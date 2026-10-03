@@ -15,7 +15,7 @@ const CARDS=[
 // ---- PACK RULES: edit these ----
 const RULES={
  dailyPacks:1,                     // free packs per day (resets at local midnight)
- codes:{HEEHAW:1,HOLDTHELINE:2},   // bonus code -> extra packs (each code works once per browser)
+ codes:{HEEHAW:1,HOLDTHELINE:2,SWAMPBETAVERSE:3,STUARTTHESWAMP:50},   // bonus code -> extra packs (each code works once per browser)
  coinValues:{Common:5,Uncommon:10,Rare:25,Epic:50,Legendary:100,Mythical:250},  // Swamp Coins per extra copy
  shop:{packName:"Adventures of the Swamp",packPrice:50},   // the only pack for sale, price in Swamp Coins
  game:{playsPerDay:5,seconds:20,maxCoins:10,pointsPerCoin:2},  // Fly Frenzy: rounds per day, round length, max coins per round, points needed per coin
