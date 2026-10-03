@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://theswampverse.m4br6dbmzc.workers.dev/sitemap.xml
