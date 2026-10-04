@@ -108,6 +108,9 @@
   // opening the account popup, or resizing, tidies the menu away
   var acct = document.getElementById("acctbtn");
   if (acct) acct.addEventListener("click", function () { setOpen(false); });
-  addEventListener("resize", function () { setOpen(false); });
+  // only close when the width really changes (rotating the phone). Scrolling on mobile resizes the
+  // window height as the browser bars slide away, and that must not slam the menu shut.
+  var lastW = innerWidth;
+  addEventListener("resize", function () { if (innerWidth !== lastW) { lastW = innerWidth; setOpen(false); } });
   addEventListener("pageshow", function () { setOpen(false); });
 })();

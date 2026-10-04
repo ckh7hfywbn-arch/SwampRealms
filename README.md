@@ -12,7 +12,9 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `shop.html` | Buy packs with Swamp Coins |
 | `arcade.html` | The Arcade (the old Play page is merged in). Fly Frenzy (coins for the first rounds each day, crystals every round), Lily Hop, Swamp Dash, Memory Flip. Open a game directly with `arcade.html#hop` |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
-| `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet |
+| `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Small on purpose: the card pictures live in `images/` |
+| `images/` | One JPG per card (`images/<card-id>.jpg`) plus the two pack pictures (`pack-adventures.jpg`, `pack-abstract.jpg`) |
+| `preview.jpg` | The 1200x630 picture shown when the site is shared on X, Discord and Telegram |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter. Load after `cards.js` |
 | `avatar.js` | Draws the animals and cosmetics as SVG |
 | `styles.css` | Base styles: layout, packs, cards, shop |
@@ -21,8 +23,9 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `worker.js` | Cloudflare Worker for `/api/*` (register, login, logout, save). Not served to visitors |
 | `schema.sql` | Database tables for accounts. Run once in D1 |
 | `wrangler.jsonc`, `.assetsignore` | Cloudflare config (Worker + D1 binding) and the list of files that are not published |
+| `menu.js` | Header menu: builds the hamburger dropdown from the nav links, avatar and sound switch. Load last, after `account.js` |
 | `_redirects` | Sends the old `/game` address to `/arcade` on Cloudflare |
-| `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files |
+| `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files. The 404 page only shows if `"not_found_handling": "404-page"` is set inside `assets` in `wrangler.jsonc` |
 
 ## Two currencies
 
@@ -30,13 +33,20 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 - **Swamp Crystals** buy avatar cosmetics. Rounds that pay crystals are unlimited.
   Tuning is in `CRY` at the top of `store.js`. Call `Crystals.award("gameName", score)` when a round ends.
 
+## Header menu
+
+The header shows the logo, coin and crystal counters, the account button and a hamburger. Every page link, the avatar and the sound switch live in the dropdown. To add a page, add one `<a class="hide" href="...">Name</a>` to the `<nav>` in the page header; `menu.js` moves it into the dropdown. Give it an icon in `ICONS` at the top of `menu.js` (optional). Script order on every page: `cards.js`, `store.js`, `account.js`, `menu.js`.
+
 ## Adding a cosmetic
 
 Add a line to `COSMETICS` in `store.js`, then draw it in `avatar.js` (`HAT`, `FACE`, `NECK` or `BG`, same id).
 
-## Before going live
+## Adding a card
 
-`index.html` points social previews at `/preview.jpg` (1200x630). Add that image to this folder.
+1. Save the picture as `images/<card-id>.jpg` (roughly 2:3, under 150 KB).
+2. Add one line to `CARDS` in `cards.js`, with `img:"images/<card-id>.jpg"`.
+
+Keep pictures out of `cards.js` itself. Every page loads that file, so a big one slows the whole site down.
 
 ## Accounts
 
@@ -58,4 +68,4 @@ If the Worker is not named `theswampverse`, change `name` in `wrangler.jsonc` to
 
 ## Deploying
 
-Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
+Commit the files to GitHub (including the `images/` folder). If the repo is connected to Cloudflare Workers, it redeploys on push.

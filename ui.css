@@ -254,3 +254,8 @@ a.sm-item:active{background:#4ee6b422}
 .sm-t{flex:1}
 .sm-snd .sm-t{color:var(--text);opacity:.88}
 @media(prefers-reduced-motion:reduce){.sitemenu,.mb-bars i{transition:none}}
+
+/* skip link: invisible until a keyboard user tabs to it */
+.skip{position:fixed;left:12px;top:-60px;z-index:200;padding:10px 16px;border-radius:12px;background:#f2c14e;color:#1a1405;font-weight:800;text-decoration:none;transition:top .15s}
+.skip:focus{top:calc(env(safe-area-inset-top,0px) + 10px)}
+main{display:block}
