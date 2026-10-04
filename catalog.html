@@ -3,27 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Card Catalog | SwampVerse</title>
-<meta name="description" content="Browse every DonK swamp card in SwampVerse, from Common to Mythical, and trade extra copies for Swamp Coins.">
+<title>Packs &amp; Collection | SwampVerse</title>
+<meta name="description" content="Open your free daily SwampVerse card pack, then browse your collection and the full DonK swamp card catalog, from Common to Mythical. Trade extra copies for Swamp Coins.">
 <link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/catalog">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SwampVerse">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="Card Catalog | SwampVerse">
-<meta property="og:description" content="Browse every DonK swamp card in SwampVerse, from Common to Mythical, and trade extra copies for Swamp Coins.">
+<meta property="og:title" content="Packs &amp; Collection | SwampVerse">
+<meta property="og:description" content="Open your free daily SwampVerse card pack, then browse your collection and the full DonK swamp card catalog, from Common to Mythical. Trade extra copies for Swamp Coins.">
 <meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/catalog">
 <meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Card Catalog | SwampVerse">
-<meta name="twitter:description" content="Browse every DonK swamp card in SwampVerse, from Common to Mythical, and trade extra copies for Swamp Coins.">
+<meta name="twitter:title" content="Packs &amp; Collection | SwampVerse">
+<meta name="twitter:description" content="Open your free daily SwampVerse card pack, then browse your collection and the full DonK swamp card catalog, from Common to Mythical. Trade extra copies for Swamp Coins.">
 <meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta name="twitter:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0d110a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
@@ -32,25 +33,46 @@
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
- <nav><a class="hide" href="index.html#packs">Packs</a><a class="hide" href="catalog.html">Catalog</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+ <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html" aria-current="page">Packs / Collection</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
-<div id="top"></div>
 <section class="reveal" id="catalog">
- <h2>Card catalog</h2>
- <p class="sub">Every card you can pull, sorted by the pack it comes from. Tap a card you own to view it larger. Cards you haven't found yet show as ?</p>
- <div class="coins"><span class="coin"></span><span id="coinct">0</span> Swamp Coins</div>
- <div id="tally" class="sub"></div>
- <p class="ratecap">Extra copies trade for more coins the rarer they are:</p>
- <ul class="rates" id="rates"></ul>
- <button class="btn ghost" id="tradeall">Trade all extras</button>
- <div class="new" id="trademsg"></div>
- <noscript><ul><li>Boggy the Frog (Uncommon)</li><li>Boggy: Blood Moon Awakening (Epic)</li><li>DonK and Friends (Common)</li><li>MonK and DonK: Crystal Edition (Mythical)</li><li>MonK and DonK: Crystal Cave (Legendary)</li><li>MonK and DonK (Common)</li><li>Ellie the Elephant (Uncommon)</li><li>DonK and Ellie: Dessert Adventure (Uncommon)</li><li>DonK and Ellie: Winter Adventure (Uncommon)</li><li>DonK and Ellie (Common)</li></ul></noscript>
- <div id="packlist"></div>
+ <h2>Packs &amp; Collection</h2>
+ <p class="sub">Open your packs, then see what you have found.</p>
+ <div><div class="seg" id="seg" data-on="packs" role="tablist" aria-label="Packs and collection">
+  <button role="tab" id="t-packs" aria-selected="true" aria-controls="p-packs" data-t="packs">Open Packs <span class="badge" id="pbadge"></span></button>
+  <button role="tab" id="t-cards" aria-selected="false" aria-controls="p-cards" data-t="cards">Collection <span class="badge new" id="cbadge" title="New cards"></span></button>
+ </div></div>
+
+ <div class="panel" id="p-packs" role="tabpanel" aria-labelledby="t-packs">
+  <div class="streak" id="streak" aria-live="polite"></div>
+  <div class="stage" id="stage"></div>
+  <h3 class="subhead">Your packs</h3>
+  <p class="sub small" style="margin-top:0">Pick which pack to open. Tap What's inside to see every card and your odds.</p>
+  <div class="ptiles" id="ptiles"></div>
+  <div class="codebox">
+   <label for="code">Have a bonus code?</label>
+   <input id="code" placeholder="Bonus code" autocapitalize="characters" autocomplete="off"><button class="btn" id="redeem">Redeem</button>
+   <div id="codemsg" aria-live="polite"></div>
+  </div>
+ </div>
+
+ <div class="panel" id="p-cards" role="tabpanel" aria-labelledby="t-cards" hidden>
+  <div class="coins"><span class="coin"></span><span id="coinct">0</span> Swamp Coins</div>
+  <p class="sub">Tap a card you own to view it larger. Cards you have not found yet show as ?</p>
+  <div id="tally" class="sub"></div>
+  <div class="chips" id="chips" role="group" aria-label="Show cards"><button class="chip" aria-pressed="true" data-f="all">All</button><button class="chip" aria-pressed="false" data-f="owned">Found</button><button class="chip" aria-pressed="false" data-f="missing">Missing</button></div>
+  <p class="ratecap">Extra copies trade for more coins the rarer they are:</p>
+  <ul class="rates" id="rates"></ul>
+  <button class="btn ghost" id="tradeall">Trade all extras</button>
+  <div class="new" id="trademsg" aria-live="polite"></div>
+  <noscript><ul><li>Boggy the Frog (Uncommon)</li><li>Boggy: Blood Moon Awakening (Epic)</li><li>DonK and Friends (Common)</li><li>MonK and DonK: Crystal Edition (Mythical)</li><li>MonK and DonK: Crystal Cave (Legendary)</li><li>MonK and DonK (Common)</li><li>Ellie the Elephant (Uncommon)</li><li>DonK and Ellie: Dessert Adventure (Uncommon)</li><li>DonK and Ellie: Winter Adventure (Uncommon)</li><li>DonK and Ellie (Common)</li><li>DonK the Donkey: Abstract Edition (Rare)</li><li>Ollie the Owl: Abstract Edition (Rare)</li><li>Boggy the Frog: Abstract Edition (Rare)</li><li>MonK the Monkey: Abstract Edition (Rare)</li><li>DonK Y2K: Abstract Edition (Epic)</li><li>DonK Injured: Abstract Edition (Epic)</li><li>Boggy Y2K: Abstract Edition (Epic)</li><li>Ollie Y2K: Abstract Edition (Epic)</li><li>MonK Y2K: Abstract Edition (Epic)</li><li>Legendary Abstract: DonK (Legendary)</li><li>Legendary Abstract: Boggy (Legendary)</li><li>Legendary Abstract: Ollie (Legendary)</li><li>Legendary Abstract: MonK (Legendary)</li><li>DonK the Superhero: Abstract Edition (Mythical)</li><li>Boggy the MonK Soldier: Abstract Edition (Mythical)</li><li>Ollie the MonK Soldier: Abstract Edition (Mythical)</li><li>MonK the Villain: Abstract Edition (Mythical)</li></ul></noscript>
+  <div id="packlist"></div>
+ </div>
 </section>
 
 <section class="reveal">
- <div class="row" style="justify-content:center"><a class="btn" href="index.html#packs">Open a pack</a><a class="btn ghost" href="shop.html">Spend coins</a></div>
+ <div class="row" style="justify-content:center"><a class="btn ghost" href="game.html">Play for coins</a><a class="btn ghost" href="shop.html">Spend coins</a></div>
 </section>
 
 <footer>
@@ -71,63 +93,253 @@
  </div>
 </dialog>
 
-<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="catalog.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><span>Catalog</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
 <script>
-function flipCard(c){return `<button class="cprev" data-id="${c.id}" aria-label="View ${c.name} larger">${cardHTML(c)}</button>`}
-let lastCoins=null;
+const $=id=>document.getElementById(id);
+// ---- PACK ANIMATION: spark count per rarity (more sparks for rarer cards) ----
+const FX={Common:10,Uncommon:16,Rare:26,Epic:38,Legendary:56,Mythical:80};
+const reduced=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* ================= Open Packs ================= */
+let curPack=PACKS[0];
+try{const sp=sessionStorage.getItem("swp-pack");curPack=PACKS.find(p=>p.id===sp)||PACKS[0]}catch(e){}
+const busy=()=>revealing&&!document.querySelector(".flip.on");
+
+function showPack(){
+ clearInterval(tick);revealing=false;load();
+ const s=$("stage"),have=PACKS.filter(p=>stockOf(p)>0);
+ if(stockOf(curPack)<1&&have.length)curPack=have[0];
+ const n=stockOf(curPack);
+ renderPacks();
+ if(n<1){
+  s.innerHTML=`<div class="ps"><div class="pack locked" aria-hidden="true">${packLabel(PACKS[0])}</div></div><div>No packs left today. Next free pack in <b id="cd"></b></div><div class="row"><a class="btn" href="shop.html">Buy a pack</a><a class="btn ghost" href="game.html">Play for coins</a></div>`;
+  const cd=$("cd"),t=()=>{cd.textContent=untilMidnight();if(PACKS.some(p=>stockOf(p)>0))showPack()};
+  t();tick=setInterval(t,1000);return;
+ }
+ s.innerHTML=`<div class="ps" id="ps"><button class="pack" id="pack" aria-label="Open a ${curPack.name} pack">${packLabel(curPack)}</button></div><div id="hint">Tap the pack to open it. ${curPack.name} packs left: ${n}</div>`;
+ $("pack").onclick=reveal;
+}
+
+function pickCard(pack){
+ // pick a rarity by weight (only rarities that this pack has), then a random card of that rarity
+ const W=pack.weights||RULES.dropWeights,pool={},all=CARDS.filter(k=>packOf(k)===pack);
+ all.forEach(k=>{(pool[k.rarity]=pool[k.rarity]||[]).push(k)});
+ const rs=Object.keys(pool),tot=rs.reduce((a,r)=>a+(W[r]||0),0);
+ if(tot<=0)return all[Math.floor(Math.random()*all.length)];
+ let x=Math.random()*tot,r=rs[rs.length-1];
+ for(const k of rs){x-=(W[k]||0);if(x<0){r=k;break}}
+ const list=pool[r];return list[Math.floor(Math.random()*list.length)];
+}
+
+function reveal(){
+ if(revealing)return;
+ load();
+ if(stockOf(curPack)<1){showPack();return}
+ revealing=true;
+ // the card is decided and saved the moment the pack is tapped; the rest is show
+ let freeUsed=false;
+ if(curPack===PACKS[0]){if(meta.used<RULES.dailyPacks){meta.used++;freeUsed=true}else meta.bonus--}else{meta.stock=meta.stock||{};meta.stock[curPack.id]--}
+ const c=pickCard(curPack),dupe=owned[c.id]>0;
+ owned[c.id]=(owned[c.id]||0)+1;
+ if(!dupe){meta.fresh=meta.fresh||[];if(!meta.fresh.includes(c.id))meta.fresh.push(c.id)}
+ // the free daily pack counts toward your streak (bonus and shop packs do not)
+ const reward=freeUsed?claimStreak():null;
+ save();
+ renderPacks();renderGrid();renderStreak();
+
+ const s=$("stage"),ps=$("ps"),m=$("hint");
+ m.id="msg";m.className="new";m.setAttribute("aria-live","polite");m.innerHTML="&nbsp;";
+ ps.style.setProperty("--c",c.color);
+ ps.insertAdjacentHTML("afterbegin",`<div class="rays"></div><div class="ring"></div><button class="flip" id="flip" tabindex="-1" aria-label="Flip the card"><div class="inner"><div class="face back">${BACK_SVG}</div><div class="face front">${cardHTML(c)}</div></div></button><div class="parts"></div>`);
+ const f=$("flip"),T=[];
+ let ready=false,sparked=false;
+
+ function sparks(){
+  sparked=true;
+  const box=ps.querySelector(".parts"),cols=[c.color,"#f2c14e","#fff3c4","#7fb23a"];
+  for(let i=0;i<(FX[c.rarity]||12);i++){
+   const a=Math.random()*Math.PI*2,r=60+Math.random()*95,e=document.createElement("i");
+   e.className="pt";
+   e.style.cssText=`--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r+24}px;--z:${4+Math.random()*7}px;--t:${700+Math.random()*700}ms;--w:${Math.random()*120}ms;--pc:${cols[i%cols.length]}`;
+   box.appendChild(e);
+  }
+ }
+ function finish(fast){
+  if(ready)return;ready=true;T.forEach(clearTimeout);
+  if(fast)ps.classList.add("fast");
+  ps.classList.remove("charge");
+  ps.classList.add("tear","open","rise","ready");
+  if(!sparked)sparks();
+  f.tabIndex=0;f.focus({preventScroll:true});
+  m.textContent="Tap the card to flip it";
+ }
+
+ if(reduced()){finish();}
+ else{
+  const at=(ms,fn)=>T.push(setTimeout(fn,ms));
+  ps.classList.add("charge");SFX.charge();
+  at(900,()=>{ps.classList.add("tear");SFX.tear();try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}});
+  at(1000,()=>{ps.classList.remove("charge");ps.classList.add("open");sparks()});
+  at(1200,()=>ps.classList.add("rise"));
+  at(2050,()=>finish());
+  // tapping during the sequence skips ahead (added after this click finishes bubbling)
+  setTimeout(()=>ps.addEventListener("click",()=>{if(!ready)finish(true)}),0);
+ }
+
+ f.onclick=()=>{
+  if(f.classList.contains("on"))return;
+  f.classList.add("on");ps.classList.add("on");
+  SFX.flip();setTimeout(()=>SFX.open(c.rarity),380);
+  if((FX[c.rarity]||0)>=26)sparks();
+  setTimeout(()=>{
+   m.textContent=dupe?"Duplicate! You now have "+owned[c.id]+" of "+c.name:"New card: "+c.name+"!";
+   if(reward){
+    const r=document.createElement("div");r.className="rewardnote";
+    r.innerHTML="<b>Day "+reward.streak+" streak!</b> +"+reward.coins+" Swamp Coins"+(reward.bonus?" and +"+reward.bonus+" bonus pack":"");
+    s.appendChild(r);setTimeout(()=>SFX.streak(),500);
+   }
+   const row=document.createElement("div");row.className="row";
+   const b=document.createElement("button");b.className="btn";b.textContent=PACKS.some(p=>stockOf(p)>0)?"Open another pack":"See next pack time";b.onclick=showPack;
+   const lk=document.createElement("button");lk.className="btn ghost";lk.textContent="View collection";lk.onclick=()=>setTab("cards",true);
+   row.append(b,lk);s.appendChild(row);
+  },700);
+ };
+}
+
+$("redeem").onclick=()=>{
+ const i=$("code"),v=i.value.trim().toUpperCase(),m=$("codemsg"),n=RULES.codes[v];
+ if(!v){m.textContent="Type a code first.";return}
+ if(!n){m.textContent="That code isn't valid.";return}
+ load();
+ if(meta.codes.includes(v)){m.textContent="You already used that code.";return}
+ meta.bonus+=n;meta.codes.push(v);save();i.value="";
+ m.textContent="Code accepted: +"+n+" bonus pack"+(n>1?"s":"")+".";
+ pulse(m,"msgin");
+ if(!revealing)showPack();else renderPacks();
+};
+$("code").addEventListener("keydown",e=>{if(e.key==="Enter")$("redeem").click()});
+
+/* ================= Daily streak ================= */
+function renderStreak(){
+ const S=RULES.streak,st=streakNow(),done=claimedToday(),pos=st===0?0:(st%S.bonusEvery||S.bonusEvery);
+ let dots="";
+ for(let i=1;i<=S.bonusEvery;i++){
+  const last=i===S.bonusEvery;
+  dots+=`<i class="${i<=pos?"on":""}${last?" gift":""}"><span>${last?"+1":Math.min(S.maxCoins,(st-pos+i)*S.coinsPerDay)}</span></i>`;
+ }
+ const nextDay=done?st+1:Math.max(st,0)+1,nextCoins=Math.min(S.maxCoins,nextDay*S.coinsPerDay);
+ $("streak").innerHTML=`<div class="sk-head"><b>${st?"Day "+st+" streak":"Daily streak"}</b><span>${done?"Done for today. Come back tomorrow for +"+nextCoins+" coins.":st?"Open today's free pack to keep it going (+"+nextCoins+" coins).":"Open your free daily pack on back-to-back days for coins. Every "+S.bonusEvery+"th day gives a bonus pack."}</span></div><div class="sk-dots">${dots}</div>`;
+}
+
+/* ================= Your packs (tiles) ================= */
+function renderPacks(){
+ const have=PACKS.filter(p=>stockOf(p)>0),total=PACKS.reduce((a,p)=>a+stockOf(p),0);
+ $("pbadge").textContent=total||"";
+ $("ptiles").innerHTML=PACKS.map(p=>{
+  const n=stockOf(p);
+  return `<div class="ptile${have.length>1&&p===curPack?" sel":""}"><div class="pack${n?"":" locked"}" aria-hidden="true">${packLabel(p)}</div><h3>${p.name}</h3><div class="pcount"><b>${n}</b> ready to open</div>${n?`<button class="btn" data-open="${p.id}">Open pack</button>`:`<a class="btn" href="shop.html">Get packs</a>`}<button class="btn ghost" data-odds="${p.id}">What's inside</button>${p===PACKS[0]&&n<1?`<p class="pnote">Next free pack in <b class="cdt">${untilMidnight()}</b></p>`:""}</div>`;
+ }).join("");
+}
+$("ptiles").onclick=e=>{
+ const o=e.target.closest("[data-odds]");if(o){openOdds(PACKS.find(p=>p.id===o.dataset.odds));return}
+ const b=e.target.closest("[data-open]");if(!b||busy())return;
+ curPack=PACKS.find(p=>p.id===b.dataset.open);
+ try{sessionStorage.setItem("swp-pack",curPack.id)}catch(x){}
+ showPack();
+ $("stage").scrollIntoView({behavior:reduced()?"auto":"smooth",block:"center"});
+};
+setInterval(()=>{
+ const t=document.querySelectorAll(".cdt");if(!t.length)return;
+ t.forEach(e=>e.textContent=untilMidnight());
+ load();if(left()>0){renderPacks();if(!revealing)showPack()}
+},1000);
+
+/* ================= Collection ================= */
+let lastCoins=null,filt="all";
 const rank=c=>RULES.coinValues[c.rarity]||0;
+const flipCard=c=>`<button class="cprev" data-id="${c.id}" aria-label="View ${c.name} larger">${cardHTML(c)}</button>`;
 function slotHTML(c,i){
  const n=owned[c.id]||0,v=rank(c);
  if(!n)return `<div class="slot" style="--i:${i};--c:${c.color}"><div class="cw"><div class="empty"><span class="rar">${c.rarity}</span>?<small>Not found yet</small></div></div></div>`;
- return `<div class="slot" style="--i:${i}"><div class="cw">${n>1?`<span class="count">x${n}</span>`:""}${flipCard(c)}</div>${n>1?`<button class="btn mini" data-id="${c.id}">Trade 1 extra<br>+${v} coins</button>`:""}</div>`;
+ const fresh=(meta.fresh||[]).includes(c.id);
+ return `<div class="slot" style="--i:${i}"><div class="cw">${n>1?`<span class="count">x${n}</span>`:""}${fresh?`<span class="newtag">NEW</span>`:""}${flipCard(c)}</div>${n>1?`<button class="btn mini" data-id="${c.id}">Trade 1 extra<br>+${v} coins</button>`:""}</div>`;
 }
 function renderGrid(){
  const have=CARDS.filter(c=>owned[c.id]).length,extras=CARDS.reduce((a,c)=>a+Math.max(0,(owned[c.id]||0)-1),0);
- document.getElementById("tally").textContent=have+" of "+CARDS.length+" cards found";
- document.getElementById("coinct").textContent=meta.coins;
- if(lastCoins!==null&&meta.coins!==lastCoins)pulse(document.querySelector(".coins"),"bump");
+ $("tally").textContent=have+" of "+CARDS.length+" cards found";
+ $("coinct").textContent=meta.coins;
+ if(lastCoins!==null&&meta.coins!==lastCoins)pulse(document.querySelector("#p-cards .coins"),"bump");
  lastCoins=meta.coins;
- document.getElementById("tradeall").disabled=extras<1;
- document.getElementById("packlist").innerHTML=PACKS.map(p=>{
-  const cs=CARDS.filter(c=>packOf(c)===p).sort((a,b)=>rank(a)-rank(b)),f=cs.filter(c=>owned[c.id]).length;
+ $("tradeall").disabled=extras<1;
+ const nf=(meta.fresh||[]).filter(id=>owned[id]).length;$("cbadge").textContent=nf||"";
+ let shown=0;
+ const html=PACKS.map(p=>{
+  const all=CARDS.filter(c=>packOf(c)===p).sort((a,b)=>rank(a)-rank(b)),f=all.filter(c=>owned[c.id]).length;
+  if(!all.length)return "";
+  const cs=all.filter(c=>filt==="all"||(filt==="owned")===!!owned[c.id]);
   if(!cs.length)return "";
-  return `<div class="packsec"><div class="packhead"><div class="packthumb">${PACK_ART}</div><div class="packinfo"><h3>${p.name}</h3><p>${p.how||""}</p><div class="packbar"><i><b style="width:${Math.round(f/cs.length*100)}%"></b></i>${f} of ${cs.length} found</div></div></div><div class="grid">${cs.map(slotHTML).join("")}</div></div>`;
+  shown+=cs.length;
+  return `<div class="packsec"><div class="packhead"><div class="packthumb">${p.art||PACK_ART}</div><div class="packinfo"><h3>${p.name}</h3><p>${p.how||""}</p><div class="packbar"><i><b style="width:${Math.round(f/all.length*100)}%"></b></i>${f} of ${all.length} found</div></div></div><div class="grid">${cs.map(slotHTML).join("")}</div></div>`;
  }).join("");
+ $("packlist").innerHTML=html||`<p class="nomatch">${filt==="missing"?"You have found every card. Nice work!":"No cards found yet. Open a pack to start your collection."}</p>`;
 }
+function animateGrid(){const l=$("packlist");l.classList.add("enter");setTimeout(()=>l.classList.remove("enter"),1600)}
 function trade(id,all){
  const c=CARDS.find(x=>x.id===id),n=all?Math.max(0,(owned[id]||0)-1):((owned[id]||0)>1?1:0);
  if(!c||!n)return 0;
  const g=n*(RULES.coinValues[c.rarity]||0);
  owned[id]-=n;meta.coins+=g;save();return g;
 }
-function tradeMsg(g){const m=document.getElementById("trademsg");m.textContent=g?"Traded in extras for +"+g+" Swamp Coins.":"No extra copies to trade.";pulse(m,"msgin")}
-document.getElementById("packlist").onclick=e=>{const f=e.target.closest(".cprev");if(f){openPreview(f.dataset.id);return}const b=e.target.closest(".mini");if(!b)return;tradeMsg(trade(b.dataset.id,false));renderGrid()};
-document.getElementById("tradeall").onclick=()=>{let g=0;CARDS.forEach(c=>g+=trade(c.id,true));tradeMsg(g);renderGrid()};
+function tradeMsg(g){if(g)SFX.coin();const m=$("trademsg");m.textContent=g?"Traded in extras for +"+g+" Swamp Coins.":"No extra copies to trade.";pulse(m,"msgin")}
+$("packlist").onclick=e=>{const f=e.target.closest(".cprev");if(f){openPreview(f.dataset.id);return}const b=e.target.closest(".mini");if(!b)return;load();tradeMsg(trade(b.dataset.id,false));renderGrid()};
+$("tradeall").onclick=()=>{load();let g=0;CARDS.forEach(c=>g+=trade(c.id,true));tradeMsg(g);renderGrid()};
+$("chips").onclick=e=>{
+ const b=e.target.closest(".chip");if(!b)return;
+ filt=b.dataset.f;
+ document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));
+ renderGrid();animateGrid();
+};
 
-const pv=document.getElementById("preview");
+const pv=$("preview");
 function openPreview(id){
  const c=CARDS.find(x=>x.id===id),n=owned[id]||0;
  if(!c||!n)return;
  pv.style.setProperty("--c",c.color);
- document.getElementById("pv-card").innerHTML=cardHTML(c);
- document.getElementById("pv-title").textContent=c.name;
- document.getElementById("pv-text").textContent="This verifies that you have collected "+c.name+" ("+c.rarity+") from the "+packOf(c).name+" pack in the SwampVerse. "+(n>1?"You hold "+n+" copies.":"You hold 1 copy.");
+ $("pv-card").innerHTML=cardHTML(c);
+ $("pv-title").textContent=c.name;
+ $("pv-text").textContent="This verifies that you have collected "+c.name+" ("+c.rarity+") from the "+packOf(c).name+" pack in the SwampVerse. "+(n>1?"You hold "+n+" copies.":"You hold 1 copy.");
  pv.showModal();
+ if((meta.fresh||[]).includes(id)){load();meta.fresh=(meta.fresh||[]).filter(x=>x!==id);save();renderGrid()}
 }
 function closePreview(){
  if(!pv.open||pv.classList.contains("closing"))return;
- if(matchMedia("(prefers-reduced-motion:reduce)").matches){pv.close();return}
+ if(reduced()){pv.close();return}
  pv.classList.add("closing");
  setTimeout(()=>{pv.classList.remove("closing");pv.close()},220);
 }
-document.getElementById("pv-close").onclick=closePreview;
+$("pv-close").onclick=closePreview;
 pv.addEventListener("click",e=>{if(e.target===pv)closePreview()});
 pv.addEventListener("cancel",e=>{e.preventDefault();closePreview()});
 
-document.getElementById("rates").innerHTML=ratesHTML();
-const listEl=document.getElementById("packlist");listEl.classList.add("enter");renderGrid();setTimeout(()=>listEl.classList.remove("enter"),1600);
+/* ================= Tabs ================= */
+function setTab(t,scroll){
+ $("p-packs").hidden=t!=="packs";$("p-cards").hidden=t!=="cards";
+ $("seg").dataset.on=t;
+ $("t-packs").setAttribute("aria-selected",t==="packs");$("t-cards").setAttribute("aria-selected",t==="cards");
+ if(t==="cards")animateGrid();
+ try{history.replaceState(null,"",t==="cards"?"#cards":"#packs")}catch(x){}
+ if(scroll)$("catalog").scrollIntoView({behavior:reduced()?"auto":"smooth",block:"start"});
+}
+$("seg").onclick=e=>{const b=e.target.closest("button[data-t]");if(b)setTab(b.dataset.t)};
+$("seg").onkeydown=e=>{if(e.key==="ArrowLeft"||e.key==="ArrowRight"){const t=$("seg").dataset.on==="packs"?"cards":"packs";setTab(t);$("t-"+t).focus()}};
+addEventListener("hashchange",()=>setTab(location.hash==="#cards"?"cards":"packs"));
+
+$("rates").innerHTML=ratesHTML();
+renderGrid();renderStreak();
+showPack();
+setTab(location.hash==="#cards"?"cards":"packs");
 </script>
 </body>
 </html>

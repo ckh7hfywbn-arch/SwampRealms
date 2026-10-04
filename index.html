@@ -26,6 +26,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://theswampverse.m4br6dbmzc.workers.dev/#site","url":"https://theswampverse.m4br6dbmzc.workers.dev/","name":"SwampVerse","alternateName":"DonK Swamp Cards","description":"SwampVerse is a free card collecting site. Open a free pack every day, collect the whole DonK swamp herd and earn Swamp Coins. Fan collectibles, just for fun.","inLanguage":"en"},{"@type":"Organization","@id":"https://theswampverse.m4br6dbmzc.workers.dev/#org","name":"SwampVerse","url":"https://theswampverse.m4br6dbmzc.workers.dev/","logo":"https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg","sameAs":["https://x.com/donkeycryt","https://discord.gg/ryQMThkQFr","https://t.me/DonKSwamp","https://donkthedonkey.framer.website/"]}]}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0d110a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
@@ -34,31 +35,48 @@
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
- <nav><a class="hide" href="#packs">Packs</a><a class="hide" href="catalog.html">Catalog</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="#herd">The Herd</a></nav>
+ <nav aria-label="Site"><a class="hide" href="index.html" aria-current="page">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
 <div class="hero" id="top">
+ <a class="showcase" id="showcase" href="catalog.html#cards" hidden></a>
  <div>
-  <a class="showcase" id="showcase" href="catalog.html" hidden></a>
   <h1>DonK<span>Swamp Cards</span></h1>
   <p class="tag">King of the Swamp. Stubborn by nature.</p>
   <p>Open a free pack every day and collect the whole herd.</p>
-  <div class="row"><a class="btn" href="#packs">Open today's pack</a><a class="btn ghost" href="catalog.html">Card catalog</a><a class="btn ghost" href="game.html">Play for coins</a></div>
+  <div class="row"><a class="btn" href="catalog.html#packs">Open today's pack</a><a class="btn ghost" href="catalog.html#cards">My collection</a><a class="btn ghost" href="game.html">Play for coins</a></div>
+ </div>
+ <div class="status" id="status" aria-label="Your progress">
+  <a class="stat" href="catalog.html#packs"><b id="s-packs">1</b><span>Packs ready</span><small id="s-cd">&nbsp;</small></a>
+  <a class="stat" href="catalog.html#packs"><b id="s-streak">0</b><span>Day streak</span><small id="s-sk">Open a pack to start</small></a>
+  <a class="stat" href="catalog.html#cards"><b id="s-cards">0</b><span>Cards found</span><small id="s-total">&nbsp;</small></a>
+  <a class="stat" href="shop.html"><b id="s-coins">0</b><span>Swamp Coins</span><small>Spend in the shop</small></a>
  </div>
 </div>
 
-<section class="reveal" id="packs">
- <h2>Open a pack</h2>
- <p class="sub">One free pack a day. Bonus codes give you more.</p>
- <div class="stage" id="stage"></div>
- <div class="codes"><input id="code" placeholder="Bonus code" autocapitalize="characters" aria-label="Bonus code"><button class="btn" id="redeem">Redeem</button><div id="codemsg"></div></div>
+<section class="reveal" id="explore">
+ <h2>Jump in</h2>
+ <p class="sub">Everything in the swamp, one tap away.</p>
+ <div class="tiles">
+  <a class="tile" href="catalog.html#packs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><b>Open packs</b><span>Tear open your free daily pack, or one you bought.</span></a>
+  <a class="tile" href="catalog.html#cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><b>Collection</b><span>See every card you have found and trade extras.</span></a>
+  <a class="tile" href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><b>Fly Frenzy</b><span>Catch flies, dodge wasps and earn Swamp Coins.</span></a>
+  <a class="tile" href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><b>Shop</b><span>Spend coins on more packs, including Abstract Edition.</span></a>
+ </div>
+</section>
+
+<section class="reveal" id="rarities">
+ <h2>Six rarities, one swamp</h2>
+ <p class="sub">From Common to Mythical. The rarer the card, the harder it is to pull.</p>
+ <div class="deck" id="deck"></div>
+ <a class="btn ghost" href="catalog.html#cards">See the full catalog</a>
 </section>
 
 <section class="reveal" id="how">
  <h2>How it works</h2>
  <ol class="steps">
-  <li><b>Open</b>Tap your free pack once a day. It resets at midnight.</li>
-  <li><b>Collect</b>Find every swamp character in the catalog. Trade extra copies for Swamp Coins.</li>
+  <li><b>Open</b>Tap your free pack once a day in the Packs / Collection tab. It resets at midnight.</li>
+  <li><b>Collect</b>Find every swamp character. Trade extra copies for Swamp Coins.</li>
   <li><b>Earn more</b>Play Fly Frenzy for Swamp Coins and spend them in the shop. Watch X and Discord for bonus codes too.</li>
  </ol>
 </section>
@@ -84,116 +102,40 @@
  <p style="margin-top:10px">© 2026 DonK the Donkey</p>
 </footer>
 
-<nav class="tabbar" aria-label="Main"><a href="index.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><span>Catalog</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+<nav class="tabbar" aria-label="Main"><a href="index.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
 <script>
-// ---- PACK ANIMATION: spark count per rarity (more sparks for rarer cards) ----
-const FX={Common:10,Uncommon:16,Rare:26,Epic:38,Legendary:56,Mythical:80};
-
-function showPack(){
- clearInterval(tick);revealing=false;load();
- const s=document.getElementById("stage"),n=left();
- if(n<1){
-  s.innerHTML=`<div class="ps"><div class="pack locked" aria-hidden="true">${PACK_LABEL}</div></div><div>No packs left today. Next free pack in <b id="cd"></b></div><div class="row"><a class="btn" href="shop.html">Buy a pack</a><a class="btn ghost" href="game.html">Play for coins</a></div>`;
-  const cd=document.getElementById("cd"),t=()=>{cd.textContent=untilMidnight();if(left()>0)showPack()};
-  t();tick=setInterval(t,1000);return;
- }
- s.innerHTML=`<div class="ps" id="ps"><button class="pack" id="pack" aria-label="Open a pack">${PACK_LABEL}</button></div><div id="hint">Tap the pack to open it. Packs left: ${n}</div>`;
- document.getElementById("pack").onclick=reveal;
-}
-
-function pickCard(){
- // pick a rarity by weight (only rarities that currently have cards), then a random card of that rarity
- const W=RULES.dropWeights,pool={};
- CARDS.forEach(k=>{(pool[k.rarity]=pool[k.rarity]||[]).push(k)});
- const rs=Object.keys(pool),tot=rs.reduce((a,r)=>a+(W[r]||0),0);
- if(tot<=0)return CARDS[Math.floor(Math.random()*CARDS.length)];
- let x=Math.random()*tot,r=rs[rs.length-1];
- for(const k of rs){x-=(W[k]||0);if(x<0){r=k;break}}
- const list=pool[r];return list[Math.floor(Math.random()*list.length)];
-}
-
-function reveal(){
- if(revealing)return;
- load();
- if(left()<1){showPack();return}
- revealing=true;
- // the card is decided and saved the moment the pack is tapped; the rest is show
- if(meta.used<RULES.dailyPacks)meta.used++;else meta.bonus--;
- const c=pickCard(),dupe=owned[c.id]>0;
- owned[c.id]=(owned[c.id]||0)+1;save();
-
- const s=document.getElementById("stage"),ps=document.getElementById("ps"),m=document.getElementById("hint");
- m.id="msg";m.className="new";m.setAttribute("aria-live","polite");m.innerHTML="&nbsp;";
- ps.style.setProperty("--c",c.color);
- ps.insertAdjacentHTML("afterbegin",`<div class="rays"></div><div class="ring"></div><button class="flip" id="flip" tabindex="-1" aria-label="Flip the card"><div class="inner"><div class="face back">${BACK_SVG}</div><div class="face front">${cardHTML(c)}</div></div></button><div class="parts"></div>`);
- const f=document.getElementById("flip"),T=[];
- let ready=false,sparked=false;
-
- function sparks(){
-  sparked=true;
-  const box=ps.querySelector(".parts"),cols=[c.color,"#f2c14e","#fff3c4","#7fb23a"];
-  for(let i=0;i<(FX[c.rarity]||12);i++){
-   const a=Math.random()*Math.PI*2,r=60+Math.random()*95,e=document.createElement("i");
-   e.className="pt";
-   e.style.cssText=`--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r+24}px;--z:${4+Math.random()*7}px;--t:${700+Math.random()*700}ms;--w:${Math.random()*120}ms;--pc:${cols[i%cols.length]}`;
-   box.appendChild(e);
-  }
- }
- function finish(fast){
-  if(ready)return;ready=true;T.forEach(clearTimeout);
-  if(fast)ps.classList.add("fast");
-  ps.classList.remove("charge");
-  ps.classList.add("tear","open","rise","ready");
-  if(!sparked)sparks();
-  f.tabIndex=0;f.focus({preventScroll:true});
-  m.textContent="Tap the card to flip it";
- }
-
- if(matchMedia("(prefers-reduced-motion:reduce)").matches){finish();}
- else{
-  const at=(ms,fn)=>T.push(setTimeout(fn,ms));
-  ps.classList.add("charge");
-  at(900,()=>{ps.classList.add("tear");try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}});
-  at(1000,()=>{ps.classList.remove("charge");ps.classList.add("open");sparks()});
-  at(1200,()=>ps.classList.add("rise"));
-  at(2050,()=>finish());
-  // tapping during the sequence skips ahead (added after this click finishes bubbling)
-  setTimeout(()=>ps.addEventListener("click",()=>{if(!ready)finish(true)}),0);
- }
-
- f.onclick=()=>{
-  if(f.classList.contains("on"))return;
-  f.classList.add("on");ps.classList.add("on");
-  if((FX[c.rarity]||0)>=26)sparks();
-  setTimeout(()=>{
-   m.textContent=dupe?"Duplicate! You now have "+owned[c.id]+" of "+c.name:"New card: "+c.name+"!";
-   const b=document.createElement("button");b.className="btn";b.textContent=left()>0?"Open another pack":"See next pack time";b.onclick=showPack;
-   s.appendChild(b);const lk=document.createElement("a");lk.className="btn ghost";lk.href="catalog.html";lk.textContent="View catalog";s.appendChild(lk);
-  },700);
- };
-}
-
-document.getElementById("redeem").onclick=()=>{
- const i=document.getElementById("code"),v=i.value.trim().toUpperCase(),m=document.getElementById("codemsg"),n=RULES.codes[v];
- if(!v){m.textContent="Type a code first.";return}
- if(!n){m.textContent="That code isn't valid.";return}
- if(meta.codes.includes(v)){m.textContent="You already used that code.";return}
- meta.bonus+=n;meta.codes.push(v);save();i.value="";
- m.textContent="Code accepted: +"+n+" bonus pack"+(n>1?"s":"")+".";
- if(!revealing)showPack();
-};
 // featured card above the title: the Epic Boggy card
 (function(){
  const c=CARDS.find(k=>k.id==="boggy-blood-moon"),el=document.getElementById("showcase");
  if(!c||!el)return;
  el.style.setProperty("--c",c.color);
- el.setAttribute("aria-label",c.name+", "+c.rarity+" card. View the card catalog");
+ el.setAttribute("aria-label",c.name+", "+c.rarity+" card. View your collection");
  el.innerHTML='<span class="glow"></span>'+cardHTML(c);
  el.hidden=false;
 })();
-showPack();
+
+// one card per rarity, rarest last (edit the ids to change which cards are shown)
+(function(){
+ const ids=["donk-and-friends","boggy","abs-donk-the-donkey","boggy-blood-moon","monk-and-donk-crystal-cave","monk-and-donk-crystal-edition"];
+ document.getElementById("deck").innerHTML=ids.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean).map(c=>`<a class="dcard" href="catalog.html#cards" aria-label="${c.name}, ${c.rarity}">${cardHTML(c)}</a>`).join("");
+})();
+
+// your progress (saved on this device)
+function renderStatus(){
+ load();
+ const n=PACKS.reduce((a,p)=>a+stockOf(p),0),have=CARDS.filter(c=>owned[c.id]).length;
+ document.getElementById("s-packs").textContent=n;
+ document.getElementById("s-cd").textContent=left()>0?"Tap to open":"Next free in "+untilMidnight();
+ document.getElementById("s-cards").textContent=have;
+ const st=streakNow();document.getElementById("s-streak").textContent=st;
+ document.getElementById("s-sk").textContent=claimedToday()?"Done today":st?"Open today's pack":"Open a pack to start";
+ const nf=(meta.fresh||[]).filter(id=>owned[id]).length;
+ document.getElementById("s-total").textContent=nf?"of "+CARDS.length+" · "+nf+" new":"of "+CARDS.length;
+  document.getElementById("s-coins").textContent=meta.coins||0;
+}
+renderStatus();setInterval(renderStatus,1000);
 </script>
 </body>
 </html>
