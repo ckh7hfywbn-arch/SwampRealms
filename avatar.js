@@ -45,7 +45,7 @@ const AV=(function(){
  function svg(o){
   o=o||{};const an=A[o.animal]||A.frog,c=COL[o.animal]||COL.frog;
   return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Your swamp avatar">`+
-   (BG[o.bg]||BG[""])+(BACK[o.neck]||"")+`<ellipse cx="100" cy="178" rx="40" ry="30" fill="${c}"/>`+an.d(c)+
+   (o.nobg?"":(BG[o.bg]||BG[""]))+(BACK[o.neck]||"")+`<ellipse cx="100" cy="178" rx="40" ry="30" fill="${c}"/>`+an.d(c)+
    (NECK[o.neck]||"")+(FACE[o.face]?FACE[o.face](an.eyes):"")+(HAT[o.hat]?`<g transform="translate(0,${an.top})">${HAT[o.hat]}</g>`:"")+`</svg>`;
  }
  return{svg,animals:Object.keys(A)};

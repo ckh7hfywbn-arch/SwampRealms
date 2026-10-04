@@ -109,7 +109,7 @@ function paintGems(){
  const coin=n.querySelector(".bank"),html='<a class="bank cry" href="avatar.html"><span class="gem" aria-hidden="true"></span><b id="gemct">0</b></a>';
  if(coin)coin.insertAdjacentHTML("afterend",html);else n.insertAdjacentHTML("beforeend",html);
  const here=/avatar\.html/.test(location.pathname);
- const snd=document.getElementById("snd"),link='<a class="hide" href="avatar.html"'+(here?' aria-current="page"':'')+'>Avatar</a>';
+ const snd=document.getElementById("snd"),link='<a class="hide" href="arcade.html"'+(/arcade\.html/.test(location.pathname)?' aria-current="page"':'')+'>Arcade</a><a class="hide" href="avatar.html"'+(here?' aria-current="page"':'')+'>Avatar</a>';
  if(snd)snd.insertAdjacentHTML("beforebegin",link);
  paintGems();
 })();

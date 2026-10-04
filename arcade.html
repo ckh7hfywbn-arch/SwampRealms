@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arcade | SwampVerse</title>
+<meta name="description" content="Play Lily Hop, Swamp Dash and Memory Flip with unlimited rounds and earn Swamp Crystals for your swamp avatar.">
+<link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/arcade">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SwampVerse">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Arcade | SwampVerse">
+<meta property="og:description" content="Play Lily Hop, Swamp Dash and Memory Flip with unlimited rounds and earn Swamp Crystals for your swamp avatar.">
+<meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/arcade">
+<meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Arcade | SwampVerse">
+<meta name="twitter:description" content="Play Lily Hop, Swamp Dash and Memory Flip with unlimited rounds and earn Swamp Crystals for your swamp avatar.">
+<meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta name="twitter:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0d110a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
+<link rel="stylesheet" href="styles.css">
+<style>
+#arc{display:grid;gap:16px;justify-items:center}
+.cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cats button{font:800 14px Nunito,sans-serif;color:var(--text);background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.cats button[aria-selected=true]{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.box{position:relative;width:min(100%,420px);aspect-ratio:3/4;background:#0d1a1a;border:1px solid var(--line);border-radius:18px;overflow:hidden;user-select:none;-webkit-user-select:none}
+.box canvas{width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;top:10px;left:10px;font:800 16px Nunito,sans-serif;background:#000a;border-radius:999px;padding:4px 12px;pointer-events:none}
+.mem{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:48px 12px 12px;align-content:center}
+.mem[hidden],.box canvas[hidden],.gov[hidden]{display:none}
+.mc{position:relative;aspect-ratio:1;border:0;border-radius:12px;padding:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mb,.mf{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;overflow:hidden}
+.mb{background:linear-gradient(135deg,#3d9150,#245c33);font:800 26px Nunito,sans-serif;color:#fff9}
+.mf{background:#1c3a2a;font-size:32px;display:none}.mf svg{width:100%;height:100%}
+.mc.on .mf{display:grid}.mc.on .mb{display:none}.mc.ok .mf{outline:3px solid var(--gold);outline-offset:-3px}
+.gov{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;padding:20px;text-align:center;background:#0009;backdrop-filter:blur(2px)}
+.gov h3{margin:0;font-size:28px}.gov p{margin:0;max-width:30ch;line-height:1.5}
+</style>
+</head>
+<body>
+<noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
+<header>
+ <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
+ <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+</header>
+
+<div id="top"></div>
+<section class="reveal" id="arcade">
+ <h2>Swamp Arcade</h2>
+ <p class="sub">Play as many rounds as you like. Every round pays Swamp Crystals for your avatar.</p>
+ <div id="arc">
+  <div class="cats" id="tabs" role="tablist" aria-label="Choose a game"></div>
+  <div class="box">
+   <canvas id="cv" width="360" height="480" aria-label="Game area"></canvas>
+   <div class="mem" id="mem" hidden></div>
+   <div class="hud" aria-live="polite"><span id="sc">0</span></div>
+   <div class="gov" id="ovx"><h3 id="ovt"></h3><p id="ovp"></p><button type="button" class="btn" id="go">Play</button><a class="btn ghost" href="avatar.html">Dress your avatar</a></div>
+  </div>
+ </div>
+</section>
+
+
+<footer>
+ <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
+ <p>Swamp Cards and Swamp Coins are free fan collectibles for fun. They have no cash value and can't be bought, sold or exchanged for money or $DonK. $DonK is a meme coin with no intrinsic value or expectation of financial return. Crypto is volatile and you can lose everything. Do your own research.</p>
+ <p style="margin-top:10px">© 2026 DonK the Donkey</p>
+</footer>
+
+<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+
+<script src="cards.js"></script>
+<script src="store.js"></script>
+<script src="avatar.js"></script>
+<script>
+const $=id=>document.getElementById(id),cv=$("cv"),X=cv.getContext("2d"),W=360,H=480,av=new Image();
+let cur=null,raf=0,live=false,sel="hop";
+const setScore=t=>$("sc").textContent=t;
+function loadAv(){av.src="data:image/svg+xml,"+encodeURIComponent(AV.svg(Object.assign({},Crystals.outfit(),{nobg:1})))}
+function pic(x,y,s){if(av.complete&&av.naturalWidth)X.drawImage(av,x,y,s,s)}
+function loop(step){let last=performance.now();live=true;(function f(n){if(!live)return;const dt=Math.min(.05,(n-last)/1e3);last=n;step(dt);if(live)raf=requestAnimationFrame(f)})(last)}
+function stop(){live=false;cancelAnimationFrame(raf);cur=null}
+function finish(g,score){
+ stop();const r=Crystals.award(g,score);
+ $("ovt").textContent="Round over";
+ $("ovp").innerHTML="Score <b>"+score+"</b><br><span class='gem'></span><b>+"+r.total+" crystals</b>"+(r.bonus?"<br>Includes +"+r.bonus+" first round of the day bonus!":"")+(r.record?"<br>New best!":"");
+ $("go").textContent="Play again";$("ovx").hidden=false;
+}
+/* ---- Lily Hop: hold to charge, release to jump ---- */
+function hop(){
+ let pads=[{x:0,w:110}],pi=0,fx=55,cam=-40,charge=0,dir=1,hold=false,jmp=null,score=0,fall=0;const PY=330;
+ const add=()=>{const p=pads[pads.length-1],n=pads.length;pads.push({x:p.x+p.w+36+Math.random()*(60+Math.min(n*5,70)),w:Math.max(42,100-n*3)})};
+ while(pads.length<9)add();
+ const bg=X.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#2c6d6a");bg.addColorStop(1,"#0f2e2e");
+ cur={down(){if(!jmp&&!fall){hold=true;charge=0;dir=1}},up(){if(hold){hold=false;jmp={t:0,from:fx,to:fx+40+charge*220}}}};
+ setScore(0);
+ loop(dt=>{
+  if(hold){charge+=dir*dt*1.4;if(charge>=1){charge=1;dir=-1}if(charge<=0){charge=0;dir=1}}
+  let arc=0;
+  if(jmp){jmp.t+=dt/.55;const k=Math.min(1,jmp.t),d=jmp.to-jmp.from;fx=jmp.from+d*k;arc=Math.sin(k*Math.PI)*(50+d*.25);
+   if(k>=1){const lx=jmp.to,i=pads.findIndex(p=>lx>=p.x-6&&lx<=p.x+p.w+6);jmp=null;
+    if(i<0)fall=.01;else{if(i>pi){const p=pads[i];score+=10+(Math.abs(lx-(p.x+p.w/2))<p.w*.2?5:0);setScore(score)}pi=i;while(pads.length<pi+9)add()}}}
+  if(fall){fall+=dt;if(fall>.7)return finish("hop",score)}
+  cam+=(fx-90-cam)*Math.min(1,dt*5);
+  X.fillStyle=bg;X.fillRect(0,0,W,H);
+  for(const p of pads){const x=p.x-cam+p.w/2;if(x<-80||x>W+80)continue;X.fillStyle="#3d9150";X.beginPath();X.ellipse(x,PY,p.w/2,13,0,0,7);X.fill();X.fillStyle="#5cc06e";X.beginPath();X.ellipse(x,PY-3,p.w/2-5,8,0,0,7);X.fill()}
+  if(hold){X.fillStyle="#fff";X.globalAlpha=.7;X.beginPath();X.arc(fx+40+charge*220-cam,PY,5,0,7);X.fill();X.globalAlpha=1;X.fillStyle="#0007";X.fillRect(20,20,W-40,12);X.fillStyle="#4ee6b4";X.fillRect(20,20,(W-40)*charge,12)}
+  X.globalAlpha=fall?Math.max(0,1-fall*1.4):1;pic(fx-cam-26,PY-48-arc+(fall?fall*90:0),52);X.globalAlpha=1;
+ });
+}
+/* ---- Swamp Dash: dodge logs, grab flies ---- */
+function dash(){
+ let pl=1,px=180,objs=[],t=0,spawn=.4,flies=0,score=0,off=0;const LX=[60,180,300];
+ cur={down(f){pl=Math.max(0,Math.min(2,pl+(f<.5?-1:1)))},left(){pl=Math.max(0,pl-1)},right(){pl=Math.min(2,pl+1)}};
+ setScore(0);
+ loop(dt=>{
+  t+=dt;spawn-=dt;const sp=Math.min(520,230+t*9);off=(off+sp*dt)%60;
+  if(spawn<=0){spawn=Math.max(.38,.85-t*.01);objs.push({l:Math.random()*3|0,y:-30,f:Math.random()<.3})}
+  px+=(LX[pl]-px)*Math.min(1,dt*14);
+  for(const o of objs){o.y+=sp*dt;if(Math.abs(LX[o.l]-px)<44&&Math.abs(o.y-410)<34){if(o.f){o.dead=1;flies++}else return finish("dash",score)}}
+  objs=objs.filter(o=>o.y<H+40&&!o.dead);
+  score=Math.floor(t*3)+flies*6;setScore(score);
+  X.fillStyle="#12302f";X.fillRect(0,0,W,H);X.strokeStyle="#ffffff18";X.lineWidth=2;
+  for(let i=1;i<3;i++){X.beginPath();X.moveTo(i*120,0);X.lineTo(i*120,H);X.stroke()}
+  X.strokeStyle="#ffffff10";for(let y=off-60;y<H;y+=60){X.beginPath();X.moveTo(0,y);X.lineTo(W,y);X.stroke()}
+  for(const o of objs){const x=LX[o.l];
+   if(o.f){X.fillStyle="#ffe66d";X.shadowColor="#ffe66d";X.shadowBlur=14;X.beginPath();X.arc(x,o.y,7,0,7);X.fill();X.shadowBlur=0;X.fillStyle="#fff9";X.beginPath();X.ellipse(x-8,o.y-6,7,4,-.5,0,7);X.ellipse(x+8,o.y-6,7,4,.5,0,7);X.fill()}
+   else{X.fillStyle="#7a4a2b";X.fillRect(x-38,o.y-15,76,30);X.fillStyle="#a06a3f";X.fillRect(x-38,o.y-15,76,8);X.fillStyle="#4a2f14";X.fillRect(x-30,o.y+2,60,3)}}
+  pic(px-30,380,60);
+ });
+}
+/* ---- Memory Flip: match the pairs ---- */
+function memory(){
+ const faces=["frog","donkey","owl","monkey","elephant","🪰","🍄","🪷"],deck=[...faces,...faces].sort(()=>Math.random()-.5),g=$("mem");
+ let open=[],lock=false,found=0,moves=0;const t0=performance.now();
+ g.innerHTML=deck.map((f,i)=>`<button type="button" class="mc" data-i="${i}" aria-label="Card ${i+1}"><span class="mf">${AV.animals.includes(f)?AV.svg({animal:f,bg:"pond"}):f}</span><span class="mb">?</span></button>`).join("");
+ setScore("0 moves");live=true;
+ g.onclick=e=>{const b=e.target.closest(".mc");if(!live||!b||lock||b.classList.contains("on"))return;
+  b.classList.add("on");open.push(b);
+  if(open.length==2){moves++;setScore(moves+" moves");const[a,c]=open;
+   if(deck[a.dataset.i]===deck[c.dataset.i]){a.classList.add("ok");c.classList.add("ok");open=[];
+    if(++found==8)setTimeout(()=>finish("memory",Math.max(12,110-(moves-8)*6-Math.floor((performance.now()-t0)/2000))),500)}
+   else{lock=true;setTimeout(()=>{a.classList.remove("on");c.classList.remove("on");open=[];lock=false},700)}}};
+}
+/* ---- menu + input ---- */
+const GAMES={
+ hop:{n:"Lily Hop",h:"Hold to charge your jump, let go to leap. Land on the lily pads. Centre landings score extra.",run:hop},
+ dash:{n:"Swamp Dash",h:"Tap the left or right side to change lanes. Dodge the logs, grab the glowing flies.",run:dash},
+ memory:{n:"Memory Flip",h:"Flip two cards at a time and match all 8 pairs. Fewer moves and less time pay more.",run:memory}
+};
+function menu(){
+ stop();loadAv();const g=GAMES[sel];
+ $("cv").hidden=sel==="memory";$("mem").hidden=sel!=="memory";$("mem").innerHTML="";
+ $("ovt").textContent=g.n;$("ovp").textContent=g.h;$("go").textContent="Play";$("ovx").hidden=false;setScore(sel==="memory"?"0 moves":0);
+ $("tabs").innerHTML=Object.entries(GAMES).map(([k,v])=>`<button type="button" role="tab" data-g="${k}" aria-selected="${k===sel}">${v.n}</button>`).join("");
+ X.clearRect(0,0,W,H);
+}
+$("tabs").onclick=e=>{const b=e.target.closest("button");if(b){sel=b.dataset.g;menu()}};
+$("go").onclick=()=>{loadAv();$("ovx").hidden=true;GAMES[sel].run();$("go").blur()};
+cv.addEventListener("pointerdown",e=>{if(!live||!cur)return;e.preventDefault();const r=cv.getBoundingClientRect();cur.down((e.clientX-r.left)/r.width)});
+addEventListener("pointerup",()=>{if(live&&cur&&cur.up)cur.up()});
+addEventListener("keydown",e=>{if(!live||!cur||e.repeat)return;
+ if(e.code==="Space"&&cur.up){e.preventDefault();cur.down(.5)}
+ else if(e.code==="ArrowLeft"&&cur.left){e.preventDefault();cur.left()}
+ else if(e.code==="ArrowRight"&&cur.right){e.preventDefault();cur.right()}});
+addEventListener("keyup",e=>{if(e.code==="Space"&&live&&cur&&cur.up)cur.up()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&live&&sel!=="memory"){stop();menu()}});
+menu();
+</script>
+</body>
+</html>
