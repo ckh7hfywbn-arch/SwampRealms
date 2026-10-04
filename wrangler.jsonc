@@ -1,0 +1,19 @@
+{
+  // Worker name must match the Worker already deployed in Cloudflare
+  "name": "theswampverse",
+  "main": "worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./",
+    // only /api/* runs the Worker; every other URL is served as a plain static file
+    "run_worker_first": ["/api/*"],
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "swampverse",
+      "database_id": "PASTE-YOUR-D1-DATABASE-ID-HERE"
+    }
+  ]
+}
