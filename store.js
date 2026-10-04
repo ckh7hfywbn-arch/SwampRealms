@@ -49,7 +49,7 @@ const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":
 const CK="swamp-crystals-v1";
 let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",bg:""},day:"",rounds:0,best:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{}}
-function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems()}
+function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv()}
 cload();
 
 const Crystals={
@@ -92,6 +92,13 @@ const Crystals={
  outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,bg:CS.eq.bg}}
 };
 
+// ---- header: round avatar button (top right) -> avatar.html ----
+function paintAv(){
+ const b=document.getElementById("avbtn");if(!b||typeof AV==="undefined")return;
+ const o=Crystals.outfit();
+ b.innerHTML=AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="22 4 156 156"');
+ b.style.setProperty("--ac",AV.aura(o)||"#4ee6b4");
+}
 // ---- header: crystal pill next to the coin bank + Avatar link ----
 let _g=null;
 function paintGems(){
@@ -112,5 +119,10 @@ function paintGems(){
  const snd=document.getElementById("snd"),link='<a class="hide" href="arcade.html"'+(/arcade\.html/.test(location.pathname)?' aria-current="page"':'')+'>Arcade</a><a class="hide" href="avatar.html"'+(here?' aria-current="page"':'')+'>Avatar</a>';
  if(snd)snd.insertAdjacentHTML("beforebegin",link);
  paintGems();
+ n.insertAdjacentHTML("beforeend",'<a class="avbtn" id="avbtn" href="avatar.html" aria-label="Your avatar"'+(here?' aria-current="page"':'')+'></a>');
+ addEventListener("load",()=>{
+  if(typeof AV!=="undefined"){paintAv();return}
+  const sc=document.createElement("script");sc.src="avatar.js";sc.onload=paintAv;document.head.appendChild(sc);
+ });
 })();
-addEventListener("storage",e=>{if(e.key===CK){cload();paintGems()}});
+addEventListener("storage",e=>{if(e.key===CK){cload();paintGems();paintAv()}});

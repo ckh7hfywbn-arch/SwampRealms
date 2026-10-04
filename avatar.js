@@ -68,5 +68,6 @@ const AV=(function(){
    (BACK[o.neck]||"")+`<path d="M48 204Q48 148 100 146Q152 148 152 204Z" fill="url(#bd)" ${ST("#07070c")}/><path d="M84 148Q100 170 116 148" fill="none" stroke="#4ee6b4" stroke-width="3" stroke-linecap="round"/>`+(o.neck?"":`<path d="M100 174l7 8-7 11-7-11z" fill="url(#tl)" ${ST("#06191a",1.5)}/>`)+
    an.d(`url(#ag${a})`,S,c)+(NECK[o.neck]||"")+(FACE[o.face]?FACE[o.face](an.eyes):"")+(HAT[o.hat]?`<g transform="translate(0,${an.top})">${HAT[o.hat]}</g>`:"")+`</svg>`;
  }
- return{svg,animals:Object.keys(A)};
+ const aura=o=>AURA[Math.max(0,...["hat","face","neck","bg"].map(k=>o&&o[k]?RAR[o[k]]||0:0))];
+ return{svg,aura,animals:Object.keys(A)};
 })();
