@@ -10,11 +10,11 @@ header nav .bank.cry b{color:#c8fff4}
 .gov .btn{box-shadow:0 0 26px -6px var(--gold)}
 .sl{font:900 11px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .big{font:900 44px Nunito,sans-serif;line-height:1}
-.rew{display:flex;align-items:center;gap:8px;margin-top:6px;font:900 38px Nunito,sans-serif;color:#c8fff4;text-shadow:0 0 20px #4ee6b4;animation:pop .5s var(--ease-out,ease-out)}
+.rew{display:flex;align-items:center;gap:8px;margin-top:6px;font:900 38px Nunito,sans-serif;color:#c8fff4;text-shadow:0 0 20px #4ee6b4;animation:avp .5s ease-out}
 .rew .gem{width:30px;height:34px}
 .nb{font:900 11px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#1a1405;background:var(--gold);padding:3px 10px;border-radius:6px}
 .bn{font-size:13px;color:var(--gold);font-weight:800}
-@keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes avp{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
 /* arcade */
 #arc{display:grid;gap:16px;justify-items:center}
 .box{position:relative;width:min(100%,420px);aspect-ratio:3/4;background:#060b0a;border:1px solid #4ee6b440;border-radius:18px;overflow:hidden;user-select:none;-webkit-user-select:none;box-shadow:0 0 40px -12px #4ee6b4,0 20px 40px -20px #000}
@@ -35,7 +35,7 @@ header nav .bank.cry b{color:#c8fff4}
 @media(min-width:820px){.av2{grid-template-columns:minmax(300px,380px) 1fr;align-items:start}.stagecard{position:sticky;top:84px}}
 .stagecard{display:grid;gap:12px;padding:14px;border-radius:20px;background:linear-gradient(180deg,#141a14,#090d0a);border:1px solid #ffffff1f;box-shadow:0 24px 50px -22px #000}
 .avstage{border-radius:16px;overflow:hidden;box-shadow:0 0 44px -10px var(--ac,#4ee6b455)}.avstage svg{display:block;width:100%;height:auto}
-.avstage.pop{animation:pop .35s ease-out}
+.avstage.avp{animation:avp .35s ease-out}
 .plate{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .plate b{font:900 19px Nunito,sans-serif;letter-spacing:.03em}
 .aura{font:900 11px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--ac,#ffffff40);color:var(--ac,var(--muted))}
@@ -48,9 +48,9 @@ header nav .bank.cry b{color:#c8fff4}
 .slot b{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--rc,#6b7770)}
 .slot[aria-selected=true]{border-color:#4ee6b4;box-shadow:0 0 14px -4px #4ee6b4}
 .panel2{display:grid;gap:14px;min-width:0}
-.pick{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
-.pick button{flex:none;width:64px;display:grid;gap:4px;justify-items:center;background:none;border:0;color:var(--muted);font:900 10px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:0}
-.pick button svg{width:64px;height:64px;border-radius:14px;border:2px solid #ffffff1f;transition:all .2s}
+.pick{display:flex;justify-content:center;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.pick button{flex:1 0 52px;max-width:72px;display:grid;gap:4px;justify-items:center;background:none;border:0;color:var(--muted);font:900 10px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:0}
+.pick button svg{width:100%;height:auto;aspect-ratio:1;border-radius:14px;border:2px solid #ffffff1f;transition:all .2s}
 .pick button[aria-pressed=true]{color:#c8fff4}.pick button[aria-pressed=true] svg{border-color:#4ee6b4;box-shadow:0 0 18px -2px #4ee6b4}
 #msg{min-height:1.3em;margin:0;color:var(--gold);font-weight:800;font-size:14px}
 .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
