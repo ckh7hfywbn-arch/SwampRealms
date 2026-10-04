@@ -30,12 +30,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="ui.css">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
- <nav aria-label="Site"><a class="hide" href="index.html" aria-current="page">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+ <nav aria-label="Site"><a class="hide" href="index.html" aria-current="page">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
 <div class="hero" id="top">
@@ -44,7 +45,7 @@
   <h1>DonK<span>Swamp Cards</span></h1>
   <p class="tag">King of the Swamp. Stubborn by nature.</p>
   <p>Open two free packs every day and collect the whole herd.</p>
-  <div class="row"><a class="btn" href="catalog.html#packs">Open today's pack</a><a class="btn ghost" href="catalog.html#cards">My collection</a><a class="btn ghost" href="game.html">Play for coins</a></div>
+  <div class="row"><a class="btn" href="catalog.html#packs">Open today's pack</a><a class="btn ghost" href="catalog.html#cards">My collection</a><a class="btn ghost" href="arcade.html">Play the Arcade</a></div>
  </div>
  <div class="status" id="status" aria-label="Your progress">
   <a class="stat" href="catalog.html#packs"><b id="s-packs">1</b><span>Packs ready</span><small id="s-cd">&nbsp;</small></a>
@@ -60,8 +61,7 @@
  <div class="tiles">
   <a class="tile" href="catalog.html#packs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><b>Open packs</b><span>Tear open your free daily pack, or one you bought.</span></a>
   <a class="tile" href="catalog.html#cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><b>Collection</b><span>See every card you have found and trade extras.</span></a>
-  <a class="tile" href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><b>Fly Frenzy</b><span>Unlimited rounds. Earn Swamp Coins and Crystals.</span></a>
-  <a class="tile" href="arcade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><b>Arcade</b><span>Lily Hop, Swamp Dash and Memory Flip. Earn Swamp Crystals.</span></a>
+  <a class="tile" href="arcade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><b>Arcade</b><span>Fly Frenzy, Lily Hop, Swamp Dash and Memory Flip. Unlimited rounds that pay Coins and Crystals.</span></a>
   <a class="tile" href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><b>Your avatar</b><span>Pick a swamp animal and dress it with crystals.</span></a>
   <a class="tile" href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><b>Shop</b><span>Spend coins on more packs, including Abstract Edition.</span></a>
  </div>
@@ -79,7 +79,7 @@
  <ol class="steps">
   <li><b>Open</b>Tap your two free packs (Adventures and Abstract) once a day in the Packs / Collection tab. They reset at midnight.</li>
   <li><b>Collect</b>Find every swamp character. Trade extra copies for Swamp Coins.</li>
-  <li><b>Earn more</b>Play Fly Frenzy for Swamp Coins and spend them in the shop. Every game also pays Swamp Crystals to dress your own swamp avatar. Watch X and Discord for bonus codes too.</li>
+  <li><b>Earn more</b>Play Fly Frenzy in the Arcade for Swamp Coins and spend them in the shop. Every game also pays Swamp Crystals to dress your own swamp avatar. Watch X and Discord for bonus codes too.</li>
  </ol>
 </section>
 
@@ -104,7 +104,7 @@
  <p style="margin-top:10px">© 2026 DonK the Donkey</p>
 </footer>
 
-<nav class="tabbar" aria-label="Main"><a href="index.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="arcade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+<nav class="tabbar" aria-label="Main"><a href="index.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
 <script src="store.js"></script>

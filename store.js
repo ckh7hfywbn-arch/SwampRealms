@@ -109,14 +109,14 @@ function paintGems(){
 }
 (function(){
  if(document.getElementById("gemct"))return;
- const lk=document.createElement("link");lk.rel="stylesheet";lk.href="ui.css";document.head.appendChild(lk);const st=document.createElement("style");
+ if(!document.querySelector('link[href="ui.css"]')){const lk=document.createElement("link");lk.rel="stylesheet";lk.href="ui.css";document.head.appendChild(lk)}const st=document.createElement("style");
  st.textContent=".gem{display:inline-block;width:.95em;height:1.05em;margin-right:.35em;vertical-align:-.15em;background:linear-gradient(135deg,#d8fff0,#4ee6b4 45%,#14976f);clip-path:polygon(50% 0,100% 35%,50% 100%,0 35%);filter:drop-shadow(0 0 4px #4ee6b488)}.gem{flex:none}header nav .bank.cry{gap:0}html,body{overflow-x:clip}@media(max-width:639px){header{gap:8px;min-width:0}header nav{gap:6px}header .logo{font-size:20px;gap:6px;min-width:0}header nav .bank{min-height:32px;padding:5px 9px 5px 8px;font-size:14px}.snd{width:32px;height:32px}}@media(max-width:380px){header .logo{font-size:17px}header .logo .mark{width:20px;height:24px}header nav .bank{padding:5px 7px;font-size:13px}.bank .coin{margin-right:5px}}";
  document.head.appendChild(st);
  const n=document.querySelector("header nav");if(!n)return;
  const coin=n.querySelector(".bank"),html='<a class="bank cry" href="avatar.html"><span class="gem" aria-hidden="true"></span><b id="gemct">0</b></a>';
  if(coin)coin.insertAdjacentHTML("afterend",html);else n.insertAdjacentHTML("beforeend",html);
  const here=/avatar\.html/.test(location.pathname);
- const snd=document.getElementById("snd"),link='<a class="hide" href="arcade.html"'+(/arcade\.html/.test(location.pathname)?' aria-current="page"':'')+'>Arcade</a><a class="hide" href="avatar.html"'+(here?' aria-current="page"':'')+'>Avatar</a>';
+ const snd=document.getElementById("snd"),link='<a class="hide" href="avatar.html"'+(here?' aria-current="page"':'')+'>Avatar</a>';
  if(snd)snd.insertAdjacentHTML("beforebegin",link);
  paintGems();
  n.insertAdjacentHTML("beforeend",'<a class="avbtn" id="avbtn" href="avatar.html" aria-label="Your avatar"'+(here?' aria-current="page"':'')+'></a>');

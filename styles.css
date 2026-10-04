@@ -1,7 +1,7 @@
 /* ==========================================================================
    SwampVerse styles
    1 Base  2 Header + tab bar  3 Buttons  4 Layout  5 Home  6 Pack opener
-   7 Cards  8 Packs/Collection  9 Dialogs  10 Shop  11 Fly Frenzy  12 Motion
+   7 Cards  8 Packs/Collection  9 Dialogs  10 Shop  11 Fly Frenzy (flies + wasps, used by the Arcade)  12 Motion
    ========================================================================== */
 
 /* ===== 1 Base ===== */
@@ -318,32 +318,7 @@ body:has(#preview[open]),body:has(#odds[open]){overflow:hidden}
 .earn a:hover{border-color:#f2c14e66;transform:translateY(-3px)}.earn a:active{transform:scale(.98)}
 .earn b{display:block;margin-bottom:4px;font:800 17px Nunito,sans-serif;color:var(--text)}.earn span{color:var(--muted);font-size:14px}
 
-/* ===== 11 Fly Frenzy ===== */
-.hud{display:flex;justify-content:space-between;align-items:center;max-width:420px;margin:18px auto 8px;font:800 15px Nunito,sans-serif;color:var(--muted)}
-.hud b{font-size:28px;line-height:1;margin-left:6px;color:var(--gold)}
-.timebar{height:8px;max-width:420px;margin:0 auto 12px;border-radius:99px;background:#ffffff14;overflow:hidden}
-.timebar i{display:block;height:100%;width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--reed),var(--gold))}
-.arena{position:relative;max-width:420px;height:clamp(320px,calc(100dvh - 340px),560px);margin:0 auto;border-radius:22px;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
- background:
-  radial-gradient(ellipse 20% 7% at 22% 78%,#4c7326 0 62%,transparent 66%),
-  radial-gradient(ellipse 26% 8% at 74% 66%,#44681f 0 62%,transparent 66%),
-  radial-gradient(ellipse 18% 6% at 58% 90%,#4c7326 0 62%,transparent 66%),
-  radial-gradient(ellipse 22% 7% at 18% 28%,#3d5f1d 0 62%,transparent 66%),
-  radial-gradient(ellipse 16% 5% at 80% 20%,#44681f 0 62%,transparent 66%),
-  linear-gradient(180deg,#1d2c15,#0e1810);
- box-shadow:0 0 0 1px var(--line),0 24px 50px -24px #000}
-#field{position:absolute;inset:0}
-.ov{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:22px;text-align:center;background:#0a0f08e6;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);transition:opacity .3s var(--ease-out),visibility .3s}
-.ov.hide{opacity:0;visibility:hidden;pointer-events:none}
-.ov h3{margin:0;font:800 28px/1.1 Nunito,sans-serif;color:var(--gold)}
-.ov p{margin:0;color:var(--muted);font-size:15px}.ov .fine{font-size:13px}
-.ov b.g{color:var(--gold)}.ov b.w{color:#ff7b6b}.ov p b{color:var(--text)}
-.ov .row{margin-top:6px;justify-content:center}
-.bigscore{font:400 72px/1 'Bagel Fat One',Impact,sans-serif;color:var(--text)}
-.earned{display:flex;align-items:center;gap:8px;font:800 22px Nunito,sans-serif!important;color:var(--gold)!important;margin:4px 0 8px!important}
-.earned .coin{margin:0}
-.cd321{font:400 96px/1 'Bagel Fat One',Impact,sans-serif;color:var(--gold)}
-.cdpop{animation:cdpop .6s var(--ease-out)}
+/* ===== 11 Fly Frenzy (flies + wasps, used by the Arcade) ===== */
 .fly{position:absolute;width:62px;height:62px;margin:-31px 0 0 -31px;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;animation:flyin .22s var(--ease-spring) backwards}
 .fly svg{display:block;width:100%;height:100%;animation:wobble .5s ease-in-out infinite alternate;pointer-events:none;filter:drop-shadow(0 0 6px #c8ff8a99)}
 .fly.gold svg{filter:drop-shadow(0 0 9px #f2c14ecc)}
@@ -356,30 +331,7 @@ body:has(#preview[open]),body:has(#odds[open]){overflow:hidden}
 .pop{position:absolute;z-index:3;transform:translate(-50%,-50%);font:400 26px 'Bagel Fat One',Impact,sans-serif;color:var(--gold);text-shadow:0 2px 0 #0008;pointer-events:none;animation:popup .65s var(--ease-out) forwards}
 .pop.bad{color:#ff7b6b}
 .shake{animation:shake .32s ease-out}
-#game{padding-top:28px}
-#game h2{margin-bottom:4px}
-#game .sub{margin-bottom:12px}
-#game .coins{margin-bottom:0}
-@media(max-height:760px){#game .sub:not(.small){display:none}}
 
-/* ===== Swamp Match ===== */
-.mgrid{position:absolute;inset:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:10px}
-.mt{min-width:0;min-height:0;padding:0;border:0;background:none;perspective:700px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-.mt:focus-visible{outline-offset:2px;border-radius:12px}
-.mi{position:relative;display:block;width:100%;height:100%;transition:transform .45s var(--ease-out);transform-style:preserve-3d}
-.mt.on .mi{transform:rotateY(180deg)}
-.mf{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
-.mb{background:linear-gradient(145deg,#2f3d17,#1c2a13);box-shadow:0 0 0 2px #f2c14e88 inset,0 0 0 5px #10170b inset,0 6px 14px -6px #000}
-.mb svg{width:46%;height:46%}
-@media(hover:hover){.mt:not(.on):hover .mi{transform:rotateY(-10deg) translateY(-2px)}}
-.mfr{transform:rotateY(180deg);background:linear-gradient(160deg,#2a3a1b,#162010);box-shadow:0 0 0 2px var(--reed) inset}
-.mfr svg{width:68%;height:68%}
-.mt.done .mfr{box-shadow:0 0 0 2px var(--gold) inset,0 0 18px #f2c14e66;animation:matchpop .5s var(--ease-spring)}
-.mt.bad .mfr{box-shadow:0 0 0 2px #ff7b6b inset}
-.mt.bad .mi{animation:mshake .4s ease-out}
-@keyframes matchpop{40%{transform:rotateY(180deg) scale(1.12)}}
-@keyframes mshake{20%{translate:-4px 0}40%{translate:4px 0}60%{translate:-3px 0}80%{translate:2px 0}}
-#g-fly .sub:not(.small),#g-match .sub:not(.small){margin-top:14px;margin-bottom:6px}
 
 /* ===== 12 Motion ===== */
 @view-transition{navigation:auto}

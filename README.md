@@ -9,13 +9,15 @@ Progress is saved in the visitor's browser (`localStorage`).
 | --- | --- |
 | `index.html` | Home page |
 | `catalog.html` | Open packs and view the collection |
-| `game.html` | Fly Frenzy and Swamp Match mini games |
 | `shop.html` | Buy packs with Swamp Coins |
+| `arcade.html` | The Arcade (the old Play page is merged in). Fly Frenzy (coins for the first rounds each day, crystals every round), Lily Hop, Swamp Dash, Memory Flip. Open a game directly with `arcade.html#hop` |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter. Load after `cards.js` |
 | `avatar.js` | Draws the animals and cosmetics as SVG |
-| `styles.css` | All styles |
+| `styles.css` | Base styles: layout, packs, cards, shop |
+| `ui.css` | The Arcade theme (dark glass panels, mint glow, uppercase labels) for every page, plus the arcade and avatar screens. Loaded after `styles.css` |
+| `_redirects` | Sends the old `/game` address to `/arcade` on Cloudflare |
 | `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files |
 
 ## Two currencies

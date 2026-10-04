@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Arcade | SwampVerse</title>
-<meta name="description" content="Play Lily Hop, Swamp Dash and Memory Flip with unlimited rounds and earn Swamp Crystals for your swamp avatar.">
+<meta name="description" content="Play Fly Frenzy, Lily Hop, Swamp Dash and Memory Flip with unlimited rounds. Earn Swamp Coins for card packs and Swamp Crystals for your swamp avatar.">
 <link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/arcade">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SwampVerse">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Arcade | SwampVerse">
-<meta property="og:description" content="Play Lily Hop, Swamp Dash and Memory Flip with unlimited rounds and earn Swamp Crystals for your swamp avatar.">
+<meta property="og:description" content="Play Fly Frenzy, Lily Hop, Swamp Dash and Memory Flip with unlimited rounds. Earn Swamp Coins for card packs and Swamp Crystals for your swamp avatar.">
 <meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/arcade">
 <meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Arcade | SwampVerse">
-<meta name="twitter:description" content="Play Lily Hop, Swamp Dash and Memory Flip with unlimited rounds and earn Swamp Crystals for your swamp avatar.">
+<meta name="twitter:description" content="Play Fly Frenzy, Lily Hop, Swamp Dash and Memory Flip with unlimited rounds. Earn Swamp Coins for card packs and Swamp Crystals for your swamp avatar.">
 <meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta name="twitter:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
@@ -35,21 +35,26 @@
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
- <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+ <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html" aria-current="page">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
 <div id="top"></div>
 <section class="reveal" id="arcade">
- <h2>Swamp Arcade</h2>
- <p class="sub">Play as many rounds as you like. Every round pays Swamp Crystals for your avatar.</p>
+ <h2>Arcade</h2>
+ <p class="sub">Four games, unlimited rounds. Every round pays Swamp Crystals. Fly Frenzy pays Swamp Coins for packs too.</p>
  <div id="arc">
   <div class="cats" id="tabs" role="tablist" aria-label="Choose a game"></div>
-  <div class="box">
-   <canvas id="cv" width="360" height="480" aria-label="Game area"></canvas>
+  <div class="box" id="box">
+   <canvas id="cv" width="360" height="480" aria-label="Game area" hidden></canvas>
    <div class="mem" id="mem" hidden></div>
+   <div class="fz" id="fz" hidden><div id="field"></div></div>
+   <div class="tbar" id="tbar" hidden><i id="bar"></i></div>
    <div class="hud" aria-live="polite"><span id="sc">0</span></div>
-   <div class="gov" id="ovx"><h3 id="ovt"></h3><p id="ovp"></p><button type="button" class="btn" id="go">Play</button><a class="btn ghost" href="avatar.html">Dress your avatar</a></div>
+   <div class="hud tm" id="tmw" hidden>Time <span id="tm">20</span></div>
+   <div class="gov" id="ovx"><h3 id="ovt"></h3><p id="ovp"></p><div class="acts" id="acts"><button type="button" class="btn" id="go">Play</button><a class="btn ghost" href="avatar.html">Dress your avatar</a></div></div>
   </div>
+  <p class="note" id="note" aria-live="polite"></p>
+  <div class="row mid"><a class="btn ghost" href="shop.html">Spend coins in the shop</a><a class="btn ghost" href="catalog.html#packs">Open packs</a></div>
  </div>
 </section>
 
@@ -60,24 +65,96 @@
  <p style="margin-top:10px">© 2026 DonK the Donkey</p>
 </footer>
 
-<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
 <script src="store.js"></script>
 <script src="avatar.js"></script>
 <script>
 const $=id=>document.getElementById(id),cv=$("cv"),X=cv.getContext("2d"),W=360,H=480,av=new Image();
-let cur=null,raf=0,live=false,sel="hop";
+let cur=null,raf=0,live=false,sel="fly",fzT=0,fzS=0;
 const setScore=t=>$("sc").textContent=t;
 function loadAv(){av.src="data:image/svg+xml,"+encodeURIComponent(AV.svg(Object.assign({},Crystals.outfit(),{nobg:1})))}
 function pic(x,y,s){if(av.complete&&av.naturalWidth)X.drawImage(av,x,y,s,s)}
 function loop(step){let last=performance.now();live=true;(function f(n){if(!live)return;const dt=Math.min(.05,(n-last)/1e3);last=n;step(dt);if(live)raf=requestAnimationFrame(f)})(last)}
-function stop(){live=false;cancelAnimationFrame(raf);cur=null}
-function finish(g,score){
- stop();const r=Crystals.award(g,score);
- $("ovt").textContent="Round complete";
- $("ovp").innerHTML="<span class='sl'>Score</span><b class='big'>"+score+"</b>"+(r.record?"<span class='nb'>New best</span>":"")+"<span class='rew'><i class='gem'></i>+"+r.total+"</span><span class='sl'>Swamp Crystals</span>"+(r.bonus?"<span class='bn'>Includes +"+r.bonus+" daily bonus</span>":"");
- $("go").textContent="Play again";$("ovx").hidden=false;
+function stop(){live=false;cancelAnimationFrame(raf);clearTimeout(fzT);clearTimeout(fzS);$("field").innerHTML="";cur=null}
+function note(){
+ const el=$("note");
+ if(sel==="fly"){load();const n=gameLeft();el.textContent=(n>0?n+" of "+RULES.game.playsPerDay+" coin rounds left today":"Coin rounds used up today, crystals still pay")+" · Best "+(meta.gameBest||0)}
+ else el.textContent="Best "+((Crystals.state.best||{})[sel]||0)+" · Every round pays crystals";
+}
+function finish(g,score,ex){
+ ex=ex||{};stop();const r=Crystals.award(g,score);
+ $("ovt").textContent=ex.title||"Round complete";
+ $("ovp").innerHTML="<span class='sl'>Score</span><b class='big'>"+score+"</b>"+(r.record?"<span class='nb'>New best</span>":"")+"<span class='rew'><i class='gem'></i>+"+r.total+"</span><span class='sl'>Swamp Crystals</span>"+(r.bonus?"<span class='bn'>Includes +"+r.bonus+" first round of the day bonus</span>":"")+(ex.html||"");
+ $("go").textContent="Play again";$("acts").hidden=false;$("ovx").hidden=false;note();
+}
+/* ---- Fly Frenzy: tap flies, dodge wasps, 20 seconds. Pays coins and crystals ---- */
+const WING='<g class="wl"><ellipse cx="16" cy="17" rx="11" ry="6" transform="rotate(-28 16 17)" fill="#d6ecff" fill-opacity=".72"/></g><g class="wr"><ellipse cx="32" cy="17" rx="11" ry="6" transform="rotate(28 32 17)" fill="#d6ecff" fill-opacity=".72"/></g>';
+const SVG={
+ fly:`<svg viewBox="0 0 48 48" aria-hidden="true">${WING}<ellipse cx="24" cy="30" rx="8" ry="11" fill="#5d7f2e"/><circle cx="24" cy="18" r="7" fill="#7a9f3f"/><circle cx="21" cy="16.5" r="2.5" fill="#ff5d5d"/><circle cx="27" cy="16.5" r="2.5" fill="#ff5d5d"/></svg>`,
+ gold:`<svg viewBox="0 0 48 48" aria-hidden="true">${WING.replace(/#d6ecff/g,"#fff3c4")}<ellipse cx="24" cy="30" rx="8" ry="11" fill="#f2c14e"/><circle cx="24" cy="18" r="7" fill="#ffe08a"/><circle cx="21" cy="16.5" r="2.5" fill="#7a4a00"/><circle cx="27" cy="16.5" r="2.5" fill="#7a4a00"/><path d="M24 24v13" stroke="#b8860b" stroke-width="2"/></svg>`,
+ wasp:`<svg viewBox="0 0 48 48" aria-hidden="true">${WING}<ellipse cx="24" cy="30" rx="8.5" ry="12" fill="#f6d02f"/><ellipse cx="24" cy="27" rx="8" ry="2.2" fill="#1a1405"/><ellipse cx="24" cy="33" rx="7" ry="2.2" fill="#1a1405"/><path d="M24 41l-2.4 5h4.8z" fill="#1a1405"/><circle cx="24" cy="18" r="7" fill="#1a1405"/><circle cx="21" cy="16.5" r="2.5" fill="#ff4d4d"/><circle cx="27" cy="16.5" r="2.5" fill="#ff4d4d"/></svg>`
+};
+const LABEL={fly:"Fly",gold:"Golden fly",wasp:"Wasp, avoid"};
+function fly(){
+ const G=RULES.game,field=$("field"),bar=$("bar"),tm=$("tm");
+ let score=0,endAt=0,coinRound=false,i=0;const seq=["3","2","1","Go!"];
+ live=true;cur={};$("acts").hidden=true;$("ovp").textContent="";
+ bar.style.width="100%";tm.textContent=G.seconds;setScore(0);
+ (function step(){
+  if(!live)return;
+  if(i>=seq.length)return begin();
+  $("ovt").innerHTML='<span class="cd">'+seq[i]+'</span>';i++;
+  fzS=setTimeout(step,i===4?350:600);
+ })();
+ function begin(){
+  $("ovx").hidden=true;load();
+  coinRound=gameLeft()>0;if(coinRound){meta.gamePlays++;save()}note();
+  endAt=Date.now()+G.seconds*1000;spawn();raf=requestAnimationFrame(frame);
+ }
+ function frame(){
+  if(!live)return;
+  const left=Math.max(0,endAt-Date.now());
+  tm.textContent=Math.ceil(left/1000);bar.style.width=(left/(G.seconds*1000)*100)+"%";
+  if(left<=0)return end();
+  raf=requestAnimationFrame(frame);
+ }
+ function spawn(){
+  if(!live)return;
+  const p=1-Math.max(0,endAt-Date.now())/(G.seconds*1000),r=Math.random();
+  const type=r<.12?"gold":r<.28?"wasp":"fly";
+  let x,y,tries=0;
+  do{x=10+Math.random()*80;y=12+Math.random()*76;tries++}
+  while(tries<8&&[...field.children].some(f=>Math.hypot(f.dataset.x-x,(f.dataset.y-y)*1.3)<24));
+  const life=(type==="gold"?950:1500)-p*450;
+  const b=document.createElement("button");
+  b.type="button";b.className="fly "+type;b.dataset.x=x;b.dataset.y=y;
+  b.style.left=x+"%";b.style.top=y+"%";b.setAttribute("aria-label",LABEL[type]);b.innerHTML=SVG[type];
+  field.appendChild(b);
+  const gone=setTimeout(()=>{b.classList.add("gone");setTimeout(()=>b.remove(),230)},life);
+  b.addEventListener("pointerdown",e=>{e.preventDefault();hit(b,type,x,y,gone)});
+  b.addEventListener("click",e=>{if(e.detail===0)hit(b,type,x,y,gone)});
+  fzT=setTimeout(spawn,560-p*220+Math.random()*220);
+ }
+ function hit(b,type,x,y,gone){
+  if(!live||b.classList.contains("caught")||b.classList.contains("stung")||b.classList.contains("gone"))return;
+  clearTimeout(gone);
+  const d=type==="gold"?3:type==="wasp"?-2:1;
+  score=Math.max(0,score+d);setScore(score);pulse($("sc"),"bump");
+  b.classList.add(type==="wasp"?"stung":"caught");
+  const pop=document.createElement("span");pop.className="pop"+(d<0?" bad":"");pop.textContent=(d>0?"+":"")+d;
+  pop.style.left=x+"%";pop.style.top=y+"%";field.appendChild(pop);setTimeout(()=>pop.remove(),650);
+  if(type==="wasp")pulse($("fz"),"shake");
+  try{navigator.vibrate&&navigator.vibrate(d<0?60:12)}catch(e){}
+  setTimeout(()=>b.remove(),300);
+ }
+ function end(){
+  tm.textContent=0;bar.style.width="0%";load();
+  const coins=coinRound?Math.min(G.maxCoins,Math.floor(score/G.pointsPerCoin)):0;
+  meta.coins+=coins;if(score>(meta.gameBest||0))meta.gameBest=score;save();
+  finish("fly",score,{title:"Time's up!",html:coinRound?"<span class='rew cn2'><i class='cn'></i>+"+coins+"</span><span class='sl'>Swamp Coins</span>":"<span class='bn'>Coin rounds are used up today</span>"});
+ }
 }
 /* ---- Lily Hop: hold to charge, release to jump ---- */
 function hop(){
@@ -137,28 +214,33 @@ function memory(){
 }
 /* ---- menu + input ---- */
 const GAMES={
+ fly:{n:"Fly Frenzy",h:"Tap the flies before they escape. Golden flies +3, wasps −2. You have 20 seconds. Pays coins and crystals.",run:fly},
  hop:{n:"Lily Hop",h:"Hold to charge your jump, let go to leap. Land on the lily pads. Centre landings score extra.",run:hop},
  dash:{n:"Swamp Dash",h:"Tap the left or right side to change lanes. Dodge the logs, grab the glowing flies.",run:dash},
  memory:{n:"Memory Flip",h:"Flip two cards at a time and match all 8 pairs. Fewer moves and less time pay more.",run:memory}
 };
 function menu(){
- stop();loadAv();const g=GAMES[sel];
- $("cv").hidden=sel==="memory";$("mem").hidden=sel!=="memory";$("mem").innerHTML="";
- $("ovt").textContent=g.n;$("ovp").textContent=g.h;$("go").textContent="Play";$("ovx").hidden=false;setScore(sel==="memory"?"0 moves":0);
+ stop();loadAv();const g=GAMES[sel],isFly=sel==="fly";
+ $("cv").hidden=sel==="memory"||isFly;$("mem").hidden=sel!=="memory";$("mem").innerHTML="";
+ $("fz").hidden=!isFly;$("tbar").hidden=!isFly;$("tmw").hidden=!isFly;
+ if(isFly){$("bar").style.width="100%";$("tm").textContent=RULES.game.seconds}
+ $("ovt").textContent=g.n;$("ovp").textContent=g.h;$("go").textContent="Play";$("acts").hidden=false;$("ovx").hidden=false;setScore(sel==="memory"?"0 moves":0);
  $("tabs").innerHTML=Object.entries(GAMES).map(([k,v])=>`<button type="button" role="tab" data-g="${k}" aria-selected="${k===sel}">${v.n}</button>`).join("");
- X.clearRect(0,0,W,H);
+ X.clearRect(0,0,W,H);note();
+ try{history.replaceState(null,"","#"+sel)}catch(e){}
 }
 $("tabs").onclick=e=>{const b=e.target.closest("button");if(b){sel=b.dataset.g;menu()}};
-$("go").onclick=()=>{loadAv();$("ovx").hidden=true;GAMES[sel].run();$("go").blur()};
-cv.addEventListener("pointerdown",e=>{if(!live||!cur)return;e.preventDefault();const r=cv.getBoundingClientRect();cur.down((e.clientX-r.left)/r.width)});
+$("go").onclick=()=>{loadAv();$("ovx").hidden=true;if(innerWidth<640)$("box").scrollIntoView({block:"center",behavior:"smooth"});GAMES[sel].run();$("go").blur()};
+cv.addEventListener("pointerdown",e=>{if(!live||!cur||!cur.down)return;e.preventDefault();const r=cv.getBoundingClientRect();cur.down((e.clientX-r.left)/r.width)});
 addEventListener("pointerup",()=>{if(live&&cur&&cur.up)cur.up()});
 addEventListener("keydown",e=>{if(!live||!cur||e.repeat)return;
  if(e.code==="Space"&&cur.up){e.preventDefault();cur.down(.5)}
  else if(e.code==="ArrowLeft"&&cur.left){e.preventDefault();cur.left()}
  else if(e.code==="ArrowRight"&&cur.right){e.preventDefault();cur.right()}});
 addEventListener("keyup",e=>{if(e.code==="Space"&&live&&cur&&cur.up)cur.up()});
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&live&&sel!=="memory"){stop();menu()}});
-menu();
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&live&&sel!=="memory"&&sel!=="fly"){stop();menu()}});
+{const h=location.hash.slice(1);if(GAMES[h])sel=h}
+load();menu();
 </script>
 </body>
 </html>
