@@ -186,3 +186,37 @@ header nav a.avbtn::after{display:none}
 .rew.cn2{color:#ffe9a8;text-shadow:0 0 20px #f2c14e}
 .note{margin:0;color:var(--muted);font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;text-align:center}
 @media(max-width:639px){.cats{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:420px}.cats button{padding:11px 8px;font-size:11px}}
+
+/* ===== Accounts: header button + sign in dialog (account.js) ===== */
+.acct{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;min-width:36px;padding:0;border:1px solid var(--mint-line);border-radius:999px;background:#0a100c;color:var(--mint-soft);font:800 14px Nunito,sans-serif;letter-spacing:.02em;cursor:pointer;opacity:.9;transition:opacity .2s,border-color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+.acct:hover{opacity:1;border-color:#4ee6b4aa}
+.acct svg{width:19px;height:19px}
+.acct.out span{display:none}
+.acct.on{width:36px;padding:0;border-color:#f2c14e88;box-shadow:0 0 14px -4px var(--gold);color:var(--gold)}
+.acct.on b{font-size:16px;font-weight:900}
+@media(min-width:640px){.acct.out{padding:0 14px 0 11px}.acct.out span{display:inline}}
+@media(max-width:639px){.acct{height:32px;min-width:32px}.acct.on{width:32px}}
+.acct-dlg{margin:auto;width:min(92vw,400px);max-height:92dvh;overflow-y:auto;padding:26px 22px calc(22px + env(safe-area-inset-bottom,0px));border:0;border-radius:20px;background:linear-gradient(180deg,#0e1612,#060a08);color:var(--text);text-align:center;box-shadow:0 0 0 1px #4ee6b44d,0 0 60px -20px var(--mint),0 30px 80px -20px #000}
+.acct-dlg::backdrop{background:#020504e6;backdrop-filter:blur(3px)}
+body:has(.acct-dlg[open]){overflow:hidden}
+.acct-dlg h3{margin:0 0 6px;font-size:24px;text-transform:uppercase;letter-spacing:.06em;text-shadow:0 0 18px #4ee6b466}
+.acct-sub{margin:0 0 16px;color:#f6eedbb3;font-size:15px;line-height:1.45}
+.acct-fine{margin:12px 0 0;color:var(--muted);font-size:12.5px;line-height:1.45}
+.acct-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 0 14px;padding:4px;border:1px solid var(--mint-line);border-radius:999px;background:#05090a}
+.acct-tabs button{padding:9px 6px;border:0;border-radius:999px;background:none;color:var(--muted);font:800 13px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.acct-tabs button[aria-selected=true]{background:linear-gradient(180deg,#123a30,#0a1a15);color:var(--mint-soft);box-shadow:0 0 0 1px #4ee6b4aa inset}
+.acct-form{display:grid;gap:12px;text-align:left}
+.acct-form label{display:grid;gap:6px;color:var(--mint-soft);font-size:11.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.acct-form input{width:100%;padding:12px 16px;border:1.5px solid #4ee6b44d;border-radius:999px;background:#05090a;color:var(--text);font:800 16px Nunito,sans-serif;letter-spacing:0;text-transform:none}
+.acct-form input:focus{border-color:var(--mint);outline:0;box-shadow:0 0 16px -4px var(--mint)}
+.acct-form .btn{width:100%;margin-top:2px}
+.acct-form .acct-fine{margin:0;text-align:center}
+.acct-err{margin:0;min-height:0;color:#ff8a9b;font-size:13.5px;font-weight:800;text-align:center}
+.acct-err:empty{display:none}
+.acct-st{margin:0 0 16px;color:var(--mint-soft);font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.acct-dlg .row{justify-content:center}
+.acct-cmp{display:grid;gap:12px}
+.acct-cmp>div{display:grid;gap:8px;padding:14px;border:1px solid var(--mint-line);border-radius:14px;background:#0a100c}
+.acct-cmp small{color:var(--muted);font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.acct-cmp b{color:var(--mint-soft);font-size:15px}
+.acct-dlg .pv-close{background:#4ee6b41a}
