@@ -19,27 +19,27 @@ const ANIMALS=[
 ];
 // cat: hat | face | neck | bg   (avatar.js draws each id)
 const COSMETICS=[
- {id:"beanie",cat:"hat",name:"Black Beanie",price:40},
- {id:"party",cat:"hat",name:"Party Hat",price:60},
- {id:"cowboy",cat:"hat",name:"Cowboy Hat",price:90},
- {id:"wizard",cat:"hat",name:"Wizard Hat",price:150},
- {id:"halo",cat:"hat",name:"Golden Halo",price:250},
- {id:"crown",cat:"hat",name:"Swamp Crown",price:400},
- {id:"eyepatch",cat:"face",name:"Pirate Eyepatch",price:50},
- {id:"shades",cat:"face",name:"Cool Shades",price:60},
- {id:"hearts",cat:"face",name:"Heart Specs",price:70},
- {id:"monocle",cat:"face",name:"Fancy Monocle",price:80},
+ {id:"beanie",cat:"hat",name:"Street Beanie",price:40},
+ {id:"party",cat:"hat",name:"Neon Cone",price:60},
+ {id:"cowboy",cat:"hat",name:"Outlaw Hat",price:90},
+ {id:"wizard",cat:"hat",name:"Arcane Hat",price:150},
+ {id:"halo",cat:"hat",name:"Divine Halo",price:250},
+ {id:"crown",cat:"hat",name:"Swamp King Crown",price:400},
+ {id:"eyepatch",cat:"face",name:"Raider Patch",price:50},
+ {id:"shades",cat:"face",name:"Cyber Visor",price:60},
+ {id:"hearts",cat:"face",name:"Love Lenses",price:70},
+ {id:"monocle",cat:"face",name:"Gold Monocle",price:80},
  {id:"laser",cat:"face",name:"Laser Eyes",price:220},
- {id:"bell",cat:"neck",name:"Little Bell",price:30},
- {id:"bowtie",cat:"neck",name:"Bow Tie",price:40},
- {id:"scarf",cat:"neck",name:"Cozy Scarf",price:70},
+ {id:"bell",cat:"neck",name:"Gold Bell",price:30},
+ {id:"bowtie",cat:"neck",name:"Neon Bow Tie",price:40},
+ {id:"scarf",cat:"neck",name:"Crimson Scarf",price:70},
  {id:"cape",cat:"neck",name:"Hero Cape",price:150},
- {id:"chain",cat:"neck",name:"Gold Chain",price:200},
- {id:"pond",cat:"bg",name:"Lily Pond",price:50},
- {id:"sunset",cat:"bg",name:"Swamp Sunset",price:80},
+ {id:"chain",cat:"neck",name:"Crystal Chain",price:200},
+ {id:"pond",cat:"bg",name:"Lotus Pond",price:50},
+ {id:"sunset",cat:"bg",name:"Dusk Marsh",price:80},
  {id:"night",cat:"bg",name:"Firefly Night",price:120},
- {id:"dust",cat:"bg",name:"Gold Dust",price:200},
- {id:"rainbow",cat:"bg",name:"Rainbow Mist",price:300},
+ {id:"dust",cat:"bg",name:"Treasure Vault",price:200},
+ {id:"rainbow",cat:"bg",name:"Aurora Mist",price:300},
  {id:"moon",cat:"bg",name:"Blood Moon",price:350}
 ];
 const CATS={hat:"Hats",face:"Faces",neck:"Neck",bg:"Backgrounds"};
@@ -102,7 +102,7 @@ function paintGems(){
 }
 (function(){
  if(document.getElementById("gemct"))return;
- const st=document.createElement("style");
+ const lk=document.createElement("link");lk.rel="stylesheet";lk.href="ui.css";document.head.appendChild(lk);const st=document.createElement("style");
  st.textContent=".gem{display:inline-block;width:.95em;height:1.05em;margin-right:.35em;vertical-align:-.15em;background:linear-gradient(135deg,#d8fff0,#4ee6b4 45%,#14976f);clip-path:polygon(50% 0,100% 35%,50% 100%,0 35%);filter:drop-shadow(0 0 4px #4ee6b488)}.gem{flex:none}header nav .bank.cry{gap:0}html,body{overflow-x:clip}@media(max-width:639px){header{gap:8px;min-width:0}header nav{gap:6px}header .logo{font-size:20px;gap:6px;min-width:0}header nav .bank{min-height:32px;padding:5px 9px 5px 8px;font-size:14px}.snd{width:32px;height:32px}}@media(max-width:380px){header .logo{font-size:17px}header .logo .mark{width:20px;height:24px}header nav .bank{padding:5px 7px;font-size:13px}.bank .coin{margin-right:5px}}";
  document.head.appendChild(st);
  const n=document.querySelector("header nav");if(!n)return;

@@ -29,22 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<style>
-#av{display:grid;gap:22px;justify-items:center}
-.stage{width:min(300px,78vw);filter:drop-shadow(0 10px 24px #0008)}
-.stage svg{display:block;width:100%;height:auto}
-.gems{display:inline-flex;align-items:center;gap:6px;font:800 18px Nunito,sans-serif;padding:8px 18px;border-radius:999px;background:var(--bg3);border:1px solid var(--line)}
-.pick,.cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.pick button,.cats button{font:800 14px Nunito,sans-serif;color:var(--text);background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
-.pick button[aria-pressed=true],.cats button[aria-selected=true]{background:var(--gold);color:#1a1405;border-color:var(--gold)}
-.pick button{display:flex;align-items:center;gap:6px;padding:4px 14px 4px 6px}.pick button svg{width:34px;height:34px;border-radius:50%}
-#msg{min-height:1.4em;margin:0;color:var(--muted);font-weight:800}
-.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:100%}
-.it{display:grid;gap:6px;justify-items:center;padding:10px;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--line)}
-.it svg{width:100%;max-width:110px;height:auto}.it b{font-size:14px}.it small{color:var(--muted)}
-.it .btn{padding:7px 16px;font-size:14px}.it .btn.on{background:var(--reed)}.it .btn.no{opacity:.55}
-.it[data-t=Rare] small{color:#4da3ff}.it[data-t=Epic] small{color:#a855f7}.it[data-t=Legendary] small{color:#ff9f1c}.it[data-t=Mythical] small{color:#ff5a7a}
-</style>
+<link rel="stylesheet" href="ui.css">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -56,15 +41,21 @@
 <div id="top"></div>
 <section class="reveal" id="avatar">
  <h2>Your Avatar</h2>
- <p class="sub">Pick your swamp animal and dress it up. Earn Swamp Crystals by playing games, as many rounds as you like.</p>
- <div id="av">
-  <div class="stage" id="stage"></div>
-  <div class="gems"><span class="gem"></span><span id="gn">0</span> Swamp Crystals</div>
-  <p id="msg" role="status" aria-live="polite"></p>
-  <div class="pick" id="pick" aria-label="Choose your animal"></div>
-  <div class="cats" id="cats" role="tablist" aria-label="Cosmetic type"></div>
-  <div class="items" id="items"></div>
-  <a class="btn" href="arcade.html">Play games to earn crystals</a>
+ <p class="sub">Pick your swamp animal and gear up. Earn Swamp Crystals in every game, with unlimited rounds.</p>
+ <div class="av2">
+  <div class="stagecard" id="sc">
+   <div class="avstage" id="stage"></div>
+   <div class="plate"><b id="an"></b><span class="aura" id="aura"></span></div>
+   <div class="gems"><span class="gem"></span><b id="gn">0</b><small>Swamp Crystals</small></div>
+   <div class="slots" id="slots" role="tablist" aria-label="Gear slots"></div>
+  </div>
+  <div class="panel2">
+   <div class="pick" id="pick" aria-label="Choose your animal"></div>
+   <div class="cats" id="cats" role="tablist" aria-label="Cosmetic type"></div>
+   <p id="msg" role="status" aria-live="polite"></p>
+   <div class="items" id="items"></div>
+   <a class="btn" href="arcade.html">Earn crystals in the Arcade</a>
+  </div>
  </div>
 </section>
 
@@ -80,29 +71,32 @@
 <script src="store.js"></script>
 <script src="avatar.js"></script>
 <script>
-const $=id=>document.getElementById(id);let cat="hat";
+const $=id=>document.getElementById(id),T=["Common","Uncommon","Rare","Epic","Legendary","Mythical"],RC=["#9aa4a0","#4ade80","#4da3ff","#a855f7","#ff9f1c","#ff4d6d"];
+const tr=i=>T.indexOf(Crystals.tier(i.price));let cat="hat";
 function msg(t){$("msg").textContent=t}
 function draw(){
- const C=Crystals,o=C.outfit();
- $("stage").innerHTML=AV.svg(o);$("gn").textContent=C.balance;
- $("pick").innerHTML=C.animals.map(a=>`<button type="button" data-a="${a.id}" aria-pressed="${a.id===o.animal}">${AV.svg({animal:a.id,bg:"pond"})}${a.name.split(" ")[0]}</button>`).join("");
+ const C=Crystals,o=C.outfit(),S=C.state,eqd=Object.keys(C.cats).map(k=>C.item(S.eq[k])).filter(Boolean);
+ const top=eqd.length?Math.max(...eqd.map(tr)):-1,ac=top>=0?RC[top]:"#4ee6b4";
+ $("sc").style.setProperty("--ac",ac);$("stage").innerHTML=AV.svg(o);$("gn").textContent=C.balance;
+ $("an").textContent=C.animals.find(a=>a.id===o.animal).name;$("aura").textContent=top>=0?T[top]+" aura":"No gear";
+ $("slots").innerHTML=Object.entries(C.cats).map(([k,n])=>{const it=C.item(S.eq[k]);return `<button type="button" role="tab" class="slot" data-c="${k}" aria-selected="${k===cat}"${it?` style="--rc:${RC[tr(it)]}"`:""}><small>${n}</small><b>${it?it.name:"Empty"}</b></button>`}).join("");
+ $("pick").innerHTML=C.animals.map(a=>`<button type="button" data-a="${a.id}" aria-pressed="${a.id===o.animal}" aria-label="${a.name}">${AV.svg({animal:a.id})}${a.name.split(" ")[0]}</button>`).join("");
  $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}">${n}</button>`).join("");
  $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
-  const own=C.owns(i.id),on=C.state.eq[cat]===i.id,can=C.balance>=i.price,t=C.tier(i.price);
-  const lbl=own?(on?"Take off":"Wear"):`<span class="gem"></span>${i.price}`;
-  return `<div class="it" data-t="${t}">${AV.svg(Object.assign({},o,{[cat]:i.id}))}<b>${i.name}</b><small>${t}</small><button type="button" class="btn${on?" on":""}${!own&&!can?" no":""}" data-i="${i.id}">${lbl}</button></div>`}).join("")+
-  `<div class="it"><b>None</b><button type="button" class="btn" data-clear="1">Take off</button></div>`;
+  const own=C.owns(i.id),on=S.eq[cat]===i.id,can=C.balance>=i.price,t=tr(i);
+  const btn=own?(on?"Equipped":"Equip"):`<span class="gem"></span>${i.price}`;
+  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art">${AV.svg(Object.assign({},o,{[cat]:i.id}))}</div><span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
 }
+function flash(){const s=$("stage");s.classList.remove("pop");void s.offsetWidth;s.classList.add("pop")}
 document.addEventListener("click",e=>{
- const t=e.target.closest("button");if(!t)return;const C=Crystals;C.reload();
- if(t.dataset.a){C.setAnimal(t.dataset.a);msg("")}
+ const t=e.target.closest("button");if(!t)return;const C=Crystals;C.reload();let f=false;
+ if(t.dataset.a){C.setAnimal(t.dataset.a);msg("");f=true}
  else if(t.dataset.c){cat=t.dataset.c;msg("")}
- else if(t.dataset.clear){C.clear(cat);msg("")}
  else if(t.dataset.i){const it=C.item(t.dataset.i);
-  if(C.owns(it.id)){C.equip(it.id);msg("")}
-  else{const r=C.buy(it.id);msg(r.ok?it.name+" is yours!":r.why)}}
+  if(C.owns(it.id)){C.equip(it.id);msg("");f=true}
+  else{const r=C.buy(it.id);msg(r.ok?it.name+" unlocked!":r.why);f=r.ok}}
  else return;
- draw();
+ draw();if(f)flash();
 });
 draw();
 </script>

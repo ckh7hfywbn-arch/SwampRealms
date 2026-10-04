@@ -1,0 +1,68 @@
+/* ===== SwampVerse game UI (avatar + arcade) ===== */
+.gem{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 22'%3E%3Cpath d='M10 0L20 7L10 22L0 7Z' fill='%234ee6b4'/%3E%3Cpath d='M10 0L20 7H0Z' fill='%23c8fff4'/%3E%3Cpath d='M0 7H10L10 22Z' fill='%2314b98a'/%3E%3Cpath d='M10 7H20L10 22Z' fill='%230b7a5c'/%3E%3C/svg%3E") center/contain no-repeat!important;clip-path:none!important;filter:drop-shadow(0 0 5px #4ee6b4aa)!important}
+header nav .bank.cry{border-color:#4ee6b455;background:linear-gradient(180deg,#0f2a24,#09130f);box-shadow:inset 0 0 14px -4px #4ee6b4aa}
+header nav .bank.cry b{color:#c8fff4}
+.cats{display:flex;flex-wrap:wrap;gap:8px}
+.cats button{font:900 12px Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:#0c110d;border:1px solid #ffffff1f;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s}
+.cats button[aria-selected=true]{color:#c8fff4;border-color:#4ee6b4;background:linear-gradient(180deg,#123a30,#0a1a15);box-shadow:0 0 18px -4px #4ee6b4}
+.gov h3{font:900 26px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;text-shadow:0 0 18px #4ee6b4aa}
+.gov p{display:grid;gap:4px;justify-items:center}
+.gov .btn{box-shadow:0 0 26px -6px var(--gold)}
+.sl{font:900 11px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.big{font:900 44px Nunito,sans-serif;line-height:1}
+.rew{display:flex;align-items:center;gap:8px;margin-top:6px;font:900 38px Nunito,sans-serif;color:#c8fff4;text-shadow:0 0 20px #4ee6b4;animation:pop .5s var(--ease-out,ease-out)}
+.rew .gem{width:30px;height:34px}
+.nb{font:900 11px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#1a1405;background:var(--gold);padding:3px 10px;border-radius:6px}
+.bn{font-size:13px;color:var(--gold);font-weight:800}
+@keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+/* arcade */
+#arc{display:grid;gap:16px;justify-items:center}
+.box{position:relative;width:min(100%,420px);aspect-ratio:3/4;background:#060b0a;border:1px solid #4ee6b440;border-radius:18px;overflow:hidden;user-select:none;-webkit-user-select:none;box-shadow:0 0 40px -12px #4ee6b4,0 20px 40px -20px #000}
+.box::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#0000 0 2px,#0000000d 2px 3px),radial-gradient(ellipse at center,#0000 55%,#000a 100%)}
+.box canvas{width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;top:10px;left:10px;z-index:2;font:900 20px Nunito,sans-serif;color:#c8fff4;text-shadow:0 0 12px #4ee6b4;background:#04100dcc;border:1px solid #4ee6b455;border-radius:8px;padding:4px 12px;pointer-events:none}
+.mem{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:52px 12px 12px;align-content:center}
+.mem[hidden],.box canvas[hidden],.gov[hidden]{display:none}
+.mc{position:relative;aspect-ratio:1;border:0;border-radius:12px;padding:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mb,.mf{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;overflow:hidden}
+.mb{background:linear-gradient(145deg,#173a30,#08150f);border:1px solid #4ee6b455;font:900 24px Nunito,sans-serif;color:#4ee6b4aa;box-shadow:inset 0 0 14px #4ee6b422}
+.mf{background:#0d1a14;font-size:32px;display:none}.mf svg{width:100%;height:100%}
+.mc.on .mf{display:grid}.mc.on .mb{display:none}.mc.ok .mf{outline:3px solid #4ee6b4;outline-offset:-3px;box-shadow:0 0 16px #4ee6b4}
+.gov{position:absolute;inset:0;z-index:3;display:grid;place-content:center;justify-items:center;gap:12px;padding:20px;text-align:center;background:radial-gradient(circle,#06130fdd,#020605f2);backdrop-filter:blur(3px)}
+.gov p{margin:0;max-width:30ch;line-height:1.5;color:#d6e4dc}
+/* avatar locker */
+.av2{display:grid;gap:22px;width:100%;max-width:1040px;margin:26px auto 0;text-align:left}
+@media(min-width:820px){.av2{grid-template-columns:minmax(300px,380px) 1fr;align-items:start}.stagecard{position:sticky;top:84px}}
+.stagecard{display:grid;gap:12px;padding:14px;border-radius:20px;background:linear-gradient(180deg,#141a14,#090d0a);border:1px solid #ffffff1f;box-shadow:0 24px 50px -22px #000}
+.avstage{border-radius:16px;overflow:hidden;box-shadow:0 0 44px -10px var(--ac,#4ee6b455)}.avstage svg{display:block;width:100%;height:auto}
+.avstage.pop{animation:pop .35s ease-out}
+.plate{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.plate b{font:900 19px Nunito,sans-serif;letter-spacing:.03em}
+.aura{font:900 11px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--ac,#ffffff40);color:var(--ac,var(--muted))}
+.gems{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:#07110e;border:1px solid #4ee6b440;box-shadow:inset 0 0 18px #4ee6b41f}
+.gems .gem{width:20px;height:22px}.gems b{font:900 24px Nunito,sans-serif;color:#c8fff4}
+.gems small{color:var(--muted);font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:11px}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot{display:grid;gap:2px;justify-items:start;padding:8px;border-radius:10px;background:#0c110d;border:1px solid #ffffff1a;color:var(--text);cursor:pointer;text-align:left;font-family:Nunito,sans-serif;min-width:0}
+.slot small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:900}
+.slot b{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--rc,#6b7770)}
+.slot[aria-selected=true]{border-color:#4ee6b4;box-shadow:0 0 14px -4px #4ee6b4}
+.panel2{display:grid;gap:14px;min-width:0}
+.pick{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.pick button{flex:none;width:64px;display:grid;gap:4px;justify-items:center;background:none;border:0;color:var(--muted);font:900 10px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:0}
+.pick button svg{width:64px;height:64px;border-radius:14px;border:2px solid #ffffff1f;transition:all .2s}
+.pick button[aria-pressed=true]{color:#c8fff4}.pick button[aria-pressed=true] svg{border-color:#4ee6b4;box-shadow:0 0 18px -2px #4ee6b4}
+#msg{min-height:1.3em;margin:0;color:var(--gold);font-weight:800;font-size:14px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+.it{position:relative;display:grid;gap:8px;padding:8px 8px 10px;border-radius:14px;background:linear-gradient(180deg,#171d17,#0b0f0b);border:1px solid color-mix(in srgb,var(--rc) 50%,#000);box-shadow:0 10px 24px -16px var(--rc)}
+.it::before{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 22%,transparent),transparent 45%);pointer-events:none}
+.it .art{border-radius:10px;overflow:hidden}.it .art svg{display:block;width:100%;height:auto}
+.it b{font-size:14px;position:relative}
+.tag{position:relative;justify-self:start;font:900 10px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--rc)}
+.it.eq{box-shadow:0 0 0 2px var(--rc),0 0 26px -4px var(--rc)}
+.it .buy{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px 8px;border-radius:10px;border:1px solid #4ee6b455;background:linear-gradient(180deg,#123a30,#0a1a15);color:#c8fff4;font:900 14px Nunito,sans-serif;letter-spacing:.06em;cursor:pointer}
+.it .buy .gem{width:13px;height:14px}
+.it.own .buy{background:#10150f;border-color:#ffffff2a;color:var(--text);text-transform:uppercase;font-size:12px;letter-spacing:.14em}
+.it.eq .buy{background:var(--rc);border-color:var(--rc);color:#10130d}
+.it.no .buy{opacity:.55}
+.prog{position:relative;height:4px;border-radius:2px;background:#ffffff14}.prog i{display:block;height:100%;border-radius:2px;background:var(--rc)}
