@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fly Frenzy Game | SwampVerse</title>
-<meta name="description" content="Play Fly Frenzy: catch flies, dodge wasps and earn free Swamp Coins to spend on SwampVerse card packs.">
+<title>Games | SwampVerse</title>
+<meta name="description" content="Play Fly Frenzy and Swamp Match, two free games that earn Swamp Coins to spend on SwampVerse card packs.">
 <link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/game">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SwampVerse">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="Fly Frenzy Game | SwampVerse">
-<meta property="og:description" content="Play Fly Frenzy: catch flies, dodge wasps and earn free Swamp Coins to spend on SwampVerse card packs.">
+<meta property="og:title" content="Games | SwampVerse">
+<meta property="og:description" content="Play Fly Frenzy and Swamp Match, two free games that earn Swamp Coins to spend on SwampVerse card packs.">
 <meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/game">
 <meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Fly Frenzy Game | SwampVerse">
-<meta name="twitter:description" content="Play Fly Frenzy: catch flies, dodge wasps and earn free Swamp Coins to spend on SwampVerse card packs.">
+<meta name="twitter:title" content="Games | SwampVerse">
+<meta name="twitter:description" content="Play Fly Frenzy and Swamp Match, two free games that earn Swamp Coins to spend on SwampVerse card packs.">
 <meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta name="twitter:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
@@ -39,13 +39,29 @@
 
 <div id="top"></div>
 <section class="reveal" id="game">
- <h2>Fly Frenzy</h2>
- <p class="sub">Catch flies, dodge wasps and earn Swamp Coins to spend in the shop.</p>
+ <h2>Play</h2>
+ <p class="sub">Pick a game and earn Swamp Coins to spend in the shop.</p>
  <div class="coins" id="coinpill"><span class="coin"></span><span id="coinct">0</span> Swamp Coins</div>
- <div class="hud"><div>Score <b id="score">0</b></div><div>Time <b id="time">20</b></div></div>
- <div class="timebar"><i id="bar"></i></div>
- <div class="arena" id="arena"><div id="field"></div><div class="ov" id="ov" aria-live="polite"></div></div>
- <p class="sub small" id="roundsleft"></p>
+ <div><div class="seg" id="gseg" data-on="fly" role="tablist" aria-label="Choose a game">
+  <button role="tab" id="t-fly" aria-selected="true" aria-controls="g-fly" data-g="fly">Fly Frenzy</button>
+  <button role="tab" id="t-match" aria-selected="false" aria-controls="g-match" data-g="match">Swamp Match</button>
+ </div></div>
+
+ <div class="panel" id="g-fly" role="tabpanel" aria-labelledby="t-fly">
+  <p class="sub">Catch flies, dodge wasps and beat the clock.</p>
+  <div class="hud"><div>Score <b id="score">0</b></div><div>Time <b id="time">20</b></div></div>
+  <div class="timebar"><i id="bar"></i></div>
+  <div class="arena" id="arena"><div id="field"></div><div class="ov" id="ov" aria-live="polite"></div></div>
+  <p class="sub small" id="roundsleft"></p>
+ </div>
+
+ <div class="panel" id="g-match" role="tabpanel" aria-labelledby="t-match" hidden>
+  <p class="sub">Flip two tiles to find a pair. Matches in a row score combo points.</p>
+  <div class="hud"><div>Score <b id="m-score">0</b></div><div>Time <b id="m-time">40</b></div></div>
+  <div class="timebar"><i id="m-bar"></i></div>
+  <div class="arena" id="m-arena"><div class="mgrid" id="m-field"></div><div class="ov" id="m-ov" aria-live="polite"></div></div>
+  <p class="sub small" id="m-rounds"></p>
+ </div>
 </section>
 
 <footer>
@@ -158,7 +174,127 @@ function finish(){
 }
 
 ov.onclick=e=>{const a=e.target.closest("[data-act]");if(a&&a.dataset.act==="go")begin()};
-intro();
+
+/* ================= Swamp Match ================= */
+const M=RULES.game2,mArena=$("m-arena"),mField=$("m-field"),mOv=$("m-ov"),mBar=$("m-bar");
+let mrun=false,mscore=0,mEnd=0,mtick,mLock=false,mFirst=null,mCombo=0,mPairs=0,mT=[];
+const PAIRS=6;
+const SYM={
+ coin:'<circle cx="24" cy="24" r="16" fill="#f2c14e"/><circle cx="24" cy="24" r="11" fill="none" stroke="#b8860b" stroke-width="2"/><text x="24" y="29" text-anchor="middle" font-size="14" font-weight="800" font-family="Nunito,sans-serif" fill="#7a4a00">D</text>',
+ lily:'<ellipse cx="24" cy="31" rx="19" ry="10" fill="#5f9a2c"/><path d="M24 31L38 25" stroke="#243319" stroke-width="2.5" stroke-linecap="round"/><circle cx="19" cy="22" r="6" fill="#ff8fc8"/><circle cx="19" cy="22" r="2.5" fill="#ffe08a"/>',
+ frog:'<ellipse cx="24" cy="29" rx="17" ry="12" fill="#6faa35"/><circle cx="15" cy="18" r="7" fill="#7fb23a"/><circle cx="33" cy="18" r="7" fill="#7fb23a"/><circle cx="15" cy="18" r="3.2" fill="#10130a"/><circle cx="33" cy="18" r="3.2" fill="#10130a"/><path d="M15 31q9 6 18 0" stroke="#243319" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+ fly:'<ellipse cx="14" cy="17" rx="10" ry="5.5" transform="rotate(-28 14 17)" fill="#d6ecff" fill-opacity=".8"/><ellipse cx="34" cy="17" rx="10" ry="5.5" transform="rotate(28 34 17)" fill="#d6ecff" fill-opacity=".8"/><ellipse cx="24" cy="30" rx="8" ry="12" fill="#5d7f2e"/><circle cx="24" cy="18" r="7" fill="#7a9f3f"/><circle cx="21" cy="16.5" r="2.5" fill="#ff5d5d"/><circle cx="27" cy="16.5" r="2.5" fill="#ff5d5d"/>',
+ cattail:'<path d="M24 44V20" stroke="#4f7a24" stroke-width="3" stroke-linecap="round"/><rect x="19.5" y="6" width="9" height="20" rx="4.5" fill="#8a5a2b"/><path d="M24 4v4" stroke="#4f7a24" stroke-width="2"/><path d="M24 36q-9-2-12-12M24 38q9-2 12-14" stroke="#6faa35" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+ moon:'<path d="M31 6a18 18 0 1 0 11 27A15 15 0 0 1 31 6z" fill="#fff3c4"/><circle cx="37" cy="12" r="1.6" fill="#fff3c4"/><circle cx="42" cy="20" r="1.2" fill="#fff3c4"/>',
+ shroom:'<rect x="19" y="24" width="10" height="16" rx="4" fill="#f6eedb"/><path d="M6 27a18 16 0 0 1 36 0z" fill="#d94b3b"/><circle cx="16" cy="20" r="3" fill="#f6eedb"/><circle cx="27" cy="16" r="3.4" fill="#f6eedb"/><circle cx="35" cy="22" r="2.4" fill="#f6eedb"/>',
+ star:'<path d="M24 5l5.2 11.2 12.3 1.5-9.1 8.3 2.4 12.1L24 32l-10.8 6.1 2.4-12.1-9.1-8.3 12.3-1.5z" fill="#f2c14e"/>'
+};
+const sym=k=>`<svg viewBox="0 0 48 48" aria-hidden="true">${SYM[k]}</svg>`;
+const MBACK='<svg viewBox="0 0 28 32" aria-hidden="true"><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="translate(3 0) scale(.9)" fill="#f2c14e" fill-opacity=".7"/></svg>';
+
+function mLeft(){if(meta.game2Day!==today()){meta.game2Day=today();meta.game2Plays=0;save()}return Math.max(0,M.playsPerDay-meta.game2Plays)}
+function mTop(){$("coinct").textContent=meta.coins;$("m-rounds").textContent=mLeft()+" of "+M.playsPerDay+" rounds left today. Best score: "+meta.game2Best}
+function mIntro(){
+ clearInterval(mtick);load();mTop();
+ const n=mLeft();$("m-time").textContent=M.seconds;mBar.style.width="100%";
+ mField.innerHTML="";
+ if(n<1){
+  mOv.innerHTML=`<h3>Swamp Match</h3><p>No rounds left today.<br>Next rounds in <b id="mcd"></b></p>${links()}`;
+  const cd=$("mcd"),t=()=>{cd.textContent=untilMidnight();if(mLeft()>0)mIntro()};t();mtick=setInterval(t,1000);
+ }else{
+  mOv.innerHTML=`<h3>Swamp Match</h3><p>Find all ${PAIRS} pairs.<br><b>Pair +2</b> &middot; <b class="g">Each pair in a row +1 more</b></p><p class="fine">${M.seconds} seconds. Finish early for bonus points. Up to ${M.maxCoins} Swamp Coins per round.</p><button class="btn" data-act="go">Start</button>`;
+ }
+ mOv.classList.remove("hide");
+}
+function mBegin(){
+ clearInterval(mtick);
+ const seq=["3","2","1","Go!"];let i=0;
+ mArena.scrollIntoView({block:"center"});
+ mOv.innerHTML='<div class="cd321" id="mcdn"></div>';
+ (function step(){
+  if(i>=seq.length){mStart();return}
+  const d=$("mcdn");d.textContent=seq[i];pulse(d,"cdpop");i++;setTimeout(step,i===4?350:600);
+ })();
+}
+function mStart(){
+ load();
+ if(mLeft()<1){mIntro();return}
+ meta.game2Plays++;save();mTop();
+ // pick 6 symbols, double them, shuffle
+ const keys=Object.keys(SYM).sort(()=>Math.random()-.5).slice(0,PAIRS),deck=keys.concat(keys).sort(()=>Math.random()-.5);
+ mField.innerHTML=deck.map((k,i)=>`<button type="button" class="mt" data-k="${k}" aria-label="Hidden tile ${i+1}"><span class="mi"><span class="mf mb">${MBACK}</span><span class="mf mfr">${sym(k)}</span></span></button>`).join("");
+ mscore=0;mCombo=0;mPairs=0;mFirst=null;mLock=false;mrun=true;$("m-score").textContent=0;mOv.classList.add("hide");
+ mEnd=Date.now()+M.seconds*1000;requestAnimationFrame(mFrame);
+}
+function mFrame(){
+ if(!mrun)return;
+ const left=Math.max(0,mEnd-Date.now());
+ $("m-time").textContent=Math.ceil(left/1000);
+ mBar.style.width=(left/(M.seconds*1000)*100)+"%";
+ if(left<=0){mFinish(false);return}
+ requestAnimationFrame(mFrame);
+}
+function mAdd(pts,el){
+ mscore+=pts;$("m-score").textContent=mscore;pulse($("m-score"),"bump");
+ const r=el.getBoundingClientRect(),a=mArena.getBoundingClientRect(),p=document.createElement("span");
+ p.className="pop";p.textContent="+"+pts;p.style.left=(r.left-a.left+r.width/2)+"px";p.style.top=(r.top-a.top+r.height/2)+"px";
+ mArena.appendChild(p);setTimeout(()=>p.remove(),650);
+}
+mField.onclick=e=>{
+ const t=e.target.closest(".mt");
+ if(!mrun||mLock||!t||t.classList.contains("on")||t.classList.contains("done"))return;
+ t.classList.add("on");t.setAttribute("aria-label","Tile: "+t.dataset.k);
+ try{navigator.vibrate&&navigator.vibrate(8)}catch(x){}
+ if(!mFirst){mFirst=t;return}
+ const a=mFirst;mFirst=null;mLock=true;
+ if(a.dataset.k===t.dataset.k){
+  mT.push(setTimeout(()=>{
+   if(!mrun)return;
+   a.classList.add("done");t.classList.add("done");
+   mAdd(2+mCombo,t);mCombo++;mPairs++;SFX.coin();mLock=false;
+   if(mPairs>=PAIRS)mFinish(true);
+  },380));
+ }else{
+  mCombo=0;
+  mT.push(setTimeout(()=>{
+   if(!mrun)return;
+   a.classList.add("bad");t.classList.add("bad");
+   mT.push(setTimeout(()=>{a.classList.remove("on","bad");t.classList.remove("on","bad");mLock=false},420));
+  },520));
+ }
+};
+function mFinish(cleared){
+ mrun=false;mT.forEach(clearTimeout);mT=[];
+ const left=Math.max(0,mEnd-Date.now());
+ if(cleared){const b=Math.floor(left/5000);if(b){mscore+=b;$("m-score").textContent=mscore}}
+ mBar.style.width="0%";$("m-time").textContent=cleared?Math.ceil(left/1000):0;
+ load();
+ const coins=Math.min(M.maxCoins,Math.floor(mscore/M.pointsPerCoin));
+ meta.coins+=coins;
+ const isBest=mscore>meta.game2Best;if(isBest)meta.game2Best=mscore;
+ save();mTop();pulse($("coinpill"),"bump");
+ const n=mLeft();
+ setTimeout(()=>{
+  mOv.innerHTML=`<h3>${cleared?"All matched!":"Time's up!"}</h3><div class="bigscore">${mscore}</div><p class="fine">points${isBest&&mscore>0?" &middot; new best!":""}</p><p class="earned"><span class="coin"></span>+${coins} Swamp Coins</p>${n>0?'<button class="btn" data-act="go">Play again</button>':'<p class="fine">No rounds left today. Come back tomorrow.</p>'}${links()}`;
+  mOv.classList.remove("hide");
+ },cleared?600:0);
+}
+mOv.onclick=e=>{const a=e.target.closest("[data-act]");if(a&&a.dataset.act==="go")mBegin()};
+
+/* ================= Game switch ================= */
+function setGame(g,force){
+ if(!force&&(running||mrun))return;
+ clearInterval(tick);clearInterval(mtick);
+ $("g-fly").hidden=g!=="fly";$("g-match").hidden=g!=="match";
+ $("gseg").dataset.on=g;
+ $("t-fly").setAttribute("aria-selected",g==="fly");$("t-match").setAttribute("aria-selected",g==="match");
+ try{history.replaceState(null,"","#"+g)}catch(x){}
+ if(g==="fly")intro();else mIntro();
+}
+$("gseg").onclick=e=>{const b=e.target.closest("button[data-g]");if(b)setGame(b.dataset.g)};
+$("gseg").onkeydown=e=>{if(e.key==="ArrowLeft"||e.key==="ArrowRight"){const g=$("gseg").dataset.on==="fly"?"match":"fly";setGame(g);$("t-"+g).focus()}};
+addEventListener("hashchange",()=>setGame(location.hash==="#match"?"match":"fly"));
+setGame(location.hash==="#match"?"match":"fly",true);
 </script>
 </body>
 </html>

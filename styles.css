@@ -362,6 +362,25 @@ body:has(#preview[open]),body:has(#odds[open]){overflow:hidden}
 #game .coins{margin-bottom:0}
 @media(max-height:760px){#game .sub:not(.small){display:none}}
 
+/* ===== Swamp Match ===== */
+.mgrid{position:absolute;inset:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:10px}
+.mt{min-width:0;min-height:0;padding:0;border:0;background:none;perspective:700px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.mt:focus-visible{outline-offset:2px;border-radius:12px}
+.mi{position:relative;display:block;width:100%;height:100%;transition:transform .45s var(--ease-out);transform-style:preserve-3d}
+.mt.on .mi{transform:rotateY(180deg)}
+.mf{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.mb{background:linear-gradient(145deg,#2f3d17,#1c2a13);box-shadow:0 0 0 2px #f2c14e88 inset,0 0 0 5px #10170b inset,0 6px 14px -6px #000}
+.mb svg{width:46%;height:46%}
+@media(hover:hover){.mt:not(.on):hover .mi{transform:rotateY(-10deg) translateY(-2px)}}
+.mfr{transform:rotateY(180deg);background:linear-gradient(160deg,#2a3a1b,#162010);box-shadow:0 0 0 2px var(--reed) inset}
+.mfr svg{width:68%;height:68%}
+.mt.done .mfr{box-shadow:0 0 0 2px var(--gold) inset,0 0 18px #f2c14e66;animation:matchpop .5s var(--ease-spring)}
+.mt.bad .mfr{box-shadow:0 0 0 2px #ff7b6b inset}
+.mt.bad .mi{animation:mshake .4s ease-out}
+@keyframes matchpop{40%{transform:rotateY(180deg) scale(1.12)}}
+@keyframes mshake{20%{translate:-4px 0}40%{translate:4px 0}60%{translate:-3px 0}80%{translate:2px 0}}
+#g-fly .sub:not(.small),#g-match .sub:not(.small){margin-top:14px;margin-bottom:6px}
+
 /* ===== 12 Motion ===== */
 @view-transition{navigation:auto}
 ::view-transition-group(root){animation-duration:.3s}

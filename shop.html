@@ -44,7 +44,7 @@
  <div class="coins" id="coinpill"><span class="coin"></span><span id="coinct">0</span> Swamp Coins</div>
  <div id="shopcards"></div>
  <div class="earn">
-  <a href="game.html"><b>Play Fly Frenzy</b><span>Catch flies for up to <span id="gmax"></span> coins a round.</span></a>
+  <a href="game.html"><b>Play games</b><span>Fly Frenzy and Swamp Match pay up to <span id="gmax"></span> coins a round.</span></a>
   <a href="catalog.html#cards"><b>Trade extras</b><span>Swap duplicate cards for coins. Rarer cards are worth more.</span></a>
  </div>
  <p class="ratecap">What an extra copy is worth:</p>
@@ -62,7 +62,7 @@
 <script src="cards.js"></script>
 <script>
 const $=id=>document.getElementById(id),buyable=PACKS.filter(p=>p.price);
-$("gmax").textContent=RULES.game.maxCoins;
+$("gmax").textContent=Math.max(RULES.game.maxCoins,RULES.game2.maxCoins);
 $("rates").innerHTML=ratesHTML();
 $("shopcards").innerHTML=buyable.map(p=>`<div class="shopcard" data-p="${p.id}"><button class="pack" data-odds="${p.id}" aria-label="See what is inside ${p.name}">${packLabel(p)}</button><h3>${p.name}</h3><p>${p.blurb||"One random swamp card from the whole herd. Rarer cards are harder to pull."}</p><div class="price"><span class="coin"></span>${p.price}</div><button class="btn buy">Buy 1 pack</button><button class="btn ghost oddsbtn" data-odds="${p.id}">What's inside</button><p class="need"></p><p class="shopmsg" aria-live="polite"></p><a class="btn ghost opennow" href="catalog.html#packs" hidden>Open it now</a><p class="stash">Packs ready to open: <b class="n">0</b></p></div>`).join("");
 function render(){

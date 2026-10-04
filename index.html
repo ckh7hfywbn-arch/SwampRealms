@@ -43,7 +43,7 @@
  <div>
   <h1>DonK<span>Swamp Cards</span></h1>
   <p class="tag">King of the Swamp. Stubborn by nature.</p>
-  <p>Open a free pack every day and collect the whole herd.</p>
+  <p>Open two free packs every day and collect the whole herd.</p>
   <div class="row"><a class="btn" href="catalog.html#packs">Open today's pack</a><a class="btn ghost" href="catalog.html#cards">My collection</a><a class="btn ghost" href="game.html">Play for coins</a></div>
  </div>
  <div class="status" id="status" aria-label="Your progress">
@@ -60,7 +60,7 @@
  <div class="tiles">
   <a class="tile" href="catalog.html#packs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><b>Open packs</b><span>Tear open your free daily pack, or one you bought.</span></a>
   <a class="tile" href="catalog.html#cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><b>Collection</b><span>See every card you have found and trade extras.</span></a>
-  <a class="tile" href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><b>Fly Frenzy</b><span>Catch flies, dodge wasps and earn Swamp Coins.</span></a>
+  <a class="tile" href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><b>Games</b><span>Fly Frenzy and Swamp Match. Earn Swamp Coins.</span></a>
   <a class="tile" href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><b>Shop</b><span>Spend coins on more packs, including Abstract Edition.</span></a>
  </div>
 </section>
@@ -75,15 +75,15 @@
 <section class="reveal" id="how">
  <h2>How it works</h2>
  <ol class="steps">
-  <li><b>Open</b>Tap your free pack once a day in the Packs / Collection tab. It resets at midnight.</li>
+  <li><b>Open</b>Tap your two free packs (Adventures and Abstract) once a day in the Packs / Collection tab. They reset at midnight.</li>
   <li><b>Collect</b>Find every swamp character. Trade extra copies for Swamp Coins.</li>
-  <li><b>Earn more</b>Play Fly Frenzy for Swamp Coins and spend them in the shop. Watch X and Discord for bonus codes too.</li>
+  <li><b>Earn more</b>Play Fly Frenzy and Swamp Match for Swamp Coins and spend them in the shop. Watch X and Discord for bonus codes too.</li>
  </ol>
 </section>
 
 <section class="reveal" id="about">
  <h2>What is SwampVerse?</h2>
- <p class="sub">SwampVerse is a free card collecting site for the DonK community. Open a free pack every day, collect the whole herd of swamp characters from Common to Mythical, play Fly Frenzy for Swamp Coins and trade your extra copies. The cards are inspired by DonK, a community meme coin, and are just free fan collectibles for fun.</p>
+ <p class="sub">SwampVerse is a free card collecting site for the DonK community. Open two free packs every day, collect the whole herd of swamp characters from Common to Mythical, play Fly Frenzy and Swamp Match for Swamp Coins and trade your extra copies. The cards are inspired by DonK, a community meme coin, and are just free fan collectibles for fun.</p>
 </section>
 
 <section class="reveal" id="herd">
@@ -127,7 +127,7 @@ function renderStatus(){
  load();
  const n=PACKS.reduce((a,p)=>a+stockOf(p),0),have=CARDS.filter(c=>owned[c.id]).length;
  document.getElementById("s-packs").textContent=n;
- document.getElementById("s-cd").textContent=left()>0?"Tap to open":"Next free in "+untilMidnight();
+ document.getElementById("s-cd").textContent=n>0?"Tap to open":"Next free in "+untilMidnight();
  document.getElementById("s-cards").textContent=have;
  const st=streakNow();document.getElementById("s-streak").textContent=st;
  document.getElementById("s-sk").textContent=claimedToday()?"Done today":st?"Open today's pack":"Open a pack to start";

@@ -48,7 +48,7 @@
   <div class="streak" id="streak" aria-live="polite"></div>
   <div class="stage" id="stage"></div>
   <h3 class="subhead">Your packs</h3>
-  <p class="sub small" style="margin-top:0">Pick which pack to open. Tap What's inside to see every card and your odds.</p>
+  <p class="sub small" style="margin-top:0">You get a free Adventures pack and a free Abstract pack every day. Pick which one to open, or tap What's inside to see every card and your odds.</p>
   <div class="ptiles" id="ptiles"></div>
   <div class="codebox">
    <label for="code">Have a bonus code?</label>
@@ -140,7 +140,7 @@ function reveal(){
  revealing=true;
  // the card is decided and saved the moment the pack is tapped; the rest is show
  let freeUsed=false;
- if(curPack===PACKS[0]){if(meta.used<RULES.dailyPacks){meta.used++;freeUsed=true}else meta.bonus--}else{meta.stock=meta.stock||{};meta.stock[curPack.id]--}
+ if(curPack===PACKS[0]){if(meta.used<RULES.dailyPacks){meta.used++;freeUsed=true}else meta.bonus--}else if(freeLeft(curPack)>0){meta.freeUsed=meta.freeUsed||{};meta.freeUsed[curPack.id]=(meta.freeUsed[curPack.id]||0)+1}else{meta.stock=meta.stock||{};meta.stock[curPack.id]--}
  const c=pickCard(curPack),dupe=owned[c.id]>0;
  owned[c.id]=(owned[c.id]||0)+1;
  if(!dupe){meta.fresh=meta.fresh||[];if(!meta.fresh.includes(c.id))meta.fresh.push(c.id)}
@@ -239,7 +239,7 @@ function renderPacks(){
  $("pbadge").textContent=total||"";
  $("ptiles").innerHTML=PACKS.map(p=>{
   const n=stockOf(p);
-  return `<div class="ptile${have.length>1&&p===curPack?" sel":""}"><div class="pack${n?"":" locked"}" aria-hidden="true">${packLabel(p)}</div><h3>${p.name}</h3><div class="pcount"><b>${n}</b> ready to open</div>${n?`<button class="btn" data-open="${p.id}">Open pack</button>`:`<a class="btn" href="shop.html">Get packs</a>`}<button class="btn ghost" data-odds="${p.id}">What's inside</button>${p===PACKS[0]&&n<1?`<p class="pnote">Next free pack in <b class="cdt">${untilMidnight()}</b></p>`:""}</div>`;
+  return `<div class="ptile${have.length>1&&p===curPack?" sel":""}"><div class="pack${n?"":" locked"}" aria-hidden="true">${packLabel(p)}</div><h3>${p.name}</h3><div class="pcount"><b>${n}</b> ready to open</div>${n?`<button class="btn" data-open="${p.id}">Open pack</button>`:`<a class="btn" href="shop.html">Get packs</a>`}<button class="btn ghost" data-odds="${p.id}">What's inside</button>${(p===PACKS[0]||p.daily)&&n<1?`<p class="pnote">Next free pack in <b class="cdt">${untilMidnight()}</b></p>`:p.daily&&freeLeft(p)?`<p class="pnote">Includes today's free pack</p>`:""}</div>`;
  }).join("");
 }
 $("ptiles").onclick=e=>{
@@ -253,7 +253,7 @@ $("ptiles").onclick=e=>{
 setInterval(()=>{
  const t=document.querySelectorAll(".cdt");if(!t.length)return;
  t.forEach(e=>e.textContent=untilMidnight());
- load();if(left()>0){renderPacks();if(!revealing)showPack()}
+ load();if(PACKS.some(p=>stockOf(p)>0)){renderPacks();if(!revealing)showPack()}
 },1000);
 
 /* ================= Collection ================= */
