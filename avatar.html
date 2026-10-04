@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Avatar | SwampVerse</title>
+<meta name="description" content="Pick a swamp animal and dress it with cosmetics you buy with Swamp Crystals earned from SwampVerse games.">
+<link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/avatar">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SwampVerse">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Avatar | SwampVerse">
+<meta property="og:description" content="Pick a swamp animal and dress it with cosmetics you buy with Swamp Crystals earned from SwampVerse games.">
+<meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/avatar">
+<meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Avatar | SwampVerse">
+<meta name="twitter:description" content="Pick a swamp animal and dress it with cosmetics you buy with Swamp Crystals earned from SwampVerse games.">
+<meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta name="twitter:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0d110a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
+<link rel="stylesheet" href="styles.css">
+<style>
+#av{display:grid;gap:22px;justify-items:center}
+.stage{width:min(300px,78vw);filter:drop-shadow(0 10px 24px #0008)}
+.stage svg{display:block;width:100%;height:auto}
+.gems{display:inline-flex;align-items:center;gap:6px;font:800 18px Nunito,sans-serif;padding:8px 18px;border-radius:999px;background:var(--bg3);border:1px solid var(--line)}
+.pick,.cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.pick button,.cats button{font:800 14px Nunito,sans-serif;color:var(--text);background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.pick button[aria-pressed=true],.cats button[aria-selected=true]{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.pick button{display:flex;align-items:center;gap:6px;padding:4px 14px 4px 6px}.pick button svg{width:34px;height:34px;border-radius:50%}
+#msg{min-height:1.4em;margin:0;color:var(--muted);font-weight:800}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:100%}
+.it{display:grid;gap:6px;justify-items:center;padding:10px;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--line)}
+.it svg{width:100%;max-width:110px;height:auto}.it b{font-size:14px}.it small{color:var(--muted)}
+.it .btn{padding:7px 16px;font-size:14px}.it .btn.on{background:var(--reed)}.it .btn.no{opacity:.55}
+.it[data-t=Rare] small{color:#4da3ff}.it[data-t=Epic] small{color:#a855f7}.it[data-t=Legendary] small{color:#ff9f1c}.it[data-t=Mythical] small{color:#ff5a7a}
+</style>
+</head>
+<body>
+<noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
+<header>
+ <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
+ <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="game.html">Play</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+</header>
+
+<div id="top"></div>
+<section class="reveal" id="avatar">
+ <h2>Your Avatar</h2>
+ <p class="sub">Pick your swamp animal and dress it up. Earn Swamp Crystals by playing games, as many rounds as you like.</p>
+ <div id="av">
+  <div class="stage" id="stage"></div>
+  <div class="gems"><span class="gem"></span><span id="gn">0</span> Swamp Crystals</div>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <div class="pick" id="pick" aria-label="Choose your animal"></div>
+  <div class="cats" id="cats" role="tablist" aria-label="Cosmetic type"></div>
+  <div class="items" id="items"></div>
+  <a class="btn" href="game.html">Play games to earn crystals</a>
+ </div>
+</section>
+
+<footer>
+ <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
+ <p>Swamp Cards and Swamp Coins are free fan collectibles for fun. They have no cash value and can't be bought, sold or exchanged for money or $DonK. $DonK is a meme coin with no intrinsic value or expectation of financial return. Crypto is volatile and you can lose everything. Do your own research.</p>
+ <p style="margin-top:10px">© 2026 DonK the Donkey</p>
+</footer>
+
+<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="game.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg><span>Play</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+
+<script src="cards.js"></script>
+<script src="store.js"></script>
+<script src="avatar.js"></script>
+<script>
+const $=id=>document.getElementById(id);let cat="hat";
+function msg(t){$("msg").textContent=t}
+function draw(){
+ const C=Crystals,o=C.outfit();
+ $("stage").innerHTML=AV.svg(o);$("gn").textContent=C.balance;
+ $("pick").innerHTML=C.animals.map(a=>`<button type="button" data-a="${a.id}" aria-pressed="${a.id===o.animal}">${AV.svg({animal:a.id,bg:"pond"})}${a.name.split(" ")[0]}</button>`).join("");
+ $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}">${n}</button>`).join("");
+ $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
+  const own=C.owns(i.id),on=C.state.eq[cat]===i.id,can=C.balance>=i.price,t=C.tier(i.price);
+  const lbl=own?(on?"Take off":"Wear"):`<span class="gem"></span>${i.price}`;
+  return `<div class="it" data-t="${t}">${AV.svg(Object.assign({},o,{[cat]:i.id}))}<b>${i.name}</b><small>${t}</small><button type="button" class="btn${on?" on":""}${!own&&!can?" no":""}" data-i="${i.id}">${lbl}</button></div>`}).join("")+
+  `<div class="it"><b>None</b><button type="button" class="btn" data-clear="1">Take off</button></div>`;
+}
+document.addEventListener("click",e=>{
+ const t=e.target.closest("button");if(!t)return;const C=Crystals;C.reload();
+ if(t.dataset.a){C.setAnimal(t.dataset.a);msg("")}
+ else if(t.dataset.c){cat=t.dataset.c;msg("")}
+ else if(t.dataset.clear){C.clear(cat);msg("")}
+ else if(t.dataset.i){const it=C.item(t.dataset.i);
+  if(C.owns(it.id)){C.equip(it.id);msg("")}
+  else{const r=C.buy(it.id);msg(r.ok?it.name+" is yours!":r.why)}}
+ else return;
+ draw();
+});
+draw();
+</script>
+</body>
+</html>
