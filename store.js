@@ -6,7 +6,7 @@
 // ---- CRYSTAL RULES: edit these ----
 const CRY={
  // per game: points needed for 1 crystal, and the most crystals one round can pay
- games:{fly:{per:3,cap:30},match:{per:3,cap:30},hop:{per:4,cap:30},dash:{per:5,cap:30},memory:{per:3,cap:30},_:{per:4,cap:25}},
+ games:{fly:{per:3,cap:30},hop:{per:4,cap:30},dash:{per:5,cap:30},memory:{per:3,cap:30},_:{per:4,cap:25}},
  minRound:2,          // every finished round pays at least this many (so a bad round still helps)
  firstOfDay:15        // bonus for your first round each day
 };
