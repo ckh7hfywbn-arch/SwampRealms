@@ -9,27 +9,25 @@ Progress is saved in the visitor's browser (`localStorage`).
 | --- | --- |
 | `index.html` | Home page |
 | `catalog.html` | Open packs and view the collection |
-| `game.html` | Fly Frenzy and Swamp Match |
-| `shop.html` | Packs (Swamp Coins), cosmetics and boosts (Swamp Crystals) |
-| `cards.js` | Card list, pack rules, saved data, sounds, header wallet |
-| `store.js` | Swamp Crystal shop: cosmetics, boosts, tap effects |
-| `styles.css` | All styles, including the cosmetics in section 15 |
+| `game.html` | Fly Frenzy and Swamp Match mini games |
+| `shop.html` | Buy packs with Swamp Coins |
+| `cards.js` | Card list, packs, pack rules, saved data, sounds, header coin wallet |
+| `styles.css` | All styles |
 | `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files |
 
-## Two currencies
+## Packs
 
-- **Swamp Coins** buy card packs. Games pay coins for the first `playsPerDay` rounds each day.
-- **Swamp Crystals** buy cosmetics and boosts. Every game round pays crystals and rounds are unlimited.
+- **Adventures of the Swamp**: one free pack a day, or buy one in the shop.
+- **The Swamp Verse: Abstract Edition**: Pack #2.
 
-Tuning lives in `RULES` at the top of `cards.js` (`game`, `game2`, `crystals`).
+## Tuning
 
-## Adding to the shop
+Everything lives in `RULES` at the top of `cards.js`: daily packs, game rounds per day (`game`, `game2`), coin rewards, streaks and shop prices.
 
-Add a line to `SHOP_ITEMS` in `store.js`, then add the matching style in `styles.css` section 15.
-The style hooks on `data-<category>="<id>"` on `<html>`, for example `data-frame="gilded"`.
-Boosts are in `BOOSTS` in `store.js`.
+## Before going live
+
+`index.html` points social previews at `/preview.jpg` (1200x630). Add that image to the same folder or link previews will be blank.
 
 ## Deploying
 
 Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
-Otherwise run `npx wrangler deploy`.
