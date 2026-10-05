@@ -310,3 +310,9 @@ html{scroll-behavior:smooth}
 .cv-f{contain:paint}
 .cv-glare{inset:-40%;mix-blend-mode:normal;background:radial-gradient(circle,#ffffff38,transparent 42%);will-change:transform}
 .cv-back svg [filter],.cv-back svg [style*="mix-blend"]{display:none}
+
+/* ===== Picture pack covers ===== */
+.pk-img{object-fit:cover;object-position:center top;border-radius:12px;-webkit-user-drag:none;user-select:none}
+.strip.img{left:0;right:0;border:0;border-radius:12px 12px 0 0;clip-path:none;background-color:transparent;background-repeat:no-repeat;background-position:center top;background-size:auto 1163%}
+
+.bsimg{object-fit:cover;object-position:center;-webkit-user-drag:none;user-select:none}
