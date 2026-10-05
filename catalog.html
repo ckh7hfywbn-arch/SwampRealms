@@ -85,6 +85,7 @@
 <dialog id="preview" aria-labelledby="pv-title">
  <button class="pv-close" id="pv-close" aria-label="Close preview">&times;</button>
  <div class="pv-card" id="pv-card"></div>
+ <div class="cv-bar"><span class="cv-hint">Drag the card to rotate it</span><b id="pv-side">Front</b><button type="button" class="btn ghost cv-flip" id="pv-flip">Flip</button></div>
  <div class="license" id="pv-license">
   <svg class="seal" viewBox="0 0 28 32" width="30" height="34" aria-hidden="true"><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="currentColor"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>
   <div class="lic-label">Certificate of Collection</div>
@@ -156,7 +157,7 @@ function reveal(){
  const s=$("stage"),ps=$("ps"),m=$("hint");
  m.id="msg";m.className="new";m.setAttribute("aria-live","polite");m.innerHTML="&nbsp;";
  ps.style.setProperty("--c",c.color);
- ps.insertAdjacentHTML("afterbegin",`<div class="rays"></div><div class="ring"></div><button class="flip" id="flip" tabindex="-1" aria-label="Flip the card"><div class="inner"><div class="face back">${BACK_SVG}</div><div class="face front">${cardHTML(c)}</div></div></button><div class="parts"></div>`);
+ ps.insertAdjacentHTML("afterbegin",`<div class="rays"></div><div class="ring"></div><button class="flip" id="flip" tabindex="-1" aria-label="Flip the card"><div class="inner"><div class="face back">${curPack.back||BACK_SVG}</div><div class="face front">${cardHTML(c)}</div></div></button><div class="parts"></div>`);
  const f=$("flip"),T=[];
  let ready=false,sparked=false;
 
@@ -185,9 +186,9 @@ function reveal(){
   const at=(ms,fn)=>T.push(setTimeout(fn,ms));
   ps.classList.add("charge");SFX.charge();
   at(900,()=>{ps.classList.add("tear");SFX.tear();try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}});
-  at(1000,()=>{ps.classList.remove("charge");ps.classList.add("open");sparks()});
-  at(1200,()=>ps.classList.add("rise"));
-  at(2050,()=>finish());
+  at(1100,()=>{ps.classList.add("rise");sparks();SFX.rise()});
+  at(1750,()=>{ps.classList.remove("charge");ps.classList.add("open")});
+  at(2500,()=>finish());
   // tapping during the sequence skips ahead (added after this click finishes bubbling)
   setTimeout(()=>ps.addEventListener("click",()=>{if(!ready)finish(true)}),0);
  }
@@ -311,12 +312,42 @@ function openPreview(id){
  const c=CARDS.find(x=>x.id===id),n=owned[id]||0;
  if(!c||!n)return;
  pv.style.setProperty("--c",c.color);
- $("pv-card").innerHTML=cardHTML(c);
+ $("pv-card").innerHTML=`<div class="cv-spin" id="cv-spin"><div class="cv-f cv-front">${cardHTML(c)}<i class="cv-glare"></i></div><div class="cv-f cv-back">${packOf(c).back||BACK_SVG}<i class="cv-glare"></i></div></div>`;
+ $("pv-side").textContent="Front";$("pv-card").dataset.back=packOf(c).name;
+ startSpin();
  $("pv-title").textContent=c.name;
  $("pv-text").textContent="This verifies that you have collected "+c.name+" ("+c.rarity+") from the "+packOf(c).name+" pack in the SwampVerse. "+(n>1?"You hold "+n+" copies.":"You hold 1 copy.");
  pv.showModal();
  if((meta.fresh||[]).includes(id)){load();meta.fresh=(meta.fresh||[]).filter(x=>x!==id);save();renderGrid()}
 }
+// ---- 3D card viewer: drag to rotate, spins with momentum, shows the card back (pack design) ----
+let cvRaf=0,cvFlip=null;
+function startSpin(){
+ cancelAnimationFrame(cvRaf);
+ const st=$("pv-card"),sp=$("cv-spin"),side=$("pv-side");
+ let ry=-24,rx=8,vy=0,vx=0,drag=false,lx=0,ly=0,tgt=null,last="";
+ const paint=()=>{
+  sp.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+  const f=Math.cos(ry*Math.PI/180)>=0,k=f?"f":"b";
+  st.style.setProperty("--gx",(50+Math.sin(ry*Math.PI/180)*45)+"%");st.style.setProperty("--gy",(50-rx*1.6)+"%");
+  if(k!==last){last=k;side.textContent=f?"Front":"Back: "+st.dataset.back}
+ };
+ st.onpointerdown=e=>{drag=true;tgt=null;lx=e.clientX;ly=e.clientY;vy=vx=0;try{st.setPointerCapture(e.pointerId)}catch(_){}st.classList.add("grab")};
+ st.onpointermove=e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;ry+=dx*.6;rx=Math.max(-40,Math.min(40,rx-dy*.35));vy=dx*.6;vx=0};
+ const up=()=>{drag=false;st.classList.remove("grab")};
+ st.onpointerup=st.onpointercancel=up;
+ cvFlip=()=>{tgt=(Math.round(ry/180)+1)*180};
+ (function loop(){
+  if(!pv.open)return;
+  if(!drag){
+   if(tgt!==null){ry+=(tgt-ry)*.12;if(Math.abs(tgt-ry)<.2){ry=tgt;tgt=null}}
+   else{ry+=vy;vy*=.95;if(Math.abs(vy)<.02)vy=0}
+   rx+=(0-rx)*.06;
+  }
+  paint();cvRaf=requestAnimationFrame(loop);
+ })();
+}
+$("pv-flip").onclick=()=>{if(cvFlip)cvFlip()};
 function closePreview(){
  if(!pv.open||pv.classList.contains("closing"))return;
  if(reduced()){pv.close();return}

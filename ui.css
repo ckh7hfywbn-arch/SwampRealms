@@ -261,3 +261,44 @@ a.sm-item:active{background:#4ee6b422}
 .bank .coin{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.bank:hover .coin{transform:rotateY(360deg)}}
 .cn{filter:drop-shadow(0 0 10px #f2c14ecc) drop-shadow(0 1px 0 #0008)}
+
+/* ===== Motion pass: smooth page transitions, springy buttons and tiles, soft glows (every page) ===== */
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:no-preference){
+ body{animation:pgin .55s var(--ease-out) both}
+ html.leaving body{opacity:0;transform:translateY(-6px);transition:opacity .2s ease-in,transform .2s ease-in}
+ @keyframes pgin{from{opacity:0;transform:translateY(10px)}}
+ .btn,button.btn,.bank,.snd{transition:transform .35s var(--ease-spring),box-shadow .3s var(--ease-out),filter .25s,background-color .25s,border-color .25s,color .25s}
+ @media(hover:hover){
+  .btn:hover{transform:translateY(-2px) scale(1.03);filter:brightness(1.08)}
+  .bank:hover,.snd:hover{transform:translateY(-1px) scale(1.06)}
+  .shopcard:hover,.ptile:hover,.earn a:hover,.slot:hover{transform:translateY(-4px);box-shadow:0 18px 34px -16px #000,0 0 22px -8px var(--c,#5fd38d)}
+ }
+ .btn:active,.bank:active,.snd:active{transform:scale(.95);transition-duration:.09s}
+ .shopcard,.ptile,.earn a,.slot,.tile,.stat{transition:transform .4s var(--ease-spring),box-shadow .35s var(--ease-out),border-color .25s}
+ .bank.bump .coin{animation:coinspin .7s var(--ease-out)}
+ @keyframes coinspin{40%{transform:rotateY(180deg) scale(1.25)}to{transform:rotateY(360deg)}}
+ .rewardnote{animation:fade-up .6s var(--ease-spring) .1s backwards}
+ .stage .row{animation:fade-up .6s var(--ease-out) .15s backwards}
+ dialog[open]{animation:pvin .4s var(--ease-spring)}
+}
+
+/* ===== 3D card viewer (Collection preview): bigger card, drag to rotate, see the back; smaller certificate ===== */
+#preview{width:min(94vw,440px);max-height:96dvh;padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.pv-card{width:min(78vw,calc((100dvh - 300px)/1.5),340px);margin:6px auto 8px;perspective:1100px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.pv-card.grab{cursor:grabbing}
+.cv-spin{position:relative;width:100%;height:100%;transform-style:preserve-3d;will-change:transform}
+.cv-f{position:absolute;inset:0;border-radius:var(--radius);overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 22px 40px -16px #000d,0 0 28px -8px var(--c)}
+.cv-back{transform:rotateY(180deg)}
+.cv-f .card{width:100%;height:100%}
+.cv-glare{position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at var(--gx,50%) var(--gy,40%),#ffffff55,transparent 55%);mix-blend-mode:soft-light}
+.cv-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 10px;font:700 12px Nunito,sans-serif;color:var(--muted)}
+.cv-bar b{color:var(--c,#f2c14e);font-weight:800}
+.cv-hint{opacity:.75}
+.cv-flip{min-height:0;padding:6px 14px;font-size:13px}
+#preview .license{padding:9px 12px 8px}
+#preview .license .seal{width:20px;height:22px}
+#preview .lic-label{margin-top:0;font-size:9.5px}
+#preview .license h3{margin:2px 0 3px;font-size:14px}
+#preview .license p{font-size:11.5px;line-height:1.4}
+#preview .license .lic-fine{margin-top:5px;font-size:10px}

@@ -125,19 +125,20 @@ h1 span{display:block;margin-top:8px;font-size:.42em;color:var(--text)}
 .ps{position:relative;display:grid;place-items:center;width:250px;height:370px}
 .ps::before{content:"";position:absolute;inset:-34px;z-index:0;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--c,var(--gold)) 20%,transparent),transparent);transition:background .6s}
 .ps>.pack,.ps>.flip{grid-area:1/1}
-.pack{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;width:190px;height:270px;padding:14px;border:0;border-radius:14px;cursor:pointer;color:#1a1405;text-align:center;
- background:linear-gradient(160deg,#ffe08a,var(--gold) 50%,#b8860b);box-shadow:0 0 0 3px var(--gold) inset,0 18px 40px #000a;
+.pack{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;width:190px;height:270px;padding:0;border:0;border-radius:0;cursor:pointer;color:#1a1405;text-align:center;
+ background:none;box-shadow:none;filter:drop-shadow(0 16px 18px #000c) drop-shadow(0 0 1px #000);
  transition:transform .4s var(--ease-out),filter .3s}
 .pack:not(.locked){animation:floaty 3.6s var(--ease-in-out) infinite}
 @media(hover:hover){.pack:not(.locked):hover{transform:translateY(-4px) rotate(-1.5deg) scale(1.02)}}
 .pack:not(.locked):active{transform:scale(.96);transition-duration:.1s}
-.locked{opacity:.45;filter:grayscale(.6);cursor:default}
-.pk-wrap{position:absolute;inset:0;display:block;border-radius:14px;overflow:hidden}
+.locked{opacity:.45;filter:grayscale(.6) drop-shadow(0 10px 12px #000a);cursor:default}
+.pk-wrap{position:absolute;inset:0;display:block;overflow:visible}
 .pk-art{display:block;width:100%;height:100%}
-.pk-wrap::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff2e 48%,transparent 60%) 160% 0/250% 100% no-repeat;pointer-events:none}
-.pack:not(.locked) .pk-wrap::after{animation:packsheen 5.5s var(--ease-in-out) 1.2s infinite}
-.strip{position:absolute;left:0;right:0;top:0;z-index:1;height:9.5%;border-radius:14px 14px 0 0;border-bottom:1px solid #6b4d0f;transform-origin:0 100%;
- background:repeating-linear-gradient(90deg,#0000003a 0 1px,#ffffff38 1px 2px,transparent 2px 4px),linear-gradient(#ecd488,#c9a23f 55%,#8f6d1c);box-shadow:0 1px 0 #ffffff59 inset}
+.pk-sheen{animation:pksheen 6s var(--ease-in-out) 1.2s infinite}
+.locked .pk-sheen,.ptile .pk-sheen{animation:none;opacity:0}
+.strip{position:absolute;left:1.5%;right:1.5%;top:0;z-index:1;height:8.6%;border-bottom:1px solid #0009;transform-origin:0 100%;
+ clip-path:polygon(0 4%,100% 4%,100% 100%,0 100%);
+ background:repeating-linear-gradient(90deg,#0000004d 0 .6px,#ffffff4d .6px 1.3px,transparent 1.3px 2.7px,#0000002e 2.7px 3.1px,transparent 3.1px 4.4px),linear-gradient(#ffffff59,#fff0 45%,#0000006e),linear-gradient(90deg,var(--m0,#555),var(--m3,#ddd) 8%,var(--m1,#999) 17%,var(--m4,#bbb) 30%,var(--m0,#555) 42%,var(--m3,#ddd) 55%,var(--m1,#999) 66%,var(--m4,#bbb) 80%,var(--m2,#777) 92%,var(--m0,#555))}
 .rays,.ring,.parts{position:absolute;left:50%;top:50%;pointer-events:none}
 .rays{width:min(560px,100vw);aspect-ratio:1;translate:-50% -50%;border-radius:50%;z-index:1;opacity:0;
  background:repeating-conic-gradient(color-mix(in srgb,var(--c) 55%,transparent) 0 5deg,transparent 5deg 20deg);-webkit-mask:radial-gradient(circle,#000 0,#0000 66%);mask:radial-gradient(circle,#000 0,#0000 66%)}
@@ -146,16 +147,20 @@ h1 span{display:block;margin-top:8px;font-size:.42em;color:var(--text)}
 .pt{position:absolute;left:0;top:0;width:var(--z);height:var(--z);margin:calc(var(--z)/-2) 0 0 calc(var(--z)/-2);border-radius:50%;background:var(--pc);box-shadow:0 0 10px 2px var(--pc);opacity:0;animation:burst var(--t) cubic-bezier(.15,.7,.3,1) var(--w) forwards}
 /* 1 charge: the pack shakes harder and glows in the card's rarity colour */
 .ps.charge .pack{animation:charge .9s linear forwards,floaty 3.6s var(--ease-in-out) infinite}
-/* 2 tear: the foil strip peels off */
-.ps.tear .strip{opacity:0;animation:peel .55s cubic-bezier(.4,0,.6,1) forwards}
-/* 3 open: flash, light rays, sparks */
-.ps.open .pack{opacity:0;pointer-events:none;animation:flash .55s ease-out forwards,floaty 3.6s var(--ease-in-out) infinite}
-.ps.open .rays{opacity:.5;animation:rays 2.4s ease-out forwards}
-/* 4 rise: the card slides out face down, then waits for a tap */
-.ps .flip{opacity:0;pointer-events:none;z-index:2;transform:translateY(46px) scale(.6)}
-.ps.rise .flip{opacity:1;transform:none}
-.ps.rise:not(.ready) .flip{animation:rise .85s cubic-bezier(.2,.9,.25,1.12) forwards}
+.ps.tear:not(.open) .pack:not(.locked){transform:scale(1.075);filter:drop-shadow(0 16px 18px #000c) drop-shadow(0 0 26px var(--c)) drop-shadow(0 0 54px var(--c))}
+/* 2 tear: the top strip rips off, the foil is left with a jagged edge and light pours out */
+.ps.tear .strip{opacity:0;animation:peel .6s cubic-bezier(.4,0,.6,1) forwards}
+.ps.tear .pk-art{clip-path:polygon(0 8.6%,4% 7.4%,8% 9%,13% 7.2%,18% 8.8%,23% 7.5%,28% 9.2%,34% 7.4%,40% 8.9%,46% 7.3%,52% 9%,58% 7.4%,64% 8.8%,70% 7.2%,76% 9.1%,82% 7.5%,88% 8.9%,94% 7.3%,100% 8.6%,100% 100%,0 100%)}
+.pack::after{content:"";position:absolute;left:4%;right:4%;top:6.4%;height:4.4%;z-index:2;border-radius:50%;pointer-events:none;opacity:0;
+ background:radial-gradient(closest-side,#fff,color-mix(in srgb,var(--c,#f2c14e) 80%,#fff0) 55%,transparent);filter:blur(2px)}
+.ps.tear .pack::after{opacity:1;animation:mouth .9s ease-out forwards}
+/* 3 rise: the card slides up out of the opened pack, then the empty pack drops away */
+.ps .flip{opacity:0;pointer-events:none;z-index:2;transform:translateY(8px) scale(.66)}
+.ps.rise .flip{opacity:1;transform:none;z-index:4}
+.ps.rise:not(.ready) .flip{animation:cardout 1.2s cubic-bezier(.22,1,.36,1) forwards}
 .ps.ready .flip{pointer-events:auto;animation:floaty 3.4s var(--ease-in-out) infinite}
+.ps.open .pack{pointer-events:none;animation:packdrop .8s cubic-bezier(.4,0,.7,.3) forwards}
+.ps.open .rays{opacity:.5;animation:rays 2.4s ease-out forwards}
 .ps.fast *{animation-duration:.2s!important;animation-delay:0s!important}
 .ps.fast.ready .flip{animation-duration:3.4s!important}
 /* 5 flip: shockwave in the card's shape, glow pulse, light sweep */
@@ -163,11 +168,13 @@ h1 span{display:block;margin-top:8px;font-size:.42em;color:var(--text)}
 .flip.on .front .card{animation:glow 1.3s ease-out .35s}
 .flip.on .card::after{content:"";position:absolute;inset:-20%;z-index:3;background:linear-gradient(105deg,transparent 40%,#ffffff88 50%,transparent 60%);transform:translateX(-120%);animation:sheen .9s ease-out .6s forwards;pointer-events:none}
 .flip{width:230px;aspect-ratio:2/3;perspective:900px;background:none;border:0;padding:0;cursor:pointer}
-.inner{position:relative;width:100%;height:100%;transition:transform .8s cubic-bezier(.3,1.15,.4,1);transform-style:preserve-3d}
+.inner{position:relative;width:100%;height:100%;transition:transform .95s cubic-bezier(.34,1.25,.5,1);transform-style:preserve-3d}
 .flip .inner{will-change:transform}
 .flip.on .inner{transform:rotateY(180deg)}
+.flip{transition:scale .6s cubic-bezier(.34,1.5,.5,1)}
+.flip.on{scale:1.05}
 .face{position:absolute;inset:0;border-radius:var(--radius);backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.back{border-radius:var(--radius);overflow:hidden;box-shadow:0 0 0 2px var(--gold) inset,0 0 0 6px #0d110a inset,0 0 0 7px #f2c14e66 inset}
+.back{border-radius:var(--radius);overflow:hidden}
 .front{transform:rotateY(180deg)}
 .bsv{display:block;width:100%;height:100%}
 #hint,#msg{min-height:24px}
@@ -220,8 +227,8 @@ h1 span{display:block;margin-top:8px;font-size:.42em;color:var(--text)}
 .ratecap{margin:18px 0 0;font-size:14px;color:var(--muted)}
 .packsec{max-width:920px;margin:44px auto 0;text-align:left}
 .packhead{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line)}
-.packthumb{position:relative;flex:none;width:72px;aspect-ratio:190/270;border-radius:10px;box-shadow:0 12px 24px -10px #000}
-.packthumb .pk-wrap{border-radius:10px}
+.packthumb{position:relative;flex:none;width:72px;aspect-ratio:190/270;filter:drop-shadow(0 10px 10px #000a)}
+
 .packinfo{flex:1;min-width:210px}
 .packinfo h3{margin:0;font:800 24px/1.15 Nunito,system-ui,sans-serif;letter-spacing:-.01em}
 .packinfo p{margin:4px 0 0;color:var(--muted);font-size:14px}
@@ -343,16 +350,23 @@ body:has(#preview[open]),body:has(#odds[open]){overflow:hidden}
 @keyframes bump{40%{transform:scale(1.12)}}
 @keyframes burst{0%{opacity:1;transform:translate(0,0) scale(1)}70%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
 @keyframes charge{
- 0%{transform:none;box-shadow:0 0 0 3px var(--gold) inset,0 18px 40px #000a,0 0 0 0 transparent;animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 12%{transform:rotate(-1.5deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 24%{transform:rotate(2deg) scale(1.012);animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 36%{transform:rotate(-2.5deg) scale(1.024);animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 48%{transform:rotate(3deg) scale(1.036);animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 60%{transform:rotate(-3.5deg) scale(1.048);animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 72%{transform:rotate(4deg) scale(1.06);animation-timing-function:cubic-bezier(.45,0,.55,1)}
- 86%{transform:rotate(-3deg) scale(1.07);animation-timing-function:cubic-bezier(.3,0,.2,1)}
- 100%{transform:rotate(0) scale(1.075);box-shadow:0 0 0 3px var(--gold) inset,0 18px 40px #000a,0 0 70px 14px var(--c)}
+ 0%{transform:none;filter:drop-shadow(0 16px 18px #000c) drop-shadow(0 0 0 transparent);animation-timing-function:ease-in-out}
+ 15%{transform:translateX(-1px) rotate(-1.2deg) scale(1.01);animation-timing-function:ease-in-out}
+ 30%{transform:translateX(1.5px) rotate(1.8deg) scale(1.025);animation-timing-function:ease-in-out}
+ 45%{transform:translateX(-2px) rotate(-2.6deg) scale(1.04);animation-timing-function:ease-in-out}
+ 60%{transform:translateX(2.5px) rotate(3.2deg) scale(1.055);animation-timing-function:ease-in-out}
+ 75%{transform:translateX(-2.5px) rotate(-3.6deg) scale(1.068);animation-timing-function:ease-in-out}
+ 90%{transform:translateX(1px) rotate(1.5deg) scale(1.08);animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+ 100%{transform:rotate(0) scale(1.075);filter:drop-shadow(0 16px 18px #000c) drop-shadow(0 0 26px var(--c)) drop-shadow(0 0 54px var(--c))}
 }
+@keyframes mouth{0%{opacity:0;transform:scaleX(.3)}25%{opacity:1;transform:scaleX(1.05)}100%{opacity:.85;transform:scaleX(1)}}
+@keyframes cardout{
+ 0%{opacity:1;z-index:2;transform:translateY(8px) scale(.66)}
+ 62%{opacity:1;z-index:2;transform:translateY(-158px) scale(.74)}
+ 63%{opacity:1;z-index:4;transform:translateY(-158px) scale(.74)}
+ 100%{opacity:1;z-index:4;transform:none}
+}
+@keyframes packdrop{0%{opacity:1;transform:scale(1.075)}100%{opacity:0;transform:translateY(90px) rotate(5deg) scale(.88)}}
 @keyframes peel{0%{transform:none;opacity:1}25%{transform:rotate(-5deg) translateY(-6px);opacity:1}100%{transform:translate(90px,-130px) rotate(38deg);opacity:0}}
 @keyframes flash{0%{filter:brightness(1);opacity:1;transform:scale(1.07)}35%{filter:brightness(2.6);opacity:1;transform:scale(1.1)}100%{filter:brightness(3);opacity:0;transform:scale(1.18)}}
 @keyframes rays{0%{opacity:0;transform:scale(.2) rotate(0)}25%{opacity:1}100%{opacity:.5;transform:scale(1) rotate(40deg)}}
@@ -360,7 +374,7 @@ body:has(#preview[open]),body:has(#odds[open]){overflow:hidden}
 @keyframes ring{0%{opacity:.9;transform:scale(.95)}100%{opacity:0;transform:scale(1.9)}}
 @keyframes glow{35%{box-shadow:0 0 70px 14px color-mix(in srgb,var(--c) 80%,transparent),0 14px 30px #0008}}
 @keyframes sheen{to{transform:translateX(120%)}}
-@keyframes packsheen{0%{background-position:160% 0}45%,100%{background-position:-60% 0}}
+@keyframes pksheen{0%{transform:translateX(0) skewX(-18deg)}45%,100%{transform:translateX(420px) skewX(-18deg)}}
 @keyframes holo{0%{background-position:160% 0}55%,100%{background-position:-70% 0}}
 @keyframes pvin{from{opacity:0;transform:translateY(18px) scale(.96)}}
 @keyframes pvout{to{opacity:0;transform:translateY(10px) scale(.97)}}
