@@ -137,7 +137,7 @@
   }
 
   // ---------- UI ----------
-  var btn, dlg, mode = "in", msg = "", busy = false, lastUser = "";
+  var btn, dlg, mode = "in", msg = "", busy = false;
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
   var ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
 
@@ -153,11 +153,7 @@
         btn.setAttribute("aria-label", "Sign in to save your progress");
       }
     }
-    if (dlg && dlg.open) {
-      // a background update (sign-in check, save finished) must not wipe a form that is being filled in
-      var typing = !S.user && !pending && !busy && dlg.querySelector("form") && dlg.querySelector("form").contains(document.activeElement);
-      if (!typing) render();
-    }
+    if (dlg && dlg.open) render();
   }
 
   function ago() {
@@ -185,7 +181,7 @@
         '<p class="acct-sub">Save your progress and play on any device. Free, and no email needed.</p>' +
         '<div class="acct-tabs" role="tablist"><button type="button" role="tab" aria-selected="' + !up + '" data-mode="in">Sign in</button><button type="button" role="tab" aria-selected="' + up + '" data-mode="up">Create account</button></div>' +
         '<form class="acct-form" novalidate>' +
-        '<label>Username<input name="u" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" value="' + esc(lastUser) + '" required></label>' +
+        '<label>Username<input name="u" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" required></label>' +
         '<label>Password<input name="p" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" maxlength="200" required></label>' +
         (up ? '<p class="acct-fine">3 to 20 letters, numbers or underscores. Password: 8 or more characters. We don\'t collect an email, so a lost password can\'t be reset. Write it down.</p>' : '') +
         '<p class="acct-err" role="alert">' + esc(msg) + '</p>' +
@@ -194,11 +190,6 @@
         '<p class="acct-fine">Already playing without an account? Your progress on this device is added to your account.</p>';
     }
     dlg.innerHTML = h;
-    if (msg && !S.user && !pending) {
-      var pf = dlg.querySelector('input[name="p"]'), uf = dlg.querySelector('input[name="u"]');
-      var tgt = uf && !uf.value ? uf : pf;
-      if (tgt) tgt.focus();
-    }
   }
 
   function openDialog() {
@@ -221,13 +212,11 @@
           else { S.rev = p.cloud.rev; S.base = ""; saveS(); ready = true; push(false).then(function () { render(); }); }
         }
       });
-      dlg.addEventListener("input", function (e) { if (e.target && e.target.name === "u") lastUser = e.target.value; });
       dlg.addEventListener("cancel", function (e) { if (pending) e.preventDefault(); });
       dlg.addEventListener("submit", async function (e) {
         e.preventDefault();
         if (busy) return;
         var f = e.target, un = f.u.value.trim(), pw = f.p.value;
-        lastUser = un;
         if (!un || !pw) { msg = "Enter a username and password."; render(); return; }
         busy = true; msg = ""; render();
         try { await authenticate(mode, un, pw); }

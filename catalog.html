@@ -31,14 +31,12 @@
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
  <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html" aria-current="page">Packs / Collection</a><a class="hide" href="arcade.html">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
-<main id="main">
 <section class="reveal" id="catalog">
  <h2>Packs &amp; Collection</h2>
  <p class="sub">Open your packs, then see what you have found.</p>
@@ -77,8 +75,6 @@
 <section class="reveal">
  <div class="row" style="justify-content:center"><a class="btn ghost" href="arcade.html">Play the Arcade</a><a class="btn ghost" href="shop.html">Spend coins</a></div>
 </section>
-
-</main>
 
 <footer>
  <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
@@ -258,16 +254,10 @@ $("ptiles").onclick=e=>{
  showPack();
  $("stage").scrollIntoView({behavior:reduced()?"auto":"smooth",block:"center"});
 };
-// once a second: tick the countdowns, and only redraw the packs when what you have actually changed
-// (a new day, a code, a purchase in another tab). Redrawing every second made the pack flicker and swallowed taps.
-let packSig=null;
-const sigNow=()=>PACKS.map(stockOf).join(",");
 setInterval(()=>{
- load();
- const sig=sigNow();
- if(packSig===null)packSig=sig;
- if(sig!==packSig){packSig=sig;renderPacks();if(!revealing)showPack();return}
- document.querySelectorAll(".cdt").forEach(e=>e.textContent=untilMidnight());
+ const t=document.querySelectorAll(".cdt");if(!t.length)return;
+ t.forEach(e=>e.textContent=untilMidnight());
+ load();if(PACKS.some(p=>stockOf(p)>0)){renderPacks();if(!revealing)showPack()}
 },1000);
 
 /* ================= Collection ================= */

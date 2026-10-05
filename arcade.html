@@ -32,14 +32,12 @@
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
 <noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
  <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html" aria-current="page">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
-<main id="main">
 <div id="top"></div>
 <section class="reveal" id="arcade">
  <h2>Arcade</h2>
@@ -60,8 +58,6 @@
  </div>
 </section>
 
-
-</main>
 
 <footer>
  <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
@@ -207,8 +203,7 @@ function dash(){
 }
 /* ---- Memory Flip: match the pairs ---- */
 function memory(){
- const faces=["frog","donkey","owl","monkey","elephant","🪰","🍄","🪷"],deck=[...faces,...faces],g=$("mem");
- for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
+ const faces=["frog","donkey","owl","monkey","elephant","🪰","🍄","🪷"],deck=[...faces,...faces].sort(()=>Math.random()-.5),g=$("mem");
  let open=[],lock=false,found=0,moves=0;const t0=performance.now();
  g.innerHTML=deck.map((f,i)=>`<button type="button" class="mc" data-i="${i}" aria-label="Card ${i+1}"><span class="mf">${AV.animals.includes(f)?AV.svg({animal:f,bg:"pond"}):f}</span><span class="mb">?</span></button>`).join("");
  setScore("0 moves");live=true;
@@ -240,7 +235,6 @@ $("tabs").onclick=e=>{const b=e.target.closest("button");if(b){sel=b.dataset.g;m
 $("go").onclick=()=>{loadAv();$("ovx").hidden=true;if(innerWidth<640)$("box").scrollIntoView({block:"center",behavior:"smooth"});GAMES[sel].run();$("go").blur()};
 cv.addEventListener("pointerdown",e=>{if(!live||!cur||!cur.down)return;e.preventDefault();const r=cv.getBoundingClientRect();cur.down((e.clientX-r.left)/r.width)});
 addEventListener("pointerup",()=>{if(live&&cur&&cur.up)cur.up()});
-addEventListener("pointercancel",()=>{if(live&&cur&&cur.up)cur.up()});
 addEventListener("keydown",e=>{if(!live||!cur||e.repeat)return;
  if(e.code==="Space"&&cur.up){e.preventDefault();cur.down(.5)}
  else if(e.code==="ArrowLeft"&&cur.left){e.preventDefault();cur.left()}

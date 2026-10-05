@@ -128,10 +128,10 @@ header nav .bank.cry b{color:#c8fff4}
 .gems .gem{width:20px;height:22px}.gems b{font:900 24px Nunito,sans-serif;color:#c8fff4}
 .gems small{color:var(--muted);font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:11px}
 .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.slot{display:grid;gap:2px;justify-items:start;padding:8px;border-radius:10px;background:#0c110d;border:1px solid #ffffff1a;color:var(--text);cursor:pointer;text-align:left;font-family:Nunito,sans-serif;min-width:0}
-.slot small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:900}
-.slot b{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--rc,#6b7770)}
-.slot[aria-selected=true]{border-color:#4ee6b4;box-shadow:0 0 14px -4px #4ee6b4}
+.slots .slot{display:grid;gap:2px;justify-items:start;padding:8px;border-radius:10px;background:#0c110d;border:1px solid #ffffff1a;color:var(--text);cursor:pointer;text-align:left;font-family:Nunito,sans-serif;min-width:0}
+.slots .slot small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:900}
+.slots .slot b{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--rc,#6b7770)}
+.slots .slot[aria-selected=true]{border-color:#4ee6b4;box-shadow:0 0 14px -4px #4ee6b4}
 .panel2{display:grid;gap:14px;min-width:0}
 .pick{display:flex;justify-content:center;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
 .pick button{flex:1 0 52px;max-width:72px;display:grid;gap:4px;justify-items:center;background:none;border:0;color:var(--muted);font:900 10px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:0}
@@ -254,8 +254,3 @@ a.sm-item:active{background:#4ee6b422}
 .sm-t{flex:1}
 .sm-snd .sm-t{color:var(--text);opacity:.88}
 @media(prefers-reduced-motion:reduce){.sitemenu,.mb-bars i{transition:none}}
-
-/* skip link: invisible until a keyboard user tabs to it */
-.skip{position:fixed;left:12px;top:-60px;z-index:200;padding:10px 16px;border-radius:12px;background:#f2c14e;color:#1a1405;font-weight:800;text-decoration:none;transition:top .15s}
-.skip:focus{top:calc(env(safe-area-inset-top,0px) + 10px)}
-main{display:block}

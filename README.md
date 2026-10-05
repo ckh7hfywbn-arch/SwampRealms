@@ -12,9 +12,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `shop.html` | Buy packs with Swamp Coins |
 | `arcade.html` | The Arcade (the old Play page is merged in). Fly Frenzy (coins for the first rounds each day, crystals every round), Lily Hop, Swamp Dash, Memory Flip. Open a game directly with `arcade.html#hop` |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
-| `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Small on purpose: the card pictures live in `images/` |
-| `images/` | One JPG per card (`images/<card-id>.jpg`) plus the two pack pictures (`pack-adventures.jpg`, `pack-abstract.jpg`) |
-| `preview.jpg` | The 1200x630 picture shown when the site is shared on X, Discord and Telegram |
+| `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter. Load after `cards.js` |
 | `avatar.js` | Draws the animals and cosmetics as SVG |
 | `styles.css` | Base styles: layout, packs, cards, shop |
@@ -25,7 +23,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `wrangler.jsonc`, `.assetsignore` | Cloudflare config (Worker + D1 binding) and the list of files that are not published |
 | `menu.js` | Header menu: builds the hamburger dropdown from the nav links, avatar and sound switch. Load last, after `account.js` |
 | `_redirects` | Sends the old `/game` address to `/arcade` on Cloudflare |
-| `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files. The 404 page only shows if `"not_found_handling": "404-page"` is set inside `assets` in `wrangler.jsonc` |
+| `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files |
 
 ## Two currencies
 
@@ -41,12 +39,9 @@ The header shows the logo, coin and crystal counters, the account button and a h
 
 Add a line to `COSMETICS` in `store.js`, then draw it in `avatar.js` (`HAT`, `FACE`, `NECK` or `BG`, same id).
 
-## Adding a card
+## Before going live
 
-1. Save the picture as `images/<card-id>.jpg` (roughly 2:3, under 150 KB).
-2. Add one line to `CARDS` in `cards.js`, with `img:"images/<card-id>.jpg"`.
-
-Keep pictures out of `cards.js` itself. Every page loads that file, so a big one slows the whole site down.
+`index.html` points social previews at `/preview.jpg` (1200x630). Add that image to this folder.
 
 ## Accounts
 
@@ -68,4 +63,4 @@ If the Worker is not named `theswampverse`, change `name` in `wrangler.jsonc` to
 
 ## Deploying
 
-Commit the files to GitHub (including the `images/` folder). If the repo is connected to Cloudflare Workers, it redeploys on push.
+Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
