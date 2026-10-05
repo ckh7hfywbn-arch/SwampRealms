@@ -254,3 +254,10 @@ a.sm-item:active{background:#4ee6b422}
 .sm-t{flex:1}
 .sm-snd .sm-t{color:var(--text);opacity:.88}
 @media(prefers-reduced-motion:reduce){.sitemenu,.mb-bars i{transition:none}}
+
+/* ===== Swamp Coin: embossed gold coin with a star, matches the crystal gem ===== */
+:root{--coin:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='r' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff3c0'/%3E%3Cstop offset='.45' stop-color='%23f2c14e'/%3E%3Cstop offset='1' stop-color='%239a6a0c'/%3E%3C/linearGradient%3E%3ClinearGradient id='f' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop offset='0' stop-color='%23d99a1f'/%3E%3Cstop offset='1' stop-color='%23ffe08a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='12' cy='12' r='11.5' fill='url%28%23r%29'/%3E%3Ccircle cx='12' cy='12' r='9' fill='url%28%23f%29' stroke='%238a5d0a' stroke-opacity='.75' stroke-width='.9'/%3E%3Cpolygon points='12.00,7.70 13.18,10.78 16.47,10.95 13.90,13.02 14.76,16.20 12.00,14.40 9.24,16.20 10.10,13.02 7.53,10.95 10.82,10.78' fill='%237a4f08' fill-opacity='.9' stroke='%23fff3c0' stroke-opacity='.55' stroke-width='.4' stroke-linejoin='round'/%3E%3Cpath d='M5.2 8.2A8 8 0 0 1 12 4' fill='none' stroke='%23fff' stroke-opacity='.65' stroke-width='1.1' stroke-linecap='round'/%3E%3C/svg%3E")}
+.coin,.bank .coin,.rates .coin,.price .coin,.cn{border-radius:0;background:var(--coin) center/contain no-repeat;box-shadow:none;filter:drop-shadow(0 0 4px #f2c14e88) drop-shadow(0 1px 0 #0008)}
+.bank .coin{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.bank:hover .coin{transform:rotateY(360deg)}}
+.cn{filter:drop-shadow(0 0 10px #f2c14ecc) drop-shadow(0 1px 0 #0008)}
