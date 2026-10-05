@@ -17,7 +17,7 @@ const ANIMALS=[
  {id:"monkey",name:"MonK the Monkey"},
  {id:"elephant",name:"Ellie the Elephant"}
 ];
-// cat: hat | face | neck | bg   (avatar.js draws each id)
+// cat: hat | face | neck | shirt | bg   (avatar.js draws each id)
 const COSMETICS=[
  {id:"beanie",cat:"hat",name:"Street Beanie",price:40},
  {id:"party",cat:"hat",name:"Neon Cone",price:60},
@@ -35,6 +35,12 @@ const COSMETICS=[
  {id:"scarf",cat:"neck",name:"Crimson Scarf",price:70},
  {id:"cape",cat:"neck",name:"Hero Cape",price:150},
  {id:"chain",cat:"neck",name:"Crystal Chain",price:200},
+ {id:"tee",cat:"shirt",name:"Swamp Tee",price:40},
+ {id:"hoodie",cat:"shirt",name:"Neon Hoodie",price:70},
+ {id:"jersey",cat:"shirt",name:"Herd Jersey",price:100},
+ {id:"tux",cat:"shirt",name:"Boss Tux",price:150},
+ {id:"armor",cat:"shirt",name:"Crystal Armor",price:250},
+ {id:"robe",cat:"shirt",name:"Royal Robe",price:350},
  {id:"pond",cat:"bg",name:"Lotus Pond",price:50},
  {id:"sunset",cat:"bg",name:"Dusk Marsh",price:80},
  {id:"night",cat:"bg",name:"Firefly Night",price:120},
@@ -42,13 +48,13 @@ const COSMETICS=[
  {id:"rainbow",cat:"bg",name:"Aurora Mist",price:300},
  {id:"moon",cat:"bg",name:"Blood Moon",price:350}
 ];
-const CATS={hat:"Hats",face:"Faces",neck:"Neck",bg:"Backgrounds"};
+const CATS={hat:"Hats",face:"Faces",neck:"Neck",shirt:"Shirts",bg:"Backgrounds"};
 const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":p>=50?"Uncommon":"Common";
 
 // ---- saved data ----
 const CK="swamp-crystals-v1";
-let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",bg:""},day:"",rounds:0,best:{}};
-function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{}}
+let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{}};
+function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{}}
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv()}
 cload();
 
@@ -89,7 +95,7 @@ const Crystals={
  equip(id){cload();const it=this.item(id);if(!it||!CS.own[id])return false;CS.eq[it.cat]=CS.eq[it.cat]===id?"":id;csave();return true},
  clear(cat){cload();CS.eq[cat]="";csave()},
  setAnimal(a){cload();if(ANIMALS.some(x=>x.id===a)){CS.animal=a;csave()}},
- outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,bg:CS.eq.bg}}
+ outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,bg:CS.eq.bg}}
 };
 
 // ---- header: round avatar button (top right) -> avatar.html ----
