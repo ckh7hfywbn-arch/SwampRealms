@@ -1,6 +1,6 @@
 {
   // Worker name must match the Worker already deployed in Cloudflare
-  "name": "theswampverse",
+  "name": "swampverse",
   "main": "worker.js",
   "compatibility_date": "2025-09-01",
   "assets": {
