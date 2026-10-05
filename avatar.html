@@ -87,7 +87,7 @@ function draw(){
  $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
   const own=C.owns(i.id),on=S.eq[cat]===i.id,can=C.balance>=i.price,t=tr(i);
   const btn=own?(on?"Equipped":"Equip"):`<span class="gem"></span>${i.price}`;
-  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art">${AV.svg(Object.assign({},o,{[cat]:i.id}))}</div><span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
+  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art">${AV.item(i.id)}</div><span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
 }
 function flash(){const s=$("stage");s.classList.remove("avp");void s.offsetWidth;s.classList.add("avp")}
 document.addEventListener("click",e=>{

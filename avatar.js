@@ -71,8 +71,31 @@ const AV=(function(){
   robe:SH(`<path d="${BODY}" fill="url(#red)"/><path d="M100 150V206" stroke="url(#gold)" stroke-width="9"/><path d="M100 150V206" stroke="#5a3d00" stroke-width="1.2" stroke-opacity=".6"/><path d="M50 166Q100 134 150 166L150 182Q100 154 50 182Z" fill="#f6f3ea" stroke="#8a7a56" stroke-width="2.5"/><path d="M66 166l1.6 6M82 158l1.6 6M118 158l-1.6 6M134 166l-1.6 6M72 176l1.6 6M128 176l-1.6 6" stroke="#1a1a24" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="176" r="7" fill="url(#gold)" stroke="#5a3d00" stroke-width="2"/><path d="M100 172l2 4-2 4-2-4z" fill="#ff4d6d"/>`,"#4a0a18")
  };
  const DEFBODY=`<path d="${BODY}" fill="url(#bd)" ${ST("#07070c")}/><path d="M84 148Q100 170 116 148" fill="none" stroke="#4ee6b4" stroke-width="3" stroke-linecap="round"/>`;
+
+ // ---- item-only art: each cosmetic drawn on its own (used by the shop cards) ----
+ const SHORT="M62 40L28 62L44 94L66 82V168H134V82L156 94L172 62L138 40Q100 66 62 40Z";
+ const LONG="M62 40L30 70L26 150L50 154L58 104L66 94V168H134V94L142 104L150 154L174 150L170 70L138 40Q100 66 62 40Z";
+ const SHIRTI={
+  tee:`<path d="${SHORT}" fill="url(#tl)" ${ST("#06404d",3)}/><path d="M62 40Q100 66 138 40" fill="none" stroke="#0b5f73" stroke-width="7"/><path d="M66 41Q100 63 134 41" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.8"/><path d="M100 104l5.4 11 12.2 1.7-8.8 8.5 2.1 12-10.9-5.7-10.9 5.7 2.1-12-8.8-8.5 12.2-1.7z" fill="#fff3c0" stroke="#06404d" stroke-width="2.4" stroke-linejoin="round"/><path d="M34 76L48 98M166 76L152 98" stroke="#06404d" stroke-opacity=".5" stroke-width="2"/>`,
+  hoodie:`<path d="${LONG}" fill="url(#pu)" ${ST("#1d0f4d",3)}/><path d="M60 42Q100-8 140 42Q126 70 100 72Q74 70 60 42Z" fill="#4a2a9a" ${ST("#1d0f4d",3)}/><path d="M74 46Q100 14 126 46Q116 62 100 64Q84 62 74 46Z" fill="#150a38"/><path d="M90 74V108M110 74V108" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="90" cy="111" r="3.4" fill="#4ee6b4"/><circle cx="110" cy="111" r="3.4" fill="#4ee6b4"/><path d="M72 134Q100 124 128 134L134 164H66Z" fill="#4a2a9a" ${ST("#1d0f4d",2.5)}/><path d="M28 140L50 144M172 140L150 144" stroke="#1d0f4d" stroke-width="3"/>`,
+  jersey:`<path d="${SHORT}" fill="url(#red)" ${ST("#4a0a18",3)}/><path d="M64 42L100 86L136 42" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round"/><path d="M32 70L47 92M168 70L153 92" stroke="#fff" stroke-width="6"/><path d="M66 100V168M134 100V168" stroke="#fff" stroke-opacity=".9" stroke-width="3"/><text x="100" y="150" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-weight="900" font-size="48" fill="#fff" stroke="#4a0a18" stroke-width="2.4" paint-order="stroke">7</text>`,
+  tux:`<path d="${LONG}" fill="url(#bd)" ${ST("#000",3)}/><path d="M80 42L100 130L120 42Q100 66 80 42Z" fill="#f6f3ea" ${ST("#000",2.2)}/><path d="M76 42L98 130L84 168M124 42L102 130L116 168" fill="none" stroke="#f2c14e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="100" cy="142" r="2.8" fill="#f2c14e"/><circle cx="100" cy="156" r="2.8" fill="#f2c14e"/><path d="M114 108h16v10h-16z" fill="#e83a9a" stroke="#000" stroke-width="1.6"/><path d="M28 142L52 146M172 142L148 146" stroke="#f2c14e" stroke-width="2.4"/>`,
+  armor:`<path d="M66 40H134V168H66Z" fill="url(#dk)" ${ST("#06191a",3)}/><path d="M56 48L100 30L144 48L136 148L100 170L64 148Z" fill="url(#tl)" ${ST("#06191a",3)}/><path d="M100 30V170M56 48L100 100L144 48M100 100L64 148M100 100L136 148" fill="none" stroke="#06191a" stroke-opacity=".5" stroke-width="2.2"/><path d="M100 32L78 54L100 90Z" fill="#fff" opacity=".45"/><circle cx="42" cy="62" r="22" fill="url(#gold)" ${ST("#5a3d00",3)}/><circle cx="158" cy="62" r="22" fill="url(#gold)" ${ST("#5a3d00",3)}/><path d="M42 48l6 9-6 14-6-14z M158 48l6 9-6 14-6-14z" fill="#c8fff4" stroke="#06191a" stroke-width="1.6"/><path d="M100 104l9 11-9 14-9-14z" fill="#c8fff4" ${ST("#06191a",2.2)}/>`,
+  robe:`<path d="${LONG}" fill="url(#red)" ${ST("#4a0a18",3)}/><path d="M100 66V168" stroke="url(#gold)" stroke-width="11"/><path d="M100 66V168" stroke="#5a3d00" stroke-opacity=".55" stroke-width="1.4"/><path d="M54 46Q100 8 146 46L152 70Q100 36 48 70Z" fill="#f6f3ea" ${ST("#8a7a56",2.6)}/><path d="M70 40l2 8M88 30l1.6 8M112 30l-1.6 8M130 40l-2 8M64 56l2 8M136 56l-2 8M82 48l1.6 8M118 48l-1.6 8" stroke="#1a1a24" stroke-width="3.2" stroke-linecap="round"/><circle cx="100" cy="86" r="9" fill="url(#gold)" ${ST("#5a3d00",2.2)}/><path d="M100 80l3 6-3 6-3-6z" fill="#ff4d6d"/><path d="M28 140L52 146M172 140L148 146" stroke="#f2c14e" stroke-width="3"/>`
+ };
+ const E0=[[78,100],[122,100]];
+ // raw art for one cosmetic: [category, markup]
+ function rawItem(id){
+  if(HAT[id])return["hat",HAT[id]];
+  if(FACE[id])return["face",FACE[id](E0)];
+  if(NECK[id])return["neck",(BACK[id]||"")+NECK[id]];
+  if(SHIRTI[id])return["shirt",SHIRTI[id]];
+  if(BG[id])return["bg",BG[id]];
+  return null;
+ }
  let SEQ=0;
- function svg(o){const k=++SEQ;return svg0(o).replace(/ id="([^"]+)"/g," id=\"$1_"+k+"\"").replace(/url\(#([^)]+)\)/g,"url(#$1_"+k+")")}
+ const uniq=t=>{const k=++SEQ;return t.replace(/ id="([^"]+)"/g," id=\"$1_"+k+"\"").replace(/url\(#([^)]+)\)/g,"url(#$1_"+k+")")};
+ function svg(o){return uniq(svg0(o))}
  function svg0(o){
   o=o||{};const a=A[o.animal]?o.animal:"frog",an=A[a],c=COL[a],S=dk(c,.62);
   const t=o.nobg?0:Math.max(0,...["hat","face","neck","shirt","bg"].map(k=>o[k]?RAR[o[k]]||0:0)),au=AURA[t];
@@ -83,6 +106,20 @@ const AV=(function(){
    (BACK[o.neck]||"")+(SHIRT[o.shirt]||DEFBODY)+(o.neck||o.shirt?"":`<path d="M100 174l7 8-7 11-7-11z" fill="url(#tl)" ${ST("#06191a",1.5)}/>`)+
    an.d(`url(#ag${a})`,S,c)+(NECK[o.neck]||"")+(FACE[o.face]?FACE[o.face](an.eyes):"")+(HAT[o.hat]?`<g transform="translate(0,${an.top})">${HAT[o.hat]}</g>`:"")+`</svg>`;
  }
+
+ // ---- shop card art: just the cosmetic floating in a glow of its rarity colour (no character) ----
+ const RCOL=["#9aa4a0","#4ade80","#4da3ff","#a855f7","#ff9f1c","#ff4d6d"];
+ const FIT={"beanie": [100.0, -5.0, 1.18], "party": [100.0, -22.0, 1.48], "cowboy": [100.0, -5.0, 0.89], "wizard": [100.0, -23.5, 1.09], "halo": [100.0, -16.0, 1.84], "crown": [100.0, -12.0, 1.34], "eyepatch": [104.0, 91.0, 1.48], "shades": [100.0, 100.0, 1.4], "hearts": [100.0, 97.5, 1.69], "monocle": [129.5, 122.0, 1.64], "laser": [100, 96.5, 0.98], "bell": [100.0, 157.5, 1.74], "bowtie": [100.0, 154.0, 2.11], "scarf": [100.0, 173.0, 1.34], "cape": [100.0, 175.0, 0.92], "chain": [100.0, 173.0, 1.74], "tee": [100.0, 104.0, 0.82], "hoodie": [100.0, 92.5, 0.78], "jersey": [100.0, 104.0, 0.82], "tux": [100.0, 104.0, 0.8], "armor": [100.0, 100.0, 0.75], "robe": [100.0, 97.5, 0.8]};
+ function item0(id){
+  const r=rawItem(id);if(!r)return"";
+  const t=RAR[id]||0,col=RCOL[t];
+  const head=`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cosmetic preview">`+DEFS+`<defs><radialGradient id="ig" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${col}" stop-opacity=".85"/><stop offset=".55" stop-color="${col}" stop-opacity=".28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient></defs>`;
+  if(r[0]==="bg")return head+`<g clip-path="url(#rc)">${BG[id]}<ellipse cx="100" cy="120" rx="86" ry="90" fill="url(#ig)"/><rect width="200" height="200" fill="url(#vg)"/></g><rect x=".75" y=".75" width="198.5" height="198.5" rx="18" fill="none" stroke="${col}" stroke-opacity=".8" stroke-width="2"/></svg>`;
+  const f=FIT[id]||[100,100,1];
+  const sp=t>=3?[[34,50],[168,46],[26,118],[176,120],[100,16]].slice(0,t>=5?5:t>=4?4:3).map((p,i)=>`<path d="M${p[0]} ${p[1]-6}L${p[0]+1.6} ${p[1]-1.6}L${p[0]+6} ${p[1]}L${p[0]+1.6} ${p[1]+1.6}L${p[0]} ${p[1]+6}L${p[0]-1.6} ${p[1]+1.6}L${p[0]-6} ${p[1]}L${p[0]-1.6} ${p[1]-1.6}Z" fill="${col}"><animate attributeName="opacity" values=".2;1;.2" dur="${1.8+i*.4}s" repeatCount="indefinite"/></path>`).join(""):"";
+  return head+`<rect width="200" height="200" fill="#0b0f0b"/><circle cx="100" cy="100" r="98" fill="url(#ig)"/><circle cx="100" cy="100" r="44" fill="${col}" opacity=".4" filter="url(#bl)"/><circle cx="100" cy="100" r="80" fill="none" stroke="${col}" stroke-opacity=".32" stroke-width="1.4" stroke-dasharray="3 7"/><ellipse cx="100" cy="176" rx="48" ry="7" fill="${col}" opacity=".45" filter="url(#bl)"/>${sp}<g transform="translate(100 100) scale(${f[2]}) translate(${-f[0]} ${-f[1]})">${r[1]}</g></svg>`;
+ }
+ function item(id){return uniq(item0(id))}
  const aura=o=>AURA[Math.max(0,...["hat","face","neck","shirt","bg"].map(k=>o&&o[k]?RAR[o[k]]||0:0))];
- return{svg,aura,animals:Object.keys(A)};
+ return{svg,aura,item,animals:Object.keys(A)};
 })();
