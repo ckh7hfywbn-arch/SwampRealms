@@ -85,7 +85,7 @@
 <dialog id="preview" aria-labelledby="pv-title">
  <button class="pv-close" id="pv-close" aria-label="Close preview">&times;</button>
  <div class="pv-card" id="pv-card"></div>
- <div class="cv-bar"><span class="cv-hint">Drag the card to rotate it</span><b id="pv-side">Front</b><button type="button" class="btn ghost cv-flip" id="pv-flip">Flip</button></div>
+ <div class="cv-bar"><span class="cv-hint">Drag the card to rotate it</span><button type="button" class="btn ghost cv-flip" id="pv-flip">Flip</button></div>
  <div class="license" id="pv-license">
   <svg class="seal" viewBox="0 0 28 32" width="30" height="34" aria-hidden="true"><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="currentColor"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>
   <div class="lic-label">Certificate of Collection</div>
@@ -239,9 +239,10 @@ function renderStreak(){
 }
 
 /* ================= Your packs (tiles) ================= */
+let _pt=-1;
 function renderPacks(){
  const have=PACKS.filter(p=>stockOf(p)>0),total=PACKS.reduce((a,p)=>a+stockOf(p),0);
- $("pbadge").textContent=total||"";
+ _pt=total;$("pbadge").textContent=total||"";
  $("ptiles").innerHTML=PACKS.map(p=>{
   const n=stockOf(p);
   return `<div class="ptile${have.length>1&&p===curPack?" sel":""}"><div class="pack${n?"":" locked"}" aria-hidden="true">${packLabel(p)}</div><h3>${p.name}</h3><div class="pcount"><b>${n}</b> ready to open</div>${n?`<button class="btn" data-open="${p.id}">Open pack</button>`:`<a class="btn" href="shop.html">Get packs</a>`}<button class="btn ghost" data-odds="${p.id}">What's inside</button>${(p===PACKS[0]||p.daily)&&n<1?`<p class="pnote">Next free pack in <b class="cdt">${untilMidnight()}</b></p>`:p.daily&&freeLeft(p)?`<p class="pnote">Includes today's free pack</p>`:""}</div>`;
@@ -258,7 +259,7 @@ $("ptiles").onclick=e=>{
 setInterval(()=>{
  const t=document.querySelectorAll(".cdt");if(!t.length)return;
  t.forEach(e=>e.textContent=untilMidnight());
- load();if(PACKS.some(p=>stockOf(p)>0)){renderPacks();if(!revealing)showPack()}
+ load();const tot=PACKS.reduce((a,p)=>a+stockOf(p),0);if(tot!==_pt){renderPacks();if(!revealing)showPack()}
 },1000);
 
 /* ================= Collection ================= */
@@ -313,24 +314,24 @@ function openPreview(id){
  if(!c||!n)return;
  pv.style.setProperty("--c",c.color);
  $("pv-card").innerHTML=`<div class="cv-spin" id="cv-spin"><div class="cv-f cv-front">${cardHTML(c)}<i class="cv-glare"></i></div><div class="cv-f cv-back">${packOf(c).back||BACK_SVG}<i class="cv-glare"></i></div></div>`;
- $("pv-side").textContent="Front";$("pv-card").dataset.back=packOf(c).name;
- startSpin();
  $("pv-title").textContent=c.name;
  $("pv-text").textContent="This verifies that you have collected "+c.name+" ("+c.rarity+") from the "+packOf(c).name+" pack in the SwampVerse. "+(n>1?"You hold "+n+" copies.":"You hold 1 copy.");
  pv.showModal();
+ startSpin();
  if((meta.fresh||[]).includes(id)){load();meta.fresh=(meta.fresh||[]).filter(x=>x!==id);save();renderGrid()}
 }
 // ---- 3D card viewer: drag to rotate, spins with momentum, shows the card back (pack design) ----
 let cvRaf=0,cvFlip=null;
 function startSpin(){
  cancelAnimationFrame(cvRaf);
- const st=$("pv-card"),sp=$("cv-spin"),side=$("pv-side");
+ const st=$("pv-card"),sp=$("cv-spin");
  let ry=-24,rx=8,vy=0,vx=0,drag=false,lx=0,ly=0,tgt=null,last="";
+ const gl=[...st.querySelectorAll(".cv-glare")];let pry=null,prx=null;
  const paint=()=>{
+  if(ry===pry&&rx===prx)return;pry=ry;prx=rx;
   sp.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
-  const f=Math.cos(ry*Math.PI/180)>=0,k=f?"f":"b";
-  st.style.setProperty("--gx",(50+Math.sin(ry*Math.PI/180)*45)+"%");st.style.setProperty("--gy",(50-rx*1.6)+"%");
-  if(k!==last){last=k;side.textContent=f?"Front":"Back: "+st.dataset.back}
+  const r=ry*Math.PI/180,f=Math.cos(r)>=0,k=f?"f":"b",w=st.offsetWidth,gx=Math.sin(r)*w*.45,gy=-rx*w*.012;
+  for(const g of gl)g.style.transform=`translate(${gx}px,${gy}px)`;
  };
  st.onpointerdown=e=>{drag=true;tgt=null;lx=e.clientX;ly=e.clientY;vy=vx=0;try{st.setPointerCapture(e.pointerId)}catch(_){}st.classList.add("grab")};
  st.onpointermove=e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;ry+=dx*.6;rx=Math.max(-40,Math.min(40,rx-dy*.35));vy=dx*.6;vx=0};

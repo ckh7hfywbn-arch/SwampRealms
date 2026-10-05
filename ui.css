@@ -302,3 +302,11 @@ html{scroll-behavior:smooth}
 #preview .license h3{margin:2px 0 3px;font-size:14px}
 #preview .license p{font-size:11.5px;line-height:1.4}
 #preview .license .lic-fine{margin-top:5px;font-size:10px}
+
+/* viewer speed: no blur behind it, no endless animations or blend modes on the spinning faces */
+#preview::backdrop{backdrop-filter:none;background:#05070bf0}
+.cv-f .pk-sheen{animation:none;opacity:0}
+.cv-f .holo{animation:none;background-position:50% 0}
+.cv-f{contain:paint}
+.cv-glare{inset:-40%;mix-blend-mode:normal;background:radial-gradient(circle,#ffffff38,transparent 42%);will-change:transform}
+.cv-back svg [filter],.cv-back svg [style*="mix-blend"]{display:none}
