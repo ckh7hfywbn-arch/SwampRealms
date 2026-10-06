@@ -630,3 +630,47 @@ header .logo img{display:block;flex:none}
 header .logo .mark{width:44px;height:44px;filter:drop-shadow(0 2px 6px #0008)}
 header .logo .word{width:160px;height:auto}
 @media(max-width:420px){header .logo .word{display:none}}
+
+/* ===== Bag: coins, crystals, fragments and gear (opened with data-bag / Bag.open()) ===== */
+.bag-open{overflow:hidden}
+.bag-wrap{position:fixed;inset:0;z-index:2147483600;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom,0px))}
+.bag-wrap[hidden]{display:none}
+.bag-back{position:absolute;inset:0;background:#02060acc;backdrop-filter:blur(3px)}
+.bag{--g:#f2c14e;position:relative;box-sizing:border-box;min-width:0;width:min(520px,100%);max-height:min(640px,100%);display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:22px;background:linear-gradient(180deg,#0e1712f7,#070d0af7);border:1px solid #4ee6b455;box-shadow:0 0 44px -12px #4ee6b4,0 26px 60px -20px #000;color:#e7f4ee;animation:bagin .3s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes bagin{from{opacity:0;transform:translateY(14px) scale(.97)}}
+.bag-head{display:flex;align-items:center;gap:10px}
+.bag-head>svg{width:26px;height:26px;color:#f2c14e;filter:drop-shadow(0 0 6px #f2c14e88);flex:none}
+.bag-head h2{margin:0;flex:1;font:400 26px "Bagel Fat One",Nunito,sans-serif;letter-spacing:.02em;color:#fff3d6}
+.bag-x{width:38px;height:38px;border-radius:50%;border:1px solid #4ee6b444;background:#0a100c;color:#c8fff4;font:800 22px/1 Nunito,sans-serif;cursor:pointer}
+.bag-x:hover{border-color:#4ee6b4}
+.bg-wallet{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bg-wallet>span{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:14px;background:#05090a;border:1px solid #f2c14e44;min-width:0}
+.bg-wallet .bg-gems{border-color:#4ee6b455}
+.bg-wallet .coin{margin:0;width:20px;height:20px;flex:none}
+.bg-wallet .gem{margin:0}
+.bg-wallet b{font:900 20px Nunito,sans-serif;color:#fff3d6}
+.bg-wallet em{font:800 10px Nunito,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:#a9c7c0;line-height:1.1;min-width:0}
+.bg-tabs{min-width:0;display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.bg-tabs::-webkit-scrollbar{display:none}
+.bg-tab{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 12px;border-radius:999px;border:1px solid #4ee6b433;background:#0a100c;color:#cfe1e3;font:800 12px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.bg-tab svg{width:16px;height:16px;flex:none}
+.bg-tab small{min-width:18px;padding:1px 6px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 10px Nunito,sans-serif;text-align:center}
+.bg-tab[aria-selected=true]{border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0;box-shadow:0 0 16px -6px #f2c14e}
+#bgpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain}
+.bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bgs{--c:#9fe8c8;position:relative;display:grid;justify-items:center;align-content:center;gap:3px;aspect-ratio:1;padding:8px 4px;border-radius:14px;background:#05090a;border:1px solid var(--c);box-shadow:0 0 16px -8px var(--c);text-align:center;min-width:0}
+.bgs i{display:block;width:26px;height:30px;background:linear-gradient(135deg,#fff,var(--c) 55%,#0007);clip-path:polygon(50% 0,100% 38%,78% 100%,22% 100%,0 38%);filter:drop-shadow(0 0 6px var(--c))}
+.bgs b{font:900 11px/1.15 Nunito,sans-serif;color:#fff3d6;overflow-wrap:anywhere}
+.bgs em{font:800 9px Nunito,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.bgs .bgq{position:absolute;top:5px;right:6px;font:900 12px Nunito,sans-serif;color:#ffe9b0}
+.bgs.empty{border:1px dashed #4ee6b433;background:#05090a88;box-shadow:none}
+.bgs:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.bg-note{margin:10px 2px 2px;font:800 12px/1.4 Nunito,sans-serif;color:#a9c7c0;text-align:center}
+.bagbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.bagbtn svg{width:18px;height:18px;flex:none}
+.bagbtn small{min-width:20px;padding:1px 7px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 11px Nunito,sans-serif}
+.bagrow{display:flex;justify-content:center;margin:0}
+button.tile{font:inherit;color:inherit;text-align:inherit;cursor:pointer}
+.tile .bagbadge{display:inline-block;min-width:20px;margin-left:6px;padding:1px 7px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 11px Nunito,sans-serif;text-align:center}
+@media(max-width:380px){.bg-wallet em{display:none}.bag{padding:12px}}
+@media(prefers-reduced-motion:reduce){.bag{animation:none}}
