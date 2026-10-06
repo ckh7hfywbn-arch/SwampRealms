@@ -703,3 +703,12 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .bgs.on{box-shadow:0 0 0 2px var(--c),0 0 20px -4px var(--c)}
 .bg-detail{margin:10px 0 0;padding:8px 12px;border-radius:12px;background:#05090a;border:1px solid var(--c,#4ee6b4);color:#fff3d6;font:800 12px/1.4 Nunito,sans-serif;text-align:center}
 .bg-detail[hidden]{display:none}
+
+/* ===== Phones: scroll INSIDE the page instead of the browser window =====
+   Safari/Chrome on a phone collapse and re-show their top and bottom bars whenever the document scrolls, which makes the site and the tab bar jump.
+   Here the document is fixed to the screen and <body> is the scroller, so the browser bars stay put. Desktop and tablets scroll normally. */
+@media(max-width:639px) and (pointer:coarse){
+ html{height:100%;overflow:hidden;overscroll-behavior:none}
+ body{height:100%;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;scroll-padding-top:76px}
+}
+.bag-open body{overflow:hidden}

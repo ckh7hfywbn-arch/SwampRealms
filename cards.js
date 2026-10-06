@@ -325,7 +325,7 @@ function ratesHTML(){const seen={};CARDS.forEach(c=>seen[c.rarity]=c.color);
  const show=()=>{document.querySelectorAll(".reveal").forEach(x=>x.classList.add("in"));window.__rv=1};
  try{
   const h=document.querySelector("header");
-  if(h){const f=()=>h.classList.toggle("scrolled",scrollY>8);f();addEventListener("scroll",f,{passive:true})}
+  if(h){const f=()=>h.classList.toggle("scrolled",Math.max(window.scrollY||0,document.body.scrollTop||0)>8);f();addEventListener("scroll",f,{passive:true});document.addEventListener("scroll",f,{passive:true,capture:true})}
   if(!("IntersectionObserver" in window)){show();return}
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.08,rootMargin:"0px 0px -6% 0px"});
   document.querySelectorAll(".reveal").forEach(x=>io.observe(x));window.__rv=1;
