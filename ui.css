@@ -712,3 +712,21 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
  body{height:100%;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;scroll-padding-top:76px}
 }
 .bag-open body{overflow:hidden}
+
+/* ===== Home: featured game panel (Swamp Adventure) ===== */
+.feat{position:relative;display:grid;gap:0;max-width:760px;margin:0 auto;overflow:hidden;border-radius:22px;background:var(--panel);border:1px solid #f2c14e66;box-shadow:0 0 40px -14px #f2c14e,0 20px 44px -24px #000;text-decoration:none;color:inherit;text-align:left}
+.feat-art{position:relative;display:block;aspect-ratio:5/3;overflow:hidden}
+.feat-art svg{display:block;width:100%;height:100%}
+.feat-badge{position:absolute;top:12px;left:12px;padding:4px 12px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 11px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.feat-body{display:grid;gap:10px;justify-items:start;padding:18px 18px 20px}
+.feat-title{font:400 28px/1.05 "Bagel Fat One",Nunito,sans-serif;color:#fff3d6}
+.feat-text{color:#cfe1e3;font-weight:600}
+.feat-chips{display:flex;flex-wrap:wrap;gap:6px}
+.feat-chips i{font:800 11px Nunito,sans-serif;font-style:normal;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid #4ee6b455;background:#05090a;color:#c8fff4}
+.feat-cta{margin-top:4px;pointer-events:none}
+.feat:hover{border-color:#f2c14e;box-shadow:0 0 46px -10px #f2c14e,0 20px 44px -24px #000}
+.feat:focus-visible{outline:2px solid var(--mint);outline-offset:4px}
+.feat-more{margin:14px 0 0;text-align:center}
+.feat-more a{color:var(--mint-soft);font-weight:800}
+@media(min-width:640px){.feat{grid-template-columns:1.05fr 1fr;align-items:stretch}.feat-art{aspect-ratio:auto;min-height:260px}.feat-body{align-content:center;padding:24px}}
+.feat-text{font-size:15px;line-height:1.5;font-weight:600}
