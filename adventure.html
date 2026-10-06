@@ -92,6 +92,7 @@
 
 <script src="cards.js"></script>
 <script src="store.js"></script>
+<script src="avatar.js"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script>
@@ -808,6 +809,28 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   X.strokeStyle="#2a0d18";X.lineWidth=1.6;X.beginPath();X.moveTo(9,-13.5);X.lineTo(14,-11.6);X.moveTo(19,-12.8);X.lineTo(14.5,-11.6);X.stroke();
   X.restore();
  }
+ // ---- Player look: the visitor's own avatar (animal + gear picked on avatar.html). Only the drawing changes; physics, hitboxes and combat are untouched. ----
+ // The avatar SVG is rasterised once into a canvas (and a pink silhouette for the hurt flash), then drawn by drawPlayer() through the same animation transforms as before.
+ // Until it is ready (or if avatar.js fails to load) the original sprout character is drawn, so the game always works.
+ const AVS={ok:false,c:null,sil:null,aura:null,w:0,h:0,bot:0,key:""};
+ function avatarRefresh(){
+  try{
+   if(typeof AV==="undefined"||typeof Crystals==="undefined")return;
+   const o=Crystals.outfit(),key=JSON.stringify(o);if(key===AVS.key)return;AVS.key=key;
+   const VX=-30,VY=-70,VW=260,VH=280,S=3,K=.24;   // wide view box so tall hats are not clipped; K = on-screen scale (about 62px wide, bust bottom on the ground)
+   const svg=AV.svg(Object.assign({},o,{nobg:true})).replace('viewBox="0 0 200 200"','viewBox="'+VX+' '+VY+' '+VW+' '+VH+'" width="'+VW*S+'" height="'+VH*S+'"');
+   const im=new Image();
+   im.onload=()=>{
+    if(AVS.key!==key)return;
+    const c=document.createElement("canvas");c.width=VW*S;c.height=VH*S;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    const sl=document.createElement("canvas");sl.width=c.width;sl.height=c.height;const g=sl.getContext("2d");g.drawImage(c,0,0);g.globalCompositeOperation="source-in";g.fillStyle="#ffdde2";g.fillRect(0,0,sl.width,sl.height);
+    const ac=AV.aura(o);let au=null;if(ac&&/^#[0-9a-f]{6}$/i.test(ac)){au=glowSprite(48,[1,3,5].map(i=>parseInt(ac.slice(i,i+2),16)).join(","))}
+    AVS.c=c;AVS.sil=sl;AVS.aura=au;AVS.w=VW*K;AVS.h=VH*K;AVS.bot=(200-VY)*K;AVS.ok=true;
+   };
+   im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  }catch(e){}
+ }
+ avatarRefresh();addEventListener("load",avatarRefresh);addEventListener("focus",avatarRefresh);addEventListener("pageshow",avatarRefresh);addEventListener("storage",()=>setTimeout(avatarRefresh,0));
  // Player animation states: idle, run, jump, fall, attack, hurt, defeated. All procedural, drawn from the same state the game already tracks.
  function animState(){
   if(state.hp<=0)return "defeated";
@@ -858,6 +881,14 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   X.translate(state.x+lunge+ox,state.y+R);X.scale(sx,sy);
   if(dead){X.translate(0,-R*.84*Math.sin(Math.abs(th)));X.rotate(th)}
   X.translate(0,-R);X.rotate(dead?0:rot);
+  if(AVS.ok){   // the visitor's avatar, bottom of the bust on the ground; same squash, lean, lunge, blink, hurt flash and tip-over as the sprout had
+   const hop=Math.max(fl,fr)*.4;
+   if(AVS.aura)glow(AVS.aura,0,-2,30+flare*8,.5+flare*.3);
+   X.translate(0,R+1-hop);
+   X.drawImage(AVS.c,-AVS.w/2,-AVS.bot,AVS.w,AVS.h);
+   if(vis.flash>0){X.globalAlpha=Math.min(.75,vis.flash*2.4);X.drawImage(AVS.sil,-AVS.w/2,-AVS.bot,AVS.w,AVS.h)}
+   X.restore();return;
+  }
   // feet
   X.fillStyle="#2a7a52";
   const fy=dead?0:(air&&an!=="fall"&&an!=="hurt"?3:0);
