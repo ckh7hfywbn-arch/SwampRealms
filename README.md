@@ -13,7 +13,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `arcade.html` | The Arcade hub: a card for each game (just the Swamp Adventure for now) |
 | `adventure.html` | The Swamp Adventure. Every run pays Swamp Coins and Swamp Crystals, no daily limit. Rates: `COIN_PER` in the page script (1 coin per 150 score) and `CRY.games.adv` in `store.js` (1 crystal per 50 score) (3 levels + Rootmaw boss). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
-| `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet |
+| `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Card back = `card-back.jpg` |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter. Load after `cards.js` |
 | `avatar.js` | Draws the animals and cosmetics as SVG |
 | `styles.css` | Base styles: layout, packs, cards, shop |
