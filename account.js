@@ -29,6 +29,7 @@
   Storage.prototype.setItem = function (k, v) {
     rawSet.call(this, k, v);
     if (this === localStorage && KEYS.indexOf(k) > -1) queue();
+    if (this === localStorage && k === LS.crystals) setTimeout(paint, 0);   // avatar changed: refresh the header circle
   };
 
   function queue() {
@@ -141,13 +142,31 @@
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
   var ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
 
+  // The visitor's current avatar (animal + gear from avatar.html) as a small SVG, or null if it can't be drawn yet
+  function avatarArt() {
+    try {
+      if (typeof AV === "undefined" || typeof Crystals === "undefined") return null;
+      var o = Crystals.outfit();
+      return { svg: AV.svg(o).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'), ac: AV.aura(o) || "#4ee6b4" };
+    } catch (e) { return null; }
+  }
+
   function paint() {
     if (btn) {
       if (S.user) {
-        btn.className = "acct on";
-        btn.innerHTML = "<b>" + esc(S.user.charAt(0).toUpperCase()) + "</b>";
+        var av = avatarArt();
+        if (av) {   // signed in: the circle shows the player's own avatar
+          btn.className = "acct on av";
+          btn.innerHTML = av.svg;
+          btn.style.setProperty("--ac", av.ac);
+        } else {    // avatar code not loaded yet: show the first letter for now
+          btn.className = "acct on";
+          btn.innerHTML = "<b>" + esc(S.user.charAt(0).toUpperCase()) + "</b>";
+          btn.style.removeProperty("--ac");
+        }
         btn.setAttribute("aria-label", "Account: " + S.user);
       } else {
+        btn.style.removeProperty("--ac");
         btn.className = "acct out";
         btn.innerHTML = ICON + "<span>Sign in</span>";
         btn.setAttribute("aria-label", "Sign in to save your progress");
@@ -239,7 +258,13 @@
     var snd = document.getElementById("snd");
     if (snd) nav.insertBefore(btn, snd); else nav.appendChild(btn);
     paint();
+    var tries = 0;   // avatar.js can finish loading after this file: check a few times, then stop
+    (function waitAv() { if (S.user && typeof AV === "undefined" && tries++ < 20) setTimeout(function () { paint(); waitAv(); }, 300); })();
+    addEventListener("load", paint);
   }
+
+  // Another tab changed the avatar
+  addEventListener("storage", function (e) { if (e.key === LS.crystals) setTimeout(paint, 0); });
 
   // Save right before the page goes away, and when the connection comes back
   addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") { clearTimeout(timer); push(true); } });

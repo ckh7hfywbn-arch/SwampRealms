@@ -194,8 +194,11 @@ header nav a.avbtn::after{display:none}
 .acct.out span{display:none}
 .acct.on{width:36px;padding:0;border-color:#f2c14e88;box-shadow:0 0 14px -4px var(--gold);color:var(--gold)}
 .acct.on b{font-size:16px;font-weight:900}
+.acct.on.av{width:36px;height:36px;overflow:hidden;border:2px solid var(--ac,#4ee6b4);background:#0b100c;box-shadow:0 0 14px -3px var(--ac,#4ee6b4)}
+.acct.on.av svg{display:block;width:100%;height:100%}
 @media(min-width:640px){.acct.out{padding:0 14px 0 11px}.acct.out span{display:inline}}
 @media(max-width:639px){.acct{height:32px;min-width:32px}.acct.on{width:32px}}
+@media(max-width:639px){.acct.on.av{width:32px;height:32px}}
 .acct-dlg{margin:auto;width:min(92vw,400px);max-height:92dvh;overflow-y:auto;padding:26px 22px calc(22px + env(safe-area-inset-bottom,0px));border:0;border-radius:20px;background:linear-gradient(180deg,#0e1612,#060a08);color:var(--text);text-align:center;box-shadow:0 0 0 1px #4ee6b44d,0 0 60px -20px var(--mint),0 30px 80px -20px #000}
 .acct-dlg::backdrop{background:#020504e6;backdrop-filter:blur(3px)}
 body:has(.acct-dlg[open]){overflow:hidden}
