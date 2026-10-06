@@ -1307,23 +1307,24 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const box=$("loot");if(!box)return;
   const el=document.createElement("div");el.className="lt r-"+d.rarity;el.style.setProperty("--c",d.color);
   el.innerHTML='<i aria-hidden="true"></i><span><b></b><em></em></span>';
-  el.querySelector("b").textContent=d.name;el.querySelector("em").textContent=d.rarityName+" · you have "+d.count;
+  el.querySelector("b").textContent=d.name;el.querySelector("em").textContent=d.rarityName+" · in your bag ×"+d.count;
   box.appendChild(el);while(box.children.length>3)box.firstChild.remove();
   setTimeout(()=>el.remove(),2700);
  }
- // the small inventory line under the game: every fragment type the player owns, with its count
+ // the Bag button under the game: opens the bag (coins, crystals, fragments, gear). The item count shows on the button.
  function showFrags(){
-  const el=$("frinv");if(!el||typeof Fragments==="undefined")return;
-  el.textContent="";
-  const lab=document.createElement("span");lab.className="fl";el.appendChild(lab);
-  let any=false;
-  for(const id in Fragments.defs){
-   const n=Fragments.count(id);if(!n)continue;any=true;
-   const info=Fragments.info(id),c=document.createElement("span");c.className="fi";c.style.setProperty("--c",info.color);c.title=info.rarityName+" · dropped by the "+info.enemy;
-   const i=document.createElement("i");i.setAttribute("aria-hidden","true");c.appendChild(i);c.appendChild(document.createTextNode(info.name+" ×"+n));el.appendChild(c);
+  const el=$("frinv");if(!el||typeof Bag==="undefined")return;
+  if(!el.querySelector("[data-bag]")){
+   el.className="bagrow";el.textContent="";
+   const b=document.createElement("button");b.type="button";b.className="btn ghost bagbtn";b.setAttribute("data-bag","");b.setAttribute("aria-label","Open your bag");
+   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/></svg><span>Bag</span><small data-bag-count>0</small>';
+   el.appendChild(b);
   }
-  lab.textContent=any?"Fragments":"Fragments: none yet. Defeat enemies for a chance to find them.";
+  const n=Bag.count;el.querySelectorAll("[data-bag-count]").forEach(e=>{e.textContent=n});
  }
+ // opening the bag mid-run pauses the game so nothing hits you while you look
+ addEventListener("bag:open",()=>{try{pause()}catch(e){}});
+ try{showFrags()}catch(e){}
  function killPts(){let n=0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
  const scoreNow=()=>state.spores*SCORE.spore+killPts();
  function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}
