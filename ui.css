@@ -692,3 +692,14 @@ button.tile{font:inherit;color:inherit;text-align:inherit;cursor:pointer}
 /* Gold border on EVERY card back (pack opening flip, card viewer, home showcase) */
 :root{--back-ring:0 0 0 2px #f2c14e,0 0 0 3px #0008,0 22px 40px -14px #000d,0 0 30px -8px #f2c14e88}
 .face.back,.cv-f.cv-back,.showcase .sc-b{box-shadow:var(--back-ring)}
+
+/* ===== Touch: no text selection, callouts, tap flash or double-tap zoom while using the site (iPhone / Android) =====
+   touch-action:manipulation keeps pinch zoom (accessibility) but removes double-tap zoom. Form fields stay selectable so people can type and paste. */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+img,svg,canvas,a,button{-webkit-touch-callout:none;-webkit-user-drag:none}
+input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+.bgs{cursor:pointer;touch-action:manipulation}
+.bgs.on{box-shadow:0 0 0 2px var(--c),0 0 20px -4px var(--c)}
+.bg-detail{margin:10px 0 0;padding:8px 12px;border-radius:12px;background:#05090a;border:1px solid var(--c,#4ee6b4);color:#fff3d6;font:800 12px/1.4 Nunito,sans-serif;text-align:center}
+.bg-detail[hidden]{display:none}

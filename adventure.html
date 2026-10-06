@@ -1325,6 +1325,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // opening the bag mid-run pauses the game so nothing hits you while you look
  addEventListener("bag:open",()=>{try{pause()}catch(e){}});
  try{showFrags()}catch(e){}
+ // stop iOS pinch/gesture zoom and the long-press menu while playing (inside the game box only)
+ (function(){const bx=$("box");if(!bx)return;["gesturestart","gesturechange","gestureend"].forEach(t=>bx.addEventListener(t,e=>e.preventDefault()));bx.addEventListener("contextmenu",e=>e.preventDefault())})();
  function killPts(){let n=0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
  const scoreNow=()=>state.spores*SCORE.spore+killPts();
  function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}

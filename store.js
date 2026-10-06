@@ -174,6 +174,11 @@ function bagSlot(info,kind){
  const nm=document.createElement("b");nm.textContent=info.name;d.appendChild(nm);
  const rr=document.createElement("em");rr.textContent=info.rarityName;d.appendChild(rr);
  const q=document.createElement("span");q.className="bgq";q.textContent="×"+info.count;d.appendChild(q);
+ const txt=info.name+" · "+info.rarityName+(kind==="frag"?" · dropped by the "+info.enemy:info.desc?" · "+info.desc:"");
+ d.setAttribute("role","button");d.setAttribute("aria-label",txt);
+ const show=()=>{const p=document.getElementById("bgdetail");if(!p)return;p.textContent=txt;p.style.setProperty("--c",info.color);p.hidden=false;document.querySelectorAll("#bag .bgs.on").forEach(x=>x.classList.remove("on"));d.classList.add("on")};
+ d.addEventListener("click",show);d.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();show()}});
+ d.addEventListener("contextmenu",e=>{e.preventDefault();show()});
  return d;
 }
 function bagPaintBody(){
@@ -202,9 +207,10 @@ function bagPaintBody(){
  const pad=Math.max(0,(shown<6?6:Math.ceil(shown/3)*3)-shown);
  for(let k=0;k<pad;k++){const e=document.createElement("div");e.className="bgs empty";e.setAttribute("aria-hidden","true");grid.appendChild(e)}
  panel.appendChild(grid);
+ const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.hidden=true;det.setAttribute("aria-live","polite");panel.appendChild(det);
  const note=document.createElement("p");note.className="bg-note";
  if(!shown)note.textContent=bagTab==="fragments"?"No fragments yet. Defeat enemies in the Swamp Adventure for a chance to find them.":GEAR_SLOTS[bagTab].empty;
- else note.textContent=bagTab==="fragments"?"Fragments drop from defeated enemies. Hover or long-press one to see where it came from.":"Gear you collect shows up here.";
+ else note.textContent=bagTab==="fragments"?"Fragments drop from defeated enemies. Tap one to see where it came from.":"Gear you collect shows up here.";
  panel.appendChild(note);
 }
 function bagBuild(){
