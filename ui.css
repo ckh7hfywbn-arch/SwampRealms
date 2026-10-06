@@ -265,7 +265,7 @@ a.sm-item:active{background:#4ee6b422}
 /* ===== Motion pass: smooth page transitions, springy buttons and tiles, soft glows (every page) ===== */
 html{scroll-behavior:smooth}
 @media(prefers-reduced-motion:no-preference){
- body{animation:pgin .55s var(--ease-out) both}
+ body{animation:pgin .55s var(--ease-out) backwards}
  html.leaving body{opacity:0;transform:translateY(-6px);transition:opacity .2s ease-in,transform .2s ease-in}
  @keyframes pgin{from{opacity:0;transform:translateY(10px)}}
  .btn,button.btn,.bank,.snd{transition:transform .35s var(--ease-spring),box-shadow .3s var(--ease-out),filter .25s,background-color .25s,border-color .25s,color .25s}
@@ -594,3 +594,17 @@ body.tc-on #stage.fs{--bwid:min(var(--fw),calc((var(--fh) - 120px)*.75))}
 .rwd .gem{width:15px;height:17px}
 .rwd em{flex:0 0 100%;text-align:center;font:800 10px Nunito,sans-serif;font-style:normal;letter-spacing:.06em;color:#a9c7c0}
 #box .gov{padding-top:46px}   /* keeps the title clear of the full screen button */
+
+/* ---- Avatar: try cosmetics on before buying ---- */
+.it .try{position:relative;width:100%;padding:7px 8px;border-radius:10px;border:1px dashed #ffffff44;background:transparent;color:#d8e8e4;font:800 12px Nunito,sans-serif;letter-spacing:.06em;cursor:pointer}
+.it .try[aria-pressed=true]{border-style:solid;border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0}
+.it .art[data-p]{cursor:pointer}
+.pvbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:12px;background:#f2c14e1a;border:1px solid #f2c14e66;font:800 13px Nunito,sans-serif;color:#ffe9b0}
+.pvbar[hidden],.pvmini[hidden]{display:none}
+.pvbar .btn{padding:6px 12px;min-height:0;font-size:12px}
+.slots .slot.pv{border-color:#f2c14e;border-style:dashed}
+.slots .slot.pv small:last-child{color:#f2c14e}
+.pvmini{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9;display:grid;justify-items:center;gap:2px;padding:6px 8px 5px;border-radius:16px;background:#0b110dee;border:1px solid #f2c14e88;box-shadow:0 10px 26px -8px #000,0 0 18px -6px #f2c14e;color:#ffe9b0;cursor:pointer}
+.pvmini span{display:block;width:62px;height:62px;border-radius:12px;overflow:hidden}.pvmini span svg{display:block;width:100%;height:100%}
+.pvmini b{font:900 9px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+@media(min-width:640px){.pvmini{bottom:18px}}
