@@ -42,7 +42,7 @@
 <div class="hero" id="top">
  <a class="showcase" id="showcase" href="catalog.html#cards" hidden></a>
  <div>
-  <h1>DonK<span>Swamp Cards</span></h1>
+  <h1>SwampRealms<span>DonK Collective</span></h1>
   <p class="tag">King of the Swamp. Stubborn by nature.</p>
   <p>Open two free packs every day and collect the whole herd.</p>
   <div class="row"><a class="btn" href="catalog.html#packs">Open today's pack</a><a class="btn ghost" href="catalog.html#cards">My collection</a><a class="btn ghost" href="arcade.html">Play the Arcade</a></div>
@@ -111,13 +111,13 @@
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script>
-// featured card above the title: the Epic Boggy card
+// featured cards above the title: the Epic Boggy card in front, the SwampRealms card back behind it
 (function(){
  const c=CARDS.find(k=>k.id==="boggy-blood-moon"),el=document.getElementById("showcase");
  if(!c||!el)return;
  el.style.setProperty("--c",c.color);
- el.setAttribute("aria-label",c.name+", "+c.rarity+" card. View your collection");
- el.innerHTML='<span class="glow"></span>'+cardHTML(c);
+ el.setAttribute("aria-label",c.name+", "+c.rarity+" card, shown with the SwampRealms card back. View your collection");
+ el.innerHTML='<span class="glow"></span><span class="sc-b"><img src="card-back.jpg?v=2" alt="" width="1000" height="1500" decoding="async"></span><span class="sc-f">'+cardHTML(c)+'</span>';
  el.hidden=false;
 })();
 
