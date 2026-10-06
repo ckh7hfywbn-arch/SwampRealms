@@ -54,8 +54,8 @@ const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":
 
 // ---- saved data ----
 const CK="swamp-crystals-v1";
-let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{}};
-function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{}}
+let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{}};
+function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}}
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv()}
 cload();
 
@@ -97,6 +97,41 @@ const Crystals={
  clear(cat){cload();CS.eq[cat]="";csave()},
  setAnimal(a){cload();if(ANIMALS.some(x=>x.id===a)){CS.animal=a;csave()}},
  outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,bg:CS.eq.bg}}
+};
+
+// ---- Fragments: enemy loot. Saved INSIDE the crystals save (CS.frags = {fragmentId: count}), so they persist in the browser and sync with accounts like everything else.
+// To give a new enemy a drop, add a line here and use the same id for the enemy (the adventure calls Fragments.roll(enemyId) when it is defeated).
+const FRAG_RARITY={common:{name:"Common",color:"#9fe8c8"},uncommon:{name:"Uncommon",color:"#7fd0ff"},rare:{name:"Rare",color:"#ffd27a"}};
+const FRAGMENTS={
+ bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:.35,rarity:"common"},
+ crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:.5,rarity:"uncommon"},
+ boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:.3,rarity:"rare"},
+ // ready for enemies that are not in the game yet
+ frog:{name:"Frog Fragment",enemy:"Frog",chance:.4,rarity:"common"},
+ crocodile:{name:"Crocodile Fragment",enemy:"Crocodile",chance:.4,rarity:"uncommon"},
+ slime:{name:"Slime Fragment",enemy:"Slime",chance:.4,rarity:"common"}
+};
+const Fragments={
+ defs:FRAGMENTS,
+ rarity:FRAG_RARITY,
+ count:id=>CS.frags[id]||0,
+ get all(){return CS.frags},
+ get total(){let n=0;for(const k in CS.frags)n+=CS.frags[k];return n},
+ // the fragment record for the notification: {id,name,enemy,rarity,rarityName,color,count}
+ info(id){const d=FRAGMENTS[id];if(!d)return null;const r=FRAG_RARITY[d.rarity]||FRAG_RARITY.common;return{id,name:d.name,enemy:d.enemy,rarity:d.rarity,rarityName:r.name,color:r.color,count:CS.frags[id]||0}},
+ // put n fragments in the saved inventory. Returns the record, or null for an unknown id
+ add(id,n){
+  if(!FRAGMENTS[id])return null;
+  cload();n=Math.max(1,Math.floor(n)||1);
+  CS.frags[id]=(CS.frags[id]||0)+n;csave();
+  return this.info(id);
+ },
+ // called when an enemy is defeated: rolls its drop chance; on a drop it is saved straight away. Returns the record, or null for no drop
+ roll(enemyId){
+  const d=FRAGMENTS[enemyId];
+  if(!d||Math.random()>=d.chance)return null;
+  return this.add(enemyId,1);
+ }
 };
 
 // ---- header: round avatar button (top right) -> avatar.html ----

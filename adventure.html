@@ -52,6 +52,7 @@
    <div class="hud tm"><span id="st">Ready</span></div>
    <div class="hud scw" id="scw" title="Score and time"><span class="sl">Score</span><b id="scv">0</b><span class="stm" id="sct">0:00</span></div>
    <div class="hud scb" id="scb" hidden></div>
+   <div class="loot" id="loot" aria-live="polite"></div>
    <button type="button" class="btn ghost gpause gsnd" id="snd-hud" aria-pressed="true" aria-label="Sound on. Tap to switch." hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg></button>
    <button type="button" class="btn ghost gpause" id="pz" aria-label="Pause" hidden>Pause</button>
    <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div class="acts" id="acts"><button type="button" class="btn" id="go">Play</button><button type="button" class="btn ghost" id="rpl" hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
@@ -63,6 +64,7 @@
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3c0 0-6 6-6 11a6 6 0 0012 0c0-5-6-11-6-11z"/></svg></i><div><b>Health</b><span>You have 3 flames. A Bramble Bug or Bog Crawler touch costs one. Lose them all and it is game over. Lit lanterns save your spot.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Reach the goal gate at the far end of Levels 1 and 2. Level 3 ends in a boss fight: defeat the Rootmaw to win.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></i><div><b>Score</b><span>Glowspore 100, Bramble Bug 250, Bog Crawler 400, Rootmaw 1,500, finishing a level 1,000, plus a speed bonus of up to 1,000. Your best score for each level is saved.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l7 6-3 12H8L5 9z"/></svg></i><div><b>Fragments</b><span>Defeated enemies have a chance to drop a Fragment. Each kind comes from its own enemy, and the Rootmaw drops a rare one. They are saved to your collection straight away.</span></div></li>
   </ol><div class="acts hrow"><button type="button" class="btn" id="howplay">Play</button><button type="button" class="btn ghost" id="howback">Back</button></div></div><div class="lvs" id="lvp" role="region" aria-labelledby="lvt"><h3 id="lvt">Level Select</h3><ul class="lvl" id="lvl"></ul><div class="acts hrow1"><button type="button" class="btn ghost" id="lvback">Main menu</button></div></div></div>
   </div>
   <div class="tc" id="tc" aria-label="Touch controls" hidden>
@@ -76,6 +78,7 @@
    </div>
   </div>
   </div>
+  <p class="frinv" id="frinv" aria-live="polite"></p>
   <p class="note" id="note" aria-live="polite">A / D or arrows to move · Space to jump · P or Esc to pause · F for full screen</p>
   <div class="row mid"><button type="button" class="btn" id="fsb2" data-fs aria-pressed="false">Full screen</button><a class="btn ghost" href="shop.html">Spend coins in the shop</a><a class="btn ghost" href="catalog.html#packs">Open packs</a></div>
  </div>
@@ -415,10 +418,11 @@
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=!(m==="complete"&&LV<LEVELS.length-1);
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
   if(m==="complete"){const nu=markDone(LV),r=finishScore();$("ovp").textContent=(LEVELS[LV].boss?"The Rootmaw is defeated and the Forgotten Jungle is free! ":"")+r.result+(nu?" Level "+nu+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"")}
-  if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent="Restart";$("quit").hidden=false}
+  if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent="Restart";$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
   if(m==="playing"){last=performance.now();state.tx=state.ty=null}
   if(m!=="playing"){for(const k in keys)keys[k]=false}
+  try{showFrags()}catch(e){}
   draw();
  }
  function start(){paid=false;loadLevel(LV);vis.banner=LEVELS[LV].banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=MAXHP;vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
@@ -1283,9 +1287,46 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
  function writeScore(i,rec){scoresMem[i]=rec;try{localStorage.setItem(SKEY,JSON.stringify(scoresMem))}catch(e){}}
  function foes(){const a=[{id:"bug",pts:SCORE.bug,d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:SCORE.crawler,d:()=>cr.defeated,x:()=>cr.x});if(AR)a.push({id:"boss",pts:SCORE.boss,d:()=>boss.defeated,x:()=>boss.x});return a}
+
+ // ================= Loot: defeated enemies can drop a Fragment (table and drop chances live in store.js, FRAGMENTS). =================
+ // A drop is saved to the player's data the moment it happens (Fragments.add writes it into the crystals save), then shown as a notification.
+ const runLoot={};   // fragments found in the current run, by id (for the results screen)
+ function lootCount(){let n=0;for(const k in runLoot)n+=runLoot[k];return n}
+ function dropLoot(f){
+  try{
+   const d=typeof Fragments!=="undefined"?Fragments.roll(f.id):null;if(!d)return;
+   runLoot[d.id]=(runLoot[d.id]||0)+1;
+   const x=f.x();
+   fx.push({k:"star",x:x,y:GROUND_Y-34,vx:0,vy:0,life:.42,max:.42,c:d.color,g:26});
+   fx.push({k:"ring",x:x,y:GROUND_Y-34,vx:0,vy:0,life:.5,max:.5,c:d.color,g:30});
+   fx.push({k:"txt",x:x,y:GROUND_Y-72,vx:0,vy:-34,life:1.1,max:1.1,s:"+"+d.name});
+   lootToast(d);showFrags();AUDIO.play("pickup");
+  }catch(e){}
+ }
+ function lootToast(d){
+  const box=$("loot");if(!box)return;
+  const el=document.createElement("div");el.className="lt r-"+d.rarity;el.style.setProperty("--c",d.color);
+  el.innerHTML='<i aria-hidden="true"></i><span><b></b><em></em></span>';
+  el.querySelector("b").textContent=d.name;el.querySelector("em").textContent=d.rarityName+" · you have "+d.count;
+  box.appendChild(el);while(box.children.length>3)box.firstChild.remove();
+  setTimeout(()=>el.remove(),2700);
+ }
+ // the small inventory line under the game: every fragment type the player owns, with its count
+ function showFrags(){
+  const el=$("frinv");if(!el||typeof Fragments==="undefined")return;
+  el.textContent="";
+  const lab=document.createElement("span");lab.className="fl";el.appendChild(lab);
+  let any=false;
+  for(const id in Fragments.defs){
+   const n=Fragments.count(id);if(!n)continue;any=true;
+   const info=Fragments.info(id),c=document.createElement("span");c.className="fi";c.style.setProperty("--c",info.color);c.title=info.rarityName+" · dropped by the "+info.enemy;
+   const i=document.createElement("i");i.setAttribute("aria-hidden","true");c.appendChild(i);c.appendChild(document.createTextNode(info.name+" ×"+n));el.appendChild(c);
+  }
+  lab.textContent=any?"Fragments":"Fragments: none yet. Defeat enemies for a chance to find them.";
+ }
  function killPts(){let n=0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
  const scoreNow=()=>state.spores*SCORE.spore+killPts();
- function resetScore(){sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}
+ function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}
  function showScore(force){
   const v=scoreNow(),sec=Math.floor(state.t||0);
   if(force||v!==sc.shown){const bumped=sc.shown>=0&&v>sc.shown;sc.shown=v;$("scv").textContent=fmt(v);if(bumped)bumpEl($("scw"))}
@@ -1297,7 +1338,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  let bestCache=null;
  function readScoresCached(){if(!bestCache)bestCache=readScores();return bestCache}
  function scoreTick(){
-  for(const f of foes())if(f.d()&&!sc.kills[f.id]){sc.kills[f.id]=true;fx.push({k:"txt",x:f.x(),y:GROUND_Y-46,vx:0,vy:-38,life:.9,max:.9,s:"+"+f.pts})}
+  for(const f of foes())if(f.d()&&!sc.kills[f.id]){sc.kills[f.id]=true;fx.push({k:"txt",x:f.x(),y:GROUND_Y-46,vx:0,vy:-38,life:.9,max:.9,s:"+"+f.pts});dropLoot(f)}
   showScore(false);
  }
  function finishScore(){
@@ -1310,7 +1351,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const row=(a,b,c)=>"<li><span>"+a+"</span><i>"+b+"</i><em>"+c+"</em></li>";
   const best=isBest?(prev?'<span class="sbest new">New best! Beat '+fmt(prev.score)+"</span>":'<span class="sbest new">New best!</span>'):'<span class="sbest">Best '+fmt(prev.score)+"</span>";
   const html='<div class="sres"><span class="sk">Final score</span><b class="sbig">'+fmt(total)+"</b>"+best+
-   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+"</ul></div>";
+   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+"</ul></div>";
   return {total,result,html,isBest};
  }
 
