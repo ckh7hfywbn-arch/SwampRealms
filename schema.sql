@@ -1,4 +1,4 @@
--- SwampVerse accounts. Run this once in your D1 database (Console tab, or: wrangler d1 execute swampverse --remote --file=schema.sql)
+-- SwampRealms accounts. Run this once in your D1 database (Console tab, or: wrangler d1 execute swampverse --remote --file=schema.sql)
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,      -- lowercase, used for sign in

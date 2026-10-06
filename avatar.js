@@ -1,4 +1,4 @@
-// ===== SwampVerse avatar drawing (v2: shaded, game-style) =====  AV.svg({animal,hat,face,neck,bg,nobg}) -> SVG string
+// ===== SwampRealms avatar drawing (v2: shaded, game-style) =====  AV.svg({animal,hat,face,neck,bg,nobg}) -> SVG string
 const AV=(function(){
  const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),
   mix=(h,t,k)=>"#"+hx(h).map((v,i)=>Math.round(v+(hx(t)[i]-v)*k).toString(16).padStart(2,"0")).join(""),

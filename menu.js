@@ -1,4 +1,4 @@
-// ===== SwampVerse header menu =====
+// ===== SwampRealms header menu =====
 // Load LAST, after cards.js, store.js and account.js:
 //   <script src="cards.js"></script><script src="store.js"></script><script src="account.js"></script><script src="menu.js"></script>
 // Header keeps: logo, coin + crystal counters, account button, and a hamburger.

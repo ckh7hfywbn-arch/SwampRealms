@@ -1,4 +1,4 @@
-/* ===== SwampVerse Arcade theme: loaded on every page after styles.css =====
+/* ===== SwampRealms Arcade theme: loaded on every page after styles.css =====
    1 Shared look (tokens, header, buttons, panels, tabs)  2 Game UI (avatar + arcade) */
 /* ===== 1 Shared look ===== */
 :root{
@@ -586,3 +586,11 @@ body.tc-on #stage.fs{--bwid:min(var(--fw),calc((var(--fh) - 120px)*.75))}
  body.tc-on #stage.fs .tc-act{grid-column:3;grid-row:1;justify-self:end;padding-bottom:6px}
  body.tc-on #stage.fs .tc-atk{margin-bottom:calc(var(--tcs)*.3)}
 }
+
+/* ---- Run rewards (adventure end screens) ---- */
+.rwd{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 16px;margin:4px 0 0;padding:6px 12px;border-radius:12px;background:#04100dcc;border:1px solid #f2c14e55;box-shadow:0 0 22px -10px #f2c14e}
+.rwd span{display:inline-flex;align-items:center;gap:6px;font:900 15px Nunito,sans-serif;color:#fff3d6;font-variant-numeric:tabular-nums}
+.rwd .coin{width:18px;height:18px;margin:0}
+.rwd .gem{width:15px;height:17px}
+.rwd em{flex:0 0 100%;text-align:center;font:800 10px Nunito,sans-serif;font-style:normal;letter-spacing:.06em;color:#a9c7c0}
+#box .gov{padding-top:46px}   /* keeps the title clear of the full screen button */

@@ -1,4 +1,4 @@
-# SwampVerse
+# SwampRealms
 
 Free daily swamp card packs for the DonK community. A static site: plain HTML, CSS and JavaScript, no build step.
 Progress is saved in the visitor's browser (`localStorage`). Visitors can also sign in (username + password) to keep it in a cloud account and play on any device. See **Accounts** below.
@@ -10,8 +10,8 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `index.html` | Home page |
 | `catalog.html` | Open packs and view the collection |
 | `shop.html` | Buy packs with Swamp Coins |
-| `arcade.html` | The Arcade hub: a card for each game. Links to the Swamp Adventure and Fly Frenzy |
-| `adventure.html` | The Swamp Adventure (3 levels + Rootmaw boss). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone |
+| `arcade.html` | The Arcade hub: a card for each game (just the Swamp Adventure for now) |
+| `adventure.html` | The Swamp Adventure. Every run pays Swamp Coins and Swamp Crystals, no daily limit. Rates: `COIN_PER` in the page script (1 coin per 150 score) and `CRY.games.adv` in `store.js` (1 crystal per 50 score) (3 levels + Rootmaw boss). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter. Load after `cards.js` |
@@ -27,9 +27,8 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 
 ## Two currencies
 
-- **Swamp Coins** buy card packs.
-- **Swamp Crystals** buy avatar cosmetics. Rounds that pay crystals are unlimited.
-  Tuning is in `CRY` at the top of `store.js`. Call `Crystals.award("gameName", score)` when a round ends.
+- **Swamp Coins** buy card packs. Earned from every Swamp Adventure run.
+- **Swamp Crystals** buy avatar cosmetics. Earned from every Swamp Adventure run. Tuning is in `CRY` at the top of `store.js`; call `Crystals.award("adv", score)` when a run ends.
 
 ## Header menu
 

@@ -1,4 +1,4 @@
-// ===== SwampVerse accounts: sign in + cloud save =====
+// ===== SwampRealms accounts: sign in + cloud save =====
 // Load AFTER cards.js and store.js on every page:
 //   <script src="cards.js"></script><script src="store.js"></script><script src="account.js"></script>
 // The game keeps saving to localStorage exactly as before. This file copies that save to the

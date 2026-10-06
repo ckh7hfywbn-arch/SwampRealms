@@ -35,10 +35,7 @@ const RULES={
  codes:{HEEHAW:1,HOLDTHELINE:2,SWAMPBETAVERSE:3,STUARTTHESWAMP:50},   // bonus code -> extra packs (each code works once per browser)
  coinValues:{Common:5,Uncommon:10,Rare:25,Epic:50,Legendary:100,Mythical:250},  // Swamp Coins per extra copy
  shop:{packName:"Adventures of the Swamp",packPrice:50},   // the only pack for sale, price in Swamp Coins
- game:{playsPerDay:5,seconds:20,maxCoins:10,pointsPerCoin:2},
- game2:{playsPerDay:5,seconds:40,maxCoins:10,pointsPerCoin:3},  // Swamp Match: same idea. 6 pairs; each pair 2 points + 1 per match in a row; early finish adds time points
  dailyAbstract:1,                  // free Abstract Edition packs per day (resets at local midnight)
-   // Fly Frenzy: rounds per day, round length, max coins per round, points needed per coin
  streak:{coinsPerDay:2,maxCoins:10,bonusEvery:7,bonusPacks:1},  // daily streak: opening your free daily pack on back-to-back days. Coins per streak day (capped), plus bonus packs every Nth day
  dropWeights:{Common:60,Uncommon:25,Rare:8,Epic:6,Legendary:1,Mythical:0.25}  // relative pull odds per rarity; only rarities that have cards count
 };
@@ -86,11 +83,11 @@ ${leaf(186,72,145)}${leaf(192,120,210,.9)}${leaf(184,170,140)}${leaf(190,220,215
 </g>
 <!-- title -->
 <g font-family="'Bagel Fat One',Impact,sans-serif" font-size="31" text-anchor="middle" stroke-linejoin="round" lengthAdjust="spacingAndGlyphs">
-<text x="100" y="231" fill="#04070a" stroke="#04070a" stroke-width="9" textLength="152">SwampVerse</text>
-<text x="100" y="229" fill="#7a4a06" stroke="#04070a" stroke-width="3" textLength="152">SwampVerse</text>
-<text x="100" y="226.5" fill="#a86f0d" textLength="152">SwampVerse</text>
-<text x="100" y="224" fill="url(#${id('Gold')})" stroke="#04070a" stroke-width="2.4" paint-order="stroke" textLength="152">SwampVerse</text>
-<text x="100" y="224" fill="none" stroke="#fff8d0" stroke-opacity=".55" stroke-width=".7" textLength="152" transform="translate(-.6 -.8)">SwampVerse</text></g>
+<text x="100" y="231" fill="#04070a" stroke="#04070a" stroke-width="9" textLength="152">SwampRealms</text>
+<text x="100" y="229" fill="#7a4a06" stroke="#04070a" stroke-width="3" textLength="152">SwampRealms</text>
+<text x="100" y="226.5" fill="#a86f0d" textLength="152">SwampRealms</text>
+<text x="100" y="224" fill="url(#${id('Gold')})" stroke="#04070a" stroke-width="2.4" paint-order="stroke" textLength="152">SwampRealms</text>
+<text x="100" y="224" fill="none" stroke="#fff8d0" stroke-opacity=".55" stroke-width=".7" textLength="152" transform="translate(-.6 -.8)">SwampRealms</text></g>
 <!-- ribbon with the pack name -->
 <g stroke-linejoin="round"><path d="M22 238L38 238L32 248L38 258L22 258L28 248Z" fill="${o.rib}" stroke="#04070a" stroke-width="2.4"/><path d="M178 238L162 238L168 248L162 258L178 258L172 248Z" fill="${o.rib}" stroke="#04070a" stroke-width="2.4"/>
 <path d="M34 235H166V261H34Z" fill="#04070a"/><path d="M36 237H164V259H36Z" fill="${o.rib}" stroke="url(#${id('Gold')})" stroke-width="1.6"/><path d="M36 237H164V243H36Z" fill="#fff" opacity=".13"/></g>
@@ -169,7 +166,7 @@ ${leaf(186,90,145)}${leaf(192,130,210,.9)}${leaf(184,170,140)}${leaf(190,212,215
 <circle cx="26" cy="74" r="8" fill="url(#${id('Fly')})"/><circle cx="176" cy="196" r="9" fill="url(#${id('Fly')})"/><circle cx="12" cy="180" r="5" fill="url(#${id('Fly')})"/><circle cx="190" cy="108" r="6" fill="url(#${id('Fly')})"/>
 <!-- logo -->
 <g transform="translate(64 28) scale(.5)"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".7" stroke-width="2.4"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e" stroke="#04070a" stroke-width="1.4"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></g>
-<text x="80" y="40.5" font-family="'Bagel Fat One',Impact,sans-serif" font-size="11" fill="#f6eedb" stroke="#04070a" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round" textLength="58" lengthAdjust="spacingAndGlyphs">SwampVerse</text>
+<text x="80" y="40.5" font-family="'Bagel Fat One',Impact,sans-serif" font-size="11" fill="#f6eedb" stroke="#04070a" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round" textLength="58" lengthAdjust="spacingAndGlyphs">SwampRealms</text>
 <!-- the best card in the pack -->
 <g transform="rotate(-3 100 134)">
 <rect ${cardRect} fill="${cc}" opacity=".9" filter="url(#${id('Blur')})" transform="translate(0 2) scale(1)"/>
@@ -226,9 +223,9 @@ const PACKS=[
  {id:"adventures",name:"Adventures of the Swamp",how:`Open one free a day, or buy it in the Shop for ${RULES.shop.packPrice} Swamp Coins.`}
 ];
 PACKS[0].price=RULES.shop.packPrice;
-// Pack 2: The Swamp Verse: Abstract Edition (bought in the Shop only; Rare and above)
+// Pack 2: The Swamp Realms: Abstract Edition (bought in the Shop only; Rare and above)
 const PACK_ART2=packImg(COVER2);
-PACKS.push({id:"abstract",metal:MET2,back:BACK_SVG2,name:"The Swamp Verse: Abstract Edition",short:"Abstract",price:100,daily:RULES.dailyAbstract,art:PACK_ART2,cover:COVER2,weights:{Rare:55,Epic:30,Legendary:12,Mythical:3},
+PACKS.push({id:"abstract",metal:MET2,back:BACK_SVG2,name:"The Swamp Realms: Abstract Edition",short:"Abstract",price:100,daily:RULES.dailyAbstract,art:PACK_ART2,cover:COVER2,weights:{Rare:55,Epic:30,Legendary:12,Mythical:3},
  blurb:"One random Rare, Epic, Legendary or Mythical card from the Abstract Edition. You also get one free every day.",how:"Open one free a day, or buy more in the Shop for 100 Swamp Coins. Rare, Epic, Legendary and Mythical cards only."});
 const packLabel=p=>(p.art||PACK_ART)+stripImg(p.cover||COVER1);
 // packs with a daily free allowance (set daily:n on the pack): the free ones reset at local midnight
@@ -317,7 +314,6 @@ const SFX=(function(){
  };
 })();
 
-function gameLeft(){if(meta.gameDay!==today()){meta.gameDay=today();meta.gamePlays=0;save()}return Math.max(0,RULES.game.playsPerDay-meta.gamePlays)}
 function pulse(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
 // little chips showing what an extra copy is worth, by rarity (only rarities that exist in CARDS)
 function ratesHTML(){const seen={};CARDS.forEach(c=>seen[c.rarity]=c.color);

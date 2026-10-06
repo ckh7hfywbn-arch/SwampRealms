@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Shop | SwampVerse</title>
+<title>Shop | SwampRealms</title>
 <meta name="description" content="Spend Swamp Coins on Adventures of the Swamp card packs and open them for new DonK swamp cards.">
 <link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/shop">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SwampVerse">
+<meta property="og:site_name" content="SwampRealms">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="Shop | SwampVerse">
+<meta property="og:title" content="Shop | SwampRealms">
 <meta property="og:description" content="Spend Swamp Coins on Adventures of the Swamp card packs and open them for new DonK swamp cards.">
 <meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/shop">
 <meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
+<meta property="og:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Shop | SwampVerse">
+<meta name="twitter:title" content="Shop | SwampRealms">
 <meta name="twitter:description" content="Spend Swamp Coins on Adventures of the Swamp card packs and open them for new DonK swamp cards.">
 <meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
-<meta name="twitter:image:alt" content="SwampVerse swamp cards: Boggy, MonK, DonK and Ellie">
+<meta name="twitter:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0d110a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,9 +32,9 @@
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
-<noscript><p style="text-align:center;padding:24px">SwampVerse needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
+<noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
- <a class="logo" href="index.html" aria-label="SwampVerse home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampVerse</a>
+ <a class="logo" href="index.html" aria-label="SwampRealms home"><svg class="mark" viewBox="0 0 28 32" width="24" height="28" aria-hidden="true"><rect x="9" y="3" width="16" height="24" rx="3.5" transform="rotate(10 17 15)" fill="none" stroke="#f2c14e" stroke-opacity=".55" stroke-width="2"/><rect x="3" y="4" width="16" height="24" rx="3.5" transform="rotate(-8 11 16)" fill="#f2c14e"/><path d="M11 10.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" transform="rotate(-8 11 16)" fill="#1a1405"/></svg>SwampRealms</a>
  <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html">Arcade</a><a class="hide" href="adventure.html">Adventure</a><a class="hide" href="shop.html" aria-current="page">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
@@ -45,7 +45,7 @@
  <div class="coins" id="coinpill"><span class="coin"></span><span id="coinct">0</span> Swamp Coins</div>
  <div id="shopcards"></div>
  <div class="earn">
-  <a href="arcade.html"><b>Play games</b><span>Fly Frenzy pays up to <span id="gmax"></span> coins a round.</span></a>
+  <a href="adventure.html"><b>Play the Adventure</b><span>Every run pays Swamp Coins and Swamp Crystals. No daily limit.</span></a>
   <a href="catalog.html#cards"><b>Trade extras</b><span>Swap duplicate cards for coins. Rarer cards are worth more.</span></a>
  </div>
  <p class="ratecap">What an extra copy is worth:</p>
@@ -66,7 +66,6 @@
 <script src="menu.js"></script>
 <script>
 const $=id=>document.getElementById(id),buyable=PACKS.filter(p=>p.price);
-$("gmax").textContent=RULES.game.maxCoins;
 $("rates").innerHTML=ratesHTML();
 $("shopcards").innerHTML=buyable.map(p=>`<div class="shopcard" data-p="${p.id}"><button class="pack" data-odds="${p.id}" aria-label="See what is inside ${p.name}">${packLabel(p)}</button><h3>${p.name}</h3><p>${p.blurb||"One random swamp card from the whole herd. Rarer cards are harder to pull."}</p><div class="price"><span class="coin"></span>${p.price}</div><button class="btn buy">Buy 1 pack</button><button class="btn ghost oddsbtn" data-odds="${p.id}">What's inside</button><p class="need"></p><p class="shopmsg" aria-live="polite"></p><a class="btn ghost opennow" href="catalog.html#packs" hidden>Open it now</a><p class="stash">Packs ready to open: <b class="n">0</b></p></div>`).join("");
 function render(){

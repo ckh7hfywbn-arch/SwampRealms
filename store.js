@@ -1,4 +1,4 @@
-// ===== SwampVerse: Swamp Crystals + avatar wallet =====
+// ===== SwampRealms: Swamp Crystals + avatar wallet =====
 // Load AFTER cards.js on every page:  <script src="cards.js"></script><script src="store.js"></script>
 // Crystals are earned from games (unlimited rounds) and spent on cosmetics for your avatar animal.
 // Saved separately from coins, so cards.js is never touched.
@@ -6,7 +6,8 @@
 // ---- CRYSTAL RULES: edit these ----
 const CRY={
  // per game: points needed for 1 crystal, and the most crystals one round can pay
- games:{fly:{per:3,cap:30},hop:{per:4,cap:30},dash:{per:5,cap:30},memory:{per:3,cap:30},_:{per:4,cap:25}},
+ // adv = the Swamp Adventure: 1 crystal per 50 score, no cap, so every run pays and there is no daily limit
+ games:{adv:{per:50,cap:Infinity},_:{per:4,cap:25}},
  minRound:2,          // every finished round pays at least this many (so a bad round still helps)
  firstOfDay:15        // bonus for your first round each day
 };

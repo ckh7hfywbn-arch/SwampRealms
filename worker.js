@@ -1,4 +1,4 @@
-// ===== SwampVerse accounts API: Cloudflare Worker + D1 =====
+// ===== SwampRealms accounts API: Cloudflare Worker + D1 =====
 // Handles only /api/* (see run_worker_first in wrangler.jsonc). Everything else is served as static files.
 // Username + password sign in, a session cookie, and one cloud save per account.
 
