@@ -15,6 +15,7 @@
     "index.html": I('<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),
     "catalog.html": I('<rect x="4" y="5" width="11" height="15" rx="2"/><path d="M9 3h8a2 2 0 012 2v12"/>'),
     "arcade.html": I('<rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M8 10.5v4M6 12.5h4"/><circle cx="15.5" cy="11.5" r=".8"/><circle cx="18" cy="13.5" r=".8"/>'),
+    "adventure.html": I('<path d="M6 21V4"/><path d="M6 5h11l-3 4 3 4H6"/>'),
     "shop.html": I('<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>'),
     "herd": I('<circle cx="7" cy="9" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="9" r="2"/><path d="M12 12c-3 0-5 2.5-5 5 0 2 1.7 2.5 5 2.5s5-.5 5-2.5c0-2.5-2-5-5-5z"/>'),
     "avatar.html": ""

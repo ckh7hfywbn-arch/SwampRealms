@@ -316,3 +316,273 @@ html{scroll-behavior:smooth}
 .strip.img{left:0;right:0;border:0;border-radius:12px 12px 0 0;clip-path:none;background-color:transparent;background-repeat:no-repeat;background-position:center top;background-size:auto 1163%}
 
 .bsimg{object-fit:cover;object-position:center;-webkit-user-drag:none;user-select:none}
+/* game shell: pause button and HUD tweaks (added) */
+.gpause{position:absolute;bottom:10px;right:10px;z-index:4;padding:8px 14px;font-size:12px;min-height:0}
+.gpause[hidden]{display:none}
+
+/* glowspore counter under the hearts (added) */
+.hud.spn{top:50px;font-size:15px;letter-spacing:.04em;color:#bdfbe5;white-space:nowrap}
+.hud.spn.bump{animation:bump .3s ease-out}
+.hud.bump{animation:bump .3s ease-out}
+#ovs{color:#f2c14e;font-weight:900;font-size:18px;letter-spacing:.04em}
+
+/* ===== Lantern Bog: game look (scoped to the arcade game box) ===== */
+#box{border-color:#ffc86a44;box-shadow:0 0 40px -14px #ffb85f,0 0 60px -30px #4ee6b4,0 20px 40px -20px #000}
+#box::after{background:radial-gradient(ellipse at center,#0000 62%,#02060ccc 100%)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#box .hud{background:linear-gradient(180deg,#0b1a2bcc,#07111ecc);border:1px solid #ffd98a33;border-radius:999px;padding:5px 12px;text-shadow:none;color:#fff3d6;box-shadow:0 2px 14px -6px #000,inset 0 0 12px -6px #ffd98a66;backdrop-filter:blur(2px)}
+#box .hhp{display:flex;align-items:center;gap:4px;padding:5px 10px}
+#hp{display:inline-flex;gap:3px}
+.fl{display:block;width:17px;height:20px}
+.fl svg{display:block;width:100%;height:100%;overflow:visible}
+.fl path{fill:#ffb04f;stroke:#ffe3a6;stroke-width:1.2}
+.fl .in{fill:#fff3cf;stroke:none}
+.fl.on{filter:drop-shadow(0 0 5px #ffb04fcc);animation:flick 2.4s ease-in-out infinite}
+.fl.on:nth-child(2){animation-delay:-.8s}.fl.on:nth-child(3){animation-delay:-1.6s}
+.fl.off path{fill:#101c2a;stroke:#ffd98a40}.fl.off .in{display:none}
+.fl.out{animation:fizz .55s ease-out}
+@keyframes flick{0%,100%{transform:scale(1)}50%{transform:scale(1.07) translateY(-1px)}}
+@keyframes fizz{0%{transform:scale(1.5) rotate(-12deg);filter:drop-shadow(0 0 10px #ff6b82)}60%{transform:scale(.8) rotate(8deg)}100%{transform:scale(1)}}
+#box .hud.spn{top:50px;display:flex;align-items:center;gap:7px;font-size:15px;letter-spacing:.04em;color:#d8fff3}
+#box .hud.spn .orb{display:block;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f2fffa,#34e3b0 55%,#0b8f7c);box-shadow:0 0 10px #4ee6b4,0 0 0 3px #4ee6b433}
+#box .hud.tm{font-size:12px;letter-spacing:.14em;color:#ffe9b0;padding:5px 12px}
+#box .hud.bump{animation:bump .3s ease-out}
+/* title, pause, complete and game over screens */
+#box .gov{background:radial-gradient(ellipse at 50% 42%,#0c2238ee,#050b16f5 75%);backdrop-filter:blur(3px)}
+#box .gov[data-m=over]{background:radial-gradient(ellipse at 50% 42%,#1a1626ee,#07060cf7 75%)}
+#box .gov[data-m=complete]{background:radial-gradient(ellipse at 50% 42%,#2a2a18ee,#07100cf5 75%)}
+.gcard{display:grid;justify-items:center;gap:10px;animation:gin .45s var(--ease-spring,ease-out)}
+@keyframes gin{0%{opacity:0;transform:translateY(10px) scale(.96)}100%{opacity:1;transform:none}}
+#box .gov h3{margin:0;font:900 28px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#fff3d6;text-shadow:0 0 22px #ffb04f99}
+#box .gov[data-m=over] h3{color:#ffd9d2;text-shadow:0 0 22px #ff6b8299}
+#box .gov[data-m=complete] h3{color:#fff0b8;text-shadow:0 0 26px #ffd45fcc}
+#box .gov p{color:#cfe1e3}
+.lantern{width:46px;height:62px;overflow:visible;filter:drop-shadow(0 0 14px #ffb04faa)}
+.lantern .ring{stroke:#8a6a52}.lantern .cap{fill:#6b4c5a}.lantern .glass{fill:#ffd98a33;stroke:#ffd98a;stroke-width:1.6}
+.lantern .flame{fill:#ffb04f;transform-origin:24px 42px;animation:flick 1.6s ease-in-out infinite}.lantern .smoke{stroke:#9aa6b8;display:none}
+.gov[data-m=over] .lantern{filter:none;opacity:.9}
+.gov[data-m=over] .lantern .glass{fill:#1a2434;stroke:#58667a}.gov[data-m=over] .lantern .flame{display:none}
+.gov[data-m=over] .lantern .smoke{display:block;animation:smoke 2.4s ease-out infinite}
+@keyframes smoke{0%{opacity:0;transform:translateY(6px)}30%{opacity:.8}100%{opacity:0;transform:translateY(-8px)}}
+#ovs{display:grid;gap:8px;justify-items:center;color:#ffe6b0;font-weight:800;font-size:15px;letter-spacing:.03em}
+#ovs b{color:#fff3d6;font-size:20px}
+.pips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;max-width:200px}
+.pip{width:11px;height:11px;border-radius:50%;background:#12222f;border:1px solid #4ee6b440}
+.pip.on{background:radial-gradient(circle at 35% 35%,#f2fffa,#34e3b0 60%,#0b8f7c);border-color:#a6ffe9;box-shadow:0 0 8px #4ee6b4}
+#box .gov .btn{box-shadow:0 0 28px -6px #ffb04f}
+.hint{font:800 11px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8fa3ad!important}
+.hint[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){.fl.on,.lantern .flame,.lantern .smoke,.gcard{animation:none}}
+
+/* ---- Touch controls (Swamp Quest). Shown only on touch devices; see arcade.html ---- */
+.arcstage{align-self:start;display:grid;gap:12px;justify-items:center;width:100%}
+.tc[hidden]{display:none}
+.tc{--tcs:clamp(56px,17.6vw,78px);width:min(100%,420px);display:flex;align-items:flex-end;justify-content:space-between;gap:clamp(8px,2.6vw,14px);padding:0 2px env(safe-area-inset-bottom,0px);box-sizing:border-box;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tc-grp{display:flex;align-items:flex-end;gap:clamp(8px,2.6vw,14px)}
+.tcb{--c:78,230,180;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:var(--tcs);height:var(--tcs);min-height:0;padding:0;border-radius:50%;cursor:pointer;
+ font:900 clamp(10px,3vw,12px) Nunito,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#e9fff8;
+ background:radial-gradient(circle at 50% 30%,rgba(var(--c),.28),rgba(8,18,16,.82) 72%);border:2px solid rgba(var(--c),.8);
+ box-shadow:0 0 18px -6px rgba(var(--c),.8),0 6px 14px -8px #000;
+ touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+ transition:transform .08s,box-shadow .08s,background .08s}
+.tcb svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.tcb span{pointer-events:none;line-height:1}
+.tcb.on,.tcb:active{transform:scale(.92);background:radial-gradient(circle at 50% 40%,rgba(var(--c),.6),rgba(8,18,16,.75) 78%);box-shadow:0 0 26px -2px rgba(var(--c),1),inset 0 0 14px rgba(var(--c),.5)}
+.tc-jmp{--c:255,200,106;width:calc(var(--tcs)*1.2);height:calc(var(--tcs)*1.2)}
+.tc-atk{--c:255,120,140;margin-bottom:calc(var(--tcs)*.34)}
+/* a slightly larger invisible touch zone around each round button, so a thumb that lands near the edge still counts */
+.tcb::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+#arc:not([data-mode=playing]) .tc{opacity:.55}
+#arc:not([data-mode=playing]) .tcb{pointer-events:none}
+@media(prefers-reduced-motion:reduce){.tcb{transition:none}}
+
+/* keep the whole play area (board + buttons) on one phone screen */
+body.tc-on .box{width:min(100%,420px,calc((100vh - 290px)*.75));width:min(100%,420px,calc((100dvh - 290px)*.75))}
+
+/* landscape touch screens: buttons sit in the empty space left and right of the board */
+@media(orientation:landscape) and (max-height:820px){
+ body.tc-on .arcstage{--bw:min(420px,calc((100vh - 94px)*.75));--bw:min(420px,calc((100dvh - 94px)*.75));grid-template-columns:minmax(0,1fr) var(--bw) minmax(0,1fr);grid-template-rows:calc(var(--bw)*4/3);align-items:end;gap:12px}
+ body.tc-on .box{width:100%}
+ body.tc-on .arcstage .box{grid-column:2;grid-row:1}
+ body.tc-on .tc{display:contents}
+ body.tc-on .tc-move{grid-column:1;grid-row:1;justify-self:start;padding-bottom:6px}
+ body.tc-on .tc-act{grid-column:3;grid-row:1;justify-self:end;padding-bottom:6px}
+ body.tc-on .tc-atk{margin-bottom:calc(var(--tcs)*.3)}
+ body.tc-on .tc{padding:0}
+ body.tc-on .tc-move{padding-left:env(safe-area-inset-left,0px)}
+ body.tc-on .tc-act{padding-right:env(safe-area-inset-right,0px)}
+ body.tc-on #arc[data-mode=playing] .tc-grp{opacity:1}
+ body.tc-on #arc:not([data-mode=playing]) .tc-grp{opacity:.55}
+ body.tc-on .tc-grp{gap:14px}
+}
+@media(orientation:landscape) and (max-height:430px){body.tc-on .tc{--tcs:62px}body.tc-on .tc-grp{--tcs:62px}}
+
+/* ---- Start screen: Glowspore Trail ---- */
+#box{container-type:inline-size}
+#box .gov{overflow-y:auto;align-content:safe center;padding:clamp(12px,5cqw,24px) clamp(12px,5cqw,22px)}
+.gov .ttl,.gov .how{display:none}
+.gov[data-m=title] .ttl{display:block}
+.gov[data-m=title] #ovp{display:none}
+.gov[data-m=title]{background:radial-gradient(ellipse at 50% 28%,#16382fcc,#08151fee 55%,#03070cf8 100%)!important}
+.gov[data-m=title]::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 24%,#ffb04f2e,#0000 42%),radial-gradient(circle at 18% 70%,#4ee6b422,#0000 30%),radial-gradient(circle at 85% 60%,#4ee6b41a,#0000 28%)}
+.gov[data-m=title] .gcard{position:relative;gap:clamp(6px,2.2cqw,10px);width:100%}
+.gov[data-m=title] .lantern{width:clamp(30px,11cqw,46px);height:clamp(40px,15cqw,62px);filter:drop-shadow(0 0 16px #ffb04fcc) drop-shadow(0 0 34px #ffb04f66)}
+#box .gov[data-m=title] h3{display:grid;justify-items:center;line-height:.95;letter-spacing:.14em;margin:0}
+#box .gov[data-m=title] h3 span:first-child{font-size:clamp(24px,10.5cqw,40px);color:#ffe9b0;text-shadow:0 0 24px #ffb04fcc,0 3px 0 #5a3a12}
+#box .gov[data-m=title] h3 span:last-child{font-size:clamp(20px,8.5cqw,32px);color:#8ff5d2;letter-spacing:.42em;margin-right:-.42em;text-shadow:0 0 22px #4ee6b4cc,0 3px 0 #0a4a3a}
+.eyebrow{margin:0;font:900 clamp(9px,2.8cqw,11px) Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#7fe3c4!important;opacity:.9}
+.tag{margin:0;font:700 clamp(11px,3.5cqw,14px)/1.4 Nunito,sans-serif;color:#cfe1e3!important;max-width:26ch;text-align:center}
+.gov[data-m=title] .acts{display:grid;gap:8px;width:min(100%,230px);margin-top:2px}
+.gov[data-m=title] .acts .btn{width:100%;min-height:44px;padding:10px 18px;font-size:clamp(14px,4.4cqw,17px);letter-spacing:.06em}
+.gov[data-m=title] #go{font-weight:900;text-transform:uppercase;letter-spacing:.14em}
+.gov[data-m=title] #how{border:0;color:#d8fff3;box-shadow:0 0 0 1.5px #4ee6b480 inset}
+.gov[data-m=title] #how:hover,.gov[data-m=title] #how:focus-visible{box-shadow:0 0 0 1.5px #4ee6b4 inset,0 0 18px -4px #4ee6b4;color:#fff}
+.gov .btn:focus-visible,.snd2:focus-visible,.tcb:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.keys{margin:2px 0 0;display:grid!important;grid-template-columns:1fr 1fr;gap:6px;width:min(100%,300px)}
+.keys>div{display:grid;gap:3px;padding:6px 8px;border-radius:10px;background:#04100d99;border:1px solid #4ee6b430;text-align:center}
+.keys dt{font:900 9px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#ffd98a}
+.keys dd{margin:0;font:800 clamp(10px,3.1cqw,12px) Nunito,sans-serif;color:#d8fff3;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;align-items:center}
+kbd{display:inline-block;min-width:1.7em;padding:1px 6px;border-radius:6px;font:800 .92em Nunito,sans-serif;color:#fff3d6;background:#12222f;border:1px solid #4ee6b455;box-shadow:0 2px 0 #02080b;text-align:center}
+.kt{display:none}
+body.tc-on .kd{display:none}body.tc-on .kt{display:inline}
+.snd2{display:grid!important;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:7px;row-gap:1px;min-height:44px;padding:4px 14px;border-radius:999px;cursor:pointer;background:#04100dcc;color:#d8fff3;border:1px solid #4ee6b455;font:900 12px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.snd2 svg{grid-row:1/3;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.snd2 .x{display:none}.snd2.off .w{display:none}.snd2.off .x{display:inline}
+.snd2.off{color:#9fb2b6;border-color:#ffffff22}
+.snd2 small{font:700 9px Nunito,sans-serif;letter-spacing:.08em;color:#8fa3ad;text-transform:uppercase;text-align:left}
+.snd2:hover{border-color:#4ee6b4}
+
+/* How to play panel */
+.gov[data-v=how] .gcard{display:none}
+.gov[data-v=how] .how{display:grid;gap:clamp(6px,2.4cqw,10px);width:100%;animation:gin .3s ease-out}
+#box .how h3{margin:0;text-align:center;font-size:clamp(18px,6.4cqw,24px);letter-spacing:.2em}
+.hl{list-style:none;margin:0;padding:0;display:grid;gap:clamp(5px,1.8cqw,8px);text-align:left}
+.hl li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:7px 10px;border-radius:12px;background:#04100dcc;border:1px solid #4ee6b430}
+.hl b{display:block;font:900 11px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#ffd98a;margin-bottom:1px}
+.hl span{font:700 clamp(11px,3.3cqw,13px)/1.38 Nunito,sans-serif;color:#d8e8e4}
+.hi{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#4ee6b41f;border:1px solid #4ee6b466;color:#8ff5d2;margin-top:2px}
+.hi svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.hi.orb::after{content:"";width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f2fffa,#34e3b0 55%,#0b8f7c);box-shadow:0 0 10px #4ee6b4}
+.hrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.hrow .btn{min-height:44px;padding:10px 14px;font-size:15px}
+.how .btn.ghost{color:#d8fff3;box-shadow:0 0 0 1.5px #4ee6b480 inset}
+@container (max-width:320px){.gov[data-m=title] .tag{display:none}.keys dt{display:none}.keys>div{padding:5px 6px}.snd2 small{display:none}}
+@container (max-width:250px){.gov[data-m=title] .eyebrow,.gov[data-m=title] .keys{display:none}}
+@media(prefers-reduced-motion:reduce){.gov[data-v=how] .how{animation:none}}
+/* start screen tightening */
+#box .gov[data-m=title] .eyebrow,#box .gov[data-m=title] .tag{text-transform:none;display:block}
+#box .gov[data-m=title] .eyebrow{text-transform:uppercase;letter-spacing:.2em;white-space:nowrap}
+#box .gov[data-m=title] .tag{letter-spacing:.01em;max-width:30ch;line-height:1.35}
+.gov[data-m=title] .acts{gap:7px;width:min(100%,220px)}
+.gov[data-m=title] .acts .btn{min-height:42px;padding:8px 18px}
+.keys>div{padding:4px 6px;gap:1px}
+.snd2{min-height:40px;padding:2px 14px}
+@container (max-width:330px){
+ #box .gov[data-m=title] .tag{display:none}
+ .keys dt{display:none}.snd2 small{display:none}
+ .hi{display:none}.hl li{grid-template-columns:1fr;padding:5px 9px;gap:0}.hl b{font-size:10px}
+}
+@container (max-width:250px){#box .gov[data-m=title] .eyebrow,.gov[data-m=title] .keys{display:none}}
+@container (min-width:331px) and (max-width:400px){.hl li{padding:5px 9px}.hi{width:26px;height:26px}}
+.how .hrow{position:sticky;bottom:calc(-1*clamp(12px,5cqw,24px));padding:8px 0 2px;background:linear-gradient(180deg,#0000,#050b16 35%)}
+.how{padding-bottom:0}
+@container (max-width:250px){
+ .gov[data-m=title] .lantern{display:none}
+ #box .gov[data-m=title] h3 span:first-child{font-size:22px}#box .gov[data-m=title] h3 span:last-child{font-size:18px}
+ .gov[data-m=title] .acts .btn{min-height:40px}.snd2{min-height:36px}
+ #box .gov{padding-top:10px;padding-bottom:10px}
+}
+.gov[data-m=title] .gcard{gap:clamp(5px,1.8cqw,10px)}
+.hl span{line-height:1.38!important;display:block}
+.hl kbd{line-height:1.2;margin:0 1px}
+.gov[data-m=title] #how{text-transform:uppercase;letter-spacing:.12em;font-weight:900;font-size:clamp(13px,4cqw,15px)}
+.hrow .btn{width:100%}
+.gov:not([data-m=title]) .keys,.gov:not([data-m=title]):not([data-m=paused]) .snd2,.gov:not([data-m=title]) .eyebrow,.gov:not([data-m=title]) .tag,.gov:not([data-m=title]) #how{display:none!important}
+
+/* in-game sound switch, sits left of Pause */
+.gsnd{right:84px;padding:8px 10px;line-height:0}
+.gsnd svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gsnd .x{display:none}.gsnd.off .w{display:none}.gsnd.off .x{display:inline}.gsnd.off{color:#9fb2b6}
+
+/* Level Select panel */
+.gov .lvs{display:none}
+.gov[data-v=levels] .gcard,.gov[data-v=levels] .how{display:none}
+.gov[data-v=levels] .lvs{display:grid;gap:clamp(8px,2.6cqw,12px);width:100%;max-width:300px;margin-inline:auto;animation:gin .3s ease-out}
+#box .lvs h3{margin:0;text-align:center;font-size:clamp(18px,6.4cqw,24px);letter-spacing:.2em}
+.lvl{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lvb{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;width:100%;text-align:left;padding:12px 14px;border-radius:14px;background:#04100dcc;border:1.5px solid #4ee6b4aa;color:#e8f6f0;cursor:pointer;font:inherit;box-shadow:0 0 22px -10px #4ee6b4}
+.lvb:hover:not(:disabled),.lvb:focus-visible{border-color:#ffd98a;box-shadow:0 0 22px -4px #ffb04f}
+.lvb span{display:grid;gap:2px}
+.lvb b{font:900 12px Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#ffd98a}
+.lvb em{font:700 12px/1.3 Nunito,sans-serif;font-style:normal;color:#cfe1e3}
+.lvi{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#4ee6b41f;border:1px solid #4ee6b466;color:#8ff5d2}
+.lvi svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.lvb.done .lvi{background:#ffd98a26;border-color:#ffd98a88;color:#ffd98a}
+.lvb.locked{cursor:not-allowed;background:#0a0f0ecc;border-color:#ffffff22;box-shadow:none}
+.lvb.locked b{color:#8d9a96}.lvb.locked em{color:#7d8a86}
+.lvb.locked .lvi{background:#ffffff0d;border-color:#ffffff22;color:#7d8a86}
+.hrow1 .btn{width:100%;min-height:44px}
+#lvsel{border:0;color:#d8fff3;box-shadow:0 0 0 1.5px #4ee6b480 inset}
+#lvsel:hover,#lvsel:focus-visible{box-shadow:0 0 0 1.5px #4ee6b4 inset,0 0 18px -4px #4ee6b4;color:#fff}
+.lvs .btn.ghost{color:#d8fff3;box-shadow:0 0 0 1.5px #4ee6b480 inset}
+@media(prefers-reduced-motion:reduce){.gov[data-v=levels] .lvs{animation:none}}
+.gov[data-m=title] #lvsel{text-transform:uppercase;letter-spacing:.1em;font-weight:900}
+
+/* Score HUD and results */
+#box .hud.scw{left:auto;right:10px;top:50px;display:flex;align-items:baseline;gap:8px;font-size:15px;letter-spacing:.03em;color:#ffe9b0;padding:5px 12px}
+#box .hud.scw .sl{font:900 10px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#bdfbe5}
+#box .hud.scw b{font:900 17px Nunito,sans-serif;font-variant-numeric:tabular-nums;color:#fff3d6;min-width:2ch;text-align:right}
+#box .hud.scw .stm{font:800 12px Nunito,sans-serif;font-variant-numeric:tabular-nums;color:#a9c7c0;padding-left:8px;border-left:1px solid #ffffff2a}
+#box .hud.scb{left:auto;right:10px;top:88px;font:900 11px Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#a9c7c0;padding:3px 10px}
+#box .hud.scb.beat{color:#1b1400;background:linear-gradient(180deg,#ffe08a,#f2b84a);border-color:#fff3cf}
+.sres{display:grid;gap:5px;justify-items:center;width:100%}
+.sres .sk{font:900 10px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#bdfbe5}
+.sres .sbig{font:900 clamp(30px,11cqw,42px)/1 Nunito,sans-serif;color:#fff3d6;text-shadow:0 0 22px #ffb04fcc;font-variant-numeric:tabular-nums}
+.sres .sbest{font:900 11px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#a9c7c0}
+.sres .sbest.new{color:#1b1400;background:linear-gradient(180deg,#ffe08a,#f2b84a);padding:3px 12px;border-radius:999px;box-shadow:0 0 18px -2px #ffb04f}
+.srows{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:4px;width:100%;max-width:270px}
+.srows li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;padding:5px 10px;border-radius:10px;background:#04100dcc;border:1px solid #4ee6b430;text-align:left}
+.srows span{font:800 12px Nunito,sans-serif;color:#d8e8e4}
+.srows i{font:800 12px Nunito,sans-serif;font-style:normal;color:#8ff5d2;font-variant-numeric:tabular-nums}
+.srows em{font:900 12px Nunito,sans-serif;font-style:normal;color:#ffd98a;min-width:4.2ch;text-align:right;font-variant-numeric:tabular-nums}
+.lvb em.lvbest{color:#ffd98a;font-weight:900}
+@media(prefers-reduced-motion:reduce){#box .hud.scw.bump{animation:none}}
+/* compact results card so the score, breakdown and buttons fit the game area */
+.gov[data-m=complete] .lantern{display:none}
+#box .gov[data-m=complete] h3{font-size:clamp(18px,6.4cqw,23px);letter-spacing:.12em}
+.gov[data-m=complete] .gcard{gap:6px}
+.gov[data-m=complete] #ovp{font-size:13px;line-height:1.35}
+.gov[data-m=complete] .acts{grid-template-columns:1fr 1fr;gap:6px;width:min(100%,290px)}
+.gov[data-m=complete] .acts #go,.gov[data-m=complete] .acts #quit{grid-column:1/-1}
+.gov[data-m=complete] .acts .btn{width:100%;min-height:38px;padding:6px 10px;font-size:14px}
+.gov[data-m=complete] .srows li{padding:3px 10px}
+.gov[data-m=complete] .sres{gap:3px}
+
+/* ---- Full screen play (adventure page) ---- */
+.gfs{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:5;width:36px;height:36px;min-height:0;padding:0;display:grid;place-items:center;border-radius:999px;line-height:0}
+.gfs svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#stage:not(.fs) .gfs .ex,#stage.fs .gfs .en{display:none}
+html.fs-on,html.fs-on body{overflow:hidden;overscroll-behavior:none}
+/* the page-fade animation leaves a transform on body, which would trap a fixed full-screen layer inside it */
+html.fs-on body{animation:none;transform:none}
+#stage.fs{
+ --fw:calc(100vw - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));
+ --fh:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ --fh:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ --bwid:min(var(--fw),calc(var(--fh)*.75));
+ position:fixed;inset:0;z-index:2147483000;width:auto;height:auto;align-self:stretch;justify-self:stretch;margin:0;box-sizing:border-box;
+ padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
+ display:grid;place-content:center;justify-items:center;align-items:center;gap:10px;background:#020605;overflow:hidden}
+#stage.fs #box{width:var(--bwid);border-radius:0;border-color:transparent;box-shadow:none}
+/* phone held upright: the board shrinks a little so Left / Right / Attack / Jump stay on screen under it */
+body.tc-on #stage.fs{--bwid:min(var(--fw),calc((var(--fh) - 120px)*.75))}
+#stage.fs .tc{width:min(var(--fw),480px);padding:0 2px}
+/* touch device on its side: buttons sit left and right of the board, which fills the full height */
+@media(orientation:landscape){
+ body.tc-on #stage.fs{--bwid:calc(var(--fh)*.75);grid-template-columns:minmax(0,1fr) var(--bwid) minmax(0,1fr);grid-template-rows:var(--fh);gap:12px;align-items:end}
+ body.tc-on #stage.fs #box{grid-column:2;grid-row:1;width:100%;align-self:center}
+ body.tc-on #stage.fs .tc{display:contents}
+ body.tc-on #stage.fs .tc-move{grid-column:1;grid-row:1;justify-self:start;padding-bottom:6px}
+ body.tc-on #stage.fs .tc-act{grid-column:3;grid-row:1;justify-self:end;padding-bottom:6px}
+ body.tc-on #stage.fs .tc-atk{margin-bottom:calc(var(--tcs)*.3)}
+}

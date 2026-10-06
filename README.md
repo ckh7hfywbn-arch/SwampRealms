@@ -10,7 +10,8 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `index.html` | Home page |
 | `catalog.html` | Open packs and view the collection |
 | `shop.html` | Buy packs with Swamp Coins |
-| `arcade.html` | The Arcade (the old Play page is merged in). Fly Frenzy (coins for the first rounds each day, crystals every round), Lily Hop, Swamp Dash, Memory Flip. Open a game directly with `arcade.html#hop` |
+| `arcade.html` | The Arcade hub: a card for each game. Links to the Swamp Adventure and Fly Frenzy |
+| `adventure.html` | The Swamp Adventure (3 levels + Rootmaw boss). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter. Load after `cards.js` |
@@ -22,7 +23,6 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `schema.sql` | Database tables for accounts. Run once in D1 |
 | `wrangler.jsonc`, `.assetsignore` | Cloudflare config (Worker + D1 binding) and the list of files that are not published |
 | `menu.js` | Header menu: builds the hamburger dropdown from the nav links, avatar and sound switch. Load last, after `account.js` |
-| `_redirects` | Sends the old `/game` address to `/arcade` on Cloudflare |
 | `404.html`, `robots.txt`, `sitemap.xml` | Not-found page and search engine files |
 
 ## Two currencies
@@ -33,7 +33,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 
 ## Header menu
 
-The header shows the logo, coin and crystal counters, the account button and a hamburger. Every page link, the avatar and the sound switch live in the dropdown. To add a page, add one `<a class="hide" href="...">Name</a>` to the `<nav>` in the page header; `menu.js` moves it into the dropdown. Give it an icon in `ICONS` at the top of `menu.js` (optional). Script order on every page: `cards.js`, `store.js`, `account.js`, `menu.js`.
+The header shows the logo, coin and crystal counters, the account button and a hamburger. Every page link (Home, Packs, Arcade, Adventure, Shop, The Herd), the avatar and the sound switch live in the dropdown. To add a page, add one `<a class="hide" href="...">Name</a>` to the `<nav>` in the page header; `menu.js` moves it into the dropdown. Give it an icon in `ICONS` at the top of `menu.js` (optional). Script order on every page: `cards.js`, `store.js`, `account.js`, `menu.js`.
 
 ## Adding a cosmetic
 
