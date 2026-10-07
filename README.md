@@ -126,6 +126,17 @@ Every armor piece needs at least one Rootmaw Fragment. The gear ids in `store.js
 - **API:** `Crafting.list()`, `Crafting.info(id)`, `Crafting.check(id)` (returns `{ok, reason, missing}`), `Crafting.craft(id)`. `craft` checks the cost, subtracts the fragments and adds the weapon in one save, so nothing is taken unless the craft succeeds.
 - Weapons are collectibles for now. Equipping them in the Swamp Adventure is a separate step.
 
+## Story bosses (end of each main-story level)
+
+Every hand-made level ends in a boss arena. The setup lives in `storyboss.js` (loaded before the game script). Level 3's Rootmaw is built into `adventure.html`; Level 2 uses the **Mirewing**, the flying boss already in the game (`kind:"wing"`). Levels 1 and 4 use a **placeholder boss** (a plodding purple block named "Level N Boss") until real bosses are made.
+
+- **Slots.** `StoryBoss.SLOTS` has one entry per level index (0 = Level 1, 1 = Level 2, 3 = Level 4): `on`, `name`, `short`, `kind`, `hp`, `w`, `h`, `defeat`, `arenaLen`, `bossTime`, `fragment`, `music`. `on:false` puts the goal gate back, `StoryBoss.ENABLED=false` turns every story boss off.
+- **Arena.** `addArena()` lengthens the level's last ground piece by `arenaLen`, removes the goal gate (`goalX:99999`), builds `arena:{x,bx}` and adds a checkpoint before the vines. Winning the fight completes the level, the same as the Rootmaw.
+- **Add a real boss.** In `storyboss.js` add `kinds.myboss={reset(c){},update(c,dt,dx,enraged){},draw(c){}}`, then set the slot's `kind:"myboss"` and its `name`, `hp`, `w`, `h`. `c` is the game context (`BCTX` in `adventure.html`: player `state`, live `boss`, `BS`, `AR`, `fx`, `X`, `hurtPlayer()`, `startDefeat()` ...). The game handles waking the boss, the vine gate, the intro (your `update` must move `boss.st` on from `"intro"`), player hits, the health bar, the defeat animation, drops, score and the victory screen. Use `kinds.stub` as the template.
+- **Loot.** Add a fragment to `FRAGMENTS` in `store.js`, then set the slot's `fragment` to its id. A slot with `fragment:null` drops nothing (only the Rootmaw drops Rootmaw Fragments).
+- **Music.** The fight plays track 3 unless the slot sets `music`.
+- **Par time.** `bossTime` seconds are added to the level's time limit for the score bonus, because the level is longer.
+
 ## Adding a new game
 
 1. Make the game page and add a tile for it on `arcade.html` (games live in the Arcade, not the header menu).

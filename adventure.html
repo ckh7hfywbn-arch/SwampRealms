@@ -41,7 +41,7 @@
 <div id="top"></div>
 <section class="reveal" id="arcade">
  <h2>Swamp Adventure</h2>
- <p class="sub">A brand new swamp adventure. Four hand-made levels, the Mossy Trail, the Murky Marsh, the Forgotten Jungle with its boss, and the Sunlit Canopy, open the way into the Endless Realms: a new, tougher level every time you win, with a stronger boss every third level and bigger rewards the deeper you go. Finish a level to unlock the next, and replay any unlocked level from Level Select. Once you beat the Rootmaw, Levels 1-3 stay open for replay (a good way to farm Rootmaw Fragments), and Level 4 can be replayed after you finish it too. The Endless Realms are next until new hand-made levels arrive. Every run, win or lose, pays Swamp Coins and Swamp Crystals. There is no daily limit.</p>
+ <p class="sub">A brand new swamp adventure. Four hand-made levels, the Mossy Trail, the Murky Marsh, the Forgotten Jungle and the Sunlit Canopy, each ending in a boss fight, open the way into the Endless Realms: a new, tougher level every time you win, with a stronger boss every third level and bigger rewards the deeper you go. Finish a level to unlock the next, and replay any unlocked level from Level Select. Once you beat the Rootmaw, Levels 1-3 stay open for replay (a good way to farm Rootmaw Fragments), and Level 4 can be replayed after you finish it too. The Endless Realms are next until new hand-made levels arrive. Every run, win or lose, pays Swamp Coins and Swamp Crystals. There is no daily limit.</p>
  <div id="arc">
   <div class="arcstage" id="stage">
   <div class="box" id="box">
@@ -63,7 +63,7 @@
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M19.5 4.5L9 15M14 4.5h5.5V10M7 11l6 6M8 16l-4 4"/></svg></i><div><b>Attack</b><span>Press <kbd>J</kbd> or <kbd>E</kbd>, or Attack, to swing in front of you. The Bramble Bug takes two hits. The Bog Crawler in Level 2 takes three (four in the Sunlit Canopy, where the Bramble Bug takes three). The Rootmaw boss at the end of Level 3 takes twelve: dodge its ground slam, then strike while it recovers. In the Sunlit Canopy, MonK the Monkey swings on the vines overhead and lobs bananas at you: he raises one before every throw, so dodge it, hide behind cover, or swing at a banana to knock it out of the air. In the Endless Realms enemies get new looks and take more hits, and boss levels bring tougher bosses.</span></div></li>
    <li><i class="hi orb"></i><div><b>Collectibles</b><span>Glowspores float along the way. There are 12 in Level 1, 17 in Level 2, 41 in Level 3 and 42 in Level 4. Touch one to collect it. Watch out for thorn vines from Level 3 on: they hurt.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3c0 0-6 6-6 11a6 6 0 0012 0c0-5-6-11-6-11z"/></svg></i><div><b>Health</b><span>You have 3 flames. A Bramble Bug or Bog Crawler touch costs one. Lose them all and it is game over. Lit lanterns save your spot.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Reach the goal gate at the far end of each level. Every third level (3, 6, 9 and on) ends in a boss fight: defeat the boss to clear it. There is no last level.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Every level now ends in a boss fight: walk into the arena at the far end and defeat the boss to clear the level. Endless Realms levels end at a goal gate, with a stronger boss every third level (3, 6, 9 and on). There is no last level.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></i><div><b>Score</b><span>Glowspore 100, Bramble Bug 250, Bog Crawler 400, Rootmaw 1,500, finishing a level 1,000, plus a speed bonus of up to 1,000. In the Endless Realms, every score value grows with the level's Danger number, so coins and crystals do too. Your best score for each level is saved.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l7 6-3 12H8L5 9z"/></svg></i><div><b>Fragments</b><span>Defeated enemies have a chance to drop a Fragment. Each kind comes from its own enemy, and the Rootmaw drops a rare one. They are saved to your collection straight away.</span></div></li>
   </ol><div class="acts hrow"><button type="button" class="btn" id="howplay" data-fs-start>Play</button><button type="button" class="btn ghost" id="howback">Back</button></div></div><div class="lvs" id="lvp" role="region" aria-labelledby="lvt"><h3 id="lvt">Level Select</h3><ul class="lvl" id="lvl"></ul><div class="acts hrow1"><button type="button" class="btn ghost" id="lvback">Main menu</button></div></div></div>
@@ -102,6 +102,7 @@
 <script src="menu.js"></script>
 <script src="progression.js?v=endless1"></script>
 <script src="runups.js?v=up1"></script>
+<script src="storyboss.js?v=sb1"></script>
 <script>
 /* SwampRealms game: title, start, pause, movement, Level 1, collectibles, enemy, health, and simple player combat. */
 (function(){
@@ -341,7 +342,7 @@
  }
  let boss={y:0,cyc:0,tx:0,x0:0,y0:0,x:0,dir:-1,hp:12,trail:12,hurt:0,dead:0,defeated:false,kb:0,st:"dormant",t:0,wt:.8,tt:0,lt:0,lock:false,slams:0,pulse:0};
  const enraged=()=>boss.hp<=BS.hp/2;
- function resetBoss(){waves=[];orbs=[];goo=[];boss.y=0;boss.cyc=0;boss.x=AR?AR.bx:0;boss.dir=-1;boss.hp=BS.hp;boss.trail=BS.hp;boss.hurt=0;boss.dead=0;boss.defeated=false;boss.kb=0;boss.st="dormant";boss.t=0;boss.wt=.8;boss.tt=0;boss.lt=0;boss.lock=false;boss.slams=0;boss.pulse=0;resetMonk()}
+ function resetBoss(){waves=[];orbs=[];goo=[];boss.y=0;boss.cyc=0;boss.x=AR?AR.bx:0;boss.dir=-1;boss.hp=BS.hp;boss.trail=BS.hp;boss.hurt=0;boss.dead=0;boss.defeated=false;boss.kb=0;boss.st="dormant";boss.t=0;boss.wt=.8;boss.tt=0;boss.lt=0;boss.lock=false;boss.slams=0;boss.pulse=0;resetMonk();if(BS.custom&&BS.custom.reset)BS.custom.reset(BCTX)}
  function bossStrike(f){
   if(!AR||boss.defeated||!boss.lock||boss.st==="intro")return;
   // Mirewing: its mire shield turns every blow aside while it flies; it can only be hurt while it lies stunned after a dive
@@ -385,6 +386,7 @@
   // the fight starts when you walk into the arena: vines close the way back and the boss wakes
   if(!boss.lock){if(vis.dying<=0&&state.hp>0&&state.x>AR.x+60){boss.lock=true;boss.st="intro";boss.t=1.4;AUDIO.play("croak");vis.shake=Math.max(vis.shake,.3)}return}
   const dx=state.x-boss.x,en=enraged();
+  if(BS.custom){BS.custom.update(BCTX,dt,dx,en);return}   // a story boss from storyboss.js runs its own behaviour
   if(BS.kind==="wing"){updateWing(dt,dx,en);return}
   // shockwaves: low roots racing along the floor; jump them
   for(const w of waves){
@@ -895,8 +897,13 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   if(h>0){X.globalAlpha=h*.6;X.fillStyle="#fff";X.beginPath();X.ellipse(0,0,22,16,0,0,7);X.fill()}
   X.restore();
  }
+ // The game context handed to story bosses (storyboss.js). Getters, so it always reads the live values.
+ const BCTX={get state(){return state},get boss(){return boss},get BS(){return BS},get AR(){return AR},get fx(){return fx},get vis(){return vis},get X(){return X},get LEVEL_W(){return LEVEL_W},
+  get GROUND_Y(){return GROUND_Y},get HW(){return HW},get R(){return R},get AUDIO(){return AUDIO},get glow(){return glow},get GLOW(){return GLOW},get enraged(){return enraged},
+  hurtPlayer:(x,n)=>hurtPlayer(x,n),startDefeat:()=>startDefeat()};
  function drawBoss(){
   if(!AR||(boss.defeated&&boss.dead<=0))return;
+  if(BS.custom){if(boss.st!=="dormant")BS.custom.draw(BCTX);return}
   if(BS.kind==="wing"){if(boss.st!=="dormant")drawWing();return}
   const t=boss.tt,f=boss.dir,st=boss.st,en=enraged();
   const dp=boss.defeated?1-boss.dead/BS.defeat:0;
@@ -1566,6 +1573,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    bug:[1900,2150,2020],crawler:{min:3590,max:3662,x:3626},goalX:3770,gaps:[[600,840],[1420,1740],[2300,2640],[2780,3180]],theme:TH4,monk:{from:740,to:3640},
    scale:(function(){const S=Progression.scale(3);S.bugHp=3;S.crawlerHp=4;S.speed=1.08;S.rewardMul=1.1;return S})()}
  ];
+ StoryBoss.attach(LEVELS);   // story bosses (storyboss.js): turns on the boss arena for any slot that is switched on
  let LV=0;
  // ---- Endless levels: index 0-2 are the hand-built LEVELS above; every higher index is generated (once, then cached) by Progression.build.
  const GEN={};
@@ -1574,6 +1582,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // swap every piece of level data the game reads, then repaint the sky, ground and water for that level
  function loadLevel(i){
   const L=lvl(i);LV=i;applyScale(L.scale||Progression.scale(i));
+  BS.w=BS0.w;BS.defeat=BS0.defeat;BS.custom=null;BS.loot="boss";BS.music=undefined;if(L.storyBoss)StoryBoss.apply(BS,L.storyBoss);   // story boss slot (storyboss.js) overrides the boss settings
   LEVEL_W=L.W;GROUNDS=L.grounds;PLATFORMS=L.platforms;SOLIDS=L.solids;CHECKPOINTS=L.cps;SPORE_POS=L.spores;GAPS=L.gaps;
   CR=L.crawler||null;MK=L.monk||null;AR=L.arena||null;HAZ=L.hazards||[];for(const p of PLATFORMS)if(p.rg)p.x=p.bx+Math.sin(p.ph)*p.rg;BUG.min=L.bug[0];BUG.max=L.bug[1];BUG_X=L.bug[2];GOAL.x=L.goalX;ONEWAY=GROUNDS.concat(PLATFORMS);
   TH=L.theme;paintSky(TH);paintGrads(TH);
@@ -1657,7 +1666,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   function watch(){
    try{
     let want=-1;
-    if(AUDIO.on&&state.mode==="playing"&&!document.hidden){want=lvl(LV).music!==undefined?lvl(LV).music:LV;if(lvl(LV).boss&&boss.lock&&!boss.defeated)want=3}
+    if(AUDIO.on&&state.mode==="playing"&&!document.hidden){want=lvl(LV).music!==undefined?lvl(LV).music:LV;if(lvl(LV).boss&&boss.lock&&!boss.defeated)want=BS.music!==undefined?BS.music:3}
     if(want<0){if(cur>=0)end();return}
     const c=AUDIO.ctx();if(!c)return;
     if(want!==cur||!bus)begin(c,want);
@@ -1685,7 +1694,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   return scoresMem;
  }
  function writeScore(i,rec){scoresMem[i]=rec;try{localStorage.setItem(SKEY,JSON.stringify(scoresMem))}catch(e){}}
- function foes(){const a=[{id:"bug",pts:pt(SCORE.bug),d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:pt(SCORE.crawler),d:()=>cr.defeated,x:()=>cr.x});if(AR)a.push({id:"boss",pts:pt(SCORE.boss*SC.bossPts),d:()=>boss.defeated,x:()=>boss.x});return a}
+ function foes(){const a=[{id:"bug",pts:pt(SCORE.bug),d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:pt(SCORE.crawler),d:()=>cr.defeated,x:()=>cr.x});if(AR)a.push({id:"boss",loot:BS.loot,pts:pt(SCORE.boss*SC.bossPts),d:()=>boss.defeated,x:()=>boss.x});return a}
 
  // ================= Loot: defeated enemies can drop a Fragment (table and drop chances live in store.js, FRAGMENTS). =================
  // A drop is saved to the player's data the moment it happens (Fragments.add writes it into the crystals save), then shown as a notification.
@@ -1693,7 +1702,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  function lootCount(){let n=0;for(const k in runLoot)n+=runLoot[k];return n}
  function dropLoot(f){
   try{
-   const d=typeof Fragments!=="undefined"?Fragments.roll(f.id,SC.fragBonus):null;if(!d)return;
+   const lid=("loot" in f)?f.loot:f.id;const d=lid&&typeof Fragments!=="undefined"?Fragments.roll(lid,SC.fragBonus):null;if(!d)return;   // f.loot: a story boss can drop its own fragment (or none)
    runLoot[d.id]=(runLoot[d.id]||0)+1;
    const x=f.x();
    fx.push({k:"star",x:x,y:GROUND_Y-34,vx:0,vy:0,life:.42,max:.42,c:d.color,g:26});
@@ -1748,7 +1757,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   showScore(false);
  }
  function finishScore(){
-  const lim=lvl(LV).timeLimit||TIME_LIMIT[LV]||120,list=foes(),en=list.filter(f=>sc.kills[f.id]).length,enT=list.length,spT=SPORE_POS.length;
+  const lim=(lvl(LV).timeLimit||TIME_LIMIT[LV]||120)+(lvl(LV).bossTime||0),list=foes(),en=list.filter(f=>sc.kills[f.id]).length,enT=list.length,spT=SPORE_POS.length;
   const sp=state.spores*pt(SCORE.spore),ep=killPts(),cl=pt(SCORE.clear),tm=state.t,sb=Math.round(pt(SCORE.speed)*Math.max(0,1-tm/lim)/10)*10,total=sp+ep+cl+sb;
   bestCache=null;const prev=readScores()[LV],isBest=!prev||total>prev.score;
   if(isBest)writeScore(LV,{score:total,spores:state.spores,enemies:en,time:Math.round(tm*10)/10});
