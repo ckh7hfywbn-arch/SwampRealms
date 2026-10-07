@@ -89,7 +89,7 @@ Fragments, weapons and all other gear use the **same six rarities and colors as 
 
 ## Crafting
 
-Players turn fragments into weapons from the **Craft** tab of the Bag (open it from the Arcade Bag tile, the Bag button under the Swamp Adventure, or `Bag.open("craft")`). Each recipe shows its cost, how many fragments the player has, and a Craft button that stays disabled until they have enough. Crafted weapons land in the Bag's Weapons tab and are saved with the crystals save (`gear`), so they sync with accounts.
+Players turn fragments into weapons in the **Crafting** popup, its own section like the Bag (it is no longer a Bag tab). Open it from the Crafting tile in the Arcade, the Craft button under the Swamp Adventure (beside Bag), any element with a `data-craft` attribute, `Craft.open()`, or by visiting `#craft` on any page. `<span data-craft-count></span>` shows how many recipes can be crafted right now, and the popup has an Open Bag button. Each recipe shows its cost, how many fragments the player has, and a Craft button that stays disabled until they have enough. Crafted weapons land in the Bag's Weapons tab and are saved with the crystals save (`gear`), so they sync with accounts.
 
 | Weapon | Cost |
 | --- | --- |

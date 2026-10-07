@@ -230,7 +230,7 @@ const Bag={
  open(tab){bagOpen(tab)},close(){bagClose()},toggle(){bagEl&&!bagEl.hidden?bagClose():bagOpen()}
 };
 let bagEl=null,bagTab="fragments",bagFrom=null;
-const BAG_TABS=()=>[{id:"fragments",name:"Fragments",icon:'<path d="M12 3l7 6-3 12H8L5 9z"/>',n:Fragments.total}].concat(Object.keys(GEAR_SLOTS).map(k=>({id:k,name:GEAR_SLOTS[k].name,icon:GEAR_SLOTS[k].icon,n:Gear.list(k).reduce((a,g)=>a+g.count,0)}))).concat([{id:"craft",name:"Craft",icon:'<path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/>',n:Crafting.list().filter(r=>r.can).length}]);
+const BAG_TABS=()=>[{id:"fragments",name:"Fragments",icon:'<path d="M12 3l7 6-3 12H8L5 9z"/>',n:Fragments.total}].concat(Object.keys(GEAR_SLOTS).map(k=>({id:k,name:GEAR_SLOTS[k].name,icon:GEAR_SLOTS[k].icon,n:Gear.list(k).reduce((a,g)=>a+g.count,0)})));
 function bagCoins(){try{if(typeof load==="function")load();return typeof meta!=="undefined"?(meta.coins||0):0}catch(e){return 0}}
 function bagSlot(info,kind){
  const d=document.createElement("div");d.className="bgs";d.style.setProperty("--c",info.color);d.tabIndex=0;
@@ -257,11 +257,10 @@ function bagPaintBody(){
   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+t.icon+'</svg>';
   const sp=document.createElement("span");sp.textContent=t.name;b.appendChild(sp);
   if(t.n){const c=document.createElement("small");c.textContent=t.n;b.appendChild(c)}
-  b.onclick=()=>{bagTab=t.id;bagCraftMsg="";bagGearMsg="";bagPaintBody();const nb=bagEl.querySelector("#bgt-"+t.id);nb&&nb.focus()};
+  b.onclick=()=>{bagTab=t.id;bagGearMsg="";bagPaintBody();const nb=bagEl.querySelector("#bgt-"+t.id);nb&&nb.focus()};
   bar.appendChild(b);
  });
  const panel=bagEl.querySelector("#bgpanel");panel.textContent="";panel.setAttribute("aria-labelledby","bgt-"+bagTab);
- if(bagTab==="craft"){bagPaintCraft(panel);return}
  if(bagTab!=="fragments"&&Gear.list(bagTab).length){bagPaintGear(panel,bagTab);return}
  const grid=document.createElement("div");grid.className="bg-grid";
  let shown=0;
@@ -314,9 +313,9 @@ function bagPaintGear(panel,slot){
  panel.appendChild(det);
  const note=document.createElement("p");note.className="bg-note";note.textContent="One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
 }
-// the Craft tab: one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
-let bagCraftMsg="";
-function bagPaintCraft(panel){
+// the Crafting popup (its own section, like the Bag): one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
+let craftMsg="";
+function craftPaintPanel(panel){
  const list=document.createElement("div");list.className="cr-list";
  Crafting.list().forEach(r=>{
   const row=document.createElement("div");row.className="cr-row"+(r.can?" can":"");row.style.setProperty("--c",r.gear.color);
@@ -331,14 +330,14 @@ function bagPaintCraft(panel){
   const b=document.createElement("button");b.type="button";b.className="cr-btn";b.textContent=r.can?"Craft":"Need more fragments";b.disabled=!r.can;
   b.addEventListener("click",()=>{
    const res=Crafting.craft(r.id);
-   bagCraftMsg=res.ok?"Crafted "+res.gear.name+"! Find it in the Weapons tab.":(res.reason+(res.missing.length?" Need "+res.missing.map(m=>m.short+" more "+m.name).join(", ")+".":""));
-   bagPaintBody();
+   craftMsg=res.ok?"Crafted "+res.gear.name+"! It is in your Bag, under Weapons.":(res.reason+(res.missing.length?" Need "+res.missing.map(m=>m.short+" more "+m.name).join(", ")+".":""));
+   craftPaint();
   });
   row.appendChild(b);list.appendChild(row);
  });
  panel.appendChild(list);
- const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
- if(bagCraftMsg){det.textContent=bagCraftMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
+ const det=document.createElement("p");det.className="bg-detail";det.id="crdetail";det.setAttribute("aria-live","polite");
+ if(craftMsg){det.textContent=craftMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
  panel.appendChild(det);
  const note=document.createElement("p");note.className="bg-note";note.textContent="Crafting uses up the fragments. Defeat enemies in the Swamp Adventure to find more.";panel.appendChild(note);
 }
@@ -359,7 +358,8 @@ function bagBuild(){
  return w;
 }
 function bagOpen(tab){
- cload();if(!bagEl)bagEl=bagBuild();
+ if(tab==="craft"){craftOpen();return}   // crafting is its own section now
+ cload();try{craftClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
  if(tab)bagTab=tab;
  bagFrom=document.activeElement;bagPaintBody();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(bagEl)}catch(e){}
@@ -374,10 +374,59 @@ function bagClose(){
  try{bagFrom&&bagFrom.focus&&bagFrom.focus()}catch(e){}
  if(location.hash==="#bag")history.replaceState(null,"",location.pathname+location.search);
 }
+
+const Craft={
+ get count(){return Crafting.list().filter(r=>r.can).length},
+ open(){craftOpen()},close(){craftClose()},toggle(){craftEl&&!craftEl.hidden?craftClose():craftOpen()}
+};
+let craftEl=null,craftFrom=null;
+function craftBuild(){
+ const w=document.createElement("div");w.className="bag-wrap";w.hidden=true;w.id="craft";
+ w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="crafttitle">'+
+  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/></svg><h2 id="crafttitle">Crafting</h2><button type="button" class="bag-x" data-x aria-label="Close crafting">&times;</button></div>'+
+  '<div class="bg-wallet"><span class="bg-coins"><span class="bg-fr" aria-hidden="true"></span><b>0</b><em>Fragments</em></span><button type="button" class="cr-bagbtn" data-bag>Open Bag</button></div>'+
+  '<div id="crpanel"></div></div>';
+ document.body.appendChild(w);
+ w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))craftClose();else if(e.target.closest("[data-bag]"))craftClose()});
+ w.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();craftClose();return}
+  if(e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+ },true);
+ return w;
+}
+function craftPaint(){
+ if(!craftEl)return;
+ craftEl.querySelector(".bg-coins b").textContent=Fragments.total;
+ const panel=craftEl.querySelector("#crpanel");panel.textContent="";craftPaintPanel(panel);
+}
+function craftOpen(){
+ cload();if(!craftEl)craftEl=craftBuild();
+ try{bagClose()}catch(e){}
+ craftFrom=document.activeElement;craftMsg="";craftPaint();
+ try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(craftEl)}catch(e){}
+ craftEl.hidden=false;document.documentElement.classList.add("bag-open");
+ try{dispatchEvent(new CustomEvent("craft:open"));dispatchEvent(new CustomEvent("bag:open"))}catch(e){}
+ const x=craftEl.querySelector(".bag-x");x&&x.focus();
+}
+function craftClose(){
+ if(!craftEl||craftEl.hidden)return;
+ craftEl.hidden=true;document.documentElement.classList.remove("bag-open");
+ try{dispatchEvent(new CustomEvent("craft:close"))}catch(e){}
+ try{craftFrom&&craftFrom.focus&&craftFrom.focus()}catch(e){}
+ if(location.hash==="#craft")history.replaceState(null,"",location.pathname+location.search);
+}
+function paintCraft(){
+ const n=Craft.count;document.querySelectorAll("[data-craft-count]").forEach(e=>{e.textContent=n;e.hidden=!n});
+ if(craftEl&&!craftEl.hidden)craftPaint();
+}
+document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-craft]");if(t){e.preventDefault();craftOpen()}});
+addEventListener("hashchange",()=>{if(location.hash==="#craft")craftOpen()});
+addEventListener("DOMContentLoaded",()=>{paintCraft();if(location.hash==="#craft")craftOpen()});
 // item count badge on any [data-bag-count]
 function paintBag(){
  const n=Bag.count;document.querySelectorAll("[data-bag-count]").forEach(e=>{e.textContent=n});
  if(bagEl&&!bagEl.hidden)bagPaintBody();
+ try{paintCraft()}catch(e){}
 }
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-bag]");if(t){e.preventDefault();bagOpen(t.getAttribute("data-bag")||undefined)}});
 addEventListener("hashchange",()=>{if(location.hash==="#bag")bagOpen()});
