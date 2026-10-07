@@ -324,6 +324,8 @@ function craftPaintPanel(panel){
   const ow=document.createElement("small");ow.textContent=r.gear.count?"Owned ×"+r.gear.count:r.gear.rarityName;top.appendChild(ow);
   row.appendChild(top);
   if(r.gear.desc){const ds=document.createElement("p");ds.className="cr-desc";ds.textContent=r.gear.desc;row.appendChild(ds)}
+  const sk=Object.keys(r.gear.stats||{});
+  if(sk.length){const sc=document.createElement("div");sc.className="gr-stats";sk.forEach(k=>{const c=document.createElement("span");c.className="gr-stat";c.textContent=k+" "+r.gear.stats[k];sc.appendChild(c)});row.appendChild(sc)}
   const cs=document.createElement("div");cs.className="cr-cost";
   r.cost.forEach(c=>{const ch=document.createElement("span");ch.className="cr-chip"+(c.short?" short":"");ch.textContent=c.name+" "+Math.min(c.have,c.need)+" / "+c.need;cs.appendChild(ch)});
   row.appendChild(cs);
