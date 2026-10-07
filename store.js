@@ -464,7 +464,7 @@ function bagOpen(tab){
  if(tab==="craft"){craftOpen();return}   // crafting is its own section now
  cload();try{craftClose()}catch(e){}try{skinClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
  if(tab)bagTab=tab;
- if(bagInlineHost()){bagPaintBody();try{bagEl.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){bagEl.scrollIntoView()}try{dispatchEvent(new CustomEvent("bag:open"))}catch(e){}return}
+ if(bagInlineHost()){bagPaintBody();loadoutGo("bag");try{dispatchEvent(new CustomEvent("bag:open"))}catch(e){}return}
  bagFrom=document.activeElement;bagPaintBody();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(bagEl)}catch(e){}
  bagEl.hidden=false;document.documentElement.classList.add("bag-open");
@@ -484,19 +484,22 @@ const Craft={
  open(){craftOpen()},close(){craftClose()},toggle(){craftEl&&!craftEl.hidden?craftClose():craftOpen()}
 };
 let craftEl=null,craftFrom=null;
+// On the Arcade page Crafting also lives inside Your Loadout, as the pane next to the Bag (swipe sideways between them): <div id="craft" class="craft-inline">.
+function craftInlineHost(){const h=document.getElementById("craft");return h&&h.classList.contains("craft-inline")?h:null}
 function craftBuild(){
- const w=document.createElement("div");w.className="bag-wrap";w.hidden=true;w.id="craft";
- w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="crafttitle">'+
-  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/></svg><h2 id="crafttitle">Crafting</h2><button type="button" class="bag-x" data-x aria-label="Close crafting">&times;</button></div>'+
+ const inl=craftInlineHost();
+ const w=inl||document.createElement("div");if(!inl){w.className="bag-wrap";w.hidden=true;w.id="craft"}
+ w.innerHTML=(inl?'':'<div class="bag-back" data-x></div>')+'<div class="bag" role="'+(inl?'region':'dialog" aria-modal="true')+'" aria-labelledby="crafttitle">'+
+  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/></svg><h2 id="crafttitle">Crafting</h2>'+(inl?'':'<button type="button" class="bag-x" data-x aria-label="Close crafting">&times;</button>')+'</div>'+
   '<div class="bg-wallet"><span class="bg-coins"><span class="bg-fr" aria-hidden="true"></span><b>0</b><em>Fragments</em></span><button type="button" class="cr-bagbtn" data-bag>Open Bag</button></div>'+
   '<div class="bg-tabs" role="tablist" aria-label="Crafting sections"></div><div id="crpanel" role="tabpanel"></div></div>';
- document.body.appendChild(w);
+ if(!inl)document.body.appendChild(w);
  w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))craftClose();else if(e.target.closest("[data-bag]"))craftClose()});
  w.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();craftClose();return}
+  if(!inl&&e.key==="Escape"){e.stopPropagation();e.preventDefault();craftClose();return}
   const t=e.target.closest&&e.target.closest(".bg-tab");
   if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){const all=[...w.querySelectorAll(".bg-tab")],i=all.indexOf(t),n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];e.preventDefault();n.click()}
-  if(e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>x.tabIndex>=0&&!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+  if(!inl&&e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>x.tabIndex>=0&&!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
  },true);
  return w;
 }
@@ -517,6 +520,7 @@ function craftPaint(){
 }
 function craftOpen(){
  cload();if(!craftEl)craftEl=craftBuild();
+ if(craftInlineHost()){try{skinClose()}catch(e){}craftPaint();loadoutGo("craft");try{dispatchEvent(new CustomEvent("craft:open"))}catch(e){}return}
  try{bagClose()}catch(e){}try{skinClose()}catch(e){}
  craftFrom=document.activeElement;craftMsg="";craftPaint();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(craftEl)}catch(e){}
@@ -525,7 +529,7 @@ function craftOpen(){
  const x=craftEl.querySelector(".bag-x");x&&x.focus();
 }
 function craftClose(){
- if(!craftEl||craftEl.hidden)return;
+ if(!craftEl||craftEl.hidden||craftEl.classList.contains("craft-inline"))return;
  craftEl.hidden=true;document.documentElement.classList.remove("bag-open");
  try{dispatchEvent(new CustomEvent("craft:close"))}catch(e){}
  try{craftFrom&&craftFrom.focus&&craftFrom.focus()}catch(e){}
@@ -537,7 +541,7 @@ function paintCraft(){
 }
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-craft]");if(t){e.preventDefault();craftOpen()}});
 addEventListener("hashchange",()=>{if(location.hash==="#craft")craftOpen()});
-addEventListener("DOMContentLoaded",()=>{paintCraft();if(location.hash==="#craft")craftOpen()});
+addEventListener("DOMContentLoaded",()=>{if(craftInlineHost()&&!craftEl){cload();craftEl=craftBuild();craftPaint()}paintCraft();try{loadoutPager()}catch(e){}if(location.hash==="#craft")craftOpen()});
 // ---- Your Loadout (Arcade page): hero portrait, max health, weapon and armor, always showing what the game will use. Redrawn whenever the Bag changes (bagPaintBody).
 // Fills the <section id="loadout"> markup in arcade.html. Does nothing on pages without it.
 const LO_BASEHP=3;   // keep in step with BASEHP in adventure.html
@@ -572,6 +576,29 @@ function loadoutPaint(){
  const sb=q("#lo-set");
  if(bn.set&&SET_BONUS[bn.set]){sb.textContent="Set bonus active";sb.classList.add("on");sb.title=SET_BONUS[bn.set].name+": "+SET_BONUS[bn.set].text}
  else{sb.textContent="Wear a full set for a bonus";sb.classList.remove("on");sb.title=""}
+}
+// Bag | Crafting pager on the Arcade page: two panes side by side in a swipeable strip, with two buttons that show which one you are on.
+function loadoutPane(){const t=document.getElementById("lo-track");return t?Math.round(t.scrollLeft/Math.max(1,t.clientWidth)):0}
+function loadoutFit(){
+ const t=document.getElementById("lo-track");if(!t)return;
+ const i=loadoutPane(),p=t.children[i];if(p)t.style.height=(p.offsetHeight+24)+"px";
+ document.querySelectorAll("#lo-pager [data-pane]").forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false")});
+}
+function loadoutGo(which){
+ const t=document.getElementById("lo-track");if(!t)return;
+ const i=which==="craft"?1:0;
+ try{t.scrollTo({left:i*t.clientWidth,behavior:"smooth"})}catch(e){t.scrollLeft=i*t.clientWidth}
+ const pg=document.getElementById("lo-pager");if(pg)try{pg.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){pg.scrollIntoView()}
+ loadoutFit();
+}
+let _lpInit=false;
+function loadoutPager(){
+ const t=document.getElementById("lo-track");if(!t||_lpInit)return;_lpInit=true;
+ let raf=0;t.addEventListener("scroll",()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(loadoutFit)},{passive:true});
+ addEventListener("resize",()=>{const i=loadoutPane();t.scrollLeft=i*t.clientWidth;loadoutFit()});
+ document.querySelectorAll("#lo-pager [data-pane]").forEach(b=>b.addEventListener("click",()=>loadoutGo(b.getAttribute("data-pane"))));
+ if("ResizeObserver" in window)[...t.children].forEach(c=>new ResizeObserver(loadoutFit).observe(c));
+ loadoutFit();
 }
 // item count badge on any [data-bag-count]
 function paintBag(){

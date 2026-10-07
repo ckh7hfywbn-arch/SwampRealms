@@ -848,3 +848,23 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
  .lo-av{width:130px}
 }
 @media(min-width:701px){.bag-inline .bg-grid{grid-template-columns:repeat(6,1fr)}}
+
+/* Tab bars (Bag, Crafting, Skins): never squeezed or scrolled up/down by tall panels; only sideways */
+.bg-tabs{flex:none;overflow-y:hidden;overflow-x:auto;padding-bottom:4px}
+.bag-head,.bg-wallet{flex:none}
+.bg-tab{flex-shrink:0}
+
+/* Bag | Crafting pager (Arcade): swipe sideways between the two panes */
+.lo-pager{display:flex;justify-content:center;gap:8px;margin:18px auto 6px}
+.lo-pager button{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:6px 20px;border-radius:999px;border:1px solid #4ee6b433;background:#0a100c;color:#cfe1e3;font:800 13px Nunito,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.lo-pager button[aria-selected=true]{border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0;box-shadow:0 0 16px -6px #f2c14e}
+.lo-pager .craftbadge{display:inline-block;min-width:20px;padding:1px 7px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 11px Nunito,sans-serif;text-align:center}
+.lo-swipe{margin:0 0 10px;font:800 11px Nunito,sans-serif;color:#a9c7c0;letter-spacing:.04em}
+.lo-track{display:flex;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0 -16px;padding:0 16px 24px;scroll-padding:0 16px;box-sizing:border-box;width:calc(100% + 32px);transition:height .25s ease}
+.lo-track::-webkit-scrollbar{display:none}
+.lo-track>.bag-inline,.lo-track>.craft-inline{flex:0 0 100%;min-width:0;margin:0 32px 0 0;scroll-snap-align:start;scroll-margin-top:84px}
+.lo-track>.craft-inline:last-child{margin-right:0}
+.craft-inline .bag{width:100%;max-height:none;animation:none;text-align:left}
+.craft-inline .bag-head h2{text-transform:none;letter-spacing:.02em;font-weight:400;font-size:26px;text-shadow:none}
+.craft-inline #crpanel{overflow:visible}
+@media(prefers-reduced-motion:reduce){.lo-track{transition:none}}

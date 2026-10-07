@@ -61,7 +61,15 @@
    <div class="lo-row"><span>Boots</span><b id="lo-boots" class="none">Empty</b></div>
    <p class="lo-set" id="lo-set">Wear a full set for a bonus</p></div>
  </div>
- <div id="bag" class="bag-inline"></div>
+ <div class="lo-pager" id="lo-pager" role="tablist" aria-label="Bag and Crafting">
+  <button type="button" role="tab" data-pane="bag" aria-selected="true">Bag <span class="bagbadge" data-bag-count>0</span></button>
+  <button type="button" role="tab" data-pane="craft" aria-selected="false">Crafting <span class="craftbadge" data-craft-count hidden>0</span></button>
+ </div>
+ <p class="lo-swipe">Swipe sideways to switch between your Bag and Crafting.</p>
+ <div class="lo-track" id="lo-track">
+  <div id="bag" class="bag-inline"></div>
+  <div id="craft" class="craft-inline"></div>
+ </div>
 </section>
 
 <footer>
