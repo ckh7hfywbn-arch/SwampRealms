@@ -185,7 +185,8 @@
  // Health and the one enemy: the Bramble Bug patrols back and forth and hurts on contact
  const MAXHP=3,INVULN=1.2;
  // player attack tuning: windup (anticipation) -> strike frame (damage lands once) -> follow-through; the cooldown runs from the start of the swing
- const ATK_T=.2,ATK_HIT=.05,ATK_CD=.34,ATK_BUF=.1,REACH=46,BACK=8;
+ const ATK_T=.2,ATK_HIT=.05,ATK_CD=.34,ATK_BUF=.1,BACK=8;
+ let REACH=46,HELD=null,noRec=false;   // HELD = stats of the weapon used for the current swing (null = bare attack)
  const BUG={w:30,h:24,min:1650,max:1970,speed:60};
  let bug={x:1810,dir:1,hp:2,hurt:0,dead:0,defeated:false,kb:0};
  let BUG_X=1810;
@@ -202,11 +203,11 @@
   if(cr.x+CRW.w/2<x0||cr.x-CRW.w/2>x1||state.y+R+2<top||state.y-R-6>bot)return;
   hitCrawler(f);
  }
- function hitCrawler(f){
-  cr.hp--;const kill=cr.hp<=0;AUDIO.play(kill?"defeat":"hit");
+ function hitCrawler(f,d){
+  cr.hp-=d||dmg();const kill=cr.hp<=0;AUDIO.play(kill?"defeat":"hit");
   const cy=GROUND_Y-cr.z-11,cx=cr.x-f*CRW.w/2;
   cr.hurt=.32;cr.kb=f*(kill?220:130);cr.vx=0;cr.st="idle";cr.t=.55;cr.cd=Math.max(cr.cd,.5);
-  state.vx=-f*60;vis.stop=kill?.1:.055;vis.shake=Math.max(vis.shake,kill?.16:.09);
+  if(!noRec)state.vx=-f*60;vis.stop=kill?.1:.055;vis.shake=Math.max(vis.shake,kill?.16:.09);
   fx.push({k:"star",x:cx,y:cy,vx:0,vy:0,life:.26,max:.26,c:"#e6ffb0",g:18});
   fx.push({k:"ring",x:cx,y:cy,vx:0,vy:0,life:.22,max:.22,c:"#b6e85a",g:16});
   for(let i=0;i<8;i++){const a=(Math.random()-.65)*1.5,v=90+Math.random()*110;fx.push({k:"hit",x:cx,y:cy,vx:Math.cos(a)*v*f,vy:Math.sin(a)*v-20,life:.36,max:.36,c:i%2?"#b6e85a":"#7a5a2a"})}   // slime and mud chips
@@ -276,7 +277,7 @@
  let orbs=[];
  let boss={y:0,cyc:0,tx:0,x0:0,y0:0,x:0,dir:-1,hp:12,trail:12,hurt:0,dead:0,defeated:false,kb:0,st:"dormant",t:0,wt:.8,tt:0,lt:0,lock:false,slams:0,pulse:0};
  const enraged=()=>boss.hp<=BS.hp/2;
- function resetBoss(){waves=[];orbs=[];boss.y=0;boss.cyc=0;boss.x=AR?AR.bx:0;boss.dir=-1;boss.hp=BS.hp;boss.trail=BS.hp;boss.hurt=0;boss.dead=0;boss.defeated=false;boss.kb=0;boss.st="dormant";boss.t=0;boss.wt=.8;boss.tt=0;boss.lt=0;boss.lock=false;boss.slams=0;boss.pulse=0}
+ function resetBoss(){waves=[];orbs=[];goo=[];boss.y=0;boss.cyc=0;boss.x=AR?AR.bx:0;boss.dir=-1;boss.hp=BS.hp;boss.trail=BS.hp;boss.hurt=0;boss.dead=0;boss.defeated=false;boss.kb=0;boss.st="dormant";boss.t=0;boss.wt=.8;boss.tt=0;boss.lt=0;boss.lock=false;boss.slams=0;boss.pulse=0}
  function bossStrike(f){
   if(!AR||boss.defeated||!boss.lock||boss.st==="intro")return;
   // Mirewing: its mire shield turns every blow aside while it flies; it can only be hurt while it lies stunned after a dive
@@ -285,15 +286,15 @@
   if(boss.x+BS.w/2<x0||boss.x-BS.w/2>x1||state.y+R+2<GROUND_Y-BS.h||state.y-R-6>GROUND_Y)return;
   hitBoss(f);
  }
- function hitBoss(f){
-  boss.hp--;const kill=boss.hp<=0;AUDIO.play(kill?"defeat":"hit");
+ function hitBoss(f,d){
+  boss.hp-=d||dmg();const kill=boss.hp<=0;AUDIO.play(kill?"defeat":"hit");
   const cx=boss.x-f*BS.w/2,cy=Math.max(GROUND_Y-BS.h+14,Math.min(GROUND_Y-16,state.y));
-  boss.hurt=.22;boss.pulse=.3;boss.kb=f*(kill?0:110);state.vx=-f*90;   // the boss rocks back; you recoil off its bark
+  boss.hurt=.22;boss.pulse=.3;boss.kb=f*(kill?0:110);if(!noRec)state.vx=-f*90;   // the boss rocks back; you recoil off its bark
   vis.stop=kill?.18:.07;vis.shake=Math.max(vis.shake,kill?.4:.12);
   fx.push({k:"star",x:cx,y:cy,vx:0,vy:0,life:.28,max:.28,c:"#fff3cf",g:22});
   fx.push({k:"ring",x:cx,y:cy,vx:0,vy:0,life:.24,max:.24,c:"#ffb04f",g:20});
   for(let i=0;i<10;i++){const a=(Math.random()-.65)*1.5,v=90+Math.random()*120;fx.push({k:"hit",x:cx,y:cy,vx:Math.cos(a)*v*f,vy:Math.sin(a)*v-20,life:.4,max:.4,c:i%3?"#7a5a2a":(i%2?"#5fe39a":"#ffd27a")})}   // bark chips and leaves
-  fx.push({k:"txt",x:boss.x,y:GROUND_Y-BS.h-16,vx:0,vy:-40,life:.6,max:.6,s:"-1"});
+  fx.push({k:"txt",x:boss.x,y:GROUND_Y-BS.h-16,vx:0,vy:-40,life:.6,max:.6,s:"-"+(+(d||dmg()).toFixed(1))});
   if(kill){
    boss.defeated=true;boss.dead=BS.defeat;boss.st="dead";waves=[];orbs=[];
    for(let i=0;i<3;i++)fx.push({k:"ring",x:boss.x,y:GROUND_Y-44,vx:0,vy:0,life:.6+i*.25,max:.6+i*.25,c:i%2?"#ffd27a":"#5fe39a",g:50+i*40});
@@ -403,7 +404,7 @@
  function attack(){
   if(state.mode!=="playing"||state.stun>0)return;
   if(state.attackCooldown>0){if(state.attackCooldown<=ATK_BUF)state.atkQ=ATK_BUF;return}
-  state.attack=ATK_T;state.attackCooldown=ATK_CD;state.swingHit=false;state.atkQ=0;AUDIO.play("attack");
+  HELD=wstat();REACH=HELD.reach;state.attack=ATK_T;state.attackCooldown=HELD.cd;state.swingHit=false;state.atkQ=0;AUDIO.play("attack");
  }
  // The strike frame: fires once per swing, a few frames after the press, so the windup reads and the hit matches the slash.
  function strike(){
@@ -416,12 +417,12 @@
   if(bug.x+BUG.w/2<x0||bug.x-BUG.w/2>x1||state.y+R+2<GROUND_Y-BUG.h||state.y-R-6>GROUND_Y)return;
   hitBug(f);
  }
- function hitBug(f){
-  bug.hp--;
+ function hitBug(f,d){
+  bug.hp-=d||dmg();
   const kill=bug.hp<=0;AUDIO.play(kill?"defeat":"hit");
   const cx=bug.x-f*BUG.w/2,cy=GROUND_Y-13;
   bug.hurt=.3;bug.kb=f*(kill?240:150);                      // stagger + knockback away from the swing; patrol resumes after
-  state.vx=-f*60;                                            // small recoil so the hit has weight
+  if(!noRec)state.vx=-f*60;                                            // small recoil so the hit has weight
   vis.stop=kill?.1:.055;vis.shake=Math.max(vis.shake,kill?.16:.09);
   // hit effect at the point of contact: bright spark star, a small ring, and chips thrown the way the swing was going
   fx.push({k:"star",x:cx,y:cy,vx:0,vy:0,life:.26,max:.26,c:"#fff3cf",g:18});
@@ -537,7 +538,7 @@
   if(state.y>H+60){for(let i=0;i<14;i++)fx.push({k:"drop",x:state.x,y:GROUND_Y+18,vx:(Math.random()-.5)*140,vy:-120-Math.random()*140,life:.7,max:.7});state.x=state.cp;state.y=GROUND_Y-R;state.vx=state.vy=0;state.ground=false}
 
   // strike frame of the swing in progress (resolved before the bug moves, so a clean hit beats a same-frame touch)
-  if(state.attack>0&&!state.swingHit&&ATK_T-state.attack>=ATK_HIT){state.swingHit=true;strike()}
+  if(state.attack>0&&!state.swingHit&&ATK_T-state.attack>=ATK_HIT){state.swingHit=true;if(HELD&&HELD.ranged)shoot();else strike()}
 
   // knockback: the bug slides back and slows to a stop (also carries it while it fades out)
   if(bug.kb){bug.x=Math.max(BUG.min-30,Math.min(BUG.max+30,bug.x+bug.kb*dt));bug.kb*=Math.max(0,1-9*dt);if(Math.abs(bug.kb)<8)bug.kb=0}
@@ -551,7 +552,7 @@
    }
   }
 
-  updateCrawler(dt);updateBoss(dt);updateHazards();scoreTick();
+  updateCrawler(dt);updateBoss(dt);updateGoo(dt);updateHazards();scoreTick();
   // glowspores: touch to collect
   for(const sp of spores){if(!sp.got&&Math.hypot(state.x-sp.x,state.y-sp.y)<R+9)collect(sp)}
   for(const f of fx){f.life-=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;if(f.k==="spark"||f.k==="hit"||f.k==="defeat"||f.k==="drop")f.vy+=300*dt;if(f.k==="puff"){f.vx*=Math.max(0,1-4*dt);f.vy*=Math.max(0,1-3*dt)}}
@@ -1011,6 +1012,65 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   X.restore();
  }
  function atkQ(){const p=1-state.attack/ATK_T;if(p<.25)return -.6*(p/.25);const u=(p-.25)/.75;return (1-u)*(1-u)}
+ // ---- Weapon stats: read straight from the GEAR table (store.js): Damage / 5 = damage per hit (bare attack = 1), Speed sets the swing cooldown,
+ // Range sets the reach (Long = a ranged weapon that fires goo balls). A new weapon needs no code here, only its GEAR line.
+ const SPD_CD={Fast:.27,Medium:.36,Slow:.5},RNG_REACH={Short:42,Medium:60};
+ function wstat(){
+  const id=heldWeapon(),g=id&&GEAR[id],st=g&&g.stats;
+  if(!st)return{id:"",dmg:1,cd:ATK_CD,reach:46,ranged:false};
+  const ranged=st.Range==="Long";
+  return{id,dmg:Math.max(.5,Math.round((+st.Damage||5)/5*10)/10),cd:SPD_CD[st.Speed]||ATK_CD,reach:RNG_REACH[st.Range]||46,ranged:ranged&&id==="bogblaster"};
+ }
+ const dmg=()=>HELD?HELD.dmg:1;
+ // Goo balls (Bog Blaster). Aim assist: the shot locks onto the nearest enemy in front of you (reticle shown), fires straight at it, and curves
+ // gently toward it in flight so a small miss still lands. With nothing in range it fires straight ahead.
+ let goo=[],AIMA=0;
+ function aimTargets(){
+  const T=[];
+  if(!bug.defeated)T.push({k:"bug",x:bug.x,y:GROUND_Y-BUG.h/2});
+  if(CR&&!cr.defeated)T.push({k:"cr",x:cr.x,y:GROUND_Y-cr.z-CRW.h/2});
+  if(AR&&boss.lock&&!boss.defeated&&boss.st!=="intro")T.push({k:"boss",x:boss.x,y:BS.kind==="wing"?GROUND_Y-boss.y-22:GROUND_Y-BS.h/2});
+  return T;
+ }
+ function aimTarget(f){
+  let best=null,bd=1e9;
+  for(const t of aimTargets()){const dx=(t.x-state.x)*f,dy=Math.abs(t.y-state.y);if(dx<-12||dx>330||dy>170)continue;const d=dx+dy*.6;if(d<bd){bd=d;best=t}}
+  return best;
+ }
+ function shoot(){
+  const f=state.face,sx=state.x+f*26,sy=state.y-4,t=aimTarget(f),a=t?Math.atan2(t.y-sy,t.x-sx):(f>0?0:Math.PI),v=400;
+  AIMA=Math.atan2(Math.sin(a)*1,Math.cos(a)*f);
+  goo.push({x:sx,y:sy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,k:t?t.k:"",life:1.1,f,d:HELD.dmg});
+  for(let i=0;i<5;i++)fx.push({k:"puff",x:sx+f*6,y:sy,vx:Math.cos(a)*(60+i*14),vy:Math.sin(a)*(60+i*14)-10,life:.25,max:.25,r:2.4,g:6});
+ }
+ function gooSplat(g,c){for(let i=0;i<7;i++){const a=Math.random()*6.283,v=50+Math.random()*90;fx.push({k:"hit",x:g.x,y:g.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20,life:.34,max:.34,c:i%2?"#7dff6a":(c||"#b6e85a")})}fx.push({k:"ring",x:g.x,y:g.y,vx:0,vy:0,life:.2,max:.2,c:"#7dff6a",g:14})}
+ function updateGoo(dt){
+  for(const g of goo){
+   g.life-=dt;
+   const t=g.k&&aimTargets().find(q=>q.k===g.k);
+   if(t){const want=Math.atan2(t.y-g.y,t.x-g.x),cur=Math.atan2(g.vy,g.vx);let df=want-cur;while(df>Math.PI)df-=6.283;while(df<-Math.PI)df+=6.283;const na=cur+Math.max(-5*dt,Math.min(5*dt,df)),sp=Math.hypot(g.vx,g.vy);g.vx=Math.cos(na)*sp;g.vy=Math.sin(na)*sp}
+   else g.vy+=160*dt;
+   g.x+=g.vx*dt;g.y+=g.vy*dt;
+   const f=g.vx>=0?1:-1;let hit=false;noRec=true;
+   if(!bug.defeated&&Math.abs(g.x-bug.x)<BUG.w/2+6&&g.y>GROUND_Y-BUG.h-6&&g.y<GROUND_Y+4){hitBug(f,g.d);hit=true}
+   else if(CR&&!cr.defeated&&Math.abs(g.x-cr.x)<CRW.w/2+6&&g.y>GROUND_Y-cr.z-CRW.h-6&&g.y<GROUND_Y-cr.z+4){hitCrawler(f,g.d);hit=true}
+   else if(AR&&boss.lock&&!boss.defeated&&boss.st!=="intro"){
+    const top=BS.kind==="wing"?GROUND_Y-boss.y-44:GROUND_Y-BS.h,bot=BS.kind==="wing"?GROUND_Y-boss.y:GROUND_Y;
+    if(Math.abs(g.x-boss.x)<BS.w/2+4&&g.y>top-6&&g.y<bot+4){
+     if(BS.kind==="wing"&&boss.st!=="perch"){AUDIO.play("thump");fx.push({k:"ring",x:g.x,y:g.y,vx:0,vy:0,life:.3,max:.3,c:"#4ee6b4",g:30});fx.push({k:"txt",x:boss.x,y:top-8,vx:0,vy:-30,life:.5,max:.5,s:"Shielded"})}
+     else hitBoss(f,g.d);
+     hit=true}
+   }
+   noRec=false;
+   if(hit){gooSplat(g);g.life=0}else if(g.y>GROUND_Y-3){gooSplat(g,"#5a7a3a");g.life=0}
+  }
+  goo=goo.filter(g=>g.life>0&&g.x>-40&&g.x<LEVEL_W+40);
+ }
+ function drawGoo(){
+  for(const g of goo){glow(GLOW.moon,g.x,g.y,15,.7);X.fillStyle="#5bd64a";X.strokeStyle="#1f4a14";X.lineWidth=1.6;X.beginPath();X.arc(g.x,g.y,5.6,0,7);X.fill();X.stroke();X.fillStyle="#d9ffc9";X.beginPath();X.arc(g.x-1.8,g.y-2,1.9,0,7);X.fill()}
+  // lock-on reticle on the enemy the next shot will go to
+  if(state.mode==="playing"&&heldWeapon()==="bogblaster"&&vis.dying<=0){const t=aimTarget(state.face);if(t){const p=.5+.5*Math.sin(state.t*9);X.save();X.strokeStyle="rgba(125,255,106,"+(.55+.3*p)+")";X.lineWidth=2;X.beginPath();X.arc(t.x,t.y,15+3*p,0,7);X.stroke();for(let i=0;i<4;i++){const a=i*1.5708+state.t*2;X.beginPath();X.moveTo(t.x+Math.cos(a)*11,t.y+Math.sin(a)*11);X.lineTo(t.x+Math.cos(a)*19,t.y+Math.sin(a)*19);X.stroke()}X.restore()}}
+ }
  // ---- Held weapons: the equipped weapon (Bag > Weapons) is drawn in the player's hand and swings with the attack.
  // Each is drawn pointing right from the grip at (0,0); drawHeld() flips it to face the way the player looks.
  const WPN_PAL={spikedblade:["#ffb04f","#fff3cf"],bogblaster:["#7dff6a","#eaffd0"],hopperstaff:["#4ee6b4","#e6fff6"]};
@@ -1047,15 +1107,17 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const id=heldWeapon();if(!id)return;
   const f=state.face,p=state.attack>0?1-state.attack/ATK_T:-1;
   let ang=-.7+Math.sin(state.t*2.4)*.05,a=0;
-  if(p>=0){if(p<.25)ang=-.7-1.0*(p/.25);else{const u=(p-.25)/.75;ang=-1.7+2.7*(1-(1-u)*(1-u));a=1-u}}
+  if(id==="bogblaster"){ang=-.12+Math.sin(state.t*2.4)*.03;if(p>=0){ang=AIMA-.3*Math.max(0,1-p/.45);a=Math.max(0,1-p/.5)}}
+  else if(p>=0){if(p<.25)ang=-.7-1.0*(p/.25);else{const u=(p-.25)/.75;ang=-1.7+2.7*(1-(1-u)*(1-u));a=1-u}}
   X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WPN[id](a);X.restore();
  }
  function drawSlash(){
+  if(HELD&&HELD.ranged)return;
   const p=1-state.attack/ATK_T;if(p<.25)return;
   const u=(p-.25)/.75,e=1-(1-u)*(1-u),hd=-1.35+1.9*e,tl=hd-1.25*(1-u*.6),f=state.face,w=1-u*.55;
   X.save();X.translate(state.x+f*8,state.y-2);X.scale(f,1);X.globalAlpha=Math.min(1,(1-u)*1.8);X.lineCap="round";
-  const pal=WPN_PAL[heldWeapon()]||["#ffb04f","#fff3cf"];X.strokeStyle=pal[0];X.lineWidth=10*w;X.beginPath();X.arc(0,0,34,tl,hd);X.stroke();
-  X.strokeStyle=pal[1];X.lineWidth=4*w;X.beginPath();X.arc(0,0,34,tl+.12,hd-.05);X.stroke();
+  const pal=WPN_PAL[heldWeapon()]||["#ffb04f","#fff3cf"];X.strokeStyle=pal[0];X.lineWidth=10*w;X.beginPath();X.arc(0,0,34*(HELD?HELD.reach:46)/46,tl,hd);X.stroke();
+  X.strokeStyle=pal[1];X.lineWidth=4*w;X.beginPath();X.arc(0,0,34*(HELD?HELD.reach:46)/46,tl+.12,hd-.05);X.stroke();
   X.restore();
  }
 
@@ -1106,7 +1168,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   for(const o of SOLIDS){if(o.x+o.w<cam-8||o.x>cam+W+8)continue;drawSolid(o)}
   for(const z of HAZ)drawThorns(z,cam);
   if(GOAL.x<cam+W+110)drawGoal();
-  drawAuras();drawBug();drawCrawler();drawBoss();drawWaves();
+  drawAuras();drawBug();drawCrawler();drawBoss();drawWaves();drawGoo();
   for(const sp of spores){if(sp.got||sp.x<cam-30||sp.x>cam+W+30)continue;drawSpore(sp)}
   drawGate();
   drawPlayer();

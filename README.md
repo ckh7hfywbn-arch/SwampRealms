@@ -45,7 +45,7 @@ Levels 1-3 are still hand-built in `LEVELS` in `adventure.html` and are unchange
 
 ## Held weapons
 
-The weapon equipped in the Bag (Weapons tab) is drawn in the player's hand and swings with the attack, and the slash colour changes to match. Art is in `WPN` in `adventure.html` (Spiked Blade, Bog Blaster, Swamp Hopper Staff); to give a new weapon a held design add a `WPN` entry and a `WPN_PAL` slash colour with the same id as its `GEAR` line. Weapon damage is still not read by combat.
+The weapon equipped in the Bag (Weapons tab) is drawn in the player's hand and swings with the attack, and the slash colour changes to match. Art is in `WPN` in `adventure.html` (Spiked Blade, Bog Blaster, Swamp Hopper Staff); to give a new weapon a held design add a `WPN` entry and a `WPN_PAL` slash colour with the same id as its `GEAR` line. Combat reads the weapon straight from its `GEAR` stats (`wstat()`): Damage / 5 is the damage per hit (a bare attack is 1, so the Spiked Blade does 1.8, the Bog Blaster 1.4, the Hopper Staff 1), Speed sets the swing cooldown (Fast .27s, Medium .36s) and Range sets the reach (Short 42, Medium 60). A weapon with Range "Long" that is the Bog Blaster fires goo balls instead of swinging: the shot locks onto the nearest enemy in front (a green reticle shows who), flies straight at it and curves gently toward it in flight, so aiming is just "face the enemy and press attack". The Mirewing's shield blocks goo balls too.
 
 ## Two currencies
 
