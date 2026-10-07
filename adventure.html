@@ -41,7 +41,7 @@
 <div id="top"></div>
 <section class="reveal" id="arcade">
  <h2>Swamp Adventure</h2>
- <p class="sub">A brand new swamp adventure. Three levels are ready: the Mossy Trail, the Murky Marsh, then the Forgotten Jungle and its boss. Finish a level to unlock the next, and replay any from Level Select. Every run, win or lose, pays Swamp Coins and Swamp Crystals. There is no daily limit.</p>
+ <p class="sub">A brand new swamp adventure. Three hand-made levels, the Mossy Trail, the Murky Marsh and the Forgotten Jungle with its boss, open the way into the Endless Realms: a new, tougher level every time you win, with a stronger boss every third level and bigger rewards the deeper you go. Finish a level to unlock the next, and replay any from Level Select. Every run, win or lose, pays Swamp Coins and Swamp Crystals. There is no daily limit.</p>
  <div id="arc">
   <div class="arcstage" id="stage">
   <div class="box" id="box">
@@ -55,17 +55,17 @@
    <div class="loot" id="loot" aria-live="polite"></div>
    <button type="button" class="btn ghost gpause gsnd" id="snd-hud" aria-pressed="true" aria-label="Sound on. Tap to switch." hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg></button>
    <button type="button" class="btn ghost gpause" id="pz" aria-label="Pause" hidden>Pause</button>
-   <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div class="acts" id="acts"><button type="button" class="btn" id="go">Play</button><button type="button" class="btn ghost" id="rpl" hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
+   <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div class="acts" id="acts"><button type="button" class="btn" id="go" data-fs-start>Play</button><button type="button" class="btn ghost" id="cont" data-fs-start hidden>Continue</button><button type="button" class="btn ghost" id="rpl" data-fs-start hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
   <div class="how" id="howp" role="region" aria-labelledby="howt"><h3 id="howt">How to play</h3><ol class="hl">
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></i><div><b>Movement</b><span>Run with <kbd>A</kbd><kbd>D</kbd> or the arrow keys. On touch, use the Left and Right buttons.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 19V6M6 11l6-6 6 6"/></svg></i><div><b>Jump</b><span>Press <kbd>Space</kbd> or Jump to leap onto crates and platforms. Hold for a high jump, tap for a short hop.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M19.5 4.5L9 15M14 4.5h5.5V10M7 11l6 6M8 16l-4 4"/></svg></i><div><b>Attack</b><span>Press <kbd>J</kbd> or <kbd>E</kbd>, or Attack, to swing in front of you. The Bramble Bug takes two hits. The Bog Crawler in Level 2 takes three. The Rootmaw boss at the end of Level 3 takes twelve: dodge its ground slam, then strike while it recovers.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M19.5 4.5L9 15M14 4.5h5.5V10M7 11l6 6M8 16l-4 4"/></svg></i><div><b>Attack</b><span>Press <kbd>J</kbd> or <kbd>E</kbd>, or Attack, to swing in front of you. The Bramble Bug takes two hits. The Bog Crawler in Level 2 takes three. The Rootmaw boss at the end of Level 3 takes twelve: dodge its ground slam, then strike while it recovers. In the Endless Realms enemies get new looks and take more hits, and boss levels bring tougher bosses.</span></div></li>
    <li><i class="hi orb"></i><div><b>Collectibles</b><span>Glowspores float along the way. There are 12 in Level 1, 17 in Level 2 and 41 in Level 3. Touch one to collect it. Watch out for thorn vines in Level 3: they hurt.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3c0 0-6 6-6 11a6 6 0 0012 0c0-5-6-11-6-11z"/></svg></i><div><b>Health</b><span>You have 3 flames. A Bramble Bug or Bog Crawler touch costs one. Lose them all and it is game over. Lit lanterns save your spot.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Reach the goal gate at the far end of Levels 1 and 2. Level 3 ends in a boss fight: defeat the Rootmaw to win.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></i><div><b>Score</b><span>Glowspore 100, Bramble Bug 250, Bog Crawler 400, Rootmaw 1,500, finishing a level 1,000, plus a speed bonus of up to 1,000. Your best score for each level is saved.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Reach the goal gate at the far end of each level. Every third level (3, 6, 9 and on) ends in a boss fight: defeat the boss to clear it. There is no last level.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></i><div><b>Score</b><span>Glowspore 100, Bramble Bug 250, Bog Crawler 400, Rootmaw 1,500, finishing a level 1,000, plus a speed bonus of up to 1,000. From Level 4 on, every score value grows with the level's Danger number, so coins and crystals do too. Your best score for each level is saved.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l7 6-3 12H8L5 9z"/></svg></i><div><b>Fragments</b><span>Defeated enemies have a chance to drop a Fragment. Each kind comes from its own enemy, and the Rootmaw drops a rare one. They are saved to your collection straight away.</span></div></li>
-  </ol><div class="acts hrow"><button type="button" class="btn" id="howplay">Play</button><button type="button" class="btn ghost" id="howback">Back</button></div></div><div class="lvs" id="lvp" role="region" aria-labelledby="lvt"><h3 id="lvt">Level Select</h3><ul class="lvl" id="lvl"></ul><div class="acts hrow1"><button type="button" class="btn ghost" id="lvback">Main menu</button></div></div></div>
+  </ol><div class="acts hrow"><button type="button" class="btn" id="howplay" data-fs-start>Play</button><button type="button" class="btn ghost" id="howback">Back</button></div></div><div class="lvs" id="lvp" role="region" aria-labelledby="lvt"><h3 id="lvt">Level Select</h3><ul class="lvl" id="lvl"></ul><div class="acts hrow1"><button type="button" class="btn ghost" id="lvback">Main menu</button></div></div></div>
   </div>
   <div class="tc" id="tc" aria-label="Touch controls" hidden>
    <div class="tc-grp tc-move" id="tcMove">
@@ -94,10 +94,11 @@
 <nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
-<script src="store.js?v=bag2"></script>
+<script src="store.js?v=endless1"></script>
 <script src="avatar.js"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
+<script src="progression.js?v=endless1"></script>
 <script>
 /* SwampRealms game: title, start, pause, movement, Level 1, collectibles, enemy, health, and simple player combat. */
 (function(){
@@ -188,13 +189,13 @@
  const BUG={w:30,h:24,min:1650,max:1970,speed:60};
  let bug={x:1810,dir:1,hp:2,hurt:0,dead:0,defeated:false,kb:0};
  let BUG_X=1810;
- function resetBug(){bug.x=BUG_X;bug.dir=1;bug.hp=2;bug.hurt=0;bug.dead=0;bug.defeated=false;bug.kb=0}
+ function resetBug(){bug.x=BUG_X;bug.dir=1;bug.hp=BUGHP;bug.hurt=0;bug.dead=0;bug.defeated=false;bug.kb=0}
  // ---- Bog Crawler (Level 2 only): a squat swamp-hopper. It hops in short bounces, and when you get close it crouches (warning), then lunges in one big leap.
  // After landing it is winded for a moment (harmless, and your window to strike). It takes three hits.
  const CRW={w:34,h:22,hop:60,hopV:170,hopG:620,lungeV:260,lungeX:190,lungeG:700,aggro:150,wind:.55,recover:.85};
  let CR=null;   // this level's patch: {min,max,x}, or null when the level has no Bog Crawler
  let cr={x:0,z:0,vz:0,vx:0,dir:-1,hp:3,hurt:0,dead:0,defeated:false,kb:0,st:"idle",t:.6,cd:0,tt:0};
- function resetCrawler(){if(!CR)return;cr.x=CR.x;cr.z=0;cr.vz=0;cr.vx=0;cr.dir=-1;cr.hp=3;cr.hurt=0;cr.dead=0;cr.defeated=false;cr.kb=0;cr.st="idle";cr.t=.6;cr.cd=0;cr.tt=0}
+ function resetCrawler(){if(!CR)return;cr.x=CR.x;cr.z=0;cr.vz=0;cr.vx=0;cr.dir=-1;cr.hp=CRHP;cr.hurt=0;cr.dead=0;cr.defeated=false;cr.kb=0;cr.st="idle";cr.t=.6;cr.cd=0;cr.tt=0}
  function crawlerStrike(f){
   if(!CR||cr.defeated)return;
   const x0=f>0?state.x-BACK:state.x-REACH,x1=f>0?state.x+REACH:state.x+BACK,bot=GROUND_Y-cr.z,top=bot-CRW.h;
@@ -253,7 +254,7 @@
   // touch hurts, except while it is winded after a lunge or staggered by a hit
   if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&cr.hurt<=0&&cr.st!=="recover"){
    const bot=GROUND_Y-cr.z,top=bot-CRW.h;
-   if(state.x+HW>cr.x-CRW.w/2&&state.x-HW<cr.x+CRW.w/2&&state.y+R>top&&state.y-R<bot){hurtPlayer(cr.x,"Bog Crawler");if(state.hp<=0)startDefeat()}
+   if(state.x+HW>cr.x-CRW.w/2&&state.x-HW<cr.x+CRW.w/2&&state.y+R>top&&state.y-R<bot){hurtPlayer(cr.x,SC.crawler.name);if(state.hp<=0)startDefeat()}
   }
  }
 
@@ -261,7 +262,16 @@
  // Thorn vines hurt on touch (same damage as an enemy). The Rootmaw is a giant root-golem: it walks toward you, rears up (warning), then slams the ground and sends a
  // low shockwave of roots along the floor each way (jump it). After the slam it is winded for a moment (harmless, your window to strike).
  // Under half health it walks faster, winds up quicker and slams twice. It takes twelve hits from the normal player attack.
- const BS={w:64,h:86,hp:12,walk:34,walkE:58,wave:165,waveH:20,defeat:2.2};
+ const BS={w:64,h:86,hp:12,walk:34,walkE:58,wave:165,waveH:20,defeat:2.2,slamPlus:0,name:"The Rootmaw",short:"Rootmaw"};
+ // ---- Endless progression: the current level's difficulty/reward settings (SC) come from progression.js (Progression.scale).
+ // The numbers above are the ORIGINAL (Level 1-3) values; applyScale() multiplies them for deeper levels, and for Levels 1-3 it changes nothing.
+ const BS0=Object.assign({},BS),CRW0=Object.assign({},CRW),BUG_SPEED0=BUG.speed;
+ let SC=Progression.scale(0),BUGHP=2,CRHP=3;
+ function applyScale(S){
+  SC=S;BUGHP=S.bugHp;CRHP=S.crawlerHp;BUG.speed=BUG_SPEED0*S.speed;
+  CRW.hop=CRW0.hop*S.speed;CRW.lungeX=CRW0.lungeX*S.speed;CRW.aggro=CRW0.aggro*S.aggro;CRW.recover=CRW0.recover*S.recover;CRW.wind=Math.max(.35,CRW0.wind*S.recover);
+  BS.hp=S.bossHp;BS.walk=BS0.walk*S.bossSpeed;BS.walkE=BS0.walkE*S.bossSpeed;BS.wave=BS0.wave*S.waveSpeed;BS.slamPlus=S.slamPlus;BS.name=S.boss.name;BS.short=S.boss.short;
+ }
  let AR=null,HAZ=[],waves=[];   // AR: this level's boss arena {x (left wall), bx (boss start)} or null
  let boss={x:0,dir:-1,hp:12,trail:12,hurt:0,dead:0,defeated:false,kb:0,st:"dormant",t:0,wt:.8,tt:0,lt:0,lock:false,slams:0,pulse:0};
  const enraged=()=>boss.hp<=BS.hp/2;
@@ -311,7 +321,7 @@
   for(const w of waves){
    w.x+=w.d*BS.wave*dt;
    if(Math.random()<dt*30)fx.push({k:"puff",x:w.x,y:GROUND_Y-2,vx:-w.d*20,vy:-10,life:.3,max:.3,r:2,g:5});
-   if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&Math.abs(state.x-w.x)<HW+11&&state.y+R>GROUND_Y-BS.waveH){hurtPlayer(w.x,"Rootmaw");if(state.hp<=0)startDefeat()}
+   if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&Math.abs(state.x-w.x)<HW+11&&state.y+R>GROUND_Y-BS.waveH){hurtPlayer(w.x,BS.short);if(state.hp<=0)startDefeat()}
   }
   waves=waves.filter(w=>w.x>AR.x-30&&w.x<LEVEL_W+30);
   if(boss.st==="intro"){
@@ -322,17 +332,17 @@
    boss.dir=dx>=0?1:-1;
    if(boss.hurt<=0)boss.x=Math.max(AR.x+BS.w/2+6,Math.min(LEVEL_W-BS.w/2-6,boss.x+boss.dir*(en?BS.walkE:BS.walk)*dt));
    boss.t-=dt;
-   if(boss.t<=0){boss.st="wind";boss.wt=en?.5:.8;boss.t=boss.wt;boss.slams=en?1:0;AUDIO.play("croak")}
+   if(boss.t<=0){boss.st="wind";boss.wt=Math.max(.32,(en?.5:.8)/SC.bossSpeed);boss.t=boss.wt;boss.slams=(en?1:0)+BS.slamPlus;AUDIO.play("croak")}
   }else if(boss.st==="wind"){   // rears up and shakes: the warning. It turns to track you until the slam.
    boss.t-=dt;boss.dir=dx>=0?1:-1;
    if(boss.t<=0){boss.st="slam";boss.t=.22;bossWave()}
   }else if(boss.st==="slam"){
    boss.t-=dt;
-   if(boss.t<=0){if(boss.slams>0){boss.slams--;boss.st="wind";boss.wt=.45;boss.t=.45}else{boss.st="recover";boss.t=en?.95:1.15}}
+   if(boss.t<=0){if(boss.slams>0){boss.slams--;boss.st="wind";boss.wt=.45;boss.t=.45}else{boss.st="recover";boss.t=(en?.95:1.15)*SC.recover}}
   }else if(boss.st==="recover"){boss.t-=dt;if(boss.t<=0){boss.st="walk";boss.t=(en?.9:1.4)+Math.random()*.6}}
   // touching the body hurts, except while it is staggered by a hit or winded after a slam
   if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&boss.hurt<=0&&boss.st!=="recover"&&boss.st!=="intro"){
-   if(state.x+HW>boss.x-BS.w/2+6&&state.x-HW<boss.x+BS.w/2-6&&state.y+R>GROUND_Y-BS.h+12&&state.y-R<GROUND_Y){hurtPlayer(boss.x,"Rootmaw");if(state.hp<=0)startDefeat()}
+   if(state.x+HW>boss.x-BS.w/2+6&&state.x-HW<boss.x+BS.w/2-6&&state.y+R>GROUND_Y-BS.h+12&&state.y-R<GROUND_Y){hurtPlayer(boss.x,BS.short);if(state.hp<=0)startDefeat()}
   }
  }
  function updateHazards(){
@@ -400,7 +410,7 @@
   sp.got=true;state.spores++;showSpores();bumpHud();AUDIO.play("pickup");
   for(let i=0;i<12;i++){const a=i/12*6.283+Math.random()*.4,v=70+Math.random()*70;fx.push({k:"spark",x:sp.x,y:sp.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-30,life:.45,max:.45})}
   fx.push({k:"ring",x:sp.x,y:sp.y,vx:0,vy:0,life:.35,max:.35});
-  fx.push({k:"txt",x:sp.x,y:sp.y-14,vx:0,vy:-45,life:.7,max:.7,s:"+"+SCORE.spore});
+  fx.push({k:"txt",x:sp.x,y:sp.y-14,vx:0,vy:-45,life:.7,max:.7,s:"+"+pt(SCORE.spore)});
  }
 
  const GOAL={x:2270,y:GROUND_Y-110,w:70,h:110};
@@ -414,10 +424,10 @@
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
   ov.hidden=m==="playing";
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent="Play";$("quit").hidden=true}
-  if(m==="complete"){AUDIO.play("complete");const more=LV<LEVELS.length-1;$("ovt").textContent=LEVELS[LV].boss?"Victory!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+LEVELS[LV].name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+(more?". Next up: Level "+(LV+2)+", "+LEVELS[LV+1].name+".":".");$("go").textContent=more?"Next level":"Play again";$("quit").hidden=false}
-  $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=!(m==="complete"&&LV<LEVELS.length-1);
+  if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: Level "+(LV+2)+", "+lvl(LV+1).name+".";$("go").textContent="Next level";$("quit").hidden=false}
+  $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
-  if(m==="complete"){const nu=markDone(LV),r=finishScore();$("ovp").textContent=(LEVELS[LV].boss?"The Rootmaw is defeated and the Forgotten Jungle is free! ":"")+r.result+(nu?" Level "+nu+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"")}
+  if(m==="complete"){const nu=markDone(LV),r=finishScore();$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):"")+r.result+(nu?" Level "+nu+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"")}
   if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent="Restart";$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
   if(m==="playing"){last=performance.now();state.tx=state.ty=null}
@@ -425,7 +435,7 @@
   try{showFrags()}catch(e){}
   draw();
  }
- function start(){paid=false;loadLevel(LV);vis.banner=LEVELS[LV].banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=MAXHP;vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
+ function start(){paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=MAXHP;vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
  function respawnReset(){state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=MAXHP;vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
@@ -501,7 +511,7 @@
    if(bug.hurt<=0){bug.x+=bug.dir*BUG.speed*dt;if(bug.x<=BUG.min)bug.dir=1;else if(bug.x>=BUG.max)bug.dir=-1}
    const by0=GROUND_Y-BUG.h;
    if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&bug.hurt<=0&&state.x+HW>bug.x-BUG.w/2&&state.x-HW<bug.x+BUG.w/2&&state.y+R>by0&&state.y-R<by0+BUG.h){
-    hurtPlayer(bug.x);
+    hurtPlayer(bug.x,SC.bug.name);
     if(state.hp<=0){startDefeat()}
    }
   }
@@ -528,6 +538,15 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  const vis={banner:0,stop:0,land:0,shake:0,flash:0,take:0,turn:0,dust:0,dying:0,dyT:0,dyDir:1};   // visual-only timers: landing squash, screen shake, damage flash
  function glowSprite(r,rgb){const c=document.createElement("canvas");c.width=c.height=r*2;const g=c.getContext("2d"),q=g.createRadialGradient(r,r,0,r,r,r);q.addColorStop(0,"rgba("+rgb+",.9)");q.addColorStop(.35,"rgba("+rgb+",.32)");q.addColorStop(1,"rgba("+rgb+",0)");g.fillStyle=q;g.fillRect(0,0,r*2,r*2);return c}
  const GLOW={teal:glowSprite(32,"110,255,218"),amber:glowSprite(32,"255,190,95"),rose:glowSprite(32,"255,105,125"),moon:glowSprite(64,"255,236,190")};
+ const AURAS={};
+ function auraGlow(hex,x,y,r,a){let g=AURAS[hex];if(!g){g=AURAS[hex]=glowSprite(32,parseInt(hex.slice(1,3),16)+","+parseInt(hex.slice(3,5),16)+","+parseInt(hex.slice(5,7),16))}glow(g,x,y,r,a)}
+ // enemy variants (Level 4+): a coloured glow behind them, and a small nameplate when you are close
+ function drawAuras(){
+  const t=state.t,tag=(txt,col,x,y)=>{X.save();X.textAlign="center";X.font="800 9px Nunito,sans-serif";X.lineWidth=3;X.strokeStyle="#0a1208";X.strokeText(txt,x,y);X.fillStyle=col;X.fillText(txt,x,y);X.restore()};
+  if(SC.bug.aura&&!bug.defeated){auraGlow(SC.bug.aura,bug.x,GROUND_Y-12,36,.5+.15*Math.sin(t*4));if(Math.abs(state.x-bug.x)<170)tag(SC.bug.name,SC.bug.aura,bug.x,GROUND_Y-34)}
+  if(CR&&SC.crawler.aura&&!cr.defeated){auraGlow(SC.crawler.aura,cr.x,GROUND_Y-cr.z-11,38,.5+.15*Math.sin(t*4+1));if(Math.abs(state.x-cr.x)<190)tag(SC.crawler.name,SC.crawler.aura,cr.x,GROUND_Y-cr.z-32)}
+  if(AR&&SC.boss.aura&&!boss.defeated)auraGlow(SC.boss.aura,boss.x,GROUND_Y-BS.h/2,96,.34+.1*Math.sin(boss.tt*3));
+ }
  function glow(s,x,y,r,a){const pa=X.globalAlpha;X.globalAlpha=pa*a;X.drawImage(s,x-r,y-r,r*2,r*2);X.globalAlpha=pa}
  function rr(x,y,w,h,r){X.beginPath();X.moveTo(x+r,y);X.arcTo(x+w,y,x+w,y+h,r);X.arcTo(x+w,y+h,x,y+h,r);X.arcTo(x,y+h,x,y,r);X.arcTo(x,y,x+w,y,r);X.closePath()}
  // sky is painted once and reused every frame
@@ -780,7 +799,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const a=Math.min(1,boss.lt/.5)*(boss.defeated?Math.min(1,boss.dead/.8):1);if(a<=0)return;
   const bw=288,bx=(W-bw)/2+(boss.pulse>0?Math.sin(boss.tt*90)*2*boss.pulse/.3:0),by=H-34,bh=15,fr=Math.max(0,boss.hp)/BS.hp,tr=Math.max(0,boss.trail)/BS.hp;
   X.save();X.globalAlpha=a;X.textAlign="center";
-  X.font="900 12px Nunito,sans-serif";try{X.letterSpacing="3px"}catch(_){}X.lineWidth=4;X.strokeStyle="#0a0608";X.strokeText("THE ROOTMAW",W/2,by-9);X.fillStyle=enraged()?"#ff9aa8":"#ffd98a";X.fillText("THE ROOTMAW",W/2,by-9);try{X.letterSpacing="0px"}catch(_){}
+  X.font="900 12px Nunito,sans-serif";try{X.letterSpacing="3px"}catch(_){}X.lineWidth=4;X.strokeStyle="#0a0608";X.strokeText(BS.name.toUpperCase(),W/2,by-9);X.fillStyle=enraged()?"#ff9aa8":"#ffd98a";X.fillText(BS.name.toUpperCase(),W/2,by-9);try{X.letterSpacing="0px"}catch(_){}
   X.fillStyle="rgba(10,6,10,.82)";rr(bx-5,by-5,bw+10,bh+10,9);X.fill();X.strokeStyle="#7a5a46";X.lineWidth=2;X.stroke();
   X.save();rr(bx,by,bw,bh,5);X.clip();
   X.fillStyle="#2a1520";X.fillRect(bx,by,bw,bh);
@@ -788,7 +807,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const gg=X.createLinearGradient(bx,0,bx+bw,0);gg.addColorStop(0,"#ff6b82");gg.addColorStop(1,"#ffb04f");X.fillStyle=gg;X.fillRect(bx,by,bw*fr,bh);
   X.fillStyle="rgba(255,255,255,.22)";X.fillRect(bx,by,bw*fr,4);
   if(boss.pulse>0){X.fillStyle="rgba(255,255,255,"+boss.pulse/.3*.6+")";X.fillRect(bx,by,bw,bh)}
-  X.strokeStyle="rgba(10,6,10,.75)";X.lineWidth=1.5;for(let i=1;i<BS.hp;i++){const sx=bx+bw*i/BS.hp;X.beginPath();X.moveTo(sx,by);X.lineTo(sx,by+bh);X.stroke()}
+  const tk=BS.hp>30?Math.ceil(BS.hp/12):1;X.strokeStyle="rgba(10,6,10,.75)";X.lineWidth=1.5;for(let i=tk;i<BS.hp;i+=tk){const sx=bx+bw*i/BS.hp;X.beginPath();X.moveTo(sx,by);X.lineTo(sx,by+bh);X.stroke()}
   X.restore();X.restore();
  }
 
@@ -982,7 +1001,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   for(const o of SOLIDS){if(o.x+o.w<cam-8||o.x>cam+W+8)continue;drawSolid(o)}
   for(const z of HAZ)drawThorns(z,cam);
   if(GOAL.x<cam+W+110)drawGoal();
-  drawBug();drawCrawler();drawBoss();drawWaves();
+  drawAuras();drawBug();drawCrawler();drawBoss();drawWaves();
   for(const sp of spores){if(sp.got||sp.x<cam-30||sp.x>cam+W+30)continue;drawSpore(sp)}
   drawGate();
   drawPlayer();
@@ -1009,13 +1028,14 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   if(vis.flash>0){const vg=X.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,H*.75);vg.addColorStop(0,"rgba(255,70,100,0)");vg.addColorStop(1,"rgba(255,70,100,"+Math.min(.5,vis.flash*1.4)+")");X.fillStyle=vg;X.fillRect(0,0,W,H)}
  }
  function drawBanner(){
-  const lv=LEVELS[LV];if(!lv.banner||vis.banner<=0)return;
+  const lv=lvl(LV);if(!lv.banner||vis.banner<=0)return;
   const b=vis.banner,e=2.8-b;
   const fa=e<.35?1:Math.max(0,1-(e-.35)/.5);if(fa>0){X.fillStyle="rgba(4,8,6,"+fa+")";X.fillRect(0,0,W,H)}
   const ta=e<.4?0:e<.9?(e-.4)/.5:b<.7?b/.7:1;if(ta<=0)return;
   X.save();X.globalAlpha=ta;X.textAlign="center";
   X.fillStyle="#ffd98a";X.font="900 13px Nunito,sans-serif";try{X.letterSpacing="4px"}catch(_){}X.fillText("LEVEL "+(LV+1),W/2,176);
   let fs=27;X.font="900 27px Nunito,sans-serif";try{X.letterSpacing="1px"}catch(_){}while(X.measureText(lv.name.toUpperCase()).width>W-40&&fs>16){fs--;X.font="900 "+fs+"px Nunito,sans-serif"}X.lineWidth=5;X.strokeStyle="#0a1208";X.strokeText(lv.name.toUpperCase(),W/2,212);X.fillStyle="#f3f0c8";X.fillText(lv.name.toUpperCase(),W/2,212);
+  if(lv.sub){X.font="900 11px Nunito,sans-serif";try{X.letterSpacing="3px"}catch(_){}X.fillStyle=lv.boss?"#ff9aa8":"#9be8c8";X.fillText(lv.sub.toUpperCase(),W/2,236)}
   try{X.letterSpacing="0px"}catch(_){}X.restore();
  }
  function shadowY(){let y=null;const sup=ONEWAY.concat(SOLIDS);for(const p of sup){if(state.x+R*.7>p.x&&state.x-R*.7<p.x+p.w&&p.y>=state.y+R-1&&(y===null||p.y<y))y=p.y}return y}
@@ -1028,7 +1048,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
 
  // buttons
- $("go").onclick=()=>{if(state.mode==="over"&&performance.now()-deadAt<500)return;try{document.activeElement&&document.activeElement.blur()}catch(e){}if(state.mode==="paused")resume();else{if(state.mode==="complete"&&LV<LEVELS.length-1)LV++;start()}if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"});$("go").blur()};
+ $("go").onclick=()=>{if(state.mode==="over"&&performance.now()-deadAt<500)return;try{document.activeElement&&document.activeElement.blur()}catch(e){}if(state.mode==="paused")resume();else{if(state.mode==="complete")LV++;start()}if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"});$("go").blur()};
  $("quit").onclick=()=>{LV=0;loadLevel(0);respawnReset();setMode("title")};
  $("pz").onclick=pause;
 
@@ -1179,9 +1199,12 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    bug:[3560,3760,3660],crawler:{min:1930,max:2000,x:1965},arena:{x:3900,bx:4200},goalX:99999,gaps:[[560,820],[1360,1760],[2300,2680],[3280,3410]],theme:TH3}
  ];
  let LV=0;
+ // ---- Endless levels: index 0-2 are the hand-built LEVELS above; every higher index is generated (once, then cached) by Progression.build.
+ const GEN={};
+ function lvl(i){if(i<LEVELS.length)return LEVELS[i];return GEN[i]||(GEN[i]=Progression.build(i,{gr:gr,pf:pf,bx:bx,mp:mp,themes:[TH1,TH2,TH3],START_X:START_X,GROUND_Y:GROUND_Y}))}
  // swap every piece of level data the game reads, then repaint the sky, ground and water for that level
  function loadLevel(i){
-  const L=LEVELS[i];LV=i;
+  const L=lvl(i);LV=i;applyScale(L.scale||Progression.scale(i));
   LEVEL_W=L.W;GROUNDS=L.grounds;PLATFORMS=L.platforms;SOLIDS=L.solids;CHECKPOINTS=L.cps;SPORE_POS=L.spores;GAPS=L.gaps;
   CR=L.crawler||null;AR=L.arena||null;HAZ=L.hazards||[];for(const p of PLATFORMS)if(p.rg)p.x=p.bx+Math.sin(p.ph)*p.rg;BUG.min=L.bug[0];BUG.max=L.bug[1];BUG_X=L.bug[2];GOAL.x=L.goalX;ONEWAY=GROUNDS.concat(PLATFORMS);
   TH=L.theme;paintSky(TH);paintGrads(TH);
@@ -1259,7 +1282,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   function watch(){
    try{
     let want=-1;
-    if(AUDIO.on&&state.mode==="playing"&&!document.hidden){want=LV;if(LEVELS[LV].boss&&boss.lock&&!boss.defeated)want=3}
+    if(AUDIO.on&&state.mode==="playing"&&!document.hidden){want=lvl(LV).music!==undefined?lvl(LV).music:LV;if(lvl(LV).boss&&boss.lock&&!boss.defeated)want=3}
     if(want<0){if(cur>=0)end();return}
     const c=AUDIO.ctx();if(!c)return;
     if(want!==cur||!bus)begin(c,want);
@@ -1274,19 +1297,20 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // Glowspore 100, enemy 250 (Bramble Bug) / 400 (Bog Crawler), level clear 1000, speed bonus up to 1000 that falls to 0 at the level's time limit.
  // Score is worked out from state the game already tracks (spores collected, enemies defeated, play time), so combat is untouched.
  const SCORE={spore:100,bug:250,crawler:400,boss:1500,clear:1000,speed:1000},TIME_LIMIT=[90,150,240],SKEY="swampverse-arcade-scores";
+ const pt=n=>Math.round(n*SC.rewardMul/10)*10;   // every score value, scaled by this level's reward multiplier (x1 for Levels 1-3)
  const fmt=n=>Number(n).toLocaleString("en-US"),mmss=t=>{t=Math.max(0,Math.floor(t));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
  let sc={kills:{},shown:-1,sec:-1,bestKey:-1};
  let scoresMem={};
  function readScores(){
   try{
    const o=JSON.parse(localStorage.getItem(SKEY)||"null"),out={};
-   if(o&&typeof o==="object")for(const k in o){const v=o[k],i=Number(k);if(Number.isInteger(i)&&i>=0&&i<LEVELS.length&&v&&Number.isFinite(v.score)&&v.score>=0)out[i]={score:Math.floor(v.score),spores:Math.floor(v.spores)||0,enemies:Math.floor(v.enemies)||0,time:Number(v.time)||0}}
+   if(o&&typeof o==="object")for(const k in o){const v=o[k],i=Number(k);if(Number.isInteger(i)&&i>=0&&i<Progression.maxLevel&&v&&Number.isFinite(v.score)&&v.score>=0)out[i]={score:Math.floor(v.score),spores:Math.floor(v.spores)||0,enemies:Math.floor(v.enemies)||0,time:Number(v.time)||0}}
    scoresMem=out;
   }catch(e){}
   return scoresMem;
  }
  function writeScore(i,rec){scoresMem[i]=rec;try{localStorage.setItem(SKEY,JSON.stringify(scoresMem))}catch(e){}}
- function foes(){const a=[{id:"bug",pts:SCORE.bug,d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:SCORE.crawler,d:()=>cr.defeated,x:()=>cr.x});if(AR)a.push({id:"boss",pts:SCORE.boss,d:()=>boss.defeated,x:()=>boss.x});return a}
+ function foes(){const a=[{id:"bug",pts:pt(SCORE.bug),d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:pt(SCORE.crawler),d:()=>cr.defeated,x:()=>cr.x});if(AR)a.push({id:"boss",pts:pt(SCORE.boss*SC.bossPts),d:()=>boss.defeated,x:()=>boss.x});return a}
 
  // ================= Loot: defeated enemies can drop a Fragment (table and drop chances live in store.js, FRAGMENTS). =================
  // A drop is saved to the player's data the moment it happens (Fragments.add writes it into the crystals save), then shown as a notification.
@@ -1294,7 +1318,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  function lootCount(){let n=0;for(const k in runLoot)n+=runLoot[k];return n}
  function dropLoot(f){
   try{
-   const d=typeof Fragments!=="undefined"?Fragments.roll(f.id):null;if(!d)return;
+   const d=typeof Fragments!=="undefined"?Fragments.roll(f.id,SC.fragBonus):null;if(!d)return;
    runLoot[d.id]=(runLoot[d.id]||0)+1;
    const x=f.x();
    fx.push({k:"star",x:x,y:GROUND_Y-34,vx:0,vy:0,life:.42,max:.42,c:d.color,g:26});
@@ -1328,7 +1352,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // stop iOS pinch/gesture zoom and the long-press menu while playing (inside the game box only)
  (function(){const bx=$("box");if(!bx)return;["gesturestart","gesturechange","gestureend"].forEach(t=>bx.addEventListener(t,e=>e.preventDefault()));bx.addEventListener("contextmenu",e=>e.preventDefault())})();
  function killPts(){let n=0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
- const scoreNow=()=>state.spores*SCORE.spore+killPts();
+ const scoreNow=()=>state.spores*pt(SCORE.spore)+killPts();
  function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}
  function showScore(force){
   const v=scoreNow(),sec=Math.floor(state.t||0);
@@ -1345,8 +1369,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   showScore(false);
  }
  function finishScore(){
-  const lim=TIME_LIMIT[LV]||120,list=foes(),en=list.filter(f=>sc.kills[f.id]).length,enT=list.length,spT=SPORE_POS.length;
-  const sp=state.spores*SCORE.spore,ep=killPts(),cl=SCORE.clear,tm=state.t,sb=Math.round(SCORE.speed*Math.max(0,1-tm/lim)/10)*10,total=sp+ep+cl+sb;
+  const lim=lvl(LV).timeLimit||TIME_LIMIT[LV]||120,list=foes(),en=list.filter(f=>sc.kills[f.id]).length,enT=list.length,spT=SPORE_POS.length;
+  const sp=state.spores*pt(SCORE.spore),ep=killPts(),cl=pt(SCORE.clear),tm=state.t,sb=Math.round(pt(SCORE.speed)*Math.max(0,1-tm/lim)/10)*10,total=sp+ep+cl+sb;
   bestCache=null;const prev=readScores()[LV],isBest=!prev||total>prev.score;
   if(isBest)writeScore(LV,{score:total,spores:state.spores,enemies:en,time:Math.round(tm*10)/10});
   bestCache=null;
@@ -1354,7 +1378,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const row=(a,b,c)=>"<li><span>"+a+"</span><i>"+b+"</i><em>"+c+"</em></li>";
   const best=isBest?(prev?'<span class="sbest new">New best! Beat '+fmt(prev.score)+"</span>":'<span class="sbest new">New best!</span>'):'<span class="sbest">Best '+fmt(prev.score)+"</span>";
   const html='<div class="sres"><span class="sk">Final score</span><b class="sbig">'+fmt(total)+"</b>"+best+
-   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+"</ul></div>";
+   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+(SC.depth?row("Danger "+SC.depth+" rewards","×"+SC.rewardMul.toFixed(2),""):"")+"</ul></div>";
   return {total,result,html,isBest};
  }
 
@@ -1384,8 +1408,9 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   try{
    const o=JSON.parse(localStorage.getItem(PKEY)||"null");
    if(o&&typeof o==="object"){
-    const u=Math.floor(Number(o.unlocked));if(u>=1)p.unlocked=Math.min(u,LEVELS.length);
-    if(Array.isArray(o.done))p.done=o.done.filter((n,i,a)=>Number.isInteger(n)&&n>=0&&n<LEVELS.length&&a.indexOf(n)===i);
+    const u=Math.floor(Number(o.unlocked));if(u>=1)p.unlocked=Math.min(u,Progression.maxLevel);
+    if(Array.isArray(o.done))p.done=o.done.filter((n,i,a)=>Number.isInteger(n)&&n>=0&&n<Progression.maxLevel&&a.indexOf(n)===i);
+    for(const n of p.done)p.unlocked=Math.max(p.unlocked,n+2);   // finishing a level always opens the next, even for saves made when Level 3 was the last
    }
   }catch(e){return prog}   // storage blocked or corrupt: keep what this page already knows
   prog=p;return p;
@@ -1396,26 +1421,33 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  function markDone(i){
   readProg();const before=prog.unlocked;
   if(!prog.done.includes(i))prog.done.push(i);
-  prog.unlocked=Math.max(prog.unlocked,Math.min(i+2,LEVELS.length));
+  prog.unlocked=Math.max(prog.unlocked,Math.min(i+2,Progression.maxLevel));
   saveProg();return prog.unlocked>before?prog.unlocked:0;
  }
  const LOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>',PLAYI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>',DONEI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+ let lvAll=false;   // Level Select shows the three hand-made levels plus the latest endless ones; "Show earlier" reveals the rest
  function renderLevels(){
-  readProg();const bs=readScores();let h="";
-  LEVELS.forEach((L,i)=>{
-   const open=isUnlocked(i),done=prog.done.includes(i);
+  readProg();const bs=readScores(),H0=LEVELS.length,RECENT=8,total=prog.unlocked+1;   // +1: the next, locked level is shown as a teaser
+  const from=lvAll?H0:Math.max(H0,total-RECENT);let h="",cur=-1;
+  for(let i=0;i<total;i++)if(isUnlocked(i)&&!prog.done.includes(i))cur=i;
+  if(cur<0)cur=prog.unlocked-1;
+  for(let i=0;i<total;i++){
+   if(i>=H0&&i<from){if(i===H0)h+='<li class="lvdiv">Endless Realms</li><li><button type="button" class="btn ghost lvmore">Show '+(from-H0)+' earlier levels</button></li>';continue}
+   if(i===H0&&from===H0)h+='<li class="lvdiv">Endless Realms</li>';
+   const L=lvl(i),open=isUnlocked(i),done=prog.done.includes(i);
    const st=!open?"Locked. Finish Level "+i+" to unlock.":done?"Completed. Tap to replay.":"Unlocked. Tap to play.";
-   h+='<li><button type="button" class="lvb'+(open?"":" locked")+(done?" done":"")+'" data-i="'+i+'"'+(open?"":' disabled aria-disabled="true"')+'><i class="lvi">'+(open?(done?DONEI:PLAYI):LOCK)+'</i><span><b>Level '+(i+1)+" \u2014 "+L.name+"</b><em>"+st+"</em>"+(bs[i]?'<em class="lvbest">Best score '+fmt(bs[i].score)+"</em>":"")+"</span></button></li>";
-  });
+   h+='<li><button type="button" class="lvb'+(open?"":" locked")+(done?" done":"")+(i===cur?" cur":"")+'" data-i="'+i+'"'+(open?"":' disabled aria-disabled="true"')+'><i class="lvi">'+(open?(done?DONEI:PLAYI):LOCK)+'</i><span><b>Level '+(i+1)+" \u2014 "+L.name+"</b>"+(L.gen?'<em class="lvtier'+(L.boss?" boss":"")+'">'+Progression.label(i)+"</em>":"")+"<em>"+st+"</em>"+(bs[i]?'<em class="lvbest">Best score '+fmt(bs[i].score)+"</em>":"")+"</span></button></li>";
+  }
   $("lvl").innerHTML=h;
  }
  (function(){
   const ov=$("ovx"),list=$("lvl");
-  function open(){renderLevels();ov.dataset.v="levels";try{document.activeElement&&document.activeElement.blur()}catch(e){}$("lvp").scrollTop=0;setTimeout(()=>{const f=list.querySelector("button:not([disabled])")||$("lvback");f.focus({preventScroll:true})},0)}
+  function open(){renderLevels();ov.dataset.v="levels";try{document.activeElement&&document.activeElement.blur()}catch(e){}$("lvp").scrollTop=0;setTimeout(()=>{const f=list.querySelector(".lvb.cur")||list.querySelector("button:not([disabled])")||$("lvback");f.focus({preventScroll:true});try{f.scrollIntoView({block:"center"})}catch(e){}},0)}
   function menu(){$("quit").onclick()}
   $("lvsel").onclick=open;$("lvback").onclick=menu;
   $("rpl").onclick=()=>{try{document.activeElement&&document.activeElement.blur()}catch(_){}start();if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"})};
   list.addEventListener("click",e=>{
+   if(e.target.closest(".lvmore")){lvAll=true;renderLevels();return}
    const b=e.target.closest(".lvb");if(!b||b.disabled)return;
    const i=+b.dataset.i;readProg();if(!isUnlocked(i))return;
    try{document.activeElement&&document.activeElement.blur()}catch(_){}
@@ -1424,49 +1456,15 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   });
   addEventListener("keydown",e=>{if(e.code==="Escape"&&ov.dataset.v==="levels"&&(state.mode==="title"||state.mode==="complete")){e.preventDefault();menu()}},true);
  })();
+ // title screen "Continue" button: jumps straight to the furthest level reached (only shown once Level 2 or later is unlocked)
+ function paintContinue(){const c=$("cont");if(!c)return;readProg();const show=state.mode==="title"&&prog.unlocked>1;c.hidden=!show;if(show)c.textContent="Continue \u00b7 Level "+prog.unlocked}
+ $("cont").onclick=()=>{readProg();LV=Math.max(0,prog.unlocked-1);try{document.activeElement&&document.activeElement.blur()}catch(e){}start();if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"})};
  readProg();
- loadLevel(0);
+ loadLevel(0);paintContinue();
  resetSpores();showHp();draw();raf=requestAnimationFrame(frame);
 })();
 </script>
-<script>
-/* Full screen for the adventure. Uses the browser Fullscreen API where it exists; on iPhone (no element fullscreen)
-   it falls back to a page-filling view, so the same button works everywhere. */
-(function(){
- const st=document.getElementById("stage"),btns=[].slice.call(document.querySelectorAll("[data-fs]")),root=document.documentElement;
- if(!st||!btns.length)return;
- const rq=st.requestFullscreen||st.webkitRequestFullscreen,ex=document.exitFullscreen||document.webkitExitFullscreen;
- let pseudo=false;
- const real=()=>(document.fullscreenElement||document.webkitFullscreenElement)===st;
- const on=()=>real()||pseudo;
- function sync(){
-  const f=on();
-  st.classList.toggle("fs",f);root.classList.toggle("fs-on",f);
-  btns.forEach(b=>{b.setAttribute("aria-pressed",f?"true":"false");
-   if(b.id==="fsb")b.setAttribute("aria-label",f?"Exit full screen":"Enter full screen");
-   else b.textContent=f?"Exit full screen":"Full screen"});
- }
- function enter(){
-  if(rq){
-   try{const p=rq.call(st);if(p&&p.catch)p.catch(()=>{pseudo=true;sync()})}catch(e){pseudo=true}
-  }else pseudo=true;
-  sync();
- }
- function leave(){
-  pseudo=false;
-  if(real()&&ex){try{const p=ex.call(document);if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-  sync();
- }
- const toggle=()=>on()?leave():enter();
- btns.forEach(b=>b.addEventListener("click",()=>{toggle();try{b.blur()}catch(e){}}));
- const chg=()=>{if(!real())pseudo=false;sync()};
- document.addEventListener("fullscreenchange",chg);document.addEventListener("webkitfullscreenchange",chg);
- addEventListener("keydown",e=>{
-  if(e.code==="KeyF"&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"")){e.preventDefault();toggle()}
-  else if(e.code==="Escape"&&pseudo){leave()}
- });
- sync();
-})();
-</script>
+<script src="gamefs.js?v=1"></script>
+<script>GameFS.attach({stage:"#stage",start:"[data-fs-start],.lvb"});</script>
 </body>
 </html>

@@ -54,9 +54,10 @@ const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":
 
 // ---- saved data ----
 const CK="swamp-crystals-v1";
-let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{}};
+let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
- if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}}
+ if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
+ if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&GEAR[g].slot===sl))delete CS.geq[sl]}}
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv();try{paintBag()}catch(e){}}
 cload();
 
@@ -102,7 +103,13 @@ const Crystals={
 
 // ---- Fragments: enemy loot. Saved INSIDE the crystals save (CS.frags = {fragmentId: count}), so they persist in the browser and sync with accounts like everything else.
 // To give a new enemy a drop, add a line here and use the same id for the enemy (the adventure calls Fragments.roll(enemyId) when it is defeated).
-const FRAG_RARITY={common:{name:"Common",color:"#9fe8c8"},uncommon:{name:"Uncommon",color:"#7fd0ff"},rare:{name:"Rare",color:"#ffd27a"}};
+// Rarity names and colors are the SAME as the cards (cards.js CARDS: Common, Uncommon, Rare, Epic, Legendary, Mythical).
+// They are read from CARDS when it is loaded, so changing a card rarity color changes fragments and gear too. The literals below are only a fallback.
+const FRAG_RARITY=(()=>{
+ const R={common:{name:"Common",color:"#b9bcc2"},uncommon:{name:"Uncommon",color:"#5fd38d"},rare:{name:"Rare",color:"#4da3ff"},epic:{name:"Epic",color:"#a855f7"},legendary:{name:"Legendary",color:"#ff9f1c"},mythical:{name:"Mythical",color:"#ff4fd8"}};
+ try{if(typeof CARDS!=="undefined")CARDS.forEach(c=>{const k=String(c.rarity||"").toLowerCase();if(R[k]&&c.color){R[k].name=c.rarity;R[k].color=c.color}})}catch(e){}
+ return R;
+})();
 const FRAGMENTS={
  bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:.35,rarity:"common"},
  crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:.5,rarity:"uncommon"},
@@ -128,9 +135,10 @@ const Fragments={
   return this.info(id);
  },
  // called when an enemy is defeated: rolls its drop chance; on a drop it is saved straight away. Returns the record, or null for no drop
- roll(enemyId){
+ // bonus (optional) is added to the drop chance: the Endless Realms pass a little extra for deeper levels
+ roll(enemyId,bonus){
   const d=FRAGMENTS[enemyId];
-  if(!d||Math.random()>=d.chance)return null;
+  if(!d||Math.random()>=Math.min(.95,d.chance+(Number(bonus)||0)))return null;
   return this.add(enemyId,1);
  }
 };
@@ -143,8 +151,12 @@ const GEAR_SLOTS={
  armor:{name:"Armor",icon:'<path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>',empty:"No armor yet. Shields and plating are coming soon."},
  accessories:{name:"Accessories",icon:'<circle cx="12" cy="14" r="5"/><path d="M9 4h6l-1 5h-4z"/>',empty:"No accessories yet. Charms and trinkets are coming soon."}
 };
-// id:{name,slot,rarity:common|uncommon|rare, desc}   (empty for now, gear is on the way)
+// id:{name,slot,rarity:common|uncommon|rare|epic|legendary|mythical (same as the cards), desc, stats:{Label:value,...}, icon:"<svg inner markup, 24x24, stroke style>"}   stats and icon are optional; stats are shown in the Bag
 const GEAR={
+ // weapons the player can craft from fragments (recipes are in RECIPES below)
+ bogblaster:{name:"Bog Blaster",slot:"weapons",rarity:"uncommon",desc:"Spits sticky bog goo.",stats:{Damage:7,Speed:"Medium",Range:"Long"},icon:'<path d="M3 10h11l3 2h3v4h-3l-1 3h-4l-1-3H3z"/><path d="M7 10V7h4v3"/><circle cx="21.5" cy="8" r="1.3"/>'},
+ spikedblade:{name:"Spiked Blade",slot:"weapons",rarity:"common",desc:"A blade bristling with bramble thorns.",stats:{Damage:9,Speed:"Fast",Range:"Short"},icon:'<path d="M20 4l-1 6-9 9-5-5 9-9z"/><path d="M8 14l-4 6M4 20l-1 1"/><path d="M14 4l-1-2M19 9l2 1M16 7l1-2"/>'},
+ hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'}
  // example:  oakclub:{name:"Oak Club",slot:"weapons",rarity:"common",desc:"A knobbly swamp club."},
 };
 const Gear={
@@ -152,10 +164,63 @@ const Gear={
  count:id=>CS.gear[id]||0,
  get all(){return CS.gear},
  get total(){let n=0;for(const k in CS.gear)n+=CS.gear[k];return n},
- info(id){const d=GEAR[id];if(!d)return null;const r=FRAG_RARITY[d.rarity]||FRAG_RARITY.common;return{id,name:d.name,slot:d.slot,desc:d.desc||"",rarity:d.rarity||"common",rarityName:r.name,color:r.color,count:CS.gear[id]||0}},
+ info(id){const d=GEAR[id];if(!d)return null;const r=FRAG_RARITY[d.rarity]||FRAG_RARITY.common;return{id,name:d.name,slot:d.slot,desc:d.desc||"",rarity:d.rarity||"common",rarityName:r.name,color:r.color,count:CS.gear[id]||0,stats:d.stats||{},icon:d.icon||"",equipped:CS.geq[d.slot]===id}},
+ // what is equipped in a slot (info record) or null
+ equipped(slot){const id=CS.geq[slot];return id&&CS.gear[id]>0?this.info(id):null},
+ isEquipped(id){const d=GEAR[id];return !!d&&CS.geq[d.slot]===id&&CS.gear[id]>0},
+ // equip an item the player owns (one per slot; it replaces the old one). Returns {ok,reason,gear}
+ equip(id){
+  cload();const d=GEAR[id];
+  if(!d)return{ok:false,reason:"Unknown item."};
+  if(!(CS.gear[id]>0))return{ok:false,reason:"You don't own that yet."};
+  CS.geq[d.slot]=id;csave();
+  try{dispatchEvent(new CustomEvent("gear:change",{detail:{slot:d.slot,id}}))}catch(e){}
+  return{ok:true,reason:"",gear:this.info(id)};
+ },
+ unequip(slot){
+  cload();if(!CS.geq[slot])return{ok:false,reason:"Nothing equipped."};
+  delete CS.geq[slot];csave();
+  try{dispatchEvent(new CustomEvent("gear:change",{detail:{slot,id:""}}))}catch(e){}
+  return{ok:true,reason:""};
+ },
  // owned items of one slot, as info records
  list(slot){const out=[];for(const id in CS.gear){const d=GEAR[id];if(d&&d.slot===slot)out.push(this.info(id))}return out},
  add(id,n){if(!GEAR[id])return null;cload();n=Math.max(1,Math.floor(n)||1);CS.gear[id]=(CS.gear[id]||0)+n;csave();return this.info(id)}
+};
+
+// ---- Crafting: turn fragments into gear. One line per recipe. To add a weapon: add it to GEAR above, then add a line here.
+// RECIPES id = the GEAR id it makes.  cost = { fragmentId: amount } (fragment ids are the FRAGMENTS keys; list as many as you like).
+// Crafting.craft(id) checks the cost, subtracts the fragments and adds the gear in ONE save, so it can never take fragments without giving the item.
+const RECIPES={
+ bogblaster:{cost:{crawler:5}},   // 5 Bog Fragments
+ spikedblade:{cost:{bug:4}},      // 4 Bramble Fragments
+ hopperstaff:{cost:{frog:5}}      // 5 Frog Fragments (the Frog enemy is not in the game yet)
+};
+const Crafting={
+ defs:RECIPES,
+ // every recipe as a record: {id, gear:(Gear.info), cost:[{id,name,need,have,short}], can}
+ list(){return Object.keys(RECIPES).filter(id=>GEAR[id]).map(id=>this.info(id))},
+ info(id){
+  const r=RECIPES[id],g=Gear.info(id);if(!r||!g)return null;
+  const cost=Object.keys(r.cost).map(f=>{const d=FRAGMENTS[f],need=r.cost[f],have=Fragments.count(f);return{id:f,name:d?d.name:f,need,have,short:Math.max(0,need-have)}});
+  return{id,gear:g,cost,can:cost.every(c=>c.short===0)};
+ },
+ // can the player craft it right now? {ok, reason, missing:[{id,name,short}]}
+ check(id){
+  cload();const r=this.info(id);
+  if(!r)return{ok:false,reason:"Unknown recipe.",missing:[]};
+  const missing=r.cost.filter(c=>c.short>0).map(c=>({id:c.id,name:c.name,short:c.short}));
+  return missing.length?{ok:false,reason:"Not enough fragments.",missing}:{ok:true,reason:"",missing:[]};
+ },
+ // craft one. Returns {ok, reason, missing, gear}. Nothing is changed unless it succeeds.
+ craft(id){
+  const c=this.check(id);if(!c.ok)return c;
+  const r=RECIPES[id];
+  for(const f in r.cost){CS.frags[f]=(CS.frags[f]||0)-r.cost[f];if(CS.frags[f]<=0)delete CS.frags[f]}
+  CS.gear[id]=(CS.gear[id]||0)+1;
+  csave();
+  return{ok:true,reason:"",missing:[],gear:Gear.info(id)};
+ }
 };
 
 // ---- The Bag: one place for coins, crystals, fragments and gear. Open it from anywhere with Bag.open(), or give any element data-bag.
@@ -165,7 +230,7 @@ const Bag={
  open(tab){bagOpen(tab)},close(){bagClose()},toggle(){bagEl&&!bagEl.hidden?bagClose():bagOpen()}
 };
 let bagEl=null,bagTab="fragments",bagFrom=null;
-const BAG_TABS=()=>[{id:"fragments",name:"Fragments",icon:'<path d="M12 3l7 6-3 12H8L5 9z"/>',n:Fragments.total}].concat(Object.keys(GEAR_SLOTS).map(k=>({id:k,name:GEAR_SLOTS[k].name,icon:GEAR_SLOTS[k].icon,n:Gear.list(k).reduce((a,g)=>a+g.count,0)})));
+const BAG_TABS=()=>[{id:"fragments",name:"Fragments",icon:'<path d="M12 3l7 6-3 12H8L5 9z"/>',n:Fragments.total}].concat(Object.keys(GEAR_SLOTS).map(k=>({id:k,name:GEAR_SLOTS[k].name,icon:GEAR_SLOTS[k].icon,n:Gear.list(k).reduce((a,g)=>a+g.count,0)}))).concat([{id:"craft",name:"Craft",icon:'<path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/>',n:Crafting.list().filter(r=>r.can).length}]);
 function bagCoins(){try{if(typeof load==="function")load();return typeof meta!=="undefined"?(meta.coins||0):0}catch(e){return 0}}
 function bagSlot(info,kind){
  const d=document.createElement("div");d.className="bgs";d.style.setProperty("--c",info.color);d.tabIndex=0;
@@ -192,10 +257,12 @@ function bagPaintBody(){
   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+t.icon+'</svg>';
   const sp=document.createElement("span");sp.textContent=t.name;b.appendChild(sp);
   if(t.n){const c=document.createElement("small");c.textContent=t.n;b.appendChild(c)}
-  b.onclick=()=>{bagTab=t.id;bagPaintBody();const nb=bagEl.querySelector("#bgt-"+t.id);nb&&nb.focus()};
+  b.onclick=()=>{bagTab=t.id;bagCraftMsg="";bagGearMsg="";bagPaintBody();const nb=bagEl.querySelector("#bgt-"+t.id);nb&&nb.focus()};
   bar.appendChild(b);
  });
  const panel=bagEl.querySelector("#bgpanel");panel.textContent="";panel.setAttribute("aria-labelledby","bgt-"+bagTab);
+ if(bagTab==="craft"){bagPaintCraft(panel);return}
+ if(bagTab!=="fragments"&&Gear.list(bagTab).length){bagPaintGear(panel,bagTab);return}
  const grid=document.createElement("div");grid.className="bg-grid";
  let shown=0;
  if(bagTab==="fragments"){
@@ -212,6 +279,68 @@ function bagPaintBody(){
  if(!shown)note.textContent=bagTab==="fragments"?"No fragments yet. Defeat enemies in the Swamp Adventure for a chance to find them.":GEAR_SLOTS[bagTab].empty;
  else note.textContent=bagTab==="fragments"?"Fragments drop from defeated enemies. Tap one to see where it came from.":"Gear you collect shows up here.";
  panel.appendChild(note);
+}
+// a gear tab (Weapons, Armor...): one card per owned item with icon, rarity, stats, description, equipped status and an Equip / Unequip button
+let bagGearMsg="";
+function bagPaintGear(panel,slot){
+ const items=Gear.list(slot).sort((a,b)=>(b.equipped-a.equipped)||a.name.localeCompare(b.name));
+ const list=document.createElement("div");list.className="gr-list";
+ items.forEach(g=>{
+  const row=document.createElement("div");row.className="gr-row"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
+  const ic=document.createElement("div");ic.className="gr-icon";ic.setAttribute("aria-hidden","true");
+  ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">'+(g.icon||GEAR_SLOTS[slot].icon)+'</svg>';
+  row.appendChild(ic);
+  const body=document.createElement("div");body.className="gr-body";
+  const top=document.createElement("div");top.className="gr-top";
+  const nm=document.createElement("b");nm.textContent=g.name;top.appendChild(nm);
+  const st=document.createElement("small");st.className="gr-state";st.textContent=g.equipped?"Equipped":"Unequipped";top.appendChild(st);
+  body.appendChild(top);
+  const rr=document.createElement("em");rr.className="gr-rar";rr.textContent=g.rarityName+(g.count>1?" · ×"+g.count:"");body.appendChild(rr);
+  const keys=Object.keys(g.stats);
+  if(keys.length){const sc=document.createElement("div");sc.className="gr-stats";keys.forEach(k=>{const c=document.createElement("span");c.className="gr-stat";c.textContent=k+" "+g.stats[k];sc.appendChild(c)});body.appendChild(sc)}
+  if(g.desc){const ds=document.createElement("p");ds.className="gr-desc";ds.textContent=g.desc;body.appendChild(ds)}
+  const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent=g.equipped?"Unequip":"Equip";
+  b.setAttribute("aria-label",(g.equipped?"Unequip ":"Equip ")+g.name);
+  b.addEventListener("click",()=>{
+   if(g.equipped){Gear.unequip(slot);bagGearMsg="Unequipped "+g.name+"."}
+   else{const r=Gear.equip(g.id);bagGearMsg=r.ok?"Equipped "+g.name+".":r.reason}
+   bagPaintBody();
+  });
+  body.appendChild(b);row.appendChild(body);list.appendChild(row);
+ });
+ panel.appendChild(list);
+ const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
+ if(bagGearMsg){det.textContent=bagGearMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
+ panel.appendChild(det);
+ const note=document.createElement("p");note.className="bg-note";note.textContent="One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
+}
+// the Craft tab: one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
+let bagCraftMsg="";
+function bagPaintCraft(panel){
+ const list=document.createElement("div");list.className="cr-list";
+ Crafting.list().forEach(r=>{
+  const row=document.createElement("div");row.className="cr-row"+(r.can?" can":"");row.style.setProperty("--c",r.gear.color);
+  const top=document.createElement("div");top.className="cr-top";
+  const nm=document.createElement("b");nm.textContent=r.gear.name;top.appendChild(nm);
+  const ow=document.createElement("small");ow.textContent=r.gear.count?"Owned ×"+r.gear.count:r.gear.rarityName;top.appendChild(ow);
+  row.appendChild(top);
+  if(r.gear.desc){const ds=document.createElement("p");ds.className="cr-desc";ds.textContent=r.gear.desc;row.appendChild(ds)}
+  const cs=document.createElement("div");cs.className="cr-cost";
+  r.cost.forEach(c=>{const ch=document.createElement("span");ch.className="cr-chip"+(c.short?" short":"");ch.textContent=c.name+" "+Math.min(c.have,c.need)+" / "+c.need;cs.appendChild(ch)});
+  row.appendChild(cs);
+  const b=document.createElement("button");b.type="button";b.className="cr-btn";b.textContent=r.can?"Craft":"Need more fragments";b.disabled=!r.can;
+  b.addEventListener("click",()=>{
+   const res=Crafting.craft(r.id);
+   bagCraftMsg=res.ok?"Crafted "+res.gear.name+"! Find it in the Weapons tab.":(res.reason+(res.missing.length?" Need "+res.missing.map(m=>m.short+" more "+m.name).join(", ")+".":""));
+   bagPaintBody();
+  });
+  row.appendChild(b);list.appendChild(row);
+ });
+ panel.appendChild(list);
+ const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
+ if(bagCraftMsg){det.textContent=bagCraftMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
+ panel.appendChild(det);
+ const note=document.createElement("p");note.className="bg-note";note.textContent="Crafting uses up the fragments. Defeat enemies in the Swamp Adventure to find more.";panel.appendChild(note);
 }
 function bagBuild(){
  const w=document.createElement("div");w.className="bag-wrap";w.hidden=true;w.id="bag";

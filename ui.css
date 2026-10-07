@@ -614,8 +614,8 @@ body.tc-on #stage.fs{--bwid:min(var(--fw),calc((var(--fh) - 120px)*.75))}
 
 /* ===== Loot: fragment drop notification + inventory line ===== */
 #box .loot{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:5;display:grid;gap:6px;justify-items:center;pointer-events:none;width:max-content;max-width:92%}
-#box .lt{--c:#9fe8c8;display:flex;align-items:center;gap:9px;padding:6px 14px 6px 10px;border-radius:999px;background:linear-gradient(180deg,#0b1a2bf2,#07111ef2);border:1px solid var(--c);box-shadow:0 0 18px -4px var(--c),0 2px 14px -6px #000;color:#fff3d6;animation:ltin .35s cubic-bezier(.2,.9,.3,1.2),ltout .4s ease-in 2.25s forwards}
-#box .lt.r-rare{box-shadow:0 0 28px -2px var(--c),0 2px 14px -6px #000}
+#box .lt{--c:#b9bcc2;display:flex;align-items:center;gap:9px;padding:6px 14px 6px 10px;border-radius:999px;background:linear-gradient(180deg,#0b1a2bf2,#07111ef2);border:1px solid var(--c);box-shadow:0 0 18px -4px var(--c),0 2px 14px -6px #000;color:#fff3d6;animation:ltin .35s cubic-bezier(.2,.9,.3,1.2),ltout .4s ease-in 2.25s forwards}
+#box .lt.r-rare,#box .lt.r-epic,#box .lt.r-legendary,#box .lt.r-mythical{box-shadow:0 0 28px -2px var(--c),0 2px 14px -6px #000}
 #box .lt i,.frinv .fi i{display:block;flex:none;width:14px;height:16px;background:linear-gradient(135deg,#fff,var(--c) 55%,#0007);clip-path:polygon(50% 0,100% 38%,78% 100%,22% 100%,0 38%);filter:drop-shadow(0 0 5px var(--c))}
 #box .lt span{display:grid;line-height:1.15;text-align:left}
 #box .lt b{font:900 13px Nunito,sans-serif;letter-spacing:.03em}
@@ -625,7 +625,7 @@ body.tc-on #stage.fs{--bwid:min(var(--fw),calc((var(--fh) - 120px)*.75))}
 @media (prefers-reduced-motion:reduce){#box .lt{animation:ltout .4s ease-in 2.25s forwards}}
 .frinv{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin:0;max-width:420px;font:800 12px Nunito,sans-serif;color:#cfe1e3;text-align:center}
 .frinv .fl{letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#a9c7c0)}
-.frinv .fi{--c:#9fe8c8;display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:999px;border:1px solid var(--c);background:#07111ecc;color:#fff3d6}
+.frinv .fi{--c:#b9bcc2;display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:999px;border:1px solid var(--c);background:#07111ecc;color:#fff3d6}
 
 /* ===== Header logo: the SwampRealms emblem + wordmark image (transparent PNGs with a cream outline) ===== */
 header .logo{gap:10px}
@@ -661,7 +661,7 @@ header .logo .word{width:160px;height:auto}
 .bg-tab[aria-selected=true]{border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0;box-shadow:0 0 16px -6px #f2c14e}
 #bgpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain}
 .bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.bgs{--c:#9fe8c8;position:relative;display:grid;justify-items:center;align-content:center;gap:3px;aspect-ratio:1;padding:8px 4px;border-radius:14px;background:#05090a;border:1px solid var(--c);box-shadow:0 0 16px -8px var(--c);text-align:center;min-width:0}
+.bgs{--c:#b9bcc2;position:relative;display:grid;justify-items:center;align-content:center;gap:3px;aspect-ratio:1;padding:8px 4px;border-radius:14px;background:#05090a;border:1px solid var(--c);box-shadow:0 0 16px -8px var(--c);text-align:center;min-width:0}
 .bgs i{display:block;width:26px;height:30px;background:linear-gradient(135deg,#fff,var(--c) 55%,#0007);clip-path:polygon(50% 0,100% 38%,78% 100%,22% 100%,0 38%);filter:drop-shadow(0 0 6px var(--c))}
 .bgs b{font:900 11px/1.15 Nunito,sans-serif;color:#fff3d6;overflow-wrap:anywhere}
 .bgs em{font:800 9px Nunito,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
@@ -733,3 +733,47 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .feat-more a{color:var(--mint-soft);font-weight:800}
 @media(min-width:640px){.feat{grid-template-columns:1.05fr 1fr;align-items:stretch}.feat-art{aspect-ratio:auto;min-height:260px}.feat-body{align-content:center;padding:24px}}
 .feat-text{font-size:15px;line-height:1.5;font-weight:600}
+
+/* ===== Bag: Craft tab (recipes made from fragments) ===== */
+.cr-list{display:grid;gap:8px}
+.cr-row{--c:#b9bcc2;display:grid;gap:6px;padding:10px 12px;border-radius:14px;background:#05090a;border:1px solid #4ee6b433}
+.cr-row.can{border-color:var(--c);box-shadow:0 0 16px -8px var(--c)}
+.cr-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cr-top b{font:900 14px Nunito,sans-serif;color:#fff3d6}
+.cr-top small{font:800 10px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.cr-desc{margin:0;font:700 12px/1.35 Nunito,sans-serif;color:#a9c7c0}
+.cr-cost{display:flex;flex-wrap:wrap;gap:6px}
+.cr-chip{padding:3px 9px;border-radius:999px;background:#0a100c;border:1px solid #4ee6b455;color:#c8fff4;font:800 11px Nunito,sans-serif}
+.cr-chip.short{border-color:#ff8f8f88;color:#ffb4b4}
+.cr-btn{min-height:44px;border-radius:999px;border:1px solid #f2c14e;background:#f2c14e;color:#1a1405;font:900 13px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;touch-action:manipulation}
+.cr-btn:disabled{background:#0a100c;border-color:#4ee6b433;color:#7f9a95;cursor:not-allowed}
+.cr-btn:not(:disabled):hover{filter:brightness(1.08)}
+.cr-btn:focus-visible{outline:2px solid var(--mint,#4ee6b4);outline-offset:2px}
+
+/* ===== Bag: gear cards (Weapons etc.): icon, rarity, stats, description, equipped status, Equip button ===== */
+.gr-list{display:grid;gap:8px}
+.gr-row{--c:#b9bcc2;display:flex;gap:12px;padding:10px 12px;border-radius:14px;background:#05090a;border:1px solid #4ee6b433}
+.gr-row.on{border-color:var(--c);box-shadow:0 0 16px -8px var(--c)}
+.gr-icon{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:12px;background:#0a100c;border:1px solid var(--c);color:var(--c);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--c) 50%,transparent))}
+.gr-icon svg{width:30px;height:30px}
+.gr-body{flex:1;min-width:0;display:grid;gap:5px}
+.gr-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.gr-top b{font:900 14px Nunito,sans-serif;color:#fff3d6;overflow-wrap:anywhere}
+.gr-state{flex:none;padding:1px 8px;border-radius:999px;border:1px solid #4ee6b433;color:#a9c7c0;font:900 9px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.gr-row.on .gr-state{background:#f2c14e;border-color:#f2c14e;color:#1a1405}
+.gr-rar{font:800 10px Nunito,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.gr-stats{display:flex;flex-wrap:wrap;gap:6px}
+.gr-stat{padding:2px 8px;border-radius:999px;background:#0a100c;border:1px solid #4ee6b455;color:#c8fff4;font:800 11px Nunito,sans-serif}
+.gr-desc{margin:0;font:700 12px/1.35 Nunito,sans-serif;color:#a9c7c0}
+.gr-btn{justify-self:start;min-height:40px;padding:6px 18px;border-radius:999px;border:1px solid #f2c14e;background:#f2c14e;color:#1a1405;font:900 12px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;touch-action:manipulation}
+.gr-row.on .gr-btn{background:transparent;color:#ffe9b0}
+.gr-btn:hover{filter:brightness(1.08)}
+.gr-btn:focus-visible{outline:2px solid var(--mint,#4ee6b4);outline-offset:2px}
+
+/* Endless Realms: Level Select extras */
+.lvdiv{list-style:none;margin:6px 0 -2px;text-align:center;font:900 11px Nunito,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:#9be8c8;display:flex;align-items:center;gap:10px}
+.lvdiv::before,.lvdiv::after{content:"";flex:1;height:1px;background:#4ee6b455}
+.lvl .lvmore{width:100%}
+.lvb em.lvtier{color:#9be8c8;font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:11px}
+.lvb em.lvtier.boss{color:#ff9aa8}
+.lvb.cur:not(.locked){border-color:#ffd98a}
