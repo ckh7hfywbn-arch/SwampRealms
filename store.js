@@ -186,7 +186,9 @@ const Gear={
  },
  // owned items of one slot, as info records
  list(slot){const out=[];for(const id in CS.gear){const d=GEAR[id];if(d&&d.slot===slot)out.push(this.info(id))}return out},
- add(id,n){if(!GEAR[id])return null;cload();n=Math.max(1,Math.floor(n)||1);CS.gear[id]=(CS.gear[id]||0)+n;csave();return this.info(id)}
+ add(id,n){if(!GEAR[id])return null;cload();n=Math.max(1,Math.floor(n)||1);CS.gear[id]=(CS.gear[id]||0)+n;csave();return this.info(id)},
+ // damage per hit as the game really applies it: Damage / 5, one decimal (a bare attack = 1). The Bag shows this same number and adventure.html uses it for combat.
+ hitDmg(id){const st=GEAR[id]&&GEAR[id].stats;return st?Math.max(.5,Math.round((+st.Damage||5)/5*10)/10):1}
 };
 
 // ---- Crafting: turn fragments into gear. One line per recipe. To add a weapon: add it to GEAR above, then add a line here.
@@ -289,7 +291,10 @@ function bagPaintGear(panel,slot){
   const row=document.createElement("div");row.className="gr-row"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
   const ic=document.createElement("div");ic.className="gr-icon";ic.setAttribute("aria-hidden","true");
   ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">'+(g.icon||GEAR_SLOTS[slot].icon)+'</svg>';
-  row.appendChild(ic);
+  // the real weapon design (same drawing as the one held in the Swamp Adventure); falls back to the small icon if the art is missing
+  let art=null;
+  if(typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){art=document.createElement("div");art.className="gr-art";art.setAttribute("role","img");art.setAttribute("aria-label",g.name+" design");const cv=document.createElement("canvas");cv.width=360;cv.height=150;WeaponArt.paint(cv,g.id);art.appendChild(cv);row.classList.add("has-art")}
+  if(art)row.appendChild(art);else row.appendChild(ic);
   const body=document.createElement("div");body.className="gr-body";
   const top=document.createElement("div");top.className="gr-top";
   const nm=document.createElement("b");nm.textContent=g.name;top.appendChild(nm);
@@ -297,7 +302,7 @@ function bagPaintGear(panel,slot){
   body.appendChild(top);
   const rr=document.createElement("em");rr.className="gr-rar";rr.textContent=g.rarityName+(g.count>1?" · ×"+g.count:"");body.appendChild(rr);
   const keys=Object.keys(g.stats);
-  if(keys.length){const sc=document.createElement("div");sc.className="gr-stats";keys.forEach(k=>{const c=document.createElement("span");c.className="gr-stat";c.textContent=k+" "+g.stats[k];sc.appendChild(c)});body.appendChild(sc)}
+  if(keys.length){const sc=document.createElement("div");sc.className="gr-stats";keys.forEach(k=>{const c=document.createElement("span");c.className="gr-stat";c.textContent=k==="Damage"?"Damage "+Gear.hitDmg(g.id)+" per hit":k+" "+g.stats[k];sc.appendChild(c)});body.appendChild(sc)}
   if(g.desc){const ds=document.createElement("p");ds.className="gr-desc";ds.textContent=g.desc;body.appendChild(ds)}
   const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent=g.equipped?"Unequip":"Equip";
   b.setAttribute("aria-label",(g.equipped?"Unequip ":"Equip ")+g.name);

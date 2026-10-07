@@ -94,7 +94,8 @@
 <nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
-<script src="store.js?v=craft1"></script>
+<script src="weapons.js?v=art1"></script>
+<script src="store.js?v=art1"></script>
 <script src="avatar.js"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
@@ -1019,7 +1020,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const id=heldWeapon(),g=id&&GEAR[id],st=g&&g.stats;
   if(!st)return{id:"",dmg:1,cd:ATK_CD,reach:46,ranged:false};
   const ranged=st.Range==="Long";
-  return{id,dmg:Math.max(.5,Math.round((+st.Damage||5)/5*10)/10),cd:SPD_CD[st.Speed]||ATK_CD,reach:RNG_REACH[st.Range]||46,ranged:ranged&&id==="bogblaster"};
+  return{id,dmg:Gear.hitDmg(id),cd:SPD_CD[st.Speed]||ATK_CD,reach:RNG_REACH[st.Range]||46,ranged:ranged&&id==="bogblaster"};
  }
  const dmg=()=>HELD?HELD.dmg:1;
  // Goo balls (Bog Blaster). Aim assist: the shot locks onto the nearest enemy in front of you (reticle shown), fires straight at it, and curves
@@ -1032,14 +1033,27 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   if(AR&&boss.lock&&!boss.defeated&&boss.st!=="intro")T.push({k:"boss",x:boss.x,y:BS.kind==="wing"?GROUND_Y-boss.y-22:GROUND_Y-BS.h/2});
   return T;
  }
+ // Goo is stopped by anything solid: crates and stumps, hanging logs, floating platforms, the ground, and the boss arena's closed wall.
+ function gooBlocked(x,y){
+  const r=3;
+  for(const o of SOLIDS)if(x>o.x-r&&x<o.x+o.w+r&&y>o.y-r&&y<o.y+o.h+r)return true;
+  for(const p of PLATFORMS)if(x>p.x-r&&x<p.x+p.w+r&&y>p.y-r&&y<p.y+p.h+r)return true;
+  for(const g of GROUNDS)if(x>g.x&&x<g.x+g.w&&y>g.y-r)return true;
+  if(AR&&boss.lock&&x<AR.x+r)return true;
+  return false;
+ }
+ // true when a straight line from (x1,y1) to (x2,y2) hits nothing solid (used so the aim assist ignores enemies hiding behind cover)
+ function losClear(x1,y1,x2,y2){const n=Math.max(1,Math.ceil(Math.hypot(x2-x1,y2-y1)/5));for(let i=1;i<n;i++){const u=i/n;if(gooBlocked(x1+(x2-x1)*u,y1+(y2-y1)*u))return false}return true}
  function aimTarget(f){
   let best=null,bd=1e9;
-  for(const t of aimTargets()){const dx=(t.x-state.x)*f,dy=Math.abs(t.y-state.y);if(dx<-12||dx>330||dy>170)continue;const d=dx+dy*.6;if(d<bd){bd=d;best=t}}
+  for(const t of aimTargets()){const dx=(t.x-state.x)*f,dy=Math.abs(t.y-state.y);if(dx<-12||dx>330||dy>170)continue;if(!losClear(state.x,state.y-4,t.x,t.y))continue;const d=dx+dy*.6;if(d<bd){bd=d;best=t}}
   return best;
  }
  function shoot(){
   const f=state.face,sx=state.x+f*26,sy=state.y-4,t=aimTarget(f),a=t?Math.atan2(t.y-sy,t.x-sx):(f>0?0:Math.PI),v=400;
   AIMA=Math.atan2(Math.sin(a)*1,Math.cos(a)*f);
+  // standing right against a crate or wall: the shot splats on it instead of appearing on the far side
+  for(let i=1;i<=5;i++){const px=state.x+(sx-state.x)*i/5;if(gooBlocked(px,sy)){gooSplat({x:state.x+(sx-state.x)*(i-1)/5,y:sy},"#5a7a3a");return}}
   goo.push({x:sx,y:sy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,k:t?t.k:"",life:1.1,f,d:HELD.dmg});
   for(let i=0;i<5;i++)fx.push({k:"puff",x:sx+f*6,y:sy,vx:Math.cos(a)*(60+i*14),vy:Math.sin(a)*(60+i*14)-10,life:.25,max:.25,r:2.4,g:6});
  }
@@ -1050,7 +1064,9 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    const t=g.k&&aimTargets().find(q=>q.k===g.k);
    if(t){const want=Math.atan2(t.y-g.y,t.x-g.x),cur=Math.atan2(g.vy,g.vx);let df=want-cur;while(df>Math.PI)df-=6.283;while(df<-Math.PI)df+=6.283;const na=cur+Math.max(-5*dt,Math.min(5*dt,df)),sp=Math.hypot(g.vx,g.vy);g.vx=Math.cos(na)*sp;g.vy=Math.sin(na)*sp}
    else g.vy+=160*dt;
-   g.x+=g.vx*dt;g.y+=g.vy*dt;
+   // move in small steps so a fast goo ball can never skip over a thin platform; it splats on the first solid it touches
+   let wall=false;{const n=Math.max(1,Math.ceil(Math.hypot(g.vx,g.vy)*dt/3)),ex=g.vx*dt/n,ey=g.vy*dt/n;for(let i=0;i<n;i++){const nx=g.x+ex,ny=g.y+ey;if(gooBlocked(nx,ny)){wall=true;break}g.x=nx;g.y=ny}}
+   if(wall){gooSplat(g,"#5a7a3a");g.life=0;continue}
    const f=g.vx>=0?1:-1;let hit=false;noRec=true;
    if(!bug.defeated&&Math.abs(g.x-bug.x)<BUG.w/2+6&&g.y>GROUND_Y-BUG.h-6&&g.y<GROUND_Y+4){hitBug(f,g.d);hit=true}
    else if(CR&&!cr.defeated&&Math.abs(g.x-cr.x)<CRW.w/2+6&&g.y>GROUND_Y-cr.z-CRW.h-6&&g.y<GROUND_Y-cr.z+4){hitCrawler(f,g.d);hit=true}
@@ -1075,33 +1091,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // Each is drawn pointing right from the grip at (0,0); drawHeld() flips it to face the way the player looks.
  const WPN_PAL={spikedblade:["#ffb04f","#fff3cf"],bogblaster:["#7dff6a","#eaffd0"],hopperstaff:["#4ee6b4","#e6fff6"]};
  function heldWeapon(){try{const id=CS.geq&&CS.geq.weapons;return id&&CS.gear[id]>0&&WPN_PAL[id]?id:""}catch(e){return""}}
- const WPN={
-  spikedblade(){
-   X.fillStyle="#6b4a2a";X.strokeStyle="#2a1a0c";X.lineWidth=1.4;rr(-9,-2.6,11,5.2,2);X.fill();X.stroke();
-   X.fillStyle="#f2c14e";X.beginPath();X.arc(-9.5,0,3,0,7);X.fill();X.stroke();rr(1,-7.5,4.5,15,2);X.fill();X.stroke();
-   const g=X.createLinearGradient(0,-4,0,4);g.addColorStop(0,"#eafff6");g.addColorStop(1,"#7fb3a5");X.fillStyle=g;X.strokeStyle="#0e2a24";
-   X.beginPath();X.moveTo(5.5,-4);X.lineTo(31,-3);X.lineTo(40,0);X.lineTo(31,3);X.lineTo(5.5,4);X.closePath();X.fill();X.stroke();
-   X.strokeStyle="rgba(255,255,255,.75)";X.lineWidth=1;X.beginPath();X.moveTo(8,-.6);X.lineTo(34,-.6);X.stroke();
-   X.fillStyle="#3fae5a";X.strokeStyle="#0e3a1c";X.lineWidth=1;for(let i=0;i<4;i++){const x=10+i*6.5;X.beginPath();X.moveTo(x,-3.6);X.lineTo(x+2.6,-9.5);X.lineTo(x+4.6,-3.4);X.fill();X.stroke();X.beginPath();X.moveTo(x+1.5,3.6);X.lineTo(x+4,9);X.lineTo(x+6,3.4);X.fill();X.stroke()}
-  },
-  bogblaster(a){
-   X.fillStyle="#5a3a1c";X.strokeStyle="#1e1208";X.lineWidth=1.4;X.save();X.rotate(.25);rr(-4,3,6,10,2);X.fill();X.stroke();X.restore();
-   const g=X.createLinearGradient(0,-7,0,7);g.addColorStop(0,"#7a8a4a");g.addColorStop(1,"#3a4a22");X.fillStyle=g;rr(-7,-6,23,12,4);X.fill();X.stroke();
-   X.fillStyle="#34421e";rr(15,-3.6,15,7.2,2);X.fill();X.stroke();X.fillStyle="#8fe88a";rr(29,-5,5,10,2);X.fill();X.stroke();
-   X.fillStyle="rgba(125,255,106,.85)";X.strokeStyle="#1f4a14";X.beginPath();X.arc(5,-9,6.2,0,7);X.fill();X.stroke();
-   X.fillStyle="#eaffd0";X.beginPath();X.arc(3,-10.5,1.4,0,7);X.arc(7,-7,1,0,7);X.fill();
-   X.fillStyle="#7dff6a";X.beginPath();X.ellipse(32,6,1.8,3.2,0,0,7);X.fill();
-   if(a>0){glow(GLOW.moon,38,0,14*a,a)}
-  },
-  hopperstaff(a){
-   glow(GLOW.moon,42,0,16,.55);
-   X.strokeStyle="#2a1a0c";X.lineWidth=5.2;X.lineCap="round";X.beginPath();X.moveTo(-14,0);X.lineTo(36,0);X.stroke();X.strokeStyle="#9a6a34";X.lineWidth=3.2;X.beginPath();X.moveTo(-14,0);X.lineTo(36,0);X.stroke();
-   X.strokeStyle="#d8f7ff";X.lineWidth=1.8;X.beginPath();X.moveTo(8,0);for(let i=0;i<6;i++)X.lineTo(10+i*3,i%2?-4.5:4.5);X.stroke();
-   X.fillStyle="#43c463";X.strokeStyle="#14451f";X.lineWidth=1.6;X.beginPath();X.arc(42,0,7,0,7);X.fill();X.stroke();
-   X.fillStyle="#fff";X.beginPath();X.arc(42,-5.5,2.6,0,7);X.arc(46.5,-4,2.4,0,7);X.fill();X.fillStyle="#0b2a2c";X.beginPath();X.arc(42.6,-5.5,1.2,0,7);X.arc(47,-4,1.1,0,7);X.fill();
-   X.strokeStyle="#14451f";X.lineWidth=1.3;X.beginPath();X.moveTo(40,3);X.quadraticCurveTo(45,6,49,2);X.stroke();
-  }
- };
+ // The weapon art lives in weapons.js (WeaponArt), shared with the Bag so the preview there is the same drawing. Add a new weapon there.
  // gx,gy = where the hand is (in the player's local space); the weapon rests angled up and swings through the attack
  function drawHeld(gx,gy){
   const id=heldWeapon();if(!id)return;
@@ -1109,7 +1099,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   let ang=-.7+Math.sin(state.t*2.4)*.05,a=0;
   if(id==="bogblaster"){ang=-.12+Math.sin(state.t*2.4)*.03;if(p>=0){ang=AIMA-.3*Math.max(0,1-p/.45);a=Math.max(0,1-p/.5)}}
   else if(p>=0){if(p<.25)ang=-.7-1.0*(p/.25);else{const u=(p-.25)/.75;ang=-1.7+2.7*(1-(1-u)*(1-u));a=1-u}}
-  X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WPN[id](a);X.restore();
+  X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WeaponArt.draw(X,id,a);X.restore();
  }
  function drawSlash(){
   if(HELD&&HELD.ranged)return;

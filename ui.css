@@ -757,6 +757,9 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .gr-icon{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:12px;background:#0a100c;border:1px solid var(--c);color:var(--c);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--c) 50%,transparent))}
 .gr-icon svg{width:30px;height:30px}
 .gr-body{flex:1;min-width:0;display:grid;gap:5px}
+.gr-row.has-art{flex-direction:column;gap:10px}
+.gr-art{display:grid;place-items:center;padding:8px;border-radius:12px;border:1px solid var(--c);background:radial-gradient(ellipse at 50% 55%,color-mix(in srgb,var(--c) 22%,#0a100c),#0a100c 72%);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--c) 35%,transparent))}
+.gr-art canvas{display:block;width:100%;max-width:300px;height:auto}
 .gr-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .gr-top b{font:900 14px Nunito,sans-serif;color:#fff3d6;overflow-wrap:anywhere}
 .gr-state{flex:none;padding:1px 8px;border-radius:999px;border:1px solid #4ee6b433;color:#a9c7c0;font:900 9px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase}

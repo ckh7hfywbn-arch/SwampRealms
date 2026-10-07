@@ -15,6 +15,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `progression.js` | The Endless Realms: difficulty, rewards, enemy variants, boss ranks and the level generator for every level after Level 3. Pure data and maths, loaded before the game script. See **Endless progression** below |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Card back = `card-back.jpg` |
+| `weapons.js` | Weapon drawings (`WeaponArt`), shared by the Swamp Adventure (held in hand) and the Bag (preview card). Load before `store.js` |
 | `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter, the Fragments (enemy loot) table, the Gear table, the Crafting recipes, and the Bag (inventory popup). Load after `cards.js` |
 | `gamefs.js` | Shared full screen for every game: `GameFS.attach({stage, start})`. Games go full screen automatically when the player taps Play (browsers need a tap first), with a page-filling fallback on iPhone. Leaving full screen on purpose is remembered for the visit |
 | `avatar.js` | Draws the animals and cosmetics as SVG |
@@ -45,7 +46,7 @@ Levels 1-3 are still hand-built in `LEVELS` in `adventure.html` and are unchange
 
 ## Held weapons
 
-The weapon equipped in the Bag (Weapons tab) is drawn in the player's hand and swings with the attack, and the slash colour changes to match. Art is in `WPN` in `adventure.html` (Spiked Blade, Bog Blaster, Swamp Hopper Staff); to give a new weapon a held design add a `WPN` entry and a `WPN_PAL` slash colour with the same id as its `GEAR` line. Combat reads the weapon straight from its `GEAR` stats (`wstat()`): Damage / 5 is the damage per hit (a bare attack is 1, so the Spiked Blade does 1.8, the Bog Blaster 1.4, the Hopper Staff 1), Speed sets the swing cooldown (Fast .27s, Medium .36s) and Range sets the reach (Short 42, Medium 60). A weapon with Range "Long" that is the Bog Blaster fires goo balls instead of swinging: the shot locks onto the nearest enemy in front (a green reticle shows who), flies straight at it and curves gently toward it in flight, so aiming is just "face the enemy and press attack". The Mirewing's shield blocks goo balls too.
+The weapon equipped in the Bag (Weapons tab) is drawn in the player's hand and swings with the attack, and the slash colour changes to match. Art is in `WPN` in `adventure.html` (Spiked Blade, Bog Blaster, Swamp Hopper Staff); to give a new weapon a held design add a draw function in `weapons.js` (`WPN`) and a `WPN_PAL` slash colour in `adventure.html` with the same id as its `GEAR` line. Combat reads the weapon straight from its `GEAR` stats (`wstat()`): Damage / 5 is the damage per hit (a bare attack is 1, so the Spiked Blade does 1.8, the Bog Blaster 1.4, the Hopper Staff 1), Speed sets the swing cooldown (Fast .27s, Medium .36s) and Range sets the reach (Short 42, Medium 60). A weapon with Range "Long" that is the Bog Blaster fires goo balls instead of swinging: the shot locks onto the nearest enemy in front (a green reticle shows who), flies straight at it and curves gently toward it in flight, so aiming is just "face the enemy and press attack". The Mirewing's shield blocks goo balls too. Goo also stops (and splats) on crates, stumps, hanging logs, floating platforms, the ground and the closed boss-arena wall (`gooBlocked()`); the aim assist ignores enemies hiding behind cover.
 
 ## Two currencies
 
@@ -86,7 +87,7 @@ Every gear tab in the Bag (Weapons first) lists what the player owns as cards: *
 - **Ownership is enforced.** `Gear.equip(id)` refuses anything the player does not own (`{ok:false, reason}`), and any equipped id that is not owned is dropped when the save loads, so an edited save cannot equip it either.
 - **Saved.** The equipped item per slot is stored in the crystals save as `geq` (`{ weapons: "bogblaster" }`), so it persists and syncs with accounts.
 - **API:** `Gear.equip(id)`, `Gear.unequip(slot)`, `Gear.equipped(slot)` (info record or null), `Gear.isEquipped(id)`. Equipping or unequipping fires a `gear:change` event (`detail: {slot, id}`) so a game can react.
-- **Stats and icon:** optional `stats:{Damage:7,Speed:"Medium",Range:"Long"}` and `icon:"<svg inner markup>"` on any `GEAR` line. Stats are shown only; the Swamp Adventure does not use the equipped weapon yet. To wire it up, read `Gear.equipped("weapons")` in `adventure.html`.
+- **Stats and icon:** optional `stats:{Damage:7,Speed:"Medium",Range:"Long"}` and `icon:"<svg inner markup>"` on any `GEAR` line. The Bag shows Damage as the real per-hit number (`Gear.hitDmg(id)` = Damage / 5), the same value combat uses, and draws the weapon from `WeaponArt` (`weapons.js`). A new weapon needs a `GEAR` line plus a draw function in `weapons.js` and a slash colour in `WPN_PAL`.
 
 ## Rarity colors (shared with the cards)
 
