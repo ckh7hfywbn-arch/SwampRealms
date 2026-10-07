@@ -187,7 +187,11 @@
  let SPORE_POS=[[200,380],[300,328],[635,290],[765,328],[1010,298],[1125,266],[1230,320],[1370,342],[1590,318],[1750,266],[1910,216],[2020,336]];
  // Health and the one enemy: the Bramble Bug patrols back and forth and hurts on contact
  const BASEHP=3,INVULN=1.2;
- function maxHp(){return BASEHP+RunUps.hp()}   // 3 + any Hardy Hide picks this run
+ // Worn armor (store.js Gear.bonus): extra max health and run speed. Read fresh when a run starts, after a respawn, and when armor is swapped in the Bag.
+ let ARM={hp:0,move:1,pieces:0,set:false};
+ function armRefresh(){try{ARM=Gear.bonus()}catch(e){ARM={hp:0,move:1,pieces:0,set:false}}}
+ armRefresh();
+ function maxHp(){return BASEHP+RunUps.hp()+ARM.hp}   // 3 + Hardy Hide picks this run + worn armor
  // player attack tuning: windup (anticipation) -> strike frame (damage lands once) -> follow-through; the cooldown runs from the start of the swing
  const ATK_T=.2,ATK_HIT=.05,ATK_CD=.34,ATK_BUF=.1,BACK=8;
  let REACH=46,HELD=null,noRec=false;   // HELD = stats of the weapon used for the current swing (null = bare attack)
@@ -395,6 +399,8 @@
  const FLAME='<svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1C12 1 4 10 4 17a8 8 0 0016 0C20 10 12 1 12 1z"/><path class="in" d="M12 12s-3.5 3.6-3.5 6.2a3.5 3.5 0 007 0C15.5 15.6 12 12 12 12z"/></svg>';
  let shownHp=BASEHP;
  function showHp(){const out=state.hp<shownHp?state.hp:-1;let h="";for(let i=0,M=maxHp();i<M;i++)h+='<i class="fl '+(i<state.hp?"on":"off")+(i===out?" out":"")+'">'+FLAME+"</i>";const e=$("hp");e.innerHTML=h;e.setAttribute("aria-label",state.hp+" of "+maxHp()+" health");shownHp=state.hp}
+ // Swapping armor from the Bag while paused: stats change right away. Gaining max health also adds that heart; losing it trims current health to the new max.
+ addEventListener("gear:change",()=>{const o=maxHp();armRefresh();const n=maxHp();if(state.mode==="paused"&&state.hp>0&&n!==o){if(n>o)state.hp+=n-o;state.hp=Math.min(state.hp,n);showHp()}});
  function hurtPlayer(fromX,foe){
   lastFoe=foe||"Bramble Bug";AUDIO.play("damage");state.hp--;state.hurt=INVULN;state.stun=.22;state.attack=0;state.atkQ=0;showHp();bumpEl($("hp").parentNode);vis.shake=.28;vis.flash=.4;
   const away=state.x<fromX?-1:1;state.vx=away*240;state.vy=-320;state.ground=false;state.canCut=false;
@@ -504,8 +510,8 @@
  }
  let runCont=false;   // true only when "Next level" is pressed after an Endless clear: that keeps the run upgrades. Every other start begins a fresh run.
  function start(){if(state.mode==="over"&&isEndless(LV))LV=LEVELS.length;   // Game Over in the Endless Realms ends the run: the next one starts again at the first Endless level
-  if(!runCont)RunUps.reset();runCont=false;paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
- function respawnReset(){state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
+  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
+ function respawnReset(){armRefresh();state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
 
@@ -524,7 +530,7 @@
   let dir=(keys.right?1:0)-(keys.left?1:0);
   if(!dir&&state.tx!==null){const d=state.tx-state.x;if(Math.abs(d)>10)dir=d>0?1:-1}
   if(state.stun>0){/* knocked back: no steering for a moment */}
-  else if(dir){if(state.face!==dir)vis.turn=.1;state.face=dir;const turning=Math.sign(state.vx)===-dir&&state.vx!==0;state.vx+=dir*(ACCEL*(turning?1.6:1))*dt;const RM=RUN*RunUps.move();state.vx=Math.max(-RM,Math.min(RM,state.vx))}
+  else if(dir){if(state.face!==dir)vis.turn=.1;state.face=dir;const turning=Math.sign(state.vx)===-dir&&state.vx!==0;state.vx+=dir*(ACCEL*(turning?1.6:1))*dt;const RM=RUN*RunUps.move()*ARM.move;state.vx=Math.max(-RM,Math.min(RM,state.vx))}
   else{const f=FRICTION*dt;state.vx=Math.abs(state.vx)<=f?0:state.vx-Math.sign(state.vx)*f}
 
   // jump: buffered press + short coyote time, release early for a shorter hop

@@ -57,7 +57,7 @@ const CK="swamp-crystals-v1";
 let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
- if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&GEAR[g].slot===sl))delete CS.geq[sl]}}catch(e){}}   // GEAR is declared further down this file; the first cload() runs before it exists, so it is re-run below
+ if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&eqk(GEAR[g])===sl))delete CS.geq[sl]}}catch(e){}}   // GEAR is declared further down this file; the first cload() runs before it exists, so it is re-run below
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv();try{paintBag()}catch(e){}}
 cload();
 
@@ -146,9 +146,11 @@ const Fragments={
 // ---- Gear: weapons, armor and more, stored in the Bag. Saved INSIDE the crystals save (CS.gear = {gearId: count}), so it persists and syncs with accounts.
 // To add gear later: add a line to GEAR (slot = weapons | armor | accessories), then call Gear.add("id") when the player earns or buys it.
 // To add a whole new section (e.g. "pets"), add it to GEAR_SLOTS. The Bag builds its tabs from these two tables.
+// Equip key: weapons use their slot ("weapons"); armor pieces have a part (helmet | chest | boots) and use "armor:helmet" etc., so one of each part can be worn at once.
+function eqk(d){return d.part?d.slot+":"+d.part:d.slot}
 const GEAR_SLOTS={
  weapons:{name:"Weapons",icon:'<path d="M14.5 4.5L20 4l-.5 5.5L9 20l-5-5z"/><path d="M13 7l4 4M5 19l-2 2"/>',empty:"No weapons yet. Swords and blasters are coming soon."},
- armor:{name:"Armor",icon:'<path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>',empty:"No armor yet. Shields and plating are coming soon."},
+ armor:{name:"Armor",icon:'<path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>',empty:"No armor yet. Craft helmets, chest armor and boots from fragments."},
  accessories:{name:"Accessories",icon:'<circle cx="12" cy="14" r="5"/><path d="M9 4h6l-1 5h-4z"/>',empty:"No accessories yet. Charms and trinkets are coming soon."}
 };
 // id:{name,slot,rarity:common|uncommon|rare|epic|legendary|mythical (same as the cards), desc, stats:{Label:value,...}, icon:"<svg inner markup, 24x24, stroke style>"}   stats and icon are optional; stats are shown in the Bag
@@ -156,26 +158,35 @@ const GEAR={
  // weapons the player can craft from fragments (recipes are in RECIPES below)
  bogblaster:{name:"Bog Blaster",slot:"weapons",rarity:"uncommon",desc:"Spits sticky bog goo.",stats:{Damage:7,Speed:"Medium",Range:"Long"},icon:'<path d="M3 10h11l3 2h3v4h-3l-1 3h-4l-1-3H3z"/><path d="M7 10V7h4v3"/><circle cx="21.5" cy="8" r="1.3"/>'},
  spikedblade:{name:"Spiked Blade",slot:"weapons",rarity:"common",desc:"A blade bristling with bramble thorns.",stats:{Damage:9,Speed:"Fast",Range:"Short"},icon:'<path d="M20 4l-1 6-9 9-5-5 9-9z"/><path d="M8 14l-4 6M4 20l-1 1"/><path d="M14 4l-1-2M19 9l2 1M16 7l1-2"/>'},
- hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'}
+ hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'},
+ // ---- Bog Warden armor set: one helmet, one chest piece and one pair of boots can be worn at once (part = helmet | chest | boots).
+ // Stats shown here mirror ARMOR_FX below (what the game applies). Wearing all three adds SET_BONUS.
+ wardenhelm:{name:"Bog Warden Helm",slot:"armor",part:"helmet",set:"warden",rarity:"uncommon",desc:"A mossy iron helm with a bramble crest.",stats:{Health:"+1"},icon:'<path d="M4 15a8 8 0 0116 0v3H4z"/><path d="M12 4v5M8 18v-3M16 18v-3"/>'},
+ wardenplate:{name:"Bog Warden Chestplate",slot:"armor",part:"chest",set:"warden",rarity:"rare",desc:"Layered bark plates bound with swamp vine.",stats:{Health:"+1"},icon:'<path d="M7 4l-4 4 2 4 2-1v9h10v-9l2 1 2-4-4-4-3 2h-4z"/><path d="M12 8v12"/>'},
+ wardenboots:{name:"Bog Warden Boots",slot:"armor",part:"boots",set:"warden",rarity:"uncommon",desc:"Light, waterproof and quick over the mud.",stats:{Speed:"+8%"},icon:'<path d="M7 3h6v8l6 3v5H5v-5l2-1z"/><path d="M5 16h14"/>'}
  // example:  oakclub:{name:"Oak Club",slot:"weapons",rarity:"common",desc:"A knobbly swamp club."},
 };
 cload();   // second pass now that GEAR exists: drops equipped weapons that are no longer owned
+// Armor numbers the game applies. hp = extra max health, move = run speed (0.08 = +8%).
+const ARMOR_FX={wardenhelm:{hp:1},wardenplate:{hp:1},wardenboots:{move:.08}};
+// Wearing the full set adds this on top.
+const SET_BONUS={warden:{name:"Bog Warden set",text:"+1 max health",hp:1}};
 const Gear={
  defs:GEAR,slots:GEAR_SLOTS,
  count:id=>CS.gear[id]||0,
  get all(){return CS.gear},
  get total(){let n=0;for(const k in CS.gear)n+=CS.gear[k];return n},
- info(id){const d=GEAR[id];if(!d)return null;const r=FRAG_RARITY[d.rarity]||FRAG_RARITY.common;return{id,name:d.name,slot:d.slot,desc:d.desc||"",rarity:d.rarity||"common",rarityName:r.name,color:r.color,count:CS.gear[id]||0,stats:d.stats||{},icon:d.icon||"",equipped:CS.geq[d.slot]===id}},
+ info(id){const d=GEAR[id];if(!d)return null;const r=FRAG_RARITY[d.rarity]||FRAG_RARITY.common;return{id,name:d.name,slot:d.slot,part:d.part||"",set:d.set||"",key:eqk(d),desc:d.desc||"",rarity:d.rarity||"common",rarityName:r.name,color:r.color,count:CS.gear[id]||0,stats:d.stats||{},icon:d.icon||"",equipped:CS.geq[eqk(d)]===id}},
  // what is equipped in a slot (info record) or null
  equipped(slot){const id=CS.geq[slot];return id&&CS.gear[id]>0?this.info(id):null},
- isEquipped(id){const d=GEAR[id];return !!d&&CS.geq[d.slot]===id&&CS.gear[id]>0},
+ isEquipped(id){const d=GEAR[id];return !!d&&CS.geq[eqk(d)]===id&&CS.gear[id]>0},
  // equip an item the player owns (one per slot; it replaces the old one). Returns {ok,reason,gear}
  equip(id){
   cload();const d=GEAR[id];
   if(!d)return{ok:false,reason:"Unknown item."};
   if(!(CS.gear[id]>0))return{ok:false,reason:"You don't own that yet."};
-  CS.geq[d.slot]=id;csave();
-  try{dispatchEvent(new CustomEvent("gear:change",{detail:{slot:d.slot,id}}))}catch(e){}
+  CS.geq[eqk(d)]=id;csave();
+  try{dispatchEvent(new CustomEvent("gear:change",{detail:{slot:d.slot,part:d.part||"",key:eqk(d),id}}))}catch(e){}
   return{ok:true,reason:"",gear:this.info(id)};
  },
  unequip(slot){
@@ -187,6 +198,14 @@ const Gear={
  // owned items of one slot, as info records
  list(slot){const out=[];for(const id in CS.gear){const d=GEAR[id];if(d&&d.slot===slot)out.push(this.info(id))}return out},
  add(id,n){if(!GEAR[id])return null;cload();n=Math.max(1,Math.floor(n)||1);CS.gear[id]=(CS.gear[id]||0)+n;csave();return this.info(id)},
+ // What the worn armor gives right now: {hp: extra max health, move: run speed multiplier, pieces: 0-3, set: set id or false}.
+ // The game reads this in one place. To retune armor, change ARMOR_FX / SET_BONUS above.
+ bonus(){
+  cload();const o={hp:0,move:1,pieces:0,set:false},cnt={};
+  ["helmet","chest","boots"].forEach(pt=>{const id=CS.geq["armor:"+pt];if(!(id&&CS.gear[id]>0&&GEAR[id]))return;o.pieces++;const fx=ARMOR_FX[id]||{};o.hp+=fx.hp||0;o.move+=fx.move||0;const st=GEAR[id].set;if(st)cnt[st]=(cnt[st]||0)+1});
+  for(const st in cnt)if(cnt[st]>=3&&SET_BONUS[st]){o.set=st;o.hp+=SET_BONUS[st].hp||0;o.move+=SET_BONUS[st].move||0}
+  return o;
+ },
  // damage per hit as the game really applies it: Damage / 5, one decimal (a bare attack = 1). The Bag shows this same number and adventure.html uses it for combat.
  hitDmg(id){const st=GEAR[id]&&GEAR[id].stats;return st?Math.max(.5,Math.round((+st.Damage||5)/5*10)/10):1}
 };
@@ -197,7 +216,11 @@ const Gear={
 const RECIPES={
  bogblaster:{cost:{crawler:5}},   // 5 Bog Fragments
  spikedblade:{cost:{bug:4}},      // 4 Bramble Fragments
- hopperstaff:{cost:{frog:5}}      // 5 Frog Fragments (the Frog enemy is not in the game yet)
+ hopperstaff:{cost:{frog:5}},     // 5 Frog Fragments (the Frog enemy is not in the game yet)
+ // Bog Warden armor (fragments the game already drops)
+ wardenhelm:{cost:{bug:4,crawler:2}},
+ wardenplate:{cost:{crawler:5,boss:1}},   // needs a rare Rootmaw Fragment
+ wardenboots:{cost:{bug:3,crawler:3}}
 };
 const Crafting={
  defs:RECIPES,
@@ -285,7 +308,7 @@ function bagPaintBody(){
 // a gear tab (Weapons, Armor...): one card per owned item with icon, rarity, stats, description, equipped status and an Equip / Unequip button
 let bagGearMsg="";
 function bagPaintGear(panel,slot){
- const items=Gear.list(slot).sort((a,b)=>(b.equipped-a.equipped)||a.name.localeCompare(b.name));
+ const items=Gear.list(slot).sort((a,b)=>(b.equipped-a.equipped)||((["helmet","chest","boots"].indexOf(a.part)-["helmet","chest","boots"].indexOf(b.part))||a.name.localeCompare(b.name)));
  const list=document.createElement("div");list.className="gr-list";
  items.forEach(g=>{
   const row=document.createElement("div");row.className="gr-row"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
@@ -300,14 +323,14 @@ function bagPaintGear(panel,slot){
   const nm=document.createElement("b");nm.textContent=g.name;top.appendChild(nm);
   const st=document.createElement("small");st.className="gr-state";st.textContent=g.equipped?"Equipped":"Unequipped";top.appendChild(st);
   body.appendChild(top);
-  const rr=document.createElement("em");rr.className="gr-rar";rr.textContent=g.rarityName+(g.count>1?" · ×"+g.count:"");body.appendChild(rr);
+  const rr=document.createElement("em");rr.className="gr-rar";rr.textContent=(g.part?g.part.charAt(0).toUpperCase()+g.part.slice(1)+" · ":"")+g.rarityName+(g.count>1?" · ×"+g.count:"");body.appendChild(rr);
   const keys=Object.keys(g.stats);
   if(keys.length){const sc=document.createElement("div");sc.className="gr-stats";keys.forEach(k=>{const c=document.createElement("span");c.className="gr-stat";c.textContent=k==="Damage"?"Damage "+Gear.hitDmg(g.id)+" per hit":k+" "+g.stats[k];sc.appendChild(c)});body.appendChild(sc)}
   if(g.desc){const ds=document.createElement("p");ds.className="gr-desc";ds.textContent=g.desc;body.appendChild(ds)}
   const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent=g.equipped?"Unequip":"Equip";
   b.setAttribute("aria-label",(g.equipped?"Unequip ":"Equip ")+g.name);
   b.addEventListener("click",()=>{
-   if(g.equipped){Gear.unequip(slot);bagGearMsg="Unequipped "+g.name+"."}
+   if(g.equipped){Gear.unequip(g.key);bagGearMsg="Unequipped "+g.name+"."}
    else{const r=Gear.equip(g.id);bagGearMsg=r.ok?"Equipped "+g.name+".":r.reason}
    bagPaintBody();
   });
@@ -317,7 +340,7 @@ function bagPaintGear(panel,slot){
  const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
  if(bagGearMsg){det.textContent=bagGearMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
  panel.appendChild(det);
- const note=document.createElement("p");note.className="bg-note";note.textContent="One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
+ const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Bog Warden pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
 }
 // the Crafting popup (its own section, like the Bag): one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
 let craftMsg="";
