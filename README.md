@@ -12,7 +12,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `shop.html` | Buy packs with Swamp Coins |
 | `arcade.html` | The Arcade hub and the main menu for all games (games are not in the header menu, they are tiles here): a card for each game (just the Swamp Adventure for now) plus the Bag tile |
 | `adventure.html` | The Swamp Adventure. Every run pays Swamp Coins and Swamp Crystals, no daily limit. Rates: `COIN_PER` in the page script (1 coin per 150 score) and `CRY.games.adv` in `store.js` (1 crystal per 50 score) (3 hand-made levels + Rootmaw boss, then endless generated levels, see **Endless progression**). Each level has its own background music (`MUSIC` in the page script: synthesized, no audio files, same sound switch as the effects, plus a faster track for the Rootmaw fight). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone. The player is drawn as the visitor's own avatar (animal + gear from `avatar.html`, via `avatarRefresh()` and `drawPlayer()`); it falls back to the original sprout character if the avatar can't load |
-| `progression.js` | The Endless Realms: difficulty, rewards, enemy variants, boss ranks and the level generator for every level after Level 3. Pure data and maths, loaded before the game script. See **Endless progression** below |
+| `progression.js` | The Endless Realms: difficulty, rewards, enemy variants, boss ranks and the level generator for every level after the four hand-made ones (Level 4, the Sunlit Canopy, is hand-made). Pure data and maths, loaded before the game script. See **Endless progression** below |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Card back = `card-back.jpg` |
 | `weapons.js` | Weapon drawings (`WeaponArt`), shared by the Swamp Adventure (held in hand) and the Bag (preview card). Load before `store.js` |
@@ -31,7 +31,7 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 
 ## Endless progression
 
-Levels 1-3 are still hand-built in `LEVELS` in `adventure.html` and are unchanged. Every level after them is **generated from numbers in `progression.js`**, so there is no last level and nothing to write per level.
+Levels 1-4 are hand-built in `LEVELS` in `adventure.html` (Level 4, the Sunlit Canopy, is a bright treetop jungle with its own theme `TH4`, music track 4 and temple-stone obstacles; Levels 1-3 are unchanged). Every level after them is **generated from numbers in `progression.js`**, so there is no last level and nothing to write per level.
 
 - **Index → level.** `lvl(i)` in `adventure.html` returns the hand-built level for 0-2, otherwise `Progression.build(i)`. The same index always builds the same level (seeded), so best scores, checkpoints and replays are stable. Levels are built when first needed and cached.
 - **Difficulty.** `Progression.scale(i)` returns the settings for a level: enemy hits-to-kill (`bugHp`, `crawlerHp`, `bossHp`), speed, Bog Crawler aggro and recovery, boss speed / shockwave speed / extra follow-up slams, and the reward multiplier. All formulas are in the `TUNING` table at the top of `progression.js`; change a line there to retune the whole game. Health grows with the square root of depth, speeds are capped so every fight stays dodgeable. Levels 1-3 resolve to exactly the original numbers. `applyScale()` in `adventure.html` applies them when a level loads.
@@ -157,3 +157,10 @@ If the Worker is not named `theswampverse`, change `name` in `wrangler.jsonc` to
 ## Deploying
 
 Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
+
+
+## Level 4: The Sunlit Canopy
+Hand-made, no boss. Daytime jungle theme (`TH4`, with `canopy` and `temple` flags), music track 4, 42 Glowspores, tougher enemies than Level 3 (Bramble Bug 3 hits, Bog Crawler 4). Because it sits at index 3, the Endless Realms now start at index 4 (Danger 1) and boss levels stay at 3, 6, 9. Old saves are shifted once on load (`swampverse-arcade-v4mig`) so Endless progress and best scores are kept; Levels 1-3 stay retired once finished and Level 4 retires after it is finished.
+
+### MonK the Monkey (Level 4)
+MonK swings on vines high above the path and lobs bananas at you. Set per level with `monk:{from,to}` in the level data (only Level 4 has it): he appears when you pass `from` and leaves near `to`. Every throw is telegraphed (he raises a banana for about half a second), a banana costs one flame, splats on solid things, and can be knocked away with a weapon swing or a goo shot. Tuning is at the top of the MonK block in `adventure.html` (`MKL`, `MKA`, `MKW`, throw timing in `updateMonk`).

@@ -1,6 +1,6 @@
 /* SwampRealms endless progression.
  *
- * The three hand-built levels (Mossy Trail, Murky Marsh, Forgotten Jungle) stay exactly as they are in adventure.html.
+ * The four hand-built levels (Mossy Trail, Murky Marsh, Forgotten Jungle, Sunlit Canopy) stay exactly as they are in adventure.html.
  * Every level after them is GENERATED from the numbers in this file, so there is no limit and nothing to write by hand:
  *
  *   Progression.scale(i)      -> the difficulty + reward settings for level index i (0-based)
@@ -15,9 +15,9 @@ const Progression=(function(){
  "use strict";
 
  // ---------------------------------------------------------------- tuning
- // d = depth = how many levels past Level 3 (Level 4 is d=1, Level 5 is d=2 ...). b = boss rank (Rootmaw = 0, Elder Rootmaw = 1 ...).
+ // d = depth = how many levels past the last hand-made one (Level 4 is hand-made, so the first Endless level is d=1, the next d=2 ...). b = boss rank (Rootmaw = 0, Elder Rootmaw = 1 ...).
  const TUNING={
-  handLevels:3,          // levels written by hand in adventure.html
+  handLevels:4,          // levels written by hand in adventure.html (Mossy Trail, Murky Marsh, Forgotten Jungle, Sunlit Canopy)
   bossEvery:3,           // a boss level every N levels: 3, 6, 9, 12 ...
   maxLevel:100000,       // sanity cap for saved data only
 
@@ -64,7 +64,7 @@ const Progression=(function(){
  // ---------------------------------------------------------------- helpers
  const HAND=TUNING.handLevels;
  const depth=i=>Math.max(0,i-(HAND-1));                                  // Level 3 and below = 0
- const isBoss=i=>i>=HAND-1&&(i+1)%TUNING.bossEvery===0;
+ const isBoss=i=>i>=2&&(i+1)%TUNING.bossEvery===0;   // boss levels stay at Level 3, 6, 9 ... (index 2, 5, 8 ...) whatever the number of hand-made levels
  const bossRank=i=>isBoss(i)?(i+1)/TUNING.bossEvery-1:0;
  function roman(n){const m=[[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];if(n<1||n>3999)return String(n);let s="";for(const[v,t]of m)while(n>=v){s+=t;n-=v}return s}
  // The Mirewing: the second kind of boss (a flying mire-moth). Boss ranks 1, 3, 5 ... are Mirewings; ranks 0, 2, 4 ... are Rootmaws.
