@@ -59,7 +59,6 @@ function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
  if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&GEAR[g].slot===sl))delete CS.geq[sl]}}
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv();try{paintBag()}catch(e){}}
-cload();
 
 const Crystals={
  get balance(){return CS.c},
@@ -159,6 +158,8 @@ const GEAR={
  hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'}
  // example:  oakclub:{name:"Oak Club",slot:"weapons",rarity:"common",desc:"A knobbly swamp club."},
 };
+// first load of the save. It must come AFTER GEAR is defined, because cload() checks equipped gear against GEAR.
+cload();
 const Gear={
  defs:GEAR,slots:GEAR_SLOTS,
  count:id=>CS.gear[id]||0,
