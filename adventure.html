@@ -41,7 +41,7 @@
 <div id="top"></div>
 <section class="reveal" id="arcade">
  <h2>Swamp Adventure</h2>
- <p class="sub">A brand new swamp adventure. Four hand-made levels, the Mossy Trail, the Murky Marsh, the Forgotten Jungle with its boss, and the Sunlit Canopy, open the way into the Endless Realms: a new, tougher level every time you win, with a stronger boss every third level and bigger rewards the deeper you go. Finish a level to unlock the next, and replay any from Level Select until you have finished all four hand-made levels. After that they are retired and you play the Endless Realms until new hand-made levels arrive. Every run, win or lose, pays Swamp Coins and Swamp Crystals. There is no daily limit.</p>
+ <p class="sub">A brand new swamp adventure. Four hand-made levels, the Mossy Trail, the Murky Marsh, the Forgotten Jungle with its boss, and the Sunlit Canopy, open the way into the Endless Realms: a new, tougher level every time you win, with a stronger boss every third level and bigger rewards the deeper you go. Finish a level to unlock the next, and replay any unlocked level from Level Select. Once you beat the Rootmaw, Levels 1-3 stay open for replay (a good way to farm Rootmaw Fragments), and Level 4 can be replayed after you finish it too. The Endless Realms are next until new hand-made levels arrive. Every run, win or lose, pays Swamp Coins and Swamp Crystals. There is no daily limit.</p>
  <div id="arc">
   <div class="arcstage" id="stage">
   <div class="box" id="box">
@@ -552,10 +552,10 @@
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
   ov.hidden=m==="playing";$("go").hidden=false;$("pick").hidden=true;showUps();
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent=handDone()?"Play Endless":"Play";$("quit").hidden=true}
-  if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(LV+1)?"":"Level "+(LV+2)+", ")+lvl(LV+1).name+".";$("go").textContent="Next level";$("quit").hidden=false}
+  if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(nextLv(LV))?"":"Level "+(nextLv(LV)+1)+", ")+lvl(nextLv(LV)).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
-  if(m==="complete"){const nu=markDone(LV),r=finishScore(),ret=handDone()&&LV<LEVELS.length;if(retired(LV))$("rpl").hidden=true;if(ret){$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):LV===3?"You made it through the Sunlit Canopy! ":"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" Levels 1-4 are now retired. The Endless Realms are next."}
+  if(m==="complete"){const was=handDone(),nu=markDone(LV),r=finishScore(),ret=!was&&handDone()&&LV===3,ent=LV<LEVELS.length&&nextLv(LV)>=LEVELS.length;if(retired(LV))$("rpl").hidden=true;if(ent){$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):LV===3?"You made it through the Sunlit Canopy! ":"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" All four hand-made levels are complete. The Endless Realms are next, and Levels 1-4 can still be replayed from Level Select."}
   if(m==="complete")showPick();
   if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent=isEndless(LV)?"New run":"Restart";if(isEndless(LV)){$("ovp").textContent+=" Your run ends at "+Progression.label(LV)+"."+(RunUps.total()?" Upgrades: "+runUpList()+".":"")+" A new run starts again at "+lvl(LEVELS.length).name+"."}$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
@@ -1366,7 +1366,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
 
  // buttons
- $("go").onclick=()=>{if(state.mode==="over"&&performance.now()-deadAt<500)return;try{document.activeElement&&document.activeElement.blur()}catch(e){}if(state.mode==="paused")resume();else{if(state.mode==="complete"){LV++;runCont=isEndless(LV-1)}start()}if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"});$("go").blur()};
+ $("go").onclick=()=>{if(state.mode==="over"&&performance.now()-deadAt<500)return;try{document.activeElement&&document.activeElement.blur()}catch(e){}if(state.mode==="paused")resume();else{if(state.mode==="complete"){const pv=LV;LV=nextLv(LV);runCont=isEndless(pv)}start()}if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"});$("go").blur()};
  $("quit").onclick=()=>{RunUps.reset();const e=entryLevel();LV=e;loadLevel(e);respawnReset();setMode("title")};
  $("pz").onclick=pause;
 
@@ -1796,12 +1796,13 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
  function saveProg(){try{localStorage.setItem(PKEY,JSON.stringify(prog))}catch(e){}}
  const isUnlocked=i=>i===0||i<prog.unlocked;
- // Once Levels 1-3 (the hand-made ones) are all finished they are retired: no replay, only the Endless Realms.
- // Flip LOCK_HAND_LEVELS to false when Level 4 is released to open Level Select to every level again.
+ // All four hand-made levels stay replayable forever once unlocked (retired() is kept as a switch in case a level ever needs to be hidden again).
+ // Flip LOCK_HAND_LEVELS to false when more hand-made levels are released to open Level Select to every level again.
  const LOCK_HAND_LEVELS=true;
  function handDone(){return LOCK_HAND_LEVELS&&[0,1,2,3].every(i=>prog.done.includes(i))}   // all four hand-made levels finished: only the Endless Realms are left
- function oldDone(){return LOCK_HAND_LEVELS&&[0,1,2].every(i=>prog.done.includes(i))}   // Levels 1-3 finished: they are retired, Level 4 is next
- function retired(i){return i<LEVELS.length&&(i<3?oldDone():handDone())}
+ function oldDone(){return LOCK_HAND_LEVELS&&[0,1,2].every(i=>prog.done.includes(i))}   // Levels 1-3 finished (the Rootmaw is beaten): they open for replay, Level 4 is next
+ function retired(i){return false}   // nothing retires any more: all four hand-made levels can always be replayed
+ function nextLv(i){return retired(i+1)?LEVELS.length:i+1}   // the level after i: skips a retired Level 4 and goes on to the Endless Realms
  function entryLevel(){readProg();return handDone()?LEVELS.length:oldDone()?3:0}   // every new Endless run starts at the first Endless level (Level Select can still jump deeper, without upgrades)
  // returns the number (1-based) of a level this completion newly unlocked, or 0
  function markDone(i){
@@ -1814,10 +1815,11 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  let lvAll=false;   // Level Select shows the three hand-made levels plus the latest endless ones; "Show earlier" reveals the rest
  function renderLevels(){
   readProg();const bs=readScores(),H0=LEVELS.length,RECENT=8,total=prog.unlocked+1;   // +1: the next, locked level is shown as a teaser
-  const from=lvAll?H0:Math.max(H0,total-RECENT);let h=handDone()?'<li class="lvdiv">Levels 1-4 complete. More hand-made levels are coming soon.</li>':oldDone()?'<li class="lvdiv">Levels 1-3 complete. Level 4 is open.</li>':"",cur=-1;
+  const from=lvAll?H0:Math.max(H0,total-RECENT);let h=handDone()?'<li class="lvdiv">Levels 1-4 complete. Replay any of them, or head on to the Endless Realms. More hand-made levels are coming soon.</li>':oldDone()?'<li class="lvdiv">The Rootmaw is defeated! Levels 1-3 are open to replay, and Level 4 is open.</li>':"",cur=-1;
   for(let i=0;i<total;i++)if(isUnlocked(i)&&!prog.done.includes(i))cur=i;
   if(cur<0)cur=prog.unlocked-1;
-  for(let i=handDone()?H0:oldDone()?3:0;i<total;i++){
+  for(let i=0;i<total;i++){
+   if(retired(i))continue;
    if(i>=H0&&i<from){if(i===H0)h+='<li class="lvdiv">Endless Realms</li><li><button type="button" class="btn ghost lvmore">Show '+(from-H0)+' earlier levels</button></li>';continue}
    if(i===H0&&from===H0)h+='<li class="lvdiv">Endless Realms</li>';
    const L=lvl(i),open=isUnlocked(i),done=prog.done.includes(i);
