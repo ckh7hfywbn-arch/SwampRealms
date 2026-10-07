@@ -54,10 +54,12 @@ const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":
 
 // ---- saved data ----
 const CK="swamp-crystals-v1";
-let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{}};
+let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{},skins:{},skeq:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
- if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&eqk(GEAR[g])===sl))delete CS.geq[sl]}}catch(e){}}   // GEAR is declared further down this file; the first cload() runs before it exists, so it is re-run below
+ if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&eqk(GEAR[g])===sl))delete CS.geq[sl]}}catch(e){}
+ if(!CS.skins||typeof CS.skins!=="object"||Array.isArray(CS.skins))CS.skins={};if(!CS.skeq||typeof CS.skeq!=="object"||Array.isArray(CS.skeq))CS.skeq={};
+ try{for(const w in CS.skeq){const k=CS.skeq[w];if(!(typeof k==="string"&&CS.skins[k]&&SKINS[k]&&SKINS[k].w===w))delete CS.skeq[w]}}catch(e){}}   // GEAR and SKINS are declared further down this file; the first cload() runs before it exists, so it is re-run below
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv();try{paintBag()}catch(e){}}
 cload();
 
@@ -210,6 +212,70 @@ const Gear={
  hitDmg(id){const st=GEAR[id]&&GEAR[id].stats;return st?Math.max(.5,Math.round((+st.Damage||5)/5*10)/10):1}
 };
 
+// ---- Weapon Skins: luxury paints for the weapons, bought with Swamp Crystals in the Skin Shop (Skins.open()). The art for each id is in SKIN_ART in weapons.js.
+// Owned skins are saved INSIDE the crystals save (CS.skins = {skinId:1}); the one worn per weapon is CS.skeq = {weaponId: skinId}, so both sync with accounts.
+// To add a skin: add its art to SKIN_ART in weapons.js, then a line here (w = weapon id, rarity: epic | legendary | mythical, price in Swamp Crystals).
+// Free quest skins can be added later as lines with  price:0, free:true  and handed out with Skins.grant(id); nothing uses that yet.
+const SKINS={
+ midnightbramble:{w:"spikedblade",name:"Midnight Bramble",rarity:"epic",price:600,desc:"Obsidian steel with violet thorns that hum in the dark."},
+ gildedthornbane:{w:"spikedblade",name:"Gilded Thornbane",rarity:"legendary",price:900,desc:"Pure gold blade, emerald thorns and a glowing jewel at the guard."},
+ moonbriar:{w:"spikedblade",name:"Moonlit Briar",rarity:"mythical",price:1500,desc:"Frost-silver blade with ice thorns, etched runes and drifting starlight."},
+ amberrelic:{w:"bogblaster",name:"Amber Relic",rarity:"epic",price:600,desc:"A sunken copper relic that spits molten amber goo."},
+ royalmire:{w:"bogblaster",name:"Royal Mire Cannon",rarity:"legendary",price:900,desc:"Golden royal cannon with ringed barrel and glowing emerald goo."},
+ toxicnebula:{w:"bogblaster",name:"Toxic Nebula",rarity:"mythical",price:1500,desc:"A void-dark blaster that fires glittering magenta goo."},
+ glacialtreefrog:{w:"hopperstaff",name:"Glacial Tree Frog",rarity:"epic",price:600,desc:"A frozen frog with a pearl-white staff and an icy glow."},
+ twilighttoad:{w:"hopperstaff",name:"Twilight Toad Sceptre",rarity:"legendary",price:900,desc:"A crowned violet toad that sparkles like a swamp at dusk."},
+ emeraldmonarch:{w:"hopperstaff",name:"Emerald Monarch Staff",rarity:"mythical",price:1500,desc:"A solid gold staff topped by a jewelled, crowned emerald frog."}
+};
+const Skins={
+ defs:SKINS,
+ info(id){const d=SKINS[id];if(!d)return null;const r=FRAG_RARITY[d.rarity]||FRAG_RARITY.common;return{id,w:d.w,weapon:GEAR[d.w]?GEAR[d.w].name:d.w,name:d.name,desc:d.desc||"",price:d.price||0,rarity:d.rarity,rarityName:r.name,color:r.color,owned:!!CS.skins[id],equipped:CS.skeq[d.w]===id}},
+ owns:id=>!!CS.skins[id],
+ // every skin for one weapon (info records), cheapest first
+ forWeapon(w){return Object.keys(SKINS).filter(id=>SKINS[id].w===w).map(id=>this.info(id)).sort((a,b)=>a.price-b.price)},
+ // weapons that have skins, in GEAR order
+ weapons(){return Object.keys(GEAR).filter(w=>Object.keys(SKINS).some(id=>SKINS[id].w===w))},
+ // the skin id worn on a weapon, or null (this is what the Bag and the Swamp Adventure draw)
+ equippedFor(w){const id=CS.skeq[w];return id&&CS.skins[id]&&SKINS[id]&&SKINS[id].w===w?id:null},
+ // {ok, reason}: can the player buy it right now?
+ check(id){
+  cload();const d=SKINS[id];
+  if(!d)return{ok:false,reason:"Unknown skin."};
+  if(CS.skins[id])return{ok:false,reason:"You already own this skin."};
+  if(!(CS.gear[d.w]>0))return{ok:false,reason:"Craft the "+(GEAR[d.w]?GEAR[d.w].name:d.w)+" first, then you can buy its skins."};
+  if(CS.c<d.price)return{ok:false,reason:"Need "+(d.price-CS.c)+" more Swamp Crystals."};
+  return{ok:true,reason:""};
+ },
+ // spend crystals, own the skin and wear it. Nothing is taken unless it succeeds.
+ buy(id){
+  const c=this.check(id);if(!c.ok)return c;
+  const d=SKINS[id];CS.c-=d.price;CS.skins[id]=1;CS.skeq[d.w]=id;csave();
+  try{SFX.streak()}catch(e){}
+  try{dispatchEvent(new CustomEvent("skin:change",{detail:{w:d.w,id}}))}catch(e){}
+  return{ok:true,reason:"",skin:this.info(id)};
+ },
+ // wear a skin the player owns (replaces the one on that weapon)
+ equip(id){
+  cload();const d=SKINS[id];
+  if(!d)return{ok:false,reason:"Unknown skin."};
+  if(!CS.skins[id])return{ok:false,reason:"You don't own that skin yet."};
+  CS.skeq[d.w]=id;csave();
+  try{dispatchEvent(new CustomEvent("skin:change",{detail:{w:d.w,id}}))}catch(e){}
+  return{ok:true,reason:""};
+ },
+ // back to the plain weapon
+ unequip(w){
+  cload();if(!CS.skeq[w])return{ok:false,reason:"No skin worn."};
+  delete CS.skeq[w];csave();
+  try{dispatchEvent(new CustomEvent("skin:change",{detail:{w,id:""}}))}catch(e){}
+  return{ok:true,reason:""};
+ },
+ // give a skin without charging (for quest rewards later; not used yet)
+ grant(id){if(!SKINS[id])return null;cload();CS.skins[id]=1;csave();return this.info(id)},
+ open(w){skinOpen(w)},close(){skinClose()},toggle(){skEl&&!skEl.hidden?skinClose():skinOpen()}
+};
+cload();   // third pass now that SKINS exists: drops worn skins that are no longer owned
+
 // ---- Crafting: turn fragments into gear. One line per recipe. To add a weapon: add it to GEAR above, then add a line here.
 // RECIPES id = the GEAR id it makes.  cost = { fragmentId: amount } (fragment ids are the FRAGMENTS keys; list as many as you like).
 // Crafting.craft(id) checks the cost, subtracts the fragments and adds the gear in ONE save, so it can never take fragments without giving the item.
@@ -316,7 +382,7 @@ function bagPaintGear(panel,slot){
   ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">'+(g.icon||GEAR_SLOTS[slot].icon)+'</svg>';
   // the real weapon design (same drawing as the one held in the Swamp Adventure); falls back to the small icon if the art is missing
   let art=null;
-  if(typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){art=document.createElement("div");art.className="gr-art";art.setAttribute("role","img");art.setAttribute("aria-label",g.name+" design");const cv=document.createElement("canvas");cv.width=360;cv.height=150;WeaponArt.paint(cv,g.id);art.appendChild(cv);row.classList.add("has-art")}
+  if(typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){art=document.createElement("div");art.className="gr-art";art.setAttribute("role","img");art.setAttribute("aria-label",g.name+" design");const cv=document.createElement("canvas");cv.width=360;cv.height=150;WeaponArt.paint(cv,g.id,null,Skins.equippedFor(g.id));art.appendChild(cv);row.classList.add("has-art")}
   if(art)row.appendChild(art);else row.appendChild(ic);
   const body=document.createElement("div");body.className="gr-body";
   const top=document.createElement("div");top.className="gr-top";
@@ -334,7 +400,9 @@ function bagPaintGear(panel,slot){
    else{const r=Gear.equip(g.id);bagGearMsg=r.ok?"Equipped "+g.name+".":r.reason}
    bagPaintBody();
   });
-  body.appendChild(b);row.appendChild(body);list.appendChild(row);
+  body.appendChild(b);
+  if(slot==="weapons"&&Skins.forWeapon(g.id).length){const sb=document.createElement("button");sb.type="button";sb.className="gr-btn sk-open";const w=Skins.equippedFor(g.id);sb.textContent=w?"Skin: "+SKINS[w].name:"Skins";sb.setAttribute("aria-label","Open skins for "+g.name);sb.addEventListener("click",()=>skinOpen(g.id));body.appendChild(sb)}
+  row.appendChild(body);list.appendChild(row);
  });
  panel.appendChild(list);
  const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
@@ -388,7 +456,7 @@ function bagBuild(){
 }
 function bagOpen(tab){
  if(tab==="craft"){craftOpen();return}   // crafting is its own section now
- cload();try{craftClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
+ cload();try{craftClose()}catch(e){}try{skinClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
  if(tab)bagTab=tab;
  bagFrom=document.activeElement;bagPaintBody();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(bagEl)}catch(e){}
@@ -430,7 +498,7 @@ function craftPaint(){
 }
 function craftOpen(){
  cload();if(!craftEl)craftEl=craftBuild();
- try{bagClose()}catch(e){}
+ try{bagClose()}catch(e){}try{skinClose()}catch(e){}
  craftFrom=document.activeElement;craftMsg="";craftPaint();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(craftEl)}catch(e){}
  craftEl.hidden=false;document.documentElement.classList.add("bag-open");
@@ -456,10 +524,94 @@ function paintBag(){
  const n=Bag.count;document.querySelectorAll("[data-bag-count]").forEach(e=>{e.textContent=n});
  if(bagEl&&!bagEl.hidden)bagPaintBody();
  try{paintCraft()}catch(e){}
+ try{if(skEl&&!skEl.hidden)skinPaint()}catch(e){}
 }
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-bag]");if(t){e.preventDefault();bagOpen(t.getAttribute("data-bag")||undefined)}});
 addEventListener("hashchange",()=>{if(location.hash==="#bag")bagOpen()});
 addEventListener("DOMContentLoaded",()=>{paintBag();if(location.hash==="#bag")bagOpen()});
+
+// ---- The Skin Shop popup (its own section like the Bag and Crafting). Open it with Skins.open(), Skins.open("bogblaster"), any element with data-skins, the Skins button on a weapon in the Bag, or by visiting #skins.
+// Each skin shows a live shimmering preview, its rarity, the weapon it is for and its Swamp Crystal price. Buying asks for a second tap to confirm.
+let skEl=null,skFrom=null,skMsg="",skFocus="",skPending="",skTimer=0;
+function skinBuild(){
+ const w=document.createElement("div");w.className="bag-wrap sk-wrap";w.hidden=true;w.id="skins";
+ w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="skintitle">'+
+  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3l2.4 5.2 5.6.7-4.1 3.9 1 5.6L12 15.6 7.1 18.4l1-5.6L4 8.9l5.6-.7z"/></svg><h2 id="skintitle">Skin Shop</h2><button type="button" class="bag-x" data-x aria-label="Close skin shop">&times;</button></div>'+
+  '<div class="bg-wallet"><span class="bg-gems"><span class="gem" aria-hidden="true"></span><b>0</b><em>Swamp Crystals</em></span><button type="button" class="cr-bagbtn" data-bag>Open Bag</button></div>'+
+  '<div id="skpanel"></div></div>';
+ document.body.appendChild(w);
+ w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))skinClose();else if(e.target.closest("[data-bag]"))skinClose()});
+ w.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();skinClose();return}
+  if(e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+ },true);
+ return w;
+}
+function skinPaintPanel(panel){
+ const lives=[],order=Skins.weapons().sort((a,b)=>(b===skFocus)-(a===skFocus));
+ order.forEach(wid=>{
+  const own=CS.gear[wid]>0,sec=document.createElement("section");sec.className="sk-sec";
+  const h=document.createElement("h3");h.className="sk-h";h.textContent=GEAR[wid].name;
+  const st=document.createElement("small");st.textContent=own?" · you own this weapon":" · craft it to unlock these skins";h.appendChild(st);sec.appendChild(h);
+  const list=document.createElement("div");list.className="cr-list sk-list";
+  Skins.forWeapon(wid).forEach(k=>{
+   const row=document.createElement("div");row.className="cr-row sk-row"+(k.equipped?" on":"")+(k.owned?" owned":"");row.style.setProperty("--c",k.color);
+   const art=document.createElement("div");art.className="gr-art sk-art";art.setAttribute("role","img");art.setAttribute("aria-label",k.name+" preview");
+   const cv=document.createElement("canvas");cv.width=360;cv.height=150;try{WeaponArt.paint(cv,wid,null,k.id)}catch(e){}art.appendChild(cv);row.appendChild(art);
+   lives.push(()=>{try{WeaponArt.live(cv,wid,k.id)}catch(e){}});
+   const top=document.createElement("div");top.className="cr-top";
+   const nm=document.createElement("b");nm.textContent=k.name;top.appendChild(nm);
+   const sm=document.createElement("small");sm.textContent=k.equipped?"Equipped":k.owned?"Owned":k.rarityName;top.appendChild(sm);row.appendChild(top);
+   const ds=document.createElement("p");ds.className="cr-desc";ds.textContent=k.rarityName+" skin for the "+k.weapon+". "+k.desc;row.appendChild(ds);
+   const b=document.createElement("button");b.type="button";b.className="cr-btn";
+   if(k.owned){
+    b.textContent=k.equipped?"Unequip":"Equip";
+    b.addEventListener("click",()=>{const r=k.equipped?Skins.unequip(wid):Skins.equip(k.id);skMsg=r.ok?(k.equipped?"Back to the plain "+k.weapon+".":k.name+" equipped."):r.reason;skPending="";skinPaint()});
+   }else{
+    const c=Skins.check(k.id);
+    b.textContent=skPending===k.id?"Tap again to confirm · "+k.price:"Buy · "+k.price+" crystals";
+    if(!c.ok&&!(c.reason.indexOf("Need")===0)){b.textContent=own?c.reason:"Craft the weapon first";b.disabled=true}
+    else if(!c.ok){b.textContent=c.reason.replace("Swamp ","").replace("."," ·")+" "+k.price;b.disabled=true}
+    b.addEventListener("click",()=>{
+     if(skPending!==k.id){skPending=k.id;clearTimeout(skTimer);skTimer=setTimeout(()=>{skPending="";skinPaint()},4000);skMsg="Spend "+k.price+" Swamp Crystals on "+k.name+"? Tap again to confirm.";skinPaint();return}
+     clearTimeout(skTimer);skPending="";const r=Skins.buy(k.id);skMsg=r.ok?"You bought "+k.name+"! It is equipped on your "+k.weapon+".":r.reason;skinPaint();
+    });
+   }
+   row.appendChild(b);list.appendChild(row);
+  });
+  sec.appendChild(list);panel.appendChild(sec);
+ });
+ const det=document.createElement("p");det.className="bg-detail";det.id="skdetail";det.setAttribute("aria-live","polite");
+ if(skMsg){det.textContent=skMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
+ panel.appendChild(det);
+ const note=document.createElement("p");note.className="bg-note";note.textContent="Skins are cosmetic: they change how a weapon looks, not how it fights. You must own a weapon to buy its skins. Earn Swamp Crystals in the Swamp Adventure.";panel.appendChild(note);
+ lives.forEach(f=>f());
+}
+function skinPaint(){
+ if(!skEl)return;
+ skEl.querySelector(".bg-gems b").textContent=CS.c;
+ const panel=skEl.querySelector("#skpanel"),keep=panel.scrollTop,bag=skEl.querySelector(".bag"),k2=bag?bag.scrollTop:0;
+ panel.textContent="";skinPaintPanel(panel);panel.scrollTop=keep;if(bag)bag.scrollTop=k2;
+}
+function skinOpen(w){
+ cload();if(!skEl)skEl=skinBuild();
+ try{bagClose()}catch(e){}try{craftClose()}catch(e){}
+ skFrom=document.activeElement;skMsg="";skPending="";skFocus=typeof w==="string"?w:"";skinPaint();
+ try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(skEl)}catch(e){}
+ skEl.hidden=false;document.documentElement.classList.add("bag-open");skinPaint();
+ try{dispatchEvent(new CustomEvent("skins:open"));dispatchEvent(new CustomEvent("bag:open"))}catch(e){}
+ const x=skEl.querySelector(".bag-x");x&&x.focus();
+}
+function skinClose(){
+ if(!skEl||skEl.hidden)return;
+ skEl.hidden=true;clearTimeout(skTimer);skPending="";document.documentElement.classList.remove("bag-open");
+ try{dispatchEvent(new CustomEvent("skins:close"))}catch(e){}
+ try{skFrom&&skFrom.focus&&skFrom.focus()}catch(e){}
+ if(location.hash==="#skins")history.replaceState(null,"",location.pathname+location.search);
+}
+document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-skins]");if(t){e.preventDefault();skinOpen(t.getAttribute("data-skins")||undefined)}});
+addEventListener("hashchange",()=>{if(location.hash==="#skins")skinOpen()});
+addEventListener("DOMContentLoaded",()=>{if(location.hash==="#skins")skinOpen()});
 
 // ---- header: round avatar button (top right) -> avatar.html ----
 function paintAv(){
