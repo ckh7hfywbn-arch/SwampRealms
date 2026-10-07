@@ -262,7 +262,7 @@
  // Thorn vines hurt on touch (same damage as an enemy). The Rootmaw is a giant root-golem: it walks toward you, rears up (warning), then slams the ground and sends a
  // low shockwave of roots along the floor each way (jump it). After the slam it is winded for a moment (harmless, your window to strike).
  // Under half health it walks faster, winds up quicker and slams twice. It takes twelve hits from the normal player attack.
- const BS={w:64,h:86,hp:12,walk:34,walkE:58,wave:165,waveH:20,defeat:2.2,slamPlus:0,name:"The Rootmaw",short:"Rootmaw"};
+ const BS={kind:"root",w:64,h:86,hp:12,walk:34,walkE:58,wave:165,waveH:20,defeat:2.2,slamPlus:0,name:"The Rootmaw",short:"Rootmaw"};
  // ---- Endless progression: the current level's difficulty/reward settings (SC) come from progression.js (Progression.scale).
  // The numbers above are the ORIGINAL (Level 1-3) values; applyScale() multiplies them for deeper levels, and for Levels 1-3 it changes nothing.
  const BS0=Object.assign({},BS),CRW0=Object.assign({},CRW),BUG_SPEED0=BUG.speed;
@@ -270,14 +270,17 @@
  function applyScale(S){
   SC=S;BUGHP=S.bugHp;CRHP=S.crawlerHp;BUG.speed=BUG_SPEED0*S.speed;
   CRW.hop=CRW0.hop*S.speed;CRW.lungeX=CRW0.lungeX*S.speed;CRW.aggro=CRW0.aggro*S.aggro;CRW.recover=CRW0.recover*S.recover;CRW.wind=Math.max(.35,CRW0.wind*S.recover);
-  BS.hp=S.bossHp;BS.walk=BS0.walk*S.bossSpeed;BS.walkE=BS0.walkE*S.bossSpeed;BS.wave=BS0.wave*S.waveSpeed;BS.slamPlus=S.slamPlus;BS.name=S.boss.name;BS.short=S.boss.short;
+  BS.kind=S.boss.kind||"root";BS.h=BS.kind==="wing"?46:BS0.h;BS.hp=BS.kind==="wing"?Math.max(8,Math.round(S.bossHp*.7)):S.bossHp;BS.walk=BS0.walk*S.bossSpeed;BS.walkE=BS0.walkE*S.bossSpeed;BS.wave=BS0.wave*S.waveSpeed;BS.slamPlus=S.slamPlus;BS.name=S.boss.name;BS.short=S.boss.short;
  }
  let AR=null,HAZ=[],waves=[];   // AR: this level's boss arena {x (left wall), bx (boss start)} or null
- let boss={x:0,dir:-1,hp:12,trail:12,hurt:0,dead:0,defeated:false,kb:0,st:"dormant",t:0,wt:.8,tt:0,lt:0,lock:false,slams:0,pulse:0};
+ let orbs=[];
+ let boss={y:0,cyc:0,tx:0,x0:0,y0:0,x:0,dir:-1,hp:12,trail:12,hurt:0,dead:0,defeated:false,kb:0,st:"dormant",t:0,wt:.8,tt:0,lt:0,lock:false,slams:0,pulse:0};
  const enraged=()=>boss.hp<=BS.hp/2;
- function resetBoss(){waves=[];boss.x=AR?AR.bx:0;boss.dir=-1;boss.hp=BS.hp;boss.trail=BS.hp;boss.hurt=0;boss.dead=0;boss.defeated=false;boss.kb=0;boss.st="dormant";boss.t=0;boss.wt=.8;boss.tt=0;boss.lt=0;boss.lock=false;boss.slams=0;boss.pulse=0}
+ function resetBoss(){waves=[];orbs=[];boss.y=0;boss.cyc=0;boss.x=AR?AR.bx:0;boss.dir=-1;boss.hp=BS.hp;boss.trail=BS.hp;boss.hurt=0;boss.dead=0;boss.defeated=false;boss.kb=0;boss.st="dormant";boss.t=0;boss.wt=.8;boss.tt=0;boss.lt=0;boss.lock=false;boss.slams=0;boss.pulse=0}
  function bossStrike(f){
   if(!AR||boss.defeated||!boss.lock||boss.st==="intro")return;
+  // Mirewing: its mire shield turns every blow aside while it flies; it can only be hurt while it lies stunned after a dive
+  if(BS.kind==="wing"&&boss.st!=="perch"){if(Math.abs(state.x-boss.x)<REACH+BS.w/2&&state.y-R<GROUND_Y-boss.y){AUDIO.play("thump");fx.push({k:"ring",x:boss.x,y:GROUND_Y-boss.y-22,vx:0,vy:0,life:.3,max:.3,c:"#4ee6b4",g:34});fx.push({k:"txt",x:boss.x,y:GROUND_Y-boss.y-52,vx:0,vy:-30,life:.5,max:.5,s:"Shielded"})}return}
   const x0=f>0?state.x-BACK:state.x-REACH,x1=f>0?state.x+REACH:state.x+BACK;
   if(boss.x+BS.w/2<x0||boss.x-BS.w/2>x1||state.y+R+2<GROUND_Y-BS.h||state.y-R-6>GROUND_Y)return;
   hitBoss(f);
@@ -292,7 +295,7 @@
   for(let i=0;i<10;i++){const a=(Math.random()-.65)*1.5,v=90+Math.random()*120;fx.push({k:"hit",x:cx,y:cy,vx:Math.cos(a)*v*f,vy:Math.sin(a)*v-20,life:.4,max:.4,c:i%3?"#7a5a2a":(i%2?"#5fe39a":"#ffd27a")})}   // bark chips and leaves
   fx.push({k:"txt",x:boss.x,y:GROUND_Y-BS.h-16,vx:0,vy:-40,life:.6,max:.6,s:"-1"});
   if(kill){
-   boss.defeated=true;boss.dead=BS.defeat;boss.st="dead";waves=[];
+   boss.defeated=true;boss.dead=BS.defeat;boss.st="dead";waves=[];orbs=[];
    for(let i=0;i<3;i++)fx.push({k:"ring",x:boss.x,y:GROUND_Y-44,vx:0,vy:0,life:.6+i*.25,max:.6+i*.25,c:i%2?"#ffd27a":"#5fe39a",g:50+i*40});
    for(let i=0;i<26;i++){const a=Math.random()*6.283,v=100+Math.random()*190;fx.push({k:"defeat",x:boss.x,y:GROUND_Y-44,vx:Math.cos(a)*v,vy:Math.sin(a)*v-80,life:.9,max:.9,c:i%3?"#ffd27a":"#5fe39a"})}
   }
@@ -317,6 +320,7 @@
   // the fight starts when you walk into the arena: vines close the way back and the boss wakes
   if(!boss.lock){if(vis.dying<=0&&state.hp>0&&state.x>AR.x+60){boss.lock=true;boss.st="intro";boss.t=1.4;AUDIO.play("croak");vis.shake=Math.max(vis.shake,.3)}return}
   const dx=state.x-boss.x,en=enraged();
+  if(BS.kind==="wing"){updateWing(dt,dx,en);return}
   // shockwaves: low roots racing along the floor; jump them
   for(const w of waves){
    w.x+=w.d*BS.wave*dt;
@@ -343,6 +347,37 @@
   // touching the body hurts, except while it is staggered by a hit or winded after a slam
   if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&boss.hurt<=0&&boss.st!=="recover"&&boss.st!=="intro"){
    if(state.x+HW>boss.x-BS.w/2+6&&state.x-HW<boss.x+BS.w/2-6&&state.y+R>GROUND_Y-BS.h+12&&state.y-R<GROUND_Y){hurtPlayer(boss.x,BS.short);if(state.hp<=0)startDefeat()}
+  }
+ }
+ // ---- The Mirewing (new boss, every second boss level): a mire-moth. It hovers behind a shield that blocks all attacks, spits fans of
+ // mire orbs that arc down at you, and dives at where you stood. Only after a dive does it lie stunned on the ground: that is your window to strike.
+ // Under half health it moves faster, spits five orbs instead of three and recovers sooner.
+ function wingSpit(en){
+  const n=en?5:3,bx=boss.x+boss.dir*14,by=GROUND_Y-boss.y-26,a0=Math.atan2(state.y-by,state.x-bx);AUDIO.play("croak");
+  for(let i=0;i<n;i++){const a=a0+(i-(n-1)/2)*.3,v=150*Math.min(1.4,SC.bossSpeed);orbs.push({x:bx,y:by,vx:Math.cos(a)*v,vy:Math.sin(a)*v-50})}
+ }
+ function updateWing(dt,dx,en){
+  const HOV=66,sp=SC.bossSpeed,st=boss.st,lo=AR.x+BS.w/2+6,hi=LEVEL_W-BS.w/2-6;
+  const mv=(tx,v)=>{boss.x=Math.max(lo,Math.min(hi,boss.x+Math.max(-v*dt,Math.min(v*dt,tx-boss.x))))};
+  boss.dir=dx>=0?1:-1;
+  if(st==="intro"){boss.t-=dt;boss.y=HOV*Math.min(1,Math.max(0,1-boss.t/1.4));if(boss.t<=0){boss.st="hover";boss.t=1.2;boss.y=HOV}}
+  else if(st==="hover"){mv(state.x,(en?125:85)*sp);boss.y=HOV+Math.sin(boss.tt*3)*6;boss.t-=dt;
+   if(boss.t<=0){boss.cyc++;if(boss.cyc%2){boss.st="spit";boss.wt=(en?.5:.75)/sp;boss.t=boss.wt}else{boss.st="tele";boss.wt=(en?.55:.85)/sp;boss.t=boss.wt;boss.tx=Math.max(lo,Math.min(hi,state.x));AUDIO.play("croak")}}}
+  else if(st==="spit"){boss.t-=dt;if(boss.t<=0){wingSpit(en);boss.st="hover";boss.t=en?.9:1.3}}
+  else if(st==="tele"){boss.t-=dt;boss.y=HOV+(1-boss.t/boss.wt)*12;if(boss.t<=0){boss.st="dive";boss.t=.26;boss.x0=boss.x;boss.y0=boss.y}}
+  else if(st==="dive"){boss.t-=dt;const u=Math.min(1,Math.max(0,1-boss.t/.26));boss.x=boss.x0+(boss.tx-boss.x0)*u;boss.y=boss.y0*(1-u*u);
+   if(boss.t<=0){boss.y=0;boss.st="perch";boss.t=(en?1.25:1.7)*Math.max(.6,SC.recover);AUDIO.play("thump");vis.shake=Math.max(vis.shake,.3);
+    fx.push({k:"ring",x:boss.x,y:GROUND_Y-4,vx:0,vy:0,life:.35,max:.35,c:"#4ee6b4",g:46});
+    for(let i=0;i<8;i++){const d=i%2?1:-1;fx.push({k:"puff",x:boss.x+d*(8+i*3),y:GROUND_Y-3,vx:d*(50+i*12),vy:-16,life:.45,max:.45,r:3,g:9})}}}
+  else if(st==="perch"){boss.t-=dt;boss.y=0;if(boss.t<=0){boss.st="rise";boss.t=.4}}
+  else if(st==="rise"){boss.t-=dt;boss.y=HOV*Math.min(1,Math.max(0,1-boss.t/.4));if(boss.t<=0){boss.st="hover";boss.t=en?.8:1.1;boss.y=HOV}}
+  for(const o of orbs){o.x+=o.vx*dt;o.y+=o.vy*dt;o.vy+=380*dt;
+   if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&Math.abs(state.x-o.x)<HW+6&&Math.abs(state.y-o.y)<R+6){o.dead=true;hurtPlayer(o.x,"Mire Orb");if(state.hp<=0)startDefeat()}
+   else if(o.y>GROUND_Y-4){o.dead=true;for(let i=0;i<4;i++)fx.push({k:"puff",x:o.x,y:GROUND_Y-3,vx:(i-1.5)*26,vy:-18,life:.35,max:.35,r:2,g:6})}}
+  orbs=orbs.filter(o=>!o.dead&&o.x>AR.x-40&&o.x<LEVEL_W+40);
+  if(vis.dying<=0&&state.hp>0&&state.hurt<=0&&boss.hurt<=0&&st!=="perch"&&st!=="intro"&&st!=="rise"){
+   const bb=GROUND_Y-boss.y,bt=bb-44;
+   if(state.x+HW>boss.x-BS.w/2+8&&state.x-HW<boss.x+BS.w/2-8&&state.y+R>bt&&state.y-R<bb){hurtPlayer(boss.x,BS.short);if(state.hp<=0)startDefeat()}
   }
  }
  function updateHazards(){
@@ -424,10 +459,10 @@
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
   ov.hidden=m==="playing";
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent=handDone()?"Play Endless":"Play";$("quit").hidden=true}
-  if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: Level "+(LV+2)+", "+lvl(LV+1).name+".";$("go").textContent="Next level";$("quit").hidden=false}
+  if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(LV+1)?"":"Level "+(LV+2)+", ")+lvl(LV+1).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
-  if(m==="complete"){const nu=markDone(LV),r=finishScore(),ret=handDone()&&LV<LEVELS.length;if(ret){$("rpl").hidden=true;$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):"")+r.result+(nu?" Level "+nu+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" Levels 1-3 are now retired. The Endless Realms are next."}
+  if(m==="complete"){const nu=markDone(LV),r=finishScore(),ret=handDone()&&LV<LEVELS.length;if(ret){$("rpl").hidden=true;$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" Levels 1-3 are now retired. The Endless Realms are next."}
   if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent="Restart";$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
   if(m==="playing"){last=performance.now();state.tx=state.ty=null}
@@ -725,8 +760,37 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   }
   glow(GLOW.rose,x,GROUND_Y-60,70,.22*g);X.restore();
  }
+ function drawWing(){
+  const t=boss.tt,f=boss.dir,st=boss.st,en=enraged(),dp=boss.defeated?1-boss.dead/BS.defeat:0,h=Math.max(0,boss.hurt)/.22;
+  const perch=st==="perch",tele=st==="tele",spit=st==="spit",cy=GROUND_Y-boss.y-22;
+  X.save();X.globalAlpha=.45*(1-dp)*Math.max(0,1-boss.y/120);X.fillStyle="#000";X.beginPath();X.ellipse(boss.x,GROUND_Y,30*(1-boss.y/220),4,0,0,7);X.fill();X.restore();
+  if(tele){const u=1-boss.t/boss.wt;X.save();X.strokeStyle="rgba(255,90,110,"+(.45+.35*Math.sin(t*40))+")";X.lineWidth=3;X.beginPath();X.ellipse(boss.tx,GROUND_Y-2,24+14*(1-u),5,0,0,7);X.stroke();X.restore()}
+  for(const o of orbs){glow(GLOW.moon,o.x,o.y,16,.8);X.fillStyle="rgba(78,230,180,.55)";X.beginPath();X.arc(o.x,o.y,7,0,7);X.fill();X.fillStyle="#e6fff6";X.beginPath();X.arc(o.x-1,o.y-1,3.4,0,7);X.fill()}
+  X.save();X.globalAlpha=Math.max(0,1-dp*dp);X.translate(boss.x+(h>0?Math.sin(t*90)*2*h:0)+(tele?Math.sin(t*70)*1.6:0),cy);X.scale(f*(1+.4*dp),1-.8*dp);
+  if(!perch&&st!=="dormant"){X.fillStyle="rgba(78,230,180,.08)";X.strokeStyle="rgba(120,255,214,"+(.35+.2*Math.sin(t*5))+")";X.lineWidth=2;X.beginPath();X.ellipse(0,0,44,34,0,0,7);X.fill();X.stroke()}
+  const fa=perch?.55:(-.25-.55*(.5+.5*Math.sin(t*(tele?4:17))));
+  const wing=(dx,sc,dark)=>{X.save();X.translate(dx,-6);X.rotate(fa);X.scale(sc,sc);
+   const g=X.createLinearGradient(-60,-40,0,0);g.addColorStop(0,dark?"#2a1260":"#8a5fe0");g.addColorStop(1,dark?"#150a38":"#3a1c8a");X.fillStyle=g;X.strokeStyle="#120830";X.lineWidth=2;
+   X.beginPath();X.moveTo(0,0);X.bezierCurveTo(-8,-34,-46,-50,-62,-22);X.bezierCurveTo(-48,-14,-28,-4,0,0);X.fill();X.stroke();
+   X.strokeStyle="rgba(255,255,255,.22)";X.lineWidth=1.2;X.beginPath();X.moveTo(-4,-2);X.lineTo(-48,-30);X.moveTo(-4,-2);X.lineTo(-54,-20);X.stroke();
+   X.fillStyle="#4ee6b4";X.beginPath();X.arc(-40,-22,4,0,7);X.arc(-24,-14,2.6,0,7);X.fill();X.restore()};
+  wing(-2,.86,true);
+  X.fillStyle="#3b2a5c";X.strokeStyle="#120830";X.lineWidth=2.4;X.beginPath();X.ellipse(-16,3,15,11,0,0,7);X.fill();X.stroke();X.beginPath();X.ellipse(0,0,19,14,0,0,7);X.fill();X.stroke();
+  X.fillStyle="#4ee6b4";X.beginPath();X.arc(-20,3,2.4,0,7);X.arc(-12,-2,2,0,7);X.arc(-6,6,2,0,7);X.fill();
+  X.fillStyle="#3b2a5c";X.beginPath();X.arc(17,-3,10,0,7);X.fill();X.stroke();
+  X.strokeStyle="#120830";X.lineWidth=2;X.beginPath();X.moveTo(20,-11);X.quadraticCurveTo(26,-24,34,-22);X.moveTo(15,-11);X.quadraticCurveTo(14,-24,20,-28);X.stroke();
+  X.fillStyle="#9dffcf";X.beginPath();X.arc(34,-22,2.2,0,7);X.arc(20,-28,2.2,0,7);X.fill();
+  const eye=perch?"#8a7aa8":(en||tele)?"#ff4d6d":"#ffd23f";
+  if(perch){X.strokeStyle="#cfc4ee";X.lineWidth=2;X.beginPath();X.moveTo(18,-8);X.lineTo(24,-2);X.moveTo(24,-8);X.lineTo(18,-2);X.stroke()}
+  else{glow(GLOW.amber,21,-5,12,.8);X.fillStyle=eye;X.beginPath();X.ellipse(21,-5,4,3.4,0,0,7);X.fill();X.fillStyle="#1a0a22";X.beginPath();X.arc(22,-5,1.6,0,7);X.fill()}
+  if(spit){const u=1-boss.t/boss.wt;glow(GLOW.moon,26,0,10+14*u,.9)}
+  wing(2,1,false);
+  if(h>0){X.globalAlpha=h*.6;X.fillStyle="#fff";X.beginPath();X.ellipse(0,0,22,16,0,0,7);X.fill()}
+  X.restore();
+ }
  function drawBoss(){
   if(!AR||(boss.defeated&&boss.dead<=0))return;
+  if(BS.kind==="wing"){if(boss.st!=="dormant")drawWing();return}
   const t=boss.tt,f=boss.dir,st=boss.st,en=enraged();
   const dp=boss.defeated?1-boss.dead/BS.defeat:0;
   const h=Math.max(0,boss.hurt)/.22,flash=h>.4||(boss.defeated&&Math.sin(t*55)>0);
@@ -911,6 +975,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    X.translate(0,R+1-hop);
    X.drawImage(AVS.c,-AVS.w/2,-AVS.bot,AVS.w,AVS.h);
    if(vis.flash>0){X.globalAlpha=Math.min(.75,vis.flash*2.4);X.drawImage(AVS.sil,-AVS.w/2,-AVS.bot,AVS.w,AVS.h)}
+   drawHeld(f*AVS.w*.3,-AVS.bot*.42);
    X.restore();return;
   }
   // feet
@@ -942,15 +1007,55 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   else if(hurtFace){X.beginPath();X.moveTo(ex-3,7);X.quadraticCurveTo(ex,4.5,ex+3,7);X.stroke()}
   else{X.beginPath();X.arc(ex,4.2,3,.15*Math.PI,.85*Math.PI);X.stroke()}
   if(vis.flash>0){X.globalAlpha=Math.min(.75,vis.flash*2.4);X.fillStyle="#ffdde2";X.beginPath();X.ellipse(0,1,16,15,0,0,7);X.fill()}
+  drawHeld(f*13,3);
   X.restore();
  }
  function atkQ(){const p=1-state.attack/ATK_T;if(p<.25)return -.6*(p/.25);const u=(p-.25)/.75;return (1-u)*(1-u)}
+ // ---- Held weapons: the equipped weapon (Bag > Weapons) is drawn in the player's hand and swings with the attack.
+ // Each is drawn pointing right from the grip at (0,0); drawHeld() flips it to face the way the player looks.
+ const WPN_PAL={spikedblade:["#ffb04f","#fff3cf"],bogblaster:["#7dff6a","#eaffd0"],hopperstaff:["#4ee6b4","#e6fff6"]};
+ function heldWeapon(){try{const id=CS.geq&&CS.geq.weapons;return id&&CS.gear[id]>0&&WPN_PAL[id]?id:""}catch(e){return""}}
+ const WPN={
+  spikedblade(){
+   X.fillStyle="#6b4a2a";X.strokeStyle="#2a1a0c";X.lineWidth=1.4;rr(-9,-2.6,11,5.2,2);X.fill();X.stroke();
+   X.fillStyle="#f2c14e";X.beginPath();X.arc(-9.5,0,3,0,7);X.fill();X.stroke();rr(1,-7.5,4.5,15,2);X.fill();X.stroke();
+   const g=X.createLinearGradient(0,-4,0,4);g.addColorStop(0,"#eafff6");g.addColorStop(1,"#7fb3a5");X.fillStyle=g;X.strokeStyle="#0e2a24";
+   X.beginPath();X.moveTo(5.5,-4);X.lineTo(31,-3);X.lineTo(40,0);X.lineTo(31,3);X.lineTo(5.5,4);X.closePath();X.fill();X.stroke();
+   X.strokeStyle="rgba(255,255,255,.75)";X.lineWidth=1;X.beginPath();X.moveTo(8,-.6);X.lineTo(34,-.6);X.stroke();
+   X.fillStyle="#3fae5a";X.strokeStyle="#0e3a1c";X.lineWidth=1;for(let i=0;i<4;i++){const x=10+i*6.5;X.beginPath();X.moveTo(x,-3.6);X.lineTo(x+2.6,-9.5);X.lineTo(x+4.6,-3.4);X.fill();X.stroke();X.beginPath();X.moveTo(x+1.5,3.6);X.lineTo(x+4,9);X.lineTo(x+6,3.4);X.fill();X.stroke()}
+  },
+  bogblaster(a){
+   X.fillStyle="#5a3a1c";X.strokeStyle="#1e1208";X.lineWidth=1.4;X.save();X.rotate(.25);rr(-4,3,6,10,2);X.fill();X.stroke();X.restore();
+   const g=X.createLinearGradient(0,-7,0,7);g.addColorStop(0,"#7a8a4a");g.addColorStop(1,"#3a4a22");X.fillStyle=g;rr(-7,-6,23,12,4);X.fill();X.stroke();
+   X.fillStyle="#34421e";rr(15,-3.6,15,7.2,2);X.fill();X.stroke();X.fillStyle="#8fe88a";rr(29,-5,5,10,2);X.fill();X.stroke();
+   X.fillStyle="rgba(125,255,106,.85)";X.strokeStyle="#1f4a14";X.beginPath();X.arc(5,-9,6.2,0,7);X.fill();X.stroke();
+   X.fillStyle="#eaffd0";X.beginPath();X.arc(3,-10.5,1.4,0,7);X.arc(7,-7,1,0,7);X.fill();
+   X.fillStyle="#7dff6a";X.beginPath();X.ellipse(32,6,1.8,3.2,0,0,7);X.fill();
+   if(a>0){glow(GLOW.moon,38,0,14*a,a)}
+  },
+  hopperstaff(a){
+   glow(GLOW.moon,42,0,16,.55);
+   X.strokeStyle="#2a1a0c";X.lineWidth=5.2;X.lineCap="round";X.beginPath();X.moveTo(-14,0);X.lineTo(36,0);X.stroke();X.strokeStyle="#9a6a34";X.lineWidth=3.2;X.beginPath();X.moveTo(-14,0);X.lineTo(36,0);X.stroke();
+   X.strokeStyle="#d8f7ff";X.lineWidth=1.8;X.beginPath();X.moveTo(8,0);for(let i=0;i<6;i++)X.lineTo(10+i*3,i%2?-4.5:4.5);X.stroke();
+   X.fillStyle="#43c463";X.strokeStyle="#14451f";X.lineWidth=1.6;X.beginPath();X.arc(42,0,7,0,7);X.fill();X.stroke();
+   X.fillStyle="#fff";X.beginPath();X.arc(42,-5.5,2.6,0,7);X.arc(46.5,-4,2.4,0,7);X.fill();X.fillStyle="#0b2a2c";X.beginPath();X.arc(42.6,-5.5,1.2,0,7);X.arc(47,-4,1.1,0,7);X.fill();
+   X.strokeStyle="#14451f";X.lineWidth=1.3;X.beginPath();X.moveTo(40,3);X.quadraticCurveTo(45,6,49,2);X.stroke();
+  }
+ };
+ // gx,gy = where the hand is (in the player's local space); the weapon rests angled up and swings through the attack
+ function drawHeld(gx,gy){
+  const id=heldWeapon();if(!id)return;
+  const f=state.face,p=state.attack>0?1-state.attack/ATK_T:-1;
+  let ang=-.7+Math.sin(state.t*2.4)*.05,a=0;
+  if(p>=0){if(p<.25)ang=-.7-1.0*(p/.25);else{const u=(p-.25)/.75;ang=-1.7+2.7*(1-(1-u)*(1-u));a=1-u}}
+  X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WPN[id](a);X.restore();
+ }
  function drawSlash(){
   const p=1-state.attack/ATK_T;if(p<.25)return;
   const u=(p-.25)/.75,e=1-(1-u)*(1-u),hd=-1.35+1.9*e,tl=hd-1.25*(1-u*.6),f=state.face,w=1-u*.55;
   X.save();X.translate(state.x+f*8,state.y-2);X.scale(f,1);X.globalAlpha=Math.min(1,(1-u)*1.8);X.lineCap="round";
-  X.strokeStyle="#ffb04f";X.lineWidth=10*w;X.beginPath();X.arc(0,0,34,tl,hd);X.stroke();
-  X.strokeStyle="#fff3cf";X.lineWidth=4*w;X.beginPath();X.arc(0,0,34,tl+.12,hd-.05);X.stroke();
+  const pal=WPN_PAL[heldWeapon()]||["#ffb04f","#fff3cf"];X.strokeStyle=pal[0];X.lineWidth=10*w;X.beginPath();X.arc(0,0,34,tl,hd);X.stroke();
+  X.strokeStyle=pal[1];X.lineWidth=4*w;X.beginPath();X.arc(0,0,34,tl+.12,hd-.05);X.stroke();
   X.restore();
  }
 
@@ -1033,7 +1138,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const fa=e<.35?1:Math.max(0,1-(e-.35)/.5);if(fa>0){X.fillStyle="rgba(4,8,6,"+fa+")";X.fillRect(0,0,W,H)}
   const ta=e<.4?0:e<.9?(e-.4)/.5:b<.7?b/.7:1;if(ta<=0)return;
   X.save();X.globalAlpha=ta;X.textAlign="center";
-  X.fillStyle="#ffd98a";X.font="900 13px Nunito,sans-serif";try{X.letterSpacing="4px"}catch(_){}X.fillText("LEVEL "+(LV+1),W/2,176);
+  X.fillStyle="#ffd98a";X.font="900 13px Nunito,sans-serif";try{X.letterSpacing="4px"}catch(_){}X.fillText(isEndless(LV)?"ENDLESS REALMS":"LEVEL "+(LV+1),W/2,176);
   let fs=27;X.font="900 27px Nunito,sans-serif";try{X.letterSpacing="1px"}catch(_){}while(X.measureText(lv.name.toUpperCase()).width>W-40&&fs>16){fs--;X.font="900 "+fs+"px Nunito,sans-serif"}X.lineWidth=5;X.strokeStyle="#0a1208";X.strokeText(lv.name.toUpperCase(),W/2,212);X.fillStyle="#f3f0c8";X.fillText(lv.name.toUpperCase(),W/2,212);
   if(lv.sub){X.font="900 11px Nunito,sans-serif";try{X.letterSpacing="3px"}catch(_){}X.fillStyle=lv.boss?"#ff9aa8":"#9be8c8";X.fillText(lv.sub.toUpperCase(),W/2,236)}
   try{X.letterSpacing="0px"}catch(_){}X.restore();
@@ -1201,6 +1306,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  let LV=0;
  // ---- Endless levels: index 0-2 are the hand-built LEVELS above; every higher index is generated (once, then cached) by Progression.build.
  const GEN={};
+ function isEndless(i){return i>=LEVELS.length}   // generated Endless Realms levels have a name only, no "Level N" number
  function lvl(i){if(i<LEVELS.length)return LEVELS[i];return GEN[i]||(GEN[i]=Progression.build(i,{gr:gr,pf:pf,bx:bx,mp:mp,themes:[TH1,TH2,TH3],START_X:START_X,GROUND_Y:GROUND_Y}))}
  // swap every piece of level data the game reads, then repaint the sky, ground and water for that level
  function loadLevel(i){
@@ -1444,8 +1550,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    if(i>=H0&&i<from){if(i===H0)h+='<li class="lvdiv">Endless Realms</li><li><button type="button" class="btn ghost lvmore">Show '+(from-H0)+' earlier levels</button></li>';continue}
    if(i===H0&&from===H0)h+='<li class="lvdiv">Endless Realms</li>';
    const L=lvl(i),open=isUnlocked(i),done=prog.done.includes(i);
-   const st=!open?"Locked. Finish Level "+i+" to unlock.":done?"Completed. Tap to replay.":"Unlocked. Tap to play.";
-   h+='<li><button type="button" class="lvb'+(open?"":" locked")+(done?" done":"")+(i===cur?" cur":"")+'" data-i="'+i+'"'+(open?"":' disabled aria-disabled="true"')+'><i class="lvi">'+(open?(done?DONEI:PLAYI):LOCK)+'</i><span><b>Level '+(i+1)+" \u2014 "+L.name+"</b>"+(L.gen?'<em class="lvtier'+(L.boss?" boss":"")+'">'+Progression.label(i)+"</em>":"")+"<em>"+st+"</em>"+(bs[i]?'<em class="lvbest">Best score '+fmt(bs[i].score)+"</em>":"")+"</span></button></li>";
+   const st=!open?"Locked. Finish "+(isEndless(i-1)?lvl(i-1).name:"Level "+i)+" to unlock.":done?"Completed. Tap to replay.":"Unlocked. Tap to play.";
+   h+='<li><button type="button" class="lvb'+(open?"":" locked")+(done?" done":"")+(i===cur?" cur":"")+'" data-i="'+i+'"'+(open?"":' disabled aria-disabled="true"')+'><i class="lvi">'+(open?(done?DONEI:PLAYI):LOCK)+'</i><span><b>'+(isEndless(i)?"":"Level "+(i+1)+" \u2014 ")+L.name+"</b>"+(L.gen?'<em class="lvtier'+(L.boss?" boss":"")+'">'+Progression.label(i)+"</em>":"")+"<em>"+st+"</em>"+(bs[i]?'<em class="lvbest">Best score '+fmt(bs[i].score)+"</em>":"")+"</span></button></li>";
   }
   $("lvl").innerHTML=h;
  }
@@ -1466,7 +1572,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   addEventListener("keydown",e=>{if(e.code==="Escape"&&ov.dataset.v==="levels"&&(state.mode==="title"||state.mode==="complete")){e.preventDefault();menu()}},true);
  })();
  // title screen "Continue" button: jumps straight to the furthest level reached (only shown once Level 2 or later is unlocked)
- function paintContinue(){const c=$("cont");if(!c)return;readProg();if(state.mode==="title")$("go").textContent=handDone()?"Play Endless":"Play";const show=state.mode==="title"&&prog.unlocked>1&&!handDone();c.hidden=!show;if(show)c.textContent="Continue \u00b7 Level "+prog.unlocked}
+ function paintContinue(){const c=$("cont");if(!c)return;readProg();if(state.mode==="title")$("go").textContent=handDone()?"Play Endless":"Play";const show=state.mode==="title"&&prog.unlocked>1&&!handDone();c.hidden=!show;if(show)c.textContent="Continue \u00b7 "+(isEndless(prog.unlocked-1)?lvl(prog.unlocked-1).name:"Level "+prog.unlocked)}
  $("cont").onclick=()=>{readProg();LV=Math.max(0,prog.unlocked-1);try{document.activeElement&&document.activeElement.blur()}catch(e){}start();if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"})};
  readProg();
  loadLevel(entryLevel());paintContinue();

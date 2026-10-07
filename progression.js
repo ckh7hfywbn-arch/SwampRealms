@@ -67,6 +67,9 @@ const Progression=(function(){
  const isBoss=i=>i>=HAND-1&&(i+1)%TUNING.bossEvery===0;
  const bossRank=i=>isBoss(i)?(i+1)/TUNING.bossEvery-1:0;
  function roman(n){const m=[[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];if(n<1||n>3999)return String(n);let s="";for(const[v,t]of m)while(n>=v){s+=t;n-=v}return s}
+ // The Mirewing: the second kind of boss (a flying mire-moth). Boss ranks 1, 3, 5 ... are Mirewings; ranks 0, 2, 4 ... are Rootmaws.
+ const WINGS=["The Mirewing","Elder Mirewing","Ancient Mirewing","Primeval Mirewing","Mythic Mirewing","Eternal Mirewing"];
+ function wingName(n){return n<WINGS.length?WINGS[n]:WINGS[WINGS.length-1]+" "+roman(n-WINGS.length+2)}
  function bossName(b){return b<BOSSES.length?BOSSES[b]:BOSSES[BOSSES.length-1]+" "+roman(b-BOSSES.length+2)}
  // enemy variant for a depth: rank 0 = the original look and name
  function variant(d,base){
@@ -80,7 +83,7 @@ const Progression=(function(){
  function scale(i){
   const d=depth(i),b=bossRank(i),boss=isBoss(i),T=TUNING;
   const bv=variant(d,"Bug"),cv=variant(d,"Crawler");
-  const bn=b===0?{name:"The Rootmaw",aura:null}:{name:bossName(b),aura:VARIANTS[(b-1)%VARIANTS.length].c};
+  const bn=b===0?{name:"The Rootmaw",aura:null}:b%2===1?{name:wingName((b-1)/2),aura:VARIANTS[(b-1)%VARIANTS.length].c,kind:"wing"}:{name:bossName(b),aura:VARIANTS[(b-1)%VARIANTS.length].c};
   return{
    depth:d,isBoss:boss,bossRank:b,
    bugHp:T.bugHp(d),crawlerHp:T.crawlerHp(d),bossHp:T.bossHp(b),
@@ -88,7 +91,7 @@ const Progression=(function(){
    rewardMul:T.rewardMul(d),bossPts:T.bossPts(b),fragBonus:T.fragBonus(d),
    bug:{name:d?bv.name:"Bramble Bug",aura:bv.aura},
    crawler:{name:d?cv.name:"Bog Crawler",aura:cv.aura},
-   boss:{name:bn.name,short:bn.name.replace(/^The /,""),aura:bn.aura}
+   boss:{name:bn.name,short:bn.name.replace(/^The /,""),aura:bn.aura,kind:bn.kind||"root"}
   };
  }
 

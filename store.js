@@ -57,8 +57,9 @@ const CK="swamp-crystals-v1";
 let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
- if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&GEAR[g].slot===sl))delete CS.geq[sl]}}
+ if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&GEAR[g].slot===sl))delete CS.geq[sl]}}catch(e){}}   // GEAR is declared further down this file; the first cload() runs before it exists, so it is re-run below
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv();try{paintBag()}catch(e){}}
+cload();
 
 const Crystals={
  get balance(){return CS.c},
@@ -158,8 +159,7 @@ const GEAR={
  hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'}
  // example:  oakclub:{name:"Oak Club",slot:"weapons",rarity:"common",desc:"A knobbly swamp club."},
 };
-// first load of the save. It must come AFTER GEAR is defined, because cload() checks equipped gear against GEAR.
-cload();
+cload();   // second pass now that GEAR exists: drops equipped weapons that are no longer owned
 const Gear={
  defs:GEAR,slots:GEAR_SLOTS,
  count:id=>CS.gear[id]||0,
@@ -325,8 +325,6 @@ function craftPaintPanel(panel){
   const ow=document.createElement("small");ow.textContent=r.gear.count?"Owned ×"+r.gear.count:r.gear.rarityName;top.appendChild(ow);
   row.appendChild(top);
   if(r.gear.desc){const ds=document.createElement("p");ds.className="cr-desc";ds.textContent=r.gear.desc;row.appendChild(ds)}
-  const sk=Object.keys(r.gear.stats||{});
-  if(sk.length){const sc=document.createElement("div");sc.className="gr-stats";sk.forEach(k=>{const c=document.createElement("span");c.className="gr-stat";c.textContent=k+" "+r.gear.stats[k];sc.appendChild(c)});row.appendChild(sc)}
   const cs=document.createElement("div");cs.className="cr-cost";
   r.cost.forEach(c=>{const ch=document.createElement("span");ch.className="cr-chip"+(c.short?" short":"");ch.textContent=c.name+" "+Math.min(c.have,c.need)+" / "+c.need;cs.appendChild(ch)});
   row.appendChild(cs);
