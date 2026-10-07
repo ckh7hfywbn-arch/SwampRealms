@@ -860,7 +860,7 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .lo-pager button[aria-selected=true]{border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0;box-shadow:0 0 16px -6px #f2c14e}
 .lo-pager .craftbadge{display:inline-block;min-width:20px;padding:1px 7px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 11px Nunito,sans-serif;text-align:center}
 .lo-swipe{margin:0 0 10px;font:800 11px Nunito,sans-serif;color:#a9c7c0;letter-spacing:.04em}
-.lo-track{display:flex;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0 -16px;padding:0 16px 24px;scroll-padding:0 16px;box-sizing:border-box;width:calc(100% + 32px);transition:height .25s ease}
+.lo-track{display:flex;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0 -16px;padding:0 16px 24px;scroll-padding:0 16px;box-sizing:border-box;width:calc(100% + 32px)}
 .lo-track::-webkit-scrollbar{display:none}
 .lo-track>.bag-inline,.lo-track>.craft-inline{flex:0 0 100%;min-width:0;margin:0 32px 0 0;scroll-snap-align:start;scroll-margin-top:84px}
 .lo-track>.craft-inline:last-child{margin-right:0}
@@ -868,3 +868,9 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .craft-inline .bag-head h2{text-transform:none;letter-spacing:.02em;font-weight:400;font-size:26px;text-shadow:none}
 .craft-inline #crpanel{overflow:visible}
 @media(prefers-reduced-motion:reduce){.lo-track{transition:none}}
+
+/* smoother swipe: panes get their own layer, no height animation, and while moving the glow shadows and shimmer are switched off */
+.lo-track>.bag-inline,.lo-track>.craft-inline{transform:translateZ(0);backface-visibility:hidden}
+.lo-track.moving .bag{box-shadow:none}
+.lo-track.moving *{animation-play-state:paused!important}
+.lo-track{scroll-behavior:auto}

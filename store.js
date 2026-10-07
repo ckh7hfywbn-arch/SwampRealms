@@ -579,25 +579,32 @@ function loadoutPaint(){
 }
 // Bag | Crafting pager on the Arcade page: two panes side by side in a swipeable strip, with two buttons that show which one you are on.
 function loadoutPane(){const t=document.getElementById("lo-track");return t?Math.round(t.scrollLeft/Math.max(1,t.clientWidth)):0}
+let _lpIdx=-1,_lpBusy=false;
+function loadoutMark(){
+ const i=loadoutPane();if(i===_lpIdx)return;_lpIdx=i;
+ document.querySelectorAll("#lo-pager [data-pane]").forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false")});
+}
+// height follows the pane you are on; only done when the swipe has settled so nothing is re-laid-out mid-swipe
 function loadoutFit(){
  const t=document.getElementById("lo-track");if(!t)return;
- const i=loadoutPane(),p=t.children[i];if(p)t.style.height=(p.offsetHeight+24)+"px";
- document.querySelectorAll("#lo-pager [data-pane]").forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false")});
+ loadoutMark();const p=t.children[loadoutPane()];if(p){const h=(p.offsetHeight+24)+"px";if(t.style.height!==h)t.style.height=h}
 }
 function loadoutGo(which){
  const t=document.getElementById("lo-track");if(!t)return;
  const i=which==="craft"?1:0;
  try{t.scrollTo({left:i*t.clientWidth,behavior:"smooth"})}catch(e){t.scrollLeft=i*t.clientWidth}
  const pg=document.getElementById("lo-pager");if(pg)try{pg.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){pg.scrollIntoView()}
- loadoutFit();
+ loadoutMark();
 }
 let _lpInit=false;
 function loadoutPager(){
  const t=document.getElementById("lo-track");if(!t||_lpInit)return;_lpInit=true;
- let raf=0;t.addEventListener("scroll",()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(loadoutFit)},{passive:true});
- addEventListener("resize",()=>{const i=loadoutPane();t.scrollLeft=i*t.clientWidth;loadoutFit()});
+ let tm=0;const settle=()=>{clearTimeout(tm);if(_lpBusy){_lpBusy=false;t.classList.remove("moving")}loadoutFit()};
+ t.addEventListener("scroll",()=>{if(!_lpBusy){_lpBusy=true;t.classList.add("moving")}loadoutMark();clearTimeout(tm);tm=setTimeout(settle,110)},{passive:true});
+ if("onscrollend" in window)t.addEventListener("scrollend",settle);
+ addEventListener("resize",()=>{t.scrollLeft=Math.max(0,loadoutPane())*t.clientWidth;loadoutFit()});
  document.querySelectorAll("#lo-pager [data-pane]").forEach(b=>b.addEventListener("click",()=>loadoutGo(b.getAttribute("data-pane"))));
- if("ResizeObserver" in window)[...t.children].forEach(c=>new ResizeObserver(loadoutFit).observe(c));
+ let rf=0;if("ResizeObserver" in window){const ro=new ResizeObserver(()=>{if(_lpBusy)return;cancelAnimationFrame(rf);rf=requestAnimationFrame(loadoutFit)});[...t.children].forEach(c=>ro.observe(c))}
  loadoutFit();
 }
 // item count badge on any [data-bag-count]
