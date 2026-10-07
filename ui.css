@@ -811,3 +811,40 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 
 /* Crafting popup: scroll the recipe list inside the card instead of spilling off screen */
 #crpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain}
+
+/* ===== Arcade: Your Loadout (portrait, max health, weapon, armor) with the Bag inside it ===== */
+#loadout{max-width:820px}
+.lo{display:grid;grid-template-columns:minmax(150px,.62fr) 2fr 1.35fr;grid-template-areas:"hero health health" "hero weapon armor";gap:12px;margin:22px auto 0;text-align:center}
+.lo-card{position:relative;box-sizing:border-box;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 14px;border-radius:20px;background:linear-gradient(180deg,#0e1712f2,#070d0af2);border:1px solid #4ee6b444;box-shadow:0 0 34px -16px #4ee6b4,0 16px 34px -22px #000}
+.lo-hero{grid-area:hero;gap:12px;border-color:#4ee6b477;box-shadow:0 0 40px -12px #4ee6b4,0 16px 34px -22px #000}
+.lo-health{grid-area:health}.lo-weapon{grid-area:weapon}.lo-armor{grid-area:armor;align-items:stretch}
+.lo-lbl{font:800 10px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#a9c7c0}
+.lo-av{width:min(100%,160px);aspect-ratio:1;border-radius:18px;overflow:hidden;background:#05090a;border:1px solid var(--ac,#4ee6b4);box-shadow:0 0 22px -8px var(--ac,#4ee6b4)}
+.lo-av svg{display:block;width:100%;height:100%}
+.lo-hero b{font:900 15px Nunito,sans-serif;color:#fff3d6}
+.lo-flames{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;min-height:26px}
+.lo-flames .fl{width:21px;height:25px}
+.lo-hptxt{margin:0;font:900 15px Nunito,sans-serif;color:#fff3d6}
+.lo-weapon canvas{display:block;width:100%;max-width:230px;height:auto;aspect-ratio:360/150}
+.lo-weapon canvas[hidden]{display:none}
+.lo-weapon b{font:900 16px Nunito,sans-serif;color:#fff3d6}
+.lo-weapon small{font:800 12px Nunito,sans-serif;letter-spacing:.03em;color:#a9c7c0}
+.lo-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:12px;background:#05090a;border:1px solid var(--c,#4ee6b433);text-align:left;min-width:0}
+.lo-row span{font:800 10px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#a9c7c0;flex:none}
+.lo-row b{font:900 12.5px/1.2 Nunito,sans-serif;color:#fff3d6;text-align:right;min-width:0}
+.lo-row b.none{color:#6f8a84;font-weight:800}
+.lo-set{margin:0;font:800 11px Nunito,sans-serif;letter-spacing:.04em;color:#6f8a84}
+.lo-set.on{color:#5fd38d;text-shadow:0 0 12px #5fd38d66}
+#bag.bag-inline{scroll-margin-top:84px;margin-top:14px}
+.bag-inline .bag{width:100%;max-height:none;animation:none;text-align:left}
+.bag-inline .bag-head h2{text-transform:none;letter-spacing:.02em;font-weight:400;font-size:26px;text-shadow:none}
+.bag-inline #bgpanel{overflow:visible}
+@media(max-width:700px){
+ .lo{grid-template-columns:1fr 1fr;grid-template-areas:"hero health" "hero weapon" "armor armor"}
+ .lo-hero{padding:14px 10px}
+}
+@media(max-width:460px){
+ .lo{grid-template-columns:1fr;grid-template-areas:"hero" "health" "weapon" "armor"}
+ .lo-av{width:130px}
+}
+@media(min-width:701px){.bag-inline .bg-grid{grid-template-columns:repeat(6,1fr)}}

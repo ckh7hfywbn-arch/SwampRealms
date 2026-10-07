@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="ui.css?v=craft3">
+<link rel="stylesheet" href="ui.css?v=loadout1">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -44,9 +44,24 @@
  <p class="sub">Play as much as you like. Every run pays Swamp Coins for packs and Swamp Crystals for your avatar, with no daily limit.</p>
  <div class="tiles">
   <a class="tile" href="adventure.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M6 21V4"/><path d="M6 5h11l-3 4 3 4H6"/></svg><b>Swamp Adventure</b><span>Run, jump and fight through endless levels and ever-tougher bosses. Plays full screen. Earn coins and crystals every run.</span></a>
-  <a class="tile" href="#bag" data-bag><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/></svg><b>Bag <span class="bagbadge" data-bag-count>0</span></b><span>Your coins, crystals and fragments, plus room for weapons, armor and other gear.</span></a>
   <a class="tile" href="#craft" data-craft><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/></svg><b>Crafting <span class="craftbadge" data-craft-count hidden>0</span></b><span>Turn enemy fragments into weapons. The badge shows how many you can craft right now.</span></a>
  </div>
+</section>
+
+<section class="reveal" id="loadout">
+ <h2>Your Loadout</h2>
+ <p class="sub">What you take into the Swamp Adventure. Equip gear from your Bag below and it shows up here.</p>
+ <div class="lo">
+  <div class="lo-card lo-hero"><div class="lo-av" id="lo-av" aria-hidden="true"></div><b id="lo-name">Boggy the Frog</b></div>
+  <div class="lo-card lo-health"><span class="lo-lbl">Max health</span><div class="lo-flames" id="lo-flames" role="img"></div><p class="lo-hptxt" id="lo-hp">3 (3 base)</p></div>
+  <div class="lo-card lo-weapon"><span class="lo-lbl">Weapon</span><canvas id="lo-wcv" width="360" height="150" role="img" aria-label="Equipped weapon"></canvas><b id="lo-wname">No weapon equipped</b><small id="lo-winfo">Bare hands · Damage 1 per hit</small></div>
+  <div class="lo-card lo-armor"><span class="lo-lbl">Armor</span>
+   <div class="lo-row"><span>Helmet</span><b id="lo-helmet" class="none">Empty</b></div>
+   <div class="lo-row"><span>Chest</span><b id="lo-chest" class="none">Empty</b></div>
+   <div class="lo-row"><span>Boots</span><b id="lo-boots" class="none">Empty</b></div>
+   <p class="lo-set" id="lo-set">Wear a full set for a bonus</p></div>
+ </div>
+ <div id="bag" class="bag-inline"></div>
 </section>
 
 <footer>
@@ -59,7 +74,8 @@
 
 <script src="cards.js"></script>
 <script src="weapons.js?v=art1"></script>
-<script src="store.js?v=craft2"></script>
+<script src="avatar.js"></script>
+<script src="store.js?v=loadout1"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
 </body>

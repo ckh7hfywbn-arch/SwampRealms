@@ -339,6 +339,7 @@ function bagSlot(info,kind){
  return d;
 }
 function bagPaintBody(){
+ try{loadoutPaint()}catch(e){}
  if(!bagEl)return;
  bagEl.querySelector(".bg-coins b").textContent=bagCoins();
  bagEl.querySelector(".bg-gems b").textContent=CS.c;
@@ -439,19 +440,23 @@ function craftPaintPanel(panel){
  panel.appendChild(det);
  const note=document.createElement("p");note.className="bg-note";note.textContent="Crafting uses up the fragments. Defeat enemies in the Swamp Adventure to find more.";panel.appendChild(note);
 }
+// On the Arcade page the Bag lives INSIDE the Your Loadout section: a <div id="bag" class="bag-inline"> in the page is filled with the very same Bag (no backdrop, no close button, always open).
+// Everywhere else the Bag is still the popup.
+function bagInlineHost(){const h=document.getElementById("bag");return h&&h.classList.contains("bag-inline")?h:null}
 function bagBuild(){
- const w=document.createElement("div");w.className="bag-wrap";w.hidden=true;w.id="bag";
- w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="bagtitle">'+
-  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/></svg><h2 id="bagtitle">Bag</h2><button type="button" class="bag-x" data-x aria-label="Close bag">&times;</button></div>'+
+ const inl=bagInlineHost();
+ const w=inl||document.createElement("div");if(!inl){w.className="bag-wrap";w.hidden=true;w.id="bag"}
+ w.innerHTML=(inl?'':'<div class="bag-back" data-x></div>')+'<div class="bag" role="'+(inl?'region':'dialog" aria-modal="true')+'" aria-labelledby="bagtitle">'+
+  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/></svg><h2 id="bagtitle">Bag</h2>'+(inl?'':'<button type="button" class="bag-x" data-x aria-label="Close bag">&times;</button>')+'</div>'+
   '<div class="bg-wallet"><span class="bg-coins"><span class="coin" aria-hidden="true"></span><b>0</b><em>Swamp Coins</em></span><span class="bg-gems"><span class="gem" aria-hidden="true"></span><b>0</b><em>Swamp Crystals</em></span></div>'+
   '<div class="bg-tabs" role="tablist" aria-label="Bag sections"></div><div id="bgpanel" role="tabpanel"></div></div>';
- document.body.appendChild(w);
+ if(!inl)document.body.appendChild(w);
  w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))bagClose()});
  w.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();bagClose();return}
+  if(!inl&&e.key==="Escape"){e.stopPropagation();e.preventDefault();bagClose();return}
   const t=e.target.closest&&e.target.closest(".bg-tab");
   if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){const all=[...w.querySelectorAll(".bg-tab")],i=all.indexOf(t),n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];e.preventDefault();n.click()}
-  if(e.key==="Tab"){const f=[...w.querySelectorAll("button,[tabindex='0']")].filter(x=>x.tabIndex>=0&&!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+  if(!inl&&e.key==="Tab"){const f=[...w.querySelectorAll("button,[tabindex='0']")].filter(x=>x.tabIndex>=0&&!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
  },true);
  return w;
 }
@@ -459,6 +464,7 @@ function bagOpen(tab){
  if(tab==="craft"){craftOpen();return}   // crafting is its own section now
  cload();try{craftClose()}catch(e){}try{skinClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
  if(tab)bagTab=tab;
+ if(bagInlineHost()){bagPaintBody();try{bagEl.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){bagEl.scrollIntoView()}try{dispatchEvent(new CustomEvent("bag:open"))}catch(e){}return}
  bagFrom=document.activeElement;bagPaintBody();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(bagEl)}catch(e){}
  bagEl.hidden=false;document.documentElement.classList.add("bag-open");
@@ -466,7 +472,7 @@ function bagOpen(tab){
  const x=bagEl.querySelector(".bag-x");x&&x.focus();
 }
 function bagClose(){
- if(!bagEl||bagEl.hidden)return;
+ if(!bagEl||bagEl.hidden||bagEl.classList.contains("bag-inline"))return;
  bagEl.hidden=true;document.documentElement.classList.remove("bag-open");
  try{dispatchEvent(new CustomEvent("bag:close"))}catch(e){}
  try{bagFrom&&bagFrom.focus&&bagFrom.focus()}catch(e){}
@@ -532,6 +538,41 @@ function paintCraft(){
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-craft]");if(t){e.preventDefault();craftOpen()}});
 addEventListener("hashchange",()=>{if(location.hash==="#craft")craftOpen()});
 addEventListener("DOMContentLoaded",()=>{paintCraft();if(location.hash==="#craft")craftOpen()});
+// ---- Your Loadout (Arcade page): hero portrait, max health, weapon and armor, always showing what the game will use. Redrawn whenever the Bag changes (bagPaintBody).
+// Fills the <section id="loadout"> markup in arcade.html. Does nothing on pages without it.
+const LO_BASEHP=3;   // keep in step with BASEHP in adventure.html
+const LO_FLAME='<svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1C12 1 4 10 4 17a8 8 0 0016 0C20 10 12 1 12 1z"/><path class="in" d="M12 12s-3.5 3.6-3.5 6.2a3.5 3.5 0 007 0C15.5 15.6 12 12 12 12z"/></svg>';
+function loadoutPaint(){
+ const root=document.getElementById("loadout");if(!root)return;
+ cload();
+ const q=s=>root.querySelector(s);
+ // portrait + name
+ const an=ANIMALS.find(a=>a.id===CS.animal)||ANIMALS[0];
+ q("#lo-name").textContent=an.name;
+ const av=q("#lo-av");
+ if(typeof AV!=="undefined"){const o=Crystals.outfit();av.innerHTML=AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="22 4 156 156"');av.style.setProperty("--ac",AV.aura(o)||"#4ee6b4")}
+ // max health: 3 base + worn armor (Hardy Hide picks only apply inside a run)
+ const bn=Gear.bonus(),max=LO_BASEHP+bn.hp;
+ q("#lo-flames").innerHTML=Array.from({length:max},()=>'<i class="fl on">'+LO_FLAME+"</i>").join("");
+ q("#lo-hp").textContent=bn.hp?max+" ("+LO_BASEHP+" base +"+bn.hp+" from armor)":max+" ("+LO_BASEHP+" base)";
+ q("#lo-flames").setAttribute("aria-label","Max health "+max);
+ // weapon
+ const wp=Gear.equipped("weapons"),cv=q("#lo-wcv"),wn=q("#lo-wname"),wi=q("#lo-winfo");
+ cv.getContext("2d").clearRect(0,0,cv.width,cv.height);
+ if(wp){
+  if(!(typeof WeaponArt!=="undefined"&&WeaponArt.paint(cv,wp.id,null,Skins.equippedFor(wp.id))))cv.getContext("2d").clearRect(0,0,cv.width,cv.height);
+  cv.hidden=false;wn.textContent=wp.name;wi.textContent=wp.rarityName+" · Damage "+Gear.hitDmg(wp.id)+" per hit";wi.style.color=wp.color;
+ }else{cv.hidden=true;wn.textContent="No weapon equipped";wi.textContent="Bare hands · Damage 1 per hit";wi.style.color=""}
+ // armor
+ ["helmet","chest","boots"].forEach(pt=>{
+  const g=Gear.equipped("armor:"+pt),el=q("#lo-"+pt);
+  el.textContent=g?g.name:"Empty";el.classList.toggle("none",!g);
+  if(g)el.style.setProperty("--c",g.color);else el.style.removeProperty("--c");
+ });
+ const sb=q("#lo-set");
+ if(bn.set&&SET_BONUS[bn.set]){sb.textContent="Set bonus active";sb.classList.add("on");sb.title=SET_BONUS[bn.set].name+": "+SET_BONUS[bn.set].text}
+ else{sb.textContent="Wear a full set for a bonus";sb.classList.remove("on");sb.title=""}
+}
 // item count badge on any [data-bag-count]
 function paintBag(){
  const n=Bag.count;document.querySelectorAll("[data-bag-count]").forEach(e=>{e.textContent=n});
@@ -541,7 +582,9 @@ function paintBag(){
 }
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-bag]");if(t){e.preventDefault();bagOpen(t.getAttribute("data-bag")||undefined)}});
 addEventListener("hashchange",()=>{if(location.hash==="#bag")bagOpen()});
-addEventListener("DOMContentLoaded",()=>{paintBag();if(location.hash==="#bag")bagOpen()});
+addEventListener("DOMContentLoaded",()=>{if(bagInlineHost()&&!bagEl){cload();bagEl=bagBuild()}paintBag();try{loadoutPaint()}catch(e){}if(location.hash==="#bag")bagOpen()});
+// avatar.js can finish loading after the page: redraw the loadout portrait then
+addEventListener("load",()=>{try{loadoutPaint()}catch(e){}});
 
 // ---- The Skin Shop popup (its own section like the Bag and Crafting). Open it with Skins.open(), Skins.open("bogblaster"), any element with data-skins, the Skins button on a weapon in the Bag, or by visiting #skins.
 // Each skin shows a live shimmering preview, its rarity, the weapon it is for and its Swamp Crystal price. Buying asks for a second tap to confirm.
