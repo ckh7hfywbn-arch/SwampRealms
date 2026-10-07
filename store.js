@@ -161,18 +161,18 @@ const GEAR={
  bogblaster:{name:"Bog Blaster",slot:"weapons",rarity:"uncommon",desc:"Spits sticky bog goo.",stats:{Damage:7,Speed:"Medium",Range:"Long"},icon:'<path d="M3 10h11l3 2h3v4h-3l-1 3h-4l-1-3H3z"/><path d="M7 10V7h4v3"/><circle cx="21.5" cy="8" r="1.3"/>'},
  spikedblade:{name:"Spiked Blade",slot:"weapons",rarity:"common",desc:"A blade bristling with bramble thorns.",stats:{Damage:9,Speed:"Fast",Range:"Short"},icon:'<path d="M20 4l-1 6-9 9-5-5 9-9z"/><path d="M8 14l-4 6M4 20l-1 1"/><path d="M14 4l-1-2M19 9l2 1M16 7l1-2"/>'},
  hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'},
- // ---- Bog Warden armor set: one helmet, one chest piece and one pair of boots can be worn at once (part = helmet | chest | boots).
+ // ---- Rootmaw armor set: one helmet, one chest piece and one pair of boots can be worn at once (part = helmet | chest | boots).
  // Stats shown here mirror ARMOR_FX below (what the game applies). Wearing all three adds SET_BONUS.
- wardenhelm:{name:"Bog Warden Helm",slot:"armor",part:"helmet",set:"warden",rarity:"uncommon",desc:"A mossy iron helm with a bramble crest.",stats:{Health:"+1"},icon:'<path d="M4 15a8 8 0 0116 0v3H4z"/><path d="M12 4v5M8 18v-3M16 18v-3"/>'},
- wardenplate:{name:"Bog Warden Chestplate",slot:"armor",part:"chest",set:"warden",rarity:"rare",desc:"Layered bark plates bound with swamp vine.",stats:{Health:"+1"},icon:'<path d="M7 4l-4 4 2 4 2-1v9h10v-9l2 1 2-4-4-4-3 2h-4z"/><path d="M12 8v12"/>'},
- wardenboots:{name:"Bog Warden Boots",slot:"armor",part:"boots",set:"warden",rarity:"uncommon",desc:"Light, waterproof and quick over the mud.",stats:{Speed:"+8%"},icon:'<path d="M7 3h6v8l6 3v5H5v-5l2-1z"/><path d="M5 16h14"/>'}
+ wardenhelm:{name:"Rootmaw Helmet",slot:"armor",part:"helmet",set:"warden",rarity:"uncommon",desc:"A mossy iron helm with a bramble crest.",stats:{Health:"+1"},icon:'<path d="M4 15a8 8 0 0116 0v3H4z"/><path d="M12 4v5M8 18v-3M16 18v-3"/>'},
+ wardenplate:{name:"Rootmaw Chest Piece",slot:"armor",part:"chest",set:"warden",rarity:"rare",desc:"Layered bark plates bound with swamp vine.",stats:{Health:"+1"},icon:'<path d="M7 4l-4 4 2 4 2-1v9h10v-9l2 1 2-4-4-4-3 2h-4z"/><path d="M12 8v12"/>'},
+ wardenboots:{name:"Rootmaw Boots",slot:"armor",part:"boots",set:"warden",rarity:"uncommon",desc:"Light, waterproof and quick over the mud.",stats:{Speed:"+8%"},icon:'<path d="M7 3h6v8l6 3v5H5v-5l2-1z"/><path d="M5 16h14"/>'}
  // example:  oakclub:{name:"Oak Club",slot:"weapons",rarity:"common",desc:"A knobbly swamp club."},
 };
 cload();   // second pass now that GEAR exists: drops equipped weapons that are no longer owned
 // Armor numbers the game applies. hp = extra max health, move = run speed (0.08 = +8%).
 const ARMOR_FX={wardenhelm:{hp:1},wardenplate:{hp:1},wardenboots:{move:.08}};
 // Wearing the full set adds this on top.
-const SET_BONUS={warden:{name:"Bog Warden set",text:"+1 max health",hp:1}};
+const SET_BONUS={warden:{name:"Rootmaw set",text:"+1 max health",hp:1}};
 const Gear={
  defs:GEAR,slots:GEAR_SLOTS,
  count:id=>CS.gear[id]||0,
@@ -283,10 +283,10 @@ const RECIPES={
  bogblaster:{cost:{crawler:5}},   // 5 Bog Fragments
  spikedblade:{cost:{bug:4}},      // 4 Bramble Fragments
  hopperstaff:{cost:{frog:5}},     // 5 Frog Fragments (the Frog enemy is not in the game yet)
- // Bog Warden armor (fragments the game already drops)
- wardenhelm:{cost:{bug:4,crawler:2}},
- wardenplate:{cost:{crawler:5,boss:1}},   // needs a rare Rootmaw Fragment
- wardenboots:{cost:{bug:3,crawler:3}}
+ // Rootmaw armor: every piece needs at least one Rootmaw Fragment (boss) on top of the other fragments
+ wardenhelm:{cost:{bug:4,crawler:2,boss:1}},
+ wardenplate:{cost:{crawler:5,boss:1}},
+ wardenboots:{cost:{bug:3,crawler:3,boss:1}}
 };
 const Crafting={
  defs:RECIPES,
@@ -409,7 +409,7 @@ function bagPaintGear(panel,slot){
  const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
  if(bagGearMsg){det.textContent=bagGearMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
  panel.appendChild(det);
- const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Bog Warden pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
+ const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Rootmaw pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
 }
 // the Crafting popup (its own section, like the Bag): one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
 let craftMsg="",craftTab="";

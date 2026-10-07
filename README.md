@@ -114,6 +114,14 @@ Players turn fragments into weapons in the **Crafting** popup, its own section l
 | Spiked Blade | 4 Bramble Fragments (`bug`) |
 | Swamp Hopper Staff | 5 Frog Fragments (`frog`, the Frog enemy is not in the game yet, so this one cannot be crafted until it is) |
 
+| Armor | Cost |
+| --- | --- |
+| Rootmaw Helmet | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Rootmaw Fragment (`boss`) |
+| Rootmaw Chest Piece | 5 Bog (`crawler`) + 1 Rootmaw Fragment (`boss`) |
+| Rootmaw Boots | 3 Bramble (`bug`) + 3 Bog (`crawler`) + 1 Rootmaw Fragment (`boss`) |
+
+Every armor piece needs at least one Rootmaw Fragment. The gear ids in `store.js` are still `wardenhelm`, `wardenplate` and `wardenboots` so existing saves keep working; only the display names changed.
+
 - **Add a weapon:** add a line to `GEAR` in `store.js` (`slot:"weapons"`), then a line to `RECIPES` with the same id: `{cost:{crawler:3, bug:2}}`. Costs can mix any fragment ids from `FRAGMENTS`. The Craft tab builds itself from `RECIPES`.
 - **API:** `Crafting.list()`, `Crafting.info(id)`, `Crafting.check(id)` (returns `{ok, reason, missing}`), `Crafting.craft(id)`. `craft` checks the cost, subtracts the fragments and adds the weapon in one save, so nothing is taken unless the craft succeeds.
 - Weapons are collectibles for now. Equipping them in the Swamp Adventure is a separate step.
