@@ -40,6 +40,7 @@ const RunUps=(function(){
   cd:()=>1/(1+n("cd")),                        // swing cooldown multiplier (smaller = faster)
   reach:()=>1+n("reach"),                      // reach multiplier
   move:()=>1+n("move"),                        // run speed multiplier
-  hp:()=>Math.round(n("hp"))                   // extra max health
+  hp:()=>Math.round(n("hp")),                  // extra max health
+  summary(){return POOL.filter(u=>picks[u.id]).map(u=>{const t=picks[u.id]*u.per;return{id:u.id,icon:u.icon,name:u.name,val:"+"+(u.stat==="hp"?Math.round(t):Math.round(t*100)+"%")}})}   // for the HUD
  };
 })();

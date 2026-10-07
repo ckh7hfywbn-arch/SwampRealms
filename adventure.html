@@ -52,6 +52,7 @@
    <div class="hud tm"><span id="st">Ready</span></div>
    <div class="hud scw" id="scw" title="Score and time"><span class="sl">Score</span><b id="scv">0</b><span class="stm" id="sct">0:00</span></div>
    <div class="hud scb" id="scb" hidden></div>
+   <div class="hud upw" id="upw" hidden></div>
    <div class="loot" id="loot" aria-live="polite"></div>
    <button type="button" class="btn ghost gpause gsnd" id="snd-hud" aria-pressed="true" aria-label="Sound on. Tap to switch." hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg></button>
    <button type="button" class="btn ghost gpause" id="pz" aria-label="Pause" hidden>Pause</button>
@@ -457,6 +458,13 @@
  let raf=0,last=0,deadAt=0;   // deadAt: when the player died, to ignore button mashing for a moment
 
  // ---- Run upgrades: after every Endless clear the player picks 1 of 2 (runups.js). "Next level" stays hidden until one is chosen.
+ // HUD chips for the run upgrades picked so far (icon + total bonus). Shown while playing or paused, hidden when there are none.
+ function showUps(){
+  const e=$("upw"),l=RunUps.summary();
+  if(!l.length||(state.mode!=="playing"&&state.mode!=="paused")){e.hidden=true;e.innerHTML="";return}
+  e.innerHTML=l.map(u=>'<span class="upc" title="'+u.name+': '+u.val+'"><i aria-hidden="true">'+u.icon+'</i>'+u.val+'</span>').join("");
+  e.setAttribute("aria-label","Run upgrades: "+l.map(u=>u.name+" "+u.val).join(", "));e.hidden=false;
+ }
  let pickLV=-1,pickOffer=[];
  function showPick(){
   const box=$("pick");
@@ -480,14 +488,14 @@
   const ov=$("ovx");ov.dataset.m=m;ov.dataset.v="";if(m==="playing"||m==="title"){vis.shake=vis.flash=vis.land=vis.take=vis.turn=0}if(m==="over"||m==="title"||m==="complete")vis.dying=0
   $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
-  ov.hidden=m==="playing";$("go").hidden=false;$("pick").hidden=true;
+  ov.hidden=m==="playing";$("go").hidden=false;$("pick").hidden=true;showUps();
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent=handDone()?"Play Endless":"Play";$("quit").hidden=true}
   if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(LV+1)?"":"Level "+(LV+2)+", ")+lvl(LV+1).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
   if(m==="complete"){const nu=markDone(LV),r=finishScore(),ret=handDone()&&LV<LEVELS.length;if(ret){$("rpl").hidden=true;$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" Levels 1-3 are now retired. The Endless Realms are next."}
   if(m==="complete")showPick();
-  if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent="Restart";$("quit").hidden=false}
+  if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent=isEndless(LV)?"New run":"Restart";if(isEndless(LV)){$("ovp").textContent+=" Your run ends at "+Progression.label(LV)+"."+(RunUps.total()?" Upgrades: "+runUpList()+".":"")+" A new run starts again at "+lvl(LEVELS.length).name+"."}$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
   if(m==="playing"){last=performance.now();state.tx=state.ty=null}
   if(m!=="playing"){for(const k in keys)keys[k]=false}
@@ -495,7 +503,8 @@
   draw();
  }
  let runCont=false;   // true only when "Next level" is pressed after an Endless clear: that keeps the run upgrades. Every other start begins a fresh run.
- function start(){if(!runCont)RunUps.reset();runCont=false;paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
+ function start(){if(state.mode==="over"&&isEndless(LV))LV=LEVELS.length;   // Game Over in the Endless Realms ends the run: the next one starts again at the first Endless level
+  if(!runCont)RunUps.reset();runCont=false;paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
  function respawnReset(){state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
@@ -1606,7 +1615,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // Flip LOCK_HAND_LEVELS to false when Level 4 is released to open Level Select to every level again.
  const LOCK_HAND_LEVELS=true;
  function handDone(){return LOCK_HAND_LEVELS&&[0,1,2].every(i=>prog.done.includes(i))}
- function entryLevel(){readProg();return handDone()?Math.max(LEVELS.length,prog.unlocked-1):0}
+ function entryLevel(){readProg();return handDone()?LEVELS.length:0}   // every new Endless run starts at the first Endless level (Level Select can still jump deeper, without upgrades)
  // returns the number (1-based) of a level this completion newly unlocked, or 0
  function markDone(i){
   readProg();const before=prog.unlocked;

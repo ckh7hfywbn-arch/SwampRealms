@@ -51,6 +51,8 @@ After every Endless level (not the three hand-made ones) the results screen show
 - `runups.js` holds the pool (`POOL`: id, name, text, stat, amount per pick, max picks) and the maths. To add an upgrade of an existing stat (dmg, cd, reach, move, hp) add one line to `POOL`.
 - The game reads them in one place per stat: `wstat()` (damage, swing cooldown, reach, which also covers goo balls), the run-speed clamp in the movement code, and `maxHp()` (replaces the old `MAXHP` constant).
 - The picker is `showPick()` and the `#pick` element in `adventure.html`; styles are at the end of `ui.css`.
+- **HUD.** `showUps()` draws a chip per picked upgrade (icon + total bonus) under the Glowspore counter while playing or paused (`#upw`, `RunUps.summary()`).
+- **Run end.** Game Over in the Endless Realms ends the run: the button reads "New run", the screen lists the upgrades and how deep you got, and `start()` sends you back to the first Endless level with no upgrades. Title / Quit also enter at the first Endless level (`entryLevel()`). Level Select can still jump to any unlocked level, as a fresh run.
 - Step 1 pool: Sharpened Edge (+5% damage), Quick Hands (+8% attack speed), Hardy Hide (+1 max health), Swift Roots (+6% move speed), Long Reach (+10% reach).
 
 ## Held weapons
