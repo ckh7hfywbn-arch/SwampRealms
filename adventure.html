@@ -1276,6 +1276,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  cv.addEventListener("pointermove",e=>{if(state.mode==="playing"&&e.buttons&&!(touchOn&&e.pointerType==="touch"))aimX(e)});
  const lift=()=>{state.tx=null};
  cv.addEventListener("pointerup",lift);cv.addEventListener("pointercancel",lift);
+ addEventListener("pointerup",lift,true);addEventListener("pointercancel",lift,true);   // also when the mouse is released outside the game
 
  // on-screen touch controls: shown on touch devices, keyboard keeps working everywhere
  (function(){
@@ -1323,6 +1324,28 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   });
   const aup=()=>setOn(A,false);
   A.addEventListener("pointerup",aup);A.addEventListener("pointercancel",aup);A.addEventListener("lostpointercapture",aup);
+  // safety net: if a finger lifts anywhere (off the pad, over a popup, a lost pointer-capture on iOS/Android) the buttons must still let go,
+  // otherwise the player keeps running. Listens on the whole window, and also clears everything once no finger is left on the screen.
+  const letGo=e=>{
+   if(pads.delete(e.pointerId)&&!pads.size)stopMove();
+   if(jumps.delete(e.pointerId)&&!jumps.size){if(keys.jump)release();keys.jump=false;setOn(J,false)}
+   setOn(A,false);
+  };
+  addEventListener("pointerup",letGo,true);addEventListener("pointercancel",letGo,true);
+  const noTouch=e=>{
+   if(e.touches&&e.touches.length)return;
+   if(pads.size){pads.clear();stopMove()}
+   if(jumps.size){jumps.clear();if(keys.jump)release();keys.jump=false;setOn(J,false)}
+   setOn(A,false);
+  };
+  addEventListener("touchend",noTouch,true);addEventListener("touchcancel",noTouch,true);
+  // no accidental zoom while playing on a touch screen or in full screen: spamming Attack / Jump (double-tap) or a second finger (pinch) must not zoom the page
+  const noZoom=()=>touchOn||!!(document.fullscreenElement||document.webkitFullscreenElement)||matchMedia("(display-mode:fullscreen),(display-mode:standalone)").matches;
+  let lastEnd=0;
+  addEventListener("touchend",e=>{const n=performance.now();if(noZoom()&&e.cancelable&&n-lastEnd<400&&!(e.target.closest&&e.target.closest("input,textarea,select,a")))e.preventDefault();lastEnd=n},{capture:true,passive:false});
+  addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1&&noZoom()&&e.cancelable)e.preventDefault()},{capture:true,passive:false});
+  for(const g of ["gesturestart","gesturechange","gestureend"])addEventListener(g,e=>{if(noZoom())e.preventDefault()},{capture:true,passive:false});
+  addEventListener("dblclick",e=>{if(noZoom())e.preventDefault()},true);
   // no long-press menus or text selection on the pads
   tc.addEventListener("contextmenu",e=>e.preventDefault());
   // if the game stops while a finger is down, let go of everything
