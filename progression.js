@@ -23,15 +23,15 @@ const Progression=(function(){
 
   // enemy health (hits to defeat). Level 1-3 values are the originals: Bramble Bug 2, Bog Crawler 3, Rootmaw 12.
   // Health grows with the square root of depth (and a bit slower than linear for bosses) so fights get longer but never become a grind.
-  bugHp:    d=>2+Math.round(1.2*Math.sqrt(d)),
-  crawlerHp:d=>3+Math.round(1.2*Math.sqrt(d)),
-  bossHp:   b=>12+Math.round(6*Math.pow(b,.8)),
+  bugHp:    d=>2+Math.round(1.5*Math.sqrt(d)),
+  crawlerHp:d=>3+Math.round(1.5*Math.sqrt(d)),
+  bossHp:   b=>12+Math.round(7*Math.pow(b,.8)),
 
   // enemy behaviour multipliers (1 = the original). Capped so every fight stays dodgeable at any depth.
-  speed:    d=>Math.min(1.7,1+.04*d),     // walk / hop / lunge speed
-  aggro:    d=>Math.min(1.4,1+.03*d),     // how far away a Bog Crawler notices you
-  recover:  d=>Math.max(.65,1-.015*d),    // shorter "winded" window after an attack (1 = original)
-  bossSpeed:(d,b)=>Math.min(1.6,1+.03*d+.04*b),
+  speed:    d=>Math.min(1.8,1+.05*d),     // walk / hop / lunge speed
+  aggro:    d=>Math.min(1.45,1+.035*d),     // how far away a Bog Crawler notices you
+  recover:  d=>Math.max(.6,1-.02*d),    // shorter "winded" window after an attack (1 = original)
+  bossSpeed:(d,b)=>Math.min(1.65,1+.035*d+.05*b),
   waveSpeed:d=>Math.min(1.3,1+.02*d),     // the Rootmaw's ground shockwave
   slamPlus: b=>Math.min(2,Math.floor(b/2)),// extra follow-up slams per attack
 
@@ -44,9 +44,9 @@ const Progression=(function(){
   // level shape
   gapCount: d=>Math.min(7,3+Math.floor(d/2)),
   gapMin:   190,
-  gapMax:   d=>Math.min(420,250+8*d),
-  moverOdds:d=>Math.min(.6,.08+.05*d),    // chance a stepping stone glides side to side
-  thornOdds:d=>Math.min(.55,.2+.04*d),
+  gapMax:   d=>Math.min(430,255+9*d),
+  moverOdds:d=>Math.min(.65,.1+.055*d),    // chance a stepping stone glides side to side
+  thornOdds:d=>Math.min(.6,.22+.045*d),
   thornMax: d=>Math.min(84,60+3*d)
  };
 

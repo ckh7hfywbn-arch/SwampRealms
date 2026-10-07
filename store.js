@@ -54,14 +54,32 @@ const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":
 
 // ---- saved data ----
 const CK="swamp-crystals-v1";
+// Crafting reset: raise this number to wipe everybody's fragments, crafted gear and equipped armor/weapons ONCE (coins, crystals, cosmetics, avatar and skins are never touched).
+// Each save remembers the number it has been reset to (CS.cr), so it only happens once per save, and it syncs with accounts like the rest of the crystals save.
+const CRAFT_RESET=1;
 let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{},skins:{},skeq:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
  if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&eqk(GEAR[g])===sl))delete CS.geq[sl]}}catch(e){}
  if(!CS.skins||typeof CS.skins!=="object"||Array.isArray(CS.skins))CS.skins={};if(!CS.skeq||typeof CS.skeq!=="object"||Array.isArray(CS.skeq))CS.skeq={};
- try{for(const w in CS.skeq){const k=CS.skeq[w];if(!(typeof k==="string"&&CS.skins[k]&&SKINS[k]&&SKINS[k].w===w))delete CS.skeq[w]}}catch(e){}}   // GEAR and SKINS are declared further down this file; the first cload() runs before it exists, so it is re-run below
+ try{for(const w in CS.skeq){const k=CS.skeq[w];if(!(typeof k==="string"&&CS.skins[k]&&SKINS[k]&&SKINS[k].w===w))delete CS.skeq[w]}}catch(e){}
+ if((Number(CS.cr)||0)<CRAFT_RESET){const had=Object.keys(CS.frags).length+Object.keys(CS.gear).length>0;CS.frags={};CS.gear={};CS.geq={};CS.cr=CRAFT_RESET;if(had)CS.crn=1;try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}}}   // GEAR and SKINS are declared further down this file; the first cload() runs before it exists, so it is re-run below
 function csave(){try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}paintGems();paintAv();try{paintBag()}catch(e){}}
 cload();
+
+// One-time notice after the crafting reset (CRAFT_RESET above). Only shown on the Arcade and Swamp Adventure pages, then cleared from the save.
+(function(){
+ function show(){
+  if(!CS.crn||!document.querySelector("[data-bag],[data-craft],#stage"))return;
+  const d=document.createElement("div");d.setAttribute("role","status");
+  d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,460px);padding:12px 40px 12px 16px;border-radius:12px;background:#10241f;color:#e9fff6;border:1px solid #4ee6b4;font:700 14px/1.4 Nunito,system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.45)";
+  d.textContent="Crafting has been reset for the new Swamp Adventure. Your fragments and crafted gear were cleared. Coins, crystals and your avatar are untouched.";
+  const x=document.createElement("button");x.type="button";x.textContent="\u00d7";x.setAttribute("aria-label","Dismiss");x.style.cssText="position:absolute;top:4px;right:8px;background:none;border:0;color:inherit;font-size:22px;cursor:pointer";
+  const done=()=>{d.remove()};x.onclick=done;d.appendChild(x);document.body.appendChild(d);setTimeout(done,12000);
+  delete CS.crn;try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",show);else show();
+})();
 
 const Crystals={
  get balance(){return CS.c},
@@ -113,9 +131,9 @@ const FRAG_RARITY=(()=>{
  return R;
 })();
 const FRAGMENTS={
- bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:.35,rarity:"common"},
- crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:.5,rarity:"uncommon"},
- boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:.3,rarity:"rare"},
+ bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:.3,rarity:"common"},
+ crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:.4,rarity:"uncommon"},
+ boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:.25,rarity:"rare"},
  // ready for enemies that are not in the game yet
  frog:{name:"Frog Fragment",enemy:"Frog",chance:.4,rarity:"common"},
  crocodile:{name:"Crocodile Fragment",enemy:"Crocodile",chance:.4,rarity:"uncommon"},

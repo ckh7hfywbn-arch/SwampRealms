@@ -70,9 +70,9 @@ Defeated enemies have a chance to drop a Fragment. The table is `FRAGMENTS` in `
 
 | Enemy id | Fragment | Chance |
 | --- | --- | --- |
-| `bug` (Bramble Bug) | Bramble Fragment | 35% |
-| `crawler` (Bog Crawler) | Bog Fragment | 50% |
-| `boss` (Rootmaw) | Rootmaw Fragment (rare) | 30% |
+| `bug` (Bramble Bug) | Bramble Fragment | 30% |
+| `crawler` (Bog Crawler) | Bog Fragment | 40% |
+| `boss` (Rootmaw) | Rootmaw Fragment (rare) | 25% |
 | `frog`, `crocodile`, `slime` | Frog / Crocodile / Slime Fragment | 40% (ready for when those enemies exist) |
 
 - **Stored for real.** Counts are kept in the crystals save as `frags` (`{ bug: 2, boss: 1 }`), so they persist in the browser and sync with accounts like everything else. `Fragments.count(id)`, `Fragments.total`, `Fragments.all` read them; `Fragments.add(id, n)` writes them.
@@ -128,7 +128,7 @@ Every armor piece needs at least one Rootmaw Fragment. The gear ids in `store.js
 
 ## Story bosses (end of each main-story level)
 
-Every hand-made level ends in a boss arena. The setup lives in `storyboss.js` (loaded before the game script). Level 3's Rootmaw is built into `adventure.html`; Level 2 uses the **Mirewing**, the flying boss already in the game (`kind:"wing"`). Levels 1 and 4 use a **placeholder boss** (a plodding purple block named "Level N Boss") until real bosses are made.
+Every hand-made level ends in a boss arena. The setup lives in `storyboss.js` (loaded before the game script). Level 3's Rootmaw is built into `adventure.html`; Level 2 uses the **Mirewing**, the flying boss already in the game (`kind:"wing"`). Level 1 uses the **Bog Gator**, a basic alligator (`kind:"gator"` in `storyboss.js`: it crawls toward you, opens its jaws as a warning, lunges in a straight line, then is winded and open to attack). Level 4 still uses a **placeholder boss** (a plodding purple block named "Level 4 Boss") until its real boss is made.
 
 - **Slots.** `StoryBoss.SLOTS` has one entry per level index (0 = Level 1, 1 = Level 2, 3 = Level 4): `on`, `name`, `short`, `kind`, `hp`, `w`, `h`, `defeat`, `arenaLen`, `bossTime`, `fragment`, `music`. `on:false` puts the goal gate back, `StoryBoss.ENABLED=false` turns every story boss off.
 - **Arena.** `addArena()` lengthens the level's last ground piece by `arenaLen`, removes the goal gate (`goalX:99999`), builds `arena:{x,bx}` and adds a checkpoint before the vines. Winning the fight completes the level, the same as the Rootmaw.
@@ -136,6 +136,11 @@ Every hand-made level ends in a boss arena. The setup lives in `storyboss.js` (l
 - **Loot.** Add a fragment to `FRAGMENTS` in `store.js`, then set the slot's `fragment` to its id. A slot with `fragment:null` drops nothing (only the Rootmaw drops Rootmaw Fragments).
 - **Music.** The fight plays track 3 unless the slot sets `music`.
 - **Par time.** `bossTime` seconds are added to the level's time limit for the score bonus, because the level is longer.
+
+## Crafting reset and difficulty
+
+- **Crafting reset (one time per save).** `CRAFT_RESET` in `store.js` wipes a save's fragments (`frags`), crafted gear (`gear`) and equipped items (`geq`) once. Coins, crystals, owned cosmetics, the avatar and weapon skins are never touched. Each save remembers the number it was reset to (`CS.cr`) and it lives inside the crystals save, so it syncs with accounts. To reset everyone again later, raise `CRAFT_RESET` by 1. Players who actually lost items see a one-time notice on the Arcade / Swamp Adventure pages only (`CS.crn`).
+- **Harder progression.** Endless Realms tuning in `progression.js` (`TUNING`) is a little tougher: enemy and boss health grow faster, enemies are slightly faster and notice you from further away, the winded window after attacks shrinks faster, and gaps, gliding stones and thorns show up a bit more. Levels 1-4 sit at depth 0, so they are unchanged. Fragment drop chances were lowered slightly (table above), so crafting takes a little longer.
 
 ## Adding a new game
 
