@@ -788,3 +788,17 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .tile .craftbadge{display:inline-block;min-width:20px;margin-left:6px;padding:1px 7px;border-radius:999px;background:#4ee6b4;color:#04100d;font:900 12px Nunito,sans-serif;text-align:center;vertical-align:middle}
 .craftbadge[hidden]{display:none}
 .bagrow{gap:10px}
+
+/* Run upgrades: pick 1 of 2 after an Endless level (runups.js, showPick in adventure.html) */
+.pick{display:grid;gap:8px;justify-items:center;width:100%}
+.pick[hidden]{display:none}
+.pk-h{margin:0;font:900 13px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#ffd98a}
+.pk-s{margin:0;font:700 12px Nunito,sans-serif;color:#9fd8c4}
+.pk-row{display:flex;gap:10px;width:100%;justify-content:center}
+.pk{flex:1 1 0;min-width:0;max-width:170px;display:grid;gap:3px;justify-items:center;padding:10px 8px;border-radius:14px;border:2px solid #4ee6b4aa;background:linear-gradient(#10382f,#0a2420);color:#e9fff5;cursor:pointer;font-family:Nunito,sans-serif;box-shadow:0 0 22px -8px #4ee6b4;transition:transform .12s,border-color .12s}
+.pk:hover,.pk:focus-visible{transform:translateY(-2px);border-color:#ffd98a;outline:none}
+.pk i{font-style:normal;font-size:22px;line-height:1;color:#ffd98a}
+.pk b{font-size:13px;font-weight:900;letter-spacing:.04em;color:#fff3d6}
+.pk span{font-size:13px;font-weight:800;color:#8ff5d2}
+.pk em{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fb3ba}
+@media (prefers-reduced-motion:reduce){.pk{transition:none}}

@@ -55,7 +55,7 @@
    <div class="loot" id="loot" aria-live="polite"></div>
    <button type="button" class="btn ghost gpause gsnd" id="snd-hud" aria-pressed="true" aria-label="Sound on. Tap to switch." hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg></button>
    <button type="button" class="btn ghost gpause" id="pz" aria-label="Pause" hidden>Pause</button>
-   <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div class="acts" id="acts"><button type="button" class="btn" id="go" data-fs-start>Play</button><button type="button" class="btn ghost" id="cont" data-fs-start hidden>Continue</button><button type="button" class="btn ghost" id="rpl" data-fs-start hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
+   <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div id="pick" class="pick" hidden></div><div class="acts" id="acts"><button type="button" class="btn" id="go" data-fs-start>Play</button><button type="button" class="btn ghost" id="cont" data-fs-start hidden>Continue</button><button type="button" class="btn ghost" id="rpl" data-fs-start hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
   <div class="how" id="howp" role="region" aria-labelledby="howt"><h3 id="howt">How to play</h3><ol class="hl">
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></i><div><b>Movement</b><span>Run with <kbd>A</kbd><kbd>D</kbd> or the arrow keys. On touch, use the Left and Right buttons.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 19V6M6 11l6-6 6 6"/></svg></i><div><b>Jump</b><span>Press <kbd>Space</kbd> or Jump to leap onto crates and platforms. Hold for a high jump, tap for a short hop.</span></div></li>
@@ -100,6 +100,7 @@
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script src="progression.js?v=endless1"></script>
+<script src="runups.js?v=up1"></script>
 <script>
 /* SwampRealms game: title, start, pause, movement, Level 1, collectibles, enemy, health, and simple player combat. */
 (function(){
@@ -184,7 +185,8 @@
  // Glowspores: the collectible. Some are easy, some sit on high platforms or over the ponds.
  let SPORE_POS=[[200,380],[300,328],[635,290],[765,328],[1010,298],[1125,266],[1230,320],[1370,342],[1590,318],[1750,266],[1910,216],[2020,336]];
  // Health and the one enemy: the Bramble Bug patrols back and forth and hurts on contact
- const MAXHP=3,INVULN=1.2;
+ const BASEHP=3,INVULN=1.2;
+ function maxHp(){return BASEHP+RunUps.hp()}   // 3 + any Hardy Hide picks this run
  // player attack tuning: windup (anticipation) -> strike frame (damage lands once) -> follow-through; the cooldown runs from the start of the swing
  const ATK_T=.2,ATK_HIT=.05,ATK_CD=.34,ATK_BUF=.1,BACK=8;
  let REACH=46,HELD=null,noRec=false;   // HELD = stats of the weapon used for the current swing (null = bare attack)
@@ -390,8 +392,8 @@
 
  let lastFoe="Bramble Bug";
  const FLAME='<svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1C12 1 4 10 4 17a8 8 0 0016 0C20 10 12 1 12 1z"/><path class="in" d="M12 12s-3.5 3.6-3.5 6.2a3.5 3.5 0 007 0C15.5 15.6 12 12 12 12z"/></svg>';
- let shownHp=MAXHP;
- function showHp(){const out=state.hp<shownHp?state.hp:-1;let h="";for(let i=0;i<MAXHP;i++)h+='<i class="fl '+(i<state.hp?"on":"off")+(i===out?" out":"")+'">'+FLAME+"</i>";const e=$("hp");e.innerHTML=h;e.setAttribute("aria-label",state.hp+" of "+MAXHP+" health");shownHp=state.hp}
+ let shownHp=BASEHP;
+ function showHp(){const out=state.hp<shownHp?state.hp:-1;let h="";for(let i=0,M=maxHp();i<M;i++)h+='<i class="fl '+(i<state.hp?"on":"off")+(i===out?" out":"")+'">'+FLAME+"</i>";const e=$("hp");e.innerHTML=h;e.setAttribute("aria-label",state.hp+" of "+maxHp()+" health");shownHp=state.hp}
  function hurtPlayer(fromX,foe){
   lastFoe=foe||"Bramble Bug";AUDIO.play("damage");state.hp--;state.hurt=INVULN;state.stun=.22;state.attack=0;state.atkQ=0;showHp();bumpEl($("hp").parentNode);vis.shake=.28;vis.flash=.4;
   const away=state.x<fromX?-1:1;state.vx=away*240;state.vy=-320;state.ground=false;state.canCut=false;
@@ -454,17 +456,37 @@
  let ONEWAY=GROUNDS.concat(PLATFORMS);
  let raf=0,last=0,deadAt=0;   // deadAt: when the player died, to ignore button mashing for a moment
 
+ // ---- Run upgrades: after every Endless clear the player picks 1 of 2 (runups.js). "Next level" stays hidden until one is chosen.
+ let pickLV=-1,pickOffer=[];
+ function showPick(){
+  const box=$("pick");
+  if(!isEndless(LV)){box.hidden=true;return}
+  if(pickLV!==LV||!pickOffer.length){pickLV=LV;pickOffer=RunUps.offer()}
+  if(!pickOffer.length){box.hidden=true;return}
+  box.innerHTML='<p class="pk-h">Choose an upgrade</p><div class="pk-row">'+pickOffer.map(u=>'<button type="button" class="pk" data-id="'+u.id+'"><i aria-hidden="true">'+u.icon+'</i><b>'+u.name+'</b><span>'+u.text+'</span>'+(RunUps.count(u.id)?'<em>Have '+RunUps.count(u.id)+'</em>':'')+'</button>').join("")+'</div>';
+  box.hidden=false;$("go").hidden=true;
+ }
+ function runUpList(){return RunUps.POOL.filter(u=>RunUps.count(u.id)).map(u=>u.name+(RunUps.count(u.id)>1?" x"+RunUps.count(u.id):"")).join(", ")}
+ $("pick").addEventListener("click",e=>{
+  const b=e.target.closest(".pk");if(!b||state.mode!=="complete")return;
+  const u=RunUps.take(b.dataset.id);if(!u)return;
+  pickOffer=[];AUDIO.play("hit");
+  $("pick").innerHTML='<p class="pk-h">'+u.name+': '+u.text+'</p><p class="pk-s">Run upgrades: '+runUpList()+'</p>';
+  $("go").hidden=false;try{$("go").focus()}catch(_){}
+ });
+
  function setMode(m){
   state.mode=m;$("arc").dataset.mode=m;
   const ov=$("ovx");ov.dataset.m=m;ov.dataset.v="";if(m==="playing"||m==="title"){vis.shake=vis.flash=vis.land=vis.take=vis.turn=0}if(m==="over"||m==="title"||m==="complete")vis.dying=0
   $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
-  ov.hidden=m==="playing";
+  ov.hidden=m==="playing";$("go").hidden=false;$("pick").hidden=true;
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent=handDone()?"Play Endless":"Play";$("quit").hidden=true}
   if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(LV+1)?"":"Level "+(LV+2)+", ")+lvl(LV+1).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
   if(m==="complete"){const nu=markDone(LV),r=finishScore(),ret=handDone()&&LV<LEVELS.length;if(ret){$("rpl").hidden=true;$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" Levels 1-3 are now retired. The Endless Realms are next."}
+  if(m==="complete")showPick();
   if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent="Restart";$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
   if(m==="playing"){last=performance.now();state.tx=state.ty=null}
@@ -472,8 +494,9 @@
   try{showFrags()}catch(e){}
   draw();
  }
- function start(){paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=MAXHP;vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
- function respawnReset(){state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=MAXHP;vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
+ let runCont=false;   // true only when "Next level" is pressed after an Endless clear: that keeps the run upgrades. Every other start begins a fresh run.
+ function start(){if(!runCont)RunUps.reset();runCont=false;paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
+ function respawnReset(){state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
 
@@ -492,7 +515,7 @@
   let dir=(keys.right?1:0)-(keys.left?1:0);
   if(!dir&&state.tx!==null){const d=state.tx-state.x;if(Math.abs(d)>10)dir=d>0?1:-1}
   if(state.stun>0){/* knocked back: no steering for a moment */}
-  else if(dir){if(state.face!==dir)vis.turn=.1;state.face=dir;const turning=Math.sign(state.vx)===-dir&&state.vx!==0;state.vx+=dir*(ACCEL*(turning?1.6:1))*dt;state.vx=Math.max(-RUN,Math.min(RUN,state.vx))}
+  else if(dir){if(state.face!==dir)vis.turn=.1;state.face=dir;const turning=Math.sign(state.vx)===-dir&&state.vx!==0;state.vx+=dir*(ACCEL*(turning?1.6:1))*dt;const RM=RUN*RunUps.move();state.vx=Math.max(-RM,Math.min(RM,state.vx))}
   else{const f=FRICTION*dt;state.vx=Math.abs(state.vx)<=f?0:state.vx-Math.sign(state.vx)*f}
 
   // jump: buffered press + short coyote time, release early for a shorter hop
@@ -988,7 +1011,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const lean=-vxn*5-(air?Math.max(-1,Math.min(1,state.vy/700))*3:0)+(an==="idle"?Math.sin(t*1.7)*1.6:0)+(dead?vis.dyDir*5*ee:0)-(an==="attack"?f*2*atkQ():0),bx=lean*.6,by=-27+(dead?5*ee:0);
   X.strokeStyle="#3f9a5e";X.lineWidth=2.6;X.beginPath();X.moveTo(0,-12);X.quadraticCurveTo(lean*.2,-20,bx,by);X.stroke();
   X.fillStyle="#8fe88a";for(const s of [-1,1]){X.save();X.translate(bx,by+3);X.rotate(s*(.75+(air?.25:0)+leaf+flap)+trail+lean*.04);X.beginPath();X.ellipse(s*6,-2,6.2,3,0,0,7);X.fill();X.restore()}
-  const hpk=.45+.55*state.hp/MAXHP;
+  const hpk=.45+.55*state.hp/maxHp();
   if(budA>0){glow(GLOW.amber,bx,by-3,17+flare*13,Math.min(1,hpk*(1+flare*.45))*budA)}
   X.save();X.globalAlpha*=.3+.7*budA;X.fillStyle=dead&&budA<.3?"#8a7a62":"#ffd98a";X.beginPath();X.arc(bx,by-3,3.2+flare*1.3,0,7);X.fill();X.restore();
   // body
@@ -1018,9 +1041,9 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  const SPD_CD={Fast:.27,Medium:.36,Slow:.5},RNG_REACH={Short:42,Medium:60};
  function wstat(){
   const id=heldWeapon(),g=id&&GEAR[id],st=g&&g.stats;
-  if(!st)return{id:"",dmg:1,cd:ATK_CD,reach:46,ranged:false};
+  if(!st)return{id:"",dmg:1*RunUps.dmg(),cd:ATK_CD*RunUps.cd(),reach:46*RunUps.reach(),ranged:false};
   const ranged=st.Range==="Long";
-  return{id,dmg:Gear.hitDmg(id),cd:SPD_CD[st.Speed]||ATK_CD,reach:RNG_REACH[st.Range]||46,ranged:ranged&&id==="bogblaster"};
+  return{id,dmg:Gear.hitDmg(id)*RunUps.dmg(),cd:(SPD_CD[st.Speed]||ATK_CD)*RunUps.cd(),reach:(RNG_REACH[st.Range]||46)*RunUps.reach(),ranged:ranged&&id==="bogblaster"};   // run upgrades (runups.js) multiply the weapon's own stats
  }
  const dmg=()=>HELD?HELD.dmg:1;
  // Goo balls (Bog Blaster). Aim assist: the shot locks onto the nearest enemy in front of you (reticle shown), fires straight at it, and curves
@@ -1205,8 +1228,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
 
  // buttons
- $("go").onclick=()=>{if(state.mode==="over"&&performance.now()-deadAt<500)return;try{document.activeElement&&document.activeElement.blur()}catch(e){}if(state.mode==="paused")resume();else{if(state.mode==="complete")LV++;start()}if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"});$("go").blur()};
- $("quit").onclick=()=>{const e=entryLevel();LV=e;loadLevel(e);respawnReset();setMode("title")};
+ $("go").onclick=()=>{if(state.mode==="over"&&performance.now()-deadAt<500)return;try{document.activeElement&&document.activeElement.blur()}catch(e){}if(state.mode==="paused")resume();else{if(state.mode==="complete"){LV++;runCont=isEndless(LV-1)}start()}if(innerWidth<640||touchOn)$("stage").scrollIntoView({block:touchOn?"start":"center",behavior:"smooth"});$("go").blur()};
+ $("quit").onclick=()=>{RunUps.reset();const e=entryLevel();LV=e;loadLevel(e);respawnReset();setMode("title")};
  $("pz").onclick=pause;
 
  // keyboard: A / D or arrows to move, Space to jump
