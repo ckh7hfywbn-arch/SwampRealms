@@ -790,8 +790,8 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .bagrow{gap:10px}
 
 /* Run upgrades: pick 1 of 2 after an Endless level (runups.js, showPick in adventure.html) */
-.pick{display:grid;gap:8px;justify-items:center;width:100%}
-.pick[hidden]{display:none}
+.gov .pick{display:grid;gap:8px;justify-items:center;width:100%;overflow:visible;padding:0}
+.gov .pick[hidden]{display:none}
 .pk-h{margin:0;font:900 13px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#ffd98a}
 .pk-s{margin:0;font:700 12px Nunito,sans-serif;color:#9fd8c4}
 .pk-row{display:flex;gap:10px;width:100%;justify-content:center}
@@ -808,3 +808,6 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 #box .hud.upw[hidden]{display:none}
 .upc{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
 .upc i{font-style:normal;font-size:12px;color:#ffd98a}
+
+/* Crafting popup: scroll the recipe list inside the card instead of spilling off screen */
+#crpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain}
