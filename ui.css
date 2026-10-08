@@ -901,3 +901,8 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 @keyframes swpulse{50%{box-shadow:0 0 38px 2px #ffd45f,0 6px 0 #8a4f0c}}
 body.tc-on .swat small{display:none}
 @media (prefers-reduced-motion:reduce){.swat{animation:none}}
+
+/* BETA V3 badge (menu.js): small white circle, bottom left on every page, above the tab bar. Never blocks taps. */
+.betabadge{position:fixed;left:8px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:30;width:44px;height:44px;border-radius:50%;display:grid;place-content:center;justify-items:center;gap:0;background:#fff;color:#1a2420;border:2px solid #d9e7e0;box-shadow:0 2px 10px #0008;font:900 10px/1.05 Nunito,sans-serif;letter-spacing:.06em;text-align:center;pointer-events:none;user-select:none;opacity:.94}
+.betabadge span:last-child{font-size:12px;color:#1c7a5a}
+@media print{.betabadge{display:none}}

@@ -112,3 +112,16 @@
   addEventListener("resize", function () { setOpen(false); });
   addEventListener("pageshow", function () { setOpen(false); });
 })();
+
+/* BETA badge: a small white circle at the bottom left of every page, to show the site is not finished yet.
+   To change the label or version, edit the two lines below. Style: .betabadge in ui.css. */
+(function () {
+  if (document.getElementById("betabadge")) return;
+  var b = document.createElement("div");
+  b.id = "betabadge"; b.className = "betabadge";
+  b.setAttribute("role", "note");
+  b.setAttribute("aria-label", "Beta version 3. This website is not finished yet.");
+  b.title = "Beta V3: this website is still being built";
+  b.innerHTML = "<span>BETA</span><span>V3</span>";
+  document.body.appendChild(b);
+})();
