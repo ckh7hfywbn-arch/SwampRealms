@@ -39,45 +39,146 @@ const WeaponArt=(()=>{
   glacialtreefrog:{w:"hopperstaff",pal:{shaftS:"#1c3a52",shaft:"#cfeaff",zig:"#ffffff",head:"#6fd8ff",headS:"#0f4a6a",eye:"#ffffff",pupil:"#0b2a4a"},gem:"#4da3ff",aura:"#9fe8ff",spark:"#ffffff",band:"#e8f6ff",slash:["#8feaff","#ffffff"]},
   twilighttoad:{w:"hopperstaff",pal:{shaftS:"#12082a",shaft:"#5a3a9c",zig:"#ff9ae8",head:"#b45cff",headS:"#3a0a6a",eye:"#fff0fb",pupil:"#2a0a4a"},gem:"#ff4fd8",aura:"#c070ff",spark:"#ffd0f4",band:"#ff9ae8",crown:"#ff9ae8",slash:["#c070ff","#ffe0f8"]}
  };
+ // ---- remodel helpers: avatar-style shading (light top, dark bottom), thick dark outlines, white rim highlights ----
+ const hx=h=>/^#[0-9a-f]{6}$/i.test(h||"")?[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)):/^#[0-9a-f]{3}$/i.test(h||"")?[1,2,3].map(i=>parseInt(h[i]+h[i],16)):null;
+ const mix=(h,t,k)=>{const a=hx(h),b=hx(t);return a&&b?"#"+a.map((v,i)=>Math.round(v+(b[i]-v)*k).toString(16).padStart(2,"0")).join(""):h};
+ const lt=(h,k)=>mix(h,"#ffffff",k),dk=(h,k)=>mix(h,"#000000",k);
+ function lg(c,x0,y0,x1,y1,st){const g=c.createLinearGradient(x0,y0,x1,y1);for(const s of st)g.addColorStop(s[0],s[1]);return g}
+ function rg(c,x,y,r0,r1,st,cx,cy){const g=c.createRadialGradient(cx==null?x:cx,cy==null?y:cy,r0,x,y,r1);for(const s of st)g.addColorStop(s[0],s[1]);return g}
+ const metalV=(c,col,y0,y1)=>lg(c,0,y0,0,y1,[[0,lt(col,.6)],[.45,col],[1,dk(col,.42)]]);
+ // a soft light streak that slides along a shape now and then (time based, so it needs no game state)
+ function glint(c,clip,x0,x1,y0,y1){
+  const t=(Date.now()/1000*.5)%2;if(t>1)return;const x=x0+(x1-x0)*t,al=Math.sin(t*Math.PI);
+  c.save();clip();c.clip();c.fillStyle="rgba(255,255,255,"+(.55*al).toFixed(3)+")";c.beginPath();c.moveTo(x,y0);c.lineTo(x+3.4,y0);c.lineTo(x-.6,y1);c.lineTo(x-4,y1);c.closePath();c.fill();c.restore();
+ }
  const WPN={
+  // ===== Spiked Thornblade: a leaf-green thorned blade with a vine-wrapped grip and a leaf guard =====
   spikedblade(c,a,p,s){
+   c.save();c.lineJoin="round";c.lineCap="round";
    if(s&&s.aura)glow(c,22,0,34,.55,rgb(s.aura));
-   c.fillStyle=p.grip;c.strokeStyle=p.gripS;c.lineWidth=1.4;rr(c,-9,-2.6,11,5.2,2);c.fill();c.stroke();
-   c.fillStyle=p.metal;c.beginPath();c.arc(-9.5,0,3,0,7);c.fill();c.stroke();rr(c,1,-7.5,4.5,15,2);c.fill();c.stroke();
-   const g=c.createLinearGradient(0,-4,0,4);g.addColorStop(0,p.b1);g.addColorStop(1,p.b2);c.fillStyle=g;c.strokeStyle=p.bS;
-   c.beginPath();c.moveTo(5.5,-4);c.lineTo(31,-3);c.lineTo(40,0);c.lineTo(31,3);c.lineTo(5.5,4);c.closePath();c.fill();c.stroke();
-   c.strokeStyle=p.shine;c.lineWidth=1;c.beginPath();c.moveTo(8,-.6);c.lineTo(34,-.6);c.stroke();
-   if(s&&s.etch){c.strokeStyle=s.etch;c.lineWidth=.9;for(let i=0;i<5;i++){const x=14+i*4.2;c.beginPath();c.moveTo(x,1.1);c.lineTo(x+1.6,2.4);c.stroke()}}
-   c.fillStyle=p.th;c.strokeStyle=p.thS;c.lineWidth=1;for(let i=0;i<4;i++){const x=10+i*6.5;c.beginPath();c.moveTo(x,-3.6);c.lineTo(x+2.6,-9.5);c.lineTo(x+4.6,-3.4);c.fill();c.stroke();c.beginPath();c.moveTo(x+1.5,3.6);c.lineTo(x+4,9);c.lineTo(x+6,3.4);c.fill();c.stroke()}
-   if(s&&s.gem)gem(c,3.2,0,2.6,s.gem);
+   const O=p.gripS,B=p.bS;
+   // wrapped grip
+   c.fillStyle=lg(c,0,-2.8,0,2.8,[[0,lt(p.grip,.4)],[.5,p.grip],[1,dk(p.grip,.45)]]);c.strokeStyle=O;c.lineWidth=1.6;rr(c,-9,-2.8,11,5.6,2.2);c.fill();c.stroke();
+   c.strokeStyle=dk(p.grip,.55);c.lineWidth=.9;for(let i=0;i<4;i++){const x=-7.6+i*2.6;c.beginPath();c.moveTo(x,-2.5);c.lineTo(x+1.7,2.5);c.stroke()}
+   c.strokeStyle="rgba(255,255,255,.4)";c.lineWidth=.7;c.beginPath();c.moveTo(-8,-1.8);c.lineTo(.6,-1.8);c.stroke();
+   // pommel orb
+   c.fillStyle=rg(c,-10,0,.3,4,[[0,lt(p.metal,.75)],[.55,p.metal],[1,dk(p.metal,.5)]],-11.2,-1.3);c.strokeStyle=O;c.lineWidth=1.5;c.beginPath();c.arc(-10,0,3.5,0,7);c.fill();c.stroke();
+   // thorns first, so their roots tuck under the blade edge
+   const by=x=>(x<30?4.2-(x-5.8)*.029:3.5-(x-30)*.12)-.5;
+   const thorn=(x,sg)=>{const y0=by(x+2.5)*sg;
+    c.fillStyle=lg(c,0,y0,0,sg*10.4,[[0,dk(p.th,.2)],[.55,p.th],[1,lt(p.th,.5)]]);c.strokeStyle=p.thS;c.lineWidth=1.2;
+    c.beginPath();c.moveTo(x,y0);c.quadraticCurveTo(x+.3,sg*8,x+3.6,sg*10.4);c.quadraticCurveTo(x+4.3,sg*7,x+5,y0);c.closePath();c.fill();c.stroke();
+    c.strokeStyle="rgba(255,255,255,.5)";c.lineWidth=.6;c.beginPath();c.moveTo(x+1.2,sg*5.4);c.quadraticCurveTo(x+1.7,sg*7.8,x+3,sg*9);c.stroke()};
+   for(let i=0;i<4;i++){thorn(10+i*6.5,-1);thorn(11.6+i*6.5,1)}
+   // crossguard (leaf wings)
+   c.fillStyle=metalV(c,p.metal,-9,9);c.strokeStyle=O;c.lineWidth=1.6;
+   c.beginPath();c.moveTo(1.2,-3);c.quadraticCurveTo(-.2,-7,1.4,-9.2);c.quadraticCurveTo(5,-9.2,5.9,-5.6);c.lineTo(5.9,5.6);c.quadraticCurveTo(5,9.2,1.4,9.2);c.quadraticCurveTo(-.2,7,1.2,3);c.closePath();c.fill();c.stroke();
+   c.strokeStyle="rgba(255,255,255,.55)";c.lineWidth=.7;c.beginPath();c.moveTo(2.2,-7.6);c.quadraticCurveTo(4.4,-7.6,4.6,-4.6);c.stroke();
+   // blade
+   const bp=()=>{c.beginPath();c.moveTo(5.9,-4.2);c.lineTo(30,-3.5);c.quadraticCurveTo(37,-2.2,40.5,0);c.quadraticCurveTo(37,2.2,30,3.5);c.lineTo(5.9,4.2);c.closePath()};
+   bp();c.fillStyle=lg(c,0,-4.2,0,4.2,[[0,p.b1],[.5,mix(p.b1,p.b2,.55)],[1,p.b2]]);c.fill();
+   c.save();bp();c.clip();
+   c.fillStyle="rgba(0,0,0,.2)";c.fillRect(5,.25,37,5);
+   c.strokeStyle="rgba(0,0,0,.28)";c.lineWidth=.8;c.beginPath();c.moveTo(8,.55);c.lineTo(36,.55);c.stroke();
+   c.strokeStyle=p.shine;c.lineWidth=1;c.beginPath();c.moveTo(8,-.5);c.lineTo(35,-.5);c.stroke();
+   c.strokeStyle="rgba(255,255,255,.7)";c.lineWidth=.8;c.beginPath();c.moveTo(6.5,-3.5);c.lineTo(30,-2.9);c.quadraticCurveTo(36,-1.8,39.2,-.2);c.stroke();
+   c.restore();
+   if(s&&s.etch){c.strokeStyle=s.etch;c.lineWidth=.9;for(let i=0;i<5;i++){const x=14+i*4.2;c.beginPath();c.moveTo(x,1.4);c.lineTo(x+1.6,2.7);c.stroke()}}
+   glint(c,bp,6,40,-4.2,4.2);
+   bp();c.strokeStyle=B;c.lineWidth=1.6;c.stroke();
+   // centre jewel
+   if(s&&s.gem)gem(c,3.4,0,2.7,s.gem);else gem(c,3.4,0,2.3,lt(p.th,.3),p.thS);
    sparkles(c,s,6,40,8);
+   c.restore();
   },
+  // ===== Bog Blaster: a brass-and-wood goo cannon with a glass tank, ribbed barrel and glowing muzzle =====
   bogblaster(c,a,p,s){
+   c.save();c.lineJoin="round";c.lineCap="round";
    if(s&&s.aura)glow(c,16,0,34,.5,rgb(s.aura));
-   c.fillStyle=p.stock;c.strokeStyle=p.stockS;c.lineWidth=1.4;c.save();c.rotate(.25);rr(c,-4,3,6,10,2);c.fill();c.stroke();c.restore();
-   const g=c.createLinearGradient(0,-7,0,7);g.addColorStop(0,p.b0);g.addColorStop(1,p.b1);c.fillStyle=g;rr(c,-7,-6,23,12,4);c.fill();c.stroke();
-   c.fillStyle=p.barrel;rr(c,15,-3.6,15,7.2,2);c.fill();c.stroke();
-   if(s&&s.trim){c.strokeStyle=s.trim;c.lineWidth=1.3;c.beginPath();c.moveTo(19,-3.6);c.lineTo(19,3.6);c.moveTo(25,-3.6);c.lineTo(25,3.6);c.stroke();c.strokeStyle=p.stockS;c.lineWidth=1.4}
-   c.fillStyle=p.muz;rr(c,29,-5,5,10,2);c.fill();c.stroke();
-   c.fillStyle=p.tank;c.strokeStyle=p.tankS;c.beginPath();c.arc(5,-9,6.2,0,7);c.fill();c.stroke();
-   c.fillStyle=p.bub;c.beginPath();c.arc(3,-10.5,1.4,0,7);c.arc(7,-7,1,0,7);c.fill();
-   c.fillStyle=p.drip;c.beginPath();c.ellipse(32,6,1.8,3.2,0,0,7);c.fill();
-   if(s&&s.gem)gem(c,10,.5,2.6,s.gem);
+   const O=p.stockS;
+   // wooden grip
+   c.save();c.rotate(.25);c.fillStyle=lg(c,-4,0,2.4,0,[[0,lt(p.stock,.35)],[.6,p.stock],[1,dk(p.stock,.45)]]);c.strokeStyle=O;c.lineWidth=1.6;rr(c,-4,3,6.4,10.6,2.4);c.fill();c.stroke();
+   c.strokeStyle=dk(p.stock,.55);c.lineWidth=.8;for(let i=0;i<3;i++){c.beginPath();c.moveTo(-3.5,6.4+i*2.6);c.lineTo(2,6.4+i*2.6);c.stroke()}c.restore();
+   // trigger guard
+   c.strokeStyle=O;c.lineWidth=1.4;c.beginPath();c.moveTo(4.5,5.6);c.quadraticCurveTo(8.6,11.4,12,5.6);c.stroke();
+   // body
+   c.fillStyle=lg(c,0,-6,0,6,[[0,lt(p.b0,.45)],[.4,p.b0],[1,dk(p.b1,.15)]]);c.strokeStyle=O;c.lineWidth=1.6;rr(c,-7,-6,23,12,4);c.fill();c.stroke();
+   c.strokeStyle=dk(p.b1,.4);c.lineWidth=.9;c.beginPath();c.moveTo(11.2,-5.4);c.lineTo(11.2,5.4);c.moveTo(-2,3.4);c.lineTo(8,3.4);c.stroke();
+   c.strokeStyle="rgba(255,255,255,.45)";c.lineWidth=.8;c.beginPath();c.moveTo(-3.6,-4.4);c.lineTo(13,-4.4);c.stroke();
+   c.fillStyle=lt(p.b0,.55);for(const q of[[-4.4,-2.6],[-4.4,2.4],[13.6,-2.6],[13.6,2.4]]){c.beginPath();c.arc(q[0],q[1],.8,0,7);c.fill()}
+   // swamp moss
+   c.fillStyle=dk(p.muz,.35);c.strokeStyle=dk(p.muz,.7);c.lineWidth=.7;c.beginPath();c.ellipse(-4.6,-6.1,3.2,1.5,-.15,0,7);c.fill();c.stroke();c.beginPath();c.ellipse(-1.8,-6.6,1.6,1,.3,0,7);c.fill();c.stroke();
+   // goo tank: brass base ring, glass globe, liquid, cap
+   c.fillStyle=metalV(c,p.barrel,-6,-2.4);c.strokeStyle=O;c.lineWidth=1.4;rr(c,1.2,-5.8,7.6,3.2,1.2);c.fill();c.stroke();
+   c.fillStyle="rgba(8,22,12,.6)";c.strokeStyle=p.tankS;c.lineWidth=1.6;c.beginPath();c.arc(5,-9,6.2,0,7);c.fill();
+   c.save();c.beginPath();c.arc(5,-9,6.2,0,7);c.clip();
+   c.fillStyle=p.tank;c.beginPath();c.moveTo(-2,-11.4);c.quadraticCurveTo(2,-12.6,5,-11.4);c.quadraticCurveTo(8,-10.2,12,-11.4);c.lineTo(12,-2);c.lineTo(-2,-2);c.closePath();c.fill();
+   c.fillStyle="rgba(0,0,0,.18)";c.fillRect(-2,-5.4,14,4);
+   c.restore();
+   c.strokeStyle=p.tankS;c.lineWidth=1.6;c.beginPath();c.arc(5,-9,6.2,0,7);c.stroke();
+   c.fillStyle=p.bub;c.beginPath();c.arc(3.4,-7.4,1.2,0,7);c.arc(7,-5.6,.9,0,7);c.arc(5.4,-8.8,.7,0,7);c.fill();
+   c.strokeStyle="rgba(255,255,255,.85)";c.lineWidth=1;c.beginPath();c.arc(5,-9,4.4,3.5,4.7);c.stroke();
+   c.fillStyle="rgba(255,255,255,.8)";c.beginPath();c.arc(8.6,-12.2,.8,0,7);c.fill();
+   c.fillStyle=metalV(c,p.barrel,-17,-14);c.strokeStyle=O;c.lineWidth=1.4;rr(c,2.6,-16.4,4.8,2.6,1);c.fill();c.stroke();
+   // ribbed barrel
+   c.fillStyle=lg(c,0,-3.6,0,3.6,[[0,lt(p.barrel,.5)],[.45,p.barrel],[1,dk(p.barrel,.45)]]);c.strokeStyle=O;c.lineWidth=1.6;rr(c,15,-3.6,15,7.2,2);c.fill();c.stroke();
+   if(s&&s.trim){c.strokeStyle=s.trim;c.lineWidth=1.4;c.beginPath();c.moveTo(19,-3.6);c.lineTo(19,3.6);c.moveTo(25,-3.6);c.lineTo(25,3.6);c.stroke()}
+   else{c.strokeStyle=dk(p.barrel,.5);c.lineWidth=.9;c.beginPath();for(const x of[19,22.5,26]){c.moveTo(x,-3.3);c.lineTo(x,3.3)}c.stroke()}
+   c.strokeStyle="rgba(255,255,255,.4)";c.lineWidth=.7;c.beginPath();c.moveTo(16.5,-2.2);c.lineTo(28.4,-2.2);c.stroke();
+   // flared muzzle with a glowing mouth
+   c.fillStyle=lg(c,0,-5.4,0,5.4,[[0,lt(p.muz,.55)],[.5,p.muz],[1,dk(p.muz,.45)]]);c.strokeStyle=O;c.lineWidth=1.6;rr(c,29,-5.4,5.4,10.8,2);c.fill();c.stroke();
+   c.fillStyle=dk(p.muz,.78);c.beginPath();c.ellipse(34,0,1.5,3.8,0,0,7);c.fill();c.fillStyle=lt(p.muz,.5);c.beginPath();c.ellipse(34.2,0,.7,2.2,0,0,7);c.fill();
+   // drip
+   c.fillStyle=p.drip;c.strokeStyle=p.tankS;c.lineWidth=.8;c.beginPath();c.moveTo(32,5.4);c.quadraticCurveTo(29.8,8.2,32,10);c.quadraticCurveTo(34.2,8.2,32,5.4);c.closePath();c.fill();c.stroke();
+   c.fillStyle="rgba(255,255,255,.8)";c.beginPath();c.arc(31.2,8,.5,0,7);c.fill();
+   // charge light / jewel
+   if(s&&s.gem)gem(c,10,.5,2.6,s.gem);else{glow(c,8,.4,5,.7,rgb(p.muz));c.fillStyle=lt(p.muz,.35);c.strokeStyle=O;c.lineWidth=.8;c.beginPath();c.arc(8,.4,1.7,0,7);c.fill();c.stroke()}
    if(a>0){glow(c,38,0,14*a,a,s&&s.aura?rgb(s.aura):null)}
    sparkles(c,s,-6,34,9);
+   c.restore();
   },
+  // ===== Hopper Staff: a gnarled wood staff, vine wrapped, glowing rune, topped with a cheeky frog =====
   hopperstaff(c,a,p,s){
+   c.save();c.lineJoin="round";c.lineCap="round";
    glow(c,42,0,16,.55,s&&s.aura?rgb(s.aura):null);
    if(s&&s.aura)glow(c,14,0,30,.4,rgb(s.aura));
-   c.strokeStyle=p.shaftS;c.lineWidth=5.2;c.lineCap="round";c.beginPath();c.moveTo(-14,0);c.lineTo(36,0);c.stroke();c.strokeStyle=p.shaft;c.lineWidth=3.2;c.beginPath();c.moveTo(-14,0);c.lineTo(36,0);c.stroke();
-   if(s&&s.band){c.fillStyle=s.band;c.strokeStyle=p.shaftS;c.lineWidth=.8;for(const x of[-8,14,30]){rr(c,x,-3.4,2.6,6.8,1);c.fill();c.stroke()}}
-   c.strokeStyle=p.zig;c.lineWidth=1.8;c.beginPath();c.moveTo(8,0);for(let i=0;i<6;i++)c.lineTo(10+i*3,i%2?-4.5:4.5);c.stroke();
-   c.fillStyle=p.head;c.strokeStyle=p.headS;c.lineWidth=1.6;c.beginPath();c.arc(42,0,7,0,7);c.fill();c.stroke();
-   c.fillStyle=p.eye;c.beginPath();c.arc(42,-5.5,2.6,0,7);c.arc(46.5,-4,2.4,0,7);c.fill();c.fillStyle=p.pupil;c.beginPath();c.arc(42.6,-5.5,1.2,0,7);c.arc(47,-4,1.1,0,7);c.fill();
-   c.strokeStyle=p.headS;c.lineWidth=1.3;c.beginPath();c.moveTo(40,3);c.quadraticCurveTo(45,6,49,2);c.stroke();
-   if(s&&s.crown){c.fillStyle=s.crown;c.strokeStyle=p.headS;c.lineWidth=.9;c.beginPath();c.moveTo(37,-5.5);c.lineTo(36.5,-12);c.lineTo(39.6,-9);c.lineTo(42,-13.5);c.lineTo(44.4,-9);c.lineTo(47.5,-12);c.lineTo(47,-5.5);c.closePath();c.fill();c.stroke()}
+   // shaft
+   c.strokeStyle=p.shaftS;c.lineWidth=5.8;c.beginPath();c.moveTo(-14,0);c.lineTo(36,0);c.stroke();
+   c.strokeStyle=lg(c,0,-2.6,0,2.6,[[0,lt(p.shaft,.45)],[.5,p.shaft],[1,dk(p.shaft,.4)]]);c.lineWidth=3.8;c.beginPath();c.moveTo(-14,0);c.lineTo(36,0);c.stroke();
+   c.strokeStyle="rgba(255,255,255,.42)";c.lineWidth=.7;c.beginPath();c.moveTo(-12,-1.1);c.lineTo(34,-1.1);c.stroke();
+   c.strokeStyle=dk(p.shaft,.5);c.lineWidth=.8;c.beginPath();for(const x of[-5,19,31]){c.moveTo(x,-1.8);c.lineTo(x+.8,1.8)}c.stroke();
+   // butt cap
+   c.fillStyle=metalV(c,dk(p.shaft,.1),-3,3);c.strokeStyle=p.shaftS;c.lineWidth=1.4;rr(c,-16,-3,4,6,1.6);c.fill();c.stroke();
+   // gold bands (skins)
+   if(s&&s.band){c.fillStyle=lg(c,0,-3.4,0,3.4,[[0,lt(s.band,.5)],[1,dk(s.band,.35)]]);c.strokeStyle=p.shaftS;c.lineWidth=.9;for(const x of[-8,14,30]){rr(c,x,-3.6,2.8,7.2,1.1);c.fill();c.stroke()}}
+   // vine wrap with two leaves
+   else{c.strokeStyle=p.headS;c.lineWidth=2;c.beginPath();c.moveTo(-12,1);for(let i=1;i<=6;i++)c.lineTo(-12+i*2.6,i%2?-1.9:1.9);c.stroke();c.strokeStyle=p.head;c.lineWidth=1;c.beginPath();c.moveTo(-12,1);for(let i=1;i<=6;i++)c.lineTo(-12+i*2.6,i%2?-1.9:1.9);c.stroke();
+    c.fillStyle=lg(c,0,-6,0,0,[[0,lt(p.head,.4)],[1,p.head]]);c.strokeStyle=p.headS;c.lineWidth=.9;c.beginPath();c.ellipse(-3,-3.8,2.8,1.4,-.7,0,7);c.fill();c.stroke()}
+   // glowing rune
+   const zz=()=>{c.beginPath();c.moveTo(8,0);for(let i=0;i<6;i++)c.lineTo(10+i*3,i%2?-4.5:4.5)};
+   c.strokeStyle="rgba("+rgb(p.zig)+",.35)";c.lineWidth=4.2;zz();c.stroke();c.strokeStyle=p.zig;c.lineWidth=1.8;zz();c.stroke();c.strokeStyle="rgba(255,255,255,.85)";c.lineWidth=.6;zz();c.stroke();
+   // crown first, so the frog's eyes pop out in front of it
+   const head=()=>{c.beginPath();c.arc(42,0,7,0,7)};
+   // leaf collar
+   c.fillStyle=lg(c,0,-6,0,6,[[0,lt(p.head,.3)],[1,dk(p.head,.2)]]);c.strokeStyle=p.headS;c.lineWidth=1;c.beginPath();c.ellipse(35.4,-3.2,3.4,1.5,-.8,0,7);c.fill();c.stroke();c.beginPath();c.ellipse(35.4,3.2,3.4,1.5,.8,0,7);c.fill();c.stroke();
+   // frog head
+   head();c.fillStyle=rg(c,42,0,1,8,[[0,lt(p.head,.5)],[.55,p.head],[1,dk(p.head,.4)]],40,-2.6);c.fill();c.strokeStyle=p.headS;c.lineWidth=1.7;c.stroke();
+   c.fillStyle="rgba(255,255,255,.28)";c.beginPath();c.ellipse(39,-1.6,2.6,1.6,-.6,0,7);c.fill();
+   if(s&&s.crown){c.fillStyle=lg(c,0,-14,0,-5,[[0,lt(s.crown,.5)],[1,dk(s.crown,.3)]]);c.strokeStyle=p.headS;c.lineWidth=1;c.beginPath();c.moveTo(37,-5.5);c.lineTo(36.4,-12.4);c.lineTo(39.6,-9.2);c.lineTo(42,-14);c.lineTo(44.4,-9.2);c.lineTo(47.6,-12.4);c.lineTo(47,-5.5);c.closePath();c.fill();c.stroke()}
+   // belly / mouth
+   c.fillStyle=lt(p.head,.6);c.globalAlpha*=.85;c.beginPath();c.ellipse(45,4.6,4.2,1.9,.12,0,7);c.fill();c.globalAlpha/=.85;
+   c.strokeStyle=p.headS;c.lineWidth=1.3;c.beginPath();c.moveTo(39.6,3);c.quadraticCurveTo(45,6.6,49.2,2);c.stroke();
+   c.fillStyle=p.headS;c.beginPath();c.arc(48.3,-.9,.55,0,7);c.fill();
+   c.fillStyle="rgba(255,120,150,.35)";c.beginPath();c.arc(41,2,1.7,0,7);c.fill();
+   // bulging eyes
+   for(const e of[[42,-5.6,3.5,2.6],[46.6,-4.2,3.3,2.4]]){
+    c.fillStyle=rg(c,e[0],e[1],.5,e[2]+.6,[[0,lt(p.head,.35)],[1,p.head]],e[0]-1,e[1]-1.2);c.strokeStyle=p.headS;c.lineWidth=1.3;c.beginPath();c.arc(e[0],e[1],e[2],0,7);c.fill();c.stroke();
+    c.fillStyle=p.eye;c.beginPath();c.arc(e[0]+.2,e[1],e[3],0,7);c.fill();
+    c.fillStyle=p.pupil;c.beginPath();c.ellipse(e[0]+.9,e[1]+.1,1,1.6,0,0,7);c.fill();
+    c.fillStyle="#fff";c.beginPath();c.arc(e[0]+.2,e[1]-1,.55,0,7);c.fill()}
    if(s&&s.gem)gem(c,-1,0,2.6,s.gem);
    sparkles(c,s,-8,50,10);
+   c.restore();
   }
  };
  const has=id=>typeof WPN[id]==="function";
