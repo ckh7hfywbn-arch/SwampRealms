@@ -124,8 +124,10 @@ function showPack(){
   const cd=$("cd"),t=()=>{cd.textContent=untilMidnight();if(PACKS.some(p=>stockOf(p)>0))showPack()};
   t();tick=setInterval(t,1000);return;
  }
- s.innerHTML=`<div class="ps" id="ps"><button class="pack" id="pack" aria-label="Open a ${curPack.name} pack">${packLabel(curPack)}</button></div><div id="hint">Tap the pack to open it. ${curPack.name} packs left: ${n}</div>`;
+ const all=PACKS.reduce((a,p)=>a+stockOf(p),0);
+ s.innerHTML=`<div class="ps" id="ps"><button class="pack" id="pack" aria-label="Open a ${curPack.name} pack">${packLabel(curPack)}</button></div><div id="hint">Tap the pack to open it. ${curPack.name} packs left: ${n}</div>${all>1?`<button type="button" class="btn ghost" id="openall">Open all ${all} packs at once</button>`:""}`;
  $("pack").onclick=reveal;
+ if($("openall"))$("openall").onclick=openAll;
 }
 
 function pickCard(pack){
@@ -137,6 +139,51 @@ function pickCard(pack){
  let x=Math.random()*tot,r=rs[rs.length-1];
  for(const k of rs){x-=(W[k]||0);if(x<0){r=k;break}}
  const list=pool[r];return list[Math.floor(Math.random()*list.length)];
+}
+
+/* ================= Open all packs at once ================= */
+function openAll(){
+ if(revealing)return;
+ load();
+ if(PACKS.reduce((a,p)=>a+stockOf(p),0)<1){showPack();return}
+ clearInterval(tick);revealing=true;
+ const got=new Map(),fresh=new Set();let freeUsed=false,opened=0;
+ for(const p of PACKS){
+  while(stockOf(p)>0){
+   // same order as opening one pack: the free daily pack first, then bonus / shop stock
+   if(p===PACKS[0]){if(meta.used<RULES.dailyPacks){meta.used++;freeUsed=true}else meta.bonus--}
+   else if(freeLeft(p)>0){meta.freeUsed=meta.freeUsed||{};meta.freeUsed[p.id]=(meta.freeUsed[p.id]||0)+1}
+   else{meta.stock=meta.stock||{};meta.stock[p.id]--}
+   const c=pickCard(p);
+   if(!owned[c.id]){fresh.add(c.id);meta.fresh=meta.fresh||[];if(!meta.fresh.includes(c.id))meta.fresh.push(c.id)}
+   owned[c.id]=(owned[c.id]||0)+1;
+   got.set(c.id,(got.get(c.id)||0)+1);opened++;
+  }
+ }
+ const reward=freeUsed?claimStreak():null;
+ save();renderPacks();renderGrid();renderStreak();
+ openAllScreen(got,fresh,opened,reward);
+}
+function openAllScreen(got,fresh,opened,reward){
+ const cards=[...got.keys()].map(id=>CARDS.find(c=>c.id===id)).filter(Boolean).sort((a,b)=>rank(b)-rank(a)||a.name.localeCompare(b.name));
+ const dupes=[...got].reduce((a,[id,n])=>a+n,0)-fresh.size;
+ const ORDER=Object.keys(RULES.coinValues).reverse(),by={};
+ cards.forEach(c=>{by[c.rarity]=(by[c.rarity]||0)+got.get(c.id)});
+ const chips=ORDER.filter(r=>by[r]).map(r=>{const k=cards.find(c=>c.rarity===r);return `<span class="oa-chip" style="--c:${k.color}"><i></i>${by[r]} ${r}</span>`}).join("");
+ const tiles=cards.map((c,i)=>`<div class="oa-c" style="--c:${c.color};--i:${Math.min(i,24)}"><div class="cw">${cardHTML(c)}</div>${got.get(c.id)>1?`<span class="oa-n">×${got.get(c.id)}</span>`:""}${fresh.has(c.id)?`<span class="oa-new">NEW</span>`:""}</div>`).join("");
+ const w=document.createElement("div");w.className="bag-wrap oa-wrap";w.setAttribute("role","dialog");w.setAttribute("aria-modal","true");w.setAttribute("aria-labelledby","oat");
+ w.innerHTML=`<div class="bag-back"></div><div class="avbox oabox"><div class="bag-head"><h2 id="oat">You opened ${opened} pack${opened>1?"s":""}</h2></div>
+ <p class="oa-sum"><b>${fresh.size}</b> new card${fresh.size===1?"":"s"} · <b>${dupes}</b> duplicate${dupes===1?"":"s"} · <b>${cards.length}</b> different card${cards.length===1?"":"s"}</p>
+ <div class="oa-chips">${chips}</div>${reward?`<div class="rewardnote"><b>Day ${reward.streak} streak!</b> +${reward.coins} Swamp Coins${reward.bonus?` and +${reward.bonus} bonus pack`:""}</div>`:""}
+ <div class="oa-grid">${tiles}</div>
+ <div class="row oa-act"><button type="button" class="btn" id="oadone">Done</button><button type="button" class="btn ghost" id="oacol">View collection</button></div></div>`;
+ document.body.appendChild(w);document.documentElement.classList.add("av-open");
+ const best=cards[0];try{SFX.open(best.rarity)}catch(e){}
+ const close=(toCol)=>{document.removeEventListener("keydown",esc);w.remove();document.documentElement.classList.remove("av-open");showPack();if(toCol)setTab("cards",true)};
+ const esc=e=>{if(e.key==="Escape")close()};
+ document.addEventListener("keydown",esc);
+ w.querySelector("#oadone").onclick=()=>close();w.querySelector("#oacol").onclick=()=>close(true);w.querySelector(".bag-back").onclick=()=>close();
+ w.querySelector("#oadone").focus({preventScroll:true});
 }
 
 function reveal(){
@@ -156,6 +203,7 @@ function reveal(){
  renderPacks();renderGrid();renderStreak();
 
  const s=$("stage"),ps=$("ps"),m=$("hint");
+ const oab=$("openall");if(oab)oab.remove();
  m.id="msg";m.className="new";m.setAttribute("aria-live","polite");m.innerHTML="&nbsp;";
  ps.style.setProperty("--c",c.color);
  ps.insertAdjacentHTML("afterbegin",`<div class="rays"></div><div class="ring"></div><button class="flip" id="flip" tabindex="-1" aria-label="Flip the card"><div class="inner"><div class="face back">${curPack.back||BACK_SVG}</div><div class="face front">${cardHTML(c)}</div></div></button><div class="parts"></div>`);
