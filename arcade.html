@@ -47,6 +47,27 @@
  </div>
 </section>
 
+<section class="reveal" id="avatar">
+ <h2>Your Avatar</h2>
+ <p class="sub">Pick your swamp animal and gear up. Crystals come from every Swamp Adventure run, with no daily limit.</p>
+ <div class="av2">
+  <div class="stagecard" id="sc">
+   <div class="avstage" id="stage"></div>
+   <div class="plate"><b id="an"></b><span class="aura" id="aura"></span></div>
+   <div class="gems"><span class="gem"></span><b id="gn">0</b><small>Swamp Crystals</small></div>
+   <div class="pvbar" id="pvbar" hidden><span id="pvt"></span><button type="button" class="btn ghost" data-pvx>Reset</button></div>
+   <div class="slots" id="slots" role="tablist" aria-label="Gear slots"></div>
+  </div>
+  <div class="panel2">
+   <div class="pick" id="pick" aria-label="Choose your animal"></div>
+   <div class="cats" id="cats" role="tablist" aria-label="Cosmetic type"></div>
+   <p id="msg" role="status" aria-live="polite"></p>
+   <div class="items" id="items"></div>
+   <a class="btn" href="adventure.html">Earn crystals in the Swamp Adventure</a>
+  </div>
+ </div>
+</section>
+
 <section class="reveal" id="loadout">
  <h2>Your Loadout</h2>
  <p class="sub">What you take into the Swamp Adventure. Equip gear from your Bag below and it shows up here.</p>
@@ -71,13 +92,15 @@
  </div>
 </section>
 
+<button type="button" class="pvmini" id="pvmini" hidden aria-label="Show my preview"><span id="pvmv"></span><b>Preview</b></button>
+
 <footer>
  <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
  <p>Swamp Cards and Swamp Coins are free fan collectibles for fun. They have no cash value and can't be bought, sold or exchanged for money or $DonK. $DonK is a meme coin with no intrinsic value or expectation of financial return. Crypto is volatile and you can lose everything. Do your own research.</p>
  <p style="margin-top:10px">© 2026 DonK the Donkey</p>
 </footer>
 
-<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="avatar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="arcade.html#avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Avatar</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
 <script src="weapons.js?v=art1"></script>
@@ -85,5 +108,50 @@
 <script src="store.js?v=loadout1"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id),T=["Common","Uncommon","Rare","Epic","Legendary","Mythical"],RC=["#9aa4a0","#4ade80","#4da3ff","#a855f7","#ff9f1c","#ff4d6d"];
+const tr=i=>T.indexOf(Crystals.tier(i.price));let cat="hat",pv={},miniHide=false;   // pv = items being tried on (not saved, not owned): { hat:"crown", ... }
+function msg(t){$("msg").textContent=t}
+function draw(){
+ const C=Crystals,S=C.state,o=Object.assign(C.outfit(),pv),E=Object.assign({},S.eq,pv),npv=Object.keys(pv).length,eqd=Object.keys(C.cats).map(k=>C.item(E[k])).filter(Boolean);
+ const top=eqd.length?Math.max(...eqd.map(tr)):-1,ac=top>=0?RC[top]:"#4ee6b4";
+ $("sc").style.setProperty("--ac",ac);$("stage").innerHTML=AV.svg(o);$("gn").textContent=C.balance;
+ $("an").textContent=C.animals.find(a=>a.id===o.animal).name;$("aura").textContent=(npv?"Preview · ":"")+(top>=0?T[top]+" aura":"No gear");
+ $("pvbar").hidden=!npv;$("pvt").textContent=npv?"Trying on: "+Object.values(pv).map(id=>C.item(id).name).join(", "):"";
+ $("pvmini").hidden=!npv||miniHide;$("pvmv").innerHTML=npv?AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="22 4 156 156"'):"";
+ $("slots").innerHTML=Object.entries(C.cats).map(([k,n])=>{const it=C.item(E[k]);return `<button type="button" role="tab" class="slot${pv[k]?" pv":""}" data-c="${k}" aria-selected="${k===cat}"${it?` style="--rc:${RC[tr(it)]}"`:""}><small>${n}</small><b>${it?it.name:"Empty"}</b>${pv[k]?"<small>Preview</small>":""}</button>`}).join("");
+ $("pick").innerHTML=C.animals.map(a=>`<button type="button" data-a="${a.id}" aria-pressed="${a.id===o.animal}" aria-label="${a.name}">${AV.svg({animal:a.id})}${a.name.split(" ")[0]}</button>`).join("");
+ $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}">${n}</button>`).join("");
+ $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
+  const own=C.owns(i.id),on=S.eq[cat]===i.id,can=C.balance>=i.price,t=tr(i);
+  const btn=own?(on?"Equipped":"Equip"):`<span class="gem"></span>${i.price}`;
+  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id)}</div><span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
+ try{loadoutPaint()}catch(e){}
+}
+function flash(){const s=$("stage");s.classList.remove("avp");void s.offsetWidth;s.classList.add("avp")}
+const togglePv=id=>{const it=Crystals.item(id);if(!it||Crystals.owns(id))return false;if(pv[it.cat]===id){delete pv[it.cat];msg("")}else{pv[it.cat]=id;msg("Trying on "+it.name+". Buy it to keep it.")}return true};
+const root=$("avatar");
+root.addEventListener("click",e=>{
+ const art=e.target.closest(".art[data-p]");
+ if(art&&!e.target.closest("button")){togglePv(art.dataset.p);draw();flash();return}
+ const t=e.target.closest("button");if(!t)return;const C=Crystals;C.reload();let f=false;
+  if(t.dataset.pvx!==undefined){pv={};msg("");f=true}
+ else if(t.dataset.p){f=togglePv(t.dataset.p)}
+ else if(t.dataset.a){C.setAnimal(t.dataset.a);msg("");f=true}
+ else if(t.dataset.c){cat=t.dataset.c;msg("")}
+ else if(t.dataset.i){const it=C.item(t.dataset.i);
+  if(C.owns(it.id)){delete pv[it.cat];C.equip(it.id);msg("");f=true}
+  else{const r=C.buy(it.id);msg(r.ok?it.name+" unlocked!":r.why);if(r.ok&&pv[it.cat]===it.id)delete pv[it.cat];f=r.ok}}
+ else return;
+ draw();if(f)flash();
+});
+$("pvmini").addEventListener("click",()=>$("stage").scrollIntoView({behavior:"smooth",block:"center"}));
+// on a phone the avatar scrolls out of sight while you browse: show a small floating preview that jumps back up
+
+try{new IntersectionObserver(es=>{miniHide=es[0].isIntersecting;$("pvmini").hidden=!Object.keys(pv).length||miniHide}).observe($("sc"))}catch(e){}
+draw();
+})();
+</script>
 </body>
 </html>

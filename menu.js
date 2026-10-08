@@ -18,7 +18,7 @@
     "adventure.html": I('<path d="M6 21V4"/><path d="M6 5h11l-3 4 3 4H6"/>'),
     "shop.html": I('<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>'),
     "herd": I('<circle cx="7" cy="9" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="9" r="2"/><path d="M12 12c-3 0-5 2.5-5 5 0 2 1.7 2.5 5 2.5s5-.5 5-2.5c0-2.5-2-5-5-5z"/>'),
-    "avatar.html": ""
+    "arcade.html#avatar": ""
   };
   var iconFor = function (href) { return ICONS[/#herd/.test(href) ? "herd" : href.replace(/#.*/, "")] || ICONS["index.html"]; };
 
@@ -38,7 +38,7 @@
   menu.hidden = true;
   var html = '<ul class="sm-list" role="list">';
   links.forEach(function (l) {
-    if (/avatar\.html/.test(l.href)) {
+    if (/#avatar/.test(l.href)) {
       html += '<li><a class="sm-item sm-av" href="' + l.href + '"' + (l.current ? ' aria-current="page"' : "") + '><span class="avbtn" id="avbtn"></span><span class="sm-t">' + l.text + "</span></a></li>";
     } else {
       html += '<li><a class="sm-item" href="' + l.href + '"' + (l.current ? ' aria-current="page"' : "") + ">" + iconFor(l.href) + '<span class="sm-t">' + l.text + "</span></a></li>";
