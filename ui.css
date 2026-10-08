@@ -906,4 +906,19 @@ body.tc-on .swat small{display:none}
 .betabadge{position:fixed;left:8px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:30;width:44px;height:44px;border-radius:50%;display:grid;place-content:center;justify-items:center;gap:0;background:#fff;color:#1a2420;border:2px solid #d9e7e0;box-shadow:0 2px 10px #0008;font:900 10px/1.05 Nunito,sans-serif;letter-spacing:.06em;text-align:center;pointer-events:none;user-select:none;opacity:.94}
 .betabadge span:last-child{font-size:12px;color:#1c7a5a}
 @media print{.betabadge{display:none}}
-#avatar,#loadout{scroll-margin-top:84px}
+
+/* Avatar popup (opened from the Loadout portrait or #avatar) */
+html.av-open{overflow:hidden}
+.av-wrap .bag-back{cursor:pointer}
+.avbox{position:relative;box-sizing:border-box;min-width:0;width:min(1040px,100%);max-height:100%;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:22px;background:linear-gradient(180deg,#0e1712f7,#070d0af7);border:1px solid #4ee6b455;box-shadow:0 0 44px -12px #4ee6b4,0 26px 60px -20px #000;color:#e7f4ee;animation:avin .25s ease-out}
+@keyframes avin{from{opacity:0}}
+.avbox .bag-head{position:sticky;top:-16px;z-index:3;margin:-16px -16px 0;padding:16px 16px 10px;background:#0b130fee;border-radius:22px 22px 0 0}
+.avbox .sub{margin:0}
+.avbox .av2{margin-top:6px}
+@media(min-width:820px){.avbox .stagecard{top:64px}}
+.av-wrap .pvmini{bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.lo-hero{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.lo-hero:hover{box-shadow:0 0 52px -8px #4ee6b4,0 16px 34px -22px #000}
+.lo-hero:active{transform:scale(.98)}
+.lo-hero:focus-visible{outline:2px solid #f2c14e;outline-offset:3px}
+.lo-edit{font:800 10px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#4ee6b4}
