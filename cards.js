@@ -32,7 +32,7 @@ const CARDS=[
 // ---- PACK RULES: edit these ----
 const RULES={
  dailyPacks:1,                     // free packs per day (resets at local midnight)
- codes:{HEEHAW:1,HOLDTHELINE:2,SWAMPBETAVERSE:3,STUARTTHESWAMP:50},   // bonus code -> extra packs (each code works once per browser)
+ codes:{HEEHAW:1,HOLDTHELINE:2,SWAMPBETAVERSE:3,STUARTTHESWAMP:50,SWAMPYDIH:{base:30,abstract:50}},   // bonus code -> extra packs (each code works once per browser). A plain number = that many 1st edition packs; {base:N,abstract:N} gives a count of each pack edition
  coinValues:{Common:5,Uncommon:10,Rare:25,Epic:50,Legendary:100,Mythical:250},  // Swamp Coins per extra copy
  shop:{packName:"Adventures of the Swamp",packPrice:50},   // the only pack for sale, price in Swamp Coins
  dailyAbstract:1,                  // free Abstract Edition packs per day (resets at local midnight)

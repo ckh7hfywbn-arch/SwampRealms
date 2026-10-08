@@ -220,8 +220,11 @@ $("redeem").onclick=()=>{
  if(!n){m.textContent="That code isn't valid.";return}
  load();
  if(meta.codes.includes(v)){m.textContent="You already used that code.";return}
- meta.bonus+=n;meta.codes.push(v);save();i.value="";
- m.textContent="Code accepted: +"+n+" bonus pack"+(n>1?"s":"")+".";
+ const g=typeof n==="object"?n:{base:n},parts=[];
+ for(const k in g){const q=g[k];if(!q)continue;if(k==="base")meta.bonus+=q;else{meta.stock=meta.stock||{};meta.stock[k]=(meta.stock[k]||0)+q}
+  const p=k==="base"?PACKS[0]:PACKS.find(x=>x.id===k);parts.push(q+" "+(p&&PACKS.length>1?p.short||p.name:"bonus")+" pack"+(q>1?"s":""))}
+ meta.codes.push(v);save();i.value="";
+ m.textContent="Code accepted: +"+(typeof n==="object"?parts.join(" and "):n+" bonus pack"+(n>1?"s":""))+".";
  pulse(m,"msgin");
  if(!revealing)showPack();else renderPacks();
 };
