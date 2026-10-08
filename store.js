@@ -131,13 +131,16 @@ const FRAG_RARITY=(()=>{
  return R;
 })();
 const FRAGMENTS={
- bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:.3,rarity:"common"},
- crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:.4,rarity:"uncommon"},
- boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:.25,rarity:"rare"},
+ bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:1,rarity:"common"},
+ crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:1,rarity:"uncommon"},
+ boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:1,rarity:"rare"},
  // ready for enemies that are not in the game yet
- frog:{name:"Frog Fragment",enemy:"Frog",chance:.4,rarity:"common"},
- crocodile:{name:"Crocodile Fragment",enemy:"Crocodile",chance:.4,rarity:"uncommon"},
- slime:{name:"Slime Fragment",enemy:"Slime",chance:.4,rarity:"common"}
+ frog:{name:"Frog Fragment",enemy:"Frog",chance:1,rarity:"common"},
+ crocodile:{name:"Crocodile Fragment",enemy:"Crocodile",chance:1,rarity:"uncommon"},
+ slime:{name:"Slime Fragment",enemy:"Slime",chance:1,rarity:"common"},
+ // story bosses (set as SLOTS[n].fragment in storyboss.js)
+ wing:{name:"Wing Fragment",enemy:"Mirewing",chance:1,rarity:"rare"},
+ ape:{name:"Ape Fragment",enemy:"Stone Ape",chance:1,rarity:"epic"}
 };
 const Fragments={
  defs:FRAGMENTS,
@@ -158,7 +161,7 @@ const Fragments={
  // bonus (optional) is added to the drop chance: the Endless Realms pass a little extra for deeper levels
  roll(enemyId,bonus){
   const d=FRAGMENTS[enemyId];
-  if(!d||Math.random()>=Math.min(.95,d.chance+(Number(bonus)||0)))return null;
+  if(!d||Math.random()>=Math.min(1,d.chance+(Number(bonus)||0)))return null;
   return this.add(enemyId,1);
  }
 };
