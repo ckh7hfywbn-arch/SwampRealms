@@ -11,8 +11,9 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `catalog.html` | Open packs and view the collection |
 | `shop.html` | Buy packs with Swamp Coins |
 | `arcade.html` | The Arcade hub and the main menu for all games (games are not in the header menu, they are tiles here): a card for each game (just the Swamp Adventure for now) plus the Bag tile |
-| `adventure.html` | The Swamp Adventure. Every run pays Swamp Coins and Swamp Crystals, no daily limit. Rates: `COIN_PER` in the page script (1 coin per 150 score) and `CRY.games.adv` in `store.js` (1 crystal per 50 score) (3 hand-made levels + Rootmaw boss, then endless generated levels, see **Endless progression**). Each level has its own background music (`MUSIC` in the page script: synthesized, no audio files, same sound switch as the effects, plus a faster track for the Rootmaw fight). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone. The player is drawn as the visitor's own avatar (animal + gear from `avatar.html`, via `avatarRefresh()` and `drawPlayer()`); it falls back to the original sprout character if the avatar can't load |
+| `adventure.html` | The Swamp Adventure. Every run pays Swamp Coins and Swamp Crystals, no daily limit. Rates: `COIN_PER` in the page script (1 coin per 200 score) and `CRY.games.adv` in `store.js` (1 crystal per 55.6 score) (3 hand-made levels + Rootmaw boss, then endless generated levels, see **Endless progression**). Each level has its own background music (`MUSIC` in the page script: synthesized, no audio files, same sound switch as the effects, plus a faster track for the Rootmaw fight). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone. The player is drawn as the visitor's own avatar (animal + gear from `avatar.html`, via `avatarRefresh()` and `drawPlayer()`); it falls back to the original sprout character if the avatar can't load |
 | `progression.js` | The Endless Realms: difficulty, rewards, enemy variants, boss ranks and the level generator for every level after the four hand-made ones (Level 4, the Sunlit Canopy, is hand-made). Pure data and maths, loaded before the game script. See **Endless progression** below |
+| `chestcabin.js` | The treasure cabin in front of every boss arena (Swamp Adventure Levels 1-4 and the Endless Realms boss levels): layout, the two chest rewards and the drawing. Loaded after `storyboss.js`. See **Treasure cabin** below |
 | `avatar.html` | Pick a swamp animal and dress it with Swamp Crystals |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Card back = `card-back.jpg` |
 | `weapons.js` | Weapon drawings (`WeaponArt`), shared by the Swamp Adventure (held in hand) and the Bag (preview card). Load before `store.js` |
@@ -188,3 +189,22 @@ Hand-made, no boss. Daytime jungle theme (`TH4`, with `canopy` and `temple` flag
 
 ### MonK the Monkey (Level 4)
 MonK swings on vines high above the path and lobs bananas at you. Set per level with `monk:{from,to}` in the level data (only Level 4 has it): he appears when you pass `from` and leaves near `to`. Every throw is telegraphed (he raises a banana for about half a second), a banana costs one flame, splats on solid things, and can be knocked away with a weapon swing or a goo shot. Tuning is at the top of the MonK block in `adventure.html` (`MKL`, `MKA`, `MKW`, throw timing in `updateMonk`).
+
+
+## Treasure cabin (before every boss)
+
+Every level with a boss arena (Levels 1-4 and every Endless Realms boss level) has a **cabin** just before the arena. `Cabin.add(level)` in `chestcabin.js` pushes the arena right to make room, so no level data is edited by hand (hand-made levels are patched right after `StoryBoss.attach`, endless ones in `lvl()`).
+
+- **Flow.** Walk in through the open front door, stand at the chest and strike it (`J` / `E` / Attack) to open it. A popup offers **Max Flames +1** (the new Flame starts lit) or **+25% Damage**. The pick is applied at once, the barred back door swings open, and the player walks on to the arena with that stat. The back door stays shut until the chest is opened, so the choice cannot be skipped. Keys `1` / `2` also pick.
+- **Lasts for one attempt.** The choice is kept for the rest of that level, then cleared when a level starts or the run restarts (`chestReset()` in `start()` and `respawnReset()`), so a Game Over means picking again.
+- **Where it plugs in** (`adventure.html`): `maxHp()` adds `chestHp()`, `wstat()` multiplies damage by `chestDmg()` (so melee, goo shots and boss hits all use it), the HUD chip row (`showUps`) shows the pick, and the game mode `"chest"` shows the `#chp` popup (styles at the end of `ui.css`).
+- **Tuning.** `Cabin.CFG` at the top of `chestcabin.js`: `HP` (extra Flames), `DMG` (0.25 = +25%), `W` (cabin width), `PRE` / `POST` (space before / after it), `TIME` (seconds added to par time). To add a third reward, add a line to `Cabin.REWARDS` and read it in `chestHp()` / `chestDmg()` (or a new helper).
+- Spores that used to float inside the arena are moved with it, and the level's par time grows by `Cabin.CFG.TIME`.
+
+## Purple glowspores (boss levels)
+
+On every level with a boss arena (Levels 1-4 and the Endless Realms boss levels) all Glowspores are drawn purple (`drawSpore`, `GLOW.purple`) and each one collected pays `PURPLE_CRY` (3) extra Swamp Crystals when the run ends (`payOut` passes it to `Crystals.award(game,score,extra)`). Win or lose, the spores collected count; coins and score are unchanged. The results panel shows "Includes +N from purple glowspores".
+
+## Mosquito swarms (Endless Realms)
+
+`swarm.js` adds random mosquito swarms to the generated Endless levels (about 4 in 10 levels, one or two swarm spots each, never boss levels or the four hand-made levels). `Swarm.plan(level, index)` picks the spots from the level index (same level, same spots) when the level is built in `lvl()`. Run past a spot and a cloud of tiny mosquitoes flies in and circles the player. They do **no damage**: each touch shoves the player in a random direction (about every half second, with a short stun so you cannot steer straight out). A **Swat!** button pops up (also key `K`) and scatters the whole swarm; if ignored, the swarm gives up after 14 seconds. Tuning is `Swarm.CFG` (chance, count, shove strength, life); the button styles are at the end of `ui.css`. A shove can push you into a pond, which just sends you back to the last checkpoint.

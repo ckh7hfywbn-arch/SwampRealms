@@ -874,3 +874,30 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .lo-track.moving .bag{box-shadow:none}
 .lo-track.moving *{animation-play-state:paused!important}
 .lo-track{scroll-behavior:auto}
+
+/* Treasure cabin chest popup (adventure.html: #chp, chestcabin.js) */
+#box .chp{background:radial-gradient(ellipse at 50% 42%,#3b2a10ee,#0b0804f6 78%)}
+#box .chp h3{color:#fff0b8;text-shadow:0 0 24px #ffd45fcc}
+.chp .gcard{width:100%}
+.chp-ic{width:64px;height:48px;filter:drop-shadow(0 0 14px #ffb04fcc)}
+.chp-ic .lid{fill:#8a5629;stroke:#2f1a0a;stroke-width:2.4;stroke-linejoin:round}
+.chp-ic .bod{fill:#7a4a24;stroke:#2f1a0a;stroke-width:2.4}
+.chp-ic .band{fill:none;stroke:#f2c14e;stroke-width:5}
+.chp-ic .lock{fill:#ffe9b0;stroke:#2f1a0a;stroke-width:2}
+.chp .pk{border-color:#ffd98aaa;background:linear-gradient(#3a2a12,#1f1608);box-shadow:0 0 22px -8px #ffb04f}
+.chp .pk:hover,.chp .pk:focus-visible{border-color:#fff3cf}
+.chp .pk span{color:#ffe9b0}
+.pk-fl svg{display:block;width:20px;height:24px;fill:#ff9f1c}
+.pk-fl .in{fill:#ffe9a8}
+.upc i svg{display:block;width:11px;height:13px;fill:#ff9f1c}
+.upc i svg .in{fill:#ffe9a8}
+
+/* Mosquito swarm: the Swat! button (adventure.html #swat, swarm.js) */
+.swat{position:absolute;right:12px;bottom:58px;z-index:2;min-width:120px;min-height:54px;padding:8px 22px;border-radius:999px;border:2px solid #fff3cf;background:linear-gradient(#ffcf5a,#e8941c);color:#2a1604;font:900 20px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 28px -2px #ffb04f,0 6px 0 #8a4f0c;animation:swpop .35s ease-out,swpulse .8s ease-in-out .35s infinite}
+.swat[hidden]{display:none}
+.swat small{margin-left:8px;padding:1px 6px;border-radius:6px;background:#2a160444;font-size:11px;letter-spacing:0}
+.swat:active{transform:translateY(3px);box-shadow:0 0 18px -2px #ffb04f,0 3px 0 #8a4f0c}
+@keyframes swpop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes swpulse{50%{box-shadow:0 0 38px 2px #ffd45f,0 6px 0 #8a4f0c}}
+body.tc-on .swat small{display:none}
+@media (prefers-reduced-motion:reduce){.swat{animation:none}}

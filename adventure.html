@@ -56,14 +56,16 @@
    <div class="loot" id="loot" aria-live="polite"></div>
    <button type="button" class="btn ghost gpause gsnd" id="snd-hud" aria-pressed="true" aria-label="Sound on. Tap to switch." hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg></button>
    <button type="button" class="btn ghost gpause" id="pz" aria-label="Pause" hidden>Pause</button>
+   <button type="button" class="btn swat" id="swat" aria-label="Swat the mosquitoes away" hidden>Swat!<small>K</small></button>
+   <div class="gov chp" id="chp" role="dialog" aria-modal="true" aria-labelledby="chpt" hidden><div class="gcard"><svg class="chp-ic" viewBox="0 0 64 48" aria-hidden="true"><path class="lid" d="M6 20C6 8 16 3 32 3s26 5 26 17z"/><rect class="bod" x="6" y="20" width="52" height="24" rx="3"/><path class="band" d="M16 5v39M48 5v39"/><rect class="lock" x="27" y="17" width="10" height="11" rx="2"/></svg><h3 id="chpt">Treasure Chest</h3><p>Pick one reward for the boss fight.</p><div class="pk-row" id="chpb"></div></div></div>
    <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div id="pick" class="pick" hidden></div><div class="acts" id="acts"><button type="button" class="btn" id="go" data-fs-start>Play</button><button type="button" class="btn ghost" id="cont" data-fs-start hidden>Continue</button><button type="button" class="btn ghost" id="rpl" data-fs-start hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
   <div class="how" id="howp" role="region" aria-labelledby="howt"><h3 id="howt">How to play</h3><ol class="hl">
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></i><div><b>Movement</b><span>Run with <kbd>A</kbd><kbd>D</kbd> or the arrow keys. On touch, use the Left and Right buttons.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 19V6M6 11l6-6 6 6"/></svg></i><div><b>Jump</b><span>Press <kbd>Space</kbd> or Jump to leap onto crates and platforms. Hold for a high jump, tap for a short hop.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M19.5 4.5L9 15M14 4.5h5.5V10M7 11l6 6M8 16l-4 4"/></svg></i><div><b>Attack</b><span>Press <kbd>J</kbd> or <kbd>E</kbd>, or Attack, to swing in front of you. The Bramble Bug takes two hits. The Bog Crawler in Level 2 takes three (four in the Sunlit Canopy, where the Bramble Bug takes three). The Rootmaw boss at the end of Level 3 takes twelve: dodge its ground slam, then strike while it recovers. In the Sunlit Canopy, MonK the Monkey swings on the vines overhead and lobs bananas at you: he raises one before every throw, so dodge it, hide behind cover, or swing at a banana to knock it out of the air. In the Endless Realms enemies get new looks and take more hits, and boss levels bring tougher bosses.</span></div></li>
-   <li><i class="hi orb"></i><div><b>Collectibles</b><span>Glowspores float along the way. There are 12 in Level 1, 17 in Level 2, 41 in Level 3 and 42 in Level 4. Touch one to collect it. Watch out for thorn vines from Level 3 on: they hurt.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M19.5 4.5L9 15M14 4.5h5.5V10M7 11l6 6M8 16l-4 4"/></svg></i><div><b>Attack</b><span>Press <kbd>J</kbd> or <kbd>E</kbd>, or Attack, to swing in front of you. The Bramble Bug takes two hits. The Bog Crawler in Level 2 takes three (four in the Sunlit Canopy, where the Bramble Bug takes three). The Rootmaw boss at the end of Level 3 takes twelve: dodge its ground slam, then strike while it recovers. In the Sunlit Canopy, MonK the Monkey swings on the vines overhead and lobs bananas at you: he raises one before every throw, so dodge it, hide behind cover, or swing at a banana to knock it out of the air. In the Endless Realms, swarms of little mosquitoes sometimes buzz in: they do no damage but shove you around, so tap the Swat! button (or press <kbd>K</kbd>) to send them flying. Enemies get new looks and take more hits, and boss levels bring tougher bosses.</span></div></li>
+   <li><i class="hi orb"></i><div><b>Collectibles</b><span>Glowspores float along the way. There are 12 in Level 1, 17 in Level 2, 41 in Level 3 and 42 in Level 4. Touch one to collect it. On boss levels they glow purple and each one pays bonus Swamp Crystals. Watch out for thorn vines from Level 3 on: they hurt.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3c0 0-6 6-6 11a6 6 0 0012 0c0-5-6-11-6-11z"/></svg></i><div><b>Health</b><span>You have 3 flames. A Bramble Bug or Bog Crawler touch costs one. Lose them all and it is game over. Lit lanterns save your spot.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Every level now ends in a boss fight: walk into the arena at the far end and defeat the boss to clear the level. Endless Realms levels end at a goal gate, with a stronger boss every third level (3, 6, 9 and on). There is no last level.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Every level now ends in a boss fight: walk into the arena at the far end and defeat the boss to clear the level. Endless Realms levels end at a goal gate, with a stronger boss every third level (3, 6, 9 and on). There is no last level. Before every boss arena stands a cabin with a treasure chest: strike it open (<kbd>J</kbd> / <kbd>E</kbd> or Attack) and pick <b>Max Flames +1</b> or <b>+25% Damage</b> for the fight. The cabin's back door stays barred until you do.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></i><div><b>Score</b><span>Glowspore 100, Bramble Bug 250, Bog Crawler 400, Rootmaw 1,500, finishing a level 1,000, plus a speed bonus of up to 1,000. In the Endless Realms, every score value grows with the level's Danger number, so coins and crystals do too. Your best score for each level is saved.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l7 6-3 12H8L5 9z"/></svg></i><div><b>Fragments</b><span>Defeated enemies have a chance to drop a Fragment. Each kind comes from its own enemy, and the Rootmaw drops a rare one. They are saved to your collection straight away.</span></div></li>
   </ol><div class="acts hrow"><button type="button" class="btn" id="howplay" data-fs-start>Play</button><button type="button" class="btn ghost" id="howback">Back</button></div></div><div class="lvs" id="lvp" role="region" aria-labelledby="lvt"><h3 id="lvt">Level Select</h3><ul class="lvl" id="lvl"></ul><div class="acts hrow1"><button type="button" class="btn ghost" id="lvback">Main menu</button></div></div></div>
@@ -103,6 +105,8 @@
 <script src="progression.js?v=endless1"></script>
 <script src="runups.js?v=up1"></script>
 <script src="storyboss.js?v=sb1"></script>
+<script src="chestcabin.js"></script>
+<script src="swarm.js"></script>
 <script>
 /* SwampRealms game: title, start, pause, movement, Level 1, collectibles, enemy, health, and simple player combat. */
 (function(){
@@ -207,7 +211,14 @@
  let ARM={hp:0,move:1,pieces:0,set:false};
  function armRefresh(){try{ARM=Gear.bonus()}catch(e){ARM={hp:0,move:1,pieces:0,set:false}}}
  armRefresh();
- function maxHp(){return BASEHP+RunUps.hp()+ARM.hp}   // 3 + Hardy Hide picks this run + worn armor
+ function maxHp(){return BASEHP+RunUps.hp()+ARM.hp+chestHp()}   // 3 + Hardy Hide picks this run + worn armor + the cabin chest's extra Flame
+ // ---- Treasure cabin (chestcabin.js): every boss arena has a cabin in front of it with a chest. The player picks +1 max Flame or +25% damage,
+ // which lasts for this attempt at the level (cleared whenever a level starts or the run restarts). The cabin's back door stays barred until the chest is open.
+ const CHEST={taken:false,open:false,openT:0,doorT:0,pick:null,t0:0};
+ let CAB=null;   // this level's cabin {x,w,cx,door} or null
+ function chestReset(){CHEST.taken=CHEST.open=false;CHEST.openT=CHEST.doorT=0;CHEST.pick=null}
+ function chestHp(){return CHEST.pick==="hp"?Cabin.CFG.HP:0}
+ function chestDmg(){return CHEST.pick==="dmg"?1+Cabin.CFG.DMG:1}   // 3 + Hardy Hide picks this run + worn armor
  // player attack tuning: windup (anticipation) -> strike frame (damage lands once) -> follow-through; the cooldown runs from the start of the swing
  const ATK_T=.2,ATK_HIT=.05,ATK_CD=.34,ATK_BUF=.1,BACK=8;
  let REACH=46,HELD=null,noRec=false;   // HELD = stats of the weapon used for the current swing (null = bare attack)
@@ -469,8 +480,36 @@
   for(let i=0;i<8;i++){const a=-Math.PI/2+(Math.random()-.5)*2.2,v=40+Math.random()*60;fx.push({k:"spark",x:state.x,y:state.y-R,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.8,max:.8})}
  }
  // Start a swing. Presses during the last moments of the cooldown are buffered (one at most), so tapping feels responsive without ever beating the cooldown.
+ function chestNear(){return !!CAB&&!CHEST.taken&&state.mode==="playing"&&Math.abs(state.x-CAB.cx)<=56&&Math.abs(state.y+R-GROUND_Y)<50}
+ function openChest(){
+  CHEST.open=true;CHEST.openT=Math.max(CHEST.openT,.35);CHEST.t0=performance.now();AUDIO.play("checkpoint");
+  fx.push({k:"ring",x:CAB.cx,y:GROUND_Y-24,vx:0,vy:0,life:.5,max:.5,c:"#ffe27a",g:46});
+  $("chpb").innerHTML=Cabin.REWARDS.map((r,i)=>'<button type="button" class="pk" data-id="'+r.id+'"><i'+(r.icon==="flame"?' class="pk-fl">'+FLAME:' aria-hidden="true">'+r.icon)+'</i><b>'+r.name+'</b><span>'+r.text+'</span>'+(touchOn?'':'<em>Press '+(i+1)+'</em>')+'</button>').join("");
+  setMode("chest");
+  try{$("chpb").querySelector(".pk").focus()}catch(_){}
+ }
+ function pickChest(id){
+  if(state.mode!=="chest"||CHEST.taken||performance.now()-CHEST.t0<350)return;
+  const r=Cabin.REWARDS.find(r=>r.id===id);if(!r)return;
+  CHEST.pick=id;CHEST.taken=true;CHEST.open=true;
+  if(id==="hp")state.hp=Math.min(maxHp(),state.hp+Cabin.CFG.HP);   // the new Flame starts lit
+  AUDIO.play("checkpoint");
+  fx.push({k:"ring",x:CAB.cx,y:GROUND_Y-24,vx:0,vy:0,life:.6,max:.6,c:id==="hp"?"#ff9f1c":"#ffe27a",g:60});
+  fx.push({k:"star",x:CAB.cx,y:GROUND_Y-30,vx:0,vy:0,life:.4,max:.4,c:"#fff3cf",g:26});
+  fx.push({k:"txt",x:CAB.cx,y:GROUND_Y-64,vx:0,vy:-34,life:1.1,max:1.1,s:id==="hp"?"+1 Flame":"+25% Damage"});
+  for(let i=0;i<12;i++){const a=-Math.PI/2+(Math.random()-.5)*2.4,v=60+Math.random()*90;fx.push({k:"spark",x:CAB.cx,y:GROUND_Y-30,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.7,max:.7})}
+  showHp();
+  try{document.activeElement&&document.activeElement.blur()}catch(_){}
+  setMode("playing");
+ }
+ // ---- Mosquito swarms (swarm.js, Endless Realms only): no damage, they shove you around until you press Swat (button or K)
+ const SWCTX={get state(){return state},get fx(){return fx},get vis(){return vis},get cam(){return Math.round(state.cam)},W:W,GROUND_Y:GROUND_Y,R:R,HW:HW,AUDIO:AUDIO};
+ function swat(){if(state.mode==="playing")Swarm.swat(SWCTX)}
+ $("swat").addEventListener("click",e=>{e.preventDefault();swat();try{$("swat").blur()}catch(_){}});
+ $("chp").addEventListener("click",e=>{const b=e.target.closest(".pk");if(b)pickChest(b.dataset.id)});
  function attack(){
   if(state.mode!=="playing"||state.stun>0)return;
+  if(chestNear()){openChest();return}   // striking the chest opens it
   if(state.attackCooldown>0){if(state.attackCooldown<=ATK_BUF)state.atkQ=ATK_BUF;return}
   HELD=wstat();REACH=HELD.reach;state.attack=ATK_T;state.attackCooldown=HELD.cd;state.swingHit=false;state.atkQ=0;AUDIO.play("attack");
  }
@@ -524,7 +563,7 @@
  // ---- Run upgrades: after every Endless clear the player picks 1 of 2 (runups.js). "Next level" stays hidden until one is chosen.
  // HUD chips for the run upgrades picked so far (icon + total bonus). Shown while playing or paused, hidden when there are none.
  function showUps(){
-  const e=$("upw"),l=RunUps.summary();
+  const e=$("upw"),l=RunUps.summary().concat(CHEST.pick?[{icon:CHEST.pick==="hp"?FLAME:"\u2694",name:"Cabin chest",val:CHEST.pick==="hp"?"+"+Cabin.CFG.HP:"+"+Math.round(Cabin.CFG.DMG*100)+"%"}]:[]);
   if(!l.length||(state.mode!=="playing"&&state.mode!=="paused")){e.hidden=true;e.innerHTML="";return}
   e.innerHTML=l.map(u=>'<span class="upc" title="'+u.name+': '+u.val+'"><i aria-hidden="true">'+u.icon+'</i>'+u.val+'</span>').join("");
   e.setAttribute("aria-label","Run upgrades: "+l.map(u=>u.name+" "+u.val).join(", "));e.hidden=false;
@@ -550,9 +589,9 @@
  function setMode(m){
   state.mode=m;$("arc").dataset.mode=m;
   const ov=$("ovx");ov.dataset.m=m;ov.dataset.v="";if(m==="playing"||m==="title"){vis.shake=vis.flash=vis.land=vis.take=vis.turn=0}if(m==="over"||m==="title"||m==="complete")vis.dying=0
-  $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
+  $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="chest"?"Chest":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
-  ov.hidden=m==="playing";$("go").hidden=false;$("pick").hidden=true;showUps();
+  ov.hidden=m==="playing"||m==="chest";$("chp").hidden=m!=="chest";$("swat").hidden=true;$("go").hidden=false;$("pick").hidden=true;showUps();
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent=handDone()?"Play Endless":"Play";$("quit").hidden=true}
   if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(nextLv(LV))?"":"Level "+(nextLv(LV)+1)+", ")+lvl(nextLv(LV)).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
@@ -568,8 +607,8 @@
  }
  let runCont=false;   // true only when "Next level" is pressed after an Endless clear: that keeps the run upgrades. Every other start begins a fresh run.
  function start(){if(state.mode==="over"&&isEndless(LV))LV=LEVELS.length;   // Game Over in the Endless Realms ends the run: the next one starts again at the first Endless level
-  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
- function respawnReset(){armRefresh();state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
+  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;chestReset();loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
+ function respawnReset(){chestReset();Swarm.reset();armRefresh();state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
 
@@ -603,6 +642,7 @@
   if(state.x<HW){state.x=HW;state.vx=0}
   if(state.x>LEVEL_W-HW){state.x=LEVEL_W-HW;state.vx=0}
   if(AR&&boss.lock&&state.x<AR.x+HW){state.x=AR.x+HW;state.vx=0}   // the vines have closed behind you
+  if(CAB){if(CHEST.open)CHEST.openT=Math.min(1,CHEST.openT+dt*3);if(CHEST.taken)CHEST.doorT=Math.min(1,CHEST.doorT+dt*2);if(!CHEST.taken&&state.x+HW>CAB.door){state.x=CAB.door-HW;if(state.vx>0)state.vx=0}}   // the cabin's back door is barred until the chest is open
   for(const o of SOLIDS){
    if(state.x+HW>o.x&&state.x-HW<o.x+o.w&&state.y+R>o.y+.01&&state.y-R<o.y+o.h-.01){
     if(state.vx>0||(state.vx===0&&state.x<o.x+o.w/2))state.x=o.x-HW;else state.x=o.x+o.w+HW;
@@ -649,6 +689,7 @@
    }
   }
 
+  Swarm.update(dt,SWCTX);{const on=Swarm.on(),sw=$("swat");if(sw.hidden===on)sw.hidden=!on}
   updateCrawler(dt);updateBoss(dt);updateMonk(dt);updateGoo(dt);updateHazards();scoreTick();
   // glowspores: touch to collect
   for(const sp of spores){if(!sp.got&&Math.hypot(state.x-sp.x,state.y-sp.y)<R+9)collect(sp)}
@@ -670,7 +711,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // A moonlit bog at dusk. Colour code: TEAL = collect it (glowspores), AMBER = light and life (lanterns, health), ROSE = danger (the Thornback).
  const vis={banner:0,stop:0,land:0,shake:0,flash:0,take:0,turn:0,dust:0,dying:0,dyT:0,dyDir:1};   // visual-only timers: landing squash, screen shake, damage flash
  function glowSprite(r,rgb){const c=document.createElement("canvas");c.width=c.height=r*2;const g=c.getContext("2d"),q=g.createRadialGradient(r,r,0,r,r,r);q.addColorStop(0,"rgba("+rgb+",.9)");q.addColorStop(.35,"rgba("+rgb+",.32)");q.addColorStop(1,"rgba("+rgb+",0)");g.fillStyle=q;g.fillRect(0,0,r*2,r*2);return c}
- const GLOW={teal:glowSprite(32,"110,255,218"),amber:glowSprite(32,"255,190,95"),rose:glowSprite(32,"255,105,125"),moon:glowSprite(64,"255,236,190")};
+ const GLOW={teal:glowSprite(32,"110,255,218"),amber:glowSprite(32,"255,190,95"),rose:glowSprite(32,"255,105,125"),moon:glowSprite(64,"255,236,190"),purple:glowSprite(32,"190,110,255")};
  const AURAS={};
  function auraGlow(hex,x,y,r,a){let g=AURAS[hex];if(!g){g=AURAS[hex]=glowSprite(32,parseInt(hex.slice(1,3),16)+","+parseInt(hex.slice(3,5),16)+","+parseInt(hex.slice(5,7),16))}glow(g,x,y,r,a)}
  // enemy variants (Level 4+): a coloured glow behind them, and a small nameplate when you are close
@@ -783,12 +824,13 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
  function drawSpore(sp){
   const by=sp.y+Math.sin(state.t*3+sp.ph)*3,pu=.75+.25*Math.sin(state.t*4+sp.ph);
-  glow(GLOW.teal,sp.x,by,26,pu);
-  X.save();X.translate(sp.x,by);X.rotate(state.t*.8+sp.ph);X.fillStyle="#a6ffe9";
+  const pp=!!AR;   // boss levels: purple glowspores worth extra crystals
+  glow(pp?GLOW.purple:GLOW.teal,sp.x,by,26,pu);
+  X.save();X.translate(sp.x,by);X.rotate(state.t*.8+sp.ph);X.fillStyle=pp?"#e3c4ff":"#a6ffe9";
   for(let i=0;i<4;i++){X.rotate(Math.PI/2);X.beginPath();X.moveTo(0,-6);X.quadraticCurveTo(4,-11,0,-15);X.quadraticCurveTo(-4,-11,0,-6);X.fill()}
   X.restore();
-  const cg=X.createRadialGradient(sp.x-2,by-2,1,sp.x,by,8);cg.addColorStop(0,"#f2fffa");cg.addColorStop(.5,"#34e3b0");cg.addColorStop(1,"#0b8f7c");X.fillStyle=cg;X.beginPath();X.arc(sp.x,by,7,0,7);X.fill();
-  const oa=state.t*2+sp.ph;X.fillStyle="#d9fff0";X.beginPath();X.arc(sp.x+Math.cos(oa)*13,by+Math.sin(oa)*5,1.5,0,7);X.fill();
+  const cg=X.createRadialGradient(sp.x-2,by-2,1,sp.x,by,8);cg.addColorStop(0,pp?"#fbf2ff":"#f2fffa");cg.addColorStop(.5,pp?"#a65cff":"#34e3b0");cg.addColorStop(1,pp?"#4d1fa8":"#0b8f7c");X.fillStyle=cg;X.beginPath();X.arc(sp.x,by,7,0,7);X.fill();
+  const oa=state.t*2+sp.ph;X.fillStyle=pp?"#f1e0ff":"#d9fff0";X.beginPath();X.arc(sp.x+Math.cos(oa)*13,by+Math.sin(oa)*5,1.5,0,7);X.fill();
  }
 
  function drawCrawler(){
@@ -1168,9 +1210,9 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  const SPD_CD={Fast:.27,Medium:.36,Slow:.5},RNG_REACH={Short:42,Medium:60};
  function wstat(){
   const id=heldWeapon(),g=id&&GEAR[id],st=g&&g.stats;
-  if(!st)return{id:"",dmg:1*RunUps.dmg(),cd:ATK_CD*RunUps.cd(),reach:46*RunUps.reach(),ranged:false};
+  if(!st)return{id:"",dmg:1*RunUps.dmg()*chestDmg(),cd:ATK_CD*RunUps.cd(),reach:46*RunUps.reach(),ranged:false};
   const ranged=st.Range==="Long";
-  return{id,dmg:Gear.hitDmg(id)*RunUps.dmg(),cd:(SPD_CD[st.Speed]||ATK_CD)*RunUps.cd(),reach:(RNG_REACH[st.Range]||46)*RunUps.reach(),ranged:ranged&&id==="bogblaster"};   // run upgrades (runups.js) multiply the weapon's own stats
+  return{id,dmg:Gear.hitDmg(id)*RunUps.dmg()*chestDmg(),cd:(SPD_CD[st.Speed]||ATK_CD)*RunUps.cd(),reach:(RNG_REACH[st.Range]||46)*RunUps.reach(),ranged:ranged&&id==="bogblaster"};   // run upgrades (runups.js) multiply the weapon's own stats
  }
  const dmg=()=>HELD?HELD.dmg:1;
  // Goo balls (Bog Blaster). Aim assist: the shot locks onto the nearest enemy in front of you (reticle shown), fires straight at it, and curves
@@ -1322,11 +1364,12 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   // reeds at the pond edges
   X.lineWidth=1.8;for(const g of GAPS){for(const [rx,s] of [[g[0]-8,-1],[g[1]+8,1],[g[0]-18,-1],[g[1]+16,1]]){if(rx<cam-20||rx>cam+W+20)continue;const sw=Math.sin(t*1.3+rx)*2;X.strokeStyle=TH.l1;X.beginPath();X.moveTo(rx,GROUND_Y+2);X.quadraticCurveTo(rx+s*2+sw,GROUND_Y-16,rx+s*5+sw,GROUND_Y-30);X.stroke();X.fillStyle="#7a4f3f";rr(rx+s*5+sw-2,GROUND_Y-37,4,9,2);X.fill()}}
   for(const c of CHECKPOINTS.slice(1)){if(c<cam-60||c>cam+W+60)continue;drawLantern(c,state.cp>=c)}
+  if(CAB)Cabin.draw(X,{cabin:CAB,cam:cam,t:t,W:W,GY:GROUND_Y,state:state,chest:CHEST,touch:touchOn,reach:56,glow:glow,GLOW:GLOW,rr:rr});
   for(const p of PLATFORMS){if(p.x+p.w<cam-8||p.x>cam+W+8)continue;drawPlatform(p,cam)}
   for(const o of SOLIDS){if(o.x+o.w<cam-8||o.x>cam+W+8)continue;drawSolid(o)}
   for(const z of HAZ)drawThorns(z,cam);
   if(GOAL.x<cam+W+110)drawGoal();
-  drawAuras();drawBug();drawCrawler();drawBoss();drawWaves();drawGoo();drawMonk();drawBananas();
+  Swarm.draw(X,SWCTX);drawAuras();drawBug();drawCrawler();drawBoss();drawWaves();drawGoo();drawMonk();drawBananas();
   for(const sp of spores){if(sp.got||sp.x<cam-30||sp.x>cam+W+30)continue;drawSpore(sp)}
   drawGate();
   drawPlayer();
@@ -1348,7 +1391,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   }
   X.globalAlpha=1;
   X.restore();
-  drawBossBar();drawBanner();
+  drawBossBar();drawBanner();Swarm.hud(X,SWCTX);
   // damage flash: a rose vignette that fades out
   if(vis.flash>0){const vg=X.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,H*.75);vg.addColorStop(0,"rgba(255,70,100,0)");vg.addColorStop(1,"rgba(255,70,100,"+Math.min(.5,vis.flash*1.4)+")");X.fillStyle=vg;X.fillRect(0,0,W,H)}
  }
@@ -1384,6 +1427,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  addEventListener("keydown",e=>{
   if(e.code==="KeyP"||e.code==="Escape"){if(state.mode==="playing")pause();else if(state.mode==="paused")resume();return}
   if(state.mode==="over"){if((e.code==="KeyR"||e.code==="Enter")&&!e.repeat&&performance.now()-deadAt>=500){e.preventDefault();start()}return}
+  if(e.code==="KeyK"&&state.mode==="playing"){e.preventDefault();if(!e.repeat)swat();return}
+  if(state.mode==="chest"){const i=e.code==="Digit1"||e.code==="Numpad1"?0:e.code==="Digit2"||e.code==="Numpad2"?1:-1;if(i>=0){e.preventDefault();pickChest(Cabin.REWARDS[i].id)}return}
   if(state.mode!=="playing")return;
   if(e.code==="Space"){e.preventDefault();if(!e.repeat&&!keys.jump){keys.jump=true;press()}return}
   if(e.code==="KeyJ"||e.code==="KeyE"){e.preventDefault();if(!e.repeat)attack();return}
@@ -1573,18 +1618,18 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    bug:[1900,2150,2020],crawler:{min:3590,max:3662,x:3626},goalX:3770,gaps:[[600,840],[1420,1740],[2300,2640],[2780,3180]],theme:TH4,monk:{from:740,to:3640},
    scale:(function(){const S=Progression.scale(3);S.bugHp=3;S.crawlerHp=4;S.speed=1.08;S.rewardMul=1.1;return S})()}
  ];
- StoryBoss.attach(LEVELS);   // story bosses (storyboss.js): turns on the boss arena for any slot that is switched on
+ StoryBoss.attach(LEVELS);for(const L of LEVELS)Cabin.add(L);   // chestcabin.js: a cabin with a chest in front of every boss arena   // story bosses (storyboss.js): turns on the boss arena for any slot that is switched on
  let LV=0;
  // ---- Endless levels: index 0-2 are the hand-built LEVELS above; every higher index is generated (once, then cached) by Progression.build.
  const GEN={};
  function isEndless(i){return i>=LEVELS.length}   // generated Endless Realms levels have a name only, no "Level N" number
- function lvl(i){if(i<LEVELS.length)return LEVELS[i];return GEN[i]||(GEN[i]=Progression.build(i,{gr:gr,pf:pf,bx:bx,mp:mp,themes:[TH1,TH2,TH3],START_X:START_X,GROUND_Y:GROUND_Y}))}
+ function lvl(i){if(i<LEVELS.length)return LEVELS[i];if(!GEN[i]){const L=Progression.build(i,{gr:gr,pf:pf,bx:bx,mp:mp,themes:[TH1,TH2,TH3],START_X:START_X,GROUND_Y:GROUND_Y});Cabin.add(L);Swarm.plan(L,i);GEN[i]=L}return GEN[i]}
  // swap every piece of level data the game reads, then repaint the sky, ground and water for that level
  function loadLevel(i){
   const L=lvl(i);LV=i;applyScale(L.scale||Progression.scale(i));
   BS.w=BS0.w;BS.defeat=BS0.defeat;BS.custom=null;BS.loot="boss";BS.music=undefined;if(L.storyBoss)StoryBoss.apply(BS,L.storyBoss);   // story boss slot (storyboss.js) overrides the boss settings
   LEVEL_W=L.W;GROUNDS=L.grounds;PLATFORMS=L.platforms;SOLIDS=L.solids;CHECKPOINTS=L.cps;SPORE_POS=L.spores;GAPS=L.gaps;
-  CR=L.crawler||null;MK=L.monk||null;AR=L.arena||null;HAZ=L.hazards||[];for(const p of PLATFORMS)if(p.rg)p.x=p.bx+Math.sin(p.ph)*p.rg;BUG.min=L.bug[0];BUG.max=L.bug[1];BUG_X=L.bug[2];GOAL.x=L.goalX;ONEWAY=GROUNDS.concat(PLATFORMS);
+  CR=L.crawler||null;MK=L.monk||null;AR=L.arena||null;CAB=L.cabin||null;Swarm.load(L.swarms);HAZ=L.hazards||[];for(const p of PLATFORMS)if(p.rg)p.x=p.bx+Math.sin(p.ph)*p.rg;BUG.min=L.bug[0];BUG.max=L.bug[1];BUG_X=L.bug[2];GOAL.x=L.goalX;ONEWAY=GROUNDS.concat(PLATFORMS);
   TH=L.theme;paintSky(TH);paintGrads(TH);
  }
 
@@ -1772,19 +1817,21 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
 
 
  // ================= Rewards: every run pays Swamp Coins and Swamp Crystals. No daily limit, play as much as you like. =================
- // Coins: 1 per COIN_PER score (added to the same wallet the shop uses). Crystals: set in store.js (CRY.games.adv).
- const COIN_PER=150;
+ // Coins: 1 per COIN_PER score (200) (added to the same wallet the shop uses). Crystals: set in store.js (CRY.games.adv).
+ const PURPLE_CRY=3;   // bonus Swamp Crystals per purple glowspore collected (boss levels only)
+ const COIN_PER=200;   // was 150: 25% fewer coins
  let paid=false;
  function payOut(score){
   let coins=Math.max(0,Math.floor((score||0)/COIN_PER)),cry={total:0,bonus:0};
   try{if(coins>0){meta.coins=(meta.coins||0)+coins;save()}}catch(e){coins=0}
-  try{cry=Crystals.award("adv",score)||cry}catch(e){}
-  return {coins:coins,crystals:cry.total||0,bonus:cry.bonus||0};
+  const pr=AR?state.spores*PURPLE_CRY:0;   // boss levels: every glowspore is purple and pays extra crystals
+  try{cry=Crystals.award("adv",score,pr)||cry}catch(e){}
+  return {coins:coins,crystals:cry.total||0,bonus:cry.bonus||0,purple:pr};
  }
  function rewardHTML(p){
   return '<p class="rwd" aria-live="polite">'+(p.coins?'<span><i class="coin" aria-hidden="true"></i>+'+fmt(p.coins)+' Swamp Coins</span>':'')+
    '<span><i class="gem" aria-hidden="true"></i>+'+fmt(p.crystals)+' Swamp Crystals</span>'+
-   (p.bonus?'<em>Includes +'+p.bonus+' for your first run today</em>':'')+'</p>';
+   (p.purple?'<em>Includes +'+p.purple+' from purple glowspores</em>':'')+(p.bonus?'<em>Includes +'+p.bonus+' for your first run today</em>':'')+'</p>';
  }
 
  // ================= Level progression and Level Select =================

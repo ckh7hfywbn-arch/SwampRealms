@@ -6,8 +6,8 @@
 // ---- CRYSTAL RULES: edit these ----
 const CRY={
  // per game: points needed for 1 crystal, and the most crystals one round can pay
- // adv = the Swamp Adventure: 1 crystal per 50 score, no cap, so every run pays and there is no daily limit
- games:{adv:{per:50,cap:Infinity},_:{per:4,cap:25}},
+ // adv = the Swamp Adventure: 1 crystal per 55.6 score (was 50: 10% fewer), no cap, so every run pays and there is no daily limit
+ games:{adv:{per:55.6,cap:Infinity},_:{per:4,cap:25}},
  minRound:2,          // every finished round pays at least this many (so a bad round still helps)
  firstOfDay:15        // bonus for your first round each day
 };
@@ -94,11 +94,11 @@ const Crystals={
  // how many crystals a finished round pays. game = "fly" | "match" | ...; score = the round's points
  forScore(game,score){const g=CRY.games[game]||CRY.games._;return Math.max(CRY.minRound,Math.min(g.cap,Math.floor((score||0)/g.per)))},
  // call once when a round ends. Returns {gained, bonus, total, record}
- award(game,score){
+ award(game,score,extra){   // extra: flat bonus crystals (the Swamp Adventure's purple boss-level glowspores)
   cload();
   const t=new Date().toLocaleDateString("en-CA");
   if(CS.day!==t){CS.day=t;CS.rounds=0}
-  let gained=this.forScore(game,score),bonus=0;
+  let gained=this.forScore(game,score)+Math.max(0,Math.floor(extra)||0),bonus=0;
   if(CS.rounds===0)bonus=CRY.firstOfDay;
   CS.rounds++;
   const record=(score||0)>(CS.best[game]||0);if(record)CS.best[game]=score;
