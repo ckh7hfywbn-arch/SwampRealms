@@ -23,6 +23,7 @@ const WeaponArt=(()=>{
  const BASE={
   spikedblade:{grip:"#6b4a2a",gripS:"#2a1a0c",metal:"#f2c14e",b1:"#eafff6",b2:"#7fb3a5",bS:"#0e2a24",shine:"rgba(255,255,255,.75)",th:"#3fae5a",thS:"#0e3a1c"},
   bogblaster:{stock:"#5a3a1c",stockS:"#1e1208",b0:"#7a8a4a",b1:"#3a4a22",barrel:"#34421e",muz:"#8fe88a",tank:"rgba(125,255,106,.85)",tankS:"#1f4a14",bub:"#eaffd0",drip:"#7dff6a"},
+  swampstick:{wood:"#8a5e30",woodS:"#2a1a0c",knot:"#5a3a1c",moss:"#4fae52",mossS:"#14451f",tip:"#b98a52"},
   hopperstaff:{shaftS:"#2a1a0c",shaft:"#9a6a34",zig:"#d8f7ff",head:"#43c463",headS:"#14451f",eye:"#ffffff",pupil:"#0b2a2c"}
  };
  // ---- LUXURY SKINS: art only. Prices, names and rarity live in SKINS in store.js (same ids). ----
@@ -138,6 +139,33 @@ const WeaponArt=(()=>{
    if(s&&s.gem)gem(c,10,.5,2.6,s.gem);else{glow(c,8,.4,5,.7,rgb(p.muz));c.fillStyle=lt(p.muz,.35);c.strokeStyle=O;c.lineWidth=.8;c.beginPath();c.arc(8,.4,1.7,0,7);c.fill();c.stroke()}
    if(a>0){glow(c,38,0,14*a,a,s&&s.aura?rgb(s.aura):null)}
    sparkles(c,s,-6,34,9);
+   c.restore();
+  },
+  // ===== Swamp Stick: a plain gnarled branch with a mossy grip, a knot and a little leaf sprout =====
+  swampstick(c,a,p,s){
+   c.save();c.lineJoin="round";c.lineCap="round";
+   if(s&&s.aura)glow(c,16,0,30,.4,rgb(s.aura));
+   const path=()=>{c.beginPath();c.moveTo(-12,1.2);c.quadraticCurveTo(6,-2.2,22,-.6);c.lineTo(30,-.2)};
+   // outline then wood body
+   c.strokeStyle=p.woodS;c.lineWidth=5.6;path();c.stroke();
+   c.strokeStyle=lg(c,0,-2.6,0,2.6,[[0,lt(p.wood,.4)],[.5,p.wood],[1,dk(p.wood,.4)]]);c.lineWidth=3.6;path();c.stroke();
+   c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=.7;c.beginPath();c.moveTo(-9,-.4);c.quadraticCurveTo(7,-3,24,-1.6);c.stroke();
+   // bark ridges
+   c.strokeStyle=dk(p.wood,.5);c.lineWidth=.8;c.beginPath();for(const x of[2,10,18]){c.moveTo(x,-1.6);c.lineTo(x+.9,1.7)}c.stroke();
+   // knobbly tip
+   c.fillStyle=lg(c,0,-3.5,0,3.5,[[0,lt(p.tip,.3)],[1,dk(p.tip,.25)]]);c.strokeStyle=p.woodS;c.lineWidth=1.1;c.beginPath();c.ellipse(31,-.2,3.2,3,0,0,7);c.fill();c.stroke();
+   // knot
+   c.fillStyle=p.knot;c.strokeStyle=p.woodS;c.lineWidth=.8;c.beginPath();c.ellipse(13,-.8,1.7,1.3,0,0,7);c.fill();c.stroke();
+   // twig with a leaf
+   c.strokeStyle=p.woodS;c.lineWidth=2;c.beginPath();c.moveTo(8,-2);c.lineTo(10.5,-6.5);c.stroke();
+   c.strokeStyle=p.wood;c.lineWidth=1;c.beginPath();c.moveTo(8,-2);c.lineTo(10.5,-6.5);c.stroke();
+   c.fillStyle=lg(c,0,-11,0,-5,[[0,lt(p.moss,.35)],[1,p.moss]]);c.strokeStyle=p.mossS;c.lineWidth=.9;c.beginPath();c.ellipse(12.4,-8,3,1.5,-.9,0,7);c.fill();c.stroke();
+   // mossy grip wrap
+   c.fillStyle=p.moss;c.strokeStyle=p.mossS;c.lineWidth=.9;
+   for(const x of[-9,-6,-3]){c.beginPath();c.ellipse(x,.5+(x+9)*-.05,1.5,2.7,.15,0,7);c.fill();c.stroke()}
+   if(s&&s.gem)gem(c,24,-.6,2.2,s.gem);
+   if(a>0)glow(c,34,0,12*a,a,s&&s.aura?rgb(s.aura):null);
+   sparkles(c,s,-8,32,8);
    c.restore();
   },
   // ===== Hopper Staff: a gnarled wood staff, vine wrapped, glowing rune, topped with a cheeky frog =====

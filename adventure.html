@@ -30,6 +30,21 @@
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=armory1">
+<style>
+/* DonK the Donkey intro (Level 1): speech card with his avatar, shown once when the very first run starts */
+.donk .dk-av{width:132px;height:132px;animation:dkwalk .9s cubic-bezier(.2,.8,.3,1) both,dkbob 2.4s ease-in-out .9s infinite}
+.donk .dk-av svg{width:100%;height:100%;filter:drop-shadow(0 6px 14px #000a)}
+.donk .dk-nm{margin:0;font:900 12px Nunito,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ffd98a}
+.donk .dk-bub{position:relative;max-width:30ch;min-height:4.6em;padding:12px 14px;border-radius:16px;border:2px solid #4ee6b4aa;background:linear-gradient(#10382f,#0a2420);color:#f1fff8;font:700 15px/1.45 Nunito,sans-serif;box-shadow:0 0 28px -8px #4ee6b4}
+.donk .dk-bub::before{content:"";position:absolute;left:50%;top:-8px;width:12px;height:12px;margin-left:-6px;transform:rotate(45deg);background:#10382f;border-left:2px solid #4ee6b4aa;border-top:2px solid #4ee6b4aa}
+.donk .dk-it{width:150px;height:56px;border-radius:12px;background:radial-gradient(#ffd98a33,#0000 70%)}
+.donk .dk-it[hidden]{display:none}
+.donk .dk-row{display:flex;gap:10px;align-items:center;justify-content:center}
+.donk .dk-skip{background:none;border:0;color:#9fd8c4;font:800 12px Nunito,sans-serif;text-decoration:underline;cursor:pointer;padding:6px}
+@keyframes dkwalk{from{transform:translateX(-70px);opacity:0}to{transform:none;opacity:1}}
+@keyframes dkbob{50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.donk .dk-av{animation:none}}
+</style>
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -57,7 +72,8 @@
    <button type="button" class="btn ghost gpause gsnd" id="snd-hud" aria-pressed="true" aria-label="Sound on. Tap to switch." hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg></button>
    <button type="button" class="btn ghost gpause" id="pz" aria-label="Pause" hidden>Pause</button>
    <button type="button" class="btn swat" id="swat" aria-label="Swat the mosquitoes away" hidden>Swat!<small>K</small></button>
-   <div class="gov chp" id="chp" role="dialog" aria-modal="true" aria-labelledby="chpt" hidden><div class="gcard"><svg class="chp-ic" viewBox="0 0 64 48" aria-hidden="true"><path class="lid" d="M6 20C6 8 16 3 32 3s26 5 26 17z"/><rect class="bod" x="6" y="20" width="52" height="24" rx="3"/><path class="band" d="M16 5v39M48 5v39"/><rect class="lock" x="27" y="17" width="10" height="11" rx="2"/></svg><h3 id="chpt">Treasure Chest</h3><p>Pick one reward for the boss fight.</p><div class="pk-row" id="chpb"></div></div></div>
+   <div class="gov chp" id="chp" role="dialog" aria-modal="true" aria-labelledby="chpt" hidden><div class="gcard"><svg class="chp-ic" viewBox="0 0 64 48" aria-hidden="true"><path class="lid" d="M6 20C6 8 16 3 32 3s26 5 26 17z"/><rect class="bod" x="6" y="20" width="52" height="24" rx="3"/><path class="band" d="M16 5v39M48 5v39"/><rect class="lock" x="27" y="17" width="10" height="11" rx="2"/></svg><h3 id="chpt">Treasure Chest</h3><p>Pick one reward for the boss fight.</p><div class="pk-row" id="chpb"></div></div>
+   <div class="gov donk" id="donk" role="dialog" aria-modal="true" aria-labelledby="dknm" hidden><div class="gcard"><div class="dk-av" id="dkav" aria-hidden="true"></div><p class="dk-nm" id="dknm">DonK the Donkey</p><div class="dk-bub" id="dktx" aria-live="polite"></div><canvas class="dk-it" id="dkit" width="300" height="112" role="img" aria-label="Swamp Stick" hidden></canvas><div class="dk-row"><button type="button" class="btn" id="dkgo">Next</button></div><button type="button" class="dk-skip" id="dkskip">Skip</button></div></div></div>
    <div class="gov" id="ovx" data-m="title"><div class="gcard"><svg class="lantern" viewBox="0 0 48 64" aria-hidden="true"><path class="ring" d="M17 12a7 7 0 0114 0" fill="none" stroke-width="3" stroke-linecap="round"/><rect class="cap" x="12" y="12" width="24" height="6" rx="3"/><path class="glass" d="M14 18h20l3 28a4 4 0 01-4 4H15a4 4 0 01-4-4z"/><path class="flame" d="M24 24c0 0-7 7-7 13a7 7 0 0014 0c0-6-7-13-7-13z"/><path class="smoke" d="M24 20c-4-4 4-7 0-12" fill="none" stroke-width="2.4" stroke-linecap="round"/><rect class="cap" x="11" y="50" width="26" height="6" rx="3"/></svg><p class="ttl eyebrow">SwampRealms Arcade</p><h3 id="ovt"><span>Glowspore</span><span>Trail</span></h3><p class="ttl tag">Carry the lantern. Gather the glow. Reach the gate.</p><p id="ovp">Take a breath. Your game is waiting.</p><p id="ovs" hidden></p><div id="pick" class="pick" hidden></div><div class="acts" id="acts"><button type="button" class="btn" id="go" data-fs-start>Play</button><button type="button" class="btn ghost" id="cont" data-fs-start hidden>Continue</button><button type="button" class="btn ghost" id="rpl" data-fs-start hidden>Replay level</button><button type="button" class="btn ghost" id="lvsel">Level Select</button><button type="button" class="btn ghost ttl" id="how">How to play</button><button type="button" class="btn ghost" id="quit" hidden>Quit to title</button></div><p id="ovh" class="hint" hidden>or press R</p><dl class="ttl keys" aria-label="Controls"><div><dt>Move</dt><dd><span class="kd"><kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span class="kt">Left / Right buttons</span></dd></div><div><dt>Jump</dt><dd><span class="kd"><kbd>Space</kbd></span><span class="kt">Jump button</span></dd></div><div><dt>Attack</dt><dd><span class="kd"><kbd>J</kbd> or <kbd>E</kbd></span><span class="kt">Attack button</span></dd></div><div><dt>Pause</dt><dd><span class="kd"><kbd>P</kbd> or <kbd>Esc</kbd></span><span class="kt">Pause button</span></dd></div></dl><button type="button" class="snd2" id="sq-snd" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/><path class="x" d="M16 9l5 6M21 9l-5 6"/></svg><span id="sq-snd-t">Sound on</span><small>Effects &amp; music</small></button></div>
   <div class="how" id="howp" role="region" aria-labelledby="howt"><h3 id="howt">How to play</h3><ol class="hl">
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></i><div><b>Movement</b><span>Run with <kbd>A</kbd><kbd>D</kbd> or the arrow keys. On touch, use the Left and Right buttons.</span></div></li>
@@ -589,9 +605,9 @@
  function setMode(m){
   state.mode=m;$("arc").dataset.mode=m;
   const ov=$("ovx");ov.dataset.m=m;ov.dataset.v="";if(m==="playing"||m==="title"){vis.shake=vis.flash=vis.land=vis.take=vis.turn=0}if(m==="over"||m==="title"||m==="complete")vis.dying=0
-  $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="chest"?"Chest":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
+  $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="chest"?"Chest":m==="talk"?"Talking":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
   $("pz").hidden=m!=="playing";$("snd-hud").hidden=m!=="playing";
-  ov.hidden=m==="playing"||m==="chest";$("chp").hidden=m!=="chest";$("swat").hidden=true;$("go").hidden=false;$("pick").hidden=true;showUps();
+  ov.hidden=m==="playing"||m==="chest"||m==="talk";$("chp").hidden=m!=="chest";$("donk").hidden=m!=="talk";$("swat").hidden=true;$("go").hidden=false;$("pick").hidden=true;showUps();
   if(m==="title"){$("ovt").innerHTML="<span>Glowspore</span><span>Trail</span>";$("ovp").textContent="Reach the goal gate.";$("go").textContent=handDone()?"Play Endless":"Play";$("quit").hidden=true}
   if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(nextLv(LV))?"":"Level "+(nextLv(LV)+1)+", ")+lvl(nextLv(LV)).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
@@ -606,8 +622,50 @@
   draw();
  }
  let runCont=false;   // true only when "Next level" is pressed after an Endless clear: that keeps the run upgrades. Every other start begins a fresh run.
+ // ---- DonK the Donkey greets the player at the start of Level 1 (first time only) and hands over the Swamp Stick. ----
+ // Shown once per browser (flag below). The stick is added to the Bag and equipped only if no other weapon is equipped already.
+ const DONK_KEY="swampverse-donk-stick";
+ function donkSeen(){try{return localStorage.getItem(DONK_KEY)==="1"}catch(e){return true}}   // storage blocked: never nag
+ function donkDue(){try{return LV===0&&!donkSeen()&&Gear.count("swampstick")===0&&!!GEAR.swampstick}catch(e){return false}}
+ const DK={i:0,given:false,lines:[
+  {t:"Well, well! A new face in the swamp! I'm DonK the Donkey."},
+  {t:"The Mossy Trail is rough, and those Bramble Bugs bite. You can't go out there empty-hoofed!"},
+  {t:"Here, take this Swamp Stick. It isn't fancy, but it's yours.",item:true,b:"Take the Swamp Stick"},
+  {t:"",b:"Let's go!",swing:true}
+ ]};
+ function donkGive(){
+  if(DK.given)return;DK.given=true;
+  try{localStorage.setItem(DONK_KEY,"1")}catch(e){}
+  try{const had=Gear.equipped("weapons");Gear.add("swampstick",1);if(!had)Gear.equip("swampstick");AUDIO.play("pickup")}catch(e){}
+ }
+ function donkShow(){
+  const L=DK.lines[DK.i],it=$("dkit");
+  $("dktx").textContent=L.swing?(touchOn?"Tap the Attack button":"Press J or E")+" to swing it. Good luck, hero!":L.t;$("dkgo").textContent=L.b||"Next";
+  it.hidden=!L.item;
+  if(L.item){try{const c=it.getContext("2d");c.clearRect(0,0,it.width,it.height);c.save();c.translate(70,56);c.scale(3.1,3.1);WeaponArt.draw(c,"swampstick",0,null);c.restore()}catch(e){}}
+ }
+ function donkOpen(){
+  DK.i=0;DK.given=false;
+  try{if(typeof AV!=="undefined")$("dkav").innerHTML=AV.svg({animal:"donkey",nobg:true}).replace('viewBox="0 0 200 200"','viewBox="22 8 156 170"')}catch(e){}
+  AUDIO.play("croak");donkShow();
+  try{$("dkgo").focus({preventScroll:true})}catch(e){}
+ }
+ function donkNext(){
+  if(state.mode!=="talk")return;
+  if(DK.lines[DK.i].item)donkGive();
+  if(DK.i>=DK.lines.length-1){donkEnd();return}
+  DK.i++;donkShow();
+ }
+ function donkEnd(){donkGive();try{document.activeElement&&document.activeElement.blur()}catch(e){}setMode("playing")}
+ $("dkgo").onclick=donkNext;$("dkskip").onclick=donkEnd;
+ addEventListener("keydown",e=>{
+  if(state.mode!=="talk")return;
+  if(e.target&&e.target.closest&&e.target.closest("button"))return;   // a focused button handles Enter / Space itself
+  if(e.code==="Enter"||e.code==="Space"||e.code==="KeyE"||e.code==="KeyJ"){e.preventDefault();if(!e.repeat)donkNext()}
+  else if(e.code==="Escape"){e.preventDefault();donkEnd()}
+ },true);
  function start(){if(state.mode==="over"&&isEndless(LV))LV=LEVELS.length;   // Game Over in the Endless Realms ends the run: the next one starts again at the first Endless level
-  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;chestReset();loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;setMode("playing")}
+  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;chestReset();loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;if(donkDue()){setMode("talk");donkOpen()}else setMode("playing")}
  function respawnReset(){chestReset();Swarm.reset();armRefresh();state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
@@ -1285,7 +1343,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
  // ---- Held weapons: the equipped weapon (Bag > Weapons) is drawn in the player's hand and swings with the attack.
  // Each is drawn pointing right from the grip at (0,0); drawHeld() flips it to face the way the player looks.
- const WPN_PAL={spikedblade:["#ffb04f","#fff3cf"],bogblaster:["#7dff6a","#eaffd0"],hopperstaff:["#4ee6b4","#e6fff6"]};
+ const WPN_PAL={swampstick:["#c99a5a","#fff1d6"],spikedblade:["#ffb04f","#fff3cf"],bogblaster:["#7dff6a","#eaffd0"],hopperstaff:["#4ee6b4","#e6fff6"]};
  function heldWeapon(){try{const id=CS.geq&&CS.geq.weapons;return id&&CS.gear[id]>0&&WPN_PAL[id]?id:""}catch(e){return""}}
  // the skin worn on the held weapon (bought in the Skin Shop with Swamp Crystals), or null
  function heldSkin(id){try{return(id&&typeof Skins!=="undefined"&&Skins.equippedFor(id))||null}catch(e){return null}}

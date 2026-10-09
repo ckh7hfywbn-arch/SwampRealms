@@ -181,6 +181,7 @@ const GEAR={
  // weapons the player can craft from fragments (recipes are in RECIPES below)
  bogblaster:{name:"Bog Blaster",slot:"weapons",rarity:"uncommon",desc:"Spits sticky bog goo.",stats:{Damage:3.5,Speed:"Medium",Range:"Long"},icon:'<path d="M3 10h11l3 2h3v4h-3l-1 3h-4l-1-3H3z"/><path d="M7 10V7h4v3"/><circle cx="21.5" cy="8" r="1.3"/>'},
  spikedblade:{name:"Spiked Blade",slot:"weapons",rarity:"common",desc:"A blade bristling with bramble thorns.",stats:{Damage:9,Speed:"Fast",Range:"Short"},icon:'<path d="M20 4l-1 6-9 9-5-5 9-9z"/><path d="M8 14l-4 6M4 20l-1 1"/><path d="M14 4l-1-2M19 9l2 1M16 7l1-2"/>'},
+ swampstick:{name:"Swamp Stick",slot:"weapons",rarity:"common",desc:"A gnarled stick from the swamp, given by DonK the Donkey. Every hero starts somewhere.",stats:{Damage:4,Speed:"Medium",Range:"Short"},icon:'<path d="M4 20L18 6"/><path d="M9 15l-3-1M13 11l3-1M15 9l0-3"/><path d="M18 6l2-2"/>'},
  hopperstaff:{name:"Swamp Hopper Staff",slot:"weapons",rarity:"common",desc:"A staff that hops with a frog's spring.",stats:{Damage:5,Speed:"Medium",Range:"Medium"},icon:'<path d="M4 20l8-8"/><path d="M12 12l-1-3 3 1 1-3 3 1"/><circle cx="19" cy="5" r="2.2"/>'},
  // ---- Mirewing armor set: one helmet, one chest piece and one pair of boots can be worn at once (part = helmet | chest | boots).
  // Stats shown here mirror ARMOR_FX below (what the game applies). Wearing all three adds SET_BONUS.
