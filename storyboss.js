@@ -223,61 +223,108 @@ const StoryBoss=(function(){
    const b=c.boss,BS=c.BS,X=c.X,t=b.tt,st=b.st,dp=b.defeated?1-b.dead/BS.defeat:0,en=b.hp<=BS.hp/2,GY=c.GROUND_Y;
    const flash=b.hurt>.09||(b.defeated&&Math.sin(t*55)>0),rise=st==="intro"?Math.min(1,1-b.t/1.4):1;
    const pw=st==="throw"?1-b.t/b.wt:0,tele=st==="tele"||st==="intro",chg=st==="charge",stun=st==="stun",hurl=st==="hurl",hold=st==="throw";
-   const moving=(st==="walk"&&b.hurt<=0)||chg;
-   // charge lane: a pulsing red strip on the ground in the direction it will run
+   const moving=(st==="walk"&&b.hurt<=0)||chg,mad=en||tele||chg||hold||hurl;
+   const W=(a)=>flash?"#ffffff":a;
+   // palette: slate fur, mossy stone plates, amber runes (red when it is angry)
+   const OUT="#0c0f10",F0=W(en?"#4a444a":"#464c56"),F1=W(en?"#2f2a30":"#2c3038"),F2=W(en?"#6a5e64":"#69727e"),
+         S0=W("#8d9792"),S1=W("#5f6b67"),S2=W("#b9c4bd"),MOSS=W("#58a85f"),
+         RUNE=flash?"#ffffff":(mad?"#ff5a3c":"#ffb04f"),SK=W("#2a2327");
+   const pulse=.65+.35*Math.sin(t*(mad?9:4));
+   const poly=(pts,fill,stroke,lw)=>{X.beginPath();pts.forEach((p,i)=>X[i?"lineTo":"moveTo"](p[0],p[1]));X.closePath();if(fill){X.fillStyle=fill;X.fill()}if(stroke){X.lineWidth=lw||2.4;X.strokeStyle=stroke;X.stroke()}};
+   // a thick limb through three points, with a rim light
+   const limb=(p,w,col,rim)=>{X.lineCap="round";X.lineJoin="round";X.beginPath();X.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)X.lineTo(p[i],p[i+1]);
+    X.strokeStyle=OUT;X.lineWidth=w+5;X.stroke();X.strokeStyle=col;X.lineWidth=w;X.stroke();
+    if(rim){X.save();X.translate(-w*.18,-w*.2);X.strokeStyle=rim;X.globalAlpha=.35;X.lineWidth=w*.28;X.stroke();X.restore()}};
+   // two-bone arm: shoulder -> elbow -> target
+   const ik=(sx,sy,tx,ty,L,bend)=>{const dx=tx-sx,dy=ty-sy,d=Math.min(Math.hypot(dx,dy),2*L-.5)||1,a=Math.atan2(dy,dx),A=Math.acos(Math.max(-1,Math.min(1,d/(2*L))));
+    const ang=a+bend*A;return[sx,sy,sx+Math.cos(ang)*L,sy+Math.sin(ang)*L,sx+Math.cos(a)*d,sy+Math.sin(a)*d]};
+   const rock=(r,a)=>{X.save();X.rotate(a);const pts=[];for(let i=0;i<8;i++){const an=i/8*6.283,rr=r*(.84+.2*((i*37)%5)/4);pts.push([Math.cos(an)*rr,Math.sin(an)*rr])}
+    poly(pts,W("#857d74"),"#26211c",2.4);X.fillStyle="rgba(255,255,255,.2)";X.beginPath();X.arc(-r*.3,-r*.3,r*.28,0,7);X.fill();
+    X.strokeStyle="#26211c";X.lineWidth=1.4;X.beginPath();X.moveTo(r*.1,-r*.5);X.lineTo(-r*.05,0);X.lineTo(r*.3,r*.45);X.stroke();X.restore()};
+   const fist=(x,y,r,a)=>{X.save();X.translate(x,y);X.rotate(a||0);const pts=[];for(let i=0;i<7;i++){const an=i/7*6.283+.3,rr=r*(.86+.2*((i*53)%5)/4);pts.push([Math.cos(an)*rr,Math.sin(an)*rr])}
+    poly(pts,S0,OUT,2.6);X.fillStyle=S2;X.globalAlpha=.4;X.beginPath();X.arc(-r*.3,-r*.35,r*.3,0,7);X.fill();X.globalAlpha=1;
+    X.fillStyle=MOSS;X.beginPath();X.ellipse(r*.15,r*.55,r*.5,r*.2,0,0,7);X.fill();
+    X.strokeStyle=RUNE;X.globalAlpha=.55+.4*pulse;X.lineWidth=1.8;X.beginPath();X.moveTo(-r*.2,-r*.1);X.lineTo(r*.1,r*.1);X.lineTo(r*.4,-r*.15);X.stroke();X.restore()};
+   // ---- charge lane ----
    if(st==="tele"){const u=1-b.t/b.wt,lo=c.AR.x;
     X.save();X.globalAlpha=(.25+.3*Math.abs(Math.sin(t*(14+16*u))));X.fillStyle="#ff4d5e";
     const xa=b.dir>0?b.x+BS.w/2:lo,xb=b.dir>0?c.LEVEL_W:b.x-BS.w/2;X.fillRect(Math.min(xa,xb),GY-5,Math.abs(xb-xa),5);X.restore()}
-   // rocks in flight
-   if(!b.defeated)for(const o of apeRocks){X.save();X.translate(o.x,o.y);X.rotate(o.a);X.fillStyle="#7c7268";X.strokeStyle="#2e2822";X.lineWidth=2.4;X.lineJoin="round";
-    X.beginPath();for(let i=0;i<7;i++){const a=i/7*6.283,r=o.r*(.82+.22*((i*37)%5)/4);X[i?"lineTo":"moveTo"](Math.cos(a)*r,Math.sin(a)*r)}X.closePath();X.fill();X.stroke();
-    X.fillStyle="rgba(255,255,255,.22)";X.beginPath();X.arc(-3,-3,3,0,7);X.fill();X.restore()}
-   X.save();X.globalAlpha=.45*(1-dp);X.fillStyle="#000";X.beginPath();X.ellipse(b.x,GY,BS.w*.6,5,0,0,7);X.fill();X.restore();
+   // ---- rocks in flight ----
+   if(!b.defeated)for(const o of apeRocks){X.save();X.translate(o.x,o.y);rock(o.r,o.a);X.restore()}
+   X.save();X.globalAlpha=.45*(1-dp);X.fillStyle="#000";X.beginPath();X.ellipse(b.x,GY,BS.w*.7,6,0,0,7);X.fill();X.restore();
    X.save();X.globalAlpha=Math.max(0,1-dp*dp);
-   X.translate(b.x+(b.hurt>0?Math.sin(t*90)*2:0)+(tele&&st==="tele"?Math.sin(t*70)*1.4:0),GY);X.scale(b.dir*(1+.4*dp),(.6+.4*rise)*(1-.85*dp));
-   X.lineJoin="round";X.lineCap="round";
-   const fur=flash?"#ffffff":(en?"#5a3c32":"#4d4038"),fur2=flash?"#ffe6e6":(en?"#3f2822":"#352b25"),skin=flash?"#ffffff":"#8d6f58",dk="#1c1511";
-   if(tele||chg)c.glow(c.GLOW.rose,6,-44,70,.22+.16*(en?1:.5));
-   // legs
+   X.translate(b.x+(b.hurt>0?Math.sin(t*90)*2:0)+(st==="tele"?Math.sin(t*70)*1.2:0),GY);X.scale(b.dir*(1+.4*dp),(.6+.4*rise)*(1-.85*dp));
+   if(tele||chg||en)c.glow(c.GLOW.rose,8,-50,84,(.16+.14*pulse)*(en?1.2:.8));
+   // ---- legs ----
    const sw=moving?Math.sin(t*(chg?22:8)):0;
-   X.fillStyle=fur2;X.strokeStyle=dk;X.lineWidth=2.5;
-   for(const [lx,ph] of [[-13,0],[13,Math.PI]]){const o=moving?Math.sin(t*(chg?22:8)+ph)*(chg?8:4):0;X.beginPath();X.roundRect?X.roundRect(lx-8+o,-32,16,32,5):X.rect(lx-8+o,-32,16,32);X.fill();X.stroke()}
-   // body group, leaning from the hips
-   const lean=chg?.42:stun?.34:hold?-.2*pw:hurl?.2:tele?-.12:.14;
-   X.save();X.translate(0,-32);X.rotate(lean+(stun?Math.sin(t*6)*.04:0));
-   // far arm (behind the torso)
-   const arm=(sx,sy,ex,ey,fx_,fy_,col)=>{X.beginPath();X.moveTo(sx,sy);X.lineTo(ex,ey);X.lineTo(fx_,fy_);X.strokeStyle=dk;X.lineWidth=16;X.stroke();X.strokeStyle=col;X.lineWidth=10.5;X.stroke();
-    X.fillStyle=col;X.strokeStyle=dk;X.lineWidth=2.5;X.beginPath();X.arc(fx_,fy_,8.5,0,7);X.fill();X.stroke()};
-   const pound=Math.sin(t*27),gnd=34;   // gnd: how far below the hips the ground is
-   let fa,na;   // far arm [elbowX,elbowY,fistX,fistY], near arm
-   if(tele){fa=[-16,-36,-2,-34+9*pound];na=[28,-40,16,-32-9*pound]}
-   else if(chg){fa=[26,-6,32+sw*8,gnd-6];na=[16,-6,20-sw*8,gnd-4]}
-   else if(stun){fa=[10,-10,4,gnd-2];na=[18,-8,16,gnd]}
-   else if(hold){fa=[-6,-12,-2,gnd-4];na=[10-pw*4,-62,6,-88-4*pw]}
-   else if(hurl){fa=[-6,-12,-2,gnd-4];na=[34,-60,52,-54]}
-   else{fa=[14,-14,10-sw*9,gnd];na=[24,-14,22+sw*9,gnd]}
-   arm(-4,-46,fa[0],fa[1],fa[2],fa[3],fur2);
-   // torso and chest
-   X.fillStyle=fur;X.strokeStyle=dk;X.lineWidth=2.8;X.beginPath();X.ellipse(0,-26,31,29,0,0,7);X.fill();X.stroke();
-   X.fillStyle=flash?"#ffffff":(en?"#7a5648":"#6b5a4c");X.beginPath();X.ellipse(8,-22,17,19,0,0,7);X.fill();
-   // head
-   const hy=stun?-44:-56,hx=stun?24:20+(chg?6:0);
-   X.fillStyle=fur;X.beginPath();X.ellipse(hx-8,hy-2,17,14,0,0,7);X.fill();X.stroke();   // hunched shoulders / crest
-   X.fillStyle=fur2;X.beginPath();X.arc(hx,hy,15,0,7);X.fill();X.stroke();
-   X.fillStyle=skin;X.beginPath();X.ellipse(hx+7,hy+3,10,9,0,0,7);X.fill();X.stroke();   // face
-   X.fillStyle=dk;X.fillRect(hx+3,hy-9,15,4.5);   // heavy brow
-   const mad=en||tele||chg||hold,mouth=tele?.9:(chg||hurl)?.6:hold?.35:stun?.2:.1;
-   if(stun){X.strokeStyle="#fff1c9";X.lineWidth=2;X.beginPath();X.moveTo(hx+7,hy-6);X.lineTo(hx+13,hy-1);X.moveTo(hx+13,hy-6);X.lineTo(hx+7,hy-1);X.stroke()}   // dazed eye
-   else{X.fillStyle=mad?"#ff4d5e":"#ffd23f";X.beginPath();X.arc(hx+10,hy-3,3,0,7);X.fill()}
-   X.fillStyle="#1a0d0d";X.beginPath();X.ellipse(hx+11,hy+9+mouth*3,7,2+mouth*5,0,0,7);X.fill();   // mouth
-   X.fillStyle="#fff";X.beginPath();X.moveTo(hx+6,hy+7);X.lineTo(hx+8,hy+7+3+mouth*2);X.lineTo(hx+10,hy+7);X.moveTo(hx+13,hy+7);X.lineTo(hx+15,hy+7+3+mouth*2);X.lineTo(hx+17,hy+7);X.fill();   // fangs
-   // near arm (in front) and the held rock
-   arm(6,-46,na[0],na[1],na[2],na[3],fur);
-   if(hold){const r=10+pw*2;X.save();X.translate(na[2],na[3]-r+2);X.rotate(t*3);X.fillStyle="#7c7268";X.strokeStyle="#2e2822";X.lineWidth=2.4;
-    X.beginPath();for(let i=0;i<7;i++){const a=i/7*6.283,rr=r*(.82+.22*((i*37)%5)/4);X[i?"lineTo":"moveTo"](Math.cos(a)*rr,Math.sin(a)*rr)}X.closePath();X.fill();X.stroke();X.restore()}
+   for(const [lx,ph,col] of [[-12,Math.PI,F1],[12,0,F0]]){
+    const o=moving?Math.sin(t*(chg?22:8)+ph)*(chg?9:5):0,lift=moving?Math.max(0,Math.cos(t*(chg?22:8)+ph))*(chg?4:2):0;
+    limb([lx,-36,lx+o*.5,-18-lift,lx+o,-5-lift],17,col,F2);
+    poly([[lx+o-9,-6-lift],[lx+o+15,-6-lift],[lx+o+17,-lift],[lx+o-9,-lift]],S1,OUT,2.4);   // stone boot
+   }
+   // ---- body, leaning from the hips ----
+   const lean=chg?.5:stun?.4:hold?-.2*pw:hurl?.24:tele?-.2:.2;
+   X.save();X.translate(0,-36);X.rotate(lean+(stun?Math.sin(t*6)*.04:0));
+   const br=moving?0:Math.sin(t*3)*1.2;   // breathing
+   const g=(wx,wy)=>{const cs=Math.cos(lean),sn=Math.sin(lean);return[wx*cs+wy*sn,-wx*sn+wy*cs]};   // a ground point, in lean space
+   const SHN=[8,-58+br],SHF=[-8,-58+br];
+   let nf,ff;   // fist targets, near and far arm
+   if(tele){const p=Math.sin(t*27);nf=[26,-36+9*p];ff=[10,-34-9*p]}
+   else if(chg){nf=g(38+sw*10,36);ff=g(24-sw*10,36)}
+   else if(stun){nf=g(26,36);ff=g(10,36)}
+   else if(hold){nf=[14,-122-4*pw];ff=g(8,36)}
+   else if(hurl){nf=[76,-46];ff=g(8,36)}
+   else{nf=g(28+sw*13,36);ff=g(8-sw*13,36)}
+   // far arm
+   const fa=ik(SHF[0],SHF[1],ff[0],ff[1],40,tele||hold?-1:1);limb(fa,17,F1,F2);fist(fa[4],fa[5],11,t);
+   // torso: broad shoulders, tapering to the waist
+   X.beginPath();X.moveTo(-18,0);X.bezierCurveTo(-40,-14,-44,-48,-22,-66+br);X.bezierCurveTo(-6,-76+br,22,-72+br,36,-52+br);X.bezierCurveTo(42,-30,28,-10,18,0);X.closePath();
+   const gr=X.createLinearGradient(-30,-70,30,0);gr.addColorStop(0,F2);gr.addColorStop(.35,F0);gr.addColorStop(1,F1);X.fillStyle=gr;X.fill();X.lineWidth=3;X.strokeStyle=OUT;X.stroke();
+   // belly fur
+   X.fillStyle=W(en?"#7a6a70":"#78828e");X.globalAlpha=.55;X.beginPath();X.ellipse(12,-24,15,17,.1,0,7);X.fill();X.globalAlpha=1;
+   // mane tufts along the back
+   for(let i=0;i<5;i++){const x0=-34+i*7,y0=-48-Math.sin(i*.9)*10+br;poly([[x0-7,y0+6],[x0-12-i,y0-10],[x0+3,y0-2]],F1,OUT,2)}
+   // stone chest plate with a glowing rune
+   poly([[8,-62+br],[34,-50+br],[30,-24],[14,-14],[2,-34]],S0,OUT,2.8);poly([[8,-62+br],[34,-50+br],[28,-46+br],[10,-54+br]],S2,null);
+   poly([[2,-34],[14,-14],[10,-24]],S1,null);
+   X.strokeStyle=RUNE;X.lineWidth=2.6;X.shadowColor=RUNE;X.shadowBlur=flash?0:8*pulse;X.globalAlpha=.7+.3*pulse;
+   X.beginPath();X.moveTo(20,-52);X.lineTo(14,-38);X.lineTo(24,-34);X.lineTo(18,-22);X.stroke();X.shadowBlur=0;X.globalAlpha=1;
+   X.fillStyle=MOSS;X.beginPath();X.ellipse(24,-26,6,3,.4,0,7);X.fill();
+   // shoulder boulder (near)
+   X.save();X.translate(6,-62+br);poly([[-16,6],[-12,-8],[2,-14],[16,-8],[18,6],[4,12]],S0,OUT,2.8);poly([[-12,-8],[2,-14],[16,-8],[4,-6]],S2,null);
+   X.fillStyle=MOSS;X.beginPath();X.ellipse(-2,-10,9,3,-.2,0,7);X.fill();
+   X.strokeStyle=RUNE;X.lineWidth=2;X.globalAlpha=.6+.35*pulse;X.beginPath();X.moveTo(0,-4);X.lineTo(5,2);X.lineTo(10,-3);X.stroke();X.restore();
+   // ---- head: low and forward, like a gorilla ----
+   const hx=stun?32:tele?24:chg?36:26,hy=stun?-52:tele?-82:chg?-62:hold?-74:-70,tilt=stun?.35:tele?-.35:chg?.18:0;
+   X.save();X.translate(hx,hy+br);X.rotate(tilt);
+   X.beginPath();X.ellipse(-4,-4,17,15,0,0,7);X.fillStyle=F0;X.fill();X.lineWidth=2.8;X.strokeStyle=OUT;X.stroke();   // skull
+   poly([[-10,-16],[-4,-26],[2,-16]],F1,OUT,2);poly([[-2,-17],[6,-24],[10,-14]],F1,OUT,2);   // crest tufts
+   poly([[-16,-6],[-8,-12],[-12,0]],S0,OUT,2);   // small stone horn plate on the brow
+   // face mask
+   X.beginPath();X.moveTo(0,-6);X.bezierCurveTo(8,-10,22,-6,24,2);X.bezierCurveTo(26,10,18,16,8,15);X.bezierCurveTo(-2,14,-4,4,0,-6);X.closePath();X.fillStyle=SK;X.fill();X.lineWidth=2.4;X.strokeStyle=OUT;X.stroke();
+   // heavy brow
+   poly([[0,-8],[22,-6],[24,-1],[14,-2],[2,-1]],F1,OUT,2.2);
+   // glowing eye
+   X.fillStyle=mad?"#ff3d4a":"#ffd23f";X.shadowColor=X.fillStyle;X.shadowBlur=flash?0:10;
+   if(stun){X.shadowBlur=0;X.strokeStyle="#fff1c9";X.lineWidth=2.2;X.beginPath();X.moveTo(11,0);X.lineTo(16,5);X.moveTo(16,0);X.lineTo(11,5);X.stroke()}
+   else{X.beginPath();X.ellipse(14,2,3.4,2.6,.2,0,7);X.fill()}
+   X.shadowBlur=0;
+   // nostrils
+   X.fillStyle="#000";X.beginPath();X.arc(20,6,1.1,0,7);X.arc(23,5,1.1,0,7);X.fill();
+   // jaw and tusks
+   const mouth=tele?1:(chg||hurl)?.6:hold?.35:stun?.15:.12;
+   X.save();X.translate(4,12);X.rotate(mouth*.5);
+   X.fillStyle="#150a0c";X.beginPath();X.ellipse(10,3,12,5+mouth*5,0,0,7);X.fill();X.strokeStyle=OUT;X.lineWidth=2.2;X.stroke();
+   X.beginPath();X.moveTo(-2,3);X.quadraticCurveTo(10,15+mouth*4,24,3);X.lineTo(22,7);X.quadraticCurveTo(10,18+mouth*4,0,8);X.closePath();X.fillStyle=SK;X.fill();X.stroke();
+   poly([[3,4],[6,-8-mouth*3],[9,4]],W("#f2ecd8"),OUT,1.8);poly([[15,4],[18,-7-mouth*3],[21,4]],W("#f2ecd8"),OUT,1.8);   // tusks
+   X.restore();X.restore();
+   // near arm
+   const na=ik(SHN[0]+2,SHN[1]+4,nf[0],nf[1],40,tele||hold?-1:1);limb(na,19,F0,F2);
+   if(hold){X.save();X.translate(na[4]+1,na[5]-19);rock(15+pw*3,t*3);X.restore()}
+   fist(na[4],na[5]+(hold?5:0),12.5,-t);
    X.restore();
-   // dizzy stars over the head when dazed
-   if(stun)for(let i=0;i<3;i++){const a=t*5+i*2.094;X.fillStyle="#ffe26a";X.beginPath();X.arc(22+Math.cos(a)*18,-100+Math.sin(a)*5,3,0,7);X.fill()}
+   // dizzy stars when dazed
+   if(stun)for(let i=0;i<3;i++){const a=t*5+i*2.094;X.fillStyle="#ffe26a";X.beginPath();X.arc(30+Math.cos(a)*20,-104+Math.sin(a)*5,3,0,7);X.fill()}
    X.restore();
   }
  };

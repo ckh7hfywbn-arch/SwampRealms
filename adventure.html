@@ -241,7 +241,7 @@
  function hitCrawler(f,d){
   cr.hp-=d||dmg();const kill=cr.hp<=0;AUDIO.play(kill?"defeat":"hit");
   const cy=GROUND_Y-cr.z-11,cx=cr.x-f*CRW.w/2;
-  cr.hurt=.32;cr.kb=f*(kill?220:130);cr.vx=0;cr.st="idle";cr.t=.55;cr.cd=Math.max(cr.cd,.5);
+  cr.hurt=.32;cr.kb=f*(kill?220:130)*kbMul();cr.vx=0;cr.st="idle";cr.t=.55;cr.cd=Math.max(cr.cd,.5);
   if(!noRec)state.vx=-f*60;vis.stop=kill?.1:.055;vis.shake=Math.max(vis.shake,kill?.16:.09);
   fx.push({k:"star",x:cx,y:cy,vx:0,vy:0,life:.26,max:.26,c:"#e6ffb0",g:18});
   fx.push({k:"ring",x:cx,y:cy,vx:0,vy:0,life:.22,max:.22,c:"#b6e85a",g:16});
@@ -365,7 +365,7 @@
  function hitBoss(f,d){
   boss.hp-=d||dmg();const kill=boss.hp<=0;AUDIO.play(kill?"defeat":"hit");
   const cx=boss.x-f*BS.w/2,cy=Math.max(GROUND_Y-BS.h+14,Math.min(GROUND_Y-16,state.y));
-  boss.hurt=.22;boss.pulse=.3;boss.kb=f*(kill?0:110);if(!noRec)state.vx=-f*90;   // the boss rocks back; you recoil off its bark
+  boss.hurt=.22;boss.pulse=.3;boss.kb=f*(kill?0:110)*kbMul();if(!noRec)state.vx=-f*90;   // the boss rocks back; you recoil off its bark
   vis.stop=kill?.18:.07;vis.shake=Math.max(vis.shake,kill?.4:.12);
   fx.push({k:"star",x:cx,y:cy,vx:0,vy:0,life:.28,max:.28,c:"#fff3cf",g:22});
   fx.push({k:"ring",x:cx,y:cy,vx:0,vy:0,life:.24,max:.24,c:"#ffb04f",g:20});
@@ -528,7 +528,7 @@
   bug.hp-=d||dmg();
   const kill=bug.hp<=0;AUDIO.play(kill?"defeat":"hit");
   const cx=bug.x-f*BUG.w/2,cy=GROUND_Y-13;
-  bug.hurt=.3;bug.kb=f*(kill?240:150);                      // stagger + knockback away from the swing; patrol resumes after
+  bug.hurt=.3;bug.kb=f*(kill?240:150)*kbMul();                      // stagger + knockback away from the swing; patrol resumes after
   if(!noRec)state.vx=-f*60;                                            // small recoil so the hit has weight
   vis.stop=kill?.1:.055;vis.shake=Math.max(vis.shake,kill?.16:.09);
   // hit effect at the point of contact: bright spark star, a small ring, and chips thrown the way the swing was going
@@ -1208,6 +1208,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // ---- Weapon stats: read straight from the GEAR table (store.js): Damage / 5 = damage per hit (bare attack = 1), Speed sets the swing cooldown,
  // Range sets the reach (Long = a ranged weapon that fires goo balls). A new weapon needs no code here, only its GEAR line.
  const SPD_CD={Fast:.27,Medium:.36,Slow:.5},RNG_REACH={Short:42,Medium:60};
+ // How far a hit shoves an enemy back, scaled by the weapon used: ranged weapons -50%, melee weapons -25%, bare hands unchanged.
+ function kbMul(){return heldWeapon()?(wstat().ranged?.5:.75):1}
  function wstat(){
   const id=heldWeapon(),g=id&&GEAR[id],st=g&&g.stats;
   if(!st)return{id:"",dmg:1*RunUps.dmg()*chestDmg(),cd:ATK_CD*RunUps.cd(),reach:46*RunUps.reach(),ranged:false};
