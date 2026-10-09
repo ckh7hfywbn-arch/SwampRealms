@@ -133,34 +133,66 @@ const StoryBoss=(function(){
   draw(c){
    const b=c.boss,BS=c.BS,X=c.X,t=b.tt,st=b.st,dp=b.defeated?1-b.dead/BS.defeat:0,en=b.hp<=BS.hp/2;
    const flash=b.hurt>.09||(b.defeated&&Math.sin(t*55)>0),rise=st==="intro"?Math.min(1,1-b.t/1.4):1;
-   const pw=st==="wind"?1-b.t/b.wt:0,hot=st==="wind"||st==="lunge";
-   const jaw=st==="wind"?.25+.6*pw:st==="lunge"?.2:st==="recover"?.12:.1+.08*Math.sin(t*4);
+   const pw=st==="wind"?1-b.t/b.wt:0,hot=st==="wind"||st==="lunge",lunge=st==="lunge",rec=st==="recover";
+   const jaw=st==="wind"?.3+.55*pw:lunge?.5:rec?.16+.05*Math.sin(t*8):.12+.1*Math.sin(t*4);
    const crawl=st==="walk"&&b.hurt<=0?Math.sin(t*9):0;
-   const g1=flash?"#f4ffe8":"#3f7d3a",g2=flash?"#ffffff":"#2c5c2b",bel=flash?"#ffffff":"#b9c97a",dk="#16301a";
-   X.save();X.globalAlpha=.45*(1-dp);X.fillStyle="#000";X.beginPath();X.ellipse(b.x,c.GROUND_Y,BS.w*.55,5,0,0,7);X.fill();X.restore();
+   const W=a=>flash?"#ffffff":a;
+   const OUT="#0d1a10",G0=W(en?"#4b7035":"#3f7436"),G1=W(en?"#2b4a22":"#26502a"),G2=W("#7fb55a"),BEL=W("#d9d28a"),BEL2=W("#a9a35e"),
+         TEETH=W("#f6f0dc"),MAW=W("#7c1c2a"),TONG=W("#c4485c"),MOSS=W("#8fd05f"),GLOW=flash?"#ffffff":(hot?"#ff5a6e":en?"#ffa23a":"#ffe26a");
+   const poly=(pts,fill,stroke,lw)=>{X.beginPath();pts.forEach((p,i)=>X[i?"lineTo":"moveTo"](p[0],p[1]));X.closePath();if(fill){X.fillStyle=fill;X.fill()}if(stroke){X.lineWidth=lw||2.4;X.strokeStyle=stroke;X.stroke()}};
+   X.save();X.globalAlpha=.45*(1-dp);X.fillStyle="#000";X.beginPath();X.ellipse(b.x,c.GROUND_Y,BS.w*.6,5,0,0,7);X.fill();X.restore();
    X.save();X.globalAlpha=Math.max(0,1-dp*dp);
-   X.translate(b.x+(b.hurt>0?Math.sin(t*90)*2:0)+(st==="wind"?Math.sin(t*70)*1.2*pw:0),c.GROUND_Y);X.scale(b.dir*(1+.4*dp),(.55+.45*rise)*(1-.85*dp));
-   X.lineJoin="round";X.lineWidth=2.5;X.strokeStyle=dk;
-   if(hot)c.glow(c.GLOW.rose,10,-18,64,.28+.2*pw);
-   // legs (four little stumps that paddle while it crawls)
-   X.fillStyle=g2;for(const lx of[-30,-10,14,32]){const o=Math.sin(t*9+lx)*3*(crawl?1:0);X.beginPath();X.rect(lx-5+o,-9,10,10);X.fill();X.stroke()}
-   // tail, swaying
-   const sw=Math.sin(t*3)*4+(st==="lunge"?-6:0);
-   X.fillStyle=g1;X.beginPath();X.moveTo(-34,-30);X.quadraticCurveTo(-58,-30+sw,-86,-14+sw*1.6);X.quadraticCurveTo(-58,-10+sw,-34,-8);X.closePath();X.fill();X.stroke();
-   // body
-   X.fillStyle=g1;X.beginPath();X.ellipse(-2,-19,40,15,0,0,7);X.fill();X.stroke();
-   X.fillStyle=bel;X.beginPath();X.ellipse(0,-11,32,5,0,0,7);X.fill();
-   // back ridges
-   X.fillStyle=g2;for(let i=-3;i<=3;i++){X.beginPath();X.moveTo(i*10-5,-32);X.lineTo(i*10,-39);X.lineTo(i*10+5,-32);X.closePath();X.fill();X.stroke()}
-   // head: upper jaw, lower jaw (hinged at the back of the head, opens with `jaw`), teeth, eye
-   X.save();X.translate(28,-14);
-   X.save();X.rotate(jaw);X.fillStyle=g2;X.beginPath();X.moveTo(0,0);X.lineTo(30,-1);X.lineTo(31,7);X.lineTo(0,9);X.closePath();X.fill();X.stroke();
-   X.fillStyle="#fff";for(let i=0;i<4;i++){X.beginPath();X.moveTo(8+i*6,0);X.lineTo(10+i*6,-5);X.lineTo(12+i*6,0);X.fill()}X.restore();
-   X.fillStyle=g1;X.beginPath();X.moveTo(-6,-10);X.lineTo(32,-14);X.lineTo(33,-4);X.lineTo(-6,0);X.closePath();X.fill();X.stroke();
-   X.fillStyle="#fff";for(let i=0;i<4;i++){X.beginPath();X.moveTo(8+i*6,-4);X.lineTo(10+i*6,1);X.lineTo(12+i*6,-4);X.fill()}
-   X.fillStyle=hot?"#ff5a6e":en?"#ffb04f":"#ffe26a";X.beginPath();X.arc(4,-12,4,0,7);X.fill();X.stroke();
-   X.fillStyle=dk;X.fillRect(3,-14,2,5);
-   X.restore();X.restore();
+   X.translate(b.x+(b.hurt>0?Math.sin(t*90)*2:0)+(st==="wind"?Math.sin(t*70)*1.2*pw:0),c.GROUND_Y);X.scale(b.dir*(1+.4*dp)*(lunge?1.05:1),(.55+.45*rise)*(1-.85*dp)*(lunge?.95:1));
+   X.lineJoin="round";X.lineCap="round";
+   if(hot)c.glow(c.GLOW.rose,10,-18,70,.26+.2*pw);
+   const sw=Math.sin(t*3)*4+(lunge?-7:0),raise=st==="wind"?pw*7:0;
+   X.translate(0,-7);
+   // ---- tail: thick, tapering, with a ridge ----
+   X.beginPath();X.moveTo(-30,-34);X.bezierCurveTo(-56,-34+sw*.4,-78,-26+sw,-100,-12+sw*1.7);X.bezierCurveTo(-78,-8+sw,-56,-6,-30,-8);X.closePath();
+   let gr=X.createLinearGradient(0,-36,0,-6);gr.addColorStop(0,G0);gr.addColorStop(1,G1);X.fillStyle=gr;X.fill();X.lineWidth=2.6;X.strokeStyle=OUT;X.stroke();
+   for(let i=0;i<6;i++){const u=i/6,x=-38-u*52,y=-33+u*21+sw*u*.8,h=8-u*5;poly([[x+5,y+1],[x,y-h],[x-5,y+1]],G1,OUT,1.8)}
+   // ---- far legs ----
+   const leg=(x,ph,col,sp)=>{X.save();X.translate(0,7);const o=crawl?Math.sin(t*9+ph)*4:0,lf=crawl?Math.max(0,Math.cos(t*9+ph))*3:0;
+    X.beginPath();X.moveTo(x-8,-18);X.quadraticCurveTo(x-13+o*.4,-8,x-6+o,-4-lf);X.lineTo(x+9+o,-4-lf);X.quadraticCurveTo(x+9,-10,x+8,-18);X.closePath();X.fillStyle=col;X.fill();X.lineWidth=2.4;X.strokeStyle=OUT;X.stroke();
+    X.fillStyle=TEETH;for(let k=0;k<3;k++){poly([[x+o+k*4-2,-4-lf],[x+o+k*4+8,-4-lf],[x+o+k*4+10,-lf]],TEETH,OUT,1.4)}X.restore()};
+   leg(-22,Math.PI,G1);leg(24+raise*.3,0,G1);
+   // ---- body ----
+   X.beginPath();X.moveTo(-36,-22);X.bezierCurveTo(-36,-40,-8,-44,16,-42);X.bezierCurveTo(34,-40,42,-30,40,-20);X.bezierCurveTo(38,-8,20,-6,0,-6);X.bezierCurveTo(-24,-6,-36,-10,-36,-22);X.closePath();
+   gr=X.createLinearGradient(0,-44,0,-6);gr.addColorStop(0,G2);gr.addColorStop(.3,G0);gr.addColorStop(1,G1);X.fillStyle=gr;X.fill();X.lineWidth=3;X.strokeStyle=OUT;X.stroke();
+   // belly with plate lines
+   X.beginPath();X.moveTo(-30,-12);X.bezierCurveTo(-10,-5,20,-5,36,-14);X.bezierCurveTo(20,-12,-8,-12,-30,-12);X.closePath();X.fillStyle=BEL;X.fill();
+   X.strokeStyle=BEL2;X.lineWidth=1.3;for(let i=-26;i<34;i+=8){X.beginPath();X.moveTo(i,-11);X.lineTo(i+2,-6.5);X.stroke()}
+   // armored scutes in two rows along the back
+   for(let i=0;i<8;i++){const x=-30+i*9.5,y=-39-Math.sin(i*.8)*1.5;poly([[x-5,y+3],[x,y-9],[x+5,y+3]],W(en?"#5a8a3a":"#3a6e34"),OUT,2);poly([[x-1,y-8],[x,y-9],[x+1.5,y-4]],en?(flash?"#fff":"#ffb04f"):G2,null)}
+   X.fillStyle=G1;X.strokeStyle=OUT;X.lineWidth=1.6;for(let i=0;i<7;i++){const x=-27+i*9.5;X.beginPath();X.ellipse(x,-29,4.2,3.2,0,0,7);X.fill();X.stroke()}
+   // moss and a few swamp warts
+   X.fillStyle=MOSS;X.globalAlpha=.8;X.beginPath();X.ellipse(-14,-39,8,2.6,-.1,0,7);X.ellipse(10,-41,6,2.2,.1,0,7);X.fill();X.globalAlpha=1;
+   // ---- near legs ----
+   leg(-6,0,G0);leg(36+raise*.3,Math.PI,G0);
+   // ---- head: hinged lower jaw, long armored snout ----
+   X.save();X.translate(30,-20-raise*.6);X.rotate(-pw*.3-(lunge?.06:0)+(rec?.1:0));
+   // lower jaw (behind)
+   X.save();X.translate(-2,-1);X.rotate(jaw);
+   X.beginPath();X.moveTo(0,0);X.lineTo(52,1);X.quadraticCurveTo(60,4,56,9);X.lineTo(4,11);X.quadraticCurveTo(-4,8,0,0);X.closePath();X.fillStyle=G1;X.fill();X.lineWidth=2.6;X.strokeStyle=OUT;X.stroke();
+   X.beginPath();X.moveTo(6,10);X.lineTo(54,9);X.lineTo(52,6);X.lineTo(8,6);X.closePath();X.fillStyle=BEL;X.fill();
+   for(let i=0;i<7;i++){poly([[8+i*7,1],[10.5+i*7,-6],[13+i*7,1]],TEETH,OUT,1.4)}
+   X.beginPath();X.ellipse(24,0,12,4,0,0,Math.PI);X.fillStyle=TONG;X.fill();   // tongue
+   X.restore();
+   // mouth interior
+   X.beginPath();X.moveTo(-2,-1);X.lineTo(52,-1);X.lineTo(44+jaw*18,5+jaw*30);X.lineTo(2,3+jaw*8);X.closePath();X.fillStyle=MAW;X.fill();
+   // upper jaw / skull
+   X.beginPath();X.moveTo(-10,-2);X.bezierCurveTo(-14,-16,-4,-22,6,-22);X.bezierCurveTo(22,-22,40,-17,56,-12);X.quadraticCurveTo(63,-9,60,-3);X.lineTo(52,-1);X.lineTo(-2,-1);X.closePath();
+   gr=X.createLinearGradient(0,-22,0,-1);gr.addColorStop(0,G2);gr.addColorStop(.5,G0);gr.addColorStop(1,G1);X.fillStyle=gr;X.fill();X.lineWidth=2.8;X.strokeStyle=OUT;X.stroke();
+   for(let i=0;i<7;i++){poly([[6+i*7,-1],[8.5+i*7,5+(i%2)*2],[11+i*7,-1]],TEETH,OUT,1.4)}
+   // snout details: nostril bump, brow ridge, scale lines
+   X.fillStyle=G1;X.beginPath();X.ellipse(53,-12,4,3,-.2,0,7);X.fill();X.stroke();X.fillStyle="#000";X.beginPath();X.arc(55,-12.5,1.2,0,7);X.fill();
+   X.strokeStyle=OUT;X.globalAlpha=.4;X.lineWidth=1.3;for(let i=0;i<5;i++){X.beginPath();X.moveTo(16+i*7,-17+i*.8);X.lineTo(18+i*7,-9+i*.6);X.stroke()}X.globalAlpha=1;
+   poly([[-2,-20],[4,-27],[16,-24],[18,-18],[8,-18]],W("#2d5e2c"),OUT,2.2);   // raised brow ridge
+   // glowing eye with a slit pupil
+   X.shadowColor=GLOW;X.shadowBlur=flash?0:12;X.fillStyle=GLOW;X.beginPath();X.ellipse(9,-16,5,3.8,.1,0,7);X.fill();X.shadowBlur=0;
+   X.fillStyle="#1a0a0c";X.beginPath();X.ellipse(9.5,-16,1.3,3.4,0,0,7);X.fill();
+   X.restore();
+   X.restore();
   }
  };
 

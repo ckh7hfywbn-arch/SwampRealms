@@ -109,19 +109,19 @@ Fragments, weapons and all other gear use the **same six rarities and colors as 
 
 Players turn fragments into weapons in the **Crafting** popup, its own section like the Bag (it is no longer a Bag tab). Open it from the Crafting tile in the Arcade, the Craft button under the Swamp Adventure (beside Bag), any element with a `data-craft` attribute, `Craft.open()`, or by visiting `#craft` on any page. `<span data-craft-count></span>` shows how many recipes can be crafted right now, and the popup has an Open Bag button. Each recipe shows its cost, how many fragments the player has, and a Craft button that stays disabled until they have enough. Crafted weapons land in the Bag's Weapons tab and are saved with the crystals save (`gear`), so they sync with accounts.
 
-| Weapon | Cost |
-| --- | --- |
-| Bog Blaster | 5 Bog Fragments (`crawler`) |
-| Spiked Blade | 4 Bramble Fragments (`bug`) |
-| Swamp Hopper Staff | 5 Frog Fragments (`frog`, the Frog enemy is not in the game yet, so this one cannot be crafted until it is) |
+| Weapon | Cost | Unlocked by |
+| --- | --- | --- |
+| Spiked Blade (the first weapon) | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Wing (`wing`) | Levels 1 and 2: Bramble Bugs, the Bog Gator and the Mirewing |
+| Bog Blaster | 3 Bog (`crawler`) + 1 Rootmaw (`boss`) + 1 Ape (`ape`) | Levels 3 and 4: the Rootmaw and the Stone Ape |
+| Swamp Hopper Staff | 5 Frog Fragments (`frog`, the Frog enemy is not in the game yet, so this one cannot be crafted until it is) | not yet |
 
 | Armor | Cost |
 | --- | --- |
-| Rootmaw Helmet | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Rootmaw Fragment (`boss`) |
-| Rootmaw Chest Piece | 5 Bog (`crawler`) + 1 Rootmaw Fragment (`boss`) |
-| Rootmaw Boots | 3 Bramble (`bug`) + 3 Bog (`crawler`) + 1 Rootmaw Fragment (`boss`) |
+| Mirewing Helmet | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Wing Fragment (`wing`) |
+| Mirewing Chest Piece | 5 Bog (`crawler`) + 1 Wing Fragment (`wing`) |
+| Mirewing Boots | 3 Bramble (`bug`) + 3 Bog (`crawler`) + 1 Wing Fragment (`wing`) |
 
-Every armor piece needs at least one Rootmaw Fragment. The gear ids in `store.js` are still `wardenhelm`, `wardenplate` and `wardenboots` so existing saves keep working; only the display names changed.
+Every armor piece needs at least one Wing Fragment, so armor comes from beating the Level 2 boss (the Mirewing). The gear ids in `store.js` are still `wardenhelm`, `wardenplate` and `wardenboots` so existing saves keep working; only the display names changed.
 
 - **Add a weapon:** add a line to `GEAR` in `store.js` (`slot:"weapons"`), then a line to `RECIPES` with the same id: `{cost:{crawler:3, bug:2}}`. Costs can mix any fragment ids from `FRAGMENTS`. The Craft tab builds itself from `RECIPES`.
 - **API:** `Crafting.list()`, `Crafting.info(id)`, `Crafting.check(id)` (returns `{ok, reason, missing}`), `Crafting.craft(id)`. `craft` checks the cost, subtracts the fragments and adds the weapon in one save, so nothing is taken unless the craft succeeds.
