@@ -938,3 +938,17 @@ html.av-open{overflow:hidden}
 .oa-new{position:absolute;left:-4px;top:-6px;z-index:3;padding:3px 8px;border-radius:999px;font:900 10px Nunito,sans-serif;letter-spacing:.1em;color:#04130e;background:#4ee6b4;box-shadow:0 2px 8px #000a}
 .oa-act{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:sticky;bottom:-16px;margin:0 -16px -16px;padding:12px 16px 16px;background:linear-gradient(transparent,#070d0a 40%)}
 #openall{margin-top:10px}
+
+/* Your Loadout: the Weapon card opens the weapon & skin picker */
+.lo-weapon{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.lo-weapon:hover{box-shadow:0 0 44px -10px #f2c14e,0 16px 34px -22px #000}
+.lo-weapon:active{transform:scale(.98)}
+.lo-weapon:focus-visible{outline:2px solid #f2c14e;outline-offset:3px}
+.lo-weapon .lo-edit{color:#f2c14e}
+.ar-lbl{display:block;margin-top:8px;font:800 10px Nunito,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#a9c7c0}
+.ar-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ar-chip{--c:#4ee6b4;min-height:36px;padding:4px 12px;border-radius:999px;border:1px solid var(--c);background:transparent;color:#fff3d6;font:900 11px Nunito,sans-serif;letter-spacing:.04em;cursor:pointer;touch-action:manipulation}
+.ar-chip.on{background:var(--c);color:#10140f}
+.ar-chip:hover{filter:brightness(1.12)}
+.ar-chip:focus-visible{outline:2px solid #fff3d6;outline-offset:2px}
+#arpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px}

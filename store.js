@@ -483,7 +483,7 @@ function bagBuild(){
 }
 function bagOpen(tab){
  if(tab==="craft"){craftOpen();return}   // crafting is its own section now
- cload();try{craftClose()}catch(e){}try{skinClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
+ cload();try{craftClose()}catch(e){}try{skinClose()}catch(e){}try{armoryClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
  if(tab)bagTab=tab;
  if(bagInlineHost()){bagPaintBody();loadoutGo("bag");try{dispatchEvent(new CustomEvent("bag:open"))}catch(e){}return}
  bagFrom=document.activeElement;bagPaintBody();
@@ -598,6 +598,85 @@ function loadoutPaint(){
  if(bn.set&&SET_BONUS[bn.set]){sb.textContent="Set bonus active";sb.classList.add("on");sb.title=SET_BONUS[bn.set].name+": "+SET_BONUS[bn.set].text}
  else{sb.textContent="Wear a full set for a bonus";sb.classList.remove("on");sb.title=""}
 }
+// ---- Weapon picker: the Weapon card in Your Loadout opens this popup. Pick which owned weapon to carry, and which skin it wears (Plain or any skin you own).
+// "Skin Shop" jumps to the Skin Shop to buy more. Everything uses the same Gear / Skins calls as the Bag, so the Bag, the Loadout and the Swamp Adventure stay in step.
+let arEl=null,arFrom=null,arMsg="";
+function armoryBuild(){
+ const w=document.createElement("div");w.className="bag-wrap ar-wrap";w.hidden=true;w.id="armory";
+ w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="artitle">'+
+  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14.5 3.5l6 6-9.5 9.5-3.2.7.7-3.2zM6 18l-3 3"/></svg><h2 id="artitle">Choose Weapon &amp; Skin</h2><button type="button" class="bag-x" data-x aria-label="Close weapon picker">&times;</button></div>'+
+  '<div id="arpanel"></div></div>';
+ document.body.appendChild(w);
+ w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))armoryClose()});
+ w.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();armoryClose();return}
+  if(e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+ },true);
+ return w;
+}
+function armoryPaint(){
+ if(!arEl)return;
+ const panel=arEl.querySelector("#arpanel"),bag=arEl.querySelector(".bag"),keep=bag?bag.scrollTop:0;
+ panel.textContent="";
+ const items=Gear.list("weapons").sort((a,b)=>(b.equipped-a.equipped)||a.name.localeCompare(b.name));
+ const sync=()=>{armoryPaint();try{loadoutPaint()}catch(e){}try{paintBag()}catch(e){}};
+ if(!items.length){
+  const p=document.createElement("p");p.className="bg-note";p.textContent="You don't own a weapon yet. Craft one from your fragments, then come back here to equip it and pick its skin.";panel.appendChild(p);
+  const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent="Open Crafting";b.addEventListener("click",()=>{armoryClose();try{craftOpen()}catch(e){}});panel.appendChild(b);
+ }else{
+  const list=document.createElement("div");list.className="gr-list";
+  items.forEach(g=>{
+   const row=document.createElement("div");row.className="gr-row has-art"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
+   const sk=Skins.equippedFor(g.id);
+   if(typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){const art=document.createElement("div");art.className="gr-art";art.setAttribute("role","img");art.setAttribute("aria-label",g.name+" design");const cv=document.createElement("canvas");cv.width=360;cv.height=150;try{WeaponArt.paint(cv,g.id,null,sk)}catch(e){}art.appendChild(cv);row.appendChild(art)}
+   const body=document.createElement("div");body.className="gr-body";
+   const top=document.createElement("div");top.className="gr-top";
+   const nm=document.createElement("b");nm.textContent=g.name;top.appendChild(nm);
+   const st=document.createElement("small");st.className="gr-state";st.textContent=g.equipped?"Equipped":"Unequipped";top.appendChild(st);body.appendChild(top);
+   const rr=document.createElement("em");rr.className="gr-rar";rr.textContent=g.rarityName+" · Damage "+Gear.hitDmg(g.id)+" per hit";body.appendChild(rr);
+   const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent=g.equipped?"Unequip":"Equip";b.setAttribute("aria-label",(g.equipped?"Unequip ":"Equip ")+g.name);
+   b.addEventListener("click",()=>{if(g.equipped){Gear.unequip(g.key);arMsg="Unequipped "+g.name+"."}else{const r=Gear.equip(g.id);arMsg=r.ok?"Equipped "+g.name+".":r.reason}sync()});
+   body.appendChild(b);
+   // skins for this weapon: Plain + every skin you own, plus a way into the shop
+   const all=Skins.forWeapon(g.id);
+   if(all.length){
+    const lab=document.createElement("span");lab.className="ar-lbl";lab.textContent="Skin";body.appendChild(lab);
+    const chips=document.createElement("div");chips.className="ar-chips";chips.setAttribute("role","group");chips.setAttribute("aria-label","Skin for "+g.name);
+    const chip=(text,on,color,fn)=>{const c=document.createElement("button");c.type="button";c.className="ar-chip"+(on?" on":"");if(color)c.style.setProperty("--c",color);c.textContent=text;c.setAttribute("aria-pressed",on?"true":"false");c.addEventListener("click",fn);chips.appendChild(c)};
+    chip("Plain",!sk,"",()=>{if(sk)Skins.unequip(g.id);arMsg="Back to the plain "+g.name+".";sync()});
+    all.filter(k=>k.owned).forEach(k=>chip(k.name,k.equipped,k.color,()=>{const r=Skins.equip(k.id);arMsg=r.ok?k.name+" equipped on your "+g.name+".":r.reason;sync()}));
+    const left=all.filter(k=>!k.owned).length;
+    chip(left?"Skin Shop · "+left+" more":"Skin Shop",false,"#f2c14e",()=>{armoryClose();skinOpen(g.id)});
+    body.appendChild(chips);
+   }
+   row.appendChild(body);list.appendChild(row);
+  });
+  panel.appendChild(list);
+ }
+ const det=document.createElement("p");det.className="bg-detail";det.id="ardetail";det.setAttribute("aria-live","polite");
+ if(arMsg){det.textContent=arMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
+ panel.appendChild(det);
+ const note=document.createElement("p");note.className="bg-note";note.textContent="Skins are cosmetic: they change how a weapon looks, not how it fights. Only weapons you own are listed.";panel.appendChild(note);
+ if(bag)bag.scrollTop=keep;
+}
+function armoryOpen(){
+ cload();if(!arEl)arEl=armoryBuild();
+ try{bagClose()}catch(e){}try{craftClose()}catch(e){}try{skinClose()}catch(e){}
+ arFrom=document.activeElement;arMsg="";armoryPaint();
+ arEl.hidden=false;document.documentElement.classList.add("bag-open");
+ const x=arEl.querySelector(".bag-x");x&&x.focus();
+}
+function armoryClose(){
+ if(!arEl||arEl.hidden)return;
+ arEl.hidden=true;document.documentElement.classList.remove("bag-open");
+ try{loadoutPaint()}catch(e){}
+ try{arFrom&&arFrom.focus&&arFrom.focus()}catch(e){}
+}
+addEventListener("DOMContentLoaded",()=>{
+ const card=document.getElementById("lo-weapon");if(!card)return;
+ card.addEventListener("click",armoryOpen);
+ card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();armoryOpen()}});
+});
 // Bag | Crafting pager on the Arcade page: two panes side by side in a swipeable strip, with two buttons that show which one you are on.
 function loadoutPane(){const t=document.getElementById("lo-track");return t?Math.round(t.scrollLeft/Math.max(1,t.clientWidth)):0}
 let _lpIdx=-1,_lpBusy=false;
@@ -706,7 +785,7 @@ function skinPaint(){
 }
 function skinOpen(w){
  cload();if(!skEl)skEl=skinBuild();
- try{bagClose()}catch(e){}try{craftClose()}catch(e){}
+ try{bagClose()}catch(e){}try{craftClose()}catch(e){}try{armoryClose()}catch(e){}
  skFrom=document.activeElement;skMsg="";skPending="";skFocus=typeof w==="string"?w:"";skinPaint();
  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(skEl)}catch(e){}
  skEl.hidden=false;document.documentElement.classList.add("bag-open");skinPaint();

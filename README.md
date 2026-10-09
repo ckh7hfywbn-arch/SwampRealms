@@ -208,3 +208,8 @@ On every level with a boss arena (Levels 1-4 and the Endless Realms boss levels)
 ## Mosquito swarms (Endless Realms)
 
 `swarm.js` adds random mosquito swarms to the generated Endless levels (about 4 in 10 levels, one or two swarm spots each, never boss levels or the four hand-made levels). `Swarm.plan(level, index)` picks the spots from the level index (same level, same spots) when the level is built in `lvl()`. Run past a spot and a cloud of tiny mosquitoes flies in and circles the player. They do **no damage**: each touch shoves the player in a random direction (about every half second, with a short stun so you cannot steer straight out). A **Swat!** button pops up (also key `K`) and scatters the whole swarm; if ignored, the swarm gives up after 14 seconds. Tuning is `Swarm.CFG` (chance, count, shove strength, life); the button styles are at the end of `ui.css`. A shove can push you into a pond, which just sends you back to the last checkpoint.
+
+
+## Your Loadout: weapon picker
+
+The Weapon card in Your Loadout (`#lo-weapon` in `arcade.html`) is a button. It opens a popup (`armoryOpen()` in `store.js`) listing the weapons you own, each with Equip / Unequip and a Skin row (Plain, every skin you own, and a Skin Shop button for buying more). It uses the same `Gear` and `Skins` calls as the Bag, so the Bag, the Loadout and the Swamp Adventure stay in step.
