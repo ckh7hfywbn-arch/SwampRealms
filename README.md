@@ -10,14 +10,14 @@ Progress is saved in the visitor's browser (`localStorage`). Visitors can also s
 | `index.html` | Home page |
 | `catalog.html` | Open packs and view the collection |
 | `shop.html` | Buy packs with Swamp Coins |
-| `arcade.html` | The Arcade hub and the main menu for all games (games are not in the header menu, they are tiles here): a card for each game (just the Swamp Adventure for now), **Your Avatar** (pick an animal, try on and buy cosmetics with Swamp Crystals), then Your Loadout with the Bag and Crafting |
+| `arcade.html` | The Arcade hub and the main menu for all games (games are not in the header menu, they are tiles here): a card for each game (just the Swamp Adventure for now), **Your Avatar** (pick an animal, try on and buy cosmetics with Swamp Crystals), then Your Loadout with an **Open Armory** button (Bag, Crafting, Weapons and the Skin Shop in one popup) |
 | `adventure.html` | The Swamp Adventure. Every run pays Swamp Coins and Swamp Crystals, no daily limit. Rates: `COIN_PER` in the page script (1 coin per 200 score) and `CRY.games.adv` in `store.js` (1 crystal per 55.6 score) (3 hand-made levels + Rootmaw boss, then endless generated levels, see **Endless progression**). Each level has its own background music (`MUSIC` in the page script: synthesized, no audio files, same sound switch as the effects, plus a faster track for the Rootmaw fight). Its own page, with a Full screen button (top centre of the game, and under it), or press `F`. Uses the browser Fullscreen API, and a page-filling view on iPhone. The player is drawn as the visitor's own avatar (animal + gear from `avatar.html`, via `avatarRefresh()` and `drawPlayer()`); it falls back to the original sprout character if the avatar can't load |
 | `progression.js` | The Endless Realms: difficulty, rewards, enemy variants, boss ranks and the level generator for every level after the four hand-made ones (Level 4, the Sunlit Canopy, is hand-made). Pure data and maths, loaded before the game script. See **Endless progression** below |
 | `chestcabin.js` | The treasure cabin in front of every boss arena (Swamp Adventure Levels 1-4 and the Endless Realms boss levels): layout, the two chest rewards and the drawing. Loaded after `storyboss.js`. See **Treasure cabin** below |
 | `avatar.html` | Redirect stub only. The avatar picker now lives in the "Your Avatar" section of `arcade.html` (`#avatar`), so old `/avatar` links still land there. Safe to delete if you don't mind old links breaking |
 | `cards.js` | Cards, packs, pack rules, saved data, sounds, coin wallet. Card back = `card-back.jpg` |
 | `weapons.js` | Weapon drawings (`WeaponArt`), shared by the Swamp Adventure (held in hand) and the Bag (preview card). Load before `store.js` |
-| `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter, the Fragments (enemy loot) table, the Gear table, the Crafting recipes, and the Bag (inventory popup). Load after `cards.js` |
+| `store.js` | Swamp Crystals wallet, cosmetics list, header crystal counter, the Fragments (enemy loot) table, the Gear table, the Crafting recipes, and the **Armory** popup with its four tabs (Bag, Crafting, Weapons, Skin Shop). Load after `cards.js` |
 | `gamefs.js` | Shared full screen for every game: `GameFS.attach({stage, start})`. Games go full screen automatically when the player taps Play (browsers need a tap first), with a page-filling fallback on iPhone. Leaving full screen on purpose is remembered for the visit |
 | `avatar.js` | Draws the animals and cosmetics as SVG |
 | `styles.css` | Base styles: layout, packs, cards, shop |
@@ -80,6 +80,16 @@ Defeated enemies have a chance to drop a Fragment. The table is `FRAGMENTS` in `
 - **Drops.** `adventure.html` calls `Fragments.roll(enemyId)` the first time an enemy is seen defeated (the same place the kill score is awarded, `scoreTick`). A drop is saved immediately, shows a small notification at the top of the game, puts a shard burst and a floating label where the enemy fell, and adds a chip to the Fragments line under the game. The results screens show how many were found in the run.
 - **New enemy:** add a line to `FRAGMENTS` with the enemy's id, and add the enemy to `foes()` in `adventure.html` (the loot id is the same as the foe id).
 
+## The Armory (one popup, four tabs)
+
+Bag, Crafting, the weapon picker and the Skin Shop used to be four separate popups. They are now the four tabs of one **Armory** popup in `store.js` (`Armory`, `armoryOpen()`), with the wallet (Swamp Coins, Swamp Crystals, Fragments) always visible on top. The popup remembers the last tab you used.
+
+- **Open it:** any element with `data-armory` (`data-armory="craft"` jumps to a tab: `bag`, `craft`, `weapons`, `skins`), `Armory.open(tab, section)` (e.g. `Armory.open("skins","bogblaster")`), or visit `#armory`. `arcade.html` has an Open Armory button and the Weapon card in Your Loadout opens the Weapons tab; `adventure.html` has an Armory button under the game (it also pauses the run).
+- **Old entry points still work** and open the matching tab: `Bag.open()`, `Craft.open()`, `Skins.open()`, `data-bag`, `data-craft`, `data-skins`, `#bag`, `#craft`, `#weapons`, `#skins`.
+- **Counts:** `<span data-bag-count>` (items carried) and `<span data-craft-count>` (recipes ready to craft) still work anywhere.
+- **Events:** `armory:open` / `armory:close` (and `bag:open` / `bag:close`, which pauses the Swamp Adventure).
+- **Code:** each tab has its own paint function drawn into its own pane (`bagPaintBody`, `craftPaint`, `armoryPaintWeapons`, `skinPaint`); the shell (`armoryBuild`, `armoryPaint`, `armoryTab`, `armoryClose`) only owns header, wallet, tab bar, keyboard (Esc, arrows, Tab trap) and closing. Styles are at the bottom of `ui.css` (`.armory`, `.ar-tab`, `.ar-pane`). The Arcade page no longer has the inline Bag/Crafting swipe pager.
+
 ## The Bag (inventory)
 
 The Bag is one popup that holds everything the player owns: **Swamp Coins**, **Swamp Crystals**, **Fragments**, and **gear** sections (Weapons, Armor, Accessories). It lives in `store.js` (`Bag`, `Gear`) with styles at the bottom of `ui.css`.
@@ -107,7 +117,7 @@ Fragments, weapons and all other gear use the **same six rarities and colors as 
 
 ## Crafting
 
-Players turn fragments into weapons in the **Crafting** popup, its own section like the Bag (it is no longer a Bag tab). Open it from the Crafting tile in the Arcade, the Craft button under the Swamp Adventure (beside Bag), any element with a `data-craft` attribute, `Craft.open()`, or by visiting `#craft` on any page. `<span data-craft-count></span>` shows how many recipes can be crafted right now, and the popup has an Open Bag button. Each recipe shows its cost, how many fragments the player has, and a Craft button that stays disabled until they have enough. Crafted weapons land in the Bag's Weapons tab and are saved with the crystals save (`gear`), so they sync with accounts.
+Players turn fragments into weapons in the **Crafting** tab of the Armory. Open it from the Crafting tile in the Arcade, the Craft button under the Swamp Adventure (beside Bag), any element with a `data-craft` attribute, `Craft.open()`, or by visiting `#craft` on any page. `<span data-craft-count></span>` shows how many recipes can be crafted right now, and the popup has an Open Bag button. Each recipe shows its cost, how many fragments the player has, and a Craft button that stays disabled until they have enough. Crafted weapons land in the Bag's Weapons tab and are saved with the crystals save (`gear`), so they sync with accounts.
 
 | Weapon | Cost | Unlocked by |
 | --- | --- | --- |
@@ -212,7 +222,7 @@ On every level with a boss arena (Levels 1-4 and the Endless Realms boss levels)
 
 ## Your Loadout: weapon picker
 
-The Weapon card in Your Loadout (`#lo-weapon` in `arcade.html`) is a button. It opens a popup (`armoryOpen()` in `store.js`) listing the weapons you own, each with Equip / Unequip and a Skin row (Plain, every skin you own, and a Skin Shop button for buying more). It uses the same `Gear` and `Skins` calls as the Bag, so the Bag, the Loadout and the Swamp Adventure stay in step.
+The Weapon card in Your Loadout (`#lo-weapon` in `arcade.html`) is a button. It opens the Armory on its Weapons tab (`armoryPaintWeapons()` in `store.js`) listing the weapons you own, each with Equip / Unequip and a Skin row (Plain, every skin you own, and a Skin Shop chip that jumps to the Skin Shop tab). It uses the same `Gear` and `Skins` calls as the Bag, so the Bag, the Loadout and the Swamp Adventure stay in step.
 
 ## Weapon skins (Skin Shop)
-Nine Swamp Crystal skins, three per weapon: Epic 600, Legendary 900, Mythical 1500 crystals (art in `SKIN_ART` in `weapons.js`, prices in `SKINS` in `store.js`). The Swamp Adventure now draws the worn skin in the player's hand (`heldSkin()` in `adventure.html`), tints the swing arc with the skin's colours, and tints Bog Blaster goo with the skin's accent colour. The Skin Shop opens from the Arcade page's "Skin Shop" button, the Weapon card in Your Loadout, or `#skins`.
+Nine Swamp Crystal skins, three per weapon: Epic 600, Legendary 900, Mythical 1500 crystals (art in `SKIN_ART` in `weapons.js`, prices in `SKINS` in `store.js`). The Swamp Adventure now draws the worn skin in the player's hand (`heldSkin()` in `adventure.html`), tints the swing arc with the skin's colours, and tints Bog Blaster goo with the skin's accent colour. The Skin Shop is the Skin Shop tab of the Armory: open it from the Skins button on a weapon, the Skin Shop chip in the Weapons tab, `Skins.open()`, or `#skins`.

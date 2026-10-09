@@ -70,7 +70,7 @@ cload();
 // One-time notice after the crafting reset (CRAFT_RESET above). Only shown on the Arcade and Swamp Adventure pages, then cleared from the save.
 (function(){
  function show(){
-  if(!CS.crn||!document.querySelector("[data-bag],[data-craft],#stage"))return;
+  if(!CS.crn||!document.querySelector("[data-armory],[data-bag],[data-craft],#stage"))return;
   const d=document.createElement("div");d.setAttribute("role","status");
   d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,460px);padding:12px 40px 12px 16px;border-radius:12px;background:#10241f;color:#e9fff6;border:1px solid #4ee6b4;font:700 14px/1.4 Nunito,system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.45)";
   d.textContent="Crafting has been reset for the new Swamp Adventure. Your fragments and crafted gear were cleared. Coins, crystals and your avatar are untouched.";
@@ -172,7 +172,7 @@ const Fragments={
 // Equip key: weapons use their slot ("weapons"); armor pieces have a part (helmet | chest | boots) and use "armor:helmet" etc., so one of each part can be worn at once.
 function eqk(d){return d.part?d.slot+":"+d.part:d.slot}
 const GEAR_SLOTS={
- weapons:{name:"Weapons",icon:'<path d="M14.5 4.5L20 4l-.5 5.5L9 20l-5-5z"/><path d="M13 7l4 4M5 19l-2 2"/>',empty:"No weapons yet. Swords and blasters are coming soon."},
+ weapons:{name:"Weapons",icon:'<path d="M14.5 4.5L20 4l-.5 5.5L9 20l-5-5z"/><path d="M13 7l4 4M5 19l-2 2"/>',empty:"No weapons yet. Craft one from fragments that enemies drop in the Swamp Adventure."},
  armor:{name:"Armor",icon:'<path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>',empty:"No armor yet. Craft helmets, chest armor and boots from fragments."},
  accessories:{name:"Accessories",icon:'<circle cx="12" cy="14" r="5"/><path d="M9 4h6l-1 5h-4z"/>',empty:"No accessories yet. Charms and trinkets are coming soon."}
 };
@@ -293,7 +293,7 @@ const Skins={
  },
  // give a skin without charging (for quest rewards later; not used yet)
  grant(id){if(!SKINS[id])return null;cload();CS.skins[id]=1;csave();return this.info(id)},
- open(w){skinOpen(w)},close(){skinClose()},toggle(){skEl&&!skEl.hidden?skinClose():skinOpen()}
+ open(w){skinOpen(w)},close(){armoryClose()},toggle(){armoryToggle("skins")}
 };
 cload();   // third pass now that SKINS exists: drops worn skins that are no longer owned
 
@@ -337,13 +337,15 @@ const Crafting={
  }
 };
 
-// ---- The Bag: one place for coins, crystals, fragments and gear. Open it from anywhere with Bag.open(), or give any element data-bag.
+// ---- The Bag: coins, crystals, fragments and gear. It is the "Bag" tab of the Armory popup (see "The Armory" below).
+// Open it with Bag.open() / Bag.open("armor"), or give any element data-bag (data-bag="armor" opens straight to a gear section).
 // Put <span data-bag-count></span> inside a button to show how many items the player is carrying.
 const Bag={
  get count(){return Fragments.total+Gear.total},
- open(tab){bagOpen(tab)},close(){bagClose()},toggle(){bagEl&&!bagEl.hidden?bagClose():bagOpen()}
+ open(tab){bagOpen(tab)},close(){armoryClose()},toggle(){armoryToggle("bag")}
 };
-let bagEl=null,bagTab="fragments",bagFrom=null;
+// Armory state. The four tab panes (bagEl, craftEl, wpEl, skEl) are created together with the popup (armoryBuild).
+let arEl=null,arFrom=null,arTab="bag",arMsg="",bagEl=null,craftEl=null,wpEl=null,skEl=null,bagTab="fragments";
 const BAG_TABS=()=>[{id:"fragments",name:"Fragments",icon:'<path d="M12 3l7 6-3 12H8L5 9z"/>',n:Fragments.total}].concat(Object.keys(GEAR_SLOTS).map(k=>({id:k,name:GEAR_SLOTS[k].name,icon:GEAR_SLOTS[k].icon,n:Gear.list(k).reduce((a,g)=>a+g.count,0)})));
 function bagCoins(){try{if(typeof load==="function")load();return typeof meta!=="undefined"?(meta.coins||0):0}catch(e){return 0}}
 function bagSlot(info,kind){
@@ -355,16 +357,13 @@ function bagSlot(info,kind){
  const q=document.createElement("span");q.className="bgq";q.textContent="×"+info.count;d.appendChild(q);
  const txt=info.name+" · "+info.rarityName+(kind==="frag"?" · dropped by the "+info.enemy:info.desc?" · "+info.desc:"");
  d.setAttribute("role","button");d.setAttribute("aria-label",txt);
- const show=()=>{const p=document.getElementById("bgdetail");if(!p)return;p.textContent=txt;p.style.setProperty("--c",info.color);p.hidden=false;document.querySelectorAll("#bag .bgs.on").forEach(x=>x.classList.remove("on"));d.classList.add("on")};
+ const show=()=>{const p=document.getElementById("bgdetail");if(!p)return;p.textContent=txt;p.style.setProperty("--c",info.color);p.hidden=false;document.querySelectorAll("#arp-bag .bgs.on").forEach(x=>x.classList.remove("on"));d.classList.add("on")};
  d.addEventListener("click",show);d.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();show()}});
  d.addEventListener("contextmenu",e=>{e.preventDefault();show()});
  return d;
 }
 function bagPaintBody(){
- try{loadoutPaint()}catch(e){}
  if(!bagEl)return;
- bagEl.querySelector(".bg-coins b").textContent=bagCoins();
- bagEl.querySelector(".bg-gems b").textContent=CS.c;
  const tabs=BAG_TABS(),bar=bagEl.querySelector(".bg-tabs");bar.textContent="";
  if(!tabs.some(t=>t.id===bagTab))bagTab=tabs[0].id;
  tabs.forEach(t=>{
@@ -393,6 +392,7 @@ function bagPaintBody(){
  if(!shown)note.textContent=bagTab==="fragments"?"No fragments yet. Defeat enemies in the Swamp Adventure for a chance to find them.":GEAR_SLOTS[bagTab].empty;
  else note.textContent=bagTab==="fragments"?"Fragments drop from defeated enemies. Tap one to see where it came from.":"Gear you collect shows up here.";
  panel.appendChild(note);
+ if(!shown&&bagTab==="weapons"){const h=weaponHints()[0];const c=h&&recipeHint(h.r.id,{});c&&panel.appendChild(c)}
 }
 // a gear tab (Weapons, Armor...): one card per owned item with icon, rarity, stats, description, equipped status and an Equip / Unequip button
 let bagGearMsg="";
@@ -462,72 +462,18 @@ function craftPaintPanel(panel){
  panel.appendChild(det);
  const note=document.createElement("p");note.className="bg-note";note.textContent="Crafting uses up the fragments. Defeat enemies in the Swamp Adventure to find more.";panel.appendChild(note);
 }
-// On the Arcade page the Bag lives INSIDE the Your Loadout section: a <div id="bag" class="bag-inline"> in the page is filled with the very same Bag (no backdrop, no close button, always open).
-// Everywhere else the Bag is still the popup.
-function bagInlineHost(){const h=document.getElementById("bag");return h&&h.classList.contains("bag-inline")?h:null}
-function bagBuild(){
- const inl=bagInlineHost();
- const w=inl||document.createElement("div");if(!inl){w.className="bag-wrap";w.hidden=true;w.id="bag"}
- w.innerHTML=(inl?'':'<div class="bag-back" data-x></div>')+'<div class="bag" role="'+(inl?'region':'dialog" aria-modal="true')+'" aria-labelledby="bagtitle">'+
-  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/></svg><h2 id="bagtitle">Bag</h2>'+(inl?'':'<button type="button" class="bag-x" data-x aria-label="Close bag">&times;</button>')+'</div>'+
-  '<div class="bg-wallet"><span class="bg-coins"><span class="coin" aria-hidden="true"></span><b>0</b><em>Swamp Coins</em></span><span class="bg-gems"><span class="gem" aria-hidden="true"></span><b>0</b><em>Swamp Crystals</em></span></div>'+
-  '<div class="bg-tabs" role="tablist" aria-label="Bag sections"></div><div id="bgpanel" role="tabpanel"></div></div>';
- if(!inl)document.body.appendChild(w);
- w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))bagClose()});
- w.addEventListener("keydown",e=>{
-  if(!inl&&e.key==="Escape"){e.stopPropagation();e.preventDefault();bagClose();return}
-  const t=e.target.closest&&e.target.closest(".bg-tab");
-  if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){const all=[...w.querySelectorAll(".bg-tab")],i=all.indexOf(t),n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];e.preventDefault();n.click()}
-  if(!inl&&e.key==="Tab"){const f=[...w.querySelectorAll("button,[tabindex='0']")].filter(x=>x.tabIndex>=0&&!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
- },true);
- return w;
-}
+// Bag.open(), Craft.open(), Skins.open(), the data-bag / data-craft / data-skins attributes and #bag / #craft / #skins all open the Armory on the matching tab.
 function bagOpen(tab){
- if(tab==="craft"){craftOpen();return}   // crafting is its own section now
- cload();try{craftClose()}catch(e){}try{skinClose()}catch(e){}try{armoryClose()}catch(e){}if(!bagEl)bagEl=bagBuild();
- if(tab)bagTab=tab;
- if(bagInlineHost()){bagPaintBody();loadoutGo("bag");try{dispatchEvent(new CustomEvent("bag:open"))}catch(e){}return}
- bagFrom=document.activeElement;bagPaintBody();
- try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(bagEl)}catch(e){}
- bagEl.hidden=false;document.documentElement.classList.add("bag-open");
- try{dispatchEvent(new CustomEvent("bag:open"))}catch(e){}
- const x=bagEl.querySelector(".bag-x");x&&x.focus();
+ if(tab==="craft"){armoryOpen("craft");return}
+ armoryOpen("bag",typeof tab==="string"?tab:undefined);
 }
-function bagClose(){
- if(!bagEl||bagEl.hidden||bagEl.classList.contains("bag-inline"))return;
- bagEl.hidden=true;document.documentElement.classList.remove("bag-open");
- try{dispatchEvent(new CustomEvent("bag:close"))}catch(e){}
- try{bagFrom&&bagFrom.focus&&bagFrom.focus()}catch(e){}
- if(location.hash==="#bag")history.replaceState(null,"",location.pathname+location.search);
-}
-
+// the Crafting tab: its own tab bar (Weapons, Armor...) and one row per recipe (craftPaintPanel above)
 const Craft={
  get count(){return Crafting.list().filter(r=>r.can).length},
- open(){craftOpen()},close(){craftClose()},toggle(){craftEl&&!craftEl.hidden?craftClose():craftOpen()}
+ open(slot){craftOpen(slot)},close(){armoryClose()},toggle(){armoryToggle("craft")}
 };
-let craftEl=null,craftFrom=null;
-// On the Arcade page Crafting also lives inside Your Loadout, as the pane next to the Bag (swipe sideways between them): <div id="craft" class="craft-inline">.
-function craftInlineHost(){const h=document.getElementById("craft");return h&&h.classList.contains("craft-inline")?h:null}
-function craftBuild(){
- const inl=craftInlineHost();
- const w=inl||document.createElement("div");if(!inl){w.className="bag-wrap";w.hidden=true;w.id="craft"}
- w.innerHTML=(inl?'':'<div class="bag-back" data-x></div>')+'<div class="bag" role="'+(inl?'region':'dialog" aria-modal="true')+'" aria-labelledby="crafttitle">'+
-  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/></svg><h2 id="crafttitle">Crafting</h2>'+(inl?'':'<button type="button" class="bag-x" data-x aria-label="Close crafting">&times;</button>')+'</div>'+
-  '<div class="bg-wallet"><span class="bg-coins"><span class="bg-fr" aria-hidden="true"></span><b>0</b><em>Fragments</em></span><button type="button" class="cr-bagbtn" data-bag>Open Bag</button></div>'+
-  '<div class="bg-tabs" role="tablist" aria-label="Crafting sections"></div><div id="crpanel" role="tabpanel"></div></div>';
- if(!inl)document.body.appendChild(w);
- w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))craftClose();else if(e.target.closest("[data-bag]"))craftClose()});
- w.addEventListener("keydown",e=>{
-  if(!inl&&e.key==="Escape"){e.stopPropagation();e.preventDefault();craftClose();return}
-  const t=e.target.closest&&e.target.closest(".bg-tab");
-  if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){const all=[...w.querySelectorAll(".bg-tab")],i=all.indexOf(t),n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];e.preventDefault();n.click()}
-  if(!inl&&e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>x.tabIndex>=0&&!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
- },true);
- return w;
-}
 function craftPaint(){
  if(!craftEl)return;
- craftEl.querySelector(".bg-coins b").textContent=Fragments.total;
  const tabs=CRAFT_TABS(),bar=craftEl.querySelector(".bg-tabs");bar.textContent="";
  if(!tabs.some(t=>t.id===craftTab))craftTab=tabs.length?tabs[0].id:"";
  tabs.forEach(t=>{
@@ -540,30 +486,12 @@ function craftPaint(){
  });
  const panel=craftEl.querySelector("#crpanel");panel.textContent="";panel.setAttribute("aria-labelledby","crt-"+craftTab);craftPaintPanel(panel);
 }
-function craftOpen(){
- cload();if(!craftEl)craftEl=craftBuild();
- if(craftInlineHost()){try{skinClose()}catch(e){}craftPaint();loadoutGo("craft");try{dispatchEvent(new CustomEvent("craft:open"))}catch(e){}return}
- try{bagClose()}catch(e){}try{skinClose()}catch(e){}
- craftFrom=document.activeElement;craftMsg="";craftPaint();
- try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(craftEl)}catch(e){}
- craftEl.hidden=false;document.documentElement.classList.add("bag-open");
- try{dispatchEvent(new CustomEvent("craft:open"));dispatchEvent(new CustomEvent("bag:open"))}catch(e){}
- const x=craftEl.querySelector(".bag-x");x&&x.focus();
-}
-function craftClose(){
- if(!craftEl||craftEl.hidden||craftEl.classList.contains("craft-inline"))return;
- craftEl.hidden=true;document.documentElement.classList.remove("bag-open");
- try{dispatchEvent(new CustomEvent("craft:close"))}catch(e){}
- try{craftFrom&&craftFrom.focus&&craftFrom.focus()}catch(e){}
- if(location.hash==="#craft")history.replaceState(null,"",location.pathname+location.search);
-}
+function craftOpen(slot){armoryOpen("craft",typeof slot==="string"?slot:undefined)}
+// "ready to craft" count on any [data-craft-count]
 function paintCraft(){
  const n=Craft.count;document.querySelectorAll("[data-craft-count]").forEach(e=>{e.textContent=n;e.hidden=!n});
- if(craftEl&&!craftEl.hidden)craftPaint();
 }
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-craft]");if(t){e.preventDefault();craftOpen()}});
-addEventListener("hashchange",()=>{if(location.hash==="#craft")craftOpen()});
-addEventListener("DOMContentLoaded",()=>{if(craftInlineHost()&&!craftEl){cload();craftEl=craftBuild();craftPaint()}paintCraft();try{loadoutPager()}catch(e){}if(location.hash==="#craft")craftOpen()});
 // ---- Your Loadout (Arcade page): hero portrait, max health, weapon and armor, always showing what the game will use. Redrawn whenever the Bag changes (bagPaintBody).
 // Fills the <section id="loadout"> markup in arcade.html. Does nothing on pages without it.
 const LO_BASEHP=3;   // keep in step with BASEHP in adventure.html
@@ -583,12 +511,17 @@ function loadoutPaint(){
  q("#lo-hp").textContent=bn.hp?max+" ("+LO_BASEHP+" base +"+bn.hp+" from armor)":max+" ("+LO_BASEHP+" base)";
  q("#lo-flames").setAttribute("aria-label","Max health "+max);
  // weapon
- const wp=Gear.equipped("weapons"),cv=q("#lo-wcv"),wn=q("#lo-wname"),wi=q("#lo-winfo");
+ const wp=Gear.equipped("weapons"),cv=q("#lo-wcv"),wn=q("#lo-wname"),wi=q("#lo-winfo"),wed=q("#lo-weapon .lo-edit");
+ if(wed)wed.textContent="Tap to change weapon & skin";
  cv.getContext("2d").clearRect(0,0,cv.width,cv.height);
  if(wp){
   if(!(typeof WeaponArt!=="undefined"&&WeaponArt.paint(cv,wp.id,null,Skins.equippedFor(wp.id))))cv.getContext("2d").clearRect(0,0,cv.width,cv.height);
   cv.hidden=false;wn.textContent=wp.name;wi.textContent=wp.rarityName+" · Damage "+Gear.hitDmg(wp.id)+" per hit";wi.style.color=wp.color;
- }else{cv.hidden=true;wn.textContent="No weapon equipped";wi.textContent="Bare hands · Damage 1 per hit";wi.style.color=""}
+ }else{
+  cv.hidden=true;wi.style.color="";
+  if(Gear.list("weapons").length){wn.textContent="No weapon equipped";wi.textContent="Bare hands · Damage 1 per hit";if(wed)wed.textContent="Tap to equip a weapon"}
+  else{const h=weaponHints()[0];wn.textContent="No weapon yet";wi.textContent=h?(h.r.can?"Ready to craft: "+h.r.gear.name+"!":"Next: "+h.r.gear.name+" · "+h.done+"/"+h.total+" fragments"):"Bare hands · Damage 1 per hit";if(wed)wed.textContent="Tap to craft your first weapon"}
+ }
  // armor
  ["helmet","chest","boots"].forEach(pt=>{
   const g=Gear.equipped("armor:"+pt),el=q("#lo-"+pt);
@@ -599,31 +532,162 @@ function loadoutPaint(){
  if(bn.set&&SET_BONUS[bn.set]){sb.textContent="Set bonus active";sb.classList.add("on");sb.title=SET_BONUS[bn.set].name+": "+SET_BONUS[bn.set].text}
  else{sb.textContent="Wear a full set for a bonus";sb.classList.remove("on");sb.title=""}
 }
-// ---- Weapon picker: the Weapon card in Your Loadout opens this popup. Pick which owned weapon to carry, and which skin it wears (Plain or any skin you own).
-// "Skin Shop" jumps to the Skin Shop to buy more. Everything uses the same Gear / Skins calls as the Bag, so the Bag, the Loadout and the Swamp Adventure stay in step.
-let arEl=null,arFrom=null,arMsg="";
+// ---- "What next?" hints for weapons you do not own yet. Used by the Loadout card, the Weapons tab, the Bag (Weapons section) and the Skin Shop tab.
+// Shows which fragments a weapon needs, how many you have, which enemy drops each, and a button into Crafting.
+const FRAG_EARNABLE={bug:1,crawler:1,boss:1,wing:1,ape:1};   // fragments that have an enemy in the Swamp Adventure today; add an id here when a new enemy arrives
+// weapon recipes you do not own yet, closest to craftable first (weapons that cannot be earned yet go last)
+function weaponHints(){
+ return Crafting.list().filter(r=>r.gear.slot==="weapons"&&!(CS.gear[r.id]>0)).map(r=>{
+  const total=r.cost.reduce((a,c)=>a+c.need,0),done=r.cost.reduce((a,c)=>a+Math.min(c.have,c.need),0);
+  return{r,total,done,earn:r.cost.every(c=>FRAG_EARNABLE[c.id]),frac:total?done/total:0};
+ }).sort((a,b)=>(b.earn-a.earn)||(b.frac-a.frac)||(a.total-b.total));
+}
+function goCraft(slot){armoryOpen("craft",slot||"weapons")}
+// one card for one weapon recipe. o.art = show the weapon picture, o.title = replace the weapon name in the heading
+function recipeHint(wid,o){
+ o=o||{};cload();const r=Crafting.info(wid);if(!r)return null;
+ const g=r.gear,earn=r.cost.every(c=>FRAG_EARNABLE[c.id]),total=r.cost.reduce((a,c)=>a+c.need,0),done=r.cost.reduce((a,c)=>a+Math.min(c.have,c.need),0);
+ const el=document.createElement("div");el.className="rh"+(r.can?" ready":"")+(earn?"":" soon");el.style.setProperty("--c",g.color);
+ if(o.art&&typeof WeaponArt!=="undefined"&&WeaponArt.has(wid)){const a=document.createElement("div");a.className="gr-art rh-art";a.setAttribute("role","img");a.setAttribute("aria-label",g.name+" design");const cv=document.createElement("canvas");cv.width=360;cv.height=150;try{WeaponArt.paint(cv,wid,null,null)}catch(e){}a.appendChild(cv);el.appendChild(a)}
+ const top=document.createElement("div");top.className="rh-top";
+ const nm=document.createElement("b");nm.textContent=o.title||g.name;top.appendChild(nm);
+ const st=document.createElement("small");st.textContent=r.can?"Ready to craft!":earn?done+" / "+total+" fragments":"Coming soon";top.appendChild(st);el.appendChild(top);
+ if(earn){const bar=document.createElement("div");bar.className="rh-bar";bar.setAttribute("role","img");bar.setAttribute("aria-label",done+" of "+total+" fragments collected");const f=document.createElement("i");f.style.width=Math.round(total?done/total*100:0)+"%";bar.appendChild(f);el.appendChild(bar)}
+ const ul=document.createElement("ul");ul.className="rh-list";
+ r.cost.forEach(c=>{
+  const li=document.createElement("li");if(c.short===0)li.className="ok";
+  const n=document.createElement("span");n.className="rh-n";n.textContent=c.name;li.appendChild(n);
+  const q=document.createElement("em");q.textContent=Math.min(c.have,c.need)+" / "+c.need;li.appendChild(q);
+  const w=document.createElement("small");const d=FRAGMENTS[c.id];w.textContent=FRAG_EARNABLE[c.id]?"Dropped by "+(d?d.enemy:"enemies"):"No enemy drops this yet. Coming soon.";li.appendChild(w);
+  ul.appendChild(li);
+ });
+ el.appendChild(ul);
+ const b=document.createElement("button");b.type="button";b.className="cr-btn"+(r.can?"":" ghost");
+ if(earn){b.textContent=r.can?"Craft it now":"Open Crafting";b.addEventListener("click",()=>goCraft(g.slot))}
+ else{b.textContent="Coming soon";b.disabled=true}
+ el.appendChild(b);
+ return el;
+}
+
+// ---- The Armory: ONE popup with four tabs, so nothing has to be closed to reach something else.
+//    Bag | Crafting | Weapons | Skin Shop
+// Open it with Armory.open(), Armory.open("skins","bogblaster") (tab, then optional section inside it), any element with data-armory (data-armory="craft" jumps to a tab), or by visiting #armory.
+// The older entry points still work and each opens the Armory on its tab: Bag.open(), Craft.open(), Skins.open(), data-bag, data-craft, data-skins, #bag, #craft, #weapons, #skins.
+// Each tab is drawn by its own function into its own pane: bagPaintBody (Bag), craftPaint (Crafting), armoryPaintWeapons (Weapons, below), skinPaint (Skin Shop).
+// This shell only owns the header, the wallet, the tab bar, focus handling and closing. Everything uses the same Gear / Skins / Crafting calls, so the Bag, the Loadout and the Swamp Adventure stay in step.
+const Armory={
+ get count(){return Bag.count},
+ open(tab,sub){armoryOpen(tab,sub)},close(){armoryClose()},toggle(tab){armoryToggle(tab)}
+};
+const AR_TABS=[
+ {id:"bag",name:"Bag",icon:'<path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/>',n:()=>Bag.count,what:n=>n+" items carried"},
+ {id:"craft",name:"Crafting",icon:'<path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/>',n:()=>Craft.count,what:n=>n+" ready to craft"},
+ {id:"weapons",name:"Weapons",icon:'<path d="M14.5 3.5l6 6-9.5 9.5-3.2.7.7-3.2zM6 18l-3 3"/>'},
+ {id:"skins",name:"Skin Shop",icon:'<path d="M12 3l2.4 5.2 5.6.7-4.1 3.9 1 5.6L12 15.6 7.1 18.4l1-5.6L4 8.9l5.6-.7z"/>'}
+];
+const AR_SCROLL={bag:"bgpanel",craft:"crpanel",weapons:"arpanel",skins:"skpanel"};   // the scrolling area of each tab
+const AR_HASH={"#armory":"","#bag":"bag","#craft":"craft","#weapons":"weapons","#skins":"skins"};
 function armoryBuild(){
  const w=document.createElement("div");w.className="bag-wrap ar-wrap";w.hidden=true;w.id="armory";
- w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="artitle">'+
-  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14.5 3.5l6 6-9.5 9.5-3.2.7.7-3.2zM6 18l-3 3"/></svg><h2 id="artitle">Choose Weapon &amp; Skin</h2><button type="button" class="bag-x" data-x aria-label="Close weapon picker">&times;</button></div>'+
-  '<div id="arpanel"></div></div>';
+ const sub=(label,panel)=>'<div class="bg-tabs" role="tablist" aria-label="'+label+'"></div><div id="'+panel+'" role="tabpanel"></div>';
+ const pane=(id,inner)=>'<div class="ar-pane" id="arp-'+id+'" role="tabpanel" aria-labelledby="art-'+id+'" hidden>'+inner+'</div>';
+ w.innerHTML='<div class="bag-back" data-x></div><div class="bag armory" role="dialog" aria-modal="true" aria-labelledby="artitle">'+
+  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg><h2 id="artitle">Armory</h2><button type="button" class="bag-x" data-x aria-label="Close armory">&times;</button></div>'+
+  '<div class="bg-wallet"><span class="bg-coins"><span class="coin" aria-hidden="true"></span><b>0</b><em>Coins</em></span><span class="bg-gems"><span class="gem" aria-hidden="true"></span><b>0</b><em>Crystals</em></span><span class="bg-frs"><span class="bg-fr" aria-hidden="true"></span><b>0</b><em>Fragments</em></span></div>'+
+  '<div class="ar-tabs" role="tablist" aria-label="Armory sections"></div>'+
+  pane("bag",sub("Bag sections","bgpanel"))+pane("craft",sub("Crafting sections","crpanel"))+pane("weapons",'<div id="arpanel"></div>')+pane("skins",'<div id="skpanel"></div>')+
+  '</div>';
  document.body.appendChild(w);
+ bagEl=w.querySelector("#arp-bag");craftEl=w.querySelector("#arp-craft");wpEl=w.querySelector("#arp-weapons");skEl=w.querySelector("#arp-skins");
  w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))armoryClose()});
- w.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();armoryClose();return}
-  if(e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
- },true);
  return w;
 }
+// Keyboard: Escape closes the Armory (first the "new skin" celebration if it is showing), left / right arrows move between the tabs of whichever tab bar you are on
+// (Armory tabs, Bag sections, Crafting sections), and Tab stays inside the popup. Listens on the document so it still works after a redraw has dropped the focused button.
+function armoryKeys(e){
+ if(!arEl||arEl.hidden)return;
+ if(e.key==="Escape"){e.stopPropagation();e.preventDefault();if(skPop)skinPopClose();else armoryClose();return}
+ const inside=arEl.contains(e.target);
+ const t=inside&&e.target.closest&&e.target.closest(".ar-tab,.bg-tab");
+ if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){const all=[...t.parentNode.children].filter(x=>x.matches(".ar-tab,.bg-tab")),i=all.indexOf(t),n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];e.preventDefault();n.click();return}
+ if(e.key==="Tab"){
+  const f=[...arEl.querySelectorAll("button,[tabindex='0']")].filter(x=>x.tabIndex>=0&&!x.disabled&&x.offsetParent!==null);if(!f.length)return;
+  const a=f[0],z=f[f.length-1];
+  if(!inside){e.preventDefault();(e.shiftKey?z:a).focus();return}
+  if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}
+ }
+}
+document.addEventListener("keydown",armoryKeys,true);
+// redraw the wallet, the tab bar and the tab you are on (called on open, on every tab change and whenever the save changes)
 function armoryPaint(){
  if(!arEl)return;
- const panel=arEl.querySelector("#arpanel"),bag=arEl.querySelector(".bag"),keep=bag?bag.scrollTop:0;
+ try{loadoutPaint()}catch(e){}
+ const q=s=>arEl.querySelector(s);
+ q(".bg-coins b").textContent=bagCoins();q(".bg-gems b").textContent=CS.c;q(".bg-frs b").textContent=Fragments.total;
+ const bar=q(".ar-tabs");bar.textContent="";
+ AR_TABS.forEach(t=>{
+  const on=t.id===arTab,b=document.createElement("button");b.type="button";b.className="ar-tab";b.id="art-"+t.id;b.setAttribute("role","tab");b.setAttribute("aria-selected",on?"true":"false");b.setAttribute("aria-controls","arp-"+t.id);b.tabIndex=on?0:-1;
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+t.icon+'</svg>';
+  const sp=document.createElement("span");sp.textContent=t.name;b.appendChild(sp);
+  const n=t.n?t.n():0;if(n){const c=document.createElement("small");c.textContent=n;c.setAttribute("aria-label",t.what(n));b.appendChild(c)}
+  b.onclick=()=>{armoryTab(t.id);const nb=q("#art-"+t.id);nb&&nb.focus()};
+  bar.appendChild(b);
+ });
+ AR_TABS.forEach(t=>{const p=q("#arp-"+t.id);if(p)p.hidden=t.id!==arTab});
+ const sc=q("#"+AR_SCROLL[arTab]),keep=sc?sc.scrollTop:0;
+ ({bag:bagPaintBody,craft:craftPaint,weapons:armoryPaintWeapons,skins:skinPaint})[arTab]();
+ if(sc)sc.scrollTop=keep;
+}
+// switch tab inside the open Armory (a note from the tab you leave is dropped)
+function armoryTab(id){
+ if(!AR_TABS.some(t=>t.id===id))return;
+ skinPopClose();clearTimeout(skTimer);skPending="";bagGearMsg=craftMsg=arMsg=skMsg="";
+ arTab=id;armoryPaint();
+}
+// open the Armory. tab = "bag" | "craft" | "weapons" | "skins" (anything else = the tab you used last, Bag the first time).
+// sub = a section inside that tab: a Bag section ("armor"), a Crafting section ("weapons") or a weapon id in the Skin Shop ("bogblaster").
+function armoryOpen(tab,sub){
+ cload();if(!arEl)arEl=armoryBuild();
+ if(!AR_TABS.some(t=>t.id===tab))tab=arTab;
+ if(typeof sub==="string"&&sub){if(tab==="bag")bagTab=sub;else if(tab==="craft")craftTab=sub;else if(tab==="skins")skTab=sub}
+ const fresh=arEl.hidden;
+ skinPopClose();clearTimeout(skTimer);skPending="";bagGearMsg=craftMsg=arMsg=skMsg="";
+ arTab=tab;
+ if(fresh){
+  arFrom=document.activeElement;
+  try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(arEl)}catch(e){}
+ }
+ armoryPaint();
+ if(fresh){
+  arEl.hidden=false;document.documentElement.classList.add("bag-open");
+  try{dispatchEvent(new CustomEvent("armory:open",{detail:{tab:arTab}}));dispatchEvent(new CustomEvent("bag:open"))}catch(e){}   // bag:open is what pauses the Swamp Adventure
+ }
+ const f=fresh?arEl.querySelector(".bag-x"):arEl.querySelector("#art-"+arTab);f&&f.focus();
+}
+function armoryClose(){
+ if(!arEl||arEl.hidden)return;
+ skinPopClose();clearTimeout(skTimer);skPending="";
+ arEl.hidden=true;document.documentElement.classList.remove("bag-open");
+ try{loadoutPaint()}catch(e){}
+ try{dispatchEvent(new CustomEvent("armory:close"));dispatchEvent(new CustomEvent("bag:close"))}catch(e){}
+ try{arFrom&&arFrom.focus&&arFrom.focus()}catch(e){}
+ if(AR_HASH[location.hash]!==undefined)history.replaceState(null,"",location.pathname+location.search);
+}
+function armoryToggle(tab){arEl&&!arEl.hidden&&(!tab||tab===arTab)?armoryClose():armoryOpen(tab)}
+
+// ---- Weapons tab: pick which owned weapon to carry, and which skin it wears (Plain or any skin you own).
+// The "Skin Shop" chip jumps to the Skin Shop tab for that weapon. The Weapon card in Your Loadout (Arcade) opens the Armory on this tab.
+function armoryPaintWeapons(){
+ if(!wpEl)return;
+ const panel=wpEl.querySelector("#arpanel"),keep=panel.scrollTop;
  panel.textContent="";
  const items=Gear.list("weapons").sort((a,b)=>(b.equipped-a.equipped)||a.name.localeCompare(b.name));
- const sync=()=>{armoryPaint();try{loadoutPaint()}catch(e){}try{paintBag()}catch(e){}};
+ const sync=()=>{armoryPaint()};
  if(!items.length){
-  const p=document.createElement("p");p.className="bg-note";p.textContent="You don't own a weapon yet. Craft one from your fragments, then come back here to equip it and pick its skin.";panel.appendChild(p);
-  const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent="Open Crafting";b.addEventListener("click",()=>{armoryClose();try{craftOpen()}catch(e){}});panel.appendChild(b);
+  const p=document.createElement("p");p.className="bg-note rh-intro";p.textContent="You don't have a weapon yet. Craft your first one from fragments that enemies drop in the Swamp Adventure. Closest first:";panel.appendChild(p);
+  const hs=weaponHints();
+  if(hs.length)hs.forEach(h=>{const c=recipeHint(h.r.id,{art:true});c&&panel.appendChild(c)});
+  else{const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent="Open Crafting";b.addEventListener("click",()=>goCraft("weapons"));panel.appendChild(b)}
  }else{
   const list=document.createElement("div");list.className="gr-list";
   items.forEach(g=>{
@@ -638,7 +702,7 @@ function armoryPaint(){
    const b=document.createElement("button");b.type="button";b.className="gr-btn";b.textContent=g.equipped?"Unequip":"Equip";b.setAttribute("aria-label",(g.equipped?"Unequip ":"Equip ")+g.name);
    b.addEventListener("click",()=>{if(g.equipped){Gear.unequip(g.key);arMsg="Unequipped "+g.name+"."}else{const r=Gear.equip(g.id);arMsg=r.ok?"Equipped "+g.name+".":r.reason}sync()});
    body.appendChild(b);
-   // skins for this weapon: Plain + every skin you own, plus a way into the shop
+   // skins for this weapon: Plain + every skin you own, plus a way into the Skin Shop tab
    const all=Skins.forWeapon(g.id);
    if(all.length){
     const lab=document.createElement("span");lab.className="ar-lbl";lab.textContent="Skin";body.appendChild(lab);
@@ -647,7 +711,7 @@ function armoryPaint(){
     chip("Plain",!sk,"",()=>{if(sk)Skins.unequip(g.id);arMsg="Back to the plain "+g.name+".";sync()});
     all.filter(k=>k.owned).forEach(k=>chip(k.name,k.equipped,k.color,()=>{const r=Skins.equip(k.id);arMsg=r.ok?k.name+" equipped on your "+g.name+".":r.reason;sync()}));
     const left=all.filter(k=>!k.owned).length;
-    chip(left?"Skin Shop · "+left+" more":"Skin Shop",false,"#f2c14e",()=>{armoryClose();skinOpen(g.id)});
+    chip(left?"Skin Shop · "+left+" more":"Skin Shop",false,"#f2c14e",()=>armoryOpen("skins",g.id));
     body.appendChild(chips);
    }
    row.appendChild(body);list.appendChild(row);
@@ -658,92 +722,90 @@ function armoryPaint(){
  if(arMsg){det.textContent=arMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
  panel.appendChild(det);
  const note=document.createElement("p");note.className="bg-note";note.textContent="Skins are cosmetic: they change how a weapon looks, not how it fights. Only weapons you own are listed.";panel.appendChild(note);
- if(bag)bag.scrollTop=keep;
-}
-function armoryOpen(){
- cload();if(!arEl)arEl=armoryBuild();
- try{bagClose()}catch(e){}try{craftClose()}catch(e){}try{skinClose()}catch(e){}
- arFrom=document.activeElement;arMsg="";armoryPaint();
- arEl.hidden=false;document.documentElement.classList.add("bag-open");
- const x=arEl.querySelector(".bag-x");x&&x.focus();
-}
-function armoryClose(){
- if(!arEl||arEl.hidden)return;
- arEl.hidden=true;document.documentElement.classList.remove("bag-open");
- try{loadoutPaint()}catch(e){}
- try{arFrom&&arFrom.focus&&arFrom.focus()}catch(e){}
+ panel.scrollTop=keep;
 }
 addEventListener("DOMContentLoaded",()=>{
  const card=document.getElementById("lo-weapon");if(!card)return;
- card.addEventListener("click",armoryOpen);
- card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();armoryOpen()}});
+ card.addEventListener("click",()=>armoryOpen("weapons"));
+ card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();armoryOpen("weapons")}});
 });
-// Bag | Crafting pager on the Arcade page: two panes side by side in a swipeable strip, with two buttons that show which one you are on.
-function loadoutPane(){const t=document.getElementById("lo-track");return t?Math.round(t.scrollLeft/Math.max(1,t.clientWidth)):0}
-let _lpIdx=-1,_lpBusy=false;
-function loadoutMark(){
- const i=loadoutPane();if(i===_lpIdx)return;_lpIdx=i;
- document.querySelectorAll("#lo-pager [data-pane]").forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false")});
-}
-// height follows the pane you are on; only done when the swipe has settled so nothing is re-laid-out mid-swipe
-function loadoutFit(){
- const t=document.getElementById("lo-track");if(!t)return;
- loadoutMark();const p=t.children[loadoutPane()];if(p){const h=(p.offsetHeight+24)+"px";if(t.style.height!==h)t.style.height=h}
-}
-function loadoutGo(which){
- const t=document.getElementById("lo-track");if(!t)return;
- const i=which==="craft"?1:0;
- try{t.scrollTo({left:i*t.clientWidth,behavior:"smooth"})}catch(e){t.scrollLeft=i*t.clientWidth}
- const pg=document.getElementById("lo-pager");if(pg)try{pg.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){pg.scrollIntoView()}
- loadoutMark();
-}
-let _lpInit=false;
-function loadoutPager(){
- const t=document.getElementById("lo-track");if(!t||_lpInit)return;_lpInit=true;
- let tm=0;const settle=()=>{clearTimeout(tm);if(_lpBusy){_lpBusy=false;t.classList.remove("moving")}loadoutFit()};
- t.addEventListener("scroll",()=>{if(!_lpBusy){_lpBusy=true;t.classList.add("moving")}loadoutMark();clearTimeout(tm);tm=setTimeout(settle,110)},{passive:true});
- if("onscrollend" in window)t.addEventListener("scrollend",settle);
- addEventListener("resize",()=>{t.scrollLeft=Math.max(0,loadoutPane())*t.clientWidth;loadoutFit()});
- document.querySelectorAll("#lo-pager [data-pane]").forEach(b=>b.addEventListener("click",()=>loadoutGo(b.getAttribute("data-pane"))));
- let rf=0;if("ResizeObserver" in window){const ro=new ResizeObserver(()=>{if(_lpBusy)return;cancelAnimationFrame(rf);rf=requestAnimationFrame(loadoutFit)});[...t.children].forEach(c=>ro.observe(c))}
- loadoutFit();
-}
-// item count badge on any [data-bag-count]
+// item count badge on any [data-bag-count]; also keeps the Loadout card, the "ready to craft" badges and the open Armory tab in step with the save
 function paintBag(){
  const n=Bag.count;document.querySelectorAll("[data-bag-count]").forEach(e=>{e.textContent=n});
- if(bagEl&&!bagEl.hidden)bagPaintBody();
- try{paintCraft()}catch(e){}
- try{if(skEl&&!skEl.hidden)skinPaint()}catch(e){}
+ paintCraft();
+ if(arEl&&!arEl.hidden)armoryPaint();else{try{loadoutPaint()}catch(e){}}
 }
+document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-armory]");if(t){e.preventDefault();armoryOpen(t.getAttribute("data-armory")||undefined,t.getAttribute("data-armory-sub")||undefined)}});
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-bag]");if(t){e.preventDefault();bagOpen(t.getAttribute("data-bag")||undefined)}});
-addEventListener("hashchange",()=>{if(location.hash==="#bag")bagOpen()});
-addEventListener("DOMContentLoaded",()=>{if(bagInlineHost()&&!bagEl){cload();bagEl=bagBuild()}paintBag();try{loadoutPaint()}catch(e){}if(location.hash==="#bag")bagOpen()});
+function armoryHash(){const t=AR_HASH[location.hash];if(t!==undefined)armoryOpen(t)}
+addEventListener("hashchange",armoryHash);
+addEventListener("DOMContentLoaded",()=>{paintBag();armoryHash()});
 // avatar.js can finish loading after the page: redraw the loadout portrait then
 addEventListener("load",()=>{try{loadoutPaint()}catch(e){}});
 
-// ---- The Skin Shop popup (its own section like the Bag and Crafting). Open it with Skins.open(), Skins.open("bogblaster"), any element with data-skins, the Skins button on a weapon in the Bag, or by visiting #skins.
+// ---- The Skin Shop tab of the Armory. Open it with Skins.open(), Skins.open("bogblaster"), any element with data-skins, the Skins button on a weapon in the Bag, or by visiting #skins.
 // Each skin shows a live shimmering preview, its rarity, the weapon it is for and its Swamp Crystal price. Buying asks for a second tap to confirm.
-let skEl=null,skFrom=null,skMsg="",skFocus="",skPending="",skTimer=0;
-function skinBuild(){
- const w=document.createElement("div");w.className="bag-wrap sk-wrap";w.hidden=true;w.id="skins";
- w.innerHTML='<div class="bag-back" data-x></div><div class="bag" role="dialog" aria-modal="true" aria-labelledby="skintitle">'+
-  '<div class="bag-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3l2.4 5.2 5.6.7-4.1 3.9 1 5.6L12 15.6 7.1 18.4l1-5.6L4 8.9l5.6-.7z"/></svg><h2 id="skintitle">Skin Shop</h2><button type="button" class="bag-x" data-x aria-label="Close skin shop">&times;</button></div>'+
-  '<div class="bg-wallet"><span class="bg-gems"><span class="gem" aria-hidden="true"></span><b>0</b><em>Swamp Crystals</em></span><button type="button" class="cr-bagbtn" data-bag>Open Bag</button></div>'+
-  '<div id="skpanel"></div></div>';
- document.body.appendChild(w);
- w.addEventListener("click",e=>{if(e.target.closest("[data-x]"))skinClose();else if(e.target.closest("[data-bag]"))skinClose()});
- w.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){e.stopPropagation();e.preventDefault();skinClose();return}
-  if(e.key==="Tab"){const f=[...w.querySelectorAll("button")].filter(x=>!x.disabled);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
- },true);
- return w;
+let skMsg="",skTab="",skPending="",skTimer=0,skPop=null,skPopT=0,skFx=0;
+// ---- Purchase celebration: a full-popup moment when a skin is bought (big live preview, sparkle burst in the skin's colours, "Equipped" line). Tap or wait to dismiss.
+function skinPopClose(){clearTimeout(skPopT);cancelAnimationFrame(skFx);if(skPop){skPop.remove();skPop=null}}
+function skinCelebrate(k){
+ if(!arEl)return;skinPopClose();
+ let reduce=false;try{reduce=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}
+ let info=null;try{info=WeaponArt.skinInfo(k.id)}catch(e){}
+ const acc=(info&&info.accent)||k.color;
+ const d=document.createElement("div");d.className="sk-pop"+(reduce?" calm":"");d.style.setProperty("--c",k.color);d.style.setProperty("--a",acc);d.setAttribute("role","status");d.setAttribute("aria-live","polite");
+ d.innerHTML='<canvas class="sk-fx" aria-hidden="true"></canvas><b class="sk-pop-lbl">New skin unlocked!</b><div class="sk-pop-art"><canvas width="360" height="150" role="img"></canvas></div><b class="sk-pop-name"></b><span class="sk-pop-sub"></span><small class="sk-pop-tap">Tap to continue</small>';
+ d.querySelector(".sk-pop-name").textContent=k.name;
+ d.querySelector(".sk-pop-sub").textContent="Equipped on your "+k.weapon+" · "+k.rarityName;
+ d.querySelector(".sk-pop-art canvas").setAttribute("aria-label",k.name+" preview");
+ d.addEventListener("click",e=>{e.stopPropagation();skinPopClose()});
+ arEl.appendChild(d);skPop=d;
+ try{const cv=d.querySelector(".sk-pop-art canvas");WeaponArt.paint(cv,k.w,null,k.id);WeaponArt.live(cv,k.w,k.id)}catch(e){}
+ try{navigator.vibrate&&navigator.vibrate([25,40,70])}catch(e){}
+ if(!reduce){try{
+  const fx=d.querySelector(".sk-fx"),dpr=Math.min(2,window.devicePixelRatio||1),W=arEl.clientWidth,H=arEl.clientHeight;
+  fx.width=Math.round(W*dpr);fx.height=Math.round(H*dpr);
+  const g=fx.getContext("2d");g.scale(dpr,dpr);
+  const ar=d.querySelector(".sk-pop-art").getBoundingClientRect(),wr=arEl.getBoundingClientRect(),ox=ar.left-wr.left+ar.width/2,oy=ar.top-wr.top+ar.height/2;
+  const cols=[acc,k.color,"#ffffff","#ffe08a"],ps=[];
+  const burst=n=>{for(let i=0;i<n;i++){const a=Math.random()*6.283,v=120+Math.random()*330;ps.push({x:ox+(Math.random()-.5)*60,y:oy+(Math.random()-.5)*20,vx:Math.cos(a)*v,vy:Math.sin(a)*v-90,r:3+Math.random()*5.5,life:0,max:.9+Math.random()*.9,col:cols[i%cols.length],star:Math.random()<.55,rot:Math.random()*6.283,sp:(Math.random()-.5)*8})}};
+  burst(64);let t0=performance.now(),second=false;
+  const step=now=>{
+   const dt=Math.min(.05,(now-t0)/1000);t0=now;
+   if(!second&&now>0&&ps.length&&ps[0].life>.26){second=true;burst(32)}
+   g.clearRect(0,0,W,H);let alive=0;
+   for(const p of ps){p.life+=dt;if(p.life>=p.max)continue;alive++;p.vy+=300*dt;p.vx*=.992;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.sp*dt;
+    const al=Math.max(0,1-p.life/p.max),sc=p.r*(.6+.4*al);
+    g.globalAlpha=al;g.fillStyle=p.col;g.save();g.translate(p.x,p.y);g.rotate(p.rot);
+    if(p.star){g.beginPath();for(let j=0;j<8;j++){const rr=j%2?sc*.38:sc*1.5,an=j*Math.PI/4;g.lineTo(Math.cos(an)*rr,Math.sin(an)*rr)}g.closePath();g.fill()}
+    else{g.beginPath();g.arc(0,0,sc*.7,0,7);g.fill()}
+    g.restore()}
+   g.globalAlpha=1;
+   if(alive&&skPop===d)skFx=requestAnimationFrame(step);
+  };
+  skFx=requestAnimationFrame(step);
+ }catch(e){}}
+ skPopT=setTimeout(skinPopClose,3600);
 }
 function skinPaintPanel(panel){
- const lives=[],order=Skins.weapons().sort((a,b)=>(b===skFocus)-(a===skFocus));
- order.forEach(wid=>{
+ const lives=[],all=Skins.weapons();
+ // one tab per weapon: only that weapon's 3 skins show at a time. Starts on the weapon you opened it from, else the first weapon you own.
+ const tab=skTab&&all.indexOf(skTab)>-1?skTab:(all.find(w=>CS.gear[w]>0)||all[0]);
+ const tabs=document.createElement("div");tabs.className="sk-tabs";tabs.setAttribute("role","tablist");tabs.setAttribute("aria-label","Weapons");
+ all.forEach(wid=>{
+  const list=Skins.forWeapon(wid),own=list.filter(k=>k.owned).length,can=CS.gear[wid]>0&&list.some(k=>!k.owned&&Skins.check(k.id).ok);
+  const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",wid===tab?"true":"false");b.className="sk-tab"+(wid===tab?" on":"");
+  const n=document.createElement("span");n.textContent=GEAR[wid].name;b.appendChild(n);
+  const m=document.createElement("small");m.textContent=CS.gear[wid]>0?own+"/"+list.length+" owned":"Locked";b.appendChild(m);
+  if(can){const d=document.createElement("i");d.className="sk-can";d.setAttribute("role","img");d.setAttribute("aria-label","You can afford a skin for this weapon");b.appendChild(d)}
+  b.addEventListener("click",()=>{skTab=wid;skPending="";skMsg="";clearTimeout(skTimer);skinPaint();panel.scrollTop=0});
+  tabs.appendChild(b);
+ });
+ panel.appendChild(tabs);
+ [tab].forEach(wid=>{
   const own=CS.gear[wid]>0,sec=document.createElement("section");sec.className="sk-sec";
   const h=document.createElement("h3");h.className="sk-h";h.textContent=GEAR[wid].name;
-  const st=document.createElement("small");st.textContent=own?" · you own this weapon":" · craft it to unlock these skins";h.appendChild(st);sec.appendChild(h);
+  if(!own){const hc=recipeHint(wid,{title:"Craft the "+GEAR[wid].name+" to unlock these skins"});if(hc)sec.appendChild(hc);else{h.textContent="Craft the "+GEAR[wid].name+" to unlock these skins";sec.appendChild(h)}}
   const list=document.createElement("div");list.className="cr-list sk-list";
   Skins.forWeapon(wid).forEach(k=>{
    const row=document.createElement("div");row.className="cr-row sk-row"+(k.equipped?" on":"")+(k.owned?" owned":"");row.style.setProperty("--c",k.color);
@@ -752,7 +814,7 @@ function skinPaintPanel(panel){
    lives.push(()=>{try{WeaponArt.live(cv,wid,k.id)}catch(e){}});
    const top=document.createElement("div");top.className="cr-top";
    const nm=document.createElement("b");nm.textContent=k.name;top.appendChild(nm);
-   const sm=document.createElement("small");sm.textContent=k.equipped?"Equipped":k.owned?"Owned":k.rarityName;top.appendChild(sm);row.appendChild(top);
+   const sm=document.createElement("small");const ok=!k.owned&&Skins.check(k.id).ok;if(ok)row.classList.add("can");sm.textContent=k.equipped?"Equipped":k.owned?"Owned":k.rarityName+(ok?" · you can afford this":"");top.appendChild(sm);row.appendChild(top);
    const ds=document.createElement("p");ds.className="cr-desc";ds.textContent=k.rarityName+" skin for the "+k.weapon+". "+k.desc;row.appendChild(ds);
    const b=document.createElement("button");b.type="button";b.className="cr-btn";
    if(k.owned){
@@ -762,10 +824,17 @@ function skinPaintPanel(panel){
     const c=Skins.check(k.id);
     b.textContent=skPending===k.id?"Tap again to confirm · "+k.price:"Buy · "+k.price+" crystals";
     if(!c.ok&&!(c.reason.indexOf("Need")===0)){b.textContent=own?c.reason:"Craft the weapon first";b.disabled=true}
-    else if(!c.ok){b.textContent=c.reason.replace("Swamp ","").replace("."," ·")+" "+k.price;b.disabled=true}
+    else if(!c.ok){
+     // a progress bar instead of a dead button: fills as your crystals approach the price
+     const have=Math.min(CS.c,k.price),pct=Math.max(0,Math.min(100,Math.floor(have/k.price*100))),left=k.price-CS.c;
+     b.textContent="";b.disabled=true;b.classList.add("sk-prog");b.style.setProperty("--p",pct+"%");
+     b.setAttribute("aria-label",left+" more Swamp Crystals needed for "+k.name+" ("+CS.c+" of "+k.price+")");
+     const t=document.createElement("span");t.className="sk-pt";t.textContent=CS.c+" / "+k.price+" crystals";b.appendChild(t);
+     const g=document.createElement("small");g.className="sk-pl";g.textContent=left+" more to go";b.appendChild(g);
+    }
     b.addEventListener("click",()=>{
      if(skPending!==k.id){skPending=k.id;clearTimeout(skTimer);skTimer=setTimeout(()=>{skPending="";skinPaint()},4000);skMsg="Spend "+k.price+" Swamp Crystals on "+k.name+"? Tap again to confirm.";skinPaint();return}
-     clearTimeout(skTimer);skPending="";const r=Skins.buy(k.id);skMsg=r.ok?"You bought "+k.name+"! It is equipped on your "+k.weapon+".":r.reason;skinPaint();
+     clearTimeout(skTimer);skPending="";const r=Skins.buy(k.id);skMsg=r.ok?"You bought "+k.name+"! It is equipped on your "+k.weapon+".":r.reason;skinPaint();if(r.ok)skinCelebrate(r.skin);
     });
    }
    row.appendChild(b);list.appendChild(row);
@@ -780,29 +849,11 @@ function skinPaintPanel(panel){
 }
 function skinPaint(){
  if(!skEl)return;
- skEl.querySelector(".bg-gems b").textContent=CS.c;
- const panel=skEl.querySelector("#skpanel"),keep=panel.scrollTop,bag=skEl.querySelector(".bag"),k2=bag?bag.scrollTop:0;
- panel.textContent="";skinPaintPanel(panel);panel.scrollTop=keep;if(bag)bag.scrollTop=k2;
+ const panel=skEl.querySelector("#skpanel"),keep=panel.scrollTop;
+ panel.textContent="";skinPaintPanel(panel);panel.scrollTop=keep;
 }
-function skinOpen(w){
- cload();if(!skEl)skEl=skinBuild();
- try{bagClose()}catch(e){}try{craftClose()}catch(e){}try{armoryClose()}catch(e){}
- skFrom=document.activeElement;skMsg="";skPending="";skFocus=typeof w==="string"?w:"";skinPaint();
- try{const fe=document.fullscreenElement||document.webkitFullscreenElement;(fe&&fe!==document.documentElement?fe:document.body).appendChild(skEl)}catch(e){}
- skEl.hidden=false;document.documentElement.classList.add("bag-open");skinPaint();
- try{dispatchEvent(new CustomEvent("skins:open"));dispatchEvent(new CustomEvent("bag:open"))}catch(e){}
- const x=skEl.querySelector(".bag-x");x&&x.focus();
-}
-function skinClose(){
- if(!skEl||skEl.hidden)return;
- skEl.hidden=true;clearTimeout(skTimer);skPending="";document.documentElement.classList.remove("bag-open");
- try{dispatchEvent(new CustomEvent("skins:close"))}catch(e){}
- try{skFrom&&skFrom.focus&&skFrom.focus()}catch(e){}
- if(location.hash==="#skins")history.replaceState(null,"",location.pathname+location.search);
-}
+function skinOpen(w){armoryOpen("skins",typeof w==="string"?w:undefined)}
 document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest("[data-skins]");if(t){e.preventDefault();skinOpen(t.getAttribute("data-skins")||undefined)}});
-addEventListener("hashchange",()=>{if(location.hash==="#skins")skinOpen()});
-addEventListener("DOMContentLoaded",()=>{if(location.hash==="#skins")skinOpen()});
 
 // ---- header: round avatar button (top right) -> arcade.html#avatar ----
 function paintAv(){

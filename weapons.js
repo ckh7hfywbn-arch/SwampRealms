@@ -65,11 +65,14 @@ const WeaponArt=(()=>{
    c.fillStyle=rg(c,-10,0,.3,4,[[0,lt(p.metal,.75)],[.55,p.metal],[1,dk(p.metal,.5)]],-11.2,-1.3);c.strokeStyle=O;c.lineWidth=1.5;c.beginPath();c.arc(-10,0,3.5,0,7);c.fill();c.stroke();
    // thorns first, so their roots tuck under the blade edge
    const by=x=>(x<30?4.2-(x-5.8)*.029:3.5-(x-30)*.12)-.5;
-   const thorn=(x,sg)=>{const y0=by(x+2.5)*sg;
-    c.fillStyle=lg(c,0,y0,0,sg*10.4,[[0,dk(p.th,.2)],[.55,p.th],[1,lt(p.th,.5)]]);c.strokeStyle=p.thS;c.lineWidth=1.2;
-    c.beginPath();c.moveTo(x,y0);c.quadraticCurveTo(x+.3,sg*8,x+3.6,sg*10.4);c.quadraticCurveTo(x+4.3,sg*7,x+5,y0);c.closePath();c.fill();c.stroke();
-    c.strokeStyle="rgba(255,255,255,.5)";c.lineWidth=.6;c.beginPath();c.moveTo(x+1.2,sg*5.4);c.quadraticCurveTo(x+1.7,sg*7.8,x+3,sg*9);c.stroke()};
-   for(let i=0;i<4;i++){thorn(10+i*6.5,-1);thorn(11.6+i*6.5,1)}
+   // clean, evenly spaced thorns: same spot on both edges, shrinking toward the tip, each a sharp swept-back claw with a lit side and a shaded side
+   const thorn=(x,len,sg)=>{const w=3.1,y0=by(x+w/2)*sg,tx=x+w+1.3,ty=sg*(by(x+w/2)+len);
+    const path=()=>{c.beginPath();c.moveTo(x,y0);c.quadraticCurveTo(x+.1,y0+sg*len*.6,tx,ty);c.quadraticCurveTo(x+w-.2,y0+sg*len*.4,x+w,y0);c.closePath()};
+    path();c.fillStyle=lg(c,0,y0,0,ty,[[0,dk(p.th,.25)],[.6,p.th],[1,lt(p.th,.45)]]);c.fill();
+    c.save();path();c.clip();c.fillStyle="rgba(0,0,0,.26)";c.beginPath();c.moveTo(x+w*.5,y0);c.lineTo(tx,ty);c.lineTo(x+w+.6,y0);c.closePath();c.fill();
+    c.strokeStyle="rgba(255,255,255,.6)";c.lineWidth=.6;c.beginPath();c.moveTo(x+.7,y0+sg*len*.18);c.quadraticCurveTo(x+1.2,y0+sg*len*.55,tx-.8,ty-sg*len*.12);c.stroke();c.restore();
+    c.lineJoin="miter";c.miterLimit=5;path();c.strokeStyle=p.thS;c.lineWidth=1;c.stroke();c.lineJoin="round"};
+   const TL=[7,6.4,5.6,4.6];for(let i=0;i<4;i++){const x=10.2+i*5.9;thorn(x,TL[i],-1);thorn(x,TL[i],1)}
    // crossguard (leaf wings)
    c.fillStyle=metalV(c,p.metal,-9,9);c.strokeStyle=O;c.lineWidth=1.6;
    c.beginPath();c.moveTo(1.2,-3);c.quadraticCurveTo(-.2,-7,1.4,-9.2);c.quadraticCurveTo(5,-9.2,5.9,-5.6);c.lineTo(5.9,5.6);c.quadraticCurveTo(5,9.2,1.4,9.2);c.quadraticCurveTo(-.2,7,1.2,3);c.closePath();c.fill();c.stroke();

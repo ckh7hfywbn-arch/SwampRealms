@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="ui.css?v=loadout1">
+<link rel="stylesheet" href="ui.css?v=armory1">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -97,8 +97,8 @@
 <nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
-<script src="weapons.js?v=skins1"></script>
-<script src="store.js?v=skins1"></script>
+<script src="weapons.js?v=skins2"></script>
+<script src="store.js?v=armory1"></script>
 <script src="avatar.js"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
@@ -1768,22 +1768,19 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   box.appendChild(el);while(box.children.length>3)box.firstChild.remove();
   setTimeout(()=>el.remove(),2700);
  }
- // the Bag button under the game: opens the bag (coins, crystals, fragments, gear). The item count shows on the button.
+ // the Armory button under the game: one popup with Bag, Crafting, Weapons and the Skin Shop tabs. The item count shows on the button, and a green count when something can be crafted right now.
  function showFrags(){
   const el=$("frinv");if(!el||typeof Bag==="undefined")return;
-  if(!el.querySelector("[data-bag]")){
+  if(!el.querySelector("[data-armory]")){
    el.className="bagrow";el.textContent="";
-   const b=document.createElement("button");b.type="button";b.className="btn ghost bagbtn";b.setAttribute("data-bag","");b.setAttribute("aria-label","Open your bag");
-   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 7V5a4 4 0 018 0v2"/><path d="M6 7h12l2 13a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M9 13h6"/></svg><span>Bag</span><small data-bag-count>0</small>';
+   const b=document.createElement("button");b.type="button";b.className="btn ghost bagbtn";b.setAttribute("data-armory","");b.setAttribute("aria-label","Open your armory: bag, crafting, weapons and skin shop");
+   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg><span>Armory</span><small data-bag-count title="Items carried">0</small><small data-craft-count title="Ready to craft" hidden>0</small>';
    el.appendChild(b);
-   const c=document.createElement("button");c.type="button";c.className="btn ghost bagbtn";c.setAttribute("data-craft","");c.setAttribute("aria-label","Open crafting");
-   c.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 9l-7 7 4 4 7-7"/></svg><span>Craft</span><small data-craft-count hidden>0</small>';
-   el.appendChild(c);
   }
   try{paintCraft()}catch(e){}
   const n=Bag.count;el.querySelectorAll("[data-bag-count]").forEach(e=>{e.textContent=n});
  }
- // opening the bag mid-run pauses the game so nothing hits you while you look
+ // opening the Armory mid-run pauses the game so nothing hits you while you look
  addEventListener("bag:open",()=>{try{pause()}catch(e){}});
  try{showFrags()}catch(e){}
  // stop iOS pinch/gesture zoom and the long-press menu while playing (inside the game box only)

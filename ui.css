@@ -835,10 +835,6 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
 .lo-row b.none{color:#6f8a84;font-weight:800}
 .lo-set{margin:0;font:800 11px Nunito,sans-serif;letter-spacing:.04em;color:#6f8a84}
 .lo-set.on{color:#5fd38d;text-shadow:0 0 12px #5fd38d66}
-#bag.bag-inline{scroll-margin-top:84px;margin-top:14px}
-.bag-inline .bag{width:100%;max-height:none;animation:none;text-align:left}
-.bag-inline .bag-head h2{text-transform:none;letter-spacing:.02em;font-weight:400;font-size:26px;text-shadow:none}
-.bag-inline #bgpanel{overflow:visible}
 @media(max-width:700px){
  .lo{grid-template-columns:1fr 1fr;grid-template-areas:"hero health" "hero weapon" "armor armor"}
  .lo-hero{padding:14px 10px}
@@ -847,33 +843,11 @@ input,textarea,select,[contenteditable="true"],.selectable{-webkit-user-select:t
  .lo{grid-template-columns:1fr;grid-template-areas:"hero" "health" "weapon" "armor"}
  .lo-av{width:130px}
 }
-@media(min-width:701px){.bag-inline .bg-grid{grid-template-columns:repeat(6,1fr)}}
 
 /* Tab bars (Bag, Crafting, Skins): never squeezed or scrolled up/down by tall panels; only sideways */
 .bg-tabs{flex:none;overflow-y:hidden;overflow-x:auto;padding-bottom:4px}
 .bag-head,.bg-wallet{flex:none}
 .bg-tab{flex-shrink:0}
-
-/* Bag | Crafting pager (Arcade): swipe sideways between the two panes */
-.lo-pager{display:flex;justify-content:center;gap:8px;margin:18px auto 6px}
-.lo-pager button{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:6px 20px;border-radius:999px;border:1px solid #4ee6b433;background:#0a100c;color:#cfe1e3;font:800 13px Nunito,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
-.lo-pager button[aria-selected=true]{border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0;box-shadow:0 0 16px -6px #f2c14e}
-.lo-pager .craftbadge{display:inline-block;min-width:20px;padding:1px 7px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 11px Nunito,sans-serif;text-align:center}
-.lo-swipe{margin:0 0 10px;font:800 11px Nunito,sans-serif;color:#a9c7c0;letter-spacing:.04em}
-.lo-track{display:flex;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0 -16px;padding:0 16px 24px;scroll-padding:0 16px;box-sizing:border-box;width:calc(100% + 32px)}
-.lo-track::-webkit-scrollbar{display:none}
-.lo-track>.bag-inline,.lo-track>.craft-inline{flex:0 0 100%;min-width:0;margin:0 32px 0 0;scroll-snap-align:start;scroll-margin-top:84px}
-.lo-track>.craft-inline:last-child{margin-right:0}
-.craft-inline .bag{width:100%;max-height:none;animation:none;text-align:left}
-.craft-inline .bag-head h2{text-transform:none;letter-spacing:.02em;font-weight:400;font-size:26px;text-shadow:none}
-.craft-inline #crpanel{overflow:visible}
-@media(prefers-reduced-motion:reduce){.lo-track{transition:none}}
-
-/* smoother swipe: panes get their own layer, no height animation, and while moving the glow shadows and shimmer are switched off */
-.lo-track>.bag-inline,.lo-track>.craft-inline{transform:translateZ(0);backface-visibility:hidden}
-.lo-track.moving .bag{box-shadow:none}
-.lo-track.moving *{animation-play-state:paused!important}
-.lo-track{scroll-behavior:auto}
 
 /* Treasure cabin chest popup (adventure.html: #chp, chestcabin.js) */
 #box .chp{background:radial-gradient(ellipse at 50% 42%,#3b2a10ee,#0b0804f6 78%)}
@@ -953,13 +927,98 @@ html.av-open{overflow:hidden}
 .ar-chip:focus-visible{outline:2px solid #fff3d6;outline-offset:2px}
 #arpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px}
 
-/* Skin Shop entry button (Arcade page, under Your Loadout) */
-.sk-entry{display:block;margin:12px auto 4px;padding:11px 20px;border:2px solid #0e2a24;border-radius:999px;font:800 15px/1.1 Nunito,system-ui,sans-serif;color:#fff;cursor:pointer;background:linear-gradient(120deg,#9d4dff,#ff4fd8 50%,#ffb028);box-shadow:0 3px 0 #0e2a24,0 0 18px rgba(255,79,216,.35);text-shadow:0 1px 0 rgba(0,0,0,.45)}
-.sk-entry:active{transform:translateY(2px);box-shadow:0 1px 0 #0e2a24}
-/* Skin Shop popup: scrolls inside the panel (same as the Bag and Crafting) so it never grows taller than the screen */
+/* Skin Shop tab: scrolls inside its panel so the Armory never grows taller than the screen */
 #skpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain;display:flex;flex-direction:column;gap:14px}
 .sk-sec{display:flex;flex-direction:column;gap:8px}
 .sk-h{margin:0;font:800 15px/1.2 Nunito,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#f2c14e}
 .sk-h small{font-weight:700;text-transform:none;letter-spacing:0;color:#9fb8ae}
 .sk-list{display:flex;flex-direction:column;gap:10px}
 .bag-wrap{grid-template-rows:minmax(0,1fr)}
+
+/* Skin Shop weapon tabs: one weapon's skins at a time */
+.sk-tabs{position:sticky;top:0;z-index:2;display:flex;gap:8px;padding:2px 0 8px;background:linear-gradient(#0b130f 78%,#0b130f00)}
+.sk-tab{position:relative;flex:1 1 0;min-width:0;min-height:48px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1.5px solid #4ee6b455;border-radius:14px;background:#0e1712;color:#cfe8dd;font:800 12.5px/1.15 Nunito,system-ui,sans-serif;text-align:center;cursor:pointer}
+.sk-tab small{font:700 11px/1.1 Nunito,system-ui,sans-serif;color:#9fb8ae}
+.sk-tab.on{border-color:#f2c14e;background:linear-gradient(180deg,#2a2410,#14110a);color:#ffe9a8;box-shadow:0 0 14px -3px #f2c14e88}
+.sk-tab.on small{color:#e6cf8a}
+.sk-can{position:absolute;top:5px;right:6px;width:9px;height:9px;border-radius:50%;background:#4ee6b4;box-shadow:0 0 8px #4ee6b4}
+.sk-row.can{box-shadow:0 0 0 1.5px #4ee6b466,0 0 16px -4px #4ee6b4}
+
+.sk-h{text-align:center;font-size:13px;color:#9fb8ae;text-transform:none;letter-spacing:0;padding:2px 0 4px}
+
+#skpanel .sk-sec{padding:0;margin:0}
+
+/* Skin Shop: progress bar on a skin you cannot afford yet */
+.cr-btn.sk-prog:disabled{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 10px;min-height:48px;color:#e8fff6;border-color:#4ee6b477;background:linear-gradient(90deg,#1f8f6a 0,#4ee6b4 var(--p,0%),#0a100c var(--p,0%));cursor:default}
+.cr-btn.sk-prog .sk-pt{font:900 13px/1.1 Nunito,sans-serif;letter-spacing:.04em;text-shadow:0 1px 2px #000c}
+.cr-btn.sk-prog .sk-pl{font:700 11px/1.1 Nunito,sans-serif;letter-spacing:.03em;text-transform:none;color:#d6f5ea;text-shadow:0 1px 2px #000c}
+
+/* Skin Shop purchase celebration */
+.sk-pop{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 18px;text-align:center;cursor:pointer;background:#02060af4;background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--c,#f2c14e) 34%,transparent),transparent 66%),#02060af4;animation:skFade .28s ease-out}
+.sk-pop .sk-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.sk-pop-lbl{position:relative;font:900 13px/1 Nunito,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#fff3d6;text-shadow:0 0 14px var(--a,#f2c14e)}
+.sk-pop-art{position:relative;width:min(340px,86%);animation:skPop .75s cubic-bezier(.2,1.5,.4,1) both}
+.sk-pop-art::before{content:"";position:absolute;inset:-14% -8%;border-radius:50%;background:radial-gradient(circle,var(--a,#f2c14e) 0,transparent 68%);opacity:.55;animation:skPulse 1.6s ease-in-out infinite}
+.sk-pop-art canvas{position:relative;display:block;width:100%;height:auto;filter:drop-shadow(0 0 14px var(--a,#f2c14e))}
+.sk-pop-name{position:relative;font:900 25px/1.1 'Bagel Fat One',Nunito,system-ui,sans-serif;color:var(--c,#f2c14e);text-shadow:0 2px 0 #000a,0 0 18px var(--c,#f2c14e);animation:skRise .5s .2s ease-out both}
+.sk-pop-sub{position:relative;font:800 14px/1.25 Nunito,system-ui,sans-serif;color:#e8fff6;animation:skRise .5s .32s ease-out both}
+.sk-pop-tap{position:relative;margin-top:10px;font:700 12px Nunito,system-ui,sans-serif;color:#9fb8ae;animation:skRise .5s .8s ease-out both}
+.sk-pop.calm,.sk-pop.calm *{animation:none!important}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPop{0%{transform:scale(.3) rotate(-8deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes skPulse{0%,100%{transform:scale(.94);opacity:.4}50%{transform:scale(1.06);opacity:.65}}
+@keyframes skRise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.sk-pop,.sk-pop *{animation:none!important}}
+
+/* "What next?" recipe hints for weapons you do not own yet */
+.rh{--c:#f2c14e;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);background:linear-gradient(180deg,#0e1712,#080e0b);text-align:left}
+.rh.ready{box-shadow:0 0 18px -4px var(--c)}
+.rh.soon{opacity:.85}
+.rh-art{margin:0}
+.rh-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rh-top b{font:900 15px/1.2 Nunito,system-ui,sans-serif;color:#fff3d6}
+.rh-top small{font:800 12px/1.2 Nunito,system-ui,sans-serif;color:var(--c);white-space:nowrap}
+.rh-bar{height:8px;border-radius:99px;background:#05090a;border:1px solid #4ee6b433;overflow:hidden}
+.rh-bar i{display:block;height:100%;background:linear-gradient(90deg,#1f8f6a,#4ee6b4);border-radius:99px;min-width:0}
+.rh-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rh-list li{display:grid;grid-template-columns:1fr auto;gap:0 8px;align-items:baseline;padding:6px 8px;border-radius:10px;background:#05090a99}
+.rh-list .rh-n{font:800 13px/1.2 Nunito,system-ui,sans-serif;color:#e8fff6}
+.rh-list em{font:900 13px/1.2 Nunito,system-ui,sans-serif;font-style:normal;color:#ffb86b}
+.rh-list li.ok em{color:#4ee6b4}
+.rh-list li.ok .rh-n::after{content:" \2713";color:#4ee6b4}
+.rh-list small{grid-column:1/-1;font:700 11.5px/1.25 Nunito,system-ui,sans-serif;color:#9fb8ae}
+.rh .cr-btn.ghost:not(:disabled){background:transparent;color:#f2c14e}
+.rh-intro{margin:0 0 2px}
+.rh .rh-list small{color:#8fa8a0;font-weight:700}
+
+/* ===== The Armory: one popup, four tabs (Bag | Crafting | Weapons | Skin Shop). Opened with data-armory / Armory.open() ===== */
+.armory{height:min(640px,100%)}   /* fixed height so the popup does not jump in size between tabs */
+.armory .bg-wallet{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.armory .bg-wallet>span{display:grid;grid-template-columns:auto auto;justify-content:center;align-items:center;column-gap:6px;row-gap:3px;padding:7px 4px 6px;text-align:center}
+.armory .bg-wallet b{font-size:18px;line-height:1}
+.armory .bg-wallet .coin{width:18px;height:18px}
+.armory .bg-wallet .bg-fr{width:13px;height:15px;justify-self:center}
+.armory .bg-wallet em{grid-column:1/-1;font-size:9px;letter-spacing:.08em;white-space:nowrap}
+.ar-tabs{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;border-radius:16px;background:#05090a;border:1px solid #4ee6b433}
+.ar-tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:54px;padding:7px 2px 6px;border-radius:12px;border:1px solid transparent;background:transparent;color:#a9c7c0;font:800 10.5px/1.1 Nunito,sans-serif;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;touch-action:manipulation}
+.ar-tab svg{width:20px;height:20px;flex:none}
+.ar-tab span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ar-tab:hover{color:#e7f4ee}
+.ar-tab[aria-selected=true]{border-color:#f2c14e;background:#f2c14e22;color:#ffe9b0;box-shadow:0 0 16px -6px #f2c14e}
+.ar-tab small{position:absolute;top:2px;right:3px;min-width:16px;padding:0 5px;border-radius:999px;background:#f2c14e;color:#1a1405;font:900 10px/16px Nunito,sans-serif;text-align:center}
+.ar-tab:focus-visible{outline:2px solid var(--mint,#4ee6b4);outline-offset:1px}
+.ar-pane{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:12px}
+.ar-pane[hidden]{display:none}
+.ar-pane>[role=tabpanel],.ar-pane>#arpanel,.ar-pane>#skpanel{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:380px){.ar-tab{font-size:9.5px;letter-spacing:.03em}}
+
+/* Arcade (Your Loadout) and Swamp Adventure: the button that opens the Armory */
+.lo-armory{display:flex;flex-direction:column;align-items:center;gap:8px;margin:18px auto 4px}
+.lo-swipe{margin:0;font:800 11px Nunito,sans-serif;color:#a9c7c0;letter-spacing:.04em;text-align:center}
+.armory-open{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:10px 28px;border-radius:999px;border:2px solid #0e2a24;background:linear-gradient(180deg,#ffd878,#f2c14e);color:#1a1405;font:900 16px/1 Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 3px 0 #0e2a24,0 0 22px -6px #f2c14e;touch-action:manipulation}
+.armory-open svg{width:22px;height:22px;flex:none}
+.armory-open:active{transform:translateY(2px);box-shadow:0 1px 0 #0e2a24}
+.armory-open:focus-visible{outline:2px solid #fff3d6;outline-offset:3px}
+.armory-open .bagbadge,.armory-open .craftbadge{display:inline-block;min-width:20px;padding:2px 7px;border-radius:999px;background:#1a1405;color:#ffe9b0;font:900 11px Nunito,sans-serif;text-align:center}
+.armory-open .craftbadge{background:#0e5a43;color:#d8fff0}
+.bagbtn small[data-craft-count]{background:#4ee6b4;color:#06251b}
