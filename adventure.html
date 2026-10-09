@@ -97,8 +97,8 @@
 <nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
 
 <script src="cards.js"></script>
-<script src="weapons.js?v=art1"></script>
-<script src="store.js?v=loadout1"></script>
+<script src="weapons.js?v=skins1"></script>
+<script src="store.js?v=skins1"></script>
 <script src="avatar.js"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
@@ -1279,7 +1279,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   goo=goo.filter(g=>g.life>0&&g.x>-40&&g.x<LEVEL_W+40);
  }
  function drawGoo(){
-  for(const g of goo){glow(GLOW.moon,g.x,g.y,15,.7);X.fillStyle="#5bd64a";X.strokeStyle="#1f4a14";X.lineWidth=1.6;X.beginPath();X.arc(g.x,g.y,5.6,0,7);X.fill();X.stroke();X.fillStyle="#d9ffc9";X.beginPath();X.arc(g.x-1.8,g.y-2,1.9,0,7);X.fill()}
+  const gsk=heldSkin("bogblaster"),gac=gsk&&WeaponArt.skinInfo(gsk),gcol=gac?gac.accent:null;for(const g of goo){glow(GLOW.moon,g.x,g.y,15,.7);X.fillStyle=gcol||"#5bd64a";X.strokeStyle=gcol?"rgba(0,0,0,.55)":"#1f4a14";X.lineWidth=1.6;X.beginPath();X.arc(g.x,g.y,5.6,0,7);X.fill();X.stroke();X.fillStyle="#d9ffc9";X.beginPath();X.arc(g.x-1.8,g.y-2,1.9,0,7);X.fill()}
   // lock-on reticle on the enemy the next shot will go to
   if(state.mode==="playing"&&heldWeapon()==="bogblaster"&&vis.dying<=0){const t=aimTarget(state.face);if(t){const p=.5+.5*Math.sin(state.t*9);X.save();X.strokeStyle="rgba(125,255,106,"+(.55+.3*p)+")";X.lineWidth=2;X.beginPath();X.arc(t.x,t.y,15+3*p,0,7);X.stroke();for(let i=0;i<4;i++){const a=i*1.5708+state.t*2;X.beginPath();X.moveTo(t.x+Math.cos(a)*11,t.y+Math.sin(a)*11);X.lineTo(t.x+Math.cos(a)*19,t.y+Math.sin(a)*19);X.stroke()}X.restore()}}
  }
@@ -1287,6 +1287,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // Each is drawn pointing right from the grip at (0,0); drawHeld() flips it to face the way the player looks.
  const WPN_PAL={spikedblade:["#ffb04f","#fff3cf"],bogblaster:["#7dff6a","#eaffd0"],hopperstaff:["#4ee6b4","#e6fff6"]};
  function heldWeapon(){try{const id=CS.geq&&CS.geq.weapons;return id&&CS.gear[id]>0&&WPN_PAL[id]?id:""}catch(e){return""}}
+ // the skin worn on the held weapon (bought in the Skin Shop with Swamp Crystals), or null
+ function heldSkin(id){try{return(id&&typeof Skins!=="undefined"&&Skins.equippedFor(id))||null}catch(e){return null}}
  // The weapon art lives in weapons.js (WeaponArt), shared with the Bag so the preview there is the same drawing. Add a new weapon there.
  // gx,gy = where the hand is (in the player's local space); the weapon rests angled up and swings through the attack
  function drawHeld(gx,gy){
@@ -1295,14 +1297,14 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   let ang=-.7+Math.sin(state.t*2.4)*.05,a=0;
   if(id==="bogblaster"){ang=-.12+Math.sin(state.t*2.4)*.03;if(p>=0){ang=AIMA-.3*Math.max(0,1-p/.45);a=Math.max(0,1-p/.5)}}
   else if(p>=0){if(p<.25)ang=-.7-1.0*(p/.25);else{const u=(p-.25)/.75;ang=-1.7+2.7*(1-(1-u)*(1-u));a=1-u}}
-  X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WeaponArt.draw(X,id,a);X.restore();
+  X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WeaponArt.draw(X,id,a,heldSkin(id));X.restore();
  }
  function drawSlash(){
   if(HELD&&HELD.ranged)return;
   const p=1-state.attack/ATK_T;if(p<.25)return;
   const u=(p-.25)/.75,e=1-(1-u)*(1-u),hd=-1.35+1.9*e,tl=hd-1.25*(1-u*.6),f=state.face,w=1-u*.55;
   X.save();X.translate(state.x+f*8,state.y-2);X.scale(f,1);X.globalAlpha=Math.min(1,(1-u)*1.8);X.lineCap="round";
-  const pal=WPN_PAL[heldWeapon()]||["#ffb04f","#fff3cf"];X.strokeStyle=pal[0];X.lineWidth=10*w;X.beginPath();X.arc(0,0,34*(HELD?HELD.reach:46)/46,tl,hd);X.stroke();
+  const hw=heldWeapon(),si=hw&&heldSkin(hw)&&WeaponArt.skinInfo(heldSkin(hw)),pal=(si&&si.slash)||WPN_PAL[hw]||["#ffb04f","#fff3cf"];X.strokeStyle=pal[0];X.lineWidth=10*w;X.beginPath();X.arc(0,0,34*(HELD?HELD.reach:46)/46,tl,hd);X.stroke();
   X.strokeStyle=pal[1];X.lineWidth=4*w;X.beginPath();X.arc(0,0,34*(HELD?HELD.reach:46)/46,tl+.12,hd-.05);X.stroke();
   X.restore();
  }

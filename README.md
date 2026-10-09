@@ -213,3 +213,6 @@ On every level with a boss arena (Levels 1-4 and the Endless Realms boss levels)
 ## Your Loadout: weapon picker
 
 The Weapon card in Your Loadout (`#lo-weapon` in `arcade.html`) is a button. It opens a popup (`armoryOpen()` in `store.js`) listing the weapons you own, each with Equip / Unequip and a Skin row (Plain, every skin you own, and a Skin Shop button for buying more). It uses the same `Gear` and `Skins` calls as the Bag, so the Bag, the Loadout and the Swamp Adventure stay in step.
+
+## Weapon skins (Skin Shop)
+Nine Swamp Crystal skins, three per weapon: Epic 600, Legendary 900, Mythical 1500 crystals (art in `SKIN_ART` in `weapons.js`, prices in `SKINS` in `store.js`). The Swamp Adventure now draws the worn skin in the player's hand (`heldSkin()` in `adventure.html`), tints the swing arc with the skin's colours, and tints Bog Blaster goo with the skin's accent colour. The Skin Shop opens from the Arcade page's "Skin Shop" button, the Weapon card in Your Loadout, or `#skins`.

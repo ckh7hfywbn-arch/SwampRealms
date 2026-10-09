@@ -952,3 +952,14 @@ html.av-open{overflow:hidden}
 .ar-chip:hover{filter:brightness(1.12)}
 .ar-chip:focus-visible{outline:2px solid #fff3d6;outline-offset:2px}
 #arpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px}
+
+/* Skin Shop entry button (Arcade page, under Your Loadout) */
+.sk-entry{display:block;margin:12px auto 4px;padding:11px 20px;border:2px solid #0e2a24;border-radius:999px;font:800 15px/1.1 Nunito,system-ui,sans-serif;color:#fff;cursor:pointer;background:linear-gradient(120deg,#9d4dff,#ff4fd8 50%,#ffb028);box-shadow:0 3px 0 #0e2a24,0 0 18px rgba(255,79,216,.35);text-shadow:0 1px 0 rgba(0,0,0,.45)}
+.sk-entry:active{transform:translateY(2px);box-shadow:0 1px 0 #0e2a24}
+/* Skin Shop popup: scrolls inside the panel (same as the Bag and Crafting) so it never grows taller than the screen */
+#skpanel{overflow-y:auto;min-height:0;overscroll-behavior:contain;display:flex;flex-direction:column;gap:14px}
+.sk-sec{display:flex;flex-direction:column;gap:8px}
+.sk-h{margin:0;font:800 15px/1.2 Nunito,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#f2c14e}
+.sk-h small{font-weight:700;text-transform:none;letter-spacing:0;color:#9fb8ae}
+.sk-list{display:flex;flex-direction:column;gap:10px}
+.bag-wrap{grid-template-rows:minmax(0,1fr)}
