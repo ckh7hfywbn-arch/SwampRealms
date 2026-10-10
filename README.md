@@ -74,7 +74,8 @@ Defeated enemies have a chance to drop a Fragment. The table is `FRAGMENTS` in `
 | `bug` (Bramble Bug) | Bramble Fragment | 30% |
 | `crawler` (Bog Crawler) | Bog Fragment | 40% |
 | `boss` (Rootmaw) | Rootmaw Fragment (rare) | 25% |
-| `frog`, `crocodile`, `slime` | Frog / Crocodile / Slime Fragment | 40% (ready for when those enemies exist) |
+| `frog` (Swamp Frog, Level 3) | Frog Fragment | 100% (like the other enemies in `store.js`) |
+| `crocodile`, `slime` | Crocodile / Slime Fragment | 40% (ready for when those enemies exist) |
 
 - **Stored for real.** Counts are kept in the crystals save as `frags` (`{ bug: 2, boss: 1 }`), so they persist in the browser and sync with accounts like everything else. `Fragments.count(id)`, `Fragments.total`, `Fragments.all` read them; `Fragments.add(id, n)` writes them.
 - **Drops.** `adventure.html` calls `Fragments.roll(enemyId)` the first time an enemy is seen defeated (the same place the kill score is awarded, `scoreTick`). A drop is saved immediately, shows a small notification at the top of the game, puts a shard burst and a floating label where the enemy fell, and adds a chip to the Fragments line under the game. The results screens show how many were found in the run.
@@ -123,7 +124,7 @@ Players turn fragments into weapons in the **Crafting** tab of the Armory. Open 
 | --- | --- | --- |
 | Spiked Blade (the first weapon) | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Wing (`wing`) | Levels 1 and 2: Bramble Bugs, the Bog Gator and the Mirewing |
 | Bog Blaster | 3 Bog (`crawler`) + 1 Rootmaw (`boss`) + 1 Ape (`ape`) | Levels 3 and 4: the Rootmaw and the Stone Ape |
-| Swamp Hopper Staff | 5 Frog Fragments (`frog`, the Frog enemy is not in the game yet, so this one cannot be crafted until it is) | not yet |
+| Swamp Hopper Staff | 5 Frog Fragments (`frog`) | Level 3: the Swamp Frog (replay Level 3 to farm them) |
 
 | Armor | Cost |
 | --- | --- |
@@ -193,6 +194,9 @@ If the Worker is not named `theswampverse`, change `name` in `wrangler.jsonc` to
 
 Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
 
+
+## Swamp Frog (Level 3)
+A bright tree frog guarding the ledge before Level 3's first big drop. It lives in `LEVELS[2].frog` (`{min, max, x}`, the patch it hops along) and its code sits in `adventure.html` next to the Bog Crawler (`FRG` tuning, `updateFrog`, `drawFrog`). It hops in short bounces; when you get within range it opens its mouth (amber "!"), then flicks a tongue straight out along the ground for a moment. The tongue is a low strip, so jumping it works. After the lash the frog is winded (harmless) for about a second: that is the window to strike. Touching its body also costs a flame. It takes 3 hits, is worth 300 score, counts in "Enemies defeated", can be hit by the Bog Blaster's aim assist, and drops a Frog Fragment (`frog` in `store.js`), which is what the Swamp Hopper Staff is crafted from. Only Level 3 has one: other levels and the Endless Realms are unchanged. To move it, change the three numbers in `LEVELS[2].frog`; to make it easier or harder, edit `FRHP` (hits) and `FRG` (`aggro`, `reach`, `wind`, `recover`).
 
 ## Level 4: The Sunlit Canopy
 Hand-made, no boss. Daytime jungle theme (`TH4`, with `canopy` and `temple` flags), music track 4, 42 Glowspores, tougher enemies than Level 3 (Bramble Bug 3 hits, Bog Crawler 4). Because it sits at index 3, the Endless Realms now start at index 4 (Danger 1) and boss levels stay at 3, 6, 9. Old saves are shifted once on load (`swampverse-arcade-v4mig`) so Endless progress and best scores are kept; all four hand-made levels stay replayable from Level Select once unlocked (`retired()` in `adventure.html` always returns false; change it to hide a level again).

@@ -134,7 +134,7 @@ const FRAGMENTS={
  bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:1,rarity:"common"},
  crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:1,rarity:"uncommon"},
  boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:1,rarity:"rare"},
- // ready for enemies that are not in the game yet
+ // frog = the Swamp Frog (Level 3); crocodile and slime are ready for enemies that are not in the game yet
  frog:{name:"Frog Fragment",enemy:"Frog",chance:1,rarity:"common"},
  crocodile:{name:"Crocodile Fragment",enemy:"Crocodile",chance:1,rarity:"uncommon"},
  slime:{name:"Slime Fragment",enemy:"Slime",chance:1,rarity:"common"},
@@ -315,7 +315,7 @@ const RECIPES={
  // Progression: Spiked Blade (the first weapon) = Level 1 + 2 loot. Mirewing armor = beat the Level 2 boss. Bog Blaster = Level 3 + 4 bosses.
  bogblaster:{cost:{crawler:3,boss:1,ape:1}},   // 3 Bog Fragments + 1 Rootmaw Fragment (Level 3 boss) + 1 Ape Fragment (Level 4 boss)
  spikedblade:{cost:{bug:4,crawler:2,wing:1}},  // 4 Bramble Fragments + 2 Bog Fragments (Level 1 boss, Bog Gator) + 1 Wing Fragment (Level 2 boss, Mirewing)
- hopperstaff:{cost:{frog:5}},     // 5 Frog Fragments (the Frog enemy is not in the game yet)
+ hopperstaff:{cost:{frog:5}},     // 5 Frog Fragments (dropped by the Swamp Frog in Level 3)
  // Mirewing armor: every piece needs at least one Wing Fragment (the Level 2 boss, Mirewing) on top of the other fragments
  wardenhelm:{cost:{bug:4,crawler:2,wing:1}},
  wardenplate:{cost:{crawler:5,wing:1}},
@@ -409,6 +409,34 @@ function bagPaintBody(){
  panel.appendChild(note);
  if(!shown&&bagTab==="weapons"){const h=weaponHints()[0];const c=h&&recipeHint(h.r.id,{});c&&panel.appendChild(c)}
 }
+// preview of an accessory: your own character wearing only that item (so you can see what it looks like before and after crafting). null if the avatar art is missing.
+function accThumb(g){
+ try{
+  if(typeof AV==="undefined"||typeof Crystals==="undefined"||!g.part)return null;
+  const acc={};acc[g.part]=g.id;
+  const o=Object.assign({},Crystals.outfit(),{nobg:true,acc});
+  const d=document.createElement("div");d.className="gr-acc";d.setAttribute("role","img");d.setAttribute("aria-label",g.name+" shown on your character");
+  d.style.cssText="flex:none;width:76px;height:82px;border-radius:12px;border:1px solid "+g.color+";background:radial-gradient(ellipse at 50% 55%,#12301f,#0a100c 75%);display:grid;place-items:center;overflow:hidden;box-shadow:0 0 10px -4px "+g.color;
+  d.innerHTML=AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="14 6 172 176" width="76" height="80"');
+  return d;
+ }catch(e){return null}
+}
+// small preview for a Crafting row, whatever the tab: accessories show your character wearing them, weapons show their real art, everything else shows its icon in the same frame
+function gearThumb(g){
+ try{
+  if(g.slot==="accessories"){const a=accThumb(g);if(a)return a}
+  const d=document.createElement("div");d.className="gr-acc";d.setAttribute("role","img");d.setAttribute("aria-label",g.name+" preview");
+  const wide=g.slot==="weapons";
+  d.style.cssText="flex:none;width:"+(wide?96:76)+"px;height:"+(wide?64:82)+"px;border-radius:12px;border:1px solid "+g.color+";background:radial-gradient(ellipse at 50% 55%,color-mix(in srgb,"+g.color+" 22%,#0a100c),#0a100c 75%);display:grid;place-items:center;overflow:hidden;box-shadow:0 0 10px -4px "+g.color+";color:"+g.color;
+  if(wide&&typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){
+   const cv=document.createElement("canvas");cv.width=192;cv.height=128;cv.style.cssText="display:block;width:100%;height:100%";
+   WeaponArt.paint(cv,g.id,null,(typeof Skins!=="undefined"?Skins.equippedFor(g.id):null));d.appendChild(cv);return d;
+  }
+  const ic=(GEAR_SLOTS[g.slot]&&GEAR_SLOTS[g.slot].icon)||"";
+  d.innerHTML='<svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" style="filter:drop-shadow(0 0 5px currentColor)">'+(g.icon||ic)+'</svg>';
+  return d;
+ }catch(e){return null}
+}
 // a gear tab (Weapons, Armor...): one card per owned item with icon, rarity, stats, description, equipped status and an Equip / Unequip button
 let bagGearMsg="";
 function bagPaintGear(panel,slot){
@@ -421,7 +449,8 @@ function bagPaintGear(panel,slot){
   // the real weapon design (same drawing as the one held in the Swamp Adventure); falls back to the small icon if the art is missing
   let art=null;
   if(typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){art=document.createElement("div");art.className="gr-art";art.setAttribute("role","img");art.setAttribute("aria-label",g.name+" design");const cv=document.createElement("canvas");cv.width=360;cv.height=150;WeaponArt.paint(cv,g.id,null,Skins.equippedFor(g.id));art.appendChild(cv);row.classList.add("has-art")}
-  if(art)row.appendChild(art);else row.appendChild(ic);
+  const ath=(!art&&slot==="accessories")?accThumb(g):null;
+  if(art)row.appendChild(art);else if(ath)row.appendChild(ath);else row.appendChild(ic);
   const body=document.createElement("div");body.className="gr-body";
   const top=document.createElement("div");top.className="gr-top";
   const nm=document.createElement("b");nm.textContent=g.name;top.appendChild(nm);
@@ -458,6 +487,8 @@ function craftPaintPanel(panel){
   const top=document.createElement("div");top.className="cr-top";
   const nm=document.createElement("b");nm.textContent=r.gear.name;top.appendChild(nm);
   const ow=document.createElement("small");ow.textContent=r.gear.count?"Owned ×"+r.gear.count:r.gear.rarityName;top.appendChild(ow);
+  const cth=gearThumb(r.gear);
+  if(cth){row.style.gridTemplateColumns="auto 1fr";row.style.columnGap="12px";cth.style.gridRow="1 / span 4";row.appendChild(cth)}
   row.appendChild(top);
   if(r.gear.desc){const ds=document.createElement("p");ds.className="cr-desc";ds.textContent=r.gear.desc;row.appendChild(ds)}
   const cs=document.createElement("div");cs.className="cr-cost";

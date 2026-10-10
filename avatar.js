@@ -98,20 +98,20 @@ const AV=(function(){
  // nd = necklace shift down; rx/ry = ring (earring) position.
  const ACCP={frog:{by:97,hw:50,nd:0,rx:152,ry:122},donkey:{by:77,hw:37,nd:0,rx:145,ry:116},owl:{by:80,hw:41,nd:8,rx:149,ry:122},monkey:{by:73,hw:38,nd:0,rx:148,ry:126},elephant:{by:71,hw:36,nd:0,rx:158,ry:134}};
  const ACC={
-  bandana:(a)=>{const q=ACCP[a]||ACCP.frog,y=q.by,l=100-q.hw,r=100+q.hw;
+  bandana:(a)=>{const q=ACCP[a]||ACCP.frog,y=q.by-3,l=100-q.hw-2,r=100+q.hw+2;
    return `<g>`+
-    `<path d="M${l} ${y}Q100 ${y-9} ${r} ${y}L${r+1} ${y+12}Q100 ${y+3} ${l-1} ${y+12}Z" fill="url(#red)" ${ST("#4a0a18",2)}/>`+
-    `<path d="M${l+8} ${y+3}Q100 ${y-5} ${r-8} ${y+3}" fill="none" stroke="#fff6" stroke-width="1.4"/>`+
-    [[-24,1],[-8,-2],[10,-2],[26,1]].map(d=>`<circle cx="${100+d[0]}" cy="${y+5+d[1]}" r="1.8" fill="#fff" opacity=".85"/>`).join("")+
-    `<path d="M${r-3} ${y+3}l13 9-5 3 9 8-11 0-6-12z" fill="url(#red)" ${ST("#4a0a18",1.6)}/>`+
-    `<circle cx="${r-3}" cy="${y+6}" r="4.6" fill="url(#red)" ${ST("#4a0a18",1.8)}/></g>`},
+    `<path d="M${l} ${y}Q100 ${y-11} ${r} ${y}L${r+2} ${y+19}Q100 ${y+6} ${l-2} ${y+19}Z" fill="url(#red)" ${ST("#4a0a18",2.6)}/>`+
+    `<path d="M${l+8} ${y+4}Q100 ${y-6} ${r-8} ${y+4}" fill="none" stroke="#fff8" stroke-width="2"/>`+
+    [[-26,3],[-9,-1],[9,-1],[27,3]].map(d=>`<circle cx="${100+d[0]}" cy="${y+8+d[1]}" r="2.8" fill="#fff" opacity=".95"/>`).join("")+
+    `<path d="M${r-4} ${y+4}l19 12-7 4 13 13-17 0-9-17z" fill="url(#red)" ${ST("#4a0a18",2.2)}/>`+
+    `<circle cx="${r-4}" cy="${y+9}" r="6.5" fill="url(#red)" ${ST("#4a0a18",2.4)}/><circle cx="${r-6}" cy="${y+7}" r="1.8" fill="#fff" opacity=".8"/></g>`},
   necklace:(a)=>{const d=(ACCP[a]||ACCP.frog).nd;
-   return `<g><path d="M70 ${154+d}Q100 ${190+d} 130 ${154+d}" fill="none" stroke="#5a3d00" stroke-width="5" stroke-linecap="round"/>`+
-    `<path d="M70 ${154+d}Q100 ${190+d} 130 ${154+d}" fill="none" stroke="url(#gold)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="1 3.6"/>`+
-    `<path d="M70 ${154+d}Q100 ${190+d} 130 ${154+d}" fill="none" stroke="url(#gold)" stroke-width="1.4" stroke-linecap="round"/>`+
-    `<circle cx="100" cy="${172+d}" r="8.5" fill="url(#gold)" ${ST("#5a3d00",1.6)}/><circle cx="100" cy="${172+d}" r="5.2" fill="#4ee6b4" ${ST("#06191a",1.2)}/><circle cx="98.2" cy="${170.2+d}" r="1.7" fill="#fff" opacity=".9"/></g>`},
+   return `<g><path d="M66 ${152+d}Q100 ${192+d} 134 ${152+d}" fill="none" stroke="#5a3d00" stroke-width="8" stroke-linecap="round"/>`+
+    `<path d="M66 ${152+d}Q100 ${192+d} 134 ${152+d}" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>`+
+    `<path d="M66 ${152+d}Q100 ${192+d} 134 ${152+d}" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 5" opacity=".7"/>`+
+    `<circle cx="100" cy="${174+d}" r="12.5" fill="url(#gold)" ${ST("#5a3d00",2.2)}/><circle cx="100" cy="${174+d}" r="8" fill="#4ee6b4" ${ST("#06191a",1.6)}/><circle cx="97.5" cy="${171.5+d}" r="2.6" fill="#fff" opacity=".9"/></g>`},
   ring:(a)=>{const q=ACCP[a]||ACCP.frog;
-   return `<g><circle cx="${q.rx}" cy="${q.ry-8}" r="2.4" fill="url(#gold)" ${ST("#5a3d00",1)}/><circle cx="${q.rx}" cy="${q.ry}" r="7" fill="none" stroke="#5a3d00" stroke-width="5"/><circle cx="${q.rx}" cy="${q.ry}" r="7" fill="none" stroke="url(#gold)" stroke-width="3"/><path d="M${q.rx-5} ${q.ry-3}A6 6 0 0 1 ${q.rx-1} ${q.ry-6.4}" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".85"/></g>`}
+   return `<g><circle cx="${q.rx}" cy="${q.ry-10}" r="3.4" fill="url(#gold)" ${ST("#5a3d00",1.4)}/><circle cx="${q.rx}" cy="${q.ry}" r="9.5" fill="none" stroke="#5a3d00" stroke-width="7.5"/><circle cx="${q.rx}" cy="${q.ry}" r="9.5" fill="none" stroke="url(#gold)" stroke-width="5"/><path d="M${q.rx-7} ${q.ry-4}A8.5 8.5 0 0 1 ${q.rx-1} ${q.ry-9}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/></g>`}
  };
  const accOn=(o,k)=>!!(o&&o.acc&&o.acc[k]);
  let SEQ=0;
