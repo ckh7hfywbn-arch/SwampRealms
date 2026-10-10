@@ -93,6 +93,27 @@ const AV=(function(){
   if(BG[id])return["bg",BG[id]];
   return null;
  }
+
+ // ---- Accessories worn on the avatar (o.acc = {ring,necklace,bandana}; any truthy value draws it). Positions are per animal: by/bh/hw = bandana y, height, half-width;
+ // nd = necklace shift down; rx/ry = ring (earring) position.
+ const ACCP={frog:{by:97,hw:50,nd:0,rx:152,ry:122},donkey:{by:77,hw:37,nd:0,rx:145,ry:116},owl:{by:80,hw:41,nd:8,rx:149,ry:122},monkey:{by:73,hw:38,nd:0,rx:148,ry:126},elephant:{by:71,hw:36,nd:0,rx:158,ry:134}};
+ const ACC={
+  bandana:(a)=>{const q=ACCP[a]||ACCP.frog,y=q.by,l=100-q.hw,r=100+q.hw;
+   return `<g>`+
+    `<path d="M${l} ${y}Q100 ${y-9} ${r} ${y}L${r+1} ${y+12}Q100 ${y+3} ${l-1} ${y+12}Z" fill="url(#red)" ${ST("#4a0a18",2)}/>`+
+    `<path d="M${l+8} ${y+3}Q100 ${y-5} ${r-8} ${y+3}" fill="none" stroke="#fff6" stroke-width="1.4"/>`+
+    [[-24,1],[-8,-2],[10,-2],[26,1]].map(d=>`<circle cx="${100+d[0]}" cy="${y+5+d[1]}" r="1.8" fill="#fff" opacity=".85"/>`).join("")+
+    `<path d="M${r-3} ${y+3}l13 9-5 3 9 8-11 0-6-12z" fill="url(#red)" ${ST("#4a0a18",1.6)}/>`+
+    `<circle cx="${r-3}" cy="${y+6}" r="4.6" fill="url(#red)" ${ST("#4a0a18",1.8)}/></g>`},
+  necklace:(a)=>{const d=(ACCP[a]||ACCP.frog).nd;
+   return `<g><path d="M70 ${154+d}Q100 ${190+d} 130 ${154+d}" fill="none" stroke="#5a3d00" stroke-width="5" stroke-linecap="round"/>`+
+    `<path d="M70 ${154+d}Q100 ${190+d} 130 ${154+d}" fill="none" stroke="url(#gold)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="1 3.6"/>`+
+    `<path d="M70 ${154+d}Q100 ${190+d} 130 ${154+d}" fill="none" stroke="url(#gold)" stroke-width="1.4" stroke-linecap="round"/>`+
+    `<circle cx="100" cy="${172+d}" r="8.5" fill="url(#gold)" ${ST("#5a3d00",1.6)}/><circle cx="100" cy="${172+d}" r="5.2" fill="#4ee6b4" ${ST("#06191a",1.2)}/><circle cx="98.2" cy="${170.2+d}" r="1.7" fill="#fff" opacity=".9"/></g>`},
+  ring:(a)=>{const q=ACCP[a]||ACCP.frog;
+   return `<g><circle cx="${q.rx}" cy="${q.ry-8}" r="2.4" fill="url(#gold)" ${ST("#5a3d00",1)}/><circle cx="${q.rx}" cy="${q.ry}" r="7" fill="none" stroke="#5a3d00" stroke-width="5"/><circle cx="${q.rx}" cy="${q.ry}" r="7" fill="none" stroke="url(#gold)" stroke-width="3"/><path d="M${q.rx-5} ${q.ry-3}A6 6 0 0 1 ${q.rx-1} ${q.ry-6.4}" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".85"/></g>`}
+ };
+ const accOn=(o,k)=>!!(o&&o.acc&&o.acc[k]);
  let SEQ=0;
  const uniq=t=>{const k=++SEQ;return t.replace(/ id="([^"]+)"/g," id=\"$1_"+k+"\"").replace(/url\(#([^)]+)\)/g,"url(#$1_"+k+")")};
  function svg(o){return uniq(svg0(o))}
@@ -104,7 +125,7 @@ const AV=(function(){
    `<defs><radialGradient id="ag${a}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="${lt(c,.4)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${dk(c,.45)}"/></radialGradient>${au?`<radialGradient id="au${t}" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${au}" stop-opacity=".55"/><stop offset="1" stop-color="${au}" stop-opacity="0"/></radialGradient>`:""}</defs>`+
    (o.nobg?"":`<g clip-path="url(#rc)">${BG[o.bg]||BG[""]}${au?`<ellipse cx="100" cy="120" rx="86" ry="90" fill="url(#au${t})"/>`:""}<rect width="200" height="200" fill="url(#vg)"/></g><rect x=".75" y=".75" width="198.5" height="198.5" rx="18" fill="none" stroke="${au||"#ffffff2e"}" stroke-width="1.6"/>${stars}`)+
    (BACK[o.neck]||"")+(SHIRT[o.shirt]||DEFBODY)+(o.neck||o.shirt?"":`<path d="M100 174l7 8-7 11-7-11z" fill="url(#tl)" ${ST("#06191a",1.5)}/>`)+
-   an.d(`url(#ag${a})`,S,c)+(NECK[o.neck]||"")+(FACE[o.face]?FACE[o.face](an.eyes):"")+(HAT[o.hat]?`<g transform="translate(0,${an.top})">${HAT[o.hat]}</g>`:"")+`</svg>`;
+   an.d(`url(#ag${a})`,S,c)+(NECK[o.neck]||"")+(accOn(o,"necklace")?ACC.necklace(a):"")+(FACE[o.face]?FACE[o.face](an.eyes):"")+(accOn(o,"bandana")?ACC.bandana(a):"")+(accOn(o,"ring")?ACC.ring(a):"")+(HAT[o.hat]?`<g transform="translate(0,${an.top})">${HAT[o.hat]}</g>`:"")+`</svg>`;
  }
 
  // ---- shop card art: just the cosmetic floating in a glow of its rarity colour (no character) ----

@@ -118,7 +118,7 @@ const Crystals={
  equip(id){cload();const it=this.item(id);if(!it||!CS.own[id])return false;CS.eq[it.cat]=CS.eq[it.cat]===id?"":id;csave();return true},
  clear(cat){cload();CS.eq[cat]="";csave()},
  setAnimal(a){cload();if(ANIMALS.some(x=>x.id===a)){CS.animal=a;csave()}},
- outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,bg:CS.eq.bg}}
+ outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,bg:CS.eq.bg,acc:accWorn()}}
 };
 
 // ---- Fragments: enemy loot. Saved INSIDE the crystals save (CS.frags = {fragmentId: count}), so they persist in the browser and sync with accounts like everything else.
@@ -174,7 +174,7 @@ function eqk(d){return d.part?d.slot+":"+d.part:d.slot}
 const GEAR_SLOTS={
  weapons:{name:"Weapons",icon:'<path d="M14.5 4.5L20 4l-.5 5.5L9 20l-5-5z"/><path d="M13 7l4 4M5 19l-2 2"/>',empty:"No weapons yet. Craft one from fragments that enemies drop in the Swamp Adventure."},
  armor:{name:"Armor",icon:'<path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>',empty:"No armor yet. Craft helmets, chest armor and boots from fragments."},
- accessories:{name:"Accessories",icon:'<circle cx="12" cy="14" r="5"/><path d="M9 4h6l-1 5h-4z"/>',empty:"No accessories yet. Charms and trinkets are coming soon."}
+ accessories:{name:"Accessories",icon:'<circle cx="12" cy="14" r="5"/><path d="M9 4h6l-1 5h-4z"/>',empty:"No accessories yet. Craft a ring, a necklace and a bandana from fragments."}
 };
 // id:{name,slot,rarity:common|uncommon|rare|epic|legendary|mythical (same as the cards), desc, stats:{Label:value,...}, icon:"<svg inner markup, 24x24, stroke style>"}   stats and icon are optional; stats are shown in the Bag
 const GEAR={
@@ -187,14 +187,23 @@ const GEAR={
  // Stats shown here mirror ARMOR_FX below (what the game applies). Wearing all three adds SET_BONUS.
  wardenhelm:{name:"Mirewing Helmet",slot:"armor",part:"helmet",set:"warden",rarity:"uncommon",desc:"A light helm crowned with violet moth-wing scales.",stats:{Health:"+1"},icon:'<path d="M4 15a8 8 0 0116 0v3H4z"/><path d="M12 4v5M8 18v-3M16 18v-3"/>'},
  wardenplate:{name:"Mirewing Chest Piece",slot:"armor",part:"chest",set:"warden",rarity:"rare",desc:"Layered wing-scale plates bound with swamp vine.",stats:{Health:"+1"},icon:'<path d="M7 4l-4 4 2 4 2-1v9h10v-9l2 1 2-4-4-4-3 2h-4z"/><path d="M12 8v12"/>'},
- wardenboots:{name:"Mirewing Boots",slot:"armor",part:"boots",set:"warden",rarity:"uncommon",desc:"Light, waterproof and quick over the mud, with a moth-wing flutter.",stats:{Speed:"+8%"},icon:'<path d="M7 3h6v8l6 3v5H5v-5l2-1z"/><path d="M5 16h14"/>'}
+ wardenboots:{name:"Mirewing Boots",slot:"armor",part:"boots",set:"warden",rarity:"uncommon",desc:"Light, waterproof and quick over the mud, with a moth-wing flutter.",stats:{Speed:"+8%"},icon:'<path d="M7 3h6v8l6 3v5H5v-5l2-1z"/><path d="M5 16h14"/>'},
+ // ---- Accessories: one ring, one necklace and one bandana can be worn at once (part = ring | necklace | bandana). Numbers are in ACC_FX below.
+ leapring:{name:"Leaping Ring",slot:"accessories",part:"ring",rarity:"uncommon",desc:"A mossy band that makes your legs spring like a frog's.",stats:{Jump:"+5%"},icon:'<circle cx="12" cy="15" r="5.5"/><path d="M9.5 6.5L12 3l2.5 3.5L12 9z"/>'},
+ mendernecklace:{name:"Mender's Necklace",slot:"accessories",part:"necklace",rarity:"rare",desc:"A glowing charm that mends your wounds when you collect a fragment from a defeated enemy.",stats:{Heal:"+1 Flame per fragment"},icon:'<path d="M4 5c0 8 3.5 12 8 12s8-4 8-12"/><circle cx="12" cy="19.5" r="2"/>'},
+ sporebandana:{name:"Glowspore Bandana",slot:"accessories",part:"bandana",rarity:"uncommon",desc:"A faintly glowing headscarf that draws extra glowspores to you.",stats:{Glowspores:"+1 for every 3 collected"},icon:'<path d="M3 7c6 2 12 2 18 0v4l-9 9-9-9z"/><path d="M3 7l-1 3M21 7l1 3"/>'}
  // example:  oakclub:{name:"Oak Club",slot:"weapons",rarity:"common",desc:"A knobbly swamp club."},
 };
 cload();   // second pass now that GEAR exists: drops equipped weapons that are no longer owned
 // Armor numbers the game applies. hp = extra max health, move = run speed (0.08 = +8%).
 const ARMOR_FX={wardenhelm:{hp:1},wardenplate:{hp:1},wardenboots:{move:.08}};
 // Wearing the full set adds this on top.
+// Accessory numbers the game applies. jump = extra jump HEIGHT (0.05 = +5%), heal = Flames restored per fragment collected from a defeated enemy,
+// sporeEvery = every Nth glowspore collected pays one extra bonus glowspore (counts for score and boss-level crystals).
+const ACC_FX={leapring:{jump:.05},mendernecklace:{heal:1},sporebandana:{sporeEvery:3}};
 const SET_BONUS={warden:{name:"Mirewing set",text:"+1 max health",hp:1}};
+// the accessories currently worn, for drawing the avatar: {ring,necklace,bandana} = gear id or undefined (an empty object when nothing is worn)
+function accWorn(){const o={};try{["ring","necklace","bandana"].forEach(pt=>{const id=CS.geq["accessories:"+pt];if(id&&CS.gear[id]>0&&GEAR[id])o[pt]=id})}catch(e){}return o}
 const Gear={
  defs:GEAR,slots:GEAR_SLOTS,
  count:id=>CS.gear[id]||0,
@@ -225,8 +234,9 @@ const Gear={
  // What the worn armor gives right now: {hp: extra max health, move: run speed multiplier, pieces: 0-3, set: set id or false}.
  // The game reads this in one place. To retune armor, change ARMOR_FX / SET_BONUS above.
  bonus(){
-  cload();const o={hp:0,move:1,pieces:0,set:false},cnt={};
+  cload();const o={hp:0,move:1,pieces:0,set:false,jump:0,heal:0,sporeEvery:0},cnt={};
   ["helmet","chest","boots"].forEach(pt=>{const id=CS.geq["armor:"+pt];if(!(id&&CS.gear[id]>0&&GEAR[id]))return;o.pieces++;const fx=ARMOR_FX[id]||{};o.hp+=fx.hp||0;o.move+=fx.move||0;const st=GEAR[id].set;if(st)cnt[st]=(cnt[st]||0)+1});
+  ["ring","necklace","bandana"].forEach(pt=>{const id=CS.geq["accessories:"+pt];if(!(id&&CS.gear[id]>0&&GEAR[id]))return;const fx=ACC_FX[id]||{};o.jump+=fx.jump||0;o.heal+=fx.heal||0;if(fx.sporeEvery)o.sporeEvery=fx.sporeEvery});
   for(const st in cnt)if(cnt[st]>=3&&SET_BONUS[st]){o.set=st;o.hp+=SET_BONUS[st].hp||0;o.move+=SET_BONUS[st].move||0}
   return o;
  },
@@ -309,7 +319,11 @@ const RECIPES={
  // Mirewing armor: every piece needs at least one Wing Fragment (the Level 2 boss, Mirewing) on top of the other fragments
  wardenhelm:{cost:{bug:4,crawler:2,wing:1}},
  wardenplate:{cost:{crawler:5,wing:1}},
- wardenboots:{cost:{bug:3,crawler:3,wing:1}}
+ wardenboots:{cost:{bug:3,crawler:3,wing:1}},
+ // Accessories: made only from the common fragments of Levels 1 and 2 so they are within reach early
+ leapring:{cost:{bug:5,crawler:1}},
+ mendernecklace:{cost:{bug:3,crawler:3}},
+ sporebandana:{cost:{bug:4,crawler:2}}
 };
 const Crafting={
  defs:RECIPES,
@@ -398,7 +412,7 @@ function bagPaintBody(){
 // a gear tab (Weapons, Armor...): one card per owned item with icon, rarity, stats, description, equipped status and an Equip / Unequip button
 let bagGearMsg="";
 function bagPaintGear(panel,slot){
- const items=Gear.list(slot).sort((a,b)=>(b.equipped-a.equipped)||((["helmet","chest","boots"].indexOf(a.part)-["helmet","chest","boots"].indexOf(b.part))||a.name.localeCompare(b.name)));
+ const items=Gear.list(slot).sort((a,b)=>(b.equipped-a.equipped)||((["helmet","chest","boots","ring","necklace","bandana"].indexOf(a.part)-["helmet","chest","boots","ring","necklace","bandana"].indexOf(b.part))||a.name.localeCompare(b.name)));
  const list=document.createElement("div");list.className="gr-list";
  items.forEach(g=>{
   const row=document.createElement("div");row.className="gr-row"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
@@ -432,7 +446,7 @@ function bagPaintGear(panel,slot){
  const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
  if(bagGearMsg){det.textContent=bagGearMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
  panel.appendChild(det);
- const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Mirewing pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
+ const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Mirewing pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":slot==="accessories"?"Wear one ring, one necklace and one bandana at the same time. Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
 }
 // the Crafting popup (its own section, like the Bag): one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
 let craftMsg="",craftTab="";

@@ -114,8 +114,8 @@
 
 <script src="cards.js"></script>
 <script src="weapons.js?v=skins2"></script>
-<script src="store.js?v=armory1"></script>
-<script src="avatar.js"></script>
+<script src="store.js?v=acc2"></script>
+<script src="avatar.js?v=acc1"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script src="progression.js?v=endless1"></script>
@@ -142,7 +142,7 @@
  }catch(e){}
  const $=id=>document.getElementById(id),cv=$("cv"),X=cv.getContext("2d"),W=360,H=480;
  const START_X=60,GROUND_Y=H-70;
- const state={mode:"title",x:START_X,y:GROUND_Y-16,vx:0,vy:0,ground:false,coyote:0,buffer:0,face:1,tx:null,ty:null,t:0,cam:0,cp:START_X,spores:0,hp:3,hurt:0,stun:0,attack:0,attackCooldown:0,atkQ:0,swingHit:true};   // mode: title | playing | paused | complete
+ const state={mode:"title",x:START_X,y:GROUND_Y-16,vx:0,vy:0,ground:false,coyote:0,buffer:0,face:1,tx:null,ty:null,t:0,cam:0,cp:START_X,spores:0,bonus:0,hp:3,hurt:0,stun:0,attack:0,attackCooldown:0,atkQ:0,swingHit:true};   // mode: title | playing | paused | complete
  const keys={},R=16,HW=13;
  let touchOn=false;
  // ---- Game sound effects: all synthesized with the Web Audio API (original, no audio files, nothing to download).
@@ -224,8 +224,8 @@
  // Health and the one enemy: the Bramble Bug patrols back and forth and hurts on contact
  const BASEHP=3,INVULN=1.2;
  // Worn armor (store.js Gear.bonus): extra max health and run speed. Read fresh when a run starts, after a respawn, and when armor is swapped in the Bag.
- let ARM={hp:0,move:1,pieces:0,set:false};
- function armRefresh(){try{ARM=Gear.bonus()}catch(e){ARM={hp:0,move:1,pieces:0,set:false}}}
+ let ARM={hp:0,move:1,pieces:0,set:false,jump:0,heal:0,sporeEvery:0};
+ function armRefresh(){try{ARM=Gear.bonus()}catch(e){ARM={hp:0,move:1,pieces:0,set:false,jump:0,heal:0,sporeEvery:0}}}
  armRefresh();
  function maxHp(){return BASEHP+RunUps.hp()+ARM.hp+chestHp()}   // 3 + Hardy Hide picks this run + worn armor + the cabin chest's extra Flame
  // ---- Treasure cabin (chestcabin.js): every boss arena has a cabin in front of it with a chest. The player picks +1 max Flame or +25% damage,
@@ -561,12 +561,12 @@
   }
  }
  let spores=[],fx=[];
- function resetSpores(){spores=SPORE_POS.map((p,i)=>({x:p[0],y:p[1],got:false,ph:i*1.7}));fx=[];state.spores=0;showSpores()}
- function showSpores(){$("cn").textContent=state.spores;$("cnt").textContent=SPORE_POS.length}
+ function resetSpores(){spores=SPORE_POS.map((p,i)=>({x:p[0],y:p[1],got:false,ph:i*1.7}));fx=[];state.spores=0;state.bonus=0;showSpores()}
+ function showSpores(){$("cn").textContent=state.spores;$("cnt").textContent=SPORE_POS.length+(state.bonus?" +"+state.bonus:"")}
  function bumpEl(el){el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump")}
  function bumpHud(){bumpEl($("cnw"))}
  function collect(sp){
-  sp.got=true;state.spores++;showSpores();bumpHud();AUDIO.play("pickup");
+  sp.got=true;state.spores++;if(ARM.sporeEvery>0&&state.spores%ARM.sporeEvery===0){state.bonus++;fx.push({k:"txt",x:sp.x,y:sp.y-32,vx:0,vy:-45,life:.9,max:.9,s:"+1 bonus glowspore"})}showSpores();bumpHud();AUDIO.play("pickup");
   for(let i=0;i<12;i++){const a=i/12*6.283+Math.random()*.4,v=70+Math.random()*70;fx.push({k:"spark",x:sp.x,y:sp.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-30,life:.45,max:.45})}
   fx.push({k:"ring",x:sp.x,y:sp.y,vx:0,vy:0,life:.35,max:.35});
   fx.push({k:"txt",x:sp.x,y:sp.y-14,vx:0,vy:-45,life:.7,max:.7,s:"+"+pt(SCORE.spore)});
@@ -691,7 +691,7 @@
   // jump: buffered press + short coyote time, release early for a shorter hop
   state.coyote=state.ground?COYOTE:Math.max(0,state.coyote-dt);
   state.buffer=Math.max(0,state.buffer-dt);
-  if(state.buffer>0&&state.coyote>0){for(let i=0;i<4;i++)fx.push({k:"puff",x:state.x+(i-1.5)*6,y:state.y+R-2,vx:(i-1.5)*26,vy:-8,life:.32,max:.32,r:3,g:6});vis.take=.14;AUDIO.play("jump");state.vy=-JUMP;state.ground=false;state.coyote=0;state.buffer=0;state.canCut=!!keys.jump}
+  if(state.buffer>0&&state.coyote>0){for(let i=0;i<4;i++)fx.push({k:"puff",x:state.x+(i-1.5)*6,y:state.y+R-2,vx:(i-1.5)*26,vy:-8,life:.32,max:.32,r:3,g:6});vis.take=.14;AUDIO.play("jump");state.vy=-JUMP*Math.sqrt(1+(ARM.jump||0));state.ground=false;state.coyote=0;state.buffer=0;state.canCut=!!keys.jump}
   state.vy=Math.min(MAXFALL,state.vy+GRAV*dt);
   if(state.ground&&Math.abs(state.vx)>120&&state.stun<=0){vis.dust-=dt;if(vis.dust<=0){vis.dust=.1;const sg=Math.sign(state.vx);fx.push({k:"puff",x:state.x-sg*9,y:state.y+R-2,vx:-sg*22,vy:-12,life:.26,max:.26,r:2,g:5})}}else vis.dust=0;
 
@@ -1170,7 +1170,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
   }catch(e){}
  }
- avatarRefresh();addEventListener("load",avatarRefresh);addEventListener("focus",avatarRefresh);addEventListener("pageshow",avatarRefresh);addEventListener("storage",()=>setTimeout(avatarRefresh,0));
+ avatarRefresh();addEventListener("gear:change",()=>setTimeout(avatarRefresh,0));addEventListener("load",avatarRefresh);addEventListener("focus",avatarRefresh);addEventListener("pageshow",avatarRefresh);addEventListener("storage",()=>setTimeout(avatarRefresh,0));
  // Player animation states: idle, run, jump, fall, attack, hurt, defeated. All procedural, drawn from the same state the game already tracks.
  function animState(){
   if(state.hp<=0)return "defeated";
@@ -1816,6 +1816,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    fx.push({k:"ring",x:x,y:GROUND_Y-34,vx:0,vy:0,life:.5,max:.5,c:d.color,g:30});
    fx.push({k:"txt",x:x,y:GROUND_Y-72,vx:0,vy:-34,life:1.1,max:1.1,s:"+"+d.name});
    lootToast(d);showFrags();AUDIO.play("pickup");
+   if(ARM.heal>0&&state.hp>0&&vis.dying<=0&&state.hp<maxHp()){state.hp=Math.min(maxHp(),state.hp+ARM.heal);showHp();fx.push({k:"txt",x:state.x,y:state.y-30,vx:0,vy:-40,life:.9,max:.9,s:"+"+ARM.heal+" Flame"})}
   }catch(e){}
  }
  function lootToast(d){
@@ -1844,7 +1845,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  // stop iOS pinch/gesture zoom and the long-press menu while playing (inside the game box only)
  (function(){const bx=$("box");if(!bx)return;["gesturestart","gesturechange","gestureend"].forEach(t=>bx.addEventListener(t,e=>e.preventDefault()));bx.addEventListener("contextmenu",e=>e.preventDefault())})();
  function killPts(){let n=0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
- const scoreNow=()=>state.spores*pt(SCORE.spore)+killPts();
+ const scoreNow=()=>(state.spores+(state.bonus||0))*pt(SCORE.spore)+killPts();
  function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}
  function showScore(force){
   const v=scoreNow(),sec=Math.floor(state.t||0);
@@ -1862,7 +1863,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
  function finishScore(){
   const lim=(lvl(LV).timeLimit||TIME_LIMIT[LV]||120)+(lvl(LV).bossTime||0),list=foes(),en=list.filter(f=>sc.kills[f.id]).length,enT=list.length,spT=SPORE_POS.length;
-  const sp=state.spores*pt(SCORE.spore),ep=killPts(),cl=pt(SCORE.clear),tm=state.t,sb=Math.round(pt(SCORE.speed)*Math.max(0,1-tm/lim)/10)*10,total=sp+ep+cl+sb;
+  const sp=state.spores*pt(SCORE.spore),bn=(state.bonus||0)*pt(SCORE.spore),ep=killPts(),cl=pt(SCORE.clear),tm=state.t,sb=Math.round(pt(SCORE.speed)*Math.max(0,1-tm/lim)/10)*10,total=sp+bn+ep+cl+sb;
   bestCache=null;const prev=readScores()[LV],isBest=!prev||total>prev.score;
   if(isBest)writeScore(LV,{score:total,spores:state.spores,enemies:en,time:Math.round(tm*10)/10});
   bestCache=null;
@@ -1870,7 +1871,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const row=(a,b,c)=>"<li><span>"+a+"</span><i>"+b+"</i><em>"+c+"</em></li>";
   const best=isBest?(prev?'<span class="sbest new">New best! Beat '+fmt(prev.score)+"</span>":'<span class="sbest new">New best!</span>'):'<span class="sbest">Best '+fmt(prev.score)+"</span>";
   const html='<div class="sres"><span class="sk">Final score</span><b class="sbig">'+fmt(total)+"</b>"+best+
-   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+(SC.depth?row("Danger "+SC.depth+" rewards","×"+SC.rewardMul.toFixed(2),""):"")+"</ul></div>";
+   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+(state.bonus?row("Bandana bonus","×"+state.bonus,"+"+fmt(bn)):"")+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+(SC.depth?row("Danger "+SC.depth+" rewards","×"+SC.rewardMul.toFixed(2),""):"")+"</ul></div>";
   return {total,result,html,isBest};
  }
 
@@ -1883,7 +1884,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  function payOut(score){
   let coins=Math.max(0,Math.floor((score||0)/COIN_PER)),cry={total:0,bonus:0};
   try{if(coins>0){meta.coins=(meta.coins||0)+coins;save()}}catch(e){coins=0}
-  const pr=AR?state.spores*PURPLE_CRY:0;   // boss levels: every glowspore is purple and pays extra crystals
+  const pr=AR?(state.spores+(state.bonus||0))*PURPLE_CRY:0;   // boss levels: every glowspore is purple and pays extra crystals
   try{cry=Crystals.award("adv",score,pr)||cry}catch(e){}
   return {coins:coins,crystals:cry.total||0,bonus:cry.bonus||0,purple:pr};
  }
