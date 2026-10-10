@@ -59,6 +59,7 @@ const CK="swamp-crystals-v1";
 const CRAFT_RESET=1;
 let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{},skins:{},skeq:{}};
 function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
+ if(CS.frags.crawler>0){CS.frags.frog=(CS.frags.frog||0)+CS.frags.crawler;delete CS.frags.crawler;try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}}else delete CS.frags.crawler;   // the Bog Fragment became the Frog Fragment: carry old saves over
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
  if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&eqk(GEAR[g])===sl))delete CS.geq[sl]}}catch(e){}
  if(!CS.skins||typeof CS.skins!=="object"||Array.isArray(CS.skins))CS.skins={};if(!CS.skeq||typeof CS.skeq!=="object"||Array.isArray(CS.skeq))CS.skeq={};
@@ -132,10 +133,9 @@ const FRAG_RARITY=(()=>{
 })();
 const FRAGMENTS={
  bug:{name:"Bramble Fragment",enemy:"Bramble Bug",chance:1,rarity:"common"},
- crawler:{name:"Bog Fragment",enemy:"Bog Crawler",chance:1,rarity:"uncommon"},
  boss:{name:"Rootmaw Fragment",enemy:"Rootmaw",chance:1,rarity:"rare"},
- // frog = the Swamp Frog (Level 3); crocodile and slime are ready for enemies that are not in the game yet
- frog:{name:"Frog Fragment",enemy:"Frog",chance:1,rarity:"common"},
+ // frog = the Swamp Frog (every frog drops it; it replaced the old Bog Fragment and carries old saves over); crocodile and slime are ready for enemies that are not in the game yet
+ frog:{name:"Frog Fragment",enemy:"Swamp Frog",chance:1,rarity:"uncommon"},
  crocodile:{name:"Crocodile Fragment",enemy:"Crocodile",chance:1,rarity:"uncommon"},
  slime:{name:"Slime Fragment",enemy:"Slime",chance:1,rarity:"common"},
  // story bosses (set as SLOTS[n].fragment in storyboss.js)
@@ -313,17 +313,17 @@ cload();   // third pass now that SKINS exists: drops worn skins that are no lon
 // Crafting.craft(id) checks the cost, subtracts the fragments and adds the gear in ONE save, so it can never take fragments without giving the item.
 const RECIPES={
  // Progression: Spiked Blade (the first weapon) = Level 1 + 2 loot. Mirewing armor = beat the Level 2 boss. Bog Blaster = Level 3 + 4 bosses.
- bogblaster:{cost:{crawler:3,boss:1,ape:1}},   // 3 Bog Fragments + 1 Rootmaw Fragment (Level 3 boss) + 1 Ape Fragment (Level 4 boss)
- spikedblade:{cost:{bug:4,crawler:2,wing:1}},  // 4 Bramble Fragments + 2 Bog Fragments (Level 1 boss, Bog Gator) + 1 Wing Fragment (Level 2 boss, Mirewing)
- hopperstaff:{cost:{frog:5}},     // 5 Frog Fragments (dropped by the Swamp Frog in Level 3)
+ bogblaster:{cost:{frog:3,boss:1,ape:1}},   // 3 Frog Fragments + 1 Rootmaw Fragment (Level 3 boss) + 1 Ape Fragment (Level 4 boss)
+ spikedblade:{cost:{bug:4,frog:2,wing:1}},  // 4 Bramble Fragments + 2 Frog Fragments (Swamp Frogs, and the Level 1 boss, Bog Gator) + 1 Wing Fragment (Level 2 boss, Mirewing)
+ hopperstaff:{cost:{frog:5}},     // 5 Frog Fragments (dropped by every Swamp Frog)
  // Mirewing armor: every piece needs at least one Wing Fragment (the Level 2 boss, Mirewing) on top of the other fragments
- wardenhelm:{cost:{bug:4,crawler:2,wing:1}},
- wardenplate:{cost:{crawler:5,wing:1}},
- wardenboots:{cost:{bug:3,crawler:3,wing:1}},
+ wardenhelm:{cost:{bug:4,frog:2,wing:1}},
+ wardenplate:{cost:{frog:5,wing:1}},
+ wardenboots:{cost:{bug:3,frog:3,wing:1}},
  // Accessories: made only from the common fragments of Levels 1 and 2 so they are within reach early
- leapring:{cost:{bug:5,crawler:1}},
- mendernecklace:{cost:{bug:3,crawler:3}},
- sporebandana:{cost:{bug:4,crawler:2}}
+ leapring:{cost:{bug:5,frog:1}},
+ mendernecklace:{cost:{bug:3,frog:3}},
+ sporebandana:{cost:{bug:4,frog:2}}
 };
 const Crafting={
  defs:RECIPES,
@@ -580,7 +580,7 @@ function loadoutPaint(){
 }
 // ---- "What next?" hints for weapons you do not own yet. Used by the Loadout card, the Weapons tab, the Bag (Weapons section) and the Skin Shop tab.
 // Shows which fragments a weapon needs, how many you have, which enemy drops each, and a button into Crafting.
-const FRAG_EARNABLE={bug:1,crawler:1,boss:1,wing:1,ape:1};   // fragments that have an enemy in the Swamp Adventure today; add an id here when a new enemy arrives
+const FRAG_EARNABLE={bug:1,frog:1,boss:1,wing:1,ape:1};   // fragments that have an enemy in the Swamp Adventure today; add an id here when a new enemy arrives
 // weapon recipes you do not own yet, closest to craftable first (weapons that cannot be earned yet go last)
 function weaponHints(){
  return Crafting.list().filter(r=>r.gear.slot==="weapons"&&!(CS.gear[r.id]>0)).map(r=>{

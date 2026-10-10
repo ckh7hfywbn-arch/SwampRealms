@@ -34,7 +34,7 @@ const StoryBoss=(function(){
  //   fragment       FRAGMENTS id this boss can drop (null = no drop)
  //   music          music track while fighting (undefined = the Rootmaw fight track, 3)
  const SLOTS={
-  0:{on:true, name:"The Bog Gator",short:"Bog Gator",kind:"gator",hp:6, w:96,h:38,defeat:1.6,arenaLen:520,bossTime:60,fragment:"crawler",music:undefined},
+  0:{on:true, name:"The Bog Gator",short:"Bog Gator",kind:"gator",hp:6, w:96,h:38,defeat:1.6,arenaLen:520,bossTime:60,fragment:"frog",music:undefined},
   1:{on:true, name:"The Mirewing",short:"Mirewing",kind:"wing",hp:9, w:64,h:46,defeat:2.2,arenaLen:520,bossTime:60,fragment:"wing",music:undefined},
   3:{on:true, name:"The Stone Ape",short:"Stone Ape",kind:"ape",hp:12,w:72,h:92,defeat:2,arenaLen:520,bossTime:60,fragment:"ape",music:undefined}
  };

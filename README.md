@@ -72,9 +72,8 @@ Defeated enemies have a chance to drop a Fragment. The table is `FRAGMENTS` in `
 | Enemy id | Fragment | Chance |
 | --- | --- | --- |
 | `bug` (Bramble Bug) | Bramble Fragment | 30% |
-| `crawler` (Bog Crawler) | Bog Fragment | 40% |
 | `boss` (Rootmaw) | Rootmaw Fragment (rare) | 25% |
-| `frog` (Swamp Frog, Level 3) | Frog Fragment | 100% (like the other enemies in `store.js`) |
+| `frog` (every Swamp Frog, plus the Bog Gator in Level 1) | Frog Fragment (it replaced the Bog Fragment) | 100% (like the other enemies in `store.js`) |
 | `crocodile`, `slime` | Crocodile / Slime Fragment | 40% (ready for when those enemies exist) |
 
 - **Stored for real.** Counts are kept in the crystals save as `frags` (`{ bug: 2, boss: 1 }`), so they persist in the browser and sync with accounts like everything else. `Fragments.count(id)`, `Fragments.total`, `Fragments.all` read them; `Fragments.add(id, n)` writes them.
@@ -122,19 +121,19 @@ Players turn fragments into weapons in the **Crafting** tab of the Armory. Open 
 
 | Weapon | Cost | Unlocked by |
 | --- | --- | --- |
-| Spiked Blade (the first weapon) | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Wing (`wing`) | Levels 1 and 2: Bramble Bugs, the Bog Gator and the Mirewing |
-| Bog Blaster | 3 Bog (`crawler`) + 1 Rootmaw (`boss`) + 1 Ape (`ape`) | Levels 3 and 4: the Rootmaw and the Stone Ape |
-| Swamp Hopper Staff | 5 Frog Fragments (`frog`) | Level 3: the Swamp Frog (replay Level 3 to farm them) |
+| Spiked Blade (the first weapon) | 4 Bramble (`bug`) + 2 Frog (`frog`) + 1 Wing (`wing`) | Levels 1 and 2: Bramble Bugs, Swamp Frogs, the Bog Gator and the Mirewing |
+| Bog Blaster | 3 Frog (`frog`) + 1 Rootmaw (`boss`) + 1 Ape (`ape`) | Levels 3 and 4: the Rootmaw and the Stone Ape |
+| Swamp Hopper Staff | 5 Frog Fragments (`frog`) | Level 3: the two Swamp Frogs (replay Level 3 to farm them) |
 
 | Armor | Cost |
 | --- | --- |
-| Mirewing Helmet | 4 Bramble (`bug`) + 2 Bog (`crawler`) + 1 Wing Fragment (`wing`) |
-| Mirewing Chest Piece | 5 Bog (`crawler`) + 1 Wing Fragment (`wing`) |
-| Mirewing Boots | 3 Bramble (`bug`) + 3 Bog (`crawler`) + 1 Wing Fragment (`wing`) |
+| Mirewing Helmet | 4 Bramble (`bug`) + 2 Frog (`frog`) + 1 Wing Fragment (`wing`) |
+| Mirewing Chest Piece | 5 Frog (`frog`) + 1 Wing Fragment (`wing`) |
+| Mirewing Boots | 3 Bramble (`bug`) + 3 Frog (`frog`) + 1 Wing Fragment (`wing`) |
 
 Every armor piece needs at least one Wing Fragment, so armor comes from beating the Level 2 boss (the Mirewing). The gear ids in `store.js` are still `wardenhelm`, `wardenplate` and `wardenboots` so existing saves keep working; only the display names changed.
 
-- **Add a weapon:** add a line to `GEAR` in `store.js` (`slot:"weapons"`), then a line to `RECIPES` with the same id: `{cost:{crawler:3, bug:2}}`. Costs can mix any fragment ids from `FRAGMENTS`. The Craft tab builds itself from `RECIPES`.
+- **Add a weapon:** add a line to `GEAR` in `store.js` (`slot:"weapons"`), then a line to `RECIPES` with the same id: `{cost:{frog:3, bug:2}}`. Costs can mix any fragment ids from `FRAGMENTS`. The Craft tab builds itself from `RECIPES`.
 - **API:** `Crafting.list()`, `Crafting.info(id)`, `Crafting.check(id)` (returns `{ok, reason, missing}`), `Crafting.craft(id)`. `craft` checks the cost, subtracts the fragments and adds the weapon in one save, so nothing is taken unless the craft succeeds.
 - Weapons are collectibles for now. Equipping them in the Swamp Adventure is a separate step.
 
@@ -195,8 +194,15 @@ If the Worker is not named `theswampverse`, change `name` in `wrangler.jsonc` to
 Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
 
 
-## Swamp Frog (Level 3)
-A bright tree frog guarding the ledge before Level 3's first big drop. It lives in `LEVELS[2].frog` (`{min, max, x}`, the patch it hops along) and its code sits in `adventure.html` next to the Bog Crawler (`FRG` tuning, `updateFrog`, `drawFrog`). It hops in short bounces; when you get within range it opens its mouth (amber "!"), then flicks a tongue straight out along the ground for a moment. The tongue is a low strip, so jumping it works. After the lash the frog is winded (harmless) for about a second: that is the window to strike. Touching its body also costs a flame. It takes 3 hits, is worth 300 score, counts in "Enemies defeated", can be hit by the Bog Blaster's aim assist, and drops a Frog Fragment (`frog` in `store.js`), which is what the Swamp Hopper Staff is crafted from. Only Level 3 has one: other levels and the Endless Realms are unchanged. To move it, change the three numbers in `LEVELS[2].frog`; to make it easier or harder, edit `FRHP` (hits) and `FRG` (`aggro`, `reach`, `wind`, `recover`).
+## Swamp Frog (replaced the Bog Crawler in every level)
+The Bog Crawler is gone: the bright tree frog now stands wherever a crawler patch used to be (Level 2, Level 4 and every Endless Realms level that had one), and Level 3 has two. Level data is unchanged for the old levels: a level's `crawler: {min, max, x}` patch is simply loaded as a frog (`loadLevel` turns it into a frog with `repl: true`). Level 3 lists its two frogs directly in `LEVELS[2].frogs`. The code (`FRG` tuning, `updateFrog`, `drawFrog`) sits in `adventure.html`; the old crawler code is still there but switched off (`CR` is always null).
+
+A frog hops in short bounces; when you get within range it opens its mouth (amber "!"), then flicks a tongue straight out along the ground. The tongue is a low strip, so jumping it works. After the lash the frog is winded (harmless) for about a second: that is the window to strike. Touching its body also costs a flame. It can be hit by the Bog Blaster's aim assist and counts in "Enemies defeated".
+
+- **Replacement frogs (Levels 2, 4, Endless)** keep what the crawler had: hits to defeat (`crawlerHp`: 3, 4 in Level 4, more deeper in the Endless Realms), speed / aggro / recovery scaling, 400 score (times the level's reward multiplier), the Endless variant name and glow ("Mossy Frog" and so on) and and a Frog Fragment drop.
+- **Level 3's two frogs** take 3 hits (`FRHP`) and are worth 300 score.
+- **Every frog drops a Frog Fragment** (`frog`). The old Bog Fragment (`crawler`) no longer exists: every recipe that used it now uses Frog Fragments, the Level 1 boss (the Bog Gator) drops a Frog Fragment too, and `cload()` in `store.js` turns any saved Bog Fragments (local or from an account) into Frog Fragments, so nobody loses anything.
+- To move a frog, change its `{min, max, x}`; to tune them, edit `FRG` (`aggro`, `reach`, `wind`, `recover`) and `FRHP`.
 
 ## Level 4: The Sunlit Canopy
 Hand-made, no boss. Daytime jungle theme (`TH4`, with `canopy` and `temple` flags), music track 4, 42 Glowspores, tougher enemies than Level 3 (Bramble Bug 3 hits, Bog Crawler 4). Because it sits at index 3, the Endless Realms now start at index 4 (Danger 1) and boss levels stay at 3, 6, 9. Old saves are shifted once on load (`swampverse-arcade-v4mig`) so Endless progress and best scores are kept; all four hand-made levels stay replayable from Level Select once unlocked (`retired()` in `adventure.html` always returns false; change it to hide a level again).
