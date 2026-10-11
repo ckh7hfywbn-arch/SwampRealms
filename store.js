@@ -444,6 +444,9 @@ function bagPaintGear(panel,slot){
  const list=document.createElement("div");list.className="gr-list";
  items.forEach(g=>{
   const row=document.createElement("div");row.className="gr-row"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
+  row.tabIndex=0;row.setAttribute("role","group");row.title="Tap for details";
+  row.addEventListener("click",e=>{if(!e.target.closest("button"))gearInspect(g.id)});
+  row.addEventListener("keydown",e=>{if(e.target===row&&(e.key==="Enter"||e.key===" ")){e.preventDefault();gearInspect(g.id)}});
   const ic=document.createElement("div");ic.className="gr-icon";ic.setAttribute("aria-hidden","true");
   ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">'+(g.icon||GEAR_SLOTS[slot].icon)+'</svg>';
   // the real weapon design (same drawing as the one held in the Swamp Adventure); falls back to the small icon if the art is missing
@@ -475,7 +478,120 @@ function bagPaintGear(panel,slot){
  const det=document.createElement("p");det.className="bg-detail";det.id="bgdetail";det.setAttribute("aria-live","polite");
  if(bagGearMsg){det.textContent=bagGearMsg;det.style.setProperty("--c","#f2c14e")}else det.hidden=true;
  panel.appendChild(det);
- const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Mirewing pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":slot==="accessories"?"Wear one ring, one necklace and one bandana at the same time. Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";panel.appendChild(note);
+ const note=document.createElement("p");note.className="bg-note";note.textContent=slot==="armor"?"Wear one helmet, one chest piece and one pair of boots. Wear all three Mirewing pieces for the set bonus ("+SET_BONUS.warden.text+"). Crafted gear shows up here automatically.":slot==="accessories"?"Wear one ring, one necklace and one bandana at the same time. Crafted gear shows up here automatically.":"One "+GEAR_SLOTS[slot].name.toLowerCase().replace(/s$/,"")+" can be equipped at a time. Crafted gear shows up here automatically.";note.textContent+=" Tap an item to inspect it.";
+ panel.appendChild(note);
+}
+// ---- Inspect card: tap a weapon, armor piece or accessory in the Bag for a big preview, stat bars, and a compare against what you are wearing now ----
+// Bars are relative to the best item of that slot (Speed / Range words use a fixed Slow-Medium-Fast scale). The white tick on a bar is your equipped item's value; the arrow says
+// whether this item is better (green up) or worse (red down) than it. Nothing here changes the game numbers: it only reads GEAR / Gear.hitDmg().
+let inEl=null,inFrom=null;
+const IN_LEVEL={slow:1,short:1,medium:2,fast:3,long:3};
+const IN_WORDS={Speed:["slower","faster"],Range:["shorter","longer"]};
+function inIsLevel(id,k){const v=GEAR[id]&&GEAR[id].stats?GEAR[id].stats[k]:undefined;return typeof v==="string"&&!!IN_LEVEL[v.trim().toLowerCase()]}
+// one stat of one item as a number (null when it has no simple number, e.g. "+1 for every 3")
+function inNum(id,k){
+ const d=GEAR[id],v=d&&d.stats?d.stats[k]:undefined;if(v===undefined)return null;
+ if(k==="Damage")return Gear.hitDmg(id);
+ if(typeof v==="number")return v;
+ const s=String(v).trim().toLowerCase();if(IN_LEVEL[s])return IN_LEVEL[s];
+ return /^[+-]?\d+(\.\d+)?%?$/.test(s)?parseFloat(s):null;
+}
+function inMax(slot,k){let m=0;for(const id in GEAR)if(GEAR[id].slot===slot){const n=inNum(id,k);if(n!=null&&n>m)m=n}return m||1}
+function inDeltaText(id,k,d){
+ if(inIsLevel(id,k)&&IN_WORDS[k])return IN_WORDS[k][d>0?1:0];
+ const v=GEAR[id].stats[k],a=Math.abs(d),pct=typeof v==="string"&&/%$/.test(v);
+ return (d>0?"+":"\u2212")+(k==="Damage"?a.toFixed(1):String(Math.round(a*10)/10))+(pct?"%":"");
+}
+function inspectClose(quiet){
+ if(inEl){inEl.remove();inEl=null}
+ const f=inFrom;inFrom=null;
+ if(!quiet){try{f&&f.isConnected&&f.focus()}catch(e){}}
+}
+function inspectArt(g){
+ const f=document.createElement("div");f.className="in-art";
+ try{
+  if(g.slot==="weapons"&&typeof WeaponArt!=="undefined"&&WeaponArt.has(g.id)){
+   const cv=document.createElement("canvas");cv.width=540;cv.height=225;cv.setAttribute("role","img");cv.setAttribute("aria-label",g.name+" design");f.appendChild(cv);
+   const sk=typeof Skins!=="undefined"?Skins.equippedFor(g.id):null;WeaponArt.paint(cv,g.id,null,sk);WeaponArt.live(cv,g.id,sk);return f;
+  }
+  if(g.slot==="accessories"&&g.part&&typeof AV!=="undefined"&&typeof Crystals!=="undefined"){
+   const acc={};acc[g.part]=g.id;const o=Object.assign({},Crystals.outfit(),{nobg:true,acc});
+   f.classList.add("avatar");f.setAttribute("role","img");f.setAttribute("aria-label",g.name+" shown on your character");
+   f.innerHTML=AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="14 6 172 176" width="176" height="184"');return f;
+  }
+ }catch(e){f.innerHTML=""}
+ f.classList.add("icon");f.setAttribute("role","img");f.setAttribute("aria-label",g.name);
+ f.innerHTML='<svg viewBox="0 0 24 24" width="104" height="104" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">'+(g.icon||(GEAR_SLOTS[g.slot]&&GEAR_SLOTS[g.slot].icon)||"")+'</svg>';
+ return f;
+}
+function gearInspect(id){
+ if(!arEl||arEl.hidden)return;const g=Gear.info(id);if(!g)return;
+ inspectClose(true);inFrom=document.activeElement;
+ let reduce=false;try{reduce=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}
+ const eq=g.equipped?null:Gear.equipped(g.key);   // what you are wearing in this slot now (null when this item IS the equipped one, or the slot is empty)
+ const d=document.createElement("div");d.className="in-pop";d.style.setProperty("--c",g.color);
+ d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-label",g.name+" details");
+ const card=document.createElement("div");card.className="in-card";
+ const x=document.createElement("button");x.type="button";x.className="in-x";x.setAttribute("aria-label","Close details");x.innerHTML="&times;";x.setAttribute("data-in-x","");card.appendChild(x);
+ card.appendChild(inspectArt(g));
+ const head=document.createElement("div");head.className="in-head";
+ const nm=document.createElement("b");nm.className="in-name";nm.textContent=g.name;head.appendChild(nm);
+ const rr=document.createElement("span");rr.className="in-rar";rr.textContent=g.rarityName;head.appendChild(rr);card.appendChild(head);
+ const sub=document.createElement("div");sub.className="in-sub";
+ const kind={weapons:"Weapon",armor:"Armor",accessories:"Accessory"}[g.slot]||"Gear";
+ sub.textContent=(g.part?g.part.charAt(0).toUpperCase()+g.part.slice(1):kind)+(g.count>1?" \u00b7 \u00d7"+g.count:"")+(g.equipped?" \u00b7 Equipped":"");
+ card.appendChild(sub);
+ // stat bars
+ const keys=Object.keys(g.stats||{}),box=document.createElement("div");box.className="in-stats";
+ const fills=[];
+ keys.forEach(k=>{
+  const raw=g.stats[k],n=inNum(g.id,k),row=document.createElement("div");row.className="in-stat";
+  const kk=document.createElement("span");kk.className="in-k";kk.textContent=k;row.appendChild(kk);
+  const vv=document.createElement("b");vv.className="in-v";vv.textContent=k==="Damage"?String(Gear.hitDmg(g.id)):String(raw);
+  if(n==null){row.classList.add("txt");row.appendChild(vv);box.appendChild(row);return}
+  const max=inIsLevel(g.id,k)?3:inMax(g.slot,k),bar=document.createElement("span"),fill=document.createElement("i");bar.className="in-bar";bar.appendChild(fill);
+  const pct=Math.max(8,Math.min(100,Math.round(n/max*100)));fills.push([fill,pct]);
+  // compare against the equipped item of this slot
+  if(eq){
+   const m=inNum(eq.id,k),b=m==null?0:m;
+   if(inIsLevel(eq.id,k)||m!=null||inNum(g.id,k)!=null){
+    const tick=document.createElement("u");tick.style.left=Math.max(0,Math.min(100,Math.round(b/max*100)))+"%";tick.setAttribute("aria-hidden","true");bar.appendChild(tick);
+   }
+   row.appendChild(bar);row.appendChild(vv);
+   const df=n-b,dl=document.createElement("span");
+   if(Math.abs(df)<1e-9){dl.className="in-d same";dl.textContent="same";dl.setAttribute("aria-label","same as equipped")}
+   else{const up=df>0;dl.className="in-d "+(up?"up":"down");dl.textContent=(up?"\u25b2 ":"\u25bc ")+inDeltaText(g.id,k,df);dl.setAttribute("aria-label",(up?"better than equipped: ":"worse than equipped: ")+inDeltaText(g.id,k,df))}
+   row.appendChild(dl);
+  }else{row.appendChild(bar);row.appendChild(vv)}
+  box.appendChild(row);
+ });
+ if(keys.length)card.appendChild(box);
+ if(eq&&keys.length){const cn=document.createElement("small");cn.className="in-note";cn.textContent="Compared with your equipped "+eq.name+". The white tick on a bar is its value.";card.appendChild(cn)}
+ else if(!g.equipped&&!eq){const cn=document.createElement("small");cn.className="in-note";cn.textContent="Nothing equipped in this slot yet.";card.appendChild(cn)}
+ // armor set progress
+ if(g.set&&SET_BONUS[g.set]){
+  const worn=["helmet","chest","boots"].filter(pt=>{const e=Gear.equipped("armor:"+pt);return e&&e.set===g.set}).length;
+  const st=document.createElement("div");st.className="in-set";st.textContent=SET_BONUS[g.set].name+": "+worn+" / 3 worn. Wear all three for "+SET_BONUS[g.set].text+".";card.appendChild(st);
+ }
+ if(g.desc){const ds=document.createElement("p");ds.className="in-desc";ds.textContent=g.desc;card.appendChild(ds)}
+ const acts=document.createElement("div");acts.className="in-acts";
+ const eb=document.createElement("button");eb.type="button";eb.className="gr-btn in-eq";eb.textContent=g.equipped?"Unequip":"Equip";eb.setAttribute("aria-label",(g.equipped?"Unequip ":"Equip ")+g.name);
+ eb.addEventListener("click",()=>{
+  if(g.equipped){Gear.unequip(g.key);bagGearMsg="Unequipped "+g.name+"."}
+  else{const r=Gear.equip(g.id);bagGearMsg=r.ok?"Equipped "+g.name+".":r.reason}
+  inspectClose(true);inFrom=null;bagPaintBody();
+ });
+ acts.appendChild(eb);
+ const cb=document.createElement("button");cb.type="button";cb.className="gr-btn in-close";cb.textContent="Close";cb.setAttribute("data-in-x","");acts.appendChild(cb);
+ card.appendChild(acts);
+ const bk=document.createElement("div");bk.className="in-back";bk.setAttribute("data-in-x","");
+ d.appendChild(bk);d.appendChild(card);
+ d.addEventListener("click",e=>{if(e.target.closest("[data-in-x]"))inspectClose()});
+ arEl.appendChild(d);inEl=d;
+ // the bars fill up (straight to full with reduced motion)
+ if(reduce)fills.forEach(f=>{f[0].style.width=f[1]+"%";f[0].style.transition="none"});
+ else requestAnimationFrame(()=>requestAnimationFrame(()=>fills.forEach((f,i)=>{f[0].style.transitionDelay=(i*70)+"ms";f[0].style.width=f[1]+"%"})));
+ try{eb.focus()}catch(e){}
 }
 // the Crafting popup (its own section, like the Bag): one row per recipe with its cost, what the player has, and a Craft button (disabled until they have enough)
 let craftMsg="",craftTab="";
@@ -652,14 +768,14 @@ function armoryBuild(){
 // (Armory tabs, Bag sections, Crafting sections), and Tab stays inside the popup. Listens on the document so it still works after a redraw has dropped the focused button.
 function armoryKeys(e){
  if(!arEl||arEl.hidden)return;
- if(e.key==="Escape"){e.stopPropagation();e.preventDefault();if(skPop)skinPopClose();else armoryClose();return}
+ if(e.key==="Escape"){e.stopPropagation();e.preventDefault();if(inEl)inspectClose();else if(skPop)skinPopClose();else armoryClose();return}
  const inside=arEl.contains(e.target);
  const t=inside&&e.target.closest&&e.target.closest(".ar-tab,.bg-tab");
  if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){const all=[...t.parentNode.children].filter(x=>x.matches(".ar-tab,.bg-tab")),i=all.indexOf(t),n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];e.preventDefault();n.click();return}
  if(e.key==="Tab"){
-  const f=[...arEl.querySelectorAll("button,[tabindex='0']")].filter(x=>x.tabIndex>=0&&!x.disabled&&x.offsetParent!==null);if(!f.length)return;
+  const f=[...(inEl||arEl).querySelectorAll("button,[tabindex='0']")].filter(x=>x.tabIndex>=0&&!x.disabled&&x.offsetParent!==null);if(!f.length)return;
   const a=f[0],z=f[f.length-1];
-  if(!inside){e.preventDefault();(e.shiftKey?z:a).focus();return}
+  if(!inside||(inEl&&!inEl.contains(e.target))){e.preventDefault();(e.shiftKey?z:a).focus();return}
   if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}
  }
 }
@@ -697,7 +813,7 @@ function armoryOpen(tab,sub){
  if(!AR_TABS.some(t=>t.id===tab))tab=arTab;
  if(typeof sub==="string"&&sub){if(tab==="bag")bagTab=sub;else if(tab==="craft")craftTab=sub;else if(tab==="skins")skTab=sub}
  const fresh=arEl.hidden;
- skinPopClose();clearTimeout(skTimer);skPending="";bagGearMsg=craftMsg=arMsg=skMsg="";
+ inspectClose(true);skinPopClose();clearTimeout(skTimer);skPending="";bagGearMsg=craftMsg=arMsg=skMsg="";
  arTab=tab;
  if(fresh){
   arFrom=document.activeElement;
@@ -712,7 +828,7 @@ function armoryOpen(tab,sub){
 }
 function armoryClose(){
  if(!arEl||arEl.hidden)return;
- skinPopClose();clearTimeout(skTimer);skPending="";
+ inspectClose(true);skinPopClose();clearTimeout(skTimer);skPending="";
  arEl.hidden=true;document.documentElement.classList.remove("bag-open");
  try{loadoutPaint()}catch(e){}
  try{dispatchEvent(new CustomEvent("armory:close"));dispatchEvent(new CustomEvent("bag:close"))}catch(e){}
@@ -913,7 +1029,7 @@ let _g=null;
 function paintGems(){
  const e=document.getElementById("gemct");if(!e)return;
  const v=CS.c,b=e.parentNode;
- if(_g!==null&&v!==_g){b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump")}
+ if(_g!==null&&v!==_g){b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump");if(window.HudFX){HudFX.pop(e);HudFX.chip(b,v-_g,"mint","below")}}
  _g=v;e.textContent=v;b.setAttribute("aria-label","Swamp Crystals: "+v+". Open your avatar");
 }
 (function(){

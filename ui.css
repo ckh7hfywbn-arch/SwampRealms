@@ -1022,3 +1022,86 @@ html.av-open{overflow:hidden}
 .armory-open .bagbadge,.armory-open .craftbadge{display:inline-block;min-width:20px;padding:2px 7px;border-radius:999px;background:#1a1405;color:#ffe9b0;font:900 11px Nunito,sans-serif;text-align:center}
 .armory-open .craftbadge{background:#0e5a43;color:#d8fff0}
 .bagbtn small[data-craft-count]{background:#4ee6b4;color:#06251b}
+
+/* ---- Results screen animation (adventure.html resultsFX): count-up score, stamped "New best!", rewards that pop in one at a time ---- */
+.sres .pre,.rwd .pre{opacity:0}
+.sres .show,.rwd em.show{animation:rsIn .38s cubic-bezier(.2,.9,.3,1.2) both}
+.rwd>span.show{animation:rsPop .5s cubic-bezier(.2,.9,.3,1.4) both}
+.sres .sbest.stamp{animation:rsStamp .6s cubic-bezier(.2,1.4,.4,1) both}
+.sres .sbig.done{animation:rsBig .5s ease-out}
+.rwd .frg{width:14px;height:16px;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 6-3 12H8L5 9z' fill='%2378f0c8' stroke='%23d6fff2' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+@keyframes rsIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes rsPop{0%{opacity:0;transform:scale(.4)}60%{opacity:1;transform:scale(1.22)}100%{opacity:1;transform:scale(1)}}
+@keyframes rsStamp{0%{opacity:0;transform:scale(2.6) rotate(-9deg)}55%{opacity:1;transform:scale(.88) rotate(3deg)}75%{transform:scale(1.1) rotate(-2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes rsBig{0%{transform:scale(1)}40%{transform:scale(1.12);text-shadow:0 0 34px #ffb04f}100%{transform:scale(1)}}
+
+/* ---- HUD numbers (cards.js HudFX): bold glowing counters that pop, plus floating +N chips ---- */
+header nav .bank{position:relative}
+header nav .bank b{font-weight:900;font-size:1.07em;font-variant-numeric:tabular-nums;letter-spacing:.01em;color:#ffe9a8;text-shadow:0 0 12px #f2c14e66}
+header nav .bank.cry b{color:#c8fff4;text-shadow:0 0 12px #4ee6b466}
+.hpop{animation:hudpop .45s cubic-bezier(.2,.9,.3,1.4)}
+.hfx{position:absolute;z-index:60;pointer-events:none;font:900 13px/1 Nunito,sans-serif;font-style:normal;font-variant-numeric:tabular-nums;padding:3px 8px;border-radius:999px;white-space:nowrap;color:#1b1400;background:linear-gradient(180deg,#ffe08a,#f2b84a);box-shadow:0 0 14px -2px #ffb04f;animation:hfxdown 1.2s cubic-bezier(.2,.8,.3,1) both}
+.hfx.mint{color:#032019;background:linear-gradient(180deg,#d8fff0,#4ee6b4);box-shadow:0 0 14px -2px #4ee6b4}
+.hfx.rose{color:#fff;background:linear-gradient(180deg,#ff8a9c,#d6455e);box-shadow:0 0 14px -2px #ff6b82}
+.hfx.below{top:100%;right:0;margin-top:4px}
+.hfx.left{right:calc(100% + 6px);top:50%;margin-top:-10px;animation-name:hfxup}
+.hfx.right{left:calc(100% + 6px);top:50%;margin-top:-10px;animation-name:hfxup}
+#box .hud.scw b{font-size:20px;text-shadow:0 0 12px #ffb04f66}
+#box .hhp .fl{width:20px;height:24px}
+.fl.on.gain{animation:flpop .55s cubic-bezier(.2,.9,.3,1.5),flick 2.4s ease-in-out .55s infinite}
+@keyframes hudpop{0%{transform:scale(1)}35%{transform:scale(1.4);filter:brightness(1.5)}100%{transform:scale(1)}}
+@keyframes hfxdown{0%{opacity:0;transform:translateY(-6px) scale(.6)}18%{opacity:1;transform:translateY(0) scale(1.15)}30%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(16px)}}
+@keyframes hfxup{0%{opacity:0;transform:translateY(6px) scale(.6)}18%{opacity:1;transform:translateY(0) scale(1.15)}30%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+@keyframes flpop{0%{transform:scale(.2);filter:drop-shadow(0 0 2px #fff)}55%{transform:scale(1.55);filter:drop-shadow(0 0 12px #ffd98a)}100%{transform:scale(1)}}
+@keyframes hfxfade{0%,70%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.hpop,.fl.on.gain{animation:none}.hfx,.hfx.left,.hfx.right,.hfx.below{animation:hfxfade 1.2s linear both}}
+
+/* ---- Chunky buttons: a solid 3D lip under every .btn that squishes down when pressed (the soft tap sound already plays from cards.js on every tap) ---- */
+/* --lw = lip height, --lip = lip colour, --glow = soft glow, --ring = inner highlight/outline. !important so the older one-off .btn box-shadows in this file can't flatten the lip. */
+.btn{--lw:4px;--lip:#9a6f12;--glow:#f2c14e66;--ring:inset 0 1px 0 #ffffff59;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.btn.ghost{--lip:#0c3a2d;--glow:#4ee6b44d;--ring:inset 0 0 0 1.5px #4ee6b46b}
+.btn.ghost:hover{--glow:#4ee6b488;--ring:inset 0 0 0 1.5px #4ee6b4}
+.btn.mini,.pvbar .btn{--lw:3px}
+.btn:not([disabled]):not(.swat){box-shadow:0 var(--lw) 0 var(--lip),0 calc(var(--lw) + 6px) 22px -10px var(--glow),var(--ring)!important}
+.btn:active:not([disabled]):not(.swat){transform:translateY(calc(var(--lw) - 1px)) scale(.985);transition-duration:.08s;filter:brightness(.96);box-shadow:0 calc(var(--lw) - 3px) 0 var(--lip),0 3px 10px -6px var(--glow),var(--ring),inset 0 3px 8px #0000004d!important}
+
+/* ---- Inspect card (store.js gearInspect): tap an item in the Bag for a big preview, stat bars and a compare against what you are wearing ---- */
+.gr-row{cursor:pointer;transition:border-color .2s,transform .12s}
+.gr-row:hover{border-color:var(--c)}
+.gr-row:active{transform:scale(.99)}
+.gr-row:focus-visible{outline:2px solid var(--mint,#4ee6b4);outline-offset:2px}
+.in-pop{position:absolute;inset:0;z-index:7;display:grid;place-items:center;padding:14px 12px calc(14px + env(safe-area-inset-bottom,0px));animation:inFade .2s ease-out both}
+.in-back{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c) 14%,#02060a),#02060af2 70%)}
+.in-card{position:relative;box-sizing:border-box;width:min(400px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:20px;background:linear-gradient(180deg,#0f1a14,#070c0a);border:1px solid var(--c);box-shadow:0 0 0 1px #000,0 0 38px -10px var(--c),0 24px 50px -20px #000;animation:inRise .38s cubic-bezier(.2,1.2,.4,1) both}
+.in-x{position:absolute;top:8px;right:8px;z-index:2;width:34px;height:34px;border-radius:50%;border:1px solid #ffffff22;background:#0a100cd9;color:#e8fff6;font:900 20px/1 Nunito,system-ui,sans-serif;cursor:pointer}
+.in-x:hover{border-color:var(--c)}
+.in-art{display:grid;place-items:center;padding:14px 10px;min-height:150px;border-radius:16px;border:1px solid var(--c);overflow:hidden;color:var(--c);background:radial-gradient(ellipse at 50% 55%,color-mix(in srgb,var(--c) 28%,#0a100c),#0a100c 78%)}
+.in-art canvas{display:block;width:100%;max-width:340px;height:auto;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--c) 70%,transparent))}
+.in-art.icon svg{filter:drop-shadow(0 0 10px var(--c));animation:inFloat 3.2s ease-in-out infinite}
+.in-art.avatar svg{display:block;max-width:100%;height:auto}
+.in-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.in-name{font:900 22px/1.1 'Bagel Fat One',Nunito,system-ui,sans-serif;color:#fff3d6;text-shadow:0 2px 0 #000a,0 0 16px color-mix(in srgb,var(--c) 70%,transparent)}
+.in-rar{padding:3px 10px;border-radius:999px;border:1px solid var(--c);color:var(--c);font:900 11px/1 Nunito,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;background:color-mix(in srgb,var(--c) 12%,#0a100c)}
+.in-sub{margin-top:-4px;font:800 12px Nunito,system-ui,sans-serif;letter-spacing:.06em;color:#9fb8ae}
+.in-stats{display:grid;gap:9px;padding:10px 12px;border-radius:14px;background:#05090a;border:1px solid #4ee6b422}
+.in-stat{display:grid;grid-template-columns:58px minmax(0,1fr) auto auto;align-items:center;gap:8px;font:800 12px Nunito,system-ui,sans-serif;color:#cfe9df}
+.in-k{color:#9fb8ae;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:900}
+.in-bar{position:relative;display:block;height:9px;border-radius:99px;background:#101c18;border:1px solid #ffffff14}
+.in-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 55%,#000),var(--c));box-shadow:0 0 8px -1px var(--c);transition:width .7s cubic-bezier(.2,.9,.3,1)}
+.in-bar u{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:2px;background:#fff;opacity:.9;text-decoration:none;box-shadow:0 0 6px #fff8}
+.in-v{min-width:34px;text-align:right;font-weight:900;color:#fff3d6;font-variant-numeric:tabular-nums}
+.in-stat.txt .in-v{grid-column:2 / -1;text-align:left;min-width:0;font-weight:800}
+.in-d{padding:3px 8px;border-radius:99px;white-space:nowrap;font:900 11px/1 Nunito,system-ui,sans-serif}
+.in-d.up{color:#04170f;background:#5fd38d;box-shadow:0 0 10px -3px #5fd38d}
+.in-d.down{color:#fff;background:#d6455e;box-shadow:0 0 10px -3px #ff6b82}
+.in-d.same{color:#9fb8ae;background:#16231d}
+.in-note{margin-top:-4px;font:700 11px/1.35 Nunito,system-ui,sans-serif;color:#8fa79c}
+.in-set{padding:8px 10px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--c) 55%,transparent);font:800 12px/1.35 Nunito,system-ui,sans-serif;color:#d8fff3}
+.in-desc{margin:0;font:600 13px/1.4 Nunito,system-ui,sans-serif;color:#b9cfc6}
+.in-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.in-acts .gr-btn{flex:1 1 0;justify-self:auto}
+.in-close{background:transparent!important;color:#ffe9b0!important}
+@keyframes inFade{from{opacity:0}}
+@keyframes inRise{from{opacity:0;transform:translateY(18px) scale(.94)}}
+@keyframes inFloat{50%{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){.in-pop,.in-card,.in-art.icon svg{animation:none}.in-bar i{transition:none}}
