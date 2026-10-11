@@ -92,6 +92,7 @@ const Crystals={
  item:id=>COSMETICS.find(x=>x.id===id),
  owns:id=>!!CS.own[id],
  reload:cload,
+ save:csave,   // write the current crystals save (used by games that keep their own progress inside it, e.g. CS.evo for SwampRealms: Evolution)
  // how many crystals a finished round pays. game = "fly" | "match" | ...; score = the round's points
  forScore(game,score){const g=CRY.games[game]||CRY.games._;return Math.max(CRY.minRound,Math.min(g.cap,Math.floor((score||0)/g.per)))},
  // call once when a round ends. Returns {gained, bonus, total, record}

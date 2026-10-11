@@ -1,0 +1,112 @@
+/* ===== SwampRealms: Evolution (Stage 1) =====
+   Loaded after styles.css and ui.css. Uses the site tokens (--mint, --gold, --panel, --line ...). All rules are scoped to #evo / .evo-* so no other page is affected. */
+#evo{max-width:1120px;padding-bottom:24px}
+#evo .sub{margin-bottom:16px}
+.evo-stage{position:relative;display:grid;gap:12px;padding:12px;text-align:left;background:var(--panel);border:1px solid var(--mint-line);border-radius:18px;box-shadow:0 0 34px -18px var(--mint),0 18px 36px -22px #000}
+.evo-stage button{font-family:inherit}
+/* resource bar */
+.evo-bar{position:sticky;top:var(--evo-top,64px);z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:-12px -12px 0;padding:10px 12px;background:#0b130ff2;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:18px 18px 0 0;border-bottom:1px solid var(--mint-line)}
+#evoStage.fs .evo-bar{top:0;border-radius:0;margin:calc(-1 * max(12px,env(safe-area-inset-top,0px))) -12px 0;padding-top:max(10px,env(safe-area-inset-top,0px))}
+.evo-res{display:flex;align-items:center;gap:10px;min-width:0}
+.evo-count{position:relative;display:grid;line-height:1.1}
+.evo-count small{font:900 10.5px Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.evo-count b{font:900 clamp(24px,6vw,32px)/1.05 Nunito,sans-serif;color:var(--mint-soft);text-shadow:0 0 14px #4ee6b4aa;font-variant-numeric:tabular-nums}
+.evo-rate{align-self:end;margin-bottom:3px;padding:3px 9px;border-radius:999px;background:#0a100c;border:1px solid var(--mint-line);color:var(--mint);font:900 13px Nunito,sans-serif;font-variant-numeric:tabular-nums}
+.evo-rate.off{color:var(--muted);opacity:.7}
+.evo-bar-r{display:flex;align-items:center;gap:8px}
+.evo-mult{padding:3px 10px;border-radius:999px;border:1px solid #f2c14e44;background:#0a100c;color:var(--gold);font:900 12px Nunito,sans-serif;letter-spacing:.04em;white-space:nowrap}
+.evo-fsb{margin:0;white-space:nowrap}
+.evo-orb{flex:none;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,#b9ffe9 22%,#4ee6b4 55%,#0e6b52 100%);box-shadow:0 0 18px -2px #4ee6b4,0 0 0 2px #04110c inset}
+.evo-orb.sm{width:14px;height:14px;box-shadow:0 0 8px -1px #4ee6b4;vertical-align:-2px;margin-right:5px}
+/* layout: scene on top (phone), scene left + panels right (desktop) */
+.evo-main{display:grid;gap:12px}
+@media(min-width:900px){.evo-main{grid-template-columns:minmax(0,1.3fr) minmax(330px,.9fr);align-items:start}}
+.evo-scene{position:relative;aspect-ratio:400/260;border-radius:14px;overflow:hidden;border:1px solid var(--mint-line);background:#06100d;box-shadow:0 0 30px -16px var(--mint) inset;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.evo-art,.evo-art svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* tappable spots (positions are percentages of the 400x260 picture) */
+.evo-hot{position:absolute;padding:0;border:0;background:none;cursor:pointer;border-radius:50%;-webkit-tap-highlight-color:transparent}
+.evo-hot:focus-visible,.evo-cr:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.evo-hq{left:3%;top:30%;width:30%;height:46%}
+.evo-p1{left:51%;top:48%;width:23%;height:30%}
+.evo-p2{left:77%;top:50%;width:20%;height:28%}
+.evo-hot.can::after{content:"Build";position:absolute;left:50%;top:-4px;transform:translateX(-50%);padding:2px 9px;border-radius:999px;background:var(--gold);color:#1a1405;font:900 11px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 0 14px -2px var(--gold);animation:evoBob 1.2s ease-in-out infinite}
+.evo-hot.flash{animation:evoFlash .7s ease-out}
+.evo-cr{position:absolute;left:31%;top:48%;width:19%;padding:0;border:0;background:none;cursor:pointer;display:grid;justify-items:center;-webkit-tap-highlight-color:transparent;}
+.evo-cr-art{display:block;width:100%;filter:drop-shadow(0 4px 6px #000a);transform-origin:50% 90%;animation:evoIdle 3.2s ease-in-out infinite}
+.evo-cr-art svg{display:block;width:100%;height:auto}
+.evo-cr-tip{white-space:nowrap;margin-top:-4px;padding:1px 8px;border-radius:999px;background:#04110ccc;border:1px solid var(--mint-line);color:var(--mint-soft);font:900 10px Nunito,sans-serif;letter-spacing:.08em;text-transform:uppercase;pointer-events:none}
+.evo-cr.hop .evo-cr-art{animation:evoHop .35s var(--ease-spring)}
+.evo-cr:active{transform:scale(.94)}
+/* feedback */
+.evo-float{position:absolute;z-index:6;pointer-events:none;transform:translate(-50%,0);font:900 17px/1 Nunito,sans-serif;font-style:normal;text-shadow:0 2px 6px #000,0 0 10px currentColor;animation:evoRise 1.1s ease-out forwards}
+.evo-float.gold{color:#ffd978}
+.evo-float.mint{color:#9ff5d6;font-size:13px;opacity:.9}
+.evo-spark{position:absolute;z-index:6;width:8px;height:8px;margin:-4px;border-radius:50%;background:#ffe9a0;box-shadow:0 0 10px 2px #f2c14e;pointer-events:none;animation:evoSpark .85s ease-out forwards}
+.evo-toast{position:absolute;left:50%;top:8px;z-index:7;max-width:92%;transform:translate(-50%,-10px);padding:7px 14px;border-radius:12px;background:#04110cf0;border:1px solid var(--mint-line);color:var(--mint-soft);font:800 13px/1.3 Nunito,sans-serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.evo-toast.show{opacity:1;transform:translate(-50%,0)}
+.evo-toast.good{border-color:#f2c14e99;color:#ffe9a8;box-shadow:0 0 22px -6px var(--gold)}
+.evo-dash{animation:evoDash 6s linear infinite}
+.evo-shroom{animation:evoPulse 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.evo-fly{animation:evoFly 5s ease-in-out infinite}
+.evo-mist{animation:evoMist 14s ease-in-out infinite alternate}
+@keyframes evoRise{0%{opacity:0;margin-top:6px}15%{opacity:1}100%{opacity:0;margin-top:-52px}}
+@keyframes evoSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+@keyframes evoHop{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-10px) scale(1.08,.94)}100%{transform:translateY(0) scale(1)}}
+@keyframes evoIdle{0%,100%{transform:scale(1,1)}50%{transform:scale(1.03,.97)}}
+@keyframes evoFlash{0%{box-shadow:0 0 0 0 #f2c14ecc}100%{box-shadow:0 0 0 28px #f2c14e00}}
+@keyframes evoBob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-4px)}}
+@keyframes evoPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+@keyframes evoFly{0%,100%{transform:translate(0,0);opacity:.2}50%{transform:translate(10px,-12px);opacity:1}}
+@keyframes evoMist{from{transform:translateX(-12px)}to{transform:translateX(24px)}}
+@keyframes evoDash{to{stroke-dashoffset:-60}}
+/* tabs + panels */
+.evo-side{display:grid;gap:10px;min-width:0}
+.evo-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:999px;background:#0a100c;border:1px solid var(--mint-line);box-shadow:inset 0 0 18px -8px var(--mint)}
+.evo-tabs button{min-height:40px;border:0;border-radius:999px;background:none;color:var(--muted);font:900 12.5px Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s,box-shadow .2s}
+.evo-tabs button[aria-selected=true]{color:var(--mint-soft);background:linear-gradient(180deg,#123a30,#0a1a15);box-shadow:0 0 0 1px var(--mint) inset,0 0 16px -4px var(--mint)}
+.evo-pane{display:grid;gap:10px;align-content:start}
+.evo-card{position:relative;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center;padding:12px;border-radius:14px;background:#0a100c;border:1px solid var(--mint-line)}
+.evo-card.locked{opacity:.72;border-style:dashed}
+.evo-card.empty{border-style:dashed;background:#4ee6b406}
+.evo-card.done{border-color:#f2c14e88;box-shadow:0 0 24px -12px var(--gold)}
+.evo-card.done h3::after{content:"\2713";margin-left:8px;color:var(--gold)}
+.evo-card.realm,.evo-card:not(:has(.evo-ic,.evo-cav)){grid-template-columns:1fr}
+.evo-info{min-width:0}
+.evo-info h3{margin:0 0 3px;font:900 16px/1.2 Nunito,sans-serif;letter-spacing:.02em;color:var(--text)}
+.evo-info h3 em{margin-left:6px;font:900 10.5px Nunito,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.evo-info p{margin:0;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.evo-act{grid-column:1/-1;display:grid;gap:6px}
+.evo-act .btn{width:100%;min-height:44px;padding:8px 14px;font-size:15px}
+.evo-act .btn.ready{animation:evoReady 1.6s ease-in-out infinite}
+@keyframes evoReady{0%,100%{box-shadow:0 0 26px -8px var(--gold)}50%{box-shadow:0 0 30px -2px var(--gold)}}
+.evo-c{display:inline-block;margin-left:6px;padding-left:10px;border-left:1.5px solid #0004;font-variant-numeric:tabular-nums}
+.evo-bar2{height:6px;border-radius:99px;background:#04110c;border:1px solid var(--mint-line);overflow:hidden}
+.evo-bar2 i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1c9d7a,#4ee6b4);box-shadow:0 0 10px var(--mint);transition:width .25s}
+.evo-need{margin:0;font:800 12px Nunito,sans-serif;color:var(--muted);text-align:center}
+.evo-ic{width:46px;height:46px;border-radius:12px;background:#07110d center/60% no-repeat;border:1px solid var(--mint-line)}
+.evo-ic.hq{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f2c14e' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M3 12l9-8 9 8'/%3E%3Cpath d='M5 11v9h14v-9'/%3E%3Cpath d='M10 20v-5h4v5'/%3E%3C/svg%3E")}
+.evo-ic.patch{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ee6b4' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M4 12a8 7 0 0116 0z'/%3E%3Cpath d='M12 12v8'/%3E%3C/svg%3E")}
+.evo-ic.lock{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9b8b0' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 018 0v3'/%3E%3C/svg%3E")}
+.evo-ic.plot{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237fd36a' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M12 20v-8'/%3E%3Cpath d='M12 12c-4 0-6-3-6-6 4 0 6 2 6 6zM12 14c4 0 6-3 6-6-4 0-6 2-6 6z'/%3E%3C/svg%3E")}
+.evo-ic.egg{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9b8b0' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M12 3c4 0 7 6 7 11a7 7 0 01-14 0c0-5 3-11 7-11z'/%3E%3C/svg%3E")}
+.evo-cav{width:76px;height:76px;border-radius:14px;background:radial-gradient(circle at 50% 60%,#1b4a3a,#07110d);border:1px solid var(--mint-line);overflow:hidden}
+.evo-cav svg{display:block;width:100%;height:100%}
+.evo-stats{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+.evo-stats li{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}
+.evo-stats b{color:var(--mint-soft);font-variant-numeric:tabular-nums}
+.evo-goals{list-style:none;margin:8px 0 10px;padding:0;display:grid;gap:6px}
+.evo-goals li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted)}
+.evo-goals i{flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--mint-line)}
+.evo-goals li.ok{color:var(--text)}
+.evo-goals li.ok i{background:var(--gold) center/12px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1405' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");border-color:var(--gold)}
+.evo-win{color:var(--gold)!important;font-weight:800}
+.evo-fine{margin:2px 2px 0;font-size:12px;color:var(--muted)}
+.evo-link{padding:0;border:0;background:none;color:var(--mint);font:800 12px Nunito,sans-serif;text-decoration:underline;cursor:pointer}
+.evo-back{margin:16px 0 0;text-align:center}
+@media(max-width:380px){.evo-fsb{display:none}}
+/* full screen (GameFS adds .fs to #evoStage and .fs-on to <html>) */
+#evoStage.fs{position:fixed;inset:0;z-index:2147483000;width:auto;max-width:none;margin:0;border:0;border-radius:0;overflow:auto;background:#050b08;align-content:start;
+ padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+#evoStage.fs .evo-scene{max-height:calc(100dvh - 90px);justify-self:center;width:100%}
+@media(min-width:900px){#evoStage.fs .evo-scene{max-height:none}}
+@media(prefers-reduced-motion:reduce){.evo-cr-art,.evo-cr.hop .evo-cr-art,.evo-dash,.evo-shroom,.evo-fly,.evo-mist,.evo-hot.can::after,.evo-act .btn.ready{animation:none}.evo-float{animation-duration:.01s}}
