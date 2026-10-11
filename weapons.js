@@ -201,6 +201,11 @@ const WeaponArt=(()=>{
    c.strokeStyle=p.headS;c.lineWidth=1.3;c.beginPath();c.moveTo(39.6,3);c.quadraticCurveTo(45,6.6,49.2,2);c.stroke();
    c.fillStyle=p.headS;c.beginPath();c.arc(48.3,-.9,.55,0,7);c.fill();
    c.fillStyle="rgba(255,120,150,.35)";c.beginPath();c.arc(41,2,1.7,0,7);c.fill();
+   // frog poison: a glowing bead in the mouth (flares when it fires, a=1 to 0) and a drip that falls now and then
+   {const pc=(s&&s.aura)?s.aura:"#9dff4a",ph=(Date.now()/1000*.9)%1;
+    glow(c,49.2,2.2,5+a*9,.5+.45*Math.min(1,a),rgb(pc));
+    c.fillStyle=pc;c.beginPath();c.arc(49.2,2.2,1.5+.5*a,0,7);c.fill();c.fillStyle="#fff";c.beginPath();c.arc(48.8,1.8,.55,0,7);c.fill();
+    if(ph<.6){const dy=ph/.6,k=1-dy*.7;c.globalAlpha*=k;c.fillStyle=pc;c.beginPath();c.ellipse(49.4,4+dy*7,.9,1.3+dy*.4,0,0,7);c.fill();c.globalAlpha/=k}}
    // bulging eyes
    for(const e of[[42,-5.6,3.5,2.6],[46.6,-4.2,3.3,2.4]]){
     c.fillStyle=rg(c,e[0],e[1],.5,e[2]+.6,[[0,lt(p.head,.35)],[1,p.head]],e[0]-1,e[1]-1.2);c.strokeStyle=p.headS;c.lineWidth=1.3;c.beginPath();c.arc(e[0],e[1],e[2],0,7);c.fill();c.stroke();

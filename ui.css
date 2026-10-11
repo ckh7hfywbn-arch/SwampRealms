@@ -1105,3 +1105,12 @@ header nav .bank.cry b{color:#c8fff4;text-shadow:0 0 12px #4ee6b466}
 @keyframes inRise{from{opacity:0;transform:translateY(18px) scale(.94)}}
 @keyframes inFloat{50%{transform:translateY(-5px)}}
 @media(prefers-reduced-motion:reduce){.in-pop,.in-card,.in-art.icon svg{animation:none}.in-bar i{transition:none}}
+
+/* ---- Endless Realms Threat meter (adventure.html updateRein): more pips light up the longer you stay in a level ---- */
+.hud.dng{top:78px;display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#ffc9d2;padding:4px 10px;white-space:nowrap}
+.hud.dng[hidden]{display:none}
+.hud.dng i{display:block;width:9px;height:9px;border-radius:50%;background:#2a1418;border:1px solid #ff6b8266}
+.hud.dng i.on{background:#ff6b82;border-color:#ffb3c0;box-shadow:0 0 8px #ff6b82}
+.hud.dng.up{animation:dngUp 1s ease-out}
+@keyframes dngUp{0%{transform:scale(1)}20%{transform:scale(1.25);box-shadow:0 0 22px #ff6b82}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.hud.dng.up{animation:none}}

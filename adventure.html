@@ -63,6 +63,7 @@
    <canvas id="cv" width="360" height="480" aria-label="Game area"></canvas>
    <button type="button" class="btn ghost gfs" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
    <div class="hud hhp" aria-live="polite"><span class="sr">Health</span><span id="hp" role="img"></span></div>
+   <div class="hud dng" id="dng" hidden aria-live="polite"></div>
    <div class="hud spn" id="cnw" aria-live="polite" title="Glowspores"><i class="orb" aria-hidden="true"></i><span class="sr">Glowspores </span><span id="cn">0</span>/<span id="cnt">0</span></div>
    <div class="hud tm"><span id="st">Ready</span></div>
    <div class="hud scw" id="scw" title="Score and time"><span class="sl">Score</span><b id="scv">0</b><span class="stm" id="sct">0:00</span></div>
@@ -81,7 +82,7 @@
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M19.5 4.5L9 15M14 4.5h5.5V10M7 11l6 6M8 16l-4 4"/></svg></i><div><b>Attack</b><span>Press <kbd>J</kbd> or <kbd>E</kbd>, or Attack, to swing in front of you. The Bramble Bug takes two hits. The Swamp Frog takes three hits (four in the Sunlit Canopy, where the Bramble Bug takes three). When its mouth opens and a "!" shows, it is about to flick its tongue along the ground, so jump the tongue or stay back, then strike while it is winded. The Rootmaw boss at the end of Level 3 takes twelve: dodge its ground slam, then strike while it recovers. In the Sunlit Canopy, MonK the Monkey swings on the vines overhead and lobs bananas at you: he raises one before every throw, so dodge it, hide behind cover, or swing at a banana to knock it out of the air. In the Endless Realms, swarms of little mosquitoes sometimes buzz in: they do no damage but shove you around, so tap the Swat! button (or press <kbd>K</kbd>) to send them flying. Enemies get new looks and take more hits, and boss levels bring tougher bosses.</span></div></li>
    <li><i class="hi orb"></i><div><b>Collectibles</b><span>Glowspores float along the way. There are 12 in Level 1, 17 in Level 2, 41 in Level 3 and 42 in Level 4. Touch one to collect it. On boss levels they glow purple and each one pays bonus Swamp Crystals. Watch out for thorn vines from Level 3 on: they hurt.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3c0 0-6 6-6 11a6 6 0 0012 0c0-5-6-11-6-11z"/></svg></i><div><b>Health</b><span>You have 3 flames. A Bramble Bug or Swamp Frog touch costs one. Lose them all and it is game over. Lit lanterns save your spot.</span></div></li>
-   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Every level now ends in a boss fight: walk into the arena at the far end and defeat the boss to clear the level. Endless Realms levels end at a goal gate, with a stronger boss every third level (3, 6, 9 and on). There is no last level. Before every boss arena stands a cabin with a treasure chest: strike it open (<kbd>J</kbd> / <kbd>E</kbd> or Attack) and pick <b>Max Flames +1</b> or <b>+25% Damage</b> for the fight. The cabin's back door stays barred until you do.</span></div></li>
+   <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M6 21V4M6 5h12l-3 4 3 4H6"/></svg></i><div><b>Goal</b><span>Every level now ends in a boss fight: walk into the arena at the far end and defeat the boss to clear the level. Endless Realms levels end at a goal gate, with a stronger boss every third level (3, 6, 9 and on). There is no last level. In the Endless Realms the longer you stay in a level, the more enemies arrive: Swamp Frogs keep showing up off-screen and hunt you, and the Threat pips under the glowspore counter show how many can be on you at once (they score points but drop no fragments). Before every boss arena stands a cabin with a treasure chest: strike it open (<kbd>J</kbd> / <kbd>E</kbd> or Attack) and pick <b>Max Flames +1</b> or <b>+25% Damage</b> for the fight. The cabin's back door stays barred until you do.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></i><div><b>Score</b><span>Glowspore 100, Bramble Bug 250, Swamp Frog 300 in Level 3 and 400 everywhere else, Rootmaw 1,500, finishing a level 1,000, plus a speed bonus of up to 1,000. In the Endless Realms, every score value grows with the level's Danger number, so coins and crystals do too. Your best score for each level is saved.</span></div></li>
    <li><i class="hi"><svg viewBox="0 0 24 24"><path d="M12 3l7 6-3 12H8L5 9z"/></svg></i><div><b>Fragments</b><span>Every defeated enemy drops a Fragment. Each kind comes from its own enemy, and the Rootmaw drops a rare one. They are saved to your collection straight away.</span></div></li>
   </ol><div class="acts hrow"><button type="button" class="btn" id="howplay" data-fs-start>Play</button><button type="button" class="btn ghost" id="howback">Back</button></div></div><div class="lvs" id="lvp" role="region" aria-labelledby="lvt"><h3 id="lvt">Level Select</h3><ul class="lvl" id="lvl"></ul><div class="acts hrow1"><button type="button" class="btn ghost" id="lvback">Main menu</button></div></div></div>
@@ -317,10 +318,11 @@
  const FRHP=3;
  let FR=null;   // this level's frog patches [{min,max,x}, ...], or null when the level has no Swamp Frog
  let frogs=[];   // one live state object per patch (built by resetFrog)
- function newFrog(c){return{c:c,x:c.x,z:0,vz:0,vx:0,dir:-1,hp:c.repl?CRHP:FRHP,hurt:0,dead:0,defeated:false,kb:0,st:"idle",t:.7,cd:0,tt:0,ext:0}}
+ let frSeq=0;
+ function newFrog(c){return{id:++frSeq,c:c,x:c.x,z:0,vz:0,vx:0,dir:-1,hp:c.repl?CRHP:FRHP,hurt:0,dead:0,defeated:false,kb:0,st:"idle",t:.7,cd:0,tt:0,ext:0}}
  // c.repl = this frog stands where a Bog Crawler used to (Levels 2, 4 and the Endless Realms): it keeps the crawler's hits, points and Endless variant name. Every frog drops a Frog Fragment (the Bog Fragment no longer exists)
  function frogName(fr){if(!fr.c.repl)return"Swamp Frog";const n=SC.crawler.name;return n==="Bog Crawler"?"Swamp Frog":n.replace("Crawler","Frog")}
- function resetFrog(){frogs=(FR||[]).map(newFrog);frogs.forEach((q,i)=>{q.t=.7+i*.35})}
+ function resetFrog(){frSeq=0;frogs=(FR||[]).map(newFrog);frogs.forEach((q,i)=>{q.t=.7+i*.35})}
  function frogStrike(f){for(const q of frogs)frogStrike1(q,f)}
  function frogStrike1(fr,f){
   if(fr.defeated)return;
@@ -366,7 +368,7 @@
     if(fr.t<=0){
      if(near&&fr.cd<=0){fr.st="wind";fr.t=FRG.wind;fr.dir=dx>=0?1:-1;AUDIO.play("croak")}
      else{   // hop along the ledge; drift toward the player when one is around
-      if(near)fr.dir=dx>=0?1:-1;else if(fr.x<=fr.c.min+6)fr.dir=1;else if(fr.x>=fr.c.max-6)fr.dir=-1;else if(Math.random()<.3)fr.dir=-fr.dir;
+      if(near||(fr.c.extra&&Math.abs(dx)<560))fr.dir=dx>=0?1:-1;else if(fr.x<=fr.c.min+6)fr.dir=1;else if(fr.x>=fr.c.max-6)fr.dir=-1;else if(Math.random()<.3)fr.dir=-fr.dir;
       fr.st="hop";fr.vz=FRG.hopV;fr.z=.01;fr.vx=fr.dir*FRG.hop;
      }
     }
@@ -566,7 +568,7 @@
  let lastFoe="Bramble Bug";
  const FLAME='<svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1C12 1 4 10 4 17a8 8 0 0016 0C20 10 12 1 12 1z"/><path class="in" d="M12 12s-3.5 3.6-3.5 6.2a3.5 3.5 0 007 0C15.5 15.6 12 12 12 12z"/></svg>';
  let shownHp=BASEHP;
- function showHp(){const out=state.hp<shownHp?state.hp:-1;let h="";for(let i=0,M=maxHp();i<M;i++)h+='<i class="fl '+(i<state.hp?"on":"off")+(i===out?" out":"")+'">'+FLAME+"</i>";const e=$("hp");e.innerHTML=h;e.setAttribute("aria-label",state.hp+" of "+maxHp()+" health");shownHp=state.hp}
+ function showHp(){const out=state.hp<shownHp?state.hp:-1,was=shownHp,gain=state.hp>was;let h="";for(let i=0,M=maxHp();i<M;i++)h+='<i class="fl '+(i<state.hp?"on":"off")+(i===out?" out":"")+(gain&&i>=was&&i<state.hp?" gain":"")+'">'+FLAME+"</i>";const e=$("hp");e.innerHTML=h;e.setAttribute("aria-label",state.hp+" of "+maxHp()+" health");shownHp=state.hp;if(window.HudFX&&state.hp!==was)HudFX.chip(e.parentNode,state.hp-was,"gold","right")}
  // Swapping armor from the Bag while paused: stats change right away. Gaining max health also adds that heart; losing it trims current health to the new max.
  addEventListener("gear:change",()=>{const o=maxHp();armRefresh();const n=maxHp();if(state.mode==="paused"&&state.hp>0&&n!==o){if(n>o)state.hp+=n-o;state.hp=Math.min(state.hp,n);showHp()}});
  function hurtPlayer(fromX,foe){
@@ -686,6 +688,7 @@
  });
 
  function setMode(m){
+  if(m!=="playing"&&m!=="paused")hideThreat();
   state.mode=m;$("arc").dataset.mode=m;
   const ov=$("ovx");ov.dataset.m=m;ov.dataset.v="";if(m==="playing"||m==="title"){vis.shake=vis.flash=vis.land=vis.take=vis.turn=0}if(m==="over"||m==="title"||m==="complete")vis.dying=0
   $("st").textContent=m==="playing"?"Playing":m==="paused"?"Paused":m==="chest"?"Chest":m==="talk"?"Talking":m==="complete"?"Complete":m==="over"?"Game over":"Ready";
@@ -695,9 +698,9 @@
   if(m==="complete"){AUDIO.play("complete");$("ovt").textContent=lvl(LV).boss?"Victory!":isEndless(LV)?"Realm cleared!":"Level "+(LV+1)+" complete!";$("ovp").textContent="You made it to the end of "+lvl(LV).name+". Glowspores: "+state.spores+" of "+SPORE_POS.length+". Next up: "+(isEndless(nextLv(LV))?"":"Level "+(nextLv(LV)+1)+", ")+lvl(nextLv(LV)).name+".";$("go").textContent="Next level";$("quit").hidden=false}
   $("lvsel").hidden=!(m==="title"||m==="complete");$("rpl").hidden=m!=="complete";paintContinue();
   $("ovs").hidden=m!=="over";$("ovh").hidden=m!=="over";
-  if(m==="complete"){const was=handDone(),nu=markDone(LV),r=finishScore(),ret=!was&&handDone()&&LV===3,ent=LV<LEVELS.length&&nextLv(LV)>=LEVELS.length;if(retired(LV))$("rpl").hidden=true;if(ent){$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):LV===3?"You made it through the Sunlit Canopy! ":"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");if(ret)$("ovp").textContent+=" All four hand-made levels are complete. The Endless Realms are next, and Levels 1-4 can still be replayed from Level Select."}
+  if(m==="complete"){const was=handDone(),nu=markDone(LV),r=finishScore(),ret=!was&&handDone()&&LV===3,ent=LV<LEVELS.length&&nextLv(LV)>=LEVELS.length;if(retired(LV))$("rpl").hidden=true;if(ent){$("go").textContent="Enter Endless Realms"}$("ovp").textContent=(lvl(LV).boss?(LV===2?"The Rootmaw is defeated and the Forgotten Jungle is free! ":BS.name+" is defeated! "):LV===3?"You made it through the Sunlit Canopy! ":"")+r.result+(nu?(isEndless(nu-1)?" "+lvl(nu-1).name:" Level "+nu)+" is now unlocked!":"");$("ovs").hidden=false;if(!paid){paid=true;r.pay=payOut(r.total)}$("ovs").innerHTML=r.html+(r.pay?rewardHTML(r.pay):"");resultsFX();if(ret)$("ovp").textContent+=" All four hand-made levels are complete. The Endless Realms are next, and Levels 1-4 can still be replayed from Level Select."}
   if(m==="complete")showPick();
-  if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));$("go").textContent=isEndless(LV)?"New run":"Restart";if(isEndless(LV)){$("ovp").textContent+=" Your run ends at "+Progression.label(LV)+"."+(RunUps.total()?" Upgrades: "+runUpList()+".":"")+" A new run starts again at "+lvl(LEVELS.length).name+"."}$("quit").hidden=false}
+  if(m==="over"){deadAt=performance.now();$("ovt").textContent="Game Over";$("ovp").textContent="The "+lastFoe+" got you.";let pips="";for(let i=0;i<SPORE_POS.length;i++)pips+='<i class="pip'+(i<state.spores?" on":"")+'"></i>';$("ovs").innerHTML='<span class="pips">'+pips+"</span><span>Glowspores collected: <b>"+state.spores+"</b> / "+SPORE_POS.length+"</span>"+(lootCount()?"<span>Fragments found: <b>"+lootCount()+"</b></span>":"")+(paid?"":(paid=true,rewardHTML(payOut(scoreNow()))));resultsFX();$("go").textContent=isEndless(LV)?"New run":"Restart";if(isEndless(LV)){$("ovp").textContent+=" Your run ends at "+Progression.label(LV)+"."+(RunUps.total()?" Upgrades: "+runUpList()+".":"")+" A new run starts again at "+lvl(LEVELS.length).name+"."}$("quit").hidden=false}
   if(m==="paused"){$("ovt").textContent="Paused";$("ovp").textContent="Take a breath. Your game is waiting.";$("go").textContent="Resume";$("quit").hidden=false}
   if(m==="playing"){last=performance.now();state.tx=state.ty=null}
   if(m!=="playing"){for(const k in keys)keys[k]=false}
@@ -748,8 +751,8 @@
   else if(e.code==="Escape"){e.preventDefault();donkEnd()}
  },true);
  function start(){if(state.mode==="over"&&isEndless(LV))LV=LEVELS.length;   // Game Over in the Endless Realms ends the run: the next one starts again at the first Endless level
-  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;chestReset();loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetFrog();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;if(donkDue()){setMode("talk");donkOpen()}else setMode("playing")}
- function respawnReset(){chestReset();Swarm.reset();armRefresh();state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetFrog();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
+  armRefresh();if(!runCont)RunUps.reset();runCont=false;paid=false;chestReset();loadLevel(LV);vis.banner=lvl(LV).banner?2.8:0;state.x=START_X;state.y=GROUND_Y-R;state.cp=START_X;state.cam=0;state.face=1;state.vx=state.vy=0;resetSpores();resetBug();resetCrawler();resetFrog();resetRein();resetZaps();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;state.canCut=false;showHp();state.ground=true;state.coyote=state.buffer=0;state.t=0;for(const k in keys)keys[k]=false;if(donkDue()){setMode("talk");donkOpen()}else setMode("playing")}
+ function respawnReset(){chestReset();Swarm.reset();armRefresh();state.x=START_X;state.y=GROUND_Y-R;state.vx=state.vy=0;state.cp=START_X;state.cam=0;state.face=1;resetSpores();resetBug();resetCrawler();resetFrog();resetRein();resetZaps();resetBoss();resetScore();state.hp=maxHp();vis.dying=vis.dyT=0;state.hurt=state.stun=state.attack=state.attackCooldown=state.atkQ=0;showHp()}
  function pause(){if(state.mode==="playing")setMode("paused")}
  function resume(){if(state.mode==="paused")setMode("playing")}
 
@@ -816,7 +819,7 @@
   if(state.y>H+60){for(let i=0;i<14;i++)fx.push({k:"drop",x:state.x,y:GROUND_Y+18,vx:(Math.random()-.5)*140,vy:-120-Math.random()*140,life:.7,max:.7});state.x=state.cp;state.y=GROUND_Y-R;state.vx=state.vy=0;state.ground=false}
 
   // strike frame of the swing in progress (resolved before the bug moves, so a clean hit beats a same-frame touch)
-  if(state.attack>0&&!state.swingHit&&ATK_T-state.attack>=ATK_HIT){state.swingHit=true;if(HELD&&HELD.ranged)shoot();else strike()}
+  if(state.attack>0&&!state.swingHit&&ATK_T-state.attack>=ATK_HIT){state.swingHit=true;if(HELD&&HELD.ranged){if(HELD.id==="hopperstaff")zap();else shoot()}else strike()}
 
   // knockback: the bug slides back and slows to a stop (also carries it while it fades out)
   if(bug.kb){bug.x=Math.max(BUG.min-30,Math.min(BUG.max+30,bug.x+bug.kb*dt));bug.kb*=Math.max(0,1-9*dt);if(Math.abs(bug.kb)<8)bug.kb=0}
@@ -831,7 +834,7 @@
   }
 
   Swarm.update(dt,SWCTX);{const on=Swarm.on(),sw=$("swat");if(sw.hidden===on)sw.hidden=!on}
-  updateCrawler(dt);updateFrog(dt);updateBoss(dt);updateMonk(dt);updateGoo(dt);updateHazards();scoreTick();
+  updateCrawler(dt);updateFrog(dt);updateRein(dt);updateBoss(dt);updateMonk(dt);updateGoo(dt);updateZaps(dt);updateHazards();scoreTick();
   // glowspores: touch to collect
   for(const sp of spores){if(!sp.got&&Math.hypot(state.x-sp.x,state.y-sp.y)<R+9)collect(sp)}
   for(const f of fx){f.life-=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;if(f.k==="spark"||f.k==="hit"||f.k==="defeat"||f.k==="drop")f.vy+=300*dt;if(f.k==="puff"){f.vx*=Math.max(0,1-4*dt);f.vy*=Math.max(0,1-3*dt)}}
@@ -1398,7 +1401,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  }
  function atkQ(){const p=1-state.attack/ATK_T;if(p<.25)return -.6*(p/.25);const u=(p-.25)/.75;return (1-u)*(1-u)}
  // ---- Weapon stats: read straight from the GEAR table (store.js): Damage / 5 = damage per hit (bare attack = 1), Speed sets the swing cooldown,
- // Range sets the reach (Long = a ranged weapon that fires goo balls). A new weapon needs no code here, only its GEAR line.
+ // Range sets the reach (Long = a ranged weapon: the Bog Blaster fires goo balls, the Swamp Hopper Staff fires poison zaps). A new weapon needs no code here, only its GEAR line.
  const SPD_CD={Fast:.27,Medium:.36,Slow:.5},RNG_REACH={Short:42,Medium:60};
  // How far a hit shoves an enemy back, scaled by the weapon used: ranged weapons -50%, melee weapons -25%, bare hands unchanged.
  function kbMul(){return heldWeapon()?(wstat().ranged?.5:.75):1}
@@ -1406,7 +1409,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const id=heldWeapon(),g=id&&GEAR[id],st=g&&g.stats;
   if(!st)return{id:"",dmg:1*RunUps.dmg()*chestDmg(),cd:ATK_CD*RunUps.cd(),reach:46*RunUps.reach(),ranged:false};
   const ranged=st.Range==="Long";
-  return{id,dmg:Gear.hitDmg(id)*RunUps.dmg()*chestDmg(),cd:(SPD_CD[st.Speed]||ATK_CD)*RunUps.cd(),reach:(RNG_REACH[st.Range]||46)*RunUps.reach(),ranged:ranged&&id==="bogblaster"};   // run upgrades (runups.js) multiply the weapon's own stats
+  return{id,dmg:Gear.hitDmg(id)*RunUps.dmg()*chestDmg(),cd:(SPD_CD[st.Speed]||ATK_CD)*RunUps.cd(),reach:(RNG_REACH[st.Range]||46)*RunUps.reach(),ranged:ranged&&(id==="bogblaster"||id==="hopperstaff")};   // run upgrades (runups.js) multiply the weapon's own stats
  }
  const dmg=()=>HELD?HELD.dmg:1;
  // Goo balls (Bog Blaster). Aim assist: the shot locks onto the nearest enemy in front of you (reticle shown), fires straight at it, and curves
@@ -1416,7 +1419,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const T=[];
   if(!bug.defeated)T.push({k:"bug",x:bug.x,y:GROUND_Y-BUG.h/2});
   if(CR&&!cr.defeated)T.push({k:"cr",x:cr.x,y:GROUND_Y-cr.z-CRW.h/2});
-  for(const q of frogs)if(!q.defeated)T.push({k:"fr",x:q.x,y:GROUND_Y-q.z-FRG.h/2});
+  for(const q of frogs)if(!q.defeated)T.push({k:"fr"+q.id,x:q.x,y:GROUND_Y-q.z-FRG.h/2});
   if(AR&&boss.lock&&!boss.defeated&&boss.st!=="intro")T.push({k:"boss",x:boss.x,y:BS.kind==="wing"?GROUND_Y-boss.y-22:GROUND_Y-BS.h/2});
   return T;
  }
@@ -1445,6 +1448,24 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   for(let i=0;i<5;i++)fx.push({k:"puff",x:sx+f*6,y:sy,vx:Math.cos(a)*(60+i*14),vy:Math.sin(a)*(60+i*14)-10,life:.25,max:.25,r:2.4,g:6});
  }
  function gooSplat(g,c){for(let i=0;i<7;i++){const a=Math.random()*6.283,v=50+Math.random()*90;fx.push({k:"hit",x:g.x,y:g.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20,life:.34,max:.34,c:i%2?"#7dff6a":(c||"#b6e85a")})}fx.push({k:"ring",x:g.x,y:g.y,vx:0,vy:0,life:.2,max:.2,c:"#7dff6a",g:14})}
+ // Does a projectile (a goo ball, or a poison zap when pz is true) touch an enemy? Applies the hit and returns true. Small enemies hit by a zap take part of the damage now
+ // and the rest as poison over time (ZAP.direct, then ZAP.ticks ticks of ZAP.share each); bosses just take the full hit.
+ function projHit(g,f,pz){
+  let hit=false;
+   const bn=bananas.find(b=>!b.dead&&Math.hypot(b.x-g.x,b.y-g.y)<13);
+   if(bn){bn.dead=true;AUDIO.play("hit");fx.push({k:"star",x:bn.x,y:bn.y,vx:0,vy:0,life:.22,max:.22,c:"#ffe27a",g:14});hit=true}
+   else if(!bug.defeated&&Math.abs(g.x-bug.x)<BUG.w/2+6&&g.y>GROUND_Y-BUG.h-6&&g.y<GROUND_Y+4){if(pz){hitBug(f,g.d*ZAP.direct);if(!bug.defeated)poisonOn("bug",g.d)}else hitBug(f,g.d);hit=true}
+   else if(CR&&!cr.defeated&&Math.abs(g.x-cr.x)<CRW.w/2+6&&g.y>GROUND_Y-cr.z-CRW.h-6&&g.y<GROUND_Y-cr.z+4){hitCrawler(f,g.d);hit=true}
+   else if(frogs.some(q=>!q.defeated&&Math.abs(g.x-q.x)<FRG.w/2+6&&g.y>GROUND_Y-q.z-FRG.h-6&&g.y<GROUND_Y-q.z+4)){const q=frogs.find(q=>!q.defeated&&Math.abs(g.x-q.x)<FRG.w/2+6&&g.y>GROUND_Y-q.z-FRG.h-6&&g.y<GROUND_Y-q.z+4);hitFrog(q,f,pz?g.d*ZAP.direct:g.d);if(pz&&!q.defeated)poisonOn("fr"+q.id,g.d);hit=true}
+   else if(AR&&boss.lock&&!boss.defeated&&boss.st!=="intro"){
+    const top=BS.kind==="wing"?GROUND_Y-boss.y-44:GROUND_Y-BS.h,bot=BS.kind==="wing"?GROUND_Y-boss.y:GROUND_Y;
+    if(Math.abs(g.x-boss.x)<BS.w/2+4&&g.y>top-6&&g.y<bot+4){
+     if(BS.kind==="wing"&&boss.st!=="perch"){AUDIO.play("thump");fx.push({k:"ring",x:g.x,y:g.y,vx:0,vy:0,life:.3,max:.3,c:"#4ee6b4",g:30});fx.push({k:"txt",x:boss.x,y:top-8,vx:0,vy:-30,life:.5,max:.5,s:"Shielded"})}
+     else hitBoss(f,g.d);
+     hit=true}
+   }
+  return hit;
+ }
  function updateGoo(dt){
   for(const g of goo){
    g.life-=dt;
@@ -1454,28 +1475,154 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    // move in small steps so a fast goo ball can never skip over a thin platform; it splats on the first solid it touches
    let wall=false;{const n=Math.max(1,Math.ceil(Math.hypot(g.vx,g.vy)*dt/3)),ex=g.vx*dt/n,ey=g.vy*dt/n;for(let i=0;i<n;i++){const nx=g.x+ex,ny=g.y+ey;if(gooBlocked(nx,ny)){wall=true;break}g.x=nx;g.y=ny}}
    if(wall){gooSplat(g,"#5a7a3a");g.life=0;continue}
-   const f=g.vx>=0?1:-1;let hit=false;noRec=true;
-   const bn=bananas.find(b=>!b.dead&&Math.hypot(b.x-g.x,b.y-g.y)<13);
-   if(bn){bn.dead=true;AUDIO.play("hit");fx.push({k:"star",x:bn.x,y:bn.y,vx:0,vy:0,life:.22,max:.22,c:"#ffe27a",g:14});hit=true}
-   else if(!bug.defeated&&Math.abs(g.x-bug.x)<BUG.w/2+6&&g.y>GROUND_Y-BUG.h-6&&g.y<GROUND_Y+4){hitBug(f,g.d);hit=true}
-   else if(CR&&!cr.defeated&&Math.abs(g.x-cr.x)<CRW.w/2+6&&g.y>GROUND_Y-cr.z-CRW.h-6&&g.y<GROUND_Y-cr.z+4){hitCrawler(f,g.d);hit=true}
-   else if(frogs.some(q=>!q.defeated&&Math.abs(g.x-q.x)<FRG.w/2+6&&g.y>GROUND_Y-q.z-FRG.h-6&&g.y<GROUND_Y-q.z+4)){hitFrog(frogs.find(q=>!q.defeated&&Math.abs(g.x-q.x)<FRG.w/2+6&&g.y>GROUND_Y-q.z-FRG.h-6&&g.y<GROUND_Y-q.z+4),f,g.d);hit=true}
-   else if(AR&&boss.lock&&!boss.defeated&&boss.st!=="intro"){
-    const top=BS.kind==="wing"?GROUND_Y-boss.y-44:GROUND_Y-BS.h,bot=BS.kind==="wing"?GROUND_Y-boss.y:GROUND_Y;
-    if(Math.abs(g.x-boss.x)<BS.w/2+4&&g.y>top-6&&g.y<bot+4){
-     if(BS.kind==="wing"&&boss.st!=="perch"){AUDIO.play("thump");fx.push({k:"ring",x:g.x,y:g.y,vx:0,vy:0,life:.3,max:.3,c:"#4ee6b4",g:30});fx.push({k:"txt",x:boss.x,y:top-8,vx:0,vy:-30,life:.5,max:.5,s:"Shielded"})}
-     else hitBoss(f,g.d);
-     hit=true}
-   }
+   const f=g.vx>=0?1:-1;noRec=true;const hit=projHit(g,f,false);
    noRec=false;
    if(hit){gooSplat(g);g.life=0}else if(g.y>GROUND_Y-3){gooSplat(g,"#5a7a3a");g.life=0}
   }
   goo=goo.filter(g=>g.life>0&&g.x>-40&&g.x<LEVEL_W+40);
  }
+ // ================= Endless Realms pressure: the longer you stay in a level, the more enemies come =================
+ // Every REIN.gap seconds (shorter the longer you stay) a Swamp Frog arrives on solid ground just off-screen, mostly ahead of you and sometimes behind, and stalks you along its
+ // stretch of ground. How many can be alive at once (the Threat pips under the glowspore counter) grows with the time in the level. Reinforcements are NOT part of
+ // "Enemies defeated" or Perfect clear, drop no fragments (so waiting around can't be farmed for loot) and are worth REIN.pts each (scaled like all points, up to REIN.maxScored a run).
+ // They hit and take hits like the level's own frog (same hits to defeat and the same Endless variant name and glow). Boss levels: they stop once you enter the arena.
+ const REIN={first:20,gap0:16,gapMin:6.5,shrink:.06,capBase:2,capMax:6,capEvery:40,pts:150,maxScored:20};
+ let rein={next:null,shownCap:0,on:false};
+ const reinCap=t=>Math.min(REIN.capMax,REIN.capBase+Math.floor(t/REIN.capEvery)),reinGap=t=>Math.max(REIN.gapMin,REIN.gap0-t*REIN.shrink);
+ function hideThreat(){rein.on=false;const e=$("dng");if(e)e.hidden=true}
+ function resetRein(){rein.next=null;rein.shownCap=0;hideThreat()}
+ function showThreat(cap,up){
+  const e=$("dng");if(!e)return;
+  const total=REIN.capMax-REIN.capBase+1,fill=cap-REIN.capBase+1;let p="";for(let i=0;i<total;i++)p+='<i class="'+(i<fill?"on":"")+'"></i>';
+  e.innerHTML="<span>Threat</span>"+p;e.setAttribute("aria-label","Threat "+fill+" of "+total+": up to "+cap+" extra enemies at once");
+  e.hidden=false;rein.on=true;
+  if(up){e.classList.remove("up");void e.offsetWidth;e.classList.add("up")}
+ }
+ function reinBlocked(px){
+  for(const o of SOLIDS)if(o.y<GROUND_Y&&px>o.x-16&&px<o.x+o.w+16)return true;
+  for(const z of HAZ)if(px>z.x-12&&px<z.x+z.w+12)return true;
+  return false;
+ }
+ // a spot just off-screen on solid, clear ground (null when it can't find one this time)
+ function reinSpot(){
+  const end=Math.min(GOAL.x,LEVEL_W,AR?AR.x:1e9)-100;
+  for(let tries=0;tries<14;tries++){
+   const x=Math.random()<.65?state.x+W*.6+30+Math.random()*220:state.x-(W*.42+50+Math.random()*200);
+   if(x<80||x>end)continue;
+   const g=GROUNDS.find(g=>x-45>=g.x&&x+45<=g.x+g.w);if(!g)continue;
+   if(reinBlocked(x)||reinBlocked(x-30)||reinBlocked(x+30))continue;
+   if(!bug.defeated&&Math.abs(bug.x-x)<70)continue;
+   if(frogs.some(q=>!q.defeated&&Math.abs(q.x-x)<80))continue;
+   let lo=x-34,hi=x+34;   // the free stretch of ground around the spot: the frog hops along it
+   while(lo-8>=g.x+16&&x-lo<200&&!reinBlocked(lo-8))lo-=8;
+   while(hi+8<=g.x+g.w-16&&hi-x<200&&!reinBlocked(hi+8))hi+=8;
+   return{x,min:lo,max:hi};
+  }
+  return null;
+ }
+ function updateRein(dt){
+  if(!isEndless(LV)||(AR&&boss.lock))return;
+  const t=state.t||0,cap=reinCap(t);
+  if(rein.next===null)rein.next=t+REIN.first;
+  if(cap!==rein.shownCap||!rein.on){
+   const up=rein.shownCap>0&&cap>rein.shownCap;rein.shownCap=cap;showThreat(cap,up);
+   if(up){fx.push({k:"txt",x:state.x,y:state.y-46,vx:0,vy:-30,life:1.5,max:1.5,s:"More enemies are coming!"});AUDIO.play("thump")}
+  }
+  // reinforcements that are far behind you, or defeated and finished, leave the level
+  for(let i=frogs.length-1;i>=0;i--){const q=frogs[i];if(q.c.extra&&((q.defeated&&q.dead<=0&&q.scored)||q.x<state.x-W*1.6))frogs.splice(i,1)}
+  if(t<rein.next||vis.dying>0||state.hp<=0)return;
+  rein.next=t+reinGap(t);
+  if(frogs.filter(q=>q.c.extra&&!q.defeated).length>=cap)return;
+  const p=reinSpot();if(!p)return;
+  const q=newFrog({min:p.min,max:p.max,x:p.x,repl:true,extra:true});q.t=.5;frogs.push(q);
+  fx.push({k:"ring",x:p.x,y:GROUND_Y-6,vx:0,vy:0,life:.5,max:.5,c:"#7de08a",g:34});
+  for(let i=0;i<6;i++)fx.push({k:"bub",x:p.x+(i-3)*5,y:GROUND_Y-6,vx:(i-3)*10,vy:-30-Math.random()*30,life:.6,max:.6,r:2.6,c:"#7de08a"});
+ }
+ // ---- Swamp Hopper Staff: the frog on its tip spits crackling zaps of frog poison. A zap flies fast and straight (with the same gentle aim assist as the goo),
+ // hits for ZAP.direct of the damage, and then the enemy is POISONED: it keeps taking ZAP.share damage every ZAP.gap seconds for ZAP.ticks ticks (about the rest of the weapon's damage).
+ // Poison never staggers or knocks back, bubbles drift off the victim, and a new zap just restarts the poison. Bosses take the full damage at once (no poison).
+ const ZAP={speed:520,life:.9,direct:.55,ticks:3,gap:.5,share:.15};
+ let zaps=[],poisons=[];
+ function resetZaps(){zaps=[];poisons=[]}
+ function zapHex(){const sk=heldSkin("hopperstaff"),ac=sk&&WeaponArt.skinInfo(sk);return ac&&/^#[0-9a-f]{6}$/i.test(ac.accent)?ac.accent:"#9dff4a"}
+ function hexRGB(c){return[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)).join(",")}
+ function zap(){
+  const f=state.face,hx=state.x+f*13,hy=state.y+3,t=aimTarget(f);
+  const a=t?Math.atan2(t.y-hy,t.x-hx):(f>0?0:Math.PI),col=zapHex();
+  AIMA=Math.atan2(Math.sin(a),Math.cos(a)*f);
+  const sx=hx+Math.cos(a)*50,sy=hy+Math.sin(a)*50;   // the frog's mouth at the end of the staff
+  // standing right against a crate or wall: the zap fizzles on it instead of appearing on the far side
+  for(let i=1;i<=5;i++){const px=hx+(sx-hx)*i/5,py=hy+(sy-hy)*i/5;if(gooBlocked(px,py)){zapFizzle({x:hx+(sx-hx)*(i-1)/5,y:hy+(sy-hy)*(i-1)/5});return}}
+  zaps.push({x:sx,y:sy,vx:Math.cos(a)*ZAP.speed,vy:Math.sin(a)*ZAP.speed,k:t?t.k:"",life:ZAP.life,f,d:HELD.dmg,tr:[],seed:Math.random()*100});
+  fx.push({k:"star",x:sx,y:sy,vx:0,vy:0,life:.2,max:.2,c:col,g:12});
+  fx.push({k:"ring",x:sx,y:sy,vx:0,vy:0,life:.2,max:.2,c:col,g:16});
+  for(let i=0;i<6;i++){const sp=(Math.random()-.5)*.9,v=90+Math.random()*130;fx.push({k:"hit",x:sx,y:sy,vx:Math.cos(a+sp)*v,vy:Math.sin(a+sp)*v-10,life:.26,max:.26,c:i%2?col:"#f4ffd0"})}
+  for(let i=0;i<3;i++)fx.push({k:"bub",x:sx,y:sy,vx:Math.cos(a)*40+(Math.random()-.5)*30,vy:-20-Math.random()*30,life:.45,max:.45,r:2.2,c:col});
+ }
+ function zapFizzle(p){const col=zapHex();for(let i=0;i<6;i++){const an=Math.random()*6.283,v=40+Math.random()*90;fx.push({k:"hit",x:p.x,y:p.y,vx:Math.cos(an)*v,vy:Math.sin(an)*v-20,life:.3,max:.3,c:i%2?col:"#f4ffd0"})}fx.push({k:"ring",x:p.x,y:p.y,vx:0,vy:0,life:.2,max:.2,c:col,g:14})}
+ function zapBurst(z){const col=zapHex();zapFizzle(z);fx.push({k:"star",x:z.x,y:z.y,vx:0,vy:0,life:.22,max:.22,c:"#f4ffd0",g:16});for(let i=0;i<4;i++)fx.push({k:"bub",x:z.x+(Math.random()-.5)*10,y:z.y+(Math.random()-.5)*8,vx:(Math.random()-.5)*30,vy:-26-Math.random()*30,life:.6,max:.6,r:2.4,c:col})}
+ function updateZaps(dt){
+  for(const z of zaps){
+   z.life-=dt;
+   const t=z.k&&aimTargets().find(q=>q.k===z.k);
+   if(t){const want=Math.atan2(t.y-z.y,t.x-z.x),cur=Math.atan2(z.vy,z.vx);let df=want-cur;while(df>Math.PI)df-=6.283;while(df<-Math.PI)df+=6.283;const na=cur+Math.max(-7*dt,Math.min(7*dt,df));z.vx=Math.cos(na)*ZAP.speed;z.vy=Math.sin(na)*ZAP.speed}   // gentle homing, no gravity: it flies straight
+   z.tr.push(z.x,z.y);if(z.tr.length>20)z.tr.splice(0,2);
+   let wall=false;{const n=Math.max(1,Math.ceil(Math.hypot(z.vx,z.vy)*dt/3)),ex=z.vx*dt/n,ey=z.vy*dt/n;for(let i=0;i<n;i++){const nx=z.x+ex,ny=z.y+ey;if(gooBlocked(nx,ny)){wall=true;break}z.x=nx;z.y=ny}}
+   if(wall){zapFizzle(z);z.life=0;continue}
+   const f=z.vx>=0?1:-1;noRec=true;const hit=projHit(z,f,true);noRec=false;
+   if(hit){zapBurst(z);z.life=0}else if(z.y>GROUND_Y-3){zapFizzle(z);z.life=0}
+  }
+  zaps=zaps.filter(z=>z.life>0&&z.x>-40&&z.x<LEVEL_W+40);
+  updatePoison(dt);
+ }
+ // who can be poisoned, and how to hurt them
+ function poisonTgt(k){
+  if(k==="bug")return bug.defeated?null:{o:bug,x:bug.x,y:GROUND_Y-BUG.h/2,hit:d=>hitBug(state.face,d)};
+  if(k.slice(0,2)==="fr"){const q=frogs.find(q=>q.id===+k.slice(2));return q&&!q.defeated?{o:q,x:q.x,y:GROUND_Y-q.z-FRG.h/2,hit:d=>hitFrog(q,state.face,d)}:null}
+  return null;
+ }
+ function poisonOn(k,d){poisons=poisons.filter(p=>p.k!==k);poisons.push({k,left:ZAP.ticks,t:ZAP.gap,d:d*ZAP.share,seed:Math.random()*10})}
+ function updatePoison(dt){
+  const col=zapHex();
+  for(const p of poisons){
+   const T=poisonTgt(p.k);if(!T){p.left=0;continue}
+   p.t-=dt;if(p.t>0)continue;
+   p.t+=ZAP.gap;p.left--;
+   if(T.o.hp-p.d<=0){noRec=true;T.hit(p.d);noRec=false;p.left=0}   // the last tick finishes it off with the normal defeat effects
+   else{T.o.hp-=p.d;for(let i=0;i<4;i++)fx.push({k:"bub",x:T.x+(Math.random()-.5)*14,y:T.y+(Math.random()-.2)*10,vx:(Math.random()-.5)*24,vy:-30-Math.random()*30,life:.5,max:.5,r:2.2,c:col})}
+  }
+  poisons=poisons.filter(p=>p.left>0);
+ }
+ function drawZaps(){
+  const col=zapHex(),rgb=hexRGB(col),t=state.t;
+  for(const z of zaps){
+   glow(GLOW.teal,z.x,z.y,22,.8);
+   // a crackling trail: the recent path, jittered, fading toward the tail
+   const n=z.tr.length/2;
+   if(n>1){X.lineCap="round";X.lineJoin="round";for(const pass of[0,1]){X.strokeStyle=pass?"rgba(244,255,208,.85)":"rgba("+rgb+",.5)";X.lineWidth=pass?1.3:3.6;X.beginPath();for(let i=0;i<n;i++){const j=Math.sin(t*70+i*1.9+z.seed)*(2.6*(i/n));const x=z.tr[i*2]+j*.4,y=z.tr[i*2+1]+j;if(i)X.lineTo(x,y);else X.moveTo(x,y)}X.lineTo(z.x,z.y);X.stroke()}}
+   // jagged forks around the head, re-rolled every frame so it flickers like electricity
+   X.lineWidth=1.5;for(let k=0;k<3;k++){const an=t*22+k*2.1+z.seed,L=8+((Math.sin(t*50+k*3+z.seed)+1)*3.5);X.strokeStyle=k%2?"rgba(244,255,208,.95)":"rgba("+rgb+",.95)";X.beginPath();X.moveTo(z.x,z.y);X.lineTo(z.x+Math.cos(an)*L*.5+Math.sin(t*90+k)*2.5,z.y+Math.sin(an)*L*.5+Math.cos(t*90+k)*2.5);X.lineTo(z.x+Math.cos(an+.5)*L,z.y+Math.sin(an+.5)*L);X.stroke()}
+   // the poison bolt itself: a bright core with a white heart
+   X.fillStyle=col;X.strokeStyle="rgba(10,40,12,.6)";X.lineWidth=1.2;X.beginPath();X.arc(z.x,z.y,4.4,0,7);X.fill();X.stroke();X.fillStyle="#f4ffd0";X.beginPath();X.arc(z.x-.6,z.y-.7,2,0,7);X.fill();
+  }
+ }
+ // poisoned enemies get a sickly glow and a few bubbles rising off them while it lasts
+ function drawPoison(){
+  const col=zapHex(),t=state.t;
+  for(const p of poisons){
+   const T=poisonTgt(p.k);if(!T)continue;
+   glow(GLOW.teal,T.x,T.y,26,.35+.12*Math.sin(t*8+p.seed));
+   for(let i=0;i<3;i++){
+    const ph=(t*.9+i/3+p.seed)%1,x=T.x+Math.sin(ph*6.28+i*2+p.seed)*9,y=T.y+8-ph*30,r=2.3*(1-ph*.45);
+    X.globalAlpha=1-ph;X.fillStyle=col;X.beginPath();X.arc(x,y,r,0,7);X.fill();X.fillStyle="#f4ffd0";X.beginPath();X.arc(x-.7,y-.8,.75,0,7);X.fill();
+   }
+   X.globalAlpha=1;
+  }
+ }
  function drawGoo(){
   const gsk=heldSkin("bogblaster"),gac=gsk&&WeaponArt.skinInfo(gsk),gcol=gac?gac.accent:null;for(const g of goo){glow(GLOW.moon,g.x,g.y,15,.7);X.fillStyle=gcol||"#5bd64a";X.strokeStyle=gcol?"rgba(0,0,0,.55)":"#1f4a14";X.lineWidth=1.6;X.beginPath();X.arc(g.x,g.y,5.6,0,7);X.fill();X.stroke();X.fillStyle="#d9ffc9";X.beginPath();X.arc(g.x-1.8,g.y-2,1.9,0,7);X.fill()}
   // lock-on reticle on the enemy the next shot will go to
-  if(state.mode==="playing"&&heldWeapon()==="bogblaster"&&vis.dying<=0){const t=aimTarget(state.face);if(t){const p=.5+.5*Math.sin(state.t*9);X.save();X.strokeStyle="rgba(125,255,106,"+(.55+.3*p)+")";X.lineWidth=2;X.beginPath();X.arc(t.x,t.y,15+3*p,0,7);X.stroke();for(let i=0;i<4;i++){const a=i*1.5708+state.t*2;X.beginPath();X.moveTo(t.x+Math.cos(a)*11,t.y+Math.sin(a)*11);X.lineTo(t.x+Math.cos(a)*19,t.y+Math.sin(a)*19);X.stroke()}X.restore()}}
+  if(state.mode==="playing"&&(heldWeapon()==="bogblaster"||heldWeapon()==="hopperstaff")&&vis.dying<=0){const t=aimTarget(state.face);if(t){const p=.5+.5*Math.sin(state.t*9);X.save();X.strokeStyle="rgba(125,255,106,"+(.55+.3*p)+")";X.lineWidth=2;X.beginPath();X.arc(t.x,t.y,15+3*p,0,7);X.stroke();for(let i=0;i<4;i++){const a=i*1.5708+state.t*2;X.beginPath();X.moveTo(t.x+Math.cos(a)*11,t.y+Math.sin(a)*11);X.lineTo(t.x+Math.cos(a)*19,t.y+Math.sin(a)*19);X.stroke()}X.restore()}}
  }
  // ---- Held weapons: the equipped weapon (Bag > Weapons) is drawn in the player's hand and swings with the attack.
  // Each is drawn pointing right from the grip at (0,0); drawHeld() flips it to face the way the player looks.
@@ -1489,7 +1636,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const id=heldWeapon();if(!id)return;
   const f=state.face,p=state.attack>0?1-state.attack/ATK_T:-1;
   let ang=-.7+Math.sin(state.t*2.4)*.05,a=0;
-  if(id==="bogblaster"){ang=-.12+Math.sin(state.t*2.4)*.03;if(p>=0){ang=AIMA-.3*Math.max(0,1-p/.45);a=Math.max(0,1-p/.5)}}
+  if(id==="bogblaster"||id==="hopperstaff"){ang=(id==="bogblaster"?-.12:-.6)+Math.sin(state.t*2.4)*.03;if(p>=0){ang=AIMA-(id==="bogblaster"?.3:.38)*Math.max(0,1-p/.45);a=Math.max(0,1-p/.5)}}
   else if(p>=0){if(p<.25)ang=-.7-1.0*(p/.25);else{const u=(p-.25)/.75;ang=-1.7+2.7*(1-(1-u)*(1-u));a=1-u}}
   X.save();X.translate(gx,gy);X.scale(f,1);X.rotate(ang);WeaponArt.draw(X,id,a,heldSkin(id));X.restore();
  }
@@ -1567,7 +1714,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   for(const o of SOLIDS){if(o.x+o.w<cam-8||o.x>cam+W+8)continue;drawSolid(o)}
   for(const z of HAZ)drawThorns(z,cam);
   if(GOAL.x<cam+W+110)drawGoal();
-  Swarm.draw(X,SWCTX);drawAuras();drawBug();drawCrawler();drawFrog();drawBoss();drawWaves();drawGoo();drawMonk();drawBananas();
+  Swarm.draw(X,SWCTX);drawAuras();drawBug();drawCrawler();drawFrog();drawBoss();drawWaves();drawGoo();drawZaps();drawPoison();drawMonk();drawBananas();
   for(const sp of spores){if(sp.got||sp.x<cam-30||sp.x>cam+W+30)continue;drawSpore(sp)}
   drawGate();
   drawPlayer();
@@ -1582,6 +1729,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
    else if(f.k==="slash"){X.strokeStyle="#ffcf7a";X.lineWidth=3*a+1;X.beginPath();X.moveTo(f.x,f.y);X.lineTo(f.x-f.vx*.05,f.y-f.vy*.05);X.stroke()}
    else if(f.k==="spark"){X.fillStyle="#a6ffe9";X.beginPath();X.arc(f.x,f.y,3*a+1,0,7);X.fill()}
    else if(f.k==="ring"){X.strokeStyle=f.c||"#a6ffe9";X.lineWidth=3*a+1;X.beginPath();X.arc(f.x,f.y,10+(1-a)*(f.g||26),0,7);X.stroke()}
+   else if(f.k==="bub"){X.fillStyle=f.c||"#9dff4a";X.beginPath();X.arc(f.x,f.y,(f.r||2.4)*(.55+.45*a),0,7);X.fill();X.fillStyle="#f4ffd0";X.beginPath();X.arc(f.x-.7,f.y-.8,.75,0,7);X.fill()}
    else if(f.k==="puff"){X.fillStyle="#d3ebdf";X.globalAlpha=a*.5;X.beginPath();X.arc(f.x,f.y,(f.r||3)+(1-a)*(f.g||6),0,7);X.fill()}
    else if(f.k==="drop"){X.fillStyle="#8ff0ea";X.beginPath();X.arc(f.x,f.y,2.2*a+.8,0,7);X.fill()}
    else if(f.k==="star"){X.strokeStyle=f.c||"#fff3cf";X.lineWidth=2.4*a+.6;X.beginPath();for(let i=0;i<6;i++){const an=i*1.047+.3,r0=4+(1-a)*6,r1=9+(1-a)*(f.g||14);X.moveTo(f.x+Math.cos(an)*r0,f.y+Math.sin(an)*r0);X.lineTo(f.x+Math.cos(an)*r1,f.y+Math.sin(an)*r1)}X.stroke()}
@@ -1927,7 +2075,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  const SCORE={spore:100,bug:250,crawler:400,frog:300,boss:1500,clear:1000,speed:1000},TIME_LIMIT=[90,150,240],SKEY="swampverse-arcade-scores";
  const pt=n=>Math.round(n*SC.rewardMul/10)*10;   // every score value, scaled by this level's reward multiplier (x1 for Levels 1-3)
  const fmt=n=>Number(n).toLocaleString("en-US"),mmss=t=>{t=Math.max(0,Math.floor(t));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
- let sc={kills:{},shown:-1,sec:-1,bestKey:-1};
+ let sc={kills:{},shown:-1,sec:-1,bestKey:-1,extraPts:0,extraKills:0};
  let scoresMem={};
  function readScores(){
   try{
@@ -1938,7 +2086,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   return scoresMem;
  }
  function writeScore(i,rec){scoresMem[i]=rec;try{localStorage.setItem(SKEY,JSON.stringify(scoresMem))}catch(e){}}
- function foes(){const a=[{id:"bug",pts:pt(SCORE.bug),d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:pt(SCORE.crawler),d:()=>cr.defeated,x:()=>cr.x});frogs.forEach((q,i)=>a.push({id:"frog"+i,loot:"frog",pts:pt(q.c.repl?SCORE.crawler:SCORE.frog),d:()=>q.defeated,x:()=>q.x}));if(AR)a.push({id:"boss",loot:BS.loot,pts:pt(SCORE.boss*SC.bossPts),d:()=>boss.defeated,x:()=>boss.x});return a}
+ function foes(){const a=[{id:"bug",pts:pt(SCORE.bug),d:()=>bug.defeated,x:()=>bug.x}];if(CR)a.push({id:"crawler",pts:pt(SCORE.crawler),d:()=>cr.defeated,x:()=>cr.x});frogs.forEach((q,i)=>{if(!q.c.extra)a.push({id:"frog"+i,loot:"frog",pts:pt(q.c.repl?SCORE.crawler:SCORE.frog),d:()=>q.defeated,x:()=>q.x})});if(AR)a.push({id:"boss",loot:BS.loot,pts:pt(SCORE.boss*SC.bossPts),d:()=>boss.defeated,x:()=>boss.x});return a}
 
  // ================= Loot: defeated enemies can drop a Fragment (table and drop chances live in store.js, FRAGMENTS). =================
  // A drop is saved to the player's data the moment it happens (Fragments.add writes it into the crystals save), then shown as a notification.
@@ -1981,12 +2129,12 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  try{showFrags()}catch(e){}
  // stop iOS pinch/gesture zoom and the long-press menu while playing (inside the game box only)
  (function(){const bx=$("box");if(!bx)return;["gesturestart","gesturechange","gestureend"].forEach(t=>bx.addEventListener(t,e=>e.preventDefault()));bx.addEventListener("contextmenu",e=>e.preventDefault())})();
- function killPts(){let n=0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
+ function killPts(){let n=sc.extraPts||0;for(const f of foes())if(sc.kills[f.id])n+=f.pts;return n}
  const scoreNow=()=>(state.spores+(state.bonus||0))*pt(SCORE.spore)+killPts();
- function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.shown=-1;sc.sec=-1;showScore(true)}
+ function resetScore(){for(const k in runLoot)delete runLoot[k];sc.kills={};sc.extraPts=0;sc.extraKills=0;sc.shown=-1;sc.sec=-1;showScore(true)}
  function showScore(force){
   const v=scoreNow(),sec=Math.floor(state.t||0);
-  if(force||v!==sc.shown){const bumped=sc.shown>=0&&v>sc.shown;sc.shown=v;$("scv").textContent=fmt(v);if(bumped)bumpEl($("scw"))}
+  if(force||v!==sc.shown){const prev=sc.shown,bumped=prev>=0&&v>prev;sc.shown=v;$("scv").textContent=fmt(v);if(bumped){bumpEl($("scw"));if(window.HudFX){HudFX.pop($("scv"));HudFX.chip($("scw"),v-prev,"gold","left")}}}
   if(force||sec!==sc.sec){sc.sec=sec;$("sct").textContent=mmss(sec)}
   const b=readScoresCached()[LV],el=$("scb");
   if(b){el.hidden=false;el.textContent="Best "+fmt(b.score);el.classList.toggle("beat",v>b.score)}else el.hidden=true;
@@ -1996,6 +2144,7 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
  function readScoresCached(){if(!bestCache)bestCache=readScores();return bestCache}
  function scoreTick(){
   for(const f of foes())if(f.d()&&!sc.kills[f.id]){sc.kills[f.id]=true;fx.push({k:"txt",x:f.x(),y:GROUND_Y-46,vx:0,vy:-38,life:.9,max:.9,s:"+"+f.pts});dropLoot(f)}
+  for(const q of frogs)if(q.c.extra&&q.defeated&&!q.scored){q.scored=true;if(sc.extraKills<REIN.maxScored){const p=pt(REIN.pts);sc.extraKills++;sc.extraPts+=p;fx.push({k:"txt",x:q.x,y:GROUND_Y-46,vx:0,vy:-38,life:.9,max:.9,s:"+"+p})}}   // reinforcements: points only (no fragments), up to REIN.maxScored per run
   showScore(false);
  }
  function finishScore(){
@@ -2007,8 +2156,8 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   const perfect=state.spores===spT&&en===enT,result=perfect?"Perfect clear!":(state.spores===spT||en===enT)?"Great run!":"Level cleared.";
   const row=(a,b,c)=>"<li><span>"+a+"</span><i>"+b+"</i><em>"+c+"</em></li>";
   const best=isBest?(prev?'<span class="sbest new">New best! Beat '+fmt(prev.score)+"</span>":'<span class="sbest new">New best!</span>'):'<span class="sbest">Best '+fmt(prev.score)+"</span>";
-  const html='<div class="sres"><span class="sk">Final score</span><b class="sbig">'+fmt(total)+"</b>"+best+
-   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+(state.bonus?row("Bandana bonus","×"+state.bonus,"+"+fmt(bn)):"")+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep))+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+(SC.depth?row("Danger "+SC.depth+" rewards","×"+SC.rewardMul.toFixed(2),""):"")+"</ul></div>";
+  const html='<div class="sres"><span class="sk">Final score</span><b class="sbig" data-to="'+total+'">'+fmt(total)+"</b>"+best+
+   '<ul class="srows">'+row("Glowspores",state.spores+" / "+spT,"+"+fmt(sp))+(state.bonus?row("Bandana bonus","×"+state.bonus,"+"+fmt(bn)):"")+row("Enemies defeated",en+" / "+enT,"+"+fmt(ep-sc.extraPts))+(sc.extraKills?row("Reinforcements","×"+sc.extraKills,"+"+fmt(sc.extraPts)):"")+(lootCount()?row("Fragments found","×"+lootCount(),""):"")+row("Level complete","",'+'+fmt(cl))+row("Time "+mmss(tm),"","+"+fmt(sb))+(SC.depth?row("Danger "+SC.depth+" rewards","×"+SC.rewardMul.toFixed(2),""):"")+"</ul></div>";
   return {total,result,html,isBest};
  }
 
@@ -2025,9 +2174,47 @@ function hash(i){const v=Math.sin(i*127.1+311.7)*43758.5453;return v-Math.floor(
   try{cry=Crystals.award("adv",score,pr)||cry}catch(e){}
   return {coins:coins,crystals:cry.total||0,bonus:cry.bonus||0,purple:pr};
  }
- function rewardHTML(p){
+  // ================= Results screen: the score counts up, "New best!" stamps in, then the rewards appear one at a time (coins, crystals, fragments) =================
+ // Tap the results to skip straight to the end. With "reduce motion" on, nothing is animated and everything simply shows.
+ let resTok=0,resTimers=[],resDone=null,resBound=false;
+ function resultsFX(){
+  resTok++;resTimers.forEach(clearTimeout);resTimers=[];resDone=null;
+  const box=$("ovs");if(!box)return;
+  if(!resBound){resBound=true;box.addEventListener("pointerdown",()=>{if(resDone)resDone()},{passive:true})}
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const big=box.querySelector(".sbig"),best=box.querySelector(".sbest"),rows=[...box.querySelectorAll(".srows li")],rw=[...box.querySelectorAll(".rwd>span")],notes=[...box.querySelectorAll(".rwd>em")];
+  const to=big?Number(big.dataset.to)||0:0,tok=resTok,all=[best].concat(rows,rw,notes).filter(Boolean);
+  const at=(ms,fn)=>resTimers.push(setTimeout(()=>{if(tok===resTok)fn()},ms));
+  const snd=n=>{try{AUDIO.play(n)}catch(e){}};
+  const show=el=>{el.classList.remove("pre");el.classList.add("show")};
+  for(const e of all)e.classList.add("pre");
+  if(big&&to>0)big.textContent="0";
+  // 1) the score counts up
+  const DUR=big&&to>0?Math.min(1500,700+to/20):0;
+  if(DUR){const t0=performance.now();const step=now=>{if(tok!==resTok)return;const k=Math.min(1,(now-t0)/DUR);big.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3))));if(k<1)requestAnimationFrame(step);else big.classList.add("done")};requestAnimationFrame(step)}
+  // the score breakdown rows slide in one after another while it counts
+  rows.forEach((li,i)=>at(150+i*80,()=>show(li)));
+  const tRows=150+rows.length*80,tCount=DUR+120;
+  // 2) "New best!" stamps down (or the old best fades in)
+  if(best)at(tCount,()=>{best.classList.remove("pre");if(best.classList.contains("new")){best.classList.add("stamp");snd("thump")}else best.classList.add("show")});
+  // 3) rewards, one at a time: coins, then crystals, then fragments
+  const tR=Math.max(tCount,tRows)+420;
+  rw.forEach((el,i)=>at(tR+i*520,()=>{show(el);snd("pickup")}));
+  notes.forEach(el=>at(tR+rw.length*520,()=>show(el)));
+  resDone=()=>{
+   resTok++;resTimers.forEach(clearTimeout);resTimers=[];resDone=null;
+   if(big&&to>0){big.textContent=fmt(to);big.classList.add("done")}
+   for(const e of all){e.classList.remove("pre");if(e===best&&e.classList.contains("new"))e.classList.add("stamp");else e.classList.add("show")}
+  };
+ }
+ function fragHTML(){
+  let h="";
+  try{for(const id in runLoot){const n=runLoot[id],d=typeof FRAGMENTS!=="undefined"?FRAGMENTS[id]:null;if(n>0)h+='<span><i class="frg" aria-hidden="true"></i>'+(d?d.name:"Fragment")+" ×"+n+"</span>"}}catch(e){}
+  return h;
+ }
+function rewardHTML(p){
   return '<p class="rwd" aria-live="polite">'+(p.coins?'<span><i class="coin" aria-hidden="true"></i>+'+fmt(p.coins)+' Swamp Coins</span>':'')+
-   '<span><i class="gem" aria-hidden="true"></i>+'+fmt(p.crystals)+' Swamp Crystals</span>'+
+   '<span><i class="gem" aria-hidden="true"></i>+'+fmt(p.crystals)+' Swamp Crystals</span>'+fragHTML()+
    (p.purple?'<em>Includes +'+p.purple+' from purple glowspores</em>':'')+(p.bonus?'<em>Includes +'+p.bonus+' for your first run today</em>':'')+'</p>';
  }
 
