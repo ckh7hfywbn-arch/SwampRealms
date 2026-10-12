@@ -17,7 +17,7 @@ body.evo-app footer{margin-top:28px}
 .evo-stage button{font-family:inherit}
 /* ---- swamp ---- */
 .evo-scene{position:relative;width:min(100%,calc(var(--avail) * .47 * 1.1765));aspect-ratio:400/340;justify-self:center;overflow:hidden;background:#06100d;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.evo-scene::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,#0000 0 2px,#0000001c 2px 3px),radial-gradient(ellipse at 50% 45%,transparent 55%,#000c 100%),linear-gradient(180deg,transparent 78%,#04090aee 100%)}
+.evo-scene::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,#0000 0 2px,#0000001c 2px 3px),radial-gradient(ellipse at 50% 45%,transparent 55%,#000c 100%),linear-gradient(180deg,transparent 90%,#04090acc 100%)}
 .evo-art,.evo-art svg{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
 .evo-hot{position:absolute;z-index:3;padding:0;border:0;background:none;cursor:pointer;border-radius:50%;-webkit-tap-highlight-color:transparent}
 .evo-hot:focus-visible,.evo-cr:focus-visible,.evo-ibtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
@@ -156,3 +156,94 @@ body.evo-app footer{margin-top:28px}
  .evo-nav{grid-column:2}
  .evo-stage{width:100%;margin:0;border-radius:0}}
 @media(prefers-reduced-motion:reduce){.evo-cr-art,.evo-cr.hop .evo-cr-art,.evo-egg.inc,.evo-egg.ready,.evo-dash,.evo-shroom,.evo-fly,.evo-mist,.evo-ring,.evo-orb,.evo-hot.can::after,.evo-stage .btn.ready{animation:none}.evo-float{animation-duration:.01s}}
+
+/* ===== Stage 3: Living Swamp (day/night, fireflies, mutations, lantern, journal) ===== */
+.evo-chips{flex-wrap:wrap}
+.evo-tint{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 4s}
+.evo-tint.t-day{background:linear-gradient(180deg,#d6f5a8,#6fb06a);mix-blend-mode:screen}
+.evo-tint.t-dusk{background:linear-gradient(180deg,#ff9a5a,#9a3f78);mix-blend-mode:screen}
+.evo-tint.t-night{background:#0b1c4a;mix-blend-mode:multiply}
+.evo-tint.t-dawn{background:linear-gradient(180deg,#ffc8a8,#7fd6c8);mix-blend-mode:screen}
+.evo-scene[data-ph=day] .t-day{opacity:.3}.evo-scene[data-ph=dusk] .t-dusk{opacity:.28}.evo-scene[data-ph=night] .t-night{opacity:.32}.evo-scene[data-ph=dawn] .t-dawn{opacity:.24}
+.evo-scene[data-ph=night] .evo-shroom{filter:brightness(1.4) drop-shadow(0 0 4px #4ee6b4)}
+.evo-phase,.evo-fz{padding:1px 8px;border-radius:999px;font:900 11px Nunito,sans-serif;white-space:nowrap}
+.evo-phase{background:#6df0ff14;border:1px solid #6df0ff44;color:#bff5ff}
+.evo-fz{background:#f2c14e2e;border:1px solid #f2c14e;color:#ffe9a8}
+.evo-fz[hidden]{display:none}
+.evo-wisp{position:absolute;z-index:7;left:var(--x0);top:var(--y);width:48px;height:48px;margin:-24px 0 0 -24px;padding:0;border:0;background:none;cursor:pointer;animation:evoWisp var(--dur,7s) linear forwards;-webkit-tap-highlight-color:transparent}
+.evo-wisp i{position:absolute;left:50%;top:50%;width:13px;height:13px;margin:-6.5px;border-radius:50%;background:#f4ffb0;box-shadow:0 0 10px 4px #d6ff7a,0 0 26px 10px #8ef7d655;animation:evoBob 1.3s ease-in-out infinite}
+.evo-wisp.gold i{width:18px;height:18px;margin:-9px;background:#fff3b0;box-shadow:0 0 12px 5px #ffd35a,0 0 34px 14px #f2c14e88}
+@keyframes evoWisp{to{left:var(--x1)}}
+@keyframes evoBob{50%{transform:translateY(-9px) scale(1.12)}}
+.evo-lamp{animation:evoBob 3s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.m-glow{--c:#4ee6b4}.m-grip{--c:#ff9f1c}.m-lucky{--c:#f2c14e}.m-night{--c:#b57cff}
+.evo-mut{display:inline-block;margin-top:6px;padding:2px 9px;border-radius:999px;font:900 11px Nunito,sans-serif;border:1px solid var(--c,#4ee6b433);color:var(--c,var(--muted));background:#0006}
+.evo-mdesc{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.evo-mdot{position:absolute;right:6%;top:4%;width:11px;height:11px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);border:1.5px solid #04110c;pointer-events:none}
+.evo-goals small{display:block;font-size:11.5px;color:var(--muted)}
+.evo-pick{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:#020706e6;backdrop-filter:blur(3px)}
+.evo-pick[hidden]{display:none}
+.evo-pick-box{width:100%;max-width:340px;display:grid;gap:10px;padding:16px;border-radius:18px;background:linear-gradient(180deg,#0b1814,#050b09);border:1px solid #4ee6b466;box-shadow:0 0 40px -10px var(--mint)}
+.evo-pick-box h3{margin:0;font-size:18px;color:var(--mint-soft)}
+.evo-pick-box p{margin:0;font-size:13px;color:var(--muted)}
+.evo-opt{display:grid;gap:3px;text-align:left;padding:12px 14px;min-height:56px;border-radius:14px;background:#07110d;border:1px solid var(--c,#4ee6b455);color:var(--text);cursor:pointer}
+.evo-opt b{font-size:15px;color:var(--c,#9ff5d6)}
+.evo-opt span{font-size:12.5px;color:var(--muted)}
+.evo-opt:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.evo-ic.lamp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f2c14e' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M12 21V10'/%3E%3Crect x='8' y='3' width='8' height='7' rx='2'/%3E%3Cpath d='M9 21h6'/%3E%3C/svg%3E")}
+.evo-ic.fert{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237fd36a' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M4 19c2-6 6-9 16-10-1 8-5 11-12 11'/%3E%3Cpath d='M4 19c3-3 6-5 9-6'/%3E%3C/svg%3E")}
+@media(prefers-reduced-motion:reduce){.evo-wisp i,.evo-lamp{animation:none}.evo-tint{transition:none}}
+
+/* ===== Stage 3.5: design polish (calmer HUD, cleaner cards, tile stats) ===== */
+.evo-res{padding:5px 13px 6px 6px;border-radius:16px;box-shadow:0 6px 18px -8px #000,inset 0 0 0 1px #ffffff08}
+.evo-orb{width:38px;height:38px}
+.evo-count small{font-size:10px;letter-spacing:.08em;text-transform:none;color:#9fe9d2cc;font-weight:800}
+.evo-count b{font-size:26px}
+.evo-chips{margin-top:2px;gap:5px}
+.evo-rate,.evo-mult{padding:0 7px;font-size:11px;line-height:17px}
+.evo-ibtn{width:40px;height:40px;border-radius:13px;box-shadow:0 6px 16px -8px #000}
+.evo-status{position:absolute;left:10px;top:calc(max(10px,env(safe-area-inset-top,0px)) + 68px);z-index:8;display:flex;gap:6px;pointer-events:none}
+.evo-phase,.evo-fz{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;line-height:15px;background:#04110ccc;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.evo-phase::before{content:"";width:9px;height:9px;border-radius:50%;background:#ffd978;box-shadow:0 0 8px #ffd978}
+.evo-scene[data-ph=night] .evo-phase::before{background:#dfeaff;box-shadow:inset -3px -1px 0 #7f8fc8,0 0 8px #aebbf0}
+.evo-scene[data-ph=dusk] .evo-phase::before,.evo-scene[data-ph=dawn] .evo-phase::before{background:#ff9a6a;box-shadow:0 0 8px #ff9a6a}
+.evo-fz{animation:evoReady 1.2s ease-in-out infinite}
+.evo-toast{bottom:46px}
+/* sheet + cards: quiet glass, one accent edge instead of corner brackets */
+.evo-sheet{border-radius:24px 24px 0 0;background:linear-gradient(180deg,#0c1a15,#050b09 55%)}
+.evo-pane{gap:9px;padding:6px 12px 18px}
+.evo-card{padding:13px;border-radius:16px;background:linear-gradient(165deg,#0f1d18,#08100d);border:1px solid #4ee6b41f;box-shadow:inset 3px 0 0 var(--c)}
+.evo-card::before{display:none}
+.evo-card.locked{opacity:.62;box-shadow:none;border-style:dashed}
+.evo-card.done{box-shadow:inset 3px 0 0 var(--gold)}
+.evo-card.done h3::after{display:none}
+.evo-info h3{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:15.5px;letter-spacing:0;text-transform:none}
+.evo-info h3 em{margin:0;padding:1px 8px;border-radius:999px;background:#f2c14e1c;border:1px solid #f2c14e44;font-size:10.5px;letter-spacing:.02em;line-height:15px}
+.evo-card.done h3 em{background:#f2c14e2e}
+.evo-info p{font-size:12.8px;line-height:1.4}
+.evo-stage .btn{min-height:42px;border-radius:13px;font-size:14px;letter-spacing:.01em;text-transform:none}
+.evo-stage .btn:disabled:not(.ghost){background:#10201a;color:#cfe7dd;border:1px solid #4ee6b433;box-shadow:none;text-shadow:none}
+.evo-stage .btn.ghost:disabled{opacity:.7}
+.evo-c{border-left-color:#0003}
+.evo-stage .btn:disabled .evo-c{border-left-color:#4ee6b433;color:var(--gold)}
+.evo-need{font-size:11.5px;letter-spacing:0}
+.evo-ic{width:44px;height:44px;border-radius:13px}
+.evo-cav{width:70px;height:70px;border-radius:16px}
+.evo-nav{background:#050b09;border-top:1px solid #4ee6b426}
+.evo-nav button{font-size:11px;letter-spacing:.03em;text-transform:none;font-weight:800}
+.evo-nav button[aria-selected=true]::before{top:-4px;width:26px;margin-left:-13px}
+/* realm: stat tiles and journal badges */
+.evo-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.evo-tile{display:grid;gap:2px;padding:11px 13px;border-radius:14px;background:linear-gradient(165deg,#0f1d18,#08100d);border:1px solid #4ee6b41f}
+.evo-tile b{font:900 22px/1.1 Nunito,sans-serif;color:var(--text);font-variant-numeric:tabular-nums}
+.evo-tile.mint b{color:var(--mint)}.evo-tile.gold b{color:var(--gold)}
+.evo-tile span{font-size:12px;color:var(--muted)}
+.evo-badges{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.evo-badges li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;padding:8px 10px;border-radius:12px;background:#050c09;border:1px dashed #4ee6b426;color:var(--muted);font-size:12.5px;font-weight:800;line-height:1.2}
+.evo-badges i{width:20px;height:20px;border-radius:50%;border:1.5px solid #4ee6b440}
+.evo-badges small{display:block;margin-top:1px;font-size:10.5px;font-weight:600;color:#f6eedb80}
+.evo-badges li.ok{border:1px solid #f2c14e66;background:#f2c14e12;color:var(--text)}
+.evo-badges li.ok i{background:var(--gold) center/12px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1405' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");border-color:var(--gold)}
+@media(max-width:340px){.evo-badges,.evo-tiles{grid-template-columns:1fr}}
+.evo-pick-box{border-radius:20px}
+.evo-tiles{margin:0;padding:0;text-align:left}.evo-tile{text-align:left;align-content:center}.evo-tile b,.evo-tile span{text-align:left}
