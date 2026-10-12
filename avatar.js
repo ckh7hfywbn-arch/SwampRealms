@@ -111,9 +111,9 @@ const AV=(function(){
  const HATV={
   y2kbandana:{def:"pink",list:Y2KV,art:c=>{const m=c[0],d=c[1],l=c[2];
    const dots=[0,1,2,3,4,5,6,7,8].map(i=>{const t=(i+.5)/9,y=(1-t)*(1-t)*18+2*t*(1-t)*6+t*t*18;return `<circle cx="${52+96*t}" cy="${y-3.5}" r="2" fill="${l}" opacity=".9"/>`}).join("");
-   return `<defs><linearGradient id="yb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${l}" stop-opacity=".75"/><stop offset=".25" stop-color="${m}"/><stop offset="1" stop-color="${d}"/></linearGradient></defs>`+
+   return `<defs><linearGradient id="yb${m.slice(1)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${l}" stop-opacity=".75"/><stop offset=".25" stop-color="${m}"/><stop offset="1" stop-color="${d}"/></linearGradient></defs>`+
    `<path d="M146 8L166 30L156 32L168 46L148 38Z" fill="${m}" ${ST(d,2.2)}/><path d="M150 14L162 30M152 24L162 40" stroke="${l}" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>`+
-   `<path d="M52 18Q46-16 100-21Q154-16 148 18Q100 6 52 18Z" fill="url(#yb)" ${ST(d,2.6)}/>`+
+   `<path d="M52 18Q46-16 100-21Q154-16 148 18Q100 6 52 18Z" fill="url(#yb${m.slice(1)})" ${ST(d,2.6)}/>`+
    `<path d="M62 6Q100-10 138 6" fill="none" stroke="${d}" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 4"/>`+dots+
    STAR4(76,-5,6,l)+STAR4(124,-5,6,l)+STAR4(100,-12,7.5,l)+`<path d="M100 -1c-5-6-12-1-8 4c2 2 6 2 8-1c2 3 6 3 8 1c4-5-3-10-8-4z" fill="${l}" opacity=".95"/>`+
    `<path d="M66-8Q76-18 92-20" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round"/>`+

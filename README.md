@@ -170,6 +170,8 @@ Add a line to `COSMETICS` in `store.js`, then draw it in `avatar.js` (`HAT`, `FA
 
 **Cosmetics added in stages** (original swamp designs): Stage 1 = hats Lilypad Sunhat, Glowcap Mushroom, Mossback Shell Helm, Dragonfly Circlet, Pet Thundercloud; faces Firefly Goggles, Mire Claw Paint, Bog Oracle Eye. Many are animated SVG (glow pulses, fireflies, rain, lightning).
 
+**Avatar screen polish (cos5).** Fixed: colour-variant hats (Y2K Bandana) shared one gradient id, so every copy on the page showed the first colour drawn; the id now includes the colour. The six gear slots were laid out in 5 columns (orphan row), now 3. Equipped items now say "Equipped ✓" and a message confirms equip/remove. Locked items show "N more to unlock". Phones get a compact stage, tapping a gear slot jumps to its items, 30px colour swatches, focus stays on the button you pressed, Tab is trapped inside the popup, Left/Right arrows move between category tabs, and reduced-motion is respected. Bump `avatar.js?v=` / `ui.css?v=` when changing these files.
+
 ## Before going live
 
 `index.html` points social previews at `/preview.jpg` (1200x630). Add that image to this folder.

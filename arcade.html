@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="ui.css?v=armory2">
+<link rel="stylesheet" href="ui.css?v=armory3">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -103,7 +103,7 @@
 
 <script src="cards.js"></script>
 <script src="weapons.js?v=skins2"></script>
-<script src="avatar.js?v=cos4"></script>
+<script src="avatar.js?v=cos5"></script>
 <script src="store.js?v=cos4"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
@@ -121,11 +121,11 @@ function draw(){
  $("pvmini").hidden=!npv||miniHide;$("pvmv").innerHTML=npv?AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="22 4 156 156"'):"";
  $("slots").innerHTML=Object.entries(C.cats).map(([k,n])=>{const it=C.item(E[k]);return `<button type="button" role="tab" class="slot${pv[k]?" pv":""}" data-c="${k}" aria-selected="${k===cat}"${it?` style="--rc:${RC[tr(it)]}"`:""}><small>${n}</small><b>${it?it.name:"Empty"}</b>${pv[k]?"<small>Preview</small>":""}</button>`}).join("");
  $("pick").innerHTML=C.animals.map(a=>`<button type="button" data-a="${a.id}" aria-pressed="${a.id===o.animal}" aria-label="${a.name}">${AV.svg({animal:a.id})}${a.name.split(" ")[0]}</button>`).join("");
- $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}">${n}</button>`).join("");
+ $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}" tabindex="${k===cat?0:-1}">${n}</button>`).join("");
  $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
   const own=C.owns(i.id),on=S.eq[cat]===i.id,can=C.balance>=i.price,t=tr(i);
-  const btn=own?(on?"Equipped":"Equip"):`<span class="gem"></span>${i.price}`;
-  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id,C.variant(i.id))}</div>${AV.variants(i.id).length?`<div class="vs" role="group" aria-label="${i.name} colours">${AV.variants(i.id).map(v=>`<button type="button" class="vsw" data-vi="${i.id}" data-vv="${v.id}" style="--vc:${v.color}" aria-label="${v.name}" aria-pressed="${C.variant(i.id)===v.id}" title="${v.name}"></button>`).join("")}</div>`:""}<span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
+  const btn=own?(on?"Equipped &#10003;":"Equip"):`<span class="gem"></span>${i.price}`,short=i.price-C.balance;
+  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id,C.variant(i.id))}</div>${AV.variants(i.id).length?`<div class="vs" role="group" aria-label="${i.name} colours">${AV.variants(i.id).map(v=>`<button type="button" class="vsw" data-vi="${i.id}" data-vv="${v.id}" style="--vc:${v.color}" aria-label="${v.name}" aria-pressed="${C.variant(i.id)===v.id}" title="${v.name}"></button>`).join("")}</div>`:""}<span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}"${on?` aria-pressed="true" aria-label="${i.name} equipped, tap to remove"`:""}${!own&&!can?` aria-label="${i.name}, ${i.price} crystals, you need ${short} more"`:""}>${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog" role="img" aria-label="${Math.round(C.balance/i.price*100)} percent saved"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div><small class="need">${short} more to unlock</small>`:""}</div>`}).join("");
  try{loadoutPaint()}catch(e){}
 }
 function flash(){const s=$("stage");s.classList.remove("avp");void s.offsetWidth;s.classList.add("avp")}
@@ -135,7 +135,14 @@ function openAv(){draw();root.hidden=false;document.documentElement.classList.ad
 function closeAv(){root.hidden=true;document.documentElement.classList.remove("av-open");if(location.hash==="#avatar")history.replaceState(null,"",location.pathname+location.search);const h=$("lo-hero");if(h)h.focus({preventScroll:true})}
 const hero=$("lo-hero");
 if(hero){hero.addEventListener("click",openAv);hero.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openAv()}})}
-addEventListener("keydown",e=>{if(e.key==="Escape"&&!root.hidden)closeAv()});
+addEventListener("keydown",e=>{
+ if(root.hidden)return;
+ if(e.key==="Escape"){closeAv();return}
+ if(e.key==="Tab"){const f=[...root.querySelectorAll("button,a[href]")].filter(x=>!x.disabled&&x.offsetParent!==null);if(!f.length)return;const a=f[0],z=f[f.length-1];
+  if(!root.contains(document.activeElement)){e.preventDefault();a.focus()}
+  else if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}
+  else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+});
 const hashOpen=()=>{if(location.hash==="#avatar")openAv()};addEventListener("hashchange",hashOpen);hashOpen();
 root.addEventListener("click",e=>{
  if(e.target.closest("[data-avx]")){closeAv();return}
@@ -146,14 +153,17 @@ root.addEventListener("click",e=>{
  else if(t.dataset.vi){f=C.setVariant(t.dataset.vi,t.dataset.vv)}
  else if(t.dataset.p){f=togglePv(t.dataset.p)}
  else if(t.dataset.a){C.setAnimal(t.dataset.a);msg("");f=true}
- else if(t.dataset.c){cat=t.dataset.c;msg("")}
+ else if(t.dataset.c){cat=t.dataset.c;msg("");if(t.classList.contains("slot")&&matchMedia("(max-width:819px)").matches){draw();$("cats").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth",block:"start"});return}}
  else if(t.dataset.i){const it=C.item(t.dataset.i);
-  if(C.owns(it.id)){delete pv[it.cat];C.equip(it.id);msg("");f=true}
+  if(C.owns(it.id)){delete pv[it.cat];C.equip(it.id);msg(C.state.eq[it.cat]===it.id?it.name+" equipped.":it.name+" removed.");f=true}
   else{const r=C.buy(it.id);msg(r.ok?it.name+" unlocked!":r.why);if(r.ok&&pv[it.cat]===it.id)delete pv[it.cat];f=r.ok}}
  else return;
+ const fk=t.dataset.i?"i":t.dataset.p?"p":t.dataset.a?"a":t.dataset.c?"c":"",fv=t.dataset.i||t.dataset.p||t.dataset.a||t.dataset.c||"";
  draw();if(f)flash();
+ if(fk){const n=root.querySelector(fk==="i"?'.buy[data-i="'+fv+'"]':fk==="p"?'.try[data-p="'+fv+'"]':fk==="a"?'[data-a="'+fv+'"]':'#cats [data-c="'+fv+'"]');if(n)n.focus({preventScroll:true})}
 });
-$("pvmini").addEventListener("click",()=>$("stage").scrollIntoView({behavior:"smooth",block:"center"}));
+root.addEventListener("keydown",e=>{const t=e.target.closest("#cats button");if(!t||(e.key!=="ArrowRight"&&e.key!=="ArrowLeft"))return;const b=[...$("cats").children],n=b[(b.indexOf(t)+(e.key==="ArrowRight"?1:-1)+b.length)%b.length];e.preventDefault();cat=n.dataset.c;msg("");draw();const nb=$("cats").querySelector('[data-c="'+cat+'"]');if(nb)nb.focus()});
+$("pvmini").addEventListener("click",()=>$("stage").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth",block:"center"}));
 // on a phone the avatar scrolls out of sight while you browse: show a small floating preview that jumps back up
 
 try{new IntersectionObserver(es=>{miniHide=es[0].isIntersecting;$("pvmini").hidden=!Object.keys(pv).length||miniHide}).observe($("sc"))}catch(e){}
