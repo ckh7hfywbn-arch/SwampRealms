@@ -30,9 +30,9 @@
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=armory1">
-<link rel="stylesheet" href="evolution.css?v=evo1">
+<link rel="stylesheet" href="evolution.css?v=evo3">
 </head>
-<body>
+<body class="evo-app">
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampRealms home"><img class="mark" src="logo-mark.png" alt="" width="44" height="44"><img class="word" src="logo-word.png" alt="" width="160" height="29"></a>
@@ -40,44 +40,40 @@
 </header>
 
 <div id="top"></div>
-<section id="evo">
- <h2>SwampRealms: Evolution</h2>
- <p class="sub">Grow your swamp. Collect Swamp Essence, build your realm and raise your first creature.</p>
+<main id="evo">
  <div class="evo-stage" id="evoStage">
-  <div class="evo-bar">
-   <div class="evo-res" role="status" aria-live="off">
-    <span class="evo-orb" aria-hidden="true"></span>
-    <div class="evo-count" id="evoCount"><small>Swamp Essence</small><b id="evoEss">0</b></div>
-    <span class="evo-rate" id="evoRate">+0/s</span>
-   </div>
-   <div class="evo-bar-r">
-    <span class="evo-mult" id="evoMult" title="Production bonus from your Hollow and creature"></span>
-    <button type="button" class="btn ghost mini evo-fsb" data-fs aria-pressed="false">Full screen</button>
-   </div>
-  </div>
-  <div class="evo-main">
-   <div class="evo-scene" id="evoScene" aria-label="Your swamp">
-    <div class="evo-art" id="evoArt" aria-hidden="true"></div>
-    <button type="button" class="evo-hot evo-hq" id="hotHq" aria-label="Swamp Hollow, your headquarters"></button>
-    <button type="button" class="evo-hot evo-p1" id="hotP1" aria-label="Starter plot"></button>
-    <button type="button" class="evo-hot evo-p2" id="hotP2" aria-label="Second plot"></button>
-    <button type="button" class="evo-cr" id="evoCr" aria-label="Pet your creature to collect Swamp Essence"><span class="evo-cr-art" id="evoCrArt"></span><span class="evo-cr-tip">Tap to pet</span></button>
-    <div class="evo-toast" id="evoToast" role="status" aria-live="polite"></div>
-   </div>
-   <div class="evo-side">
-    <div class="evo-tabs" role="tablist" aria-label="Game sections">
-     <button type="button" role="tab" id="tab-build" data-tab="build" aria-selected="true" aria-controls="pane-build">Build</button>
-     <button type="button" role="tab" id="tab-creature" data-tab="creature" aria-selected="false" aria-controls="pane-creature">Creature</button>
-     <button type="button" role="tab" id="tab-realm" data-tab="realm" aria-selected="false" aria-controls="pane-realm">Realm</button>
+  <div class="evo-scene" id="evoScene" aria-label="Your swamp">
+   <div class="evo-art" id="evoArt" aria-hidden="true"></div>
+   <button type="button" class="evo-hot evo-hq" id="hotHq" aria-label="Swamp Hollow, your headquarters"></button>
+   <button type="button" class="evo-hot evo-p1" id="hotP1" aria-label="Starter plot"></button>
+   <button type="button" class="evo-hot evo-p2" id="hotP2" aria-label="Second plot"></button>
+   <div class="evo-crs" id="evoCrs"></div>
+   <div class="evo-hud">
+    <div class="evo-res" role="status" aria-live="off">
+     <span class="evo-orb" aria-hidden="true"></span>
+     <div class="evo-count" id="evoCount"><small>Swamp Essence</small><b id="evoEss">0</b></div>
+     <div class="evo-chips"><span class="evo-rate" id="evoRate">+0/s</span><span class="evo-mult" id="evoMult" title="Production bonus from your Hollow and creatures"></span></div>
     </div>
-    <div class="evo-pane" id="pane-build" role="tabpanel" aria-labelledby="tab-build"></div>
-    <div class="evo-pane" id="pane-creature" role="tabpanel" aria-labelledby="tab-creature" hidden></div>
-    <div class="evo-pane" id="pane-realm" role="tabpanel" aria-labelledby="tab-realm" hidden></div>
+    <div class="evo-ibtns">
+     <button type="button" class="evo-ibtn" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+     <a class="evo-ibtn" href="arcade.html" aria-label="Back to the Arcade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    </div>
    </div>
+   <div class="evo-toast" id="evoToast" role="status" aria-live="polite"></div>
   </div>
+  <div class="evo-sheet">
+   <div class="evo-grip" aria-hidden="true"></div>
+   <div class="evo-pane" id="pane-build" role="tabpanel" aria-labelledby="tab-build"></div>
+   <div class="evo-pane" id="pane-creature" role="tabpanel" aria-labelledby="tab-creature" hidden></div>
+   <div class="evo-pane" id="pane-realm" role="tabpanel" aria-labelledby="tab-realm" hidden></div>
+  </div>
+  <nav class="evo-nav" role="tablist" aria-label="Game sections">
+   <button type="button" role="tab" id="tab-build" data-tab="build" aria-selected="true" aria-controls="pane-build"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>Build</span></button>
+   <button type="button" role="tab" id="tab-creature" data-tab="creature" aria-selected="false" aria-controls="pane-creature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4 0 7 6 7 11a7 7 0 01-14 0c0-5 3-11 7-11z"/><path d="M9 14a3 3 0 003 3"/></svg><span>Creatures</span></button>
+   <button type="button" role="tab" id="tab-realm" data-tab="realm" aria-selected="false" aria-controls="pane-realm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><span>Realm</span></button>
+  </nav>
  </div>
- <p class="evo-back"><a class="btn ghost" href="arcade.html">Back to the Arcade</a></p>
-</section>
+</main>
 
 <footer>
  <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
@@ -92,7 +88,7 @@
 <script src="store.js?v=evo1"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
-<script src="evolution.js?v=evo1"></script>
+<script src="evolution.js?v=evo3"></script>
 <script src="gamefs.js?v=2"></script>
 <script>GameFS.attach({stage:"#evoStage",start:"[data-fs-start]"});</script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->
