@@ -247,3 +247,145 @@ body.evo-app footer{margin-top:28px}
 @media(max-width:340px){.evo-badges,.evo-tiles{grid-template-columns:1fr}}
 .evo-pick-box{border-radius:20px}
 .evo-tiles{margin:0;padding:0;text-align:left}.evo-tile{text-align:left;align-content:center}.evo-tile b,.evo-tile span{text-align:left}
+
+/* ===== Stage 4: Realms, cinematics, live atmosphere, daily gift, next-goal pill ===== */
+/* 4 tabs + a dot when something in that tab is ready */
+.evo-nav{grid-template-columns:repeat(4,1fr)}
+.evo-nav button.dot::after{content:"";position:absolute;top:4px;left:calc(50% + 9px);width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);border:1.5px solid #050b09;animation:evoReady 1.4s ease-in-out infinite}
+/* live particle canvas sits between the art and the day/night tint */
+.evo-fx{position:absolute;inset:0;z-index:1;width:100%;height:100%;pointer-events:none;display:block}
+/* each realm re-colours the game chrome */
+.evo-stage{--bc:#4ee6b4}
+.evo-stage[data-bio=ember]{--mint:#ff9a4d;--mint-soft:#ffd8b4;--mint-line:#ff8a3d55;--bc:#ff8a3d}
+.evo-stage[data-bio=frost]{--mint:#7fd6ff;--mint-soft:#dff6ff;--mint-line:#7fd6ff55;--bc:#7fd6ff}
+.evo-stage[data-bio=ember],.evo-stage[data-bio=frost]{border-color:color-mix(in srgb,var(--bc) 45%,transparent);box-shadow:0 0 0 1px #000,0 0 60px -14px var(--bc),0 30px 70px -20px #000}
+.evo-stage[data-bio=ember] :is(.evo-res,.evo-ibtn,.evo-goal),.evo-stage[data-bio=frost] :is(.evo-res,.evo-ibtn,.evo-goal){border-color:color-mix(in srgb,var(--bc) 40%,transparent)}
+.evo-stage[data-bio=ember] :is(.evo-nav,.evo-card,.evo-tile),.evo-stage[data-bio=frost] :is(.evo-nav,.evo-card,.evo-tile){border-color:color-mix(in srgb,var(--bc) 24%,transparent)}
+.evo-stage[data-bio=ember] .evo-card:not(.done):not(.locked),.evo-stage[data-bio=frost] .evo-card:not(.done):not(.locked){box-shadow:inset 3px 0 0 var(--bc)}
+.evo-stage[data-bio=ember] .evo-orb:not(.sm){background:radial-gradient(circle at 35% 30%,#fff3b0 0,#ffc46b 22%,#ff7a2a 55%,#7a1608 100%);box-shadow:0 0 20px -2px #ff7a2a,0 0 0 2px #1a0805 inset}
+.evo-stage[data-bio=frost] .evo-orb:not(.sm){background:radial-gradient(circle at 35% 30%,#fff 0,#dff6ff 22%,#7fd6ff 55%,#16507a 100%);box-shadow:0 0 20px -2px #7fd6ff,0 0 0 2px #04101a inset}
+.evo-stage[data-bio=ember] .evo-count b{text-shadow:0 0 16px #ff8a3dcc}.evo-stage[data-bio=frost] .evo-count b{text-shadow:0 0 16px #7fd6ffcc}
+.evo-stage[data-bio=ember] .evo-bar2 i,.evo-stage[data-bio=ember] .evo-pips i.on{background:linear-gradient(90deg,#c24a14,#ffa24d)}
+.evo-stage[data-bio=frost] .evo-bar2 i,.evo-stage[data-bio=frost] .evo-pips i.on{background:linear-gradient(90deg,#2a86b8,#9fe3ff)}
+.evo-stage[data-bio=ember] .evo-card.done .evo-pips i.on,.evo-stage[data-bio=frost] .evo-card.done .evo-pips i.on{background:linear-gradient(90deg,#c18a17,#f2c14e)}
+.evo-scene[data-bio=ember] .evo-wisp i{background:#fff0b0;box-shadow:0 0 10px 4px #ffb347,0 0 26px 10px #ff6a1f55}
+.evo-scene[data-bio=frost] .evo-wisp i{background:#f0fcff;box-shadow:0 0 10px 4px #9fe3ff,0 0 26px 10px #7fd6ff55}
+.evo-scene[data-bio=ember] .evo-tint.t-day{background:linear-gradient(180deg,#ffd0a0,#a8502a)}
+.evo-scene[data-bio=frost] .evo-tint.t-day{background:linear-gradient(180deg,#e6fbff,#7fb8d6)}
+/* landmark tap spot (other realms) */
+.evo-lm{left:60%;top:28%;width:32%;height:46%;display:none}
+.evo-scene:not([data-bio=swamp]) .evo-lm{display:block}
+.evo-scene:not([data-bio=swamp]) :is(.evo-hq,.evo-p1,.evo-p2){display:none}
+/* realm art animations */
+.evo-plume{animation:evoPlume 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.evo-lavaflow{animation:evoGlow 3.2s ease-in-out infinite alternate}
+.evo-aur{animation:evoAur 9s ease-in-out infinite alternate;transform-origin:50% 0}
+.evo-aur.b{animation-duration:13s;animation-delay:-4s}
+.evo-glint{animation:evoTw 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.evo-beam{animation:evoTw 4s ease-in-out infinite}
+@keyframes evoPlume{0%,100%{transform:scale(1,.92);filter:brightness(1)}50%{transform:scale(1.08,1.1);filter:brightness(1.3)}}
+@keyframes evoGlow{from{filter:brightness(.85)}to{filter:brightness(1.4)}}
+@keyframes evoAur{from{transform:translateX(-16px) skewX(-4deg);opacity:.7}to{transform:translateX(16px) skewX(5deg);opacity:1}}
+@keyframes evoTw{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+/* creatures feel alive */
+.evo-cr::before{content:"";position:absolute;left:10%;right:10%;bottom:4%;height:11%;border-radius:50%;background:radial-gradient(#000a,transparent 70%);z-index:-1;pointer-events:none}
+.evo-cr.s2 .evo-cr-art{animation:evoIdle 3.2s ease-in-out infinite,evoAuraPulse 2.4s ease-in-out infinite}
+.evo-cr.wig .evo-cr-art{animation:evoWig .9s ease-in-out}
+@keyframes evoWig{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg) translateY(-3px)}45%{transform:rotate(5deg) translateY(-5px)}70%{transform:rotate(-3deg)}}
+@keyframes evoAuraPulse{0%,100%{filter:drop-shadow(0 4px 6px #000a) drop-shadow(0 0 6px var(--aura,#f2c14e))}50%{filter:drop-shadow(0 4px 6px #000a) drop-shadow(0 0 16px var(--aura,#f2c14e))}}
+/* tab content slides in, one card after another */
+.evo-pane.enter>*{animation:evoCardIn .5s var(--ease-out,ease-out) both;animation-delay:calc(var(--i,0) * 55ms)}
+@keyframes evoCardIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+/* next-goal pill */
+.evo-goal{position:absolute;left:10px;top:calc(max(10px,env(safe-area-inset-top,0px)) + 96px);z-index:8;max-width:calc(100% - 20px);display:flex;align-items:center;padding:5px 12px 7px;border-radius:999px;overflow:hidden;
+ background:#04110ccc;border:1px solid #4ee6b455;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#dffaf0;font:800 11.5px/15px Nunito,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 6px 16px -8px #000}
+.evo-goal[hidden]{display:none}
+.evo-goal span{position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evo-goal i{position:absolute;left:0;bottom:0;height:3px;width:var(--p,0%);background:var(--bc,#4ee6b4);box-shadow:0 0 8px var(--bc,#4ee6b4);transition:width .25s}
+.evo-goal.ready{border-color:var(--gold);color:#ffe9a8;animation:evoReady 1.4s ease-in-out infinite}
+.evo-goal.ready i{background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.evo-goal:active{transform:scale(.97)}
+/* travel wipe + zone title */
+.evo-iris{position:absolute;inset:0;z-index:15;pointer-events:none;background:radial-gradient(circle at 50% 62%,#fff 0,var(--ic) 26%,#020706 82%);clip-path:circle(0% at 50% 62%);transition:clip-path .62s cubic-bezier(.65,0,.35,1)}
+.evo-iris.in{clip-path:circle(150% at 50% 62%)}
+.evo-iris.out{clip-path:circle(0% at 50% 62%);transition-duration:.7s}
+.evo-zone{position:absolute;left:0;right:0;top:34%;z-index:16;pointer-events:none;display:grid;justify-items:center;gap:3px;text-align:center;animation:evoZone 3.2s ease-out both}
+.evo-zone small{font:900 11px Nunito,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#fff;text-shadow:0 2px 8px #000}
+.evo-zone b{font:400 34px/1.05 "Bagel Fat One",Nunito,sans-serif;color:#fff;text-shadow:0 0 22px var(--ic),0 3px 10px #000}
+.evo-zone i{width:150px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--ic),transparent);box-shadow:0 0 12px var(--ic)}
+@keyframes evoZone{0%{opacity:0;transform:translateY(14px) scale(.96);letter-spacing:.3em}16%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+/* world cards */
+.evo-card.world{grid-template-columns:auto 1fr}
+.evo-card.world.here{border-color:color-mix(in srgb,var(--c) 55%,transparent);background:linear-gradient(165deg,color-mix(in srgb,var(--c) 14%,#0c1914),#08100d)}
+.evo-wthumb{position:relative;width:72px;height:72px;border-radius:16px;overflow:hidden;border:1px solid #ffffff22;box-shadow:0 6px 16px -8px #000}
+.evo-wthumb.t-swamp{background:radial-gradient(circle at 72% 24%,#effff8 0 6px,transparent 7px),radial-gradient(ellipse at 30% 78%,#4ee6b455,transparent 50%),linear-gradient(180deg,#0f2c24,#1b4a3a 55%,#0e3a30 56%,#050e0b)}
+.evo-wthumb.t-ember{background:radial-gradient(circle at 24% 26%,#ffe7bd 0 5px,transparent 6px),radial-gradient(ellipse at 70% 60%,#ff7a2a99,transparent 45%),linear-gradient(180deg,#3a0f16,#8a2a12 55%,#ff6a1f 56%,#4a0e06)}
+.evo-wthumb.t-frost{background:radial-gradient(ellipse at 40% 24%,#4ee6b4aa,transparent 60%),radial-gradient(ellipse at 75% 30%,#a98bff88,transparent 55%),linear-gradient(180deg,#050a24,#2d7a9a 55%,#dff6ff 56%,#3a86a8)}
+.evo-wthumb.t-void{background:radial-gradient(circle at 50% 40%,#6a3cff66,transparent 60%),radial-gradient(circle at 20% 20%,#fff 0 1px,transparent 2px),radial-gradient(circle at 80% 70%,#fff 0 1px,transparent 2px),#0a0620}
+.evo-wthumb .lk{position:absolute;inset:0;background:#000a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d5e3dc' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 018 0v3'/%3E%3C/svg%3E") center/34% no-repeat}
+.evo-lm-info{margin:6px 0 0!important;font-size:12.5px!important;color:var(--text)!important}
+.evo-lm-info b{color:var(--c)}
+.evo-card.gift:not(.done){border-color:#f2c14e66;background:linear-gradient(165deg,#241d0c,#0d0b05)}
+/* ---------- cinematic celebration card ---------- */
+.evo-cine{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:18px;overflow:hidden;--cc:#f2c14e;background:#020706fa;background:radial-gradient(ellipse at 50% 40%,color-mix(in srgb,var(--cc) 26%,#020706) 0,#020706 74%);animation:cnIn .35s ease-out both}
+.evo-cine.out{opacity:0;transition:opacity .35s;pointer-events:none}
+.cn-rays{position:absolute;left:50%;top:42%;width:220%;aspect-ratio:1;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--cc) 34%,transparent) 0 5deg,transparent 5deg 16deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 40%);mask:radial-gradient(circle,#000 0,transparent 40%);animation:cnSpin 22s linear infinite,cnFade 1s .1s both}
+.cn-rays.r2{background:repeating-conic-gradient(from 8deg,color-mix(in srgb,var(--cc) 22%,transparent) 0 3deg,transparent 3deg 11deg);animation:cnSpinR 34s linear infinite,cnFade 1.2s .2s both}
+.cn-ring{position:absolute;left:50%;top:42%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:3px solid var(--cc);box-shadow:0 0 22px var(--cc),inset 0 0 18px var(--cc);opacity:0;pointer-events:none;animation:cnRing 1.3s .15s ease-out both}
+.cn-ring.r2{animation-delay:.45s;border-width:2px}
+.cn-flash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 42%,#fff 0,color-mix(in srgb,var(--cc) 70%,#fff) 22%,transparent 62%);opacity:0;animation:cnFlash .9s .1s ease-out both}
+.cn-dots{position:absolute;left:50%;top:42%;width:0;height:0;pointer-events:none}
+.cn-dot{position:absolute;left:0;top:0;width:var(--s);height:var(--s);margin:calc(var(--s) / -2);border-radius:50%;background:var(--cc);box-shadow:0 0 9px var(--cc);opacity:0;animation:cnDot var(--w) calc(.35s + var(--hd,0s)) cubic-bezier(.2,.7,.3,1) both}
+.cn-dot:nth-child(3n){background:#fff;box-shadow:0 0 9px #fff}
+.k-hatch{--hd:1s}
+.cn-body{position:relative;z-index:2;display:grid;justify-items:center;gap:8px;width:100%;max-width:320px;text-align:center}
+.cn-body>*{opacity:0;animation:cnUp .6s var(--ease-out,ease-out) var(--d,.5s) both}
+.cn-art{--d:.15s;display:grid;place-items:center;min-height:150px}
+.cn-art svg{display:block;width:150px;height:auto;filter:drop-shadow(0 0 18px var(--aura,var(--cc)))}
+.cn-art .cn-aura{display:block;animation:cnHover 3s ease-in-out infinite}
+.k-evolve .cn-art{animation:cnPopIn .9s .2s var(--ease-spring,cubic-bezier(.34,1.45,.64,1)) both}
+.cn-kicker{--d:.6s;margin:0;font:900 12px Nunito,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--cc);text-shadow:0 0 12px var(--cc)}
+.cn-title{--d:.75s;margin:0;font:400 30px/1.08 "Bagel Fat One",Nunito,sans-serif;color:#fff;text-shadow:0 0 24px var(--cc),0 3px 10px #000}
+.cn-sub{--d:.9s;margin:0;font:800 14px/1.35 Nunito,sans-serif;color:#e8f7f0}
+.cn-sub b{font-size:22px;color:var(--cc);font-variant-numeric:tabular-nums;text-shadow:0 0 14px var(--cc)}
+.cn-lines{--d:1.05s;list-style:none;margin:2px 0 0;padding:0;display:grid;gap:6px;justify-items:center}
+.cn-lines li{padding:5px 12px;border-radius:999px;background:#ffffff0f;border:1px solid color-mix(in srgb,var(--cc) 40%,transparent);font:800 12.5px/1.3 Nunito,sans-serif;color:#f1fbf6;opacity:0;animation:cnUp .5s var(--ease-out,ease-out) calc(1.1s + var(--i) * .15s) both}
+.cn-btns{--d:1.45s;display:grid;gap:8px;width:100%;max-width:280px;margin-top:8px}
+.k-hatch .cn-kicker{--d:1.75s}.k-hatch .cn-title{--d:1.9s}.k-hatch .cn-sub{--d:2.05s}.k-hatch .cn-lines{--d:2.2s}.k-hatch .cn-btns{--d:2.5s}
+.k-hatch .cn-lines li{animation-delay:calc(2.25s + var(--i) * .15s)}
+.k-hatch .cn-flash{animation-delay:1.05s}.k-hatch .cn-ring{animation-delay:1.1s}.k-hatch .cn-ring.r2{animation-delay:1.4s}
+.cn-egg{position:absolute;left:50%;top:6px;width:104px;margin-left:-52px;opacity:1!important;transform-origin:50% 90%;animation:cnEgg 1.15s ease-in forwards!important}
+.cn-egg svg{display:block;width:100%;filter:drop-shadow(0 0 16px var(--cc))}
+.cn-crack{stroke-dasharray:120;stroke-dashoffset:120;animation:cnCrack 1s .1s ease-in forwards}
+.k-hatch .cn-art.cn-pop{--d:1.1s;animation:cnPopIn .8s 1.1s var(--ease-spring,cubic-bezier(.34,1.45,.64,1)) both}
+.cn-orbm{display:block;width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,#b9ffe9 22%,#4ee6b4 55%,#0e6b52 100%);box-shadow:0 0 60px 6px #4ee6b488,0 0 0 3px #04110c inset;animation:evoOrb 3s ease-in-out infinite}
+.cn-orbm.t-ember{background:radial-gradient(circle at 35% 30%,#fff3b0 0,#ffc46b 22%,#ff7a2a 58%,#5a1306 100%);box-shadow:0 0 60px 6px #ff7a2a88,0 0 0 3px #1a0805 inset}
+.cn-orbm.t-frost{background:radial-gradient(circle at 35% 30%,#fff 0,#dff6ff 22%,#7fd6ff 58%,#16507a 100%);box-shadow:0 0 60px 6px #7fd6ff88,0 0 0 3px #04101a inset}
+.k-realm .cn-title{font-size:34px}
+.gift-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.gift-row span{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:2px solid #f2c14e55;background:#0008;font:900 13px Nunito,sans-serif;color:#f2c14e99}
+.gift-row span.done{background:#f2c14e;border-color:#f2c14e;color:#1a1405}
+.gift-row span.today{border-color:#fff;color:#fff;background:radial-gradient(circle,#f2c14e66,#0008);box-shadow:0 0 18px #f2c14e;animation:cnBeat 1s ease-in-out infinite}
+.gift-row span:last-child{width:40px;height:40px;font-size:17px}
+.evo-cine .btn{min-height:46px}
+.evo-cine.calm .cn-rays,.evo-cine.calm .cn-ring,.evo-cine.calm .cn-flash,.evo-cine.calm .cn-dots,.evo-cine.calm .cn-egg{display:none}
+.evo-cine.calm *,.evo-cine.calm{animation:none!important}
+.evo-cine.calm .cn-body>*,.evo-cine.calm .cn-lines li{opacity:1}
+@keyframes cnIn{from{opacity:0}to{opacity:1}}
+@keyframes cnUp{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes cnFade{from{opacity:0}to{opacity:1}}
+@keyframes cnSpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes cnSpinR{from{transform:translate(-50%,-50%) rotate(360deg)}to{transform:translate(-50%,-50%) rotate(0)}}
+@keyframes cnRing{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(15)}}
+@keyframes cnFlash{0%{opacity:0}18%{opacity:.95}100%{opacity:0}}
+@keyframes cnDot{0%{opacity:1;transform:rotate(var(--a)) translateY(0) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(.2)}}
+@keyframes cnPopIn{0%{opacity:0;transform:scale(.2) rotate(-12deg)}60%{opacity:1;transform:scale(1.14) rotate(3deg)}100%{opacity:1;transform:none}}
+@keyframes cnHover{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes cnBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+@keyframes cnEgg{0%{transform:rotate(0) scale(.9);opacity:0}10%{opacity:1;transform:rotate(0) scale(1)}25%{transform:rotate(-8deg)}40%{transform:rotate(9deg)}55%{transform:rotate(-12deg) scale(1.03)}70%{transform:rotate(13deg) scale(1.05)}85%{transform:rotate(-14deg) scale(1.1)}100%{transform:rotate(0) scale(1.35);opacity:0}}
+@keyframes cnCrack{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.evo-plume,.evo-lavaflow,.evo-aur,.evo-glint,.evo-beam,.evo-cr.s2 .evo-cr-art,.evo-goal.ready,.evo-nav button.dot::after,.evo-zone{animation:none}.evo-pane.enter>*{animation:none}.evo-iris{transition:none}}
+@media(max-width:340px){.cn-title{font-size:25px}.evo-zone b{font-size:28px}}
+
+.evo-card.world.avail{border-color:color-mix(in srgb,var(--c) 45%,transparent)}
+.evo-scene[data-bio=ember][data-ph=day] .t-day,.evo-scene[data-bio=frost][data-ph=day] .t-day{opacity:.1}

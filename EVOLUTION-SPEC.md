@@ -58,7 +58,7 @@ Never paste `cards.js` (4.3 MB, base64 art), `adventure.html` (200 KB) or `store
 1. **Skeleton:** `evolution.html` + `evolution.js`, Arcade tile, `CS.evo` load/save, swamp resource ticking, offline catch-up, wallet header. *Also add `Crystals.grant` and a save helper to `store.js`.*
 2. **Creatures:** egg → hatch → evolve stages, using the 5 animals.
 3. **Structures:** buildings that raise production, upgrade costs.
-4. **Biomes:** unlock new realms with their own resources and palettes.
+4. **Biomes:** DONE in Stage 4 (Ember Bog, Frostfen, cinematics, daily gift, next-goal pill, particle atmosphere). See README.
 5. **Bosses:** timed or stat-check fights, first-kill rewards (capped coin/crystal payouts).
 6. **Expansion and polish:** prestige, achievements, sound, README update.
 After each stage: test on a phone-width viewport, check that `arcade.html`, `adventure.html` and `shop.html` still load with no console errors, check that sign-in sync still works, then zip and name `SwampRealms-evo-stageN.zip`.
