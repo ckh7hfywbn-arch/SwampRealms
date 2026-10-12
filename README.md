@@ -166,7 +166,9 @@ The header shows the logo, coin and crystal counters, the account button and a h
 
 ## Adding a cosmetic
 
-Add a line to `COSMETICS` in `store.js`, then draw it in `avatar.js` (`HAT`, `FACE`, `NECK` or `BG`, same id).
+Add a line to `COSMETICS` in `store.js`, then draw it in `avatar.js` (`HAT`, `FACE`, `NECK` or `BG`, same id). Also add its tier number to `RAR` (must match the price tier in `tierOf`) and a `FIT` entry (centre x, centre y, scale) so the shop card frames it. `FACE` functions receive `(eyes, animal)`.
+
+**Cosmetics added in stages** (original swamp designs): Stage 1 = hats Lilypad Sunhat, Glowcap Mushroom, Mossback Shell Helm, Dragonfly Circlet, Pet Thundercloud; faces Firefly Goggles, Mire Claw Paint, Bog Oracle Eye. Many are animated SVG (glow pulses, fireflies, rain, lightning).
 
 ## Before going live
 

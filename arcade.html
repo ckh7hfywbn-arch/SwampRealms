@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="ui.css?v=armory1">
+<link rel="stylesheet" href="ui.css?v=armory2">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -103,8 +103,8 @@
 
 <script src="cards.js"></script>
 <script src="weapons.js?v=skins2"></script>
-<script src="avatar.js?v=acc2"></script>
-<script src="store.js?v=acc3"></script>
+<script src="avatar.js?v=cos4"></script>
+<script src="store.js?v=cos4"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script>
@@ -125,7 +125,7 @@ function draw(){
  $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
   const own=C.owns(i.id),on=S.eq[cat]===i.id,can=C.balance>=i.price,t=tr(i);
   const btn=own?(on?"Equipped":"Equip"):`<span class="gem"></span>${i.price}`;
-  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id)}</div><span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
+  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id,C.variant(i.id))}</div>${AV.variants(i.id).length?`<div class="vs" role="group" aria-label="${i.name} colours">${AV.variants(i.id).map(v=>`<button type="button" class="vsw" data-vi="${i.id}" data-vv="${v.id}" style="--vc:${v.color}" aria-label="${v.name}" aria-pressed="${C.variant(i.id)===v.id}" title="${v.name}"></button>`).join("")}</div>`:""}<span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}">${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div>`:""}</div>`}).join("");
  try{loadoutPaint()}catch(e){}
 }
 function flash(){const s=$("stage");s.classList.remove("avp");void s.offsetWidth;s.classList.add("avp")}
@@ -143,6 +143,7 @@ root.addEventListener("click",e=>{
  if(art&&!e.target.closest("button")){togglePv(art.dataset.p);draw();flash();return}
  const t=e.target.closest("button");if(!t)return;const C=Crystals;C.reload();let f=false;
   if(t.dataset.pvx!==undefined){pv={};msg("");f=true}
+ else if(t.dataset.vi){f=C.setVariant(t.dataset.vi,t.dataset.vv)}
  else if(t.dataset.p){f=togglePv(t.dataset.p)}
  else if(t.dataset.a){C.setAnimal(t.dataset.a);msg("");f=true}
  else if(t.dataset.c){cat=t.dataset.c;msg("")}

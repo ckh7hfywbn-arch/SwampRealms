@@ -1114,3 +1114,6 @@ header nav .bank.cry b{color:#c8fff4;text-shadow:0 0 12px #4ee6b466}
 .hud.dng.up{animation:dngUp 1s ease-out}
 @keyframes dngUp{0%{transform:scale(1)}20%{transform:scale(1.25);box-shadow:0 0 22px #ff6b82}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.hud.dng.up{animation:none}}
+
+/* colour variant swatches on a cosmetic card */
+.it .vs{position:relative;display:flex;gap:7px;justify-content:center;flex-wrap:wrap}.it .vsw{width:22px;height:22px;border-radius:50%;border:2px solid #ffffff55;background:var(--vc);cursor:pointer;padding:0;box-shadow:0 0 0 1px #000}.it .vsw[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 2px var(--rc),0 0 10px var(--vc)}.it .vsw:focus-visible{outline:2px solid #fff;outline-offset:2px}

@@ -18,7 +18,7 @@ const ANIMALS=[
  {id:"monkey",name:"MonK the Monkey"},
  {id:"elephant",name:"Ellie the Elephant"}
 ];
-// cat: hat | face | neck | shirt | bg   (avatar.js draws each id)
+// cat: hat | face | neck | shirt | shoes | bg   (avatar.js draws each id)
 const COSMETICS=[
  {id:"beanie",cat:"hat",name:"Street Beanie",price:40},
  {id:"party",cat:"hat",name:"Neon Cone",price:60},
@@ -26,11 +26,21 @@ const COSMETICS=[
  {id:"wizard",cat:"hat",name:"Arcane Hat",price:150},
  {id:"halo",cat:"hat",name:"Divine Halo",price:250},
  {id:"crown",cat:"hat",name:"Swamp King Crown",price:400},
+ {id:"lilypad",cat:"hat",name:"Lilypad Sunhat",price:35},
+ {id:"glowcap",cat:"hat",name:"Glowcap Mushroom",price:90},
+ {id:"mossback",cat:"hat",name:"Mossback Shell Helm",price:160},
+ {id:"dragonfly",cat:"hat",name:"Dragonfly Circlet",price:260},
+ {id:"stormcloud",cat:"hat",name:"Pet Thundercloud",price:380},
+ {id:"y2kbandana",cat:"hat",name:"Y2K Bandana",price:85},
  {id:"eyepatch",cat:"face",name:"Raider Patch",price:50},
  {id:"shades",cat:"face",name:"Cyber Visor",price:60},
  {id:"hearts",cat:"face",name:"Love Lenses",price:70},
  {id:"monocle",cat:"face",name:"Gold Monocle",price:80},
  {id:"laser",cat:"face",name:"Laser Eyes",price:220},
+ {id:"fireflygoggles",cat:"face",name:"Firefly Goggles",price:55},
+ {id:"clawpaint",cat:"face",name:"Mire Claw Paint",price:85},
+ {id:"oracleeye",cat:"face",name:"Bog Oracle Eye",price:180},
+ {id:"gothicshades",cat:"face",name:"Gothic Chrome Specs",price:400},
  {id:"bell",cat:"neck",name:"Gold Bell",price:30},
  {id:"bowtie",cat:"neck",name:"Neon Bow Tie",price:40},
  {id:"scarf",cat:"neck",name:"Crimson Scarf",price:70},
@@ -42,6 +52,9 @@ const COSMETICS=[
  {id:"tux",cat:"shirt",name:"Boss Tux",price:150},
  {id:"armor",cat:"shirt",name:"Crystal Armor",price:250},
  {id:"robe",cat:"shirt",name:"Royal Robe",price:350},
+ {id:"sneakers",cat:"shoes",name:"Swamp Sneakers",price:35},
+ {id:"swampboots",cat:"shoes",name:"Mossy Stompers",price:90},
+ {id:"gildedkicks",cat:"shoes",name:"Gilded Kicks",price:250},
  {id:"pond",cat:"bg",name:"Lotus Pond",price:50},
  {id:"sunset",cat:"bg",name:"Dusk Marsh",price:80},
  {id:"night",cat:"bg",name:"Firefly Night",price:120},
@@ -49,7 +62,7 @@ const COSMETICS=[
  {id:"rainbow",cat:"bg",name:"Aurora Mist",price:300},
  {id:"moon",cat:"bg",name:"Blood Moon",price:350}
 ];
-const CATS={hat:"Hats",face:"Faces",neck:"Neck",shirt:"Shirts",bg:"Backgrounds"};
+const CATS={hat:"Hats",face:"Faces",neck:"Neck",shirt:"Shirts",shoes:"Shoes",bg:"Backgrounds"};
 const tierOf=p=>p>=350?"Mythical":p>=220?"Legendary":p>=150?"Epic":p>=80?"Rare":p>=50?"Uncommon":"Common";
 
 // ---- saved data ----
@@ -57,8 +70,8 @@ const CK="swamp-crystals-v1";
 // Crafting reset: raise this number to wipe everybody's fragments, crafted gear and equipped armor/weapons ONCE (coins, crystals, cosmetics, avatar and skins are never touched).
 // Each save remembers the number it has been reset to (CS.cr), so it only happens once per save, and it syncs with accounts like the rest of the crystals save.
 const CRAFT_RESET=1;
-let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{},skins:{},skeq:{}};
-function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
+let CS={c:0,earned:0,animal:"frog",own:{},eq:{hat:"",face:"",neck:"",shirt:"",shoes:"",bg:""},day:"",rounds:0,best:{},frags:{},gear:{},geq:{},skins:{},skeq:{},hv:{}};
+function cload(){try{CS=Object.assign(CS,JSON.parse(localStorage.getItem(CK)||"{}"))}catch(e){}CS.eq=Object.assign({hat:"",face:"",neck:"",shirt:"",shoes:"",bg:""},CS.eq);CS.own=CS.own||{};CS.best=CS.best||{};if(!CS.hv||typeof CS.hv!=="object"||Array.isArray(CS.hv))CS.hv={};if(!CS.frags||typeof CS.frags!=="object"||Array.isArray(CS.frags))CS.frags={};for(const k in CS.frags){const v=CS.frags[k];if(!(Number.isFinite(v)&&v>0))delete CS.frags[k];else CS.frags[k]=Math.floor(v)}
  if(CS.frags.crawler>0){CS.frags.frog=(CS.frags.frog||0)+CS.frags.crawler;delete CS.frags.crawler;try{localStorage.setItem(CK,JSON.stringify(CS))}catch(e){}}else delete CS.frags.crawler;   // the Bog Fragment became the Frog Fragment: carry old saves over
  if(!CS.gear||typeof CS.gear!=="object"||Array.isArray(CS.gear))CS.gear={};for(const k in CS.gear){const v=CS.gear[k];if(!(Number.isFinite(v)&&v>0))delete CS.gear[k];else CS.gear[k]=Math.floor(v)}
  if(!CS.geq||typeof CS.geq!=="object"||Array.isArray(CS.geq))CS.geq={};try{for(const sl in CS.geq){const g=CS.geq[sl];if(!(typeof g==="string"&&CS.gear[g]>0&&GEAR[g]&&eqk(GEAR[g])===sl))delete CS.geq[sl]}}catch(e){}
@@ -91,6 +104,8 @@ const Crystals={
  tier:tierOf,
  item:id=>COSMETICS.find(x=>x.id===id),
  owns:id=>!!CS.own[id],
+ variant:id=>{const l=typeof AV!=="undefined"?AV.variants(id):[];const v=CS.hv&&CS.hv[id];return l.some(x=>x.id===v)?v:(l[0]?l[0].id:"")},   // chosen colour of a cosmetic that has variants (free to change)
+ setVariant(id,v){cload();if(typeof AV!=="undefined"&&AV.variants(id).some(x=>x.id===v)){CS.hv[id]=v;csave();return true}return false},
  reload:cload,
  save:csave,   // write the current crystals save (used by games that keep their own progress inside it, e.g. CS.evo for SwampRealms: Evolution)
  // how many crystals a finished round pays. game = "fly" | "match" | ...; score = the round's points
@@ -120,7 +135,7 @@ const Crystals={
  equip(id){cload();const it=this.item(id);if(!it||!CS.own[id])return false;CS.eq[it.cat]=CS.eq[it.cat]===id?"":id;csave();return true},
  clear(cat){cload();CS.eq[cat]="";csave()},
  setAnimal(a){cload();if(ANIMALS.some(x=>x.id===a)){CS.animal=a;csave()}},
- outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,bg:CS.eq.bg,acc:accWorn()}}
+ outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,shoes:CS.eq.shoes,bg:CS.eq.bg,hv:CS.hv,acc:accWorn()}}
 };
 
 // ---- Fragments: enemy loot. Saved INSIDE the crystals save (CS.frags = {fragmentId: count}), so they persist in the browser and sync with accounts like everything else.
