@@ -1140,3 +1140,125 @@ header nav .bank.cry b{color:#c8fff4;text-shadow:0 0 12px #4ee6b466}
 /* the message line never makes the list jump, and stays readable */
 #msg{min-height:1.5em;line-height:1.3}
 @media(prefers-reduced-motion:reduce){.avstage.avp,.avbox{animation:none}.pick button svg,.cats button{transition:none}}
+
+/* ===== Avatar screen polish v2 (cos6): animated stage, rarity effects, collection tracker, shuffle ===== */
+@property --a{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes avin{from{opacity:0;transform:translateY(16px) scale(.97)}}
+@keyframes av-spin{to{--a:360deg}}
+@keyframes av-float{50%{translate:0 -6px}}
+@keyframes av-gsh{50%{transform:scaleX(.8);opacity:.3}}
+@keyframes av-shine{0%,60%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(260%) skewX(-18deg)}}
+@keyframes av-twinkle{0%{opacity:0;transform:translateY(10px) scale(.4) rotate(0)}35%{opacity:1}100%{opacity:0;transform:translateY(-36px) scale(1) rotate(120deg)}}
+@keyframes av-card-in{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes av-hop{30%{transform:scale(1.08,1.03) rotate(-1.4deg)}60%{transform:scale(1.03,1.09) rotate(1.2deg)}}
+@keyframes av-ring{from{transform:scale(.6);opacity:.95}to{transform:scale(1.5);opacity:0}}
+@keyframes av-pt{from{transform:translate(0,0) scale(var(--s));opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+@keyframes av-pulse{0%,100%{box-shadow:0 0 0 0 #4ee6b400}50%{box-shadow:0 0 18px 0 #4ee6b499}}
+@keyframes av-epic{0%,100%{box-shadow:inset 0 0 0 0 transparent}50%{box-shadow:inset 0 0 20px -4px var(--rc)}}
+@keyframes av-up{0%{color:#fff;text-shadow:0 0 14px #4ee6b4;transform:scale(1.18)}100%{transform:none}}
+@keyframes av-dn{0%{color:#ffd36a;text-shadow:0 0 14px #ffb300;transform:scale(.88)}100%{transform:none}}
+@keyframes av-title{to{background-position:200% center}}
+@keyframes av-amb{from{background-position:0 0,100% 100%,0 0}to{background-position:30% 20%,70% 80%,0 0}}
+
+/* backdrop: soft drifting colour glow + stronger blur */
+.av-wrap .bag-back{background:radial-gradient(circle at 20% 25%,#4ee6b433,transparent 45%) 0 0/140% 140% no-repeat,radial-gradient(circle at 80% 75%,#a855f733,transparent 45%) 100% 100%/140% 140% no-repeat,#02060ad9;backdrop-filter:blur(7px)}
+#avt{background:linear-gradient(90deg,#fff3d6 0%,#4ee6b4 25%,#fff3d6 50%,#4ee6b4 75%,#fff3d6 100%) 0 0/200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+
+/* stage: floating avatar in a spinning rarity ring, with ground shadow, glare, shine and sparkles */
+.stdock{position:relative;padding-bottom:14px}
+.stwrap{position:relative;border-radius:18px}
+.stwrap::before{content:"";position:absolute;inset:-4px;border-radius:22px;padding:3px;pointer-events:none;z-index:2;opacity:.85;
+ background:conic-gradient(from var(--a),transparent 0 55%,var(--ac,#4ee6b4) 85%,#fff 93%,transparent);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+#sc[data-t="5"] .stwrap::before{background:conic-gradient(from var(--a),#ff4d6d,#ffd36a,#ff4fd8,#a855f7,#4da3ff,#ff4d6d);opacity:1}
+#sc[data-t="4"] .stwrap::before{background:conic-gradient(from var(--a),var(--ac) 0 20%,#fff3b0 30%,var(--ac) 45%,transparent 60%,var(--ac) 85%,#fff3b0 93%,var(--ac));opacity:1}
+.avstage{position:relative;cursor:pointer;transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .18s ease-out,box-shadow .5s;will-change:transform}
+.avstage::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .25s;background:radial-gradient(circle at var(--mx,50%) var(--my,30%),#ffffff2e,transparent 55%)}
+.stwrap:hover .avstage::before{opacity:1}
+.avstage::after{content:"";position:absolute;top:0;bottom:0;left:0;width:34%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,#ffffff30,transparent);transform:translateX(-140%) skewX(-18deg)}
+.gsh{position:absolute;left:14%;right:14%;bottom:0;height:12px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--ac,#4ee6b4) 75%,#000),transparent);filter:blur(5px);opacity:.55}
+.spk{position:absolute;inset:0;pointer-events:none;display:none;z-index:3}
+#sc[data-hi="1"] .spk{display:block}
+.spk i{position:absolute;width:11px;height:11px;background:var(--ac,#fff);opacity:0;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+.spk i:nth-child(1){left:-4%;top:72%}.spk i:nth-child(2){left:6%;top:30%}.spk i:nth-child(3){left:94%;top:62%}.spk i:nth-child(4){left:100%;top:22%}
+.spk i:nth-child(5){left:22%;top:96%}.spk i:nth-child(6){left:78%;top:92%}.spk i:nth-child(7){left:48%;top:-3%}.spk i:nth-child(8){left:-2%;top:8%}
+.burst{position:absolute;inset:0;pointer-events:none;z-index:5;display:grid;place-items:center}
+.bring{position:absolute;width:60%;aspect-ratio:1;border-radius:50%;border:3px solid var(--bc);box-shadow:0 0 18px var(--bc)}
+.bp{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;background:var(--bc);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+
+/* plate + crystal counter + collection tracker */
+.plate b{background:linear-gradient(90deg,#fff,color-mix(in srgb,var(--ac,#4ee6b4) 60%,#fff));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.aura{background:color-mix(in srgb,var(--ac,#ffffff) 14%,transparent);box-shadow:0 0 14px -4px var(--ac,transparent)}
+#sc[data-t="5"] .aura{background:linear-gradient(90deg,#ff4d6d33,#ffd36a33,#a855f733);border-color:#ff4d6d}
+.gems b{display:inline-block;min-width:2ch;font-variant-numeric:tabular-nums}
+.acts{display:flex}.acts .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;min-height:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.acts .btn svg{width:17px;height:17px;flex:none;transition:transform .5s}
+.acts .btn:hover svg{transform:rotate(180deg)}
+.coll{display:grid;gap:7px;padding:10px 12px;border-radius:12px;background:#0a100c;border:1px solid #ffffff18}
+.coll-t{display:flex;justify-content:space-between;align-items:center;font:900 11px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.coll-t b{color:#e7f4ee;font-size:13px;letter-spacing:.06em}
+.cseg{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.cseg i{position:relative;overflow:hidden;height:7px;border-radius:4px;background:#ffffff14}
+.cseg i::after{content:"";position:absolute;inset:0;width:var(--p,0%);background:var(--c);box-shadow:0 0 8px var(--c);transition:width .7s cubic-bezier(.2,.9,.3,1)}
+.cseg i.full{box-shadow:0 0 10px -2px var(--c)}
+
+/* slots + tabs + animal picker */
+.slots .slot{border-left:3px solid var(--rc,#ffffff1a);transition:transform .2s,border-color .2s,box-shadow .2s}
+.slots .slot:hover{transform:translateY(-2px)}
+.cats button{display:inline-flex;align-items:center;gap:7px}
+.cats button i{font-style:normal;padding:1px 7px;border-radius:999px;background:#ffffff14;font-size:10px;letter-spacing:.04em;color:var(--muted)}
+.cats button[aria-selected=true] i{background:#4ee6b433;color:#c8fff4}
+.cats button.done i{background:#f2c14e33;color:#ffe9b0}.cats button.done i::before{content:"\2713 "}
+.pick button svg{transition:transform .3s cubic-bezier(.2,.9,.3,1.4),border-color .2s,box-shadow .2s}
+.pick button:hover svg{transform:translateY(-3px) scale(1.05)}
+.pick button[aria-pressed=true] svg{transform:translateY(-4px) scale(1.07)}
+
+/* item cards */
+.items .it{transition:transform .3s cubic-bezier(.2,.9,.3,1.3),box-shadow .3s}
+.it .art{position:relative}
+.it .art svg{transition:transform .5s ease}
+.it .art::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,#ffffff38,transparent);transform:translateX(-150%) skewX(-18deg)}
+.it:hover .art svg{transform:scale(1.07)}
+.it:hover .art::after{transition:transform .7s ease;transform:translateX(320%) skewX(-18deg)}
+@media(hover:hover){.it:hover{transform:translateY(-5px);box-shadow:0 18px 30px -14px var(--rc),0 0 0 1px color-mix(in srgb,var(--rc) 65%,transparent)}}
+.it.eq,.it.eq:hover{box-shadow:0 0 0 2px var(--rc),0 0 26px -4px var(--rc)}
+.tag{padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--rc) 16%,transparent);border:1px solid color-mix(in srgb,var(--rc) 45%,transparent)}
+.it.own .tag::after{content:" \00B7  Owned";color:#b9cfc7}
+.it.eq .tag::after{content:" \00B7  Equipped";color:#fff}
+.it[data-t="3"]::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none}
+.it[data-t="4"]::after,.it[data-t="5"]::after{content:"";position:absolute;inset:-1px;border-radius:15px;padding:2px;pointer-events:none;
+ background:conic-gradient(from var(--a),transparent 0 55%,var(--rc) 85%,#fff 93%,transparent);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.it[data-t="5"]::after{background:conic-gradient(from var(--a),#ff4d6d,#ffd36a,#ff4fd8,#a855f7,#4da3ff,#ff4d6d)}
+.it:not(.own):not(.no) .buy{border-color:#4ee6b4aa}
+
+/* phones: the dock holds the stage size (the ring wraps the dock, not a wider box) */
+@media(max-width:819px){
+ .avbox .avstage{width:auto;justify-self:auto}
+ .avbox .stdock{width:min(100%,250px);justify-self:center}
+}
+
+/* motion only for people who have not asked to reduce it */
+@media(prefers-reduced-motion:no-preference){
+ .avbox{animation:avin .35s cubic-bezier(.2,.9,.3,1)}
+ .av-wrap .bag-back{animation:av-amb 14s ease-in-out infinite alternate}
+ #avt{animation:av-title 7s linear infinite}
+ .stwrap{animation:av-float 5s ease-in-out infinite}
+ .gsh{animation:av-gsh 5s ease-in-out infinite}
+ .stwrap::before{animation:av-spin 5s linear infinite}
+ #sc[data-t="4"] .stwrap::before{animation-duration:3.2s}
+ #sc[data-t="5"] .stwrap::before{animation-duration:2.6s}
+ .avstage::after{animation:av-shine 6s ease-in-out infinite}
+ .avstage.hop svg{animation:av-hop .55s ease-out}
+ .spk i{animation:av-twinkle 3.2s ease-out infinite}
+ .spk i:nth-child(2){animation-delay:.4s}.spk i:nth-child(3){animation-delay:.9s}.spk i:nth-child(4){animation-delay:1.3s}.spk i:nth-child(5){animation-delay:1.8s}.spk i:nth-child(6){animation-delay:2.2s}.spk i:nth-child(7){animation-delay:2.6s}.spk i:nth-child(8){animation-delay:3s}
+ .bring{animation:av-ring .8s ease-out forwards}
+ .bp{animation:av-pt .85s ease-out forwards}
+ .gems b.up{animation:av-up .7s ease-out}.gems b.dn{animation:av-dn .7s ease-out}
+ .it.ent{animation:av-card-in .5s cubic-bezier(.2,.9,.3,1) backwards;animation-delay:calc(var(--i,0)*45ms)}
+ .it[data-t="3"]::after{animation:av-epic 3s ease-in-out infinite}
+ .it[data-t="4"]::after{animation:av-spin 4s linear infinite}
+ .it[data-t="5"]::after{animation:av-spin 2.6s linear infinite}
+ .it:not(.own):not(.no) .buy{animation:av-pulse 2.4s ease-in-out infinite}
+}
+@media(prefers-reduced-motion:reduce){.avstage{transition:none}.stwrap::before{opacity:.7}}

@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="ui.css?v=armory3">
+<link rel="stylesheet" href="ui.css?v=cos6">
 </head>
 <body>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -55,9 +55,11 @@
   <p class="sub">Pick your swamp animal and gear up. Crystals come from every Swamp Adventure run, with no daily limit.</p>
   <div class="av2">
   <div class="stagecard" id="sc">
-   <div class="avstage" id="stage"></div>
+   <div class="stdock"><div class="stwrap" id="stwrap"><div class="avstage" id="stage" title="Tap me!"></div><div class="spk" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><i class="gsh" aria-hidden="true"></i></div>
    <div class="plate"><b id="an"></b><span class="aura" id="aura"></span></div>
+   <div class="acts"><button type="button" class="btn ghost" data-shuf><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>Shuffle look</button></div>
    <div class="gems"><span class="gem"></span><b id="gn">0</b><small>Swamp Crystals</small></div>
+   <div class="coll"><div class="coll-t"><span>Collection</span><b id="cnum">0 / 0</b></div><div class="cseg" id="cseg" aria-hidden="true"></div></div>
    <div class="pvbar" id="pvbar" hidden><span id="pvt"></span><button type="button" class="btn ghost" data-pvx>Reset</button></div>
    <div class="slots" id="slots" role="tablist" aria-label="Gear slots"></div>
   </div>
@@ -110,28 +112,46 @@
 <script>
 (function(){
 const $=id=>document.getElementById(id),T=["Common","Uncommon","Rare","Epic","Legendary","Mythical"],RC=["#9aa4a0","#4ade80","#4da3ff","#a855f7","#ff9f1c","#ff4d6d"];
-const tr=i=>T.indexOf(Crystals.tier(i.price));let cat="hat",pv={},miniHide=false;   // pv = items being tried on (not saved, not owned): { hat:"crown", ... }
+const tr=i=>T.indexOf(Crystals.tier(i.price));let cat="hat",pv={},miniHide=false,lastCat=null;   // pv = items being tried on (not saved, not owned): { hat:"crown", ... }
 function msg(t){$("msg").textContent=t}
+const RED=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
+const cc=k=>{const l=Crystals.items.filter(i=>i.cat===k),o=l.filter(i=>Crystals.owns(i.id)).length;return{t:o+"/"+l.length,d:l.length>0&&o===l.length}};
+let shown=null,gt=0;
+function countGems(v){const el=$("gn");if(shown===null||RED()){el.textContent=v;shown=v;return}
+ if(v===shown)return;const from=shown;shown=v;cancelAnimationFrame(gt);const t0=performance.now(),d=Math.min(800,260+Math.abs(v-from)*4);
+ el.classList.remove("up","dn");void el.offsetWidth;el.classList.add(v<from?"dn":"up");
+ const st=t=>{const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,3);el.textContent=Math.round(from+(v-from)*e);if(k<1)gt=requestAnimationFrame(st)};gt=requestAnimationFrame(st)}
+function coll(){const C=Crystals,n=C.items.length,o=C.items.filter(i=>C.owns(i.id)).length,sg=$("cseg");$("cnum").textContent=o+" / "+n;
+ if(sg.children.length!==6)sg.innerHTML=T.map(()=>"<i></i>").join("");
+ T.forEach((nm,ti)=>{const l=C.items.filter(i=>tr(i)===ti),w=l.filter(i=>C.owns(i.id)).length,e=sg.children[ti];e.style.setProperty("--c",RC[ti]);e.style.setProperty("--p",(l.length?w/l.length*100:0)+"%");e.title=nm+": "+w+"/"+l.length;e.classList.toggle("full",l.length>0&&w===l.length)})}
+function burst(){const w=$("stwrap");if(!w||RED())return;const c=(getComputedStyle($("sc")).getPropertyValue("--ac")||"").trim()||"#4ee6b4",b=document.createElement("div");b.className="burst";b.style.setProperty("--bc",c);
+ let h='<i class="bring"></i>';for(let i=0;i<16;i++){const a=i/16*6.283+Math.random()*.4,d=70+Math.random()*70;h+='<i class="bp" style="--dx:'+(Math.cos(a)*d|0)+'px;--dy:'+(Math.sin(a)*d|0)+'px;--s:'+(.6+Math.random()*.9).toFixed(2)+'"></i>'}
+ b.innerHTML=h;w.appendChild(b);setTimeout(()=>b.remove(),950)}
+function hop(){const s=$("stage");s.classList.remove("hop");void s.offsetWidth;s.classList.add("hop")}
+function shuffle(){const C=Crystals,ks=Object.keys(C.cats),pick=k=>{const l=C.items.filter(i=>i.cat===k);return l.length?l[Math.random()*l.length|0].id:null};pv={};
+ ks.forEach(k=>{if(Math.random()<.7){const id=pick(k);if(id)pv[k]=id}});if(!Object.keys(pv).length){const k=ks[Math.random()*ks.length|0],id=pick(k);if(id)pv[k]=id}
+ msg("Shuffled! Tap any piece you like to buy it, or shuffle again.")}
 function draw(){
  const C=Crystals,S=C.state,o=Object.assign(C.outfit(),pv),E=Object.assign({},S.eq,pv),npv=Object.keys(pv).length,eqd=Object.keys(C.cats).map(k=>C.item(E[k])).filter(Boolean);
  const top=eqd.length?Math.max(...eqd.map(tr)):-1,ac=top>=0?RC[top]:"#4ee6b4";
- $("sc").style.setProperty("--ac",ac);$("stage").innerHTML=AV.svg(o);$("gn").textContent=C.balance;
+ $("sc").style.setProperty("--ac",ac);$("stage").innerHTML=AV.svg(o);countGems(C.balance);$("sc").dataset.t=top;$("sc").dataset.hi=top>=3?1:0;coll();
  $("an").textContent=C.animals.find(a=>a.id===o.animal).name;$("aura").textContent=(npv?"Preview · ":"")+(top>=0?T[top]+" aura":"No gear");
  $("pvbar").hidden=!npv;$("pvt").textContent=npv?"Trying on: "+Object.values(pv).map(id=>C.item(id).name).join(", "):"";
  $("pvmini").hidden=!npv||miniHide;$("pvmv").innerHTML=npv?AV.svg(o).replace('viewBox="0 0 200 200"','viewBox="22 4 156 156"'):"";
  $("slots").innerHTML=Object.entries(C.cats).map(([k,n])=>{const it=C.item(E[k]);return `<button type="button" role="tab" class="slot${pv[k]?" pv":""}" data-c="${k}" aria-selected="${k===cat}"${it?` style="--rc:${RC[tr(it)]}"`:""}><small>${n}</small><b>${it?it.name:"Empty"}</b>${pv[k]?"<small>Preview</small>":""}</button>`}).join("");
  $("pick").innerHTML=C.animals.map(a=>`<button type="button" data-a="${a.id}" aria-pressed="${a.id===o.animal}" aria-label="${a.name}">${AV.svg({animal:a.id})}${a.name.split(" ")[0]}</button>`).join("");
- $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}" tabindex="${k===cat?0:-1}">${n}</button>`).join("");
- $("items").innerHTML=C.items.filter(i=>i.cat===cat).map(i=>{
+ $("cats").innerHTML=Object.entries(C.cats).map(([k,n])=>`<button type="button" role="tab" data-c="${k}" aria-selected="${k===cat}" tabindex="${k===cat?0:-1}"${cc(k).d?' class="done"':""}>${n}<i>${cc(k).t}</i></button>`).join("");
+ const ent=lastCat!==cat;lastCat=cat;
+ $("items").innerHTML=C.items.filter(i=>i.cat===cat).sort((a,b)=>tr(a)-tr(b)||a.price-b.price).map((i,ix)=>{
   const own=C.owns(i.id),on=S.eq[cat]===i.id,can=C.balance>=i.price,t=tr(i);
   const btn=own?(on?"Equipped &#10003;":"Equip"):`<span class="gem"></span>${i.price}`,short=i.price-C.balance;
-  return `<div class="it${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" style="--rc:${RC[t]}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id,C.variant(i.id))}</div>${AV.variants(i.id).length?`<div class="vs" role="group" aria-label="${i.name} colours">${AV.variants(i.id).map(v=>`<button type="button" class="vsw" data-vi="${i.id}" data-vv="${v.id}" style="--vc:${v.color}" aria-label="${v.name}" aria-pressed="${C.variant(i.id)===v.id}" title="${v.name}"></button>`).join("")}</div>`:""}<span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}"${on?` aria-pressed="true" aria-label="${i.name} equipped, tap to remove"`:""}${!own&&!can?` aria-label="${i.name}, ${i.price} crystals, you need ${short} more"`:""}>${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog" role="img" aria-label="${Math.round(C.balance/i.price*100)} percent saved"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div><small class="need">${short} more to unlock</small>`:""}</div>`}).join("");
+  return `<div class="it${ent?" ent":""}${own?" own":""}${on?" eq":""}${!own&&!can?" no":""}" data-t="${t}" style="--rc:${RC[t]};--i:${Math.min(ix,14)}"><div class="art"${own?"":` data-p="${i.id}"`}>${AV.item(i.id,C.variant(i.id))}</div>${AV.variants(i.id).length?`<div class="vs" role="group" aria-label="${i.name} colours">${AV.variants(i.id).map(v=>`<button type="button" class="vsw" data-vi="${i.id}" data-vv="${v.id}" style="--vc:${v.color}" aria-label="${v.name}" aria-pressed="${C.variant(i.id)===v.id}" title="${v.name}"></button>`).join("")}</div>`:""}<span class="tag">${T[t]}</span><b>${i.name}</b><button type="button" class="buy" data-i="${i.id}"${on?` aria-pressed="true" aria-label="${i.name} equipped, tap to remove"`:""}${!own&&!can?` aria-label="${i.name}, ${i.price} crystals, you need ${short} more"`:""}>${btn}</button>${own?"":`<button type="button" class="try" data-p="${i.id}" aria-pressed="${pv[cat]===i.id}">${pv[cat]===i.id?"Trying on · tap to remove":"Try on"}</button>`}${!own&&!can?`<div class="prog" role="img" aria-label="${Math.round(C.balance/i.price*100)} percent saved"><i style="width:${Math.round(C.balance/i.price*100)}%"></i></div><small class="need">${short} more to unlock</small>`:""}</div>`}).join("");
  try{loadoutPaint()}catch(e){}
 }
-function flash(){const s=$("stage");s.classList.remove("avp");void s.offsetWidth;s.classList.add("avp")}
+function flash(){const s=$("stage");s.classList.remove("avp");void s.offsetWidth;s.classList.add("avp");burst()}
 const togglePv=id=>{const it=Crystals.item(id);if(!it||Crystals.owns(id))return false;if(pv[it.cat]===id){delete pv[it.cat];msg("")}else{pv[it.cat]=id;msg("Trying on "+it.name+". Buy it to keep it.")}return true};
 const root=$("avatar");
-function openAv(){draw();root.hidden=false;document.documentElement.classList.add("av-open");const b=root.querySelector(".bag-x");if(b)b.focus({preventScroll:true})}
+function openAv(){lastCat=null;draw();root.hidden=false;document.documentElement.classList.add("av-open");const b=root.querySelector(".bag-x");if(b)b.focus({preventScroll:true})}
 function closeAv(){root.hidden=true;document.documentElement.classList.remove("av-open");if(location.hash==="#avatar")history.replaceState(null,"",location.pathname+location.search);const h=$("lo-hero");if(h)h.focus({preventScroll:true})}
 const hero=$("lo-hero");
 if(hero){hero.addEventListener("click",openAv);hero.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openAv()}})}
@@ -146,10 +166,12 @@ addEventListener("keydown",e=>{
 const hashOpen=()=>{if(location.hash==="#avatar")openAv()};addEventListener("hashchange",hashOpen);hashOpen();
 root.addEventListener("click",e=>{
  if(e.target.closest("[data-avx]")){closeAv();return}
+ if(e.target.closest("#stage")){hop();return}
  const art=e.target.closest(".art[data-p]");
  if(art&&!e.target.closest("button")){togglePv(art.dataset.p);draw();flash();return}
  const t=e.target.closest("button");if(!t)return;const C=Crystals;C.reload();let f=false;
   if(t.dataset.pvx!==undefined){pv={};msg("");f=true}
+ else if(t.dataset.shuf!==undefined){shuffle();f=true}
  else if(t.dataset.vi){f=C.setVariant(t.dataset.vi,t.dataset.vv)}
  else if(t.dataset.p){f=togglePv(t.dataset.p)}
  else if(t.dataset.a){C.setAnimal(t.dataset.a);msg("");f=true}
@@ -166,6 +188,10 @@ root.addEventListener("keydown",e=>{const t=e.target.closest("#cats button");if(
 $("pvmini").addEventListener("click",()=>$("stage").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth",block:"center"}));
 // on a phone the avatar scrolls out of sight while you browse: show a small floating preview that jumps back up
 
+(function(){const w=$("stwrap");if(!w)return;
+ w.addEventListener("pointermove",e=>{if(e.pointerType!=="mouse"||RED())return;const r=w.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+  w.style.setProperty("--rx",(-y*10).toFixed(1)+"deg");w.style.setProperty("--ry",(x*12).toFixed(1)+"deg");w.style.setProperty("--mx",((x+.5)*100).toFixed(0)+"%");w.style.setProperty("--my",((y+.5)*100).toFixed(0)+"%")});
+ w.addEventListener("pointerleave",()=>{w.style.setProperty("--rx","0deg");w.style.setProperty("--ry","0deg")})})();
 try{new IntersectionObserver(es=>{miniHide=es[0].isIntersecting;$("pvmini").hidden=!Object.keys(pv).length||miniHide}).observe($("sc"))}catch(e){}
 draw();
 })();

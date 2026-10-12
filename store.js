@@ -456,7 +456,7 @@ function gearThumb(g){
 // a gear tab (Weapons, Armor...): one card per owned item with icon, rarity, stats, description, equipped status and an Equip / Unequip button
 let bagGearMsg="";
 function bagPaintGear(panel,slot){
- const items=Gear.list(slot).sort((a,b)=>(b.equipped-a.equipped)||((["helmet","chest","boots","ring","necklace","bandana"].indexOf(a.part)-["helmet","chest","boots","ring","necklace","bandana"].indexOf(b.part))||a.name.localeCompare(b.name)));
+ const RO=["common","uncommon","rare","epic","legendary","mythical"],items=Gear.list(slot).sort((a,b)=>(RO.indexOf(a.rarity)-RO.indexOf(b.rarity))||(["helmet","chest","boots","ring","necklace","bandana"].indexOf(a.part)-["helmet","chest","boots","ring","necklace","bandana"].indexOf(b.part))||a.name.localeCompare(b.name));
  const list=document.createElement("div");list.className="gr-list";
  items.forEach(g=>{
   const row=document.createElement("div");row.className="gr-row"+(g.equipped?" on":"");row.style.setProperty("--c",g.color);
@@ -859,7 +859,7 @@ function armoryPaintWeapons(){
  if(!wpEl)return;
  const panel=wpEl.querySelector("#arpanel"),keep=panel.scrollTop;
  panel.textContent="";
- const items=Gear.list("weapons").sort((a,b)=>(b.equipped-a.equipped)||a.name.localeCompare(b.name));
+ const RO=["common","uncommon","rare","epic","legendary","mythical"],items=Gear.list("weapons").sort((a,b)=>(RO.indexOf(a.rarity)-RO.indexOf(b.rarity))||a.name.localeCompare(b.name));
  const sync=()=>{armoryPaint()};
  if(!items.length){
   const p=document.createElement("p");p.className="bg-note rh-intro";p.textContent="You don't have a weapon yet. Craft your first one from fragments that enemies drop in the Swamp Adventure. Closest first:";panel.appendChild(p);
