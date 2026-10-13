@@ -45,7 +45,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-slot i{position:absolute;left:4px;top:2px;font-style:normal;font-size:.62rem;font-weight:800;color:#f6eedb88}
 .sbx-slot b{position:absolute;right:4px;bottom:1px;font-size:.7rem;font-weight:800;text-shadow:0 1px 2px #000}
 .sbx-slot.on{border-color:#f2c14e;background:#1b2a14;box-shadow:0 0 14px -4px #f2c14e}
-@media(max-width:420px){.sbx-slot{width:41px;height:41px}.sbx-slot img{width:26px;height:26px}}
+@media(max-width:420px){.sbx-slot{width:43px;height:43px}.sbx-slot img{width:27px;height:27px}}
 
 /* ---- touch pad (phones and tablets only) ---- */
 .sbx-pad{display:none;position:absolute;left:10px;right:10px;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 64px);justify-content:space-between;align-items:flex-end;pointer-events:none}
@@ -151,3 +151,33 @@ body.sbx-app footer{margin-top:28px}
 .sbx-goal .rw{color:#f2c14e;margin-top:3px}
 .sbx-goal>div{min-width:0;flex:1}
 @media(prefers-reduced-motion:reduce){.bar>i{transition:none}}
+.sbx-stage.panel .sbx-trail{display:none}
+
+/* ---- short landscape phones: use the whole screen, smaller controls ---- */
+@media(max-height:520px) and (orientation:landscape){
+ body.sbx-app>header{display:none}
+ .sbx-stage{height:100dvh;min-height:0;margin:0;border-radius:0;border:0}
+ .sbx-ibtn{width:38px;height:38px}
+ .sbx-slot{width:40px;height:40px}.sbx-slot img{width:25px;height:25px}
+ .sbx-bar{bottom:max(6px,env(safe-area-inset-bottom));padding:4px;gap:4px}
+ .sbx-pad{left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:max(6px,env(safe-area-inset-bottom))}
+ .sbx-pad button{width:56px;height:56px}.sbx-pad .jump{width:64px;height:64px}
+ .sbx-pad button svg{width:26px;height:26px}
+ .sbx-hint{bottom:calc(max(6px,env(safe-area-inset-bottom)) + 58px)}
+ .sbx-trail{width:150px;padding:6px 9px 7px;top:calc(max(8px,env(safe-area-inset-top)) + 46px)}
+ .sbx-trail b{font-size:.84rem}
+}
+
+/* ---- health bar (top right, under the bag button) ---- */
+.sbx-hp{position:absolute;right:8px;top:calc(max(8px,env(safe-area-inset-top)) + 50px);display:flex;align-items:center;gap:7px;width:138px;padding:6px 10px 6px 8px;border-radius:14px;background:linear-gradient(160deg,rgba(14,34,28,.78),rgba(4,10,8,.7));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px -10px #000;pointer-events:none;color:#ff6b6b;z-index:2}
+.sbx-hp svg{flex:none;width:18px;height:18px;filter:drop-shadow(0 0 5px rgba(255,90,90,.6))}
+.sbx-hp .trk{flex:1;min-width:0;height:10px;border-radius:99px;background:rgba(0,0,0,.55);overflow:hidden;box-shadow:inset 0 1px 2px #000}
+.sbx-hp .trk i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(180deg,#7dffb0,#2fc46a);transition:width .25s}
+.sbx-hp.mid .trk i{background:linear-gradient(180deg,#ffe48a,#f2b134)}
+.sbx-hp.low .trk i{background:linear-gradient(180deg,#ff8a7a,#e0342b)}
+.sbx-hp.low{border-color:#ff6b6b99;animation:sbxLow 1.1s ease-in-out infinite}
+@keyframes sbxLow{50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 18px -2px #ff4a4a}}
+.sbx-hp b{flex:none;min-width:2ch;text-align:right;font:800 .8rem Nunito,system-ui,sans-serif;color:#f6eedb}
+@media(max-height:520px) and (orientation:landscape){.sbx-hp{top:calc(max(8px,env(safe-area-inset-top)) + 46px);width:124px;padding:4px 8px 4px 6px}}
+@media(prefers-reduced-motion:reduce){.sbx-hp .trk i{transition:none}.sbx-hp.low{animation:none}}
+.sbx-toast,.sbx-banner{z-index:3}

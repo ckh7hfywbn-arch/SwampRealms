@@ -13,6 +13,8 @@
 
   // ---------- TUNING ----------
   var KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
+  // health: tuning (a player has MAXHP; fall hits past FALL_SAFE speed, lava burns per second, then you heal after a calm spell)
+  var MAXHP = 100, FALL_SAFE = 17, LAVA_DPS = 38, REGEN_WAIT = 4, REGEN_RATE = 2.5;
   var PICKS = [
     { n: "Bare Paws", c: "#8fd37a", sp: 0.55 }, { n: "Reed Pick", c: "#c9b58a", sp: 1 }, { n: "Glowspore Pick", c: "#4ee6b4", sp: 1.8 },
     { n: "Cinder Pick", c: "#ff8a3d", sp: 2.8 }, { n: "Frost Pick", c: "#7fd6ff", sp: 4.2 }
@@ -71,15 +73,16 @@
   var cam = { x: 40, y: 34 }, keys = { l: 0, r: 0, j: 0 }, tk = { l: 0, r: 0, j: 0 };
   var sel = "pick", mine = null, aim = { down: false, id: null, mx: 0, my: 0, tx: -1, ty: -1 }, cool = 0;
   var parts = [], texts = [], flies = [], glows = [];
+  var hp = MAXHP, hurtT = 0, hurtGrace = 0, sinceHurt = 99, shake = 0, shownHp = -1, HVIG = null;
   var vw = 800, vh = 600, dpr = 1, ts = 28, ox = 0, oy = 0;
   var panelOpen = false, tab = "craft", hbDirty = true, lastBio = -1, hudT = 0, saveT = 0, msT = 0, nagT = 0, exKey = "", sprite = null, spriteKey = "", confirmNew = false;
-  var ICO = {}, ATLAS, bannerQ = [], bannerBusy = false, guide = null, guideT = 0, trailKey = "";
+  var ICO = {}, ATLAS, bannerQ = [], bannerBusy = false, guide = null, guideT = 0, trailKey = "", PCV = [], heldAmt = 0, heldPh = 0;
 
   // ---------- SAVE / LOAD ----------
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, seed: seed, e: "", ex: "", p: null, animal: defaultAnimal(), inv: {}, mru: [], tier: 0, trail: 0, time: 60, ms: {}, st: { mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0 }, zoom: 1 }; }
+  function fresh(seed) { return { v: 2, seed: seed, e: "", ex: "", p: null, animal: defaultAnimal(), inv: {}, mru: [], tier: 0, trail: 0, hp: MAXHP, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0 }, zoom: 1 }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
@@ -90,6 +93,7 @@
     if (Array.isArray(o.mru)) d.mru = o.mru.filter(function (k) { return ITEMS[k] && ITEMS[k].tile !== undefined; }).slice(0, 20);
     var tr = Math.floor(+o.tier); d.tier = clamp(isFinite(tr) ? tr : 1, o.v >= 2 ? 0 : 1, 4);
     d.trail = typeof o.trail === "number" ? clamp(Math.floor(o.trail), 0, TRAIL.length) : TRAIL.length;   // older saves skip the beginner Trail
+    d.hp = isFinite(+o.hp) && +o.hp > 0 ? Math.min(MAXHP, +o.hp) : MAXHP;   // older saves start at full health
     d.time = clamp(+o.time || 60, 0, CYCLE - 0.01);
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
@@ -107,10 +111,12 @@
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
     cam.x = p.x; cam.y = p.y - 1; sel = "pick"; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.trail < TRAIL.length ? "trail" : "craft"; hbDirty = true; exKey = ""; spriteKey = ""; ICO = {};
+    hp = S.hp; hurtT = hurtGrace = shake = 0; sinceHurt = 99; shownHp = -1; drawHp();
     reveal(true);
   }
   function save() {
     try {
+      S.hp = Math.max(1, Math.round(hp));
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
       S.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(",");
       S.ex = rle(ex);
@@ -225,6 +231,47 @@
     if (id === T.BEDROCK) for (k = 0; k < 9; k++) rect(Math.floor(hh(k, 0, 6) * 14), Math.floor(hh(k, 1, 7) * 14), 2, 2, td.c2);
     if (td.solid && kind !== "leaves") rect(0, 15, 16, 1, "#000", 0.16);
   }
+  // Each pick is styled after what it is made from: Reed (reed stalk + pebble head), Glowspore (glowing green crystal),
+  // Cinder (charred handle, basalt head with lava veins), Frost (ice crystal). 32x32 canvas.
+  function drawPickIcon(g, tier) {
+    var P = [null,
+      { h1: "#d8c48e", h2: "#a8905a", hl: "#f4e8bf", head: "#8e969b", head2: "#c3c9cc", edge: "#4a5256" },
+      { h1: "#5a3d26", h2: "#3a2616", hl: "#8a6440", head: "#1fbf93", head2: "#9bfbe0", edge: "#0b5d48" },
+      { h1: "#2a2024", h2: "#150f12", hl: "#5a464e", head: "#3b3036", head2: "#ff8a3d", edge: "#120c0f" },
+      { h1: "#bfe9f7", h2: "#7fcfe8", hl: "#ffffff", head: "#7fd6ff", head2: "#e6fbff", edge: "#2f7fa3" }][tier];
+    var line = function (x1, y1, x2, y2, c, w) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
+    // handle
+    line(6, 28, 19, 12, P.edge, 5.2); line(6, 28, 19, 12, P.h2, 3.8); line(6.4, 27.4, 18.6, 12.2, P.h1, 2.2); line(7, 26, 12, 19.8, P.hl, 1);
+    var crescent = function (fill, stroke) {
+      g.beginPath(); g.moveTo(3, 16); g.quadraticCurveTo(13, -1, 30, 9); g.quadraticCurveTo(15, 6.5, 8, 21); g.quadraticCurveTo(6, 19, 3, 16); g.closePath();
+      g.fillStyle = fill; g.fill(); g.strokeStyle = stroke; g.lineWidth = 1.6; g.lineJoin = "round"; g.stroke();
+    };
+    if (tier === 1) {
+      line(15, 18, 20, 12, "#4f8a3c", 3.4); line(10, 24, 14, 19, "#4f8a3c", 3); line(15.4, 17.6, 19.6, 12.4, "#8fd37a", 1);   // fiber lashings
+      crescent(P.head, P.edge); g.strokeStyle = P.head2; g.lineWidth = 1.4; g.beginPath(); g.moveTo(7, 13.5); g.quadraticCurveTo(14, 5.5, 24, 8); g.stroke();
+      g.fillStyle = "#5d666b"; g.fillRect(12, 8, 2, 2); g.fillRect(19, 9, 2, 1);
+      line(15, 14, 21, 12.5, "#4f8a3c", 3.6); line(15.5, 13.8, 20.5, 12.7, "#8fd37a", 1.2);
+    } else if (tier === 2) {
+      g.shadowColor = "#4ee6b4"; g.shadowBlur = 7; crescent(P.head, P.edge); g.shadowBlur = 0;
+      g.fillStyle = P.head2; [[11, 5.8, 12, 9], [18, 4.6, 19.2, 8.6]].forEach(function (c) { g.beginPath(); g.moveTo(c[0], c[3] + 1); g.lineTo(c[0] + 1.6, c[1]); g.lineTo(c[2] + 2.4, c[3] + 1); g.closePath(); g.fill(); });
+      g.strokeStyle = P.head2; g.lineWidth = 1.3; g.beginPath(); g.moveTo(6.5, 14.5); g.quadraticCurveTo(14, 5, 26, 8.5); g.stroke();
+      g.fillStyle = "#d8fff6"; g.fillRect(24, 5, 2, 2); g.fillRect(3, 12, 1.5, 1.5);   // glints
+      g.fillStyle = "#4ee6b4"; g.fillRect(8, 24, 2, 2); g.fillRect(12, 28, 1.5, 1.5);  // spore specks on the handle
+    } else if (tier === 3) {
+      crescent(P.head, P.edge);
+      g.strokeStyle = "#ff6a1f"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(6.5, 15); g.lineTo(11, 11); g.lineTo(14, 12); g.lineTo(19, 8); g.lineTo(25, 8.6); g.stroke();   // lava vein
+      g.strokeStyle = "#ffc24a"; g.lineWidth = 0.8; g.stroke();
+      g.shadowColor = "#ff8a3d"; g.shadowBlur = 6; g.fillStyle = "#ffb13b"; g.fillRect(28, 8, 2, 2); g.shadowBlur = 0;
+      line(9, 24, 12, 20.5, "#ff6a1f", 1.2); line(14, 18, 16.5, 14.8, "#ff8a3d", 1);   // glowing cracks in the handle
+      g.fillStyle = "#ffc24a"; g.fillRect(4, 8, 1.5, 1.5); g.fillRect(25, 2, 1.5, 1.5); g.fillRect(2, 22, 1.2, 1.2);   // embers
+    } else {
+      g.shadowColor = "#bff4ff"; g.shadowBlur = 8; crescent(P.head, P.edge); g.shadowBlur = 0;
+      g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.moveTo(5, 15); g.quadraticCurveTo(13, 3.5, 24, 7); g.quadraticCurveTo(14, 7.5, 8.5, 17.5); g.closePath(); g.fill();
+      g.strokeStyle = P.edge; g.lineWidth = 0.9; g.beginPath(); g.moveTo(12, 8); g.lineTo(14, 11); g.moveTo(19, 7.4); g.lineTo(18, 10.2); g.stroke();   // ice facets
+      g.fillStyle = "#fff"; g.fillRect(27, 5, 1.6, 4); g.fillRect(25.8, 6.2, 4, 1.6); g.fillRect(4, 8, 1, 3); g.fillRect(3, 9, 3, 1);   // sparkles
+      line(8, 27, 11, 23.4, "#ffffffaa", 1.2);
+    }
+  }
   function icon(id) {
     var key = id === "pick" ? "pick" + S.tier : id;
     if (ICO[key]) return ICO[key];
@@ -234,10 +281,7 @@
       [[16, 20, 7.5, 6.2], [7.5, 12.5, 2.9, 3.6], [13, 7.6, 2.9, 3.6], [19.5, 7.6, 2.9, 3.6], [25, 12.5, 2.9, 3.6]].forEach(function (e) { g.beginPath(); g.ellipse(e[0], e[1], e[2], e[3], 0, 0, 6.2832); g.fill(); g.stroke(); });
       g.fillStyle = "#c9f2b4"; g.beginPath(); g.ellipse(14, 18, 3, 2, -0.5, 0, 6.2832); g.fill();
     } else if (id === "pick") {
-      var pk = PICKS[S.tier];
-      g.strokeStyle = "#8a5a32"; g.lineWidth = 4; g.lineCap = "round"; g.beginPath(); g.moveTo(9, 26); g.lineTo(22, 10); g.stroke();
-      g.strokeStyle = pk.c; g.lineWidth = 4; g.beginPath(); g.arc(18, 14, 10, Math.PI * 1.05, Math.PI * 1.75); g.stroke();
-      g.strokeStyle = "#ffffff55"; g.lineWidth = 1.5; g.beginPath(); g.arc(18, 14, 11.5, Math.PI * 1.15, Math.PI * 1.55); g.stroke();
+      drawPickIcon(g, S.tier);
     } else if (ITEMS[id].mat) {
       var mt = ITEMS[id].mat; g.lineCap = "round";
       if (mt === "stick") { [[7, 26, 25, 7, "#8a5a32", 4], [10, 9, 24, 25, "#6a4426", 3.4]].forEach(function (l) { g.strokeStyle = l[4]; g.lineWidth = l[5]; g.beginPath(); g.moveTo(l[0], l[1]); g.lineTo(l[2], l[3]); g.stroke(); }); g.strokeStyle = "#c9935a"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(8, 24); g.lineTo(23, 8); g.stroke(); }
@@ -327,6 +371,7 @@
     if (!aim.down || aim.tx < 0) { mine = null; return; }
     var tx = aim.tx, ty = aim.ty, dx = tx + 0.5 - p.x, dy = ty + 0.5 - (p.y - PH / 2);
     if (dx * dx + dy * dy > REACH * REACH) { mine = null; return; }
+    if (Math.abs(dx) > 0.35) p.face = dx < 0 ? -1 : 1;   // turn to face what you are digging or building
     if (sel === "pick") {
       var id = get(tx, ty), td = TILES[id];
       if (id === T.BEDROCK) { nag("Bedrock can't be broken."); mine = null; return; }
@@ -402,6 +447,23 @@
     checkTrail();
     GOALS.forEach(function (g) { if (!S.ms[g.id] && g.f()) { S.ms[g.id] = 1; banner(g.n, g.d); } });
   }
+  // ---------- HEALTH ----------
+  function drawHp() {
+    var v = Math.max(0, Math.ceil(hp)); if (v === shownHp) return; shownHp = v;
+    var el = $("sbxHp"); if (!el) return; var pc = v / MAXHP * 100;
+    el.querySelector(".trk i").style.width = pc + "%"; el.querySelector("b").textContent = v;
+    el.setAttribute("aria-valuenow", v); el.classList.toggle("low", pc <= 30); el.classList.toggle("mid", pc > 30 && pc <= 60);
+  }
+  function hurt(n, why, cont) {
+    if (n <= 0) return; if (!cont && hurtGrace > 0) return;
+    hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
+    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(p.x, p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
+    if (hp <= 0) faint(why);
+  }
+  function faint(why) {
+    S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
+    respawn(why === "lava" ? "Burned by lava! You woke up at camp." : "You passed out and woke up at camp.");
+  }
   function respawn(msg) {
     var sp = world.spawn; p.x = sp.x; p.y = sp.y; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
@@ -425,6 +487,7 @@
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
     if (p.on || feetWet) p.coy = 0.1; else p.coy -= h;
     if (jump) { if (p.wet) p.vy = Math.max(p.vy - 52 * h, -5.2); else if (p.coy > 0) { p.vy = feetWet ? -9 : -14.2; p.coy = 0; p.on = false; } }
+    if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
     // horizontal, with automatic one-block step-up
     var nx = clamp(p.x + p.vx * h, 1, W - 1);
     if (!boxHit(nx, p.y)) p.x = nx;
@@ -433,7 +496,7 @@
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
     if (!boxHit(p.x, ny)) p.y = ny;
-    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; p.on = true; p.vy = 0; if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); } }
+    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; p.on = true; p.vy = 0; if (vpre > FALL_SAFE && !p.wet) hurt(Math.round((vpre - FALL_SAFE) * 4), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); } }
     else { p.y = Math.ceil(ny - PH) + PH; p.vy = 0; }
     if (p.y > H - 2) { p.y = H - 2.01; p.vy = 0; }
   }
@@ -448,7 +511,10 @@
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (var i = 0; i < sub; i++) step(h, dir, jump);
     p.walk += Math.abs(p.vx) * dt; if (p.wet) S.st.swim += dt;
-    if (touches("lava")) respawn("Singed by lava! Back at camp.");
+    if (touches("lava")) hurt(LAVA_DPS * dt, "lava", true);
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * dt);
+    drawHp();
     var depth = Math.max(0, Math.floor(p.y - SURF)); if (depth > S.st.maxDepth) S.st.maxDepth = depth;
     var tcx = Math.floor(p.x), tcy = Math.floor(p.y - 1); if (tcx + "," + tcy !== exKey) { exKey = tcx + "," + tcy; reveal(); }
     cam.x += (p.x - cam.x) * Math.min(1, dt * 7); cam.y += (p.y - 1.1 - cam.y) * Math.min(1, dt * 6);
@@ -458,6 +524,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     useTool(dt);
+    var working = !!mine || (aim.down && sel !== "pick" && aim.tx >= 0); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" ? 5.4 : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
@@ -513,6 +580,7 @@
     var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t);
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
+    if (shake > 0 && !reduce) { ox += Math.round((Math.random() - 0.5) * shake * 10); oy += Math.round((Math.random() - 0.5) * shake * 10); }
     var bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (SURF + 3)) / 9, 0, 1);
     // --- sky: three-stop gradient, stars, sun/moon, clouds, aurora ---
     var sk = skyAt(t), gr = g.createLinearGradient(0, 0, 0, vh), mid = mixC(sk[0], sk[1], 0.55);
@@ -638,7 +706,10 @@
     flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)), rg = g.createRadialGradient(fx, fy, 0, fx, fy, ts * 0.8); rg.addColorStop(0, "rgba(220,255,120," + 0.85 * a + ")"); rg.addColorStop(1, "rgba(220,255,120,0)"); g.fillStyle = rg; g.fillRect(fx - ts, fy - ts, ts * 2, ts * 2); });
     g.globalCompositeOperation = "source-over";
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
-    g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
+    g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh);
+    var ha = Math.min(0.6, hurtT * 1.2) + (hp <= MAXHP * 0.3 ? (reduce ? 0.18 : 0.16 + 0.08 * Math.sin(now / 280)) : 0);
+    if (ha > 0.01) { if (!HVIG) { HVIG = document.createElement("canvas"); HVIG.width = HVIG.height = 128; var hg = HVIG.getContext("2d"), hr = hg.createRadialGradient(64, 64, 34, 64, 64, 92); hr.addColorStop(0, "rgba(200,20,20,0)"); hr.addColorStop(1, "rgba(200,20,20,.9)"); hg.fillStyle = hr; hg.fillRect(0, 0, 128, 128); } g.globalAlpha = ha; g.drawImage(HVIG, 0, 0, vw, vh); g.globalAlpha = 1; }
+    g.imageSmoothingEnabled = false;
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     drawGuide(g, now);
@@ -657,14 +728,38 @@
     if (moon) { g.fillStyle = "rgba(120,140,190,.35)"; [[-0.3, -0.2, 0.28], [0.35, 0.15, 0.2], [-0.1, 0.45, 0.15]].forEach(function (c) { g.beginPath(); g.arc(x + c[0] * r, y + c[1] * r, c[2] * r, 0, 6.2832); g.fill(); }); }
     else { g.strokeStyle = "rgba(255,230,150,.35)"; g.lineWidth = 2; g.beginPath(); for (var k = 0; k < 10; k++) { var a = k / 10 * 6.2832 + now / 6000; g.moveTo(x + Math.cos(a) * r * 1.35, y + Math.sin(a) * r * 1.35); g.lineTo(x + Math.cos(a) * r * 1.75, y + Math.sin(a) * r * 1.75); } g.stroke(); }
   }
+  // The tool or block in your hand. The pick swings down while you dig; a held block bobs while you build.
+  function heldCanvas(tier) {
+    if (!PCV[tier]) { var c = document.createElement("canvas"); c.width = c.height = 32; drawPickIcon(c.getContext("2d"), tier); PCV[tier] = c; }
+    return PCV[tier];
+  }
+  function drawHeld(g, size) {
+    g.shadowBlur = 0; g.shadowColor = "transparent";
+    var hx = size * 0.27, hy = -size * 0.3, sm = g.imageSmoothingEnabled;
+    if (sel === "pick") {
+      if (S.tier < 1) return;
+      var ph = heldPh % 1, sw = Math.sin(Math.min(1, ph / 0.55) * Math.PI * 0.5) * (ph < 0.55 ? 1 : 1 - (ph - 0.55) / 0.45);   // quick swing down, slower return
+      var ang = 0.15 + heldAmt * (-0.55 + sw * 1.9) + (reduce ? 0 : Math.sin(p.walk * 5) * 0.06 * (1 - heldAmt)), tsz = ts * 1.35;
+      g.save(); g.translate(hx, hy); g.rotate(ang); g.imageSmoothingEnabled = true;
+      g.drawImage(heldCanvas(S.tier), -tsz * 6 / 32, -tsz * 28 / 32, tsz, tsz); g.restore();
+    } else if (ITEMS[sel] && ITEMS[sel].tile !== undefined) {
+      var bob = heldAmt * Math.sin(heldPh * 6.28) * ts * 0.06, bs = ts * 0.55;
+      g.save(); g.translate(hx + ts * 0.12, hy - ts * 0.1 + bob); g.imageSmoothingEnabled = false;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(-bs / 2 - 1, -bs / 2 - 1, bs + 2, bs + 2);
+      g.drawImage(ATLAS, 0, ITEMS[sel].tile * 16, 16, 16, -bs / 2, -bs / 2, bs, bs); g.restore();
+    }
+    g.imageSmoothingEnabled = sm;
+  }
   function drawPlayer(g, now) {
     var sx = ox + p.x * ts, sy = oy + p.y * ts, size = ts * 2.0, bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
     var sq = 1 + bob * 0.05 + (p.vy < -2 ? 0.07 : 0) - (p.vy > 6 ? 0.05 : 0) - (p.land || 0);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1);
     g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
     g.scale(1 / sq, sq); if (p.wet) g.globalAlpha = 0.85;
+    if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
     if (sprite) { var gl2 = 1 - daylight(S.time); if (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3) { g.shadowColor = "rgba(110,255,210,.55)"; g.shadowBlur = ts * 0.5; } g.drawImage(sprite, -size / 2, -size * 0.93, size, size); }
     else { g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(0, -ts * 0.7, ts * 0.6, 0, 6.2832); g.fill(); }
+    drawHeld(g, size);
     g.restore();
   }
 
@@ -747,7 +842,7 @@
   function closePanel() { panelOpen = false; $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
 
   // ---------- INPUT ----------
-  function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top; }
+  function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
   cv.addEventListener("pointerdown", function (e) {
     if (panelOpen || (e.pointerType === "mouse" && e.button !== 0)) return; e.preventDefault();
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
@@ -796,7 +891,7 @@
   function resize() {
     var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(2, window.devicePixelRatio || 1);
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
-    ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, 15, 40) * (S ? S.zoom : 1)));
+    ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, coarse ? 24 : 15, 40) * (S ? S.zoom : 1)));
   }
   var last = 0, slowN = 0, frN = 0;
   function loop(now) {
@@ -812,7 +907,7 @@
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
 
   buildAtlas(); load(); resize(); mkSprite(); drawBar();
-  $("sbxHint").textContent = S.trail === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold a block to dig it." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your bag.";
+  $("sbxHint").textContent = S.trail === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your bag.";
   if (!S.st.mined) $("sbxHint").classList.add("on");
   setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000);
   requestAnimationFrame(loop);

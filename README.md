@@ -331,3 +331,18 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Bog Workbench** (10 Wood + 4 Fiber): new placeable tile `T.BENCH`, non-solid, breakable.
 - **The First Day Trail:** `TRAIL` array in `sandbox.js`, 10 guided steps with a HUD tracker, a Trail tab, a gold ring/arrow pointing at the nearest thing to gather, and small item gifts (no coins or crystals). Steps count lifetime stats, so gathering ahead still counts. To add a step, add one object to `TRAIL`.
 - **Saves:** `v:2` adds `trail`; new stat counters `stick, fiber, pebble, spore, benches`. Old v1 saves keep their pick and skip the Trail. "Start a new world" restarts the Trail.
+- **Held tool:** `drawHeld()` in `sandbox.js` draws your pick (or the block you are about to place) in your avatar's hand. The pick swings while you dig, you turn to face what you are working on, and the pick icons come from `drawPickIcon()` (one look per material). Bare paws show nothing in hand.
+
+### Delve phone comfort pass
+- Touch devices get a minimum tile size of 24px (desktop stays 15px) so fingers can dig accurately.
+- On touch, the aim box sits 28-44px above the fingertip so your finger does not hide the target (`setAim()`).
+- Short landscape phones (height <= 520px): site header hidden, the game uses the full screen, smaller pad/hotbar/Trail card (end of `sandbox.css`).
+- Narrow-phone hotbar slots 41px -> 43px.
+
+### Delve health system
+- **HP:** 100 max, shown as a heart + bar + number under the bag button (green, then amber under 60%, red and pulsing under 30%). Stored as `hp` in the save (older saves start full). Tuning constants are at the top of `sandbox.js`: `MAXHP, FALL_SAFE, LAVA_DPS, REGEN_WAIT, REGEN_RATE`.
+- **Damage:** falls (landing faster than `FALL_SAFE`, about a 3.5 tile drop; water cushions it; max about 40 at terminal speed), and lava (38 per second). Lava used to send you straight to camp; now it is thick (you sink slowly and can jump to climb out) so you can escape.
+- **Healing:** 2.5 HP per second after 4 seconds without damage.
+- **Passing out:** at 0 HP you wake at camp with full health and keep everything. Counted in `st.deaths` for later use.
+- **Feedback:** red edge flash, damage number, short screen shake (off for reduced motion), blinking avatar, 0.5 s grace between hits.
+- **For Stage 3:** `hurt(amount, why, continuous)` is the one function every damage source should call (Gloomlings, hunger).
