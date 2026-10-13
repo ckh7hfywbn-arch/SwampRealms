@@ -105,3 +105,49 @@ body.sbx-app footer{margin-top:28px}
 .sbx-row .warn{border-color:#ff7a5a;color:#ffb3a0}
 @media(prefers-reduced-motion:reduce){.sbx-toast.on{animation:none;opacity:1;transform:translate(-50%,0)}.sbx-banner,.sbx-hint{transition:none}}
 @media(max-width:430px){.sbx-tabs{gap:1px}.sbx-tabs button{padding:9px 8px;font-size:.82rem}}
+
+/* ===== visual polish pass ===== */
+.sbx-ibtn,.sbx-loc,.sbx-bar{background:linear-gradient(160deg,rgba(14,34,28,.78),rgba(4,10,8,.7));-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);border-color:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px -10px #000}
+.sbx-ibtn:active{transform:scale(.94)}
+.sbx-loc{border-color:color-mix(in srgb,var(--bc) 55%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px -10px #000,0 0 22px -10px var(--bc)}
+.sbx-loc i{animation:sbxPulse 2.6s ease-in-out infinite}
+@keyframes sbxPulse{50%{box-shadow:0 0 18px var(--bc);transform:scale(1.15)}}
+.sbx-loc b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;letter-spacing:.01em;font-size:.98rem}
+.sbx-bcard{position:absolute;left:50%;top:26%;transform:translate(-50%,8px);display:grid;justify-items:center;gap:4px;text-align:center;pointer-events:none;opacity:0;width:max-content;max-width:92%}
+.sbx-bcard b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:clamp(1.9rem,6.5vw,3rem);line-height:1.05;color:#fff;text-shadow:0 0 28px var(--bc),0 3px 0 rgba(0,0,0,.45)}
+.sbx-bcard small{font-weight:800;font-size:.9rem;color:color-mix(in srgb,var(--bc) 60%,#fff);text-shadow:0 2px 8px #000}
+.sbx-bcard::after{content:"";width:min(220px,60%);height:2px;margin-top:4px;background:linear-gradient(90deg,transparent,var(--bc),transparent);box-shadow:0 0 14px var(--bc)}
+.sbx-bcard.on{animation:sbxCard 4s ease forwards}
+@keyframes sbxCard{0%{opacity:0;transform:translate(-50%,10px) scale(.96);letter-spacing:.06em}14%{opacity:1;transform:translate(-50%,0) scale(1);letter-spacing:0}78%{opacity:1}100%{opacity:0;transform:translate(-50%,-6px)}}
+.sbx-hint{top:auto;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 76px)}
+@media(pointer:coarse),(max-width:760px){.sbx-hint{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 162px)}}
+.sbx-banner{top:36%;background:linear-gradient(160deg,rgba(40,32,10,.94),rgba(8,14,10,.94));border:1px solid #f2c14e;overflow:hidden}
+.sbx-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,230,150,.22) 50%,transparent 65%);transform:translateX(-120%)}
+.sbx-banner.on::before{animation:sbxShine 1.4s .3s ease forwards}
+@keyframes sbxShine{to{transform:translateX(120%)}}
+.sbx-banner b{text-shadow:0 0 18px rgba(242,193,78,.55)}
+.sbx-slot{background:linear-gradient(180deg,#14281f,#09130f);border-color:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:transform .12s}
+.sbx-slot.on{transform:translateY(-4px);background:linear-gradient(180deg,#2f3a16,#141c0b);border-color:#f2c14e;box-shadow:0 0 16px -2px rgba(242,193,78,.7),inset 0 1px 0 rgba(255,255,255,.2)}
+.sbx-slot img{filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.sbx-pad button{background:radial-gradient(circle at 35% 30%,rgba(78,230,180,.28),rgba(7,18,15,.62));-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 18px -8px #000}
+.sbx-pad .jump{background:radial-gradient(circle at 35% 30%,rgba(242,193,78,.32),rgba(20,16,6,.62))}
+.sbx-panel{background:linear-gradient(180deg,rgba(11,28,23,.95),rgba(4,10,8,.97));border-color:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 -18px 50px -16px #000}
+.sbx-card,.sbx-it,.sbx-goal{background:linear-gradient(160deg,rgba(18,42,34,.85),rgba(8,18,14,.85));border-color:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.sbx-card:not(.done) .btn:not(.ghost){box-shadow:0 0 16px -4px #f2c14e}
+.sbx-goal.ok{background:linear-gradient(160deg,rgba(60,48,12,.7),rgba(10,16,12,.85))}
+@media(prefers-reduced-motion:reduce){.sbx-loc i,.sbx-banner.on::before{animation:none}.sbx-bcard.on{animation:none;opacity:1}}
+
+/* ---- Stage 1: the First Day Trail ---- */
+.sbx-trail{position:absolute;left:8px;top:calc(max(8px,env(safe-area-inset-top)) + 52px);display:grid;gap:3px;width:176px;padding:8px 11px 9px;text-align:left;border-radius:14px;background:linear-gradient(160deg,rgba(44,34,10,.86),rgba(6,12,9,.82));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid #f2c14e99;box-shadow:0 8px 20px -10px #000,0 0 18px -10px #f2c14e;color:#f6eedb;cursor:pointer;font-family:Nunito,system-ui,sans-serif;z-index:2}
+.sbx-trail[hidden]{display:none}
+.sbx-trail small{font-size:.66rem;font-weight:800;color:#f2c14e;letter-spacing:.04em;text-transform:uppercase}
+.sbx-trail b{font-size:.92rem;line-height:1.15}
+.sbx-trail em{font-style:normal;font-size:.72rem;font-weight:800;color:#f6eedbcc}
+.bar{display:block;height:7px;border-radius:99px;background:#00000066;overflow:hidden;margin-top:3px}
+.bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f2c14e,#ffe9a0);transition:width .3s}
+.sbx-goal.cur{border-color:#f2c14e;background:linear-gradient(160deg,rgba(60,48,12,.55),rgba(10,16,12,.85))}
+.sbx-goal.cur i{border-color:#f2c14e;color:#f2c14e}
+.sbx-goal em{font-style:normal;font-size:.74rem;font-weight:800;color:#f6eedbcc}
+.sbx-goal .rw{color:#f2c14e;margin-top:3px}
+.sbx-goal>div{min-width:0;flex:1}
+@media(prefers-reduced-motion:reduce){.bar>i{transition:none}}

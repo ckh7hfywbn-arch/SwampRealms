@@ -4,7 +4,7 @@
 (function (root) {
   "use strict";
   var W = 240, H = 110, SURF = 34;           // world size in tiles, and the average surface row
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20 };
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -32,16 +32,26 @@
   tile(T.PLANKS, "Planks", "#a8703c", "#c98c4f", 0.8, 1, "planks", true, 0, "planks");
   tile(T.TORCH, "Torch", "#000", "#ffb13b", 0.05, 1, "torch", false, 13, "torch");
   tile(T.GLOWCAP, "Glowcap", "#000", "#4ee6b4", 0.1, 1, "spore", false, 6, "glowcap");
+  tile(T.REED, "Cattail", "#000", "#6aa347", 0.05, 1, null, false, 0, "reed");
+  tile(T.BLOOM, "Ember Bloom", "#000", "#ff8a3d", 0.05, 1, null, false, 5, "bloom");
+  tile(T.SPIKE, "Frost Spike", "#000", "#9fe8ff", 0.05, 1, null, false, 3, "spike");
+  tile(T.VINE, "Hanging Vine", "#000", "#3f8f3a", 0.05, 1, null, false, 0, "vine");
 
-  // Items. tile = the block it places (undefined = material only).
+  tile(T.BENCH, "Bog Workbench", "#000", "#c98c4f", 0.4, 0, "bench", false, 0, "bench");
+  // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
+  [T.MOSS, T.MUD, T.ASH, T.SNOW, T.LEAVES, T.TORCH, T.GLOWCAP, T.REED, T.BLOOM, T.SPIKE, T.VINE].forEach(function (i) { TILES[i].tier = 0; });
+  TILES[T.REED].drop = "fiber"; TILES[T.VINE].drop = "fiber";   // cattails are rare on some seeds, so hanging vines give fiber too
+
+  // Items. tile = the block it places (undefined = material only). mat = how the icon is drawn for loose materials.
   var ITEMS = {
     wood: { n: "Wood", tile: T.LOG }, mud: { n: "Mud", tile: T.MUD }, clay: { n: "Clay", tile: T.CLAY }, stone: { n: "Stone", tile: T.STONE },
     planks: { n: "Planks", tile: T.PLANKS }, torch: { n: "Torch", tile: T.TORCH }, leaves: { n: "Leaves", tile: T.LEAVES },
     snow: { n: "Snow", tile: T.SNOW }, ice: { n: "Ice", tile: T.ICE }, basalt: { n: "Basalt", tile: T.BASALT }, ash: { n: "Ash Soil", tile: T.ASH },
     frostrock: { n: "Frostrock", tile: T.FROSTROCK },
+    stick: { n: "Stick", mat: "stick" }, fiber: { n: "Reed Fiber", mat: "fiber" }, pebble: { n: "Pebble", mat: "pebble" }, bench: { n: "Bog Workbench", tile: T.BENCH },
     spore: { n: "Glowspore", gem: "#4ee6b4" }, cinder: { n: "Cinder Shard", gem: "#ff8a3d" }, crystal: { n: "Frost Crystal", gem: "#bff4ff" }
   };
-  var ITEM_ORDER = ["wood", "planks", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -114,11 +124,31 @@
     }
     // 3. swamp trees and glowcaps (a second pass guarantees enough Wood on every seed)
     function plant(x) {
-      var tp2 = top[x], th = 4 + Math.floor(rnd() * 4), cy = tp2 - th;
-      for (var dy = -2; dy <= 1; dy++) for (var dx = -2; dx <= 2; dx++) {
-        if (dx * dx / 6.25 + dy * dy / 4.84 <= 1) { var lx = x + dx, ly = cy + dy; if (ly >= 0 && t[ly * W + lx] === T.AIR) t[ly * W + lx] = T.LEAVES; }
+      // the first rnd() call matches the old generator so terrain and tree spacing stay the same; all new variety is hash-based
+      var tp2 = top[x], th = 4 + Math.floor(rnd() * 4), cy = tp2 - th - 1, hs = function (a) { return hash(x, 300 + a, seed); };
+      function put(px, py, id) { if (px < 0 || px >= W || py < 0) return; var i = py * W + px; if (t[i] === T.AIR) t[i] = id; }
+      function blob(cx, cy2, rx, ry) {
+        for (var dy = -Math.ceil(ry); dy <= Math.ceil(ry); dy++) for (var dx = -Math.ceil(rx); dx <= Math.ceil(rx); dx++)
+          if (dx * dx / (rx * rx) + dy * dy / (ry * ry) <= 1 + (hash(cx + dx, cy2 + dy, seed + 9) - 0.5) * 0.45) put(cx + dx, cy2 + dy, T.LEAVES);
       }
-      for (var k = 1; k <= th; k++) t[(tp2 - k) * W + x] = T.LOG;
+      var lean = hs(1) < 0.5 ? -1 : 1;
+      blob(x, cy, 3, 2.2); blob(x + lean * 2, cy + 1, 2.2, 1.6); blob(x - lean * 2, cy + 1, 1.8, 1.4); blob(x, cy - 2, 1.9, 1.3);
+      if (th >= 5 && hs(5) < 0.65) {                       // a side branch you can stand on
+        var side = hs(6) < 0.5 ? -1 : 1, by = tp2 - 2 - Math.floor(th / 2);
+        put(x + side, by, T.LOG); put(x + side * 2, by, T.LOG); blob(x + side * 3, by - 1, 1.8, 1.3);
+      }
+      for (var k = 1; k <= th + 1; k++) { var ti = (tp2 - k) * W + x; if (t[ti] === T.AIR || t[ti] === T.LEAVES) t[ti] = T.LOG; }
+      for (var sd = -1; sd <= 1; sd += 2) {               // flared roots at the base
+        var px = x + sd;
+        if (px > 0 && px < W - 1 && TILES[t[tp2 * W + px]].solid && hs(2 + sd) < 0.8) put(px, tp2 - 1, T.LOG);
+      }
+      for (var vx = x - 4; vx <= x + 4; vx++) {            // hanging vines under the leaves
+        if (vx < 1 || vx >= W - 1 || hash(vx, 400, seed) > 0.5) continue;
+        var lb = -1; for (var vy = cy - 3; vy <= cy + 5; vy++) if (t[vy * W + vx] === T.LEAVES) lb = vy;
+        if (lb < 0) continue;
+        var len = 1 + Math.floor(hash(vx, 401, seed) * 3);
+        for (var q = 1; q <= len; q++) if (lb + q < top[vx]) put(vx, lb + q, T.VINE);
+      }
     }
     var lastTree = -9, trees = [];
     for (x = 3; x < W - 3; x++) {
@@ -129,6 +159,14 @@
     for (x = 8; x < 76 && trees.length < 10; x += 3) {
       if (top[x] > WL || trees.some(function (q) { return Math.abs(q - x) < 5; })) continue;
       trees.push(x); plant(x);
+    }
+    // 4. surface decorations (hash-based, so they never disturb the terrain random sequence)
+    for (x = 2; x < W - 2; x++) {
+      var sy = top[x] - 1, r = hash(x, 91, seed), bb = bio[x];
+      if (sy < 1 || t[sy * W + x] !== T.AIR || t[top[x] * W + x] === T.WATER) continue;
+      if (bb === 0 && r < 0.26) t[sy * W + x] = T.REED;
+      else if (bb === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
+      else if (bb === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
     }
     return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, spawn: { x: 40.5, y: top[40] } };
   }

@@ -300,3 +300,34 @@ An idle swamp tycoon on its own page (`evolution.html`, logic in `evolution.js`,
   - *Save:* `CS.evo` is now `v:4` and adds `rl` (realms unlocked 1-3), `at` (realm you are in), `em`, `fr` (landmark levels), `ds, bd, dl, dc` (gift streak, best streak, last claim date, claims). Older saves upgrade in `clean()`. Still inside the crystals save, so no Worker or account change.
   - *Tuning:* `CFG` and the `BIO` table at the top of `evolution.js`. Adding a realm = one `BIO` entry, one art function in `evolution-fx.js`, and a thumbnail class in `evolution.css`.
 - **Next:** Stage 5, bosses (stat-check fights with capped first-kill rewards), then prestige and more realms.
+
+
+## SwampRealms: Delve (Stage 1 of the multiplayer sandbox plan)
+
+A single-player 2D dig-and-build sandbox at `/sandbox` (Arcade tile "Play SwampRealms: Delve").
+Files: `sandbox.html`, `sandbox.css`, `sandbox-world.js` (tile/item tables + seeded world generator, no DOM, testable in Node), `sandbox.js` (game).
+
+- **World:** 240 x 110 tiles from a seed. Three biomes left to right: Murkwater Swamp (mud, trees, water, Glowspore ore), Ember Bog (ash, basalt, lava, Cinder ore), Frostfen (snow, ice, Frostrock, Frost Crystal ore). Caves, lava deep down, bedrock at the bottom.
+- **Play:** walk/jump (A/D, Space; touch pad on phones), hold on a block to dig, hold to place the selected block, hotbar keys 1-7, `E` opens Craft / Bag / Map / Goals / Options, `Q` swaps pick and last block.
+- **Progression:** four picks (Reed -> Glowspore -> Cinder -> Frost). Each tier breaks harder rock and digs faster. Tile `tier` and `hard` values live in `sandbox-world.js`; recipes and goals are at the top of `sandbox.js`.
+- **Look:** your equipped Armory avatar (animal + gear) is the player. Day/night cycle (8 min), soft per-tile lighting, torches, glowing ore, fireflies at swamp night, fog-of-war map.
+- **Saving:** one localStorage key, `swamp-delve-v1`, this browser only (not cloud-synced yet). Stores the seed plus only the tiles you changed, so saves stay small. It never reads or writes Swamp Coins or Crystals, so it cannot affect the shop economy.
+- **Not in Stage 1 (planned):** enemies and health, multiplayer server (Cloudflare Durable Objects), weekly world resets, account-linked rewards.
+- **Gotcha:** shared scripts (`store.js`) listen globally for `data-craft`, `data-bag`, `data-armory`, `data-x`, `data-use`, `data-save`, `data-out`, `data-mode`. The Delve UI uses `data-sx-craft` etc. to avoid opening the Armory by accident. Do not reuse those names.
+
+### Delve art pass (v2)
+- All art is drawn in code (no image files). `paint()` in `sandbox.js` builds the tile atlas; edit palettes in `sandbox-world.js` (`tile(...)` colours).
+- Terrain faces get a lit top rim and side shadows, caves get shaded back walls, water has depth colour, caustics and foam, lava bubbles and glows.
+- Sky: gradient, twinkling stars, sun rays, moon craters, clouds, three biome-shaped parallax hill layers with horizon mist, Frostfen aurora, drifting spores / embers / snow.
+- Decorations (hash-placed, so terrain is unchanged): cattails in the swamp, Ember Blooms, Frost Spikes.
+- Extras: biome title card, landing squash and dust, soft vignette, dusk/dawn colour grade, avatar rim glow in the dark.
+- Performance: canvas resolution is capped at 2x, and if a device drops below ~30 fps the optional sparkle (motes, aurora, glints, fireflies) switches off automatically. Players with "reduce motion" on get the calm version from the start.
+
+### Delve progression, Stage 1: Paws to Pick (Lego-Fortnite-style opening, swamp style)
+Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villagers) -> 3 Survival (hearts, hunger, food, night Gloomlings) -> 4 Village levels gate the biomes and pick tiers -> 5 Quests and biome bosses.
+- **Start with bare paws** (tool tier 0): paws break only soft things (leaves, mud, moss, snow, ash, cattails, glowcaps, vines). Wood, clay, ice, stone and ore need a pick. `PICKS` is now indexed directly by `S.tier` (0 = Bare Paws); this also fixes the old "Needs the ... Pick" message naming the wrong pick.
+- **New materials:** Stick (50% from leaves), Reed Fiber (cattails and hanging vines, 1-2; cattails are rare on some seeds), Pebble (16% from mud/moss). Tuning lives in `breakTile()`.
+- **Reed Pick** is now crafted by hand: 3 Sticks, 3 Fiber, 2 Pebbles. Glowspore/Cinder/Frost picks need a **Bog Workbench** within 7 tiles (`nearBench()`), and each pick needs the one before it.
+- **Bog Workbench** (10 Wood + 4 Fiber): new placeable tile `T.BENCH`, non-solid, breakable.
+- **The First Day Trail:** `TRAIL` array in `sandbox.js`, 10 guided steps with a HUD tracker, a Trail tab, a gold ring/arrow pointing at the nearest thing to gather, and small item gifts (no coins or crystals). Steps count lifetime stats, so gathering ahead still counts. To add a step, add one object to `TRAIL`.
+- **Saves:** `v:2` adds `trail`; new stat counters `stick, fiber, pebble, spore, benches`. Old v1 saves keep their pick and skip the Trail. "Start a new world" restarts the Trail.
