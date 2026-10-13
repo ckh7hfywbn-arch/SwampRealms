@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SwampRealms: Delve | SwampRealms</title>
+<meta name="description" content="SwampRealms: Delve is a 2D dig-and-build sandbox. Explore Murkwater Swamp, Ember Bog and Frostfen, mine glowing ore, craft better picks and light up the caves.">
+<link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/sandbox">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SwampRealms">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="SwampRealms: Delve | SwampRealms">
+<meta property="og:description" content="SwampRealms: Delve is a 2D dig-and-build sandbox. Explore Murkwater Swamp, Ember Bog and Frostfen, mine glowing ore, craft better picks and light up the caves.">
+<meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/sandbox">
+<meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SwampRealms: Delve | SwampRealms">
+<meta name="twitter:description" content="SwampRealms: Delve is a 2D dig-and-build sandbox. Explore Murkwater Swamp, Ember Bog and Frostfen, mine glowing ore, craft better picks and light up the caves.">
+<meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta name="twitter:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0d110a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="ui.css?v=armory3">
+<link rel="stylesheet" href="sandbox.css?v=delve1">
+</head>
+<body class="sbx-app">
+<noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
+<header>
+ <a class="logo" href="index.html" aria-label="SwampRealms home"><img class="mark" src="logo-mark.png" alt="" width="44" height="44"><img class="word" src="logo-word.png" alt="" width="160" height="29"></a>
+ <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html" aria-current="page">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+</header>
+
+<div id="top"></div>
+<main id="sbx">
+ <div class="sbx-stage" id="sbxStage">
+  <canvas id="sbxCv" aria-label="The Delve world. Dig, build and explore."></canvas>
+  <div class="sbx-hud">
+   <div class="sbx-ibtns">
+    <a class="sbx-ibtn" href="arcade.html" aria-label="Back to the Arcade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <button type="button" class="sbx-ibtn" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+   </div>
+   <div class="sbx-loc" id="sbxLoc" role="status"><i aria-hidden="true"></i><div><b id="sbxBiome">Murkwater Swamp</b><span id="sbxSub"></span></div></div>
+   <button type="button" class="sbx-ibtn" id="sbxMenuBtn" aria-label="Open bag, crafting and map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V6a5 5 0 0110 0v2"/><path d="M5 8h14l1 12H4z"/><path d="M9 13h6"/></svg></button>
+  </div>
+  <div class="sbx-hint" id="sbxHint" aria-hidden="true"></div>
+  <div class="sbx-toast" id="sbxToast" role="status" aria-live="polite"></div>
+  <div class="sbx-banner" id="sbxBanner" role="status" aria-live="polite"></div>
+  <div class="sbx-pad" id="sbxPad">
+   <div class="lr">
+    <button type="button" data-k="l" aria-label="Move left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button type="button" data-k="r" aria-label="Move right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+   </div>
+   <button type="button" class="jump" data-k="j" aria-label="Jump"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-8 7 8"/><path d="M5 21l7-8 7 8"/></svg></button>
+  </div>
+  <div class="sbx-bar" id="sbxBar" role="toolbar" aria-label="Hotbar"></div>
+  <section class="sbx-panel" id="sbxPanel" aria-label="Bag, crafting, map and goals" hidden>
+   <div class="sbx-phead"><div class="sbx-tabs" id="sbxTabs" role="tablist"></div><button type="button" class="sbx-x" data-close aria-label="Close">&times;</button></div>
+   <div class="sbx-body" id="sbxBody"></div>
+  </section>
+ </div>
+</main>
+
+<footer>
+ <div class="row"><a href="https://pump.fun/6suAaqm6HkHkixq2zyeLPhLE679AHUdV32ivj8Xypump">pump.fun</a><a href="https://donkthedonkey.framer.website/">Main site</a><a href="https://x.com/donkeycryt?s=11">X</a><a href="https://discord.gg/ryQMThkQFr">Discord</a><a href="https://t.me/DonKSwamp">Telegram</a></div>
+ <p>Swamp Cards and Swamp Coins are free fan collectibles for fun. They have no cash value and can't be bought, sold or exchanged for money or $DonK. $DonK is a meme coin with no intrinsic value or expectation of financial return. Crypto is volatile and you can lose everything. Do your own research.</p>
+ <p style="margin-top:10px">© 2026 DonK the Donkey</p>
+</footer>
+
+<nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
+<script src="cards.js"></script>
+<script src="weapons.js?v=skins2"></script>
+<script src="avatar.js?v=cos5"></script>
+<script src="store.js?v=cos4"></script>
+<script src="account.js"></script>
+<script src="menu.js"></script>
+<script src="sandbox-world.js?v=delve1"></script>
+<script src="sandbox.js?v=delve1"></script>
+<script src="gamefs.js?v=2"></script>
+<script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]"});</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
