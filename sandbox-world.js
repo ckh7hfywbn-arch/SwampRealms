@@ -6,7 +6,7 @@
   // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
   var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42 };
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -63,6 +63,17 @@
   tile(T.POT, "Clay Pot", "#000", "#c46a3c", 0.3, 0, "pot", false, 0, "pot");
   tile(T.FLOWERPOT, "Flower Pot", "#000", "#c46a3c", 0.3, 0, "flowerpot", false, 0, "flowerpot");
   tile(T.BARREL, "Barrel", "#000", "#9a6234", 0.4, 0, "barrel", false, 0, "barrel");
+  // Decor Workbench pieces (see DECOR in sandbox.js). All are non-solid, break by hand and give themselves back. To add one: a tile line here, an ITEMS entry + ITEM_ORDER + DECOR_FLOOR / DECOR_WALL below,
+  // a drawing in paint() (sandbox.js) and a recipe in DECOR (sandbox.js).
+  tile(T.DECORBENCH, "Decor Workbench", "#000", "#7fc9a0", 0.4, 0, "decorbench", false, 0, "decorbench");
+  tile(T.STOOL, "Stool", "#000", "#b9793f", 0.3, 0, "stool", false, 0, "stool");
+  tile(T.RUG, "Reed Rug", "#000", "#8d63c9", 0.2, 0, "rug", false, 0, "rug");
+  tile(T.BOOKSHELF, "Bookshelf", "#000", "#a8703c", 0.5, 0, "bookshelf", false, 0, "bookshelf");
+  tile(T.LANTERN, "Clay Lantern", "#000", "#ffb13b", 0.3, 0, "lantern", false, 12, "lantern");
+  tile(T.BANNER, "Swamp Banner", "#000", "#22a883", 0.2, 0, "banner", false, 0, "banner");
+  tile(T.SIGN, "Wooden Sign", "#000", "#c98c4f", 0.2, 0, "sign", false, 0, "sign");
+  tile(T.PLANTER, "Flower Planter", "#000", "#5fb24a", 0.4, 0, "planter", false, 0, "planter");
+  tile(T.CAMPFIRE, "Campfire", "#000", "#ff7a1f", 0.3, 0, "campfire", false, 13, "campfire");
   // Cave Hole: a little burrow in the ground. It cannot be broken or built on; tap it (or press F nearby) to climb down into a top-down cave (see sandbox-cave.js).
   tile(T.HOLE, "Cave Hole", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
@@ -81,7 +92,16 @@
     bugfrag: { n: "Bramble Fragment", frag: "bug" }, frogfrag: { n: "Frog Fragment", frag: "frog" },   // enemy loot, same names as the Adventure Fragments
     batwing: { n: "Bat Wing", frag: "bat" }   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
   };
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
+  Object.assign(ITEMS, {
+    decorbench: { n: "Decor Workbench", tile: T.DECORBENCH }, stool: { n: "Stool", tile: T.STOOL }, rug: { n: "Reed Rug", tile: T.RUG }, bookshelf: { n: "Bookshelf", tile: T.BOOKSHELF },
+    lantern: { n: "Clay Lantern", tile: T.LANTERN }, banner: { n: "Swamp Banner", tile: T.BANNER }, sign: { n: "Wooden Sign", tile: T.SIGN }, planter: { n: "Flower Planter", tile: T.PLANTER }, campfire: { n: "Campfire", tile: T.CAMPFIRE }
+  });
+  // Where each decor item may be placed. floor = needs solid ground right under it. wall = hangs on a block beside it or above it (never just resting on the ground).
+  // Anything flagged here counts as decor (stack of 16 in the inventory, counts for the "furniture" goals). The village generator uses the same rules.
+  var DECOR_FLOOR = ["chair", "table", "bucket", "pot", "flowerpot", "barrel", "flower", "decorbench", "stool", "rug", "bookshelf", "lantern", "planter", "campfire"], DECOR_WALL = ["painting", "banner", "sign"];
+  DECOR_FLOOR.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "floor"; });
+  DECOR_WALL.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "wall"; });
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -127,6 +147,16 @@
     }
     if (!spot) return null;
     function put(px, py, id) { if (px >= 0 && px < W && py >= 0 && py < H) t[py * W + px] = id; }
+    // decor goes through the same rules a player follows: floor pieces need solid ground right under them, wall pieces need a block beside or above them, lamps need something to hang on.
+    // A piece that would float or land on something else is simply not placed.
+    function solidAt(px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; }
+    function decor(px, py, id, rule) {
+      if (px < 0 || px >= W || py < 1 || py >= H || t[py * W + px] !== T.AIR) return false;
+      if (rule === "floor" && !solidAt(px, py + 1)) return false;
+      if (rule === "wall" && !(solidAt(px - 1, py) || solidAt(px + 1, py) || solidAt(px, py - 1))) return false;
+      if (rule === "any" && !(solidAt(px - 1, py) || solidAt(px + 1, py) || solidAt(px, py - 1) || solidAt(px, py + 1))) return false;
+      t[py * W + px] = id; return true;
+    }
     var isTree = function (id) { return id === T.LEAVES || id === T.LOG || id === T.VINE; };
     // 1. flatten the plateau (ground row = GY) and ease it into the old terrain over BL columns; clear trees and plants above it
     var xa = spot.left - BL, xb = spot.right + BL, stack = [];
@@ -163,30 +193,32 @@
       for (x = x0 + 1; x <= x1 - 1; x++) put(x, GY - 5, T.PLANKS);
       for (x = x0 + 3; x <= x1 - 3; x++) put(x, GY - 6, T.PLANKS);
       put(x0, GY - 1, T.DOOR_B); put(x0, GY - 2, T.DOOR_T); put(x1, GY - 1, T.DOOR_B); put(x1, GY - 2, T.DOOR_T);   // a door in each wall, plank lintel above it
-      put(x0 - 1, GY - 2, T.TORCH); put(x1 + 1, GY - 2, T.TORCH);                  // a lamp on the outside next to each door
-      put(x0 + (w - 1) / 2, GY - 3, T.TORCH);                                      // and one hanging under the roof, so the inside is lit
+      decor(x0 - 1, GY - 2, T.TORCH, "any"); decor(x1 + 1, GY - 2, T.TORCH, "any");   // a lamp on the outside next to each door (it hangs on the door frame)
+      decor(x0 + (w - 1) / 2, GY - 3, T.TORCH, "any");                              // and one hanging under the roof, so the inside is lit
       var at = function (j) { return x0 + 1 + (flip ? n - 1 - j : j); }, face = function (right) { return (right !== flip) ? T.CHAIR : T.CHAIR_L; };
-      put(at(1), GY - 1, T.BED); put(at(1), GY - 2, T.PAINTING);
-      put(at(3), GY - 1, T.TABLE); put(at(2), GY - 1, face(true));
-      if (n >= 7) { put(at(4), GY - 1, face(false)); if (hash(i, 703, seed) < 0.6) put(at(5), GY - 2, T.PAINTING); }
+      // inside: the cells next to the two doors stay clear (that is the walkway). Bed, then a chair facing the table, a second chair on bigger houses, and a store barrel or pot in the spare cell.
+      decor(at(1), GY - 1, T.BED, "floor");
+      decor(at(3), GY - 1, T.TABLE, "floor"); decor(at(2), GY - 1, face(true), "floor");
+      if (n >= 7) { decor(at(4), GY - 1, face(false), "floor"); decor(at(5), GY - 1, hash(i, 708, seed) < 0.5 ? T.BARREL : T.POT, "floor"); }
+      // paintings hang on the wall above a doorway (row GY-3 is the wall's top row, touching the end wall and the roof), never in mid-air
+      decor(at(0), GY - 3, T.PAINTING, "wall"); if (n >= 7 && hash(i, 703, seed) < 0.6) decor(at(n - 1), GY - 3, T.PAINTING, "wall");
       houses.push({ x: x0, w: w, doors: [x0, x1] });
       hx = x1 + 1 + (gaps[i] || 0);
     }
-    // 3. a little swamp life on the open ground: glowcaps, cattails and wild flowers, a lamp on each side of the plaza, and a market corner in the middle
-    var pc = houses[2].x - 1 - Math.floor(gaps[1] / 2), mk = {}, KN = [T.FLOWERPOT, T.BUCKET, T.POT, T.BARREL];
-    mk[pc - 2] = T.POT; mk[pc - 1] = T.BARREL; mk[pc + 1] = T.BUCKET; mk[pc + 2] = T.FLOWERPOT;
+    // 3. a little swamp life on the open ground: glowcaps, cattails and wild flowers, a lamp on each side of the plaza, and a market stall in the middle
+    //    (a table for a counter with a barrel, pot, bucket and flower pot around it). Wild plants sit on the ground; nothing is put in front of a door.
+    var pc = houses[2].x - 1 - Math.floor(gaps[1] / 2), mk = {};
+    mk[pc - 2] = T.BARREL; mk[pc - 1] = T.POT; mk[pc] = T.TABLE; mk[pc + 1] = T.BUCKET; mk[pc + 2] = T.FLOWERPOT;
+    // knick-knacks beside the paths, not on them: one barrel or bucket halfway along each short lane between houses, and a flower pot at each end of the village
+    [0, 2, 3].forEach(function (g) { var hh2 = houses[g], mid = hh2.x + hh2.w + 1; decor(mid, GY - 1, hash(g, 705, seed) < 0.5 ? T.BARREL : T.BUCKET, "floor"); });
+    decor(houses[0].x - 3, GY - 1, T.FLOWERPOT, "floor"); decor(houses[4].x + houses[4].w + 2, GY - 1, T.FLOWERPOT, "floor");
     for (x = spot.left; x <= spot.right; x++) {
       if (houses.some(function (h) { return x >= h.x - 1 && x <= h.x + h.w; })) continue;
       var r = hash(x, 704, seed); if (t[(GY - 1) * W + x] !== T.AIR) continue;
-      if (Math.abs(x - pc) === 3) put(x, GY - 1, T.TORCH);
-      else if (mk[x]) put(x, GY - 1, mk[x]);
-      else if (r < 0.08) put(x, GY - 1, T.GLOWCAP); else if (r < 0.18) put(x, GY - 1, T.REED); else if (r < 0.48) put(x, GY - 1, T.FLOWER);
+      if (Math.abs(x - pc) === 3) decor(x, GY - 1, T.TORCH, "floor");
+      else if (mk[x]) decor(x, GY - 1, mk[x], "floor");
+      else if (r < 0.08) decor(x, GY - 1, T.GLOWCAP, "floor"); else if (r < 0.18) decor(x, GY - 1, T.REED, "floor"); else if (r < 0.48) decor(x, GY - 1, T.FLOWER, "floor");
     }
-    // a knick-knack on the doorstep of every door (flower pot, bucket, clay pot or barrel) and one inside each house by the door
-    houses.forEach(function (h, hi) {
-      put(h.x - 1, GY - 1, KN[Math.floor(hash(hi, 705, seed) * 4)]); put(h.x + h.w, GY - 1, KN[Math.floor(hash(hi, 706, seed) * 4)]);
-      put(h.x + 1 + (hash(hi, 702, seed) < 0.5 ? 0 : h.w - 3), GY - 1, KN[Math.floor(hash(hi, 707, seed) * 4)]);
-    });
     return { cx: spot.cx, x0: spot.left, x1: spot.right, f0: spot.f0, f1: spot.f1, gy: GY, plaza: pc, houses: houses };
   }
 
@@ -307,6 +339,6 @@
     return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, holes: holes, village: village, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
-  var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
+  var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);

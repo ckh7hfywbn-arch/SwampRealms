@@ -5,6 +5,7 @@
 // SAVING: the whole game is one localStorage key, "swamp-delve-v1" (this browser only, NOT cloud-synced in Stage 1).
 //   { v:2, trail (First Day Trail step), seed, e:"idx:tile,idx:tile" (only tiles you changed), ex:"run-length explored map", p:{x,y,f}, animal, inv:{item:n}, mru:[item],
 //     tier (pick level 1-4), time (0-480 day clock), ms:{milestone:1}, st:{mined,placed,torches,wood,maxDepth,swim}, zoom }
+// INVENTORY: S.slots is a Minecraft-style grid (INV_HOT hotbar slots first, then INV_MAIN bag slots; each null or {k,n}, stack limit per item). S.inv {item:n} is the running total of the slots and is what all crafting code reads; reslot() keeps the two in step. S.extra holds loot that did not fit.
 // Swamp Coins and Swamp Crystals are never read or written. Nothing here pays out currency.
 // WORLDS: each player (signed-in name, or "guest") has a list of world slots on this device. Index key "swamp-delve-worlds:<user>", one save per world "swamp-delve-w:<user>:<id>".
 // The old single key below (swamp-delve-v1) is moved into the first slot once, then left untouched as a backup.
@@ -15,6 +16,10 @@
   var SW = SbxWorld, W = SW.W, H = SW.H, SURF = SW.SURF, T = SW.T, TILES = SW.TILES, ITEMS = SW.ITEMS, ORDER = SW.ITEM_ORDER, BIOMES = SW.BIOMES, SC = typeof SbxCave !== "undefined" ? SbxCave : null;
 
   // ---------- TUNING ----------
+  // inventory: 6 hotbar slots + 24 bag slots, 64 per stack (16 for furniture and other bulky things)
+  var INV_HOT = 6, INV_MAIN = 24, INV_N = INV_HOT + INV_MAIN, STACK = 64, STACK_SMALL = 16, SMALL = {};
+  ["bench", "bed", "door", "chest", "chair", "table", "painting", "flowerpot", "pot", "bucket", "barrel"].forEach(function (k) { SMALL[k] = 1; });
+  Object.keys(ITEMS).forEach(function (k) { if (ITEMS[k].decor && k !== "flower") SMALL[k] = 1; });   // furniture and decor stack to 16
   var KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
   // health: tuning (a player has MAXHP; fall hits past FALL_SAFE speed, lava burns per second, then you heal after a calm spell)
   var MAXHP = 100, FALL_SAFE = 17, LAVA_DPS = 38, REGEN_WAIT = 4, REGEN_RATE = 2.5;
@@ -47,9 +52,7 @@
     { id: "door", n: "Swamp Door", out: { door: 1 }, cost: { planks: 6, fiber: 2 }, d: "A two-tall wooden door. Place it on the ground in a doorway. Walk into it to open it (it shuts behind you), tap it or press F to open or close it by hand, and hold on it to break it. Closed doors stop bugs, frogs and bats." },
     { id: "ladder", n: "Ladder (4)", out: { ladder: 4 }, cost: { planks: 3 }, d: "Stick it to a wall or stack it up or down. Hold Jump to climb up, S or Down to climb down (on a phone you slowly slide down when not climbing)." },
     { id: "chest", n: "Wooden Chest", out: { chest: 1 }, cost: { planks: 8, fiber: 2 }, d: "Place it at camp on solid ground. Tap it (or press F nearby) to open it and stash up to 30 kinds of items. Empty it before you pick it up." },
-    { id: "chair", n: "Wooden Chair", out: { chair: 1 }, cost: { planks: 4, fiber: 1 }, d: "A simple chair for your camp. Place it on solid ground; it faces the way you are looking." },
-    { id: "table", n: "Wooden Table", out: { table: 1 }, cost: { planks: 8, fiber: 2 }, d: "A small table. Place it on solid ground." },
-    { id: "painting", n: "Painting", out: { painting: 1 }, cost: { planks: 2, fiber: 3 }, d: "Hang it on a wall (or any block). Every painting is a surprise: random coloured pixels." },
+    { id: "decorbench", n: "Decor Workbench", out: { decorbench: 1 }, bench: true, cost: { planks: 14, fiber: 6, clay: 4 }, d: "Place it in your camp or house. Standing next to it adds a Decor tab to your bag: chairs, tables, paintings, lamps, rugs and more. Needs a Bog Workbench nearby to make." },
     { id: "pick2", n: "Glowspore Pick", tier: 2, bench: true, cost: { spore: 16, wood: 12 }, d: "Digs 1.8x faster. Breaks Basalt and Cinder Ore." },
     { id: "wpn2", n: "Glowspore Blade", wpn: 2, need: 2, bench: true, cost: { spore: 12, wood: 8, planks: 8, bugfrag: 3 }, d: "A glowing blade. Damage 9, quick swing. Needs the Glowspore Pick and Bramble Fragments from Bramble Bugs." },
     { id: "pick3", n: "Cinder Pick", tier: 3, bench: true, cost: { cinder: 20, basalt: 16, planks: 24 }, d: "Digs 2.8x faster. Breaks Frostrock and Frost Crystal." },
@@ -57,6 +60,27 @@
     { id: "pick4", n: "Frost Pick", tier: 4, bench: true, cost: { crystal: 24, frostrock: 20, planks: 32 }, d: "The fastest pick in the swamp. Digs 4.2x faster." },
     { id: "wpn4", n: "Frost Fang", wpn: 4, need: 4, bench: true, cost: { crystal: 18, frostrock: 14, planks: 24, batwing: 4 }, d: "A razor ice blade. Damage 26, the fastest swing. Needs the Frost Pick and Bat Wings from Dusk Bats (they only come out at night)." }
   ];
+  // ---- DECOR WORKBENCH: recipes made while standing next to a Decor Workbench (Decor tab in the bag) ----
+  // TO ADD A NEW DECOR ITEM: (1) a tile() line + ITEMS entry + name in ITEM_ORDER and DECOR_FLOOR or DECOR_WALL in sandbox-world.js,
+  // (2) a drawing for its "kind" in paint() below, (3) one line here. cat groups the cards. cost may use other decor items (pot, barrel ...) to build "creations".
+  var DECOR = [
+    { id: "d_chair", cat: "Furniture", n: "Wooden Chair", out: { chair: 1 }, cost: { planks: 4, fiber: 1 }, d: "Faces the way you are looking when you place it." },
+    { id: "d_table", cat: "Furniture", n: "Wooden Table", out: { table: 1 }, cost: { planks: 8, fiber: 2 }, d: "A small table. Put chairs on each side." },
+    { id: "d_stool", cat: "Furniture", n: "Stool", out: { stool: 1 }, cost: { planks: 2, fiber: 1 }, d: "A simple seat for a corner or a market stall." },
+    { id: "d_shelf", cat: "Furniture", n: "Bookshelf", out: { bookshelf: 1 }, cost: { planks: 10, fiber: 4, stick: 2 }, d: "Rows of swamp-bound books." },
+    { id: "d_rug", cat: "Furniture", n: "Reed Rug", out: { rug: 1 }, cost: { fiber: 10, leaves: 2 }, d: "A woven rug that lies flat on the floor." },
+    { id: "d_bucket", cat: "Garden & Storage", n: "Wooden Bucket", out: { bucket: 1 }, cost: { planks: 3, fiber: 2 }, d: "Handy beside a well or a doorway." },
+    { id: "d_pot", cat: "Garden & Storage", n: "Clay Pot", out: { pot: 1 }, cost: { clay: 6 }, d: "A round terracotta pot. It is also the base of the Clay Lantern." },
+    { id: "d_barrel", cat: "Garden & Storage", n: "Barrel", out: { barrel: 1 }, cost: { planks: 8, fiber: 2 }, d: "A banded barrel. It is also the base of the Flower Planter." },
+    { id: "d_fpot", cat: "Garden & Storage", n: "Flower Pot", out: { flowerpot: 1 }, cost: { pot: 1, flower: 1 }, d: "A Clay Pot with a Swamp Flower planted in it." },
+    { id: "d_planter", cat: "Garden & Storage", n: "Flower Planter", out: { planter: 1 }, cost: { barrel: 1, flower: 3 }, d: "A Barrel overflowing with Swamp Flowers." },
+    { id: "d_lantern", cat: "Lighting", n: "Clay Lantern", out: { lantern: 1 }, cost: { pot: 1, torch: 2, stick: 2 }, d: "A Clay Pot topped with a glass lamp. Gives off warm light." },
+    { id: "d_campfire", cat: "Lighting", n: "Campfire", out: { campfire: 1 }, cost: { stick: 6, pebble: 6, torch: 1 }, d: "A ring of stones and a crackling fire. Gives off warm light." },
+    { id: "d_painting", cat: "Wall decor", n: "Painting", out: { painting: 1 }, cost: { planks: 2, fiber: 3 }, d: "Hang it on a wall. Every painting is a surprise." },
+    { id: "d_banner", cat: "Wall decor", n: "Swamp Banner", out: { banner: 1 }, cost: { fiber: 6, stick: 2, flower: 1 }, d: "A teal cloth banner. Hangs from a wall or a ceiling beam." },
+    { id: "d_sign", cat: "Wall decor", n: "Wooden Sign", out: { sign: 1 }, cost: { planks: 3, stick: 1 }, d: "A little board to hang beside a door." }
+  ];
+  DECOR.forEach(function (r) { r.deco = 1; });
   var GOALS = [
     { id: "dig", n: "First Dig", d: "Mine your first block", f: function () { return S.st.mined >= 1; } },
     { id: "wood", n: "Timber!", d: "Collect 10 Wood", f: function () { return S.st.wood >= 10; } },
@@ -88,6 +112,9 @@
     { id: "build", n: "Builder", d: "Place 100 blocks", f: function () { return S.st.placed >= 100; } },
     { id: "deep", n: "Deep Diver", d: "Dig down to depth 50", f: function () { return S.st.maxDepth >= 50; } },
     { id: "decor1", n: "Home Sweet Home", d: "Place 3 pieces of furniture", f: function () { return S.st.decor >= 3; } },
+    { id: "dbench1", n: "Interior Designer", d: "Place a Decor Workbench", f: function () { return S.st.dbenches >= 1; } },
+    { id: "dcraft5", n: "Cozy Corner", d: "Craft 5 pieces at the Decor Workbench", f: function () { return S.st.dcraft >= 5; } },
+    { id: "dcraft15", n: "Master Decorator", d: "Craft 15 pieces at the Decor Workbench", f: function () { return S.st.dcraft >= 15; } },
     { id: "cave1", n: "Down the Hole", d: "Climb down into a cave", f: function () { return S.st.caves >= 1; } },
     { id: "cave2", n: "Rock Hound", d: "Break 25 rocks inside caves", f: function () { return S.st.cmined >= 25; } },
     { id: "cave3", n: "Spelunker", d: "Reach cave floor 5", f: function () { return S.st.caveDeep >= 5; } },
@@ -130,7 +157,7 @@
   var S, world, tiles, orig, edits, col, ex;
   var p = { x: SW.SPAWNX + 0.5, y: 34, vx: 0, vy: 0, face: 1, on: false, coy: 0, wet: false, walk: 0 };
   var cam = { x: 40, y: 34 }, keys = { l: 0, r: 0, j: 0, d: 0, u: 0 }, tk = { l: 0, r: 0, j: 0, d: 0, u: 0 };
-  var sel = "pick", mine = null, aim = { down: false, id: null, mx: 0, my: 0, tx: -1, ty: -1 }, cool = 0;
+  var selSlot = -1, invSel = -1, invAsk = "", sel = "pick", mine = null, aim = { down: false, id: null, mx: 0, my: 0, tx: -1, ty: -1 }, cool = 0;
   var parts = [], texts = [], flies = [], glows = [];
   var hp = MAXHP, hurtT = 0, hurtGrace = 0, sinceHurt = 99, shake = 0, shownHp = -1, HVIG = null;
   var vw = 800, vh = 600, dpr = 1, ts = 28, ox = 0, oy = 0;
@@ -141,7 +168,7 @@
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", p: null, animal: defaultAnimal(), inv: {}, mru: [], tier: 0, wpn: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0 }, zoom: 1 }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(), extra: {}, mru: [], tier: 0, wpn: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0 }, zoom: 1 }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
@@ -150,6 +177,15 @@
     if (o.p && isFinite(o.p.x) && isFinite(o.p.y)) d.p = { x: clamp(+o.p.x, 1, W - 1), y: clamp(+o.p.y, 2, H - 2), f: o.p.f < 0 ? -1 : 1 };
     if (typeof o.animal === "string") d.animal = o.animal;
     if (o.inv && typeof o.inv === "object") ORDER.forEach(function (k) { var n = Math.floor(+o.inv[k]); if (n > 0) d.inv[k] = Math.min(n, 99999); });
+    d.slots = emptySlots(); d.extra = {};
+    if (Array.isArray(o.slots) && o.slots.length === INV_N) {   // saved slot layout
+      o.slots.forEach(function (sl, i) { if (sl && typeof sl.k === "string" && ITEMS[sl.k] && ORDER.indexOf(sl.k) > -1) { var n = clamp(Math.floor(+sl.n) || 0, 0, stackMax(sl.k)); if (n > 0) d.slots[i] = { k: sl.k, n: n }; } });
+      if (o.extra && typeof o.extra === "object") ORDER.forEach(function (k) { var n = Math.floor(+o.extra[k]); if (n > 0) d.extra[k] = Math.min(n, 99999); });
+    } else {   // older save (unlimited bag): the items you had on the hotbar go first, anything past the new limits waits in Overflow
+      var first = (Array.isArray(o.mru) ? o.mru : []).filter(function (k) { return d.inv[k] > 0; }), seen = {};
+      first.concat(ORDER).forEach(function (k) { if (seen[k] || !(d.inv[k] > 0)) return; seen[k] = 1; var rest = packInto(d.slots, k, d.inv[k]); if (rest > 0) d.extra[k] = rest; });
+    }
+    d.inv = totals(d.slots);
     if (Array.isArray(o.mru)) d.mru = o.mru.filter(function (k) { return ITEMS[k] && ITEMS[k].tile !== undefined; }).slice(0, 20);
     var tr = Math.floor(+o.tier); d.tier = clamp(isFinite(tr) ? tr : 1, o.v >= 2 ? 0 : 1, 4);
     var wp = Math.floor(+o.wpn); d.wpn = clamp(isFinite(wp) ? wp : 0, 0, WEAPONS.length - 1);
@@ -180,14 +216,14 @@
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world grew! It is 3x wider, with Frostfen west and Ember Bog east. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
-    cam.x = p.x; cam.y = p.y - 1; sel = "pick"; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.trail < TRAIL.length ? "trail" : "craft"; hbDirty = true; exKey = ""; spriteKey = ""; ICO = {};
+    cam.x = p.x; cam.y = p.y - 1; sel = "pick"; selSlot = -1; invSel = -1; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.trail < TRAIL.length ? "trail" : "craft"; hbDirty = true; exKey = ""; spriteKey = ""; ICO = {};
     hp = S.hp; hurtT = hurtGrace = shake = 0; sinceHurt = 99; shownHp = -1; drawHp(); sleepT = 0; batT = 8; enemies.length = 0;
     spawnCivs();
     reveal(true);
   }
   function save() {
     try {
-      S.hp = Math.max(1, Math.round(hp));
+      reslot(); S.hp = Math.max(1, Math.round(hp));
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
       S.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(",");
       S.ex = rle(ex);
@@ -310,13 +346,87 @@
   }
 
   // ---------- INVENTORY ----------
-  function give(item, n, tx, ty) {
-    S.inv[item] = (S.inv[item] || 0) + n;
-    if (typeof S.st[item] === "number") S.st[item] += n;
-    if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
-    if (tx !== undefined) text(tx + 0.5, ty, "+" + n + " " + ITEMS[item].n, ITEMS[item].gem || "#f6eedb");
-    hbDirty = true; if (panelOpen) renderPanel();
+  // A grid of INV_N slots like Minecraft: slots 0..5 are the hotbar, 6..29 are the bag. Each slot is null or { k: item, n: count }, at most stackMax(k) per slot.
+  // S.inv ({item: total}) is what crafting, building and repairs read and change. reslot() copies any change in S.inv back into the slots, so those places did not need to change.
+  function emptySlots() { var a = []; for (var i = 0; i < INV_N; i++) a.push(null); return a; }
+  function stackMax(k) { return SMALL[k] ? STACK_SMALL : STACK; }
+  function totals(sl) { var t = {}; sl.forEach(function (c) { if (c) t[c.k] = (t[c.k] || 0) + c.n; }); return t; }
+  function packInto(sl, k, n) {   // put n of k into slots (top up stacks first, then empty slots, hotbar first). Returns how many did NOT fit
+    var m = stackMax(k), i, c;
+    for (i = 0; i < sl.length && n > 0; i++) { c = sl[i]; if (c && c.k === k && c.n < m) { var a = Math.min(n, m - c.n); c.n += a; n -= a; } }
+    for (i = 0; i < sl.length && n > 0; i++) if (!sl[i]) { var b = Math.min(n, m); sl[i] = { k: k, n: b }; n -= b; }
+    return n;
   }
+  function takeFrom(sl, k, n, pref) {   // remove n of k: the slot you are holding first, then the bag from the back, the hotbar last
+    var i, c;
+    if (pref >= 0 && sl[pref] && sl[pref].k === k) { c = sl[pref]; var a = Math.min(n, c.n); c.n -= a; n -= a; if (c.n <= 0) sl[pref] = null; }
+    for (i = sl.length - 1; i >= 0 && n > 0; i--) { c = sl[i]; if (c && c.k === k) { var b = Math.min(n, c.n); c.n -= b; n -= b; if (c.n <= 0) sl[i] = null; } }
+  }
+  function reslot() {   // make the slots match S.inv
+    if (!S || !S.slots) return; var t = totals(S.slots), k, d, lost = 0;
+    for (k in t) { d = (S.inv[k] || 0) - t[k]; if (d < 0) takeFrom(S.slots, k, -d, k === sel ? selSlot : -1); }
+    for (k in S.inv) {
+      d = (S.inv[k] || 0) - (t[k] || 0);
+      if (d > 0) { var rest = packInto(S.slots, k, d); if (rest > 0) { S.inv[k] -= rest; S.extra[k] = (S.extra[k] || 0) + rest; lost += rest; } }
+      if (S.inv[k] <= 0) delete S.inv[k];
+    }
+    if (lost) toast("Inventory full! The extra went to Overflow (open your inventory).", "#f2c14e");
+  }
+  function room(k) { reslot(); var m = stackMax(k), r = 0; S.slots.forEach(function (c) { if (!c) r += m; else if (c.k === k) r += m - c.n; }); return r; }
+  function usedSlots() { reslot(); var n = 0; S.slots.forEach(function (c) { if (c) n++; }); return n; }
+  function extraCount() { var n = 0; for (var k in S.extra) n += S.extra[k]; return n; }
+  function addExtra(k, n) { S.extra[k] = Math.min(99999, (S.extra[k] || 0) + n); }
+  function invFull(item) { if (item && room(item) > 0) return false; nag("Inventory full! Press E to make room."); return true; }
+  function give(item, n, tx, ty, keep) {   // keep: loot that must never be lost (rewards, enemy drops). What does not fit waits in Overflow
+    var fit = Math.min(n, room(item));
+    if (fit > 0) {
+      S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit);
+      if (typeof S.st[item] === "number") S.st[item] += fit;
+      if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
+      if (tx !== undefined) text(tx + 0.5, ty, "+" + fit + " " + ITEMS[item].n, ITEMS[item].gem || "#f6eedb");
+    }
+    if (fit < n) { if (keep) { addExtra(item, n - fit); toast("Inventory full! " + (n - fit) + " " + ITEMS[item].n + " went to Overflow.", "#f2c14e"); } else nag("Inventory full! Press E to make room."); }
+    hbDirty = true; if (panelOpen) renderPanel(); return fit;
+  }
+  function moveSlot(a, b) {   // tap a, then tap b: move the stack, merge equal stacks, or swap
+    var sl = S.slots, A = sl[a], B = sl[b]; if (a === b || !A) return;
+    if (!B) { sl[b] = A; sl[a] = null; }
+    else if (B.k === A.k) { var m = stackMax(A.k), mv = Math.min(A.n, m - B.n); B.n += mv; A.n -= mv; if (A.n <= 0) sl[a] = null; }
+    else { sl[a] = B; sl[b] = A; }
+    hbDirty = true; invAfter();
+  }
+  function splitSlot(a) {   // half of the stack goes into the first empty slot
+    var A = S.slots[a]; if (!A || A.n < 2) return; var e = -1, i;
+    for (i = 0; i < INV_N; i++) if (!S.slots[i]) { e = i; break; }
+    if (e < 0) { toast("No empty slot to split into.", "#f2c14e"); return; }
+    var h = Math.floor(A.n / 2); A.n -= h; S.slots[e] = { k: A.k, n: h }; invSel = e; hbDirty = true; invAfter();
+  }
+  function quickMove(a) {   // hotbar -> bag, bag -> hotbar
+    var A = S.slots[a]; if (!A) return; var toHot = a >= INV_HOT, lo = toHot ? 0 : INV_HOT, hi = toHot ? INV_HOT : INV_N, m = stackMax(A.k), i;
+    for (i = lo; i < hi && A.n > 0; i++) { var c = S.slots[i]; if (c && c.k === A.k && c.n < m) { var mv = Math.min(A.n, m - c.n); c.n += mv; A.n -= mv; } }
+    for (i = lo; i < hi && A.n > 0; i++) if (!S.slots[i]) { S.slots[i] = { k: A.k, n: A.n }; A.n = 0; invSel = i; }
+    if (A.n <= 0) S.slots[a] = null; else if (toHot) { var sw = selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0; moveSlot(a, sw); invSel = sw; return; } else toast("The bag is full.", "#f2c14e");
+    hbDirty = true; invAfter();
+  }
+  function tossSlot(a, all) {   // throw away one, or the whole stack (the stack asks twice)
+    var A = S.slots[a]; if (!A) return;
+    if (all && A.n > 1 && invAsk !== "t" + a) { invAsk = "t" + a; renderPanel(); return; }
+    invAsk = ""; var k = A.k, n = all ? A.n : 1; A.n -= n; if (A.n <= 0) { S.slots[a] = null; invSel = -1; }
+    S.inv[k] = (S.inv[k] || 0) - n; if (S.inv[k] <= 0) delete S.inv[k]; if (sel === k && !(S.inv[k] > 0)) { sel = "pick"; selSlot = -1; }
+    snd("coin"); hbDirty = true; invAfter();
+  }
+  function sortInv() {   // tidy the bag (not the hotbar): merge stacks, then order like the item list
+    var items = [], i; for (i = INV_HOT; i < INV_N; i++) if (S.slots[i]) items.push(S.slots[i]); var t = {}; items.forEach(function (c) { t[c.k] = (t[c.k] || 0) + c.n; });
+    for (i = INV_HOT; i < INV_N; i++) S.slots[i] = null;
+    var tmp = S.slots.slice(INV_HOT); ORDER.forEach(function (k) { if (t[k]) packInto(tmp, k, t[k]); }); for (i = 0; i < tmp.length; i++) S.slots[INV_HOT + i] = tmp[i];
+    invSel = -1; hbDirty = true; invAfter();
+  }
+  function collectExtra(k) {
+    var n = S.extra[k] || 0, fit = Math.min(n, room(k)); if (fit <= 0) { toast("No room yet. Free a slot first.", "#f2c14e"); return; }
+    S.inv[k] = (S.inv[k] || 0) + fit; packInto(S.slots, k, fit); S.extra[k] -= fit; if (S.extra[k] <= 0) delete S.extra[k];
+    hbDirty = true; invAfter();
+  }
+  function invAfter() { if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && !(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } renderPanel(); }
   // ---------- DURABILITY ----------
   function durMax(k) { return k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : DUR.wpn[S.wpn] || 0; }
   function durOf(k) { var v = S.dur[k], m = durMax(k); return v == null ? m : Math.min(v, m); }
@@ -338,13 +448,18 @@
     for (var c2 in cost) { S.inv[c2] -= cost[c2]; if (S.inv[c2] <= 0) delete S.inv[c2]; }
     S.dur[k] = m; hbDirty = true; toast(toolName(k) + " repaired.", "#4ee6b4"); snd("coin"); chips(p.x, p.y - 1, "#4ee6b4", 12, 6); renderPanel(); save();
   }
-  function bar() { return ["pick"].concat(S.wpn ? ["weapon"] : [], S.shovel ? ["shovel"] : [], hot()); }
-  function hot() { return S.mru.filter(function (k) { return (S.inv[k] || 0) > 0; }).slice(0, 6); }
-  function choose(id) {
-    if (id === "pick") sel = "pick";
-    else if (id === "weapon") { if (S.wpn) sel = "weapon"; }
-    else if (id === "shovel") { if (S.shovel) sel = "shovel"; }
-    else if ((S.inv[id] || 0) > 0 && ITEMS[id] && ITEMS[id].tile !== undefined) { sel = id; S.mru = [id].concat(S.mru.filter(function (k) { return k !== id; })); }
+  function barEntries() {   // tools first (they do not use inventory slots), then the 6 hotbar slots
+    reslot(); var e = [{ id: "pick", slot: -1 }]; if (S.wpn) e.push({ id: "weapon", slot: -1 }); if (S.shovel) e.push({ id: "shovel", slot: -1 });
+    for (var i = 0; i < INV_HOT; i++) e.push({ id: S.slots[i] ? S.slots[i].k : "", slot: i });
+    return e;
+  }
+  function hot() { var o = []; for (var i = 0; i < INV_HOT; i++) if (S.slots[i] && o.indexOf(S.slots[i].k) < 0) o.push(S.slots[i].k); return o; }
+  function hotIndex(k) { for (var i = 0; i < INV_HOT; i++) if (S.slots[i] && S.slots[i].k === k) return i; return -1; }
+  function choose(id, slot) {
+    if (id === "pick") { sel = "pick"; selSlot = -1; }
+    else if (id === "weapon") { if (S.wpn) { sel = "weapon"; selSlot = -1; } }
+    else if (id === "shovel") { if (S.shovel) { sel = "shovel"; selSlot = -1; } }
+    else if ((S.inv[id] || 0) > 0 && ITEMS[id] && ITEMS[id].tile !== undefined) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(id); }
     mine = null; hbDirty = true;
   }
 
@@ -567,6 +682,47 @@
       rect(1, 1, 14, 14, "#6e431f"); rect(2, 2, 12, 12, "#c98c4f"); rect(3, 3, 10, 10, "#3a200d");
       [["#e8541a", 3, 3], ["#ffd25a", 6, 3], ["#4ee6b4", 9, 3], ["#8d63c9", 3, 6], ["#2a8f95", 6, 6], ["#ff8fc0", 9, 6], ["#5fb24a", 3, 9], ["#7fd6ff", 6, 9], ["#f2c14e", 9, 9]].forEach(function (c) { rect(c[1], c[2], 4, 4, c[0]); });
       return;
+    }
+    if (kind === "decorbench") {   // a work table with a teal cloth runner, paint pots, a brush and a chisel
+      rect(1, 8, 14, 3, "#c98c4f"); rect(1, 8, 14, 1, "#e4aa6c"); rect(1, 11, 14, 1, "#6e431f"); rect(2, 12, 2, 4, "#8a5a32"); rect(12, 12, 2, 4, "#8a5a32"); rect(2, 12, 1, 4, "#a8703c"); rect(4, 14, 8, 1, "#6e431f", 0.8);
+      rect(4, 8, 8, 3, "#22a883"); rect(4, 8, 8, 1, "#4ee6b4"); rect(4, 10, 8, 1, "#1a8a6c");
+      rect(2, 5, 3, 3, "#e8541a"); rect(2, 5, 3, 1, "#ff8a3d"); rect(6, 6, 3, 2, "#8d63c9"); rect(6, 6, 3, 1, "#b58cff");
+      rect(11, 2, 1, 6, "#8a5a32"); rect(10, 1, 3, 2, "#f2c14e"); rect(13, 4, 1, 4, "#9aa0ac"); rect(13, 3, 1, 1, "#e4aa6c"); return;
+    }
+    if (kind === "stool") {
+      rect(4, 8, 8, 2, "#c98c4f"); rect(4, 8, 8, 1, "#e4aa6c"); rect(4, 10, 8, 1, "#6e431f"); rect(5, 11, 2, 5, "#8a5a32"); rect(5, 11, 1, 5, "#a8703c"); rect(9, 11, 2, 5, "#8a5a32"); rect(6, 13, 4, 1, "#6e431f"); rect(5, 7, 6, 1, "#b58cff", 0.0); return;
+    }
+    if (kind === "rug") {   // flat woven rug with gold edges and fringe
+      rect(1, 12, 14, 4, "#6b3fa0"); rect(1, 12, 14, 1, "#8d63c9"); rect(3, 13, 10, 2, "#22a883"); rect(3, 13, 10, 1, "#4ee6b4"); rect(2, 12, 1, 4, "#f2c14e"); rect(13, 12, 1, 4, "#f2c14e"); rect(7, 13, 2, 2, "#f2c14e"); rect(0, 13, 1, 2, "#e4d7a8"); rect(15, 13, 1, 2, "#e4d7a8"); return;
+    }
+    if (kind === "bookshelf") {
+      rect(1, 0, 14, 16, "#8a5328"); rect(2, 1, 12, 14, "#3a200d"); rect(2, 5, 12, 1, "#a8703c"); rect(2, 10, 12, 1, "#a8703c"); rect(1, 15, 14, 1, "#6e431f"); rect(1, 0, 14, 1, "#c98c4f");
+      var BK = ["#e8541a", "#4ee6b4", "#8d63c9", "#f2c14e", "#2a8f95", "#ff8fc0", "#5fb24a", "#7fd6ff"];
+      [[1, 4], [6, 4], [11, 4]].forEach(function (rw, ri) { for (var bx = 2; bx < 14; bx += 2) { var bh = 3 - (hh(bx, ri, 4) > 0.6 ? 1 : 0), bc = BK[Math.floor(hh(bx, ri, 5) * BK.length)]; rect(bx, rw[0] + rw[1] - bh, 2, bh, bc); rect(bx, rw[0] + rw[1] - bh, 1, bh, "#fff", 0.25); } });
+      return;
+    }
+    if (kind === "lantern") {   // clay pot base, glass lamp with a flame
+      rect(5, 12, 6, 4, "#c46a3c"); rect(5, 12, 6, 1, "#e48a5c"); rect(10, 12, 1, 4, "#8a4524"); rect(6, 10, 4, 2, "#d9794a");
+      rect(5, 2, 6, 8, "#6e431f"); rect(6, 3, 4, 6, "#ffcf5a"); rect(7, 4, 2, 4, "#fff6c2"); rect(5, 1, 6, 1, "#8a5a32"); rect(7, 0, 2, 1, "#6e431f"); rect(6, 3, 1, 6, "#fff", 0.25); return;
+    }
+    if (kind === "banner") {
+      rect(2, 1, 12, 1, "#8a5a32"); rect(1, 0, 1, 3, "#c98c4f"); rect(14, 0, 1, 3, "#c98c4f"); rect(3, 2, 10, 10, "#22a883"); rect(3, 2, 10, 1, "#4ee6b4"); rect(3, 2, 1, 10, "#1a8a6c"); rect(12, 2, 1, 10, "#1a8a6c");
+      rect(4, 12, 8, 1, "#22a883"); rect(5, 13, 6, 1, "#22a883"); rect(6, 14, 4, 1, "#22a883"); rect(7, 15, 2, 1, "#22a883");
+      rect(7, 4, 2, 6, "#f2c14e"); rect(6, 6, 1, 2, "#f2c14e"); rect(9, 6, 1, 2, "#f2c14e"); rect(7, 3, 2, 1, "#fff2b0"); return;
+    }
+    if (kind === "sign") {
+      rect(4, 0, 1, 4, "#c9b58a"); rect(11, 0, 1, 4, "#c9b58a"); rect(1, 4, 14, 8, "#c98c4f"); rect(1, 4, 14, 1, "#e4aa6c"); rect(1, 11, 14, 1, "#6e431f"); rect(1, 4, 1, 8, "#a8703c"); rect(14, 4, 1, 8, "#8a5a32");
+      rect(3, 6, 8, 1, "#3a200d"); rect(3, 8, 10, 1, "#3a200d"); rect(12, 6, 1, 1, "#3f8f3a"); rect(3, 10, 5, 1, "#3a200d", 0.7); return;
+    }
+    if (kind === "planter") {   // a barrel overflowing with flowers (colours vary by spot)
+      var FR = [["#ff6fb5", "#ffd1ea"], ["#ffd23f", "#fff2a8"], ["#6aa8ff", "#d3e6ff"], ["#c08cff", "#ece0ff"]][v & 3];
+      rect(2, 9, 12, 7, "#9a6234"); rect(2, 9, 12, 1, "#c98c4f"); rect(2, 9, 1, 7, "#c98c4f"); rect(13, 9, 1, 7, "#6e431f"); rect(2, 12, 12, 1, "#4a4a52"); rect(2, 15, 12, 1, "#6e431f");
+      rect(2, 6, 12, 3, "#3f8f3a"); rect(3, 5, 10, 1, "#5fb24a"); rect(4, 4, 2, 2, FR[0]); rect(4, 4, 1, 1, FR[1]); rect(8, 2, 2, 3, FR[0]); rect(8, 2, 1, 1, FR[1]); rect(11, 4, 2, 2, FR[0]); rect(6, 5, 1, 1, "#ffe27a"); rect(10, 5, 1, 1, "#ffe27a"); return;
+    }
+    if (kind === "campfire") {
+      rect(2, 14, 12, 2, "#6b7276"); rect(2, 14, 12, 1, "#8e969b"); rect(3, 13, 2, 1, "#8e969b"); rect(11, 13, 2, 1, "#8e969b");
+      rect(3, 12, 10, 2, "#6a4426"); rect(4, 11, 8, 1, "#8a5a32"); rect(5, 12, 6, 1, "#3a200d");
+      rect(6, 5, 4, 7, "#ff7a1f"); rect(7, 3, 2, 4, "#ffc43a"); rect(7, 7, 2, 4, "#fff6c2"); rect(5, 8, 1, 3, "#ff7a1f"); rect(10, 8, 1, 3, "#ff7a1f"); rect(4, 6, 1, 1, "#ffb13b", 0.7); rect(11, 5, 1, 1, "#ffb13b", 0.7); return;
     }
     if (kind === "door") { paintDoor(rect, hh, td.door); return; }
     if (kind === "chest") {   // iron-banded swamp chest with a brass lock and a little moss
@@ -801,6 +957,7 @@
 
   // ---------- RULES ----------
   function dropQty(td) { return td.kind === "ore" ? 1 + (Math.random() < 0.6 ? 1 : 0) : td.kind === "reed" || td.kind === "vine" ? 1 + (Math.random() < 0.5 ? 1 : 0) : 1; }
+  function dropOf(td) { return td.kind === "door" ? "door" : td.drop; }
   function breakTile(x, y) {
     var id = get(x, y), td = TILES[id];
     if (td.kind === "door") {   // both halves go together and you get one Door back
@@ -828,7 +985,9 @@
       return true;
     }
     if (item === "chest" && !TILES[get(tx, ty + 1)].solid) { nag("A chest needs solid ground under it."); return false; }
-    if ((item === "chair" || item === "table" || item === "bucket" || item === "pot" || item === "flowerpot" || item === "barrel" || item === "flower") && !TILES[get(tx, ty + 1)].solid) { nag("That needs solid ground under it."); return false; }
+    var prule = ITEMS[item].put;   // decor: "floor" pieces stand on solid ground, "wall" pieces hang on a block beside or above them (see DECOR_FLOOR / DECOR_WALL in sandbox-world.js)
+    if (prule === "floor" && !TILES[get(tx, ty + 1)].solid) { nag("That needs solid ground under it."); return false; }
+    if (prule === "wall" && !(TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid)) { nag("Hang this on a wall: it needs a block beside or above it."); return false; }
     if (item === "bed" && !TILES[get(tx, ty + 1)].solid) { nag("A bed needs solid ground under it."); return false; }
     if (solid && tx + 1 > p.x - PW / 2 && tx < p.x + PW / 2 && ty + 1 > p.y - PH && ty < p.y) return false;
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
@@ -837,7 +996,7 @@
   function place(tx, ty, item) {
     setT(tx, ty, ITEMS[item].tile); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
-    if (item === "chair" || item === "table" || item === "painting" || item === "bucket" || item === "pot" || item === "flowerpot" || item === "barrel" || item === "flower") S.st.decor++;
+    if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
     if (item === "ladder") S.st.ladders++;
     if (item === "chest") S.st.chests++;
@@ -963,7 +1122,7 @@
     e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].glow, 16, 8); snd("open", "Epic");
     var kills = e.k === "bug" ? ++S.st.bugs : e.k === "bat" ? ++S.st.bats : ++S.st.frogs, d = ENEMY[e.k];
     if (kills === 1 || Math.random() < d.chance) {   // loot: a Delve item, and the same Fragment is added to your Adventure bag
-      give(d.frag, 1, e.x - 0.5, e.y - e.h - 0.9);
+      give(d.frag, 1, e.x - 0.5, e.y - e.h - 0.9, true);
       try { if (typeof Fragments !== "undefined") Fragments.add(ITEMS[d.frag].frag, 1); } catch (er) {}
     }
     checkGoals();
@@ -1176,7 +1335,7 @@
     if (!S.chests[key]) S.chests[key] = {};
     chestKey = key; snd("coin"); openPanel("chest"); return true;
   }
-  function addInv(item, n) { S.inv[item] = (S.inv[item] || 0) + n; if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item); hbDirty = true; }   // like give(), but without counting it as gathered
+  function addInv(item, n) { var fit = Math.min(n, room(item)); if (fit > 0) { S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit); if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item); } hbDirty = true; return fit; }   // like give(), but without counting it as gathered; returns how many fit
   function chestMove(item, all, dir) {   // dir "put": bag -> chest, "take": chest -> bag. all = whole stack
     var c = S.chests[chestKey]; if (!c || !ITEMS[item]) return;
     if (dir === "put") {
@@ -1184,7 +1343,9 @@
       if (!c[item] && chestKinds(c) >= CHEST_KINDS) { toast("This chest is full.", "#f2c14e"); return; }
       c[item] = Math.min(99999, (c[item] || 0) + have); S.st.stashed += have; delete S.inv[item]; if (sel === item) sel = "pick"; snd("coin");
     } else {
-      var n = c[item] || 0; if (n <= 0) return; addInv(item, n); delete c[item];
+      var n = c[item] || 0; if (n <= 0) return; var fit = addInv(item, n);
+      if (fit <= 0) { toast("Your inventory is full.", "#f2c14e"); return; }
+      if (fit < n) { c[item] = n - fit; toast("Inventory full. " + (n - fit) + " " + ITEMS[item].n + " stayed in the chest.", "#f2c14e"); } else delete c[item];
     }
     hbDirty = true; renderPanel(); checkTrail();
   }
@@ -1249,6 +1410,7 @@
       if (sel === "shovel" && !SOFT[id]) { nag("A shovel only digs soft ground (mud, moss, clay, ash, snow). Use your pick for " + td.n + "."); mine = null; return; }
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
+      var dro = dropOf(td); if (dro && room(dro) <= 0) { invFull(); mine = null; return; }
       if (td.kind === "door" || td.kind === "chest") {   // a quick tap opens/closes the door, so breaking it needs a short hold first
         var dk = tx + "," + ty; if (doorHoldKey !== dk) { doorHoldKey = dk; doorHoldT = 0; }
         doorHoldT += dt; if (doorHoldT < 0.3) { mine = null; return; }
@@ -1263,13 +1425,24 @@
       if ((S.inv[sel] || 0) > 0 && canPlace(tx, ty, sel)) place(tx, ty, sel);
     }
   }
+  function decorNear() {
+    if (cave) return false; var cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
+    for (var y = cy - 3; y <= cy + 3; y++) for (var x = cx - 5; x <= cx + 5; x++) if (get(x, y) === T.DECORBENCH) return true;
+    return false;
+  }
+  function decorBenchAt() {
+    var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 1e9;
+    for (var y = cy - 3; y <= cy + 3; y++) for (var x = cx - 5; x <= cx + 5; x++) if (get(x, y) === T.DECORBENCH) { var dx = x + 0.5 - p.x, dy = y + 0.5 - (p.y - 0.7), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
+    return best;
+  }
   function nearBench() {
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
     for (var y = cy - 4; y <= cy + 4; y++) for (var x = cx - 7; x <= cx + 7; x++) if (get(x, y) === T.BENCH) return true;
     return false;
   }
   function craft(id) {
-    var r = RECIPES.filter(function (x) { return x.id === id; })[0]; if (!r) return;
+    var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
+    if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
     if (r.sh && S.shovel) return;
@@ -1278,11 +1451,17 @@
     if (r.need && S.tier < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
     if (r.bench && !nearBench()) { toast("Stand near a Bog Workbench to craft this.", "#f2c14e"); return; }
     for (var k in r.cost) if ((S.inv[k] || 0) < r.cost[k]) { toast("Not enough " + ITEMS[k].n + ".", "#f2c14e"); return; }
+    if (r.out) {   // the crafted items must fit once the ingredients are used up
+      reslot(); var sim = S.slots.map(function (c) { return c ? { k: c.k, n: c.n } : null; }), q;
+      for (q in r.cost) takeFrom(sim, q, r.cost[q], -1);
+      for (q in r.out) if (packInto(sim, q, r.out[q]) > 0) { toast("Not enough room in your inventory.", "#f2c14e"); return; }
+    }
     for (var c in r.cost) { S.inv[c] -= r.cost[c]; if (S.inv[c] <= 0) delete S.inv[c]; }
+    reslot();
     if (r.tier) { S.tier = r.tier; S.dur.pick = DUR.pick[r.tier]; ICO = {}; toast(r.n + " crafted. Dig faster!", PICKS[r.tier].c); snd("open", "Epic"); chips(p.x, p.y - 1, PICKS[r.tier].c, 30, 9); }
     else if (r.sh) { S.shovel = 1; S.dur.shovel = DUR.shovel; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar to dig soft ground!", SHOVEL.c); snd("open", "Epic"); chips(p.x, p.y - 1, SHOVEL.c, 24, 8); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
-    else { for (var o in r.out) give(o, r.out[o]); toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
+    else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
     hbDirty = true; renderPanel(); save();
   }
   function rewardText(rw) { return Object.keys(rw).map(function (k) { return "+" + rw[k] + " " + ITEMS[k].n; }).join(", "); }
@@ -1290,7 +1469,7 @@
     var st;
     while ((st = TRAIL[S.trail]) && st.v() >= st.need) {
       S.trail++; trailKey = "";
-      if (st.rw) for (var k in st.rw) give(st.rw[k] ? k : k, st.rw[k]);
+      if (st.rw) for (var k in st.rw) give(k, st.rw[k], undefined, undefined, true);
       banner(st.n, st.rw ? "Reward: " + rewardText(st.rw) : "Nice work!", S.trail >= TRAIL.length ? "Trail complete" : "Trail step " + S.trail + " of " + TRAIL.length);
       if (S.trail >= TRAIL.length) setTimeout(function () { toast("First Day Trail done! Keep delving.", "#f2c14e"); }, 3600);
       save();
@@ -1625,7 +1804,7 @@
           g.fillStyle = "rgba(0,0,0,.3)"; if (nB) g.fillRect(sx3, sy + ts - edge, ts, edge); if (nL) g.fillRect(sx3, sy, edge, ts); if (nR) g.fillRect(sx3 + ts - edge, sy, edge, ts);
         }
       }
-      if (td.light >= 3 && td.solid === false || td.light >= 6) glows.push([sx3 + ts / 2, sy + ts / 2, id === T.TORCH ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", id === T.TORCH ? 4.6 : 2.7, id === T.TORCH ? 0.3 : 0.17]);
+      if (td.light >= 3 && td.solid === false || td.light >= 6) glows.push([sx3 + ts / 2, sy + ts / 2, id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
       if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
     }
     // mining cracks and a pulse on the tile being dug
@@ -1837,6 +2016,7 @@
     if (nid) {
       var td = TILES[nid];
       if (sel !== "pick" && sel !== "shovel") { nag("Hold your pick to break rocks (press Q)."); mine = null; return; }
+      if (td.drop && room(td.drop) <= 0) { invFull(); mine = null; return; }
       if (sel === "shovel" && !SOFT[nid]) { nag("A shovel only digs soft things. Use your pick for " + td.n + "."); mine = null; return; }
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
@@ -1847,7 +2027,7 @@
       return;
     }
     mine = null; cool -= dt; if (cool > 0) return;
-    if (F.torch[i]) { if (sel === "pick" || sel === "shovel") { cool = 0.25; F.torch[i] = 0; give("torch", 1, tx, ty); thud(300, 0.04); } return; }
+    if (F.torch[i]) { if (sel === "pick" || sel === "shovel") { if (invFull("torch")) { cool = 0.5; return; } cool = 0.25; F.torch[i] = 0; give("torch", 1, tx, ty); thud(300, 0.04); } return; }
     if (F.wall[i]) return;
     if (sel === "torch" && (S.inv.torch || 0) > 0) {
       if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y)) return;
@@ -2050,22 +2230,27 @@
     if (hbDirty) drawBar();
   }
   function drawBar() {
-    hbDirty = false; var items = bar(), html = "";
-    items.forEach(function (id, i) {
-      var cnt = id === "pick" ? (S.tier ? "Lv" + S.tier : "Paws") : id === "weapon" ? "Lv" + S.wpn : id === "shovel" ? "Soft" : S.inv[id];
+    hbDirty = false; var items = barEntries(), html = "";
+    if (sel !== "pick" && sel !== "weapon" && sel !== "shovel") { if (!(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } else if (!(S.slots[selSlot] && S.slots[selSlot].k === sel)) selSlot = hotIndex(sel); }
+    items.forEach(function (en, i) {
+      var id = en.id, on = en.slot >= 0 ? (id && sel === id && selSlot === en.slot) : sel === id;
+      if (!id) { html += '<button type="button" class="sbx-slot empty" disabled aria-label="Empty hotbar slot"><i>' + (i + 1) + "</i></button>"; return; }
+      var cnt = id === "pick" ? (S.tier ? "Lv" + S.tier : "Paws") : id === "weapon" ? "Lv" + S.wpn : id === "shovel" ? "Soft" : S.slots[en.slot].n;
       var dk = id === "pick" ? (S.tier ? "pick" : "") : id === "weapon" ? "wpn" : id === "shovel" ? "shovel" : "", dpc = dk ? Math.round(durOf(dk) / durMax(dk) * 100) : -1, brk = dk && toolBroken(dk);
       if (brk) cnt = "Broken";
-      html += '<button type="button" class="sbx-slot' + (sel === id ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : ITEMS[id].n + ", " + S.inv[id]) + '" aria-pressed="' + (sel === id) + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
+      html += '<button type="button" class="sbx-slot' + (on ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" data-slot="' + en.slot + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : ITEMS[id].n + ", " + S.slots[en.slot].n) + '" aria-pressed="' + on + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
     });
     $("sbxBar").innerHTML = html;
+    var bb = $("sbxMenuBtn"); bb.classList.toggle("full", S.slots.every(Boolean));
   }
   function costHtml(cost) {
     return Object.keys(cost).map(function (k) { var have = S.inv[k] || 0, ok = have >= cost[k]; return '<span class="' + (ok ? "ok" : "no") + '"><img alt="" src="' + icon(k) + '">' + have + "/" + cost[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("");
   }
   function renderPanel() {
     if (!panelOpen) return;
-    var tabs = [["trail", "Trail"], ["craft", "Craft"], ["bag", "Bag"], ["map", "Map"], ["goals", "Goals"], ["more", "Options"]];
+    var tabs = [["trail", "Trail"], ["craft", "Craft"], ["bag", "Inventory"], ["map", "Map"], ["goals", "Goals"], ["more", "Options"]];
     if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "bag";
+    if (decorNear()) tabs.splice(2, 0, ["decor", "Decor"]); else if (tab === "decor") tab = "craft";
     $("sbxTabs").innerHTML = tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
     var h = "";
     if (tab === "trail") {
@@ -2095,10 +2280,33 @@
         var note = lock ? (r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
         h += '<div class="sbx-card' + (owned || lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !needB ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (owned || lock ? " disabled" : "") + ">" + (owned ? "Owned" : lock ? "Locked" : "Craft") + "</button></div>";
       });
+    } else if (tab === "decor") {
+      var lastCat = "";
+      h += '<p class="sbx-note"><b>Decor Workbench.</b> Craft furniture and decorations for your camp or house. Floor pieces need solid ground under them; wall pieces hang on a block beside or above them. Some pieces are built from others (a Lantern needs a Clay Pot).</p>';
+      DECOR.forEach(function (r) {
+        if (r.cat !== lastCat) { lastCat = r.cat; h += "<h3>" + esc(r.cat) + "</h3>"; }
+        var can = Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ok = Object.keys(r.out)[0];
+        h += '<div class="sbx-card"><img class="big" alt="" src="' + icon(ok) + '"><div><b>' + esc(r.n) + "</b><small>" + esc(r.d) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can ? "" : " ghost") + '" data-sx-craft="' + r.id + '">Craft</button></div>';
+      });
     } else if (tab === "bag") {
-      var have = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0; });
-      h += have.length ? '<p class="sbx-note">Tap a block to hold it, then tap the world to build.</p><div class="sbx-bag">' + have.map(function (k) { var pl = ITEMS[k].tile !== undefined; return '<button type="button" class="sbx-it' + (sel === k ? " on" : "") + '"' + (pl ? ' data-hold="' + k + '"' : " disabled") + '><img alt="" src="' + icon(k) + '"><b>' + S.inv[k] + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; }).join("") + "</div>"
-        : '<p class="sbx-note">Your bag is empty. Walk to a tree and hold on the trunk to chop it.</p>';
+      reslot(); var used = usedSlots(), cell = function (i) {
+        var c = S.slots[i], on = invSel === i;
+        return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + "</b>" : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
+      }, cur2 = invSel >= 0 ? S.slots[invSel] : null, g1 = "", g2 = "", i2;
+      for (i2 = INV_HOT; i2 < INV_N; i2++) g1 += cell(i2);
+      for (i2 = 0; i2 < INV_HOT; i2++) g2 += cell(i2);
+      h += '<p class="sbx-note"><b>Inventory</b> \u00b7 <span class="' + (used >= INV_N ? "invfull" : "") + '">' + used + " / " + INV_N + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap a slot, then tap another to move, swap or merge stacks.</p>";
+      h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div><h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
+      h += '<div class="sbx-iinfo">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + cur2.n + " of " + stackMax(cur2.k) + "</small></span></div>" : "<div><span><small>No slot selected. Tap an item to select it.</small></span></div>")
+        + '<div class="acts"><button type="button" class="btn ghost" data-iact="swap"' + (cur2 ? "" : " disabled") + ">" + (invSel >= INV_HOT ? "To hotbar" : "To bag") + '</button>'
+        + (cur2 && ITEMS[cur2.k].tile !== undefined ? '<button type="button" class="btn" data-iact="hold">Hold</button>' : "")
+        + '<button type="button" class="btn ghost" data-iact="split"' + (cur2 && cur2.n > 1 ? "" : " disabled") + '>Split</button>'
+        + '<button type="button" class="btn ghost" data-iact="toss1"' + (cur2 ? "" : " disabled") + '>Toss 1</button>'
+        + '<button type="button" class="btn ghost' + (cur2 && invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall"' + (cur2 ? "" : " disabled") + ">" + (cur2 && invAsk === "t" + invSel ? "Tap again" : "Toss all") + '</button>'
+        + '<button type="button" class="btn ghost" data-iact="sort">Sort bag</button></div></div>';
+      var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
+      if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
+      if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
     } else if (tab === "chest") {
       var cc = S.chests[chestKey] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
       h += '<p class="sbx-note"><b>Wooden Chest</b> (' + ck.length + " of " + CHEST_KINDS + ' kinds). Tap an item to move the whole stack.</p>';
@@ -2137,6 +2345,29 @@
   function openPanel(t) { if (t) tab = t; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
   function closePanel() { panelOpen = false; if (chestKey) { chestKey = ""; if (tab === "chest") tab = "bag"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
 
+  // ---------- INVENTORY SCREEN ----------
+  function invClick(i, shift) {
+    invAsk = "";
+    if (shift) { if (S.slots[i]) quickMove(i); return; }
+    if (invSel < 0 || !S.slots[invSel]) { invSel = S.slots[i] ? i : -1; return renderPanel(); }
+    if (invSel === i) { invSel = -1; return renderPanel(); }
+    var from = invSel; invSel = i; moveSlot(from, i);
+  }
+  function invAct(a) {
+    var c = invSel >= 0 ? S.slots[invSel] : null; if (!c && a !== "sort") return;
+    if (a !== "tossall") invAsk = "";
+    if (a === "swap") quickMove(invSel);
+    else if (a === "split") splitSlot(invSel);
+    else if (a === "toss1") tossSlot(invSel, false);
+    else if (a === "tossall") tossSlot(invSel, true);
+    else if (a === "sort") sortInv();
+    else if (a === "hold") { var k = c.k, at = invSel; if (at >= INV_HOT) { quickMove(at); at = hotIndex(k); } choose(k, at); closePanel(); }
+  }
+  $("sbxPanel").addEventListener("contextmenu", function (e) {   // right-click a slot: split the stack in half
+    var b = e.target.closest("[data-is]"); if (!b) return; e.preventDefault(); var i = +b.getAttribute("data-is"); if (S.slots[i] && S.slots[i].n > 1) { invSel = i; splitSlot(i); }
+  });
+  $("sbxPanel").addEventListener("click", function (e) { var b = e.target.closest("[data-is]"); if (b && e.shiftKey) { e.stopImmediatePropagation(); invClick(+b.getAttribute("data-is"), true); } }, true);
+
   // ---------- INPUT ----------
   function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
   cv.addEventListener("pointerdown", function (e) {
@@ -2144,7 +2375,7 @@
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
-    aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && TILES[get(aim.dx, aim.dy)].kind === "door"; aim.chest = !cave && get(aim.dx, aim.dy) === T.CHEST; aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE;
+    aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && TILES[get(aim.dx, aim.dy)].kind === "door"; aim.chest = !cave && get(aim.dx, aim.dy) === T.CHEST; aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.dwb = !cave && get(aim.dx, aim.dy) === T.DECORBENCH;
     aim.lad = cave ? (aim.dx === cave.F.up.x && (aim.dy === cave.F.up.y || aim.dy === cave.F.up.y - 1) ? "up" : aim.dx === cave.F.down.x && aim.dy === cave.F.down.y ? "down" : "") : ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
     $("sbxHint").classList.remove("on"); if (ac && ac.state === "suspended") ac.resume();
   });
@@ -2153,6 +2384,10 @@
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.door && TILES[get(aim.dx, aim.dy)].kind === "door") {   // quick tap on a door: open or close it
       var ddx = aim.dx + 0.5 - p.x, ddy = aim.dy + 0.5 - (p.y - PH / 2);
       if (ddx * ddx + ddy * ddy <= REACH * REACH) toggleDoor(aim.dx, aim.dy, true); else nag("That door is too far away.");
+    }
+    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.dwb && get(aim.dx, aim.dy) === T.DECORBENCH) {   // quick tap on a Decor Workbench: open the Decor tab
+      var wdx2 = aim.dx + 0.5 - p.x, wdy2 = aim.dy + 0.5 - (p.y - PH / 2);
+      if (wdx2 * wdx2 + wdy2 * wdy2 <= REACH * REACH) { snd("coin"); openPanel("decor"); } else nag("Walk closer to the Decor Workbench.");
     }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.chest && get(aim.dx, aim.dy) === T.CHEST) {   // quick tap on a chest: open it
       var cdx = aim.dx + 0.5 - p.x, cdy = aim.dy + 0.5 - (p.y - PH / 2);
@@ -2184,15 +2419,15 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && panelOpen) { closePanel(); return; }
-    if (k === "e" || k === "E") { panelOpen ? closePanel() : openPanel(); e.preventDefault(); return; }
+    if (k === "e" || k === "E") { panelOpen ? closePanel() : openPanel("bag"); e.preventDefault(); return; }
     if (panelOpen) return;
     if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 1; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 1;
     else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 1;
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
-    else if (k >= "1" && k <= "9") { var items = bar(), id = items[+k - 1]; if (id) choose(id); }
+    else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); }
     else if (k === "f" || k === "F") {
       if (cave) { var ln = ladderNear(); if (ln) useLadder(ln.k); else nag("Stand next to a ladder to use it."); }
-      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), hn = skip || dn || cn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (hn) enterCave(hn.x, hn.y); else trySleep(); }
+      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), wn = skip || dn || cn ? null : decorBenchAt(), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (wn) { snd("coin"); openPanel("decor"); } else if (hn) enterCave(hn.x, hn.y); else trySleep(); }
     }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
@@ -2201,9 +2436,9 @@
     var k = e.key; if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 0; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 0; else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 0; if (k !== " ") keys.u = 0; } else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 0;
   });
   window.addEventListener("blur", function () { keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; });
-  $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel")); });
+  $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
   $("sbxTrail").addEventListener("click", function () { openPanel("trail"); });
-  $("sbxMenuBtn").addEventListener("click", function () { panelOpen ? closePanel() : openPanel(); });
+  $("sbxMenuBtn").addEventListener("click", function () { panelOpen ? closePanel() : openPanel("bag"); });
   $("sbxPanel").addEventListener("click", function (e) {
     var t = e.target.closest("button"); if (!t) return;
     if (t.hasAttribute("data-close")) return closePanel();
@@ -2213,6 +2448,9 @@
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.getAttribute("data-sx-craft")) return craft(t.getAttribute("data-sx-craft"));
+    if (t.hasAttribute("data-is")) return invClick(+t.getAttribute("data-is"));
+    if (t.getAttribute("data-iact")) return invAct(t.getAttribute("data-iact"));
+    if (t.getAttribute("data-iextra")) return collectExtra(t.getAttribute("data-iextra"));
     if (t.getAttribute("data-hold")) { choose(t.getAttribute("data-hold")); return closePanel(); }
     if (t.getAttribute("data-an")) { S.animal = t.getAttribute("data-an"); mkSprite(); return renderPanel(); }
     if (t.hasAttribute("data-zoom")) { var Z = [0.8, 1, 1.25, 1.5, 2], zi = clamp(Z.indexOf(S.zoom) + +t.getAttribute("data-zoom"), 0, Z.length - 1); S.zoom = Z[zi]; resize(); return renderPanel(); }
@@ -2246,5 +2484,5 @@
   if (wIdx.list.length > 1) openWorlds();   // several worlds: let the player pick
   setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000);
   requestAnimationFrame(loop);
-  window.__sbx = { get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: bar, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
+  window.__sbx = { get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
 })();
