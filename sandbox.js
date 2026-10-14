@@ -46,11 +46,17 @@
   // DURABILITY: every tool wears out. A block broken costs the pick or shovel 1 point (2 for hard rock like Basalt and Frostrock); each swing that hits something costs the weapon 1.
   // At 0 the tool is BROKEN, not lost: a broken pick digs like bare paws, a broken shovel or weapon cannot be used. Repair it in the Craft tab (Reed gear by hand, Glowspore and up next to a Workbench).
   // A newly crafted tool is at full durability. Saved in S.dur; older saves start with everything at full.
-  var DUR = { pick: [0, 100, 180, 300, 480], shovel: 80, wpn: [0, 40, 70, 100, 150] };
-  var REPAIR = { pick: [null, { stick: 2, fiber: 2 }, { spore: 4, wood: 3 }, { cinder: 5, basalt: 3 }, { crystal: 6, frostrock: 4 }], shovel: { stick: 1, fiber: 2 }, wpn: [null, { stick: 2, fiber: 2 }, { spore: 3, planks: 2 }, { cinder: 4, basalt: 3 }, { crystal: 5, frostrock: 3 }] };
+  var DUR = { pick: [0, 100, 180, 300, 480], shovel: 80, wpn: [0, 40, 70, 100, 150], arm: [0, 60, 110, 170, 260] };
+  var REPAIR = { pick: [null, { stick: 2, fiber: 2 }, { spore: 4, wood: 3 }, { cinder: 5, basalt: 3 }, { crystal: 6, frostrock: 4 }], shovel: { stick: 1, fiber: 2 }, wpn: [null, { stick: 2, fiber: 2 }, { spore: 3, planks: 2 }, { cinder: 4, basalt: 3 }, { crystal: 5, frostrock: 3 }], arm: [null, { fiber: 3, leaves: 3 }, { spore: 4, fiber: 3 }, { cinder: 5, basalt: 3 }, { crystal: 6, frostrock: 4 }] };
   var WEAPONS = [
     { n: "No Weapon", c: "#8fd37a", dmg: 0, cd: 0 }, { n: "Reed Spear", c: "#c9b58a", dmg: 5, cd: 0.5 }, { n: "Glowspore Blade", c: "#4ee6b4", dmg: 9, cd: 0.42 },
     { n: "Cinder Cleaver", c: "#ff8a3d", dmg: 16, cd: 0.5 }, { n: "Frost Fang", c: "#7fd6ff", dmg: 26, cd: 0.34 }
+  ];
+  // Armor: a third track beside picks and weapons (S.arm 0-4). It is worn automatically once crafted, shows on your avatar and cuts the damage you take.
+  // red = share of damage blocked (lava is only blocked at half strength). Each hit that hurts you wears it down; at 0 it is BROKEN (no protection) until repaired.
+  var ARMORS = [
+    { n: "No Armor", c: "#8fd37a", red: 0 }, { n: "Reed Vest", c: "#d3a96b", red: 0.12 }, { n: "Glowspore Mail", c: "#4ee6b4", red: 0.24 },
+    { n: "Cinder Plate", c: "#ff8a3d", red: 0.36 }, { n: "Frost Plate", c: "#7fd6ff", red: 0.5 }
   ];
   var RECIPES = [
     { id: "pick1", n: "Reed Pick", tier: 1, cost: { stick: 3, fiber: 3, pebble: 2 }, d: "Your first tool. Chops wood, digs clay and breaks stone." },
@@ -78,7 +84,11 @@
     { id: "pick3", n: "Cinder Pick", tier: 3, bench: true, cost: { cinder: 20, basalt: 16, planks: 24 }, d: "Digs 2.8x faster. Breaks Frostrock and Frost Crystal." },
     { id: "wpn3", n: "Cinder Cleaver", wpn: 3, need: 3, bench: true, cost: { cinder: 16, basalt: 12, planks: 16, frogfrag: 3 }, d: "A heavy lava-veined cleaver. Damage 16. Needs the Cinder Pick and Frog Fragments from Swamp Frogs." },
     { id: "pick4", n: "Frost Pick", tier: 4, bench: true, cost: { crystal: 24, frostrock: 20, planks: 32 }, d: "The fastest pick in the swamp. Digs 4.2x faster." },
-    { id: "wpn4", n: "Frost Fang", wpn: 4, need: 4, bench: true, cost: { crystal: 18, frostrock: 14, planks: 24, batwing: 4 }, d: "A razor ice blade. Damage 26, the fastest swing. Needs the Frost Pick and Bat Wings from Dusk Bats (they only come out at night)." }
+    { id: "wpn4", n: "Frost Fang", wpn: 4, need: 4, bench: true, cost: { crystal: 18, frostrock: 14, planks: 24, batwing: 4 }, d: "A razor ice blade. Damage 26, the fastest swing. Needs the Frost Pick and Bat Wings from Dusk Bats (they only come out at night)." },
+    { id: "arm1", n: "Reed Vest", arm: 1, cost: { fiber: 10, stick: 4, leaves: 6 }, d: "A woven vest of reed fibre. Blocks 12% of damage. Made by hand and worn right away." },
+    { id: "arm2", n: "Glowspore Mail", arm: 2, need: 2, bench: true, cost: { spore: 14, planks: 10, fiber: 8, bugfrag: 2 }, d: "Teal armor with a glowing gem. Blocks 24% of damage. Needs the Reed Vest, the Glowspore Pick and Bramble Fragments." },
+    { id: "arm3", n: "Cinder Plate", arm: 3, need: 3, bench: true, cost: { cinder: 18, basalt: 14, planks: 12, frogfrag: 2 }, d: "Dark plate with a glowing lava seam. Blocks 36% of damage. Needs the Glowspore Mail, the Cinder Pick and Frog Fragments." },
+    { id: "arm4", n: "Frost Plate", arm: 4, need: 4, bench: true, cost: { crystal: 22, frostrock: 16, planks: 20, batwing: 3 }, d: "Crystal ice plate. Blocks half of all damage. Needs the Cinder Plate, the Frost Pick and Bat Wings." }
   ];
   // ---- DECOR WORKBENCH: recipes made while standing next to a Decor Workbench (Decor tab in the bag) ----
   // TO ADD A NEW DECOR ITEM: (1) a tile() line + ITEMS entry + name in ITEM_ORDER and DECOR_FLOOR or DECOR_WALL in sandbox-world.js,
@@ -120,6 +130,10 @@
     { id: "wpn2", n: "Spore Blade", d: "Craft the Glowspore Blade", f: function () { return S.wpn >= 2; } },
     { id: "wpn3", n: "Cinder Cleaver", d: "Craft the Cinder Cleaver", f: function () { return S.wpn >= 3; } },
     { id: "wpn4", n: "Frost Fang", d: "Craft the Frost Fang", f: function () { return S.wpn >= 4; } },
+    { id: "arm1", n: "Dressed Up", d: "Craft the Reed Vest", f: function () { return S.arm >= 1; } },
+    { id: "arm2", n: "Spore Mail", d: "Craft the Glowspore Mail", f: function () { return S.arm >= 2; } },
+    { id: "arm3", n: "Cinder Plate", d: "Craft the Cinder Plate", f: function () { return S.arm >= 3; } },
+    { id: "arm4", n: "Frozen Solid", d: "Craft the Frost Plate", f: function () { return S.arm >= 4; } },
     { id: "bed1", n: "Bed Time", d: "Place a Swamp Bed", f: function () { return S.st.beds >= 1; } },
     { id: "door1", n: "Knock Knock", d: "Place a Swamp Door", f: function () { return S.st.doors >= 1; } },
     { id: "ladder1", n: "Up and Away", d: "Place a Ladder", f: function () { return S.st.ladders >= 1; } },
@@ -195,7 +209,7 @@
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1 }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1 }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
@@ -218,11 +232,12 @@
     if (Array.isArray(o.mru)) d.mru = o.mru.filter(function (k) { return ITEMS[k] && ITEMS[k].tile !== undefined; }).slice(0, 20);
     var tr = Math.floor(+o.tier); d.tier = clamp(isFinite(tr) ? tr : 1, o.v >= 2 ? 0 : 1, 4);
     var wp = Math.floor(+o.wpn); d.wpn = clamp(isFinite(wp) ? wp : 0, 0, WEAPONS.length - 1);
+    var ar = Math.floor(+o.arm); d.arm = clamp(isFinite(ar) ? ar : 0, 0, ARMORS.length - 1);   // older saves have no armor
     d.trail = typeof o.trail === "number" ? clamp(Math.floor(o.trail), 0, TRAIL.length) : TRAIL.length;   // older saves skip the beginner Trail
     d.shovel = +o.shovel ? 1 : 0;
     d.can = +o.can ? 1 : 0; d.water = d.can ? clamp(Math.floor(+o.water) || 0, 0, CAN.max) : 0;
-    d.dur = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0 };   // older saves: everything at full
-    if (o.dur && typeof o.dur === "object") { var dm = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0 }; Object.keys(dm).forEach(function (k) { if (isFinite(+o.dur[k]) && o.dur[k] !== null) d.dur[k] = clamp(Math.floor(+o.dur[k]), 0, dm[k]); }); }
+    d.dur = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0, arm: DUR.arm[d.arm] || 0 };   // older saves: everything at full
+    if (o.dur && typeof o.dur === "object") { var dm = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0, arm: DUR.arm[d.arm] || 0 }; Object.keys(dm).forEach(function (k) { if (isFinite(+o.dur[k]) && o.dur[k] !== null) d.dur[k] = clamp(Math.floor(+o.dur[k]), 0, dm[k]); }); }
     d.hp = isFinite(+o.hp) && +o.hp > 0 ? Math.min(MAXHP, +o.hp) : MAXHP;   // older saves start at full health
     d.time = clamp(+o.time || 60, 0, CYCLE - 0.01);
     if (o.bed && isFinite(o.bed.x) && isFinite(o.bed.y)) d.bed = { x: clamp(Math.floor(o.bed.x), 0, W - 1), y: clamp(Math.floor(o.bed.y), 0, H - 1) };   // checked against the world on respawn
@@ -460,25 +475,25 @@
   }
   function invAfter() { if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can" && !(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } renderPanel(); }
   // ---------- DURABILITY ----------
-  function durMax(k) { return k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : DUR.wpn[S.wpn] || 0; }
+  function durMax(k) { return k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : k === "arm" ? DUR.arm[S.arm] || 0 : DUR.wpn[S.wpn] || 0; }
   function durOf(k) { var v = S.dur[k], m = durMax(k); return v == null ? m : Math.min(v, m); }
-  var toolName = function (k) { return k === "pick" ? PICKS[S.tier].n : k === "shovel" ? SHOVEL.n : WEAPONS[S.wpn].n; };
+  var toolName = function (k) { return k === "pick" ? PICKS[S.tier].n : k === "shovel" ? SHOVEL.n : k === "arm" ? ARMORS[S.arm].n : WEAPONS[S.wpn].n; };
   var toolBroken = function (k) { return durMax(k) > 0 && durOf(k) <= 0; };
   function effTier() { return S.tier > 0 && durOf("pick") > 0 ? S.tier : 0; }   // a broken pick digs like bare paws
   function wear(k, n) {
     var m = durMax(k); if (m <= 0) return; var before = durOf(k), now = Math.max(0, before - n); S.dur[k] = now; hbDirty = true;
     if (panelOpen && tab === "craft") renderPanel();
-    if (now <= 0 && before > 0) { toast("Your " + toolName(k) + " broke! Repair it in the Craft tab.", "#ff6b82"); thud(90, 0.12); chips(p.x, p.y - 1, "#c9b58a", 14, 6); mine = null; }
+    if (now <= 0 && before > 0) { toast("Your " + toolName(k) + " broke" + (k === "arm" ? " and no longer protects you" : "") + "! Repair it in the Craft tab.", "#ff6b82"); thud(90, 0.12); chips(p.x, p.y - 1, "#c9b58a", 14, 6); mine = null; }
     else if (before > m * 0.2 && now <= m * 0.2) toast("Your " + toolName(k) + " is wearing out.", "#f2c14e");
   }
-  function repairNeedsBench(k) { return k === "pick" ? S.tier >= 2 : k === "wpn" ? S.wpn >= 2 : false; }
-  function repairCost(k) { return k === "pick" ? REPAIR.pick[S.tier] : k === "shovel" ? REPAIR.shovel : REPAIR.wpn[S.wpn]; }
+  function repairNeedsBench(k) { return k === "pick" ? S.tier >= 2 : k === "wpn" ? S.wpn >= 2 : k === "arm" ? S.arm >= 2 : false; }
+  function repairCost(k) { return k === "pick" ? REPAIR.pick[S.tier] : k === "shovel" ? REPAIR.shovel : k === "arm" ? REPAIR.arm[S.arm] : REPAIR.wpn[S.wpn]; }
   function repair(k) {
     var m = durMax(k); if (m <= 0 || durOf(k) >= m) return; var cost = repairCost(k); if (!cost) return;
     if (repairNeedsBench(k) && !nearBench()) { toast("Stand near a Bog Workbench to repair this.", "#f2c14e"); return; }
     for (var c in cost) if ((S.inv[c] || 0) < cost[c]) { toast("Not enough " + ITEMS[c].n + ".", "#f2c14e"); return; }
     for (var c2 in cost) { S.inv[c2] -= cost[c2]; if (S.inv[c2] <= 0) delete S.inv[c2]; }
-    S.dur[k] = m; hbDirty = true; toast(toolName(k) + " repaired.", "#4ee6b4"); snd("coin"); chips(p.x, p.y - 1, "#4ee6b4", 12, 6); renderPanel(); save();
+    S.dur[k] = m; hbDirty = true; armKey = ""; toast(toolName(k) + " repaired.", "#4ee6b4"); snd("coin"); chips(p.x, p.y - 1, "#4ee6b4", 12, 6); renderPanel(); save();
   }
   function barEntries() {   // tools first (they do not use inventory slots), then the 6 hotbar slots
     reslot(); var e = [{ id: "pick", slot: -1 }]; if (S.wpn) e.push({ id: "weapon", slot: -1 }); if (S.shovel) e.push({ id: "shovel", slot: -1 }); if (S.can) e.push({ id: "can", slot: -1 });
@@ -833,127 +848,59 @@
     if (id === T.BEDROCK) for (k = 0; k < 9; k++) rect(Math.floor(hh(k, 0, 6) * 14), Math.floor(hh(k, 1, 7) * 14), 2, 2, td.c2);
     if (td.solid && kind !== "leaves") rect(0, 15, 16, 1, "#000", 0.16);
   }
-  // Each pick is styled after what it is made from: Reed (reed stalk + pebble head), Glowspore (glowing green crystal),
-  // Cinder (charred handle, basalt head with lava veins), Frost (ice crystal). 32x32 canvas.
-  function drawPickIcon(g, tier) {
-    var P = [null,
-      { h1: "#d8c48e", h2: "#a8905a", hl: "#f4e8bf", head: "#8e969b", head2: "#c3c9cc", edge: "#4a5256" },
-      { h1: "#5a3d26", h2: "#3a2616", hl: "#8a6440", head: "#1fbf93", head2: "#9bfbe0", edge: "#0b5d48" },
-      { h1: "#2a2024", h2: "#150f12", hl: "#5a464e", head: "#3b3036", head2: "#ff8a3d", edge: "#120c0f" },
-      { h1: "#bfe9f7", h2: "#7fcfe8", hl: "#ffffff", head: "#7fd6ff", head2: "#e6fbff", edge: "#2f7fa3" }][tier];
-    var line = function (x1, y1, x2, y2, c, w) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
-    // handle
-    line(6, 28, 19, 12, P.edge, 5.2); line(6, 28, 19, 12, P.h2, 3.8); line(6.4, 27.4, 18.6, 12.2, P.h1, 2.2); line(7, 26, 12, 19.8, P.hl, 1);
-    var crescent = function (fill, stroke) {
-      g.beginPath(); g.moveTo(3, 16); g.quadraticCurveTo(13, -1, 30, 9); g.quadraticCurveTo(15, 6.5, 8, 21); g.quadraticCurveTo(6, 19, 3, 16); g.closePath();
-      g.fillStyle = fill; g.fill(); g.strokeStyle = stroke; g.lineWidth = 1.6; g.lineJoin = "round"; g.stroke();
-    };
-    if (tier === 1) {
-      line(15, 18, 20, 12, "#4f8a3c", 3.4); line(10, 24, 14, 19, "#4f8a3c", 3); line(15.4, 17.6, 19.6, 12.4, "#8fd37a", 1);   // fiber lashings
-      crescent(P.head, P.edge); g.strokeStyle = P.head2; g.lineWidth = 1.4; g.beginPath(); g.moveTo(7, 13.5); g.quadraticCurveTo(14, 5.5, 24, 8); g.stroke();
-      g.fillStyle = "#5d666b"; g.fillRect(12, 8, 2, 2); g.fillRect(19, 9, 2, 1);
-      line(15, 14, 21, 12.5, "#4f8a3c", 3.6); line(15.5, 13.8, 20.5, 12.7, "#8fd37a", 1.2);
-    } else if (tier === 2) {
-      g.shadowColor = "#4ee6b4"; g.shadowBlur = 7; crescent(P.head, P.edge); g.shadowBlur = 0;
-      g.fillStyle = P.head2; [[11, 5.8, 12, 9], [18, 4.6, 19.2, 8.6]].forEach(function (c) { g.beginPath(); g.moveTo(c[0], c[3] + 1); g.lineTo(c[0] + 1.6, c[1]); g.lineTo(c[2] + 2.4, c[3] + 1); g.closePath(); g.fill(); });
-      g.strokeStyle = P.head2; g.lineWidth = 1.3; g.beginPath(); g.moveTo(6.5, 14.5); g.quadraticCurveTo(14, 5, 26, 8.5); g.stroke();
-      g.fillStyle = "#d8fff6"; g.fillRect(24, 5, 2, 2); g.fillRect(3, 12, 1.5, 1.5);   // glints
-      g.fillStyle = "#4ee6b4"; g.fillRect(8, 24, 2, 2); g.fillRect(12, 28, 1.5, 1.5);  // spore specks on the handle
-    } else if (tier === 3) {
-      crescent(P.head, P.edge);
-      g.strokeStyle = "#ff6a1f"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(6.5, 15); g.lineTo(11, 11); g.lineTo(14, 12); g.lineTo(19, 8); g.lineTo(25, 8.6); g.stroke();   // lava vein
-      g.strokeStyle = "#ffc24a"; g.lineWidth = 0.8; g.stroke();
-      g.shadowColor = "#ff8a3d"; g.shadowBlur = 6; g.fillStyle = "#ffb13b"; g.fillRect(28, 8, 2, 2); g.shadowBlur = 0;
-      line(9, 24, 12, 20.5, "#ff6a1f", 1.2); line(14, 18, 16.5, 14.8, "#ff8a3d", 1);   // glowing cracks in the handle
-      g.fillStyle = "#ffc24a"; g.fillRect(4, 8, 1.5, 1.5); g.fillRect(25, 2, 1.5, 1.5); g.fillRect(2, 22, 1.2, 1.2);   // embers
-    } else {
-      g.shadowColor = "#bff4ff"; g.shadowBlur = 8; crescent(P.head, P.edge); g.shadowBlur = 0;
-      g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.moveTo(5, 15); g.quadraticCurveTo(13, 3.5, 24, 7); g.quadraticCurveTo(14, 7.5, 8.5, 17.5); g.closePath(); g.fill();
-      g.strokeStyle = P.edge; g.lineWidth = 0.9; g.beginPath(); g.moveTo(12, 8); g.lineTo(14, 11); g.moveTo(19, 7.4); g.lineTo(18, 10.2); g.stroke();   // ice facets
-      g.fillStyle = "#fff"; g.fillRect(27, 5, 1.6, 4); g.fillRect(25.8, 6.2, 4, 1.6); g.fillRect(4, 8, 1, 3); g.fillRect(3, 9, 3, 1);   // sparkles
-      line(8, 27, 11, 23.4, "#ffffffaa", 1.2);
-    }
+  // ---------- PIXEL TOOL ART ----------
+  // Every tool, pack and the bare paws are 16x16 pixel sprites (same chunky look as the avatars). "r" holds rows of colour letters for the art only;
+  // the dark outline ("o") is added automatically around it. Held tools, hotbar icons and Craft cards all use these same sprites.
+  // Grip is bottom-left and the working end is top-right, so every tool sits in the paw the same way. Edit a sprite by changing its rows.
+  var SPR = {
+    "paw": { r: ["................", "................", "..bb..bb..bb.bb.", ".bahb.baab.baab.", ".baab.baab.baab.", "..bb...bb...bb..", "................", "....cccccccc....", "...chhaaaaaac...", "..caaaaaaaaaac..", "..caaaaaaaaaac..", "..caaaaaaaaaac..", "...caaaaaaaac...", "....cccccccc....", "................", "................"], p: {"a": "#8fd37a", "b": "#7bc66a", "c": "#4f9a45", "h": "#d4f7bf"}, o: "#1b3d19" },
+    "pick1": { r: ["................", "................", "...bbbbb........", "..bbaacaabb.....", ".bbaa....acbb...", ".ba.......aaabb.", ".a.........aaab.", "...........aaac.", "..........hdaac.", ".........llh.c..", "........lel.....", ".......hdh......", "......hdh.......", ".....hdh........", "....hdh.........", "...hdh.........."], p: {"h": "#d8c48e", "H": "#f4e8bf", "d": "#a8905a", "a": "#8e969b", "b": "#c9cfd2", "c": "#5d666b", "l": "#4f8a3c", "e": "#8fd37a"}, o: "#1e1c18" },
+    "pick2": { r: ["................", "..............e.", "...bbbbe..e.....", "..bbeaaabbb.....", ".bbaa....aaeb...", ".ba.......aaabb.", ".a.........aeab.", "...........aaac.", "..........hdaac.", ".........edh.c..", "........hdh.....", ".......hdh......", "......heh.......", ".....edh........", "....hdh.........", "...hdh.........."], p: {"h": "#6b4a30", "H": "#8a6440", "d": "#3a2616", "a": "#1fbf93", "b": "#9bfbe0", "c": "#0b7a5e", "e": "#e6fff8"}, o: "#06231c" },
+    "pick3": { r: ["................", "................", "...bbbbb.....e..", "..bbaaaabbb.....", ".bblle...eabb...", ".ba.......laabb.", ".a.........eaab.", "...........alac.", "..........hdaac.", ".........hdh.c..", "........hdh.....", ".......hdh......", "......hdl.......", ".....hlh........", "....hdh.........", "...hdh.........."], p: {"h": "#3a2e34", "H": "#5a464e", "d": "#1c1418", "a": "#4a3c44", "b": "#6e5c66", "c": "#2a2026", "l": "#ff6a1f", "e": "#ffc24a"}, o: "#0c070a" },
+    "pick4": { r: ["............e.e.", ".............e..", "...bbbbb......e.", "..beeaaabbb.....", ".bbaae...aabb...", ".ba.......aaebb.", ".a.........aaab.", "...........aaac.", "..........hdaac.", ".e.......hdh.c..", "e.e.....hdh.....", ".e.....hdh......", "......heh.......", ".....hdh........", "....hdh.........", "...hdh.........."], p: {"h": "#bfe9f7", "H": "#ffffff", "d": "#7fcfe8", "a": "#7fd6ff", "b": "#e6fbff", "c": "#3f9fc4", "e": "#ffffff"}, o: "#16465e" },
+    "shovel": { r: ["................", "............bbb.", "...........bwaab", "..........bawaac", ".........gbwaac.", "........ggaacc..", ".......hgg.cc...", "......hlh.......", ".....hle........", "....hdh.........", "...hdh..........", "..hdh...........", ".hdh............", ".hh.............", "................", "................"], p: {"h": "#d8c48e", "d": "#a8905a", "a": "#a3abb0", "b": "#d6dbde", "c": "#6a7378", "g": "#7d868b", "l": "#4f8a3c", "e": "#8fd37a", "w": "#ffffff"}, o: "#1e1c18" },
+    "wpn1": { r: ["..............b.", ".............bab", "............waac", "...........waaac", "..........hbaac.", ".........hdaac..", "........hlhcc...", ".......hle......", "......hdh.......", ".....hdh........", "....hdh.........", "...hdh..........", "..hdh...........", ".hdh............", ".hh.............", "................"], p: {"h": "#d8c48e", "d": "#a8905a", "a": "#9aa2a6", "b": "#d9dee0", "c": "#5d666b", "l": "#4f8a3c", "e": "#8fd37a", "w": "#ffffff"}, o: "#1e1c18" },
+    "wpn2": { r: ["..............bb", ".............bab", "............beac", "...........beac.", "..........beac..", ".........beac...", "....g...beac....", ".....g.beac.....", "...x..gggc......", ".......ggg......", "......hdg.g.....", ".....hdh........", "....hdh.........", "...ppp..........", "................", "................"], p: {"h": "#5a3d26", "d": "#3a2616", "a": "#1fbf93", "b": "#9bfbe0", "c": "#0b7a5e", "g": "#4ee6b4", "e": "#e6fff8", "p": "#2a1a0e", "x": "#4ee6b4"}, o: "#06231c" },
+    "wpn3": { r: ["................", "...........bbwb.", "..........blaaac", ".........beaaaac", "........blaaaac.", ".......blaaaac..", "...g...bleaac...", "....g.gbaaac....", ".....gggaac.....", "....hggg.c......", "...ldh.g........", "..ldh...........", ".ldh............", ".hh.............", "................", "................"], p: {"h": "#4a3a40", "d": "#241a1e", "a": "#4a3c44", "b": "#7a6872", "c": "#2a2026", "g": "#ff8a3d", "l": "#ff6a1f", "e": "#ffd25a", "w": "#ffd25a"}, o: "#0c070a" },
+    "wpn4": { r: [".............wwb", ".............baw", "............bwac", "...........bwac.", "..........bwacc.", "..x.g....bwaac..", "...x.g..bwac.c..", "......ggbac.....", ".......ggc......", "......hdg.g.....", ".....hdh........", "....hdh.........", "...hdh..........", "...hh...........", "................", "................"], p: {"h": "#bfe9f7", "d": "#7fcfe8", "a": "#7fd6ff", "b": "#e6fbff", "c": "#3f9fc4", "g": "#e6fbff", "w": "#ffffff", "x": "#ffffff"}, o: "#16465e" },
+    "can": { r: ["................", "..............bb", ".............bwb", "............ab.c", "...hhhh....aa...", "..hdddh...aa....", "..ha..hhh.a.....", ".hh.bwwbbbaa....", ".h..awaaaaaa....", ".h..awaaaaac....", ".hd.awaaaaac....", "..hdaaaaaaac....", "...cccccccc.....", "................", "................", "................"], p: {"h": "#2f7ea6", "d": "#1d4a63", "a": "#4f9fc4", "b": "#8fd3ef", "c": "#2f7ea6", "w": "#cdeeff"}, o: "#10303f" },
+    "bag1": { r: ["................", "......bbbb......", ".....bffffb.....", "....bffffffb....", "....bbbbbbbb....", "...saaaaaaaas...", "...saaaggaaas...", "...saaagggaas...", "...saaaaaaaas...", "...saadadadaas..", "...saaaaaaaas...", "...saaaaaaaas...", "....cccccccc....", "................", "................", "................"], p: {"a": "#b88a52", "b": "#6b4a26", "f": "#d3a96b", "s": "#5a3d20", "g": "#f2c14e", "d": "#8a6236", "c": "#6b4a26", "p": "#b88a52"}, o: "#2a1a0c" },
+    "bag2": { r: ["................", "......bbbb......", ".....bffffb.....", "....bffffffb....", "....bbbbbbbb....", "...saaaaaaaas...", "...saaaggaaas...", "..psaaagggaasp..", "..psaaaaaaaasp..", "..psaadadadaasp.", "..psaaaaaaaasp..", "...saaaaaaaas...", "....cccccccc....", "................", "................", "................"], p: {"a": "#1f7a6a", "b": "#0f3f38", "f": "#2fb59a", "s": "#0b2a26", "g": "#7dffe0", "d": "#16574c", "c": "#0f3f38", "p": "#1f7a6a"}, o: "#04201c" }
+  };
+  var SPC = {};
+  SPR = Object.assign(SPR, {
+    "arm1": { r: ["................", "..aaa......aaa..", ".abbaa.cc.aabba.", ".abaaaa..aaaaba.", ".aaaaaaaaaaaaaa.", "..aabbalaabbaa..", "..aabbeblebbaa..", "..aabbblbbbbaa..", "...abbemlebba...", "...abbblmbbba...", "...aabbblbbaa...", "....aaaaaaaa....", "....ddddddddd...", "................", "................", "................"], p: {"a": "#a8814b", "b": "#d3a96b", "c": "#6b4a26", "m": "#b88a52", "d": "#6b4a26", "l": "#4f8a3c", "e": "#8fd37a"}, o: "#2a1a0c" },
+    "arm2": { r: ["................", "..aaa......aaa..", ".abbaa.cc.aabba.", ".abwaaa..aaawba.", ".aaaaaaaaaaaaaa.", "..aabbaaaabbaa..", "..aabcbbbbcbaa..", "..aabbbbbbbbaa..", "...abbbggbbba...", "...abbbgwbbba...", "...aacbbbbcaa...", "....aaaaaaaa....", "....ddddddddd...", "................", "................", "................"], p: {"a": "#157a64", "b": "#1fbf93", "c": "#0b4d3e", "m": "#1fbf93", "d": "#0b4d3e", "g": "#4ee6b4", "w": "#e6fff8"}, o: "#04201c" },
+    "arm3": { r: ["................", "..aaa......aaa..", ".albaa.cc.aabla.", ".abaaaa..aaaaba.", ".aaaaaaaaaaaaaa.", "..aalbaaaablaa..", "..aabbblbbbbaa..", "..aabbbblbbbaa..", "...abbbggbbba...", "...abbbgwbbba...", "...aabbbbbbaa...", "....aaaaaaaa....", "....dldddlddd...", "................", "................", "................"], p: {"a": "#3a2e34", "b": "#5a4a52", "c": "#1c1418", "m": "#4a3c44", "d": "#ff6a1f", "g": "#ff6a1f", "w": "#ffd25a", "l": "#ff8a3d"}, o: "#0c070a" },
+    "arm4": { r: [".w............w.", "..waa......aaw..", ".abbaa.ww.aabba.", ".abaaaa..aaaaba.", ".aaaaaaaaaaaaaa.", "..aabbaaaabbaa..", "..aawbbbbbbwaa..", "..aabbbbbbbbaa..", "...abbbwwbbba...", "...abbbwwbbba...", "...aabbbbbbaa...", "....aaaaaaaa....", "....ddddddddd...", "................", "................", "................"], p: {"a": "#3f9fc4", "b": "#7fd6ff", "c": "#16465e", "m": "#bff0ff", "d": "#2f7fa3", "w": "#ffffff"}, o: "#16465e" }
+  });
+  function sprCanvas(key) {   // 16x16 canvas for one sprite, cached
+    if (SPC[key]) return SPC[key];
+    var d = SPR[key], c = document.createElement("canvas"); c.width = c.height = 16; var g = c.getContext("2d"), on = {}, x, y;
+    for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var ch = d.r[y].charAt(x); if (ch !== "." && d.p[ch]) on[x + "," + y] = d.p[ch]; }
+    g.fillStyle = d.o;
+    Object.keys(on).forEach(function (k) {
+      var q = k.split(","), px = +q[0], py = +q[1];
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (o) { var nx = px + o[0], ny = py + o[1]; if (nx >= 0 && ny >= 0 && nx < 16 && ny < 16 && !on[nx + "," + ny]) g.fillRect(nx, ny, 1, 1); });
+    });
+    Object.keys(on).forEach(function (k) { var q = k.split(","); g.fillStyle = on[k]; g.fillRect(+q[0], +q[1], 1, 1); });
+    return (SPC[key] = c);
   }
-  // Weapon art: same 32x32 box and grip corner as the picks, so it sits in the hand the same way (grip bottom-left, tip top-right).
-  function drawCanIcon(g) {   // a watering can in the 32x32 box: round body, handle on the left, long spout with a rose pointing up and right
-    g.lineJoin = "round"; g.lineCap = "round"; g.strokeStyle = "#1d4a63"; g.lineWidth = 1.5;
-    g.beginPath(); g.moveTo(7, 15); g.quadraticCurveTo(2, 15, 3, 21); g.quadraticCurveTo(4, 26, 8, 25); g.stroke();   // back handle
-    g.fillStyle = "#4f9fc4"; g.beginPath(); g.moveTo(21, 15); g.lineTo(28, 7); g.lineTo(30, 9); g.lineTo(23, 20); g.closePath(); g.fill(); g.stroke();   // spout
-    g.fillStyle = "#8fd3ef"; g.beginPath(); g.moveTo(27, 5); g.lineTo(31, 8); g.lineTo(29.5, 11); g.lineTo(26, 7.5); g.closePath(); g.fill(); g.stroke();   // rose
-    g.fillStyle = "#4f9fc4"; g.beginPath(); g.roundRect ? g.roundRect(6, 13, 16, 15, 3) : g.rect(6, 13, 16, 15); g.fill(); g.stroke();   // body
-    g.fillStyle = "#8fd3ef"; g.fillRect(8, 15, 3, 11);   // shine
-    g.fillStyle = "#2f7ea6"; g.fillRect(6, 19, 16, 2);   // band
-    g.strokeStyle = "#1d4a63"; g.lineWidth = 2; g.beginPath(); g.moveTo(10, 13); g.quadraticCurveTo(14, 6, 19, 13); g.stroke();   // top handle
-  }
-  var CCV = null;
-  function heldCan() { if (!CCV) { CCV = document.createElement("canvas"); CCV.width = CCV.height = 32; drawCanIcon(CCV.getContext("2d")); } return CCV; }
-  function drawBagIcon(g, t) {   // a backpack in the 32x32 icon box: tier 1 woven reed, tier 2 teal with side pockets and a glowing buckle
-    var body = t >= 2 ? "#1f7a6a" : "#b88a52", dark = t >= 2 ? "#0f3f38" : "#6b4a26", flap = t >= 2 ? "#2fb59a" : "#d3a96b", strap = t >= 2 ? "#0b2a26" : "#5a3d20";
-    g.lineJoin = "round"; g.lineWidth = 1.5; g.strokeStyle = dark;
-    g.fillStyle = strap; g.fillRect(6, 12, 3, 16); g.fillRect(23, 12, 3, 16);   // straps
-    if (t >= 2) { g.fillStyle = body; g.beginPath(); g.roundRect ? g.roundRect(3, 17, 5, 9, 2) : g.rect(3, 17, 5, 9); g.fill(); g.stroke(); g.beginPath(); g.roundRect ? g.roundRect(24, 17, 5, 9, 2) : g.rect(24, 17, 5, 9); g.fill(); g.stroke(); }
-    g.fillStyle = body; g.beginPath(); g.roundRect ? g.roundRect(7, 9, 18, 20, 4) : g.rect(7, 9, 18, 20); g.fill(); g.stroke();
-    g.fillStyle = flap; g.beginPath(); g.moveTo(7, 15); g.quadraticCurveTo(7, 5, 16, 5); g.quadraticCurveTo(25, 5, 25, 15); g.lineTo(25, 17); g.lineTo(7, 17); g.closePath(); g.fill(); g.stroke();
-    g.strokeStyle = dark; g.lineWidth = 1; g.beginPath(); for (var i = 0; i < 3; i++) { g.moveTo(10, 21 + i * 2.6); g.lineTo(22, 21 + i * 2.6); } g.stroke();   // weave lines
-    g.fillStyle = t >= 2 ? "#7dffe0" : "#f2c14e"; g.strokeStyle = dark; g.lineWidth = 1.2; g.fillRect(14, 15, 4, 5); g.strokeRect(14, 15, 4, 5);   // buckle
-  }
-  function drawShovelIcon(g) {   // same 32x32 box and grip corner as the picks: grip bottom-left, blade top-right
-    var line = function (x1, y1, x2, y2, c, w) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
-    line(6, 28, 20, 11, "#4a5256", 5.2); line(6, 28, 20, 11, "#a8905a", 3.8); line(6.4, 27.4, 19.6, 11.4, "#d8c48e", 2.2); line(7, 26, 12, 19.8, "#f4e8bf", 1);
-    line(14, 19, 18, 14, "#4f8a3c", 3.2); line(14.4, 18.6, 17.6, 14.4, "#8fd37a", 1);   // fiber lashing
-    g.save(); g.translate(20, 11); g.rotate(-0.88); g.lineJoin = "round";
-    g.fillStyle = "#5d666b"; g.strokeStyle = "#4a5256"; g.lineWidth = 1.2; g.fillRect(0, -3.2, 3.4, 6.4); g.strokeRect(0, -3.2, 3.4, 6.4);   // iron collar
-    g.beginPath(); g.moveTo(3.2, -3.6); g.quadraticCurveTo(12.5, -7.2, 14.2, 0); g.quadraticCurveTo(12.5, 7.2, 3.2, 3.6); g.closePath();
-    var gr = g.createLinearGradient(0, -6, 0, 6); gr.addColorStop(0, "#c3c9cc"); gr.addColorStop(1, "#7d868b"); g.fillStyle = gr; g.fill(); g.strokeStyle = "#4a5256"; g.lineWidth = 1.5; g.stroke();
-    g.strokeStyle = "rgba(255,255,255,.75)"; g.lineWidth = 1; g.beginPath(); g.moveTo(5, -2.4); g.quadraticCurveTo(10.5, -4.4, 12, -0.6); g.stroke();
-    g.strokeStyle = "rgba(60,40,20,.45)"; g.lineWidth = 1; g.beginPath(); g.moveTo(6, 1.6); g.lineTo(11, 0.6); g.moveTo(6, 3); g.lineTo(9.5, 2.6); g.stroke();   // dirt stains
-    g.restore();
-  }
-  function drawWeaponIcon(g, tier) {
-    var P = [null,
-      { h1: "#d8c48e", h2: "#a8905a", edge: "#4a5256", b1: "#8e969b", b2: "#e3e8ea" },
-      { h1: "#5a3d26", h2: "#3a2616", edge: "#0b5d48", b1: "#1fbf93", b2: "#c8fff0" },
-      { h1: "#2a2024", h2: "#150f12", edge: "#120c0f", b1: "#3b3036", b2: "#ff8a3d" },
-      { h1: "#bfe9f7", h2: "#7fcfe8", edge: "#2f7fa3", b1: "#7fd6ff", b2: "#f2fdff" }][tier];
-    if (!P) return;
-    var line = function (x1, y1, x2, y2, c, w) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
-    var blade = function (w, fill) {   // blade along the grip direction, from the guard near (13,19) to the tip (29,3)
-      g.beginPath(); g.moveTo(12, 20); g.lineTo(13 - w, 19 - w); g.lineTo(29, 3); g.lineTo(13 + w, 19 + w); g.closePath();
-      g.fillStyle = fill; g.fill(); g.strokeStyle = P.edge; g.lineWidth = 1.5; g.lineJoin = "round"; g.stroke();
-    };
-    if (tier === 1) {   // spear: long reed shaft, stone head, fibre lashing
-      line(5, 29, 22, 10, P.edge, 5); line(5, 29, 22, 10, P.h2, 3.6); line(5.4, 28.4, 21.6, 10.4, P.h1, 1.8);
-      g.beginPath(); g.moveTo(19, 13); g.lineTo(21, 7); g.lineTo(30, 2); g.lineTo(26, 11); g.lineTo(23, 14); g.closePath(); g.fillStyle = P.b1; g.fill(); g.strokeStyle = P.edge; g.lineWidth = 1.5; g.lineJoin = "round"; g.stroke();
-      line(24, 5.6, 21.6, 11.4, P.b2, 1.1); line(18, 15, 24, 12, "#4f8a3c", 3.4); line(18.4, 14.7, 23.6, 12.3, "#8fd37a", 1);
-      return;
-    }
-    line(5, 29, 12, 21, P.edge, 5.2); line(5, 29, 12, 21, P.h2, 3.8); line(5.4, 28.4, 11.6, 21.2, P.h1, 1.8);   // grip
-    if (tier === 2) {
-      g.shadowColor = "#4ee6b4"; g.shadowBlur = 7; blade(3.4, P.b1); g.shadowBlur = 0;
-      line(14, 18, 27.5, 4.6, P.b2, 1.4); g.fillStyle = "#d8fff6"; g.fillRect(25, 8, 2, 2); g.fillRect(17, 6, 1.5, 1.5);
-      line(8.5, 17, 16, 24, "#4ee6b4", 3); line(8.5, 17, 16, 24, "#9bfbe0", 1);   // glowing guard
-    } else if (tier === 3) {
-      blade(4.6, P.b1); g.strokeStyle = "#ff6a1f"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(14, 18); g.lineTo(17.5, 15); g.lineTo(19, 16.5); g.lineTo(23, 11); g.lineTo(26.5, 6.6); g.stroke();
-      g.strokeStyle = "#ffc24a"; g.lineWidth = 0.8; g.stroke(); g.shadowColor = "#ff8a3d"; g.shadowBlur = 6; g.fillStyle = "#ffb13b"; g.fillRect(27, 3, 2.4, 2.4); g.shadowBlur = 0;
-      line(8, 16.6, 16.6, 24.4, "#150f12", 3.6); line(8, 16.6, 16.6, 24.4, "#ff6a1f", 1.1);
-      g.fillStyle = "#ffc24a"; g.fillRect(4, 9, 1.5, 1.5); g.fillRect(24, 1, 1.4, 1.4);
-    } else {
-      g.shadowColor = "#bff4ff"; g.shadowBlur = 8; blade(3.2, P.b1); g.shadowBlur = 0;
-      g.fillStyle = "rgba(255,255,255,.6)"; g.beginPath(); g.moveTo(13, 18); g.lineTo(28, 3.6); g.lineTo(16, 18); g.closePath(); g.fill();
-      line(8.4, 17.4, 16.4, 24.4, P.edge, 3.8); line(8.4, 17.4, 16.4, 24.4, P.b2, 1.8);
-      g.fillStyle = "#fff"; g.fillRect(27, 7, 1.6, 4); g.fillRect(25.8, 8.2, 4, 1.6); g.fillRect(4, 11, 1, 3); g.fillRect(3, 12, 3, 1);
-    }
-  }
+  function drawSpr(g, key) { var W = g.canvas.width; g.imageSmoothingEnabled = false; g.drawImage(sprCanvas(key), 0, 0, W, W); }   // 16 -> 1x, 32 -> crisp 2x
+  function drawPickIcon(g, tier) { drawSpr(g, tier > 0 ? "pick" + tier : "paw"); }
+  function drawCanIcon(g) { drawSpr(g, "can"); }
+  function drawBagIcon(g, t) { drawSpr(g, t >= 2 ? "bag2" : "bag1"); }
+  function drawShovelIcon(g) { drawSpr(g, "shovel"); }
+  function drawWeaponIcon(g, tier) { if (tier >= 1 && tier <= 4) drawSpr(g, "wpn" + tier); }
+  function heldCan() { return sprCanvas("can"); }
   function icon(id) {
-    var key = id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id;   // "shovel" is its own key
+    var key = id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
     if (ICO[key]) return ICO[key];
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
-    if (id === "pick" && S.tier === 0) {
-      g.fillStyle = "#8fd37a"; g.strokeStyle = "#2f6b2a"; g.lineWidth = 1.5;
-      [[16, 20, 7.5, 6.2], [7.5, 12.5, 2.9, 3.6], [13, 7.6, 2.9, 3.6], [19.5, 7.6, 2.9, 3.6], [25, 12.5, 2.9, 3.6]].forEach(function (e) { g.beginPath(); g.ellipse(e[0], e[1], e[2], e[3], 0, 0, 6.2832); g.fill(); g.stroke(); });
-      g.fillStyle = "#c9f2b4"; g.beginPath(); g.ellipse(14, 18, 3, 2, -0.5, 0, 6.2832); g.fill();
-    } else if (id === "pick") {
+    if (id === "pick") {
       drawPickIcon(g, S.tier);
+    } else if (id === "arm" || /^arm\d$/.test(id)) {
+      drawSpr(g, id === "arm" ? "arm" + S.arm : id);
     } else if (id === "shovel") {
       drawShovelIcon(g);
     } else if (id === "weapon") {
@@ -1001,9 +948,9 @@
   // ---------- PLAYER SPRITE (your avatar, gear included) ----------
   var spriteOutfit = null;
   function mkSprite() {   // the pixel full-body avatar (delve-avatar.js) is rebuilt whenever the Armory outfit or animal changes
-    var key = S.animal + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
+    var key = S.animal + "|" + S.arm + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
     if (key === spriteKey) return; spriteKey = key; sprite = null;
-    try { spriteOutfit = Object.assign({}, Crystals.outfit(), { animal: S.animal }); } catch (e) { spriteOutfit = { animal: S.animal }; }
+    try { spriteOutfit = Object.assign({}, Crystals.outfit(), { animal: S.animal, arm: S.arm }); } catch (e) { spriteOutfit = { animal: S.animal, arm: S.arm }; }
   }
   function getSprite() {
     if (typeof DelveAv === "undefined") return null;
@@ -1607,12 +1554,14 @@
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
+    if (r.arm && S.arm >= r.arm) return;
     if (r.sh && S.shovel) return;
     if (r.can && S.can) return;
     if (r.bag && S.bag >= r.bag) return;
     if (r.bag && S.bag < r.bag - 1) { toast("Make the " + BAGS[r.bag - 1].n + " first.", "#f2c14e"); return; }
     if (r.tier && S.tier < r.tier - 1) { toast("Craft the " + PICKS[r.tier - 1].n + " first.", "#f2c14e"); return; }
     if (r.wpn && S.wpn < r.wpn - 1) { toast("Craft the " + WEAPONS[r.wpn - 1].n + " first.", "#f2c14e"); return; }
+    if (r.arm && S.arm < r.arm - 1) { toast("Craft the " + ARMORS[r.arm - 1].n + " first.", "#f2c14e"); return; }
     if (r.need && S.tier < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
     if (r.bench && !nearBench()) { toast("Stand near a Bog Workbench to craft this.", "#f2c14e"); return; }
     for (var k in r.cost) if ((S.inv[k] || 0) < r.cost[k]) { toast("Not enough " + ITEMS[k].n + ".", "#f2c14e"); return; }
@@ -1631,6 +1580,7 @@
       var moved = 0; Object.keys(S.extra).forEach(function (ek) { var fit = Math.min(S.extra[ek], room(ek)); if (fit > 0) { S.inv[ek] = (S.inv[ek] || 0) + fit; packInto(S.slots, ek, fit); S.extra[ek] -= fit; moved += fit; if (S.extra[ek] <= 0) delete S.extra[ek]; } });
       toast(r.n + " crafted. +" + (BAGS[S.bag].x - BAGS[S.bag - 1].x) + " bag slots (" + S.slots.length + " in all)!" + (moved ? " " + moved + " Overflow items moved in." : ""), BAGS[S.bag].c); snd("open", "Epic"); chips(p.x, p.y - 1, BAGS[S.bag].c, 26, 8); checkGoals();
     }
+    else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. You take " + Math.round(ARMORS[r.arm].red * 100) + "% less damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
     hbDirty = true; renderPanel(); save();
@@ -1681,7 +1631,17 @@
     GOALS.forEach(function (g) { if (!S.ms[g.id] && g.f()) { S.ms[g.id] = 1; banner(g.n, g.d); } });
   }
   // ---------- HEALTH ----------
+  var armKey = "";
+  function drawArm() {   // little armor badge under the health bar: icon + how much is left
+    var el = $("sbxArm"); if (!el) return; var k = S.arm + ":" + (S.arm ? durOf("arm") : 0); if (k === armKey) return; armKey = k;
+    if (!S.arm) { el.hidden = true; return; }
+    var m = durMax("arm"), cur = durOf("arm"), pc = Math.round(cur / m * 100);
+    el.hidden = false; el.className = "shd" + (cur <= 0 ? " brk" : pc <= 25 ? " bad" : pc <= 50 ? " low" : "");
+    el.title = ARMORS[S.arm].n + (cur <= 0 ? " (broken)" : " blocks " + Math.round(ARMORS[S.arm].red * 100) + "%");
+    el.innerHTML = '<img alt="" src="' + sprCanvas("arm" + S.arm).toDataURL() + '"><b>' + (cur <= 0 ? "Broken" : pc + "%") + "</b>";
+  }
   function drawHp() {
+    drawArm();
     var v = Math.max(0, Math.ceil(hp)); if (v === shownHp) return; var was = shownHp; shownHp = v;
     var el = $("sbxHp"); if (!el) return; var pc = v / MAXHP * 100;
     el.querySelector(".fl").style.width = pc + "%"; el.querySelector(".gh").style.width = pc + "%"; el.querySelector("b").textContent = v;
@@ -1690,6 +1650,10 @@
   }
   function hurt(n, why, cont) {
     if (n <= 0) return; if (!cont && hurtGrace > 0) return;
+    if (S.arm > 0 && durOf("arm") > 0) {   // armor blocks a share of the hit (half as much against lava) and wears down on every real hit
+      var blocked = n * ARMORS[S.arm].red * (why === "lava" ? 0.5 : 1); n -= blocked;
+      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text(p.x + 0.5, p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
+    }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
     if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(p.x, p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
     if (hp <= 0) faint(why);
@@ -2048,17 +2012,9 @@
     else { g.strokeStyle = "rgba(255,230,150,.35)"; g.lineWidth = 2; g.beginPath(); for (var k = 0; k < 10; k++) { var a = k / 10 * 6.2832 + now / 6000; g.moveTo(x + Math.cos(a) * r * 1.35, y + Math.sin(a) * r * 1.35); g.lineTo(x + Math.cos(a) * r * 1.75, y + Math.sin(a) * r * 1.75); } g.stroke(); }
   }
   // The tool or block in your hand. The pick swings down while you dig; a held block bobs while you build.
-  function heldCanvas(tier) {
-    if (!PCV[tier]) { var c = document.createElement("canvas"); c.width = c.height = 32; drawPickIcon(c.getContext("2d"), tier); PCV[tier] = c; }
-    return PCV[tier];
-  }
-  var SCV = null;
-  function heldShovel() { if (!SCV) { SCV = document.createElement("canvas"); SCV.width = SCV.height = 32; drawShovelIcon(SCV.getContext("2d")); } return SCV; }
-  var WCV = [];
-  function heldWeapon(tier) {
-    if (!WCV[tier]) { var c = document.createElement("canvas"); c.width = c.height = 32; drawWeaponIcon(c.getContext("2d"), tier); WCV[tier] = c; }
-    return WCV[tier];
-  }
+  function heldCanvas(tier) { return sprCanvas("pick" + tier); }
+  function heldShovel() { return sprCanvas("shovel"); }
+  function heldWeapon(tier) { return sprCanvas("wpn" + tier); }
   // Arm angle (phi: 0 = hanging, ~2.5 = raised overhead) and tool angle for the current swing, so the arm and the tool move as one
   function toolPose() {
     var sway = reduce ? 0 : Math.sin(p.walk * 5), moving = p.on && Math.abs(p.vx) > 0.5 ? 1 : 0;
@@ -2078,26 +2034,20 @@
   function drawHeld(g, hx, hy, tp) {
     g.shadowBlur = 0; g.shadowColor = "transparent";
     var sm = g.imageSmoothingEnabled;
+    var hpx = Math.max(1, Math.round(ts * 1.7 / 24));   // one avatar art pixel; tools are drawn a touch smaller than that so they read as small, neat props
+    var put = function (cv, k, gx, gy) { var z = hpx * k; g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = false; g.drawImage(cv, -gx * z, -gy * z, 16 * z, 16 * z); g.restore(); };   // (gx, gy) = the grip cell that sits in the paw
     if (sel === "pick") {
       if (S.tier < 1) return;
-      var tsz = ts * 1.35;
-      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
-      g.drawImage(heldCanvas(S.tier), -tsz * 6 / 32, -tsz * 28 / 32, tsz, tsz); g.restore();
+      put(heldCanvas(S.tier), 0.8, 4, 12);
     } else if (sel === "shovel") {
       if (!S.shovel) return;
-      var ssz = ts * 1.35;
-      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
-      g.drawImage(heldShovel(), -ssz * 6 / 32, -ssz * 28 / 32, ssz, ssz); g.restore();
+      put(heldShovel(), 0.8, 4, 12);
     } else if (sel === "can") {
       if (!S.can) return;
-      var csz = ts * 1.3;
-      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
-      g.drawImage(heldCan(), -csz * 8 / 32, -csz * 20 / 32, csz, csz); g.restore();
+      put(heldCan(), 0.8, 3, 9.5);
     } else if (sel === "weapon") {
       if (S.wpn < 1) return;
-      var wsz = ts * 1.5;
-      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
-      g.drawImage(heldWeapon(S.wpn), -wsz * 6 / 32, -wsz * 28 / 32, wsz, wsz); g.restore();
+      put(heldWeapon(S.wpn), 0.85, 4, 11.5);
     } else if (ITEMS[sel] && ITEMS[sel].tile !== undefined) {
       var bob = heldAmt * Math.sin(heldPh * 6.28) * ts * 0.06, bs = ts * 0.55;
       g.save(); g.translate(hx + ts * 0.12, hy - ts * 0.1 + bob); g.imageSmoothingEnabled = false;
@@ -2462,8 +2412,8 @@
       }).join("") + "</div>";
     } else if (tab === "craft") {
       var nb = nearBench();
-      h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + ". " + (S.st.benches ? (nb ? "A Workbench is close, so you can craft anything." : "No Workbench nearby. Walk next to yours to craft better picks.") : "Better tools unlock new rock. A Workbench lets you craft the next picks.") + "</p>";
-      var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : ""].filter(Boolean);
+      h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? (nb ? "A Workbench is close, so you can craft anything." : "No Workbench nearby. Walk next to yours to craft better picks.") : "Better tools unlock new rock. A Workbench lets you craft the next picks.") + "</p>";
+      var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : "", S.arm ? "arm" : ""].filter(Boolean);
       if (rk.length) {
         h += "<h3>Repair</h3>";
         rk.forEach(function (k) {
@@ -2473,9 +2423,9 @@
         h += "<h3>Craft</h3>";
       }
       RECIPES.forEach(function (r) {
-        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
-        var im = r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(ic);
-        var note = lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
+        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need))), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.arm ? "arm" + r.arm : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
+        var im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(ic);
+        var note = lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
         h += '<div class="sbx-card' + (owned || lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !needB ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (owned || lock ? " disabled" : "") + ">" + (owned ? "Owned" : lock ? "Locked" : "Craft") + "</button></div>";
       });
     } else if (tab === "decor") {

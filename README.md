@@ -496,3 +496,16 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Saving:** new save field `we` (like `e`: `"index:wallId"` pairs, only changes from what the world made, `0` = removed). Dropped if the world is rebuilt (`WORLDVER`), same as `e`. New stat `st.walls`, goals "Back Wall" and "Room Maker".
 - **Village:** `buildVillage` now also fills each house interior with its own wall (timber, plank, plaster, log, timber). Terrain generation is unchanged (checked: the block layer is identical to before for several seeds), so existing worlds only gain the walls.
 - Versions: `sandbox.js` delve35, `sandbox-world.js` delve15.
+
+### Delve: pixel tools (smaller, cleaner)
+- All tool, pack and bare-paw art is now 16x16 pixel sprites in `SPR` (`sandbox.js`): rows of colour letters, dark outline added automatically. Hotbar, Craft cards and held tools share them, so one edit changes all three. Grip is bottom-left, working end top-right.
+- Held tools are drawn at about 0.8x an avatar pixel (smaller than before) and pivot at the grip cell (see `drawHeld`).
+- Hotbar slots shrank (46 -> 40px, 38 on phones, 36 landscape) with crisp 32px icons, pixel-square corners and a segmented durability bar. Craft card icons sit in a small framed tile (`sandbox.css`, end of file).
+- Versions: `sandbox.js` delve36, `sandbox.css` delve14. No save-format change.
+
+### Delve: armor (third progression track)
+- **`S.arm` (0-4)** saved with the world (older saves load as 0), plus `S.dur.arm`. `ARMORS` in `sandbox.js` holds name, colour and `red` (share of damage blocked). Armor is worn automatically when crafted.
+- **Ladder:** Reed Vest (by hand: 10 Fiber, 4 Stick, 6 Leaves, blocks 12%) -> Glowspore Mail (Workbench, Glowspore Pick, + 2 Bramble Fragments, 24%) -> Cinder Plate (Cinder Pick, + 2 Frog Fragments, 36%) -> Frost Plate (Frost Pick, + 3 Bat Wings, 50%). Each needs the previous piece. Recipes are the `arm` entries in `RECIPES`.
+- **Damage:** `hurt()` blocks `red` of every hit (half as much against lava) and shows "-N blocked". Each real hit wears the armor 1 point (2 for hits of 14+). At 0 it is BROKEN: no protection until repaired in the Craft tab (`REPAIR.arm`, `DUR.arm`).
+- **Look:** 16x16 pixel icons (`arm1`-`arm4` in `SPR`), a badge with icon and durability % under the health bar (`#sbxArm`, `drawArm()`), and the armor is drawn on your avatar torso and shoulders (`armorOver()` and `ARM` in `delve-avatar.js`; the Armory outfit is untouched).
+- **Goals:** Dressed Up, Spore Mail, Cinder Plate, Frozen Solid. Versions: `sandbox.js` delve37, `sandbox.css` delve15, `delve-avatar.js` delve2.

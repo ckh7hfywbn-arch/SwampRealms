@@ -260,6 +260,23 @@ var DelveAv = (function () {
     gildedkicks: { rows: [".hhh", "gggg", "dddd"], pal: { h: "#fff4b0", g: "#f2c14e", d: "#a8740a" } }
   };
 
+  // ---------- worn armor (Delve progression): drawn over the torso and the shoulders. a main, b light, c dark, t trim ----------
+  var ARM = {
+    1: { a: "#a8814b", b: "#d3a96b", c: "#6b4a26", t: "#4f8a3c", t2: "#8fd37a" },
+    2: { a: "#157a64", b: "#1fbf93", c: "#0b4d3e", t: "#4ee6b4", t2: "#e6fff8" },
+    3: { a: "#3a2e34", b: "#5a4a52", c: "#1c1418", t: "#ff6a1f", t2: "#ffd25a" },
+    4: { a: "#3f9fc4", b: "#7fd6ff", c: "#16465e", t: "#ffffff", t2: "#bff0ff" }
+  };
+  function armorOver(B, tier, by) {
+    var P = ARM[tier]; if (!P) return; var x = 7, y = 17 + by;
+    B.r(x, y, 8, 7, P.a); B.r(x, y, 8, 1, P.b); B.r(x, y, 1, 7, P.b); B.r(x + 7, y, 1, 7, P.c); B.r(x + 1, y + 6, 6, 1, P.c);
+    B.r(x + 2, y + 1, 4, 4, P.b); B.r(x + 2, y + 4, 4, 1, P.a);
+    if (tier === 1) { for (var i = 0; i < 5; i++) B.p(x + 3 + (i % 2), y + 1 + i, i % 2 ? P.t2 : P.t); }
+    else if (tier === 2) { B.r(x + 3, y + 2, 2, 2, P.t); B.p(x + 4, y + 3, P.t2); B.p(x + 1, y + 1, P.t2); }
+    else if (tier === 3) { B.r(x + 3, y + 2, 2, 2, P.t); B.p(x + 4, y + 3, P.t2); B.r(x + 1, y + 6, 6, 1, P.t); B.p(x + 1, y + 1, P.t); B.p(x + 6, y + 1, P.t); }
+    else { B.r(x + 3, y + 2, 2, 2, P.t); B.p(x + 3, y, P.t); B.p(x + 4, y, P.t); B.p(x + 1, y + 1, P.t2); B.p(x + 6, y + 1, P.t2); }
+  }
+
   // ---------- poses: by = body bob, L/R = [dx, lift], ab = back-arm shift ----------
   var POSE = {
     idle0: { by: 0, L: [0, 0], R: [0, 0], ab: 0 }, idle1: { by: 1, L: [0, 0], R: [0, 0], ab: 0 },
@@ -276,9 +293,11 @@ var DelveAv = (function () {
         var c = s.sleeve, cc = [c[0], c[2]];
         if (s.pauld && i < 2) cc = [s.pauld[0], s.pauld[2]];
         else if (s.cuff && i === sl - 1) cc = [s.cuff, dk(s.cuff, 0.25)];
+        if (o.arm && ARM[o.arm] && i < 2) cc = [ARM[o.arm].b, ARM[o.arm].c];
         if (o.shirt === "jersey" && i === 1) cc = ["#ffffff", "#d8d8d8"];
         rows.push(cc);
-      } else rows.push(i >= 6 ? [lt(P.skin, 0.12), P.sd] : [P.sl, P.sd]);
+      } else if (o.arm && ARM[o.arm] && i < 2) rows.push([ARM[o.arm].b, ARM[o.arm].c]);
+      else rows.push(i >= 6 ? [lt(P.skin, 0.12), P.sd] : [P.sl, P.sd]);
     }
     return rows;
   }
@@ -308,6 +327,7 @@ var DelveAv = (function () {
     // back arm, torso
     drawArm(B, 5, 17 + by + PO.ab, armRows(o, a));
     torso(B, shirt, by, !!o.neck);
+    if (o.arm) armorOver(B, o.arm, by);
     if (withArm) drawArm(B, 15, 17 + by, armRows(o, a)); else B.r(15, 17 + by, 2, 8, null);
     // head
     var hx = A.x0, hy0 = A.y0 + by;
@@ -340,7 +360,7 @@ var DelveAv = (function () {
     if (s <= 1) return c;
     var c2 = document.createElement("canvas"); c2.width = B.w * s; c2.height = B.h * s; var g2 = c2.getContext("2d"); g2.imageSmoothingEnabled = false; g2.drawImage(c, 0, 0, c2.width, c2.height); return c2;
   }
-  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0].join("|"); }
+  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
   var CACHE = {};
   function sprite(o, animal, s) {
     o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); s = Math.max(1, s | 0);
