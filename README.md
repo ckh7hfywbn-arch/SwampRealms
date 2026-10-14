@@ -509,3 +509,33 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Damage:** `hurt()` blocks `red` of every hit (half as much against lava) and shows "-N blocked". Each real hit wears the armor 1 point (2 for hits of 14+). At 0 it is BROKEN: no protection until repaired in the Craft tab (`REPAIR.arm`, `DUR.arm`).
 - **Look:** 16x16 pixel icons (`arm1`-`arm4` in `SPR`), a badge with icon and durability % under the health bar (`#sbxArm`, `drawArm()`), and the armor is drawn on your avatar torso and shoulders (`armorOver()` and `ARM` in `delve-avatar.js`; the Armory outfit is untouched).
 - **Goals:** Dressed Up, Spore Mail, Cinder Plate, Frozen Solid. Versions: `sandbox.js` delve37, `sandbox.css` delve15, `delve-avatar.js` delve2.
+
+### Delve: Workbench upgrades gate the armor (sandbox.js `BENCH_LV`)
+
+- **Idea:** you get basic gear for the first biome, then tools for the second, then upgraded gear to keep going. The **Bog Workbench levels up** (`S.bl`, 1-4, saved), and every upgrade costs loot from the biome *before* the one the new gear is for. One level covers the whole world: every Workbench you place looks and works at your level, so a second bench at a far camp is already upgraded.
+- **Upgrade:** Craft tab, new **Workbench** card at the top (stand near a Workbench). The card shows the next level, what it unlocks, and the cost.
+
+| Level | Name | Upgrade cost (biome the loot comes from) | Unlocks |
+|---|---|---|---|
+| 1 | Bog Workbench | 10 Wood + 4 Fiber (Murkwater) | Glowspore Pick, Glowspore Blade, Hauler Pack, walls, Decor Workbench |
+| 2 | Glowspore Workbench | 20 Glowspore, 12 Clay, 16 Stone, 16 Planks, 3 Bramble + 2 Frog Fragments (Murkwater) | Glowspore Mail, Cinder Pick, Cinder Cleaver |
+| 3 | Cinder Forge Workbench | 24 Cinder Shard, 20 Basalt, 16 Ash Soil, 16 Planks (Ember Bog) | Cinder Plate, Frost Pick, Frost Fang |
+| 4 | Frost Workbench | 24 Frost Crystal, 20 Frostrock, 12 Ice, 16 Planks (Frostfen) | Frost Plate |
+
+- **Pattern:** tools for a biome come at level N, the armor for it needs level N+1. Recipes get a `bl` field (no `bl` = level 1); `craft()` refuses with "Upgrade your Workbench to the ... first" and the Craft tab shows the recipe as Locked with the same note. The recipe's old gear order (previous tier first) still applies.
+- **Look:** the Workbench tile is repainted per level (wood, teal Glowspore gems, dark Cinder Forge with a lava seam, icy Frost Crystals) by `repaintBench()`, so the hotbar icon and placed benches change on upgrade.
+- **Saves:** `bl` is new. Old saves get `bl` from the gear they already own (for example a Cinder Plate means level 3), so nobody is locked out of gear they have.
+- **Trail:** two steps added at the end (Level Up the Bench, Suit Up). Goals added: Bench Boost, Forged in Ember, Frostbound Bench.
+- **Tuning:** costs live in `BENCH_LV`, per-recipe levels in the `bl:` fields of `RECIPES`. Repairing Glowspore-and-up gear still only needs any Workbench.
+
+### Delve: Decor expansion (new blocks, 23 showpieces, themed by biome)
+
+- **30 new tiles** (ids 58-87, appended so old saves are untouched; `sandbox-world.js` v delve16, `sandbox.js` v delve39). All are made at the **Decor Workbench** (Decor tab). New cards are grouped: Building blocks, Murkwater Showpieces, Ember Bog Collection, Frostfen Collection.
+- **7 new solid building blocks** (placed like Planks, stack to 64, not "decor"): Stone Brick, Reed Thatch, Glowspore Glass (see-through), Basalt Brick, Cinder Lamp Block (very bright), Frost Brick, Crystal Lamp Block (brightest).
+- **Murkwater (no Workbench level needed):** Swamp Wardrobe, Wooden Fence (joins in a row), Reed Bale, Swamp Well, Mossy Fountain, Bubbling Cauldron (from a Clay Pot, green light), Glowcap Pot (from a Clay Pot), Stone Hearth (bright), Frog Statue, plus wall pieces Glowspore Sconce, Bramble Trophy and Frog Trophy (use Bramble / Frog Fragments).
+- **Ember Bog (needs Glowspore Workbench, level 2):** Cinder Brazier (one of the brightest lights), Basalt Guardian, Ember Lantern, Ashen Urn, Cinder Anvil, Ember Banner (wall).
+- **Frostfen (needs Cinder Forge Workbench, level 3):** Ice Sculpture, Frost Lantern, Frost Banner (wall), Crystal Chandelier (wall, very bright). **Frostrock Throne** is the capstone and needs the **Frost Workbench (level 4)**.
+- **Gating:** decor recipes take the same `bl` field as the gear recipes (see Workbench upgrades above). Locked cards show "Needs the ... (upgrade your Bog Workbench in the Craft tab)".
+- **Light:** each tile can carry `glow` (r,g,b), `gr` (radius) and `ga` (strength) in `sandbox-world.js`; the renderer uses them instead of the old torch/ember/crystal colour rules, so every new light has its own tint (teal Glowspore, orange ember, icy blue).
+- **To add another piece:** same four steps as before (tile + ITEMS + ITEM_ORDER + DECOR_FLOOR/WALL, a picture, a recipe), but pictures now go in the `DECOR_ART` table in `sandbox.js` keyed by the tile's `kind`, and the recipe takes an optional `bl:`.
+- **Goals:** Grand Decorator (30 pieces), Fit for a King (Frostrock Throne).

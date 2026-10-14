@@ -58,12 +58,26 @@
     { n: "No Armor", c: "#8fd37a", red: 0 }, { n: "Reed Vest", c: "#d3a96b", red: 0.12 }, { n: "Glowspore Mail", c: "#4ee6b4", red: 0.24 },
     { n: "Cinder Plate", c: "#ff8a3d", red: 0.36 }, { n: "Frost Plate", c: "#7fd6ff", red: 0.5 }
   ];
+  // WORKBENCH LEVELS: S.bl (1-4, saved) is how far you have upgraded your Bog Workbench. It is one level for the whole world (every Workbench you place looks and works at that level).
+  // Each upgrade costs materials from the biome BEFORE the one the new gear is for, so you have to finish a biome to gear up for the next:
+  //   Lv1 Bog Workbench (Murkwater wood and fibre): Glowspore Pick, Glowspore Blade, Hauler Pack = the tools to cross into Ember Bog.
+  //   Lv2 Glowspore Workbench (Murkwater loot: Glowspore, Clay, Stone, Bramble + Frog Fragments): Glowspore Mail, Cinder Pick, Cinder Cleaver.
+  //   Lv3 Cinder Forge (Ember Bog loot: Cinder, Basalt, Ash): Cinder Plate, Frost Pick, Frost Fang.
+  //   Lv4 Frost Workbench (Frostfen loot: Frost Crystal, Frostrock, Ice): Frost Plate.
+  // A recipe needs a Workbench of at least its `bl` (no bl = level 1). TO ADD A LEVEL: push an entry here, raise the clamp in clean(), and give paint() a look for it.
+  var BENCH_LV = [null,
+    { n: "Bog Workbench", c: "#c98c4f", gives: "Reed gear, Glowspore Pick, Glowspore Blade, Hauler Pack" },
+    { n: "Glowspore Workbench", c: "#4ee6b4", cost: { spore: 20, clay: 12, stone: 16, planks: 16, bugfrag: 3, frogfrag: 2 }, from: "Murkwater Swamp", gives: "Glowspore Mail, Cinder Pick, Cinder Cleaver" },
+    { n: "Cinder Forge Workbench", c: "#ff8a3d", cost: { cinder: 24, basalt: 20, ash: 16, planks: 16 }, from: "Ember Bog", gives: "Cinder Plate, Frost Pick, Frost Fang" },
+    { n: "Frost Workbench", c: "#7fd6ff", cost: { crystal: 24, frostrock: 20, ice: 12, planks: 16 }, from: "Frostfen", gives: "Frost Plate" }
+  ];
+  var benchLv = 1;   // the level the Workbench tile is painted at (kept in step with S.bl)
   var RECIPES = [
     { id: "pick1", n: "Reed Pick", tier: 1, cost: { stick: 3, fiber: 3, pebble: 2 }, d: "Your first tool. Chops wood, digs clay and breaks stone." },
     { id: "shovel", n: "Reed Shovel", sh: 1, cost: { stick: 2, fiber: 2, pebble: 2 }, d: "A hand shovel for soft ground. Digs Mud, Moss, Clay, Ash and Snow a little faster than bare paws. It cannot break stone, wood or ore, so keep your pick too." },
     { id: "can", n: "Watering Can", can: 1, cost: { planks: 4, fiber: 3, pebble: 2 }, d: "Pick it in the hotbar, hold it on the water to fill it, then hold it on a Swamp Flower, Cattail or Glowcap. A watered plant spreads a new one nearby after a few seconds. Holds 12 waterings. Comes full." },
     { id: "planks", n: "Planks (4)", out: { planks: 4 }, cost: { wood: 1 }, d: "Build walls, floors and bridges." },
-    { id: "bench", n: "Bog Workbench", out: { bench: 1 }, cost: { wood: 10, fiber: 4 }, d: "Place it at camp. Better tools are made standing next to it." },
+    { id: "bench", n: "Bog Workbench", out: { bench: 1 }, cost: { wood: 10, fiber: 4 }, d: "Place it at camp. Better tools are made standing next to it. Upgrade it as you win loot from each biome to unlock better armor and tools." },
     { id: "bed", n: "Swamp Bed", out: { bed: 1 }, cost: { planks: 6, fiber: 6, leaves: 8 }, d: "Place it at camp. At night, stand next to it and sleep to skip to dawn, heal fully and set your respawn. Bats cannot hurt you while you sleep." },
     { id: "torch", n: "Torches (4)", out: { torch: 4 }, cost: { stick: 1, spore: 1 }, d: "Light up caves. Place next to a wall." },
     { id: "wpn1", n: "Reed Spear", wpn: 1, cost: { stick: 6, fiber: 3, pebble: 4 }, d: "Your first weapon. Hold it from the hotbar and swing. Damage 5." },
@@ -81,14 +95,14 @@
     { id: "pick2", n: "Glowspore Pick", tier: 2, bench: true, cost: { spore: 16, wood: 12 }, d: "Digs 1.8x faster. Breaks Basalt and Cinder Ore." },
     { id: "bag2", n: "Bog Hauler Pack", bag: 2, need: 2, bench: true, cost: { fiber: 16, spore: 8, planks: 8, leaves: 12 }, d: "A big stitched pack with side pockets and a glowing buckle. Adds 12 more bag slots (54 in all). Needs the Reed Backpack and the Glowspore Pick." },
     { id: "wpn2", n: "Glowspore Blade", wpn: 2, need: 2, bench: true, cost: { spore: 12, wood: 8, planks: 8, bugfrag: 3 }, d: "A glowing blade. Damage 9, quick swing. Needs the Glowspore Pick and Bramble Fragments from Bramble Bugs." },
-    { id: "pick3", n: "Cinder Pick", tier: 3, bench: true, cost: { cinder: 20, basalt: 16, planks: 24 }, d: "Digs 2.8x faster. Breaks Frostrock and Frost Crystal." },
-    { id: "wpn3", n: "Cinder Cleaver", wpn: 3, need: 3, bench: true, cost: { cinder: 16, basalt: 12, planks: 16, frogfrag: 3 }, d: "A heavy lava-veined cleaver. Damage 16. Needs the Cinder Pick and Frog Fragments from Swamp Frogs." },
-    { id: "pick4", n: "Frost Pick", tier: 4, bench: true, cost: { crystal: 24, frostrock: 20, planks: 32 }, d: "The fastest pick in the swamp. Digs 4.2x faster." },
-    { id: "wpn4", n: "Frost Fang", wpn: 4, need: 4, bench: true, cost: { crystal: 18, frostrock: 14, planks: 24, batwing: 4 }, d: "A razor ice blade. Damage 26, the fastest swing. Needs the Frost Pick and Bat Wings from Dusk Bats (they only come out at night)." },
+    { id: "pick3", n: "Cinder Pick", tier: 3, bench: true, bl: 2, cost: { cinder: 20, basalt: 16, planks: 24 }, d: "Digs 2.8x faster. Breaks Frostrock and Frost Crystal. Needs a Glowspore Workbench." },
+    { id: "wpn3", n: "Cinder Cleaver", wpn: 3, need: 3, bench: true, bl: 2, cost: { cinder: 16, basalt: 12, planks: 16, frogfrag: 3 }, d: "A heavy lava-veined cleaver. Damage 16. Needs the Cinder Pick, Frog Fragments from Swamp Frogs and a Glowspore Workbench." },
+    { id: "pick4", n: "Frost Pick", tier: 4, bench: true, bl: 3, cost: { crystal: 24, frostrock: 20, planks: 32 }, d: "The fastest pick in the swamp. Digs 4.2x faster. Needs a Cinder Forge Workbench." },
+    { id: "wpn4", n: "Frost Fang", wpn: 4, need: 4, bench: true, bl: 3, cost: { crystal: 18, frostrock: 14, planks: 24, batwing: 4 }, d: "A razor ice blade. Damage 26, the fastest swing. Needs the Frost Pick and Bat Wings from Dusk Bats (they only come out at night). Needs a Cinder Forge Workbench." },
     { id: "arm1", n: "Reed Vest", arm: 1, cost: { fiber: 10, stick: 4, leaves: 6 }, d: "A woven vest of reed fibre. Blocks 12% of damage. Made by hand and worn right away." },
-    { id: "arm2", n: "Glowspore Mail", arm: 2, need: 2, bench: true, cost: { spore: 14, planks: 10, fiber: 8, bugfrag: 2 }, d: "Teal armor with a glowing gem. Blocks 24% of damage. Needs the Reed Vest, the Glowspore Pick and Bramble Fragments." },
-    { id: "arm3", n: "Cinder Plate", arm: 3, need: 3, bench: true, cost: { cinder: 18, basalt: 14, planks: 12, frogfrag: 2 }, d: "Dark plate with a glowing lava seam. Blocks 36% of damage. Needs the Glowspore Mail, the Cinder Pick and Frog Fragments." },
-    { id: "arm4", n: "Frost Plate", arm: 4, need: 4, bench: true, cost: { crystal: 22, frostrock: 16, planks: 20, batwing: 3 }, d: "Crystal ice plate. Blocks half of all damage. Needs the Cinder Plate, the Frost Pick and Bat Wings." }
+    { id: "arm2", n: "Glowspore Mail", arm: 2, need: 2, bench: true, bl: 2, cost: { spore: 14, planks: 10, fiber: 8, bugfrag: 2 }, d: "Teal armor with a glowing gem. Blocks 24% of damage. Needs the Reed Vest, the Glowspore Pick, Bramble Fragments and a Glowspore Workbench." },
+    { id: "arm3", n: "Cinder Plate", arm: 3, need: 3, bench: true, bl: 3, cost: { cinder: 18, basalt: 14, planks: 12, frogfrag: 2 }, d: "Dark plate with a glowing lava seam. Blocks 36% of damage. Needs the Glowspore Mail, the Cinder Pick, Frog Fragments and a Cinder Forge Workbench." },
+    { id: "arm4", n: "Frost Plate", arm: 4, need: 4, bench: true, bl: 4, cost: { crystal: 22, frostrock: 16, planks: 20, batwing: 3 }, d: "Crystal ice plate. Blocks half of all damage. Needs the Cinder Plate, the Frost Pick, Bat Wings and a Frost Workbench." }
   ];
   // ---- DECOR WORKBENCH: recipes made while standing next to a Decor Workbench (Decor tab in the bag) ----
   // TO ADD A NEW DECOR ITEM: (1) a tile() line + ITEMS entry + name in ITEM_ORDER and DECOR_FLOOR or DECOR_WALL in sandbox-world.js,
@@ -108,7 +122,38 @@
     { id: "d_campfire", cat: "Lighting", n: "Campfire", out: { campfire: 1 }, cost: { stick: 6, pebble: 6, torch: 1 }, d: "A ring of stones and a crackling fire. Gives off warm light." },
     { id: "d_painting", cat: "Wall decor", n: "Painting", out: { painting: 1 }, cost: { planks: 2, fiber: 3 }, d: "Hang it on a wall. Every painting is a surprise." },
     { id: "d_banner", cat: "Wall decor", n: "Swamp Banner", out: { banner: 1 }, cost: { fiber: 6, stick: 2, flower: 1 }, d: "A teal cloth banner. Hangs from a wall or a ceiling beam." },
-    { id: "d_sign", cat: "Wall decor", n: "Wooden Sign", out: { sign: 1 }, cost: { planks: 3, stick: 1 }, d: "A little board to hang beside a door." }
+    { id: "d_sign", cat: "Wall decor", n: "Wooden Sign", out: { sign: 1 }, cost: { planks: 3, stick: 1 }, d: "A little board to hang beside a door." },
+    // ---- DECOR EXPANSION. bl = Workbench level needed (see BENCH_LV): Murkwater pieces need none, Ember Bog pieces the Glowspore Workbench (2), Frostfen pieces the Cinder Forge (3), the Throne the Frost Workbench (4). ----
+    { id: "d_brick", cat: "Building blocks", n: "Stone Brick (4)", out: { brick: 4 }, cost: { stone: 4 }, d: "A solid block of grey stone bricks. Place it like Planks for walls, floors and chimneys." },
+    { id: "d_thatch", cat: "Building blocks", n: "Reed Thatch (4)", out: { thatch: 4 }, cost: { fiber: 6, stick: 2 }, d: "Golden straw blocks for a cosy cottage roof." },
+    { id: "d_glass", cat: "Building blocks", n: "Glowspore Glass (2)", out: { glass: 2 }, cost: { clay: 4, spore: 1 }, d: "A see-through teal pane. Put it in a wall for a window." },
+    { id: "d_bbrick", cat: "Building blocks", n: "Basalt Brick (4)", out: { basaltbrick: 4 }, cost: { basalt: 4 }, bl: 2, d: "Dark bricks with faint hot cracks. Strong castle walls." },
+    { id: "d_clamp", cat: "Building blocks", n: "Cinder Lamp Block", out: { cinderlamp: 1 }, cost: { cinder: 3, basalt: 2 }, bl: 2, d: "A solid block with a glowing ember core. A very bright light you can build into a wall or floor." },
+    { id: "d_ibrick", cat: "Building blocks", n: "Frost Brick (4)", out: { icebrick: 4 }, cost: { ice: 4, frostrock: 2 }, bl: 3, d: "Pale blue ice bricks for glittering halls." },
+    { id: "d_crlamp", cat: "Building blocks", n: "Crystal Lamp Block", out: { crystallamp: 1 }, cost: { crystal: 3, frostrock: 2 }, bl: 3, d: "A solid block around a glowing Frost Crystal. The brightest block light in the swamp." },
+    { id: "d_wardrobe", cat: "Murkwater Showpieces", n: "Swamp Wardrobe", out: { wardrobe: 1 }, cost: { planks: 12, fiber: 4, clay: 2 }, d: "A tall two-door wardrobe for the bedroom." },
+    { id: "d_fence", cat: "Murkwater Showpieces", n: "Wooden Fence (2)", out: { fence: 2 }, cost: { planks: 2, stick: 2 }, d: "Fence off a garden. A row of fences joins up." },
+    { id: "d_bale", cat: "Murkwater Showpieces", n: "Reed Bale", out: { bale: 1 }, cost: { fiber: 12 }, d: "A tied bale of dried reeds. Good for a barn or a market." },
+    { id: "d_well", cat: "Murkwater Showpieces", n: "Swamp Well", out: { well: 1 }, cost: { stone: 10, planks: 6, fiber: 2 }, d: "A stone well with a little roof and a bucket on a rope." },
+    { id: "d_fountain", cat: "Murkwater Showpieces", n: "Mossy Fountain", out: { fountain: 1 }, cost: { stone: 12, clay: 4, spore: 2 }, d: "A moss-covered stone fountain for the village square." },
+    { id: "d_cauldron", cat: "Murkwater Showpieces", n: "Bubbling Cauldron", out: { cauldron: 1 }, cost: { pot: 1, spore: 4, stick: 4 }, d: "A cauldron of glowing green brew over a small fire. Gives off a soft green light. Made from a Clay Pot." },
+    { id: "d_glowpot", cat: "Murkwater Showpieces", n: "Glowcap Pot", out: { glowpot: 1 }, cost: { pot: 1, spore: 3 }, d: "A Clay Pot with a glowing mushroom. A gentle night-light." },
+    { id: "d_hearth", cat: "Murkwater Showpieces", n: "Stone Hearth", out: { hearth: 1 }, cost: { stone: 14, stick: 6, torch: 2 }, d: "A stone fireplace with a roaring fire. Warm, bright light for your house." },
+    { id: "d_frogstatue", cat: "Murkwater Showpieces", n: "Frog Statue", out: { frogstatue: 1 }, cost: { stone: 14, clay: 4, spore: 4 }, d: "A stone frog on a plinth with glowing gem eyes." },
+    { id: "d_sconce", cat: "Murkwater Showpieces", n: "Glowspore Sconce", out: { sconce: 1 }, cost: { spore: 2, stick: 1, clay: 1 }, d: "Hangs on a wall and burns with a teal flame." },
+    { id: "d_bugtrophy", cat: "Murkwater Showpieces", n: "Bramble Trophy", out: { bugtrophy: 1 }, cost: { bugfrag: 3, planks: 2, fiber: 1 }, d: "Show off your first kills: a Bramble Bug on a wooden plaque. Hangs on a wall." },
+    { id: "d_frogtrophy", cat: "Murkwater Showpieces", n: "Frog Trophy", out: { frogtrophy: 1 }, cost: { frogfrag: 3, planks: 2, fiber: 1 }, d: "A Swamp Frog on a wooden plaque. Hangs on a wall." },
+    { id: "d_brazier", cat: "Ember Bog Collection", n: "Cinder Brazier", out: { brazier: 1 }, cost: { basalt: 8, cinder: 6, stick: 2 }, bl: 2, d: "An iron bowl of roaring flame. One of the brightest lights you can make." },
+    { id: "d_guardian", cat: "Ember Bog Collection", n: "Basalt Guardian", out: { guardian: 1 }, cost: { basalt: 16, cinder: 4, ash: 6 }, bl: 2, d: "A basalt knight statue with ember eyes and a lava seam. It guards your door." },
+    { id: "d_emberlantern", cat: "Ember Bog Collection", n: "Ember Lantern", out: { emberlantern: 1 }, cost: { cinder: 4, planks: 2, torch: 2 }, bl: 2, d: "An iron-caged lantern full of glowing embers." },
+    { id: "d_urn", cat: "Ember Bog Collection", n: "Ashen Urn", out: { urn: 1 }, cost: { clay: 4, ash: 8, cinder: 1 }, bl: 2, d: "A tall ash-grey urn with glowing ember bands." },
+    { id: "d_anvil", cat: "Ember Bog Collection", n: "Cinder Anvil", out: { anvil: 1 }, cost: { basalt: 10, cinder: 4, planks: 4 }, bl: 2, d: "A blackened anvil with a hot top. Just for show, but it looks like it means business." },
+    { id: "d_emberbanner", cat: "Ember Bog Collection", n: "Ember Banner", out: { emberbanner: 1 }, cost: { fiber: 6, cinder: 2, stick: 2 }, bl: 2, d: "A rust-red banner with a golden flame. Hangs from a wall or a ceiling beam." },
+    { id: "d_icesculpt", cat: "Frostfen Collection", n: "Ice Sculpture", out: { icesculpt: 1 }, cost: { ice: 14, crystal: 3 }, bl: 3, d: "A cluster of glittering ice shards." },
+    { id: "d_frostlantern", cat: "Frostfen Collection", n: "Frost Lantern", out: { frostlantern: 1 }, cost: { crystal: 4, ice: 4, planks: 2 }, bl: 3, d: "A crystal lantern with a cold blue flame." },
+    { id: "d_frostbanner", cat: "Frostfen Collection", n: "Frost Banner", out: { frostbanner: 1 }, cost: { fiber: 6, crystal: 2, stick: 2 }, bl: 3, d: "A deep-blue banner with a white snowflake. Hangs from a wall or a ceiling beam." },
+    { id: "d_chandelier", cat: "Frostfen Collection", n: "Crystal Chandelier", out: { chandelier: 1 }, cost: { crystal: 8, planks: 4, torch: 4, stick: 2 }, bl: 3, d: "A hanging ring of Frost Crystals and candle flames. Hangs from a wall or a ceiling beam. Very bright." },
+    { id: "d_throne", cat: "Frostfen Collection", n: "Frostrock Throne", out: { throne: 1 }, cost: { frostrock: 14, crystal: 6, fiber: 6 }, bl: 4, d: "The grandest piece you can craft: a throne carved from Frostrock. Needs the fully upgraded Frost Workbench." }
   ];
   DECOR.forEach(function (r) { r.deco = 1; });
   var GOALS = [
@@ -134,6 +179,11 @@
     { id: "arm2", n: "Spore Mail", d: "Craft the Glowspore Mail", f: function () { return S.arm >= 2; } },
     { id: "arm3", n: "Cinder Plate", d: "Craft the Cinder Plate", f: function () { return S.arm >= 3; } },
     { id: "arm4", n: "Frozen Solid", d: "Craft the Frost Plate", f: function () { return S.arm >= 4; } },
+    { id: "dcraft30", n: "Grand Decorator", d: "Craft 30 pieces at the Decor Workbench", f: function () { return S.st.dcraft >= 30; } },
+    { id: "throne", n: "Fit for a King", d: "Craft the Frostrock Throne", f: function () { return (S.inv.throne || 0) > 0; } },
+    { id: "bench2", n: "Bench Boost", d: "Upgrade to the Glowspore Workbench", f: function () { return S.bl >= 2; } },
+    { id: "bench3", n: "Forged in Ember", d: "Upgrade to the Cinder Forge Workbench", f: function () { return S.bl >= 3; } },
+    { id: "bench4", n: "Frostbound Bench", d: "Upgrade to the Frost Workbench", f: function () { return S.bl >= 4; } },
     { id: "bed1", n: "Bed Time", d: "Place a Swamp Bed", f: function () { return S.st.beds >= 1; } },
     { id: "door1", n: "Knock Knock", d: "Place a Swamp Door", f: function () { return S.st.doors >= 1; } },
     { id: "ladder1", n: "Up and Away", d: "Place a Ladder", f: function () { return S.st.ladders >= 1; } },
@@ -180,7 +230,9 @@
     { id: "bed", n: "Build a Bed", d: "Dusk Bats swoop down at night. Craft a Swamp Bed (Planks, Fiber, Leaves), select it in the hotbar and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
     { id: "bats", n: "Night Watch", d: "When the sky goes dark, bats dive at you. Watch for the red eyes, step aside, then strike. Defeat 2 Dusk Bats.", need: 2, v: function () { return S.st.bats; }, rw: { planks: 6 } },
     { id: "sleep", n: "Sleep Tight", d: "At night, stand next to your bed and tap Sleep (or press F). You skip to dawn with full health, and the bed becomes your respawn point. Bats must be gone, or you need a roof overhead.", need: 1, v: function () { return S.st.sleeps; }, rw: { torch: 6 } },
-    { id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest (Planks, Fiber), place it near camp, open it (tap it or press F) and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8, torch: 4 } }
+    { id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest (Planks, Fiber), place it near camp, open it (tap it or press F) and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8, torch: 4 } },
+    { id: "benchup", n: "Level Up the Bench", d: "Armor for the next biome needs a better Workbench. Bring Glowspore, Clay, Stone and Bramble + Frog Fragments from Murkwater to your Workbench and upgrade it in the Craft tab.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
+    { id: "mail", n: "Suit Up", d: "Craft the Glowspore Mail at your upgraded Workbench before you push deep into Ember Bog.", need: 1, v: function () { return S.arm >= 2 ? 1 : 0; }, rw: { torch: 6 } }
   ];
   var PHN = { day: "Day", dusk: "Dusk", night: "Night", dawn: "Dawn" };
 
@@ -209,7 +261,7 @@
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1 }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1 }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
@@ -233,6 +285,8 @@
     var tr = Math.floor(+o.tier); d.tier = clamp(isFinite(tr) ? tr : 1, o.v >= 2 ? 0 : 1, 4);
     var wp = Math.floor(+o.wpn); d.wpn = clamp(isFinite(wp) ? wp : 0, 0, WEAPONS.length - 1);
     var ar = Math.floor(+o.arm); d.arm = clamp(isFinite(ar) ? ar : 0, 0, ARMORS.length - 1);   // older saves have no armor
+    var bl0 = Math.floor(+o.bl); d.bl = clamp(isFinite(bl0) ? bl0 : 1, 1, BENCH_LV.length - 1);
+    RECIPES.forEach(function (r) { if (r.bl && ((r.tier && d.tier >= r.tier) || (r.wpn && d.wpn >= r.wpn) || (r.arm && d.arm >= r.arm))) d.bl = Math.max(d.bl, r.bl); });   // older saves keep the gear they already made
     d.trail = typeof o.trail === "number" ? clamp(Math.floor(o.trail), 0, TRAIL.length) : TRAIL.length;   // older saves skip the beginner Trail
     d.shovel = +o.shovel ? 1 : 0;
     d.can = +o.can ? 1 : 0; d.water = d.can ? clamp(Math.floor(+o.water) || 0, 0, CAN.max) : 0;
@@ -259,7 +313,7 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; stageEl.classList.remove("cave");
+    S = state; benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; stageEl.classList.remove("cave");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world grew! It is 3x wider, with Frostfen west and Ember Bog east. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
@@ -571,6 +625,10 @@
     var g = ATLAS.getContext("2d");
     TILES.forEach(function (td) { for (var v = 0; v < 4; v++) paint(g, td, v, td.id * 16); });
   }
+  function repaintBench() {   // the Workbench tile looks different at each level; redraw just its strip of the atlas
+    if (!ATLAS) return; var g = ATLAS.getContext("2d"); g.clearRect(0, T.BENCH * 16, 64, 16);
+    for (var v = 0; v < 4; v++) paint(g, TILES[T.BENCH], v, T.BENCH * 16);
+  }
   // ---------- PAINTINGS ----------
   // Each placed painting is drawn from its position, so it looks the same every time you load the world.
   // TO USE YOUR OWN IMAGES: add entries here, e.g. { src: "art/sunset.png" }. Square images work best (they are shrunk into a 12 x 12 frame).
@@ -685,6 +743,143 @@
       rect(0, 0, 16, 2, "#5a3a1e"); rect(0, 0, 2, 16, "#5a3a1e"); rect(0, 0, 16, 1, "#7a5230"); rect(0, 0, 1, 16, "#7a5230"); rect(2, 2, 14, 1, "#000", 0.14); rect(2, 2, 1, 14, "#000", 0.1);
     }
   }
+  // ---------- DECOR EXPANSION ART: one 16x16 picture per new block / showpiece (kind name = key). Called from paint() with rect(x, y, w, h, colour, alpha), hh = tile hash, v = look 0-3. ----------
+  var DECOR_ART = {
+    brick: function (rect, hh) {   // grey stone bricks, staggered, with mortar
+      rect(0, 0, 16, 16, "#80868a");
+      [0, 5, 10].forEach(function (y, r) { rect(0, y, 16, 1, "#4d5256"); var jx = r % 2 ? 3 : 7; rect(jx, y + 1, 1, 4, "#4d5256"); rect(jx + 8 > 15 ? jx - 8 : jx + 8, y + 1, 1, 4, "#4d5256"); rect(0, y + 1, 16, 1, "#a3aaae", 0.35); });
+      rect(0, 15, 16, 1, "#4d5256"); for (var k = 0; k < 8; k++) rect(Math.floor(hh(k, 1, 61) * 16), Math.floor(hh(k, 2, 62) * 16), 1, 1, hh(k, 3, 63) > 0.5 ? "#6a7075" : "#979ea2");
+    },
+    thatch: function (rect, hh) {   // layers of golden straw
+      rect(0, 0, 16, 16, "#c9a85a");
+      for (var y = 0; y < 16; y += 3) { rect(0, y, 16, 1, "#e6cf86"); rect(0, y + 2, 16, 1, "#9a7a38"); }
+      for (var k = 0; k < 22; k++) rect(Math.floor(hh(k, 1, 71) * 16), Math.floor(hh(k, 2, 72) * 15), 1, 2, hh(k, 3, 73) > 0.5 ? "#b8984a" : "#f0dc9a");
+    },
+    glass: function (rect) {   // see-through teal pane with a bright frame and shine
+      rect(0, 0, 16, 16, "#7fe8d0", 0.22); rect(0, 0, 16, 1, "#bffff0", 0.9); rect(0, 15, 16, 1, "#2aa88a", 0.9); rect(0, 0, 1, 16, "#bffff0", 0.8); rect(15, 0, 1, 16, "#2aa88a", 0.8);
+      rect(8, 0, 1, 16, "#4ee6b4", 0.45); rect(0, 8, 16, 1, "#4ee6b4", 0.45); rect(3, 2, 2, 1, "#fff", 0.85); rect(2, 3, 1, 3, "#fff", 0.7); rect(11, 10, 2, 1, "#fff", 0.6); rect(10, 11, 1, 2, "#fff", 0.5);
+    },
+    basaltbrick: function (rect, hh) {   // dark basalt bricks with faint hot cracks
+      rect(0, 0, 16, 16, "#3b3036");
+      [0, 5, 10].forEach(function (y, r) { rect(0, y, 16, 1, "#1e171b"); var jx = r % 2 ? 3 : 7; rect(jx, y + 1, 1, 4, "#1e171b"); rect(jx + 8 > 15 ? jx - 8 : jx + 8, y + 1, 1, 4, "#1e171b"); rect(0, y + 1, 16, 1, "#55444d", 0.7); });
+      rect(0, 15, 16, 1, "#1e171b"); for (var k = 0; k < 5; k++) rect(Math.floor(hh(k, 1, 81) * 15), Math.floor(hh(k, 2, 82) * 15), 1, 1, "#ff8a3d", 0.55);
+    },
+    cinderlamp: function (rect) {   // iron-framed block with a glowing ember core
+      rect(0, 0, 16, 16, "#2a2228"); rect(1, 1, 14, 14, "#3b3036"); rect(2, 2, 12, 12, "#c9461a"); rect(3, 3, 10, 10, "#ff8a3d"); rect(5, 5, 6, 6, "#ffc24a"); rect(7, 7, 2, 2, "#fff6c2");
+      rect(1, 1, 2, 2, "#8e969b"); rect(13, 1, 2, 2, "#8e969b"); rect(1, 13, 2, 2, "#8e969b"); rect(13, 13, 2, 2, "#8e969b"); rect(8, 2, 1, 12, "#2a2228", 0.55); rect(2, 8, 12, 1, "#2a2228", 0.55);
+    },
+    icebrick: function (rect, hh) {   // pale blue ice bricks
+      rect(0, 0, 16, 16, "#9fd8ef");
+      [0, 5, 10].forEach(function (y, r) { rect(0, y, 16, 1, "#5d90aa"); var jx = r % 2 ? 3 : 7; rect(jx, y + 1, 1, 4, "#5d90aa"); rect(jx + 8 > 15 ? jx - 8 : jx + 8, y + 1, 1, 4, "#5d90aa"); rect(0, y + 1, 16, 1, "#e8fbff", 0.6); });
+      rect(0, 15, 16, 1, "#5d90aa"); for (var k = 0; k < 6; k++) rect(Math.floor(hh(k, 1, 91) * 15), Math.floor(hh(k, 2, 92) * 15), 1, 1, "#fff", 0.6);
+    },
+    crystallamp: function (rect) {   // frostrock frame around a glowing crystal
+      rect(0, 0, 16, 16, "#5d7c93"); rect(1, 1, 14, 14, "#7c9db4"); rect(2, 2, 12, 12, "#3f6f94"); rect(3, 3, 10, 10, "#7fd6ff"); rect(5, 4, 6, 8, "#bff4ff"); rect(7, 3, 2, 10, "#fff"); rect(6, 6, 1, 4, "#e8fbff");
+      rect(1, 1, 2, 2, "#bff4ff"); rect(13, 1, 2, 2, "#bff4ff"); rect(1, 13, 2, 2, "#bff4ff"); rect(13, 13, 2, 2, "#bff4ff");
+    },
+    fountain: function (rect) {   // stone basin, pillar, upper bowl and a spray of water
+      rect(1, 12, 14, 4, "#8a9094"); rect(1, 11, 14, 1, "#b3babe"); rect(1, 15, 14, 1, "#5d6468"); rect(3, 10, 10, 2, "#4fb6c9"); rect(4, 10, 3, 1, "#9fe8f5");
+      rect(7, 4, 2, 7, "#8a9094"); rect(7, 4, 1, 7, "#b3babe"); rect(4, 4, 8, 2, "#8a9094"); rect(4, 4, 8, 1, "#b3babe"); rect(5, 3, 6, 1, "#7fd6e0");
+      rect(7, 0, 2, 3, "#bff4ff", 0.85); rect(5, 5, 1, 4, "#9fe8f5", 0.75); rect(10, 5, 1, 4, "#9fe8f5", 0.75); rect(2, 13, 3, 1, "#3f8f3a"); rect(11, 14, 3, 1, "#3f8f3a");
+    },
+    well: function (rect) {   // stone ring, wooden posts and roof, a bucket on a rope
+      rect(2, 10, 12, 6, "#7f868a"); rect(2, 10, 12, 1, "#a3aaae"); rect(2, 13, 12, 1, "#5d6468"); rect(7, 10, 1, 6, "#5d6468", 0.7); rect(4, 11, 8, 1, "#1f4f5a"); rect(5, 11, 6, 1, "#2a8f95");
+      rect(3, 3, 1, 8, "#8a5a32"); rect(12, 3, 1, 8, "#8a5a32"); rect(2, 1, 12, 2, "#9a6234"); rect(2, 1, 12, 1, "#c98c4f"); rect(4, 0, 8, 1, "#c98c4f");
+      rect(8, 3, 1, 5, "#c9b58a"); rect(7, 8, 3, 2, "#b9793f"); rect(7, 8, 3, 1, "#dc9a58");
+    },
+    cauldron: function (rect, hh, v) {   // iron cauldron of green brew over a little fire
+      rect(5, 14, 6, 2, "#ff7a1f"); rect(6, 13, 4, 1, "#ffc43a"); rect(3, 13, 2, 3, "#2a2a30"); rect(11, 13, 2, 3, "#2a2a30");
+      rect(2, 6, 12, 7, "#3a3a42"); rect(3, 5, 10, 1, "#4a4a54"); rect(2, 5, 12, 1, "#5a5a66"); rect(2, 6, 2, 7, "#4a4a54"); rect(12, 6, 2, 7, "#2a2a30"); rect(3, 12, 10, 1, "#2a2a30");
+      rect(3, 4, 10, 2, "#4ee6b4"); rect(4, 4, 3, 1, "#9bfbe0"); rect(5, 2, 2, 2, "#9bfbe0", 0.9); rect(9, 3, 1, 1, "#d8fff6"); rect(8, 1, 1, 1, "#d8fff6", 0.8); rect(11, 2, 1, 1, "#9bfbe0", 0.7);
+    },
+    fence: function (rect) {   // posts at the sides with two rails across, so a row of fences joins up
+      rect(0, 7, 16, 2, "#c98c4f"); rect(0, 7, 16, 1, "#e4aa6c"); rect(0, 8, 16, 1, "#8a5a32"); rect(0, 12, 16, 2, "#c98c4f"); rect(0, 12, 16, 1, "#e4aa6c"); rect(0, 13, 16, 1, "#8a5a32");
+      rect(1, 4, 3, 12, "#a8703c"); rect(1, 3, 3, 1, "#dc9a58"); rect(1, 4, 1, 12, "#c98c4f"); rect(3, 4, 1, 12, "#6e431f"); rect(12, 4, 3, 12, "#a8703c"); rect(12, 3, 3, 1, "#dc9a58"); rect(12, 4, 1, 12, "#c98c4f"); rect(14, 4, 1, 12, "#6e431f");
+    },
+    bale: function (rect, hh) {   // a tied bale of dried reeds
+      rect(1, 6, 14, 10, "#c9b36a"); rect(1, 6, 14, 1, "#e6d08a"); rect(1, 15, 14, 1, "#8a7a38"); rect(1, 6, 1, 10, "#a8964f"); rect(14, 6, 1, 10, "#a8964f");
+      for (var k = 0; k < 16; k++) rect(2 + Math.floor(hh(k, 1, 101) * 12), 7 + Math.floor(hh(k, 2, 102) * 8), 2, 1, hh(k, 3, 103) > 0.5 ? "#dcc67a" : "#a8964f");
+      rect(5, 6, 1, 10, "#8a5a32"); rect(10, 6, 1, 10, "#8a5a32"); rect(3, 5, 1, 1, "#c9b36a"); rect(9, 4, 1, 2, "#e6d08a"); rect(12, 5, 1, 1, "#c9b36a");
+    },
+    glowpot: function (rect) {   // a clay pot with a glowing mushroom
+      rect(4, 10, 8, 6, "#c46a3c"); rect(3, 9, 10, 2, "#d9794a"); rect(3, 9, 10, 1, "#e48a5c"); rect(11, 11, 1, 5, "#8a4524");
+      rect(7, 6, 2, 4, "#cfe3cb"); rect(4, 3, 8, 4, "#22a883"); rect(5, 2, 6, 1, "#4ee6b4"); rect(6, 4, 1, 1, "#d8fff6"); rect(9, 3, 1, 1, "#d8fff6"); rect(10, 5, 1, 1, "#d8fff6"); rect(3, 5, 1, 1, "#4ee6b4", 0.6);
+    },
+    wardrobe: function (rect) {   // a tall two-door wardrobe
+      rect(2, 0, 12, 16, "#8a5328"); rect(1, 0, 14, 1, "#c98c4f"); rect(3, 2, 5, 12, "#a8703c"); rect(8, 2, 5, 12, "#a8703c"); rect(3, 2, 5, 1, "#c98c4f"); rect(8, 2, 5, 1, "#c98c4f"); rect(8, 1, 1, 14, "#3a200d");
+      rect(5, 4, 1, 8, "#8a5a32"); rect(10, 4, 1, 8, "#8a5a32"); rect(7, 8, 1, 2, "#f2c14e"); rect(9, 8, 1, 2, "#f2c14e"); rect(2, 15, 2, 1, "#4a2c14"); rect(12, 15, 2, 1, "#4a2c14");
+    },
+    hearth: function (rect) {   // a stone fireplace with a roaring fire
+      rect(1, 2, 14, 14, "#6b7276"); rect(0, 1, 16, 2, "#8e969b"); rect(0, 1, 16, 1, "#b3babe"); rect(1, 6, 14, 1, "#4d5256", 0.6); rect(1, 11, 14, 1, "#4d5256", 0.6);
+      rect(4, 5, 8, 11, "#1a1416"); rect(5, 5, 6, 1, "#2a2228"); rect(6, 10, 4, 6, "#ff7a1f"); rect(7, 8, 2, 4, "#ffc43a"); rect(7, 11, 2, 4, "#fff6c2"); rect(5, 14, 6, 2, "#6a4426"); rect(5, 14, 6, 1, "#8a5a32"); rect(5, 12, 1, 2, "#ff7a1f", 0.8);
+    },
+    frogstatue: function (rect) {   // a stone frog on a plinth with glowing gem eyes
+      rect(3, 12, 10, 4, "#8e969b"); rect(3, 12, 10, 1, "#b3babe"); rect(3, 15, 10, 1, "#5d6468");
+      rect(4, 6, 8, 6, "#7f868a"); rect(4, 6, 8, 1, "#a3aaae"); rect(4, 4, 3, 3, "#7f868a"); rect(9, 4, 3, 3, "#7f868a"); rect(4, 4, 3, 1, "#a3aaae"); rect(9, 4, 3, 1, "#a3aaae");
+      rect(5, 5, 1, 1, "#4ee6b4"); rect(10, 5, 1, 1, "#4ee6b4"); rect(6, 9, 4, 1, "#4d5256"); rect(3, 10, 2, 2, "#7f868a"); rect(11, 10, 2, 2, "#7f868a"); rect(7, 7, 2, 1, "#a3aaae", 0.6);
+    },
+    brazier: function (rect) {   // an iron bowl blazing with fire
+      rect(4, 12, 2, 4, "#2a2228"); rect(10, 12, 2, 4, "#2a2228"); rect(7, 13, 2, 3, "#2a2228"); rect(3, 9, 10, 3, "#3b3036"); rect(2, 8, 12, 1, "#55444d"); rect(3, 9, 10, 1, "#ff8a3d", 0.7);
+      rect(4, 3, 8, 5, "#ff6a1f"); rect(5, 1, 6, 4, "#ffa133"); rect(6, 0, 4, 3, "#ffd86a"); rect(7, 4, 2, 4, "#fff1b0"); rect(3, 5, 1, 3, "#ff6a1f", 0.8); rect(12, 4, 1, 3, "#ff6a1f", 0.8); rect(2, 3, 1, 1, "#ffc24a", 0.7); rect(13, 2, 1, 1, "#ffc24a", 0.7);
+    },
+    guardian: function (rect) {   // a basalt knight statue with ember eyes and a seam of lava
+      rect(3, 13, 10, 3, "#2a2228"); rect(3, 13, 10, 1, "#55444d"); rect(5, 6, 6, 8, "#3b3036"); rect(3, 6, 10, 2, "#55444d"); rect(3, 6, 10, 1, "#6b5560");
+      rect(6, 2, 4, 4, "#3b3036"); rect(6, 2, 4, 1, "#55444d"); rect(7, 1, 2, 1, "#ff8a3d"); rect(6, 4, 1, 1, "#ff8a3d"); rect(9, 4, 1, 1, "#ff8a3d"); rect(7, 9, 2, 1, "#ff8a3d"); rect(7, 11, 2, 1, "#ff8a3d", 0.7);
+      rect(12, 5, 1, 9, "#9aa0ac"); rect(11, 8, 3, 1, "#ff8a3d"); rect(12, 4, 1, 1, "#e8ecf2"); rect(3, 8, 2, 5, "#2a2228");
+    },
+    emberlantern: function (rect) {   // an iron-caged lantern full of embers
+      rect(7, 0, 2, 2, "#2a2228"); rect(4, 2, 8, 1, "#3b3036"); rect(4, 2, 8, 10, "#2a2228"); rect(5, 3, 6, 8, "#ff8a3d"); rect(6, 4, 4, 6, "#ffc24a"); rect(7, 6, 2, 3, "#fff6c2"); rect(5, 3, 1, 8, "#ffb067", 0.7);
+      rect(8, 3, 1, 8, "#2a2228", 0.6); rect(4, 12, 8, 1, "#55444d"); rect(5, 13, 6, 3, "#3b3036"); rect(5, 13, 6, 1, "#55444d");
+    },
+    urn: function (rect) {   // a tall ash-grey urn with glowing ember bands
+      rect(4, 5, 8, 10, "#8a7a72"); rect(5, 4, 6, 1, "#8a7a72"); rect(6, 2, 4, 3, "#8a7a72"); rect(5, 2, 6, 1, "#a89990"); rect(5, 15, 6, 1, "#5d524c"); rect(4, 14, 8, 1, "#6f625b");
+      rect(4, 8, 8, 1, "#ff8a3d"); rect(4, 11, 8, 1, "#ff8a3d", 0.7); rect(5, 5, 1, 9, "#fff", 0.2); rect(10, 5, 1, 9, "#000", 0.2); rect(7, 9, 2, 1, "#ffc24a");
+    },
+    anvil: function (rect) {   // a blackened anvil with a hot top
+      rect(0, 6, 3, 1, "#4a4a54"); rect(2, 6, 12, 2, "#4a4a54"); rect(2, 6, 12, 1, "#6a6a78"); rect(13, 7, 2, 1, "#4a4a54"); rect(5, 8, 6, 3, "#3a3a42"); rect(3, 11, 10, 3, "#2a2a30"); rect(2, 14, 12, 2, "#55444d"); rect(2, 14, 12, 1, "#6b5560");
+      rect(5, 6, 6, 1, "#ff8a3d"); rect(7, 5, 2, 1, "#ffc24a"); rect(9, 3, 1, 1, "#ffc24a", 0.8); rect(5, 2, 1, 1, "#ff8a3d", 0.7);
+    },
+    icesculpt: function (rect) {   // a cluster of ice shards on a frozen base
+      rect(4, 13, 8, 3, "#7c9db4"); rect(4, 13, 8, 1, "#9fd8ef"); rect(7, 1, 3, 12, "#bff4ff"); rect(8, 0, 1, 1, "#fff"); rect(7, 2, 1, 9, "#fff", 0.55); rect(4, 5, 3, 8, "#9fd8ef"); rect(5, 4, 1, 1, "#e8fbff"); rect(10, 7, 3, 6, "#7fd6ff"); rect(11, 6, 1, 1, "#e8fbff");
+      rect(3, 11, 1, 2, "#9fd8ef", 0.8); rect(13, 10, 1, 3, "#7fd6ff", 0.8);
+    },
+    frostlantern: function (rect) {   // a crystal lantern with a cold blue flame
+      rect(7, 0, 2, 2, "#5d7c93"); rect(4, 2, 8, 1, "#7c9db4"); rect(4, 2, 8, 10, "#5d7c93"); rect(5, 3, 6, 8, "#7fd6ff"); rect(6, 4, 4, 6, "#bff4ff"); rect(7, 6, 2, 3, "#fff"); rect(5, 3, 1, 8, "#e8fbff", 0.6);
+      rect(8, 3, 1, 8, "#5d7c93", 0.6); rect(4, 12, 8, 1, "#9fd8ef"); rect(5, 13, 6, 3, "#7c9db4"); rect(5, 13, 6, 1, "#bff4ff");
+    },
+    throne: function (rect) {   // a throne carved from Frostrock with crystal spikes and a gem
+      rect(3, 0, 10, 12, "#5d7c93"); rect(4, 1, 8, 9, "#7c9db4"); rect(3, 0, 2, 2, "#bff4ff"); rect(11, 0, 2, 2, "#bff4ff"); rect(7, 0, 2, 1, "#e8fbff");
+      rect(7, 3, 2, 3, "#7fd6ff"); rect(7, 3, 1, 1, "#fff"); rect(6, 6, 4, 1, "#bff4ff", 0.7); rect(2, 10, 12, 3, "#9fd8ef"); rect(2, 10, 12, 1, "#e8fbff"); rect(1, 8, 2, 8, "#5d7c93"); rect(13, 8, 2, 8, "#5d7c93"); rect(1, 8, 2, 1, "#bff4ff"); rect(13, 8, 2, 1, "#bff4ff");
+      rect(3, 13, 2, 3, "#5d7c93"); rect(11, 13, 2, 3, "#5d7c93"); rect(4, 10, 8, 1, "#fff", 0.3);
+    },
+    sconce: function (rect) {   // an iron bracket holding a teal Glowspore flame
+      rect(6, 10, 4, 2, "#4a4a52"); rect(7, 7, 2, 4, "#4a4a52"); rect(5, 6, 6, 2, "#6e431f"); rect(5, 6, 6, 1, "#8a5a32");
+      rect(6, 2, 4, 4, "#4ee6b4"); rect(7, 1, 2, 2, "#9bfbe0"); rect(7, 3, 2, 2, "#e6fff8"); rect(5, 4, 1, 1, "#4ee6b4", 0.6); rect(10, 3, 1, 1, "#4ee6b4", 0.6);
+    },
+    bugtrophy: function (rect) {   // a wooden plaque with a mounted Bramble Bug
+      rect(2, 2, 12, 12, "#8a5328"); rect(2, 2, 12, 1, "#c98c4f"); rect(3, 3, 10, 10, "#3a200d");
+      rect(5, 6, 6, 4, "#9a52a8"); rect(5, 6, 6, 1, "#c68cd0"); rect(4, 7, 2, 2, "#7a3a88"); rect(4, 7, 1, 1, "#ff6b82"); rect(6, 5, 4, 1, "#c68cd0", 0.8); rect(5, 10, 1, 2, "#4a2c14"); rect(7, 10, 1, 2, "#4a2c14"); rect(9, 10, 1, 2, "#4a2c14"); rect(3, 3, 1, 1, "#f2c14e"); rect(12, 12, 1, 1, "#f2c14e");
+    },
+    frogtrophy: function (rect) {   // a wooden plaque with a mounted Swamp Frog
+      rect(2, 2, 12, 12, "#8a5328"); rect(2, 2, 12, 1, "#c98c4f"); rect(3, 3, 10, 10, "#3a200d");
+      rect(5, 7, 6, 4, "#6fe08a"); rect(5, 7, 6, 1, "#a8f5ba"); rect(5, 5, 2, 2, "#6fe08a"); rect(9, 5, 2, 2, "#6fe08a"); rect(6, 5, 1, 1, "#f2c14e"); rect(9, 5, 1, 1, "#f2c14e"); rect(6, 9, 4, 1, "#2a8f4a"); rect(4, 10, 2, 2, "#6fe08a"); rect(10, 10, 2, 2, "#6fe08a"); rect(3, 3, 1, 1, "#f2c14e"); rect(12, 12, 1, 1, "#f2c14e");
+    },
+    emberbanner: function (rect) {   // a rust-red banner with a golden flame
+      rect(2, 1, 12, 1, "#8a5a32"); rect(1, 0, 1, 3, "#c98c4f"); rect(14, 0, 1, 3, "#c98c4f"); rect(3, 2, 10, 10, "#c9461a"); rect(3, 2, 10, 1, "#ff8a3d"); rect(3, 2, 1, 10, "#8a2a0e"); rect(12, 2, 1, 10, "#8a2a0e");
+      rect(4, 12, 8, 1, "#c9461a"); rect(5, 13, 6, 1, "#c9461a"); rect(6, 14, 4, 1, "#c9461a"); rect(7, 15, 2, 1, "#c9461a");
+      rect(7, 4, 2, 6, "#ffd86a"); rect(6, 6, 1, 3, "#ffa133"); rect(9, 6, 1, 3, "#ffa133"); rect(7, 3, 2, 1, "#fff1b0");
+    },
+    chandelier: function (rect) {   // a hanging ring of Frost Crystals and candle flames
+      rect(7, 0, 2, 3, "#9aa0ac"); rect(1, 3, 14, 2, "#5d7c93"); rect(1, 3, 14, 1, "#9fd8ef"); rect(0, 4, 1, 1, "#5d7c93"); rect(15, 4, 1, 1, "#5d7c93");
+      rect(2, 1, 1, 2, "#fff2b0"); rect(2, 0, 1, 1, "#ffd86a"); rect(13, 1, 1, 2, "#fff2b0"); rect(13, 0, 1, 1, "#ffd86a"); rect(5, 2, 1, 1, "#fff2b0"); rect(10, 2, 1, 1, "#fff2b0");
+      rect(2, 5, 2, 4, "#bff4ff"); rect(2, 5, 1, 4, "#fff"); rect(5, 5, 2, 6, "#7fd6ff"); rect(5, 5, 1, 6, "#e8fbff"); rect(7, 5, 2, 9, "#bff4ff"); rect(7, 5, 1, 9, "#fff"); rect(10, 5, 2, 6, "#7fd6ff"); rect(10, 5, 1, 6, "#e8fbff"); rect(12, 5, 2, 4, "#bff4ff"); rect(12, 5, 1, 4, "#fff");
+    },
+    frostbanner: function (rect) {   // a deep-blue banner with a white snowflake
+      rect(2, 1, 12, 1, "#8a5a32"); rect(1, 0, 1, 3, "#c98c4f"); rect(14, 0, 1, 3, "#c98c4f"); rect(3, 2, 10, 10, "#3a7fa8"); rect(3, 2, 10, 1, "#7fd6ff"); rect(3, 2, 1, 10, "#245a7a"); rect(12, 2, 1, 10, "#245a7a");
+      rect(4, 12, 8, 1, "#3a7fa8"); rect(5, 13, 6, 1, "#3a7fa8"); rect(6, 14, 4, 1, "#3a7fa8"); rect(7, 15, 2, 1, "#3a7fa8");
+      rect(7, 3, 2, 8, "#e8fbff"); rect(4, 6, 8, 2, "#e8fbff"); [[5, 4], [6, 5], [9, 5], [10, 4], [5, 9], [6, 8], [9, 8], [10, 9]].forEach(function (q) { rect(q[0], q[1], 1, 1, "#e8fbff"); }); rect(7, 6, 2, 2, "#7fd6ff");
+    }
+  };
   function paint(g, td, v, oy) {
     var id = td.id, ox = v * 16, kind = td.kind, hh = function (x, y, s) { return SW.hash(x + v * 16, y + id * 31, s + id); };
     var rect = function (x, y, w, h, c, a) { g.globalAlpha = a == null ? 1 : a; g.fillStyle = c; g.fillRect(ox + x, oy + y, w, h); g.globalAlpha = 1; };
@@ -692,10 +887,20 @@
     if (id === T.AIR || id === T.WATER || id === T.LAVA) return;
     if (kind === "wall") { paintWall(rect, hh, id, v); return; }
     if (kind === "torch") { rect(7, 6, 2, 10, "#6a4426"); rect(7, 6, 1, 10, "#8a5a32"); rect(6, 2, 4, 5, "#ff7a1f"); rect(7, 1, 2, 3, "#ffc43a"); rect(7, 4, 2, 2, "#fff6c2"); rect(5, 5, 1, 1, "#ffb13b", 0.6); rect(10, 4, 1, 1, "#ffb13b", 0.6); return; }
-    if (kind === "bench") {
-      rect(1, 7, 14, 3, "#c98c4f"); rect(1, 7, 14, 1, "#e4aa6c"); rect(1, 10, 14, 1, "#6e431f"); rect(2, 11, 2, 5, "#8a5a32"); rect(12, 11, 2, 5, "#8a5a32"); rect(2, 11, 1, 5, "#a8703c"); rect(3, 13, 10, 1, "#6e431f", 0.8);
-      rect(3, 5, 7, 2, "#3f8f3a"); rect(4, 4, 5, 1, "#5fb24a"); rect(4, 5, 2, 1, "#9be062"); rect(9, 5, 1, 2, "#2a6a2a");
-      rect(11, 2, 1, 5, "#8a5a32"); rect(10, 2, 3, 1, "#c9b58a"); rect(6, 2, 2, 2, "#ff8fc0"); rect(6, 2, 1, 1, "#ffd0e6"); return;
+    if (kind === "bench") {   // four looks, one per Workbench level (see BENCH_LV)
+      var bL = benchLv, bTop = ["", "#c98c4f", "#c98c4f", "#3b3036", "#9fd8ef"][bL], bHi = ["", "#e4aa6c", "#7ff5d0", "#55444d", "#e8fbff"][bL], bLo = ["", "#6e431f", "#1f8f78", "#ff8a3d", "#5d7c93"][bL], bLeg = ["", "#8a5a32", "#8a5a32", "#4a3a40", "#7c9db4"][bL], bLegHi = ["", "#a8703c", "#4ee6b4", "#6b5560", "#bff4ff"][bL];
+      rect(1, 7, 14, 3, bTop); rect(1, 7, 14, 1, bHi); rect(1, 10, 14, 1, bLo); rect(2, 11, 2, 5, bLeg); rect(12, 11, 2, 5, bLeg); rect(2, 11, 1, 5, bLegHi); rect(3, 13, 10, 1, bLo, 0.8);
+      if (bL === 1) {
+        rect(3, 5, 7, 2, "#3f8f3a"); rect(4, 4, 5, 1, "#5fb24a"); rect(4, 5, 2, 1, "#9be062"); rect(9, 5, 1, 2, "#2a6a2a");
+        rect(11, 2, 1, 5, "#8a5a32"); rect(10, 2, 3, 1, "#c9b58a"); rect(6, 2, 2, 2, "#ff8fc0"); rect(6, 2, 1, 1, "#ffd0e6");
+      } else if (bL === 2) {   // glowing Glowspore gems and a teal trim
+        rect(3, 4, 2, 3, "#4ee6b4"); rect(3, 3, 2, 1, "#bffff0"); rect(7, 5, 2, 2, "#22a883"); rect(7, 4, 2, 1, "#4ee6b4"); rect(11, 3, 2, 4, "#4ee6b4"); rect(11, 2, 1, 1, "#d8fff6"); rect(9, 6, 1, 1, "#9bfbe0"); rect(5, 8, 1, 1, "#d8fff6"); rect(10, 8, 1, 1, "#d8fff6");
+      } else if (bL === 3) {   // a dark basalt forge top with a lava seam and an anvil
+        rect(6, 8, 4, 1, "#ff8a3d"); rect(3, 8, 1, 1, "#ffc24a"); rect(12, 8, 1, 1, "#ffc24a"); rect(4, 5, 8, 2, "#2a2228"); rect(5, 4, 6, 1, "#55444d"); rect(6, 3, 4, 1, "#3b3036"); rect(7, 5, 2, 1, "#ff8a3d"); rect(7, 4, 1, 1, "#ffc24a"); rect(12, 3, 1, 4, "#4a3a40"); rect(12, 2, 1, 1, "#ff8a3d");
+      } else {   // frozen top with sprouting Frost Crystals
+        rect(3, 3, 2, 4, "#bff4ff"); rect(3, 2, 1, 1, "#ffffff"); rect(6, 4, 2, 3, "#7fd6ff"); rect(6, 3, 1, 1, "#e8fbff"); rect(10, 1, 2, 6, "#bff4ff"); rect(10, 0, 1, 1, "#ffffff"); rect(13, 4, 1, 3, "#7fd6ff"); rect(5, 8, 1, 1, "#ffffff"); rect(9, 8, 1, 1, "#ffffff");
+      }
+      return;
     }
     if (kind === "bed") {   // wooden frame, mossy-purple blanket, pillow
       rect(1, 13, 14, 2, "#6e431f"); rect(1, 15, 2, 1, "#4a2c14"); rect(13, 15, 2, 1, "#4a2c14");
@@ -806,6 +1011,7 @@
       rect(3, 12, 10, 2, "#6a4426"); rect(4, 11, 8, 1, "#8a5a32"); rect(5, 12, 6, 1, "#3a200d");
       rect(6, 5, 4, 7, "#ff7a1f"); rect(7, 3, 2, 4, "#ffc43a"); rect(7, 7, 2, 4, "#fff6c2"); rect(5, 8, 1, 3, "#ff7a1f"); rect(10, 8, 1, 3, "#ff7a1f"); rect(4, 6, 1, 1, "#ffb13b", 0.7); rect(11, 5, 1, 1, "#ffb13b", 0.7); return;
     }
+    if (DECOR_ART[kind]) { DECOR_ART[kind](rect, hh, v); return; }
     if (kind === "door") { paintDoor(rect, hh, td.door); return; }
     if (kind === "chest") {   // iron-banded swamp chest with a brass lock and a little moss
       rect(1, 7, 14, 8, "#8a5328"); rect(1, 7, 14, 1, "#6e431f"); rect(1, 9, 14, 1, "#a8703c", 0.5); rect(1, 12, 14, 1, "#6e431f", 0.6);
@@ -1563,6 +1769,7 @@
     if (r.wpn && S.wpn < r.wpn - 1) { toast("Craft the " + WEAPONS[r.wpn - 1].n + " first.", "#f2c14e"); return; }
     if (r.arm && S.arm < r.arm - 1) { toast("Craft the " + ARMORS[r.arm - 1].n + " first.", "#f2c14e"); return; }
     if (r.need && S.tier < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
+    if (r.bl && S.bl < r.bl) { toast("Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first.", "#f2c14e"); return; }
     if (r.bench && !nearBench()) { toast("Stand near a Bog Workbench to craft this.", "#f2c14e"); return; }
     for (var k in r.cost) if ((S.inv[k] || 0) < r.cost[k]) { toast("Not enough " + ITEMS[k].n + ".", "#f2c14e"); return; }
     if (r.out) {   // the crafted items must fit once the ingredients are used up
@@ -1584,6 +1791,15 @@
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
     hbDirty = true; renderPanel(); save();
+  }
+  function upgradeBench() {   // spend loot from the last biome to raise the Workbench one level (needs a Workbench close by)
+    var nx = S.bl + 1, L = BENCH_LV[nx]; if (!L) return;
+    if (!nearBench()) { toast("Stand near a Bog Workbench to upgrade it.", "#f2c14e"); return; }
+    for (var k in L.cost) if ((S.inv[k] || 0) < L.cost[k]) { toast("Not enough " + ITEMS[k].n + ".", "#f2c14e"); return; }
+    for (var c in L.cost) { S.inv[c] -= L.cost[c]; if (S.inv[c] <= 0) delete S.inv[c]; }
+    reslot(); S.bl = nx; benchLv = nx; repaintBench(); ICO = {};
+    toast("Workbench upgraded: " + L.n + "! Unlocks " + L.gives + ".", L.c); snd("open", "Epic"); chips(p.x, p.y - 1, L.c, 34, 10);
+    hbDirty = true; checkGoals(); renderPanel(); save();
   }
   function rewardText(rw) { return Object.keys(rw).map(function (k) { return "+" + rw[k] + " " + ITEMS[k].n; }).join(", "); }
   function checkTrail() {
@@ -1952,7 +2168,7 @@
           g.fillStyle = "rgba(0,0,0,.3)"; if (nB) g.fillRect(sx3, sy + ts - edge, ts, edge); if (nL) g.fillRect(sx3, sy, edge, ts); if (nR) g.fillRect(sx3 + ts - edge, sy, edge, ts);
         }
       }
-      if (td.light >= 3 && td.solid === false || td.light >= 6) glows.push([sx3 + ts / 2, sy + ts / 2, id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
+      if (td.light >= 3 && td.solid === false || td.light >= 6) glows.push([sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
       if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
     }
     // mining cracks and a pulse on the tile being dug
@@ -2412,7 +2628,12 @@
       }).join("") + "</div>";
     } else if (tab === "craft") {
       var nb = nearBench();
-      h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? (nb ? "A Workbench is close, so you can craft anything." : "No Workbench nearby. Walk next to yours to craft better picks.") : "Better tools unlock new rock. A Workbench lets you craft the next picks.") + "</p>";
+      h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? (nb ? "A Workbench is close, so you can craft anything." : "No Workbench nearby. Walk next to yours to craft better gear.") : "Better tools unlock new rock. A Workbench lets you craft the next picks, and upgrading it unlocks armor for the next biome.") + "</p>";
+      var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1];
+      if (S.st.benches) {
+        h += "<h3>Workbench</h3>";
+        h += '<div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
+      }
       var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : "", S.arm ? "arm" : ""].filter(Boolean);
       if (rk.length) {
         h += "<h3>Repair</h3>";
@@ -2423,18 +2644,18 @@
         h += "<h3>Craft</h3>";
       }
       RECIPES.forEach(function (r) {
-        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need))), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.arm ? "arm" + r.arm : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
+        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock0 = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need))), lock = lock0 || (r.bl && S.bl < r.bl), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.arm ? "arm" + r.arm : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
         var im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(ic);
-        var note = lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
+        var note = lock && !lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
         h += '<div class="sbx-card' + (owned || lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !needB ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (owned || lock ? " disabled" : "") + ">" + (owned ? "Owned" : lock ? "Locked" : "Craft") + "</button></div>";
       });
     } else if (tab === "decor") {
       var lastCat = "";
-      h += '<p class="sbx-note"><b>Decor Workbench.</b> Craft furniture and decorations for your camp or house. Floor pieces need solid ground under them; wall pieces hang on a block beside or above them. Some pieces are built from others (a Lantern needs a Clay Pot).</p>';
+      h += '<p class="sbx-note"><b>Decor Workbench.</b> Craft furniture and decorations for your camp or house. Floor pieces need solid ground under them; wall pieces hang on a block beside or above them. Some pieces are built from others (a Lantern needs a Clay Pot). Building blocks go in your hotbar and place like Planks. Pieces from Ember Bog and Frostfen need a better Bog Workbench.</p>';
       DECOR.forEach(function (r) {
         if (r.cat !== lastCat) { lastCat = r.cat; h += "<h3>" + esc(r.cat) + "</h3>"; }
-        var can = Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ok = Object.keys(r.out)[0];
-        h += '<div class="sbx-card"><img class="big" alt="" src="' + icon(ok) + '"><div><b>' + esc(r.n) + "</b><small>" + esc(r.d) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can ? "" : " ghost") + '" data-sx-craft="' + r.id + '">Craft</button></div>';
+        var can = Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ok = Object.keys(r.out)[0], dl = r.bl && S.bl < r.bl;
+        h += '<div class="sbx-card' + (dl ? " done" : "") + '"><img class="big" alt="" src="' + icon(ok) + '"><div><b>' + esc(r.n) + "</b><small>" + esc(dl ? "Needs the " + BENCH_LV[r.bl].n + " (upgrade your Bog Workbench in the Craft tab)." : r.d) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !dl ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (dl ? " disabled" : "") + ">" + (dl ? "Locked" : "Craft") + "</button></div>";
       });
     } else if (tab === "bag") {
       reslot(); var used = usedSlots(), cell = function (i) {
@@ -2595,6 +2816,7 @@
     if (t.hasAttribute("data-ch-put")) return chestMove(t.getAttribute("data-ch-put"), true, "put");
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
+    if (t.hasAttribute("data-sx-bup")) return upgradeBench();
     if (t.getAttribute("data-sx-craft")) return craft(t.getAttribute("data-sx-craft"));
     if (t.hasAttribute("data-is")) return invClick(+t.getAttribute("data-is"));
     if (t.getAttribute("data-iact")) return invAct(t.getAttribute("data-iact"));

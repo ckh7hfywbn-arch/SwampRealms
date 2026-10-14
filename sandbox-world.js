@@ -6,7 +6,7 @@
   // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
   var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57 };
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -74,6 +74,42 @@
   tile(T.SIGN, "Wooden Sign", "#000", "#c98c4f", 0.2, 0, "sign", false, 0, "sign");
   tile(T.PLANTER, "Flower Planter", "#000", "#5fb24a", 0.4, 0, "planter", false, 0, "planter");
   tile(T.CAMPFIRE, "Campfire", "#000", "#ff7a1f", 0.3, 0, "campfire", false, 13, "campfire");
+
+  // ---- DECOR EXPANSION: new solid building blocks and a themed set of showpieces for each biome (see DECOR in sandbox.js for the recipes and the Workbench level each needs) ----
+  // Blocks are solid and place like Planks (they are NOT decor, so they stack to 64). Showpieces are non-solid decor. light = glow level; tile.glow = "r,g,b" tints the glow, gr/ga = its radius and strength.
+  tile(T.BRICK, "Stone Brick", "#80868a", "#a3aaae", 1.2, 1, "brick", true, 0, "brick");
+  tile(T.THATCH, "Reed Thatch", "#c9a85a", "#e0c177", 0.4, 1, "thatch", true, 0, "thatch");
+  tile(T.GLASS, "Glowspore Glass", "#7fe8d0", "#bffff0", 0.3, 1, "glass", true, 0, "glass");
+  tile(T.BASALTBRICK, "Basalt Brick", "#3b3036", "#55444d", 1.6, 1, "basaltbrick", true, 0, "basaltbrick");
+  tile(T.CINDERLAMP, "Cinder Lamp Block", "#2a2228", "#ff8a3d", 1.2, 1, "cinderlamp", true, 14, "cinderlamp");
+  tile(T.ICEBRICK, "Frost Brick", "#9fd8ef", "#e8fbff", 1.2, 1, "icebrick", true, 0, "icebrick");
+  tile(T.CRYSTALLAMP, "Crystal Lamp Block", "#5d7c93", "#bff4ff", 1.2, 1, "crystallamp", true, 14, "crystallamp");
+  tile(T.FOUNTAIN, "Mossy Fountain", "#000", "#4fb6c9", 0.5, 0, "fountain", false, 0, "fountain");
+  tile(T.WELL, "Swamp Well", "#000", "#7f868a", 0.5, 0, "well", false, 0, "well");
+  tile(T.CAULDRON, "Bubbling Cauldron", "#000", "#4ee6b4", 0.4, 0, "cauldron", false, 8, "cauldron");
+  tile(T.FENCE, "Wooden Fence", "#000", "#c98c4f", 0.3, 0, "fence", false, 0, "fence");
+  tile(T.BALE, "Reed Bale", "#000", "#c9b36a", 0.3, 0, "bale", false, 0, "bale");
+  tile(T.GLOWPOT, "Glowcap Pot", "#000", "#4ee6b4", 0.3, 0, "glowpot", false, 7, "glowpot");
+  tile(T.WARDROBE, "Swamp Wardrobe", "#000", "#a8703c", 0.5, 0, "wardrobe", false, 0, "wardrobe");
+  tile(T.HEARTH, "Stone Hearth", "#000", "#ff7a1f", 0.5, 0, "hearth", false, 13, "hearth");
+  tile(T.FROGSTATUE, "Frog Statue", "#000", "#8e969b", 0.5, 0, "frogstatue", false, 3, "frogstatue");
+  tile(T.BRAZIER, "Cinder Brazier", "#000", "#ff6a1f", 0.4, 0, "brazier", false, 14, "brazier");
+  tile(T.GUARDIAN, "Basalt Guardian", "#000", "#55444d", 0.5, 0, "guardian", false, 3, "guardian");
+  tile(T.EMBERLANTERN, "Ember Lantern", "#000", "#ff8a3d", 0.3, 0, "emberlantern", false, 12, "emberlantern");
+  tile(T.URN, "Ashen Urn", "#000", "#8a7a72", 0.3, 0, "urn", false, 0, "urn");
+  tile(T.ANVIL, "Cinder Anvil", "#000", "#4a4a54", 0.5, 0, "anvil", false, 5, "anvil");
+  tile(T.ICESCULPT, "Ice Sculpture", "#000", "#bff4ff", 0.4, 0, "icesculpt", false, 4, "icesculpt");
+  tile(T.FROSTLANTERN, "Frost Lantern", "#000", "#7fd6ff", 0.3, 0, "frostlantern", false, 12, "frostlantern");
+  tile(T.THRONE, "Frostrock Throne", "#000", "#9fd8ef", 0.6, 0, "throne", false, 5, "throne");
+  tile(T.SCONCE, "Glowspore Sconce", "#000", "#4ee6b4", 0.2, 0, "sconce", false, 10, "sconce");
+  tile(T.BUGTROPHY, "Bramble Trophy", "#000", "#9a52a8", 0.2, 0, "bugtrophy", false, 0, "bugtrophy");
+  tile(T.FROGTROPHY, "Frog Trophy", "#000", "#6fe08a", 0.2, 0, "frogtrophy", false, 0, "frogtrophy");
+  tile(T.EMBERBANNER, "Ember Banner", "#000", "#ff8a3d", 0.2, 0, "emberbanner", false, 0, "emberbanner");
+  tile(T.CHANDELIER, "Crystal Chandelier", "#000", "#bff4ff", 0.3, 0, "chandelier", false, 14, "chandelier");
+  tile(T.FROSTBANNER, "Frost Banner", "#000", "#7fd6ff", 0.2, 0, "frostbanner", false, 0, "frostbanner");
+  [[T.CINDERLAMP, "255,130,50", 4.4, 0.3], [T.CRYSTALLAMP, "170,235,255", 4.4, 0.3], [T.CAULDRON, "80,240,190", 3, 0.2], [T.GLOWPOT, "80,240,190", 2.6, 0.17], [T.HEARTH, "255,170,60", 5, 0.33], [T.BRAZIER, "255,130,50", 5.2, 0.36],
+   [T.EMBERLANTERN, "255,150,60", 4.2, 0.28], [T.ANVIL, "255,120,50", 2, 0.12], [T.ICESCULPT, "150,225,255", 2.2, 0.14], [T.FROSTLANTERN, "150,225,255", 4.2, 0.28], [T.THRONE, "150,225,255", 2.2, 0.12], [T.SCONCE, "80,240,190", 3.6, 0.24],
+   [T.CHANDELIER, "180,235,255", 5.2, 0.34], [T.FROGSTATUE, "80,240,190", 2, 0.12], [T.GUARDIAN, "255,120,50", 2, 0.12]].forEach(function (g) { TILES[g[0]].glow = g[1]; TILES[g[0]].gr = g[2]; TILES[g[0]].ga = g[3]; });
   // BACK WALLS (Terraria style): a second layer BEHIND the blocks. These ids are never placed as blocks; the wall layer (walls[] in sandbox.js) stores the tile id of the wall art, so the
   // same ids give the item icons and the atlas pictures. You walk in front of a wall, and furniture and decor stand in front of it. To add one: an id in T, a line here,
   // an ITEMS entry (wall: id) + ITEM_ORDER, a picture in paintWall() (sandbox.js) and a recipe in RECIPES (sandbox.js).
@@ -109,12 +145,23 @@
     decorbench: { n: "Decor Workbench", tile: T.DECORBENCH }, stool: { n: "Stool", tile: T.STOOL }, rug: { n: "Reed Rug", tile: T.RUG }, bookshelf: { n: "Bookshelf", tile: T.BOOKSHELF },
     lantern: { n: "Clay Lantern", tile: T.LANTERN }, banner: { n: "Swamp Banner", tile: T.BANNER }, sign: { n: "Wooden Sign", tile: T.SIGN }, planter: { n: "Flower Planter", tile: T.PLANTER }, campfire: { n: "Campfire", tile: T.CAMPFIRE }
   });
+  Object.assign(ITEMS, {
+    brick: { n: "Stone Brick", tile: T.BRICK }, thatch: { n: "Reed Thatch", tile: T.THATCH }, glass: { n: "Glowspore Glass", tile: T.GLASS }, basaltbrick: { n: "Basalt Brick", tile: T.BASALTBRICK },
+    cinderlamp: { n: "Cinder Lamp Block", tile: T.CINDERLAMP }, icebrick: { n: "Frost Brick", tile: T.ICEBRICK }, crystallamp: { n: "Crystal Lamp Block", tile: T.CRYSTALLAMP },
+    fountain: { n: "Mossy Fountain", tile: T.FOUNTAIN }, well: { n: "Swamp Well", tile: T.WELL }, cauldron: { n: "Bubbling Cauldron", tile: T.CAULDRON }, fence: { n: "Wooden Fence", tile: T.FENCE }, bale: { n: "Reed Bale", tile: T.BALE },
+    glowpot: { n: "Glowcap Pot", tile: T.GLOWPOT }, wardrobe: { n: "Swamp Wardrobe", tile: T.WARDROBE }, hearth: { n: "Stone Hearth", tile: T.HEARTH }, frogstatue: { n: "Frog Statue", tile: T.FROGSTATUE },
+    brazier: { n: "Cinder Brazier", tile: T.BRAZIER }, guardian: { n: "Basalt Guardian", tile: T.GUARDIAN }, emberlantern: { n: "Ember Lantern", tile: T.EMBERLANTERN }, urn: { n: "Ashen Urn", tile: T.URN }, anvil: { n: "Cinder Anvil", tile: T.ANVIL },
+    icesculpt: { n: "Ice Sculpture", tile: T.ICESCULPT }, frostlantern: { n: "Frost Lantern", tile: T.FROSTLANTERN }, throne: { n: "Frostrock Throne", tile: T.THRONE },
+    sconce: { n: "Glowspore Sconce", tile: T.SCONCE }, bugtrophy: { n: "Bramble Trophy", tile: T.BUGTROPHY }, frogtrophy: { n: "Frog Trophy", tile: T.FROGTROPHY },
+    emberbanner: { n: "Ember Banner", tile: T.EMBERBANNER }, chandelier: { n: "Crystal Chandelier", tile: T.CHANDELIER }, frostbanner: { n: "Frost Banner", tile: T.FROSTBANNER }
+  });
   // Where each decor item may be placed. floor = needs solid ground right under it. wall = hangs on a block beside it or above it (never just resting on the ground).
   // Anything flagged here counts as decor (stack of 16 in the inventory, counts for the "furniture" goals). The village generator uses the same rules.
-  var DECOR_FLOOR = ["chair", "table", "bucket", "pot", "flowerpot", "barrel", "flower", "decorbench", "stool", "rug", "bookshelf", "lantern", "planter", "campfire"], DECOR_WALL = ["painting", "banner", "sign"];
+  var DECOR_FLOOR = ["chair", "table", "bucket", "pot", "flowerpot", "barrel", "flower", "decorbench", "stool", "rug", "bookshelf", "lantern", "planter", "campfire", "fountain", "well", "cauldron", "fence", "bale", "glowpot", "wardrobe", "hearth", "frogstatue", "brazier", "guardian", "emberlantern", "urn", "anvil", "icesculpt", "frostlantern", "throne"],
+    DECOR_WALL = ["painting", "banner", "sign", "sconce", "bugtrophy", "frogtrophy", "emberbanner", "chandelier", "frostbanner"];
   DECOR_FLOOR.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "floor"; });
   DECOR_WALL.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "wall"; });
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "wall_plank", "wall_log", "wall_timber", "wall_plaster", "wall_brick", "wall_moss", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "wall_plank", "wall_log", "wall_timber", "wall_plaster", "wall_brick", "wall_moss", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "brick", "thatch", "glass", "basaltbrick", "cinderlamp", "icebrick", "crystallamp", "fountain", "well", "cauldron", "fence", "bale", "glowpot", "wardrobe", "hearth", "frogstatue", "brazier", "guardian", "emberlantern", "urn", "anvil", "icesculpt", "frostlantern", "throne", "sconce", "bugtrophy", "frogtrophy", "emberbanner", "chandelier", "frostbanner", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
