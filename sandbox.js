@@ -182,6 +182,7 @@
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
     cam.x = p.x; cam.y = p.y - 1; sel = "pick"; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.trail < TRAIL.length ? "trail" : "craft"; hbDirty = true; exKey = ""; spriteKey = ""; ICO = {};
     hp = S.hp; hurtT = hurtGrace = shake = 0; sinceHurt = 99; shownHp = -1; drawHp(); sleepT = 0; batT = 8; enemies.length = 0;
+    spawnCivs();
     reveal(true);
   }
   function save() {
@@ -515,6 +516,36 @@
     if (kind === "reed") { [[3, 9], [7, 14], [11, 10]].forEach(function (s) { rect(s[0], 16 - s[1], 1, s[1], "#4f8a3c"); rect(s[0] + 1, 16 - s[1] + 3, 1, s[1] - 3, "#3b6a2c"); rect(s[0] - 1, 16 - s[1] + 4, 1, 3, "#6aa347"); rect(s[0] + 2, 16 - s[1] + 6, 1, 3, "#6aa347"); }); rect(6, 1, 3, 5, "#6b4a2a"); rect(6, 1, 3, 1, "#a07a46"); rect(6, 1, 1, 5, "#8a6238"); rect(10, 5, 2, 4, "#6b4a2a"); rect(10, 5, 2, 1, "#a07a46"); return; }
     if (kind === "bloom") { rect(7, 9, 2, 7, "#3a2a2a"); rect(4, 11, 3, 1, "#3a2a2a"); rect(9, 12, 3, 1, "#3a2a2a"); rect(5, 5, 6, 5, "#e8541a"); rect(6, 4, 4, 2, "#ff8a3d"); rect(7, 6, 2, 3, "#ffd25a"); rect(7, 7, 2, 1, "#fff2b0"); rect(3, 3, 1, 1, "#ffb13b", 0.8); rect(12, 4, 1, 1, "#ffb13b", 0.8); rect(11, 1, 1, 1, "#ffb13b", 0.6); return; }
     if (kind === "spike") { rect(3, 7, 3, 9, "#7fd6f0"); rect(4, 4, 1, 3, "#cdf6ff"); rect(3, 7, 1, 9, "#cdf6ff", 0.8); rect(7, 2, 3, 14, "#9fe8ff"); rect(8, 0, 1, 2, "#e6fbff"); rect(7, 2, 1, 14, "#ffffff", 0.7); rect(9, 6, 1, 10, "#5fb8d6", 0.7); rect(11, 8, 3, 8, "#7fd6f0"); rect(12, 5, 1, 3, "#cdf6ff"); rect(11, 8, 1, 8, "#cdf6ff", 0.8); return; }
+    if (kind === "flower") {   // three stems with blooms; the colour comes from the variant (pink, yellow, blue, lilac)
+      var FP = [["#ff6fb5", "#ffd1ea"], ["#ffd23f", "#fff2a8"], ["#6aa8ff", "#d3e6ff"], ["#c08cff", "#ece0ff"]][v & 3];
+      [[4, 7, 0], [8, 10, 1], [12, 6, 2]].forEach(function (f) {
+        var fx = f[0], fh = f[1], top = 16 - fh, pc2 = f[2] === 1 ? FP[0] : f[2] === 0 ? FP[1] : FP[0];
+        rect(fx, top + 2, 1, fh - 2, "#3f8f3a"); rect(fx, top + 6, 1, fh - 6, "#2a6a2a", 0.6); rect(fx - 2 + (f[2] === 1 ? 0 : 1), top + 7, 2, 1, "#5fb24a"); rect(fx + 1, top + 9, 2, 1, "#5fb24a");
+        rect(fx - 1, top, 3, 3, pc2); rect(fx, top - 1, 1, 1, pc2); rect(fx, top + 3, 1, 1, pc2); rect(fx, top + 1, 1, 1, "#ffe27a"); rect(fx - 1, top, 1, 1, "#fff", 0.45);
+      }); return;
+    }
+    if (kind === "bucket") {   // a stave bucket with iron bands, a bail handle and a little water
+      rect(3, 3, 1, 5, "#9aa0ac"); rect(12, 3, 1, 5, "#9aa0ac"); rect(3, 3, 10, 1, "#9aa0ac"); rect(4, 2, 8, 1, "#c9ced8");
+      rect(3, 7, 10, 1, "#6e431f"); rect(4, 8, 8, 7, "#b9793f"); rect(4, 8, 8, 1, "#5fd0cf"); rect(5, 8, 3, 1, "#c8fffb"); rect(4, 9, 1, 6, "#dc9a58"); rect(11, 9, 1, 6, "#8a5a32");
+      rect(7, 9, 1, 6, "#8a5a32"); rect(9, 9, 1, 6, "#8a5a32"); rect(4, 10, 8, 1, "#4a4a52"); rect(4, 13, 8, 1, "#4a4a52"); rect(4, 15, 8, 1, "#6e431f"); return;
+    }
+    if (kind === "pot") {   // a round terracotta pot with a gold zigzag band
+      [[5, 6], [4, 8], [3, 10], [3, 10], [3, 10], [4, 8], [4, 8], [5, 6]].forEach(function (r2, k2) { rect(r2[0], 7 + k2, r2[1], 1, "#c46a3c"); rect(r2[0], 7 + k2, 1, 1, "#e48a5c"); rect(r2[0] + r2[1] - 1, 7 + k2, 1, 1, "#8a4524"); });
+      rect(5, 5, 6, 2, "#d9794a"); rect(5, 5, 6, 1, "#f09a6a"); rect(6, 6, 4, 1, "#2a1408");
+      [4, 6, 8, 10].forEach(function (zx, zi) { rect(zx, 10 + (zi % 2), 2, 1, "#f2c14e"); }); rect(5, 15, 6, 1, "#6e3418"); return;
+    }
+    if (kind === "flowerpot") {   // a small pot with soil and one bloom (colour from the variant)
+      var FQ = [["#ff6fb5", "#ffd1ea"], ["#ffd23f", "#fff2a8"], ["#6aa8ff", "#d3e6ff"], ["#c08cff", "#ece0ff"]][v & 3];
+      [[3, 10], [4, 8], [4, 8], [5, 6], [5, 6], [5, 6]].forEach(function (r2, k2) { rect(r2[0], 10 + k2, r2[1], 1, "#c46a3c"); rect(r2[0], 10 + k2, 1, 1, "#e48a5c"); rect(r2[0] + r2[1] - 1, 10 + k2, 1, 1, "#8a4524"); });
+      rect(3, 10, 10, 2, "#d9794a"); rect(3, 10, 10, 1, "#f09a6a"); rect(4, 9, 8, 1, "#3a2a1a");
+      rect(7, 4, 1, 5, "#3f8f3a"); rect(5, 6, 2, 1, "#5fb24a"); rect(8, 5, 2, 1, "#5fb24a");
+      rect(5, 1, 5, 3, FQ[0]); rect(6, 0, 3, 5, FQ[0]); rect(7, 1, 1, 3, "#ffe27a"); rect(5, 1, 1, 1, FQ[1]); rect(6, 0, 1, 1, FQ[1]); return;
+    }
+    if (kind === "barrel") {   // a banded wooden barrel with a brass tap
+      rect(4, 3, 8, 1, "#8a5a32"); rect(3, 4, 10, 11, "#9a6234"); rect(4, 15, 8, 1, "#6e431f"); rect(4, 4, 1, 11, "#c98c4f"); rect(11, 4, 1, 11, "#6e431f");
+      rect(6, 4, 1, 11, "#6e431f", 0.7); rect(9, 4, 1, 11, "#6e431f", 0.7); rect(3, 6, 10, 1, "#4a4a52"); rect(3, 12, 10, 1, "#4a4a52"); rect(3, 6, 10, 1, "#9aa0ac", 0.25);
+      rect(10, 9, 3, 1, "#f2c14e"); rect(12, 9, 1, 2, "#a8740a"); rect(4, 3, 8, 1, "#a8703c"); return;
+    }
     if (kind === "hole") {   // a little stone-ringed burrow in the ground
       rect(2, 9, 12, 7, "#6b7276"); rect(3, 8, 10, 1, "#82898d"); rect(5, 7, 6, 1, "#82898d"); rect(2, 9, 1, 7, "#8f979b"); rect(13, 10, 1, 6, "#4a5054");
       rect(4, 10, 8, 6, "#08090a"); rect(5, 9, 6, 1, "#08090a"); rect(5, 11, 6, 5, "#14100c"); rect(6, 13, 1, 1, "#4ee6b4", 0.35); rect(9, 14, 1, 1, "#4ee6b4", 0.25);
@@ -797,7 +828,7 @@
       return true;
     }
     if (item === "chest" && !TILES[get(tx, ty + 1)].solid) { nag("A chest needs solid ground under it."); return false; }
-    if ((item === "chair" || item === "table") && !TILES[get(tx, ty + 1)].solid) { nag("Furniture needs solid ground under it."); return false; }
+    if ((item === "chair" || item === "table" || item === "bucket" || item === "pot" || item === "flowerpot" || item === "barrel" || item === "flower") && !TILES[get(tx, ty + 1)].solid) { nag("That needs solid ground under it."); return false; }
     if (item === "bed" && !TILES[get(tx, ty + 1)].solid) { nag("A bed needs solid ground under it."); return false; }
     if (solid && tx + 1 > p.x - PW / 2 && tx < p.x + PW / 2 && ty + 1 > p.y - PH && ty < p.y) return false;
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
@@ -806,7 +837,7 @@
   function place(tx, ty, item) {
     setT(tx, ty, ITEMS[item].tile); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
-    if (item === "chair" || item === "table" || item === "painting") S.st.decor++;
+    if (item === "chair" || item === "table" || item === "painting" || item === "bucket" || item === "pot" || item === "flowerpot" || item === "barrel" || item === "flower") S.st.decor++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
     if (item === "ladder") S.st.ladders++;
     if (item === "chest") S.st.chests++;
@@ -950,6 +981,7 @@
     var k = cnt.bug < ENEMY.bug.max && (cnt.frog >= ENEMY.frog.max || Math.random() < 0.6) ? "bug" : cnt.frog < ENEMY.frog.max ? "frog" : null; if (!k) return;
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (vw / 2 / ts + 2 + Math.random() * 8)), 3, W - 4) + 0.5, y = -1, cx = Math.floor(x);
     if (world.bio[cx] !== 0) return;
+    var vg = world.village; if (vg && cx >= vg.f0 && cx <= vg.f1) return;   // the village is a calm place: nothing spawns inside it
     if (k === "bug" && Math.random() < 0.4) {   // some bugs lurk in dark caves
       for (var yy = Math.floor(p.y) - 8; yy <= Math.floor(p.y) + 8; yy++) if (!blocks(cx, yy) && !blocks(cx, yy - 1) && blocks(cx, yy + 1) && TILES[get(cx, yy)].kind !== "water" && yy > col[cx] + 3) { y = yy + 1; break; }
     } else { var cy = col[cx]; if (cy > 0 && cy < H && !blocks(cx, cy - 1) && TILES[get(cx, cy - 1)].kind !== "water") y = cy; }
@@ -1057,6 +1089,78 @@
   }
   function drawEnemies(g, now) { enemies.forEach(function (e) { drawEnemy(g, e, now); }); }
 
+  // ---------- VILLAGERS: swamp avatars that live in the Delve village (Murkwater Swamp, see buildVillage in sandbox-world.js) ----------
+  // Seven civilians drawn with the same pixel avatars as you (delve-avatar.js), each with a fixed outfit. They wander the village, stop to chat
+  // with the air, turn to face you when you walk close, and open doors on the way, so they pass straight through the houses.
+  // They only move while you are within about 70 tiles, are not saved (they start at home whenever the world loads) and cannot be hurt.
+  var CIV = { w: 0.7, h: 1.5, speed: 1.6 };
+  var CIV_FOLK = [
+    { a: "frog", o: { hat: "lilypad", shirt: "tee", shoes: "sneakers" } },
+    { a: "donkey", o: { hat: "cowboy", shirt: "jersey", acc: { bandana: true } } },
+    { a: "owl", o: { face: "monocle", neck: "bowtie", shirt: "tux" } },
+    { a: "monkey", o: { hat: "beanie", shirt: "hoodie", shoes: "swampboots" } },
+    { a: "elephant", o: { hat: "glowcap", shirt: "tee", neck: "scarf" } },
+    { a: "frog", o: { hat: "wizard", shirt: "robe" } },
+    { a: "owl", o: { hat: "mossback", shirt: "hoodie", shoes: "sneakers" } }
+  ];
+  var civs = [];
+  function spawnCivs() {
+    civs = []; var v = world.village; if (!v) return;
+    CIV_FOLK.forEach(function (f, i) {
+      var x = i < v.houses.length ? v.houses[i].x + v.houses[i].w / 2 : v.plaza + 0.5 + (i - v.houses.length ? 1.5 : -1.5), y = v.gy, g = 0;
+      while (eBoxHit(x, y, CIV.w, CIV.h) && g++ < 4) y -= 1;
+      civs.push({ x: x, y: y, vy: 0, kv: 0, on: false, w: CIV.w, h: CIV.h, blocked: false, face: Math.random() < 0.5 ? -1 : 1, st: "idle", t: 0.5 + Math.random() * 4, tx: x, wp: Math.random() * 6, bt: 0, walking: false, ph: Math.random() * 1000, a: f.a, o: Object.assign({ animal: f.a, hat: "", face: "", neck: "", shirt: "", shoes: "", acc: {}, hv: {} }, f.o), sp: null, sc: 0 });
+    });
+  }
+  function civPick(c) {   // choose somewhere to walk: mostly nearby, sometimes anywhere in the village
+    var v = world.village, lo = v.x0 + 2, hi = v.x1 - 2;
+    c.tx = clamp(Math.random() < 0.7 ? c.x + (Math.random() * 2 - 1) * 16 : lo + Math.random() * (hi - lo), lo, hi);
+    c.st = "walk"; c.t = 14; c.bt = 0;
+  }
+  function civDoor(c) {   // a closed door right in front of a walking civilian swings open (and shuts again by itself, see updateDoors)
+    var fx = Math.floor(c.x + c.face * (CIV.w / 2 + 0.2));
+    for (var yy = Math.floor(c.y - CIV.h + 0.05); yy <= Math.floor(c.y - 0.05); yy++) {
+      var td = TILES[get(fx, yy)];
+      if (td.kind === "door" && !td.door.open) { var b = doorBase(fx, yy); setT(b.x, b.y, T.DOORO_B); setT(b.x, b.y - 1, T.DOORO_T); doorAuto[b.y * W + b.x] = 0; return; }
+    }
+  }
+  function updateCivs(dt) {
+    if (panelOpen || !civs.length) return;
+    civs.forEach(function (c) {
+      if (Math.abs(c.x - p.x) > 70 || Math.abs(c.y - p.y) > 50) { c.walking = false; return; }
+      var vx = 0;
+      if (c.st === "idle") {
+        c.t -= dt;
+        if (Math.abs(p.x - c.x) < 3 && Math.abs(p.y - c.y) < 2.5) c.face = p.x >= c.x ? 1 : -1;
+        if (c.t <= 0) civPick(c);
+      } else {
+        var dx = c.tx - c.x; c.t -= dt;
+        if (Math.abs(dx) < 0.2 || c.t <= 0) { c.st = "idle"; c.t = 2 + Math.random() * 5; }
+        else { c.face = dx > 0 ? 1 : -1; vx = c.face * CIV.speed; civDoor(c); }
+      }
+      moveEnemy(c, dt, vx);
+      if (c.st === "walk" && c.blocked) { c.bt += dt; if (c.bt > 0.8) { c.st = "idle"; c.t = 1 + Math.random() * 2; c.bt = 0; } } else c.bt = 0;
+      c.walking = c.st === "walk" && vx !== 0; if (c.walking) c.wp += CIV.speed * dt;
+    });
+  }
+  function drawCivs(g, now) {
+    if (!civs.length || typeof DelveAv === "undefined") return;
+    var sc = Math.max(1, Math.round(ts * 1.7 / 24)), sm0 = g.imageSmoothingEnabled;
+    civs.forEach(function (c) {
+      var sx = ox + c.x * ts, sy = oy + c.y * ts;
+      if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) return;
+      if (!c.sp || c.sc !== sc) { try { c.sp = DelveAv.sprite(c.o, c.a, sc); c.sc = sc; } catch (e) { c.sp = null; return; } }
+      var SP = c.sp, pose = !c.on ? (c.vy < 0 ? "jump" : "fall") : c.walking ? "walk" + (Math.floor(c.wp / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor((now + c.ph) / 520) % 2);
+      var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), phi = c.walking ? Math.sin(c.wp * 5) * 0.55 : 0.04;
+      g.save(); g.translate(sx, sy + ts * 0.14); g.scale(c.face, 1);
+      g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
+      g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
+      g.save(); g.translate(fx + sh[0], fy + sh[1]); g.rotate(-phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
+      g.restore();
+    });
+    g.imageSmoothingEnabled = sm0;
+  }
+
   // ---------- CHESTS ----------
   // S.chests["x,y"] = { itemId: count }. A chest holds up to CHEST_KINDS kinds of item. Tap it or press F nearby to open the Chest tab. A chest must be empty before you can pick it up.
   var CHEST_KINDS = 30, chestKey = "";
@@ -1093,6 +1197,7 @@
   function doorInTheWay(bx, by) {   // you or an enemy is standing where a closed door would be
     if (p.x + PW / 2 > bx && p.x - PW / 2 < bx + 1 && p.y > by - 1 && p.y - PH < by + 1) return true;
     for (var i = 0; i < enemies.length; i++) { var e = enemies[i]; if (e.def) continue; if (e.x + e.w / 2 > bx && e.x - e.w / 2 < bx + 1 && e.y > by - 1 && e.y - e.h < by + 1) return true; }
+    for (var ci = 0; ci < civs.length; ci++) { var c = civs[ci]; if (c.x + c.w / 2 > bx && c.x - c.w / 2 < bx + 1 && c.y > by - 1 && c.y - c.h < by + 1) return true; }
     return false;
   }
   function setDoor(bx, by, open) { setT(bx, by, open ? T.DOORO_B : T.DOOR_B); if (by - 1 >= 0) setT(bx, by - 1, open ? T.DOORO_T : T.DOOR_T); thud(open ? 300 : 200, 0.05); chips(bx + 0.5, by - 0.5, "#c98c4f", 3, 2); }
@@ -1363,7 +1468,7 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    useTool(dt); updateEnemies(dt);
+    useTool(dt); updateEnemies(dt); updateCivs(dt);
     var working = sel === "weapon" ? (aim.down && S.wpn > 0) : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
@@ -1500,7 +1605,7 @@
       if (!td.solid) {
         if (under) { g.fillStyle = "rgb(" + BACKWALL[world.bio[i]].join(",") + ")"; g.fillRect(sx3, sy, ts, ts); }
         if (td.kind === "vine") { var vhalf = Math.round(ts / 2), vo = Math.round(Math.sin(now / 900 + i * 1.7) * ts * 0.08); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3, sy, ts, vhalf); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3 + vo, sy + vhalf, ts, ts - vhalf); }
-        else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap") { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3, sy + half, ts, ts - half); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3 + off, sy, ts, half); }
+        else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower") { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3, sy + half, ts, ts - half); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
         else g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
       } else if (td.kind === "leaves") {
@@ -1530,6 +1635,7 @@
       for (i = 0; i < nseg && i < CRACKS.length; i++) { g.moveTo(mx + ts * 0.5, my + ts * 0.5); g.lineTo(mx + ts * CRACKS[i][0], my + ts * CRACKS[i][1]); }
       g.stroke(); g.fillStyle = "rgba(255,255,255," + (0.06 + mine.p * 0.16) + ")"; g.fillRect(mx, my, ts, ts);
     }
+    drawCivs(g, now);
     drawEnemies(g, now);
     drawPlayer(g, now);
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;

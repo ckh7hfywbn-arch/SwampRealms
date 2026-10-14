@@ -6,7 +6,7 @@
   // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
   var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37 };
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -56,6 +56,13 @@
   tile(T.CHAIR_L, "Wooden Chair", "#000", "#b9793f", 0.4, 0, "chair", false, 0, "chair");
   tile(T.TABLE, "Wooden Table", "#000", "#b9793f", 0.4, 0, "table", false, 0, "table");
   tile(T.PAINTING, "Painting", "#000", "#c98c4f", 0.3, 0, "painting", false, 0, "painting");
+  // Village knick-knacks: small, not solid, break by hand and give themselves back. They need solid ground under them to be placed.
+  // Flowers come in four colours (chosen by position, like leaves) and sway in the wind like cattails.
+  tile(T.FLOWER, "Swamp Flower", "#000", "#ff6fb5", 0.05, 0, "flower", false, 0, "flower");
+  tile(T.BUCKET, "Wooden Bucket", "#000", "#b9793f", 0.3, 0, "bucket", false, 0, "bucket");
+  tile(T.POT, "Clay Pot", "#000", "#c46a3c", 0.3, 0, "pot", false, 0, "pot");
+  tile(T.FLOWERPOT, "Flower Pot", "#000", "#c46a3c", 0.3, 0, "flowerpot", false, 0, "flowerpot");
+  tile(T.BARREL, "Barrel", "#000", "#9a6234", 0.4, 0, "barrel", false, 0, "barrel");
   // Cave Hole: a little burrow in the ground. It cannot be broken or built on; tap it (or press F nearby) to climb down into a top-down cave (see sandbox-cave.js).
   tile(T.HOLE, "Cave Hole", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
@@ -69,11 +76,12 @@
     snow: { n: "Snow", tile: T.SNOW }, ice: { n: "Ice", tile: T.ICE }, basalt: { n: "Basalt", tile: T.BASALT }, ash: { n: "Ash Soil", tile: T.ASH },
     frostrock: { n: "Frostrock", tile: T.FROSTROCK },
     stick: { n: "Stick", mat: "stick" }, fiber: { n: "Reed Fiber", mat: "fiber" }, pebble: { n: "Pebble", mat: "pebble" }, bench: { n: "Bog Workbench", tile: T.BENCH }, bed: { n: "Swamp Bed", tile: T.BED }, door: { n: "Swamp Door", tile: T.DOOR_B }, ladder: { n: "Ladder", tile: T.LADDER }, chest: { n: "Wooden Chest", tile: T.CHEST }, chair: { n: "Wooden Chair", tile: T.CHAIR }, table: { n: "Wooden Table", tile: T.TABLE }, painting: { n: "Painting", tile: T.PAINTING },
+    flower: { n: "Swamp Flower", tile: T.FLOWER }, bucket: { n: "Wooden Bucket", tile: T.BUCKET }, pot: { n: "Clay Pot", tile: T.POT }, flowerpot: { n: "Flower Pot", tile: T.FLOWERPOT }, barrel: { n: "Barrel", tile: T.BARREL },
     spore: { n: "Glowspore", gem: "#4ee6b4" }, cinder: { n: "Cinder Shard", gem: "#ff8a3d" }, crystal: { n: "Frost Crystal", gem: "#bff4ff" },
     bugfrag: { n: "Bramble Fragment", frag: "bug" }, frogfrag: { n: "Frog Fragment", frag: "frog" },   // enemy loot, same names as the Adventure Fragments
     batwing: { n: "Bat Wing", frag: "bat" }   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
   };
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -98,6 +106,89 @@
   }
   function mulberry(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   function smooth(a, b, x) { var k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); }
+
+  // ---------- village ----------
+  // Murkwater Swamp (the home area) gets one village: a flat plateau with five plank houses (7 or 9 tiles wide) and a plaza between the
+  // second and third. Every house has a door in BOTH side walls so people can walk straight through the village, a lamp beside each door,
+  // and a bed, table, chairs and a painting inside. It is built after the trees and decorations and only uses hash() (never rnd()),
+  // so all earlier terrain, trees and holes stay exactly as they were. The villagers themselves (swamp avatars) live in sandbox.js.
+  function buildVillage(t, top, bio, seed) {
+    var GY = SURF, WL = SURF + 2, BL = 7, i, x, y, ws = [], gaps = [3, 9, 3, 3], L = 6;
+    for (i = 0; i < 5; i++) { ws.push(hash(i, 701, seed) < 0.5 ? 7 : 9); L += ws[i]; }
+    for (i = 0; i < 4; i++) L += gaps[i];
+    // a spot where the whole village, its slopes and a small margin lie inside Murkwater and clear of the flat spawn area; try the side
+    // opposite the first Cave Hole first, then the other side
+    var vs = hash(7, 0, seed) < 0.5 ? -1 : 1, sides = [vs, -vs], dists = [56, 52, 60, 48, 64], spot = null, si, di;
+    for (si = 0; si < 2 && !spot; si++) for (di = 0; di < dists.length && !spot; di++) {
+      var cx = SPAWNX + sides[si] * dists[di], left = cx - Math.floor(L / 2), right = left + L - 1, f0 = left - BL - 2, f1 = right + BL + 2;
+      var ok = f0 > B_FROST + 8 && f1 < B_EMBER - 8 && (f1 < SPAWNX - 14 || f0 > SPAWNX + 14);
+      for (x = f0; ok && x <= f1; x++) if (bio[x] !== 0) ok = false;
+      if (ok) spot = { cx: cx, left: left, right: right, f0: f0, f1: f1 };
+    }
+    if (!spot) return null;
+    function put(px, py, id) { if (px >= 0 && px < W && py >= 0 && py < H) t[py * W + px] = id; }
+    var isTree = function (id) { return id === T.LEAVES || id === T.LOG || id === T.VINE; };
+    // 1. flatten the plateau (ground row = GY) and ease it into the old terrain over BL columns; clear trees and plants above it
+    var xa = spot.left - BL, xb = spot.right + BL, stack = [];
+    for (x = xa; x <= xb; x++) {
+      var old = top[x], d = x < spot.left ? spot.left - x : x > spot.right ? x - spot.right : 0;
+      var th = d === 0 ? GY : Math.round(GY + (old - GY) * smooth(0, 1, d / (BL + 1)));
+      th = Math.max(18, Math.min(60, th));
+      var lo = Math.min(old, th);
+      for (y = 0; y < lo; y++) {
+        var id0 = t[y * W + x]; if (id0 === T.AIR || id0 === T.WATER) continue;
+        t[y * W + x] = y >= WL ? T.WATER : T.AIR; if (isTree(id0)) stack.push(x, y);
+      }
+      if (th < old) for (y = th; y < old; y++) t[y * W + x] = y === th ? T.MOSS : T.MUD;
+      else { for (y = old; y < th; y++) t[y * W + x] = y >= WL ? T.WATER : T.AIR; t[th * W + x] = T.MOSS; }
+      top[x] = th;
+    }
+    // trees that reached into the cleared ground are removed whole (leaves and trunk that touch a removed tile), within a few columns of the slopes
+    var fa = xa - 8, fb = xb + 8;
+    while (stack.length) {
+      var qy = stack.pop(), qx = stack.pop();
+      for (var ddy = -1; ddy <= 1; ddy++) for (var ddx = -1; ddx <= 1; ddx++) {
+        var nx = qx + ddx, ny = qy + ddy; if (nx < fa || nx > fb || ny < 0 || ny >= H) continue;
+        if (isTree(t[ny * W + nx])) { t[ny * W + nx] = ny >= WL ? T.WATER : T.AIR; stack.push(nx, ny); }
+      }
+    }
+    // 2. houses, left to right: H0 H1 | plaza | H2 H3 H4
+    var houses = [], hx = spot.left + 3;
+    for (i = 0; i < 5; i++) {
+      var w = ws[i], x0 = hx, x1 = x0 + w - 1, n = w - 2, flip = hash(i, 702, seed) < 0.5;
+      for (x = x0 + 1; x < x1; x++) put(x, GY, T.PLANKS);                       // plank floor
+      for (y = GY - 3; y < GY; y++) { put(x0, y, T.PLANKS); put(x1, y, T.PLANKS); }   // side walls, rows GY-3..GY-1
+      put(x0 - 1, GY - 4, T.PLANKS); put(x1 + 1, GY - 4, T.PLANKS);               // roof: three stepped rows with a small overhang
+      for (x = x0; x <= x1; x++) put(x, GY - 4, T.PLANKS);
+      for (x = x0 + 1; x <= x1 - 1; x++) put(x, GY - 5, T.PLANKS);
+      for (x = x0 + 3; x <= x1 - 3; x++) put(x, GY - 6, T.PLANKS);
+      put(x0, GY - 1, T.DOOR_B); put(x0, GY - 2, T.DOOR_T); put(x1, GY - 1, T.DOOR_B); put(x1, GY - 2, T.DOOR_T);   // a door in each wall, plank lintel above it
+      put(x0 - 1, GY - 2, T.TORCH); put(x1 + 1, GY - 2, T.TORCH);                  // a lamp on the outside next to each door
+      put(x0 + (w - 1) / 2, GY - 3, T.TORCH);                                      // and one hanging under the roof, so the inside is lit
+      var at = function (j) { return x0 + 1 + (flip ? n - 1 - j : j); }, face = function (right) { return (right !== flip) ? T.CHAIR : T.CHAIR_L; };
+      put(at(1), GY - 1, T.BED); put(at(1), GY - 2, T.PAINTING);
+      put(at(3), GY - 1, T.TABLE); put(at(2), GY - 1, face(true));
+      if (n >= 7) { put(at(4), GY - 1, face(false)); if (hash(i, 703, seed) < 0.6) put(at(5), GY - 2, T.PAINTING); }
+      houses.push({ x: x0, w: w, doors: [x0, x1] });
+      hx = x1 + 1 + (gaps[i] || 0);
+    }
+    // 3. a little swamp life on the open ground: glowcaps, cattails and wild flowers, a lamp on each side of the plaza, and a market corner in the middle
+    var pc = houses[2].x - 1 - Math.floor(gaps[1] / 2), mk = {}, KN = [T.FLOWERPOT, T.BUCKET, T.POT, T.BARREL];
+    mk[pc - 2] = T.POT; mk[pc - 1] = T.BARREL; mk[pc + 1] = T.BUCKET; mk[pc + 2] = T.FLOWERPOT;
+    for (x = spot.left; x <= spot.right; x++) {
+      if (houses.some(function (h) { return x >= h.x - 1 && x <= h.x + h.w; })) continue;
+      var r = hash(x, 704, seed); if (t[(GY - 1) * W + x] !== T.AIR) continue;
+      if (Math.abs(x - pc) === 3) put(x, GY - 1, T.TORCH);
+      else if (mk[x]) put(x, GY - 1, mk[x]);
+      else if (r < 0.08) put(x, GY - 1, T.GLOWCAP); else if (r < 0.18) put(x, GY - 1, T.REED); else if (r < 0.48) put(x, GY - 1, T.FLOWER);
+    }
+    // a knick-knack on the doorstep of every door (flower pot, bucket, clay pot or barrel) and one inside each house by the door
+    houses.forEach(function (h, hi) {
+      put(h.x - 1, GY - 1, KN[Math.floor(hash(hi, 705, seed) * 4)]); put(h.x + h.w, GY - 1, KN[Math.floor(hash(hi, 706, seed) * 4)]);
+      put(h.x + 1 + (hash(hi, 702, seed) < 0.5 ? 0 : h.w - 3), GY - 1, KN[Math.floor(hash(hi, 707, seed) * 4)]);
+    });
+    return { cx: spot.cx, x0: spot.left, x1: spot.right, f0: spot.f0, f1: spot.f1, gy: GY, plaza: pc, houses: houses };
+  }
 
   // ---------- generator ----------
   function gen(seed) {
@@ -190,6 +281,8 @@
       else if (bb === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
       else if (bb === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
     }
+    // 4b. the village (see buildVillage above)
+    var village = buildVillage(t, top, bio, seed);
     // 5. cave holes: a few little burrows on dry ground in every area (hash-based again, so terrain and trees never change).
     // One lies a short walk from the spawn so every world has a cave to find; the rest are spread about 36 columns apart.
     var holes = [];
@@ -199,6 +292,7 @@
       var g0 = t[sy * W + hx]; if (g0 !== T.AIR && g0 !== T.REED && g0 !== T.BLOOM && g0 !== T.SPIKE && g0 !== T.GLOWCAP) return false;
       if (t[(sy - 1) * W + hx] !== T.AIR || t[(sy - 2) * W + hx] !== T.AIR) return false;
       if (Math.abs(SPAWNX - hx) < 9) return false;
+      if (village && hx >= village.f0 && hx <= village.f1) return false;
       for (var k = 0; k < holes.length; k++) if (Math.abs(holes[k].x - hx) < 14) return false;
       return Math.abs(top[hx - 1] - top[hx]) <= 1 && Math.abs(top[hx + 1] - top[hx]) <= 1;
     }
@@ -210,7 +304,7 @@
       for (x = 0; x < 14; x++) { var hx = (start + x) % W; if (holeOk(hx)) { addHole(hx); break; } }
     }
     holes.sort(function (a, b) { return a.x - b.x; });
-    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, holes: holes, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, holes: holes, village: village, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
