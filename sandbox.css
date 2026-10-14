@@ -99,6 +99,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-an{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .sbx-an button{display:grid;justify-items:center;gap:2px;padding:6px 2px;border-radius:12px;background:#0b1a15;border:1px solid #4ee6b426;color:#f6eedb;cursor:pointer;font:800 .7rem Nunito,system-ui,sans-serif}
 .sbx-an button svg{width:100%;max-width:54px;height:auto}
+.sbx-an button img{width:100%;max-width:40px;height:auto;image-rendering:pixelated}
 .sbx-an button[aria-pressed=true]{border-color:#f2c14e;box-shadow:0 0 14px -6px #f2c14e}
 .sbx-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .sbx-row .btn{padding:9px 14px;font-size:.86rem}

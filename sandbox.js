@@ -248,6 +248,12 @@
 
   // ---------- WORLD ACCESS ----------
   function get(x, y) { if (x < 0 || x >= W) return T.BEDROCK; if (y < 0) return T.AIR; if (y >= H) return T.BEDROCK; return tiles[y * W + x]; }
+  // Natural trees are scenery: you and the enemies walk through untouched trunks and leaves (you can still chop them). Logs and leaves YOU placed stay solid.
+  function blocks(x, y) {
+    var id = get(x, y); if (!TILES[id].solid) return false;
+    if ((id === T.LOG || id === T.LEAVES) && x >= 0 && x < W && y >= 0 && y < H && tiles[y * W + x] === orig[y * W + x]) return false;
+    return true;
+  }
   var opaque = function (id) { return TILES[id].solid && id !== T.LEAVES; };
   function recalc(x) { for (var y = 0; y < H; y++) if (opaque(tiles[y * W + x])) { col[x] = y; return; } col[x] = H; }
   function setT(x, y, id) {
@@ -258,7 +264,7 @@
   var bioAt = function () { return world.bio[clamp(Math.floor(p.x), 0, W - 1)]; };
   function boxHit(x, y) {
     var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4), y0 = Math.floor(y - PH + 1e-4), y1 = Math.floor(y - 1e-4);
-    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (TILES[get(xx, yy)].solid) return true;
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) return true;
     return false;
   }
   function touches(kind) {
@@ -557,14 +563,17 @@
   }
 
   // ---------- PLAYER SPRITE (your avatar, gear included) ----------
-  function mkSprite() {
+  var spriteOutfit = null;
+  function mkSprite() {   // the pixel full-body avatar (delve-avatar.js) is rebuilt whenever the Armory outfit or animal changes
     var key = S.animal + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
     if (key === spriteKey) return; spriteKey = key; sprite = null;
-    try {
-      var o = Object.assign({}, Crystals.outfit(), { animal: S.animal, nobg: true });
-      var svg = AV.svg(o).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156" width="156" height="156"');
-      var im = new Image(); im.onload = function () { sprite = im; }; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-    } catch (e) {}
+    try { spriteOutfit = Object.assign({}, Crystals.outfit(), { animal: S.animal }); } catch (e) { spriteOutfit = { animal: S.animal }; }
+  }
+  function getSprite() {
+    if (typeof DelveAv === "undefined") return null;
+    var sc = Math.max(1, Math.round(ts * 1.7 / 24));   // whole pixels per art pixel, so the art stays crisp
+    if (!sprite || sprite.s !== sc) { try { sprite = DelveAv.sprite(spriteOutfit || { animal: S.animal }, S.animal, sc); } catch (e) { sprite = null; } }
+    return sprite;
   }
 
   // ---------- SOUND (tiny synth, follows the site's sound switch) ----------
@@ -643,7 +652,7 @@
   var enemies = [], spawnT = 6, swingQ = 0, batT = 8, sleepT = 0, slept = false, bedBtn = null;
   function eBoxHit(x, y, w, h) {
     var x0 = Math.floor(x - w / 2 + 1e-4), x1 = Math.floor(x + w / 2 - 1e-4), y0 = Math.floor(y - h + 1e-4), y1 = Math.floor(y - 1e-4);
-    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (TILES[get(xx, yy)].solid) return true;
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) return true;
     return false;
   }
   function moveEnemy(e, dt, vx) {
@@ -671,7 +680,7 @@
     else if (near && e.cd <= 0) { e.st = "charge"; e.dir = dx >= 0 ? 1 : -1; vx = e.dir * 3.6; }
     else {
       e.st = "patrol"; e.t -= dt; if (e.t <= 0) { e.t = 2 + Math.random() * 3; if (Math.random() < 0.35) e.dir = -e.dir; }
-      var ax = Math.floor(e.x + e.dir * 0.9); if (!TILES[get(ax, Math.floor(e.y + 0.3))].solid && !TILES[get(ax, Math.floor(e.y + 1.3))].solid) e.dir = -e.dir;
+      var ax = Math.floor(e.x + e.dir * 0.9); if (!blocks(ax, Math.floor(e.y + 0.3)) && !blocks(ax, Math.floor(e.y + 1.3))) e.dir = -e.dir;
       if (e.blocked) e.dir = -e.dir; vx = e.dir * 1.3;
     }
     moveEnemy(e, dt, vx);
@@ -763,8 +772,8 @@
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (vw / 2 / ts + 2 + Math.random() * 8)), 3, W - 4) + 0.5, y = -1, cx = Math.floor(x);
     if (world.bio[cx] !== 0) return;
     if (k === "bug" && Math.random() < 0.4) {   // some bugs lurk in dark caves
-      for (var yy = Math.floor(p.y) - 8; yy <= Math.floor(p.y) + 8; yy++) if (!TILES[get(cx, yy)].solid && !TILES[get(cx, yy - 1)].solid && TILES[get(cx, yy + 1)].solid && TILES[get(cx, yy)].kind !== "water" && yy > col[cx] + 3) { y = yy + 1; break; }
-    } else { var cy = col[cx]; if (cy > 0 && cy < H && !TILES[get(cx, cy - 1)].solid && TILES[get(cx, cy - 1)].kind !== "water") y = cy; }
+      for (var yy = Math.floor(p.y) - 8; yy <= Math.floor(p.y) + 8; yy++) if (!blocks(cx, yy) && !blocks(cx, yy - 1) && blocks(cx, yy + 1) && TILES[get(cx, yy)].kind !== "water" && yy > col[cx] + 3) { y = yy + 1; break; }
+    } else { var cy = col[cx]; if (cy > 0 && cy < H && !blocks(cx, cy - 1) && TILES[get(cx, cy - 1)].kind !== "water") y = cy; }
     if (y < 0 || eBoxHit(x, y, ENEMY[k].w, ENEMY[k].h)) return;
     enemies.push(newEnemy(k, x, y));
   }
@@ -1001,7 +1010,7 @@
     for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (get(x, y) === T.BED) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
-  function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (TILES[get(x, y)].solid) return true; return false; }   // a roof within 5 tiles overhead
+  function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y)) return true; return false; }   // a roof within 5 tiles overhead
   function sleepBlock() {   // why you cannot sleep right now ("" = you can). A roof overhead means nothing outside can reach you.
     if (sheltered()) return "";
     for (var i = 0; i < enemies.length; i++) { var e = enemies[i]; if (!e.def && Math.abs(e.x - p.x) < 14 && Math.abs(e.y - p.y) < 10) return e.k === "bat" ? "Bats are circling! Drive them off, or get under a roof." : "Something is too close to sleep!"; }
@@ -1315,20 +1324,33 @@
     if (!WCV[tier]) { var c = document.createElement("canvas"); c.width = c.height = 32; drawWeaponIcon(c.getContext("2d"), tier); WCV[tier] = c; }
     return WCV[tier];
   }
-  function drawHeld(g, size) {
+  // Arm angle (phi: 0 = hanging, ~2.5 = raised overhead) and tool angle for the current swing, so the arm and the tool move as one
+  function toolPose() {
+    var sway = reduce ? 0 : Math.sin(p.walk * 5), moving = p.on && Math.abs(p.vx) > 0.5 ? 1 : 0;
+    var kind = sel === "pick" ? "pick" : sel === "weapon" ? "weapon" : "item", sw = 0, base = 0.15, k1 = -0.55, k2 = 1.9, amp = 0.06, has = false, ph;
+    if (kind === "pick") { has = S.tier >= 1; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.55) * Math.PI * 0.5) * (ph < 0.55 ? 1 : 1 - (ph - 0.55) / 0.45); }
+    else if (kind === "weapon") { has = S.wpn >= 1; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.4) * Math.PI * 0.5) * (ph < 0.4 ? 1 : 1 - (ph - 0.4) / 0.6); base = 0.2; k1 = -0.7; k2 = 2.2; amp = 0.05; }
+    else has = !!(ITEMS[sel] && ITEMS[sel].tile !== undefined);
+    var ang = base + heldAmt * (k1 + sw * k2) + sway * amp * (1 - heldAmt), phi;
+    if (kind === "item") phi = (has ? 0.85 : 0.3 + sway * 0.4 * moving) + heldAmt * Math.sin(heldPh * 6.28) * 0.3;
+    else {
+      var idle = has ? 0.38 + sway * 0.12 * moving : 0.3 + sway * 0.45 * moving, work = 2.5 - (base + k1 + sw * k2 + 0.4) * 0.8;
+      phi = idle * (1 - heldAmt) + work * heldAmt;
+    }
+    return { ang: ang, phi: phi, has: has, kind: kind };
+  }
+  function drawHeld(g, hx, hy, tp) {
     g.shadowBlur = 0; g.shadowColor = "transparent";
-    var hx = size * 0.27, hy = -size * 0.3, sm = g.imageSmoothingEnabled;
+    var sm = g.imageSmoothingEnabled;
     if (sel === "pick") {
       if (S.tier < 1) return;
-      var ph = heldPh % 1, sw = Math.sin(Math.min(1, ph / 0.55) * Math.PI * 0.5) * (ph < 0.55 ? 1 : 1 - (ph - 0.55) / 0.45);   // quick swing down, slower return
-      var ang = 0.15 + heldAmt * (-0.55 + sw * 1.9) + (reduce ? 0 : Math.sin(p.walk * 5) * 0.06 * (1 - heldAmt)), tsz = ts * 1.35;
-      g.save(); g.translate(hx, hy); g.rotate(ang); g.imageSmoothingEnabled = true;
+      var tsz = ts * 1.35;
+      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
       g.drawImage(heldCanvas(S.tier), -tsz * 6 / 32, -tsz * 28 / 32, tsz, tsz); g.restore();
     } else if (sel === "weapon") {
       if (S.wpn < 1) return;
-      var wph = heldPh % 1, wsw = Math.sin(Math.min(1, wph / 0.4) * Math.PI * 0.5) * (wph < 0.4 ? 1 : 1 - (wph - 0.4) / 0.6);
-      var wang = 0.2 + heldAmt * (-0.7 + wsw * 2.2) + (reduce ? 0 : Math.sin(p.walk * 5) * 0.05 * (1 - heldAmt)), wsz = ts * 1.5;
-      g.save(); g.translate(hx, hy); g.rotate(wang); g.imageSmoothingEnabled = true;
+      var wsz = ts * 1.5;
+      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
       g.drawImage(heldWeapon(S.wpn), -wsz * 6 / 32, -wsz * 28 / 32, wsz, wsz); g.restore();
     } else if (ITEMS[sel] && ITEMS[sel].tile !== undefined) {
       var bob = heldAmt * Math.sin(heldPh * 6.28) * ts * 0.06, bs = ts * 0.55;
@@ -1339,15 +1361,29 @@
     g.imageSmoothingEnabled = sm;
   }
   function drawPlayer(g, now) {
-    var sx = ox + p.x * ts, sy = oy + p.y * ts, size = ts * 2.0, bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
-    var sq = 1 + bob * 0.05 + (p.vy < -2 ? 0.07 : 0) - (p.vy > 6 ? 0.05 : 0) - (p.land || 0);
+    var sx = ox + p.x * ts, sy = oy + p.y * ts, bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
+    var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) - (p.land || 0);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1);
     g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
     g.scale(1 / sq, sq); if (p.wet) g.globalAlpha = 0.85;
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
-    if (sprite) { var gl2 = 1 - daylight(S.time); if (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3) { g.shadowColor = "rgba(110,255,210,.55)"; g.shadowBlur = ts * 0.5; } g.drawImage(sprite, -size / 2, -size * 0.93, size, size); }
-    else { g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(0, -ts * 0.7, ts * 0.6, 0, 6.2832); g.fill(); }
-    drawHeld(g, size);
+    var SP = getSprite();
+    if (SP) {
+      var pose = !p.on ? (p.vy < 0 ? "jump" : "fall") : Math.abs(p.vx) > 0.5 ? "walk" + (Math.floor(p.walk / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2);
+      var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), tp = toolPose(), sm0 = g.imageSmoothingEnabled;
+      var gl2 = 1 - daylight(S.time);
+      if (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3) { g.shadowColor = "rgba(110,255,210,.45)"; g.shadowBlur = ts * 0.4; }
+      g.imageSmoothingEnabled = false;
+      g.drawImage(SP.frame(pose), fx, fy);
+      var shx = fx + sh[0], shy = fy + sh[1];
+      g.save(); g.translate(shx, shy); g.rotate(-tp.phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
+      g.imageSmoothingEnabled = sm0;
+      drawHeld(g, shx + SP.armLen * Math.sin(tp.phi), shy + SP.armLen * Math.cos(tp.phi), tp);
+      try {   // rarity aura: a few twinkles around the avatar when the outfit is rare
+        var ac = typeof AV !== "undefined" && AV.aura ? AV.aura(spriteOutfit || {}) : "";
+        if (ac && !reduce) { g.shadowBlur = 0; g.shadowColor = "transparent"; g.fillStyle = ac; for (var ti = 0; ti < 3; ti++) { var ta = now / 1100 + ti * 2.1, tw = 0.5 + 0.5 * Math.sin(now / 260 + ti * 1.7), px = Math.max(2, Math.round(ts * 0.09)); g.globalAlpha = 0.25 + 0.6 * tw; g.fillRect(Math.cos(ta) * ts * 0.62 - px / 2, -ts * (0.9 + 0.35 * Math.sin(ta * 1.3)), px, px); } g.globalAlpha = 1; }
+      } catch (e) {}
+    } else { g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(0, -ts * 0.7, ts * 0.6, 0, 6.2832); g.fill(); }
     g.restore();
   }
 
@@ -1405,7 +1441,7 @@
       h += '<p class="sbx-note"><b>' + done + " / " + GOALS.length + "</b> goals complete. Goals are bragging rights for now, with no coin or crystal payouts.</p><div class=\"sbx-goals\">" + GOALS.map(function (g) { return '<div class="sbx-goal' + (S.ms[g.id] ? " ok" : "") + '"><i aria-hidden="true">' + (S.ms[g.id] ? "&#10003;" : "") + "</i><div><b>" + esc(g.n) + "</b><small>" + esc(g.d) + "</small></div></div>"; }).join("") + "</div>";
     } else {
       var an = (typeof Crystals !== "undefined" && Crystals.animals) ? Crystals.animals : [{ id: "frog", name: "Boggy the Frog" }];
-      h += '<h3>Play as</h3><div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e) {} return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note">Your equipped avatar gear shows in the world. Change it in the Armory.</p>';
+      h += '<h3>Play as</h3><div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = '<img alt="" src="' + DelveAv.thumb(Object.assign({}, Crystals.outfit()), a.id, 3) + '">'; } catch (e) { try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e2) {} } return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note">Your equipped avatar gear shows in the world. Change it in the Armory.</p>';
       h += '<h3>View</h3><div class="sbx-row"><button type="button" class="btn ghost" data-zoom="-1" aria-label="Zoom out">Zoom out</button><b>' + Math.round(S.zoom * 100) + '%</b><button type="button" class="btn ghost" data-zoom="1" aria-label="Zoom in">Zoom in</button></div>';
       h += '<h3>Worlds</h3><p class="sbx-note">Playing: <b>' + esc(curEntry() ? curEntry().name : "My Swamp") + '</b>. Switch worlds, start a new one, or leave.</p><div class="sbx-row"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Save &amp; exit to menu</button></div>';
       h += '<p class="sbx-note">World seed ' + S.seed + ". Every world saves automatically in this browser (not cloud-synced yet). Shared servers come in a later stage.</p>";
@@ -1504,5 +1540,5 @@
   if (wIdx.list.length > 1) openWorlds();   // several worlds: let the player pick
   setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000);
   requestAnimationFrame(loop);
-  window.__sbx = { worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: bar, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
+  window.__sbx = { blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: bar, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
 })();

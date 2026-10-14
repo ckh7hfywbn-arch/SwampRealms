@@ -402,3 +402,18 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **"Start a new world" no longer erases anything;** it makes a new slot. Deleting the last world creates a fresh one.
 - **Gotcha:** the Worlds UI uses `data-wl-*` attributes so `store.js` global listeners never react. Signing in or out mid-session takes effect on the next page load.
 - `sandbox.html` versions bumped (`sandbox.js` delve15, `sandbox.css` delve7).
+
+
+### Delve: walk past trees
+- Natural trunks and leaves are now scenery: the player and enemies walk through them, and bats and shelter checks ignore them (a tree canopy no longer counts as a roof for sleeping). You can still chop trunks and punch leaves for Wood and Sticks.
+- `blocks(x, y)` in `sandbox.js` is the collision test used by `boxHit`, `eBoxHit`, enemy ledge/spawn checks and `sheltered()`. A Log or Leaves tile only blocks if it differs from the generated world (i.e. you placed it). Other tiles are unchanged, and lighting and drawing still use the tile's own `solid` flag. Tile data and saves are unchanged.
+- `sandbox.js` version bumped to `delve16`.
+
+
+### Delve: pixel full-body avatars (v1)
+- **New file `delve-avatar.js`** (loaded before `sandbox.js`): draws your Armory outfit as a pixel-art, full-body character on a 22x34 grid, one per animal (frog, donkey, owl, monkey, elephant). `DelveAv.sprite(outfit, animal, scale)` returns cached frames (idle0/1, walk0-3, jump, fall) plus a separate front arm; `DelveAv.thumb()` makes the "Play as" buttons.
+- **Cosmetics are worn, not pasted on:** all 12 hats (incl. hat colour variants such as the Y2K Bandana) sit on the head, face gear sits on the eyes, scarf/bow tie/bell/chain/cape sit at the neck (cape hangs behind), shirts cover the torso and sleeves (robe also covers the legs), shoes sit on the feet, and the ring / necklace / bandana accessories are drawn too. Rare outfits twinkle in their rarity colour.
+- **Arm + tool move together:** `toolPose()` in `sandbox.js` gives one arm angle and one tool angle, so picks, weapons and placeable blocks are held in the hand and swing with the arm.
+- **Scale:** art is drawn at a whole number of screen pixels per art pixel (`round(ts*1.7/24)`), so it stays crisp when you zoom.
+- **Fallback:** if `delve-avatar.js` fails to load, Delve shows a plain green dot (the old portrait path was removed). The Armory still uses the portrait art from `avatar.js`, which is untouched.
+- **Gotcha:** the cosmetic art lives in `delve-avatar.js` separately from `avatar.js`. A new cosmetic needs a drawing in both (hats in `HATS`, face gear in `FACES`, neck in `NECKS`, shirts in `SHIRTS`/`torso()`, shoes in `SHOES`). Scripts are versioned `delve1` / `delve17`.
