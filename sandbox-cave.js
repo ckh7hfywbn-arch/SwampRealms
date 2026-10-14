@@ -157,7 +157,7 @@
     [[17, 8], [26, 8], [17, 13], [26, 13], [17, 19], [26, 19], [17, 25], [26, 25]].forEach(function (q) { wall[q[1] * CW + q[0]] = 1; });   // pillars
     var up = { x: 22, y: 5 }, lamps = [];
     [6, 15, 17, 27].forEach(function (ly) { [5, 11, 18, 25, 32, 38].forEach(function (lx) { if (!wall[ly * CW + lx]) lamps.push({ x: lx, y: ly }); }); });
-    return { w: CW, h: CH, floor: 1, biome: 0, seed: 0, theme: MANOR_THEME, wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), up: up, down: { x: -9, y: -9 }, spawn: { x: up.x + 0.5, y: up.y + 1.55 }, lamps: lamps, rocks: 0, manor: true, noDown: true };
+    return { w: CW, h: CH, floor: 1, biome: 0, seed: 0, theme: MANOR_THEME, wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), up: up, down: { x: -9, y: -9 }, spawn: { x: up.x + 0.5, y: up.y + 1.55 }, lamps: lamps, rocks: 0, manor: true, noDown: true, chests: [[4, 6], [38, 6], [4, 27], [38, 27]].map(function (q) { return { x: q[0], y: q[1], open: 0, loot: null }; }) };   // four loot chests in the corners (loot: null = empty for now)
   }
 
   // is the cell blocked for walking? (walls and rocks are; anything outside the grid is)

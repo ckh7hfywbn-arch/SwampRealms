@@ -573,7 +573,7 @@
   // ---------- DAY / NIGHT ----------
   function phaseOf(t) { if (t < 240) return { id: "day", k: t / 240 }; if (t < 280) return { id: "dusk", k: (t - 240) / 40 }; if (t < 440) return { id: "night", k: (t - 280) / 160 }; return { id: "dawn", k: (t - 440) / 40 }; }
   function daylight(t) { var f = phaseOf(t); return f.id === "day" ? 1 : f.id === "dusk" ? 1 - 0.7 * f.k : f.id === "night" ? 0.3 : 0.3 + 0.7 * f.k; }
-  var SKY = { day: [[56, 160, 205], [176, 226, 214]], dusk: [[88, 52, 112], [255, 150, 90]], night: [[5, 8, 24], [14, 32, 52]], dawn: [[52, 66, 120], [255, 176, 140]] };
+  var SKY = { day: [[34, 140, 232], [170, 238, 226]], dusk: [[88, 52, 112], [255, 150, 90]], night: [[5, 8, 24], [14, 32, 52]], dawn: [[52, 66, 120], [255, 176, 140]] };
   var mixC = function (a, b, k) { return [lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k)]; };
   var rgb = function (c) { return "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; };
   function skyAt(t) {
@@ -623,16 +623,33 @@
     if ((mask & 2) && (mask & 4)) { clearPx(0, 15); clearPx(1, 15); clearPx(0, 14); }
     if ((mask & 2) && (mask & 8)) { clearPx(15, 15); clearPx(14, 15); clearPx(15, 14); }
   }
+  // ---------- ART PUNCH ----------
+  // One pass over a finished tile atlas: boosts saturation, lifts the mid-tones a touch and tightens contrast so colours read bright and crisp. Alpha is untouched.
+  function punch(cv, sat, con, lift, rx, ry, rw, rh) {
+    try {
+      var g = cv.getContext("2d"), im = g.getImageData(rx || 0, ry || 0, rw || cv.width, rh || cv.height), d = im.data, i, r, gg, b, l, mx, mn, k;
+      for (i = 0; i < d.length; i += 4) {
+        if (!d[i + 3]) continue; r = d[i]; gg = d[i + 1]; b = d[i + 2]; l = 0.299 * r + 0.587 * gg + 0.114 * b;
+        mx = Math.max(r, gg, b); mn = Math.min(r, gg, b); k = sat * (1 + 0.35 * (1 - (mx - mn) / 255));   // muted pixels get a bigger boost than already vivid ones
+        r = l + (r - l) * k; gg = l + (gg - l) * k; b = l + (b - l) * k;
+        r = (r - 128) * con + 128 + lift; gg = (gg - 128) * con + 128 + lift; b = (b - 128) * con + 128 + lift;
+        d[i] = r < 0 ? 0 : r > 255 ? 255 : r; d[i + 1] = gg < 0 ? 0 : gg > 255 ? 255 : gg; d[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+      }
+      g.putImageData(im, rx || 0, ry || 0);
+    } catch (e) {}
+  }
   function buildAtlas() {
     LEAFATLAS = document.createElement("canvas"); LEAFATLAS.width = 64; LEAFATLAS.height = 16 * 16;
     var lg = LEAFATLAS.getContext("2d"); for (var lm = 0; lm < 16; lm++) for (var lv = 0; lv < 4; lv++) paintLeaf(lg, lv * 16, lm * 16, lv, lm);
     ATLAS = document.createElement("canvas"); ATLAS.width = 64; ATLAS.height = 16 * TILES.length;
     var g = ATLAS.getContext("2d");
     TILES.forEach(function (td) { for (var v = 0; v < 4; v++) paint(g, td, v, td.id * 16); });
+    punch(ATLAS, 1.22, 1.07, 4); punch(LEAFATLAS, 1.18, 1.06, 4);
   }
   function repaintBench() {   // the Workbench tile looks different at each level; redraw just its strip of the atlas
     if (!ATLAS) return; var g = ATLAS.getContext("2d"); g.clearRect(0, T.BENCH * 16, 64, 16);
     for (var v = 0; v < 4; v++) paint(g, TILES[T.BENCH], v, T.BENCH * 16);
+    punch(ATLAS, 1.22, 1.07, 4, 0, T.BENCH * 16, 64, 16);
   }
   // ---------- PAINTINGS ----------
   // Each placed painting is drawn from its position, so it looks the same every time you load the world.
@@ -1895,15 +1912,15 @@
     if (n <= 0) return; if (!cont && hurtGrace > 0) return;
     if (S.arm > 0 && durOf("arm") > 0) {   // armor blocks a share of the hit (half as much against lava) and wears down on every real hit
       var blocked = n * ARMORS[S.arm].red * (why === "lava" ? 0.5 : 1); n -= blocked;
-      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text(p.x + 0.5, p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
+      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text((cave ? cp.x : p.x) + 0.5, (cave ? cp.y - 1.6 : p.y - PH) - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
-    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(p.x, p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
+    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(cave ? cp.x : p.x, (cave ? cp.y - 1.6 : p.y - PH) - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
     if (hp <= 0) faint(why);
   }
   function faint(why) {
     S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
-    respawn(why === "lava" ? "Burned by lava! You woke up at camp." : "You passed out and woke up at camp.");
+    respawn(why === "lava" ? "Burned by lava! You woke up at camp." : why === "raider" ? "The Swamp Raider cut you down. You woke up at camp." : "You passed out and woke up at camp.");
   }
   function respawn(msg) {
     if (cave) leaveCaveNow();
@@ -2071,7 +2088,7 @@
   function buildVignette() {
     VIG = document.createElement("canvas"); VIG.width = Math.max(2, Math.round(vw / 2)); VIG.height = Math.max(2, Math.round(vh / 2));
     var g = VIG.getContext("2d"), rg = g.createRadialGradient(VIG.width / 2, VIG.height / 2, Math.min(VIG.width, VIG.height) * 0.38, VIG.width / 2, VIG.height / 2, Math.max(VIG.width, VIG.height) * 0.78);
-    rg.addColorStop(0, "rgba(2,6,10,0)"); rg.addColorStop(1, "rgba(2,6,10,.55)"); g.fillStyle = rg; g.fillRect(0, 0, VIG.width, VIG.height);
+    rg.addColorStop(0, "rgba(2,6,10,0)"); rg.addColorStop(1, "rgba(2,6,10,.42)"); g.fillStyle = rg; g.fillRect(0, 0, VIG.width, VIG.height);
   }
   function cloud(g, x, y, s, col, a) {
     g.globalAlpha = a; g.fillStyle = col; var r = 16 * s;
@@ -2385,6 +2402,7 @@
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
       for (k = 0; k < o.length; k++) { nx = F.down.x + o[k][0]; ny = F.down.y + o[k][1]; if (!SC.solid(F, nx, ny)) { cp.x = nx + 0.5; cp.y = ny + 0.85; break; } }
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
+    if (cave.manor) spawnRaiders(F); else raiders = [];
     cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
     if (f > S.st.caveDeep && !cave.manor) S.st.caveDeep = f;
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = cave.manor ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = cave.manor ? F.theme.sub : F.theme.n;
@@ -2392,7 +2410,7 @@
     hud(); checkGoals();
   }
   function leaveCaveNow() {
-    if (!cave) return; var h = cave.hole; cave = null; stageEl.classList.remove("cave"); stopInput();
+    cswing = 0; if (!cave) return; var h = cave.hole; cave = null; raiders = []; stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; hud(); save();
   }
@@ -2400,6 +2418,33 @@
     var F = cave.F, r = null;
     (F.noDown ? [[F.up, "up"]] : [[F.up, "up"], [F.down, "down"]]).forEach(function (e) { var dx = e[0].x + 0.5 - cp.x, dy = e[0].y + 0.5 - (cp.y - 0.3), d = dx * dx + dy * dy; if (d <= 2.6 * 2.6 && (!r || d < r.d)) r = { k: e[1], d: d }; });
     return r;
+  }
+  // ---------- MANOR CHESTS ----------
+  // F.chests = [{ x, y, open, loot }] on the manor floor (see SbxCave.genManor). Press F / tap the pill beside one to open it. c.loot is the hook for future contents: null means empty for now.
+  function chestNearCave() {
+    var F = cave && cave.F, r = null; if (!F || !F.chests) return null;
+    F.chests.forEach(function (c) { var dx = c.x + 0.5 - cp.x, dy = c.y + 0.9 - cp.y, d = dx * dx + dy * dy; if (d <= 1.7 * 1.7 && (!r || d < r.d)) r = { c: c, d: d }; });
+    return r && r.c;
+  }
+  function openCaveChest(c) {
+    if (c.open) { nag("This chest is already open."); return; }
+    c.open = 1; snd("open"); chips(c.x + 0.5, c.y + 0.3, "#f2c14e", 8, 5);
+    if (c.loot && c.loot.length) { c.loot.forEach(function (it) { give(it.id, it.n, c.x + 0.5, c.y - 0.6, true); }); c.loot = []; } else toast("The chest is empty.", "#cdbd9a");
+  }
+  function drawCaveChest(g, c, now) {
+    var sx = ox + (c.x + 0.5) * ts, sy = oy + (c.y + 1) * ts; if (sx < -ts * 2 || sx > vw + ts * 2 || sy < -ts * 2 || sy > vh + ts * 2) return;
+    var w = ts * 1.05, h = ts * 0.62, x0 = sx - w / 2, y0 = sy - h - ts * 0.06, lid = h * 0.42;
+    g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(sx, sy - ts * 0.04, w * 0.55, ts * 0.12, 0, 0, 6.2832); g.fill();
+    g.fillStyle = "#4a2e18"; g.fillRect(x0, y0 + lid, w, h - lid);                       // body
+    g.fillStyle = "#2f1c0e"; g.fillRect(x0, y0 + h - ts * 0.1, w, ts * 0.1);
+    g.fillStyle = "#1c2420"; g.fillRect(x0 + w * 0.12, y0 + lid, ts * 0.09, h - lid); g.fillRect(x0 + w - w * 0.12 - ts * 0.09, y0 + lid, ts * 0.09, h - lid);   // iron bands
+    if (c.open) {
+      g.fillStyle = "#14100a"; g.fillRect(x0 + 2, y0 + lid - ts * 0.1, w - 4, ts * 0.14);   // dark inside
+      g.fillStyle = "#5a3a20"; g.fillRect(x0 - 1, y0 - ts * 0.34, w + 2, ts * 0.3); g.fillStyle = "#1c2420"; g.fillRect(x0 + w * 0.12, y0 - ts * 0.34, ts * 0.09, ts * 0.3);   // lid swung back
+    } else {
+      g.fillStyle = "#5a3a20"; g.fillRect(x0 - 1, y0, w + 2, lid); g.fillStyle = "#1c2420"; g.fillRect(x0 + w * 0.12, y0, ts * 0.09, lid); g.fillRect(x0 + w - w * 0.12 - ts * 0.09, y0, ts * 0.09, lid);
+      g.fillStyle = "#e0b43c"; g.fillRect(sx - ts * 0.07, y0 + lid - ts * 0.07, ts * 0.14, ts * 0.16);   // brass lock
+    }
   }
   function useLadder(k) {
     if (trans || !cave) return; stopInput(); thud(k === "up" ? 330 : 200, 0.07);
@@ -2418,8 +2463,18 @@
     give(td.drop, n, x, y); if (td.kind === "ore") snd("coin");
     if (id === T.STONE && Math.random() < 0.12) give("pebble", 1, x, y - 0.55);
   }
+  var cswing = 0;
   function caveTool(dt) {
-    var F = cave.F; if (!aim.down || aim.tx < 0) { mine = null; return; }
+    var F = cave.F;
+    if (sel === "weapon") {   // swing at the raider (nothing else in a cave can be hit)
+      mine = null; if (!aim.down || !S.wpn) return;
+      if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
+      var wdx = aim.mx - (ox + cp.x * ts); if (Math.abs(wdx) > ts * 0.3) cp.face = wdx < 0 ? -1 : 1;
+      cool -= dt; if (cool > 0) return; cool = WEAPONS[S.wpn].cd; S.st.swings++; cswing = 0.1;
+      thud(300 + S.wpn * 70, 0.04); for (var sk = 0; sk < 3; sk++) parts.push({ x: cp.x + cp.face * (0.9 + sk * 0.35), y: cp.y - 1.1 - sk * 0.12, vx: cp.face * 3, vy: -0.4, life: 0.22, max: 0.3, c: WEAPONS[S.wpn].c, s: 3 });
+      return;
+    }
+    if (!aim.down || aim.tx < 0) { mine = null; return; }
     var tx = aim.tx, ty = aim.ty, i = ty * F.w + tx, dx = tx + 0.5 - cp.x, dy = ty + 0.5 - (cp.y - 0.4);
     if (dx * dx + dy * dy > CAVE_REACH * CAVE_REACH) { mine = null; return; }
     if (Math.abs(dx) > 0.3) cp.face = dx < 0 ? -1 : 1;
@@ -2446,8 +2501,138 @@
       if (S.inv.torch <= 0) { delete S.inv.torch; if (sel === "torch") sel = "pick"; } hbDirty = true; if (panelOpen) renderPanel();
     } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can") { cool = 0.4; nag("Only torches can be placed in caves."); }
   }
+  // ---------- SWAMP RAIDER (Swamp Manor) ----------
+  // Five evil humans of the Dweller clan who prowl the manor halls. Same pixel avatar engine as you and the villagers (DelveAv, "human" head). He patrols until you come within RAIDER.aggro, then chases you and stabs with a short dagger (wind-up, thrust, recover). Outrun him or sidestep the wind-up; if you get far enough away (RAIDER.leash) he gives up.
+  var RAIDER_O = { animal: "human", hat: "raidband", face: "", neck: "", shirt: "raider", shoes: "swampboots", acc: {}, hv: {} };
+  var RAIDER_SAY = ["Get out of our halls, swamp-rat.", "The Dwellers don't share.", "Touch nothing.", "Wrong house, little croaker.", "Hehe... fresh meat."];
+  var RAIDER = { hp: 40, aggro: 5.5, leash: 9.5, speed: 3.1, reach: 1.2, dmg: 8, wind: 0.38, stab: 0.16, rec: 0.7 };
+  var raiders = [];
+  var RAIDER_SPOTS = [[8.5, 11.5], [34.5, 11.5], [8.5, 22.5], [22.5, 22.5], [34.5, 22.5]];   // west hall + four more: east hall, and the three southern rooms
+  function spawnRaiders(F) {
+    raiders = [];
+    RAIDER_SPOTS.forEach(function (sp) {
+      var rx = sp[0], ry = sp[1]; if (SC.solid(F, Math.floor(rx), Math.floor(ry))) { rx = F.spawn.x; ry = F.spawn.y + 3; }
+      raiders.push(newRaider(rx, ry));
+    });
+  }
+  function newRaider(rx, ry) {
+    return { x: rx, y: ry, face: 1, tx: rx, ty: ry, t: 1 + Math.random() * 2, st: "idle", wp: 0, ph: Math.random() * 1000, say: -1, sayT: 0, sayCd: 0, sp: null, sc: 0, bt: 0, aggro: false, as: "", at: 0, cd: 0, mv: false, lunge: 0, hp: RAIDER.hp, hurt: 0, stun: 0, kv: 0, dead: 0 };
+  }
+  function raiderPick(F, raider) {   // a random open spot within a few cells (the whole hall is open to him)
+    for (var k = 0; k < 14; k++) {
+      var nx = raider.x + (Math.random() * 2 - 1) * 8, ny = raider.y + (Math.random() * 2 - 1) * 6;
+      if (!SC.solid(F, Math.floor(nx), Math.floor(ny)) && !cBox(F, nx, ny)) { raider.tx = nx; raider.ty = ny; raider.st = "walk"; raider.t = 9; raider.bt = 0; return; }
+    }
+    raider.st = "idle"; raider.t = 1.5;
+  }
+  function raiderStep(F, r, dx, dy, d, speed, dt) {   // walk toward (dx, dy), sliding along walls; returns true if both axes were blocked
+    var sp = speed * dt, mx = dx / d * sp, my = dy / d * sp, bl = 0;
+    if (!cBox(F, r.x + mx, r.y)) r.x += mx; else bl++;
+    if (!cBox(F, r.x, r.y + my)) r.y += my; else bl++;
+    if (Math.abs(dx) > 0.15) r.face = dx < 0 ? -1 : 1;
+    r.wp += speed * dt; return bl === 2;
+  }
+  function raiderUpdate(dt) {
+    var F = cave.F; if (!F.manor) return;
+    for (var i = raiders.length - 1; i >= 0; i--) {
+      var r = raiders[i];
+      if (r.dead > 0) { r.dead -= dt; if (r.dead <= 0) raiders.splice(i, 1); continue; }   // defeated: fades out, they are back next time you enter the manor
+      raiderOne(F, r, dt); if (!cave) return;
+    }
+  }
+  function raiderOne(F, r, dt) {   // defeated: fades out, he is back next time you enter the manor
+    r.hurt = Math.max(0, r.hurt - dt);
+    if (r.stun > 0) {   // staggered by your hit: knocked back, can't act
+      r.stun -= dt; r.lunge = 0; r.mv = false; var kx = r.kv * dt; r.kv *= Math.max(0, 1 - dt * 9); if (!cBox(F, r.x + kx, r.y)) r.x += kx; return;
+    }
+    var ddx = cp.x - r.x, ddy = cp.y - r.y, d = Math.sqrt(ddx * ddx + ddy * ddy);
+    r.sayT = Math.max(0, r.sayT - dt); r.sayCd = Math.max(0, r.sayCd - dt); r.cd = Math.max(0, r.cd - dt); r.mv = false;
+    if (!r.aggro && hp > 0 && d < RAIDER.aggro) {   // you walked into his vicinity: he snarls and comes for you
+      r.aggro = true; r.st = "chase"; r.as = ""; r.say = (r.say + 1 + Math.floor(Math.random() * 2)) % RAIDER_SAY.length; r.sayT = 2.6; r.sayCd = 5; thud(90, 0.06);
+    } else if (r.aggro && (hp <= 0 || d > RAIDER.leash)) { r.aggro = false; r.as = ""; r.lunge = 0; r.st = "idle"; r.t = 1.5; }
+    if (r.aggro) {
+      if (r.sayCd <= 0 && r.sayT <= 0) { r.say = (r.say + 1 + Math.floor(Math.random() * 2)) % RAIDER_SAY.length; r.sayT = 2.6; r.sayCd = 6; }
+      if (r.as === "wind") {   // dagger drawn back: this is your window to step away
+        r.at -= dt; r.lunge = -0.08; if (ddx * ddx > 0.02) r.face = ddx >= 0 ? 1 : -1;
+        if (r.at <= 0) {
+          r.as = "stab"; r.at = RAIDER.stab; r.lunge = 0.3; snd("coin");
+          if (d <= RAIDER.reach + 0.3 && hp > 0 && hurtGrace <= 0) { hurt(RAIDER.dmg, "raider"); cp.vx += r.face * 6; chips(cp.x, cp.y - 0.8, "#c2362b", 6, 4); }
+        }
+      } else if (r.as === "stab") { r.at -= dt; if (r.at <= 0) { r.as = "rec"; r.at = RAIDER.rec; r.lunge = 0; } }
+      else if (r.as === "rec") { r.at -= dt; if (r.at <= 0) r.as = ""; }
+      else if (d <= RAIDER.reach + 0.1 && r.cd <= 0) { r.as = "wind"; r.at = RAIDER.wind; r.cd = RAIDER.wind + RAIDER.stab + RAIDER.rec; }
+      else {   // run at you, a little slower than you can walk
+        r.st = "chase"; if (d > 0.85) { raiderStep(F, r, ddx, ddy, d, RAIDER.speed, dt); r.mv = true; } else if (Math.abs(ddx) > 0.15) r.face = ddx >= 0 ? 1 : -1;
+      }
+      return;
+    }
+    r.t -= dt;
+    if (r.st === "idle") { if (r.t <= 0) raiderPick(F, r); }
+    else {
+      var dx = r.tx - r.x, dy = r.ty - r.y, dd = Math.sqrt(dx * dx + dy * dy);
+      if (dd < 0.2 || r.t <= 0) { r.st = "idle"; r.t = 1 + Math.random() * 3; }
+      else {
+        var blocked = raiderStep(F, r, dx, dy, dd, 1.5, dt); r.mv = true;
+        if (blocked) { r.bt += dt; if (r.bt > 0.4) { r.st = "idle"; r.t = 0.5; r.bt = 0; } } else r.bt = 0;
+      }
+    }
+  }
+  function damageRaider(r, dmg, face) {   // your weapon connects: knock him back, interrupt his wind-up, and maybe finish him
+    if (!r || r.dead > 0) return;
+    r.hp -= dmg; r.hurt = 0.3; r.stun = 0.18; r.kv = face * 9; r.aggro = true; r.as = ""; r.lunge = 0; r.cd = Math.max(r.cd, 0.5);
+    text(r.x, r.y - 2.1, "-" + Math.round(dmg), "#ffe48a"); chips(r.x, r.y - 1, "#c2362b", 8, 6); thud(180 + Math.random() * 60, 0.06);
+    if (r.hp > 0) return;
+    r.hp = 0; r.dead = 0.6; r.say = -1; r.sayT = 0; chips(r.x, r.y - 1, "#ffb13b", 16, 8); snd("open", "Epic");
+    var n = 2 + Math.floor(Math.random() * 3); give("torch", n, r.x - 0.5, r.y - 2.3, true);   // he carried a few torches
+    toast("Swamp Raider defeated!", "#ffd24a");
+  }
+  function caveStrike() {   // one weapon swing in the manor: hits the nearest raider in front of you and close
+    if (!raiders.length || toolBroken("wpn")) return;
+    var reach = [0, 2.7, 2.2, 2.4, 2.4][S.wpn], f = cp.face, xa = cp.x - f * 0.3, xb = cp.x + f * reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb);
+    var hit = null, hd = 1e9;
+    raiders.forEach(function (r) { if (r.dead > 0) return; if (r.x > lo - 0.3 && r.x < hi + 0.3 && Math.abs(r.y - cp.y) < 1.0) { var dd = Math.abs(r.x - cp.x); if (dd < hd) { hd = dd; hit = r; } } });
+    if (hit) { damageRaider(hit, WEAPONS[S.wpn].dmg, f); wear("wpn", 1); }
+  }
+  function drawRaider(g, now, r) {
+    if (!r || typeof DelveAv === "undefined") return;
+    var sx = ox + r.x * ts, sy = oy + r.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) return;
+    var sc = Math.max(1, Math.round(ts * 1.7 / 24));
+    if (!r.sp || r.sc !== sc) { try { r.sp = DelveAv.sprite(RAIDER_O, "human", sc); r.sc = sc; } catch (e) { r.sp = null; return; } }
+    var SP = r.sp, walking = r.mv, pose = walking ? "walk" + (Math.floor(r.wp / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor((now + r.ph) / 520) % 2);
+    var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), phi = r.as === "wind" ? -0.7 : r.as === "stab" ? 1.5 : walking ? Math.sin(r.wp * 5) * 0.55 : 0.18 + Math.sin(now / 300) * 0.04, sm0 = g.imageSmoothingEnabled;
+    g.save(); if (r.dead > 0) g.globalAlpha = Math.max(0, r.dead / 0.6); else if (r.hurt > 0 && !reduce && Math.floor(now / 60) % 2) g.globalAlpha = 0.5;
+    g.translate(sx, sy + ts * 0.14); g.scale(r.face, 1);
+    g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.46, ts * 0.15, 0, 0, 6.2832); g.fill();
+    g.translate(r.lunge * ts, 0);
+    g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
+    var shx = fx + sh[0], shy = fy + sh[1];
+    g.save(); g.translate(shx, shy); g.rotate(-phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]);
+    var b = SP.s;   // a short dagger: leather grip, small crossguard, a stubby tapered blade (about half the length of a sword)
+    g.translate(0, SP.armLen); g.fillStyle = "#2a1a10"; g.fillRect(-b * 0.5, -b * 0.6, b, b * 1.8); g.fillStyle = "#0a100d"; g.fillRect(-b * 1.3, b * 1.2, b * 2.6, b * 0.7);
+    g.fillStyle = "#8a8f9c"; g.fillRect(-b * 0.6, b * 1.9, b * 1.2, b * 2.6); g.fillRect(-b * 0.3, b * 4.5, b * 0.6, b * 0.8);
+    g.fillStyle = "#d4d9e2"; g.fillRect(-b * 0.6, b * 1.9, b * 0.4, b * 2.6);
+    if (r.as === "stab") { g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(-b * 0.2, b * 5.3, b * 0.4, b * 1.6); }
+    g.restore(); g.imageSmoothingEnabled = sm0; g.restore();
+    if (r.dead <= 0 && r.hp < RAIDER.hp) {   // health bar once you have hurt him
+      var bw = ts * 1.1, bh = Math.max(4, ts * 0.12), bx = sx - bw / 2, by = sy - ts * 2.05;
+      g.fillStyle = "rgba(10,4,4,.85)"; g.fillRect(bx - 1, by - 1, bw + 2, bh + 2); g.fillStyle = "#c2362b"; g.fillRect(bx, by, bw * Math.max(0, r.hp / RAIDER.hp), bh);
+    }
+  }
+  function drawRaiderSay(g) { raiders.forEach(function (r) { drawRaiderSay1(g, r); }); }
+  function drawRaiderSay1(g, r) {   // a little red-edged speech bubble above him, drawn after the darkness so it stays readable
+    if (!r || r.sayT <= 0 || r.say < 0 || r.dead > 0) return;
+    var s = RAIDER_SAY[r.say], sx = ox + r.x * ts, sy = oy + (r.y - 2.35) * ts, fs = Math.max(11, Math.round(ts * 0.42));
+    g.save(); g.font = "800 " + fs + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    var w = g.measureText(s).width + fs * 1.2, h = fs * 1.9, a = Math.min(1, r.sayT * 2.5); g.globalAlpha = a;
+    g.fillStyle = "rgba(20,8,8,.88)"; g.strokeStyle = "#c2362b"; g.lineWidth = 2; g.beginPath();
+    if (g.roundRect) g.roundRect(sx - w / 2, sy - h / 2, w, h, fs * 0.5); else g.rect(sx - w / 2, sy - h / 2, w, h);
+    g.fill(); g.stroke(); g.beginPath(); g.moveTo(sx - fs * 0.35, sy + h / 2 - 1); g.lineTo(sx, sy + h / 2 + fs * 0.5); g.lineTo(sx + fs * 0.35, sy + h / 2 - 1); g.fillStyle = "rgba(20,8,8,.88)"; g.fill();
+    g.fillStyle = "#ffd9d2"; g.fillText(s, sx, sy + 1); g.restore();
+  }
+
   function caveUpdate(dt) {
     var F = cave.F, i;
+    if (cave.manor) { raiderUpdate(dt); if (!cave) return; }   // his stab can knock you out, which drops you back at camp and ends the cave
     S.time = (S.time + dt) % CYCLE;
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
@@ -2467,8 +2652,9 @@
     cam.x = F.w <= halfW * 2 ? F.w / 2 : clamp(cam.x, halfW, F.w - halfW); cam.y = F.h <= halfH * 2 ? F.h / 2 : clamp(cam.y, halfH, F.h - halfH);
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
+    if (cswing > 0) { cswing -= dt; if (cswing <= 0) caveStrike(); }
     caveTool(dt);
-    var working = !!mine; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
+    var working = sel === "weapon" ? (aim.down && S.wpn > 0) : !!mine; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 5.4);
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
@@ -2497,6 +2683,7 @@
       for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var r3 = hh(x, y, 4); if (r3 < 0.14) R(x, y, 1, 1, th.faceHi, 0.55); else if (r3 > 0.92) R(x, y, 1, 1, th.faceLo, 0.8); }
       R(0, 0, 16, 3, th.faceHi, 0.5); R(0, 0, 16, 1, "#fff", 0.12); R(0, 5 + Math.floor(hh(1, 1, 7) * 5), 16, 1, th.faceLo, 0.45); R(0, 13, 16, 3, th.faceLo, 0.85); R(0, 12, 16, 1, th.faceLo, 0.4);
     }
+    punch(c, 1.2, 1.07, 4);
     return (CATLAS[ck] = c);
   }
   function caveNode(id, v) {   // a boulder (stone, clay, basalt, frostrock) or an ore-studded boulder, seen from above
@@ -2592,7 +2779,8 @@
         if (TILES[rid].kind === "ore" && !reduce && ((now / 90 + ri * 7 + rj * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(rx + ts * 0.55, ry2 + ts * 0.3, 2, 2); }
       }
     };
-    drawRocks(Y0, Math.min(Y1, prow)); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Y1);
+    drawRocks(Y0, Math.min(Y1, prow)); if (F.chests) F.chests.forEach(function (c) { drawCaveChest(g, c, now); });
+    raiders.forEach(function (r) { if (r.y <= cp.y) drawRaider(g, now, r); }); drawCavePlayer(g, now); raiders.forEach(function (r) { if (r.y > cp.y) drawRaider(g, now, r); }); drawRocks(Math.max(Y0, prow + 1), Y1);
     if (mine) {
       var mx = ox + mine.x * ts, my = oy + mine.y * ts, nseg = 1 + Math.floor(mine.p * 6);
       g.strokeStyle = "rgba(0,0,0,.65)"; g.lineWidth = Math.max(1, ts / 14); g.beginPath();
@@ -2606,7 +2794,7 @@
     if (LC.width !== gw || LC.height !== gh) { LC.width = gw; LC.height = gh; LID = LCX.createImageData(gw, gh); }
     var dk = LID.data, tr = th.tint[0], tg = th.tint[1], tb = th.tint[2];
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
-      var cx = X0 + i + 0.5, cy = Y0 + j + 0.5, L = 0.07;
+      var cx = X0 + i + 0.5, cy = Y0 + j + 0.5, L = cave.manor ? 0.26 : 0.12;
       for (var s = 0; s < srcs.length; s++) { var sc = srcs[s], ddx = cx - sc[0], ddy = cy - sc[1], d2 = ddx * ddx + ddy * ddy, rr = sc[2]; if (d2 < rr * rr) { var kk = 1 - Math.sqrt(d2) / rr, vv = sc[3] * Math.pow(kk, 1.2); if (vv > L) L = vv; } }
       var kx = (j * gw + i) * 4; dk[kx] = tr; dk[kx + 1] = tg; dk[kx + 2] = tb; dk[kx + 3] = Math.round(clamp(1 - L, 0, 0.94) * 255);
     }
@@ -2617,9 +2805,10 @@
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
-    texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
+    texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1; if (cave.manor) drawRaiderSay(g);
     if (!panelOpen && !trans) {   // ladder prompt
-      var ln = ladderNear();
+      var ln = ladderNear(), cch = ln ? null : chestNearCave();
+      if (cch && !cch.open) drawPill(g, now, "Open chest" + (coarse ? "" : " (F)"), ox + (cch.x + 0.5) * ts, oy + cch.y * ts - ts * 0.5, false, function () { openCaveChest(cch); });
       if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (cave.manor ? "Leave manor" : cave.f <= 1 ? "Climb out" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? 1.3 : 0.5), false, function () { useLadder(ln.k); }); }
     }
     if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down)) {
@@ -2852,7 +3041,7 @@
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); }
     else if (k === "f" || k === "F") {
-      if (cave) { var ln = ladderNear(); if (ln) useLadder(ln.k); else nag("Stand next to a ladder to use it."); }
+      if (cave) { var ln = ladderNear(), cc0 = ln ? null : chestNearCave(); if (ln) useLadder(ln.k); else if (cc0) openCaveChest(cc0); else nag("Stand next to a ladder or chest to use it."); }
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), wn = skip || dn || cn ? null : decorBenchAt(), hn = skip || dn || cn || wn || !SC ? null : holeNear(), mnr = skip || dn || cn || wn || hn || !SC ? null : manorNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (wn) { snd("coin"); openPanel("decor"); } else if (hn) enterCave(hn.x, hn.y); else if (mnr) enterManor(); else trySleep(); }
     }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
@@ -2911,5 +3100,5 @@
   if (wIdx.list.length > 1) openWorlds();   // several worlds: let the player pick
   setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000);
   requestAnimationFrame(loop);
-  window.__sbx = { get cave() { return cave; }, cp: cp, enterCave: enterCave, enterManor: enterManor, manorNear: manorNear, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
+  window.__sbx = { get cave() { return cave; }, get raider() { return raiders[0] || null; }, get raiders() { return raiders; }, get hp() { return hp; }, RAIDER: RAIDER, cp: cp, enterCave: enterCave, enterManor: enterManor, manorNear: manorNear, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
 })();

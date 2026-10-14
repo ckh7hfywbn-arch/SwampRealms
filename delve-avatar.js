@@ -50,8 +50,8 @@ var DelveAv = (function () {
   };
 
   // ---------- animals ----------
-  var COL = { frog: "#43c463", donkey: "#8f91a8", owl: "#a2704a", monkey: "#8d5a34", elephant: "#8c9db8" };
-  var IRIS = { frog: "#ffd23f", donkey: "#f0a41c", owl: "#ffd23f", monkey: "#7a4a22", elephant: "#4a74b8" };
+  var COL = { frog: "#43c463", donkey: "#8f91a8", owl: "#a2704a", monkey: "#8d5a34", elephant: "#8c9db8", human: "#b99674" };
+  var IRIS = { frog: "#ffd23f", donkey: "#f0a41c", owl: "#ffd23f", monkey: "#7a4a22", elephant: "#4a74b8", human: "#ff3b30" };
   // head maps: b base, l light, d dark, w white, k black, n inner-ear pink, m muzzle, y/x beak, g tusk. x0/y0 = top-left cell on the grid
   var AN = {
     frog: {
@@ -74,12 +74,17 @@ var DelveAv = (function () {
     elephant: {
       x0: 3, y0: 6, eyes: [[9, 10], [12, 10]], hy: 7, hw: 8, fy: [11, 8], ring: [17, 14], mask: [13, 8], leg: "#8c9db8",
       head: ["....bbbbbbbb....", "....bbbbbbbb....", ".bbbbbbbbbbbbbb.", "bnnbbbbbbbbbbnnb", "bnnbbwkbbkwbbnnb", "bnnbbbbbbbbbbnnb", "bnnbbbbldbbbbnnb", ".bnbbgbldbgbbnb.", "..bbbbbldbbbbb..", "....bbbldbbb....", "......bldb......"]
+    },
+    // the Swamp Raider: a human, not a swamp animal. h hair, e brow, r red eye, s scar, k mouth, w gritted teeth
+    human: {
+      x0: 7, y0: 6, eyes: [[9, 11], [12, 11]], hy: 8, hw: 8, fy: [11, 8], ring: [16, 12], mask: [13, 8], leg: "#3b2b22",
+      head: [".hhhhhh.", "hhhhhhhh", "hhhhhhhh", "heebbeeh", "bbbeebbb", "bkrbbrkb", "bbbbdbsb", "bbbbbsbb", "bdkwwkdb", ".bbddbb.", "..bbbb.."]
     }
   };
 
   function palFor(a) {
     var base = COL[a], skin = base;
-    return { b: base, l: lt(base, 0.3), d: dk(base, 0.32), w: "#f6f6ee", k: "#10131a", n: "#e8a0a0", m: a === "donkey" ? "#d9d5e6" : a === "monkey" ? "#e8c9a0" : base, y: "#ffb830", x: "#d97a10", g: "#f1ead0", skin: skin, sl: lt(base, 0.22), sd: dk(base, 0.3) };
+    return { b: base, l: lt(base, 0.3), d: dk(base, 0.32), w: "#f6f6ee", k: "#10131a", n: "#e8a0a0", m: a === "donkey" ? "#d9d5e6" : a === "monkey" ? "#e8c9a0" : base, y: "#ffb830", x: "#d97a10", g: "#f1ead0", skin: skin, sl: lt(base, 0.22), sd: dk(base, 0.3), h: "#1c1613", e: "#2e2018", r: "#ff3b30", s: "#a8433f" };
   }
 
   // ---------- gradients used by the Armory art (light, mid, dark) ----------
@@ -88,6 +93,13 @@ var DelveAv = (function () {
 
   // ---------- hats: each draws upward from hy (the row sitting on the skull), hw = head width (even) ----------
   var HATS = {
+    raidband: function (B, hy, hw) {   // blood-red Dweller headband with trailing tails, over wild black hair
+      var x0 = 11 - Math.floor(hw / 2), x1 = x0 + hw - 1;
+      B.row(hy, hw + 2, "#c2362b"); B.p(x0 - 1, hy, "#e65a4a"); B.p(x1 + 1, hy, "#7a1f1a");
+      B.r(x0 - 3, hy, 2, 1, "#c2362b"); B.r(x0 - 3, hy + 1, 1, 3, "#7a1f1a"); B.r(x0 - 2, hy + 1, 1, 2, "#c2362b"); B.p(x0 - 2, hy + 3, "#7a1f1a");
+      [[x0 + 1, hy - 3], [x0 + 3, hy - 4], [x0 + 5, hy - 3], [x0 + 6, hy - 4]].forEach(function (c) { B.p(c[0], c[1], "#1c1613"); B.p(c[0], c[1] + 1, "#1c1613"); });
+      B.p(x0 + 2, hy - 2, "#2e2420"); B.p(x0 + 4, hy - 2, "#2e2420");
+    },
     beanie: function (B, hy, hw) {
       var g = G.dk; B.row(hy, hw, "#4a4a5c"); B.row(hy - 1, hw, "#3a3a4c");
       for (var i = 0; i < hw; i += 2) { B.p(11 - hw / 2 + i, hy, "#5e5e76"); B.p(11 - hw / 2 + i + 1, hy - 1, "#5e5e76"); }
@@ -223,7 +235,8 @@ var DelveAv = (function () {
     jersey: { c: G.red, sleeve: G.red, sl: 3, cuff: "#ffffff" },
     tux: { c: ["#3a3a4c", "#25252f", "#0e0e14"], sleeve: ["#3a3a4c", "#25252f", "#0e0e14"], sl: 6, cuff: "#f6f3ea" },
     armor: { c: G.tl, sleeve: ["#4a4a5c", "#25252f", "#0e0e14"], sl: 6, cuff: "#35d6b4", pauld: G.tl },
-    robe: { c: G.red, sleeve: G.red, sl: 6, cuff: "#f2c14e" }
+    robe: { c: G.red, sleeve: G.red, sl: 6, cuff: "#f2c14e" },
+    raider: { c: ["#7a4a30", "#55331f", "#241410"], sleeve: ["#7a4a30", "#55331f", "#241410"], sl: 4, cuff: "#c2362b", pauld: ["#5a5a6e", "#2c2c38", "#0e0e14"] }
   };
   function torso(B, id, by, noItem) {
     var s = SHIRTS[id] || SHIRTS[""], c = s.c, x = 7, y = 17 + by, i, j;
@@ -247,6 +260,10 @@ var DelveAv = (function () {
     } else if (id === "armor") {
       B.r(x, y, 8, 6, "#35d6b4"); B.r(x, y, 8, 1, "#b8fff0"); B.r(x + 3, y + 1, 2, 5, "#0e7490"); B.r(x + 3, y + 1, 1, 5, "#b8fff0"); B.r(x + 1, y + 2, 2, 1, "#0e7490"); B.r(x + 5, y + 2, 2, 1, "#0e7490"); B.r(x + 1, y + 4, 2, 1, "#0e7490"); B.r(x + 5, y + 4, 2, 1, "#0e7490");
       B.p(x, y + 1, "#e6fffa"); B.r(x, y + 6, 8, 1, "#25252f"); B.r(x + 3, y + 6, 2, 1, "#f2c14e"); B.p(x + 4, y, "#ffffff");
+    } else if (id === "raider") {
+      for (i = 0; i < 5; i++) { B.p(x + 1 + i, y + i, "#2a1a10"); B.p(x + 2 + i, y + i, "#3a2518"); }
+      B.p(x + 1, y, "#8a5a3a"); B.r(x, y + 5, 8, 1, "#c2362b"); B.r(x, y + 5, 8, 1, "#7a1f1a", 0.0); B.p(x, y + 5, "#e65a4a"); B.r(x + 3, y + 5, 2, 1, "#f1ead0"); B.p(x + 3, y + 5, "#ffffff");
+      B.p(x + 5, y + 1, "#c2362b"); B.p(x + 6, y + 2, "#7a1f1a"); B.r(x + 1, y + 6, 6, 1, "#150c08");
     } else if (id === "robe") {
       B.r(x + 3, y, 2, 7, "#f2c14e"); B.p(x + 3, y, "#fff4b0"); B.p(x + 3, y + 3, "#fff4b0"); B.p(x + 4, y + 5, "#a8740a");
       B.r(x, y, 8, 2, "#f6f3ea"); B.p(x, y, "#ffffff"); B.p(x + 1, y + 1, "#d8d2c0"); B.p(x + 3, y, "#f6f3ea"); B.p(x + 4, y + 1, "#d8d2c0"); B.p(x + 6, y + 1, "#d8d2c0");
@@ -356,7 +373,15 @@ var DelveAv = (function () {
   // ---------- canvas side ----------
   function toCanvas(B, s) {
     var c = document.createElement("canvas"); c.width = B.w; c.height = B.h;
-    var g = c.getContext("2d"), im = g.createImageData(B.w, B.h); im.data.set(B.d); g.putImageData(im, 0, 0);
+    var g = c.getContext("2d"), im = g.createImageData(B.w, B.h); im.data.set(B.d);
+    // crisp 1px dark outline (inside the frame, around every opaque edge) so characters pop against any background
+    var d = im.data, w = B.w, h = B.h, src = B.d, x, y, i, o = [];
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      i = (y * w + x) * 4 + 3; if (src[i] > 40) continue;
+      if ((x > 0 && src[i - 4] > 200) || (x < w - 1 && src[i + 4] > 200) || (y > 0 && src[i - w * 4] > 200) || (y < h - 1 && src[i + w * 4] > 200)) o.push(i - 3);
+    }
+    o.forEach(function (j) { d[j] = 12; d[j + 1] = 20; d[j + 2] = 16; d[j + 3] = 235; });
+    g.putImageData(im, 0, 0);
     if (s <= 1) return c;
     var c2 = document.createElement("canvas"); c2.width = B.w * s; c2.height = B.h * s; var g2 = c2.getContext("2d"); g2.imageSmoothingEnabled = false; g2.drawImage(c, 0, 0, c2.width, c2.height); return c2;
   }
