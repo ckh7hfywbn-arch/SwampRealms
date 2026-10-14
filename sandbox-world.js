@@ -3,8 +3,10 @@
 // The same seed always builds the same world. Player edits are stored separately as a small diff (see sandbox.js).
 (function (root) {
   "use strict";
-  var W = 240, H = 110, SURF = 34;           // world size in tiles, and the average surface row
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25 };
+  // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
+  // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
+  var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -16,7 +18,7 @@
   tile(T.MUD, "Mud", "#4a3a28", "#5d4833", 0.5, 1, "mud", true);
   tile(T.CLAY, "Clay", "#8b7a62", "#a08d72", 0.6, 1, "clay", true);
   tile(T.STONE, "Stone", "#6b7276", "#82898d", 1.3, 1, "stone", true);
-  tile(T.LOG, "Swamp Log", "#6a4a2d", "#4a321d", 0.9, 1, "wood", true, 0, "log");
+  tile(T.LOG, "Swamp Log", "#5e4024", "#2e1d10", 0.9, 1, "wood", true, 0, "log");
   tile(T.LEAVES, "Leaves", "#2f7a3c", "#46a352", 0.15, 1, "leaves", true, 0, "leaves");
   tile(T.WATER, "Water", "#2a8f95", "#5fd0cf", Infinity, 0, null, false, 0, "water");
   tile(T.BASALT, "Basalt", "#3b3036", "#55444d", 2.2, 2, "basalt", true);
@@ -29,7 +31,7 @@
   tile(T.CINDER, "Cinder Ore", "#3b3036", "#ff8a3d", 2.4, 2, "cinder", true, 7, "ore");
   tile(T.CRYSTAL, "Frost Crystal Ore", "#5d7c93", "#bff4ff", 3.2, 3, "crystal", true, 8, "ore");
   tile(T.BEDROCK, "Bedrock", "#1c1a22", "#2c2934", Infinity, 99, null, true);
-  tile(T.PLANKS, "Planks", "#a8703c", "#c98c4f", 0.8, 1, "planks", true, 0, "planks");
+  tile(T.PLANKS, "Planks", "#b9793f", "#dc9a58", 0.8, 1, "planks", true, 0, "planks");
   tile(T.TORCH, "Torch", "#000", "#ffb13b", 0.05, 1, "torch", false, 13, "torch");
   tile(T.GLOWCAP, "Glowcap", "#000", "#4ee6b4", 0.1, 1, "spore", false, 6, "glowcap");
   tile(T.REED, "Cattail", "#000", "#6aa347", 0.05, 1, null, false, 0, "reed");
@@ -38,6 +40,7 @@
   tile(T.VINE, "Hanging Vine", "#000", "#3f8f3a", 0.05, 1, null, false, 0, "vine");
 
   tile(T.BENCH, "Bog Workbench", "#000", "#c98c4f", 0.4, 0, "bench", false, 0, "bench");
+  tile(T.BED, "Swamp Bed", "#000", "#8d63c9", 0.4, 0, "bed", false, 0, "bed");   // sleep in it at night: skips to dawn, heals, sets your respawn
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
   [T.MOSS, T.MUD, T.ASH, T.SNOW, T.LEAVES, T.TORCH, T.GLOWCAP, T.REED, T.BLOOM, T.SPIKE, T.VINE].forEach(function (i) { TILES[i].tier = 0; });
   TILES[T.REED].drop = "fiber"; TILES[T.VINE].drop = "fiber";   // cattails are rare on some seeds, so hanging vines give fiber too
@@ -48,10 +51,12 @@
     planks: { n: "Planks", tile: T.PLANKS }, torch: { n: "Torch", tile: T.TORCH }, leaves: { n: "Leaves", tile: T.LEAVES },
     snow: { n: "Snow", tile: T.SNOW }, ice: { n: "Ice", tile: T.ICE }, basalt: { n: "Basalt", tile: T.BASALT }, ash: { n: "Ash Soil", tile: T.ASH },
     frostrock: { n: "Frostrock", tile: T.FROSTROCK },
-    stick: { n: "Stick", mat: "stick" }, fiber: { n: "Reed Fiber", mat: "fiber" }, pebble: { n: "Pebble", mat: "pebble" }, bench: { n: "Bog Workbench", tile: T.BENCH },
-    spore: { n: "Glowspore", gem: "#4ee6b4" }, cinder: { n: "Cinder Shard", gem: "#ff8a3d" }, crystal: { n: "Frost Crystal", gem: "#bff4ff" }
+    stick: { n: "Stick", mat: "stick" }, fiber: { n: "Reed Fiber", mat: "fiber" }, pebble: { n: "Pebble", mat: "pebble" }, bench: { n: "Bog Workbench", tile: T.BENCH }, bed: { n: "Swamp Bed", tile: T.BED },
+    spore: { n: "Glowspore", gem: "#4ee6b4" }, cinder: { n: "Cinder Shard", gem: "#ff8a3d" }, crystal: { n: "Frost Crystal", gem: "#bff4ff" },
+    bugfrag: { n: "Bramble Fragment", frag: "bug" }, frogfrag: { n: "Frog Fragment", frag: "frog" },   // enemy loot, same names as the Adventure Fragments
+    batwing: { n: "Bat Wing", frag: "bat" }   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
   };
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -87,12 +92,12 @@
       var hs = SURF + 1.5 + (fbm(x * 0.05, 0, seed, 3) - 0.5) * 13;
       var he = SURF - 2 + (fbm(x * 0.05, 3.3, seed + 5, 3) - 0.5) * 18;
       var hf = SURF - 1 + (fbm(x * 0.04, 7.7, seed + 9, 3) - 0.5) * 14;
-      var w1 = smooth(72, 88, x), w2 = smooth(152, 168, x);
-      var h = hs * (1 - w1) + (he * (1 - w2) + hf * w2) * w1;
-      h = SURF + (h - SURF) * smooth(3, 12, Math.abs(x - 40));       // flat, dry start area around x = 40
+      var wE = smooth(B_EMBER - 8, B_EMBER + 8, x), wF = 1 - smooth(B_FROST - 8, B_FROST + 8, x);
+      var h = hs * (1 - wE - wF) + he * wE + hf * wF;
+      h = SURF + (h - SURF) * smooth(3, 12, Math.abs(x - SPAWNX));   // flat, dry start area around the spawn
       top[x] = Math.max(18, Math.min(60, Math.round(h)));
       var bx = x + (vnoise(x * 0.08, 0, seed + 3) - 0.5) * 14;
-      bio[x] = bx < 80 ? 0 : bx < 160 ? 1 : 2;
+      bio[x] = bx < B_FROST ? 2 : bx < B_EMBER ? 0 : 1;   // west Frostfen, middle Murkwater, east Ember Bog
     }
     // 2. ground, ores, caves, liquids
     for (x = 0; x < W; x++) {
@@ -116,7 +121,7 @@
           if (id === T.FROSTROCK && fbm(x * 0.22 + 5, y * 0.22, seed + 41, 2) > 0.68) id = T.CRYSTAL;
           if (d >= 7 && y < H - 6) {
             var cave = fbm(x * 0.06, y * 0.06, seed + 51, 3) > 0.7 || (d >= 9 && Math.abs(fbm(x * 0.035 + 100, y * 0.07 + 50, seed + 61, 2) - 0.5) < 0.03);
-            if (cave) id = y >= (b === 1 ? 70 : 92) ? T.LAVA : T.AIR;
+            if (cave) id = y >= (b === 1 ? H - 40 : H - 18) ? T.LAVA : T.AIR;
           }
         }
         t[y * W + x] = id;
@@ -156,7 +161,7 @@
       if (x - lastTree > 4 && rnd() < 0.24) { lastTree = x; trees.push(x); plant(x); }
       else if (x - lastTree > 1 && rnd() < 0.16 && t[(top[x] - 1) * W + x] === T.AIR) t[(top[x] - 1) * W + x] = T.GLOWCAP;
     }
-    for (x = 8; x < 76 && trees.length < 10; x += 3) {
+    for (x = SPAWNX - 34; x < SPAWNX + 34 && trees.length < 10; x += 3) {
       if (top[x] > WL || trees.some(function (q) { return Math.abs(q - x) < 5; })) continue;
       trees.push(x); plant(x);
     }
@@ -168,9 +173,9 @@
       else if (bb === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
       else if (bb === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
     }
-    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, spawn: { x: 40.5, y: top[40] } };
+    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
-  var api = { W: W, H: H, SURF: SURF, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
+  var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);

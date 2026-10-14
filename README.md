@@ -346,3 +346,59 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Passing out:** at 0 HP you wake at camp with full health and keep everything. Counted in `st.deaths` for later use.
 - **Feedback:** red edge flash, damage number, short screen shake (off for reduced motion), blinking avatar, 0.5 s grace between hits.
 - **For Stage 3:** `hurt(amount, why, continuous)` is the one function every damage source should call (Gloomlings, hunger).
+
+### Delve wood art pass
+- `paintLog()` and `paintPlanks()` in `sandbox.js` replace the old log/planks tiles. Logs are rounded trunks (lit left, shaded right) with bark cracks, scars, knots, glowing swamp moss and occasional orange bracket fungus. Planks are two beveled boards with grain, staggered joints, iron nails and a faint moss glow in the seam. Tile colours in `sandbox-world.js` were updated to match (used by the map and break particles).
+
+### Delve weapons (progression track)
+- **Weapons are a second track beside the picks.** `S.wpn` (0-4) is saved in `swamp-delve-v1` (older saves load as 0). `WEAPONS` at the top of `sandbox.js` holds name, glow colour, `dmg` and `cd` (seconds per swing); `RECIPES` entries with a `wpn` field craft them.
+- **Ladder:** Reed Spear (by hand: 6 Stick, 3 Fiber, 4 Pebble, damage 5) -> Glowspore Blade (Workbench, needs the Glowspore Pick: 12 Glowspore, 8 Wood, 8 Planks, damage 9) -> Cinder Cleaver (Workbench, Cinder Pick: 16 Cinder, 12 Basalt, 16 Planks, damage 16) -> Frost Fang (Workbench, Frost Pick: 18 Frost Crystal, 14 Frostrock, 24 Planks, damage 26, fastest swing). Each needs the previous weapon (`need` = pick tier required).
+- **Using it:** a "weapon" slot appears in the hotbar once you own one (slot 2, `Lv` badge). Hold to swing toward your aim; the weapon is drawn in the avatar's hand with its own swing and slash sparks. `Q` now toggles pick and weapon/last block.
+- **Art:** `drawWeaponIcon(g, tier)` (same 32x32 box as `drawPickIcon`), used for the hotbar, Craft tab and held sprite.
+- **Goals:** four new goals (Armed Paws, Spore Blade, Cinder Cleaver, Frost Fang). `st.swings` counts swings.
+- **Not wired yet:** Delve has no enemies, so swings hit nothing. Stage 3 (Gloomlings) should read `WEAPONS[S.wpn].dmg` inside `hurt`-style enemy damage and use `cd`. The Armory `GEAR` weapons for the Swamp Adventure are separate and untouched.
+
+### Delve leaf art pass
+- Foliage is now built from small pointed pixel leaves (lit top-left, shadow pixel underneath, sun glints on the tips) over a dark back layer, instead of random squares. `paintLeaf()` in `sandbox.js`; palette `LEAFC`.
+- `LEAFATLAS` holds 4 variants for each of the 16 open-edge combinations. Open edges (sky, air, cave) get ragged leaf tips and corners, a sunlit rim on top and a shaded rim underneath, so canopies look leafy instead of square. Interior tiles wrap, so they tile with no seams. The old rim overlay for leaves is gone because it is baked into those tiles.
+- Same colours family, same 16x16 pixel grid and same glowspore sparkle as before. Wood, vines and every other tile are unchanged.
+
+### Delve HUD layout
+- **Bag button** now sits in a `.sbx-dock` at the bottom centre, to the right of the hotbar (`#sbxMenuBtn`, same click and `E` behaviour).
+- **Health bar** is the top-right element of `.sbx-hud`: a round heart badge that beats (faster when low, thumps when hit), a glossy bar with a flowing sheen, quarter-mark ticks, the number inside, and a trailing orange "damage ghost" that drains slowly after a hit. Colour and glow follow state: mint above 60%, gold to 30%, red and pulsing below. Reduced-motion turns the animations off. `drawHp()` in `sandbox.js` drives it.
+
+### Delve enemies (the first two from the Swamp Realms Adventure)
+- **Bramble Bug** and **Swamp Frog**, drawn with the Adventure's own art code (`drawEnemy()` in `sandbox.js`, scaled to tiles). Tuning is the `ENEMY` and `FROG` tables above `useTool`; they live in the `enemies` list, are updated by `updateEnemies(dt)` and paused while the bag is open.
+- **Bramble Bug** (12 HP, 9 damage): patrols the Murkwater Swamp surface and, sometimes, dark caves. Notices you within about 7 tiles, charges, rams you, then backs off for a second. It turns at ledges and walls.
+- **Swamp Frog** (18 HP, 12 tongue / 6 touch): hops about; when you are close it shows an amber **!** for half a second, then lashes its tongue along the ground. **Jump the tongue**, then hit it while it is winded (dizzy sparks, harmless).
+- **Fighting:** hold a weapon and swing. Each swing hits every enemy in front of you after a short wind-up (`strike()`), using the weapon's `dmg` and reach (Spear 2.7 tiles, Blade 2.2, Cleaver 2.4, Fang 2.4). Hits knock them back and show damage numbers and a small health bar.
+- **Spawning:** only once you carry a weapon (`S.wpn >= 1`), only in Murkwater Swamp, off screen, up to 3 bugs + 2 frogs (4 total), every 4 to 7 seconds. They despawn when you walk far away and are cleared when you wake at camp.
+- **Loot:** Bramble Fragments and Frog Fragments, 60% per kill and always the first kill of each (`give()` into the Delve bag). The same Fragment is also added to your **Adventure** Fragments (`Fragments.add("bug" / "frog")`).
+- **Progression:** the **Glowspore Blade** now also needs 3 Bramble Fragments and the **Cinder Cleaver** 3 Frog Fragments. Four new Trail steps are appended after "Cross into Ember Bog" (Arm Yourself, Squash a Bramble Bug, Hop to It, Spore Blade), so existing saves keep their place and just get the new steps. Four new goals: Bug Squasher, Frog Hopper, Thorn Trouble (5 bugs), Croak Crusher (5 frogs). Kill counts are saved as `st.bugs` and `st.frogs`.
+- **Later:** Ember Bog and Frostfen enemies (and night Gloomlings) can reuse `newEnemy`, `moveEnemy` and `damageEnemy`; add a table entry, an AI function and a draw branch.
+
+### Delve: a much bigger world, go left or right
+- **Size:** 720 x 140 tiles (was 240 x 110). Each area is 240 tiles wide, three times the old width, and the world is 30 tiles deeper (cave lava now starts relative to the bottom, `H - 18`, and `H - 40` in Ember Bog).
+- **Layout:** you start in the **middle**, in Murkwater Swamp (spawn x = 360). **Ember Bog is east (right)** and **Frostfen is west (left)**, so both directions are open from the first minute. The constants are `B_FROST = 240`, `B_EMBER = 480`, `SPAWNX = 360` in `sandbox-world.js`; the sky, hills and back-wall colours blend by the same numbers (`biomeMix`). The Trail text "Walk east past the swamp edge" still points the right way. Frostfen needs the Cinder Pick, so it is a longer trip west.
+- **Old saves:** worlds are tagged `wv: 3` (`WORLDVER`). A save from the smaller world keeps its items, tools, weapons, goals and Trail progress, but its digging, explored map and position are reset (they no longer line up with the new world), and a toast explains it.
+- **Map tab:** drawn 1:1 at 720 x 140 with the three area names and a bigger "you are here" marker.
+
+
+### Delve: night bats and beds
+- **Dusk Bats** (`ENEMY.bat`, `BAT`, `updateBat()` in `sandbox.js`): night-only fliers. Once you carry a weapon, they spawn in the sky above you from late dusk to early dawn (clock 268-446), in any biome. A bat drifts overhead, shows **red eyes** for half a second, then dives in a straight line; step aside, then strike. A hit scares it off briefly. A roof or the ground stops them. At dawn, or if you dig more than ~7 tiles below the surface, they flap away.
+- **Scaling:** bat HP is 10 + 4 per weapon tier, damage 6 + 2 per tier. Max bats at once is `1 + weapon tier` (min 2, max 6), plus one late in the night; spawns speed up as the night goes on.
+- **Swamp Bed** (`T.BED`, craft: 6 Planks, 6 Fiber, 8 Leaves, by hand): needs solid ground under it. Stand within ~3 tiles at night (clock 280-440) and tap the **Sleep** pill above the bed (or press **F**). The screen fades, the night is skipped to dawn, you heal fully, bats are cleared, and the bed becomes your respawn point (`S.bed`). Fainting or "Back to camp" now returns you to your bed; a broken bed is forgotten and spawn falls back to camp.
+- **Sleep rules** (`sleepBlock()`): you cannot sleep with an enemy within ~14 tiles, unless a solid tile is within 5 tiles overhead (a roof or tree canopy keeps everything out). So bats push you to either kill them or build a shelter.
+- **Progression hooks:** 3 new Trail steps appended after Spore Blade (Build a Bed, Night Watch: 2 bats, Sleep Tight); 5 new goals (Bed Time, Night Watch, Sweet Dreams, Bat Basher: 10 bats, Well Rested: 5 sleeps); **Frost Fang now also needs 4 Bat Wings**, so the last weapon requires night hunting. Old saves keep their place and pick up the new Trail steps.
+- **Saves:** new top-level `bed`, new stats `bats, beds, sleeps, warned`. Bat Wings are Delve-only (no Adventure Fragment exists for them, so `Fragments.add` ignores it).
+- **Gotcha:** `sandbox.html` script versions bumped to `delve6` / `delve14` so browsers fetch the new code.
+
+
+### Delve: multiple worlds (save slots)
+- **Per player:** each signed-in name (read from the account link in `swamp-sync-v1`) or "guest" has their own list of up to 8 worlds on this device. Index key `swamp-delve-worlds:<user>`; each world is its own save at `swamp-delve-w:<user>:<id>` (same save format as before). Worlds are still browser-only, not cloud-synced, and still never touch coins or crystals.
+- **Migration:** the old single key `swamp-delve-v1` is copied once into a world called "My Swamp" for whoever opens Delve first on the device (`swamp-delve-legacy-claimed` records that). The old key is left alone as a backup.
+- **Worlds screen** (`#sbxWorlds`, built in JS; styles at the end of `sandbox.css`): Play/Resume, Rename, Delete (tap twice), and New world with an optional name. Open it from Bag, then Options, then **Save & exit to menu**. It also opens at launch when a player has more than one world. The game pauses while it is open; Escape or "Back to game" closes it; "Exit to Arcade" leaves.
+- **Saving:** autosave every 8 s, when the tab is hidden, on page close, and whenever you create, switch or open the menu. If storage is full or blocked, a one-time toast says so.
+- **"Start a new world" no longer erases anything;** it makes a new slot. Deleting the last world creates a fresh one.
+- **Gotcha:** the Worlds UI uses `data-wl-*` attributes so `store.js` global listeners never react. Signing in or out mid-session takes effect on the next page load.
+- `sandbox.html` versions bumped (`sandbox.js` delve15, `sandbox.css` delve7).
