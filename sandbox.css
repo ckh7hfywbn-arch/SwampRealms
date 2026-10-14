@@ -245,6 +245,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-is b{position:absolute;right:5px;bottom:2px;font-size:.74rem;font-weight:800;text-shadow:0 1px 2px #000,0 0 3px #000;pointer-events:none}
 .sbx-is i{position:absolute;left:5px;top:2px;font-style:normal;font-size:.62rem;font-weight:800;color:#f6eedb88;pointer-events:none}
 .sbx-igrid.hot .sbx-is{border-color:rgba(242,193,78,.28)}
+.sbx-igrid.pack .sbx-is{border-color:rgba(201,160,106,.4)}
 .sbx-is.on{border-color:#f2c14e;box-shadow:0 0 0 2px rgba(242,193,78,.55),0 0 14px -2px rgba(242,193,78,.7)}
 .sbx-is.held:not(.on){border-color:#4ee6b4}
 .sbx-is:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}

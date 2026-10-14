@@ -5,6 +5,7 @@
 // SAVING: the whole game is one localStorage key, "swamp-delve-v1" (this browser only, NOT cloud-synced in Stage 1).
 //   { v:2, trail (First Day Trail step), seed, e:"idx:tile,idx:tile" (only tiles you changed), ex:"run-length explored map", p:{x,y,f}, animal, inv:{item:n}, mru:[item],
 //     tier (pick level 1-4), time (0-480 day clock), ms:{milestone:1}, st:{mined,placed,torches,wood,maxDepth,swim}, zoom }
+// BACKPACK: S.bag (0-2) adds extra bag slots (Reed Backpack +12, Bog Hauler Pack +24 in all); saved slot lists are the size invSize(S.bag).
 // INVENTORY: S.slots is a Minecraft-style grid (INV_HOT hotbar slots first, then INV_MAIN bag slots; each null or {k,n}, stack limit per item). S.inv {item:n} is the running total of the slots and is what all crafting code reads; reslot() keeps the two in step. S.extra holds loot that did not fit.
 // Swamp Coins and Swamp Crystals are never read or written. Nothing here pays out currency.
 // WORLDS: each player (signed-in name, or "guest") has a list of world slots on this device. Index key "swamp-delve-worlds:<user>", one save per world "swamp-delve-w:<user>:<id>".
@@ -17,12 +18,22 @@
 
   // ---------- TUNING ----------
   // inventory: 6 hotbar slots + 24 bag slots, 64 per stack (16 for furniture and other bulky things)
-  var INV_HOT = 6, INV_MAIN = 24, INV_N = INV_HOT + INV_MAIN, STACK = 64, STACK_SMALL = 16, SMALL = {};
+  var INV_HOT = 6, INV_MAIN = 24, INV_N = INV_HOT + INV_MAIN, INV_BASE = INV_N, STACK = 64, STACK_SMALL = 16, SMALL = {};
   ["bench", "bed", "door", "chest", "chair", "table", "painting", "flowerpot", "pot", "bucket", "barrel"].forEach(function (k) { SMALL[k] = 1; });
   Object.keys(ITEMS).forEach(function (k) { if (ITEMS[k].decor && k !== "flower") SMALL[k] = 1; });   // furniture and decor stack to 16
+  // BACKPACKS: S.bag (0-2) is saved. Each pack adds bag slots on top of the base 30 (x = total extra slots). The extra slots sit at the end of S.slots (index INV_BASE and up),
+  // so the hotbar and the base bag never move. A pack never shrinks (you keep it for good), so a saved slot list is always the size invSize(S.bag).
+  var BAGS = [{ n: "No Backpack", x: 0, c: "#8fd37a" }, { n: "Reed Backpack", x: 12, c: "#c9a06a" }, { n: "Bog Hauler Pack", x: 24, c: "#4ee6b4" }];
+  function invSize(b) { return INV_BASE + (BAGS[b | 0] ? BAGS[b | 0].x : 0); }
+  function invN() { return S && S.slots ? S.slots.length : INV_BASE; }
+  // WATERING CAN: a tool beside the pick (S.can 0/1, S.water 0..CAN.max, both saved). Hold it on water to fill it, hold it on a Swamp Flower, Cattail or Glowcap to water it:
+  // after a few seconds the watered plant spreads a new one onto free ground within 2 tiles (never into a crowded patch). Pending growth lives in memory only (grow[]), the new plants are ordinary tile edits.
+  var CAN = { n: "Watering Can", max: 12, c: "#6fb7d9" }, GROW_T = 4.5, PLANTS = {}, GROW_CROWD = 5;
+  PLANTS[T.FLOWER] = 1; PLANTS[T.REED] = 1; PLANTS[T.GLOWCAP] = 1;
+  var AVS = 0.85;   // how big avatars are drawn (1 = the old size). Applies to you and the villagers; the hitbox (PW x PH) is unchanged.
   var KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
   // health: tuning (a player has MAXHP; fall hits past FALL_SAFE speed, lava burns per second, then you heal after a calm spell)
-  var MAXHP = 100, FALL_SAFE = 17, LAVA_DPS = 38, REGEN_WAIT = 4, REGEN_RATE = 2.5;
+  var MAXHP = 100, FALL_SAFE = 21, FALL_DMG = 3.5, LAVA_DPS = 38, REGEN_WAIT = 4, REGEN_RATE = 2.5;
   var PICKS = [
     { n: "Bare Paws", c: "#8fd37a", sp: 0.55 }, { n: "Reed Pick", c: "#c9b58a", sp: 1 }, { n: "Glowspore Pick", c: "#4ee6b4", sp: 1.8 },
     { n: "Cinder Pick", c: "#ff8a3d", sp: 2.8 }, { n: "Frost Pick", c: "#7fd6ff", sp: 4.2 }
@@ -44,6 +55,7 @@
   var RECIPES = [
     { id: "pick1", n: "Reed Pick", tier: 1, cost: { stick: 3, fiber: 3, pebble: 2 }, d: "Your first tool. Chops wood, digs clay and breaks stone." },
     { id: "shovel", n: "Reed Shovel", sh: 1, cost: { stick: 2, fiber: 2, pebble: 2 }, d: "A hand shovel for soft ground. Digs Mud, Moss, Clay, Ash and Snow a little faster than bare paws. It cannot break stone, wood or ore, so keep your pick too." },
+    { id: "can", n: "Watering Can", can: 1, cost: { planks: 4, fiber: 3, pebble: 2 }, d: "Pick it in the hotbar, hold it on the water to fill it, then hold it on a Swamp Flower, Cattail or Glowcap. A watered plant spreads a new one nearby after a few seconds. Holds 12 waterings. Comes full." },
     { id: "planks", n: "Planks (4)", out: { planks: 4 }, cost: { wood: 1 }, d: "Build walls, floors and bridges." },
     { id: "bench", n: "Bog Workbench", out: { bench: 1 }, cost: { wood: 10, fiber: 4 }, d: "Place it at camp. Better tools are made standing next to it." },
     { id: "bed", n: "Swamp Bed", out: { bed: 1 }, cost: { planks: 6, fiber: 6, leaves: 8 }, d: "Place it at camp. At night, stand next to it and sleep to skip to dawn, heal fully and set your respawn. Bats cannot hurt you while you sleep." },
@@ -52,8 +64,16 @@
     { id: "door", n: "Swamp Door", out: { door: 1 }, cost: { planks: 6, fiber: 2 }, d: "A two-tall wooden door. Place it on the ground in a doorway. Walk into it to open it (it shuts behind you), tap it or press F to open or close it by hand, and hold on it to break it. Closed doors stop bugs, frogs and bats." },
     { id: "ladder", n: "Ladder (4)", out: { ladder: 4 }, cost: { planks: 3 }, d: "Stick it to a wall or stack it up or down. Hold Jump to climb up, S or Down to climb down (on a phone you slowly slide down when not climbing)." },
     { id: "chest", n: "Wooden Chest", out: { chest: 1 }, cost: { planks: 8, fiber: 2 }, d: "Place it at camp on solid ground. Tap it (or press F nearby) to open it and stash up to 30 kinds of items. Empty it before you pick it up." },
+    { id: "bag1", n: "Reed Backpack", bag: 1, cost: { fiber: 10, leaves: 6, stick: 4 }, d: "A woven reed pack you wear on your back. Adds 12 bag slots (42 in all). Made by hand, no Workbench needed." },
+    { id: "w_plank", n: "Plank Wall (4)", out: { wall_plank: 4 }, cost: { planks: 1 }, d: "A back wall. Select it and tap an empty tile next to a block or another wall: it goes BEHIND you, so you can walk and decorate in front of it. Hold your pick on an empty walled tile to take a wall down." },
+    { id: "w_log", n: "Log Wall (4)", out: { wall_log: 4 }, cost: { wood: 1 }, d: "Round vertical logs for a cabin look. A back wall you can walk in front of." },
+    { id: "w_moss", n: "Mossy Wall (4)", out: { wall_moss: 4 }, cost: { mud: 2, leaves: 1 }, d: "Damp, mossy swamp stone. A back wall for burrows and cellars." },
+    { id: "w_timber", n: "Timber Frame Wall (4)", out: { wall_timber: 4 }, bench: true, cost: { planks: 1, clay: 1 }, d: "Cream plaster in dark wooden frames, like a cottage. Needs a Bog Workbench nearby." },
+    { id: "w_plaster", n: "Plaster Wall (4)", out: { wall_plaster: 4 }, bench: true, cost: { clay: 2, fiber: 1 }, d: "Smooth cream plaster. Needs a Bog Workbench nearby." },
+    { id: "w_brick", n: "Stone Brick Wall (4)", out: { wall_brick: 4 }, bench: true, cost: { stone: 2 }, d: "Grey stone bricks for cellars and castles. Needs a Bog Workbench nearby." },
     { id: "decorbench", n: "Decor Workbench", out: { decorbench: 1 }, bench: true, cost: { planks: 14, fiber: 6, clay: 4 }, d: "Place it in your camp or house. Standing next to it adds a Decor tab to your bag: chairs, tables, paintings, lamps, rugs and more. Needs a Bog Workbench nearby to make." },
     { id: "pick2", n: "Glowspore Pick", tier: 2, bench: true, cost: { spore: 16, wood: 12 }, d: "Digs 1.8x faster. Breaks Basalt and Cinder Ore." },
+    { id: "bag2", n: "Bog Hauler Pack", bag: 2, need: 2, bench: true, cost: { fiber: 16, spore: 8, planks: 8, leaves: 12 }, d: "A big stitched pack with side pockets and a glowing buckle. Adds 12 more bag slots (54 in all). Needs the Reed Backpack and the Glowspore Pick." },
     { id: "wpn2", n: "Glowspore Blade", wpn: 2, need: 2, bench: true, cost: { spore: 12, wood: 8, planks: 8, bugfrag: 3 }, d: "A glowing blade. Damage 9, quick swing. Needs the Glowspore Pick and Bramble Fragments from Bramble Bugs." },
     { id: "pick3", n: "Cinder Pick", tier: 3, bench: true, cost: { cinder: 20, basalt: 16, planks: 24 }, d: "Digs 2.8x faster. Breaks Frostrock and Frost Crystal." },
     { id: "wpn3", n: "Cinder Cleaver", wpn: 3, need: 3, bench: true, cost: { cinder: 16, basalt: 12, planks: 16, frogfrag: 3 }, d: "A heavy lava-veined cleaver. Damage 16. Needs the Cinder Pick and Frog Fragments from Swamp Frogs." },
@@ -104,6 +124,12 @@
     { id: "door1", n: "Knock Knock", d: "Place a Swamp Door", f: function () { return S.st.doors >= 1; } },
     { id: "ladder1", n: "Up and Away", d: "Place a Ladder", f: function () { return S.st.ladders >= 1; } },
     { id: "chest1", n: "Pack Rat", d: "Place a Wooden Chest", f: function () { return S.st.chests >= 1; } },
+    { id: "bag1", n: "Pack Up", d: "Craft the Reed Backpack", f: function () { return S.bag >= 1; } },
+    { id: "bag2", n: "Hauler", d: "Craft the Bog Hauler Pack", f: function () { return S.bag >= 2; } },
+    { id: "can1", n: "Green Paws", d: "Water a plant with the Watering Can", f: function () { return S.st.watered >= 1; } },
+    { id: "can2", n: "Gardener", d: "Water plants 20 times", f: function () { return S.st.watered >= 20; } },
+    { id: "wall1", n: "Back Wall", d: "Place a back wall", f: function () { return S.st.walls >= 1; } },
+    { id: "wall2", n: "Room Maker", d: "Place 40 back wall tiles", f: function () { return S.st.walls >= 40; } },
     { id: "shovel1", n: "Dig It", d: "Craft the Reed Shovel", f: function () { return S.shovel >= 1; } },
     { id: "bat1", n: "Night Watch", d: "Defeat a Dusk Bat", f: function () { return S.st.bats >= 1; } },
     { id: "sleep1", n: "Sweet Dreams", d: "Sleep through a night", f: function () { return S.st.sleeps >= 1; } },
@@ -154,7 +180,8 @@
   var stageEl = $("sbxStage");
 
   // ---------- STATE ----------
-  var S, world, tiles, orig, edits, col, ex;
+  var S, world, tiles, orig, edits, col, ex, walls, worigW, wedits, WALLITEM = {};
+  Object.keys(ITEMS).forEach(function (k) { if (ITEMS[k].wall) WALLITEM[ITEMS[k].wall] = k; });
   var p = { x: SW.SPAWNX + 0.5, y: 34, vx: 0, vy: 0, face: 1, on: false, coy: 0, wet: false, walk: 0 };
   var cam = { x: 40, y: 34 }, keys = { l: 0, r: 0, j: 0, d: 0, u: 0 }, tk = { l: 0, r: 0, j: 0, d: 0, u: 0 };
   var selSlot = -1, invSel = -1, invAsk = "", sel = "pick", mine = null, aim = { down: false, id: null, mx: 0, my: 0, tx: -1, ty: -1 }, cool = 0;
@@ -168,17 +195,19 @@
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(), extra: {}, mru: [], tier: 0, wpn: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0 }, zoom: 1 }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1 }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
+    d.we = typeof o.we === "string" && o.wv === SW.WORLDVER ? o.we : "";
     if (o.p && isFinite(o.p.x) && isFinite(o.p.y)) d.p = { x: clamp(+o.p.x, 1, W - 1), y: clamp(+o.p.y, 2, H - 2), f: o.p.f < 0 ? -1 : 1 };
     if (typeof o.animal === "string") d.animal = o.animal;
     if (o.inv && typeof o.inv === "object") ORDER.forEach(function (k) { var n = Math.floor(+o.inv[k]); if (n > 0) d.inv[k] = Math.min(n, 99999); });
-    d.slots = emptySlots(); d.extra = {};
-    if (Array.isArray(o.slots) && o.slots.length === INV_N) {   // saved slot layout
+    var bg = Math.floor(+o.bag); d.bag = clamp(isFinite(bg) ? bg : 0, 0, BAGS.length - 1);   // older saves have no backpack
+    d.slots = emptySlots(d.bag); d.extra = {};
+    if (Array.isArray(o.slots) && o.slots.length === d.slots.length) {   // saved slot layout
       o.slots.forEach(function (sl, i) { if (sl && typeof sl.k === "string" && ITEMS[sl.k] && ORDER.indexOf(sl.k) > -1) { var n = clamp(Math.floor(+sl.n) || 0, 0, stackMax(sl.k)); if (n > 0) d.slots[i] = { k: sl.k, n: n }; } });
       if (o.extra && typeof o.extra === "object") ORDER.forEach(function (k) { var n = Math.floor(+o.extra[k]); if (n > 0) d.extra[k] = Math.min(n, 99999); });
     } else {   // older save (unlimited bag): the items you had on the hotbar go first, anything past the new limits waits in Overflow
@@ -191,6 +220,7 @@
     var wp = Math.floor(+o.wpn); d.wpn = clamp(isFinite(wp) ? wp : 0, 0, WEAPONS.length - 1);
     d.trail = typeof o.trail === "number" ? clamp(Math.floor(o.trail), 0, TRAIL.length) : TRAIL.length;   // older saves skip the beginner Trail
     d.shovel = +o.shovel ? 1 : 0;
+    d.can = +o.can ? 1 : 0; d.water = d.can ? clamp(Math.floor(+o.water) || 0, 0, CAN.max) : 0;
     d.dur = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0 };   // older saves: everything at full
     if (o.dur && typeof o.dur === "object") { var dm = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0 }; Object.keys(dm).forEach(function (k) { if (isFinite(+o.dur[k]) && o.dur[k] !== null) d.dur[k] = clamp(Math.floor(+o.dur[k]), 0, dm[k]); }); }
     d.hp = isFinite(+o.hp) && +o.hp > 0 ? Math.min(MAXHP, +o.hp) : MAXHP;   // older saves start at full health
@@ -210,9 +240,11 @@
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
     ex = new Uint8Array(W * H); unrle(state.ex, ex);
+    walls = world.walls ? world.walls.slice() : new Uint8Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
+    (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; build(S); cave = null; trans = null; stageEl.classList.remove("cave");
+    S = state; grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; stageEl.classList.remove("cave");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world grew! It is 3x wider, with Frostfen west and Ember Bog east. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
@@ -226,7 +258,7 @@
       reslot(); S.hp = Math.max(1, Math.round(hp));
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
       S.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(",");
-      S.ex = rle(ex);
+      S.ex = rle(ex); S.we = Object.keys(wedits).map(function (k) { return k + ":" + wedits[k]; }).join(",");
       localStorage.setItem(wkey(curId), JSON.stringify(S)); touchIdx(); saveFail = false;
     } catch (e) { if (!saveFail) { saveFail = true; try { toast("Could not save: browser storage is full or blocked. Delete a world you do not need.", "#ff8a3d"); } catch (x) {} } }
   }
@@ -348,7 +380,7 @@
   // ---------- INVENTORY ----------
   // A grid of INV_N slots like Minecraft: slots 0..5 are the hotbar, 6..29 are the bag. Each slot is null or { k: item, n: count }, at most stackMax(k) per slot.
   // S.inv ({item: total}) is what crafting, building and repairs read and change. reslot() copies any change in S.inv back into the slots, so those places did not need to change.
-  function emptySlots() { var a = []; for (var i = 0; i < INV_N; i++) a.push(null); return a; }
+  function emptySlots(b) { var a = [], n = invSize(b === undefined ? (S && S.bag) : b); for (var i = 0; i < n; i++) a.push(null); return a; }
   function stackMax(k) { return SMALL[k] ? STACK_SMALL : STACK; }
   function totals(sl) { var t = {}; sl.forEach(function (c) { if (c) t[c.k] = (t[c.k] || 0) + c.n; }); return t; }
   function packInto(sl, k, n) {   // put n of k into slots (top up stacks first, then empty slots, hotbar first). Returns how many did NOT fit
@@ -397,12 +429,12 @@
   }
   function splitSlot(a) {   // half of the stack goes into the first empty slot
     var A = S.slots[a]; if (!A || A.n < 2) return; var e = -1, i;
-    for (i = 0; i < INV_N; i++) if (!S.slots[i]) { e = i; break; }
+    for (i = 0; i < invN(); i++) if (!S.slots[i]) { e = i; break; }
     if (e < 0) { toast("No empty slot to split into.", "#f2c14e"); return; }
     var h = Math.floor(A.n / 2); A.n -= h; S.slots[e] = { k: A.k, n: h }; invSel = e; hbDirty = true; invAfter();
   }
   function quickMove(a) {   // hotbar -> bag, bag -> hotbar
-    var A = S.slots[a]; if (!A) return; var toHot = a >= INV_HOT, lo = toHot ? 0 : INV_HOT, hi = toHot ? INV_HOT : INV_N, m = stackMax(A.k), i;
+    var A = S.slots[a]; if (!A) return; var toHot = a >= INV_HOT, lo = toHot ? 0 : INV_HOT, hi = toHot ? INV_HOT : invN(), m = stackMax(A.k), i;
     for (i = lo; i < hi && A.n > 0; i++) { var c = S.slots[i]; if (c && c.k === A.k && c.n < m) { var mv = Math.min(A.n, m - c.n); c.n += mv; A.n -= mv; } }
     for (i = lo; i < hi && A.n > 0; i++) if (!S.slots[i]) { S.slots[i] = { k: A.k, n: A.n }; A.n = 0; invSel = i; }
     if (A.n <= 0) S.slots[a] = null; else if (toHot) { var sw = selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0; moveSlot(a, sw); invSel = sw; return; } else toast("The bag is full.", "#f2c14e");
@@ -416,8 +448,8 @@
     snd("coin"); hbDirty = true; invAfter();
   }
   function sortInv() {   // tidy the bag (not the hotbar): merge stacks, then order like the item list
-    var items = [], i; for (i = INV_HOT; i < INV_N; i++) if (S.slots[i]) items.push(S.slots[i]); var t = {}; items.forEach(function (c) { t[c.k] = (t[c.k] || 0) + c.n; });
-    for (i = INV_HOT; i < INV_N; i++) S.slots[i] = null;
+    var items = [], i; for (i = INV_HOT; i < invN(); i++) if (S.slots[i]) items.push(S.slots[i]); var t = {}; items.forEach(function (c) { t[c.k] = (t[c.k] || 0) + c.n; });
+    for (i = INV_HOT; i < invN(); i++) S.slots[i] = null;
     var tmp = S.slots.slice(INV_HOT); ORDER.forEach(function (k) { if (t[k]) packInto(tmp, k, t[k]); }); for (i = 0; i < tmp.length; i++) S.slots[INV_HOT + i] = tmp[i];
     invSel = -1; hbDirty = true; invAfter();
   }
@@ -426,7 +458,7 @@
     S.inv[k] = (S.inv[k] || 0) + fit; packInto(S.slots, k, fit); S.extra[k] -= fit; if (S.extra[k] <= 0) delete S.extra[k];
     hbDirty = true; invAfter();
   }
-  function invAfter() { if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && !(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } renderPanel(); }
+  function invAfter() { if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can" && !(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } renderPanel(); }
   // ---------- DURABILITY ----------
   function durMax(k) { return k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : DUR.wpn[S.wpn] || 0; }
   function durOf(k) { var v = S.dur[k], m = durMax(k); return v == null ? m : Math.min(v, m); }
@@ -449,7 +481,7 @@
     S.dur[k] = m; hbDirty = true; toast(toolName(k) + " repaired.", "#4ee6b4"); snd("coin"); chips(p.x, p.y - 1, "#4ee6b4", 12, 6); renderPanel(); save();
   }
   function barEntries() {   // tools first (they do not use inventory slots), then the 6 hotbar slots
-    reslot(); var e = [{ id: "pick", slot: -1 }]; if (S.wpn) e.push({ id: "weapon", slot: -1 }); if (S.shovel) e.push({ id: "shovel", slot: -1 });
+    reslot(); var e = [{ id: "pick", slot: -1 }]; if (S.wpn) e.push({ id: "weapon", slot: -1 }); if (S.shovel) e.push({ id: "shovel", slot: -1 }); if (S.can) e.push({ id: "can", slot: -1 });
     for (var i = 0; i < INV_HOT; i++) e.push({ id: S.slots[i] ? S.slots[i].k : "", slot: i });
     return e;
   }
@@ -459,6 +491,7 @@
     if (id === "pick") { sel = "pick"; selSlot = -1; }
     else if (id === "weapon") { if (S.wpn) { sel = "weapon"; selSlot = -1; } }
     else if (id === "shovel") { if (S.shovel) { sel = "shovel"; selSlot = -1; } }
+    else if (id === "can") { if (S.can) { sel = "can"; selSlot = -1; } }
     else if ((S.inv[id] || 0) > 0 && ITEMS[id] && ITEMS[id].tile !== undefined) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(id); }
     mine = null; hbDirty = true;
   }
@@ -604,11 +637,45 @@
     if (hh(0, 0, 7) > 0.55) { var mx = 3 + Math.floor(hh(0, 1, 7) * 8); rect(mx, 7, 3, 1, "#4ee6b4", 0.5); rect(mx + 1, 7, 1, 1, "#d8fff6", 0.7); }
   }
 
+  function paintWall(rect, hh, id, v) {   // 16x16 back wall pictures (4 variants each). They are drawn darker than blocks when placed (see drawWall)
+    var x, y, k;
+    if (id === T.W_PLANK) {   // horizontal boards with seams, staggered joints and a nail each
+      for (k = 0; k < 4; k++) {
+        var by = k * 4; rect(0, by, 16, 4, ["#7d5230", "#734a2a", "#80552f", "#76502c"][(k + v) & 3]); rect(0, by, 16, 1, "#96643a"); rect(0, by + 3, 16, 1, "#47290f");
+        var jx = 2 + Math.floor(hh(k, 1, 5) * 11); rect(jx, by + 1, 1, 3, "#47290f"); rect((jx + 7) % 14 + 1, by + 1, 1, 1, "#2e1a09", 0.7);
+        for (x = 0; x < 3; x++) rect(Math.floor(hh(k, x, 9) * 14), by + 1 + Math.floor(hh(x, k, 11) * 2), 3, 1, "#5e3b1f", 0.5);
+      }
+    } else if (id === T.W_LOG) {   // four upright logs, lit on the left, shaded on the right, with the odd knot
+      for (k = 0; k < 4; k++) {
+        var bx = k * 4; rect(bx, 0, 4, 16, "#6b4526"); rect(bx, 0, 1, 16, "#8a5a32"); rect(bx + 1, 0, 1, 16, "#7a502b", 0.6); rect(bx + 3, 0, 1, 16, "#3e2612");
+        if (hh(k, 3, 4) > 0.55) { var ky = 2 + Math.floor(hh(k, 5, 6) * 11); rect(bx + 1, ky, 2, 2, "#2e1a09"); rect(bx + 1, ky, 1, 1, "#4a2f18"); }
+      }
+    } else if (id === T.W_BRICK) {   // grey bricks, 8 wide and 4 tall, every other row shifted
+      rect(0, 0, 16, 16, "#2f373b");
+      for (var r = 0; r < 4; r++) for (var b0 = -((r & 1) * 4); b0 < 16; b0 += 8) {
+        var x0 = Math.max(0, b0), x1 = Math.min(16, b0 + 7), tone = ["#566066", "#4f595f", "#5d676d", "#525c62"][Math.floor(hh(b0 + 9, r, 3) * 4)];
+        rect(x0, r * 4, x1 - x0, 3, tone); rect(x0, r * 4, x1 - x0, 1, "#7a858c", 0.55); if (hh(b0, r, 7) > 0.6) rect(x0 + 2, r * 4 + 1, 2, 1, "#3f484d", 0.6);
+      }
+    } else if (id === T.W_PLASTER) {   // creamy plaster with specks and a hairline crack now and then
+      rect(0, 0, 16, 16, "#d8c8a2");
+      for (k = 0; k < 14; k++) rect(Math.floor(hh(k, 1, 21) * 16), Math.floor(hh(k, 2, 22) * 16), 1, 1, hh(k, 3, 23) > 0.5 ? "#c4b389" : "#e8dcba");
+      if (hh(1, 1, 24) > 0.65) { var cx = 3 + Math.floor(hh(2, 2, 25) * 9); rect(cx, 3, 1, 3, "#b8a77d", 0.8); rect(cx + 1, 6, 1, 3, "#b8a77d", 0.8); }
+    } else if (id === T.W_MOSS) {   // damp dark mud brick with moss blotches
+      rect(0, 0, 16, 16, "#3b4426");
+      for (k = 0; k < 9; k++) { var mx = Math.floor(hh(k, 1, 31) * 14), my = Math.floor(hh(k, 2, 32) * 14), mc = ["#58742f", "#2a3320", "#7da34a", "#47592a"][Math.floor(hh(k, 3, 33) * 4)]; rect(mx, my, 2 + (k & 1), 2, mc, mc === "#7da34a" ? 0.6 : 1); }
+      rect(0, 7, 16, 1, "#2a3320", 0.5); rect(0, 15, 16, 1, "#2a3320", 0.5);
+    } else if (id === T.W_TIMBER) {   // plaster panel inside a dark wooden frame (the frames tile into a half-timbered wall)
+      rect(0, 0, 16, 16, "#d6c59c");
+      for (k = 0; k < 8; k++) rect(Math.floor(hh(k, 1, 41) * 16), Math.floor(hh(k, 2, 42) * 16), 1, 1, hh(k, 3, 43) > 0.5 ? "#c2b088" : "#e6d9b6");
+      rect(0, 0, 16, 2, "#5a3a1e"); rect(0, 0, 2, 16, "#5a3a1e"); rect(0, 0, 16, 1, "#7a5230"); rect(0, 0, 1, 16, "#7a5230"); rect(2, 2, 14, 1, "#000", 0.14); rect(2, 2, 1, 14, "#000", 0.1);
+    }
+  }
   function paint(g, td, v, oy) {
     var id = td.id, ox = v * 16, kind = td.kind, hh = function (x, y, s) { return SW.hash(x + v * 16, y + id * 31, s + id); };
     var rect = function (x, y, w, h, c, a) { g.globalAlpha = a == null ? 1 : a; g.fillStyle = c; g.fillRect(ox + x, oy + y, w, h); g.globalAlpha = 1; };
     var x, y, k;
     if (id === T.AIR || id === T.WATER || id === T.LAVA) return;
+    if (kind === "wall") { paintWall(rect, hh, id, v); return; }
     if (kind === "torch") { rect(7, 6, 2, 10, "#6a4426"); rect(7, 6, 1, 10, "#8a5a32"); rect(6, 2, 4, 5, "#ff7a1f"); rect(7, 1, 2, 3, "#ffc43a"); rect(7, 4, 2, 2, "#fff6c2"); rect(5, 5, 1, 1, "#ffb13b", 0.6); rect(10, 4, 1, 1, "#ffb13b", 0.6); return; }
     if (kind === "bench") {
       rect(1, 7, 14, 3, "#c98c4f"); rect(1, 7, 14, 1, "#e4aa6c"); rect(1, 10, 14, 1, "#6e431f"); rect(2, 11, 2, 5, "#8a5a32"); rect(12, 11, 2, 5, "#8a5a32"); rect(2, 11, 1, 5, "#a8703c"); rect(3, 13, 10, 1, "#6e431f", 0.8);
@@ -808,6 +875,28 @@
     }
   }
   // Weapon art: same 32x32 box and grip corner as the picks, so it sits in the hand the same way (grip bottom-left, tip top-right).
+  function drawCanIcon(g) {   // a watering can in the 32x32 box: round body, handle on the left, long spout with a rose pointing up and right
+    g.lineJoin = "round"; g.lineCap = "round"; g.strokeStyle = "#1d4a63"; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(7, 15); g.quadraticCurveTo(2, 15, 3, 21); g.quadraticCurveTo(4, 26, 8, 25); g.stroke();   // back handle
+    g.fillStyle = "#4f9fc4"; g.beginPath(); g.moveTo(21, 15); g.lineTo(28, 7); g.lineTo(30, 9); g.lineTo(23, 20); g.closePath(); g.fill(); g.stroke();   // spout
+    g.fillStyle = "#8fd3ef"; g.beginPath(); g.moveTo(27, 5); g.lineTo(31, 8); g.lineTo(29.5, 11); g.lineTo(26, 7.5); g.closePath(); g.fill(); g.stroke();   // rose
+    g.fillStyle = "#4f9fc4"; g.beginPath(); g.roundRect ? g.roundRect(6, 13, 16, 15, 3) : g.rect(6, 13, 16, 15); g.fill(); g.stroke();   // body
+    g.fillStyle = "#8fd3ef"; g.fillRect(8, 15, 3, 11);   // shine
+    g.fillStyle = "#2f7ea6"; g.fillRect(6, 19, 16, 2);   // band
+    g.strokeStyle = "#1d4a63"; g.lineWidth = 2; g.beginPath(); g.moveTo(10, 13); g.quadraticCurveTo(14, 6, 19, 13); g.stroke();   // top handle
+  }
+  var CCV = null;
+  function heldCan() { if (!CCV) { CCV = document.createElement("canvas"); CCV.width = CCV.height = 32; drawCanIcon(CCV.getContext("2d")); } return CCV; }
+  function drawBagIcon(g, t) {   // a backpack in the 32x32 icon box: tier 1 woven reed, tier 2 teal with side pockets and a glowing buckle
+    var body = t >= 2 ? "#1f7a6a" : "#b88a52", dark = t >= 2 ? "#0f3f38" : "#6b4a26", flap = t >= 2 ? "#2fb59a" : "#d3a96b", strap = t >= 2 ? "#0b2a26" : "#5a3d20";
+    g.lineJoin = "round"; g.lineWidth = 1.5; g.strokeStyle = dark;
+    g.fillStyle = strap; g.fillRect(6, 12, 3, 16); g.fillRect(23, 12, 3, 16);   // straps
+    if (t >= 2) { g.fillStyle = body; g.beginPath(); g.roundRect ? g.roundRect(3, 17, 5, 9, 2) : g.rect(3, 17, 5, 9); g.fill(); g.stroke(); g.beginPath(); g.roundRect ? g.roundRect(24, 17, 5, 9, 2) : g.rect(24, 17, 5, 9); g.fill(); g.stroke(); }
+    g.fillStyle = body; g.beginPath(); g.roundRect ? g.roundRect(7, 9, 18, 20, 4) : g.rect(7, 9, 18, 20); g.fill(); g.stroke();
+    g.fillStyle = flap; g.beginPath(); g.moveTo(7, 15); g.quadraticCurveTo(7, 5, 16, 5); g.quadraticCurveTo(25, 5, 25, 15); g.lineTo(25, 17); g.lineTo(7, 17); g.closePath(); g.fill(); g.stroke();
+    g.strokeStyle = dark; g.lineWidth = 1; g.beginPath(); for (var i = 0; i < 3; i++) { g.moveTo(10, 21 + i * 2.6); g.lineTo(22, 21 + i * 2.6); } g.stroke();   // weave lines
+    g.fillStyle = t >= 2 ? "#7dffe0" : "#f2c14e"; g.strokeStyle = dark; g.lineWidth = 1.2; g.fillRect(14, 15, 4, 5); g.strokeRect(14, 15, 4, 5);   // buckle
+  }
   function drawShovelIcon(g) {   // same 32x32 box and grip corner as the picks: grip bottom-left, blade top-right
     var line = function (x1, y1, x2, y2, c, w) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
     line(6, 28, 20, 11, "#4a5256", 5.2); line(6, 28, 20, 11, "#a8905a", 3.8); line(6.4, 27.4, 19.6, 11.4, "#d8c48e", 2.2); line(7, 26, 12, 19.8, "#f4e8bf", 1);
@@ -869,6 +958,10 @@
       drawShovelIcon(g);
     } else if (id === "weapon") {
       drawWeaponIcon(g, S.wpn);
+    } else if (id === "can") {
+      drawCanIcon(g);
+    } else if (/^bag\d$/.test(id)) {
+      drawBagIcon(g, +id.slice(3));
     } else if (/^wpn\d$/.test(id)) {
       drawWeaponIcon(g, +id.slice(3));
     } else if (ITEMS[id].mat) {
@@ -993,6 +1086,31 @@
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
     return TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid || TILES[get(tx, ty + 1)].solid;
   }
+  function setWall(x, y, id) { var i = y * W + x; walls[i] = id; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
+  function canWall(tx, ty, wid) {   // walls go on the back layer: the front tile must be free (air or a decor piece), and the wall needs a block or another wall beside, above or below it
+    if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 3) return false;
+    var id = get(tx, ty); if (TILES[id].solid || id === T.WATER || id === T.LAVA) return false;
+    if (walls[ty * W + tx] === wid) return false;
+    var sup = function (a, b) { return TILES[get(a, b)].solid || hasW(a, b); };
+    if (sup(tx - 1, ty) || sup(tx + 1, ty) || sup(tx, ty - 1) || sup(tx, ty + 1)) return true;
+    nag("A wall needs a block or another wall next to it to attach to."); return false;
+  }
+  function placeWall(tx, ty, item) {
+    var wid = ITEMS[item].wall, old = walls[ty * W + tx];
+    if (old && old !== wid && WALLITEM[old]) addInv(WALLITEM[old], 1);   // swapping a wall hands the old one back
+    setWall(tx, ty, wid); S.inv[item]--; S.st.walls++;
+    chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 4, 3); thud(210, 0.04);
+    if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick"; }
+    hbDirty = true; if (panelOpen) renderPanel(); checkGoals();
+  }
+  function wallMine(dt, tx, ty) {   // hold your pick, shovel or paws on an empty tile with a wall behind it to take the wall down
+    var wid = walls[ty * W + tx], item = WALLITEM[wid];
+    if (item && room(item) <= 0) { invFull(); mine = null; return; }
+    if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
+    mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) / 0.45; mine.tick -= dt;
+    if (mine.tick <= 0) { mine.tick = 0.17; thud(180 + Math.random() * 40, 0.03); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 1, 3); }
+    if (mine.p >= 1) { setWall(tx, ty, 0); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 8, 5); thud(200, 0.06); if (item) give(item, 1, tx, ty); mine = null; }
+  }
   function place(tx, ty, item) {
     setT(tx, ty, ITEMS[item].tile); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
@@ -1015,6 +1133,7 @@
   // Dusk Bat: a night-only flier. It spawns in the sky above you, drifts overhead, shows red eyes (wind-up), then dives in a straight line. Step aside during the dive.
   // from/to = clock times (0-480) when bats are out (late dusk to early dawn); a roof or the ground stops them, and at dawn they flap away.
   var BAT = { hover: 4, wind: 0.5, dive: 0.6, speed: 9.5, cruise: 4.2, from: 268, to: 446 };
+  var grow = [], canBusy = false, canAcc = 0;
   var enemies = [], spawnT = 6, swingQ = 0, batT = 8, sleepT = 0, slept = false, bedBtn = null;
   function eBoxHit(x, y, w, h) {
     var x0 = Math.floor(x - w / 2 + 1e-4), x1 = Math.floor(x + w / 2 - 1e-4), y0 = Math.floor(y - h + 1e-4), y1 = Math.floor(y - 1e-4);
@@ -1313,7 +1432,7 @@
       var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), phi = c.walking ? Math.sin(c.wp * 5) * 0.55 : 0.04;
       g.save(); g.translate(sx, sy + ts * 0.14); g.scale(c.face, 1);
       g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
-      g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
+      g.scale(AVS, AVS); g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
       g.save(); g.translate(fx + sh[0], fy + sh[1]); g.rotate(-phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
       g.restore();
     });
@@ -1390,7 +1509,47 @@
       else { doorAuto[k] += dt; if (doorAuto[k] > 0.8) { setDoor(bx, by, false); delete doorAuto[k]; } }
     }
   }
+  function plantNear(tx, ty) {   // the watering target: the plant under your finger, or the closest one touching that tile
+    var best = null, bd = 1e9, x, y, d;
+    for (y = ty - 1; y <= ty + 1; y++) for (x = tx - 1; x <= tx + 1; x++) if (PLANTS[get(x, y)]) { d = (x - tx) * (x - tx) + (y - ty) * (y - ty); if (d < bd) { bd = d; best = { x: x, y: y, id: get(x, y) }; } }
+    return best;
+  }
+  function useCan(dt, tx, ty) {
+    var id = get(tx, ty), spx = p.x + p.face * 0.8, spy = p.y - 1.05;
+    if (id === T.WATER) {   // fill up
+      if (S.water >= CAN.max) { nag("Your Watering Can is full."); return; }
+      canBusy = true; canAcc += dt * 5;
+      if (canAcc >= 1) { var add = Math.floor(canAcc); canAcc -= add; S.water = Math.min(CAN.max, S.water + add); hbDirty = true; thud(380 + Math.random() * 120, 0.025); if (S.water >= CAN.max) toast("Watering Can full.", CAN.c); }
+      if (Math.random() < dt * 30) parts.push({ x: tx + 0.2 + Math.random() * 0.6, y: ty + 0.3, vx: (Math.random() - 0.5) * 1.5, vy: -2.5 - Math.random() * 2, life: 0.5, max: 0.6, c: "#8fe0ff", s: 3 });
+      return;
+    }
+    var pl = plantNear(tx, ty);
+    if (!pl) { nag("Water a Swamp Flower, Cattail or Glowcap. Fill up at the water."); return; }
+    if (S.water <= 0) { nag("Your Watering Can is empty. Hold it on the water to fill it."); return; }
+    canBusy = true;
+    if (Math.random() < dt * 40) parts.push({ x: spx, y: spy, vx: (pl.x + 0.5 - spx) * 2.2 + (Math.random() - 0.5), vy: -1 + Math.random(), life: 0.55, max: 0.6, c: "#8fe0ff", s: 3 });
+    cool -= dt; if (cool > 0) return; cool = 0.4;
+    S.water--; hbDirty = true; S.st.watered++; thud(520, 0.02); chips(pl.x + 0.5, pl.y + 0.5, "#8fe0ff", 6, 3);
+    var gq = null; for (var gi = 0; gi < grow.length; gi++) if (grow[gi].x === pl.x && grow[gi].y === pl.y) gq = grow[gi];
+    if (gq) gq.t = GROW_T + Math.random() * 1.5; else grow.push({ x: pl.x, y: pl.y, id: pl.id, t: GROW_T + Math.random() * 1.5 });
+    checkGoals();
+  }
+  function updateGrow(dt) {   // watered plants spread: a new one pops up on free ground within 2 tiles, unless the patch is already crowded
+    for (var i = grow.length - 1; i >= 0; i--) {
+      var q = grow[i]; q.t -= dt; if (q.t > 0) continue; grow.splice(i, 1);
+      if (get(q.x, q.y) !== q.id) continue;
+      var same = 0, x, y, spots = [], dx, dy, offs = [0, -1, 1];
+      for (y = q.y - 2; y <= q.y + 2; y++) for (x = q.x - 3; x <= q.x + 3; x++) if (get(x, y) === q.id) same++;
+      if (same >= GROW_CROWD) { nag("That patch is already thriving."); continue; }
+      for (dx = -2; dx <= 2; dx++) { if (!dx) continue; for (var oi = 0; oi < 3; oi++) { dy = offs[oi]; var nx = q.x + dx, ny = q.y + dy; if (nx < 1 || nx >= W - 1 || ny < 1) continue; if (get(nx, ny) === T.AIR && TILES[get(nx, ny + 1)].solid) { spots.push({ x: nx, y: ny }); break; } } }
+      if (!spots.length) continue;
+      var sp = spots[Math.floor(Math.random() * spots.length)]; setT(sp.x, sp.y, q.id); S.st.grown++;
+      chips(sp.x + 0.5, sp.y + 0.5, TILES[q.id].c2 || "#ff6fb5", 10, 4); thud(260, 0.04);
+      for (var k = 0; k < 4; k++) parts.push({ x: sp.x + 0.5, y: sp.y + 0.4, vx: (Math.random() - 0.5) * 1.6, vy: -2 - Math.random() * 1.5, life: 0.6, max: 0.7, c: "#e8ffb0", s: 3 });
+    }
+  }
   function useTool(dt) {
+    canBusy = false;
     if (sel === "weapon") {   // swing: faces your aim, one swing per cooldown. Nothing takes damage until Stage 3 adds enemies.
       mine = null; if (!aim.down || !S.wpn) return;
       if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
@@ -1403,8 +1562,10 @@
     var tx = aim.tx, ty = aim.ty, dx = tx + 0.5 - p.x, dy = ty + 0.5 - (p.y - PH / 2);
     if (dx * dx + dy * dy > REACH * REACH) { mine = null; return; }
     if (Math.abs(dx) > 0.35) p.face = dx < 0 ? -1 : 1;   // turn to face what you are digging or building
+    if (sel === "can") { useCan(dt, tx, ty); return; }
     if (sel === "pick" || sel === "shovel") {
       var id = get(tx, ty), td = TILES[id];
+      if (id === T.AIR && walls[ty * W + tx]) { wallMine(dt, tx, ty); return; }
       if (id === T.BEDROCK) { nag("Bedrock can't be broken."); mine = null; return; }
       if (id === T.AIR || !isFinite(td.hard)) { mine = null; return; }
       if (sel === "shovel" && !SOFT[id]) { nag("A shovel only digs soft ground (mud, moss, clay, ash, snow). Use your pick for " + td.n + "."); mine = null; return; }
@@ -1422,6 +1583,7 @@
       if (mine.p >= 1) { breakTile(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
     } else {
       cool -= dt; if (cool > 0) return; cool = 0.13;
+      if (ITEMS[sel] && ITEMS[sel].wall) { if ((S.inv[sel] || 0) > 0 && canWall(tx, ty, ITEMS[sel].wall)) placeWall(tx, ty, sel); return; }
       if ((S.inv[sel] || 0) > 0 && canPlace(tx, ty, sel)) place(tx, ty, sel);
     }
   }
@@ -1446,6 +1608,9 @@
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
     if (r.sh && S.shovel) return;
+    if (r.can && S.can) return;
+    if (r.bag && S.bag >= r.bag) return;
+    if (r.bag && S.bag < r.bag - 1) { toast("Make the " + BAGS[r.bag - 1].n + " first.", "#f2c14e"); return; }
     if (r.tier && S.tier < r.tier - 1) { toast("Craft the " + PICKS[r.tier - 1].n + " first.", "#f2c14e"); return; }
     if (r.wpn && S.wpn < r.wpn - 1) { toast("Craft the " + WEAPONS[r.wpn - 1].n + " first.", "#f2c14e"); return; }
     if (r.need && S.tier < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
@@ -1460,6 +1625,12 @@
     reslot();
     if (r.tier) { S.tier = r.tier; S.dur.pick = DUR.pick[r.tier]; ICO = {}; toast(r.n + " crafted. Dig faster!", PICKS[r.tier].c); snd("open", "Epic"); chips(p.x, p.y - 1, PICKS[r.tier].c, 30, 9); }
     else if (r.sh) { S.shovel = 1; S.dur.shovel = DUR.shovel; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar to dig soft ground!", SHOVEL.c); snd("open", "Epic"); chips(p.x, p.y - 1, SHOVEL.c, 24, 8); }
+    else if (r.can) { S.can = 1; S.water = CAN.max; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar, then water flowers!", CAN.c); snd("open", "Epic"); chips(p.x, p.y - 1, CAN.c, 24, 8); checkGoals(); }
+    else if (r.bag) {   // a backpack: more bag slots at the end of the list, then anything waiting in Overflow moves in
+      S.bag = r.bag; while (S.slots.length < invSize(S.bag)) S.slots.push(null);
+      var moved = 0; Object.keys(S.extra).forEach(function (ek) { var fit = Math.min(S.extra[ek], room(ek)); if (fit > 0) { S.inv[ek] = (S.inv[ek] || 0) + fit; packInto(S.slots, ek, fit); S.extra[ek] -= fit; moved += fit; if (S.extra[ek] <= 0) delete S.extra[ek]; } });
+      toast(r.n + " crafted. +" + (BAGS[S.bag].x - BAGS[S.bag - 1].x) + " bag slots (" + S.slots.length + " in all)!" + (moved ? " " + moved + " Overflow items moved in." : ""), BAGS[S.bag].c); snd("open", "Epic"); chips(p.x, p.y - 1, BAGS[S.bag].c, 26, 8); checkGoals();
+    }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
     hbDirty = true; renderPanel(); save();
@@ -1615,7 +1786,7 @@
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
     if (!boxHit(p.x, ny)) p.y = ny;
-    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; p.on = true; p.vy = 0; if (vpre > FALL_SAFE && !p.wet) hurt(Math.round((vpre - FALL_SAFE) * 4), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); } }
+    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; p.on = true; p.vy = 0; if (vpre > FALL_SAFE && !p.wet) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); } }
     else { p.y = Math.ceil(ny - PH) + PH; p.vy = 0; }
     if (p.y > H - 2) { p.y = H - 2.01; p.vy = 0; }
   }
@@ -1647,8 +1818,8 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    useTool(dt); updateEnemies(dt); updateCivs(dt);
-    var working = sel === "weapon" ? (aim.down && S.wpn > 0) : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
+    useTool(dt); updateGrow(dt); updateEnemies(dt); updateCivs(dt);
+    var working = sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
@@ -1699,6 +1870,17 @@
     g.globalAlpha = a; g.fillStyle = col; var r = 16 * s;
     [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]].forEach(function (b) { g.beginPath(); g.ellipse(x + b[0] * r, y + b[1] * r, r * b[2] * 1.15, r * b[2] * 0.62, 0, 0, 6.2832); g.fill(); });
     g.globalAlpha = 1;
+  }
+  function hasW(x, y) { return x >= 0 && x < W && y >= 0 && y < H && walls[y * W + x] > 0; }
+  function drawWall(g, wl, i, j, sx, sy) {   // a back wall tile: its picture, pushed back with a dark wash, with a soft edge where the wall stops so rooms read as rooms
+    var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, e = Math.max(1, Math.round(ts / 11));
+    g.drawImage(ATLAS, v * 16, wl * 16, 16, 16, sx, sy, ts, ts);
+    g.fillStyle = "rgba(6,12,10,.4)"; g.fillRect(sx, sy, ts, ts);
+    g.fillStyle = "rgba(0,0,0,.3)";
+    if (!hasW(i - 1, j) && !TILES[get(i - 1, j)].solid) g.fillRect(sx, sy, e, ts);
+    if (!hasW(i + 1, j) && !TILES[get(i + 1, j)].solid) g.fillRect(sx + ts - e, sy, e, ts);
+    if (!hasW(i, j - 1) && !TILES[get(i, j - 1)].solid) g.fillRect(sx, sy, ts, e);
+    if (!hasW(i, j + 1) && !TILES[get(i, j + 1)].solid) g.fillRect(sx, sy + ts - e, ts, e);
   }
   function render(now) {
     var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t);
@@ -1759,6 +1941,7 @@
       if (i < 0 || i >= W || j < 0 || j >= H) continue;
       var id = tiles[j * W + i], td = TILES[id], sx3 = ox + i * ts, sy = oy + j * ts, under = j >= col[i];
       if (id === T.AIR) {
+        if (walls[j * W + i]) { drawWall(g, walls[j * W + i], i, j, sx3, sy); continue; }
         if (under) {
           var bwc = BACKWALL[world.bio[i]], nb = (TILES[get(i - 1, j)].solid ? 1 : 0) + (TILES[get(i + 1, j)].solid ? 1 : 0) + (TILES[get(i, j - 1)].solid ? 1 : 0) + (TILES[get(i, j + 1)].solid ? 1 : 0), sh = ((i * 7 + j * 13) & 3) * 2 - nb * 5;
           g.fillStyle = "rgb(" + clamp(bwc[0] + sh, 0, 255) + "," + clamp(bwc[1] + sh, 0, 255) + "," + clamp(bwc[2] + sh, 0, 255) + ")"; g.fillRect(sx3, sy, ts, ts);
@@ -1782,7 +1965,8 @@
       }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (!td.solid) {
-        if (under) { g.fillStyle = "rgb(" + BACKWALL[world.bio[i]].join(",") + ")"; g.fillRect(sx3, sy, ts, ts); }
+        if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy);
+        else if (under) { g.fillStyle = "rgb(" + BACKWALL[world.bio[i]].join(",") + ")"; g.fillRect(sx3, sy, ts, ts); }
         if (td.kind === "vine") { var vhalf = Math.round(ts / 2), vo = Math.round(Math.sin(now / 900 + i * 1.7) * ts * 0.08); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3, sy, ts, vhalf); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3 + vo, sy + vhalf, ts, ts - vhalf); }
         else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower") { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3, sy + half, ts, ts - half); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
@@ -1878,6 +2062,7 @@
   // Arm angle (phi: 0 = hanging, ~2.5 = raised overhead) and tool angle for the current swing, so the arm and the tool move as one
   function toolPose() {
     var sway = reduce ? 0 : Math.sin(p.walk * 5), moving = p.on && Math.abs(p.vx) > 0.5 ? 1 : 0;
+    if (sel === "can") return { ang: heldAmt * 0.8 + sway * 0.03 * (1 - heldAmt), phi: (S.can >= 1 ? 0.95 + sway * 0.1 * moving : 0.3) + heldAmt * 0.45, has: S.can >= 1, kind: "can" };   // held out in front, tipping forward to pour
     var kind = sel === "pick" || sel === "shovel" ? "pick" : sel === "weapon" ? "weapon" : "item", sw = 0, base = 0.15, k1 = -0.55, k2 = 1.9, amp = 0.06, has = false, ph;
     if (kind === "pick") { has = sel === "shovel" ? S.shovel >= 1 : S.tier >= 1; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.55) * Math.PI * 0.5) * (ph < 0.55 ? 1 : 1 - (ph - 0.55) / 0.45); }
     else if (kind === "weapon") { has = S.wpn >= 1; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.4) * Math.PI * 0.5) * (ph < 0.4 ? 1 : 1 - (ph - 0.4) / 0.6); base = 0.2; k1 = -0.7; k2 = 2.2; amp = 0.05; }
@@ -1903,6 +2088,11 @@
       var ssz = ts * 1.35;
       g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
       g.drawImage(heldShovel(), -ssz * 6 / 32, -ssz * 28 / 32, ssz, ssz); g.restore();
+    } else if (sel === "can") {
+      if (!S.can) return;
+      var csz = ts * 1.3;
+      g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = true;
+      g.drawImage(heldCan(), -csz * 8 / 32, -csz * 20 / 32, csz, csz); g.restore();
     } else if (sel === "weapon") {
       if (S.wpn < 1) return;
       var wsz = ts * 1.5;
@@ -1921,7 +2111,7 @@
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) - (p.land || 0);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1);
     g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
-    g.scale(1 / sq, sq); if (p.wet) g.globalAlpha = 0.85;
+    g.scale(1 / sq, sq); g.scale(AVS, AVS); if (p.wet) g.globalAlpha = 0.85;
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
     var SP = getSprite();
     if (SP) {
@@ -1930,6 +2120,14 @@
       var gl2 = 1 - daylight(S.time);
       if (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3) { g.shadowColor = "rgba(110,255,210,.45)"; g.shadowBlur = ts * 0.4; }
       g.imageSmoothingEnabled = false;
+      if (S.bag > 0) {   // the backpack, on the back (the side away from the way you face), drawn first so the body overlaps it
+        var bs = SP.s, by0 = fy + SP.footY - 31 * bs + 13 * bs, bx0 = fx + 1.5 * bs, big = S.bag >= 2, bc = big ? "#1f7a6a" : "#b88a52", bd = big ? "#0f3f38" : "#6b4a26", bf = big ? "#2fb59a" : "#d3a96b";
+        g.fillStyle = bd; g.fillRect(bx0 - bs * 0.6, by0 - bs * 0.6, bs * 6.2, bs * 10.2);
+        g.fillStyle = bc; g.fillRect(bx0, by0, bs * 5, bs * 9);
+        g.fillStyle = bf; g.fillRect(bx0, by0, bs * 5, bs * 2.6);
+        if (big) { g.fillStyle = bd; g.fillRect(bx0 - bs * 1.4, by0 + bs * 3.4, bs * 1.6, bs * 4); g.fillStyle = bc; g.fillRect(bx0 - bs * 0.9, by0 + bs * 3.9, bs * 1.1, bs * 3); g.fillStyle = "#7dffe0"; g.fillRect(bx0 + bs * 1.8, by0 + bs * 1.6, bs * 1.4, bs * 1.6); }
+        else { g.fillStyle = "#f2c14e"; g.fillRect(bx0 + bs * 1.8, by0 + bs * 1.6, bs * 1.4, bs * 1.6); }
+      }
       g.drawImage(SP.frame(pose), fx, fy);
       var shx = fx + sh[0], shy = fy + sh[1];
       g.save(); g.translate(shx, shy); g.rotate(-tp.phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
@@ -2033,7 +2231,7 @@
       if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y)) return;
       cool = 0.2; F.torch[i] = 1; S.inv.torch--; S.st.torches++; S.st.placed++; chips(tx + 0.5, ty + 0.5, "#ffb13b", 4, 3); thud(420, 0.05);
       if (S.inv.torch <= 0) { delete S.inv.torch; if (sel === "torch") sel = "pick"; } hbDirty = true; if (panelOpen) renderPanel();
-    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon") { cool = 0.4; nag("Only torches can be placed in caves."); }
+    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can") { cool = 0.4; nag("Only torches can be placed in caves."); }
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
@@ -2231,14 +2429,14 @@
   }
   function drawBar() {
     hbDirty = false; var items = barEntries(), html = "";
-    if (sel !== "pick" && sel !== "weapon" && sel !== "shovel") { if (!(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } else if (!(S.slots[selSlot] && S.slots[selSlot].k === sel)) selSlot = hotIndex(sel); }
+    if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can") { if (!(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } else if (!(S.slots[selSlot] && S.slots[selSlot].k === sel)) selSlot = hotIndex(sel); }
     items.forEach(function (en, i) {
       var id = en.id, on = en.slot >= 0 ? (id && sel === id && selSlot === en.slot) : sel === id;
       if (!id) { html += '<button type="button" class="sbx-slot empty" disabled aria-label="Empty hotbar slot"><i>' + (i + 1) + "</i></button>"; return; }
-      var cnt = id === "pick" ? (S.tier ? "Lv" + S.tier : "Paws") : id === "weapon" ? "Lv" + S.wpn : id === "shovel" ? "Soft" : S.slots[en.slot].n;
+      var cnt = id === "pick" ? (S.tier ? "Lv" + S.tier : "Paws") : id === "weapon" ? "Lv" + S.wpn : id === "shovel" ? "Soft" : id === "can" ? S.water + "/" + CAN.max : S.slots[en.slot].n;
       var dk = id === "pick" ? (S.tier ? "pick" : "") : id === "weapon" ? "wpn" : id === "shovel" ? "shovel" : "", dpc = dk ? Math.round(durOf(dk) / durMax(dk) * 100) : -1, brk = dk && toolBroken(dk);
       if (brk) cnt = "Broken";
-      html += '<button type="button" class="sbx-slot' + (on ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" data-slot="' + en.slot + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : ITEMS[id].n + ", " + S.slots[en.slot].n) + '" aria-pressed="' + on + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
+      html += '<button type="button" class="sbx-slot' + (on ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" data-slot="' + en.slot + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "can" ? CAN.n + ", " + S.water + " of " + CAN.max + " water" : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : ITEMS[id].n + ", " + S.slots[en.slot].n) + '" aria-pressed="' + on + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
     });
     $("sbxBar").innerHTML = html;
     var bb = $("sbxMenuBtn"); bb.classList.toggle("full", S.slots.every(Boolean));
@@ -2275,9 +2473,9 @@
         h += "<h3>Craft</h3>";
       }
       RECIPES.forEach(function (r) {
-        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.sh && S.shovel), lock = (r.tier && S.tier < r.tier - 1) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : Object.keys(r.out)[0];
+        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
         var im = r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(ic);
-        var note = lock ? (r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
+        var note = lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
         h += '<div class="sbx-card' + (owned || lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !needB ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (owned || lock ? " disabled" : "") + ">" + (owned ? "Owned" : lock ? "Locked" : "Craft") + "</button></div>";
       });
     } else if (tab === "decor") {
@@ -2293,10 +2491,10 @@
         var c = S.slots[i], on = invSel === i;
         return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + "</b>" : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
       }, cur2 = invSel >= 0 ? S.slots[invSel] : null, g1 = "", g2 = "", i2;
-      for (i2 = INV_HOT; i2 < INV_N; i2++) g1 += cell(i2);
+      var g3 = ""; for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += cell(i2); for (i2 = INV_BASE; i2 < invN(); i2++) g3 += cell(i2);
       for (i2 = 0; i2 < INV_HOT; i2++) g2 += cell(i2);
-      h += '<p class="sbx-note"><b>Inventory</b> \u00b7 <span class="' + (used >= INV_N ? "invfull" : "") + '">' + used + " / " + INV_N + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap a slot, then tap another to move, swap or merge stacks.</p>";
-      h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div><h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
+      h += '<p class="sbx-note"><b>Inventory</b> \u00b7 <span class="' + (used >= invN() ? "invfull" : "") + '">' + used + " / " + invN() + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap a slot, then tap another to move, swap or merge stacks." + (S.bag ? " You are wearing the " + BAGS[S.bag].n + " (+" + BAGS[S.bag].x + " slots)." : " Craft a Backpack to carry more.") + "</p>";
+      h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div>' + (g3 ? "<h3>" + esc(BAGS[S.bag].n) + '</h3><div class="sbx-igrid pack">' + g3 + "</div>" : "") + '<h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
       h += '<div class="sbx-iinfo">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + cur2.n + " of " + stackMax(cur2.k) + "</small></span></div>" : "<div><span><small>No slot selected. Tap an item to select it.</small></span></div>")
         + '<div class="acts"><button type="button" class="btn ghost" data-iact="swap"' + (cur2 ? "" : " disabled") + ">" + (invSel >= INV_HOT ? "To hotbar" : "To bag") + '</button>'
         + (cur2 && ITEMS[cur2.k].tile !== undefined ? '<button type="button" class="btn" data-iact="hold">Hold</button>' : "")

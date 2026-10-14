@@ -6,7 +6,7 @@
   // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
   var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51 };
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -74,6 +74,15 @@
   tile(T.SIGN, "Wooden Sign", "#000", "#c98c4f", 0.2, 0, "sign", false, 0, "sign");
   tile(T.PLANTER, "Flower Planter", "#000", "#5fb24a", 0.4, 0, "planter", false, 0, "planter");
   tile(T.CAMPFIRE, "Campfire", "#000", "#ff7a1f", 0.3, 0, "campfire", false, 13, "campfire");
+  // BACK WALLS (Terraria style): a second layer BEHIND the blocks. These ids are never placed as blocks; the wall layer (walls[] in sandbox.js) stores the tile id of the wall art, so the
+  // same ids give the item icons and the atlas pictures. You walk in front of a wall, and furniture and decor stand in front of it. To add one: an id in T, a line here,
+  // an ITEMS entry (wall: id) + ITEM_ORDER, a picture in paintWall() (sandbox.js) and a recipe in RECIPES (sandbox.js).
+  tile(T.W_PLANK, "Plank Wall", "#7d5230", "#96643a", 0.5, 0, "wall_plank", false, 0, "wall");
+  tile(T.W_LOG, "Log Wall", "#6b4526", "#8a5a32", 0.5, 0, "wall_log", false, 0, "wall");
+  tile(T.W_BRICK, "Stone Brick Wall", "#566066", "#7a858c", 0.5, 0, "wall_brick", false, 0, "wall");
+  tile(T.W_PLASTER, "Plaster Wall", "#d8c8a2", "#e8dcba", 0.5, 0, "wall_plaster", false, 0, "wall");
+  tile(T.W_MOSS, "Mossy Wall", "#3b4426", "#58742f", 0.5, 0, "wall_moss", false, 0, "wall");
+  tile(T.W_TIMBER, "Timber Frame Wall", "#d6c59c", "#5a3a1e", 0.5, 0, "wall_timber", false, 0, "wall");
   // Cave Hole: a little burrow in the ground. It cannot be broken or built on; tap it (or press F nearby) to climb down into a top-down cave (see sandbox-cave.js).
   tile(T.HOLE, "Cave Hole", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
@@ -93,6 +102,10 @@
     batwing: { n: "Bat Wing", frag: "bat" }   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
   };
   Object.assign(ITEMS, {
+    wall_plank: { n: "Plank Wall", tile: T.W_PLANK, wall: T.W_PLANK }, wall_log: { n: "Log Wall", tile: T.W_LOG, wall: T.W_LOG }, wall_brick: { n: "Stone Brick Wall", tile: T.W_BRICK, wall: T.W_BRICK },
+    wall_plaster: { n: "Plaster Wall", tile: T.W_PLASTER, wall: T.W_PLASTER }, wall_moss: { n: "Mossy Wall", tile: T.W_MOSS, wall: T.W_MOSS }, wall_timber: { n: "Timber Frame Wall", tile: T.W_TIMBER, wall: T.W_TIMBER }
+  });
+  Object.assign(ITEMS, {
     decorbench: { n: "Decor Workbench", tile: T.DECORBENCH }, stool: { n: "Stool", tile: T.STOOL }, rug: { n: "Reed Rug", tile: T.RUG }, bookshelf: { n: "Bookshelf", tile: T.BOOKSHELF },
     lantern: { n: "Clay Lantern", tile: T.LANTERN }, banner: { n: "Swamp Banner", tile: T.BANNER }, sign: { n: "Wooden Sign", tile: T.SIGN }, planter: { n: "Flower Planter", tile: T.PLANTER }, campfire: { n: "Campfire", tile: T.CAMPFIRE }
   });
@@ -101,7 +114,7 @@
   var DECOR_FLOOR = ["chair", "table", "bucket", "pot", "flowerpot", "barrel", "flower", "decorbench", "stool", "rug", "bookshelf", "lantern", "planter", "campfire"], DECOR_WALL = ["painting", "banner", "sign"];
   DECOR_FLOOR.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "floor"; });
   DECOR_WALL.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "wall"; });
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "wall_plank", "wall_log", "wall_timber", "wall_plaster", "wall_brick", "wall_moss", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -132,7 +145,7 @@
   // second and third. Every house has a door in BOTH side walls so people can walk straight through the village, a lamp beside each door,
   // and a bed, table, chairs and a painting inside. It is built after the trees and decorations and only uses hash() (never rnd()),
   // so all earlier terrain, trees and holes stay exactly as they were. The villagers themselves (swamp avatars) live in sandbox.js.
-  function buildVillage(t, top, bio, seed) {
+  function buildVillage(t, top, bio, seed, walls) {
     var GY = SURF, WL = SURF + 2, BL = 7, i, x, y, ws = [], gaps = [3, 9, 3, 3], L = 6;
     for (i = 0; i < 5; i++) { ws.push(hash(i, 701, seed) < 0.5 ? 7 : 9); L += ws[i]; }
     for (i = 0; i < 4; i++) L += gaps[i];
@@ -147,6 +160,7 @@
     }
     if (!spot) return null;
     function put(px, py, id) { if (px >= 0 && px < W && py >= 0 && py < H) t[py * W + px] = id; }
+    function wput(px, py, id) { if (walls && px >= 0 && px < W && py >= 0 && py < H) walls[py * W + px] = id; }
     // decor goes through the same rules a player follows: floor pieces need solid ground right under them, wall pieces need a block beside or above them, lamps need something to hang on.
     // A piece that would float or land on something else is simply not placed.
     function solidAt(px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; }
@@ -192,6 +206,8 @@
       for (x = x0; x <= x1; x++) put(x, GY - 4, T.PLANKS);
       for (x = x0 + 1; x <= x1 - 1; x++) put(x, GY - 5, T.PLANKS);
       for (x = x0 + 3; x <= x1 - 3; x++) put(x, GY - 6, T.PLANKS);
+      var wst = [T.W_TIMBER, T.W_PLANK, T.W_PLASTER, T.W_LOG, T.W_TIMBER][i];   // each house has its own back wall, so the rooms read as rooms
+      for (y = GY - 3; y < GY; y++) for (x = x0 + 1; x < x1; x++) wput(x, y, wst);
       put(x0, GY - 1, T.DOOR_B); put(x0, GY - 2, T.DOOR_T); put(x1, GY - 1, T.DOOR_B); put(x1, GY - 2, T.DOOR_T);   // a door in each wall, plank lintel above it
       decor(x0 - 1, GY - 2, T.TORCH, "any"); decor(x1 + 1, GY - 2, T.TORCH, "any");   // a lamp on the outside next to each door (it hangs on the door frame)
       decor(x0 + (w - 1) / 2, GY - 3, T.TORCH, "any");                              // and one hanging under the roof, so the inside is lit
@@ -225,7 +241,7 @@
   // ---------- generator ----------
   function gen(seed) {
     seed = (seed | 0) || 1;
-    var t = new Uint8Array(W * H), top = new Int16Array(W), bio = new Uint8Array(W), rnd = mulberry(seed ^ 0x9e3779b9);
+    var walls = new Uint8Array(W * H), t = new Uint8Array(W * H), top = new Int16Array(W), bio = new Uint8Array(W), rnd = mulberry(seed ^ 0x9e3779b9);
     var WL = SURF + 2, LAVAL = SURF + 5, ICEL = SURF + 3, x, y;
     // 1. surface height and biome per column
     for (x = 0; x < W; x++) {
@@ -314,7 +330,7 @@
       else if (bb === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
     }
     // 4b. the village (see buildVillage above)
-    var village = buildVillage(t, top, bio, seed);
+    var village = buildVillage(t, top, bio, seed, walls);
     // 5. cave holes: a few little burrows on dry ground in every area (hash-based again, so terrain and trees never change).
     // One lies a short walk from the spawn so every world has a cave to find; the rest are spread about 36 columns apart.
     var holes = [];
@@ -336,7 +352,7 @@
       for (x = 0; x < 14; x++) { var hx = (start + x) % W; if (holeOk(hx)) { addHole(hx); break; } }
     }
     holes.sort(function (a, b) { return a.x - b.x; });
-    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, holes: holes, village: village, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, village: village, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
