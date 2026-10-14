@@ -417,3 +417,37 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Scale:** art is drawn at a whole number of screen pixels per art pixel (`round(ts*1.7/24)`), so it stays crisp when you zoom.
 - **Fallback:** if `delve-avatar.js` fails to load, Delve shows a plain green dot (the old portrait path was removed). The Armory still uses the portrait art from `avatar.js`, which is untouched.
 - **Gotcha:** the cosmetic art lives in `delve-avatar.js` separately from `avatar.js`. A new cosmetic needs a drawing in both (hats in `HATS`, face gear in `FACES`, neck in `NECKS`, shirts in `SHIRTS`/`torso()`, shoes in `SHOES`). Scripts are versioned `delve1` / `delve17`.
+
+### Delve: doors
+- **New tiles** (`sandbox-world.js`): `DOOR_B/DOOR_T` (closed, solid) and `DOORO_B/DOORO_T` (open, walk-through). A door is always two tiles tall and its halves switch together. New item `door` (Swamp Door).
+- **Craft:** 6 Planks + 2 Reed Fiber (no Workbench needed). Place it on solid ground with two free tiles above; it will not place on top of you or an enemy.
+- **Use:** walk into a closed door to open it (it shuts itself about 0.8s after you leave); quick-tap/click it, or press **F** near it, to open or close it by hand (it then stays as you left it; F still sleeps first when a bed is near at night). Hold a pick on it (about 0.3s) to break it and get the Door back. It cannot close on you or an enemy.
+- **Effects:** closed doors block bugs, frogs and bats and count as a roof for sleeping and for light; open doors do not.
+- **Saves:** door state is stored in the normal tile diff, so no save-format or world-version change. New stat `st.doors` and goal "Knock Knock". `sandbox.js` v `delve18`, `sandbox-world.js` v `delve7`.
+
+### Delve: ladders
+- **New tile/item** `LADDER` / `ladder` (non-solid, tile id 31). Craft "Ladder (4)" from 3 Planks, no Workbench.
+- **Place:** on air next to a solid block or another ladder (so you can stack them up or down a wall or shaft). Breaking is instant with paws.
+- **Climb:** standing in a ladder, Jump/W/Up climbs, S/Down descends, and you hold still otherwise. On touch screens you slowly slide down when not climbing. Falling damage resets while on a ladder.
+- New stat `st.ladders` and goal "Up and Away". Versions: `sandbox.js` delve19, `sandbox-world.js` delve8. No save-format change.
+
+### Delve: no backwall under generated trees
+- `recalc()` in `sandbox.js` now ignores world-generated Swamp Logs when finding the ground/roof row of a column, so chopping the bottom of a tree shows the normal sky/world background instead of the dark cave backwall. Logs and Planks you place still count as roofs and keep the backwall. `sandbox.js` is `delve20`.
+
+### Delve: Wooden Chest (progression)
+- **New tile/item** `CHEST` / `chest` (id 32, non-solid like the Bench). Craft "Wooden Chest": 8 Planks + 2 Reed Fiber, no Workbench. Needs solid ground under it.
+- **Open:** quick-tap/click it within reach, or press **F** nearby (after sleep at night and doors). Opens a **Chest** tab with "In the chest" and "In your bag" grids; tap an item to move the whole stack, plus Take all / Store all. 30 kinds per chest, no stack limit (99,999).
+- **Breaking:** hold a pick on it (0.3s, so taps never break it). A chest with items inside refuses ("Empty the chest before picking it up"); an empty one drops itself.
+- **Saves:** `S.chests["x,y"] = { item: count }` in the world save (dropped if the world is rebuilt via WORLDVER). Moving items in and out uses `addInv()`, so stored/taken items do not count toward gather stats or goals.
+- **Progression:** new last step of the First Day Trail, "Stash Your Loot" (store 10 items, reward 8 Planks + 4 Torches; players who had finished the Trail will see it appear), new goal "Pack Rat". Stats `st.chests`, `st.stashed`. Versions `sandbox.js` delve21, `sandbox-world.js` delve9.
+
+### Delve: Reed Shovel
+- **What:** a basic second tool, `S.shovel` (0/1, saved; older saves load as 0). Crafted by hand (no Workbench) from 2 Sticks, 2 Reed Fiber, 2 Pebbles.
+- **Digging:** only the soft blocks in `SOFT` (Mud, Mossy Mud, Clay, Ash Soil, Snow), at speed 0.85 (`SHOVEL.sp`): a bit faster than bare paws (0.55), slower than the Reed Pick (1). Anything else shows "A shovel only digs soft ground...". No pick tier needed, so it can dig Clay.
+- **Hotbar:** appears as its own slot after the weapon (number keys now go 1-9). Held in hand with the same swing as the pick. Art is `drawShovelIcon()`.
+- **Goal:** "Dig It". Versions `sandbox.js` delve22.
+
+### Delve: tool durability
+- Pick, Shovel and weapon each have durability, saved in `S.dur` (older saves start full). Pick 100/180/300/480 by tier, shovel 80, weapon 40/70/100/150. Each block broken costs 1 (2 for hard rock); each weapon swing that hits costs 1.
+- At 0 a tool is **broken**, not lost: a broken pick digs like bare paws, a broken shovel or weapon cannot be used. Repair in the Craft tab (new Repair section): Reed gear by hand, Glowspore and up next to a Workbench. New tools start full.
+- Hotbar slots show a durability bar (green, yellow, red) and "Broken". Versions: `sandbox.js` delve23, `sandbox.css` delve9.

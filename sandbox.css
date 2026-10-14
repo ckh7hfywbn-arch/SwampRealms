@@ -217,3 +217,13 @@ body.sbx-app footer{margin-top:28px}
 .sbx-wnew{display:flex;gap:8px;margin:10px 0}
 .sbx-wnew input{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid #ffffff33;background:#0009;color:#f6eedb;font:inherit}
 .sbx-wbox .sbx-row .btn{text-decoration:none}
+
+/* tool durability */
+.sbx-slot u.dur{position:absolute;left:6px;right:6px;bottom:3px;height:3px;border-radius:2px;background:rgba(0,0,0,.55);overflow:hidden;text-decoration:none}
+.sbx-slot u.dur::after{content:"";display:block;height:100%;width:var(--d,100%);background:#4ee6b4}
+.sbx-slot u.dur.low::after,.bar.dur.low i{background:#f2c14e}
+.sbx-slot u.dur.bad::after,.bar.dur.bad i{background:#ff6b82}
+.sbx-slot.hasdur b{bottom:6px}
+.sbx-slot.brk img{filter:grayscale(1) brightness(.7)}
+.sbx-slot.brk b{color:#ff6b82}
+.bar.dur i{background:linear-gradient(90deg,#2fbf93,#4ee6b4)}.bar.dur.low i{background:#f2c14e}.bar.dur.bad i{background:#ff6b82}
