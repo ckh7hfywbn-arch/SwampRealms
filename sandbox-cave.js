@@ -144,9 +144,25 @@
     return { w: CW, h: CH, floor: floor, biome: biome, seed: seed, theme: THEMES[biome], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: down, spawn: spawn, lamps: lamps, rocks: rocks };
   }
 
+  // ---- Swamp Manor interior (Stage 1): one fixed floor, no ore, nothing to mine. Entered from the front door of the manor on the surface. ----
+  // Six rooms (left / centre / right, upstairs and downstairs rows) joined by doorways; the way out is the ladder-door at the top centre.
+  var MANOR_THEME = { key: 7, n: "Swamp Manor", sub: "The Dwellers' halls", floor: "#5a4630", floor2: "#6e5539", top: "#1c1410", topHi: "#2f2218", face: "#6b4a2c", faceHi: "#9a6c3e", faceLo: "#2d1d10", tint: [12, 6, 2], lamp: T.LANTERN, glow: "255,170,60" };
+  function genManor() {
+    var n = CW * CH, wall = new Uint8Array(n).fill(1), x, y;
+    function carve(x0, y0, x1, y1, v) { for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) wall[y * CW + x] = v; }
+    carve(3, 5, 40, 28, 0);                                   // the whole hall
+    carve(14, 5, 14, 28, 1); carve(29, 5, 29, 28, 1); carve(3, 16, 40, 16, 1);   // partitions
+    [9, 21].forEach(function (yy) { carve(14, yy, 14, yy + 2, 0); carve(29, yy, 29, yy + 2, 0); });   // doorways in the two long walls
+    [8, 21, 34].forEach(function (xx) { carve(xx, 16, xx + 2, 16, 0); });                                // doorways in the cross wall
+    [[17, 8], [26, 8], [17, 13], [26, 13], [17, 19], [26, 19], [17, 25], [26, 25]].forEach(function (q) { wall[q[1] * CW + q[0]] = 1; });   // pillars
+    var up = { x: 22, y: 5 }, lamps = [];
+    [6, 15, 17, 27].forEach(function (ly) { [5, 11, 18, 25, 32, 38].forEach(function (lx) { if (!wall[ly * CW + lx]) lamps.push({ x: lx, y: ly }); }); });
+    return { w: CW, h: CH, floor: 1, biome: 0, seed: 0, theme: MANOR_THEME, wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), up: up, down: { x: -9, y: -9 }, spawn: { x: up.x + 0.5, y: up.y + 1.55 }, lamps: lamps, rocks: 0, manor: true, noDown: true };
+  }
+
   // is the cell blocked for walking? (walls and rocks are; anything outside the grid is)
   function solid(F, x, y) { if (x < 0 || y < 0 || x >= CW || y >= CH) return true; var i = y * CW + x; return !!(F.wall[i] || F.node[i]); }
 
-  var api = { W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  var api = { W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, genManor: genManor, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);

@@ -3,10 +3,11 @@
 // The same seed always builds the same world. Player edits are stored separately as a small diff (see sandbox.js).
 (function (root) {
   "use strict";
-  // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
-  // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
-  var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
+  // World size in tiles and the average surface row. The world is a long open map and you start in the MIDDLE:
+  // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 720 tiles wide (2160 in all, 3x the old world).
+  // WORLDVER 4: the world was rebuilt bigger. Saves from an older version keep items and progress but not their digging, map or chests (see clean() in sandbox.js).
+  var W = 2160, H = 140, SURF = 34, WORLDVER = 4, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080;
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87, MDOOR: 88, RAIDBANNER: 89, MWIN: 90, MROOF: 91 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -119,6 +120,13 @@
   tile(T.W_PLASTER, "Plaster Wall", "#d8c8a2", "#e8dcba", 0.5, 0, "wall_plaster", false, 0, "wall");
   tile(T.W_MOSS, "Mossy Wall", "#3b4426", "#58742f", 0.5, 0, "wall_moss", false, 0, "wall");
   tile(T.W_TIMBER, "Timber Frame Wall", "#d6c59c", "#5a3a1e", 0.5, 0, "wall_timber", false, 0, "wall");
+  // Swamp Manor pieces (the Swamp Dwellers' mansion, see buildManor). Scenery only: never craftable, cannot be broken. MWIN glows amber, so the windows are lit at night.
+  tile(T.MDOOR, "Manor Door", "#4a2c16", "#7a4a26", Infinity, 0, null, true, 6, "mdoor");
+  tile(T.RAIDBANNER, "Dweller Banner", "#7a1f1a", "#c2362b", Infinity, 0, null, true, 0, "raidbanner");
+  tile(T.MWIN, "Manor Window", "#2a1c10", "#ffb13b", Infinity, 0, null, true, 9, "mwin");
+  tile(T.MROOF, "Manor Shingles", "#2b2a33", "#43414f", Infinity, 0, null, true, 0, "mroof");
+  TILES[T.MWIN].glow = "255,170,60"; TILES[T.MWIN].gr = 3.2; TILES[T.MWIN].ga = 0.22;
+  TILES[T.MDOOR].glow = "255,150,50"; TILES[T.MDOOR].gr = 3; TILES[T.MDOOR].ga = 0.14;
   // Cave Hole: a little burrow in the ground. It cannot be broken or built on; tap it (or press F nearby) to climb down into a top-down cave (see sandbox-cave.js).
   tile(T.HOLE, "Cave Hole", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
@@ -285,6 +293,94 @@
     return { cx: spot.cx, x0: spot.left, x1: spot.right, f0: spot.f0, f1: spot.f1, gy: GY, plaza: pc, houses: houses };
   }
 
+  // ---------- swamp manor ----------
+  // The Swamp Dwellers' Manor: a medium mansion (41 tiles wide, 25 tall counting the chimney) at the EAST edge of Murkwater, the last big thing before Ember Bog.
+  // It is SCENERY, like the natural trees: you walk straight past it in front of the walls (blocks() in sandbox.js ignores its tiles), nothing in it can be mined,
+  // and the only way in is the front door (the player taps "Enter" near it). Every tile it owns is flagged in the returned mask `scen` (1 = manor tile).
+  // Built with hash() only, so no earlier terrain, tree or village changes. Layout, left to right: west wing | centre hall (3 storeys) | east wing.
+  //   rows (GY = ground row): wings stand GY-1..GY-8 under a 5-row stepped roof; the hall stands GY-1..GY-15 under a 7-row roof with a chimney and an attic window.
+  function buildManor(t, top, bio, seed, walls, village) {
+    var GY = SURF, WL = SURF + 2, BL = 6, MW = 41, x, y, i, spot = null;
+    // 1. find a spot: the whole manor and its slopes inside Murkwater, as far east as possible, clear of the village
+    for (var fx1 = B_EMBER - 10; fx1 > B_EMBER - 60 && !spot; fx1--) {
+      var f1 = fx1, right = f1 - BL - 1, left = right - MW + 1, f0 = left - BL - 1, ok = f0 > SPAWNX + 20;
+      for (x = f0; ok && x <= f1; x++) if (bio[x] !== 0) ok = false;
+      if (ok && village && !(f1 < village.f0 - 4 || f0 > village.f1 + 4)) ok = false;
+      if (ok) spot = { left: left, right: right, f0: f0, f1: f1 };
+    }
+    if (!spot) return null;
+    var scen = new Uint8Array(W * H), X0 = spot.left, cx = X0 + 20;
+    function inb(px, py) { return px >= 0 && px < W && py >= 0 && py < H; }
+    function put(px, py, id) { if (inb(px, py)) { t[py * W + px] = id; scen[py * W + px] = 1; } }
+    function wput(px, py, id) { if (walls && inb(px, py)) walls[py * W + px] = id; }
+    var isTree = function (id) { return id === T.LEAVES || id === T.LOG || id === T.VINE; };
+    // 2. flatten the plateau (ground row = GY) and ease it into the old terrain over BL columns, clearing trees and plants (same recipe as the village)
+    var xa = spot.left - BL, xb = spot.right + BL, stack = [];
+    for (x = xa; x <= xb; x++) {
+      var old = top[x], d = x < spot.left ? spot.left - x : x > spot.right ? x - spot.right : 0;
+      var th = d === 0 ? GY : Math.round(GY + (old - GY) * smooth(0, 1, d / (BL + 1)));
+      th = Math.max(18, Math.min(60, th));
+      var lo = Math.min(old, th);
+      for (y = 0; y < lo; y++) {
+        var id0 = t[y * W + x]; if (id0 === T.AIR || id0 === T.WATER) continue;
+        t[y * W + x] = y >= WL ? T.WATER : T.AIR; if (isTree(id0)) stack.push(x, y);
+      }
+      if (th < old) for (y = th; y < old; y++) t[y * W + x] = y === th ? T.MOSS : T.MUD;
+      else { for (y = old; y < th; y++) t[y * W + x] = y >= WL ? T.WATER : T.AIR; t[th * W + x] = T.MOSS; }
+      top[x] = th;
+    }
+    var fa = xa - 8, fb = xb + 8;
+    while (stack.length) {
+      var qy = stack.pop(), qx = stack.pop();
+      for (var ddy = -1; ddy <= 1; ddy++) for (var ddx = -1; ddx <= 1; ddx++) {
+        var nx = qx + ddx, ny = qy + ddy; if (nx < fa || nx > fb || ny < 0 || ny >= H) continue;
+        if (isTree(t[ny * W + nx])) { t[ny * W + nx] = ny >= WL ? T.WATER : T.AIR; stack.push(nx, ny); }
+      }
+    }
+    // 3. plinth: a stone-brick foundation row one tile wider than the walls
+    for (x = X0 - 1; x <= X0 + MW; x++) put(x, GY, T.BRICK);
+    // 4. wings (10 wide each) and the hall (21 wide). Body = plank, with a log band between storeys and plaster behind everything (so lamps and fences have a wall to stand on).
+    var wings = [X0, X0 + 31];
+    function body(xl, xr, topRow) {
+      for (y = GY - 1; y >= topRow; y--) for (x = xl; x <= xr; x++) { put(x, y, T.PLANKS); wput(x, y, T.W_PLASTER); }
+    }
+    function roof(xl, xr, rows) {   // rows = [[xl offset, xr offset] per row from the eaves up]; each row is shingles
+      rows.forEach(function (r, k) { for (x = xl + r[0]; x <= xr + r[1]; x++) put(x, rows.base - k, T.MROOF); });
+    }
+    wings.forEach(function (wx) {
+      var wr = wx + 9;
+      body(wx, wr, GY - 8);
+      for (x = wx; x <= wr; x++) put(x, GY - 8, T.LOG);   // top beam
+      var rw = [[-1, 1], [0, 0], [1, -1], [2, -2], [3, -3], [4, -4]]; rw.base = GY - 9;
+      roof(wx, wr, rw);
+      [2, 7].forEach(function (o) { put(wx + o, GY - 6, T.MWIN); put(wx + o, GY - 5, T.MWIN); });
+      put(wx + 4, GY - 4, T.RAIDBANNER); put(wx + 5, GY - 4, T.RAIDBANNER); put(wx + 4, GY - 3, T.RAIDBANNER); put(wx + 5, GY - 3, T.RAIDBANNER);
+    });
+    var hl = X0 + 10, hr = X0 + 30;
+    body(hl, hr, GY - 15);
+    for (x = hl; x <= hr; x++) { put(x, GY - 8, T.LOG); put(x, GY - 15, T.LOG); }   // storey bands
+    var rh = [[-1, 1], [0, 0], [1, -1], [3, -3], [5, -5], [7, -7], [9, -9]]; rh.base = GY - 16;
+    roof(hl, hr, rh);
+    // chimney (right of the apex) and an attic window under the peak
+    for (y = GY - 24; y <= GY - 19; y++) { put(cx + 3, y, T.BRICK); put(cx + 4, y, T.BRICK); }
+    put(cx, GY - 19, T.MWIN); put(cx, GY - 20, T.MWIN);
+    // hall windows: four on the ground floor, five on the second storey, three on the top floor
+    [-9, -5, 5, 9].forEach(function (o) { put(cx + o, GY - 6, T.MWIN); put(cx + o, GY - 5, T.MWIN); });
+    [-8, -4, 0, 4, 8].forEach(function (o) { put(cx + o, GY - 13, T.MWIN); put(cx + o, GY - 12, T.MWIN); });
+    [-6, 6].forEach(function (o) { put(cx + o, GY - 11, T.MWIN); put(cx + o, GY - 10, T.MWIN); });
+    // 5. front door: three wide, three tall, under a shingled porch roof with a little fence on top; torches and banners either side
+    for (y = GY - 3; y <= GY - 1; y++) for (x = cx - 1; x <= cx + 1; x++) put(x, y, T.MDOOR);
+    for (x = cx - 3; x <= cx + 3; x++) { put(x, GY - 5, T.MROOF); put(x, GY - 6, T.FENCE); }
+    put(cx - 2, GY - 3, T.TORCH); put(cx + 2, GY - 3, T.TORCH);
+    [cx - 3, cx + 3].forEach(function (bx) { put(bx, GY - 4, T.RAIDBANNER); put(bx, GY - 3, T.RAIDBANNER); });
+    put(cx, GY - 8, T.RAIDBANNER); put(cx, GY - 7, T.RAIDBANNER);   // house sigil over the door, hanging from the storey band
+    // 6. front garden: a lamp at each end of the plinth and planters either side of the steps (floor pieces on the solid plinth/ground)
+    [X0 - 3, X0 + MW + 2].forEach(function (lx) { if (TILES[t[GY * W + lx]].solid && t[(GY - 1) * W + lx] === T.AIR) put(lx, GY - 1, T.LANTERN); });
+    [cx - 6, cx + 6].forEach(function (px) { put(px, GY - 1, T.PLANTER); });
+    return { x0: X0, x1: X0 + MW - 1, f0: spot.f0, f1: spot.f1, cx: cx, gy: GY, top: GY - 24,
+             door: { x0: cx - 1, x1: cx + 1, y0: GY - 3, y1: GY - 1 }, scen: scen };
+  }
+
   // ---------- generator ----------
   function gen(seed) {
     seed = (seed | 0) || 1;
@@ -297,10 +393,14 @@
       var hf = SURF - 1 + (fbm(x * 0.04, 7.7, seed + 9, 3) - 0.5) * 14;
       var wE = smooth(B_EMBER - 8, B_EMBER + 8, x), wF = 1 - smooth(B_FROST - 8, B_FROST + 8, x);
       var h = hs * (1 - wE - wF) + he * wE + hf * wF;
+      // OPEN WORLD: a slow, wide swell on top of the local bumps gives each area real hills, ridges and basins (swamp basins fill into lakes, Frostfen basins freeze over).
+      var mw = (1 - wE - wF) * 0.8 + wE * 0.6 + wF * 1.1;
+      h += (fbm(x * 0.011, 21.7, seed + 13, 3) - 0.5) * 26 * mw;
       h = SURF + (h - SURF) * smooth(3, 12, Math.abs(x - SPAWNX));   // flat, dry start area around the spawn
       top[x] = Math.max(18, Math.min(60, Math.round(h)));
       var bx = x + (vnoise(x * 0.08, 0, seed + 3) - 0.5) * 14;
       bio[x] = bx < B_FROST ? 2 : bx < B_EMBER ? 0 : 1;   // west Frostfen, middle Murkwater, east Ember Bog
+      if (bio[x] === 1) top[x] = Math.min(top[x], LAVAL - 2);   // Ember ground never dips into the lava level, so a long walk east is never cut off by a surface lava lake
     }
     // 2. ground, ores, caves, liquids
     for (x = 0; x < W; x++) {
@@ -378,6 +478,8 @@
     }
     // 4b. the village (see buildVillage above)
     var village = buildVillage(t, top, bio, seed, walls);
+    // 4c. the Swamp Manor (see buildManor above), built after the village and only with hash()
+    var manorRes = buildManor(t, top, bio, seed, walls, village), manor = manorRes, scen = manorRes ? manorRes.scen : null;
     // 5. cave holes: a few little burrows on dry ground in every area (hash-based again, so terrain and trees never change).
     // One lies a short walk from the spawn so every world has a cave to find; the rest are spread about 36 columns apart.
     var holes = [];
@@ -388,6 +490,7 @@
       if (t[(sy - 1) * W + hx] !== T.AIR || t[(sy - 2) * W + hx] !== T.AIR) return false;
       if (Math.abs(SPAWNX - hx) < 9) return false;
       if (village && hx >= village.f0 && hx <= village.f1) return false;
+      if (manor && hx >= manor.f0 - 2 && hx <= manor.f1 + 2) return false;
       for (var k = 0; k < holes.length; k++) if (Math.abs(holes[k].x - hx) < 14) return false;
       return Math.abs(top[hx - 1] - top[hx]) <= 1 && Math.abs(top[hx + 1] - top[hx]) <= 1;
     }
@@ -399,7 +502,7 @@
       for (x = 0; x < 14; x++) { var hx = (start + x) % W; if (holeOk(hx)) { addHole(hx); break; } }
     }
     holes.sort(function (a, b) { return a.x - b.x; });
-    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, village: village, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, village: village, manor: manor, scen: scen, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };

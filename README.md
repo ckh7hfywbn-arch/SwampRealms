@@ -539,3 +539,12 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Light:** each tile can carry `glow` (r,g,b), `gr` (radius) and `ga` (strength) in `sandbox-world.js`; the renderer uses them instead of the old torch/ember/crystal colour rules, so every new light has its own tint (teal Glowspore, orange ember, icy blue).
 - **To add another piece:** same four steps as before (tile + ITEMS + ITEM_ORDER + DECOR_FLOOR/WALL, a picture, a recipe), but pictures now go in the `DECOR_ART` table in `sandbox.js` keyed by the tile's `kind`, and the recipe takes an optional `bl:`.
 - **Goals:** Grand Decorator (30 pieces), Fit for a King (Frostrock Throne).
+
+### Delve: bigger, more open world (WORLDVER 4)
+
+- **Size:** `W` 720 -> **2160** tiles (3x wider again), `B_FROST` 720, `B_EMBER` 1440, `SPAWNX` 1080, so each biome is 720 tiles wide (`sandbox-world.js`). Depth is unchanged (`H` 140). Generation takes about 50-120 ms; frame cost is the same as before because only the tiles on screen are drawn.
+- **Terrain:** a slow, wide swell is added to the surface (`fbm(x * 0.011 ...)`, +/-13 tiles scaled per biome: swamp 0.8, Ember 0.6, Frostfen 1.1), so every area now has real hills, ridges and basins. Swamp basins fill into lakes you can swim, Frostfen basins freeze over and are walkable. Ember ground is capped just above the lava level, so a surface lava lake can never cut off the walk east. The spawn area stays flat.
+- **More to find:** cave holes are placed about every 36 columns, so there are about 50 now (was about 17). The village still sits near the spawn.
+- **Map tab:** the canvas is 1080 x 260 and everything on it scales with the world (`mk`, `sx` in `drawMap()`); it now also marks the village once you have seen it.
+- **Old saves:** the `wv` check in `clean()` keeps items, gear, bench level and goals, and drops digging, the explored map and chests (they no longer line up with the new world). The player sees "The world grew again!" once.
+- **Versions:** `sandbox.js` delve40, `sandbox-world.js` delve17, `sandbox.css` delve16.
