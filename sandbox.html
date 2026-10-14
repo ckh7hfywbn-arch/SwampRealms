@@ -30,7 +30,7 @@
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=armory3">
-<link rel="stylesheet" href="sandbox.css?v=delve9">
+<link rel="stylesheet" href="sandbox.css?v=delve11">
 </head>
 <body class="sbx-app">
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -63,6 +63,7 @@
    </div>
    <button type="button" class="jump" data-k="j" aria-label="Jump"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-8 7 8"/><path d="M5 21l7-8 7 8"/></svg></button>
   </div>
+  <div class="sbx-joy" id="sbxJoy" aria-label="Walk stick: drag to walk"><i id="sbxJoyKnob"></i></div>
   <div class="sbx-dock">
   <div class="sbx-bar" id="sbxBar" role="toolbar" aria-label="Hotbar"></div>
    <button type="button" class="sbx-ibtn sbx-bagbtn" id="sbxMenuBtn" aria-label="Open bag, crafting and map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V6a5 5 0 0110 0v2"/><path d="M5 8h14l1 12H4z"/><path d="M9 13h6"/></svg></button>
@@ -87,9 +88,10 @@
 <script src="store.js?v=cos4"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
-<script src="sandbox-world.js?v=delve9"></script>
+<script src="sandbox-world.js?v=delve11"></script>
+<script src="sandbox-cave.js?v=cave1"></script>
 <script src="delve-avatar.js?v=delve1"></script>
-<script src="sandbox.js?v=delve23"></script>
+<script src="sandbox.js?v=delve26"></script>
 <script src="gamefs.js?v=2"></script>
 <script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]"});</script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->

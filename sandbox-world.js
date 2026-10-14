@@ -6,7 +6,7 @@
   // World size in tiles and the average surface row. The world is 3x wider and a bit deeper than the first version, and you start in the MIDDLE:
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 240 tiles wide.
   var W = 720, H = 140, SURF = 34, WORLDVER = 3, B_FROST = 240, B_EMBER = 480, SPAWNX = 360;
-  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32 };
+  var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
   // tier = lowest pick tier that can mine it, drop = item id you get, light = light level it gives off (0-15),
@@ -50,6 +50,14 @@
   TILES[T.DOORO_B].door = { top: false, open: true, other: T.DOORO_T, toggle: T.DOOR_B }; TILES[T.DOORO_T].door = { top: true, open: true, other: T.DOORO_B, toggle: T.DOOR_T };
   tile(T.LADDER, "Ladder", "#000", "#b9793f", 0.1, 0, "ladder", false, 0, "ladder");   // climb it: Jump goes up, S / Down goes down
   tile(T.CHEST, "Wooden Chest", "#000", "#a8703c", 0.5, 0, "chest", false, 0, "chest");   // stores items; tap it or press F nearby to open it
+  // Furniture: plain decoration, not solid, breaks by hand and gives the item back. Chairs face the way you were looking when you placed them.
+  // A Painting shows random coloured pixels, different at every spot (see paintingCanvas in sandbox.js: it can show your own images instead).
+  tile(T.CHAIR, "Wooden Chair", "#000", "#b9793f", 0.4, 0, "chair", false, 0, "chair");
+  tile(T.CHAIR_L, "Wooden Chair", "#000", "#b9793f", 0.4, 0, "chair", false, 0, "chair");
+  tile(T.TABLE, "Wooden Table", "#000", "#b9793f", 0.4, 0, "table", false, 0, "table");
+  tile(T.PAINTING, "Painting", "#000", "#c98c4f", 0.3, 0, "painting", false, 0, "painting");
+  // Cave Hole: a little burrow in the ground. It cannot be broken or built on; tap it (or press F nearby) to climb down into a top-down cave (see sandbox-cave.js).
+  tile(T.HOLE, "Cave Hole", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
   [T.MOSS, T.MUD, T.ASH, T.SNOW, T.LEAVES, T.TORCH, T.GLOWCAP, T.REED, T.BLOOM, T.SPIKE, T.VINE].forEach(function (i) { TILES[i].tier = 0; });
   TILES[T.REED].drop = "fiber"; TILES[T.VINE].drop = "fiber";   // cattails are rare on some seeds, so hanging vines give fiber too
@@ -60,12 +68,12 @@
     planks: { n: "Planks", tile: T.PLANKS }, torch: { n: "Torch", tile: T.TORCH }, leaves: { n: "Leaves", tile: T.LEAVES },
     snow: { n: "Snow", tile: T.SNOW }, ice: { n: "Ice", tile: T.ICE }, basalt: { n: "Basalt", tile: T.BASALT }, ash: { n: "Ash Soil", tile: T.ASH },
     frostrock: { n: "Frostrock", tile: T.FROSTROCK },
-    stick: { n: "Stick", mat: "stick" }, fiber: { n: "Reed Fiber", mat: "fiber" }, pebble: { n: "Pebble", mat: "pebble" }, bench: { n: "Bog Workbench", tile: T.BENCH }, bed: { n: "Swamp Bed", tile: T.BED }, door: { n: "Swamp Door", tile: T.DOOR_B }, ladder: { n: "Ladder", tile: T.LADDER }, chest: { n: "Wooden Chest", tile: T.CHEST },
+    stick: { n: "Stick", mat: "stick" }, fiber: { n: "Reed Fiber", mat: "fiber" }, pebble: { n: "Pebble", mat: "pebble" }, bench: { n: "Bog Workbench", tile: T.BENCH }, bed: { n: "Swamp Bed", tile: T.BED }, door: { n: "Swamp Door", tile: T.DOOR_B }, ladder: { n: "Ladder", tile: T.LADDER }, chest: { n: "Wooden Chest", tile: T.CHEST }, chair: { n: "Wooden Chair", tile: T.CHAIR }, table: { n: "Wooden Table", tile: T.TABLE }, painting: { n: "Painting", tile: T.PAINTING },
     spore: { n: "Glowspore", gem: "#4ee6b4" }, cinder: { n: "Cinder Shard", gem: "#ff8a3d" }, crystal: { n: "Frost Crystal", gem: "#bff4ff" },
     bugfrag: { n: "Bramble Fragment", frag: "bug" }, frogfrag: { n: "Frog Fragment", frag: "frog" },   // enemy loot, same names as the Adventure Fragments
     batwing: { n: "Bat Wing", frag: "bat" }   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
   };
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -182,7 +190,27 @@
       else if (bb === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
       else if (bb === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
     }
-    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    // 5. cave holes: a few little burrows on dry ground in every area (hash-based again, so terrain and trees never change).
+    // One lies a short walk from the spawn so every world has a cave to find; the rest are spread about 36 columns apart.
+    var holes = [];
+    function holeOk(hx) {
+      if (hx < 8 || hx >= W - 8) return false;
+      var sy = top[hx] - 1; if (sy < 3 || !TILES[t[top[hx] * W + hx]].solid) return false;
+      var g0 = t[sy * W + hx]; if (g0 !== T.AIR && g0 !== T.REED && g0 !== T.BLOOM && g0 !== T.SPIKE && g0 !== T.GLOWCAP) return false;
+      if (t[(sy - 1) * W + hx] !== T.AIR || t[(sy - 2) * W + hx] !== T.AIR) return false;
+      if (Math.abs(SPAWNX - hx) < 9) return false;
+      for (var k = 0; k < holes.length; k++) if (Math.abs(holes[k].x - hx) < 14) return false;
+      return Math.abs(top[hx - 1] - top[hx]) <= 1 && Math.abs(top[hx + 1] - top[hx]) <= 1;
+    }
+    function addHole(hx) { var sy = top[hx] - 1; t[sy * W + hx] = T.HOLE; holes.push({ x: hx, y: sy, b: bio[hx] }); }
+    var side = hash(7, 0, seed) < 0.5 ? 1 : -1;
+    for (x = 0; x < 30; x++) { var gx = SPAWNX + side * (12 + x); if (holeOk(gx)) { addHole(gx); break; } }
+    for (var cx0 = 0; cx0 < W; cx0 += 36) {
+      var start = cx0 + Math.floor(hash(cx0, 8, seed) * 36);
+      for (x = 0; x < 14; x++) { var hx = (start + x) % W; if (holeOk(hx)) { addHole(hx); break; } }
+    }
+    holes.sort(function (a, b) { return a.x - b.x; });
+    return { W: W, H: H, seed: seed, t: t, top: top, bio: bio, holes: holes, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var api = { W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };

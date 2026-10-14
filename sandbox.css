@@ -227,3 +227,10 @@ body.sbx-app footer{margin-top:28px}
 .sbx-slot.brk img{filter:grayscale(1) brightness(.7)}
 .sbx-slot.brk b{color:#ff6b82}
 .bar.dur i{background:linear-gradient(90deg,#2fbf93,#4ee6b4)}.bar.dur.low i{background:#f2c14e}.bar.dur.bad i{background:#ff6b82}
+
+/* Caves: top-down mode. On touch / small screens the buttons are replaced by an analog stick. */
+.sbx-joy{display:none;position:absolute;left:max(18px,env(safe-area-inset-left));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 74px);width:132px;height:132px;border-radius:50%;touch-action:none;-webkit-tap-highlight-color:transparent;background:radial-gradient(circle,rgba(78,230,180,.12),rgba(7,18,15,.5));border:2px solid #4ee6b466;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 18px -8px #000;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sbx-joy i{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(120,255,214,.75),rgba(30,140,110,.7));border:2px solid #4ee6b4;box-shadow:0 4px 10px #0008;pointer-events:none}
+.sbx-joy.on{border-color:#4ee6b4}
+@media(pointer:coarse),(max-width:760px){.sbx-stage.cave .sbx-joy{display:block}.sbx-stage.cave .sbx-pad{display:none}}
+@media(max-height:520px){.sbx-joy{width:108px;height:108px;bottom:max(6px,env(safe-area-inset-bottom))}.sbx-joy i{width:48px;height:48px;margin:-24px 0 0 -24px}}
