@@ -548,3 +548,7 @@ Roadmap: **1 Paws to Pick** (this) -> 2 Camp (campfire, shelter, Swampfolk villa
 - **Map tab:** the canvas is 1080 x 260 and everything on it scales with the world (`mk`, `sx` in `drawMap()`); it now also marks the village once you have seen it.
 - **Old saves:** the `wv` check in `clean()` keeps items, gear, bench level and goals, and drops digging, the explored map and chests (they no longer line up with the new world). The player sees "The world grew again!" once.
 - **Versions:** `sandbox.js` delve40, `sandbox-world.js` delve17, `sandbox.css` delve16.
+
+## Delve: structures (big world, Stage 1)
+
+About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Reed Cabin and Old Watchtower (swamp), Cinder Forge and Ashen Keep (ember), Frost Lodge and Frozen Shrine (frost). They are made by `buildStructures()` in `sandbox-world.js` (hash-based, runs after the cave holes, so earlier terrain and holes are unchanged) and listed in `world.structs`. Each has a solid body with windows and a roof, a lamp, and one door at ground level. Tap the door (or press F) to go in; `enterBuilding()` in `sandbox.js` reuses the cave engine, with the room made by `SbxCave.interior()` in `sandbox-cave.js` (furniture lists in `KINDS`, extra themes at the end of `THEMES`). The exit door in the bottom wall takes you back outside. Building doors never swing open and cannot be picked up. Stage 2 ideas: loot chests, shopkeepers, things living inside.

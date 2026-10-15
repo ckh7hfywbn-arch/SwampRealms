@@ -144,25 +144,80 @@
     return { w: CW, h: CH, floor: floor, biome: biome, seed: seed, theme: THEMES[biome], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: down, spawn: spawn, lamps: lamps, rocks: rocks };
   }
 
-  // ---- Swamp Manor interior (Stage 1): one fixed floor, no ore, nothing to mine. Entered from the front door of the manor on the surface. ----
-  // Six rooms (left / centre / right, upstairs and downstairs rows) joined by doorways; the way out is the ladder-door at the top centre.
-  var MANOR_THEME = { key: 7, n: "Swamp Manor", sub: "The Dwellers' halls", floor: "#5a4630", floor2: "#6e5539", top: "#1c1410", topHi: "#2f2218", face: "#6b4a2c", faceHi: "#9a6c3e", faceLo: "#2d1d10", tint: [12, 6, 2], lamp: T.LANTERN, glow: "255,170,60" };
-  function genManor() {
-    var n = CW * CH, wall = new Uint8Array(n).fill(1), x, y;
-    function carve(x0, y0, x1, y1, v) { for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) wall[y * CW + x] = v; }
-    carve(3, 5, 40, 28, 0);                                   // the whole hall
-    carve(14, 5, 14, 28, 1); carve(29, 5, 29, 28, 1); carve(3, 16, 40, 16, 1);   // partitions
-    [9, 21].forEach(function (yy) { carve(14, yy, 14, yy + 2, 0); carve(29, yy, 29, yy + 2, 0); });   // doorways in the two long walls
-    [8, 21, 34].forEach(function (xx) { carve(xx, 16, xx + 2, 16, 0); });                                // doorways in the cross wall
-    [[17, 8], [26, 8], [17, 13], [26, 13], [17, 19], [26, 19], [17, 25], [26, 25]].forEach(function (q) { wall[q[1] * CW + q[0]] = 1; });   // pillars
-    var up = { x: 22, y: 5 }, lamps = [];
-    [6, 15, 17, 27].forEach(function (ly) { [5, 11, 18, 25, 32, 38].forEach(function (lx) { if (!wall[ly * CW + lx]) lamps.push({ x: lx, y: ly }); }); });
-    return { w: CW, h: CH, floor: 1, biome: 0, seed: 0, theme: MANOR_THEME, wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), up: up, down: { x: -9, y: -9 }, spawn: { x: up.x + 0.5, y: up.y + 1.55 }, lamps: lamps, rocks: 0, manor: true, noDown: true, chests: [[4, 6], [38, 6], [4, 27], [38, 27]].map(function (q) { return { x: q[0], y: q[1], open: 0, loot: null }; }) };   // four loot chests in the corners (loot: null = empty for now)
+  // is the cell blocked for walking? (walls and rocks are; anything outside the grid is)
+  function solid(F, x, y) { var w = F.w || CW, h = F.h || CH; if (x < 0 || y < 0 || x >= w || y >= h) return true; var i = y * w + x; return !!(F.wall[i] || F.node[i] || (F.sol && F.sol[i])); }
+
+  // ---------- building interiors (Delve structures, see buildStructures in sandbox-world.js) ----------
+  // A room seen from above, in the same format as a cave floor so the cave engine runs it unchanged. Extras on the floor object:
+  //   bld = true, bi = index into THEMES (the wall and floor look), amb = base light (0..1), sol = solid furniture cells,
+  //   deco = [{x, y, id, solid, flat, wall}] (id = a surface tile id, drawn with that tile's art; flat = lies on the floor, wall = hangs on the back wall)
+  //   up = the exit door (a cell in the bottom wall). There is no way down.
+  THEMES.push(
+    { n: "Reed Cabin", sub: "Warm, quiet and smells of old tea", plank: 1, floor: "#8c6238", floor2: "#a37446", top: "#241810", topHi: "#3a2a1a", face: "#7a4f2c", faceHi: "#a8703c", faceLo: "#46301a", tint: [10, 6, 2], lamp: T.GLOWCAP, glow: "255,190,110" },
+    { n: "Old Watchtower", sub: "Cold stone and a long view", floor: "#676b6f", floor2: "#7a8085", top: "#1a1c20", topHi: "#2b2f35", face: "#59616a", faceHi: "#8793a0", faceLo: "#2f353b", tint: [4, 6, 10], lamp: T.GLOWCAP, glow: "255,210,150" },
+    { n: "Cinder Forge", sub: "Hot air and the smell of iron", floor: "#4a3d42", floor2: "#5f4d52", top: "#1b1214", topHi: "#2f1f1e", face: "#5a3a36", faceHi: "#8c5a4a", faceLo: "#2a1a1a", tint: [16, 5, 3], lamp: T.BLOOM, glow: "255,120,50" },
+    { n: "Ashen Keep", sub: "Banners hang still in the dark", floor: "#443a42", floor2: "#594b57", top: "#161014", topHi: "#2a1c24", face: "#4f3340", faceHi: "#84566a", faceLo: "#25151d", tint: [14, 4, 8], lamp: T.BLOOM, glow: "255,110,70" },
+    { n: "Frost Lodge", sub: "A fire crackles behind frosted glass", plank: 1, floor: "#9db4c8", floor2: "#b7ccdd", top: "#18232e", topHi: "#2a3d4f", face: "#7f9fba", faceHi: "#c4dff0", faceLo: "#36506a", tint: [4, 9, 18], lamp: T.SPIKE, glow: "190,230,255" },
+    { n: "Frozen Shrine", sub: "Something old sleeps in the ice", floor: "#8aa3bb", floor2: "#a5bed4", top: "#141e29", topHi: "#25384a", face: "#6d8aa3", faceHi: "#b5d3e6", faceLo: "#2c4054", tint: [3, 8, 20], lamp: T.SPIKE, glow: "130,225,255" }
+  );
+  // Each kind: size, theme (index into THEMES), light, and a furniture list built by items(add). add(x, y, id, opt) with opt: "s" solid, "f" flat on the floor, "w" hangs on the back wall.
+  var KINDS = {
+    cabin: { th: 3, w: 13, h: 10, amb: 0.7, items: function (a) {
+      a(2, 2, T.BED, "s"); a(4, 2, T.BOOKSHELF, "s"); a(5, 2, T.BOOKSHELF, "s"); a(9, 2, T.HEARTH, "s"); a(11, 2, T.WARDROBE, "s");
+      a(7, 1, T.PAINTING, "w"); a(3, 1, T.TORCH, "w"); a(10, 1, T.TORCH, "w");
+      a(5, 5, T.RUG, "f"); a(6, 5, T.RUG, "f"); a(7, 5, T.RUG, "f"); a(6, 5, T.TABLE, "s"); a(5, 5, T.CHAIR); a(7, 5, T.CHAIR_L);
+      a(1, 7, T.BARREL, "s"); a(1, 8, T.BARREL, "s"); a(11, 8, T.POT, "s"); a(11, 7, T.FLOWERPOT, "s"); a(9, 7, T.GLOWPOT, "s");
+    } },
+    tower: { th: 4, w: 9, h: 13, amb: 0.62, items: function (a) {
+      a(2, 2, T.BOOKSHELF, "s"); a(3, 2, T.BOOKSHELF, "s"); a(5, 2, T.BOOKSHELF, "s"); a(6, 2, T.WARDROBE, "s");
+      a(4, 1, T.BANNER, "w"); a(1, 1, T.TORCH, "w"); a(7, 1, T.TORCH, "w");
+      a(3, 5, T.RUG, "f"); a(4, 5, T.RUG, "f"); a(5, 5, T.RUG, "f"); a(4, 5, T.TABLE, "s"); a(3, 5, T.CHAIR); a(5, 5, T.CHAIR_L);
+      a(4, 8, T.CAULDRON, "s"); a(1, 7, T.BARREL, "s"); a(7, 7, T.BARREL, "s"); a(1, 10, T.BUCKET, "s"); a(7, 10, T.BUGTROPHY, "s"); a(2, 10, T.BARREL, "s");
+    } },
+    forge: { th: 5, w: 14, h: 10, amb: 0.55, items: function (a) {
+      a(6, 2, T.HEARTH, "s"); a(7, 2, T.HEARTH, "s"); a(2, 2, T.BRAZIER, "s"); a(11, 2, T.BRAZIER, "s");
+      a(4, 1, T.EMBERBANNER, "w"); a(9, 1, T.EMBERBANNER, "w"); a(1, 1, T.TORCH, "w"); a(12, 1, T.TORCH, "w");
+      a(3, 5, T.ANVIL, "s"); a(10, 5, T.TABLE, "s"); a(9, 5, T.CHAIR); a(11, 5, T.CHAIR_L);
+      a(5, 4, T.RUG, "f"); a(6, 4, T.RUG, "f"); a(7, 4, T.RUG, "f"); a(8, 4, T.RUG, "f");
+      a(1, 7, T.BARREL, "s"); a(2, 7, T.BARREL, "s"); a(12, 7, T.URN, "s"); a(12, 8, T.POT, "s"); a(7, 7, T.CINDERLAMP, "s");
+    } },
+    keep: { th: 6, w: 11, h: 13, amb: 0.5, items: function (a) {
+      a(5, 2, T.THRONE, "s"); a(3, 1, T.EMBERBANNER, "w"); a(7, 1, T.EMBERBANNER, "w"); a(1, 1, T.TORCH, "w"); a(9, 1, T.TORCH, "w");
+      for (var y = 3; y <= 9; y++) a(5, y, T.RUG, "f");
+      a(2, 4, T.BRAZIER, "s"); a(8, 4, T.BRAZIER, "s"); a(2, 7, T.GUARDIAN, "s"); a(8, 7, T.GUARDIAN, "s");
+      a(1, 10, T.BARREL, "s"); a(9, 10, T.URN, "s"); a(2, 10, T.BARREL, "s"); a(8, 10, T.EMBERLANTERN, "s");
+    } },
+    lodge: { th: 7, w: 14, h: 10, amb: 0.66, items: function (a) {
+      a(6, 2, T.HEARTH, "s"); a(2, 2, T.BED, "s"); a(3, 2, T.WARDROBE, "s"); a(10, 2, T.BOOKSHELF, "s"); a(11, 2, T.BOOKSHELF, "s");
+      a(4, 1, T.FROSTBANNER, "w"); a(9, 1, T.FROSTBANNER, "w"); a(7, 1, T.TORCH, "w");
+      a(5, 5, T.RUG, "f"); a(6, 5, T.RUG, "f"); a(7, 5, T.RUG, "f"); a(8, 5, T.RUG, "f"); a(6, 5, T.TABLE, "s"); a(5, 5, T.CHAIR); a(8, 5, T.CHAIR_L);
+      a(1, 7, T.FROSTLANTERN, "s"); a(12, 7, T.ICESCULPT, "s"); a(12, 8, T.BARREL, "s"); a(2, 8, T.BARREL, "s");
+    } },
+    shrine: { th: 8, w: 11, h: 9, amb: 0.5, items: function (a) {
+      a(5, 2, T.FROGSTATUE, "s"); a(3, 1, T.FROSTBANNER, "w"); a(7, 1, T.FROSTBANNER, "w");
+      a(3, 3, T.FROSTLANTERN, "s"); a(7, 3, T.FROSTLANTERN, "s");
+      for (var y = 3; y <= 6; y++) a(5, y, T.RUG, "f");
+      a(2, 6, T.ICESCULPT, "s"); a(8, 6, T.ICESCULPT, "s"); a(1, 3, T.CRYSTALLAMP, "s"); a(9, 3, T.CRYSTALLAMP, "s");
+    } }
+  };
+  function interior(kind, biome, id, run) {
+    var K = KINDS[kind] || KINDS.cabin, w = K.w, h = K.h, n = w * h, wall = new Uint8Array(n), sol = new Uint8Array(n), deco = [], x, y, dr = [];
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) wall[y * w + x] = (y <= 1 || y === h - 1 || x === 0 || x === w - 1) ? 1 : 0;
+    var dx = Math.floor(w / 2);
+    K.items(function (px, py, tid, o) {
+      if (px < 1 || px > w - 2 || py < 1 || py > h - 2) return;
+      var e = { x: px, y: py, id: tid, solid: o === "s", flat: o === "f", wall: o === "w" };
+      deco.push(e); if (e.solid) sol[py * w + px] = 1;
+    });
+    deco.forEach(function (e) { if (e.x === dx && e.y >= h - 3) { e.solid = false; sol[e.y * w + e.x] = 0; } });   // never block the way to the door
+    for (y = 0; y < h; y++) dr[y] = [];
+    deco.forEach(function (e) { if (!e.flat) dr[e.y].push(e); });
+    return { w: w, h: h, floor: 1, biome: biome, seed: id, theme: THEMES[K.th], wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), sol: sol,
+      up: { x: dx, y: h - 1 }, down: { x: -60, y: -60 }, spawn: { x: dx + 0.5, y: h - 1.25 }, lamps: [], rocks: 0,
+      bld: true, bi: K.th, amb: K.amb, deco: deco, dr: dr, flat: deco.filter(function (e) { return e.flat; }) };
   }
 
-  // is the cell blocked for walking? (walls and rocks are; anything outside the grid is)
-  function solid(F, x, y) { if (x < 0 || y < 0 || x >= CW || y >= CH) return true; var i = y * CW + x; return !!(F.wall[i] || F.node[i]); }
 
-  var api = { W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, genManor: genManor, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  var api = { W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);
