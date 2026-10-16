@@ -595,3 +595,40 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
 - **Doors:** closed doors are drawn thin (edge-on), open doors wide.
 - **Waypoints:** name, 12 colours and 12 icons, edited from the map card.
 - **Inventory:** tapping an item only shows its info; drag an item onto another slot to move, swap or merge (mouse and touch).
+- **Quests (replaces the Trail and Goals):** a six-chapter story told by Old Croaker (CHAPTERS / MAIN in sandbox.js) with story cards, chapter rewards and a HUD tracker, plus 52 side quests in 8 categories (SIDE) that open chapter by chapter. The finale: craft and place the Heart of the Swamp. Older saves are fast-forwarded silently to the quest they had already earned. Craft counts are kept in S.mk, visited places in S.vis.
+- **Fishing & animals:** Reed Fishing Rod (hand-crafted) and Ember Rod (lava). Tap water, wait for the bite, then tap to reel in. There are 9 fish across water, ice and lava, plus rare night and underground catches, treasure and old boots. Wild ducks, pigs and goats can be tamed with their favourite crop. Pets get names, lay eggs, dig truffles and give milk, follow you while you hold their food, and breed when two fed pets are together. Adds a Feeding Trough, a Fish Trophy, 8 new meals, Angler and Rancher side quests, and two chapter-1 story quests.
+- **Old Croaker NPC:** the storyteller now lives at the spawn camp. Tap him or press F to talk. He gives a hint for your current quest, swamp wisdom tips, a "Retell the story" button and a shortcut to the quest log. Finish a chapter and he has a gift waiting for you: a gold "!" shows over him and on the map.
+- **Bosses:** three chapter bosses, each with a summon item crafted at the Workbench and used in its home land:
+  - **Bramble Queen** (Bramble Lure, Murkwater): charges, thorn volleys, calls bugs. Dazed after a charge, taking +50% damage.
+  - **Magma Wyrm** (Ember Bog): tunnels underground, bursts out of glowing cracks and spits fire.
+  - **Frost Alpha** (Frostfen): pounces with ice shockwaves, howls down icicles (shadow telegraph), calls wolves and breathes frost.
+
+  Each has a boss health bar and goes enraged under 40% health. Passing out or leaving makes the boss retreat and gives back the summon. Rewards are unique materials for Decor-bench trophies (Bramble Crown, Wyrm Skull, Alpha Pelt Banner) plus gems and ingots. Each fight is also the last quest of chapters 3–5 (old saves migrate by quest id), and there are new Hunter side quests.
+- **Bounties & Swap Shop:** from Chapter 2, Old Croaker posts 3 daily bounties (reset at local midnight, with 1 free reroll a day) and 1 weekly bounty (resets Monday). Bounties include digging, farming, fishing, cooking, hunting, caves and bosses, and scale with your chapter. Claim them at Croaker for Croaker Tokens plus items, with +2 tokens for finishing all 3 dailies. Spend tokens in his Swap Shop on seeds, ingots, gems, boss summons and the exclusive Golden Frog Statue. The Quests tab shows bounty progress, and Croaker shows a "!" when one is ready.
+- **Polish: mini-map, music, hotbar drag:**
+  - **Mini-map:** a live map of the explored area, top right, with waypoints, holes, bed, Croaker, pets and bosses. Tap it to open the World Map.
+  - **Ambient music:** generated with Web Audio, no files. Each land has its own mood, it goes slower and lower underground and at night, and boss fights get a tense pulse.
+  - **Options:** a new "Music and mini-map" section (music on/off and volume, mini-map on/off), saved on the device.
+  - **Hotbar:** you can now drag items between in-game hotbar slots, the same as in the backpack.
+- **Cloud saves:** when signed in to a SwampRealms account, every Delve world is backed up to the account. Backups happen about 15 seconds after a real change, from "Back up now" in the Worlds menu, and when you leave the page.
+  - **Other devices:** your cloud worlds show up in the Worlds menu to download. A world you haven't changed on this device updates itself when the cloud copy is newer.
+  - **Conflicts:** if two devices change the same world, nothing is overwritten. The Worlds menu asks which copy to keep.
+  - **Backend:** `worker.js` adds `GET/PUT/DELETE /api/delve[/<world id>]` (up to 12 worlds and about 900 KB each per account, with compare-and-swap revisions). The `delve` table is created automatically on first use and is also listed in `schema.sql`. Deploy as usual with `wrangler deploy`; no manual database step is needed.
+  - **Without a backend** (e.g. a static preview), the menu just says cloud saves aren't available.
+- **Weather:** the world's weather cycles between calm, wet and storm, and each land shows it its own way: rain and thunderstorms with lightning in Murkwater, ash fall and ember storms in Ember Bog, snow and blizzards in Frostfen.
+  - Swamp rain waters crops under open sky, and fish bite about 30% sooner in rain or snow.
+  - Storms darken the sky, with a soft rain/wind sound tied to the music switch.
+  - The HUD shows the current weather, and there's a Weather on/off toggle in Options. Mobile still runs at 56 fps during a night storm.
+- **Charms:** 8 wearable trinkets, crafted at the Workbench (Craft > Gear > Charms) and worn from a collapsible box at the top of the backpack. You get 2 slots, or 3 after beating all three bosses.
+  - **Boss charms:** Bramble (+15% speed), Alpha (double jump) and Magma (−70% lava burn).
+  - **Utility charms:** Miner's (+25% dig), Angler's (faster bites, more rare fish), Green Thumb (+25% crop growth), Hearty (−35% hunger drain, +20% regen) and Lucky Clover (extra loot finds, bought with Croaker Tokens).
+  - There are two new Collector side quests for charms.
+- **Stability sweep:** boss fights now block sleeping, entering caves or buildings, and switching worlds (switching hands the summon back). If the page closes mid-fight, the summon item is returned on the next load. In hole caves, weather and bounties keep ticking, the Bramble Charm speeds you up, and holding a summon explains it only works on the surface.
+- **Collection Log:** a new Journal tab, Log, with an overall completion bar and 12 lifetime stats. It tracks creatures (with kill counts), bosses, fish, crops grown, meals tasted, animal friends and charms. Anything you haven't found yet shows as "???".
+- **Multiplayer (co-op, up to 4 players):** open "Play together" from the Worlds menu or Options.
+  - **Hosting and joining:** a signed-in player opens their world, optionally listing it publicly and allowing PvP, and gets a 6-character room code. Anyone can join with the code or from the public list, no account needed.
+  - **What the host runs:** creatures, bosses, crops, time and weather. Creatures chase whichever player is nearest.
+  - **Shared between players:** digging and building, chat (press Enter), kill credit, and boss rewards for everyone present.
+  - **Guests:** they bring their backpack, gear and quests. Their character is saved to their own world while they play, and they return home when they leave. Guests can't open the host's chests, sleep, or summon bosses.
+  - **Host controls:** kick players, toggle Public and PvP, close the room.
+  - **Deploying:** `worker.js` now exports the `DelveRoom` Durable Object, and `wrangler.jsonc` has its binding and migration. `wrangler deploy` sets everything up; the `mp_rooms` table creates itself. It runs on the Workers Free plan (SQLite-backed Durable Objects, 100k requests/day; WebSocket messages count 20:1).

@@ -158,109 +158,172 @@
   ];
   if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
   DECOR.forEach(function (r) { r.deco = 1; });
-  var GOALS = [
-    { id: "dig", n: "First Dig", d: "Mine your first block", f: function () { return S.st.mined >= 1; } },
-    { id: "wood", n: "Timber!", d: "Collect 10 Wood", f: function () { return S.st.wood >= 10; } },
-    { id: "swim", n: "Wet Paws", d: "Swim in the swamp", f: function () { return S.st.swim >= 2; } },
-    { id: "glow", n: "Glow Finder", d: "Mine Glowspore Ore", f: function () { return (S.inv.spore || 0) + S.st.torches > 0 || S.tier >= 2; } },
-    { id: "lights", n: "Night Light", d: "Place 10 Torches", f: function () { return S.st.torches >= 10; } },
-    { id: "pick2", n: "Spore Smith", d: "Craft the Glowspore Pick", f: function () { return S.tier >= 2; } },
-    { id: "ember", n: "Into the Ember", d: "Reach Ember Bog", f: function () { return bioAt() === 1 || S.ms.ember; } },
-    { id: "pick3", n: "Cinder Smith", d: "Craft the Cinder Pick", f: function () { return S.tier >= 3; } },
-    { id: "frost", n: "Frozen Feet", d: "Reach Frostfen", f: function () { return bioAt() === 2 || S.ms.frost; } },
-    { id: "pick4", n: "Frost Smith", d: "Craft the Frost Pick", f: function () { return S.tier >= 4; } },
-    { id: "bug1", n: "Bug Squasher", d: "Defeat a Bramble Bug", f: function () { return S.st.bugs >= 1; } },
-    { id: "frog1", n: "Frog Hopper", d: "Defeat a Swamp Frog", f: function () { return S.st.frogs >= 1; } },
-    { id: "bug5", n: "Thorn Trouble", d: "Defeat 5 Bramble Bugs", f: function () { return S.st.bugs >= 5; } },
-    { id: "frog5", n: "Croak Crusher", d: "Defeat 5 Swamp Frogs", f: function () { return S.st.frogs >= 5; } },
-    { id: "wolf1", n: "Lone Wolf Down", d: "Defeat a Frost Wolf in Frostfen", f: function () { return S.st.wolves >= 1; } },
-    { id: "gator1", n: "Gator Wrangler", d: "Defeat a Bog Gator (they lurk in swamp lakes once you have the Glowspore Blade)", f: function () { return S.st.gators >= 1; } },
-    { id: "slime5", n: "Slime Time", d: "Pop 5 slimes (caves, or the surface at night)", f: function () { return S.st.slimes >= 5; } },
-    { id: "wasp1", n: "Wasp Swatter", d: "Defeat an Ember Wasp in Ember Bog", f: function () { return S.st.wasps >= 1; } },
-    { id: "ckill10", n: "Cave Crawler", d: "Defeat 10 creatures in the caves below the Cave Holes", f: function () { return S.st.ckills >= 10; } },
-    { id: "cclear1", n: "Clean Sweep", d: "Clear every creature from a cave floor", f: function () { return S.st.cclear >= 1; } },
-    { id: "cclear5", n: "Deep Delver", d: "Clear 5 cave floors", f: function () { return S.st.cclear >= 5; } },
-    { id: "farm1", n: "Green Thumb", d: "Harvest a ripe crop", f: function () { return S.st.harvests >= 1; } },
-    { id: "farm25", n: "Swamp Farmer", d: "Harvest 25 ripe crops", f: function () { return S.st.harvests >= 25; } },
-    { id: "crops4", n: "Four Fields", d: "Harvest Swamp Carrots, Bog Potatoes, Fire Peppers and Frostberries", f: function () { return (S.st.cropbits & 15) === 15; } },
-    { id: "cook5", n: "Swamp Chef", d: "Cook 5 meals at a Cooking Pot", f: function () { return S.st.cooked >= 5; } },
-    { id: "gourmet", n: "Gourmet", d: "Eat 6 different cooked meals", f: function () { return Object.keys(S.ate).length >= 6; } },
-    { id: "feast", n: "Feast of Three Lands", d: "Eat an Explorer's Feast", f: function () { return !!S.ate.feast; } },
-    { id: "loot1", n: "Treasure Hunter", d: "Open a Cave Chest (they glow faintly in dark caves)", f: function () { return S.st.cchests >= 1; } },
-    { id: "loot10", n: "Hoard of Gold", d: "Open 10 Cave Chests", f: function () { return S.st.cchests >= 10; } },
-    { id: "pots20", n: "Pot Smasher", d: "Smash 20 Cave Pots", f: function () { return S.st.pots >= 20; } },
-    { id: "hunter", n: "Monster Hunter", d: "Defeat one of every creature: bug, frog, bat, wolf, gator, slime and wasp", f: function () { return ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps"].every(function (k) { return S.st[k] >= 1; }); } },
-    { id: "wpn1", n: "Armed Paws", d: "Craft the Reed Spear", f: function () { return S.wpn >= 1; } },
-    { id: "wpn2", n: "Spore Blade", d: "Craft the Glowspore Blade", f: function () { return S.wpn >= 2; } },
-    { id: "wpn3", n: "Cinder Cleaver", d: "Craft the Cinder Cleaver", f: function () { return S.wpn >= 3; } },
-    { id: "wpn4", n: "Frost Fang", d: "Craft the Frost Fang", f: function () { return S.wpn >= 4; } },
-    { id: "arm1", n: "Dressed Up", d: "Craft the Reed Vest", f: function () { return S.arm >= 1; } },
-    { id: "arm2", n: "Spore Mail", d: "Craft the Glowspore Mail", f: function () { return S.arm >= 2; } },
-    { id: "arm3", n: "Cinder Plate", d: "Craft the Cinder Plate", f: function () { return S.arm >= 3; } },
-    { id: "arm4", n: "Frozen Solid", d: "Craft the Frost Plate", f: function () { return S.arm >= 4; } },
-    { id: "dcraft30", n: "Grand Decorator", d: "Craft 30 pieces at the Decor Workbench", f: function () { return S.st.dcraft >= 30; } },
-    { id: "throne", n: "Fit for a King", d: "Craft the Frostrock Throne", f: function () { return (S.inv.throne || 0) > 0; } },
-    { id: "bench2", n: "Bench Boost", d: "Upgrade to the Glowspore Workbench", f: function () { return S.bl >= 2; } },
-    { id: "bench3", n: "Forged in Ember", d: "Upgrade to the Cinder Forge Workbench", f: function () { return S.bl >= 3; } },
-    { id: "bench4", n: "Frostbound Bench", d: "Upgrade to the Frost Workbench", f: function () { return S.bl >= 4; } },
-    { id: "bed1", n: "Bed Time", d: "Place a Swamp Bed", f: function () { return S.st.beds >= 1; } },
-    { id: "door1", n: "Knock Knock", d: "Place a Swamp Door", f: function () { return S.st.doors >= 1; } },
-    { id: "ladder1", n: "Up and Away", d: "Place a Ladder", f: function () { return S.st.ladders >= 1; } },
-    { id: "chest1", n: "Pack Rat", d: "Place a Wooden Chest", f: function () { return S.st.chests >= 1; } },
-    { id: "bag1", n: "Pack Up", d: "Craft the Reed Backpack", f: function () { return S.bag >= 1; } },
-    { id: "bag2", n: "Hauler", d: "Craft the Bog Hauler Pack", f: function () { return S.bag >= 2; } },
-    { id: "can1", n: "Green Paws", d: "Water a plant with the Watering Can", f: function () { return S.st.watered >= 1; } },
-    { id: "can2", n: "Gardener", d: "Water plants 20 times", f: function () { return S.st.watered >= 20; } },
-    { id: "wall1", n: "Back Wall", d: "Place a back wall", f: function () { return S.st.walls >= 1; } },
-    { id: "wall2", n: "Room Maker", d: "Place 40 back wall tiles", f: function () { return S.st.walls >= 40; } },
-    { id: "shovel1", n: "Dig It", d: "Craft the Reed Shovel", f: function () { return S.shovel >= 1; } },
-    { id: "bat1", n: "Night Watch", d: "Defeat a Dusk Bat", f: function () { return S.st.bats >= 1; } },
-    { id: "sleep1", n: "Sweet Dreams", d: "Sleep through a night", f: function () { return S.st.sleeps >= 1; } },
-    { id: "bat10", n: "Bat Basher", d: "Defeat 10 Dusk Bats", f: function () { return S.st.bats >= 10; } },
-    { id: "sleep5", n: "Well Rested", d: "Sleep through 5 nights", f: function () { return S.st.sleeps >= 5; } },
-    { id: "build", n: "Builder", d: "Place 100 blocks", f: function () { return S.st.placed >= 100; } },
-    { id: "deep", n: "Deep Diver", d: "Dig down to depth 50", f: function () { return S.st.maxDepth >= 50; } },
-    { id: "decor1", n: "Home Sweet Home", d: "Place 3 pieces of furniture", f: function () { return S.st.decor >= 3; } },
-    { id: "dbench1", n: "Interior Designer", d: "Place a Decor Workbench", f: function () { return S.st.dbenches >= 1; } },
-    { id: "dcraft5", n: "Cozy Corner", d: "Craft 5 pieces at the Decor Workbench", f: function () { return S.st.dcraft >= 5; } },
-    { id: "dcraft15", n: "Master Decorator", d: "Craft 15 pieces at the Decor Workbench", f: function () { return S.st.dcraft >= 15; } },
-    { id: "cave1", n: "Down the Hole", d: "Climb down into a cave", f: function () { return S.st.caves >= 1; } },
-    { id: "cave2", n: "Rock Hound", d: "Break 25 rocks inside caves", f: function () { return S.st.cmined >= 25; } },
-    { id: "cave3", n: "Spelunker", d: "Reach cave floor 5", f: function () { return S.st.caveDeep >= 5; } },
-    { id: "bld1", n: "Knock Knock", d: "Step inside a building", f: function () { return S.st.bld >= 1; } },
-    { id: "bld5", n: "House Call", d: "Visit 5 buildings", f: function () { return S.st.bld >= 5; } },
-    { id: "cave4", n: "Cave Diver", d: "Reach cave floor 10", f: function () { return S.st.caveDeep >= 10; } }
+  // ==================================================================================================
+  // QUESTS: the story of Delve. One main quest line in six chapters (S.qi = index into MAIN), told by Old Croaker,
+  // plus side quests (S.ms[id] = done) that open up chapter by chapter. Every quest counts from lifetime stats,
+  // so doing things early still counts. Rewards are items. TO ADD A QUEST: one line in MAIN (with ch) or SIDE.
+  //   tg = tile ids the guide ring points at on the surface, deep = how far below the surface still counts, rw = reward.
+  // ==================================================================================================
+  function mk(id) { return (S.mk && S.mk[id]) || 0; }   // how many times a recipe was crafted
+  function vis(k) { return !!(S.vis && S.vis[k]); }      // places visited: "b0".."b2" biomes, "k_<kind>" buildings
+  function inv(k) { return S.inv[k] || 0; }
+  var MAIN_V1 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "lights", "eat", "plant", "harvest", "cook", "bed", "door", "sleep", "stash", "spore", "pick2", "spear", "bug", "frog", "blade", "hole", "sweep", "benchup", "mail", "ember", "wasp", "pick3", "furnace", "iron", "cleaver", "forge", "bench3", "plate", "frost", "wolf", "pick4", "fang", "shrine", "berry", "bench4", "fplate", "deep10", "hoard", "hunter", "feast", "gems", "heart", "restore"];   // MAIN order before fishing and animals (old saves)
+  var CHAPTERS = [
+    { n: "Washed Up in Murkwater", c: "#4ee6b4", s: "You wake on a mossy bank with mud in your fur. A deep, croaky voice drifts out of the reeds: “Easy now, little one. I'm Old Croaker. The Heart of the Swamp, the great crystal that kept these lands glowing, has gone dark, and the swamp is fading with it. Bringing it back will take tools, shelter and a lot of courage. Let's start small: sticks, fibre, stone. Every delver starts with bare paws.”", rw: { torch: 6, planks: 8 } },
+    { n: "A Place to Call Home", c: "#7dd65a", s: "“Not bad at all!” croaks Old Croaker. “But a delver needs more than a pick. You'll need food in your belly, a garden that grows while you're away, and a bed to sleep through the dark. Nights bring the Dusk Bats. Build yourself a real home, and the swamp will start to feel like yours.”", rw: { seed_potato: 3, farmland: 6, torch: 6 } },
+    { n: "The Glow Beneath", c: "#22d3a6", s: "“Deep under the mud there's still a little light left: Glowspore. It's the last of the Heart's glow, soaked into the stone. Dig it, forge it, and arm yourself, because the creatures of the swamp have grown restless since the dark came. The Cave Holes lead further down than anyone's dared to go.”", rw: { torch: 10, ironingot: 2 } },
+    { n: "Embers in the East", c: "#ff8a3d", s: "“East of the swamp lies Ember Bog, where the ground smoulders and the rivers run with fire. Its fire has been cooling too, and the Ember Wasps are angry about it. Forge a hotter pick, learn to smelt iron, and find the old Forges and Keeps. The bog's Ruby fire is one of the three lights the Heart needs.”", rw: { charcoal: 6, ironingot: 3 } },
+    { n: "The Frozen Fen", c: "#7fd6ff", s: "“Far to the west is Frostfen, white and silent. Frost Wolves hunt there in pairs. Under the ice sleep the Frost Sapphire and the pale Moonstone, the cold lights of the Heart. Dress warm, keep your blade sharp, and visit the old Shrines. They remember the Heart.”", rw: { frostberry: 4, torch: 8 } },
+    { n: "Heart of the Swamp", c: "#f2c14e", s: "“You've walked all three lands, little one. Now gather their lights: Ember Ruby, Frost Sapphire and Moonstone, bound with Glowspore, Cinder and Frost Crystal. Prove yourself in the deep caves, then shape the Heart of the Swamp at your Decor Workbench and set it down at home. Then the swamp will glow again.”", rw: null },
+    { n: "Epilogue: A Glowing Swamp", c: "#f2c14e", s: "The crystal flares, and green light ripples out across the water, through the ember fields and over the frozen fen. Old Croaker laughs, a big wet happy croak. “You did it! The swamp is alive again. But there's always more to find: deeper caves, rarer treasure, grander homes. The side quests in your Journal will keep you busy for a long, long time.”", rw: null }
   ];
-  if (typeof SbxExtra !== "undefined") SbxExtra.GOALS.forEach(function (g) { GOALS.push({ id: g.id, n: g.n, d: g.d, f: function () { return g.f(S); } }); });
-  // ---- THE TRAIL (Stage 1): a guided first-day path. Steps count from lifetime stats, so gathering ahead still counts. ----
-  // tg = tile ids to point at on the surface, deep = how far below the surface still counts, rw = small item gift.
-  var TRAIL_V1 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "spore", "lights", "pick2", "ember", "spear", "bug", "frog", "blade", "bed", "bats", "sleep", "stash", "benchup", "mail"];   // Trail order before the food steps (for old saves)
-  var TRAIL = [
-    { id: "stick", n: "Gather Sticks", d: "Hold on tree leaves to punch them. Leaves sometimes drop Sticks.", need: 5, v: function () { return S.st.stick; }, tg: [T.LEAVES], rw: null },
-    { id: "fiber", n: "Gather Reed Fiber", d: "Snip cattails by the water or the vines hanging under tree leaves.", need: 3, v: function () { return S.st.fiber; }, tg: [T.REED, T.VINE], rw: { stick: 2 } },
-    { id: "pebble", n: "Dig for Pebbles", d: "Dig mud with your paws. Pebbles pop out now and then.", need: 2, v: function () { return S.st.pebble; }, tg: [T.MOSS, T.MUD], rw: { fiber: 1 } },
-    { id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
-    { id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
-    { id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench, select it in the hotbar, then tap the ground to place it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
-    { id: "spore", n: "Find Glowspore", d: "Dig down into the stone. Glowing green ore is Glowspore. Bring a torch.", need: 16, v: function () { return S.st.spore; }, rw: { wood: 4 } },
-    { id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
-    { id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Eat something: Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmland: 4 } },
-    { id: "plant", n: "Plant a Garden", d: "Place Garden Soil on the ground (craft more from Mud and Leaves), then plant Swamp Carrot Seeds on top. Cattails drop more seeds. Watered crops grow twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
-    { id: "harvest", n: "First Harvest", d: "When a crop shows its ripe produce, hold on it to pick it. You get food and seeds to plant again.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
-    { id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food and heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
-    { id: "pick2", n: "Spore Smith", d: "Tap your Workbench to open it and craft the Glowspore Pick.", need: 1, v: function () { return S.tier >= 2 ? 1 : 0; }, rw: { torch: 6 } },
-    { id: "ember", n: "Cross into Ember Bog", d: "Walk east past the swamp edge. Basalt and Cinder Ore are next.", need: 1, v: function () { return (S.ms.ember || bioAt() === 1) ? 1 : 0; }, rw: null },
-    { id: "spear", n: "Arm Yourself", d: "Craft the Reed Spear (Sticks, Fiber, Pebbles). Pick it in the hotbar and hold to swing. Enemies start to roam once you carry a weapon.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { planks: 4 } },
-    { id: "bug", n: "Squash a Bramble Bug", d: "Bramble Bugs prowl the swamp surface and dark caves. Strike them before they ram you.", need: 1, v: function () { return S.st.bugs; }, rw: { torch: 4 } },
-    { id: "frog", n: "Hop to It", d: "A Swamp Frog warns with a ! then lashes its tongue low. Jump the tongue, then hit it while it is winded.", need: 1, v: function () { return S.st.frogs; }, rw: { planks: 6 } },
-    { id: "blade", n: "Spore Blade", d: "Bring 3 Bramble Fragments from bugs to your Workbench and craft the Glowspore Blade.", need: 1, v: function () { return S.wpn >= 2 ? 1 : 0; }, rw: { torch: 6 } },
-    { id: "bed", n: "Build a Bed", d: "Dusk Bats swoop down at night. Craft a Swamp Bed (Planks, Fiber, Leaves), select it in the hotbar and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
-    { id: "bats", n: "Night Watch", d: "When the sky goes dark, bats dive at you. Watch for the red eyes, step aside, then strike. Defeat 2 Dusk Bats.", need: 2, v: function () { return S.st.bats; }, rw: { planks: 6 } },
-    { id: "sleep", n: "Sleep Tight", d: "At night, stand next to your bed and tap Sleep (or press F). You skip to dawn with full health, and the bed becomes your respawn point. Bats must be gone, or you need a roof overhead.", need: 1, v: function () { return S.st.sleeps; }, rw: { torch: 6 } },
-    { id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest (Planks, Fiber), place it near camp, open it (tap it or press F) and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8, torch: 4 } },
-    { id: "benchup", n: "Level Up the Bench", d: "Armor for the next biome needs a better Workbench. Bring Glowspore, Clay, Stone and Bramble + Frog Fragments from Murkwater to your Workbench, tap it to open it and press Upgrade.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
-    { id: "mail", n: "Suit Up", d: "Craft the Glowspore Mail at your upgraded Workbench before you push deep into Ember Bog.", need: 1, v: function () { return S.arm >= 2 ? 1 : 0; }, rw: { torch: 6 } }
+  var MAIN = [
+    // ---- Chapter 1: bare paws to a workbench ----
+    { ch: 0, id: "stick", n: "Gather Sticks", d: "Hold on tree leaves to punch them. Leaves sometimes drop Sticks.", need: 5, v: function () { return S.st.stick; }, tg: [T.LEAVES] },
+    { ch: 0, id: "fiber", n: "Gather Reed Fiber", d: "Snip cattails by the water, or the vines hanging under tree leaves.", need: 3, v: function () { return S.st.fiber; }, tg: [T.REED, T.VINE], rw: { stick: 2 } },
+    { ch: 0, id: "pebble", n: "Dig for Pebbles", d: "Dig mud with your paws. Pebbles pop out now and then.", need: 2, v: function () { return S.st.pebble; }, tg: [T.MOSS, T.MUD], rw: { fiber: 1 } },
+    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
+    { ch: 0, id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
+    { ch: 0, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
+    { ch: 0, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
+    // ---- Chapter 2: food, farm and shelter ----
+    { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmland: 4 } },
+    { ch: 1, id: "plant", n: "Plant a Garden", d: "Place Garden Soil on the ground (make more from Mud and Leaves), then plant Swamp Carrot Seeds on top. Watered crops grow twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
+    { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop shows its ripe produce, hold on it to pick it. You get food, plus seeds to plant again.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
+    { ch: 1, id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food, and it heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
+    { ch: 1, id: "bed", n: "Build a Bed", d: "Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
+    { ch: 1, id: "door", n: "Close the Door", d: "Craft a Swamp Door and place it in a doorway. Closed doors keep bugs, frogs and bats out.", need: 1, v: function () { return S.st.doors; }, rw: { planks: 6 } },
+    { ch: 1, id: "sleep", n: "Sleep Tight", d: "At night, stand next to your bed and tap Sleep (or press F). You wake at dawn with full health, and the bed becomes your respawn point.", need: 1, v: function () { return S.st.sleeps; }, rw: { torch: 6 } },
+    { ch: 1, id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest, place it at camp, open it and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8 } },
+    { ch: 1, id: "fishing", n: "Gone Fishing", d: "Craft a Reed Fishing Rod by hand, pick it in the hotbar and tap a lake to cast. When the bobber dips and a ! shows, tap again to reel in.", need: 1, v: function () { return S.st.fish; }, rw: { bogminnow: 2, stick: 2 } },
+    { ch: 1, id: "tame", n: "A New Friend", d: "Wild Bog Ducks and Mud Pigs wander the swamp. Hold their favourite food (seeds for ducks, carrots or potatoes for pigs) and tap one to tame it.", need: 1, v: function () { return S.st.tamed; }, rw: { trough: 1, seed_carrot: 3 } },
+    // ---- Chapter 3: Glowspore, weapons and the caves ----
+    { ch: 2, id: "spore", n: "Find Glowspore", d: "Dig down into the stone. The glowing green ore is Glowspore. Collect 16.", need: 16, v: function () { return S.st.spore; }, rw: { wood: 4 } },
+    { ch: 2, id: "pick2", n: "Spore Smith", d: "Tap your Workbench to open it and craft the Glowspore Pick.", need: 1, v: function () { return S.tier >= 2 ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 2, id: "spear", n: "Arm Yourself", d: "Craft the Reed Spear (Sticks, Fiber, Pebbles), pick it in the hotbar and hold to swing. Creatures start to roam once you carry a weapon.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { planks: 4 } },
+    { ch: 2, id: "bug", n: "Squash a Bramble Bug", d: "Bramble Bugs prowl the swamp and its caves. Strike them before they ram you.", need: 1, v: function () { return S.st.bugs; }, rw: { torch: 4 } },
+    { ch: 2, id: "frog", n: "Hop to It", d: "A Swamp Frog warns with a ! and then lashes its tongue low. Jump the tongue, then hit it while it's winded.", need: 1, v: function () { return S.st.frogs; }, rw: { planks: 6 } },
+    { ch: 2, id: "blade", n: "Spore Blade", d: "Bring 3 Bramble Fragments to your Workbench and craft the Glowspore Blade.", need: 1, v: function () { return S.wpn >= 2 ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 2, id: "hole", n: "Down the Hole", d: "Find a Cave Hole on the surface and climb down. Each floor has rocks, treasure and creatures.", need: 1, v: function () { return S.st.caves; }, rw: { torch: 6 } },
+    { ch: 2, id: "sweep", n: "Clean Sweep", d: "Defeat every creature on one cave floor.", need: 1, v: function () { return S.st.cclear; }, rw: { ironingot: 1, torch: 4 } },
+    { ch: 2, id: "benchup", n: "Level Up the Bench", d: "Bring Glowspore, Clay, Stone and Bramble and Frog Fragments to your Workbench, open it and press Upgrade.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
+    { ch: 2, id: "mail", n: "Suit Up", d: "Craft the Glowspore Mail at your upgraded Workbench.", need: 1, v: function () { return S.arm >= 2 ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 2, id: "queen", n: "Queen of Thorns", d: "Craft a Bramble Lure at your Glowspore Workbench, then use it in Murkwater Swamp. Defeat the Bramble Queen: dodge her charge, then strike while she's dazed.", need: 1, v: function () { return S.st.boss & 1 ? 1 : 0; }, rw: { ironingot: 2, torch: 6 } },
+    // ---- Chapter 4: Ember Bog ----
+    { ch: 3, id: "ember", n: "Cross into Ember Bog", d: "Walk east past the swamp's edge into the smouldering bog.", need: 1, v: function () { return vis("b1") ? 1 : 0; }, rw: { wood: 6 } },
+    { ch: 3, id: "wasp", n: "Wasp Swatter", d: "Ember Wasps glow red just before they dash. Step aside, then strike. Defeat one.", need: 1, v: function () { return S.st.wasps; }, rw: { torch: 4 } },
+    { ch: 3, id: "pick3", n: "Cinder Smith", d: "Mine Cinder Ore and Basalt, then craft the Cinder Pick at your Workbench.", need: 1, v: function () { return S.tier >= 3 ? 1 : 0; }, rw: { planks: 8 } },
+    { ch: 3, id: "furnace", n: "Fire Up a Furnace", d: "Craft a Stone Furnace at your Workbench and place it near camp.", need: 1, v: function () { return mk("x_furnace"); }, rw: { charcoal: 4 } },
+    { ch: 3, id: "iron", n: "Iron Age", d: "Smelt an Iron Ingot at the Stone Furnace (Bog Iron from deep swamp stone, plus Charcoal).", need: 1, v: function () { return mk("x_ingot"); }, rw: { bogiron: 4 } },
+    { ch: 3, id: "cleaver", n: "Cinder Cleaver", d: "Craft the Cinder Cleaver. You'll need Frog Fragments.", need: 1, v: function () { return S.wpn >= 3 ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 3, id: "forge", n: "Old Fires", d: "Step inside a Cinder Forge or an Ashen Keep in Ember Bog.", need: 1, v: function () { return vis("k_forge") || vis("k_keep") ? 1 : 0; }, rw: { cinder: 6 } },
+    { ch: 3, id: "bench3", n: "Forged in Ember", d: "Upgrade your Workbench to the Cinder Forge Workbench with loot from Ember Bog.", need: 3, v: function () { return S.bl; }, rw: { planks: 10 } },
+    { ch: 3, id: "plate", n: "Cinder Plate", d: "Craft the Cinder Plate armor.", need: 1, v: function () { return S.arm >= 3 ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 3, id: "wyrm", n: "The Fire Below", d: "Craft an Ember Idol at your Cinder Forge Workbench and use it in Ember Bog. Defeat the Magma Wyrm: watch where the ground cracks, and hit it when it comes up.", need: 1, v: function () { return S.st.boss & 2 ? 1 : 0; }, rw: { ironingot: 3, charcoal: 6 } },
+    // ---- Chapter 5: Frostfen ----
+    { ch: 4, id: "frost", n: "Into the Frozen Fen", d: "Walk west past the swamp into Frostfen.", need: 1, v: function () { return vis("b2") ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 4, id: "wolf", n: "Lone Wolf Down", d: "Frost Wolves crouch before they lunge. Jump over them or back away, then strike. Defeat one.", need: 1, v: function () { return S.st.wolves; }, rw: { rawmeat: 2 } },
+    { ch: 4, id: "pick4", n: "Frost Smith", d: "Mine Frostrock and Frost Crystal, then craft the Frost Pick.", need: 1, v: function () { return S.tier >= 4 ? 1 : 0; }, rw: { planks: 10 } },
+    { ch: 4, id: "fang", n: "Frost Fang", d: "Craft the Frost Fang. Dusk Bats drop the Bat Wings it needs.", need: 1, v: function () { return S.wpn >= 4 ? 1 : 0; }, rw: { torch: 6 } },
+    { ch: 4, id: "shrine", n: "What the Ice Remembers", d: "Step inside a Frozen Shrine or a Frost Lodge.", need: 1, v: function () { return vis("k_shrine") || vis("k_lodge") ? 1 : 0; }, rw: { crystal: 4 } },
+    { ch: 4, id: "berry", n: "Cold Harvest", d: "Grow and harvest a Frostberry. Frost Spikes drop the seeds, and they grow fastest in Frostfen.", need: 1, v: function () { return S.st.cropbits & 8 ? 1 : 0; }, rw: { seed_frost: 2 } },
+    { ch: 4, id: "bench4", n: "Frostbound Bench", d: "Upgrade your Workbench to the Frost Workbench.", need: 4, v: function () { return S.bl; }, rw: { planks: 12 } },
+    { ch: 4, id: "fplate", n: "Frozen Solid", d: "Craft the Frost Plate armor.", need: 1, v: function () { return S.arm >= 4 ? 1 : 0; }, rw: { torch: 8 } },
+    { ch: 4, id: "alpha", n: "Leader of the Pack", d: "Craft a Frost Horn at your Frost Workbench and blow it in Frostfen. Defeat the Frost Alpha: jump its ice shards and step out from under the icicles.", need: 1, v: function () { return S.st.boss & 4 ? 1 : 0; }, rw: { crystal: 6, rawmeat: 3 } },
+    // ---- Chapter 6: the finale ----
+    { ch: 5, id: "deep10", n: "Into the Deep", d: "Reach floor 10 below a Cave Hole.", need: 10, v: function () { return S.st.caveDeep; }, rw: { ironingot: 2 } },
+    { ch: 5, id: "hoard", n: "Lost Treasures", d: "Open 5 Cave Chests.", need: 5, v: function () { return S.st.cchests; }, rw: { amethyst: 2 } },
+    { ch: 5, id: "hunter", n: "Monster Hunter", d: "Defeat one of every creature: bug, frog, bat, wolf, gator, slime and wasp.", need: 7, v: function () { return ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps"].filter(function (k) { return S.st[k] >= 1; }).length; }, rw: { torch: 10 } },
+    { ch: 5, id: "feast", n: "Feast of Three Lands", d: "Cook and eat an Explorer's Feast (a stew, a chili and a tart).", need: 1, v: function () { return S.ate.feast ? 1 : 0; }, rw: { roastcarrot: 3 } },
+    { ch: 5, id: "gems", n: "The Three Lights", d: "Hold 2 Ember Rubies, 2 Frost Sapphires and 2 Moonstones.", need: 3, v: function () { return mk("x_swampheart") ? 3 : (inv("ruby") >= 2 ? 1 : 0) + (inv("sapphire") >= 2 ? 1 : 0) + (inv("moonstone") >= 2 ? 1 : 0); } },
+    { ch: 5, id: "heart", n: "Shape the Heart", d: "Craft the Heart of the Swamp at the Decor Workbench (Legendary).", need: 1, v: function () { return mk("x_swampheart"); } },
+    { ch: 5, id: "restore", n: "Restore the Swamp", d: "Place the Heart of the Swamp at your camp.", need: 1, v: function () { return S.st.heart; }, rw: { torch: 20 } }
   ];
+  MAIN.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
+  CHAPTERS.forEach(function (c) { if (c.rw) Object.keys(c.rw).forEach(function (k) { if (!ITEMS[k]) delete c.rw[k]; }); });
+  // Side quests: cat groups them, ch = the chapter they open in. ids match the old Goals, so finished goals stay finished.
+  function sq(id, cat, ch, n, d, need, v, rw) { return { id: id, cat: cat, ch: ch, n: n, d: d, need: need, v: v, rw: rw }; }
+  function st(k) { return function () { return S.st[k] || 0; }; }
+  var SIDE = [
+    sq("croak", "Explorer", 0, "Say Hello", "Find Old Croaker at the camp (a few steps west of where you woke up) and tap him to talk.", 1, st("talks"), { roastcarrot: 2 }),
+    sq("dig", "Explorer", 0, "First Dig", "Mine your first block.", 1, st("mined"), { pebble: 2 }),
+    sq("swim", "Explorer", 0, "Wet Paws", "Swim in the swamp.", 2, st("swim"), { fiber: 3 }),
+    sq("bld1", "Explorer", 0, "Knock Knock", "Step inside a building.", 1, st("bld"), { torch: 2 }),
+    sq("bld5", "Explorer", 2, "House Call", "Visit 5 buildings.", 5, st("bld"), { planks: 10 }),
+    sq("allkinds", "Explorer", 4, "Grand Tour", "Step inside all seven kinds of building.", 7, function () { return ["cabin", "tower", "farm", "forge", "keep", "lodge", "shrine"].filter(function (k) { return vis("k_" + k); }).length; }, { amethyst: 3 }),
+    sq("deep", "Explorer", 1, "Deep Diver", "Dig down to depth 50.", 50, st("maxDepth"), { torch: 6 }),
+    sq("wood", "Builder", 0, "Timber!", "Collect 10 Wood.", 10, st("wood"), { planks: 4 }),
+    sq("ladder1", "Builder", 1, "Up and Away", "Place a Ladder.", 1, st("ladders"), { planks: 3 }),
+    sq("wall1", "Builder", 1, "Back Wall", "Place a back wall.", 1, st("walls"), { wall_plank: 8 }),
+    sq("wall2", "Builder", 2, "Room Maker", "Place 40 back wall tiles.", 40, st("walls"), { wall_log: 12 }),
+    sq("lights", "Builder", 1, "Night Light", "Place 10 Torches.", 10, st("torches"), { torch: 6 }),
+    sq("build", "Builder", 1, "Builder", "Place 100 blocks.", 100, st("placed"), { planks: 16 }),
+    sq("build500", "Builder", 3, "Master Builder", "Place 500 blocks.", 500, st("placed"), { cobble: 16, redbrick: 16 }),
+    sq("decor1", "Decorator", 1, "Home Sweet Home", "Place 3 pieces of furniture.", 3, st("decor"), { flower: 2 }),
+    sq("dbench1", "Decorator", 1, "Interior Designer", "Place a Decor Workbench.", 1, st("dbenches"), { planks: 6 }),
+    sq("dcraft5", "Decorator", 1, "Cozy Corner", "Craft 5 pieces at the Decor Workbench.", 5, st("dcraft"), { candle: 4 }),
+    sq("dcraft15", "Decorator", 2, "Master Decorator", "Craft 15 pieces at the Decor Workbench.", 15, st("dcraft"), { cloth: 3 }),
+    sq("dcraft30", "Decorator", 3, "Grand Decorator", "Craft 30 pieces at the Decor Workbench.", 30, st("dcraft"), { amberblock: 4 }),
+    sq("throne", "Decorator", 4, "Fit for a King", "Craft the Frostrock Throne.", 1, function () { return mk("d_throne") || inv("throne") ? 1 : 0; }, { moonstone: 1 }),
+    sq("bag1", "Crafter", 0, "Pack Up", "Craft the Reed Backpack.", 1, function () { return S.bag >= 1 ? 1 : 0; }, { fiber: 4 }),
+    sq("bag2", "Crafter", 2, "Hauler", "Craft the Bog Hauler Pack.", 1, function () { return S.bag >= 2 ? 1 : 0; }, { rope: 3 }),
+    sq("shovel1", "Crafter", 0, "Dig It", "Craft the Reed Shovel.", 1, function () { return S.shovel ? 1 : 0; }, { pebble: 3 }),
+    sq("arm1", "Crafter", 0, "Dressed Up", "Craft the Reed Vest.", 1, function () { return S.arm >= 1 ? 1 : 0; }, { fiber: 4 }),
+    sq("x_cloth", "Crafter", 2, "Weaver", "Weave Cloth on a Weaver's Loom.", 1, function () { return mk("x_cloth") + mk("x_furcloth") || inv("cloth") ? 1 : 0; }, { cotton: 3 }),
+    sq("x_mason", "Crafter", 3, "Master Mason", "Cut Red Brick, Quartz Blocks and Obsidian Brick.", 3, function () { return (mk("x_redbrick") ? 1 : 0) + (mk("x_quartzblock") ? 1 : 0) + (mk("x_obsbrick") ? 1 : 0); }, { mortar: 4 }),
+    sq("x_glass", "Crafter", 3, "Stained Glass Window", "Make all three stained glass colours.", 3, function () { return (mk("x_stainedred") ? 1 : 0) + (mk("x_stainedblue") ? 1 : 0) + (mk("x_stainedgreen") ? 1 : 0); }, { glass: 4 }),
+    sq("can1", "Farmer & Cook", 1, "Green Paws", "Water a plant with the Watering Can.", 1, st("watered"), { seed_carrot: 2 }),
+    sq("can2", "Farmer & Cook", 1, "Gardener", "Water plants 20 times.", 20, st("watered"), { farmland: 6 }),
+    sq("farm25", "Farmer & Cook", 2, "Swamp Farmer", "Harvest 25 ripe crops.", 25, st("harvests"), { seed_potato: 4 }),
+    sq("crops4", "Farmer & Cook", 4, "Four Fields", "Harvest Swamp Carrots, Bog Potatoes, Fire Peppers and Frostberries.", 4, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8; q *= 2) if (b & q) n++; return n; }, { seed_pepper: 2, seed_frost: 2 }),
+    sq("cook5", "Farmer & Cook", 1, "Swamp Chef", "Cook 5 meals at a Cooking Pot.", 5, st("cooked"), { rawmeat: 2 }),
+    sq("gourmet", "Farmer & Cook", 3, "Gourmet", "Eat 6 different cooked meals.", 6, function () { return Object.keys(S.ate).length; }, { stew: 1 }),
+    sq("boss1", "Hunter", 2, "Big Game", "Defeat a boss. Craft a summon item at the Workbench and use it in its home land.", 1, st("bossk"), { torch: 8, ironingot: 1 }),
+    sq("boss3", "Hunter", 4, "Slayer of Three", "Defeat the Bramble Queen, the Magma Wyrm and the Frost Alpha.", 3, function () { return (S.st.boss & 1 ? 1 : 0) + (S.st.boss & 2 ? 1 : 0) + (S.st.boss & 4 ? 1 : 0); }, { moonstone: 1, ruby: 1, sapphire: 1 }),
+    sq("boss10", "Hunter", 5, "Boss Rush", "Defeat 10 bosses (fighting the same one again counts).", 10, st("bossk"), { amethyst: 3 }),
+    sq("bug5", "Hunter", 2, "Thorn Trouble", "Defeat 5 Bramble Bugs.", 5, st("bugs"), { torch: 4 }),
+    sq("frog5", "Hunter", 2, "Croak Crusher", "Defeat 5 Swamp Frogs.", 5, st("frogs"), { rawmeat: 2 }),
+    sq("bat1", "Hunter", 1, "Night Watch", "Defeat a Dusk Bat.", 1, st("bats"), { torch: 3 }),
+    sq("bat10", "Hunter", 2, "Bat Basher", "Defeat 10 Dusk Bats.", 10, st("bats"), { batwing: 2 }),
+    sq("slime5", "Hunter", 2, "Slime Time", "Pop 5 slimes (caves, or the surface at night).", 5, st("slimes"), { slimeball: 2 }),
+    sq("gator1", "Hunter", 2, "Gator Wrangler", "Defeat a Bog Gator. They lurk in swamp lakes once you have the Glowspore Blade.", 1, st("gators"), { gatorscale: 1 }),
+    sq("wasp5", "Hunter", 3, "Hive Breaker", "Defeat 5 Ember Wasps.", 5, st("wasps"), { stinger: 2 }),
+    sq("wolf5", "Hunter", 4, "Pack Leader", "Defeat 5 Frost Wolves.", 5, st("wolves"), { wolfpelt: 2 }),
+    sq("sleep5", "Hunter", 2, "Well Rested", "Sleep through 5 nights.", 5, st("sleeps"), { torch: 4 }),
+    sq("cave2", "Delver", 2, "Rock Hound", "Break 25 rocks inside the Cave Holes.", 25, st("cmined"), { torch: 4 }),
+    sq("cave3", "Delver", 2, "Spelunker", "Reach cave floor 5.", 5, st("caveDeep"), { ironingot: 1 }),
+    sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures in the Cave Holes.", 10, st("ckills"), { torch: 6 }),
+    sq("cclear5", "Delver", 3, "Deep Delver", "Clear 5 cave floors.", 5, st("cclear"), { amethyst: 2 }),
+    sq("cave15", "Delver", 5, "Abyss Walker", "Reach cave floor 15.", 15, st("caveDeep"), { moonstone: 1, ruby: 1 }),
+    sq("loot1", "Delver", 2, "Treasure Hunter", "Open a Cave Chest. They glow faintly in dark caves.", 1, st("cchests"), { torch: 3 }),
+    sq("loot10", "Delver", 4, "Hoard of Gold", "Open 10 Cave Chests.", 10, st("cchests"), { quartz: 3 }),
+    sq("pots20", "Delver", 2, "Pot Smasher", "Smash 20 Cave Pots.", 20, st("pots"), { candle: 4 }),
+    sq("fish10", "Angler", 1, "Fishmonger", "Catch 10 fish.", 10, st("fish"), { bogminnow: 3 }),
+    sq("fish50", "Angler", 3, "Master Angler", "Catch 50 fish.", 50, st("fish"), { rope: 4 }),
+    sq("rarefish", "Angler", 2, "Rare Catch", "Catch a rare fish: a Glowfin (best at night), a Crystal Carp or a Cinderfish.", 1, st("rarefish"), { glowfin: 1 }),
+    sq("fishdex", "Angler", 4, "Fish Collector", "Catch all nine kinds of fish (swamp water, Frostfen ice and Ember Bog lava).", 9, function () { return FISH_ALL.filter(function (k) { return S.fdex[k]; }).length; }, { moonstone: 1, ruby: 1 }),
+    sq("lavafish", "Angler", 3, "Lava Angler", "Catch a fish in lava with the Ember Rod.", 1, st("lavafish"), { charcoal: 4 }),
+    sq("fishloot", "Angler", 2, "Sunken Treasure", "Fish up treasure from the depths.", 1, st("fishloot"), { candle: 3 }),
+    sq("boot", "Angler", 1, "One Boot Short", "Fish up an Old Boot.", 1, st("boots"), { fiber: 3 }),
+    sq("pets3", "Rancher", 1, "Little Farm", "Tame 3 animals.", 3, st("tamed"), { trough: 1 }),
+    sq("allpets", "Rancher", 4, "Menagerie", "Own a Bog Duck, a Mud Pig and a Frost Goat.", 3, function () { return ["duck", "pig", "goat"].filter(function (k) { return S.pets.some(function (q) { return q.k === k; }); }).length; }, { goatmilk: 2 }),
+    sq("collect20", "Rancher", 2, "Farm Fresh", "Collect 20 eggs, truffles or milk from your animals.", 20, st("collected"), { seed_potato: 4 }),
+    sq("baby1", "Rancher", 2, "Growing Family", "Feed two happy animals of the same kind side by side to get a baby.", 1, st("babies"), { duckegg: 3 }),
+    sq("charm1", "Collector", 2, "Lucky Charm", "Craft your first charm and wear it.", 1, function () { return S.charms.on.length ? 1 : 0; }, { rope: 2 }),
+    sq("charm8", "Collector", 5, "Charmed, I'm Sure", "Own all eight charms.", 8, function () { return Object.keys(S.charms.own).length; }, { amethyst: 2, feast: 1 }),
+    sq("bty1", "Collector", 1, "Odd Job", "Finish one of Old Croaker's bounties and claim it.", 1, st("bounties"), { torch: 6 }),
+    sq("bty25", "Collector", 2, "Swamp's Handyfrog", "Claim 25 bounties.", 25, st("bounties"), { amethyst: 1, ironingot: 2 }),
+    sq("shop1", "Collector", 1, "Swap Meet", "Trade Croaker Tokens for something in his Swap Shop.", 1, st("shopbuys"), { seed_carrot: 3 }),
+    sq("x_amber", "Collector", 2, "Amber Eyes", "Mine Amber from a swamp ore vein.", 1, function () { return inv("amber") ? 1 : 0; }, { torch: 3 }),
+    sq("x_geode", "Collector", 2, "Geode Cracker", "Crack open a Geode.", 1, function () { return inv("quartz") || inv("amethyst") ? 1 : 0; }, { torch: 3 }),
+    sq("x_fossil", "Collector", 2, "Fossil Hunter", "Dig up a Fossil.", 1, function () { return inv("fossil") ? 1 : 0; }, { bone: 3 })
+  ];
+  SIDE.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
+  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Angler", "Rancher", "Hunter", "Delver", "Collector"];
+  var GOALS = SIDE, TRAIL = MAIN;   // older names, still used by a few helpers
+  function curCh() { return MAIN[S.qi] ? MAIN[S.qi].ch : CHAPTERS.length - 1; }
+  function chQuests(c) { return MAIN.filter(function (q) { return q.ch === c; }); }
+  function sideOpen(q) { return q.ch <= curCh(); }
   // Day counter: S.days counts finished day/night cycles in this world (saved with the world). Showing it is a per-device option.
   var SHOWDAYS = false; try { SHOWDAYS = localStorage.getItem("swamp-delve-daycount") === "1"; } catch (e) {}
   function advTime(dt) { var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
@@ -294,7 +357,7 @@
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 3, rod: 0, cg: 0, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
@@ -342,9 +405,31 @@
     d.food = isFinite(+o.food) && o.food !== null && o.food !== undefined ? clamp(+o.food, 0, 100) : 100; d.nohunger = o.nohunger ? 1 : 0;
     if (o.ate && typeof o.ate === "object") Object.keys(o.ate).forEach(function (k) { if (ITEMS[k] && ITEMS[k].cooked) d.ate[k] = 1; });
     if (o.farm && typeof o.farm === "object" && o.wv === SW.WORLDVER) Object.keys(o.farm).forEach(function (k) { var f = o.farm[k]; if (/^\d+,\d+$/.test(k) && f && CROPS[f.c]) d.farm[k] = { c: f.c, g: Math.max(0, +f.g || 0), w: Math.max(0, +f.w || 0) }; });
-    if (o.tv !== 2 && typeof o.trail === "number") {   // the Trail gained food steps: keep older saves on the step they had reached
-      var oid = TRAIL_V1[clamp(Math.floor(o.trail), 0, TRAIL_V1.length)], ni = oid ? TRAIL.map(function (t) { return t.id; }).indexOf(oid) : -1; d.trail = oid ? (ni < 0 ? TRAIL.length : ni) : TRAIL.length;
+    if (o.mk && typeof o.mk === "object") Object.keys(o.mk).forEach(function (k) { var n = Math.floor(+o.mk[k]); if (n > 0) d.mk[k] = n; });
+    if (o.vis && typeof o.vis === "object") Object.keys(o.vis).forEach(function (k) { if (o.vis[k]) d.vis[k] = 1; });
+    if (o.ms && o.ms.ember) d.vis.b1 = 1; if (o.ms && o.ms.frost) d.vis.b2 = 1;
+    d.rod = clamp(Math.floor(+o.rod) || 0, 0, 2); d.cg = clamp(Math.floor(+o.cg) || 0, 0, 63);
+    if (typeof o.bossOn === "string" && ITEMS[o.bossOn] && ITEMS[o.bossOn].summon) d.bossOn = o.bossOn;
+    if (o.charms && typeof o.charms === "object") { if (o.charms.own) Object.keys(CHARMS).forEach(function (k) { if (o.charms.own[k]) d.charms.own[k] = 1; }); if (Array.isArray(o.charms.on)) o.charms.on.forEach(function (k) { if (d.charms.own[k] && d.charms.on.indexOf(k) < 0 && d.charms.on.length < 3) d.charms.on.push(k); }); }
+    if (o.wx && WX_LEN[o.wx.k] && isFinite(+o.wx.t)) d.wx = { k: o.wx.k, t: clamp(+o.wx.t, 1, 600), n: clamp(+o.wx.n || 0, 0, 1) };
+    if (o.bty && typeof o.bty === "object") {   // Old Croaker's bounties
+      var okb = function (b) { if (!b || typeof b.id !== "string" || !isFinite(+b.need) || !isFinite(+b.b)) return null; var rw = {}; if (b.rw && typeof b.rw === "object") Object.keys(b.rw).forEach(function (k) { var n = Math.floor(+b.rw[k]); if (ITEMS[k] && n > 0) rw[k] = Math.min(n, 99); }); return { id: b.id.slice(0, 12), need: Math.max(1, Math.floor(+b.need)), b: Math.max(0, Math.floor(+b.b)), tk: clamp(Math.floor(+b.tk) || 2, 1, 20), rw: rw, done: b.done ? 1 : 0, told: b.told ? 1 : 0 }; };
+      d.bty = { day: Math.floor(+o.bty.day) || -1, wk: Math.floor(+o.bty.wk) || -1, d: Array.isArray(o.bty.d) ? o.bty.d.map(okb).filter(Boolean).slice(0, 3) : [], w: okb(o.bty.w), rr: clamp(Math.floor(+o.bty.rr) || 0, 0, 9), full: o.bty.full ? 1 : 0 };
     }
+    if (o.fdex && typeof o.fdex === "object") Object.keys(o.fdex).forEach(function (k) { if (ITEMS[k]) d.fdex[k] = 1; });
+    if (Array.isArray(o.pets) && o.wv === SW.WORLDVER) o.pets.slice(0, PET_MAX).forEach(function (q) {   // tamed animals (dropped if the world was rebuilt)
+      if (!q || !ANIM[q.k] || !isFinite(+q.x) || !isFinite(+q.y)) return;
+      var a = newAnimal(q.k, clamp(+q.x, 2, W - 2), clamp(+q.y, 2, H - 3), true); a.hx = isFinite(+q.hx) ? +q.hx : a.x; a.fed = clamp(+q.fed || 0, 0, FED_S); a.pr = Math.max(0, +q.pr || 0); a.rdy = clamp(Math.floor(+q.rdy) || 0, 0, 3);
+      a.nm = String(q.nm || ANIM[q.k].n).slice(0, 20); a.baby = Math.max(0, +q.baby || 0); if (a.baby) { a.w *= 0.6; a.h *= 0.6; } a.love = Math.max(0, +q.love || 0); d.pets.push(a);
+    });
+    if (o.qv === 1) {   // quest list v1: Chapter 2 gained "Gone Fishing" and "A New Friend", so map the saved quest by its id
+      var oid = MAIN_V1[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V1.length)], ni = oid ? MAIN.map(function (q) { return q.id; }).indexOf(oid) : MAIN.length; o = Object.assign({}, o, { qi: ni < 0 ? MAIN.length : ni, qv: 2 });
+    }
+    if (o.qv === 2) {   // quest list v2: chapters 3-5 each gained a boss quest at the end, so map the saved quest by its id
+      var oid2 = MAIN.filter(function (q) { return !BOSS[q.id]; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni2 = oid2 ? MAIN.map(function (q) { return q.id; }).indexOf(oid2) : MAIN.length; o = Object.assign({}, o, { qi: ni2 < 0 ? MAIN.length : ni2, qv: 3 });
+    }
+    if (o.qv === 3) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
+    else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     return d;
   }
   function build(state) {
@@ -357,27 +442,31 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; resize(); stageEl.classList.remove("cave");
+    S = state; if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; resize(); stageEl.classList.remove("cave");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
-    cam.x = p.x; cam.y = p.y - 1; sel = "pick"; selSlot = -1; invSel = -1; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.trail < TRAIL.length ? "trail" : "craft"; hbDirty = true; exKey = ""; spriteKey = ""; ICO = {};
-    hp = S.hp; hurtT = hurtGrace = shake = 0; sinceHurt = 99; shownHp = -1; drawHp(); sleepT = 0; batT = 8; enemies.length = 0;
+    if (!S.qv) { S.qv = 3; S.qi = 0; checkTrail(true); S.qch = curCh() - 1; }   // an older save: every quest already done counts, silently, then the current chapter's story is shown
+    npc.ok = false; npc.chk = 0; cam.x = p.x; cam.y = p.y - 1; sel = "pick"; selSlot = -1; invSel = -1; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.qi < MAIN.length ? "quests" : "craft"; hbDirty = true;
+    storyQ.length = 0; if (S.qch < curCh()) { S.qch = curCh(); storyQ.push(curCh()); setTimeout(showStory, 900); } exKey = ""; spriteKey = ""; ICO = {};
+    hp = S.hp; hurtT = hurtGrace = shake = 0; sinceHurt = 99; shownHp = -1; drawHp(); sleepT = 0; batT = 8; enemies.length = 0; bshots.length = 0; bossBarKey = "x";
     reveal(true);
   }
   function save() {
+    if (MP.on && MP.role === "guest") { mpSaveChar(); cloudDirty(); return; }
     try {
       reslot(); S.hp = Math.max(1, Math.round(hp));
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
       S.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(",");
       S.ex = rle(ex); S.we = Object.keys(wedits).map(function (k) { return k + ":" + wedits[k]; }).join(",");
-      localStorage.setItem(wkey(curId), JSON.stringify(S)); touchIdx(); saveFail = false;
+      localStorage.setItem(wkey(curId), JSON.stringify(S)); cloudDirty(); touchIdx(); saveFail = false;
     } catch (e) { if (!saveFail) { saveFail = true; try { toast("Could not save: browser storage is full or blocked. Delete a world you do not need.", "#ff8a3d"); } catch (x) {} } }
   }
   function load() {
     wIdx = readIdx();
     if (wIdx.list.length) curId = wIdx.last; else addWorld("My Swamp");
-    start(readWorld(curId) || fresh(randSeed())); saveIdx();
+    start(readWorld(curId) || fresh(randSeed())); saveIdx(); cloudInit();
   }
 
   // ---------- WORLDS: several saves per player ----------
@@ -405,15 +494,17 @@
   function curEntry() { return wIdx && wIdx.list.filter(function (x) { return x.id === curId; })[0]; }
   function touchIdx() {   // keep the little summary shown on the Worlds screen fresh
     var w = curEntry(); if (!w) return;
-    w.played = Date.now(); w.tier = S.tier; w.wpn = S.wpn; w.trail = S.trail; w.sleeps = S.st.sleeps; w.goals = Object.keys(S.ms).length; w.depth = S.st.maxDepth; wIdx.last = curId; saveIdx();
+    w.played = Date.now(); w.tier = S.tier; w.wpn = S.wpn; w.trail = S.qi; w.ch = curCh(); w.sleeps = S.st.sleeps; w.goals = Object.keys(S.ms).length; w.depth = S.st.maxDepth; wIdx.last = curId; saveIdx();
   }
   function switchWorld(id) {
-    if (id !== curId) { save(); curId = id; start(readWorld(id) || fresh(randSeed())); touchIdx(); toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); }
+    if (MP.on || MP.ws) mpLeave();
+    if (id !== curId) { bossGone(); save(); curId = id; start(readWorld(id) || fresh(randSeed())); touchIdx(); toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); }
     closeWorlds();
   }
   function createWorld(name) {
     if (wIdx.list.length >= MAXW) { toast("You can keep " + MAXW + " worlds. Delete one first.", "#f2c14e"); return; }
-    save(); var z = S.zoom, an = S.animal; addWorld(String(name || "").trim().slice(0, 24));
+    if (MP.on || MP.ws) mpLeave();
+    bossGone(); save(); var z = S.zoom, an = S.animal; addWorld(String(name || "").trim().slice(0, 24));
     start(Object.assign(fresh(randSeed()), { zoom: z, animal: an })); save(); closeWorlds(); toast("A fresh world: " + curEntry().name + ". Happy digging!", "#4ee6b4");
   }
   function deleteWorld(id) {
@@ -430,16 +521,16 @@
   function ago(t) { var m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " d ago"; }
   function renderWorlds() {
     var list = wIdx.list.slice().sort(function (a, b) { return b.played - a.played; });
-    var h = '<div class="sbx-wbox"><h2>Your Worlds</h2><p class="sbx-note">Each world saves on its own in this browser' + (WUSER !== "guest" ? " for " + esc(WUSER) : "") + ". Switch any time, or start a new one.</p><div class=\"sbx-wlist\">";
+    var h = '<div class="sbx-wbox"><h2>Your Worlds</h2><p class="sbx-note">Each world saves on its own in this browser' + (WUSER !== "guest" ? " for " + esc(WUSER) : "") + ". Switch any time, or start a new one.</p>" + cloudSection() + "<div class=\"sbx-wlist\">";
     list.forEach(function (w) {
-      var cur = w.id === curId, sub = PICKS[w.tier || 0].n + (w.wpn ? " \u00b7 " + WEAPONS[w.wpn].n : "") + " \u00b7 " + (w.goals || 0) + " goals \u00b7 " + ago(w.played);
-      h += '<div class="sbx-w' + (cur ? " cur" : "") + '"><div><b>' + esc(w.name) + (cur ? " (playing)" : "") + "</b><small>" + esc(sub) + '</small></div><div class="acts">'
+      var cur = w.id === curId, sub = PICKS[w.tier || 0].n + (w.wpn ? " \u00b7 " + WEAPONS[w.wpn].n : "") + " \u00b7 " + (w.ch != null ? "Chapter " + Math.min(6, w.ch + 1) : (w.goals || 0) + " goals") + " \u00b7 " + ago(w.played);
+      h += '<div class="sbx-w' + (cur ? " cur" : "") + '"><div><b>' + esc(w.name) + (cur ? " (playing)" : "") + "</b><small>" + esc(sub) + "</small>" + cloudBadge(w) + '</div><div class="acts">'
         + '<button type="button" class="btn' + (cur ? "" : " ghost") + '" data-wl-play="' + w.id + '">' + (cur ? "Resume" : "Play") + "</button>"
         + '<button type="button" class="btn ghost" data-wl-ren="' + w.id + '" aria-label="Rename ' + esc(w.name) + '">Rename</button>'
         + '<button type="button" class="btn ghost' + (delAsk === w.id ? " warn" : "") + '" data-wl-del="' + w.id + '">' + (delAsk === w.id ? "Tap again to delete" : "Delete") + "</button></div></div>";
     });
     h += '</div><div class="sbx-wnew"><input id="sbxWName" type="text" maxlength="24" placeholder="Name your new world" aria-label="New world name" autocomplete="off"><button type="button" class="btn" data-wl-new>New world</button></div>'
-      + '<div class="sbx-row"><button type="button" class="btn ghost" data-wl-close>Back to game</button><a class="btn ghost" href="arcade.html">Exit to Arcade</a></div></div>';
+      + '<div class="sbx-row"><button type="button" class="btn" data-wl-mp>Play together</button></div><div class="sbx-row"><button type="button" class="btn ghost" data-wl-close>Back to game</button><a class="btn ghost" href="arcade.html">Exit to Arcade</a></div></div>';
     var keep = $("sbxWName") ? $("sbxWName").value : ""; wEl.innerHTML = h; if (keep && $("sbxWName")) $("sbxWName").value = keep;
   }
   function openWorlds() {
@@ -449,16 +540,139 @@
   function closeWorlds() { menuOpen = false; wEl.hidden = true; delAsk = ""; hbDirty = true; }
   wEl.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
+    if (cloudClick(b)) return;
     var id = b.getAttribute("data-wl-play"); if (id) return switchWorld(id);
     if (b.hasAttribute("data-wl-close")) return closeWorlds();
+    if (b.hasAttribute("data-wl-mp")) { closeWorlds(); return openMPV(); }
     if (b.hasAttribute("data-wl-new")) { var inp = $("sbxWName"); createWorld(inp ? inp.value : ""); if (menuOpen) renderWorlds(); return; }
     var rn = b.getAttribute("data-wl-ren");
-    if (rn) { var w = wIdx.list.filter(function (x) { return x.id === rn; })[0], nm = null; try { nm = window.prompt("Rename world", w.name); } catch (er) {} if (nm && nm.trim()) { w.name = nm.trim().slice(0, 24); saveIdx(); } return renderWorlds(); }
+    if (rn) { var w = wIdx.list.filter(function (x) { return x.id === rn; })[0], nm = null; try { nm = window.prompt("Rename world", w.name); } catch (er) {} if (nm && nm.trim()) { w.name = nm.trim().slice(0, 24); w.cdirty = 1; w.cgen = (w.cgen || 0) + 1; saveIdx(); if (CLOUD.state === "on") CLOUD.t = performance.now() + 2000; } return renderWorlds(); }
     var dl = b.getAttribute("data-wl-del");
     if (dl) { if (delAsk !== dl) { delAsk = dl; return renderWorlds(); } delAsk = ""; deleteWorld(dl); return renderWorlds(); }
   });
   wEl.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "sbxWName") { createWorld(e.target.value); if (menuOpen) renderWorlds(); } });
 
+  // ---------- CLOUD SAVES (when signed in to a SwampRealms account) ----------
+  // Every world is also backed up to your account (worker.js, /api/delve): about 15 seconds after it changes, from the Worlds menu
+  // ("Back up now"), and when you leave the page. On another device your cloud worlds show up in the Worlds menu, ready to download, and a
+  // world you already have is quietly updated if the cloud copy is newer and you have not changed it here.
+  // Each upload names the cloud version it was based on (crev). If another device saved the same world in between, nothing is overwritten:
+  // the Worlds menu asks which copy to keep. World index entries keep: crev (cloud version), cdirty (changed since the last backup),
+  // cgen (counts local saves), csync (time of the last backup), conflict (the newer cloud version, while you decide).
+  var CLOUD = { state: WUSER === "guest" ? "guest" : "checking", list: [], t: 0, busy: false, err: "", last: 0, told: {}, delAsk: "" };
+  function cloudCall(method, path, body, keep) {
+    var o = { method: method, credentials: "same-origin", cache: "no-store", keepalive: !!keep };
+    if (body) { o.headers = { "content-type": "application/json" }; o.body = JSON.stringify(body); }
+    return fetch(path, o).then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }, function () { return { s: r.status, j: null }; }); }, function () { return { s: 0, j: null }; });
+  }
+  function saveHash(o) {   // a fingerprint of a save that ignores what changes just by standing around (clock, weather, position, health, hunger)
+    var t = typeof o === "string" ? (function () { try { return JSON.parse(o); } catch (e) { return {}; } })() : o;
+    var str = JSON.stringify(Object.assign({}, t, { p: 0, time: 0, hp: 0, food: 0, days: 0, wx: 0 })), h = 2166136261;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(36) + str.length.toString(36);
+  }
+  function wEntry(id) { return wIdx && wIdx.list.filter(function (x) { return x.id === id; })[0]; }
+  function cloudInit() {
+    if (CLOUD.state === "guest") return;
+    cloudCall("GET", "/api/delve").then(function (r) {
+      if (r.s === 401) { CLOUD.state = "signedout"; return; }
+      if (r.s !== 200 || !r.j || !Array.isArray(r.j.worlds)) { CLOUD.state = "off"; return; }
+      CLOUD.state = "on"; CLOUD.list = r.j.worlds; cloudReconcile(); if (menuOpen) renderWorlds();
+    });
+  }
+  function cloudReconcile() {
+    wIdx.list.forEach(function (e) {
+      var cw = CLOUD.list.filter(function (q) { return q.wid === e.id; })[0];
+      if (!cw) { if (!e.crev) e.cdirty = 1; return; }   // never backed up (or deleted from the cloud): back it up
+      if (cw.rev > (e.crev || 0)) { if (!e.cdirty) cloudPull(e.id, true); else e.conflict = cw.rev; }
+    });
+    saveIdx(); CLOUD.t = performance.now() + 3000;
+  }
+  function cloudDirty() {   // called from save(): this world changed, back it up soon
+    var e = curEntry(); if (!e || CLOUD.state === "checking") return;   // the save made while the page loads is not a change
+    if (e.chash && saveHash(S) === e.chash) return;   // nothing that matters changed since the last backup
+    e.cdirty = 1; e.cgen = (e.cgen || 0) + 1;
+    if (CLOUD.state === "on" && !CLOUD.t) CLOUD.t = performance.now() + 15000;
+  }
+  function tickCloud() {
+    if (CLOUD.state !== "on" || CLOUD.busy || !CLOUD.t || performance.now() < CLOUD.t) return;
+    var next = wIdx.list.filter(function (e) { return e.cdirty && !e.conflict && !CLOUD.told["big" + e.id]; })[0];
+    CLOUD.t = 0; if (next) cloudPush(next.id);
+  }
+  function cloudPush(id, keep) {
+    var e = wEntry(id); if (!e || CLOUD.state !== "on") return Promise.resolve(false);
+    if (id === curId) save();
+    var data = null; try { data = localStorage.getItem(wkey(id)); } catch (er) {} if (!data) return Promise.resolve(false);
+    if (keep && data.length > 60000) return Promise.resolve(false);   // a page that is closing can only send a small upload
+    var gen = e.cgen || 0; CLOUD.busy = true;
+    return cloudCall("PUT", "/api/delve/" + encodeURIComponent(id), { name: e.name, data: data, baseRev: e.crev || 0 }, keep).then(function (r) {
+      CLOUD.busy = false;
+      if (r.s === 200 && r.j) {
+        e.crev = r.j.rev; e.csync = Date.now(); e.cdirty = (e.cgen || 0) !== gen ? 1 : 0; if (!e.cdirty) e.chash = saveHash(data); CLOUD.last = e.csync; CLOUD.err = "";
+        var cw = CLOUD.list.filter(function (q) { return q.wid === id; })[0]; if (cw) { cw.rev = r.j.rev; cw.updated = r.j.updated; cw.name = e.name; cw.size = data.length; } else CLOUD.list.push({ wid: id, name: e.name, rev: r.j.rev, updated: r.j.updated, size: data.length });
+        saveIdx(); if (wIdx.list.some(function (q) { return q.cdirty && !q.conflict; })) CLOUD.t = performance.now() + 4000;
+        if (menuOpen) renderWorlds(); return true;
+      }
+      if (r.s === 409 && r.j && r.j.error === "conflict") {
+        e.conflict = r.j.rev || 1; saveIdx();
+        if (!CLOUD.told[id]) { CLOUD.told[id] = 1; toast("“" + e.name + "” was changed on another device. Open Worlds to choose which copy to keep.", "#f2c14e"); }
+      } else if (r.s === 401) CLOUD.state = "signedout";
+      else if (r.s === 413 || r.s === 409) { CLOUD.err = (r.j && r.j.error) || "The cloud could not take this world."; CLOUD.told["big" + id] = 1; }
+      else { CLOUD.err = "Could not reach the cloud. Trying again soon."; CLOUD.t = performance.now() + 60000; }
+      if (menuOpen) renderWorlds(); return false;
+    });
+  }
+  function cloudPull(id, quiet) {
+    CLOUD.busy = true;
+    return cloudCall("GET", "/api/delve/" + encodeURIComponent(id)).then(function (r) {
+      CLOUD.busy = false;
+      if (r.s !== 200 || !r.j || typeof r.j.data !== "string") { CLOUD.err = "Could not download that world."; if (menuOpen) renderWorlds(); return false; }
+      var ok = null; try { ok = clean(JSON.parse(r.j.data)); } catch (er) {} if (!ok) { CLOUD.err = "That cloud world could not be read."; if (menuOpen) renderWorlds(); return false; }
+      var e = wEntry(id);
+      if (!e) { if (wIdx.list.length >= MAXW) { CLOUD.err = "You can keep " + MAXW + " worlds on this device. Delete one first."; if (menuOpen) renderWorlds(); return false; } e = { id: id, name: r.j.name || "World", made: Date.now(), played: r.j.updated || Date.now() }; wIdx.list.push(e); }
+      try { localStorage.setItem(wkey(id), r.j.data); } catch (er) { CLOUD.err = "Not enough browser storage to download it."; if (menuOpen) renderWorlds(); return false; }
+      e.name = r.j.name || e.name; e.crev = r.j.rev; e.cdirty = 0; e.conflict = 0; e.chash = saveHash(ok); e.csync = Date.now(); e.tier = ok.tier; e.wpn = ok.wpn; e.trail = ok.qi; e.ch = MAIN[ok.qi] ? MAIN[ok.qi].ch : CHAPTERS.length - 1; saveIdx();
+      if (id === curId) { start(ok); e.cdirty = 0; saveIdx(); toast(quiet ? "This world was updated from your cloud save." : "Loaded the cloud copy of " + e.name + ".", "#4ee6b4"); }
+      else if (!quiet) toast("Downloaded " + e.name + ".", "#4ee6b4");
+      if (menuOpen) renderWorlds(); return true;
+    });
+  }
+  function cloudDelete(id) {
+    cloudCall("DELETE", "/api/delve/" + encodeURIComponent(id)).then(function (r) {
+      if (r.s === 200) { CLOUD.list = CLOUD.list.filter(function (q) { return q.wid !== id; }); var e = wEntry(id); if (e) { e.crev = 0; e.cdirty = 1; saveIdx(); } }
+      if (menuOpen) renderWorlds();
+    });
+  }
+  function cloudBadge(w) {
+    if (CLOUD.state !== "on") return "";
+    if (w.conflict) return '<div class="cl-cf"><span>This world was also changed on another device. Which copy should stay?</span><button type="button" class="btn ghost" data-cl-keep="' + w.id + '">Keep this device\'s</button><button type="button" class="btn ghost" data-cl-use="' + w.id + '">Use the cloud copy</button></div>';
+    return '<em class="cl-b' + (w.cdirty ? " wait" : "") + '">' + (w.cdirty ? "Not backed up yet" : "Backed up " + ago(w.csync || Date.now())) + "</em>";
+  }
+  function cloudSection() {
+    var h = '<div class="sbx-cloud">';
+    if (CLOUD.state === "guest") return h + '<b>Cloud saves</b><span>Sign in (top right) to back up your worlds to your account and keep playing them on any device.</span></div>';
+    if (CLOUD.state === "checking") return h + "<b>Cloud saves</b><span>Checking your account…</span></div>";
+    if (CLOUD.state === "signedout") return h + "<b>Cloud saves</b><span>Your sign-in ran out. Sign in again to keep backing up your worlds.</span></div>";
+    if (CLOUD.state === "off") return h + '<b>Cloud saves</b><span>Cloud saves are not available right now. Your worlds are still saved in this browser.</span><button type="button" class="btn ghost" data-cl-retry>Try again</button></div>';
+    var only = CLOUD.list.filter(function (q) { return !wEntry(q.wid); }), dirty = wIdx.list.filter(function (q) { return q.cdirty && !q.conflict; }).length;
+    var cfs = wIdx.list.filter(function (q) { return q.conflict; }).length;
+    h += "<b>Cloud saves: on for " + esc(WUSER) + "</b><span>" + (cfs ? cfs + " world" + (cfs > 1 ? "s need" : " needs") + " you to pick which copy to keep (below). " : "") + (dirty ? dirty + " world" + (dirty > 1 ? "s" : "") + " waiting to back up." : "All worlds backed up" + (CLOUD.last ? " · last " + ago(CLOUD.last) : "") + ".") + "</span>"
+      + (CLOUD.err ? '<span class="cl-err">' + esc(CLOUD.err) + "</span>" : "")
+      + '<button type="button" class="btn ghost" data-cl-now' + (CLOUD.busy ? " disabled" : "") + ">Back up now</button>";
+    if (only.length) h += '<div class="cl-only"><small>In your cloud, not on this device</small>' + only.map(function (q) {
+      return '<div class="sbx-w"><div><b>' + esc(q.name) + "</b><small>Saved " + ago(q.updated) + " · " + Math.max(1, Math.round(q.size / 1024)) + ' KB</small></div><div class="acts"><button type="button" class="btn" data-cl-get="' + q.wid + '">Download</button><button type="button" class="btn ghost' + (CLOUD.delAsk === q.wid ? " warn" : "") + '" data-cl-del="' + q.wid + '">' + (CLOUD.delAsk === q.wid ? "Tap again to delete" : "Delete") + "</button></div></div>";
+    }).join("") + "</div>";
+    return h + "</div>";
+  }
+  function cloudClick(b) {
+    if (b.hasAttribute("data-cl-now")) { wIdx.list.forEach(function (e) { if (!e.conflict && (e.cdirty || !e.crev)) e.cdirty = 1; }); CLOUD.err = ""; CLOUD.told = {}; var first = wIdx.list.filter(function (e) { return e.cdirty && !e.conflict; })[0]; if (first) cloudPush(first.id); else { CLOUD.last = Date.now(); renderWorlds(); } return true; }
+    if (b.hasAttribute("data-cl-retry")) { CLOUD.state = "checking"; renderWorlds(); cloudInit(); return true; }
+    var k = b.getAttribute("data-cl-keep"); if (k) { var e = wEntry(k); e.crev = e.conflict; e.conflict = 0; e.cdirty = 1; CLOUD.told[k] = 0; cloudPush(k); return true; }
+    var u = b.getAttribute("data-cl-use"); if (u) { cloudPull(u); return true; }
+    var gt = b.getAttribute("data-cl-get"); if (gt) { cloudPull(gt); return true; }
+    var dl = b.getAttribute("data-cl-del"); if (dl) { if (CLOUD.delAsk !== dl) { CLOUD.delAsk = dl; renderWorlds(); return true; } CLOUD.delAsk = ""; cloudDelete(dl); return true; }
+    return false;
+  }
   // ---------- WORLD ACCESS ----------
   function get(x, y) { if (x < 0 || x >= W) return T.BEDROCK; if (y < 0) return T.AIR; if (y >= H) return T.BEDROCK; return tiles[y * W + x]; }
   // Natural trees are scenery: you and the enemies walk through untouched trunks and leaves (you can still chop them). Logs and leaves YOU placed stay solid.
@@ -482,7 +696,7 @@
     col[x] = H;
   }
   function setT(x, y, id) {
-    var i = y * W + x; tiles[i] = id;
+    mpTileEdit(x, y, id); var i = y * W + x; tiles[i] = id;
     if (id === orig[i]) delete edits[i]; else edits[i] = id;
     recalc(x);
   }
@@ -579,7 +793,7 @@
     S.inv[k] = (S.inv[k] || 0) + fit; packInto(S.slots, k, fit); S.extra[k] -= fit; if (S.extra[k] <= 0) delete S.extra[k];
     hbDirty = true; invAfter();
   }
-  function invAfter() { if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can" && !(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } renderPanel(); }
+  function invAfter() { if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can" && sel !== "rod" && !(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } renderPanel(); }
   // ---------- DURABILITY ----------
   function durMax(k) { return k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : k === "arm" ? DUR.arm[S.arm] || 0 : DUR.wpn[S.wpn] || 0; }
   function durOf(k) { var v = S.dur[k], m = durMax(k); return v == null ? m : Math.min(v, m); }
@@ -602,7 +816,7 @@
     S.dur[k] = m; hbDirty = true; armKey = ""; toast(toolName(k) + " repaired.", "#4ee6b4"); snd("coin"); chips(p.x, p.y - 1, "#4ee6b4", 12, 6); renderPanel(); save();
   }
   function barEntries() {   // tools first (they do not use inventory slots), then the 6 hotbar slots
-    reslot(); var e = [{ id: "pick", slot: -1 }]; if (S.wpn) e.push({ id: "weapon", slot: -1 }); if (S.shovel) e.push({ id: "shovel", slot: -1 }); if (S.can) e.push({ id: "can", slot: -1 });
+    reslot(); var e = [{ id: "pick", slot: -1 }]; if (S.wpn) e.push({ id: "weapon", slot: -1 }); if (S.shovel) e.push({ id: "shovel", slot: -1 }); if (S.can) e.push({ id: "can", slot: -1 }); if (S.rod) e.push({ id: "rod", slot: -1 });
     for (var i = 0; i < INV_HOT; i++) e.push({ id: S.slots[i] ? S.slots[i].k : "", slot: i });
     return e;
   }
@@ -613,7 +827,8 @@
     else if (id === "weapon") { if (S.wpn) { sel = "weapon"; selSlot = -1; } }
     else if (id === "shovel") { if (S.shovel) { sel = "shovel"; selSlot = -1; } }
     else if (id === "can") { if (S.can) { sel = "can"; selSlot = -1; } }
-    else if ((S.inv[id] || 0) > 0 && ITEMS[id] && (ITEMS[id].tile !== undefined || ITEMS[id].food)) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(id); }
+    else if (id === "rod") { if (S.rod) { sel = "rod"; selSlot = -1; } }
+    else if ((S.inv[id] || 0) > 0 && ITEMS[id] && (ITEMS[id].tile !== undefined || ITEMS[id].food || ITEMS[id].summon)) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(id); }
     mine = null; hbDirty = true;
   }
 
@@ -1204,6 +1419,43 @@
     "seed_pepper": { r: ["................", "................", "................", "................", ".....ssssss.....", "....rrrrrrrr....", ".....ssssss.....", "....statttts....", "...sttttabtts...", "..sttabtttttts..", "..ssttttttatss..", "..sssttatttsss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: {"s": "#c9a46a", "t": "#e0c48a", "r": "#8a5a32", "a": "#e8341c", "b": "#ffb0a0"}, o: "#3a2410" },
     "seed_frost": { r: ["................", "................", "................", "................", ".....ssssss.....", "....rrrrrrrr....", ".....ssssss.....", "....statttts....", "...sttttabtts...", "..sttabtttttts..", "..ssttttttatss..", "..sssttatttsss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: {"s": "#c9a46a", "t": "#e0c48a", "r": "#8a5a32", "a": "#4a7cff", "b": "#d0e0ff"}, o: "#3a2410" }
   });
+  // ----- fishing and ranching sprites (generated, 16x16) -----
+  SPR = Object.assign(SPR, {
+    "bogminnow": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aaaaaaaaa...", ".ffaaaaaaaaaea..", ".ffaaaaaaaaaaa..", ".ffaabbbbbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#8aa86a", "b": "#d8e0a8", "f": "#5a7a4a", "e": "#12220f"}, o: "#1a2410" },
+    "catfish": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aaaaasaaa...", ".ffaaasaaaaaea..", ".ffaaaaaaasaaa..", ".ffaabbbbbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#7a6248", "b": "#c8b48a", "f": "#4a3a28", "e": "#12220f", "s": "#3a2a18"}, o: "#1a120a" },
+    "glowfin": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aaaaaaaaa...", ".ffaaaaaaaaaea..", ".ffaaaaaaaaaaa..", ".ffaabbbbbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#4ee6b4", "b": "#d4fff6", "f": "#22a883", "e": "#06231c"}, o: "#063a2c" },
+    "frosttrout": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aaaasaaaa...", ".ffaaasaaasaea..", ".ffaaaasaaaaaa..", ".ffaabbbbbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#9fc8e0", "b": "#f0f8ff", "f": "#5a8aa8", "e": "#0e1a28", "s": "#ff9aa8"}, o: "#16283a" },
+    "icepike": { r: ["................", "................", "................", "................", "................", "................", "...f.........a..", ".afaaaaaaaaaaae.", ".faaaaaaaaaaaaaa", ".afbababababaaa.", "...f.........a..", "................", "................", "................", "................", "................"], p: {"a": "#6a9ac0", "b": "#d0e8f8", "f": "#3a6a90", "e": "#0e1a28"}, o: "#10203a" },
+    "crystalcarp": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aaaaaaaaa...", ".ffaaasaasaaea..", ".ffaaaaaaaaaaa..", ".ffaabbbsbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#bff4ff", "b": "#ffffff", "f": "#7fd6ff", "e": "#2a5a9a", "s": "#ffffff"}, o: "#2a4a6a" },
+    "magmaeel": { r: ["................", "................", "................", "................", "................", "................", "...f.........a..", ".afaaaaaaaaaaae.", ".faaaaaaaaaaaaaa", ".afbababababaaa.", "...f.........a..", "................", "................", "................", "................", "................"], p: {"a": "#c83a1a", "b": "#ffb13b", "f": "#7a1a0a", "e": "#ffe48a"}, o: "#2a0806" },
+    "emberkoi": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aasaaasaa...", ".ffaaaaaaaaaea..", ".ffaaaaaasaaaa..", ".ffaabbbbbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#ff8a3d", "b": "#ffe0b0", "f": "#e8341c", "e": "#2a0806", "s": "#ffffff"}, o: "#3a1406" },
+    "cinderfish": { r: ["................", "................", "................", "........f.......", ".......fff......", ".f...aaaaaaa....", ".ff.aaaaaaaaa...", ".ffaaasaasaaea..", ".ffaaaaaaaaaaa..", ".ffaabbbbbbbbf..", ".ff.abbbbbbbb...", ".f...aaaaaaa....", "................", "................", "................", "................"], p: {"a": "#3a3036", "b": "#ff8a3d", "f": "#ff5a1a", "e": "#ffe48a", "s": "#ffb13b"}, o: "#140a0a" },
+    "oldboot": { r: ["................", "................", "....ddddddd.....", ".....abaaa......", ".....abaaa......", ".....abaaa......", ".....abaaa......", ".....abaaa......", ".....abaaa...g..", ".....abaaa..g...", ".....aaaaaaaaa..", ".....aaaawawaa..", ".....aaaaaaaaa..", ".....dddddddddd.", "................", "................"], p: {"a": "#6a4a32", "b": "#8a6a4a", "d": "#3a2416", "w": "#c8b48a", "g": "#3f9a3a"}, o: "#1a0e06" },
+    "rod1": { r: ["................", ".............tt.", ".............sl.", "............s.l.", "...........t..l.", "..........s...l.", ".........s....l.", "........ts....l.", ".......ss.....l.", "......ss......l.", "....rtr......kk.", "....rwr.........", "....rrr.........", "...s............", "..s.............", "................"], p: {"s": "#a8703c", "t": "#e8dcc0", "r": "#6a6a74", "w": "#d0d0d8", "l": "#f6eedb", "k": "#c8c8d0"}, o: "#2a1a0a" },
+    "rod2": { r: ["................", ".............tt.", ".............sl.", "............s.l.", "...........t..l.", "..........s...l.", ".........s....l.", "........ts....l.", ".......ss.....l.", "......ss......l.", "....rtr......kk.", "....rwr.........", "....rrr.........", "...s............", "..s.............", "................"], p: {"s": "#3a3036", "t": "#ff8a3d", "r": "#ff5a1a", "w": "#ffe48a", "l": "#ffd0a0", "k": "#ffb13b"}, o: "#140806" },
+    "duckegg": { r: ["................", "................", "................", "................", "......aaaa......", ".....awaaaa.....", "....awwwaaaa....", "....awwwaaaa....", "....awwwaaaa....", "....aawaaaaa....", "....aaaaaaaa....", "....aaaaasaa....", "....aasaaaaa....", ".....aaaaaa.....", "......aaaa......", "................"], p: {"a": "#e8e0c8", "w": "#ffffff", "s": "#a8c0a0"}, o: "#5a5440" },
+    "truffle": { r: ["................", "................", "................", "................", "................", "......aaaa......", "....aadaaaaa....", "....abbbaaaa....", "...aabbbaadaa...", "...adaaaaaaaa...", "...aaaaaaaaaa...", "....aaadadaa....", "....aaaaaaaa....", "......aaaa......", "................", "................"], p: {"a": "#5a3a2a", "b": "#8a6a4a", "d": "#2a1a10"}, o: "#160a06" },
+    "goatmilk": { r: ["................", "......cccc......", "......aaaa......", "......aaaa......", ".....aaaaaa.....", ".....awaaaa.....", ".....awaaaa.....", ".....awaaaa.....", ".....bbbbbb.....", ".....bwbbbb.....", ".....bbbbbb.....", ".....aaaaaa.....", ".....aaaaaa.....", ".....aaaaaa.....", "................", "................"], p: {"a": "#f6f6f0", "b": "#7fb6e0", "c": "#c86a3a", "w": "#ffffff"}, o: "#5a5a60" },
+    "grilledfish": { r: ["................", "................", "................", "................", "................", "................", ".a..............", "..a.aabbbaa.....", "...abcbbbbbe....", "..aaaabbcaaa....", ".apqaaaaaaaqqp..", ".pqqqqqqqqqqqqp.", ".ppqqqqqqqqqqpp.", "..pppppppppppp..", "....pppppppp....", "................"], p: {"p": "#e8e4d8", "q": "#c8c2b0", "a": "#b8763e", "b": "#e0a868", "c": "#5a2a10", "e": "#12220f"}, o: "#2a1a0e" },
+    "catstew": { r: ["................", "................", "................", "................", "................", "................", "......ffff......", "...fffhffffff...", ".ffhxhhhhhfxfff.", ".rffffzffyffffr.", ".fkkffffffffkkf.", "...kkkkkkkkkk...", "....kkkkkkkk....", ".....kkkkkk.....", "......kkkk......", ".....kkkkkk....."], p: {"k": "#8a5a32", "r": "#c98c4f", "f": "#9a7a4a", "h": "#c8a870", "x": "#c8b48a", "y": "#ff8a2a", "z": "#e0b070"}, o: "#2a1a0a" },
+    "chowder": { r: ["................", "................", "................", "................", "................", "................", "......ffff......", "...fffhffffff...", ".ffhxhhhhhfxfff.", ".rffffyffyffffr.", ".fkkffffffffkkf.", "...kkkkkkkkkk...", "....kkkkkkkk....", ".....kkkkkk.....", "......kkkk......", ".....kkkkkk....."], p: {"k": "#5a7a9a", "r": "#8ab0d0", "f": "#f0eadc", "h": "#ffffff", "x": "#ff9aa8", "y": "#c9934e"}, o: "#1a2a3a" },
+    "spicyeel": { r: ["................", "................", "................", "................", "............h...", "...........gg...", "...........gg...", "..aa..aa..agg...", ".aabababababa...", "..aaaaaaaaaaaa..", "..pqaaqqaaqqap..", ".pqqqqqqqqqqqqp.", ".ppqqqqqqqqqqpp.", "..pppppppppppp..", "....pppppppp....", "................"], p: {"p": "#e8e4d8", "q": "#c8c2b0", "a": "#a83a1a", "b": "#ffb13b", "g": "#e8341c", "h": "#3f9a3a"}, o: "#2a0806" },
+    "omelette": { r: ["................", "................", "................", "................", "................", "................", ".....aaaaaa.....", "...aaayyryaaa...", "...aagyyyyyaa...", "...aaayyyygaa...", "..paaaaaaaaaap..", ".pqqqaaaaaaqqqp.", ".ppqqqqqqqqqqpp.", "..pppppppppppp..", "....pppppppp....", "................"], p: {"p": "#e8e4d8", "q": "#c8c2b0", "a": "#ffe08a", "y": "#fff2b0", "g": "#3f9a3a", "r": "#e8341c"}, o: "#3a2a0a" },
+    "truffleroast": { r: ["................", "................", "................", "................", "................", "................", "......m.........", "....mmmmm.bt....", ".wwmmmmmmbbbtt..", "...mmmmmmtbttt..", "..pqmmmmmttdtt..", ".pqqqqmqqqqtqqp.", ".ppqqqqqqqqqqpp.", "..pppppppppppp..", "....pppppppp....", "................"], p: {"p": "#e8e4d8", "q": "#c8c2b0", "m": "#9a5228", "w": "#f6eedb", "t": "#5a3a2a", "b": "#8a6a4a", "d": "#2a1a10"}, o: "#2a1206" },
+    "milkshake": { r: ["................", "..........s.....", ".........ss.....", "....cccccscc....", ".....cccssc.....", ".....cwwswc.....", ".....cwwwwc.....", ".....cabaac.....", ".....caaaac.....", ".....caaabc.....", ".....caaaac.....", ".....cabaac.....", ".....caaaac.....", ".....cccccc.....", ".....cccccc.....", "................"], p: {"c": "#bfe8ff", "a": "#c8a8ff", "w": "#ffffff", "b": "#4a6cff", "s": "#ff6b82"}, o: "#2a3a5a" },
+    "fishchips": { r: ["................", "................", "................", "................", "................", "................", "...........c....", ".a.aaaaa.c.c....", "..aaaaaa.c.c....", "...aaaaapcpc....", "..paaaaaqccccp..", ".pqqqqqqqccqcqp.", ".ppqqqqqqqcqcpp.", "..pppppppppppp..", "....pppppppp....", "................"], p: {"p": "#e8e4d8", "q": "#c8c2b0", "a": "#e0a040", "c": "#ffd23f"}, o: "#3a2408" }
+  });
+  SPR = Object.assign(SPR, {   // Croaker Token
+    "swamptoken": { r: ["................", ".....oooooo.....", "...ooyyyyyyoo...", "..oyyYYYYYYyyo..", "..oyYYggYggYyo..", ".oyYYgwgYgwgYyo.", ".oyYYgggYgggYyo.", ".oyYgggggggggyo.", ".oyYgkgggggkgyo.", ".oyYYgkkkkkgYyo.", ".oyYYYgggggYYyo.", "..oyYYYYYYYYyo..", "..oyyYYYYYYyyo..", "...ooyyyyyyoo...", ".....oooooo.....", "................"], p: { "o": "#8a5a10", "y": "#f2c14e", "Y": "#ffe08a", "g": "#3fae5e", "w": "#ffffff", "k": "#12220f" }, o: "#5a3a08" }
+  });
+  SPR = Object.assign(SPR, {   // boss summons and boss materials
+    "lure_queen": { r: ["................", "......gg........", ".....gppg.......", "....gpPPpg......", "....gpPPpg..t...", "...gppppppg.t...", "...gpprrppgt....", "...gppprppg.....", "....gppppg......", "....tgggg.......", "...t..ff........", "..t...ff........", "......ff........", "......ff........", ".....ffff.......", "................"], p: {"g": "#2f5a2a", "p": "#8a3aa0", "P": "#c06aff", "r": "#ff6b82", "t": "#3f7a2a", "f": "#c9b58a"}, o: "#16300f" },
+    "idol_wyrm": { r: ["................", ".....hh..hh.....", "....h.hhhh.h....", "......bbbb......", ".....bbbbbb.....", ".....beebeb.....", ".....bbbbbb.....", "......bjjb......", ".....bbbbbb.....", "....bbrbbrbb....", "....bbbbbbbb....", ".....bbrrbb.....", "....ssssssss....", "...ssssssssss...", "...SSSSSSSSSS...", "................"], p: {"h": "#2a1008", "b": "#4a2418", "e": "#ffd23f", "j": "#ff6a1f", "r": "#ff8a3d", "s": "#6b6f74", "S": "#4a4e52"}, o: "#1a0804" },
+    "horn_alpha": { r: ["................", "................", "..............w.", ".............ww.", "............wcw.", "..........wwcw..", "........wwwcw...", "......wwwccw....", "....wwwcccw.....", "...wwccccw......", "..bwcccww.......", "..bbwww.........", "..bb............", "...b............", "................", "................"], p: {"w": "#e8f2f8", "c": "#9fe8ff", "b": "#6b4a26"}, o: "#3a5a6e" },
+    "queenchitin": { r: ["................", "................", ".....pppp.......", "...ppPPPPpp.....", "..pPPPpPPPPp....", "..pPPppPPPPPp...", ".pPPpppPPPPPp...", ".pPppppppPPPp...", ".ppppprpppPPp...", ".pppprrrppppp...", "..ppppprppppp...", "..ppppppppppp...", "...ppppppppp....", ".....ppppp......", "................", "................"], p: {"p": "#5a2468", "P": "#9a52a8", "r": "#ff6b82"}, o: "#2a0c34" },
+    "wyrmscale": { r: ["................", "................", "......oooo......", "....oorrrroo....", "...orryyyyrro...", "...oryyyyyyro...", "..orryyyyyyrro..", "..orryyyyyyrro..", "..oorryyyyrroo..", "...oorryyrroo...", "....oorrrroo....", ".....oorroo.....", "......oooo......", ".......oo.......", "................", "................"], p: {"o": "#4a2418", "r": "#ff6a1f", "y": "#ffd23f"}, o: "#1a0804" },
+    "alphamane": { r: ["................", "......c.........", ".....cwc..c.....", "....cwwwccwc....", "...cwwwwwwwwc...", "..cwwwwbwwwwwc..", "..cwwwbbbwwwwc..", ".cwwwwbwwwwwwwc.", ".cwwwwwwwwbwwwc.", "..cwwwwwwbbbwc..", "..cwwwwwwwbwwc..", "...cwwwwwwwwc...", "....ccwwwwcc....", "......cccc......", "................", "................"], p: {"c": "#9fe8ff", "w": "#e8f2f8", "b": "#b8ccda"}, o: "#3a7aa8" }
+  });
   function sprCanvas(key) {   // 16x16 canvas for one sprite, cached
     if (SPC[key]) return SPC[key];
     var d = SPR[key], c = document.createElement("canvas"); c.width = c.height = 16; var g = c.getContext("2d"), on = {}, x, y;
@@ -1224,7 +1476,7 @@
   function drawWeaponIcon(g, tier) { if (tier >= 1 && tier <= 4) drawSpr(g, "wpn" + tier); }
   function heldCan() { return sprCanvas("can"); }
   function icon(id) {
-    var key = id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
+    var key = id === "rod" ? "rod" + Math.max(1, S.rod) : id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
     if (ICO[key]) return ICO[key];
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
     if (id === "pick") {
@@ -1237,6 +1489,8 @@
       drawWeaponIcon(g, S.wpn);
     } else if (id === "can") {
       drawCanIcon(g);
+    } else if (id === "rod") {
+      drawSpr(g, "rod" + Math.max(1, S.rod));
     } else if (/^bag\d$/.test(id)) {
       drawBagIcon(g, +id.slice(3));
     } else if (/^wpn\d$/.test(id)) {
@@ -1316,10 +1570,12 @@
   }
 
   // ---------- SOUND (tiny synth, follows the site's sound switch) ----------
-  var ac = null;
+  var ac = null, gestured = false;   // browsers only allow sound after the first tap or key press
+  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) { window.addEventListener(ev, function () { gestured = true; }, { once: true, capture: true }); });
   function thud(f, vol) {
     try {
       if (typeof SFX !== "undefined" && SFX.on === false) return;
+      if (!gestured && !ac) return;
       ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume();
       var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
       o.type = "triangle"; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.45, t + 0.09);
@@ -1405,7 +1661,7 @@
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
     return TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid || TILES[get(tx, ty + 1)].solid;
   }
-  function setWall(x, y, id) { var i = y * W + x; walls[i] = id; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
+  function setWall(x, y, id) { mpWallEdit(x, y, id); var i = y * W + x; walls[i] = id; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
   function canWall(tx, ty, wid) {   // walls go on the back layer: the front tile must be free (air or a decor piece), and the wall needs a block or another wall beside, above or below it
     if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 3) return false;
     var id = get(tx, ty); if (TILES[id].solid || id === T.WATER || id === T.LAVA) return false;
@@ -1426,7 +1682,7 @@
     var wid = walls[ty * W + tx], item = WALLITEM[wid];
     if (item && room(item) <= 0) { invFull(); mine = null; return; }
     if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
-    mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) / 0.45; mine.tick -= dt;
+    mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) / 0.45; mine.tick -= dt;
     if (mine.tick <= 0) { mine.tick = 0.17; thud(180 + Math.random() * 40, 0.03); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 1, 3); }
     if (mine.p >= 1) { setWall(tx, ty, 0); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 8, 5); thud(200, 0.06); if (item) give(item, 1, tx, ty); mine = null; }
   }
@@ -1437,6 +1693,7 @@
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
     if (item === "ladder") S.st.ladders++;
     if (ITEMS[item].seed) plantCrop(tx, ty, item);
+    if (item === "swampheart" && !S.st.heart) { S.st.heart = 1; chips(tx + 0.5, ty + 0.3, "#4ee6b4", 40, 12); snd("open", "Epic"); checkGoals(); }
     if (item === "chest") S.st.chests++;
     chips(tx + 0.5, ty + 0.5, TILES[ITEMS[item].tile].c2 || "#fff", 4, 3); thud(item === "torch" ? 420 : 240, 0.05);
     if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick"; }
@@ -1664,6 +1921,8 @@
     if (!S.st.warned) { S.st.warned = 1; toast("Bats come out at night! Craft a Swamp Bed and sleep to skip the night.", "#b58cff"); }
   }
   function damageEnemy(e, dmg, face) {
+    if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
+    if (e.boss) return damageBoss(e, dmg, face);
     if (e.def) return; e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
@@ -1671,6 +1930,7 @@
     if (e.hp > 0) return;
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
     e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic");
+    if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small });
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
     }
@@ -1688,7 +1948,8 @@
     if (toolBroken("wpn")) return;
     var reach = [0, 2.7, 2.2, 2.4, 2.4][S.wpn], f = p.face, xa = p.x - f * 0.3, xb = p.x + f * reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb);
     var hits = 0;
-    enemies.forEach(function (e) { if (!e.def && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; damageEnemy(e, WEAPONS[S.wpn].dmg, f); } });
+    enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; e.lastHit = 0; damageEnemy(e, WEAPONS[S.wpn].dmg, f); } });
+    hits += mpStrikePlayers(lo, hi, WEAPONS[S.wpn].dmg, f);
     if (hits) wear("wpn", 1);
   }
   function spawnEnemy() {   // one try every few seconds, just off screen: what can appear depends on the biome there, day or night, and whether you are underground
@@ -1721,18 +1982,20 @@
     var tip = SEEN_TIP[k]; if (tip && !(S.st.seen & tip[0])) { S.st.seen |= tip[0]; toast(tip[1], tip[2]); }
   }
   function updateEnemies(dt) {
-    if (panelOpen) return;
+    if (panelOpen && !MP.on) return;
+    if (MP.on && MP.role === "guest") { mpGhostStep(dt); return; }   // a guest only mirrors the host's creatures
     var underground = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7;
-    spawnT -= dt; if (spawnT <= 0) { spawnT = underground ? 2.6 + Math.random() * 2 : 4 + Math.random() * 3; if (S.wpn >= 1) spawnEnemy(); }   // caves are busier
-    batT -= dt; if (batT <= 0) { batT = (3.2 + Math.random() * 3) * (1 - 0.35 * clamp((S.time - BAT.from) / 150, 0, 1)); if (S.wpn >= 1 && batNight(S.time) && !underground) spawnBat(); }   // bats arrive faster as the night goes on
+    spawnT -= dt; if (spawnT <= 0) { spawnT = underground ? 2.6 + Math.random() * 2 : 4 + Math.random() * 3; if (S.wpn >= 1 && !activeBoss()) spawnEnemy(); }   // caves are busier
+    batT -= dt; if (batT <= 0) { batT = (3.2 + Math.random() * 3) * (1 - 0.35 * clamp((S.time - BAT.from) / 150, 0, 1)); if (S.wpn >= 1 && batNight(S.time) && !underground && !activeBoss()) spawnBat(); }   // bats arrive faster as the night goes on
     enemies.forEach(function (e) { if (e.k === "bat" && !e.def && !e.leave && (!batNight(S.time) || underground)) e.leave = underground ? 4 : 3 + Math.random() * 2; });   // dawn, or you went underground
     enemies.forEach(function (e) { if (e.k === "wasp" && !e.def && !e.leave && (batNight(S.time) || underground)) e.leave = 2.5 + Math.random() * 2; });   // wasps head home at night, or when you go underground
     if (swingQ > 0) { swingQ -= dt; if (swingQ <= 0) strike(); }
+    updateShots(dt);
     for (var i = enemies.length - 1; i >= 0; i--) {
       var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt);
       if (e.def) { e.dead -= dt; moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
-      if (e.gone || Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
-      if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else updateFrog(e, dt);
+      if (e.gone || (!e.boss && (Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44))) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
+      mpRun(e, function () { if (e.boss) updBoss(e, dt); else if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else updateFrog(e, dt); });
     }
   }
   // ---------- CAVE CREATURES (hole-cave floors, seen from above) ----------
@@ -2015,6 +2278,7 @@
   }
   var SHADOW = { bug: 19, frog: 17, wolf: 21, gator: 27, slime: 14 }, HBAR = { bug: 41, bat: 30, frog: 49, wolf: 44, gator: 30, slime: 32, wasp: 30 };
   function drawEnemy(g, e, now) {
+    if (e.boss) return drawBoss(g, e, now);
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
     if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
     var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, h = Math.max(0, e.hurt) / 0.3, flash = e.hurt > 0.2 || e.def, d = ENEMY[e.k];
@@ -2089,12 +2353,12 @@
   function cropAt(x, y) { var td = TILES[get(x, y)]; return td && td.crop ? td : null; }
   function soilKind(x, y) { var k = TILES[get(x, y)].kind; return k === "farmland" || k === "farmwet"; }
   function setSoil(x, y, wet) { var k = TILES[get(x, y)].kind; if (k === "farmland" && wet) setT(x, y, T.X_farmwet); else if (k === "farmwet" && !wet) setT(x, y, T.X_farmland); }
-  function plantCrop(x, y, seedItem) { S.farm[x + "," + y] = { c: ITEMS[seedItem].seed, g: 0, w: 0 }; S.st.planted++; checkTrail(); checkGoals(); }
+  function plantCrop(x, y, seedItem) { S.farm[x + "," + y] = { c: ITEMS[seedItem].seed, g: 0, w: 0 }; if (MP.on && MP.role === "guest") mpSend({ t: "farm", k: x + "," + y, c: ITEMS[seedItem].seed }); S.st.planted++; checkTrail(); checkGoals(); }
   function farmStep(sec) {
     Object.keys(S.farm).forEach(function (key) {
       var e = S.farm[key], q = key.split(","), x = +q[0], y = +q[1], td = cropAt(x, y), C = td && CROPS[td.crop];
       if (!C || td.crop !== e.c) { delete S.farm[key]; return; }
-      var rate = (e.w > 0 ? 2 : 1) * (world.bio[x] === C.b ? 1.4 : 1);
+      var rate = (e.w > 0 ? 2 : 1) * (world.bio[x] === C.b ? 1.4 : 1) * (hasCharm("thumb") ? 1.25 : 1);
       if (td.stage < 4) {
         e.g += sec * rate;
         while (e.g >= C.t && td.stage < 4) { e.g -= C.t; setT(x, y, C.tiles[td.stage]); td = TILES[C.tiles[td.stage]]; if (td.stage === 4 && !cave && Math.abs(x - p.x) < 24 && Math.abs(y - p.y) < 16) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); }
@@ -2103,7 +2367,7 @@
       if (e.w > 0) { e.w -= sec; if (e.w <= 0) { e.w = 0; setSoil(x, y + 1, false); } }
     });
   }
-  function tickFarm(dt) { farmT += dt; if (farmT >= 1) { var s2 = farmT; farmT = 0; farmStep(s2); } }
+  function tickFarm(dt) { if (MP.on && MP.role === "guest") return; farmT += dt; if (farmT >= 1) { var s2 = farmT; farmT = 0; farmStep(s2); } }
   function harvestCrop(x, y, td) {
     var C = CROPS[td.crop], key = x + "," + y, e = S.farm[key], sd = SEEDOF[td.crop]; delete S.farm[key];
     if (e && e.w > 0) setSoil(x, y + 1, false);
@@ -2125,7 +2389,7 @@
   var HUNGER_RATE = 100 / 720, starveT = 0, shownFood = -1;
   function meX() { return cave ? cp.x : p.x; }
   function meY() { return cave ? cp.y - 1.4 : p.y - PH - 0.3; }
-  function regenMul() { if (S.nohunger) return 1; return S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1; }
+  function regenMul() { var hc = hasCharm("hearty") ? 1.2 : 1; if (S.nohunger) return hc; return (S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1) * hc; }
   function drawFood() {
     var el = $("sbxFood"); if (!el) return; el.hidden = !!S.nohunger; if (S.nohunger) return;
     var v = Math.max(0, Math.ceil(S.food)); if (v === shownFood) return; shownFood = v;
@@ -2134,7 +2398,7 @@
   }
   function tickHunger(dt) {
     if (S.nohunger) { drawFood(); return; }
-    var was = S.food; S.food = Math.max(0, S.food - dt * HUNGER_RATE);
+    var was = S.food; S.food = Math.max(0, S.food - dt * HUNGER_RATE * (hasCharm("hearty") ? 0.65 : 1));
     if (was >= 50 && S.food < 50 && !(S.st.htip & 1)) { S.st.htip |= 1; toast("Getting hungry! Pick food in the hotbar and tap to eat. Cattails drop carrot seeds, and Redcap Mushrooms are edible.", "#f2c14e"); }
     if (was >= 25 && S.food < 25) toast("You are hungry: your health stops coming back until you eat.", "#f2a14e");
     if (was > 0 && S.food <= 0) toast("Starving! Eat something soon.", "#ff7a5a");
@@ -2153,13 +2417,1357 @@
     hbDirty = true; checkTrail(); checkGoals(); if (panelOpen) renderPanel();
   }
   function useFood(dt) { mine = null; if (!aim.down) return; cool -= dt; if (cool > 0) return; cool = 0.7; eat(sel); }
+  // ---------- FISHING ----------
+  // Pick the rod (S.rod: 1 Reed Rod, 2 Ember Rod) and tap water to cast. The bobber floats... when it dips and a "!" shows, tap again quickly to reel in.
+  // Tapping too early pulls the line in. The Reed Rod fishes water, and also through Frostfen ice; the Ember Rod can fish in lava too.
+  // What bites depends on the liquid, the biome, night time (Glowfins love the dark) and depth (cave pools hold more rare fish).
+  var fishing = null, rodPrev = false, ROD_REACH = 7.5;
+  var FISHTAB = {
+    water: [["bogminnow", 55], ["catfish", 32], ["glowfin", 0]],
+    ice: [["frosttrout", 55], ["icepike", 32], ["crystalcarp", 0]],
+    lava: [["emberkoi", 52], ["magmaeel", 35], ["cinderfish", 0]]
+  };
+  var FISH_ALL = ["bogminnow", "catfish", "glowfin", "frosttrout", "icepike", "crystalcarp", "emberkoi", "magmaeel", "cinderfish"];
+  function liquidAt(x, y) { var id = get(x, y); return id === T.WATER ? "water" : id === T.LAVA ? "lava" : id === T.ICE || id === T.X_permafrost ? "ice" : ""; }
+  function castTarget(tx, ty) {   // the liquid's surface cell at (or just below) where you tapped
+    for (var y = ty; y <= ty + 3; y++) { var lq = liquidAt(tx, y); if (lq) { var top = y; while (top > 0 && liquidAt(tx, top - 1) === lq) top--; if (lq === "ice" && get(tx, top - 1) !== T.AIR) return null; return { x: tx, y: top, lq: lq }; } if (blocks(tx, y)) break; }
+    return null;
+  }
+  function useRod(dt) {
+    mine = null; var press = aim.down && !rodPrev; rodPrev = aim.down;
+    if (!fishing) {
+      if (!press || aim.tx < 0) return;
+      var c = castTarget(aim.tx, aim.ty);
+      if (!c) { nag("Tap water to cast your line" + (S.rod >= 2 ? " (or lava)." : ". In Frostfen you can fish through the ice.")); return; }
+      if (c.lq === "lava" && S.rod < 2) { nag("Lava would burn this rod. Craft the Ember Rod to fish in lava."); return; }
+      var dx = c.x + 0.5 - p.x, dy = c.y - (p.y - PH / 2); if (dx * dx + dy * dy > ROD_REACH * ROD_REACH) { nag("That's too far to cast."); return; }
+      p.face = dx < 0 ? -1 : 1;
+      fishing = { x: c.x, y: c.y, lq: c.lq, ph: "wait", t: (2.5 + Math.random() * 5) * fishBiteMul(), bob: 0 };
+      thud(520, 0.04); chips(c.x + 0.5, c.y + 0.1, c.lq === "lava" ? "#ffb13b" : "#bff4ff", 6, 3); return;
+    }
+    var fx = fishing.x + 0.5 - p.x, fy = fishing.y - (p.y - PH / 2);
+    if (fx * fx + fy * fy > (ROD_REACH + 2) * (ROD_REACH + 2) || !liquidAt(fishing.x, fishing.y)) { fishing = null; nag("Your line came loose."); return; }
+    fishing.t -= dt; fishing.bob += dt;
+    if (fishing.ph === "wait") {
+      if (press) { fishing = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
+      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
+    } else if (fishing.ph === "bite") {
+      if (press) return landFish();
+      if (fishing.t <= 0) { fishing.ph = "wait"; fishing.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
+    }
+  }
+  function landFish() {
+    var F = fishing, x = F.x, y = F.y; fishing = null;
+    var under = y > col[clamp(x, 0, W - 1)] + 6, night = isNight(S.time), r = Math.random();
+    if (r < 0.04) { var L = rollLoot("pot", world.bio[x], under ? 1 : 0); L.forEach(function (q) { give(q[0], q[1], x, y - 0.6); }); popup("Fished up treasure!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#f2c14e", "✦"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
+    if (r < 0.1) { give("oldboot", 1, x, y - 0.6); nag("Just an Old Boot..."); S.st.boots++; checkGoals(); return; }
+    var tab = FISHTAB[F.lq], rare = 0.07 + (under ? 0.05 : 0) + (hasCharm("angler") ? 0.06 : 0) + (night && F.lq === "water" ? 0.08 : 0), k;
+    if (Math.random() < rare) k = tab[2][0];
+    else { var tw = tab[0][1] + tab[1][1], rr = Math.random() * tw; k = rr < tab[0][1] ? tab[0][0] : tab[1][0]; }
+    give(k, 1, x, y - 0.6, true); S.st.fish++; S.fdex[k] = 1; if (F.lq === "lava") S.st.lavafish++;
+    chips(x + 0.5, y, F.lq === "lava" ? "#ff8a3d" : "#8fe0ff", 14, 6); thud(420, 0.06);
+    if (k === tab[2][0]) { S.st.rarefish++; popup("Rare catch!", ITEMS[k].n, "#c78bff", "★"); snd("open", "Epic"); } else snd("coin");
+    checkTrail(); checkGoals();
+  }
+  function drawFishing(g, now) {
+    if (!fishing || cave) return;
+    var bite = fishing.ph === "bite", bx = ox + (fishing.x + 0.5) * ts, by = oy + fishing.y * ts + (bite ? ts * 0.22 : Math.sin(fishing.bob * 2.4) * ts * 0.05);
+    var tx = ox + (p.x + p.face * 1.15) * ts, ty = oy + (p.y - 2.05) * ts;   // the rod tip
+    g.strokeStyle = "rgba(246,238,219,.75)"; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + ts * 0.6, bx, by); g.stroke();
+    var r = ts * 0.16; g.fillStyle = "#ffffff"; g.beginPath(); g.arc(bx, by - r * 0.4, r, Math.PI, 0); g.fill(); g.fillStyle = "#e8341c"; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, Math.PI); g.fill();
+    g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, 6.2832); g.stroke();
+    if (bite) {
+      g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 2; var rr = ts * (0.3 + (1 - fishing.t) * 0.4); g.beginPath(); g.ellipse(bx, by, rr, rr * 0.3, 0, 0, 6.2832); g.stroke();
+      g.font = "900 " + Math.round(ts * 0.8) + "px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.7)"; g.fillStyle = "#ffcf3a";
+      var ey = by - ts * 0.9 - Math.abs(Math.sin(now / 80)) * ts * 0.15; g.strokeText("!", bx, ey); g.fillText("!", bx, ey);
+    }
+  }
+
+  // ---------- ANIMALS TO RAISE ----------
+  // Wild Bog Ducks, Mud Pigs and Frost Goats wander their biomes (they never fight). Hold an animal's favourite food and tap it to feed it:
+  // after a feed or three it is tamed (S.pets). A fed animal stays happy for a day and makes something every couple of minutes: tap it to collect.
+  // Hold its favourite food and it follows you; let go and it settles where it stands, or beside the nearest Feeding Trough.
+  // Two happy adults of the same kind fed close together can have a baby (it grows up in a few minutes).
+  var ANIM = {
+    duck: { n: "Bog Duck", b: [0], w: 0.8, h: 0.75, spd: 1.3, fav: ["seed_carrot", "seed_potato", "seed_pepper", "seed_frost"], favN: "any seeds", prod: "duckegg", every: 100, names: ["Puddles", "Quackers", "Mossy", "Dewdrop", "Bean", "Waddles"] },
+    pig: { n: "Mud Pig", b: [0, 1], w: 1.1, h: 0.85, spd: 1.0, fav: ["carrot", "potato"], favN: "carrots or potatoes", prod: "truffle", every: 140, names: ["Truffles", "Mudsy", "Hamlet", "Pickle", "Rosie", "Biscuit"] },
+    goat: { n: "Frost Goat", b: [2], w: 1.0, h: 1.05, spd: 1.4, fav: ["frostberry", "leaves"], favN: "frostberries or leaves", prod: "goatmilk", every: 130, names: ["Snowball", "Flurry", "Pebble", "Juniper", "Frostbite", "Clover"] }
+  };
+  var wilds = [], animT = 3, FED_S = 480, PET_MAX = 24;
+  function newAnimal(k, x, y, tame) { var A = ANIM[k]; return { k: k, x: x, y: y, vx: 0, vy: 0, kv: 0, on: false, w: A.w, h: A.h, dir: Math.random() < 0.5 ? -1 : 1, t: 1 + Math.random() * 2, st: "idle", tt: Math.random() * 6, tame: !!tame, hx: x, fed: 0, pr: 0, rdy: 0, nm: "", baby: 0, love: 0, tm: 0, fol: false, hop: 0 }; }
+  function allAnimals() { return S.pets.concat(wilds); }
+  function spawnWild() {
+    if (cave || wilds.length >= 3 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) return;
+    var side = Math.random() < 0.5 ? -1 : 1, cx = clamp(Math.floor(p.x + side * (vw / 2 / ts + 3 + Math.random() * 8)), 3, W - 4), b = world.bio[cx], opts = [];
+    Object.keys(ANIM).forEach(function (k) { if (ANIM[k].b.indexOf(b) >= 0) opts.push(k); }); if (!opts.length) return;
+    var k = opts[Math.floor(Math.random() * opts.length)], cy = col[cx];
+    if (cy <= 1 || cy >= H || blocks(cx, cy - 1) || TILES[get(cx, cy - 1)].kind === "water" || TILES[get(cx, cy)].kind === "water") return;
+    var a = newAnimal(k, cx + 0.5, cy, false); if (eBoxHit(a.x, a.y, a.w, a.h)) return;
+    wilds.push(a);
+    if (!(S.st.seen & 16)) { S.st.seen |= 16; toast("A wild " + ANIM[k].n + "! Hold " + ANIM[k].favN + " and tap it to tame it.", "#f2c14e"); }
+  }
+  function troughNear(x, y) { if (T.X_trough === undefined) return null; for (var d = 0; d <= 8; d++) for (var s2 = -1; s2 <= 1; s2 += 2) { var xx = Math.floor(x) + d * s2; for (var yy = Math.floor(y) - 3; yy <= Math.floor(y) + 2; yy++) if (get(xx, yy) === T.X_trough) return xx + 0.5; } return null; }
+  function updateAnimals(dt) { if (MP.on && MP.role === "guest") return;
+    if (cave) return;
+    animT -= dt; if (animT <= 0) { animT = 6 + Math.random() * 5; spawnWild(); }
+    for (var i = wilds.length - 1; i >= 0; i--) if (Math.abs(wilds[i].x - p.x) > 55 || Math.abs(wilds[i].y - p.y) > 40) wilds.splice(i, 1);
+    allAnimals().forEach(function (a) {
+      var A = ANIM[a.k]; if (!A) return; a.tt += dt; a.love = Math.max(0, a.love - dt);
+      if (a.tame) {
+        if (a.fed > 0) { a.fed = Math.max(0, a.fed - dt); if (!a.baby && a.rdy < 3) { a.pr += dt; if (a.pr >= A.every) { a.pr = 0; a.rdy++; } } }
+        if (a.baby > 0) { a.baby = Math.max(0, a.baby - dt); if (!a.baby) { a.w = A.w; a.h = A.h; } }
+      }
+      var far = Math.abs(a.x - p.x) > 60 || Math.abs(a.y - p.y) > 45; if (far) return;   // far away: only the timers run
+      var dx = p.x - a.x, d = Math.abs(dx), lead = a.tame && A.fav.indexOf(sel) >= 0 && d < 14 && Math.abs(p.y - a.y) < 6, vx = 0, sp = A.spd * (a.baby ? 1.2 : 1);
+      if (lead) { a.fol = true; if (d > 1.6) { a.dir = dx > 0 ? 1 : -1; vx = a.dir * Math.min(4.2, sp * 2.6); a.st = "walk"; } else a.st = "idle"; }
+      else {
+        if (a.fol) { a.fol = false; var tr = troughNear(a.x, a.y); a.hx = tr !== null ? tr : a.x; }   // let go: settle here, or by a trough
+        a.t -= dt;
+        if (a.t <= 0) { if (a.st === "walk") { a.st = "idle"; a.t = 1.5 + Math.random() * 3; } else { a.st = "walk"; a.t = 1 + Math.random() * 2.5; a.dir = a.tame && Math.abs(a.x - a.hx) > 4 ? (a.hx > a.x ? 1 : -1) : Math.random() < 0.5 ? -1 : 1; } }
+        if (a.st === "walk") {
+          var ax = Math.floor(a.x + a.dir * (a.w / 2 + 0.3)); if (!blocks(ax, Math.floor(a.y + 0.3)) && !blocks(ax, Math.floor(a.y + 1.3)) || TILES[get(ax, Math.floor(a.y + 0.3))].kind === "water" && a.k !== "duck") { a.dir = -a.dir; }
+          if (a.tame && Math.abs(a.x + a.dir - a.hx) > 6) a.dir = a.hx > a.x ? 1 : -1;
+          vx = a.dir * sp;
+        }
+      }
+      if (a.blocked && a.on && vx) { a.vy = -9.5; }   // hop up a step
+      if (a.on && a.st === "walk" && a.k === "goat" && Math.random() < dt * 0.4) a.vy = -7;   // goats love a little jump
+      moveEnemy(a, dt, vx); a.mv = vx;
+    });
+  }
+  function animalAt(wx, wy) {   // the animal under a point (world tiles), or null
+    var all = allAnimals(), best = null, bd = 9;
+    for (var i = 0; i < all.length; i++) { var a = all[i], pad = 0.35; if (wx > a.x - a.w / 2 - pad && wx < a.x + a.w / 2 + pad && wy > a.y - a.h - pad && wy < a.y + 0.2) { var d = Math.abs(wx - a.x); if (d < bd) { bd = d; best = a; } } }
+    return best;
+  }
+  function animalNear() { var all = allAnimals(), best = null, bd = 2.6; all.forEach(function (a) { var d = Math.abs(a.x - p.x) + Math.abs(a.y - p.y) * 0.6; if (d < bd) { bd = d; best = a; } }); return best; }
+  function hearts(a, n, c) { for (var q = 0; q < n; q++) parts.push({ x: a.x + (Math.random() - 0.5) * a.w, y: a.y - a.h - 0.1, vx: (Math.random() - 0.5) * 1.5, vy: -2.4 - Math.random() * 1.5, life: 0.8, max: 0.9, c: c || "#ff6b9a", s: 4 }); }
+  function petName(k) { var L = ANIM[k].names, used = {}; S.pets.forEach(function (q) { used[q.nm] = 1; }); for (var i = 0; i < L.length; i++) if (!used[L[i]]) return L[i]; return ANIM[k].n.split(" ")[1] + " " + (S.pets.length + 1); }
+  function useAnimal(a) {
+    var A = ANIM[a.k], dx = a.x - p.x, dy = a.y - p.y; if (dx * dx + dy * dy > REACH * REACH) { nag("Walk closer to the " + A.n + "."); return; }
+    var holding = A.fav.indexOf(sel) >= 0 && (S.inv[sel] || 0) > 0;
+    if (a.tame) {
+      if (a.rdy > 0) { var n = a.rdy; a.rdy = 0; give(A.prod, n, a.x - 0.5, a.y - a.h - 0.6, true); S.st.collected += n; hearts(a, 3, "#ffe48a"); snd("coin"); checkGoals(); save(); return; }
+      if (holding) {
+        if (a.fed > FED_S * 0.75) { nag(a.nm + " isn't hungry right now."); return; }
+        eatFrom(sel); a.fed = FED_S; hearts(a, 5); thud(560, 0.04); toast(a.nm + " is happy! It will make " + ITEMS[A.prod].n + "s for a day.", "#ff9ac2");
+        if (!a.baby && !a.love) {   // a friend nearby? a baby might come along
+          var mate = S.pets.filter(function (q) { return q !== a && q.k === a.k && q.tame && !q.baby && !q.love && q.fed > 0 && Math.abs(q.x - a.x) < 5 && Math.abs(q.y - a.y) < 3; })[0];
+          if (mate && S.pets.filter(function (q) { return q.k === a.k; }).length < 8 && S.pets.length < PET_MAX) {
+            var kid = newAnimal(a.k, (a.x + mate.x) / 2, Math.min(a.y, mate.y), true); kid.baby = 300; kid.w = A.w * 0.6; kid.h = A.h * 0.6; kid.hx = kid.x; kid.nm = petName(a.k); kid.fed = FED_S;
+            if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) { S.pets.push(kid); a.love = mate.love = 600; hearts(kid, 10); popup("A baby " + A.n + "!", kid.nm + " joins your farm", "#ff9ac2", "♥"); S.st.babies++; }
+          }
+        }
+        checkGoals(); save(); return;
+      }
+      var mins = a.fed > 0 ? Math.ceil((A.every - a.pr) / 60) : 0;
+      toast(a.nm + " the " + A.n + (a.baby ? " (baby)" : "") + ": " + (a.baby ? "still growing up." : a.fed > 0 ? "happy. Next " + ITEMS[A.prod].n + " in about " + mins + " min." : "hungry. Feed it " + A.favN + "."), "#ff9ac2");
+      return;
+    }
+    if (!holding) { toast("A wild " + A.n + ". Hold " + A.favN + " and tap it to tame it.", "#f2c14e"); return; }
+    if (S.pets.length >= PET_MAX) { nag("Your farm is full (" + PET_MAX + " animals)."); return; }
+    eatFrom(sel); a.tm++; hearts(a, 2); thud(500, 0.03);
+    if (Math.random() < 0.4 || a.tm >= 3) {
+      wilds.splice(wilds.indexOf(a), 1); a.tame = true; a.nm = petName(a.k); a.hx = a.x; a.fed = FED_S; S.pets.push(a); S.st.tamed++;
+      hearts(a, 12); popup("Tamed!", a.nm + " the " + A.n, "#ff9ac2", "♥"); snd("open", "Epic");
+      if (S.st.tamed === 1) setTimeout(function () { toast("Hold " + A.favN + " and " + a.nm + " follows you. Let go near a Feeding Trough and it stays there.", "#ff9ac2"); }, 1800);
+      checkTrail(); checkGoals(); save();
+    } else nag("The " + A.n + " sniffs the food... give it a little more.");
+  }
+  function eatFrom(k) { S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) sel = "pick"; } reslot(); hbDirty = true; }
+  function drawAnimals(g, now) { allAnimals().forEach(function (a) { drawAnimal(g, a, now); }); }
+  function drawAnimal(g, a, now) {
+    var sx = ox + a.x * ts, sy = oy + a.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    var t = a.tt, walk = Math.abs(a.mv || 0) > 0.2, bob = walk ? Math.abs(Math.sin(t * 9)) * 1.4 : Math.sin(t * 2) * 0.4, sc = a.baby ? 0.62 : 1;
+    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30, ts / 30);
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 14 * sc * a.w, 3, 0, 0, 7); g.fill();
+    g.save(); g.scale(a.dir * sc, sc); g.translate(0, -bob); g.lineJoin = "round"; g.lineCap = "round";
+    var leg = function (x0, ph, c, len) { var sw = walk ? Math.sin(t * 9 + ph) * 3 : 0; g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, -len); g.lineTo(x0 + sw, bob - 0.5); g.stroke(); };
+    if (a.k === "duck") {
+      leg(-2, 0, "#ff8a2a", 6); leg(2, 3, "#e8701a", 6);
+      g.fillStyle = "#ff8a2a"; g.fillRect(-4 + (walk ? Math.sin(t * 9) * 3 : 0), -1 + bob, 4, 1.5); g.fillRect(1 + (walk ? Math.sin(t * 9 + 3) * 3 : 0), -1 + bob, 4, 1.5);
+      g.fillStyle = "#8a6a4a"; g.strokeStyle = "#3a2416"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(-1, -11, 10, 6.5, -0.1, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#b8936a"; g.beginPath(); g.ellipse(-1, -8.5, 7, 3, 0, 0, 7); g.fill();
+      g.fillStyle = "#5a4430"; g.beginPath(); g.moveTo(-10, -12); g.lineTo(-15, -15); g.lineTo(-10, -9); g.closePath(); g.fill();   // tail
+      g.fillStyle = "#6a5038"; g.beginPath(); g.ellipse(-2, -12, 6, 3.5, -0.2, 0, 7); g.fill();   // wing
+      g.fillStyle = "#1f8f7e"; g.strokeStyle = "#0e3a32"; g.beginPath(); g.ellipse(7, -19, 4.6, 4.4, 0, 0, 7); g.fill(); g.stroke();   // teal head
+      g.fillStyle = "#f6eedb"; g.fillRect(4, -16, 5, 1.4);   // neck ring
+      g.fillStyle = "#ffb13b"; g.beginPath(); g.moveTo(10.5, -20); g.lineTo(16, -18.5); g.lineTo(10.5, -17); g.closePath(); g.fill();
+      g.fillStyle = "#12220f"; g.beginPath(); g.arc(8.4, -20.4, 1.1, 0, 7); g.fill();
+    } else if (a.k === "pig") {
+      leg(-6, 0, "#c47a6a", 5); leg(-2, 2, "#a8645a", 5); leg(5, 1, "#c47a6a", 5); leg(8, 3, "#a8645a", 5);
+      g.fillStyle = "#e8a090"; g.strokeStyle = "#7a3a30"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, -11, 12, 7, 0, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#7a5a3a"; [[-5, -13, 3.2], [3, -8, 2.6], [-1, -15, 2], [6, -14, 1.8]].forEach(function (m) { g.beginPath(); g.arc(m[0], m[1], m[2], 0, 7); g.fill(); });   // mud spots
+      g.strokeStyle = "#c47a6a"; g.lineWidth = 1.8; g.beginPath(); g.moveTo(-12, -13); g.quadraticCurveTo(-16, -16, -14, -18); g.quadraticCurveTo(-12, -19, -13, -16); g.stroke();   // curly tail
+      g.fillStyle = "#e8a090"; g.strokeStyle = "#7a3a30"; g.beginPath(); g.ellipse(11, -13, 6, 5.5, 0, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#d48878"; g.beginPath(); g.moveTo(8, -18); g.lineTo(10, -22); g.lineTo(12, -18); g.closePath(); g.fill(); g.stroke();   // ear
+      g.fillStyle = "#f0b4a4"; g.beginPath(); g.ellipse(16.5, -12, 2.6, 2.4, 0, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#7a3a30"; g.fillRect(16, -13, 0.9, 1.8); g.fillRect(17.4, -13, 0.9, 1.8);
+      g.fillStyle = "#12220f"; g.beginPath(); g.arc(12.6, -15, 1, 0, 7); g.fill();
+    } else {
+      leg(-6, 0, "#8a8f99", 7); leg(-3, 2, "#6a6f79", 7); leg(4, 1, "#8a8f99", 7); leg(7, 3, "#6a6f79", 7);
+      g.fillStyle = "#f0f4f8"; g.strokeStyle = "#7a8a9a"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, -13, 11, 6.5, 0, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#ffffff"; [[-6, -16], [-1, -18], [4, -17], [-3, -11], [3, -11]].forEach(function (m) { g.beginPath(); g.arc(m[0], m[1], 3, 0, 7); g.fill(); });   // fluffy coat
+      g.fillStyle = "#e0e6ec"; g.beginPath(); g.moveTo(-11, -15); g.lineTo(-14, -18); g.lineTo(-10, -12); g.closePath(); g.fill();
+      g.fillStyle = "#e8eef2"; g.strokeStyle = "#7a8a9a"; g.beginPath(); g.ellipse(10, -20, 4.6, 4, 0.3, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#d0d8e0"; g.beginPath(); g.ellipse(13.5, -18, 3, 2.4, 0.3, 0, 7); g.fill();
+      g.strokeStyle = "#8a7a60"; g.lineWidth = 2; g.beginPath(); g.moveTo(9, -23); g.quadraticCurveTo(6, -28, 2, -26); g.stroke();   // horn
+      g.fillStyle = "#e8eef2"; g.beginPath(); g.moveTo(11, -15); g.lineTo(12.5, -10); g.lineTo(13.5, -15); g.closePath(); g.fill();   // beard
+      g.fillStyle = "#12220f"; g.beginPath(); g.arc(11.5, -21, 1, 0, 7); g.fill();
+    }
+    g.restore();
+    if (a.tame) {   // product ready bubble, and a name tag when you are close
+      var top = -(a.h * 30 * sc) - 10;
+      if (a.rdy > 0) {
+        var im = icon(ANIM[a.k].prod), byy = top - 12 + Math.sin(now / 300) * 1.5; g.fillStyle = "rgba(10,20,16,.85)"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.5;
+        g.beginPath(); g.arc(0, byy, 9, 0, 7); g.fill(); g.stroke(); if (im) { var imo = imgOf(im); if (imo) g.drawImage(imo, -7, byy - 7, 14, 14); }
+        if (a.rdy > 1) { g.fillStyle = "#f2c14e"; g.font = "900 8px Nunito,sans-serif"; g.textAlign = "center"; g.fillText("x" + a.rdy, 10, byy + 9); }
+      } else if (Math.abs(a.x - p.x) < 4 && Math.abs(a.y - p.y) < 3) {
+        g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText(a.nm).width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, top - 8, tw, 12);
+        g.fillStyle = a.fed > 0 ? "#ff9ac2" : "#f6eedb99"; g.fillText((a.fed > 0 ? "♥ " : "") + a.nm, 0, top + 1);
+      }
+    }
+    g.restore();
+  }
+  var IMGC = {};
+  function imgOf(url) { var im = IMGC[url]; if (!im) { im = IMGC[url] = new Image(); im.src = url; } return im.complete ? im : null; }
+  // ---------- OLD CROAKER ----------
+  // The old frog who tells the story lives at the spawn camp, a few steps west of where you wake up. Tap him (or press F beside him) to talk.
+  // He hints at your current quest, hands out a gift for every chapter you finish (S.cg bit c = claimed), and shares swamp wisdom.
+  // A gold "!" floats over him while a gift is waiting, and a "..." while you are close.
+  var npc = { x: 0, y: 0, t: 0, face: 1, blink: 2, chk: 0, ok: false }, talkN = 0;
+  var CG = [   // chapter gifts: given when you talk to him after finishing chapter c
+    { seed_potato: 3, torch: 8, planks: 10, roastcarrot: 2 },
+    { rawmeat: 3, seed_pepper: 2, bogminnow: 3, stone: 12 },
+    { charcoal: 6, crystal: 4, bogiron: 6, roastcarrot: 3 },
+    { ironingot: 4, cinder: 8, seed_frost: 3, chili: 2 },
+    { amethyst: 2, frostberry: 6, ironingot: 4, berrypie: 2 },
+    { feast: 2, ruby: 1, sapphire: 1, moonstone: 1 }
+  ];
+  var CROAK_HI = ["Ribbit! Good to see you, little one.", "Ah, there you are. Sit a while.", "Hrrrm. Mind the mud, it's deeper than it looks.", "Back again? Splendid, splendid.", "The reeds told me you were coming."];
+  var CROAK_TIPS = [
+    "Torches keep the Dusk Bugs away from your camp at night.",
+    "Watered crops grow twice as fast. A crop in its home land grows faster still.",
+    "Fish bite more often at the edges of big lakes, and rare fish like the dark.",
+    "A tamed duck lays eggs if you keep her fed. Two fed friends side by side may surprise you.",
+    "Hold your pick on a block to dig. Harder stone wants a better pick.",
+    "Cave Chests deep down hold the best loot, but the deep holds the meanest bats too.",
+    "Cooked meals fill you up and mend your wounds. Raw carrots only fill you a little.",
+    "Sleep in a bed and you'll wake there if the swamp gets the better of you.",
+    "Slimes split when they're angry. Hit them fast!",
+    "Ember Wasps hate the cold. Frost Wolves hate the fire. Nobody likes an alligator.",
+    "Your map remembers where you've been. Mark the good spots with a waypoint.",
+    "Upgrade your Workbench to craft fancier things. Check the Craft tab for what it needs.",
+    "Pigs dig truffles, goats give milk. Feed them at a Feeding Trough and they stay happy.",
+    "In Frostfen you can fish right through the ice.",
+    "Old buildings are full of treasure, and a few of them have stairs going down.",
+    "Each land has a boss. Craft its summon at the Workbench, and fight it on open ground with a full belly.",
+    "When the Bramble Queen rams a wall she sees stars. That is when to hit her hardest!",
+    "Swamp rain waters your crops for you. And fish bite quicker when the weather turns.",
+    "Boss trophies make fine charms. Wear one and you will feel the difference."
+  ];
+  function npcSpot() {   // where he stands: the first solid floor with headroom near the camp (rechecked now and then, in case you build there)
+    var sx = Math.floor(world.spawn.x) - 4;
+    for (var d = 0; d < 6; d++) for (var sg = -1; sg <= 1; sg += 2) {
+      var x = clamp(sx + sg * d, 1, W - 2), t0 = world.top[x];
+      for (var y = Math.max(3, t0 - 14); y < Math.min(H - 1, t0 + 6); y++) {
+        var id = get(x, y); if (!blocks(x, y) || id === T.LEAVES || id === T.LOG) continue;
+        if (!blocks(x, y - 1) && !blocks(x, y - 2)) { npc.x = x + 0.5; npc.y = y; npc.ok = true; return; }
+      }
+    }
+    npc.ok = false;
+  }
+  function giftsWaiting() { var n = [], c = Math.min(curCh(), CG.length); for (var i = 0; i < c; i++) if (!(S.cg & (1 << i))) n.push(i); return n; }
+  function updateNpc(dt) {
+    if (cave) return; npc.t += dt; npc.chk -= dt;
+    if (npc.chk <= 0) { npc.chk = 2; npcSpot(); }
+    npc.blink -= dt; if (npc.blink < -0.14) npc.blink = 2 + Math.random() * 3;
+    if (Math.abs(p.x - npc.x) < 8) npc.face = p.x < npc.x ? -1 : 1;
+  }
+  function npcAt(wx, wy) { return npc.ok && !cave && Math.abs(wx - npc.x) < 0.8 && wy > npc.y - 1.9 && wy < npc.y + 0.2; }
+  function npcNear() { return npc.ok && !cave && Math.abs(npc.x - p.x) < 2.6 && Math.abs(npc.y - p.y) < 2.5; }
+  function drawNpc(g, now) {
+    if (!npc.ok || cave) return;
+    var sx = ox + npc.x * ts, sy = oy + npc.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) return;
+    var t = npc.t, br = reduce ? 0 : Math.sin(t * 1.6) * 0.8, near = npcNear();
+    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30, ts / 30); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 15, 3.2, 0, 0, 7); g.fill();
+    g.save(); g.scale(npc.face, 1);
+    // walking stick (behind), with a little lantern-moss tuft on top
+    g.strokeStyle = "#5a3a20"; g.lineWidth = 2.6; g.beginPath(); g.moveTo(14, 0); g.lineTo(12.5, -34); g.stroke();
+    g.strokeStyle = "#7a5230"; g.lineWidth = 1; g.beginPath(); g.moveTo(13.5, -2); g.lineTo(12.2, -32); g.stroke();
+    g.fillStyle = "#4ee6b4"; g.globalAlpha = 0.75 + 0.25 * Math.sin(now / 400); g.beginPath(); g.arc(12.3, -35.5, 2.6, 0, 7); g.fill(); g.globalAlpha = 1;
+    // legs: big squat frog feet
+    g.fillStyle = "#2f9a4c"; g.strokeStyle = "#174a28"; g.lineWidth = 1.6;
+    [-7, 6].forEach(function (fx) { g.beginPath(); g.ellipse(fx, -2.5, 6, 3, 0, 0, 7); g.fill(); g.stroke(); });
+    g.translate(0, -br * 0.4);
+    // body, belly and a mossy shawl
+    g.fillStyle = "#3a9e58"; g.beginPath(); g.ellipse(0, -13, 13, 11 + br * 0.2, 0, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = "#e6e0a8"; g.beginPath(); g.ellipse(1.5, -10, 8.5, 7, 0, 0, 7); g.fill();
+    g.fillStyle = "#6a7a2a"; g.strokeStyle = "#3a4416"; g.beginPath(); g.moveTo(-13, -17); g.quadraticCurveTo(0, -11, 13, -17); g.lineTo(11, -21); g.quadraticCurveTo(0, -17, -11, -21); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(4, -15.5, 1.6, 0, 7); g.fill();   // a gold clasp
+    // arm on the stick
+    g.strokeStyle = "#2f8a46"; g.lineWidth = 3.4; g.beginPath(); g.moveTo(7, -16); g.quadraticCurveTo(11, -14, 12.6, -20); g.stroke();
+    // head
+    g.fillStyle = "#3fae5e"; g.strokeStyle = "#174a28"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(1, -27, 12, 8, 0, 0, 7); g.fill(); g.stroke();
+    [-5, 7].forEach(function (ex) {
+      g.fillStyle = "#3fae5e"; g.beginPath(); g.arc(ex, -33, 4.6, 0, 7); g.fill(); g.stroke();
+      if (npc.blink < 0) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.6, -33); g.lineTo(ex + 2.6, -33); g.stroke(); g.strokeStyle = "#174a28"; g.lineWidth = 1.6; }
+      else { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ex, -33, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(ex - 0.6 + npc.face * 0.3, -34.6, 1.6, 3.2); }
+    });
+    // big white bushy brows and a droopy moustache: he's very old
+    g.fillStyle = "#f4f0e2"; g.strokeStyle = "#a8a290"; g.lineWidth = 0.8;
+    [-5, 7].forEach(function (ex) { g.beginPath(); g.moveTo(ex - 5.5, -36); g.quadraticCurveTo(ex, -41.5, ex + 5.5, -37); g.quadraticCurveTo(ex, -38.5, ex - 5.5, -36); g.fill(); g.stroke(); });
+    g.beginPath(); g.moveTo(-2, -24); g.quadraticCurveTo(-8, -23, -9, -18); g.quadraticCurveTo(-5, -21, 1, -22.5); g.quadraticCurveTo(7, -21, 11, -18); g.quadraticCurveTo(10, -23, 4, -24); g.closePath(); g.fill(); g.stroke();
+    g.strokeStyle = "#12220f"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-5, -25); g.quadraticCurveTo(1, -23, 8, -25.5); g.stroke();
+    // a reed straw hat
+    g.fillStyle = "#d8b45a"; g.strokeStyle = "#7a5a1e"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(1, -39.5, 11, 2.6, 0, 0, 7); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(-5, -40); g.quadraticCurveTo(1, -50, 7, -40); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#c0503a"; g.fillRect(-4.6, -42.6, 11.2, 1.8);
+    g.restore();
+    // bubble: a gift is waiting, or you're close enough to talk
+    var gw = giftsWaiting().length + btyReady(), by = -60 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
+    if (gw || near) {
+      g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = gw ? "#f2c14e" : "#4ee6b4"; g.lineWidth = 1.6;
+      g.beginPath(); g.ellipse(0, by, gw ? 8 : 10, 7.5, 0, 0, 7); g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill();
+      g.fillStyle = gw ? "#f2c14e" : "#bff4e4"; g.font = "900 " + (gw ? 12 : 10) + "px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(gw ? "!" : "...", 0, by + (gw ? 4.5 : 2));
+    }
+    if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Old Croaker").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Old Croaker", 0, 13); }
+    g.restore();
+  }
+  function questLine(q) {   // what he says about your current quest
+    var v = Math.min(q.v(), q.need);
+    return "“" + q.d + "”" + (q.need > 1 ? " (" + v + " of " + q.need + ")" : "");
+  }
+  function talkCroaker() {
+    var el = $("sbxStory"); if (!el) return;
+    if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    S.st.talks++; talkN++; talkView = "main"; rollBounties();
+    storyOpen = 100; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
+    renderTalk(true); checkGoals(); save();
+  }
+  function renderTalk(first) {
+    var c = curCh(), C = CHAPTERS[c], q = MAIN[S.qi], gifts = giftsWaiting(), h = "";
+    $("sbxStoryBox").style.setProperty("--qc", C.c);
+    if (talkView === "bty" || talkView === "shop") { $("sbxStoryBox").innerHTML = talkView === "bty" ? renderBty() : renderShop(); var b2 = $("sbxStoryBox").querySelector("[data-talk^=claim],[data-story-close]"); if (b2) b2.focus({ preventScroll: true }); return; }
+    h += '<div class="st-croak" aria-hidden="true">' + CROAK_SVG + "</div><small>Old Croaker</small>";
+    if (gifts.length) {
+      var gc = gifts[0], G = CG[gc];
+      h += "<h2>A gift for you!</h2><p>“You finished <b>" + esc(CHAPTERS[gc].n) + "</b>. I've been saving this for a delver like you. Go on, take it!”</p>"
+        + '<div class="st-gift">' + Object.keys(G).filter(function (k) { return ITEMS[k]; }).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + G[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>"
+        + '<button type="button" class="btn" data-talk="gift">Take the gift' + (gifts.length > 1 ? " (" + gifts.length + " waiting)" : "") + "</button>";
+    } else {
+      h += "<h2 class=\"st-hi\">" + esc(CROAK_HI[(talkN + S.days) % CROAK_HI.length]) + "</h2>";
+      if (q) h += '<div class="st-next"><span>Your quest: ' + esc(C.n) + "</span><b>" + esc(q.n) + "</b><em>" + esc(questLine(q)) + "</em></div>";
+      else h += "<p>“You've brought the Heart back. The swamp is singing again! Wander as you like, little one. There's always more to find.”</p>";
+      h += '<p class="st-tip"><b>Swamp wisdom:</b> ' + esc(CROAK_TIPS[(talkN * 7 + S.days) % CROAK_TIPS.length]) + "</p>";
+      if (btyOpen()) { var rd = btyReady(); h += '<button type="button" class="btn st-bbtn' + (rd ? " ready" : "") + '" data-talk="bty">' + (rd ? rd + " bounty reward" + (rd > 1 ? "s" : "") + " to claim!" : "Bounties and Swap Shop") + "</button>"; }
+      else h += '<p class="st-tip"><b>Bounties:</b> “Settle in first, little one. Once you have finished Chapter 1, I will have odd jobs for you every day.”</p>';
+      h += '<div class="st-row"><button type="button" class="btn ghost" data-talk="story">Retell the story</button><button type="button" class="btn ghost" data-talk="log">Quest log</button><button type="button" class="btn" data-story-close>Bye for now</button></div>';
+    }
+    $("sbxStoryBox").innerHTML = h;
+    if (first && gestured) snd("rise");
+    var bt = $("sbxStoryBox").querySelector("[data-talk=gift],[data-story-close]"); if (bt) bt.focus({ preventScroll: true });
+  }
+  function talkAct(a) {
+    if (a === "gift") {
+      var gs = giftsWaiting(); if (!gs.length) return renderTalk();
+      var gc = gs[0], G = CG[gc]; S.cg |= 1 << gc; giveRw(G); snd("open", "Epic");
+      popup("Gift from Old Croaker", rewardText(Object.keys(G).reduce(function (o, k) { if (ITEMS[k]) o[k] = G[k]; return o; }, {})), CHAPTERS[gc].c, "✦");
+      checkGoals(); save(); renderTalk();
+    } else if (a === "story") { closeStory(); storyQ.length = 0; setTimeout(function () { showStory(curCh()); }, 120); }
+    else if (a === "log") { closeStory(); tab = "quests"; openPanel("quests"); }
+    else if (a === "bty" || a === "shop" || a === "main") { talkView = a; renderTalk(); }
+    else if (a.indexOf("claim:") === 0) { claimBty(a.slice(6)); renderTalk(); }
+    else if (a.indexOf("reroll:") === 0) { rerollBty(a.slice(7)); renderTalk(); }
+    else if (a.indexOf("buy:") === 0) { buyShop(a.slice(4)); renderTalk(); }
+  }
+  // ---------- BOUNTIES (Old Croaker's daily and weekly jobs) ----------
+  // From Chapter 2 on, Old Croaker posts 3 daily bounties (new ones every real-world day) and 1 bigger weekly bounty (every Monday).
+  // Each one counts a lifetime stat from the moment it was posted (S.bty.d[i].b = the stat then). Finish it, then talk to him to claim
+  // Croaker Tokens and a few items. Claim all three dailies for a bonus token. One free reroll a day.
+  // Tokens are spent in his Swap Shop. S.bty = { day, wk, d: [3 dailies], w: weekly, rr: rerolls used today, full: daily bonus taken }.
+  var BTY = [   // id, text (n = amount), stat, [need at chapter 1, extra per chapter], min chapter, extra condition
+    { id: "mine", t: "Dig {n} blocks", s: "mined", n: [120, 40], c: 1 },
+    { id: "wood", t: "Chop {n} Wood", s: "wood", n: [16, 4], c: 1 },
+    { id: "place", t: "Place {n} blocks", s: "placed", n: [50, 15], c: 1 },
+    { id: "torch", t: "Place {n} torches", s: "torches", n: [5, 1], c: 1 },
+    { id: "plant", t: "Plant {n} crops", s: "planted", n: [8, 2], c: 1 },
+    { id: "harv", t: "Harvest {n} ripe crops", s: "harvests", n: [5, 1], c: 1 },
+    { id: "cook", t: "Cook {n} meals", s: "cooked", n: [3, 1], c: 1 },
+    { id: "eat", t: "Eat {n} things", s: "eaten", n: [4, 1], c: 1 },
+    { id: "fish", t: "Catch {n} fish", s: "fish", n: [4, 1], c: 1, ok: function () { return S.rod > 0; } },
+    { id: "prod", t: "Collect {n} eggs, truffles or milk", s: "collected", n: [3, 1], c: 1, ok: function () { return S.pets.length > 0; } },
+    { id: "bugs", t: "Defeat {n} Bramble Bugs", s: "bugs", n: [5, 1], c: 2 },
+    { id: "frogs", t: "Defeat {n} Swamp Frogs", s: "frogs", n: [3, 1], c: 2 },
+    { id: "slime", t: "Defeat {n} slimes", s: "slimes", n: [4, 1], c: 2 },
+    { id: "bats", t: "Defeat {n} Dusk Bats", s: "bats", n: [3, 1], c: 2 },
+    { id: "cave", t: "Clear {n} cave floor", s: "cclear", n: [1, 0], c: 2 },
+    { id: "chest", t: "Open {n} Cave Chests", s: "cchests", n: [2, 0], c: 2 },
+    { id: "wasps", t: "Defeat {n} Ember Wasps", s: "wasps", n: [3, 1], c: 3 },
+    { id: "gator", t: "Defeat {n} Bog Gators", s: "gators", n: [2, 0], c: 3 },
+    { id: "wolf", t: "Defeat {n} Frost Wolves", s: "wolves", n: [3, 1], c: 4 },
+    { id: "rare", t: "Catch {n} rare fish", s: "rarefish", n: [1, 0], c: 3, ok: function () { return S.rod > 0; } }
+  ];
+  var BTYW = [   // weekly: bigger jobs
+    { id: "wmine", t: "Dig {n} blocks", s: "mined", n: [800, 200], c: 1 },
+    { id: "wfish", t: "Catch {n} fish", s: "fish", n: [25, 5], c: 1, ok: function () { return S.rod > 0; } },
+    { id: "wcook", t: "Cook {n} meals", s: "cooked", n: [15, 3], c: 1 },
+    { id: "wharv", t: "Harvest {n} ripe crops", s: "harvests", n: [25, 5], c: 1 },
+    { id: "whunt", t: "Defeat {n} creatures", s: "_kills", n: [30, 8], c: 2 },
+    { id: "wcave", t: "Clear {n} cave floors", s: "cclear", n: [4, 1], c: 2 },
+    { id: "wboss", t: "Defeat {n} bosses", s: "bossk", n: [2, 0], c: 3, ok: function () { return S.st.boss > 0; } }
+  ];
+  var BTY_POOL = [   // item rewards, by chapter reached (one is picked per bounty)
+    [{ seed_carrot: 4 }, { torch: 8 }, { planks: 12 }, { roastcarrot: 2 }, { seed_potato: 3 }],
+    [{ seed_pepper: 2 }, { grilledmeat: 2 }, { stone: 16 }, { rope: 2 }, { bogminnow: 3 }],
+    [{ spore: 8 }, { charcoal: 6 }, { bogiron: 4 }, { stew: 1 }, { crystal: 2 }],
+    [{ ironingot: 2 }, { cinder: 8 }, { chili: 2 }, { seed_frost: 2 }],
+    [{ ironingot: 3 }, { crystal: 6 }, { berrypie: 1 }, { amethyst: 1 }],
+    [{ amethyst: 1 }, { feast: 1 }, { ironingot: 4 }]
+  ];
+  var BSHOP = [   // the Swap Shop: [item, how many, token price, min chapter]
+    ["seed_carrot", 6, 1, 1], ["seed_potato", 4, 1, 1], ["seed_pepper", 3, 2, 1], ["seed_frost", 3, 3, 3], ["torch", 16, 1, 1],
+    ["ironingot", 3, 3, 2], ["feast", 1, 4, 3], ["lure_queen", 1, 5, 2], ["idol_wyrm", 1, 8, 3], ["horn_alpha", 1, 10, 4],
+    ["amethyst", 1, 5, 3], ["ruby", 1, 9, 4], ["sapphire", 1, 9, 4], ["moonstone", 1, 9, 4], ["goldfrog", 1, 25, 1]
+  ];
+  BSHOP = BSHOP.filter(function (q) { return ITEMS[q[0]]; });
+  BTY_POOL.forEach(function (L) { L.forEach(function (o) { Object.keys(o).forEach(function (k) { if (!ITEMS[k]) delete o[k]; }); }); });
+  var BTY_CH = 1, talkView = "main", btyChk = 0;
+  function dayKey() { var d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); }
+  function weekKey(dk) { return Math.floor((dk + 3) / 7); }   // weeks start on Monday
+  function btyStat(s) { return s === "_kills" ? ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps"].reduce(function (a, k) { return a + (S.st[k] || 0); }, 0) : (S.st[s] || 0); }
+  function btyOpen() { return curCh() >= BTY_CH; }
+  function makeBty(list, avoid, weekly) {
+    var c = curCh(), opts = list.filter(function (q) { return q.c <= c && avoid.indexOf(q.id) < 0 && (!q.ok || q.ok()); }); if (!opts.length) opts = list.filter(function (q) { return q.c <= 1; });
+    var q = opts[Math.floor(Math.random() * opts.length)], need = q.n[0] + q.n[1] * Math.max(0, Math.min(c, 5) - 1);
+    if (!weekly && need > 6) need = Math.round(need / 5) * 5;
+    var pool = BTY_POOL[Math.min(c, BTY_POOL.length - 1)], rw = Object.assign({}, pool[Math.floor(Math.random() * pool.length)]);
+    if (weekly) { var pool2 = BTY_POOL[Math.min(c + 1, BTY_POOL.length - 1)]; Object.assign(rw, pool2[Math.floor(Math.random() * pool2.length)]); }
+    return { id: q.id, need: need, b: btyStat(q.s), tk: weekly ? 8 : need >= 5 && q.c >= 2 ? 3 : 2, rw: rw, done: 0 };
+  }
+  function btyDef(b) { var all = BTY.concat(BTYW); for (var i = 0; i < all.length; i++) if (all[i].id === b.id) return all[i]; return BTY[0]; }
+  function btyProg(b) { return Math.max(0, Math.min(b.need, btyStat(btyDef(b).s) - b.b)); }
+  function btyText(b) { return btyDef(b).t.replace("{n}", b.need); }
+  function rollBounties() {
+    if (!btyOpen()) return;
+    var dk = dayKey(), wk = weekKey(dk), B = S.bty;
+    if (B.day !== dk || B.d.length !== 3) { B.day = dk; B.rr = 0; B.full = 0; B.d = []; for (var i = 0; i < 3; i++) B.d.push(makeBty(BTY, B.d.map(function (q) { return q.id; }), false)); }
+    if (B.wk !== wk || !B.w) { B.wk = wk; B.w = makeBty(BTYW, [], true); }
+  }
+  function btyReady() { if (!btyOpen() || !S.bty.d.length) return 0; return S.bty.d.concat(S.bty.w ? [S.bty.w] : []).filter(function (b) { return !b.done && btyProg(b) >= b.need; }).length; }
+  function tickBounties(dt) {   // once a second: roll a new day's bounties, and say so when one is finished
+    btyChk -= dt; if (btyChk > 0) return; btyChk = 1;
+    if (!btyOpen()) return; rollBounties();
+    S.bty.d.concat(S.bty.w ? [S.bty.w] : []).forEach(function (b) { if (!b.done && !b.told && btyProg(b) >= b.need) { b.told = 1; toast("Bounty done: " + btyText(b) + "! Visit Old Croaker to claim it.", "#f2c14e"); } });
+  }
+  function claimBty(i) {
+    var b = i === "w" ? S.bty.w : S.bty.d[+i]; if (!b || b.done || btyProg(b) < b.need) return;
+    b.done = 1; S.st.bounties++; var rw = Object.assign({ swamptoken: b.tk }, b.rw); giveRw(rw);
+    var all = S.bty.d.every(function (q) { return q.done; });
+    if (all && !S.bty.full) { S.bty.full = 1; give("swamptoken", 2, undefined, undefined, true); popup("All of today's bounties!", "+2 Croaker Tokens bonus", "#f2c14e", "✦"); }
+    else popup("Bounty claimed", rewardText(rw), "#f2c14e", "✦");
+    snd("coin"); checkGoals(); save();
+  }
+  function rerollBty(i) {
+    if (S.bty.rr >= 1) { nag("Only one reroll a day. Come back tomorrow!"); return; }
+    var b = S.bty.d[+i]; if (!b || b.done) return; S.bty.rr++;
+    S.bty.d[+i] = makeBty(BTY, S.bty.d.map(function (q) { return q.id; }), false); thud(500, 0.04); save();
+  }
+  function buyShop(i) {
+    var q = BSHOP[+i]; if (!q || curCh() < q[3]) return;
+    if ((S.inv.swamptoken || 0) < q[2]) { nag("Not enough Croaker Tokens."); return; }
+    S.inv.swamptoken -= q[2]; if (S.inv.swamptoken <= 0) delete S.inv.swamptoken; give(q[0], q[1], undefined, undefined, true); S.st.shopbuys++;
+    snd("coin"); toast("Swapped for " + q[1] + " " + ITEMS[q[0]].n + "!", "#f2c14e"); reslot(); checkGoals(); save();
+  }
+  function btyCard(b, key, weekly) {
+    var pr = btyProg(b), ok = pr >= b.need, rw = Object.assign({ swamptoken: b.tk }, b.rw);
+    return '<div class="st-bty' + (b.done ? " done" : ok ? " ready" : "") + (weekly ? " wk" : "") + '"><div class="bt-top"><b>' + esc(btyText(b)) + "</b><em>" + (b.done ? "Claimed" : pr + " / " + b.need) + "</em></div>"
+      + '<span class="bar"><i style="width:' + Math.round(pr / b.need * 100) + '%"></i></span><div class="bt-rw">' + Object.keys(rw).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + rw[k] + "</span>"; }).join("")
+      + (b.done ? "" : ok ? '<button type="button" class="btn" data-talk="claim:' + key + '">Claim</button>' : !weekly && S.bty.rr < 1 ? '<button type="button" class="btn ghost" data-talk="reroll:' + key + '">Reroll</button>' : "") + "</div></div>";
+  }
+  function renderBty() {
+    rollBounties(); var B = S.bty, tk = S.inv.swamptoken || 0, h = '<div class="st-croak" aria-hidden="true">' + CROAK_SVG + "</div><small>Old Croaker's bounties</small><h2 class=\"st-hi\">Odd jobs around the swamp</h2>";
+    h += '<p class="st-tok"><img alt="" src="' + icon("swamptoken") + '"><b>' + tk + "</b> Croaker Token" + (tk === 1 ? "" : "s") + "</p>";
+    h += '<div class="st-bhead">Today <em>New jobs at midnight' + (B.full ? " · bonus claimed" : " · finish all 3 for +2 tokens") + "</em></div>" + B.d.map(function (b, i) { return btyCard(b, i, false); }).join("");
+    if (B.w) h += '<div class="st-bhead">This week <em>New job every Monday</em></div>' + btyCard(B.w, "w", true);
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-talk="shop">Swap Shop</button><button type="button" class="btn ghost" data-talk="main">Back</button><button type="button" class="btn" data-story-close>Bye for now</button></div>';
+    return h;
+  }
+  function renderShop() {
+    var tk = S.inv.swamptoken || 0, c = curCh(), h = '<div class="st-croak" aria-hidden="true">' + CROAK_SVG + "</div><small>Old Croaker's Swap Shop</small><h2 class=\"st-hi\">“Tokens for treasures!”</h2>";
+    h += '<p class="st-tok"><img alt="" src="' + icon("swamptoken") + '"><b>' + tk + "</b> Croaker Token" + (tk === 1 ? "" : "s") + '</p><div class="st-shop">';
+    BSHOP.forEach(function (q, i) {
+      var lock = c < q[3], can = !lock && tk >= q[2];
+      h += '<button type="button" class="sh-it' + (lock ? " lock" : "") + '" data-talk="buy:' + i + '"' + (can ? "" : " disabled") + ' aria-label="' + esc(q[1] + " " + ITEMS[q[0]].n + " for " + q[2] + " tokens" + (lock ? ", unlocks in chapter " + (q[3] + 1) : "")) + '"><img alt="" src="' + icon(q[0]) + '"><b>' + (q[1] > 1 ? q[1] + " " : "") + esc(ITEMS[q[0]].n) + "</b><em>" + (lock ? "Chapter " + (q[3] + 1) : q[2] + (q[2] === 1 ? " token" : " tokens")) + "</em></button>";
+    });
+    h += '</div><div class="st-row"><button type="button" class="btn ghost" data-talk="bty">Bounties</button><button type="button" class="btn ghost" data-talk="main">Back</button><button type="button" class="btn" data-story-close>Bye for now</button></div>';
+    return h;
+  }
+  // ---------- BOSSES ----------
+  // Three chapter bosses, each called with a summon item crafted at the Workbench and used (pick it in the hotbar, tap) in its home land:
+  //   Bramble Queen (Murkwater, Bramble Lure): charges in a line after a shudder ("!"), lobs thorn volleys, calls Bramble Bugs. She is DAZED after
+  //     ramming a wall or finishing a charge: hits then deal 50% more.
+  //   Magma Wyrm (Ember Bog, Ember Idol): swims through the ground (watch the dust), cracks the ground glowing, then bursts out in a leap or rears up to spit fire.
+  //     It can only be hit while it is above ground.
+  //   Frost Alpha (Frostfen, Frost Horn): stalks you, crouches then pounces (the landing sends ice shards along the ground: jump them), howls down icicles
+  //     (watch their shadows) and calls Frost Wolves, and breathes frost up close.
+  // Every boss gets ENRAGED under 40% health: faster, with more shots. Pass out or run far away and it leaves (the summon item is given back).
+  // First kills set S.st.boss bits (1 queen, 2 wyrm, 4 alpha); S.st.bossk counts every boss kill.
+  var BOSS = {
+    queen: { n: "Bramble Queen", sub: "Queen of the Thorn Burrows", b: 0, hp: 260, w: 3.3, h: 2.1, dmg: 16, c: "#ff6b82", chip: "#9a52a8", item: "lure_queen", bit: 1, loot: { queenchitin: 3, spore: 12, bugfrag: 6, amethyst: 1, ironingot: 2 } },
+    wyrm: { n: "Magma Wyrm", sub: "The Fire Under Ember Bog", b: 1, hp: 540, w: 2.3, h: 2.0, dmg: 22, c: "#ff8a3d", chip: "#ff5a1f", item: "idol_wyrm", bit: 2, loot: { wyrmscale: 3, cinder: 14, ruby: 1, ironingot: 4, charcoal: 8 } },
+    alpha: { n: "Frost Alpha", sub: "Leader of the Frostfen Pack", b: 2, hp: 1150, w: 3.9, h: 2.3, dmg: 28, c: "#9fe8ff", chip: "#cfdde6", item: "horn_alpha", bit: 4, loot: { alphamane: 3, crystal: 10, sapphire: 1, moonstone: 1, wolfpelt: 4 } }
+  };
+  var BIO_NAMES = ["Murkwater Swamp", "Ember Bog", "Frostfen"];
+  Object.keys(BOSS).forEach(function (k) { var B = BOSS[k]; ENEMY[k] = { n: B.n, hp: B.hp, w: B.w, h: B.h, dmg: B.dmg, glow: B.c, chip: B.chip, frag: null, chance: 0, max: 0 }; Object.keys(B.loot).forEach(function (q) { if (!ITEMS[q]) delete B.loot[q]; }); });
+  var bshots = [], sumPrev = false, bossBarKey = "";
+  function activeBoss() { for (var i = 0; i < enemies.length; i++) if (enemies[i].boss && !enemies[i].def) return enemies[i]; return null; }
+  function minions() { var n = 0; enemies.forEach(function (q) { if (q.minion && !q.def) n++; }); return n; }
+  function surfAt(x) { var cx = clamp(Math.floor(x), 0, W - 1), y = col[cx]; while (y < H - 1 && (get(cx, y) === T.LEAVES || get(cx, y) === T.LOG || !blocks(cx, y))) y++; return y; }
+  function shoot(x, y, vx, vy, o) { bshots.push(Object.assign({ x: x, y: y, vx: vx, vy: vy, g: 0, r: 0.28, dmg: 10, k: "thorn", life: 4, wait: 0, why: "boss" }, o)); }
+  function newBoss(k, x, y) {
+    var B = BOSS[k], e = newEnemy("bug", x, y);
+    Object.assign(e, { k: k, boss: 1, w: B.w, h: B.h, hp: B.hp, mx: B.hp, dmg: B.dmg, st: "intro", t: 1.8, cd: 1.5, dir: p.x < x ? -1 : 1, rage: 0, u: false, hist: [], dust: 0 });
+    return e;
+  }
+  function useSummon(dt) {
+    mine = null; var press = aim.down && !sumPrev; sumPrev = aim.down; if (!press) return;
+    var it = ITEMS[sel], k = it && it.summon, B = BOSS[k]; if (!B) return;
+    if (MP.on && MP.role === "guest") { nag("Only the host can call a boss in this world."); return; }
+    if (cave) { nag("Bosses only answer the call on the surface world."); return; }
+    if (activeBoss()) { nag("Finish this fight first!"); return; }
+    if (world.bio[clamp(Math.floor(p.x), 0, W - 1)] !== B.b) { nag("The " + it.n + " only works in " + BIO_NAMES[B.b] + "."); return; }
+    if (!S.wpn) { nag("You'll want a weapon for this!"); return; }
+    var side = p.face || 1, x = clamp(p.x + side * 9, 4, W - 5), y = -1;
+    if (k === "wyrm") { x = clamp(p.x + side * 7, 4, W - 5); y = surfAt(x) + 2; }
+    else for (var tq = 0; tq < 12 && y < 0; tq++) {
+      var tx = clamp(Math.floor(x) + (tq % 2 ? 1 : -1) * Math.ceil(tq / 2), 3, W - 4), cy = surfAt(tx);
+      for (var up = 0; up <= 3; up++) if (!eBoxHit(tx + 0.5, cy - up, B.w, B.h)) { x = tx + 0.5; y = cy - up; break; }
+    }
+    if (y < 0) { x = p.x + side * 3; y = p.y; }
+    S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; } reslot(); hbDirty = true; S.bossOn = B.item;   // given back if the page closes mid-fight
+    var e = newBoss(k, x, y); if (k === "wyrm") { e.u = true; e.st = "under"; e.t = 1.4; }
+    enemies.forEach(function (q) { if (!q.boss && !q.def && Math.abs(q.x - p.x) < 20) q.gone = true; });   // the small fry scatter
+    enemies.push(e); shake = 0.8; snd("open", "Epic"); thud(80, 0.12);
+    popup(B.n + " awakens!", B.sub, B.c, "☠"); S.st.summons++; save();
+  }
+  function bossLeaves(e, why) {
+    var B = BOSS[e.k]; e.gone = true; bshots.length = 0; S.bossOn = "";
+    enemies.forEach(function (q) { if (q.minion) q.gone = true; });
+    give(B.item, 1, undefined, undefined, true);
+    toast("The " + B.n + (why === "far" ? " lost your trail and went back to its lair." : " went back to its lair.") + " Your " + ITEMS[B.item].n + " is back in your bag.", B.c);
+  }
+  function bossGone() { enemies.forEach(function (e) { if (e.boss && !e.def && !e.gone) bossLeaves(e, "faint"); }); bshots.length = 0; }
+  function damageBoss(e, dmg, face) {
+    var B = BOSS[e.k]; if (e.def || e.u || e.st === "intro") return;
+    if (e.st === "dazed") dmg = Math.round(dmg * 1.5);
+    e.hp -= dmg; e.hurt = 0.16; e.kv = face * 1.2; text(e.x, e.y - e.h - 0.4, "-" + Math.round(dmg) + (e.st === "dazed" ? "!" : ""), e.st === "dazed" ? "#ffb13b" : "#ffe48a");
+    chips(e.x, e.y - e.h * 0.5, B.chip, 8, 6); thud(150 + Math.random() * 50, 0.06);
+    if (e.hp > 0) { if (!e.rage && e.hp < e.mx * 0.4) { e.rage = 1; shake = 0.6; toast("The " + B.n + " is enraged!", B.c); thud(70, 0.12); } return; }
+    e.def = true; e.dead = 1.6; e.u = false; bshots.length = 0; S.bossOn = ""; shake = 1; chips(e.x, e.y - e.h * 0.5, B.c, 30, 10);
+    enemies.forEach(function (q) { if (q.minion && !q.def) q.gone = true; });
+    var first = !(S.st.boss & B.bit); S.st.boss |= B.bit; S.st.bossk++; if (MP.role === "host" && MP.npeers) mpSend({ t: "bosswin", k: e.k });
+    var L = Object.assign({}, B.loot); if (first) L[B.item] = 0;
+    Object.keys(L).forEach(function (q, i) { if (L[q] > 0) setTimeout(function () { give(q, L[q], e.x - 0.5 + (i - 2) * 0.4, e.y - e.h - 0.8, true); }, 250 + i * 140); });
+    setTimeout(function () { banner(B.n + " defeated!", (first ? "First victory! " : "") + rewardText(L), "Boss"); snd("open", "Epic"); }, 500);
+    checkTrail(); checkGoals(); save();
+  }
+  function bossContact(e, n) { if (hurtGrace <= 0 && hp > 0 && overlapP(e)) { hurt(Math.round(n), e.k); shoved(e); return true; } return false; }
+  function updBoss(e, dt) {
+    var B = BOSS[e.k], sp = e.rage ? 1.35 : 1;
+    if (Math.abs(e.x - p.x) > 46 || Math.abs(e.y - p.y) > 40) { bossLeaves(e, "far"); return; }
+    e.t -= dt; var h0 = e.hist[0]; if (!h0 || Math.abs(h0[0] - e.x) + Math.abs(h0[1] - e.y) > 0.08) { e.hist.unshift([e.x, e.y]); if (e.hist.length > 160) e.hist.pop(); }
+    if (e.k === "queen") updQueen(e, dt, B, sp); else if (e.k === "wyrm") updWyrm(e, dt, B, sp); else updAlpha(e, dt, B, sp);
+  }
+  function updQueen(e, dt, B, sp) {
+    var dx = p.x - e.x, ad = Math.abs(dx), vx = 0;
+    if (e.st === "intro") { if (e.t <= 0) { e.st = "walk"; e.cd = 1; } }
+    else if (e.st === "walk") {
+      e.dir = dx >= 0 ? 1 : -1; vx = ad > 1.2 ? e.dir * 1.8 * sp : 0; if (e.blocked && e.on) e.vy = -12;
+      if (e.cd <= 0) {
+        var r = Math.random();
+        if (e.hp < e.mx * 0.6 && minions() < 2 && r < 0.25) { e.st = "brood"; e.t = 0.9; }
+        else if (ad < 10 && r < 0.62) { e.st = "wind"; e.t = 0.75 / sp; thud(200, 0.05); }
+        else { e.st = "volley"; e.t = 0.6; }
+      }
+    } else if (e.st === "wind") { if (e.t <= 0) { e.st = "charge"; e.t = 1.25; thud(120, 0.09); } }
+    else if (e.st === "charge") {
+      vx = e.dir * 10 * sp; if (e.on && Math.random() < 0.5) parts.push({ x: e.x - e.dir * 1.2, y: e.y - 0.1, vx: -e.dir * 2, vy: -1.5, life: 0.4, max: 0.4, c: "#7a5a3a", s: 3 });
+      if (e.blocked || e.t <= 0) { e.st = "dazed"; e.t = 1.6; if (e.blocked) { shake = 0.5; chips(e.x + e.dir * 1.3, e.y - 0.8, "#a08060", 12, 6); thud(90, 0.1); } }
+    } else if (e.st === "dazed") { if (e.t <= 0) { e.st = "walk"; e.cd = 1.4 / sp; } }
+    else if (e.st === "volley") {
+      if (e.t <= 0) {
+        var n = e.rage ? 7 : 5, x0 = e.x + e.dir * 0.9, y0 = e.y - e.h * 0.9, g2 = 18, Tm = 0.95;
+        for (var i = 0; i < n; i++) { var tx = p.x + (i - (n - 1) / 2) * 1.5; shoot(x0, y0, (tx - x0) / Tm, ((p.y - 0.6 - y0) - 0.5 * g2 * Tm * Tm) / Tm, { g: g2, dmg: 9, k: "thorn" }); }
+        thud(420, 0.05); e.st = "walk"; e.cd = 2.2 / sp;
+      }
+    } else if (e.st === "brood") {
+      if (e.t <= 0) {
+        [-1, 1].forEach(function (s2) { var bx = clamp(e.x + s2 * 1.8, 2, W - 2); if (!eBoxHit(bx, e.y, ENEMY.bug.w, ENEMY.bug.h)) { var m = newEnemy("bug", bx, e.y); m.minion = true; m.vy = -6; enemies.push(m); chips(bx, e.y - 0.4, "#9a52a8", 8, 4); } });
+        e.st = "walk"; e.cd = 2;
+      }
+    }
+    moveEnemy(e, dt, vx);
+    if (e.st !== "dazed" && e.st !== "intro") bossContact(e, e.st === "charge" ? B.dmg * 1.4 : B.dmg * 0.7);
+  }
+  function updWyrm(e, dt, B, sp) {
+    var dx = p.x - e.x, s0 = surfAt(e.x);
+    if (e.st === "under") {
+      e.u = true; e.x = clamp(e.x + clamp(dx, -1, 1) * 5.5 * sp * dt, 2, W - 2); e.y = s0 + 2.2;
+      e.dust -= dt; if (e.dust <= 0) { e.dust = 0.07; parts.push({ x: e.x + (Math.random() - 0.5) * 0.8, y: s0, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.5, max: 0.5, c: "#8a6a5a", s: 3 }); }
+      if (e.t <= 0 && Math.abs(dx) < 6) { e.st = "crack"; e.t = 0.7 / sp; thud(90, 0.08); }
+      else if (e.t < -3) { e.st = "crack"; e.t = 0.7 / sp; }
+    } else if (e.st === "crack") {
+      e.y = s0 + 2.2; e.dust -= dt; if (e.dust <= 0) { e.dust = 0.04; parts.push({ x: e.x + (Math.random() - 0.5) * 1.6, y: s0, vx: (Math.random() - 0.5) * 3, vy: -3 - Math.random() * 3, life: 0.45, max: 0.45, c: Math.random() < 0.5 ? "#ff8a3d" : "#ffd23f", s: 3 }); }
+      if (e.t <= 0) {
+        e.u = false; shake = 0.4; chips(e.x, s0, "#ff8a3d", 14, 8);
+        if (Math.random() < (e.rage ? 0.5 : 0.62)) { e.st = "leap"; e.y = s0 + 0.5; e.vy = -17; e.lv = clamp((p.x - e.x) / 1.4, -7, 7); }
+        else { e.st = "spit"; e.y = s0 + 0.3; e.t = 2; e.shots = e.rage ? 4 : 3; e.cd = 0.45; }
+      }
+    } else if (e.st === "leap") {
+      e.vy += 26 * dt; e.x = clamp(e.x + e.lv * dt, 2, W - 2); e.y += e.vy * dt; e.dir = e.lv >= 0 ? 1 : -1;
+      if (e.vy > 0 && e.y > surfAt(e.x) + 1.4) { e.st = "under"; e.t = 1.4 + Math.random() * 0.8; chips(e.x, surfAt(e.x), "#ff8a3d", 10, 6); shake = 0.3; }
+    } else if (e.st === "spit") {
+      e.y = s0 + 0.3; e.dir = dx >= 0 ? 1 : -1;
+      if (e.cd <= 0 && e.shots > 0) { e.shots--; e.cd = 0.5 / sp; var hx = e.x + e.dir * 0.8, hy = e.y - e.h, Tm = 0.8; shoot(hx, hy, (p.x - hx) / Tm, ((p.y - 0.8 - hy) - 0.5 * 8 * Tm * Tm) / Tm, { g: 8, dmg: 13, k: "fire", r: 0.36 }); thud(260, 0.05); }
+      if (e.t <= 0) { e.st = "under"; e.u = true; e.t = 1.2 + Math.random(); chips(e.x, s0, "#ff8a3d", 8, 5); }
+    } else if (e.st === "intro") { if (e.t <= 0) { e.st = "under"; e.t = 1; } }
+    if (!e.u) bossContact(e, B.dmg);
+  }
+  function updAlpha(e, dt, B, sp) {
+    var dx = p.x - e.x, ad = Math.abs(dx), vx = 0;
+    if (e.st === "intro") { if (e.t <= 0) { e.st = "stalk"; e.cd = 1; } }
+    else if (e.st === "stalk") {
+      e.dir = dx >= 0 ? 1 : -1; vx = ad > 5 ? e.dir * 3 * sp : ad < 3 ? -e.dir * 1.4 : 0; if (e.blocked && e.on) e.vy = -12;
+      if (e.cd <= 0 && e.on) {
+        var r = Math.random();
+        if (ad < 4.5 && r < 0.3) { e.st = "breathwind"; e.t = 0.5; }
+        else if (r < 0.62) { e.st = "crouch"; e.t = 0.6 / sp; thud(180, 0.05); }
+        else { e.st = "howl"; e.t = 1.1; thud(330, 0.08); }
+      }
+    } else if (e.st === "crouch") { if (e.t <= 0) { e.st = "pounce"; e.vy = -13; e.on = false; e.pv = clamp(dx / 1.0, -11, 11); e.air = 0; } }
+    else if (e.st === "pounce") {
+      vx = e.pv; e.air += dt;
+      if (e.on && e.air > 0.15) {
+        shake = 0.5; chips(e.x, e.y, "#cfeaff", 16, 7); thud(100, 0.1);
+        [-1, 1].forEach(function (s2) { shoot(e.x + s2 * 1.4, e.y - 0.3, s2 * 8.5 * sp, 0, { k: "shard", dmg: 14, life: 1, r: 0.3, ground: 1 }); });
+        e.st = "stalk"; e.cd = 1.7 / sp;
+      }
+    } else if (e.st === "howl") {
+      if (e.t <= 0) {
+        var n = e.rage ? 8 : 5;
+        for (var i = 0; i < n; i++) { var ix = p.x + (i - (n - 1) / 2) * 1.7 + (Math.random() - 0.5) * 0.6; shoot(ix, p.y - 8, 0, 0, { k: "ice", g: 30, dmg: 15, wait: 0.75 + i * 0.1, r: 0.3 }); }
+        if (e.hp < e.mx * 0.7 && minions() < 2) [-1, 1].forEach(function (s2) { var wx = clamp(p.x + s2 * 9, 3, W - 3), wy = surfAt(wx); if (!eBoxHit(wx, wy, ENEMY.wolf.w, ENEMY.wolf.h)) { var m = newEnemy("wolf", wx, wy); m.minion = true; enemies.push(m); } });
+        e.st = "stalk"; e.cd = 2 / sp;
+      }
+    } else if (e.st === "breathwind") { if (e.t <= 0) { e.st = "breath"; e.t = 1.1; } }
+    else if (e.st === "breath") {
+      for (var q = 0; q < 3; q++) parts.push({ x: e.x + e.dir * 1.7, y: e.y - e.h * 0.75, vx: e.dir * (6 + Math.random() * 4), vy: (Math.random() - 0.5) * 2.4, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#e8f8ff" : "#9fe8ff", s: 4 });
+      var fx = (p.x - e.x) * e.dir; if (fx > 0 && fx < 5.2 && Math.abs(p.y - e.y) < 1.8 && hurtGrace <= 0 && hp > 0) hurt(10, "alpha");
+      if (e.t <= 0) { e.st = "stalk"; e.cd = 1.5 / sp; }
+    }
+    moveEnemy(e, dt, vx);
+    if (e.st !== "intro") bossContact(e, e.st === "pounce" ? B.dmg : B.dmg * 0.6);
+  }
+  function updateShots(dt) {
+    for (var i = bshots.length - 1; i >= 0; i--) {
+      var s = bshots[i];
+      if (s.wait > 0) { s.wait -= dt; continue; }
+      s.life -= dt; s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt;
+      if (s.ground) { var gy = surfAt(s.x); if (Math.abs(gy - s.y) < 2) s.y = gy - 0.3; }
+      var hitR = MP.role === "host" && MP.npeers ? mpShotHit(s) : false, hitP = hp > 0 && s.x + s.r > p.x - PW / 2 && s.x - s.r < p.x + PW / 2 && s.y + s.r > p.y - PH && s.y - s.r < p.y;
+      if (hitP && hurtGrace <= 0) { hurt(s.dmg, s.why); p.vx = (s.vx >= 0 ? 1 : -1) * 4; }
+      if (hitP || hitR || s.life <= 0 || (!s.ground && blocks(Math.floor(s.x), Math.floor(s.y))) || (s.ground && blocks(Math.floor(s.x + Math.sign(s.vx) * 0.3), Math.floor(s.y)))) {
+        chips(s.x, s.y, s.k === "fire" ? "#ff8a3d" : s.k === "thorn" ? "#7ad06a" : "#cfeaff", 6, 4); bshots.splice(i, 1);
+      }
+    }
+  }
+  function drawShots(g, now) {
+    bshots.forEach(function (s) {
+      var sx = ox + s.x * ts, sy = oy + s.y * ts; g.save(); g.translate(sx, sy); g.scale(ts / 30, ts / 30);
+      if (s.wait > 0) {   // icicle telegraph: a shadow on the ground, and the icicle forming up high
+        var gy = (surfAt(s.x) - s.y) * 30, a = 1 - s.wait / 1.6; g.fillStyle = "rgba(20,40,60," + (0.25 + 0.35 * a) + ")"; g.beginPath(); g.ellipse(0, gy, 6 + 4 * a, 2.2, 0, 0, 7); g.fill();
+        g.globalAlpha = 0.5 + 0.5 * a;
+      }
+      if (s.k === "fire") {
+        g.fillStyle = "rgba(255,120,40,.35)"; g.beginPath(); g.arc(0, 0, 13, 0, 7); g.fill();
+        g.fillStyle = "#ff6a1f"; g.beginPath(); g.arc(0, 0, 8, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(-1, -1, 4.5, 0, 7); g.fill();
+      } else if (s.k === "thorn") {
+        g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = "#3f7a2a"; g.strokeStyle = "#1f3a14"; g.lineWidth = 1.2;
+        g.beginPath(); g.moveTo(10, 0); g.lineTo(-6, -3.5); g.lineTo(-3, 0); g.lineTo(-6, 3.5); g.closePath(); g.fill(); g.stroke(); g.fillStyle = "#c06aff"; g.fillRect(-5, -1, 4, 2);
+      } else if (s.k === "ice") {
+        g.fillStyle = "#e8f8ff"; g.strokeStyle = "#5aa8d8"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-4.5, -12); g.lineTo(4.5, -12); g.lineTo(0, 10); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = "#9fe8ff"; g.fillRect(-1, -11, 2, 12);
+      } else {
+        g.fillStyle = "#cfeaff"; g.strokeStyle = "#5aa8d8"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-7, 8); g.lineTo(-2, -9); g.lineTo(1, 2); g.lineTo(4, -6); g.lineTo(7, 8); g.closePath(); g.fill(); g.stroke();
+      }
+      g.restore();
+    });
+  }
+  function drawBossBar() {
+    var e = activeBoss(), el = $("sbxBoss"); if (!el) return;
+    var key = e ? e.k + ":" + Math.max(0, Math.ceil(e.hp)) + ":" + e.rage : "";
+    if (key === bossBarKey) return; bossBarKey = key; el.hidden = !e; stageEl.classList.toggle("bossfight", !!e); if (!e) return;
+    var B = BOSS[e.k]; el.style.setProperty("--bc", B.c); el.classList.toggle("rage", !!e.rage);
+    el.querySelector("b").textContent = B.n + (e.rage ? " (enraged)" : ""); el.querySelector("i").style.width = Math.max(0, e.hp / e.mx * 100) + "%"; el.querySelector("em").textContent = Math.max(0, Math.ceil(e.hp)) + " / " + e.mx;
+  }
+  function drawBoss(g, e, now) {
+    var sx = ox + e.x * ts, sy = oy + e.y * ts; if (sx < -ts * 6 || sx > vw + ts * 6 || sy < -ts * 6 || sy > vh + ts * 8) return;
+    var t = e.tt, fl = e.hurt > 0.08, pd = e.def ? 1 - e.dead / 1.6 : 0;
+    if (e.k === "wyrm") return drawWyrm(g, e, now, fl, pd);
+    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30, ts / 30);
+    if (pd) { g.globalAlpha = Math.max(0, 1 - pd); g.translate(0, pd * 6); }
+    g.fillStyle = "rgba(0,0,0,.32)"; g.beginPath(); g.ellipse(0, 0, e.w * 13, 4.5, 0, 0, 7); g.fill();
+    var jit = (e.st === "wind" || e.st === "crouch" || e.st === "breathwind") && !reduce ? Math.sin(now / 22) * 1.4 : 0;
+    g.translate(jit, 0); g.scale(e.dir, 1); g.lineJoin = "round"; g.lineCap = "round";
+    g.scale(1.28, 1.28); if (e.k === "queen") drawQueen(g, e, t, now, fl); else drawAlpha(g, e, t, now, fl);
+    g.restore();
+    if ((e.st === "wind" || e.st === "crouch") && !e.def) { g.save(); g.translate(sx, sy - e.h * ts - ts * 0.9); g.fillStyle = "#ff5a3a"; g.font = "900 " + Math.round(ts * 0.8) + "px Nunito,sans-serif"; g.textAlign = "center"; g.fillText("!", 0, 0); g.restore(); }
+    if (e.st === "dazed" && !reduce) { g.save(); g.translate(sx + e.dir * ts * 1.1, sy - e.h * ts - ts * 0.2); for (var q = 0; q < 3; q++) { var a = now / 200 + q * 2.1; g.fillStyle = "#ffe48a"; g.font = "900 " + Math.round(ts * 0.45) + "px Nunito,sans-serif"; g.fillText("★", Math.cos(a) * ts * 0.6, Math.sin(a) * ts * 0.2); } g.restore(); }
+  }
+  function drawQueen(g, e, t, now, fl) {
+    var walk = e.st === "walk" || e.st === "charge", sp = e.st === "charge" ? 22 : 9, ang = e.st === "wind" || e.st === "charge";
+    for (var l = 0; l < 6; l++) {   // six legs
+      var lx = -26 + l * 10, sw = walk ? Math.sin(t * sp + l * 1.7) * 4 : 0; g.strokeStyle = l % 2 ? "#3a1a44" : "#4a2456"; g.lineWidth = 3.4;
+      g.beginPath(); g.moveTo(lx, -14); g.lineTo(lx + sw - 3, -7); g.lineTo(lx + sw, 0); g.stroke();
+    }
+    g.fillStyle = fl ? "#ffffff" : "#5a2468"; g.strokeStyle = "#2a0c34"; g.lineWidth = 2;   // abdomen and shell
+    g.beginPath(); g.ellipse(-12, -24, 26, 17, -0.08, 0, 7); g.fill(); g.stroke();
+    if (!fl) { g.fillStyle = "#8a3aa0"; g.beginPath(); g.ellipse(-14, -30, 18, 8, -0.1, 0, 7); g.fill(); g.strokeStyle = "#2a0c34"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-12, -40); g.lineTo(-12, -9); g.stroke(); }
+    g.fillStyle = "#2f5a2a"; g.strokeStyle = "#16300f"; g.lineWidth = 1.2;   // bramble thorns along the back
+    [[-34, -30], [-26, -38], [-16, -41], [-6, -40], [3, -35]].forEach(function (q, i) { g.beginPath(); g.moveTo(q[0] - 3, q[1] + 2); g.lineTo(q[0] + (i % 2 ? 1 : -1), q[1] - 9); g.lineTo(q[0] + 3, q[1] + 2); g.closePath(); g.fill(); g.stroke(); });
+    g.fillStyle = "#ff6b82"; [[-28, -22], [-8, -18], [-20, -14]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 2.2, 0, 7); g.fill(); });   // glowing spots
+    g.fillStyle = fl ? "#ffffff" : "#4a1c56"; g.strokeStyle = "#2a0c34"; g.lineWidth = 2; g.beginPath(); g.ellipse(18, -20, 14, 12, 0, 0, 7); g.fill(); g.stroke();   // head
+    g.strokeStyle = "#1a0820"; g.lineWidth = 3; var mo = e.st === "volley" ? 4 : Math.sin(t * 6) * 1.5;   // mandibles
+    g.beginPath(); g.moveTo(28, -16); g.quadraticCurveTo(37, -18 - mo, 35, -9); g.stroke(); g.beginPath(); g.moveTo(28, -11); g.quadraticCurveTo(37, -6 + mo, 33, -2); g.stroke();
+    var ec = ang ? "#ff3a3a" : "#ff6b82"; g.fillStyle = ec; g.shadowColor = ec; g.shadowBlur = lowq ? 0 : 8; g.beginPath(); g.arc(22, -24, 3.2, 0, 7); g.fill(); g.beginPath(); g.arc(14, -25, 2.6, 0, 7); g.fill(); g.shadowBlur = 0;
+    g.strokeStyle = "#3a1a44"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(16, -31); g.quadraticCurveTo(20, -44, 30, -42); g.stroke(); g.beginPath(); g.moveTo(22, -31); g.quadraticCurveTo(30, -40, 36, -34); g.stroke();   // antennae
+    g.fillStyle = "#f2c14e"; g.strokeStyle = "#8a5a10"; g.lineWidth = 1.2;   // her crown
+    g.beginPath(); g.moveTo(9, -30); g.lineTo(9, -37); g.lineTo(13, -33); g.lineTo(17, -40); g.lineTo(21, -33); g.lineTo(25, -37); g.lineTo(25, -30); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#ff3a5a"; g.beginPath(); g.arc(17, -33, 1.6, 0, 7); g.fill();
+  }
+  function drawAlpha(g, e, t, now, fl) {
+    var walk = e.st === "stalk" && Math.abs(e.vx || 0) >= 0, low = e.st === "crouch" ? 6 : 0, howl = e.st === "howl", air = e.st === "pounce" && !e.on, bob = Math.sin(t * 7) * (walk ? 1.2 : 0.4);
+    g.translate(0, low);
+    var legs = [[-26, 0], [-16, 2], [16, 1], [26, 3]];
+    legs.forEach(function (q, i) { var sw = air ? (i < 2 ? -6 : 6) : Math.sin(t * 8 + q[1]) * 4; g.strokeStyle = i % 2 ? "#a8c0d0" : "#cfe0ea"; g.lineWidth = 5; g.beginPath(); g.moveTo(q[0], -20); g.lineTo(q[0] + sw, -low - 1); g.stroke(); });
+    g.fillStyle = fl ? "#ffffff" : "#dfeaf2"; g.strokeStyle = "#5a7a8e"; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(-40, -36); g.quadraticCurveTo(-56, -50, -50, -30); g.quadraticCurveTo(-46, -26, -38, -28); g.closePath(); g.fill(); g.stroke();   // tail
+    g.beginPath(); g.ellipse(0, -28 + bob, 36, 13, 0, 0, 7); g.fill(); g.stroke();   // body
+    g.fillStyle = "#b8ccda"; g.beginPath(); g.ellipse(4, -22 + bob, 24, 6, 0, 0, 7); g.fill();
+    g.fillStyle = "#9fe8ff"; g.strokeStyle = "#3a7aa8"; g.lineWidth = 1.2;   // icy mane spikes
+    for (var m = 0; m < 6; m++) { var mx = 6 + m * 5, my = -38 + bob + Math.abs(m - 2) * 1.5; g.beginPath(); g.moveTo(mx - 4, my + 6); g.lineTo(mx - 2, my - 9 - (m === 2 ? 4 : 0)); g.lineTo(mx + 3, my + 6); g.closePath(); g.fill(); g.stroke(); }
+    g.save(); g.translate(34, -34 + bob); if (howl) g.rotate(-0.7); else if (e.st === "breath" || e.st === "breathwind") g.rotate(0.12);
+    g.fillStyle = fl ? "#ffffff" : "#e8f2f8"; g.strokeStyle = "#5a7a8e"; g.lineWidth = 2; g.beginPath(); g.ellipse(0, 0, 13, 10, 0, 0, 7); g.fill(); g.stroke();   // head
+    g.beginPath(); g.moveTo(8, -3); g.lineTo(24, 1); g.lineTo(23, 6); g.lineTo(6, 8); g.closePath(); g.fill(); g.stroke();   // snout
+    g.fillStyle = "#2a3a4a"; g.beginPath(); g.arc(23, 2, 2.2, 0, 7); g.fill();
+    var open = howl || e.st === "breath"; if (open) { g.fillStyle = "#3a1a24"; g.beginPath(); g.moveTo(10, 6); g.lineTo(22, 6); g.lineTo(12, 12); g.closePath(); g.fill(); }
+    g.fillStyle = "#dfeaf2"; g.strokeStyle = "#5a7a8e"; g.beginPath(); g.moveTo(-6, -7); g.lineTo(-4, -20); g.lineTo(3, -8); g.closePath(); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-1, -8); g.lineTo(3, -19); g.lineTo(7, -7); g.closePath(); g.fill(); g.stroke();   // ears
+    var ec = e.rage ? "#ff5a7a" : "#3ad8ff"; g.fillStyle = ec; g.shadowColor = ec; g.shadowBlur = lowq ? 0 : 8; g.beginPath(); g.ellipse(6, -2, 2.8, 1.8, -0.2, 0, 7); g.fill(); g.shadowBlur = 0;
+    g.fillStyle = "#7fd6ff"; g.strokeStyle = "#3a7aa8"; g.lineWidth = 1; g.beginPath(); g.moveTo(-8, -9); g.lineTo(-6, -17); g.lineTo(-3, -11); g.lineTo(0, -19); g.lineTo(3, -11); g.lineTo(-2, -8); g.closePath(); g.fill(); g.stroke();   // ice crown
+    g.restore();
+  }
+  function drawWyrm(g, e, now, fl, pd) {
+    var H0 = e.hist, n = 11, segs = [], acc = 0, gap = 0.62;   // body segments sit every 0.62 tiles along the path the head took
+    for (var hi = 1; hi < H0.length && segs.length < n; hi++) { var ddx = H0[hi][0] - H0[hi - 1][0], ddy = H0[hi][1] - H0[hi - 1][1]; acc += Math.sqrt(ddx * ddx + ddy * ddy); if (acc >= gap) { acc = 0; segs.push(H0[hi]); } }
+    for (var i = segs.length; i >= 1; i--) {   // parts inside the ground are hidden
+      var q = segs[i - 1];
+      if (blocks(Math.floor(q[0]), Math.floor(q[1] - 0.4))) continue;
+      var r = (19 - i * 1.05) * ts / 30, sx2 = ox + q[0] * ts, sy2 = oy + (q[1] - 0.8) * ts;
+      g.globalAlpha = pd ? Math.max(0, 1 - pd) : 1;
+      g.fillStyle = fl ? "#ffffff" : i % 2 ? "#3a1a14" : "#4a2418"; g.strokeStyle = "#1a0804"; g.lineWidth = Math.max(1, ts / 18); g.beginPath(); g.arc(sx2, sy2, r, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = "#ff6a1f"; g.beginPath(); g.arc(sx2, sy2 - r * 0.15, r * 0.45, 0, 7); g.fill();
+      g.fillStyle = "#ffd23f"; g.globalAlpha *= 0.6 + 0.4 * Math.sin(now / 160 + i); g.beginPath(); g.arc(sx2, sy2 - r * 0.2, r * 0.2, 0, 7); g.fill(); g.globalAlpha = 1;
+    }
+    if (e.u && !e.def) {   // underground: a glowing crack where it will come up
+      if (e.st === "crack") { var cx = ox + e.x * ts, cy = oy + surfAt(e.x) * ts; g.save(); g.globalAlpha = 0.55 + 0.45 * Math.sin(now / 50); g.strokeStyle = "#ffb13b"; g.lineWidth = Math.max(2, ts / 10); g.beginPath(); g.moveTo(cx - ts, cy); g.lineTo(cx - ts * 0.4, cy - ts * 0.1); g.lineTo(cx, cy + ts * 0.05); g.lineTo(cx + ts * 0.5, cy - ts * 0.1); g.lineTo(cx + ts, cy); g.stroke(); g.restore(); }
+      return;
+    }
+    var hs = ox + e.x * ts, hy = oy + (e.y - 0.95) * ts; g.save(); g.translate(hs, hy); g.scale(ts / 30 * 1.45, ts / 30 * 1.45);
+    if (pd) g.globalAlpha = Math.max(0, 1 - pd);
+    var up = e.st === "leap" ? Math.atan2(e.vy, e.lv * 3) : 0; g.scale(e.dir, 1); g.rotate(e.st === "leap" ? up * 0.6 * e.dir * e.dir : 0);
+    g.fillStyle = fl ? "#ffffff" : "#4a2418"; g.strokeStyle = "#1a0804"; g.lineWidth = 2; g.beginPath(); g.ellipse(0, 0, 18, 14, 0, 0, 7); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(8, -8); g.lineTo(28, -3); g.lineTo(27, 3); g.lineTo(8, 4); g.closePath(); g.fill(); g.stroke();   // upper jaw
+    var jaw = e.st === "spit" ? 5 + Math.sin(now / 80) * 2 : 2; g.beginPath(); g.moveTo(6, 5); g.lineTo(24, 5 + jaw); g.lineTo(6, 12); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#ffd23f"; g.beginPath(); g.moveTo(8, 4); g.lineTo(26, 4); g.lineTo(24, 4 + jaw * 0.6); g.lineTo(8, 6); g.closePath(); g.fill();   // fire inside the mouth
+    g.fillStyle = "#e8d8c0"; [12, 17, 22].forEach(function (tx) { g.beginPath(); g.moveTo(tx, 3); g.lineTo(tx + 1.5, 6); g.lineTo(tx + 3, 3); g.fill(); });
+    g.fillStyle = "#2a1008"; g.strokeStyle = "#1a0804"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-6, -10); g.quadraticCurveTo(-16, -26, -2, -30); g.quadraticCurveTo(-10, -20, 0, -12); g.closePath(); g.fill(); g.stroke();   // horns
+    g.beginPath(); g.moveTo(2, -12); g.quadraticCurveTo(0, -26, 12, -26); g.quadraticCurveTo(4, -20, 8, -11); g.closePath(); g.fill(); g.stroke();
+    var ec = e.rage ? "#fff06a" : "#ffb13b"; g.fillStyle = ec; g.shadowColor = "#ff6a1f"; g.shadowBlur = lowq ? 0 : 10; g.beginPath(); g.ellipse(8, -5, 3.6, 2.4, 0.2, 0, 7); g.fill(); g.shadowBlur = 0;
+    g.fillStyle = "#ff6a1f"; [[-8, -2], [-2, 6], [-12, 6]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 2.4, 0, 7); g.fill(); });
+    g.restore();
+  }
+  // ---------- MINI-MAP (top right, under health and food) ----------
+  // A small live view of the explored world around you: you in the middle, plus waypoints, cave holes, your bed, Old Croaker, pets and bosses.
+  // Tap it to open the full World Map. It can be switched off in Options (saved on this device). Hidden inside hole caves.
+  var MINI = { on: true, t: 0, off: null, og: null, img: null, rgb: {}, tw: 64, th: 40 };
+  try { MINI.on = localStorage.getItem("swamp-delve-minimap") !== "0"; } catch (e) {}
+  function hexRgb(hex) {
+    var c = MINI.rgb[hex]; if (c) return c; var h = hex.length === 4 ? "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3] : hex;
+    return (MINI.rgb[hex] = [parseInt(h.slice(1, 3), 16) || 0, parseInt(h.slice(3, 5), 16) || 0, parseInt(h.slice(5, 7), 16) || 0]);
+  }
+  function drawMini() {
+    var cv = $("sbxMini"); if (!cv) return; var show = MINI.on && !cave && !!world; if (cv.hidden === show) cv.hidden = !show; if (!show) return;
+    var now = performance.now(); if (now - MINI.t < 250) return; MINI.t = now;
+    var tw = MINI.tw, th = MINI.th, x0 = Math.round(p.x - tw / 2), y0 = Math.round(p.y - 2 - th / 2);
+    if (!MINI.img) { MINI.off = document.createElement("canvas"); MINI.off.width = tw; MINI.off.height = th; MINI.og = MINI.off.getContext("2d"); MINI.img = MINI.og.createImageData(tw, th); }
+    var d = MINI.img.data;
+    for (var yy = 0; yy < th; yy++) for (var xx = 0; xx < tw; xx++) {
+      var x = x0 + xx, y = y0 + yy, k = (yy * tw + xx) * 4, r = 6, g2 = 10, b = 9;
+      if (x >= 0 && x < W && y >= 0 && y < H) {
+        var i = y * W + x;
+        if (ex[i]) { var id = tiles[i], td = TILES[id], hex = id === T.AIR ? (y < col[x] ? "#2a5a6a" : "#0d1114") : id === T.WATER ? "#2a8f95" : td.kind === "ore" ? td.c2 : td.c; if (hex === "#000") hex = td.c2 || "#2a5a6a"; var c = hexRgb(hex); r = c[0]; g2 = c[1]; b = c[2]; }
+      }
+      d[k] = r; d[k + 1] = g2; d[k + 2] = b; d[k + 3] = 255;
+    }
+    MINI.og.putImageData(MINI.img, 0, 0);
+    var dpr = Math.min(2, window.devicePixelRatio || 1), cw = cv.clientWidth || 140, ch = cv.clientHeight || 88;
+    if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); }
+    var g = cv.getContext("2d"), sx = cw / tw, sy = ch / th; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(MINI.off, 0, 0, cw, ch);
+    function at(wx, wy) { var q = [(wx - x0) * sx, (wy - y0) * sy]; return q[0] < -4 || q[0] > cw + 4 || q[1] < -4 || q[1] > ch + 4 ? null : q; }
+    function dot(q, r2, fill, ring) { if (!q) return; g.beginPath(); g.arc(q[0], q[1], r2, 0, 6.2832); g.fillStyle = fill; g.fill(); if (ring) { g.lineWidth = 1.2; g.strokeStyle = ring; g.stroke(); } }
+    (world.holes || []).forEach(function (hh) { if (ex[hh.y * W + hh.x]) dot(at(hh.x + 0.5, hh.y), 2.2, "#050607", "#f2c14e"); });
+    if (S.bed) { var bq = at(S.bed.x + 0.5, S.bed.y + 0.5); if (bq) { g.fillStyle = "#b58cff"; g.fillRect(bq[0] - 2.5, bq[1] - 2, 5, 4); } }
+    (S.wp || []).forEach(function (w) { dot(at(w.x + 0.5, w.y + 0.5), 2.8, WP_COL[w.c] || "#f2c14e", "#06100d"); });
+    S.pets.forEach(function (a) { dot(at(a.x, a.y - 0.3), 1.6, "#ff9ac2"); });
+    if (npc.ok) dot(at(npc.x, npc.y - 1), 3, "#3fae5e", giftsWaiting().length + btyReady() ? "#f2c14e" : "#bff4e4");
+    var bo = activeBoss(); if (bo) dot(at(bo.x, bo.y - bo.h / 2), 3.4 + Math.sin(now / 200), BOSS[bo.k].c, "#fff");
+    var pq = at(p.x, p.y - 1); dot(pq, 3.2, "#f2c14e", "#fff");
+    if (pq) { g.fillStyle = "#fff"; g.beginPath(); g.moveTo(pq[0] + p.face * 6, pq[1]); g.lineTo(pq[0] + p.face * 3.6, pq[1] - 2.2); g.lineTo(pq[0] + p.face * 3.6, pq[1] + 2.2); g.closePath(); g.fill(); }
+  }
+  // ---------- AMBIENT MUSIC ----------
+  // A soft generative tune made on the fly with the Web Audio API (no files). Each land has its own scale and sound:
+  // Murkwater: warm marimba-ish plucks; Ember Bog: a darker, lower mode; Frostfen: bright bells. Underground and at night it slows down and gets lower.
+  // A boss fight switches to a tense pulse. It follows the site's sound switch, and has its own On/Off and volume in Options (saved on this device).
+  var MUS = { on: true, vol: 0.5, out: null, flt: null, dl: null, nextT: 0, step: 0, deg: 0, pad: 0, mood: "" };
+  try { MUS.on = localStorage.getItem("swamp-delve-music") !== "0"; var mv = parseFloat(localStorage.getItem("swamp-delve-musicvol")); if (isFinite(mv)) MUS.vol = clamp(mv, 0, 1); } catch (e) {}
+  var SCALES = {   // semitones above the root, root frequency, voice
+    swamp: { root: 146.83, s: [0, 3, 5, 7, 10, 12, 15, 17], wave: "triangle", beat: 0.5 },
+    ember: { root: 130.81, s: [0, 1, 5, 7, 8, 12, 13, 17], wave: "sawtooth", beat: 0.58 },
+    frost: { root: 196.0, s: [0, 2, 4, 7, 9, 12, 14, 16], wave: "sine", beat: 0.52 },
+    deep: { root: 110.0, s: [0, 3, 5, 7, 10, 12], wave: "sine", beat: 0.8 },
+    boss: { root: 110.0, s: [0, 1, 3, 7, 8, 12], wave: "square", beat: 0.3 }
+  };
+  function musicMood() {
+    if (activeBoss()) return "boss";
+    if (cave || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7) return "deep";
+    return ["swamp", "ember", "frost"][world.bio[clamp(Math.floor(p.x), 0, W - 1)]] || "swamp";
+  }
+  function musicOut() {
+    if (MUS.out || !ac) return MUS.out;
+    try {
+      MUS.out = ac.createGain(); MUS.out.gain.value = 0; MUS.flt = ac.createBiquadFilter(); MUS.flt.type = "lowpass"; MUS.flt.frequency.value = 2400;
+      MUS.dl = ac.createDelay(1); MUS.dl.delayTime.value = 0.36; var fb = ac.createGain(); fb.gain.value = 0.32; var wet = ac.createGain(); wet.gain.value = 0.35;
+      MUS.flt.connect(MUS.out); MUS.flt.connect(MUS.dl); MUS.dl.connect(fb); fb.connect(MUS.dl); MUS.dl.connect(wet); wet.connect(MUS.out); MUS.out.connect(ac.destination);
+    } catch (e) { MUS.out = null; }
+    return MUS.out;
+  }
+  function musNote(f, t, len, wave, vol) {
+    var o = ac.createOscillator(), g = ac.createGain(); o.type = wave; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + Math.min(0.04, len * 0.2)); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g); g.connect(MUS.flt); o.start(t); o.stop(t + len + 0.05);
+  }
+  function musPad(f, t, len, vol) {
+    [1, 1.5, 2.003].forEach(function (m, i) {
+      var o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(f * m, t);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol / (i + 1), t + len * 0.4); g.gain.linearRampToValueAtTime(0.0001, t + len);
+      o.connect(g); g.connect(MUS.flt); o.start(t); o.stop(t + len + 0.05);
+    });
+  }
+  function tickMusic() {
+    var want = MUS.on && gestured && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden && !!world;
+    if (!want) { if (MUS.out && ac) MUS.out.gain.setTargetAtTime(0, ac.currentTime, 0.4); return; }
+    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { return; }
+    if (!musicOut()) return;
+    var mood = musicMood(), Sc = SCALES[mood], night = isNight(S.time), now = ac.currentTime;
+    MUS.out.gain.setTargetAtTime(0.16 * MUS.vol * (night ? 0.8 : 1), now, 0.6);
+    MUS.flt.frequency.setTargetAtTime(mood === "deep" ? 900 : mood === "boss" ? 1800 : night ? 1500 : 2600, now, 0.5);
+    if (mood !== MUS.mood) { MUS.mood = mood; MUS.nextT = Math.max(MUS.nextT, now + 0.2); MUS.step = 0; }
+    if (MUS.nextT < now) MUS.nextT = now + 0.05;
+    var beat = Sc.beat * (night && mood !== "boss" ? 1.3 : 1);
+    while (MUS.nextT < now + 0.35) {
+      var t = MUS.nextT, st = MUS.step++;
+      if (mood === "boss") {   // a tense, driving pulse
+        if (st % 2 === 0) musNote(Sc.root / 2, t, 0.22, "triangle", 0.5);
+        if (st % 4 === 2 || Math.random() < 0.25) musNote(Sc.root * Math.pow(2, Sc.s[Math.floor(Math.random() * Sc.s.length)] / 12), t, 0.18, Sc.wave, 0.12);
+        if (st % 16 === 0) musPad(Sc.root, t, beat * 16, 0.18);
+      } else {
+        if (st % 16 === 0) musPad(Sc.root / (mood === "deep" ? 2 : 1) * (MUS.pad++ % 2 ? Math.pow(2, 5 / 12) : 1), t, beat * 16, 0.12);
+        if (Math.random() > (mood === "deep" ? 0.55 : 0.38)) {   // a melody that wanders up and down the scale
+          MUS.deg = clamp(MUS.deg + [-2, -1, -1, 1, 1, 2, 0][Math.floor(Math.random() * 7)], 0, Sc.s.length - 1);
+          var f = Sc.root * Math.pow(2, Sc.s[MUS.deg] / 12) * (mood === "frost" ? 2 : 1);
+          musNote(f, t, beat * (mood === "frost" ? 3 : 2.2), Sc.wave, Sc.wave === "sawtooth" ? 0.07 : Sc.wave === "sine" ? 0.32 : 0.22);
+          if (mood === "swamp" && Math.random() < 0.2) musNote(f * 1.5, t + beat / 2, beat * 1.4, "triangle", 0.1);
+        }
+      }
+      MUS.nextT += beat;
+    }
+  }
+  // ---------- WEATHER ----------
+  // One weather for the whole world (S.wx = { k: "calm" | "wet" | "storm", t: seconds left, n: 0-1 how strong it is right now }), and each land shows it its own way:
+  //   Murkwater: rain, then thunderstorms (lightning at night is spectacular).  Frostfen: snow, then blizzards.  Ember Bog: ash fall, then ember storms.
+  // Gameplay: swamp rain waters every crop under open sky (it grows twice as fast), and fish bite sooner in rain or snow.
+  // Storms darken the sky. Weather only shows above ground. Weather effects can be switched off in Options (saved on this device).
+  var WX = { on: true, drops: [], flash: 0, bolt: null, nextBolt: 6, snd: null, sndG: null, waterT: 0 };
+  try { WX.on = localStorage.getItem("swamp-delve-weather") !== "0"; } catch (e) {}
+  var WX_LEN = { calm: [240, 540], wet: [120, 240], storm: [90, 170] }, WX_NAMES = [["Rain", "Thunderstorm"], ["Ash fall", "Ember storm"], ["Snow", "Blizzard"]];
+  function wxNew(k) { var L = WX_LEN[k]; S.wx = { k: k, t: L[0] + Math.random() * (L[1] - L[0]), n: S.wx ? S.wx.n : 0 }; }
+  function wxTarget() { return !S.wx || S.wx.k === "calm" ? 0 : S.wx.k === "wet" ? 0.6 : 1; }
+  function wxLabel() {   // for the HUD: what the weather is called where you are standing (empty when calm)
+    if (!WX.on || cave || !S.wx || S.wx.n < 0.25) return "";
+    return WX_NAMES[bioAt()][S.wx.k === "storm" && S.wx.n > 0.7 ? 1 : 0];
+  }
+  function wxOpenSky(x, y) { return col[clamp(x, 0, W - 1)] >= y; }   // nothing solid above (x, y)
+  function tickWeather(dt) {
+    if (!S.wx) wxNew("calm");
+    var w = S.wx; w.t -= dt;
+    if (w.t <= 0) wxNew(w.k === "calm" ? "wet" : w.k === "wet" ? (Math.random() < 0.45 ? "storm" : "calm") : "wet");
+    var tg = WX.on ? wxTarget() : 0; w.n += clamp(tg - w.n, -dt / 25, dt / 25);   // fades in and out over about 25 seconds
+    if (w.n > 0.3) {   // swamp rain waters crops that are under open sky
+      WX.waterT -= dt;
+      if (WX.waterT <= 0) {
+        WX.waterT = 2;
+        Object.keys(S.farm).forEach(function (key) { var q = key.split(","), x = +q[0], y = +q[1], e = S.farm[key]; if (world.bio[x] !== 0 || !wxOpenSky(x, y)) return; if (e.w < 40) { e.w = 40; setSoil(x, y + 1, true); } });
+      }
+    }
+    if (w.k === "storm" && w.n > 0.7 && !cave && bioAt() !== 1) {   // lightning (not in Ember Bog: it gets ember bursts instead)
+      WX.nextBolt -= dt;
+      if (WX.nextBolt <= 0) {
+        WX.nextBolt = 5 + Math.random() * 9; WX.flash = 1;
+        var bx = p.x + (Math.random() - 0.5) * (vw / ts) * 0.9; WX.bolt = { x: bx, y: col[clamp(Math.floor(bx), 0, W - 1)], t: 0.35, seed: Math.random() * 1000 };
+        var dly = 0.3 + Math.random() * 1.2; setTimeout(function () { thud(55, 0.11); setTimeout(function () { thud(40, 0.08); }, 160); }, dly * 1000);
+      }
+    }
+    WX.flash = Math.max(0, WX.flash - dt * 3); if (WX.bolt) { WX.bolt.t -= dt; if (WX.bolt.t <= 0) WX.bolt = null; }
+    tickRainSound();
+  }
+  function fishBiteMul() { return (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1); }
+  function tickRainSound() {   // a soft filtered-noise hiss for rain / blizzard wind, following the music switch
+    var want = WX.on && MUS.on && gestured && ac && S.wx && S.wx.n > 0.05 && !cave && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden;
+    var above = p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (bioAt() === 1 ? 0.25 : 0.55) : 0;
+    if (!lvl && !WX.snd) return;
+    try {
+      if (!WX.snd) {
+        var len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0), last = 0;
+        for (var i = 0; i < len; i++) { last = last * 0.6 + (Math.random() * 2 - 1) * 0.4; d[i] = last; }
+        WX.snd = ac.createBufferSource(); WX.snd.buffer = buf; WX.snd.loop = true;
+        var f = ac.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1400; f.Q.value = 0.6; WX.sndF = f;
+        WX.sndG = ac.createGain(); WX.sndG.gain.value = 0; WX.snd.connect(f); f.connect(WX.sndG); WX.sndG.connect(ac.destination); WX.snd.start();
+      }
+      WX.sndF.frequency.setTargetAtTime(bioAt() === 2 ? 600 : 1400, ac.currentTime, 1);
+      WX.sndG.gain.setTargetAtTime(lvl * 0.09, ac.currentTime, 0.8);
+    } catch (e) {}
+  }
+  function drawWeather(g, now, day, above) {
+    var w = S.wx; if (!WX.on || !w || cave) return;
+    var n = w.n * above; if (n < 0.02 && WX.flash <= 0) return;
+    var b = bioAt(), storm = w.k === "storm" && w.n > 0.7, want = Math.round((lowq ? 70 : 170) * n * (b === 2 && storm ? 1.6 : 1)), L = WX.drops, dt = WX.ln ? clamp((now - WX.ln) / 1000, 0, 0.05) : 1 / 60; WX.ln = now;
+    while (L.length < want) L.push({ x: Math.random() * vw, y: Math.random() * vh, z: 0.5 + Math.random() * 0.5, ph: Math.random() * 6.28 });
+    if (L.length > want) L.length = want;
+    var wind = (storm ? 1 : 0.35) * (b === 2 ? 1.6 : 1), lit = 0.35 + 0.65 * day;
+    if (n > 0.05) { g.fillStyle = b === 1 ? "rgba(60,40,30," + (0.18 * n).toFixed(3) + ")" : b === 2 ? "rgba(200,220,236," + ((storm ? 0.26 : 0.08) * n).toFixed(3) + ")" : "rgba(20,30,44," + ((storm ? 0.32 : 0.16) * n).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+    g.save();
+    if (b === 0) {   // rain: thin slanted streaks
+      g.strokeStyle = "rgba(200,228,255," + (0.8 * lit).toFixed(3) + ")"; g.lineWidth = 1.4; g.lineCap = "round"; g.beginPath();
+      L.forEach(function (d) { var sp = 900 * d.z; d.y += sp * dt; d.x += sp * dt * wind * 0.25; if (d.y > vh) { d.y = -10; d.x = Math.random() * (vw + 100) - 100; } if (d.x > vw) d.x -= vw + 50; g.moveTo(d.x, d.y); g.lineTo(d.x - 4 * wind * d.z, d.y - 20 * d.z); });
+      g.stroke();
+    } else if (b === 2) {   // snow: drifting flakes
+      var shade = "rgba(110,150,190," + (0.55 * lit).toFixed(3) + ")", flake = "rgba(255,255,255," + (0.95 * lit).toFixed(3) + ")";
+      L.forEach(function (d) { var sp = (storm ? 160 : 60) * d.z; d.y += sp * dt; d.x += (Math.sin(now / 700 + d.ph) * 30 + wind * (storm ? 260 : 40)) * dt; if (d.y > vh) { d.y = -6; d.x = Math.random() * vw; } if (d.x > vw + 6) d.x = -6; if (d.x < -6) d.x = vw + 6;
+        var sz = d.z * (storm ? 3.6 : 3.2); g.fillStyle = shade; g.fillRect(d.x + 1, d.y + 1, sz, sz); g.fillStyle = flake; g.fillRect(d.x, d.y, sz, sz); });
+      if (storm) { g.strokeStyle = "rgba(255,255,255," + (0.35 * lit * n).toFixed(3) + ")"; g.lineWidth = 1; g.beginPath(); for (var ws = 0; ws < 14; ws++) { var wy = (ws * 97 + now * 0.05) % vh, wx = (ws * 211 + now * 0.9) % (vw + 200) - 100; g.moveTo(wx, wy); g.lineTo(wx + 60, wy + 4); } g.stroke(); }
+    } else {   // ash: grey flakes, and in an ember storm some glowing embers
+      L.forEach(function (d, i) { var hot = storm && i % 3 === 0, sp = (hot ? 90 : 45) * d.z; d.y += sp * dt; d.x += (Math.sin(now / 900 + d.ph) * 20 + 25 * wind) * dt; if (d.y > vh) { d.y = -6; d.x = Math.random() * vw; } if (d.x > vw + 6) d.x = -6;
+        if (hot) { g.fillStyle = "rgba(255," + (140 + Math.round(60 * Math.sin(now / 120 + d.ph))) + ",60,0.9)"; g.fillRect(d.x, d.y, 2.4, 2.4); } else { g.fillStyle = "rgba(120,110,105," + (0.6 * lit).toFixed(3) + ")"; g.fillRect(d.x, d.y, 2.2 * d.z, 2.2 * d.z); } });
+    }
+    g.restore();
+    if (WX.bolt) {   // a jagged bolt from the top of the screen to the ground
+      var B = WX.bolt, x = ox + B.x * ts, y1 = Math.min(vh, oy + B.y * ts), segs = 9, r = B.seed;
+      g.save(); g.strokeStyle = "rgba(235,245,255," + Math.min(1, B.t * 4).toFixed(3) + ")"; g.lineWidth = 2.5; g.shadowColor = "#bfe4ff"; g.shadowBlur = lowq ? 0 : 14; g.beginPath(); g.moveTo(x, 0);
+      for (var s = 1; s <= segs; s++) { r = (r * 9301 + 49297) % 233280; g.lineTo(x + (r / 233280 - 0.5) * 40, y1 * s / segs); } g.stroke(); g.restore();
+    }
+    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.45 * above).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+  }
+  // ---------- CHARMS ----------
+  // Little trinkets worn on a cord. Craft each one once (Craft tab > Gear > Charms), then wear up to 2 of them from the top of your backpack
+  // (3 once you have beaten all three bosses). S.charms = { own: { key: 1 }, on: [keys being worn] }.
+  // Their effects are applied where each thing happens: walk speed (step), double jump (step), lava (update), fishing (useRod / landFish),
+  // crops (farmStep), loot (rollLoot), hunger (tickHunger), digging (the three mine.p lines).
+  var CHARMS = {
+    bramble: { n: "Bramble Charm", d: "Walk 15% faster.", c: "#c06aff", g: "#ff6b82" },
+    alpha: { n: "Alpha Charm", d: "Jump a second time in mid-air.", c: "#9fe8ff", g: "#e8f8ff" },
+    magma: { n: "Magma Charm", d: "Lava burns you 70% less.", c: "#ff8a3d", g: "#ffd23f" },
+    miner: { n: "Miner's Charm", d: "Dig 25% faster.", c: "#b58cff", g: "#e2d0ff" },
+    angler: { n: "Angler's Charm", d: "Fish bite 35% sooner, and rare fish are more common.", c: "#4ee6b4", g: "#d4fff6" },
+    thumb: { n: "Green Thumb Charm", d: "Crops grow 25% faster.", c: "#7fd06a", g: "#ff8a2a" },
+    hearty: { n: "Hearty Charm", d: "Hunger drains 35% slower, and health comes back 20% faster.", c: "#ff6a5a", g: "#ffd0c8" },
+    lucky: { n: "Lucky Clover", d: "Treasure is more generous: chests, pots and fished-up treasure sometimes give an extra find.", c: "#3fae5e", g: "#f2c14e" }
+  };
+  function charmSlots() { return (S.st.boss & 7) === 7 ? 3 : 2; }
+  function hasCharm(k) { return S.charms.on.indexOf(k) > -1; }
+  function wearCharm(k) {
+    if (!S.charms.own[k]) return;
+    var i = S.charms.on.indexOf(k);
+    if (i > -1) { S.charms.on.splice(i, 1); toast("Took off the " + CHARMS[k].n + ".", "#f6eedb"); }
+    else if (S.charms.on.length >= charmSlots()) { nag("You can wear " + charmSlots() + " charms" + (charmSlots() < 3 ? ". Beat all three bosses to wear a third." : ".") + " Take one off first."); return; }
+    else { S.charms.on.push(k); toast("Wearing the " + CHARMS[k].n + ": " + CHARMS[k].d, CHARMS[k].c); snd("coin"); }
+    S.st.charmswap++; checkGoals(); save();
+  }
+  function charmHtml() {
+    var own = Object.keys(CHARMS).filter(function (k) { return S.charms.own[k]; }), n = charmSlots();
+    var worn = S.charms.on.map(function (k) { return CHARMS[k].n.replace(/ Charm$/, ""); }).join(", ");
+    var h = '<details class="sbx-charms"' + (charmOpen === null ? (own.length <= 3 ? " open" : "") : charmOpen ? " open" : "") + '><summary class="ch-head"><b>Charms</b><em>' + (worn ? esc(worn) + " · " : "") + S.charms.on.length + " / " + n + " worn</em></summary>";
+    if (!own.length) return h + '<p class="sbx-note">No charms yet. Craft them in the Craft tab (Gear &gt; Charms). Most need boss trophies.</p></details>';
+    h += '<div class="ch-list">' + own.map(function (k) {
+      var C = CHARMS[k], on = hasCharm(k);
+      return '<button type="button" class="ch-it' + (on ? " on" : "") + '" data-charm="' + k + '" aria-pressed="' + on + '" style="--cc:' + C.c + '"><img alt="" src="' + icon("charm_" + k) + '"><span><b>' + esc(C.n) + "</b><small>" + esc(C.d) + "</small></span><i>" + (on ? "Worn" : "Wear") + "</i></button>";
+    }).join("") + "</div></details>";
+    return h;
+  }
+  var charmOpen = null;   // the backpack's Charms box: null = automatic (open while you own 3 or fewer)
+  document.addEventListener("toggle", function (e) { if (e.target && e.target.classList && e.target.classList.contains("sbx-charms")) charmOpen = e.target.open; }, true);
+  // a pendant sprite per charm: a cord, a metal frame, and a gem in the charm's colours
+  function charmSprite(k) {
+    var C = CHARMS[k];
+    return { r: ["....c......c....", ".....c....c.....", "......c..c......", ".......cc.......", "......mmmm......", ".....mGGGGm.....", "....mGgGGGGm....", "...mGGgGGGGGm...", "...mGGGGGGGGm...", "...mGGGGGGgGm...", "....mGGGGGgm....", ".....mGGGGm.....", "......mmmm......", ".......mm.......", "........m.......", "................"],
+      p: { c: "#8a6a4a", m: "#e8c46a", G: C.c, g: C.g }, o: "#2a1c0e" };
+  }
+  Object.keys(CHARMS).forEach(function (k) { SPR["charm_" + k] = charmSprite(k); });
+  // ---------- COLLECTION LOG (Journal > Log) ----------
+  // Everything you have found, caught, grown, cooked, tamed and beaten in this world, with "?" for what is still out there. Read-only: it is all
+  // worked out from the save (lifetime stats, the fish log, crop bits, meals eaten, pets, charms and boss bits).
+  function logHtml() {
+    var st = S.st, kills = Object.keys(KSTAT).reduce(function (a, k) { return a + (st[KSTAT[k]] || 0); }, 0);
+    var tile = function (img, name, sub, got, cc) { return '<div class="lg-it' + (got ? "" : " no") + '"' + (cc ? ' style="--lc:' + cc + '"' : "") + '>' + (got ? '<img alt="" src="' + img + '">' : '<span class="q">?</span>') + "<b>" + esc(got ? name : "???") + "</b>" + (sub && got ? "<em>" + esc(sub) + "</em>" : "") + "</div>"; };
+    var sect = function (title, done, all, inner) { return '<h3>' + title + ' <small class="lg-n">' + done + " / " + all + '</small></h3><div class="lg-grid">' + inner + "</div>"; };
+    var h = '<div class="lg-stats">' + [
+      ["Days", (S.days | 0) + 1], ["Deepest", (st.maxDepth | 0) + " m"], ["Dug", st.mined], ["Placed", st.placed], ["Defeated", kills], ["Bosses", st.bossk],
+      ["Fish", st.fish], ["Harvests", st.harvests], ["Meals", st.cooked], ["Bounties", st.bounties], ["Cave floors", st.caveDeep], ["Naps", st.sleeps]
+    ].map(function (q) { return "<div><b>" + (q[1] || 0) + "</b><span>" + q[0] + "</span></div>"; }).join("") + "</div>";
+    var cre = Object.keys(KSTAT), creN = cre.filter(function (k) { return st[KSTAT[k]] > 0; }).length;
+    h += sect("Creatures", creN, cre.length, cre.map(function (k) { var d = ENEMY[k], n = st[KSTAT[k]] || 0; return tile(icon(d.frag), d.n, n + " defeated", n > 0, d.glow); }).join(""));
+    var bk = Object.keys(BOSS), bN = bk.filter(function (k) { return st.boss & BOSS[k].bit; }).length;
+    h += sect("Bosses", bN, bk.length, bk.map(function (k) { var B = BOSS[k], m = { queen: "queenchitin", wyrm: "wyrmscale", alpha: "alphamane" }[k]; return tile(icon(m), B.n, BIO_NAMES[B.b], !!(st.boss & B.bit), B.c); }).join(""));
+    var fN = FISH_ALL.filter(function (k) { return S.fdex[k]; }).length;
+    h += sect("Fish", fN, FISH_ALL.length, FISH_ALL.map(function (k) { return tile(icon(k), ITEMS[k].n, "", !!S.fdex[k], "#7fd6ff"); }).join(""));
+    var crops = [["carrot", 1], ["potato", 2], ["pepper", 4], ["frostberry", 8]], cN = crops.filter(function (q) { return st.cropbits & q[1]; }).length;
+    h += sect("Crops grown", cN, crops.length, crops.map(function (q) { return ITEMS[q[0]] ? tile(icon(q[0]), ITEMS[q[0]].n, "", !!(st.cropbits & q[1]), "#7fd06a") : ""; }).join(""));
+    var meals = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked; }), mN = meals.filter(function (k) { return S.ate[k]; }).length;
+    h += sect("Meals tasted", mN, meals.length, meals.map(function (k) { return tile(icon(k), ITEMS[k].n, "", !!S.ate[k], "#ffb13b"); }).join(""));
+    var ak = Object.keys(ANIM), aN = ak.filter(function (k) { return S.pets.some(function (a) { return a.k === k; }); }).length;
+    h += sect("Animal friends", aN, ak.length, ak.map(function (k) { var n = S.pets.filter(function (a) { return a.k === k; }).length; return tile(icon(ANIM[k].prod), ANIM[k].n, n + " at home", n > 0, "#ff9ac2"); }).join(""));
+    var ck = Object.keys(CHARMS), chN = ck.filter(function (k) { return S.charms.own[k]; }).length;
+    h += sect("Charms", chN, ck.length, ck.map(function (k) { return tile(icon("charm_" + k), CHARMS[k].n, hasCharm(k) ? "Worn" : "", !!S.charms.own[k], CHARMS[k].c); }).join(""));
+    var total = creN + bN + fN + cN + mN + aN + chN, max = cre.length + bk.length + FISH_ALL.length + crops.length + meals.length + ak.length + ck.length;
+    return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(total / max * 100) + '%"></i></span><em>' + total + " / " + max + " found</em></div>" + h;
+  }
+  // ---------- MULTIPLAYER (co-op rooms; the server side is DelveRoom in worker.js) ----------
+  // The HOST's game runs the world: creatures, bosses, crops, time and weather. Up to 3 friends join with a room code (or from the public list).
+  // A guest brings their CHARACTER along (inventory, gear, quests, charms, stats: the keys in MP_CHAR) and plays in the host's world, which is
+  // kept in memory only. While a guest plays, their character is saved back into their own world slot, so nothing is lost when they leave.
+  // Messages (JSON): me (look), p (player state), set / wall (tile edits, batched), tick (host: creatures, shots, its own state), env (time, weather),
+  //   hit (guest hit a creature), dmg (a creature hit a guest), kill / bosswin (reward a guest), pvp (player hit), farm / water, chat, cfg (PvP switch).
+  // Creatures always chase the nearest player: the host runs each creature's brain with that player standing in for "you" (mpRun).
+  var MP_CHAR = ["inv", "slots", "extra", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "rod", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
+  var MP = { on: false, role: "", ws: null, code: "", id: 0, peers: {}, npeers: 0, pvp: false, pub: false, room: "", hostName: "", own: null, applying: false,
+    sets: [], walls: [], flushT: 0, sendT: 0, tickT: 0, envT: 0, metaT: 0, last: "", proxy: null, proxyE: null, nid: 0, chat: [], say: "", sayT: 0, status: "", err: "", list: null, view: "home" };
+  var mpName = ""; try { mpName = localStorage.getItem("swamp-delve-mpname") || ""; } catch (e) {}
+  function mpSend(o) { if (MP.ws && MP.ws.readyState === 1) try { MP.ws.send(JSON.stringify(o)); } catch (e) {} }
+  function mpUrl(code, role, name) { return (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/mp/ws/" + code + "?role=" + role + "&name=" + encodeURIComponent(name || ""); }
+  function mpMe() { mpSend({ t: "me", name: MP.myName, animal: S.animal, outfit: spriteOutfit || null }); }
+  function mpPeer(id) { return MP.peers[id] || (MP.peers[id] = { id: id, name: "Player", x: p.x, y: p.y, tx: p.x, ty: p.y, vx: 0, vy: 0, on: true, face: 1, walk: 0, a: 0.3, hp: MAXHP, cave: 0, grace: 0, sp: null }); }
+  function mpCount() { MP.npeers = Object.keys(MP.peers).length; }
+  // ---- hosting ----
+  function mpHost(pub, pvp) {
+    if (MP.on) return; if (CLOUD.state === "guest") { MP.err = "Sign in (top right) to host your world."; renderMP(); return; }
+    MP.err = ""; MP.status = "Opening your world…"; renderMP();
+    var e = curEntry();
+    cloudCall("POST", "/api/mp/host", { name: e ? e.name : "My Swamp", pub: !!pub, pvp: !!pvp }).then(function (r) {
+      if (r.s !== 200 || !r.j || !r.j.code) { MP.status = ""; MP.err = (r.j && r.j.error) || "Multiplayer isn't available right now."; renderMP(); return; }
+      MP.code = r.j.code; MP.pub = !!pub; MP.pvp = !!pvp; MP.room = e ? e.name : "My Swamp"; MP.myName = WUSER; mpConnect("host");
+    });
+  }
+  function worldSnap() {
+    save(); var o = null; try { o = JSON.parse(localStorage.getItem(wkey(curId))); } catch (e) {} if (!o) return null;
+    MP_CHAR.forEach(function (k) { delete o[k]; }); o.bossOn = ""; o.pets = []; return JSON.stringify(o);
+  }
+  // ---- joining ----
+  function mpJoin(code, name) {
+    if (MP.on) return; code = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (code.length !== 6) { MP.err = "Room codes are 6 letters and numbers."; renderMP(); return; }
+    name = String(name || "").trim().slice(0, 16); if (WUSER === "guest" && name.length < 2) { MP.err = "Pick a name (at least 2 letters) so your friends know who you are."; renderMP(); return; }
+    try { localStorage.setItem("swamp-delve-mpname", name); } catch (e) {} mpName = name;
+    MP.err = ""; MP.status = "Looking for that world…"; renderMP();
+    cloudCall("GET", "/api/mp/room/" + code).then(function (r) {
+      if (r.s !== 200 || !r.j) { MP.status = ""; MP.err = (r.j && r.j.error) || "Multiplayer isn't available right now."; renderMP(); return; }
+      MP.code = code; MP.room = r.j.name; MP.hostName = r.j.host; MP.pvp = !!r.j.pvp; MP.myName = WUSER !== "guest" ? WUSER : name; MP.status = "Joining " + r.j.host + "'s world…"; renderMP(); mpConnect("guest", name);
+    });
+  }
+  function mpConnect(role, name) {
+    var ws; try { ws = new WebSocket(mpUrl(MP.code, role, name)); } catch (e) { MP.status = ""; MP.err = "Could not connect."; renderMP(); return; }
+    MP.ws = ws; MP.role = role; MP.peers = {}; MP.npeers = 0;
+    ws.onmessage = function (ev) { var m = null; try { m = JSON.parse(ev.data); } catch (e) {} if (m) try { mpOn(m); } catch (e) { if (window.console) console.error(e); } };
+    ws.onclose = function (ev) { if (MP.ws !== ws) return; var was = MP.on, why = MP.why || (ev.code === 4002 ? "You were removed from the world by the host." : ev.code === 4003 ? "The host closed their world." : was ? "Lost the connection to the world." : MP.err || "Could not connect to that world."); MP.ws = null; mpEnd(why); };
+  }
+  function mpOn(m) {
+    var q;
+    if (m.t === "error") { MP.why = m.m; MP.err = m.m; return; }
+    if (m.t === "hello") {
+      MP.id = m.id; (m.players || []).forEach(function (pl) { var q2 = mpPeer(pl.id); q2.name = pl.name; q2.role = pl.role; }); mpCount();
+      if (MP.role === "host") { MP.on = true; MP.status = ""; toast("Your world is open! Room code " + MP.code + ".", "#4ee6b4"); mpMeta(); renderMP(); }
+      mpMe(); return;
+    }
+    if (m.t === "join") { q = mpPeer(m.id); q.name = m.name; q.role = m.role; mpCount(); mpMe(); if (MP.on) toast(m.name + " joined the world!", "#4ee6b4"); addChat("", m.name + " joined."); if (MP.role === "host") { var w = worldSnap(); if (w) mpSend({ t: "welcome", to: m.id, world: w, pvp: MP.pvp, room: MP.room, host: MP.myName, wv: SW.WORLDVER }); mpMeta(); } renderMP(); return; }
+    if (m.t === "leave") { q = MP.peers[m.id]; if (q) { toast(q.name + " left the world.", "#f6eedb"); addChat("", q.name + " left."); } delete MP.peers[m.id]; mpCount(); if (MP.role === "host") mpMeta(); renderMP(); return; }
+    if (m.t === "welcome" && MP.role === "guest" && !MP.on) return mpEnterGuest(m);
+    if (m.t === "me") { q = mpPeer(m.from); q.name = String(m.name || q.name).slice(0, 16); q.animal = m.animal; q.outfit = m.outfit; q.sp = null; return; }
+    if (m.t === "p") { q = mpPeer(m.from); mpState(q, m); return; }
+    if (m.t === "set") { MP.applying = true; for (var i = 0; i + 2 < m.L.length; i += 3) if (m.L[i] >= 0 && m.L[i] < W && m.L[i + 1] >= 0 && m.L[i + 1] < H && TILES[m.L[i + 2]]) setT(m.L[i], m.L[i + 1], m.L[i + 2]); MP.applying = false; return; }
+    if (m.t === "wall") { MP.applying = true; for (var j = 0; j + 2 < m.L.length; j += 3) if (m.L[j] >= 0 && m.L[j] < W && m.L[j + 1] >= 0 && m.L[j + 1] < H) setWall(m.L[j], m.L[j + 1], m.L[j + 2]); MP.applying = false; return; }
+    if (m.t === "chat") { q = mpPeer(m.from); var txt = String(m.m || "").slice(0, 80); q.say = txt; q.sayT = 5; addChat(q.name, txt); return; }
+    if (m.t === "cfg") { MP.pvp = !!m.pvp; toast("The host turned PvP " + (MP.pvp ? "ON: players can hit each other." : "off."), MP.pvp ? "#ff8a7a" : "#4ee6b4"); renderMP(); return; }
+    if (MP.role === "guest") {
+      if (m.t === "tick") { mpGhosts(m); if (m.h) mpState(mpPeer(m.from), m.h); return; }
+      if (m.t === "env") { S.time = m.time; if (m.wx) S.wx = m.wx; S.days = m.days | 0; return; }
+      if (m.t === "dmg") { if (!cave) { hurt(m.n, m.why || "hit"); if (m.kx) { p.vx = m.kx * 6.5; p.vy = -6; p.on = false; } } return; }
+      if (m.t === "kill") return mpKill(m);
+      if (m.t === "bosswin") return mpBossWin(m.k);
+    } else if (MP.role === "host") {
+      if (m.t === "hit") { var e = mpEnemy(m.i); if (e && !e.def) { e.lastHit = m.from; damageEnemy(e, clamp(+m.d || 0, 0, 60), m.f < 0 ? -1 : 1); } return; }
+      if (m.t === "farm" && typeof m.k === "string" && CROPS[m.c]) { if (!S.farm[m.k]) S.farm[m.k] = { c: m.c, g: 0, w: 0 }; return; }
+      if (m.t === "water" && S.farm[m.k]) { S.farm[m.k].w = WET_S; return; }
+    }
+    if (m.t === "pvp" && MP.pvp && !cave) { hurt(clamp(+m.d || 0, 0, 60), "pvp"); p.vx = (m.f < 0 ? -1 : 1) * 6.5; p.vy = -5; p.on = false; return; }
+  }
+  function mpState(q, m) {
+    if (Math.abs(m.x - q.x) > 8 || Math.abs(m.y - q.y) > 8) { q.x = m.x; q.y = m.y; }
+    q.tx = m.x; q.ty = m.y; q.vx = m.vx || 0; q.vy = m.vy || 0; q.on = !!m.on; q.face = m.f < 0 ? -1 : 1; q.walk = m.w || 0; q.a = m.a || 0.3; q.hp = m.hp == null ? q.hp : m.hp; q.cave = m.c ? 1 : 0; q.seen = performance.now();
+  }
+  // ---- a guest enters the host's world ----
+  function mpEnterGuest(m) {
+    if (m.wv !== SW.WORLDVER) { MP.why = "That world is from a different version of Delve. Both players should refresh the page."; try { MP.ws.close(); } catch (e) {} return; }
+    var hostS = null; try { hostS = clean(JSON.parse(m.world)); } catch (e) {}
+    if (!hostS) { MP.why = "Could not read the host's world."; try { MP.ws.close(); } catch (e) {} return; }
+    save(); var keep = JSON.parse(JSON.stringify(S));
+    MP.own = { id: curId }; MP.on = true; MP.pvp = !!m.pvp; MP.room = m.room || MP.room; MP.hostName = m.host || MP.hostName; MP.status = "";
+    MP_CHAR.forEach(function (k) { if (keep[k] !== undefined) hostS[k] = keep[k]; }); hostS.pets = []; hostS.bossOn = "";
+    start(hostS); enemies.length = 0; bshots.length = 0; closeMPV();
+    toast("You joined " + MP.hostName + "'s world! Your backpack and gear came with you.", "#4ee6b4"); addChat("", "Joined " + MP.hostName + "'s world. Press Enter to chat."); renderMP();
+  }
+  function mpSaveChar() {   // guest: write the character back into your own world slot (the host's world is never saved here)
+    if (!MP.own) return; reslot(); S.hp = Math.max(1, Math.round(hp));
+    var own = null; try { own = JSON.parse(localStorage.getItem(wkey(MP.own.id))); } catch (e) {} if (!own) return;
+    MP_CHAR.forEach(function (k) { if (S[k] !== undefined) own[k] = S[k]; });
+    try { localStorage.setItem(wkey(MP.own.id), JSON.stringify(own)); } catch (e) {}
+  }
+  function mpLeave() { if (!MP.ws && !MP.on) return; MP.why = MP.role === "host" ? "You closed your world to visitors." : "You left the world."; var w = MP.ws; MP.ws = null; try { if (w) w.close(1000, "bye"); } catch (e) {} mpEnd(MP.why); }
+  function mpEnd(why) {
+    var wasGuest = MP.role === "guest" && MP.on, wasOn = MP.on;
+    if (wasGuest) { mpSaveChar(); }
+    MP.on = false; MP.role = ""; MP.peers = {}; MP.npeers = 0; MP.ws = null; MP.code = wasOn ? "" : MP.code; MP.status = ""; MP.why = ""; MP.sets.length = 0; MP.walls.length = 0;
+    if (wasGuest) { var own = readWorld(MP.own.id); MP.own = null; if (own) start(own); enemies.length = 0; bshots.length = 0; }
+    if (why && (wasOn || !MP.err)) { if (!wasOn) MP.err = why; toast(why, "#f2c14e"); }
+    if (wasOn) addChat("", why || "Disconnected.");
+    renderMP(); hbDirty = true;
+  }
+  function mpMeta() { if (MP.role === "host") { mpSend({ t: "meta", pub: MP.pub, pvp: MP.pvp }); MP.metaT = 45; } }
+  // ---- creatures: the host's real ones, mirrored on guests as "ghosts" ----
+  function mpEnemy(nid) { for (var i = 0; i < enemies.length; i++) if (enemies[i].nid === nid) return enemies[i]; return null; }
+  function enSnap(e) {
+    if (!e.nid) e.nid = ++MP.nid; var o = {};
+    for (var k in e) { var v = e[k]; if (k === "hist" || k === "tt" || k === "lastHit") continue; if (typeof v === "number") o[k] = Math.round(v * 100) / 100; else if (typeof v === "string" || typeof v === "boolean") o[k] = v; }
+    return o;
+  }
+  function mpGhosts(m) {
+    var seen = {};
+    (m.en || []).forEach(function (o) {
+      seen[o.nid] = 1; var g = mpEnemy(o.nid);
+      if (!g) { g = Object.assign({ tt: 0, hist: [] }, o); g.gx = o.x; g.gy = o.y; enemies.push(g); return; }
+      var gx = o.x, gy = o.y; delete o.x; delete o.y; Object.assign(g, o); g.gx = gx; g.gy = gy;
+      if (Math.abs(gx - g.x) > 6 || Math.abs(gy - g.y) > 6) { g.x = gx; g.y = gy; }
+    });
+    for (var i = enemies.length - 1; i >= 0; i--) if (!seen[enemies[i].nid]) enemies.splice(i, 1);
+    bshots.length = 0; (m.sh || []).forEach(function (s) { bshots.push({ k: s[0], x: s[1], y: s[2], vx: s[3], vy: s[4], wait: s[5], r: s[6], g: s[7], ground: s[8], life: 2 }); });
+  }
+  function mpGhostStep(dt) {   // guests: glide the mirrored creatures toward their latest positions (the host decides everything else)
+    var k = Math.min(1, dt * 12);
+    enemies.forEach(function (e) {
+      e.tt += dt; if (e.gx === undefined) return; e.x += (e.gx - e.x) * k; e.y += (e.gy - e.y) * k;
+      if (e.hurt > 0) e.hurt = Math.max(0, e.hurt - dt);
+      if (e.boss && e.hist) { var h0 = e.hist[0]; if (!h0 || Math.abs(h0[0] - e.x) + Math.abs(h0[1] - e.y) > 0.08) { e.hist.unshift([e.x, e.y]); if (e.hist.length > 160) e.hist.pop(); } }
+    });
+    if (swingQ > 0) { swingQ -= dt; if (swingQ <= 0) strike(); }
+    bshots.forEach(function (s) { if (s.wait > 0) { s.wait -= dt; return; } s.vy += (s.g || 0) * dt; s.x += s.vx * dt; s.y += s.vy * dt; });
+  }
+  function mpRun(e, fn) {   // host: run one creature's brain with the nearest player standing in as "you"
+    if (MP.role !== "host" || !MP.npeers) return fn();
+    var best = null, bd = cave ? 1e9 : Math.abs(e.x - p.x) + Math.abs(e.y - p.y) * 0.7;
+    for (var id in MP.peers) { var q = MP.peers[id]; if (q.cave || q.hp <= 0 || !q.seen) continue; var d = Math.abs(e.x - q.x) + Math.abs(e.y - q.y) * 0.7; if (d < bd) { bd = d; best = q; } }
+    if (!best) return fn();
+    var sv = { x: p.x, y: p.y, vx: p.vx, vy: p.vy, on: p.on, hp: hp, hg: hurtGrace };
+    p.x = best.x; p.y = best.y; p.vx = best.vx; p.vy = best.vy; p.on = best.on; hp = best.hp; hurtGrace = best.grace; MP.proxy = best; MP.proxyE = e;
+    try { fn(); } finally { best.grace = hurtGrace; p.x = sv.x; p.y = sv.y; p.vx = sv.vx; p.vy = sv.vy; p.on = sv.on; hp = sv.hp; hurtGrace = sv.hg; MP.proxy = null; MP.proxyE = null; }
+  }
+  function mpProxyHurt(n, why) {   // a creature hit the player it was chasing on the host's screen: tell that player
+    var q = MP.proxy, e = MP.proxyE; if (hurtGrace > 0) return; hurtGrace = 0.5;
+    mpSend({ t: "dmg", to: q.id, n: Math.round(n), why: why, kx: e ? (q.x >= e.x ? 1 : -1) : 0 });
+  }
+  function mpShotHit(s) {   // host: does a boss shot hit a visiting player?
+    for (var id in MP.peers) {
+      var q = MP.peers[id]; if (q.cave || q.hp <= 0 || !q.seen) continue;
+      if (s.x + s.r > q.x - PW / 2 && s.x - s.r < q.x + PW / 2 && s.y + s.r > q.y - PH && s.y - s.r < q.y) { if (!(q.grace > 0)) { q.grace = 0.5; mpSend({ t: "dmg", to: q.id, n: s.dmg, why: s.why, kx: s.vx >= 0 ? 1 : -1 }); } return true; }
+    }
+    return false;
+  }
+  function mpKill(m) {   // guest: you landed the last hit, so the kill counts for you too
+    var d = ENEMY[m.k]; if (!d || !KSTAT[m.k]) return;
+    var kills = ++S.st[KSTAT[m.k]], drop = (kills === 1 && !m.small) || Math.random() < d.chance * (m.small ? 0.35 : 1);
+    if (drop && d.frag) give(d.frag, 1, undefined, undefined, true);
+    var MEAT = { frog: 0.35, wolf: 0.6, gator: 0.7 }; if (MEAT[m.k] && ITEMS.rawmeat && Math.random() < MEAT[m.k]) give("rawmeat", 1, undefined, undefined, true);
+    popup("Enemy defeated", d.n + (drop && d.frag ? " • +1 " + ITEMS[d.frag].n : ""), d.glow, "⚔"); checkTrail(); checkGoals();
+  }
+  function mpBossWin(k) {   // guest: you were there when the boss fell, so you get the reward too
+    var B = BOSS[k]; if (!B) return; var first = !(S.st.boss & B.bit); S.st.boss |= B.bit; S.st.bossk++;
+    var L = Object.assign({}, B.loot); Object.keys(L).forEach(function (q) { give(q, L[q], undefined, undefined, true); });
+    banner(B.n + " defeated!", (first ? "First victory! " : "") + rewardText(L), "Co-op boss"); snd("open", "Epic"); checkTrail(); checkGoals(); save();
+  }
+  // ---- the per-frame network step ----
+  function mpTick(dt) {
+    if (!MP.ws) return;
+    for (var id in MP.peers) { var q = MP.peers[id], k = Math.min(1, dt * 14); q.x += (q.tx - q.x) * k; q.y += (q.ty - q.y) * k; q.grace = Math.max(0, (q.grace || 0) - dt); if (q.sayT > 0) q.sayT -= dt; }
+    if (MP.sayT > 0) MP.sayT -= dt;
+    if (!MP.on) return;
+    MP.flushT -= dt;
+    if (MP.flushT <= 0) { MP.flushT = 0.1; if (MP.sets.length) { mpSend({ t: "set", L: MP.sets }); MP.sets = []; } if (MP.walls.length) { mpSend({ t: "wall", L: MP.walls }); MP.walls = []; } }
+    var tp = toolPose(), me = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(1), vy: +p.vy.toFixed(1), on: p.on ? 1 : 0, f: p.face, w: +p.walk.toFixed(1), a: +tp.phi.toFixed(2), hp: Math.round(hp), c: cave ? 1 : 0 };
+    if (MP.role === "host") {
+      if (!MP.npeers) return;
+      MP.tickT -= dt;
+      if (MP.tickT <= 0) {
+        MP.tickT = 0.125;
+        var en = cave ? [] : enemies.filter(function (e) { return !e.gone; }).map(enSnap);
+        var sh = bshots.map(function (s) { return [s.k, +s.x.toFixed(2), +s.y.toFixed(2), +s.vx.toFixed(2), +s.vy.toFixed(2), +(s.wait || 0).toFixed(2), s.r, s.g || 0, s.ground ? 1 : 0]; });
+        mpSend({ t: "tick", h: me, en: en, sh: sh });
+      }
+      MP.envT -= dt; if (MP.envT <= 0) { MP.envT = 2; mpSend({ t: "env", time: +S.time.toFixed(2), wx: S.wx, days: S.days }); }
+      MP.metaT -= dt; if (MP.metaT <= 0) mpMeta();
+    } else {
+      MP.sendT -= dt; var key = JSON.stringify(me);
+      if (MP.sendT <= 0 && (key !== MP.last || MP.sendT < -1.5)) { MP.sendT = 0.125; MP.last = key; me.t = "p"; mpSend(me); }
+    }
+  }
+  function mpTileEdit(x, y, id) { if (MP.on && !MP.applying) MP.sets.push(x, y, id); }
+  function mpWallEdit(x, y, id) { if (MP.on && !MP.applying) MP.walls.push(x, y, id); }
+  function mpStrikePlayers(lo, hi, dmg, f) {   // PvP: your swing also hits other players in front of you
+    if (!MP.on || !MP.pvp || cave) return 0; var n = 0;
+    for (var id in MP.peers) { var q = MP.peers[id]; if (q.cave || q.hp <= 0) continue; if (q.x + PW / 2 > lo && q.x - PW / 2 < hi && Math.abs(q.y - p.y) < 1.6) { n++; mpSend({ t: "pvp", to: q.id, d: dmg, f: f }); chips(q.x, q.y - 0.9, "#ff8a7a", 8, 5); text(q.x, q.y - PH - 0.2, "-" + dmg, "#ff8a7a"); } }
+    return n;
+  }
+  // ---- drawing other players ----
+  function drawRemotes(g, now) {
+    if (!MP.on) return;
+    for (var id in MP.peers) {
+      var q = MP.peers[id]; if (q.cave || !q.seen) continue;
+      var sx = ox + q.x * ts, sy = oy + q.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) continue;
+      var sc = Math.max(1, Math.round(ts * 1.7 / 24));
+      if (typeof DelveAv !== "undefined" && (!q.sp || q.sp.s !== sc)) { try { q.sp = DelveAv.sprite(q.outfit || { animal: q.animal || S.animal }, q.animal || S.animal, sc); } catch (e) { q.sp = null; } }
+      var SP = q.sp; g.save(); g.translate(sx, sy + ts * 0.14);
+      g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
+      g.save(); g.scale(q.face, 1); g.scale(AVS, AVS);
+      if (SP) {
+        var pose = !q.on ? (q.vy < 0 ? "jump" : "fall") : Math.abs(q.vx) > 0.5 ? "walk" + (Math.floor(q.walk / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2);
+        var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), sm0 = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
+        g.drawImage(SP.frame(pose), fx, fy); g.save(); g.translate(fx + sh[0], fy + sh[1]); g.rotate(-q.a); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore(); g.imageSmoothingEnabled = sm0;
+      } else { g.fillStyle = "#3fae5e"; g.fillRect(-ts * 0.35, -ts * 1.3, ts * 0.7, ts * 1.2); }
+      g.restore();
+      var top = -ts * 1.75, nm = q.name || "Player"; g.font = "800 " + Math.max(10, Math.round(ts * 0.36)) + "px Nunito,sans-serif"; g.textAlign = "center";
+      var tw = g.measureText(nm).width + 12; g.fillStyle = "rgba(6,14,11,.78)"; g.fillRect(-tw / 2, top - 13, tw, 16); g.fillStyle = q.role === "host" ? "#ffe9a8" : "#bff4e4"; g.fillText(nm, 0, top);
+      g.fillStyle = "#3a1414"; g.fillRect(-tw / 2, top + 4, tw, 3); g.fillStyle = q.hp > 30 ? "#4ee6b4" : "#ff6a5a"; g.fillRect(-tw / 2, top + 4, tw * clamp(q.hp / MAXHP, 0, 1), 3);
+      if (q.sayT > 0 && q.say) mpBubble(g, q.say, top - 20, q.sayT);
+      g.restore();
+    }
+    if (MP.sayT > 0 && MP.say && !cave) { g.save(); g.translate(ox + p.x * ts, oy + p.y * ts + ts * 0.14); mpBubble(g, MP.say, -ts * 1.75 - 6, MP.sayT); g.restore(); }
+  }
+  function mpBubble(g, txt, y, life) {
+    g.font = "700 12px Nunito,sans-serif"; g.textAlign = "center"; var w = Math.min(220, g.measureText(txt).width + 16);
+    g.globalAlpha = Math.min(1, life * 2); g.fillStyle = "rgba(246,238,219,.95)"; g.strokeStyle = "#0b1a14"; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(-w / 2 + 8, y - 22); g.lineTo(w / 2 - 8, y - 22); g.quadraticCurveTo(w / 2, y - 22, w / 2, y - 14); g.lineTo(w / 2, y - 8); g.quadraticCurveTo(w / 2, y, w / 2 - 8, y); g.lineTo(5, y); g.lineTo(0, y + 6); g.lineTo(-5, y); g.lineTo(-w / 2 + 8, y); g.quadraticCurveTo(-w / 2, y, -w / 2, y - 8); g.lineTo(-w / 2, y - 14); g.quadraticCurveTo(-w / 2, y - 22, -w / 2 + 8, y - 22); g.fill(); g.stroke();
+    g.fillStyle = "#12220f"; g.fillText(txt.length > 34 ? txt.slice(0, 33) + "…" : txt, 0, y - 7); g.globalAlpha = 1;
+  }
+  // ---- chat ----
+  function addChat(who, txt) { MP.chat.push({ who: who, txt: txt, t: performance.now() }); if (MP.chat.length > 30) MP.chat.shift(); drawChat(); }
+  function drawChat() {
+    var el = $("sbxChatLog"); if (!el) return; var now = performance.now(), open = !$("sbxChat").hidden;
+    var lines = MP.chat.filter(function (c) { return open || now - c.t < 9000; }).slice(-6);
+    el.innerHTML = lines.map(function (c) { return "<div>" + (c.who ? "<b>" + esc(c.who) + ":</b> " : "<i>") + esc(c.txt) + (c.who ? "" : "</i>") + "</div>"; }).join(""); el.hidden = !MP.on || !lines.length;
+  }
+  function openChat() { if (!MP.on) return; var c = $("sbxChat"); c.hidden = false; var i = $("sbxChatIn"); i.value = ""; i.focus(); keys.l = keys.r = keys.j = 0; drawChat(); }
+  function sendChat() {
+    var i = $("sbxChatIn"), t = String(i.value || "").trim().slice(0, 80); $("sbxChat").hidden = true; i.blur();
+    if (t && MP.on) { mpSend({ t: "chat", m: t }); MP.say = t; MP.sayT = 5; addChat(MP.myName || "You", t); } drawChat();
+  }
+  // ---- the Play Together window ----
+  function openMPV() { if (panelOpen) closePanel(); if (menuOpen) closeWorlds(); MP.err = MP.on ? "" : MP.err; $("sbxMPV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null; renderMP(); if (!MP.on) mpRefreshList(); }
+  function closeMPV() { var el = $("sbxMPV"); if (!el || el.hidden) return; el.hidden = true; if (!panelOpen) stageEl.classList.remove("panel"); }
+  function mpRefreshList() { MP.list = null; renderMP(); cloudCall("GET", "/api/mp/list").then(function (r) { MP.list = r.s === 200 && r.j && r.j.rooms ? r.j.rooms : (r.s === 503 ? "off" : []); renderMP(); }); }
+  function renderMP() {
+    var box = $("sbxMPBox"); if (!box || $("sbxMPV").hidden) { drawMPChip(); return; }
+    var h = '<div class="sbx-phead"><h2>Play together</h2><button type="button" class="sbx-x" data-mp="close" aria-label="Close">&times;</button></div><div class="sbx-body mp-body">';
+    if (MP.on) {
+      var pl = [{ id: MP.id, name: (MP.myName || "You") + " (you)", role: MP.role }].concat(Object.keys(MP.peers).map(function (k) { return MP.peers[k]; }));
+      h += '<div class="mp-code"><small>' + (MP.role === "host" ? "Your world is open" : "Playing in " + esc(MP.hostName || "a friend") + "'s world") + "</small><b>" + esc(MP.code) + '</b><button type="button" class="btn ghost" data-mp="copy">Copy code</button></div>';
+      h += "<h3>Players " + pl.length + " / 4</h3><div class=\"mp-pl\">" + pl.map(function (q) { return "<div><span class=\"dot" + (q.role === "host" ? " host" : "") + "\"></span><b>" + esc(q.name) + "</b>" + (q.role === "host" ? "<em>Host</em>" : "") + (MP.role === "host" && q.id !== MP.id ? '<button type="button" class="btn ghost" data-mp-kick="' + q.id + '">Kick</button>' : "") + "</div>"; }).join("") + "</div>";
+      if (MP.role === "host") h += '<div class="sbx-row"><button type="button" class="btn' + (MP.pub ? "" : " ghost") + '" data-mp="pub">Public: ' + (MP.pub ? "On" : "Off") + '</button><button type="button" class="btn' + (MP.pvp ? "" : " ghost") + '" data-mp="pvp">PvP: ' + (MP.pvp ? "On" : "Off") + "</button></div>";
+      else h += '<p class="sbx-note">PvP is ' + (MP.pvp ? "<b>on</b>: other players can hit you." : "off.") + " Creatures, bosses, crops and the weather are run by the host. Your backpack, gear and quests are saved to your own world as you play.</p>";
+      h += '<p class="sbx-note">Press <b>Enter</b> (or the chat button) to talk.</p><div class="sbx-row"><button type="button" class="btn ghost" data-mp="chat">Chat</button><button type="button" class="btn ghost warn" data-mp="leave">' + (MP.role === "host" ? "Close to visitors" : "Leave world") + "</button></div>";
+    } else if (MP.ws || MP.status) {
+      h += '<p class="mp-wait">' + esc(MP.status || "Connecting…") + '</p><div class="sbx-row"><button type="button" class="btn ghost" data-mp="leave">Cancel</button></div>';
+    } else {
+      if (MP.err) h += '<p class="mp-err">' + esc(MP.err) + "</p>";
+      h += "<h3>Host this world</h3>";
+      if (WUSER === "guest") h += '<p class="sbx-note">Sign in (top right) to open your world to friends. You can still join other worlds below.</p>';
+      else h += '<p class="sbx-note">Up to 3 friends can join <b>' + esc(curEntry() ? curEntry().name : "this world") + '</b> with a room code. You run the world: creatures, bosses, crops and weather.</p><div class="mp-opts"><label><input type="checkbox" id="mpPub"> List it publicly</label><label><input type="checkbox" id="mpPvp"> Allow PvP</label></div><div class="sbx-row"><button type="button" class="btn" data-mp="host">Open my world</button></div>';
+      h += '<h3>Join a friend</h3><div class="mp-join"><input id="mpCode" type="text" maxlength="6" placeholder="Room code" autocomplete="off" autocapitalize="characters" aria-label="Room code">' + (WUSER === "guest" ? '<input id="mpName" type="text" maxlength="16" placeholder="Your name" value="' + esc(mpName) + '" aria-label="Your name">' : "") + '<button type="button" class="btn" data-mp="join">Join</button></div>';
+      h += '<h3>Public worlds <button type="button" class="btn ghost mp-ref" data-mp="refresh">Refresh</button></h3>';
+      if (MP.list === null) h += '<p class="sbx-note">Looking…</p>';
+      else if (MP.list === "off") h += '<p class="sbx-note">Multiplayer isn\'t set up on this server yet.</p>';
+      else if (!MP.list.length) h += '<p class="sbx-note">No public worlds open right now. Open yours!</p>';
+      else h += '<div class="mp-list">' + MP.list.map(function (r) { return '<div class="sbx-w"><div><b>' + esc(r.name) + "</b><small>" + esc(r.host_name) + " · " + r.players + " / 4" + (r.pvp ? " · PvP" : "") + '</small></div><div class="acts"><button type="button" class="btn"' + (r.players >= 4 ? " disabled" : "") + ' data-mp-join="' + r.code + '">' + (r.players >= 4 ? "Full" : "Join") + "</button></div></div>"; }).join("") + "</div>";
+    }
+    box.innerHTML = h + "</div>"; drawMPChip();
+  }
+  function drawMPChip() {
+    var c = $("sbxMPChip"); if (!c) return; c.hidden = !MP.on;
+    if (MP.on) c.innerHTML = '<span class="dot"></span>' + esc(MP.code) + " · " + (MP.npeers + 1) + '/4<button type="button" data-mp="chat" aria-label="Chat">Chat</button>';
+  }
+  function mpClick(e) {
+    var b = e.target.closest("[data-mp],[data-mp-kick],[data-mp-join]"); if (!b) { if (e.target === $("sbxMPV")) closeMPV(); return; }
+    var a = b.getAttribute("data-mp"), kid = b.getAttribute("data-mp-kick"), jc = b.getAttribute("data-mp-join");
+    if (kid) { mpSend({ t: "kick", id: +kid }); return; }
+    if (jc) { mpJoin(jc, $("mpName") ? $("mpName").value : mpName); return; }
+    if (a === "close") return closeMPV();
+    if (a === "host") return mpHost($("mpPub") && $("mpPub").checked, $("mpPvp") && $("mpPvp").checked);
+    if (a === "join") return mpJoin($("mpCode").value, $("mpName") ? $("mpName").value : mpName);
+    if (a === "refresh") return mpRefreshList();
+    if (a === "leave") { if (MP.ws && !MP.on) { var w = MP.ws; MP.ws = null; MP.status = ""; try { w.close(); } catch (er) {} renderMP(); return; } return mpLeave(); }
+    if (a === "copy") { try { navigator.clipboard.writeText(MP.code); toast("Room code copied.", "#4ee6b4"); } catch (er) {} return; }
+    if (a === "pub") { MP.pub = !MP.pub; mpMeta(); return renderMP(); }
+    if (a === "pvp") { MP.pvp = !MP.pvp; mpMeta(); mpSend({ t: "cfg", pvp: MP.pvp }); toast("PvP " + (MP.pvp ? "on" : "off") + ".", MP.pvp ? "#ff8a7a" : "#4ee6b4"); return renderMP(); }
+    if (a === "chat") { closeMPV(); return openChat(); }
+  }
   // ---------- CHESTS ----------
   // S.chests["x,y"] = { itemId: count }. A chest holds up to CHEST_KINDS kinds of item. Tap it or press F nearby to open the Chest tab. A chest must be empty before you can pick it up.
   var CHEST_KINDS = 30, chestKey = "";
   // Cave Chests (content pack) work like Wooden Chests, but are found in caves and come filled: the loot is rolled the first time one is opened (or broken unopened).
   function isChest(id) { return id === T.CHEST || TILES[id].kind === "lootchest"; }
   function lootTier(y) { var d = y - SURF; return d < 35 ? 0 : d < 80 ? 1 : 2; }
-  function rollLoot(kind, b, tier) { return typeof SbxExtra !== "undefined" && SbxExtra.loot ? SbxExtra.loot(kind, b, tier) : [["torch", 4]]; }
+  function rollLoot(kind, b, tier) {
+    var one = function () { return typeof SbxExtra !== "undefined" && SbxExtra.loot ? SbxExtra.loot(kind, b, tier) : [["torch", 4]]; }, L = one();
+    if (S.charms && hasCharm("lucky") && Math.random() < 0.45) L = L.concat(one().slice(0, 1));   // the Lucky Clover: sometimes one extra find
+    return L;
+  }
   function treasureFound(n) { S.st.cchests++; popup("Treasure found", "Cave Chest \u2022 " + n + " kinds of loot", "#f2c14e", "\u2726"); snd("open", "Epic"); checkGoals(); }
   function chestCount(key) { var c = S.chests[key], n = 0; if (c) for (var k in c) n += c[k]; return n; }
   function chestKinds(c) { return Object.keys(c).length; }
@@ -2169,6 +3777,7 @@
     return best;
   }
   function openChest(x, y) {
+    if (MP.on && MP.role === "guest") { nag("Only the host can open chests in this world."); return; }
     var cid = get(x, y); if (!isChest(cid)) return false; var key = x + "," + y;
     if (!S.chests[key]) {
       S.chests[key] = {};
@@ -2252,7 +3861,7 @@
       var fe = S.farm[cr.x + "," + cr.y]; if (fe && fe.w > WET_S - 3) return;   // already soaked
       cool -= dt; if (cool > 0) return; cool = 0.4;
       S.water--; hbDirty = true; S.st.watered++; thud(520, 0.02); chips(cr.x + 0.5, cr.y + 0.6, "#8fe0ff", 6, 3);
-      if (fe) { fe.w = WET_S; setSoil(cr.x, cr.y + 1, true); }
+      if (fe) { fe.w = WET_S; setSoil(cr.x, cr.y + 1, true); if (MP.on && MP.role === "guest") mpSend({ t: "water", k: cr.x + "," + cr.y }); }
       checkGoals(); return;
     }
     var pl = plantNear(tx, ty);
@@ -2290,6 +3899,9 @@
       thud(300 + S.wpn * 70, 0.04); for (var sk = 0; sk < 3; sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.35), y: p.y - 1.1 - sk * 0.12, vx: p.face * 3, vy: -0.4, life: 0.22, max: 0.3, c: WEAPONS[S.wpn].c, s: 3 });
       return;
     }
+    if (aim.down && aim.tx >= 0 && (animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts))) { mine = null; return; }   // tapping an animal (handled on release)
+    if (sel === "rod") { useRod(dt); return; }
+    if (ITEMS[sel] && ITEMS[sel].summon) { useSummon(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }   // holding food: tap to eat
     if (!aim.down || aim.tx < 0) { mine = null; doorHoldKey = ""; return; }
     var tx = aim.tx, ty = aim.ty, dx = tx + 0.5 - p.x, dy = ty + 0.5 - (p.y - PH / 2);
@@ -2312,7 +3924,7 @@
         if ((td.kind === "chest" || td.kind === "lootchest") && chestCount(tx + "," + ty) > 0) { nag("Empty the chest before picking it up."); mine = null; return; }
       } else doorHoldKey = "";
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
-      mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) / td.hard; mine.tick -= dt;
+      mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; thud(150 + Math.random() * 50, 0.035); chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 1, 3); }
       if (mine.p >= 1) { breakTile(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
     } else {
@@ -2375,6 +3987,9 @@
     if (r.arm && S.arm >= r.arm) return;
     if (r.sh && S.shovel) return;
     if (r.can && S.can) return;
+    if (r.rod && S.rod >= r.rod) return;
+    if (r.charm && S.charms.own[r.charm]) return;
+    if (r.rod && S.rod < r.rod - 1) { toast("Make the Reed Fishing Rod first.", "#f2c14e"); return; }
     if (r.bag && S.bag >= r.bag) return;
     if (r.bag && S.bag < r.bag - 1) { toast("Make the " + BAGS[r.bag - 1].n + " first.", "#f2c14e"); return; }
     if (r.tier && S.tier < r.tier - 1) { toast("Craft the " + PICKS[r.tier - 1].n + " first.", "#f2c14e"); return; }
@@ -2394,6 +4009,8 @@
     reslot();
     if (r.tier) { S.tier = r.tier; S.dur.pick = DUR.pick[r.tier]; ICO = {}; toast(r.n + " crafted. Dig faster!", PICKS[r.tier].c); snd("open", "Epic"); chips(p.x, p.y - 1, PICKS[r.tier].c, 30, 9); }
     else if (r.sh) { S.shovel = 1; S.dur.shovel = DUR.shovel; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar to dig soft ground!", SHOVEL.c); snd("open", "Epic"); chips(p.x, p.y - 1, SHOVEL.c, 24, 8); }
+    else if (r.charm) { S.charms.own[r.charm] = 1; var wore = S.charms.on.length < charmSlots(); if (wore) S.charms.on.push(r.charm); toast(r.n + " crafted! " + CHARMS[r.charm].d + (wore ? " (Now wearing it.)" : " Wear it from the top of your backpack."), CHARMS[r.charm].c); snd("open", "Epic"); chips(p.x, p.y - 1, CHARMS[r.charm].c, 24, 8); checkGoals(); }
+    else if (r.rod) { S.rod = r.rod; ICO = {}; toast(r.n + " crafted! Pick it in the hotbar and tap " + (r.rod >= 2 ? "water or lava" : "water") + " to cast.", "#7fd6ff"); snd("open", "Epic"); chips(p.x, p.y - 1, "#7fd6ff", 24, 8); }
     else if (r.can) { S.can = 1; S.water = CAN.max; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar, then water flowers!", CAN.c); snd("open", "Epic"); chips(p.x, p.y - 1, CAN.c, 24, 8); checkGoals(); }
     else if (r.bag) {   // a backpack: more bag slots at the end of the list, then anything waiting in Overflow moves in
       S.bag = r.bag; while (S.slots.length < invSize(S.bag)) S.slots.push(null);
@@ -2403,6 +4020,7 @@
     else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. You take " + Math.round(ARMORS[r.arm].red * 100) + "% less damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } if (r.stn === "cook") { S.st.cooked++; checkTrail(); checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
+    S.mk[r.id] = (S.mk[r.id] || 0) + 1; checkGoals();
     hbDirty = true; renderPanel(); save();
   }
   function upgradeBench() {   // spend loot from the last biome to raise the Workbench one level (needs a Workbench close by)
@@ -2415,18 +4033,41 @@
     hbDirty = true; checkGoals(); renderPanel(); save();
   }
   function rewardText(rw) { return Object.keys(rw).map(function (k) { return "+" + rw[k] + " " + ITEMS[k].n; }).join(", "); }
-  function checkTrail() {
-    var st;
-    while ((st = TRAIL[S.trail]) && st.v() >= st.need) {
-      S.trail++; trailKey = "";
-      if (st.rw) for (var k in st.rw) give(k, st.rw[k], undefined, undefined, true);
-      banner(st.n, st.rw ? "Reward: " + rewardText(st.rw) : "Nice work!", S.trail >= TRAIL.length ? "Trail complete" : "Trail step " + S.trail + " of " + TRAIL.length);
-      if (S.trail >= TRAIL.length) setTimeout(function () { toast("First Day Trail done! Keep delving.", "#f2c14e"); }, 3600);
+  function giveRw(rw) { if (rw) for (var k in rw) if (ITEMS[k]) give(k, rw[k], undefined, undefined, true); }
+  function checkTrail(silent) {   // the main quest line: finish quests in order; finishing a chapter shows the next chapter's story
+    var q, guard = 0;
+    while ((q = MAIN[S.qi]) && q.v() >= q.need && guard++ < 99) {
+      var ch0 = q.ch, list = chQuests(ch0), pos = list.indexOf(q) + 1; S.qi++; trailKey = "";
+      if (silent) continue;
+      giveRw(q.rw);
+      banner(q.n, q.rw ? "Reward: " + rewardText(q.rw) : "Quest complete!", "Chapter " + (ch0 + 1) + " \u00b7 quest " + pos + " of " + list.length);
+      var ch1 = curCh();
+      if (ch1 !== ch0) {
+        var C = CHAPTERS[ch0]; giveRw(C.rw);
+        setTimeout(function () { popup("Chapter complete", C.n + (C.rw ? " \u2022 " + rewardText(C.rw) : ""), C.c, "\u2605"); snd("open", "Epic"); }, 900);
+        if (S.qch < ch1) { S.qch = ch1; storyQ.length = 0; storyQ.push(ch1); setTimeout(showStory, 2200); }   // several chapters at once: only the newest story is told
+      }
       save();
     }
   }
+  // ---- story cards: Old Croaker tells each chapter's story when it begins (and you can reread it from the Quests tab) ----
+  var storyQ = [], storyOpen = -1;
+  function showStory(c) {
+    if (c === undefined) { if (!storyQ.length) return; if (panelOpen || trans || sleepT > 0) { setTimeout(showStory, 1200); return; } c = storyQ.shift(); }
+    var C = CHAPTERS[c], last = c === CHAPTERS.length - 1, el = $("sbxStory"); if (!C || !el) return;
+    if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    storyOpen = c; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
+    $("sbxStoryBox").style.setProperty("--qc", C.c);
+    var nq = chQuests(c), first = nq[0];
+    $("sbxStoryBox").innerHTML = '<div class="st-croak" aria-hidden="true">' + CROAK_SVG + '</div><small>' + (last ? "The end... for now" : "Chapter " + (c + 1) + " of " + (CHAPTERS.length - 1)) + "</small><h2>" + esc(C.n) + "</h2><p>" + esc(C.s) + "</p>"
+      + (first ? '<div class="st-next"><span>First quest</span><b>' + esc(first.n) + "</b><em>" + esc(first.d) + "</em></div>" : "")
+      + '<button type="button" class="btn" data-story-close>' + (last ? "Keep exploring" : c === 0 ? "Let's begin" : "Onward!") + "</button>";
+    if (gestured) snd("rise"); var bt = el.querySelector("[data-story-close]"); if (bt) bt.focus({ preventScroll: true });
+  }
+  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); }
+  var CROAK_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="42" rx="24" ry="17" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><ellipse cx="32" cy="48" rx="15" ry="7" fill="#f1efb4"/><circle cx="19" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="45" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="19" cy="24" r="5" fill="#ffd23f"/><circle cx="45" cy="24" r="5" fill="#ffd23f"/><path d="M17 23h4M43 23h4" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 40q12 8 24 0" fill="none" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M12 16q7-9 14-3M38 13q7-6 14 3" fill="none" stroke="#e8e4d8" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="33" r="1.4" fill="#1c5e34"/><circle cx="37" cy="33" r="1.4" fill="#1c5e34"/></svg>';
   function findGuide() {
-    var st = TRAIL[S.trail]; guide = null; if (!st || !st.tg) return;
+    var st = MAIN[S.qi]; guide = null; if (!st || !st.tg) return;
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = 1e9, x, y;
     for (x = Math.max(0, cx - 28); x <= Math.min(W - 1, cx + 28); x++) {
       for (y = Math.max(0, cy - 16); y <= Math.min(H - 1, cy + 16); y++) {
@@ -2448,16 +4089,25 @@
       g.beginPath(); g.moveTo(14, 0); g.lineTo(-8, -10); g.lineTo(-4, 0); g.lineTo(-8, 10); g.closePath(); g.stroke(); g.fill(); g.restore();
     }
   }
-  function drawTrail() {
-    var el = $("sbxTrail"), st = TRAIL[S.trail];
-    if (!st) { if (!el.hidden) el.hidden = true; return; }
-    var v = Math.min(st.need, st.v()), key = S.trail + ":" + v; if (key === trailKey) return; trailKey = key;
-    el.hidden = false;
-    el.title = "Trail " + (S.trail + 1) + " of " + TRAIL.length; el.innerHTML = "<b>" + esc(st.n) + "</b><em>" + v + "/" + st.need + '</em><span class="bar"><i style="width:' + Math.round(v / st.need * 100) + '%"></i></span>';
+  function bestSide() {   // the open side quest closest to done (shown in the tracker once the story is over)
+    var best = null, br = -1; SIDE.forEach(function (q) { if (S.ms[q.id] || !sideOpen(q)) return; var r = Math.min(1, q.v() / q.need); if (r > br) { br = r; best = q; } }); return best;
+  }
+  function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
+    var el = $("sbxTrail"), q = MAIN[S.qi], side = !q; if (side) q = bestSide();
+    if (!q) { if (!el.hidden) el.hidden = true; return; }
+    var v = Math.min(q.need, Math.floor(q.v())), key = q.id + ":" + v; if (key === trailKey) return; trailKey = key;
+    el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c);
+    el.title = side ? "Side quest" : "Chapter " + (q.ch + 1) + ": " + CHAPTERS[q.ch].n;
+    el.innerHTML = "<small>" + (side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>';
   }
   function checkGoals() {
+    if (!cave && world) { var bb = world.bio[clamp(Math.floor(p.x), 0, W - 1)]; if (!S.vis["b" + bb]) { S.vis["b" + bb] = 1; trailKey = ""; } }
     checkTrail();
-    GOALS.forEach(function (g) { if (!S.ms[g.id] && g.f()) { S.ms[g.id] = 1; banner(g.n, g.d); } });
+    var got = [];
+    SIDE.forEach(function (q) { if (!S.ms[q.id] && sideOpen(q) && q.v() >= q.need) { S.ms[q.id] = 1; giveRw(q.rw); got.push(q); } });
+    if (got.length > 2) popup("Side quests complete", got.length + " quests \u2022 rewards added to your bag", "#c78bff", "\u2713");
+    else got.forEach(function (q) { banner(q.n, q.rw ? "Reward: " + rewardText(q.rw) : q.d, "Side quest complete"); });
+    if (got.length) trailKey = "";
   }
   // ---------- HEALTH ----------
   var armKey = "";
@@ -2478,6 +4128,7 @@
     if (was > v && !reduce) { el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit"); }   // heart thumps when you take damage
   }
   function hurt(n, why, cont) {
+    if (MP.proxy) return mpProxyHurt(n, why);   // a creature on the host's screen hit a visiting player
     if (n <= 0) return; if (!cont && hurtGrace > 0) return;
     if (S.arm > 0 && durOf("arm") > 0) {   // armor blocks a share of the hit (half as much against lava) and wears down on every real hit
       var blocked = n * ARMORS[S.arm].red * (why === "lava" ? 0.5 : 1); n -= blocked;
@@ -2493,7 +4144,7 @@
   }
   function respawn(msg) {
     if (cave) leaveCaveNow();
-    enemies.length = 0; spawnT = 6; swingQ = 0; batT = 8;
+    bossGone(); enemies.length = 0; spawnT = 6; swingQ = 0; batT = 8;
     var sp = world.spawn, bd = S.bed && get(S.bed.x, S.bed.y) === T.BED ? S.bed : null; if (S.bed && !bd) S.bed = null;   // a broken bed is forgotten
     if (bd) { p.x = bd.x + 0.5; p.y = bd.y + 1; msg = msg.replace("at camp", "at your bed"); } else { p.x = sp.x; p.y = sp.y; }
     p.vx = p.vy = 0;
@@ -2517,11 +4168,13 @@
   }
   function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y) || (smask && smask[y * W + x] && TILES[tiles[y * W + x]].solid)) return true; return false; }   // a roof within 5 tiles overhead
   function sleepBlock() {   // why you cannot sleep right now ("" = you can). A roof overhead means nothing outside can reach you.
+    if (activeBoss()) return "Not with a boss on the loose!";
     if (sheltered()) return "";
     for (var i = 0; i < enemies.length; i++) { var e = enemies[i]; if (!e.def && Math.abs(e.x - p.x) < 14 && Math.abs(e.y - p.y) < 10) return e.k === "bat" ? "Bats are circling! Drive them off, or get under a roof." : "Something is too close to sleep!"; }
     return "";
   }
   function trySleep() {
+    if (MP.on && MP.role === "guest") { if (bedNear()) nag("Only the host can sleep through the night in their world."); return; }
     if (sleepT > 0 || panelOpen || hp <= 0) return;
     if (!bedNear()) { nag("Stand next to a Swamp Bed to sleep."); return; }
     if (!isNight(S.time)) { nag("You can only sleep at night."); return; }
@@ -2564,13 +4217,15 @@
   function step(h, dir, jump) {
     var feetWet = TILES[get(Math.floor(p.x), Math.floor(p.y - 0.2))].kind === "water";
     p.wet = TILES[get(Math.floor(p.x), Math.floor(p.y - PH * 0.5))].kind === "water";
-    var sp = p.wet ? 3.6 : 6.3, acc = p.on ? 70 : 34;
+    var sp = (p.wet ? 3.6 : 6.3) * (hasCharm("bramble") ? 1.15 : 1), acc = p.on ? 70 : 34;
     p.vx = approach(p.vx, dir * sp, (dir ? acc : (p.on ? 60 : 8)) * h);
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
     if (p.on || feetWet) p.coy = 0.1; else p.coy -= h;
     var lad = onLadder();
     if (lad) { p.vy = jump ? -4.8 : (keys.d || tk.d) ? 5.2 : (coarse ? 2.5 : 0); p.coy = 0; p.vx *= 0.9; }
-    else if (jump) { if (p.wet) p.vy = Math.max(p.vy - 52 * h, -5.2); else if (p.coy > 0) { p.vy = feetWet ? -9 : -14.2; p.coy = 0; p.on = false; } }
+    else if (jump) { if (p.wet) p.vy = Math.max(p.vy - 52 * h, -5.2); else if (p.coy > 0) { p.vy = feetWet ? -9 : -14.2; p.coy = 0; p.on = false; } else if (p.air2 && !p.jprev && hasCharm("alpha")) { p.air2 = false; p.vy = -12.6; chips(p.x, p.y - 0.1, "#cfeaff", 8, 4); thud(640, 0.03); } }   // the Alpha Charm's second jump
+    if (p.on || lad || p.wet) p.air2 = true;
+    p.jprev = !!jump;   // per physics step, so one press is one jump
     if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
     // horizontal, with automatic one-block step-up
     var nx = clamp(p.x + p.vx * h, 1, W - 1);
@@ -2591,7 +4246,7 @@
       tickSleep(dt); for (var zi = texts.length - 1; zi >= 0; zi--) { texts[zi].life -= dt; texts[zi].y -= dt * 0.9; if (texts[zi].life <= 0) texts.splice(zi, 1); }
       if (sleepT > 0 && Math.random() < dt * 3) text(p.x + 0.4, p.y - PH - 0.1, "z", "#cfd6ff"); return;
     }
-    advTime(dt);
+    advTime(dt); tickWeather(dt);
     if (p.land) p.land = Math.max(0, p.land - dt * 2.2);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
@@ -2600,7 +4255,7 @@
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (var i = 0; i < sub; i++) step(h, dir, jump);
     p.walk += Math.abs(p.vx) * dt; if (p.wet) S.st.swim += dt;
-    if (touches("lava")) hurt(LAVA_DPS * dt, "lava", true);
+    if (touches("lava")) hurt(LAVA_DPS * dt * (hasCharm("magma") ? 0.3 : 1), "lava", true);
     hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
     if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt);
     drawHp();
@@ -2612,7 +4267,7 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    useTool(dt); updateGrow(dt); updateEnemies(dt); tickFarm(dt); tickHunger(dt);
+    useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); if (fishing && sel !== "rod") fishing = null;
     var working = sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
@@ -3049,8 +4704,8 @@
       for (i = 0; i < nseg && i < CRACKS.length; i++) { g.moveTo(mx + ts * 0.5, my + ts * 0.5); g.lineTo(mx + ts * CRACKS[i][0], my + ts * CRACKS[i][1]); }
       g.stroke(); g.fillStyle = "rgba(255,255,255," + (0.06 + mine.p * 0.16) + ")"; g.fillRect(mx, my, ts, ts);
     }
-    drawEnemies(g, now);
-    drawPlayer(g, now);
+    drawNpc(g, now); drawAnimals(g, now); drawEnemies(g, now); drawShots(g, now); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    drawRemotes(g, now); drawPlayer(g, now); drawFishing(g, now);
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // --- darkness: small light grid stretched with smoothing, tinted deeper blue-violet the further down you go ---
     var M = 14, gx0 = X0 - 1 - M, gy0 = Y0 - 1 - M, gw = X1 - X0 + 3 + M * 2, gh = Y1 - Y0 + 3 + M * 2;
@@ -3067,6 +4722,7 @@
     if (day > 0.6 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     // dusk/dawn colour grade over the open air
     if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = lowq ? "source-over" : "soft-light"; g.fillStyle = "rgba(255,130,70," + ((lowq ? 0.16 : 0.55) * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
+    drawWeather(g, now, day, above);
     g.imageSmoothingEnabled = false;
     g.globalCompositeOperation = "lighter";
     drawGlows(g, glows);
@@ -3105,6 +4761,7 @@
   // Arm angle (phi: 0 = hanging, ~2.5 = raised overhead) and tool angle for the current swing, so the arm and the tool move as one
   function toolPose() {
     var sway = reduce ? 0 : Math.sin(p.walk * 5), moving = p.on && Math.abs(p.vx) > 0.5 ? 1 : 0;
+    if (sel === "rod") return { ang: -0.25 + (fishing && fishing.ph === "bite" ? -0.35 : 0) + sway * 0.03, phi: 0.95 + sway * 0.08 * moving, has: S.rod >= 1, kind: "can" };   // held out over the water
     if (sel === "can") return { ang: heldAmt * 0.8 + sway * 0.03 * (1 - heldAmt), phi: (S.can >= 1 ? 0.95 + sway * 0.1 * moving : 0.3) + heldAmt * 0.45, has: S.can >= 1, kind: "can" };   // held out in front, tipping forward to pour
     var kind = sel === "pick" || sel === "shovel" ? "pick" : sel === "weapon" ? "weapon" : "item", sw = 0, base = 0.15, k1 = -0.55, k2 = 1.9, amp = 0.06, has = false, ph;
     if (kind === "pick") { has = sel === "shovel" ? S.shovel >= 1 : S.tier >= 1; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.55) * Math.PI * 0.5) * (ph < 0.55 ? 1 : 1 - (ph - 0.55) / 0.45); }
@@ -3132,6 +4789,9 @@
     } else if (sel === "can") {
       if (!S.can) return;
       put(heldCan(), 0.8, 3, 9.5);
+    } else if (sel === "rod") {
+      if (!S.rod) return;
+      put(sprCanvas("rod" + S.rod), 0.95, 3, 13);
     } else if (sel === "weapon") {
       if (S.wpn < 1) return;
       put(heldWeapon(S.wpn), 0.85, 4, 11.5);
@@ -3205,15 +4865,17 @@
   }
   function enterBuilding(s) {
     if (!SC || cave || trans || sleepT > 0 || hp <= 0 || !s) return;
+    if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
     stopInput(); thud(210, 0.08);
     trans = { t: 0, done: false, mid: function () {
       cave = { hole: { x: s.outX, y: s.gy - 1, b: s.b }, bld: s, run: s.id + 1, floors: {}, f: 0, F: null };
-      S.st.bld = (S.st.bld || 0) + 1; enemies.length = 0; stageEl.classList.add("cave"); $("sbxHint").classList.remove("on");
+      S.st.bld = (S.st.bld || 0) + 1; S.vis["k_" + s.kind] = 1; enemies.length = 0; stageEl.classList.add("cave"); $("sbxHint").classList.remove("on");
       setFloor(1, "down"); save();
     } };
   }
   function enterCave(hx, hy) {
     if (!SC || cave || trans || sleepT > 0 || hp <= 0) return;
+    if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
     var hb = world.bio[clamp(hx, 0, W - 1)];
     stopInput(); thud(150, 0.08);
     trans = { t: 0, done: false, mid: function () {
@@ -3271,6 +4933,7 @@
   function caveTool(dt) {
     var F = cave.F; if (sel === "weapon") { mine = null; caveSwing(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
+    if (ITEMS[sel] && ITEMS[sel].summon) { mine = null; if (aim.down) nag("Bosses only answer the call on the surface world."); return; }
     if (!aim.down || aim.tx < 0) { mine = null; return; }
     var tx = aim.tx, ty = aim.ty, i = ty * F.w + tx, dx = tx + 0.5 - cp.x, dy = ty + 0.5 - (cp.y - 0.4);
     if (dx * dx + dy * dy > CAVE_REACH * CAVE_REACH) { mine = null; return; }
@@ -3284,7 +4947,7 @@
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
-      mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) / td.hard; mine.tick -= dt;
+      mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; thud(150 + Math.random() * 50, 0.035); chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 1, 3); }
       if (mine.p >= 1) { breakRock(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
       return;
@@ -3296,14 +4959,14 @@
       if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y)) return;
       cool = 0.2; F.torch[i] = 1; S.inv.torch--; S.st.torches++; S.st.placed++; chips(tx + 0.5, ty + 0.5, "#ffb13b", 4, 3); thud(420, 0.05);
       if (S.inv.torch <= 0) { delete S.inv.torch; if (sel === "torch") sel = "pick"; } hbDirty = true; if (panelOpen) renderPanel();
-    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can") { cool = 0.4; nag("Only torches can be placed in caves."); }
+    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can" && sel !== "rod") { cool = 0.4; nag("Only torches can be placed in caves."); }
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
     advTime(dt);
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
-    cp.vx = approach(cp.vx, dx / len * CAVE_SPEED * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * CAVE_SPEED * mag, 70 * dt);
+    var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -3319,7 +4982,7 @@
     cam.x = F.w <= halfW * 2 ? F.w / 2 : clamp(cam.x, halfW, F.w - halfW); cam.y = F.h <= halfH * 2 ? F.h / 2 : clamp(cam.y, halfH, F.h - halfH);
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
-    ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt);
+    ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt); tickWeather(dt); tickBounties(dt);
     caveTool(dt); if (!F.bld && !trans) updateCaveMobs(dt);
     var working = !!mine; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
@@ -3522,21 +5185,21 @@
     if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bioAt(), bi = BIOMES[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
-    hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 surface"));
+    hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 " + (wxLabel() || "surface")));
     if (lastBio !== b) { bcard(bi, b); lastBio = b; }
     drawTrail();
     if (hbDirty) drawBar();
   }
   function drawBar() {
     hbDirty = false; var items = barEntries(), html = "";
-    if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can") { if (!(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } else if (!(S.slots[selSlot] && S.slots[selSlot].k === sel)) selSlot = hotIndex(sel); }
+    if (sel !== "pick" && sel !== "weapon" && sel !== "shovel" && sel !== "can" && sel !== "rod") { if (!(S.inv[sel] > 0)) { sel = "pick"; selSlot = -1; } else if (!(S.slots[selSlot] && S.slots[selSlot].k === sel)) selSlot = hotIndex(sel); }
     items.forEach(function (en, i) {
       var id = en.id, on = en.slot >= 0 ? (id && sel === id && selSlot === en.slot) : sel === id;
-      if (!id) { html += '<button type="button" class="sbx-slot empty" disabled aria-label="Empty hotbar slot"><i>' + (i + 1) + "</i></button>"; return; }
-      var cnt = id === "pick" ? (S.tier ? "Lv" + S.tier : "Paws") : id === "weapon" ? "Lv" + S.wpn : id === "shovel" ? "Soft" : id === "can" ? S.water + "/" + CAN.max : S.slots[en.slot].n;
+      if (!id) { html += '<button type="button" class="sbx-slot empty" disabled data-slot="' + en.slot + '" aria-label="Empty hotbar slot"><i>' + (i + 1) + "</i></button>"; return; }
+      var cnt = id === "pick" ? (S.tier ? "Lv" + S.tier : "Paws") : id === "weapon" ? "Lv" + S.wpn : id === "shovel" ? "Soft" : id === "can" ? S.water + "/" + CAN.max : id === "rod" ? (S.rod >= 2 ? "Lava" : "Rod") : S.slots[en.slot].n;
       var dk = id === "pick" ? (S.tier ? "pick" : "") : id === "weapon" ? "wpn" : id === "shovel" ? "shovel" : "", dpc = dk ? Math.round(durOf(dk) / durMax(dk) * 100) : -1, brk = dk && toolBroken(dk);
       if (brk) cnt = "Broken";
-      html += '<button type="button" class="sbx-slot' + (on ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" data-slot="' + en.slot + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "can" ? CAN.n + ", " + S.water + " of " + CAN.max + " water" : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : ITEMS[id].n + ", " + S.slots[en.slot].n) + '" aria-pressed="' + on + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
+      html += '<button type="button" class="sbx-slot' + (on ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" data-slot="' + en.slot + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "can" ? CAN.n + ", " + S.water + " of " + CAN.max + " water" : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : id === "rod" ? (S.rod >= 2 ? "Ember Rod" : "Reed Fishing Rod") : ITEMS[id].n + ", " + S.slots[en.slot].n) + '" aria-pressed="' + on + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
     });
     $("sbxBar").innerHTML = html;
     var bb = $("sbxPackBtn"); bb.classList.toggle("full", S.slots.every(Boolean));
@@ -3551,14 +5214,16 @@
   [
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4"],
-    ["Tools|Utility", "shovel can"],
+    ["Tools|Utility", "shovel can x_rod1 x_rod2"],
     ["Gear|Armor", "arm1 arm2 arm3 arm4"],
     ["Gear|Backpacks", "bag1 bag2"],
+    ["Gear|Boss Summons", "x_lure x_idol x_horn"],
+    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky"],
     ["Stations|Workbenches", "bench decorbench"],
     ["Stations|Crafting Stations", "x_cookpot x_furnace x_loom x_mason"],
-    ["Food|Farming", "x_farmland"],
-    ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat"],
-    ["Food|Hearty Meals", "x_chili x_stew x_berrypie x_feast"],
+    ["Food|Farming", "x_farmland x_trough"],
+    ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat x_grilledfish x_omelette x_milkshake"],
+    ["Food|Hearty Meals", "x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast"],
     ["Materials|Fibre & Cloth", "x_rope x_cloth x_furcloth x_candle"],
     ["Materials|Dyes", "x_dyered x_dyeblue x_dyegreen"],
     ["Materials|Smelted & Fired", "x_ingot x_claybrick x_mortar"],
@@ -3582,8 +5247,9 @@
     ["Garden|Pots & Planters", "d_pot d_fpot d_planter d_glowpot"],
     ["Garden|Structures", "d_fence d_bale d_well d_fountain"],
     ["Garden|Curios", "x_scarecrow x_gravestone x_totem d_cauldron d_urn"],
-    ["Decor|Wall Art", "d_painting d_banner d_sign d_emberbanner d_frostbanner x_mirror x_worldmap x_wreath x_tap_swamp x_tap_ember x_tap_frost"],
+    ["Decor|Wall Art", "d_painting d_banner d_sign d_emberbanner d_frostbanner x_mirror x_worldmap x_wreath x_tap_swamp x_tap_ember x_tap_frost x_fishtrophy"],
     ["Decor|Trophies & Armory", "d_bugtrophy d_frogtrophy x_battrophy x_antlers x_weaponrack x_armorstand x_shield x_swords x_wolftrophy x_gatortrophy x_waspnest x_slimejar"],
+    ["Decor|Legendary", "x_swampheart"],
     ["Decor|Statues & Showpieces", "d_frogstatue d_guardian d_icesculpt x_snowman x_obelisk d_anvil x_aquarium"]
   ].forEach(function (g) { var ps = g[0].split("|"); (CRAFT_SUBS[ps[0]] = CRAFT_SUBS[ps[0]] || []).push(ps[1]); g[1].split(" ").forEach(function (id) { CRAFT_MAP[id] = g[0]; }); });
   function recRank(r) { var c = 0, k; for (k in r.cost) c += r.cost[k]; return (r.bl || 0) * 100000 + (r.tier || r.wpn || r.arm || r.bag || 0) * 1000 + (r.stn ? 50 : 0) + (r.bench ? 20 : 0) + c; }
@@ -3598,8 +5264,8 @@
   function recStatus(r) {   // owned / locked / affordable / ready-to-craft-right-now for one recipe (gear recipes and Decor Workbench recipes)
     var afford = Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; });
     if (r.deco) { var dl = !!(r.bl && S.bl < r.bl), nd = !decorNear(); return { owned: false, lock: dl, lock0: false, needB: nd, can: afford && !dl, ready: afford && !dl && !nd }; }
-    var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can)),
-      lock0 = !!((r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need)))),
+    var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can) || (r.rod && S.rod >= r.rod) || (r.charm && S.charms.own[r.charm])),
+      lock0 = !!((r.rod && S.rod < r.rod - 1) || (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need)))),
       lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()), can = !owned && !lock && afford;
     return { owned: owned, lock: lock, lock0: lock0, needB: needB, can: can, ready: can && !needB && !(r.stn && !nearStn(r.stn)) };
   }
@@ -3609,8 +5275,8 @@
       im = icon(Object.keys(r.out)[0]);
       note = st.lock ? "Needs the " + BENCH_LV[r.bl].n + " (tap your Bog Workbench to upgrade it)." : r.d;
     } else {
-      im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0]);
-      note = st.lock && !st.lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : st.lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (st.needB && !st.owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
+      im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(r.sh ? "shovel" : r.can ? "can" : r.charm ? "charm_" + r.charm : r.rod ? "rod" + r.rod : r.bag ? "bag" + r.bag : Object.keys(r.out)[0]);
+      note = st.lock && !st.lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : st.lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.rod ? "Craft the Reed Fishing Rod first." : "Craft the " + PICKS[r.tier - 1].n + " first.") : (st.needB && !st.owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
     }
     return '<div class="sbx-card' + (st.owned || st.lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (st.ready ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (st.owned || st.lock ? " disabled" : "") + ">" + (st.owned ? "Owned" : st.lock ? "Locked" : "Craft") + "</button></div>";
   }
@@ -3704,7 +5370,7 @@
     return h;
   }
   function renderPack() {
-    var h = bagHtml(), t = $("sbxPackTitle"); if (t) t.innerHTML = "Backpack <small>" + usedSlots() + " / " + invN() + "</small>";
+    var h = charmHtml() + bagHtml(), t = $("sbxPackTitle"); if (t) t.innerHTML = "Backpack <small>" + usedSlots() + " / " + invN() + "</small>";
     var bd = $("sbxPackBody"), st = bd.scrollTop; bd.innerHTML = h; bd.scrollTop = st;
   }
   function renderPanel() {
@@ -3713,20 +5379,36 @@
     if (packOpen) return renderPack();
     if (mapOpen) return;
     if (tab === "bag" || tab === "map") tab = "craft";
-    var tabs = [["trail", "Trail"], ["craft", "Craft"], ["map", "Map"], ["goals", "Goals"], ["more", "Options"]];
+    if (tab === "trail" || tab === "goals") tab = "quests";
+    var tabs = [["quests", "Quests"], ["log", "Log"], ["craft", "Craft"], ["map", "Map"], ["more", "Options"]];
     if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "craft";
     if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
     $("sbxTabs").innerHTML = tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
     var h = "";
-    if (tab === "trail") {
-      var cur = TRAIL[S.trail];
-      h += '<p class="sbx-note"><b>The First Day Trail.</b> ' + (cur ? "Step " + (S.trail + 1) + " of " + TRAIL.length + ". Follow it from bare paws to your first glowing pick." : "All " + TRAIL.length + " steps done. More chapters are coming.") + "</p>";
-      h += '<div class="sbx-goals">' + TRAIL.map(function (t, n) {
-        var done = n < S.trail, now2 = n === S.trail, v = now2 ? Math.min(t.need, t.v()) : 0;
-        return '<div class="sbx-goal' + (done ? " ok" : "") + (now2 ? " cur" : "") + '"><i aria-hidden="true">' + (done ? "&#10003;" : n + 1) + "</i><div><b>" + esc(n <= S.trail ? t.n : "???") + "</b><small>" + esc(n <= S.trail ? t.d : "Finish the step before this to reveal it.") + "</small>"
-          + (now2 ? '<span class="bar"><i style="width:' + Math.round(v / t.need * 100) + '%"></i></span><em>' + v + " / " + t.need + "</em>" : "")
-          + (t.rw && n <= S.trail && !done ? '<small class="rw">Reward: ' + esc(rewardText(t.rw)) + "</small>" : "") + "</div></div>";
-      }).join("") + "</div>";
+    if (tab === "quests") {
+      var c = curCh(), C = CHAPTERS[c], cl = chQuests(c), cdone = cl.filter(function (q) { return MAIN.indexOf(q) < S.qi; }).length, epi = c === CHAPTERS.length - 1;
+      var qrow = function (q, state, sideQ) {   // state: "ok" done, "cur" current, "next" later
+        var v = Math.min(q.need, Math.floor(q.v())), rw = q.rw && Object.keys(q.rw).length ? q.rw : null;
+        return '<div class="sbx-goal' + (state === "ok" ? " ok" : state === "cur" ? " cur" : state === "next" ? " later" : "") + (sideQ ? " side" : "") + '"><i aria-hidden="true">' + (state === "ok" ? "&#10003;" : state === "cur" ? "&#9733;" : "") + "</i><div><b>" + esc(q.n) + "</b>"
+          + (state !== "next" ? "<small>" + esc(q.d) + "</small>" : "")
+          + (state === "cur" || sideQ && state !== "ok" ? '<span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span><em>' + v + " / " + q.need + "</em>" : "")
+          + (rw && state !== "ok" && state !== "next" ? '<small class="rw">Reward: ' + esc(rewardText(rw)) + "</small>" : "") + "</div></div>";
+      };
+      h += '<div class="sbx-qch" style="--qc:' + C.c + '"><div class="qc-top"><span class="qc-frog" aria-hidden="true">' + CROAK_SVG + "</span><div><small>" + (epi ? "Story complete" : "Chapter " + (c + 1) + " of " + (CHAPTERS.length - 1)) + "</small><b>" + esc(C.n) + "</b></div></div>"
+        + "<p>" + esc(C.s.length > 170 ? C.s.slice(0, C.s.lastIndexOf(" ", 165)) + "\u2026" : C.s) + '</p><div class="qc-row"><button type="button" class="btn ghost" data-story="' + c + '">Read the story</button>'
+        + (epi ? "" : '<span class="bar"><i style="width:' + Math.round(cdone / cl.length * 100) + '%"></i></span><em>' + cdone + " / " + cl.length + "</em>") + "</div></div>";
+      if (btyOpen()) { rollBounties(); var bl2 = S.bty.d.concat(S.bty.w ? [S.bty.w] : []), bdn = bl2.filter(function (b) { return b.done; }).length, brd = btyReady(); h += '<div class="sbx-btycard"><img alt="" src="' + icon("swamptoken") + '"><div><b>Croaker\'s bounties</b><span>' + (brd ? brd + " ready to claim. Visit Old Croaker at camp!" : bdn + " of " + bl2.length + " claimed · " + bl2.filter(function (b) { return !b.done; }).map(function (b) { return btyText(b) + " (" + btyProg(b) + "/" + b.need + ")"; }).slice(0, 2).join(", ")) + "</span></div></div>"; }
+      if (!epi) h += '<h3>Main quests</h3><div class="sbx-goals">' + cl.map(function (q) { var n2 = MAIN.indexOf(q); return qrow(q, n2 < S.qi ? "ok" : n2 === S.qi ? "cur" : "next"); }).join("") + "</div>"
+        + (C.rw && Object.keys(C.rw).length ? '<p class="sbx-note">Finish the chapter for: <b>' + esc(rewardText(C.rw)) + "</b></p>" : "");
+      if (c > 0) h += '<details class="sbx-qpast"><summary>Earlier chapters (' + c + ")</summary>" + CHAPTERS.slice(0, c).map(function (P, n2) { return '<div class="qp"><i>&#10003;</i><span>' + (n2 + 1) + ". " + esc(P.n) + '</span><button type="button" class="btn ghost" data-story="' + n2 + '">Story</button></div>'; }).join("") + "</details>";
+      var open = SIDE.filter(function (q) { return sideOpen(q); }), sdone = SIDE.filter(function (q) { return S.ms[q.id]; }), locked = SIDE.length - open.length;
+      h += "<h3>Side quests</h3><p class=\"sbx-note\"><b>" + sdone.length + " / " + SIDE.length + "</b> done." + (locked ? " " + locked + " more open up as the story goes on." : "") + "</p>";
+      SIDE_CATS.forEach(function (cat) {
+        var act = open.filter(function (q) { return q.cat === cat && !S.ms[q.id]; }).sort(function (a2, b2) { return b2.v() / b2.need - a2.v() / a2.need; });
+        if (!act.length) return;
+        h += '<div class="sbx-qcat">' + esc(cat) + '</div><div class="sbx-goals">' + act.map(function (q) { return qrow(q, "", true); }).join("") + "</div>";
+      });
+      if (sdone.length) h += '<details class="sbx-qpast"><summary>Completed side quests (' + sdone.length + ")</summary><div class=\"sbx-goals\">" + sdone.map(function (q) { return qrow(q, "ok", true); }).join("") + "</div></details>";
     } else if (tab === "craft") {
       h += craftBar();
       if (ccat === "Tools" || ccat === "Gear" || ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
@@ -3743,20 +5425,21 @@
       var shown = handAll().filter(function (r) { return r.cat2 === ccat && (!csub || r.sub === csub) && (!cready || recStatus(r).ready); }), lastSub = "";
       if (!shown.length) h += '<p class="sbx-note">' + (cready ? "Nothing in here can be crafted right now. Turn off Ready to see everything." : "Nothing here is made by hand. Open a crafting station to see its recipes.") + "</p>";
       shown.forEach(function (r) { if (!csub && r.sub !== lastSub) { lastSub = r.sub; h += "<h3>" + esc(r.sub) + "</h3>"; } h += recCard(r); });
+    } else if (tab === "log") {
+      h += logHtml();
     } else if (tab === "chest") {
       var cc = S.chests[chestKey] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
       var ckx = chestKey.split(","), cname = TILES[get(+ckx[0], +ckx[1])].kind === "lootchest" ? "Cave Chest" : "Wooden Chest";
       h += '<p class="sbx-note"><b>' + cname + '</b> (' + ck.length + " of " + CHEST_KINDS + ' kinds). Tap an item to move the whole stack.</p>';
       h += '<h3>In the chest</h3>' + (ck.length ? '<div class="sbx-bag">' + ORDER.filter(function (k) { return cc[k]; }).map(function (k) { return btn(k, cc[k], "data-ch-take"); }).join("") + "</div>" : '<p class="sbx-note">Empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="take"' + (ck.length ? "" : " disabled") + ">Take all</button>";
       h += '<h3>In your backpack</h3>' + (mine2.length ? '<div class="sbx-bag">' + mine2.map(function (k) { return btn(k, S.inv[k], "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your backpack is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine2.length ? "" : " disabled") + ">Store all</button>";
-    } else if (tab === "goals") {
-      var done = GOALS.filter(function (g) { return S.ms[g.id]; }).length;
-      h += '<p class="sbx-note"><b>' + done + " / " + GOALS.length + "</b> goals complete. Goals are bragging rights for now, with no coin or crystal payouts.</p><div class=\"sbx-goals\">" + GOALS.map(function (g) { return '<div class="sbx-goal' + (S.ms[g.id] ? " ok" : "") + '"><i aria-hidden="true">' + (S.ms[g.id] ? "&#10003;" : "") + "</i><div><b>" + esc(g.n) + "</b><small>" + esc(g.d) + "</small></div></div>"; }).join("") + "</div>";
     } else {
       var an = (typeof Crystals !== "undefined" && Crystals.animals) ? Crystals.animals : [{ id: "frog", name: "Boggy the Frog" }];
       h += '<h3>Play as</h3><div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = '<img alt="" src="' + DelveAv.thumb(Object.assign({}, Crystals.outfit()), a.id, 3) + '">'; } catch (e) { try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e2) {} } return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note">Your equipped avatar gear shows in the world. Change it in the Armory.</p>';
       h += '<h3>View</h3><div class="sbx-row"><button type="button" class="btn ghost" data-zoom="-1" aria-label="Zoom out">Zoom out</button><b>' + Math.round(S.zoom * 100) + '%</b><button type="button" class="btn ghost" data-zoom="1" aria-label="Zoom in">Zoom in</button></div>';
       h += '<h3>Day counter</h3><p class="sbx-note">Show which in-game day you are on, under the biome name. This world is on day <b>' + (((S.days | 0) + 1)) + '</b>. The count is saved with the world; the on/off choice is saved on this device.</p><div class="sbx-row"><button type="button" class="btn' + (SHOWDAYS ? "" : " ghost") + '" data-daytoggle aria-pressed="' + SHOWDAYS + '">Day counter: ' + (SHOWDAYS ? "On" : "Off") + '</button></div>';
+      h += '<h3>Multiplayer</h3><p class="sbx-note">' + (MP.on ? (MP.role === "host" ? "Your world is open: room <b>" + esc(MP.code) + "</b>, " + (MP.npeers + 1) + " / 4 players." : "You are playing in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs with a room code.") + '</p><div class="sbx-row"><button type="button" class="btn" data-mpopen>Play together</button></div>';
+      h += '<h3>Music and mini-map</h3><p class="sbx-note">Soft music that changes with the land you are in (and turns tense in boss fights). Weather brings rain, snow and ash, waters swamp crops and makes fish bite sooner. The mini-map shows the explored area around you: tap it to open the World Map. Saved on this device.</p><div class="sbx-row"><button type="button" class="btn' + (MUS.on ? "" : " ghost") + '" data-musictoggle aria-pressed="' + MUS.on + '">Music: ' + (MUS.on ? "On" : "Off") + '</button><button type="button" class="btn ghost" data-musvol="-1" aria-label="Music quieter">&minus;</button><b>' + Math.round(MUS.vol * 100) + '%</b><button type="button" class="btn ghost" data-musvol="1" aria-label="Music louder">+</button></div><div class="sbx-row"><button type="button" class="btn' + (MINI.on ? "" : " ghost") + '" data-minitoggle aria-pressed="' + MINI.on + '">Mini-map: ' + (MINI.on ? "On" : "Off") + '</button><button type="button" class="btn' + (WX.on ? "" : " ghost") + '" data-wxtoggle aria-pressed="' + WX.on + '">Weather: ' + (WX.on ? "On" : "Off") + '</button></div>';
       h += '<h3>Hunger</h3><p class="sbx-note">With hunger on, your food bar slowly empties: eat to stay well fed (faster healing). Turn it off for a relaxed game. Saved with this world.</p><div class="sbx-row"><button type="button" class="btn' + (S.nohunger ? " ghost" : "") + '" data-hungertoggle aria-pressed="' + !S.nohunger + '">Hunger: ' + (S.nohunger ? "Off" : "On") + '</button></div>';
       h += '<h3>Touch controls</h3><p class="sbx-note">Size of the walk stick, arrows, jump button, hotbar, backpack and journal buttons. Saved on this device.</p><div class="sbx-row"><button type="button" class="btn ghost" data-ui="-1" aria-label="Smaller controls">Smaller</button><b>' + Math.round(UIS * 100) + '%</b><button type="button" class="btn ghost" data-ui="1" aria-label="Bigger controls">Bigger</button><button type="button" class="btn ghost" data-ui="0" aria-label="Reset control size">Reset</button></div>';
       h += '<h3>Worlds</h3><p class="sbx-note">Playing: <b>' + esc(curEntry() ? curEntry().name : "My Swamp") + '</b>. Switch worlds, start a new one, or leave.</p><div class="sbx-row"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Save &amp; exit to menu</button></div>';
@@ -3808,6 +5491,11 @@
     });
     (world.structs || []).forEach(function (s2) { if (!ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.holes || []).forEach(function (hh) { if (!ex[hh.y * W + hh.x]) return; var q = m2s(hh.x, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.6; g.beginPath(); g.arc(q[0], q[1], 3.4, 0, 6.2832); g.fill(); g.stroke(); });
+    if (npc.ok) {   // Old Croaker's camp: a little frog face (gold ring while he has a gift for you)
+      var cq = m2s(npc.x, npc.y - 1), gw2 = giftsWaiting().length + btyReady(); g.fillStyle = "#06100d"; g.strokeStyle = gw2 ? "#f2c14e" : "#bff4e4"; g.lineWidth = gw2 ? 2.4 : 1.6;
+      g.beginPath(); g.arc(cq[0], cq[1], 8, 0, 6.2832); g.fill(); g.stroke(); g.fillStyle = "#3fae5e"; g.beginPath(); g.ellipse(cq[0], cq[1] + 1.5, 5.6, 3.8, 0, 0, 6.2832); g.fill();
+      [-2.8, 2.8].forEach(function (ex) { g.fillStyle = "#3fae5e"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 2.4, 0, 6.2832); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 1.3, 0, 6.2832); g.fill(); });
+    }
     var pq = m2s(p.x, p.y - 1), pulse = 9 + Math.sin(performance.now() / 260) * 1.6;
     g.strokeStyle = "#fff"; g.lineWidth = 2.6; g.beginPath(); g.arc(pq[0], pq[1], pulse, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(pq[0], pq[1], 4.6, 0, 6.2832); g.fill();
     g.textAlign = "left"; g.font = "800 12px Nunito,sans-serif"; g.textBaseline = "middle";
@@ -3909,13 +5597,13 @@
     window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
     if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(V);
   })();
-  function openPanel(t) { if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
+  function openPanel(t) { if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
   function openPack() {
     if (mapOpen) closeMap(); else if (panelOpen && !packOpen) closePanel();
     packOpen = true; panelOpen = true; invSel = -1; invAsk = ""; $("sbxPack").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPack();
   }
   function closePack() { packOpen = false; panelOpen = false; $("sbxPack").hidden = true; stageEl.classList.remove("panel"); $("sbxPackBtn").focus({ preventScroll: true }); }
-  function closePanel() { if (stnOpen) return closeStn(); if (mapOpen) return closeMap(); if (packOpen) return closePack(); panelOpen = false; if (chestKey) { chestKey = ""; if (tab === "chest") tab = "craft"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
+  function closePanel() { if (storyOpen >= 0) return closeStory(); if (stnOpen) return closeStn(); if (mapOpen) return closeMap(); if (packOpen) return closePack(); panelOpen = false; if (chestKey) { chestKey = ""; if (tab === "chest") tab = "craft"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
 
   // ---------- INVENTORY SCREEN ----------
   function invClick(i, shift) {
@@ -3928,19 +5616,20 @@
   function dragEnd(drop, e) {
     var D = idrag; idrag = null; if (!D) return;
     if (D.ghost && D.ghost.parentNode) D.ghost.parentNode.removeChild(D.ghost);
-    [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-is.lift"), function (b) { b.classList.remove("drop"); b.classList.remove("lift"); });
+    [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-is.lift, .sbx-slot.drop, .sbx-slot.lift"), function (b) { b.classList.remove("drop"); b.classList.remove("lift"); });
     if (!D.on) return;
     idragJust = true; setTimeout(function () { idragJust = false; }, 0);
     if (!drop) return;
-    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is]");
+    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]");
     if (!t) return;
-    var to = +t.getAttribute("data-is"); if (to === D.from || !S.slots[D.from]) return;
+    var to = slotOfEl(t); if (to < 0 || to === D.from || !S.slots[D.from]) return;
     invAsk = ""; invSel = to; moveSlot(D.from, to); snd("coin");
   }
-  [$("sbxPanel"), $("sbxPack")].forEach(function (el) {
+  function slotOfEl(b) { return b.hasAttribute("data-is") ? +b.getAttribute("data-is") : +b.getAttribute("data-slot"); }   // backpack slots use data-is, hotbar slots data-slot (-1 = a tool)
+  [$("sbxPanel"), $("sbxPack"), $("sbxBar")].forEach(function (el) {
     el.addEventListener("pointerdown", function (e) {
       if (e.button && e.pointerType === "mouse") return;
-      var b = e.target.closest("[data-is]"); if (!b) return; var i = +b.getAttribute("data-is"); if (!S.slots[i]) return;
+      var b = e.target.closest("[data-is],.sbx-slot[data-slot]"); if (!b) return; var i = slotOfEl(b); if (!(i >= 0) || !S.slots[i]) return;
       idrag = { from: i, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: b, th: e.pointerType === "mouse" ? 5 : 9 };
     });
     el.addEventListener("click", function (e) { if (idragJust) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a finished drag is not also a tap
@@ -3955,8 +5644,8 @@
     }
     e.preventDefault();
     D.ghost.style.transform = "translate(" + (e.clientX - 26) + "px," + (e.clientY - 26) + "px)";
-    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is]");
-    [].forEach.call(document.querySelectorAll(".sbx-is.drop"), function (b) { if (b !== t) b.classList.remove("drop"); });
+    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]"); if (t && !(slotOfEl(t) >= 0)) t = null;
+    [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-slot.drop"), function (b) { if (b !== t) b.classList.remove("drop"); });
     if (t && t !== D.src) t.classList.add("drop");
   }, { passive: false });
   window.addEventListener("pointerup", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(true, e); });
@@ -3995,6 +5684,7 @@
       if (ddx * ddx + ddy * ddy <= REACH * REACH) toggleDoor(aim.dx, aim.dy, true); else nag("That door is too far away.");
     }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.stn && stnKeyAt(aim.dx, aim.dy) === aim.stn) tapStation(aim.dx, aim.dy);   // quick tap on a crafting station: open its window
+    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 300 && !cave) { var an = animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts); if (npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { talkCroaker(); aim.chest = false; } else if (an) { useAnimal(an); aim.chest = false; } }   // quick tap on an animal
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.chest && isChest(get(aim.dx, aim.dy))) {   // quick tap on a chest: open it
       var cdx = aim.dx + 0.5 - p.x, cdy = aim.dy + 0.5 - (p.y - PH / 2);
       if (cdx * cdx + cdy * cdy <= REACH * REACH) openChest(aim.dx, aim.dy); else nag("That chest is too far away.");
@@ -4025,6 +5715,8 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
+    if (k === "Escape" && !$("sbxMPV").hidden) { closeMPV(); return; }
+    if (k === "Enter" && MP.on && !panelOpen) { openChat(); e.preventDefault(); return; }
     if (k === "Escape" && panelOpen) { closePanel(); return; }
     if (k === "e" || k === "E") { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); e.preventDefault(); return; }
     if (k === "m" || k === "M") { mapOpen ? closeMap() : openMap(); e.preventDefault(); return; }
@@ -4038,7 +5730,7 @@
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); }
     else if (k === "f" || k === "F") {
       if (cave) { var ln = ladderNear(); if (ln) useLadder(ln.k); else nag("Stand next to a ladder to use it."); }
-      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), wn = skip || dn || cn ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else trySleep(); }
+      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), an2 = skip || dn || cn || nn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else trySleep(); }
     }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
@@ -4048,13 +5740,15 @@
   });
   window.addEventListener("blur", function () { keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; });
   $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
-  $("sbxTrail").addEventListener("click", function () { openPanel("trail"); });
+  $("sbxTrail").addEventListener("click", function () { openPanel("quests"); });
   $("sbxMenuBtn").addEventListener("click", function () { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); });
   $("sbxPackBtn").addEventListener("click", function () { packOpen ? closePack() : openPack(); });
   $("sbxPack").addEventListener("click", function (e) { if (e.target === this) closePack(); });
   function panelClick(e) {
     var t = e.target.closest("button"); if (!t) return;
     if (t.hasAttribute("data-close")) return closePanel();
+    if (t.hasAttribute("data-charm")) { wearCharm(t.getAttribute("data-charm")); if (packOpen) renderPack(); if (panelOpen) renderPanel(); return; }
+    if (t.hasAttribute("data-story")) { var sc = +t.getAttribute("data-story"); closePanel(); return showStory(sc); }
     if (t.getAttribute("data-tab") === "map") return openMap();
     if (t.getAttribute("data-tab")) { tab = t.getAttribute("data-tab"); confirmNew = false; return renderPanel(); }
     if (t.hasAttribute("data-cc")) { ccat = t.getAttribute("data-cc"); csub = ""; renderPanel(); $("sbxBody").scrollTop = 0; return; }
@@ -4075,6 +5769,11 @@
     if (t.getAttribute("data-hold")) { choose(t.getAttribute("data-hold")); return closePanel(); }
     if (t.getAttribute("data-an")) { S.animal = t.getAttribute("data-an"); mkSprite(); return renderPanel(); }
     if (t.hasAttribute("data-hungertoggle")) { S.nohunger = S.nohunger ? 0 : 1; if (!S.nohunger && S.food < 50) S.food = 50; shownFood = -1; drawFood(); save(); return renderPanel(); }
+    if (t.hasAttribute("data-musictoggle")) { MUS.on = !MUS.on; try { localStorage.setItem("swamp-delve-music", MUS.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
+    if (t.hasAttribute("data-musvol")) { MUS.vol = clamp(Math.round((MUS.vol + 0.1 * +t.getAttribute("data-musvol")) * 10) / 10, 0, 1); try { localStorage.setItem("swamp-delve-musicvol", String(MUS.vol)); } catch (e) {} return renderPanel(); }
+    if (t.hasAttribute("data-mpopen")) { closePanel(); return openMPV(); }
+    if (t.hasAttribute("data-wxtoggle")) { WX.on = !WX.on; WX.drops.length = 0; try { localStorage.setItem("swamp-delve-weather", WX.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
+    if (t.hasAttribute("data-minitoggle")) { MINI.on = !MINI.on; MINI.t = 0; try { localStorage.setItem("swamp-delve-minimap", MINI.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
     if (t.hasAttribute("data-daytoggle")) { SHOWDAYS = !SHOWDAYS; try { localStorage.setItem("swamp-delve-daycount", SHOWDAYS ? "1" : "0"); } catch (e) {} hud(); return renderPanel(); }
     if (t.hasAttribute("data-ui")) { var uv = +t.getAttribute("data-ui"); setUi(uv === 0 ? 1 : UIS + uv * 0.1); return renderPanel(); }
     if (t.hasAttribute("data-zoom")) { var Z = [0.8, 1, 1.25, 1.5, 2], zi = clamp(Z.indexOf(S.zoom) + +t.getAttribute("data-zoom"), 0, Z.length - 1); S.zoom = Z[zi]; resize(); return renderPanel(); }
@@ -4082,6 +5781,14 @@
     if (t.hasAttribute("data-wl-open")) return openWorlds();
   }
   $("sbxPanel").addEventListener("click", panelClick); $("sbxPack").addEventListener("click", panelClick); $("sbxStn").addEventListener("click", panelClick);
+  $("sbxMPV").addEventListener("click", mpClick); $("sbxMPChip").addEventListener("click", function (e) { if (e.target.closest("[data-mp=chat]")) return openChat(); openMPV(); });
+  $("sbxChatIn").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); sendChat(); } else if (e.key === "Escape") { e.preventDefault(); $("sbxChat").hidden = true; e.target.blur(); drawChat(); } e.stopPropagation(); });
+  $("sbxChatGo").addEventListener("click", sendChat);
+  setInterval(drawChat, 2000);
+  $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
+  $("sbxMini").addEventListener("click", function () { if (!panelOpen && !cave) openMap(); });
+  $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
+  $("sbxStory").addEventListener("click", function (e) { var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -4104,25 +5811,25 @@
   function fitDock() { var d = document.querySelector(".sbx-dock"); if (d && d.offsetWidth) d.style.setProperty("--ds", Math.min(UIS, (stageEl.clientWidth - 12) / d.offsetWidth)); }   // the hotbar grows with the setting only as far as the screen is wide enough
   var last = 0, slowN = 0, frN = 0, lastDraw = 0;
   function loop(now) {
-    var paused = (panelOpen || menuOpen) && !trans;
+    var paused = (panelOpen || menuOpen) && !trans && !MP.on;
     if (now - lastDraw < (paused ? 100 : 10)) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
     lastDraw = now;
     var raw = (now - last) / 1000 || 0.016, dt = Math.min(0.05, raw); last = now;
     // automatic quality: if a device is struggling for ~2 seconds, switch off the optional sparkle (ambient motes, aurora, glints)
     if (!paused && !document.hidden && raw < 0.5) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
-    if (!document.hidden) { if (trans) tickTrans(dt); if (!panelOpen && !menuOpen && !trans) { if (cave) caveUpdate(dt); else update(dt); } if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); }
+    if (!document.hidden) { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen)) && !trans) { if (cave) caveUpdate(dt); else update(dt); } mpTick(dt); if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); }
     requestAnimationFrame(loop);
   }
   document.addEventListener("visibilitychange", function () { if (document.hidden) save(); });
-  window.addEventListener("pagehide", save);
+  window.addEventListener("pagehide", function () { save(); var e = curEntry(); if (CLOUD.state === "on" && e && e.cdirty && !e.conflict && !CLOUD.busy) cloudPush(curId, true); });
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
 
   buildAtlas(); load(); resize(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
-  $("sbxHint").textContent = S.trail === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your Journal, B your Backpack.";
+  $("sbxHint").textContent = S.qi === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your Journal, B your Backpack.";
   if (!S.st.mined) $("sbxHint").classList.add("on");
   if (wIdx.list.length > 1) openWorlds();   // several worlds: let the player pick
   setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000);
   requestAnimationFrame(loop);
-  window.__sbx = { enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, aim: aim, npc: npc, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
 })();

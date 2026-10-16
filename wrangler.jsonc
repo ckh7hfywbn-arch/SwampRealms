@@ -9,6 +9,11 @@
     "run_worker_first": ["/api/*"],
     "binding": "ASSETS"
   },
+  // Delve multiplayer: one Durable Object per room (class DelveRoom in worker.js, SQLite-backed so it runs on the Workers Free plan)
+  "durable_objects": {
+    "bindings": [{ "name": "ROOMS", "class_name": "DelveRoom" }]
+  },
+  "migrations": [{ "tag": "v1-delve-rooms", "new_sqlite_classes": ["DelveRoom"] }],
   "d1_databases": [
     {
       "binding": "DB",

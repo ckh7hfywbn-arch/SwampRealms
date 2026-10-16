@@ -30,7 +30,7 @@
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=armory3">
-<link rel="stylesheet" href="sandbox.css?v=drag1">
+<link rel="stylesheet" href="sandbox.css?v=mp1">
 </head>
 <body class="sbx-app">
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -49,9 +49,12 @@
     <button type="button" class="sbx-ibtn" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
    </div>
    <div class="sbx-loc" id="sbxLoc" role="status"><i aria-hidden="true"></i><div><b id="sbxBiome">Murkwater Swamp</b><span id="sbxSub"></span></div></div>
+   <div class="sbx-mpchip" id="sbxMPChip" role="button" tabindex="0" aria-label="Multiplayer room" hidden></div>
+   <div class="sbx-boss" id="sbxBoss" role="status" aria-live="polite" hidden><b></b><span class="bt"><i></i></span><em></em></div>
    <div class="sbx-vit">
     <div class="sbx-hp" id="sbxHp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hrt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" fill="currentColor"/></svg></span><span class="trk"><i class="gh"></i><i class="fl"></i><b>100</b></span><span class="shd" id="sbxArm" hidden></span></div>
     <div class="sbx-food" id="sbxFood" role="progressbar" aria-label="Hunger" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-40 12 12)"><ellipse cx="12" cy="8.2" rx="6.2" ry="6.8" fill="currentColor"/><ellipse cx="10" cy="6.4" rx="2" ry="1.4" fill="#fff" opacity=".45"/><rect x="10.7" y="13.5" width="2.6" height="5.6" rx="1" fill="#f6eedb"/><circle cx="10.5" cy="20.2" r="1.7" fill="#f6eedb"/><circle cx="13.5" cy="20.2" r="1.7" fill="#f6eedb"/></g></svg></span><span class="trk"><i class="fl"></i><b>100</b></span></div>
+    <canvas class="sbx-mini" id="sbxMini" role="button" tabindex="0" aria-label="Mini-map. Tap to open the World Map." hidden></canvas>
    </div>
   </div>
   <button type="button" class="sbx-trail" id="sbxTrail" hidden aria-label="Open your Trail"></button>
@@ -89,6 +92,14 @@
    <div class="sbx-mhint" id="sbxMapHint">Tap the map to drop a waypoint. Tap a waypoint to rename, recolor or change its icon. Drag to move, scroll or pinch to zoom.</div>
    <div class="sbx-mcard" id="sbxMapCard" hidden></div>
   </section>
+  <section class="sbx-pack sbx-mpv" id="sbxMPV" role="dialog" aria-modal="true" aria-label="Play together" hidden>
+   <div class="sbx-pbox" id="sbxMPBox"></div>
+  </section>
+  <div class="sbx-chatlog" id="sbxChatLog" aria-live="polite" hidden></div>
+  <form class="sbx-chat" id="sbxChat" hidden onsubmit="return false"><input id="sbxChatIn" type="text" maxlength="80" placeholder="Say something…" autocomplete="off" aria-label="Chat message"><button type="button" class="btn" id="sbxChatGo">Send</button></form>
+  <section class="sbx-pack sbx-story" id="sbxStory" role="dialog" aria-modal="true" aria-label="Story" hidden>
+   <div class="sbx-sbox2" id="sbxStoryBox"></div>
+  </section>
   <section class="sbx-pack sbx-stn" id="sbxStn" role="dialog" aria-modal="true" aria-labelledby="sbxStnTitle" hidden>
    <div class="sbx-pbox sbx-sbox" id="sbxStnBox">
     <div class="sbx-phead"><h2 id="sbxStnTitle">Workbench</h2><button type="button" class="sbx-x" data-close aria-label="Close station">&times;</button></div>
@@ -118,10 +129,10 @@
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script src="sandbox-world.js?v=delve26-ground"></script>
-<script src="sandbox-extra.js?v=pack6"></script>
+<script src="sandbox-extra.js?v=pack11"></script>
 <script src="sandbox-cave.js?v=cave7"></script>
 <script src="delve-avatar.js?v=delve3"></script>
-<script src="sandbox.js?v=delve72-drag"></script>
+<script src="sandbox.js?v=delve83-mp"></script>
 <script src="gamefs.js?v=3"></script>
 <script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG"});</script>   <!-- F is Delve's interact key (caves, doors, chests, ladders), so full screen is the button or G -->
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->

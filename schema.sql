@@ -25,3 +25,16 @@ CREATE TABLE IF NOT EXISTS limits (
   n INTEGER NOT NULL,
   first INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS delve (   -- Delve worlds backed up to the account (worker.js also creates this on first use)
+  user_id TEXT NOT NULL,
+  wid TEXT NOT NULL,              -- the world's id on the device that made it
+  name TEXT NOT NULL,
+  data TEXT NOT NULL,             -- the world save, as JSON text
+  rev INTEGER NOT NULL,
+  updated INTEGER NOT NULL,
+  PRIMARY KEY (user_id, wid)
+);
+CREATE TABLE IF NOT EXISTS mp_rooms (   -- open Delve multiplayer rooms (worker.js also creates this on first use)
+  code TEXT PRIMARY KEY, host_id TEXT NOT NULL, host_name TEXT NOT NULL, name TEXT NOT NULL,
+  pub INTEGER NOT NULL, pvp INTEGER NOT NULL, players INTEGER NOT NULL, updated INTEGER NOT NULL
+);

@@ -202,6 +202,13 @@
   deco("gatortrophy", "Bog Gator Trophy", "#7aa84a", function (rect) { rect(0, 3, 6, 10, "#8a5328"); rect(0, 3, 6, 1, "#c98c4f"); rect(1, 5, 6, 6, "#3f6a2c"); rect(6, 6, 9, 4, "#4d7a3a"); rect(6, 6, 9, 1, "#6e9a4a"); rect(2, 4, 2, 2, "#5a8a3a"); rect(2, 4, 1, 1, "#f2c14e"); rect(6, 9, 9, 1, "#2a3d1c"); rect(7, 8, 1, 1, "#f6eedb"); rect(9, 10, 1, 1, "#f6eedb"); rect(11, 8, 1, 1, "#f6eedb"); rect(13, 10, 1, 1, "#f6eedb"); rect(14, 7, 1, 1, "#1a2412"); rect(3, 7, 3, 1, "#2a3d1c", 0.6); rect(2, 9, 4, 1, "#2a3d1c", 0.6); }, 0, null, "wall");
   deco("waspnest", "Ember Wasp Nest", "#d9b56a", function (rect) { rect(7, 0, 2, 2, "#6e431f"); rect(5, 2, 6, 2, "#c9a46a"); rect(4, 4, 8, 3, "#d9b98a"); rect(3, 7, 10, 3, "#c9a46a"); rect(4, 10, 8, 3, "#b8925a"); rect(6, 13, 4, 2, "#a8824a"); rect(4, 6, 8, 1, "#a8824a", 0.6); rect(3, 9, 10, 1, "#a8824a", 0.6); rect(5, 12, 6, 1, "#8a6a3a", 0.6); rect(7, 10, 2, 2, "#2a1a0a"); rect(12, 3, 3, 2, "#ffcf3a"); rect(12, 4, 3, 1, "#2a1a0a"); rect(13, 2, 2, 1, "#e9f6ff", 0.8); }, 0, null, "wall");
   deco("slimejar", "Glowing Slime Jar", "#8af07a", function (rect) { rect(5, 2, 6, 2, "#8a5a32"); rect(4, 4, 8, 1, "#bfe8ff", 0.7); rect(3, 5, 10, 10, "#bfe8ff", 0.35); rect(3, 5, 1, 10, "#e9f6ff", 0.8); rect(12, 5, 1, 10, "#7fb0c8", 0.8); rect(3, 15, 10, 1, "#7fb0c8"); rect(4, 9, 8, 6, "#5ad04a"); rect(4, 9, 8, 1, "#9af58a"); rect(5, 11, 2, 2, "#c8ffb8"); rect(9, 12, 1, 1, "#c8ffb8"); rect(6, 10, 1, 1, "#1a3a14"); rect(9, 10, 1, 1, "#1a3a14"); rect(4, 6, 1, 2, "#ffffff", 0.7); }, 5, ["120,255,140", 2.6, 0.22]);
+  // The story's finale piece: the Heart of the Swamp, a great glowing crystal on a carved pedestal. Placing it ends the main quest line.
+  deco("swampheart", "Heart of the Swamp", "#4ee6b4", function (rect) {
+    rect(3, 13, 10, 3, "#6b7276"); rect(3, 13, 10, 1, "#8e969b"); rect(4, 12, 8, 1, "#5a6066"); rect(5, 15, 6, 1, "#3e4448");
+    rect(6, 9, 4, 3, "#ff8a3d"); rect(6, 9, 4, 1, "#ffc24a"); rect(4, 10, 2, 2, "#5a8cff"); rect(10, 10, 2, 2, "#c08cff");
+    rect(6, 2, 4, 8, "#22a883"); rect(5, 4, 6, 5, "#22a883"); rect(7, 0, 2, 3, "#4ee6b4"); rect(6, 3, 4, 5, "#4ee6b4"); rect(7, 3, 2, 4, "#bffcec"); rect(7, 3, 1, 2, "#ffffff");
+    rect(4, 5, 1, 1, "#bffcec", 0.8); rect(11, 3, 1, 1, "#bffcec", 0.8); rect(12, 7, 1, 1, "#bffcec", 0.6); rect(3, 8, 1, 1, "#bffcec", 0.6);
+  }, 12, ["78,230,180", 5, 0.32]);
   // Cave treasure: a gold-banded Cave Chest (opens like a chest, its loot is rolled the first time you open it) and a Cave Pot (smash it for a few goodies).
   // They are placed by populate() in the open-world caves and by SbxCave.gen() on the hole-cave floors. Loot comes from loot() below.
   var LC = tile("X_lootchest", "Cave Chest", "#000", "#f2c14e", 0.9, 0, "chest", false, 4, "lootchest"); glow(LC, "255,200,90", 1.9, 0.16);
@@ -288,6 +295,49 @@
     rect(2, 7, 1, 4, "#5a5a64"); rect(13, 7, 1, 4, "#24242c"); rect(0, 6, 1, 2, "#4a4a54"); rect(15, 6, 1, 2, "#4a4a54");
     rect(5, 2, 1, 2, "#d0d0d0", 0.7); rect(8, 1, 1, 3, "#d0d0d0", 0.6); rect(11, 2, 1, 2, "#d0d0d0", 0.5);
   }, 6, ["255,150,60", 2.4, 0.18]);
+  // ---- fishing and ranching ----
+  // fish: food + heal when eaten raw; rare fish are worth cooking into a trophy instead
+  food("bogminnow", "Bog Minnow", 5, 0); food("catfish", "Mud Catfish", 8, 0); food("glowfin", "Glowfin", 18, 12);
+  food("frosttrout", "Frost Trout", 8, 2); food("icepike", "Ice Pike", 10, 2); food("crystalcarp", "Crystal Carp", 20, 15);
+  food("magmaeel", "Magma Eel", 10, 3); food("emberkoi", "Ember Koi", 10, 3); food("cinderfish", "Cinderfish", 22, 16);
+  item("oldboot", "Old Boot", {});
+  // animal products
+  food("duckegg", "Duck Egg", 8, 1); food("truffle", "Swamp Truffle", 10, 4); food("goatmilk", "Goat Milk", 12, 6);
+  // fish and farm meals (Cooking Pot)
+  food("grilledfish", "Grilled Fish", 30, 8, 1); food("fishchips", "Fish and Taters", 45, 14, 1); food("catstew", "Catfish Stew", 55, 20, 1); food("chowder", "Frost Trout Chowder", 58, 22, 1);
+  food("spicyeel", "Spicy Eel", 52, 24, 1); food("omelette", "Swamp Omelette", 34, 10, 1); food("truffleroast", "Truffle Roast", 62, 26, 1); food("milkshake", "Frostberry Shake", 40, 16, 1);
+  // the Feeding Trough marks a pen: tamed animals near one stay close to it
+  deco("trough", "Feeding Trough", "#c9a46a", function (rect) {
+    rect(1, 8, 14, 6, "#8a5328"); rect(1, 8, 14, 1, "#c98c4f"); rect(2, 9, 12, 3, "#3a200d"); rect(2, 9, 12, 2, "#d9b56a"); rect(3, 9, 2, 1, "#f2d890"); rect(8, 9, 3, 1, "#f2d890");
+    rect(1, 14, 2, 2, "#6e431f"); rect(13, 14, 2, 2, "#6e431f"); rect(1, 11, 14, 1, "#6e431f", 0.6); rect(4, 8, 1, 6, "#6e431f", 0.5); rect(11, 8, 1, 6, "#6e431f", 0.5);
+  });
+  deco("fishtrophy", "Mounted Fish", "#7fd6ff", function (rect) {
+    rect(1, 3, 14, 10, "#8a5328"); rect(1, 3, 14, 1, "#c98c4f"); rect(2, 4, 12, 8, "#3a200d");
+    rect(4, 6, 8, 4, "#4ee6b4"); rect(5, 9, 6, 1, "#d4fff6"); rect(2, 6, 2, 1, "#22a883"); rect(2, 9, 2, 1, "#22a883"); rect(3, 7, 1, 2, "#22a883"); rect(10, 7, 1, 1, "#06231c"); rect(7, 5, 2, 1, "#22a883");
+  }, 3, ["120,255,210", 2.2, 0.16], "wall");
+  item("swamptoken", "Croaker Token", {});   // bounty currency (Old Croaker's Swap Shop)
+  deco("goldfrog", "Golden Frog Statue", "#f2c14e", function (rect) {   // Swap Shop exclusive
+    rect(3, 13, 10, 3, "#6b6f74"); rect(3, 13, 10, 1, "#8e969b");
+    rect(4, 7, 8, 6, "#f2c14e"); rect(3, 9, 10, 4, "#f2c14e"); rect(4, 4, 3, 3, "#f2c14e"); rect(9, 4, 3, 3, "#f2c14e"); rect(5, 5, 1, 1, "#12220f"); rect(10, 5, 1, 1, "#12220f");
+    rect(4, 7, 8, 1, "#ffe9a8"); rect(5, 4, 1, 1, "#ffe9a8"); rect(10, 4, 1, 1, "#ffe9a8"); rect(5, 9, 6, 1, "#c8901e"); rect(3, 12, 10, 1, "#c8901e"); rect(7, 10, 2, 1, "#ffe9a8");
+  }, 4, ["255,210,90", 2.0, 0.16]);
+  // ---- boss summons, boss materials and boss trophies (the fights live in sandbox.js, BOSSES) ----
+  item("lure_queen", "Bramble Lure", { summon: "queen" }); item("idol_wyrm", "Ember Idol", { summon: "wyrm" }); item("horn_alpha", "Frost Horn", { summon: "alpha" });
+  item("queenchitin", "Queen's Chitin", {}); item("wyrmscale", "Wyrm Scale", {}); item("alphamane", "Alpha Mane", {});
+  deco("queencrown", "Bramble Crown", "#f2c14e", function (rect) {   // the Queen's crown on a little stand
+    rect(4, 13, 8, 3, "#6b4a26"); rect(4, 13, 8, 1, "#9a6a3a"); rect(6, 11, 4, 2, "#5a2468");
+    rect(3, 6, 10, 5, "#f2c14e"); rect(3, 4, 2, 2, "#f2c14e"); rect(7, 2, 2, 4, "#f2c14e"); rect(11, 4, 2, 2, "#f2c14e"); rect(3, 6, 10, 1, "#ffe9a8");
+    rect(7, 7, 2, 2, "#ff3a5a"); rect(4, 8, 1, 1, "#c06aff"); rect(11, 8, 1, 1, "#c06aff"); rect(3, 10, 10, 1, "#8a5a10");
+  }, 4, ["255,107,130", 2.0, 0.16]);
+  deco("wyrmskull", "Wyrm Skull", "#ff8a3d", function (rect) {
+    rect(1, 2, 14, 12, "#3a200d"); rect(1, 2, 14, 1, "#6e431f");
+    rect(3, 5, 10, 6, "#e8d8c0"); rect(9, 7, 5, 3, "#e8d8c0"); rect(5, 7, 2, 2, "#ff6a1f"); rect(5, 7, 1, 1, "#ffd23f"); rect(10, 10, 1, 1, "#3a200d"); rect(12, 10, 1, 1, "#3a200d");
+    rect(3, 3, 2, 3, "#2a1008"); rect(7, 3, 2, 2, "#2a1008"); rect(3, 11, 9, 1, "#b8a890");
+  }, 5, ["255,130,40", 2.2, 0.18], "wall");
+  deco("alphapelt", "Alpha Pelt Banner", "#9fe8ff", function (rect) {
+    rect(2, 1, 12, 1, "#6b4a26"); rect(3, 2, 10, 12, "#dfeaf2"); rect(3, 2, 10, 2, "#b8ccda"); rect(4, 14, 2, 2, "#dfeaf2"); rect(10, 14, 2, 2, "#dfeaf2"); rect(7, 13, 2, 2, "#dfeaf2");
+    rect(6, 5, 4, 3, "#9fe8ff"); rect(7, 4, 2, 1, "#9fe8ff"); rect(6, 9, 4, 1, "#3a7aa8"); rect(5, 6, 1, 1, "#3ad8ff"); rect(10, 6, 1, 1, "#3ad8ff");
+  }, 3, ["120,220,255", 2.0, 0.14], "wall");
   // ====================================================================================================
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
@@ -313,6 +363,28 @@
   R("x_stew", "Swamp Stew", { stew: 1 }, { carrot: 1, potato: 1, redcap: 1, rawmeat: 1 }, { stn: "cook", d: "A hearty bowl of everything the swamp grows. Fills 65 hunger and heals 25." });
   R("x_berrypie", "Frostberry Tart", { berrypie: 1 }, { frostberry: 3, potato: 1 }, { stn: "cook", bl: 2, d: "Sweet and cold. Fills 60 hunger and heals 30. Needs a Glowspore Workbench (or better)." });
   R("x_feast", "Explorer's Feast", { feast: 1 }, { stew: 1, chili: 1, berrypie: 1 }, { stn: "cook", bl: 3, d: "A meal from all three lands. Fills you up completely and heals 60. Needs a Cinder Forge Workbench (or better)." });
+  R("x_rod1", "Reed Fishing Rod", null, { stick: 3, fiber: 4, pebble: 1 }, { rod: 1, d: "Pick it in the hotbar and tap water to cast. When the bobber dips and a ! shows, tap again to reel in. Works through Frostfen ice too. Made by hand." });
+  R("x_rod2", "Ember Rod", null, { cinder: 6, ironingot: 1, rope: 2 }, { rod: 2, bench: true, bl: 2, d: "A heat-proof rod that can fish in lava for Magma Eels, Ember Koi and Cinderfish. Needs a Glowspore Workbench." });
+  R("x_lure", "Bramble Lure", { lure_queen: 1 }, { bugfrag: 6, spore: 8, fiber: 6 }, { bench: true, bl: 2, d: "Use it in Murkwater Swamp to call the Bramble Queen. When she shudders she is about to charge: jump aside, then hit her while she's dazed." });
+  R("x_idol", "Ember Idol", { idol_wyrm: 1 }, { cinder: 10, stinger: 4, ironingot: 2 }, { bench: true, bl: 3, d: "Use it in Ember Bog to wake the Magma Wyrm. Watch the dust: it bursts out where the ground cracks and glows." });
+  R("x_horn", "Frost Horn", { horn_alpha: 1 }, { wolfpelt: 5, crystal: 6, batwing: 3 }, { bench: true, bl: 4, d: "Blow it in Frostfen to call the Frost Alpha. Jump its ice shards and watch the ground for falling icicles." });
+  R("x_ch_bramble", "Bramble Charm", null, { queenchitin: 3, spore: 6, rope: 1 }, { charm: "bramble", bench: true, bl: 2, d: "Walk 15% faster. Worn from the top of your backpack." });
+  R("x_ch_magma", "Magma Charm", null, { wyrmscale: 3, cinder: 6, rope: 1 }, { charm: "magma", bench: true, bl: 3, d: "Lava burns you 70% less." });
+  R("x_ch_alpha", "Alpha Charm", null, { alphamane: 3, crystal: 4, rope: 1 }, { charm: "alpha", bench: true, bl: 4, d: "Jump a second time in mid-air." });
+  R("x_ch_miner", "Miner's Charm", null, { amethyst: 2, ironingot: 3, rope: 1 }, { charm: "miner", bench: true, bl: 3, d: "Dig 25% faster." });
+  R("x_ch_angler", "Angler's Charm", null, { glowfin: 1, catfish: 2, rope: 2 }, { charm: "angler", bench: true, bl: 2, d: "Fish bite 35% sooner, and rare fish are more common. Needs a Glowfin (a rare catch)." });
+  R("x_ch_thumb", "Green Thumb Charm", null, { carrot: 6, potato: 4, pepper: 2, rope: 1 }, { charm: "thumb", bench: true, bl: 2, d: "Crops grow 25% faster." });
+  R("x_ch_hearty", "Hearty Charm", null, { grilledmeat: 3, stew: 1, rope: 1 }, { charm: "hearty", bench: true, bl: 2, d: "Hunger drains 35% slower, and health comes back 20% faster." });
+  R("x_ch_lucky", "Lucky Clover", null, { swamptoken: 12, rope: 1 }, { charm: "lucky", bench: true, bl: 2, d: "Chests, pots and fished-up treasure sometimes give an extra find. Paid for with Croaker Tokens." });
+  R("x_trough", "Feeding Trough", { trough: 1 }, { planks: 6, fiber: 2 }, { d: "Place it to make a pen. Tamed animals that come near it stay close to it. Made by hand." });
+  R("x_grilledfish", "Grilled Fish", { grilledfish: 1 }, { bogminnow: 2, stick: 1 }, { stn: "cook", d: "Fills 30 hunger and heals 8." });
+  R("x_fishchips", "Fish and Taters", { fishchips: 1 }, { catfish: 1, potato: 2 }, { stn: "cook", d: "Fills 45 hunger and heals 14." });
+  R("x_catstew", "Catfish Stew", { catstew: 1 }, { catfish: 1, potato: 1, carrot: 1 }, { stn: "cook", d: "Fills 55 hunger and heals 20." });
+  R("x_chowder", "Frost Trout Chowder", { chowder: 1 }, { frosttrout: 1, goatmilk: 1, potato: 1 }, { stn: "cook", d: "Fills 58 hunger and heals 22." });
+  R("x_spicyeel", "Spicy Eel", { spicyeel: 1 }, { magmaeel: 1, pepper: 1 }, { stn: "cook", d: "Fills 52 hunger and heals 24." });
+  R("x_omelette", "Swamp Omelette", { omelette: 1 }, { duckegg: 2, redcap: 1 }, { stn: "cook", d: "Fills 34 hunger and heals 10." });
+  R("x_truffleroast", "Truffle Roast", { truffleroast: 1 }, { truffle: 1, rawmeat: 1, potato: 1 }, { stn: "cook", d: "Fills 62 hunger and heals 26." });
+  R("x_milkshake", "Frostberry Shake", { milkshake: 1 }, { goatmilk: 1, frostberry: 2 }, { stn: "cook", d: "Fills 40 hunger and heals 16." });
   R("x_furcloth", "Fur Cloth (2)", { cloth: 2 }, { wolfpelt: 1 }, { stn: "loom", d: "Spin a Frost Wolf Pelt into two pieces of warm cloth." });
   R("x_slimetorch", "Slime Torches (8)", { torch: 8 }, { stick: 2, slimeball: 1 }, { d: "Sticks dipped in slime burn twice as long to make. Made by hand." });
   R("x_cloth", "Woven Cloth", { cloth: 1 }, { cotton: 3 }, { stn: "loom", d: "Soft cream cloth from Bog Cotton." });
@@ -370,6 +442,11 @@
   Dc("x_shield", "Armory Showpieces", "Wall Shield", { shield: 1 }, { ironingot: 2, planks: 4, dyeblue: 1 }, "A blue shield with a golden cross.");
   Dc("x_swords", "Armory Showpieces", "Crossed Swords", { crossedswords: 1 }, { ironingot: 4, rope: 1 }, "Two blades crossed over the hearth.");
   Dc("x_battrophy", "Armory Showpieces", "Dusk Bat Trophy", { battrophy: 1 }, { batwing: 3, planks: 2, rope: 1 }, "A Dusk Bat with spread wings on a plaque.");
+  Dc("x_swampheart", "Legendary", "Heart of the Swamp", { swampheart: 1 }, { spore: 20, cinder: 12, crystal: 12, ruby: 2, sapphire: 2, moonstone: 2 }, "The light of all three lands bound in one crystal. Place it at your camp to restore the swamp.", 4);
+  Dc("x_queencrown", "Armory Showpieces", "Bramble Crown", { queencrown: 1 }, { queenchitin: 2, planks: 2 }, "The Bramble Queen's crown on a stand. Proof you beat her.", 2);
+  Dc("x_wyrmskull", "Armory Showpieces", "Wyrm Skull", { wyrmskull: 1 }, { wyrmscale: 2, planks: 2 }, "A Magma Wyrm skull, still warm. Hangs on a wall.", 3);
+  Dc("x_alphapelt", "Armory Showpieces", "Alpha Pelt Banner", { alphapelt: 1 }, { alphamane: 2, rope: 1 }, "The Frost Alpha's pelt as a banner. Hangs on a wall.", 4);
+  Dc("x_fishtrophy", "Armory Showpieces", "Mounted Fish", { fishtrophy: 1 }, { glowfin: 1, planks: 2, rope: 1 }, "A prize Glowfin on a plaque. It glows softly. Hangs on a wall.");
   Dc("x_wolftrophy", "Armory Showpieces", "Frost Wolf Trophy", { wolftrophy: 1 }, { wolfpelt: 3, planks: 2, rope: 1 }, "A snarling Frost Wolf head on a plaque. Hangs on a wall.");
   Dc("x_gatortrophy", "Armory Showpieces", "Bog Gator Trophy", { gatortrophy: 1 }, { gatorscale: 3, planks: 2, rope: 1 }, "A toothy Bog Gator head mounted on a plaque. Hangs on a wall.");
   Dc("x_waspnest", "Armory Showpieces", "Ember Wasp Nest", { waspnest: 1 }, { stinger: 2, fiber: 6, planks: 1 }, "An empty papery wasp nest (honest). Hangs on a wall.");

@@ -6,6 +6,8 @@ const enc = new TextEncoder();
 const SESSION_DAYS = 30;
 const ITER = 100000;          // Cloudflare Workers allows at most 100,000 PBKDF2 iterations
 const MAX_SAVE = 200000;      // largest cloud save, in characters of JSON
+const MAX_DELVE = 900000;     // largest Delve world save, in characters (a heavily built world is ~100-300k)
+const MAX_DELVE_WORLDS = 12;  // Delve worlds kept in the cloud per account
 const COOKIE = "sv_session";
 const LOGIN_MAX = 8, LOGIN_WINDOW = 15 * 60 * 1000;   // 8 wrong passwords per name per 15 minutes
 const REG_MAX = 10, REG_WINDOW = 60 * 60 * 1000;      // 10 new accounts per IP per hour
@@ -169,7 +171,179 @@ async function api(req, env, url) {
     return json({ rev: b.baseRev + 1, updated: now });
   }
 
+  // ---- Delve multiplayer rooms (see DelveRoom below). The host must be signed in; anyone can join with the code. ----
+  //   POST /api/mp/host        {name, pub, pvp} -> {code}   (one open room per account; hosting again replaces it)
+  //   GET  /api/mp/list        public rooms seen in the last 2 minutes
+  //   GET  /api/mp/room/<code> one room's details, so the game can explain a bad code before connecting
+  //   GET  /api/mp/ws/<code>?role=host|guest&name=...   the WebSocket, handed to that room's Durable Object
+  if (path.startsWith("/api/mp/")) {
+    if (!env.ROOMS) return json({ error: "Multiplayer is not set up on this server yet." }, 503);
+    await mpTable(db);
+    const now = Date.now();
+    if (path === "/api/mp/host" && method === "POST") {
+      const u = await auth(req, db); if (!u) return json({ error: "Sign in to host a world." }, 401);
+      const b = (await readJson(req)) || {};
+      const name = (typeof b.name === "string" ? b.name : "My Swamp").replace(/[^\w '!?.-]/g, "").trim().slice(0, 24) || "My Swamp";
+      let code = "";
+      for (let i = 0; i < 8 && !code; i++) { const c = mpCode(); if (!(await db.prepare("SELECT 1 AS x FROM mp_rooms WHERE code = ?").bind(c).first())) code = c; }
+      if (!code) return json({ error: "Could not make a room code. Try again." }, 500);
+      await db.prepare("DELETE FROM mp_rooms WHERE host_id = ?").bind(u.id).run();
+      await db.prepare("INSERT INTO mp_rooms (code, host_id, host_name, name, pub, pvp, players, updated) VALUES (?, ?, ?, ?, ?, ?, 1, ?)")
+        .bind(code, u.id, u.name, name, b.pub ? 1 : 0, b.pvp ? 1 : 0, now).run();
+      return json({ code });
+    }
+    if (path === "/api/mp/list" && method === "GET") {
+      const r = await db.prepare("SELECT code, host_name, name, players, pvp FROM mp_rooms WHERE pub = 1 AND updated > ? ORDER BY updated DESC LIMIT 30").bind(now - 120000).all();
+      return json({ rooms: r.results || [] });
+    }
+    const m = path.match(/^\/api\/mp\/(room|ws)\/([A-Z0-9]{6})$/);
+    if (!m || method !== "GET") return json({ error: "Not found" }, 404);
+    const room = await db.prepare("SELECT code, host_id, host_name, name, pub, pvp, players, updated FROM mp_rooms WHERE code = ?").bind(m[2]).first();
+    if (m[1] === "room") return room ? json({ code: room.code, name: room.name, host: room.host_name, players: room.players, pvp: !!room.pvp }) : json({ error: "No world with that code. Check the code with your friend." }, 404);
+    if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ error: "Expected a WebSocket" }, 426);
+    const origin = req.headers.get("origin"); if (origin) { let h = ""; try { h = new URL(origin).host; } catch (e) {} if (h !== url.host) return json({ error: "Not allowed" }, 403); }
+    if (!room) return json({ error: "No world with that code." }, 404);
+    const role = url.searchParams.get("role") === "host" ? "host" : "guest", u = await auth(req, db);
+    if (role === "host" && (!u || u.id !== room.host_id)) return json({ error: "Only the person who opened this room can host it." }, 403);
+    let name = u ? u.name : String(url.searchParams.get("name") || "").replace(/[^\w -]/g, "").trim().slice(0, 16);
+    if (!name || name.length < 2) name = "Guest";
+    const h = new Headers(req.headers); h.set("x-mp-role", role); h.set("x-mp-name", name); h.set("x-mp-code", room.code); h.set("x-mp-pvp", room.pvp ? "1" : "0");
+    return env.ROOMS.get(env.ROOMS.idFromName(room.code)).fetch(new Request(req, { headers: h }));
+  }
+
+  // ---- Delve worlds: one row per (account, world id). The table is created the first time it is used. ----
+  //   GET    /api/delve          list: [{wid, name, rev, updated, size}]
+  //   GET    /api/delve/<wid>    {wid, name, data, rev, updated}
+  //   PUT    /api/delve/<wid>    {name, data, baseRev} -> {rev, updated}; 409 {error:"conflict", rev, updated} if the cloud copy changed since baseRev
+  //   DELETE /api/delve/<wid>
+  if (path === "/api/delve" || path.startsWith("/api/delve/")) {
+    const u = await auth(req, db);
+    if (!u) return json({ error: "Not signed in" }, 401);
+    await delveTable(db);
+    const wid = path.length > 11 ? decodeURIComponent(path.slice(11)) : "";
+    if (!wid) {
+      if (method !== "GET") return json({ error: "Not found" }, 404);
+      const r = await db.prepare("SELECT wid, name, rev, updated, length(data) AS size FROM delve WHERE user_id = ? ORDER BY updated DESC").bind(u.id).all();
+      return json({ worlds: r.results || [] });
+    }
+    if (!/^w[a-z0-9]{4,24}$/.test(wid)) return json({ error: "Bad world id" }, 400);
+    if (method === "GET") {
+      const r = await db.prepare("SELECT wid, name, data, rev, updated FROM delve WHERE user_id = ? AND wid = ?").bind(u.id, wid).first();
+      return r ? json(r) : json({ error: "Not found" }, 404);
+    }
+    if (method === "DELETE") {
+      await db.prepare("DELETE FROM delve WHERE user_id = ? AND wid = ?").bind(u.id, wid).run();
+      return json({ ok: true });
+    }
+    if (method === "PUT") {
+      const b = await readJson(req);
+      if (!b || typeof b.data !== "string" || !Number.isInteger(b.baseRev) || b.baseRev < 0) return json({ error: "Bad request" }, 400);
+      if (b.data.length > MAX_DELVE) return json({ error: "World is too large for the cloud" }, 413);
+      let parsed = null; try { parsed = JSON.parse(b.data); } catch (e) {}
+      if (!isObj(parsed) || !Number.isFinite(parsed.seed)) return json({ error: "Bad world data" }, 400);
+      const name = (typeof b.name === "string" ? b.name : "World").trim().slice(0, 24) || "World", now = Date.now();
+      const conflict = async () => { const c = await db.prepare("SELECT rev, updated FROM delve WHERE user_id = ? AND wid = ?").bind(u.id, wid).first(); return json({ error: "conflict", rev: c ? c.rev : 0, updated: c ? c.updated : 0 }, 409); };
+      const cur = await db.prepare("SELECT rev FROM delve WHERE user_id = ? AND wid = ?").bind(u.id, wid).first();
+      if (!cur) {
+        if (b.baseRev !== 0) return conflict();
+        const n = await db.prepare("SELECT COUNT(*) AS n FROM delve WHERE user_id = ?").bind(u.id).first();
+        if (n && n.n >= MAX_DELVE_WORLDS) return json({ error: "You already have " + MAX_DELVE_WORLDS + " worlds in the cloud. Delete one first." }, 409);
+        const r = await db.prepare("INSERT OR IGNORE INTO delve (user_id, wid, name, data, rev, updated) VALUES (?, ?, ?, ?, 1, ?)").bind(u.id, wid, name, b.data, now).run();
+        if (!r.meta || r.meta.changes !== 1) return conflict();
+        return json({ rev: 1, updated: now });
+      }
+      if (cur.rev !== b.baseRev) return conflict();
+      const r = await db.prepare("UPDATE delve SET data = ?, name = ?, rev = rev + 1, updated = ? WHERE user_id = ? AND wid = ? AND rev = ?")
+        .bind(b.data, name, now, u.id, wid, b.baseRev).run();
+      if (!r.meta || r.meta.changes !== 1) return conflict();
+      return json({ rev: b.baseRev + 1, updated: now });
+    }
+    return json({ error: "Not found" }, 404);
+  }
+
   return json({ error: "Not found" }, 404);
+}
+let mpReady = false;
+async function mpTable(db) {
+  if (mpReady) return;
+  await db.prepare("CREATE TABLE IF NOT EXISTS mp_rooms (code TEXT PRIMARY KEY, host_id TEXT NOT NULL, host_name TEXT NOT NULL, name TEXT NOT NULL, pub INTEGER NOT NULL, pvp INTEGER NOT NULL, players INTEGER NOT NULL, updated INTEGER NOT NULL)").run();
+  mpReady = true;
+}
+const MP_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function mpCode() { const r = rand(6); let s = ""; for (const b of r) s += MP_CHARS[b % MP_CHARS.length]; return s; }
+
+// ===== DelveRoom: one Durable Object per room code. It only relays messages; the host's game runs the world. =====
+// Sockets use the hibernation API, so an idle room costs nothing. Each socket's attachment holds {id, role, name}.
+//   Guest messages of the kinds in BCAST go to everyone else; other guest messages go to the host only.
+//   Host messages go to every guest, or to one player when they carry {to}. Any message with {to} goes only to that player.
+//   Host-only controls: {t:"kick", id}, {t:"meta", players, pub, pvp} (refreshes the lobby listing).
+const MP_MAX = 4, MP_BCAST = { p: 1, set: 1, wall: 1, chat: 1, me: 1, fx: 1 };
+export class DelveRoom {
+  constructor(ctx, env) { this.ctx = ctx; this.env = env; this.rate = new Map(); }
+  metas() { return this.ctx.getWebSockets().map(w => ({ w, m: w.deserializeAttachment() })).filter(q => q.m); }
+  send(w, o) { try { w.send(typeof o === "string" ? o : JSON.stringify(o)); } catch (e) {} }
+  async listing(players) {
+    const code = (this.metas()[0] || {}).m; if (!code || !this.env.DB) return;
+    try { await this.env.DB.prepare("UPDATE mp_rooms SET players = ?, updated = ? WHERE code = ?").bind(players, Date.now(), code.code).run(); } catch (e) {}
+  }
+  async fetch(req) {
+    if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return new Response("Expected a WebSocket", { status: 426 });
+    const role = req.headers.get("x-mp-role") === "host" ? "host" : "guest", name = req.headers.get("x-mp-name") || "Guest", code = req.headers.get("x-mp-code") || "";
+    const pair = new WebSocketPair(), [client, server] = Object.values(pair), others = this.metas();
+    this.ctx.acceptWebSocket(server);
+    const refuse = msg => { this.send(server, { t: "error", m: msg }); try { server.close(4000, msg.slice(0, 120)); } catch (e) {} return new Response(null, { status: 101, webSocket: client }); };
+    if (role === "host") others.forEach(q => { if (q.m.role === "host") { this.send(q.w, { t: "error", m: "You opened this world somewhere else." }); try { q.w.close(4001, "replaced"); } catch (e) {} } });
+    else {
+      if (!others.some(q => q.m.role === "host")) return refuse("The host isn't online right now.");
+      if (others.length >= MP_MAX) return refuse("This world is full (" + MP_MAX + " players).");
+    }
+    const id = ((await this.ctx.storage.get("n")) || 0) + 1; await this.ctx.storage.put("n", id);
+    const live = others.filter(q => !(role === "host" && q.m.role === "host"));
+    server.serializeAttachment({ id, role, name, code });
+    this.send(server, { t: "hello", id, role, pvp: req.headers.get("x-mp-pvp") === "1", players: live.map(q => ({ id: q.m.id, name: q.m.name, role: q.m.role })) });
+    live.forEach(q => this.send(q.w, { t: "join", id, name, role }));
+    await this.listing(live.length + 1);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async webSocketMessage(ws, data) {
+    const me = ws.deserializeAttachment(); if (!me || typeof data !== "string") return;
+    if (data.length > (me.role === "host" ? 1500000 : 32000)) return;
+    if (me.role !== "host") {   // a guest may send at most 60 messages a second
+      const now = Date.now(), r = this.rate.get(me.id) || { t: now, n: 0 };
+      if (now - r.t > 1000) { r.t = now; r.n = 0; } if (++r.n > 60) { this.rate.set(me.id, r); return; } this.rate.set(me.id, r);
+    }
+    let m; try { m = JSON.parse(data); } catch (e) { return; }
+    if (!m || typeof m.t !== "string") return;
+    m.from = me.id; const all = this.metas();
+    if (me.role === "host" && m.t === "kick") { const q = all.find(q => q.m.id === m.id && q.m.role !== "host"); if (q) { this.send(q.w, { t: "kicked" }); try { q.w.close(4002, "kicked"); } catch (e) {} } return; }
+    if (me.role === "host" && m.t === "meta") {
+      if (this.env.DB) try { await this.env.DB.prepare("UPDATE mp_rooms SET players = ?, pub = ?, pvp = ?, updated = ? WHERE code = ?").bind(all.length, m.pub ? 1 : 0, m.pvp ? 1 : 0, Date.now(), me.code).run(); } catch (e) {}
+      return;
+    }
+    const out = JSON.stringify(m);
+    if (m.to) { const q = all.find(q => q.m.id === m.to); if (q) this.send(q.w, out); return; }
+    all.forEach(q => { if (q.w === ws) return; if (me.role === "host" || MP_BCAST[m.t] || q.m.role === "host") this.send(q.w, out); });
+  }
+  async webSocketClose(ws, code, reason) { await this.gone(ws); try { ws.close(code === 1005 ? 1000 : code, "bye"); } catch (e) {} }
+  async webSocketError(ws) { await this.gone(ws); }
+  async gone(ws) {
+    const me = ws.deserializeAttachment(); if (!me || me.left) return; me.left = true; try { ws.serializeAttachment(me); } catch (e) {}
+    const rest = this.metas().filter(q => q.w !== ws && !q.m.left);
+    if (me.role === "host" && !rest.some(q => q.m.role === "host")) {
+      rest.forEach(q => { this.send(q.w, { t: "hostleft" }); try { q.w.close(4003, "host left"); } catch (e) {} });
+      if (this.env.DB) try { await this.env.DB.prepare("DELETE FROM mp_rooms WHERE code = ?").bind(me.code).run(); } catch (e) {}
+      return;
+    }
+    rest.forEach(q => this.send(q.w, { t: "leave", id: me.id }));
+    await this.listing(rest.length);
+  }
+}
+
+let delveReady = false;
+async function delveTable(db) {
+  if (delveReady) return;
+  await db.prepare("CREATE TABLE IF NOT EXISTS delve (user_id TEXT NOT NULL, wid TEXT NOT NULL, name TEXT NOT NULL, data TEXT NOT NULL, rev INTEGER NOT NULL, updated INTEGER NOT NULL, PRIMARY KEY (user_id, wid))").run();
+  delveReady = true;
 }
 
 export default {
