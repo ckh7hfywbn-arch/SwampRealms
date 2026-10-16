@@ -392,3 +392,25 @@ body.sbx-app footer{margin-top:28px}
 .sbx-food.mid{--fc:#f2c14e;--fc2:#c08a1c}
 .sbx-food.low{--fc:#ff5a4a;--fc2:#b81d18;animation:sbxLow 1.1s ease-in-out infinite}
 @media(max-width:480px){.sbx-food{width:96px}}
+/* waypoint editor card on the map */
+.sbx-mcard{flex-direction:column;align-items:stretch;gap:8px}
+.sbx-mcard .wp-top{display:flex;align-items:center;gap:10px}
+.sbx-mcard .wp-pin{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #06100d;box-shadow:0 0 0 1px #ffffff33}
+.sbx-mcard .wp-pin img{width:20px;height:20px;transform:rotate(45deg)}
+.sbx-mcard .wp-meta{flex:1;min-width:0}
+.sbx-mcard input{width:100%;box-sizing:border-box;padding:6px 9px;border-radius:9px;border:1px solid #4ee6b455;background:#04100c;color:#f6eedb;font:800 .95rem Nunito,system-ui,sans-serif;outline:none}
+.sbx-mcard input:focus{border-color:#4ee6b4;box-shadow:0 0 0 2px #4ee6b433}
+.sbx-mcard .wp-row{display:flex;flex-wrap:wrap;gap:6px}
+.sbx-mcard .wp-sw{width:26px;height:26px;padding:0;border-radius:50%;border:2px solid #06100d;cursor:pointer;box-shadow:0 0 0 1px #ffffff22}
+.sbx-mcard .wp-sw.on{box-shadow:0 0 0 2px #fff}
+.sbx-mcard .wp-ic{display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:9px;border:1px solid #ffffff22;background:#0b1a15;cursor:pointer}
+.sbx-mcard .wp-ic img{width:20px;height:20px}
+.sbx-mcard .wp-ic.on{background:#4ee6b4;border-color:#4ee6b4}
+@media(max-width:480px){.sbx-mcard .wp-sw{width:24px;height:24px}.sbx-mcard .wp-ic{width:29px;height:29px}.sbx-mcard .wp-top .btn{padding:8px 9px}}
+.sbx-mcard .wp-meta small{text-align:left;margin-top:3px}
+.sbx-mcard .wp-row{gap:5px}
+.sbx-mcard .wp-ic{width:30px;height:30px}
+.sbx-mcard .wp-ic img{width:18px;height:18px}
+@media(max-width:480px){.sbx-mcard .wp-ic{width:26px;height:26px}.sbx-mcard .wp-ic img{width:16px;height:16px}.sbx-mcard .wp-sw{width:22px;height:22px}}
+.sbx-mapv:has(.sbx-mcard:not([hidden])) .sbx-mhint{display:none}
+@media(max-width:480px){.sbx-mcard{padding:9px 9px}.sbx-mcard .wp-row{gap:3px}.sbx-mcard .wp-ic{width:24px;height:24px;border-radius:7px}.sbx-mcard .wp-ic img{width:15px;height:15px}.sbx-mcard .wp-sw{width:22px;height:22px}}

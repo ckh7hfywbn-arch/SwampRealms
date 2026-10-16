@@ -31,7 +31,8 @@
   var CAN = { n: "Watering Can", max: 12, c: "#6fb7d9" }, GROW_T = 4.5, PLANTS = {}, GROW_CROWD = 5;
   PLANTS[T.FLOWER] = 1; PLANTS[T.REED] = 1; PLANTS[T.GLOWCAP] = 1;
   var AVS = 0.85;   // how big avatars are drawn (1 = the old size). Applies to you; the hitbox (PW x PH) is unchanged.
-  var WP_MAX = 24, WP_COL = ["#ff6b82", "#f2c14e", "#4ee6b4", "#6fb6ff", "#c78bff", "#ff9a4a"], KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
+  var WP_ICONS = ["dot", "home", "star", "heart", "skull", "pick", "chest", "flag", "cave", "tree", "crown", "sword"];
+  var WP_MAX = 24, WP_COL = ["#ff6b82", "#f2c14e", "#4ee6b4", "#6fb6ff", "#c78bff", "#ff9a4a", "#ff4a4a", "#9be35a", "#3ad0ff", "#ff7ad9", "#f6eedb", "#8a8f99"], KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
   // health: tuning (a player has MAXHP; fall hits past FALL_SAFE speed, lava burns per second, then you heal after a calm spell)
   var MAXHP = 100, FALL_SAFE = 21, FALL_DMG = 3.5, LAVA_DPS = 38, REGEN_WAIT = 4, REGEN_RATE = 2.5;
   var PICKS = [
@@ -334,7 +335,7 @@
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
-      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), n: String(w.n || "Waypoint").slice(0, 24) });
+      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24) });
     });
     d.days = Math.max(0, Math.min(1e6, Math.floor(+o.days) || 0));
     d.zoom = [0.8, 1, 1.25, 1.5, 2].indexOf(+o.zoom) > -1 ? +o.zoom : 1;
@@ -671,9 +672,9 @@
   }
   function buildAtlas() {
     LEAFATLAS = document.createElement("canvas"); LEAFATLAS.width = 64; LEAFATLAS.height = 16 * 16;
-    var lg = LEAFATLAS.getContext("2d"); for (var lm = 0; lm < 16; lm++) for (var lv = 0; lv < 4; lv++) paintLeaf(lg, lv * 16, lm * 16, lv, lm);
+    var lg = LEAFATLAS.getContext("2d", { willReadFrequently: true }); for (var lm = 0; lm < 16; lm++) for (var lv = 0; lv < 4; lv++) paintLeaf(lg, lv * 16, lm * 16, lv, lm);
     ATLAS = document.createElement("canvas"); ATLAS.width = 64; ATLAS.height = 16 * TILES.length;
-    var g = ATLAS.getContext("2d");
+    var g = ATLAS.getContext("2d", { willReadFrequently: true });
     TILES.forEach(function (td) { for (var v = 0; v < 4; v++) paint(g, td, v, td.id * 16); });
     gradeAtlas();
     buildSmooth();
@@ -732,13 +733,15 @@
   // Door: closed = framed planks with iron hinges, a round iron handle and a glowing swamp window up top; open = the slab swung back, seen edge-on against the left side of the doorway.
   function paintDoor(rect, hh, d) {
     var x, y;
-    if (d.open) {
-      rect(0, 0, 4, 16, "#b9793f"); rect(0, 0, 1, 16, "#dc9a58"); rect(3, 0, 1, 16, "#6e431f"); rect(4, 0, 1, 16, "#000", 0.18);
-      for (y = 1; y < 16; y += 4) rect(1, y, 2, 1, "#8a5328", 0.8);
-      rect(0, d.top ? 3 : 11, 4, 3, "#4a4a52"); rect(0, d.top ? 3 : 11, 4, 1, "#9aa0ac"); rect(2, d.top ? 4 : 12, 1, 1, "#1c1c22");
-      if (d.top) rect(0, 0, 4, 1, "#2a190d");
+    if (!d.open) {   // CLOSED: the door seen edge-on, a thin plank standing in the middle of the doorway
+      var tx = 6;
+      rect(tx, 0, 4, 16, "#b9793f"); rect(tx, 0, 1, 16, "#dc9a58"); rect(tx + 3, 0, 1, 16, "#6e431f"); rect(tx + 4, 0, 1, 16, "#000", 0.18); rect(tx - 1, 0, 1, 16, "#000", 0.12);
+      for (y = 1; y < 16; y += 4) rect(tx + 1, y, 2, 1, "#8a5328", 0.8);
+      rect(tx, d.top ? 3 : 11, 4, 3, "#4a4a52"); rect(tx, d.top ? 3 : 11, 4, 1, "#9aa0ac"); rect(tx + 2, d.top ? 4 : 12, 1, 1, "#1c1c22");
+      if (d.top) rect(tx, 0, 4, 1, "#2a190d");
       return;
     }
+    // OPEN: the door swung round to face you, the full wide panel
     rect(0, 0, 16, 16, "#9a6234");
     var boards = [[2, "#b9793f", "#dc9a58", "#8a5328"], [6, "#c4844a", "#e6a766", "#94592c"], [10, "#b9793f", "#dc9a58", "#8a5328"]];
     boards.forEach(function (b, i) {
@@ -1293,7 +1296,7 @@
       var gc = ITEMS[id].gem; g.fillStyle = gc; g.beginPath(); g.moveTo(16, 4); g.lineTo(26, 14); g.lineTo(16, 28); g.lineTo(6, 14); g.closePath(); g.fill();
       g.fillStyle = "#ffffff88"; g.beginPath(); g.moveTo(16, 4); g.lineTo(21, 14); g.lineTo(16, 14); g.lineTo(11, 14); g.closePath(); g.fill();
       g.strokeStyle = "#00000055"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(16, 4); g.lineTo(26, 14); g.lineTo(16, 28); g.lineTo(6, 14); g.closePath(); g.stroke();
-    } else if (id === "door") { g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, T.DOOR_T * 16, 16, 16, 8, 1, 16, 15); g.drawImage(ATLAS, 0, T.DOOR_B * 16, 16, 16, 8, 16, 16, 15); }
+    } else if (id === "door") { g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, T.DOORO_T * 16, 16, 16, 8, 1, 16, 15); g.drawImage(ATLAS, 0, T.DOORO_B * 16, 16, 16, 8, 16, 16, 15); }
     else { var t = ITEMS[id].tile; g.drawImage(ATLAS, 0, t * 16, 16, 16, 2, 2, 28, 28); }
     return (ICO[key] = c.toDataURL());
   }
@@ -3442,7 +3445,7 @@
         srcs.push([e.x + 0.5, e.y + 2.1, 3.6, 0.25 + 0.45 * dl]);
       }); }
       g.fillStyle = "#3a2216"; g.fillRect(ux, uy, ts, ts);
-      g.drawImage(ATLAS, 0, T.DOOR_T * 16, 16, 16, ux, uy, ts, ts / 2); g.drawImage(ATLAS, 0, T.DOOR_B * 16, 16, 16, ux, uy + ts / 2, ts, ts / 2);
+      g.drawImage(ATLAS, 0, T.DOORO_T * 16, 16, 16, ux, uy, ts, ts / 2); g.drawImage(ATLAS, 0, T.DOORO_B * 16, 16, 16, ux, uy + ts / 2, ts, ts / 2);
       g.fillStyle = "rgba(120,40,40,.7)"; g.fillRect(ux + ts * 0.12, uy - ts * 0.55, ts * 0.76, ts * 0.45); g.fillStyle = "rgba(255,225,170,.18)"; g.fillRect(ux, uy - ts * 1.5, ts, ts * 1.5);
       srcs.push([F.up.x + 0.5, F.up.y - 0.2, 5, 0.8]); glows2.push([ux + ts / 2, uy - ts * 0.3, "255,225,170", 3, 0.2]);
     } else {
@@ -3812,20 +3815,47 @@
       var q = m2s(w.x + 0.5, w.y + 0.5), col = WP_COL[w.c], on = i === M.sel; if (q[0] < -30 || q[0] > M.cw + 30 || q[1] < -30 || q[1] > M.ch + 30) return;
       g.save(); g.translate(q[0], q[1]); g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.ellipse(0, 1, 6, 2.2, 0, 0, 6.2832); g.fill();
       g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(-13, -14, -9, -27, 0, -27); g.bezierCurveTo(9, -27, 13, -14, 0, 0); g.closePath();
-      g.fillStyle = col; g.fill(); g.lineWidth = on ? 3 : 2; g.strokeStyle = on ? "#fff" : "#06100d"; g.stroke(); g.fillStyle = "#06100d"; g.beginPath(); g.arc(0, -17, 3.6, 0, 6.2832); g.fill();
+      g.fillStyle = col; g.fill(); g.lineWidth = on ? 3 : 2; g.strokeStyle = on ? "#fff" : "#06100d"; g.stroke();
+      g.fillStyle = "#06100d"; g.beginPath(); g.arc(0, -17, 6.4, 0, 6.2832); g.fill(); g.save(); g.translate(0, -17); wpGlyph(g, WP_ICONS[w.i || 0], 4.4, "#ffffff"); g.restore();
       if (on || s >= 5) { var tw = g.measureText(w.n).width; g.fillStyle = "rgba(4,10,8,.82)"; g.fillRect(12, -30, tw + 12, 20); g.fillStyle = "#f6eedb"; g.fillText(w.n, 18, -20); }
       g.restore();
     });
     g.textBaseline = "alphabetic";
     $("sbxMapInfo").textContent = (S.wp.length ? S.wp.length + " / " + WP_MAX + " waypoints" : "No waypoints yet") + " · " + (M.s / mapMin()).toFixed(1) + "x";
   }
+  // Waypoint icons: little vector glyphs drawn centred on (0,0) in a box about 2r wide. Used on the map pins and on the picker buttons.
+  var WP_ICON_NAMES = { dot: "Dot", home: "Home", star: "Star", heart: "Heart", skull: "Danger", pick: "Mine", chest: "Treasure", flag: "Flag", cave: "Cave", tree: "Tree", crown: "Crown", sword: "Battle" };
+  function wpGlyph(g, k, r, fg) {
+    g.fillStyle = fg; g.strokeStyle = fg; g.lineJoin = "round"; g.lineCap = "round"; var i, a;
+    g.beginPath();
+    if (k === "dot") { g.arc(0, 0, r * 0.55, 0, 6.2832); g.fill(); }
+    else if (k === "home") { g.moveTo(-r, -0.05 * r); g.lineTo(0, -r); g.lineTo(r, -0.05 * r); g.lineTo(0.72 * r, -0.05 * r); g.lineTo(0.72 * r, r); g.lineTo(-0.72 * r, r); g.lineTo(-0.72 * r, -0.05 * r); g.closePath(); g.fill(); g.clearRect(-0.22 * r, 0.3 * r, 0.44 * r, 0.7 * r); }
+    else if (k === "star") { for (i = 0; i < 10; i++) { a = -Math.PI / 2 + i * Math.PI / 5; var rr = i % 2 ? r * 0.45 : r; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); g.fill(); }
+    else if (k === "heart") { g.moveTo(0, r); g.bezierCurveTo(-1.3 * r, 0, -0.9 * r, -1.05 * r, 0, -0.42 * r); g.bezierCurveTo(0.9 * r, -1.05 * r, 1.3 * r, 0, 0, r); g.fill(); }
+    else if (k === "skull") { g.arc(0, -0.15 * r, 0.82 * r, 0, 6.2832); g.fill(); g.fillRect(-0.45 * r, 0.4 * r, 0.9 * r, 0.55 * r); g.globalCompositeOperation = "destination-out"; g.beginPath(); g.arc(-0.33 * r, -0.15 * r, 0.24 * r, 0, 6.2832); g.arc(0.33 * r, -0.15 * r, 0.24 * r, 0, 6.2832); g.fill(); g.fillRect(-0.06 * r, 0.5 * r, 0.12 * r, 0.45 * r); g.globalCompositeOperation = "source-over"; }
+    else if (k === "pick") { g.lineWidth = r * 0.3; g.moveTo(-0.75 * r, 0.85 * r); g.lineTo(0.35 * r, -0.3 * r); g.stroke(); g.beginPath(); g.lineWidth = r * 0.34; g.moveTo(-0.6 * r, -0.65 * r); g.quadraticCurveTo(0.35 * r, -1.05 * r, 0.95 * r, 0.1 * r); g.stroke(); }
+    else if (k === "chest") { g.fillRect(-0.95 * r, -0.2 * r, 1.9 * r, 1.1 * r); g.beginPath(); g.moveTo(-0.95 * r, -0.25 * r); g.quadraticCurveTo(0, -1.1 * r, 0.95 * r, -0.25 * r); g.fill(); g.clearRect(-0.95 * r, -0.28 * r, 1.9 * r, 0.14 * r); g.clearRect(-0.14 * r, -0.1 * r, 0.28 * r, 0.36 * r); }
+    else if (k === "flag") { g.lineWidth = r * 0.24; g.moveTo(-0.6 * r, r); g.lineTo(-0.6 * r, -r); g.stroke(); g.beginPath(); g.moveTo(-0.55 * r, -r); g.lineTo(0.95 * r, -0.62 * r); g.lineTo(-0.55 * r, -0.15 * r); g.closePath(); g.fill(); }
+    else if (k === "cave") { g.moveTo(-r, r); g.lineTo(-r, -0.1 * r); g.quadraticCurveTo(-r, -r, 0, -r); g.quadraticCurveTo(r, -r, r, -0.1 * r); g.lineTo(r, r); g.closePath(); g.fill(); g.globalCompositeOperation = "destination-out"; g.beginPath(); g.moveTo(-0.5 * r, r); g.lineTo(-0.5 * r, 0.1 * r); g.quadraticCurveTo(-0.5 * r, -0.5 * r, 0, -0.5 * r); g.quadraticCurveTo(0.5 * r, -0.5 * r, 0.5 * r, 0.1 * r); g.lineTo(0.5 * r, r); g.closePath(); g.fill(); g.globalCompositeOperation = "source-over"; }
+    else if (k === "tree") { g.moveTo(0, -r); g.lineTo(0.85 * r, 0.45 * r); g.lineTo(-0.85 * r, 0.45 * r); g.closePath(); g.fill(); g.fillRect(-0.16 * r, 0.4 * r, 0.32 * r, 0.6 * r); }
+    else if (k === "crown") { g.moveTo(-r, 0.7 * r); g.lineTo(-r, -0.55 * r); g.lineTo(-0.5 * r, 0); g.lineTo(0, -0.85 * r); g.lineTo(0.5 * r, 0); g.lineTo(r, -0.55 * r); g.lineTo(r, 0.7 * r); g.closePath(); g.fill(); }
+    else if (k === "sword") { g.lineWidth = r * 0.26; g.moveTo(-0.7 * r, 0.7 * r); g.lineTo(0.85 * r, -0.85 * r); g.stroke(); g.beginPath(); g.lineWidth = r * 0.22; g.moveTo(-0.75 * r, 0.15 * r); g.lineTo(-0.15 * r, 0.75 * r); g.stroke(); }
+  }
+  var WPI_URL = {};
+  function wpIconUrl(k, col) { var key = k + col; if (WPI_URL[key]) return WPI_URL[key]; var c = document.createElement("canvas"); c.width = c.height = 40; var g = c.getContext("2d"); g.translate(20, 20); wpGlyph(g, k, 13, col); return (WPI_URL[key] = c.toDataURL()); }
   function wpText(w) {
     var dx = Math.round(w.x - p.x), dy = Math.round(w.y - p.y);
     return (Math.abs(dx) < 2 ? "right here sideways" : Math.abs(dx) + " tiles " + (dx > 0 ? "east" : "west")) + " · " + (Math.abs(dy) < 2 ? "same depth" : Math.abs(dy) + " " + (dy > 0 ? "down" : "up"));
   }
   function mapCard() {
     var cd = $("sbxMapCard"), w = M.sel >= 0 ? S.wp[M.sel] : null; if (!w) { cd.hidden = true; return; }
-    cd.hidden = false; cd.innerHTML = '<i style="background:' + WP_COL[w.c] + '"></i><div><b>' + esc(w.n) + "</b><small>" + esc(wpText(w)) + '</small></div><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button>';
+    cd.hidden = false;
+    var keep = document.activeElement && document.activeElement.id === "sbxWpName";   // re-rendering while typing would lose the cursor: only refresh the rest
+    var head = '<div class="wp-top"><span class="wp-pin" style="background:' + WP_COL[w.c] + '"><img alt="" src="' + wpIconUrl(WP_ICONS[w.i || 0], "#ffffff") + '"></span><div class="wp-meta"><input id="sbxWpName" type="text" maxlength="24" value="' + esc(w.n) + '" aria-label="Waypoint name" spellcheck="false"><small>' + esc(wpText(w)) + '</small></div><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button></div>';
+    var cols = '<div class="wp-row" role="group" aria-label="Colour">' + WP_COL.map(function (c, n) { return '<button type="button" class="wp-sw' + (n === w.c ? " on" : "") + '" data-wpc="' + n + '" style="background:' + c + '" aria-label="Colour ' + (n + 1) + '" aria-pressed="' + (n === w.c) + '"></button>'; }).join("") + "</div>";
+    var ics = '<div class="wp-row" role="group" aria-label="Icon">' + WP_ICONS.map(function (k, n) { return '<button type="button" class="wp-ic' + (n === (w.i || 0) ? " on" : "") + '" data-wpi="' + n + '" title="' + WP_ICON_NAMES[k] + '" aria-label="' + WP_ICON_NAMES[k] + '" aria-pressed="' + (n === (w.i || 0)) + '"><img alt="" src="' + wpIconUrl(k, n === (w.i || 0) ? "#06100d" : "#f6eedb") + '"></button>'; }).join("") + "</div>";
+    if (keep) { var sm = cd.querySelector(".wp-meta small"); if (sm) sm.textContent = wpText(w); var pin = cd.querySelector(".wp-pin"); if (pin) pin.style.background = WP_COL[w.c]; return; }
+    cd.innerHTML = head + cols + ics;
   }
   function mapTap(x, y) {
     var i, best = -1, bd = 22 * 22;
@@ -3835,7 +3865,7 @@
     if (S.wp.length >= WP_MAX) { toast("Waypoint limit reached (" + WP_MAX + "). Remove one first.", "#f2c14e"); return; }
     var used = {}; S.wp.forEach(function (w) { var m2 = /^Waypoint (\d+)$/.exec(w.n); if (m2) used[m2[1]] = 1; }); for (i = 1; used[i]; i++);
     var col = 0, cnt = {}; S.wp.forEach(function (w) { cnt[w.c] = (cnt[w.c] || 0) + 1; }); WP_COL.forEach(function (_, ci) { if ((cnt[ci] || 0) < (cnt[col] || 0)) col = ci; });
-    S.wp.push({ x: tx, y: ty, c: col, n: "Waypoint " + i }); M.sel = S.wp.length - 1; snd("coin"); save(); mapCard();
+    S.wp.push({ x: tx, y: ty, c: col, i: 0, n: "Waypoint " + i }); M.sel = S.wp.length - 1; snd("coin"); save(); mapCard();
   }
   function mapDelete() { if (M.sel < 0) return; S.wp.splice(M.sel, 1); M.sel = -1; snd("open"); save(); mapCard(); }
   function openMap() {
@@ -3869,8 +3899,13 @@
       var t = e.target.closest("button"); if (!t) return;
       if (t.hasAttribute("data-mclose")) return closeMap();
       var z = t.getAttribute("data-mz"); if (z) { if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
+      if (t.hasAttribute("data-wpc") && M.sel >= 0) { S.wp[M.sel].c = +t.getAttribute("data-wpc"); snd("coin"); save(); return mapCard(); }
+      if (t.hasAttribute("data-wpi") && M.sel >= 0) { S.wp[M.sel].i = +t.getAttribute("data-wpi"); snd("coin"); save(); return mapCard(); }
       var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete(); if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
     });
+    V.addEventListener("input", function (e) { if (e.target.id !== "sbxWpName" || M.sel < 0) return; S.wp[M.sel].n = e.target.value.slice(0, 24); });
+    V.addEventListener("change", function (e) { if (e.target.id !== "sbxWpName" || M.sel < 0) return; var w = S.wp[M.sel]; w.n = (e.target.value.trim() || "Waypoint").slice(0, 24); e.target.value = w.n; save(); });
+    V.addEventListener("keydown", function (e) { if (e.target.id === "sbxWpName" && (e.key === "Enter" || e.key === "Escape")) { e.target.blur(); e.stopPropagation(); } }, true);
     window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
     if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(V);
   })();
@@ -3952,6 +3987,7 @@
   });
   window.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && panelOpen) { closePanel(); return; }
     if (k === "e" || k === "E") { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); e.preventDefault(); return; }

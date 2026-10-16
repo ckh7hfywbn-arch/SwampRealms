@@ -583,3 +583,14 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
 
 ### Delve: no character outline
 - The dark 1px outline around your avatar (and its arm) is off. `OUTLINE = false` at the top of `delve-avatar.js`; set it to `true` to bring it back. This also applies to the "Play as" thumbnails.
+
+## Delve update (October 2026)
+
+- **Crafting stations:** tap (or press F next to) a Workbench, Decor Workbench, Furnace, Loom, Mason's Table or Cooking Pot to open its own window. Station recipes only appear there; the Journal's Craft tab lists hand-made recipes.
+- **World generation (WORLDVER 7):** taller world (H 200, surface row 72), per-seed landforms (ranges, peaks, mesas, volcanoes with lava craters, ice spires, lake basins), clean walkable slopes, smoothed caverns, cave mouths, still pools, pines and dead trees. Old saves keep items and progress; digging, map, chests and crops reset.
+- **Creatures:** Frost Wolf, Bog Gator, slimes (split when popped; colour by biome) and Ember Wasp, each with a visible tell before attacking. Hole caves are stocked per floor with top-down combat; open-world caves spawn more underground.
+- **Cave loot:** Cave Chests (rolled when first opened) and Cave Pots in both cave systems, better deeper down.
+- **Farming and food:** hunger bar (can be turned off in Options), Garden Soil, 4 crops with growth stages and watering, Cooking Pot meals, raw meat drops, 4 new Trail steps and food goals.
+- **Buildings:** 7 redesigned exteriors (incl. the new Swamp Farmstead) built from Content Pack blocks, and hand-drawn interior floor plans (IMAP in sandbox-cave.js, one letter per tile).
+- **Doors:** closed doors are drawn thin (edge-on), open doors wide.
+- **Waypoints:** name, 12 colours and 12 icons, edited from the map card.
