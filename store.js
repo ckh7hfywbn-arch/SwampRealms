@@ -107,6 +107,7 @@ const Crystals={
  variant:id=>{const l=typeof AV!=="undefined"?AV.variants(id):[];const v=CS.hv&&CS.hv[id];return l.some(x=>x.id===v)?v:(l[0]?l[0].id:"")},   // chosen colour of a cosmetic that has variants (free to change)
  setVariant(id,v){cload();if(typeof AV!=="undefined"&&AV.variants(id).some(x=>x.id===v)){CS.hv[id]=v;csave();return true}return false},
  reload:cload,
+ grant(n){n=Math.max(0,Math.floor(n)||0);cload();CS.c+=n;CS.earned+=n;csave()},   // add crystals (capped milestone rewards only, e.g. Evolution boss first wins)
  save:csave,   // write the current crystals save (used by games that keep their own progress inside it, e.g. CS.evo for SwampRealms: Evolution)
  // how many crystals a finished round pays. game = "fly" | "match" | ...; score = the round's points
  forScore(game,score){const g=CRY.games[game]||CRY.games._;return Math.max(CRY.minRound,Math.min(g.cap,Math.floor((score||0)/g.per)))},

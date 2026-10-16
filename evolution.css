@@ -250,7 +250,7 @@ body.evo-app footer{margin-top:28px}
 
 /* ===== Stage 4: Realms, cinematics, live atmosphere, daily gift, next-goal pill ===== */
 /* 4 tabs + a dot when something in that tab is ready */
-.evo-nav{grid-template-columns:repeat(4,1fr)}
+.evo-nav{grid-template-columns:repeat(5,1fr)}
 .evo-nav button.dot::after{content:"";position:absolute;top:4px;left:calc(50% + 9px);width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);border:1.5px solid #050b09;animation:evoReady 1.4s ease-in-out infinite}
 /* live particle canvas sits between the art and the day/night tint */
 .evo-fx{position:absolute;inset:0;z-index:1;width:100%;height:100%;pointer-events:none;display:block}
@@ -389,3 +389,58 @@ body.evo-app footer{margin-top:28px}
 
 .evo-card.world.avail{border-color:color-mix(in srgb,var(--c) 45%,transparent)}
 .evo-scene[data-bio=ember][data-ph=day] .t-day,.evo-scene[data-bio=frost][data-ph=day] .t-day{opacity:.1}
+
+/* ===== Stage 5: Boss Battles ===== */
+.evo-bthumb{width:64px;height:58px;flex:none;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--c) 38%,#06100d),#06100d);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.evo-bthumb svg{width:52px;height:48px}
+.evo-card.boss.locked .evo-bthumb{filter:grayscale(1) brightness(.6)}
+.evo-bt{position:absolute;inset:0;z-index:22;display:grid;place-items:center;padding:12px;background:#020706f0;backdrop-filter:blur(3px)}
+.evo-bt[hidden]{display:none}
+.evo-bt-box,.evo-bt-fight{width:100%;max-width:360px;display:grid;gap:9px;padding:14px;border-radius:18px;background:linear-gradient(180deg,#0b1814,#050b09);border:1px solid color-mix(in srgb,var(--bc,#4ee6b4) 60%,transparent);box-shadow:0 0 40px -10px var(--bc,#4ee6b4);max-height:100%;overflow:auto}
+.evo-bt-box h3{margin:0;text-align:center;font-size:20px;color:#fff}
+.evo-bt-tag{margin:0;text-align:center;font-size:13px;color:var(--muted)}
+.evo-bt-pic{width:130px;margin:0 auto}.evo-bt-pic svg{width:100%;filter:drop-shadow(0 0 14px var(--bc))}.evo-bt-pic.lost{filter:grayscale(.8)}
+.evo-bt-facts{margin:0;padding:0 0 0 18px;display:grid;gap:4px;font-size:13px;color:#f6eedbcc}
+.evo-bt-facts b{color:var(--gold,#f2c14e)}
+.evo-bt-box .btn.on{box-shadow:0 0 0 2px var(--gold,#f2c14e)}
+.evo-bt-top{display:flex;align-items:center;gap:10px;font-size:15px;color:#fff}.evo-bt-top b{flex:1}.evo-bt-top span{font-weight:900;color:var(--gold,#f2c14e)}
+.evo-bt-x{width:34px;height:34px;border-radius:10px;border:1px solid #ffffff30;background:#ffffff10;color:#fff;font-size:18px;cursor:pointer}
+.evo-bt-bar{position:relative;height:20px;border-radius:10px;overflow:hidden;background:#ffffff14;border:1px solid #ffffff20}
+.evo-bt-bar i{position:absolute;inset:0 auto 0 0;width:100%;transition:width .12s linear}
+.evo-bt-bar.hp i{background:linear-gradient(90deg,#d63a3a,#ff7a5c)}.evo-bt-bar.co i{background:linear-gradient(90deg,#2fb6e6,#4ee6b4)}.evo-bt-bar.co{height:14px}
+.evo-bt-bar span{position:absolute;inset:0;display:grid;place-items:center;font:900 10.5px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-shadow:0 1px 3px #000}
+.evo-bt-art{position:relative;display:block;width:100%;aspect-ratio:200/150;padding:0;border:0;border-radius:16px;background:radial-gradient(circle at 50% 70%,color-mix(in srgb,var(--bc) 30%,#06100d),#050b09);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;overflow:hidden}
+.evo-bt-art svg{width:84%;margin:0 auto;display:block;filter:drop-shadow(0 0 12px var(--bc));transition:transform .08s}
+.evo-bt-art:active svg{transform:scale(.95)}
+.evo-bt-art.wind svg{animation:btShake .12s infinite;filter:drop-shadow(0 0 18px #ff3b3b)}
+.evo-bt-art.stun svg{filter:grayscale(.7) drop-shadow(0 0 14px #f2c14e);animation:btWob .4s infinite}
+.evo-bt-art.hit{animation:btHit .35s}
+.evo-bt-weak{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:radial-gradient(circle,#fff 0,#ffe08a 35%,#ff9f1c 70%,transparent 72%);box-shadow:0 0 18px #ffb43c;animation:btPulse .5s infinite alternate;cursor:pointer}
+.evo-bt-weak[hidden],.evo-bt-warn[hidden]{display:none}
+.evo-bt-warn{position:absolute;left:0;right:0;top:6px;text-align:center;font:900 16px Nunito,sans-serif;letter-spacing:.12em;color:#ff5a5a;text-shadow:0 0 10px #000}
+.evo-bt-dodge{width:100%;font-size:18px;padding:14px}
+.evo-bt-hint{margin:0;text-align:center;font-size:12.5px;color:var(--muted)}
+.evo-bt-f{position:absolute;pointer-events:none;font:900 18px Nunito,sans-serif;color:#fff;text-shadow:0 2px 4px #000;animation:btFloat .8s ease-out forwards}
+.evo-bt-f.crit{color:#ffd24a;font-size:24px}.evo-bt-f.bad{color:#ff6b6b}.evo-bt-f.good{color:#4ee6b4}
+.cn-boss svg{width:150px;filter:drop-shadow(0 0 16px currentColor)}
+@keyframes btShake{0%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}100%{transform:translate(-1px,-2px)}}
+@keyframes btWob{50%{transform:rotate(3deg)}}
+@keyframes btHit{0%{box-shadow:inset 0 0 0 0 #f00}30%{box-shadow:inset 0 0 40px 8px #ff2d2d}100%{box-shadow:inset 0 0 0 0 #f00}}
+@keyframes btPulse{to{transform:scale(1.18)}}
+@keyframes btFloat{to{transform:translateY(-34px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.evo-bt-art.wind svg,.evo-bt-art.stun svg,.evo-bt-weak{animation:none}}
+
+/* boss polish */
+.evo-card.boss{grid-template-columns:auto 1fr;box-shadow:inset 3px 0 0 var(--c)}
+.evo-card.boss .evo-act{grid-column:1/-1}
+.evo-card.boss .evo-act .btn{width:100%}
+.evo-card.boss.done{box-shadow:inset 3px 0 0 var(--gold,#f2c14e)}
+.evo-card.boss:not(.locked) .evo-bthumb{box-shadow:0 0 18px -6px var(--c)}
+.evo-bt-box{animation:btIn .25s ease-out}
+@keyframes btIn{from{transform:translateY(12px) scale(.97);opacity:0}}
+.evo-bt .btn{width:100%;box-sizing:border-box;margin:0}
+.evo-bt [data-tonic]{display:grid;gap:3px;justify-items:center;line-height:1.2}
+.evo-bt .evo-c{display:inline-flex;align-items:center;gap:5px;font-weight:900}
+.evo-bt .evo-orb.sm{display:inline-block;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#4ee6b4 55%,#1b8a68)}
+.evo-bt-dodge.ready{background:linear-gradient(#ff7a6a,#d63a3a);color:#fff;border-color:#ff9a8a;animation:btPulse .35s infinite alternate}
+.evo-bt-dodge:disabled{opacity:.45}

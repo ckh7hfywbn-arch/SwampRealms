@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SwampRealms: Evolution | SwampRealms</title>
-<meta name="description" content="SwampRealms: Evolution is an idle swamp tycoon. Collect Swamp Essence, catch fireflies, mutate your creatures and travel from the swamp to Ember Bog and Frostfen.">
+<meta name="description" content="SwampRealms: Evolution is an idle swamp tycoon. Collect Swamp Essence, catch fireflies, mutate your creatures, beat bosses and travel from the swamp to Ember Bog and Frostfen.">
 <link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/evolution">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SwampRealms">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="SwampRealms: Evolution | SwampRealms">
-<meta property="og:description" content="SwampRealms: Evolution is an idle swamp tycoon. Collect Swamp Essence, catch fireflies, mutate your creatures and travel from the swamp to Ember Bog and Frostfen.">
+<meta property="og:description" content="SwampRealms: Evolution is an idle swamp tycoon. Collect Swamp Essence, catch fireflies, mutate your creatures, beat bosses and travel from the swamp to Ember Bog and Frostfen.">
 <meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/evolution">
 <meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SwampRealms: Evolution | SwampRealms">
-<meta name="twitter:description" content="SwampRealms: Evolution is an idle swamp tycoon. Collect Swamp Essence, catch fireflies, mutate your creatures and travel from the swamp to Ember Bog and Frostfen.">
+<meta name="twitter:description" content="SwampRealms: Evolution is an idle swamp tycoon. Collect Swamp Essence, catch fireflies, mutate your creatures, beat bosses and travel from the swamp to Ember Bog and Frostfen.">
 <meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
 <meta name="twitter:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
@@ -30,7 +30,7 @@
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=armory3">
-<link rel="stylesheet" href="evolution.css?v=evo6">
+<link rel="stylesheet" href="evolution.css?v=evo7">
 </head>
 <body class="evo-app">
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -71,12 +71,14 @@
    <div class="evo-pane" id="pane-creature" role="tabpanel" aria-labelledby="tab-creature" hidden></div>
    <div class="evo-pane" id="pane-worlds" role="tabpanel" aria-labelledby="tab-worlds" hidden></div>
    <div class="evo-pane" id="pane-realm" role="tabpanel" aria-labelledby="tab-realm" hidden></div>
+   <div class="evo-pane" id="pane-boss" role="tabpanel" aria-labelledby="tab-boss" hidden></div>
   </div>
   <nav class="evo-nav" role="tablist" aria-label="Game sections">
    <button type="button" role="tab" id="tab-build" data-tab="build" aria-selected="true" aria-controls="pane-build"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>Build</span></button>
    <button type="button" role="tab" id="tab-creature" data-tab="creature" aria-selected="false" aria-controls="pane-creature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4 0 7 6 7 11a7 7 0 01-14 0c0-5 3-11 7-11z"/><path d="M9 14a3 3 0 003 3"/></svg><span>Creatures</span></button>
    <button type="button" role="tab" id="tab-worlds" data-tab="worlds" aria-selected="false" aria-controls="pane-worlds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><span>Worlds</span></button>
    <button type="button" role="tab" id="tab-realm" data-tab="realm" aria-selected="false" aria-controls="pane-realm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><span>Journal</span></button>
+   <button type="button" role="tab" id="tab-boss" data-tab="boss" aria-selected="false" aria-controls="pane-boss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><path d="M15 4h5v5"/><path d="M20 20L4 4"/><path d="M9 4H4v5"/></svg><span>Bosses</span></button>
   </nav>
  </div>
 </main>
@@ -91,11 +93,12 @@
 <script src="cards.js"></script>
 <script src="weapons.js?v=skins2"></script>
 <script src="avatar.js?v=cos5"></script>
-<script src="store.js?v=cos4"></script>
+<script src="store.js?v=evo7"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
 <script src="evolution-fx.js?v=evo6"></script>
-<script src="evolution.js?v=evo6"></script>
+<script src="evolution-boss.js?v=evo7"></script>
+<script src="evolution.js?v=evo7"></script>
 <script src="gamefs.js?v=2"></script>
 <script>GameFS.attach({stage:"#evoStage",start:"[data-fs-start]"});</script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->

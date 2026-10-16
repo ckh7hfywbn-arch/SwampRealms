@@ -1,4 +1,4 @@
-// ===== SwampRealms: Evolution (Stage 4: Realms - Ember Bog and Frostfen, cinematics, daily gifts, next-goal pill) =====
+// ===== SwampRealms: Evolution (Stage 5: Boss Battles on top of Realms, cinematics, daily gifts) =====
 // Load AFTER cards.js, weapons.js, avatar.js, store.js, account.js, menu.js and evolution-fx.js (see evolution.html).
 // Everything lives inside this function so it can never clash with the globals in cards.js / store.js (meta, save, KEY, CS ...).
 //
@@ -26,7 +26,8 @@
     maxCreatures: 5,
     lamp: { max: 3, cost: [400, 1500, 6000] },      // Firefly Lantern (needs Hollow 2; level 3 needs Hollow 3)
     fertBonus: 0.04,        // Compost Heap: production bonus per level (endless, cost 6000 x 1.38^level)
-    achBonus: 0.02,         // Swamp Journal: production bonus per entry
+    achBonus: 0.02,
+    bossBonus: 0.1,         // production bonus for each boss Trophy (first win of each boss, see evolution-boss.js)         // Swamp Journal: production bonus per entry
     dayTap: 2, nightSpore: 1.5, cycle: 240,   // day: taps x2; night: Glowspores x1.5 (see PH for phase lengths)
     fire: { gapDay: [30, 55], gapNight: [10, 20], life: 7, gold: 0.06, frenzy: 20, secs: 12, min: 5, chainMs: 9000, chainMax: 10 },   // fireflies
     realmBonus: 0.15,       // production bonus for each extra realm you unlock
@@ -73,6 +74,11 @@
   var S = null, dirty = false, lastSaveAt = 0, lastTick = Date.now(), eggSeen = true;
 
   function num(v, d, lo, hi) { v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; }
+  function cleanBo(b) {
+    var r = {}; if (!b || typeof b !== "object") return r;
+    ["mossback", "cinderhide", "rimewing"].forEach(function (id) { var x = b[id]; if (x && typeof x === "object") { var k = Math.floor(num(x.k, 0, 0, 1e6)); if (k) r[id] = { k: k, t: num(x.t, 0, 0, 4e12) }; } });
+    return r;
+  }
   function clean(o) {
     o = (o && typeof o === "object" && !Array.isArray(o)) ? o : {};
     var ids = ANI.map(function (a) { return a.id; }), crs = [];
@@ -86,7 +92,7 @@
     if (e && typeof e === "object" && ids.indexOf(e.a) > -1 && !crs.some(function (x) { return x.a === e.a; }) && crs.length < CFG.maxCreatures)
       egg = { a: e.a, t: num(e.t, Date.now(), 0, 4e12), d: num(e.d, 30, 1, 86400) };
     return {
-      v: 4,
+      v: 5,
       ess: num(o.ess, 0, 0, 1e15), tot: num(o.tot, 0, 0, 1e18), taps: Math.floor(num(o.taps, 0, 0, 1e9)),
       hq: Math.floor(num(o.hq, 1, 1, CFG.hq.max)), patch: Math.floor(num(o.patch, 0, 0, CFG.patch.max)),
       hatch: Math.floor(num(o.hatch, 0, 0, 1)) && Math.floor(num(o.hq, 1, 1, CFG.hq.max)) >= 2 ? 1 : 0,
@@ -95,7 +101,7 @@
       fc: Math.floor(num(o.fc, 0, 0, 1e9)), gc: Math.floor(num(o.gc, 0, 0, 1e9)), bs: Math.floor(num(o.bs, 0, 0, CFG.fire.chainMax)),
       rl: rl, at: Math.floor(num(o.at, 0, 0, rl - 1)),
       em: rl >= 2 ? Math.floor(num(o.em, 0, 0, BIO[1].lm.max)) : 0, fr: rl >= 3 ? Math.floor(num(o.fr, 0, 0, BIO[2].lm.max)) : 0,
-      ds: Math.floor(num(o.ds, 0, 0, 7)), bd: Math.floor(num(o.bd, 0, 0, 7)), dc: Math.floor(num(o.dc, 0, 0, 1e6)), dl: typeof o.dl === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.dl) ? o.dl : ""
+      ds: Math.floor(num(o.ds, 0, 0, 7)), bd: Math.floor(num(o.bd, 0, 0, 7)), dc: Math.floor(num(o.dc, 0, 0, 1e6)), dl: typeof o.dl === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.dl) ? o.dl : "", bo: cleanBo(o.bo)
     };
   }
   function load() { try { Crystals.reload(); S = clean(Crystals.state.evo); } catch (e) { S = clean(null); } }
@@ -137,15 +143,18 @@
     { n: "Frostbitten", d: "Unlock Frostfen", f: function () { return S.rl >= 3; } },
     { n: "Geyser Keeper", d: "Cinder Geyser level 4", f: function () { return S.em >= 4; } },
     { n: "Lotus Bloom", d: "Aurora Lotus level 4", f: function () { return S.fr >= 4; } },
+    { n: "Boss Slayer", d: "Defeat your first boss", f: function () { return trophies() >= 1; } },
+    { n: "Realm Champion", d: "Defeat all 3 bosses", f: function () { return trophies() >= 3; } },
     { n: "Million Club", d: "Earn 1,000,000 Essence", f: function () { return S.tot >= 1000000; } }
   ];
+  function trophies() { var n = 0; for (var k in S.bo) if (S.bo[k].k > 0) n++; return n; }
   function achDone() { return ACH.filter(function (a) { return a.f(); }).map(function (a) { return a.n; }); }
   function achTick() {
     var d = achDone(); if (d.length <= achSeen.length) { achSeen = d; return; }
     var fresh = d.filter(function (n) { return achSeen.indexOf(n) < 0; }); achSeen = d;
     if (fresh.length) { toast("Journal: " + fresh[0] + "! +" + Math.round(CFG.achBonus * 100) + "% production", true); try { SFX.coin(); } catch (e) {} save(true); renderRealm(); }
   }
-  function mult() { return 1 + (S.rl - 1) * CFG.realmBonus + CFG.hqBonus[S.hq - 1] + S.crs.reduce(function (t, c) { return t + CFG.stageBonus[c.s]; }, 0) + mv("glow") + achDone().length * CFG.achBonus + S.fert * CFG.fertBonus; }
+  function mult() { return 1 + (S.rl - 1) * CFG.realmBonus + CFG.hqBonus[S.hq - 1] + S.crs.reduce(function (t, c) { return t + CFG.stageBonus[c.s]; }, 0) + mv("glow") + achDone().length * CFG.achBonus + S.fert * CFG.fertBonus + trophies() * CFG.bossBonus; }
   function boost() { return (frenzy() ? 2 : 1) * (phase().id === "night" ? CFG.nightSpore + mv("night") : 1); }
   function lmRate() { return (S.em ? BIO[1].lm.rate[S.em - 1] : 0) + (S.fr ? BIO[2].lm.rate[S.fr - 1] : 0); }
   function rateBase() { return ((S.patch ? CFG.patch.rate[S.patch - 1] : 0) + lmRate()) * mult(); }
@@ -541,7 +550,7 @@
     h += '<p class="evo-fine">Progress is saved on this device and in your account when you are signed in. <button type="button" class="evo-link" data-reset>Start over</button></p>';
     $("pane-realm").innerHTML = h;
   }
-  function renderAll() { paintRes(); paintScene(); paintCreatures(); renderBuild(); renderCreature(); renderWorlds(); renderRealm(); refresh(); }
+  function renderAll() { paintRes(); paintScene(); paintCreatures(); renderBuild(); renderCreature(); renderWorlds(); renderRealm(); if (window.EvoBoss) EvoBoss.render(); refresh(); }
 
   // light update every tick: buttons enable themselves and bars fill, without rebuilding the DOM under a pressed finger
   function bar(key, have, cost) {
@@ -692,13 +701,15 @@
     on("creature", eggReady() || e.state === "empty" && S.ess >= e.cost || S.crs.some(function (c, i) { return evoInfo(i).state === "ready" || (c.s >= 1 && !c.m); }));
     on("worlds", ["em", "fr"].some(rd) || (S.rl < BIO.length && realmInfo(S.rl).state === "ready"));
     on("realm", giftInfo().due && S.tot >= CFG.gift.minTot);
+    on("boss", window.EvoBoss && EvoBoss.ready());
   }
 
   // ---------- NAVIGATION + EVENTS ----------
   function tab(name) {
-    ["build", "creature", "worlds", "realm"].forEach(function (n) { var on = n === name; $("tab-" + n).setAttribute("aria-selected", on); $("pane-" + n).hidden = !on; });
+    ["build", "creature", "worlds", "realm", "boss"].forEach(function (n) { var on = n === name; $("tab-" + n).setAttribute("aria-selected", on); $("pane-" + n).hidden = !on; });
     if (name === "realm") renderRealm();
     if (name === "worlds") renderWorlds();
+    if (name === "boss" && window.EvoBoss) EvoBoss.render();
     var pn = $("pane-" + name); pn.classList.remove("enter"); void pn.offsetWidth;
     Array.prototype.forEach.call(pn.children, function (c, i) { c.style.setProperty("--i", Math.min(i, 9)); });
     pn.classList.add("enter"); clearTimeout(pn._t); pn._t = setTimeout(function () { pn.classList.remove("enter"); }, 1000);
@@ -755,7 +766,7 @@
     var hd = document.querySelector("header"), setTop = function () { if (hd) $("evoStage").style.setProperty("--evo-top", hd.offsetHeight + "px"); };
     setTop(); addEventListener("resize", setTop);
     renderAll(); bind(); setupExtras();
-    var t = "build"; try { t = sessionStorage.getItem("evo-tab") || "build"; } catch (e) {} tab(t === "creature" || t === "realm" || t === "worlds" ? t : "build");
+    var t = "build"; try { t = sessionStorage.getItem("evo-tab") || "build"; } catch (e) {} tab(t === "creature" || t === "realm" || t === "worlds" || t === "boss" ? t : "build");
     if (fx()) fx().atmo.start($("evoScene"), BIO[S.at].id);
     tick();
     if (!S.tot && !S.patch) toast("Welcome! Pet " + S.crs[0].n + " to collect your first Essence.");
@@ -768,6 +779,8 @@
       var c = all[Math.floor(Math.random() * all.length)]; c.classList.remove("wig"); void c.offsetWidth; c.classList.add("wig");
     }, 4200);
   }
+  // small bridge for evolution-boss.js (the game state lives in this file; S is re-created on reset, so it is read through a function)
+  window.EvoCore = { S: function () { return S; }, save: save, toast: toast, rate: rate, mult: mult, tapGain: tapGain, mv: mv, fmtK: fmtK, esc: esc, chipRes: chipRes, renderAll: renderAll, fx: fx };
   if (typeof Crystals === "undefined" || typeof AV === "undefined") {
     var m = document.createElement("p"); m.textContent = "The game could not start because a shared script failed to load. Reload the page.";
     var st = document.getElementById("evoStage"); if (st) st.appendChild(m);
