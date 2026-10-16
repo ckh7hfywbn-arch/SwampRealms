@@ -464,3 +464,26 @@ body.evo-app footer{margin-top:28px}
 .cn-boss.relic svg{width:90px}
 .evo-perks li>span{flex:1 1 auto;min-width:0}
 .evo-perks .btn{width:auto;flex:none;min-width:92px;white-space:nowrap}
+
+/* ===== UI polish pass ===== */
+/* finished cards: a small status pill instead of a big dead button, so more cards fit on screen */
+.evo-card.done .evo-act .btn:disabled{width:auto;min-height:28px;padding:4px 12px;font-size:12px;border-radius:99px;opacity:.85;background:#f2c14e1f;border:1px solid #f2c14e55;color:#f2c14e;box-shadow:none;text-shadow:none}
+.evo-card.done .evo-act{justify-self:start}
+/* calmer rhythm */
+.evo-pane{gap:8px;padding-bottom:34px}
+.evo-card{padding:11px 12px}
+.evo-card .evo-info p{font-size:13px;line-height:1.38}
+.evo-card h3{line-height:1.25}
+.evo-tab-fade,.evo-pane{-webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent);mask-image:linear-gradient(#000 calc(100% - 22px),transparent)}
+/* keyboard / switch-control focus */
+.evo-stage :is(button,a):focus-visible{outline:2px solid var(--mint-soft,#c8fff4);outline-offset:2px}
+/* nicer press feel everywhere */
+.evo-stage .btn:not(:disabled):active{transform:translateY(1px) scale(.985)}
+.evo-card{transition:border-color .25s,box-shadow .25s}
+/* Journal badges and relic tiles: slightly larger tap-friendly text */
+.evo-relics li,.evo-badges li{min-height:48px}
+/* long names never break the layout */
+.evo-info h3{overflow-wrap:anywhere}
+/* boss and prep screens: keep inside the safe area on short phones */
+.evo-bt-box,.evo-bt-fight{max-height:calc(100% - 8px)}
+@media(max-height:700px){.evo-bt-pic{width:92px}.evo-bt-art{aspect-ratio:200/120}.evo-bt-facts{font-size:12px}}
