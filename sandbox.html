@@ -30,7 +30,7 @@
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=armory3">
-<link rel="stylesheet" href="sandbox.css?v=delve16">
+<link rel="stylesheet" href="sandbox.css?v=food1">
 </head>
 <body class="sbx-app">
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
@@ -49,13 +49,17 @@
     <button type="button" class="sbx-ibtn" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
    </div>
    <div class="sbx-loc" id="sbxLoc" role="status"><i aria-hidden="true"></i><div><b id="sbxBiome">Murkwater Swamp</b><span id="sbxSub"></span></div></div>
-   <div class="sbx-hp" id="sbxHp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hrt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" fill="currentColor"/></svg></span><span class="trk"><i class="gh"></i><i class="fl"></i><b>100</b></span><span class="shd" id="sbxArm" hidden></span></div>
+   <div class="sbx-vit">
+    <div class="sbx-hp" id="sbxHp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hrt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" fill="currentColor"/></svg></span><span class="trk"><i class="gh"></i><i class="fl"></i><b>100</b></span><span class="shd" id="sbxArm" hidden></span></div>
+    <div class="sbx-food" id="sbxFood" role="progressbar" aria-label="Hunger" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-40 12 12)"><ellipse cx="12" cy="8.2" rx="6.2" ry="6.8" fill="currentColor"/><ellipse cx="10" cy="6.4" rx="2" ry="1.4" fill="#fff" opacity=".45"/><rect x="10.7" y="13.5" width="2.6" height="5.6" rx="1" fill="#f6eedb"/><circle cx="10.5" cy="20.2" r="1.7" fill="#f6eedb"/><circle cx="13.5" cy="20.2" r="1.7" fill="#f6eedb"/></g></svg></span><span class="trk"><i class="fl"></i><b>100</b></span></div>
+   </div>
   </div>
   <button type="button" class="sbx-trail" id="sbxTrail" hidden aria-label="Open your Trail"></button>
   <div class="sbx-hint" id="sbxHint" aria-hidden="true"></div>
   <div class="sbx-bcard" id="sbxBCard" aria-hidden="true"><small></small><b></b></div>
   <div class="sbx-toast" id="sbxToast" role="status" aria-live="polite"></div>
   <div class="sbx-banner" id="sbxBanner" role="status" aria-live="polite"></div>
+  <div class="sbx-pops" id="sbxPops" role="status" aria-live="polite"></div>
   <div class="sbx-pad" id="sbxPad">
    <div class="lr">
     <button type="button" data-k="l" aria-label="Move left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -66,11 +70,36 @@
   <div class="sbx-joy" id="sbxJoy" aria-label="Walk stick: drag to walk"><i id="sbxJoyKnob"></i></div>
   <div class="sbx-dock">
   <div class="sbx-bar" id="sbxBar" role="toolbar" aria-label="Hotbar"></div>
-   <button type="button" class="sbx-ibtn sbx-bagbtn" id="sbxMenuBtn" aria-label="Open bag, crafting and map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V6a5 5 0 0110 0v2"/><path d="M5 8h14l1 12H4z"/><path d="M9 13h6"/></svg></button>
+   <button type="button" class="sbx-ibtn sbx-packbtn" id="sbxPackBtn" aria-label="Open backpack (B)" title="Backpack (B)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5V5a3 3 0 016 0v.5"/><path d="M7 7h10a3 3 0 013 3v9a2 2 0 01-2 2H6a2 2 0 01-2-2v-9a3 3 0 013-3z"/><path d="M8.5 15h7v3h-7z"/><path d="M4 12.5h2M18 12.5h2"/></svg><kbd class="sbx-kb">B</kbd></button>
+   <button type="button" class="sbx-ibtn sbx-menubtn" id="sbxMenuBtn" aria-label="Open journal: crafting, map and goals (E)" title="Journal (E)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 016.5 3H18v15H6.5A1.5 1.5 0 005 19.5z"/><path d="M5 19.5A1.5 1.5 0 006.5 21H18v-3"/><path d="M9 8h5M9 11.5h3"/></svg><kbd class="sbx-kb">E</kbd></button>
   </div>
-  <section class="sbx-panel" id="sbxPanel" aria-label="Bag, crafting, map and goals" hidden>
+  <section class="sbx-panel" id="sbxPanel" aria-label="Journal: crafting, map and goals" hidden>
    <div class="sbx-phead"><div class="sbx-tabs" id="sbxTabs" role="tablist"></div><button type="button" class="sbx-x" data-close aria-label="Close">&times;</button></div>
    <div class="sbx-body" id="sbxBody"></div>
+  </section>
+  <section class="sbx-mapv" id="sbxMapV" aria-label="World map" hidden>
+   <canvas id="sbxMapC"></canvas>
+   <div class="sbx-mtop"><b>World Map</b><span id="sbxMapInfo"></span><button type="button" class="sbx-x" data-mclose aria-label="Close map">&times;</button></div>
+   <div class="sbx-mctl" role="group" aria-label="Map zoom">
+    <button type="button" data-mz="in" aria-label="Zoom in">+</button>
+    <button type="button" data-mz="out" aria-label="Zoom out">&minus;</button>
+    <button type="button" data-mz="me" aria-label="Centre on me" title="Centre on me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+    <button type="button" data-mz="fit" aria-label="Show whole world" title="Whole world"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+   </div>
+   <div class="sbx-mhint" id="sbxMapHint">Tap the map to drop a waypoint. Tap a waypoint to remove it. Drag to move, scroll or pinch to zoom.</div>
+   <div class="sbx-mcard" id="sbxMapCard" hidden></div>
+  </section>
+  <section class="sbx-pack sbx-stn" id="sbxStn" role="dialog" aria-modal="true" aria-labelledby="sbxStnTitle" hidden>
+   <div class="sbx-pbox sbx-sbox" id="sbxStnBox">
+    <div class="sbx-phead"><h2 id="sbxStnTitle">Workbench</h2><button type="button" class="sbx-x" data-close aria-label="Close station">&times;</button></div>
+    <div class="sbx-body" id="sbxStnBody"></div>
+   </div>
+  </section>
+  <section class="sbx-pack" id="sbxPack" aria-label="Backpack" hidden>
+   <div class="sbx-pbox">
+    <div class="sbx-phead"><h2 id="sbxPackTitle">Backpack</h2><button type="button" class="sbx-x" data-close aria-label="Close backpack">&times;</button></div>
+    <div class="sbx-body" id="sbxPackBody"></div>
+   </div>
   </section>
  </div>
 </main>
@@ -88,13 +117,13 @@
 <script src="store.js?v=cos4"></script>
 <script src="account.js"></script>
 <script src="menu.js"></script>
-<script src="sandbox-world.js?v=delve19"></script>
-<script src="sandbox-extra.js?v=pack1"></script>
-<script src="sandbox-cave.js?v=cave3"></script>
-<script src="delve-avatar.js?v=delve2"></script>
-<script src="sandbox.js?v=delve48-nooutline"></script>
-<script src="gamefs.js?v=2"></script>
-<script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]"});</script>
+<script src="sandbox-world.js?v=delve26-ground"></script>
+<script src="sandbox-extra.js?v=pack6"></script>
+<script src="sandbox-cave.js?v=cave7"></script>
+<script src="delve-avatar.js?v=delve3"></script>
+<script src="sandbox.js?v=delve68-interiors"></script>
+<script src="gamefs.js?v=3"></script>
+<script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG"});</script>   <!-- F is Delve's interact key (caves, doors, chests, ladders), so full screen is the button or G -->
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

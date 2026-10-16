@@ -141,6 +141,21 @@
     for (var l = 0; l < 9 && lc.length; l++) { var li = lc.splice(Math.floor(rnd() * lc.length), 1)[0]; lamps.push({ x: li % CW, y: (li / CW) | 0 }); }
 
     var rocks = 0; for (i = 0; i < n; i++) if (node[i]) rocks++;
+    // 6. treasure (needs the content pack): a Cave Chest tucked into a nook on most floors (more likely deeper), and a few Cave Pots along the walls.
+    //    Both are rock-like nodes: hold your pick on them to pry the chest open or smash the pot. Never placed on the ladder-to-ladder path.
+    if (T.X_lootchest && T.X_lootpot) {
+      var tr = SW.mulberry((seed * 31 + floor * 977 + biome * 7) | 0), onPath = {}, lampAt = {}, nooks = [], edges = [];
+      for (var c3 = dnI; c3 >= 0 && c3 !== spI; c3 = d0.par[c3]) onPath[c3] = 1; onPath[spI] = onPath[dnI] = onPath[upI] = 1;
+      lamps.forEach(function (L) { lampAt[L.y * CW + L.x] = 1; });
+      for (i = CW; i < n - CW; i++) {
+        if (wall[i] || node[i] || onPath[i] || lampAt[i]) continue; x = i % CW; y = (i / CW) | 0;
+        if ((Math.abs(x - up.x) <= 2 && y >= up.y - 1 && y <= up.y + 3) || (Math.abs(x - down.x) <= 1 && Math.abs(y - down.y) <= 1)) continue;
+        var wn = wall[i - 1] + wall[i + 1] + wall[i - CW] + wall[i + CW]; if (wn >= 3) continue;   // dead-end pockets stay reachable
+        if (wn === 2) nooks.push(i); else if (wn === 1) edges.push(i);
+      }
+      if (nooks.length && tr() < Math.min(0.85, 0.5 + floor * 0.025)) node[nooks[Math.floor(tr() * nooks.length)]] = T.X_lootchest;
+      for (var pq = 2 + Math.floor(tr() * 4); pq > 0 && edges.length; pq--) { var ei = edges.splice(Math.floor(tr() * edges.length), 1)[0]; if (!node[ei]) node[ei] = T.X_lootpot; }
+    }
     return { w: CW, h: CH, floor: floor, biome: biome, seed: seed, theme: THEMES[biome], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: down, spawn: spawn, lamps: lamps, rocks: rocks };
   }
 
@@ -158,23 +173,29 @@
     { n: "Cinder Forge", sub: "Hot air and the smell of iron", floor: "#4a3d42", floor2: "#5f4d52", top: "#1b1214", topHi: "#2f1f1e", face: "#5a3a36", faceHi: "#8c5a4a", faceLo: "#2a1a1a", tint: [16, 5, 3], lamp: T.BLOOM, glow: "255,120,50" },
     { n: "Ashen Keep", sub: "Banners hang still in the dark", floor: "#443a42", floor2: "#594b57", top: "#161014", topHi: "#2a1c24", face: "#4f3340", faceHi: "#84566a", faceLo: "#25151d", tint: [14, 4, 8], lamp: T.BLOOM, glow: "255,110,70" },
     { n: "Frost Lodge", sub: "A fire crackles behind frosted glass", plank: 1, floor: "#9db4c8", floor2: "#b7ccdd", top: "#18232e", topHi: "#2a3d4f", face: "#7f9fba", faceHi: "#c4dff0", faceLo: "#36506a", tint: [4, 9, 18], lamp: T.SPIKE, glow: "190,230,255" },
-    { n: "Frozen Shrine", sub: "Something old sleeps in the ice", floor: "#8aa3bb", floor2: "#a5bed4", top: "#141e29", topHi: "#25384a", face: "#6d8aa3", faceHi: "#b5d3e6", faceLo: "#2c4054", tint: [3, 8, 20], lamp: T.SPIKE, glow: "130,225,255" }
+    { n: "Frozen Shrine", sub: "Something old sleeps in the ice", floor: "#8aa3bb", floor2: "#a5bed4", top: "#141e29", topHi: "#25384a", face: "#6d8aa3", faceHi: "#b5d3e6", faceLo: "#2c4054", tint: [3, 8, 20], lamp: T.SPIKE, glow: "130,225,255" },
+    { n: "Swamp Farmstead", sub: "Hay, harvest sacks and a pot on the boil", plank: 1, floor: "#94683c", floor2: "#ab7a4a", top: "#241810", topHi: "#3a2a1a", face: "#8a4a2c", faceHi: "#b8643c", faceLo: "#4a2416", tint: [10, 6, 2], lamp: T.GLOWCAP, glow: "255,190,110" }
   );
   // Each kind: size, theme (index into THEMES), light, and a furniture list built by items(add). add(x, y, id, opt) with opt: "s" solid, "f" flat on the floor, "w" hangs on the back wall.
+  function X(nm) { return T["X_" + nm]; }   // a Content Pack piece (or undefined when the pack is missing)
+  function ax(a, x, y, nm, o) { if (X(nm) !== undefined) a(x, y, X(nm), o); }
   var KINDS = {
     cabin: { th: 3, w: 13, h: 10, amb: 0.7, items: function (a) {
+      ax(a, 2, 5, "desk", "s"); ax(a, 10, 5, "sofa", "s"); ax(a, 3, 8, "crate", "s"); ax(a, 8, 1, "clock", "w"); ax(a, 4, 1, "mirror", "w"); ax(a, 9, 8, "cookpot", "s");
       a(2, 2, T.BED, "s"); a(4, 2, T.BOOKSHELF, "s"); a(5, 2, T.BOOKSHELF, "s"); a(9, 2, T.HEARTH, "s"); a(11, 2, T.WARDROBE, "s");
       a(7, 1, T.PAINTING, "w"); a(3, 1, T.TORCH, "w"); a(10, 1, T.TORCH, "w");
       a(5, 5, T.RUG, "f"); a(6, 5, T.RUG, "f"); a(7, 5, T.RUG, "f"); a(6, 5, T.TABLE, "s"); a(5, 5, T.CHAIR); a(7, 5, T.CHAIR_L);
       a(1, 7, T.BARREL, "s"); a(1, 8, T.BARREL, "s"); a(11, 8, T.POT, "s"); a(11, 7, T.FLOWERPOT, "s"); a(9, 7, T.GLOWPOT, "s");
     } },
     tower: { th: 4, w: 9, h: 13, amb: 0.62, items: function (a) {
+      ax(a, 7, 5, "globe", "s"); ax(a, 1, 5, "telescope", "s"); ax(a, 2, 1, "worldmap", "w"); ax(a, 6, 10, "weaponrack", "s"); ax(a, 3, 8, "candelabra", "s");
       a(2, 2, T.BOOKSHELF, "s"); a(3, 2, T.BOOKSHELF, "s"); a(5, 2, T.BOOKSHELF, "s"); a(6, 2, T.WARDROBE, "s");
       a(4, 1, T.BANNER, "w"); a(1, 1, T.TORCH, "w"); a(7, 1, T.TORCH, "w");
       a(3, 5, T.RUG, "f"); a(4, 5, T.RUG, "f"); a(5, 5, T.RUG, "f"); a(4, 5, T.TABLE, "s"); a(3, 5, T.CHAIR); a(5, 5, T.CHAIR_L);
       a(4, 8, T.CAULDRON, "s"); a(1, 7, T.BARREL, "s"); a(7, 7, T.BARREL, "s"); a(1, 10, T.BUCKET, "s"); a(7, 10, T.BUGTROPHY, "s"); a(2, 10, T.BARREL, "s");
     } },
     forge: { th: 5, w: 14, h: 10, amb: 0.55, items: function (a) {
+      ax(a, 4, 5, "furnace", "s"); ax(a, 1, 4, "weaponrack", "s"); ax(a, 12, 4, "armorstand", "s"); ax(a, 3, 7, "crate", "s"); ax(a, 10, 8, "crate", "s"); ax(a, 7, 1, "crossedswords", "w"); ax(a, 11, 7, "lavalamp", "s");
       a(6, 2, T.HEARTH, "s"); a(7, 2, T.HEARTH, "s"); a(2, 2, T.BRAZIER, "s"); a(11, 2, T.BRAZIER, "s");
       a(4, 1, T.EMBERBANNER, "w"); a(9, 1, T.EMBERBANNER, "w"); a(1, 1, T.TORCH, "w"); a(12, 1, T.TORCH, "w");
       a(3, 5, T.ANVIL, "s"); a(10, 5, T.TABLE, "s"); a(9, 5, T.CHAIR); a(11, 5, T.CHAIR_L);
@@ -182,52 +203,73 @@
       a(1, 7, T.BARREL, "s"); a(2, 7, T.BARREL, "s"); a(12, 7, T.URN, "s"); a(12, 8, T.POT, "s"); a(7, 7, T.CINDERLAMP, "s");
     } },
     keep: { th: 6, w: 11, h: 13, amb: 0.5, items: function (a) {
+      ax(a, 5, 1, "tapestry_ember", "w"); ax(a, 2, 1, "shield", "w"); ax(a, 8, 1, "shield", "w"); ax(a, 1, 6, "armorstand", "s"); ax(a, 9, 6, "armorstand", "s"); ax(a, 4, 2, "candelabra", "s"); ax(a, 6, 2, "candelabra", "s");
       a(5, 2, T.THRONE, "s"); a(3, 1, T.EMBERBANNER, "w"); a(7, 1, T.EMBERBANNER, "w"); a(1, 1, T.TORCH, "w"); a(9, 1, T.TORCH, "w");
       for (var y = 3; y <= 9; y++) a(5, y, T.RUG, "f");
       a(2, 4, T.BRAZIER, "s"); a(8, 4, T.BRAZIER, "s"); a(2, 7, T.GUARDIAN, "s"); a(8, 7, T.GUARDIAN, "s");
       a(1, 10, T.BARREL, "s"); a(9, 10, T.URN, "s"); a(2, 10, T.BARREL, "s"); a(8, 10, T.EMBERLANTERN, "s");
     } },
     lodge: { th: 7, w: 14, h: 10, amb: 0.66, items: function (a) {
+      ax(a, 2, 5, "sofa", "s"); ax(a, 11, 5, "dresser", "s"); ax(a, 12, 1, "antlers", "w"); ax(a, 1, 1, "wolftrophy", "w"); ax(a, 10, 7, "cookpot", "s"); ax(a, 5, 8, "sack", "s");
       a(6, 2, T.HEARTH, "s"); a(2, 2, T.BED, "s"); a(3, 2, T.WARDROBE, "s"); a(10, 2, T.BOOKSHELF, "s"); a(11, 2, T.BOOKSHELF, "s");
       a(4, 1, T.FROSTBANNER, "w"); a(9, 1, T.FROSTBANNER, "w"); a(7, 1, T.TORCH, "w");
       a(5, 5, T.RUG, "f"); a(6, 5, T.RUG, "f"); a(7, 5, T.RUG, "f"); a(8, 5, T.RUG, "f"); a(6, 5, T.TABLE, "s"); a(5, 5, T.CHAIR); a(8, 5, T.CHAIR_L);
       a(1, 7, T.FROSTLANTERN, "s"); a(12, 7, T.ICESCULPT, "s"); a(12, 8, T.BARREL, "s"); a(2, 8, T.BARREL, "s");
     } },
+    farm: { th: 9, w: 14, h: 10, amb: 0.72, items: function (a) {   // the Swamp Farmstead: a barn with hay, sacks of harvest, a kitchen corner and tools
+      a(1, 2, T.BALE, "s"); a(2, 2, T.BALE, "s"); a(1, 3, T.BALE, "s"); a(12, 2, T.BARREL, "s"); a(11, 2, T.BARREL, "s");
+      a(5, 1, T.PAINTING, "w"); a(3, 1, T.TORCH, "w"); a(10, 1, T.TORCH, "w");
+      a(6, 4, T.RUG, "f"); a(7, 4, T.RUG, "f"); a(6, 4, T.TABLE, "s"); a(5, 4, T.CHAIR); a(8, 4, T.CHAIR_L);
+      a(1, 7, T.BUCKET, "s"); a(12, 7, T.POT, "s"); a(12, 8, T.FLOWERPOT, "s");
+      ax(a, 4, 2, "cookpot", "s"); ax(a, 8, 2, "sack", "s"); ax(a, 9, 2, "sack", "s"); ax(a, 10, 7, "crate", "s"); ax(a, 11, 7, "crate", "s"); ax(a, 2, 7, "scarecrow", "s"); ax(a, 8, 1, "wreath", "w");
+    } },
     shrine: { th: 8, w: 11, h: 9, amb: 0.5, items: function (a) {
+      ax(a, 5, 1, "tapestry_frost", "w"); ax(a, 1, 6, "obelisk", "s"); ax(a, 9, 6, "obelisk", "s");
       a(5, 2, T.FROGSTATUE, "s"); a(3, 1, T.FROSTBANNER, "w"); a(7, 1, T.FROSTBANNER, "w");
       a(3, 3, T.FROSTLANTERN, "s"); a(7, 3, T.FROSTLANTERN, "s");
       for (var y = 3; y <= 6; y++) a(5, y, T.RUG, "f");
       a(2, 6, T.ICESCULPT, "s"); a(8, 6, T.ICESCULPT, "s"); a(1, 3, T.CRYSTALLAMP, "s"); a(9, 3, T.CRYSTALLAMP, "s");
     } }
   };
-  // Village houses (see the 6b block in gen() in sandbox-world.js). Pieces from Content Pack 1 are used when it is loaded, otherwise a plain stand-in.
-  (function () {
-    var N = function (k, f) { return T[k] !== undefined ? T[k] : f; };
-    KINDS.house0 = { th: 3, w: 11, h: 9, amb: 0.72, items: function (a) {   // Mossy Cottage: a bed, a hearth and a kitchen table
-      a(2, 2, T.BED, "s"); a(4, 2, T.BOOKSHELF, "s"); a(7, 2, T.HEARTH, "s"); a(9, 2, T.WARDROBE, "s"); a(5, 1, T.PAINTING, "w"); a(2, 1, T.TORCH, "w"); a(8, 1, T.TORCH, "w");
-      a(4, 5, T.RUG, "f"); a(5, 5, T.RUG, "f"); a(6, 5, T.RUG, "f"); a(5, 5, T.TABLE, "s"); a(4, 5, T.CHAIR); a(6, 5, T.CHAIR_L); a(1, 6, T.BARREL, "s"); a(9, 6, T.FLOWERPOT, "s");
-    } };
-    KINDS.house1 = { th: 3, w: 11, h: 9, amb: 0.66, items: function (a) {   // Scholar's House: shelves to the ceiling, a desk, a globe and a telescope
-      a(1, 2, T.BOOKSHELF, "s"); a(2, 2, T.BOOKSHELF, "s"); a(3, 2, T.BOOKSHELF, "s"); a(8, 2, T.BOOKSHELF, "s"); a(9, 2, T.BOOKSHELF, "s"); a(5, 2, N("X_globe", T.POT), "s"); a(6, 1, N("X_worldmap", T.PAINTING), "w"); a(3, 1, T.TORCH, "w"); a(8, 1, T.TORCH, "w");
-      a(5, 4, N("X_desk", T.TABLE), "s"); a(5, 5, T.CHAIR); a(2, 5, N("X_telescope", T.BARREL), "s"); a(8, 5, N("X_candelabra", T.LANTERN), "s");
-      a(3, 6, T.RUG, "f"); a(4, 6, T.RUG, "f"); a(5, 6, T.RUG, "f"); a(6, 6, T.RUG, "f"); a(7, 6, T.RUG, "f"); a(9, 6, T.FLOWERPOT, "s");
-    } };
-    KINDS.house2 = { th: 3, w: 12, h: 9, amb: 0.7, items: function (a) {   // Baker's House: a big hearth, a cauldron and sacks of grain
-      a(5, 2, T.HEARTH, "s"); a(6, 2, T.HEARTH, "s"); a(2, 2, T.CAULDRON, "s"); a(9, 2, T.BARREL, "s"); a(10, 2, N("X_crate", T.BARREL), "s"); a(4, 1, T.SIGN, "w"); a(7, 1, T.BANNER, "w"); a(1, 1, T.TORCH, "w"); a(10, 1, T.TORCH, "w");
-      a(5, 5, T.TABLE, "s"); a(6, 5, T.TABLE, "s"); a(4, 5, T.CHAIR); a(7, 5, T.CHAIR_L); a(1, 6, N("X_sack", T.POT), "s"); a(1, 7, N("X_sack", T.POT), "s"); a(10, 6, T.BALE, "s"); a(10, 7, T.BALE, "s"); a(2, 4, T.BUCKET, "s");
-    } };
-    KINDS.house3 = { th: 3, w: 11, h: 9, amb: 0.78, items: function (a) {   // Gardener's Cottage: planters, flower pots and a little fountain
-      a(2, 2, T.PLANTER, "s"); a(4, 2, T.PLANTER, "s"); a(6, 2, T.FLOWERPOT, "s"); a(8, 2, T.GLOWPOT, "s"); a(5, 1, T.BANNER, "w"); a(2, 1, T.TORCH, "w"); a(8, 1, T.TORCH, "w");
-      a(5, 4, T.FOUNTAIN, "s"); a(2, 5, T.STOOL, "s"); a(8, 5, T.STOOL, "s"); a(3, 6, T.RUG, "f"); a(4, 6, T.RUG, "f"); a(5, 6, T.RUG, "f"); a(6, 6, T.RUG, "f"); a(7, 6, T.RUG, "f");
-      a(1, 4, T.FLOWER); a(9, 4, T.FLOWER); a(1, 6, T.PLANTER, "s"); a(9, 6, N("X_sack", T.POT), "s");
-    } };
-    KINDS.house4 = { th: 3, w: 13, h: 10, amb: 0.68, items: function (a) {   // Elder's Hall: a sofa by the fire, a grandfather clock and a harp
-      a(6, 2, T.HEARTH, "s"); a(2, 2, N("X_clock", T.WARDROBE), "s"); a(10, 2, T.WARDROBE, "s"); a(4, 1, N("X_tapestry_swamp", T.BANNER), "w"); a(8, 1, N("X_tapestry_swamp", T.BANNER), "w"); a(1, 1, T.TORCH, "w"); a(11, 1, T.TORCH, "w");
-      a(5, 4, N("X_sofa", T.TABLE), "s"); a(8, 4, T.CHAIR_L); a(3, 5, N("X_harp", T.BOOKSHELF), "s"); a(10, 5, T.BOOKSHELF, "s");
-      for (var x = 4; x <= 8; x++) a(x, 6, T.RUG, "f"); a(6, 6, T.TABLE, "s"); a(5, 6, T.CHAIR); a(7, 6, T.CHAIR_L); a(1, 8, T.BARREL, "s"); a(11, 8, T.URN || T.POT, "s");
-    } };
-  })();
+  // ---------- building interiors, redesigned: hand-drawn floor plans ----------
+  // Each map row is one row of cells. Row 0 = wall, row 1 = the back wall (its letters are things hung on it, "w" = a window that lets daylight in),
+  // the last row = the bottom wall (the exit door is put in its centre). Floors: "floors" lists patterned floor zones [x0, y0, x1, y1, block].
+  // Floor-row letters: "." floor, "#" inner wall, "r" rug, "~" lava trough, "=" still water, anything else = a piece of furniture from ILEG.
+  var IMAP = {"cabin":{"th":3,"amb":0.68,"win":"GLASS","map":["###################","#tw.P.wt#tMw#tw.wt#","#B.KK.l#H.H.#O.xX.#","#B.....#.r..#.....#","#..W...#rrr.#.T.c.#","#k......rrr.......#","#.......S.S...b.P.#","#D.c.........g....#","#........rrr.....p#","#b......crTrC.....#","#bb......rrr....X.#","#u...............n#","###################"],"floors":[[8,2,11,11,"parquet"],[13,2,17,4,"checker"],[1,2,6,4,"plasterblock"]]},"tower":{"th":4,"amb":0.6,"win":"GLASS","map":["###############","#t.w.n#M#n.w.t#","###K.K.^.K.K###","##l.........G##","#e...rrrrr...l#","#....rcTCr....#","#....rrrrr....#","#R...........M#","#b...V.......X#","#b...........X#","##u.........b##","##x.........x##","###.........###","###############"],"floors":[[1,2,13,12,"cobble"]]},"farm":{"th":9,"amb":0.7,"win":"GLASS","map":["###################","#t.w.W.t.P.t.w.W.t#","#nnn|nn.....O..xxx#","#n..|...r.....T.c.#","#n..|..rrr........#","#||.|...r....b..X.#","#.......z.......XX#","#nn|nn............#","#n..|.....T.c..u..#","#n..|....rrr......#","#...|.............#","#bb.......p...P.gp#","###################"],"floors":[[13,2,17,4,"checker"]]},"forge":{"th":5,"amb":0.52,"win":"BARS","map":["###################","#t.e.t.x.w.x.t.e.t#","#Y.F.F..HHH..F.F.Y#","#.................#","#R..~~~~...~~~~..M#","#R..~~~~...~~~~..M#","#...A.........A...#","#.................#","#X.X..m.rrr.m..X.X#","#X.....crTrC.....X#","#b.......r.......b#","#bb.............bU#","###################"],"floors":[[1,2,17,11,"obsidianbrick"],[7,3,11,11,"checker"]]},"keep":{"th":6,"amb":0.48,"win":"GLASSR","map":["###################","#t.e.T.e.w.e.T.e.t#","#Y.....lrNrl.....Y#","#........r........#","#M.#.....r.....#.M#","#..#..Q..r..Q..#..#","#.................#","#M.#.....r.....#.M#","#..#..Q..r..Q..#..#","#.................#","#E.#.....r.....#.E#","#bU#.....r.....#Ub#","#X.......r.......X#","###################"],"floors":[[6,2,12,12,"checker"]]},"lodge":{"th":7,"amb":0.64,"win":"GLASSB","map":["###################","#t.w.a.h.T.f.w.h.t#","#B.W..#...HHH...K.#","#B....#..r.r.r..K.#","#Z....#...rrr.....#","#.....S..rrrrr..S.#","#.D.......rrr.....#","#..........r....O.#","#L....crTrC.......#","#.......r.....T.c.#","#I...............x#","#bb.............bx#","###################"],"floors":[[7,2,17,11,"parquet"],[1,2,5,5,"plasterblock"]]},"shrine":{"th":8,"amb":0.5,"win":"GLASSB","map":["#################","#t.f.w.T.w.f.t..#","#j.....rJr.....j#","#...L..rrr..L...#","#.#...=====...#.#","#.#...=====...#.#","#.....r.o.r.....#","#.#.....r.....#.#","#.#.I...r...I.#.#","#.......r.......#","#.o.....r.....o.#","#L......r......L#","#################"],"floors":[[1,2,15,11,"quartzblock"],[6,6,10,11,"moonbrick"]]}};
+  var ILEG = { B: "BED", K: "BOOKSHELF", H: "HEARTH", W: "WARDROBE", T: "TABLE", c: "CHAIR", C: "CHAIR_L", b: "BARREL", u: "BUCKET", p: "POT", P: "FLOWERPOT", g: "GLOWPOT", V: "CAULDRON",
+    Y: "BRAZIER", U: "URN", Q: "GUARDIAN", N: "THRONE", I: "ICESCULPT", J: "FROGSTATUE", L: "FROSTLANTERN", E: "EMBERLANTERN", A: "ANVIL", n: "BALE", i: "CINDERLAMP", j: "CRYSTALLAMP", "^": "LADDER", "|": "FENCE",
+    F: "X_furnace", D: "X_desk", S: "X_sofa", k: "X_clock", Z: "X_dresser", O: "X_cookpot", R: "X_weaponrack", M: "X_armorstand", X: "X_crate", x: "X_sack", G: "X_globe", e: "X_telescope",
+    l: "X_candelabra", m: "X_lavalamp", z: "X_scarecrow", o: "X_obelisk" };
+  var IWALL = { t: "TORCH", P: "PAINTING", n: "BANNER", e: "EMBERBANNER", f: "FROSTBANNER", M: "X_worldmap", m: "X_mirror", W: "X_wreath", a: "X_antlers", h: "X_wolftrophy", x: "X_crossedswords" };
+  var IWIN = { GLASS: "GLASS", BARS: "X_ironbars", GLASSR: "X_stainedred", GLASSB: "X_stainedblue" }, ITAP = { keep: "X_tapestry_ember", lodge: "X_tapestry_frost", shrine: "X_tapestry_frost" };
+  function mapInterior(kind, biome, id) {
+    var D = IMAP[kind], m = D.map, w = m[0].length, h = m.length, n = w * h, wall = new Uint8Array(n), sol = new Uint8Array(n), deco = [], dr = [], wins = [], x, y, dx = Math.floor(w / 2);
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) if (y <= 1 || y === h - 1 || x === 0 || x === w - 1 || m[y].charAt(x) === "#") wall[y * w + x] = 1;
+    function add(px, py, key, solid, flat, onWall, win) {
+      var tid = typeof key === "number" ? key : T[key]; if (tid === undefined) return;
+      var e = { x: px, y: py, id: tid, solid: !!solid, flat: !!flat, wall: !!onWall }; deco.push(e); if (solid) sol[py * w + px] = 1; if (win) wins.push(e);
+    }
+    (D.floors || []).forEach(function (z) { var fk = "X_" + z[4]; if (T[fk] === undefined) return; for (var yy = z[1]; yy <= z[3]; yy++) for (var xx = z[0]; xx <= z[2]; xx++) if (!wall[yy * w + xx]) add(xx, yy, fk, false, true); });
+    for (x = 1; x < w - 1; x++) {   // the back wall
+      var c1 = m[1].charAt(x);
+      if (c1 === "w") add(x, 1, IWIN[D.win] || "GLASS", false, false, true, true);
+      else if (c1 === "T") add(x, 1, ITAP[kind] || "X_tapestry_swamp", false, false, true);
+      else if (IWALL[c1]) add(x, 1, IWALL[c1], false, false, true);
+    }
+    for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
+      var ch = m[y].charAt(x);
+      if (ch === "r") add(x, y, "RUG", false, true); else if (ch === "~") add(x, y, "LAVA", true, true); else if (ch === "=") add(x, y, "WATER", true, true);
+      else if (ILEG[ch]) add(x, y, ILEG[ch], true, false);
+    }
+    deco.forEach(function (e) { if (e.x === dx && e.y >= h - 3 && !e.flat) { e.solid = false; sol[e.y * w + e.x] = 0; } });   // never block the way to the door
+    for (y = 0; y < h; y++) dr[y] = [];
+    deco.forEach(function (e) { if (!e.flat) dr[e.y].push(e); });
+    return { w: w, h: h, floor: 1, biome: biome, seed: id, theme: THEMES[D.th], wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), sol: sol,
+      up: { x: dx, y: h - 1 }, down: { x: -60, y: -60 }, spawn: { x: dx + 0.5, y: h - 1.25 }, lamps: [], rocks: 0,
+      bld: true, bi: D.th, amb: D.amb, deco: deco, dr: dr, flat: deco.filter(function (e) { return e.flat; }), wins: wins };
+  }
   function interior(kind, biome, id, run) {
+    if (IMAP[kind]) return mapInterior(kind, biome, id);
     var K = KINDS[kind] || KINDS.cabin, w = K.w, h = K.h, n = w * h, wall = new Uint8Array(n), sol = new Uint8Array(n), deco = [], x, y, dr = [];
     for (y = 0; y < h; y++) for (x = 0; x < w; x++) wall[y * w + x] = (y <= 1 || y === h - 1 || x === 0 || x === w - 1) ? 1 : 0;
     var dx = Math.floor(w / 2);

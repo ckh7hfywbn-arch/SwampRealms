@@ -197,11 +197,101 @@
   deco("battrophy", "Dusk Bat Trophy", "#8d63c9", function (rect) { rect(1, 2, 14, 12, "#8a5328"); rect(1, 2, 14, 1, "#c98c4f"); rect(2, 3, 12, 10, "#3a200d"); rect(2, 6, 4, 3, "#6a4a9a"); rect(10, 6, 4, 3, "#6a4a9a"); rect(1, 6, 2, 1, "#8d63c9"); rect(13, 6, 2, 1, "#8d63c9"); rect(6, 5, 4, 5, "#2a1744"); rect(6, 4, 1, 2, "#2a1744"); rect(9, 4, 1, 2, "#2a1744"); rect(7, 6, 1, 1, "#ff5a7a"); rect(8, 6, 1, 1, "#ff5a7a"); rect(7, 8, 2, 1, "#f6eedb"); rect(2, 3, 1, 1, "#f2c14e"); rect(13, 12, 1, 1, "#f2c14e"); }, 0, null, "wall");
   deco("worldmap", "World Map", "#e8dcc0", function (rect) { rect(1, 1, 14, 14, "#8a5a32"); rect(2, 2, 12, 12, "#e8dcc0"); rect(2, 2, 12, 1, "#f6eedb"); rect(3, 4, 4, 3, "#9ab070"); rect(5, 6, 3, 3, "#9ab070"); rect(8, 3, 4, 2, "#7fd6ff"); rect(9, 8, 4, 4, "#ff8a3d", 0.8); rect(4, 10, 3, 3, "#bff4ff"); rect(6, 8, 6, 1, "#a8703c"); rect(11, 10, 1, 1, "#d6382e"); rect(12, 9, 1, 1, "#d6382e"); rect(11, 9, 1, 1, "#d6382e"); rect(12, 10, 1, 1, "#d6382e"); }, 0, null, "wall");
   deco("antlers", "Mounted Antlers", "#c9b58a", function (rect) { rect(5, 8, 6, 5, "#8a5328"); rect(5, 8, 6, 1, "#c98c4f"); rect(6, 13, 4, 1, "#6e431f"); rect(6, 5, 1, 4, "#e8dcc0"); rect(9, 5, 1, 4, "#e8dcc0"); rect(4, 3, 2, 3, "#e8dcc0"); rect(3, 1, 1, 3, "#e8dcc0"); rect(5, 1, 1, 2, "#e8dcc0"); rect(10, 3, 2, 3, "#e8dcc0"); rect(12, 1, 1, 3, "#e8dcc0"); rect(10, 1, 1, 2, "#e8dcc0"); rect(2, 4, 2, 1, "#e8dcc0"); rect(13, 4, 2, 1, "#e8dcc0"); }, 0, null, "wall");
+  // Hunter's trophies from the four wild creatures (Frost Wolf, Bog Gator, slimes, Ember Wasp)
+  deco("wolftrophy", "Frost Wolf Trophy", "#cfdde6", function (rect) { rect(1, 2, 14, 12, "#8a5328"); rect(1, 2, 14, 1, "#c98c4f"); rect(2, 3, 12, 10, "#3a200d"); rect(4, 3, 2, 3, "#9aa8b4"); rect(10, 3, 2, 3, "#9aa8b4"); rect(5, 4, 1, 1, "#e8c0c8"); rect(10, 4, 1, 1, "#e8c0c8"); rect(4, 5, 8, 5, "#b9c6d0"); rect(5, 9, 6, 3, "#e8eef2"); rect(6, 12, 4, 1, "#e8eef2"); rect(7, 10, 2, 1, "#1a1e24"); rect(5, 6, 2, 1, "#7fd6ff"); rect(9, 6, 2, 1, "#7fd6ff"); rect(5, 6, 1, 1, "#ffffff"); rect(9, 6, 1, 1, "#ffffff"); rect(4, 5, 8, 1, "#d8e2ea"); rect(6, 12, 1, 1, "#ffffff"); rect(9, 12, 1, 1, "#ffffff"); }, 0, null, "wall");
+  deco("gatortrophy", "Bog Gator Trophy", "#7aa84a", function (rect) { rect(0, 3, 6, 10, "#8a5328"); rect(0, 3, 6, 1, "#c98c4f"); rect(1, 5, 6, 6, "#3f6a2c"); rect(6, 6, 9, 4, "#4d7a3a"); rect(6, 6, 9, 1, "#6e9a4a"); rect(2, 4, 2, 2, "#5a8a3a"); rect(2, 4, 1, 1, "#f2c14e"); rect(6, 9, 9, 1, "#2a3d1c"); rect(7, 8, 1, 1, "#f6eedb"); rect(9, 10, 1, 1, "#f6eedb"); rect(11, 8, 1, 1, "#f6eedb"); rect(13, 10, 1, 1, "#f6eedb"); rect(14, 7, 1, 1, "#1a2412"); rect(3, 7, 3, 1, "#2a3d1c", 0.6); rect(2, 9, 4, 1, "#2a3d1c", 0.6); }, 0, null, "wall");
+  deco("waspnest", "Ember Wasp Nest", "#d9b56a", function (rect) { rect(7, 0, 2, 2, "#6e431f"); rect(5, 2, 6, 2, "#c9a46a"); rect(4, 4, 8, 3, "#d9b98a"); rect(3, 7, 10, 3, "#c9a46a"); rect(4, 10, 8, 3, "#b8925a"); rect(6, 13, 4, 2, "#a8824a"); rect(4, 6, 8, 1, "#a8824a", 0.6); rect(3, 9, 10, 1, "#a8824a", 0.6); rect(5, 12, 6, 1, "#8a6a3a", 0.6); rect(7, 10, 2, 2, "#2a1a0a"); rect(12, 3, 3, 2, "#ffcf3a"); rect(12, 4, 3, 1, "#2a1a0a"); rect(13, 2, 2, 1, "#e9f6ff", 0.8); }, 0, null, "wall");
+  deco("slimejar", "Glowing Slime Jar", "#8af07a", function (rect) { rect(5, 2, 6, 2, "#8a5a32"); rect(4, 4, 8, 1, "#bfe8ff", 0.7); rect(3, 5, 10, 10, "#bfe8ff", 0.35); rect(3, 5, 1, 10, "#e9f6ff", 0.8); rect(12, 5, 1, 10, "#7fb0c8", 0.8); rect(3, 15, 10, 1, "#7fb0c8"); rect(4, 9, 8, 6, "#5ad04a"); rect(4, 9, 8, 1, "#9af58a"); rect(5, 11, 2, 2, "#c8ffb8"); rect(9, 12, 1, 1, "#c8ffb8"); rect(6, 10, 1, 1, "#1a3a14"); rect(9, 10, 1, 1, "#1a3a14"); rect(4, 6, 1, 2, "#ffffff", 0.7); }, 5, ["120,255,140", 2.6, 0.22]);
+  // Cave treasure: a gold-banded Cave Chest (opens like a chest, its loot is rolled the first time you open it) and a Cave Pot (smash it for a few goodies).
+  // They are placed by populate() in the open-world caves and by SbxCave.gen() on the hole-cave floors. Loot comes from loot() below.
+  var LC = tile("X_lootchest", "Cave Chest", "#000", "#f2c14e", 0.9, 0, "chest", false, 4, "lootchest"); glow(LC, "255,200,90", 1.9, 0.16);
+  ART.lootchest = function (rect) {
+    rect(1, 7, 14, 8, "#5a3a22"); rect(1, 10, 14, 1, "#3e2616", 0.7); rect(1, 13, 14, 1, "#3e2616", 0.6);
+    rect(1, 3, 14, 4, "#6e4a2a"); rect(2, 2, 12, 1, "#7e5632"); rect(1, 3, 14, 1, "#8a6038"); rect(1, 6, 14, 1, "#2e1c10");
+    rect(1, 7, 14, 1, "#f2c14e"); rect(3, 2, 2, 13, "#d9a83a"); rect(11, 2, 2, 13, "#d9a83a"); rect(3, 2, 1, 13, "#ffe08a"); rect(11, 2, 1, 13, "#ffe08a");
+    rect(6, 5, 4, 5, "#f2c14e"); rect(6, 5, 4, 1, "#fff2b0"); rect(7, 7, 2, 2, "#3a200d"); rect(1, 15, 14, 1, "#1a0f08");
+    rect(1, 3, 1, 12, "#000", 0.25); rect(14, 3, 1, 12, "#000", 0.3); rect(13, 2, 2, 1, "#e8e8e8", 0.45); rect(14, 3, 1, 2, "#e8e8e8", 0.35); rect(0, 14, 2, 2, "#6b7276", 0.8); rect(14, 14, 2, 2, "#6b7276", 0.7);
+    rect(2, 4, 1, 1, "#fff6c2", 0.9); rect(12, 9, 1, 1, "#fff6c2", 0.7);
+  };
+  tile("X_lootpot", "Cave Pot", "#000", "#b87444", 0.15, 0, null, false, 0, "lootpot");
+  ART.lootpot = function (rect, hh, v) {
+    var C = [["#b87444", "#9a5a34", "#e0b070"], ["#8a7a9a", "#6a5a7a", "#c8b8e0"], ["#7a9a8a", "#5a7a6a", "#c0e0c8"]][(v || 0) % 3];
+    rect(5, 3, 6, 1, "#5a3420"); rect(6, 4, 4, 2, C[1]); rect(4, 6, 8, 1, C[0]); rect(3, 7, 10, 7, C[0]); rect(2, 8, 1, 5, C[0]); rect(13, 8, 1, 5, C[1]);
+    rect(4, 14, 8, 1, C[1]); rect(5, 15, 6, 1, "#3a2414"); rect(3, 9, 10, 1, C[2]); rect(3, 12, 10, 1, C[1], 0.8);
+    rect(5, 10, 1, 1, C[2]); rect(8, 10, 1, 1, C[2]); rect(11, 10, 1, 1, C[2]); rect(4, 7, 1, 5, "#ffffff", 0.22); rect(11, 7, 2, 7, "#000", 0.18);
+  };
 
+  // ====================================================================================================
+  // 7b. FARMING AND FOOD
+  //   Garden Soil (placed like a block; Watered Soil is the same tile, darker, while a crop on it is watered)
+  //   4 crops x 4 growth stages. Seeds are placed on top of Garden Soil like any block. Growth is run by sandbox.js (S.farm).
+  //   Cooking Pot: a crafting station (Content Pack STN "cook"); meals are made in its window.
+  //   Every food item has food = how much of the hunger bar it fills (0-100) and heal = health it gives back.
+  // ====================================================================================================
+  var FARM = block("farmland", "Garden Soil", "#5a3a26", "#7a5236", 0.5, function (rect, hh) {
+    rect(0, 0, 16, 16, "#5a3a26"); rect(0, 0, 16, 2, "#6e4a2e"); rect(0, 0, 16, 1, "#8a6038");
+    [3, 7, 11, 15].forEach(function (y) { rect(0, y, 16, 1, "#3e2616"); });
+    for (var i = 0; i < 9; i++) rect(Math.floor(hh(i, 1, 3) * 15), 2 + Math.floor(hh(i, 2, 3) * 13), 1, 1, "#8a6a4a", 0.8);
+  });
+  var FARMWET = tile("X_farmwet", "Watered Soil", "#3a2416", "#523420", 0.5, 1, "farmland", true, 0, "farmwet");
+  ART.farmwet = function (rect, hh) {
+    rect(0, 0, 16, 16, "#3a2416"); rect(0, 0, 16, 2, "#4a3020"); rect(0, 0, 16, 1, "#5a3c28");
+    [3, 7, 11, 15].forEach(function (y) { rect(0, y, 16, 1, "#24140a"); });
+    for (var i = 0; i < 6; i++) rect(Math.floor(hh(i, 1, 4) * 15), 2 + Math.floor(hh(i, 2, 4) * 12), 2, 1, "#8fe0ff", 0.35);
+  };
+  // crops: n, home biome (grows 40% faster there), seconds per growth stage, produce yield, seeds back, colours
+  var CROPS = {
+    carrot: { n: "Swamp Carrot", b: 0, t: 32, yld: [2, 3], sd: [1, 2], leaf: "#3f9a3a", leaf2: "#7fd06a", fruit: "#ff8a2a", fruit2: "#c85a10", look: "root" },
+    potato: { n: "Bog Potato", b: 0, t: 42, yld: [2, 4], sd: [1, 1], leaf: "#2f7a3c", leaf2: "#5fb24a", fruit: "#c9934e", fruit2: "#7a5228", look: "tuber", flower: "#c08cff" },
+    pepper: { n: "Fire Pepper", b: 1, t: 50, yld: [2, 3], sd: [1, 2], leaf: "#3f8a2a", leaf2: "#8ad04a", fruit: "#e8341c", fruit2: "#ff8a6a", look: "hang" },
+    frost: { n: "Frostberry", b: 2, t: 58, yld: [3, 4], sd: [1, 2], leaf: "#2f6a5a", leaf2: "#6ab8a0", fruit: "#5a8cff", fruit2: "#e8f4ff", look: "berry", flower: "#ffffff" }
+  };
+  function cropArt(C, st) {
+    return function (rect) {
+      var L = C.leaf, L2 = C.leaf2;
+      if (st === 1) { rect(7, 12, 2, 4, L); rect(5, 11, 2, 1, L2); rect(9, 11, 2, 1, L2); rect(6, 12, 1, 1, L); rect(9, 12, 1, 1, L); return; }
+      if (st === 2) { rect(7, 8, 2, 8, L); rect(4, 10, 3, 2, L2); rect(9, 9, 3, 2, L2); rect(5, 13, 2, 1, L); rect(9, 12, 3, 1, L); rect(6, 7, 1, 2, L2); rect(9, 6, 1, 2, L2); return; }
+      if (C.look === "root") {   // feathery carrot tops; at stage 4 the orange shoulders show
+        [[4, 3], [7, 1], [10, 3], [6, 5], [9, 5]].forEach(function (q) { rect(q[0], q[1], 2, 10 - q[1] + 4, L); rect(q[0] - 1, q[1] + 1, 1, 2, L2); rect(q[0] + 2, q[1] + 2, 1, 2, L2); });
+        if (st === 4) { rect(4, 13, 3, 3, C.fruit); rect(9, 13, 3, 3, C.fruit); rect(4, 13, 3, 1, "#ffc070"); rect(9, 13, 3, 1, "#ffc070"); rect(5, 15, 1, 1, C.fruit2); rect(10, 15, 1, 1, C.fruit2); }
+        return;
+      }
+      rect(7, 7, 2, 9, L);   // a bush
+      rect(3, 6, 10, 6, L); rect(2, 8, 12, 3, L); rect(4, 4, 8, 3, L2); rect(3, 7, 2, 2, L2); rect(11, 7, 2, 2, L2); rect(6, 3, 4, 2, L2);
+      if (st === 3) { if (C.flower) { rect(5, 4, 1, 1, C.flower); rect(10, 5, 1, 1, C.flower); rect(7, 3, 1, 1, C.flower); } if (C.look === "hang") { rect(5, 11, 1, 2, L2); rect(10, 11, 1, 2, L2); } return; }
+      if (C.look === "tuber") { rect(5, 4, 1, 1, C.flower); rect(10, 5, 1, 1, C.flower); rect(8, 3, 1, 1, C.flower); rect(3, 13, 3, 3, C.fruit); rect(10, 13, 3, 3, C.fruit); rect(3, 13, 3, 1, "#e0b070"); rect(10, 13, 3, 1, "#e0b070"); rect(4, 15, 1, 1, C.fruit2); rect(11, 14, 1, 1, C.fruit2); }
+      else if (C.look === "hang") { [[4, 10], [8, 11], [11, 9]].forEach(function (q) { rect(q[0], q[1], 2, 4, C.fruit); rect(q[0], q[1] + 3, 1, 1, C.fruit); rect(q[0], q[1], 1, 1, C.fruit2); rect(q[0], q[1] - 1, 1, 1, L); }); }
+      else { [[4, 6], [9, 5], [6, 9], [11, 9], [3, 10]].forEach(function (q) { rect(q[0], q[1], 2, 2, C.fruit); rect(q[0], q[1], 1, 1, C.fruit2); }); }
+    };
+  }
+  Object.keys(CROPS).forEach(function (k) {
+    var C = CROPS[k]; C.tiles = [];
+    for (var st = 1; st <= 4; st++) { var id = tile("X_crop_" + k + st, C.n + (st === 4 ? " (ripe)" : " (growing)"), "#000", st === 4 ? C.fruit : C.leaf2, 0.05, 0, null, false, 0, "crop_" + k + st, { crop: k, stage: st, sway: 1 }); ART["crop_" + k + st] = cropArt(C, st); C.tiles.push(id); }
+  });
+  var SEEDS = { carrot: "seed_carrot", potato: "seed_potato", pepper: "seed_pepper", frost: "seed_frost" };
+  item("seed_carrot", "Swamp Carrot Seeds", { tile: CROPS.carrot.tiles[0], seed: "carrot" });
+  item("seed_potato", "Seed Potato", { tile: CROPS.potato.tiles[0], seed: "potato" });
+  item("seed_pepper", "Fire Pepper Seeds", { tile: CROPS.pepper.tiles[0], seed: "pepper" });
+  item("seed_frost", "Frostberry Seeds", { tile: CROPS.frost.tiles[0], seed: "frost" });
+  CROPS.carrot.produce = "carrot"; CROPS.potato.produce = "potato"; CROPS.pepper.produce = "pepper"; CROPS.frost.produce = "frostberry";
+  // food: raw crops, wild finds, meat and cooked meals
+  function food(k, n, f, h, cooked) { item(k, n, { food: f, heal: h || 0, cooked: cooked ? 1 : 0 }); }
+  food("carrot", "Swamp Carrot", 10, 0); food("potato", "Bog Potato", 6, 0); food("pepper", "Fire Pepper", 6, 0); food("frostberry", "Frostberry", 12, 2);
+  food("rawmeat", "Raw Meat", 8, 0);
+  food("roastcarrot", "Roast Carrots", 28, 6, 1); food("bakedpotato", "Baked Potato", 32, 6, 1); food("skewer", "Mushroom Skewer", 22, 5, 1); food("grilledmeat", "Grilled Meat", 40, 12, 1);
+  food("chili", "Fire Pepper Chili", 50, 18, 1); food("stew", "Swamp Stew", 65, 25, 1); food("berrypie", "Frostberry Tart", 60, 30, 1); food("feast", "Explorer's Feast", 100, 60, 1);
+  if (ITEMS.redcap) { ITEMS.redcap.food = 5; ITEMS.redcap.heal = 0; }   // wild Redcap Mushrooms and Frostfen Icecaps can be eaten raw in a pinch
+  if (ITEMS.icecap) { ITEMS.icecap.food = 5; ITEMS.icecap.heal = 0; }
+  deco("cookpot", "Cooking Pot", "#ff8a3d", function (rect) {   // an iron pot of stew over a little fire
+    rect(2, 14, 12, 2, "#6b7276"); rect(2, 14, 12, 1, "#8e969b"); rect(4, 12, 8, 2, "#ff7a1f"); rect(6, 11, 4, 2, "#ffc43a"); rect(7, 12, 2, 1, "#fff6c2");
+    rect(2, 5, 12, 7, "#3a3a44"); rect(1, 5, 14, 2, "#4a4a54"); rect(1, 5, 14, 1, "#6a6a74"); rect(3, 6, 10, 1, "#9a6a2a"); rect(4, 6, 3, 1, "#ff8a2a"); rect(9, 6, 2, 1, "#7fd06a");
+    rect(2, 7, 1, 4, "#5a5a64"); rect(13, 7, 1, 4, "#24242c"); rect(0, 6, 1, 2, "#4a4a54"); rect(15, 6, 1, 2, "#4a4a54");
+    rect(5, 2, 1, 2, "#d0d0d0", 0.7); rect(8, 1, 1, 3, "#d0d0d0", 0.6); rect(11, 2, 1, 2, "#d0d0d0", 0.5);
+  }, 6, ["255,150,60", 2.4, 0.18]);
   // ====================================================================================================
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
-  var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable" };
+  var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot" };
   function R(id, n, out, cost, o) { var r = { id: id, n: n, out: out, cost: cost, d: (o && o.d) || "" }; if (o) Object.keys(o).forEach(function (k) { r[k] = o[k]; }); RECIPES.push(r); }
   R("x_rope", "Rope (2)", { rope: 2 }, { fiber: 4 }, { d: "Twisted reed fibre. Used for looms, lanterns, trophies and tapestries." });
   R("x_candle", "Candles (4)", { candle: 4 }, { fiber: 2, peat: 1 }, { d: "A wick dipped in peat tallow. Used in candelabras and chandeliers." });
@@ -209,9 +299,22 @@
   R("x_dyeblue", "Blue Dye (2)", { dyeblue: 2 }, { frostbell: 2 }, { d: "Crushed Frostbells from the Frostfen." });
   R("x_dyegreen", "Green Dye (2)", { dyegreen: 2 }, { marshlily: 2 }, { d: "Marsh Lily stems boiled to a deep green." });
   R("x_mortar", "Mortar (2)", { mortar: 2 }, { silt: 3, clay: 1 }, { d: "Silt from lake beds mixed with clay. Holds bricks together." });
-  R("x_furnace", "Stone Furnace", { furnace: 1 }, { stone: 20, clay: 6, pebble: 4 }, { bench: true, d: "Place it near camp. Standing next to it lets you smelt Bog Iron and fire clay bricks. Needs a Bog Workbench nearby." });
-  R("x_loom", "Weaver's Loom", { loom: 1 }, { planks: 10, stick: 6, rope: 2 }, { bench: true, d: "Weave Bog Cotton into cloth. Needs a Bog Workbench nearby." });
-  R("x_mason", "Mason's Table", { masontable: 1 }, { planks: 8, stone: 10, pebble: 6 }, { bench: true, d: "Cut stone, bricks and shingles into building blocks. Needs a Bog Workbench nearby." });
+  R("x_furnace", "Stone Furnace", { furnace: 1 }, { stone: 20, clay: 6, pebble: 4 }, { bench: true, d: "Place it near camp, then tap it to open it: smelt Bog Iron, fire clay bricks and melt glowing blocks. Made at the Bog Workbench." });
+  R("x_loom", "Weaver's Loom", { loom: 1 }, { planks: 10, stick: 6, rope: 2 }, { bench: true, d: "Place it, then tap it to open it and weave Bog Cotton into cloth. Made at the Bog Workbench." });
+  R("x_mason", "Mason's Table", { masontable: 1 }, { planks: 8, stone: 10, pebble: 6 }, { bench: true, d: "Place it, then tap it to open it and cut stone, bricks and shingles into building blocks. Made at the Bog Workbench." });
+  // farming and cooking
+  R("x_farmland", "Garden Soil (4)", { farmland: 4 }, { mud: 4, leaves: 2 }, { d: "Rich tilled soil. Place it like a block, then plant seeds on top. Made by hand." });
+  R("x_cookpot", "Cooking Pot", { cookpot: 1 }, { stone: 8, clay: 4, stick: 3 }, { bench: true, d: "Place it, then tap it to open it and cook meals that fill you up far more than raw food. Made at the Bog Workbench." });
+  R("x_roastcarrot", "Roast Carrots", { roastcarrot: 1 }, { carrot: 2, stick: 1 }, { stn: "cook", d: "Fills 28 hunger and heals 6." });
+  R("x_bakedpotato", "Baked Potato", { bakedpotato: 1 }, { potato: 2, stick: 1 }, { stn: "cook", d: "Fills 32 hunger and heals 6." });
+  R("x_skewer", "Mushroom Skewer", { skewer: 1 }, { redcap: 2, stick: 1 }, { stn: "cook", d: "Wild Redcap Mushrooms grilled on a stick. Fills 22 hunger and heals 5." });
+  R("x_grilledmeat", "Grilled Meat", { grilledmeat: 1 }, { rawmeat: 1, stick: 1 }, { stn: "cook", d: "Raw Meat comes from frogs, wolves and gators. Fills 40 hunger and heals 12." });
+  R("x_chili", "Fire Pepper Chili", { chili: 1 }, { pepper: 2, potato: 1, rawmeat: 1 }, { stn: "cook", d: "Hot enough to make your eyes water. Fills 50 hunger and heals 18." });
+  R("x_stew", "Swamp Stew", { stew: 1 }, { carrot: 1, potato: 1, redcap: 1, rawmeat: 1 }, { stn: "cook", d: "A hearty bowl of everything the swamp grows. Fills 65 hunger and heals 25." });
+  R("x_berrypie", "Frostberry Tart", { berrypie: 1 }, { frostberry: 3, potato: 1 }, { stn: "cook", bl: 2, d: "Sweet and cold. Fills 60 hunger and heals 30. Needs a Glowspore Workbench (or better)." });
+  R("x_feast", "Explorer's Feast", { feast: 1 }, { stew: 1, chili: 1, berrypie: 1 }, { stn: "cook", bl: 3, d: "A meal from all three lands. Fills you up completely and heals 60. Needs a Cinder Forge Workbench (or better)." });
+  R("x_furcloth", "Fur Cloth (2)", { cloth: 2 }, { wolfpelt: 1 }, { stn: "loom", d: "Spin a Frost Wolf Pelt into two pieces of warm cloth." });
+  R("x_slimetorch", "Slime Torches (8)", { torch: 8 }, { stick: 2, slimeball: 1 }, { d: "Sticks dipped in slime burn twice as long to make. Made by hand." });
   R("x_cloth", "Woven Cloth", { cloth: 1 }, { cotton: 3 }, { stn: "loom", d: "Soft cream cloth from Bog Cotton." });
   R("x_ingot", "Iron Ingot", { ironingot: 1 }, { bogiron: 2, charcoal: 1 }, { stn: "furnace", d: "Smelt Bog Iron with Charcoal." });
   R("x_claybrick", "Fired Brick (4)", { claybrick: 4 }, { clay: 6, charcoal: 1 }, { stn: "furnace", d: "Fire raw clay into hard red bricks." });
@@ -267,8 +370,12 @@
   Dc("x_shield", "Armory Showpieces", "Wall Shield", { shield: 1 }, { ironingot: 2, planks: 4, dyeblue: 1 }, "A blue shield with a golden cross.");
   Dc("x_swords", "Armory Showpieces", "Crossed Swords", { crossedswords: 1 }, { ironingot: 4, rope: 1 }, "Two blades crossed over the hearth.");
   Dc("x_battrophy", "Armory Showpieces", "Dusk Bat Trophy", { battrophy: 1 }, { batwing: 3, planks: 2, rope: 1 }, "A Dusk Bat with spread wings on a plaque.");
+  Dc("x_wolftrophy", "Armory Showpieces", "Frost Wolf Trophy", { wolftrophy: 1 }, { wolfpelt: 3, planks: 2, rope: 1 }, "A snarling Frost Wolf head on a plaque. Hangs on a wall.");
+  Dc("x_gatortrophy", "Armory Showpieces", "Bog Gator Trophy", { gatortrophy: 1 }, { gatorscale: 3, planks: 2, rope: 1 }, "A toothy Bog Gator head mounted on a plaque. Hangs on a wall.");
+  Dc("x_waspnest", "Armory Showpieces", "Ember Wasp Nest", { waspnest: 1 }, { stinger: 2, fiber: 6, planks: 1 }, "An empty papery wasp nest (honest). Hangs on a wall.");
+  Dc("x_slimejar", "Armory Showpieces", "Glowing Slime Jar", { slimejar: 1 }, { slimeball: 4, glass: 1 }, "A jar of wobbling slime that glows a soft green. A gentle light.");
   Dc("x_antlers", "Armory Showpieces", "Mounted Antlers", { antlers: 1 }, { bone: 4, planks: 2, rope: 1 }, "Antlers carved from old bone.");
-  Dc("x_streetlamp", "Lighting II", "Iron Street Lamp", { streetlamp: 1 }, { ironingot: 3, glass: 1, candle: 2 }, "A tall lamp-post for the village lane.");
+  Dc("x_streetlamp", "Lighting II", "Iron Street Lamp", { streetlamp: 1 }, { ironingot: 3, glass: 1, candle: 2 }, "A tall lamp-post for your garden lane.");
   Dc("x_bonfire", "Lighting II", "Bonfire", { bonfire: 1 }, { wood: 8, charcoal: 3, torch: 2 }, "A roaring pile of logs. Very bright and warm.");
   Dc("x_candelabra", "Lighting II", "Candelabra", { candelabra: 1 }, { ironingot: 2, candle: 3 }, "Three flames on a golden stand.");
   Dc("x_lavalamp", "Lighting II", "Lava Lamp", { lavalamp: 1 }, { glass: 2, ruby: 1, sulfur: 2, ironingot: 1 }, "A slow red blob rises and sinks.", 2);
@@ -300,22 +407,21 @@
 
   // ====================================================================================================
   // 10. WORLD POPULATION: new ores, loot and plants are added after the normal generator, using hash() only,
-  //     and only by swapping plain natural blocks (stone, mud, ice ...), so every earlier tile, tree, hole, village and building stays put.
+  //     and only by swapping plain natural blocks (stone, mud, ice ...), so every earlier tile, tree, hole and building stays put.
   // ====================================================================================================
   function populate(w) {
-    var t = w.t, top = w.top, bio = w.bio, W = w.W, H = w.H, seed = w.seed, vil = w.village, x, y, i, id, d;
+    var t = w.t, top = w.top, bio = w.bio, W = w.W, H = w.H, seed = w.seed, x, y, i, id, d;
     function cell(x2, y2, k, p, fill) { return hash(x2 >> 2, y2 >> 2, seed + k) < p && hash(x2, y2, seed + k + 1) < fill; }
     var solidAir = function (xx, yy) { return TILES[t[yy * W + xx]].solid; };
     for (x = 3; x < W - 3; x++) {
-      var tp = top[x], b = bio[x], inV = vil && x >= vil.f0 && x <= vil.f1;
-      if (b === 0 && !inV && t[(tp - 1) * W + x] === T.WATER) { var bed = t[tp * W + x]; if (bed === T.MOSS || bed === T.MUD) { t[tp * W + x] = T.X_silt; if (t[(tp + 1) * W + x] === T.MUD && hash(x, 3, seed + 711) < 0.7) t[(tp + 1) * W + x] = T.X_silt; } }   // lake beds
+      var tp = top[x], b = bio[x];
+      if (b === 0 && t[(tp - 1) * W + x] === T.WATER) { var bed = t[tp * W + x]; if (bed === T.MOSS || bed === T.MUD) { t[tp * W + x] = T.X_silt; if (t[(tp + 1) * W + x] === T.MUD && hash(x, 3, seed + 711) < 0.7) t[(tp + 1) * W + x] = T.X_silt; } }   // lake beds
       for (y = tp + 2; y < H - 6; y++) {
         i = y * W + x; id = t[i]; d = y - tp;
         if (id === T.AIR || id === T.WATER || id === T.LAVA) {
           if (id === T.AIR && d > 8 && y < H - 8 && solidAir(x, y + 1) && hash(x, y, seed + 700) < 0.022) t[i] = T.GLOWSHROOMTUFT;   // cave-floor mushrooms
           continue;
         }
-        if (inV && d < 12) continue;
         if (b === 0) {
           if (id === T.MUD && d >= 2 && d <= 5 && cell(x, y, 720, 0.22, 0.8)) t[i] = T.X_peat;
           else if (id === T.STONE && d >= 6 && cell(x, y, 730, 0.05, 0.7)) t[i] = T.AMBERORE;
@@ -335,7 +441,7 @@
       }
       // wild plants on the surface (only where the ground tile above is still empty air)
       var sy = tp - 1, gi = tp * W + x;
-      if (sy > 1 && !inV && t[sy * W + x] === T.AIR && TILES[t[gi]].solid && t[gi] !== T.WATER) {
+      if (sy > 1 && t[sy * W + x] === T.AIR && TILES[t[gi]].solid && t[gi] !== T.WATER) {
         var r = hash(x, 95, seed), gid = t[gi];
         if (b === 0) { if (r < 0.1) t[sy * W + x] = T.REDCAPTUFT; else if (r < 0.22 && gid === T.MOSS) t[sy * W + x] = T.COTTONTUFT; else if (r < 0.3) t[sy * W + x] = T.LILYTUFT; }
         else if (b === 1) { if (r < 0.08) t[sy * W + x] = T.EMBERROOTTUFT; else if (r < 0.16) t[sy * W + x] = T.THISTLETUFT; }
@@ -343,9 +449,44 @@
       }
     }
   }
+  // ---------- CAVE LOOT ----------
+  // loot(kind, biome, tier, rnd) -> [[item, count], ...]. kind "chest" (4-7 stacks) or "pot" (1-2 small stacks).
+  // tier 0 = shallow, 1 = mid, 2 = deep (side-view caves: depth below the surface line; hole caves: the floor number).
+  // Each entry: [item, min, max, weight, lowest tier]. Biome lists sit on top of the common list.
+  var LOOT_ALL = [["torch", 3, 8, 6, 0], ["rope", 1, 3, 4, 0], ["candle", 2, 4, 3, 0], ["planks", 4, 10, 4, 0], ["pebble", 3, 6, 2, 0], ["charcoal", 1, 3, 3, 0], ["bone", 1, 3, 2, 0],
+    ["ironingot", 1, 3, 3, 1], ["cloth", 1, 3, 2, 1], ["quartz", 1, 3, 2, 1], ["amethyst", 1, 2, 2, 1], ["glass", 2, 4, 1, 1], ["ironingot", 2, 5, 3, 2], ["amethyst", 2, 4, 2, 2]];
+  var LOOT_B = [
+    [["spore", 3, 8, 5, 0], ["clay", 3, 6, 3, 0], ["seed_carrot", 2, 4, 3, 0], ["seed_potato", 1, 3, 2, 0], ["bakedpotato", 1, 2, 1, 1], ["amber", 1, 3, 3, 0], ["bogiron", 2, 5, 3, 0], ["cotton", 2, 4, 2, 0], ["bugfrag", 1, 2, 2, 0], ["frogfrag", 1, 2, 2, 0], ["slimeball", 1, 3, 2, 0], ["gatorscale", 1, 2, 1, 1], ["moonstone", 1, 1, 1, 2]],
+    [["cinder", 3, 6, 5, 0], ["sulfur", 1, 3, 3, 0], ["seed_pepper", 2, 3, 3, 0], ["chili", 1, 1, 1, 1], ["emberroot", 1, 3, 2, 0], ["stinger", 1, 2, 2, 0], ["ruby", 1, 2, 2, 1], ["ruby", 2, 3, 2, 2], ["slimeball", 1, 3, 1, 0]],
+    [["crystal", 2, 5, 5, 0], ["icecap", 1, 3, 2, 0], ["seed_frost", 2, 3, 3, 0], ["berrypie", 1, 1, 1, 1], ["frostbell", 1, 3, 2, 0], ["wolfpelt", 1, 2, 2, 0], ["sapphire", 1, 2, 2, 1], ["moonstone", 1, 2, 2, 1], ["sapphire", 2, 3, 2, 2]]
+  ];
+  function loot(kind, biome, tier, rnd) {
+    rnd = rnd || Math.random; var pool = LOOT_ALL.concat(LOOT_B[biome] || LOOT_B[0]).filter(function (e) { return e[4] <= tier && ITEMS[e[0]]; }), tot = 0, out = {}, n, q;
+    pool.forEach(function (e) { tot += e[3]; });
+    function roll(small) { var r = rnd() * tot; for (q = 0; q < pool.length; q++) { r -= pool[q][3]; if (r <= 0) break; } var e = pool[Math.min(q, pool.length - 1)], c = e[1] + Math.floor(rnd() * (e[2] - e[1] + 1)); if (small) c = Math.max(1, Math.ceil(c / 2)); out[e[0]] = (out[e[0]] || 0) + c; }
+    if (kind === "chest") { n = 4 + Math.floor(rnd() * 3) + (tier >= 2 ? 1 : 0); for (var k = 0; k < n; k++) roll(false); }
+    else { if (rnd() < 0.25) out.pebble = 1 + Math.floor(rnd() * 3); n = rnd() < 0.35 ? 2 : 1; for (var k2 = 0; k2 < n; k2++) roll(true); }
+    return Object.keys(out).map(function (k3) { return [k3, out[k3]]; });
+  }
+  function placeTreasure(w) {   // chests on flat cave floors (about one per 40 x 26 cell, if it has a good spot) and pots scattered along cave floors
+    var t = w.t, top = w.top, W = w.W, H = w.H, seed = w.seed, x, y, i, gx, gy;
+    function floorAt(xx, yy) { var i2 = yy * W + xx; return t[i2] === T.AIR && t[i2 - W] === T.AIR && TILES[t[i2 + W]].solid && yy > top[xx] + 8 && yy < H - 8; }
+    for (gx = 0; gx < W; gx += 40) for (gy = 0; gy < H; gy += 26) {
+      if (hash(gx, gy, seed + 900) > 0.42) continue;
+      for (var tr = 0; tr < 24; tr++) {
+        x = Math.min(W - 3, Math.max(3, gx + Math.floor(hash(gx + tr, gy, seed + 901) * 40))); var y0 = gy + Math.floor(hash(gx, gy + tr, seed + 902) * 26), done = false;
+        for (y = y0; y < Math.min(H - 8, y0 + 12); y++) if (floorAt(x, y) && floorAt(x - 1, y) && floorAt(x + 1, y) && t[(y + 1) * W + x] !== T.LAVA) { t[y * W + x] = T.X_lootchest; done = true; break; }
+        if (done) break;
+      }
+    }
+    for (x = 3; x < W - 3; x++) for (y = top[x] + 9; y < H - 8; y++) {
+      i = y * W + x; if (t[i] !== T.AIR || !TILES[t[i + W]].solid || hash(x, y, seed + 910) > 0.016) continue;
+      t[i] = T.X_lootpot; if (hash(x, y, seed + 911) < 0.5 && t[i + 1] === T.AIR && TILES[t[i + 1 + W]].solid) t[i + 1] = T.X_lootpot;
+    }
+  }
   var origGen = SW.gen;
-  SW.gen = function (seed) { var w = origGen(seed); populate(w); return w; };
+  SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
 
-  var api = { NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, tileCount: nid };
+  var api = { NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

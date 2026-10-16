@@ -5,8 +5,9 @@
   "use strict";
   // World size in tiles and the average surface row. The world is a long open map and you start in the MIDDLE:
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 720 tiles wide (2160 in all, 3x the old world).
-  // WORLDVER 4: the world was rebuilt bigger. Saves from an older version keep items and progress but not their digging, map or chests (see clean() in sandbox.js).
-  var W = 2160, H = 140, SURF = 34, WORLDVER = 4, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080;
+  // H 200 / SURF 72: there are ~58 rows of sky above the average ground line for mountains, and ~126 rows of underground below it.
+  // WORLDVER 5 (big-sky terrain) / WORLDVER 4 (the world was rebuilt bigger): Saves from an older version keep items and progress but not their digging, map or chests (see clean() in sandbox.js).
+  var W = 2160, H = 200, SURF = 72, WORLDVER = 7, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080;
   var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
@@ -32,7 +33,7 @@
   tile(T.CINDER, "Cinder Ore", "#3b3036", "#ff8a3d", 2.4, 2, "cinder", true, 7, "ore");
   tile(T.CRYSTAL, "Frost Crystal Ore", "#5d7c93", "#bff4ff", 3.2, 3, "crystal", true, 8, "ore");
   tile(T.BEDROCK, "Bedrock", "#1c1a22", "#2c2934", Infinity, 99, null, true);
-  tile(T.PLANKS, "Planks", "#b9793f", "#dc9a58", 0.8, 1, "planks", true, 0, "planks");
+  tile(T.PLANKS, "Planks", "#d29a58", "#edb978", 0.8, 1, "planks", true, 0, "planks");
   tile(T.TORCH, "Torch", "#000", "#ffb13b", 0.05, 1, "torch", false, 13, "torch");
   tile(T.GLOWCAP, "Glowcap", "#000", "#4ee6b4", 0.1, 1, "spore", false, 6, "glowcap");
   tile(T.REED, "Cattail", "#000", "#6aa347", 0.05, 1, null, false, 0, "reed");
@@ -57,7 +58,7 @@
   tile(T.CHAIR_L, "Wooden Chair", "#000", "#b9793f", 0.4, 0, "chair", false, 0, "chair");
   tile(T.TABLE, "Wooden Table", "#000", "#b9793f", 0.4, 0, "table", false, 0, "table");
   tile(T.PAINTING, "Painting", "#000", "#c98c4f", 0.3, 0, "painting", false, 0, "painting");
-  // Village knick-knacks: small, not solid, break by hand and give themselves back. They need solid ground under them to be placed.
+  // Knick-knacks: small, not solid, break by hand and give themselves back. They need solid ground under them to be placed.
   // Flowers come in four colours (chosen by position, like leaves) and sway in the wind like cattails.
   tile(T.FLOWER, "Swamp Flower", "#000", "#ff6fb5", 0.05, 0, "flower", false, 0, "flower");
   tile(T.BUCKET, "Wooden Bucket", "#000", "#b9793f", 0.3, 0, "bucket", false, 0, "bucket");
@@ -136,7 +137,8 @@
     flower: { n: "Swamp Flower", tile: T.FLOWER }, bucket: { n: "Wooden Bucket", tile: T.BUCKET }, pot: { n: "Clay Pot", tile: T.POT }, flowerpot: { n: "Flower Pot", tile: T.FLOWERPOT }, barrel: { n: "Barrel", tile: T.BARREL },
     spore: { n: "Glowspore", gem: "#4ee6b4" }, cinder: { n: "Cinder Shard", gem: "#ff8a3d" }, crystal: { n: "Frost Crystal", gem: "#bff4ff" },
     bugfrag: { n: "Bramble Fragment", frag: "bug" }, frogfrag: { n: "Frog Fragment", frag: "frog" },   // enemy loot, same names as the Adventure Fragments
-    batwing: { n: "Bat Wing", frag: "bat" }   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
+batwing: { n: "Bat Wing", frag: "bat" },
+    wolfpelt: { n: "Wolf Pelt", frag: "wolf" }, gatorscale: { n: "Gator Scale", frag: "gator" }, slimeball: { n: "Slime Ball", frag: "slime" }, stinger: { n: "Wasp Stinger", frag: "wasp" }   // loot from the Frost Wolf, Bog Gator, slimes and Ember Wasp   // Dusk Bat loot (Delve only: the Adventure has no bat Fragment, so Fragments.add ignores it)
   };
   Object.assign(ITEMS, {
     wall_plank: { n: "Plank Wall", tile: T.W_PLANK, wall: T.W_PLANK }, wall_log: { n: "Log Wall", tile: T.W_LOG, wall: T.W_LOG }, wall_brick: { n: "Stone Brick Wall", tile: T.W_BRICK, wall: T.W_BRICK },
@@ -157,12 +159,12 @@
     emberbanner: { n: "Ember Banner", tile: T.EMBERBANNER }, chandelier: { n: "Crystal Chandelier", tile: T.CHANDELIER }, frostbanner: { n: "Frost Banner", tile: T.FROSTBANNER }
   });
   // Where each decor item may be placed. floor = needs solid ground right under it. wall = hangs on a block beside it or above it (never just resting on the ground).
-  // Anything flagged here counts as decor (stack of 16 in the inventory, counts for the "furniture" goals). The village generator uses the same rules.
+  // Anything flagged here counts as decor (stack of 16 in the inventory, counts for the "furniture" goals). Generated buildings follow the same rules.
   var DECOR_FLOOR = ["chair", "table", "bucket", "pot", "flowerpot", "barrel", "flower", "decorbench", "stool", "rug", "bookshelf", "lantern", "planter", "campfire", "fountain", "well", "cauldron", "fence", "bale", "glowpot", "wardrobe", "hearth", "frogstatue", "brazier", "guardian", "emberlantern", "urn", "anvil", "icesculpt", "frostlantern", "throne"],
     DECOR_WALL = ["painting", "banner", "sign", "sconce", "bugtrophy", "frogtrophy", "emberbanner", "chandelier", "frostbanner"];
   DECOR_FLOOR.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "floor"; });
   DECOR_WALL.forEach(function (k) { ITEMS[k].decor = 1; ITEMS[k].put = "wall"; });
-  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "wall_plank", "wall_log", "wall_timber", "wall_plaster", "wall_brick", "wall_moss", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "brick", "thatch", "glass", "basaltbrick", "cinderlamp", "icebrick", "crystallamp", "fountain", "well", "cauldron", "fence", "bale", "glowpot", "wardrobe", "hearth", "frogstatue", "brazier", "guardian", "emberlantern", "urn", "anvil", "icesculpt", "frostlantern", "throne", "sconce", "bugtrophy", "frogtrophy", "emberbanner", "chandelier", "frostbanner", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing"];
+  var ITEM_ORDER = ["stick", "fiber", "pebble", "wood", "planks", "wall_plank", "wall_log", "wall_timber", "wall_plaster", "wall_brick", "wall_moss", "bench", "bed", "door", "ladder", "chest", "chair", "table", "painting", "flower", "flowerpot", "pot", "bucket", "barrel", "decorbench", "stool", "rug", "bookshelf", "lantern", "banner", "sign", "planter", "campfire", "brick", "thatch", "glass", "basaltbrick", "cinderlamp", "icebrick", "crystallamp", "fountain", "well", "cauldron", "fence", "bale", "glowpot", "wardrobe", "hearth", "frogstatue", "brazier", "guardian", "emberlantern", "urn", "anvil", "icesculpt", "frostlantern", "throne", "sconce", "bugtrophy", "frogtrophy", "emberbanner", "chandelier", "frostbanner", "torch", "mud", "clay", "stone", "leaves", "ash", "basalt", "snow", "ice", "frostrock", "spore", "cinder", "crystal", "bugfrag", "frogfrag", "batwing", "wolfpelt", "gatorscale", "slimeball", "stinger"];
   var BIOMES = [
     { id: "swamp", n: "Murkwater Swamp", c: "#4ee6b4" },
     { id: "ember", n: "Ember Bog", c: "#ff8a3d" },
@@ -188,257 +190,360 @@
   function mulberry(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   function smooth(a, b, x) { var k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); }
 
-  // ---------- village ----------
-  // Murkwater Swamp (the home area) gets one village: a flat plateau with five plank houses (7 or 9 tiles wide) and a plaza between the
-  // second and third. Every house has a door in BOTH side walls so people can walk straight through the village, a lamp beside each door,
-  // and a bed, table, chairs and a painting inside. It is built after the trees and decorations and only uses hash() (never rnd()),
-  // so all earlier terrain, trees and holes stay exactly as they were. The villagers themselves (swamp avatars) live in sandbox.js.
-  function buildVillage(t, top, bio, seed, walls) {
-    var GY = SURF, WL = SURF + 2, BL = 7, i, x, y, ws = [], gaps = [3, 9, 3, 3], L = 6;
-    for (i = 0; i < 5; i++) { ws.push(hash(i, 701, seed) < 0.5 ? 7 : 9); L += ws[i]; }
-    for (i = 0; i < 4; i++) L += gaps[i];
-    // a spot where the whole village, its slopes and a small margin lie inside Murkwater and clear of the flat spawn area; try the side
-    // opposite the first Cave Hole first, then the other side
-    var vs = hash(7, 0, seed) < 0.5 ? -1 : 1, sides = [vs, -vs], dists = [56, 52, 60, 48, 64], spot = null, si, di;
-    for (si = 0; si < 2 && !spot; si++) for (di = 0; di < dists.length && !spot; di++) {
-      var cx = SPAWNX + sides[si] * dists[di], left = cx - Math.floor(L / 2), right = left + L - 1, f0 = left - BL - 2, f1 = right + BL + 2;
-      var ok = f0 > B_FROST + 8 && f1 < B_EMBER - 8 && (f1 < SPAWNX - 14 || f0 > SPAWNX + 14);
-      for (x = f0; ok && x <= f1; x++) if (bio[x] !== 0) ok = false;
-      if (ok) spot = { cx: cx, left: left, right: right, f0: f0, f1: f1 };
-    }
-    if (!spot) return null;
-    function put(px, py, id) { if (px >= 0 && px < W && py >= 0 && py < H) t[py * W + px] = id; }
-    function wput(px, py, id) { if (walls && px >= 0 && px < W && py >= 0 && py < H) walls[py * W + px] = id; }
-    // decor goes through the same rules a player follows: floor pieces need solid ground right under them, wall pieces need a block beside or above them, lamps need something to hang on.
-    // A piece that would float or land on something else is simply not placed.
-    function solidAt(px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; }
-    function decor(px, py, id, rule) {
-      if (px < 0 || px >= W || py < 1 || py >= H || t[py * W + px] !== T.AIR) return false;
-      if (rule === "floor" && !solidAt(px, py + 1)) return false;
-      if (rule === "wall" && !(solidAt(px - 1, py) || solidAt(px + 1, py) || solidAt(px, py - 1))) return false;
-      if (rule === "any" && !(solidAt(px - 1, py) || solidAt(px + 1, py) || solidAt(px, py - 1) || solidAt(px, py + 1))) return false;
-      t[py * W + px] = id; return true;
-    }
-    var isTree = function (id) { return id === T.LEAVES || id === T.LOG || id === T.VINE; };
-    // 1. flatten the plateau (ground row = GY) and ease it into the old terrain over BL columns; clear trees and plants above it
-    var xa = spot.left - BL, xb = spot.right + BL, stack = [];
-    for (x = xa; x <= xb; x++) {
-      var old = top[x], d = x < spot.left ? spot.left - x : x > spot.right ? x - spot.right : 0;
-      var th = d === 0 ? GY : Math.round(GY + (old - GY) * smooth(0, 1, d / (BL + 1)));
-      th = Math.max(18, Math.min(60, th));
-      var lo = Math.min(old, th);
-      for (y = 0; y < lo; y++) {
-        var id0 = t[y * W + x]; if (id0 === T.AIR || id0 === T.WATER) continue;
-        t[y * W + x] = y >= WL ? T.WATER : T.AIR; if (isTree(id0)) stack.push(x, y);
-      }
-      if (th < old) for (y = th; y < old; y++) t[y * W + x] = y === th ? T.MOSS : T.MUD;
-      else { for (y = old; y < th; y++) t[y * W + x] = y >= WL ? T.WATER : T.AIR; t[th * W + x] = T.MOSS; }
-      top[x] = th;
-    }
-    // trees that reached into the cleared ground are removed whole (leaves and trunk that touch a removed tile), within a few columns of the slopes
-    var fa = xa - 8, fb = xb + 8;
-    while (stack.length) {
-      var qy = stack.pop(), qx = stack.pop();
-      for (var ddy = -1; ddy <= 1; ddy++) for (var ddx = -1; ddx <= 1; ddx++) {
-        var nx = qx + ddx, ny = qy + ddy; if (nx < fa || nx > fb || ny < 0 || ny >= H) continue;
-        if (isTree(t[ny * W + nx])) { t[ny * W + nx] = ny >= WL ? T.WATER : T.AIR; stack.push(nx, ny); }
-      }
-    }
-    // 2. houses, left to right: H0 H1 | plaza | H2 H3 H4
-    var houses = [], hx = spot.left + 3;
-    for (i = 0; i < 5; i++) {
-      var w = ws[i], x0 = hx, x1 = x0 + w - 1, n = w - 2, flip = hash(i, 702, seed) < 0.5;
-      for (x = x0 + 1; x < x1; x++) put(x, GY, T.PLANKS);                       // plank floor
-      for (y = GY - 3; y < GY; y++) { put(x0, y, T.PLANKS); put(x1, y, T.PLANKS); }   // side walls, rows GY-3..GY-1
-      put(x0 - 1, GY - 4, T.PLANKS); put(x1 + 1, GY - 4, T.PLANKS);               // roof: three stepped rows with a small overhang
-      for (x = x0; x <= x1; x++) put(x, GY - 4, T.PLANKS);
-      for (x = x0 + 1; x <= x1 - 1; x++) put(x, GY - 5, T.PLANKS);
-      for (x = x0 + 3; x <= x1 - 3; x++) put(x, GY - 6, T.PLANKS);
-      var wst = [T.W_TIMBER, T.W_PLANK, T.W_PLASTER, T.W_LOG, T.W_TIMBER][i];   // each house has its own back wall, so the rooms read as rooms
-      for (y = GY - 3; y < GY; y++) for (x = x0 + 1; x < x1; x++) wput(x, y, wst);
-      put(x0, GY - 1, T.DOOR_B); put(x0, GY - 2, T.DOOR_T); put(x1, GY - 1, T.DOOR_B); put(x1, GY - 2, T.DOOR_T);   // a door in each wall, plank lintel above it
-      decor(x0 - 1, GY - 2, T.TORCH, "any"); decor(x1 + 1, GY - 2, T.TORCH, "any");   // a lamp on the outside next to each door (it hangs on the door frame)
-      decor(x0 + (w - 1) / 2, GY - 3, T.TORCH, "any");                              // and one hanging under the roof, so the inside is lit
-      var at = function (j) { return x0 + 1 + (flip ? n - 1 - j : j); }, face = function (right) { return (right !== flip) ? T.CHAIR : T.CHAIR_L; };
-      // inside: the cells next to the two doors stay clear (that is the walkway). Bed, then a chair facing the table, a second chair on bigger houses, and a store barrel or pot in the spare cell.
-      decor(at(1), GY - 1, T.BED, "floor");
-      decor(at(3), GY - 1, T.TABLE, "floor"); decor(at(2), GY - 1, face(true), "floor");
-      if (n >= 7) { decor(at(4), GY - 1, face(false), "floor"); decor(at(5), GY - 1, hash(i, 708, seed) < 0.5 ? T.BARREL : T.POT, "floor"); }
-      // paintings hang on the wall above a doorway (row GY-3 is the wall's top row, touching the end wall and the roof), never in mid-air
-      decor(at(0), GY - 3, T.PAINTING, "wall"); if (n >= 7 && hash(i, 703, seed) < 0.6) decor(at(n - 1), GY - 3, T.PAINTING, "wall");
-      houses.push({ x: x0, w: w, doors: [x0, x1] });
-      hx = x1 + 1 + (gaps[i] || 0);
-    }
-    // 3. a little swamp life on the open ground: glowcaps, cattails and wild flowers, a lamp on each side of the plaza, and a market stall in the middle
-    //    (a table for a counter with a barrel, pot, bucket and flower pot around it). Wild plants sit on the ground; nothing is put in front of a door.
-    var pc = houses[2].x - 1 - Math.floor(gaps[1] / 2), mk = {};
-    mk[pc - 2] = T.BARREL; mk[pc - 1] = T.POT; mk[pc] = T.TABLE; mk[pc + 1] = T.BUCKET; mk[pc + 2] = T.FLOWERPOT;
-    // knick-knacks beside the paths, not on them: one barrel or bucket halfway along each short lane between houses, and a flower pot at each end of the village
-    [0, 2, 3].forEach(function (g) { var hh2 = houses[g], mid = hh2.x + hh2.w + 1; decor(mid, GY - 1, hash(g, 705, seed) < 0.5 ? T.BARREL : T.BUCKET, "floor"); });
-    decor(houses[0].x - 3, GY - 1, T.FLOWERPOT, "floor"); decor(houses[4].x + houses[4].w + 2, GY - 1, T.FLOWERPOT, "floor");
-    for (x = spot.left; x <= spot.right; x++) {
-      if (houses.some(function (h) { return x >= h.x - 1 && x <= h.x + h.w; })) continue;
-      var r = hash(x, 704, seed); if (t[(GY - 1) * W + x] !== T.AIR) continue;
-      if (Math.abs(x - pc) === 3) decor(x, GY - 1, T.TORCH, "floor");
-      else if (mk[x]) decor(x, GY - 1, mk[x], "floor");
-      else if (r < 0.08) decor(x, GY - 1, T.GLOWCAP, "floor"); else if (r < 0.18) decor(x, GY - 1, T.REED, "floor"); else if (r < 0.48) decor(x, GY - 1, T.FLOWER, "floor");
-    }
-    return { cx: spot.cx, x0: spot.left, x1: spot.right, f0: spot.f0, f1: spot.f1, gy: GY, plaza: pc, houses: houses };
-  }
-
-
-  // ---------- structures ----------
-  // Stage 1 of the big world: standalone buildings scattered through every biome. Each one just sits in the landscape on a small flat pad: a solid
-  // body with windows and a roof, one door at ground level in a side wall and a lamp beside it. Walk up to the door and tap it (or press F) to go
-  // inside: the inside is a top-down room, built by SbxCave.interior(). The door is a normal DOOR_B/DOOR_T pair, but sandbox.js knows it is a
-  // building door through world.structs, so it never swings open and cannot be picked up.
-  // Like the village it only uses hash() (never rnd()), and it runs AFTER the cave holes so every earlier tile, tree and hole stays where it was.
-  // kind ids (used by SbxCave.interior): 0 cabin, 1 tower (swamp), 2 forge, 3 keep (ember), 4 lodge, 5 shrine (frost)
+  // ---------- structures (redesign: blueprints built from the Content Pack blocks) ----------
+  // Standalone buildings scattered through every biome, each on a small levelled pad. Walk up to the door and tap it (or press F) to go inside:
+  // the inside is a top-down room built by SbxCave.interior(kind). The door is a DOOR_B/DOOR_T pair in a side wall; sandbox.js knows it is a
+  // building door through world.structs, so it never swings open and cannot be picked up. Every generated building tile is walk-past scenery
+  // (sandbox.js masks the bounds mx0..mx1 x my0..gy-1), so roofs, chimneys, balconies and porches never trap the player.
+  // Blueprints use Content Pack blocks (cobble, plaster, shingles, stained glass, iron bars, quartz pillars, lamp blocks ...) with plain fallbacks,
+  // and back walls (walls[]) behind open areas (belfries, colonnades, banners, loft doors) so you can see "into" them.
+  // It only uses hash() (never rnd()), and runs AFTER the cave holes, so terrain, trees and holes stay where they were.
+  // kind ids (SbxCave.interior): cabin, tower, farm (swamp) / forge, keep (ember) / lodge, shrine (frost)
   var STRUCT_KINDS = [
-    { k: "cabin", n: "Reed Cabin", b: 0, w: 9, bh: 5, body: T.PLANKS, post: T.LOG, roof: T.THATCH, roofType: "gable", lamp: T.TORCH, out: [T.BARREL, T.POT, T.FLOWERPOT] },
-    { k: "tower", n: "Old Watchtower", b: 0, w: 5, bh: 10, body: T.BRICK, post: T.BRICK, roof: T.BRICK, roofType: "crown", lamp: T.TORCH, out: [T.BUCKET, T.BARREL] },
-    { k: "forge", n: "Cinder Forge", b: 1, w: 9, bh: 5, body: T.BASALTBRICK, post: T.BASALT, roof: T.BASALTBRICK, roofType: "flat", chimney: true, lamp: T.EMBERLANTERN, out: [T.ANVIL, T.BARREL, T.BRAZIER] },
-    { k: "keep", n: "Ashen Keep", b: 1, w: 7, bh: 8, body: T.BASALTBRICK, post: T.BASALT, roof: T.BASALTBRICK, roofType: "crown", lamp: T.EMBERLANTERN, out: [T.URN, T.BRAZIER] },
-    { k: "lodge", n: "Frost Lodge", b: 2, w: 9, bh: 5, body: T.ICEBRICK, post: T.FROSTROCK, roof: T.SNOW, roofType: "gable", lamp: T.FROSTLANTERN, out: [T.ICESCULPT, T.BARREL] },
-    { k: "shrine", n: "Frozen Shrine", b: 2, w: 7, bh: 7, body: T.ICEBRICK, post: T.FROSTROCK, roof: T.ICEBRICK, roofType: "crown", lamp: T.FROSTLANTERN, out: [T.ICESCULPT, T.FROSTLANTERN] }
+    { k: "cabin", n: "Reed Cabin", b: 0, w: 11, bh: 5 },
+    { k: "tower", n: "Old Watchtower", b: 0, w: 5, bh: 12 },
+    { k: "farm", n: "Swamp Farmstead", b: 0, w: 9, bh: 5, yard: 8 },
+    { k: "forge", n: "Cinder Forge", b: 1, w: 11, bh: 5 },
+    { k: "keep", n: "Ashen Keep", b: 1, w: 9, bh: 8 },
+    { k: "lodge", n: "Frost Lodge", b: 2, w: 11, bh: 5 },
+    { k: "shrine", n: "Frozen Shrine", b: 2, w: 9, bh: 7 }
   ];
-  function buildStructures(t, top, bio, seed, holes, village) {
+  function buildStructures(t, top, bio, seed, holes, walls) {
     var out = [], WLv = SURF + 3, slot, x, y, i;
-    function put(px, py, id) { if (px >= 0 && px < W && py >= 0 && py < H) t[py * W + px] = id; }
+    function M(name, fb) { var v = T["X_" + name]; return v !== undefined ? v : fb; }   // a Content Pack block, or a plain fallback
+    function WM(name, fb) { var v = T["W_" + name]; return v !== undefined ? v : fb; }   // a back wall
     function solidAt(px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; }
-    function soft(id) { return id === T.AIR || id === T.REED || id === T.BLOOM || id === T.SPIKE || id === T.GLOWCAP || id === T.FLOWER; }
+    function soft(id) { return id === T.AIR || id === T.REED || id === T.BLOOM || id === T.SPIKE || id === T.GLOWCAP || id === T.FLOWER || (TILES[id] && !TILES[id].solid && TILES[id].kind !== "water" && TILES[id].kind !== "lava"); }
     function tryPlace(cx, ki) {
-      var K = STRUCT_KINDS[ki], w = K.w, x0 = cx - Math.floor(w / 2), x1 = x0 + w - 1, lo = x0 - 3, hi = x1 + 3, mn = 999, mx = -999, q, yy;
+      var K = STRUCT_KINDS[ki], w = K.w, x0 = cx - Math.floor(w / 2), x1 = x0 + w - 1, yd = K.yard || 0, lo = x0 - 3 - yd, hi = x1 + 3 + yd, mn = 999, mx = -999, q, yy;
       if (lo < 10 || hi > W - 10) return null;
-      if (Math.abs(SPAWNX - cx) < w + 20) return null;
-      if (village && hi >= village.f0 - 4 && lo <= village.f1 + 4) return null;
+      if (Math.abs(SPAWNX - cx) < w + 20 + yd) return null;
       for (q = 0; q < holes.length; q++) if (holes[q].x >= lo - 2 && holes[q].x <= hi + 2) return null;
-      for (q = 0; q < out.length; q++) if (lo <= out[q].x1 + 10 && hi >= out[q].x0 - 10) return null;
+      for (q = 0; q < out.length; q++) if (lo <= out[q].mx1 + 8 && hi >= out[q].mx0 - 8) return null;
       for (x = lo; x <= hi; x++) {
         if (bio[x] !== K.b) return null;
-        var tp = top[x]; if (tp < 12 || tp > WLv) return null;
+        var tp = top[x]; if (tp < 26 || tp > WLv) return null;
         if (!TILES[t[tp * W + x]].solid) return null;
-        for (yy = Math.max(0, tp - 14); yy < tp; yy++) { var id0 = t[yy * W + x]; if (id0 === T.WATER) return null; }
+        for (yy = Math.max(0, tp - 14); yy < tp; yy++) { var id0 = t[yy * W + x]; if (id0 === T.WATER || id0 === T.LAVA) return null; }
         if (tp < mn) mn = tp; if (tp > mx) mx = tp;
       }
-      if (mx - mn > 4) return null;
+      if (mx - mn > (yd ? 6 : 5)) return null;
       return { K: K, ki: ki, x0: x0, x1: x1, lo: lo, hi: hi, gy: mn };
     }
     function build(P, idx) {
-      var K = P.K, gy = P.gy, x0 = P.x0, x1 = P.x1, w = K.w, bh = K.bh, side = hash(idx, 731, seed) < 0.5 ? -1 : 1, base, yy, xx;
-      // 1. level pad: ground row = gy across the pad and 3 columns beyond; fill low columns up with the biome's own ground, clear plants above
+      var K = P.K, gy = P.gy, x0 = P.x0, x1 = P.x1, w = K.w, bh = K.bh, side = hash(idx, 731, seed) < 0.5 ? -1 : 1, yy, xx;
+      var bx0 = x0, bx1 = x1, by0 = gy - 1;   // running bounds of everything built (for the walk-past mask)
+      function put(px, py, id) { if (px >= 0 && px < W && py >= 1 && py < H) { t[py * W + px] = id; if (px < bx0) bx0 = px; if (px > bx1) bx1 = px; if (py < by0) by0 = py; } }
+      function air(px, py, wid) { put(px, py, T.AIR); if (wid && walls) walls[py * W + px] = wid; }
+      function wallAt(px, py, wid) { if (walls && px >= 0 && px < W && py >= 0 && py < H) walls[py * W + px] = wid; }
+      function fill(xa, xb, ya, yb, id) { for (var y2 = ya; y2 <= yb; y2++) for (var x2 = xa; x2 <= xb; x2++) put(x2, y2, id); }
+      function decoOut(px, id) { if (solidAt(px, gy) && t[(gy - 1) * W + px] === T.AIR) put(px, gy - 1, id); }   // a piece standing on the ground outside
+      // gable: rows step in 1 tile per row from the eave line (xa..xb at row yb) up to a single ridge tile. edge = the 2-thick roof line, fillId = the gable wall inside it.
+      function gable(xa, xb, yb, edge, fillId, ridge, snow) {
+        for (var r = 0; ; r++) {
+          var L = xa + r, R = xb - r, yR = yb - r; if (L > R) return yR + 1;
+          if (r === 0 || R - L <= 2) { for (var x2 = L; x2 <= R; x2++) put(x2, yR, R - L <= 0 ? ridge : edge); if (snow && R - L <= 2) put(L + Math.floor((R - L) / 2), yR - 1, T.SNOW); if (R - L <= 0) return yR; continue; }
+          put(L, yR, snow ? T.SNOW : edge); put(L + 1, yR, edge); put(R, yR, snow ? T.SNOW : edge); put(R - 1, yR, edge);
+          for (var x3 = L + 2; x3 <= R - 2; x3++) put(x3, yR, fillId);
+        }
+      }
+      function chimney(cx, yFrom, hgt, mat, cap) { for (var y2 = yFrom; y2 > yFrom - hgt; y2--) put(cx, y2, mat); put(cx - 1, yFrom - hgt, cap); put(cx, yFrom - hgt, cap); put(cx + 1, yFrom - hgt, cap); }
+      function windowAt(xa, ya, ww, hh2, glass, sill) { fill(xa, xa + ww - 1, ya, ya + hh2 - 1, glass); if (sill) for (var x2 = xa - 1; x2 <= xa + ww; x2++) put(x2, ya + hh2, sill); }
+      // 1. level pad: ground row = gy across the pad, fill low columns up with the biome's own ground, clear plants above
       for (xx = P.lo; xx <= P.hi; xx++) {
         var old = top[xx], gt = t[old * W + xx], below = t[(old + 1) * W + xx];
         for (yy = gy; yy < old; yy++) t[yy * W + xx] = yy === gy ? gt : (TILES[below].solid ? below : T.MUD);
-        for (yy = Math.max(1, gy - 16); yy < gy; yy++) if (soft(t[yy * W + xx])) t[yy * W + xx] = T.AIR;
+        for (yy = Math.max(1, gy - 24); yy < gy; yy++) if (soft(t[yy * W + xx])) t[yy * W + xx] = T.AIR;
         top[xx] = gy;
       }
-      // trees growing on the pad are removed whole, with a margin so no stray leaves or trunk pieces are left hanging
       for (xx = Math.max(0, P.lo - 4); xx <= Math.min(W - 1, P.hi + 4); xx++) for (yy = 1; yy < gy; yy++) { var tid = t[yy * W + xx]; if (tid === T.LOG || tid === T.LEAVES || tid === T.VINE) t[yy * W + xx] = T.AIR; }
-      // 2. body: solid blocks, posts at both corners
-      for (yy = gy - bh; yy < gy; yy++) for (xx = x0; xx <= x1; xx++) put(xx, yy, (xx === x0 || xx === x1) ? K.post : K.body);
-      // plinth: the bottom row in the wall material, so the building looks set into the ground
-      for (xx = x0; xx <= x1; xx++) put(xx, gy - 1, K.roofType === "gable" && K.k !== "cabin" ? K.post : (xx === x0 || xx === x1 ? K.post : K.body));
-      // 3. windows (glass blocks you can see through): row gy-3, and one more row up on tall buildings
-      var wcols = w >= 9 ? [x0 + 2, x1 - 2, x0 + Math.floor(w / 2)] : [x0 + 2, x1 - 2];
-      for (i = 0; i < wcols.length; i++) { if (wcols[i] !== x0 && wcols[i] !== x1) put(wcols[i], gy - 3, T.GLASS); }
-      if (bh >= 8) for (i = 0; i < wcols.length; i++) put(wcols[i], gy - 6, T.GLASS);
-      if (bh >= 10) for (i = 0; i < wcols.length; i++) put(wcols[i], gy - 8, T.GLASS);
-      // the middle window on wide buildings is replaced by the door side being clear; keep the centre column plain wall on the door side
-      // 4. roof
-      var top0 = gy - bh;
-      if (K.roofType === "gable") {
-        put(x0 - 1, top0 - 1 + 0, K.roof); put(x1 + 1, top0 - 1 + 0, K.roof);
-        for (xx = x0 - 1; xx <= x1 + 1; xx++) put(xx, top0 - 1, K.roof);
-        for (xx = x0; xx <= x1; xx++) put(xx, top0 - 2, K.roof);
-        for (xx = x0 + 1; xx <= x1 - 1; xx++) put(xx, top0 - 3, K.roof);
-        for (xx = x0 + 3; xx <= x1 - 3; xx++) put(xx, top0 - 4, K.roof);
-      } else if (K.roofType === "flat") {
-        for (xx = x0 - 1; xx <= x1 + 1; xx++) put(xx, top0 - 1, K.roof);
-        if (K.chimney) { var cxm = x0 + (side < 0 ? w - 3 : 2); for (yy = top0 - 4; yy < top0 - 1; yy++) put(cxm, yy, T.BASALTBRICK); put(cxm, top0 - 5, T.BASALT); }
-      } else {   // crown: a lip of blocks with battlements
-        for (xx = x0 - 1; xx <= x1 + 1; xx++) put(xx, top0 - 1, K.roof);
-        for (xx = x0 - 1; xx <= x1 + 1; xx += 2) put(xx, top0 - 2, K.roof);
+      // ramps: fill the ground just outside the pad up so no step next to it is taller than 2 tiles (always walkable)
+      [-1, 1].forEach(function (dir) {
+        for (var rx = dir < 0 ? P.lo - 1 : P.hi + 1, n2 = 0; n2 < 30 && rx > 1 && rx < W - 2; n2++, rx += dir) {
+          var want = top[rx - dir] + 2; if (top[rx] <= want) break;
+          var gt2 = t[top[rx] * W + rx]; for (yy = want; yy < top[rx]; yy++) t[yy * W + rx] = yy === want ? gt2 : T.MUD;
+          var plant2 = t[(top[rx] - 1) * W + rx]; top[rx] = want; if (soft(plant2)) t[(want - 1) * W + rx] = T.AIR;
+        }
+      });
+      var dx = side < 0 ? x0 : x1, ox2 = dx + side, far = side < 0 ? x1 + 1 : x0 - 1, top0 = gy - bh, cx = x0 + Math.floor(w / 2), h1 = function (k) { return hash(idx, 740 + k, seed); };
+      var COB = M("cobble", T.STONE), PLAS = M("plasterblock", T.PLANKS), SHR = M("shinglered", T.THATCH), SHB = M("shingleblue", T.BASALTBRICK), RBR = M("redbrick", T.BRICK), MOSSB = M("mossbrick", T.BRICK);
+      var OBS = M("obsidianbrick", T.BASALTBRICK), PERM = M("permabrick", T.ICEBRICK), QZ = M("quartzblock", T.ICEBRICK), QP = M("quartzpillar", T.ICEBRICK), MOON = M("moonbrick", T.ICEBRICK), BARS = M("ironbars", T.GLASS), IRON = M("ironblock", T.BASALT);
+      var GL = T.GLASS, GLR = M("stainedred", T.GLASS), GLB = M("stainedblue", T.GLASS), GLG = M("stainedgreen", T.GLASS), RUBY = M("rubylamp", T.CINDERLAMP), SAPH = M("sapphirelamp", T.CRYSTALLAMP), HL = M("hanginglantern", T.LANTERN);
+      var lamp = T.TORCH;
+      var GRD = [T.MOSS, T.ASH, T.SNOW][K.b] || T.MUD;   // the ground under every building stays the natural biome ground (no sunken footing)
+      if (K.k === "cabin") {   // Tudor cottage: plaster between log posts, two framed windows, a steep red shingle gable with an attic window and a brick chimney
+        fill(x0, x1, gy - 1, gy - 1, COB);   // foundation row (above ground); the ground under it stays the biome's own ground
+        fill(x0, x1, top0, gy - 2, PLAS); [x0, cx, x1].forEach(function (px) { fill(px, px, top0, gy - 2, T.LOG); }); fill(x0, x1, top0, top0, T.PLANKS);
+        windowAt(x0 + 2, gy - 4, 2, 2, GL, T.PLANKS); windowAt(x1 - 3, gy - 4, 2, 2, GL, T.PLANKS);
+        var rt = gable(x0 - 2, x1 + 2, top0 - 1, SHR, T.PLANKS, SHR); fill(cx, cx, top0 - 4, top0 - 3, GL);
+        chimney(side < 0 ? x1 - 2 : x0 + 2, top0 - 4, 6, RBR, T.STONE);
+        lamp = HL; put(ox2, gy - 4, SHR);
+        decoOut(ox2 + side, T.BARREL); decoOut(far - side, M("crate", T.BARREL)); decoOut(far - side * 2, T.PLANTER || T.FLOWERPOT); decoOut(far - side * 3, T.FENCE);
+      } else if (K.k === "tower") {   // stone watchtower: mossy plinth, cobble shaft with brick quoins, arrow slits, a cantilevered balcony, an open belfry and a slate spire
+        fill(x0, x1, gy - 1, gy - 1, MOSSB);   // foundation row (above ground); the ground under it stays the biome's own ground
+        for (yy = top0; yy <= gy - 2; yy++) for (xx = x0; xx <= x1; xx++) put(xx, yy, (xx === x0 || xx === x1) ? ((gy - yy) % 2 ? T.BRICK : COB) : (h1(xx * 7 + yy) < 0.25 ? MOSSB : COB));
+        fill(cx, cx, gy - 6, gy - 5, BARS); put(cx, gy - 8, GL); fill(cx, cx, gy - 11, gy - 10, BARS);
+        fill(x0 - 2, x1 + 2, top0 - 1, top0 - 1, T.PLANKS); put(x0 - 2, top0 - 2, T.FENCE); put(x1 + 2, top0 - 2, T.FENCE);
+        for (yy = top0 - 4; yy <= top0 - 2; yy++) { put(x0, yy, T.LOG); put(x1, yy, T.LOG); for (xx = x0 + 1; xx <= x1 - 1; xx++) air(xx, yy, T.W_PLANK); }
+        put(cx, top0 - 4, HL);
+        var pk = gable(x0 - 1, x1 + 1, top0 - 5, SHB, SHB, SHB); put(cx, pk - 1, T.LOG); put(cx, pk - 2, T.LOG); put(cx + 1, pk - 2, T.BANNER);
+        decoOut(ox2 + side, T.BUCKET); decoOut(far, T.BARREL);
+      } else if (K.k === "farm") {   // red barn with a hay loft, plus a fenced garden of ripe crops you can harvest and a scarecrow
+        fill(x0, x1, gy - 1, gy - 1, COB);   // foundation row (above ground); the ground under it stays the biome's own ground
+        fill(x0, x1, top0, gy - 2, T.PLANKS); fill(x0, x0, top0, gy - 2, T.LOG); fill(x1, x1, top0, gy - 2, T.LOG); fill(x0, x1, top0, top0, RBR);
+        windowAt(x0 + 2, gy - 4, 1, 2, GL, null); windowAt(x1 - 2, gy - 4, 1, 2, GL, null);
+        for (yy = gy - 4; yy <= gy - 2; yy++) { put(cx - 1, yy, T.LOG); put(cx + 1, yy, T.LOG); } put(cx, gy - 3, T.LOG); put(cx, gy - 2, RBR); put(cx, gy - 4, RBR);   // big barn doors with an X brace look
+        gable(x0 - 1, x1 + 1, top0 - 1, SHR, T.PLANKS, SHR);
+        air(cx, top0 - 3, T.W_PLANK); air(cx, top0 - 2, T.W_PLANK); put(cx, top0 - 2, T.BALE); put(cx - 1, top0 - 3, T.PLANKS);   // loft door with hay
+        var dirY = -side, gx0 = dirY > 0 ? x1 + 2 : x0 - 2, C1 = M("crop_carrot4", 0), C2 = M("crop_potato4", 0);
+        if (T.X_farmland !== undefined && C1 && C2) {
+          for (var gk = 0; gk <= 7; gk++) {
+            var gxx = gx0 + dirY * gk;
+            if (gk === 0 || gk === 7) { put(gxx, gy - 1, T.FENCE); continue; }
+            if (gk === 3) { put(gxx, gy - 1, M("scarecrow", T.FENCE)); continue; }
+            put(gxx, gy, T.X_farmland); put(gxx, gy - 1, gk < 3 ? C1 : C2);
+          }
+        }
+        decoOut(ox2 + side, T.BALE); decoOut(ox2 + side * 2, M("sack", T.BARREL));
+      } else if (K.k === "forge") {   // basalt forge: obsidian quoins, a barred furnace mouth glowing with ruby lamps, a parapet roof and two iron-capped chimneys
+        fill(x0, x1, gy - 1, gy - 1, OBS);   // foundation row (above ground); the ground under it stays the biome's own ground
+        fill(x0, x1, top0, gy - 2, T.BASALTBRICK); for (yy = top0; yy <= gy - 2; yy++) { put(x0, yy, OBS); put(x1, yy, OBS); }
+        fill(cx - 1, cx + 1, gy - 4, gy - 3, BARS); fill(cx - 1, cx + 1, gy - 2, gy - 2, RUBY); put(cx - 2, gy - 4, IRON); put(cx + 2, gy - 4, IRON);
+        put(x0 + 2, gy - 4, GLR); put(x1 - 2, gy - 4, GLR);
+        fill(x0 - 1, x1 + 1, top0 - 1, top0 - 1, OBS); for (xx = x0 - 1; xx <= x1 + 1; xx += 2) put(xx, top0 - 2, OBS);
+        var c1 = side < 0 ? x1 - 2 : x0 + 2, c2 = side < 0 ? x0 + 3 : x1 - 3; chimney(c1, top0 - 2, 5, T.BASALTBRICK, IRON); chimney(c2, top0 - 2, 3, T.BASALTBRICK, IRON);
+        lamp = T.EMBERLANTERN; put(ox2, gy - 4, SHR);
+        decoOut(ox2 + side, T.ANVIL); decoOut(far - side, M("crate", T.BARREL)); decoOut(far - side * 2, T.BRAZIER);
+      } else if (K.k === "keep") {   // obsidian keep: basalt quoins, tall red stained-glass windows, a banner on a back wall, battlements and two turrets with red cone roofs
+        fill(x0, x1, gy - 1, gy - 1, T.BASALTBRICK);   // foundation row (above ground); the ground under it stays the biome's own ground
+        for (yy = top0; yy <= gy - 2; yy++) for (xx = x0; xx <= x1; xx++) put(xx, yy, (xx === x0 || xx === x1) && (gy - yy) % 2 ? T.BASALTBRICK : OBS);
+        fill(x0 + 2, x0 + 2, gy - 6, gy - 4, GLR); fill(x1 - 2, x1 - 2, gy - 6, gy - 4, GLR); put(x0 + 2, gy - 7, BARS); put(x1 - 2, gy - 7, BARS);
+        air(cx, gy - 5, WM("obsidian", T.W_BRICK)); air(cx, gy - 4, WM("obsidian", T.W_BRICK)); put(cx, gy - 5, T.EMBERBANNER); put(cx, gy - 7, RUBY);
+        fill(x0 - 1, x1 + 1, top0 - 1, top0 - 1, T.BASALTBRICK); for (xx = x0 + 1; xx <= x1 - 1; xx += 2) put(xx, top0 - 2, OBS);
+        [x0 - 1, x1 + 1].forEach(function (tx2) { fill(tx2, tx2, top0 - 4, top0 - 2, OBS); put(tx2, top0 - 3, BARS); put(tx2 - 1, top0 - 5, SHR); put(tx2, top0 - 5, SHR); put(tx2 + 1, top0 - 5, SHR); put(tx2, top0 - 6, SHR); put(tx2, top0 - 7, T.EMBERBANNER); });
+        lamp = T.EMBERLANTERN; decoOut(ox2 + side * 2, T.BRAZIER); decoOut(far, T.URN);
+      } else if (K.k === "lodge") {   // log lodge: plank walls between log posts, blue stained glass, a snow-capped slate gable and a stone chimney
+        fill(x0, x1, gy - 1, gy - 1, PERM);   // foundation row (above ground); the ground under it stays the biome's own ground
+        fill(x0, x1, top0, gy - 2, T.PLANKS); [x0, cx, x1].forEach(function (px) { fill(px, px, top0, gy - 2, T.LOG); }); fill(x0, x1, top0, top0, T.LOG);
+        windowAt(x0 + 2, gy - 4, 2, 2, GLB, T.PLANKS); windowAt(x1 - 3, gy - 4, 2, 2, GLB, T.PLANKS);
+        gable(x0 - 2, x1 + 2, top0 - 1, SHB, T.PLANKS, T.SNOW, true); fill(cx, cx, top0 - 4, top0 - 3, GLB);
+        var chx = side < 0 ? x1 - 2 : x0 + 2; chimney(chx, top0 - 4, 6, COB, T.STONE); put(chx - 1, top0 - 11, T.SNOW); put(chx, top0 - 11, T.SNOW); put(chx + 1, top0 - 11, T.SNOW);
+        lamp = T.FROSTLANTERN; put(ox2, gy - 4, SHB);
+        decoOut(far - side * 2, M("snowman", T.ICESCULPT)); decoOut(ox2 + side * 2, T.BARREL);
+      } else {   // frozen shrine: quartz steps, a colonnade of fluted pillars you can see between, a moonstone architrave and a pediment with a sapphire lamp
+        fill(x0 - 1, x1 + 1, gy - 1, gy - 1, QZ);   // foundation row (above ground); the ground under it stays the biome's own ground
+        var cols = [x0, x0 + 2, x1 - 2, x1];
+        for (xx = x0; xx <= x1; xx++) for (yy = gy - 6; yy <= gy - 2; yy++) { if (cols.indexOf(xx) >= 0) put(xx, yy, QP); else air(xx, yy, WM("quartz", T.W_BRICK)); }
+        put(cx, gy - 2, M("obelisk", T.FROSTLANTERN)); put(x0 + 1, gy - 2, T.FROSTLANTERN); put(x1 - 1, gy - 2, T.FROSTLANTERN); put(cx, gy - 6, SAPH);
+        fill(x0 - 1, x1 + 1, gy - 7, gy - 7, MOON); fill(x0, x1, gy - 8, gy - 8, QZ); put(cx, gy - 8, SAPH);
+        gable(x0 - 1, x1 + 1, gy - 9, MOON, QZ, SAPH);
+        lamp = T.FROSTLANTERN; decoOut(far - side, M("obelisk", T.ICESCULPT));
       }
-      // 5. the door: two blocks in the side wall (bottom + top), a lamp beside it and a keepsake or two on the ground outside
-      var dx = side < 0 ? x0 : x1, ox2 = dx + side;
+      // the door: two blocks in the side wall (bottom + top), and a lamp beside it
       put(dx, gy - 1, T.DOOR_B); put(dx, gy - 2, T.DOOR_T);
-      if (TILES[t[(gy - 3) * W + ox2]].solid === false) put(ox2, gy - 3, K.lamp);
-      var o1 = K.out[Math.floor(hash(idx, 732, seed) * K.out.length)], o2 = K.out[Math.floor(hash(idx, 733, seed) * K.out.length)];
-      if (solidAt(ox2 + side, gy) && t[(gy - 1) * W + ox2 + side] === T.AIR) put(ox2 + side, gy - 1, o1);
-      if (hash(idx, 734, seed) < 0.6 && o2 !== o1 && solidAt(ox2 + side * 3, gy) && t[(gy - 1) * W + ox2 + side * 3] === T.AIR) put(ox2 + side * 3, gy - 1, o2);
-      // a lamp on the far wall too, so the building is lit from both sides at night
-      var fx = side < 0 ? x1 + 1 : x0 - 1; if (t[(gy - 3) * W + fx] === T.AIR) put(fx, gy - 3, K.lamp);
-      return { id: idx, ki: P.ki, kind: K.k, name: K.n, b: K.b, x0: x0, x1: x1, w: w, gy: gy, bh: bh, side: side, dx: dx, outX: ox2, doorY: gy - 1 };
+      if (!TILES[t[(gy - 3) * W + ox2]].solid) put(ox2, gy - 3, lamp);
+      return { id: idx, ki: P.ki, kind: K.k, name: K.n, b: K.b, x0: x0, x1: x1, w: w, gy: gy, bh: bh, side: side, dx: dx, outX: ox2, doorY: gy - 1, mx0: bx0, mx1: bx1, my0: by0 };
     }
-    // one slot every ~76 columns; each tries its kinds for the biome there (hash picks the order) with a few nudges left and right
+    // one slot every ~58 columns; each tries its kinds for the biome there (hash picks the order) with a few nudges left and right
     for (slot = 0, x = 34; x < W - 34; slot++, x += 58) {
-      var cx = x + Math.floor(hash(slot, 735, seed) * 40) - 10, bb = bio[Math.min(W - 1, Math.max(0, cx))], kinds = [];
+      var cx0 = x + Math.floor(hash(slot, 735, seed) * 40) - 10, bb = bio[Math.min(W - 1, Math.max(0, cx0))], kinds = [];
       for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb) kinds.push(i);
       if (!kinds.length) continue;
-      var first = Math.floor(hash(slot, 736, seed) * kinds.length), done = false, nudge;
-      for (nudge = 0; nudge < 16 && !done; nudge++) {
-        var cxx = cx + (nudge % 2 ? 1 : -1) * Math.ceil(nudge / 2) * 4, kk = kinds[(first + nudge) % kinds.length], P = tryPlace(cxx, kk);
-        if (P) { out.push(build(P, out.length)); done = true; }
+      var wide = kinds.filter(function (q) { return STRUCT_KINDS[q].w > 5; }), slim = kinds.filter(function (q) { return STRUCT_KINDS[q].w <= 5; });   // big buildings get first pick of the flat ground
+      var first = Math.floor(hash(slot, 736, seed) * 97), done = false, nudge;
+      for (nudge = 0; nudge < 20 && !done; nudge++) {
+        var list = nudge < 14 || !slim.length ? (wide.length ? wide : slim) : slim, cxx = cx0 + (nudge % 2 ? 1 : -1) * Math.ceil((nudge % 14) / 2) * 4, kk = list[(first + nudge) % list.length], P = tryPlace(cxx, kk);
+        if (P) { var bP = build(P, out.length); out.push(bP); done = true; }
       }
     }
     return out;
   }
 
-  // ---------- generator ----------
+  // ---------- generator (WORLDVER 5: "big sky" terrain) ----------
+  // The world is built in passes. Every pass is deterministic for a seed, and every seed lays out its own landscape:
+  //   1. biomes per column (Frostfen west, Murkwater middle, Ember Bog east) and a per-seed list of LANDFORMS for each biome
+  //      (mountain ranges, lone peaks, rolling hills, mesas, volcanoes with lava craters, ice spires, lake basins)
+  //   2. one clean height line: landforms + gentle base noise, then slopes are capped at 2 tiles a column (always walkable/jumpable)
+  //      and 1-wide spikes and pits are smoothed away, so the skyline reads crisp and clean
+  //   3. ground: biome soil (thin on mountains), exposed stone/ice cliff faces, snow caps on high peaks, rock strata, ores that get richer deeper
+  //   4. caves: wide caverns (bigger the deeper you go), long winding tunnels, then a cellular smoothing pass so cave walls are clean;
+  //      a few slanted tunnels open onto hillsides as cave mouths; closed cave basins fill with still water, lava or ice
+  //   5. trees (swamp mangroves, Frostfen pines, Ember Bog dead trees), plants, cave holes and buildings
   function gen(seed) {
     seed = (seed | 0) || 1;
-    var walls = new Uint8Array(W * H), t = new Uint8Array(W * H), top = new Int16Array(W), bio = new Uint8Array(W), rnd = mulberry(seed ^ 0x9e3779b9);
-    var WL = SURF + 2, LAVAL = SURF + 5, ICEL = SURF + 3, x, y;
-    // 1. surface height and biome per column
-    for (x = 0; x < W; x++) {
-      var hs = SURF + 1.5 + (fbm(x * 0.05, 0, seed, 3) - 0.5) * 13;
-      var he = SURF - 2 + (fbm(x * 0.05, 3.3, seed + 5, 3) - 0.5) * 18;
-      var hf = SURF - 1 + (fbm(x * 0.04, 7.7, seed + 9, 3) - 0.5) * 14;
-      var wE = smooth(B_EMBER - 8, B_EMBER + 8, x), wF = 1 - smooth(B_FROST - 8, B_FROST + 8, x);
-      var h = hs * (1 - wE - wF) + he * wE + hf * wF;
-      // OPEN WORLD: a slow, wide swell on top of the local bumps gives each area real hills, ridges and basins (swamp basins fill into lakes, Frostfen basins freeze over).
-      var mw = (1 - wE - wF) * 0.8 + wE * 0.6 + wF * 1.1;
-      h += (fbm(x * 0.011, 21.7, seed + 13, 3) - 0.5) * 26 * mw;
-      h = SURF + (h - SURF) * smooth(3, 12, Math.abs(x - SPAWNX));   // flat, dry start area around the spawn
-      top[x] = Math.max(18, Math.min(60, Math.round(h)));
-      var bx = x + (vnoise(x * 0.08, 0, seed + 3) - 0.5) * 14;
-      bio[x] = bx < B_FROST ? 2 : bx < B_EMBER ? 0 : 1;   // west Frostfen, middle Murkwater, east Ember Bog
-      if (bio[x] === 1) top[x] = Math.min(top[x], LAVAL - 2);   // Ember ground never dips into the lava level, so a long walk east is never cut off by a surface lava lake
+    var walls = new Uint8Array(W * H), t = new Uint8Array(W * H), top = new Int16Array(W), bio = new Uint8Array(W), rnd = mulberry(seed ^ 0x9e3779b9), frnd = mulberry(seed ^ 0x51ed270b);
+    var WL = SURF + 2, LAVAL = SURF + 5, ICEL = SURF + 3, x, y, i, k;
+    function ri(a, b) { return a + Math.floor(frnd() * (b - a + 1)); }
+    function ridged(x2, s, f) { return 1 - Math.abs(2 * fbm(x2 * f, 0.5, s, 3) - 1); }
+    // ---- 1. biomes and landforms ----
+    for (x = 0; x < W; x++) { var bx = x + (vnoise(x * 0.08, 0, seed + 3) - 0.5) * 14; bio[x] = bx < B_FROST ? 2 : bx < B_EMBER ? 0 : 1; }
+    var REG = [[B_FROST, B_EMBER], [B_EMBER, W], [0, B_FROST]];   // index = biome id
+    var KINDS = [   // per biome: [kind, weight]
+      [["range", 3], ["peak", 2], ["hills", 3], ["basin", 3], ["mesa", 1]],
+      [["volcano", 3], ["mesa", 3], ["range", 1], ["hills", 2], ["peak", 1]],
+      [["range", 3], ["spires", 3], ["peak", 2], ["hills", 1], ["basin", 1]]
+    ];
+    var feats = [], craters = [], MUST = [["range", "peak", "range"], ["volcano", "mesa", "volcano"], ["spires", "range", "peak"]], must;
+    function pick(b) { if (must.length && frnd() < 0.7) return must.splice(Math.floor(frnd() * must.length), 1)[0]; var L = KINDS[b], tot = 0, q; for (q = 0; q < L.length; q++) tot += L[q][1]; var r = frnd() * tot; for (q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) return L[q][0]; } return L[0][0]; }
+    [0, 1, 2].forEach(function (b) {
+      var cx = REG[b][0] + ri(20, 50); must = MUST[b].slice();   // every biome gets its signature landforms, in a random order and place
+      while (cx < REG[b][1] - 20) {
+        var kd = pick(b), hw, hh;
+        if (kd === "range") { hw = ri(48, 110); hh = b === 2 ? ri(40, 62) : ri(30, 52); }
+        else if (kd === "peak") { hw = ri(22, 40); hh = ri(26, 44); }
+        else if (kd === "hills") { hw = ri(30, 60); hh = ri(7, 15); }
+        else if (kd === "mesa") { hw = ri(24, 50); hh = ri(12, 24); }
+        else if (kd === "volcano") { hw = ri(26, 42); hh = ri(28, 46); }
+        else if (kd === "spires") { hw = ri(30, 60); hh = ri(32, 54); }
+        else { hw = ri(14, 32); hh = -ri(5, 10); }   // basin: a lake bowl
+        var fx = cx + hw;
+        if (fx + hw > REG[b][1] + 6) break;
+        var clear = Math.abs(fx - SPAWNX) - hw;
+        if (clear < (kd === "basin" ? 22 : 46)) {   // keep the walk out of camp gentle: only small hills right next to the spawn
+          if (kd !== "basin" && kd !== "hills" && MUST[b].indexOf(kd) >= 0) must.push(kd);
+          if (clear > 18 && kd !== "basin") feats.push({ k: "hills", x: fx, hw: hw, h: ri(5, 9), b: b, s: ri(1, 9999) });
+        } else feats.push({ k: kd, x: fx, hw: hw, h: hh, b: b, s: ri(1, 9999), cr: ri(3, 5) });
+        cx = fx + hw + (kd === "basin" ? ri(10, 40) : ri(12, 64));
+      }
+    });
+    function shape(f, x2) {   // elevation (tiles above SURF) this landform adds at column x2
+      var u = (x2 - f.x) / f.hw, au = Math.abs(u); if (au >= 1) return 0;
+      var s = seed + f.s, r = ridged(x2, s, 0.045);
+      if (f.k === "range") { var env = Math.pow(1 - u * u, 1.5); return f.h * env * (0.5 + 0.5 * r) + f.h * 0.18 * env * ridged(x2, s + 7, 0.12); }
+      if (f.k === "peak") return f.h * Math.pow(1 - au, 1.25) * (0.88 + 0.12 * r);
+      if (f.k === "hills") return f.h * Math.pow(Math.cos(u * Math.PI / 2), 2) * (0.6 + 0.4 * fbm(x2 * 0.06, 2.2, s, 2));
+      if (f.k === "mesa") { var m = smooth(1, 0.62, au); return Math.round(f.h * m * (0.92 + 0.08 * r) / 3) * 3; }   // flat top, stepped sides
+      if (f.k === "volcano") return f.h * Math.pow(1 - au, 1.1);
+      if (f.k === "spires") return f.h * (1 - u * u) * Math.pow(ridged(x2, s, 0.085), 2.2) + f.h * 0.25 * (1 - u * u);
+      return f.h * Math.pow(Math.cos(u * Math.PI / 2), 2);   // basin (negative h)
     }
-    // 2. ground, ores, caves, liquids
+    // ---- 2. the height line ----
+    var elev = new Float32Array(W);
     for (x = 0; x < W; x++) {
-      var b = bio[x], tp = top[x];
+      var wE = smooth(B_EMBER - 10, B_EMBER + 10, x), wF = 1 - smooth(B_FROST - 10, B_FROST + 10, x), wS = 1 - wE - wF;
+      var base = (fbm(x * 0.028, 0, seed, 3) - 0.5) * (8 * wS + 11 * wE + 10 * wF) + (fbm(x * 0.11, 4.4, seed + 5, 2) - 0.5) * 3;
+      var up = 0, down = 0;
+      for (k = 0; k < feats.length; k++) { var F = feats[k]; if (x > F.x - F.hw && x < F.x + F.hw) { var v = shape(F, x); if (v > up) up = v; if (v < down) down = v; } }
+      elev[x] = (base + up + down) * smooth(4, 16, Math.abs(x - SPAWNX));   // a flat, dry camp around the spawn
+    }
+    for (x = 0; x < W; x++) {
+      var hgt = Math.round(SURF - elev[x]);
+      if (bio[x] === 1) hgt = Math.min(hgt, LAVAL - 2);   // Ember ground never dips into the lava level
+      top[x] = Math.max(14, Math.min(SURF + 18, hgt));
+    }
+    for (var pass = 0; pass < 2; pass++) {   // crisp skyline: no 1-wide spikes or pits, and never more than 2 tiles up from one column to the next
+      for (x = 1; x < W - 1; x++) {
+        var l = top[x - 1], r2 = top[x + 1], c = top[x];
+        if (c < l && c < r2) top[x] = Math.min(l, r2); else if (c > l && c > r2) top[x] = Math.max(l, r2);
+      }
+      for (x = 1; x < W; x++) if (top[x] < top[x - 1] - 2) top[x] = top[x - 1] - 2;
+      for (x = W - 2; x >= 0; x--) if (top[x] < top[x + 1] - 2) top[x] = top[x + 1] - 2;
+    }
+    feats.forEach(function (f) {   // volcano craters: a bowl cut into the summit, filled with lava later
+      if (f.k !== "volcano") return; var sx = f.x, mn = 999; for (x = f.x - 3; x <= f.x + 3; x++) if (top[x] < mn) { mn = top[x]; sx = x; }
+      var rim = top[sx], cw = f.cr, dep = 3 + (f.s % 2);
+      for (x = sx - cw; x <= sx + cw; x++) { var dx2 = Math.abs(x - sx); top[x] = Math.max(top[x], rim + (dx2 <= cw - 1 ? dep - (dx2 === cw - 1 ? 1 : 0) : 1)); }
+      craters.push({ x0: sx - cw, x1: sx + cw, lvl: rim + 1 });
+    });
+    // ---- 3. ground, strata and ores ----
+    var STEEP = new Uint8Array(W);
+    for (x = 1; x < W - 1; x++) STEEP[x] = Math.max(Math.abs(top[x] - top[x - 1]), Math.abs(top[x] - top[x + 1]));
+    for (x = 0; x < W; x++) {
+      var b = bio[x], tp = top[x], alt = SURF - tp, steep = STEEP[x] >= 2 && alt > 6, cap = alt > (b === 2 ? 22 : 34) && b !== 1;
+      var soilN = vnoise(x * 0.2, 0.7, seed + 2), soil = alt > 14 ? 1 + Math.floor(soilN * 2) : 3 + Math.floor(soilN * 3);
       for (y = 0; y < H; y++) {
         var id = T.AIR, d = y - tp;
         if (y < tp) {
           if (b === 0 && y >= WL) id = T.WATER;
           else if (b === 1 && y >= LAVAL) id = T.LAVA;
           else if (b === 2 && y >= ICEL) id = T.ICE;
-        } else if (y >= H - 2 || (y === H - 3 && rnd() < 0.55)) id = T.BEDROCK;
-        else if (d === 0) id = [T.MOSS, T.ASH, T.SNOW][b];
+        } else if (y >= H - 2 || (y === H - 3 && hash(x, y, seed + 5) < 0.55)) id = T.BEDROCK;
+        else if (d === 0) id = cap ? T.SNOW : steep ? [T.STONE, T.STONE, T.ICE][b] : [T.MOSS, T.ASH, T.SNOW][b];
         else {
-          var soil = 4 + Math.floor(vnoise(x * 0.2, y * 0.2, seed + 2) * 3);
-          if (d <= soil) { id = [T.MUD, T.ASH, T.SNOW][b]; if (b === 2 && d >= 3) id = T.ICE; }
-          else if (b === 0) id = (d < 30 && d >= 3 && fbm(x * 0.09, y * 0.09, seed + 11, 3) > 0.62) ? T.CLAY : T.STONE;
-          else if (b === 1) id = d < 12 ? T.STONE : T.BASALT;
-          else id = T.FROSTROCK;
-          if (id === T.STONE && d >= 5 && fbm(x * 0.2 + 40, y * 0.2, seed + 21, 2) > 0.7) id = T.SPORE;
-          if (id === T.BASALT && fbm(x * 0.22, y * 0.22 + 9, seed + 31, 2) > 0.68) id = T.CINDER;
-          if (id === T.FROSTROCK && fbm(x * 0.22 + 5, y * 0.22, seed + 41, 2) > 0.68) id = T.CRYSTAL;
-          if (d >= 7 && y < H - 6) {
-            var cave = fbm(x * 0.06, y * 0.06, seed + 51, 3) > 0.7 || (d >= 9 && Math.abs(fbm(x * 0.035 + 100, y * 0.07 + 50, seed + 61, 2) - 0.5) < 0.03);
-            if (cave) id = y >= (b === 1 ? H - 40 : H - 18) ? T.LAVA : T.AIR;
+          if (d <= soil && !(steep && d > 1)) { id = cap ? (b === 2 ? T.ICE : T.STONE) : [T.MUD, T.ASH, T.SNOW][b]; if (b === 2 && d >= 3) id = T.ICE; }
+          else if (b === 0) {
+            id = T.STONE;
+            if (d < 34 && d >= 3 && fbm(x * 0.09, y * 0.09, seed + 11, 3) > 0.62) id = T.CLAY;
+            else if (d >= 4 && d < 60 && Math.sin((y + fbm(x * 0.018, 1.1, seed + 12, 2) * 16) * 0.42) > 0.93 && hash(x >> 3, y, seed + 13) < 0.85) id = T.CLAY;   // thin clay bands you can see in cliff faces
           }
+          else if (b === 1) id = d < (alt > 10 ? 4 : 12) ? T.STONE : T.BASALT;
+          else id = d < (alt > 10 ? 3 : 6) ? T.ICE : T.FROSTROCK;
+          var deep = Math.min(1, Math.max(0, (y - SURF) / 100));   // ore gets more common the deeper you dig
+          if (id === T.STONE && d >= 5 && fbm(x * 0.2 + 40, y * 0.2, seed + 21, 2) > 0.7 - deep * 0.06) id = T.SPORE;
+          if (id === T.BASALT && fbm(x * 0.22, y * 0.22 + 9, seed + 31, 2) > 0.68 - deep * 0.06) id = T.CINDER;
+          if (id === T.FROSTROCK && fbm(x * 0.22 + 5, y * 0.22, seed + 41, 2) > 0.68 - deep * 0.06) id = T.CRYSTAL;
         }
         t[y * W + x] = id;
       }
     }
-    // 3. swamp trees and glowcaps (a second pass guarantees enough Wood on every seed)
-    function plant(x) {
-      // the first rnd() call matches the old generator so terrain and tree spacing stay the same; all new variety is hash-based
+    craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl; y < top[x]; y++) if (t[y * W + x] === T.AIR) t[y * W + x] = T.LAVA; });
+    // ---- 4. caves ----
+    var cm = new Uint8Array(W * H), cm2 = new Uint8Array(W * H);
+    for (x = 0; x < W; x++) {
+      var tp3 = top[x];
+      for (y = tp3 + 6; y < H - 5; y++) {
+        var d3 = y - tp3, dd = Math.min(1, Math.max(0, (y - SURF) / 110));
+        var cav = fbm(x * 0.042, y * 0.075, seed + 51, 3) > 0.7 - dd * 0.07;                                    // caverns, wider and more common deep down
+        var tun = d3 >= 9 && Math.abs(fbm(x * 0.03 + 100, y * 0.06 + 50, seed + 61, 2) - 0.5) < 0.026 + dd * 0.012;   // long winding tunnels
+        var tun2 = d3 >= 16 && Math.abs(fbm(x * 0.05 + 300, y * 0.05, seed + 71, 2) - 0.5) < 0.02;                   // a second, crossing tunnel network
+        if (cav || tun || tun2) cm[y * W + x] = 1;
+      }
+    }
+    for (var it = 0; it < 2; it++) {   // cellular smoothing: clean, rounded cave walls with no 1-tile crumbs or pinholes
+      for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++) {
+        i = y * W + x; if (y < top[x] + 5 || y >= H - 5) { cm2[i] = 0; continue; }
+        var n = cm[i - W - 1] + cm[i - W] + cm[i - W + 1] + cm[i - 1] + cm[i + 1] + cm[i + W - 1] + cm[i + W] + cm[i + W + 1];
+        cm2[i] = n >= 5 ? 1 : n <= 2 ? 0 : cm[i];
+      }
+      var sw = cm; cm = cm2; cm2 = sw;
+    }
+    function carve(cx2, cy2, rad) { for (var yy = Math.floor(cy2 - rad); yy <= Math.ceil(cy2 + rad); yy++) for (var xx = Math.floor(cx2 - rad); xx <= Math.ceil(cx2 + rad); xx++) if (xx > 2 && xx < W - 3 && yy > 1 && yy < H - 5 && (xx - cx2) * (xx - cx2) + (yy - cy2) * (yy - cy2) <= rad * rad) cm[yy * W + xx] = 1; }
+    [0, 1, 2].forEach(function (b) {   // cave mouths: slanted tunnels that start on a hillside and dive into the network
+      var nm = ri(5, 8);
+      for (var m2 = 0; m2 < nm; m2++) {
+        var sx2 = ri(REG[b][0] + 20, REG[b][1] - 20), tries = 0;
+        while (tries++ < 40 && (Math.abs(sx2 - SPAWNX) < 30 || STEEP[sx2] < 1 || top[sx2] > SURF + 1 || bio[sx2] !== b)) sx2 = ri(REG[b][0] + 20, REG[b][1] - 20);
+        if (tries >= 40) continue;
+        var dir = top[sx2 - 2] > top[sx2 + 2] ? 1 : -1, px = sx2, py = top[sx2] + 1, ang = 0.55 + frnd() * 0.45, len = ri(36, 80), rad = 1.3 + frnd() * 0.6;
+        for (var st2 = 0; st2 < len; st2++) {
+          carve(px, py, rad + Math.sin(st2 * 0.3) * 0.25);
+          ang += (frnd() - 0.5) * 0.35; ang = Math.max(0.25, Math.min(1.2, ang));
+          px += Math.cos(ang) * dir; py += Math.sin(ang);
+          if (py > H - 12) break;
+        }
+      }
+    });
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      i = y * W + x; if (!cm[i] || y < top[x]) continue;
+      var bb = bio[x]; if (t[i] === T.BEDROCK) continue;
+      t[i] = y >= (bb === 1 ? H - 46 : H - 20) ? T.LAVA : T.AIR;
+    }
+    // still pools: closed cave basins fill up to a flat level (swamp water, ember lava, frostfen ice)
+    var seen = new Int32Array(W * H), stamp = 0;
+    function pool(px, fy, kmax, fill) {
+      for (var kk = kmax; kk >= 2; kk--) {
+        var L = fy - kk + 1, q = [fy * W + px], out = [], ok = true; stamp++; seen[q[0]] = stamp;
+        while (q.length) {
+          var c2 = q.pop(), cx3 = c2 % W, cy3 = (c2 / W) | 0; out.push(c2);
+          if (out.length > 220 || cy3 <= top[cx3] + 2) { ok = false; break; }
+          var nb = [c2 - 1, c2 + 1, c2 - W, c2 + W];
+          for (var z = 0; z < 4; z++) { var e2 = nb[z], ey = (e2 / W) | 0; if (ey < L || ey >= H || seen[e2] === stamp || t[e2] !== T.AIR) continue; seen[e2] = stamp; q.push(e2); }
+        }
+        if (ok && out.length >= 6) { for (z = 0; z < out.length; z++) t[out[z]] = fill; return true; }
+      }
+      return false;
+    }
+    [0, 1, 2].forEach(function (b) {
+      var want = [34, 22, 28][b], fill = [T.WATER, T.LAVA, T.ICE][b], made = 0, tries = 0;
+      while (made < want && tries++ < want * 12) {
+        var px = ri(REG[b][0] + 8, REG[b][1] - 8), y0 = top[px] + 10 + ri(0, 40);
+        for (y = y0; y < H - 24; y++) if (t[y * W + px] === T.AIR && TILES[t[(y + 1) * W + px]].solid) { if (pool(px, y, ri(3, 7), fill)) made++; break; }
+      }
+    });
+    // ---- 5. trees and plants ----
+    function put(px, py, id) { if (px < 0 || px >= W || py < 0) return; var i2 = py * W + px; if (t[i2] === T.AIR) t[i2] = id; }
+    function plant(x) {   // a Murkwater mangrove
       var tp2 = top[x], th = 4 + Math.floor(rnd() * 4), cy = tp2 - th - 1, hs = function (a) { return hash(x, 300 + a, seed); };
-      function put(px, py, id) { if (px < 0 || px >= W || py < 0) return; var i = py * W + px; if (t[i] === T.AIR) t[i] = id; }
       function blob(cx, cy2, rx, ry) {
         for (var dy = -Math.ceil(ry); dy <= Math.ceil(ry); dy++) for (var dx = -Math.ceil(rx); dx <= Math.ceil(rx); dx++)
           if (dx * dx / (rx * rx) + dy * dy / (ry * ry) <= 1 + (hash(cx + dx, cy2 + dy, seed + 9) - 0.5) * 0.45) put(cx + dx, cy2 + dy, T.LEAVES);
@@ -449,7 +554,7 @@
         var side = hs(6) < 0.5 ? -1 : 1, by = tp2 - 2 - Math.floor(th / 2);
         put(x + side, by, T.LOG); put(x + side * 2, by, T.LOG); blob(x + side * 3, by - 1, 1.8, 1.3);
       }
-      for (var k = 1; k <= th + 1; k++) { var ti = (tp2 - k) * W + x; if (t[ti] === T.AIR || t[ti] === T.LEAVES) t[ti] = T.LOG; }
+      for (var k2 = 1; k2 <= th + 1; k2++) { var ti = (tp2 - k2) * W + x; if (t[ti] === T.AIR || t[ti] === T.LEAVES) t[ti] = T.LOG; }
       for (var sd = -1; sd <= 1; sd += 2) {               // flared roots at the base
         var px = x + sd;
         if (px > 0 && px < W - 1 && TILES[t[tp2 * W + px]].solid && hs(2 + sd) < 0.8) put(px, tp2 - 1, T.LOG);
@@ -462,28 +567,46 @@
         for (var q = 1; q <= len; q++) if (lb + q < top[vx]) put(vx, lb + q, T.VINE);
       }
     }
-    var lastTree = -9, trees = [];
-    for (x = 3; x < W - 3; x++) {
-      if (bio[x] !== 0 || top[x] > WL) continue;
-      if (x - lastTree > 4 && rnd() < 0.24) { lastTree = x; trees.push(x); plant(x); }
-      else if (x - lastTree > 1 && rnd() < 0.16 && t[(top[x] - 1) * W + x] === T.AIR) t[(top[x] - 1) * W + x] = T.GLOWCAP;
+    function pine(x) {   // a Frostfen pine: a straight trunk and stacked tiers that widen, step in, and widen again
+      var tp2 = top[x], th = 6 + Math.floor(hash(x, 310, seed) * 5), P = [0, 1, 1, 2, 1, 2, 3, 2, 3], k2, row;
+      for (k2 = 1; k2 <= th; k2++) t[(tp2 - k2) * W + x] = T.LOG;
+      for (row = 0; row < Math.min(9, th - 1); row++) for (var dx = -P[row]; dx <= P[row]; dx++) put(x + dx, tp2 - th - 1 + row, T.LEAVES);
     }
-    for (x = SPAWNX - 34; x < SPAWNX + 34 && trees.length < 10; x += 3) {
-      if (top[x] > WL || trees.some(function (q) { return Math.abs(q - x) < 5; })) continue;
+    function snag(x) {   // an Ember Bog dead tree: a charred trunk with a couple of bare branches
+      var tp2 = top[x], th = 3 + Math.floor(hash(x, 320, seed) * 4), k2;
+      for (k2 = 1; k2 <= th; k2++) t[(tp2 - k2) * W + x] = T.LOG;
+      var s1 = hash(x, 321, seed) < 0.5 ? -1 : 1; put(x + s1, tp2 - th + 1, T.LOG); put(x + s1 * 2, tp2 - th, T.LOG);
+      if (th >= 5) { put(x - s1, tp2 - th + 2, T.LOG); }
+    }
+    function flat(x2) { return Math.abs(top[x2 - 1] - top[x2]) <= 1 && Math.abs(top[x2 + 1] - top[x2]) <= 1; }
+    var lastTree = -9, trees = [];
+    for (x = 4; x < W - 4; x++) {
+      var gid0 = t[top[x] * W + x], above0 = t[(top[x] - 1) * W + x];
+      if (above0 !== T.AIR) continue;
+      if (bio[x] === 0) {
+        if (top[x] > WL || gid0 !== T.MOSS || !flat(x)) continue;
+        if (x - lastTree > 4 && rnd() < 0.26) { lastTree = x; trees.push(x); plant(x); }
+        else if (x - lastTree > 1 && rnd() < 0.16) t[(top[x] - 1) * W + x] = T.GLOWCAP;
+      } else if (bio[x] === 2) {
+        if (gid0 !== T.SNOW || !flat(x) || SURF - top[x] > 30) continue;
+        if (x - lastTree > 6 && hash(x, 311, seed) < 0.16) { lastTree = x; pine(x); }
+      } else {
+        if (gid0 !== T.ASH || !flat(x)) continue;
+        if (x - lastTree > 9 && hash(x, 322, seed) < 0.07) { lastTree = x; snag(x); }
+      }
+    }
+    for (x = SPAWNX - 34; x < SPAWNX + 34 && trees.length < 10; x += 3) {   // always enough Wood near camp
+      if (top[x] > WL || trees.some(function (q2) { return Math.abs(q2 - x) < 5; })) continue;
       trees.push(x); plant(x);
     }
-    // 4. surface decorations (hash-based, so they never disturb the terrain random sequence)
-    for (x = 2; x < W - 2; x++) {
-      var sy = top[x] - 1, r = hash(x, 91, seed), bb = bio[x];
-      if (sy < 1 || t[sy * W + x] !== T.AIR || t[top[x] * W + x] === T.WATER) continue;
-      if (bb === 0 && r < 0.26) t[sy * W + x] = T.REED;
-      else if (bb === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
-      else if (bb === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
+    for (x = 2; x < W - 2; x++) {   // surface plants
+      var sy = top[x] - 1, r = hash(x, 91, seed), bb2 = bio[x], gid = t[top[x] * W + x];
+      if (sy < 1 || t[sy * W + x] !== T.AIR || gid === T.WATER || gid === T.STONE || gid === T.ICE) continue;
+      if (bb2 === 0 && gid === T.MOSS && r < 0.26) t[sy * W + x] = T.REED;
+      else if (bb2 === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
+      else if (bb2 === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
     }
-    // 4b. the village (see buildVillage above)
-    var village = buildVillage(t, top, bio, seed, walls);
-    // 5. cave holes: a few little burrows on dry ground in every area (hash-based again, so terrain and trees never change).
-    // One lies a short walk from the spawn so every world has a cave to find; the rest are spread about 36 columns apart.
+    // ---- 6. cave holes: little burrows on dry ground (one a short walk from the spawn), about 36 columns apart ----
     var holes = [];
     function holeOk(hx) {
       if (hx < 8 || hx >= W - 8) return false;
@@ -491,8 +614,7 @@
       var g0 = t[sy * W + hx]; if (g0 !== T.AIR && g0 !== T.REED && g0 !== T.BLOOM && g0 !== T.SPIKE && g0 !== T.GLOWCAP) return false;
       if (t[(sy - 1) * W + hx] !== T.AIR || t[(sy - 2) * W + hx] !== T.AIR) return false;
       if (Math.abs(SPAWNX - hx) < 9) return false;
-      if (village && hx >= village.f0 && hx <= village.f1) return false;
-      for (var k = 0; k < holes.length; k++) if (Math.abs(holes[k].x - hx) < 14) return false;
+      for (var k3 = 0; k3 < holes.length; k3++) if (Math.abs(holes[k3].x - hx) < 14) return false;
       return Math.abs(top[hx - 1] - top[hx]) <= 1 && Math.abs(top[hx + 1] - top[hx]) <= 1;
     }
     function addHole(hx) { var sy = top[hx] - 1; t[sy * W + hx] = T.HOLE; holes.push({ x: hx, y: sy, b: bio[hx] }); }
@@ -503,18 +625,9 @@
       for (x = 0; x < 14; x++) { var hx = (start + x) % W; if (holeOk(hx)) { addHole(hx); break; } }
     }
     holes.sort(function (a, b) { return a.x - b.x; });
-    // 6. structures (see buildStructures): standalone buildings with a door you can walk into
-    var structs = buildStructures(t, top, bio, seed, holes, village);
-    // 6b. the village houses are enterable like every other building: each door (west and east) is a building door, so tap it or press F to step inside to a top-down room.
-    //     They are appended after the standalone structures, so those keep their ids. kind house0..house4 are the interiors in sandbox-cave.js.
-    var HOUSENAMES = ["Mossy Cottage", "Scholar's House", "Baker's House", "Gardener's Cottage", "Elder's Hall"];
-    if (village) village.houses.forEach(function (h, hi) {
-      [0, 1].forEach(function (d) {
-        var dx = h.doors[d], side = d ? 1 : -1;
-        structs.push({ id: structs.length, ki: -1, kind: "house" + (hi % 5), name: HOUSENAMES[hi % 5], b: 0, x0: h.x, x1: h.x + h.w - 1, w: h.w, gy: village.gy, bh: 3, side: side, dx: dx, outX: dx + side, doorY: village.gy - 1, village: true });
-      });
-    });
-    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, village: village, structs: structs, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    // ---- 7. structures (see buildStructures): standalone buildings with a door you can walk into ----
+    var structs = buildStructures(t, top, bio, seed, holes, walls);
+    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, structs: structs, feats: feats, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var api = { STRUCT_KINDS: STRUCT_KINDS, W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };

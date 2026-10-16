@@ -568,3 +568,18 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
 - Each village house door (west and east) is now a building door, like the Manor-style structures: walk up, tap **Enter** (or press **F**) to step into a top-down room. Done in `gen()` (block "6b" in `sandbox-world.js`): ten entries are appended to `world.structs` (after the standalone buildings, so their ids are unchanged), `kind` `house0`..`house4`.
 - Five interiors in `sandbox-cave.js` (`KINDS.house0-4`): Mossy Cottage, Scholar's House, Baker's House, Gardener's Cottage, Elder's Hall. They use Content Pack 1 furniture (desk, globe, clock, sofa, harp...) when it is loaded and plain stand-ins otherwise.
 - Script versions: `sandbox-world.js` delve19, `sandbox-cave.js` cave3, `sandbox.js` delve44.
+
+### Delve: villages removed
+- The Murkwater village is gone: `buildVillage()`, the seven villagers (`CIV_FOLK`, `spawnCivs`, `updateCivs`, `drawCivs`), the five enterable house interiors (`house0`-`house4` in `sandbox-cave.js`), the "calm zone" around it and its map marker were all deleted. `world.village` no longer exists. The earlier Delve village notes above are history only.
+- World generation is otherwise unchanged. The ground where the village stood is now ordinary swamp, and cave holes and standalone structures (cabin, tower, forge, keep, lodge, shrine) can now be placed there.
+- Tree leaves in the Adventure look were redrawn (`buildLeafTile` / `natLeaf` in `sandbox.js`).
+
+### Delve: corner pop-ups
+- `popup(label, title, color, icon)` in `sandbox.js` shows a small card in the bottom-right corner (`#sbxPops`, styles at the end of `sandbox.css`). It stacks up to 3 and each fades after about 3 seconds.
+- Completed goals and Trail steps now use it (`banner()` calls `popup()`; the big centre banner is no longer used), and `damageEnemy()` shows "Enemy defeated" with the enemy name and any fragment it dropped.
+
+### Delve: crisp in-world sprites
+- Ladders, torches, plants, furniture and ore gems were being re-drawn at 4x with blur, melted edges and a dark outline (`gooCanvas`), which looked blurry and "playdough". `SMCRISP = true` (next to `SMATLAS` in `sandbox.js`) now draws them as the original pixel art, the same as the hotbar and crafting icons. Set it to `false` to bring the old soft look back.
+
+### Delve: no character outline
+- The dark 1px outline around your avatar (and its arm) is off. `OUTLINE = false` at the top of `delve-avatar.js`; set it to `true` to bring it back. This also applies to the "Play as" thumbnails.

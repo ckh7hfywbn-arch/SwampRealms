@@ -30,8 +30,8 @@
   // after a few seconds the watered plant spreads a new one onto free ground within 2 tiles (never into a crowded patch). Pending growth lives in memory only (grow[]), the new plants are ordinary tile edits.
   var CAN = { n: "Watering Can", max: 12, c: "#6fb7d9" }, GROW_T = 4.5, PLANTS = {}, GROW_CROWD = 5;
   PLANTS[T.FLOWER] = 1; PLANTS[T.REED] = 1; PLANTS[T.GLOWCAP] = 1;
-  var AVS = 0.85;   // how big avatars are drawn (1 = the old size). Applies to you and the villagers; the hitbox (PW x PH) is unchanged.
-  var KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
+  var AVS = 0.85;   // how big avatars are drawn (1 = the old size). Applies to you; the hitbox (PW x PH) is unchanged.
+  var WP_MAX = 24, WP_COL = ["#ff6b82", "#f2c14e", "#4ee6b4", "#6fb6ff", "#c78bff", "#ff9a4a"], KEY = "swamp-delve-v1", CYCLE = 480, REACH = 5.6, PW = 0.7, PH = 1.5, SAVE_MS = 8000;
   // health: tuning (a player has MAXHP; fall hits past FALL_SAFE speed, lava burns per second, then you heal after a calm spell)
   var MAXHP = 100, FALL_SAFE = 21, FALL_DMG = 3.5, LAVA_DPS = 38, REGEN_WAIT = 4, REGEN_RATE = 2.5;
   var PICKS = [
@@ -77,7 +77,7 @@
     { id: "shovel", n: "Reed Shovel", sh: 1, cost: { stick: 2, fiber: 2, pebble: 2 }, d: "A hand shovel for soft ground. Digs Mud, Moss, Clay, Ash and Snow a little faster than bare paws. It cannot break stone, wood or ore, so keep your pick too." },
     { id: "can", n: "Watering Can", can: 1, cost: { planks: 4, fiber: 3, pebble: 2 }, d: "Pick it in the hotbar, hold it on the water to fill it, then hold it on a Swamp Flower, Cattail or Glowcap. A watered plant spreads a new one nearby after a few seconds. Holds 12 waterings. Comes full." },
     { id: "planks", n: "Planks (4)", out: { planks: 4 }, cost: { wood: 1 }, d: "Build walls, floors and bridges." },
-    { id: "bench", n: "Bog Workbench", out: { bench: 1 }, cost: { wood: 10, fiber: 4 }, d: "Place it at camp. Better tools are made standing next to it. Upgrade it as you win loot from each biome to unlock better armor and tools." },
+    { id: "bench", n: "Bog Workbench", out: { bench: 1 }, cost: { wood: 10, fiber: 4 }, d: "Place it at camp, then tap it (or press F next to it) to open it. Better tools, armor and new stations are crafted in its window. Upgrade it as you win loot from each biome to unlock better armor and tools." },
     { id: "bed", n: "Swamp Bed", out: { bed: 1 }, cost: { planks: 6, fiber: 6, leaves: 8 }, d: "Place it at camp. At night, stand next to it and sleep to skip to dawn, heal fully and set your respawn. Bats cannot hurt you while you sleep." },
     { id: "torch", n: "Torches (4)", out: { torch: 4 }, cost: { stick: 1, spore: 1 }, d: "Light up caves. Place next to a wall." },
     { id: "wpn1", n: "Reed Spear", wpn: 1, cost: { stick: 6, fiber: 3, pebble: 4 }, d: "Your first weapon. Hold it from the hotbar and swing. Damage 5." },
@@ -91,7 +91,7 @@
     { id: "w_timber", n: "Timber Frame Wall (4)", out: { wall_timber: 4 }, bench: true, cost: { planks: 1, clay: 1 }, d: "Cream plaster in dark wooden frames, like a cottage. Needs a Bog Workbench nearby." },
     { id: "w_plaster", n: "Plaster Wall (4)", out: { wall_plaster: 4 }, bench: true, cost: { clay: 2, fiber: 1 }, d: "Smooth cream plaster. Needs a Bog Workbench nearby." },
     { id: "w_brick", n: "Stone Brick Wall (4)", out: { wall_brick: 4 }, bench: true, cost: { stone: 2 }, d: "Grey stone bricks for cellars and castles. Needs a Bog Workbench nearby." },
-    { id: "decorbench", n: "Decor Workbench", out: { decorbench: 1 }, bench: true, cost: { planks: 14, fiber: 6, clay: 4 }, d: "Place it in your camp or house. Standing next to it adds a Decor tab to your bag: chairs, tables, paintings, lamps, rugs and more. Needs a Bog Workbench nearby to make." },
+    { id: "decorbench", n: "Decor Workbench", out: { decorbench: 1 }, bench: true, cost: { planks: 14, fiber: 6, clay: 4 }, d: "Place it in your camp or house. Tap it (or press F next to it) to open its window, where all the furniture, lamps, garden pieces, building blocks and wall decor are crafted. Made at the Bog Workbench." },
     { id: "pick2", n: "Glowspore Pick", tier: 2, bench: true, cost: { spore: 16, wood: 12 }, d: "Digs 1.8x faster. Breaks Basalt and Cinder Ore." },
     { id: "bag2", n: "Bog Hauler Pack", bag: 2, need: 2, bench: true, cost: { fiber: 16, spore: 8, planks: 8, leaves: 12 }, d: "A big stitched pack with side pockets and a glowing buckle. Adds 12 more bag slots (54 in all). Needs the Reed Backpack and the Glowspore Pick." },
     { id: "wpn2", n: "Glowspore Blade", wpn: 2, need: 2, bench: true, cost: { spore: 12, wood: 8, planks: 8, bugfrag: 3 }, d: "A glowing blade. Damage 9, quick swing. Needs the Glowspore Pick and Bramble Fragments from Bramble Bugs." },
@@ -135,7 +135,7 @@
     { id: "d_fence", cat: "Murkwater Showpieces", n: "Wooden Fence (2)", out: { fence: 2 }, cost: { planks: 2, stick: 2 }, d: "Fence off a garden. A row of fences joins up." },
     { id: "d_bale", cat: "Murkwater Showpieces", n: "Reed Bale", out: { bale: 1 }, cost: { fiber: 12 }, d: "A tied bale of dried reeds. Good for a barn or a market." },
     { id: "d_well", cat: "Murkwater Showpieces", n: "Swamp Well", out: { well: 1 }, cost: { stone: 10, planks: 6, fiber: 2 }, d: "A stone well with a little roof and a bucket on a rope." },
-    { id: "d_fountain", cat: "Murkwater Showpieces", n: "Mossy Fountain", out: { fountain: 1 }, cost: { stone: 12, clay: 4, spore: 2 }, d: "A moss-covered stone fountain for the village square." },
+    { id: "d_fountain", cat: "Murkwater Showpieces", n: "Mossy Fountain", out: { fountain: 1 }, cost: { stone: 12, clay: 4, spore: 2 }, d: "A moss-covered stone fountain for your garden." },
     { id: "d_cauldron", cat: "Murkwater Showpieces", n: "Bubbling Cauldron", out: { cauldron: 1 }, cost: { pot: 1, spore: 4, stick: 4 }, d: "A cauldron of glowing green brew over a small fire. Gives off a soft green light. Made from a Clay Pot." },
     { id: "d_glowpot", cat: "Murkwater Showpieces", n: "Glowcap Pot", out: { glowpot: 1 }, cost: { pot: 1, spore: 3 }, d: "A Clay Pot with a glowing mushroom. A gentle night-light." },
     { id: "d_hearth", cat: "Murkwater Showpieces", n: "Stone Hearth", out: { hearth: 1 }, cost: { stone: 14, stick: 6, torch: 2 }, d: "A stone fireplace with a roaring fire. Warm, bright light for your house." },
@@ -172,6 +172,23 @@
     { id: "frog1", n: "Frog Hopper", d: "Defeat a Swamp Frog", f: function () { return S.st.frogs >= 1; } },
     { id: "bug5", n: "Thorn Trouble", d: "Defeat 5 Bramble Bugs", f: function () { return S.st.bugs >= 5; } },
     { id: "frog5", n: "Croak Crusher", d: "Defeat 5 Swamp Frogs", f: function () { return S.st.frogs >= 5; } },
+    { id: "wolf1", n: "Lone Wolf Down", d: "Defeat a Frost Wolf in Frostfen", f: function () { return S.st.wolves >= 1; } },
+    { id: "gator1", n: "Gator Wrangler", d: "Defeat a Bog Gator (they lurk in swamp lakes once you have the Glowspore Blade)", f: function () { return S.st.gators >= 1; } },
+    { id: "slime5", n: "Slime Time", d: "Pop 5 slimes (caves, or the surface at night)", f: function () { return S.st.slimes >= 5; } },
+    { id: "wasp1", n: "Wasp Swatter", d: "Defeat an Ember Wasp in Ember Bog", f: function () { return S.st.wasps >= 1; } },
+    { id: "ckill10", n: "Cave Crawler", d: "Defeat 10 creatures in the caves below the Cave Holes", f: function () { return S.st.ckills >= 10; } },
+    { id: "cclear1", n: "Clean Sweep", d: "Clear every creature from a cave floor", f: function () { return S.st.cclear >= 1; } },
+    { id: "cclear5", n: "Deep Delver", d: "Clear 5 cave floors", f: function () { return S.st.cclear >= 5; } },
+    { id: "farm1", n: "Green Thumb", d: "Harvest a ripe crop", f: function () { return S.st.harvests >= 1; } },
+    { id: "farm25", n: "Swamp Farmer", d: "Harvest 25 ripe crops", f: function () { return S.st.harvests >= 25; } },
+    { id: "crops4", n: "Four Fields", d: "Harvest Swamp Carrots, Bog Potatoes, Fire Peppers and Frostberries", f: function () { return (S.st.cropbits & 15) === 15; } },
+    { id: "cook5", n: "Swamp Chef", d: "Cook 5 meals at a Cooking Pot", f: function () { return S.st.cooked >= 5; } },
+    { id: "gourmet", n: "Gourmet", d: "Eat 6 different cooked meals", f: function () { return Object.keys(S.ate).length >= 6; } },
+    { id: "feast", n: "Feast of Three Lands", d: "Eat an Explorer's Feast", f: function () { return !!S.ate.feast; } },
+    { id: "loot1", n: "Treasure Hunter", d: "Open a Cave Chest (they glow faintly in dark caves)", f: function () { return S.st.cchests >= 1; } },
+    { id: "loot10", n: "Hoard of Gold", d: "Open 10 Cave Chests", f: function () { return S.st.cchests >= 10; } },
+    { id: "pots20", n: "Pot Smasher", d: "Smash 20 Cave Pots", f: function () { return S.st.pots >= 20; } },
+    { id: "hunter", n: "Monster Hunter", d: "Defeat one of every creature: bug, frog, bat, wolf, gator, slime and wasp", f: function () { return ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps"].every(function (k) { return S.st[k] >= 1; }); } },
     { id: "wpn1", n: "Armed Paws", d: "Craft the Reed Spear", f: function () { return S.wpn >= 1; } },
     { id: "wpn2", n: "Spore Blade", d: "Craft the Glowspore Blade", f: function () { return S.wpn >= 2; } },
     { id: "wpn3", n: "Cinder Cleaver", d: "Craft the Cinder Cleaver", f: function () { return S.wpn >= 3; } },
@@ -216,16 +233,21 @@
   if (typeof SbxExtra !== "undefined") SbxExtra.GOALS.forEach(function (g) { GOALS.push({ id: g.id, n: g.n, d: g.d, f: function () { return g.f(S); } }); });
   // ---- THE TRAIL (Stage 1): a guided first-day path. Steps count from lifetime stats, so gathering ahead still counts. ----
   // tg = tile ids to point at on the surface, deep = how far below the surface still counts, rw = small item gift.
+  var TRAIL_V1 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "spore", "lights", "pick2", "ember", "spear", "bug", "frog", "blade", "bed", "bats", "sleep", "stash", "benchup", "mail"];   // Trail order before the food steps (for old saves)
   var TRAIL = [
     { id: "stick", n: "Gather Sticks", d: "Hold on tree leaves to punch them. Leaves sometimes drop Sticks.", need: 5, v: function () { return S.st.stick; }, tg: [T.LEAVES], rw: null },
     { id: "fiber", n: "Gather Reed Fiber", d: "Snip cattails by the water or the vines hanging under tree leaves.", need: 3, v: function () { return S.st.fiber; }, tg: [T.REED, T.VINE], rw: { stick: 2 } },
     { id: "pebble", n: "Dig for Pebbles", d: "Dig mud with your paws. Pebbles pop out now and then.", need: 2, v: function () { return S.st.pebble; }, tg: [T.MOSS, T.MUD], rw: { fiber: 1 } },
-    { id: "pick1", n: "Craft the Reed Pick", d: "Open the bag (E or the bag button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
+    { id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
     { id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
     { id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench, select it in the hotbar, then tap the ground to place it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
     { id: "spore", n: "Find Glowspore", d: "Dig down into the stone. Glowing green ore is Glowspore. Bring a torch.", need: 16, v: function () { return S.st.spore; }, rw: { wood: 4 } },
     { id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
-    { id: "pick2", n: "Spore Smith", d: "Stand near your Workbench and craft the Glowspore Pick.", need: 1, v: function () { return S.tier >= 2 ? 1 : 0; }, rw: { torch: 6 } },
+    { id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Eat something: Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmland: 4 } },
+    { id: "plant", n: "Plant a Garden", d: "Place Garden Soil on the ground (craft more from Mud and Leaves), then plant Swamp Carrot Seeds on top. Cattails drop more seeds. Watered crops grow twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
+    { id: "harvest", n: "First Harvest", d: "When a crop shows its ripe produce, hold on it to pick it. You get food and seeds to plant again.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
+    { id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food and heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
+    { id: "pick2", n: "Spore Smith", d: "Tap your Workbench to open it and craft the Glowspore Pick.", need: 1, v: function () { return S.tier >= 2 ? 1 : 0; }, rw: { torch: 6 } },
     { id: "ember", n: "Cross into Ember Bog", d: "Walk east past the swamp edge. Basalt and Cinder Ore are next.", need: 1, v: function () { return (S.ms.ember || bioAt() === 1) ? 1 : 0; }, rw: null },
     { id: "spear", n: "Arm Yourself", d: "Craft the Reed Spear (Sticks, Fiber, Pebbles). Pick it in the hotbar and hold to swing. Enemies start to roam once you carry a weapon.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { planks: 4 } },
     { id: "bug", n: "Squash a Bramble Bug", d: "Bramble Bugs prowl the swamp surface and dark caves. Strike them before they ram you.", need: 1, v: function () { return S.st.bugs; }, rw: { torch: 4 } },
@@ -235,9 +257,13 @@
     { id: "bats", n: "Night Watch", d: "When the sky goes dark, bats dive at you. Watch for the red eyes, step aside, then strike. Defeat 2 Dusk Bats.", need: 2, v: function () { return S.st.bats; }, rw: { planks: 6 } },
     { id: "sleep", n: "Sleep Tight", d: "At night, stand next to your bed and tap Sleep (or press F). You skip to dawn with full health, and the bed becomes your respawn point. Bats must be gone, or you need a roof overhead.", need: 1, v: function () { return S.st.sleeps; }, rw: { torch: 6 } },
     { id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest (Planks, Fiber), place it near camp, open it (tap it or press F) and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8, torch: 4 } },
-    { id: "benchup", n: "Level Up the Bench", d: "Armor for the next biome needs a better Workbench. Bring Glowspore, Clay, Stone and Bramble + Frog Fragments from Murkwater to your Workbench and upgrade it in the Craft tab.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
+    { id: "benchup", n: "Level Up the Bench", d: "Armor for the next biome needs a better Workbench. Bring Glowspore, Clay, Stone and Bramble + Frog Fragments from Murkwater to your Workbench, tap it to open it and press Upgrade.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
     { id: "mail", n: "Suit Up", d: "Craft the Glowspore Mail at your upgraded Workbench before you push deep into Ember Bog.", need: 1, v: function () { return S.arm >= 2 ? 1 : 0; }, rw: { torch: 6 } }
   ];
+  // Day counter: S.days counts finished day/night cycles in this world (saved with the world). Showing it is a per-device option.
+  var SHOWDAYS = false; try { SHOWDAYS = localStorage.getItem("swamp-delve-daycount") === "1"; } catch (e) {}
+  function advTime(dt) { var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
+  function dayTag() { return SHOWDAYS ? "Day " + (((S.days | 0) + 1)) + " \u00b7 " : ""; }
   var PHN = { day: "Day", dusk: "Dusk", night: "Night", dawn: "Dawn" };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -246,26 +272,28 @@
   var lerp = function (a, b, k) { return a + (b - a) * k; };
   var reduce = matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var coarse = matchMedia && matchMedia("(pointer: coarse)").matches;
+  // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
+  var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   var cv = $("sbxCv"), ctx = cv.getContext("2d");
   var stageEl = $("sbxStage");
 
   // ---------- STATE ----------
   var S, world, tiles, orig, edits, col, ex, walls, worigW, wedits, WALLITEM = {};
   Object.keys(ITEMS).forEach(function (k) { if (ITEMS[k].wall) WALLITEM[ITEMS[k].wall] = k; });
-  var p = { x: SW.SPAWNX + 0.5, y: 34, vx: 0, vy: 0, face: 1, on: false, coy: 0, wet: false, walk: 0 };
-  var cam = { x: 40, y: 34 }, keys = { l: 0, r: 0, j: 0, d: 0, u: 0 }, tk = { l: 0, r: 0, j: 0, d: 0, u: 0 };
+  var p = { x: SW.SPAWNX + 0.5, y: SURF, vx: 0, vy: 0, face: 1, on: false, coy: 0, wet: false, walk: 0 };
+  var cam = { x: 40, y: SURF }, keys = { l: 0, r: 0, j: 0, d: 0, u: 0 }, tk = { l: 0, r: 0, j: 0, d: 0, u: 0 };
   var selSlot = -1, invSel = -1, invAsk = "", sel = "pick", mine = null, aim = { down: false, id: null, mx: 0, my: 0, tx: -1, ty: -1 }, cool = 0;
   var parts = [], texts = [], flies = [], glows = [];
   var hp = MAXHP, hurtT = 0, hurtGrace = 0, sinceHurt = 99, shake = 0, shownHp = -1, HVIG = null;
   var vw = 800, vh = 600, dpr = 1, ts = 28, ox = 0, oy = 0;
-  var panelOpen = false, tab = "craft", hbDirty = true, lastBio = -1, hudT = 0, saveT = 0, msT = 0, nagT = 0, exKey = "", sprite = null, spriteKey = "", confirmNew = false;
+  var panelOpen = false, packOpen = false, mapOpen = false, tab = "craft", hbDirty = true, lastBio = -1, hudT = 0, saveT = 0, msT = 0, nagT = 0, exKey = "", sprite = null, spriteKey = "", confirmNew = false;
   var ICO = {}, ATLAS, bannerQ = [], bannerBusy = false, guide = null, guideT = 0, trailKey = "", PCV = [], heldAmt = 0, heldPh = 0;
 
   // ---------- SAVE / LOAD ----------
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, time: 60, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1 }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     var d = fresh(o.seed | 0 || 1);
@@ -305,7 +333,17 @@
     });
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
+    if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
+      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), n: String(w.n || "Waypoint").slice(0, 24) });
+    });
+    d.days = Math.max(0, Math.min(1e6, Math.floor(+o.days) || 0));
     d.zoom = [0.8, 1, 1.25, 1.5, 2].indexOf(+o.zoom) > -1 ? +o.zoom : 1;
+    d.food = isFinite(+o.food) && o.food !== null && o.food !== undefined ? clamp(+o.food, 0, 100) : 100; d.nohunger = o.nohunger ? 1 : 0;
+    if (o.ate && typeof o.ate === "object") Object.keys(o.ate).forEach(function (k) { if (ITEMS[k] && ITEMS[k].cooked) d.ate[k] = 1; });
+    if (o.farm && typeof o.farm === "object" && o.wv === SW.WORLDVER) Object.keys(o.farm).forEach(function (k) { var f = o.farm[k]; if (/^\d+,\d+$/.test(k) && f && CROPS[f.c]) d.farm[k] = { c: f.c, g: Math.max(0, +f.g || 0), w: Math.max(0, +f.w || 0) }; });
+    if (o.tv !== 2 && typeof o.trail === "number") {   // the Trail gained food steps: keep older saves on the step they had reached
+      var oid = TRAIL_V1[clamp(Math.floor(o.trail), 0, TRAIL_V1.length)], ni = oid ? TRAIL.map(function (t) { return t.id; }).indexOf(oid) : -1; d.trail = oid ? (ni < 0 ? TRAIL.length : ni) : TRAIL.length;
+    }
     return d;
   }
   function build(state) {
@@ -318,13 +356,12 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; stageEl.classList.remove("cave");
-    if (state.grown) { state.grown = false; setTimeout(function () { toast("The world grew again! It is now 2160 tiles wide: each biome is 720 tiles of hills, lakes and caves to explore. Your items are safe.", "#f2c14e"); }, 1200); }
+    S = state; benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; resize(); stageEl.classList.remove("cave");
+    if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
     cam.x = p.x; cam.y = p.y - 1; sel = "pick"; selSlot = -1; invSel = -1; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.trail < TRAIL.length ? "trail" : "craft"; hbDirty = true; exKey = ""; spriteKey = ""; ICO = {};
     hp = S.hp; hurtT = hurtGrace = shake = 0; sinceHurt = 99; shownHp = -1; drawHp(); sleepT = 0; batT = 8; enemies.length = 0;
-    spawnCivs();
     reveal(true);
   }
   function save() {
@@ -424,14 +461,13 @@
   // ---------- WORLD ACCESS ----------
   function get(x, y) { if (x < 0 || x >= W) return T.BEDROCK; if (y < 0) return T.AIR; if (y >= H) return T.BEDROCK; return tiles[y * W + x]; }
   // Natural trees are scenery: you and the enemies walk through untouched trunks and leaves (you can still chop them). Logs and leaves YOU placed stay solid.
-  // Generated buildings (the village houses and the standalone structures) are scenery: you walk straight through their walls, roofs and doors as if they were in the background.
+  // Generated buildings (the standalone structures) are scenery: you walk straight through their walls, roofs and doors as if they were in the background.
   // smask marks the footprint (built in build()); only tiles still equal to the generated world count, so anything you place or dig yourself behaves normally.
   var smask = null;
   function buildSMask() {
-    smask = new Uint8Array(W * H); var v = world.village, ss = world.structs || [], i, x, y;
+    smask = new Uint8Array(W * H); var ss = world.structs || [], i, x, y;
     function mark(x0, x1, y0, y1) { for (y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) for (x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) smask[y * W + x] = 1; }
-    if (v) v.houses.forEach(function (h) { mark(h.x - 1, h.x + h.w, v.gy - 7, v.gy - 1); });
-    for (i = 0; i < ss.length; i++) mark(ss[i].x0 - 1, ss[i].x1 + 1, ss[i].gy - ss[i].bh - 7, ss[i].gy - 1);
+    for (i = 0; i < ss.length; i++) { var q = ss[i]; if (q.mx0 !== undefined) mark(q.mx0, q.mx1, q.my0, q.gy - 1); else mark(q.x0 - 1, q.x1 + 1, q.gy - q.bh - 7, q.gy - 1); }
   }
   function blocks(x, y) {
     var id = get(x, y); if (!TILES[id].solid) return false;
@@ -441,7 +477,7 @@
   }
   var opaque = function (id) { return TILES[id].solid && id !== T.LEAVES; };
   function recalc(x) {   // first row that counts as ground/roof (sets sky light and the dark backwall). World-generated trunks are scenery, so they never count: no backwall appears under a tree when you chop it.
-    for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i])) { col[x] = y; return; } }
+    for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i])) { col[x] = y; return; } }   // generated buildings are scenery: sky light passes them
     col[x] = H;
   }
   function setT(x, y, id) {
@@ -521,7 +557,7 @@
     var A = S.slots[a]; if (!A) return; var toHot = a >= INV_HOT, lo = toHot ? 0 : INV_HOT, hi = toHot ? INV_HOT : invN(), m = stackMax(A.k), i;
     for (i = lo; i < hi && A.n > 0; i++) { var c = S.slots[i]; if (c && c.k === A.k && c.n < m) { var mv = Math.min(A.n, m - c.n); c.n += mv; A.n -= mv; } }
     for (i = lo; i < hi && A.n > 0; i++) if (!S.slots[i]) { S.slots[i] = { k: A.k, n: A.n }; A.n = 0; invSel = i; }
-    if (A.n <= 0) S.slots[a] = null; else if (toHot) { var sw = selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0; moveSlot(a, sw); invSel = sw; return; } else toast("The bag is full.", "#f2c14e");
+    if (A.n <= 0) S.slots[a] = null; else if (toHot) { var sw = selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0; moveSlot(a, sw); invSel = sw; return; } else toast("Your backpack is full.", "#f2c14e");
     hbDirty = true; invAfter();
   }
   function tossSlot(a, all) {   // throw away one, or the whole stack (the stack asks twice)
@@ -576,7 +612,7 @@
     else if (id === "weapon") { if (S.wpn) { sel = "weapon"; selSlot = -1; } }
     else if (id === "shovel") { if (S.shovel) { sel = "shovel"; selSlot = -1; } }
     else if (id === "can") { if (S.can) { sel = "can"; selSlot = -1; } }
-    else if ((S.inv[id] || 0) > 0 && ITEMS[id] && ITEMS[id].tile !== undefined) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(id); }
+    else if ((S.inv[id] || 0) > 0 && ITEMS[id] && (ITEMS[id].tile !== undefined || ITEMS[id].food)) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(id); }
     mine = null; hbDirty = true;
   }
 
@@ -724,22 +760,18 @@
     }
   }
   // Planks: two beveled boards, wood grain, staggered end joints, iron nails, and a faint glow of swamp moss in the seam.
-  function paintPlanks(rect, hh) {
-    var rows = [[0, "#b9793f", "#dc9a58", "#8a5328"], [8, "#c4844a", "#e6a766", "#94592c"]];
-    rows.forEach(function (r, i) {
-      var y0 = r[0], k;
-      rect(0, y0, 16, 8, r[1]);
-      for (k = 0; k < 7; k++) rect(Math.floor(hh(k, i + 4, 4) * 10), y0 + 1 + Math.floor(hh(k, i, 3) * 5), 3 + Math.floor(hh(k, i + 9, 5) * 8), 1, r[3], 0.35);
-      for (k = 0; k < 4; k++) rect(Math.floor(hh(k, i + 14, 6) * 10), y0 + 1 + Math.floor(hh(k, i + 2, 7) * 5), 3 + Math.floor(hh(k, i + 7, 8) * 6), 1, r[2], 0.35);
-      rect(0, y0, 16, 1, r[2], 0.9); rect(0, y0 + 1, 16, 1, r[2], 0.28);
-      rect(0, y0 + 6, 16, 1, r[3], 0.5); rect(0, y0 + 7, 16, 1, "#5a3318");
-      var jx = i ? 4 + Math.floor(hh(1, i, 6) * 3) : 10 + Math.floor(hh(1, i, 6) * 3);
-      rect(jx, y0 + 1, 1, 6, "#5a3318", 0.9); rect(jx + 1, y0 + 1, 1, 5, r[2], 0.25);
-      [2, 13].forEach(function (nx) { if (i === 0) { rect(nx, y0 + 3, 2, 2, "#2e2e34"); rect(nx, y0 + 3, 1, 1, "#b8bcc8"); } else rect(nx, y0 + 3, 1, 1, "#4a2a12", 0.9); });
-      if (hh(i, 9, 9) > 0.85) { rect(7, y0 + 2, 3, 3, "#6a3f1c"); rect(8, y0 + 3, 1, 1, "#3a200d"); }
+  function paintPlanks(rect, hh) {   // four bevelled boards with staggered joints, wood grain and a knot
+    var tones = [["#dba663", "#f6ca90", "#a8713a"], ["#cf9553", "#edb978", "#9a6330"], ["#e3b273", "#fad6a2", "#b07a44"], ["#d49b58", "#f1be82", "#9f6934"]], joints = [5, 11, 2, 8];
+    tones.forEach(function (t, i) {
+      var y0 = i * 4, k, jx = joints[i];
+      rect(0, y0, 16, 4, t[0]);
+      for (k = 0; k < 4; k++) { var gx = Math.floor(hh(k, i + 3, 4) * 11), gy = y0 + 1 + Math.floor(hh(k, i, 3) * 2), gl = 3 + Math.floor(hh(k, i + 9, 5) * 7); rect(gx, gy, gl, 1, k % 2 ? t[2] : t[1], k % 2 ? 0.32 : 0.3); }
+      rect(0, y0, 16, 1, t[1], 0.9); rect(0, y0 + 1, 16, 1, t[1], 0.16);
+      rect(0, y0 + 2, 16, 1, t[2], 0.28); rect(0, y0 + 3, 16, 1, "#4a2a12", 0.92);
+      rect(jx, y0, 1, 3, "#4a2a12", 0.95); rect(jx + 1, y0, 1, 3, t[1], 0.3);
     });
-    rect(15, 0, 1, 16, "#5a3318", 0.35);
-    if (hh(0, 0, 7) > 0.55) { var mx = 3 + Math.floor(hh(0, 1, 7) * 8); rect(mx, 7, 3, 1, "#4ee6b4", 0.5); rect(mx + 1, 7, 1, 1, "#d8fff6", 0.7); }
+    rect(7, 5, 3, 2, "#6a3f1c"); rect(8, 5, 1, 1, "#34200d"); rect(6, 5, 1, 2, "#8a5328", 0.7);
+    rect(0, 0, 1, 16, "#ffd9a0", 0.12); rect(15, 0, 1, 16, "#000", 0.14);
   }
 
   function paintWall(rect, hh, id, v) {   // 16x16 back wall pictures (4 variants each). They are drawn darker than blocks when placed (see drawWall)
@@ -1098,8 +1130,8 @@
     "pick2": { r: ["................", "..............e.", "...bbbbe..e.....", "..bbeaaabbb.....", ".bbaa....aaeb...", ".ba.......aaabb.", ".a.........aeab.", "...........aaac.", "..........hdaac.", ".........edh.c..", "........hdh.....", ".......hdh......", "......heh.......", ".....edh........", "....hdh.........", "...hdh.........."], p: {"h": "#6b4a30", "H": "#8a6440", "d": "#3a2616", "a": "#1fbf93", "b": "#9bfbe0", "c": "#0b7a5e", "e": "#e6fff8"}, o: "#06231c" },
     "pick3": { r: ["................", "................", "...bbbbb.....e..", "..bbaaaabbb.....", ".bblle...eabb...", ".ba.......laabb.", ".a.........eaab.", "...........alac.", "..........hdaac.", ".........hdh.c..", "........hdh.....", ".......hdh......", "......hdl.......", ".....hlh........", "....hdh.........", "...hdh.........."], p: {"h": "#3a2e34", "H": "#5a464e", "d": "#1c1418", "a": "#4a3c44", "b": "#6e5c66", "c": "#2a2026", "l": "#ff6a1f", "e": "#ffc24a"}, o: "#0c070a" },
     "pick4": { r: ["............e.e.", ".............e..", "...bbbbb......e.", "..beeaaabbb.....", ".bbaae...aabb...", ".ba.......aaebb.", ".a.........aaab.", "...........aaac.", "..........hdaac.", ".e.......hdh.c..", "e.e.....hdh.....", ".e.....hdh......", "......heh.......", ".....hdh........", "....hdh.........", "...hdh.........."], p: {"h": "#bfe9f7", "H": "#ffffff", "d": "#7fcfe8", "a": "#7fd6ff", "b": "#e6fbff", "c": "#3f9fc4", "e": "#ffffff"}, o: "#16465e" },
-    "shovel": { r: ["................", "............bbb.", "...........bwaab", "..........bawaac", ".........gbwaac.", "........ggaacc..", ".......hgg.cc...", "......hlh.......", ".....hle........", "....hdh.........", "...hdh..........", "..hdh...........", ".hdh............", ".hh.............", "................", "................"], p: {"h": "#d8c48e", "d": "#a8905a", "a": "#a3abb0", "b": "#d6dbde", "c": "#6a7378", "g": "#7d868b", "l": "#4f8a3c", "e": "#8fd37a", "w": "#ffffff"}, o: "#1e1c18" },
-    "wpn1": { r: ["..............b.", ".............bab", "............waac", "...........waaac", "..........hbaac.", ".........hdaac..", "........hlhcc...", ".......hle......", "......hdh.......", ".....hdh........", "....hdh.........", "...hdh..........", "..hdh...........", ".hdh............", ".hh.............", "................"], p: {"h": "#d8c48e", "d": "#a8905a", "a": "#9aa2a6", "b": "#d9dee0", "c": "#5d666b", "l": "#4f8a3c", "e": "#8fd37a", "w": "#ffffff"}, o: "#1e1c18" },
+    "shovel": { r: ["................", "............bbbb", "..........bwwaab", ".........bwaagac", "........bwaagaac", "........bwagaac.", "........bagac...", "........bgc.....", ".......lel......", "......lel.......", ".....hd.........", "....hd..........", "...ld...........", "..hd............", ".ld.............", "kkd............."], p: {"h": "#e0cd96", "d": "#a8905a", "a": "#a3abb0", "b": "#dfe5e8", "c": "#5f686d", "g": "#7b848a", "l": "#4f8a3c", "e": "#8fd37a", "k": "#d8b24a", "w": "#ffffff"}, o: "#1e1c18" },
+    "wpn1": {r: ["...............b", ".............bwa", "...........bwaac", "..........bwaac.", ".........bwaac..", "........bwac....", ".......lele.....", "......lele......", "......hd.fg.....", ".....hd.fgf.....", "....ld..ff......", "...hd..f........", "..ld............", ".hd.............", "hh..............", "................"], p: {"h": "#e0cd96", "d": "#a8905a", "a": "#a7b0b5", "b": "#e4eaed", "c": "#5d666b", "l": "#4f8a3c", "e": "#8fd37a", "f": "#d8573c", "g": "#ffb35a", "w": "#ffffff"}, o: "#1e1c18"},
     "wpn2": { r: ["..............bb", ".............bab", "............beac", "...........beac.", "..........beac..", ".........beac...", "....g...beac....", ".....g.beac.....", "...x..gggc......", ".......ggg......", "......hdg.g.....", ".....hdh........", "....hdh.........", "...ppp..........", "................", "................"], p: {"h": "#5a3d26", "d": "#3a2616", "a": "#1fbf93", "b": "#9bfbe0", "c": "#0b7a5e", "g": "#4ee6b4", "e": "#e6fff8", "p": "#2a1a0e", "x": "#4ee6b4"}, o: "#06231c" },
     "wpn3": { r: ["................", "...........bbwb.", "..........blaaac", ".........beaaaac", "........blaaaac.", ".......blaaaac..", "...g...bleaac...", "....g.gbaaac....", ".....gggaac.....", "....hggg.c......", "...ldh.g........", "..ldh...........", ".ldh............", ".hh.............", "................", "................"], p: {"h": "#4a3a40", "d": "#241a1e", "a": "#4a3c44", "b": "#7a6872", "c": "#2a2026", "g": "#ff8a3d", "l": "#ff6a1f", "e": "#ffd25a", "w": "#ffd25a"}, o: "#0c070a" },
     "wpn4": { r: [".............wwb", ".............baw", "............bwac", "...........bwac.", "..........bwacc.", "..x.g....bwaac..", "...x.g..bwac.c..", "......ggbac.....", ".......ggc......", "......hdg.g.....", ".....hdh........", "....hdh.........", "...hdh..........", "...hh...........", "................", "................"], p: {"h": "#bfe9f7", "d": "#7fcfe8", "a": "#7fd6ff", "b": "#e6fbff", "c": "#3f9fc4", "g": "#e6fbff", "w": "#ffffff", "x": "#ffffff"}, o: "#16465e" },
@@ -1113,6 +1145,61 @@
     "arm2": { r: ["................", "..aaa......aaa..", ".abbaa.cc.aabba.", ".abwaaa..aaawba.", ".aaaaaaaaaaaaaa.", "..aabbaaaabbaa..", "..aabcbbbbcbaa..", "..aabbbbbbbbaa..", "...abbbggbbba...", "...abbbgwbbba...", "...aacbbbbcaa...", "....aaaaaaaa....", "....ddddddddd...", "................", "................", "................"], p: {"a": "#157a64", "b": "#1fbf93", "c": "#0b4d3e", "m": "#1fbf93", "d": "#0b4d3e", "g": "#4ee6b4", "w": "#e6fff8"}, o: "#04201c" },
     "arm3": { r: ["................", "..aaa......aaa..", ".albaa.cc.aabla.", ".abaaaa..aaaaba.", ".aaaaaaaaaaaaaa.", "..aalbaaaablaa..", "..aabbblbbbbaa..", "..aabbbblbbbaa..", "...abbbggbbba...", "...abbbgwbbba...", "...aabbbbbbaa...", "....aaaaaaaa....", "....dldddlddd...", "................", "................", "................"], p: {"a": "#3a2e34", "b": "#5a4a52", "c": "#1c1418", "m": "#4a3c44", "d": "#ff6a1f", "g": "#ff6a1f", "w": "#ffd25a", "l": "#ff8a3d"}, o: "#0c070a" },
     "arm4": { r: [".w............w.", "..waa......aaw..", ".abbaa.ww.aabba.", ".abaaaa..aaaaba.", ".aaaaaaaaaaaaaa.", "..aabbaaaabbaa..", "..aawbbbbbbwaa..", "..aabbbbbbbbaa..", "...abbbwwbbba...", "...abbbwwbbba...", "...aabbbbbbaa...", "....aaaaaaaa....", "....ddddddddd...", "................", "................", "................"], p: {"a": "#3f9fc4", "b": "#7fd6ff", "c": "#16465e", "m": "#bff0ff", "d": "#2f7fa3", "w": "#ffffff"}, o: "#16465e" }
+  });
+  // ----- material sprites: every loose material that used to show the plain diamond now has its own pixel art (same 16x16 style as the tools) -----
+  SPR = Object.assign(SPR, {
+    "spore": { r: ["................", "..w.........w...", "......bb........", ".....bwab..b....", ".....baac.bwa...", "..bb..cc..baac..", ".bwab......cc...", ".baac...bb...w..", "..cc...bwab.....", ".......baac.bb..", "..w.....cc.bwab.", ".........w.baac.", "............cc..", "................", "................", "................"], p: {"a": "#4ee6b4", "b": "#9bfbe0", "c": "#1fa37e", "w": "#e6fff8"}, o: "#06231c" },
+    "cinder": { r: ["................", ".........c......", "........cac.....", ".......cabac....", "......cabbac....", ".....cabeebac...", ".....cabebbac...", "....cdabebbac...", "....cddabbaac...", "...cddaaabaac...", "...cdddaaaacc...", "....cddddacc....", ".....ccccc......", "................", "................", "................"], p: {"a": "#ff8a3d", "b": "#ffc24a", "c": "#b8420f", "d": "#3a2e34", "e": "#ffe08a"}, o: "#1c0a04" },
+    "crystal": { r: ["................", ".......bb.......", "......bwab......", "......bwac......", ".....bwaac......", ".....bwaac..b...", "..b..bwaac.bab..", ".bab.baaac.bac..", ".baac.baac.bac..", ".baac.baacbaac..", ".bwac.baaccaac..", "..cc..cccc.cc...", "................", "................", "................", "................"], p: {"a": "#7fd6ff", "b": "#e6fbff", "c": "#3f9fc4", "w": "#ffffff"}, o: "#16465e" },
+    "amber": { r: ["................", "................", ".....cccccc.....", "...ccbbaaaaac...", "..cbwbaaaaaaac..", "..cbaaaaddaaac..", "..caaaaaddddaac.", "..caaaadaddaaac.", "..caaaaaddaaaac.", "..caaaaaaaaaacc.", "...caaaaaaaacc..", "....cccccccc....", "................", "................", "................", "................"], p: {"a": "#f0a02c", "b": "#ffd25a", "c": "#b36a10", "d": "#5a3510", "w": "#fff1b8"}, o: "#2e1a05" },
+    "bogiron": { r: ["................", "................", "................", ".....bbbbb......", "...bbbaaaabb....", "..bbaaeaaaaab...", "..baaaaaadaaab..", ".bbaadaaaaaaacb.", ".baaaaaaeaaaaacc", ".baaeaaaaaadaacc", ".bcaaaaaaaaaaac.", "..ccaadaaaaacc..", "...cccccccccc...", "................", "................", "................"], p: {"a": "#a9845f", "b": "#c9a47a", "c": "#6b4a30", "d": "#8a4a22", "e": "#d9792b"}, o: "#241408" },
+    "sulfur": { r: ["................", "................", "........b.......", ".......bab......", "...b...bac..b...", "..bab..bac.bab..", "..bac.bbaacbac..", "..bac.baaacbac..", ".bbaacbaaaacaac.", ".baaacbaaaacaac.", ".baadaaaaaaaaac.", ".bcaaaaaadaaacc.", "..ccccccccccc...", "................", "................", "................"], p: {"a": "#e6d83a", "b": "#fff58a", "c": "#a89c14", "d": "#c9b81c"}, o: "#2e2a04" },
+    "ruby": { r: ["................", "................", "................", "....bbbbbbbb....", "...bwwaaaaaab...", "..bwaaaaaaaaab..", ".bbbbbbbbbbbbbb.", ".baaaaabaaaaaac.", "..baaaabaaaaac..", "...baaabaaaac...", "....baabaaac....", ".....baaaac.....", "......bacc......", ".......cc.......", "................", "................"], p: {"a": "#e0364a", "b": "#ff7a88", "c": "#9a1428", "w": "#ffd0d6"}, o: "#2a040b" },
+    "sapphire": { r: ["................", "................", ".....bbbbbb.....", "...bbwwaaaabb...", "..bwaaaaaaaaab..", "..baaaabbaaaac..", ".bwaaabaabaaaac.", ".baaaabaaabaaac.", ".baaaabaaabaaac.", ".bwaaaabbaaaaac.", "..baaaaaaaaaac..", "..cbaaaaaaaacc..", "...ccaaaaaacc...", ".....cccccc.....", "................", "................"], p: {"a": "#3f7fe6", "b": "#8fb8ff", "c": "#1f3f99", "w": "#d6e6ff"}, o: "#0a1438" },
+    "moonstone": { r: ["................", "................", ".....bbbbbb.....", "...bbwwwaaabb...", "..bwwbbaaaaaab..", "..bwbaaaaaaaac..", ".bwbaaaaaaaaaac.", ".bwaaaaaaaaaaac.", ".bwaaaaaaaaaaac.", ".baaaaaaaaaaacc.", "..baaaaaaaaacc..", "..bcaaaaaaacc...", "...ccccccccc....", "................", "................", "................"], p: {"a": "#c9d2ff", "b": "#eef1ff", "c": "#8a94d6", "w": "#ffffff"}, o: "#232a5c" },
+    "quartz": { r: ["................", ".......bb.......", "......bwab......", "......bwac......", ".....bwaac......", ".....bwaac......", ".....bwaac..b...", ".....bwaac.bab..", "....bbwaaacbac..", "....bwaaaaacac..", "....baaaaaaacc..", "....bcaaaaacc...", ".....cccccccc...", "................", "................", "................"], p: {"a": "#d6dde2", "b": "#ffffff", "c": "#8a959c", "w": "#f1f5f8"}, o: "#2e363b" },
+    "amethyst": { r: ["................", "..........b.....", ".....b...bab....", "....bab..bac....", "....bac.bwac....", "....bac.bwac.b..", ".b..bacbbwaccab.", "bab.bbacbwaacac.", "bac.bwaacwaaacc.", "bacbbwaaaaaaac..", "bwaacaaaaaaacc..", ".caaaaaaaaaaac..", "..ccccccccccc...", "................", "................", "................"], p: {"a": "#a36bde", "b": "#d2a8ff", "c": "#6a3aa6", "w": "#ecd8ff"}, o: "#1e0e33" },
+    "charcoal": { r: ["................", "................", "................", "......bb........", "....bbaabb......", "...baaaaaab.bb..", "..baaadaaaabbab.", "..baaaaaaaaaaac.", ".baadaaaaaadaac.", ".baaaaaaeaaaaac.", ".bcaaaadaaaaacc.", "..ccaaaaaaacc...", "....ccccccc.....", "................", "................", "................"], p: {"a": "#3a3a40", "b": "#6a6a74", "c": "#1c1c20", "d": "#26262c", "e": "#c8501a"}, o: "#000000" },
+    "bone": { r: ["................", "................", "..........bbb...", ".........bwwab..", "........bwaab...", ".......bwaac....", "......bwaac.....", ".....bwaac......", "....bwaac.......", "...bwaac........", ".bbwaac.........", "bwwabc..........", "bwabb...........", ".bbb............", "................", "................"], p: {"a": "#e8e0c8", "b": "#fffbea", "c": "#a8a088", "w": "#ffffff"}, o: "#3a3524" },
+    "fossil": { r: ["................", "................", "....bbbbbbbb....", "..bbaaaaaaaabb..", ".baaaccccccaaab.", ".baacaaaaaacaab.", ".bacaabbbbaacab.", ".bacabaaaabcaab.", ".bacabacccabaab.", ".bacabaabbabcab.", ".baacabbbbaacab.", ".bcaacccccaaacb.", "..ccaaaaaaaaacc.", "...cccccccccc...", "................", "................"], p: {"a": "#b09a76", "b": "#d4c49e", "c": "#7a6a4c"}, o: "#2a2214" },
+    "ironingot": { r: ["................", "................", "................", "................", "....bbbbbbbbb...", "...bwwwbbbbbbc..", "..bwwbbbbbbbbac.", ".bbbbbbbbbbbbaac", ".baaaaaaaaaaaaac", ".baaaaaaaaaaaacc", ".bdaaaaaaaaaaac.", "..ccccccccccccc.", "................", "................", "................", "................"], p: {"a": "#aab2bd", "b": "#dfe5ea", "c": "#6c7580", "d": "#8a929c", "w": "#ffffff"}, o: "#1c2026" },
+    "cloth": { r: ["................", "................", "................", "..bbbbbbbbbb....", ".bwwbbbbbbbbbc..", ".bwbbbbbbbbbbac.", ".bbbbbbbbbbbaac.", ".bddddddddddddc.", ".baaaaaaaaaaaac.", ".bddddddddddddc.", ".baaaaaaaaaaaac.", ".bcccccccccccc..", "..cc.c.c.c.c.c..", "................", "................", "................"], p: {"a": "#e8dcc0", "b": "#fff6e0", "c": "#b8a888", "d": "#c85a4a", "w": "#ffffff"}, o: "#3a3020" },
+    "rope": { r: ["................", "................", "....bbbbbbb.....", "..bbaacaacabb...", ".bacb.....bcab..", ".bab.......bac..", "bab..........bab", "bac....bb....bac", "bab...bab....bab", ".bac..bac...bac.", ".bacb.bac..bacc.", "..bbaabaacabcc..", "....cbbaaccc....", "................", "................", "................"], p: {"a": "#c9a96a", "b": "#e6cf94", "c": "#8a6a36"}, o: "#2e220e" },
+    "dyered": { r: ["................", "................", ".......hh.......", "......hddh......", ".......bb.......", "......bwwb......", ".....bwwaab.....", "....bwaaaaab....", "...bwaaaaaaab...", "...baaaaaaaac...", "...baaaeeaaac...", "...baaaeeaaac...", "...bcaaaaaacc...", "....ccccccc.....", "................", "................"], p: {"a": "#d6382e", "b": "#e6f2f5", "c": "#8a1810", "w": "#ffffff", "e": "#ff8a80", "h": "#a8814b", "d": "#6b4a26"}, o: "#2a0806" },
+    "dyeblue": { r: ["................", "................", ".......hh.......", "......hddh......", ".......bb.......", "......bwwb......", ".....bwwaab.....", "....bwaaaaab....", "...bwaaaaaaab...", "...baaaaaaaac...", "...baaaeeaaac...", "...baaaeeaaac...", "...bcaaaaaacc...", "....ccccccc.....", "................", "................"], p: {"a": "#3a7fd8", "b": "#e6f2f5", "c": "#1a4a8a", "w": "#ffffff", "e": "#8fc0ff", "h": "#a8814b", "d": "#6b4a26"}, o: "#08162e" },
+    "dyegreen": { r: ["................", "................", ".......hh.......", "......hddh......", ".......bb.......", "......bwwb......", ".....bwwaab.....", "....bwaaaaab....", "...bwaaaaaaab...", "...baaaaaaaac...", "...baaaeeaaac...", "...baaaeeaaac...", "...bcaaaaaacc...", "....ccccccc.....", "................", "................"], p: {"a": "#3aa84e", "b": "#e6f2f5", "c": "#1c6a2c", "w": "#ffffff", "e": "#8fe39c", "h": "#a8814b", "d": "#6b4a26"}, o: "#07200c" },
+    "mortar": { r: ["................", "................", "................", "................", ".........h......", "........hdh.....", ".......hdh......", "...bbbhdh.......", "..bwabbdbbb.....", ".bwabbbbbbbab...", ".baaaaaaaaaaac..", "bwaaaaaaaaaaaac.", "baaaaaaaaaaaaaac", ".bcaaaaaaaaaacc.", "..cccccccccccc..", "................"], p: {"a": "#bdb9a8", "b": "#dcd8c8", "c": "#8a8676", "h": "#c9a96a", "d": "#8a6a36", "w": "#ffffff"}, o: "#2a2820" },
+    "claybrick": { r: ["................", "................", "................", "................", "...bbbbbbbbbbb..", "..bwbbbbbbbbbac.", ".bbbbbbbbbbbbaac", ".baaaaaaaaaaaaac", ".baaaddaaaaddaac", ".baaaddaaaaddaac", ".bdaaaaaaaaaaaac", ".bcaaaaaaaaaaacc", "..ccccccccccccc.", "................", "................", "................"], p: {"a": "#c4573a", "b": "#e8856a", "c": "#8a3420", "d": "#a8452a", "w": "#ffc0a8"}, o: "#2a0f08" },
+    "candle": { r: ["................", ".......yy.......", "......yffy......", "......yffy......", ".......fy.......", ".......dd.......", "......bbac......", "......bwac......", "......bwac......", "......bwac......", "....hhhhhhhh....", "...hddddddddh...", "....hhhhhhhh....", "................", "................", "................"], p: {"a": "#f6ecc8", "b": "#fff9e0", "c": "#c9bc8a", "d": "#3a2a1a", "f": "#ffb43a", "y": "#ffe680", "w": "#ffffff", "h": "#8a5a32"}, o: "#2a1a0a" }
+  });
+  // ----- loose-material and enemy-loot sprites: Stick, Reed Fiber, Pebble and the three Fragments used to be vector drawings; now they are 16x16 pixel art too -----
+  SPR = Object.assign(SPR, {
+    "stick": {r: ["................", "............bb..", "...........bwab.", "..........bwac..", "...b.....bwac...", "..bab...bwac....", "....babbwac.....", "......bwac......", ".....bwac.......", "....bwac........", "...bwac.........", "..bwac..........", ".bwac...........", ".bbc............", "................", "................"], p: {"a": "#a8703c", "b": "#c9935a", "c": "#6a4426", "w": "#e2b982"}, o: "#2a1a0c"},
+    "fiber": {r: ["................", "..b.....b....b..", "..ba....ba..ba..", "..ba....ba..ba..", "...ba...ba.bac..", "...bac..ba.bac..", "....bac.ba.bac..", "....bac.bacbac..", ".....bacbacbc...", "......bbbbbb....", ".....dddddddd...", ".....eeeeeeee...", "......bbbbbb....", ".......bbbb.....", "................", "................"], p: {"a": "#6aa347", "b": "#8fd37a", "c": "#3b6a2c", "d": "#f0e4b8", "e": "#c9b87a"}, o: "#16300f"},
+    "pebble": {r: ["................", "................", "................", "................", "................", "................", "......bbbb......", "....bbwwaab.....", "...bwwaaaaac....", "..bwaaaaaaaac...", "..baaaaaaaac.bb.", "..bcaaaaaaccbwac", "...cccaaaaccbaac", ".....cccccc.bccc", "................", "................"], p: {"a": "#8e969b", "b": "#b9c1c5", "c": "#5d6569", "w": "#e4e9ec"}, o: "#1c1f21"},
+    "bugfrag": {r: ["................", "..........rr....", "..........dr....", ".........ddd....", "........bbdbb...", "......bbwaaabb..", ".....bwaaaaaaab.", "....bwaaeaaaaab.", "....baaaeaaaaac.", "...bcaaeaaaaaacc", "...bcaeaaaaaaacc", "...bccccccccccc.", "................", "................", "................", "................"], p: {"a": "#7a3d86", "b": "#a463b2", "c": "#3a1d42", "w": "#d9a5e6", "e": "#ff6b82", "d": "#f1e5d0", r: "#ff6b82"}, o: "#12061a"},
+    "frogfrag": {r: ["................", ".......bb.......", "......bwab......", ".....bwaaab.....", "....bwaaaaac....", "...bwaaaaaaac...", "...bwaayyyaac...", "..bwaaypyyaaac..", "..baaaayyyaaaac.", "..baasaaaaasaac.", "...bcaaaaaaacc..", "....bccaaaccc...", ".....bccccc.....", "................", "................", "................"], p: {"a": "#3fb35f", "b": "#7ee08a", "c": "#1c5e34", "w": "#c8f5c8", "y": "#ffd23f", p: "#12220f", "s": "#2a8a47"}, o: "#0e2f1a"},
+    "batwing": {r: ["................", "..........bbb...", "....bbbbbbbbbb..", "..bbwaaaaaaaaab.", ".bwaaeaaaaeaaaac", ".baaaaeaaaeaaacc", ".bcaaaaeaeaaacc.", "..bcaaaaeaaacc..", "..bccbcaeaacbcc.", "...bc.bccbc.bc..", "...b...bb...b...", "................", "................", "................", "................", "................"], p: {"a": "#6a43a8", "b": "#a37fe0", "c": "#3d2466", "w": "#e9dcff", "e": "#d9c4ff"}, o: "#12061a"}
+  });
+  // ----- farming and food sprites (generated, 16x16) -----
+  SPR = Object.assign(SPR, {
+    "carrot": { r: ["..............h.", "............gh..", "...........ggh.g", "...........ghgg.", "..........aggh..", ".........abaaa..", "........abaaa...", ".......abaca....", "......abcaa.....", ".....abaaa......", "....aaaaa.......", "....acaa........", "...aaaa.........", "..aaa...........", "...a............", "................"], p: {"a": "#ff8a2a", "b": "#ffc070", "c": "#c85a10", "g": "#3f9a3a", "h": "#7fd06a"}, o: "#3a1a06" },
+    "potato": { r: ["................", "................", "................", "................", "................", ".....aaaaaa.....", "...abbbbbaaaa...", "...bbwbbbcaaa...", "..abbbbbbbaaaa..", "..aacbbbbaaaaa..", "..aaaaaaaaacaa..", "...aaaacaaaaa...", "...aaaaaaaaaa...", ".....aaaaaa.....", "................", "................"], p: {"a": "#c9934e", "b": "#e0b070", "c": "#7a5228", "w": "#f6e0b0"}, o: "#3a2410" },
+    "pepper": { r: ["......h.........", ".....g..........", "....ggg.........", "..aaggg.........", "..aaaaa.........", "..aabaaa........", "...aabaaa.......", "....abaaa.......", "....aabaaa......", ".....aabaa......", "......abaaa.....", ".......aaaa.....", "........aaa.....", "..........aa....", "..........a.....", "................"], p: {"a": "#e8341c", "b": "#ff8a6a", "g": "#3f9a3a", "h": "#7fd06a"}, o: "#3a0a04" },
+    "frostberry": { r: ["................", "........ghhh....", ".......gghhh....", ".......g........", "........g.......", "......wgaa......", "......aada......", "......addd......", "......aada......", "....aa....aa....", "...waaa..waaa...", "...aadd..aadd...", "...addd..addd...", "....aa....aa....", "................", "................"], p: {"a": "#5a8cff", "d": "#2a4ac8", "w": "#e8f4ff", "g": "#3f7a5a", "h": "#7fd0a0"}, o: "#0e1a40" },
+    "rawmeat": { r: ["................", "................", "................", ".............ww.", "......faa...www.", "....ffaaaaaawww.", "...faaabbbaww...", "..aaabbbbbbbaa..", "..aaabbbbbbbaa..", "..aaabbbbbbbaa..", "..aaaaabbbaaaa..", "...aaaaaaaaaa...", "....aaaaaaaa....", ".......aa.......", "................", "................"], p: {"a": "#d8435a", "b": "#ff8a9a", "f": "#fff0f0", "w": "#f6eedb"}, o: "#3a0a12" },
+    "grilledmeat": { r: ["................", "................", "................", ".............ww.", ".......aa...www.", "....aaaaaaaawww.", "...aabcbbcaac..c", "..aabcbbcbbcaac.", "..aabcbbcbbcaac.", "..aacbbcbbcaac..", "..aacaacaacaac..", "...caacaacaac...", "....aaaaaaaa....", ".......aa.......", "................", "................"], p: {"a": "#9a5228", "b": "#c9763e", "c": "#4a240e", "w": "#f6eedb"}, o: "#2a1206" },
+    "roastcarrot": { r: ["................", "................", "................", ".........g......", "........g..g....", ".......aaag.....", ".....aaaaaaa....", "...aaaacaaaa....", "..aacaaaaaa.....", ".aaaaacaappp....", "..aaaaaqqqqqqp..", ".pqaaaqqqqqqqqp.", ".ppqqqqqqqqqqpp.", "..pppppppppppp..", "....pppppppp....", "................"], p: {"p": "#e8e4d8", "q": "#c8c2b0", "a": "#e06a1a", "c": "#6a2a08", "g": "#3f9a3a"}, o: "#2a1a0e" },
+    "bakedpotato": { r: ["................", "................", "................", "................", "................", "................", "....aaawaaaa....", "...abbyyybbba...", "..aabbyyybbbaa..", "..aabbbbbbbbaa..", "..aacbbbbbbbaa..", "..aaaaaaaaacaa..", "...aaaaaaaaaa...", "....aaaaaaaa....", "................", "................"], p: {"a": "#8a5a2a", "b": "#f6e6b0", "y": "#ffd23f", "w": "#fff8d0", "c": "#5a3a18"}, o: "#2a1a0a" },
+    "skewer": { r: ["................", "..............s.", ".............s..", "..........waa...", ".........aaaaa..", "..........bba...", ".......waa......", "......aaaaa.....", ".......bba......", "....waa.........", "...aaaaa........", "....bba.........", "...s............", "..s.............", ".s..............", "................"], p: {"s": "#a8703c", "a": "#d8342a", "w": "#ffffff", "b": "#f1e5d0"}, o: "#2a0a06" },
+    "stew": { r: ["................", "................", "................", "................", "................", "................", "......ffff......", "...fffhffffff...", ".ffhxhhhhhfyfff.", ".rffffyffxffffr.", ".fkkffffffffkkf.", "...kkkkkkkkkk...", "....kkkkkkkk....", ".....kkkkkk.....", "......kkkk......", ".....kkkkkk....."], p: {"k": "#8a5a32", "r": "#c98c4f", "f": "#7a6a2a", "h": "#a89a4a", "x": "#ff8a2a", "y": "#d8c070"}, o: "#2a1a0a" },
+    "chili": { r: ["................", "................", "................", "........s.......", ".......s........", "......s.........", "......ffff......", "...fffhffffff...", ".ffhxhhyhhfxfff.", ".rffffhffxffffr.", ".fkkffffffffkkf.", "...kkkkkkkkkk...", "....kkkkkkkk....", ".....kkkkkk.....", "......kkkk......", ".....kkkkkk....."], p: {"k": "#5a3a2a", "r": "#8a5a42", "f": "#c8301a", "h": "#ff6a3a", "x": "#7a1a0a", "y": "#f2c14e", "s": "#d0d0d0"}, o: "#1a0a06" },
+    "berrypie": { r: ["................", "................", "................", "................", "................", ".......ccc......", "......ccac......", ".....ccaacc.....", ".....cawaacc....", "....ccaaaaacc...", "...ccaaaawaac...", "...cawaaaaawcc..", "..ccccccccccccc.", ".ddddddddddddddd", ".ccccccccccccccc", "................"], p: {"c": "#e0a85a", "d": "#f6d090", "a": "#4a6cff", "w": "#cfe0ff"}, o: "#3a2410" },
+    "feast": { r: ["................", "................", "................", "................", "........g.......", ".......oo.......", ".......oo.......", "....mmmoo.......", ".wwmmmmooawaa...", "..mmmmmmmaaaa...", "..pmmmmmqaaaap..", ".pqqmmmqqqqqqqp.", ".pqqqqqqqqqqqqp.", ".pppqqqqqqqqppp.", "..pppppppppppp..", "................"], p: {"p": "#f2c14e", "q": "#d9a83a", "m": "#9a5228", "w": "#f6eedb", "a": "#4a6cff", "o": "#ff8a2a", "g": "#3f9a3a"}, o: "#2a1a06" },
+    "seed_carrot": { r: ["................", "................", "................", "................", ".....ssssss.....", "....rrrrrrrr....", ".....ssssss.....", "....statttts....", "...sttttabtts...", "..sttabtttttts..", "..ssttttttatss..", "..sssttatttsss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: {"s": "#c9a46a", "t": "#e0c48a", "r": "#8a5a32", "a": "#ff8a2a", "b": "#ffd0a0"}, o: "#3a2410" },
+    "seed_potato": { r: ["................", "................", "................", "................", ".....ssssss.....", "....rrrrrrrr....", ".....ssssss.....", "....statttts....", "...sttttabtts...", "..sttabtttttts..", "..ssttttttatss..", "..sssttatttsss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: {"s": "#c9a46a", "t": "#e0c48a", "r": "#8a5a32", "a": "#c9934e", "b": "#f0d0a0"}, o: "#3a2410" },
+    "seed_pepper": { r: ["................", "................", "................", "................", ".....ssssss.....", "....rrrrrrrr....", ".....ssssss.....", "....statttts....", "...sttttabtts...", "..sttabtttttts..", "..ssttttttatss..", "..sssttatttsss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: {"s": "#c9a46a", "t": "#e0c48a", "r": "#8a5a32", "a": "#e8341c", "b": "#ffb0a0"}, o: "#3a2410" },
+    "seed_frost": { r: ["................", "................", "................", "................", ".....ssssss.....", "....rrrrrrrr....", ".....ssssss.....", "....statttts....", "...sttttabtts...", "..sttabtttttts..", "..ssttttttatss..", "..sssttatttsss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: {"s": "#c9a46a", "t": "#e0c48a", "r": "#8a5a32", "a": "#4a7cff", "b": "#d0e0ff"}, o: "#3a2410" }
   });
   function sprCanvas(key) {   // 16x16 canvas for one sprite, cached
     if (SPC[key]) return SPC[key];
@@ -1151,6 +1238,8 @@
       drawBagIcon(g, +id.slice(3));
     } else if (/^wpn\d$/.test(id)) {
       drawWeaponIcon(g, +id.slice(3));
+    } else if (SPR[id]) {   // Glowspore, Amber, Ruby, Rope, Candle ... all have their own pixel art now
+      drawSpr(g, id);
     } else if (ITEMS[id].mat) {
       var mt = ITEMS[id].mat; g.lineCap = "round";
       if (mt === "stick") { [[7, 26, 25, 7, "#8a5a32", 4], [10, 9, 24, 25, "#6a4426", 3.4]].forEach(function (l) { g.strokeStyle = l[4]; g.lineWidth = l[5]; g.beginPath(); g.moveTo(l[0], l[1]); g.lineTo(l[2], l[3]); g.stroke(); }); g.strokeStyle = "#c9935a"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(8, 24); g.lineTo(23, 8); g.stroke(); }
@@ -1176,6 +1265,29 @@
       g.beginPath(); g.moveTo(6, 9); g.quadraticCurveTo(16, 4, 26, 11); g.lineTo(22, 15); g.quadraticCurveTo(20, 19, 18, 16); g.quadraticCurveTo(16, 22, 13, 18); g.quadraticCurveTo(10, 22, 8, 17); g.quadraticCurveTo(5, 15, 6, 9); g.closePath(); g.fill();
       g.strokeStyle = "#e9dcff"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(5, 9); g.quadraticCurveTo(16, 3, 27, 10); g.moveTo(6, 9); g.lineTo(13, 18); g.moveTo(27, 10); g.lineTo(18, 16); g.stroke();
       g.fillStyle = "#b58cff"; g.beginPath(); g.arc(7, 8, 1.6, 0, 6.2832); g.fill();
+    } else if (ITEMS[id].frag === "wolf") {   // a folded grey pelt with a pale belly stripe
+      g.lineJoin = "round"; g.fillStyle = "#9aa8b4"; g.strokeStyle = "#2a323c"; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(5, 10); g.quadraticCurveTo(16, 4, 27, 10); g.lineTo(29, 22); g.quadraticCurveTo(16, 29, 3, 22); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = "#5d6c7a"; g.beginPath(); g.moveTo(7, 11); g.quadraticCurveTo(16, 7, 25, 11); g.lineTo(25, 14); g.quadraticCurveTo(16, 11, 7, 14); g.closePath(); g.fill();
+      g.fillStyle = "#e8eef2"; g.beginPath(); g.ellipse(16, 21, 8, 3, 0, 0, 6.2832); g.fill();
+      g.strokeStyle = "#cfdde6"; g.lineWidth = 1; [[8, 16], [13, 17], [19, 17], [24, 16]].forEach(function (q) { g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(q[0] + 2, q[1] - 2); g.stroke(); });
+    } else if (ITEMS[id].frag === "gator") {   // a ridged green scute
+      g.lineJoin = "round"; g.fillStyle = "#2f4f22"; g.strokeStyle = "#1a2412"; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(16, 3); g.lineTo(28, 14); g.lineTo(24, 28); g.lineTo(8, 28); g.lineTo(4, 14); g.closePath(); g.fill(); g.stroke();
+      var sgg = g.createLinearGradient(0, 5, 0, 27); sgg.addColorStop(0, "#8ab85a"); sgg.addColorStop(1, "#3f6a2c"); g.fillStyle = sgg;
+      g.beginPath(); g.moveTo(16, 6); g.lineTo(25, 14); g.lineTo(22, 25); g.lineTo(10, 25); g.lineTo(7, 14); g.closePath(); g.fill();
+      g.fillStyle = "#2a3d1c"; g.beginPath(); g.moveTo(16, 8); g.lineTo(19, 16); g.lineTo(16, 23); g.lineTo(13, 16); g.closePath(); g.fill();
+      g.fillStyle = "#c9e89a"; g.beginPath(); g.arc(14, 12, 1.4, 0, 6.2832); g.fill();
+    } else if (ITEMS[id].frag === "slime") {   // a wobbly green ball of slime
+      g.fillStyle = "#5ad04a"; g.strokeStyle = "#2a7a24"; g.lineWidth = 1.6;
+      g.beginPath(); g.moveTo(5, 26); g.quadraticCurveTo(3, 8, 16, 6); g.quadraticCurveTo(29, 8, 27, 26); g.quadraticCurveTo(16, 29, 5, 26); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = "#2a7a24"; g.globalAlpha = 0.35; g.beginPath(); g.ellipse(14, 20, 6, 3.5, 0, 0, 6.2832); g.fill(); g.globalAlpha = 1;
+      g.fillStyle = "#c8ffb8"; g.beginPath(); g.ellipse(11, 12, 3.5, 2.2, -0.5, 0, 6.2832); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(10, 11, 1.2, 0, 6.2832); g.fill();
+    } else if (ITEMS[id].frag === "wasp") {   // a curved black-and-amber stinger
+      g.lineJoin = "round"; g.fillStyle = "#ffcf3a"; g.strokeStyle = "#1a1206"; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(6, 8); g.quadraticCurveTo(14, 4, 20, 10); g.quadraticCurveTo(24, 16, 27, 28); g.quadraticCurveTo(18, 20, 9, 16); g.quadraticCurveTo(4, 13, 6, 8); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = "#1a1206"; g.beginPath(); g.moveTo(11, 6.5); g.lineTo(14, 6); g.lineTo(12, 15); g.lineTo(9.5, 14.5); g.closePath(); g.fill(); g.beginPath(); g.moveTo(17, 8); g.lineTo(19.5, 10); g.lineTo(16.5, 18); g.lineTo(14.5, 16.5); g.closePath(); g.fill();
+      g.fillStyle = "#ff8a3d"; g.beginPath(); g.arc(26.5, 27, 1.6, 0, 6.2832); g.fill();
     } else if (ITEMS[id].ico !== undefined) { g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, ITEMS[id].ico * 16, 16, 16, 2, 2, 28, 28);
     } else if (ITEMS[id].gem) {
       var gc = ITEMS[id].gem; g.fillStyle = gc; g.beginPath(); g.moveTo(16, 4); g.lineTo(26, 14); g.lineTo(16, 28); g.lineTo(6, 14); g.closePath(); g.fill();
@@ -1195,7 +1307,7 @@
   }
   function getSprite() {
     if (typeof DelveAv === "undefined") return null;
-    var sc = Math.max(1, Math.round(ts * 1.7 / 24));   // whole pixels per art pixel, so the art stays crisp
+    var sc = cave ? Math.max(1, Math.floor(ts * 1.3 / 24)) : Math.max(1, Math.round(ts * 1.7 / 24));   // whole pixels per art pixel, so the art stays crisp; indoors you are drawn smaller so furniture and rocks look the right size next to you
     if (!sprite || sprite.s !== sc) { try { sprite = DelveAv.sprite(spriteOutfit || { animal: S.animal }, S.animal, sc); } catch (e) { sprite = null; } }
     return sprite;
   }
@@ -1228,7 +1340,15 @@
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
   }
   function nag(msg) { if (performance.now() - nagT < 1800) return; nagT = performance.now(); toast(msg, "#f2c14e"); }
-  function banner(title, desc, label) { bannerQ.push([title, desc, label]); if (!bannerBusy) nextBanner(); }
+  // Small pop-up in the bottom-right corner (stacks up to 3, each fades after ~3 s). Used for completed goals / trail steps and for defeated enemies.
+  function popup(label, title, color, icon) {
+    var box = $("sbxPops"); if (!box) return;
+    var el = document.createElement("div"); el.className = "sbx-pop"; el.style.setProperty("--pc", color || "#f2c14e");
+    el.innerHTML = "<i aria-hidden=\"true\">" + (icon || "\u2713") + "</i><small>" + esc(label) + "</small><b>" + esc(title) + "</b>";
+    box.appendChild(el); while (box.children.length > 3) box.removeChild(box.firstChild);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3300);
+  }
+  function banner(title, desc, label) { popup(label || "Goal complete", title + (desc ? " \u2022 " + desc : ""), "#f2c14e", "\u2713"); snd("rise"); }
   function nextBanner() {
     var b = bannerQ.shift(), el = $("sbxBanner"); if (!b) { bannerBusy = false; return; }
     bannerBusy = true; el.innerHTML = "<small>" + esc(b[2] || "Goal complete") + "</small><b>" + esc(b[0]) + "</b><span>" + esc(b[1]) + "</span>";
@@ -1246,8 +1366,14 @@
       setT(x, db, T.AIR); if (db - 1 >= 0) setT(x, db - 1, T.AIR); S.st.mined++;
       chips(x + 0.5, db, "#b9793f", 10, 6); thud(170, 0.08); give("door", 1, x, y); return;
     }
-    if (id === T.CHEST) delete S.chests[x + "," + y];
+    if (td.kind === "lootchest" && !S.chests[x + "," + y]) { var LL = rollLoot("chest", world.bio[x], lootTier(y)); LL.forEach(function (q) { give(q[0], q[1], x, y - 0.4); }); treasureFound(LL.length); }   // broken before it was opened: the loot spills out
+    if (td.kind === "lootpot") { S.st.pots++; rollLoot("pot", world.bio[x], lootTier(y)).forEach(function (q) { give(q[0], q[1], x, y - 0.4); }); chips(x + 0.5, y + 0.5, "#b87444", 12, 6); thud(420, 0.06); checkGoals(); }
+    if (isChest(id)) delete S.chests[x + "," + y];
+    if ((td.kind === "farmland" || td.kind === "farmwet") && cropAt(x, y - 1)) { var tc = cropAt(x, y - 1); setT(x, y - 1, T.AIR); harvestCrop(x, y - 1, tc); }   // the crop on top comes with it
     setT(x, y, T.AIR); S.st.mined++;
+    if (td.crop) harvestCrop(x, y, td);
+    var SDROP = {}; SDROP[T.REED] = ["seed_carrot", 0.18]; SDROP[T.GLOWCAP] = ["seed_potato", 0.15]; SDROP[T.BLOOM] = ["seed_pepper", 0.2]; SDROP[T.SPIKE] = ["seed_frost", 0.2];
+    if (SDROP[id] && ITEMS[SDROP[id][0]] && Math.random() < SDROP[id][1]) give(SDROP[id][0], 1, x, y - 0.6);   // wild plants sometimes drop crop seeds
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 14 : 9, 6);
     thud(td.hard > 2 ? 110 : 160, 0.08);
     if (td.drop) { var n = dropQty(td); give(td.drop, n, x, y); if (td.kind === "ore") snd("coin"); }
@@ -1260,6 +1386,7 @@
     var id = get(tx, ty), td = ITEMS[item]; if (id !== T.AIR && id !== T.WATER) return false;
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
     var t = td.tile, solid = TILES[t].solid;
+    if (td.seed) { if (!soilKind(tx, ty + 1)) { nag("Plant seeds on top of Garden Soil."); return false; } return true; }
     if (item === "door") {
       if (ty < 2 || get(tx, ty - 1) !== T.AIR) { nag("A door needs two free tiles stacked up."); return false; }
       if (!TILES[get(tx, ty + 1)].solid) { nag("A door needs solid ground under it."); return false; }
@@ -1306,6 +1433,7 @@
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
     if (item === "ladder") S.st.ladders++;
+    if (ITEMS[item].seed) plantCrop(tx, ty, item);
     if (item === "chest") S.st.chests++;
     chips(tx + 0.5, ty + 0.5, TILES[ITEMS[item].tile].c2 || "#fff", 4, 3); thud(item === "torch" ? 420 : 240, 0.05);
     if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick"; }
@@ -1316,12 +1444,122 @@
   var ENEMY = {
     bug: { n: "Bramble Bug", hp: 12, w: 1.1, h: 0.8, dmg: 9, glow: "#ff6b82", chip: "#9a52a8", frag: "bugfrag", chance: 0.6, max: 3 },
     frog: { n: "Swamp Frog", hp: 18, w: 0.95, h: 0.85, dmg: 12, body: 6, glow: "#4ee6b4", chip: "#6fe08a", frag: "frogfrag", chance: 0.6, max: 2 },
-    bat: { n: "Dusk Bat", hp: 10, w: 0.9, h: 0.6, dmg: 6, glow: "#b58cff", chip: "#6a4a9a", frag: "batwing", chance: 0.5, max: 6 }   // hp +4 and dmg +2 per weapon tier (see newEnemy)
+    bat: { n: "Dusk Bat", hp: 10, w: 0.9, h: 0.6, dmg: 6, glow: "#b58cff", chip: "#6a4a9a", frag: "batwing", chance: 0.5, max: 6 },   // hp +4 and dmg +2 per weapon tier (see newEnemy)
+    wolf: { n: "Frost Wolf", hp: 30, w: 1.3, h: 0.9, dmg: 15, glow: "#9fe8ff", chip: "#cfdde6", frag: "wolfpelt", chance: 0.6, max: 3 },
+    gator: { n: "Bog Gator", hp: 42, w: 1.9, h: 0.7, dmg: 18, glow: "#a8e05a", chip: "#4d7a3a", frag: "gatorscale", chance: 0.65, max: 2 },
+    slime: { n: "Slime", hp: 16, w: 0.9, h: 0.75, dmg: 7, glow: "#7dff6a", chip: "#5ad04a", frag: "slimeball", chance: 0.7, max: 4 },   // small slimes (from a split): hp 6, dmg 4
+    wasp: { n: "Ember Wasp", hp: 12, w: 0.8, h: 0.6, dmg: 10, glow: "#ffcf3a", chip: "#e0a020", frag: "stinger", chance: 0.55, max: 3 }
   };
   var FROG = { aggro: 5.5, reach: 2.5, wind: 0.5, lash: 0.2, recover: 0.95, hopV: 10, hopX: 3.2 };
   // Dusk Bat: a night-only flier. It spawns in the sky above you, drifts overhead, shows red eyes (wind-up), then dives in a straight line. Step aside during the dive.
   // from/to = clock times (0-480) when bats are out (late dusk to early dawn); a roof or the ground stops them, and at dawn they flap away.
   var BAT = { hover: 4, wind: 0.5, dive: 0.6, speed: 9.5, cruise: 4.2, from: 268, to: 446 };
+  // ---------- WILD CREATURES: Frost Wolf (Frostfen), Bog Gator (Murkwater water), slimes (caves everywhere + night surface), Ember Wasp (Ember Bog, daytime) ----------
+  // Each one telegraphs before it attacks, so a careful player can always dodge:
+  //   Wolf: stalks you, CROUCHES ("!") then lunges in a leap. Jump over it or step back.
+  //   Gator: floats in lakes and crawls the shore, its JAWS OPEN, then it snaps forward a short way. Get out of reach.
+  //   Slime: hops at you. Big slimes split into two small ones when popped.
+  //   Wasp: buzzes around you, its body GLOWS RED, then it dashes straight at you. Step aside.
+  var WOLF = { aggro: 9, lungeAt: 3.6, wind: 0.45, lungeV: 9.5, lungeUp: 7.5, recover: 0.85, walk: 1.5, run: 4.1, body: 5 };
+  var GATOR = { aggro: 6.5, reach: 1.7, wind: 0.6, snap: 0.28, recover: 1.1, walk: 0.8, swim: 2.5, crawl: 1.9, roam: 10, body: 6 };
+  var SLIME = { aggro: 9, hopV: 9.2, hopX: 3.3 };
+  var WASP = { hover: 2.4, wind: 0.45, dash: 0.42, speed: 11, cruise: 4.8 };
+  var SLIME_PAL = [   // by biome: Bog Slime, Magma Slime, Frost Slime
+    { n: "Bog Slime", c: "#5ad04a", hi: "#9af58a", dk: "#2a7a24", glow: "#7dff6a" },
+    { n: "Magma Slime", c: "#ff7a2a", hi: "#ffc24a", dk: "#a83a10", glow: "#ff8a3d" },
+    { n: "Frost Slime", c: "#6ab8ff", hi: "#c8ecff", dk: "#2a5a9a", glow: "#9fe8ff" }
+  ];
+  var KSTAT = { bug: "bugs", frog: "frogs", bat: "bats", wolf: "wolves", gator: "gators", slime: "slimes", wasp: "wasps" };
+  var FLIER = { bat: 1, wasp: 1 };
+  var SEEN_TIP = {
+    wolf: [1, "Frost Wolves hunt in pairs! When one crouches, jump over it or back away before it lunges.", "#9fe8ff"],
+    gator: [2, "A Bog Gator lurks in the water! When its jaws open, get out of reach.", "#a8e05a"],
+    slime: [4, "Slimes! Big ones split in two when you pop them.", "#7dff6a"],
+    wasp: [8, "Ember Wasps! When one glows red it is about to dash at you: step aside.", "#ffcf3a"]
+  };
+  function updateWolf(e, dt) {
+    var dx = p.x - e.x, near = Math.abs(dx) < WOLF.aggro && Math.abs(p.y - e.y) < 4 && hp > 0, vx = 0;
+    if (e.hurt > 0) { if (e.st === "wind") e.st = "stalk"; vx = e.on ? 0 : e.hvx; }
+    else if (e.st === "lunge") { e.t += dt; vx = e.hvx; if (e.on && e.t > 0.15) { e.st = "recover"; e.t = WOLF.recover; e.cd = 1.2; } }
+    else if (e.st === "recover") { e.t -= dt; if (e.t <= 0) e.st = "stalk"; }
+    else if (e.st === "wind") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; if (e.t <= 0) { e.st = "lunge"; e.t = 0; e.vy = -WOLF.lungeUp; e.on = false; e.hvx = e.dir * WOLF.lungeV; thud(240, 0.07); } }
+    else if (near) {
+      e.st = "stalk"; e.dir = dx >= 0 ? 1 : -1;
+      if (Math.abs(dx) < WOLF.lungeAt && e.cd <= 0 && e.on) { e.st = "wind"; e.t = WOLF.wind; thud(130, 0.06); }
+      else vx = Math.abs(dx) > 1 ? e.dir * WOLF.run : 0;
+    } else {
+      e.st = "patrol"; e.t -= dt; if (e.t <= 0) { e.t = 2 + Math.random() * 3; if (Math.random() < 0.35) e.dir = -e.dir; }
+      var ax = Math.floor(e.x + e.dir * 1.0); if (!blocks(ax, Math.floor(e.y + 0.3)) && !blocks(ax, Math.floor(e.y + 1.3)) && !blocks(ax, Math.floor(e.y + 2.3))) e.dir = -e.dir;
+      vx = e.dir * WOLF.walk;
+    }
+    if (e.blocked && e.on && vx && e.st !== "lunge") e.vy = -11.5;   // hop up a ledge while running
+    e.mv = vx; moveEnemy(e, dt, vx);
+    if (hp <= 0 || hurtGrace > 0 || e.hurt > 0 || !overlapP(e)) return;
+    if (e.st === "lunge") { hurt(e.dmg, "wolf"); shoved(e); e.hvx *= 0.25; e.st = "recover"; e.t = WOLF.recover; e.cd = 1.4; }
+    else if (e.st !== "recover") { hurt(WOLF.body, "wolf"); shoved(e); }
+  }
+  function gatorWet(e) { return TILES[get(Math.floor(e.x), Math.floor(e.y - 0.35))].kind === "water"; }
+  function updateGator(e, dt) {
+    var dx = p.x - e.x, near = Math.abs(dx) < GATOR.aggro && Math.abs(p.y - e.y) < 3 && hp > 0, vx = 0, wet = gatorWet(e); e.wet = wet;
+    if (wet) e.vy = Math.min(e.vy, -1.5);   // floats: bobs along the surface with only its back, eyes and snout above the water
+    if (e.hurt > 0) { if (e.st === "wind") { e.st = "stalk"; e.jaw = 0; } }
+    else if (e.st === "wind") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; e.jaw = 0.6 * (1 - e.t / GATOR.wind); if (e.t <= 0) { e.st = "snap"; e.t = GATOR.snap; e.hvx = e.dir * 6.5; thud(160, 0.08); } }
+    else if (e.st === "snap") { e.t -= dt; vx = e.hvx; e.jaw = 0.6 * Math.max(0, e.t / GATOR.snap - 0.3); if (e.t <= 0) { e.st = "recover"; e.t = GATOR.recover; e.cd = 1.5; e.jaw = 0; } }
+    else if (e.st === "recover") { e.t -= dt; if (e.t <= 0) e.st = "lurk"; }
+    else if (near) {
+      e.st = "stalk"; e.dir = dx >= 0 ? 1 : -1; e.jaw = 0.05;
+      if (Math.abs(dx) < GATOR.reach + e.w / 2 + 0.4 && e.cd <= 0) { e.st = "wind"; e.t = GATOR.wind; thud(90, 0.07); }
+      else vx = e.dir * (wet ? GATOR.swim : GATOR.crawl);
+    } else {
+      e.st = "lurk"; e.jaw = 0; e.t -= dt; if (e.t <= 0) { e.t = 2.5 + Math.random() * 3; if (Math.random() < 0.4) e.dir = -e.dir; }
+      if (Math.abs(e.x - e.hx) > GATOR.roam) e.dir = e.hx > e.x ? 1 : -1;   // never wanders far from its lake
+      if (e.blocked) e.dir = -e.dir; vx = e.dir * (wet ? GATOR.walk : GATOR.walk * 0.7);
+    }
+    e.mv = vx; moveEnemy(e, dt, vx);
+    if (hp <= 0 || hurtGrace > 0 || e.hurt > 0) return;
+    if (e.st === "snap") {   // the jaws reach out in front of the head
+      var a = e.x + e.dir * e.w * 0.3, b = e.x + e.dir * (e.w / 2 + GATOR.reach * 0.7), l = Math.min(a, b), r = Math.max(a, b);
+      if (p.x + PW / 2 > l && p.x - PW / 2 < r && p.y > e.y - 1.1 && p.y - PH < e.y) { hurt(e.dmg, "gator"); shoved(e); e.st = "recover"; e.t = GATOR.recover; e.cd = 1.6; e.jaw = 0; return; }
+    }
+    if (e.st !== "recover" && overlapP(e)) { hurt(GATOR.body, "gator"); shoved(e); }
+  }
+  function updateSlime(e, dt) {
+    var dx = p.x - e.x, near = Math.abs(dx) < SLIME.aggro && Math.abs(p.y - e.y) < 5 && hp > 0, sm = e.small ? 0.8 : 1;
+    e.sq = Math.max(0, (e.sq || 0) - dt * 4);
+    if (e.on) {
+      if (e.st === "hop") { e.st = "rest"; e.t = (near ? 0.5 : 1.1) + Math.random() * 0.8; e.sq = 1; }
+      e.hvx = 0;
+      if (e.hurt <= 0) {
+        e.t -= dt;
+        if (e.t <= 0) {
+          if (near) e.dir = dx >= 0 ? 1 : -1; else if (Math.abs(e.x - e.hx) > 7) e.dir = e.hx > e.x ? 1 : -1; else if (Math.random() < 0.4) e.dir = -e.dir;
+          e.st = "hop"; e.vy = -SLIME.hopV * sm * (near ? 1 : 0.75); e.on = false; e.hvx = e.dir * SLIME.hopX * sm * (near ? 1.15 : 0.6);
+        }
+      }
+    }
+    moveEnemy(e, dt, e.on ? 0 : e.hvx);
+    if (hp > 0 && hurtGrace <= 0 && e.hurt <= 0 && e.cd <= 0 && overlapP(e)) { hurt(e.dmg, "slime"); shoved(e); e.cd = 0.9; }
+  }
+  function updateWasp(e, dt) {
+    var cx = p.x - e.x, cy = (p.y - PH * 0.55) - (e.y - e.h * 0.5), tvx = 0, tvy = 0, alive = hp > 0;
+    e.fl += dt * 38; e.dir = e.st === "dash" ? (e.ax >= 0 ? 1 : -1) : cx >= 0 ? 1 : -1;
+    if (e.leave > 0) { e.leave -= dt; tvx = e.ph > 3 ? 4 : -4; tvy = -5; if (e.leave <= 0 || e.y < 1.6) e.gone = true; }
+    else if (e.hurt > 0) { tvx = 0; tvy = 0; }
+    else if (e.st === "away") { e.t -= dt; tvx = -e.dir * 3; tvy = -2.6; if (e.t <= 0) e.st = "hover"; }
+    else if (e.st === "wind") {
+      e.t -= dt; tvx = Math.sin(e.tt * 70) * 1.2; tvy = Math.cos(e.tt * 55) * 0.8;
+      if (e.t <= 0) { var ax = p.x - e.x, ay = (p.y - PH * 0.5) - (e.y - e.h * 0.5), l = Math.max(0.5, Math.sqrt(ax * ax + ay * ay)); e.ax = ax / l * WASP.speed; e.ay = ay / l * WASP.speed; e.st = "dash"; e.t = WASP.dash; thud(900, 0.04); }
+    } else if (e.st === "dash") { e.t -= dt; tvx = e.ax; tvy = e.ay; if (e.t <= 0 || e.blocked) { e.st = "away"; e.t = 0.7; e.cd = 1.3 + Math.random(); } }
+    else {   // hover: darts around beside you, a little above head height
+      var side = Math.sin(e.tt * 0.7 + e.ph) > 0 ? 1 : -1, tx = p.x + side * 3.2 + Math.sin(e.tt * 3.1 + e.ph) * 0.8, ty = p.y - PH - WASP.hover + Math.sin(e.tt * 4.3 + e.ph) * 0.6;
+      tvx = clamp((tx - e.x) * 2.4, -WASP.cruise, WASP.cruise); tvy = clamp((ty - (e.y - e.h * 0.5)) * 2.4, -WASP.cruise, WASP.cruise);
+      if (alive && e.cd <= 0 && Math.abs(cx) < 6 && cy > -2 && cy < 6) { e.st = "wind"; e.t = WASP.wind; thud(1100, 0.03); }
+    }
+    var sm = Math.min(1, dt * (e.st === "dash" ? 30 : 6)); e.vx += (tvx - e.vx) * sm; e.vy += (tvy - e.vy) * sm;
+    moveBat(e, dt);
+    if (alive && e.hurt <= 0 && e.st === "dash" && hurtGrace <= 0 && overlapP(e)) { hurt(e.dmg, "wasp"); shoved(e); e.st = "away"; e.t = 0.7; e.cd = 1.5 + Math.random(); }
+  }
+  function waterNear(cx) { for (var q = -8; q <= 8; q++) { var xx = clamp(cx + q, 0, W - 1); if (get(xx, col[xx] - 1) === T.WATER) return xx; } return -1; }
   var grow = [], canBusy = false, canAcc = 0;
   var enemies = [], spawnT = 6, swingQ = 0, batT = 8, sleepT = 0, slept = false, bedBtn = null;
   function eBoxHit(x, y, w, h) {
@@ -1345,7 +1583,7 @@
   function overlapP(e) { return p.x + PW / 2 > e.x - e.w / 2 && p.x - PW / 2 < e.x + e.w / 2 && p.y > e.y - e.h && p.y - PH < e.y; }
   function shoved(e) { p.vx = (p.x >= e.x ? 1 : -1) * 6.5; p.vy = -6; p.on = false; }
   function newEnemy(k, x, y) {
-    var d = ENEMY[k], hp0 = k === "bat" ? d.hp + 4 * S.wpn : d.hp; return { k: k, x: x, y: y, hx: x, vx: 0, vy: 0, kv: 0, on: false, dir: Math.random() < 0.5 ? -1 : 1, hp: hp0, mx: hp0, dmg: k === "bat" ? d.dmg + 2 * S.wpn : d.dmg, w: d.w, h: d.h, hurt: 0, dead: 0, def: false, st: k === "frog" ? "idle" : k === "bat" ? "hover" : "patrol", t: 1 + Math.random() * 2, tt: Math.random() * 6, cd: 0, ext: 0, hvx: 0, blocked: false, fl: Math.random() * 6, ph: Math.random() * 6, leave: 0, gone: false, ax: 0, ay: 0 };
+    var d = ENEMY[k], hp0 = k === "bat" ? d.hp + 4 * S.wpn : d.hp; return { k: k, x: x, y: y, hx: x, vx: 0, vy: 0, kv: 0, on: false, dir: Math.random() < 0.5 ? -1 : 1, hp: hp0, mx: hp0, dmg: k === "bat" ? d.dmg + 2 * S.wpn : d.dmg, w: d.w, h: d.h, hurt: 0, dead: 0, def: false, st: k === "frog" ? "idle" : k === "bat" || k === "wasp" ? "hover" : k === "gator" ? "lurk" : k === "slime" ? "rest" : "patrol", b: world.bio[clamp(Math.floor(x), 0, W - 1)], jaw: 0, sq: 0, mv: 0, wet: false, small: false, t: 1 + Math.random() * 2, tt: Math.random() * 6, cd: 0, ext: 0, hvx: 0, blocked: false, fl: Math.random() * 6, ph: Math.random() * 6, leave: 0, gone: false, ax: 0, ay: 0 };
   }
   function updateBug(e, dt) {
     var dx = p.x - e.x, near = Math.abs(dx) < 7.5 && Math.abs(p.y - e.y) < 3.2 && hp > 0, vx = 0;
@@ -1423,15 +1661,23 @@
     if (!S.st.warned) { S.st.warned = 1; toast("Bats come out at night! Craft a Swamp Bed and sleep to skip the night.", "#b58cff"); }
   }
   function damageEnemy(e, dmg, face) {
-    if (e.def) return; e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    if (e.def) return; e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
-    if (e.k === "bat" && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat off for a moment
+    if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
+    if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
     if (e.hp > 0) return;
-    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].glow, 16, 8); snd("open", "Epic");
-    var kills = e.k === "bug" ? ++S.st.bugs : e.k === "bat" ? ++S.st.bats : ++S.st.frogs, d = ENEMY[e.k];
-    if (kills === 1 || Math.random() < d.chance) {   // loot: a Delve item, and the same Fragment is added to your Adventure bag
+    var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
+    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic");
+    if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
+      [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
+    }
+    var kills = ++S.st[KSTAT[e.k]];
+    var drop = (kills === 1 && !e.small) || Math.random() < d.chance * (e.small ? 0.35 : 1);
+    popup("Enemy defeated", (sp ? (e.small ? "Little " : "") + sp.n : d.n) + (drop ? " \u2022 +1 " + ITEMS[d.frag].n : ""), sp ? sp.glow : d.glow, "\u2694");
+    var MEAT = { frog: 0.35, wolf: 0.6, gator: 0.7 }; if (MEAT[e.k] && ITEMS.rawmeat && Math.random() < MEAT[e.k]) give("rawmeat", 1, e.x - 0.5, e.y - e.h - 1.3, true);
+    if (drop) {   // loot: a Delve item, and (for bugs and frogs) the same Fragment is added to your Adventure bag
       give(d.frag, 1, e.x - 0.5, e.y - e.h - 0.9, true);
-      try { if (typeof Fragments !== "undefined") Fragments.add(ITEMS[d.frag].frag, 1); } catch (er) {}
+      try { if (typeof Fragments !== "undefined" && (e.k === "bug" || e.k === "frog")) Fragments.add(ITEMS[d.frag].frag, 1); } catch (er) {}
     }
     checkGoals();
   }
@@ -1439,35 +1685,201 @@
     if (toolBroken("wpn")) return;
     var reach = [0, 2.7, 2.2, 2.4, 2.4][S.wpn], f = p.face, xa = p.x - f * 0.3, xb = p.x + f * reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb);
     var hits = 0;
-    enemies.forEach(function (e) { if (!e.def && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (e.k === "bat" ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; damageEnemy(e, WEAPONS[S.wpn].dmg, f); } });
+    enemies.forEach(function (e) { if (!e.def && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; damageEnemy(e, WEAPONS[S.wpn].dmg, f); } });
     if (hits) wear("wpn", 1);
   }
-  function spawnEnemy() {
-    var cnt = { bug: 0, frog: 0 }; enemies.forEach(function (e) { if (!e.def && cnt[e.k] !== undefined) cnt[e.k]++; });
-    if (cnt.bug + cnt.frog >= 4) return;
-    var k = cnt.bug < ENEMY.bug.max && (cnt.frog >= ENEMY.frog.max || Math.random() < 0.6) ? "bug" : cnt.frog < ENEMY.frog.max ? "frog" : null; if (!k) return;
+  function spawnEnemy() {   // one try every few seconds, just off screen: what can appear depends on the biome there, day or night, and whether you are underground
+    var cnt = {}, tot = 0; enemies.forEach(function (e) { if (!e.def && e.k !== "bat") { cnt[e.k] = (cnt[e.k] || 0) + 1; tot++; } });
+    if (tot >= 5) return;
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (vw / 2 / ts + 2 + Math.random() * 8)), 3, W - 4) + 0.5, y = -1, cx = Math.floor(x);
-    if (world.bio[cx] !== 0) return;
-    var vg = world.village; if (vg && cx >= vg.f0 && cx <= vg.f1) return;   // the village is a calm place: nothing spawns inside it
-    if (k === "bug" && Math.random() < 0.4) {   // some bugs lurk in dark caves
+    var b = world.bio[cx], night = batNight(S.time), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7, opts = [], tw = 0, wx = -1;
+    function add(k, w) { if ((cnt[k] || 0) < ENEMY[k].max) { opts.push([k, w]); tw += w; } }
+    if (b === 0) { add("bug", under ? 4 : 5); if (!under) add("frog", 3); if (S.wpn >= 2 && !under && (wx = waterNear(cx)) >= 0) add("gator", 3); }
+    else if (b === 1) { if (!night && !under) add("wasp", 5); if (under) add("bug", 5); }   // Bramble Bugs also burrow through Ember Bog caves
+    else add("wolf", under ? 5 : 4);   // Frost Wolves den in Frostfen caverns too
+    if (under || night) add("slime", b === 0 ? 3 : 5);
+    if (!opts.length) return;
+    var r = Math.random() * tw, k = opts[0][0]; for (var q = 0; q < opts.length; q++) { r -= opts[q][1]; if (r <= 0) { k = opts[q][0]; break; } }
+    if (k === "wasp") { var gy = col[cx]; y = Math.min(gy - 3 - Math.random() * 3, p.y - 3); if (y < 2) return; }
+    else if (k === "gator") {   // in the lake, at the waterline (or on the shore right beside it)
+      x = wx + 0.5; cx = wx; var wy = col[wx] - 1; while (wy > 0 && get(wx, wy - 1) === T.WATER) wy--; y = wy + 0.6;
+    } else if (under ? k !== "gator" : (k === "bug" && Math.random() < 0.4)) {   // cave dwellers (when you are underground, everything spawns in the caves around you)
       for (var yy = Math.floor(p.y) - 8; yy <= Math.floor(p.y) + 8; yy++) if (!blocks(cx, yy) && !blocks(cx, yy - 1) && blocks(cx, yy + 1) && TILES[get(cx, yy)].kind !== "water" && yy > col[cx] + 3) { y = yy + 1; break; }
-    } else { var cy = col[cx]; if (cy > 0 && cy < H && !blocks(cx, cy - 1) && TILES[get(cx, cy - 1)].kind !== "water") y = cy; }
+    } else {   // on the ground: try a few nearby columns (wide bodies like wolves need room on hilly ground)
+      for (var tq = 0; tq < 7 && y < 0; tq++) {
+        var tx = clamp(cx + (tq % 2 ? 1 : -1) * Math.ceil(tq / 2), 2, W - 3), cy = col[tx];
+        if (cy <= 0 || cy >= H || blocks(tx, cy - 1) || TILES[get(tx, cy - 1)].kind === "water") continue;
+        for (var up = 0; up <= 2; up++) if (!eBoxHit(tx + 0.5, cy - up, ENEMY[k].w, ENEMY[k].h)) { x = tx + 0.5; y = cy - up; break; }
+      }
+    }
     if (y < 0 || eBoxHit(x, y, ENEMY[k].w, ENEMY[k].h)) return;
     enemies.push(newEnemy(k, x, y));
+    if (k === "wolf" && (cnt.wolf || 0) + 1 < ENEMY.wolf.max && !eBoxHit(x - side * 1.6, y, ENEMY.wolf.w, ENEMY.wolf.h)) enemies.push(newEnemy("wolf", x - side * 1.6, y));   // wolves come in pairs
+    var tip = SEEN_TIP[k]; if (tip && !(S.st.seen & tip[0])) { S.st.seen |= tip[0]; toast(tip[1], tip[2]); }
   }
   function updateEnemies(dt) {
     if (panelOpen) return;
-    spawnT -= dt; if (spawnT <= 0) { spawnT = 4 + Math.random() * 3; if (S.wpn >= 1) spawnEnemy(); }
     var underground = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7;
+    spawnT -= dt; if (spawnT <= 0) { spawnT = underground ? 2.6 + Math.random() * 2 : 4 + Math.random() * 3; if (S.wpn >= 1) spawnEnemy(); }   // caves are busier
     batT -= dt; if (batT <= 0) { batT = (3.2 + Math.random() * 3) * (1 - 0.35 * clamp((S.time - BAT.from) / 150, 0, 1)); if (S.wpn >= 1 && batNight(S.time) && !underground) spawnBat(); }   // bats arrive faster as the night goes on
     enemies.forEach(function (e) { if (e.k === "bat" && !e.def && !e.leave && (!batNight(S.time) || underground)) e.leave = underground ? 4 : 3 + Math.random() * 2; });   // dawn, or you went underground
+    enemies.forEach(function (e) { if (e.k === "wasp" && !e.def && !e.leave && (batNight(S.time) || underground)) e.leave = 2.5 + Math.random() * 2; });   // wasps head home at night, or when you go underground
     if (swingQ > 0) { swingQ -= dt; if (swingQ <= 0) strike(); }
     for (var i = enemies.length - 1; i >= 0; i--) {
       var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt);
       if (e.def) { e.dead -= dt; moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
-      if (e.gone || Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY.bat.chip, 6, 4); enemies.splice(i, 1); continue; }
-      if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else updateFrog(e, dt);
+      if (e.gone || Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
+      if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else updateFrog(e, dt);
     }
+  }
+  // ---------- CAVE CREATURES (hole-cave floors, seen from above) ----------
+  // Each floor is stocked once, the first time you reach it (only once you carry a weapon). Deeper floors hold more of them, and tougher ones.
+  // Every biome has slimes and bats; Mudhollow adds Bramble Bugs, Cinder Hollow adds Ember Wasps, Frostvault adds Frost Wolves (floor 3 and down).
+  // They reuse the surface art and attacks, flattened to top-down moves: slimes hop at you, bugs charge, bats and wasps circle then dive, wolves lunge.
+  // Swing your weapon toward where you aim (tap or click) to hit everything in front of you. Clear a floor for a small reward.
+  var CMOB = { slime: { r: 0.34, spd: 0, aggro: 7 }, bat: { r: 0.3, spd: 3.2, aggro: 8, fly: 1 }, bug: { r: 0.36, spd: 2.1, aggro: 7 }, wasp: { r: 0.28, spd: 3.8, aggro: 8, fly: 1 }, wolf: { r: 0.44, spd: 3.4, aggro: 8 } };
+  var CREACH = [0, 1.9, 1.6, 1.8, 1.8], ckx = 0, cky = 0;
+  function caveKinds(b, f) {
+    var L = [["slime", 4], ["bat", 3]];
+    if (b === 0) L.push(["bug", 4]); else if (b === 1) L.push(["wasp", 3]); else if (f >= 3) L.push(["wolf", 2]); else L.push(["slime", 2]);
+    return L;
+  }
+  function stockFloor(F, f) {
+    F.stocked = true; F.mobs = []; if (F.bld || S.wpn < 1) return;
+    var n = Math.min(9, 2 + Math.floor(f * 0.6)), L = caveKinds(F.biome, f), tw = 0, free = [], i, x, y;
+    L.forEach(function (q) { tw += q[1]; });
+    for (i = 0; i < F.w * F.h; i++) {
+      x = i % F.w; y = (i / F.w) | 0; if (SC.solid(F, x, y)) continue;
+      var a = x + 0.5 - F.spawn.x, b2 = y + 0.5 - F.spawn.y, c = x - F.down.x, d = y - F.down.y;
+      if (a * a + b2 * b2 > 64 && c * c + d * d > 9) free.push(i);
+    }
+    for (var m = 0; m < n && free.length; m++) {
+      var r = Math.random() * tw, k = L[0][0]; for (var q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) { k = L[q][0]; break; } }
+      var ci = free.splice(Math.floor(Math.random() * free.length), 1)[0];
+      F.mobs.push(newCaveMob(k, ci % F.w + 0.5, ((ci / F.w) | 0) + 0.7, F, f));
+    }
+    F.mobN = F.mobs.length;
+  }
+  function newCaveMob(k, x, y, F, f) {
+    var e = newEnemy(k, x, y), sc = 1 + 0.08 * (f - 1);
+    e.b = F.biome; e.r = CMOB[k].r; e.hp = e.mx = Math.round(ENEMY[k].hp * sc); e.dmg = Math.round(ENEMY[k].dmg * (1 + 0.045 * (f - 1)));
+    e.z = 0; e.kx = 0; e.ky = 0; e.ang = Math.random() * 6.28; e.wx = 0; e.wy = 0; e.hx = x; e.hy = y; e.cd = 1.2 + Math.random(); e.on = true; e.st = k === "slime" ? "rest" : FLIER[k] ? "hover" : "patrol"; e.t = Math.random() * 1.5;
+    return e;
+  }
+  function mobFree(F, x, y, r, fly) {
+    var x0 = Math.floor(x - r), x1 = Math.floor(x + r), y0 = Math.floor(y - r * 0.8), y1 = Math.floor(y - 0.001);
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) { if (xx < 0 || yy < 0 || xx >= F.w || yy >= F.h) return false; var i = yy * F.w + xx; if (F.wall[i] || (!fly && (F.node[i] || (F.sol && F.sol[i])))) return false; }
+    return true;
+  }
+  function moveMob(F, m, dt, vx, vy) {   // fliers pass over boulders but not through walls
+    var fly = !!CMOB[m.k].fly, sub = Math.ceil(dt / 0.02), h = dt / sub; m.blocked = false;
+    m.kx *= Math.max(0, 1 - 8 * dt); m.ky *= Math.max(0, 1 - 8 * dt);
+    for (var s = 0; s < sub; s++) {
+      var nx = m.x + (vx + m.kx) * h, ny = m.y + (vy + m.ky) * h;
+      if (mobFree(F, nx, m.y, m.r, fly)) m.x = nx; else { m.blocked = true; m.kx = 0; }
+      if (mobFree(F, m.x, ny, m.r, fly)) m.y = ny; else { m.blocked = true; m.ky = 0; }
+    }
+  }
+  function caveHurt(m, n) {   // the player takes a hit and is shoved away from the creature
+    if (hurtGrace > 0 || hp <= 0) return false;
+    var dx = cp.x - m.x, dy = cp.y - m.y, l = Math.sqrt(dx * dx + dy * dy) || 1; ckx = dx / l * 7; cky = dy / l * 7;
+    hurt(n, m.k); return true;
+  }
+  function updateCaveMobs(dt) {
+    var F = cave.F; if (!F.stocked) stockFloor(F, cave.f); if (!F.mobs || !F.mobs.length) return;
+    for (var i = F.mobs.length - 1; i >= 0; i--) {
+      var m = F.mobs[i], C = CMOB[m.k]; m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
+      if (m.def) { m.dead -= dt; m.z = Math.max(0, m.z - dt * 3); moveMob(F, m, dt, 0, 0); if (m.dead <= 0) F.mobs.splice(i, 1); continue; }
+      var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro && hp > 0, touch = d < m.r + 0.34;
+      if (m.hurt > 0) { moveMob(F, m, dt, 0, 0); continue; }
+      if (m.k === "slime") {
+        m.sq = Math.max(0, (m.sq || 0) - dt * 4);
+        if (m.st === "hop") {
+          m.t += dt; var pr = m.t / 0.42; m.z = Math.sin(Math.PI * Math.min(1, pr)) * (m.small ? 0.3 : 0.45); m.on = false; m.vy = pr < 0.5 ? -6 : 6; vx = m.hvx; vy = m.hvy;
+          if (pr >= 1) { m.st = "rest"; m.t = (near ? 0.45 : 1) + Math.random() * 0.7; m.z = 0; m.on = true; m.vy = 0; m.sq = 1; }
+        } else {
+          m.t -= dt; if (m.t <= 0) { var a = near ? Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.4 : Math.random() * 6.28, sp = (m.small ? 2.6 : 3.2) * (near ? 1.15 : 0.6); m.hvx = Math.cos(a) * sp; m.hvy = Math.sin(a) * sp; m.st = "hop"; m.t = 0; }
+        }
+        if (Math.abs(m.hvx) > 0.1) m.dir = m.hvx > 0 ? 1 : -1;
+        moveMob(F, m, dt, vx, vy);
+        if (touch && m.z < 0.2 && m.cd <= 0 && caveHurt(m, m.dmg)) m.cd = 0.9;
+        continue;
+      }
+      if (C.fly) {   // bats and wasps: circle you, show the tell (red eyes / red glow), then dive in a straight line
+        m.fl += dt * (m.k === "wasp" ? 38 : 11);
+        var dive = m.k === "wasp" ? "dash" : "dive", spd = m.k === "wasp" ? 10.5 : 8.5;
+        if (m.st === "away") { m.t -= dt; vx = -nx * 3; vy = -ny * 3; if (m.t <= 0) m.st = "hover"; }
+        else if (m.st === "wind") { m.t -= dt; vx = Math.sin(m.tt * 60) * 0.8; if (m.t <= 0) { m.ax = nx * spd; m.ay = ny * spd; m.st = dive; m.t = 0.42; thud(m.k === "wasp" ? 900 : 300, 0.04); } }
+        else if (m.st === dive) { m.t -= dt; vx = m.ax; vy = m.ay; if (m.t <= 0 || m.blocked) { m.st = "away"; m.t = 0.6; m.cd = 1.3 + Math.random(); } }
+        else if (near) {
+          m.ang += dt * (m.k === "wasp" ? 1.8 : 1.2); var orb = m.k === "wasp" ? 2.2 : 2.7, tx = cp.x + Math.cos(m.ang) * orb, ty = cp.y - 0.4 + Math.sin(m.ang) * orb * 0.7;
+          vx = clamp((tx - m.x) * 2.2, -C.spd, C.spd); vy = clamp((ty - m.y) * 2.2, -C.spd, C.spd);
+          if (m.cd <= 0 && d < 4.5) { m.st = "wind"; m.t = 0.45; thud(m.k === "wasp" ? 1100 : 760, 0.04); }
+        } else { m.t -= dt; if (m.t <= 0) { var wa = Math.random() * 6.28; m.wx = Math.cos(wa) * 1.4; m.wy = Math.sin(wa) * 1.4; m.t = 1 + Math.random() * 2; } vx = m.wx; vy = m.wy; }
+        m.dir = m.st === dive ? (m.ax >= 0 ? 1 : -1) : dx >= 0 ? 1 : -1;
+        moveMob(F, m, dt, vx, vy); if (m.blocked && m.st !== dive) { m.wx = -m.wx; m.wy = -m.wy; }
+        if (touch && m.st === dive && caveHurt(m, m.dmg)) { m.st = "away"; m.t = 0.6; m.cd = 1.4 + Math.random(); }
+        continue;
+      }
+      // ground hunters: Bramble Bug (charges) and Frost Wolf (crouches, then lunges in a leap)
+      var wolf = m.k === "wolf", go = wolf ? "lunge" : "charge", wind = wolf ? 0.45 : 0.35;
+      if (m.st === "wind") { m.t -= dt; m.dir = dx >= 0 ? 1 : -1; if (m.t <= 0) { m.st = go; m.t = wolf ? 0.4 : 0.5; m.ax = nx * (wolf ? 9 : 7.5); m.ay = ny * (wolf ? 9 : 7.5); thud(wolf ? 240 : 200, 0.06); } }
+      else if (m.st === go) { m.t -= dt; vx = m.ax; vy = m.ay; if (wolf) { m.z = Math.sin(Math.PI * clamp(1 - m.t / 0.4, 0, 1)) * 0.5; m.vy = m.t > 0.2 ? -6 : 6; } if (m.t <= 0 || m.blocked) { m.st = "retreat"; m.t = 0.55; m.cd = 1.2; m.z = 0; m.vy = 0; } }
+      else if (m.st === "retreat") { m.t -= dt; vx = -nx * 1.6; vy = -ny * 1.6; if (m.t <= 0) m.st = "patrol"; }
+      else if (near) {
+        m.st = wolf ? "stalk" : "patrol"; vx = nx * C.spd; vy = ny * C.spd;
+        if (d < (wolf ? 3.6 : 3.1) && m.cd <= 0) { m.st = "wind"; m.t = wind; thud(wolf ? 130 : 520, 0.05); vx = vy = 0; }
+      } else { m.st = "patrol"; m.t -= dt; if (m.t <= 0) { var ga = Math.random() * 6.28; m.wx = Math.cos(ga) * C.spd * 0.4; m.wy = Math.sin(ga) * C.spd * 0.4; m.t = 1.2 + Math.random() * 2; } vx = m.wx; vy = m.wy; }
+      if (Math.abs(vx) > 0.2 && m.st !== "wind") m.dir = vx > 0 ? 1 : -1;
+      m.mv = Math.sqrt(vx * vx + vy * vy); moveMob(F, m, dt, vx, vy); if (m.blocked && m.st === "patrol") { m.wx = -m.wx; m.wy = -m.wy; }
+      if (touch && m.cd <= 0 || (touch && m.st === go)) { if (caveHurt(m, m.st === go ? m.dmg : Math.ceil(m.dmg * 0.45))) { m.cd = 1; if (m.st === go) { m.st = "retreat"; m.t = 0.55; m.z = 0; } } }
+    }
+  }
+  function caveSwing(dt) {   // weapon in a cave: a swing toward where you aim hits every creature in a cone in front of you
+    if (!aim.down || !S.wpn) return;
+    if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
+    cool -= dt; if (cool > 0) return; cool = WEAPONS[S.wpn].cd; S.st.swings++;
+    var ax = (aim.mx - ox) / ts - cp.x, ay = (aim.my - oy) / ts - (cp.y - 0.5), al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1;
+    thud(300 + S.wpn * 70, 0.04);
+    for (var s2 = 0; s2 < 5; s2++) { var an = Math.atan2(ay, ax) + (s2 - 2) * 0.32; parts.push({ x: cp.x + Math.cos(an) * 1.1, y: cp.y - 0.5 + Math.sin(an) * 1.1, vx: Math.cos(an) * 2.5, vy: Math.sin(an) * 2.5 - 1, life: 0.2, max: 0.25, c: WEAPONS[S.wpn].c, s: 3 }); }
+    var F = cave.F, hits = 0; if (!F.mobs) return;
+    F.mobs.forEach(function (m) {
+      if (m.def) return; var dx = m.x - cp.x, dy = (m.y - 0.3) - (cp.y - 0.5), d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      if (d > CREACH[S.wpn] + m.r || (dx * ax + dy * ay) / d < 0.2) return;
+      hits++; damageCaveMob(m, WEAPONS[S.wpn].dmg, dx / d, dy / d);
+    });
+    if (hits) wear("wpn", 1);
+  }
+  function damageCaveMob(m, dmg, ux, uy) {
+    var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
+    m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
+    if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
+    if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
+    if (m.hp > 0) return;
+    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic");
+    if (m.k === "slime" && !m.small) [-1, 1].forEach(function (s2) {   // big slimes split in two
+      var kid = newCaveMob("slime", m.x + s2 * 0.25, m.y, F, cave.f); kid.small = true; kid.r = 0.22; kid.hp = kid.mx = Math.round(6 * (1 + 0.08 * (cave.f - 1))); kid.dmg = Math.max(3, Math.round(m.dmg * 0.55)); kid.kx = s2 * 5 + uy * 2; kid.ky = -ux * 2; kid.cd = 0.6; kid.t = 0.5;
+      if (mobFree(F, kid.x, kid.y, kid.r, false)) F.mobs.push(kid);
+    });
+    var kills = ++S.st[KSTAT[m.k]]; S.st.ckills++;
+    var drop = (kills === 1 && !m.small) || Math.random() < d.chance * (m.small ? 0.35 : 1);
+    popup("Enemy defeated", (sp ? (m.small ? "Little " : "") + sp.n : d.n) + (drop ? " • +1 " + ITEMS[d.frag].n : ""), sp ? sp.glow : d.glow, "⚔");
+    if (drop) give(d.frag, 1, m.x - 0.5, m.y - 1);
+    if (m.k === "wolf" && ITEMS.rawmeat && Math.random() < 0.6) give("rawmeat", 1, m.x - 0.5, m.y - 1.4);
+    if (F.mobN && !F.mobs.some(function (q) { return !q.def; }) && !F.cleared) {   // floor cleared
+      F.cleared = true; S.st.cclear++; var rw = 2 + Math.floor(cave.f / 3); give("torch", rw, cp.x - 0.5, cp.y - 1.2);
+      popup("Floor cleared", "Floor " + cave.f + " • +" + rw + " Torches", "#f2c14e", "✦"); snd("rise");
+    }
+    checkGoals();
+  }
+  function drawCaveMobs(g, now, rj) {   // called per row from the cave renderer, so creatures sort in front of / behind rocks
+    var F = cave.F; if (!F.mobs) return;
+    F.mobs.forEach(function (m) {
+      if (Math.floor(m.y) !== rj) return;
+      var fly = CMOB[m.k].fly, lift = fly ? 0.55 + Math.sin(m.tt * 3 + m.ph) * 0.08 : m.z || 0, y0 = m.y;
+      if (fly || lift > 0.02) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(ox + m.x * ts, oy + m.y * ts, ts * 0.34, ts * 0.11, 0, 0, 6.2832); g.fill(); }
+      m.y = y0 - lift; drawEnemy(g, m, now); m.y = y0;
+    });
   }
   function eGlow(g, x, y, r, col, a) {
     var c = parseInt(col.slice(1), 16), rr = (c >> 16) & 255, gg = (c >> 8) & 255, bb = c & 255, rg = g.createRadialGradient(x, y, 0, x, y, r);
@@ -1493,14 +1905,124 @@
     g.fillStyle = "#f6eedb"; g.beginPath(); g.moveTo(-1.6, 2.6); g.lineTo(-0.7, 5.4); g.lineTo(0.1, 2.6); g.moveTo(1.6, 2.6); g.lineTo(0.7, 5.4); g.lineTo(-0.1, 2.6); g.fill();
     g.restore();
   }
+  // ---- art for the wild creatures (30px per tile, origin at the feet, drawn facing right; drawEnemy flips for e.dir) ----
+  function poly(g, pts) { g.beginPath(); g.moveTo(pts[0], pts[1]); for (var i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]); g.closePath(); }
+  function drawWolf(g, e, d, flash, h, pd) {
+    var t = e.tt, wind = e.st === "wind", lunge = e.st === "lunge", run = Math.abs(e.mv) > 2.5, walk = Math.abs(e.mv) > 0.3, pw = wind ? clamp(1 - e.t / WOLF.wind, 0, 1) : 0;
+    var fur = flash ? "#ffffff" : "#9aa8b4", dk = flash ? "#ffffff" : "#5d6c7a", lt = flash ? "#ffffff" : "#e8eef2", ln = flash ? "#ffffff" : "#2a323c";
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0);
+    g.scale(e.dir * (1 + 0.5 * pd + 0.1 * h + (lunge ? 0.08 : 0)), (1 - 0.75 * pd) * (wind ? 1 - 0.16 * pw : lunge ? 0.94 : 1));
+    if (lunge) g.rotate(e.vy < 0 ? -0.18 : 0.12);
+    if (!e.def) eGlow(g, 0, -12, wind ? 30 : 24, wind || lunge ? "#ff6a5a" : d.glow, wind ? 0.25 + 0.4 * pw : 0.16);
+    var ph = t * (run ? 17 : 9), sw = walk || run ? 1 : 0;
+    g.lineCap = "round"; g.lineJoin = "round";
+    [[-12, 0], [-7, 2.4], [7, 1.2], [12, 3.6]].forEach(function (L, i) {   // legs: far pair darker
+      var a = Math.sin(ph + L[1]) * 4 * sw, far = i % 2 === 1; if (lunge) a = i < 2 ? -5 : 5;
+      g.strokeStyle = far ? dk : fur; g.lineWidth = 3.4; g.beginPath(); g.moveTo(L[0], -10); g.lineTo(L[0] + a * 0.6, -4); g.lineTo(L[0] + a, -0.5); g.stroke();
+    });
+    g.strokeStyle = fur; g.lineWidth = 5; g.beginPath(); g.moveTo(-14, -15); g.quadraticCurveTo(-22, -15 - Math.sin(t * 5) * 2, -26, -22 + (wind ? 5 : 0)); g.stroke();   // bushy tail
+    g.strokeStyle = lt; g.lineWidth = 2.4; g.beginPath(); g.moveTo(-22, -18); g.lineTo(-26, -22 + (wind ? 5 : 0)); g.stroke();
+    g.fillStyle = fur; g.strokeStyle = ln; g.lineWidth = 1.6; g.beginPath(); g.ellipse(-1, -14, 15, 6.6, 0, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = dk; g.beginPath(); g.ellipse(-3, -18, 11, 2.4, 0, 0, 7); g.fill();   // darker back stripe
+    g.fillStyle = lt; g.beginPath(); g.ellipse(0, -10.5, 10, 2.6, 0, 0, 7); g.fill();
+    g.fillStyle = lt; g.beginPath(); g.ellipse(11, -15, 6, 7, 0.3, 0, 7); g.fill();   // pale ruff
+    var hy = wind ? 3 : 0;
+    g.fillStyle = fur; g.strokeStyle = ln; g.lineWidth = 1.5;
+    poly(g, [11, -26 + hy, 13.5, -33 + hy, 16, -25 + hy]); g.fill(); g.stroke();   // ears
+    poly(g, [16, -25 + hy, 19, -31 + hy, 20, -23 + hy]); g.fill(); g.stroke();
+    g.beginPath(); g.ellipse(16, -21 + hy, 7, 5.8, 0, 0, 7); g.fill(); g.stroke();
+    poly(g, [19, -24 + hy, 28, -19.5 + hy, 27.5, -16.5 + hy, 18, -16.5 + hy]); g.fill(); g.stroke();   // snout
+    if (lunge || wind) { g.fillStyle = "#3a0d18"; poly(g, [19, -16.5 + hy, 27, -16.5 + hy, 23, -12.5 + hy]); g.fill(); g.fillStyle = "#f6eedb"; poly(g, [21, -16.5 + hy, 22, -14.6 + hy, 23, -16.5 + hy]); g.fill(); poly(g, [24.5, -16.5 + hy, 25.3, -15 + hy, 26.1, -16.5 + hy]); g.fill(); }
+    g.fillStyle = "#1a1e24"; g.beginPath(); g.arc(27.6, -18.6 + hy, 1.6, 0, 7); g.fill();
+    g.fillStyle = flash ? "#fff" : wind || lunge ? "#ff5a5a" : "#7fd6ff"; g.beginPath(); g.ellipse(18, -22.5 + hy, 2, 1.4, 0.2, 0, 7); g.fill();
+    g.fillStyle = "#0c1018"; g.beginPath(); g.arc(18.6, -22.5 + hy, 0.8, 0, 7); g.fill();
+    g.strokeStyle = ln; g.lineWidth = 1.2; g.beginPath(); g.moveTo(15.5, -25 + hy); g.lineTo(20, -23.6 + hy); g.stroke();   // brow
+    g.restore();
+    if (wind && !e.def) { g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); }
+  }
+  function drawGator(g, e, d, flash, h, pd) {
+    var t = e.tt, jaw = e.jaw || 0, wind = e.st === "wind", walk = Math.abs(e.mv) > 0.3;
+    var sk = flash ? "#ffffff" : "#4d7a3a", dk = flash ? "#ffffff" : "#2f4f22", lt = flash ? "#ffffff" : "#6e9a4a", bel = flash ? "#ffffff" : "#c9c98a", ln = flash ? "#ffffff" : "#1a2412";
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, e.wet && !e.def ? Math.sin(t * 2.4) * 0.8 : 0);
+    g.scale(e.dir * (1 + 0.5 * pd + 0.08 * h), 1 - 0.75 * pd);
+    if (!e.def) eGlow(g, 6, -6, wind ? 34 : 26, wind || e.st === "snap" ? "#ff6a5a" : d.glow, wind ? 0.35 : 0.12);
+    g.lineCap = "round"; g.lineJoin = "round";
+    var sw = Math.sin(t * (walk ? 7 : 1.6)) * (walk ? 4 : 1.5);
+    g.fillStyle = sk; g.strokeStyle = ln; g.lineWidth = 1.5;
+    poly(g, [-14, -10, -30, -5 + sw * 0.3, -32, -3 + sw * 0.4, -14, -2]); g.fill(); g.stroke();   // tail
+    [[-12, 0], [-5, 2], [6, 1], [12, 3]].forEach(function (L, i) { var a = walk ? Math.sin(t * 8 + L[1]) * 3 : 0; g.strokeStyle = i % 2 ? dk : sk; g.lineWidth = 3.6; g.beginPath(); g.moveTo(L[0], -4); g.lineTo(L[0] + 2 + a, -0.5); g.stroke(); });
+    g.fillStyle = sk; g.strokeStyle = ln; g.lineWidth = 1.6; g.beginPath(); g.ellipse(-1, -7, 16, 5.6, 0, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = bel; g.beginPath(); g.ellipse(-1, -3.2, 12, 1.8, 0, 0, 7); g.fill();
+    g.fillStyle = dk; for (var sx = -22; sx <= 10; sx += 4) { var by = sx < -14 ? -7.5 + (sx + 22) * 0.12 : -12.2; poly(g, [sx - 1.6, by + 1.6, sx, by - 1.6, sx + 1.6, by + 1.6]); g.fill(); }   // back scutes
+    g.save(); g.translate(12, -6.5);   // head: the lower jaw swings open from a hinge behind the eye
+    g.save(); g.rotate(jaw); g.fillStyle = lt; g.strokeStyle = ln; poly(g, [0, 0, 19, 0.6, 18, 3.2, 0, 4]); g.fill(); g.stroke();
+    g.fillStyle = "#f6eedb"; for (var tx2 = 3; tx2 <= 16; tx2 += 3.2) { poly(g, [tx2, 0.4, tx2 + 1, -1.8, tx2 + 2, 0.6]); g.fill(); } g.restore();
+    if (jaw > 0.12) { g.fillStyle = "#8a2030"; poly(g, [1, 0, 17, 0.2, Math.cos(jaw) * 17, Math.sin(jaw) * 17]); g.fill(); }
+    g.fillStyle = sk; g.strokeStyle = ln; poly(g, [-1, -5.5, 6, -6.4, 20, -3.4, 20.5, 0.4, 0, 0.8]); g.fill(); g.stroke();
+    g.fillStyle = "#f6eedb"; for (var tx3 = 4; tx3 <= 17; tx3 += 3.2) { poly(g, [tx3, 0.6, tx3 + 1, 2.8, tx3 + 2, 0.6]); g.fill(); }
+    g.fillStyle = lt; g.beginPath(); g.arc(3.5, -6.6, 3.4, 0, 7); g.fill(); g.strokeStyle = ln; g.stroke();   // eye bump
+    g.fillStyle = flash ? "#fff" : wind ? "#ff5a3a" : "#f2c14e"; g.beginPath(); g.ellipse(4, -7, 1.8, 1.5, 0, 0, 7); g.fill();
+    g.fillStyle = "#0c1408"; g.beginPath(); g.ellipse(4.2, -7, 0.5, 1.4, 0, 0, 7); g.fill();
+    g.fillStyle = ln; g.beginPath(); g.arc(18.5, -3.2, 0.8, 0, 7); g.fill();
+    g.restore();
+    g.restore();
+    if (e.wet && !e.def) {   // the waterline: tint the part of the gator that is under the surface
+      var wy = Math.floor(e.y - 1.5), xx = Math.floor(e.x); while (wy < e.y + 1 && get(xx, wy) !== T.WATER) wy++;
+      var top = (wy - e.y) * 30; if (top < 2) { g.fillStyle = "rgba(42,143,149,.62)"; g.fillRect(-36, top, 72, 6 - top); g.fillStyle = "rgba(210,255,248,.6)"; g.fillRect(-36, top, 72, 1.5); }
+    }
+    if (wind && !e.def) { g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", e.dir * 18, -26 - Math.sin(t * 30) * 1.2); g.fillText("!", e.dir * 18, -26 - Math.sin(t * 30) * 1.2); }
+  }
+  function drawSlime(g, e, d, flash, h, pd) {
+    var t = e.tt, P = SLIME_PAL[e.b] || SLIME_PAL[0], s0 = e.small ? 0.62 : 1, air = !e.on && !e.def, sxx = 1, syy = 1;
+    if (air) { var k = clamp(-e.vy / 10, -1, 1); sxx = 1 - 0.14 * k; syy = 1 + 0.2 * k; } else { var q = e.sq || 0; sxx = 1 + 0.25 * q + 0.03 * Math.sin(t * 5); syy = 1 - 0.22 * q - 0.03 * Math.sin(t * 5); }
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * s0 * sxx * (1 + 0.6 * pd), s0 * syy * (1 - 0.8 * pd));
+    if (!e.def) eGlow(g, 0, -9, 26, P.glow, e.b === 1 ? 0.45 : 0.28);
+    var body = flash ? "#ffffff" : P.c;
+    g.globalAlpha *= 0.92; g.fillStyle = body; g.strokeStyle = flash ? "#fff" : P.dk; g.lineWidth = 1.8;
+    g.beginPath(); g.moveTo(-14, 0); g.quadraticCurveTo(-15, -17, 0, -18); g.quadraticCurveTo(15, -17, 14, 0); g.closePath(); g.fill(); g.stroke();
+    g.globalAlpha /= 0.92;
+    g.fillStyle = flash ? "#fff" : P.dk; g.globalAlpha *= 0.35; g.beginPath(); g.ellipse(-3, -5, 6, 3.5, 0, 0, 7); g.fill(); g.globalAlpha /= 0.35;   // the core
+    g.fillStyle = flash ? "#fff" : P.hi; g.beginPath(); g.ellipse(-6, -13, 4, 2.4, -0.5, 0, 7); g.fill(); g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.arc(-7.5, -14, 1.3, 0, 7); g.fill();
+    g.fillStyle = "#14200f"; g.beginPath(); g.ellipse(3, -9, 1.8, 2.6, 0, 0, 7); g.ellipse(9, -9, 1.6, 2.4, 0, 0, 7); g.fill();
+    g.fillStyle = "#fff"; g.beginPath(); g.arc(3.5, -10, 0.7, 0, 7); g.arc(9.4, -10, 0.6, 0, 7); g.fill();
+    g.strokeStyle = "#14200f"; g.lineWidth = 1.3; g.beginPath(); g.arc(6, -5.5, 2.2, 0.2, Math.PI - 0.2); g.stroke();
+    if (e.b === 2) { g.fillStyle = flash ? "#fff" : "#e9f6ff"; poly(g, [-6, -17, -4, -21, -2, -17.5]); g.fill(); poly(g, [2, -18, 4, -22.5, 6, -17.5]); g.fill(); }   // frost slimes wear little ice spikes
+    if (e.b === 1 && !e.def && Math.sin(t * 3) > 0.6) { g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(-9 + Math.sin(t * 7) * 3, -20 - (t * 20 % 6), 1.2, 0, 7); g.fill(); }   // magma sparks
+    g.restore();
+  }
+  function drawWasp(g, e, d, flash, h, pd) {
+    var t = e.tt, hot = e.st === "wind" || e.st === "dash", flap = Math.abs(Math.sin(e.fl)), curl = e.st === "wind" ? 0.55 : e.st === "dash" ? 0.35 : 0.1;
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, -9); g.scale(e.dir * (1 + 0.4 * pd), 1 - 0.7 * pd);
+    if (!e.def) eGlow(g, 0, 0, hot ? 28 : 20, hot ? "#ff3b2a" : d.glow, hot ? 0.55 : 0.25);
+    g.fillStyle = flash ? "rgba(255,255,255,.9)" : "rgba(220,240,255,.55)"; g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(-1, -7 - flap * 2, 7, 2.6 + flap * 2.6, -0.5, 0, 7); g.fill(); g.stroke();   // wings: a blur of beats
+    g.beginPath(); g.ellipse(3, -8 - flap * 2, 6, 2.2 + flap * 2.2, -0.2, 0, 7); g.fill(); g.stroke();
+    g.save(); g.translate(-2, 0); g.rotate(curl);   // the striped abdomen and stinger curl forward before a dash
+    var ab = flash ? "#ffffff" : hot ? "#ff9a3a" : "#ffcf3a";
+    g.fillStyle = ab; g.strokeStyle = "#1a1206"; g.lineWidth = 1.4; g.beginPath(); g.ellipse(-6, 1, 8, 5, 0.25, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = "#1a1206"; [[-9, 1.6], [-5, 1.6], [-1.5, 1.4]].forEach(function (b2) { g.save(); g.translate(b2[0], 1); g.rotate(0.25); g.fillRect(-b2[1] / 2, -4.4, b2[1], 8.8); g.restore(); });
+    g.fillStyle = flash ? "#fff" : "#2a1a0a"; poly(g, [-13.5, 2.5, -19, 4.5, -13.5, 4.8]); g.fill();
+    g.restore();
+    g.fillStyle = flash ? "#fff" : "#3a2a12"; g.strokeStyle = "#1a1206"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(3, -1, 4.6, 3.8, 0, 0, 7); g.fill(); g.stroke();   // thorax
+    g.fillStyle = flash ? "#fff" : "#ffcf3a"; g.beginPath(); g.ellipse(9, -2, 3.6, 3.4, 0, 0, 7); g.fill(); g.stroke();   // head
+    g.fillStyle = flash ? "#fff" : hot ? "#ff2a1a" : "#3a1206"; g.beginPath(); g.ellipse(10.4, -2.6, 2, 2.4, 0, 0, 7); g.fill();
+    g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.moveTo(9, -5); g.quadraticCurveTo(11, -10, 14, -10); g.moveTo(10, -5); g.quadraticCurveTo(13, -8, 15, -7.5); g.stroke();
+    g.strokeStyle = "#1a1206"; g.lineWidth = 1.1; for (var lg = 0; lg < 3; lg++) { g.beginPath(); g.moveTo(1 + lg * 2.4, 2); g.lineTo(lg * 2.4 - 0.5, 6 + Math.sin(t * 9 + lg) * 0.8); g.stroke(); }
+    g.restore();
+  }
+  var SHADOW = { bug: 19, frog: 17, wolf: 21, gator: 27, slime: 14 }, HBAR = { bug: 41, bat: 30, frog: 49, wolf: 44, gator: 30, slime: 32, wasp: 30 };
   function drawEnemy(g, e, now) {
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
     if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
     var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, h = Math.max(0, e.hurt) / 0.3, flash = e.hurt > 0.2 || e.def, d = ENEMY[e.k];
     g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30, ts / 30);
     g.globalAlpha = 1 - pd * pd * 0.9;
-    if (e.k !== "bat") { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, e.k === "bug" ? 19 : 17, 3.2, 0, 0, 7); g.fill(); }
+    if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
     if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
+    else if (e.k === "wolf") drawWolf(g, e, d, flash, h, pd);
+    else if (e.k === "gator") drawGator(g, e, d, flash, h, pd);
+    else if (e.k === "slime") drawSlime(g, e, d, flash, h, pd);
+    else if (e.k === "wasp") drawWasp(g, e, d, flash, h, pd);
     else if (e.k === "bug") {
       var leg = t * 14;
       g.save(); g.translate(!e.def && h > 0 ? Math.sin(now / 1000 * 90) * 1.6 * h : 0, 0); g.rotate(-f * 0.22 * h); g.scale(f * (1 + 0.5 * pd + 0.16 * h), 1 - 0.75 * pd - 0.14 * h);
@@ -1549,98 +2071,106 @@
       if (wind) { g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); }
     }
     if (!e.def && e.hp < e.mx) {   // little health bar once it is hurt
-      g.globalAlpha = 1; g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(-15, -(e.k === "bug" ? 41 : e.k === "bat" ? 30 : 49), 30, 5);
-      g.fillStyle = e.hp / e.mx > 0.5 ? "#7dffb0" : e.hp / e.mx > 0.25 ? "#f2c14e" : "#ff6a5a"; g.fillRect(-14, -(e.k === "bug" ? 40 : e.k === "bat" ? 29 : 48), 28 * Math.max(0, e.hp / e.mx), 3);
+      g.globalAlpha = 1; g.fillStyle = "rgba(0,0,0,.65)"; var hb = (HBAR[e.k] || 49) * (e.small ? 0.6 : 1); g.fillRect(-15, -hb, 30, 5);
+      g.fillStyle = e.hp / e.mx > 0.5 ? "#7dffb0" : e.hp / e.mx > 0.25 ? "#f2c14e" : "#ff6a5a"; g.fillRect(-14, -hb + 1, 28 * Math.max(0, e.hp / e.mx), 3);
     }
     g.restore();
   }
   function drawEnemies(g, now) { enemies.forEach(function (e) { drawEnemy(g, e, now); }); }
 
-  // ---------- VILLAGERS: swamp avatars that live in the Delve village (Murkwater Swamp, see buildVillage in sandbox-world.js) ----------
-  // Seven civilians drawn with the same pixel avatars as you (delve-avatar.js), each with a fixed outfit. They wander the village, stop to chat
-  // with the air, turn to face you when you walk close, and open doors on the way, so they pass straight through the houses.
-  // They only move while you are within about 70 tiles, are not saved (they start at home whenever the world loads) and cannot be hurt.
-  var CIV = { w: 0.7, h: 1.5, speed: 1.6 };
-  var CIV_FOLK = [
-    { a: "frog", o: { hat: "lilypad", shirt: "tee", shoes: "sneakers" } },
-    { a: "donkey", o: { hat: "cowboy", shirt: "jersey", acc: { bandana: true } } },
-    { a: "owl", o: { face: "monocle", neck: "bowtie", shirt: "tux" } },
-    { a: "monkey", o: { hat: "beanie", shirt: "hoodie", shoes: "swampboots" } },
-    { a: "elephant", o: { hat: "glowcap", shirt: "tee", neck: "scarf" } },
-    { a: "frog", o: { hat: "wizard", shirt: "robe" } },
-    { a: "owl", o: { hat: "mossback", shirt: "hoodie", shoes: "sneakers" } }
-  ];
-  var civs = [];
-  function spawnCivs() {
-    civs = []; var v = world.village; if (!v) return;
-    CIV_FOLK.forEach(function (f, i) {
-      var x = i < v.houses.length ? v.houses[i].x + v.houses[i].w / 2 : v.plaza + 0.5 + (i - v.houses.length ? 1.5 : -1.5), y = v.gy, g = 0;
-      while (eBoxHit(x, y, CIV.w, CIV.h) && g++ < 4) y -= 1;
-      civs.push({ x: x, y: y, vy: 0, kv: 0, on: false, w: CIV.w, h: CIV.h, blocked: false, face: Math.random() < 0.5 ? -1 : 1, st: "idle", t: 0.5 + Math.random() * 4, tx: x, wp: Math.random() * 6, bt: 0, walking: false, ph: Math.random() * 1000, a: f.a, o: Object.assign({ animal: f.a, hat: "", face: "", neck: "", shirt: "", shoes: "", acc: {}, hv: {} }, f.o), sp: null, sc: 0 });
-    });
-  }
-  function civPick(c) {   // choose somewhere to walk: mostly nearby, sometimes anywhere in the village
-    var v = world.village, lo = v.x0 + 2, hi = v.x1 - 2;
-    c.tx = clamp(Math.random() < 0.7 ? c.x + (Math.random() * 2 - 1) * 16 : lo + Math.random() * (hi - lo), lo, hi);
-    c.st = "walk"; c.t = 14; c.bt = 0;
-  }
-  function civDoor(c) {   // a closed door right in front of a walking civilian swings open (and shuts again by itself, see updateDoors)
-    var fx = Math.floor(c.x + c.face * (CIV.w / 2 + 0.2));
-    for (var yy = Math.floor(c.y - CIV.h + 0.05); yy <= Math.floor(c.y - 0.05); yy++) {
-      var td = TILES[get(fx, yy)];
-      if (td.kind === "door" && !td.door.open) { var b = doorBase(fx, yy); setT(b.x, b.y, T.DOORO_B); setT(b.x, b.y - 1, T.DOORO_T); doorAuto[b.y * W + b.x] = 0; return; }
-    }
-  }
-  function updateCivs(dt) {
-    if (panelOpen || !civs.length) return;
-    civs.forEach(function (c) {
-      if (Math.abs(c.x - p.x) > 70 || Math.abs(c.y - p.y) > 50) { c.walking = false; return; }
-      var vx = 0;
-      if (c.st === "idle") {
-        c.t -= dt;
-        if (Math.abs(p.x - c.x) < 3 && Math.abs(p.y - c.y) < 2.5) c.face = p.x >= c.x ? 1 : -1;
-        if (c.t <= 0) civPick(c);
-      } else {
-        var dx = c.tx - c.x; c.t -= dt;
-        if (Math.abs(dx) < 0.2 || c.t <= 0) { c.st = "idle"; c.t = 2 + Math.random() * 5; }
-        else { c.face = dx > 0 ? 1 : -1; vx = c.face * CIV.speed; civDoor(c); }
+  // ---------- FARMING ----------
+  // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
+  // 2x as fast while watered (Watering Can on the crop or its soil), and 1.4x in their home biome. Sleeping through the night grows them too.
+  // Hold on a crop to pick it: ripe crops give food and seeds, unripe ones just give the seed back.
+  var CROPS = (typeof SbxExtra !== "undefined" && SbxExtra.CROPS) || {}, SEEDOF = (typeof SbxExtra !== "undefined" && SbxExtra.SEEDS) || {}, farmT = 0, WET_S = 120;
+  function cropAt(x, y) { var td = TILES[get(x, y)]; return td && td.crop ? td : null; }
+  function soilKind(x, y) { var k = TILES[get(x, y)].kind; return k === "farmland" || k === "farmwet"; }
+  function setSoil(x, y, wet) { var k = TILES[get(x, y)].kind; if (k === "farmland" && wet) setT(x, y, T.X_farmwet); else if (k === "farmwet" && !wet) setT(x, y, T.X_farmland); }
+  function plantCrop(x, y, seedItem) { S.farm[x + "," + y] = { c: ITEMS[seedItem].seed, g: 0, w: 0 }; S.st.planted++; checkTrail(); checkGoals(); }
+  function farmStep(sec) {
+    Object.keys(S.farm).forEach(function (key) {
+      var e = S.farm[key], q = key.split(","), x = +q[0], y = +q[1], td = cropAt(x, y), C = td && CROPS[td.crop];
+      if (!C || td.crop !== e.c) { delete S.farm[key]; return; }
+      var rate = (e.w > 0 ? 2 : 1) * (world.bio[x] === C.b ? 1.4 : 1);
+      if (td.stage < 4) {
+        e.g += sec * rate;
+        while (e.g >= C.t && td.stage < 4) { e.g -= C.t; setT(x, y, C.tiles[td.stage]); td = TILES[C.tiles[td.stage]]; if (td.stage === 4 && !cave && Math.abs(x - p.x) < 24 && Math.abs(y - p.y) < 16) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); }
+        if (td.stage === 4) e.g = 0;
       }
-      moveEnemy(c, dt, vx);
-      if (c.st === "walk" && c.blocked) { c.bt += dt; if (c.bt > 0.8) { c.st = "idle"; c.t = 1 + Math.random() * 2; c.bt = 0; } } else c.bt = 0;
-      c.walking = c.st === "walk" && vx !== 0; if (c.walking) c.wp += CIV.speed * dt;
+      if (e.w > 0) { e.w -= sec; if (e.w <= 0) { e.w = 0; setSoil(x, y + 1, false); } }
     });
   }
-  function drawCivs(g, now) {
-    if (!civs.length || typeof DelveAv === "undefined") return;
-    var sc = Math.max(1, Math.round(ts * 1.7 / 24)), sm0 = g.imageSmoothingEnabled;
-    civs.forEach(function (c) {
-      var sx = ox + c.x * ts, sy = oy + c.y * ts;
-      if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) return;
-      if (!c.sp || c.sc !== sc) { try { c.sp = DelveAv.sprite(c.o, c.a, sc); c.sc = sc; } catch (e) { c.sp = null; return; } }
-      var SP = c.sp, pose = !c.on ? (c.vy < 0 ? "jump" : "fall") : c.walking ? "walk" + (Math.floor(c.wp / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor((now + c.ph) / 520) % 2);
-      var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), phi = c.walking ? Math.sin(c.wp * 5) * 0.55 : 0.04;
-      g.save(); g.translate(sx, sy + ts * 0.14); g.scale(c.face, 1);
-      g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
-      g.scale(AVS, AVS); g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
-      g.save(); g.translate(fx + sh[0], fy + sh[1]); g.rotate(-phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
-      g.restore();
-    });
-    g.imageSmoothingEnabled = sm0;
+  function tickFarm(dt) { farmT += dt; if (farmT >= 1) { var s2 = farmT; farmT = 0; farmStep(s2); } }
+  function harvestCrop(x, y, td) {
+    var C = CROPS[td.crop], key = x + "," + y, e = S.farm[key], sd = SEEDOF[td.crop]; delete S.farm[key];
+    if (e && e.w > 0) setSoil(x, y + 1, false);
+    if (!C) return;
+    if (td.stage < 4) { if (sd) give(sd, 1, x, y - 0.4); return; }   // picked too early: just the seed back
+    var n = C.yld[0] + Math.floor(Math.random() * (C.yld[1] - C.yld[0] + 1)), ns = C.sd[0] + Math.floor(Math.random() * (C.sd[1] - C.sd[0] + 1));
+    give(C.produce, n, x, y - 0.4); if (sd) give(sd, ns, x, y - 0.8);
+    S.st.harvests++; S.st.cropbits |= { carrot: 1, potato: 2, pepper: 4, frost: 8 }[td.crop] || 0; snd("coin"); checkTrail(); checkGoals();
   }
-
+  function cropNear(tx, ty) {   // the watering target: a crop under your finger, on the soil you pointed at, or right beside it
+    if (cropAt(tx, ty)) return { x: tx, y: ty }; if (cropAt(tx, ty - 1)) return { x: tx, y: ty - 1 };
+    for (var y = ty - 1; y <= ty + 1; y++) for (var x = tx - 1; x <= tx + 1; x++) if (cropAt(x, y)) return { x: x, y: y };
+    return null;
+  }
+  // ---------- FOOD AND HUNGER ----------
+  // S.food 0-100: drains about 100 every 12 minutes of play (sleeping costs a little too). Eat by picking food in the hotbar and tapping, or "Eat" in the backpack.
+  // 80+ = well fed: health comes back 60% faster.  Under 25 = hungry: health stops coming back.  0 = starving: you slowly lose health, but never below 10.
+  // Hunger can be switched off per world in the Options tab.
+  var HUNGER_RATE = 100 / 720, starveT = 0, shownFood = -1;
+  function meX() { return cave ? cp.x : p.x; }
+  function meY() { return cave ? cp.y - 1.4 : p.y - PH - 0.3; }
+  function regenMul() { if (S.nohunger) return 1; return S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1; }
+  function drawFood() {
+    var el = $("sbxFood"); if (!el) return; el.hidden = !!S.nohunger; if (S.nohunger) return;
+    var v = Math.max(0, Math.ceil(S.food)); if (v === shownFood) return; shownFood = v;
+    el.querySelector(".fl").style.width = v + "%"; el.querySelector("b").textContent = v; el.setAttribute("aria-valuenow", v);
+    el.classList.toggle("low", v < 25); el.classList.toggle("mid", v >= 25 && v < 50); el.classList.toggle("full", v >= 80);
+  }
+  function tickHunger(dt) {
+    if (S.nohunger) { drawFood(); return; }
+    var was = S.food; S.food = Math.max(0, S.food - dt * HUNGER_RATE);
+    if (was >= 50 && S.food < 50 && !(S.st.htip & 1)) { S.st.htip |= 1; toast("Getting hungry! Pick food in the hotbar and tap to eat. Cattails drop carrot seeds, and Redcap Mushrooms are edible.", "#f2c14e"); }
+    if (was >= 25 && S.food < 25) toast("You are hungry: your health stops coming back until you eat.", "#f2a14e");
+    if (was > 0 && S.food <= 0) toast("Starving! Eat something soon.", "#ff7a5a");
+    if (S.food <= 0) { starveT += dt; if (starveT >= 3) { starveT = 0; if (hp > 10) { hp = Math.max(10, hp - 3); sinceHurt = 0; hurtT = 0.3; text(meX(), meY(), "-3 hungry", "#ff9a5a"); drawHp(); } } } else starveT = 0;
+    drawFood();
+  }
+  function eat(k) {
+    var it = ITEMS[k]; if (!it || !it.food || !(S.inv[k] > 0)) return;
+    if ((S.nohunger || S.food >= 99) && hp >= MAXHP) { nag(S.nohunger ? "You are already at full health." : "You are full."); return; }
+    S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) sel = "pick"; } reslot();
+    if (!S.nohunger) S.food = Math.min(100, S.food + it.food);
+    if (it.heal) { hp = Math.min(MAXHP, hp + it.heal); drawHp(); }
+    S.st.eaten++; if (it.cooked) S.ate[k] = 1; shownFood = -1; drawFood();
+    text(meX(), meY(), "+" + it.food + " food" + (it.heal ? "  +" + it.heal + " hp" : ""), "#ffd27a"); thud(560, 0.04);
+    for (var q = 0; q < 6; q++) parts.push({ x: meX() + (Math.random() - 0.5) * 0.5, y: (cave ? cp.y - 0.9 : p.y - 1.1), vx: (Math.random() - 0.5) * 2, vy: -1.5 - Math.random(), life: 0.4, max: 0.5, c: "#e0b070", s: 3 });
+    hbDirty = true; checkTrail(); checkGoals(); if (panelOpen) renderPanel();
+  }
+  function useFood(dt) { mine = null; if (!aim.down) return; cool -= dt; if (cool > 0) return; cool = 0.7; eat(sel); }
   // ---------- CHESTS ----------
   // S.chests["x,y"] = { itemId: count }. A chest holds up to CHEST_KINDS kinds of item. Tap it or press F nearby to open the Chest tab. A chest must be empty before you can pick it up.
   var CHEST_KINDS = 30, chestKey = "";
+  // Cave Chests (content pack) work like Wooden Chests, but are found in caves and come filled: the loot is rolled the first time one is opened (or broken unopened).
+  function isChest(id) { return id === T.CHEST || TILES[id].kind === "lootchest"; }
+  function lootTier(y) { var d = y - SURF; return d < 35 ? 0 : d < 80 ? 1 : 2; }
+  function rollLoot(kind, b, tier) { return typeof SbxExtra !== "undefined" && SbxExtra.loot ? SbxExtra.loot(kind, b, tier) : [["torch", 4]]; }
+  function treasureFound(n) { S.st.cchests++; popup("Treasure found", "Cave Chest \u2022 " + n + " kinds of loot", "#f2c14e", "\u2726"); snd("open", "Epic"); checkGoals(); }
   function chestCount(key) { var c = S.chests[key], n = 0; if (c) for (var k in c) n += c[k]; return n; }
   function chestKinds(c) { return Object.keys(c).length; }
   function chestNear() {
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 9, x, y, dx, dy, d;
-    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (get(x, y) === T.CHEST) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
+    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (isChest(get(x, y))) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
   function openChest(x, y) {
-    if (get(x, y) !== T.CHEST) return false; var key = x + "," + y;
-    if (!S.chests[key]) S.chests[key] = {};
+    var cid = get(x, y); if (!isChest(cid)) return false; var key = x + "," + y;
+    if (!S.chests[key]) {
+      S.chests[key] = {};
+      if (TILES[cid].kind === "lootchest") { var L = rollLoot("chest", world.bio[x], lootTier(y)); L.forEach(function (q) { S.chests[key][q[0]] = q[1]; }); chips(x + 0.5, y + 0.3, "#f2c14e", 18, 7); treasureFound(L.length); }
+    }
     chestKey = key; snd("coin"); openPanel("chest"); return true;
   }
   function addInv(item, n) { var fit = Math.min(n, room(item)); if (fit > 0) { S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit); if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item); } hbDirty = true; return fit; }   // like give(), but without counting it as gathered; returns how many fit
@@ -1666,7 +2196,6 @@
   function doorInTheWay(bx, by) {   // you or an enemy is standing where a closed door would be
     if (p.x + PW / 2 > bx && p.x - PW / 2 < bx + 1 && p.y > by - 1 && p.y - PH < by + 1) return true;
     for (var i = 0; i < enemies.length; i++) { var e = enemies[i]; if (e.def) continue; if (e.x + e.w / 2 > bx && e.x - e.w / 2 < bx + 1 && e.y > by - 1 && e.y - e.h < by + 1) return true; }
-    for (var ci = 0; ci < civs.length; ci++) { var c = civs[ci]; if (c.x + c.w / 2 > bx && c.x - c.w / 2 < bx + 1 && c.y > by - 1 && c.y - c.h < by + 1) return true; }
     return false;
   }
   function setDoor(bx, by, open) { setT(bx, by, open ? T.DOORO_B : T.DOOR_B); if (by - 1 >= 0) setT(bx, by - 1, open ? T.DOORO_T : T.DOOR_T); thud(open ? 300 : 200, 0.05); chips(bx + 0.5, by - 0.5, "#c98c4f", 3, 2); }
@@ -1713,8 +2242,18 @@
       if (Math.random() < dt * 30) parts.push({ x: tx + 0.2 + Math.random() * 0.6, y: ty + 0.3, vx: (Math.random() - 0.5) * 1.5, vy: -2.5 - Math.random() * 2, life: 0.5, max: 0.6, c: "#8fe0ff", s: 3 });
       return;
     }
+    var cr = cropNear(tx, ty);
+    if (cr) {   // water a crop: it grows twice as fast for a while and its soil turns dark
+      if (S.water <= 0) { nag("Your Watering Can is empty. Hold it on the water to fill it."); return; }
+      canBusy = true; if (Math.random() < dt * 40) parts.push({ x: spx, y: spy, vx: (cr.x + 0.5 - spx) * 2.2 + (Math.random() - 0.5), vy: -1 + Math.random(), life: 0.55, max: 0.6, c: "#8fe0ff", s: 3 });
+      var fe = S.farm[cr.x + "," + cr.y]; if (fe && fe.w > WET_S - 3) return;   // already soaked
+      cool -= dt; if (cool > 0) return; cool = 0.4;
+      S.water--; hbDirty = true; S.st.watered++; thud(520, 0.02); chips(cr.x + 0.5, cr.y + 0.6, "#8fe0ff", 6, 3);
+      if (fe) { fe.w = WET_S; setSoil(cr.x, cr.y + 1, true); }
+      checkGoals(); return;
+    }
     var pl = plantNear(tx, ty);
-    if (!pl) { nag("Water a Swamp Flower, Cattail or Glowcap. Fill up at the water."); return; }
+    if (!pl) { nag("Water a crop, a Swamp Flower, a Cattail or a Glowcap. Fill up at the water."); return; }
     if (S.water <= 0) { nag("Your Watering Can is empty. Hold it on the water to fill it."); return; }
     canBusy = true;
     if (Math.random() < dt * 40) parts.push({ x: spx, y: spy, vx: (pl.x + 0.5 - spx) * 2.2 + (Math.random() - 0.5), vy: -1 + Math.random(), life: 0.55, max: 0.6, c: "#8fe0ff", s: 3 });
@@ -1748,6 +2287,7 @@
       thud(300 + S.wpn * 70, 0.04); for (var sk = 0; sk < 3; sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.35), y: p.y - 1.1 - sk * 0.12, vx: p.face * 3, vy: -0.4, life: 0.22, max: 0.3, c: WEAPONS[S.wpn].c, s: 3 });
       return;
     }
+    if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }   // holding food: tap to eat
     if (!aim.down || aim.tx < 0) { mine = null; doorHoldKey = ""; return; }
     var tx = aim.tx, ty = aim.ty, dx = tx + 0.5 - p.x, dy = ty + 0.5 - (p.y - PH / 2);
     if (dx * dx + dy * dy > REACH * REACH) { mine = null; return; }
@@ -1763,10 +2303,10 @@
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
       var dro = dropOf(td); if (dro && room(dro) <= 0) { invFull(); mine = null; return; }
-      if (td.kind === "door" || td.kind === "chest") {   // a quick tap opens/closes the door, so breaking it needs a short hold first
+      if (td.kind === "door" || td.kind === "chest" || td.kind === "lootchest") {   // a quick tap opens/closes the door, so breaking it needs a short hold first
         var dk = tx + "," + ty; if (doorHoldKey !== dk) { doorHoldKey = dk; doorHoldT = 0; }
         doorHoldT += dt; if (doorHoldT < 0.3) { mine = null; return; }
-        if (td.kind === "chest" && chestCount(tx + "," + ty) > 0) { nag("Empty the chest before picking it up."); mine = null; return; }
+        if ((td.kind === "chest" || td.kind === "lootchest") && chestCount(tx + "," + ty) > 0) { nag("Empty the chest before picking it up."); mine = null; return; }
       } else doorHoldKey = "";
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) / td.hard; mine.tick -= dt;
@@ -1778,7 +2318,31 @@
       if ((S.inv[sel] || 0) > 0 && canPlace(tx, ty, sel)) place(tx, ty, sel);
     }
   }
+  // ---------- CRAFTING STATIONS: tap (or press F next to) a Workbench, Decor Workbench, Furnace, Loom or Mason's Table to open its own window ----------
+  // Every recipe that needs a station lives ONLY in that station's window (stnOf below); the Journal's Craft tab keeps the hand-made recipes.
+  // While a station window is open, that station counts as "near" (stnOpen), so you can craft from anywhere you were able to tap it.
+  // TO ADD A STATION: an entry here (tile kind in `kind`), and give its recipes a way to map to the key in stnOf().
+  var STATIONS = {
+    bench: { n: "Bog Workbench", sh: "Workbench", kind: "bench", ic: "bench", c: "#c98c4f", d: "Tools, weapons, armor, walls and new crafting stations. Upgrade it with loot from each biome to unlock better gear." },
+    decor: { n: "Decor Workbench", sh: "Decor Bench", kind: "decorbench", ic: "decorbench", c: "#7fc9a0", d: "Furniture, lamps, garden pieces, building blocks and wall decor." },
+    furnace: { n: "Stone Furnace", sh: "Furnace", kind: "furnace", ic: "furnace", c: "#ff9a4a", d: "Smelt Bog Iron into ingots, fire clay into bricks and melt glass and gems into glowing blocks." },
+    loom: { n: "Weaver's Loom", sh: "Loom", kind: "loom", ic: "loom", c: "#e8d9a8", d: "Weave Bog Cotton into cloth." },
+    mason: { n: "Mason's Table", sh: "Mason's Table", kind: "masontable", ic: "masontable", c: "#b8c2c8", d: "Cut stone, bricks, shingles and quartz into building blocks and floors." },
+    cook: { n: "Cooking Pot", sh: "Cooking Pot", kind: "cookpot", ic: "cookpot", c: "#ff9a4a", d: "Cook crops, mushrooms and meat into meals that fill your hunger bar and heal you." }
+  }, STN_ORDER = ["bench", "decor", "cook", "furnace", "loom", "mason"], KIND_STN = {}, stnOpen = null, stnCat = {}, stnReady = false;
+  STN_ORDER.forEach(function (k) { KIND_STN[STATIONS[k].kind] = k; });
+  function stnOf(r) { return r.deco ? "decor" : r.stn ? r.stn : r.bench ? "bench" : ""; }   // which station a recipe is made at ("" = by hand, in the Journal)
+  function stnName(k) { return k === "bench" ? BENCH_LV[S.bl].n : STATIONS[k].n; }
+  function stnColor(k) { return k === "bench" ? BENCH_LV[S.bl].c : STATIONS[k].c; }
+  function stnKeyAt(x, y) { if (cave) return ""; var t = TILES[get(x, y)]; return (t && KIND_STN[t.kind]) || ""; }
+  function stnHeld(k) { return !!(stnOpen && stnOpen.k === k && stnKeyAt(stnOpen.x, stnOpen.y) === k); }   // the open station window still has its station
+  function stationNear(maxD) {   // the closest station tile to the player (for the F key and the "Open" pill)
+    if (cave) return null; var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = (maxD || 3) * (maxD || 3), x, y, k, dx, dy, d;
+    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 4; x <= cx + 4; x++) if ((k = stnKeyAt(x, y))) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { k: k, x: x, y: y }; } }
+    return best;
+  }
   function decorNear() {
+    if (stnHeld("decor")) return true;
     if (cave) return false; var cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
     for (var y = cy - 3; y <= cy + 3; y++) for (var x = cx - 5; x <= cx + 5; x++) if (get(x, y) === T.DECORBENCH) return true;
     return false;
@@ -1789,11 +2353,13 @@
     return best;
   }
   function nearBench() {
+    if (stnHeld("bench")) return true;
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
     for (var y = cy - 4; y <= cy + 4; y++) for (var x = cx - 7; x <= cx + 7; x++) if (get(x, y) === T.BENCH) return true;
     return false;
   }
   function nearStn(k) {   // Content Pack 1 crafting stations: Stone Furnace, Weaver's Loom, Mason's Table
+    if (stnHeld(k)) return true;
     var tk = SbxExtra.STNTILE[k], cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
     for (var y = cy - 4; y <= cy + 4; y++) for (var x = cx - 7; x <= cx + 7; x++) if (TILES[get(x, y)].kind === tk) return true;
     return false;
@@ -1833,7 +2399,7 @@
     }
     else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. You take " + Math.round(ARMORS[r.arm].red * 100) + "% less damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
-    else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
+    else { for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } if (r.stn === "cook") { S.st.cooked++; checkTrail(); checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
     hbDirty = true; renderPanel(); save();
   }
   function upgradeBench() {   // spend loot from the last biome to raise the Workbench one level (needs a Workbench close by)
@@ -1884,7 +2450,7 @@
     if (!st) { if (!el.hidden) el.hidden = true; return; }
     var v = Math.min(st.need, st.v()), key = S.trail + ":" + v; if (key === trailKey) return; trailKey = key;
     el.hidden = false;
-    el.innerHTML = "<small>Trail " + (S.trail + 1) + " of " + TRAIL.length + "</small><b>" + esc(st.n) + '</b><span class="bar"><i style="width:' + Math.round(v / st.need * 100) + '%"></i></span><em>' + v + " / " + st.need + "</em>";
+    el.title = "Trail " + (S.trail + 1) + " of " + TRAIL.length; el.innerHTML = "<b>" + esc(st.n) + "</b><em>" + v + "/" + st.need + '</em><span class="bar"><i style="width:' + Math.round(v / st.need * 100) + '%"></i></span>';
   }
   function checkGoals() {
     checkTrail();
@@ -1912,10 +2478,10 @@
     if (n <= 0) return; if (!cont && hurtGrace > 0) return;
     if (S.arm > 0 && durOf("arm") > 0) {   // armor blocks a share of the hit (half as much against lava) and wears down on every real hit
       var blocked = n * ARMORS[S.arm].red * (why === "lava" ? 0.5 : 1); n -= blocked;
-      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text(p.x + 0.5, p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
+      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text((cave ? cp.x : p.x) + 0.5, cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
-    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(p.x, p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
+    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(cave ? cp.x : p.x, cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
     if (hp <= 0) faint(why);
   }
   function faint(why) {
@@ -1963,6 +2529,7 @@
   function tickSleep(dt) {   // 0-0.6s fade out, black until 1.7s (the night is skipped at 1.2s), then fade back in
     sleepT += dt;
     if (!slept && sleepT >= 1.2) {
+      farmStep(150); if (!S.nohunger) S.food = Math.max(0, S.food - 12); shownFood = -1;   // the night passes: crops grow and you wake up a little hungry
       slept = true; S.time = 446; S.st.sleeps++; hp = MAXHP; sinceHurt = 99; hurtT = hurtGrace = 0; drawHp();
       for (var i = enemies.length - 1; i >= 0; i--) if (enemies[i].k === "bat") enemies.splice(i, 1);
       batT = 10; checkGoals(); save();
@@ -2021,7 +2588,7 @@
       tickSleep(dt); for (var zi = texts.length - 1; zi >= 0; zi--) { texts[zi].life -= dt; texts[zi].y -= dt * 0.9; if (texts[zi].life <= 0) texts.splice(zi, 1); }
       if (sleepT > 0 && Math.random() < dt * 3) text(p.x + 0.4, p.y - PH - 0.1, "z", "#cfd6ff"); return;
     }
-    S.time = (S.time + dt) % CYCLE;
+    advTime(dt);
     if (p.land) p.land = Math.max(0, p.land - dt * 2.2);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
@@ -2032,7 +2599,7 @@
     p.walk += Math.abs(p.vx) * dt; if (p.wet) S.st.swim += dt;
     if (touches("lava")) hurt(LAVA_DPS * dt, "lava", true);
     hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
-    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * dt);
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt);
     drawHp();
     var depth = Math.max(0, Math.floor(p.y - SURF)); if (depth > S.st.maxDepth) S.st.maxDepth = depth;
     var tcx = Math.floor(p.x), tcy = Math.floor(p.y - 1); if (tcx + "," + tcy !== exKey) { exKey = tcx + "," + tcy; reveal(); }
@@ -2042,7 +2609,7 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    useTool(dt); updateGrow(dt); updateEnemies(dt); updateCivs(dt);
+    useTool(dt); updateGrow(dt); updateEnemies(dt); tickFarm(dt); tickHunger(dt);
     var working = sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
@@ -2066,7 +2633,7 @@
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
       var X = gx0 + i, Y = gy0 + j, id = get(X, Y), L = TILES[id].light, c = j * gw + i;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
-      LG[c] = L; OP[c] = TILES[id].solid ? 3 : 1;
+      LG[c] = L; OP[c] = TILES[id].solid && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? 3 : 1;
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], 10);
     for (var r = 0; r < 2; r++) {
@@ -2109,6 +2676,7 @@
   // ===== SMOOTH SPRITES: every pixel sprite (plants, mushrooms, torches, furniture, ore gems ...) is re-drawn once at 4x with rounded "melted" edges and a dark outline,
   // like the Adventure art. SMATLAS mirrors ATLAS at 4x size (cell = 64px). Opaque blocks (bricks, planks ...) stay crisp pixel art but get the same edge shading as the ground.
   var SMATLAS = null, SMOP = {}, SMGEM = {}, SMOK = false, SMS = 4;
+  var SMCRISP = true;   // true: plants, ladders, furniture and ore gems are drawn as crisp pixel art (same as the hotbar). false: the old blurred, melted, outlined look
   function gooCanvas(src, sx, sy, sw, sh, S, pad, gemTd) {   // returns a (sw*S + pad*2) square canvas holding the smoothed, outlined version of a sprite cell
     var N = sw * S + pad * 2, a = document.createElement("canvas"), b = document.createElement("canvas"), out = document.createElement("canvas"); a.width = a.height = b.width = b.height = out.width = out.height = N;
     var ag = a.getContext("2d", { willReadFrequently: true }), bg = b.getContext("2d", { willReadFrequently: true }), og = out.getContext("2d");
@@ -2135,6 +2703,16 @@
     var g = SMATLAS.getContext("2d");
     g.clearRect(0, td.id * 64, 256, 64);
     if (op && !gem) return;
+    if (SMCRISP) {
+      for (var v2 = 0; v2 < 4; v2++) {
+        if (!gem) { g.drawImage(ATLAS, v2 * 16, td.id * 16, 16, 16, v2 * 64, td.id * 64, 16, 16); continue; }
+        var gc = document.createElement("canvas"); gc.width = gc.height = 16; var gx = gc.getContext("2d", { willReadFrequently: true }); gx.drawImage(ATLAS, v2 * 16, td.id * 16, 16, 16, 0, 0, 16, 16);
+        var gi = gx.getImageData(0, 0, 16, 16), gd = gi.data, gc2 = hexRgb(td.c2);   // ore: keep only the gem pixels, the rock behind is the ground
+        for (var gq = 0; gq < gd.length; gq += 4) { var gr = gd[gq], gg2 = gd[gq + 1], gb = gd[gq + 2], gdist = Math.abs(gr - gc2[0]) + Math.abs(gg2 - gc2[1]) + Math.abs(gb - gc2[2]), gsat = Math.max(gr, gg2, gb) - Math.min(gr, gg2, gb), glum = 0.299 * gr + 0.587 * gg2 + 0.114 * gb; if (!(gdist < 150 || gsat > 70 || glum > 215)) gd[gq + 3] = 0; }
+        gx.putImageData(gi, 0, 0); g.drawImage(gc, v2 * 64, td.id * 64);
+      }
+      return;
+    }
     for (var v = 0; v < 4; v++) { var c = gooCanvas(ATLAS, v * 16, td.id * 16, 16, 16, 4, 0, gem ? td : null); g.drawImage(c, v * 64, td.id * 64); }
   }
   function buildSmooth() {
@@ -2142,7 +2720,10 @@
     SMATLAS = document.createElement("canvas"); SMATLAS.width = 256; SMATLAS.height = 64 * TILES.length;
     TILES.forEach(function (td) { if (td.id !== T.AIR && !NATC[td.id] && td.kind !== "leaves" && td.kind !== "water" && td.kind !== "lava") smTile(td); });
   }
-  function smDraw(g, v, id, sx0, sy0, sw, sh, dx, dy, dw, dh) { g.imageSmoothingEnabled = true; g.drawImage(SMATLAS, v * 64 + sx0 * 4, id * 64 + sy0 * 4, sw * 4, sh * 4, dx, dy, dw, dh); g.imageSmoothingEnabled = false; }
+  function smDraw(g, v, id, sx0, sy0, sw, sh, dx, dy, dw, dh) {
+    if (SMCRISP) { g.imageSmoothingEnabled = false; g.drawImage(SMATLAS, v * 64 + sx0, id * 64 + sy0, sw, sh, dx, dy, dw, dh); return; }
+    g.imageSmoothingEnabled = true; g.drawImage(SMATLAS, v * 64 + sx0 * 4, id * 64 + sy0 * 4, sw * 4, sh * 4, dx, dy, dw, dh); g.imageSmoothingEnabled = false;
+  }
   function orePal(td) { var c = td.c; return c === "#3b3036" ? T.BASALT : c === "#5d7c93" ? T.FROSTROCK : T.STONE; }
   // ===== ADVENTURE LOOK: natural terrain is drawn as smooth shaded shapes (plum soil gradient, round pebbles, minty grass lip, blobby leaves) instead of pixel tiles =====
   var NATC = {}; NATC[T.MOSS] = NATC[T.MUD] = [[74, 56, 78], [20, 14, 30]]; NATC[T.CLAY] = [[132, 100, 104], [44, 30, 44]]; NATC[T.STONE] = [[104, 122, 144], [28, 36, 54]];
@@ -2151,9 +2732,45 @@
   if (T.X_peat) NATC[T.X_peat] = [[84, 60, 66], [24, 14, 26]]; if (T.X_silt) NATC[T.X_silt] = [[150, 140, 128], [48, 40, 52]];
   if (T.X_obsidian) NATC[T.X_obsidian] = [[84, 60, 116], [18, 10, 30]]; if (T.X_permafrost) NATC[T.X_permafrost] = [[168, 204, 226], [58, 100, 140]];
   function mixRgb(a, b, k) { return "rgb(" + ((a[0] + (b[0] - a[0]) * k) | 0) + "," + ((a[1] + (b[1] - a[1]) * k) | 0) + "," + ((a[2] + (b[2] - a[2]) * k) | 0) + ")"; }
+
+  // PERF: the soft edge shading used to build several gradient objects per tile per frame. They are now painted once per tile size into tiny canvases and stamped.
+  var SHC = { ts: 0 }, BWS = {}, WST = [], GSPR = {};
+  function shadeC(key, id, j, pal, d0, d1) {
+    if (SHC.ts !== ts) SHC = { ts: ts };
+    var c = SHC[key]; if (c) return c;
+    c = SHC[key] = document.createElement("canvas");
+    var w = ts, h = ts, q, gr, x0 = 0, y0 = 0, x1 = 0, y1 = 0, a, b;
+    switch (key.charAt(0) === "s" ? "soil" : key) {
+      case "t30": h = Math.ceil(ts * 0.3); y1 = h; a = "rgba(255,255,240,.34)"; b = "rgba(255,255,240,0)"; break;
+      case "t34": h = Math.ceil(ts * 0.34); y1 = h; a = "rgba(255,255,235,.3)"; b = "rgba(255,255,235,0)"; break;
+      case "t34n": h = Math.ceil(ts * 0.34); y1 = h; a = "rgba(255,255,240,.34)"; b = "rgba(255,255,240,0)"; break;
+      case "bot": h = Math.ceil(ts * 0.45); y0 = h; a = "rgba(0,0,10,.38)"; b = "rgba(0,0,10,0)"; break;
+      case "rt": w = Math.ceil(ts * 0.7); x1 = w; a = "rgba(0,0,12,.34)"; b = "rgba(0,0,12,0)"; break;
+      case "lf": w = Math.ceil(ts * 0.7); x0 = w; a = "rgba(0,0,12,.34)"; b = "rgba(0,0,12,0)"; break;
+      case "moss": h = Math.ceil(ts * 0.7); y1 = h; a = "rgba(63,174,120,.35)"; b = "rgba(63,174,120,0)"; break;
+      case "lava": y1 = h; a = "#ff7a22"; b = "#d93c0a"; break;
+      case "soil": y1 = h; a = mixRgb(pal[0], pal[1], d0); b = mixRgb(pal[0], pal[1], d1); break;
+      case "log": x1 = w; break;
+    }
+    c.width = w; c.height = h; q = c.getContext("2d");
+    gr = q.createLinearGradient(x0, y0, x1, y1);
+    if (key === "log") { gr.addColorStop(0, "#2e1c18"); gr.addColorStop(0.22, "#6a4838"); gr.addColorStop(0.5, "#8a6450"); gr.addColorStop(0.78, "#5b4038"); gr.addColorStop(1, "#271713"); }
+    else { gr.addColorStop(0, a); gr.addColorStop(1, b); }
+    q.fillStyle = gr; q.fillRect(0, 0, w, h);
+    return c;
+  }
+  function soilC(id, j, pal, d0, d1) { return shadeC("s" + id + "_" + j, id, j, pal, d0, d1); }
+  function bwStr(b, sh) { var k = b * 100 + sh + 50, v = BWS[k]; if (!v) { var c = BACKWALL[b]; v = BWS[k] = "rgb(" + clamp(c[0] + sh, 0, 255) + "," + clamp(c[1] + sh, 0, 255) + "," + clamp(c[2] + sh, 0, 255) + ")"; } return v; }
+  // PERF: glows are one soft white-to-clear sprite per colour, scaled and faded, instead of a new radial gradient per light per frame.
+  function glowSpr(c) { var v = GSPR[c]; if (!v) { v = GSPR[c] = document.createElement("canvas"); v.width = v.height = 64; var q = v.getContext("2d"), rg = q.createRadialGradient(32, 32, 0, 32, 32, 32); rg.addColorStop(0, "rgba(" + c + ",1)"); rg.addColorStop(1, "rgba(" + c + ",0)"); q.fillStyle = rg; q.fillRect(0, 0, 64, 64); } return v; }
+  function drawGlows(g, arr) {
+    g.imageSmoothingEnabled = true;
+    for (var i = 0; i < arr.length; i++) { var gl = arr[i], rad = gl[3] * ts; g.globalAlpha = Math.min(1, gl[4]); g.drawImage(glowSpr(gl[2]), gl[0] - rad, gl[1] - rad, rad * 2, rad * 2); }
+    g.globalAlpha = 1; g.imageSmoothingEnabled = false;
+  }
   function natTile(g, id, i, j, sx, sy) {
     var pal = NATC[id], d0 = clamp((j - SURF) / 46, 0, 1), d1 = clamp((j + 1 - SURF) / 46, 0, 1), hh = function (k) { return SW.hash(i, j, k); };
-    var gr = g.createLinearGradient(0, sy, 0, sy + ts); gr.addColorStop(0, mixRgb(pal[0], pal[1], d0)); gr.addColorStop(1, mixRgb(pal[0], pal[1], d1)); g.fillStyle = gr; g.fillRect(sx, sy, ts, ts);
+    g.drawImage(soilC(id, j, pal, d0, d1), sx, sy);
     var hi = mixRgb(pal[0], [255, 255, 255], 0.14), n = 2 + (hh(1) > 0.5 ? 1 : 0), k;
     for (k = 0; k < n; k++) {   // round pebbles with a soft shadow underneath
       var px = sx + ts * (0.15 + hh(k * 3 + 2) * 0.7), py = sy + ts * (0.15 + hh(k * 3 + 3) * 0.7), pr = ts * (0.07 + hh(k * 3 + 4) * 0.09);
@@ -2167,19 +2784,18 @@
       g.fillStyle = "#3fae78"; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.09);
       g.fillStyle = "rgba(155,245,191,.65)"; g.fillRect(sx, sy - ts * 0.04, ts, Math.max(1, ts * 0.04));
       if (hh(40) > 0.55) { g.fillStyle = "#58d68b"; var tx = sx + ts * (0.2 + hh(41) * 0.6); g.beginPath(); g.moveTo(tx - 2, sy); g.lineTo(tx, sy - ts * 0.3); g.lineTo(tx + 2, sy); g.fill(); g.beginPath(); g.moveTo(tx + 1, sy); g.lineTo(tx + 4, sy - ts * 0.22); g.lineTo(tx + 4, sy); g.fill(); }
-      var mg = g.createLinearGradient(0, sy, 0, sy + ts * 0.7); mg.addColorStop(0, "rgba(63,174,120,.35)"); mg.addColorStop(1, "rgba(63,174,120,0)"); g.fillStyle = mg; g.fillRect(sx, sy, ts, ts * 0.7);
+      g.drawImage(shadeC("moss"), sx, sy);
       if (nL) { g.fillStyle = "#2f9a6a"; g.fillRect(sx, sy, ts * 0.1, ts * 0.4); } if (nR) { g.fillStyle = "#2f9a6a"; g.fillRect(sx + ts * 0.9, sy, ts * 0.1, ts * 0.4); }
-    } else if (nT) { var tg = g.createLinearGradient(0, sy, 0, sy + ts * 0.34); tg.addColorStop(0, "rgba(255,255,240,.34)"); tg.addColorStop(1, "rgba(255,255,240,0)"); g.fillStyle = tg; g.fillRect(sx, sy, ts, ts * 0.34); }
+    } else if (nT) { g.drawImage(shadeC("t34n"), sx, sy); }
     edgeShade(g, i, j, sx, sy, nB, nL, nR);
   }
   function edgeShade(g, i, j, sx, sy, nB, nL, nR) {
-    if (nB) { var bg2 = g.createLinearGradient(0, sy + ts, 0, sy + ts * 0.55); bg2.addColorStop(0, "rgba(0,0,10,.38)"); bg2.addColorStop(1, "rgba(0,0,10,0)"); g.fillStyle = bg2; g.fillRect(sx, sy + ts * 0.55, ts, ts * 0.45); }
-    if (nR && j >= col[i + 1]) { var rg3 = g.createLinearGradient(sx + ts, 0, sx + ts * 1.7, 0); rg3.addColorStop(0, "rgba(0,0,12,.34)"); rg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = rg3; g.fillRect(sx + ts, sy, ts * 0.7, ts); }
-    if (nL && j >= col[i - 1]) { var lg3 = g.createLinearGradient(sx, 0, sx - ts * 0.7, 0); lg3.addColorStop(0, "rgba(0,0,12,.34)"); lg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = lg3; g.fillRect(sx - ts * 0.7, sy, ts * 0.7, ts); }
+    if (nB) { var bgc = shadeC("bot"); g.drawImage(bgc, sx, sy + ts - bgc.height); }
+    if (nR && j >= col[i + 1]) g.drawImage(shadeC("rt"), sx + ts, sy);
+    if (nL && j >= col[i - 1]) { var lfc = shadeC("lf"); g.drawImage(lfc, sx - lfc.width, sy); }
   }
   function natLog(g, i, j, sx, sy) {   // round trunk: dark bark edges, lit centre, bark grooves and the odd knot
-    var gr = g.createLinearGradient(sx, 0, sx + ts, 0); gr.addColorStop(0, "#2e1c18"); gr.addColorStop(0.22, "#6a4838"); gr.addColorStop(0.5, "#8a6450"); gr.addColorStop(0.78, "#5b4038"); gr.addColorStop(1, "#271713");
-    g.fillStyle = gr; g.fillRect(sx, sy, ts, ts); g.fillStyle = "rgba(20,10,8,.45)";
+    g.drawImage(shadeC("log"), sx, sy); g.fillStyle = "rgba(20,10,8,.45)";
     for (var k = 0; k < 3; k++) { var gx = sx + ts * (0.2 + SW.hash(i, 0, k + 50) * 0.6), y0 = sy + ts * SW.hash(i, j, k + 60) * 0.4; g.fillRect(gx, y0, Math.max(1, ts * 0.05), ts * (0.4 + SW.hash(i, j, k + 70) * 0.5)); }
     if (SW.hash(i, j, 80) > 0.8) { g.fillStyle = "#3a2420"; g.beginPath(); g.ellipse(sx + ts * 0.5, sy + ts * 0.5, ts * 0.16, ts * 0.22, 0, 0, 6.2832); g.fill(); g.fillStyle = "rgba(255,200,150,.25)"; g.fillRect(sx + ts * 0.4, sy + ts * 0.34, ts * 0.1, 2); }
     g.fillStyle = "rgba(255,230,190,.12)"; g.fillRect(sx + ts * 0.42, sy, ts * 0.08, ts);
@@ -2252,14 +2868,27 @@
     var cv = LEAFCACHE[key] || (LEAFCACHE[key] = buildLeafTile(mask, v, S));
     g.drawImage(cv, 0, 0, S, S, sx, sy, ts, ts);
   }
+  function ridgeLine(wx, seg, sd) {   // 0..1 low-poly mountain line: a peak every `seg` tiles, a valley between, straight edges for a crisp look
+    var u = wx / seg * 2, k = Math.floor(u), f = u - k, hv = function (n) { return n & 1 ? SW.hash(n, sd, 9) * 0.35 : 0.55 + SW.hash(n, sd, 9) * 0.45; };
+    return hv(k) + (hv(k + 1) - hv(k)) * f;
+  }
+  function horizon(cx) {   // the average ground line around the camera (smooth, so the backdrop glides instead of jumping)
+    var sum = 0, n = 0, x0 = Math.floor(cx); for (var q = -48; q <= 48; q += 4) { var c = col[clamp(x0 + q, 0, W - 1)]; if (c < H) { sum += c; n++; } }
+    return n ? sum / n : SURF;
+  }
   function render(now) {
     var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t);
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
     if (shake > 0 && !reduce) { ox += Math.round((Math.random() - 0.5) * shake * 10); oy += Math.round((Math.random() - 0.5) * shake * 10); }
-    var bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (SURF + 3)) / 9, 0, 1);
+    var HZ = horizon(cam.x), bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (HZ + 3)) / 9, 0, 1);   // HZ: the local ground line, so valleys and peaks both get sky
     // --- sky: three-stop gradient, stars, sun/moon, clouds, aurora ---
     var sk = skyAt(t), gr = g.createLinearGradient(0, 0, 0, vh), mid = mixC(sk[0], sk[1], 0.55);
+    var dxa = Math.max(0, Math.floor(-ox / ts)), dxb = Math.min(W - 1, Math.floor((vw - ox) / ts)), dtop = Math.floor(-oy / ts), dmx = 0, dq;
+    for (dq = dxa; dq <= dxb; dq++) if (col[dq] > dmx) dmx = col[dq];
+    var deepV = dtop > dmx + 1;   // PERF: every pixel is underground, so the sky, hills and clouds could not be seen: just a flat colour behind any water
+    if (deepV) { g.fillStyle = rgb(sk[1]); g.fillRect(0, 0, vw, vh); }
+    else {
     gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.6, rgb(mid)); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr; g.fillRect(0, 0, vw, vh);
     if (night > 0.25) {
       var sa = clamp((night - 0.25) / 0.45, 0, 1);
@@ -2279,9 +2908,28 @@
         g.lineTo(vw + 20, vh * (a[1] + 0.34)); g.lineTo(0, vh * (a[1] + 0.34)); g.closePath(); g.fill();
       }); g.globalCompositeOperation = "source-over";
     }
+    // --- two far mountain ranges: crisp low-poly ridgelines with snow caps, fading into the sky (behind the hills) ---
+    for (var FL = 0; FL < 2; FL++) {
+      var fpar = FL ? 0.09 : 0.035, famp = FL ? 20 : 34, fbase = HZ - (FL ? 4 : 8), fmix = FL ? 0.5 : 0.7, fsd = 61 + FL * 7, fpts = [];
+      var fm = mixArr([HILLS[0][FL], HILLS[1][FL], HILLS[2][FL]], bw), fmc = mixC(mixC(fm, [120, 150, 190], 0.25), sk[1], fmix);
+      for (var fx2 = -16; fx2 <= vw + 26; fx2 += 10) {
+        var fwx = cam.x * fpar + (fx2 - vw / 2) / ts + FL * 500;
+        fpts.push(fx2, oy + (fbase - (ridgeLine(fwx, 30, fsd) * 0.8 + ridgeLine(fwx, 9, fsd + 3) * 0.2) * famp * (0.8 + bw[2] * 0.3 - bw[0] * 0.2)) * ts);
+      }
+      g.fillStyle = rgb(mixC([8, 14, 24], fmc, 0.25 + 0.75 * day)); g.beginPath(); g.moveTo(-16, vh);
+      for (var fq = 0; fq < fpts.length; fq += 2) g.lineTo(fpts[fq], fpts[fq + 1]);
+      g.lineTo(vw + 16, vh); g.closePath(); g.fill();
+      if (bw[1] < 0.85) {   // snow caps: everything above a ragged snow line (Ember Bog's ash peaks stay bare)
+        var snl = oy + (fbase - famp * 0.6) * ts, sa2 = (FL ? 0.7 : 0.85) * (1 - bw[1]);
+        g.fillStyle = "rgba(" + Math.round(lerp(120, 236, day)) + "," + Math.round(lerp(135, 244, day)) + "," + Math.round(lerp(175, 255, day)) + "," + sa2.toFixed(2) + ")"; g.beginPath();
+        for (fq = 0; fq < fpts.length; fq += 2) g.lineTo(fpts[fq], fpts[fq + 1]);
+        for (fq = fpts.length - 2; fq >= 0; fq -= 2) { var jy = snl + ((fq / 2) % 3 === 1 ? ts * 0.9 : (fq / 2) % 3 === 2 ? ts * 0.3 : -ts * 0.2); g.lineTo(fpts[fq], Math.max(fpts[fq + 1], jy)); }
+        g.closePath(); g.fill();
+      }
+    }
     // --- three parallax hill layers in the colours and shapes of the biome you are in ---
     for (var L2 = 0; L2 < 3; L2++) {
-      var par = 0.12 + L2 * 0.2, amp = 5 + L2 * 3.5, base = SURF - 3 + L2 * 3.5, f2 = 0.045 + L2 * 0.03, cc = mixArr([HILLS[0][L2], HILLS[1][L2], HILLS[2][L2]], bw);
+      var par = 0.12 + L2 * 0.2, amp = 5 + L2 * 3.5, base = HZ - 3 + L2 * 3.5, f2 = 0.045 + L2 * 0.03, cc = mixArr([HILLS[0][L2], HILLS[1][L2], HILLS[2][L2]], bw);
       var fog = mixC(cc, sk[1], 0.5 - L2 * 0.2); cc = mixC(cc, fog, 0.55 * (1 - L2 * 0.3));
       g.fillStyle = rgb(mixC([6, 12, 20], cc, 0.2 + 0.8 * day)); g.beginPath(); g.moveTo(0, vh);
       for (var sx2 = 0; sx2 <= vw + 12; sx2 += 12) {
@@ -2310,9 +2958,10 @@
       }
       if (bw[2] > 0.4 && L2 < 2) { /* snowy caps */ g.fillStyle = "rgba(255,255,255," + (0.35 * day * bw[2]) + ")"; g.fillRect(0, 0, 0, 0); }
     }
-    var hz = oy + (SURF - 1) * ts, fg = g.createLinearGradient(0, hz - ts * 7, 0, hz + ts * 1.5), fc = sk[1];
+    var hz = oy + (HZ - 1) * ts, fg = g.createLinearGradient(0, hz - ts * 7, 0, hz + ts * 1.5), fc = sk[1];
     fg.addColorStop(0, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + ",0)"); fg.addColorStop(1, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + "," + (0.4 * above) + ")");
     g.fillStyle = fg; g.fillRect(0, hz - ts * 7, vw, ts * 8.5);
+    }
     // --- ambient air: swamp spores, drifting embers, falling snow ---
     if (!reduce && above > 0.05) {
       for (i = 0; i < MOTE.length; i++) {
@@ -2327,34 +2976,34 @@
     glows.length = 0; var wob = Math.sin(now / 500), edge = Math.max(1, Math.round(ts / 9)), sw = Math.sin(now / 700);
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
       if (i < 0 || i >= W || j < 0 || j >= H) continue;
-      var id = tiles[j * W + i], td = TILES[id], sx3 = ox + i * ts, sy = oy + j * ts, under = j >= col[i];
+      var id = tiles[j * W + i], td = TILES[id], sx3 = ox + i * ts, sy = oy + j * ts, under = j >= col[i] && j > world.top[i];   // cave wall only below the natural ground line: air under a roof, eave or overhang you build stays open sky
       if (id === T.AIR) {
         if (walls[j * W + i]) { drawWall(g, walls[j * W + i], i, j, sx3, sy); continue; }
         if (under) {
           var bwc = BACKWALL[world.bio[i]], nb = (TILES[get(i - 1, j)].solid ? 1 : 0) + (TILES[get(i + 1, j)].solid ? 1 : 0) + (TILES[get(i, j - 1)].solid ? 1 : 0) + (TILES[get(i, j + 1)].solid ? 1 : 0), sh = ((i * 7 + j * 13) & 3) * 2 - nb * 5;
-          g.fillStyle = "rgb(" + clamp(bwc[0] + sh, 0, 255) + "," + clamp(bwc[1] + sh, 0, 255) + "," + clamp(bwc[2] + sh, 0, 255) + ")"; g.fillRect(sx3, sy, ts, ts);
+          g.fillStyle = bwStr(world.bio[i], sh); g.fillRect(sx3, sy, ts, ts);
           g.fillStyle = "rgba(0,0,0,.18)"; g.fillRect(sx3 + ts * 0.18, sy + ts * 0.2, ts * 0.12, ts * 0.12); g.fillRect(sx3 + ts * 0.62, sy + ts * 0.66, ts * 0.1, ts * 0.1);
         }
         continue;
       }
       if (id === T.WATER) {
         var top = get(i, j - 1) !== T.WATER, dd = 0; if (!top) { dd = 1; while (dd < 6 && get(i, j - dd - 1) === T.WATER) dd++; }
-        g.fillStyle = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")"; g.fillRect(sx3, sy, ts, ts);
+        g.fillStyle = WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")"); g.fillRect(sx3, sy, ts, ts);
         if (top) { var wy = Math.round(wob * 1.5 + Math.sin(i * 0.9 + now / 400) * 1.2 + 2); g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(sx3, sy + wy, ts, 2); g.fillStyle = "rgba(255,255,255,.25)"; g.fillRect(sx3, sy, ts, wy); }
         else if (!reduce && ((i * 31 + j * 17 + (now / 380 | 0)) % 11) === 0) { g.fillStyle = "rgba(190,255,248,.22)"; g.fillRect(sx3 + ts * 0.2, sy + ts * 0.4, ts * 0.5, 2); }
         continue;
       }
       if (id === T.LAVA) {
-        var lg = g.createLinearGradient(0, sy, 0, sy + ts); lg.addColorStop(0, "#ff7a22"); lg.addColorStop(1, "#d93c0a"); g.fillStyle = lg; g.fillRect(sx3, sy, ts, ts);
+        g.drawImage(shadeC("lava"), sx3, sy);
         g.fillStyle = "#ffc24a"; g.fillRect(sx3 + ts * (0.1 + 0.12 * Math.sin(now / 420 + i)), sy + ts * 0.18, ts * 0.5, ts * 0.2); g.fillRect(sx3 + ts * (0.45 + 0.12 * Math.cos(now / 380 + j)), sy + ts * 0.58, ts * 0.4, ts * 0.18);
         g.fillStyle = "rgba(90,20,6,.5)"; g.fillRect(sx3 + ts * ((i * 37 % 7) / 9), sy + ts * 0.82, ts * 0.22, ts * 0.12);
         if (get(i, j - 1) !== T.LAVA) { g.fillStyle = "#ffe9a0"; g.fillRect(sx3, sy, ts, Math.max(2, edge)); if (!reduce && ((i * 13 + (now / 600 | 0)) % 9) === 0) { g.fillStyle = "#fff2b0"; g.fillRect(sx3 + ts * 0.4, sy - ts * 0.25 - ((now / 20) % 6), 3, 3); } }
-        glows.push([sx3 + ts / 2, sy + ts / 2, "255,110,30", 3.6, 0.24]); continue;
+        if (!lowq || !(i & 1)) glows.push([sx3 + ts / 2, sy + ts / 2, "255,110,30", 3.6, lowq ? 0.4 : 0.24]); continue;
       }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (!td.solid) {
         if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy);
-        else if (under) { g.fillStyle = "rgb(" + BACKWALL[world.bio[i]].join(",") + ")"; g.fillRect(sx3, sy, ts, ts); }
+        else if (under) { g.fillStyle = bwStr(world.bio[i], 0); g.fillRect(sx3, sy, ts, ts); }
         if (td.kind === "vine") { var vhalf = Math.round(ts / 2), vo = Math.round(Math.sin(now / 900 + i * 1.7) * ts * 0.08); smDraw(g, v, id, 0, 0, 16, 8, sx3, sy, ts, vhalf); smDraw(g, v, id, 0, 8, 16, 8, sx3 + vo, sy + vhalf, ts, ts - vhalf); }
         else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower" || td.sway) { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); smDraw(g, v, id, 0, 8, 16, 8, sx3, sy + half, ts, ts - half); smDraw(g, v, id, 0, 0, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
@@ -2377,13 +3026,13 @@
           if (nT) { g.fillStyle = "rgba(190,255,150,.22)"; g.fillRect(sx3, sy, ts, edge); }
           if (nB) { g.fillStyle = "rgba(0,20,5,.32)"; g.fillRect(sx3, sy + ts - edge * 1.5, ts, edge * 1.5); }
         } else {
-          if (nT && td.kind !== "moss" && td.kind !== "snow") { var tg0 = g.createLinearGradient(0, sy, 0, sy + ts * 0.3); tg0.addColorStop(0, "rgba(255,255,240,.34)"); tg0.addColorStop(1, "rgba(255,255,240,0)"); g.fillStyle = tg0; g.fillRect(sx3, sy, ts, ts * 0.3); }
+          if (nT && td.kind !== "moss" && td.kind !== "snow") { g.drawImage(shadeC("t30"), sx3, sy); }
           g.fillStyle = "rgba(0,0,0,.3)"; if (nB) g.fillRect(sx3, sy + ts - edge, ts, edge); if (nL) g.fillRect(sx3, sy, edge, ts); if (nR) g.fillRect(sx3 + ts - edge, sy, edge, ts);
           if (td.kind !== "door" && td.light < 3) {   // rounded 3D shading: a bright bevel on the lit top and a soft shadow thrown onto whatever is next to the block
-            if (nT) { var tg = g.createLinearGradient(0, sy, 0, sy + ts * 0.34); tg.addColorStop(0, "rgba(255,255,235,.3)"); tg.addColorStop(1, "rgba(255,255,235,0)"); g.fillStyle = tg; g.fillRect(sx3, sy, ts, ts * 0.34); }
-            if (nB) { var bg2 = g.createLinearGradient(0, sy + ts, 0, sy + ts * 0.55); bg2.addColorStop(0, "rgba(0,0,10,.38)"); bg2.addColorStop(1, "rgba(0,0,10,0)"); g.fillStyle = bg2; g.fillRect(sx3, sy + ts * 0.55, ts, ts * 0.45); }
-            if (nR && j >= col[i + 1]) { var rg3 = g.createLinearGradient(sx3 + ts, 0, sx3 + ts * 1.7, 0); rg3.addColorStop(0, "rgba(0,0,12,.34)"); rg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = rg3; g.fillRect(sx3 + ts, sy, ts * 0.7, ts); }
-            if (nL && j >= col[i - 1]) { var lg3 = g.createLinearGradient(sx3, 0, sx3 - ts * 0.7, 0); lg3.addColorStop(0, "rgba(0,0,12,.34)"); lg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = lg3; g.fillRect(sx3 - ts * 0.7, sy, ts * 0.7, ts); }
+            if (nT) g.drawImage(shadeC("t34"), sx3, sy);
+            if (nB) { var bgc = shadeC("bot"); g.drawImage(bgc, sx3, sy + ts - bgc.height); }
+            if (nR && j >= col[i + 1]) g.drawImage(shadeC("rt"), sx3 + ts, sy);
+            if (nL && j >= col[i - 1]) { var lfc = shadeC("lf"); g.drawImage(lfc, sx3 - lfc.width, sy); }
           }
         }
       }
@@ -2397,7 +3046,6 @@
       for (i = 0; i < nseg && i < CRACKS.length; i++) { g.moveTo(mx + ts * 0.5, my + ts * 0.5); g.lineTo(mx + ts * CRACKS[i][0], my + ts * CRACKS[i][1]); }
       g.stroke(); g.fillStyle = "rgba(255,255,255," + (0.06 + mine.p * 0.16) + ")"; g.fillRect(mx, my, ts, ts);
     }
-    drawCivs(g, now);
     drawEnemies(g, now);
     drawPlayer(g, now);
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
@@ -2413,13 +3061,13 @@
       dk[k] = dr; dk[k + 1] = dg; dk[k + 2] = db; dk[k + 3] = Math.round(clamp(al, 0, 0.97) * 255);
     }
     LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(LC, 0, 0, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, vgw * ts, vgh * ts);
-    if (day > 0.6 && above > 0.05) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
+    if (day > 0.6 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     // dusk/dawn colour grade over the open air
-    if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = "soft-light"; g.fillStyle = "rgba(255,130,70," + (0.55 * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
+    if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = lowq ? "source-over" : "soft-light"; g.fillStyle = "rgba(255,130,70," + ((lowq ? 0.16 : 0.55) * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     g.imageSmoothingEnabled = false;
     g.globalCompositeOperation = "lighter";
-    for (i = 0; i < glows.length; i++) { var gl = glows[i], rad = gl[3] * ts, rg = g.createRadialGradient(gl[0], gl[1], 0, gl[0], gl[1], rad); rg.addColorStop(0, "rgba(" + gl[2] + "," + gl[4] + ")"); rg.addColorStop(1, "rgba(" + gl[2] + ",0)"); g.fillStyle = rg; g.fillRect(gl[0] - rad, gl[1] - rad, rad * 2, rad * 2); }
-    flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)), rg = g.createRadialGradient(fx, fy, 0, fx, fy, ts * 0.8); rg.addColorStop(0, "rgba(220,255,120," + 0.85 * a + ")"); rg.addColorStop(1, "rgba(220,255,120,0)"); g.fillStyle = rg; g.fillRect(fx - ts, fy - ts, ts * 2, ts * 2); });
+    drawGlows(g, glows);
+    g.imageSmoothingEnabled = true; flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)); g.globalAlpha = 0.85 * a; g.drawImage(glowSpr("220,255,120"), fx - ts * 0.8, fy - ts * 0.8, ts * 1.6, ts * 1.6); }); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
     g.globalCompositeOperation = "source-over";
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh);
@@ -2504,7 +3152,7 @@
       var pose = !p.on ? (p.vy < 0 ? "jump" : "fall") : Math.abs(p.vx) > 0.5 ? "walk" + (Math.floor(p.walk / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2);
       var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), tp = toolPose(), sm0 = g.imageSmoothingEnabled;
       var gl2 = 1 - daylight(S.time);
-      if (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3) { g.shadowColor = "rgba(110,255,210,.45)"; g.shadowBlur = ts * 0.4; }
+      if (!lowq && (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3)) { g.shadowColor = "rgba(110,255,210,.45)"; g.shadowBlur = ts * 0.4; }
       g.imageSmoothingEnabled = false;
       if (S.bag > 0) {   // the backpack, on the back (the side away from the way you face), drawn first so the body overlaps it
         var bs = SP.s, by0 = fy + SP.footY - 31 * bs + 13 * bs, bx0 = fx + 1.5 * bs, big = S.bag >= 2, bc = big ? "#1f7a6a" : "#b88a52", bd = big ? "#0f3f38" : "#6b4a26", bf = big ? "#2fb59a" : "#d3a96b";
@@ -2578,14 +3226,14 @@
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
       for (k = 0; k < o.length; k++) { nx = F.down.x + o[k][0]; ny = F.down.y + o[k][1]; if (!SC.solid(F, nx, ny)) { cp.x = nx + 0.5; cp.y = ny + 0.85; break; } }
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
-    cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
+    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
     hud(); checkGoals();
   }
   function leaveCaveNow() {
-    if (!cave) return; var h = cave.hole; cave = null; stageEl.classList.remove("cave"); stopInput();
+    if (!cave) return; var h = cave.hole; cave = null; resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; hud(); save();
   }
@@ -2607,12 +3255,20 @@
   function breakRock(x, y) {
     var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++;
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 14 : 9, 6); thud(td.hard > 2 ? 110 : 160, 0.08);
+    if (td.kind === "lootchest" || td.kind === "lootpot") {   // hole-cave treasure: deeper floors hold better loot
+      var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2, cb = cave.hole ? cave.hole.b : 0, CL = rollLoot(td.kind === "lootchest" ? "chest" : "pot", cb, ct);
+      CL.forEach(function (q) { give(q[0], q[1], x, y); });
+      if (td.kind === "lootchest") { chips(x + 0.5, y + 0.5, "#f2c14e", 18, 7); treasureFound(CL.length); } else { S.st.pots++; thud(420, 0.06); checkGoals(); }
+      return;
+    }
     var n = dropQty(td); if (id === T.STONE && Math.random() < 0.5) n++;
     give(td.drop, n, x, y); if (td.kind === "ore") snd("coin");
     if (id === T.STONE && Math.random() < 0.12) give("pebble", 1, x, y - 0.55);
   }
   function caveTool(dt) {
-    var F = cave.F; if (!aim.down || aim.tx < 0) { mine = null; return; }
+    var F = cave.F; if (sel === "weapon") { mine = null; caveSwing(dt); return; }
+    if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
+    if (!aim.down || aim.tx < 0) { mine = null; return; }
     var tx = aim.tx, ty = aim.ty, i = ty * F.w + tx, dx = tx + 0.5 - cp.x, dy = ty + 0.5 - (cp.y - 0.4);
     if (dx * dx + dy * dy > CAVE_REACH * CAVE_REACH) { mine = null; return; }
     if (Math.abs(dx) > 0.3) cp.face = dx < 0 ? -1 : 1;
@@ -2620,7 +3276,7 @@
     if (nid) {
       var td = TILES[nid];
       if (sel !== "pick" && sel !== "shovel") { nag("Hold your pick to break rocks (press Q)."); mine = null; return; }
-      if (td.drop && room(td.drop) <= 0) { invFull(); mine = null; return; }
+      if (td.drop && td.kind !== "lootchest" && room(td.drop) <= 0) { invFull(); mine = null; return; }
       if (sel === "shovel" && !SOFT[nid]) { nag("A shovel only digs soft things. Use your pick for " + td.n + "."); mine = null; return; }
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
@@ -2641,26 +3297,27 @@
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
-    S.time = (S.time + dt) % CYCLE;
+    advTime(dt);
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     cp.vx = approach(cp.vx, dx / len * CAVE_SPEED * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * CAVE_SPEED * mag, 70 * dt);
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
-      var nx = cp.x + cp.vx * h; if (!cBox(F, nx, cp.y)) cp.x = nx; else cp.vx = 0;
-      var ny = cp.y + cp.vy * h; if (!cBox(F, cp.x, ny)) cp.y = ny; else cp.vy = 0;
+      var nx = cp.x + (cp.vx + ckx) * h; if (!cBox(F, nx, cp.y)) cp.x = nx; else { cp.vx = 0; ckx = 0; }
+      var ny = cp.y + (cp.vy + cky) * h; if (!cBox(F, cp.x, ny)) cp.y = ny; else { cp.vy = 0; cky = 0; }
     }
     var spd = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy); p.walk += spd * dt; p.vx = spd > 0.5 ? spd : 0; p.on = true; p.vy = 0; p.face = cp.face;
     hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = 0; sinceHurt += dt;
-    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * dt);
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt);
     drawHp();
     cam.x += (cp.x - cam.x) * Math.min(1, dt * 8); cam.y += (cp.y - 0.8 - cam.y) * Math.min(1, dt * 8);
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts;
     cam.x = F.w <= halfW * 2 ? F.w / 2 : clamp(cam.x, halfW, F.w - halfW); cam.y = F.h <= halfH * 2 ? F.h / 2 : clamp(cam.y, halfH, F.h - halfH);
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
-    caveTool(dt);
+    ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt);
+    caveTool(dt); if (!F.bld && !trans) updateCaveMobs(dt);
     var working = !!mine; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
@@ -2696,6 +3353,7 @@
   function caveNode(id, v) {   // a boulder (stone, clay, basalt, frostrock) or an ore-studded boulder, seen from above
     var key = id + ":" + v; if (CNODE[key]) return CNODE[key];
     var c = document.createElement("canvas"); c.width = c.height = 16; var g = c.getContext("2d"), td = TILES[id], ore = td.kind === "ore", base = td.c, acc = td.c2, x, y, mask = [];
+    if (td.kind === "lootchest" || td.kind === "lootpot") { g.globalAlpha = 0.3; g.fillStyle = "#000"; g.fillRect(2, 13, 12, 3); g.globalAlpha = 1; g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16); return (CNODE[key] = c); }   // treasure: the same art as on the surface
     var hh = function (px, py, s) { return SW.hash(px + v * 19, py + id * 13, s + id); };
     var R = function (px, py, w, h2, col, a) { g.globalAlpha = a == null ? 1 : a; g.fillStyle = col; g.fillRect(px, py, w, h2); g.globalAlpha = 1; };
     R(2, 12, 12, 3, "#000", 0.28); R(3, 14, 10, 1, "#000", 0.2);
@@ -2727,8 +3385,9 @@
     actBtn = { x: x0, y: y0, w: w, h: h, fn: fn };
   }
   function drawHolePrompt(g, now) {   // surface: a pill above a nearby Cave Hole
-    actBtn = null; if (panelOpen || sleepT > 0 || !SC || trans) return;
-    var h = holeNear(); if (!h) { var sn = structNear(); if (sn) drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
+    actBtn = null; if (panelOpen || sleepT > 0 || trans) return;
+    var h = SC ? holeNear() : null; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
+      var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
     drawPill(g, now, coarse ? "Enter cave" : "Enter cave (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 0.8, false, function () { enterCave(h.x, h.y); });
   }
   function drawCavePlayer(g, now) {
@@ -2764,7 +3423,24 @@
     }
     var ux = ox + F.up.x * ts, uy = oy + F.up.y * ts;
     if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
-      F.flat.forEach(function (e) { g.drawImage(ATLAS, 0, e.id * 16, 16, 16, ox + e.x * ts, oy + e.y * ts, ts, ts); });
+      F.flat.forEach(function (e) {
+        var fx = ox + e.x * ts, fy = oy + e.y * ts;
+        if (e.id === T.LAVA || e.id === T.WATER) {   // liquids in a stone-rimmed basin, with a slow shimmer
+          var lv = e.id === T.LAVA, ph2 = Math.sin(now / (lv ? 500 : 800) + e.x * 1.3 + e.y * 0.7);
+          g.fillStyle = lv ? "#3a2a2e" : "#5a7488"; g.fillRect(fx, fy, ts, ts);
+          g.fillStyle = lv ? "#e8501a" : "#2f8fa8"; g.fillRect(fx + ts * 0.08, fy + ts * 0.08, ts * 0.84, ts * 0.84);
+          g.fillStyle = lv ? "#ffb13b" : "#7fd6e8"; g.fillRect(fx + ts * (0.2 + 0.1 * ph2), fy + ts * 0.3, ts * 0.32, ts * 0.1); g.fillRect(fx + ts * (0.5 - 0.1 * ph2), fy + ts * 0.62, ts * 0.26, ts * 0.08);
+          if (lv && ph2 > 0.7) { g.fillStyle = "#fff2b0"; g.fillRect(fx + ts * 0.45, fy + ts * 0.4, ts * 0.08, ts * 0.08); }
+          return;
+        }
+        g.drawImage(ATLAS, 0, e.id * 16, 16, 16, fx, fy, ts, ts);
+      });
+      if (F.wins) { var dl = daylight(S.time); F.wins.forEach(function (e) {   // windows: a soft shaft of daylight falls across the floor below them (dimmer at night)
+        var wx = ox + e.x * ts, wy = oy + (e.y + 1) * ts, L = ts * 3.4, sg2 = g.createLinearGradient(0, wy, 0, wy + L);
+        sg2.addColorStop(0, "rgba(255,240,205," + (0.05 + 0.2 * dl).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,240,205,0)");
+        g.fillStyle = sg2; g.beginPath(); g.moveTo(wx + ts * 0.08, wy); g.lineTo(wx + ts * 0.92, wy); g.lineTo(wx + ts * 1.55, wy + L); g.lineTo(wx - ts * 0.55, wy + L); g.closePath(); g.fill();
+        srcs.push([e.x + 0.5, e.y + 2.1, 3.6, 0.25 + 0.45 * dl]);
+      }); }
       g.fillStyle = "#3a2216"; g.fillRect(ux, uy, ts, ts);
       g.drawImage(ATLAS, 0, T.DOOR_T * 16, 16, 16, ux, uy, ts, ts / 2); g.drawImage(ATLAS, 0, T.DOOR_B * 16, 16, 16, ux, uy + ts / 2, ts, ts / 2);
       g.fillStyle = "rgba(120,40,40,.7)"; g.fillRect(ux + ts * 0.12, uy - ts * 0.55, ts * 0.76, ts * 0.45); g.fillStyle = "rgba(255,225,170,.18)"; g.fillRect(ux, uy - ts * 1.5, ts, ts * 1.5);
@@ -2773,7 +3449,8 @@
     g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy - ts, ts, ts); g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy, ts, ts); }
     if (!F.bld && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
     if (!F.bld) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
-    else F.deco.forEach(function (e) { var td = TILES[e.id], gl = td.glow; if (e.id === T.TORCH) { srcs.push([e.x + 0.5, e.y + 0.5, 6, 1]); glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, "255,170,60", 4.2, 0.3]); } else if (td.light || gl) { srcs.push([e.x + 0.5, e.y + 0.5, (td.gr || 3) * 1.3, 0.85]); if (gl) glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, gl, td.gr || 3, td.ga || 0.2]); } });
+    else F.deco.forEach(function (e) { var td = TILES[e.id], gl = td.glow; if (e.flat) { if (e.id === T.LAVA) srcs.push([e.x + 0.5, e.y + 0.5, 2.4, 0.7]); return; }   // floor tiles never light the room (the lava troughs glow a little)
+      if (e.id === T.TORCH) { srcs.push([e.x + 0.5, e.y + 0.5, 6, 1]); glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, "255,170,60", 4.2, 0.3]); } else if (td.light || gl) { srcs.push([e.x + 0.5, e.y + 0.5, (td.gr || 3) * 1.3, 0.85]); if (gl) glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, gl, td.gr || 3, td.ga || 0.2]); } });
     F.lamps.forEach(function (l) {
       if (l.x < X0 - 6 || l.x > X1 + 6 || l.y < Y0 - 6 || l.y > Y1 + 6) return;
       var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);
@@ -2783,6 +3460,7 @@
     for (j = ey0; j <= ey1; j++) for (i = ex0; i <= ex1; i++) {   // torches give light; ore glows a little
       idx = j * W2 + i; var inView = i >= X0 && i <= X1 && j >= Y0 && j <= Y1;
       if (F.torch[idx]) { srcs.push([i + 0.5, j + 0.5, 6.8, 1]); if (inView) { g.drawImage(ATLAS, 0, T.TORCH * 16, 16, 16, ox + i * ts, oy + j * ts, ts, ts); glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,170,60", 4.2, 0.3]); } }
+      else if (F.node[idx] && TILES[F.node[idx]].kind === "lootchest") { srcs.push([i + 0.5, j + 0.5, 2.4, 0.5]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,200,90", 2.4, 0.2]); }
       else if (F.node[idx] && TILES[F.node[idx]].kind === "ore") { srcs.push([i + 0.5, j + 0.5, 2.6, 0.6]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, F.node[idx] === T.CINDER ? "255,120,50" : F.node[idx] === T.CRYSTAL ? "130,225,255" : "80,240,190", 2.2, 0.16]); }
     }
     // rocks and the player, drawn back to front
@@ -2793,8 +3471,10 @@
         var rid = F.node[rj * W2 + ri]; if (!rid) continue;
         var rx = ox + ri * ts, ry2 = oy + rj * ts; g.drawImage(caveNode(rid, ((ri * 7 + rj * 13) & 1)), 0, 0, 16, 16, rx, ry2, ts, ts);
         if (TILES[rid].kind === "ore" && !reduce && ((now / 90 + ri * 7 + rj * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(rx + ts * 0.55, ry2 + ts * 0.3, 2, 2); }
-      } }
+      }
+      drawCaveMobs(g, now, rj); }
     };
+    if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     drawRocks(Y0, Math.min(Y1, prow)); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Y1);
     if (mine) {
       var mx = ox + mine.x * ts, my = oy + mine.y * ts, nseg = 1 + Math.floor(mine.p * 6);
@@ -2815,7 +3495,7 @@
     }
     LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(LC, 0, 0, gw, gh, ox + X0 * ts, oy + Y0 * ts, gw * ts, gh * ts);
     g.imageSmoothingEnabled = false; g.globalCompositeOperation = "lighter";
-    for (i = 0; i < glows2.length; i++) { var gl = glows2[i], rad = gl[3] * ts, rg = g.createRadialGradient(gl[0], gl[1], 0, gl[0], gl[1], rad); rg.addColorStop(0, "rgba(" + gl[2] + "," + gl[4] + ")"); rg.addColorStop(1, "rgba(" + gl[2] + ",0)"); g.fillStyle = rg; g.fillRect(gl[0] - rad, gl[1] - rad, rad * 2, rad * 2); }
+    drawGlows(g, glows2);
     g.globalCompositeOperation = "source-over";
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
@@ -2834,11 +3514,12 @@
   }
 
   // ---------- HUD AND PANELS ----------
+  var HUDC = {}; function hudSet(id, v) { if (HUDC[id] !== v) { HUDC[id] = v; $(id).textContent = v; } }   // PERF: rewriting identical text 4x a second re-blurred and re-laid-out the HUD
   function hud() {
-    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = cf.bld ? "Inside" : cf.theme.sub; drawTrail(); if (hbDirty) drawBar(); return; }
+    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bioAt(), bi = BIOMES[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
-    $("sbxBiome").textContent = bi.n; $("sbxLoc").style.setProperty("--bc", bi.c);
-    $("sbxSub").textContent = PHN[ph.id] + (under ? " \u00b7 depth " + depth : " \u00b7 surface");
+    hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
+    hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 surface"));
     if (lastBio !== b) { bcard(bi, b); lastBio = b; }
     drawTrail();
     if (hbDirty) drawBar();
@@ -2855,16 +3536,183 @@
       html += '<button type="button" class="sbx-slot' + (on ? " on" : "") + (dk ? " hasdur" : "") + (brk ? " brk" : "") + '" data-sel="' + id + '" data-slot="' + en.slot + '" aria-label="' + (dk ? "Durability " + dpc + " percent. " : "") + (id === "pick" ? PICKS[S.tier].n : id === "shovel" ? SHOVEL.n : id === "can" ? CAN.n + ", " + S.water + " of " + CAN.max + " water" : id === "weapon" ? WEAPONS[S.wpn].n + ", damage " + WEAPONS[S.wpn].dmg : ITEMS[id].n + ", " + S.slots[en.slot].n) + '" aria-pressed="' + on + '"><img alt="" src="' + icon(id) + '"><i>' + (i + 1) + '</i><b>' + esc(cnt) + '</b>' + (dk ? '<u class="dur' + (dpc <= 20 ? " bad" : dpc <= 50 ? " low" : "") + '" style="--d:' + dpc + '%"></u>' : "") + '</button>';
     });
     $("sbxBar").innerHTML = html;
-    var bb = $("sbxMenuBtn"); bb.classList.toggle("full", S.slots.every(Boolean));
+    var bb = $("sbxPackBtn"); bb.classList.toggle("full", S.slots.every(Boolean));
   }
   function costHtml(cost) {
     return Object.keys(cost).map(function (k) { var have = S.inv[k] || 0, ok = have >= cost[k]; return '<span class="' + (ok ? "ok" : "no") + '"><img alt="" src="' + icon(k) + '">' + have + "/" + cost[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("");
   }
+  // ---------- CRAFT BROWSER: category tabs, each split into sub-categories, every list sorted by progression ----------
+  // CRAFT_GROUPS gives each recipe id its "Category|Sub-category" (order here = order of the sub-category chips). A recipe id that is not listed lands in Decor > More.
+  // Inside a sub-category recipes are sorted by progression: Workbench level needed, then gear tier, then station / material cost.
+  var CRAFT_CATS = ["Tools", "Gear", "Food", "Stations", "Materials", "Building", "Walls", "Furniture", "Lighting", "Garden", "Decor"], CRAFT_MAP = {}, CRAFT_SUBS = {}, CRAFT_ALL = null, ccat = "Tools", csub = "", cready = false;
+  [
+    ["Tools|Pickaxes", "pick1 pick2 pick3 pick4"],
+    ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4"],
+    ["Tools|Utility", "shovel can"],
+    ["Gear|Armor", "arm1 arm2 arm3 arm4"],
+    ["Gear|Backpacks", "bag1 bag2"],
+    ["Stations|Workbenches", "bench decorbench"],
+    ["Stations|Crafting Stations", "x_cookpot x_furnace x_loom x_mason"],
+    ["Food|Farming", "x_farmland"],
+    ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat"],
+    ["Food|Hearty Meals", "x_chili x_stew x_berrypie x_feast"],
+    ["Materials|Fibre & Cloth", "x_rope x_cloth x_furcloth x_candle"],
+    ["Materials|Dyes", "x_dyered x_dyeblue x_dyegreen"],
+    ["Materials|Smelted & Fired", "x_ingot x_claybrick x_mortar"],
+    ["Building|Basics", "planks ladder door"],
+    ["Building|Stone & Brick", "d_brick x_cobble x_redbrick x_mossbrick x_plaster d_bbrick d_ibrick x_permabrick x_obsbrick x_moonbrick x_quartzblock x_quartzpillar"],
+    ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock"],
+    ["Building|Metal", "x_ironblock x_bars"],
+    ["Building|Floors & Roofs", "x_parquet x_checker d_thatch x_shinglered x_shingleblue"],
+    ["Walls|Basic Walls", "w_plank w_log w_moss"],
+    ["Walls|Cottage & Stone", "w_timber w_plaster w_brick x_w_redbrick x_w_cobble"],
+    ["Walls|Fancy Walls", "x_w_quartz x_w_obsidian x_w_frost x_w_amber"],
+    ["Walls|Wallpaper & Panels", "x_w_stripe x_w_floral x_w_panel"],
+    ["Furniture|Seating", "d_chair d_stool x_sofa d_throne"],
+    ["Furniture|Tables & Desks", "d_table x_desk"],
+    ["Furniture|Storage", "chest d_shelf d_wardrobe x_dresser x_crate x_sack d_barrel d_bucket"],
+    ["Furniture|Beds & Rugs", "bed d_rug"],
+    ["Furniture|Clocks & Curios", "x_harp x_clock x_globe x_telescope"],
+    ["Lighting|Torches & Fires", "torch x_slimetorch d_campfire d_hearth x_bonfire d_brazier"],
+    ["Lighting|Lanterns & Lamps", "d_lantern d_sconce d_emberlantern d_frostlantern x_hanginglantern x_streetlamp x_mushlamp x_lavalamp"],
+    ["Lighting|Candles & Chandeliers", "x_candelabra d_chandelier x_fairylights"],
+    ["Garden|Pots & Planters", "d_pot d_fpot d_planter d_glowpot"],
+    ["Garden|Structures", "d_fence d_bale d_well d_fountain"],
+    ["Garden|Curios", "x_scarecrow x_gravestone x_totem d_cauldron d_urn"],
+    ["Decor|Wall Art", "d_painting d_banner d_sign d_emberbanner d_frostbanner x_mirror x_worldmap x_wreath x_tap_swamp x_tap_ember x_tap_frost"],
+    ["Decor|Trophies & Armory", "d_bugtrophy d_frogtrophy x_battrophy x_antlers x_weaponrack x_armorstand x_shield x_swords x_wolftrophy x_gatortrophy x_waspnest x_slimejar"],
+    ["Decor|Statues & Showpieces", "d_frogstatue d_guardian d_icesculpt x_snowman x_obelisk d_anvil x_aquarium"]
+  ].forEach(function (g) { var ps = g[0].split("|"); (CRAFT_SUBS[ps[0]] = CRAFT_SUBS[ps[0]] || []).push(ps[1]); g[1].split(" ").forEach(function (id) { CRAFT_MAP[id] = g[0]; }); });
+  function recRank(r) { var c = 0, k; for (k in r.cost) c += r.cost[k]; return (r.bl || 0) * 100000 + (r.tier || r.wpn || r.arm || r.bag || 0) * 1000 + (r.stn ? 50 : 0) + (r.bench ? 20 : 0) + c; }
+  function craftAll() {
+    if (CRAFT_ALL) return CRAFT_ALL;
+    CRAFT_ALL = RECIPES.concat(DECOR);
+    CRAFT_ALL.forEach(function (r) { var ps = (CRAFT_MAP[r.id] || "Decor|More").split("|"); r.cat2 = ps[0]; r.sub = ps[1]; r.rank = recRank(r); });
+    var si = function (r) { var i = (CRAFT_SUBS[r.cat2] || []).indexOf(r.sub); return i < 0 ? 99 : i; };
+    CRAFT_ALL.sort(function (a, b) { return CRAFT_CATS.indexOf(a.cat2) - CRAFT_CATS.indexOf(b.cat2) || si(a) - si(b) || a.rank - b.rank; });
+    return CRAFT_ALL;
+  }
+  function recStatus(r) {   // owned / locked / affordable / ready-to-craft-right-now for one recipe (gear recipes and Decor Workbench recipes)
+    var afford = Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; });
+    if (r.deco) { var dl = !!(r.bl && S.bl < r.bl), nd = !decorNear(); return { owned: false, lock: dl, lock0: false, needB: nd, can: afford && !dl, ready: afford && !dl && !nd }; }
+    var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can)),
+      lock0 = !!((r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need)))),
+      lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()), can = !owned && !lock && afford;
+    return { owned: owned, lock: lock, lock0: lock0, needB: needB, can: can, ready: can && !needB && !(r.stn && !nearStn(r.stn)) };
+  }
+  function recCard(r) {
+    var st = recStatus(r), im, note;
+    if (r.deco) {
+      im = icon(Object.keys(r.out)[0]);
+      note = st.lock ? "Needs the " + BENCH_LV[r.bl].n + " (tap your Bog Workbench to upgrade it)." : r.d;
+    } else {
+      im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0]);
+      note = st.lock && !st.lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : st.lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (st.needB && !st.owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
+    }
+    return '<div class="sbx-card' + (st.owned || st.lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (st.ready ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (st.owned || st.lock ? " disabled" : "") + ">" + (st.owned ? "Owned" : st.lock ? "Locked" : "Craft") + "</button></div>";
+  }
+  function handAll() { return craftAll().filter(function (r) { return !stnOf(r); }); }   // the Journal only lists what you make by hand
+  function handCats() { var all = handAll(); return CRAFT_CATS.filter(function (c) { return c === "Stations" || all.some(function (r) { return r.cat2 === c; }); }); }
+  function craftBar() {   // sticky category chips + sub-category chips + the Ready-only switch
+    var all = handAll(), cats = handCats(), rd = {}, sr = {}, subs = [];
+    if (cats.indexOf(ccat) < 0) ccat = cats[0];
+    all.forEach(function (r) { var ok = recStatus(r).ready; if (ok) rd[r.cat2] = (rd[r.cat2] || 0) + 1; if (r.cat2 === ccat) { if (subs.indexOf(r.sub) < 0) subs.push(r.sub); if (ok) sr[r.sub] = (sr[r.sub] || 0) + 1; } });
+    if (csub && subs.indexOf(csub) < 0) csub = "";
+    return '<div class="sbx-cbar"><div class="sbx-cats" role="tablist" aria-label="Craft categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === ccat ? "on" : "") + '" data-cc="' + esc(c) + '" aria-selected="' + (c === ccat) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("")
+      + '</div><div class="sbx-subs" aria-label="Sub-categories"><button type="button" class="rdy' + (cready ? " on" : "") + '" data-cready="1" aria-pressed="' + cready + '">Ready</button><button type="button" class="' + (!csub ? "on" : "") + '" data-cs="">All</button>' + subs.map(function (c) { return '<button type="button" class="' + (c === csub ? "on" : "") + '" data-cs="' + esc(c) + '">' + esc(c) + (sr[c] ? "<i>" + sr[c] + "</i>" : "") + "</button>"; }).join("")
+      + '</div></div>';
+  }
+  function repairHtml(f, atBench) {   // repair cards: hand repairs in the Journal, Glowspore-and-up repairs in the Workbench window
+    var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : "", S.arm ? "arm" : ""].filter(Boolean).filter(function (k) { return repairNeedsBench(k) === atBench && (!f || f(k)); });
+    if (!rk.length) return "";
+    var h = "<h3>Repair</h3>";
+    rk.forEach(function (k) {
+      var m = durMax(k), cur = durOf(k), cost = repairCost(k), full = cur >= m, needB2 = repairNeedsBench(k) && !nearBench(), can2 = !full && Object.keys(cost).every(function (q) { return (S.inv[q] || 0) >= cost[q]; }) && !needB2;
+      h += '<div class="sbx-card' + (full ? " done" : "") + '"><img class="big" alt="" src="' + icon(k === "wpn" ? "weapon" : k) + '"><div><b>' + esc(toolName(k)) + "</b><small>" + (cur <= 0 ? "Broken! " : "") + "Durability " + cur + " / " + m + (!full && needB2 ? ". Needs a Bog Workbench nearby." : "") + '</small><span class="bar dur' + (cur / m <= 0.2 ? " bad" : cur / m <= 0.5 ? " low" : "") + '"><i style="width:' + Math.round(cur / m * 100) + '%"></i></span>' + (full ? "" : '<div class="cost">' + costHtml(cost) + "</div>") + '</div><button type="button" class="btn' + (can2 ? "" : " ghost") + '" data-sx-repair="' + k + '"' + (full ? " disabled" : "") + ">" + (full ? "Sturdy" : "Repair") + "</button></div>";
+    });
+    return h + (atBench ? "" : "<h3>Craft</h3>");
+  }
+  function stationNearK(k) {   // a placed station of kind k within tapping reach (the Journal's "Open" buttons)
+    if (cave) return null; var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = REACH * REACH, x, y, dx, dy, d;
+    for (y = cy - 6; y <= cy + 6; y++) for (x = cx - 6; x <= cx + 6; x++) if (stnKeyAt(x, y) === k) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - PH / 2); d = dx * dx + dy * dy; if (d <= bd) { bd = d; best = { k: k, x: x, y: y }; } }
+    return best;
+  }
+  function benchUpCard() {   // the Workbench level + Upgrade button (top of the Workbench window)
+    var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1], nb = nearBench();
+    return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
+  }
+  // ---------- STATION WINDOW: its own pop-up with only the recipes made at that station ----------
+  function stnRecs(k) { return craftAll().filter(function (r) { return stnOf(r) === k; }); }
+  function renderStn() {
+    var k = stnOpen.k;
+    if (stnKeyAt(stnOpen.x, stnOpen.y) !== k) { closeStn(); return; }   // it was broken or swapped while open
+    var D = STATIONS[k], recs = stnRecs(k), cats = [], rd = {}, total = 0, h = "", sc = stnCat[k] || "";
+    recs.forEach(function (r) { if (cats.indexOf(r.cat2) < 0) cats.push(r.cat2); if (recStatus(r).ready) { rd[r.cat2] = (rd[r.cat2] || 0) + 1; total++; } });
+    if (sc && cats.indexOf(sc) < 0) sc = stnCat[k] = "";
+    $("sbxStnBox").style.setProperty("--stn", stnColor(k));
+    $("sbxStnTitle").innerHTML = '<img alt="" src="' + icon(D.ic) + '"><span>' + esc(stnName(k)) + "<small>" + (total ? total + " ready to craft" : recs.length + " recipes") + "</small></span>";
+    h += '<div class="sbx-cbar"><div class="sbx-cats" role="tablist" aria-label="Station categories"><button type="button" class="rdy' + (stnReady ? " on" : "") + '" data-stready="1" aria-pressed="' + stnReady + '">Ready' + (total ? "<i>" + total + "</i>" : "") + "</button>"
+      + (cats.length > 1 ? '<button type="button" role="tab" class="' + (!sc ? "on" : "") + '" data-stc="" aria-selected="' + !sc + '">All</button>' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === sc ? "on" : "") + '" data-stc="' + esc(c) + '" aria-selected="' + (c === sc) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("") : "")
+      + "</div></div>";
+    h += '<p class="sbx-note">' + esc(D.d) + "</p>";
+    if (k === "bench" && !sc && !stnReady) h += benchUpCard() + repairHtml(null, true);
+    var shown = recs.filter(function (r) { return (!sc || r.cat2 === sc) && (!stnReady || recStatus(r).ready); }), last = "";
+    if (!shown.length) h += '<p class="sbx-note">' + (stnReady ? "Nothing here can be crafted right now. Turn off Ready to see everything." : "Nothing here yet.") + "</p>";
+    shown.forEach(function (r) { var gh = cats.length > 1 && !sc ? r.cat2 + " · " + r.sub : r.sub; if (gh !== last) { last = gh; h += "<h3>" + esc(gh) + "</h3>"; } h += recCard(r); });
+    var bd = $("sbxStnBody"), oc = bd.querySelector(".sbx-cats"), ol = oc ? oc.scrollLeft : 0, st = bd.scrollTop; bd.innerHTML = h; bd.scrollTop = st;
+    var row = bd.querySelector(".sbx-cats"); if (row) { row.scrollLeft = ol; var on = row.querySelector("[data-stc].on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; }
+  }
+  function openStn(k, x, y) {
+    if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && !stnOpen) closePanel();
+    var same = stnOpen && stnOpen.x === x && stnOpen.y === y;
+    stnOpen = { k: k, x: x, y: y }; panelOpen = true; confirmNew = false; $("sbxStn").hidden = false; stageEl.classList.add("panel");
+    keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; snd("coin");
+    renderStn(); if (!same) $("sbxStnBody").scrollTop = 0;
+    var xb = $("sbxStn").querySelector(".sbx-x"); if (xb) xb.focus({ preventScroll: true });
+  }
+  function closeStn() { stnOpen = null; panelOpen = false; $("sbxStn").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
+  function tapStation(x, y) {   // quick tap on a station tile
+    var k = stnKeyAt(x, y); if (!k) return false;
+    var dx = x + 0.5 - p.x, dy = y + 0.5 - (p.y - PH / 2);
+    if (dx * dx + dy * dy <= REACH * REACH) openStn(k, x, y); else nag("Walk closer to the " + stnName(k) + ".");
+    return true;
+  }
+  function bagHtml() {
+    var h = "";
+      reslot(); var used = usedSlots(), cell = function (i) {
+        var c = S.slots[i], on = invSel === i;
+        return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + "</b>" : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
+      }, cur2 = invSel >= 0 ? S.slots[invSel] : null, g1 = "", g2 = "", i2;
+      var g3 = ""; for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += cell(i2); for (i2 = INV_BASE; i2 < invN(); i2++) g3 += cell(i2);
+      for (i2 = 0; i2 < INV_HOT; i2++) g2 += cell(i2);
+      h += '<p class="sbx-note"><span class="' + (used >= invN() ? "invfull" : "") + '">' + used + " / " + invN() + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap a slot, then tap another to move, swap or merge stacks." + (S.bag ? " You are wearing the " + BAGS[S.bag].n + " (+" + BAGS[S.bag].x + " slots)." : " Craft a Backpack to carry more.") + "</p>";
+      h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div>' + (g3 ? "<h3>" + esc(BAGS[S.bag].n) + '</h3><div class="sbx-igrid pack">' + g3 + "</div>" : "") + '<h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
+      h += '<div class="sbx-iinfo">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + cur2.n + " of " + stackMax(cur2.k) + "</small></span></div>" : "<div><span><small>No slot selected. Tap an item to select it.</small></span></div>")
+        + '<div class="acts"><button type="button" class="btn ghost" data-iact="swap"' + (cur2 ? "" : " disabled") + ">" + (invSel >= INV_HOT ? "To hotbar" : "To pack") + '</button>'
+        + (cur2 && ITEMS[cur2.k].tile !== undefined ? '<button type="button" class="btn" data-iact="hold">Hold</button>' : "")
+        + (cur2 && ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "")
+        + '<button type="button" class="btn ghost" data-iact="split"' + (cur2 && cur2.n > 1 ? "" : " disabled") + '>Split</button>'
+        + '<button type="button" class="btn ghost" data-iact="toss1"' + (cur2 ? "" : " disabled") + '>Toss 1</button>'
+        + '<button type="button" class="btn ghost' + (cur2 && invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall"' + (cur2 ? "" : " disabled") + ">" + (cur2 && invAsk === "t" + invSel ? "Tap again" : "Toss all") + '</button>'
+        + '<button type="button" class="btn ghost" data-iact="sort">Sort</button></div></div>';
+      var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
+      if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
+      if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
+    return h;
+  }
+  function renderPack() {
+    var h = bagHtml(), t = $("sbxPackTitle"); if (t) t.innerHTML = "Backpack <small>" + usedSlots() + " / " + invN() + "</small>";
+    var bd = $("sbxPackBody"), st = bd.scrollTop; bd.innerHTML = h; bd.scrollTop = st;
+  }
   function renderPanel() {
     if (!panelOpen) return;
-    var tabs = [["trail", "Trail"], ["craft", "Craft"], ["bag", "Inventory"], ["map", "Map"], ["goals", "Goals"], ["more", "Options"]];
-    if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "bag";
-    if (decorNear()) tabs.splice(2, 0, ["decor", "Decor"]); else if (tab === "decor") tab = "craft";
+    if (stnOpen) return renderStn();
+    if (packOpen) return renderPack();
+    if (mapOpen) return;
+    if (tab === "bag" || tab === "map") tab = "craft";
+    var tabs = [["trail", "Trail"], ["craft", "Craft"], ["map", "Map"], ["goals", "Goals"], ["more", "Options"]];
+    if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "craft";
+    if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
     $("sbxTabs").innerHTML = tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
     var h = "";
     if (tab === "trail") {
@@ -2877,62 +3725,27 @@
           + (t.rw && n <= S.trail && !done ? '<small class="rw">Reward: ' + esc(rewardText(t.rw)) + "</small>" : "") + "</div></div>";
       }).join("") + "</div>";
     } else if (tab === "craft") {
-      var nb = nearBench();
-      h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? (nb ? "A Workbench is close, so you can craft anything." : "No Workbench nearby. Walk next to yours to craft better gear.") : "Better tools unlock new rock. A Workbench lets you craft the next picks, and upgrading it unlocks armor for the next biome.") + "</p>";
-      var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1];
-      if (S.st.benches) {
-        h += "<h3>Workbench</h3>";
-        h += '<div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
-      }
-      var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : "", S.arm ? "arm" : ""].filter(Boolean);
-      if (rk.length) {
-        h += "<h3>Repair</h3>";
-        rk.forEach(function (k) {
-          var m = durMax(k), cur = durOf(k), cost = repairCost(k), full = cur >= m, needB2 = repairNeedsBench(k) && !nearBench(), can2 = !full && Object.keys(cost).every(function (q) { return (S.inv[q] || 0) >= cost[q]; }) && !needB2;
-          h += '<div class="sbx-card' + (full ? " done" : "") + '"><img class="big" alt="" src="' + icon(k === "wpn" ? "weapon" : k) + '"><div><b>' + esc(toolName(k)) + "</b><small>" + (cur <= 0 ? "Broken! " : "") + "Durability " + cur + " / " + m + (!full && needB2 ? ". Needs a Bog Workbench nearby." : "") + '</small><span class="bar dur' + (cur / m <= 0.2 ? " bad" : cur / m <= 0.5 ? " low" : "") + '"><i style="width:' + Math.round(cur / m * 100) + '%"></i></span>' + (full ? "" : '<div class="cost">' + costHtml(cost) + "</div>") + '</div><button type="button" class="btn' + (can2 ? "" : " ghost") + '" data-sx-repair="' + k + '"' + (full ? " disabled" : "") + ">" + (full ? "Sturdy" : "Repair") + "</button></div>";
+      h += craftBar();
+      if (ccat === "Tools" || ccat === "Gear" || ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
+      if (ccat === "Stations") {
+        h += '<h3>Crafting stations</h3><p class="sbx-note">Recipes that need a station only show up in that station\'s window. Place one, then tap it (or press F next to it) to open it.</p>';
+        STN_ORDER.forEach(function (k) {
+          var D = STATIONS[k], recs = craftAll().filter(function (r) { return stnOf(r) === k; }); if (!recs.length || !ITEMS[D.ic]) return;
+          var here = stationNearK(k), maker = craftAll().filter(function (r) { return r.out && r.out[D.ic]; })[0], how = maker ? (stnOf(maker) ? "Make it at the " + STATIONS[stnOf(maker)].n + "." : "Made by hand below.") : "";
+          h += '<div class="sbx-card"><img class="big" alt="" src="' + icon(D.ic) + '"><div><b style="color:' + stnColor(k) + '">' + esc(stnName(k)) + "</b><small>" + esc(D.d + " " + recs.length + " recipes. " + how) + '</small></div><button type="button" class="btn' + (here ? "" : " ghost") + '" data-stn-open="' + k + '"' + (here ? "" : " disabled") + ">" + (here ? "Open" : "Not near") + "</button></div>";
         });
-        h += "<h3>Craft</h3>";
+        h += "<h3>Make by hand</h3>";
       }
-      RECIPES.forEach(function (r) {
-        var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock0 = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need))), lock = lock0 || (r.bl && S.bl < r.bl), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.arm ? "arm" + r.arm : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
-        var im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(ic);
-        var note = lock && !lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
-        h += '<div class="sbx-card' + (owned || lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !needB ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (owned || lock ? " disabled" : "") + ">" + (owned ? "Owned" : lock ? "Locked" : "Craft") + "</button></div>";
-      });
-    } else if (tab === "decor") {
-      var lastCat = "";
-      h += '<p class="sbx-note"><b>Decor Workbench.</b> Craft furniture and decorations for your camp or house. Floor pieces need solid ground under them; wall pieces hang on a block beside or above them. Some pieces are built from others (a Lantern needs a Clay Pot). Building blocks go in your hotbar and place like Planks. Pieces from Ember Bog and Frostfen need a better Bog Workbench.</p>';
-      DECOR.forEach(function (r) {
-        if (r.cat !== lastCat) { lastCat = r.cat; h += "<h3>" + esc(r.cat) + "</h3>"; }
-        var can = Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ok = Object.keys(r.out)[0], dl = r.bl && S.bl < r.bl;
-        h += '<div class="sbx-card' + (dl ? " done" : "") + '"><img class="big" alt="" src="' + icon(ok) + '"><div><b>' + esc(r.n) + "</b><small>" + esc(dl ? "Needs the " + BENCH_LV[r.bl].n + " (upgrade your Bog Workbench in the Craft tab)." : r.d) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !dl ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (dl ? " disabled" : "") + ">" + (dl ? "Locked" : "Craft") + "</button></div>";
-      });
-    } else if (tab === "bag") {
-      reslot(); var used = usedSlots(), cell = function (i) {
-        var c = S.slots[i], on = invSel === i;
-        return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + "</b>" : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
-      }, cur2 = invSel >= 0 ? S.slots[invSel] : null, g1 = "", g2 = "", i2;
-      var g3 = ""; for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += cell(i2); for (i2 = INV_BASE; i2 < invN(); i2++) g3 += cell(i2);
-      for (i2 = 0; i2 < INV_HOT; i2++) g2 += cell(i2);
-      h += '<p class="sbx-note"><b>Inventory</b> \u00b7 <span class="' + (used >= invN() ? "invfull" : "") + '">' + used + " / " + invN() + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap a slot, then tap another to move, swap or merge stacks." + (S.bag ? " You are wearing the " + BAGS[S.bag].n + " (+" + BAGS[S.bag].x + " slots)." : " Craft a Backpack to carry more.") + "</p>";
-      h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div>' + (g3 ? "<h3>" + esc(BAGS[S.bag].n) + '</h3><div class="sbx-igrid pack">' + g3 + "</div>" : "") + '<h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
-      h += '<div class="sbx-iinfo">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + cur2.n + " of " + stackMax(cur2.k) + "</small></span></div>" : "<div><span><small>No slot selected. Tap an item to select it.</small></span></div>")
-        + '<div class="acts"><button type="button" class="btn ghost" data-iact="swap"' + (cur2 ? "" : " disabled") + ">" + (invSel >= INV_HOT ? "To hotbar" : "To bag") + '</button>'
-        + (cur2 && ITEMS[cur2.k].tile !== undefined ? '<button type="button" class="btn" data-iact="hold">Hold</button>' : "")
-        + '<button type="button" class="btn ghost" data-iact="split"' + (cur2 && cur2.n > 1 ? "" : " disabled") + '>Split</button>'
-        + '<button type="button" class="btn ghost" data-iact="toss1"' + (cur2 ? "" : " disabled") + '>Toss 1</button>'
-        + '<button type="button" class="btn ghost' + (cur2 && invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall"' + (cur2 ? "" : " disabled") + ">" + (cur2 && invAsk === "t" + invSel ? "Tap again" : "Toss all") + '</button>'
-        + '<button type="button" class="btn ghost" data-iact="sort">Sort bag</button></div></div>';
-      var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
-      if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
-      if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
+      h += repairHtml(function (k) { return ccat === "Tools" ? k !== "arm" : ccat === "Gear" && k === "arm"; }, false);
+      var shown = handAll().filter(function (r) { return r.cat2 === ccat && (!csub || r.sub === csub) && (!cready || recStatus(r).ready); }), lastSub = "";
+      if (!shown.length) h += '<p class="sbx-note">' + (cready ? "Nothing in here can be crafted right now. Turn off Ready to see everything." : "Nothing here is made by hand. Open a crafting station to see its recipes.") + "</p>";
+      shown.forEach(function (r) { if (!csub && r.sub !== lastSub) { lastSub = r.sub; h += "<h3>" + esc(r.sub) + "</h3>"; } h += recCard(r); });
     } else if (tab === "chest") {
       var cc = S.chests[chestKey] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
-      h += '<p class="sbx-note"><b>Wooden Chest</b> (' + ck.length + " of " + CHEST_KINDS + ' kinds). Tap an item to move the whole stack.</p>';
+      var ckx = chestKey.split(","), cname = TILES[get(+ckx[0], +ckx[1])].kind === "lootchest" ? "Cave Chest" : "Wooden Chest";
+      h += '<p class="sbx-note"><b>' + cname + '</b> (' + ck.length + " of " + CHEST_KINDS + ' kinds). Tap an item to move the whole stack.</p>';
       h += '<h3>In the chest</h3>' + (ck.length ? '<div class="sbx-bag">' + ORDER.filter(function (k) { return cc[k]; }).map(function (k) { return btn(k, cc[k], "data-ch-take"); }).join("") + "</div>" : '<p class="sbx-note">Empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="take"' + (ck.length ? "" : " disabled") + ">Take all</button>";
-      h += '<h3>In your bag</h3>' + (mine2.length ? '<div class="sbx-bag">' + mine2.map(function (k) { return btn(k, S.inv[k], "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your bag is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine2.length ? "" : " disabled") + ">Store all</button>";
-    } else if (tab === "map") {
-      h += '<canvas id="sbxMap" width="1080" height="260" aria-label="Map of the places you have explored"></canvas><p class="sbx-note">Dark areas are unexplored. Walk and dig to uncover the world.</p>';
+      h += '<h3>In your backpack</h3>' + (mine2.length ? '<div class="sbx-bag">' + mine2.map(function (k) { return btn(k, S.inv[k], "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your backpack is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine2.length ? "" : " disabled") + ">Store all</button>";
     } else if (tab === "goals") {
       var done = GOALS.filter(function (g) { return S.ms[g.id]; }).length;
       h += '<p class="sbx-note"><b>' + done + " / " + GOALS.length + "</b> goals complete. Goals are bragging rights for now, with no coin or crystal payouts.</p><div class=\"sbx-goals\">" + GOALS.map(function (g) { return '<div class="sbx-goal' + (S.ms[g.id] ? " ok" : "") + '"><i aria-hidden="true">' + (S.ms[g.id] ? "&#10003;" : "") + "</i><div><b>" + esc(g.n) + "</b><small>" + esc(g.d) + "</small></div></div>"; }).join("") + "</div>";
@@ -2940,32 +3753,134 @@
       var an = (typeof Crystals !== "undefined" && Crystals.animals) ? Crystals.animals : [{ id: "frog", name: "Boggy the Frog" }];
       h += '<h3>Play as</h3><div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = '<img alt="" src="' + DelveAv.thumb(Object.assign({}, Crystals.outfit()), a.id, 3) + '">'; } catch (e) { try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e2) {} } return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note">Your equipped avatar gear shows in the world. Change it in the Armory.</p>';
       h += '<h3>View</h3><div class="sbx-row"><button type="button" class="btn ghost" data-zoom="-1" aria-label="Zoom out">Zoom out</button><b>' + Math.round(S.zoom * 100) + '%</b><button type="button" class="btn ghost" data-zoom="1" aria-label="Zoom in">Zoom in</button></div>';
+      h += '<h3>Day counter</h3><p class="sbx-note">Show which in-game day you are on, under the biome name. This world is on day <b>' + (((S.days | 0) + 1)) + '</b>. The count is saved with the world; the on/off choice is saved on this device.</p><div class="sbx-row"><button type="button" class="btn' + (SHOWDAYS ? "" : " ghost") + '" data-daytoggle aria-pressed="' + SHOWDAYS + '">Day counter: ' + (SHOWDAYS ? "On" : "Off") + '</button></div>';
+      h += '<h3>Hunger</h3><p class="sbx-note">With hunger on, your food bar slowly empties: eat to stay well fed (faster healing). Turn it off for a relaxed game. Saved with this world.</p><div class="sbx-row"><button type="button" class="btn' + (S.nohunger ? " ghost" : "") + '" data-hungertoggle aria-pressed="' + !S.nohunger + '">Hunger: ' + (S.nohunger ? "Off" : "On") + '</button></div>';
+      h += '<h3>Touch controls</h3><p class="sbx-note">Size of the walk stick, arrows, jump button, hotbar, backpack and journal buttons. Saved on this device.</p><div class="sbx-row"><button type="button" class="btn ghost" data-ui="-1" aria-label="Smaller controls">Smaller</button><b>' + Math.round(UIS * 100) + '%</b><button type="button" class="btn ghost" data-ui="1" aria-label="Bigger controls">Bigger</button><button type="button" class="btn ghost" data-ui="0" aria-label="Reset control size">Reset</button></div>';
       h += '<h3>Worlds</h3><p class="sbx-note">Playing: <b>' + esc(curEntry() ? curEntry().name : "My Swamp") + '</b>. Switch worlds, start a new one, or leave.</p><div class="sbx-row"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Save &amp; exit to menu</button></div>';
       h += '<p class="sbx-note">World seed ' + S.seed + ". Every world saves automatically in this browser (not cloud-synced yet). Shared servers come in a later stage.</p>";
     }
+    var oc = document.querySelector(".sbx-cats"), os = document.querySelector(".sbx-subs"), ol1 = oc ? oc.scrollLeft : 0, ol2 = os ? os.scrollLeft : 0;
     $("sbxBody").innerHTML = h;
+    [[".sbx-cats", ol1], [".sbx-subs", ol2]].forEach(function (q) { var row = document.querySelector(q[0]); if (!row) return; row.scrollLeft = q[1]; var on = row.querySelector(".on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; });
     var cur = document.querySelector("#sbxTabs [aria-selected=true]"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
-    if (tab === "map") drawMap();
   }
-  function drawMap() {
-    var c = $("sbxMap"); if (!c) return; var g = c.getContext("2d"), im = g.createImageData(W, H), d = im.data, i;
+  // ---------- FULL-SCREEN MAP: zoom, drag, and waypoints ----------
+  var M = { s: 1, cx: 0, cy: 0, cw: 0, ch: 0, dpr: 1, pts: {}, drag: null, pinch: null, sel: -1, img: null, imgT: -1e9 };
+  function mapMin() { return Math.max(0.2, M.cw / W); }
+  function mapClamp() { M.s = clamp(M.s, mapMin(), 44); M.cx = clamp(M.cx, 0, W); M.cy = clamp(M.cy, 0, H); }
+  function mapSize() {
+    var c = $("sbxMapC"), r = c.getBoundingClientRect(); M.cw = Math.max(200, r.width); M.ch = Math.max(160, r.height); M.dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = Math.round(M.cw * M.dpr); c.height = Math.round(M.ch * M.dpr);
+  }
+  function mapImg() {   // the explored world, one pixel per tile (rebuilt about twice a second while the map is open)
+    var now = performance.now(); if (M.img && now - M.imgT < 500) return M.img; M.imgT = now;
+    var off = M.img || document.createElement("canvas"); off.width = W; off.height = H; var g = off.getContext("2d"), im = g.createImageData(W, H), d = im.data, i;
     for (i = 0; i < W * H; i++) {
-      var k = i * 4, x = i % W, y = (i / W) | 0, r = 0, gg = 0, b = 0, a = 255;
+      var k = i * 4, x = i % W, y = (i / W) | 0, r = 6, gg = 10, b = 9;
       if (ex[i]) { var id = tiles[i], td = TILES[id], hex; if (id === T.AIR) hex = y < col[x] ? "#2a5a6a" : "#0d1114"; else if (id === T.WATER) hex = "#2a8f95"; else hex = td.kind === "ore" ? td.c2 : td.c; if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3]; r = parseInt(hex.slice(1, 3), 16); gg = parseInt(hex.slice(3, 5), 16); b = parseInt(hex.slice(5, 7), 16); }
-      else { r = 6; gg = 10; b = 9; }
-      d[k] = r; d[k + 1] = gg; d[k + 2] = b; d[k + 3] = a;
+      d[k] = r; d[k + 1] = gg; d[k + 2] = b; d[k + 3] = 255;
     }
-    var off = document.createElement("canvas"); off.width = W; off.height = H; off.getContext("2d").putImageData(im, 0, 0);
-    g.imageSmoothingEnabled = false; g.fillStyle = "#050807"; g.fillRect(0, 0, c.width, c.height); g.drawImage(off, 0, 0, W, H, 0, 0, c.width, c.height);
-    var mk = c.width / 720, sx = c.width / W, px = p.x * sx, py = (p.y - 1) / H * c.height;   // everything is drawn in canvas pixels; mk keeps text and markers readable at this size
-    [[0, SW.B_FROST, 2], [SW.B_FROST, SW.B_EMBER, 0], [SW.B_EMBER, W, 1]].forEach(function (z) { g.fillStyle = BIOMES[z[2]].c; g.globalAlpha = 0.9; g.fillRect(z[0] * sx, 0, (z[1] - z[0]) * sx, 5 * mk); g.globalAlpha = 0.75; g.font = "800 " + Math.round(17 * mk) + "px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(BIOMES[z[2]].n, (z[0] + z[1]) / 2 * sx, 26 * mk); g.globalAlpha = 1; });
-    var vg = world.village; if (vg && ex[vg.gy * W + vg.cx]) { var vx = vg.cx * sx, vy = (vg.gy - 1) / H * c.height; g.fillStyle = "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 2 * mk; g.beginPath(); g.moveTo(vx - 7 * mk, vy + 4 * mk); g.lineTo(vx, vy - 6 * mk); g.lineTo(vx + 7 * mk, vy + 4 * mk); g.closePath(); g.fill(); g.stroke(); }   // the village, once you have seen it
-    (world.structs || []).forEach(function (s2) { if (!ex[s2.doorY * W + s2.dx]) return; var mx2 = (s2.x0 + s2.w / 2) * sx, my2 = (s2.gy - 1) / H * c.height; g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6 * mk; g.fillRect(mx2 - 4 * mk, my2 - 4 * mk, 8 * mk, 7 * mk); g.strokeRect(mx2 - 4 * mk, my2 - 4 * mk, 8 * mk, 7 * mk); });
-    (world.holes || []).forEach(function (h) { if (!ex[h.y * W + h.x]) return; var hx = h.x * sx, hy = h.y / H * c.height; g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.6 * mk; g.beginPath(); g.arc(hx, hy, 3 * mk, 0, 6.2832); g.fill(); g.stroke(); });
-    g.strokeStyle = "#fff"; g.lineWidth = 3 * mk; g.beginPath(); g.arc(px, py, 9 * mk, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(px, py, 4.5 * mk, 0, 6.2832); g.fill();
+    g.putImageData(im, 0, 0); return (M.img = off);
   }
-  function openPanel(t) { if (t) tab = t; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
-  function closePanel() { panelOpen = false; if (chestKey) { chestKey = ""; if (tab === "chest") tab = "bag"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
+  function m2s(x, y) { return [(x - M.cx) * M.s + M.cw / 2, (y - M.cy) * M.s + M.ch / 2]; }
+  function s2m(x, y) { return [(x - M.cw / 2) / M.s + M.cx, (y - M.ch / 2) / M.s + M.cy]; }
+  function zoomAt(px, py, ns) { var w = s2m(px, py); M.s = clamp(ns, mapMin(), 44); M.cx = w[0] - (px - M.cw / 2) / M.s; M.cy = w[1] - (py - M.ch / 2) / M.s; mapClamp(); }
+  function mapFit() { M.s = mapMin(); M.cx = W / 2; M.cy = H / 2; mapClamp(); }
+  function mapMe() { M.s = Math.max(M.s, clamp(M.cw / 260, mapMin(), 44)); M.cx = p.x; M.cy = p.y; mapClamp(); }
+  function drawMapView() {
+    var c = $("sbxMapC"); if (!c || !mapOpen) return; var g = c.getContext("2d"), s = M.s;
+    g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0); g.fillStyle = "#03080a"; g.fillRect(0, 0, M.cw, M.ch);
+    var o0 = m2s(0, 0), o1 = m2s(W, H); g.imageSmoothingEnabled = false; g.drawImage(mapImg(), 0, 0, W, H, o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
+    g.strokeStyle = "#4ee6b455"; g.lineWidth = 1.5; g.strokeRect(o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
+    if (s >= 6) {   // tile grid when zoomed right in, every 10 tiles
+      g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1; g.beginPath(); var gx0 = Math.max(0, Math.floor(s2m(0, 0)[0] / 10) * 10), gx1 = Math.min(W, s2m(M.cw, 0)[0]), gy0 = Math.max(0, Math.floor(s2m(0, 0)[1] / 10) * 10), gy1 = Math.min(H, s2m(0, M.ch)[1]), q;
+      for (q = gx0; q <= gx1; q += 10) { var a = m2s(q, 0)[0]; g.moveTo(a, o0[1]); g.lineTo(a, o1[1]); }
+      for (q = gy0; q <= gy1; q += 10) { var b2 = m2s(0, q)[1]; g.moveTo(o0[0], b2); g.lineTo(o1[0], b2); }
+      g.stroke();
+    }
+    g.textAlign = "center"; g.font = "800 13px Nunito,sans-serif";
+    [[0, SW.B_FROST, 2], [SW.B_FROST, SW.B_EMBER, 0], [SW.B_EMBER, W, 1]].forEach(function (z) {
+      var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BIOMES[z[2]].c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, 0), o0[1], Math.min(r, M.cw) - Math.max(l, 0), 4); g.globalAlpha = 0.85;
+      if (r > 0 && l < M.cw) g.fillText(BIOMES[z[2]].n, (Math.max(l, 0) + Math.min(r, M.cw)) / 2, Math.max(o0[1] + 20, 78)); g.globalAlpha = 1;
+    });
+    (world.structs || []).forEach(function (s2) { if (!ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
+    (world.holes || []).forEach(function (hh) { if (!ex[hh.y * W + hh.x]) return; var q = m2s(hh.x, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.6; g.beginPath(); g.arc(q[0], q[1], 3.4, 0, 6.2832); g.fill(); g.stroke(); });
+    var pq = m2s(p.x, p.y - 1), pulse = 9 + Math.sin(performance.now() / 260) * 1.6;
+    g.strokeStyle = "#fff"; g.lineWidth = 2.6; g.beginPath(); g.arc(pq[0], pq[1], pulse, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(pq[0], pq[1], 4.6, 0, 6.2832); g.fill();
+    g.textAlign = "left"; g.font = "800 12px Nunito,sans-serif"; g.textBaseline = "middle";
+    (S.wp || []).forEach(function (w, i) {   // waypoint pins: a pointed drop with a ring, name beside it when selected or zoomed in
+      var q = m2s(w.x + 0.5, w.y + 0.5), col = WP_COL[w.c], on = i === M.sel; if (q[0] < -30 || q[0] > M.cw + 30 || q[1] < -30 || q[1] > M.ch + 30) return;
+      g.save(); g.translate(q[0], q[1]); g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.ellipse(0, 1, 6, 2.2, 0, 0, 6.2832); g.fill();
+      g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(-13, -14, -9, -27, 0, -27); g.bezierCurveTo(9, -27, 13, -14, 0, 0); g.closePath();
+      g.fillStyle = col; g.fill(); g.lineWidth = on ? 3 : 2; g.strokeStyle = on ? "#fff" : "#06100d"; g.stroke(); g.fillStyle = "#06100d"; g.beginPath(); g.arc(0, -17, 3.6, 0, 6.2832); g.fill();
+      if (on || s >= 5) { var tw = g.measureText(w.n).width; g.fillStyle = "rgba(4,10,8,.82)"; g.fillRect(12, -30, tw + 12, 20); g.fillStyle = "#f6eedb"; g.fillText(w.n, 18, -20); }
+      g.restore();
+    });
+    g.textBaseline = "alphabetic";
+    $("sbxMapInfo").textContent = (S.wp.length ? S.wp.length + " / " + WP_MAX + " waypoints" : "No waypoints yet") + " · " + (M.s / mapMin()).toFixed(1) + "x";
+  }
+  function wpText(w) {
+    var dx = Math.round(w.x - p.x), dy = Math.round(w.y - p.y);
+    return (Math.abs(dx) < 2 ? "right here sideways" : Math.abs(dx) + " tiles " + (dx > 0 ? "east" : "west")) + " · " + (Math.abs(dy) < 2 ? "same depth" : Math.abs(dy) + " " + (dy > 0 ? "down" : "up"));
+  }
+  function mapCard() {
+    var cd = $("sbxMapCard"), w = M.sel >= 0 ? S.wp[M.sel] : null; if (!w) { cd.hidden = true; return; }
+    cd.hidden = false; cd.innerHTML = '<i style="background:' + WP_COL[w.c] + '"></i><div><b>' + esc(w.n) + "</b><small>" + esc(wpText(w)) + '</small></div><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button>';
+  }
+  function mapTap(x, y) {
+    var i, best = -1, bd = 22 * 22;
+    (S.wp || []).forEach(function (w, n) { var q = m2s(w.x + 0.5, w.y + 0.5), dx = q[0] - x, dy = q[1] - 13 - y, d = Math.min(dx * dx + dy * dy, dx * dx + (q[1] - y) * (q[1] - y)); if (d < bd) { bd = d; best = n; } });
+    if (best >= 0) { M.sel = best; mapCard(); return; }
+    var w2 = s2m(x, y), tx = Math.floor(w2[0]), ty = Math.floor(w2[1]); if (tx < 0 || ty < 0 || tx >= W || ty >= H) return;
+    if (S.wp.length >= WP_MAX) { toast("Waypoint limit reached (" + WP_MAX + "). Remove one first.", "#f2c14e"); return; }
+    var used = {}; S.wp.forEach(function (w) { var m2 = /^Waypoint (\d+)$/.exec(w.n); if (m2) used[m2[1]] = 1; }); for (i = 1; used[i]; i++);
+    var col = 0, cnt = {}; S.wp.forEach(function (w) { cnt[w.c] = (cnt[w.c] || 0) + 1; }); WP_COL.forEach(function (_, ci) { if ((cnt[ci] || 0) < (cnt[col] || 0)) col = ci; });
+    S.wp.push({ x: tx, y: ty, c: col, n: "Waypoint " + i }); M.sel = S.wp.length - 1; snd("coin"); save(); mapCard();
+  }
+  function mapDelete() { if (M.sel < 0) return; S.wp.splice(M.sel, 1); M.sel = -1; snd("open"); save(); mapCard(); }
+  function openMap() {
+    if (mapOpen) return; if (packOpen) closePack(); else if (panelOpen) closePanel();
+    mapOpen = true; panelOpen = true; M.sel = -1; M.img = null; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
+    mapSize(); M.s = clamp(M.cw / 300, mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();
+  }
+  function closeMap() { mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
+  (function () {
+    var c = $("sbxMapC"), V = $("sbxMapV");
+    function pt(e) { var r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    c.addEventListener("pointerdown", function (e) {
+      e.preventDefault(); try { c.setPointerCapture(e.pointerId); } catch (x) {} var q = pt(e); M.pts[e.pointerId] = q; var ids = Object.keys(M.pts);
+      if (ids.length === 1) M.drag = { x: q.x, y: q.y, cx: M.cx, cy: M.cy, t: performance.now(), moved: false };
+      else if (ids.length === 2) { var a = M.pts[ids[0]], b = M.pts[ids[1]]; M.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, s: M.s }; if (M.drag) M.drag.moved = true; }
+    });
+    c.addEventListener("pointermove", function (e) {
+      if (!M.pts[e.pointerId]) return; var q = pt(e); M.pts[e.pointerId] = q; var ids = Object.keys(M.pts);
+      if (ids.length >= 2 && M.pinch) { var a = M.pts[ids[0]], b = M.pts[ids[1]]; zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, M.pinch.s * (Math.hypot(a.x - b.x, a.y - b.y) / M.pinch.d)); }
+      else if (M.drag) { var dx = q.x - M.drag.x, dy = q.y - M.drag.y; if (!M.drag.moved && Math.hypot(dx, dy) > 6) M.drag.moved = true; if (M.drag.moved) { M.cx = M.drag.cx - dx / M.s; M.cy = M.drag.cy - dy / M.s; mapClamp(); } }
+    });
+    var up = function (e) {
+      if (!M.pts[e.pointerId]) return; var q = M.pts[e.pointerId], was = Object.keys(M.pts).length; delete M.pts[e.pointerId];
+      if (e.type === "pointerup" && was === 1 && M.drag && !M.drag.moved && performance.now() - M.drag.t < 700) mapTap(q.x, q.y);
+      if (!Object.keys(M.pts).length) M.drag = null; M.pinch = null;
+      if (Object.keys(M.pts).length === 1) { var k = Object.keys(M.pts)[0]; M.drag = { x: M.pts[k].x, y: M.pts[k].y, cx: M.cx, cy: M.cy, t: 0, moved: true }; }
+    };
+    c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up); c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    c.addEventListener("wheel", function (e) { e.preventDefault(); var q = pt(e); zoomAt(q.x, q.y, M.s * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
+    V.addEventListener("click", function (e) {
+      var t = e.target.closest("button"); if (!t) return;
+      if (t.hasAttribute("data-mclose")) return closeMap();
+      var z = t.getAttribute("data-mz"); if (z) { if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
+      var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete(); if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
+    });
+    window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
+    if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(V);
+  })();
+  function openPanel(t) { if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
+  function openPack() {
+    if (mapOpen) closeMap(); else if (panelOpen && !packOpen) closePanel();
+    packOpen = true; panelOpen = true; invSel = -1; invAsk = ""; $("sbxPack").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPack();
+  }
+  function closePack() { packOpen = false; panelOpen = false; $("sbxPack").hidden = true; stageEl.classList.remove("panel"); $("sbxPackBtn").focus({ preventScroll: true }); }
+  function closePanel() { if (stnOpen) return closeStn(); if (mapOpen) return closeMap(); if (packOpen) return closePack(); panelOpen = false; if (chestKey) { chestKey = ""; if (tab === "chest") tab = "craft"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
 
   // ---------- INVENTORY SCREEN ----------
   function invClick(i, shift) {
@@ -2983,12 +3898,13 @@
     else if (a === "toss1") tossSlot(invSel, false);
     else if (a === "tossall") tossSlot(invSel, true);
     else if (a === "sort") sortInv();
+    else if (a === "eat") { eat(c.k); if (!S.slots[invSel]) invSel = -1; }
     else if (a === "hold") { var k = c.k, at = invSel; if (at >= INV_HOT) { quickMove(at); at = hotIndex(k); } choose(k, at); closePanel(); }
   }
-  $("sbxPanel").addEventListener("contextmenu", function (e) {   // right-click a slot: split the stack in half
+  [$("sbxPanel"), $("sbxPack")].forEach(function (el) { el.addEventListener("contextmenu", function (e) {   // right-click a slot: split the stack in half
     var b = e.target.closest("[data-is]"); if (!b) return; e.preventDefault(); var i = +b.getAttribute("data-is"); if (S.slots[i] && S.slots[i].n > 1) { invSel = i; splitSlot(i); }
   });
-  $("sbxPanel").addEventListener("click", function (e) { var b = e.target.closest("[data-is]"); if (b && e.shiftKey) { e.stopImmediatePropagation(); invClick(+b.getAttribute("data-is"), true); } }, true);
+  el.addEventListener("click", function (e) { var b = e.target.closest("[data-is]"); if (b && e.shiftKey) { e.stopImmediatePropagation(); invClick(+b.getAttribute("data-is"), true); } }, true); });
 
   // ---------- INPUT ----------
   function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
@@ -2997,7 +3913,7 @@
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
-    aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && TILES[get(aim.dx, aim.dy)].kind === "door"; aim.chest = !cave && get(aim.dx, aim.dy) === T.CHEST; aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.dwb = !cave && get(aim.dx, aim.dy) === T.DECORBENCH;
+    aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && TILES[get(aim.dx, aim.dy)].kind === "door"; aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
     aim.lad = cave ? (aim.dx === cave.F.up.x && (aim.dy === cave.F.up.y || aim.dy === cave.F.up.y - 1) ? "up" : aim.dx === cave.F.down.x && aim.dy === cave.F.down.y ? "down" : "") : ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
     $("sbxHint").classList.remove("on"); if (ac && ac.state === "suspended") ac.resume();
   });
@@ -3007,11 +3923,8 @@
       var ddx = aim.dx + 0.5 - p.x, ddy = aim.dy + 0.5 - (p.y - PH / 2);
       if (ddx * ddx + ddy * ddy <= REACH * REACH) toggleDoor(aim.dx, aim.dy, true); else nag("That door is too far away.");
     }
-    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.dwb && get(aim.dx, aim.dy) === T.DECORBENCH) {   // quick tap on a Decor Workbench: open the Decor tab
-      var wdx2 = aim.dx + 0.5 - p.x, wdy2 = aim.dy + 0.5 - (p.y - PH / 2);
-      if (wdx2 * wdx2 + wdy2 * wdy2 <= REACH * REACH) { snd("coin"); openPanel("decor"); } else nag("Walk closer to the Decor Workbench.");
-    }
-    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.chest && get(aim.dx, aim.dy) === T.CHEST) {   // quick tap on a chest: open it
+    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.stn && stnKeyAt(aim.dx, aim.dy) === aim.stn) tapStation(aim.dx, aim.dy);   // quick tap on a crafting station: open its window
+    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.chest && isChest(get(aim.dx, aim.dy))) {   // quick tap on a chest: open it
       var cdx = aim.dx + 0.5 - p.x, cdy = aim.dy + 0.5 - (p.y - PH / 2);
       if (cdx * cdx + cdy * cdy <= REACH * REACH) openChest(aim.dx, aim.dy); else nag("That chest is too far away.");
     }
@@ -3025,8 +3938,8 @@
   (function () {   // the analog stick (touch / small screens, caves only): drag anywhere inside the ring
     var base = $("sbxJoy"), knob = $("sbxJoyKnob"), id = null, R = 52; if (!base) return;
     function mv(e) {
-      var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, d / R);
-      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; knob.style.transform = "translate(" + (dx / d * Math.min(d, R)) + "px," + (dy / d * Math.min(d, R)) + "px)";
+      var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, d / (R * UIS));
+      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; knob.style.transform = "translate(" + (dx / d * Math.min(d, R * UIS) / UIS) + "px," + (dy / d * Math.min(d, R * UIS) / UIS) + "px)";
     }
     base.addEventListener("pointerdown", function (e) { e.preventDefault(); id = e.pointerId; try { base.setPointerCapture(id); } catch (x) {} base.classList.add("on"); $("sbxHint").classList.remove("on"); mv(e); });
     base.addEventListener("pointermove", function (e) { if (e.pointerId === id) mv(e); });
@@ -3041,7 +3954,11 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && panelOpen) { closePanel(); return; }
-    if (k === "e" || k === "E") { panelOpen ? closePanel() : openPanel("bag"); e.preventDefault(); return; }
+    if (k === "e" || k === "E") { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); e.preventDefault(); return; }
+    if (k === "m" || k === "M") { mapOpen ? closeMap() : openMap(); e.preventDefault(); return; }
+    if (mapOpen && (k === "+" || k === "=")) { zoomAt(M.cw / 2, M.ch / 2, M.s * 1.4); e.preventDefault(); return; }
+    if (mapOpen && (k === "-" || k === "_")) { zoomAt(M.cw / 2, M.ch / 2, M.s / 1.4); e.preventDefault(); return; }
+    if (k === "b" || k === "B") { packOpen ? closePack() : openPack(); e.preventDefault(); return; }
     if (panelOpen) return;
     if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 1; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 1;
     else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 1;
@@ -3049,7 +3966,7 @@
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); }
     else if (k === "f" || k === "F") {
       if (cave) { var ln = ladderNear(); if (ln) useLadder(ln.k); else nag("Stand next to a ladder to use it."); }
-      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), wn = skip || dn || cn ? null : decorBenchAt(), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (wn) { snd("coin"); openPanel("decor"); } else if (hn) enterCave(hn.x, hn.y); else trySleep(); }
+      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), wn = skip || dn || cn ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else trySleep(); }
     }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
@@ -3060,11 +3977,20 @@
   window.addEventListener("blur", function () { keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; });
   $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
   $("sbxTrail").addEventListener("click", function () { openPanel("trail"); });
-  $("sbxMenuBtn").addEventListener("click", function () { panelOpen ? closePanel() : openPanel("bag"); });
-  $("sbxPanel").addEventListener("click", function (e) {
+  $("sbxMenuBtn").addEventListener("click", function () { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); });
+  $("sbxPackBtn").addEventListener("click", function () { packOpen ? closePack() : openPack(); });
+  $("sbxPack").addEventListener("click", function (e) { if (e.target === this) closePack(); });
+  function panelClick(e) {
     var t = e.target.closest("button"); if (!t) return;
     if (t.hasAttribute("data-close")) return closePanel();
+    if (t.getAttribute("data-tab") === "map") return openMap();
     if (t.getAttribute("data-tab")) { tab = t.getAttribute("data-tab"); confirmNew = false; return renderPanel(); }
+    if (t.hasAttribute("data-cc")) { ccat = t.getAttribute("data-cc"); csub = ""; renderPanel(); $("sbxBody").scrollTop = 0; return; }
+    if (t.hasAttribute("data-cs")) { csub = t.getAttribute("data-cs"); renderPanel(); $("sbxBody").scrollTop = 0; return; }
+    if (t.hasAttribute("data-cready")) { cready = !cready; renderPanel(); return; }
+    if (t.hasAttribute("data-stc") && stnOpen) { stnCat[stnOpen.k] = t.getAttribute("data-stc"); renderPanel(); $("sbxStnBody").scrollTop = 0; return; }
+    if (t.hasAttribute("data-stready") && stnOpen) { stnReady = !stnReady; renderPanel(); return; }
+    if (t.getAttribute("data-stn-open")) { var so = stationNearK(t.getAttribute("data-stn-open")); if (so) openStn(so.k, so.x, so.y); else nag("Walk closer to it first."); return; }
     if (t.hasAttribute("data-ch-take")) return chestMove(t.getAttribute("data-ch-take"), true, "take");
     if (t.hasAttribute("data-ch-put")) return chestMove(t.getAttribute("data-ch-put"), true, "put");
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
@@ -3076,24 +4002,43 @@
     if (t.getAttribute("data-iextra")) return collectExtra(t.getAttribute("data-iextra"));
     if (t.getAttribute("data-hold")) { choose(t.getAttribute("data-hold")); return closePanel(); }
     if (t.getAttribute("data-an")) { S.animal = t.getAttribute("data-an"); mkSprite(); return renderPanel(); }
+    if (t.hasAttribute("data-hungertoggle")) { S.nohunger = S.nohunger ? 0 : 1; if (!S.nohunger && S.food < 50) S.food = 50; shownFood = -1; drawFood(); save(); return renderPanel(); }
+    if (t.hasAttribute("data-daytoggle")) { SHOWDAYS = !SHOWDAYS; try { localStorage.setItem("swamp-delve-daycount", SHOWDAYS ? "1" : "0"); } catch (e) {} hud(); return renderPanel(); }
+    if (t.hasAttribute("data-ui")) { var uv = +t.getAttribute("data-ui"); setUi(uv === 0 ? 1 : UIS + uv * 0.1); return renderPanel(); }
     if (t.hasAttribute("data-zoom")) { var Z = [0.8, 1, 1.25, 1.5, 2], zi = clamp(Z.indexOf(S.zoom) + +t.getAttribute("data-zoom"), 0, Z.length - 1); S.zoom = Z[zi]; resize(); return renderPanel(); }
     if (t.hasAttribute("data-camp")) { respawn("Back at camp."); return closePanel(); }
     if (t.hasAttribute("data-wl-open")) return openWorlds();
-  });
-  setInterval(function () { if (panelOpen && tab === "map") drawMap(); }, 1500);
+  }
+  $("sbxPanel").addEventListener("click", panelClick); $("sbxPack").addEventListener("click", panelClick); $("sbxStn").addEventListener("click", panelClick);
+  $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
   function resize() {
-    var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(2, window.devicePixelRatio || 1);
+    var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(dprCap, window.devicePixelRatio || 1);
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
     ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, coarse ? 24 : 15, 40) * (S ? S.zoom : 1)));
+    if (cave && cave.F) ts = caveTs();
+    fitDock();
   }
-  var last = 0, slowN = 0, frN = 0;
+  // Inside buildings and caves the tile size is a whole multiple of 16 (so every pixel of art is the same size and stays crisp), and buildings are zoomed so the room fills the screen.
+  function caveTs() {
+    var F = cave.F, k;
+    if (cave.bld) k = Math.floor(Math.min((vw - 40) / F.w, (vh - 150) / F.h) / 16); else k = Math.round(Math.max(vw, vh) / 22 / 16);
+    return clamp(k, 3, cave.bld ? 5 : 4) * 16;
+  }
+  // Control size (joystick, arrows, jump, hotbar, menu buttons): a per-device setting kept outside the world saves. CSS reads it as --cs.
+  var UIS = 1; try { UIS = +localStorage.getItem("swamp-delve-ui") || 1; } catch (e) {}
+  function setUi(v) { UIS = clamp(Math.round(v * 10) / 10, 0.6, 1.8); stageEl.style.setProperty("--cs", UIS); fitDock(); try { localStorage.setItem("swamp-delve-ui", String(UIS)); } catch (e) {} }
+  function fitDock() { var d = document.querySelector(".sbx-dock"); if (d && d.offsetWidth) d.style.setProperty("--ds", Math.min(UIS, (stageEl.clientWidth - 12) / d.offsetWidth)); }   // the hotbar grows with the setting only as far as the screen is wide enough
+  var last = 0, slowN = 0, frN = 0, lastDraw = 0;
   function loop(now) {
+    var paused = (panelOpen || menuOpen) && !trans;
+    if (now - lastDraw < (paused ? 100 : 10)) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
+    lastDraw = now;
     var raw = (now - last) / 1000 || 0.016, dt = Math.min(0.05, raw); last = now;
     // automatic quality: if a device is struggling for ~2 seconds, switch off the optional sparkle (ambient motes, aurora, glints)
-    if (!document.hidden && raw < 0.5) { frN++; if (raw > 0.034) slowN++; if (frN >= 120) { if (slowN > 80) reduce = true; frN = slowN = 0; } }
-    if (!document.hidden) { if (trans) tickTrans(dt); if (!panelOpen && !menuOpen && !trans) { if (cave) caveUpdate(dt); else update(dt); } if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); }
+    if (!paused && !document.hidden && raw < 0.5) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
+    if (!document.hidden) { if (trans) tickTrans(dt); if (!panelOpen && !menuOpen && !trans) { if (cave) caveUpdate(dt); else update(dt); } if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); }
     requestAnimationFrame(loop);
   }
   document.addEventListener("visibilitychange", function () { if (document.hidden) save(); });
@@ -3101,11 +4046,11 @@
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
 
-  buildAtlas(); load(); resize(); mkSprite(); drawBar();
-  $("sbxHint").textContent = S.trail === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your bag.";
+  buildAtlas(); load(); resize(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
+  $("sbxHint").textContent = S.trail === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your Journal, B your Backpack.";
   if (!S.st.mined) $("sbxHint").classList.add("on");
   if (wIdx.list.length > 1) openWorlds();   // several worlds: let the player pick
   setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000);
   requestAnimationFrame(loop);
-  window.__sbx = { enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail };
+  window.__sbx = { enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, colAt: function (x) { return col[x]; }, setT: setT };
 })();

@@ -8,6 +8,7 @@
 //   GameFS.attach({stage:"#stage", start:"[data-fs-start]"});
 //  - stage: the element that should fill the screen (the game plus its controls)
 //  - start: a selector for every button that starts or resumes play (add data-fs-start to them)
+//  - key: optional KeyboardEvent.code for the shortcut (default "KeyF"; pass null for none). Delve uses F to interact, so it passes "KeyG".
 //  - buttons with data-fs toggle full screen by hand; the F key does too. Style the full screen look with .fs on the stage and html.fs-on (see ui.css).
 const GameFS={
  attach(o){
@@ -16,6 +17,7 @@ const GameFS={
   if(!st||st.__gfs)return null;st.__gfs=1;
   const btns=[].slice.call(document.querySelectorAll(o.buttons||"[data-fs]")),startSel=o.start||"[data-fs-start]";
   const rq=st.requestFullscreen||st.webkitRequestFullscreen,ex=document.exitFullscreen||document.webkitExitFullscreen;
+  const FSKEY=o.key===undefined?"KeyF":o.key;   // the full screen shortcut (default F). A game that already uses F for something else passes another key code, or null for none
   const KEY="swamp-fs-off";let pseudo=false,off=false,asked=false;
   try{off=sessionStorage.getItem(KEY)==="1"}catch(e){}
   const setOff=v=>{off=v;try{v?sessionStorage.setItem(KEY,"1"):sessionStorage.removeItem(KEY)}catch(e){}};
@@ -56,7 +58,7 @@ const GameFS={
   const chg=()=>{const was=asked;if(!real()){if(!pseudo&&was)setOff(true);pseudo=false;asked=false}else asked=true;sync()};
   document.addEventListener("fullscreenchange",chg);document.addEventListener("webkitfullscreenchange",chg);
   addEventListener("keydown",e=>{
-   if(e.code==="KeyF"&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"")){e.preventDefault();toggle()}
+   if(FSKEY&&e.code===FSKEY&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"")){e.preventDefault();toggle()}
    else if(e.code==="Escape"&&pseudo){setOff(true);leave()}
   });
   sync();

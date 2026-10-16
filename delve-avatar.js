@@ -7,6 +7,7 @@
 var DelveAv = (function () {
   "use strict";
   var FW = 22, FH = 34, OY = 2, OL = "#0a100d";
+  var OUTLINE = false;   // true brings back the dark 1px outline around the character and its arm
 
   // ---------- colour helpers ----------
   var CC = {};
@@ -319,7 +320,7 @@ var DelveAv = (function () {
     return rows;
   }
   function drawArm(B, x, y, rows) { rows.forEach(function (r, i) { B.p(x, y + i, r[0]); B.p(x + 1, y + i, r[1]); }); }
-  function armBuf(o, a) { var B = new Buf(4, 10, 1, 1); drawArm(B, 0, 0, armRows(o, a)); B.outline(OL); return B; }
+  function armBuf(o, a) { var B = new Buf(4, 10, 1, 1); drawArm(B, 0, 0, armRows(o, a)); if (OUTLINE) B.outline(OL); return B; }
 
   // ---------- main frame ----------
   function drawFrame(o, pose, withArm) {
@@ -361,7 +362,7 @@ var DelveAv = (function () {
     // hat
     if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
     if (A.ears && o.hat) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
-    B.outline(OL);
+    if (OUTLINE) B.outline(OL);
     return B;
   }
   // hats are authored in absolute rows; ByBuf shifts them with the body bob
@@ -380,7 +381,7 @@ var DelveAv = (function () {
       i = (y * w + x) * 4 + 3; if (src[i] > 40) continue;
       if ((x > 0 && src[i - 4] > 200) || (x < w - 1 && src[i + 4] > 200) || (y > 0 && src[i - w * 4] > 200) || (y < h - 1 && src[i + w * 4] > 200)) o.push(i - 3);
     }
-    o.forEach(function (j) { d[j] = 12; d[j + 1] = 20; d[j + 2] = 16; d[j + 3] = 235; });
+    if (OUTLINE) o.forEach(function (j) { d[j] = 12; d[j + 1] = 20; d[j + 2] = 16; d[j + 3] = 235; });
     g.putImageData(im, 0, 0);
     if (s <= 1) return c;
     var c2 = document.createElement("canvas"); c2.width = B.w * s; c2.height = B.h * s; var g2 = c2.getContext("2d"); g2.imageSmoothingEnabled = false; g2.drawImage(c, 0, 0, c2.width, c2.height); return c2;
