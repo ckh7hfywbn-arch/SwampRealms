@@ -583,7 +583,7 @@
   // ---------- DAY / NIGHT ----------
   function phaseOf(t) { if (t < 240) return { id: "day", k: t / 240 }; if (t < 280) return { id: "dusk", k: (t - 240) / 40 }; if (t < 440) return { id: "night", k: (t - 280) / 160 }; return { id: "dawn", k: (t - 440) / 40 }; }
   function daylight(t) { var f = phaseOf(t); return f.id === "day" ? 1 : f.id === "dusk" ? 1 - 0.7 * f.k : f.id === "night" ? 0.3 : 0.3 + 0.7 * f.k; }
-  var SKY = { day: [[56, 160, 205], [176, 226, 214]], dusk: [[88, 52, 112], [255, 150, 90]], night: [[5, 8, 24], [14, 32, 52]], dawn: [[52, 66, 120], [255, 176, 140]] };
+  var SKY = { day: [[16, 104, 120], [206, 232, 140]], dusk: [[70, 40, 110], [255, 150, 96]], night: [[6, 13, 36], [26, 90, 94]], dawn: [[44, 70, 130], [255, 176, 120]] };
   var mixC = function (a, b, k) { return [lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k)]; };
   var rgb = function (c) { return "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; };
   function skyAt(t) {
@@ -639,10 +639,27 @@
     ATLAS = document.createElement("canvas"); ATLAS.width = 64; ATLAS.height = 16 * TILES.length;
     var g = ATLAS.getContext("2d");
     TILES.forEach(function (td) { for (var v = 0; v < 4; v++) paint(g, td, v, td.id * 16); });
+    gradeAtlas();
+    buildSmooth();
   }
+  // COLOUR PASS: a little more saturation and contrast on every tile, once at load (no darkening).
+  function gradeStrip(g, x, y, w, h, sat, con) {
+    var im = g.getImageData(x, y, w, h), d = im.data, i, r, gg, b, l;
+    for (i = 0; i < d.length; i += 4) {
+      if (!d[i + 3]) continue;
+      r = d[i]; gg = d[i + 1]; b = d[i + 2]; l = 0.299 * r + 0.587 * gg + 0.114 * b;
+      r = l + (r - l) * sat; gg = l + (gg - l) * sat; b = l + (b - l) * sat;
+      r = (r - 128) * con + 128; gg = (gg - 128) * con + 128; b = (b - 128) * con + 128;
+      d[i] = r < 0 ? 0 : r > 255 ? 255 : r; d[i + 1] = gg < 0 ? 0 : gg > 255 ? 255 : gg; d[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+    }
+    g.putImageData(im, x, y);
+  }
+  function gradeOne(td) { if (ATLAS) gradeStrip(ATLAS.getContext("2d", { willReadFrequently: true }), 0, td.id * 16, 64, 16, 1.22, 1.07); }
+  function gradeAtlas() { TILES.forEach(gradeOne); gradeStrip(LEAFATLAS.getContext("2d", { willReadFrequently: true }), 0, 0, 64, 256, 1.18, 1.06); }
   function repaintBench() {   // the Workbench tile looks different at each level; redraw just its strip of the atlas
     if (!ATLAS) return; var g = ATLAS.getContext("2d"); g.clearRect(0, T.BENCH * 16, 64, 16);
     for (var v = 0; v < 4; v++) paint(g, TILES[T.BENCH], v, T.BENCH * 16);
+    gradeOne(TILES[T.BENCH]); if (SMATLAS) smTile(TILES[T.BENCH]);
   }
   // ---------- PAINTINGS ----------
   // Each placed painting is drawn from its position, so it looks the same every time you load the world.
@@ -2063,7 +2080,7 @@
   var CLOUDS = []; for (var ci = 0; ci < 7; ci++) CLOUDS.push({ x: Math.random() * 1.5, y: 0.06 + Math.random() * 0.3, s: 0.6 + Math.random() * 0.9, sp: 0.006 + Math.random() * 0.01 });
   var CRACKS = [[0.1, 0.2], [0.9, 0.15], [0.2, 0.9], [0.85, 0.8], [0.5, 0.05], [0.05, 0.55], [0.95, 0.5]];
   var BACKWALL = [[38, 29, 23], [46, 26, 23], [30, 42, 52]];
-  var HILLS = [[[34, 78, 66], [22, 58, 48], [14, 40, 33]], [[92, 44, 34], [66, 32, 26], [44, 22, 18]], [[158, 196, 220], [120, 160, 190], [88, 124, 156]]];
+  var HILLS = [[[28, 98, 108], [18, 72, 86], [10, 50, 62]], [[150, 62, 40], [108, 44, 30], [66, 28, 22]], [[176, 214, 240], [130, 176, 214], [92, 138, 178]]];
   var VIG = null, MOTE = []; for (var mi = 0; mi < 46; mi++) MOTE.push({ u: Math.random(), v: Math.random(), w: Math.random(), s: 0.5 + Math.random() });
   var smoothW = function (a, b, x) { var k = clamp((x - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
   function biomeMix(x) { var we = smoothW(SW.B_EMBER - 12, SW.B_EMBER + 12, x), wf = 1 - smoothW(SW.B_FROST - 12, SW.B_FROST + 12, x); return [1 - we - wf, we, wf]; }   // [swamp, ember, frost] weights
@@ -2088,6 +2105,152 @@
     if (!hasW(i + 1, j) && !TILES[get(i + 1, j)].solid) g.fillRect(sx + ts - e, sy, e, ts);
     if (!hasW(i, j - 1) && !TILES[get(i, j - 1)].solid) g.fillRect(sx, sy, ts, e);
     if (!hasW(i, j + 1) && !TILES[get(i, j + 1)].solid) g.fillRect(sx, sy + ts - e, ts, e);
+  }
+  // ===== SMOOTH SPRITES: every pixel sprite (plants, mushrooms, torches, furniture, ore gems ...) is re-drawn once at 4x with rounded "melted" edges and a dark outline,
+  // like the Adventure art. SMATLAS mirrors ATLAS at 4x size (cell = 64px). Opaque blocks (bricks, planks ...) stay crisp pixel art but get the same edge shading as the ground.
+  var SMATLAS = null, SMOP = {}, SMGEM = {}, SMOK = false, SMS = 4;
+  function gooCanvas(src, sx, sy, sw, sh, S, pad, gemTd) {   // returns a (sw*S + pad*2) square canvas holding the smoothed, outlined version of a sprite cell
+    var N = sw * S + pad * 2, a = document.createElement("canvas"), b = document.createElement("canvas"), out = document.createElement("canvas"); a.width = a.height = b.width = b.height = out.width = out.height = N;
+    var ag = a.getContext("2d", { willReadFrequently: true }), bg = b.getContext("2d", { willReadFrequently: true }), og = out.getContext("2d");
+    if (gemTd) {   // ore: keep only the gem pixels (the rock behind is drawn as smooth ground)
+      var t16 = document.createElement("canvas"); t16.width = sw; t16.height = sh; var tg = t16.getContext("2d", { willReadFrequently: true }); tg.drawImage(src, sx, sy, sw, sh, 0, 0, sw, sh);
+      var im = tg.getImageData(0, 0, sw, sh), d = im.data, c2 = hexRgb(gemTd.c2);
+      for (var q = 0; q < d.length; q += 4) { var r = d[q], gg = d[q + 1], bb = d[q + 2], dist = Math.abs(r - c2[0]) + Math.abs(gg - c2[1]) + Math.abs(bb - c2[2]), sat = Math.max(r, gg, bb) - Math.min(r, gg, bb), lum = 0.299 * r + 0.587 * gg + 0.114 * bb; if (!(dist < 150 || sat > 70 || lum > 215)) d[q + 3] = 0; }
+      tg.putImageData(im, 0, 0); ag.imageSmoothingEnabled = true; ag.drawImage(t16, 0, 0, sw, sh, pad, pad, sw * S, sh * S);
+    } else { ag.imageSmoothingEnabled = true; ag.drawImage(src, sx, sy, sw, sh, pad, pad, sw * S, sh * S); }
+    if (SMOK) { bg.filter = "blur(" + (S * 0.6).toFixed(1) + "px)"; bg.drawImage(a, 0, 0); bg.filter = "none"; } else bg.drawImage(a, 0, 0);
+    var id2 = bg.getImageData(0, 0, N, N), dd = id2.data;
+    for (var k = 0; k < dd.length; k += 4) { var al = dd[k + 3] / 255; al = al < 0.3 ? 0 : al > 0.62 ? 1 : (al - 0.3) / 0.32; dd[k + 3] = al * 255; }
+    bg.putImageData(id2, 0, 0);
+    var sil = document.createElement("canvas"); sil.width = sil.height = N; var sg = sil.getContext("2d"); sg.drawImage(b, 0, 0); sg.globalCompositeOperation = "source-in"; sg.fillStyle = "rgba(12,6,20,.9)"; sg.fillRect(0, 0, N, N);
+    og.drawImage(b, 0, 0);
+    var hl = document.createElement("canvas"); hl.width = hl.height = N; var hg2 = hl.getContext("2d"); hg2.drawImage(b, 0, 0); hg2.globalCompositeOperation = "source-atop"; var lgg = hg2.createLinearGradient(0, 0, 0, N); lgg.addColorStop(0, "rgba(255,255,255,.18)"); lgg.addColorStop(0.5, "rgba(255,255,255,0)"); lgg.addColorStop(1, "rgba(0,0,30,.22)"); hg2.fillStyle = lgg; hg2.fillRect(0, 0, N, N); og.drawImage(hl, 0, 0);   // soft light from above
+    return out;
+  }
+  function hexRgb(h) { h = h.replace("#", ""); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+  function smTile(td) {
+    var ag = ATLAS.getContext("2d", { willReadFrequently: true }), d = ag.getImageData(0, td.id * 16, 16, 16).data, op = true, x;
+    for (x = 0; x < 16; x++) { if (d[(x) * 4 + 3] < 250 || d[(15 * 16 + x) * 4 + 3] < 250 || d[(x * 16) * 4 + 3] < 250 || d[(x * 16 + 15) * 4 + 3] < 250) { op = false; break; } }
+    SMOP[td.id] = op; var gem = td.kind === "ore" && Math.abs(hexRgb(td.c)[0] - hexRgb(td.c2)[0]) + Math.abs(hexRgb(td.c)[1] - hexRgb(td.c2)[1]) + Math.abs(hexRgb(td.c)[2] - hexRgb(td.c2)[2]) > 90; SMGEM[td.id] = gem;
+    var g = SMATLAS.getContext("2d");
+    g.clearRect(0, td.id * 64, 256, 64);
+    if (op && !gem) return;
+    for (var v = 0; v < 4; v++) { var c = gooCanvas(ATLAS, v * 16, td.id * 16, 16, 16, 4, 0, gem ? td : null); g.drawImage(c, v * 64, td.id * 64); }
+  }
+  function buildSmooth() {
+    try { var tc = document.createElement("canvas").getContext("2d"); tc.filter = "blur(1px)"; SMOK = tc.filter === "blur(1px)"; } catch (e) { SMOK = false; }
+    SMATLAS = document.createElement("canvas"); SMATLAS.width = 256; SMATLAS.height = 64 * TILES.length;
+    TILES.forEach(function (td) { if (td.id !== T.AIR && !NATC[td.id] && td.kind !== "leaves" && td.kind !== "water" && td.kind !== "lava") smTile(td); });
+  }
+  function smDraw(g, v, id, sx0, sy0, sw, sh, dx, dy, dw, dh) { g.imageSmoothingEnabled = true; g.drawImage(SMATLAS, v * 64 + sx0 * 4, id * 64 + sy0 * 4, sw * 4, sh * 4, dx, dy, dw, dh); g.imageSmoothingEnabled = false; }
+  function orePal(td) { var c = td.c; return c === "#3b3036" ? T.BASALT : c === "#5d7c93" ? T.FROSTROCK : T.STONE; }
+  // ===== ADVENTURE LOOK: natural terrain is drawn as smooth shaded shapes (plum soil gradient, round pebbles, minty grass lip, blobby leaves) instead of pixel tiles =====
+  var NATC = {}; NATC[T.MOSS] = NATC[T.MUD] = [[74, 56, 78], [20, 14, 30]]; NATC[T.CLAY] = [[132, 100, 104], [44, 30, 44]]; NATC[T.STONE] = [[104, 122, 144], [28, 36, 54]];
+  NATC[T.BASALT] = [[78, 56, 82], [20, 13, 28]]; NATC[T.ASH] = [[118, 102, 112], [34, 26, 40]]; NATC[T.SNOW] = [[240, 250, 255], [150, 192, 218]]; NATC[T.ICE] = [[176, 234, 252], [60, 122, 176]];
+  NATC[T.FROSTROCK] = [[110, 146, 178], [26, 44, 70]]; NATC[T.BEDROCK] = [[40, 34, 52], [10, 8, 16]];
+  if (T.X_peat) NATC[T.X_peat] = [[84, 60, 66], [24, 14, 26]]; if (T.X_silt) NATC[T.X_silt] = [[150, 140, 128], [48, 40, 52]];
+  if (T.X_obsidian) NATC[T.X_obsidian] = [[84, 60, 116], [18, 10, 30]]; if (T.X_permafrost) NATC[T.X_permafrost] = [[168, 204, 226], [58, 100, 140]];
+  function mixRgb(a, b, k) { return "rgb(" + ((a[0] + (b[0] - a[0]) * k) | 0) + "," + ((a[1] + (b[1] - a[1]) * k) | 0) + "," + ((a[2] + (b[2] - a[2]) * k) | 0) + ")"; }
+  function natTile(g, id, i, j, sx, sy) {
+    var pal = NATC[id], d0 = clamp((j - SURF) / 46, 0, 1), d1 = clamp((j + 1 - SURF) / 46, 0, 1), hh = function (k) { return SW.hash(i, j, k); };
+    var gr = g.createLinearGradient(0, sy, 0, sy + ts); gr.addColorStop(0, mixRgb(pal[0], pal[1], d0)); gr.addColorStop(1, mixRgb(pal[0], pal[1], d1)); g.fillStyle = gr; g.fillRect(sx, sy, ts, ts);
+    var hi = mixRgb(pal[0], [255, 255, 255], 0.14), n = 2 + (hh(1) > 0.5 ? 1 : 0), k;
+    for (k = 0; k < n; k++) {   // round pebbles with a soft shadow underneath
+      var px = sx + ts * (0.15 + hh(k * 3 + 2) * 0.7), py = sy + ts * (0.15 + hh(k * 3 + 3) * 0.7), pr = ts * (0.07 + hh(k * 3 + 4) * 0.09);
+      g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.ellipse(px + 1, py + pr * 0.5, pr * 1.1, pr * 0.8, 0, 0, 6.2832); g.fill();
+      g.fillStyle = hi; g.globalAlpha = 0.55 * (1 - d0 * 0.6); g.beginPath(); g.ellipse(px, py, pr, pr * 0.8, 0, 0, 6.2832); g.fill(); g.globalAlpha = 1;
+    }
+    var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
+    if (id === T.MOSS && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
+      g.fillStyle = "#2f9a6a"; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.16);
+      for (k = 0; k < 3; k++) { g.beginPath(); g.arc(sx + ts * ((k + 0.5) / 3) + (hh(k + 20) - 0.5) * ts * 0.1, sy + ts * 0.1, ts * (0.15 + hh(k + 30) * 0.05), 0, 6.2832); g.fill(); }
+      g.fillStyle = "#3fae78"; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.09);
+      g.fillStyle = "rgba(155,245,191,.65)"; g.fillRect(sx, sy - ts * 0.04, ts, Math.max(1, ts * 0.04));
+      if (hh(40) > 0.55) { g.fillStyle = "#58d68b"; var tx = sx + ts * (0.2 + hh(41) * 0.6); g.beginPath(); g.moveTo(tx - 2, sy); g.lineTo(tx, sy - ts * 0.3); g.lineTo(tx + 2, sy); g.fill(); g.beginPath(); g.moveTo(tx + 1, sy); g.lineTo(tx + 4, sy - ts * 0.22); g.lineTo(tx + 4, sy); g.fill(); }
+      var mg = g.createLinearGradient(0, sy, 0, sy + ts * 0.7); mg.addColorStop(0, "rgba(63,174,120,.35)"); mg.addColorStop(1, "rgba(63,174,120,0)"); g.fillStyle = mg; g.fillRect(sx, sy, ts, ts * 0.7);
+      if (nL) { g.fillStyle = "#2f9a6a"; g.fillRect(sx, sy, ts * 0.1, ts * 0.4); } if (nR) { g.fillStyle = "#2f9a6a"; g.fillRect(sx + ts * 0.9, sy, ts * 0.1, ts * 0.4); }
+    } else if (nT) { var tg = g.createLinearGradient(0, sy, 0, sy + ts * 0.34); tg.addColorStop(0, "rgba(255,255,240,.34)"); tg.addColorStop(1, "rgba(255,255,240,0)"); g.fillStyle = tg; g.fillRect(sx, sy, ts, ts * 0.34); }
+    edgeShade(g, i, j, sx, sy, nB, nL, nR);
+  }
+  function edgeShade(g, i, j, sx, sy, nB, nL, nR) {
+    if (nB) { var bg2 = g.createLinearGradient(0, sy + ts, 0, sy + ts * 0.55); bg2.addColorStop(0, "rgba(0,0,10,.38)"); bg2.addColorStop(1, "rgba(0,0,10,0)"); g.fillStyle = bg2; g.fillRect(sx, sy + ts * 0.55, ts, ts * 0.45); }
+    if (nR && j >= col[i + 1]) { var rg3 = g.createLinearGradient(sx + ts, 0, sx + ts * 1.7, 0); rg3.addColorStop(0, "rgba(0,0,12,.34)"); rg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = rg3; g.fillRect(sx + ts, sy, ts * 0.7, ts); }
+    if (nL && j >= col[i - 1]) { var lg3 = g.createLinearGradient(sx, 0, sx - ts * 0.7, 0); lg3.addColorStop(0, "rgba(0,0,12,.34)"); lg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = lg3; g.fillRect(sx - ts * 0.7, sy, ts * 0.7, ts); }
+  }
+  function natLog(g, i, j, sx, sy) {   // round trunk: dark bark edges, lit centre, bark grooves and the odd knot
+    var gr = g.createLinearGradient(sx, 0, sx + ts, 0); gr.addColorStop(0, "#2e1c18"); gr.addColorStop(0.22, "#6a4838"); gr.addColorStop(0.5, "#8a6450"); gr.addColorStop(0.78, "#5b4038"); gr.addColorStop(1, "#271713");
+    g.fillStyle = gr; g.fillRect(sx, sy, ts, ts); g.fillStyle = "rgba(20,10,8,.45)";
+    for (var k = 0; k < 3; k++) { var gx = sx + ts * (0.2 + SW.hash(i, 0, k + 50) * 0.6), y0 = sy + ts * SW.hash(i, j, k + 60) * 0.4; g.fillRect(gx, y0, Math.max(1, ts * 0.05), ts * (0.4 + SW.hash(i, j, k + 70) * 0.5)); }
+    if (SW.hash(i, j, 80) > 0.8) { g.fillStyle = "#3a2420"; g.beginPath(); g.ellipse(sx + ts * 0.5, sy + ts * 0.5, ts * 0.16, ts * 0.22, 0, 0, 6.2832); g.fill(); g.fillStyle = "rgba(255,200,150,.25)"; g.fillRect(sx + ts * 0.4, sy + ts * 0.34, ts * 0.1, 2); }
+    g.fillStyle = "rgba(255,230,190,.12)"; g.fillRect(sx + ts * 0.42, sy, ts * 0.08, ts);
+  }
+  // ---- Tree leaves (Adventure look) ----
+  // Each leaf tile is painted once per (open-edge mask, variant, tile size) into a small cached canvas, then stamped every frame.
+  // Overlapping pointed leaves in four tones (dark back layer, mid, light, sunlit tips) with a soft shadow under each leaf. Open edges get a scalloped,
+  // rounded silhouette instead of a square block: a lit rim on top, a deep shadow underneath, and light/dark sides. Leaf shapes wrap around the tile
+  // so neighbouring tiles blend into one canopy with no visible grid.
+  var LEAFCACHE = {}, LEAFKEY = 0, LEAFVARIANTS = 6;
+  function buildLeafTile(mask, v, S) {
+    var cv = document.createElement("canvas"); cv.width = cv.height = S;
+    var g = cv.getContext("2d"), seed = ((v + 1) * 7919 + mask * 131) >>> 0, TAU = 6.2832, bumps = [], k;
+    g.scale(S, S);
+    function rnd() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+    // silhouette: an inset block plus round bumps along every open edge
+    var ins = 0.17, r = 0.26, x0 = mask & 4 ? ins : 0, y0 = mask & 1 ? ins : 0, x1 = mask & 8 ? 1 - ins : 1, y1 = mask & 2 ? 1 - ins : 1, cr = 0.3;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(x0, y0, x1 - x0, y1 - y0, [mask & 1 && mask & 4 ? cr : 0, mask & 1 && mask & 8 ? cr : 0, mask & 2 && mask & 8 ? cr : 0, mask & 2 && mask & 4 ? cr : 0]);   // round the outer corners
+    else g.rect(x0, y0, x1 - x0, y1 - y0);
+    [1, 2, 4, 8].forEach(function (side) {
+      if (!(mask & side)) return;
+      for (var q = 0; q < 3; q++) {
+        var t = (q + 0.5) / 3 + (rnd() - 0.5) * 0.1, dd = r * (1 + 0.3 * rnd()), rr = r * (0.9 + 0.22 * rnd());
+        var bx = side === 4 ? dd : side === 8 ? 1 - dd : t, by = side === 1 ? dd : side === 2 ? 1 - dd : t;
+        g.moveTo(bx + rr, by); g.arc(bx, by, rr, 0, TAU); bumps.push([side, bx, by, rr]);
+      }
+    });
+    g.save(); g.clip();
+    g.fillStyle = "#1d7249"; g.fillRect(0, 0, 1, 1);
+    function leaf(cx, cy, len, ang, col, shadow) {
+      var ca = Math.cos(ang), sa = Math.sin(ang), w = len * 0.5, ox, oy;
+      for (ox = -1; ox <= 1; ox++) for (oy = -1; oy <= 1; oy++) {
+        var bx = cx + ox, by = cy + oy;
+        if (bx + len < 0 || bx - len > 1 || by + len < 0 || by - len > 1) continue;
+        for (var pass = shadow ? 0 : 1; pass < 2; pass++) {
+          var sx = bx + (pass ? 0 : 0.025), sy = by + (pass ? 0 : 0.035), tx = sx + ca * len, ty = sy + sa * len, mx = sx + ca * len * 0.5, my = sy + sa * len * 0.5;
+          g.fillStyle = pass ? col : "rgba(0,28,18,.45)";
+          g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(mx - sa * w, my + ca * w, tx, ty); g.quadraticCurveTo(mx + sa * w, my - ca * w, sx, sy); g.fill();
+        }
+      }
+    }
+    function up() { return -1.5708 + (rnd() - 0.5) * 2.6; }
+    for (k = 0; k < 7; k++) leaf(rnd(), rnd(), 0.5, rnd() * TAU, "#0e4a32", false);       // deep back layer
+    for (k = 0; k < 11; k++) leaf(rnd(), rnd(), 0.36, up(), "#23895a", true);              // body
+    for (k = 0; k < 9; k++) leaf(rnd(), rnd(), 0.3, up(), "#3fb274", true);                // lit leaves
+    for (k = 0; k < 5; k++) leaf(rnd() * 0.75, rnd() * 0.75, 0.2, -1.5708 + (rnd() - 0.5) * 2, "#8fe8a0", false);   // sunlit tips toward the top-left
+    if (rnd() < 0.4) { g.fillStyle = "rgba(235,255,190,.85)"; g.fillRect(0.15 + rnd() * 0.65, 0.12 + rnd() * 0.5, 0.05, 0.05); }
+    // light and shade on the open edges
+    var lg;
+    if (mask & 1) { lg = g.createLinearGradient(0, 0, 0, 0.4); lg.addColorStop(0, "rgba(215,255,170,.5)"); lg.addColorStop(1, "rgba(215,255,170,0)"); g.fillStyle = lg; g.fillRect(0, 0, 1, 0.4); }
+    if (mask & 2) { lg = g.createLinearGradient(0, 1, 0, 0.55); lg.addColorStop(0, "rgba(0,25,12,.6)"); lg.addColorStop(1, "rgba(0,25,12,0)"); g.fillStyle = lg; g.fillRect(0, 0.55, 1, 0.45); }
+    if (mask & 4) { lg = g.createLinearGradient(0, 0, 0.28, 0); lg.addColorStop(0, "rgba(200,255,170,.22)"); lg.addColorStop(1, "rgba(200,255,170,0)"); g.fillStyle = lg; g.fillRect(0, 0, 0.28, 1); }
+    if (mask & 8) { lg = g.createLinearGradient(1, 0, 0.72, 0); lg.addColorStop(0, "rgba(0,25,12,.4)"); lg.addColorStop(1, "rgba(0,25,12,0)"); g.fillStyle = lg; g.fillRect(0.72, 0, 0.28, 1); }
+    if (!(mask & 15)) { g.fillStyle = "rgba(0,28,14,.14)"; g.fillRect(0, 0, 1, 1); }                  // buried in the canopy: a touch darker
+    g.lineWidth = 0.028;
+    bumps.forEach(function (b) {                                                                // scalloped rim: sunlit on top and left, dark underneath and right
+      var a0 = b[0] === 1 ? 3.3 : b[0] === 2 ? 0.15 : b[0] === 4 ? 2.2 : -0.9, a1 = a0 + (b[0] === 1 ? 2.6 : b[0] === 2 ? 2.8 : 2.2);
+      g.strokeStyle = b[0] === 1 || b[0] === 4 ? "rgba(190,255,150,.65)" : "rgba(4,30,18,.55)";
+      g.beginPath(); g.arc(b[1], b[2], b[3] * 0.93, a0, a1); g.stroke();
+    });
+    g.globalCompositeOperation = "destination-out"; g.fillStyle = "#000";
+    [[16, 0, 0], [32, 1, 0], [64, 0, 1], [128, 1, 1]].forEach(function (c) { if (mask & c[0]) { g.beginPath(); g.arc(c[1], c[2], 0.3, 0, TAU); g.fill(); } });
+    g.restore();
+    return cv;
+  }
+  function natLeaf(g, i, j, sx, sy, mask) {
+    var S = Math.max(2, Math.round(ts * dpr)), v = Math.floor(SW.hash(i, j, 90) * LEAFVARIANTS) % LEAFVARIANTS, key = mask * 8 + v;
+    if (LEAFKEY !== S) { LEAFCACHE = {}; LEAFKEY = S; }
+    var cv = LEAFCACHE[key] || (LEAFCACHE[key] = buildLeafTile(mask, v, S));
+    g.drawImage(cv, 0, 0, S, S, sx, sy, ts, ts);
   }
   function render(now) {
     var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t);
@@ -2127,6 +2290,24 @@
         g.lineTo(sx2, oy + (base + sm * bw[0] + (jag - amp * 0.4) * bw[1] - (pk - amp * 0.3) * bw[2]) * ts);
       }
       g.lineTo(vw + 12, vh); g.closePath(); g.fill();
+      // mist pooled on top of this layer: farther layers fade into the sky colour (atmospheric perspective)
+      var fy0 = oy + (base - amp * 1.6) * ts, fgr = g.createLinearGradient(0, fy0, 0, fy0 + ts * 9);
+      fgr.addColorStop(0, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)"); fgr.addColorStop(0.45, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + "," + ((0.3 - L2 * 0.07) * above).toFixed(3) + ")"); fgr.addColorStop(1, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)");
+      g.fillStyle = fgr; g.fillRect(0, fy0, vw, ts * 9);
+      if (L2 === 1 && bw[0] > 0.25) {   // giant mangrove silhouettes standing on the middle hills
+        var tcol = mixC(cc, [8, 24, 28], 0.45), rim = mixC(cc, sk[1], 0.45), k0 = Math.floor((cam.x * par - vw / ts) / 16) - 1, k1 = Math.ceil((cam.x * par + vw / ts) / 16) + 1;
+        for (var tk = k0; tk <= k1; tk++) {
+          var tx = tk * 16 + SW.hash(tk, 3, 9) * 8, th = 11 + SW.hash(tk, 4, 9) * 9, tw = 5.5 + SW.hash(tk, 5, 9) * 4, tsx = vw / 2 + (tx - cam.x * par) * ts, tby = oy + (base + 3) * ts, tty = tby - th * ts;
+          if (tsx < -tw * ts * 2 || tsx > vw + tw * ts * 2) continue;
+          g.globalAlpha = bw[0] * above; g.fillStyle = rgb(tcol);
+          g.beginPath(); g.moveTo(tsx - ts * 0.9, tby); g.quadraticCurveTo(tsx - ts * 0.35, tby - th * ts * 0.5, tsx - ts * 0.3, tty); g.lineTo(tsx + ts * 0.3, tty); g.quadraticCurveTo(tsx + ts * 0.35, tby - th * ts * 0.5, tsx + ts * 0.9, tby); g.fill();
+          for (var cb = 0; cb < 4; cb++) { var cxx = tsx + (cb - 1.5) * tw * ts * 0.42, cyy = tty + Math.abs(cb - 1.5) * ts * 0.9; g.beginPath(); g.ellipse(cxx, cyy, tw * ts * 0.5, tw * ts * 0.26, 0, 0, 6.2832); g.fill(); }
+          g.fillStyle = rgb(rim); g.globalAlpha = bw[0] * above * 0.5; g.beginPath(); g.ellipse(tsx - tw * ts * 0.1, tty - tw * ts * 0.12, tw * ts * 0.55, tw * ts * 0.07, 0, 0, 6.2832); g.fill();
+          g.globalAlpha = bw[0] * above * 0.8; g.strokeStyle = rgb(tcol); g.lineWidth = Math.max(1, ts * 0.07);
+          for (var vn = 0; vn < 6; vn++) { var vx = tsx + (vn - 2.5) * tw * ts * 0.2, vl = (1.2 + SW.hash(tk, vn, 11) * 2.8) * ts; g.beginPath(); g.moveTo(vx, tty + ts * 0.8); g.lineTo(vx + Math.sin(now / 1400 + vn + tk) * ts * 0.12, tty + ts * 0.8 + vl); g.stroke(); }
+          g.globalAlpha = 1;
+        }
+      }
       if (bw[2] > 0.4 && L2 < 2) { /* snowy caps */ g.fillStyle = "rgba(255,255,255," + (0.35 * day * bw[2]) + ")"; g.fillRect(0, 0, 0, 0); }
     }
     var hz = oy + (SURF - 1) * ts, fg = g.createLinearGradient(0, hz - ts * 7, 0, hz + ts * 1.5), fc = sk[1];
@@ -2174,25 +2355,36 @@
       if (!td.solid) {
         if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy);
         else if (under) { g.fillStyle = "rgb(" + BACKWALL[world.bio[i]].join(",") + ")"; g.fillRect(sx3, sy, ts, ts); }
-        if (td.kind === "vine") { var vhalf = Math.round(ts / 2), vo = Math.round(Math.sin(now / 900 + i * 1.7) * ts * 0.08); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3, sy, ts, vhalf); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3 + vo, sy + vhalf, ts, ts - vhalf); }
-        else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower" || td.sway) { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3, sy + half, ts, ts - half); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3 + off, sy, ts, half); }
+        if (td.kind === "vine") { var vhalf = Math.round(ts / 2), vo = Math.round(Math.sin(now / 900 + i * 1.7) * ts * 0.08); smDraw(g, v, id, 0, 0, 16, 8, sx3, sy, ts, vhalf); smDraw(g, v, id, 0, 8, 16, 8, sx3 + vo, sy + vhalf, ts, ts - vhalf); }
+        else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower" || td.sway) { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); smDraw(g, v, id, 0, 8, 16, 8, sx3, sy + half, ts, ts - half); smDraw(g, v, id, 0, 0, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
-        else g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
+        else if (SMOP[id]) g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
+        else smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts);
       } else if (td.kind === "leaves") {
         var lo = function (a, b) { return !TILES[get(a, b)].solid; };
         var lmask = (lo(i, j - 1) ? 1 : 0) | (lo(i, j + 1) ? 2 : 0) | (lo(i - 1, j) ? 4 : 0) | (lo(i + 1, j) ? 8 : 0);
-        g.drawImage(LEAFATLAS, v * 16, lmask * 16, 16, 16, sx3, sy, ts, ts);
+        lmask |= (!(lmask & 5) && lo(i - 1, j - 1) ? 16 : 0) | (!(lmask & 9) && lo(i + 1, j - 1) ? 32 : 0) | (!(lmask & 6) && lo(i - 1, j + 1) ? 64 : 0) | (!(lmask & 10) && lo(i + 1, j + 1) ? 128 : 0);   // inner corners get a rounded notch
+        natLeaf(g, i, j, sx3, sy, lmask);
       } else {
-        g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
+        if (NATC[id]) { natTile(g, id, i, j, sx3, sy); continue; }
+        if (id === T.LOG) { natLog(g, i, j, sx3, sy); }
+        else if (SMGEM[id]) { natTile(g, orePal(td), i, j, sx3, sy); smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }
+        else g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
         // exposed faces get a lit rim on top and a shadow on the sides and bottom, so caves and cliffs read clearly
         var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
-        if (td.kind === "door") { /* the door art has its own frame and shading */ }
+        if (td.kind === "door" || id === T.LOG || SMGEM[id]) { /* the door art has its own frame and shading */ }
         else if (td.kind === "leaves") {
           if (nT) { g.fillStyle = "rgba(190,255,150,.22)"; g.fillRect(sx3, sy, ts, edge); }
           if (nB) { g.fillStyle = "rgba(0,20,5,.32)"; g.fillRect(sx3, sy + ts - edge * 1.5, ts, edge * 1.5); }
         } else {
-          if (nT && td.kind !== "moss" && td.kind !== "snow") { g.fillStyle = "rgba(255,255,255,.2)"; g.fillRect(sx3, sy, ts, edge); }
+          if (nT && td.kind !== "moss" && td.kind !== "snow") { var tg0 = g.createLinearGradient(0, sy, 0, sy + ts * 0.3); tg0.addColorStop(0, "rgba(255,255,240,.34)"); tg0.addColorStop(1, "rgba(255,255,240,0)"); g.fillStyle = tg0; g.fillRect(sx3, sy, ts, ts * 0.3); }
           g.fillStyle = "rgba(0,0,0,.3)"; if (nB) g.fillRect(sx3, sy + ts - edge, ts, edge); if (nL) g.fillRect(sx3, sy, edge, ts); if (nR) g.fillRect(sx3 + ts - edge, sy, edge, ts);
+          if (td.kind !== "door" && td.light < 3) {   // rounded 3D shading: a bright bevel on the lit top and a soft shadow thrown onto whatever is next to the block
+            if (nT) { var tg = g.createLinearGradient(0, sy, 0, sy + ts * 0.34); tg.addColorStop(0, "rgba(255,255,235,.3)"); tg.addColorStop(1, "rgba(255,255,235,0)"); g.fillStyle = tg; g.fillRect(sx3, sy, ts, ts * 0.34); }
+            if (nB) { var bg2 = g.createLinearGradient(0, sy + ts, 0, sy + ts * 0.55); bg2.addColorStop(0, "rgba(0,0,10,.38)"); bg2.addColorStop(1, "rgba(0,0,10,0)"); g.fillStyle = bg2; g.fillRect(sx3, sy + ts * 0.55, ts, ts * 0.45); }
+            if (nR && j >= col[i + 1]) { var rg3 = g.createLinearGradient(sx3 + ts, 0, sx3 + ts * 1.7, 0); rg3.addColorStop(0, "rgba(0,0,12,.34)"); rg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = rg3; g.fillRect(sx3 + ts, sy, ts * 0.7, ts); }
+            if (nL && j >= col[i - 1]) { var lg3 = g.createLinearGradient(sx3, 0, sx3 - ts * 0.7, 0); lg3.addColorStop(0, "rgba(0,0,12,.34)"); lg3.addColorStop(1, "rgba(0,0,12,0)"); g.fillStyle = lg3; g.fillRect(sx3 - ts * 0.7, sy, ts * 0.7, ts); }
+          }
         }
       }
       if (td.light >= 3 && td.solid === false || td.light >= 6) glows.push([sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
@@ -2221,6 +2413,7 @@
       dk[k] = dr; dk[k + 1] = dg; dk[k + 2] = db; dk[k + 3] = Math.round(clamp(al, 0, 0.97) * 255);
     }
     LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(LC, 0, 0, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, vgw * ts, vgh * ts);
+    if (day > 0.6 && above > 0.05) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     // dusk/dawn colour grade over the open air
     if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = "soft-light"; g.fillStyle = "rgba(255,130,70," + (0.55 * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     g.imageSmoothingEnabled = false;

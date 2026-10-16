@@ -88,7 +88,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-it b{font-size:.92rem}
 .sbx-it small{font-size:.7rem;color:#f6eedb99;text-align:center}
 .sbx-it.on{border-color:#f2c14e;box-shadow:0 0 14px -6px #f2c14e}
-#sbxMap{width:100%;height:auto;aspect-ratio:720/140;border-radius:12px;border:1px solid #4ee6b444;background:#050807;image-rendering:pixelated}
+#sbxMap{width:100%;height:auto;aspect-ratio:1080/260;border-radius:12px;border:1px solid #4ee6b444;background:#050807;image-rendering:pixelated}
 .sbx-goals{display:grid;gap:6px}
 .sbx-goal{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:12px;background:#0b1a15;border:1px solid #4ee6b41c}
 .sbx-goal i{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid #4ee6b455;font-style:normal;font-weight:800;color:#07120f}
