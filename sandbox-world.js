@@ -505,6 +505,15 @@
     holes.sort(function (a, b) { return a.x - b.x; });
     // 6. structures (see buildStructures): standalone buildings with a door you can walk into
     var structs = buildStructures(t, top, bio, seed, holes, village);
+    // 6b. the village houses are enterable like every other building: each door (west and east) is a building door, so tap it or press F to step inside to a top-down room.
+    //     They are appended after the standalone structures, so those keep their ids. kind house0..house4 are the interiors in sandbox-cave.js.
+    var HOUSENAMES = ["Mossy Cottage", "Scholar's House", "Baker's House", "Gardener's Cottage", "Elder's Hall"];
+    if (village) village.houses.forEach(function (h, hi) {
+      [0, 1].forEach(function (d) {
+        var dx = h.doors[d], side = d ? 1 : -1;
+        structs.push({ id: structs.length, ki: -1, kind: "house" + (hi % 5), name: HOUSENAMES[hi % 5], b: 0, x0: h.x, x1: h.x + h.w - 1, w: h.w, gy: village.gy, bh: 3, side: side, dx: dx, outX: dx + side, doorY: village.gy - 1, village: true });
+      });
+    });
     return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, village: village, structs: structs, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 

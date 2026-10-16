@@ -200,6 +200,33 @@
       a(2, 6, T.ICESCULPT, "s"); a(8, 6, T.ICESCULPT, "s"); a(1, 3, T.CRYSTALLAMP, "s"); a(9, 3, T.CRYSTALLAMP, "s");
     } }
   };
+  // Village houses (see the 6b block in gen() in sandbox-world.js). Pieces from Content Pack 1 are used when it is loaded, otherwise a plain stand-in.
+  (function () {
+    var N = function (k, f) { return T[k] !== undefined ? T[k] : f; };
+    KINDS.house0 = { th: 3, w: 11, h: 9, amb: 0.72, items: function (a) {   // Mossy Cottage: a bed, a hearth and a kitchen table
+      a(2, 2, T.BED, "s"); a(4, 2, T.BOOKSHELF, "s"); a(7, 2, T.HEARTH, "s"); a(9, 2, T.WARDROBE, "s"); a(5, 1, T.PAINTING, "w"); a(2, 1, T.TORCH, "w"); a(8, 1, T.TORCH, "w");
+      a(4, 5, T.RUG, "f"); a(5, 5, T.RUG, "f"); a(6, 5, T.RUG, "f"); a(5, 5, T.TABLE, "s"); a(4, 5, T.CHAIR); a(6, 5, T.CHAIR_L); a(1, 6, T.BARREL, "s"); a(9, 6, T.FLOWERPOT, "s");
+    } };
+    KINDS.house1 = { th: 3, w: 11, h: 9, amb: 0.66, items: function (a) {   // Scholar's House: shelves to the ceiling, a desk, a globe and a telescope
+      a(1, 2, T.BOOKSHELF, "s"); a(2, 2, T.BOOKSHELF, "s"); a(3, 2, T.BOOKSHELF, "s"); a(8, 2, T.BOOKSHELF, "s"); a(9, 2, T.BOOKSHELF, "s"); a(5, 2, N("X_globe", T.POT), "s"); a(6, 1, N("X_worldmap", T.PAINTING), "w"); a(3, 1, T.TORCH, "w"); a(8, 1, T.TORCH, "w");
+      a(5, 4, N("X_desk", T.TABLE), "s"); a(5, 5, T.CHAIR); a(2, 5, N("X_telescope", T.BARREL), "s"); a(8, 5, N("X_candelabra", T.LANTERN), "s");
+      a(3, 6, T.RUG, "f"); a(4, 6, T.RUG, "f"); a(5, 6, T.RUG, "f"); a(6, 6, T.RUG, "f"); a(7, 6, T.RUG, "f"); a(9, 6, T.FLOWERPOT, "s");
+    } };
+    KINDS.house2 = { th: 3, w: 12, h: 9, amb: 0.7, items: function (a) {   // Baker's House: a big hearth, a cauldron and sacks of grain
+      a(5, 2, T.HEARTH, "s"); a(6, 2, T.HEARTH, "s"); a(2, 2, T.CAULDRON, "s"); a(9, 2, T.BARREL, "s"); a(10, 2, N("X_crate", T.BARREL), "s"); a(4, 1, T.SIGN, "w"); a(7, 1, T.BANNER, "w"); a(1, 1, T.TORCH, "w"); a(10, 1, T.TORCH, "w");
+      a(5, 5, T.TABLE, "s"); a(6, 5, T.TABLE, "s"); a(4, 5, T.CHAIR); a(7, 5, T.CHAIR_L); a(1, 6, N("X_sack", T.POT), "s"); a(1, 7, N("X_sack", T.POT), "s"); a(10, 6, T.BALE, "s"); a(10, 7, T.BALE, "s"); a(2, 4, T.BUCKET, "s");
+    } };
+    KINDS.house3 = { th: 3, w: 11, h: 9, amb: 0.78, items: function (a) {   // Gardener's Cottage: planters, flower pots and a little fountain
+      a(2, 2, T.PLANTER, "s"); a(4, 2, T.PLANTER, "s"); a(6, 2, T.FLOWERPOT, "s"); a(8, 2, T.GLOWPOT, "s"); a(5, 1, T.BANNER, "w"); a(2, 1, T.TORCH, "w"); a(8, 1, T.TORCH, "w");
+      a(5, 4, T.FOUNTAIN, "s"); a(2, 5, T.STOOL, "s"); a(8, 5, T.STOOL, "s"); a(3, 6, T.RUG, "f"); a(4, 6, T.RUG, "f"); a(5, 6, T.RUG, "f"); a(6, 6, T.RUG, "f"); a(7, 6, T.RUG, "f");
+      a(1, 4, T.FLOWER); a(9, 4, T.FLOWER); a(1, 6, T.PLANTER, "s"); a(9, 6, N("X_sack", T.POT), "s");
+    } };
+    KINDS.house4 = { th: 3, w: 13, h: 10, amb: 0.68, items: function (a) {   // Elder's Hall: a sofa by the fire, a grandfather clock and a harp
+      a(6, 2, T.HEARTH, "s"); a(2, 2, N("X_clock", T.WARDROBE), "s"); a(10, 2, T.WARDROBE, "s"); a(4, 1, N("X_tapestry_swamp", T.BANNER), "w"); a(8, 1, N("X_tapestry_swamp", T.BANNER), "w"); a(1, 1, T.TORCH, "w"); a(11, 1, T.TORCH, "w");
+      a(5, 4, N("X_sofa", T.TABLE), "s"); a(8, 4, T.CHAIR_L); a(3, 5, N("X_harp", T.BOOKSHELF), "s"); a(10, 5, T.BOOKSHELF, "s");
+      for (var x = 4; x <= 8; x++) a(x, 6, T.RUG, "f"); a(6, 6, T.TABLE, "s"); a(5, 6, T.CHAIR); a(7, 6, T.CHAIR_L); a(1, 8, T.BARREL, "s"); a(11, 8, T.URN || T.POT, "s");
+    } };
+  })();
   function interior(kind, biome, id, run) {
     var K = KINDS[kind] || KINDS.cabin, w = K.w, h = K.h, n = w * h, wall = new Uint8Array(n), sol = new Uint8Array(n), deco = [], x, y, dr = [];
     for (y = 0; y < h; y++) for (x = 0; x < w; x++) wall[y * w + x] = (y <= 1 || y === h - 1 || x === 0 || x === w - 1) ? 1 : 0;

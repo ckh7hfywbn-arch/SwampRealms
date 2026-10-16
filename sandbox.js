@@ -155,6 +155,7 @@
     { id: "d_chandelier", cat: "Frostfen Collection", n: "Crystal Chandelier", out: { chandelier: 1 }, cost: { crystal: 8, planks: 4, torch: 4, stick: 2 }, bl: 3, d: "A hanging ring of Frost Crystals and candle flames. Hangs from a wall or a ceiling beam. Very bright." },
     { id: "d_throne", cat: "Frostfen Collection", n: "Frostrock Throne", out: { throne: 1 }, cost: { frostrock: 14, crystal: 6, fiber: 6 }, bl: 4, d: "The grandest piece you can craft: a throne carved from Frostrock. Needs the fully upgraded Frost Workbench." }
   ];
+  if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
   DECOR.forEach(function (r) { r.deco = 1; });
   var GOALS = [
     { id: "dig", n: "First Dig", d: "Mine your first block", f: function () { return S.st.mined >= 1; } },
@@ -212,6 +213,7 @@
     { id: "bld5", n: "House Call", d: "Visit 5 buildings", f: function () { return S.st.bld >= 5; } },
     { id: "cave4", n: "Cave Diver", d: "Reach cave floor 10", f: function () { return S.st.caveDeep >= 10; } }
   ];
+  if (typeof SbxExtra !== "undefined") SbxExtra.GOALS.forEach(function (g) { GOALS.push({ id: g.id, n: g.n, d: g.d, f: function () { return g.f(S); } }); });
   // ---- THE TRAIL (Stage 1): a guided first-day path. Steps count from lifetime stats, so gathering ahead still counts. ----
   // tg = tile ids to point at on the surface, deep = how far below the surface still counts, rw = small item gift.
   var TRAIL = [
@@ -309,6 +311,7 @@
   function build(state) {
     world = SW.gen(state.seed); tiles = world.t; orig = tiles.slice(); edits = {};
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
+    buildSMask();
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
     ex = new Uint8Array(W * H); unrle(state.ex, ex);
     walls = world.walls ? world.walls.slice() : new Uint8Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
@@ -421,8 +424,18 @@
   // ---------- WORLD ACCESS ----------
   function get(x, y) { if (x < 0 || x >= W) return T.BEDROCK; if (y < 0) return T.AIR; if (y >= H) return T.BEDROCK; return tiles[y * W + x]; }
   // Natural trees are scenery: you and the enemies walk through untouched trunks and leaves (you can still chop them). Logs and leaves YOU placed stay solid.
+  // Generated buildings (the village houses and the standalone structures) are scenery: you walk straight through their walls, roofs and doors as if they were in the background.
+  // smask marks the footprint (built in build()); only tiles still equal to the generated world count, so anything you place or dig yourself behaves normally.
+  var smask = null;
+  function buildSMask() {
+    smask = new Uint8Array(W * H); var v = world.village, ss = world.structs || [], i, x, y;
+    function mark(x0, x1, y0, y1) { for (y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) for (x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) smask[y * W + x] = 1; }
+    if (v) v.houses.forEach(function (h) { mark(h.x - 1, h.x + h.w, v.gy - 7, v.gy - 1); });
+    for (i = 0; i < ss.length; i++) mark(ss[i].x0 - 1, ss[i].x1 + 1, ss[i].gy - ss[i].bh - 7, ss[i].gy - 1);
+  }
   function blocks(x, y) {
     var id = get(x, y); if (!TILES[id].solid) return false;
+    if (smask && x >= 0 && x < W && y >= 0 && y < H && smask[y * W + x] && tiles[y * W + x] === orig[y * W + x]) return false;
     if ((id === T.LOG || id === T.LEAVES) && x >= 0 && x < W && y >= 0 && y < H && tiles[y * W + x] === orig[y * W + x]) return false;
     return true;
   }
@@ -714,6 +727,7 @@
 
   function paintWall(rect, hh, id, v) {   // 16x16 back wall pictures (4 variants each). They are drawn darker than blocks when placed (see drawWall)
     var x, y, k;
+    if (typeof SbxExtra !== "undefined" && SbxExtra.WALL_ART[id]) { SbxExtra.WALL_ART[id](rect, hh, v); return; }
     if (id === T.W_PLANK) {   // horizontal boards with seams, staggered joints and a nail each
       for (k = 0; k < 4; k++) {
         var by = k * 4; rect(0, by, 16, 4, ["#7d5230", "#734a2a", "#80552f", "#76502c"][(k + v) & 3]); rect(0, by, 16, 1, "#96643a"); rect(0, by + 3, 16, 1, "#47290f");
@@ -882,6 +896,7 @@
       rect(7, 3, 2, 8, "#e8fbff"); rect(4, 6, 8, 2, "#e8fbff"); [[5, 4], [6, 5], [9, 5], [10, 4], [5, 9], [6, 8], [9, 8], [10, 9]].forEach(function (q) { rect(q[0], q[1], 1, 1, "#e8fbff"); }); rect(7, 6, 2, 2, "#7fd6ff");
     }
   };
+  if (typeof SbxExtra !== "undefined") Object.assign(DECOR_ART, SbxExtra.ART);
   function paint(g, td, v, oy) {
     var id = td.id, ox = v * 16, kind = td.kind, hh = function (x, y, s) { return SW.hash(x + v * 16, y + id * 31, s + id); };
     var rect = function (x, y, w, h, c, a) { g.globalAlpha = a == null ? 1 : a; g.fillStyle = c; g.fillRect(ox + x, oy + y, w, h); g.globalAlpha = 1; };
@@ -1144,6 +1159,7 @@
       g.beginPath(); g.moveTo(6, 9); g.quadraticCurveTo(16, 4, 26, 11); g.lineTo(22, 15); g.quadraticCurveTo(20, 19, 18, 16); g.quadraticCurveTo(16, 22, 13, 18); g.quadraticCurveTo(10, 22, 8, 17); g.quadraticCurveTo(5, 15, 6, 9); g.closePath(); g.fill();
       g.strokeStyle = "#e9dcff"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(5, 9); g.quadraticCurveTo(16, 3, 27, 10); g.moveTo(6, 9); g.lineTo(13, 18); g.moveTo(27, 10); g.lineTo(18, 16); g.stroke();
       g.fillStyle = "#b58cff"; g.beginPath(); g.arc(7, 8, 1.6, 0, 6.2832); g.fill();
+    } else if (ITEMS[id].ico !== undefined) { g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, ITEMS[id].ico * 16, 16, 16, 2, 2, 28, 28);
     } else if (ITEMS[id].gem) {
       var gc = ITEMS[id].gem; g.fillStyle = gc; g.beginPath(); g.moveTo(16, 4); g.lineTo(26, 14); g.lineTo(16, 28); g.lineTo(6, 14); g.closePath(); g.fill();
       g.fillStyle = "#ffffff88"; g.beginPath(); g.moveTo(16, 4); g.lineTo(21, 14); g.lineTo(16, 14); g.lineTo(11, 14); g.closePath(); g.fill();
@@ -1218,6 +1234,7 @@
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 14 : 9, 6);
     thud(td.hard > 2 ? 110 : 160, 0.08);
     if (td.drop) { var n = dropQty(td); give(td.drop, n, x, y); if (td.kind === "ore") snd("coin"); }
+    if (td.bonus) td.bonus.forEach(function (bq) { if (Math.random() < bq[1]) give(bq[0], bq[2] + Math.floor(Math.random() * (bq[3] - bq[2] + 1)), x, y - 0.4); });   // loot blocks (geode, fossil, cache)
     if (id === T.LEAVES && Math.random() < 0.5) give("stick", 1, x, y - 0.55);                                  // Stage 1: sticks from leaves
     else if ((id === T.MUD || id === T.MOSS) && Math.random() < 0.16) give("pebble", 1, x, y - 0.55);         // Stage 1: pebbles from mud
     if (id === T.LOG && get(x, y - 1) === T.LOG) { /* upper trunk stays; keep it simple and forgiving */ }
@@ -1759,6 +1776,11 @@
     for (var y = cy - 4; y <= cy + 4; y++) for (var x = cx - 7; x <= cx + 7; x++) if (get(x, y) === T.BENCH) return true;
     return false;
   }
+  function nearStn(k) {   // Content Pack 1 crafting stations: Stone Furnace, Weaver's Loom, Mason's Table
+    var tk = SbxExtra.STNTILE[k], cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
+    for (var y = cy - 4; y <= cy + 4; y++) for (var x = cx - 7; x <= cx + 7; x++) if (TILES[get(x, y)].kind === tk) return true;
+    return false;
+  }
   function craft(id) {
     var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
@@ -1775,6 +1797,7 @@
     if (r.need && S.tier < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
     if (r.bl && S.bl < r.bl) { toast("Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first.", "#f2c14e"); return; }
     if (r.bench && !nearBench()) { toast("Stand near a Bog Workbench to craft this.", "#f2c14e"); return; }
+    if (r.stn && !nearStn(r.stn)) { toast("Stand near a " + SbxExtra.STN[r.stn] + " to craft this.", "#f2c14e"); return; }
     for (var k in r.cost) if ((S.inv[k] || 0) < r.cost[k]) { toast("Not enough " + ITEMS[k].n + ".", "#f2c14e"); return; }
     if (r.out) {   // the crafted items must fit once the ingredients are used up
       reslot(); var sim = S.slots.map(function (c) { return c ? { k: c.k, n: c.n } : null; }), q;
@@ -1906,7 +1929,7 @@
     for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (get(x, y) === T.BED) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
-  function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y)) return true; return false; }   // a roof within 5 tiles overhead
+  function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y) || (smask && smask[y * W + x] && TILES[tiles[y * W + x]].solid)) return true; return false; }   // a roof within 5 tiles overhead
   function sleepBlock() {   // why you cannot sleep right now ("" = you can). A roof overhead means nothing outside can reach you.
     if (sheltered()) return "";
     for (var i = 0; i < enemies.length; i++) { var e = enemies[i]; if (!e.def && Math.abs(e.x - p.x) < 14 && Math.abs(e.y - p.y) < 10) return e.k === "bat" ? "Bats are circling! Drive them off, or get under a roof." : "Something is too close to sleep!"; }
@@ -2152,7 +2175,7 @@
         if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy);
         else if (under) { g.fillStyle = "rgb(" + BACKWALL[world.bio[i]].join(",") + ")"; g.fillRect(sx3, sy, ts, ts); }
         if (td.kind === "vine") { var vhalf = Math.round(ts / 2), vo = Math.round(Math.sin(now / 900 + i * 1.7) * ts * 0.08); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3, sy, ts, vhalf); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3 + vo, sy + vhalf, ts, ts - vhalf); }
-        else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower") { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3, sy + half, ts, ts - half); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3 + off, sy, ts, half); }
+        else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower" || td.sway) { var half = Math.round(ts / 2), off = Math.round(sw * ts * 0.06 * (1 + (i % 3) * 0.3)); g.drawImage(ATLAS, v * 16, id * 16 + 8, 16, 8, sx3, sy + half, ts, ts - half); g.drawImage(ATLAS, v * 16, id * 16, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
         else g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
       } else if (td.kind === "leaves") {
@@ -2680,7 +2703,7 @@
       RECIPES.forEach(function (r) {
         var owned = (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can), lock0 = (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need))), lock = lock0 || (r.bl && S.bl < r.bl), needB = r.bench && !nb, can = !owned && !lock && Object.keys(r.cost).every(function (k) { return (S.inv[k] || 0) >= r.cost[k]; }), ic = r.tier ? "pick" + r.tier : r.arm ? "arm" + r.arm : r.wpn ? "wpn" + r.wpn : r.sh ? "shovel" : r.can ? "can" : r.bag ? "bag" + r.bag : Object.keys(r.out)[0];
         var im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(ic);
-        var note = lock && !lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.d);
+        var note = lock && !lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : "Craft the " + PICKS[r.tier - 1].n + " first.") : (needB && !owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
         h += '<div class="sbx-card' + (owned || lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (can && !needB ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (owned || lock ? " disabled" : "") + ">" + (owned ? "Owned" : lock ? "Locked" : "Craft") + "</button></div>";
       });
     } else if (tab === "decor") {
