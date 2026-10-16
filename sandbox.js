@@ -3688,7 +3688,7 @@
       }, cur2 = invSel >= 0 ? S.slots[invSel] : null, g1 = "", g2 = "", i2;
       var g3 = ""; for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += cell(i2); for (i2 = INV_BASE; i2 < invN(); i2++) g3 += cell(i2);
       for (i2 = 0; i2 < INV_HOT; i2++) g2 += cell(i2);
-      h += '<p class="sbx-note"><span class="' + (used >= invN() ? "invfull" : "") + '">' + used + " / " + invN() + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap a slot, then tap another to move, swap or merge stacks." + (S.bag ? " You are wearing the " + BAGS[S.bag].n + " (+" + BAGS[S.bag].x + " slots)." : " Craft a Backpack to carry more.") + "</p>";
+      h += '<p class="sbx-note"><span class="' + (used >= invN() ? "invfull" : "") + '">' + used + " / " + invN() + " slots used</span>. Each slot holds up to " + STACK + " (" + STACK_SMALL + " for furniture). Tap an item to see what it is. Drag it onto another slot to move it, swap, or merge stacks." + (S.bag ? " You are wearing the " + BAGS[S.bag].n + " (+" + BAGS[S.bag].x + " slots)." : " Craft a Backpack to carry more.") + "</p>";
       h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div>' + (g3 ? "<h3>" + esc(BAGS[S.bag].n) + '</h3><div class="sbx-igrid pack">' + g3 + "</div>" : "") + '<h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
       h += '<div class="sbx-iinfo">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + cur2.n + " of " + stackMax(cur2.k) + "</small></span></div>" : "<div><span><small>No slot selected. Tap an item to select it.</small></span></div>")
         + '<div class="acts"><button type="button" class="btn ghost" data-iact="swap"' + (cur2 ? "" : " disabled") + ">" + (invSel >= INV_HOT ? "To hotbar" : "To pack") + '</button>'
@@ -3921,10 +3921,46 @@
   function invClick(i, shift) {
     invAsk = "";
     if (shift) { if (S.slots[i]) quickMove(i); return; }
-    if (invSel < 0 || !S.slots[invSel]) { invSel = S.slots[i] ? i : -1; return renderPanel(); }
-    if (invSel === i) { invSel = -1; return renderPanel(); }
-    var from = invSel; invSel = i; moveSlot(from, i);
+    invSel = invSel === i || !S.slots[i] ? -1 : i; renderPanel();   // a tap only shows what the item is; moving takes a drag (see INVENTORY DRAG)
   }
+  // ---------- INVENTORY DRAG: press on an item and drag it onto another slot to move it, merge equal stacks, or swap ----------
+  var idrag = null, idragJust = false;
+  function dragEnd(drop, e) {
+    var D = idrag; idrag = null; if (!D) return;
+    if (D.ghost && D.ghost.parentNode) D.ghost.parentNode.removeChild(D.ghost);
+    [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-is.lift"), function (b) { b.classList.remove("drop"); b.classList.remove("lift"); });
+    if (!D.on) return;
+    idragJust = true; setTimeout(function () { idragJust = false; }, 0);
+    if (!drop) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is]");
+    if (!t) return;
+    var to = +t.getAttribute("data-is"); if (to === D.from || !S.slots[D.from]) return;
+    invAsk = ""; invSel = to; moveSlot(D.from, to); snd("coin");
+  }
+  [$("sbxPanel"), $("sbxPack")].forEach(function (el) {
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button && e.pointerType === "mouse") return;
+      var b = e.target.closest("[data-is]"); if (!b) return; var i = +b.getAttribute("data-is"); if (!S.slots[i]) return;
+      idrag = { from: i, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: b, th: e.pointerType === "mouse" ? 5 : 9 };
+    });
+    el.addEventListener("click", function (e) { if (idragJust) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a finished drag is not also a tap
+  });
+  window.addEventListener("pointermove", function (e) {
+    var D = idrag; if (!D || e.pointerId !== D.id) return;
+    if (!D.on) {
+      if (Math.abs(e.clientX - D.x0) + Math.abs(e.clientY - D.y0) < D.th) return;
+      var c = S.slots[D.from]; if (!c) { idrag = null; return; }
+      D.on = true; D.src.classList.add("lift");
+      var g = document.createElement("div"); g.className = "sbx-drag"; g.innerHTML = '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + "</b>"; document.body.appendChild(g); D.ghost = g;
+    }
+    e.preventDefault();
+    D.ghost.style.transform = "translate(" + (e.clientX - 26) + "px," + (e.clientY - 26) + "px)";
+    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is]");
+    [].forEach.call(document.querySelectorAll(".sbx-is.drop"), function (b) { if (b !== t) b.classList.remove("drop"); });
+    if (t && t !== D.src) t.classList.add("drop");
+  }, { passive: false });
+  window.addEventListener("pointerup", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(true, e); });
+  window.addEventListener("pointercancel", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(false, e); });
   function invAct(a) {
     var c = invSel >= 0 ? S.slots[invSel] : null; if (!c && a !== "sort") return;
     if (a !== "tossall") invAsk = "";

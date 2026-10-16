@@ -414,3 +414,10 @@ body.sbx-app footer{margin-top:28px}
 @media(max-width:480px){.sbx-mcard .wp-ic{width:26px;height:26px}.sbx-mcard .wp-ic img{width:16px;height:16px}.sbx-mcard .wp-sw{width:22px;height:22px}}
 .sbx-mapv:has(.sbx-mcard:not([hidden])) .sbx-mhint{display:none}
 @media(max-width:480px){.sbx-mcard{padding:9px 9px}.sbx-mcard .wp-row{gap:3px}.sbx-mcard .wp-ic{width:24px;height:24px;border-radius:7px}.sbx-mcard .wp-ic img{width:15px;height:15px}.sbx-mcard .wp-sw{width:22px;height:22px}}
+/* inventory drag and drop */
+.sbx-is:not(.empty){touch-action:none;-webkit-user-select:none;user-select:none}
+.sbx-is.lift{opacity:.35}
+.sbx-is.drop{border-color:#4ee6b4;box-shadow:0 0 0 2px rgba(78,230,180,.6),0 0 16px -2px rgba(78,230,180,.8)}
+.sbx-drag{position:fixed;left:0;top:0;z-index:9999;width:52px;height:52px;display:grid;place-items:center;border-radius:12px;pointer-events:none;background:linear-gradient(180deg,rgba(30,56,44,.96),rgba(10,22,16,.96));border:1px solid #f2c14e;box-shadow:0 10px 24px -6px #000,0 0 18px -4px rgba(242,193,78,.7)}
+.sbx-drag img{width:66%;height:66%;image-rendering:pixelated}
+.sbx-drag b{position:absolute;right:5px;bottom:2px;font:800 .74rem Nunito,sans-serif;color:#f6eedb;text-shadow:0 1px 2px #000}

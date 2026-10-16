@@ -594,3 +594,4 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
 - **Buildings:** 7 redesigned exteriors (incl. the new Swamp Farmstead) built from Content Pack blocks, and hand-drawn interior floor plans (IMAP in sandbox-cave.js, one letter per tile).
 - **Doors:** closed doors are drawn thin (edge-on), open doors wide.
 - **Waypoints:** name, 12 colours and 12 icons, edited from the map card.
+- **Inventory:** tapping an item only shows its info; drag an item onto another slot to move, swap or merge (mouse and touch).
