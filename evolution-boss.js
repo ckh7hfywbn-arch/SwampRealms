@@ -7,11 +7,11 @@
   var $ = function (id) { return document.getElementById(id); };
   var CD = 600000;   // rematch cooldown (ms)
   var BOSS = [   // hp / time (s) / dmg = Courage lost per missed dodge. Tune here.
-    { id: "mossback", n: "Grumbleroot", tag: "The Mossback Titan", c: "#4ee6b4", hp: 800, time: 45, dmg: 20, coins: 20, cry: 5, pal: ["#26492c", "#3f7a3e", "#8fe08a", "#ffe08a"],
+    { id: "mossback", n: "Grumbleroot", tag: "The Mossback Titan", c: "#4ee6b4", hp: 1500, time: 40, dmg: 25, coins: 20, cry: 5, pal: ["#26492c", "#3f7a3e", "#8fe08a", "#ffe08a"],
       need: function (S) { return S.hq >= 2 ? "" : "Upgrade Swamp Hollow to level 2"; } },
-    { id: "cinderhide", n: "Cinderhide", tag: "The Magma Toad", c: "#ff8a3d", hp: 4200, time: 50, dmg: 25, coins: 40, cry: 10, pal: ["#4a1d12", "#a8431f", "#ff8a3d", "#ffd27a"],
+    { id: "cinderhide", n: "Cinderhide", tag: "The Magma Toad", c: "#ff8a3d", hp: 8000, time: 45, dmg: 30, coins: 40, cry: 10, pal: ["#4a1d12", "#a8431f", "#ff8a3d", "#ffd27a"],
       need: function (S) { return S.rl >= 2 ? "" : "Unlock Ember Bog"; } },
-    { id: "rimewing", n: "Queen Rimewing", tag: "The Aurora Moth", c: "#7fd6ff", hp: 12000, time: 55, dmg: 30, coins: 80, cry: 25, pal: ["#1d4a66", "#5fa3c0", "#cdeefa", "#ffffff"],
+    { id: "rimewing", n: "Queen Rimewing", tag: "The Aurora Moth", c: "#7fd6ff", hp: 22000, time: 50, dmg: 35, coins: 80, cry: 25, pal: ["#1d4a66", "#5fa3c0", "#cdeefa", "#ffffff"],
       need: function (S) { return S.rl >= 3 ? "" : "Unlock Frostfen"; } }
   ];
   var F = null, iv = 0, tonic = false;
@@ -31,8 +31,8 @@
     return left > 0 ? { st: "cool", left: left, r: r } : { st: "ready", r: r };
   }
   function rematchEss() { return Math.max(300, Math.round(K().rate() * 1200)); }
-  function tapDmg() { return Math.max(2, Math.round(K().tapGain() * 0.6)); }
-  function cdps() { return K().S().crs.reduce(function (t, c) { return t + [2, 6, 15][c.s]; }, 0) * (1 + K().mv("grip") * 0.5); }
+  function tapDmg() { return Math.max(2, Math.round(K().tapGain() * 0.6 * (1 + K().relic("boss")))); }
+  function cdps() { return K().S().crs.reduce(function (t, c) { return t + [2, 6, 15][c.s]; }, 0) * (1 + K().mv("grip") * 0.5) * (1 + K().relic("boss")); }
   function tonicCost() { return Math.max(80, Math.round(K().rate() * 30)); }
   function sfx(n, a) { try { SFX[n](a); } catch (e) {} }
 
@@ -87,13 +87,13 @@
     if (!F) return;
     var now = Date.now(), dt = Math.min(0.25, (now - F.last) / 1000); F.last = now;
     F.t -= dt; F.stun = Math.max(0, F.stun - dt); F.hp -= F.dps * dt * (F.stun > 0 ? 2 : 1);
-    if (F.st === "idle") { F.nx -= dt; if (F.nx <= 0) { F.st = "wind"; F.wl = 1.6; sfx("charge"); say("It is winding up! DODGE now!"); } }
+    if (F.st === "idle") { F.nx -= dt; if (F.nx <= 0) { F.st = "wind"; F.wl = 1.2; sfx("charge"); say("It is winding up! DODGE now!"); } }
     else {
       F.wl -= dt;
-      if (F.wl <= 0) { F.co -= F.b.dmg; F.st = "idle"; F.nx = 6 + Math.random() * 3; sfx("tear"); say("Ouch! Dodge the next attack."); var a = document.querySelector(".evo-bt-art"); if (a) { a.classList.remove("hit"); void a.offsetWidth; a.classList.add("hit"); } pop("-" + F.b.dmg + " Courage", "bad", 50, 20); }
+      if (F.wl <= 0) { F.co -= F.b.dmg; F.st = "idle"; F.nx = 5 + Math.random() * 2.5; sfx("tear"); say("Ouch! Dodge the next attack."); var a = document.querySelector(".evo-bt-art"); if (a) { a.classList.remove("hit"); void a.offsetWidth; a.classList.add("hit"); } pop("-" + F.b.dmg + " Courage", "bad", 50, 20); }
     }
     if (F.weak > 0) { F.weak -= dt; if (F.weak <= 0) F.nw = 2.5 + Math.random() * 2; }
-    else { F.nw -= dt; if (F.nw <= 0) { F.weak = 2.4; var w = document.querySelector("[data-weak]"); if (w) { w.style.left = (22 + Math.random() * 56) + "%"; w.style.top = (28 + Math.random() * 44) + "%"; } } }
+    else { F.nw -= dt; if (F.nw <= 0) { F.weak = 1.8; var w = document.querySelector("[data-weak]"); if (w) { w.style.left = (22 + Math.random() * 56) + "%"; w.style.top = (28 + Math.random() * 44) + "%"; } } }
     ui();
     if (F.hp <= 0) win(); else if (F.co <= 0) lose("You ran out of Courage."); else if (F.t <= 0) lose("Time ran out.");
   }
@@ -115,7 +115,7 @@
     var t = e.target;
     if (t.closest("[data-weak]")) { if (F && F.weak > 0) { F.weak = 0; F.nw = 2.5 + Math.random() * 2; hurt(Math.round(F.td * 6 * (F.tonic ? 1.6 : 1)), "crit", 50, 45); sfx("open", "Epic"); ui(); if (F.hp <= 0) win(); } return; }
     if (t.closest("[data-hit]")) { hit(); return; }
-    if (t.closest("[data-dodge]")) { if (F && F.st === "wind") { F.st = "idle"; F.nx = 6 + Math.random() * 3; F.stun = 2.5; sfx("streak"); pop("DODGED!", "good", 50, 30); say("Counter! The boss is stunned."); ui(); } return; }
+    if (t.closest("[data-dodge]")) { if (F && F.st === "wind") { F.st = "idle"; F.nx = 5 + Math.random() * 2.5; F.stun = 2.5; sfx("streak"); pop("DODGED!", "good", 50, 30); say("Counter! The boss is stunned."); ui(); } return; }
     if (t.closest("[data-tonic]")) { tonic = !tonic; var b = t.closest("[data-tonic]"); b.setAttribute("aria-pressed", tonic); b.classList.toggle("on", tonic); return; }
     if (t.closest("[data-fight]")) { start(); return; }
     if (t.closest("[data-again]")) { prep(Number($("evoBt").dataset.i)); return; }

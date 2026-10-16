@@ -444,3 +444,23 @@ body.evo-app footer{margin-top:28px}
 .evo-bt .evo-orb.sm{display:inline-block;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#4ee6b4 55%,#1b8a68)}
 .evo-bt-dodge.ready{background:linear-gradient(#ff7a6a,#d63a3a);color:#fff;border-color:#ff9a8a;animation:btPulse .35s infinite alternate}
 .evo-bt-dodge:disabled{opacity:.45}
+
+/* Stage 6: Rebirth */
+.evo-card.rebirth{--c:#c9a8ff}
+.evo-card.rebirth.gift:not(.done){border-color:#c9a8ff88;background:linear-gradient(165deg,#1d1530,#0a0812)}
+.evo-perks{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.evo-perks li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:12px;background:#ffffff08;border:1px solid #c9a8ff22}
+.evo-perks span{display:grid;gap:1px;font-size:14px;color:#fff}.evo-perks small{font-size:11.5px;color:var(--muted)}
+.evo-perks .btn{flex:none;padding:8px 12px;font-size:13px}
+
+/* Stage 7: Expeditions and Relics */
+.evo-xrow{display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:#fff}.evo-xrow .btn{padding:7px 12px;font-size:13px}.evo-xrow small{color:var(--gold,#f2c14e);font-weight:900;min-width:38px;text-align:right}
+.evo-xsend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.evo-xsend .btn{flex:1 1 40%;padding:9px 10px;font-size:13px}
+.evo-relics{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.evo-relics li{display:flex;align-items:center;gap:8px;padding:8px;border-radius:12px;background:#ffffff08;border:1px dashed #ffffff22;opacity:.6}
+.evo-relics li.ok{opacity:1;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);background:color-mix(in srgb,var(--c) 10%,#08100d)}
+.evo-relics svg,.evo-relics .q{width:30px;height:30px;flex:none}.evo-relics .q{display:grid;place-items:center;font:900 18px Nunito,sans-serif;color:#9fb9af;font-style:normal}
+.evo-relics span{display:grid;gap:1px;font-size:12.5px;color:#fff;min-width:0}.evo-relics small{font-size:10.5px;color:var(--muted)}
+.cn-boss.relic svg{width:90px}
+.evo-perks li>span{flex:1 1 auto;min-width:0}
+.evo-perks .btn{width:auto;flex:none;min-width:92px;white-space:nowrap}

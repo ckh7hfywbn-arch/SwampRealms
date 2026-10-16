@@ -1,4 +1,4 @@
-// ===== SwampRealms: Evolution (Stage 5: Boss Battles on top of Realms, cinematics, daily gifts) =====
+// ===== SwampRealms: Evolution (Stage 7: Expeditions and Relics on top of Rebirth, Boss Battles, Realms, cinematics, daily gifts) =====
 // Load AFTER cards.js, weapons.js, avatar.js, store.js, account.js, menu.js and evolution-fx.js (see evolution.html).
 // Everything lives inside this function so it can never clash with the globals in cards.js / store.js (meta, save, KEY, CS ...).
 //
@@ -13,11 +13,12 @@
   var CFG = {
     tickMs: 250,            // game loop
     saveMs: 10000,          // autosave (also saves on every purchase and when the tab is hidden)
-    offlineCap: 7200,       // most seconds of production that count while away (2 hours). Egg timers use real time.
+    costMult: 2.5,          // HARD MODE: every Essence cost (buildings, eggs, evolutions, realms) is multiplied by this
+    offlineCap: 3600,       // most seconds of production that count while away (1 hour). Egg timers use real time.
     welcomeMin: 30,         // show the "welcome back" message after this many seconds away
     backMin: 120,           // away this long (and 50+ Essence earned) and the welcome back becomes a full card
-    stageBonus: [0.10, 0.20, 0.35],   // production bonus each creature gives, by evolution stage (Hatchling, Juvenile, Mighty)
-    hqBonus: [0, 0.25, 0.6],     // production bonus by Swamp Hollow level (index = level - 1)
+    stageBonus: [0.08, 0.15, 0.25],   // production bonus each creature gives, by evolution stage (Hatchling, Juvenile, Mighty)
+    hqBonus: [0, 0.2, 0.45],     // production bonus by Swamp Hollow level (index = level - 1)
     patch: { max: 5, cost: [10, 60, 250, 1200, 5000], rate: [0.5, 1.5, 4, 10, 24] },   // Glowspore Patch: cost to reach each level, Essence per second at each level
     hq: { max: 3, cost: [0, 120, 3000] },                                  // Swamp Hollow: cost to reach each level (level 1 is free)
     hatch: { max: 1, cost: [150] },                                  // Hatchery: needs Swamp Hollow level 2
@@ -25,13 +26,14 @@
     evolve: { cost: [200, 900], needPatch: [0, 3] },                 // cost to reach Juvenile / Mighty; Mighty also needs a level 3 patch
     maxCreatures: 5,
     lamp: { max: 3, cost: [400, 1500, 6000] },      // Firefly Lantern (needs Hollow 2; level 3 needs Hollow 3)
-    fertBonus: 0.04,        // Compost Heap: production bonus per level (endless, cost 6000 x 1.38^level)
-    achBonus: 0.02,
+    fertBonus: 0.03,        // Compost Heap: production bonus per level (endless, cost 6000 x 1.38^level)
+    achBonus: 0.015,
+    rb: { min: 250000, div: 62500, spirit: 0.02, firstCoins: 30, firstCry: 15 },   // Rebirth: Essence needed in ONE run, Spirits = floor(sqrt(run / div)), +2% production per Spirit ever earned, one-time first-rebirth gift
     bossBonus: 0.1,         // production bonus for each boss Trophy (first win of each boss, see evolution-boss.js)         // Swamp Journal: production bonus per entry
-    dayTap: 2, nightSpore: 1.5, cycle: 240,   // day: taps x2; night: Glowspores x1.5 (see PH for phase lengths)
-    fire: { gapDay: [30, 55], gapNight: [10, 20], life: 7, gold: 0.06, frenzy: 20, secs: 12, min: 5, chainMs: 9000, chainMax: 10 },   // fireflies
+    dayTap: 1.5, nightSpore: 1.3, cycle: 240,   // day: taps x2; night: Glowspores x1.5 (see PH for phase lengths)
+    fire: { gapDay: [45, 80], gapNight: [15, 30], life: 5.5, gold: 0.04, frenzy: 15, secs: 8, min: 5, chainMs: 9000, chainMax: 10 },   // fireflies
     realmBonus: 0.15,       // production bonus for each extra realm you unlock
-    gift: { mult: [1, 1.2, 1.5, 2, 2.5, 3, 5], baseSecs: 90, min: 100, frenzy: 60, minTot: 100 }   // daily gift: Essence = max(min, 90 s of production) x mult[day]; day 7 also starts a 60 s Frenzy
+    gift: { mult: [1, 1.2, 1.5, 2, 2.5, 3, 5], baseSecs: 60, min: 100, frenzy: 60, minTot: 100 }   // daily gift: Essence = max(min, 90 s of production) x mult[day]; day 7 also starts a 60 s Frenzy
   };
   var BIO = [   // realms. k = save key of the landmark level, lm.cost / lm.rate = per landmark level. Swamp has no landmark (it has the Patch).
     { id: "swamp", n: "Murkwater Swamp", tag: "Where it all began", c: "#4ee6b4", pad: ["#1c4a2c", "#2f6a37"] },
@@ -40,6 +42,23 @@
     { id: "frost", n: "Frostfen", tag: "Aurora lights over frozen reeds", c: "#7fd6ff", pad: ["#5fa3c0", "#cdeefa"], k: "fr", unlock: 600000, need: "Needs Cinder Geyser level 2",
       lm: { n: "Aurora Lotus", max: 4, cost: [150000, 500000, 1600000, 5000000], rate: [500, 1400, 3600, 9000] } }
   ];
+  var PERK = {   // bought with Swamp Spirits, permanent, kept through every Rebirth
+    prod: { n: "Swamp Wisdom", d: "+10% production per level", max: 5, cost: [2, 3, 4, 5, 6] },
+    tap: { n: "Spark of Life", d: "+25% tap power per level", max: 5, cost: [1, 2, 3, 4, 5] },
+    wisp: { n: "Wisp Caller", d: "Fireflies come 10% faster per level", max: 3, cost: [2, 4, 6] },
+    head: { n: "Head Start", d: ["Rebirth with Glowspore Patch 2", "Also Swamp Hollow 2, Patch 3", "Also the Hatchery, Patch 4"], max: 3, cost: [3, 6, 10] }
+  };
+  var EXP = [   // expeditions: a creature leaves for secs (real time, keeps going while you are away) and brings back Essence and maybe a Relic
+    { n: "Reed Maze", r: 0, secs: 300, min: 300, pool: ["moss", "lily", "tooth"], tag: "Twisting reeds full of lost treasures" },
+    { n: "Cinder Caves", r: 1, secs: 900, min: 1200, pool: ["coin", "gem", "ash"], tag: "Glowing tunnels under Ember Bog" },
+    { n: "Frost Hollow", r: 2, secs: 1800, min: 4000, pool: ["pearl", "shard", "glass"], tag: "A frozen cave behind the aurora" }
+  ];
+  var REL = {   // relics: found on expeditions, kept through Rebirth. Duplicates level a relic up (max 5). k = what it boosts, v = per level
+    moss: { n: "Mossy Charm", k: "prod", v: 0.04, d: "production", r: 0 }, lily: { n: "Lily Lantern", k: "wisp", v: 0.06, d: "faster fireflies", r: 0 }, tooth: { n: "Toad Tooth", k: "tap", v: 0.08, d: "tap power", r: 0 },
+    coin: { n: "Cinder Coin", k: "prod", v: 0.05, d: "production", r: 1 }, gem: { n: "Magma Gem", k: "boss", v: 0.08, d: "boss damage", r: 1 }, ash: { n: "Ash Feather", k: "speed", v: 0.06, d: "faster expeditions", r: 1 },
+    pearl: { n: "Frost Pearl", k: "prod", v: 0.06, d: "production", r: 2 }, shard: { n: "Aurora Shard", k: "tap", v: 0.08, d: "tap power", r: 2 }, glass: { n: "Rime Hourglass", k: "speed", v: 0.08, d: "faster expeditions", r: 2 }
+  };
+  var XCFG = { ok: [0.75, 0.88, 0.97], drop: 0.35, pity: 2, maxLv: 5 };
   var STAGES = ["Hatchling", "Juvenile", "Mighty"];
   var OUTFIT = [{}, { neck: "scarf" }, { hat: "crown", neck: "cape" }];   // gear drawn on the creature at each stage (avatar.js ids)
   var SLOTS = [[31, 51.4, 19], [4, 71, 12.5], [17.5, 71, 12.5], [51, 72, 12.5], [64, 72, 12.5]];   // scene spots for creatures: left %, top %, width %
@@ -74,6 +93,13 @@
   var S = null, dirty = false, lastSaveAt = 0, lastTick = Date.now(), eggSeen = true;
 
   function num(v, d, lo, hi) { v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; }
+  function cleanPk(b) { var r = {}; b = b && typeof b === "object" ? b : {}; for (var id in PERK) { var l = Math.floor(num(b[id], 0, 0, PERK[id].max)); if (l) r[id] = l; } return r; }
+  function cleanXp(a, crs) {
+    var r = []; if (!Array.isArray(a)) return r;
+    a.slice(0, 2).forEach(function (x) { if (x && EXP[x.d] && crs.some(function (c) { return c.a === x.c; }) && !r.some(function (y) { return y.c === x.c; })) r.push({ c: x.c, d: Math.floor(x.d), t: num(x.t, Date.now(), 0, 4e12), s: Math.floor(num(x.s, 300, 20, 7200)) }); });
+    return r;
+  }
+  function cleanRc(b) { var r = {}; b = b && typeof b === "object" ? b : {}; for (var id in REL) { var l = Math.floor(num(b[id], 0, 0, XCFG.maxLv)); if (l) r[id] = l; } return r; }
   function cleanBo(b) {
     var r = {}; if (!b || typeof b !== "object") return r;
     ["mossback", "cinderhide", "rimewing"].forEach(function (id) { var x = b[id]; if (x && typeof x === "object") { var k = Math.floor(num(x.k, 0, 0, 1e6)); if (k) r[id] = { k: k, t: num(x.t, 0, 0, 4e12) }; } });
@@ -92,7 +118,7 @@
     if (e && typeof e === "object" && ids.indexOf(e.a) > -1 && !crs.some(function (x) { return x.a === e.a; }) && crs.length < CFG.maxCreatures)
       egg = { a: e.a, t: num(e.t, Date.now(), 0, 4e12), d: num(e.d, 30, 1, 86400) };
     return {
-      v: 5,
+      v: 7,
       ess: num(o.ess, 0, 0, 1e15), tot: num(o.tot, 0, 0, 1e18), taps: Math.floor(num(o.taps, 0, 0, 1e9)),
       hq: Math.floor(num(o.hq, 1, 1, CFG.hq.max)), patch: Math.floor(num(o.patch, 0, 0, CFG.patch.max)),
       hatch: Math.floor(num(o.hatch, 0, 0, 1)) && Math.floor(num(o.hq, 1, 1, CFG.hq.max)) >= 2 ? 1 : 0,
@@ -101,7 +127,7 @@
       fc: Math.floor(num(o.fc, 0, 0, 1e9)), gc: Math.floor(num(o.gc, 0, 0, 1e9)), bs: Math.floor(num(o.bs, 0, 0, CFG.fire.chainMax)),
       rl: rl, at: Math.floor(num(o.at, 0, 0, rl - 1)),
       em: rl >= 2 ? Math.floor(num(o.em, 0, 0, BIO[1].lm.max)) : 0, fr: rl >= 3 ? Math.floor(num(o.fr, 0, 0, BIO[2].lm.max)) : 0,
-      ds: Math.floor(num(o.ds, 0, 0, 7)), bd: Math.floor(num(o.bd, 0, 0, 7)), dc: Math.floor(num(o.dc, 0, 0, 1e6)), dl: typeof o.dl === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.dl) ? o.dl : "", bo: cleanBo(o.bo)
+      ds: Math.floor(num(o.ds, 0, 0, 7)), bd: Math.floor(num(o.bd, 0, 0, 7)), dc: Math.floor(num(o.dc, 0, 0, 1e6)), dl: typeof o.dl === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.dl) ? o.dl : "", bo: cleanBo(o.bo), pk: cleanPk(o.pk), xp: cleanXp(o.xp, crs), rc: cleanRc(o.rc), pty: Math.floor(num(o.pty, 0, 0, 99)), xn: Math.floor(num(o.xn, 0, 0, 1e6)), rb: Math.floor(num(o.rb, 0, 0, 1e6)), sp: Math.floor(num(o.sp, 0, 0, 1e9)), spt: Math.floor(num(o.spt, 0, 0, 1e9)), base: num(o.base, 0, 0, 1e18)
     };
   }
   function load() { try { Crystals.reload(); S = clean(Crystals.state.evo); } catch (e) { S = clean(null); } }
@@ -145,6 +171,11 @@
     { n: "Lotus Bloom", d: "Aurora Lotus level 4", f: function () { return S.fr >= 4; } },
     { n: "Boss Slayer", d: "Defeat your first boss", f: function () { return trophies() >= 1; } },
     { n: "Realm Champion", d: "Defeat all 3 bosses", f: function () { return trophies() >= 3; } },
+    { n: "Reborn", d: "Do your first Swamp Rebirth", f: function () { return S.rb >= 1; } },
+    { n: "Spirit Walker", d: "Earn 10 Swamp Spirits", f: function () { return S.spt >= 10; } },
+    { n: "Treasure Hunter", d: "Find your first Relic", f: function () { return Object.keys(S.rc).length >= 1; } },
+    { n: "Seasoned Scout", d: "Finish 10 expeditions", f: function () { return S.xn >= 10; } },
+    { n: "Relic Collector", d: "Find all 9 Relics", f: function () { return Object.keys(S.rc).length >= 9; } },
     { n: "Million Club", d: "Earn 1,000,000 Essence", f: function () { return S.tot >= 1000000; } }
   ];
   function trophies() { var n = 0; for (var k in S.bo) if (S.bo[k].k > 0) n++; return n; }
@@ -154,15 +185,19 @@
     var fresh = d.filter(function (n) { return achSeen.indexOf(n) < 0; }); achSeen = d;
     if (fresh.length) { toast("Journal: " + fresh[0] + "! +" + Math.round(CFG.achBonus * 100) + "% production", true); try { SFX.coin(); } catch (e) {} save(true); renderRealm(); }
   }
-  function mult() { return 1 + (S.rl - 1) * CFG.realmBonus + CFG.hqBonus[S.hq - 1] + S.crs.reduce(function (t, c) { return t + CFG.stageBonus[c.s]; }, 0) + mv("glow") + achDone().length * CFG.achBonus + S.fert * CFG.fertBonus + trophies() * CFG.bossBonus; }
+  function mult() { return 1 + (S.rl - 1) * CFG.realmBonus + CFG.hqBonus[S.hq - 1] + S.crs.reduce(function (t, c) { return t + CFG.stageBonus[c.s]; }, 0) + mv("glow") + achDone().length * CFG.achBonus + S.fert * CFG.fertBonus + trophies() * CFG.bossBonus + S.spt * CFG.rb.spirit + (S.pk.prod || 0) * 0.1 + relic("prod"); }
+  function relic(k) { var t = 0; for (var id in S.rc) if (REL[id].k === k) t += REL[id].v * S.rc[id]; return t; }
   function boost() { return (frenzy() ? 2 : 1) * (phase().id === "night" ? CFG.nightSpore + mv("night") : 1); }
   function lmRate() { return (S.em ? BIO[1].lm.rate[S.em - 1] : 0) + (S.fr ? BIO[2].lm.rate[S.fr - 1] : 0); }
   function rateBase() { return ((S.patch ? CFG.patch.rate[S.patch - 1] : 0) + lmRate()) * mult(); }
   function rate() { return rateBase() * boost(); }
-  function tapGain() { var b = (1 + (S.hq - 1) + S.patch + S.em * 4 + S.fr * 12) * (1 + mv("grip")); if (phase().id === "day") b *= CFG.dayTap; if (frenzy()) b *= 2; return Math.max(1, Math.round(b)); }
+  function tapGain() { var b = (1 + (S.hq - 1) + S.patch + S.em * 4 + S.fr * 12) * (1 + mv("grip")) * (1 + 0.25 * (S.pk.tap || 0)) * (1 + relic("tap")); if (phase().id === "day") b *= CFG.dayTap; if (frenzy()) b *= 2; return Math.max(1, Math.round(b)); }
   function lvlOf(id) { return S[id]; }
   var DEF = { hq: CFG.hq, patch: CFG.patch, hatch: CFG.hatch, lamp: CFG.lamp, fert: { max: 999 }, em: BIO[1].lm, fr: BIO[2].lm };
-  function costOf(id, l) { return id === "fert" ? Math.round(6000 * Math.pow(1.38, l)) : DEF[id].cost[l]; }
+  function costOf(id, l) { return Math.round(CFG.costMult * (id === "fert" ? 6000 * Math.pow(1.38, l) : DEF[id].cost[l])); }
+  function eggCost(i) { return Math.round(CFG.costMult * CFG.egg.cost[i]); }
+  function evoCost(l) { return Math.round(CFG.costMult * CFG.evolve.cost[l]); }
+  function ulCost(b) { return Math.round(CFG.costMult * b.unlock); }
 
   function buildInfo(id) {   // the next purchase of a building: state is max | locked | ready | poor
     var lvl = lvlOf(id), c = DEF[id];
@@ -202,7 +237,7 @@
     if (S.crs.length >= CFG.maxCreatures) return { state: "full" };
     if (S.egg) return { state: eggReady() ? "ready" : "inc" };
     var i = Math.min(S.crs.length - 1, CFG.egg.cost.length - 1);
-    return { state: S.ess >= CFG.egg.cost[i] ? "empty" : "poor", cost: CFG.egg.cost[i], secs: CFG.egg.secs[i] };
+    return { state: S.ess >= eggCost(i) ? "empty" : "poor", cost: eggCost(i), secs: CFG.egg.secs[i] };
   }
   function buyEgg() {
     var e = eggInfo();
@@ -231,7 +266,7 @@
   function evoInfo(i) {
     var c = S.crs[i];
     if (c.s >= 2) return { state: "max" };
-    var cost = CFG.evolve.cost[c.s], np = CFG.evolve.needPatch[c.s];
+    var cost = evoCost(c.s), np = CFG.evolve.needPatch[c.s];
     if (S.patch < np) return { state: "locked", cost: cost, why: "Needs Glowspore Patch level " + np };
     return { state: S.ess >= cost ? "ready" : "poor", cost: cost };
   }
@@ -269,7 +304,7 @@
     var now = Date.now(), dt = Math.max(0, (now - lastTick) / 1000); lastTick = now;
     var away = dt;
     dt = Math.min(dt, CFG.offlineCap);
-    var gain = away > 6 ? rateBase() * dt * 1.1 : rate() * dt;   // away: no day/night or Frenzy, a small flat bonus instead
+    var gain = away > 6 ? rateBase() * dt * 0.9 : rate() * dt;   // away: no day/night or Frenzy, a small flat bonus instead
     if (gain > 0) { S.ess += gain; S.tot += gain; dirty = true; }
     if (away >= CFG.backMin && gain >= 50) { awayInfo = { gain: gain, secs: Math.min(away, CFG.offlineCap) }; entryDue = true; }
     else if (away >= CFG.welcomeMin && gain >= 1) toast("Welcome back! Your swamp collected " + fmtK(gain) + " Essence while you were away.");
@@ -279,7 +314,7 @@
       eggSeen = true; toast("Your egg is ready to hatch!", true); try { SFX.coin(); } catch (e) {}
       paintScene(); renderCreature(); renderRealm();
     }
-    fireTick(); achTick();
+    fireTick(); achTick(); xpTick();
     paintRes(); refresh();
     if (dirty && now - lastSaveAt > CFG.saveMs) save(false);
   }
@@ -303,7 +338,7 @@
     if (sc.getAttribute("data-ph") !== p.id) sc.setAttribute("data-ph", p.id);
     var txt = p.n + (p.id === "day" ? " · taps x" + CFG.dayTap : p.id === "night" ? " · output x" + (CFG.nightSpore + mv("night")).toFixed(1) : ""), t = $("evoPhase");
     if (t.textContent !== txt) t.textContent = txt;
-    if (lastPh && lastPh !== p.id && (p.id === "night" || p.id === "day")) toast(p.id === "night" ? "Night falls. Glowspores glow and fireflies come out." : "The sun rises. Your taps are twice as strong.");
+    if (lastPh && lastPh !== p.id && (p.id === "night" || p.id === "day")) toast(p.id === "night" ? "Night falls. Glowspores glow and fireflies come out." : "The sun rises. Your taps are stronger.");
     lastPh = p.id;
     var fz = $("evoFz");
     if (frenzy()) { fz.hidden = false; fz.textContent = "Frenzy x2 · " + Math.ceil((frenzyEnd - now) / 1000) + "s"; }
@@ -313,7 +348,7 @@
 
   // ---------- FIREFLIES ----------
   function fireGap() {
-    var g = phase().id === "night" ? CFG.fire.gapNight : CFG.fire.gapDay, k = 1 - 0.2 * S.lamp - Math.min(0.3, mv("lucky") * 0.2);
+    var g = phase().id === "night" ? CFG.fire.gapNight : CFG.fire.gapDay, k = 1 - 0.2 * S.lamp - Math.min(0.3, mv("lucky") * 0.2) - 0.1 * (S.pk.wisp || 0) - Math.min(0.3, relic("wisp"));
     return (g[0] + Math.random() * (g[1] - g[0])) * k * 1000;
   }
   function spawnWisp(delay) {
@@ -358,7 +393,7 @@
   function openPick(i, evo) {
     var c = S.crs[i], box = $("evoPick"); if (!c || !box) return;
     pickFor = { i: i, evo: !!evo };
-    box.innerHTML = '<div class="evo-pick-box" role="document"><h3>Mutate ' + esc(c.n) + '</h3><p>Choose one trait. It is permanent and grows stronger when ' + esc(c.n) + ' becomes Mighty.' + (evo ? " Evolving costs " + fmt(CFG.evolve.cost[0]) + " Essence." : "") + '</p>' +
+    box.innerHTML = '<div class="evo-pick-box" role="document"><h3>Mutate ' + esc(c.n) + '</h3><p>Choose one trait. It is permanent and grows stronger when ' + esc(c.n) + ' becomes Mighty.' + (evo ? " Evolving costs " + fmt(evoCost(0)) + " Essence." : "") + '</p>' +
       (PAIR[c.a] || []).map(function (k) { return '<button type="button" class="evo-opt m-' + k + '" data-pick="' + k + '"><b>' + MUT[k].n + '</b><span>' + MUT[k].d + '</span></button>'; }).join("") +
       '<button type="button" class="btn ghost" data-pickx>Not now</button></div>';
     box.hidden = false;
@@ -501,7 +536,7 @@
   }
   function renderBuild() {
     var p = S.patch, nextRate = p && p < CFG.patch.max ? CFG.patch.rate[p] * mult() : 0, h = "";
-    h += '<article class="evo-card' + (S.hq >= CFG.hq.max ? " done" : "") + '"><div class="evo-ic hq" aria-hidden="true"></div><div class="evo-info"><h3>Swamp Hollow <em>Lv ' + S.hq + '/' + CFG.hq.max + '</em></h3><p>Your headquarters. Level 2: +25% production, stronger taps, opens the Hatchery and Lantern. Level 3: +60%.</p>' + pips(S.hq, CFG.hq.max) + '</div><div class="evo-act">' + btnFor("hq") + '</div></article>';
+    h += '<article class="evo-card' + (S.hq >= CFG.hq.max ? " done" : "") + '"><div class="evo-ic hq" aria-hidden="true"></div><div class="evo-info"><h3>Swamp Hollow <em>Lv ' + S.hq + '/' + CFG.hq.max + '</em></h3><p>Your headquarters. Level 2: +' + Math.round(CFG.hqBonus[1] * 100) + '% production, stronger taps, opens the Hatchery and Lantern. Level 3: +' + Math.round(CFG.hqBonus[2] * 100) + '%.</p>' + pips(S.hq, CFG.hq.max) + '</div><div class="evo-act">' + btnFor("hq") + '</div></article>';
     h += '<article class="evo-card' + (p >= CFG.patch.max ? " done" : "") + '"><div class="evo-ic patch" aria-hidden="true"></div><div class="evo-info"><h3>Glowspore Patch <em>' + (p ? "Lv " + p + "/" + CFG.patch.max : "Not built") + '</em></h3><p>' +
       (p ? "Makes " + fmt1(rate()) + " Essence per second." + (nextRate ? " Next level: " + fmt1(nextRate) + "/s." : " Fully grown!") : "Your starter plot is empty. Build a patch to make Essence on its own.") + '</p>' + pips(p, CFG.patch.max) + '</div><div class="evo-act">' + btnFor("patch") + '</div></article>';
     h += '<article class="evo-card' + (S.hatch ? " done" : S.hq < 2 ? " locked" : "") + '"><div class="evo-ic ' + (S.hatch ? "egg" : S.hq < 2 ? "lock" : "plot") + '" aria-hidden="true"></div><div class="evo-info"><h3>Hatchery <em>' + (S.hatch ? "Built" : S.hq < 2 ? "Locked" : "Not built") + '</em></h3><p>' +
@@ -533,6 +568,83 @@
     if (S.crs.length < 2 && S.hatch) h += '<article class="evo-card empty"><div class="evo-ic plot" aria-hidden="true"></div><div class="evo-info"><h3>Empty spot <em>Open</em></h3><p>Hatch an egg to fill this spot.</p></div></article>';
     $("pane-creature").innerHTML = h;
   }
+  // ---------- EXPEDITIONS + RELICS ----------
+  function slots() { return 1 + (S.hq >= 3 ? 1 : 0); }
+  function xpDur(i) { return Math.round(EXP[i].secs * (1 - Math.min(0.5, relic("speed")))); }
+  function xpReady(x) { return Date.now() >= x.t + x.s * 1000; }
+  function xpEss(i) { return Math.round(Math.max(EXP[i].min, rateBase() * EXP[i].secs * 1.2)); }
+  function relicArt(id) { var c = BIO[REL[id].r].c; return '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3l15 12-15 22L5 15z" fill="' + c + '"/><path d="M5 15h30M20 3l-6 12 6 22 6-22z" stroke="#fff" stroke-opacity=".55" fill="none"/><path d="M20 3l-6 12h12z" fill="#fff" opacity=".35"/></svg>'; }
+  function send(i, a) {
+    var c = S.crs.filter(function (x) { return x.a === a; })[0];
+    if (!c || !EXP[i] || S.rl <= i) return;
+    if (S.xp.some(function (x) { return x.c === a; })) { toast(c.n + " is already away."); return; }
+    if (S.xp.length >= slots()) { toast("All expedition slots are busy." + (S.hq < 3 ? " Swamp Hollow level 3 adds a second slot." : "")); return; }
+    S.xp.push({ c: a, d: i, t: Date.now(), s: xpDur(i) }); try { SFX.streak(); } catch (e) {}
+    toast(c.n + " set off for " + EXP[i].n + "!", true); save(true); renderAll();
+  }
+  function collect(i) {
+    var x = S.xp[i]; if (!x || !xpReady(x)) return;
+    var c = S.crs.filter(function (y) { return y.a === x.c; })[0], st = c ? c.s : 0, d = EXP[x.d];
+    var ok = Math.random() < XCFG.ok[st], ess = Math.round(xpEss(x.d) * (ok ? 1 : 0.4)), got = null;
+    if (ok && (S.pty >= XCFG.pity || Math.random() < XCFG.drop + 0.2 * mv("lucky"))) { got = d.pool[Math.floor(Math.random() * d.pool.length)]; S.pty = 0; } else if (ok) S.pty++;
+    S.xp.splice(i, 1); S.xn++; S.ess += ess; S.tot += ess; var lv = 0;
+    if (got) { lv = S.rc[got] || 0; if (lv < XCFG.maxLv) { S.rc[got] = lv + 1; lv++; } else { var b2 = Math.round(rateBase() * 300); S.ess += b2; S.tot += b2; ess += b2; } }
+    chipRes(ess); save(true); renderAll();
+    var name = c ? c.n : "Your creature";
+    if (got && fx()) fx().cine($("evoStage"), { kind: "realm", color: BIO[REL[got].r].c, art: '<span class="cn-boss relic">' + relicArt(got) + '</span>', kicker: lv === 1 ? "New Relic found" : "Relic upgraded", title: REL[got].n, sub: "Level " + lv + "/" + XCFG.maxLv, lines: ["+" + Math.round(REL[got].v * lv * 100) + "% " + REL[got].d, "+" + fmtK(ess) + " Essence from " + d.n], btn: "Nice!", sound: function () { SFX.rise(); setTimeout(function () { SFX.open("Legendary"); }, 600); } });
+    else toast(ok ? name + " is back from " + d.n + ": +" + fmtK(ess) + " Essence!" : name + " got lost in " + d.n + " and only found " + fmtK(ess) + " Essence.", ok);
+  }
+  function expCards() {
+    var h = '<article class="evo-card"><div class="evo-info"><h3>Expeditions <em>' + S.xp.length + '/' + slots() + ' away</em></h3><p>Send a creature out for Essence and a chance at a Relic. Tougher creatures succeed more often. Trips keep going while you are away.' + (S.hq < 3 ? " Swamp Hollow level 3 adds a second slot." : "") + '</p></div></article>';
+    EXP.forEach(function (d, i) {
+      if (S.rl <= i) { h += '<article class="evo-card locked"><div class="evo-info"><h3>' + d.n + ' <em>Locked</em></h3><p>Unlock ' + BIO[i].n + ' to explore here.</p></div></article>'; return; }
+      var rows = '', idle = '';
+      S.xp.forEach(function (x, k) {
+        if (x.d !== i) return; var c = S.crs.filter(function (y) { return y.a === x.c; })[0], rd = xpReady(x);
+        rows += '<div class="evo-xrow"><span>' + esc(c ? c.n : "Creature") + '</span><div class="evo-bar2" data-xbar="' + k + '" data-done="' + (rd ? 1 : 0) + '"><i></i></div>' + (rd ? '<button type="button" class="btn ready" data-collect="' + k + '">Collect</button>' : '<small data-xt="' + k + '"></small>') + '</div>';
+      });
+      if (S.xp.length < slots()) S.crs.forEach(function (c) { if (!S.xp.some(function (x) { return x.c === c.a; })) idle += '<button type="button" class="btn" data-send="' + i + ':' + c.a + '">Send ' + esc(c.n) + '</button>'; });
+      h += '<article class="evo-card" style="--c:' + BIO[i].c + '"><div class="evo-info"><h3>' + d.n + ' <em>' + clock(xpDur(i)) + '</em></h3><p>' + d.tag + '. Reward about ' + fmtK(xpEss(i)) + ' Essence and a ' + Math.round((XCFG.drop + 0.2 * mv("lucky")) * 100) + '% Relic chance.</p>' + rows + (idle ? '<div class="evo-xsend">' + idle + '</div>' : "") + '</div></article>';
+    });
+    return h;
+  }
+  function relicCard() {
+    var n = Object.keys(S.rc).length, h = '<article class="evo-card' + (n === 9 ? " done" : "") + '"><div class="evo-info"><h3>Relics <em>' + n + '/9</em></h3><p>Found on expeditions. Duplicates level a Relic up to ' + XCFG.maxLv + '. Relics are kept through Rebirth.</p><ul class="evo-relics">';
+    Object.keys(REL).forEach(function (id) { var r = REL[id], l = S.rc[id] || 0; h += '<li class="' + (l ? "ok" : "") + '" style="--c:' + BIO[r.r].c + '">' + (l ? relicArt(id) : '<i class="q">?</i>') + '<span><b>' + (l ? r.n : "Undiscovered") + '</b><small>' + (l ? "Lv " + l + "/" + XCFG.maxLv + " · +" + Math.round(r.v * l * 100) + "% " + r.d : "Found in " + EXP[r.r].n) + '</small></span></li>'; });
+    return h + '</ul></div></article>';
+  }
+  var xpSeen = 0;
+  function xpTick() { var n = S.xp.filter(xpReady).length; if (n > xpSeen) { toast("An expedition has returned! Collect it in the Worlds tab.", true); try { SFX.coin(); } catch (e) {} renderWorlds(); } xpSeen = n; }
+
+  // ---------- SWAMP REBIRTH (prestige) ----------
+  function runEss() { return Math.max(0, S.tot - S.base); }
+  function spGain() { return runEss() >= CFG.rb.min ? Math.floor(Math.sqrt(runEss() / CFG.rb.div)) : 0; }
+  function rebirth() {
+    var g = spGain(); if (!g) { toast("Earn " + fmtK(CFG.rb.min) + " Essence in one run first."); return; }
+    var h = S.pk.head || 0, first = S.rb === 0;
+    S.sp += g; S.spt += g; S.rb++; S.base = S.tot; S.ess = 0;
+    S.patch = [0, 2, 3, 4][h]; S.hq = h >= 2 ? 2 : 1; S.hatch = h >= 3 ? 1 : 0; S.lamp = 0; S.fert = 0; S.em = 0; S.fr = 0; S.rl = 1; S.at = 0; S.egg = null; eggSeen = true; frenzyEnd = 0; chain = 0;
+    if (first) { try { Crystals.grant(CFG.rb.firstCry); } catch (e) {} try { window.load(); meta.coins = (meta.coins || 0) + CFG.rb.firstCoins; window.save(); } catch (e) {} }
+    save(true); if (fx()) fx().atmo.set("swamp"); renderAll(); tab("build");
+    var ln = ["+" + g + " Swamp Spirits (+" + Math.round(g * CFG.rb.spirit * 100) + "% production, forever)", "Spend Spirits on perks in the Journal tab"]; if (first) ln.push("First rebirth gift: +" + CFG.rb.firstCoins + " coins, +" + CFG.rb.firstCry + " crystals");
+    if (fx()) fx().cine($("evoStage"), { kind: "realm", color: "#c9a8ff", art: '<span class="cn-orbm"></span>', kicker: "Swamp Rebirth #" + S.rb, title: "Reborn!", sub: g + " Swamp Spirits", lines: ln, btn: "Begin again", sound: function () { SFX.rise(); setTimeout(function () { SFX.open("Mythical"); }, 700); } });
+    else toast("Reborn! +" + g + " Swamp Spirits.", true);
+  }
+  function buyPerk(id) {
+    var d = PERK[id], l = S.pk[id] || 0; if (!d || l >= d.max) return;
+    if (S.sp < d.cost[l]) { toast("Not enough Swamp Spirits."); return; }
+    S.sp -= d.cost[l]; S.pk[id] = l + 1; try { SFX.streak(); } catch (e) {} toast(d.n + " level " + (l + 1) + "!", true); save(true); renderAll();
+  }
+  function rebirthCards() {
+    var g = spGain(), run = runEss(), p = Math.min(100, run / CFG.rb.min * 100);
+    var h = '<article class="evo-card rebirth' + (g ? " gift" : "") + '"><div class="evo-info"><h3>Swamp Rebirth <em>' + S.sp + ' Spirits</em></h3><p>' + (g ? "Rebirth now for <b>" + g + " Swamp Spirits</b>. " : "Earn " + fmtK(CFG.rb.min) + " Essence in one run to rebirth (" + fmtK(run) + " so far). ") + "Resets Essence, buildings and realms. You keep creatures, trophies, journal and perks. Every Spirit you earn is +" + Math.round(CFG.rb.spirit * 100) + '% production forever.' + (S.rb ? " Rebirths: " + S.rb + "." : "") + '</p>' + (g ? "" : '<div class="evo-bar2"><i style="width:' + p + '%"></i></div>') + '</div><div class="evo-act"><button type="button" class="btn' + (g ? " ready" : " ghost") + '" data-rebirth' + (g ? "" : " disabled") + '>' + (g ? "Rebirth +" + g : "Rebirth") + '</button></div></article>';
+    h += '<article class="evo-card"><div class="evo-info"><h3>Spirit Perks <em>' + S.sp + ' to spend</em></h3><ul class="evo-perks">';
+    Object.keys(PERK).forEach(function (id) {
+      var d = PERK[id], l = S.pk[id] || 0, c = d.cost[l], ds = Array.isArray(d.d) ? d.d[Math.min(l, d.max - 1)] : d.d;
+      h += '<li><span><b>' + d.n + '</b> <small>Lv ' + l + '/' + d.max + '</small><small>' + ds + '</small></span>' + (l >= d.max ? '<button type="button" class="btn ghost" disabled>Max</button>' : '<button type="button" class="btn' + (S.sp >= c ? " ready" : " ghost") + '" data-perk="' + id + '"' + (S.sp >= c ? "" : " disabled") + '>' + c + (c === 1 ? ' Spirit' : ' Spirits') + '</button>') + '</li>';
+    });
+    return h + '</ul></div></article>';
+  }
   function renderRealm() {
     var goals = [["Build the Glowspore Patch", S.patch >= 1], ["Upgrade the patch to level " + CFG.patch.max, S.patch >= CFG.patch.max], ["Upgrade Swamp Hollow to level " + CFG.hq.max, S.hq >= CFG.hq.max],
       ["Build the Hatchery", !!S.hatch], ["Hatch a second creature", S.crs.length >= 2], ["Evolve a creature", S.crs.some(function (c) { return c.s >= 1; })], ["Build the Firefly Lantern", S.lamp >= 1], ["Unlock Ember Bog", S.rl >= 2], ["Unlock Frostfen", S.rl >= 3]];
@@ -542,11 +654,13 @@
     h += '<article class="evo-card gift' + (gi.due ? "" : " done") + '"><div class="evo-info"><h3>Daily Swamp Gift <em>' + (gi.due ? "Ready" : "Streak " + S.ds + "/7") + '</em></h3><p>' +
       (gi.due ? "Day " + gi.day + " of 7: " + fmtK(gi.amt) + " Essence" + (gi.day === 7 ? " and a 1 minute Frenzy" : "") + ". Come back every day to keep your streak going." : "Claimed today. Come back tomorrow for day " + (S.ds >= 7 ? 1 : S.ds + 1) + ".") + '</p>' + pips(S.ds, 7) + '</div>' +
       (gi.due ? '<div class="evo-act"><button type="button" class="btn ready" data-gift>Open gift</button></div>' : "") + '</article>';
+    h += rebirthCards();
+    h += relicCard();
     h += '<section class="evo-tiles" aria-label="Realm stats">' + tile(fmt1(rate()), "Essence per second", "mint") + tile("+" + Math.round((mult() - 1) * 100) + "%", "Production bonus", "gold") + tile(fmt(S.tot), "Earned, all time") + tile(S.crs.length + "/" + CFG.maxCreatures, "Creatures") + tile(fmt(S.fc), "Fireflies caught") + tile("x" + S.bs, "Best chain") + '</section>';
-    h += '<article class="evo-card"><div class="evo-info"><h3>Swamp rhythm <em>' + ph.n + '</em></h3><p><b>Day:</b> taps are twice as strong. <b>Night:</b> everything you make is 50% bigger and fireflies come out. Chain fireflies for more Essence; a golden one starts a Frenzy.</p></div></article>';
+    h += '<article class="evo-card"><div class="evo-info"><h3>Swamp rhythm <em>' + ph.n + '</em></h3><p><b>Day:</b> taps are x' + CFG.dayTap + ' stronger. <b>Night:</b> everything you make is ' + Math.round((CFG.nightSpore - 1) * 100) + '% bigger and fireflies come out. Chain fireflies for more Essence; a golden one starts a Frenzy.</p></div></article>';
     h += '<article class="evo-card' + (jn === ACH.length ? " done" : "") + '"><div class="evo-info"><h3>Swamp Journal <em>' + jn + '/' + ACH.length + '</em></h3><p>Every entry adds +' + Math.round(CFG.achBonus * 100) + '% production.</p><ul class="evo-badges">' + ACH.map(function (a) { return '<li class="' + (a.f() ? "ok" : "") + '"><i aria-hidden="true"></i><span>' + esc(a.n) + '<small>' + esc(a.d) + '</small></span></li>'; }).join("") + '</ul></div></article>';
     h += '<article class="evo-card' + (all ? " done" : "") + '"><div class="evo-info"><h3>First steps <em>' + dn + '/' + goals.length + '</em></h3><ul class="evo-goals">' + goals.map(function (g) { return '<li class="' + (g[1] ? "ok" : "") + '"><i aria-hidden="true"></i>' + esc(g[0]) + '</li>'; }).join("") + '</ul>' +
-      (all ? '<p class="evo-win">All first steps complete! Your realm is thriving. Bosses and prestige are coming next.</p>' : '<p>Finish these to complete the first stage of your realm.</p>') + '</div></article>';
+      (all ? '<p class="evo-win">All first steps complete! Your realm is thriving. Ready for a Swamp Rebirth? Find it at the top of this tab.</p>' : '<p>Finish these to complete the first stage of your realm.</p>') + '</div></article>';
     h += '<p class="evo-fine">Progress is saved on this device and in your account when you are signed in. <button type="button" class="evo-link" data-reset>Start over</button></p>';
     $("pane-realm").innerHTML = h;
   }
@@ -578,6 +692,12 @@
       var rb = realmInfo(ri), rbtn = document.querySelector('[data-unlock="' + ri + '"]');
       if (rb.state === "ready" || rb.state === "poor") { if (rbtn) { rbtn.disabled = rb.state !== "ready"; rbtn.classList.toggle("ready", rb.state === "ready"); } bar("rl" + ri, S.ess, rb.cost); }
     }
+    S.xp.forEach(function (x, k) {
+      var b = document.querySelector('[data-xbar="' + k + '"]'); if (!b) return;
+      var left = (x.t + x.s * 1000 - Date.now()) / 1000; b.firstChild.style.width = Math.min(100, (1 - left / x.s) * 100) + "%";
+      var t = document.querySelector('[data-xt="' + k + '"]'); if (t) t.textContent = clock(left);
+      if (left <= 0 && b.dataset.done !== "1") renderWorlds();
+    });
     paintGoal(); paintDots();
     var lmc = $("hotLm"); if (lmc) { var lid = BIO[S.at].k; lmc.classList.toggle("can", !!lid && buildInfo(lid).state === "ready"); lmc.setAttribute("data-tip", S[lid] ? "Upgrade" : "Build"); }
     var h1 = $("hotP1"), h2 = $("hotP2");
@@ -590,10 +710,10 @@
   // ---------- REALMS, DAILY GIFT, NEXT GOAL, ENTRY CARDS ----------
   function realmInfo(i) {
     var b = BIO[i]; if (i < S.rl) return { state: "owned" };
-    if (i > S.rl) return { state: "locked", why: "Unlock " + BIO[i - 1].n + " first", cost: b.unlock };
+    if (i > S.rl) return { state: "locked", why: "Unlock " + BIO[i - 1].n + " first", cost: ulCost(b) };
     var ok = i === 1 ? (S.hq >= 3 && S.patch >= 5) : S.em >= 2;
-    if (!ok) return { state: "locked", why: b.need, cost: b.unlock };
-    return { state: S.ess >= b.unlock ? "ready" : "poor", cost: b.unlock };
+    if (!ok) return { state: "locked", why: b.need, cost: ulCost(b) };
+    return { state: S.ess >= ulCost(b) ? "ready" : "poor", cost: ulCost(b) };
   }
   function unlockRealm(i) {
     var b = BIO[i], r = realmInfo(i);
@@ -632,7 +752,8 @@
       }
       h += '<article class="evo-card world' + (here ? " here" : "") + (r.state === "locked" ? " locked" : owned ? "" : " avail") + '" style="--c:' + b.c + '"><div class="evo-wthumb t-' + b.id + '" aria-hidden="true">' + (r.state === "locked" ? '<i class="lk"></i>' : "") + '</div><div class="evo-info"><h3>' + esc(b.n) + ' <em>' + (here ? "You are here" : owned ? "Unlocked" : "Locked") + '</em></h3><p>' + esc(b.tag) + '.' + (i ? " +" + Math.round(CFG.realmBonus * 100) + "% production." : "") + '</p>' + info + '</div><div class="evo-act">' + act + '</div></article>';
     });
-    h += '<article class="evo-card locked world"><div class="evo-wthumb t-void" aria-hidden="true"><i class="lk"></i></div><div class="evo-info"><h3>Starfall Marsh <em>Coming soon</em></h3><p>Something is falling from the sky over a distant marsh. Bosses and prestige are on the way.</p></div></article>';
+    h += expCards();
+    h += '<article class="evo-card locked world"><div class="evo-wthumb t-void" aria-hidden="true"><i class="lk"></i></div><div class="evo-info"><h3>Starfall Marsh <em>Coming soon</em></h3><p>Something is falling from the sky over a distant marsh. More realms are on the way.</p></div></article>';
     $("pane-worlds").innerHTML = h;
   }
 
@@ -699,8 +820,8 @@
     var rd = function (id) { return buildInfo(id).state === "ready"; }, e = eggInfo();
     on("build", ["hq", "patch", "hatch", "lamp"].some(rd) || (S.patch >= 5 && S.hq >= 3 && S.lamp >= 3 && rd("fert")));
     on("creature", eggReady() || e.state === "empty" && S.ess >= e.cost || S.crs.some(function (c, i) { return evoInfo(i).state === "ready" || (c.s >= 1 && !c.m); }));
-    on("worlds", ["em", "fr"].some(rd) || (S.rl < BIO.length && realmInfo(S.rl).state === "ready"));
-    on("realm", giftInfo().due && S.tot >= CFG.gift.minTot);
+    on("worlds", S.xp.some(xpReady) || ["em", "fr"].some(rd) || (S.rl < BIO.length && realmInfo(S.rl).state === "ready"));
+    on("realm", (giftInfo().due && S.tot >= CFG.gift.minTot) || (!S.rb && spGain() > 0) || Object.keys(PERK).some(function (id) { return (S.pk[id] || 0) < PERK[id].max && S.sp >= PERK[id].cost[S.pk[id] || 0]; }));
     on("boss", window.EvoBoss && EvoBoss.ready());
   }
 
@@ -728,6 +849,10 @@
       var tv = e.target.closest("[data-travel]"); if (tv) { travel(Number(tv.dataset.travel)); return; }
       if (e.target.closest("[data-gift]")) { var gg = giftInfo(); if (gg.due && fx()) giftCine(gg); return; }
       var gl = e.target.closest("#evoGoal"); if (gl) { tab(gl.dataset.tab || "build"); return; }
+      var sd = e.target.closest("[data-send]"); if (sd) { var q = sd.dataset.send.split(":"); send(Number(q[0]), q[1]); return; }
+      var cl = e.target.closest("[data-collect]"); if (cl) { collect(Number(cl.dataset.collect)); return; }
+      if (e.target.closest("[data-rebirth]")) { if (confirm("Rebirth your swamp? You will earn " + spGain() + " Swamp Spirits, but Essence, buildings and realms reset. Creatures, trophies, journal and perks are kept.")) rebirth(); return; }
+      var pk2 = e.target.closest("[data-perk]"); if (pk2) { buyPerk(pk2.dataset.perk); return; }
       if (e.target.closest("[data-hatch]")) { hatch(); return; }
       var v = e.target.closest("[data-evolve]"); if (v) { evolve(Number(v.dataset.evolve)); return; }
       if (e.target.closest("[data-reset]") && confirm("Start your swamp over? This only resets SwampRealms: Evolution. Your coins, crystals, cards and avatar are not touched.")) {
@@ -765,7 +890,7 @@
     eggSeen = !S.egg || eggReady();   // an egg that finished while you were away is just shown as ready
     var hd = document.querySelector("header"), setTop = function () { if (hd) $("evoStage").style.setProperty("--evo-top", hd.offsetHeight + "px"); };
     setTop(); addEventListener("resize", setTop);
-    renderAll(); bind(); setupExtras();
+    xpSeen = S.xp.filter(xpReady).length; renderAll(); bind(); setupExtras();
     var t = "build"; try { t = sessionStorage.getItem("evo-tab") || "build"; } catch (e) {} tab(t === "creature" || t === "realm" || t === "worlds" || t === "boss" ? t : "build");
     if (fx()) fx().atmo.start($("evoScene"), BIO[S.at].id);
     tick();
@@ -780,7 +905,7 @@
     }, 4200);
   }
   // small bridge for evolution-boss.js (the game state lives in this file; S is re-created on reset, so it is read through a function)
-  window.EvoCore = { S: function () { return S; }, save: save, toast: toast, rate: rate, mult: mult, tapGain: tapGain, mv: mv, fmtK: fmtK, esc: esc, chipRes: chipRes, renderAll: renderAll, fx: fx };
+  window.EvoCore = { S: function () { return S; }, save: save, toast: toast, rate: rate, mult: mult, tapGain: tapGain, mv: mv, fmtK: fmtK, esc: esc, chipRes: chipRes, renderAll: renderAll, fx: fx, relic: relic };
   if (typeof Crystals === "undefined" || typeof AV === "undefined") {
     var m = document.createElement("p"); m.textContent = "The game could not start because a shared script failed to load. Reload the page.";
     var st = document.getElementById("evoStage"); if (st) st.appendChild(m);
