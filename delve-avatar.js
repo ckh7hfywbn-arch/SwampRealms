@@ -283,7 +283,8 @@ var DelveAv = (function () {
     1: { a: "#a8814b", b: "#d3a96b", c: "#6b4a26", t: "#4f8a3c", t2: "#8fd37a" },
     2: { a: "#157a64", b: "#1fbf93", c: "#0b4d3e", t: "#4ee6b4", t2: "#e6fff8" },
     3: { a: "#3a2e34", b: "#5a4a52", c: "#1c1418", t: "#ff6a1f", t2: "#ffd25a" },
-    4: { a: "#3f9fc4", b: "#7fd6ff", c: "#16465e", t: "#ffffff", t2: "#bff0ff" }
+    4: { a: "#3f9fc4", b: "#7fd6ff", c: "#16465e", t: "#ffffff", t2: "#bff0ff" },
+    5: { a: "#5a2a7a", b: "#c06aff", c: "#2a1438", t: "#ffd23f", t2: "#ff8a3d" }
   };
   function armorOver(B, tier, by) {
     var P = ARM[tier]; if (!P) return; var x = 7, y = 17 + by;
@@ -292,6 +293,7 @@ var DelveAv = (function () {
     if (tier === 1) { for (var i = 0; i < 5; i++) B.p(x + 3 + (i % 2), y + 1 + i, i % 2 ? P.t2 : P.t); }
     else if (tier === 2) { B.r(x + 3, y + 2, 2, 2, P.t); B.p(x + 4, y + 3, P.t2); B.p(x + 1, y + 1, P.t2); }
     else if (tier === 3) { B.r(x + 3, y + 2, 2, 2, P.t); B.p(x + 4, y + 3, P.t2); B.r(x + 1, y + 6, 6, 1, P.t); B.p(x + 1, y + 1, P.t); B.p(x + 6, y + 1, P.t); }
+    else if (tier === 5) { B.r(x, y, 8, 1, P.t); B.r(x + 3, y + 2, 2, 2, P.t2); B.p(x + 3, y + 1, P.t); B.p(x + 4, y + 1, P.t); B.r(x + 1, y + 6, 6, 1, P.t); B.p(x + 1, y + 3, P.t); B.p(x + 6, y + 3, P.t); }
     else { B.r(x + 3, y + 2, 2, 2, P.t); B.p(x + 3, y, P.t); B.p(x + 4, y, P.t); B.p(x + 1, y + 1, P.t2); B.p(x + 6, y + 1, P.t2); }
   }
 

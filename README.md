@@ -632,3 +632,30 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
   - **Guests:** they bring their backpack, gear and quests. Their character is saved to their own world while they play, and they return home when they leave. Guests can't open the host's chests, sleep, or summon bosses.
   - **Host controls:** kick players, toggle Public and PvP, close the room.
   - **Deploying:** `worker.js` now exports the `DelveRoom` Durable Object, and `wrangler.jsonc` has its binding and migration. `wrangler deploy` sets everything up; the `mp_rooms` table creates itself. It runs on the Workers Free plan (SQLite-backed Durable Objects, 100k requests/day; WebSocket messages count 20:1).
+- **Buildings as pictures:** enterable buildings are no longer blocks in the world grid. When a world loads, each building's blocks and back walls are lifted into a picture. It's painted once with the same block art into a small cached canvas, repainted only when you zoom, and drawn behind anything you build. The ground underneath and around it stays natural land, and you walk past in front of it.
+  - Lamps still glow and light up the dark, the World Map and mini-map still show buildings, and doors still let you enter.
+  - Existing saves keep working with no world reset.
+- **Crafting from nearby chests:** crafting, Workbench upgrades and repairs count what's in your backpack plus every chest within 10 tiles. Ingredients come from the backpack first, then the nearest chests, and amounts that come from a chest show a small chest mark. This doesn't apply in hole caves or as a multiplayer guest.
+- **Hand recipes in every station:** each station window (Workbench, Furnace, Loom, Mason's Table, Cooking Pot, Decor Workbench) also lists everything you can make by hand, under a "By hand" tab.
+- **HUD and hands:** health and hunger now sit right above the hotbar, and the touch controls moved up to make room.
+  - **Hold nothing:** tap an empty hotbar slot, or press its number key, to dig and pick with bare paws even if you own a pick.
+  - **Plants:** any item you hold now breaks the flower, reed, vine, mushroom or leaves it points at, instead of refusing to place.
+- **9-slot hotbar:** the hotbar is now 9 real slots (keys 1–9). Tools are items that sit in slots (Pickaxe, Weapon, Shovel, Watering Can, Fishing Rod), one per slot, so you can arrange them by dragging.
+  - Tool items follow your best version, and can't be thrown away or put in chests.
+  - Any item can be held; plain materials dig with bare paws.
+  - In the backpack the hotbar is one row of 9, and the 21 bag slots are 3 rows of 7.
+- **Hoe:** there are three tiers: Reed (by hand), Glowspore (Workbench level 2) and Iron (level 3).
+  - **Tilling:** tap grass, mud, clay, ash, snow or peat (or the air just above it) to turn it into Garden Soil, 1 / 3 / 5 tiles wide.
+  - **Harvesting:** tap crops to harvest every ripe one across the hoe's width; each is replanted straight away from your seeds. The Iron Hoe sometimes finds an extra crop.
+  - There are two new Farmer & Cook side quests.
+- **Armor Stands:** a mannequin made at the Decor Workbench (Armory Showpieces).
+  - Tap it or press F to dress it in any armor or weapon tier you've made, or tap "Best I have". Your own gear isn't taken. Hold on it to pick it up again.
+  - The outfit is drawn on the stand using the game's own armor and weapon art.
+  - There are two new Decorator side quests.
+- **Bucket, Bug Net and bait:**
+  - **Buckets:** the Wooden Bucket (by hand) scoops and pours a tile of water, and tipping a full bucket onto crops waters three of them. The Iron Bucket (level 3) carries lava too.
+  - **Bug Net:** made by hand; on swamp nights it catches fireflies for Firefly Jars (a green light from the Decor Workbench).
+  - **Bait:** Earthworms dug from mud and grass, or Fireflies, are used one per cast. Fish bite much sooner and rare fish come more often.
+  - There are three new side quests.
+- **Sprinkler, Fish Trap, Homeward Shell.** Sprinkler (Glowspore Workbench: stone, clay, bog iron) keeps crops within 3 tiles watered. Fish Trap (workbench: planks, fiber, sticks) goes on a lake bottom and catches a fish about every 2 minutes, up to 4 — tap/F to empty, hold to pick up. Homeward Shell (by hand: pebbles, fiber, spore, makes 2) — hold to warp to your bed or camp; not in caves or boss fights. New quests: Trapper, No Place Like Home.
+- **Swampking gear (tier 5) and three new charms.** Swampking Blade (damage 40) and Swampking Plate (blocks 62%) are forged at a Frost Workbench from all three boss trophies (Queen Chitin, Wyrm Scale, Alpha Mane) plus iron, gems and crystal; both are repairable, show on your avatar and on Armor Stands. New charms: Firefly Charm (you glow in the dark), Tidecaller Charm (swim 60% faster), Swampking Sigil (+25% damage to bosses, −20% damage from them). Quest: Long Live the King. Fix: crafted armor now shows on your character right away instead of after a reload.
