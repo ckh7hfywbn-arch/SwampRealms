@@ -206,7 +206,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     { k: "forge", n: "Cinder Forge", b: 1, w: 11, bh: 5 },
     { k: "keep", n: "Ashen Keep", b: 1, w: 9, bh: 8 },
     { k: "lodge", n: "Frost Lodge", b: 2, w: 11, bh: 5 },
-    { k: "shrine", n: "Frozen Shrine", b: 2, w: 9, bh: 7 }
+    { k: "shrine", n: "Frozen Shrine", b: 2, w: 9, bh: 7 },
+    { k: "witchhut", n: "Witch Hut", b: 0, w: 7, bh: 4, solo: 1 }   // solo: not picked by the slot loop below; placed in its own pass at the end, so the other buildings stay where they were
   ];
   function buildStructures(t, top, bio, seed, holes, walls) {
     var out = [], WLv = SURF + 3, slot, x, y, i;
@@ -271,7 +272,16 @@ batwing: { n: "Bat Wing", frag: "bat" },
       var GL = T.GLASS, GLR = M("stainedred", T.GLASS), GLB = M("stainedblue", T.GLASS), GLG = M("stainedgreen", T.GLASS), RUBY = M("rubylamp", T.CINDERLAMP), SAPH = M("sapphirelamp", T.CRYSTALLAMP), HL = M("hanginglantern", T.LANTERN);
       var lamp = T.TORCH;
       var GRD = [T.MOSS, T.ASH, T.SNOW][K.b] || T.MUD;   // the ground under every building stays the natural biome ground (no sunken footing)
-      if (K.k === "cabin") {   // Tudor cottage: plaster between log posts, two framed windows, a steep red shingle gable with an attic window and a brick chimney
+      if (K.k === "witchhut") {   // a crooked little hut: log posts, dark planks, a round green window, a sagging thatch roof with a bent tip and a crooked chimney
+        fill(x0, x1, gy - 1, gy - 1, MOSSB);
+        fill(x0, x1, top0, gy - 2, T.PLANKS); [x0, x1].forEach(function (px) { fill(px, px, top0, gy - 2, T.LOG); }); fill(x0, x1, top0, top0, T.LOG);
+        put(cx, gy - 4, GLG); put(cx, gy - 3, GLG); put(cx - 1, gy - 3, T.LOG); put(cx + 1, gy - 3, T.LOG);
+        var wr = gable(x0 - 1, x1 + 1, top0 - 1, T.THATCH, T.THATCH, T.THATCH);
+        put(cx + side, wr - 1, T.THATCH); put(cx + side * 2, wr - 2, T.THATCH); put(cx + side * 3, wr - 2, T.THATCH);   // the bent hat-tip of the roof
+        chimney(side < 0 ? x1 - 1 : x0 + 1, top0 - 2, 3, COB, T.STONE);
+        lamp = M("mushlamp", T.TORCH);
+        decoOut(ox2 + side, T.CAULDRON); decoOut(far - side, T.GLOWPOT); decoOut(far - side * 2, M("slimejar", T.BARREL)); decoOut(far - side * 3, T.FENCE);
+      } else if (K.k === "cabin") {   // Tudor cottage: plaster between log posts, two framed windows, a steep red shingle gable with an attic window and a brick chimney
         fill(x0, x1, gy - 1, gy - 1, COB);   // foundation row (above ground); the ground under it stays the biome's own ground
         fill(x0, x1, top0, gy - 2, PLAS); [x0, cx, x1].forEach(function (px) { fill(px, px, top0, gy - 2, T.LOG); }); fill(x0, x1, top0, top0, T.PLANKS);
         windowAt(x0 + 2, gy - 4, 2, 2, GL, T.PLANKS); windowAt(x1 - 3, gy - 4, 2, 2, GL, T.PLANKS);
@@ -347,7 +357,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     // one slot every ~58 columns; each tries its kinds for the biome there (hash picks the order) with a few nudges left and right
     for (slot = 0, x = 34; x < W - 34; slot++, x += 58) {
       var cx0 = x + Math.floor(hash(slot, 735, seed) * 40) - 10, bb = bio[Math.min(W - 1, Math.max(0, cx0))], kinds = [];
-      for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb) kinds.push(i);
+      for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb && !STRUCT_KINDS[i].solo) kinds.push(i);
       if (!kinds.length) continue;
       var wide = kinds.filter(function (q) { return STRUCT_KINDS[q].w > 5; }), slim = kinds.filter(function (q) { return STRUCT_KINDS[q].w <= 5; });   // big buildings get first pick of the flat ground
       var first = Math.floor(hash(slot, 736, seed) * 97), done = false, nudge;
@@ -355,6 +365,13 @@ batwing: { n: "Bat Wing", frag: "bat" },
         var list = nudge < 14 || !slim.length ? (wide.length ? wide : slim) : slim, cxx = cx0 + (nudge % 2 ? 1 : -1) * Math.ceil((nudge % 14) / 2) * 4, kk = list[(first + nudge) % list.length], P = tryPlace(cxx, kk);
         if (P) { var bP = build(P, out.length); out.push(bP); done = true; }
       }
+    }
+    // Witch Huts: up to 3, out in the wilder parts of Murkwater (well away from camp)
+    var WK = STRUCT_KINDS.length - 1, huts = 0;
+    for (var wq = 0; wq < 60 && huts < 3; wq++) {
+      var hx = Math.floor(B_FROST + 30 + hash(wq, 761, seed) * (B_EMBER - B_FROST - 60));
+      if (Math.abs(hx - SPAWNX) < 150 || out.some(function (q) { return q.kind === "witchhut" && Math.abs(q.x0 - hx) < 160; })) continue;
+      for (var hn = 0; hn < 8; hn++) { var HP = tryPlace(hx + (hn % 2 ? 1 : -1) * Math.ceil(hn / 2) * 3, WK); if (HP) { out.push(build(HP, out.length)); huts++; break; } }
     }
     return out;
   }
@@ -627,7 +644,38 @@ batwing: { n: "Bat Wing", frag: "bat" },
     holes.sort(function (a, b) { return a.x - b.x; });
     // ---- 7. structures (see buildStructures): standalone buildings with a door you can walk into ----
     var structs = buildStructures(t, top, bio, seed, holes, walls);
-    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, structs: structs, feats: feats, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    // ---- 8. the Cinder Aerie: a floating ruin high in the sky over Ember Bog, reached by the hot updraft of a Thermal Vent beside it ----
+    // Built after everything else, almost entirely in open sky, so it never moves any other building. Saved as world.aerie.
+    var aerie = (function () {
+      function M2(name, fb) { var v = T["X_" + name]; return v !== undefined ? v : fb; }
+      var ax = Math.floor(B_EMBER + 220 + hash(7, 901, seed) * 340), hw = 10, x0 = ax - hw, x1 = ax + hw, Y = 20;
+      if (x1 + 6 > W - 4) return null;
+      var vx = x1 + 3, gy = top[vx];
+      function put(px, py, id) { if (px > 0 && px < W - 1 && py > 0 && py < H - 1) t[py * W + px] = id; }
+      var OBS = M2("obsidianbrick", T.BASALTBRICK), CH = M2("lootchest", T.CHEST), VENT = M2("thermalvent", T.BRAZIER), x, y, r;
+      // the underside: a rough upside-down cone of basalt shot through with cinder, with glowing crystals hanging off it
+      for (r = 0; r <= 8; r++) {
+        var half = Math.round(hw - r * 1.15 + (hash(r, 902, seed) - 0.5) * 2); if (half < 1) break;
+        for (x = ax - half; x <= ax + half; x++) put(x, Y + 1 + r, hash(x, Y + r, seed + 903) < 0.16 ? T.CINDER : T.BASALT);
+        if (r > 1 && hash(r, 904, seed) < 0.7) { put(ax - half, Y + 2 + r, T.CINDERLAMP); put(ax + half, Y + 2 + r, T.CINDERLAMP); }
+      }
+      put(ax, Y + 10, T.CINDERLAMP); put(ax, Y + 11, T.CINDERLAMP);
+      // the deck, broken pillars at the ends, and a stepped ziggurat with the chest on its crown
+      for (x = x0; x <= x1; x++) put(x, Y, OBS);
+      [x0 + 1, x1 - 1].forEach(function (px, i) { var hh = 3 + (i ? 1 : 0); for (y = Y - 1; y >= Y - hh; y--) put(px, y, T.BASALTBRICK); put(px, Y - hh - 1, T.CINDERLAMP); });
+      put(x0 + 3, Y - 1, T.BRAZIER); put(x1 - 3, Y - 1, T.BRAZIER);
+      for (var tier = 0; tier < 3; tier++) { var tw = 6 - tier * 2; for (y = Y - 1 - tier * 2; y >= Y - 2 - tier * 2; y--) for (x = ax - tw; x <= ax + tw; x++) put(x, y, tier === 2 ? OBS : T.BASALTBRICK); }
+      put(ax - 2, Y - 6, T.CINDERLAMP); put(ax + 2, Y - 6, T.CINDERLAMP);
+      put(ax, Y - 7, CH);
+      // the Thermal Vent on the ground beside it: clear a column of sky above it so the updraft has room
+      if (gy > Y + 4 && gy < H - 4) {
+        for (y = Y - 3; y < gy - 1; y++) for (x = vx - 1; x <= vx + 1; x++) put(x, y, T.AIR);
+        for (x = vx - 1; x <= vx + 1; x++) if (!TILES[t[gy * W + x]].solid) put(x, gy, T.BASALT);
+        put(vx, gy - 1, VENT);
+      }
+      return { x0: x0, x1: x1, y: Y, cx: ax, cy: Y - 7, vx: vx, vy: gy - 1 };
+    })();
+    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, structs: structs, feats: feats, aerie: aerie, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var api = { STRUCT_KINDS: STRUCT_KINDS, W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };

@@ -656,8 +656,75 @@ body.sbx-app footer{margin-top:28px}
 /* armor stand window */
 .sbx-sbox2 .st-stand{display:grid;place-items:center;margin:-6px 0 4px}
 .sbx-sbox2 .st-stand img{width:96px;height:120px;image-rendering:pixelated;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
-.sbx-sbox2 .st-pick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0 0 10px}
+.sbx-sbox2 .st-pick{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0 0 10px}
 .sbx-sbox2 .st-pick button{display:grid;justify-items:center;align-content:start;gap:3px;min-height:64px;padding:6px 4px;border-radius:12px;background:#ffffff09;border:1px solid #ffffff1a;color:#f6eedb;font:800 .66rem Nunito,sans-serif;line-height:1.15;cursor:pointer}
 .sbx-sbox2 .st-pick button.on{border-color:var(--qc);background:color-mix(in srgb,var(--qc) 18%,transparent);box-shadow:0 0 14px -6px var(--qc)}
 .sbx-sbox2 .st-pick button[disabled]{opacity:.4;cursor:default}
 .sbx-sbox2 .st-pick img{width:30px;height:30px;image-rendering:pixelated}
+
+/* Realm Gate window */
+.sbx-sbox2 .st-gate{display:grid;gap:6px;margin:0 0 10px}
+.sbx-sbox2 .gt-it{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;padding:6px 10px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff10}
+.sbx-sbox2 .gt-it img{width:30px;height:30px;image-rendering:pixelated}
+.sbx-sbox2 .gt-it span{display:grid;line-height:1.2;min-width:0}
+.sbx-sbox2 .gt-it b{font-size:.9rem}
+.sbx-sbox2 .gt-it em{font-style:normal;font-size:.75rem;color:#f6eedb99}
+.sbx-sbox2 .gt-it .btn{min-height:34px;padding:4px 14px;font-size:.85rem}
+.sbx-sbox2 .gt-it .btn[disabled]{opacity:.45}
+.sbx-sbox2 .gt-it.on{border-color:var(--gc);box-shadow:inset 0 0 18px -8px var(--gc)}
+.sbx-sbox2 .gt-it i{font-style:normal;color:var(--gc);font-weight:900;padding:0 8px}
+.sbx-sbox2 .st-row .btn[disabled]{opacity:.45}
+.sbx-gatefx{position:absolute;inset:0;z-index:60;pointer-events:none;opacity:0;transition:opacity .9s ease;background:radial-gradient(circle at 50% 50%,#ffffff 0%,#8affe0 35%,#c06aff 70%,#2a1438 100%)}
+.sbx-gatefx.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.sbx-gatefx{transition:opacity .2s}}
+.sbx-sbox2 .st-row2 .btn:last-child{grid-column:auto}
+.sbx-sbox2 .st-gate .gt-it{padding:4px 10px}
+
+/* active potion effects, above the health bar */
+.sbx-vrow{position:relative}
+.sbx-fx{position:absolute;left:0;bottom:calc(100% + 6px);display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.sbx-fx[hidden]{display:none}
+.sbx-fx .fx-chip{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 3px;border-radius:999px;background:rgba(10,16,14,.78);border:1px solid var(--fc);box-shadow:0 0 10px -4px var(--fc)}
+.sbx-fx .fx-chip img{width:20px;height:20px;image-rendering:pixelated}
+.sbx-fx .fx-chip b{font:800 .72rem Nunito,sans-serif;color:#f6eedb;font-variant-numeric:tabular-nums}
+
+/* Jeweler's Table */
+.sbx-sbox2 .st-gems{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:0 0 8px}
+.sbx-sbox2 .st-gems button{display:grid;justify-items:center;gap:2px;padding:6px 3px 5px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff14;color:#f6eedb;font:700 .62rem/1.15 Nunito,sans-serif;text-align:center;cursor:pointer}
+.sbx-sbox2 .st-gems button img{width:24px;height:24px;image-rendering:pixelated}
+.sbx-sbox2 .st-gems button i{font-style:normal;font-weight:900;color:#f6eedb88}
+.sbx-sbox2 .st-gems button.on{border-color:var(--qc);box-shadow:inset 0 0 14px -6px var(--qc)}
+.sbx-sbox2 .st-gems button.on i{color:var(--qc)}
+.sbx-sbox2 .st-gems button[disabled]:not(.on){opacity:.4;cursor:default}
+
+/* quest helper tips */
+.sbx-tip{position:absolute;left:50%;top:calc(max(8px,env(safe-area-inset-top)) + 104px);transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:10px;width:min(92%,440px);padding:10px 34px 10px 14px;border-radius:14px;background:rgba(7,18,15,.94);border:1px solid var(--tc,#f2c14e);box-shadow:0 10px 28px -12px #000,0 0 22px -12px var(--tc,#f2c14e);color:#f6eedb;animation:tipIn .35s ease}
+.sbx-tip[hidden]{display:none}
+.sbx-tip p{margin:0;flex:1;font:700 .86rem/1.35 Nunito,sans-serif}
+.sbx-tip .btn{flex:none;min-height:34px;padding:4px 14px;font-size:.82rem}
+.sbx-tip .tip-x{position:absolute;top:4px;right:6px;width:26px;height:26px;border:0;border-radius:8px;background:transparent;color:#f6eedb99;font-size:1.1rem;cursor:pointer}
+.sbx-tip .tip-x:hover{color:#fff;background:#ffffff12}
+.sbx-stage.panel .sbx-tip{display:none}
+@keyframes tipIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+.sbx-menubtn.pulse{animation:jpulse 1.4s ease-in-out infinite;border-color:#4ee6b4}
+@keyframes jpulse{0%,100%{box-shadow:0 0 0 0 rgba(78,230,180,.55)}50%{box-shadow:0 0 0 9px rgba(78,230,180,0)}}
+.sbx-card.flash{animation:cflash 2.4s ease}
+@keyframes cflash{0%,60%{box-shadow:0 0 0 2px #4ee6b4,0 0 22px -4px #4ee6b4}100%{box-shadow:none}}
+@media (prefers-reduced-motion:reduce){.sbx-tip{animation:none}.sbx-menubtn.pulse{animation:none;box-shadow:0 0 0 3px rgba(78,230,180,.5)}.sbx-card.flash{animation:none;box-shadow:0 0 0 2px #4ee6b4}}
+/* phones: the backpack and Journal buttons sit beside the health bar, so all 9 hotbar slots fit across the full width */
+@media(max-width:480px){
+ .sbx-dock{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:5px;width:calc(100% - 12px)}
+ .sbx-dcol{display:contents}
+ .sbx-dock .sbx-vrow{grid-column:1;grid-row:1;min-width:0}
+ .sbx-dock .sbx-packbtn{grid-column:2;grid-row:1}
+ .sbx-dock .sbx-menubtn{grid-column:3;grid-row:1}
+ .sbx-dock .sbx-bar{grid-column:1/-1;grid-row:2;justify-content:space-between}
+ .sbx-dock .sbx-slot{flex:1 1 0;min-width:0;width:auto;height:auto;max-width:46px;aspect-ratio:1/1}
+ .sbx-dock .sbx-slot img{width:72%;height:auto}
+}
+
+/* difficulty pickers */
+.sbx-diff{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sbx-diff > span{font:800 .78rem Nunito,sans-serif;color:#f6eedbaa;margin-right:2px}
+.sbx-diff .btn{flex:1 1 0;min-width:72px}
+.sbx-diff .btn[aria-pressed="true"]{background:var(--dc);border-color:var(--dc);color:#10140f}

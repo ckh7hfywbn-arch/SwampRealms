@@ -70,6 +70,8 @@
   ore("SULFURORE", "Sulfur Ore", "#3b3036", "#e6d83a", 2.3, 2, 5, "sulfur", ["240,230,70", 2.2, 0.12]);
   ore("RUBYORE", "Ember Ruby Ore", "#3b3036", "#e0364a", 2.8, 3, 8, "ruby", ["255,60,80", 2.6, 0.17]);
   ore("SAPPHIREORE", "Frost Sapphire Ore", "#5d7c93", "#3f7fe6", 3.1, 3, 8, "sapphire", ["80,140,255", 2.6, 0.17]);
+  mat("realmshard", "Realm Shard", "#8affe0");
+  ore("REALMORE", "Realmstone", "#231d36", "#8affe0", 4.5, 5, 10, "realmshard", ["140,255,224", 3, 0.2]);   // the stone between worlds: only the Swampking Pick breaks it
   ore("MOONORE", "Moonstone Ore", "#5d7c93", "#c9d2ff", 3.5, 4, 9, "moonstone", ["200,210,255", 2.8, 0.18]);
   ore("GEODE", "Geode", "#6b7276", "#a36bde", 1.6, 2, 4, "quartz", ["170,120,240", 2, 0.12], [["amethyst", 0.55, 1, 2]]);
   ore("SEAM", "Charcoal Seam", "#3b3036", "#2a2a30", 1.7, 2, 0, "charcoal", null, [["charcoal", 0.5, 1, 1]]);
@@ -325,6 +327,31 @@
     rect(4, 7, 8, 6, "#f2c14e"); rect(3, 9, 10, 4, "#f2c14e"); rect(4, 4, 3, 3, "#f2c14e"); rect(9, 4, 3, 3, "#f2c14e"); rect(5, 5, 1, 1, "#12220f"); rect(10, 5, 1, 1, "#12220f");
     rect(4, 7, 8, 1, "#ffe9a8"); rect(5, 4, 1, 1, "#ffe9a8"); rect(10, 4, 1, 1, "#ffe9a8"); rect(5, 9, 6, 1, "#c8901e"); rect(3, 12, 10, 1, "#c8901e"); rect(7, 10, 2, 1, "#ffe9a8");
   }, 4, ["255,210,90", 2.0, 0.16]);
+  deco("realmgate", "Realm Gate", "#8affe0", function (rect) {   // the small pedestal; the arch is drawn big by sandbox.js
+    rect(1, 10, 14, 6, "#3a3450"); rect(1, 10, 14, 1, "#5a5274"); rect(3, 6, 10, 4, "#2a2440"); rect(6, 2, 4, 4, "#8affe0"); rect(7, 3, 2, 2, "#ffffff"); rect(2, 12, 2, 2, "#c06aff"); rect(12, 12, 2, 2, "#c06aff");
+  }, 8, ["140,255,224", 2.4, 0.16]);
+  item("arrow", "Arrow", {}); item("firearrow", "Fire Arrow", {});   // ammo for the Bogwood Bow and Ember Longbow
+  deco("brewstand", "Brewing Stand", "#c06aff", function (rect) {   // a little rack of bubbling bottles over a flame
+    rect(1, 14, 14, 2, "#5a4a52"); rect(7, 4, 2, 10, "#8a6a3a"); rect(3, 4, 10, 1, "#8a6a3a");
+    rect(2, 6, 3, 5, "#cfeaf2"); rect(2, 8, 3, 3, "#ff5a6a"); rect(11, 6, 3, 5, "#cfeaf2"); rect(11, 8, 3, 3, "#4ee6b4");
+    rect(5, 10, 6, 4, "#3a3450"); rect(6, 9, 4, 2, "#c06aff"); rect(7, 12, 2, 2, "#ff8a3d"); rect(7, 0, 1, 2, "#e8d0ff", 0.6); rect(9, 1, 1, 2, "#e8d0ff", 0.5);
+  }, 5, ["192,106,255", 1.6, 0.1]);
+  item("bottle", "Glass Bottle", {});
+  [["tonic_heal", "Healing Tonic"], ["tonic_mine", "Miner's Draught"], ["tonic_speed", "Swiftfoot Brew"], ["tonic_night", "Night Eye Elixir"], ["tonic_fire", "Emberguard Potion"], ["tonic_hide", "Ironhide Brew"], ["tonic_fish", "Angler's Brew"], ["tonic_leap", "Leaping Brew"]].forEach(function (q) { item(q[0], q[1], {}); });
+  mat("hexdust", "Hex Dust", "#b06aff");   // dropped by Bog Witches
+  deco("jeweltable", "Jeweler's Table", "#e0a0ff", function (rect) {   // a small stone-topped table with a loupe and gems
+    rect(1, 7, 14, 2, "#8e969b"); rect(1, 7, 14, 1, "#c4ccd1"); rect(2, 9, 2, 7, "#6e431f"); rect(12, 9, 2, 7, "#6e431f"); rect(4, 12, 8, 1, "#6e431f");
+    rect(3, 5, 2, 2, "#e0364a"); rect(6, 5, 2, 2, "#3f7fe6"); rect(9, 4, 2, 3, "#a36bde"); rect(11, 2, 3, 3, "#c4ccd1"); rect(12, 3, 1, 1, "#ffffff"); rect(10, 5, 2, 1, "#c4ccd1");
+  }, 3, ["224,160,255", 1.2, 0.08]);
+  deco("sapling", "Sapling", "#7fd06a", function (rect) {   // a little sprout; it grows into a tree
+    rect(7, 8, 2, 8, "#6e431f"); rect(4, 5, 4, 3, "#4f9a3a"); rect(8, 3, 4, 4, "#6ac04a"); rect(5, 9, 3, 2, "#3f8a2a"); rect(9, 2, 2, 1, "#9fe07a");
+  });
+  [["stain_walnut", "Walnut Stain"], ["stain_ebony", "Ebony Stain"], ["stain_honey", "Honey Oak Stain"], ["stain_mahogany", "Mahogany Stain"], ["stain_white", "Whitewash"], ["stain_sage", "Sage Stain"], ["stain_blue", "Bog Blue Stain"], ["stain_plum", "Plum Stain"], ["sandpaper", "Sandpaper"]].forEach(function (q) { item(q[0], q[1], {}); });   // wood stains (see WOOD STAINS in sandbox.js)
+  item("emberwings", "Emberfly Wings", {});   // found in the Cinder Aerie's chest; worn at once (see EMBERFLY WINGS in sandbox.js)
+  deco("thermalvent", "Thermal Vent", "#ffb04a", function (rect) {   // a cracked basalt mouth breathing hot air
+    rect(1, 11, 14, 5, "#3b3036"); rect(1, 11, 14, 1, "#55444d"); rect(4, 12, 8, 3, "#1c1418"); rect(5, 12, 6, 2, "#ff6a1f"); rect(6, 12, 4, 1, "#ffd25a");
+    rect(5, 6, 1, 4, "#ffe9b0", 0.5); rect(8, 3, 1, 6, "#ffe9b0", 0.6); rect(11, 5, 1, 5, "#ffe9b0", 0.45);
+  }, 10, ["255,170,70", 2.6, 0.18]);
   item("homeshell", "Homeward Shell", { home: 1 });   // hold and tap: carried home to your bed (or camp)
   deco("sprinkler", "Sprinkler", "#8fe0ff", function (rect) {   // a brass head on a stone stand
     rect(5, 12, 6, 4, "#6b7276"); rect(5, 12, 6, 1, "#8e969b"); rect(7, 6, 2, 6, "#8a6a3a"); rect(4, 4, 8, 3, "#c8901e"); rect(4, 4, 8, 1, "#f2c14e"); rect(3, 5, 1, 1, "#c8901e"); rect(12, 5, 1, 1, "#c8901e");
@@ -360,7 +387,7 @@
   // ====================================================================================================
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
-  var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot" };
+  var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
   function R(id, n, out, cost, o) { var r = { id: id, n: n, out: out, cost: cost, d: (o && o.d) || "" }; if (o) Object.keys(o).forEach(function (k) { r[k] = o[k]; }); RECIPES.push(r); }
   R("x_rope", "Rope (2)", { rope: 2 }, { fiber: 4 }, { d: "Twisted reed fibre. Used for looms, lanterns, trophies and tapestries." });
   R("x_candle", "Candles (4)", { candle: 4 }, { fiber: 2, peat: 1 }, { d: "A wick dipped in peat tallow. Used in candelabras and chandeliers." });
@@ -404,6 +431,32 @@
   R("x_ch_tide", "Tidecaller Charm", null, { bogminnow: 4, catfish: 2, frosttrout: 1, rope: 1 }, { charm: "tide", bench: true, bl: 3, d: "Swim 60% faster." });
   R("x_ch_king", "Swampking Sigil", null, { queenchitin: 1, wyrmscale: 1, alphamane: 1, swamptoken: 8, rope: 1 }, { charm: "king", bench: true, bl: 4, d: "Hit bosses 25% harder and take 20% less damage from them. Made from all three boss trophies." });
   R("x_ch_lucky", "Lucky Clover", null, { swamptoken: 12, rope: 1 }, { charm: "lucky", bench: true, bl: 2, d: "Chests, pots and fished-up treasure sometimes give an extra find. Paid for with Croaker Tokens." });
+  R("x_realmgate", "Realm Gate", { realmgate: 1 }, { realmshard: 6, frostrock: 16, ironingot: 6, crystal: 8 }, { bench: true, bl: 4, d: "A great stone arch. Place it in the open, then offer it the boss trophies, the three lights and 8 Realm Shards to wake it. Needs a Frost Workbench." });
+  R("x_bow1", "Reed Slingshot", null, { stick: 3, fiber: 4 }, { bow: 1, d: "Shoots Pebbles. Damage 4. Pick it in the hotbar and tap toward a target. Made by hand." });
+  R("x_bow2", "Bogwood Bow", null, { planks: 8, rope: 2, fiber: 6 }, { bow: 2, bench: true, d: "Shoots Arrows in a long arc. Damage 11 (17 with Fire Arrows). Needs the Reed Slingshot and a Workbench." });
+  R("x_bow3", "Ember Longbow", null, { planks: 10, ironingot: 4, cinder: 8, ruby: 1 }, { bow: 3, bench: true, bl: 3, d: "A lava-veined longbow with a flat, fast shot. Damage 20 (26 with Fire Arrows). Needs a Cinder Forge Workbench." });
+  R("x_arrow", "Arrows (6)", { arrow: 6 }, { stick: 2, pebble: 1, fiber: 1 }, { d: "Ammo for bows. Made by hand." });
+  R("x_firearrow", "Fire Arrows (6)", { firearrow: 6 }, { arrow: 6, cinder: 1, sulfur: 1 }, { d: "+6 damage and sets the target burning for a few seconds. Bows use them before plain Arrows. Made by hand." });
+  R("x_brewstand", "Brewing Stand", { brewstand: 1 }, { stone: 6, glass: 2, planks: 4 }, { bench: true, d: "Place it, then tap it to brew potions. Made at the Bog Workbench." });
+  R("x_bottle", "Glass Bottles (3)", { bottle: 3 }, { glass: 1 }, { stn: "brew", d: "Every potion starts with one. You get the bottle back after drinking." });
+  R("x_tonic_heal", "Healing Tonic", { tonic_heal: 1 }, { bottle: 1, marshlily: 2, redcap: 1 }, { stn: "brew", d: "Heals 40 health right away." });
+  R("x_tonic_mine", "Miner's Draught", { tonic_mine: 1 }, { bottle: 1, glowshroom: 2, spore: 2 }, { stn: "brew", d: "Dig 40% faster for 3 minutes." });
+  R("x_tonic_speed", "Swiftfoot Brew", { tonic_speed: 1 }, { bottle: 1, thistle: 2, carrot: 1 }, { stn: "brew", d: "Walk and swim 25% faster for 3 minutes." });
+  R("x_tonic_night", "Night Eye Elixir", { tonic_night: 1 }, { bottle: 1, firefly: 2, frostbell: 1 }, { stn: "brew", d: "See much farther in the dark, in caves too, for 4 minutes." });
+  R("x_tonic_fire", "Emberguard Potion", { tonic_fire: 1 }, { bottle: 1, emberroot: 2, pepper: 2 }, { stn: "brew", d: "Lava burns you 80% less for 3 minutes." });
+  R("x_tonic_hide", "Ironhide Brew", { tonic_hide: 1 }, { bottle: 1, icecap: 2, frostberry: 2 }, { stn: "brew", d: "Take 20% less damage for 3 minutes." });
+  R("x_tonic_leap", "Leaping Brew", { tonic_leap: 1 }, { bottle: 1, hexdust: 1, frogfrag: 1 }, { stn: "brew", d: "Jump 30% higher for 3 minutes. Hex Dust comes from Bog Witches." });
+  R("x_tonic_fish", "Angler's Brew", { tonic_fish: 1 }, { bottle: 1, earthworm: 2, catfish: 1 }, { stn: "brew", d: "Fish bite 40% sooner for 5 minutes." });
+  R("x_jeweltable", "Jeweler's Table", { jeweltable: 1 }, { stone: 8, planks: 4, quartz: 2 }, { bench: true, d: "Tap it to set gems into your weapon, armor, pick and bow. Each socket costs the gem and a Quartz Shard (from Geodes). Made at the Bog Workbench." });
+  R("x_stain_walnut", "Walnut Stain (12)", { stain_walnut: 12 }, { wood: 2, mud: 1 }, { d: "A rich dark brown. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_ebony", "Ebony Stain (12)", { stain_ebony: 12 }, { wood: 1, charcoal: 1 }, { d: "Nearly black. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_honey", "Honey Oak Stain (12)", { stain_honey: 12 }, { wood: 2, marshlily: 1 }, { d: "A warm golden oak. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_mahogany", "Mahogany Stain (12)", { stain_mahogany: 12 }, { wood: 2, redcap: 1 }, { d: "A deep red-brown. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_white", "Whitewash (12)", { stain_white: 12 }, { clay: 2, pebble: 1 }, { d: "Pale, chalky white. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_sage", "Sage Stain (12)", { stain_sage: 12 }, { wood: 1, leaves: 3 }, { d: "A soft swampy green. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_blue", "Bog Blue Stain (12)", { stain_blue: 12 }, { wood: 1, frostbell: 1 }, { d: "A cool grey-blue. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_stain_plum", "Plum Stain (12)", { stain_plum: 12 }, { wood: 1, thistle: 1 }, { d: "A dusky purple. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_sandpaper", "Sandpaper (12)", { sandpaper: 12 }, { fiber: 2, pebble: 2 }, { d: "Hold it and tap stained wood to sand the stain off. Made by hand." });
   R("x_homeshell", "Homeward Shell", { homeshell: 2 }, { pebble: 3, fiber: 2, spore: 1 }, { d: "Hold it and tap: after a moment you are carried home to your bed (or the camp). Each one works once. Made by hand." });
   R("x_sprinkler", "Sprinkler", { sprinkler: 1 }, { stone: 6, clay: 4, bogiron: 2 }, { bench: true, bl: 2, d: "Place it near your crops: everything within 3 tiles to each side stays watered and grows twice as fast. Needs a Glowspore Workbench." });
   R("x_fishtrap", "Fish Trap", { fishtrap: 1 }, { planks: 6, fiber: 6, stick: 4 }, { bench: true, d: "Put it on the bottom of a lake. It catches a fish every couple of minutes, up to 4. Tap it to empty it." });
@@ -419,6 +472,7 @@
   R("x_furcloth", "Fur Cloth (2)", { cloth: 2 }, { wolfpelt: 1 }, { stn: "loom", d: "Spin a Frost Wolf Pelt into two pieces of warm cloth." });
   R("x_slimetorch", "Slime Torches (8)", { torch: 8 }, { stick: 2, slimeball: 1 }, { d: "Sticks dipped in slime burn twice as long to make. Made by hand." });
   R("x_cloth", "Woven Cloth", { cloth: 1 }, { cotton: 3 }, { stn: "loom", d: "Soft cream cloth from Bog Cotton." });
+  R("x_charcoal", "Charcoal (2)", { charcoal: 2 }, { wood: 3 }, { stn: "furnace", d: "Burn Wood down into Charcoal, so smelting iron never runs out." });
   R("x_ingot", "Iron Ingot", { ironingot: 1 }, { bogiron: 2, charcoal: 1 }, { stn: "furnace", d: "Smelt Bog Iron with Charcoal." });
   R("x_claybrick", "Fired Brick (4)", { claybrick: 4 }, { clay: 6, charcoal: 1 }, { stn: "furnace", d: "Fire raw clay into hard red bricks." });
   R("x_ironblock", "Iron Block", { ironblock: 1 }, { ironingot: 4 }, { stn: "furnace", d: "A riveted block of solid iron." });
@@ -545,7 +599,8 @@
           if (id === T.ICE && d >= 3 && cell(x, y, 780, 0.16, 0.8)) t[i] = T.X_permafrost;
           else if (id === T.FROSTROCK && cell(x, y, 790, 0.04, 0.7)) t[i] = d >= 34 && hash(x >> 2, y >> 2, seed + 795) < 0.5 ? T.MOONORE : T.SAPPHIREORE;
         }
-        if ((id === T.STONE || id === T.BASALT || id === T.FROSTROCK) && t[i] === id && d >= 12 && cell(x, y, 800, 0.022, 0.6)) t[i] = T.GEODE;
+        if ((id === T.STONE || id === T.BASALT || id === T.FROSTROCK) && t[i] === id && y >= H - 36 && cell(x, y, 830, 0.05, 0.75)) t[i] = T.REALMORE;   // Realmstone: deep down, near the bedrock, in every land
+        else if ((id === T.STONE || id === T.BASALT || id === T.FROSTROCK) && t[i] === id && d >= 12 && cell(x, y, 800, 0.022, 0.6)) t[i] = T.GEODE;
         else if ((id === T.STONE || id === T.CLAY) && t[i] === id && d >= 8 && cell(x, y, 810, 0.02, 0.6)) t[i] = T.FOSSILBLK;
         else if (d >= 10 && (id === T.STONE || id === T.BASALT || id === T.FROSTROCK) && t[i] === id && hash(x, y, seed + 820) < 0.0035) t[i] = T.CACHE;
       }
