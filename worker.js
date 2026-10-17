@@ -199,6 +199,7 @@ async function api(req, env, url) {
     const m = path.match(/^\/api\/mp\/(room|ws)\/([A-Z0-9]{6})$/);
     if (!m || method !== "GET") return json({ error: "Not found" }, 404);
     const room = await db.prepare("SELECT code, host_id, host_name, name, pub, pvp, players, updated FROM mp_rooms WHERE code = ?").bind(m[2]).first();
+    if (m[1] === "room" && room && room.updated < now - 10 * 60000) return json({ error: "That world was closed. Ask your friend for a new code." }, 404);
     if (m[1] === "room") return room ? json({ code: room.code, name: room.name, host: room.host_name, players: room.players, pvp: !!room.pvp }) : json({ error: "No world with that code. Check the code with your friend." }, 404);
     if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ error: "Expected a WebSocket" }, 426);
     const origin = req.headers.get("origin"); if (origin) { let h = ""; try { h = new URL(origin).host; } catch (e) {} if (h !== url.host) return json({ error: "Not allowed" }, 403); }
@@ -279,7 +280,10 @@ function mpCode() { const r = rand(6); let s = ""; for (const b of r) s += MP_CH
 //   Host-only controls: {t:"kick", id}, {t:"meta", players, pub, pvp} (refreshes the lobby listing).
 const MP_MAX = 4, MP_BCAST = { p: 1, set: 1, wall: 1, chat: 1, me: 1, fx: 1 };
 export class DelveRoom {
-  constructor(ctx, env) { this.ctx = ctx; this.env = env; this.rate = new Map(); }
+  constructor(ctx, env) {
+    this.ctx = ctx; this.env = env; this.rate = new Map();
+    try { this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong")); } catch (e) {}   // keep-alive, answered without waking the room
+  }
   metas() { return this.ctx.getWebSockets().map(w => ({ w, m: w.deserializeAttachment() })).filter(q => q.m); }
   send(w, o) { try { w.send(typeof o === "string" ? o : JSON.stringify(o)); } catch (e) {} }
   async listing(players) {
@@ -294,7 +298,7 @@ export class DelveRoom {
     const refuse = msg => { this.send(server, { t: "error", m: msg }); try { server.close(4000, msg.slice(0, 120)); } catch (e) {} return new Response(null, { status: 101, webSocket: client }); };
     if (role === "host") others.forEach(q => { if (q.m.role === "host") { this.send(q.w, { t: "error", m: "You opened this world somewhere else." }); try { q.w.close(4001, "replaced"); } catch (e) {} } });
     else {
-      if (!others.some(q => q.m.role === "host")) return refuse("The host isn't online right now.");
+      if (!others.some(q => q.m.role === "host" && !q.m.left)) return refuse("The host's world isn't open right now. Ask them to keep Delve open (or reopen Play together), then try again in a few seconds.");
       if (others.length >= MP_MAX) return refuse("This world is full (" + MP_MAX + " players).");
     }
     const id = ((await this.ctx.storage.get("n")) || 0) + 1; await this.ctx.storage.put("n", id);
@@ -324,14 +328,15 @@ export class DelveRoom {
     if (m.to) { const q = all.find(q => q.m.id === m.to); if (q) this.send(q.w, out); return; }
     all.forEach(q => { if (q.w === ws) return; if (me.role === "host" || MP_BCAST[m.t] || q.m.role === "host") this.send(q.w, out); });
   }
-  async webSocketClose(ws, code, reason) { await this.gone(ws); try { ws.close(code === 1005 ? 1000 : code, "bye"); } catch (e) {} }
-  async webSocketError(ws) { await this.gone(ws); }
-  async gone(ws) {
+  async webSocketClose(ws, code, reason) { await this.gone(ws, code === 1000); try { ws.close(code === 1005 ? 1000 : code, "bye"); } catch (e) {} }
+  async webSocketError(ws) { await this.gone(ws, false); }
+  async gone(ws, clean) {
     const me = ws.deserializeAttachment(); if (!me || me.left) return; me.left = true; try { ws.serializeAttachment(me); } catch (e) {}
     const rest = this.metas().filter(q => q.w !== ws && !q.m.left);
-    if (me.role === "host" && !rest.some(q => q.m.role === "host")) {
+    if (me.role === "host" && !rest.some(q => q.m.role === "host" && !q.m.left)) {
       rest.forEach(q => { this.send(q.w, { t: "hostleft" }); try { q.w.close(4003, "host left"); } catch (e) {} });
-      if (this.env.DB) try { await this.env.DB.prepare("DELETE FROM mp_rooms WHERE code = ?").bind(me.code).run(); } catch (e) {}
+      // closed on purpose: the room is gone. Dropped (phone asleep, network blip): keep the code for a few minutes so the host's game can reconnect to it.
+      if (this.env.DB) try { if (clean) await this.env.DB.prepare("DELETE FROM mp_rooms WHERE code = ?").bind(me.code).run(); else await this.env.DB.prepare("UPDATE mp_rooms SET players = 0 WHERE code = ?").bind(me.code).run(); } catch (e) {}
       return;
     }
     rest.forEach(q => this.send(q.w, { t: "leave", id: me.id }));

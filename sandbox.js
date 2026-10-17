@@ -3708,15 +3708,24 @@
   function mpConnect(role, name) {
     var ws; try { ws = new WebSocket(mpUrl(MP.code, role, name)); } catch (e) { MP.status = ""; MP.err = "Could not connect."; renderMP(); return; }
     MP.ws = ws; MP.role = role; MP.peers = {}; MP.npeers = 0;
-    ws.onmessage = function (ev) { var m = null; try { m = JSON.parse(ev.data); } catch (e) {} if (m) try { mpOn(m); } catch (e) { if (window.console) console.error(e); } };
-    ws.onclose = function (ev) { if (MP.ws !== ws) return; var was = MP.on, why = MP.why || (ev.code === 4002 ? "You were removed from the world by the host." : ev.code === 4003 ? "The host closed their world." : was ? "Lost the connection to the world." : MP.err || "Could not connect to that world."); MP.ws = null; mpEnd(why); };
+    ws.onopen = function () { MP.pingT = 20; };
+    ws.onmessage = function (ev) { if (ev.data === "pong") return; var m = null; try { m = JSON.parse(ev.data); } catch (e) {} if (m) try { mpOn(m); } catch (e) { if (window.console) console.error(e); } };
+    ws.onclose = function (ev) {
+      if (MP.ws !== ws) return;
+      if (role === "host" && MP.on && !MP.why && ev.code !== 4001 && ev.code !== 4003 && (MP.recon || 0) < 6) {   // dropped, not closed on purpose: quietly reopen the same room
+        MP.ws = null; MP.recon = (MP.recon || 0) + 1; MP.peers = {}; MP.npeers = 0; renderMP();
+        if (MP.recon === 1) toast("Connection dropped. Reopening your world…", "#f2c14e");
+        clearTimeout(MP.reconT); MP.reconT = setTimeout(function () { if (MP.on && MP.role === "host" && !MP.ws) mpConnect("host"); }, Math.min(8000, 600 * MP.recon));
+        return;
+      }
+      var was = MP.on, why = MP.why || (ev.code === 4002 ? "You were removed from the world by the host." : ev.code === 4003 ? "The host closed their world." : was ? "Lost the connection to the world." : MP.err || "Could not connect to that world."); MP.ws = null; mpEnd(why); };
   }
   function mpOn(m) {
     var q;
     if (m.t === "error") { MP.why = m.m; MP.err = m.m; return; }
     if (m.t === "hello") {
       MP.id = m.id; (m.players || []).forEach(function (pl) { var q2 = mpPeer(pl.id); q2.name = pl.name; q2.role = pl.role; }); mpCount();
-      if (MP.role === "host") { MP.on = true; MP.status = ""; if (titleOpen) closeTitle(); toast("Your world is open! Room code " + MP.code + ".", "#4ee6b4"); mpMeta(); renderMP(); }
+      if (MP.role === "host") { var back = MP.on && MP.recon; MP.on = true; MP.recon = 0; MP.status = ""; if (titleOpen) closeTitle(); toast(back ? "Back online. Your friends can join with code " + MP.code + "." : "Your world is open! Room code " + MP.code + ".", "#4ee6b4"); mpMeta(); renderMP(); }
       mpMe(); return;
     }
     if (m.t === "join") { q = mpPeer(m.id); q.name = m.name; q.role = m.role; mpCount(); mpMe(); if (MP.on) toast(m.name + " joined the world!", "#4ee6b4"); addChat("", m.name + " joined."); if (MP.role === "host") { var w = worldSnap(); if (w) mpSend({ t: "welcome", to: m.id, world: w, pvp: MP.pvp, room: MP.room, host: MP.myName, wv: SW.WORLDVER }); mpMeta(); } renderMP(); return; }
@@ -3762,7 +3771,7 @@
     MP_CHAR.forEach(function (k) { if (S[k] !== undefined) own[k] = S[k]; });
     try { localStorage.setItem(wkey(MP.own.id), JSON.stringify(own)); } catch (e) {}
   }
-  function mpLeave() { if (!MP.ws && !MP.on) return; MP.why = MP.role === "host" ? "You closed your world to visitors." : "You left the world."; var w = MP.ws; MP.ws = null; try { if (w) w.close(1000, "bye"); } catch (e) {} mpEnd(MP.why); }
+  function mpLeave() { clearTimeout(MP.reconT); MP.recon = 0; if (!MP.ws && !MP.on) return; MP.why = MP.role === "host" ? "You closed your world to visitors." : "You left the world."; var w = MP.ws; MP.ws = null; try { if (w) w.close(1000, "bye"); } catch (e) {} mpEnd(MP.why); }
   function mpEnd(why) {
     var wasGuest = MP.role === "guest" && MP.on, wasOn = MP.on;
     if (wasGuest) { mpSaveChar(); }
@@ -3836,6 +3845,7 @@
   // ---- the per-frame network step ----
   function mpTick(dt) {
     if (!MP.ws) return;
+    MP.pingT = (MP.pingT || 0) - dt; if (MP.pingT <= 0) { MP.pingT = 20; if (MP.ws.readyState === 1) try { MP.ws.send("ping"); } catch (e) {} }   // keep-alive: silent connections get dropped by phones and networks
     for (var id in MP.peers) { var q = MP.peers[id], k = Math.min(1, dt * 14); q.x += (q.tx - q.x) * k; q.y += (q.ty - q.y) * k; q.grace = Math.max(0, (q.grace || 0) - dt); if (q.sayT > 0) q.sayT -= dt; }
     if (MP.sayT > 0) MP.sayT -= dt;
     if (!MP.on) return;
@@ -3843,6 +3853,7 @@
     if (MP.flushT <= 0) { MP.flushT = 0.1; if (MP.sets.length) { mpSend({ t: "set", L: MP.sets }); MP.sets = []; } if (MP.walls.length) { mpSend({ t: "wall", L: MP.walls }); MP.walls = []; } }
     var tp = toolPose(), me = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(1), vy: +p.vy.toFixed(1), on: p.on ? 1 : 0, f: p.face, w: +p.walk.toFixed(1), a: +tp.phi.toFixed(2), hp: Math.round(hp), c: cave ? 1 : 0 };
     if (MP.role === "host") {
+      MP.metaT -= dt; if (MP.metaT <= 0) mpMeta();   // keeps the room listed (and alive) even while you wait for friends
       if (!MP.npeers) return;
       MP.tickT -= dt;
       if (MP.tickT <= 0) {
@@ -3852,7 +3863,6 @@
         mpSend({ t: "tick", h: me, en: en, sh: sh });
       }
       MP.envT -= dt; if (MP.envT <= 0) { MP.envT = 2; mpSend({ t: "env", time: +S.time.toFixed(2), wx: S.wx, days: S.days }); }
-      MP.metaT -= dt; if (MP.metaT <= 0) mpMeta();
     } else {
       MP.sendT -= dt; var key = JSON.stringify(me);
       if (MP.sendT <= 0 && (key !== MP.last || MP.sendT < -1.5)) { MP.sendT = 0.125; MP.last = key; me.t = "p"; mpSend(me); }
@@ -7475,7 +7485,11 @@
     if (!document.hidden) { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen)) && !trans && !titleOpen) { if (cave) caveUpdate(dt); else update(dt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); mpTick(dt); if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); }
     requestAnimationFrame(loop);
   }
-  document.addEventListener("visibilitychange", function () { if (document.hidden) save(); });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { save(); return; }
+    if (MP.on && MP.role === "host" && (!MP.ws || MP.ws.readyState > 1)) { clearTimeout(MP.reconT); MP.ws = null; MP.recon = Math.max(1, MP.recon || 0); mpConnect("host"); }   // back from another app: make sure friends can still reach your world
+    else if (MP.ws && MP.ws.readyState === 1) try { MP.ws.send("ping"); } catch (e) {}
+  });
   window.addEventListener("pagehide", function () { save(); var e = curEntry(); if (CLOUD.state === "on" && e && e.cdirty && !e.conflict && !CLOUD.busy) cloudPush(curId, true); });
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
