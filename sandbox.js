@@ -3701,8 +3701,8 @@
     try { localStorage.setItem("swamp-delve-mpname", name); } catch (e) {} mpName = name;
     MP.err = ""; MP.status = "Looking for that world…"; renderMP();
     cloudCall("GET", "/api/mp/room/" + code).then(function (r) {
-      if (r.s !== 200 || !r.j) { MP.status = ""; MP.err = (r.j && r.j.error) || "Multiplayer isn't available right now."; renderMP(); return; }
-      MP.code = code; MP.room = r.j.name; MP.hostName = r.j.host; MP.pvp = !!r.j.pvp; MP.myName = WUSER !== "guest" ? WUSER : name; MP.status = "Joining " + r.j.host + "'s world…"; renderMP(); mpConnect("guest", name);
+      if (r.s !== 200 || !r.j) { MP.status = ""; MP.err = (r.j && r.j.error) || "Multiplayer isn't available right now."; MP.errLink = r.j && r.j.site ? "https://" + r.j.site + "/sandbox.html" : ""; renderMP(); return; }
+      MP.errLink = ""; MP.code = code; MP.room = r.j.name; MP.hostName = r.j.host; MP.pvp = !!r.j.pvp; MP.myName = WUSER !== "guest" ? WUSER : name; MP.status = "Joining " + r.j.host + "'s world…"; renderMP(); mpConnect("guest", name);
     });
   }
   function mpConnect(role, name) {
@@ -3935,7 +3935,7 @@
     } else if (MP.ws || MP.status) {
       h += '<p class="mp-wait">' + esc(MP.status || "Connecting…") + '</p><div class="sbx-row"><button type="button" class="btn ghost" data-mp="leave">Cancel</button></div>';
     } else {
-      if (MP.err) h += '<p class="mp-err">' + esc(MP.err) + "</p>";
+      if (MP.err) h += '<p class="mp-err">' + esc(MP.err) + "</p>" + (MP.errLink && /^https:\/\/[a-z0-9.-]+\/sandbox\.html$/.test(MP.errLink) ? '<a class="btn" href="' + MP.errLink + '">Open the host\u2019s Delve</a>' : "");
       h += "<h3>Host this world</h3>";
       if (WUSER === "guest") h += '<p class="sbx-note">Sign in (top right) to open your world to friends. You can still join other worlds below.</p>';
       else h += '<p class="sbx-note">Up to 3 friends can join <b>' + esc(curEntry() ? curEntry().name : "this world") + '</b> with a room code. You run the world: creatures, bosses, crops and weather.</p><div class="mp-opts"><label><input type="checkbox" id="mpPub"> List it publicly</label><label><input type="checkbox" id="mpPvp"> Allow PvP</label></div><div class="sbx-row"><button type="button" class="btn" data-mp="host">Open my world</button></div>';

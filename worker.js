@@ -188,17 +188,18 @@ async function api(req, env, url) {
       for (let i = 0; i < 8 && !code; i++) { const c = mpCode(); if (!(await db.prepare("SELECT 1 AS x FROM mp_rooms WHERE code = ?").bind(c).first())) code = c; }
       if (!code) return json({ error: "Could not make a room code. Try again." }, 500);
       await db.prepare("DELETE FROM mp_rooms WHERE host_id = ?").bind(u.id).run();
-      await db.prepare("INSERT INTO mp_rooms (code, host_id, host_name, name, pub, pvp, players, updated) VALUES (?, ?, ?, ?, ?, ?, 1, ?)")
-        .bind(code, u.id, u.name, name, b.pub ? 1 : 0, b.pvp ? 1 : 0, now).run();
+      await db.prepare("INSERT INTO mp_rooms (code, host_id, host_name, name, pub, pvp, players, updated, site) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)")
+        .bind(code, u.id, u.name, name, b.pub ? 1 : 0, b.pvp ? 1 : 0, now, url.host).run();
       return json({ code });
     }
     if (path === "/api/mp/list" && method === "GET") {
-      const r = await db.prepare("SELECT code, host_name, name, players, pvp FROM mp_rooms WHERE pub = 1 AND updated > ? ORDER BY updated DESC LIMIT 30").bind(now - 120000).all();
+      const r = await db.prepare("SELECT code, host_name, name, players, pvp FROM mp_rooms WHERE pub = 1 AND updated > ? AND (site = ? OR site = '') ORDER BY updated DESC LIMIT 30").bind(now - 120000, url.host).all();
       return json({ rooms: r.results || [] });
     }
     const m = path.match(/^\/api\/mp\/(room|ws)\/([A-Z0-9]{6})$/);
     if (!m || method !== "GET") return json({ error: "Not found" }, 404);
-    const room = await db.prepare("SELECT code, host_id, host_name, name, pub, pvp, players, updated FROM mp_rooms WHERE code = ?").bind(m[2]).first();
+    const room = await db.prepare("SELECT code, host_id, host_name, name, pub, pvp, players, updated, site FROM mp_rooms WHERE code = ?").bind(m[2]).first();
+    if (room && room.site && room.site !== url.host) return json({ error: room.host_name + " is hosting on a different address of the site. Open Delve at " + room.site + " and join from there.", site: room.site }, 409);
     if (m[1] === "room" && room && room.updated < now - 10 * 60000) return json({ error: "That world was closed. Ask your friend for a new code." }, 404);
     if (m[1] === "room") return room ? json({ code: room.code, name: room.name, host: room.host_name, players: room.players, pvp: !!room.pvp }) : json({ error: "No world with that code. Check the code with your friend." }, 404);
     if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ error: "Expected a WebSocket" }, 426);
@@ -268,6 +269,9 @@ let mpReady = false;
 async function mpTable(db) {
   if (mpReady) return;
   await db.prepare("CREATE TABLE IF NOT EXISTS mp_rooms (code TEXT PRIMARY KEY, host_id TEXT NOT NULL, host_name TEXT NOT NULL, name TEXT NOT NULL, pub INTEGER NOT NULL, pvp INTEGER NOT NULL, players INTEGER NOT NULL, updated INTEGER NOT NULL)").run();
+  // site: the web address the room was opened on. Live connections only meet if both players use the same address (each deployed copy of the
+  // Worker has its own rooms, even when they share this database), so a guest on another address is sent to the right one.
+  try { await db.prepare("ALTER TABLE mp_rooms ADD COLUMN site TEXT NOT NULL DEFAULT ''").run(); } catch (e) {}
   mpReady = true;
 }
 const MP_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
