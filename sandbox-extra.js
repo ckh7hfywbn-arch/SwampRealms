@@ -352,6 +352,12 @@
     rect(1, 11, 14, 5, "#3b3036"); rect(1, 11, 14, 1, "#55444d"); rect(4, 12, 8, 3, "#1c1418"); rect(5, 12, 6, 2, "#ff6a1f"); rect(6, 12, 4, 1, "#ffd25a");
     rect(5, 6, 1, 4, "#ffe9b0", 0.5); rect(8, 3, 1, 6, "#ffe9b0", 0.6); rect(11, 5, 1, 5, "#ffe9b0", 0.45);
   }, 10, ["255,170,70", 2.6, 0.18]);
+  mat("silk", "Spider Silk", "#e8e4f0");   // dropped by Cave Spiders
+  deco("cobweb", "Cobweb", "#e8e4f0", function (rect) {   // a corner web, for spooky builds
+    rect(0, 0, 16, 1, "#e8e4f0", 0.7); rect(0, 0, 1, 16, "#e8e4f0", 0.7);
+    for (var k = 1; k < 15; k++) { rect(k, k, 1, 1, "#e8e4f0", 0.6); if (k % 2) { rect(k, 0, 1, Math.max(1, 15 - k), "#e8e4f0", 0.18); } }
+    [4, 8, 12].forEach(function (r) { for (var a = 0; a <= r; a++) rect(a, r - a, 1, 1, "#ffffff", 0.45); });
+  }, 0, null, "wall");
   item("homeshell", "Homeward Shell", { home: 1 });   // hold and tap: carried home to your bed (or camp)
   deco("sprinkler", "Sprinkler", "#8fe0ff", function (rect) {   // a brass head on a stone stand
     rect(5, 12, 6, 4, "#6b7276"); rect(5, 12, 6, 1, "#8e969b"); rect(7, 6, 2, 6, "#8a6a3a"); rect(4, 4, 8, 3, "#c8901e"); rect(4, 4, 8, 1, "#f2c14e"); rect(3, 5, 1, 1, "#c8901e"); rect(12, 5, 1, 1, "#c8901e");
@@ -457,6 +463,8 @@
   R("x_stain_blue", "Bog Blue Stain (12)", { stain_blue: 12 }, { wood: 1, frostbell: 1 }, { d: "A cool grey-blue. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
   R("x_stain_plum", "Plum Stain (12)", { stain_plum: 12 }, { wood: 1, thistle: 1 }, { d: "A dusky purple. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
   R("x_sandpaper", "Sandpaper (12)", { sandpaper: 12 }, { fiber: 2, pebble: 2 }, { d: "Hold it and tap stained wood to sand the stain off. Made by hand." });
+  R("x_silkrope", "Silk Rope (3)", { rope: 3 }, { silk: 2 }, { d: "Spider Silk twists into strong rope. Made by hand." });
+  R("x_cobweb", "Cobweb (2)", { cobweb: 2 }, { silk: 2 }, { d: "A dusty corner web for haunted houses and witchy builds. Hangs on a wall or ceiling. Made by hand." });
   R("x_homeshell", "Homeward Shell", { homeshell: 2 }, { pebble: 3, fiber: 2, spore: 1 }, { d: "Hold it and tap: after a moment you are carried home to your bed (or the camp). Each one works once. Made by hand." });
   R("x_sprinkler", "Sprinkler", { sprinkler: 1 }, { stone: 6, clay: 4, bogiron: 2 }, { bench: true, bl: 2, d: "Place it near your crops: everything within 3 tiles to each side stays watered and grows twice as fast. Needs a Glowspore Workbench." });
   R("x_fishtrap", "Fish Trap", { fishtrap: 1 }, { planks: 6, fiber: 6, stick: 4 }, { bench: true, d: "Put it on the bottom of a lake. It catches a fish every couple of minutes, up to 4. Tap it to empty it." });

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dl-on">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SwampRealms: Delve | SwampRealms</title>
+<title>SwampRealms: Delve | Free dig-and-build sandbox</title>
 <meta name="description" content="SwampRealms: Delve is a 2D dig-and-build sandbox. Explore Murkwater Swamp, Ember Bog and Frostfen, mine glowing ore, craft better picks and light up the caves.">
 <link rel="canonical" href="https://theswampverse.m4br6dbmzc.workers.dev/sandbox">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -13,15 +13,15 @@
 <meta property="og:title" content="SwampRealms: Delve | SwampRealms">
 <meta property="og:description" content="SwampRealms: Delve is a 2D dig-and-build sandbox. Explore Murkwater Swamp, Ember Bog and Frostfen, mine glowing ore, craft better picks and light up the caves.">
 <meta property="og:url" content="https://theswampverse.m4br6dbmzc.workers.dev/sandbox">
-<meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
+<meta property="og:image" content="https://theswampverse.m4br6dbmzc.workers.dev/delve-og.jpg?v=3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
+<meta property="og:image:alt" content="SwampRealms: Delve. A cabin above a torch-lit cave full of glowing ore.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SwampRealms: Delve | SwampRealms">
 <meta name="twitter:description" content="SwampRealms: Delve is a 2D dig-and-build sandbox. Explore Murkwater Swamp, Ember Bog and Frostfen, mine glowing ore, craft better picks and light up the caves.">
-<meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/preview.jpg">
-<meta name="twitter:image:alt" content="SwampRealms swamp cards: Boggy, MonK, DonK and Ellie">
+<meta name="twitter:image" content="https://theswampverse.m4br6dbmzc.workers.dev/delve-og.jpg?v=3">
+<meta name="twitter:image:alt" content="SwampRealms: Delve. A cabin above a torch-lit cave full of glowing ore.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0d110a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,14 +29,88 @@
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js");setTimeout(function(){if(!window.__rv)document.documentElement.classList.add("rv-done")},2500)</script>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="ui.css?v=armory3">
-<link rel="stylesheet" href="sandbox.css?v=diff1">
+<link rel="stylesheet" href="ui.css?v=delve1">
+<link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="sandbox.css?v=ui5">
+<style>
+/* loading screen: inline so it paints before the big game files arrive */
+.dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
+.dl-load.out{opacity:0;visibility:hidden}
+.dl-load .dl-hills{position:absolute;left:0;right:0;bottom:0;height:46%;pointer-events:none}
+.dl-load .dl-hills i{position:absolute;left:-5%;right:-5%;bottom:0}
+.dl-load .dl-hills .h1{height:100%;background:#0f2a1f;clip-path:polygon(0 52%,9% 38%,18% 50%,29% 30%,41% 47%,52% 34%,63% 52%,74% 36%,86% 49%,100% 33%,100% 100%,0 100%)}
+.dl-load .dl-hills .h2{height:70%;background:#0a1d15;clip-path:polygon(0 40%,12% 55%,23% 36%,35% 52%,47% 40%,60% 58%,71% 42%,83% 56%,93% 41%,100% 50%,100% 100%,0 100%)}
+.dl-load .dl-hills .gr{height:64px;background:linear-gradient(#3fbf63 0 6px,#2a8a48 6px 10px,transparent 10px),repeating-linear-gradient(90deg,#3a2c45 0 30px,#33263d 30px 32px),repeating-linear-gradient(0deg,#3a2c45 0 30px,#2c2135 30px 32px);background-blend-mode:normal,multiply,normal;box-shadow:0 -2px 0 #08110c}
+.dl-load .dl-fly{position:absolute;width:5px;height:5px;border-radius:50%;background:#d9ffe9;box-shadow:0 0 10px 3px rgba(78,230,180,.7);animation:dlFly 6s ease-in-out infinite;opacity:.0}
+@keyframes dlFly{0%,100%{opacity:0;transform:translate(0,0)}25%{opacity:.9}50%{opacity:.4;transform:translate(26px,-30px)}75%{opacity:.85;transform:translate(-14px,-12px)}}
+.dl-load .dl-mid{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:8vh}
+.dl-load canvas{display:block;max-width:92vw;height:auto}
+.dl-load .dl-bar{display:flex;gap:5px;padding:6px;border-radius:10px;background:rgba(4,10,8,.7);box-shadow:0 0 0 2px #08110c,inset 0 2px 6px #000}
+.dl-load .dl-bar i{width:clamp(14px,3.6vw,20px);aspect-ratio:1;border-radius:3px;background:#2c2135;box-shadow:inset 2px 2px 0 rgba(255,255,255,.07),inset -2px -2px 0 rgba(0,0,0,.35);transition:background .25s,box-shadow .25s}
+.dl-load .dl-bar i.on{background:linear-gradient(135deg,#9ff3d4,#4ee6b4 45%,#1d9e78);box-shadow:inset 2px 2px 0 rgba(255,255,255,.4),inset -2px -2px 0 rgba(0,0,0,.25),0 0 12px rgba(78,230,180,.55)}
+.dl-load .dl-bar i.dig{animation:dlDig .35s steps(2) infinite}
+@keyframes dlDig{50%{transform:translate(1px,-1px) rotate(4deg);background:#4a3a5a}}
+.dl-load .dl-st{margin:0;font-weight:800;font-size:1rem;letter-spacing:.01em;text-shadow:0 1px 3px #000}
+.dl-load .dl-st b{color:#f2c14e;margin-left:6px;font-variant-numeric:tabular-nums}
+.dl-load .dl-tip{margin:0;max-width:34em;min-height:2.8em;text-align:center;font-weight:600;font-size:.9rem;line-height:1.4;color:#a9cbbb}
+.dl-load .dl-err{display:none;margin:0;text-align:center;color:#ffb3be;font-weight:700}
+.dl-load.err .dl-err{display:block}.dl-load.err .dl-tip{display:none}
+.dl-load .dl-err button{margin-top:10px;padding:10px 22px;border:0;border-radius:99px;background:#f2c14e;color:#1a1405;font:800 15px Nunito,system-ui,sans-serif;cursor:pointer}
+html.dl-on,html.dl-on body{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.dl-load .dl-fly,.dl-load .dl-bar i.dig{animation:none}.dl-load .dl-fly{opacity:.6}}
+</style>
 </head>
 <body class="sbx-app">
+<div class="dl-load" id="dlLoad" role="progressbar" aria-label="Loading SwampRealms: Delve" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+ <div class="dl-hills" aria-hidden="true"><i class="h1"></i><i class="h2"></i><i class="gr"></i></div>
+ <span class="dl-fly" style="left:18%;top:34%" aria-hidden="true"></span><span class="dl-fly" style="left:74%;top:28%;animation-delay:1.5s" aria-hidden="true"></span><span class="dl-fly" style="left:62%;top:62%;animation-delay:3s" aria-hidden="true"></span><span class="dl-fly" style="left:30%;top:66%;animation-delay:4.2s" aria-hidden="true"></span><span class="dl-fly" style="left:88%;top:52%;animation-delay:2.4s" aria-hidden="true"></span>
+ <div class="dl-mid">
+  <canvas id="dlLogo" role="img" aria-label="SwampRealms: Delve"></canvas>
+  <div class="dl-bar" id="dlBar" aria-hidden="true"></div>
+  <p class="dl-st"><span id="dlSt">Loading the swamp</span><b id="dlPc">0%</b></p>
+  <p class="dl-tip" id="dlTip"></p>
+  <div class="dl-err" id="dlErr">Part of the game did not load. Check your connection and try again.<br><button type="button" onclick="location.reload()">Reload</button></div>
+ </div>
+</div>
+<script src="delve-logo.js?v=3"></script>
+<script>
+// Loading screen: real progress, counted by how much of the game has arrived (each script reports in as it finishes),
+// with a gentle creep while the next file downloads. It fades out once the world is built (sandbox.js calls __dlDone).
+(function(){
+ var el=document.getElementById("dlLoad"),bar=document.getElementById("dlBar"),pc=document.getElementById("dlPc"),st=document.getElementById("dlSt"),tip=document.getElementById("dlTip");
+ var ORDER=["cards","weapons","avatar","store","account","menu","world","extra","cave","davatar","game","fs"];
+ var W={cards:4306,weapons:23,avatar:54,store:87,account:14,menu:7,world:63,extra:100,cave:29,davatar:33,game:763,fs:4},TOT=0,k;for(k in W)TOT+=W[k];
+ var MSG={cards:"Loading the swamp",avatar:"Waking the frogs",world:"Shaping the land",extra:"Stocking the workbench",cave:"Carving the caves",game:"Growing your world",fs:"Almost there"};
+ var TIPS=["Hold the mouse (or your finger) on tree leaves to gather Sticks for your first pick.","Torches keep Dusk Bats away. Light up your caves.","Sleep in a bed to skip the night.","Old Croaker\u2019s quests in the Journal always show what to do next.","The deeper you dig, the rarer the ore.","Each world saves on its own, and you can keep up to 8.","Witch Huts hide in the wilds of Murkwater. Their owners do not like visitors.","Hungry? Cook fish and mushrooms at a Cook Pot.","Press Esc any time to come back to the main menu."];
+ var N=14,cells=[],i,got={},done=0,shown=0,ready=false,t0=Date.now(),fin=false;
+ for(i=0;i<N;i++){var c=document.createElement("i");bar.appendChild(c);cells.push(c)}
+ var ti=Math.floor(Math.random()*TIPS.length);function nextTip(){tip.textContent="Tip: "+TIPS[ti++%TIPS.length]}nextTip();var tipT=setInterval(nextTip,4200);
+ function logo(){try{DelveLogo.draw(document.getElementById("dlLogo"),{b:Math.max(6,Math.min(12,Math.floor((Math.min(innerWidth,900)-48)/38)))})}catch(e){}}logo();try{DelveLogo.onReady(logo)}catch(e){}
+ function next(){for(var j=0;j<ORDER.length;j++)if(!got[ORDER[j]])return ORDER[j];return null}
+ function paint(){
+  var n=next(),cap=ready?1:Math.min(.96,(done+(n?W[n]*.85:0))/TOT);
+  shown+=(cap-shown)*(ready?.25:.06);if(cap-shown<.002)shown=cap;
+  var on=Math.floor(shown*N+.0001);for(var j=0;j<N;j++){cells[j].className=j<on?"on":j===on&&!ready?"dig":""}
+  var p=Math.round(shown*100);pc.textContent=p+"%";el.setAttribute("aria-valuenow",p);
+  if(ready&&shown>=.999&&!fin&&Date.now()-t0>900){fin=true;finish()}
+ }
+ var pt=setInterval(paint,50);
+ window.__dl=function(k){if(got[k])return;got[k]=1;done+=W[k]||0;var n=next();if(n&&MSG[n])st.textContent=MSG[n]};
+ window.__dlDone=function(){ready=true;st.textContent="Ready"};
+ function finish(){
+  clearInterval(tipT);el.classList.add("out");document.documentElement.classList.remove("dl-on");
+  var t=document.getElementById("sbxTitle");if(t)t.classList.add("in");
+  setTimeout(function(){clearInterval(pt);if(el.parentNode)el.parentNode.removeChild(el)},700);
+ }
+ function fail(){if(fin)return;el.classList.add("err");st.textContent="Something went wrong";clearInterval(tipT)}
+ window.addEventListener("error",function(e){var t=e.target;if(t&&t.tagName==="SCRIPT"&&!ready)fail()},true);
+ setTimeout(function(){if(!ready)fail()},45000);
+})();
+</script>
 <noscript><p style="text-align:center;padding:24px">SwampRealms needs JavaScript to run. Please turn it on and reload the page.</p></noscript>
 <header>
  <a class="logo" href="index.html" aria-label="SwampRealms home"><img class="mark" src="logo-mark.png" alt="" width="44" height="44"><img class="word" src="logo-word.png" alt="" width="160" height="29"></a>
- <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html" aria-current="page">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
+ <nav aria-label="Site"><a class="hide" href="index.html">Home</a><a class="hide" href="sandbox.html" aria-current="page">Play Delve</a><a class="hide" href="catalog.html">Packs / Collection</a><a class="hide" href="arcade.html">Arcade</a><a class="hide" href="shop.html">Shop</a><a class="hide" href="index.html#herd">The Herd</a></nav>
 </header>
 
 <div id="top"></div>
@@ -74,7 +148,7 @@
    <div class="sbx-dcol">
     <div class="sbx-vrow">
      <div class="sbx-fx" id="sbxFx" hidden aria-label="Active potions"></div>
-     <div class="sbx-hp" id="sbxHp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hrt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" fill="currentColor"/></svg></span><span class="trk"><i class="gh"></i><i class="fl"></i><b>100</b></span><span class="shd" id="sbxArm" hidden></span></div>
+     <div class="sbx-hp" id="sbxHp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hrt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" fill="currentColor"/></svg><span class="shd" id="sbxArm" hidden><svg class="rg" viewBox="0 0 40 40" aria-hidden="true"><circle class="bk" cx="20" cy="20" r="18"/><circle class="v" cx="20" cy="20" r="18" pathLength="100"/></svg><i class="ai"></i></span></span><span class="trk"><i class="gh"></i><i class="fl"></i><b>100</b></span></div>
      <div class="sbx-food" id="sbxFood" role="progressbar" aria-label="Hunger" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-40 12 12)"><ellipse cx="12" cy="8.2" rx="6.2" ry="6.8" fill="currentColor"/><ellipse cx="10" cy="6.4" rx="2" ry="1.4" fill="#fff" opacity=".45"/><rect x="10.7" y="13.5" width="2.6" height="5.6" rx="1" fill="#f6eedb"/><circle cx="10.5" cy="20.2" r="1.7" fill="#f6eedb"/><circle cx="13.5" cy="20.2" r="1.7" fill="#f6eedb"/></g></svg></span><span class="trk"><i class="fl"></i><b>100</b></span></div>
     </div>
     <div class="sbx-bar" id="sbxBar" role="toolbar" aria-label="Hotbar"></div>
@@ -82,6 +156,18 @@
    <button type="button" class="sbx-ibtn sbx-packbtn" id="sbxPackBtn" aria-label="Open backpack (B)" title="Backpack (B)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5V5a3 3 0 016 0v.5"/><path d="M7 7h10a3 3 0 013 3v9a2 2 0 01-2 2H6a2 2 0 01-2-2v-9a3 3 0 013-3z"/><path d="M8.5 15h7v3h-7z"/><path d="M4 12.5h2M18 12.5h2"/></svg><kbd class="sbx-kb">B</kbd></button>
    <button type="button" class="sbx-ibtn sbx-menubtn" id="sbxMenuBtn" aria-label="Open journal: crafting, map and goals (E)" title="Journal (E)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 016.5 3H18v15H6.5A1.5 1.5 0 005 19.5z"/><path d="M5 19.5A1.5 1.5 0 006.5 21H18v-3"/><path d="M9 8h5M9 11.5h3"/></svg><kbd class="sbx-kb">E</kbd></button>
   </div>
+  <section class="sbx-title" id="sbxTitle" aria-label="Main menu" hidden>
+   <div class="tt-col">
+    <h1 class="tt-h"><canvas class="tt-logo" id="sbxLogo" role="img" aria-label="SwampRealms: Delve"></canvas></h1>
+    <p class="tt-tag">Dig deep. Build big. Light up the swamp.</p>
+    <div class="tt-btns" id="sbxTBtns"></div>
+   </div>
+   <div class="tt-foot">
+    <a class="tt-link" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>SwampRealms home</a>
+    <a class="tt-link" href="arcade.html">More games</a>
+    <button type="button" class="tt-fs gfs" data-fs aria-pressed="false" aria-label="Enter full screen" title="Full screen (G)"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+   </div>
+  </section>
   <section class="sbx-panel" id="sbxPanel" aria-label="Journal: crafting, map and goals" hidden>
    <div class="sbx-phead"><div class="sbx-tabs" id="sbxTabs" role="tablist"></div><button type="button" class="sbx-x" data-close aria-label="Close">&times;</button></div>
    <div class="sbx-body" id="sbxBody"></div>
@@ -128,18 +214,18 @@
 </footer>
 
 <nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
-<script src="cards.js"></script>
-<script src="weapons.js?v=skins2"></script>
-<script src="avatar.js?v=cos5"></script>
-<script src="store.js?v=cos4"></script>
-<script src="account.js"></script>
-<script src="menu.js"></script>
-<script src="sandbox-world.js?v=delve28-aerie"></script>
-<script src="sandbox-extra.js?v=pack25"></script>
-<script src="sandbox-cave.js?v=cave8"></script>
-<script src="delve-avatar.js?v=delve4"></script>
-<script src="sandbox.js?v=delve105-wings"></script>
-<script src="gamefs.js?v=3"></script>
+<script src="cards.js" onload="__dl('cards')"></script>
+<script src="weapons.js?v=skins2" onload="__dl('weapons')"></script>
+<script src="avatar.js?v=cos5" onload="__dl('avatar')"></script>
+<script src="store.js?v=cos4" onload="__dl('store')"></script>
+<script src="account.js" onload="__dl('account')"></script>
+<script src="menu.js" onload="__dl('menu')"></script>
+<script src="sandbox-world.js?v=delve28-aerie" onload="__dl('world')"></script>
+<script src="sandbox-extra.js?v=pack26" onload="__dl('extra')"></script>
+<script src="sandbox-cave.js?v=cave8" onload="__dl('cave')"></script>
+<script src="delve-avatar.js?v=delve4" onload="__dl('davatar')"></script>
+<script src="sandbox.js?v=delve112-mats" onload="__dl('game')"></script>
+<script src="gamefs.js?v=3" onload="__dl('fs')"></script>
 <script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG"});</script>   <!-- F is Delve's interact key (caves, doors, chests, ladders), so full screen is the button or G -->
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
