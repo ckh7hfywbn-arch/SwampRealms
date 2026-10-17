@@ -20,7 +20,7 @@
 
   // ---------- registration helpers ----------
   function tile(key, n, c, c2, hard, tier, drop, solid, light, kind, extra) {
-    var id = nid++; if (id > 255) throw new Error("too many tiles");
+    var id = nid++; if (id > 1000) throw new Error("too many tiles");
     T[key] = id; TILES[id] = { id: id, n: n, c: c, c2: c2, hard: hard, tier: tier, drop: drop, solid: solid, light: light || 0, kind: kind || "" };
     if (extra) Object.assign(TILES[id], extra); return id;
   }
@@ -391,6 +391,73 @@
     rect(6, 5, 4, 3, "#9fe8ff"); rect(7, 4, 2, 1, "#9fe8ff"); rect(6, 9, 4, 1, "#3a7aa8"); rect(5, 6, 1, 1, "#3ad8ff"); rect(10, 6, 1, 1, "#3ad8ff");
   }, 3, ["120,220,255", 2.0, 0.14], "wall");
   // ====================================================================================================
+  // 7b. BUILDER'S PACK: 50 more building blocks. Each one carries its look (mat: family + palette) for the
+  // Adventure-style block painter in sandbox.js; the 16px art is just the block's two colours.
+  // ====================================================================================================
+  var BPACK = [];
+  function nb(k, n, hard, fam, p, o, light, gl) {
+    var c = /^#/.test(p.b) ? p.b : p.d, id = block(k, n, c, p.l, hard, null, light, gl);
+    TILES[id].mat = Object.assign({ f: fam, p: p }, o || {}); BPACK.push(k); return id;
+  }
+  function pal(l, b, d, g, o) { return { l: l, b: b, d: d, g: g, o: o }; }
+  // woodwork
+  nb("oakplanks", "Dark Oak Planks", 0.8, "boards", pal("#a8744a", "#8a5a34", "#6e4426", "#3a2210", "#1c1006"));
+  nb("birchplanks", "Birch Planks", 0.8, "boards", pal("#f2dfb4", "#e0c896", "#c8ab74", "#8a7048", "#3e3020"));
+  nb("mangroveplanks", "Mangrove Planks", 0.8, "boards", pal("#c4704a", "#a4543a", "#84402c", "#44200f", "#220e06"));
+  nb("pineplanks", "Frostpine Planks", 0.8, "boards", pal("#e6c48e", "#cfa66c", "#b08650", "#5e4224", "#2c1e10"));
+  nb("charredplanks", "Charred Planks", 0.9, "boards", pal("#5a4a44", "#403430", "#2e2422", "#120c0a", "#080404"), { ember: 1 }, 2, ["255,138,61", 1.2, 0.06]);
+  nb("basketweave", "Basketweave Floor", 0.8, "weave", pal("#e8bc7c", "#cf9c5c", "#ad7c42", "#5a3a1a", "#2a1a0a"));
+  nb("bamboo", "Bamboo Block", 0.7, "bamboo", pal("#dce88e", "#b4c460", "#8a9a40", "#4e5a1e", "#262c0c"));
+  nb("wicker", "Wicker Block", 0.6, "wicker", pal("#e8cc8a", "#ccaa64", "#a8864a", "#5a4220", "#2a1e0c"));
+  nb("logsiding", "Log Siding", 0.9, "logs", pal("#b88456", "#966640", "#74482c", "#3a2414", "#1c1008"));
+  nb("woodpanel", "Oak Panelling", 0.8, "vboards", pal("#8a5a36", "#74482a", "#5e3a22", "#2a180c", "#140a04"));
+  nb("timberblock", "Timber Frame Block", 0.8, "timber", pal("#f2e6c8", "#e0d0a8", "#ccb88c", "#5a3a1e", "#2a1a0c"));
+  nb("cedarshakes", "Cedar Shakes", 0.8, "shingle", pal("#d49a64", "#b47a46", "#8e5c32", "#4a2c14", "#241406"));
+  // masonry
+  nb("sandbrick", "Sandstone Brick", 1.1, "brick", pal("#f0d8a0", "#dcc080", "#c0a060", "#7a6034", "#3a2c14"), { rows: 2, bw: 1 });
+  nb("mudbrick", "Mud Brick", 0.9, "brick", pal("#a8825a", "#8e6a44", "#745434", "#3c2a18", "#1c140a"), { rows: 3, bw: 0.67 });
+  nb("limestone", "Limestone Block", 1.2, "brick", pal("#ece6d2", "#d8d0b8", "#c0b69a", "#8a8068", "#3c382c"), { rows: 1, bw: 1 });
+  nb("marble", "White Marble", 1.4, "marble", pal("#fbfbf8", "#ecebe6", "#d4d2ca", "#9a978e", "#4a4840"));
+  nb("blackmarble", "Black Marble", 1.6, "marble", pal("#4a4652", "#34313a", "#24222a", "#e0b84a", "#0c0a10"));
+  nb("granite", "Pink Granite", 1.5, "speckle", pal("#e4b0a4", "#c89488", "#a8766c", "#5a3a36", "#2a1a18"));
+  nb("andesite", "Polished Andesite", 1.3, "polished", pal("#c4c8c8", "#a8acac", "#8e9292", "#5a5e5e", "#262a2a"));
+  nb("slatetile", "Slate Tiles", 1.2, "tiles", pal("#7a8692", "#606c76", "#4a545e", "#22282e", "#101418"));
+  nb("basalttile", "Basalt Tiles", 1.6, "tiles", pal("#6a5a6a", "#524452", "#3e323e", "#1a141a", "#0c080c"));
+  nb("carvedstone", "Carved Stone", 1.3, "carved", pal("#c2c8cc", "#a6aeb2", "#7a8286", "#4c5458", "#22282c"));
+  nb("stonepillar", "Stone Pillar", 1.3, "pillar", pal("#d2d6d8", "#b0b6b8", "#8a9092", "#5a6062", "#262a2c"));
+  nb("mossycobble", "Mossy Cobblestone", 1.2, "cobble", pal("#a4ac9e", "#868e82", "#686f64", "#363c34", "#181c16"), { moss: 1 });
+  nb("frostcobble", "Frost Cobblestone", 1.3, "cobble", pal("#c4e2f2", "#9cc4d8", "#7ea6bc", "#3e6076", "#1a2e3a"));
+  nb("crackedbrick", "Cracked Stone Brick", 1.1, "brick", pal("#b4bcc2", "#98a1a8", "#7d868d", "#4c5459", "#22282c"), { rows: 2, bw: 1, crack: 1 });
+  nb("bonebrick", "Bone Brick", 1.2, "brick", pal("#f2ead2", "#e0d4b4", "#c8b890", "#7a6c50", "#3a3020"), { rows: 2, bw: 0.5 });
+  nb("herringbone", "Herringbone Brick", 1.1, "herring", pal("#d98a64", "#bd6a48", "#9a5034", "#4a2a1e", "#22120a"));
+  // tiles, mosaics and roofs
+  nb("terracotta", "Terracotta", 1.0, "polished", pal("#e89a68", "#cc7a4c", "#ac6038", "#5c2e18", "#2c140a"));
+  nb("tealtile", "Teal Glazed Tile", 1.0, "tiles", pal("#8adcd0", "#4ab4a8", "#2e8a80", "#e8efe6", "#10302c"), { gloss: 1 });
+  nb("ochretile", "Ochre Glazed Tile", 1.0, "tiles", pal("#ffe08a", "#e8b442", "#c08a22", "#f4ecd8", "#3a2808"), { gloss: 1 });
+  nb("bluemosaic", "Blue Mosaic", 1.0, "mosaic", pal("#a8d0ff", "#5a8ae0", "#2a52a8", "#e8e4d8", "#10204a"));
+  nb("swampmosaic", "Swamp Mosaic", 1.0, "mosaic", pal("#c4ec96", "#6ab45a", "#3a7a3a", "#e4e0c4", "#d2a040"));
+  nb("rosemosaic", "Rose Mosaic", 1.0, "mosaic", pal("#ffd0dc", "#ea7a9a", "#b84a6a", "#f2eadc", "#6a2a4a"));
+  nb("claytiles", "Clay Roof Tiles", 0.9, "barrel", pal("#ec9468", "#d2704a", "#a85234", "#5c2a18", "#2c1208"));
+  nb("mossshingles", "Mossy Shingles", 0.9, "shingle", pal("#8ab45a", "#6a9440", "#4e7430", "#24361a", "#10180a"));
+  nb("bogthatch", "Bog Reed Thatch", 0.5, "thatch", pal("#b8b46e", "#94904c", "#747036", "#3c3a1a", "#1c1a0a"));
+  // metal
+  nb("brassblock", "Brass Block", 2.0, "panel", pal("#ffe4a0", "#e0b45a", "#b88a34", "#6a4a14", "#2e1e06"), { rivets: 1 });
+  nb("verdigris", "Verdigris Plate", 2.0, "panel", pal("#a8e0c8", "#6ab49a", "#4a8a74", "#24483a", "#0e2218"), { rivets: 1 });
+  nb("gildedblock", "Gilded Block", 2.0, "panel", pal("#fff2b0", "#f2c84a", "#c8962a", "#7a5410", "#3a2606"), { facets: 1 });
+  nb("steelplate", "Dark Steel Plate", 2.4, "panel", pal("#8a92a0", "#5c6470", "#444a54", "#22262c", "#0c0e12"), { rivets: 1 });
+  nb("corrugated", "Corrugated Iron", 1.8, "corrugated", pal("#c8d0d8", "#a0a8b2", "#747c86", "#3e444c", "#1a1e22"));
+  nb("grate", "Iron Grate", 1.6, "grate", pal("#b4bcc6", "#8a929c", "#5e666e", "#2c3036", "#14161a"));
+  // glass
+  nb("clearglass", "Clear Glass", 0.4, "glass", pal("#ffffff", "rgba(200,232,244,.26)", "#a0c0cc", "#6a7a82", "#2a3236"));
+  nb("purpleglass", "Violet Stained Glass", 0.4, "glass", pal("#ecd8ff", "rgba(150,90,220,.5)", "#6a3aa8", "#2e2a3a", "#14101c"));
+  nb("amberglass", "Amber Stained Glass", 0.4, "glass", pal("#fff0c8", "rgba(240,160,50,.5)", "#b8701a", "#3a2e22", "#1c140a"));
+  nb("frostglass", "Frosted Glass", 0.4, "glass", pal("#ffffff", "rgba(210,236,250,.4)", "#9cc4d8", "#4a6e84", "#1f3646"), { frost: 1 });
+  // lamp blocks
+  nb("sporelamp", "Spore Lamp Block", 1.2, "lamp", pal("#e8fff0", "#6ef0b0", "#3a5a40", "#22302a", "#0c1410"), null, 13, ["110,240,170", 4.2, 0.28]);
+  nb("paperlamp", "Paper Lantern Block", 0.6, "paperlamp", pal("#fff8e0", "#ffd890", "#8a5a32", "#5a3a1e", "#24140a"), null, 12, ["255,214,140", 4.0, 0.26]);
+  nb("moonlamp", "Moonstone Lamp Block", 1.4, "lamp", pal("#ffffff", "#c8d0ff", "#5e6890", "#3e4668", "#161a2c"), null, 14, ["200,210,255", 4.4, 0.3]);
+  nb("fireflylamp", "Firefly Jar Block", 0.8, "lamp", pal("#fffcc8", "#d8e870", "#4a5a2a", "#2a3418", "#10160a"), { flies: 1 }, 11, ["240,250,140", 3.8, 0.24]);
+  // ====================================================================================================
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
@@ -502,6 +569,58 @@
   R("x_shingleblue", "Slate Shingles (4)", { shingleblue: 4 }, { stone: 3, dyeblue: 1 }, { stn: "mason", d: "Blue-grey slate for a roof." });
   R("x_quartzblock", "Quartz Block (2)", { quartzblock: 2 }, { quartz: 3 }, { stn: "mason", d: "Polished white quartz." });
   R("x_quartzpillar", "Quartz Pillar (2)", { quartzpillar: 2 }, { quartz: 3, mortar: 1 }, { stn: "mason", d: "A fluted column." });
+  // builder's pack recipes
+  R("x_nb_oakplanks", "Dark Oak Planks (4)", { oakplanks: 4 }, { planks: 4, charcoal: 1 }, { d: "Planks darkened with charcoal." });
+  R("x_nb_birchplanks", "Birch Planks (4)", { birchplanks: 4 }, { planks: 4, sandpaper: 1 }, { d: "Pale planks sanded smooth." });
+  R("x_nb_mangroveplanks", "Mangrove Planks (4)", { mangroveplanks: 4 }, { wood: 2, mud: 1 }, { d: "Reddish swamp timber." });
+  R("x_nb_pineplanks", "Frostpine Planks (4)", { pineplanks: 4 }, { planks: 4, snow: 1 }, { d: "Golden planks cured in the cold." });
+  R("x_nb_charredplanks", "Charred Planks (4)", { charredplanks: 4 }, { planks: 4, cinder: 1 }, { d: "Burnt black wood that still glows in the cracks." });
+  R("x_nb_basketweave", "Basketweave Floor (4)", { basketweave: 4 }, { planks: 2, fiber: 2 }, { d: "Short boards laid in squares." });
+  R("x_nb_bamboo", "Bamboo Block (4)", { bamboo: 4 }, { fiber: 4, stick: 2 }, { d: "Stalks bound side by side." });
+  R("x_nb_wicker", "Wicker Block (4)", { wicker: 4 }, { fiber: 6 }, { d: "Woven reeds, light and cosy." });
+  R("x_nb_logsiding", "Log Siding (4)", { logsiding: 4 }, { wood: 3 }, { d: "Stacked round logs, cabin style." });
+  R("x_nb_woodpanel", "Oak Panelling (4)", { woodpanel: 4 }, { planks: 3, stick: 1 }, { d: "Dark upright boards." });
+  R("x_nb_timberblock", "Timber Frame Block (4)", { timberblock: 4 }, { planks: 2, mortar: 1 }, { d: "Plaster between dark beams." });
+  R("x_nb_cedarshakes", "Cedar Shakes (4)", { cedarshakes: 4 }, { planks: 3 }, { d: "Wooden roof shingles." });
+  R("x_nb_sandbrick", "Sandstone Brick (4)", { sandbrick: 4 }, { silt: 2, mortar: 1 }, { stn: "mason", d: "Warm desert-coloured brick." });
+  R("x_nb_mudbrick", "Mud Brick (4)", { mudbrick: 4 }, { mud: 4 }, { stn: "mason", d: "Sun-dried swamp brick." });
+  R("x_nb_limestone", "Limestone Block (4)", { limestone: 4 }, { stone: 3, pebble: 2 }, { stn: "mason", d: "Long pale ashlar blocks." });
+  R("x_nb_marble", "White Marble (2)", { marble: 2 }, { stone: 2, quartz: 1 }, { stn: "mason", d: "Veined white stone for grand halls." });
+  R("x_nb_blackmarble", "Black Marble (2)", { blackmarble: 2 }, { obsidian: 1, amber: 1, stone: 1 }, { stn: "mason", d: "Dark stone with golden veins." });
+  R("x_nb_granite", "Pink Granite (4)", { granite: 4 }, { stone: 3, dyered: 1 }, { stn: "mason", d: "Speckled rosy stone." });
+  R("x_nb_andesite", "Polished Andesite (4)", { andesite: 4 }, { stone: 4, sandpaper: 1 }, { stn: "mason", d: "Smooth grey stone." });
+  R("x_nb_slatetile", "Slate Tiles (4)", { slatetile: 4 }, { stone: 4, charcoal: 1 }, { stn: "mason", d: "Square dark tiles for floors." });
+  R("x_nb_basalttile", "Basalt Tiles (4)", { basalttile: 4 }, { basalt: 4 }, { stn: "mason", d: "Square volcanic tiles." });
+  R("x_nb_carvedstone", "Carved Stone (2)", { carvedstone: 2 }, { stone: 2, sandpaper: 1 }, { stn: "mason", d: "Dressed stone with a diamond carving." });
+  R("x_nb_stonepillar", "Stone Pillar (2)", { stonepillar: 2 }, { stone: 3 }, { stn: "mason", d: "A fluted column that grows a capital and base." });
+  R("x_nb_mossycobble", "Mossy Cobblestone (4)", { mossycobble: 4 }, { cobble: 4, leaves: 1 }, { stn: "mason", d: "Old stones with moss creeping over." });
+  R("x_nb_frostcobble", "Frost Cobblestone (4)", { frostcobble: 4 }, { frostrock: 4 }, { stn: "mason", d: "Icy blue rounded stones." });
+  R("x_nb_crackedbrick", "Cracked Stone Brick (4)", { crackedbrick: 4 }, { brick: 4, pebble: 1 }, { stn: "mason", d: "Weathered brick for ruins." });
+  R("x_nb_bonebrick", "Bone Brick (4)", { bonebrick: 4 }, { bone: 4 }, { stn: "mason", d: "Pale brick for spooky builds." });
+  R("x_nb_herringbone", "Herringbone Brick (4)", { herringbone: 4 }, { claybrick: 3 }, { stn: "mason", d: "Bricks laid in a zigzag." });
+  R("x_nb_terracotta", "Terracotta (4)", { terracotta: 4 }, { clay: 3 }, { stn: "furnace", d: "Fired orange clay." });
+  R("x_nb_tealtile", "Teal Glazed Tile (4)", { tealtile: 4 }, { clay: 2, dyegreen: 1 }, { stn: "furnace", d: "Shiny glazed tiles." });
+  R("x_nb_ochretile", "Ochre Glazed Tile (4)", { ochretile: 4 }, { clay: 2, amber: 1 }, { stn: "furnace", d: "Shiny golden tiles." });
+  R("x_nb_bluemosaic", "Blue Mosaic (4)", { bluemosaic: 4 }, { clay: 2, dyeblue: 1 }, { stn: "mason", d: "Little blue tiles." });
+  R("x_nb_swampmosaic", "Swamp Mosaic (4)", { swampmosaic: 4 }, { clay: 2, dyegreen: 1 }, { stn: "mason", d: "Little green and gold tiles." });
+  R("x_nb_rosemosaic", "Rose Mosaic (4)", { rosemosaic: 4 }, { clay: 2, dyered: 1 }, { stn: "mason", d: "Little pink tiles." });
+  R("x_nb_claytiles", "Clay Roof Tiles (4)", { claytiles: 4 }, { claybrick: 2, clay: 1 }, { stn: "mason", d: "Curved tiles for a sunny roof." });
+  R("x_nb_mossshingles", "Mossy Shingles (4)", { mossshingles: 4 }, { planks: 2, leaves: 2 }, { d: "A green roof for a swamp cottage." });
+  R("x_nb_bogthatch", "Bog Reed Thatch (4)", { bogthatch: 4 }, { fiber: 3, peat: 1 }, { d: "Dark reed roofing." });
+  R("x_nb_brassblock", "Brass Block", { brassblock: 1 }, { ironingot: 2, amber: 1 }, { stn: "furnace", d: "A warm riveted metal block." });
+  R("x_nb_verdigris", "Verdigris Plate", { verdigris: 1 }, { ironingot: 2, dyegreen: 1 }, { stn: "furnace", d: "Old green metal plating." });
+  R("x_nb_gildedblock", "Gilded Block", { gildedblock: 1 }, { amber: 3, ironingot: 1 }, { stn: "furnace", d: "A gleaming golden block." });
+  R("x_nb_steelplate", "Dark Steel Plate", { steelplate: 1 }, { ironingot: 3, charcoal: 1 }, { stn: "furnace", d: "Heavy riveted plate." });
+  R("x_nb_corrugated", "Corrugated Iron (4)", { corrugated: 4 }, { ironingot: 2 }, { stn: "furnace", d: "Ridged sheet metal for sheds." });
+  R("x_nb_grate", "Iron Grate (4)", { grate: 4 }, { ironingot: 2 }, { stn: "furnace", d: "A lattice you can see and light through." });
+  R("x_nb_clearglass", "Clear Glass (2)", { clearglass: 2 }, { glass: 2, sandpaper: 1 }, { stn: "furnace", d: "A nearly invisible pane." });
+  R("x_nb_purpleglass", "Violet Stained Glass (2)", { purpleglass: 2 }, { glass: 2, amethyst: 1 }, { stn: "furnace", d: "A purple window pane." });
+  R("x_nb_amberglass", "Amber Stained Glass (2)", { amberglass: 2 }, { glass: 2, amber: 1 }, { stn: "furnace", d: "A golden window pane." });
+  R("x_nb_frostglass", "Frosted Glass (2)", { frostglass: 2 }, { glass: 2, snow: 1 }, { stn: "furnace", d: "A misty pane for privacy." });
+  R("x_nb_sporelamp", "Spore Lamp Block", { sporelamp: 1 }, { spore: 3, glass: 1 }, { stn: "furnace", d: "A minty glowing block." });
+  R("x_nb_paperlamp", "Paper Lantern Block", { paperlamp: 1 }, { cloth: 2, candle: 1, stick: 2 }, { stn: "loom", d: "A paper screen lit from inside." });
+  R("x_nb_moonlamp", "Moonstone Lamp Block", { moonlamp: 1 }, { moonstone: 2, glass: 1 }, { stn: "furnace", d: "Cool silver light." });
+  R("x_nb_fireflylamp", "Firefly Jar Block", { fireflylamp: 1 }, { firefly: 2, glass: 1 }, { d: "Fireflies in a glass block." });
   R("x_obsbrick", "Obsidian Brick (4)", { obsidianbrick: 4 }, { obsidian: 4 }, { stn: "mason", bl: 3, d: "Glossy black bricks. Needs a Cinder Forge Workbench." });
   R("x_permabrick", "Permafrost Brick (4)", { permabrick: 4 }, { permafrost: 4 }, { stn: "mason", d: "Frozen-hard blue bricks." });
   R("x_moonbrick", "Moonstone Brick (4)", { moonbrick: 4 }, { moonstone: 2, stone: 4 }, { stn: "mason", bl: 3, d: "Pale bricks that glow faintly at night. Needs a Cinder Forge Workbench." });
@@ -658,8 +777,9 @@
     }
   }
   var origGen = SW.gen;
-  SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
+  if (SW.post) SW.post.push(function (w) { populate(w); placeTreasure(w); });   // per generated map (see ENDLESS WORLD in sandbox-world.js)
+  else SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
 
-  var api = { NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var api = { BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

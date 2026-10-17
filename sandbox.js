@@ -401,13 +401,28 @@
   var ICO = {}, ATLAS, bannerQ = [], bannerBusy = false, guide = null, guideT = 0, trailKey = "", PCV = [], heldAmt = 0, heldPh = 0;
 
   // ---------- SAVE / LOAD ----------
+  function widenSave(o, ext, cw) {   // a save from the 2160-column world: shift every position into the middle of the endless world
+    var n = Object.assign({}, o), sx = function (x) { return +x + ext; }, six = function (i) { i = +i; var y = Math.floor(i / cw), x = i - y * cw; return y * W + x + ext; };
+    var lists = function (str) { return typeof str === "string" && str ? str.split(",").map(function (q) { var a = q.split(":"); return a.length === 2 && /^\d+$/.test(a[0]) ? six(a[0]) + ":" + a[1] : null; }).filter(Boolean).join(",") : ""; };
+    n.e = lists(o.e); n.we = lists(o.we);
+    if (typeof o.ex === "string" && o.ex) { var a0 = new Uint8Array(cw * H), a1 = new Uint8Array(W * H); unrle(o.ex, a0); for (var y = 0; y < H; y++) a1.set(a0.subarray(y * cw, (y + 1) * cw), y * W + ext); n.ex = rle(a1); }
+    ["stain", "wstain"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { if (/^\d+$/.test(q)) m[six(q)] = o[k][q]; }); n[k] = m; } });
+    ["chests", "farm", "saps", "gates", "traps", "stands"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { var a = q.split(","); if (a.length === 2) m[sx(a[0]) + "," + a[1]] = o[k][q]; }); n[k] = m; } });
+    if (Array.isArray(o.wp)) n.wp = o.wp.map(function (w) { return w && typeof w === "object" ? Object.assign({}, w, { x: sx(w.x) }) : w; });
+    if (Array.isArray(o.pets)) n.pets = o.pets.map(function (q) { return q && typeof q === "object" ? Object.assign({}, q, { x: sx(q.x), hx: q.hx !== undefined ? sx(q.hx) : q.hx }) : q; });
+    if (o.p && typeof o.p === "object") n.p = Object.assign({}, o.p, { x: sx(o.p.x) });
+    if (o.bed && typeof o.bed === "object") n.bed = Object.assign({}, o.bed, { x: sx(o.bed.x) });
+    n.wv = 8; n.genL = 0; n.genR = 0; return n;
+  }
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, whut: {}, wloot: {}, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
-    var d = fresh(o.seed | 0 || 1);
+    if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
+    var gLR = o.wv === SW.WORLDVER ? [clamp(Math.floor(+o.genL) || 0, 0, 99), clamp(Math.floor(+o.genR) || 0, 0, 99)] : [0, 0];
+    var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
     d.we = typeof o.we === "string" && o.wv === SW.WORLDVER ? o.we : "";
@@ -492,12 +507,14 @@
     return d;
   }
   function build(state) {
-    world = SW.gen(state.seed); tiles = world.t; liftStructs(tiles, world.walls); orig = tiles.slice(); edits = {};
+    world = SW.gen(state.seed); PICT = null; MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
+    if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
+    tiles = world.t; liftStructs(tiles, world.walls); orig = tiles.slice(); edits = {};
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
     smask = null;   // buildings are pictures now (see BUILDING PICTURES), so nothing in the grid is scenery
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
     ex = new Uint8Array(W * H); unrle(state.ex, ex);
-    walls = world.walls ? world.walls.slice() : new Uint8Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
+    walls = world.walls ? world.walls.slice() : new Uint16Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
@@ -759,8 +776,9 @@
     for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i])) { col[x] = y; return; } }   // generated buildings are scenery: sky light passes them
     col[x] = H;
   }
+  var editN = 0;
   function setT(x, y, id) {
-    mpTileEdit(x, y, id); var i = y * W + x; tiles[i] = id;
+    editN++; mpTileEdit(x, y, id); var i = y * W + x; tiles[i] = id;
     if (S.stain && S.stain[i] !== undefined && !STAINABLE[id]) delete S.stain[i];   // broken or replaced: the stain goes with it (an opening door keeps its stain)
     if (id === orig[i]) delete edits[i]; else edits[i] = id;
     recalc(x);
@@ -4916,7 +4934,8 @@
   function titleTick(dt, now) {
     if (!panelOpen && !menuOpen && $("sbxMPV").hidden) {
       var halfW = vw / 2 / ts, halfH = vh / 2 / ts;
-      cam.x += TC.dir * 1.25 * dt; if (cam.x > W - halfW - 4) TC.dir = -1; else if (cam.x < halfW + 4) TC.dir = 1;
+      var lo = (world.gx0 || 0) + halfW + 4, hi = (world.gx1 !== undefined ? world.gx1 : W - 1) - halfW - 4;   // stay over land that has been made
+      cam.x += TC.dir * 1.25 * dt; if (cam.x > hi) TC.dir = -1; else if (cam.x < lo) TC.dir = 1;
       cam.y += (titleCamTarget() - cam.y) * Math.min(1, dt * 0.7);
       cam.x = clamp(cam.x, halfW, W - halfW); cam.y = clamp(cam.y, halfH, H - halfH + 2);
     }
@@ -4961,6 +4980,26 @@
     a.setAttribute("aria-label", "Main menu"); a.title = "Main menu (Esc)";
     a.addEventListener("click", function (e) { if (MP.on || MP.ws) return; e.preventDefault(); openTitle(); });
   })();
+  // ---------- ENDLESS WORLD ----------
+  // Past Frostfen and Ember Bog the land keeps going: random biomes in segments (sandbox-world.js genChunk). A new segment is made when you
+  // come within GROW_AHEAD columns of the edge of the land made so far, long before you can see it. S.genL / S.genR count the segments made
+  // on each side, so a reload makes exactly the same land again under your edits.
+  var GROW_AHEAD = 420;
+  function growWorld(force) {
+    if (!world || !world.lay || !SW.genChunk || (cave && !force)) return false;
+    var sd = p.x < world.gx0 + GROW_AHEAD ? -1 : p.x > world.gx1 - GROW_AHEAD ? 1 : 0; if (!sd) return false;
+    var r = SW.genChunk(world, sd); if (!r) return false;
+    liftStructs(tiles, world.walls, r.structs);
+    var x, y, i;
+    for (y = 0; y < H; y++) for (x = r.x0; x <= r.x1; x++) { i = y * W + x; orig[i] = tiles[i]; walls[i] = worigW[i] = world.walls[i]; }
+    Object.keys(edits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { tiles[ii] = edits[k]; if (edits[k] === orig[ii]) delete edits[k]; } });   // anything already changed there (e.g. by a friend) stays changed
+    Object.keys(wedits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { walls[ii] = wedits[k]; if (wedits[k] === worigW[ii]) delete wedits[k]; } });
+    for (x = Math.max(0, r.x0 - 1); x <= Math.min(W - 1, r.x1 + 1); x++) recalc(x);
+    S.genL = world.done["-1"]; S.genR = world.done["1"]; M.img = null; MAPB = null;
+    return true;
+  }
+  var growT = 0;
+  function tickGrow(dt) { growT -= dt; if (growT > 0) return; growT = 1; growWorld(); }
   // ---------- CHESTS ----------
   // S.chests["x,y"] = { itemId: count }. A chest holds up to CHEST_KINDS kinds of item. Tap it or press F nearby to open the Chest tab. A chest must be empty before you can pick it up.
   var CHEST_KINDS = 30, chestKey = "";
@@ -5513,7 +5552,7 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickGrow(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += 22 * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
@@ -5531,18 +5570,26 @@
 
   // ---------- LIGHT ----------
   var LG = null, OP = null, LC = null, LCX = null, LID = null;
+  function glowPush(td, i, j, G) {   // GLOWS: solid glowing blocks (ore, crystal, lamp blocks) used to stack into big fuzzy blobs; they now get a tight halo, and a cluster shares one
+    if (td.solid) {
+      var lamp = /lamp/.test(td.kind || "");
+      if (!lamp && ((i + j) & 1)) return;   // every other cell of an ore vein
+      G[3] = Math.min(G[3], lamp ? 2.6 : 1.5); G[4] = G[4] * (lamp ? 0.7 : 0.55);
+    }
+    glows.push(G);
+  }
   // ---------- BUILDING PICTURES ----------
   // The buildings you can enter are not blocks in the world. When a world is built, each one's blocks and back walls are lifted out of the tile grid
   // into a picture (s.pic: its rectangle, tile ids and wall ids), and the ground around it is left as plain land. The picture is painted once
   // (with the same art as real blocks, see drawCell) into a small cached canvas, re-painted only when the zoom changes, and drawn behind
   // everything you build, so you walk past in front of it. Its lamps still glow and light up the dark. A building is entered at its door (structNear).
   var PIC_MAX = 10, picUse = 0, PICT = null;   // PICT: building tile per world cell, for the maps
-  function liftStructs(t, wl) {   // world gen output -> pictures; the cells become air with no back wall
-    PICT = new Uint16Array(W * H);
-    (world.structs || []).forEach(function (q) {
+  function liftStructs(t, wl, list) {   // world gen output -> pictures; the cells become air with no back wall
+    if (!PICT || PICT.length !== W * H) PICT = new Uint16Array(W * H);
+    (list || world.structs || []).forEach(function (q) {
       var x0 = q.mx0 !== undefined ? q.mx0 : q.x0 - 1, x1 = q.mx0 !== undefined ? q.mx1 : q.x1 + 1, y0 = q.mx0 !== undefined ? q.my0 : q.gy - q.bh - 7, y1 = q.gy - 1;
       x0 = clamp(x0, 0, W - 1); x1 = clamp(x1, 0, W - 1); y0 = clamp(y0, 0, H - 1); y1 = clamp(y1, 0, H - 1);
-      var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint8Array(w * h), lt: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
+      var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint16Array(w * h), lt: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
       for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
         var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
@@ -5602,7 +5649,7 @@
         g.fillStyle = "#ffc24a"; g.fillRect(sx3 + ts * (0.1 + 0.12 * Math.sin(now / 420 + i)), sy + ts * 0.18, ts * 0.5, ts * 0.2); g.fillRect(sx3 + ts * (0.45 + 0.12 * Math.cos(now / 380 + j)), sy + ts * 0.58, ts * 0.4, ts * 0.18);
         g.fillStyle = "rgba(90,20,6,.5)"; g.fillRect(sx3 + ts * ((i * 37 % 7) / 9), sy + ts * 0.82, ts * 0.22, ts * 0.12);
         if (get(i, j - 1) !== T.LAVA) { g.fillStyle = "#ffe9a0"; g.fillRect(sx3, sy, ts, Math.max(2, CELL.edge)); if (!reduce && ((i * 13 + (now / 600 | 0)) % 9) === 0) { g.fillStyle = "#fff2b0"; g.fillRect(sx3 + ts * 0.4, sy - ts * 0.25 - ((now / 20) % 6), 3, 3); } }
-        if (!lowq || !(i & 1)) glows.push([sx3 + ts / 2, sy + ts / 2, "255,110,30", 3.6, lowq ? 0.4 : 0.24]); return;
+        if (get(i, j - 1) !== T.LAVA && !(i & 1)) glows.push([sx3 + ts / 2, sy, "255,110,30", 3.2, lowq ? 0.3 : 0.2]); return;   // one halo per pair of surface cells (a whole pool used to stack into a white-out)
       }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (!td.solid) {
@@ -5612,7 +5659,7 @@
         else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower" || td.sway) { var half = Math.round(ts / 2), off = Math.round(CELL.sw * ts * 0.06 * (1 + (i % 3) * 0.3)); smDraw(g, v, id, 0, 8, 16, 8, sx3, sy + half, ts, ts - half); smDraw(g, v, id, 0, 0, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
         else if (td.kind === "door" || td.kind === "ladder" || td.kind === "fence") matWood(g, td, i, j, sx3, sy);
-        else if (SMOP[id]) g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
+        else if (SMOP[id]) sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, 0, 16, 16, sx3, sy, ts, ts);
         else smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts);
       } else if (td.kind === "leaves") {
         var lo = function (a, b) { return !TILES[get(a, b)].solid; };
@@ -5624,11 +5671,11 @@
         if (id === T.LOG) { natLog(g, i, j, sx3, sy); }
         else if (SMGEM[id]) { natTile(g, orePal(td), i, j, sx3, sy); smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }
         else if (td.kind === "door") matWood(g, td, i, j, sx3, sy);
-        else if (MATF[id]) { if (MATF[id].f === "glass") { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
-        else g.drawImage(ATLAS, v * 16, id * 16, 16, 16, sx3, sy, ts, ts);
+        else if (MATF[id]) { if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
+        else sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, 0, 16, 16, sx3, sy, ts, ts);
         // exposed faces get a lit rim on top and a shadow on the sides and bottom, so caves and cliffs read clearly
         var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
-        if (td.kind === "door" || id === T.LOG || SMGEM[id] || (MATF[id] && MATF[id].f === "glass")) { /* the door art has its own frame and shading */ }
+        if (td.kind === "door" || id === T.LOG || SMGEM[id] || (MATF[id] && MATF[id].see)) { /* the door art has its own frame and shading */ }
         else if (td.kind === "leaves") {
           if (nT) { g.fillStyle = "rgba(190,255,150,.22)"; g.fillRect(sx3, sy, ts, CELL.edge); }
           if (nB) { g.fillStyle = "rgba(0,20,5,.32)"; g.fillRect(sx3, sy + ts - CELL.edge * 1.5, ts, CELL.edge * 1.5); }
@@ -5645,25 +5692,60 @@
           }
         }
       }
-      if (td.light >= 3 && td.solid === false || td.light >= 6) glows.push([sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
+      if (td.light >= 3 && td.solid === false || td.light >= 6) glowPush(td, i, j, [sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
       if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
   }
+  // LIGHT: two grids over the view. LG is all light (sky + lamps), WG is lamp light only (it warms what it touches).
+  // Levels run 0..60 (4 steps per old level) and light also spreads diagonally, so it falls off in soft circles instead of diamonds.
+  var WG = null, LQ = 4, WC = null, WCX = null, WID = null, LB = null, LBX = null, BLUROK = null;
+  function softStretch(g, src, w, h, dx, dy, op) {   // a 1-pixel-per-tile light map, blurred a little and stretched over the view so light fades instead of stepping
+    if (BLUROK === null) { try { var tc = document.createElement("canvas").getContext("2d"); tc.filter = "blur(1px)"; BLUROK = tc.filter === "blur(1px)"; } catch (e) { BLUROK = false; } }
+    g.globalCompositeOperation = op;
+    if (BLUROK && !lowq) {
+      var U = 4; if (!LB) { LB = document.createElement("canvas"); LBX = LB.getContext("2d"); }
+      if (LB.width !== w * U || LB.height !== h * U) { LB.width = w * U; LB.height = h * U; }
+      LBX.clearRect(0, 0, LB.width, LB.height); LBX.imageSmoothingEnabled = true; LBX.filter = "blur(" + (U * 0.45) + "px)"; LBX.drawImage(src, 0, 0, w, h, 0, 0, w * U, h * U); LBX.filter = "none";
+      g.drawImage(LB, 0, 0, w * U, h * U, dx, dy, w * ts, h * ts);
+    } else g.drawImage(src, 0, 0, w, h, dx, dy, w * ts, h * ts);
+    g.globalCompositeOperation = "source-over";
+  }
+  var LKEY = "", LPAR = 0;
   function lightGrid(gx0, gy0, gw, gh, day, pcx, pcy) {
-    var n = gw * gh, skyL = Math.round(day * 15), i, j;
-    if (!LG || LG.length < n) { LG = new Uint8Array(n); OP = new Uint8Array(n); }
+    var n = gw * gh, skyL = Math.round(day * 15 * LQ), i, j, c;
+    // PERF (phones): the light only changes when the view moves, the time of day steps, or something changes; reuse it on alternate frames
+    var key = gx0 + "," + gy0 + "," + gw + "," + gh + "," + skyL + "," + pcx + "," + pcy + "," + editN;
+    if (lowq && LG && LG.length >= n && key === LKEY && (LPAR = 1 - LPAR)) return;
+    LKEY = key; var anyLamp = false;
+    if (!LG || LG.length < n) { LG = new Uint8Array(n); OP = new Uint8Array(n); WG = new Uint8Array(n); }
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
-      var X = gx0 + i, Y = gy0 + j, id = get(X, Y), L = TILES[id].light, c = j * gw + i;
+      var X = gx0 + i, Y = gy0 + j, id = get(X, Y), L = TILES[id].light * LQ; c = j * gw + i;
+      WG[c] = L; if (L) anyLamp = true;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
-      LG[c] = L; OP[c] = TILES[id].solid && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? 3 : 1;
+      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? 3 * LQ : LQ;
     }
-    var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], fx("night") ? 15 : hasCharm("glow") ? 15 : 10);
-    if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8) LG[nc] = 8; }   // Night Eye: everything near you is dimly visible
-    (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) LG[lj * gw + li] = Math.max(LG[lj * gw + li], l[2]); }); });   // building lamps
+    var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") ? 15 : 10) * LQ);
+    if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8 * LQ) LG[nc] = 8 * LQ; }   // Night Eye: everything near you is dimly visible
+    (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li; LG[k2] = Math.max(LG[k2], l[2] * LQ); WG[k2] = Math.max(WG[k2], l[2] * LQ); } }); });   // building lamps
+    spread(LG, gw, gh); if (anyLamp) spread(WG, gw, gh);
+  }
+  function spread(G, gw, gh) {   // two sweeps each way; a diagonal step costs about 1.4 straight steps
+    var i, j, a, v, o, od;
     for (var r = 0; r < 2; r++) {
-      for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) { var a = j * gw + i, v = LG[a]; if (i > 0 && LG[a - 1] - OP[a] > v) v = LG[a - 1] - OP[a]; if (j > 0 && LG[a - gw] - OP[a] > v) v = LG[a - gw] - OP[a]; LG[a] = v; }
-      for (j = gh - 1; j >= 0; j--) for (i = gw - 1; i >= 0; i--) { var b = j * gw + i, w2 = LG[b]; if (i < gw - 1 && LG[b + 1] - OP[b] > w2) w2 = LG[b + 1] - OP[b]; if (j < gh - 1 && LG[b + gw] - OP[b] > w2) w2 = LG[b + gw] - OP[b]; LG[b] = w2; }
+      for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
+        a = j * gw + i; v = G[a]; o = OP[a]; od = (o * 1.41) | 0;
+        if (i > 0 && G[a - 1] - o > v) v = G[a - 1] - o;
+        if (j > 0) { if (G[a - gw] - o > v) v = G[a - gw] - o; if (i > 0 && G[a - gw - 1] - od > v) v = G[a - gw - 1] - od; if (i < gw - 1 && G[a - gw + 1] - od > v) v = G[a - gw + 1] - od; }
+        G[a] = v;
+      }
+      for (j = gh - 1; j >= 0; j--) for (i = gw - 1; i >= 0; i--) {
+        a = j * gw + i; v = G[a]; o = OP[a]; od = (o * 1.41) | 0;
+        if (i < gw - 1 && G[a + 1] - o > v) v = G[a + 1] - o;
+        if (j < gh - 1) { if (G[a + gw] - o > v) v = G[a + gw] - o; if (i < gw - 1 && G[a + gw + 1] - od > v) v = G[a + gw + 1] - od; if (i > 0 && G[a + gw - 1] - od > v) v = G[a + gw - 1] - od; }
+        G[a] = v;
+      }
     }
   }
+
 
   // ---------- RENDER ----------
   var STARS = []; for (var si = 0; si < 90; si++) STARS.push({ x: Math.random(), y: Math.random() * 0.72, s: Math.random() * 1.7 + 0.5, p: Math.random() * 6, b: Math.random() < 0.12 });
@@ -5673,7 +5755,10 @@
   var HILLS = [[[28, 98, 108], [18, 72, 86], [10, 50, 62]], [[150, 62, 40], [108, 44, 30], [66, 28, 22]], [[176, 214, 240], [130, 176, 214], [92, 138, 178]]];
   var VIG = null, MOTE = []; for (var mi = 0; mi < 46; mi++) MOTE.push({ u: Math.random(), v: Math.random(), w: Math.random(), s: 0.5 + Math.random() });
   var smoothW = function (a, b, x) { var k = clamp((x - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
-  function biomeMix(x) { var we = smoothW(SW.B_EMBER - 12, SW.B_EMBER + 12, x), wf = 1 - smoothW(SW.B_FROST - 12, SW.B_FROST + 12, x); return [1 - we - wf, we, wf]; }   // [swamp, ember, frost] weights
+  function biomeMix(x) {   // [swamp, ember, frost] weights around column x (the land decides, so it works for every new segment too)
+    var c = [0, 0, 0], n = 0, x0 = Math.floor(x); for (var k = -24; k <= 24; k += 2) { var xx = clamp(x0 + k, 0, W - 1); c[world && world.bio ? world.bio[xx] : 0] += 1; n++; }
+    return [c[0] / n, c[1] / n, c[2] / n];
+  }   // [swamp, ember, frost] weights
   function mixArr(arrs, w) { var o = [0, 0, 0]; for (var i = 0; i < 3; i++) for (var c = 0; c < 3; c++) o[c] += arrs[i][c] * w[i]; return o; }
   function buildVignette() {
     VIG = document.createElement("canvas"); VIG.width = Math.max(2, Math.round(vw / 2)); VIG.height = Math.max(2, Math.round(vh / 2));
@@ -5698,6 +5783,8 @@
   }
   // ===== SMOOTH SPRITES: every pixel sprite (plants, mushrooms, torches, furniture, ore gems ...) is re-drawn once at 4x with rounded "melted" edges and a dark outline,
   // like the Adventure art. SMATLAS mirrors ATLAS at 4x size (cell = 64px). Opaque blocks (bricks, planks ...) stay crisp pixel art but get the same edge shading as the ground.
+  function smX(id) { return Math.floor(id / 192) * 256; }   // the big atlas wraps into columns of 192 blocks (canvases cannot be taller than 16k px)
+  function smY(id) { return (id % 192) * 64; }
   var SMATLAS = null, SMOP = {}, SMGEM = {}, SMOK = false, SMS = 4;
   var SMCRISP = true;   // true: plants, ladders, furniture and ore gems are drawn as crisp pixel art (same as the hotbar). false: the old blurred, melted, outlined look
   function gooCanvas(src, sx, sy, sw, sh, S, pad, gemTd) {   // returns a (sw*S + pad*2) square canvas holding the smoothed, outlined version of a sprite cell
@@ -5724,28 +5811,38 @@
     for (x = 0; x < 16; x++) { if (d[(x) * 4 + 3] < 250 || d[(15 * 16 + x) * 4 + 3] < 250 || d[(x * 16) * 4 + 3] < 250 || d[(x * 16 + 15) * 4 + 3] < 250) { op = false; break; } }
     SMOP[td.id] = op; var gem = td.kind === "ore" && Math.abs(hexRgb(td.c)[0] - hexRgb(td.c2)[0]) + Math.abs(hexRgb(td.c)[1] - hexRgb(td.c2)[1]) + Math.abs(hexRgb(td.c)[2] - hexRgb(td.c2)[2]) > 90; SMGEM[td.id] = gem;
     var g = SMATLAS.getContext("2d");
-    g.clearRect(0, td.id * 64, 256, 64);
+    g.clearRect(smX(td.id), smY(td.id), 256, 64);
     if (op && !gem) return;
     if (SMCRISP) {
       for (var v2 = 0; v2 < 4; v2++) {
-        if (!gem) { g.drawImage(ATLAS, v2 * 16, td.id * 16, 16, 16, v2 * 64, td.id * 64, 16, 16); continue; }
+        if (!gem) { g.drawImage(ATLAS, v2 * 16, td.id * 16, 16, 16, smX(td.id) + v2 * 64, smY(td.id), 16, 16); continue; }
         var gc = document.createElement("canvas"); gc.width = gc.height = 16; var gx = gc.getContext("2d", { willReadFrequently: true }); gx.drawImage(ATLAS, v2 * 16, td.id * 16, 16, 16, 0, 0, 16, 16);
         var gi = gx.getImageData(0, 0, 16, 16), gd = gi.data, gc2 = hexRgb(td.c2);   // ore: keep only the gem pixels, the rock behind is the ground
         for (var gq = 0; gq < gd.length; gq += 4) { var gr = gd[gq], gg2 = gd[gq + 1], gb = gd[gq + 2], gdist = Math.abs(gr - gc2[0]) + Math.abs(gg2 - gc2[1]) + Math.abs(gb - gc2[2]), gsat = Math.max(gr, gg2, gb) - Math.min(gr, gg2, gb), glum = 0.299 * gr + 0.587 * gg2 + 0.114 * gb; if (!(gdist < 150 || gsat > 70 || glum > 215)) gd[gq + 3] = 0; }
-        gx.putImageData(gi, 0, 0); g.drawImage(gc, v2 * 64, td.id * 64);
+        gx.putImageData(gi, 0, 0); g.drawImage(gc, smX(td.id) + v2 * 64, smY(td.id));
       }
       return;
     }
-    for (var v = 0; v < 4; v++) { var c = gooCanvas(ATLAS, v * 16, td.id * 16, 16, 16, 4, 0, gem ? td : null); g.drawImage(c, v * 64, td.id * 64); }
+    for (var v = 0; v < 4; v++) { var c = gooCanvas(ATLAS, v * 16, td.id * 16, 16, 16, 4, 0, gem ? td : null); g.drawImage(c, smX(td.id) + v * 64, smY(td.id)); }
   }
   function buildSmooth() {
     try { var tc = document.createElement("canvas").getContext("2d"); tc.filter = "blur(1px)"; SMOK = tc.filter === "blur(1px)"; } catch (e) { SMOK = false; }
-    SMATLAS = document.createElement("canvas"); SMATLAS.width = 256; SMATLAS.height = 64 * TILES.length;
+    SMATLAS = document.createElement("canvas"); SMATLAS.width = 256 * Math.ceil(TILES.length / 192); SMATLAS.height = 64 * Math.min(192, TILES.length);
     TILES.forEach(function (td) { if (td.id !== T.AIR && !NATC[td.id] && td.kind !== "leaves" && td.kind !== "water" && td.kind !== "lava") smTile(td); });
   }
+  var SHP = { k: 0 };
+  function sharpCell(src, cx, cy, key) {   // a 16x16 cell enlarged k times with no blending (k = smallest whole number that covers the tile on screen)
+    var k = Math.max(1, Math.ceil(ts * dpr / 16)); if (SHP.k !== k) SHP = { k: k };
+    var c = SHP[key]; if (c) return c;
+    c = SHP[key] = document.createElement("canvas"); c.width = c.height = 16 * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(src, cx, cy, 16, 16, 0, 0, 16 * k, 16 * k); return c;
+  }
+  function sharpDraw(g, src, cx, cy, key, sx0, sy0, sw, sh, dx, dy, dw, dh) {
+    var c = sharpCell(src, cx, cy, key), k = SHP.k; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high";
+    g.drawImage(c, sx0 * k, sy0 * k, sw * k, sh * k, dx, dy, dw, dh); g.imageSmoothingEnabled = false; g.imageSmoothingQuality = "low";
+  }
   function smDraw(g, v, id, sx0, sy0, sw, sh, dx, dy, dw, dh) {
-    if (SMCRISP) { g.imageSmoothingEnabled = false; g.drawImage(SMATLAS, v * 64 + sx0, id * 64 + sy0, sw, sh, dx, dy, dw, dh); return; }
-    g.imageSmoothingEnabled = true; g.drawImage(SMATLAS, v * 64 + sx0 * 4, id * 64 + sy0 * 4, sw * 4, sh * 4, dx, dy, dw, dh); g.imageSmoothingEnabled = false;
+    if (SMCRISP) { sharpDraw(g, SMATLAS, smX(id) + v * 64, smY(id), "s" + id + "_" + v, sx0, sy0, sw, sh, dx, dy, dw, dh); return; }
+    g.imageSmoothingEnabled = true; g.drawImage(SMATLAS, smX(id) + v * 64 + sx0 * 4, smY(id) + sy0 * 4, sw * 4, sh * 4, dx, dy, dw, dh); g.imageSmoothingEnabled = false;
   }
   function orePal(td) { var c = td.c; return c === "#3b3036" ? T.BASALT : c === "#5d7c93" ? T.FROSTROCK : T.STONE; }
   // ===== ADVENTURE LOOK: natural terrain is drawn as smooth shaded shapes (plum soil gradient, round pebbles, minty grass lip, blobby leaves) instead of pixel tiles =====
@@ -5831,7 +5928,7 @@
   // Each look is painted once per (block, pattern variant, outline sides, tile size) into a small cached canvas and stamped, so it costs
   // the same per frame as the old pixel art. Wood stains reuse the same shapes with the stain's colours.
   var MATF = {}, MATC = { ts: 0 };
-  function defMat(name, fam, pal, o) { var id = T[name]; if (id === undefined) return; MATF[id] = Object.assign({ f: fam, p: pal }, o || {}); }
+  function defMat(name, fam, pal, o) { var id = T[name]; if (id === undefined) return; MATF[id] = Object.assign({ f: fam, p: pal }, o || {}); if (fam === "glass" || fam === "grate") MATF[id].see = TILES[id].see = 1; }
   // palettes: l light, b base, d dark, g seam / gap / mortar, o outline
   defMat("PLANKS", "boards", { l: "#dca36a", b: "#c58a52", d: "#a46c3c", g: "#5a3418", o: "#2c180a" });
   defMat("THATCH", "thatch", { l: "#ecd28c", b: "#d5b064", d: "#b38a44", g: "#6e5226", o: "#33240e" });
@@ -6022,7 +6119,126 @@
         g.fillStyle = "rgba(255,255,255,.35)"; if (mask & 1) g.fillRect(mask & 4 ? fr2 : 0, fr2, S, 1); if (mask & 4) g.fillRect(fr2, mask & 1 ? fr2 : 0, 1, S);
         break;
       }
+      case "weave": {   // basketweave: four squares of three strips, each square turned the other way
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S); var wg = Math.max(1, R(S / 32));
+        for (k = 0; k < 4; k++) {
+          var wx = (k & 1) * S / 2, wy = (k >> 1) * S / 2, hor = (((k & 1) ^ (k >> 1)) === 0) !== !!(v & 1);
+          for (c = 0; c < 3; c++) {
+            if (hor) { var sy2 = R(wy + c * S / 6); g.fillStyle = mvgrad(g, sy2, sy2 + S / 6, P.l, P.b, P.d); g.fillRect(R(wx) + wg, sy2 + wg, R(S / 2) - wg * 2, R(S / 6) - wg); }
+            else { var sx2 = R(wx + c * S / 6); g.fillStyle = mhgrad(g, sx2, sx2 + S / 6, P.l, P.b, P.d); g.fillRect(sx2 + wg, R(wy) + wg, R(S / 6) - wg, R(S / 2) - wg * 2); }
+          }
+        }
+        break;
+      }
+      case "bamboo": {   // three upright stalks with knotted joints
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S);
+        for (c = 0; c < 3; c++) {
+          var bx2 = R(c * S / 3), bw3 = R((c + 1) * S / 3) - bx2; g.fillStyle = mhgrad(g, bx2, bx2 + bw3, P.d, P.l, P.d); g.fillRect(bx2 + 1, 0, bw3 - 2, S);
+          g.fillStyle = "rgba(255,255,255,.28)"; g.fillRect(bx2 + R(bw3 * 0.3), 0, Math.max(1, R(S / 40)), S);
+          var ny = R(S * (0.2 + mhash(v, c, 41) * 0.6)); g.fillStyle = P.g; g.fillRect(bx2, ny, bw3, Math.max(1, R(S / 22))); g.fillStyle = P.l; g.fillRect(bx2 + 1, ny + Math.max(1, R(S / 22)), bw3 - 2, Math.max(1, R(S / 30)));
+          g.fillStyle = P.d; g.fillRect(bx2, ny - Math.max(1, R(S / 30)), bw3, Math.max(1, R(S / 30)));
+        }
+        break;
+      }
+      case "wicker": {   // strands woven over and under upright stakes
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S);
+        for (k = 0; k < 4; k++) for (c = -1; c < 4; c++) {
+          var ex2 = (c + ((k + v) & 1) * 0.5) * S / 4 + S / 8, ey2 = k * S / 4 + S / 8;
+          g.fillStyle = mvgrad(g, ey2 - S / 8, ey2 + S / 8, P.l, P.b, P.d); g.beginPath(); g.ellipse(ex2, ey2, S / 7.2, S / 9.5, 0, 0, 6.2832); g.fill();
+          g.fillStyle = "rgba(255,255,255,.22)"; g.fillRect(R(ex2 - S / 16), R(ey2 - S / 14), R(S / 8), 1);
+        }
+        break;
+      }
+      case "marble": case "speckle": case "polished": {   // a smooth stone: marble gets veins, granite gets flecks
+        g.fillStyle = mvgrad(g, 0, S, P.l, P.b, F.f === "polished" ? P.d : undefined); g.fillRect(0, 0, S, S);
+        if (F.f === "marble") {
+          g.save(); g.lineCap = "round";
+          for (k = 0; k < 2; k++) {
+            var ax = S * mhash(v, k, 51), az = S * mhash(v, k, 52); g.strokeStyle = P.g; g.globalAlpha = k ? 0.32 : 0.5; g.lineWidth = Math.max(1, S / (k ? 40 : 26));
+            g.beginPath(); g.moveTo(ax, 0); g.bezierCurveTo(ax + S * 0.4, S * 0.3, az - S * 0.4, S * 0.6, az, S); g.stroke();
+            g.lineWidth = Math.max(1, S / 60); g.globalAlpha = 0.25; g.beginPath(); g.moveTo(ax + S * 0.18, S * 0.22); g.quadraticCurveTo(S * 0.9, S * 0.4 + k * S * 0.2, S, S * (0.3 + k * 0.4)); g.stroke();
+          }
+          g.restore();
+        } else {
+          var nd = F.f === "speckle" ? 34 : 10;
+          for (k = 0; k < nd; k++) { var px = R(mhash(v, k, 53) * (S - 2)), py = R(mhash(v, k, 54) * (S - 2)), pz = Math.max(1, R(S / (mhash(v, k, 55) > 0.7 ? 18 : 30))); g.fillStyle = [P.d, P.g, P.l, P.o][k & 3]; g.globalAlpha = F.f === "speckle" ? 0.75 : 0.3; g.fillRect(px, py, pz, pz); }
+          g.globalAlpha = 1;
+        }
+        g.fillStyle = "rgba(255,255,255,.22)"; g.fillRect(0, 0, S, Math.max(1, R(S / 24))); g.fillStyle = "rgba(0,0,0,.1)"; g.fillRect(0, S - Math.max(1, R(S / 24)), S, Math.max(1, R(S / 24)));
+        break;
+      }
+      case "tiles": {   // four square tiles in grout; glazed ones get a shine
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S); var tg = Math.max(1, R(S / 24));
+        for (k = 0; k < 4; k++) {
+          var tx2 = R((k & 1) * S / 2), ty2 = R((k >> 1) * S / 2), tw2 = R(S / 2) - tg, tone2 = (mhash(v, k, 61) - 0.5) * 0.14;
+          mrr(g, tx2 + Math.ceil(tg / 2), ty2 + Math.ceil(tg / 2), tw2, tw2, Math.max(1, S * 0.03)); g.fillStyle = mvgrad(g, ty2, ty2 + S / 2, P.l, P.b, P.d); g.fill();
+          if (tone2) { g.fillStyle = tone2 > 0 ? "rgba(255,255,255," + tone2 + ")" : "rgba(0,0,0," + (-tone2) + ")"; g.fill(); }
+          if (F.gloss) { g.fillStyle = "rgba(255,255,255,.5)"; g.fillRect(tx2 + R(S * 0.06), ty2 + R(S * 0.06), R(S * 0.12), Math.max(1, R(S / 28))); g.fillRect(tx2 + R(S * 0.06), ty2 + R(S * 0.06), Math.max(1, R(S / 28)), R(S * 0.1)); }
+        }
+        break;
+      }
+      case "mosaic": {   // little glazed squares in many shades
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S); var mg2 = Math.max(1, R(S / 34)), cs = S / 4;
+        for (k = 0; k < 16; k++) { var mxx = R((k & 3) * cs), myy = R((k >> 2) * cs), hv = mhash(v * 16 + k, 3, 63); g.fillStyle = hv < 0.3 ? P.l : hv < 0.7 ? P.b : hv < 0.92 ? P.d : P.o; g.fillRect(mxx + mg2, myy + mg2, R(cs) - mg2, R(cs) - mg2); g.fillStyle = "rgba(255,255,255,.3)"; g.fillRect(mxx + mg2, myy + mg2, R(cs) - mg2, 1); }
+        break;
+      }
+      case "carved": {   // a dressed stone with a sunken frame and a diamond carved in the middle
+        g.fillStyle = mvgrad(g, 0, S, P.l, P.b); g.fillRect(0, 0, S, S); var ci = R(S * 0.14), cl = Math.max(1, R(S / 22));
+        g.fillStyle = P.d; g.fillRect(ci, ci, S - ci * 2, cl); g.fillRect(ci, ci, cl, S - ci * 2);
+        g.fillStyle = "rgba(255,255,255,.45)"; g.fillRect(ci, S - ci - cl, S - ci * 2, cl); g.fillRect(S - ci - cl, ci, cl, S - ci * 2);
+        g.save(); g.translate(S / 2, S / 2); g.rotate(Math.PI / 4); var dz = S * 0.17; g.fillStyle = P.d; g.fillRect(-dz, -dz, dz * 2, dz * 2); g.fillStyle = P.b; g.fillRect(-dz + cl, -dz + cl, dz * 2 - cl, dz * 2 - cl); g.fillStyle = P.l; g.fillRect(-dz * 0.4, -dz * 0.4, dz * 0.8, dz * 0.8); g.restore();
+        break;
+      }
+      case "pillar": {   // a fluted column; a capital where nothing sits on it and a base where it stands
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S); var pw = R(S * 0.12);
+        g.fillStyle = mhgrad(g, pw, S - pw, P.d, P.l, P.d); g.fillRect(pw, 0, S - pw * 2, S);
+        [0.32, 0.5, 0.68].forEach(function (fx2) { g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(R(S * fx2), 0, Math.max(1, R(S / 22)), S); g.fillStyle = "rgba(255,255,255,.3)"; g.fillRect(R(S * fx2) + Math.max(1, R(S / 22)), 0, 1, S); });
+        var c1 = R(S * 0.16), c2 = R(S * 0.12), pi2 = R(pw * 0.5), sl = Math.max(1, R(S / 26));
+        if (mask & 1) { g.fillStyle = mvgrad(g, 0, c1, P.l, P.b, P.d); g.fillRect(0, 0, S, c1); g.fillStyle = P.g; g.fillRect(0, c1, S, sl); g.fillStyle = mvgrad(g, c1, c1 + c2, P.b, P.d); g.fillRect(pi2, c1 + sl, S - pi2 * 2, c2); g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(pw, c1 + sl + c2, S - pw * 2, sl); }
+        if (mask & 2) { g.fillStyle = mvgrad(g, S - c1, S, P.l, P.b, P.d); g.fillRect(0, S - c1, S, c1); g.fillStyle = "rgba(255,255,255,.35)"; g.fillRect(0, S - c1, S, sl); g.fillStyle = mvgrad(g, S - c1 - c2, S - c1, P.l, P.b); g.fillRect(pi2, S - c1 - c2, S - pi2 * 2, c2); g.fillStyle = P.g; g.fillRect(pi2, S - c1 - c2, S - pi2 * 2, sl); }
+        break;
+      }
+      case "corrugated": {   // ridged metal sheet with a rivet line
+        for (c = 0; c < 4; c++) { var cx2 = R(c * S / 4); g.fillStyle = mhgrad(g, cx2, cx2 + S / 4, P.d, P.l, P.d); g.fillRect(cx2, 0, R((c + 1) * S / 4) - cx2, S); }
+        g.fillStyle = P.g; for (c = 0; c < 4; c++) { g.beginPath(); g.arc((c + 0.5) * S / 4, S * 0.1, Math.max(1, S / 30), 0, 6.2832); g.fill(); }
+        if (mhash(v, 1, 71) > 0.45) { var rx = R(S * (0.1 + mhash(v, 2, 72) * 0.75)); g.fillStyle = "rgba(160,84,40,.35)"; g.fillRect(rx, R(S * 0.15), Math.max(1, R(S / 20)), R(S * (0.3 + mhash(v, 3, 73) * 0.4))); }
+        break;
+      }
+      case "grate": {   // an iron lattice you can see through
+        var gb2 = Math.max(2, R(S * 0.12));
+        [0.25, 0.75].forEach(function (q) { var gy = R(S * q - gb2 / 2); g.fillStyle = P.o; g.fillRect(0, gy - 1, S, gb2 + 2); g.fillStyle = mvgrad(g, gy, gy + gb2, P.l, P.b, P.d); g.fillRect(0, gy, S, gb2); });
+        [0.25, 0.75].forEach(function (q) { var gx = R(S * q - gb2 / 2); g.fillStyle = P.o; g.fillRect(gx - 1, 0, gb2 + 2, S); g.fillStyle = mhgrad(g, gx, gx + gb2, P.l, P.b, P.d); g.fillRect(gx, 0, gb2, S); });
+        [0.25, 0.75].forEach(function (a2) { [0.25, 0.75].forEach(function (b2) { g.fillStyle = P.l; g.fillRect(R(S * a2 - 1), R(S * b2 - 1), 2, 2); }); });
+        break;
+      }
+      case "herring": {   // herringbone: short bricks laid in a zigzag
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S); var u = S / 4, hm = Math.max(1, R(S / 40));
+        var hb = function (x0, y0, w0, h0, n) { if (x0 >= S || y0 >= S || x0 + w0 <= 0 || y0 + h0 <= 0) return; g.fillStyle = mvgrad(g, y0, y0 + h0, P.l, P.b, P.d); g.fillRect(R(x0) + hm, R(y0) + hm, R(w0) - hm * 2 + 1, R(h0) - hm * 2 + 1); var t3 = (mhash(n, 7, 75) - 0.5) * 0.16; if (t3) { g.fillStyle = t3 > 0 ? "rgba(255,255,255," + t3 + ")" : "rgba(0,0,0," + (-t3) + ")"; g.fillRect(R(x0) + hm, R(y0) + hm, R(w0) - hm * 2 + 1, R(h0) - hm * 2 + 1); } };
+        for (var ha = -6; ha <= 6; ha++) for (var hb2 = -3; hb2 <= 3; hb2++) { var bxu = ha + 2 * hb2, byu = ha - 2 * hb2; hb(bxu * u, byu * u, 2 * u, u, ha * 7 + hb2); hb(bxu * u, (byu + 1) * u, u, 2 * u, ha * 5 - hb2); }
+        break;
+      }
+      case "barrel": {   // curved clay roof tiles in overlapping columns
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S);
+        for (k = 0; k < 2; k++) for (c = 0; c < 3; c++) {
+          var bx3 = R(c * S / 3), by3 = R(k * S / 2), bw4 = R(S / 3); g.save(); mrr(g, bx3 + 1, by3, bw4 - 2, R(S / 2), [0, 0, bw4 / 2, bw4 / 2]); g.clip();
+          g.fillStyle = mhgrad(g, bx3, bx3 + bw4, P.d, P.l, P.d); g.fillRect(bx3, by3, bw4, S / 2); g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(bx3, by3, bw4, Math.max(1, R(S / 14)));
+          if (mhash(v * 6 + k * 3 + c, 1, 77) > 0.6) { g.fillStyle = "rgba(0,0,0,.08)"; g.fillRect(bx3, by3, bw4, S / 2); } g.restore();
+        }
+        break;
+      }
+      case "paperlamp": {   // a paper screen in a wooden lattice, lit from inside
+        g.fillStyle = P.g; g.fillRect(0, 0, S, S); var pf = R(S * 0.1);
+        var rg5 = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S * 0.6); rg5.addColorStop(0, P.l); rg5.addColorStop(1, P.b); g.fillStyle = rg5; g.fillRect(pf, pf, S - pf * 2, S - pf * 2);
+        g.fillStyle = P.d; var pl = Math.max(1, R(S / 26)); [1 / 3, 2 / 3].forEach(function (q) { g.fillRect(R(S * q), pf, pl, S - pf * 2); g.fillRect(pf, R(S * q), S - pf * 2, pl); });
+        g.fillStyle = "rgba(255,255,255,.25)"; g.fillRect(0, 0, S, Math.max(1, R(S / 26)));
+        break;
+      }
     }
+    if (F.moss && F.f !== "brick") { for (k = 0; k < 3; k++) { var mx3 = S * (0.15 + mhash(v, k, 13) * 0.7), my3 = S * (k < 2 ? 0.02 : 0.5), mr3 = S * (0.1 + mhash(v, k, 14) * 0.08); g.fillStyle = "#4f8a3a"; g.beginPath(); g.ellipse(mx3, my3 + mr3 * 0.3, mr3 * 1.3, mr3 * 0.7, 0, 0, 6.2832); g.fill(); g.fillStyle = "#6fae4a"; g.beginPath(); g.ellipse(mx3 - mr3 * 0.2, my3 + mr3 * 0.1, mr3 * 0.8, mr3 * 0.4, 0, 0, 6.2832); g.fill(); } }
+    if (F.ember && F.f !== "brick") { g.fillStyle = "rgba(255,138,61,.8)"; for (k = 0; k < 3; k++) if (mhash(v, k, 81) > 0.35) { var ex3 = R(S * mhash(v, k, 82)), ey3 = R(S * (0.15 + mhash(v, k, 83) * 0.7)), el = R(S * (0.12 + mhash(v, k, 84) * 0.2)); g.fillRect(ex3, ey3, el, Math.max(1, R(S / 34))); g.fillRect(ex3 + el - 1, ey3, Math.max(1, R(S / 34)), R(el * 0.5)); } }
+    if (F.crack) { g.fillStyle = "rgba(20,20,24,.55)"; for (k = 0; k < 2; k++) if (mhash(v, k, 85) > 0.3) { var qx3 = S * (0.15 + mhash(v, k, 86) * 0.6), qy3 = S * (k * 0.5 + 0.08), cw2 = Math.max(1, R(S / 30)); for (var st2 = 0; st2 < 5; st2++) { g.fillRect(R(qx3), R(qy3), cw2, R(S * 0.08)); qx3 += (mhash(v, k * 9 + st2, 87) - 0.5) * S * 0.14; qy3 += S * 0.07; } } }
+    if (F.frost && F.f === "glass") { g.fillStyle = "rgba(240,250,255,.42)"; g.fillRect(0, 0, S, S); g.fillStyle = "rgba(255,255,255,.5)"; for (k = 0; k < 14; k++) g.fillRect(R(mhash(v, k, 88) * S), R(mhash(v, k, 89) * S), Math.max(1, R(S / 26)), Math.max(1, R(S / 26))); }
+    if (F.flies) { for (k = 0; k < 4; k++) { var fx3 = S * (0.3 + mhash(v, k, 91) * 0.4), fy3 = S * (0.3 + mhash(v, k, 92) * 0.4); g.fillStyle = "rgba(255,255,190,.55)"; g.beginPath(); g.arc(fx3, fy3, Math.max(1.5, S / 14), 0, 6.2832); g.fill(); g.fillStyle = "#ffffff"; g.fillRect(R(fx3), R(fy3), Math.max(1, R(S / 24)), Math.max(1, R(S / 24))); } }
     // outline where this material meets something else (Adventure-style crisp edge)
     if (F.f !== "glass") {
       var ow = Math.max(1, R(S / 16)); g.fillStyle = P.o;
@@ -6046,6 +6262,7 @@
     var F = MATF[id], same = isWall ? function (a, b) { return walls[b * W + a] === id || (a < 0 || a >= W); } : function (a, b) { var n = get(a, b); return n === id || (F.f === "glass" && MATF[n] && MATF[n].f === "glass"); };
     return (same(i, j - 1) ? 0 : 1) | (same(i, j + 1) ? 0 : 2) | (same(i - 1, j) ? 0 : 4) | (same(i + 1, j) ? 0 : 8);
   }
+  TILES.forEach(function (td) { if (td && td.mat && !MATF[td.id]) defMat(Object.keys(T).filter(function (k) { return T[k] === td.id; })[0], td.mat.f, td.mat.p, td.mat); });   // NEW BUILDING BLOCKS (sandbox-extra) bring their own look
   // lamp blocks: a dark frame around a glowing core
   defMat("CINDERLAMP", "lamp", { l: "#ffd28a", b: "#ff8a3d", d: "#3b3036", g: "#2a2228", o: "#120c10" });
   defMat("CRYSTALLAMP", "lamp", { l: "#ffffff", b: "#bff4ff", d: "#5d7c93", g: "#3e5668", o: "#16222c" });
@@ -6125,18 +6342,19 @@
       for (ox = -1; ox <= 1; ox++) for (oy = -1; oy <= 1; oy++) {
         var bx = cx + ox, by = cy + oy;
         if (bx + len < 0 || bx - len > 1 || by + len < 0 || by - len > 1) continue;
-        for (var pass = shadow ? 0 : 1; pass < 2; pass++) {
-          var sx = bx + (pass ? 0 : 0.025), sy = by + (pass ? 0 : 0.035), tx = sx + ca * len, ty = sy + sa * len, mx = sx + ca * len * 0.5, my = sy + sa * len * 0.5;
-          g.fillStyle = pass ? col : "rgba(0,28,18,.45)";
-          g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(mx - sa * w, my + ca * w, tx, ty); g.quadraticCurveTo(mx + sa * w, my - ca * w, sx, sy); g.fill();
-        }
+        // CRISP: one solid leaf with a thin dark edge and a light centre vein (no see-through offset shadow, which smeared into blur)
+        var sx = bx, sy = by, tx = sx + ca * len, ty = sy + sa * len, mx = sx + ca * len * 0.5, my = sy + sa * len * 0.5;
+        g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(mx - sa * w, my + ca * w, tx, ty); g.quadraticCurveTo(mx + sa * w, my - ca * w, sx, sy);
+        g.fillStyle = col; g.fill();
+        if (shadow) { g.strokeStyle = "rgba(4,40,22,.6)"; g.lineWidth = EDGE; g.stroke(); g.strokeStyle = "rgba(255,255,255,.22)"; g.lineWidth = EDGE * 0.8; g.beginPath(); g.moveTo(sx + ca * len * 0.12, sy + sa * len * 0.12); g.lineTo(sx + ca * len * 0.78, sy + sa * len * 0.78); g.stroke(); }
       }
     }
     function up() { return -1.5708 + (rnd() - 0.5) * 2.6; }
-    for (k = 0; k < 7; k++) leaf(rnd(), rnd(), 0.5, rnd() * TAU, "#0e4a32", false);       // deep back layer
-    for (k = 0; k < 11; k++) leaf(rnd(), rnd(), 0.36, up(), "#23895a", true);              // body
-    for (k = 0; k < 9; k++) leaf(rnd(), rnd(), 0.3, up(), "#3fb274", true);                // lit leaves
-    for (k = 0; k < 5; k++) leaf(rnd() * 0.75, rnd() * 0.75, 0.2, -1.5708 + (rnd() - 0.5) * 2, "#8fe8a0", false);   // sunlit tips toward the top-left
+    var EDGE = Math.max(0.022, 1.1 / S);   // about one screen pixel
+    for (k = 0; k < 6; k++) leaf(rnd(), rnd(), 0.56, rnd() * TAU, "#0f4a33", false);      // deep back layer
+    for (k = 0; k < 7; k++) leaf(rnd(), rnd(), 0.46, up(), "#289862", true);               // body
+    for (k = 0; k < 7; k++) leaf(rnd(), rnd(), 0.4, up(), "#45c07c", true);                // lit leaves
+    for (k = 0; k < 4; k++) leaf(rnd() * 0.75, rnd() * 0.75, 0.3, -1.5708 + (rnd() - 0.5) * 2, "#94eca4", true);   // sunlit tips toward the top-left
     if (rnd() < 0.4) { g.fillStyle = "rgba(235,255,190,.85)"; g.fillRect(0.15 + rnd() * 0.65, 0.12 + rnd() * 0.5, 0.05, 0.05); }
     // light and shade on the open edges
     var lg;
@@ -6294,11 +6512,21 @@
     if (!LC) { LC = document.createElement("canvas"); LCX = LC.getContext("2d"); }
     if (LC.width !== vgw || LC.height !== vgh) { LC.width = vgw; LC.height = vgh; LID = LCX.createImageData(vgw, vgh); }
     var dk = LID.data, deep = clamp((cam.y - SURF) / 60, 0, 1), dr = Math.round(lerp(lerp(6, 3, day), 12, deep)), dg = Math.round(lerp(lerp(9, 6, day), 6, deep)), db = Math.round(lerp(lerp(22, 12, day), 26, deep));
+    if (!WC) { WC = document.createElement("canvas"); WCX = WC.getContext("2d"); }
+    if (WC.width !== vgw || WC.height !== vgh) { WC.width = vgw; WC.height = vgh; WID = WCX.createImageData(vgw, vgh); }
+    var wk = WID.data, warmK = clamp(1 - day * 0.75 + deep, 0, 1), anyW = false, Lmax = 15 * LQ;
     for (j = 0; j < vgh; j++) for (i = 0; i < vgw; i++) {
-      var lv = LG[(j + M) * gw + (i + M)], k = (j * vgw + i) * 4, al = 1 - Math.pow(Math.min(15, lv) / 15, 0.85);
-      dk[k] = dr; dk[k + 1] = dg; dk[k + 2] = db; dk[k + 3] = Math.round(clamp(al, 0, 0.97) * 255);
+      var gi2 = (j + M) * gw + (i + M), lv = LG[gi2], k = (j * vgw + i) * 4, al = 1 - Math.pow(Math.min(Lmax, lv) / Lmax, 0.85);
+      var wv = warmK ? WG[gi2] / Lmax : 0, wa = wv > 0.05 ? Math.pow(wv, 1.6) * warmK : 0;   // warm light: strongest right by the lamp, fading out
+      if (lowq && wa > 0.02) {   // phones: blend the warm tint into the darkness pixel itself (no second full-screen pass)
+        var wt = clamp(wa * 0.32, 0, 0.32), A = clamp(al, 0, 0.97), A2 = A + wt * (1 - A), f = A2 > 0 ? wt * (1 - A) / A2 : 0;
+        dk[k] = Math.round(dr + (255 - dr) * f); dk[k + 1] = Math.round(dg + (140 - dg) * f); dk[k + 2] = Math.round(db + (60 - db) * f); dk[k + 3] = Math.round(A2 * 255);
+      } else { dk[k] = dr; dk[k + 1] = dg; dk[k + 2] = db; dk[k + 3] = Math.round(clamp(al, 0, 0.97) * 255); }
+      if (!lowq) { wk[k] = 255; wk[k + 1] = 150; wk[k + 2] = 70; wk[k + 3] = Math.round(clamp(wa, 0, 1) * 150); if (wa > 0.02) anyW = true; }
     }
-    LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(LC, 0, 0, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, vgw * ts, vgh * ts);
+    LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "low";
+    softStretch(g, LC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "source-over");
+    if (anyW && !lowq) { WCX.putImageData(WID, 0, 0); softStretch(g, WC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "soft-light"); }
     if (day > 0.6 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     // dusk/dawn colour grade over the open air
     if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = lowq ? "source-over" : "soft-light"; g.fillStyle = "rgba(255,130,70," + ((lowq ? 0.16 : 0.55) * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
@@ -6871,6 +7099,11 @@
     ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock"],
     ["Building|Metal", "x_ironblock x_bars"],
     ["Building|Floors & Roofs", "x_parquet x_checker d_thatch x_shinglered x_shingleblue"],
+    ["Building|Woodwork", "x_nb_oakplanks x_nb_birchplanks x_nb_mangroveplanks x_nb_pineplanks x_nb_charredplanks x_nb_basketweave x_nb_bamboo x_nb_wicker x_nb_logsiding x_nb_woodpanel x_nb_timberblock"],
+    ["Building|Masonry", "x_nb_sandbrick x_nb_mudbrick x_nb_limestone x_nb_marble x_nb_blackmarble x_nb_granite x_nb_andesite x_nb_carvedstone x_nb_stonepillar x_nb_mossycobble x_nb_frostcobble x_nb_crackedbrick x_nb_bonebrick x_nb_herringbone"],
+    ["Building|Tiles & Mosaics", "x_nb_slatetile x_nb_basalttile x_nb_terracotta x_nb_tealtile x_nb_ochretile x_nb_bluemosaic x_nb_swampmosaic x_nb_rosemosaic"],
+    ["Building|Roofing", "x_nb_cedarshakes x_nb_claytiles x_nb_mossshingles x_nb_bogthatch"],
+    ["Building|Metal & Glass", "x_nb_brassblock x_nb_verdigris x_nb_gildedblock x_nb_steelplate x_nb_corrugated x_nb_grate x_nb_clearglass x_nb_purpleglass x_nb_amberglass x_nb_frostglass"],
     ["Walls|Basic Walls", "w_plank w_log w_moss"],
     ["Walls|Cottage & Stone", "w_timber w_plaster w_brick x_w_redbrick x_w_cobble"],
     ["Walls|Fancy Walls", "x_w_quartz x_w_obsidian x_w_frost x_w_amber"],
@@ -6883,6 +7116,7 @@
     ["Lighting|Torches & Fires", "torch x_slimetorch d_campfire d_hearth x_bonfire d_brazier"],
     ["Lighting|Lanterns & Lamps", "d_lantern d_sconce d_emberlantern d_frostlantern x_hanginglantern x_streetlamp x_mushlamp x_lavalamp"],
     ["Lighting|Candles & Chandeliers", "x_candelabra d_chandelier x_fairylights"],
+    ["Lighting|Lamp Blocks", "x_nb_sporelamp x_nb_paperlamp x_nb_moonlamp x_nb_fireflylamp"],
     ["Garden|Pots & Planters", "d_pot d_fpot d_planter d_glowpot"],
     ["Garden|Structures", "d_fence d_bale d_well d_fountain"],
     ["Garden|Curios", "x_scarecrow x_gravestone x_totem d_cauldron d_urn"],
@@ -7111,17 +7345,25 @@
   }
   // ---------- FULL-SCREEN MAP: zoom, drag, and waypoints ----------
   var M = { s: 1, cx: 0, cy: 0, cw: 0, ch: 0, dpr: 1, pts: {}, drag: null, pinch: null, sel: -1, img: null, imgT: -1e9 };
-  function mapMin() { return Math.max(0.2, M.cw / W); }
-  function mapClamp() { M.s = clamp(M.s, mapMin(), 44); M.cx = clamp(M.cx, 0, W); M.cy = clamp(M.cy, 0, H); }
+  function mapSpan() { return world && world.gx1 !== undefined ? [world.gx0, world.gx1 + 1] : [0, W]; }
+  function mapMin() { var sp = mapSpan(); return Math.max(0.2, Math.min(1, M.cw / (sp[1] - sp[0]))); }
+  function mapClamp() { var sp = mapSpan(); M.s = clamp(M.s, mapMin(), 44); M.cx = clamp(M.cx, sp[0], sp[1]); M.cy = clamp(M.cy, 0, H); }
   function mapSize() {
     var c = $("sbxMapC"), r = c.getBoundingClientRect(); M.cw = Math.max(200, r.width); M.ch = Math.max(160, r.height); M.dpr = Math.min(2, window.devicePixelRatio || 1);
     c.width = Math.round(M.cw * M.dpr); c.height = Math.round(M.ch * M.dpr);
   }
+  var MAPB = null;
+  function mapBands() {   // the biome stretches of the land made so far: [x0, x1, biome]
+    if (MAPB) return MAPB; var out = [], a = world.gx0 !== undefined ? world.gx0 : 0, z = world.gx1 !== undefined ? world.gx1 : W - 1, b = world.bio[a], s0 = a;
+    for (var x = a + 1; x <= z + 1; x++) { var bb = x <= z ? world.bio[x] : -1; if (bb !== b && (x > z || x - s0 >= 60)) { if (out.length && out[out.length - 1][2] === b) out[out.length - 1][1] = x; else out.push([s0, x, b]); s0 = x; b = bb; } }
+    return (MAPB = out);
+  }
   function mapImg() {   // the explored world, one pixel per tile (rebuilt about twice a second while the map is open)
     var now = performance.now(); if (M.img && now - M.imgT < 500) return M.img; M.imgT = now;
-    var off = M.img || document.createElement("canvas"); off.width = W; off.height = H; var g = off.getContext("2d"), im = g.createImageData(W, H), d = im.data, i;
-    for (i = 0; i < W * H; i++) {
-      var k = i * 4, x = i % W, y = (i / W) | 0, r = 6, gg = 10, b = 9;
+    var gx0 = world.gx0 !== undefined ? world.gx0 : 0, gw = (world.gx1 !== undefined ? world.gx1 : W - 1) - gx0 + 1;
+    var off = M.img || document.createElement("canvas"); off.width = gw; off.height = H; off.gx0 = gx0; var g = off.getContext("2d"), im = g.createImageData(gw, H), d = im.data, i;
+    for (var mi = 0; mi < gw * H; mi++) {
+      var mx = mi % gw, y = (mi / gw) | 0, x = mx + gx0, k = mi * 4, r = 6, gg = 10, b = 9; i = y * W + x;
       if (ex[i]) { var id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i]; var td = TILES[id], hex; if (id === T.AIR) hex = y < col[x] ? "#2a5a6a" : "#0d1114"; else if (id === T.WATER) hex = "#2a8f95"; else hex = td.kind === "ore" ? td.c2 : td.c; if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3]; r = parseInt(hex.slice(1, 3), 16); gg = parseInt(hex.slice(3, 5), 16); b = parseInt(hex.slice(5, 7), 16); }
       d[k] = r; d[k + 1] = gg; d[k + 2] = b; d[k + 3] = 255;
     }
@@ -7130,12 +7372,12 @@
   function m2s(x, y) { return [(x - M.cx) * M.s + M.cw / 2, (y - M.cy) * M.s + M.ch / 2]; }
   function s2m(x, y) { return [(x - M.cw / 2) / M.s + M.cx, (y - M.ch / 2) / M.s + M.cy]; }
   function zoomAt(px, py, ns) { var w = s2m(px, py); M.s = clamp(ns, mapMin(), 44); M.cx = w[0] - (px - M.cw / 2) / M.s; M.cy = w[1] - (py - M.ch / 2) / M.s; mapClamp(); }
-  function mapFit() { M.s = mapMin(); M.cx = W / 2; M.cy = H / 2; mapClamp(); }
+  function mapFit() { var sp = mapSpan(); M.s = mapMin(); M.cx = M.s > M.cw / (sp[1] - sp[0]) + 1e-6 ? p.x : (sp[0] + sp[1]) / 2; M.cy = H / 2; mapClamp(); }
   function mapMe() { M.s = Math.max(M.s, clamp(M.cw / 260, mapMin(), 44)); M.cx = p.x; M.cy = p.y; mapClamp(); }
   function drawMapView() {
     var c = $("sbxMapC"); if (!c || !mapOpen) return; var g = c.getContext("2d"), s = M.s;
     g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0); g.fillStyle = "#03080a"; g.fillRect(0, 0, M.cw, M.ch);
-    var o0 = m2s(0, 0), o1 = m2s(W, H); g.imageSmoothingEnabled = false; g.drawImage(mapImg(), 0, 0, W, H, o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
+    var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, H); g.imageSmoothingEnabled = false; g.drawImage(MI, 0, 0, MI.width, H, o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
     g.strokeStyle = "#4ee6b455"; g.lineWidth = 1.5; g.strokeRect(o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
     if (s >= 6) {   // tile grid when zoomed right in, every 10 tiles
       g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1; g.beginPath(); var gx0 = Math.max(0, Math.floor(s2m(0, 0)[0] / 10) * 10), gx1 = Math.min(W, s2m(M.cw, 0)[0]), gy0 = Math.max(0, Math.floor(s2m(0, 0)[1] / 10) * 10), gy1 = Math.min(H, s2m(0, M.ch)[1]), q;
@@ -7144,7 +7386,7 @@
       g.stroke();
     }
     g.textAlign = "center"; g.font = "800 13px Nunito,sans-serif";
-    [[0, SW.B_FROST, 2], [SW.B_FROST, SW.B_EMBER, 0], [SW.B_EMBER, W, 1]].forEach(function (z) {
+    mapBands().forEach(function (z) {
       var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BIOMES[z[2]].c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, 0), o0[1], Math.min(r, M.cw) - Math.max(l, 0), 4); g.globalAlpha = 0.85;
       if (r > 0 && l < M.cw) g.fillText(BIOMES[z[2]].n, (Math.max(l, 0) + Math.min(r, M.cw)) / 2, Math.max(o0[1] + 20, 78)); g.globalAlpha = 1;
     });
@@ -7509,5 +7751,5 @@
     if (row.scrollWidth <= row.clientWidth) return; row.scrollLeft += e.deltaY; e.preventDefault();
   }, { passive: false });
   requestAnimationFrame(loop);
-  window.__sbx = { setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { growWorld: function (f) { return growWorld(f); }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
 })();

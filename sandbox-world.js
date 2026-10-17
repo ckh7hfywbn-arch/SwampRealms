@@ -7,7 +7,11 @@
   // Frostfen lies west (left), Murkwater Swamp is the home area, Ember Bog lies east (right). Each area is 720 tiles wide (2160 in all, 3x the old world).
   // H 200 / SURF 72: there are ~58 rows of sky above the average ground line for mountains, and ~126 rows of underground below it.
   // WORLDVER 5 (big-sky terrain) / WORLDVER 4 (the world was rebuilt bigger): Saves from an older version keep items and progress but not their digging, map or chests (see clean() in sandbox.js).
-  var W = 2160, H = 200, SURF = 72, WORLDVER = 7, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080;
+  // ENDLESS WORLD (WORLDVER 8): the original 2160-column map is the middle of a world WORLD_W wide. The land on each side is made in
+  // segments of random biomes (one biome each, 480-720 columns) as you walk towards them (genChunk), so it costs nothing until explored.
+  // The generator itself works on any width: W / B_FROST / B_EMBER / SPAWNX below are the settings of the map being generated right now.
+  var CORE_W = 2160, EXT = 5040, WORLD_W = CORE_W + EXT * 2;
+  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true;
   var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
@@ -367,9 +371,10 @@ batwing: { n: "Bat Wing", frag: "bat" },
       }
     }
     // Witch Huts: up to 3, out in the wilder parts of Murkwater (well away from camp)
-    var WK = STRUCT_KINDS.length - 1, huts = 0;
-    for (var wq = 0; wq < 60 && huts < 3; wq++) {
-      var hx = Math.floor(B_FROST + 30 + hash(wq, 761, seed) * (B_EMBER - B_FROST - 60));
+    var WK = STRUCT_KINDS.length - 1, huts = 0, hutMax = Math.max(1, Math.min(3, Math.round((Math.min(W, B_EMBER) - Math.max(0, B_FROST)) / 300)));
+    for (var wq = 0; wq < 60 && huts < hutMax; wq++) {
+      var sw0 = Math.max(0, B_FROST), sw1 = Math.min(W, B_EMBER); if (sw1 - sw0 < 240) break;
+      var hx = Math.floor(sw0 + 30 + hash(wq, 761, seed) * (sw1 - sw0 - 60));
       if (Math.abs(hx - SPAWNX) < 150 || out.some(function (q) { return q.kind === "witchhut" && Math.abs(q.x0 - hx) < 160; })) continue;
       for (var hn = 0; hn < 8; hn++) { var HP = tryPlace(hx + (hn % 2 ? 1 : -1) * Math.ceil(hn / 2) * 3, WK); if (HP) { out.push(build(HP, out.length)); huts++; break; } }
     }
@@ -388,13 +393,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
   //   5. trees (swamp mangroves, Frostfen pines, Ember Bog dead trees), plants, cave holes and buildings
   function gen(seed) {
     seed = (seed | 0) || 1;
-    var walls = new Uint8Array(W * H), t = new Uint8Array(W * H), top = new Int16Array(W), bio = new Uint8Array(W), rnd = mulberry(seed ^ 0x9e3779b9), frnd = mulberry(seed ^ 0x51ed270b);
+    var walls = new Uint16Array(W * H), t = new Uint16Array(W * H), top = new Int16Array(W), bio = new Uint8Array(W), rnd = mulberry(seed ^ 0x9e3779b9), frnd = mulberry(seed ^ 0x51ed270b);
     var WL = SURF + 2, LAVAL = SURF + 5, ICEL = SURF + 3, x, y, i, k;
     function ri(a, b) { return a + Math.floor(frnd() * (b - a + 1)); }
     function ridged(x2, s, f) { return 1 - Math.abs(2 * fbm(x2 * f, 0.5, s, 3) - 1); }
     // ---- 1. biomes and landforms ----
     for (x = 0; x < W; x++) { var bx = x + (vnoise(x * 0.08, 0, seed + 3) - 0.5) * 14; bio[x] = bx < B_FROST ? 2 : bx < B_EMBER ? 0 : 1; }
-    var REG = [[B_FROST, B_EMBER], [B_EMBER, W], [0, B_FROST]];   // index = biome id
+    var REG = [[Math.max(0, B_FROST), Math.min(W, B_EMBER)], [Math.max(0, B_EMBER), W], [0, Math.min(W, B_FROST)]];   // index = biome id
+    var hasB = function (b) { return REG[b][1] - REG[b][0] >= 80; };
     var KINDS = [   // per biome: [kind, weight]
       [["range", 3], ["peak", 2], ["hills", 3], ["basin", 3], ["mesa", 1]],
       [["volcano", 3], ["mesa", 3], ["range", 1], ["hills", 2], ["peak", 1]],
@@ -403,6 +409,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     var feats = [], craters = [], MUST = [["range", "peak", "range"], ["volcano", "mesa", "volcano"], ["spires", "range", "peak"]], must;
     function pick(b) { if (must.length && frnd() < 0.7) return must.splice(Math.floor(frnd() * must.length), 1)[0]; var L = KINDS[b], tot = 0, q; for (q = 0; q < L.length; q++) tot += L[q][1]; var r = frnd() * tot; for (q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) return L[q][0]; } return L[0][0]; }
     [0, 1, 2].forEach(function (b) {
+      if (!hasB(b)) return;
       var cx = REG[b][0] + ri(20, 50); must = MUST[b].slice();   // every biome gets its signature landforms, in a random order and place
       while (cx < REG[b][1] - 20) {
         var kd = pick(b), hw, hh;
@@ -442,6 +449,10 @@ batwing: { n: "Bat Wing", frag: "bat" },
       var up = 0, down = 0;
       for (k = 0; k < feats.length; k++) { var F = feats[k]; if (x > F.x - F.hw && x < F.x + F.hw) { var v = shape(F, x); if (v > up) up = v; if (v < down) down = v; } }
       elev[x] = (base + up + down) * smooth(4, 16, Math.abs(x - SPAWNX));   // a flat, dry camp around the spawn
+    }
+    if (GEN_EDGE) for (x = 0; x < Math.min(W, 64); x++) {   // a new segment meets the land beside it at the same height, then eases into its own shape
+      var ex2 = GEN_EDGE.side < 0 ? W - 1 - x : x, kk = smooth(0, 64, x);
+      elev[ex2] = (SURF - GEN_EDGE.h) * (1 - kk) + elev[ex2] * kk;
     }
     for (x = 0; x < W; x++) {
       var hgt = Math.round(SURF - elev[x]);
@@ -516,7 +527,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     }
     function carve(cx2, cy2, rad) { for (var yy = Math.floor(cy2 - rad); yy <= Math.ceil(cy2 + rad); yy++) for (var xx = Math.floor(cx2 - rad); xx <= Math.ceil(cx2 + rad); xx++) if (xx > 2 && xx < W - 3 && yy > 1 && yy < H - 5 && (xx - cx2) * (xx - cx2) + (yy - cy2) * (yy - cy2) <= rad * rad) cm[yy * W + xx] = 1; }
     [0, 1, 2].forEach(function (b) {   // cave mouths: slanted tunnels that start on a hillside and dive into the network
-      var nm = ri(5, 8);
+      if (!hasB(b)) return;
+      var nm = Math.max(1, Math.round(ri(5, 8) * Math.min(1, (REG[b][1] - REG[b][0]) / 720)));
       for (var m2 = 0; m2 < nm; m2++) {
         var sx2 = ri(REG[b][0] + 20, REG[b][1] - 20), tries = 0;
         while (tries++ < 40 && (Math.abs(sx2 - SPAWNX) < 30 || STEEP[sx2] < 1 || top[sx2] > SURF + 1 || bio[sx2] !== b)) sx2 = ri(REG[b][0] + 20, REG[b][1] - 20);
@@ -551,7 +563,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
       return false;
     }
     [0, 1, 2].forEach(function (b) {
-      var want = [34, 22, 28][b], fill = [T.WATER, T.LAVA, T.ICE][b], made = 0, tries = 0;
+      if (!hasB(b)) return;
+      var want = Math.max(2, Math.round([34, 22, 28][b] * Math.min(1, (REG[b][1] - REG[b][0]) / 720))), fill = [T.WATER, T.LAVA, T.ICE][b], made = 0, tries = 0;
       while (made < want && tries++ < want * 12) {
         var px = ri(REG[b][0] + 8, REG[b][1] - 8), y0 = top[px] + 10 + ri(0, 40);
         for (y = y0; y < H - 24; y++) if (t[y * W + px] === T.AIR && TILES[t[(y + 1) * W + px]].solid) { if (pool(px, y, ri(3, 7), fill)) made++; break; }
@@ -612,7 +625,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
         if (x - lastTree > 9 && hash(x, 322, seed) < 0.07) { lastTree = x; snag(x); }
       }
     }
-    for (x = SPAWNX - 34; x < SPAWNX + 34 && trees.length < 10; x += 3) {   // always enough Wood near camp
+    if (SPAWNX >= 40 && SPAWNX < W - 40) for (x = SPAWNX - 34; x < SPAWNX + 34 && trees.length < 10; x += 3) {   // always enough Wood near camp
       if (top[x] > WL || trees.some(function (q2) { return Math.abs(q2 - x) < 5; })) continue;
       trees.push(x); plant(x);
     }
@@ -648,6 +661,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     // Built after everything else, almost entirely in open sky, so it never moves any other building. Saved as world.aerie.
     var aerie = (function () {
       function M2(name, fb) { var v = T["X_" + name]; return v !== undefined ? v : fb; }
+      if (!GEN_AERIE) return null;
       var ax = Math.floor(B_EMBER + 220 + hash(7, 901, seed) * 340), hw = 10, x0 = ax - hw, x1 = ax + hw, Y = 20;
       if (x1 + 6 > W - 4) return null;
       var vx = x1 + 3, gy = top[vx];
@@ -678,6 +692,56 @@ batwing: { n: "Bat Wing", frag: "bat" },
     return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, structs: structs, feats: feats, aerie: aerie, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
-  var api = { STRUCT_KINDS: STRUCT_KINDS, W: W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST, B_EMBER: B_EMBER, SPAWNX: SPAWNX, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: gen, hash: hash, mulberry: mulberry };
+  var POST = [];   // content packs add their extras to every generated map (the original one and each new segment), in that map's own columns
+  function shiftX(o, dx) {   // move everything a generated map reports by dx columns
+    o.holes.forEach(function (q) { q.x += dx; });
+    o.structs.forEach(function (q) { ["x0", "x1", "dx", "outX", "mx0", "mx1"].forEach(function (k) { if (q[k] !== undefined) q[k] += dx; }); });
+    o.feats.forEach(function (q) { q.x += dx; });
+    if (o.aerie) ["x0", "x1", "cx", "vx"].forEach(function (k) { o.aerie[k] += dx; });
+  }
+  function genWide(seed) {
+    seed = (seed | 0) || 1;
+    var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), x, y;
+    for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
+    var core = gen(seed);   // exactly the original map (W = CORE_W here), so old saves line up
+    POST.forEach(function (f) { f(core); });
+    for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); wwl.set(core.walls.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); }
+    wtop.set(core.top, EXT); wbio.set(core.bio, EXT);
+    shiftX(core, EXT);
+    var lay = { "-1": [], "1": [] };   // the segments on each side, nearest first: [x0, x1, biome]
+    [-1, 1].forEach(function (sd) {
+      var prev = sd < 0 ? 2 : 1, edge = sd < 0 ? EXT : EXT + CORE_W, n = 0;
+      while (sd < 0 ? edge > 0 : edge < WW) {
+        var w = 480 + Math.floor(hash(n, sd * 977, seed) * 241), b = (prev + 1 + Math.floor(hash(n, sd * 978, seed) * 2)) % 3;   // never the same biome twice in a row
+        var a = sd < 0 ? Math.max(0, edge - w) : edge, z = sd < 0 ? edge : Math.min(WW, edge + w);
+        if (z - a < 160) { if (lay[sd].length) { var L = lay[sd][lay[sd].length - 1]; if (sd < 0) L[0] = 0; else L[1] = WW; } break; }   // a sliver at the very end joins the last segment
+        lay[sd].push([a, z, b]); prev = b; edge = sd < 0 ? a : z; n++;
+      }
+    });
+    return { W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie,
+      spawn: { x: SPAWNX + EXT + 0.5, y: core.top[SPAWNX] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: EXT, gx1: EXT + CORE_W - 1 };
+  }
+  function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
+    var n = wd.done[sd], seg = wd.lay[sd][n]; if (!seg) return null;
+    var a = seg[0], z = seg[1], w = z - a, b = seg[2], WW = wd.W, y, k;
+    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE];
+    W = w; SPAWNX = -100000; GEN_AERIE = false;
+    if (b === 2) { B_FROST = w + 200; B_EMBER = w + 400; } else if (b === 0) { B_FROST = -200; B_EMBER = w + 200; } else { B_FROST = -400; B_EMBER = -200; }
+    GEN_EDGE = { side: sd, h: wd.top[sd < 0 ? z : a - 1] };   // the column right next to it, on the side it grows from
+    var c;
+    try { c = gen((wd.seed * 31 + (sd < 0 ? 7001 : 9001) + n * 131) | 0); }
+    finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; }
+    POST.forEach(function (f) { f(c); });
+    for (y = 0; y < H; y++) { wd.t.set(c.t.subarray(y * w, (y + 1) * w), y * WW + a); wd.walls.set(c.walls.subarray(y * w, (y + 1) * w), y * WW + a); }
+    wd.top.set(c.top, a); wd.bio.set(c.bio, a);
+    shiftX(c, a);
+    var base = (sd < 0 ? 100000 : 200000) + n * 100;   // building ids that never collide and stay the same every time this segment is made
+    c.structs.forEach(function (q, i) { q.id = base + i; });
+    wd.holes = wd.holes.concat(c.holes).sort(function (p, q) { return p.x - q.x; }); wd.feats = wd.feats.concat(c.feats);
+    for (k = 0; k < c.structs.length; k++) wd.structs.push(c.structs[k]);
+    wd.done[sd] = n + 1; if (sd < 0) wd.gx0 = a; else wd.gx1 = z - 1;
+    return { x0: a, x1: z - 1, structs: c.structs, b: b };
+  }
+  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);
