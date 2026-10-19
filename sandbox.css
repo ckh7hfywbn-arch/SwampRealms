@@ -885,3 +885,14 @@ body.sbx-app footer{margin-top:28px}
 .sbx-title .tt-fs.gfs .ex{display:none}.sbx-title .tt-fs.gfs[aria-pressed="true"] .ex{display:block}.sbx-title .tt-fs.gfs[aria-pressed="true"] .en{display:none}
 @media(max-width:560px){.sbx-title .tt-foot{justify-content:space-between}}
 .sbx-title{max-width:none;width:auto;margin:0;text-align:left}
+/* WAYSTONES window */
+.sbx-sbox2 .st-ways{display:grid;gap:6px;margin:0 0 14px;max-height:46vh;overflow:auto}
+.sbx-sbox2 .st-ways button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--qc) 30%,transparent);background:#ffffff0a;color:#fff;font:800 .92rem Nunito,sans-serif;text-align:left;cursor:pointer}
+.sbx-sbox2 .st-ways button:hover,.sbx-sbox2 .st-ways button:focus-visible{background:color-mix(in srgb,var(--qc) 18%,transparent);outline:none}
+.sbx-sbox2 .st-ways i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--wc);box-shadow:0 0 8px var(--wc)}
+.sbx-sbox2 .st-ways b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbx-sbox2 .st-ways em{flex:none;font-style:normal;font-size:.78rem;color:#f6eedb99}
+.sbx-sbox2 .st-name{display:flex;gap:8px;margin:0 0 12px}
+.sbx-sbox2 .st-name input{flex:1;min-width:0;padding:9px 12px;border-radius:12px;border:1px solid #ffffff26;background:#0006;color:#fff;font:800 .95rem Nunito,sans-serif}
+.sbx-sbox2 .st-name input:focus{outline:2px solid var(--qc);outline-offset:1px}
+.sbx-sbox2 .st-name .btn{width:auto;min-height:40px;padding:0 14px;font-size:.85rem}

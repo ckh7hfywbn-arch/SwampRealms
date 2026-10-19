@@ -458,10 +458,254 @@
   nb("moonlamp", "Moonstone Lamp Block", 1.4, "lamp", pal("#ffffff", "#c8d0ff", "#5e6890", "#3e4668", "#161a2c"), null, 14, ["200,210,255", 4.4, 0.3]);
   nb("fireflylamp", "Firefly Jar Block", 0.8, "lamp", pal("#fffcc8", "#d8e870", "#4a5a2a", "#2a3418", "#10160a"), { flies: 1 }, 11, ["240,250,140", 3.8, 0.24]);
   // ====================================================================================================
+  // 7c. TRAPDOORS: a one-tile wooden hatch. Closed it is solid (stand on it, enemies cannot pass); open it hangs down from its hinge
+  // side and you fall or climb through. sandbox.js does the opening, the auto-close and the drawing (see TRAPDOORS there).
+  // ====================================================================================================
+  var HATCH_C = tile("X_trapdoor", "Swamp Trapdoor", "#9a6234", "#c98c4f", 0.6, 1, "trapdoor", true, 0, "trapdoor");
+  var HATCH_O = tile("X_trapdooro", "Open Trapdoor", "#9a6234", "#c98c4f", 0.6, 1, "trapdoor", false, 0, "trapdooro");
+  TILES[HATCH_C].hatch = { open: false, toggle: HATCH_O }; TILES[HATCH_O].hatch = { open: true, toggle: HATCH_C };
+  ART.trapdoor = function (rect) { rect(0, 0, 16, 16, "#4a2a14"); rect(1, 1, 14, 14, "#b9793f"); [5, 10].forEach(function (y) { rect(1, y, 14, 1, "#8a5328"); }); rect(1, 1, 14, 1, "#d79c62"); rect(1, 3, 14, 2, "#2c2c34"); rect(1, 11, 14, 2, "#2c2c34"); rect(7, 7, 2, 2, "#f2c14e"); };
+  ART.trapdooro = function (rect) { rect(0, 0, 4, 16, "#4a2a14"); rect(1, 0, 2, 16, "#b9793f"); rect(0, 2, 4, 2, "#2c2c34"); rect(0, 12, 4, 2, "#2c2c34"); };
+  item("trapdoor", "Swamp Trapdoor", { tile: HATCH_C });
+  // ====================================================================================================
+  // 7d. TREASURE & TREATS PACK: 50 new things across the whole game. Treasure finds turn up in chests and pots (deeper = rarer ones,
+  // see LOOT_ALL / LOOT_B), and feed the new charms and potions; new meals at the Cooking Pot; potions at the Brewing Stand; decor at the
+  // Decor Workbench. Potion effects and charm effects are wired up in sandbox.js (POTIONS, CHARMS and the hooks marked "treats pack").
+  // ====================================================================================================
+  var TREATS = [];
+  function tr(k) { TREATS.push(k); }
+  // treasure finds (9)
+  [["lodestone", "Lodestone"], ["goldfeather", "Golden Feather"], ["owlfeather", "Snowy Owl Feather"], ["springroot", "Springroot"], ["leechfang", "Leech Fang"],
+   ["trolltusk", "Troll Tusk"], ["ancientcoin", "Ancient Coin"], ["starshard", "Star Shard"], ["mandrake", "Mandrake Root"]].forEach(function (q) { item(q[0], q[1], { treasure: 1 }); tr(q[0]); });
+  // potions (8): drawn as bottles in their own colour
+  [["tonic_regen", "Mending Tonic"], ["tonic_glow", "Glow Tonic"], ["tonic_feather", "Featherfall Tonic"], ["tonic_luck", "Fortune Tonic"], ["tonic_grow", "Growth Tonic"],
+   ["tonic_gill", "Gillweed Tonic"], ["tonic_brute", "Brute Tonic"], ["tonic_grand", "Grand Healing Tonic"]].forEach(function (q) { item(q[0], q[1], {}); tr(q[0]); });
+  // meals (12): hunger filled, health healed
+  food("swampsalad", "Swamp Salad", 24, 6, 1); food("redcapsoup", "Redcap Soup", 30, 8, 1); food("glowbroth", "Glowcap Broth", 30, 12, 1); food("buttermash", "Buttered Mash", 36, 8, 1);
+  food("bogkebab", "Bog Kebab", 38, 12, 1); food("emberkebab", "Ember Kebab", 42, 14, 1); food("carproll", "Crystal Carp Roll", 44, 18, 1); food("eelcurry", "Magma Eel Curry", 60, 24, 1);
+  food("fishpie", "Fisherman's Pie", 52, 18, 1); food("carrotcake", "Carrot Cake", 40, 12, 1); food("frostjam", "Frostberry Jam", 26, 8, 1); food("swamptea", "Marsh Lily Tea", 10, 20, 1);
+  ["swampsalad", "redcapsoup", "glowbroth", "buttermash", "bogkebab", "emberkebab", "carproll", "eelcurry", "fishpie", "carrotcake", "frostjam", "swamptea"].forEach(tr);
+  // decor (15)
+  function dk(k, n, c, art, light, gl, put) { deco(k, n, c, art, light, gl, put); tr(k); }
+  dk("pottedfern", "Potted Fern", "#4f8a3c", function (rect) { rect(5, 12, 6, 4, "#b87444"); rect(4, 11, 8, 2, "#d08a52"); rect(5, 15, 6, 1, "#7a4a24"); [[7, 3, 2, 8], [4, 5, 2, 6], [10, 5, 2, 6], [2, 8, 3, 3], [11, 8, 3, 3], [6, 6, 1, 4], [9, 6, 1, 4]].forEach(function (q, i) { rect(q[0], q[1], q[2], q[3], i % 2 ? "#6aa347" : "#4f8a3c"); }); rect(7, 2, 2, 1, "#8fd06a"); });
+  dk("cattailvase", "Cattail Vase", "#8a5a32", function (rect) { rect(6, 10, 4, 6, "#5d7c93"); rect(5, 11, 6, 4, "#5d7c93"); rect(6, 10, 4, 1, "#8ab0c8"); rect(6, 12, 1, 2, "#8ab0c8"); [[5, 2], [8, 1], [10, 3]].forEach(function (q) { rect(q[0] + 1, q[1] + 3, 1, 10 - q[1], "#4f8a3c"); rect(q[0], q[1], 2, 4, "#7a4a24"); rect(q[0], q[1], 1, 1, "#a8703c"); }); });
+  dk("glowjar", "Glowcap Jar", "#4ee6b4", function (rect) { rect(4, 6, 8, 10, "#bfe8ff", 0.45); rect(4, 5, 8, 2, "#8a5a32"); rect(5, 4, 6, 1, "#a8703c"); rect(4, 15, 8, 1, "#5d7c93"); [[5, 11, 3], [8, 9, 3], [6, 13, 2]].forEach(function (q) { rect(q[0], q[1] + 2, 1, 3, "#d4fff6"); rect(q[0] - 1, q[1], q[2], 2, "#4ee6b4"); }); rect(5, 7, 1, 6, "#ffffff", 0.5); }, 9, ["78,230,180", 2.6, 0.18]);
+  dk("hangingherbs", "Hanging Herbs", "#6aa347", function (rect) { rect(1, 1, 14, 1, "#8a5a32"); [3, 7, 11].forEach(function (x, i) { rect(x + 1, 2, 1, 2, "#d8c08a"); rect(x, 4, 3, 7, ["#4f8a3c", "#7fae4a", "#a89a4a"][i]); rect(x + 1, 11, 1, 2, ["#ff9ad0", "#ffe27a", "#c8a8ff"][i]); rect(x, 5, 1, 4, "#2f5a24", 0.6); }); }, 0, null, "wall");
+  dk("shipbottle", "Ship in a Bottle", "#bfe8ff", function (rect) { rect(1, 8, 13, 7, "#bfe8ff", 0.4); rect(14, 10, 2, 3, "#8a5a32"); rect(1, 14, 13, 1, "#5d7c93"); rect(4, 11, 7, 2, "#8a5a32"); rect(5, 13, 5, 1, "#5a3418"); rect(7, 6, 1, 5, "#5a3418"); rect(5, 7, 2, 3, "#f6eedb"); rect(8, 8, 2, 2, "#f6eedb"); rect(2, 13, 11, 1, "#3f7fe6", 0.6); rect(2, 9, 1, 4, "#ffffff", 0.6); });
+  dk("gramophone", "Gramophone", "#f2c14e", function (rect) { rect(3, 11, 10, 5, "#8a5a32"); rect(3, 11, 10, 1, "#c98c4f"); rect(4, 15, 1, 1, "#3a2a1a"); rect(11, 15, 1, 1, "#3a2a1a"); rect(4, 10, 8, 1, "#22222a"); rect(7, 6, 1, 4, "#c9a43a"); rect(7, 1, 7, 2, "#f2c14e"); rect(6, 3, 7, 2, "#e0a830"); rect(6, 5, 4, 1, "#c98a20"); rect(13, 0, 2, 4, "#ffe08a"); rect(8, 2, 3, 1, "#fff2b0"); });
+  dk("stackedbooks", "Stack of Books", "#c8301a", function (rect) { [[2, 13, 12, "#3a6aa8"], [3, 11, 10, "#c8301a"], [2, 9, 11, "#3f8a4a"], [4, 7, 9, "#7a3a8a"], [3, 5, 10, "#c9934e"]].forEach(function (q) { rect(q[0], q[1], q[2], 2, q[3]); rect(q[0], q[1], 1, 2, "#f6eedb"); rect(q[0] + q[2] - 3, q[1], 1, 2, "#f2c14e"); }); rect(2, 15, 12, 1, "#22140a", 0.5); rect(9, 3, 1, 2, "#e8341c"); });
+  dk("teaset", "Tea Set", "#e8e4d8", function (rect) { rect(1, 14, 14, 2, "#a8703c"); rect(3, 9, 6, 5, "#f2eadc"); rect(4, 8, 4, 1, "#f2eadc"); rect(5, 7, 2, 1, "#3fae92"); rect(9, 10, 2, 1, "#f2eadc"); rect(10, 9, 1, 1, "#f2eadc"); rect(1, 10, 2, 3, "#f2eadc", 0.9); rect(4, 11, 4, 1, "#3fae92"); rect(11, 12, 3, 2, "#f2eadc"); rect(11, 12, 3, 1, "#b06a30"); rect(6, 4, 1, 2, "#ffffff", 0.5); rect(7, 2, 1, 2, "#ffffff", 0.4); });
+  dk("frogidol", "Frog Idol", "#7a8a6a", function (rect) { rect(3, 13, 10, 3, "#6e7a72"); rect(3, 13, 10, 1, "#8e9a92"); rect(4, 7, 8, 6, "#8a9a7a"); rect(3, 9, 10, 4, "#8a9a7a"); rect(4, 5, 3, 3, "#8a9a7a"); rect(9, 5, 3, 3, "#8a9a7a"); rect(5, 6, 1, 1, "#f2c14e"); rect(10, 6, 1, 1, "#f2c14e"); rect(5, 10, 6, 1, "#4a5a4a"); rect(6, 11, 4, 1, "#a8b89a"); rect(4, 8, 1, 4, "#a8b89a", 0.6); rect(2, 12, 2, 1, "#4f8a3a"); rect(12, 11, 2, 2, "#4f8a3a"); });
+  dk("bonepile", "Bone Pile", "#e8e0c8", function (rect) { rect(1, 13, 14, 3, "#a8a088"); [[2, 11, 6, 1], [7, 10, 7, 1], [4, 12, 8, 1], [9, 13, 5, 1]].forEach(function (q) { rect(q[0], q[1], q[2], q[3] + 1, "#e8e0c8"); rect(q[0] - 1, q[1] - 1, 2, 2, "#fffbea"); rect(q[0] + q[2] - 1, q[1] - 1, 2, 2, "#fffbea"); }); rect(5, 6, 5, 4, "#e8e0c8"); rect(6, 7, 1, 1, "#2a2420"); rect(8, 7, 1, 1, "#2a2420"); rect(6, 9, 3, 1, "#a8a088"); });
+  dk("crystalcluster", "Crystal Cluster", "#9fe8ff", function (rect) { rect(2, 14, 12, 2, "#5d7c93"); [[3, 8, 3, 6, "#7fc8e8"], [6, 3, 4, 11, "#bff4ff"], [10, 6, 3, 8, "#9fe0ff"], [12, 10, 2, 4, "#7fc8e8"]].forEach(function (q) { rect(q[0], q[1], q[2], q[3], q[4]); rect(q[0], q[1], 1, q[3], "#ffffff", 0.6); rect(q[0] + 1, q[1] - 1, Math.max(1, q[2] - 2), 1, q[4]); }); rect(8, 5, 1, 4, "#ffffff", 0.8); }, 7, ["160,230,255", 2.4, 0.16]);
+  dk("starchart", "Star Chart", "#2a3a6a", function (rect) { rect(1, 1, 14, 13, "#1e2a52"); rect(1, 1, 14, 1, "#c9a43a"); rect(1, 13, 14, 1, "#c9a43a"); rect(0, 0, 1, 15, "#8a5a32"); rect(15, 0, 1, 15, "#8a5a32"); [[3, 4], [6, 3], [9, 6], [12, 4], [5, 9], [10, 10], [7, 11]].forEach(function (q) { rect(q[0], q[1], 1, 1, "#fff2b0"); }); rect(4, 4, 2, 1, "#8ab0d0", 0.5); rect(7, 4, 2, 1, "#8ab0d0", 0.5); rect(9, 5, 1, 1, "#8ab0d0", 0.5); rect(11, 9, 2, 2, "#f2c14e", 0.7); }, 0, null, "wall");
+  dk("birdcage", "Birdcage", "#c9a43a", function (rect) { rect(7, 0, 2, 2, "#c9a43a"); rect(4, 2, 8, 1, "#c9a43a"); rect(3, 3, 10, 1, "#c9a43a"); for (var x = 3; x <= 12; x += 3) rect(x, 4, 1, 10, "#c9a43a"); rect(3, 13, 10, 2, "#8a6a1a"); rect(6, 8, 4, 3, "#ff8a2a"); rect(9, 7, 2, 2, "#ff8a2a"); rect(10, 7, 1, 1, "#12220f"); rect(11, 8, 1, 1, "#f2c14e"); rect(5, 11, 6, 1, "#8a5a32"); }, 0, null, "wall");
+  dk("windchime", "Bone Wind Chime", "#e8e0c8", function (rect) { rect(2, 1, 12, 1, "#8a5a32"); [3, 6, 9, 12].forEach(function (x, i) { rect(x, 2, 1, 3 + i, "#d8c08a"); rect(x - 1, 5 + i, 2, 4, "#e8e0c8"); rect(x - 1, 5 + i, 1, 4, "#fffbea"); }); rect(7, 12, 2, 3, "#5d7c93"); }, 0, null, "wall");
+  dk("skullcandle", "Skull Candle", "#ffd28a", function (rect) { rect(3, 9, 10, 6, "#e8e0c8"); rect(4, 8, 8, 1, "#e8e0c8"); rect(5, 11, 2, 2, "#2a2420"); rect(9, 11, 2, 2, "#2a2420"); rect(7, 13, 2, 1, "#a8a088"); rect(4, 15, 8, 1, "#a8a088"); rect(7, 4, 2, 4, "#f6eedb"); rect(6, 7, 4, 1, "#e0d0b0", 0.7); rect(7, 1, 2, 3, "#ffb13b"); rect(7, 2, 1, 1, "#fff2b0"); }, 8, ["255,190,110", 2.2, 0.15]);
+  // ====================================================================================================
+  // 7e. INTERIOR PACK: tabletops, counters and shelves.
+  // TILES[id].top = the pixel row (0..15) of a furniture piece's flat top: a "small" piece (TILES[id].small) placed in the tile above
+  // it sits down onto that surface (sandbox.js draws it lowered and lets it overlap the furniture). Small pieces can still stand on
+  // the floor like before. New here: kitchen counters, a wall shelf, a nightstand, side and coffee tables, and eight tabletop pieces.
+  // ====================================================================================================
+  var INTERIOR = [];
+  function surf(k, top) { var it = ITEMS[k]; if (it && it.tile !== undefined) TILES[it.tile].top = top; }
+  function small(k) { var it = ITEMS[k]; if (it && it.tile !== undefined) TILES[it.tile].small = 1; if (it) it.small = 1; }
+  [["table", 6], ["desk", 6], ["dresser", 5], ["crate", 4], ["barrel", 3], ["bookshelf", 0], ["jeweltable", 6]].forEach(function (q) { surf(q[0], q[1]); });
+  ["bucket", "pot", "flowerpot", "lantern", "glowpot", "emberlantern", "frostlantern", "globe", "telescope", "candelabra", "lavalamp", "slimejar", "fireflyjar", "goldfrog", "urn",
+   "skullcandle", "teaset", "stackedbooks", "glowjar", "shipbottle", "pottedfern", "cattailvase", "gramophone", "crystalcluster", "frogidol", "queencrown", "wyrmskull"].forEach(small);
+  function fur(k, n, c, top, art, light, gl, put) { deco(k, n, c, art, light, gl, put); surf(k, top); INTERIOR.push(k); }
+  function tt(k, n, c, art, light, gl) { deco(k, n, c, art, light, gl); small(k); INTERIOR.push(k); }
+  function cab(rect) { rect(0, 3, 16, 3, "#d8d2c4"); rect(0, 3, 16, 1, "#f4f0e6"); rect(0, 6, 16, 1, "#8e8a80"); rect(0, 7, 16, 9, "#9a6234"); rect(0, 15, 16, 1, "#4a2a14"); rect(1, 8, 6, 6, "#b9793f"); rect(9, 8, 6, 6, "#b9793f"); rect(1, 8, 6, 1, "#dc9a58"); rect(9, 8, 6, 1, "#dc9a58"); rect(6, 10, 1, 2, "#f2c14e"); rect(9, 10, 1, 2, "#f2c14e"); rect(7, 7, 2, 9, "#6e431f"); }
+  fur("counter", "Kitchen Counter", "#d8d2c4", 3, function (rect) { cab(rect); });
+  fur("countersink", "Counter Sink", "#8ab0c8", 3, function (rect) { cab(rect); rect(3, 3, 10, 2, "#5d7c93"); rect(4, 3, 8, 1, "#8ab0c8"); rect(10, 0, 1, 3, "#aab2bd"); rect(8, 0, 3, 1, "#aab2bd"); rect(8, 1, 1, 1, "#7fd6ff"); });
+  fur("counterstove", "Counter Stove", "#3a3a42", 3, function (rect) { cab(rect); rect(0, 3, 16, 3, "#33343c"); rect(0, 3, 16, 1, "#55565e"); rect(2, 4, 4, 1, "#ff8a3d"); rect(10, 4, 4, 1, "#ff8a3d"); rect(3, 4, 2, 1, "#ffd28a"); rect(11, 4, 2, 1, "#ffd28a"); rect(1, 9, 14, 4, "#2a2a30"); rect(2, 10, 12, 2, "#ff6a1f", 0.6); }, 4, ["255,140,60", 1.4, 0.08]);
+  fur("wallshelf", "Wall Shelf", "#a8703c", 11, function (rect) { rect(0, 11, 16, 2, "#b9793f"); rect(0, 11, 16, 1, "#dc9a58"); rect(0, 13, 16, 1, "#6e431f"); rect(2, 13, 2, 3, "#4a4a52"); rect(12, 13, 2, 3, "#4a4a52"); rect(2, 13, 1, 1, "#9aa0ac"); rect(12, 13, 1, 1, "#9aa0ac"); }, 0, null, "wall");
+  fur("nightstand", "Nightstand", "#a8703c", 6, function (rect) { rect(2, 6, 12, 2, "#c98c4f"); rect(2, 6, 12, 1, "#e4aa6c"); rect(3, 8, 10, 6, "#9a6234"); rect(3, 10, 10, 1, "#6e431f"); rect(7, 9, 2, 1, "#f2c14e"); rect(7, 12, 2, 1, "#f2c14e"); rect(3, 14, 2, 2, "#6e431f"); rect(11, 14, 2, 2, "#6e431f"); });
+  fur("sidetable", "Round Side Table", "#c98c4f", 5, function (rect) { rect(2, 5, 12, 2, "#c98c4f"); rect(3, 5, 10, 1, "#e4aa6c"); rect(1, 6, 1, 1, "#a8703c"); rect(14, 6, 1, 1, "#a8703c"); rect(7, 7, 2, 7, "#8a5a32"); rect(7, 7, 1, 7, "#a8703c"); rect(4, 14, 8, 2, "#6e431f"); rect(5, 14, 6, 1, "#8a5a32"); });
+  fur("coffeetable", "Coffee Table", "#8a5a32", 10, function (rect) { rect(0, 10, 16, 2, "#a8703c"); rect(0, 10, 16, 1, "#dc9a58"); rect(1, 12, 14, 1, "#6e431f"); rect(1, 12, 2, 4, "#8a5a32"); rect(13, 12, 2, 4, "#8a5a32"); rect(3, 14, 10, 1, "#6e431f", 0.7); });
+  tt("tablecandle", "Table Candle", "#ffd28a", function (rect) { rect(5, 14, 6, 2, "#c9a54a"); rect(6, 14, 4, 1, "#f2dc8a"); rect(7, 8, 2, 6, "#f6eedb"); rect(7, 8, 1, 6, "#ffffff"); rect(7, 7, 2, 1, "#d8c8a8"); rect(7, 4, 2, 3, "#ffb13b"); rect(7, 5, 1, 1, "#fff2b0"); rect(8, 3, 1, 1, "#ff8a3d"); }, 9, ["255,200,120", 2.4, 0.16]);
+  tt("oillamp", "Oil Lamp", "#f2c14e", function (rect) { rect(4, 14, 8, 2, "#8a6a2a"); rect(5, 11, 6, 3, "#c9a54a"); rect(5, 11, 6, 1, "#f2dc8a"); rect(6, 4, 4, 7, "#bfe8ff", 0.45); rect(6, 4, 1, 7, "#ffffff", 0.5); rect(7, 6, 2, 3, "#ffb13b"); rect(7, 7, 1, 1, "#fff2b0"); rect(6, 3, 4, 1, "#8a6a2a"); }, 11, ["255,190,110", 3.0, 0.18]);
+  tt("fruitbowl", "Fruit Bowl", "#e8341c", function (rect) { rect(3, 12, 10, 3, "#c98c4f"); rect(2, 11, 12, 1, "#e4aa6c"); rect(5, 15, 6, 1, "#8a5a32"); rect(4, 8, 3, 3, "#e8341c"); rect(7, 7, 3, 4, "#ff8a2a"); rect(10, 8, 3, 3, "#5a8cff"); rect(6, 9, 2, 2, "#7fd06a"); rect(4, 8, 1, 1, "#ffb0a0"); rect(8, 6, 1, 1, "#3f9a3a"); });
+  tt("openbook", "Open Book", "#f6eedb", function (rect) { rect(1, 12, 14, 3, "#8a3020"); rect(2, 11, 6, 3, "#f6eedb"); rect(8, 11, 6, 3, "#ece2c8"); rect(7, 11, 2, 4, "#5a1a10"); [3, 4, 5].forEach(function (x) { rect(x, 12, 1, 1, "#8a8070"); rect(x + 7, 12, 1, 1, "#8a8070"); }); rect(12, 9, 1, 3, "#e8341c"); });
+  tt("inkquill", "Ink & Quill", "#2a2a3a", function (rect) { rect(5, 11, 6, 5, "#2a2a3a"); rect(5, 11, 6, 1, "#4a4a5a"); rect(6, 10, 4, 1, "#4a4a5a"); rect(6, 12, 1, 3, "#5a5a6a"); rect(9, 2, 2, 2, "#f6eedb"); rect(8, 4, 2, 2, "#f6eedb"); rect(8, 6, 1, 4, "#f6eedb"); rect(10, 1, 1, 2, "#ffffff"); rect(8, 9, 1, 2, "#8a7a5a"); });
+  tt("bonsai", "Bonsai Tree", "#4f8a3c", function (rect) { rect(3, 13, 10, 3, "#5d7c93"); rect(3, 13, 10, 1, "#8ab0c8"); rect(7, 8, 2, 5, "#7a4a24"); rect(5, 10, 2, 1, "#7a4a24"); rect(9, 7, 2, 1, "#7a4a24"); rect(2, 5, 6, 4, "#3f8a3a"); rect(8, 3, 6, 4, "#4f9a3c"); rect(5, 2, 4, 3, "#6aae4a"); rect(3, 5, 2, 1, "#8fd06a"); rect(9, 3, 2, 1, "#8fd06a"); });
+  tt("lilyvase", "Vase of Lilies", "#ffd2e8", function (rect) { rect(5, 10, 6, 6, "#e8e4d8"); rect(4, 11, 8, 4, "#e8e4d8"); rect(5, 10, 6, 1, "#ffffff"); rect(5, 12, 6, 1, "#5a8cff"); [[4, 3], [8, 2], [11, 4]].forEach(function (q) { rect(q[0] + 1, q[1] + 2, 1, 9 - q[1], "#4f8a3c"); rect(q[0], q[1], 3, 2, "#ffd2e8"); rect(q[0] + 1, q[1], 1, 1, "#ffe27a"); }); });
+  tt("cakestand", "Cake Stand", "#ff9ad0", function (rect) { rect(4, 15, 8, 1, "#c9a54a"); rect(7, 12, 2, 3, "#c9a54a"); rect(2, 11, 12, 1, "#f2dc8a"); rect(3, 6, 10, 5, "#f6eedb"); rect(3, 6, 10, 2, "#ff9ad0"); rect(4, 8, 1, 1, "#ff9ad0"); rect(8, 8, 1, 2, "#ff9ad0"); rect(11, 8, 1, 1, "#ff9ad0"); rect(7, 4, 2, 2, "#e8341c"); rect(8, 3, 1, 1, "#3f9a3a"); });
+  tt("teapot", "Copper Teapot", "#c9763e", function (rect) { rect(4, 9, 8, 6, "#c9763e"); rect(5, 8, 6, 1, "#c9763e"); rect(4, 15, 8, 1, "#8a4a20"); rect(5, 9, 2, 4, "#f0a868"); rect(7, 6, 2, 2, "#8a4a20"); rect(12, 10, 2, 1, "#c9763e"); rect(13, 9, 2, 1, "#c9763e"); rect(1, 10, 3, 1, "#8a4a20"); rect(1, 11, 1, 3, "#8a4a20"); rect(10, 4, 1, 2, "#ffffff", 0.5); });
+  // ====================================================================================================
+  // 7f. BLASTING PACK: Bog Bombs, Sticky Bombs, the Blast Keg and Firework Rockets. sandbox.js throws, lights and blows them up (see BLASTING there).
+  //   item.throwk = what kind of throwable it is ("bomb", "sticky", "firework"). The Blast Keg is a floor piece you tap (or press F next to) to light.
+  // ====================================================================================================
+  var FUN = [];
+  item("bomb", "Bog Bomb", { throwk: "bomb" }); FUN.push("bomb");
+  item("stickybomb", "Sticky Bomb", { throwk: "sticky" }); FUN.push("stickybomb");
+  item("firework", "Firework Rocket", { throwk: "firework" }); FUN.push("firework");
+  deco("blastkeg", "Blast Keg", "#c8301a", function (rect) {
+    rect(3, 3, 10, 13, "#8a4a24"); rect(2, 4, 12, 11, "#9a5a2c"); rect(4, 3, 2, 13, "#b06a34"); rect(11, 4, 1, 11, "#6e3a1a");
+    rect(2, 5, 12, 2, "#4a4a52"); rect(2, 12, 12, 2, "#4a4a52"); rect(2, 5, 12, 1, "#7a7a84"); rect(2, 12, 12, 1, "#7a7a84");
+    rect(5, 7, 6, 5, "#c8301a"); rect(5, 7, 6, 1, "#e85a3a"); rect(7, 8, 2, 2, "#fff2b0"); rect(7, 11, 2, 1, "#fff2b0");
+    rect(3, 2, 10, 1, "#6e3a1a"); rect(7, 0, 1, 2, "#c9a46a"); rect(8, 0, 1, 1, "#ffd23f");
+  }); TILES[T.X_blastkeg].kind = "blastkeg"; FUN.push("blastkeg");
+  // ====================================================================================================
+  // 7g. STARFALL PACK: on some clear nights stars streak across the sky and a few crash down, leaving a glowing Fallen Star in a small
+  // crater (sandbox.js: STARFALL). Mine it for Star Shards and Stardust; Stardust makes Starglass, Star Lanterns, Star Rockets and a charm.
+  // ====================================================================================================
+  mat("stardust", "Stardust", "#ffe9a0"); FUN.push("stardust");
+  var FSTAR = tile("X_fallenstar", "Fallen Star", "#3a2a5a", "#ffe9a0", 2.0, 1, "starshard", true, 13, "fallenstar", { bonus: [["stardust", 1, 2, 4]] });
+  glow(FSTAR, "255,230,150", 3.4, 0.24);
+  ART.fallenstar = function (rect, hh) {
+    rect(0, 2, 16, 14, "#2c2240"); rect(1, 1, 14, 15, "#3a2c56"); rect(2, 0, 11, 2, "#3a2c56"); rect(1, 13, 14, 3, "#241a36");
+    [[2, 4], [12, 3], [3, 12], [13, 11], [6, 14], [10, 1]].forEach(function (q) { rect(q[0], q[1], 2, 1, "#5a4a82"); });
+    rect(7, 2, 2, 12, "#ffd86a"); rect(2, 7, 12, 2, "#ffd86a"); rect(5, 5, 6, 6, "#ffe9a0"); rect(4, 6, 8, 4, "#ffe9a0"); rect(6, 4, 4, 8, "#ffe9a0");
+    rect(6, 6, 4, 4, "#fffbe8"); rect(7, 7, 2, 2, "#ffffff"); rect(4, 4, 1, 1, "#fff2b0"); rect(11, 11, 1, 1, "#fff2b0"); rect(11, 4, 1, 1, "#bfe0ff"); rect(4, 11, 1, 1, "#bfe0ff");
+  };
+  block("starglass", "Starglass", "#2a3a6a", "#ffe9a0", 0.6, function (rect, hh) {
+    rect(0, 0, 16, 16, "#24305a", 0.85); rect(0, 0, 16, 1, "#141a30"); rect(0, 15, 16, 1, "#141a30"); rect(0, 0, 1, 16, "#141a30"); rect(15, 0, 1, 16, "#141a30");
+    var pts = [[3, 3], [11, 2], [7, 7], [2, 11], [12, 10], [9, 13], [5, 5], [13, 6]];
+    pts.forEach(function (q, i) { var on = ((hh * 7 + i * 13) | 0) % 3; rect(q[0], q[1], 1, 1, on ? "#ffe9a0" : "#bfe0ff"); if (i < 3) { rect(q[0] - 1, q[1], 3, 1, "#ffe9a0", 0.5); rect(q[0], q[1] - 1, 1, 3, "#ffe9a0", 0.5); } });
+    rect(1, 1, 5, 1, "#ffffff", 0.25); rect(1, 1, 1, 5, "#ffffff", 0.25);
+  }, 9, ["255,230,160", 2.2, 0.12]); FUN.push("starglass");
+  deco("starlantern", "Star Lantern", "#ffe9a0", function (rect) {
+    rect(7, 0, 2, 2, "#8a6a2a"); rect(4, 2, 8, 2, "#c9a43a"); rect(4, 2, 8, 1, "#f2d080"); rect(3, 4, 10, 9, "#bfe8ff", 0.35); rect(3, 4, 1, 9, "#c9a43a"); rect(12, 4, 1, 9, "#c9a43a");
+    rect(7, 5, 2, 7, "#ffd86a"); rect(5, 7, 6, 3, "#ffd86a"); rect(6, 6, 4, 5, "#ffe9a0"); rect(7, 7, 2, 3, "#ffffff"); rect(4, 13, 8, 2, "#c9a43a"); rect(5, 15, 6, 1, "#8a6a2a");
+  }, 12, ["255,225,150", 3.0, 0.2]); small("starlantern"); FUN.push("starlantern");
+  item("starrocket", "Star Rocket", { throwk: "firework", star: 1 }); FUN.push("starrocket");
+  // ====================================================================================================
+  // 7h. MUSIC PACK: Music Records and the things that play them. Tap a Gramophone, Jukebox or Music Box (or press F next to it) to play
+  // a song; tap again for the next record you own, and once more after the last one to stop. sandbox.js plays the tunes (see JUKEBOX).
+  //   item.record = the song key. The Gramophone knows the Swamp Waltz by heart; the Music Box only ever plays its lullaby.
+  // ====================================================================================================
+  [["rec_waltz", "Record: Swamp Waltz", "waltz"], ["rec_jig", "Record: Ember Jig", "jig"], ["rec_lullaby", "Record: Frostfen Lullaby", "lullaby"],
+   ["rec_caves", "Record: Crystal Caves", "caves"], ["rec_stomp", "Record: Bog Stomp", "stomp"], ["rec_starfall", "Record: Starfall Serenade", "starfall"]].forEach(function (q) { item(q[0], q[1], { record: q[2] }); FUN.push(q[0]); });
+  deco("jukebox", "Swamp Jukebox", "#ff7ac0", function (rect) {
+    rect(2, 3, 12, 13, "#6e3a1f"); rect(3, 1, 10, 3, "#8a4a26"); rect(5, 0, 6, 2, "#8a4a26"); rect(3, 2, 10, 1, "#b06a34");
+    rect(3, 4, 10, 6, "#ff7ac0"); rect(4, 5, 8, 4, "#ffd0ec"); rect(5, 6, 6, 2, "#7fe8ff"); rect(6, 6, 1, 2, "#ffffff"); rect(9, 6, 1, 2, "#ffffff");
+    rect(2, 3, 1, 13, "#f2c14e"); rect(13, 3, 1, 13, "#f2c14e"); rect(4, 11, 8, 3, "#2a1a14"); [5, 7, 9].forEach(function (x) { rect(x, 11, 1, 3, "#c9a43a"); });
+    rect(3, 14, 10, 2, "#4a2a14"); rect(4, 15, 2, 1, "#2a1a0c"); rect(10, 15, 2, 1, "#2a1a0c"); rect(3, 10, 10, 1, "#ffd23f");
+  }, 8, ["255,140,210", 2.4, 0.14]); FUN.push("jukebox");
+  deco("musicbox", "Music Box", "#c9a43a", function (rect) {
+    rect(3, 11, 10, 5, "#8a4a26"); rect(3, 11, 10, 1, "#b06a34"); rect(3, 15, 10, 1, "#5a2e14"); rect(7, 12, 2, 2, "#f2c14e");
+    rect(3, 6, 10, 2, "#b06a34"); rect(3, 8, 1, 3, "#8a4a26"); rect(4, 9, 8, 2, "#ffd0ec"); rect(5, 10, 6, 1, "#c9a43a");
+    rect(7, 5, 2, 4, "#ffd0ec"); rect(6, 4, 4, 1, "#ff9ad0"); rect(7, 3, 2, 1, "#ffe0c8"); rect(13, 13, 2, 1, "#c9a43a"); rect(14, 12, 1, 1, "#c9a43a");
+  }); small("musicbox"); FUN.push("musicbox");
+  // ====================================================================================================
+  // 7i. WAYSTONES: a carved standing stone. Place one anywhere on the surface; tap it (or press F) to open a list of all your waystones
+  // (plus the camp and your bed) and travel to any of them in a flash. sandbox.js keeps the list (S.ways) and does the travel (see WAYSTONES).
+  // ====================================================================================================
+  deco("waystone", "Waystone", "#4ee6d0", function (rect) {
+    rect(4, 2, 8, 13, "#6e7a82"); rect(5, 1, 6, 2, "#6e7a82"); rect(6, 0, 4, 1, "#8a969e"); rect(4, 2, 2, 13, "#8a969e"); rect(11, 3, 1, 12, "#4e585e");
+    rect(2, 14, 12, 2, "#4e585e"); rect(3, 13, 10, 1, "#6e7a82"); rect(2, 14, 12, 1, "#8a969e");
+    rect(7, 3, 2, 1, "#4ee6d0"); rect(6, 4, 1, 3, "#4ee6d0"); rect(9, 4, 1, 3, "#4ee6d0"); rect(7, 7, 2, 1, "#4ee6d0"); rect(7, 8, 2, 3, "#9ffff0"); rect(6, 11, 4, 1, "#4ee6d0"); rect(7, 5, 2, 2, "#d4fff6");
+    rect(5, 9, 1, 1, "#3f8a3a"); rect(10, 12, 2, 1, "#3f8a3a"); rect(4, 13, 2, 1, "#4f9a3c");
+  }, 7, ["78,230,208", 2.6, 0.16]); TILES[T.X_waystone].kind = "waystone"; FUN.push("waystone");
+  // ====================================================================================================
+  // 7j. ADVENTURER'S PACK: the Vine Grapple (hold it and tap a block: a hook flies out and reels you over to it) and Treasure Maps
+  // (found in chests, pots and while fishing; hold one and tap to read it: an X is marked somewhere nearby, a few blocks under the ground,
+  // where a Buried Treasure chest is waiting to be dug up). sandbox.js does both (see GRAPPLE and TREASURE MAPS).
+  // ====================================================================================================
+  item("grapple", "Vine Grapple", { grap: 1 }); FUN.push("grapple");
+  item("treasuremap", "Treasure Map", { tmap: 1 }); FUN.push("treasuremap");
+  tile("X_buried", "Buried Treasure", "#6b5a44", "#f2c14e", 0.9, 0, "", true, 0, "buried");
+  ART.buried = function (rect) {
+    rect(0, 0, 16, 16, "#5a4632"); rect(0, 0, 16, 3, "#6b5a44"); [[2, 1], [9, 2], [13, 0], [5, 14], [12, 13]].forEach(function (q) { rect(q[0], q[1], 2, 1, "#7a6a54"); });
+    rect(2, 5, 12, 9, "#7a4a24"); rect(2, 5, 12, 3, "#9a6234"); rect(2, 5, 12, 1, "#c98c4f"); rect(2, 8, 12, 1, "#4a2a14"); rect(2, 5, 1, 9, "#c9a43a"); rect(13, 5, 1, 9, "#c9a43a");
+    rect(7, 7, 2, 3, "#f2c14e"); rect(7, 9, 2, 1, "#8a6a1a"); rect(3, 13, 10, 1, "#3a2a1a"); rect(4, 4, 2, 1, "#f2c14e"); rect(10, 3, 1, 2, "#fff2b0");
+  };
+  // ====================================================================================================
+  // 7k. PLAYGROUND PACK: blocks and toys for parkour courses and parties. Bounce Shroom: land on it and you spring back up higher each
+  // time (hold down to land softly). Speed Moss: you run much faster on it. Confetti Cannon: tap it for a burst of confetti. Party Balloons:
+  // a bunch of balloons that bob in the breeze. sandbox.js does the bouncing, running and confetti (see PLAYGROUND).
+  // ====================================================================================================
+  block("bounceshroom", "Bounce Shroom", "#e8341c", "#ffd0c8", 0.5, function (rect) {
+    rect(0, 6, 16, 10, "#e8e0c8"); rect(0, 6, 16, 1, "#fffbea"); rect(5, 8, 6, 8, "#d8ccb0"); rect(0, 15, 16, 1, "#a89c84"); [[2, 9], [12, 11], [8, 13]].forEach(function (q) { rect(q[0], q[1], 2, 1, "#c8bca0"); });
+    rect(0, 0, 16, 7, "#e8341c"); rect(1, 0, 14, 1, "#ff6a5a"); rect(0, 6, 16, 1, "#b02414");
+    [[2, 2, 3, 2], [8, 1, 3, 2], [12, 3, 3, 2], [5, 4, 2, 2]].forEach(function (q) { rect(q[0], q[1], q[2], q[3], "#fff6e8"); }); rect(2, 1, 1, 1, "#ffb0a0");
+  }); FUN.push("bounceshroom");
+  block("speedmoss", "Speed Moss", "#3fd0a0", "#d4fff0", 0.4, function (rect, hh) {
+    rect(0, 0, 16, 16, "#2a6a4a"); rect(0, 0, 16, 4, "#3fd0a0"); rect(0, 0, 16, 1, "#9fffe0"); rect(0, 4, 16, 1, "#1f5038");
+    [[1, 7], [6, 6], [11, 8], [3, 11], [9, 12], [13, 13]].forEach(function (q) { rect(q[0], q[1], 2, 1, "#3a8a62"); });
+    [2, 7, 12].forEach(function (x) { rect(x, 1, 2, 1, "#ffffff"); rect(x + 1, 2, 2, 1, "#d4fff0"); rect(x, 3, 2, 1, "#ffffff"); });
+  }, 3, ["80,230,180", 1.2, 0.06]); FUN.push("speedmoss");
+  deco("confetti", "Confetti Cannon", "#ff7ad9", function (rect) {
+    rect(3, 12, 10, 4, "#5a3a8a"); rect(3, 12, 10, 1, "#8a6ac8"); rect(4, 15, 8, 1, "#3a2a5a");
+    rect(5, 4, 6, 8, "#ff7ad9"); rect(5, 4, 2, 8, "#ffb0ec"); rect(4, 3, 8, 2, "#f2c14e"); rect(4, 3, 8, 1, "#fff2b0");
+    [[5, 6, "#ffd23f"], [8, 8, "#4ee6b4"], [6, 10, "#7fa8ff"], [9, 5, "#ffffff"]].forEach(function (q) { rect(q[0], q[1], 1, 1, q[2]); });
+    [[3, 0, "#ffd23f"], [7, 1, "#4ee6b4"], [11, 0, "#ff5a6a"], [13, 2, "#7fa8ff"], [1, 2, "#d08aff"]].forEach(function (q) { rect(q[0], q[1], 1, 1, q[2]); });
+  }); TILES[T.X_confetti].kind = "confetti"; FUN.push("confetti");
+  deco("balloons", "Party Balloons", "#ff5a6a", function (rect) {
+    rect(4, 12, 8, 4, "#c9a43a"); rect(4, 12, 8, 1, "#f2d080"); rect(7, 7, 1, 5, "#f6eedb"); rect(5, 8, 1, 4, "#f6eedb"); rect(10, 8, 1, 4, "#f6eedb");
+    rect(2, 2, 5, 6, "#ff5a6a"); rect(3, 1, 3, 1, "#ff5a6a"); rect(3, 2, 1, 2, "#ffb0b8");
+    rect(6, 0, 4, 6, "#4ea8ff"); rect(7, 0, 1, 2, "#bfe0ff");
+    rect(9, 3, 5, 5, "#ffd23f"); rect(10, 2, 3, 1, "#ffd23f"); rect(10, 3, 1, 2, "#fff2b0");
+  }); TILES[T.X_balloons].kind = "balloons"; FUN.push("balloons");
+  // ====================================================================================================
+  // 7l. RAINBOW PACK: when the rain stops on a sunny day a rainbow can arch over the land, and a Pot of Gold waits where it touches the
+  // ground (sandbox.js: RAINBOWS). Tap or dig the pot for coins, tokens and Rainbow Prisms; prisms make Rainbow Glass.
+  // ====================================================================================================
+  mat("prism", "Rainbow Prism", "#ff9ad0"); FUN.push("prism");
+  var POTG = tile("X_potofgold", "Pot of Gold", "#2a2a30", "#f2c14e", 0.3, 0, "", false, 9, "potofgold"); glow(POTG, "255,210,90", 2.8, 0.2);
+  ART.potofgold = function (rect) {
+    rect(2, 8, 12, 7, "#2a2a32"); rect(1, 7, 14, 2, "#3a3a44"); rect(1, 7, 14, 1, "#5a5a66"); rect(3, 15, 10, 1, "#18181e"); rect(3, 10, 1, 4, "#4a4a56");
+    rect(2, 4, 12, 4, "#f2c14e"); rect(3, 3, 10, 1, "#f2c14e"); rect(5, 2, 6, 1, "#ffd86a"); [[3, 4], [7, 3], [11, 5], [5, 6], [9, 5]].forEach(function (q) { rect(q[0], q[1], 2, 1, "#fff2b0"); });
+    rect(4, 5, 1, 1, "#c98a20"); rect(10, 6, 1, 1, "#c98a20"); rect(8, 0, 1, 2, "#ffffff"); rect(7, 1, 3, 1, "#fff2b0", 0.7);
+  };
+  block("rainbowglass", "Rainbow Glass", "#ff9ad0", "#ffffff", 0.6, function (rect) {
+    var C = ["#ff5a6a", "#ff9a4a", "#ffd23f", "#6ae07a", "#4ea8ff", "#9a6aff"];
+    for (var y = 0; y < 16; y++) for (var x = 0; x < 16; x++) rect(x, y, 1, 1, C[Math.floor(((x + y) % 18) / 3) % 6], 0.6);
+    rect(0, 0, 16, 1, "#2a2a30"); rect(0, 15, 16, 1, "#2a2a30"); rect(0, 0, 1, 16, "#2a2a30"); rect(15, 0, 1, 16, "#2a2a30"); rect(2, 2, 4, 1, "#ffffff", 0.6); rect(2, 2, 1, 4, "#ffffff", 0.6);
+  }, 6, ["255,200,230", 1.8, 0.1]); FUN.push("rainbowglass");
+  // ====================================================================================================
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
   function R(id, n, out, cost, o) { var r = { id: id, n: n, out: out, cost: cost, d: (o && o.d) || "" }; if (o) Object.keys(o).forEach(function (k) { r[k] = o[k]; }); RECIPES.push(r); }
+  R("x_trapdoor", "Swamp Trapdoor (2)", { trapdoor: 2 }, { planks: 3, fiber: 1 }, { d: "A wooden hatch for floors. Tap it or press F to open it, press down while standing on it to drop through, jump into it from below to climb up. It shuts behind you." });
+  // blasting pack
+  R("x_bomb", "Bog Bombs (3)", { bomb: 3 }, { sulfur: 1, charcoal: 2, clay: 1, fiber: 1 }, { bench: true, d: "Hold one and tap where to throw it. It bounces, then blows a hole in the ground and hurts anything close (you too!). Sulfur comes from the Ember Bog." });
+  R("x_stickybomb", "Sticky Bombs (3)", { stickybomb: 3 }, { bomb: 3, slimeball: 1 }, { d: "A Bog Bomb wrapped in slime: it sticks to the first thing it hits, walls and ceilings included. Made by hand." });
+  R("x_blastkeg", "Blast Keg", { blastkeg: 1 }, { bomb: 4, planks: 4, ironingot: 1 }, { bench: true, d: "A barrel packed with blasting powder. Place it, tap it (or press F) to light the fuse, and run. Clears a big hole." });
+  R("x_firework", "Firework Rockets (4)", { firework: 4 }, { sulfur: 1, cloth: 1, stick: 2 }, { bench: true, d: "Hold one and tap: it whistles up into the sky and bursts into colour. Best at night." });
+  // starfall pack
+  R("x_starglass", "Starglass (4)", { starglass: 4 }, { glass: 4, stardust: 1 }, { stn: "furnace", d: "Deep blue glass full of tiny glowing stars. Gives a soft light. Stardust comes from Fallen Stars." });
+  R("x_starrocket", "Star Rockets (4)", { starrocket: 4 }, { firework: 4, stardust: 1 }, { d: "Firework Rockets packed with Stardust: they burst into a golden star. Made by hand." });
+  R("x_ch_star", "Wishing Star Charm", null, { starshard: 2, stardust: 4, rope: 1 }, { charm: "star", bench: true, d: "Falling stars come on every clear night and land closer to you." });
+  // waystones
+  R("x_waystone", "Waystone", { waystone: 1 }, { stone: 10, quartz: 2, amethyst: 1 }, { stn: "mason", d: "A standing stone you can travel between. Place two or more, then tap one to pick where to go. The camp and your bed are always on the list." });
+  // adventurer's pack
+  R("x_grapple", "Vine Grapple", { grapple: 1 }, { rope: 3, ironingot: 1, stick: 2, fiber: 4 }, { bench: true, d: "Hold it and tap a block up to 13 tiles away: the hook flies out, bites and reels you over. Tap again or jump to let go. It never wears out." });
+  // playground pack
+  R("x_bounceshroom", "Bounce Shroom (2)", { bounceshroom: 2 }, { redcap: 2, slimeball: 1, spore: 2 }, { bench: true, d: "A springy mushroom block. Land on it to bounce back up, higher each time. Hold down to land softly." });
+  R("x_speedmoss", "Speed Moss (6)", { speedmoss: 6 }, { fiber: 2, spore: 2, slimeball: 1 }, { bench: true, d: "Slick glowing moss: you run much faster along it. Lay a track!" });
+  // rainbow pack
+  R("x_rainbowglass", "Rainbow Glass (4)", { rainbowglass: 4 }, { glass: 4, prism: 1 }, { stn: "furnace", d: "Glass striped with every colour of the rainbow. Rainbow Prisms come from a Pot of Gold at a rainbow's end." });
+  // treats pack: charms (worn like the others), potions, meals
+  R("x_ch_feather", "Feather Charm", null, { goldfeather: 2, fiber: 4, rope: 1 }, { charm: "feather", bench: true, bl: 2, d: "You never take fall damage. Golden Feathers turn up in chests and pots." });
+  R("x_ch_spring", "Springroot Charm", null, { springroot: 3, frogfrag: 2, rope: 1 }, { charm: "spring", bench: true, bl: 2, d: "Jump 15% higher. Springroot is found in Murkwater chests and pots." });
+  R("x_ch_leech", "Leech Fang Charm", null, { leechfang: 3, slimeball: 2, rope: 1 }, { charm: "leech", bench: true, bl: 2, d: "Every enemy your weapon hits heals you 2. Leech Fangs are found in Murkwater chests and pots." });
+  R("x_ch_lode", "Lodestone Charm", null, { lodestone: 4, ironingot: 2, rope: 1 }, { charm: "lode", bench: true, bl: 3, d: "Ore you mine sometimes drops one extra. Lodestone hides in chests and pots below the surface." });
+  R("x_ch_owl", "Owl Charm", null, { owlfeather: 3, moonstone: 1, rope: 1 }, { charm: "owl", bench: true, bl: 3, d: "See farther in the dark. Snowy Owl Feathers are found in Frostfen chests and pots." });
+  R("x_ch_brute", "Ogre Charm", null, { trolltusk: 2, ironingot: 3, rope: 1 }, { charm: "brute", bench: true, bl: 4, d: "Your weapon hits 15% harder. Troll Tusks are found only in the deepest chests." });
+  R("x_tonic_regen", "Mending Tonic", { tonic_regen: 1 }, { bottle: 1, mandrake: 1, marshlily: 2 }, { stn: "brew", d: "Health comes back steadily (3 a second) for 1 minute." });
+  R("x_tonic_glow", "Glow Tonic", { tonic_glow: 1 }, { bottle: 1, glowshroom: 2, firefly: 1 }, { stn: "brew", d: "You glow and light up the dark around you for 5 minutes." });
+  R("x_tonic_feather", "Featherfall Tonic", { tonic_feather: 1 }, { bottle: 1, batwing: 2, fiber: 2 }, { stn: "brew", d: "Fall slowly and take no fall damage for 3 minutes. Hold down to drop fast." });
+  R("x_tonic_luck", "Fortune Tonic", { tonic_luck: 1 }, { bottle: 1, ancientcoin: 1, amber: 1 }, { stn: "brew", d: "Chests, pots and fished-up treasure sometimes give an extra find, for 5 minutes." });
+  R("x_tonic_grow", "Growth Tonic", { tonic_grow: 1 }, { bottle: 1, earthworm: 2, carrot: 1 }, { stn: "brew", d: "Your crops grow 50% faster for 5 minutes." });
+  R("x_tonic_gill", "Gillweed Tonic", { tonic_gill: 1 }, { bottle: 1, bogminnow: 2, fiber: 2 }, { stn: "brew", d: "Swim 60% faster for 4 minutes." });
+  R("x_tonic_brute", "Brute Tonic", { tonic_brute: 1 }, { bottle: 1, rawmeat: 2, pepper: 2 }, { stn: "brew", d: "Your weapon hits 25% harder for 3 minutes." });
+  R("x_tonic_grand", "Grand Healing Tonic", { tonic_grand: 1 }, { bottle: 1, mandrake: 1, starshard: 1, marshlily: 2 }, { stn: "brew", bl: 3, d: "Heals 100 health right away. Star Shards are found only in the deepest chests." });
+  R("x_f_swampsalad", "Swamp Salad", { swampsalad: 1 }, { marshlily: 1, carrot: 1 }, { stn: "cook", d: "Fills 24 hunger and heals 6." });
+  R("x_f_redcapsoup", "Redcap Soup", { redcapsoup: 1 }, { redcap: 2, potato: 1 }, { stn: "cook", d: "Fills 30 hunger and heals 8." });
+  R("x_f_glowbroth", "Glowcap Broth", { glowbroth: 1 }, { glowshroom: 2, carrot: 1 }, { stn: "cook", d: "Fills 30 hunger and heals 12." });
+  R("x_f_buttermash", "Buttered Mash", { buttermash: 1 }, { potato: 2, goatmilk: 1 }, { stn: "cook", d: "Fills 36 hunger and heals 8." });
+  R("x_f_bogkebab", "Bog Kebab", { bogkebab: 1 }, { rawmeat: 1, pepper: 1, stick: 1 }, { stn: "cook", d: "Fills 38 hunger and heals 12." });
+  R("x_f_emberkebab", "Ember Kebab", { emberkebab: 1 }, { cinderfish: 1, emberroot: 1, stick: 1 }, { stn: "cook", d: "Fills 42 hunger and heals 14." });
+  R("x_f_carproll", "Crystal Carp Roll", { carproll: 1 }, { crystalcarp: 1, marshlily: 1 }, { stn: "cook", d: "Fills 44 hunger and heals 18." });
+  R("x_f_eelcurry", "Magma Eel Curry", { eelcurry: 1 }, { magmaeel: 1, pepper: 2, potato: 1 }, { stn: "cook", bl: 2, d: "Fills 60 hunger and heals 24." });
+  R("x_f_fishpie", "Fisherman's Pie", { fishpie: 1 }, { catfish: 1, potato: 2 }, { stn: "cook", d: "Fills 52 hunger and heals 18." });
+  R("x_f_carrotcake", "Carrot Cake", { carrotcake: 1 }, { carrot: 3, duckegg: 1 }, { stn: "cook", d: "Fills 40 hunger and heals 12." });
+  R("x_f_frostjam", "Frostberry Jam", { frostjam: 1 }, { frostberry: 3 }, { stn: "cook", d: "Fills 26 hunger and heals 8." });
+  R("x_f_swamptea", "Marsh Lily Tea", { swamptea: 1 }, { marshlily: 2 }, { stn: "cook", d: "Fills only 10 hunger, but heals 20." });
   R("x_rope", "Rope (2)", { rope: 2 }, { fiber: 4 }, { d: "Twisted reed fibre. Used for looms, lanterns, trophies and tapestries." });
   R("x_candle", "Candles (4)", { candle: 4 }, { fiber: 2, peat: 1 }, { d: "A wick dipped in peat tallow. Used in candelabras and chandeliers." });
   R("x_dyered", "Red Dye (2)", { dyered: 2 }, { redcap: 2 }, { d: "Pressed Redcap Mushrooms. Colours stained glass and cloth." });
@@ -680,6 +924,44 @@
   Dc("x_tap_swamp", "Tapestries", "Swamp Tapestry", { tapestry_swamp: 1 }, { cloth: 3, dyegreen: 1, rope: 1 }, "A teal cloth with a glowing sprout.");
   Dc("x_tap_ember", "Tapestries", "Ember Tapestry", { tapestry_ember: 1 }, { cloth: 3, dyered: 1, emberroot: 1 }, "A rust-red cloth with a golden flame.", 2);
   Dc("x_tap_frost", "Tapestries", "Frost Tapestry", { tapestry_frost: 1 }, { cloth: 3, dyeblue: 1, frostbell: 1 }, "A deep blue cloth with a white snowflake.", 3);
+  Dc("x_d_pottedfern", "Cosy corners", "Potted Fern", { pottedfern: 1 }, { pot: 1, leaves: 2 }, "A leafy fern in a clay pot.");
+  Dc("x_d_cattailvase", "Cosy corners", "Cattail Vase", { cattailvase: 1 }, { clay: 2, fiber: 3 }, "Three cattails in a blue vase.");
+  Dc("x_d_glowjar", "Cosy corners", "Glowcap Jar", { glowjar: 1 }, { glass: 1, glowshroom: 2 }, "Glowcaps growing in a jar. Gives a soft teal light.");
+  Dc("x_d_hangingherbs", "Cosy corners", "Hanging Herbs", { hangingherbs: 1 }, { fiber: 3, marshlily: 1, stick: 1 }, "Bundles of herbs drying on a rail. Hangs on a wall.");
+  Dc("x_d_stackedbooks", "Cosy corners", "Stack of Books", { stackedbooks: 1 }, { cloth: 2, planks: 1 }, "A wobbly pile of well-read books.");
+  Dc("x_d_teaset", "Cosy corners", "Tea Set", { teaset: 1 }, { clay: 3, quartz: 1 }, "A teapot and cups on a tray.");
+  Dc("x_d_skullcandle", "Cosy corners", "Skull Candle", { skullcandle: 1 }, { bone: 2, candle: 1 }, "A candle melted onto an old skull. Gives a warm light.");
+  Dc("x_d_shipbottle", "Curiosities", "Ship in a Bottle", { shipbottle: 1 }, { bottle: 1, planks: 1, cloth: 1 }, "A tiny sailing ship. Nobody knows how it got in there.");
+  Dc("x_d_gramophone", "Curiosities", "Gramophone", { gramophone: 1 }, { ironingot: 2, planks: 2, ancientcoin: 1 }, "A brass horn and a crank. Ancient Coins are found in chests and pots.", 2);
+  Dc("x_d_frogidol", "Curiosities", "Frog Idol", { frogidol: 1 }, { stone: 4, amber: 1 }, "A stone frog with amber eyes.");
+  Dc("x_d_bonepile", "Curiosities", "Bone Pile", { bonepile: 1 }, { bone: 5 }, "Somebody's leftovers.");
+  Dc("x_d_crystalcluster", "Curiosities", "Crystal Cluster", { crystalcluster: 1 }, { crystal: 4, stone: 1 }, "Glowing ice-blue crystals.", 2);
+  Dc("x_d_starchart", "Curiosities", "Star Chart", { starchart: 1 }, { cloth: 2, dyeblue: 1, starshard: 1 }, "A map of the night sky. Hangs on a wall. Star Shards come from the deepest chests.", 3);
+  Dc("x_d_birdcage", "Curiosities", "Birdcage", { birdcage: 1 }, { ironingot: 1, goldfeather: 1 }, "A gilded cage with a little orange bird. Hangs on a wall.", 2);
+  Dc("x_d_windchime", "Curiosities", "Bone Wind Chime", { windchime: 1 }, { bone: 3, rope: 1 }, "Clacks gently in the breeze. Hangs on a wall.");
+  Dc("x_d_counter", "Kitchen", "Kitchen Counter (2)", { counter: 2 }, { planks: 3, stone: 2, mortar: 1 }, "A cabinet with a stone top. Line several up; small pieces stand on top.");
+  Dc("x_d_countersink", "Kitchen", "Counter Sink", { countersink: 1 }, { counter: 1, ironingot: 1 }, "A counter with a basin and a tap.");
+  Dc("x_d_counterstove", "Kitchen", "Counter Stove", { counterstove: 1 }, { counter: 1, ironingot: 2, cinder: 1 }, "A counter with a glowing iron stove top.");
+  Dc("x_d_wallshelf", "Kitchen", "Wall Shelf (2)", { wallshelf: 2 }, { planks: 2, ironingot: 1 }, "Hangs on a wall or a back wall. Put small pieces in the tile above it to stand them on the shelf.");
+  Dc("x_d_teapot", "Kitchen", "Copper Teapot", { teapot: 1 }, { ironingot: 1, amber: 1 }, "Sits nicely on a counter or a stove.");
+  Dc("x_d_fruitbowl", "Kitchen", "Fruit Bowl", { fruitbowl: 1 }, { planks: 1, carrot: 1, frostberry: 1, pepper: 1 }, "A bowl of fresh fruit for the table.");
+  Dc("x_d_cakestand", "Kitchen", "Cake Stand", { cakestand: 1 }, { ironingot: 1, carrotcake: 1 }, "A cake on a golden stand.");
+  Dc("x_d_nightstand", "Tables & Tabletops", "Nightstand", { nightstand: 1 }, { planks: 4 }, "A small bedside cabinet. Small pieces stand on top.");
+  Dc("x_d_sidetable", "Tables & Tabletops", "Round Side Table", { sidetable: 1 }, { planks: 3, stick: 1 }, "A little round table on one leg.");
+  Dc("x_d_coffeetable", "Tables & Tabletops", "Coffee Table", { coffeetable: 1 }, { planks: 4 }, "A low table to put in front of a sofa.");
+  Dc("x_d_tablecandle", "Tables & Tabletops", "Table Candle (2)", { tablecandle: 2 }, { candle: 2, ironingot: 1 }, "A candle in a brass holder. Gives a warm light.");
+  Dc("x_d_oillamp", "Tables & Tabletops", "Oil Lamp", { oillamp: 1 }, { glass: 1, ironingot: 1, peat: 1 }, "A glass oil lamp. Lights up a room.");
+  Dc("x_d_openbook", "Tables & Tabletops", "Open Book", { openbook: 1 }, { cloth: 1, planks: 1 }, "A book left open at a good bit.");
+  Dc("x_d_inkquill", "Tables & Tabletops", "Ink & Quill", { inkquill: 1 }, { bottle: 1, batwing: 1, charcoal: 1 }, "For writing letters at your desk.");
+  Dc("x_d_bonsai", "Tables & Tabletops", "Bonsai Tree", { bonsai: 1 }, { pot: 1, leaves: 3, wood: 1 }, "A tiny, patient tree.");
+  Dc("x_d_starlantern", "Curiosities", "Star Lantern", { starlantern: 1 }, { glass: 1, ironingot: 1, stardust: 2 }, "A brass lantern with a captured star inside. Bright, and small enough for a table.");
+  Dc("x_d_jukebox", "Music", "Swamp Jukebox", { jukebox: 1 }, { planks: 6, ironingot: 2, glass: 2, amber: 2 }, "Plays any Music Record you own, louder than a gramophone. Tap it to change the song.", 2);
+  Dc("x_d_musicbox", "Music", "Music Box", { musicbox: 1 }, { planks: 2, ironingot: 1, amber: 1 }, "A wind-up box with a tiny dancer. Plays the Frostfen Lullaby. Fits on a table.");
+  Dc("x_d_rec_waltz", "Music", "Record: Swamp Waltz", { rec_waltz: 1 }, { charcoal: 2, amber: 1 }, "A gentle three-step for the swamp. Other records turn up in chests and pots.");
+  Dc("x_d_rec_starfall", "Music", "Record: Starfall Serenade", { rec_starfall: 1 }, { charcoal: 2, stardust: 3 }, "A dreamy song pressed with Stardust from a Fallen Star.");
+  Dc("x_d_confetti", "Party", "Confetti Cannon", { confetti: 1 }, { cloth: 1, sulfur: 1, dyered: 1, dyeblue: 1 }, "Tap it for a big burst of confetti. Never runs out.");
+  Dc("x_d_balloons", "Party", "Party Balloons", { balloons: 1 }, { cloth: 2, dyered: 1, rope: 1 }, "Three balloons on a weight, bobbing in the breeze.");
+  Dc("x_d_lilyvase", "Tables & Tabletops", "Vase of Lilies", { lilyvase: 1 }, { clay: 2, marshlily: 3 }, "Fresh marsh lilies in a painted vase.");
 
   // ====================================================================================================
   // 9. GOALS (checked by sandbox.js; they read the bag, so they unlock the moment you hold the thing)
@@ -693,6 +975,7 @@
     { id: "x_fossil", n: "Fossil Hunter", d: "Dig up a Fossil", f: function (S) { return has(S, "fossil"); } },
     { id: "x_gems", n: "Gem Collector", d: "Hold an Ember Ruby, a Frost Sapphire and a Moonstone", f: function (S) { return has(S, "ruby") && has(S, "sapphire") && has(S, "moonstone"); } },
     { id: "x_mason", n: "Master Mason", d: "Cut Red Brick, Quartz and Obsidian Brick", f: function (S) { return has(S, "redbrick") && has(S, "quartzblock") && has(S, "obsidianbrick"); } },
+    { id: "x_star", n: "Catch a Falling Star", d: "Mine a Fallen Star after it crashes down on a clear night", f: function (S) { return has(S, "stardust"); } },
     { id: "x_glass", n: "Stained Glass Window", d: "Make all three stained glass colours", f: function (S) { return has(S, "stainedred") && has(S, "stainedblue") && has(S, "stainedgreen"); } }
   );
 
@@ -746,11 +1029,12 @@
   // tier 0 = shallow, 1 = mid, 2 = deep (side-view caves: depth below the surface line; hole caves: the floor number).
   // Each entry: [item, min, max, weight, lowest tier]. Biome lists sit on top of the common list.
   var LOOT_ALL = [["torch", 3, 8, 6, 0], ["rope", 1, 3, 4, 0], ["candle", 2, 4, 3, 0], ["planks", 4, 10, 4, 0], ["pebble", 3, 6, 2, 0], ["charcoal", 1, 3, 3, 0], ["bone", 1, 3, 2, 0],
-    ["ironingot", 1, 3, 3, 1], ["cloth", 1, 3, 2, 1], ["quartz", 1, 3, 2, 1], ["amethyst", 1, 2, 2, 1], ["glass", 2, 4, 1, 1], ["ironingot", 2, 5, 3, 2], ["amethyst", 2, 4, 2, 2]];
+    ["ironingot", 1, 3, 3, 1], ["cloth", 1, 3, 2, 1], ["quartz", 1, 3, 2, 1], ["amethyst", 1, 2, 2, 1], ["glass", 2, 4, 1, 1], ["ironingot", 2, 5, 3, 2], ["amethyst", 2, 4, 2, 2],
+    ["goldfeather", 1, 1, 1, 0], ["ancientcoin", 1, 3, 2, 1], ["lodestone", 1, 2, 2, 1], ["starshard", 1, 1, 1, 2], ["trolltusk", 1, 1, 1, 2], ["bomb", 1, 3, 2, 1], ["firework", 2, 4, 2, 0], ["rec_waltz", 1, 1, 1, 0], ["rec_caves", 1, 1, 1, 1], ["rec_stomp", 1, 1, 1, 2], ["treasuremap", 1, 1, 2, 0]];   // treats pack finds (+ blasting pack)
   var LOOT_B = [
-    [["spore", 3, 8, 5, 0], ["clay", 3, 6, 3, 0], ["seed_carrot", 2, 4, 3, 0], ["seed_potato", 1, 3, 2, 0], ["bakedpotato", 1, 2, 1, 1], ["amber", 1, 3, 3, 0], ["bogiron", 2, 5, 3, 0], ["cotton", 2, 4, 2, 0], ["bugfrag", 1, 2, 2, 0], ["frogfrag", 1, 2, 2, 0], ["slimeball", 1, 3, 2, 0], ["gatorscale", 1, 2, 1, 1], ["moonstone", 1, 1, 1, 2]],
-    [["cinder", 3, 6, 5, 0], ["sulfur", 1, 3, 3, 0], ["seed_pepper", 2, 3, 3, 0], ["chili", 1, 1, 1, 1], ["emberroot", 1, 3, 2, 0], ["stinger", 1, 2, 2, 0], ["ruby", 1, 2, 2, 1], ["ruby", 2, 3, 2, 2], ["slimeball", 1, 3, 1, 0]],
-    [["crystal", 2, 5, 5, 0], ["icecap", 1, 3, 2, 0], ["seed_frost", 2, 3, 3, 0], ["berrypie", 1, 1, 1, 1], ["frostbell", 1, 3, 2, 0], ["wolfpelt", 1, 2, 2, 0], ["sapphire", 1, 2, 2, 1], ["moonstone", 1, 2, 2, 1], ["sapphire", 2, 3, 2, 2]]
+    [["springroot", 1, 2, 2, 0], ["leechfang", 1, 2, 2, 0], ["mandrake", 1, 1, 1, 1], ["spore", 3, 8, 5, 0], ["clay", 3, 6, 3, 0], ["seed_carrot", 2, 4, 3, 0], ["seed_potato", 1, 3, 2, 0], ["bakedpotato", 1, 2, 1, 1], ["amber", 1, 3, 3, 0], ["bogiron", 2, 5, 3, 0], ["cotton", 2, 4, 2, 0], ["bugfrag", 1, 2, 2, 0], ["frogfrag", 1, 2, 2, 0], ["slimeball", 1, 3, 2, 0], ["gatorscale", 1, 2, 1, 1], ["moonstone", 1, 1, 1, 2]],
+    [["mandrake", 1, 1, 1, 2], ["rec_jig", 1, 1, 1, 0], ["cinder", 3, 6, 5, 0], ["sulfur", 1, 3, 3, 0], ["seed_pepper", 2, 3, 3, 0], ["chili", 1, 1, 1, 1], ["emberroot", 1, 3, 2, 0], ["stinger", 1, 2, 2, 0], ["ruby", 1, 2, 2, 1], ["ruby", 2, 3, 2, 2], ["slimeball", 1, 3, 1, 0]],
+    [["owlfeather", 1, 2, 2, 0], ["rec_lullaby", 1, 1, 1, 0], ["crystal", 2, 5, 5, 0], ["icecap", 1, 3, 2, 0], ["seed_frost", 2, 3, 3, 0], ["berrypie", 1, 1, 1, 1], ["frostbell", 1, 3, 2, 0], ["wolfpelt", 1, 2, 2, 0], ["sapphire", 1, 2, 2, 1], ["moonstone", 1, 2, 2, 1], ["sapphire", 2, 3, 2, 2]]
   ];
   function loot(kind, biome, tier, rnd) {
     rnd = rnd || Math.random; var pool = LOOT_ALL.concat(LOOT_B[biome] || LOOT_B[0]).filter(function (e) { return e[4] <= tier && ITEMS[e[0]]; }), tot = 0, out = {}, n, q;
@@ -780,6 +1064,6 @@
   if (SW.post) SW.post.push(function (w) { populate(w); placeTreasure(w); });   // per generated map (see ENDLESS WORLD in sandbox-world.js)
   else SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
 
-  var api = { BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var api = { FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
