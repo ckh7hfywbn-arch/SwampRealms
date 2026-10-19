@@ -8318,6 +8318,156 @@
     }
   }
 
+  // ---------- QUEST BOOK: the Quests tab as a map of lily pads joined by vines (in the spirit of FTB Quests) ----------
+  // Left: the chapters (the seven story chapters, then one page per side-quest group). Right: that chapter's pond. Every quest is a lily pad
+  // with an icon; a ring around it fills with progress; finished pads bloom with a flower; the current story quest glows like a firefly;
+  // pads you cannot reach yet are murky and locked. Vines link a quest to the one it leads to: the story is one winding chain per chapter
+  // (ending in the chapter reward), side quests hang in chains of the same kind (Fishmonger > Master Angler > Fish Collector...).
+  // Tap a pad for its card: what to do, progress, rewards. The pond scrolls (drag it with the mouse, or swipe). Quest logic is unchanged:
+  // this only draws MAIN / SIDE / CHAPTERS. QB = { ch: open chapter key, sel: selected quest id, fresh: centre on the current pad }.
+  var QB = { ch: "", sel: "", fresh: true, sx: 0, sy: 0 };
+  var QB_ICON = {
+    stick: "stick", fiber: "fiber", pebble: "pebble", pick1: "pick1", wood: "wood", bench: "bench", lights: "torch", eat: "redcap", plant: "seed_carrot", harvest: "carrot", cook: "cookpot", bed: "bed", door: "door", sleep: "#☾", stash: "chest", fishing: "bogminnow", tame: "duckegg",
+    spore: "spore", pick2: "pick2", spear: "wpn1", bug: "bugfrag", frog: "frogfrag", blade: "wpn2", hole: "ladder", sweep: "#⚔", benchup: "bench", mail: "arm2", queen: "queenchitin",
+    ember: "cinder", wasp: "stinger", pick3: "pick3", furnace: "furnace", iron: "ironingot", cleaver: "wpn3", forge: "charcoal", aerie: "emberwings", bench3: "bench", plate: "arm3", wyrm: "wyrmscale",
+    frost: "crystal", wolf: "wolfpelt", pick4: "pick4", fang: "wpn4", shrine: "#❄", berry: "frostberry", bench4: "bench", fplate: "arm4", alpha: "alphamane",
+    deep10: "amethyst", hoard: "ancientcoin", hunter: "wolftrophy", feast: "feast", gems: "ruby", heart: "swampheart", restore: "flower", pick5: "pick5", realm: "realmshard", gate: "realmgate", wake: "moonstone", through: "#✦",
+    croak: "frogidol", dig: "pebble", swim: "#≋", bld1: "door", bld5: "#⌂", allkinds: "worldmap", deep: "ladder", ladder1: "ladder", wall1: "wall_plank", wall2: "wall_log", build: "planks", build500: "redbrick",
+    stand1: "armorstand", stand3: "armorstand", decor1: "flower", dbench1: "decorbench", dcraft5: "candle", dcraft15: "cloth", dcraft30: "amberblock", throne: "throne", stain1: "stain_walnut", stain8: "stain_walnut",
+    bag1: "bag1", bag2: "bag2", shovel1: "shovel", gem1: "quartz", gem4: "amethyst", king5: "wpn5", arm1: "arm1", x_cloth: "cloth", x_mason: "redbrick", x_glass: "stainedred",
+    bow1: "bow1", arrow25: "arrow", bow3: "bow3", witch1: "hexdust", witch5: "hexdust", whut1: "bottle", whut2: "hexdust", glide500: "emberwings", spider10: "silk", boss1: "bugtrophy", boss3: "alphamane", boss10: "wyrmscale",
+    bug5: "bugfrag", frog5: "frogfrag", bat1: "batwing", bat10: "battrophy", slime5: "slimeball", gator1: "gatorscale", wasp5: "stinger", wolf5: "wolfpelt", sleep5: "bed",
+    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
+    cave2: "stone", cave3: "ladder", ckill10: "wpn2", cclear5: "amethyst", cave15: "moonstone", loot1: "chest", loot10: "ancientcoin", pots20: "pot", home1: "homeshell",
+    trap10: "fishtrap", bait10: "firefly", fish10: "bogminnow", fish50: "rod2", rarefish: "glowfin", fishdex: "fishtrophy", lavafish: "rod2", fishloot: "chest", boot: "oldboot",
+    pets3: "trough", allpets: "goatmilk", collect20: "duckegg", baby1: "truffle", ffly10: "firefly", scoop10: "bucket", charm1: "goldfeather", charm8: "owlfeather", bty1: "swamptoken", bty25: "swamptoken", shop1: "swamptoken",
+    x_amber: "amber", x_geode: "amethyst", x_fossil: "fossil",
+    fw10: "firework", boom1: "bomb", keg1: "blastkeg", boom200: "stickybomb", star1: "stardust", star5: "starshard", song1: "gramophone", song6: "jukebox", way2: "waystone", warp10: "waystone", grap1: "grapple",
+    dig1: "treasuremap", dig5: "ancientcoin", bounce50: "bounceshroom", party: "confetti", pot1: "prism"
+  };
+  var QB_BIG = { queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
+  var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate"];
+  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework" };
+  var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", stain1: "stain8", bty1: "bty25" };
+  function qbIco(k) {   // an icon url for an item key, a tool tier ("pick3"), or null for a glyph ("#⚔")
+    if (!k || k.charAt(0) === "#") return null;
+    var m = /^pick(\d)$/.exec(k);
+    if (m) { var key = "qbpick" + m[1]; if (!ICO[key]) { var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false; try { drawPickIcon(g, +m[1]); } catch (e) {} ICO[key] = c.toDataURL(); } return ICO[key]; }
+    if (!ITEMS[k] && !SPR[k] && !/^(wpn|arm|bag)\d$/.test(k) && k !== "shovel" && k !== "can" && k !== "bucket") return null;
+    try { return icon(k); } catch (e) { return null; }
+  }
+  function qbIconOf(q) { var k = QB_ICON[q.id]; if (!k && q.rw) k = Object.keys(q.rw)[0]; return k || "#★"; }
+  function qbPad(k) { var u = qbIco(k); return u ? '<img alt="" src="' + u + '">' : '<span class="qg">' + esc((k || "#★").slice(1)) + "</span>"; }
+  function qbHash(a, b) { var h = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return h - Math.floor(h); }
+  function qbChapters() {   // [{ key, n, c, ic, done, all, lock }]
+    var L = [], cc = curCh();
+    for (var i = 0; i < CHAPTERS.length; i++) { var ql = chQuests(i); if (!ql.length) continue; L.push({ key: "m" + i, n: CHAPTERS[i].n, c: CHAPTERS[i].c, ic: QB_CHIC[i] || "#★", done: ql.filter(function (q) { return MAIN.indexOf(q) < S.qi; }).length, all: ql.length, lock: i > cc, num: i + 1 }); }
+    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length) return; L.push({ key: "s:" + cat, n: cat, c: "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
+    return L;
+  }
+  function qbLayout(key) {   // nodes [{ q, x, y, st, pr, big, rw }] and links [[from, to, done]] in pixels
+    var N = [], E = [], narrow = window.innerWidth < 640, SP = narrow ? 96 : 108;
+    if (key.charAt(0) === "m") {
+      var ci = +key.slice(1), ql = chQuests(ci), cols = narrow ? 3 : 4, locked = ci > curCh();
+      ql.forEach(function (q, i) {
+        var r = Math.floor(i / cols), c = i % cols; if (r % 2) c = cols - 1 - c;
+        var x = 66 + c * SP + (qbHash(ci, i) - 0.5) * 22, y = 66 + r * 116 + (c % 2 ? 26 : 0) + (qbHash(i, ci) - 0.5) * 18, n2 = MAIN.indexOf(q);
+        var st = locked ? "lock" : n2 < S.qi ? "done" : n2 === S.qi ? "cur" : "next", pr = st === "done" ? 1 : st === "cur" ? clamp(q.v() / q.need, 0, 1) : 0;
+        N.push({ q: q, x: x, y: y, st: st, pr: pr, big: !!QB_BIG[q.id] });
+        if (i) E.push([i - 1, i, st === "done" || st === "cur"]);
+      });
+      var C = CHAPTERS[ci];
+      if (C.rw && Object.keys(C.rw).length) {   // the chapter's reward chest at the end of the chain
+        var last = N[N.length - 1], i2 = ql.length, r2 = Math.floor(i2 / cols), c2 = i2 % cols; if (r2 % 2) c2 = cols - 1 - c2;
+        var dn = !locked && ql.every(function (q) { return MAIN.indexOf(q) < S.qi; });
+        N.push({ q: { id: "rw" + ci, n: "Chapter reward", d: "Finish every quest in this chapter.", rw: C.rw, need: 1, v: function () { return dn ? 1 : 0; } }, x: 66 + c2 * SP, y: 66 + r2 * 116 + (c2 % 2 ? 26 : 0), st: locked ? "lock" : dn ? "done" : "next", pr: dn ? 1 : 0, big: true, rwNode: 1 });
+        E.push([N.length - 2, N.length - 1, dn]);
+      }
+    } else {
+      var cat = key.slice(2), list = SIDE.filter(function (q) { return q.cat === cat; }), byId = {}, next = {}, prev = {};
+      list.forEach(function (q) { byId[q.id] = q; });
+      var base = function (id) { return id.replace(/\d+$/, ""); }, num = function (id) { var m = /(\d+)$/.exec(id); return m ? +m[1] : 0; }, groups = {};
+      list.forEach(function (q) { (groups[base(q.id)] = groups[base(q.id)] || []).push(q); });
+      Object.keys(groups).forEach(function (b) { var g = groups[b].sort(function (a, c) { return num(a.id) - num(c.id); }); for (var i = 1; i < g.length; i++) { next[g[i - 1].id] = g[i].id; prev[g[i].id] = g[i - 1].id; } });
+      Object.keys(QB_LINK).forEach(function (a) { var b = QB_LINK[a]; if (byId[a] && byId[b] && !next[a] && !prev[b]) { next[a] = b; prev[b] = a; } });
+      var chains = []; list.forEach(function (q) { if (prev[q.id]) return; var ch = [q], k = q.id; while (next[k] && byId[next[k]] && ch.length < 9) { k = next[k]; ch.push(byId[k]); } chains.push(ch); });
+      chains.sort(function (a, b) { return b.length - a.length || a[0].ch - b[0].ch; });
+      var tall = Math.max(3, chains[0] ? chains[0].length : 1), col = 0, row = 0, idx = {};
+      chains.forEach(function (ch) {
+        if (ch.length > 1 || row + 1 > tall) { if (row) { col++; row = 0; } }
+        ch.forEach(function (q, j) {
+          var open = sideOpen(q), done = !!S.ms[q.id], pq = prev[q.id], st = done ? "done" : !open ? "lock" : pq && !S.ms[pq] ? "next" : "open";
+          idx[q.id] = N.length; N.push({ q: q, x: 66 + col * SP + (qbHash(col, row + j) - 0.5) * 16, y: 66 + (row + j) * 112 + (col % 2 ? 30 : 0), st: st, pr: done ? 1 : open ? clamp(q.v() / q.need, 0, 1) : 0, big: !!QB_BIG[q.id] });
+          if (j) E.push([idx[ch[j - 1].id], N.length - 1, !!S.ms[ch[j - 1].id]]);
+        });
+        if (ch.length > 1) { col++; row = 0; } else { row++; if (row >= tall) { col++; row = 0; } }
+      });
+    }
+    var w = 0, h = 0; N.forEach(function (n) { w = Math.max(w, n.x + 80); h = Math.max(h, n.y + 96); });
+    return { N: N, E: E, w: w, h: h };
+  }
+  function qbRender() {
+    var chs = qbChapters(), cc = curCh();
+    if (!QB.ch || !chs.some(function (c) { return c.key === QB.ch; })) { QB.ch = "m" + Math.min(cc, chs.filter(function (c) { return !c.side; }).length - 1); QB.fresh = true; }
+    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), h = '<div class="qb" style="--qc:' + me.c + '">';
+    // chapter list
+    h += '<nav class="qb-side" aria-label="Quest chapters"><small>Story</small>';
+    chs.forEach(function (c, i) {
+      if (c.side && !chs[i - 1].side) h += "<small>Side quests</small>";
+      var pc = Math.round(c.done / c.all * 100);
+      h += '<button type="button" class="qb-ch' + (c.key === QB.ch ? " on" : "") + (c.lock ? " lock" : "") + (c.done === c.all ? " full" : "") + '" data-qb-ch="' + esc(c.key) + '" style="--cc:' + c.c + ";--pc:" + pc + '" title="' + esc(c.n) + '"><span class="qb-chi">' + (c.lock ? '<span class="qg">🔒</span>' : qbPad(c.ic)) + '</span><span class="qb-cht"><b>' + esc(c.n) + "</b><em>" + (c.num ? "Ch " + c.num + " · " : "") + c.done + "/" + c.all + "</em></span></button>";
+    });
+    h += "</nav>";
+    // header
+    var isMain = QB.ch.charAt(0) === "m", ci = isMain ? +QB.ch.slice(1) : -1;
+    h += '<div class="qb-main"><header class="qb-head"><div><small>' + (isMain ? "Chapter " + (ci + 1) : "Side quests") + "</small><h3>" + esc(me.n) + '</h3></div><div class="qb-hp"><span class="bar"><i style="width:' + Math.round(me.done / me.all * 100) + '%"></i></span><em>' + me.done + "/" + me.all + "</em></div>"
+      + (isMain && ci <= cc ? '<button type="button" class="btn ghost qb-story" data-story="' + ci + '">Story</button>' : "") + "</header>";
+    if (isMain && ci === cc && btyOpen()) { rollBounties(); var brd = btyReady(); h += '<div class="qb-bty"><img alt="" src="' + icon("swamptoken") + '"><span>' + (brd ? "<b>" + brd + " bounties ready.</b> Visit Old Croaker!" : "Croaker's bounties: see him at camp.") + "</span></div>"; }
+    // the pond
+    h += '<div class="qb-mapwrap"><div class="qb-map" tabindex="-1"><div class="qb-world" style="width:max(100%,' + L.w + "px);height:" + L.h + 'px"><div class="qb-in" style="width:' + L.w + "px;height:" + L.h + 'px">';
+    h += '<svg class="qb-vines" width="' + L.w + '" height="' + L.h + '" aria-hidden="true">';
+    L.E.forEach(function (e) {
+      var a = L.N[e[0]], b = L.N[e[1]], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, bend = Math.abs(dy) > Math.abs(dx) ? 26 : 20, cx = mx - dy / Math.hypot(dx, dy) * bend, cy = my + dx / Math.hypot(dx, dy) * bend, d = "M" + a.x + " " + a.y + " Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + b.x + " " + b.y;
+      h += '<path class="v0" d="' + d + '"/><path class="' + (e[2] ? "v1" : "v2") + '" d="' + d + '"/>';
+      var lx = (a.x + 2 * cx + b.x) / 4, ly = (a.y + 2 * cy + b.y) / 4, ang = Math.atan2(dy, dx) * 57.3 + 50;
+      h += '<ellipse class="' + (e[2] ? "lf1" : "lf0") + '" cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" rx="7" ry="3.4" transform="rotate(' + ang.toFixed(0) + " " + lx.toFixed(1) + " " + ly.toFixed(1) + ')"/>';
+    });
+    h += "</svg>";
+    L.N.forEach(function (n) {
+      var q = n.q, ik = n.rwNode ? "chest" : qbIconOf(q);
+      h += '<button type="button" class="qb-n ' + n.st + (n.big ? " big" : "") + (QB.sel === q.id ? " sel" : "") + '" data-qb-q="' + esc(q.id) + '" style="left:' + n.x.toFixed(0) + "px;top:" + n.y.toFixed(0) + "px;--pr:" + Math.round(n.pr * 100) + ";--rot:" + Math.round(qbHash(n.x, n.y) * 360) + 'deg" title="' + esc(q.n) + '" aria-label="' + esc(q.n + (n.st === "done" ? " (done)" : n.st === "lock" ? " (locked)" : "")) + '">'
+        + '<span class="pad">' + qbPad(ik) + "</span>" + (n.st === "done" ? '<i class="fl" aria-hidden="true"></i>' : "") + (n.st === "lock" ? '<i class="lk" aria-hidden="true">🔒</i>' : "")
+        + (n.st === "cur" ? '<i class="ff" aria-hidden="true"></i><em class="nm">' + esc(q.n) + "</em>" : "") + "</button>";
+    });
+    h += "</div></div></div>";
+    // quest card
+    var sn = QB.sel ? L.N.filter(function (n) { return n.q.id === QB.sel; })[0] : null;
+    if (sn) {
+      var q = sn.q, v = Math.min(q.need, Math.floor(q.v())), rw = q.rw && Object.keys(q.rw).length ? q.rw : null, tag = { done: "Done", cur: "Current quest", next: isMain ? "Coming up" : "Do the one before first", open: "Open", lock: isMain ? "Reach chapter " + (ci + 1) + " first" : "Opens later in the story" }[sn.st];
+      var rc = QRC[q.id], rr = rc && recById(rc), showRc = sn.st === "cur" && rr && !recStatus(rr).owned;
+      h += '<div class="qb-card ' + sn.st + '"><button type="button" class="qb-x" data-qb-x aria-label="Close">&times;</button><div class="qb-ct"><span class="qb-ci">' + qbPad(sn.rwNode ? "chest" : qbIconOf(q)) + "</span><div><small>" + esc(tag) + "</small><b>" + esc(q.n) + "</b></div></div>"
+        + "<p>" + esc(q.d) + "</p>"
+        + (q.need > 1 && sn.st !== "lock" ? '<div class="qb-pr"><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span><em>' + v + " / " + q.need + "</em></div>" : "")
+        + (rw ? '<div class="qb-rw">' + Object.keys(rw).map(function (k) { return '<span title="' + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + rw[k] + "</b></span>"; }).join("") + "</div>" : "")
+        + (showRc ? '<button type="button" class="btn" data-qb-rc="' + esc(rc) + '">Show the recipe</button>' : "") + "</div>";
+    }
+    h += "</div></div></div>";
+    return h;
+  }
+  function qbAfter() {   // after the panel is drawn: keep the pond where it was, or centre it on the pad that matters
+    var map = document.querySelector(".qb-map"); if (!map) return;
+    if (QB.fresh) {
+      QB.fresh = false; var t = map.querySelector(".qb-n.sel") || map.querySelector(".qb-n.cur") || map.querySelector(".qb-n.open") || map.querySelector(".qb-n.next") || map.querySelector(".qb-n");
+      if (t) { var tr = t.getBoundingClientRect(), mr = map.getBoundingClientRect(); map.scrollLeft = Math.max(0, tr.left - mr.left + map.scrollLeft + tr.width / 2 - map.clientWidth / 2); map.scrollTop = Math.max(0, tr.top - mr.top + map.scrollTop + tr.height / 2 - map.clientHeight / 2.4); }
+    } else { map.scrollLeft = QB.sx; map.scrollTop = QB.sy; }
+    map.addEventListener("scroll", function () { QB.sx = map.scrollLeft; QB.sy = map.scrollTop; }, { passive: true });
+  }
+  (function () {   // drag the pond with the mouse (touch screens just swipe it)
+    var drag = null;
+    document.addEventListener("pointerdown", function (e) { var m = e.target.closest && e.target.closest(".qb-map"); if (!m || e.pointerType !== "mouse" || e.button !== 0) return; drag = { m: m, x: e.clientX, y: e.clientY, l: m.scrollLeft, t: m.scrollTop, moved: false }; });
+    document.addEventListener("pointermove", function (e) { if (!drag) return; var dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (!drag.moved && dx * dx + dy * dy > 25) { drag.moved = true; drag.m.classList.add("drag"); } if (drag.moved) { drag.m.scrollLeft = drag.l - dx; drag.m.scrollTop = drag.t - dy; } });
+    document.addEventListener("pointerup", function () { if (!drag) return; var d = drag; drag = null; d.m.classList.remove("drag"); if (d.moved) { var stop = function (ev) { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener("click", stop, true); }; window.addEventListener("click", stop, true); setTimeout(function () { window.removeEventListener("click", stop, true); }, 50); } });
+  })();
   // ---------- HUD AND PANELS ----------
   var HUDC = {}; function hudSet(id, v) { if (HUDC[id] !== v) { HUDC[id] = v; $(id).textContent = v; } }   // PERF: rewriting identical text 4x a second re-blurred and re-laid-out the HUD
   function hud() {
@@ -8590,29 +8740,7 @@
     $("sbxTabs").innerHTML = tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
     var h = "";
     if (tab === "quests") {
-      var c = curCh(), C = CHAPTERS[c], cl = chQuests(c), cdone = cl.filter(function (q) { return MAIN.indexOf(q) < S.qi; }).length, epi = c === CHAPTERS.length - 1;
-      var qrow = function (q, state, sideQ) {   // state: "ok" done, "cur" current, "next" later
-        var v = Math.min(q.need, Math.floor(q.v())), rw = q.rw && Object.keys(q.rw).length ? q.rw : null;
-        return '<div class="sbx-goal' + (state === "ok" ? " ok" : state === "cur" ? " cur" : state === "next" ? " later" : "") + (sideQ ? " side" : "") + '"><i aria-hidden="true">' + (state === "ok" ? "&#10003;" : state === "cur" ? "&#9733;" : "") + "</i><div><b>" + esc(q.n) + "</b>"
-          + (state !== "next" ? "<small>" + esc(q.d) + "</small>" : "")
-          + (state === "cur" || sideQ && state !== "ok" ? '<span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span><em>' + v + " / " + q.need + "</em>" : "")
-          + (rw && state !== "ok" && state !== "next" ? '<small class="rw">Reward: ' + esc(rewardText(rw)) + "</small>" : "") + "</div></div>";
-      };
-      h += '<div class="sbx-qch" style="--qc:' + C.c + '"><div class="qc-top"><span class="qc-frog" aria-hidden="true">' + CROAK_SVG + "</span><div><small>" + (epi ? "Story complete" : "Chapter " + (c + 1) + " of " + (CHAPTERS.length - 1)) + "</small><b>" + esc(C.n) + "</b></div></div>"
-        + "<p>" + esc(C.s.length > 170 ? C.s.slice(0, C.s.lastIndexOf(" ", 165)) + "\u2026" : C.s) + '</p><div class="qc-row"><button type="button" class="btn ghost" data-story="' + c + '">Read the story</button>'
-        + (epi ? "" : '<span class="bar"><i style="width:' + Math.round(cdone / cl.length * 100) + '%"></i></span><em>' + cdone + " / " + cl.length + "</em>") + "</div></div>";
-      if (btyOpen()) { rollBounties(); var bl2 = S.bty.d.concat(S.bty.w ? [S.bty.w] : []), bdn = bl2.filter(function (b) { return b.done; }).length, brd = btyReady(); h += '<div class="sbx-btycard"><img alt="" src="' + icon("swamptoken") + '"><div><b>Croaker\'s bounties</b><span>' + (brd ? brd + " ready to claim. Visit Old Croaker at camp!" : bdn + " of " + bl2.length + " claimed · " + bl2.filter(function (b) { return !b.done; }).map(function (b) { return btyText(b) + " (" + btyProg(b) + "/" + b.need + ")"; }).slice(0, 2).join(", ")) + "</span></div></div>"; }
-      if (!epi) h += '<h3>Main quests</h3><div class="sbx-goals">' + cl.map(function (q) { var n2 = MAIN.indexOf(q); return qrow(q, n2 < S.qi ? "ok" : n2 === S.qi ? "cur" : "next"); }).join("") + "</div>"
-        + (C.rw && Object.keys(C.rw).length ? '<p class="sbx-note">Finish the chapter for: <b>' + esc(rewardText(C.rw)) + "</b></p>" : "");
-      if (c > 0) h += '<details class="sbx-qpast"><summary>Earlier chapters (' + c + ")</summary>" + CHAPTERS.slice(0, c).map(function (P, n2) { return '<div class="qp"><i>&#10003;</i><span>' + (n2 + 1) + ". " + esc(P.n) + '</span><button type="button" class="btn ghost" data-story="' + n2 + '">Story</button></div>'; }).join("") + "</details>";
-      var open = SIDE.filter(function (q) { return sideOpen(q); }), sdone = SIDE.filter(function (q) { return S.ms[q.id]; }), locked = SIDE.length - open.length;
-      h += "<h3>Side quests</h3><p class=\"sbx-note\"><b>" + sdone.length + " / " + SIDE.length + "</b> done." + (locked ? " " + locked + " more open up as the story goes on." : "") + "</p>";
-      SIDE_CATS.forEach(function (cat) {
-        var act = open.filter(function (q) { return q.cat === cat && !S.ms[q.id]; }).sort(function (a2, b2) { return b2.v() / b2.need - a2.v() / a2.need; });
-        if (!act.length) return;
-        h += '<div class="sbx-qcat">' + esc(cat) + '</div><div class="sbx-goals">' + act.map(function (q) { return qrow(q, "", true); }).join("") + "</div>";
-      });
-      if (sdone.length) h += '<details class="sbx-qpast"><summary>Completed side quests (' + sdone.length + ")</summary><div class=\"sbx-goals\">" + sdone.map(function (q) { return qrow(q, "ok", true); }).join("") + "</div></details>";
+      h += qbRender();
     } else if (tab === "craft") {
       h += craftBar();
       if (ccat === "Tools" || ccat === "Gear" || ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + PICKS[S.tier].n + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + WEAPONS[S.wpn].n + " (damage " + WEAPONS[S.wpn].dmg + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + ARMORS[S.arm].n + " (blocks " + Math.round(ARMORS[S.arm].red * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
@@ -8666,7 +8794,8 @@
       h += '<p class="sbx-note op-seed">World seed ' + S.seed + "</p>";
     }
     var oc = document.querySelector(".sbx-cats"), os = document.querySelector(".sbx-subs"), ol1 = oc ? oc.scrollLeft : 0, ol2 = os ? os.scrollLeft : 0;
-    $("sbxBody").innerHTML = h;
+    $("sbxPanel").classList.toggle("qbook", tab === "quests"); $("sbxBody").classList.toggle("qb-on", tab === "quests");
+    $("sbxBody").innerHTML = h; if (tab === "quests") qbAfter();
     [[".sbx-cats", ol1], [".sbx-subs", ol2]].forEach(function (q) { var row = document.querySelector(q[0]); if (!row) return; row.scrollLeft = q[1]; var on = row.querySelector(".on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; });
     var cur = document.querySelector("#sbxTabs [aria-selected=true]"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
   }
@@ -8985,6 +9114,10 @@
     if (t.hasAttribute("data-close")) return closePanel();
     if (t.hasAttribute("data-charm")) { wearCharm(t.getAttribute("data-charm")); if (packOpen) renderPack(); if (panelOpen) renderPanel(); return; }
     if (t.hasAttribute("data-story")) { var sc = +t.getAttribute("data-story"); closePanel(); return showStory(sc); }
+    if (t.hasAttribute("data-qb-ch")) { var nk = t.getAttribute("data-qb-ch"); if (nk !== QB.ch) { QB.ch = nk; QB.sel = ""; QB.fresh = true; } return renderPanel(); }   // QUEST BOOK
+    if (t.hasAttribute("data-qb-q")) { var qid = t.getAttribute("data-qb-q"); QB.sel = QB.sel === qid ? "" : qid; snd("coin"); return renderPanel(); }
+    if (t.hasAttribute("data-qb-x")) { QB.sel = ""; return renderPanel(); }
+    if (t.hasAttribute("data-qb-rc")) { return openCraftTo(t.getAttribute("data-qb-rc")); }
     if (t.getAttribute("data-tab") === "map") return openMap();
     if (t.getAttribute("data-tab")) { tab = t.getAttribute("data-tab"); confirmNew = false; return renderPanel(); }
     if (t.hasAttribute("data-cc")) { ccat = t.getAttribute("data-cc"); csub = ""; renderPanel(); $("sbxBody").scrollTop = 0; return; }
@@ -9088,5 +9221,6 @@
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
   window.__sbx.adv = { get hook() { return hook; }, useMap: useMap, dig: digTreasure, pull: grapplePull };
   window.__sbx.rb = { start: startRainbow, get RB() { return RB; }, take: takePot, tick: tickRainbow };
+  window.__sbx.qb = { QB: QB, layout: qbLayout, chapters: qbChapters };
   window.__sbx.fun = { bombs: bombs, kegs: kegs, explode: explode, lightKeg: lightKeg, tapHook: tapHook, fHook: fHook, useThrow: useThrow, flashes: flashes };
 })();
