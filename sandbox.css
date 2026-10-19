@@ -999,3 +999,25 @@ body.sbx-app footer{margin-top:28px}
 .sbx-sbox2 .st-zaruk{width:150px;height:150px;margin:-6px auto 2px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#4ee6d033,#1a143000 70%);display:grid;place-items:center}
 .sbx-sbox2 .st-zaruk img{width:150px;height:150px}
 .sbx-sbox2 .st-row .btn.ghost{grid-column:auto}
+/* DEVELOPER MODE: the Dev tab */
+.dev-btns{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.dev-btns .btn{padding:6px 10px;font-size:13px}
+.dev-q{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:10px;border:1px solid rgba(127,252,255,.35);background:rgba(6,14,12,.7);color:#f6eedb;font:700 14px Nunito,system-ui,sans-serif}
+.dev-q:focus{outline:2px solid #7ffcff;outline-offset:1px}
+.dev-code{width:120px}
+.dev-it{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.dev-it img{width:24px;height:24px;image-rendering:pixelated}
+.dev-it span{flex:1;font-weight:700;font-size:13px}
+.dev-it .btn{padding:4px 8px;font-size:12px}
+#devList{margin-top:6px;max-height:300px;overflow:auto}
+/* POLISH: the title menu on short windows: tighter rows so the menu never runs into the footer links (and it scrolls rather than overlap) */
+.sbx-title{justify-content:safe center}
+@media (max-height:720px),(min-width:900px) and (max-height:830px){
+ .sbx-title .tt-col{gap:8px}
+ .sbx-title .tt-tag{margin:-6px 0 4px;font-size:.98rem}
+ .sbx-title .tt-play{min-height:62px;padding:9px 18px 9px 11px}
+ .sbx-title .tt-pi{width:42px;height:42px}
+ .sbx-title .tt-list{padding:4px;gap:0}
+ .sbx-title .tt-list button{min-height:38px;padding:7px 12px}
+}
+@media (max-height:600px),(min-width:900px) and (max-height:700px){ .sbx-title .tt-logo{max-height:96px;width:auto!important} .sbx-title .tt-list button{min-height:34px;padding:5px 12px;font-size:.94rem} }
