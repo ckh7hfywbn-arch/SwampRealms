@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=delve1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui7">
+<link rel="stylesheet" href="sandbox.css?v=ui8">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -221,10 +221,10 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="account.js" onload="__dl('account')"></script>
 <script src="menu.js" onload="__dl('menu')"></script>
 <script src="sandbox-world.js?v=delve30-blocks" onload="__dl('world')"></script>
-<script src="sandbox-extra.js?v=pack38" onload="__dl('extra')"></script>
-<script src="sandbox-cave.js?v=cave13-sidectr" onload="__dl('cave')"></script>
-<script src="delve-avatar.js?v=delve4" onload="__dl('davatar')"></script>
-<script src="sandbox.js?v=delve145-qbook" onload="__dl('game')"></script>
+<script src="sandbox-extra.js?v=pack39" onload="__dl('extra')"></script>
+<script src="sandbox-cave.js?v=cave15-realm" onload="__dl('cave')"></script>
+<script src="delve-avatar.js?v=delve5-crisp" onload="__dl('davatar')"></script>
+<script src="sandbox.js?v=delve150-heaven" onload="__dl('game')"></script>
 <script src="gamefs.js?v=3" onload="__dl('fs')"></script>
 <script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG"});</script>   <!-- F is Delve's interact key (caves, doors, chests, ladders), so full screen is the button or G -->
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->

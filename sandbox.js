@@ -271,6 +271,7 @@
     sq("swim", "Explorer", 0, "Wet Paws", "Swim in the swamp.", 2, st("swim"), { fiber: 3 }),
     sq("bld1", "Explorer", 0, "Knock Knock", "Step inside a building.", 1, st("bld"), { torch: 2 }),
     sq("bld5", "Explorer", 2, "House Call", "Visit 5 buildings.", 5, st("bld"), { planks: 10 }),
+    sq("warden", "Explorer", 6, "The Realm Warden", "Step through your awakened Realm Gate into the SwampRealms Dimension and meet Zaruk.", 1, function () { return S.gmet ? 1 : 0; }, { realmshard: 2, starshard: 1 }),
     sq("allkinds", "Explorer", 4, "Grand Tour", "Step inside all seven kinds of building.", 7, function () { return ["cabin", "tower", "farm", "forge", "keep", "lodge", "shrine"].filter(function (k) { return vis("k_" + k); }).length; }, { amethyst: 3 }),
     sq("deep", "Explorer", 1, "Deep Diver", "Dig down to depth 50.", 50, st("maxDepth"), { torch: 6 }),
     sq("wood", "Builder", 0, "Timber!", "Collect 10 Wood.", 10, st("wood"), { planks: 4 }),
@@ -325,6 +326,8 @@
     sq("boss10", "Hunter", 5, "Boss Rush", "Defeat 10 bosses (fighting the same one again counts).", 10, st("bossk"), { amethyst: 3 }),
     sq("bug5", "Hunter", 2, "Thorn Trouble", "Defeat 5 Bramble Bugs.", 5, st("bugs"), { torch: 4 }),
     sq("frog5", "Hunter", 2, "Croak Crusher", "Defeat 5 Swamp Frogs.", 5, st("frogs"), { rawmeat: 2 }),
+    sq("blood1", "Hunter", 3, "Red Night", "Survive a Blood Moon. It rises every 60 to 120 days; nobody sleeps that night.", 1, st("bloodmoons"), { bloodshard: 3 }),
+    sq("blood50", "Hunter", 4, "Back to the Grave", "Put 50 of the Blood Moon dead back to rest.", 50, st("bmkills"), { bloodlantern: 1 }),
     sq("bat1", "Hunter", 1, "Night Watch", "Defeat a Dusk Bat.", 1, st("bats"), { torch: 3 }),
     sq("bat10", "Hunter", 2, "Bat Basher", "Defeat 10 Dusk Bats.", 10, st("bats"), { batwing: 2 }),
     sq("slime5", "Hunter", 2, "Slime Time", "Pop 5 slimes (caves, or the surface at night).", 5, st("slimes"), { slimeball: 2 }),
@@ -434,7 +437,7 @@
   function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
   function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
   function defaultAnimal() { try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, stars: [], starRoll: -1, ways: [], tmap: null, pot: null, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, stars: [], starRoll: -1, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -494,6 +497,8 @@
     if (o.gems && typeof o.gems === "object") ["wpn", "arm", "pick", "bow"].forEach(function (k) { if (GEMS.indexOf(o.gems[k]) > -1) d.gems[k] = o.gems[k]; });
     if (Array.isArray(o.stars) && o.wv === SW.WORLDVER) d.stars = o.stars.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y) }; });
     if (isFinite(o.starRoll)) d.starRoll = Math.floor(o.starRoll);
+    if (isFinite(o.bmNext)) d.bmNext = Math.floor(o.bmNext);
+    d.gmet = o.gmet ? 1 : 0;
     if (o.pot && isFinite(o.pot.x) && isFinite(o.pot.y) && o.wv === SW.WORLDVER) d.pot = { x: Math.floor(o.pot.x), y: Math.floor(o.pot.y) };
     if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) };
     if (Array.isArray(o.ways) && o.wv === SW.WORLDVER) d.ways = o.ways.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y), n: String(q.n || "Waystone").slice(0, 24) }; });
@@ -528,7 +533,9 @@
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     return d;
   }
+  var buildN = 0, exVer = 0, wallN = 0, SVC = {};   // PERF: save() reuses the edit / explored / fluid / wall strings while nothing in them changed
   function build(state) {
+    buildN++;
     world = SW.gen(state.seed); PICT = null; MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
     if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
     tiles = world.t; liftStructs(tiles, world.walls); orig = tiles.slice(); edits = {}; flInit();
@@ -557,8 +564,11 @@
     try {
       reslot(); S.hp = Math.max(1, Math.round(hp));
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
-      S.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(",");
-      S.fl = flSave(); S.ex = rle(ex); S.we = Object.keys(wedits).map(function (k) { return k + ":" + wedits[k]; }).join(",");
+      var ek = buildN + ":" + editN, xk = buildN + ":" + exVer, wk2 = buildN + ":" + wallN;
+      if (SVC.ek !== ek) { SVC.ek = ek; SVC.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(","); SVC.fl = flSave(); }
+      if (SVC.xk !== xk) { SVC.xk = xk; SVC.ex = rle(ex); }
+      if (SVC.wk !== wk2) { SVC.wk = wk2; SVC.we = Object.keys(wedits).map(function (k) { return k + ":" + wedits[k]; }).join(","); }
+      S.e = SVC.e; S.fl = SVC.fl; S.ex = SVC.ex; S.we = SVC.we;
       localStorage.setItem(wkey(curId), JSON.stringify(S)); cloudDirty(); touchIdx(); saveFail = false;
     } catch (e) { if (!saveFail) { saveFail = true; try { toast("Could not save: browser storage is full or blocked. Delete a world you do not need.", "#ff8a3d"); } catch (x) {} } }
   }
@@ -1954,7 +1964,7 @@
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
     return TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid || TILES[get(tx, ty + 1)].solid;
   }
-  function setWall(x, y, id) { mpWallEdit(x, y, id); var i = y * W + x; walls[i] = id; if (S.wstain && S.wstain[i] !== undefined && !WSTAINABLE[id]) delete S.wstain[i]; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
+  function setWall(x, y, id) { wallN++; mpWallEdit(x, y, id); var i = y * W + x; walls[i] = id; if (S.wstain && S.wstain[i] !== undefined && !WSTAINABLE[id]) delete S.wstain[i]; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
   function canWall(tx, ty, wid) {   // walls go on the back layer: the front tile must be free (air or a decor piece), and the wall needs a block or another wall beside, above or below it
     if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 3) return false;
     var id = get(tx, ty); if (TILES[id].solid || id === T.WATER || id === T.LAVA) return false;
@@ -2233,7 +2243,7 @@
     if (e.hp > 0) return;
     if (e.home !== undefined) S.whut[e.home] = S.days | 0;   // a Witch Hut's owner: back tomorrow
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
-    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic");
+    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e);
     if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small });
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
@@ -2648,13 +2658,13 @@
       if (rec && !e.def) { g.fillStyle = "#ffe9a0"; for (var si = 0; si < 3; si++) { var an = t * 6 + si * 2.1; g.beginPath(); g.arc(Math.cos(an) * 12, -34 + Math.sin(an) * 3.5, 1.8, 0, 7); g.fill(); } }
       if (wind) { g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); }
     }
-    if (!e.def && e.hp < e.mx) {   // little health bar once it is hurt
+    if (!e.def && e.hp < e.mx && !e._nobar) {   // little health bar once it is hurt
       g.globalAlpha = 1; g.fillStyle = "rgba(0,0,0,.65)"; var hb = (HBAR[e.k] || 49) * (e.small ? 0.6 : 1); g.fillRect(-15, -hb, 30, 5);
       g.fillStyle = e.hp / e.mx > 0.5 ? "#7dffb0" : e.hp / e.mx > 0.25 ? "#f2c14e" : "#ff6a5a"; g.fillRect(-14, -hb + 1, 28 * Math.max(0, e.hp / e.mx), 3);
     }
     g.restore();
   }
-  function drawEnemies(g, now) { enemies.forEach(function (e) { drawEnemy(g, e, now); }); }
+  function drawEnemies(g, now) { enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else drawEnemy(g, e, now); }); }
 
   // ---------- FARMING ----------
   // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
@@ -2999,7 +3009,7 @@
   }
   function giftsWaiting() { var n = [], c = Math.min(curCh(), CG.length); for (var i = 0; i < c; i++) if (!(S.cg & (1 << i))) n.push(i); return n; }
   function updateNpc(dt) {
-    if (cave) return; npc.t += dt; npc.chk -= dt;
+    if (cave) return; if (BM.on && BM.croak) { bmCroaker(dt); return; } npc.t += dt; npc.chk -= dt;
     if (npc.chk <= 0) { npc.chk = 2; npcSpot(); }
     npc.blink -= dt; if (npc.blink < -0.14) npc.blink = 2 + Math.random() * 3;
     if (Math.abs(p.x - npc.x) < 8) npc.face = p.x < npc.x ? -1 : 1;
@@ -3033,6 +3043,7 @@
     [-5, 7].forEach(function (ex) {
       g.fillStyle = "#3fae5e"; g.beginPath(); g.arc(ex, -33, 4.6, 0, 7); g.fill(); g.stroke();
       if (npc.blink < 0) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.6, -33); g.lineTo(ex + 2.6, -33); g.stroke(); g.strokeStyle = "#174a28"; g.lineWidth = 1.6; }
+      else if (BM.on && BM.croak) { g.fillStyle = "rgba(255,40,50,.4)"; g.beginPath(); g.arc(ex, -33, 6.5, 0, 7); g.fill(); g.fillStyle = "#ff2a3a"; g.beginPath(); g.arc(ex, -33, 3, 0, 7); g.fill(); g.fillStyle = "#ffe0e0"; g.fillRect(ex - 0.6 + npc.face * 0.3, -34.6, 1.6, 3.2); }   // BLOOD MOON: burning red eyes
       else { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ex, -33, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(ex - 0.6 + npc.face * 0.3, -34.6, 1.6, 3.2); }
     });
     // big white bushy brows and a droopy moustache: he's very old
@@ -3583,7 +3594,7 @@
     boss: { root: 110.0, s: [0, 1, 3, 7, 8, 12], wave: "square", beat: 0.3 }
   };
   function musicMood() {
-    if (activeBoss()) return "boss";
+    if (activeBoss() || BM.on) return "boss";
     if (cave || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7) return "deep";
     return ["swamp", "ember", "frost"][world.bio[clamp(Math.floor(p.x), 0, W - 1)]] || "swamp";
   }
@@ -3746,6 +3757,7 @@
     lode: { n: "Lodestone Charm", d: "Ore you mine sometimes drops one extra.", c: "#6a717a", g: "#ff6a5a" },
     owl: { n: "Owl Charm", d: "See farther in the dark.", c: "#e8f4ff", g: "#f2c14e" },
     brute: { n: "Ogre Charm", d: "Your weapon hits 15% harder.", c: "#8a9a5a", g: "#f6eedb" },
+    blood: { n: "Crimson Charm", d: "Your weapon hits 20% harder at night.", c: "#e8243a", g: "#ffd0d4" },   // blood moon pack
     star: { n: "Wishing Star Charm", d: "Falling stars come on every clear night and land closer to you.", c: "#ffe9a0", g: "#7fa8ff" }   // starfall pack
   };
   function charmSlots() { return (S.st.boss & 7) === 7 ? 3 : 2; }
@@ -4331,7 +4343,7 @@
     var g = gateOf(gateAt.x, gateAt.y), n = GATE_OFFER.filter(function (o) { return g.o[o[0]]; }).length, h = "";
     $("sbxStoryBox").style.setProperty("--qc", "#8affe0");
     h += '<small>' + (g.on ? "The gate is awake" : n + " of " + GATE_OFFER.length + " sockets lit") + '</small><h2 class="st-hi">Realm Gate</h2>';
-    if (S.done && g.on) h += '<p class="st-tip">The way is open. Beyond it waits the <b>Swamp Realms Dimension</b>, the place between all worlds. It is still taking shape... check back soon!</p>';
+    if (S.done && g.on) h += '<p class="st-tip">The way is open. Beyond it waits the <b>SwampRealms Dimension</b>, the place between all worlds, where Zaruk the Realm Warden keeps watch.</p>';
     else if (g.on) h += '<p class="st-tip">The gate hums with light from all three lands. Step through when you are ready.</p>';
     else h += '<p class="st-tip">Light every socket to wake the gate: the trophies of the three bosses, the three lights of the lands, and <b>8 Realm Shards</b> from the Realmstone near the bottom of the world.</p>';
     h += '<div class="st-gate">' + GATE_OFFER.map(function (o) {
@@ -4357,8 +4369,10 @@
   function enterGate() {   // a bright fade, then the epilogue; you come back out beside the gate
     var fx = document.createElement("div"); fx.className = "sbx-gatefx"; stageEl.appendChild(fx); snd("open", "Epic");
     requestAnimationFrame(function () { fx.classList.add("on"); });
+    var gq = gateAt ? { x: gateAt.x, y: gateAt.y } : { x: Math.floor(p.x), y: Math.floor(p.y - 1) };
     setTimeout(function () {
       var first = !S.done; S.done = 1; S.st.gatein = (S.st.gatein || 0) + 1; save();
+      enterNexus(gq.x, gq.y);   // NEXUS: through the gate you go
       checkTrail();
       if (!first || MAIN[S.qi]) { storyQ.length = 0; storyQ.push(CHAPTERS.length - 1); showStory(); }   // the epilogue (checkTrail tells it itself when this was the last main quest)
       setTimeout(function () { fx.classList.remove("on"); setTimeout(function () { if (fx.parentNode) fx.parentNode.removeChild(fx); }, 900); }, 400);
@@ -4629,7 +4643,7 @@
         gr.addColorStop(0, "rgba(255,246,220," + (0.8 * a) + ")"); gr.addColorStop(0.35, "rgba(" + c + "," + (0.45 * a) + ")"); gr.addColorStop(1, "rgba(" + c + ",0)");
         g2.globalAlpha = 1; g2.fillStyle = gr; g2.beginPath(); g2.arc(sx, sy, r, 0, 7); g2.fill();
       });
-      drawFallers(g2); drawNotes(g2); drawWarp(g2);
+      drawFallers(g2); drawNotes(g2); drawWarp(g2); drawBloodLit(g2);
       for (var i = 0; i < parts.length; i++) {
         var q = parts[i]; if (!q.glw) continue; if (q.life < 0.45 && Math.random() < 0.35) continue;   // sparks twinkle out
         var al = clamp(q.life / q.max * 1.4, 0, 1), px = ox + q.x * ts, py = oy + q.y * ts; g2.fillStyle = q.c;
@@ -5150,6 +5164,619 @@
     if (cave || !S.pot || panelOpen) return;
     edgeArrow(g, now, S.pot.x + 0.5, S.pot.y + 0.5, "#ffd86a", Math.round(Math.abs(S.pot.x + 0.5 - p.x)) + "m", function (g2, rr) { g2.fillStyle = "#ffd86a"; g2.beginPath(); g2.arc(0, 0, rr * 0.55, 0, 7); g2.fill(); g2.fillStyle = "#c98a20"; g2.fillRect(-rr * 0.15, -rr * 0.35, rr * 0.3, rr * 0.7); });
   }
+  // ---------- BLOOD MOON ----------
+  // Every 60-120 days the moon rises red (S.bmNext = the day it happens; rolled again after each one). That whole night nobody can sleep,
+  // the sky turns crimson and the music turns tense. The moment you are out on the surface the dead come for you in three waves of about
+  // 30 seconds each: zombie Bugs and Frogs, then skeleton Wolves, Bugs and Bats, then all of them at once (zombies hit harder and soak up
+  // more hits, skeletons are quicker to come back). Old Croaker answers the call: his eyes glow red and he hops over to fight at your
+  // side, smacking anything close with his staff and letting out a red shockwave croak now and then. When the last wave is over, beat
+  // whatever is left to win: Blood Shards, coins, iron and gems. Pass out during it and the rewards are lost (the night carries on).
+  // If you spend the whole night underground or indoors, the Blood Moon waits for the next night. Only the host runs it in co-op.
+  var BMW = [
+    { n: "The Dead Rise", t: 30, every: 2.1, max: 6, kinds: [["bug", "zombie", 4], ["frog", "zombie", 3], ["slime", "zombie", 2]] },
+    { n: "Bones in the Dark", t: 30, every: 1.9, max: 7, kinds: [["wolf", "skel", 3], ["bug", "skel", 3], ["bat", "skel", 3]] },
+    { n: "Blood Tide", t: 30, every: 1.5, max: 8, kinds: [["bug", "zombie", 2], ["frog", "zombie", 2], ["wolf", "skel", 3], ["bat", "skel", 2], ["slime", "zombie", 2], ["bug", "skel", 2]] }
+  ];
+  var BM = { on: false, wave: 0, t: 0, spawn: 0, kills: 0, fail: false, done: false, clean: 0, warned: -1, croakCd: 0, shout: 6, croak: false };
+  var BMHEAD = { bug: [14, -10], frog: [12, -21], bat: [6, -8], wolf: [18, -16], slime: [4, -10], spider: [10, -7] };
+  function bmRoll() { S.bmNext = (S.days | 0) + 60 + Math.floor(Math.random() * 61); }
+  function bmNight() { return !!S && S.bmNext === (S.days | 0) && phaseOf(S.time).id === "night"; }
+  function bmGround(cx, k) {
+    for (var tq = 0; tq < 9; tq++) {
+      var tx = clamp(cx + (tq % 2 ? 1 : -1) * Math.ceil(tq / 2), 2, W - 3), cy = col[tx];
+      if (cy <= 0 || cy >= H || blocks(tx, cy - 1) || TILES[get(tx, cy - 1)].kind === "water") continue;
+      for (var up = 0; up <= 2; up++) if (!eBoxHit(tx + 0.5, cy - up, ENEMY[k].w, ENEMY[k].h)) return [tx + 0.5, cy - up];
+    }
+    return null;
+  }
+  function bmSpawn(W0) {
+    var alive = enemies.filter(function (e) { return e.bm && !e.def; }).length; if (alive >= W0.max) return;
+    var tot = 0; W0.kinds.forEach(function (q) { tot += q[2]; }); var r = Math.random() * tot, pick = W0.kinds[0];
+    for (var i = 0; i < W0.kinds.length; i++) { r -= W0.kinds[i][2]; if (r <= 0) { pick = W0.kinds[i]; break; } }
+    var k = pick[0], side = Math.random() < 0.5 ? -1 : 1, cx = clamp(Math.floor(p.x + side * (vw / 2 / ts + 1 + Math.random() * 5)), 3, W - 4), pos;
+    if (k === "bat") { var y = Math.max(2, Math.min(col[cx] - 5 - Math.random() * 3, p.y - 7)); pos = eBoxHit(cx + 0.5, y, ENEMY.bat.w, ENEMY.bat.h) ? null : [cx + 0.5, y]; }
+    else pos = bmGround(cx, k);
+    if (!pos) return;
+    var e = newEnemy(k, pos[0], pos[1]); e.bm = pick[1];
+    if (e.bm === "zombie") { e.hp = e.mx = Math.round(e.hp * 1.6); e.dmg = Math.round(e.dmg * 1.25); } else { e.hp = e.mx = Math.round(e.hp * 1.2); e.dmg = Math.round(e.dmg * 1.1); }
+    if (k === "bat") e.st = "hover";
+    enemies.push(e);
+    for (var q = 0; q < (reduce ? 4 : 12); q++) parts.push({ x: pos[0] + (Math.random() - 0.5), y: pos[1] - Math.random() * 0.4, vx: (Math.random() - 0.5) * 2, vy: -1.5 - Math.random() * 2, g: -0.5, life: 0.8, max: 0.8, c: e.bm === "zombie" ? "#6a8a4a" : "#d8d0c0", s: 3 + Math.random() * 3 });
+    if (k !== "bat") chips(pos[0], pos[1], "#4a3a2a", 6, 4);   // it claws its way out of the ground
+  }
+  function bmKilled(e) { BM.kills++; S.st.bmkills++; if (Math.random() < 0.22) give("bloodshard", 1, e.x - 0.5, e.y - e.h, true); }
+  function bmStart() {
+    BM.on = true; BM.wave = 0; BM.t = 0; BM.spawn = 1.2; BM.kills = 0; BM.fail = false; BM.done = false; BM.clean = 0; BM.croak = true; BM.croakCd = 1; BM.shout = 5;
+    if (npc.ok) { npc.homeX = npc.x; npc.homeY = npc.y; } var g0 = bmGround(Math.floor(p.x - p.face * 2.5), "bug"); if (g0) { npc.x = g0[0]; npc.y = g0[1]; npc.ok = true; }
+    shake = Math.max(shake, 0.6); thud(60, 0.2); snd("open", "Epic");
+    banner("Blood Moon", "Wave 1: " + BMW[0].n + " • Old Croaker fights beside you!", "Survive the night");
+    toast("The Blood Moon rises! The dead are coming. Old Croaker hops to your side, his eyes burning red!", "#ff3a4a");
+    for (var q = 0; q < 24; q++) parts.push({ x: npc.x + (Math.random() - 0.5) * 1.2, y: npc.y - Math.random() * 2, vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random() * 2, g: 2, life: 0.7, max: 0.7, c: "#ff3a4a", s: 3, glw: 1 });
+  }
+  function bmEnd(won) {
+    BM.on = false; BM.croak = false; if (npc.homeX !== undefined) { npc.x = npc.homeX; npc.y = npc.homeY; } npc.chk = 0;
+    enemies.forEach(function (e) { if (e.bm && !e.def) { e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, "#8a2a34", 10, 5); } });
+    bmRoll(); S.st.bloodmoons += won ? 1 : 0;
+    if (!won) { toast("The Blood Moon claimed you this time. Its rewards fade with the dawn.", "#ff6a5a"); save(); return; }
+    var L = [["bloodshard", 4 + Math.floor(Math.random() * 3)], ["ancientcoin", 4 + Math.floor(Math.random() * 3)], ["ironingot", 3], ["amethyst", 2], [Math.random() < 0.5 ? "ruby" : "sapphire", 1], ["swamptoken", 3]];
+    if (!giveBatch) giveBatch = {}; L.forEach(function (q) { if (ITEMS[q[0]]) give(q[0], q[1], p.x, p.y - 1.5, true); });
+    Object.keys(giveBatch).forEach(function (k2, gi) { text(p.x, p.y - 2 - gi * 0.5, "+" + giveBatch[k2] + " " + ITEMS[k2].n, "#ff9aa4"); }); giveBatch = null;
+    flashes.push({ x: p.x, y: p.y - 1, r: 6, t: 0.6, max: 0.6, c: "#ff3a4a" }); chips(p.x, p.y - 1, "#ff3a4a", 30, 9);
+    banner("Blood Moon survived!", BM.kills + " of the dead put back to rest. Rewards added to your bag.", "Blood Moon");
+    toast("You and Old Croaker survived the Blood Moon! \"Hrrm... I haven't had a scrap like that in a hundred years,\" he croaks.", "#ff9aa4");
+    snd("open", "Epic"); checkGoals(); save();
+  }
+  function tickBlood(dt) {
+    if (!S || !world) return;
+    if (S.bmNext === undefined || S.bmNext < 0 || S.bmNext < (S.days | 0)) bmRoll();
+    var ph = phaseOf(S.time).id, guest = MP.on && MP.role === "guest";
+    if (ph === "dusk" && S.bmNext === (S.days | 0) && BM.warned !== S.days && !guest) { BM.warned = S.days; toast("The moon is rising red tonight... Nobody sleeps on a Blood Moon. Get ready!", "#ff3a4a"); }
+    if (!BM.on) {
+      if (bmNight() && !guest && !cave && !trans && sleepT <= 0 && hp > 0 && !activeBoss() && S.time < 400) { if (S.wpn >= 1) bmStart(); else S.bmNext += 3; }
+      return;
+    }
+    if (panelOpen && !MP.on) return;
+    if (ph !== "night") { bmEnd(!BM.fail && BM.wave >= BMW.length); return; }   // dawn came first
+    if (cave || trans) return;   // underground or indoors: the dead wait at the door
+    enemies.forEach(function (e) {   // the dead come for you: walkers shamble toward you until they are close enough to attack
+      if (!e.bm || e.def || FLIER[e.k]) return; var dx = p.x - e.x; if (Math.abs(dx) < 2.6 || Math.abs(e.y - p.y) > 6) return;
+      e.dir = dx > 0 ? 1 : -1; var nx = e.x + e.dir * dt * (e.bm === "zombie" ? 2.3 : 3.3);
+      if (!eBoxHit(nx, e.y, e.w, e.h)) e.x = nx; else if (!eBoxHit(nx, e.y - 1.01, e.w, e.h)) { e.x = nx; e.y -= 1; }
+    });
+    var W0 = BMW[BM.wave];
+    if (W0) {
+      BM.t += dt; BM.spawn -= dt; if (BM.spawn <= 0) { BM.spawn = W0.every * (0.8 + Math.random() * 0.4); bmSpawn(W0); if (Math.random() < 0.35) bmSpawn(W0); }
+      if (BM.t >= W0.t) { BM.wave++; BM.t = 0; BM.spawn = 2.5; var NW = BMW[BM.wave]; if (NW) { banner("Wave " + (BM.wave + 1) + ": " + NW.n, "Keep fighting!", "Blood Moon"); thud(70, 0.15); shake = Math.max(shake, 0.4); } else toast("The last wave! Defeat the dead that are left!", "#ff3a4a"); }
+    } else {
+      var left = enemies.filter(function (e) { return e.bm && !e.def; }).length; BM.clean += dt;
+      if (!left || BM.clean > 40) bmEnd(!BM.fail);
+    }
+  }
+  function bmCroaker(dt) {   // Old Croaker fights: walks to the closest of the dead near you, smacks it, and now and then croaks a red shockwave
+    npc.t += dt; npc.blink = 1;
+    var tgt = null, bd = 1e9; enemies.forEach(function (e) { if (!e.bm || e.def || e.u) return; var d = Math.abs(e.x - p.x) + Math.abs(e.y - p.y); if (d < 16 && d < bd) { bd = d; tgt = e; } });
+    var gx = tgt ? tgt.x - Math.sign(tgt.x - npc.x || 1) * 1.1 : p.x - p.face * 2.2, dx = gx - npc.x;
+    if (Math.abs(dx) > 0.2) { npc.x += Math.sign(dx) * Math.min(Math.abs(dx), dt * (tgt ? 6.2 : 5)); npc.face = dx < 0 ? -1 : 1; }
+    if (Math.abs(npc.x - p.x) > 18) { npc.x = p.x - p.face * 2; }   // he never falls far behind
+    var cx = clamp(Math.floor(npc.x), 1, W - 2), gy = col[cx]; if (gy > 0 && gy < H) npc.y += (gy - npc.y) * Math.min(1, dt * 12);
+    if (tgt) npc.face = tgt.x < npc.x ? -1 : 1;
+    BM.croakCd -= dt; BM.shout -= dt; npc.swing = Math.max(0, (npc.swing || 0) - dt);
+    if (tgt && BM.croakCd <= 0 && Math.abs(tgt.x - npc.x) < 1.9 && Math.abs((tgt.y - tgt.h / 2) - (npc.y - 1)) < 1.8) {
+      BM.croakCd = 1.05; npc.swing = 0.25; tgt.lastHit = 0; damageEnemy(tgt, 9 + 2 * S.wpn, npc.face); chips(tgt.x, tgt.y - tgt.h * 0.6, "#ff3a4a", 6, 4); thud(240, 0.05);
+    }
+    if (BM.shout <= 0 && tgt && bd < 7) {
+      BM.shout = 7 + Math.random() * 3; var hit = 0;
+      enemies.forEach(function (e) { if (!e.bm || e.def || e.u) return; var ex = e.x - npc.x, ey = (e.y - e.h / 2) - (npc.y - 1); if (ex * ex + ey * ey < 12.25) { e.lastHit = 0; damageEnemy(e, 7 + S.wpn, ex < 0 ? -1 : 1); hit++; } });
+      flashes.push({ x: npc.x, y: npc.y - 1, r: 4.5, t: 0.4, max: 0.4, c: "#ff3a4a" }); thud(90, 0.12); text(npc.x, npc.y - 2.6, "CROAK!", "#ff6a74");
+      for (var q = 0; q < (reduce ? 10 : 26); q++) { var a = q / 26 * 6.283; parts.push({ x: npc.x, y: npc.y - 1, vx: Math.cos(a) * 7, vy: Math.sin(a) * 7, g: 0, life: 0.4, max: 0.4, c: "#ff3a4a", s: 3, glw: 1 }); }
+    }
+  }
+  var BMC = null, BMX = null;
+  function drawBMEnemy(g, e, now) {   // the dead: draw the creature off-screen, then tint it rotten green (zombie) or bone white with ribs (skeleton), and give it burning red eyes
+    var sx = ox + e.x * ts, sy = oy + e.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    var CW = Math.ceil(ts * 4), CH = Math.ceil(ts * 3.6), bx = CW / 2, byy = CH - ts * 0.6;
+    if (!BMC) { BMC = document.createElement("canvas"); BMX = BMC.getContext("2d"); }
+    if (BMC.width !== CW || BMC.height !== CH) { BMC.width = CW; BMC.height = CH; } else BMX.clearRect(0, 0, CW, CH);
+    var o0 = ox, o1 = oy; ox = bx - e.x * ts; oy = byy - e.y * ts; e._nobar = 1; try { drawEnemy(BMX, e, now); } catch (er) {} e._nobar = 0; ox = o0; oy = o1;
+    var c = BMX; c.save(); c.globalCompositeOperation = "source-atop";
+    if (e.bm === "zombie") {
+      c.fillStyle = "rgba(96,136,78,.58)"; c.fillRect(0, 0, CW, CH);
+      c.fillStyle = "rgba(40,58,32,.45)"; for (var i = 0; i < 6; i++) { var hx = bx + (Math.sin(i * 7.1 + e.mx) * 0.5) * ts, hy = byy - (0.15 + ((i * 0.37 + e.mx * 0.01) % 0.7)) * ts; c.beginPath(); c.arc(hx, hy, ts * 0.09, 0, 7); c.fill(); }
+    } else {
+      c.fillStyle = "rgba(232,226,208,.74)"; c.fillRect(0, 0, CW, CH);
+      c.fillStyle = "rgba(34,26,30,.55)"; var st = Math.max(2, Math.round(ts * 0.12)); for (var y = Math.round(byy - ts * 1.3); y < byy - ts * 0.08; y += st * 2) c.fillRect(bx - ts * 0.75, y, ts * 1.5, Math.max(1, st * 0.6));
+    }
+    c.restore();
+    var H2 = BMHEAD[e.k] || [8, -12], u = ts / 30, f = e.dir || 1, ex = bx + H2[0] * u * f, ey = byy + ts * 0.04 + H2[1] * u * (1 - (e.def ? (1 - e.dead / 0.6) * 0.75 : 0));
+    if (!e.def) { c.fillStyle = "rgba(255,40,50,.35)"; c.beginPath(); c.arc(ex, ey, ts * 0.16, 0, 7); c.fill(); c.fillStyle = "#ff2a3a"; c.beginPath(); c.arc(ex, ey, ts * 0.055, 0, 7); c.arc(ex - f * ts * 0.14, ey, ts * 0.05, 0, 7); c.fill(); c.fillStyle = "#ffd0d4"; c.fillRect(ex - 1, ey - 1, 2, 2); }
+    g.drawImage(BMC, sx - bx, sy - byy);
+    if (!e.def && e.hp < e.mx) { var hb = (HBAR[e.k] || 49) * u, w = 30 * u; g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(sx - w / 2, sy - hb, w, 5 * u); g.fillStyle = "#ff3a4a"; g.fillRect(sx - w / 2 + u, sy - hb + u, (w - 2 * u) * Math.max(0, e.hp / e.mx), 3 * u); }
+  }
+  var bmAbove = 0;
+  function drawBloodLit(g2) {   // after the darkness: the moon's red glow (added light) and a crimson tint over everything outside
+    if (!S || !(BM.on || bmNight()) || bmAbove <= 0.02 || cave) return;
+    var mx = vw * 0.78, my = vh * 0.16, r = Math.max(26, vh * 0.07), gr = g2.createRadialGradient(mx, my, r * 0.4, mx, my, r * 3.4);
+    gr.addColorStop(0, "rgba(255,50,60,.28)"); gr.addColorStop(1, "rgba(255,30,40,0)"); g2.globalAlpha = bmAbove; g2.fillStyle = gr; g2.beginPath(); g2.arc(mx, my, r * 3.4, 0, 7); g2.fill(); g2.globalAlpha = 1;
+  }
+  function drawBloodTint(g) { if (!S || !(BM.on || bmNight()) || cave) return; g.fillStyle = "rgba(120,0,16," + (0.07 + 0.11 * bmAbove) + ")"; g.fillRect(0, 0, vw, vh); }
+  function drawBloodSky(g, above) {   // a crimson wash over the open sky and a big red moon
+    bmAbove = above; if (!S || !(BM.on || bmNight()) || above <= 0.02) return;
+    g.save(); g.globalAlpha = 0.3 * above; g.fillStyle = "#8a0a18"; g.fillRect(0, 0, vw, vh); g.globalAlpha = above;
+    var mx = vw * 0.78, my = vh * 0.16, r = Math.max(26, vh * 0.07), gr = g.createRadialGradient(mx, my, r * 0.6, mx, my, r * 3.2);
+    gr.addColorStop(0, "rgba(255,60,60,.55)"); gr.addColorStop(1, "rgba(255,30,40,0)"); g.fillStyle = gr; g.beginPath(); g.arc(mx, my, r * 3.2, 0, 7); g.fill();
+    g.fillStyle = "#d8202e"; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); g.fillStyle = "rgba(120,0,16,.45)"; [[-0.3, -0.2, 0.22], [0.25, 0.15, 0.17], [-0.05, 0.38, 0.12]].forEach(function (q) { g.beginPath(); g.arc(mx + q[0] * r, my + q[1] * r, q[2] * r, 0, 7); g.fill(); });
+    g.restore();
+  }
+  function drawBMHud(g, now) {
+    if (!BM.on || cave || panelOpen) return;
+    var W0 = BMW[BM.wave], left = enemies.filter(function (e) { return e.bm && !e.def; }).length, txt = W0 ? "Wave " + (BM.wave + 1) + "/3 · " + W0.n + " · " + Math.max(0, Math.ceil(W0.t - BM.t)) + "s" : "Defeat the last " + left + "!";
+    g.save(); g.font = "900 13px Nunito, system-ui, sans-serif"; g.textAlign = "center"; var w = g.measureText(txt).width + 44, x = vw / 2, y = 74 + (reduce ? 0 : Math.sin(now / 300) * 1.2);
+    g.fillStyle = "rgba(30,4,8,.82)"; g.strokeStyle = "rgba(255,58,74,.7)"; g.lineWidth = 1.5; var r = 14; g.beginPath(); g.moveTo(x - w / 2 + r, y - r); g.arcTo(x + w / 2, y - r, x + w / 2, y + r, r); g.arcTo(x + w / 2, y + r, x - w / 2, y + r, r); g.arcTo(x - w / 2, y + r, x - w / 2, y - r, r); g.arcTo(x - w / 2, y - r, x + w / 2, y - r, r); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#ff3a4a"; g.beginPath(); g.arc(x - w / 2 + 16, y, 6, 0, 7); g.fill(); g.fillStyle = "#ffd0d4"; g.fillText(txt, x + 8, y + 4.5); g.restore();
+  }
+  // ---------- NEXUS: the SwampRealms Dimension and Zaruk, the Realm Warden ----------
+  // Stepping through an awakened Realm Gate now takes you to the Nexus (SbxCave IMAP.nexus): a starlit hall at the heart of the SwampRealms
+  // Dimension, with the sleeping portals to the other realms along its back wall. Its door leads back out beside your gate.
+  // Zaruk is its guardian: a gentle flying beast with a lion's mane and body, a monkey's face, ears and curly tail, and dragon wings and
+  // horns. He is passive: he drifts around the hall, comes to hover beside you when you are near, and the first time you arrive he
+  // introduces the SwampRealms (S.gmet = 1 after that). Talk to him again any time (tap "Talk to Zaruk" or press F beside him).
+  var GD = { x: 12.5, y: 9, alt: 1.6, face: 1, t: 0, tx: 12.5, ty: 9, wait: 0, talkAt: 0, page: 0, intro: false, sleep: false, wk: 0, zz: 0 };
+  var GD_SLEEP = { x: 16.5, y: 8.35 }, GD_SLEEP_ALT = 0.62, NXROW = 5;   // NXROW: the row the portals stand on
+  var NEXUS_BLD = { kind: "nexus", b: 0, id: 7777, name: "SwampRealms Nexus" };
+  var GD_INTRO = [
+    "Hrrrah! A traveller, at last! Don't be frightened, little one. I am Zaruk, Warden of the SwampRealms.",
+    "You are standing in the SwampRealms, the heart of the whole Dimension. It is the island that floats between every world, and every world is tied to it like a lantern on a string.",
+    "The swamp you came from, with Murkwater, Ember Bog and Frostfen, is the first of the realms. Its Heart had gone dark. You lit it again, your Gate woke up, and here you are.",
+    "See the three great portals behind me? Each one leads to another realm. They are still being built, stone by stone. When one opens, you will hear it from me first.",
+    "Until then this island is yours. Come back through your Realm Gate whenever you like, and the little portal at the island's tip leads home. Give my best to that old frog Croaker!"
+  ];
+  var GD_LINES = [
+    "The portals hum a little louder every time you visit. The builders are nearly done with one of them.",
+    "The colours here? Every realm leaks a little of its light into the SwampRealms. That is why the sky never looks the same twice.",
+    "Mind the edge, little one. It is a very long way down, and there is no bottom.",
+    "I have watched over these realms for a thousand years. You are the first to find the way here from the swamp.",
+    "My mane is a lion's, my hands are a monkey's and my wings are a dragon's. My charm is entirely my own.",
+    "Every realm has a Heart. Keep yours glowing.",
+    "When the Blood Moon rises over your swamp, even I can feel it here.",
+    "Old Croaker and I go way back. He was a tadpole when I first met him. Don't tell him I told you."
+  ];
+  // ---------- THE SWAMPREALMS: the floating island (map from SbxCave IMAP.nexus) ----------
+  // A floating island under a galaxy sky in colours you never see at home. Everything is drawn here in the 16-pixels-per-tile look:
+  //   the sky (painted small every frame, then scaled up crisp), the island (painted once into a canvas: iridescent grass, opal paths,
+  //   glowing rims and crystal cliffs hanging into the void), the props (glow-blooms, orb trees, polka mushrooms, floating shards and the
+  //   Prism Spring), the three portals under construction on the north rim, and the little portal home at the island's south tip.
+  var NXP = [
+    { x: 8, n: "Glimmer Reef", a: [255, 84, 200], b: [70, 240, 225], lv: 0.42, sc: -1, say: "The Glimmer Reef: a sea of glass coral under three suns. Half its stones are still missing. Zaruk says the builders are working day and night." },
+    { x: 16, n: "Thundercrown Peaks", a: [255, 206, 64], b: [150, 92, 255], lv: 0.68, sc: 0, say: "Thundercrown Peaks: mountains that ring like bells in the storm. This portal is the closest to finished. Not long now!" },
+    { x: 24, n: "The Hollow Moon", a: [176, 194, 255], b: [110, 255, 172], lv: 0.24, sc: 1, say: "The Hollow Moon: a world inside a moon, lit by glowing roots. It has barely been started. It is locked tight for now." }
+  ];
+  var NXPAL = [["#ffd23f", "#ff7a2a", "#ffffff"], ["#ff4fb0", "#ffe27a", "#7ffcff"], ["#3af0ff", "#ffffff", "#ff9ae0"], ["#b07aff", "#ffd0f6", "#fff27a"]];
+  function nxH(a, b, s) { var n = Math.sin(a * 127.1 + b * 311.7 + (s || 0) * 74.7) * 43758.5453; return n - Math.floor(n); }
+  function hsl2(h, s, l) {   // -> [r, g, b]
+    h = ((h % 360) + 360) % 360 / 360; var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p2 = 2 * l - q;
+    var f = function (t) { if (t < 0) t += 1; if (t > 1) t -= 1; return t < 1 / 6 ? p2 + (q - p2) * 6 * t : t < 0.5 ? q : t < 2 / 3 ? p2 + (q - p2) * (2 / 3 - t) * 6 : p2; };
+    return [Math.round(f(h + 1 / 3) * 255), Math.round(f(h) * 255), Math.round(f(h - 1 / 3) * 255)];
+  }
+  function nxPrep(F) {
+    var w = F.w, h = F.h, x, y, i, R0 = NXROW; F.iw = null; F.wins = []; F.nx = { props: [], path: new Uint8Array(w * h), clear: new Uint8Array(w * h), stones: [], isl: null, spring: { x: 16, y: R0 + 9 } };
+    NXP.forEach(function (P) { for (x = P.x - 1; x <= P.x + 1; x++) F.sol[R0 * w + x] = 1; });
+    for (y = R0 + 9; y <= R0 + 10; y++) for (x = 15; x <= 17; x++) F.sol[y * w + x] = 1;   // the Prism Spring
+    for (y = R0 + 1; y <= R0 + 2; y++) for (x = 5; x <= 27; x++) if (!F.wall[y * w + x]) F.nx.path[y * w + x] = F.nx.clear[y * w + x] = 1;   // an opal terrace in front of the portals
+    var line = function (x0, y0, x1, y1) {   // stepping stones of opal
+      var n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / 0.95));
+      for (var k = 0; k <= n; k++) { var px = x0 + (x1 - x0) * k / n + (nxH(k, x0, 2) - 0.5) * 0.25, py = y0 + (y1 - y0) * k / n; F.nx.stones.push([px, py, 4 + Math.floor(nxH(k, y0, 3) * 2.2)]);
+        for (var oy = -1; oy <= 1; oy++) for (var ox2 = -1; ox2 <= 1; ox2++) { var cx = Math.floor(px) + ox2, cy = Math.floor(py) + oy; if (cx >= 0 && cy >= 0 && cx < w && cy < h) F.nx.clear[cy * w + cx] = 1; } }
+    };
+    NXP.forEach(function (P) { line(P.x + 0.5, R0 + 3.2, 16.5 + (P.x - 16) * 0.12, R0 + 8.4); });
+    line(16.5, R0 + 11.6, 16.5, h - 1.6);
+    for (y = R0 + 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) {   // props, scattered by a fixed hash so the island is the same every visit
+      i = y * w + x; if (F.wall[i] || F.sol[i] || F.nx.clear[i] || y <= R0 + 3 || (Math.abs(x - 16) <= 2 && y >= h - 7) || (Math.abs(x - 16) <= 3 && Math.abs(y - (R0 + 9.5)) <= 2)) continue;
+      var r = nxH(x, y, 3), nb = !F.wall[i - 1] && !F.wall[i + 1] && !F.wall[i + w] && !F.wall[i - w];
+      var k = r < 0.07 ? "bloom" : r < 0.1 && nb ? "orb" : r < 0.145 ? "mush" : r < 0.18 ? "shard" : null;
+      if (!k) continue;
+      if (k === "orb") { if (F.nx.props.some(function (q) { return q.k === "orb" && Math.abs(q.x - x) < 3 && Math.abs(q.y - y) < 3; })) continue; F.sol[i] = 1; }
+      F.nx.props.push({ k: k, x: x, y: y, c: NXPAL[Math.floor(nxH(x, y, 9) * NXPAL.length)], ph: nxH(x, y, 5) * 6.28 });
+    }
+    F.nx.isl = nxIsland(F);
+  }
+  function nxHue(X, Y, w, h) {   // the island's colour field, like the sky above it: warm gold and rose to the north, magenta and violet in the middle, electric cyan to the south and the sides
+    var f = clamp((Y / 16 - 5) / (h - 6), 0, 1), side = Math.abs(X / 16 - w / 2) / (w / 2);
+    var hue = 48 - f * 220 + Math.sin(X * 0.02 + Y * 0.013) * 18;   // 48 gold -> 0 rose -> 300 magenta -> 260 violet -> 188 cyan
+    var cool = clamp(side * side * 0.9 - 0.15, 0, 0.75); hue = hue * (1 - cool) + (-172) * cool;   // the sides lean cyan (-172 = 188)
+    return hue;
+  }
+  function nxIsland(F) {   // the whole island at 16 px per cell: luminous cloud-ground, white cloud steps, glowing rims, cloud billows under every south edge
+    var w = F.w, h = F.h, PW = w * 16, PH = (h + 3) * 16, c = document.createElement("canvas"); c.width = PW; c.height = PH;
+    var g = c.getContext("2d"), im = g.createImageData(PW, PH), d = im.data, x, y, px, py;
+    var fl = function (xx, yy) { return xx >= 0 && yy >= 0 && xx < w && yy < h && !F.wall[yy * w + xx]; };
+    var put = function (X, Y, rgb, a) { if (X < 0 || Y < 0 || X >= PW || Y >= PH) return; var k = (Y * PW + X) * 4; if (a == null || a >= 1) { d[k] = rgb[0]; d[k + 1] = rgb[1]; d[k + 2] = rgb[2]; d[k + 3] = 255; return; } var oa = d[k + 3] / 255; if (oa <= 0) { d[k] = rgb[0]; d[k + 1] = rgb[1]; d[k + 2] = rgb[2]; d[k + 3] = a * 255; return; } d[k] = d[k] * (1 - a) + rgb[0] * a; d[k + 1] = d[k + 1] * (1 - a) + rgb[1] * a; d[k + 2] = d[k + 2] * (1 - a) + rgb[2] * a; d[k + 3] = Math.max(d[k + 3], a * 255); };
+    var puff = function (X, Y) { return 0.5 + 0.25 * Math.sin(X * 0.09 + Math.sin(Y * 0.07) * 2.6) + 0.25 * Math.cos(Y * 0.11 + Math.sin(X * 0.05) * 2.1); };   // soft cloudy light and shade
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      if (!fl(x, y)) continue;
+      var path = F.nx.path[y * w + x], up = fl(x, y - 1), dn = fl(x, y + 1), lf = fl(x - 1, y), rt = fl(x + 1, y);
+      for (py = 0; py < 16; py++) for (px = 0; px < 16; px++) {
+        var X = x * 16 + px, Y = y * 16 + py, r = nxH(X, Y, 1), hue = nxHue(X, Y, w, h), pf = puff(X, Y), col;
+        if (path) {   // the terrace: white marble shot with gold, glowing
+          var seam = (px + (y % 2) * 8) % 16 === 0 || py === 0;
+          col = seam ? hsl2(42, 0.85, 0.66) : hsl2(45 + pf * 20, 0.7, 0.86 + pf * 0.08 + (px + py < 5 ? 0.04 : 0)); if (r > 0.97) col = hsl2(X * 3 + Y * 5, 0.9, 0.8);
+        } else {   // cloud-ground: bright, saturated colour with soft billows of light
+          col = hsl2(hue + (pf - 0.5) * 30, 0.78, 0.55 + pf * 0.2 + (nxH(X >> 1, Y >> 1, 4) - 0.5) * 0.02);
+          if (r < 0.006) col = [255, 255, 255];   // a glint
+          else if (r > 0.994) col = hsl2(hue + 150, 1, 0.75);   // a fleck of a contrasting colour
+        }
+        if (!up && py < 2) col = py === 0 ? [255, 255, 255] : hsl2(hue + 20, 1, 0.86);   // glowing white rims facing the void
+        if (!lf && px === 0 || !rt && px === 15) col = hsl2(hue + 10, 1, 0.88);
+        if (!dn && py >= 14) col = hsl2(hue, 0.7, py === 15 ? 0.82 : 0.7);
+        put(X, Y, col);
+      }
+      if (!path) for (var f = 0; f < 2; f++) if (nxH(x, y, 20 + f) < 0.2) {   // little star-flowers
+        var fx = x * 16 + 2 + Math.floor(nxH(x, y, 30 + f) * 11), fy = y * 16 + 2 + Math.floor(nxH(x, y, 40 + f) * 10), fh = nxHue(fx, fy, w, h) + 160;
+        put(fx, fy, [255, 255, 245]); put(fx - 1, fy, hsl2(fh, 1, 0.7)); put(fx + 1, fy, hsl2(fh, 1, 0.7)); put(fx, fy - 1, hsl2(fh, 1, 0.7)); put(fx, fy + 1, hsl2(fh, 1, 0.7));
+      }
+      if (!dn) for (px = 0; px < 16; px++) {   // under a south edge: billowing cyan-white cloud that thins into the void
+        var X2 = x * 16 + px, bump = Math.abs(Math.sin((X2 + nxH(x, y, 7) * 9) * 0.21)), depth = Math.round(14 + 14 * bump + 10 * nxH(X2 >> 3, y, 7));
+        if (!lf && px < 5) depth = Math.round(depth * (0.3 + px * 0.14)); if (!rt && px > 10) depth = Math.round(depth * (0.3 + (15 - px) * 0.14));
+        for (var k = 0; k < depth; k++) {
+          var Y2 = (y + 1) * 16 + k, cy = Math.floor(Y2 / 16); if (cy < h && fl(x, cy)) break;
+          var kk = k / depth, sh = 0.5 + 0.5 * Math.sin(X2 * 0.33 + k * 0.4);
+          var cc = kk < 0.12 ? [255, 255, 255] : hsl2(192 + kk * 30 - sh * 8, 0.85, 0.9 - kk * 0.32 - (sh > 0.85 ? 0.06 : 0));
+          put(X2, Y2, cc, kk > 0.7 ? (1 - kk) / 0.3 : 1);
+        }
+        if (nxH(X2 >> 1, y, 12) > 0.9 && px % 3 === 0) for (var s = 0; s < 7; s++) put(X2, (y + 1) * 16 + depth + s * 2, [230, 252, 255], 0.8 - s * 0.11);   // drifting wisps of light
+      }
+    }
+    F.nx.stones.forEach(function (st) {   // white cloud steps, like a stair of light
+      var sx = Math.round(st[0] * 16), sy = Math.round(st[1] * 16), r = st[2];
+      for (var yy = -r; yy <= r; yy++) for (var xx = -r - 2; xx <= r + 2; xx++) {
+        var e = (xx * xx) / ((r + 2) * (r + 2)) + (yy * yy) / (r * r); if (e > 1) continue;
+        put(sx + xx, sy + yy + 2, [40, 120, 200], 0.25);
+        put(sx + xx, sy + yy, e > 0.72 ? [176, 236, 255] : yy > r * 0.35 ? [214, 246, 255] : [255, 255, 255]);
+      }
+    });
+    g.putImageData(im, 0, 0); return c;
+  }
+  // ---- the sky: a blaze of light, painted small every frame, then scaled up crisp ----
+  var NXS = null, NXC = null, NXX = null, NXN = null, NXCL = null, NXA = null, NXB = null;
+  function nxStars() {
+    NXS = []; for (var i = 0; i < 260; i++) NXS.push({ x: nxH(i, 1), y: nxH(i, 2), s: nxH(i, 3) < 0.1 ? 2 : 1, ph: nxH(i, 4) * 6.28, sp: 0.6 + nxH(i, 5) * 2.2, c: ["#ffffff", "#bffcff", "#d6ff9a", "#fff3a0", "#ffd0f6"][i % 5], big: nxH(i, 6) < 0.07 });
+    // painterly nebula: hundreds of soft dabs, warm in the middle and cool at the sides, a few deep violet ones for depth
+    NXN = document.createElement("canvas"); NXN.width = 320; NXN.height = 200; var g = NXN.getContext("2d");
+    var warm = ["255,236,120", "255,190,60", "255,130,40", "255,80,140", "235,60,200", "190,90,255"], cool = ["60,230,255", "40,190,240", "120,255,230", "70,140,255", "170,250,255"], deep = ["90,30,140", "40,40,130", "20,80,140"];
+    for (var b = 0; b < 520; b++) {
+      var x = nxH(b, 11) * 320, y = nxH(b, 12) * 200, dc = Math.abs(x - 160) / 160, r = 4 + nxH(b, 13) * 22;
+      var set = nxH(b, 15) < 0.07 ? deep : nxH(b, 14) < 1.15 - dc * 1.2 - (y / 200) * 0.35 ? warm : cool, cc = set[Math.floor(nxH(b, 16) * set.length)];
+      var rg = g.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, "rgba(" + cc + ",.55)"); rg.addColorStop(1, "rgba(" + cc + ",0)"); g.fillStyle = rg; g.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    // cyan-white cloud banks (bottom and sides)
+    NXCL = document.createElement("canvas"); NXCL.width = 320; NXCL.height = 90; var cg = NXCL.getContext("2d");
+    for (var q = 0; q < 150; q++) {
+      var qx = nxH(q, 41) * 340 - 10, qy = 30 + nxH(q, 42) * 60 + Math.abs(qx - 160) * -0.08, qr = 8 + nxH(q, 43) * 22, lit = nxH(q, 44);
+      cg.fillStyle = lit < 0.3 ? "#3aa8e8" : lit < 0.6 ? "#7ee2ff" : lit < 0.85 ? "#c8f7ff" : "#ffffff"; cg.beginPath(); cg.arc(Math.round(qx), Math.round(qy), Math.round(qr), 0, 6.2832); cg.fill();
+    }
+    NXA = ["255,255,255", "190,140,255", "120,240,255"].map(function (ac) { var s2 = document.createElement("canvas"); s2.width = 1; s2.height = 24; var x2 = s2.getContext("2d"), lg = x2.createLinearGradient(0, 0, 0, 24); lg.addColorStop(0, "rgba(" + ac + ",0)"); lg.addColorStop(0.8, "rgba(" + ac + ",1)"); lg.addColorStop(1, "rgba(" + ac + ",0)"); x2.fillStyle = lg; x2.fillRect(0, 0, 1, 24); return s2; });
+  }
+  function nxBolt(W2, H2, t) {   // a fresh fork of lightning: from the blaze at the top, crackling outwards
+    var pts = [], x = W2 * (0.35 + nxH(Math.floor(t), 51) * 0.3), y = H2 * 0.08, ang = (nxH(Math.floor(t), 52) - 0.5) * 2.2 + Math.PI / 2, n = 18, br = [];
+    for (var i = 0; i < n; i++) { ang += (nxH(i, Math.floor(t), 53) - 0.5) * 1.2; x += Math.cos(ang) * H2 * 0.03; y += Math.abs(Math.sin(ang)) * H2 * 0.025 + 1; pts.push([x, y]); if (nxH(i, Math.floor(t), 54) < 0.18) br.push([x, y, ang + (nxH(i, 55, Math.floor(t)) < 0.5 ? -1 : 1) * 0.9]); }
+    return { p: pts, b: br, t0: t };
+  }
+  function drawNexusSky(g, now, F) {
+    var P = Math.max(1, ts / 16), W2 = Math.ceil(vw / P), H2 = Math.ceil(vh / P), t = now / 1000, i;
+    if (!NXS) nxStars();
+    if (!NXC) { NXC = document.createElement("canvas"); NXX = NXC.getContext("2d"); }
+    if (NXC.width !== W2 || NXC.height !== H2) { NXC.width = W2; NXC.height = H2; }
+    var c = NXX, px = (cam.x / F.w - 0.5), py = (cam.y / F.h - 0.5), bcx = W2 * (0.5 - px * 0.1), bcy = H2 * (0.18 - py * 0.12);
+    var bg = c.createRadialGradient(bcx, bcy, 0, bcx, bcy, Math.max(W2, H2) * 0.95);   // the blaze: white-gold at the heart, through rose and violet, out to electric cyan
+    bg.addColorStop(0, "#fffbe6"); bg.addColorStop(0.1, "#ffe27a"); bg.addColorStop(0.24, "#ff9a3c"); bg.addColorStop(0.38, "#ec4aa0"); bg.addColorStop(0.52, "#8a4ae6"); bg.addColorStop(0.68, "#2f7ae8"); bg.addColorStop(0.84, "#1fc8e8"); bg.addColorStop(1, "#7af0ff");
+    c.globalCompositeOperation = "source-over"; c.globalAlpha = 1; c.fillStyle = bg; c.fillRect(0, 0, W2, H2);
+    c.imageSmoothingEnabled = true;
+    c.globalAlpha = 0.85; c.drawImage(NXN, -W2 * 0.15 - px * W2 * 0.12, -H2 * 0.12 - py * H2 * 0.12, W2 * 1.3, H2 * 1.3);
+    c.globalAlpha = 0.5; c.drawImage(NXN, W2 * 1.12 - px * W2 * 0.06, -H2 * 0.1 - py * H2 * 0.06, -W2 * 1.25, H2 * 1.25); c.globalAlpha = 1;
+    c.globalCompositeOperation = "lighter";
+    var core = c.createRadialGradient(bcx, bcy, 0, bcx, bcy, H2 * 0.45); core.addColorStop(0, "rgba(255,255,240,.85)"); core.addColorStop(0.35, "rgba(255,230,160,.35)"); core.addColorStop(1, "rgba(255,200,120,0)");
+    c.fillStyle = core; c.fillRect(0, 0, W2, H2);
+    for (var bm = 0; bm < 2; bm++) {   // two great beams of white light leaning in from the top corners
+      var sd = bm ? 1 : -1, x0 = bm ? W2 * 1.02 : -W2 * 0.02, lg2 = c.createLinearGradient(x0, 0, W2 * 0.5, H2), sw2 = Math.sin(t * 0.3 + bm) * W2 * 0.02;
+      lg2.addColorStop(0, "rgba(255,255,255,.55)"); lg2.addColorStop(0.6, "rgba(220,250,255,.18)"); lg2.addColorStop(1, "rgba(220,250,255,0)");
+      c.fillStyle = lg2; c.beginPath(); c.moveTo(x0, -2); c.lineTo(x0 - sd * W2 * 0.16, -2); c.lineTo(W2 * 0.5 - sd * W2 * 0.12 + sw2, H2 * 1.02); c.lineTo(W2 * 0.5 - sd * W2 * 0.3 + sw2, H2 * 1.02); c.closePath(); c.fill();
+    }
+    for (var a = 0; a < 3; a++) {   // drifting veils of light
+      var base = H2 * (0.22 + a * 0.16) - py * H2 * 0.05;
+      for (var x = 0; x < W2; x += 2) {
+        var yy = base + Math.sin(x * 0.018 + t * 0.25 + a * 2) * H2 * 0.05 + Math.sin(x * 0.047 - t * 0.4 + a) * H2 * 0.02, al = 0.05 + 0.06 * Math.sin(x * 0.03 + t * 0.6 + a * 3);
+        if (al <= 0) continue; c.globalAlpha = al; c.drawImage(NXA[a], x, yy - 18, 2, 24);
+      }
+    }
+    c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
+    for (i = 0; i < NXS.length; i++) {   // stars and sparks
+      var st = NXS[i], sx = ((st.x - px * 0.08) % 1 + 1) % 1 * W2, sy = ((st.y - py * 0.08) % 1 + 1) % 1 * H2, tw = 0.5 + 0.5 * Math.sin(t * st.sp + st.ph);
+      c.globalAlpha = reduce ? 0.85 : 0.4 + 0.6 * tw; c.fillStyle = st.c; c.fillRect(Math.round(sx), Math.round(sy), st.s, st.s);
+      if (st.big && tw > 0.4) { c.globalAlpha = (tw - 0.4) * 1.5; c.fillRect(Math.round(sx) - 2, Math.round(sy), 5, 1); c.fillRect(Math.round(sx), Math.round(sy) - 2, 1, 5); }
+    }
+    c.globalAlpha = 1;
+    // lightning: a fork crackles out of the blaze every few seconds
+    if (!reduce) {
+      var per = 3.4, ph = t % per, kb = Math.floor(t / per);
+      if (ph < 0.32) {
+        if (!NXB || NXB.k !== kb) { NXB = nxBolt(W2, H2, kb * 7.3); NXB.k = kb; }
+        var fl = ph < 0.08 || (ph > 0.14 && ph < 0.2) ? 1 : 0.45, line = function (pts, wd, col, al2) { c.globalAlpha = al2 * fl; c.fillStyle = col; for (var q = 1; q < pts.length; q++) { var a1 = pts[q - 1], b1 = pts[q], n2 = Math.ceil(Math.hypot(b1[0] - a1[0], b1[1] - a1[1])); for (var s = 0; s <= n2; s++) c.fillRect(Math.round(a1[0] + (b1[0] - a1[0]) * s / n2) - (wd >> 1), Math.round(a1[1] + (b1[1] - a1[1]) * s / n2) - (wd >> 1), wd, wd); } };
+        line(NXB.p, 3, "#c79aff", 0.45); line(NXB.p, 1, "#ffffff", 1);
+        NXB.b.forEach(function (bq) { var pts2 = [[bq[0], bq[1]]], ax = bq[0], ay = bq[1], an = bq[2]; for (var q = 0; q < 6; q++) { an += (nxH(q, bq[0] | 0, 56) - 0.5) * 1.3; ax += Math.cos(an) * H2 * 0.025; ay += Math.sin(an) * H2 * 0.02; pts2.push([ax, ay]); } line(pts2, 1, "#e8dcff", 0.85); });
+        if (ph < 0.08) { c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.12; c.fillStyle = "#e8dcff"; c.fillRect(0, 0, W2, H2); c.globalCompositeOperation = "source-over"; }
+        c.globalAlpha = 1;
+      }
+    }
+    // cloud banks rolling along the bottom and up the sides
+    var dr = (t * 3) % 320, cy0 = H2 - H2 * 0.3 - py * H2 * 0.15;
+    c.imageSmoothingEnabled = false;
+    for (var cb = -1; cb <= Math.ceil(W2 / 320); cb++) c.drawImage(NXCL, Math.round(cb * 320 - dr - px * W2 * 0.2), Math.round(cy0), 320, 90);
+    c.fillStyle = "#3aa8e8"; c.fillRect(0, Math.round(cy0) + 89, W2, H2);
+    c.globalAlpha = 0.75; c.drawImage(NXCL, Math.round(-80 - px * W2 * 0.1 + Math.sin(t * 0.1) * 6), Math.round(H2 * 0.35 - py * H2 * 0.1), 200, 56);
+    c.drawImage(NXCL, Math.round(W2 - 120 - px * W2 * 0.1 - Math.sin(t * 0.12) * 6), Math.round(H2 * 0.42 - py * H2 * 0.1), 200, 56); c.globalAlpha = 1;
+    // the island's own light, spilling into the clouds beneath it
+    c.globalCompositeOperation = "lighter";
+    var gcx = (ox + F.w / 2 * ts) / P, gcy = (oy + F.h * 0.62 * ts) / P, gr2 = F.w * ts / P * 0.62, ug = c.createRadialGradient(gcx, gcy, 0, gcx, gcy, gr2);
+    ug.addColorStop(0, "rgba(255,240,200,.25)"); ug.addColorStop(0.5, "rgba(120,240,255,.12)"); ug.addColorStop(1, "rgba(0,0,0,0)"); c.fillStyle = ug; c.fillRect(gcx - gr2, gcy - gr2, gr2 * 2, gr2 * 2);
+    c.globalCompositeOperation = "source-over";
+    g.imageSmoothingEnabled = false; g.drawImage(NXC, 0, 0, W2, H2, 0, 0, W2 * P, H2 * P);
+  }
+  // ---- props, portals, the spring and the way home (drawn row by row with everything else, so you walk in front of / behind them) ----
+  function nxR(g, bx, by, u) { return function (x, y, w, h, col) { g.fillStyle = col; var X = Math.round(bx + x * u), Y = Math.round(by - (y + h) * u); g.fillRect(X, Y, Math.round(bx + (x + w) * u) - X, Math.round(by - y * u) - Y); }; }
+  function nxDisc(R, cx, cy, r, col) { for (var yy = -r; yy <= r; yy++) { var hw = Math.round(Math.sqrt(r * r - yy * yy)); R(cx - hw, cy + yy, hw * 2 + 1, 1, col); } }
+  var NXPC = null, NXPX = null, NXPI = null;
+  function nxPortalTpl(P, idx) {   // once per portal: the stone frame and base (static), and the list of opening pixels with their angle and radius
+    var W = 64, H = 72, cx = 32, cy = 34, x, y, tpl = new Uint8ClampedArray(W * H * 4), op = [];
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      var k = (y * W + x) * 4, dx = x - cx, dy = y - cy, r = Math.sqrt(dx * dx + dy * dy);
+      var open = (y >= cy && y <= 68 && x >= 17 && x <= 46) || (y < cy && r <= 15.5);
+      var outer = (y >= cy && y <= 68 && x >= 11 && x <= 52) || (y < cy && r <= 21.5);
+      if (y >= 66 && y <= 71 && x >= 7 && x <= 56 && !open) {   // the stepped base
+        var stc = y === 66 ? [255, 250, 236] : y < 69 ? [236, 214, 170] : [196, 160, 110]; if (y >= 69 && (x < 9 || x > 54)) continue; tpl[k] = stc[0]; tpl[k + 1] = stc[1]; tpl[k + 2] = stc[2]; tpl[k + 3] = 255; continue;
+      }
+      if (open) { var r2 = Math.sqrt(dx * dx + (dy - 10) * (dy - 10)); op.push(k, x, y, Math.atan2(dy - 10, dx), r2); continue; }
+      if (!outer) continue;
+      var blk = y < cy ? Math.floor((Math.atan2(dy, dx) + Math.PI) / (Math.PI / 9)) : 20 + (x < cx ? 0 : 10) + Math.floor((y - cy) / 6);
+      if (nxH(blk, idx, 17) < 0.2 + (1 - P.lv) * 0.25) continue;   // missing stones (still being built)
+      var seam = y < cy ? (Math.abs(((Math.atan2(dy, dx) + Math.PI) / (Math.PI / 9)) % 1) < 0.12 || Math.abs(r - 21) < 0.6) : ((y - cy) % 6 === 0 || x === 11 || x === 52);
+      var inner = y < cy ? r < 17 : (x < 18 || (x > 45 && x < 47));
+      var sc2 = seam ? [214, 160, 60] : inner ? [P.a[0] * 0.95, P.a[1] * 0.95, P.a[2] * 0.95] : (dx < 0 && dy < 0) || x < 14 ? [255, 252, 240] : [228, 214, 196];
+      tpl[k] = sc2[0]; tpl[k + 1] = sc2[1]; tpl[k + 2] = sc2[2]; tpl[k + 3] = 255;
+    }
+    return { tpl: tpl, op: op };
+  }
+  function nxPortal(g, P, idx, now, glows) {   // a portal, painted at 16 px per tile into a 64 x 72 canvas, then scaled up crisp
+    var t = now / 1000, W = 64, H = 72, u0 = ts / 16, dxa = ox + (P.x + 0.5) * ts - 32 * u0;
+    if (dxa > vw || dxa + 64 * u0 < 0 || oy + (NXROW + 0.92) * ts < 0) return;   // off screen
+    if (!NXPC) { NXPC = document.createElement("canvas"); NXPC.width = W; NXPC.height = H; NXPX = NXPC.getContext("2d"); NXPI = NXPX.createImageData(W, H); }
+    if (!P._t) P._t = nxPortalTpl(P, idx);
+    var d = NXPI.data, op = P._t.op, lvl = 69 - (69 - 34 + 15) * P.lv, spk = Math.floor(t * 3); d.set(P._t.tpl);   // how full of swirl the opening is (they are not finished)
+    for (var n = 0; n < op.length; n += 5) {
+      var k = op[n], x = op[n + 1], y = op[n + 2], th = op[n + 3], r = op[n + 4], edge = lvl + Math.sin(x * 0.45 + t * 3) * 1.4;
+      if (y >= edge) {
+        var v = Math.sin(th * 3 + r * 0.38 - t * 2.4) * 0.5 + 0.5, v2 = Math.sin(r * 0.6 - t * 3.1 + th) * 0.5 + 0.5, m = v * 0.8 + v2 * 0.2, br2 = 0.45 + 0.35 * v2;
+        if (y - edge < 1.5) { d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 200; continue; }
+        d[k] = Math.min(255, (P.a[0] * m + P.b[0] * (1 - m)) * br2); d[k + 1] = Math.min(255, (P.a[1] * m + P.b[1] * (1 - m)) * br2); d[k + 2] = Math.min(255, (P.a[2] * m + P.b[2] * (1 - m)) * br2); d[k + 3] = 230;
+      } else if (nxH(x, y, spk) > 0.985) { d[k] = P.a[0]; d[k + 1] = P.a[1]; d[k + 2] = P.a[2]; d[k + 3] = 200; }   // loose sparks in the unfinished part
+    }
+    NXPX.putImageData(NXPI, 0, 0);
+    var R = function (x2, y2, w, h, col) { NXPX.fillStyle = col; NXPX.fillRect(x2, y2, w, h); };
+    if (P.sc <= 0) { R(2, 20, 2, 52, "#9a6a3a"); R(12, 26, 2, 46, "#9a6a3a"); R(0, 30, 16, 2, "#c08a4a"); R(0, 50, 16, 2, "#c08a4a"); for (var b = 0; b < 8; b++) R(3 + b, 50 - b * 2.4 | 0, 2, 2, "#7a4a22"); R(1, 29, 16, 1, "#5a3a1a"); }   // scaffolding
+    if (P.sc >= 0) { R(60, 20, 2, 52, "#9a6a3a"); R(50, 26, 2, 46, "#9a6a3a"); R(48, 30, 16, 2, "#c08a4a"); R(48, 50, 16, 2, "#c08a4a"); for (var b2 = 0; b2 < 8; b2++) R(59 - b2, 50 - b2 * 2.4 | 0, 2, 2, "#7a4a22"); }
+    for (var c3 = 0; c3 < 15; c3++) { R(19 + c3 * 2, 40 + c3 * 2, 2, 2, c3 % 2 ? "#cfd6e6" : "#8a92a8"); R(45 - c3 * 2, 40 + c3 * 2, 2, 2, c3 % 2 ? "#cfd6e6" : "#8a92a8"); }   // chains across
+    R(28, 50, 9, 7, "#f2c14e"); R(29, 51, 7, 5, "#d89a2a"); R(30, 46, 5, 1, "#e0e4ee"); R(30, 46, 1, 4, "#e0e4ee"); R(34, 46, 1, 4, "#e0e4ee"); R(32, 52, 1, 2, "#3a2410");   // padlock
+    R(14, 58, 2, 13, "#5a3a1a"); R(48, 58, 2, 13, "#5a3a1a");   // the barrier
+    for (var s3 = 0; s3 < 9; s3++) R(14 + s3 * 4, 60, 4, 3, s3 % 2 ? "#5a2a8a" : "#ffd23f");
+    R(14, 63, 36, 1, "#2a1440");
+    var bob = function (i2) { return Math.round(Math.sin(t * 1.6 + i2 * 2.1 + idx) * 1.5); };   // stones floating up to their places
+    [[8, 10], [52, 6], [44, 2]].forEach(function (q, i2) { R(q[0], q[1] + bob(i2), 5, 4, "#e8dcc4"); R(q[0], q[1] + bob(i2), 5, 1, "#ffffff"); R(q[0], q[1] + 3 + bob(i2), 5, 1, "#c89a4a"); });
+    var u = ts / 16, dx0 = ox + (P.x + 0.5) * ts - 32 * u, by = oy + (NXROW + 0.92) * ts;
+    g.drawImage(NXPC, 0, 0, W, H, Math.round(dx0), Math.round(by - H * u), Math.round(W * u), Math.round(H * u));
+    var gc = P.a[0] + "," + P.a[1] + "," + P.a[2]; glows.push([ox + (P.x + 0.5) * ts, by - 22 * u, gc, 2.6, 0.22 + 0.06 * Math.sin(t * 2 + idx)]);
+  }
+  var NXHC = null, NXHX = null, NXHI = null;
+  function nxHome(g, F, now, glows) {   // the little portal home, hanging in the void below the island's tip
+    var t = now / 1000, W = 28, H = 20, x, y; if (!NXHC) { NXHC = document.createElement("canvas"); NXHC.width = W; NXHC.height = H; NXHX = NXHC.getContext("2d"); NXHI = NXHX.createImageData(W, H); }
+    var d = NXHI.data; d.fill(0);
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      var dx = (x - 13.5) / 13, dy = (y - 9.5) / 9, r = Math.sqrt(dx * dx + dy * dy), k = (y * W + x) * 4; if (r > 1) continue;
+      if (r > 0.82) { d[k] = 120; d[k + 1] = 240; d[k + 2] = 170; d[k + 3] = 255; continue; }
+      var th = Math.atan2(dy, dx), v = Math.sin(th * 2 + r * 9 - t * 3) * 0.5 + 0.5;
+      d[k] = 40 + 80 * v; d[k + 1] = 150 + 100 * v; d[k + 2] = 110 + 60 * v; d[k + 3] = 235;
+    }
+    NXHX.putImageData(NXHI, 0, 0);
+    var u = ts / 16, cx = ox + (F.up.x + 0.5) * ts, cy = oy + (F.up.y + 0.45) * ts + Math.sin(t * 1.4) * u;
+    g.drawImage(NXHC, 0, 0, W, H, Math.round(cx - 14 * u), Math.round(cy - 10 * u), Math.round(W * u), Math.round(H * u));
+    glows.push([cx, cy, "120,255,190", 2, 0.25]);
+  }
+  function nxPillar(g, F, now) {   // the Spring's pillar of light, rising into the sky (painted on the ground layer, so everything stands in front of it)
+    var t = now / 1000, u = ts / 16, sp = F.nx.spring, cx = ox + (sp.x + 0.5) * ts, cy = oy + (sp.y + 1.1) * ts;
+    var pw = 16 + Math.sin(t * 1.3) * 2, pl = g.createLinearGradient(0, cy - 1.2 * ts, 0, cy - 9 * ts);
+    pl.addColorStop(0, "rgba(255,255,240,.5)"); pl.addColorStop(0.5, "rgba(255,240,200,.2)"); pl.addColorStop(1, "rgba(255,240,200,0)");
+    g.fillStyle = pl; g.fillRect(Math.round(cx - pw * u), Math.round(cy - 9 * ts), Math.round(pw * 2 * u), Math.round(8.1 * ts));
+    g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(Math.round(cx - 3 * u), Math.round(cy - 9 * ts), Math.round(6 * u), Math.round(8 * ts));
+  }
+  function nxSpring(g, F, now, glows) {   // the Prism Spring: a pool of liquid light with a ring of crystals turning above it
+    var t = now / 1000, u = ts / 16, sp = F.nx.spring, cx = ox + (sp.x + 0.5) * ts, cy = oy + (sp.y + 1.1) * ts, R = nxR(g, cx, cy, u), i;
+
+    for (var yy = -10; yy <= 10; yy++) { var hw = Math.round(Math.sqrt(1 - (yy / 10.5) * (yy / 10.5)) * 24); for (var xx = -hw; xx < hw; xx += 2) { var edge = Math.abs(xx) > hw - 3 || Math.abs(yy) > 8; var h2 = (Math.atan2(yy, xx / 2) * 57 + t * 60 + Math.hypot(xx, yy * 2) * 6) % 360; var col = edge ? "#e6dcff" : "rgb(" + hsl2(h2, 0.85, 0.62).join(",") + ")"; R(xx, -yy + 1, 2, 1, col); } }
+    R(-2, 11, 4, 1, "#fff");
+    var pts = []; for (i = 0; i < 10; i++) { var a = t * 0.7 + i / 10 * 6.2832; pts.push({ x: Math.cos(a) * 20, y: 22 + Math.sin(a) * 6, z: Math.sin(a), c: NXPAL[i % 4][i % 3] }); }
+    pts.sort(function (p1, p2) { return p1.z - p2.z; });
+    var prism = function () { var by2 = 24 + Math.sin(t * 1.8) * 1.5; for (var r = 0; r < 9; r++) { var w2 = r < 4 ? r * 2 + 1 : (8 - r) * 2 + 1; R(-w2 / 2 | 0, by2 + r, w2, 1, r < 4 ? "#fff6c4" : "#ff9ae0"); } R(-1, by2 + 3, 2, 2, "#ffffff"); };
+    var drawn = false;
+    pts.forEach(function (q) { if (!drawn && q.z > 0) { prism(); drawn = true; } var s2 = q.z > 0 ? 3 : 2; R(Math.round(q.x) - 1, Math.round(q.y), s2, s2 + 1, q.c); });
+    if (!drawn) prism();
+    glows.push([cx, cy - 1.2 * ts, "255,170,240", 3, 0.24]); glows.push([cx, cy - 0.2 * ts, "120,240,255", 2.4, 0.2]);
+  }
+  function nxProp(g, q, now, glows) {
+    var t = now / 1000, u = ts / 16, bx = ox + q.x * ts, by = oy + (q.y + 0.92) * ts, R = nxR(g, bx, by, u), c = q.c;
+    if (bx < -ts * 1.5 || bx > vw + ts * 0.5 || by < -ts * 0.5 || by > vh + ts * 2.5) return;   // off screen
+    if (q.k === "bloom") {
+      var sw = reduce ? 0 : Math.sin(t * 1.1 + q.ph) * 1.6;
+      for (var i = 0; i < 18; i++) R(7 + Math.round(sw * i / 18), i, 2, 1, i % 5 === 0 ? "#7ad62a" : "#a8ff3e");
+      R(4, 5, 3, 2, "#2fe0c0"); R(3, 6, 1, 1, "#2fe0c0"); R(9 + Math.round(sw * 0.45), 9, 3, 2, "#2fe0c0"); R(12 + Math.round(sw * 0.45), 10, 1, 1, "#2fe0c0");
+      var hx = 8 + Math.round(sw), hy = 20;
+      R(hx - 6, hy - 1, 4, 4, c[0]); R(hx + 2, hy - 1, 4, 4, c[0]); R(hx - 2, hy + 3, 4, 4, c[0]); R(hx - 2, hy - 5, 4, 4, c[0]);
+      R(hx - 6, hy + 2, 1, 1, c[1]); R(hx + 5, hy + 2, 1, 1, c[1]); R(hx + 1, hy + 6, 1, 1, c[1]); R(hx - 2, hy - 5, 1, 1, c[1]);
+      R(hx - 2, hy - 1, 4, 4, c[2]); R(hx - 1, hy + 1, 1, 1, "#ffffff");
+      glows.push([bx + hx * u, by - (hy + 1) * u, "255,140,230", 1.3, 0.16]);
+    } else if (q.k === "orb") {
+      for (var j = 0; j < 22; j++) R(6 + Math.round(Math.sin(j * 0.35) * 1.2), j, 4, 1, (j + Math.floor(t * 2)) % 4 < 2 ? "#c25aff" : "#7a2ab8");
+      R(2, 16, 5, 2, "#7a2ab8"); R(10, 19, 5, 2, "#7a2ab8");
+      [[2, 22, 4, "#4ef0e0"], [13, 25, 4, "#ffd23f"], [8, 29, 5, "#ff6a8a"]].forEach(function (o, n) {
+        var oy2 = o[1] + Math.round(Math.sin(t * 1.3 + q.ph + n * 2) * 1.2); nxDisc(R, o[0] + 2, oy2, o[2], o[3]); R(o[0] + 1, oy2 + Math.round(o[2] / 2), 2, 2, "#ffffff");
+      });
+      glows.push([bx + 8 * u, by - 26 * u, "255,170,200", 1.6, 0.2]);
+    } else if (q.k === "mush") {
+      [[2, 0, 6, c[1], c[2]], [8, 0, 8, c[0], c[2]], [11, 0, 5, c[2], c[0]]].forEach(function (m, n) {
+        var hgt = [5, 8, 4][n]; R(m[0] + Math.floor(m[2] / 2) - 1, 0, 2, hgt, "#f6eedb");
+        for (var r = 0; r < 3; r++) R(m[0] + r, hgt + r, m[2] - r * 2 + 1, 1, m[3]);
+        R(m[0] + 1, hgt + 1, 1, 1, m[4]); R(m[0] + m[2] - 2, hgt, 1, 1, m[4]);
+      });
+      glows.push([bx + 8 * u, by - 7 * u, "200,255,120", 1, 0.12]);
+    } else if (q.k === "shard") {
+      var hov = 6 + Math.sin(t * 1.5 + q.ph) * 1.6, spin = Math.abs(Math.cos(t * 0.9 + q.ph)), rows = [1, 3, 5, 5, 5, 5, 5, 3, 1];
+      g.fillStyle = "rgba(10,0,30,.3)"; g.fillRect(Math.round(bx + 5 * u), Math.round(by - 1 * u), Math.round(6 * u), Math.round(1.4 * u));
+      rows.forEach(function (w2, r) { var ww = Math.max(1, Math.round(w2 * (0.4 + 0.6 * spin))), x0 = 8 - Math.ceil(ww / 2); R(x0, hov + r, Math.ceil(ww / 2), 1, c[0]); R(x0 + Math.ceil(ww / 2), hov + r, Math.floor(ww / 2), 1, c[2]); });
+      R(7, hov + 6, 1, 1, "#ffffff");
+      glows.push([bx + 8 * u, by - (hov + 4) * u, "200,170,255", 1.4, 0.2]);
+    }
+  }
+  function nxRow(g, F, rj, now, glows) {
+    if (rj === NXROW) NXP.forEach(function (P, i) { nxPortal(g, P, i, now, glows); });
+    if (rj === F.nx.spring.y + 1) nxSpring(g, F, now, glows);
+    if (rj === F.h - 1) nxHome(g, F, now, glows);
+    for (var i = 0; i < F.nx.props.length; i++) if (F.nx.props[i].y === rj) nxProp(g, F.nx.props[i], now, glows);
+    if (GD.sleep && rj === Math.floor(GD.y)) drawGuardianBody(g, now);
+  }
+  function nxPortalNear() {
+    if (!inNexus()) return null; var best = null;
+    NXP.forEach(function (P) { var dx = P.x + 0.5 - cp.x, dy = NXROW + 1.6 - cp.y; if (Math.abs(dx) < 2.2 && Math.abs(dy) < 1.6) best = P; });
+    return best;
+  }
+  function nxPortalTalk(P) { toast(P.say, "rgb(" + P.a.join(",") + ")"); thud(180, 0.05); snd("open", "Common"); }
+  function inNexus() { return !!(cave && cave.bld && cave.bld.kind === "nexus"); }
+  function enterNexus(gx, gy) {   // called while the gate's bright fade covers the screen
+    if (cave) return; stopInput(); enemies.length = 0; bmEndQuiet();
+    cave = { hole: { x: gx + 1, y: gy, b: 0 }, bld: NEXUS_BLD, run: 7777, floors: {}, f: 0, F: null };
+    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++;
+    setFloor(1, "down"); GD.x = GD_SLEEP.x; GD.y = GD_SLEEP.y; GD.tx = GD.x; GD.ty = GD.y; GD.intro = false; GD.face = -1; GD.alt = GD_SLEEP_ALT; GD.wk = 0; gdSleep(true); save();
+  }
+  function bmEndQuiet() { if (BM.on) { BM.on = false; BM.croak = false; bmRoll(); } }
+  function gdNear() { var r = GD.sleep ? 3.1 : 2.6; return inNexus() && GD.wk <= 0 && Math.abs(GD.x - cp.x) < r && Math.abs(GD.y - cp.y) < r; }
+  function gdSleep(on) {   // asleep, he lies on the ground in front of the middle portal and blocks those cells; awake, he flies
+    GD.sleep = on; var F = cave && cave.F; if (!F || !F.sol) return;
+    for (var x = 15; x <= 17; x++) F.sol[(NXROW + 3) * F.w + x] = on ? 1 : 0;
+  }
+  function gdWake() {   // F or a tap: he stirs, yawns, rises into the air, then talks (the introduction the first time)
+    if (!GD.sleep || GD.wk > 0) return; GD.wk = 1.5; GD.face = cp.x < GD.x ? -1 : 1; snd("rise"); thud(260, 0.06); text(GD.x, GD.y - 2.2, "!", "#bff4ea");
+    for (var q = 0; q < 16; q++) parts.push({ x: GD.x + (Math.random() - 0.5) * 2.2, y: GD.y - 0.6, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 1.5, g: -0.3, life: 1.2, max: 1.2, c: ["#9ffff0", "#ffe9a0", "#ff9ae0"][q % 3], s: 2 + Math.random() * 2, glw: 1 });
+  }
+  function tickGuardian(dt) {
+    if (!inNexus()) return; var F = cave.F; GD.t += dt;
+    if (GD.sleep) {   // asleep: slow breathing and little z's drifting up
+      GD.alt = GD_SLEEP_ALT;
+      if (GD.wk > 0) {
+        GD.wk -= dt; var k2 = clamp(1 - GD.wk / 1.5, 0, 1); GD.alt = GD_SLEEP_ALT + (1.55 - GD_SLEEP_ALT) * (k2 * k2 * (3 - 2 * k2));
+        if (GD.wk <= 0) { GD.wk = 0; gdSleep(false); GD.wait = 1; GD.tx = GD.x; GD.ty = GD.y; if (!panelOpen && !trans) { GD.intro = !S.gmet; openGuardian(!S.gmet); } }
+      }
+      return;
+    }
+    var dx = cp.x - GD.x, dy = cp.y - GD.y, d = Math.sqrt(dx * dx + dy * dy);
+    if (d < 5.5) { var side = GD.x < cp.x ? -1 : 1; GD.tx = cp.x + side * 2.1; GD.ty = cp.y - 0.4; GD.face = cp.x < GD.x ? -1 : 1; GD.wait = 1; }
+    else { GD.wait -= dt; if (GD.wait <= 0) { GD.wait = 2.5 + Math.random() * 3; GD.tx = 3.5 + Math.random() * (F.w - 7); GD.ty = 4 + Math.random() * (F.h - 7.5); } }
+    GD.tx = clamp(GD.tx, 1.8, F.w - 1.8); GD.ty = clamp(GD.ty, 3.2, F.h - 2.2);
+    var mx = GD.tx - GD.x, my = GD.ty - GD.y, md = Math.sqrt(mx * mx + my * my), sp = d < 5.5 ? 4 : 1.8;
+    if (md > 0.05) { var st = Math.min(md, sp * dt); GD.x += mx / md * st; GD.y += my / md * st; if (d >= 5.5 && Math.abs(mx) > 0.1) GD.face = mx < 0 ? -1 : 1; }
+    GD.alt = 1.55 + Math.sin(GD.t * 2.1) * 0.18;
+    if (!reduce && Math.random() < dt * 6) parts.push({ x: GD.x + (Math.random() - 0.5) * 1.6, y: GD.y - GD.alt + (Math.random() - 0.3) * 0.8, vx: (Math.random() - 0.5) * 0.4, vy: -0.4 - Math.random() * 0.4, g: -0.2, life: 1, max: 1, c: Math.random() < 0.5 ? "#9ffff0" : "#ffe9a0", s: 2 + Math.random() * 1.5, glw: 1 });
+  }
+  function drawZaruk(g, x, y, sc, t, face, glowA, sl) {   // the Warden, drawn around (x, y) = the middle of his body; sc = pixels per unit (30 units ~ 1 tile); sl 0..1 = asleep
+    sl = sl || 0; var br = Math.sin(t * 1.7), flap = sl ? 0.5 * sl + Math.sin(t * 6.5) * (1 - sl) : Math.sin(t * 6.5), tail = Math.sin(t * (sl ? 0.9 : 2.4)) * (sl ? 0.4 : 1);
+    g.save(); g.translate(x, y); g.scale(sc * face * (1 + 0.025 * br * sl), sc * (1 - 0.03 * br * sl)); g.lineJoin = "round"; g.lineCap = "round";
+    if (glowA) { var ag = g.createRadialGradient(0, 0, 4, 0, 0, 38); ag.addColorStop(0, "rgba(160,255,240," + (0.22 * glowA) + ")"); ag.addColorStop(1, "rgba(160,255,240,0)"); g.fillStyle = ag; g.beginPath(); g.arc(0, 0, 38, 0, 7); g.fill(); }
+    // wings (behind): dragon membranes with finger bones, the far one darker
+    [[-1, 0.75], [1, 1]].forEach(function (wq) {
+      var k = wq[1], ang = -0.35 - flap * 0.5; g.save(); g.translate(-2, -6); g.rotate(ang * (wq[0] < 0 ? 0.8 : 1)); g.scale(1, wq[0] < 0 ? 0.85 : 1);
+      var wg = g.createLinearGradient(0, 0, -30, -18); wg.addColorStop(0, k < 1 ? "#3a6a8a" : "#4ea8b8"); wg.addColorStop(1, k < 1 ? "#4a3a8a" : "#7a5ad8");
+      g.fillStyle = wg; g.strokeStyle = "#1e1a3a"; g.lineWidth = 1.4;
+      g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(-10, -22, -32, -22); g.quadraticCurveTo(-27, -15, -30, -9); g.quadraticCurveTo(-22, -9, -22, -3); g.quadraticCurveTo(-14, -5, -12, 2); g.quadraticCurveTo(-6, 0, 0, 4); g.closePath(); g.fill(); g.stroke();
+      g.strokeStyle = k < 1 ? "#2a2a5a" : "#cfe8ff"; g.lineWidth = 1.1; g.beginPath(); g.moveTo(0, 0); g.lineTo(-30, -20); g.moveTo(-6, -6); g.lineTo(-27, -10); g.moveTo(-5, -3); g.lineTo(-20, -3); g.stroke();
+      g.restore();
+    });
+    // curly monkey tail with a lion's tuft
+    g.strokeStyle = "#c8781f"; g.lineWidth = 3.4; g.beginPath(); g.moveTo(-12, 4); g.bezierCurveTo(-22, 8 + tail * 3, -30, -2 + tail * 4, -24, -8 + tail * 3); g.bezierCurveTo(-20, -12 + tail * 2, -16, -6, -19, -4); g.stroke();
+    g.fillStyle = "#a8461a"; g.beginPath(); g.ellipse(-19.5, -3.5, 3.4, 2.6, 0.6, 0, 7); g.fill();
+    // body: a golden lion, with dragon scales down the belly
+    g.fillStyle = "#e8a33a"; g.strokeStyle = "#7a4a14"; g.lineWidth = 1.5; g.beginPath(); g.ellipse(-2, 3, 14, 8.5, -0.1, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = "#f6d38a"; g.beginPath(); g.ellipse(0, 6.5, 9, 3.6, -0.1, 0, Math.PI); g.fill();
+    g.strokeStyle = "#d8a050"; g.lineWidth = 0.9; for (var i = 0; i < 4; i++) { g.beginPath(); g.arc(-6 + i * 4, 6.5, 2, 0.1, Math.PI - 0.1); g.stroke(); }
+    // dangling paws (monkey hands in front)
+    g.fillStyle = "#e8a33a"; g.strokeStyle = "#7a4a14"; g.lineWidth = 1.3;
+    [[-10, 10, 0.3], [-4, 11, 0], [5, 10, -0.2], [9, 9, -0.4]].forEach(function (q, n) { var sw = Math.sin(t * 3 + n) * 0.15 * (1 - sl); g.save(); g.translate(q[0] + sl * (n > 1 ? 4 : 1), q[1] - sl * 2.5); g.rotate((q[2] + sw) * (1 - sl) - sl * 1.45); g.beginPath(); g.ellipse(0, 3, 2.4, 3.6, 0, 0, 7); g.fill(); g.stroke(); g.fillStyle = "#f2c99a"; g.beginPath(); g.ellipse(0, 5.6, 1.7, 1.2, 0, 0, 7); g.fill(); g.fillStyle = "#e8a33a"; g.restore(); });
+    // head: a lion's mane around a monkey's face
+    g.save(); g.translate(13 + 3 * sl, -7 + 5.5 * sl); g.rotate(Math.sin(t * 1.3) * 0.06 * (1 - sl) + 0.2 * sl);
+    g.fillStyle = "#c8641f"; g.strokeStyle = "#6a2e0e"; g.lineWidth = 1.3; g.beginPath();
+    for (var m = 0; m < 14; m++) { var a = m / 14 * 6.283, r1 = 11.5 + (m % 2 ? 2.4 : 0) + Math.sin(t * 2 + m) * 0.4; g.lineTo(Math.cos(a) * r1, Math.sin(a) * r1); } g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#a8461a"; g.beginPath(); for (m = 0; m < 12; m++) { var a2 = m / 12 * 6.283 + 0.25; g.lineTo(Math.cos(a2) * (9.5 + (m % 2 ? 1.6 : 0)), Math.sin(a2) * (9.5 + (m % 2 ? 1.6 : 0))); } g.closePath(); g.fill();
+    // dragon horns curling back
+    g.fillStyle = "#efe6cc"; g.strokeStyle = "#8a7a5a"; g.lineWidth = 1; [[-3, -9, -0.5], [3, -9.5, -0.2]].forEach(function (h) { g.beginPath(); g.moveTo(h[0] - 1.8, h[1]); g.quadraticCurveTo(h[0] - 3, h[1] - 6, h[0] - 7, h[1] - 7 + h[2] * 4); g.quadraticCurveTo(h[0] - 2, h[1] - 4.5, h[0] + 1.8, h[1]); g.closePath(); g.fill(); g.stroke(); });
+    // big round monkey ears
+    g.fillStyle = "#e8a33a"; g.strokeStyle = "#7a4a14"; [[-8.5, -1], [8, -2.5]].forEach(function (e2) { g.beginPath(); g.arc(e2[0], e2[1], 3.8, 0, 7); g.fill(); g.stroke(); g.fillStyle = "#ff9ab0"; g.beginPath(); g.arc(e2[0], e2[1], 2.1, 0, 7); g.fill(); g.fillStyle = "#e8a33a"; });
+    // the face: heart-shaped, tan
+    g.fillStyle = "#f2c99a"; g.strokeStyle = "#a8743a"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, 7.5); g.bezierCurveTo(-8, 4, -8.5, -5, -3.5, -5.5); g.quadraticCurveTo(0, -6, 0.5, -3); g.quadraticCurveTo(1.5, -6, 4.5, -5.5); g.bezierCurveTo(9, -4.5, 8, 4, 0, 7.5); g.fill(); g.stroke();
+    // eyes: big, friendly, glowing teal
+    if (sl > 0.5) [[-3, -1.2], [3.4, -1.4]].forEach(function (e3) { g.strokeStyle = "#5a2a10"; g.lineWidth = 0.9; g.beginPath(); g.arc(e3[0], e3[1] - 0.6, 1.9, 0.35, Math.PI - 0.35); g.stroke(); });   // asleep: eyes shut
+    else [[-3, -1.2], [3.4, -1.4]].forEach(function (e3) { g.fillStyle = "#ffffff"; g.beginPath(); g.ellipse(e3[0], e3[1], 2.3, 2.6, 0, 0, 7); g.fill(); g.fillStyle = "#2ad6c0"; g.beginPath(); g.arc(e3[0] + 0.5, e3[1] + 0.2, 1.6, 0, 7); g.fill(); g.fillStyle = "#08201c"; g.beginPath(); g.arc(e3[0] + 0.7, e3[1] + 0.3, 0.8, 0, 7); g.fill(); g.fillStyle = "#ffffff"; g.fillRect(e3[0] + 0.9, e3[1] - 0.9, 0.8, 0.8); });
+    g.fillStyle = "#7a3a1a"; g.beginPath(); g.ellipse(0.4, 2.2, 1.6, 1, 0, 0, 7); g.fill();
+    g.strokeStyle = "#7a3a1a"; g.lineWidth = 1; g.beginPath(); g.moveTo(-2.4, 4); g.quadraticCurveTo(0.4, 6.2, 3.2, 4); g.stroke();
+    g.fillStyle = "#ffffff"; g.fillRect(-0.6, 4.4, 1, 1); g.fillRect(1.2, 4.4, 1, 1);
+    g.restore(); g.restore();
+  }
+  function gdSl() { return GD.sleep ? (GD.wk > 0 ? clamp(GD.wk / 1.5 * 1.6 - 0.3, 0, 1) : 1) : 0; }
+  function drawGuardianBody(g, now) {
+    var gx = ox + GD.x * ts, gy = oy + GD.y * ts, sc = ts / 30 * 2.1;
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(gx, gy, ts * 1.3 * (1 - (GD.alt - 1.4) * 0.3), ts * 0.3, 0, 0, 7); g.fill();
+    drawZaruk(g, gx, gy - GD.alt * ts, sc, GD.t, GD.face, 1, gdSl());
+  }
+  function drawGuardian(g, now) {
+    if (!inNexus()) return; var gx = ox + GD.x * ts, gy = oy + GD.y * ts, sc = ts / 30 * 2.1;
+    if (GD.sleep && GD.wk <= 0) {   // little z's drifting up and away
+      g.save(); g.textAlign = "center"; g.lineJoin = "round";
+      for (var zi = 0; zi < 3; zi++) {
+        var zp = ((now / 2600 + zi / 3) % 1), zx = gx + GD.face * ts * (0.9 + zp * 0.8) + Math.sin(zp * 6 + zi) * ts * 0.15, zy = gy - ts * (1.3 + zp * 1.6);
+        g.globalAlpha = Math.sin(zp * Math.PI) * 0.95; g.font = "900 " + Math.round(ts * (0.32 + zp * 0.3)) + "px Nunito, system-ui, sans-serif";
+        g.lineWidth = 3; g.strokeStyle = "rgba(20,10,40,.7)"; g.strokeText("z", zx, zy); g.fillStyle = "#e6dcff"; g.fillText("z", zx, zy);
+      }
+      g.restore(); return;
+    }
+    if (GD.sleep) return;
+    g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(gx, gy, ts * 1.15 * (1 - (GD.alt - 1.4) * 0.3), ts * 0.28, 0, 0, 7); g.fill();
+    drawZaruk(g, gx, gy - GD.alt * ts, sc, GD.t, GD.face, 1);
+    if (!panelOpen && GD.x - cp.x < 10) { g.font = "800 " + Math.max(11, Math.round(ts * 0.42)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.fillStyle = "#bff4ea"; g.strokeText("Zaruk", gx, gy - GD.alt * ts - ts * 1.6); g.fillText("Zaruk", gx, gy - GD.alt * ts - ts * 1.6); }
+  }
+  var GD_PIC = null;
+  function zarukPic() { if (GD_PIC) return GD_PIC; var c = document.createElement("canvas"); c.width = c.height = 240; var g = c.getContext("2d"); drawZaruk(g, 104, 132, 3.6, 1.2, 1, 1); GD_PIC = c.toDataURL(); return GD_PIC; }
+  function openGuardian(intro) {
+    var el = $("sbxStory"); if (!el) return;
+    if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    GD.page = intro || !S.gmet ? 0 : -1; storyOpen = 211; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null;
+    renderGuardian(); thud(330, 0.05); snd("rise");
+  }
+  function renderGuardian() {
+    var box = $("sbxStoryBox"), h = "", intro = GD.page >= 0; box.style.setProperty("--qc", "#4ee6d0");
+    h += '<div class="st-zaruk"><img alt="" src="' + zarukPic() + '"></div><small>' + (intro ? "Zaruk, Warden of the SwampRealms · " + (GD.page + 1) + " / " + GD_INTRO.length : "Zaruk, Warden of the SwampRealms") + "</small>";
+    h += "<p>" + esc(intro ? GD_INTRO[GD.page] : GD_LINES[Math.floor(Math.random() * GD_LINES.length)]) + "</p>";
+    if (intro && GD.page < GD_INTRO.length - 1) h += '<div class="st-row"><button type="button" class="btn" data-gd="next">Go on...</button></div>';
+    else if (intro) h += '<div class="st-row"><button type="button" class="btn" data-gd="done">Thank you, Zaruk!</button></div>';
+    else h += '<div class="st-row"><button type="button" class="btn ghost" data-gd="again">Tell me about the SwampRealms</button><button type="button" class="btn" data-story-close>Goodbye</button></div>';
+    box.innerHTML = h; var b = box.querySelector("[data-gd]"); if (b) b.focus({ preventScroll: true });
+  }
+  function gdAct(a) {
+    if (a === "next") { GD.page = Math.min(GD_INTRO.length - 1, GD.page + 1); renderGuardian(); thud(420, 0.03); return; }
+    if (a === "again") { GD.page = 0; renderGuardian(); return; }
+    if (a === "done") { var first = !S.gmet; S.gmet = 1; closeStory(); if (first) { toast("Zaruk the Realm Warden is your friend now. Visit the Nexus whenever you like.", "#4ee6d0"); checkGoals(); save(); } }
+  }
   // ---------- POTIONS (Brewing Stand) ----------
   // Brew at a Brewing Stand: each potion is a Glass Bottle plus plants, crops or critters. Hold one and tap to drink it; you keep the bottle.
   // Timed effects live in S.fx = { key: seconds left } (saved), shown as chips above your health. Drinking the same one again resets its timer.
@@ -5249,7 +5876,7 @@
   function gem(sl, k) { return !!(S.gems && S.gems[sl] === k); }
   function slotOwned(sl) { return sl === "wpn" ? S.wpn >= 1 : sl === "arm" ? S.arm >= 1 : sl === "pick" ? S.tier >= 1 : S.bow >= 1; }
   function slotName(sl) { return sl === "wpn" ? WEAPONS[S.wpn].n : sl === "arm" ? ARMORS[S.arm].n : sl === "pick" ? PICKS[S.tier].n : BOWS[S.bow] ? BOWS[S.bow].n : "Ranged weapon"; }
-  function wDmg() { return WEAPONS[S.wpn].dmg * (gem("wpn", "ruby") ? 1.2 : gem("wpn", "amber") ? 1.1 : 1) * (fx("brute") ? 1.25 : 1) * (hasCharm("brute") ? 1.15 : 1); }   // treats pack: Brute Tonic, Ogre Charm
+  function wDmg() { return WEAPONS[S.wpn].dmg * (gem("wpn", "ruby") ? 1.2 : gem("wpn", "amber") ? 1.1 : 1) * (fx("brute") ? 1.25 : 1) * (hasCharm("brute") ? 1.15 : 1) * (hasCharm("blood") && isNight(S.time) ? 1.2 : 1); }   // treats pack: Brute Tonic, Ogre Charm
   function wCd() { return WEAPONS[S.wpn].cd * (gem("wpn", "sapphire") ? 0.85 : 1); }
   function gemLeech(hits) { if (hits > 0 && gem("wpn", "amethyst") && hp > 0 && hp < MAXHP) { hp = Math.min(MAXHP, hp + hits); drawHp(); } if (hits > 0 && hasCharm("leech") && hp > 0 && hp < MAXHP) { hp = Math.min(MAXHP, hp + 2 * hits); drawHp(); } }
   function armRed() { return Math.min(0.85, ARMORS[S.arm].red + (gem("arm", "sapphire") ? 0.08 : 0)); }
@@ -5833,6 +6460,7 @@
     liftStructs(tiles, world.walls, r.structs);
     var x, y, i;
     for (y = 0; y < H; y++) for (x = r.x0; x <= r.x1; x++) { i = y * W + x; orig[i] = tiles[i]; walls[i] = worigW[i] = world.walls[i]; }
+    editN++; wallN++; exVer++;
     Object.keys(edits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { tiles[ii] = edits[k]; if (edits[k] === orig[ii]) delete edits[k]; } });   // anything already changed there (e.g. by a friend) stays changed
     Object.keys(wedits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { walls[ii] = wedits[k]; if (wedits[k] === worigW[ii]) delete wedits[k]; } });
     for (x = Math.max(0, r.x0 - 1); x <= Math.min(W - 1, r.x1 + 1); x++) recalc(x);
@@ -6293,6 +6921,7 @@
     if (hp <= 0) faint(why);
   }
   function faint(why) {
+    if (BM.on) BM.fail = true;   // BLOOD MOON: no rewards this time
     S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
     var lost = 0, L = dif().loss;
     if (L > 0) Object.keys(S.inv).forEach(function (k) {   // Hard: a share of each stack of loose materials is lost
@@ -6315,7 +6944,7 @@
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), R = 9;
     for (var y = cy - R; y <= cy + R; y++) for (var x = cx - R; x <= cx + R; x++) {
       if (x < 0 || x >= W || y < 0 || y >= H) continue; var dx = x - cx, dy = y - cy;
-      if (dx * dx + dy * dy <= R * R + 2) ex[y * W + x] = 1;
+      if (dx * dx + dy * dy <= R * R + 2 && !ex[y * W + x]) { ex[y * W + x] = 1; exVer++; }
     }
   }
 
@@ -6336,6 +6965,7 @@
   function trySleep() {
     if (MP.on && MP.role === "guest") { if (bedNear()) nag("Only the host can sleep through the night in their world."); return; }
     if (sleepT > 0 || panelOpen || hp <= 0) return;
+    if (bmNight() || BM.on) { nag("Nobody sleeps on a Blood Moon! Survive the night."); return; }   // BLOOD MOON
     if (!bedNear()) { nag("Stand next to a Swamp Bed to sleep."); return; }
     if (!isNight(S.time)) { nag("You can only sleep at night."); return; }
     var why = sleepBlock(); if (why) { nag(why); return; }
@@ -6436,7 +7066,7 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0)); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
@@ -6932,15 +7562,26 @@
   // LIGHT: two grids over the view. LG is all light (sky + lamps), WG is lamp light only (it warms what it touches).
   // Levels run 0..60 (4 steps per old level) and light also spreads diagonally, so it falls off in soft circles instead of diamonds.
   var WG = null, LQ = 4, WC = null, WCX = null, WID = null, LB = null, LBX = null, BLUROK = null;
-  function softStretch(g, src, w, h, dx, dy, op) {   // a 1-pixel-per-tile light map, blurred a little and stretched over the view so light fades instead of stepping
+  // PERF: each light map keeps its own blurred copy (SSB[slot]), redone only when the map's pixels changed (dirty), and only the part of
+  // the screen that has any darkness / warmth in it (bb = [x0, y0, x1, y1] in cells, with a 2-cell margin for the soft edge) is drawn:
+  // a blend over fully clear pixels changes nothing, so the picture is the same.
+  var SSB = {}, MAPPREV = {};
+  function mapDirty(slot, data) {   // has this light map changed since the last frame? (keeps a copy to compare against)
+    var P2 = MAPPREV[slot]; if (!PERF.dark || !P2 || P2.length !== data.length) { MAPPREV[slot] = new Uint8ClampedArray(data); return true; }
+    for (var q = 0; q < data.length; q++) if (P2[q] !== data[q]) { P2.set(data); return true; }
+    return false;
+  }
+  function softStretch(g, src, w, h, dx, dy, op, slot, dirty, bb) {   // a 1-pixel-per-tile light map, blurred a little and stretched over the view so light fades instead of stepping
     if (BLUROK === null) { try { var tc = document.createElement("canvas").getContext("2d"); tc.filter = "blur(1px)"; BLUROK = tc.filter === "blur(1px)"; } catch (e) { BLUROK = false; } }
+    var bx0 = 0, by0 = 0, bx1 = w, by1 = h; if (bb && PERF.dark) { bx0 = Math.max(0, bb[0] - 2); by0 = Math.max(0, bb[1] - 2); bx1 = Math.min(w, bb[2] + 3); by1 = Math.min(h, bb[3] + 3); if (bx1 <= bx0 || by1 <= by0) return; }
+    var bw = bx1 - bx0, bh = by1 - by0;
     g.globalCompositeOperation = op;
     if (BLUROK && !lowq) {
-      var U = 4; if (!LB) { LB = document.createElement("canvas"); LBX = LB.getContext("2d"); }
-      if (LB.width !== w * U || LB.height !== h * U) { LB.width = w * U; LB.height = h * U; }
-      LBX.clearRect(0, 0, LB.width, LB.height); LBX.imageSmoothingEnabled = true; LBX.filter = "blur(" + (U * 0.45) + "px)"; LBX.drawImage(src, 0, 0, w, h, 0, 0, w * U, h * U); LBX.filter = "none";
-      g.drawImage(LB, 0, 0, w * U, h * U, dx, dy, w * ts, h * ts);
-    } else g.drawImage(src, 0, 0, w, h, dx, dy, w * ts, h * ts);
+      var U = 4, C = SSB[slot || "d"] || (SSB[slot || "d"] = { c: document.createElement("canvas") }), rs = C.c.width !== w * U || C.c.height !== h * U;
+      if (rs) { C.c.width = w * U; C.c.height = h * U; C.x = C.c.getContext("2d"); }
+      if (rs || dirty || !PERF.dark) { var X = C.x; X.clearRect(0, 0, C.c.width, C.c.height); X.imageSmoothingEnabled = true; X.filter = "blur(" + (U * 0.45) + "px)"; X.drawImage(src, 0, 0, w, h, 0, 0, w * U, h * U); X.filter = "none"; }
+      g.drawImage(C.c, bx0 * U, by0 * U, bw * U, bh * U, dx + bx0 * ts, dy + by0 * ts, bw * ts, bh * ts);
+    } else g.drawImage(src, bx0, by0, bw, bh, dx + bx0 * ts, dy + by0 * ts, bw * ts, bh * ts);
     g.globalCompositeOperation = "source-over";
   }
   var LKEY = "", LPAR = 0;
@@ -7123,7 +7764,27 @@
     for (var i = 0; i < arr.length; i++) { var gl = arr[i], rad = gl[3] * ts; g.globalAlpha = Math.min(1, gl[4]); g.drawImage(glowSpr(gl[2]), gl[0] - rad, gl[1] - rad, rad * 2, rad * 2); }
     g.globalAlpha = 1; g.imageSmoothingEnabled = false;
   }
+  // PERF: a natural tile's body (soil, pebbles, grass lip, tufts) depends only on its block, its cell and which sides are open, so it is
+  // painted once at full device resolution into a small canvas and stamped; the soft shade it throws onto its neighbours is still drawn
+  // live (edgeShade) so everything stacks exactly as before. NATM is a Map in insertion order, trimmed to a pixel budget (about 16 MB).
+  var NATM = new Map(), NATS = 0, NATPX = 0, NAT_BUDGET = 4e6, PERF = { nat: true, dark: true, vig: true };
   function natTile(g, id, i, j, sx, sy) {
+    var up = (j - 1) * W + i, scen = j > 0 && i >= 0 && i < W && tiles[up] === T.LOG && orig[up] === T.LOG;
+    var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES || scen, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
+    if (!PERF.nat) { natBody(g, id, i, j, sx, sy, scen, nT, nL, nR); edgeShade(g, i, j, sx, sy, nB, nL, nR); return; }
+    var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
+    var key = id + ":" + i + ":" + j + ":" + (nT ? 1 : 0) + (nL ? 1 : 0) + (nR ? 1 : 0) + (scen ? 1 : 0), cv = NATM.get(key), k2 = S / ts;
+    if (!cv) {
+      var pt = nT ? Math.ceil(ts * 0.42) : 0, px = nT ? Math.ceil(ts * 0.12) : 0;   // room above for the grass lip and tufts
+      cv = document.createElement("canvas"); cv.width = Math.ceil((ts + px * 2) * k2); cv.height = Math.ceil((ts + pt) * k2); cv.px = px; cv.pt = pt;
+      var q = cv.getContext("2d"); q.setTransform(k2, 0, 0, k2, 0, 0); natBody(q, id, i, j, px, pt, scen, nT, nL, nR);
+      NATM.set(key, cv); NATPX += cv.width * cv.height;
+      if (NATPX > NAT_BUDGET) { var it = NATM.keys(); while (NATPX > NAT_BUDGET * 0.75) { var ok = it.next(); if (ok.done) break; var oc = NATM.get(ok.value); NATPX -= oc.width * oc.height; NATM.delete(ok.value); } }
+    }
+    g.drawImage(cv, sx - cv.px, sy - cv.pt, cv.width / k2, cv.height / k2);
+    edgeShade(g, i, j, sx, sy, nB, nL, nR);
+  }
+  function natBody(g, id, i, j, sx, sy, scen, nT, nL, nR) {
     var pal = NATC[id], d0 = clamp((j - SURF) / 46, 0, 1), d1 = clamp((j + 1 - SURF) / 46, 0, 1), hh = function (k) { return SW.hash(i, j, k); };
     g.drawImage(soilC(id, j, pal, d0, d1), sx, sy);
     var hi = mixRgb(pal[0], [255, 255, 255], 0.14), n = 2 + (hh(1) > 0.5 ? 1 : 0), k;
@@ -7132,8 +7793,7 @@
       g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.ellipse(px + 1, py + pr * 0.5, pr * 1.1, pr * 0.8, 0, 0, 6.2832); g.fill();
       g.fillStyle = hi; g.globalAlpha = 0.55 * (1 - d0 * 0.6); g.beginPath(); g.ellipse(px, py, pr, pr * 0.8, 0, 0, 6.2832); g.fill(); g.globalAlpha = 1;
     }
-    var up = (j - 1) * W + i, scen = j > 0 && i >= 0 && i < W && tiles[up] === T.LOG && orig[up] === T.LOG;   // a world tree's trunk stands BEHIND the ground, like the buildings: the grass runs in front of it
-    var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES || scen, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
+    // (scen: a world tree's trunk stands BEHIND the ground, like the buildings: the grass runs in front of it)
     if (id === T.MOSS && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
       g.fillStyle = "#2f9a6a"; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.16);
       for (k = 0; k < 3; k++) { g.beginPath(); g.arc(sx + ts * ((k + 0.5) / 3) + (hh(k + 20) - 0.5) * ts * 0.1, sy + ts * 0.1, ts * (0.15 + hh(k + 30) * 0.05), 0, 6.2832); g.fill(); }
@@ -7153,7 +7813,6 @@
         g.lineTo(sx + ts, sy + ts * 0.12); g.lineTo(sx, sy + ts * 0.12); g.closePath(); g.fill();
       }
     }
-    edgeShade(g, i, j, sx, sy, nB, nL, nR);
   }
   function edgeShade(g, i, j, sx, sy, nB, nL, nR) {
     if (nB) { var bgc = shadeC("bot"); g.drawImage(bgc, sx, sy + ts - bgc.height); }
@@ -7758,6 +8417,7 @@
     if (!deepV && !lowq && !reduce) drawSunbeams(g, day, above, bw, now);
     if (!deepV) drawAmbientSky(g, now, day, above, bw);   // birds, bats, shooting stars, aurora
     if (!deepV) drawRainbow(g, above);   // RAINBOWS
+    if (!deepV) drawBloodSky(g, above);   // BLOOD MOON
     // --- ambient air: swamp spores, drifting embers, falling snow ---
     if (!reduce && above > 0.05) {
       for (i = 0; i < MOTE.length; i++) {
@@ -7797,11 +8457,11 @@
     lightGrid(gx0, gy0, gw, gh, day, Math.floor(p.x), Math.floor(p.y - PH * 0.5));
     var vgw = X1 - X0 + 3, vgh = Y1 - Y0 + 3;
     if (!LC) { LC = document.createElement("canvas"); LCX = LC.getContext("2d"); }
-    if (LC.width !== vgw || LC.height !== vgh) { LC.width = vgw; LC.height = vgh; LID = LCX.createImageData(vgw, vgh); }
+    if (LC.width !== vgw || LC.height !== vgh) { LC.width = vgw; LC.height = vgh; LID = LCX.createImageData(vgw, vgh); MAPPREV.d = null; }
     var dk = LID.data, deep = clamp((cam.y - SURF) / 60, 0, 1), dr = Math.round(lerp(lerp(6, 3, day), 12, deep)), dg = Math.round(lerp(lerp(9, 6, day), 6, deep)), db = Math.round(lerp(lerp(22, 12, day), 26, deep));
     if (!WC) { WC = document.createElement("canvas"); WCX = WC.getContext("2d"); }
-    if (WC.width !== vgw || WC.height !== vgh) { WC.width = vgw; WC.height = vgh; WID = WCX.createImageData(vgw, vgh); }
-    var wk = WID.data, warmK = clamp(1 - day * 0.75 + deep, 0, 1), anyW = false, Lmax = 15 * LQ;
+    if (WC.width !== vgw || WC.height !== vgh) { WC.width = vgw; WC.height = vgh; WID = WCX.createImageData(vgw, vgh); MAPPREV.w = null; }
+    var wk = WID.data, warmK = clamp(1 - day * 0.75 + deep, 0, 1), anyW = false, Lmax = 15 * LQ, dbx = [vgw, vgh, -1, -1], wbx = [vgw, vgh, -1, -1];
     for (j = 0; j < vgh; j++) for (i = 0; i < vgw; i++) {
       var gi2 = (j + M) * gw + (i + M), lv = LG[gi2], k = (j * vgw + i) * 4, al = 1 - Math.pow(Math.min(Lmax, lv) / Lmax, 0.85);
       var wv = warmK ? WG[gi2] / Lmax : 0, wa = wv > 0.05 ? Math.pow(wv, 1.6) * warmK : 0;   // warm light: strongest right by the lamp, fading out
@@ -7809,11 +8469,13 @@
         var wt = clamp(wa * 0.32, 0, 0.32), A = clamp(al, 0, 0.97), A2 = A + wt * (1 - A), f = A2 > 0 ? wt * (1 - A) / A2 : 0;
         dk[k] = Math.round(dr + (255 - dr) * f); dk[k + 1] = Math.round(dg + (140 - dg) * f); dk[k + 2] = Math.round(db + (60 - db) * f); dk[k + 3] = Math.round(A2 * 255);
       } else { dk[k] = dr; dk[k + 1] = dg; dk[k + 2] = db; dk[k + 3] = Math.round(clamp(al, 0, 0.97) * 255); }
-      if (!lowq) { wk[k] = 255; wk[k + 1] = 150; wk[k + 2] = 70; wk[k + 3] = Math.round(clamp(wa, 0, 1) * 150); if (wa > 0.02) anyW = true; }
+      if (dk[k + 3]) { if (i < dbx[0]) dbx[0] = i; if (j < dbx[1]) dbx[1] = j; if (i > dbx[2]) dbx[2] = i; if (j > dbx[3]) dbx[3] = j; }
+      if (!lowq) { wk[k] = 255; wk[k + 1] = 150; wk[k + 2] = 70; wk[k + 3] = Math.round(clamp(wa, 0, 1) * 150); if (wa > 0.02) anyW = true; if (wk[k + 3]) { if (i < wbx[0]) wbx[0] = i; if (j < wbx[1]) wbx[1] = j; if (i > wbx[2]) wbx[2] = i; if (j > wbx[3]) wbx[3] = j; } }
     }
-    LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "low";
-    softStretch(g, LC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "source-over");
-    if (anyW && !lowq) { WCX.putImageData(WID, 0, 0); softStretch(g, WC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "soft-light"); }
+    var dDirty = mapDirty("d", dk), wDirty = anyW && !lowq ? mapDirty("w", wk) : true;
+    if (dDirty) LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "low";
+    if (dbx[2] >= 0) softStretch(g, LC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "source-over", "d", dDirty, dbx);
+    if (anyW && !lowq) { if (wDirty) WCX.putImageData(WID, 0, 0); if (wbx[2] >= 0) softStretch(g, WC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "soft-light", "w", wDirty, wbx); }
     if (day > 0.6 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     // dusk/dawn colour grade over the open air
     if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = lowq ? "source-over" : "soft-light"; g.fillStyle = "rgba(255,130,70," + ((lowq ? 0.16 : 0.55) * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
@@ -7823,7 +8485,7 @@
     drawGlows(g, glows);
     g.imageSmoothingEnabled = true; flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)); g.globalAlpha = 0.85 * a; g.drawImage(glowSpr("220,255,120"), fx - ts * 0.8, fy - ts * 0.8, ts * 1.6, ts * 1.6); }); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
     drawBlastLit(g);
-    g.globalCompositeOperation = "source-over";
+    g.globalCompositeOperation = "source-over"; drawBloodTint(g);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh);
     var ha = Math.min(0.6, hurtT * 1.2) + (hp <= MAXHP * 0.3 ? (reduce ? 0.18 : 0.16 + 0.08 * Math.sin(now / 280)) : 0);
@@ -7831,7 +8493,7 @@
     g.imageSmoothingEnabled = false;
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawPotMark(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -8005,6 +8667,7 @@
   function setFloor(f, from) {
     var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : SC.gen(cave.run, f, cave.hole.b));
     cave.f = f; cave.F = F;
+    if (cave.bld && cave.bld.kind === "nexus" && !F.nx) nxPrep(F);
     if (cave.bld && cave.bld.kind === "witchhut" && T.X_lootchest !== undefined) { var wci = WCHEST.y * F.w + WCHEST.x; F.node[wci] = witchChestReady(cave.bld.id) ? T.X_lootchest : 0; }
     if (from === "up") {   // you climbed UP from the floor below: you pop out beside this floor's ladder down
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
@@ -8108,7 +8771,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
     ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt); tickFx(dt); tickWeather(dt); tickBounties(dt); tickFlow(dt);
-    caveTool(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt);
+    caveTool(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt); tickGuardian(dt);
     var working = !!mine; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
@@ -8201,10 +8864,11 @@
     var F = cave.F, th = F.theme, g = ctx, i, j, idx;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
-    g.fillStyle = "#04060a"; g.fillRect(0, 0, vw, vh);
+    if (F.nx) drawNexusSky(g, now, F); else { g.fillStyle = "#04060a"; g.fillRect(0, 0, vw, vh); }
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F.w - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F.h - 1, Math.floor((vh - oy) / ts)), CA = caveAtlas(F.bi != null ? F.bi : F.biome), W2 = F.w;
     var glows2 = [], srcs = [[cp.x, cp.y - 0.6, fx("night") ? 12 : hasCharm("glow") || fx("glow") ? 9 : hasCharm("owl") ? 8.4 : 7.2, 1]];
-    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // ground and walls
+    if (F.nx) { g.imageSmoothingEnabled = false; g.drawImage(F.nx.isl, ox, oy, F.w * ts, (F.h + 3) * ts); nxPillar(g, F, now); }   // THE SWAMPREALMS: the island, painted once
+    else for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // ground and walls
       idx = j * W2 + i; var sx = ox + i * ts, sy = oy + j * ts, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (F.wall[idx] && F.iw && F.iw[idx]) g.drawImage(CA, v * 16, 0, 16, 16, sx, sy, ts, ts);   // ROOMS: an inner wall stands up in the row pass below
       else if (F.wall[idx] && F.bld && j >= 2 && F.iw) {   // a building's side and front walls: seen from above, a cap with a dark edge facing into the room
@@ -8219,7 +8883,7 @@
       }
     }
     var ux = ox + F.up.x * ts, uy = oy + F.up.y * ts;
-    if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
+    if (F.nx) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
       F.flat.forEach(function (e) {
         var fx = ox + e.x * ts, fy = oy + e.y * ts;
         if (e.id === T.LAVA || e.id === T.WATER) {   // liquids in a stone-rimmed basin, with a slow shimmer
@@ -8269,6 +8933,7 @@
     var prow = Math.floor(cp.y), drawRocks = function (ja, jb) {
       for (var rj = ja; rj <= jb; rj++) {
       if (F.iw) drawRoomWalls(g, rj, X0, X1, now, th);
+      if (F.nx) nxRow(g, F, rj, now, glows2);
       if (F.dr && F.dr[rj]) F.dr[rj].forEach(function (e) { if (e.x >= X0 && e.x <= X1) drawRoomPiece(g, e); });
       for (var ri = X0; ri <= X1; ri++) {
         var rid = F.node[rj * W2 + ri]; if (!rid) continue;
@@ -8279,7 +8944,7 @@
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + 1)); drawArrows(g, true);
+    drawRocks(Y0, Math.min(Y1, prow)); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       var mx = ox + mine.x * ts, my = oy + mine.y * ts, nseg = 1 + Math.floor(mine.p * 6);
       g.strokeStyle = "rgba(0,0,0,.65)"; g.lineWidth = Math.max(1, ts / 14); g.beginPath();
@@ -8288,9 +8953,10 @@
     }
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // darkness: one pixel per cell, stretched with smoothing so the light fades softly
+    if (!F.nx) {   // (the SwampRealms is never dark)
     var gw = X1 - X0 + 1, gh = Y1 - Y0 + 1;
     if (!LC) { LC = document.createElement("canvas"); LCX = LC.getContext("2d"); }
-    if (LC.width !== gw || LC.height !== gh) { LC.width = gw; LC.height = gh; LID = LCX.createImageData(gw, gh); }
+    if (LC.width !== gw || LC.height !== gh) { LC.width = gw; LC.height = gh; LID = LCX.createImageData(gw, gh); } MAPPREV.d = null;   // the surface must repaint its light map after a cave used this canvas
     var dk = LID.data, tr = th.tint[0], tg = th.tint[1], tb = th.tint[2];
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
       var cx = X0 + i + 0.5, cy = Y0 + j + 0.5, L = F.amb || 0.07;
@@ -8298,18 +8964,21 @@
       var kx = (j * gw + i) * 4; dk[kx] = tr; dk[kx + 1] = tg; dk[kx + 2] = tb; dk[kx + 3] = Math.round(clamp(1 - L, 0, 0.94) * 255);
     }
     LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(LC, 0, 0, gw, gh, ox + X0 * ts, oy + Y0 * ts, gw * ts, gh * ts);
+    }
     g.imageSmoothingEnabled = false; g.globalCompositeOperation = "lighter";
     drawGlows(g, glows2);
     drawBlastLit(g);
-    g.globalCompositeOperation = "source-over";
+    g.globalCompositeOperation = "source-over"; drawBloodTint(g);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
-    g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
+    if (!F.nx) { g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) {   // ladder prompt
       var ln = ladderNear();
-      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? 1.3 : 0.5), false, function () { useLadder(ln.k); }); }
+      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? 1.3 : 0.5), false, function () { useLadder(ln.k); }); }
     }
+    if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
+    else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, "Under construction" + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, true, function () { nxPortalTalk(npp); }); }
     if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down)) {
       var qdx = aim.tx + 0.5 - cp.x, qdy = aim.ty + 0.5 - (cp.y - 0.4), ok = qdx * qdx + qdy * qdy <= CAVE_REACH * CAVE_REACH, cx0 = ox + aim.tx * ts, cy0 = oy + aim.ty * ts, L3 = ts * 0.3, pu = 1 + Math.sin(now / 160) * 0.06;
       g.strokeStyle = ok ? "rgba(255,244,200,.95)" : "rgba(255,90,90,.6)"; g.lineWidth = 2; g.beginPath();
@@ -8343,9 +9012,9 @@
     pets3: "trough", allpets: "goatmilk", collect20: "duckegg", baby1: "truffle", ffly10: "firefly", scoop10: "bucket", charm1: "goldfeather", charm8: "owlfeather", bty1: "swamptoken", bty25: "swamptoken", shop1: "swamptoken",
     x_amber: "amber", x_geode: "amethyst", x_fossil: "fossil",
     fw10: "firework", boom1: "bomb", keg1: "blastkeg", boom200: "stickybomb", star1: "stardust", star5: "starshard", song1: "gramophone", song6: "jukebox", way2: "waystone", warp10: "waystone", grap1: "grapple",
-    dig1: "treasuremap", dig5: "ancientcoin", bounce50: "bounceshroom", party: "confetti", pot1: "prism"
+    dig1: "treasuremap", dig5: "ancientcoin", bounce50: "bounceshroom", party: "confetti", pot1: "prism", blood1: "bloodshard", blood50: "bloodlantern", warden: "realmgate"
   };
-  var QB_BIG = { queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
+  var QB_BIG = { warden: 1, blood1: 1, queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
   var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate"];
   var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework" };
   var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", stain1: "stain8", bty1: "bty25" };
@@ -8471,7 +9140,7 @@
   // ---------- HUD AND PANELS ----------
   var HUDC = {}; function hudSet(id, v) { if (HUDC[id] !== v) { HUDC[id] = v; $(id).textContent = v; } }   // PERF: rewriting identical text 4x a second re-blurred and re-laid-out the HUD
   function hud() {
-    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
+    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bioAt(), bi = BIOMES[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
     hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 " + (wxLabel() || "surface")));
@@ -8542,7 +9211,7 @@
     ["Gear|Armor", "arm1 arm2 arm3 arm4 arm5"],
     ["Gear|Backpacks", "bag1 bag2"],
     ["Gear|Boss Summons", "x_lure x_idol x_horn"],
-    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky x_ch_glow x_ch_tide x_ch_king x_ch_feather x_ch_spring x_ch_leech x_ch_lode x_ch_owl x_ch_brute x_ch_star"],
+    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky x_ch_glow x_ch_tide x_ch_king x_ch_feather x_ch_spring x_ch_leech x_ch_lode x_ch_owl x_ch_brute x_ch_star x_ch_blood"],
     ["Stations|Workbenches", "bench decorbench"],
     ["Stations|Crafting Stations", "x_cookpot x_brewstand x_furnace x_loom x_mason"],
     ["Potions|Bottles", "x_bottle"],
@@ -8593,7 +9262,7 @@
     ["Decor|Kitchen", "x_d_counter x_d_countersink x_d_counterstove x_d_wallshelf x_d_teapot x_d_fruitbowl x_d_cakestand"],
     ["Decor|Tables & Tabletops", "x_d_nightstand x_d_sidetable x_d_coffeetable x_d_tablecandle x_d_oillamp x_d_openbook x_d_inkquill x_d_bonsai x_d_lilyvase"],
     ["Decor|Cosy Corners", "x_d_pottedfern x_d_cattailvase x_d_glowjar x_d_hangingherbs x_d_stackedbooks x_d_teaset"],
-    ["Decor|Curiosities", "x_d_shipbottle x_d_gramophone x_d_frogidol x_d_crystalcluster x_d_starchart x_d_birdcage x_d_windchime x_d_starlantern"],
+    ["Decor|Curiosities", "x_d_shipbottle x_d_gramophone x_d_frogidol x_d_crystalcluster x_d_starchart x_d_birdcage x_d_windchime x_d_starlantern x_d_bloodlantern"],
     ["Decor|Music", "x_d_jukebox x_d_musicbox x_d_rec_waltz x_d_rec_starfall"],
     ["Decor|Statues & Showpieces", "d_frogstatue d_guardian d_icesculpt x_snowman x_obelisk d_anvil x_aquarium"]
   ].forEach(function (g) { var ps = g[0].split("|"); (CRAFT_SUBS[ps[0]] = CRAFT_SUBS[ps[0]] || []).push(ps[1]); g[1].split(" ").forEach(function (id) { CRAFT_MAP[id] = g[0]; }); });
@@ -9034,6 +9703,10 @@
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
+    if (inNexus() && GD.sleep && GD.wk <= 0) {   // tap the sleeping Warden to wake him
+      var zr = cv.getBoundingClientRect(), zx = (e.clientX - zr.left - ox) / ts, zy = (e.clientY - zr.top - oy) / ts;
+      if (Math.abs(zx - GD.x) < 1.6 && zy > GD.y - 1.9 && zy < GD.y + 0.4) { if (Math.abs(GD.x - cp.x) < 7 && Math.abs(GD.y - cp.y) < 7) gdWake(); else nag("Walk closer to wake Zaruk."); return; }
+    }
     aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
     aim.lad = cave ? (aim.dx === cave.F.up.x && (aim.dy === cave.F.up.y || aim.dy === cave.F.up.y - 1) ? "up" : aim.dx === cave.F.down.x && aim.dy === cave.F.down.y ? "down" : "") : ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
     $("sbxHint").classList.remove("on"); if (ac && ac.state === "suspended") ac.resume();
@@ -9092,7 +9765,7 @@
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
-      if (cave) { var ln = ladderNear(); if (ln) useLadder(ln.k); else nag("Stand next to a ladder to use it."); }
+      if (cave) { var ln = ladderNear(), np = nxPortalNear(); if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
     else if ((k === "r" || k === "R") && !cave && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
@@ -9158,7 +9831,7 @@
   $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
   $("sbxMini").addEventListener("click", function () { if (!panelOpen && !cave) openMap(); });
   $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
-  $("sbxStory").addEventListener("click", function (e) { var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -9222,5 +9895,8 @@
   window.__sbx.adv = { get hook() { return hook; }, useMap: useMap, dig: digTreasure, pull: grapplePull };
   window.__sbx.rb = { start: startRainbow, get RB() { return RB; }, take: takePot, tick: tickRainbow };
   window.__sbx.qb = { QB: QB, layout: qbLayout, chapters: qbChapters };
+  window.__sbx.bm = { BM: BM, BMW: BMW, start: bmStart, end: bmEnd, night: bmNight, tick: tickBlood, force: function () { S.bmNext = S.days | 0; S.time = 290; } };
+  window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
+  window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.fun = { bombs: bombs, kegs: kegs, explode: explode, lightKeg: lightKeg, tapHook: tapHook, fHook: fHook, useThrow: useThrow, flashes: flashes };
 })();

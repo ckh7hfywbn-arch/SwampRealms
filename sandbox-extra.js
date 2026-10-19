@@ -656,6 +656,14 @@
     rect(0, 0, 16, 1, "#2a2a30"); rect(0, 15, 16, 1, "#2a2a30"); rect(0, 0, 1, 16, "#2a2a30"); rect(15, 0, 1, 16, "#2a2a30"); rect(2, 2, 4, 1, "#ffffff", 0.6); rect(2, 2, 1, 4, "#ffffff", 0.6);
   }, 6, ["255,200,230", 1.8, 0.1]); FUN.push("rainbowglass");
   // ====================================================================================================
+  // 7m. BLOOD MOON PACK: what you earn for surviving a Blood Moon (sandbox.js: BLOOD MOON). Blood Shards make a charm and a lantern.
+  // ====================================================================================================
+  mat("bloodshard", "Blood Shard", "#e8243a"); FUN.push("bloodshard");
+  deco("bloodlantern", "Blood Moon Lantern", "#ff3a4a", function (rect) {
+    rect(7, 0, 2, 2, "#3a1418"); rect(4, 2, 8, 2, "#5a1a22"); rect(4, 2, 8, 1, "#8a2a34"); rect(3, 4, 10, 9, "#ffb0b8", 0.3); rect(3, 4, 1, 9, "#5a1a22"); rect(12, 4, 1, 9, "#5a1a22");
+    rect(6, 6, 4, 5, "#e8243a"); rect(5, 7, 6, 3, "#e8243a"); rect(7, 7, 2, 3, "#ffd0d4"); rect(6, 6, 1, 1, "#ff8a94"); rect(4, 13, 8, 2, "#5a1a22"); rect(5, 15, 6, 1, "#3a1418");
+  }, 10, ["255,60,70", 2.8, 0.2]); small("bloodlantern"); FUN.push("bloodlantern");
+  // ====================================================================================================
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
@@ -679,6 +687,8 @@
   R("x_speedmoss", "Speed Moss (6)", { speedmoss: 6 }, { fiber: 2, spore: 2, slimeball: 1 }, { bench: true, d: "Slick glowing moss: you run much faster along it. Lay a track!" });
   // rainbow pack
   R("x_rainbowglass", "Rainbow Glass (4)", { rainbowglass: 4 }, { glass: 4, prism: 1 }, { stn: "furnace", d: "Glass striped with every colour of the rainbow. Rainbow Prisms come from a Pot of Gold at a rainbow's end." });
+  // blood moon pack
+  R("x_ch_blood", "Crimson Charm", null, { bloodshard: 5, ruby: 1, rope: 1 }, { charm: "blood", bench: true, d: "Your weapon hits 20% harder at night. Blood Shards come from surviving a Blood Moon." });
   // treats pack: charms (worn like the others), potions, meals
   R("x_ch_feather", "Feather Charm", null, { goldfeather: 2, fiber: 4, rope: 1 }, { charm: "feather", bench: true, bl: 2, d: "You never take fall damage. Golden Feathers turn up in chests and pots." });
   R("x_ch_spring", "Springroot Charm", null, { springroot: 3, frogfrag: 2, rope: 1 }, { charm: "spring", bench: true, bl: 2, d: "Jump 15% higher. Springroot is found in Murkwater chests and pots." });
@@ -961,6 +971,7 @@
   Dc("x_d_rec_starfall", "Music", "Record: Starfall Serenade", { rec_starfall: 1 }, { charcoal: 2, stardust: 3 }, "A dreamy song pressed with Stardust from a Fallen Star.");
   Dc("x_d_confetti", "Party", "Confetti Cannon", { confetti: 1 }, { cloth: 1, sulfur: 1, dyered: 1, dyeblue: 1 }, "Tap it for a big burst of confetti. Never runs out.");
   Dc("x_d_balloons", "Party", "Party Balloons", { balloons: 1 }, { cloth: 2, dyered: 1, rope: 1 }, "Three balloons on a weight, bobbing in the breeze.");
+  Dc("x_d_bloodlantern", "Curiosities", "Blood Moon Lantern", { bloodlantern: 1 }, { bloodshard: 2, ironingot: 1, glass: 1 }, "A lantern with a shard of the Blood Moon inside. Glows deep red. Fits on a table.");
   Dc("x_d_lilyvase", "Tables & Tabletops", "Vase of Lilies", { lilyvase: 1 }, { clay: 2, marshlily: 3 }, "Fresh marsh lilies in a painted vase.");
 
   // ====================================================================================================

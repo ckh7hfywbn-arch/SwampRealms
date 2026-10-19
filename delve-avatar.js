@@ -23,10 +23,13 @@ var DelveAv = (function () {
   function dk(c, k) { return mix(c, "#000000", k); }
 
   // ---------- pixel buffer ----------
-  function Buf(w, h, ox, oy) { this.w = w; this.h = h; this.ox = ox || 0; this.oy = oy || 0; this.d = new Uint8ClampedArray(w * h * 4); }
+  // L[i] = which layer last painted pixel i solidly (1 body, 2 shirt, 3 armor, 4 neck, 5 accessory, 6 face gear, 7 hat, 8 shoes, 9 cape):
+  // toCanvas draws a thin seam where two layers meet and a thin outline around the whole figure, so each piece reads on its own.
+  function Buf(w, h, ox, oy) { this.w = w; this.h = h; this.ox = ox || 0; this.oy = oy || 0; this.d = new Uint8ClampedArray(w * h * 4); this.L = new Uint8Array(w * h); this.cur = 1; }
   Buf.prototype.p = function (x, y, col, a) {
     x += this.ox; y += this.oy; if (!col || x < 0 || y < 0 || x >= this.w || y >= this.h) return;
     var c = rgb(col), i = (y * this.w + x) * 4, d = this.d, al = a == null ? 1 : a;
+    if (al >= 0.5) this.L[i >> 2] = this.cur;
     if (al >= 1) { d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255; return; }
     var da = d[i + 3] / 255, oa = al + da * (1 - al); if (oa <= 0) return;
     d[i] = (c[0] * al + d[i] * da * (1 - al)) / oa; d[i + 1] = (c[1] * al + d[i + 1] * da * (1 - al)) / oa; d[i + 2] = (c[2] * al + d[i + 2] * da * (1 - al)) / oa; d[i + 3] = oa * 255;
@@ -315,55 +318,59 @@ var DelveAv = (function () {
         else if (s.cuff && i === sl - 1) cc = [s.cuff, dk(s.cuff, 0.25)];
         if (o.arm && ARM[o.arm] && i < 2) cc = [ARM[o.arm].b, ARM[o.arm].c];
         if (o.shirt === "jersey" && i === 1) cc = ["#ffffff", "#d8d8d8"];
-        rows.push(cc);
-      } else if (o.arm && ARM[o.arm] && i < 2) rows.push([ARM[o.arm].b, ARM[o.arm].c]);
+        cc.lay = o.arm && ARM[o.arm] && i < 2 ? 3 : 2; rows.push(cc);
+      } else if (o.arm && ARM[o.arm] && i < 2) { var ar = [ARM[o.arm].b, ARM[o.arm].c]; ar.lay = 3; rows.push(ar); }
       else rows.push(i >= 6 ? [lt(P.skin, 0.12), P.sd] : [P.sl, P.sd]);
     }
     return rows;
   }
-  function drawArm(B, x, y, rows) { rows.forEach(function (r, i) { B.p(x, y + i, r[0]); B.p(x + 1, y + i, r[1]); }); }
-  function armBuf(o, a) { var B = new Buf(4, 10, 1, 1); drawArm(B, 0, 0, armRows(o, a)); if (OUTLINE) B.outline(OL); return B; }
+  function drawArm(B, x, y, rows) { var c0 = B.cur; rows.forEach(function (r, i) { B.cur = r.lay || 1; B.p(x, y + i, r[0]); B.p(x + 1, y + i, r[1]); }); B.cur = c0; }
+  function armBuf(o, a) { var B = new Buf(4, 10, 1, 1); drawArm(B, 0, 0, armRows(o, a)); if (OUTLINE) B.outline(OL); B.isArm = 1; return B; }
 
   // ---------- main frame ----------
   function drawFrame(o, pose, withArm) {
     var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a), PO = POSE[pose] || POSE.idle0, by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i;
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null;
-    if (o.neck === "cape") CAPE_BACK(B, by, pose.indexOf("walk") === 0 ? (pose === "walk0" || pose === "walk2" ? 1 : 0) : 0);
-    if (shirt === "hoodie") { B.r(7, 16 + by, 8, 3, "#4a2a9a"); B.p(7, 16 + by, "#6a3fc4"); }
+    B.cur = 9; if (o.neck === "cape") CAPE_BACK(B, by, pose.indexOf("walk") === 0 ? (pose === "walk0" || pose === "walk2" ? 1 : 0) : 0);
+    B.cur = 2; if (shirt === "hoodie") { B.r(7, 16 + by, 8, 3, "#4a2a9a"); B.p(7, 16 + by, "#6a3fc4"); }
+    B.cur = 1;
     // legs + shoes
     var legC = A.leg, sh = SHOES[o.shoes];
     [[7, PO.L, 1], [12, PO.R, -1]].forEach(function (lg) {
       var x = lg[0] + lg[1][0], lift = lg[1][1], bot = 30 - lift, top = 24 + by, side = lg[2];
       for (var y = top; y <= bot; y++) { B.p(x, y, side > 0 ? lt(legC, 0.2) : dk(legC, 0.3)); B.p(x + 1, y, legC); B.p(x + 2, y, side > 0 ? dk(legC, 0.3) : lt(legC, 0.2)); }
-      if (shirt === "tux") for (y = top; y < top + 2; y++) B.r(x, y, 3, 1, "#25252f");
-      if (sh) {
+      if (shirt === "tux") { B.cur = 2; for (y = top; y < top + 2; y++) B.r(x, y, 3, 1, "#25252f"); B.cur = 1; }
+      if (sh) { B.cur = 8;
         var rows = sh.rows, n = rows.length, y0 = bot - n + 1, fx = side > 0 ? x - 1 : x;
         for (var j = 0; j < n; j++) for (var k = 0; k < 4; k++) { var ch = rows[j].charAt(side > 0 ? k : 3 - k); if (ch === ".") continue; B.p(fx + k, y0 + j, sh.pal[ch]); }
         if (sh.hi) B.p(fx + (side > 0 ? 1 : 2), y0 + 1, sh.hi.c);
         if (o.shoes === "gildedkicks") B.p(fx + (side > 0 ? 0 : 3), y0 + 1, "#fff4b0");
+        B.cur = 1;
       } else { var bc = dk(legC, 0.35); B.p(side > 0 ? x - 1 : x + 3, bot, bc); if (a === "owl") { B.p(side > 0 ? x - 1 : x + 3, bot, "#f0a41c"); B.p(side > 0 ? x : x + 2, bot, "#d97a10"); } if (a === "donkey") { B.r(x, bot - 1, 3, 2, "#3a3a4c"); B.p(x, bot - 1, "#55556b"); } }
     });
-    if (shirt === "robe") { for (i = 0; i < 4; i++) B.r(6, 24 + by + i, 10, 1, i === 3 ? "#f2c14e" : "#d12f4a"); B.r(6, 24 + by, 1, 3, "#ff7a7a"); B.r(15, 24 + by, 1, 3, "#7a1428"); B.r(10, 24 + by, 2, 3, "#f2c14e"); }
+    B.cur = 2; if (shirt === "robe") { for (i = 0; i < 4; i++) B.r(6, 24 + by + i, 10, 1, i === 3 ? "#f2c14e" : "#d12f4a"); B.r(6, 24 + by, 1, 3, "#ff7a7a"); B.r(15, 24 + by, 1, 3, "#7a1428"); B.r(10, 24 + by, 2, 3, "#f2c14e"); }
     // back arm, torso
     drawArm(B, 5, 17 + by + PO.ab, armRows(o, a));
+    B.cur = 2;
     torso(B, shirt, by, !!o.neck);
-    if (o.arm) armorOver(B, o.arm, by);
+    B.cur = 3; if (o.arm) armorOver(B, o.arm, by);
+    B.cur = 1;
     if (withArm) drawArm(B, 15, 17 + by, armRows(o, a)); else B.r(15, 17 + by, 2, 8, null);
     // head
     var hx = A.x0, hy0 = A.y0 + by;
-    B.m(hx, hy0, A.head, P);
+    B.cur = 1; B.m(hx, hy0, A.head, P);
     // eye colour on the iris-free animals is handled in the maps; add a catch-light
     var E = A.eyes.map(function (e) { return [e[0], e[1] + by]; });
     // neck gear
-    if (o.neck && NECKS[o.neck]) NECKS[o.neck](B, by);
-    if (acc.necklace) { [[7, 17], [8, 18], [9, 19], [10, 20], [11, 20], [12, 19], [13, 18], [14, 17]].forEach(function (c, k) { B.p(c[0], c[1] + by, k % 2 ? "#a8740a" : "#f2c14e"); }); B.r(10, 21 + by, 2, 2, "#f2c14e"); B.p(10, 21 + by, "#fff4b0"); B.p(11, 22 + by, "#4ee6b4"); }
+    B.cur = 4; if (o.neck && NECKS[o.neck]) NECKS[o.neck](B, by);
+    B.cur = 5; if (acc.necklace) { [[7, 17], [8, 18], [9, 19], [10, 20], [11, 20], [12, 19], [13, 18], [14, 17]].forEach(function (c, k) { B.p(c[0], c[1] + by, k % 2 ? "#a8740a" : "#f2c14e"); }); B.r(10, 21 + by, 2, 2, "#f2c14e"); B.p(10, 21 + by, "#fff4b0"); B.p(11, 22 + by, "#4ee6b4"); }
     // face gear
-    if (o.face && FACES[o.face]) FACES[o.face](B, E, a);
-    if (acc.bandana) { var mk = A.mask, mw = mk[1], mx = 11 - mw / 2, my = mk[0] + by; B.r(mx, my, mw, 2, "#d12f4a"); B.r(mx, my, mw, 1, "#ff7a7a"); B.r(mx, my + 1, mw, 1, "#a82240"); for (i = 1; i < mw; i += 3) B.p(mx + i, my + 1, "#ffffff"); B.r(mx + mw, my, 2, 2, "#d12f4a"); B.r(mx + mw, my + 2, 1, 2, "#a82240"); B.p(mx + mw, my, "#ff7a7a"); }
+    B.cur = 6; if (o.face && FACES[o.face]) FACES[o.face](B, E, a);
+    B.cur = 5; if (acc.bandana) { var mk = A.mask, mw = mk[1], mx = 11 - mw / 2, my = mk[0] + by; B.r(mx, my, mw, 2, "#d12f4a"); B.r(mx, my, mw, 1, "#ff7a7a"); B.r(mx, my + 1, mw, 1, "#a82240"); for (i = 1; i < mw; i += 3) B.p(mx + i, my + 1, "#ffffff"); B.r(mx + mw, my, 2, 2, "#d12f4a"); B.r(mx + mw, my + 2, 1, 2, "#a82240"); B.p(mx + mw, my, "#ff7a7a"); }
     if (acc.ring) { var rg = A.ring; B.p(rg[0], rg[1] + by, "#fff4b0"); B.p(rg[0], rg[1] + by + 1, "#f2c14e"); B.p(rg[0], rg[1] + by + 2, "#a8740a"); }
     // hat
-    if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
-    if (A.ears && o.hat) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
+    B.cur = 7; if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
+    B.cur = 1; if (A.ears && o.hat) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
     if (OUTLINE) B.outline(OL);
     return B;
   }
@@ -386,7 +393,66 @@ var DelveAv = (function () {
     if (OUTLINE) o.forEach(function (j) { d[j] = 12; d[j + 1] = 20; d[j + 2] = 16; d[j + 3] = 235; });
     g.putImageData(im, 0, 0);
     if (s <= 1) return c;
-    var c2 = document.createElement("canvas"); c2.width = B.w * s; c2.height = B.h * s; var g2 = c2.getContext("2d"); g2.imageSmoothingEnabled = false; g2.drawImage(c, 0, 0, c2.width, c2.height); return c2;
+    var k = SMOOTH ? (s % 3 === 0 ? 3 : s % 2 === 0 ? 2 : 0) : 0, HB = k ? scaleK(B, k) : B, q = k ? s / k : s;   // Scale2x / Scale3x: rounder, cleaner edges, still crisp
+    var c1 = c; if (k) { c1 = document.createElement("canvas"); c1.width = HB.w; c1.height = HB.h; var g1 = c1.getContext("2d"), im1 = g1.createImageData(HB.w, HB.h); im1.data.set(HB.d); g1.putImageData(im1, 0, 0); }
+    var c2 = document.createElement("canvas"); c2.width = B.w * s; c2.height = B.h * s; var g2 = c2.getContext("2d"); g2.imageSmoothingEnabled = false; g2.drawImage(c1, 0, 0, c2.width, c2.height);
+    lineArt(g2, HB, q, Math.max(1, Math.round(s * 0.24)));
+    return c2;
+  }
+  // Thin line art over the scaled sprite: t = about a quarter of an art pixel (never less than 1 screen pixel).
+  //   seam: where a piece of gear meets something else, a dark line is drawn just inside the piece on top (the higher layer);
+  //   outline: a dark line just outside every solid edge of the figure.
+  function lineArt(g, B, s, t) {
+    var w = B.w, h = B.h, d = B.d, L = B.L, x, y, i, a, b; t = t || Math.max(1, Math.round(s * 0.24));
+    var solid = function (xx, yy) { return xx >= 0 && yy >= 0 && xx < w && yy < h && d[(yy * w + xx) * 4 + 3] > 200; };
+    g.fillStyle = "rgba(8,14,11,.5)";
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      i = y * w + x; if (!solid(x, y)) continue; a = L[i];
+      if (x + 1 < w && solid(x + 1, y)) { b = L[i + 1]; if (a !== b && (a > 1 || b > 1)) { if (a > b) g.fillRect((x + 1) * s - t, y * s, t, s); else g.fillRect((x + 1) * s, y * s, t, s); } }
+      if (y + 1 < h && solid(x, y + 1)) { b = L[i + w]; if (a !== b && (a > 1 || b > 1)) { if (a > b) g.fillRect(x * s, (y + 1) * s - t, s, t); else g.fillRect(x * s, (y + 1) * s, s, t); } }
+    }
+    g.fillStyle = "rgba(6,12,9,.82)";
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      if (!solid(x, y)) continue;
+      if (!solid(x - 1, y)) g.fillRect(x * s - t, y * s, t, s);
+      if (!solid(x + 1, y)) g.fillRect((x + 1) * s, y * s, t, s);
+      if (!solid(x, y - 1)) g.fillRect(x * s, y * s - t, s, t);
+      if (!solid(x, y + 1)) g.fillRect(x * s, (y + 1) * s, s, t);
+      if (!solid(x - 1, y - 1) && !solid(x - 1, y) && !solid(x, y - 1)) g.fillRect(x * s - t, y * s - t, t, t);
+      if (!solid(x + 1, y - 1) && !solid(x + 1, y) && !solid(x, y - 1)) g.fillRect((x + 1) * s, y * s - t, t, t);
+      if (!solid(x - 1, y + 1) && !solid(x - 1, y) && !solid(x, y + 1)) g.fillRect(x * s - t, (y + 1) * s, t, t);
+      if (!solid(x + 1, y + 1) && !solid(x + 1, y) && !solid(x, y + 1)) g.fillRect((x + 1) * s, (y + 1) * s, t, t);
+    }
+  }
+  var SMOOTH = true;
+  function scaleK(B, k) {   // EPX / Scale2x and Scale3x on the colours (and the layer map), so diagonals and corners come out clean
+    var w = B.w, h = B.h, d = B.d, L = B.L, W2 = w * k, H2 = h * k, o = new Buf(W2, H2, 0, 0), od = o.d, oL = o.L, x, y;
+    var v = new Uint32Array(w * h); for (var i = 0; i < w * h; i++) v[i] = d[i * 4 + 3] < 8 ? 0 : ((d[i * 4] << 24) | (d[i * 4 + 1] << 16) | (d[i * 4 + 2] << 8) | d[i * 4 + 3]) >>> 0;
+    var at = function (xx, yy) { return xx < 0 || yy < 0 || xx >= w || yy >= h ? 0 : v[yy * w + xx]; }, ix = function (xx, yy) { return xx < 0 || yy < 0 || xx >= w || yy >= h ? -1 : yy * w + xx; };
+    var put = function (X, Y, si) { var j = Y * W2 + X; if (si < 0) return; od.set(d.subarray(si * 4, si * 4 + 4), j * 4); oL[j] = L[si]; };
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      var P = y * w + x, A = at(x, y - 1), Bv = at(x + 1, y), C = at(x - 1, y), D = at(x, y + 1), iA = ix(x, y - 1), iB = ix(x + 1, y), iC = ix(x - 1, y), iD = ix(x, y + 1), X = x * k, Y = y * k;
+      var pick = function (cond, val, idx) { return cond ? idx : P; };
+      if (k === 2) {
+        put(X, Y, C === A && C !== D && A !== Bv ? (A ? iA : -2) : P);
+        put(X + 1, Y, A === Bv && A !== C && Bv !== D ? (Bv ? iB : -2) : P);
+        put(X, Y + 1, D === C && D !== Bv && C !== A ? (C ? iC : -2) : P);
+        put(X + 1, Y + 1, Bv === D && Bv !== A && D !== C ? (D ? iD : -2) : P);
+      } else {
+        var E = v[P], Av = at(x - 1, y - 1), Cv = at(x + 1, y - 1), Gv = at(x - 1, y + 1), Iv = at(x + 1, y + 1);
+        var Bn = A, Dn = C, Fn = Bv, Hn = D, iBn = iA, iDn = iC, iFn = iB, iHn = iD;
+        var tl = Dn === Bn && Dn !== Hn && Bn !== Fn ? iDn : P;
+        var tm = (Dn === Bn && Dn !== Hn && Bn !== Fn && E !== Cv) || (Bn === Fn && Bn !== Dn && Fn !== Hn && E !== Av) ? iBn : P;
+        var tr = Bn === Fn && Bn !== Dn && Fn !== Hn ? iFn : P;
+        var ml = (Hn === Dn && Hn !== Fn && Dn !== Bn && E !== Av) || (Dn === Bn && Dn !== Hn && Bn !== Fn && E !== Gv) ? iDn : P;
+        var mr = (Bn === Fn && Bn !== Dn && Fn !== Hn && E !== Iv) || (Fn === Hn && Fn !== Bn && Hn !== Dn && E !== Cv) ? iFn : P;
+        var bl = Hn === Dn && Hn !== Fn && Dn !== Bn ? iDn : P;
+        var bm = (Fn === Hn && Fn !== Bn && Hn !== Dn && E !== Gv) || (Hn === Dn && Hn !== Fn && Dn !== Bn && E !== Iv) ? iHn : P;
+        var br = Fn === Hn && Fn !== Bn && Hn !== Dn ? iHn : P;
+        [[tl, 0, 0], [tm, 1, 0], [tr, 2, 0], [ml, 0, 1], [P, 1, 1], [mr, 2, 1], [bl, 0, 2], [bm, 1, 2], [br, 2, 2]].forEach(function (c) { var si = c[0]; if (si !== P && si >= 0 && v[si] === 0) si = -2; put(X + c[1], Y + c[2], si); });
+      }
+    }
+    return o;
   }
   function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
   var CACHE = {};

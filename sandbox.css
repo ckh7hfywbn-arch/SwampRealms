@@ -995,3 +995,7 @@ body.sbx-app footer{margin-top:28px}
 .qb-in{position:relative;margin:0 auto}
 .qb-n.lock .pad{background:radial-gradient(circle at 36% 30%,#2a3a32,#151f1a 70%)}.qb-n.lock img{filter:grayscale(1) brightness(.7);opacity:.55}
 .qb-card.lock .qb-ci img{filter:grayscale(1);opacity:.6}
+/* NEXUS: Zaruk's portrait in his dialogue */
+.sbx-sbox2 .st-zaruk{width:150px;height:150px;margin:-6px auto 2px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#4ee6d033,#1a143000 70%);display:grid;place-items:center}
+.sbx-sbox2 .st-zaruk img{width:150px;height:150px}
+.sbx-sbox2 .st-row .btn.ghost{grid-column:auto}

@@ -249,7 +249,40 @@
     B: "X_stackedbooks", j: "X_glowjar", g: "X_globe", l: "X_lavalamp", S: "X_skullcandle", x: "X_shipbottle", F: "X_fireflyjar", P: "FLOWERPOT", C: "X_candelabra", y: "X_crystalcluster", Y: "X_slimejar", J: "X_goldfrog", w: "GLOWPOT", r: "X_frogidol" };
   var IWALL = { t: "TORCH", P: "PAINTING", n: "BANNER", e: "EMBERBANNER", f: "FROSTBANNER", M: "X_worldmap", m: "X_mirror", W: "X_wreath", a: "X_antlers", h: "X_wolftrophy", x: "X_crossedswords",
     S: "X_wallshelf", c: "X_starchart", g: "X_hangingherbs", k: "X_birdcage", C: "X_windchime", F: "X_fishtrophy", b: "X_battrophy", G: "X_gatortrophy" };
-  var IWIN = { GLASS: "GLASS", BARS: "X_ironbars", GLASSR: "X_stainedred", GLASSB: "X_stainedblue" }, ITAP = { keep: "X_tapestry_ember", lodge: "X_tapestry_frost", shrine: "X_tapestry_frost" };
+  // ---------- the SwampRealms: the floating island at the heart of the SwampRealms Dimension (reached through an awakened Realm Gate) ----------
+  // Not a building: a floating island under a galaxy sky. The map is made here (void = "#", ground = "."), the rest is drawn by sandbox.js
+  // (see NEXUS there): the island, its cliffs, the sky, the three portals under construction on the north rim, the props and Zaruk.
+  // "leg" letters: y crystal cluster. Rows 0-4 are open sky above the north rim, so the tall portals there have room.
+  var NEXUS_TH = THEMES.length, NX_W = 33, NX_H = 27;
+  THEMES.push({ n: "The SwampRealms", sub: "Where every world begins", floor: "#2a2440", floor2: "#352e52", top: "#0a0816", topHi: "#1a1530", face: "#3a2f5e", faceHi: "#5a4a90", faceLo: "#1a1430", tint: [8, 4, 22], lamp: T.CRYSTAL, glow: "160,130,255" });
+  function nexusMap() {
+    var w = NX_W, h = NX_H, rows = [], x, y, cx = (w - 1) / 2;
+    var hs = function (a, b2) { var n = Math.sin(a * 127.1 + b2 * 311.7) * 43758.5453; return n - Math.floor(n); };
+    for (y = 0; y < h; y++) {
+      var r = "";
+      for (x = 0; x < w; x++) {
+        var on = false;
+        if (y >= 5 && y <= h - 2 && x >= 1 && x <= w - 2) {
+          var ex = (x - cx) / 14.6, ey = (y + 0.5 - 14.8) / 9.6, wob = (hs(x >> 1, y >> 1) - 0.5) * 0.24 + Math.sin(x * 0.9 + y * 0.4) * 0.05;
+          on = ex * ex + ey * ey + wob < 1;
+          if (y <= 8 && x >= 4 && x <= w - 5) on = true;   // the terrace along the north rim, where the portals stand
+          if (y >= h - 6 && Math.abs(x - cx) <= 1 + (y < h - 3 ? 1 : 0)) on = true;   // the south tip, where the way home is
+        }
+        r += on ? "." : "#";
+      }
+      rows.push(r);
+    }
+    // holes inside the island (void not joined to the edge of the map) are filled in
+    var seen = {}, st = [], k2, isV = function (xx, yy) { return rows[yy].charAt(xx) === "#"; };
+    for (x = 0; x < w; x++) { st.push([x, 0]); st.push([x, h - 1]); } for (y = 0; y < h; y++) { st.push([0, y]); st.push([w - 1, y]); }
+    while (st.length) { var q = st.pop(), qx = q[0], qy = q[1]; if (qx < 0 || qy < 0 || qx >= w || qy >= h || seen[qx + "," + qy] || !isV(qx, qy)) continue; seen[qx + "," + qy] = 1; st.push([qx + 1, qy], [qx - 1, qy], [qx, qy + 1], [qx, qy - 1]); }
+    for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) if (isV(x, y) && !seen[x + "," + y]) rows[y] = rows[y].slice(0, x) + "." + rows[y].slice(x + 1);
+    var put = function (px, py, ch) { if (rows[py].charAt(px) === ".") rows[py] = rows[py].slice(0, px) + ch + rows[py].slice(px + 1); };
+    [[6, 11], [26, 11], [4, 15], [28, 15], [9, 20], [23, 20]].forEach(function (q) { put(q[0], q[1], "y"); });
+    return rows;
+  }
+  IMAP.nexus = { th: NEXUS_TH, amb: 1, win: "STAR", map: nexusMap(), floors: [], leg: { y: "X_crystalcluster" } };
+  var IWIN = { GLASS: "GLASS", BARS: "X_ironbars", GLASSR: "X_stainedred", GLASSB: "X_stainedblue", STAR: "X_starglass" }, ITAP = { keep: "X_tapestry_ember", lodge: "X_tapestry_frost", shrine: "X_tapestry_frost" };
   function mapInterior(kind, biome, id) {
     var D = IMAP[kind], m = D.map, w = m[0].length, h = m.length, n = w * h, wall = new Uint8Array(n), sol = new Uint8Array(n), deco = [], dr = [], wins = [], x, y, dx = Math.floor(w / 2), doors = [];
     for (y = 0; y < h; y++) for (x = 0; x < w; x++) if (y <= 1 || y === h - 1 || x === 0 || x === w - 1 || m[y].charAt(x) === "#") wall[y * w + x] = 1;
@@ -267,7 +300,7 @@
     for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
       var ch = m[y].charAt(x);
       if (ch === "r") add(x, y, "RUG", false, true); else if (ch === "~") add(x, y, "LAVA", true, true); else if (ch === "=") add(x, y, "WATER", true, true);
-      else if (ILEG[ch]) add(x, y, ILEG[ch], true, false);
+      else if ((D.leg && D.leg[ch]) || ILEG[ch]) add(x, y, (D.leg && D.leg[ch]) || ILEG[ch], true, false);
     }
     deco.forEach(function (e) { if (e.x === dx && e.y >= h - 3 && !e.flat) { e.solid = false; sol[e.y * w + e.x] = 0; } });   // never block the way to the door
     // ROOMS: inner walls ("#" away from the outer walls) stand up tall and fade down while you are in a room they border; "+" is a door in one
@@ -324,6 +357,6 @@
   }
 
 
-  var api = { IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  var api = { NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);
