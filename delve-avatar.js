@@ -42,6 +42,7 @@ var DelveAv = (function () {
   Buf.prototype.glow = function (cx, cy, rx, ry, col, a) {   // soft elliptical glow, quantised so it stays pixel-art
     for (var y = -ry; y <= ry; y++) for (var x = -rx; x <= rx; x++) { var d = (x * x) / (rx * rx) + (y * y) / (ry * ry); if (d <= 1) this.p(cx + x, cy + y, col, a * (d > 0.55 ? 0.5 : 1)); }
   };
+  Buf.prototype.get = function (x, y) { x += this.ox; y += this.oy; if (x < 0 || y < 0 || x >= this.w || y >= this.h) return null; var i = (y * this.w + x) * 4; return this.d[i + 3] > 200 ? [this.d[i], this.d[i + 1], this.d[i + 2]] : null; };
   Buf.prototype.alpha = function (x, y) { x += this.ox; y += this.oy; if (x < 0 || y < 0 || x >= this.w || y >= this.h) return 0; return this.d[(y * this.w + x) * 4 + 3]; };
   Buf.prototype.outline = function (col) {
     var c = rgb(col), w = this.w, h = this.h, d = this.d, add = [];
@@ -305,7 +306,18 @@ var DelveAv = (function () {
     idle0: { by: 0, L: [0, 0], R: [0, 0], ab: 0 }, idle1: { by: 1, L: [0, 0], R: [0, 0], ab: 0 },
     walk0: { by: -1, L: [0, 0], R: [0, 2], ab: 1 }, walk1: { by: 0, L: [0, 0], R: [0, 0], ab: 0 },
     walk2: { by: -1, L: [0, 2], R: [0, 0], ab: -1 }, walk3: { by: 0, L: [0, 0], R: [0, 0], ab: 0 },
-    jump: { by: -1, L: [1, 3], R: [-1, 3], ab: -1 }, fall: { by: 0, L: [-1, 0], R: [1, 0], ab: -1 }
+    jump: { by: -1, L: [1, 3], R: [-1, 3], ab: -1 }, fall: { by: 0, L: [-1, 0], R: [1, 0], ab: -1 },
+    // the back view: standing, walking away, and climbing (one arm reaching up, the other leg stepping up)
+    back0: { by: 0, L: [0, 0], R: [0, 0], ab: 0, back: 1 }, back1: { by: 1, L: [0, 0], R: [0, 0], ab: 0, back: 1 },
+    bwalk0: { by: -1, L: [0, 0], R: [0, 2], ab: 1, back: 1 }, bwalk1: { by: 0, L: [0, 0], R: [0, 0], ab: 0, back: 1 },
+    bwalk2: { by: -1, L: [0, 2], R: [0, 0], ab: -1, back: 1 }, bwalk3: { by: 0, L: [0, 0], R: [0, 0], ab: 0, back: 1 },
+    climb0: { by: 0, L: [0, 0], R: [0, 3], ab: 0, back: 1, climb: -1 }, climb1: { by: 0, L: [0, 3], R: [0, 0], ab: 0, back: 1, climb: 1 },
+    // MORE ANIMATION: blinking, a running stride, tucked jump apex, landing crouch, swimming kicks, flinching, cheering
+    idle0b: { by: 0, L: [0, 0], R: [0, 0], ab: 0, blink: 1 }, idle1b: { by: 1, L: [0, 0], R: [0, 0], ab: 0, blink: 1 },
+    run0: { by: -2, L: [1, 0], R: [-1, 3], ab: 2 }, run1: { by: -1, L: [0, 1], R: [0, 1], ab: 0 }, run2: { by: -2, L: [-1, 3], R: [1, 0], ab: -2 }, run3: { by: -1, L: [0, 1], R: [0, 1], ab: 0 },
+    tuck: { by: -1, L: [1, 4], R: [-1, 4], ab: -2 }, land: { by: 2, L: [-1, 0], R: [1, 0], ab: 1 },
+    swim0: { by: 1, L: [-1, 2], R: [1, 0], ab: 1 }, swim1: { by: 1, L: [0, 1], R: [0, 1], ab: 0 }, swim2: { by: 1, L: [-1, 0], R: [1, 2], ab: -1 }, swim3: { by: 1, L: [0, 1], R: [0, 1], ab: 0 },
+    hurt: { by: 1, L: [-1, 0], R: [1, 1], ab: -2, blink: 1 }, cheer0: { by: -1, L: [0, 1], R: [0, 1], ab: -1 }, cheer1: { by: -2, L: [1, 2], R: [-1, 2], ab: -2 }
   };
 
   // ---------- arms ----------
@@ -327,8 +339,77 @@ var DelveAv = (function () {
   function drawArm(B, x, y, rows) { var c0 = B.cur; rows.forEach(function (r, i) { B.cur = r.lay || 1; B.p(x, y + i, r[0]); B.p(x + 1, y + i, r[1]); }); B.cur = c0; }
   function armBuf(o, a) { var B = new Buf(4, 10, 1, 1); drawArm(B, 0, 0, armRows(o, a)); if (OUTLINE) B.outline(OL); B.isArm = 1; return B; }
 
+  // ---------- BACK VIEW (climbing ladders, walking away in caves and buildings) ----------
+  // The back of the head is made from the front head map: faces, muzzles, beaks and tusks become fur/feathers, humans get hair.
+  // Clothes show their backs (hood, jersey number, cape over the shoulders, straps of face gear across the head), armor its back plate.
+  var BACKH = {};
+  function backHead(a) {
+    if (BACKH[a]) return BACKH[a];
+    var src = AN[a].head, H = src.length, W2 = src[0].length, mid = W2 / 2;
+    var rows = src.map(function (r, j) { return r.replace(/[^.]/g, function (ch) { return a === "human" ? (j < 8 ? "h" : "b") : (ch === "n" && (a === "donkey" || a === "elephant")) ? "d" : "b"; }); });
+    var put = function (x, y, ch) { if (y >= 0 && y < H && rows[y].charAt(x) !== "." && x >= 0 && x < W2) rows[y] = rows[y].slice(0, x) + ch + rows[y].slice(x + 1); };
+    if (a === "frog") { [[3, 4], [8, 4], [5, 6], [7, 8], [3, 8]].forEach(function (q) { put(q[0], q[1], "d"); }); }   // a few darker spots
+    else if (a === "owl") { for (var j = 4; j < H - 1; j += 2) for (var i = 1 + (j % 4 ? 1 : 0); i < W2 - 1; i += 3) put(i, j, "d"); }   // feather scallops
+    else if (a === "donkey") { for (var j2 = 5; j2 < H - 2; j2++) { put(Math.floor(mid) - 1, j2, "d"); put(Math.floor(mid), j2, "d"); } }   // the mane down the back of the neck
+    else if (a === "monkey") { for (var j3 = 1; j3 < H - 2; j3++) if (j3 % 3 === 0) put(Math.floor(mid), j3, "d"); }
+    else if (a === "human") { put(Math.floor(mid), 2, "e"); put(Math.floor(mid) - 1, 3, "e"); put(Math.floor(mid) + 1, 4, "e"); }   // a crown swirl in the hair
+    else { put(Math.floor(mid), 1, "d"); put(Math.floor(mid), 2, "d"); }
+    return (BACKH[a] = rows);
+  }
+  function armUp(B, x, y, rows) { var c0 = B.cur; rows.forEach(function (r, i) { B.cur = r.lay || 1; B.p(x, y - i, r[0]); B.p(x + 1, y - i, r[1]); }); B.cur = c0; }   // an arm raised above the shoulder (hand on top)
+  function drawBack(o, PO) {
+    var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a), by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i, y;
+    var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null, s = SHIRTS[shirt] || SHIRTS[""];
+    B.cur = 1;
+    // legs and the backs of the shoes (heels)
+    var legC = A.leg, sh = SHOES[o.shoes];
+    [[7, PO.L, 1], [12, PO.R, -1]].forEach(function (lg) {
+      var x = lg[0] + lg[1][0], lift = lg[1][1], bot = 30 - lift, top = 24 + by, side = lg[2];
+      for (y = top; y <= bot; y++) { B.p(x, y, side > 0 ? dk(legC, 0.3) : lt(legC, 0.12)); B.p(x + 1, y, dk(legC, 0.08)); B.p(x + 2, y, side > 0 ? lt(legC, 0.12) : dk(legC, 0.3)); }
+      if (shirt === "tux") { B.cur = 2; for (y = top; y < top + 2; y++) B.r(x, y, 3, 1, "#1a1a22"); B.cur = 1; }
+      if (sh) { B.cur = 8; var rows = sh.rows, n = rows.length, y0 = bot - n + 1;
+        for (var j = 0; j < n; j++) for (var k = 0; k < 3; k++) { var ch = rows[j].charAt(1 + k); if (ch === ".") continue; B.p(x + k, y0 + j, j === n - 1 ? dk(sh.pal[ch], 0.25) : sh.pal[ch]); }
+        B.cur = 1;
+      } else B.r(x, bot, 3, 1, dk(legC, 0.4));
+    });
+    B.cur = 2; if (shirt === "robe") { for (i = 0; i < 4; i++) B.r(6, 24 + by + i, 10, 1, i === 3 ? "#f2c14e" : "#a82240"); B.r(6, 24 + by, 1, 3, "#7a1428"); B.r(15, 24 + by, 1, 3, "#ff7a7a"); }
+    // the back of the torso
+    var c = s.c, x = 7; y = 17 + by;
+    B.r(x, y, 8, 7, c[1]); B.r(x, y, 1, 7, c[2]); B.r(x + 7, y, 1, 7, c[0]); B.r(x + 1, y + 6, 6, 1, c[2]);
+    if (shirt === "") { B.r(x + 3, y, 2, 6, "#1d2230"); B.r(x + 1, y + 5, 6, 1, "#0f1017", 0.5); }   // a seam down the back
+    else if (shirt === "tee") { B.r(x + 1, y, 6, 1, "#0b5f73"); }
+    else if (shirt === "hoodie") { B.r(x + 1, y - 1, 6, 4, "#4a2a9a"); B.r(x + 2, y, 4, 2, "#34187f"); B.p(x + 1, y - 1, "#b79cff"); }   // the hood, down
+    else if (shirt === "jersey") { B.r(x, y + 4, 8, 1, "#ffffff"); B.r(x + 3, y + 1, 2, 1, "#ffffff"); B.p(x + 4, y + 2, "#ffffff"); B.p(x + 3, y + 3, "#ffffff"); }   // number 7
+    else if (shirt === "tux") { B.r(x + 3, y + 3, 2, 4, "#0e0e14"); }   // split tails
+    else if (shirt === "armor") { B.r(x, y, 8, 6, "#35d6b4"); B.r(x, y, 8, 1, "#b8fff0"); B.r(x + 3, y + 1, 2, 5, "#0e7490"); }
+    else if (shirt === "raider") { for (i = 0; i < 6; i++) { B.p(x + 1 + i, y + i, "#2a1a10"); B.p(x + 6 - i, y + i, "#2a1a10"); } B.r(x, y + 5, 8, 1, "#c2362b"); }
+    else if (shirt === "robe") { B.r(x + 3, y, 2, 7, "#a8740a"); B.r(x, y, 8, 1, "#f6f3ea"); }
+    B.cur = 3; if (o.arm && ARM[o.arm]) { var Q = ARM[o.arm]; B.r(x, y, 8, 7, Q.a); B.r(x, y, 8, 1, Q.b); B.r(x, y, 1, 7, Q.c); B.r(x + 7, y, 1, 7, Q.b); B.r(x + 3, y + 1, 2, 5, Q.c); B.r(x + 1, y + 6, 6, 1, Q.c); B.p(x + 3, y + 1, Q.t); B.p(x + 4, y + 1, Q.t); if (o.arm >= 3) { B.p(x + 1, y + 2, Q.t); B.p(x + 6, y + 2, Q.t); } }   // the back plate
+    B.cur = 1;
+    // the head, from behind
+    B.m(A.x0, A.y0 + by, backHead(a), P);
+    // arms: hanging at the sides, or reaching up a ladder
+    var ar = armRows(o, a);
+    if (PO.climb) { var up = PO.climb; if (up < 0) { armUp(B, 5, 17 + by, ar); drawArm(B, 15, 17 + by + 1, ar); } else { drawArm(B, 5, 17 + by + 1, ar); armUp(B, 15, 17 + by, ar); } }
+    else { drawArm(B, 5, 17 + by + PO.ab, ar); drawArm(B, 15, 17 + by - PO.ab, ar); }
+    // neck gear seen from behind
+    B.cur = 9; if (o.neck === "cape") { for (y = 17 + by; y <= 29; y++) { var t = y - 17 - by, w = Math.min(12, 10 + Math.floor(t / 5) * 2), cx2 = 11 - w / 2; B.r(cx2, y, w, 1, y > 25 + by ? "#a82240" : "#d12f4a"); B.p(cx2, y, "#7a1428"); B.p(cx2 + w - 1, y, "#ff7a7a"); } B.r(10, 19 + by, 2, 9, "#a82240", 0.5); }
+    B.cur = 4; if (o.neck === "scarf") { B.r(6, 17 + by, 10, 2, "#d12f4a"); B.r(6, 17 + by, 10, 1, "#ff7a7a"); B.r(10, 19 + by, 2, 5, "#d12f4a"); B.r(11, 19 + by, 1, 5, "#a82240"); B.p(10, 23 + by, "#ffd36a"); }
+    else if (o.neck === "bell" || o.neck === "bowtie" || o.neck === "chain") B.r(7, 17 + by, 8, 1, o.neck === "chain" ? "#f2c14e" : o.neck === "bell" ? "#d12f4a" : "#e83a9a");
+    if (acc.necklace) B.r(7, 17 + by, 8, 1, "#f2c14e");
+    // face gear: only its strap shows from behind
+    B.cur = 6; if (o.face && o.face !== "clawpaint" && o.face !== "oracleeye" && o.face !== "hearts" && o.face !== "laser" && o.face !== "monocle") { var ey = A.eyes[0][1] + by, hw2 = A.hw; B.r(11 - hw2 / 2, ey, hw2, 1, o.face === "shades" ? "#0e7490" : o.face === "fireflygoggles" ? "#5a3d00" : o.face === "gothicshades" ? "#8aa0c8" : "#14141a"); }
+    B.cur = 5; if (acc.bandana) { var mk = A.mask, my = mk[0] + by; B.r(10, my, 2, 2, "#d12f4a"); B.p(9, my + 2, "#a82240"); B.p(12, my + 2, "#a82240"); B.p(10, my, "#ff7a7a"); }   // the knot
+    // hat
+    B.cur = 7; if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
+    B.cur = 1; if (A.ears && o.hat) A.ears.cells.forEach(function (cc) { B.p(cc[0], cc[1] + by, P.b); });
+    if (OUTLINE) B.outline(OL);
+    return B;
+  }
+
   // ---------- main frame ----------
   function drawFrame(o, pose, withArm) {
+    if (POSE[pose] && POSE[pose].back) return drawBack(o, POSE[pose]);
     var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a), PO = POSE[pose] || POSE.idle0, by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i;
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null;
     B.cur = 9; if (o.neck === "cape") CAPE_BACK(B, by, pose.indexOf("walk") === 0 ? (pose === "walk0" || pose === "walk2" ? 1 : 0) : 0);
@@ -361,6 +442,9 @@ var DelveAv = (function () {
     B.cur = 1; B.m(hx, hy0, A.head, P);
     // eye colour on the iris-free animals is handled in the maps; add a catch-light
     var E = A.eyes.map(function (e) { return [e[0], e[1] + by]; });
+    if (PO.blink) E.forEach(function (e) {   // eyes shut: eye whites and pupils become skin, with a dark lid line along the bottom
+      for (var yy = e[1] - 1; yy <= e[1]; yy++) for (var xx = e[0] - 1; xx <= e[0] + 1; xx++) { var c = B.get(xx, yy); if (c && (c[0] + c[1] + c[2] > 600 || c[0] + c[1] + c[2] < 150)) B.p(xx, yy, yy === e[1] ? P.d : P.b); }
+    });
     // neck gear
     B.cur = 4; if (o.neck && NECKS[o.neck]) NECKS[o.neck](B, by);
     B.cur = 5; if (acc.necklace) { [[7, 17], [8, 18], [9, 19], [10, 20], [11, 20], [12, 19], [13, 18], [14, 17]].forEach(function (c, k) { B.p(c[0], c[1] + by, k % 2 ? "#a8740a" : "#f2c14e"); }); B.r(10, 21 + by, 2, 2, "#f2c14e"); B.p(10, 21 + by, "#fff4b0"); B.p(11, 22 + by, "#4ee6b4"); }
@@ -469,9 +553,10 @@ var DelveAv = (function () {
     var n = 0; for (var k in CACHE) n++; if (n > 24) CACHE = {};
     return (CACHE[key] = S);
   }
+  function full(o, animal, s, pose) { o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); return toCanvas(drawFrame(o, pose || "idle0", true), Math.max(1, s | 0)); }   // the whole figure with both arms (the backpack screen)
   function thumb(o, animal, s) { o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); return toCanvas(drawFrame(o, "idle0", true), s || 3).toDataURL(); }
 
-  var api = { sprite: sprite, thumb: thumb, animals: Object.keys(AN), poses: Object.keys(POSE), _draw: drawFrame, _AN: AN, FW: FW, FH: FH };
+  var api = { sprite: sprite, thumb: thumb, full: full, animals: Object.keys(AN), poses: Object.keys(POSE), _draw: drawFrame, _AN: AN, FW: FW, FH: FH };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   return api;
 })();

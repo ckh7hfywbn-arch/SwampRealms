@@ -664,6 +664,60 @@
     rect(6, 6, 4, 5, "#e8243a"); rect(5, 7, 6, 3, "#e8243a"); rect(7, 7, 2, 3, "#ffd0d4"); rect(6, 6, 1, 1, "#ff8a94"); rect(4, 13, 8, 2, "#5a1a22"); rect(5, 15, 6, 1, "#3a1418");
   }, 10, ["255,60,70", 2.8, 0.2]); small("bloodlantern"); FUN.push("bloodlantern");
   // ====================================================================================================
+  // ---------------------------------------------------------------- 7n. DISCOVERIES (secret recipes, found by experimenting)
+  // None of these are in any recipe list: mix three ingredients at a Cooking Pot or Brewing Stand (Experiment) to find them.
+  // The dishes fill you up and give a potion effect (efx: [effect, seconds]); the tonics are potions (sandbox.js POTIONS).
+  var DISC = [];
+  function dfood(k, n, f, h, efx) { food(k, n, f, h, 1); ITEMS[k].efx = efx; ITEMS[k].disc = 1; DISC.push(k); }
+  dfood("glowgoulash", "Glowshroom Goulash", 70, 30, ["glow", 240]);
+  dfood("rainbowcake", "Rainbow Cake", 100, 60, ["luck", 300]);
+  dfood("starpancakes", "Stardust Pancakes", 60, 25, ["leap", 240]);
+  dfood("swampsushi", "Swamp Sushi", 55, 35, ["gill", 300]);
+  dfood("emberpopcorn", "Ember Popcorn", 35, 12, ["fire", 240]);
+  dfood("croakersoup", "Croaker's Secret Soup", 90, 50, ["regen", 90]);
+  ["tonic_star", "tonic_titan", "tonic_zephyr", "tonic_blood"].forEach(function (k, i) { item(k, ["Starlight Elixir", "Titan Tonic", "Zephyr Draught", "Bloodmoon Brew"][i], { disc: 1 }); tr(k); DISC.push(k); });
+  // the secret recipes: [station, three ingredients, result, how many, a riddle for the experiment window]
+  var SECRETS = [
+    ["cook", ["glowshroom", "rawmeat", "spore"], "glowgoulash", 1, "Something that glows, something that walked, something dug from the dark."],
+    ["cook", ["prism", "carrotcake", "frostberry"], "rainbowcake", 1, "Catch a rainbow, bake it into something sweet, and top it with a cold berry."],
+    ["cook", ["stardust", "duckegg", "goatmilk"], "starpancakes", 2, "Fallen sky, an egg, and something a goat gives you."],
+    ["cook", ["catfish", "marshlily", "glowfin"], "swampsushi", 2, "Two fish from the swamp, rolled up with a flower."],
+    ["cook", ["emberroot", "pepper", "cinder"], "emberpopcorn", 2, "Everything in it is hot. Very hot. It pops."],
+    ["cook", ["redcap", "bogminnow", "swamptea"], "croakersoup", 1, "Old Croaker's favourite: a red mushroom, the smallest fish, and a cup of lily tea."],
+    ["brew", ["bottle", "stardust", "moonstone"], "tonic_star", 1, "A bottle, a pinch of fallen star, and the pale stone of the frozen fen."],
+    ["brew", ["bottle", "trolltusk", "tonic_brute"], "tonic_titan", 1, "Make a strong brew stronger with a tusk."],
+    ["brew", ["bottle", "goldfeather", "springroot"], "tonic_zephyr", 1, "A golden feather and a root that bounces."],
+    ["brew", ["bottle", "bloodshard", "leechfang"], "tonic_blood", 1, "Red from the Blood Moon, and the fang of something that drinks."]
+  ];
+  // ---------------------------------------------------------------- 7o. BIOME VARIANTS (sandbox-world.js gen: sub[x])
+  // Each land has a second type: Cherry Blossom Vale (Murkwater), Sunbaked Shores (Ember Bog) and Dark Oakwood (Frostfen).
+  // Their ground and wild plants. (New tiles go last, so every saved tile id stays the same.)
+  block("sand", "Sand", "#e8cf94", "#f6e4b4", 0.35, function (rect, hh) {
+    rect(0, 0, 16, 16, "#e2c88c"); for (var k = 0; k < 22; k++) rect(Math.floor(hh(k, 1, 3) * 16), Math.floor(hh(k, 2, 4) * 16), 1, 1, hh(k, 3, 5) > 0.5 ? "#f6e4b4" : "#c8aa6c");
+    rect(2, 5, 4, 1, "#f0dca6", 0.8); rect(9, 11, 5, 1, "#f0dca6", 0.8); rect(0, 15, 16, 1, "#000", 0.12);
+  }); TILES[T.X_sand].tier = 0;
+  plant("blossom", "Cherry Blossom", "X_sakuratuft", "#ff9ad0", function (rect) {
+    rect(7, 7, 1, 9, "#4f8a3c"); rect(4, 11, 1, 5, "#4f8a3c"); rect(11, 9, 1, 7, "#4f8a3c"); rect(3, 14, 3, 1, "#3f7a2f"); rect(9, 14, 4, 1, "#3f7a2f");
+    [[7, 4], [4, 8], [11, 6]].forEach(function (q) { var x = q[0], y = q[1]; rect(x - 1, y, 3, 1, "#ff9ad0"); rect(x, y - 1, 1, 3, "#ff9ad0"); rect(x - 1, y - 1, 1, 1, "#ffc8e4"); rect(x + 1, y + 1, 1, 1, "#e86aa8"); rect(x, y, 1, 1, "#fff2a8"); });
+    rect(13, 12, 1, 1, "#ffc8e4"); rect(2, 6, 1, 1, "#ffc8e4");
+  });
+  plant("cactus", "Cactus", "X_cactus", "#4fae5a", function (rect) {
+    rect(6, 2, 4, 14, "#3f9a4a"); rect(7, 2, 2, 14, "#5cc066"); rect(7, 1, 2, 1, "#5cc066"); rect(6, 3, 1, 12, "#2c7a38");
+    rect(2, 6, 2, 6, "#3f9a4a"); rect(2, 11, 4, 2, "#3f9a4a"); rect(3, 6, 1, 5, "#5cc066"); rect(12, 4, 2, 6, "#3f9a4a"); rect(10, 9, 4, 2, "#3f9a4a"); rect(12, 4, 1, 5, "#5cc066");
+    [[5, 5], [10, 7], [5, 10], [10, 13], [1, 8], [14, 6]].forEach(function (q) { rect(q[0], q[1], 1, 1, "#f6f0d0"); }); rect(7, 0, 2, 1, "#ff7ab0"); rect(12, 3, 2, 1, "#ffd23f");
+  });
+  plant("seashell", "Seashell", "X_shelltuft", "#ffd0c0", function (rect) {
+    rect(3, 11, 7, 4, "#ffd8c8"); rect(4, 10, 5, 1, "#ffe8dc"); rect(2, 14, 9, 1, "#e8a890"); rect(4, 11, 1, 4, "#e8a890"); rect(6, 10, 1, 5, "#e8a890"); rect(8, 11, 1, 4, "#e8a890"); rect(6, 15, 1, 1, "#c88870");
+    rect(11, 12, 3, 3, "#9ad8ff"); rect(12, 11, 2, 1, "#c8ecff"); rect(12, 13, 1, 1, "#4a8ac8");
+  });
+  plant("fernfrond", "Fern", "X_ferntuft", "#3f8a4a", function (rect) {
+    [[7, 1, 0], [3, 4, -1], [11, 4, 1], [2, 9, -1], [12, 9, 1]].forEach(function (q) { var x = q[0], y = q[1], d = q[2]; for (var k = 0; k < 7; k++) { var px = x + Math.round(d * k * 0.6), py = y + k; if (py > 15) break; rect(px, py, 1, 1, "#2f6a38"); if (k % 2 === 0) { rect(px - 1, py, 1, 1, "#4f9a50"); rect(px + 1, py, 1, 1, "#4f9a50"); } } });
+    rect(7, 8, 1, 8, "#2a5a30"); rect(6, 15, 3, 1, "#1f4a26");
+  });
+  plant("duskcap", "Dusk Mushroom", "X_duskcaptuft", "#c98aff", function (rect) {
+    rect(5, 9, 2, 7, "#d8cfc0"); rect(10, 11, 2, 5, "#d8cfc0"); rect(2, 6, 8, 3, "#5a3a7a"); rect(3, 5, 6, 1, "#7a52a0"); rect(3, 7, 1, 1, "#ffd8ff"); rect(7, 6, 1, 1, "#ffd8ff");
+    rect(8, 9, 6, 2, "#6a4590"); rect(9, 8, 4, 1, "#8a62b8"); rect(10, 9, 1, 1, "#ffd8ff"); rect(0, 15, 16, 1, "#1f3a22");
+  }, 3, ["200,140,255", 2, 0.1]);
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
@@ -719,6 +773,10 @@
   R("x_rope", "Rope (2)", { rope: 2 }, { fiber: 4 }, { d: "Twisted reed fibre. Used for looms, lanterns, trophies and tapestries." });
   R("x_candle", "Candles (4)", { candle: 4 }, { fiber: 2, peat: 1 }, { d: "A wick dipped in peat tallow. Used in candelabras and chandeliers." });
   R("x_dyered", "Red Dye (2)", { dyered: 2 }, { redcap: 2 }, { d: "Pressed Redcap Mushrooms. Colours stained glass and cloth." });
+  R("x_dyered2", "Red Dye from Blossom", { dyered: 1 }, { blossom: 3 }, { d: "Pressed cherry blossom from the Cherry Blossom Vale." });
+  R("x_dyegreen2", "Green Dye from Cactus", { dyegreen: 1 }, { cactus: 2 }, { d: "Cactus pulp from the Sunbaked Shores." });
+  R("x_sandglass", "Glass from Sand (2)", { glass: 2 }, { sand: 3, charcoal: 1 }, { stn: "furnace", d: "Melt beach sand into clear glass." });
+  R("x_fernfiber", "Fern Fiber (3)", { fiber: 3 }, { fernfrond: 2 }, { d: "Strip a fern from the Dark Oakwood into tough fiber." });
   R("x_dyeblue", "Blue Dye (2)", { dyeblue: 2 }, { frostbell: 2 }, { d: "Crushed Frostbells from the Frostfen." });
   R("x_dyegreen", "Green Dye (2)", { dyegreen: 2 }, { marshlily: 2 }, { d: "Marsh Lily stems boiled to a deep green." });
   R("x_mortar", "Mortar (2)", { mortar: 2 }, { silt: 3, clay: 1 }, { d: "Silt from lake beds mixed with clay. Holds bricks together." });
@@ -995,7 +1053,7 @@
   //     and only by swapping plain natural blocks (stone, mud, ice ...), so every earlier tile, tree, hole and building stays put.
   // ====================================================================================================
   function populate(w) {
-    var t = w.t, top = w.top, bio = w.bio, W = w.W, H = w.H, seed = w.seed, x, y, i, id, d;
+    var t = w.t, top = w.top, bio = w.bio, sub = w.sub, W = w.W, H = w.H, seed = w.seed, x, y, i, id, d;
     function cell(x2, y2, k, p, fill) { return hash(x2 >> 2, y2 >> 2, seed + k) < p && hash(x2, y2, seed + k + 1) < fill; }
     var solidAir = function (xx, yy) { return TILES[t[yy * W + xx]].solid; };
     for (x = 3; x < W - 3; x++) {
@@ -1029,7 +1087,8 @@
       var sy = tp - 1, gi = tp * W + x;
       if (sy > 1 && t[sy * W + x] === T.AIR && TILES[t[gi]].solid && t[gi] !== T.WATER) {
         var r = hash(x, 95, seed), gid = t[gi];
-        if (b === 0) { if (r < 0.1) t[sy * W + x] = T.REDCAPTUFT; else if (r < 0.22 && gid === T.MOSS) t[sy * W + x] = T.COTTONTUFT; else if (r < 0.3) t[sy * W + x] = T.LILYTUFT; }
+        if (sub && sub[x]) { if (b === 0 && r < 0.06) t[sy * W + x] = T.LILYTUFT; else if (b === 1 && r < 0.05 && gid !== T.X_sand) t[sy * W + x] = T.THISTLETUFT; else if (b === 2 && r < 0.07) t[sy * W + x] = T.REDCAPTUFT; }
+        else if (b === 0) { if (r < 0.1) t[sy * W + x] = T.REDCAPTUFT; else if (r < 0.22 && gid === T.MOSS) t[sy * W + x] = T.COTTONTUFT; else if (r < 0.3) t[sy * W + x] = T.LILYTUFT; }
         else if (b === 1) { if (r < 0.08) t[sy * W + x] = T.EMBERROOTTUFT; else if (r < 0.16) t[sy * W + x] = T.THISTLETUFT; }
         else { if (r < 0.08) t[sy * W + x] = T.FROSTBELLTUFT; else if (r < 0.15) t[sy * W + x] = T.ICECAPTUFT; }
       }
@@ -1075,6 +1134,6 @@
   if (SW.post) SW.post.push(function (w) { populate(w); placeTreasure(w); });   // per generated map (see ENDLESS WORLD in sandbox-world.js)
   else SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
 
-  var api = { FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var api = { DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

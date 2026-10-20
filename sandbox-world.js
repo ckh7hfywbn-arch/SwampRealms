@@ -11,7 +11,7 @@
   // segments of random biomes (one biome each, 480-720 columns) as you walk towards them (genChunk), so it costs nothing until explored.
   // The generator itself works on any width: W / B_FROST / B_EMBER / SPAWNX below are the settings of the map being generated right now.
   var CORE_W = 2160, EXT = 5040, WORLD_W = CORE_W + EXT * 2;
-  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true;
+  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true, GEN_VAR = 0;
   var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
@@ -399,8 +399,20 @@ batwing: { n: "Bat Wing", frag: "bat" },
     function ridged(x2, s, f) { return 1 - Math.abs(2 * fbm(x2 * f, 0.5, s, 3) - 1); }
     // ---- 1. biomes and landforms ----
     for (x = 0; x < W; x++) { var bx = x + (vnoise(x * 0.08, 0, seed + 3) - 0.5) * 14; bio[x] = bx < B_FROST ? 2 : bx < B_EMBER ? 0 : 1; }
+    // BIOME VARIANTS: sub[x] = 1 turns a stretch of land into its biome's other type (Murkwater -> Cherry Blossom Vale, Ember Bog -> Sunbaked Shores,
+    // Frostfen -> Dark Oakwood). GEN_VAR 0 = none (land made before variants existed, so old saves line up), 1 = patches, 2 = the whole map.
+    var sub = new Uint8Array(W);
+    var SAND = T.X_sand !== undefined ? T.X_sand : T.ASH;
     var REG = [[Math.max(0, B_FROST), Math.min(W, B_EMBER)], [Math.max(0, B_EMBER), W], [0, Math.min(W, B_FROST)]];   // index = biome id
     var hasB = function (b) { return REG[b][1] - REG[b][0] >= 80; };
+    if (GEN_VAR === 2) for (x = 0; x < W; x++) sub[x] = 1;
+    else if (GEN_VAR) [0, 1, 2].forEach(function (b) {   // patches: one stretch of each land (a bit more than a third of it), never at the camp
+      var a = REG[b][0], z = REG[b][1], len = z - a; if (len < 200) return;
+      var pw = Math.round(len * (0.34 + hash(b, 931, seed) * 0.14)), tries = 0, p0;
+      do { p0 = a + 20 + Math.floor(hash(b, 932 + tries, seed) * Math.max(1, len - pw - 40)); } while (tries++ < 12 && p0 < SPAWNX + 170 && p0 + pw > SPAWNX - 170);
+      if (p0 < SPAWNX + 170 && p0 + pw > SPAWNX - 170) { if (SPAWNX - 170 - a > z - SPAWNX - 170) { p0 = a + 10; pw = Math.min(pw, SPAWNX - 180 - p0); } else { p0 = SPAWNX + 180; pw = Math.min(pw, z - 10 - p0); } }
+      for (x = Math.max(0, p0); x < Math.min(W, p0 + pw); x++) { var e = (vnoise(x * 0.05, 2.2, seed + 78) - 0.5) * 30; if (x - p0 > 12 + e * 0.3 && p0 + pw - x > 12 - e * 0.3) sub[x] = 1; }   // ragged ends
+    });
     var KINDS = [   // per biome: [kind, weight]
       [["range", 3], ["peak", 2], ["hills", 3], ["basin", 3], ["mesa", 1]],
       [["volcano", 3], ["mesa", 3], ["range", 1], ["hills", 2], ["peak", 1]],
@@ -456,7 +468,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     }
     for (x = 0; x < W; x++) {
       var hgt = Math.round(SURF - elev[x]);
-      if (bio[x] === 1) hgt = Math.min(hgt, LAVAL - 2);   // Ember ground never dips into the lava level
+      if (bio[x] === 1 && sub[x]) hgt = Math.min(hgt + Math.round(Math.max(0, vnoise(x * 0.03, 3.3, seed + 81) - 0.5) * 24), SURF + 7);   // Sunbaked Shores: low dunes and warm lagoons
+      else if (bio[x] === 1) hgt = Math.min(hgt, LAVAL - 2);   // Ember ground never dips into the lava level
       top[x] = Math.max(14, Math.min(SURF + 18, hgt));
     }
     for (var pass = 0; pass < 2; pass++) {   // crisp skyline: no 1-wide spikes or pits, and never more than 2 tiles up from one column to the next
@@ -477,25 +490,25 @@ batwing: { n: "Bat Wing", frag: "bat" },
     var STEEP = new Uint8Array(W);
     for (x = 1; x < W - 1; x++) STEEP[x] = Math.max(Math.abs(top[x] - top[x - 1]), Math.abs(top[x] - top[x + 1]));
     for (x = 0; x < W; x++) {
-      var b = bio[x], tp = top[x], alt = SURF - tp, steep = STEEP[x] >= 2 && alt > 6, cap = alt > (b === 2 ? 22 : 34) && b !== 1;
+      var b = bio[x], vr = sub[x], tp = top[x], alt = SURF - tp, steep = STEEP[x] >= 2 && alt > 6, cap = alt > (b === 2 && !vr ? 22 : 34) && b !== 1;
       var soilN = vnoise(x * 0.2, 0.7, seed + 2), soil = alt > 14 ? 1 + Math.floor(soilN * 2) : 3 + Math.floor(soilN * 3);
       for (y = 0; y < H; y++) {
         var id = T.AIR, d = y - tp;
         if (y < tp) {
-          if (b === 0 && y >= WL) id = T.WATER;
+          if ((b === 0 || (vr && b === 1)) && y >= WL) id = T.WATER;   // (the Shores' lagoons are water)
           else if (b === 1 && y >= LAVAL) id = T.LAVA;
-          else if (b === 2 && y >= ICEL) id = T.ICE;
+          else if (b === 2 && y >= ICEL) id = vr ? T.WATER : T.ICE;   // Dark Oakwood ponds are not frozen
         } else if (y >= H - 2 || (y === H - 3 && hash(x, y, seed + 5) < 0.55)) id = T.BEDROCK;
-        else if (d === 0) id = cap ? T.SNOW : steep ? [T.STONE, T.STONE, T.ICE][b] : [T.MOSS, T.ASH, T.SNOW][b];
+        else if (d === 0) id = cap ? T.SNOW : steep ? (vr ? T.STONE : [T.STONE, T.STONE, T.ICE][b]) : vr ? [T.MOSS, SAND, T.MOSS][b] : [T.MOSS, T.ASH, T.SNOW][b];
         else {
-          if (d <= soil && !(steep && d > 1)) { id = cap ? (b === 2 ? T.ICE : T.STONE) : [T.MUD, T.ASH, T.SNOW][b]; if (b === 2 && d >= 3) id = T.ICE; }
+          if (d <= soil && !(steep && d > 1)) { id = cap ? (b === 2 && !vr ? T.ICE : T.STONE) : vr ? [T.MUD, SAND, T.MUD][b] : [T.MUD, T.ASH, T.SNOW][b]; if (b === 2 && !vr && d >= 3) id = T.ICE; }
           else if (b === 0) {
             id = T.STONE;
             if (d < 34 && d >= 3 && fbm(x * 0.09, y * 0.09, seed + 11, 3) > 0.62) id = T.CLAY;
             else if (d >= 4 && d < 60 && Math.sin((y + fbm(x * 0.018, 1.1, seed + 12, 2) * 16) * 0.42) > 0.93 && hash(x >> 3, y, seed + 13) < 0.85) id = T.CLAY;   // thin clay bands you can see in cliff faces
           }
           else if (b === 1) id = d < (alt > 10 ? 4 : 12) ? T.STONE : T.BASALT;
-          else id = d < (alt > 10 ? 3 : 6) ? T.ICE : T.FROSTROCK;
+          else id = d < (alt > 10 ? 3 : 6) ? (vr ? T.STONE : T.ICE) : T.FROSTROCK;
           var deep = Math.min(1, Math.max(0, (y - SURF) / 100));   // ore gets more common the deeper you dig
           if (id === T.STONE && d >= 5 && fbm(x * 0.2 + 40, y * 0.2, seed + 21, 2) > 0.7 - deep * 0.06) id = T.SPORE;
           if (id === T.BASALT && fbm(x * 0.22, y * 0.22 + 9, seed + 31, 2) > 0.68 - deep * 0.06) id = T.CINDER;
@@ -504,7 +517,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
         t[y * W + x] = id;
       }
     }
-    craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl; y < top[x]; y++) if (t[y * W + x] === T.AIR) t[y * W + x] = T.LAVA; });
+    craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl; y < top[x]; y++) if (t[y * W + x] === T.AIR) t[y * W + x] = sub[x] ? T.WATER : T.LAVA; });   // a Shores crater is a hilltop lagoon
     // ---- 4. caves ----
     var cm = new Uint8Array(W * H), cm2 = new Uint8Array(W * H);
     for (x = 0; x < W; x++) {
@@ -567,7 +580,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       var want = Math.max(2, Math.round([34, 22, 28][b] * Math.min(1, (REG[b][1] - REG[b][0]) / 720))), fill = [T.WATER, T.LAVA, T.ICE][b], made = 0, tries = 0;
       while (made < want && tries++ < want * 12) {
         var px = ri(REG[b][0] + 8, REG[b][1] - 8), y0 = top[px] + 10 + ri(0, 40);
-        for (y = y0; y < H - 24; y++) if (t[y * W + px] === T.AIR && TILES[t[(y + 1) * W + px]].solid) { if (pool(px, y, ri(3, 7), fill)) made++; break; }
+        for (y = y0; y < H - 24; y++) if (t[y * W + px] === T.AIR && TILES[t[(y + 1) * W + px]].solid) { if (pool(px, y, ri(3, 7), b === 2 && sub[px] ? T.WATER : fill)) made++; break; }
       }
     });
     // ---- 5. trees and plants ----
@@ -608,11 +621,41 @@ batwing: { n: "Bat Wing", frag: "bat" },
       var s1 = hash(x, 321, seed) < 0.5 ? -1 : 1; put(x + s1, tp2 - th + 1, T.LOG); put(x + s1 * 2, tp2 - th, T.LOG);
       if (th >= 5) { put(x - s1, tp2 - th + 2, T.LOG); }
     }
+    // ---- variant trees ----
+    function blobL(cx, cy2, rx, ry, k9) { for (var dy = -Math.ceil(ry); dy <= Math.ceil(ry); dy++) for (var dx = -Math.ceil(rx); dx <= Math.ceil(rx); dx++) if (dx * dx / (rx * rx) + dy * dy / (ry * ry) <= 1 + (hash(cx + dx, cy2 + dy, seed + k9) - 0.5) * 0.4) put(cx + dx, cy2 + dy, T.LEAVES); }
+    function trunk(x2, tp2, th) { for (var k2 = 1; k2 <= th; k2++) { var ti = (tp2 - k2) * W + x2; if (t[ti] === T.AIR || t[ti] === T.LEAVES) t[ti] = T.LOG; } }
+    function cherry(x) {   // Cherry Blossom Vale: a short trunk that forks, under a wide, flat-bottomed cloud of blossom
+      var tp2 = top[x], th = 4 + Math.floor(hash(x, 330, seed) * 3), cy = tp2 - th - 1, side = hash(x, 331, seed) < 0.5 ? -1 : 1;
+      blobL(x, cy, 3.6, 2.1, 12); blobL(x + side * 3, cy + 1, 2.4, 1.5, 13); blobL(x - side * 2, cy - 1, 2.3, 1.5, 14); blobL(x + side, cy - 2, 2, 1.2, 15);
+      trunk(x, tp2, th + 1); put(x + side, tp2 - th + 1, T.LOG); put(x + side * 2, tp2 - th, T.LOG);
+    }
+    function palm(x) {   // Sunbaked Shores: a tall, leaning trunk and a crown of drooping fronds
+      var tp2 = top[x], th = 6 + Math.floor(hash(x, 340, seed) * 4), lean = hash(x, 341, seed) < 0.5 ? -1 : 1, k2, cx = x;
+      for (k2 = 1; k2 <= th; k2++) { if (k2 === Math.ceil(th * 0.6)) cx += lean; var ti = (tp2 - k2) * W + cx; if (t[ti] === T.AIR) t[ti] = T.LOG; }
+      var cy = tp2 - th - 1;
+      put(cx, cy, T.LEAVES); put(cx - 1, cy, T.LEAVES); put(cx + 1, cy, T.LEAVES); put(cx, cy - 1, T.LEAVES);
+      for (var sd = -1; sd <= 1; sd += 2) { put(cx + sd * 2, cy, T.LEAVES); put(cx + sd * 3, cy + 1, T.LEAVES); put(cx + sd * 4, cy + 2, T.LEAVES); put(cx + sd * 2, cy - 1, T.LEAVES); put(cx + sd * 3, cy - 1, T.LEAVES); }
+    }
+    function darkoak(x) {   // Dark Oakwood: a thick two-wide trunk with roots and a huge, heavy crown
+      var tp2 = top[x], th = 6 + Math.floor(hash(x, 350, seed) * 4), cy = tp2 - th - 2;
+      blobL(x, cy, 4, 2.4, 16); blobL(x + 1, cy - 2, 3.4, 2, 17); blobL(x - 4, cy + 1, 2.6, 1.7, 18); blobL(x + 5, cy + 1, 2.6, 1.7, 19); blobL(x - 1, cy - 4, 2.2, 1.3, 20); blobL(x + 3, cy - 4, 2, 1.3, 21);
+      trunk(x, tp2, th + 1); trunk(x + 1, tp2, th);
+      if (TILES[t[tp2 * W + x - 1]].solid) put(x - 1, tp2 - 1, T.LOG); if (TILES[t[tp2 * W + x + 2]].solid && hash(x, 351, seed) < 0.6) put(x + 2, tp2 - 1, T.LOG);
+      var by = tp2 - 3 - Math.floor(th / 3); put(x + 2, by, T.LOG); put(x + 3, by - 1, T.LOG);
+    }
+    var VPL = function (k, fb) { var v = T["X_" + k]; return v !== undefined ? v : fb; }, P_PETAL = VPL("sakuratuft", T.FLOWER), P_CACT = VPL("cactus", T.BLOOM), P_SHELL = VPL("shelltuft", T.REED), P_FERN = VPL("ferntuft", T.REED), P_DCAP = VPL("duskcaptuft", T.GLOWCAP);
     function flat(x2) { return Math.abs(top[x2 - 1] - top[x2]) <= 1 && Math.abs(top[x2 + 1] - top[x2]) <= 1; }
     var lastTree = -9, trees = [];
     for (x = 4; x < W - 4; x++) {
       var gid0 = t[top[x] * W + x], above0 = t[(top[x] - 1) * W + x];
       if (above0 !== T.AIR) continue;
+      if (sub[x]) {   // the variant lands
+        if (!flat(x)) continue;
+        if (bio[x] === 0) { if (top[x] > WL || gid0 !== T.MOSS) continue; if (x - lastTree > 5 && hash(x, 332, seed) < 0.22) { lastTree = x; trees.push(x); cherry(x); } }
+        else if (bio[x] === 1) { if (gid0 !== SAND || top[x] >= WL) continue; if (x - lastTree > 6 && hash(x, 342, seed) < 0.13) { lastTree = x; palm(x); } }
+        else { if (gid0 !== T.MOSS || top[x] > ICEL || !flat(x + 1) || t[(top[x + 1] - 1) * W + x + 1] !== T.AIR || top[x + 1] !== top[x]) continue; if (x - lastTree > 8 && hash(x, 352, seed) < 0.3) { lastTree = x + 1; darkoak(x); } else if (x - lastTree > 1 && hash(x, 353, seed) < 0.1) t[(top[x] - 1) * W + x] = T.GLOWCAP; }
+        continue;
+      }
       if (bio[x] === 0) {
         if (top[x] > WL || gid0 !== T.MOSS || !flat(x)) continue;
         if (x - lastTree > 4 && rnd() < 0.26) { lastTree = x; trees.push(x); plant(x); }
@@ -632,6 +675,12 @@ batwing: { n: "Bat Wing", frag: "bat" },
     for (x = 2; x < W - 2; x++) {   // surface plants
       var sy = top[x] - 1, r = hash(x, 91, seed), bb2 = bio[x], gid = t[top[x] * W + x];
       if (sy < 1 || t[sy * W + x] !== T.AIR || gid === T.WATER || gid === T.STONE || gid === T.ICE) continue;
+      if (sub[x]) {   // variant plants: blossom tufts, cacti and shells, ferns and dusk mushrooms
+        if (bb2 === 0 && gid === T.MOSS) t[sy * W + x] = r < 0.2 ? P_PETAL : r < 0.27 ? T.REED : T.AIR;
+        else if (bb2 === 1 && gid === SAND) t[sy * W + x] = r < 0.07 ? P_CACT : r < 0.1 ? P_SHELL : T.AIR;
+        else if (bb2 === 2 && gid === T.MOSS) t[sy * W + x] = r < 0.16 ? P_FERN : r < 0.22 ? P_DCAP : T.AIR;
+        continue;
+      }
       if (bb2 === 0 && gid === T.MOSS && r < 0.26) t[sy * W + x] = T.REED;
       else if (bb2 === 1 && r < 0.16) t[sy * W + x] = T.BLOOM;
       else if (bb2 === 2 && r < 0.18) t[sy * W + x] = T.SPIKE;
@@ -641,7 +690,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     function holeOk(hx) {
       if (hx < 8 || hx >= W - 8) return false;
       var sy = top[hx] - 1; if (sy < 3 || !TILES[t[top[hx] * W + hx]].solid) return false;
-      var g0 = t[sy * W + hx]; if (g0 !== T.AIR && g0 !== T.REED && g0 !== T.BLOOM && g0 !== T.SPIKE && g0 !== T.GLOWCAP) return false;
+      var g0 = t[sy * W + hx]; if (g0 !== T.AIR && g0 !== T.REED && g0 !== T.BLOOM && g0 !== T.SPIKE && g0 !== T.GLOWCAP && !(TILES[g0].sway && !TILES[g0].solid)) return false;
       if (t[(sy - 1) * W + hx] !== T.AIR || t[(sy - 2) * W + hx] !== T.AIR) return false;
       if (Math.abs(SPAWNX - hx) < 9) return false;
       for (var k3 = 0; k3 < holes.length; k3++) if (Math.abs(holes[k3].x - hx) < 14) return false;
@@ -689,7 +738,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       }
       return { x0: x0, x1: x1, y: Y, cx: ax, cy: Y - 7, vx: vx, vy: gy - 1 };
     })();
-    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, holes: holes, structs: structs, feats: feats, aerie: aerie, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, holes: holes, structs: structs, feats: feats, aerie: aerie, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var POST = [];   // content packs add their extras to every generated map (the original one and each new segment), in that map's own columns
@@ -699,14 +748,15 @@ batwing: { n: "Bat Wing", frag: "bat" },
     o.feats.forEach(function (q) { q.x += dx; });
     if (o.aerie) ["x0", "x1", "cx", "vx"].forEach(function (k) { o.aerie[k] += dx; });
   }
-  function genWide(seed) {
-    seed = (seed | 0) || 1;
-    var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), x, y;
+  function genWide(seed, bv) {
+    seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
+    var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
     for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
-    var core = gen(seed);   // exactly the original map (W = CORE_W here), so old saves line up
+    var core; GEN_VAR = bv.c ? 1 : 0;
+    try { core = gen(seed); } finally { GEN_VAR = 0; }   // exactly the original map (W = CORE_W here), so old saves line up
     POST.forEach(function (f) { f(core); });
     for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); wwl.set(core.walls.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); }
-    wtop.set(core.top, EXT); wbio.set(core.bio, EXT);
+    wtop.set(core.top, EXT); wbio.set(core.bio, EXT); wsub.set(core.sub, EXT);
     shiftX(core, EXT);
     var lay = { "-1": [], "1": [] };   // the segments on each side, nearest first: [x0, x1, biome]
     [-1, 1].forEach(function (sd) {
@@ -718,22 +768,23 @@ batwing: { n: "Bat Wing", frag: "bat" },
         lay[sd].push([a, z, b]); prev = b; edge = sd < 0 ? a : z; n++;
       }
     });
-    return { W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie,
+    return { W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie,
       spawn: { x: SPAWNX + EXT + 0.5, y: core.top[SPAWNX] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: EXT, gx1: EXT + CORE_W - 1 };
   }
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
     var n = wd.done[sd], seg = wd.lay[sd][n]; if (!seg) return null;
     var a = seg[0], z = seg[1], w = z - a, b = seg[2], WW = wd.W, y, k;
-    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE];
+    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR], bv = wd.bv || { L: 99, R: 99 };
     W = w; SPAWNX = -100000; GEN_AERIE = false;
+    GEN_VAR = n >= (sd < 0 ? bv.L : bv.R) ? (hash(n, sd * 979, wd.seed) < 0.4 ? 2 : 1) : 0;   // newer segments: some are all variant land, the rest get patches
     if (b === 2) { B_FROST = w + 200; B_EMBER = w + 400; } else if (b === 0) { B_FROST = -200; B_EMBER = w + 200; } else { B_FROST = -400; B_EMBER = -200; }
     GEN_EDGE = { side: sd, h: wd.top[sd < 0 ? z : a - 1] };   // the column right next to it, on the side it grows from
     var c;
     try { c = gen((wd.seed * 31 + (sd < 0 ? 7001 : 9001) + n * 131) | 0); }
-    finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; }
+    finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; }
     POST.forEach(function (f) { f(c); });
     for (y = 0; y < H; y++) { wd.t.set(c.t.subarray(y * w, (y + 1) * w), y * WW + a); wd.walls.set(c.walls.subarray(y * w, (y + 1) * w), y * WW + a); }
-    wd.top.set(c.top, a); wd.bio.set(c.bio, a);
+    wd.top.set(c.top, a); wd.bio.set(c.bio, a); if (wd.sub) wd.sub.set(c.sub, a);
     shiftX(c, a);
     var base = (sd < 0 ? 100000 : 200000) + n * 100;   // building ids that never collide and stay the same every time this segment is made
     c.structs.forEach(function (q, i) { q.id = base + i; });

@@ -731,3 +731,47 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
   - **The island:** you arrive a few steps up from the way home, so "Go home" doesn't pop up at once. While Zaruk sleeps off screen, an arrow at the screen edge points to him. Leftover "Nexus" wording now says "SwampRealms".
   - **Screens:** the title menu fits short windows (tighter rows, smaller logo, scrolls instead of running into the footer links). Floating action buttons ("Talk to Zaruk", "Open Workbench", the bed button and so on) always stay fully on screen, clear of the top bar.
   - **Checked:** every story quest's counter is really increased somewhere in the game, so the whole line can be finished.
+- **Frost Wolf redesign: fur and texture.** The wolf is still drawn in the same style and keeps the same moves (stalk, crouch "!", lunge). It now has a ragged fur outline down the spine, a darker saddle, flank shading with fur strokes and a pale belly. It also gets a fan of shaggy fur round the neck with a frosty chest blaze, and a bushy tufted tail with a frost-white tip. Its thighs are furry and its paws padded, and its long snout has a pale muzzle, pink inner ears and a narrow glowing eye (pale blue, red when it is about to strike). It bares its fangs when it lunges, and its breath fogs in the cold (always while crouching). `wolfFur()` draws the tufted strips.
+- **Frost Alpha redesign: a fur-and-ice pack leader.** It keeps the same fight (stalk, crouch "!", pounce, howl, frost breath). It is now a huge silver-white wolf:
+  - **Body:** a ragged fur outline along the spine, a shadowed back, fur strokes and a fringe of fur under the belly. Five ice crystals grow from its back; they grow taller and turn crimson when it is enraged.
+  - **Mane:** an enormous frosted fan of fur round the neck, with ice shards.
+  - **Head:** a crown of ice between its ears, an old claw scar across one eye (and another on the shoulder), and a long muzzle that opens to show fangs when it howls or breathes frost.
+  - **Tail and legs:** a great plume tail tipped with ice, thick legs and big clawed paws.
+  - **Breath:** frost puffs from its mouth. Like the wolf's breath, it respects the defeat fade-out.
+- **Crafting mini-games: forge strikes, cauldron stirring and experiments.** See `CRAFTING MINI-GAMES` in sandbox.js and `7n. DISCOVERIES` in sandbox-extra.js. `craft()` asks `craftGame(r)` before paying; the game then calls `craft` again with its result (`CRAFT_PASS`), and `cgApply()` applies it. Every mini-game has a Skip button, and Options > Crafting mini-games turns them all off (instant crafting, saved per device).
+  - **Forge strikes** (pickaxes, weapons, armor): a hammer slides along a heat bar; tap (or Space / F) when it is over the white-hot spot. There are three strikes, the spot shrinks and the hammer speeds up each time, and the piece takes shape on the anvil. Each hit earns a star:
+    - 2 stars = **Fine**: +15% durability, 4% stronger.
+    - 3 stars = **Masterwork**: +30% durability, 10% stronger (dig speed, weapon damage, or +4% armor block).
+    - Stars are saved per slot in `S.mw` and reset when you make the next tier. The names ("Masterwork Cinder Pick") show in the Craft tab and tool names, and a Masterwork pick or weapon glints while you hold it.
+  - **Cauldron stirring** (everything made at the Cooking Pot or Brewing Stand): hold to stir and the brew shifts colour round a colour wheel. Let go so it settles on the target swatch. Within 14° is a **perfect brew**, which makes one extra.
+  - **Experiment** (Experiment card at the top of the Cooking Pot and Brewing Stand): put any three ingredients in and press Mix.
+    - **10 secret recipes** (`SECRETS`): six dishes that also give a potion effect (Glowshroom Goulash, Rainbow Cake, Stardust Pancakes, Swamp Sushi, Ember Popcorn, Croaker's Secret Soup) and four tonics (Starlight Elixir, Titan Tonic, Zephyr Draught, Bloodmoon Brew). Each has its own pixel icon.
+    - A match plays the stirring game (the name stays "???" until it is revealed), then records the discovery (`S.disc`).
+    - A miss keeps your ingredients and tells you how many were right ("Two of those feel just right").
+    - Riddles ("Rumours") hint at three undiscovered recipes, and found recipes can be made again from the same window.
+    - Discoveries have their own section in the Collection Log.
+  - **New side quests:** Fine Work, Masterwork, Master Smith (a Masterwork pick, weapon and armor at once), Perfect Brew, Head Chef (10 perfect brews), Mad Scientist, Kitchen Wizard (5 secrets) and Every Secret (all 10).
+- **Backpack screen redesign: character and gear slots.** The header is the same ("Backpack" + used/total on the left, X on the right). See `BACKPACK SCREEN` in sandbox.js.
+  - **Character** at the top: your avatar facing you (`DelveAv.full`, both arms), breathing gently on a glowing pedestal, holding the tool you hold, with your backpack peeking out behind (`pvDraw`).
+  - **Gear slots round it:**
+    - Left: Armor, Weapon and Pickaxe, with Fine ★★ / Masterwork ★★★ badges. Tap one for its details (name, block %, damage, durability).
+    - Right: your charm slots (tap for the charm picker) and the **Backpack** slot, showing the backpack you own. Tap it to open its own page with the backpack's extra slots.
+    - Both pop-up pages sit over the figure, so the inventory stays in view and you can drag items between the backpack page and the inventory.
+  - **Under the figure:** your name and quick stats (health, block %, damage, pick tier), then the Inventory (base slots with a fill bar), the Hotbar, item actions (Hold, Eat, To hotbar, Split, Drop, Sort) and Overflow. Drag-and-drop, split and shift-move all work as before.
+- **Back view for the avatar.** `delve-avatar.js` can now draw every animal from behind (`back0/1`, `bwalk0-3`, `climb0/1`): the back of the head (hair for humans), the backs of shirts, armor plates, capes, scarves, straps of face gear and hats.
+  - **Ladders:** on a ladder you face it and climb hand over hand (one arm reaching up, the other leg stepping up), with your backpack on your back.
+  - **Caves and buildings (top-down):** walking up the screen shows your back.
+- **Centred windows on desktop.** On screens 900px and wider, the Journal (Backpack, Crafting, Options and every other tab) opens as a pop-up in the middle of the screen with the world dimmed behind it, instead of a panel on the right.
+- **Biome variants.** Each land now has a second type, with its own look but the same creatures, ores and rules (sandbox-world.js `gen`: `world.sub[x]`; sandbox.js `varAt`, `VARB`):
+  - **Cherry Blossom Vale** (Murkwater): spring-green grass sprinkled with fallen petals, forked cherry trees under clouds of pink blossom, Cherry Blossom tufts, petals tumbling through the air, pink distant trees and a softer sky.
+  - **Sunbaked Shores** (Ember Bog): sand instead of ash, warm lagoons and beaches where the land dips (a crater is a hilltop lagoon instead of lava), leaning palm trees with drooping fronds and ringed trunks, cacti and seashells, palms on the horizon instead of volcanoes, a turquoise sky and glinting sea air.
+  - **Dark Oakwood** (Frostfen): no snow or ice on top: dark moss with leaf litter, ponds of water, huge two-wide dark oaks with roots, ferns and Dusk Mushrooms, a shadowy green sky, falling leaves by day and fireflies at night.
+  - **Where they are:** new worlds get one stretch of each land as a variant (never at the camp). Every new land segment you explore either has a variant stretch or is all variant land. **Old saves keep their land exactly** (`S.bvar` records where variants are allowed), so your builds never move; variants appear in land you have not explored yet.
+  - Entering one for the first time pops up "New land discovered". The HUD, biome card, waystone names and the map's biome bands show the variant's name.
+  - **New blocks and plants:** Sand (dig it, build with it, melt 3 Sand + 1 Charcoal into 2 Glass at a Stone Furnace), Cherry Blossom (3 make Red Dye), Cactus (2 make Green Dye), Seashell, Fern (2 make 3 Fiber) and Dusk Mushroom.
+  - **Side quests (Explorer):** Petals on the Wind, Sand Between Your Toes, Into the Dark Oakwood, and Every Kind of Land (visit all three).
+- **More animation.** The avatar blinks every few seconds (sometimes twice), and new poses (`delve-avatar.js POSE`, picked by `playerPose` in sandbox.js):
+  - a **running stride** when you are faster than walking (speed effects), a **tucked** pose at the top of a jump, and a **landing crouch**;
+  - **swimming:** legs kick and the free arm strokes;
+  - a **flinch** with eyes squeezed shut when you are hurt;
+  - a **victory wave** after finishing a quest.
