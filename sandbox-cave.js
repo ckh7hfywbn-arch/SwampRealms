@@ -119,7 +119,7 @@
     var dnI = far[Math.floor(rnd() * far.length)] || spI, down = { x: dnI % CW, y: (dnI / CW) | 0 };
 
     // 4. rocks and ore, grown in veins around a few seed points
-    var ws = weights(floor, biome), node = new Uint8Array(n), veins = [], nv = 7 + Math.floor(rnd() * 4), fl = [];
+    var ws = weights(floor, biome), node = new Uint16Array(n), veins = [], nv = 7 + Math.floor(rnd() * 4), fl = [];
     for (i = 0; i < n; i++) if (!wall[i]) fl.push(i);
     for (var v = 0; v < nv; v++) { var vi = fl[Math.floor(rnd() * fl.length)]; veins.push({ x: vi % CW, y: (vi / CW) | 0, k: pick(ws, rnd()) }); }
     for (var f2 = 0; f2 < fl.length; f2++) {
@@ -326,6 +326,15 @@
     dwarfhold: { floor: ["gemcase", "mushcrate", "ingotpile"], wall: ["dwarfaxes"] },
     sawmill: { floor: ["sawbench", "logpile", "logpile"], wall: ["axerack"] }
   };
+  // LOOT PACK: each kind of building also gets containers that fit it (sandbox-extra.js 7t); sandbox.js lets you search them for loot
+  var UCONT = {
+    cabin: { floor: ["pantry", "hutch"], wall: ["spicerack"] }, tower: { floor: ["ammocrate", "footlocker"], wall: ["medcabinet"] }, farm: { floor: ["producecrate", "seedchest", "breadbin"] },
+    forge: { floor: ["toolchest", "nailkeg", "orebin"] }, keep: { floor: ["strongbox", "ammocrate"] }, lodge: { floor: ["icebox", "trunk", "laundry"] }, shrine: { floor: ["offeringbowl", "scrollcase"] },
+    witchhut: { floor: ["apothecary"], wall: ["medcabinet"] }, tavern: { floor: ["alekeg", "ciderrack", "icebox"] }, igloo: { floor: ["icechest", "tacklebox"] }, teahouse: { floor: ["cupboard", "cookiejar", "jewelbox"], wall: ["spicerack"] },
+    suntemple: { floor: ["coffer", "offeringbowl"] }, skyhall: { floor: ["recordcab", "mailbox", "lockbox"] }, smithy: { floor: ["toolbox", "toolchest"] }, dwarfhold: { floor: ["gemcrate", "ironsafe", "orebin"] },
+    sawmill: { floor: ["supplycrate", "toolbox", "sewingbasket"] }
+  };
+  Object.keys(UCONT).forEach(function (k) { var U = UNIQ[k] || (UNIQ[k] = {}); ["floor", "wall"].forEach(function (f) { if (UCONT[k][f]) U[f] = (U[f] || []).concat(UCONT[k][f]); }); });
   function placeUniques(kind, D, m, w, h, dx, wall, deco, add) {
     var U = UNIQ[kind]; if (!U) return;
     var occ = {}, x, y; deco.forEach(function (e) { if (!e.flat || e.wall) occ[e.y * w + e.x] = 1; }); (U.keep || []).forEach(function (q) { occ[q[1] * w + q[0]] = 1; });

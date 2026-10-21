@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=delve1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui17-boss">
+<link rel="stylesheet" href="sandbox.css?v=ui20-aaa">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -189,6 +189,13 @@ html.dl-on,html.dl-on body{overflow:hidden}
   </section>
   <div class="sbx-chatlog" id="sbxChatLog" aria-live="polite" hidden></div>
   <form class="sbx-chat" id="sbxChat" hidden onsubmit="return false"><input id="sbxChatIn" type="text" maxlength="80" placeholder="Say something…" autocomplete="off" aria-label="Chat message"><button type="button" class="btn" id="sbxChatGo">Send</button></form>
+  <section class="sbx-pause" id="sbxPause" role="dialog" aria-modal="true" aria-labelledby="sbxPauseH" hidden>
+   <div class="pz-card">
+    <p class="pz-sub" id="sbxPauseSub"></p>
+    <h2 class="pz-h" id="sbxPauseH">Paused</h2>
+    <div class="pz-body" id="sbxPauseBody"></div>
+   </div>
+  </section>
   <section class="sbx-pack sbx-story" id="sbxStory" role="dialog" aria-modal="true" aria-label="Story" hidden>
    <div class="sbx-sbox2" id="sbxStoryBox"></div>
   </section>
@@ -214,18 +221,18 @@ html.dl-on,html.dl-on body{overflow:hidden}
 </footer>
 
 <nav class="tabbar" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></svg><span>Home</span></a><a href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v4h6V3"/></svg><span>Packs</span></a><a href="arcade.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="5"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".6"/><circle cx="18" cy="13" r=".6"/></svg><span>Arcade</span></a><a href="shop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span>Shop</span></a></nav>
-<script src="cards.js" onload="__dl('cards')"></script>
+<script src="cards.js?v=sfxvol1" onload="__dl('cards')"></script>
 <script src="weapons.js?v=skins2" onload="__dl('weapons')"></script>
 <script src="avatar.js?v=cos5" onload="__dl('avatar')"></script>
 <script src="store.js?v=cos4" onload="__dl('store')"></script>
 <script src="account.js" onload="__dl('account')"></script>
 <script src="menu.js" onload="__dl('menu')"></script>
 <script src="sandbox-world.js?v=delve34-lore" onload="__dl('world')"></script>
-<script src="sandbox-extra.js?v=pack45" onload="__dl('extra')"></script>
-<script src="sandbox-cave.js?v=cave19" onload="__dl('cave')"></script>
+<script src="sandbox-extra.js?v=pack46-loot" onload="__dl('extra')"></script>
+<script src="sandbox-cave.js?v=cave21-loot" onload="__dl('cave')"></script>
 <script src="delve-avatar.js?v=delve8-people" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="sandbox.js?v=delve171-boss" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve174-aaa" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.

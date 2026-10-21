@@ -875,6 +875,87 @@
   fd("sawbench", "Saw Bench", "#a46c3c", function (R) { R(1, 7, 14, 3, "#a46c3c"); R(1, 7, 14, 1, "#c58a52"); R(2, 10, 2, 6, "#7a5230"); R(12, 10, 2, 6, "#7a5230"); R(5, 2, 8, 5, "#c8d0d8"); R(5, 6, 8, 1, "#8a929c"); for (var x = 5; x < 13; x += 2) R(x, 7, 1, 1, "#8a929c"); R(12, 1, 3, 3, "#7a5230"); R(4, 12, 9, 1, "#7a5230"); });
   fd("logpile", "Log Pile", "#8a6450", function (R) { [[0, 11], [5, 11], [10, 11], [2, 6], [7, 6], [5, 1]].forEach(function (q) { R(q[0] + 1, q[1], 4, 5, "#6a4838"); R(q[0], q[1] + 1, 6, 3, "#6a4838"); R(q[0] + 1, q[1] + 1, 4, 3, "#dca36a"); R(q[0] + 2, q[1] + 2, 2, 1, "#a46c3c"); }); });
   fd("axerack", "Axe Rack", "#8a5a30", function (R) { R(1, 2, 14, 2, "#5a3418"); [[3, 1], [8, 0], [12, 1]].forEach(function (q) { R(q[0], 4, 1, 11, "#a46c3c"); R(q[0] + 1, 4 + q[1], 3, 4, "#a8b0ba"); R(q[0] + 3, 4 + q[1], 1, 4, "#e0e6ec"); }); }, { wall: 1 });
+  // ---------------------------------------------------------------- 7t. LOOT PACK: 100 new things (36 blocks + 64 items)
+  // Containers you can search inside buildings (sandbox-cave.js places them; sandbox.js CONTAINERS opens them), each with loot that fits
+  // what it is: an icebox holds cold food, a toolbox holds nails and hinges, a strongbox holds coins. Placed in your own world they work
+  // as storage, like a chest. The new items are what they hold: food, cooking ingredients, building materials, valuables (Old Croaker buys
+  // them for tokens), papers (old books can hold lost pages) and medicine.
+  var CONTK = [], CONTOF = {};
+  function ct(k, n, c, type, art, o) { o = o || {}; var id = deco(k, n, c, art, o.light || 0, o.gl || null, o.wall ? "wall" : "floor"); TILES[id].cont = type; CONTOF[id] = type; CONTK.push(k); if (o.small) small(k); return id; }
+  // kitchens and pantries
+  ct("icebox", "Icebox", "#a8d8f0", "cold", function (R) { R(2, 1, 12, 15, "#d8ecf4"); R(2, 1, 12, 1, "#ffffff"); R(2, 1, 1, 15, "#ffffff", 0.6); R(13, 1, 1, 15, "#8ab0c8"); R(2, 7, 12, 1, "#8ab0c8"); R(11, 3, 1, 3, "#5a6a7a"); R(11, 9, 1, 4, "#5a6a7a"); R(4, 3, 3, 1, "#bfe8ff"); R(3, 15, 2, 1, "#5a6a7a"); R(11, 15, 2, 1, "#5a6a7a"); R(5, 10, 1, 1, "#bfe8ff", 0.8); });
+  ct("pantry", "Pantry Cupboard", "#a46c3c", "pantry", function (R) { R(1, 0, 14, 16, "#8a5a30"); R(1, 0, 14, 1, "#a46c3c"); R(2, 2, 5, 13, "#a46c3c"); R(9, 2, 5, 13, "#a46c3c"); R(3, 3, 3, 5, "#c58a52"); R(10, 3, 3, 5, "#c58a52"); R(3, 9, 3, 5, "#c58a52"); R(10, 9, 3, 5, "#c58a52"); R(6, 8, 1, 2, "#f2c14e"); R(9, 8, 1, 2, "#f2c14e"); });
+  ct("cupboard", "Kitchen Cupboard", "#c8a070", "pantry", function (R) { R(1, 6, 14, 10, "#c8a070"); R(1, 6, 14, 1, "#e8c890"); R(1, 15, 14, 1, "#7a5a30"); R(2, 8, 5, 6, "#b08a5a"); R(9, 8, 5, 6, "#b08a5a"); R(6, 10, 1, 2, "#5a3a18"); R(9, 10, 1, 2, "#5a3a18"); R(2, 2, 3, 4, "#f4f0e8"); R(6, 3, 4, 3, "#4a8ab8"); R(11, 2, 3, 4, "#e8c46a"); R(1, 5, 14, 1, "#7a5a30"); });
+  ct("hutch", "China Hutch", "#8a5a30", "kitchen", function (R) { R(1, 0, 14, 16, "#6a4426"); R(2, 1, 12, 7, "#3a2a1a"); R(3, 2, 4, 5, "#f4f0e8"); R(9, 2, 4, 5, "#f4f0e8"); R(4, 3, 2, 3, "#6a9ae8"); R(10, 3, 2, 3, "#e86a8a"); R(1, 8, 14, 1, "#a46c3c"); R(2, 10, 12, 5, "#8a5a30"); R(7, 11, 2, 1, "#f2c14e"); R(7, 13, 2, 1, "#f2c14e"); });
+  ct("breadbin", "Bread Bin", "#c89a5a", "bread", function (R) { R(2, 7, 12, 8, "#c89a5a"); R(2, 5, 12, 3, "#e0b070"); R(3, 4, 10, 1, "#e0b070"); R(2, 8, 12, 1, "#8a5a30"); R(7, 6, 2, 1, "#5a3a18"); R(3, 15, 10, 1, "#7a5228"); R(5, 10, 6, 1, "#e8d0a0", 0.6); }, { small: 1 });
+  ct("cookiejar", "Cookie Jar", "#e8c8a0", "sweets", function (R) { R(4, 5, 8, 10, "#cfeaf2", 0.8); R(4, 5, 8, 1, "#ffffff"); R(5, 3, 6, 2, "#d8342a"); R(7, 2, 2, 1, "#a82a20"); R(5, 8, 3, 2, "#c98c4f"); R(8, 10, 3, 2, "#a8703c"); R(5, 12, 3, 2, "#c98c4f"); R(6, 9, 1, 1, "#5a3a18"); R(4, 15, 8, 1, "#8ab0c8"); }, { small: 1 });
+  ct("spicerack", "Spice Rack", "#a46c3c", "spice", function (R) { R(1, 3, 14, 1, "#7a5230"); R(1, 9, 14, 1, "#7a5230"); R(1, 14, 14, 1, "#7a5230"); [[2, "#d8342a"], [5, "#f2c14e"], [8, "#4f8a3c"], [11, "#8a5a30"]].forEach(function (q) { R(q[0], 5, 2, 4, "#f4f0e8"); R(q[0], 6, 2, 3, q[1]); R(q[0], 10, 2, 4, "#f4f0e8"); R(q[0], 11, 2, 3, q[1] === "#f2c14e" ? "#e8642a" : q[1]); }); R(1, 3, 1, 12, "#7a5230"); R(14, 3, 1, 12, "#7a5230"); }, { wall: 1 });
+  ct("ciderrack", "Cider Rack", "#8a5a30", "drinks", function (R) { R(1, 2, 14, 14, "#5a3a20"); for (var y = 0; y < 3; y++) for (var x = 0; x < 3; x++) { R(2 + x * 4, 3 + y * 4, 4, 4, "#3a2414"); R(3 + x * 4, 4 + y * 4, 2, 2, (x + y) % 2 ? "#6aa040" : "#c87a2a"); R(3 + x * 4, 4 + y * 4, 1, 1, "#fff6d8", 0.6); } });
+  ct("alekeg", "Ale Keg", "#a46c3c", "drinks", function (R) { R(2, 3, 12, 11, "#a46c3c"); R(1, 5, 14, 7, "#a46c3c"); R(2, 4, 12, 1, "#5a4a40"); R(2, 12, 12, 1, "#5a4a40"); R(1, 8, 14, 1, "#5a4a40"); R(3, 3, 1, 11, "#c58a52"); R(7, 7, 2, 3, "#3a2414"); R(6, 9, 4, 1, "#c8a040"); R(3, 14, 2, 2, "#5a3418"); R(11, 14, 2, 2, "#5a3418"); });
+  ct("producecrate", "Produce Crate", "#a46c3c", "produce", function (R) { R(1, 8, 14, 8, "#a46c3c"); R(1, 8, 14, 1, "#c58a52"); R(1, 12, 14, 1, "#7a5230"); R(1, 15, 14, 1, "#5a3418"); R(2, 5, 3, 3, "#ff8a2a"); R(5, 4, 3, 4, "#c9934e"); R(8, 5, 3, 3, "#e8341c"); R(11, 4, 3, 4, "#4f8a3c"); R(3, 4, 1, 1, "#3f9a3a"); R(12, 3, 1, 1, "#7fd06a"); });
+  // workshops and supplies
+  ct("toolbox", "Toolbox", "#d8342a", "tools", function (R) { R(1, 8, 14, 7, "#d8342a"); R(1, 8, 14, 1, "#ff6a5a"); R(1, 14, 14, 1, "#8a1a14"); R(5, 5, 6, 1, "#5a6068"); R(5, 5, 1, 3, "#5a6068"); R(10, 5, 1, 3, "#5a6068"); R(7, 10, 2, 2, "#c8d0d8"); R(1, 11, 14, 1, "#a82a20"); }, { small: 1 });
+  ct("toolchest", "Tool Chest", "#c8302a", "tools", function (R) { R(1, 2, 14, 14, "#b82a24"); R(1, 2, 14, 1, "#e85a4a"); [5, 9, 13].forEach(function (y) { R(2, y - 1, 12, 1, "#7a1410"); R(6, y - 2, 4, 1, "#c8d0d8"); }); R(1, 15, 2, 1, "#2a2a30"); R(13, 15, 2, 1, "#2a2a30"); R(2, 2, 1, 13, "#e85a4a", 0.5); });
+  ct("nailkeg", "Nail Keg", "#8a6a4a", "tools", function (R) { R(3, 5, 10, 11, "#8a6a4a"); R(3, 6, 10, 1, "#4a4f56"); R(3, 13, 10, 1, "#4a4f56"); R(4, 5, 1, 11, "#a8885a"); R(3, 3, 10, 2, "#8a929c"); [[4, 2], [6, 1], [8, 2], [10, 1], [11, 3], [5, 3]].forEach(function (q) { R(q[0], q[1], 1, 2, "#c8d0d8"); }); }, { small: 1 });
+  ct("supplycrate", "Supply Crate", "#b08a5a", "supply", function (R) { R(1, 4, 14, 12, "#b08a5a"); R(1, 4, 14, 1, "#d8b07a"); R(1, 15, 14, 1, "#6a4a28"); R(1, 4, 1, 12, "#d8b07a"); R(14, 4, 1, 12, "#6a4a28"); for (var k = 0; k < 11; k++) { R(2 + k, 5 + k, 1, 1, "#8a6a40"); R(13 - k, 5 + k, 1, 1, "#8a6a40"); } R(5, 8, 6, 3, "#e8dcb0"); R(6, 9, 4, 1, "#3a2a1a"); });
+  ct("ammocrate", "Ammo Crate", "#6a7a4a", "ammo", function (R) { R(1, 6, 14, 10, "#5a6a3a"); R(1, 6, 14, 1, "#7a8a5a"); R(1, 15, 14, 1, "#3a4424"); R(1, 10, 14, 1, "#3a4424"); R(6, 7, 4, 6, "#f2c14e", 0.9); R(7, 8, 2, 4, "#5a6a3a"); R(3, 2, 1, 4, "#c8a070"); R(2, 1, 3, 1, "#f4f0e0"); R(11, 2, 1, 4, "#c8a070"); R(10, 1, 3, 1, "#f4f0e0"); });
+  ct("orebin", "Ore Bin", "#6a717a", "ore", function (R) { R(1, 8, 14, 8, "#5a6068"); R(1, 8, 14, 1, "#8a929c"); R(1, 15, 14, 1, "#2a2e34"); R(2, 4, 4, 4, "#8a6450"); R(5, 5, 4, 3, "#c8301a"); R(8, 4, 4, 4, "#6a717a"); R(11, 5, 3, 3, "#4ee6b4"); R(6, 6, 1, 1, "#ffb08a"); R(12, 6, 1, 1, "#d4fff6"); });
+  ct("gemcrate", "Gem Crate", "#8a5a30", "gems", function (R) { R(1, 8, 14, 8, "#8a5a30"); R(1, 8, 14, 1, "#a46c3c"); R(1, 12, 14, 1, "#5a3418"); R(2, 5, 3, 3, "#e0364a"); R(5, 4, 3, 4, "#3a7fd8"); R(8, 5, 3, 3, "#9a5ae8"); R(11, 4, 3, 4, "#4ee6b4"); R(3, 5, 1, 1, "#ffd0d6"); R(6, 4, 1, 1, "#bfe0ff"); R(12, 4, 1, 1, "#d4fff6"); }, { light: 2, gl: ["200,160,255", 1.4, 0.1] });
+  // bedrooms and travel
+  ct("footlocker", "Footlocker", "#4a6a3a", "clothes", function (R) { R(1, 7, 14, 9, "#4a6a3a"); R(1, 7, 14, 1, "#6a8a5a"); R(1, 10, 14, 1, "#2a3a20"); R(1, 15, 14, 1, "#2a3a20"); R(2, 7, 1, 9, "#8a929c"); R(13, 7, 1, 9, "#8a929c"); R(7, 9, 2, 3, "#c8a040"); R(1, 5, 14, 2, "#5a7a4a"); }, { small: 1 });
+  ct("trunk", "Travel Trunk", "#8a5a30", "clothes", function (R) { R(1, 6, 14, 10, "#7a4a28"); R(1, 3, 14, 4, "#8a5a30"); R(2, 2, 12, 1, "#8a5a30"); R(1, 6, 14, 1, "#3a2414"); R(3, 2, 2, 14, "#3a2a1a"); R(11, 2, 2, 14, "#3a2a1a"); R(6, 5, 4, 4, "#c8a040"); R(7, 7, 2, 1, "#3a2414"); R(9, 11, 3, 2, "#e8dcb0"); R(4, 12, 3, 2, "#d8342a"); });
+  ct("laundry", "Laundry Basket", "#c8a870", "sewing", function (R) { R(2, 7, 12, 9, "#c8a870"); for (var y = 8; y < 16; y += 2) R(2, y, 12, 1, "#a8885a"); R(3, 4, 4, 3, "#f4f0e8"); R(7, 3, 4, 4, "#6a9ae8"); R(10, 5, 3, 2, "#e86a8a"); R(1, 7, 14, 1, "#e0c890"); }, { small: 1 });
+  ct("sewingbasket", "Sewing Basket", "#c87a8a", "sewing", function (R) { R(2, 9, 12, 7, "#c8a870"); R(2, 9, 12, 1, "#e0c890"); R(3, 12, 10, 1, "#a8885a"); R(4, 6, 3, 3, "#d8342a"); R(8, 6, 3, 3, "#3a7fd8"); R(11, 7, 2, 2, "#f2c14e"); R(6, 3, 1, 4, "#c8d0d8"); R(5, 2, 1, 1, "#c8d0d8"); }, { small: 1 });
+  ct("jewelbox", "Jewelry Box", "#9a3a6a", "jewels", function (R) { R(3, 8, 10, 7, "#9a3a6a"); R(3, 8, 10, 1, "#c85a8a"); R(3, 14, 10, 1, "#5a1a3a"); R(2, 5, 12, 3, "#b84a7a"); R(3, 4, 10, 1, "#c85a8a"); R(7, 9, 2, 2, "#f2c14e"); R(4, 10, 1, 1, "#ffe08a"); R(11, 10, 1, 1, "#ffe08a"); }, { small: 1, light: 1, gl: ["255,200,120", 1, 0.08] });
+  // treasure and records
+  ct("strongbox", "Strongbox", "#5a6068", "valuables", function (R) { R(1, 6, 14, 10, "#4a4f56"); R(1, 6, 14, 1, "#8a929c"); R(1, 15, 14, 1, "#1c2026"); R(1, 6, 1, 10, "#8a929c"); R(14, 6, 1, 10, "#2a2e34"); R(6, 9, 4, 4, "#c8a040"); R(7, 10, 2, 2, "#3a2a1a"); [[2, 7], [12, 7], [2, 13], [12, 13]].forEach(function (q) { R(q[0], q[1], 2, 2, "#c8d0d8"); }); }, { small: 1 });
+  ct("ironsafe", "Iron Safe", "#3a3f46", "valuables", function (R) { R(1, 1, 14, 15, "#3a3f46"); R(1, 1, 14, 1, "#6a717a"); R(2, 2, 12, 12, "#4a4f56"); R(2, 2, 12, 1, "#6a717a"); R(6, 5, 5, 5, "#8a929c"); R(7, 6, 3, 3, "#c8d0d8"); R(8, 7, 1, 1, "#2a2e34"); R(12, 6, 1, 4, "#c8a040"); R(2, 15, 2, 1, "#1c2026"); R(12, 15, 2, 1, "#1c2026"); });
+  ct("coffer", "Gilded Coffer", "#d8a040", "jewels", function (R) { R(1, 7, 14, 9, "#a8701a"); R(1, 4, 14, 4, "#d8a040"); R(2, 3, 12, 1, "#f2c14e"); R(1, 7, 14, 1, "#5a3a08"); R(1, 15, 14, 1, "#5a3a08"); R(6, 6, 4, 4, "#ffe08a"); R(7, 7, 2, 2, "#e0364a"); R(3, 9, 2, 5, "#f2c14e"); R(11, 9, 2, 5, "#f2c14e"); }, { light: 2, gl: ["255,210,110", 1.6, 0.12] });
+  ct("lockbox", "Lockbox", "#6a5a4a", "valuables", function (R) { R(3, 8, 10, 7, "#6a5a4a"); R(3, 8, 10, 1, "#8a7a6a"); R(3, 14, 10, 1, "#3a2a1a"); R(7, 6, 2, 3, "#8a929c"); R(6, 5, 4, 1, "#8a929c"); R(7, 10, 2, 2, "#c8a040"); }, { small: 1 });
+  ct("recordcab", "Record Cabinet", "#8a6a4a", "papers", function (R) { R(2, 0, 12, 16, "#7a5a3a"); [1, 6, 11].forEach(function (y) { R(3, y, 10, 4, "#9a7a5a"); R(3, y, 10, 1, "#b89a7a"); R(6, y + 2, 4, 1, "#c8a040"); R(7, y + 1, 2, 1, "#f4f0e8"); }); R(2, 15, 12, 1, "#3a2a1a"); });
+  ct("scrollcase", "Scroll Case", "#a46c3c", "papers", function (R) { R(1, 4, 14, 12, "#7a5230"); R(1, 4, 14, 1, "#a46c3c"); for (var y = 0; y < 3; y++) for (var x = 0; x < 4; x++) { R(2 + x * 3, 5 + y * 3, 3, 3, "#3a2414"); R(2 + x * 3, 6 + y * 3, 3, 1, "#f2dcb0"); R(3 + x * 3, 6 + y * 3, 1, 1, "#d8342a"); } });
+  ct("mailbox", "Mailbox", "#3a7fd8", "mail", function (R) { R(7, 9, 2, 7, "#7a5230"); R(3, 3, 10, 6, "#3a7fd8"); R(3, 3, 10, 1, "#8fc0ff"); R(3, 8, 10, 1, "#1a4a8a"); R(4, 5, 7, 2, "#1a4a8a"); R(12, 2, 1, 4, "#d8342a"); R(11, 2, 2, 1, "#d8342a"); R(5, 5, 4, 1, "#f4f0e8"); }, { small: 1 });
+  ct("offeringbowl", "Offering Bowl", "#c8a040", "offering", function (R) { R(5, 13, 6, 3, "#8a6a42"); R(2, 9, 12, 4, "#c8a040"); R(3, 12, 10, 1, "#8a5a10"); R(2, 9, 12, 1, "#ffe08a"); R(4, 7, 3, 2, "#f2c14e"); R(8, 6, 3, 3, "#e0364a"); R(10, 7, 2, 2, "#f2c14e"); R(6, 6, 1, 1, "#fff2b0"); }, { small: 1, light: 1, gl: ["255,210,110", 1, 0.08] });
+  // medicine, fishing, seeds
+  ct("apothecary", "Apothecary Drawers", "#8a5a30", "medicine", function (R) { R(1, 1, 14, 15, "#6a4426"); for (var y = 0; y < 4; y++) for (var x = 0; x < 3; x++) { R(2 + x * 4, 2 + y * 3, 4, 3, "#a46c3c"); R(2 + x * 4, 2 + y * 3, 4, 1, "#c58a52"); R(3 + x * 4, 3 + y * 3, 2, 1, (x + y) % 3 ? "#f4f0e8" : "#7fd06a"); } R(1, 15, 14, 1, "#3a2414"); });
+  ct("medcabinet", "Medicine Cabinet", "#e8f0f4", "medicine", function (R) { R(2, 2, 12, 12, "#e8f0f4"); R(2, 2, 12, 1, "#ffffff"); R(2, 13, 12, 1, "#8a98a8"); R(3, 3, 10, 10, "#d4dce4"); R(6, 5, 4, 6, "#e8341c"); R(4, 7, 8, 2, "#e8341c"); R(12, 7, 1, 2, "#8a98a8"); }, { wall: 1 });
+  ct("tacklebox", "Tackle Box", "#3a8a6a", "tackle", function (R) { R(1, 8, 14, 7, "#2a7a5a"); R(1, 8, 14, 1, "#5aaa8a"); R(1, 14, 14, 1, "#14402e"); R(1, 11, 14, 1, "#14402e"); R(5, 5, 6, 1, "#5a6068"); R(5, 5, 1, 3, "#5a6068"); R(10, 5, 1, 3, "#5a6068"); R(3, 9, 2, 2, "#ff8a2a"); R(11, 9, 2, 2, "#f2c14e"); R(7, 12, 2, 1, "#c8d0d8"); }, { small: 1 });
+  ct("seedchest", "Seed Chest", "#7a9a4a", "seeds", function (R) { R(1, 6, 14, 10, "#6a8a3a"); R(1, 6, 14, 1, "#8aaa5a"); R(1, 15, 14, 1, "#3a4a20"); R(1, 10, 14, 1, "#3a4a20"); R(3, 2, 3, 4, "#e0c48a"); R(7, 3, 3, 3, "#c9a46a"); R(11, 2, 3, 4, "#e0c48a"); R(4, 3, 1, 1, "#ff8a2a"); R(12, 3, 1, 1, "#e8341c"); R(7, 11, 2, 2, "#f2c14e"); });
+  ct("icechest", "Ice Chest", "#9fe8ff", "cold", function (R) { R(1, 6, 14, 10, "#bfe8ff"); R(1, 6, 14, 1, "#ffffff"); R(1, 15, 14, 1, "#5a8ab0"); R(1, 10, 14, 1, "#7fb8d8"); R(2, 4, 12, 2, "#d8f4ff"); R(3, 7, 2, 2, "#ffffff", 0.7); R(7, 11, 2, 2, "#5a8ab0"); R(11, 12, 2, 2, "#ffffff", 0.6); }, { light: 1, gl: ["190,230,255", 1, 0.06] });
+  // the opened cave chest: what a Cave Chest turns into once you have emptied it
+  var OCH = tile("X_openchest", "Opened Cave Chest", "#000", "#8a6038", 0.9, 0, "chest", false, 0, "openchest");
+  ART.openchest = function (rect) {
+    rect(1, 7, 14, 8, "#5a3a22"); rect(1, 10, 14, 1, "#3e2616", 0.7); rect(1, 13, 14, 1, "#3e2616", 0.6); rect(2, 7, 12, 2, "#1a0f08");
+    rect(1, 1, 14, 3, "#6e4a2a"); rect(1, 1, 14, 1, "#8a6038"); rect(1, 4, 14, 1, "#2e1c10"); rect(3, 1, 2, 4, "#d9a83a"); rect(11, 1, 2, 4, "#d9a83a");
+    rect(1, 7, 14, 1, "#f2c14e"); rect(3, 7, 2, 8, "#d9a83a"); rect(11, 7, 2, 8, "#d9a83a"); rect(1, 15, 14, 1, "#1a0f08"); rect(6, 8, 4, 1, "#f2c14e", 0.25);
+  };
+  // the furniture that was already in the buildings becomes searchable too
+  [["BARREL", "drinks"], ["X_crate", "supply"], ["X_sack", "seeds"], ["WARDROBE", "clothes"], ["X_dresser", "clothes"], ["BOOKSHELF", "books"], ["X_desk", "papers"], ["X_nightstand", "nightstand"],
+   ["URN", "offering"], ["CAULDRON", "potions"], ["X_warchest", "war"], ["X_sarcophagus", "tomb"], ["X_potionshelf", "potions"], ["X_gemcase", "gems"], ["X_mushcrate", "mushroom"],
+   ["X_seedsacks", "seeds"], ["X_arrowbarrel", "ammo"], ["X_scrollshelf", "papers"], ["X_ingotpile", "ore"], ["X_offering", "offering"]].forEach(function (q) { var id = T[q[0]]; if (id !== undefined && TILES[id]) { TILES[id].cont = q[1]; CONTOF[id] = q[1]; } });
+
+  // ---- the new items ----
+  var LOOTI = [];
+  function li(k, n, o) { item(k, n, o || {}); LOOTI.push(k); }
+  function lf(k, n, f, h) { food(k, n, f, h, 1); LOOTI.push(k); }
+  // food (22)
+  lf("cheesewheel", "Bog Cheese", 14, 3); lf("milkjug", "Milk Jug", 10, 5); lf("butter", "Butter Pat", 6, 1); lf("breadloaf", "Reed Bread", 20, 4); lf("pickles", "Pickled Cattails", 12, 2);
+  lf("jamjar", "Bogberry Jam", 14, 5); lf("honeyjar", "Swamp Honey", 12, 9); lf("sausage", "Smoked Sausage", 22, 5); lf("driedfish", "Dried Fish", 16, 3); lf("applecider", "Apple Cider", 8, 10);
+  lf("frostcream", "Frost Cream", 14, 7); lf("lilycookie", "Lily Cookie", 8, 3); lf("mossmuffin", "Mossberry Muffin", 16, 6); lf("sandwich", "Bog Sandwich", 28, 8); lf("speckledegg", "Speckled Egg", 6, 2);
+  lf("mushroompie", "Mushroom Pie", 34, 10); lf("dumplings", "Steamed Dumplings", 30, 9); lf("noodles", "Lily Noodles", 26, 6); lf("cocoa", "Swamp Cocoa", 10, 8); lf("riceball", "Rice Ball", 14, 3);
+  lf("smokedham", "Smoked Ham", 36, 10); lf("crackers", "Salted Crackers", 10, 2);
+  // cooking ingredients (5)
+  li("flour", "Reed Flour"); li("sugar", "Cane Sugar"); li("rocksalt", "Rock Salt"); li("tealeaves", "Tea Leaves"); li("cinnamon", "Swamp Cinnamon");
+  // building materials (15): used to build the new containers (Decor Workbench, Storage)
+  li("nails", "Iron Nails"); li("hinge", "Brass Hinge"); li("twine", "Twine"); li("beeswax", "Beeswax"); li("thread", "Spool of Thread"); li("buttons", "Bone Buttons"); li("leather", "Leather Strip");
+  li("canvas", "Canvas"); li("pineglue", "Pine Glue"); li("lampoil", "Lamp Oil"); li("tinplate", "Tin Plate"); li("copperwire", "Copper Wire"); li("gear", "Clockwork Gear"); li("chalk", "Chalk"); li("inkpot", "Ink Pot");
+  // valuables (13): Old Croaker buys them for tokens
+  ["silvercoin|Silver Coin", "goldcoin|Gold Coin", "pearl|Swamp Pearl", "silverring|Silver Ring", "pocketwatch|Pocket Watch", "ambernecklace|Amber Necklace", "frogbrooch|Frog Brooch", "goldbar|Gold Bar",
+   "fireopal|Fire Opal", "jadecharm|Jade Charm", "ivorycomb|Ivory Comb", "heartlocket|Heart Locket", "oldcompass|Old Compass"].forEach(function (q) { var a = q.split("|"); li(a[0], a[1], { valuable: 1 }); });
+  // papers (5): an Old Book may hold a lost page; a Sealed Letter holds a little something
+  li("oldbook", "Old Book", { read: "book" }); li("sealedletter", "Sealed Letter", { read: "letter" }); li("parchment", "Blank Parchment"); li("recipecard", "Recipe Card"); li("pressedflower", "Pressed Flower");
+  // medicine (4)
+  food("bandage", "Bandage", 1, 18, 0); LOOTI.push("bandage"); food("salve", "Healing Salve", 1, 30, 0); LOOTI.push("salve"); food("herbbundle", "Herb Bundle", 4, 10, 0); LOOTI.push("herbbundle"); food("smellingsalts", "Smelling Salts", 1, 8, 0); LOOTI.push("smellingsalts");
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
@@ -1309,6 +1390,73 @@
   if (SW.post) SW.post.push(function (w) { populate(w); placeTreasure(w); });   // per generated map (see ENDLESS WORLD in sandbox-world.js)
   else SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
 
-  var api = { FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  // ---------------------------------------------------------------- LOOT PACK recipes, loot tables and token values
+  var CTCOST = {
+    icebox: { planks: 4, tinplate: 2, hinge: 1, ice: 4 }, pantry: { planks: 6, hinge: 2, nails: 2 }, cupboard: { planks: 5, hinge: 1, nails: 1 }, hutch: { planks: 6, glass: 2, hinge: 2 },
+    breadbin: { planks: 3, hinge: 1 }, cookiejar: { glass: 2, clay: 1 }, spicerack: { planks: 2, nails: 1, glass: 1 }, ciderrack: { planks: 6, nails: 2 }, alekeg: { planks: 5, ironingot: 1, nails: 2 },
+    producecrate: { planks: 4, nails: 2 }, toolbox: { tinplate: 2, hinge: 1, nails: 1 }, toolchest: { ironingot: 2, tinplate: 3, hinge: 2 }, nailkeg: { planks: 3, nails: 4 },
+    supplycrate: { planks: 5, nails: 2, twine: 1 }, ammocrate: { planks: 4, nails: 2, leather: 1 }, orebin: { ironingot: 2, nails: 2 }, gemcrate: { planks: 4, nails: 2, quartz: 1 },
+    footlocker: { planks: 4, leather: 1, hinge: 1 }, trunk: { planks: 5, leather: 2, hinge: 2 }, laundry: { fiber: 6, twine: 2 }, sewingbasket: { fiber: 4, thread: 1 },
+    jewelbox: { planks: 2, hinge: 1, cloth: 1, silvercoin: 1 }, strongbox: { ironingot: 3, hinge: 1, nails: 2 }, ironsafe: { ironingot: 6, gear: 2, hinge: 2 }, coffer: { planks: 3, goldcoin: 2, hinge: 2 },
+    lockbox: { ironingot: 1, hinge: 1 }, recordcab: { planks: 6, hinge: 3, parchment: 1 }, scrollcase: { planks: 5, parchment: 2 }, mailbox: { tinplate: 2, nails: 1 }, offeringbowl: { clay: 3, goldcoin: 1 },
+    apothecary: { planks: 6, hinge: 2, glass: 1 }, medcabinet: { tinplate: 2, glass: 1, hinge: 1 }, tacklebox: { tinplate: 2, hinge: 1, twine: 1 }, seedchest: { planks: 4, hinge: 1, fiber: 2 }, icechest: { ice: 6, planks: 2, hinge: 1 }
+  };
+  CONTK.forEach(function (k) { if (ITEMS[k]) Dc("x_s_" + k, "Storage", ITEMS[k].n, (function () { var o = {}; o[k] = 1; return o; })(), CTCOST[k] || { planks: 4, nails: 1 }, "Storage you can place: it holds items like a chest. In the swamp's buildings, search one for loot that fits it."); });
+  // cooking with the new ingredients (Cooking Pot)
+  R("x_f_breadloaf", "Reed Bread", { breadloaf: 1 }, { flour: 2 }, { stn: "cook", d: "Fills 20 hunger and heals 4." });
+  R("x_f_lilycookie", "Lily Cookies (3)", { lilycookie: 3 }, { flour: 1, sugar: 1, butter: 1 }, { stn: "cook", d: "Fills 8 hunger and heals 3 each." });
+  R("x_f_mossmuffin", "Mossberry Muffin", { mossmuffin: 1 }, { flour: 1, sugar: 1, frostberry: 1 }, { stn: "cook", d: "Fills 16 hunger and heals 6." });
+  R("x_f_dumplings", "Steamed Dumplings", { dumplings: 1 }, { flour: 1, rawmeat: 1 }, { stn: "cook", d: "Fills 30 hunger and heals 9." });
+  R("x_f_noodles", "Lily Noodles", { noodles: 1 }, { flour: 1, duckegg: 1 }, { stn: "cook", d: "Fills 26 hunger and heals 6." });
+  R("x_f_cocoa", "Swamp Cocoa", { cocoa: 1 }, { milkjug: 1, sugar: 1 }, { stn: "cook", d: "Fills 10 hunger and heals 8." });
+  R("x_f_sandwich", "Bog Sandwich", { sandwich: 1 }, { breadloaf: 1, cheesewheel: 1 }, { stn: "cook", d: "Fills 28 hunger and heals 8." });
+  R("x_f_mushroompie", "Mushroom Pie", { mushroompie: 1 }, { flour: 1, butter: 1, redcap: 2 }, { stn: "cook", d: "Fills 34 hunger and heals 10." });
+  R("x_m_bandage", "Bandages (2)", { bandage: 2 }, { cloth: 1, herbbundle: 1 }, { stn: "loom", d: "Heals 18 health." });
+  R("x_m_salve", "Healing Salve", { salve: 1 }, { beeswax: 1, herbbundle: 1, bottle: 1 }, { stn: "brew", d: "Heals 30 health." });
+  // what each kind of container holds: [item, min, max, weight]; n = how many stacks; lore = chance of a lost page the first time
+  var CONT = {
+    cold: { L: [["milkjug", 1, 2, 4], ["cheesewheel", 1, 2, 4], ["butter", 1, 3, 4], ["frostcream", 1, 2, 3], ["sausage", 1, 2, 3], ["smokedham", 1, 1, 2], ["driedfish", 1, 3, 3], ["speckledegg", 2, 4, 3], ["goatmilk", 1, 1, 2], ["frostberry", 2, 4, 2], ["icecap", 1, 2, 1]], n: [2, 4] },
+    pantry: { L: [["flour", 2, 4, 5], ["sugar", 1, 3, 4], ["rocksalt", 1, 2, 3], ["tealeaves", 1, 3, 3], ["cinnamon", 1, 2, 2], ["jamjar", 1, 1, 3], ["honeyjar", 1, 1, 2], ["pickles", 1, 2, 3], ["crackers", 1, 3, 3], ["potato", 2, 4, 2], ["riceball", 1, 2, 2], ["noodles", 1, 1, 1]], n: [2, 4] },
+    kitchen: { L: [["sugar", 1, 2, 3], ["tealeaves", 1, 2, 3], ["honeyjar", 1, 1, 2], ["jamjar", 1, 1, 2], ["silvercoin", 1, 2, 2], ["recipecard", 1, 1, 2], ["candle", 1, 2, 2], ["glass", 1, 2, 1]], n: [1, 3] },
+    bread: { L: [["breadloaf", 1, 2, 5], ["crackers", 1, 3, 3], ["mossmuffin", 1, 2, 2], ["lilycookie", 1, 3, 2], ["flour", 1, 2, 2]], n: [1, 3] },
+    sweets: { L: [["lilycookie", 2, 5, 6], ["mossmuffin", 1, 2, 2], ["honeyjar", 1, 1, 1], ["sugar", 1, 2, 2], ["silvercoin", 1, 1, 1]], n: [1, 2] },
+    spice: { L: [["rocksalt", 1, 3, 4], ["cinnamon", 1, 2, 4], ["sugar", 1, 2, 3], ["pepper", 1, 2, 2], ["tealeaves", 1, 2, 3], ["chili", 1, 1, 1]], n: [1, 3] },
+    drinks: { L: [["applecider", 1, 3, 5], ["swamptea", 1, 2, 3], ["cocoa", 1, 2, 2], ["goatmilk", 1, 1, 2], ["bottle", 1, 3, 3], ["honeyjar", 1, 1, 1], ["pickles", 1, 1, 1], ["lampoil", 1, 1, 1]], n: [1, 3] },
+    produce: { L: [["carrot", 2, 4, 4], ["potato", 2, 4, 4], ["pepper", 1, 3, 2], ["frostberry", 2, 3, 2], ["speckledegg", 1, 3, 2], ["seed_carrot", 2, 3, 2], ["seed_potato", 1, 2, 2]], n: [2, 3] },
+    tools: { L: [["nails", 3, 8, 6], ["hinge", 1, 2, 4], ["twine", 1, 3, 3], ["tinplate", 1, 2, 3], ["copperwire", 1, 2, 2], ["gear", 1, 1, 2], ["pineglue", 1, 2, 2], ["ironingot", 1, 2, 2], ["rope", 1, 2, 2], ["sandpaper", 1, 2, 1], ["chalk", 1, 2, 1]], n: [2, 4] },
+    supply: { L: [["planks", 4, 10, 4], ["torch", 3, 6, 4], ["rope", 1, 3, 3], ["twine", 1, 3, 3], ["canvas", 1, 2, 3], ["nails", 2, 5, 3], ["lampoil", 1, 2, 2], ["candle", 1, 3, 2], ["cloth", 1, 2, 2], ["crackers", 1, 2, 1]], n: [2, 4] },
+    ammo: { L: [["arrow", 6, 14, 6], ["firearrow", 2, 5, 2], ["bomb", 1, 2, 2], ["stickybomb", 1, 2, 1], ["firework", 1, 3, 1], ["leather", 1, 1, 1]], n: [1, 3] },
+    ore: { L: [["bogiron", 2, 5, 4], ["ironingot", 1, 3, 3], ["cinder", 2, 4, 3], ["charcoal", 2, 4, 3], ["quartz", 1, 2, 2], ["crystal", 1, 3, 2], ["copperwire", 1, 1, 1]], n: [2, 3] },
+    gems: { L: [["quartz", 1, 3, 4], ["amethyst", 1, 2, 3], ["amber", 1, 2, 3], ["ruby", 1, 1, 1], ["sapphire", 1, 1, 1], ["moonstone", 1, 1, 1], ["fireopal", 1, 1, 1], ["pearl", 1, 1, 1]], n: [1, 3] },
+    clothes: { L: [["cloth", 1, 3, 4], ["canvas", 1, 2, 2], ["leather", 1, 2, 3], ["thread", 1, 2, 3], ["buttons", 1, 3, 3], ["silvercoin", 1, 3, 3], ["ivorycomb", 1, 1, 1], ["pressedflower", 1, 1, 2], ["sealedletter", 1, 1, 2], ["heartlocket", 1, 1, 1], ["oldboot", 1, 1, 1]], n: [2, 3] },
+    sewing: { L: [["thread", 1, 3, 5], ["buttons", 2, 4, 4], ["cloth", 1, 2, 3], ["canvas", 1, 1, 2], ["leather", 1, 1, 2], ["fiber", 2, 5, 3]], n: [1, 3] },
+    jewels: { L: [["pearl", 1, 2, 3], ["silverring", 1, 1, 3], ["ambernecklace", 1, 1, 2], ["frogbrooch", 1, 1, 2], ["fireopal", 1, 1, 1], ["jadecharm", 1, 1, 2], ["heartlocket", 1, 1, 1], ["goldcoin", 1, 3, 3], ["ruby", 1, 1, 1], ["amethyst", 1, 2, 2]], n: [1, 3] },
+    valuables: { L: [["silvercoin", 2, 6, 6], ["goldcoin", 1, 3, 4], ["goldbar", 1, 1, 1], ["pocketwatch", 1, 1, 2], ["ancientcoin", 1, 2, 2], ["pearl", 1, 1, 1], ["silverring", 1, 1, 2], ["oldcompass", 1, 1, 1]], n: [1, 3] },
+    papers: { L: [["parchment", 1, 3, 5], ["inkpot", 1, 1, 3], ["sealedletter", 1, 1, 3], ["oldbook", 1, 1, 2], ["recipecard", 1, 1, 3], ["treasuremap", 1, 1, 1], ["chalk", 1, 2, 2], ["candle", 1, 2, 1]], n: [1, 3], lore: 0.25 },
+    books: { L: [["oldbook", 1, 2, 5], ["recipecard", 1, 1, 3], ["parchment", 1, 2, 3], ["pressedflower", 1, 1, 2], ["sealedletter", 1, 1, 1], ["inkpot", 1, 1, 1]], n: [1, 2], lore: 0.35 },
+    mail: { L: [["sealedletter", 1, 2, 6], ["silvercoin", 1, 2, 3], ["recipecard", 1, 1, 2], ["pressedflower", 1, 1, 2]], n: [1, 2], lore: 0.15 },
+    medicine: { L: [["bandage", 1, 3, 5], ["salve", 1, 1, 3], ["herbbundle", 1, 2, 4], ["smellingsalts", 1, 1, 2], ["bottle", 1, 2, 2], ["tonic_regen", 1, 1, 1], ["marshlily", 1, 2, 2], ["frostbell", 1, 1, 1]], n: [1, 3] },
+    potions: { L: [["bottle", 1, 3, 4], ["tonic_regen", 1, 1, 2], ["tonic_glow", 1, 1, 2], ["tonic_feather", 1, 1, 1], ["tonic_luck", 1, 1, 1], ["herbbundle", 1, 2, 3], ["glowshroom", 1, 3, 2], ["hexdust", 1, 1, 1]], n: [1, 3] },
+    tackle: { L: [["earthworm", 2, 5, 5], ["firefly", 1, 2, 2], ["twine", 1, 2, 3], ["driedfish", 1, 2, 3], ["bogminnow", 1, 2, 2], ["lampoil", 1, 1, 1]], n: [1, 3] },
+    seeds: { L: [["seed_carrot", 2, 4, 5], ["seed_potato", 1, 3, 4], ["seed_pepper", 1, 2, 2], ["seed_frost", 1, 2, 1], ["flour", 1, 2, 3], ["fiber", 2, 4, 2]], n: [1, 3] },
+    offering: { L: [["ancientcoin", 1, 2, 3], ["goldcoin", 1, 2, 3], ["silvercoin", 1, 3, 4], ["amber", 1, 1, 2], ["candle", 1, 2, 2], ["pressedflower", 1, 1, 2], ["jadecharm", 1, 1, 1]], n: [1, 3] },
+    tomb: { L: [["ancientcoin", 1, 3, 4], ["goldbar", 1, 1, 2], ["fireopal", 1, 1, 2], ["bone", 1, 3, 3], ["trolltusk", 1, 1, 1], ["jadecharm", 1, 1, 2], ["goldcoin", 1, 3, 3]], n: [2, 4], lore: 0.3 },
+    war: { L: [["ironingot", 1, 3, 4], ["arrow", 4, 10, 4], ["bomb", 1, 2, 2], ["leather", 1, 2, 3], ["nails", 2, 4, 2], ["silvercoin", 1, 3, 2], ["goldcoin", 1, 1, 1]], n: [2, 3] },
+    mushroom: { L: [["redcap", 2, 4, 4], ["glowshroom", 2, 4, 4], ["truffle", 1, 1, 1], ["icecap", 1, 2, 2], ["spore", 2, 5, 2]], n: [1, 3] },
+    nightstand: { L: [["candle", 1, 2, 3], ["pressedflower", 1, 1, 2], ["silvercoin", 1, 2, 3], ["sealedletter", 1, 1, 2], ["oldbook", 1, 1, 1], ["bandage", 1, 1, 2], ["heartlocket", 1, 1, 1]], n: [1, 2], lore: 0.1 }
+  };
+  Object.keys(CONT).forEach(function (k) { CONT[k].L = CONT[k].L.filter(function (e) { return ITEMS[e[0]]; }); });
+  function contLoot(type, rnd) {   // -> { item: count }
+    rnd = rnd || Math.random; var C = CONT[type]; if (!C || !C.L.length) return {};
+    var tot = 0, out = {}; C.L.forEach(function (e) { tot += e[3]; });
+    var n = C.n[0] + Math.floor(rnd() * (C.n[1] - C.n[0] + 1));
+    for (var i = 0; i < n; i++) { var r = rnd() * tot, q; for (q = 0; q < C.L.length; q++) { r -= C.L[q][3]; if (r <= 0) break; } var e = C.L[Math.min(q, C.L.length - 1)]; out[e[0]] = (out[e[0]] || 0) + e[1] + Math.floor(rnd() * (e[2] - e[1] + 1)); }
+    return out;
+  }
+  // a few of the new finds turn up in cave chests and pots too
+  [["silvercoin", 1, 4, 3, 0], ["goldcoin", 1, 2, 2, 1], ["pearl", 1, 1, 1, 1], ["oldbook", 1, 1, 2, 0], ["sealedletter", 1, 1, 2, 0], ["nails", 2, 6, 2, 0], ["hinge", 1, 2, 1, 0], ["bandage", 1, 2, 2, 0], ["lampoil", 1, 2, 1, 0], ["goldbar", 1, 1, 1, 2], ["fireopal", 1, 1, 1, 2]].forEach(function (e) { if (ITEMS[e[0]]) LOOT_ALL.push(e); });
+  // Old Croaker's prices: [how many, tokens]
+  var VALUE = { silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
+  var api = { CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

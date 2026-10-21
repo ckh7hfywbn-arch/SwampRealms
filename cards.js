@@ -254,8 +254,9 @@ function claimStreak(){
 
 // ===== Sound effects: made in the browser (no files). Mute button in the header. =====
 const SFX=(function(){
- let ctx=null,on=true,bus=null,verb=null;
+ let ctx=null,on=true,bus=null,verb=null,vol=1;
  try{on=localStorage.getItem("swamp-sound")!=="off"}catch(e){}
+ try{const o=JSON.parse(localStorage.getItem("swamp-delve-opt")||"{}");if(o&&isFinite(o.fx))vol=Math.max(0,Math.min(1,+o.fx))}catch(e){}
  const NOTES=[523,659,784,988,1175,1319,1568,2093],COUNT={Common:2,Uncommon:3,Rare:4,Epic:5,Legendary:6,Mythical:8};
  // master chain: soft compressor -> speakers, plus a small generated "room" reverb so everything sounds smoother
  function ac(){
@@ -264,7 +265,7 @@ const SFX=(function(){
    if(!ctx){
     ctx=new(window.AudioContext||window.webkitAudioContext)();
     const comp=ctx.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;comp.attack.value=.004;comp.release.value=.2;
-    bus=ctx.createGain();bus.gain.value=.9;bus.connect(comp);comp.connect(ctx.destination);
+    bus=ctx.createGain();bus.gain.value=.9*vol;bus.connect(comp);comp.connect(ctx.destination);
     const n=Math.floor(ctx.sampleRate*1.3),ir=ctx.createBuffer(2,n,ctx.sampleRate);
     for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6)}
     const cv=ctx.createConvolver();cv.buffer=ir;verb=ctx.createGain();verb.gain.value=.5;verb.connect(cv);cv.connect(bus);
@@ -296,6 +297,7 @@ const SFX=(function(){
  }
  return{
   get on(){return on},
+  vol(v){vol=Math.max(0,Math.min(1,+v||0));if(bus)bus.gain.value=.9*vol},
   set(v){on=v;try{localStorage.setItem("swamp-sound",v?"on":"off")}catch(e){}if(v){bell(880,0,.5,.07)}},
   tap(){tone(1100,0,.05,"sine",.05,700,{at:.004})},
   charge(){tone(55,0,.95,"sine",.16,150,{at:.3,lp:400});tone(110,0,.95,"triangle",.06,330,{at:.4,lp:900});noise(0,.95,.07,300,3200,"bandpass",3)},
@@ -354,12 +356,32 @@ function ratesHTML(){const seen={};CARDS.forEach(c=>seen[c.rarity]=c.color);
 addEventListener("pageshow",e=>{if(e.persisted)location.reload()});
 
 
+// ===== HUD number FX (header counters on every page + the Swamp Adventure HUD): bold numbers pop when they change and shed a small floating "+3" chip =====
+// HudFX.pop(el) bounces a number; HudFX.chip(anchor, delta, kind, side) floats "+delta" / "-delta" next to anchor (kind: gold | mint | rose, side: below | left | right).
+// Changes that arrive in quick succession add up into ONE chip instead of stacking. With "reduce motion" on the chip only fades and nothing bounces.
+var HudFX=(function(){
+ function reduce(){return !!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)}
+ function pop(el){if(!el||reduce())return;el.classList.remove("hpop");void el.offsetWidth;el.classList.add("hpop")}
+ function chip(anchor,delta,kind,side){
+  if(!anchor||!delta)return;
+  var now=Date.now(),o=anchor._hfx,el;
+  if(o&&o.el.parentNode&&now-o.t<450&&(o.sum>0)===(delta>0)){o.sum+=delta;el=o.el;el.style.animation="none";void el.offsetWidth;el.style.animation=""}
+  else{
+   el=document.createElement("i");el.className="hfx "+(delta<0?"rose":(kind||"gold"))+" "+(side||"below");el.setAttribute("aria-hidden","true");
+   anchor.appendChild(el);o=anchor._hfx={el:el,sum:delta};
+  }
+  o.t=now;el.textContent=(o.sum>0?"+":"\u2212")+Math.abs(o.sum).toLocaleString("en-US");
+  clearTimeout(o.k);o.k=setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);if(anchor._hfx===o)anchor._hfx=null},1300);
+ }
+ return{pop:pop,chip:chip};
+})();
+
 // ===== Coin bank (top right of the header, every page) =====
 var _bk=null;
 function updateBank(){
  var e=document.getElementById("bankct");if(!e)return;
  var v=meta.coins||0,b=e.parentNode;
- if(_bk!==null&&v!==_bk){b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump")}
+ if(_bk!==null&&v!==_bk){b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump");HudFX.pop(e);HudFX.chip(b,v-_bk,"gold","below")}
  _bk=v;e.textContent=v;b.setAttribute("aria-label","Swamp Coins: "+v+". Open the shop");
 }
 (function(){
