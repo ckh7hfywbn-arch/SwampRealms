@@ -1109,3 +1109,106 @@ body.sbx-app footer{margin-top:28px}
 @keyframes uiInC{from{opacity:0;transform:translate(-50%,-48%) scale(.97)}to{opacity:1;transform:translate(-50%,-50%)}}
 @media (min-width:900px) and (prefers-reduced-motion:reduce){.sbx-panel:not([hidden]){animation:none}}
 .pk-stage canvas{cursor:default;touch-action:auto}
+
+/* SKY VILLAGE: villager talk window */
+.sbx-sbox2 .vil-pic{width:96px;height:96px}
+.sbx-sbox2 .vil-pic img{width:100%;height:100%}
+.sbx-sbox2 .vil-say{margin:0 0 6px;font-style:italic;color:#e8f4ff}
+.sbx-sbox2 .vil-hearts{margin:0 0 12px;color:#ff7aa8;font:800 .9rem Nunito,sans-serif;letter-spacing:1px}
+.sbx-sbox2 .vil-hearts span{color:#ffffff30}
+.vil-trades{display:grid;gap:6px;margin:0 0 12px}
+.vil-trades button{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff1a;color:#f6eedb;font:inherit;cursor:pointer;text-align:left}
+.vil-trades button:not([disabled]):hover{border-color:#8fd6ff;background:#8fd6ff14}
+.vil-trades button[disabled]{opacity:.45;cursor:default}
+.vil-trades button > b{color:#8fd6ff;font-size:1.1rem}
+.vil-trades em{display:block;font-style:normal;font:800 .62rem Nunito,sans-serif;color:#ffffff80;margin-bottom:2px}
+.vil-trades span{display:inline-flex;align-items:center;gap:4px;margin:1px 6px 1px 0;font:700 .78rem Nunito,sans-serif}
+.vil-trades img{width:20px;height:20px;image-rendering:pixelated}
+
+/* LORE: the page reader and the Lore tab */
+.sbx-sbox2 .lore-at{display:block;margin:0 0 8px;color:var(--qc);font:800 .72rem Nunito,sans-serif;text-align:center}
+.sbx-sbox2 .lore-page{--ink:#3a2410;position:relative;margin:4px 2px 14px;padding:22px 24px 18px;color:var(--ink);text-align:left;max-height:56vh;overflow:auto;transform:rotate(var(--rot));scrollbar-width:thin}
+.sbx-sbox2 .lore-page h2{color:var(--ink);text-align:center;margin:0 0 2px;font:inherit;font-size:1.45em;line-height:1.15;letter-spacing:0;text-transform:none}
+.sbx-sbox2 .lore-page p{margin:0 0 .7em;color:var(--ink);font:inherit;line-height:1.45}
+.sbx-sbox2 .lore-page p.lore-by{text-align:center;opacity:.72;font-size:.82em;margin:0 0 1em}
+/* old paper: yellowed, darker at the edges, foxed, a tea stain and a fold */
+.lore-page.lp-paper{background:radial-gradient(circle var(--sr) at var(--sx) var(--sy),rgba(150,96,30,.16),rgba(150,96,30,.08) 70%,transparent 72%),radial-gradient(circle at 82% 88%,rgba(120,70,20,.12) 0 6px,transparent 7px),radial-gradient(circle at 12% 74%,rgba(120,70,20,.1) 0 4px,transparent 5px),linear-gradient(90deg,transparent 49.6%,rgba(90,60,20,.12) 50%,rgba(255,255,240,.2) 50.4%,transparent 51%),radial-gradient(ellipse at 50% 45%,#f3e4bc 0,#e9d39e 62%,#c9a868 100%);box-shadow:inset 0 0 40px rgba(110,70,20,.35)}
+/* a page from the Order's printed book: cleaner, with a ruled border */
+.lore-page.lp-book{background:radial-gradient(ellipse at 50% 40%,#f6ead0 0,#ecdab0 70%,#d4b880 100%);box-shadow:inset 0 0 0 7px transparent,inset 0 0 0 8px rgba(90,50,20,.35),inset 0 0 30px rgba(110,70,20,.3)}
+.lore-page.lp-book h2::after{content:"\2766";display:block;font-size:.6em;opacity:.55;margin-top:2px}
+/* carved stone, wood, clay and gold: no paper edge; the letters are cut in */
+.lore-page.lp-stone{--ink:#2a2e34;background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.12) 0 2px,transparent 3px),radial-gradient(circle at 70% 60%,rgba(0,0,0,.1) 0 3px,transparent 4px),linear-gradient(160deg,#a8aeb2,#8a9096 55%,#747a80);border-radius:6px 9px 7px 10px;box-shadow:inset 0 2px 0 rgba(255,255,255,.25),inset 0 -6px 18px rgba(0,0,0,.35);text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.lore-page.lp-wood{--ink:#2a1608;background:repeating-linear-gradient(178deg,#b88a52 0 9px,#a8784a 9px 14px,#c49660 14px 22px);border-radius:4px;box-shadow:inset 0 0 22px rgba(60,30,10,.45);text-shadow:0 1px 0 rgba(255,220,170,.3)}
+.lore-page.lp-clay{--ink:#4a2414;background:radial-gradient(ellipse at 40% 35%,#d89a6a,#b8744a 75%,#8a5232);border-radius:14px 10px 16px 9px;box-shadow:inset 0 0 26px rgba(70,30,10,.45);text-shadow:0 1px 0 rgba(255,210,170,.3)}
+.lore-page.lp-gold{--ink:#5a3a08;background:linear-gradient(135deg,#ffe8a0,#e8b84a 40%,#ffe08a 60%,#c8902a);border-radius:50% 50% 46% 46%/12% 12% 10% 10%;box-shadow:inset 0 0 24px rgba(120,70,0,.45);text-shadow:0 1px 0 rgba(255,255,220,.5)}
+/* the handwriting: each author's own font (fonts/lore, OFL / Apache licensed), sized so they all read about the same */
+@font-face{font-family:LH-caveat;src:url(fonts/lore/caveat.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-reenie;src:url(fonts/lore/reenie.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-rocksalt;src:url(fonts/lore/rocksalt.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-kalam;src:url(fonts/lore/kalam.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-dancing;src:url(fonts/lore/dancing.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-marker;src:url(fonts/lore/marker.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-gloria;src:url(fonts/lore/gloria.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-aurore;src:url(fonts/lore/aurore.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-apple;src:url(fonts/lore/apple.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-nothing;src:url(fonts/lore/nothing.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-fell;src:url(fonts/lore/fell.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-grace;src:url(fonts/lore/grace.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-shadows;src:url(fonts/lore/shadows.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-indie;src:url(fonts/lore/indie.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-patrick;src:url(fonts/lore/patrick.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-sueellen;src:url(fonts/lore/sueellen.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-architect;src:url(fonts/lore/architect.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-another;src:url(fonts/lore/another.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-gochi;src:url(fonts/lore/gochi.woff) format("woff");font-display:swap}
+@font-face{font-family:LH-cinzel;src:url(fonts/lore/cinzel.woff) format("woff");font-display:swap}
+.lore-page[data-f]{font-size:1rem;font-weight:400}
+.sbx-sbox2 .lore-page[data-f=caveat]{font-family:LH-caveat,cursive;font-size:1.32rem;}
+.sbx-sbox2 .lore-page[data-f=reenie]{font-family:LH-reenie,cursive;font-size:1.5rem;line-height:1.2;}
+.sbx-sbox2 .lore-page[data-f=rocksalt]{font-family:LH-rocksalt,cursive;font-size:.84rem;}
+.sbx-sbox2 .lore-page[data-f=kalam]{font-family:LH-kalam,cursive;font-size:1.02rem;}
+.sbx-sbox2 .lore-page[data-f=dancing]{font-family:LH-dancing,cursive;font-size:1.22rem;}
+.sbx-sbox2 .lore-page[data-f=marker]{font-family:LH-marker,cursive;font-size:.98rem;}
+.sbx-sbox2 .lore-page[data-f=gloria]{font-family:LH-gloria,cursive;font-size:.95rem;}
+.sbx-sbox2 .lore-page[data-f=aurore]{font-family:LH-aurore,cursive;font-size:1.3rem;}
+.sbx-sbox2 .lore-page[data-f=apple]{font-family:LH-apple,cursive;font-size:.86rem;line-height:1.7;}
+.sbx-sbox2 .lore-page[data-f=nothing]{font-family:LH-nothing,cursive;font-size:1.08rem;}
+.sbx-sbox2 .lore-page[data-f=fell]{font-family:LH-fell,Georgia,serif;font-size:1.08rem;}
+.sbx-sbox2 .lore-page[data-f=grace]{font-family:LH-grace,cursive;font-size:1.3rem;}
+.sbx-sbox2 .lore-page[data-f=shadows]{font-family:LH-shadows,cursive;font-size:1.18rem;}
+.sbx-sbox2 .lore-page[data-f=indie]{font-family:LH-indie,cursive;font-size:1.08rem;}
+.sbx-sbox2 .lore-page[data-f=patrick]{font-family:LH-patrick,cursive;font-size:1.22rem;}
+.sbx-sbox2 .lore-page[data-f=sueellen]{font-family:LH-sueellen,cursive;font-size:1.5rem;line-height:1.25;}
+.sbx-sbox2 .lore-page[data-f=architect]{font-family:LH-architect,cursive;font-size:1.02rem;}
+.sbx-sbox2 .lore-page[data-f=another]{font-family:LH-another,cursive;font-size:1.55rem;line-height:1.15;}
+.sbx-sbox2 .lore-page[data-f=gochi]{font-family:LH-gochi,cursive;font-size:1.14rem;}
+.sbx-sbox2 .lore-page[data-f=cinzel]{font-family:LH-cinzel,Georgia,serif;font-size:.98rem;}
+.lore-head{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff14}
+.lore-head b{display:block;color:#f2c14e}
+.lore-head small{display:block;color:#ffffffaa;margin:2px 0 8px;line-height:1.35}
+.lore-head i{display:block;height:6px;border-radius:9px;background:linear-gradient(90deg,#f2c14e var(--p),#ffffff14 var(--p))}
+.lore-th{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#ffffff08;border:1px solid color-mix(in srgb,var(--lc) 35%,transparent)}
+.lore-th h3{display:flex;justify-content:space-between;margin:0 0 2px;color:var(--lc)}
+.lore-th h3 span{color:#ffffff99;font-size:.8rem}
+.lore-th p{margin:0 0 8px;color:#ffffffb0;font-size:.82rem;line-height:1.35}
+.lore-th p em{display:block;font-style:normal;color:var(--lc);font-size:.76rem;margin-top:2px}
+.lore-pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}
+.lore-pages button{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:9px;background:#f4e8c8;border:1px solid #c8b080;color:#3a2a14;font:700 .76rem Nunito,sans-serif;text-align:left;cursor:pointer}
+.lore-pages button b{flex:none;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--lc);color:#1a1208;font-size:.66rem}
+.lore-pages button.new{box-shadow:0 0 0 2px var(--lc)}
+.lore-pages button[disabled]{background:#ffffff08;border-color:#ffffff14;color:#ffffff50;cursor:default}
+
+/* CHARACTERS: the picker and the main-menu button */
+.tt-list .tt-char img{width:22px;height:34px;object-fit:contain;image-rendering:pixelated;margin:-6px 0}
+.sbx-sbox2 .ch-hero{display:flex;align-items:center;gap:16px;margin:4px 0 12px;text-align:left}
+.sbx-sbox2 .ch-hero img{width:88px;height:136px;object-fit:contain;image-rendering:pixelated;flex:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.sbx-sbox2 .ch-hero h2{margin:0 0 4px;text-align:left}
+.sbx-sbox2 .ch-hero p{margin:0;color:#ffffffc0;font-size:.9rem}
+.sbx-sbox2 .ch-hero p.ch-now{margin-top:6px;color:#4ee6b4;font:800 .75rem Nunito,sans-serif}
+.sbx-sbox2 .ch-h{margin:8px 0 6px;color:#ffffff90;font:800 .72rem Nunito,sans-serif;text-align:left}
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin:0 0 6px}
+.ch-grid button{display:grid;justify-items:center;gap:2px;padding:6px 2px 4px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff1a;color:#f6eedb;cursor:pointer;font:inherit}
+.ch-grid button[aria-pressed=true]{border-color:#4ee6b4;background:#4ee6b41a;box-shadow:0 0 0 1px #4ee6b4}
+.ch-grid button:hover{border-color:#4ee6b480}
+.ch-grid img{width:33px;height:51px;object-fit:contain;image-rendering:pixelated}
+.ch-grid small{font:800 .66rem Nunito,sans-serif}

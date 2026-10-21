@@ -1,0 +1,10 @@
+# Security headers for every page and file the site serves (Cloudflare Workers static assets read this file).
+# CSP notes: the pages use inline <script> blocks and onload="" handlers, so 'unsafe-inline' stays on for scripts and styles;
+# the policy still blocks scripts from any other site, plugins, framing by other sites and forms posting elsewhere.
+# Allowed outside sources: Google Fonts (styles + font files) and Cloudflare Web Analytics (beacon script + its reporting endpoint).
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' wss://theswampverse.m4br6dbmzc.workers.dev https://cloudflareinsights.com; worker-src 'self' blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'

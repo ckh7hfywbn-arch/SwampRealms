@@ -211,9 +211,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
     { k: "keep", n: "Ashen Keep", b: 1, w: 9, bh: 8 },
     { k: "lodge", n: "Frost Lodge", b: 2, w: 11, bh: 5 },
     { k: "shrine", n: "Frozen Shrine", b: 2, w: 9, bh: 7 },
-    { k: "witchhut", n: "Witch Hut", b: 0, w: 7, bh: 4, solo: 1 }   // solo: not picked by the slot loop below; placed in its own pass at the end, so the other buildings stay where they were
+    { k: "witchhut", n: "Witch Hut", b: 0, w: 7, bh: 4, solo: 1 },   // solo: not picked by the slot loop below; placed in its own pass at the end, so the other buildings stay where they were
+    // NEW BUILDINGS (nw: only in land made after they were added, so old saves keep their land; sub: needs that land type, see BIOME VARIANTS)
+    { k: "tavern", n: "The Soggy Log Tavern", b: 0, w: 13, bh: 7, nw: 1, sub: 0 },
+    { k: "igloo", n: "Snow Igloo", b: 2, w: 7, bh: 4, nw: 1, sub: 0 },
+    { k: "teahouse", n: "Blossom Tea House", b: 0, w: 11, bh: 5, nw: 1, sub: 1 },
+    { k: "suntemple", n: "Sun Temple", b: 1, w: 13, bh: 7, nw: 1, sub: 1 }
   ];
-  function buildStructures(t, top, bio, seed, holes, walls) {
+  function buildStructures(t, top, bio, seed, holes, walls, sub, nw) {
     var out = [], WLv = SURF + 3, slot, x, y, i;
     function M(name, fb) { var v = T["X_" + name]; return v !== undefined ? v : fb; }   // a Content Pack block, or a plain fallback
     function WM(name, fb) { var v = T["W_" + name]; return v !== undefined ? v : fb; }   // a back wall
@@ -227,6 +232,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       for (q = 0; q < out.length; q++) if (lo <= out[q].mx1 + 8 && hi >= out[q].mx0 - 8) return null;
       for (x = lo; x <= hi; x++) {
         if (bio[x] !== K.b) return null;
+        if (K.sub !== undefined && sub && (sub[x] ? 1 : 0) !== K.sub) return null;
         var tp = top[x]; if (tp < 26 || tp > WLv) return null;
         if (!TILES[t[tp * W + x]].solid) return null;
         for (yy = Math.max(0, tp - 14); yy < tp; yy++) { var id0 = t[yy * W + x]; if (id0 === T.WATER || id0 === T.LAVA) return null; }
@@ -285,6 +291,39 @@ batwing: { n: "Bat Wing", frag: "bat" },
         chimney(side < 0 ? x1 - 1 : x0 + 1, top0 - 2, 3, COB, T.STONE);
         lamp = M("mushlamp", T.TORCH);
         decoOut(ox2 + side, T.CAULDRON); decoOut(far - side, T.GLOWPOT); decoOut(far - side * 2, M("slimejar", T.BARREL)); decoOut(far - side * 3, T.FENCE);
+      } else if (K.k === "tavern") {   // a two-storey Tudor inn: cobble ground floor with big windows, a jettied plaster upper floor, a mossy thatch roof, a hanging sign
+        fill(x0, x1, gy - 1, gy - 1, COB);
+        fill(x0, x1, gy - 4, gy - 2, T.PLANKS); [x0, cx, x1].forEach(function (px) { fill(px, px, gy - 4, gy - 2, T.LOG); });
+        windowAt(x0 + 2, gy - 4, 2, 2, GL, T.PLANKS); windowAt(x1 - 3, gy - 4, 2, 2, GL, T.PLANKS);
+        fill(x0 - 1, x1 + 1, gy - 5, gy - 5, T.LOG);   // the jetty beam
+        fill(x0 - 1, x1 + 1, top0, gy - 6, PLAS); [x0 - 1, x0 + 3, cx, x1 - 3, x1 + 1].forEach(function (px) { fill(px, px, top0, gy - 6, T.LOG); });
+        put(x0 + 1, gy - 6, GL); put(x0 + 5, gy - 6, GLR); put(x1 - 5, gy - 6, GLR); put(x1 - 1, gy - 6, GL);
+        fill(x0 - 1, x1 + 1, top0 - 1, top0 - 1, T.LOG);
+        gable(x0 - 2, x1 + 2, top0 - 2, T.THATCH, T.PLANKS, MOSSB);
+        chimney(side < 0 ? x1 - 2 : x0 + 2, top0 - 4, 5, RBR, T.STONE);
+        lamp = HL; put(ox2, gy - 5, T.BANNER);
+        decoOut(ox2 + side, T.BARREL); decoOut(ox2 + side * 2, T.BARREL); decoOut(far - side, M("crate", T.BARREL)); decoOut(far - side * 2, T.STOOL);
+      } else if (K.k === "igloo") {   // a dome of snow blocks with an ice window, a little entrance and a campfire outside
+        fill(x0, x1, gy - 2, gy - 1, T.ICEBRICK); fill(x0 + 1, x1 - 1, gy - 3, gy - 3, T.ICEBRICK); fill(x0 + 2, x1 - 2, gy - 4, gy - 4, T.ICEBRICK);
+        for (xx = x0; xx <= x1; xx += 2) put(xx, gy - 2, T.SNOW); put(x0 + 2, gy - 3, T.SNOW); put(x1 - 2, gy - 3, T.SNOW); put(cx, gy - 4, T.SNOW); put(cx, gy - 5, T.SNOW); put(cx - 1, gy - 5, T.SNOW); put(cx + 1, gy - 5, T.SNOW);
+        put(cx, gy - 3, GLB); lamp = T.FROSTLANTERN;
+        decoOut(far - side, T.CAMPFIRE); decoOut(ox2 + side * 2, M("snowman", T.ICESCULPT));
+      } else if (K.k === "teahouse") {   // a two-tier pagoda: plaster walls between dark posts, glowing paper windows, upturned red eaves, a gold finial and paper lanterns
+        fill(x0, x1, gy - 1, gy - 1, COB);
+        fill(x0, x1, top0, gy - 2, PLAS); [x0, cx, x1].forEach(function (px) { fill(px, px, top0, gy - 2, T.LOG); });
+        windowAt(x0 + 2, gy - 4, 2, 2, GLR, null); windowAt(x1 - 3, gy - 4, 2, 2, GLR, null);
+        fill(x0 - 2, x1 + 2, top0 - 1, top0 - 1, SHR); put(x0 - 3, top0 - 2, SHR); put(x1 + 3, top0 - 2, SHR); fill(x0 - 1, x1 + 1, top0 - 2, top0 - 2, SHR);   // lower eaves, tips turned up
+        fill(x0 + 2, x1 - 2, top0 - 4, top0 - 3, PLAS); put(x0 + 2, top0 - 4, T.LOG); put(x0 + 2, top0 - 3, T.LOG); put(x1 - 2, top0 - 4, T.LOG); put(x1 - 2, top0 - 3, T.LOG); put(cx, top0 - 4, GLR); put(cx, top0 - 3, GLR);
+        fill(x0, x1, top0 - 5, top0 - 5, SHR); put(x0 - 1, top0 - 6, SHR); put(x1 + 1, top0 - 6, SHR); fill(x0 + 1, x1 - 1, top0 - 6, top0 - 6, SHR); fill(x0 + 3, x1 - 3, top0 - 7, top0 - 7, SHR);
+        put(cx, top0 - 8, M("amberblock", T.LANTERN)); put(cx, top0 - 9, T.LOG);
+        var PL = M("paperlantern", HL); put(x0 - 2, top0, PL); put(x1 + 2, top0, PL); put(x0, top0 - 4, PL); put(x1, top0 - 4, PL);
+        lamp = PL; decoOut(ox2 + side * 2, M("stonelantern", T.LANTERN)); decoOut(far - side * 2, M("stonelantern", T.LANTERN)); decoOut(far - side, M("pottedfern", T.FLOWERPOT));
+      } else if (K.k === "suntemple") {   // a stepped sandstone pyramid: gold bands, a sun disc over the door, braziers on the top step and a shrine on the summit
+        var SB = M("sandbrick", T.BRICK), GOLD = M("amberblock", T.CINDERLAMP);
+        for (var r9 = 0; r9 < bh; r9++) { var yR9 = gy - 1 - r9, L9 = x0 + Math.max(0, r9 - 1), R9 = x1 - Math.max(0, r9 - 1); for (xx = L9; xx <= R9; xx++) put(xx, yR9, r9 === 3 && (xx - L9) % 2 === 0 ? GOLD : SB); }
+        put(cx, gy - 5, M("rubylamp", GOLD)); put(cx - 1, gy - 4, GOLD); put(cx + 1, gy - 4, GOLD);
+        put(x0 + 5, gy - 8, T.BRAZIER); put(x1 - 5, gy - 8, T.BRAZIER); put(cx, gy - 8, GOLD); put(cx, gy - 9, M("obelisk", GOLD));
+        lamp = T.TORCH; decoOut(ox2 + side, T.URN); decoOut(far - side, T.URN); decoOut(far - side * 2, M("cactus", T.URN));
       } else if (K.k === "cabin") {   // Tudor cottage: plaster between log posts, two framed windows, a steep red shingle gable with an attic window and a brick chimney
         fill(x0, x1, gy - 1, gy - 1, COB);   // foundation row (above ground); the ground under it stays the biome's own ground
         fill(x0, x1, top0, gy - 2, PLAS); [x0, cx, x1].forEach(function (px) { fill(px, px, top0, gy - 2, T.LOG); }); fill(x0, x1, top0, top0, T.PLANKS);
@@ -361,7 +400,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     // one slot every ~58 columns; each tries its kinds for the biome there (hash picks the order) with a few nudges left and right
     for (slot = 0, x = 34; x < W - 34; slot++, x += 58) {
       var cx0 = x + Math.floor(hash(slot, 735, seed) * 40) - 10, bb = bio[Math.min(W - 1, Math.max(0, cx0))], kinds = [];
-      for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb && !STRUCT_KINDS[i].solo) kinds.push(i);
+      for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb && !STRUCT_KINDS[i].solo && !STRUCT_KINDS[i].nw) kinds.push(i);
       if (!kinds.length) continue;
       var wide = kinds.filter(function (q) { return STRUCT_KINDS[q].w > 5; }), slim = kinds.filter(function (q) { return STRUCT_KINDS[q].w <= 5; });   // big buildings get first pick of the flat ground
       var first = Math.floor(hash(slot, 736, seed) * 97), done = false, nudge;
@@ -371,13 +410,26 @@ batwing: { n: "Bat Wing", frag: "bat" },
       }
     }
     // Witch Huts: up to 3, out in the wilder parts of Murkwater (well away from camp)
-    var WK = STRUCT_KINDS.length - 1, huts = 0, hutMax = Math.max(1, Math.min(3, Math.round((Math.min(W, B_EMBER) - Math.max(0, B_FROST)) / 300)));
+    var WK = STRUCT_KINDS.map(function (q) { return q.k; }).indexOf("witchhut"), huts = 0, hutMax = Math.max(1, Math.min(3, Math.round((Math.min(W, B_EMBER) - Math.max(0, B_FROST)) / 300)));
     for (var wq = 0; wq < 60 && huts < hutMax; wq++) {
       var sw0 = Math.max(0, B_FROST), sw1 = Math.min(W, B_EMBER); if (sw1 - sw0 < 240) break;
       var hx = Math.floor(sw0 + 30 + hash(wq, 761, seed) * (sw1 - sw0 - 60));
       if (Math.abs(hx - SPAWNX) < 150 || out.some(function (q) { return q.kind === "witchhut" && Math.abs(q.x0 - hx) < 160; })) continue;
       for (var hn = 0; hn < 8; hn++) { var HP = tryPlace(hx + (hn % 2 ? 1 : -1) * Math.ceil(hn / 2) * 3, WK); if (HP) { out.push(build(HP, out.length)); huts++; break; } }
     }
+    // NEW BUILDINGS: their own pass after everything else (only in new land), a few of each, spread out
+    if (nw) STRUCT_KINDS.forEach(function (K, ki) {
+      if (!K.nw) return;
+      var cols = 0; for (x = 0; x < W; x++) if (bio[x] === K.b && (!sub || (sub[x] ? 1 : 0) === K.sub)) cols++;
+      if (cols < 120) return;
+      var want = Math.max(1, Math.min(3, Math.round(cols / 420))), made = 0;
+      for (var nq = 0; nq < 90 && made < want; nq++) {
+        var nx = Math.floor(20 + hash(nq, 771 + ki * 13, seed) * (W - 40));
+        if (bio[nx] !== K.b || (sub && (sub[nx] ? 1 : 0) !== K.sub)) continue;
+        if (out.some(function (q) { return q.kind === K.k && Math.abs(q.x0 - nx) < 150; })) continue;
+        for (var nn = 0; nn < 10; nn++) { var NP = tryPlace(nx + (nn % 2 ? 1 : -1) * Math.ceil(nn / 2) * 4, ki); if (NP) { out.push(build(NP, out.length)); made++; break; } }
+      }
+    });
     return out;
   }
 
@@ -468,7 +520,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     }
     for (x = 0; x < W; x++) {
       var hgt = Math.round(SURF - elev[x]);
-      if (bio[x] === 1 && sub[x]) hgt = Math.min(hgt + Math.round(Math.max(0, vnoise(x * 0.03, 3.3, seed + 81) - 0.5) * 24), SURF + 7);   // Sunbaked Shores: low dunes and warm lagoons
+      if (bio[x] === 1 && sub[x]) hgt = Math.min(Math.round(SURF - elev[x] * 0.35 + Math.max(0, vnoise(x * 0.03, 3.3, seed + 81) - 0.4) * 26), SURF + 7);   // Sunbaked Shores: low rolling dunes, dipping into warm lagoons
       else if (bio[x] === 1) hgt = Math.min(hgt, LAVAL - 2);   // Ember ground never dips into the lava level
       top[x] = Math.max(14, Math.min(SURF + 18, hgt));
     }
@@ -705,7 +757,105 @@ batwing: { n: "Bat Wing", frag: "bat" },
     }
     holes.sort(function (a, b) { return a.x - b.x; });
     // ---- 7. structures (see buildStructures): standalone buildings with a door you can walk into ----
-    var structs = buildStructures(t, top, bio, seed, holes, walls);
+    var structs = buildStructures(t, top, bio, seed, holes, walls, sub, GEN_VAR);
+    // ---- 7b. LANDMARKS (only in land made after they were added): stone circles, ruined camps, wishing wells, signposts, old mines,
+    // shipwrecks on the Sunbaked Shores, treehouses in the Dark Oakwood and moon gates in the Cherry Blossom Vale. Plain blocks you can use
+    // and dig like any other; world.marks lists them for the map and the signposts.
+    var marks = [];
+    if (GEN_VAR) (function () {
+      function MK(n, fb) { var v = T["X_" + n]; return v !== undefined ? v : fb; }
+      var NOTE = MK("lorenote", T.AIR), STN = MK("standingstone", T.STONE), ALT = MK("runealtar", T.CRYSTALLAMP), TENT = MK("tent", T.BARREL), SIGN = MK("signpost", T.SIGN || T.FENCE), CHEST = MK("lootchest", T.CHEST), CART = MK("minecart", T.BARREL), SL = MK("stonelantern", T.LANTERN), PL = MK("paperlantern", T.LANTERN), COB = MK("cobble", T.STONE);
+      var ORE = [MK("bogironore", T.STONE), MK("sulfurore", T.STONE), MK("sapphireore", T.STONE)], ORE2 = [MK("amberore", T.STONE), MK("rubyore", T.STONE), MK("moonore", T.STONE)];
+      function setT(px, py, id) { if (px > 1 && px < W - 2 && py > 1 && py < H - 3) t[py * W + px] = id; }
+      function wl(px, py, id) { if (px > 1 && px < W - 2 && py > 1 && py < H - 3) walls[py * W + px] = id; }
+      function busy(a, z) {
+        for (var q = 0; q < structs.length; q++) if (a <= structs[q].mx1 + 6 && z >= structs[q].mx0 - 6) return true;
+        for (q = 0; q < holes.length; q++) if (holes[q].x >= a - 2 && holes[q].x <= z + 2) return true;
+        for (q = 0; q < marks.length; q++) if (a <= marks[q].x + 14 && z >= marks[q].x - 14) return true;
+        return Math.abs(SPAWNX - (a + z) / 2) < 40 + (z - a);
+      }
+      function level(a, z, tol) {   // the ground row if a..z is dry, solid and nearly flat, else -1
+        var mn = 999, mx = -1; if (a < 6 || z > W - 7) return -1;
+        for (var q = a; q <= z; q++) { var tp = top[q], gid = t[tp * W + q]; if (!TILES[gid].solid || gid === T.WATER || gid === T.ICE || gid === T.LAVA) return -1; var ab = t[(tp - 1) * W + q]; if (ab === T.WATER || ab === T.LAVA) return -1; if (tp < mn) mn = tp; if (tp > mx) mx = tp; }
+        return mx - mn <= tol ? mn : -1;
+      }
+      function pad(a, z, gy) {   // fill low columns up to row gy and clear plants above it (and any tree standing in the way, canopy and all)
+        for (var q0 = Math.max(1, a - 5); q0 <= Math.min(W - 2, z + 5); q0++) for (var y0 = 1; y0 < Math.min(gy, top[q0]); y0++) { var i0 = y0 * W + q0; if (t[i0] === T.LOG || t[i0] === T.LEAVES || t[i0] === T.VINE) t[i0] = T.AIR; }
+        for (var q = a; q <= z; q++) { var g0 = t[top[q] * W + q], g1 = t[(top[q] + 1) * W + q]; if (!TILES[g1].solid) g1 = T.STONE; for (var yy = gy; yy < top[q]; yy++) t[yy * W + q] = yy === gy ? g0 : g1; for (yy = Math.max(1, gy - 9); yy < gy; yy++) { var id0 = t[yy * W + q]; if (id0 !== T.AIR && !TILES[id0].solid && TILES[id0].kind !== "water") t[yy * W + q] = T.AIR; } top[q] = Math.min(top[q], gy); }
+      }
+      var B = {
+        stones: { w: 11, f: function (cx, gy) {
+          [[-5, 3], [-3, 2], [3, 2], [5, 3]].forEach(function (q) { for (var k = 1; k <= q[1]; k++) setT(cx + q[0], gy - k, STN); });
+          setT(cx - 1, gy - 3, STN); setT(cx, gy - 3, MK("orderstone", STN)); setT(cx + 1, gy - 3, STN); setT(cx - 1, gy - 2, STN); setT(cx + 1, gy - 2, STN);   // a trilithon over the altar
+          setT(cx, gy - 1, ALT); setT(cx + 2, gy - 1, NOTE); return "Stone Circle";
+        } },
+        camp: { w: 9, f: function (cx, gy) { setT(cx - 3, gy - 1, TENT); setT(cx - 1, gy - 1, T.CAMPFIRE); setT(cx + 1, gy - 1, T.STOOL); setT(cx + 3, gy - 1, CHEST); setT(cx + 4, gy - 1, MK("sack", T.BARREL)); setT(cx, gy - 1, NOTE); return "Old Campsite"; } },
+        well: { w: 7, f: function (cx, gy) { setT(cx, gy - 1, T.WELL); setT(cx + 2, gy - 1, T.BUCKET); setT(cx - 2, gy - 1, T.FLOWER); setT(cx + 3, gy - 1, SIGN); setT(cx + 1, gy - 1, NOTE); return "Wishing Well"; } },
+        sign: { w: 3, f: function (cx, gy) { setT(cx, gy - 1, SIGN); setT(cx + 1, gy - 1, T.TORCH); return "Signpost"; } },
+        moongate: { w: 13, f: function (cx, gy) {
+          for (var k = 1; k <= 3; k++) { setT(cx - 3, gy - k, COB); setT(cx + 3, gy - k, COB); }
+          setT(cx - 2, gy - 4, COB); setT(cx + 2, gy - 4, COB); for (k = -1; k <= 1; k++) setT(cx + k, gy - 5, COB); setT(cx - 3, gy - 4, MK("mossbrick", COB)); setT(cx + 3, gy - 4, MK("mossbrick", COB));
+          setT(cx, gy - 4, PL); setT(cx - 6, gy - 1, SL); setT(cx + 6, gy - 1, SL); setT(cx + 1, gy - 1, NOTE); return "Moon Gate";
+        } },
+        mine: { w: 9, f: function (cx, gy) {
+          var D = 14 + Math.floor(hash(cx, 961, seed) * 8), bot = gy + D, b = bio[cx], k, yy, xx;
+          if (bot > H - 30) return null;
+          for (k = 1; k <= 4; k++) { setT(cx - 2, gy - k, T.LOG); setT(cx + 2, gy - k, T.LOG); }   // the headframe
+          for (xx = cx - 3; xx <= cx + 3; xx++) setT(xx, gy - 5, T.PLANKS); setT(cx, gy - 4, T.LANTERN); setT(cx + 3, gy - 1, CART);
+          for (yy = gy - 3; yy <= bot; yy++) for (xx = cx - 1; xx <= cx + 1; xx++) { if (yy >= gy) { setT(xx, yy, T.AIR); wl(xx, yy, T.W_PLANK); } }
+          for (yy = gy - 3; yy <= bot; yy++) setT(cx, yy, T.LADDER);
+          for (yy = gy + 4; yy < bot; yy += 5) { setT(cx - 1, yy, T.LANTERN); setT(cx - 2, yy, T.PLANKS); setT(cx + 2, yy, T.PLANKS); }
+          for (yy = bot - 3; yy <= bot; yy++) for (xx = cx - 6; xx <= cx + 6; xx++) { setT(xx, yy, xx === cx ? T.LADDER : T.AIR); wl(xx, yy, T.W_PLANK); }   // the chamber at the bottom
+          for (xx = cx - 7; xx <= cx + 7; xx++) { setT(xx, bot + 1, T.PLANKS); setT(xx, bot - 4, xx % 3 === 0 ? T.LOG : T.PLANKS); }
+          for (yy = bot - 3; yy <= bot; yy++) { setT(cx - 7, yy, yy === bot - 3 ? T.LOG : ORE[b]); setT(cx + 7, yy, yy === bot ? ORE2[b] : ORE[b]); }
+          setT(cx - 5, bot, CART); setT(cx + 5, bot, CHEST); setT(cx - 3, bot - 3, T.LANTERN); setT(cx + 3, bot - 3, T.LANTERN); setT(cx + 4, bot, MK("crate", T.BARREL)); setT(cx + 2, bot, NOTE);
+          return "Abandoned Mine";
+        } },
+        wreck: { w: 11, f: function (cx, gy) {
+          var d = hash(cx, 962, seed) < 0.5 ? -1 : 1, k, xx;
+          for (xx = cx - 4; xx <= cx + 4; xx++) setT(xx, gy - 1, T.PLANKS);
+          for (xx = cx - 5; xx <= cx + 5; xx++) if (Math.abs(xx - cx) >= 4 || hash(xx, 963, seed) < 0.55) setT(xx, gy - 2, T.PLANKS);
+          setT(cx - 5 * d, gy - 3, T.LOG); setT(cx - 6 * d, gy - 4, T.LOG); setT(cx + 5 * d, gy - 2, T.LOG);   // the bow rears up, the stern sits low
+          for (k = 3; k <= 8; k++) setT(cx, gy - k, T.LOG); setT(cx + d, gy - 8, T.LOG);   // a broken mast
+          for (k = 5; k <= 7; k++) for (xx = 1; xx <= 3; xx++) wl(cx + d * xx, gy - k, T.W_PLASTER);   // a torn sail
+          setT(cx + 2 * d, gy - 2, CHEST); setT(cx - 2 * d, gy - 2, T.BARREL); setT(cx - 3 * d, gy - 3, MK("shelltuft", T.AIR)); setT(cx - d, gy - 2, NOTE);
+          return "Shipwreck";
+        } },
+        treehouse: { w: 1, f: null }
+      };
+      var LIST = { "0:0": ["stones", "camp", "well", "well", "mine", "sign"], "0:1": ["moongate", "moongate", "well", "stones", "camp"], "1:0": ["mine", "mine", "camp", "stones", "sign"], "1:1": ["wreck", "wreck", "wreck", "camp", "stones"],
+        "2:0": ["mine", "mine", "stones", "camp", "sign"], "2:1": ["treehouse", "treehouse", "treehouse", "camp", "stones"] };
+      function treehouse(x0) {   // find a dark oak trunk near x0 and build a platform up in it
+        for (var x = x0 - 30; x <= x0 + 30; x++) {
+          if (x < 8 || x > W - 9 || bio[x] !== 2 || !sub[x]) continue;
+          var tp = top[x]; if (t[(tp - 1) * W + x] !== T.LOG || t[(tp - 1) * W + x + 1] !== T.LOG || t[(tp - 6) * W + x] !== T.LOG || busy(x - 6, x + 7)) continue;
+          var py = tp - 5, xx;
+          for (xx = x - 5; xx <= x + 6; xx++) if (xx !== x && xx !== x + 1) setT(xx, py, xx === x - 3 ? T.LADDER : T.PLANKS);
+          for (var yy = py + 1; yy < top[x - 3]; yy++) setT(x - 3, yy, T.LADDER);
+          setT(x - 5, py - 1, T.FENCE); setT(x + 6, py - 1, T.FENCE); setT(x - 4, py - 1, CHEST); setT(x + 3, py - 1, T.BARREL); setT(x + 4, py - 1, T.LANTERN); setT(x + 5, py - 1, T.STOOL); setT(x + 2, py - 1, NOTE);
+          for (yy = py - 3; yy <= py - 1; yy++) { if (t[yy * W + x - 5] === T.AIR || t[yy * W + x - 5] === T.LEAVES) setT(x - 5, yy, yy === py - 1 ? T.FENCE : T.LOG); }
+          for (xx = x - 6; xx <= x - 2; xx++) setT(xx, py - 4, T.THATCH);
+          return { x: x, y: py - 1, n: "Ranger's Treehouse" };
+        }
+        return null;
+      }
+      for (var sx = 50, sl = 0; sx < W - 50; sx += 100, sl++) {
+        if (hash(sl, 960, seed) < 0.22) continue;
+        var cx0 = sx + Math.floor(hash(sl, 964, seed) * 60) - 30, L = LIST[bio[clamp0(cx0)] + ":" + (sub[clamp0(cx0)] ? 1 : 0)], kind = L[Math.floor(hash(sl, 965, seed) * L.length)];
+        if (kind === "treehouse") { var th2 = treehouse(cx0); if (th2) marks.push({ k: "treehouse", x: th2.x, y: th2.y, n: th2.n }); continue; }
+        var D2 = B[kind];
+        for (var nd = 0; nd < 20; nd++) {
+          var cx = cx0 + (nd % 2 ? 1 : -1) * Math.ceil(nd / 2) * 4, a = cx - (D2.w >> 1), z = cx + (D2.w >> 1);
+          if (busy(a, z)) continue;
+          if (kind === "wreck") { var nearW = false; for (var q2 = a - 6; q2 <= z + 6; q2++) if (q2 > 0 && q2 < W && t[(top[q2] - 1) * W + q2] === T.WATER) nearW = true; if (!nearW) continue; }
+          var gy = level(a, z, kind === "sign" || kind === "wreck" || kind === "stones" ? 3 : 2); if (gy < 0) continue;
+          pad(a, z, gy);
+          var nm = D2.f(cx, gy); if (!nm) continue;
+          marks.push({ k: kind, x: cx, y: gy - 1, n: nm }); break;
+        }
+      }
+      function clamp0(v) { return Math.max(0, Math.min(W - 1, v)); }
+    })();
     // ---- 8. the Cinder Aerie: a floating ruin high in the sky over Ember Bog, reached by the hot updraft of a Thermal Vent beside it ----
     // Built after everything else, almost entirely in open sky, so it never moves any other building. Saved as world.aerie.
     var aerie = (function () {
@@ -738,7 +888,93 @@ batwing: { n: "Bat Wing", frag: "bat" },
       }
       return { x0: x0, x1: x1, y: Y, cx: ax, cy: Y - 7, vx: vx, vy: gy - 1 };
     })();
-    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, holes: holes, structs: structs, feats: feats, aerie: aerie, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    // ---- 9. the SKY VILLAGE: a floating island west of camp where the swamp villagers live (sandbox.js SKY VILLAGE draws them and runs their trades)
+    // One per world, in the original map only, built last and almost entirely in open sky (so it also appears in worlds made before it existed).
+    // A Sky Vine climbs to it from the ground. Main island (smithy, Toad Dwarf hold, Village Hall, market, lumber mill) + a rope bridge + a wooded islet.
+    // The houses are buildings like the others (world.structs, ids after every other building), so you walk in through their doors.
+    var sky = (function () {
+      if (!GEN_AERIE) return null;
+      function MS(n, fb) { var v = T["X_" + n]; return v !== undefined ? v : fb; }
+      var Y = 26, IW = 88, A = -1, x, y, k;
+      function clearSky(a) { if (a < 12 || a + IW > W - 12) return false; for (var q = a - 2; q <= a + IW + 2; q++) if (top[q] < Y + 18) return false; return true; }
+      for (k = 0; k < 120 && A < 0; k++) { var c1 = SPAWNX - 300 - k * 6, c2 = SPAWNX + 120 + k * 6; if (clearSky(c1)) A = c1; else if (k > 30 && clearSky(c2) && (!aerie || c2 > aerie.x1 + 20 || c2 + IW < aerie.x0 - 20)) A = c2; }
+      if (A < 0) return null;
+      function put(px, py, id) { if (px > 0 && px < W - 1 && py > 1 && py < H - 2) t[py * W + px] = id; }
+      function wall(px, py, id) { if (px > 0 && px < W - 1 && py > 1 && py < H - 2) walls[py * W + px] = id; }
+      var COB = MS("cobble", T.STONE), PLAS = MS("plasterblock", T.PLANKS), SHR = MS("shinglered", T.THATCH), SHB = MS("shingleblue", T.BASALTBRICK), RBR = MS("redbrick", T.BRICK), MOSSB = MS("mossbrick", T.BRICK), BARS = MS("ironbars", T.GLASS);
+      var LAMP = MS("streetlamp", T.LANTERN), HL = MS("hanginglantern", T.LANTERN), CRATE = MS("crate", T.BARREL), SACK = MS("sack", T.BARREL), VINE = MS("skyvine", T.LADDER), GL = T.GLASS;
+      // the islands: a grassy deck on a rocky, root-hung underside
+      function island(a, z, deep) {
+        var cx = (a + z) / 2, hw = (z - a) / 2;
+        for (x = a; x <= z; x++) {
+          var u = (x - cx) / hw, d = Math.round(2 + (1 - u * u) * deep + (hash(x, 970, seed) - 0.5) * 3);
+          for (y = Y; y <= Y + d; y++) put(x, y, y === Y ? T.MOSS : y <= Y + 2 ? T.MUD : hash(x, y, seed + 971) < 0.1 ? T.SPORE : T.STONE);
+          if (hash(x, 972, seed) < 0.35) for (y = Y + d + 1; y <= Y + d + 1 + Math.floor(hash(x, 973, seed) * 4); y++) put(x, y, T.VINE);   // hanging roots
+          else if (hash(x, 974, seed) < 0.06) put(x, Y + d + 1, T.LANTERN);
+        }
+      }
+      var M0 = A, M1 = A + 56, I0 = A + 67, I1 = A + IW - 1;
+      island(M0, M1, 14); island(I0, I1, 8);
+      for (x = M1 + 1; x < I0; x++) { put(x, Y, T.PLANKS); if (x === M1 + 1 || x === I0 - 1) { put(x, Y - 1, T.FENCE); put(x, Y - 2, HL); } }   // the rope bridge
+      put(M0, Y - 1, T.PLANKS); put(I1, Y - 1, T.PLANKS);   // a low rail at each far end
+      var out = [], base = structs.length;
+      // a house: blueprint fn(x0, x1, gy, top0, side) builds the shell; the door goes in the side wall
+      function house(kind, name, x0, w, bh, side, fn) {
+        var x1 = x0 + w - 1, gy = Y, top0 = gy - bh, bx0 = x0, bx1 = x1, by0 = gy - 1;
+        var P = function (px, py, id) { put(px, py, id); if (px < bx0) bx0 = px; if (px > bx1) bx1 = px; if (py < by0) by0 = py; };
+        fn(P, x0, x1, gy, top0, x0 + Math.floor(w / 2));
+        var dx = side < 0 ? x0 : x1; P(dx, gy - 1, T.DOOR_B); P(dx, gy - 2, T.DOOR_T); P(dx + side, gy - 3, HL);
+        out.push({ id: base + out.length, kind: kind, name: name, b: bio[x0], x0: x0, x1: x1, w: w, gy: gy, bh: bh, side: side, dx: dx, outX: dx + side, doorY: gy - 1, mx0: bx0, mx1: bx1, my0: by0, sky: 1 });
+      }
+      function gableP(P, xa, xb, yb, edge, fillId) { for (var r = 0; ; r++) { var L = xa + r, R = xb - r, yR = yb - r; if (L > R) return; for (var q = L; q <= R; q++) P(q, yR, (q - L < 2 || R - q < 2 || R - L <= 2) ? edge : fillId); if (L === R) return; } }
+      house("smithy", "Turtle Smithy", A + 2, 9, 5, 1, function (P, x0, x1, gy, top0, cx) {
+        for (y = top0; y <= gy - 1; y++) for (x = x0; x <= x1; x++) P(x, y, y === gy - 1 ? COB : RBR);
+        P(x0 + 2, gy - 3, BARS); P(x0 + 2, gy - 4, BARS); P(cx + 1, gy - 3, BARS); P(cx + 1, gy - 4, BARS);
+        gableP(P, x0 - 1, x1 + 1, top0 - 1, SHR, T.PLANKS); for (y = top0 - 2; y > top0 - 7; y--) P(x0 + 2, y, RBR); P(x0 + 1, top0 - 7, T.STONE); P(x0 + 2, top0 - 7, T.STONE); P(x0 + 3, top0 - 7, T.STONE);
+      });
+      put(A + 12, Y - 1, T.ANVIL);
+      house("dwarfhold", "Toad Dwarf Hold", A + 14, 9, 6, -1, function (P, x0, x1, gy, top0, cx) {
+        for (y = top0; y <= gy - 1; y++) for (x = x0; x <= x1; x++) P(x, y, (x === x0 || x === x1) ? MOSSB : (y - top0) % 3 === 0 ? MOSSB : COB);
+        P(cx, gy - 4, T.LANTERN); P(cx - 2, gy - 3, BARS); P(cx + 2, gy - 3, BARS);
+        for (x = x0 - 1; x <= x1 + 1; x++) P(x, top0 - 1, COB); for (x = x0 - 1; x <= x1 + 1; x += 2) P(x, top0 - 2, COB);
+        P(cx, top0 - 3, T.LOG); P(cx, top0 - 4, T.LOG); P(cx + 1, top0 - 4, T.BANNER);
+      });
+      house("skyhall", "Village Hall", A + 27, 13, 7, -1, function (P, x0, x1, gy, top0, cx) {
+        for (x = x0; x <= x1; x++) P(x, gy - 1, COB);
+        for (y = top0; y <= gy - 2; y++) for (x = x0; x <= x1; x++) P(x, y, PLAS);
+        [x0, x0 + 4, cx, x1 - 4, x1].forEach(function (px) { for (y = top0; y <= gy - 2; y++) P(px, y, T.LOG); });
+        [x0 + 2, x1 - 2].forEach(function (px) { for (y = gy - 5; y <= gy - 3; y++) P(px, y, GL); }); P(cx - 2, gy - 4, GL); P(cx + 2, gy - 4, GL); P(cx, gy - 6, MS("stainedblue", GL));
+        for (x = x0 - 1; x <= x1 + 1; x++) P(x, top0 - 1, T.LOG);
+        gableP(P, x0 - 2, x1 + 2, top0 - 2, SHB, T.PLANKS);
+        for (y = top0 - 10; y <= top0 - 8; y++) { P(cx - 1, y, T.LOG); P(cx + 1, y, T.LOG); } P(cx, top0 - 9, HL); P(cx - 1, top0 - 11, SHB); P(cx, top0 - 11, SHB); P(cx + 1, top0 - 11, SHB); P(cx, top0 - 12, SHB); P(cx, top0 - 13, T.BANNER);   // the belfry
+      });
+      // the market square: two awning stalls, crates and sacks, a well
+      [[A + 42, SHR], [A + 46, MS("shingleblue", SHR)]].forEach(function (q) { put(q[0] - 1, Y - 1, T.FENCE); put(q[0] + 1, Y - 1, T.FENCE); put(q[0] - 1, Y - 2, T.FENCE); put(q[0] + 1, Y - 2, T.FENCE); for (x = q[0] - 1; x <= q[0] + 1; x++) put(x, Y - 3, q[1]); put(q[0], Y - 1, x % 2 ? CRATE : SACK); });
+      put(A + 44, Y - 1, T.WELL); put(A + 41, Y - 1, T.BARREL); put(A + 49, Y - 1, SACK);
+      house("sawmill", "Beaver Lumber Mill", A + 51, 6, 5, 1, function (P, x0, x1, gy, top0, cx) {
+        for (y = top0; y <= gy - 1; y++) for (x = x0; x <= x1; x++) P(x, y, T.PLANKS);
+        [x0, x1].forEach(function (px) { for (y = top0; y <= gy - 1; y++) P(px, y, T.LOG); }); P(cx, gy - 4, GL); P(cx - 1, gy - 4, GL);
+        gableP(P, x0 - 1, x1 + 1, top0 - 1, T.THATCH, T.THATCH);
+      });
+      [A + 5, A + 20, A + 25, A + 40, A + 50].forEach(function (lx) { if (t[(Y - 1) * W + lx] === T.AIR) put(lx, Y - 1, LAMP); });
+      [A + 1, A + 13, A + 24, A + 39].forEach(function (fx) { if (t[(Y - 1) * W + fx] === T.AIR) put(fx, Y - 1, T.FLOWERPOT); });
+      // the wooded islet: lumberjack trees, a log pile and stumps
+      function tree(tx) { var th = 5 + Math.floor(hash(tx, 975, seed) * 3); for (y = Y - 1; y >= Y - th; y--) put(tx, y, T.LOG); for (var dy = -2; dy <= 2; dy++) for (var dx2 = -3; dx2 <= 3; dx2++) if (dx2 * dx2 / 9 + dy * dy / 4 <= 1 + (hash(tx + dx2, dy, seed + 976) - 0.5) * 0.4 && t[(Y - th - 1 + dy) * W + tx + dx2] === T.AIR) put(tx + dx2, Y - th - 1 + dy, T.LEAVES); }
+      tree(I0 + 4); tree(I0 + 11); tree(I0 + 17);
+      put(I0 + 7, Y - 1, T.LOG); put(I0 + 8, Y - 1, T.LOG); put(I0 + 7, Y - 2, T.LOG); put(I0 + 14, Y - 1, T.STOOL); put(I0 + 2, Y - 1, CRATE);
+      // the Sky Vine: from the ground up through the main island to the deck
+      var vx = -1;
+      function byHouse(c) { for (var q = 0; q < structs.length; q++) if (c >= structs[q].mx0 - 1 && c <= structs[q].mx1 + 1) return true; for (q = 0; q < out.length; q++) if (c >= out[q].mx0 && c <= out[q].mx1) return true; return false; }   // (building tiles become pictures, so the vine must miss them)
+      for (k = 0; k < 70 && vx < 0; k++) { var c = A + 23 + (k % 2 ? 1 : -1) * Math.ceil(k / 2); if (c < M0 + 1 || c > M1 - 1 || byHouse(c)) continue; var ok = t[(Y - 1) * W + c] === T.AIR && t[(Y - 2) * W + c] === T.AIR; for (y = Y + 1; y < top[c] - 1 && ok; y++) if (t[y * W + c] !== T.AIR && t[y * W + c] !== T.STONE && t[y * W + c] !== T.MUD && t[y * W + c] !== T.SPORE && t[y * W + c] !== T.VINE && t[y * W + c] !== T.LANTERN) ok = false; if (ok) vx = c; }
+      if (vx < 0) for (k = 0; k < 70 && vx < 0; k++) { var c3 = A + 23 + (k % 2 ? 1 : -1) * Math.ceil(k / 2); if (c3 > M0 && c3 < M1 && !byHouse(c3)) vx = c3; }
+      [M0 - 1, I1 + 1, M0 - 2, I1 + 2, M0 - 3, I1 + 3].forEach(function (c4) { if (vx < 0 && !byHouse(c4)) vx = c4; });   // or up the side of the island
+      if (vx < 0) vx = A + 23;
+      for (y = Y - 2; y < top[vx]; y++) put(vx, y, VINE);
+      for (k = 0; k < out.length; k++) structs.push(out[k]);
+      marks.push({ k: "sky", x: A + 33, y: Y - 1, n: "Sky Village" });
+      return { a: A, z: A + IW - 1, m0: M0, m1: M1, i0: I0, i1: I1, y: Y, vx: vx, vy: top[vx] - 1 };
+    })();
+    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
   var POST = [];   // content packs add their extras to every generated map (the original one and each new segment), in that map's own columns
@@ -746,7 +982,9 @@ batwing: { n: "Bat Wing", frag: "bat" },
     o.holes.forEach(function (q) { q.x += dx; });
     o.structs.forEach(function (q) { ["x0", "x1", "dx", "outX", "mx0", "mx1"].forEach(function (k) { if (q[k] !== undefined) q[k] += dx; }); });
     o.feats.forEach(function (q) { q.x += dx; });
+    (o.marks || []).forEach(function (q) { q.x += dx; });
     if (o.aerie) ["x0", "x1", "cx", "vx"].forEach(function (k) { o.aerie[k] += dx; });
+    if (o.sky) ["a", "z", "m0", "m1", "i0", "i1", "vx"].forEach(function (k) { o.sky[k] += dx; });
   }
   function genWide(seed, bv) {
     seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
@@ -768,7 +1006,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
         lay[sd].push([a, z, b]); prev = b; edge = sd < 0 ? a : z; n++;
       }
     });
-    return { W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie,
+    return { W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, marks: core.marks || [], holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie, sky: core.sky,
       spawn: { x: SPAWNX + EXT + 0.5, y: core.top[SPAWNX] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: EXT, gx1: EXT + CORE_W - 1 };
   }
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
@@ -788,7 +1026,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     shiftX(c, a);
     var base = (sd < 0 ? 100000 : 200000) + n * 100;   // building ids that never collide and stay the same every time this segment is made
     c.structs.forEach(function (q, i) { q.id = base + i; });
-    wd.holes = wd.holes.concat(c.holes).sort(function (p, q) { return p.x - q.x; }); wd.feats = wd.feats.concat(c.feats);
+    wd.holes = wd.holes.concat(c.holes).sort(function (p, q) { return p.x - q.x; }); wd.feats = wd.feats.concat(c.feats); wd.marks = (wd.marks || []).concat(c.marks || []);
     for (k = 0; k < c.structs.length; k++) wd.structs.push(c.structs[k]);
     wd.done[sd] = n + 1; if (sd < 0) wd.gx0 = a; else wd.gx1 = z - 1;
     return { x0: a, x1: z - 1, structs: c.structs, b: b };

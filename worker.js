@@ -9,13 +9,18 @@ const MAX_SAVE = 200000;      // largest cloud save, in characters of JSON
 const MAX_DELVE = 900000;     // largest Delve world save, in characters (a heavily built world is ~100-300k)
 const MAX_DELVE_WORLDS = 12;  // Delve worlds kept in the cloud per account
 const COOKIE = "sv_session";
-const LOGIN_MAX = 8, LOGIN_WINDOW = 15 * 60 * 1000;   // 8 wrong passwords per name per 15 minutes
+const LOGIN_WINDOW = 15 * 60 * 1000;
+// Wrong-password limits, all per 15 minutes:
+//   8 per username from one IP  (a normal player who forgot their password)
+//   40 per IP across all names  (stops one person trying passwords on many accounts)
+//   60 per username from all IPs (stops a spread-out attack on one account, but is high enough that one stranger can't lock you out)
+const LOGIN_MAX_NAME_IP = 8, LOGIN_MAX_IP = 40, LOGIN_MAX_NAME = 60;
 const REG_MAX = 10, REG_WINDOW = 60 * 60 * 1000;      // 10 new accounts per IP per hour
 
 const json = (o, status = 200, headers = {}) =>
   new Response(JSON.stringify(o), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...headers }
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-frame-options": "DENY", ...headers }
   });
 
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
@@ -125,17 +130,19 @@ async function api(req, env, url) {
   if (path === "/api/login" && method === "POST") {
     const b = await readJson(req);
     if (!b || typeof b.username !== "string" || typeof b.password !== "string") return json({ error: "Bad request" }, 400);
-    const name = b.username.toLowerCase().slice(0, 40), key = "login:" + name;
-    if (await blocked(db, key, LOGIN_MAX, LOGIN_WINDOW)) return json({ error: "Too many tries. Wait 15 minutes and try again." }, 429);
+    const name = b.username.toLowerCase().slice(0, 40), ip = req.headers.get("cf-connecting-ip") || "unknown";
+    const kNameIp = "login:" + name + "@" + ip, kIp = "loginip:" + ip, kName = "login:" + name;
+    if (await blocked(db, kNameIp, LOGIN_MAX_NAME_IP, LOGIN_WINDOW) || await blocked(db, kIp, LOGIN_MAX_IP, LOGIN_WINDOW) || await blocked(db, kName, LOGIN_MAX_NAME, LOGIN_WINDOW))
+      return json({ error: "Too many tries. Wait 15 minutes and try again." }, 429);
     const u = await db.prepare("SELECT id, display, salt, hash, iters FROM users WHERE name = ?").bind(name).first();
     // Do the same work whether or not the name exists, so timing doesn't reveal which names are taken
     const salt = u ? fromB64(u.salt) : rand(16);
     const got = await pbkdf2(b.password.slice(0, 200), salt, u ? u.iters : ITER);
     if (!u || !same(got, fromB64(u.hash))) {
-      await hit(db, key, LOGIN_WINDOW);
+      await hit(db, kNameIp, LOGIN_WINDOW); await hit(db, kIp, LOGIN_WINDOW); await hit(db, kName, LOGIN_WINDOW);
       return json({ error: "Wrong username or password." }, 401);
     }
-    await unhit(db, key);
+    await unhit(db, kNameIp);
     const cookie = await startSession(db, url, u.id);
     return json({ user: { name: u.display }, save: await cloudSave(db, u.id) }, 200, { "set-cookie": cookie });
   }

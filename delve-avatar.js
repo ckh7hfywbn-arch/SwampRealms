@@ -87,8 +87,44 @@ var DelveAv = (function () {
     }
   };
 
+
+  // ---------- PEOPLE: human characters you can play as (Choose Character on the main menu) ----------
+  // Same 22 x 34 body as the animals. Each has a skin tone (the base colour), a hairstyle (the top rows of the head map), hair and eye colours
+  // and their own trousers. Head letters: h hair, e brows, w eye white, r iris, n cheeks, d nose / shade, q mouth, f freckles.
+  var FACE = ["bebbbbeb", "bwrbbrwb", "bnbbbbnb", "bbbbdbbb", "bbbqqbbb", ".bbbbbb.", "..bbbb.."];
+  var STYLE = {
+    short: ["........", ".hhhhhh.", "hhhhhhhh", "hhhhhhhh", "hbbbbbbh"],
+    long: ["........", ".hhhhhh.", "hhhhhhhh", "hhhhhhhh", "hhbbbbhh"],
+    curly: [".h.hh.h.", "hhhhhhhh", "hhhhhhhh", "hhhhhhhh", "hhbbbbhh"],
+    spiky: [".h.h.h.h", "hhhhhhhh", "hhhhhhhh", "hbhhbhhb", "bbbbbbbb"],
+    bun: ["..hhhh..", ".hhhhhh.", "hhhhhhhh", "hhhhhhhh", "hbbbbbbh"],
+    crop: ["........", "........", ".hhhhhh.", "hhhhhhhh", "bbbbbbbb"]
+  };
+  function personHead(style, extra) {
+    var top = STYLE[style] || STYLE.short, face = FACE.slice();
+    if (style === "long") face = ["hebbbbeh", "hwrbbrwh", "hnbbbbnh", "hbbbdbbh", "hbbqqbbh", "hbbbbbbh", "h.bbbb.h"];
+    if (extra === "beard") { face[4] = "hbbqqbbh"; face[5] = ".hhhhhh."; face[6] = "..hhhh.."; face[3] = "bhbbdbhb"; }
+    if (extra === "freckles") face[2] = "bnfbbfnb";
+    return top.concat(face);
+  }
+  var PEOPLE = {
+    p_rowan: { name: "Rowan", bio: "A cheerful explorer with a mop of brown hair.", skin: "#e8b48a", hair: "#6a3e1e", eye: "#1a3a1a", leg: "#3a4a6a", style: "short" },
+    p_mira: { name: "Mira", bio: "Quick, clever and never without her long black hair tied back.", skin: "#a8724a", hair: "#16100c", eye: "#2a1408", leg: "#5a2a3a", style: "long" },
+    p_kai: { name: "Kai", bio: "Spiky hair, big grin, always first into the cave.", skin: "#d49a6a", hair: "#14100e", eye: "#2a1a10", leg: "#2a3a2a", style: "spiky" },
+    p_juno: { name: "Juno", bio: "Ginger curls, a face full of freckles and a pocket full of snacks.", skin: "#f4cca8", hair: "#c8582a", eye: "#142458", leg: "#4a3a2a", style: "curly", extra: "freckles" },
+    p_ezra: { name: "Ezra", bio: "Calm, careful and very good with a pickaxe.", skin: "#6a4228", hair: "#100c0a", eye: "#1e0e06", leg: "#3a3a4a", style: "crop" },
+    p_sage: { name: "Sage", bio: "A gardener at heart, with a sunny blonde bun.", skin: "#c89a72", hair: "#e8c46a", eye: "#1a3a1a", leg: "#4a5a3a", style: "bun" },
+    p_otis: { name: "Otis", bio: "An old delver with a grey beard and a hundred stories.", skin: "#d8a47e", hair: "#b8b4ac", eye: "#142458", leg: "#4a3a30", style: "crop", extra: "beard" },
+    p_lena: { name: "Lena", bio: "Dreamy, brave, and fond of her long lilac hair.", skin: "#f0c8a8", hair: "#a88ad8", eye: "#2a1a3a", leg: "#3a2a5a", style: "long" }
+  };
+  Object.keys(PEOPLE).forEach(function (k) {
+    var Pp = PEOPLE[k];
+    AN[k] = { x0: 7, y0: 5, eyes: [[9, 11], [12, 11]], hy: 8, hw: 8, fy: [11, 8], ring: [16, 12], mask: [13, 8], leg: Pp.leg, head: personHead(Pp.style, Pp.extra) };
+    COL[k] = Pp.skin; IRIS[k] = Pp.eye;
+  });
   function palFor(a) {
     var base = COL[a], skin = base;
+    if (PEOPLE[a]) { var Pp = PEOPLE[a]; return { b: base, l: lt(base, 0.25), d: dk(base, 0.18), w: "#f6f6ee", k: "#10131a", n: lt("#e88a8a", 0.1), m: base, y: "#ffb830", x: "#d97a10", g: "#f1ead0", skin: skin, sl: lt(base, 0.1), sd: dk(base, 0.25), h: Pp.hair, e: dk(Pp.hair, 0.3), r: Pp.eye, q: "#9a4a4a", f: dk(base, 0.28), s: dk(base, 0.18) }; }
     return { b: base, l: lt(base, 0.3), d: dk(base, 0.32), w: "#f6f6ee", k: "#10131a", n: "#e8a0a0", m: a === "donkey" ? "#d9d5e6" : a === "monkey" ? "#e8c9a0" : base, y: "#ffb830", x: "#d97a10", g: "#f1ead0", skin: skin, sl: lt(base, 0.22), sd: dk(base, 0.3), h: "#1c1613", e: "#2e2018", r: "#ff3b30", s: "#a8433f" };
   }
 
@@ -346,13 +382,13 @@ var DelveAv = (function () {
   function backHead(a) {
     if (BACKH[a]) return BACKH[a];
     var src = AN[a].head, H = src.length, W2 = src[0].length, mid = W2 / 2;
-    var rows = src.map(function (r, j) { return r.replace(/[^.]/g, function (ch) { return a === "human" ? (j < 8 ? "h" : "b") : (ch === "n" && (a === "donkey" || a === "elephant")) ? "d" : "b"; }); });
+    var rows = src.map(function (r, j) { return r.replace(/[^.]/g, function (ch) { return PEOPLE[a] ? (ch === "h" || j < 8 ? "h" : "b") : a === "human" ? (j < 8 ? "h" : "b") : (ch === "n" && (a === "donkey" || a === "elephant")) ? "d" : "b"; }); });
     var put = function (x, y, ch) { if (y >= 0 && y < H && rows[y].charAt(x) !== "." && x >= 0 && x < W2) rows[y] = rows[y].slice(0, x) + ch + rows[y].slice(x + 1); };
     if (a === "frog") { [[3, 4], [8, 4], [5, 6], [7, 8], [3, 8]].forEach(function (q) { put(q[0], q[1], "d"); }); }   // a few darker spots
     else if (a === "owl") { for (var j = 4; j < H - 1; j += 2) for (var i = 1 + (j % 4 ? 1 : 0); i < W2 - 1; i += 3) put(i, j, "d"); }   // feather scallops
     else if (a === "donkey") { for (var j2 = 5; j2 < H - 2; j2++) { put(Math.floor(mid) - 1, j2, "d"); put(Math.floor(mid), j2, "d"); } }   // the mane down the back of the neck
     else if (a === "monkey") { for (var j3 = 1; j3 < H - 2; j3++) if (j3 % 3 === 0) put(Math.floor(mid), j3, "d"); }
-    else if (a === "human") { put(Math.floor(mid), 2, "e"); put(Math.floor(mid) - 1, 3, "e"); put(Math.floor(mid) + 1, 4, "e"); }   // a crown swirl in the hair
+    else if (a === "human" || PEOPLE[a]) { put(Math.floor(mid), 2, "e"); put(Math.floor(mid) - 1, 3, "e"); put(Math.floor(mid) + 1, 4, "e"); }   // a crown swirl in the hair
     else { put(Math.floor(mid), 1, "d"); put(Math.floor(mid), 2, "d"); }
     return (BACKH[a] = rows);
   }
@@ -556,7 +592,7 @@ var DelveAv = (function () {
   function full(o, animal, s, pose) { o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); return toCanvas(drawFrame(o, pose || "idle0", true), Math.max(1, s | 0)); }   // the whole figure with both arms (the backpack screen)
   function thumb(o, animal, s) { o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); return toCanvas(drawFrame(o, "idle0", true), s || 3).toDataURL(); }
 
-  var api = { sprite: sprite, thumb: thumb, full: full, animals: Object.keys(AN), poses: Object.keys(POSE), _draw: drawFrame, _AN: AN, FW: FW, FH: FH };
+  var api = { people: PEOPLE, sprite: sprite, thumb: thumb, full: full, animals: Object.keys(AN), poses: Object.keys(POSE), _draw: drawFrame, _AN: AN, FW: FW, FH: FH };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   return api;
 })();

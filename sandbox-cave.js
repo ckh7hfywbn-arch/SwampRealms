@@ -255,6 +255,16 @@
   // "leg" letters: y crystal cluster. Rows 0-4 are open sky above the north rim, so the tall portals there have room.
   var NEXUS_TH = THEMES.length, NX_W = 33, NX_H = 27;
   THEMES.push({ n: "The SwampRealms", sub: "Where every world begins", floor: "#2a2440", floor2: "#352e52", top: "#0a0816", topHi: "#1a1530", face: "#3a2f5e", faceHi: "#5a4a90", faceLo: "#1a1430", tint: [8, 4, 22], lamp: T.CRYSTAL, glow: "160,130,255" });
+  THEMES.push(   // (pushed after the SwampRealms theme, so NEXUS_TH stays put)
+    { n: "The Soggy Log Tavern", sub: "Warm cider, loud frogs and a crackling fire", plank: 1, floor: "#8a5a32", floor2: "#9e6a3e", top: "#241810", topHi: "#3a2a1a", face: "#7a4a2a", faceHi: "#a86a3a", faceLo: "#42281a", tint: [12, 6, 2], lamp: T.GLOWCAP, glow: "255,180,100" },
+    { n: "Snow Igloo", sub: "Snug inside, whatever the wind is doing", floor: "#c8dcea", floor2: "#dceaf4", top: "#2a3a4a", topHi: "#4a6070", face: "#b8d0e2", faceHi: "#eef8ff", faceLo: "#6a8aa2", tint: [4, 8, 16], lamp: T.SPIKE, glow: "190,230,255" },
+    { n: "Blossom Tea House", sub: "Steam, petals and quiet cups of tea", plank: 1, floor: "#b88a5a", floor2: "#c89a6a", top: "#2a1418", topHi: "#4a2430", face: "#d87aa0", faceHi: "#ffb0cc", faceLo: "#6a2a44", tint: [14, 6, 10], lamp: T.GLOWCAP, glow: "255,170,200" },
+    { n: "Village Hall", sub: "The Heron Elder keeps the village records here", plank: 1, floor: "#9a7048", floor2: "#ac8256", top: "#1e1a24", topHi: "#34303e", face: "#d8d0bc", faceHi: "#f4eedc", faceLo: "#6a6250", tint: [6, 8, 12], lamp: T.GLOWCAP, glow: "255,220,160" },
+    { n: "Turtle Smithy", sub: "The anvil rings all day long", floor: "#4a4044", floor2: "#5c5056", top: "#1b1214", topHi: "#2f1f1e", face: "#8a4a36", faceHi: "#b8644a", faceLo: "#3a1c14", tint: [16, 6, 3], lamp: T.BLOOM, glow: "255,140,70" },
+    { n: "Toad Dwarf Hold", sub: "Stone halls, warm braziers and a ladder down to the deep", floor: "#5e6266", floor2: "#70757a", top: "#16181c", topHi: "#262a30", face: "#6a7068", faceHi: "#98a094", faceLo: "#2c302c", tint: [6, 8, 6], lamp: T.GLOWCAP, glow: "255,190,110" },
+    { n: "Beaver Lumber Mill", sub: "Sawdust, fresh-cut pine and a lot of chewing", plank: 1, floor: "#b08a5a", floor2: "#c09a68", top: "#241810", topHi: "#3a2a1a", face: "#8a6238", faceHi: "#b8844a", faceLo: "#46301a", tint: [10, 7, 2], lamp: T.GLOWCAP, glow: "255,200,120" },
+    { n: "Sun Temple", sub: "Hot sand, old gold and something guarding it", floor: "#c8a46a", floor2: "#d8b47a", top: "#3a2a14", topHi: "#5a4422", face: "#b8904e", faceHi: "#ecc888", faceLo: "#5a4020", tint: [16, 10, 2], lamp: T.BLOOM, glow: "255,190,90" }
+  );
   function nexusMap() {
     var w = NX_W, h = NX_H, rows = [], x, y, cx = (w - 1) / 2;
     var hs = function (a, b2) { var n = Math.sin(a * 127.1 + b2 * 311.7) * 43758.5453; return n - Math.floor(n); };
@@ -281,8 +291,59 @@
     [[6, 11], [26, 11], [4, 15], [28, 15], [9, 20], [23, 20]].forEach(function (q) { put(q[0], q[1], "y"); });
     return rows;
   }
+  // ---------- NEW BUILDINGS (see sandbox-world.js STRUCT_KINDS nw): the Soggy Log Tavern, the Snow Igloo, the Blossom Tea House, the Sun Temple ----------
+  var NEWTH = NEXUS_TH + 1;   // (their themes come right after the SwampRealms theme)
+  IMAP.tavern = {"amb": 0.66, "win": "GLASS", "floors": [[1, 2, 17, 10, "oakplanks"], [1, 2, 8, 2, "herringbone"]], "tops": {"2,2": "p", "3,2": "k", "5,2": "f", "7,2": "o", "5,4": "c", "13,4": "s", "3,6": "f", "13,6": "c", "5,8": "o", "12,8": "p"}, "map": ["###################", "#tS.F.tw.T.wt.F.St#", "#b111111..HH....bb#", "#b.............a.X#", "#...cTC.....cTC...#", "#.................#", "#.cTC.......cTC..f#", "#.................#", "#b..cTC....cTC...h#", "#bb.............bx#", "#X..f.........f.xx#", "###################"]}; IMAP.tavern.th = NEWTH + 0;
+  IMAP.igloo = {"amb": 0.6, "win": "GLASSB", "floors": [[1, 2, 9, 7, "frostcobble"]], "tops": {"2,2": "c", "9,5": "p"}, "map": ["###########", "#t.w.T.w.t#", "#B4..H..Lj#", "#B.......x#", "#........X#", "#I......cT#", "#f.......b#", "#.u.....x.#", "###########"]}; IMAP.igloo.th = NEWTH + 1;
+  IMAP.teahouse = {"amb": 0.7, "win": "GLASSR", "floors": [[1, 2, 13, 9, "basketweave"], [1, 8, 4, 9, "terracotta"], [10, 8, 13, 9, "terracotta"]], "tops": {"4,2": "n", "10,2": "o", "3,3": "s", "11,3": "p", "3,6": "v", "11,6": "s", "2,8": "p", "12,8": "k"}, "map": ["###############", "#tg.w.T.T.w.gt#", "#f..5.....5..f#", "#.c6C.....c6C.#", "#.............#", "#f..h.....a..f#", "#.c6C.....c6C.#", "#.............#", "#13.........31#", "#y...........y#", "###############"]}; IMAP.teahouse.th = NEWTH + 2;
+  IMAP.suntemple = {"amb": 0.5, "win": "GLASSR", "floors": [[1, 2, 15, 11, "sandbrick"], [7, 3, 9, 11, "checker"]], "tops": {}, "map": ["#################", "#t.T.t.TTT.t.T.t#", "#Y.U..o...o..U.Y#", "#...............#", "#.==..Q...Q..==.#", "#.==.........==.#", "#U.............U#", "#..o.........o..#", "#.==.........==.#", "#.==..Q...Q..==.#", "#Y.............Y#", "#U.x...d.d...x.U#", "#################"]}; IMAP.suntemple.th = NEWTH + 7;
+  // ---------- SKY VILLAGE houses (sandbox-world.js gen step 9) ----------
+  IMAP.skyhall = {"amb": 0.72, "win": "GLASSB", "floors": [[1, 2, 15, 9, "herringbone"], [3, 3, 13, 6, "checker"]], "tops": {"5,4": "c", "7,4": "f", "9,4": "k", "11,4": "o"}, "map": ["#################", "#tn.M.w.T.w.c.nt#", "#K.K....N....e.K#", "#...............#", "#..cTTTTTTTTTC..#", "#...c.c.c.c.c...#", "#...............#", "#f.Q.........Q.f#", "#s.............s#", "#b.X.........X.b#", "#################"]}; IMAP.skyhall.th = NEWTH + 3;
+  IMAP.smithy = {"amb": 0.56, "win": "BARS", "floors": [[1, 2, 11, 7, "basalttile"], [4, 2, 8, 3, "crackedbrick"]], "tops": {"5,4": "o", "6,4": "B"}, "map": ["#############", "#t.x..h..x.t#", "#FF..A.A..RM#", "#...........#", "#b...TT...X.#", "#u...cC...X.#", "#...........#", "#bb.......xx#", "#############"]}; IMAP.smithy.th = NEWTH + 4;
+  IMAP.dwarfhold = {"amb": 0.5, "win": "BARS", "floors": [[1, 2, 13, 9, "slatetile"], [5, 3, 9, 6, "crackedbrick"]], "tops": {"6,4": "j", "7,4": "C", "8,4": "f"}, "leg": {"v": "X_minecart"}, "map": ["###############", "#t.e.t.T.t.e.t#", "#B4.Y..^..Y.vv#", "#B...........X#", "#....cTTTC....#", "#y...........y#", "#A...........X#", "#O..........xx#", "#b...........b#", "#yy.........yy#", "###############"]}; IMAP.dwarfhold.th = NEWTH + 5;
+  IMAP.sawmill = {"amb": 0.7, "win": "GLASS", "floors": [[1, 2, 11, 7, "pineplanks"]], "tops": {"6,4": "o", "7,4": "p"}, "map": ["#############", "#t.a.w.w.a.t#", "#bb.X.X.X.bb#", "#...........#", "#|.|..TT..|.#", "#...........#", "#XX.......bb#", "#Xb.......Xx#", "#############"]}; IMAP.sawmill.th = NEWTH + 6;
   IMAP.nexus = { th: NEXUS_TH, amb: 1, win: "STAR", map: nexusMap(), floors: [], leg: { y: "X_crystalcluster" } };
   var IWIN = { GLASS: "GLASS", BARS: "X_ironbars", GLASSR: "X_stainedred", GLASSB: "X_stainedblue", STAR: "X_starglass" }, ITAP = { keep: "X_tapestry_ember", lodge: "X_tapestry_frost", shrine: "X_tapestry_frost" };
+  ITAP.igloo = "X_tapestry_frost"; ITAP.suntemple = "X_tapestry_ember";
+  // ---------- INTERIOR UNIQUES: furniture made for one kind of building (sandbox-extra.js 7s) ----------
+  // Placed when the room is built: wall pieces on bare stretches of the back wall, floor pieces in free spots against the walls,
+  // spread out across the room, never in the way of the door, inner doorways or the chests (keep).
+  var UNIQ = {
+    cabin: { floor: ["spinningwheel", "rockingchair"], wall: ["cuckooclock"] },
+    tower: { floor: ["maptable", "arrowbarrel"], wall: ["signalhorn"] },
+    farm: { floor: ["churn", "seedsacks", "milkpail"], wall: ["pitchfork"] },
+    forge: { floor: ["grindstone", "bellows", "ingotpile"], wall: ["tongsrack"] },
+    keep: { floor: ["knightstatue", "warchest", "knightstatue"], wall: ["shieldwall", "shieldwall"] },
+    lodge: { floor: ["furrug", "stovekettle"], wall: ["snowshoes"] },
+    shrine: { floor: ["offering", "prayerbell"], wall: ["moonmirror"] },
+    witchhut: { floor: ["broom", "potionshelf"], wall: ["spellscroll"], keep: [[10, 8]] },
+    tavern: { floor: ["aletap", "mugstack", "aletap"], wall: ["dartboard"], keep: [[16, 3]] },
+    igloo: { floor: ["icehole", "furpile"], wall: ["snowshoes"], keep: [[9, 7]] },
+    teahouse: { floor: ["cushion", "screen", "cushion"], wall: ["fanart", "fanart"], keep: [[7, 2]] },
+    suntemple: { floor: ["goldidol", "sarcophagus"], wall: ["sundisc"], keep: [[8, 3]] },
+    skyhall: { floor: ["hallbell", "scrollshelf"], wall: ["elderportrait"] },
+    smithy: { floor: ["grindstone", "bellows", "ingotpile"], wall: ["tongsrack"] },
+    dwarfhold: { floor: ["gemcase", "mushcrate", "ingotpile"], wall: ["dwarfaxes"] },
+    sawmill: { floor: ["sawbench", "logpile", "logpile"], wall: ["axerack"] }
+  };
+  function placeUniques(kind, D, m, w, h, dx, wall, deco, add) {
+    var U = UNIQ[kind]; if (!U) return;
+    var occ = {}, x, y; deco.forEach(function (e) { if (!e.flat || e.wall) occ[e.y * w + e.x] = 1; }); (U.keep || []).forEach(function (q) { occ[q[1] * w + q[0]] = 1; });
+    var wc = []; for (x = 2; x < w - 2; x++) if (m[1].charAt(x) === "." && !occ[w + x]) wc.push(x);
+    (U.wall || []).forEach(function (k, n) { var tid = T["X_" + k]; if (tid === undefined || !wc.length) return; var cx = wc.splice(Math.min(wc.length - 1, Math.floor((n + 0.5) / U.wall.length * wc.length)), 1)[0]; add(cx, 1, tid, false, false, true); occ[w + cx] = 1; });
+    var near = function (i) { return wall[i - 1] || wall[i + 1] || wall[i - w]; }, fc = [];
+    for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
+      var i = y * w + x, ch = m[y].charAt(x); if (ch !== "." || wall[i] || occ[i] || Math.abs(x - dx) < 2 || !near(i)) continue;
+      if (/\+/.test(m[y].charAt(x - 1) + m[y].charAt(x + 1) + (m[y - 1] || "").charAt(x) + (m[y + 1] || "").charAt(x))) continue;   // not in front of an inner doorway
+      fc.push(i);
+    }
+    (U.floor || []).forEach(function (k, n) {
+      var tid = T["X_" + k]; if (tid === undefined || !fc.length) return;
+      var at = Math.min(fc.length - 1, Math.floor((n + 0.5) / U.floor.length * fc.length)), i = fc[at], px = i % w, py = (i / w) | 0;
+      fc = fc.filter(function (j) { return Math.abs((j % w) - px) + Math.abs(((j / w) | 0) - py) > 1; });   // keep the pieces apart
+      if (TILES[tid] && TILES[tid].rugish) add(px, py, tid, false, true); else add(px, py, tid, true, false);
+    });
+  }
   function mapInterior(kind, biome, id) {
     var D = IMAP[kind], m = D.map, w = m[0].length, h = m.length, n = w * h, wall = new Uint8Array(n), sol = new Uint8Array(n), deco = [], dr = [], wins = [], x, y, dx = Math.floor(w / 2), doors = [];
     for (y = 0; y < h; y++) for (x = 0; x < w; x++) if (y <= 1 || y === h - 1 || x === 0 || x === w - 1 || m[y].charAt(x) === "#") wall[y * w + x] = 1;
@@ -302,6 +363,7 @@
       if (ch === "r") add(x, y, "RUG", false, true); else if (ch === "~") add(x, y, "LAVA", true, true); else if (ch === "=") add(x, y, "WATER", true, true);
       else if ((D.leg && D.leg[ch]) || ILEG[ch]) add(x, y, (D.leg && D.leg[ch]) || ILEG[ch], true, false);
     }
+    placeUniques(kind, D, m, w, h, dx, wall, deco, add);   // INTERIOR UNIQUES: the pieces only this kind of building has
     deco.forEach(function (e) { if (e.x === dx && e.y >= h - 3 && !e.flat) { e.solid = false; sol[e.y * w + e.x] = 0; } });   // never block the way to the door
     // ROOMS: inner walls ("#" away from the outer walls) stand up tall and fade down while you are in a room they border; "+" is a door in one
     var iw = new Uint8Array(n), room = new Int16Array(n), isDoor = new Uint8Array(n), nroom = 0, i, q2;
@@ -333,7 +395,7 @@
     for (y = 0; y < h; y++) dr[y] = [];
     deco.forEach(function (e) { if (!e.flat && e.top === undefined) dr[e.y].push(e); });
     deco.forEach(function (e) { if (e.top !== undefined) dr[e.y].push(e); });   // after the furniture they stand on
-    return { w: w, h: h, floor: 1, biome: biome, seed: id, theme: THEMES[D.th], wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), sol: sol,
+    return { w: w, h: h, floor: 1, biome: biome, seed: id, theme: THEMES[D.th], wall: wall, node: new Uint16Array(n), torch: new Uint8Array(n), sol: sol,
       up: { x: dx, y: h - 1 }, down: { x: -60, y: -60 }, spawn: { x: dx + 0.5, y: h - 1.25 }, lamps: [], rocks: 0,
       bld: true, bi: D.th, amb: D.amb, deco: deco, dr: dr, flat: deco.filter(function (e) { return e.flat; }), wins: wins,
       iw: iw, room: room, nroom: nroom, wrm: wrm, doors: doors, isDoor: isDoor, dfl: dfl, dvert: dvert, wf: new Float32Array(n).fill(1), dop: new Float32Array(n) };
@@ -351,7 +413,7 @@
     deco.forEach(function (e) { if (e.x === dx && e.y >= h - 3) { e.solid = false; sol[e.y * w + e.x] = 0; } });   // never block the way to the door
     for (y = 0; y < h; y++) dr[y] = [];
     deco.forEach(function (e) { if (!e.flat) dr[e.y].push(e); });
-    return { w: w, h: h, floor: 1, biome: biome, seed: id, theme: THEMES[K.th], wall: wall, node: new Uint8Array(n), torch: new Uint8Array(n), sol: sol,
+    return { w: w, h: h, floor: 1, biome: biome, seed: id, theme: THEMES[K.th], wall: wall, node: new Uint16Array(n), torch: new Uint8Array(n), sol: sol,
       up: { x: dx, y: h - 1 }, down: { x: -60, y: -60 }, spawn: { x: dx + 0.5, y: h - 1.25 }, lamps: [], rocks: 0,
       bld: true, bi: K.th, amb: K.amb, deco: deco, dr: dr, flat: deco.filter(function (e) { return e.flat; }) };
   }

@@ -718,6 +718,163 @@
     rect(5, 9, 2, 7, "#d8cfc0"); rect(10, 11, 2, 5, "#d8cfc0"); rect(2, 6, 8, 3, "#5a3a7a"); rect(3, 5, 6, 1, "#7a52a0"); rect(3, 7, 1, 1, "#ffd8ff"); rect(7, 6, 1, 1, "#ffd8ff");
     rect(8, 9, 6, 2, "#6a4590"); rect(9, 8, 4, 1, "#8a62b8"); rect(10, 9, 1, 1, "#ffd8ff"); rect(0, 15, 16, 1, "#1f3a22");
   }, 3, ["200,140,255", 2, 0.1]);
+  // ---------------------------------------------------------------- 7p. LANDMARKS (sandbox-world.js gen: world.marks; sandbox.js LANDMARKS)
+  // Pieces of the new landmarks out in the world: stone circles with a Rune Altar, ruined camps, signposts, old mines, stone lanterns.
+  block("standingstone", "Standing Stone", "#7a8088", "#a8b0b8", 2.2, function (rect, hh) {
+    rect(2, 0, 12, 16, "#7a8088"); rect(3, 0, 10, 1, "#9aa2aa"); rect(2, 0, 1, 16, "#5a6068"); rect(13, 0, 1, 16, "#5a6068"); rect(4, 1, 2, 14, "#8e969e");
+    for (var k = 0; k < 8; k++) rect(3 + Math.floor(hh(k, 1, 3) * 10), Math.floor(hh(k, 2, 4) * 16), 1, 1, hh(k, 3, 5) > 0.5 ? "#a8b0b8" : "#60666e");
+    rect(7, 5, 2, 1, "#6a5aa8"); rect(6, 6, 1, 3, "#6a5aa8"); rect(9, 6, 1, 3, "#6a5aa8"); rect(7, 9, 2, 1, "#6a5aa8"); rect(2, 12, 4, 4, "#4f8a3c", 0.8); rect(11, 13, 3, 3, "#4f8a3c", 0.8); rect(0, 15, 16, 1, "#000", 0.18);
+  }); TILES[T.X_standingstone].kind = "standingstone";
+  deco("runealtar", "Rune Altar", "#b58cff", function (rect) {
+    rect(1, 10, 14, 6, "#6a7078"); rect(1, 10, 14, 1, "#9aa2aa"); rect(2, 15, 12, 1, "#40464e"); rect(3, 8, 10, 2, "#80888f"); rect(3, 8, 10, 1, "#b0b8c0");
+    rect(6, 2, 4, 6, "#5a4a9a"); rect(7, 1, 2, 1, "#8a72e0"); rect(6, 2, 1, 6, "#4a3a80"); rect(7, 3, 2, 4, "#c8b4ff"); rect(7, 4, 2, 2, "#ffffff");
+    rect(4, 12, 2, 1, "#b58cff"); rect(10, 12, 2, 1, "#b58cff"); rect(7, 12, 2, 2, "#d8c8ff");
+  }, 7, ["180,140,255", 3.2, 0.22]);
+  deco("tent", "Camp Tent", "#c9a96a", function (rect) {
+    for (var y = 0; y < 13; y++) { var hw = Math.round(y * 0.62); rect(8 - hw - 1, 2 + y, hw * 2 + 2, 1, y < 2 ? "#e8d0a0" : "#c9a96a"); rect(8 - hw - 1, 2 + y, 1, 1, "#8a6a3a"); rect(8 + hw, 2 + y, 1, 1, "#8a6a3a"); }
+    for (var y2 = 6; y2 < 15; y2++) { var w2 = Math.round((y2 - 6) * 0.45); rect(8 - w2, y2, w2 * 2 + 1, 1, "#3a2a1a"); }
+    rect(8, 0, 1, 3, "#6a4a2a"); rect(9, 0, 3, 2, "#d6382e"); rect(0, 15, 16, 1, "#5a4022"); rect(1, 14, 2, 1, "#6a4a2a"); rect(13, 14, 2, 1, "#6a4a2a");
+  });
+  deco("signpost", "Signpost", "#c58a52", function (rect) {
+    rect(7, 2, 2, 14, "#7a5230"); rect(7, 2, 1, 14, "#9a6a3e"); rect(2, 3, 11, 4, "#c58a52"); rect(13, 4, 1, 2, "#c58a52"); rect(2, 3, 11, 1, "#dca36a"); rect(3, 5, 7, 1, "#5a3418");
+    rect(4, 8, 11, 4, "#b07a44"); rect(3, 9, 1, 2, "#b07a44"); rect(4, 8, 11, 1, "#c58a52"); rect(6, 10, 7, 1, "#5a3418"); rect(6, 15, 4, 1, "#4a3018");
+  });
+  deco("minecart", "Mine Cart", "#7e8792", function (rect) {
+    rect(1, 6, 14, 7, "#5a6068"); rect(1, 6, 14, 1, "#8a929a"); rect(1, 6, 1, 7, "#3a4048"); rect(14, 6, 1, 7, "#3a4048"); rect(3, 8, 10, 1, "#454b52");
+    rect(3, 3, 3, 3, "#f2c14e"); rect(6, 2, 3, 4, "#a8b0ba"); rect(9, 3, 3, 3, "#d6382e"); rect(4, 3, 1, 1, "#fff2b0"); rect(7, 2, 1, 1, "#ffffff");
+    rect(2, 13, 4, 3, "#2a2e34"); rect(10, 13, 4, 3, "#2a2e34"); rect(3, 14, 2, 1, "#8a929a"); rect(11, 14, 2, 1, "#8a929a");
+  });
+  deco("stonelantern", "Stone Lantern", "#ffd36a", function (rect) {
+    rect(3, 1, 10, 2, "#8a9098"); rect(5, 0, 6, 1, "#a8b0b8"); rect(2, 3, 12, 1, "#6a7078"); rect(5, 4, 6, 4, "#70767e"); rect(6, 5, 4, 2, "#ffd36a"); rect(7, 5, 2, 1, "#fff4c0");
+    rect(3, 8, 10, 1, "#6a7078"); rect(6, 9, 4, 4, "#80868e"); rect(4, 13, 8, 3, "#70767e"); rect(4, 13, 8, 1, "#9aa2aa"); rect(5, 9, 1, 4, "#5a6068");
+  }, 6, ["255,210,120", 2.6, 0.18]);
+  deco("paperlantern", "Paper Lantern", "#ff8ab8", function (rect) {
+    rect(7, 0, 2, 3, "#3a2a1a"); rect(5, 3, 6, 1, "#3a2a1a"); rect(4, 4, 8, 8, "#ff7aa8"); rect(3, 5, 10, 6, "#ff7aa8"); rect(5, 5, 6, 6, "#ffb0cc"); rect(6, 6, 4, 4, "#ffe0ec");
+    rect(4, 7, 8, 1, "#d84a80", 0.6); rect(4, 9, 8, 1, "#d84a80", 0.6); rect(5, 12, 6, 1, "#3a2a1a"); rect(7, 13, 2, 2, "#ffd23f");
+  }, 6, ["255,150,190", 2.6, 0.18], "wall");
+  // ---------------------------------------------------------------- 7q. SKY VILLAGE (sandbox-world.js gen step 9; sandbox.js SKY VILLAGE)
+  // The Sky Vine climbs like a ladder from the ground up to the village. It is far too tough to cut.
+  var SKYV = tile("X_skyvine", "Sky Vine", "#2f8a3a", "#5cc066", 99, 9, "", false, 2, "skyvine", { climb: 1, sway: 0 });
+  ART.skyvine = function (rect, hh) {
+    rect(6, 0, 4, 16, "#2f7a36"); rect(7, 0, 2, 16, "#4fae4a"); rect(7, 0, 1, 16, "#7ad06a"); rect(6, 3, 1, 3, "#1f5a26"); rect(9, 10, 1, 3, "#1f5a26");
+    rect(2, 4, 4, 2, "#4fae4a"); rect(1, 5, 2, 1, "#7ad06a"); rect(10, 11, 4, 2, "#4fae4a"); rect(13, 12, 2, 1, "#7ad06a"); rect(3, 6, 3, 1, "#2f7a36"); rect(10, 13, 3, 1, "#2f7a36");
+    rect(5, 1, 1, 1, "#9ae07a"); rect(10, 7, 1, 1, "#9ae07a"); rect(11, 6, 2, 1, "#ff9ad0"); rect(3, 13, 1, 1, "#fff2a8");
+  };
+  // ---------------------------------------------------------------- 7r. LORE (delve-lore.js pages; sandbox.js LORE)
+  // Old Notes lie at landmarks and inside buildings: tap one to read a lost page. The Lore Lectern opens your page collection.
+  // Each finished story thread gives one of the keepsakes below.
+  deco("lorenote", "Old Note", "#e8d8a8", function (rect) {
+    rect(2, 9, 12, 6, "#e8d8a8"); rect(2, 9, 12, 1, "#f6ecc8"); rect(1, 10, 1, 4, "#c8b480"); rect(14, 10, 1, 4, "#c8b480"); rect(1, 14, 14, 1, "#a8905a");
+    rect(4, 11, 7, 1, "#6a5030"); rect(4, 13, 5, 1, "#6a5030"); rect(10, 12, 2, 2, "#c8302a"); rect(11, 13, 1, 1, "#ff6a5a");
+  }, 2, ["255,230,170", 1.4, 0.12]); small("lorenote");
+  deco("lectern", "Lore Lectern", "#a46c3c", function (rect) {
+    rect(7, 7, 2, 8, "#7a5230"); rect(4, 15, 8, 1, "#5a3418"); rect(2, 4, 12, 3, "#a46c3c"); rect(2, 4, 12, 1, "#c58a52"); rect(3, 2, 5, 3, "#f4ead0"); rect(8, 2, 5, 3, "#e8dcc0"); rect(7, 2, 2, 3, "#a8905a");
+    rect(4, 3, 3, 1, "#8a7050"); rect(9, 3, 3, 1, "#8a7050"); rect(11, 0, 1, 3, "#c8302a");
+  });
+  block("orderstone", "Order Stone", "#8a8f86", "#f2c14e", 2.0, function (rect, hh) {
+    rect(0, 0, 16, 16, "#7e847c"); rect(0, 0, 16, 1, "#9aa098"); rect(0, 15, 16, 1, "#5a6058"); rect(1, 1, 14, 14, "#868c84");
+    for (var k = 0; k < 6; k++) rect(1 + Math.floor(hh(k, 1, 3) * 14), 1 + Math.floor(hh(k, 2, 4) * 14), 1, 1, "#6a7068");
+    rect(6, 3, 4, 1, "#f2c14e"); rect(5, 4, 1, 3, "#f2c14e"); rect(10, 4, 1, 3, "#f2c14e"); rect(6, 7, 4, 1, "#f2c14e"); rect(7, 8, 2, 4, "#f2c14e"); rect(5, 12, 6, 1, "#f2c14e"); rect(7, 5, 2, 2, "#fff4b0");
+  }, 3, ["255,210,120", 1.6, 0.1]);
+  block("mural", "Heart Mural", "#c8b48a", "#4ee6b4", 1.2, function (rect) {
+    rect(0, 0, 16, 16, "#c8b48a"); rect(0, 0, 16, 1, "#e0d0a8"); rect(0, 15, 16, 1, "#8a7a5a"); rect(1, 1, 14, 14, "#2a4a5a");
+    rect(1, 11, 14, 4, "#3a6a3a"); rect(6, 4, 4, 4, "#4ee6b4"); rect(5, 5, 6, 2, "#4ee6b4"); rect(7, 5, 2, 2, "#e8fff6"); rect(3, 3, 1, 1, "#f2c14e"); rect(12, 2, 1, 1, "#f2c14e"); rect(11, 8, 1, 1, "#ff9ad0");
+    rect(3, 12, 1, 2, "#43c463"); rect(4, 11, 1, 1, "#43c463"); rect(12, 12, 1, 2, "#ff8a3d"); rect(8, 9, 1, 2, "#9fe8ff");
+  });
+  deco("croakerlamp", "Croaker's Old Lantern", "#4ee6b4", function (rect) {
+    rect(7, 0, 2, 2, "#3a2a1a"); rect(4, 2, 8, 2, "#6a4a2a"); rect(4, 4, 8, 9, "#4ee6b4", 0.45); rect(4, 4, 1, 9, "#6a4a2a"); rect(11, 4, 1, 9, "#6a4a2a"); rect(6, 6, 4, 5, "#4ee6b4"); rect(7, 7, 2, 2, "#e8fff6");
+    rect(4, 13, 8, 2, "#6a4a2a"); rect(5, 15, 6, 1, "#3a2a1a"); rect(12, 7, 2, 1, "#f2c14e");
+  }, 9, ["80,240,190", 3.4, 0.2]);
+  deco("dwarfstatue", "Toad Dwarf Statue", "#9aa098", function (rect) {
+    rect(3, 13, 10, 3, "#6a7068"); rect(3, 13, 10, 1, "#8a9088"); rect(4, 6, 8, 7, "#8a9088"); rect(3, 3, 10, 4, "#9aa098"); rect(4, 2, 3, 2, "#9aa098"); rect(9, 2, 3, 2, "#9aa098"); rect(5, 2, 1, 1, "#40464e"); rect(10, 2, 1, 1, "#40464e");
+    rect(5, 6, 6, 5, "#b0b6ae"); rect(7, 11, 2, 2, "#b0b6ae"); rect(3, 0, 10, 2, "#7a8088"); rect(7, 0, 2, 1, "#f2c14e");
+  });
+  deco("grimoire", "Hex Grimoire", "#6a3fc4", function (rect) {
+    rect(2, 10, 12, 5, "#4a2a7a"); rect(2, 10, 12, 1, "#6a3fc4"); rect(3, 11, 10, 3, "#f4ead0"); rect(7, 11, 2, 3, "#c8b480"); rect(4, 12, 2, 1, "#6a3fc4"); rect(10, 12, 2, 1, "#6a3fc4");
+    rect(6, 6, 4, 4, "#b06aff", 0.5); rect(7, 4, 2, 2, "#d8b8ff", 0.7); rect(8, 2, 1, 1, "#ffffff", 0.8);
+  }, 4, ["180,110,255", 2, 0.12]); small("grimoire");
+  deco("forgebanner", "Forgemaster's Banner", "#ff8a3d", function (rect) {
+    rect(1, 0, 14, 2, "#5a3418"); rect(3, 2, 10, 11, "#c8301a"); rect(3, 13, 2, 2, "#c8301a"); rect(7, 13, 2, 3, "#c8301a"); rect(11, 13, 2, 2, "#c8301a");
+    rect(6, 4, 4, 2, "#ffd23f"); rect(7, 6, 2, 4, "#ffd23f"); rect(5, 9, 6, 1, "#ffd23f"); rect(4, 3, 8, 1, "#ff6a4a");
+  }, 0, null, "wall");
+  deco("aurorajar", "Aurora Jar", "#9fe8ff", function (rect) {
+    rect(5, 1, 6, 2, "#6a7a8a"); rect(4, 3, 8, 11, "#bfeeff", 0.35); rect(4, 3, 1, 11, "#8ab4c8"); rect(11, 3, 1, 11, "#8ab4c8"); rect(4, 14, 8, 2, "#6a7a8a");
+    rect(5, 5, 6, 1, "#4ee6b4"); rect(5, 7, 6, 1, "#7fa8ff"); rect(5, 9, 6, 1, "#c06aff"); rect(5, 11, 6, 1, "#4ee6b4"); rect(6, 6, 1, 1, "#ffffff");
+  }, 8, ["130,230,220", 3, 0.18]);
+  deco("shipwheel", "Captain's Wheel", "#a46c3c", function (rect) {
+    rect(7, 1, 2, 14, "#7a5230"); rect(1, 7, 14, 2, "#7a5230"); rect(3, 3, 2, 2, "#7a5230"); rect(11, 3, 2, 2, "#7a5230"); rect(3, 11, 2, 2, "#7a5230"); rect(11, 11, 2, 2, "#7a5230");
+    rect(4, 4, 8, 8, "#c58a52"); rect(5, 5, 6, 6, "#7a5230"); rect(6, 6, 4, 4, "#dca36a"); rect(7, 7, 2, 2, "#f2c14e");
+  }, 0, null, "wall");
+  deco("zarukfig", "Zaruk Figurine", "#c06aff", function (rect) {
+    rect(4, 14, 8, 2, "#4a3a6a"); rect(6, 8, 4, 6, "#d8a040"); rect(5, 5, 6, 4, "#e8b050"); rect(4, 4, 8, 3, "#a85a28"); rect(6, 6, 1, 1, "#14161c"); rect(9, 6, 1, 1, "#14161c");
+    rect(1, 6, 4, 5, "#7a4aa8"); rect(11, 6, 4, 5, "#7a4aa8"); rect(0, 7, 2, 2, "#9a6ad8"); rect(14, 7, 2, 2, "#9a6ad8"); rect(5, 2, 1, 2, "#f2c14e"); rect(10, 2, 1, 2, "#f2c14e");
+  }, 3, ["200,140,255", 1.8, 0.12]); small("zarukfig");
+  deco("weathervane", "Sky Weathervane", "#d8c890", function (rect) {
+    rect(7, 4, 2, 12, "#4a4f56"); rect(5, 15, 6, 1, "#3a3f46"); rect(2, 4, 12, 1, "#6a717a"); rect(2, 3, 3, 3, "#d8a040"); rect(11, 3, 4, 1, "#d8a040"); rect(13, 2, 1, 3, "#d8a040");
+    rect(6, 1, 4, 2, "#f2c14e"); rect(9, 0, 2, 1, "#f2c14e"); rect(5, 7, 6, 1, "#6a717a"); rect(5, 7, 1, 2, "#6a717a"); rect(10, 7, 1, 2, "#6a717a");
+  });
+  // ---------------------------------------------------------------- 7s. INTERIOR PACK II: furniture made for one kind of building
+  // (sandbox-cave.js INTERIOR UNIQUES puts them in their buildings; they can all be crafted at the Decor Workbench too)
+  var FURN2 = [];
+  function fd(k, n, c, art, o) { o = o || {}; deco(k, n, c, art, o.light || 0, o.gl || null, o.wall ? "wall" : "floor"); FURN2.push(k); if (o.flat) TILES[T["X_" + k]].rugish = 1; if (o.small) small(k); }
+  // Reed Cabin
+  fd("spinningwheel", "Spinning Wheel", "#a46c3c", function (R) { R(3, 2, 10, 10, "#7a5230"); R(4, 3, 8, 8, "#000", 0); R(5, 4, 6, 6, "#c58a52"); R(6, 5, 4, 4, "#7a5230"); R(7, 6, 2, 2, "#dca36a"); R(2, 12, 12, 2, "#7a5230"); R(3, 14, 2, 2, "#5a3418"); R(11, 14, 2, 2, "#5a3418"); R(12, 6, 3, 2, "#f4ead0"); R(13, 4, 1, 2, "#e8dcc0"); R(7, 1, 2, 1, "#5a3418"); });
+  fd("rockingchair", "Rocking Chair", "#b07a44", function (R) { R(4, 1, 2, 11, "#8a5a30"); R(4, 1, 6, 2, "#a46c3c"); R(5, 3, 1, 6, "#c58a52"); R(7, 3, 1, 6, "#c58a52"); R(4, 8, 9, 2, "#a46c3c"); R(11, 6, 2, 4, "#8a5a30"); R(4, 10, 1, 3, "#8a5a30"); R(11, 10, 1, 3, "#8a5a30"); R(2, 13, 13, 1, "#5a3418"); R(1, 12, 2, 1, "#5a3418"); R(14, 12, 1, 1, "#5a3418"); R(5, 7, 6, 1, "#d6382e"); });
+  fd("cuckooclock", "Cuckoo Clock", "#8a5a30", function (R) { R(4, 1, 8, 2, "#5a3418"); R(3, 3, 10, 1, "#5a3418"); R(4, 4, 8, 7, "#a46c3c"); R(6, 5, 4, 4, "#f4ead0"); R(7, 6, 1, 2, "#14161c"); R(8, 7, 1, 1, "#14161c"); R(7, 2, 2, 1, "#f2c14e"); R(6, 11, 1, 4, "#c8a040"); R(9, 11, 1, 3, "#c8a040"); R(5, 14, 3, 2, "#e8b84a"); R(8, 13, 3, 2, "#e8b84a"); }, { wall: 1 });
+  // Old Watchtower
+  fd("maptable", "Map Table", "#a46c3c", function (R) { R(1, 6, 14, 2, "#8a5a30"); R(2, 4, 12, 3, "#e8dcb0"); R(3, 5, 3, 1, "#4a8a5a"); R(8, 4, 4, 2, "#4a8a5a"); R(6, 5, 2, 1, "#3a6ab8"); R(10, 5, 1, 1, "#d6382e"); R(2, 8, 2, 7, "#7a5230"); R(12, 8, 2, 7, "#7a5230"); R(4, 12, 8, 1, "#7a5230"); R(13, 2, 1, 3, "#c8a040"); });
+  fd("arrowbarrel", "Arrow Barrel", "#8a5a30", function (R) { R(3, 7, 10, 9, "#8a5a30"); R(3, 8, 10, 1, "#5a4a40"); R(3, 13, 10, 1, "#5a4a40"); R(4, 7, 1, 9, "#a46c3c"); [[4, 1], [6, 0], [8, 2], [10, 1], [11, 3]].forEach(function (q) { R(q[0], q[1] + 2, 1, 5, "#c8a070"); R(q[0] - 1, q[1], 3, 2, "#f4f0e0"); }); });
+  fd("signalhorn", "Signal Horn", "#c8a040", function (R) { R(2, 7, 3, 3, "#5a3418"); R(5, 6, 3, 5, "#e8c46a"); R(8, 5, 3, 7, "#d8a040"); R(11, 3, 3, 11, "#c8902a"); R(12, 4, 1, 9, "#ffe08a"); R(4, 4, 2, 2, "#5a3418"); R(5, 3, 6, 1, "#5a3418"); }, { wall: 1 });
+  // Swamp Farmstead
+  fd("churn", "Butter Churn", "#c89a5a", function (R) { R(4, 5, 8, 11, "#c89a5a"); R(4, 6, 8, 1, "#7a5230"); R(4, 13, 8, 1, "#7a5230"); R(5, 5, 1, 11, "#dcb070"); R(5, 4, 6, 1, "#a46c3c"); R(7, 0, 2, 5, "#8a5a30"); R(6, 0, 4, 1, "#a46c3c"); R(9, 9, 2, 2, "#fff4c0"); });
+  fd("seedsacks", "Seed Sacks", "#c8b48a", function (R) { R(1, 6, 7, 10, "#c8b48a"); R(2, 4, 5, 2, "#a8945a"); R(3, 3, 3, 1, "#8a7448"); R(8, 8, 7, 8, "#d8c49a"); R(9, 6, 5, 2, "#b8a46a"); R(2, 9, 4, 2, "#4fae4a"); R(10, 11, 3, 2, "#f2c14e"); R(3, 8, 2, 1, "#e8642a"); });
+  fd("milkpail", "Milk Pail", "#a8b0ba", function (R) { R(3, 7, 10, 8, "#a8b0ba"); R(3, 7, 10, 2, "#f4f6f8"); R(4, 9, 1, 6, "#d4dce4"); R(3, 11, 10, 1, "#7e8792"); R(2, 15, 12, 1, "#5a6068"); R(4, 3, 8, 1, "#6a717a"); R(3, 4, 1, 3, "#6a717a"); R(12, 4, 1, 3, "#6a717a"); }, { small: 1 });
+  fd("pitchfork", "Pitchfork Rack", "#a46c3c", function (R) { R(1, 2, 14, 2, "#7a5230"); R(4, 4, 1, 11, "#a46c3c"); R(10, 4, 1, 11, "#a46c3c"); R(2, 12, 5, 1, "#8a929c"); R(2, 13, 1, 3, "#8a929c"); R(4, 13, 1, 3, "#8a929c"); R(6, 13, 1, 3, "#8a929c"); R(8, 12, 5, 3, "#8a929c"); R(9, 13, 3, 1, "#c8d0d8"); }, { wall: 1 });
+  // Cinder Forge and Turtle Smithy
+  fd("grindstone", "Grindstone", "#8a9098", function (R) { R(3, 2, 10, 10, "#8a9098"); R(4, 3, 8, 8, "#a8aeb6"); R(7, 6, 2, 2, "#5a6068"); R(5, 4, 1, 1, "#c8ced4"); R(2, 12, 12, 2, "#7a5230"); R(3, 14, 2, 2, "#5a3418"); R(11, 14, 2, 2, "#5a3418"); R(13, 6, 3, 1, "#7a5230"); R(15, 5, 1, 3, "#5a3418"); R(10, 1, 2, 1, "#ffd36a"); R(12, 2, 1, 1, "#ffd36a"); });
+  fd("bellows", "Forge Bellows", "#8a5a30", function (R) { R(2, 6, 9, 6, "#7a4a2a"); R(3, 5, 7, 1, "#5a3418"); R(3, 12, 7, 1, "#5a3418"); R(4, 7, 5, 4, "#9a6a3a"); R(11, 8, 4, 2, "#6a717a"); R(14, 7, 2, 4, "#8a929c"); R(1, 3, 2, 2, "#a46c3c"); R(1, 12, 2, 3, "#a46c3c"); R(6, 13, 2, 3, "#5a3418"); });
+  fd("ingotpile", "Ingot Pile", "#a8b0ba", function (R) { R(1, 12, 6, 3, "#a8b0ba"); R(1, 12, 6, 1, "#e0e6ec"); R(8, 12, 6, 3, "#a8b0ba"); R(8, 12, 6, 1, "#e0e6ec"); R(4, 9, 6, 3, "#f2c14e"); R(4, 9, 6, 1, "#fff2b0"); R(6, 6, 5, 3, "#c87a4a"); R(6, 6, 5, 1, "#e8a070"); R(0, 15, 16, 1, "#000", 0.2); }, { small: 1 });
+  fd("tongsrack", "Tongs Rack", "#5a6068", function (R) { R(1, 2, 14, 2, "#5a3418"); [[3, 0], [7, 1], [11, 0]].forEach(function (q) { R(q[0], 4, 1, 9, "#6a717a"); R(q[0] + 1, 4, 1, 9 - q[1], "#8a929c"); R(q[0] - 1, 12 - q[1], 4, 2, "#4a4f56"); }); }, { wall: 1 });
+  // Ashen Keep
+  fd("knightstatue", "Knight Statue", "#8a929c", function (R) { R(5, 1, 6, 5, "#a8b0ba"); R(6, 3, 4, 1, "#14161c"); R(7, 0, 2, 1, "#d6382e"); R(4, 6, 8, 6, "#8a929c"); R(5, 7, 6, 3, "#a8b0ba"); R(3, 6, 2, 6, "#7e8792"); R(11, 6, 2, 6, "#7e8792"); R(13, 1, 1, 12, "#c8d0d8"); R(12, 5, 3, 1, "#c8a040"); R(5, 12, 2, 3, "#7e8792"); R(9, 12, 2, 3, "#7e8792"); R(3, 15, 10, 1, "#5a6068"); });
+  fd("warchest", "War Chest", "#5a3a30", function (R) { R(1, 6, 14, 9, "#5a3a30"); R(1, 6, 14, 3, "#7a4a3a"); R(1, 9, 14, 1, "#2a1a14"); R(3, 6, 1, 9, "#8a929c"); R(12, 6, 1, 9, "#8a929c"); R(7, 9, 2, 3, "#f2c14e"); R(2, 15, 12, 1, "#000", 0.25); R(5, 4, 6, 2, "#d6382e"); });
+  fd("shieldwall", "Shield Display", "#d6382e", function (R) { R(4, 1, 8, 10, "#d6382e"); R(5, 11, 6, 2, "#d6382e"); R(6, 13, 4, 2, "#d6382e"); R(7, 15, 2, 1, "#d6382e"); R(4, 1, 8, 1, "#f2c14e"); R(7, 2, 2, 12, "#f2c14e"); R(5, 5, 6, 2, "#f2c14e"); R(1, 3, 2, 10, "#a8b0ba"); R(13, 3, 2, 10, "#a8b0ba"); }, { wall: 1 });
+  // Frost Lodge and Snow Igloo
+  fd("furrug", "Fur Rug", "#c8b8a0", function (R) { R(1, 4, 14, 9, "#c8b8a0"); R(0, 6, 1, 5, "#c8b8a0"); R(15, 6, 1, 5, "#c8b8a0"); R(2, 5, 12, 7, "#e0d4c0"); R(4, 6, 8, 5, "#f0e8d8"); R(1, 2, 3, 2, "#c8b8a0"); R(12, 2, 3, 2, "#c8b8a0"); R(1, 13, 3, 2, "#c8b8a0"); R(12, 13, 3, 2, "#c8b8a0"); }, { flat: 1 });
+  fd("stovekettle", "Iron Stove", "#4a4f56", function (R) { R(2, 6, 12, 9, "#3a3f46"); R(2, 6, 12, 2, "#5a6068"); R(4, 9, 8, 4, "#1a1c20"); R(5, 10, 6, 2, "#ff8a3d"); R(6, 10, 4, 1, "#ffd36a"); R(11, 0, 2, 6, "#3a3f46"); R(4, 3, 5, 3, "#6a717a"); R(9, 4, 2, 1, "#6a717a"); R(5, 2, 3, 1, "#8a929c"); R(3, 15, 2, 1, "#1a1c20"); R(11, 15, 2, 1, "#1a1c20"); }, { light: 4, gl: ["255,140,60", 2, 0.14] });
+  fd("snowshoes", "Snowshoes", "#a46c3c", function (R) { [[2, 0], [9, 1]].forEach(function (q) { R(q[0], 2 + q[1], 5, 12, "#a46c3c"); R(q[0] + 1, 3 + q[1], 3, 10, "#e8dcc0"); R(q[0] + 1, 6 + q[1], 3, 1, "#a46c3c"); R(q[0] + 1, 10 + q[1], 3, 1, "#a46c3c"); R(q[0] + 2, 3 + q[1], 1, 10, "#c8b48a"); }); R(6, 0, 4, 2, "#5a3418"); }, { wall: 1 });
+  fd("icehole", "Ice Fishing Hole", "#9fe8ff", function (R) { R(2, 4, 12, 9, "#d8f0fc"); R(4, 5, 8, 7, "#1a4a7a"); R(5, 6, 6, 5, "#2a6aa0"); R(6, 7, 3, 1, "#8fd6ff"); R(12, 2, 1, 7, "#7a5230"); R(12, 9, 1, 3, "#e8e8e8", 0.6); }, { flat: 1 });
+  fd("furpile", "Pile of Furs", "#a88a6a", function (R) { R(1, 9, 14, 6, "#8a6a4a"); R(2, 7, 11, 3, "#c8b8a0"); R(3, 5, 8, 3, "#6a5a4a"); R(4, 4, 5, 2, "#e8e0d0"); R(1, 15, 14, 1, "#000", 0.2); R(10, 10, 4, 2, "#a88a6a"); });
+  // Frozen Shrine
+  fd("offering", "Offering Bowl", "#c8d0e8", function (R) { R(5, 11, 6, 4, "#8a9ab8"); R(4, 15, 8, 1, "#5a6a88"); R(2, 7, 12, 4, "#c8d0e8"); R(2, 7, 12, 1, "#eef2ff"); R(4, 5, 3, 2, "#ff9ad0"); R(8, 4, 3, 3, "#9fe8ff"); R(9, 5, 1, 1, "#ffffff"); }, { light: 3, gl: ["160,220,255", 1.6, 0.1] });
+  fd("prayerbell", "Prayer Bell", "#c8a040", function (R) { R(3, 0, 10, 2, "#7a5230"); R(3, 2, 1, 14, "#7a5230"); R(12, 2, 1, 14, "#7a5230"); R(7, 2, 2, 2, "#5a3418"); R(5, 4, 6, 7, "#d8a040"); R(4, 9, 8, 2, "#c8902a"); R(6, 5, 1, 4, "#ffe08a"); R(7, 11, 2, 2, "#8a6a2a"); R(2, 15, 12, 1, "#5a3418"); });
+  fd("moonmirror", "Moon Mirror", "#c8d0e8", function (R) { R(3, 1, 10, 13, "#c8a040"); R(4, 2, 8, 11, "#a8c8e8"); R(5, 3, 3, 6, "#e8f4ff"); R(9, 9, 2, 2, "#f2f6ff"); R(6, 14, 4, 2, "#c8a040"); R(7, 0, 2, 1, "#f2c14e"); }, { wall: 1, light: 2, gl: ["200,230,255", 1.4, 0.08] });
+  // Witch Hut
+  fd("broom", "Witch's Broom", "#8a5a30", function (R) { R(9, 0, 2, 10, "#7a5230"); R(10, 0, 1, 10, "#9a6a3e"); R(6, 9, 8, 2, "#5a3a7a"); R(5, 11, 10, 5, "#c8a050"); R(6, 11, 1, 5, "#a8803a"); R(9, 11, 1, 5, "#a8803a"); R(12, 11, 1, 5, "#a8803a"); });
+  fd("potionshelf", "Potion Shelf", "#4a3048", function (R) { R(1, 1, 14, 15, "#3a2438"); R(1, 5, 14, 1, "#5a3a58"); R(1, 10, 14, 1, "#5a3a58"); R(1, 15, 14, 1, "#5a3a58"); [[2, 2, "#4ee6b4"], [5, 3, "#c06aff"], [9, 2, "#ff6a5a"], [12, 3, "#f2c14e"], [3, 7, "#ff9ad0"], [7, 6, "#9fe8ff"], [11, 7, "#4ee6b4"], [4, 11, "#c06aff"], [9, 12, "#ff8a3d"]].forEach(function (q) { R(q[0], q[1], 2, 5 - (q[1] % 5 === 2 ? 0 : 1), q[2]); R(q[0], q[1] - 1, 2, 1, "#d8d0c0"); }); }, { light: 2, gl: ["190,110,255", 1.4, 0.08] });
+  fd("spellscroll", "Spell Scroll", "#e8d8a8", function (R) { R(2, 1, 12, 2, "#8a6a3a"); R(3, 3, 10, 10, "#e8d8a8"); R(2, 13, 12, 2, "#8a6a3a"); R(5, 5, 6, 1, "#5a2a8a"); R(5, 7, 4, 1, "#5a2a8a"); R(7, 9, 3, 3, "#b06aff"); R(8, 10, 1, 1, "#ffffff"); }, { wall: 1 });
+  // The Soggy Log Tavern
+  fd("aletap", "Ale Barrel", "#8a5a30", function (R) { R(1, 4, 14, 10, "#8a5a30"); R(1, 4, 14, 1, "#a46c3c"); R(4, 4, 1, 10, "#5a4a40"); R(11, 4, 1, 10, "#5a4a40"); R(6, 6, 4, 4, "#a46c3c"); R(7, 7, 2, 2, "#5a3418"); R(7, 10, 2, 3, "#c8a040"); R(7, 13, 1, 1, "#ffd36a"); R(2, 14, 3, 2, "#5a3418"); R(11, 14, 3, 2, "#5a3418"); });
+  fd("mugstack", "Stack of Mugs", "#c8a070", function (R) { [[2, 10], [8, 10], [5, 4]].forEach(function (q) { R(q[0], q[1], 5, 6, "#c8a070"); R(q[0], q[1], 5, 1, "#fff4d8"); R(q[0] + 5, q[1] + 1, 1, 3, "#a87a4a"); R(q[0] + 1, q[1] + 1, 1, 4, "#e0bc8a"); }); }, { small: 1 });
+  fd("dartboard", "Dartboard", "#2a2a30", function (R) { R(3, 2, 10, 12, "#2a2a30"); R(2, 4, 12, 8, "#2a2a30"); R(4, 3, 8, 10, "#e8e0c8"); R(5, 4, 6, 8, "#d6382e"); R(6, 5, 4, 6, "#e8e0c8"); R(7, 7, 2, 2, "#3aa84e"); R(11, 5, 4, 1, "#c8a040"); R(14, 4, 1, 3, "#d6382e"); }, { wall: 1 });
+  // Blossom Tea House
+  fd("cushion", "Floor Cushion", "#d84a80", function (R) { R(2, 9, 12, 6, "#d84a80"); R(2, 9, 12, 2, "#f07aa8"); R(1, 11, 1, 3, "#c03a6a"); R(14, 11, 1, 3, "#c03a6a"); R(7, 11, 2, 2, "#f2c14e"); R(3, 15, 10, 1, "#000", 0.2); }, { small: 1 });
+  fd("screen", "Paper Screen", "#f4ead0", function (R) { [0, 5, 10].forEach(function (x0) { R(x0, 1, 6, 15, "#5a2a1a"); R(x0 + 1, 2, 4, 13, "#f4ead0"); R(x0 + 1, 7, 4, 1, "#5a2a1a"); R(x0 + 3, 2, 1, 13, "#5a2a1a", 0.5); }); R(3, 4, 2, 2, "#ff9ad0"); R(12, 10, 2, 2, "#ff9ad0"); R(7, 3, 1, 1, "#ff9ad0"); });
+  fd("fanart", "Painted Fan", "#ff9ad0", function (R) { for (var y = 0; y < 8; y++) R(8 - y, 2 + y, y * 2 + 1, 1, y % 2 ? "#ff9ad0" : "#f4ead0"); R(1, 10, 15, 1, "#5a2a1a"); R(7, 11, 2, 4, "#5a2a1a"); R(5, 4, 2, 2, "#d6382e"); R(10, 5, 2, 2, "#4fae4a"); }, { wall: 1 });
+  // Sun Temple
+  fd("goldidol", "Golden Idol", "#f2c14e", function (R) { R(4, 13, 8, 3, "#c8902a"); R(5, 5, 6, 8, "#f2c14e"); R(4, 1, 8, 5, "#ffd86a"); R(5, 3, 2, 1, "#d6382e"); R(9, 3, 2, 1, "#d6382e"); R(6, 5, 4, 1, "#c8902a"); R(3, 7, 2, 4, "#e8b84a"); R(11, 7, 2, 4, "#e8b84a"); R(6, 2, 1, 1, "#fff4b0"); }, { light: 4, gl: ["255,210,90", 2, 0.14] });
+  fd("sarcophagus", "Sarcophagus", "#c8a46a", function (R) { R(1, 3, 14, 12, "#b8904e"); R(2, 4, 12, 10, "#d8b47a"); R(5, 5, 6, 3, "#f2c14e"); R(6, 6, 1, 1, "#14161c"); R(9, 6, 1, 1, "#14161c"); R(4, 8, 8, 5, "#4a8ab8"); R(5, 9, 6, 1, "#f2c14e"); R(5, 11, 6, 1, "#f2c14e"); R(1, 15, 14, 1, "#000", 0.25); });
+  fd("sundisc", "Sun Disc", "#f2c14e", function (R) { R(4, 4, 8, 8, "#f2c14e"); R(5, 3, 6, 10, "#f2c14e"); R(3, 5, 10, 6, "#f2c14e"); R(6, 6, 4, 4, "#d6382e"); R(7, 7, 2, 2, "#ffe08a"); [[7, 0], [7, 14], [0, 7], [14, 7], [2, 2], [12, 2], [2, 12], [12, 12]].forEach(function (q) { R(q[0], q[1], 2, 2, "#e8a83a"); }); }, { wall: 1, light: 3, gl: ["255,200,90", 1.6, 0.1] });
+  // Sky Village: Village Hall, Toad Dwarf Hold, Beaver Lumber Mill
+  fd("hallbell", "Village Bell", "#c8a040", function (R) { R(1, 0, 14, 2, "#7a5230"); R(2, 2, 1, 14, "#7a5230"); R(13, 2, 1, 14, "#7a5230"); R(7, 2, 2, 1, "#5a3418"); R(4, 3, 8, 3, "#d8a040"); R(3, 6, 10, 5, "#c8902a"); R(2, 11, 12, 1, "#a87a20"); R(5, 4, 1, 6, "#ffe08a"); R(7, 12, 2, 2, "#6a4a1a"); R(1, 15, 14, 1, "#5a3418"); });
+  fd("scrollshelf", "Scroll Shelf", "#8a5a30", function (R) { R(1, 1, 14, 15, "#5a3a20"); R(1, 5, 14, 1, "#8a5a30"); R(1, 10, 14, 1, "#8a5a30"); for (var y = 0; y < 3; y++) for (var x = 0; x < 4; x++) { R(2 + x * 3, 2 + y * 5, 3, 3, (x + y) % 2 ? "#e8d8a8" : "#f4ead0"); R(2 + x * 3, 3 + y * 5, 1, 1, "#c8302a"); } });
+  fd("elderportrait", "Portrait of the Elder", "#8aa0b8", function (R) { R(2, 1, 12, 14, "#c8a040"); R(3, 2, 10, 12, "#3a5a6a"); R(7, 4, 2, 7, "#8aa0b8"); R(6, 3, 3, 2, "#8aa0b8"); R(9, 3, 3, 1, "#f2c14e"); R(5, 9, 6, 4, "#5a3fa8"); R(7, 9, 1, 4, "#f2c14e"); }, { wall: 1 });
+  fd("gemcase", "Gem Display Case", "#a8c8e8", function (R) { R(1, 10, 14, 6, "#5a3a20"); R(1, 3, 14, 7, "#bfeeff", 0.35); R(1, 3, 14, 1, "#e8f8ff"); R(1, 3, 1, 7, "#8ab4c8"); R(14, 3, 1, 7, "#8ab4c8"); R(3, 7, 2, 2, "#d6382e"); R(6, 6, 2, 3, "#3a7ad8"); R(9, 7, 2, 2, "#c06aff"); R(12, 6, 1, 3, "#4ee6b4"); R(4, 12, 8, 1, "#c8a040"); }, { light: 2, gl: ["180,220,255", 1.4, 0.08] });
+  fd("mushcrate", "Mushroom Crate", "#8a5a30", function (R) { R(1, 8, 14, 8, "#8a5a30"); R(1, 8, 14, 1, "#a46c3c"); R(1, 12, 14, 1, "#5a3418"); R(3, 4, 4, 4, "#d6382e"); R(4, 7, 2, 2, "#efe6cc"); R(8, 3, 4, 5, "#4ee6b4"); R(9, 7, 2, 2, "#d8c8f0"); R(12, 5, 3, 3, "#b17dff"); R(4, 5, 1, 1, "#fff"); }, { light: 2, gl: ["120,240,200", 1.4, 0.08] });
+  fd("dwarfaxes", "Crossed Dwarf Axes", "#8a929c", function (R) { for (var k = 0; k < 12; k++) { R(2 + k, 2 + k, 1, 1, "#7a5230"); R(13 - k, 2 + k, 1, 1, "#7a5230"); } R(1, 1, 4, 4, "#a8b0ba"); R(11, 1, 4, 4, "#a8b0ba"); R(1, 1, 2, 1, "#e0e6ec"); R(13, 1, 2, 1, "#e0e6ec"); R(6, 6, 4, 4, "#c8a040"); R(7, 7, 2, 2, "#d6382e"); }, { wall: 1 });
+  fd("sawbench", "Saw Bench", "#a46c3c", function (R) { R(1, 7, 14, 3, "#a46c3c"); R(1, 7, 14, 1, "#c58a52"); R(2, 10, 2, 6, "#7a5230"); R(12, 10, 2, 6, "#7a5230"); R(5, 2, 8, 5, "#c8d0d8"); R(5, 6, 8, 1, "#8a929c"); for (var x = 5; x < 13; x += 2) R(x, 7, 1, 1, "#8a929c"); R(12, 1, 3, 3, "#7a5230"); R(4, 12, 9, 1, "#7a5230"); });
+  fd("logpile", "Log Pile", "#8a6450", function (R) { [[0, 11], [5, 11], [10, 11], [2, 6], [7, 6], [5, 1]].forEach(function (q) { R(q[0] + 1, q[1], 4, 5, "#6a4838"); R(q[0], q[1] + 1, 6, 3, "#6a4838"); R(q[0] + 1, q[1] + 1, 4, 3, "#dca36a"); R(q[0] + 2, q[1] + 2, 2, 1, "#a46c3c"); }); });
+  fd("axerack", "Axe Rack", "#8a5a30", function (R) { R(1, 2, 14, 2, "#5a3418"); [[3, 1], [8, 0], [12, 1]].forEach(function (q) { R(q[0], 4, 1, 11, "#a46c3c"); R(q[0] + 1, 4 + q[1], 3, 4, "#a8b0ba"); R(q[0] + 3, 4 + q[1], 1, 4, "#e0e6ec"); }); }, { wall: 1 });
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
@@ -1030,6 +1187,24 @@
   Dc("x_d_confetti", "Party", "Confetti Cannon", { confetti: 1 }, { cloth: 1, sulfur: 1, dyered: 1, dyeblue: 1 }, "Tap it for a big burst of confetti. Never runs out.");
   Dc("x_d_balloons", "Party", "Party Balloons", { balloons: 1 }, { cloth: 2, dyered: 1, rope: 1 }, "Three balloons on a weight, bobbing in the breeze.");
   Dc("x_d_bloodlantern", "Curiosities", "Blood Moon Lantern", { bloodlantern: 1 }, { bloodshard: 2, ironingot: 1, glass: 1 }, "A lantern with a shard of the Blood Moon inside. Glows deep red. Fits on a table.");
+  // INTERIOR PACK II recipes (Decor Workbench > Curiosities)
+  var F2COST = { spinningwheel: { planks: 4, fiber: 4 }, rockingchair: { planks: 5, cloth: 1 }, cuckooclock: { planks: 3, ironingot: 1, amber: 1 }, maptable: { planks: 4, cloth: 1, dyegreen: 1 }, arrowbarrel: { planks: 4, stick: 6 }, signalhorn: { amber: 2, ironingot: 1 },
+    churn: { planks: 4, ironingot: 1 }, seedsacks: { cloth: 2, seed_carrot: 2 }, milkpail: { ironingot: 2 }, pitchfork: { planks: 2, ironingot: 2 }, grindstone: { stone: 8, planks: 2 }, bellows: { planks: 3, cloth: 2, ironingot: 1 }, ingotpile: { ironingot: 4, amber: 1 }, tongsrack: { ironingot: 3, planks: 1 },
+    knightstatue: { stone: 10, ironingot: 2 }, warchest: { planks: 6, ironingot: 2, dyered: 1 }, shieldwall: { planks: 2, ironingot: 2, dyered: 1 }, furrug: { wolfpelt: 2 }, stovekettle: { ironingot: 5, stone: 4 }, snowshoes: { planks: 2, fiber: 4 }, icehole: { ice: 4 }, furpile: { wolfpelt: 1, cloth: 2 },
+    offering: { crystal: 3, stone: 2 }, prayerbell: { planks: 3, amber: 2, ironingot: 1 }, moonmirror: { glass: 2, moonstone: 1, amber: 1 }, broom: { stick: 4, fiber: 6 }, potionshelf: { planks: 4, bottle: 4 }, spellscroll: { cloth: 1, hexdust: 1 },
+    aletap: { planks: 6, ironingot: 1 }, mugstack: { planks: 2, clay: 2 }, dartboard: { planks: 2, cloth: 1, dyered: 1 }, cushion: { cloth: 2, dyered: 1 }, screen: { planks: 3, cloth: 3 }, fanart: { cloth: 1, stick: 2, dyered: 1 },
+    goldidol: { amber: 6, ruby: 1 }, sarcophagus: { sand: 10, amber: 2, dyeblue: 1 }, sundisc: { amber: 4, ruby: 1 }, hallbell: { planks: 4, amber: 4, ironingot: 1 }, scrollshelf: { planks: 4, cloth: 3 }, elderportrait: { planks: 2, cloth: 1, dyeblue: 1 },
+    gemcase: { planks: 3, glass: 2, quartz: 2 }, mushcrate: { planks: 3, redcap: 2, glowshroom: 2 }, dwarfaxes: { planks: 2, ironingot: 3 }, sawbench: { planks: 4, ironingot: 2 }, logpile: { wood: 6 }, axerack: { planks: 3, ironingot: 3 } };
+  FURN2.forEach(function (k) { if (ITEMS[k]) Dc("x_d_" + k, "Curiosities", ITEMS[k].n, (function () { var o = {}; o[k] = 1; return o; })(), F2COST[k] || { planks: 4 }, "Furniture from the swamp's buildings, made for one kind of house."); });
+  Dc("x_d_lectern", "Garden & Storage", "Lore Lectern", { lectern: 1 }, { planks: 4, candle: 1, cloth: 1 }, "A reading stand for the lost pages you collect. Tap it to open your Lore.");
+  Dc("x_d_orderstone", "Garden & Storage", "Order Stone (4)", { orderstone: 4 }, { stone: 4, spore: 1 }, "Carved stone with the Lantern Order's sign, glowing faintly gold.");
+  Dc("x_d_mural", "Garden & Storage", "Heart Mural (2)", { mural: 2 }, { clay: 2, dyered: 1, dyeblue: 1 }, "A painted tile showing the Heart of the Swamp over the three lands.");
+  Dc("x_d_signpost", "Garden & Storage", "Signpost", { signpost: 1 }, { planks: 3, stick: 2 }, "Tap it to see which way the nearest landmarks, buildings and lands are.");
+  Dc("x_d_stonelantern", "Garden & Storage", "Stone Lantern", { stonelantern: 1 }, { stone: 6, torch: 1 }, "A carved stone lantern from the Cherry Blossom Vale.");
+  Dc("x_d_paperlantern", "Curiosities", "Paper Lantern", { paperlantern: 1 }, { cloth: 1, dyered: 1, torch: 1 }, "A glowing pink lantern that hangs on a wall.");
+  Dc("x_d_tent", "Curiosities", "Camp Tent", { tent: 1 }, { cloth: 3, stick: 3, rope: 1 }, "A little canvas tent for a campsite.");
+  Dc("x_d_minecart", "Curiosities", "Mine Cart", { minecart: 1 }, { ironingot: 3, planks: 2 }, "An old cart heaped with ore.");
+  Dc("x_d_standingstone", "Garden & Storage", "Standing Stone (2)", { standingstone: 2 }, { stone: 8, spore: 1 }, "A tall carved stone for your own stone circle.");
   Dc("x_d_lilyvase", "Tables & Tabletops", "Vase of Lilies", { lilyvase: 1 }, { clay: 2, marshlily: 3 }, "Fresh marsh lilies in a painted vase.");
 
   // ====================================================================================================
@@ -1134,6 +1309,6 @@
   if (SW.post) SW.post.push(function (w) { populate(w); placeTreasure(w); });   // per generated map (see ENDLESS WORLD in sandbox-world.js)
   else SW.gen = function (seed) { var w = origGen(seed); populate(w); placeTreasure(w); return w; };
 
-  var api = { DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var api = { FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
