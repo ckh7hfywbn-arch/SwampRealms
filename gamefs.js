@@ -9,6 +9,10 @@
 //  - stage: the element that should fill the screen (the game plus its controls)
 //  - start: a selector for every button that starts or resumes play (add data-fs-start to them)
 //  - key: optional KeyboardEvent.code for the shortcut (default "KeyF"; pass null for none). Delve uses F to interact, so it passes "KeyG".
+//  - keepEsc: true makes Esc belong to the game while it is full screen (Delve: Esc closes the open window instead of leaving full screen).
+//    Chrome, Edge and Opera honour this with the Keyboard Lock API (holding Esc for 2 seconds still leaves, as a safety). Firefox and Safari
+//    always leave full screen on Esc: there onEsc() is still called, so the game closes its window, and the next tap goes back to full screen.
+//  - onEsc: function called when the browser itself took an Esc press to leave full screen (so the game can still react to it).
 //  - buttons with data-fs toggle full screen by hand; the F key does too. Style the full screen look with .fs on the stage and html.fs-on (see ui.css).
 const GameFS={
  attach(o){
@@ -18,7 +22,10 @@ const GameFS={
   const btns=[].slice.call(document.querySelectorAll(o.buttons||"[data-fs]")),startSel=o.start||"[data-fs-start]";
   const rq=st.requestFullscreen||st.webkitRequestFullscreen,ex=document.exitFullscreen||document.webkitExitFullscreen;
   const FSKEY=o.key===undefined?"KeyF":o.key;   // the full screen shortcut (default F). A game that already uses F for something else passes another key code, or null for none
-  const KEY="swamp-fs-off";let pseudo=false,off=false,asked=false;
+  const KEY="swamp-fs-off";let pseudo=false,off=false,asked=false,mine=false,relock=false;
+  const KL=o.keepEsc&&navigator.keyboard&&navigator.keyboard.lock?navigator.keyboard:null;   // Keyboard Lock (Chromium desktop)
+  const lockEsc=()=>{if(KL&&real())try{const p=KL.lock(["Escape"]);if(p&&p.catch)p.catch(()=>{})}catch(e){}};
+  const unlockEsc=()=>{if(KL)try{KL.unlock()}catch(e){}};
   try{off=sessionStorage.getItem(KEY)==="1"}catch(e){}
   const setOff=v=>{off=v;try{v?sessionStorage.setItem(KEY,"1"):sessionStorage.removeItem(KEY)}catch(e){}};
   const real=()=>(document.fullscreenElement||document.webkitFullscreenElement)===st;
@@ -41,7 +48,7 @@ const GameFS={
    if(!pseudo)setTimeout(()=>{if(my===tk&&!real()&&!pseudo){pseudo=true;sync()}},500);
   }
   function leave(){
-   tk++;pseudo=false;
+   tk++;pseudo=false;mine=true;relock=false;
    if(real()&&ex){try{const p=ex.call(document);if(p&&p.catch)p.catch(()=>{})}catch(e){}}
    sync();
   }
@@ -55,11 +62,17 @@ const GameFS={
    if(b&&st.contains(b)&&!b.disabled&&b.getAttribute("aria-disabled")!=="true")auto();
   },true);
   // the browser's own exit (Esc, swipe) counts as leaving on purpose
-  const chg=()=>{const was=asked;if(!real()){if(!pseudo&&was)setOff(true);pseudo=false;asked=false}else asked=true;sync()};
+  const chg=()=>{const was=asked;
+   if(!real()){unlockEsc();
+    if(o.keepEsc&&was&&!mine){relock=true;try{o.onEsc&&o.onEsc()}catch(e){}}   // the browser took Esc to leave: let the game react, and come back on the next tap
+    else if(!pseudo&&was)setOff(true);
+    pseudo=false;asked=false;mine=false}
+   else{asked=true;lockEsc()}sync()};
+  if(o.keepEsc)st.addEventListener("pointerdown",()=>{if(relock&&!on()&&!off){relock=false;enter()}},true);
   document.addEventListener("fullscreenchange",chg);document.addEventListener("webkitfullscreenchange",chg);
   addEventListener("keydown",e=>{
    if(FSKEY&&e.code===FSKEY&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||"")){e.preventDefault();toggle()}
-   else if(e.code==="Escape"&&pseudo){setOff(true);leave()}
+   else if(e.code==="Escape"&&pseudo&&!o.keepEsc){setOff(true);leave()}
   });
   sync();
   return{enter:()=>{setOff(false);enter()},leave:()=>{setOff(true);leave()},toggle,auto,get active(){return on()}};

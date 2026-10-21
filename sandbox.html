@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=delve1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui15">
+<link rel="stylesheet" href="sandbox.css?v=ui17-boss">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -124,7 +124,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
    </div>
    <div class="sbx-loc" id="sbxLoc" role="status"><i aria-hidden="true"></i><div><b id="sbxBiome">Murkwater Swamp</b><span id="sbxSub"></span></div></div>
    <div class="sbx-mpchip" id="sbxMPChip" role="button" tabindex="0" aria-label="Multiplayer room" hidden></div>
-   <div class="sbx-boss" id="sbxBoss" role="status" aria-live="polite" hidden><b></b><span class="bt"><i></i></span><em></em></div>
+   <div class="sbx-boss" id="sbxBoss" role="status" aria-live="polite" hidden><b></b><span class="bt"><s></s><i></i><u></u></span><em></em></div>
    <div class="sbx-vit">
     <canvas class="sbx-mini" id="sbxMini" role="button" tabindex="0" aria-label="Mini-map. Tap to open the World Map." hidden></canvas>
    </div>
@@ -225,9 +225,17 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="sandbox-cave.js?v=cave19" onload="__dl('cave')"></script>
 <script src="delve-avatar.js?v=delve8-people" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="sandbox.js?v=delve164-drops" onload="__dl('game')"></script>
-<script src="gamefs.js?v=3" onload="__dl('fs')"></script>
-<script>GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG"});</script>   <!-- F is Delve's interact key (caves, doors, chests, ladders), so full screen is the button or G -->
+<script src="sandbox.js?v=delve171-boss" onload="__dl('game')"></script>
+<script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
+<script>
+  // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.
+  // If the browser still takes Esc to leave (Firefox, Safari), the game gets the same Esc here, and your next tap goes back to full screen.
+  var __escT = 0; addEventListener("keydown", function (e) { if (e.key === "Escape") __escT = Date.now(); }, true);
+  GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG",keepEsc:true,onEsc:function () {
+    if (Date.now() - __escT < 400) return;   // the game already saw this Esc
+    try { window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true })); } catch (e) {}
+  }});
+</script>   <!-- F is Delve's interact key (caves, doors, chests, ladders), so full screen is the button or G -->
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "98124712fa76422cb303cffd84696a69"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

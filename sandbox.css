@@ -493,8 +493,8 @@ body.sbx-app footer{margin-top:28px}
 .sbx-boss{--bc:#ff6b82;position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:3;width:min(440px,calc(100% - 140px));padding:6px 12px 8px;border-radius:14px;background:rgba(6,12,10,.82);border:1px solid color-mix(in srgb,var(--bc) 60%,transparent);box-shadow:0 0 24px -10px var(--bc);pointer-events:none;text-align:center;animation:stIn .4s ease-out}
 .sbx-boss[hidden]{display:none}
 .sbx-boss b{display:block;font:900 .8rem Nunito,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--bc)}
-.sbx-boss .bt{display:block;height:10px;margin-top:4px;border-radius:99px;background:#ffffff14;overflow:hidden}
-.sbx-boss .bt i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,var(--bc),color-mix(in srgb,var(--bc) 60%,#fff));transition:width .2s}
+.sbx-boss .bt{position:relative;display:block;height:10px;margin-top:4px;border-radius:99px;background:#ffffff14;overflow:hidden}
+.sbx-boss .bt i{position:relative;display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,var(--bc),color-mix(in srgb,var(--bc) 60%,#fff));transition:width .12s ease-out;box-shadow:0 0 10px -2px var(--bc)}
 .sbx-boss em{display:block;margin-top:2px;font:800 .66rem Nunito,sans-serif;font-style:normal;color:#f6eedb99}
 .sbx-boss.rage{animation:bossRage 1s ease-in-out infinite}
 @keyframes bossRage{50%{box-shadow:0 0 30px -4px var(--bc)}}
@@ -1212,3 +1212,32 @@ body.sbx-app footer{margin-top:28px}
 .ch-grid button:hover{border-color:#4ee6b480}
 .ch-grid img{width:33px;height:51px;object-fit:contain;image-rendering:pixelated}
 .ch-grid small{font:800 .66rem Nunito,sans-serif}
+/* item info pop-up (hover on desktop, press and hold on phones) */
+.sbx-itip{position:fixed;left:0;top:0;z-index:10000;width:max-content;max-width:min(260px,calc(100vw - 16px));padding:9px 11px 9px;border-radius:12px;pointer-events:none;color:#f6eedb;font-family:Nunito,system-ui,sans-serif;font-size:.8rem;line-height:1.35;text-align:left;background:linear-gradient(170deg,rgba(28,52,41,.97),rgba(8,18,13,.97));border:1px solid color-mix(in srgb,var(--ic,#4ee6b4) 55%,transparent);box-shadow:0 14px 30px -10px #000,0 0 22px -12px var(--ic,#4ee6b4);opacity:0;transform:translateY(4px) scale(.97);transform-origin:var(--ax,50%) 100%;transition:opacity .14s ease,transform .14s ease}
+.sbx-itip.below{transform-origin:var(--ax,50%) 0;transform:translateY(-4px) scale(.97)}
+.sbx-itip.on{opacity:1;transform:none}
+.sbx-itip::after{content:"";position:absolute;left:var(--ax,50%);bottom:-6px;width:10px;height:10px;margin-left:-5px;background:rgba(8,18,13,.97);border:solid color-mix(in srgb,var(--ic,#4ee6b4) 55%,transparent);border-width:0 1px 1px 0;transform:rotate(45deg)}
+.sbx-itip.below::after{bottom:auto;top:-6px;border-width:1px 0 0 1px}
+.sbx-itip .it-h{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sbx-itip .it-h img{width:30px;height:30px;flex:none;image-rendering:pixelated;padding:3px;border-radius:8px;background:rgba(255,255,255,.06)}
+.sbx-itip .it-h span{display:grid;gap:1px;min-width:0}
+.sbx-itip .it-h b{font-weight:800;font-size:.92rem;color:#fff;line-height:1.15}
+.sbx-itip .it-h em{font-style:normal;font-weight:800;font-size:.68rem;letter-spacing:.02em}
+.sbx-itip p{margin:0;color:#e4dccb}
+.sbx-itip small{display:block;margin-top:5px;font-size:.7rem;color:#a9c7b8}
+.sbx-itip .it-n{color:#f2c14e;font-weight:700}
+.sbx-is,.sbx-slot{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+@media (prefers-reduced-motion:reduce){.sbx-itip{transition:none}}
+
+/* BOSS BAR: a pale trail drains after each hit, a notch marks where it becomes enraged, the bar jolts when you land a hit, and it slides in */
+.sbx-boss .bt s{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:99px;background:#fff6dccc;transition:width .55s cubic-bezier(.3,.7,.3,1) .35s}
+.sbx-boss .bt u{position:absolute;left:40%;top:-1px;bottom:-1px;width:2px;margin-left:-1px;background:#0a1410;box-shadow:0 0 0 1px #ffffff33;text-decoration:none}
+.sbx-boss.rage .bt u{opacity:.25}
+.sbx-boss:not([hidden]){animation:sbxBossIn .45s cubic-bezier(.2,.9,.3,1.2) both}
+.sbx-boss.hit{animation:sbxBossHit .18s ease-out}
+.sbx-boss.rage{border-color:var(--bc);box-shadow:0 0 28px -6px var(--bc)}
+.sbx-boss.rage .bt i{animation:sbxBossRage 1s ease-in-out infinite alternate}
+@keyframes sbxBossIn{from{opacity:0;transform:translate(-50%,-14px) scale(.96)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes sbxBossHit{0%{transform:translate(-50%,0)}30%{transform:translate(calc(-50% + 3px),1px)}60%{transform:translate(calc(-50% - 2px),0)}100%{transform:translateX(-50%)}}
+@keyframes sbxBossRage{from{filter:brightness(1)}to{filter:brightness(1.35)}}
+@media (prefers-reduced-motion:reduce){.sbx-boss:not([hidden]),.sbx-boss.hit,.sbx-boss.rage .bt i{animation:none}.sbx-boss .bt s{transition:none}}
