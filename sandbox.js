@@ -980,6 +980,16 @@
     var i = y * W + x; if (tiles[i] !== T.WATER) return false; var L = lvAt(i); return L >= 8 || tiles[i - W] === T.WATER || fy - y >= 1 - L / 8;
   }
   var bioAt = function () { return world.bio[clamp(Math.floor(p.x), 0, W - 1)]; };
+  // LEAF PLATFORMS: the tops of tree canopies work like one-way platforms. You walk and jump straight through leaves, but falling onto
+  // the top of a leaf you land and can stand on it; hold Down (S / the down arrow) to drop back through.
+  function leafTop(x, y) { var id = get(x, y); if (id !== T.LEAVES || blocks(x, y)) return false; var up = get(x, y - 1); return up !== T.LEAVES && !TILES[up].solid; }
+  function leafLand(x, y0, y1) {
+    if (keys.d || tk.d || onLadder()) return false;
+    var r = Math.ceil(y0 - 1e-6); if (y1 < r) return false;
+    var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4);
+    for (var xx = x0; xx <= x1; xx++) if (leafTop(xx, r)) return true;
+    return false;
+  }
   function boxHit(x, y) {
     var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4), y0 = Math.floor(y - PH + 1e-4), y1 = Math.floor(y - 1e-4);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) return true;
@@ -1074,11 +1084,12 @@
     if (A.n <= 0) S.slots[a] = null; else if (toHot) { var sw = selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0; moveSlot(a, sw); invSel = sw; return; } else toast("Your backpack is full.", "#f2c14e");
     hbDirty = true; invAfter();
   }
-  function tossSlot(a, all) {   // throw away one, or the whole stack (the stack asks twice)
+  function tossSlot(a, all, noAsk) {   // drop one, or the whole stack (the stack asks twice, unless you dragged it out)
     var A = S.slots[a]; if (!A) return;
-    if (all && A.n > 1 && invAsk !== "t" + a) { invAsk = "t" + a; renderPanel(); return; }
+    if (all && A.n > 1 && !noAsk && invAsk !== "t" + a) { invAsk = "t" + a; renderPanel(); return; }
     invAsk = ""; var k = A.k, n = all ? A.n : 1; A.n -= n; if (A.n <= 0) { S.slots[a] = null; invSel = -1; }
     S.inv[k] = (S.inv[k] || 0) - n; if (S.inv[k] <= 0) delete S.inv[k]; if (sel === k && !(S.inv[k] > 0)) { sel = "pick", bare = true; selSlot = -1; }
+    if (!cave) tossDrop(k, n); else toast("Dropped " + n + " " + ITEMS[k].n + ". (Things dropped underground are lost.)", "#c9a46a");
     snd("coin"); hbDirty = true; invAfter();
   }
   function sortInv() {   // tidy the bag (not the hotbar): merge stacks, then order like the item list
@@ -2410,7 +2421,7 @@
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (vw / 2 / ts + 1 + Math.random() * 6)), 2, W - 3) + 0.5, cx = Math.floor(x);
     if (skySafe(cx)) return;
     var y = Math.max(2, Math.min(col[cx] - 6 - Math.random() * 4, p.y - 8 - Math.random() * 3));   // swoops in from the sky above you
-    if (eBoxHit(x, y, ENEMY.bat.w, ENEMY.bat.h)) return;
+    if (eBoxHit(x, y, ENEMY.bat.w, ENEMY.bat.h) || litNear(x, y) || litNear(x, col[cx])) return;
     enemies.push(newEnemy("bat", x, y));
     if (!S.st.warned) { S.st.warned = 1; toast("Bats come out at night! Craft a Swamp Bed and sleep to skip the night.", "#b58cff"); }
   }
@@ -2482,6 +2493,17 @@
     hits += mpStrikePlayers(lo, hi, wDmg(), f);
     if (hits) wear("wpn", 1);
   }
+  // LIGHT KEEPS MONSTERS AWAY: nothing spawns within the glow of a torch, lantern, campfire or other bright light (about 8 tiles for a
+  // torch), or of a lit building's lamps. Light your base and the night stays quiet there. (Dim things like glowcaps don't count.)
+  function litNear(x, y) {
+    var cx = Math.floor(x), cy = Math.floor(y - 0.5), R = 9, xx, yy, L, dx, dy;
+    for (yy = cy - R; yy <= cy + R; yy++) for (xx = cx - R; xx <= cx + R; xx++) {
+      L = TILES[get(xx, yy)].light; if (!L || L < 9) continue; dx = xx - cx; dy = yy - cy;
+      if (dx * dx + dy * dy <= L * L * 0.36) return true;
+    }
+    var hit = false; (world.structs || []).forEach(function (q) { var P = q.pic; if (hit || !P || !P.lt || !P.lt.length || P.x0 > cx + 12 || P.x0 + P.w < cx - 12) return; P.lt.forEach(function (l) { var ddx = l[0] - cx, ddy = l[1] - cy; if (ddx * ddx + ddy * ddy <= 64) hit = true; }); });
+    return hit;
+  }
   function spawnEnemy() {   // one try every few seconds, just off screen: what can appear depends on the biome there, day or night, and whether you are underground
     if (dv("peace")) return;   // DEVELOPER MODE: peaceful
     var cnt = {}, tot = 0; enemies.forEach(function (e) { if (!e.def && e.k !== "bat") { cnt[e.k] = (cnt[e.k] || 0) + 1; tot++; } });
@@ -2498,7 +2520,7 @@
     if (under) add("spider", 4);   // Cave Spiders, under every land
     if (!opts.length) return;
     var r = Math.random() * tw, k = opts[0][0]; for (var q = 0; q < opts.length; q++) { r -= opts[q][1]; if (r <= 0) { k = opts[q][0]; break; } }
-    if (k === "spider") { var cy0 = spiderCeiling(cx, p.y); if (cy0 > 0) { var sp0 = newEnemy("spider", x, cy0 + 1.1); sp0.st = "hang"; sp0.ay = cy0; enemies.push(sp0); var tip0 = SEEN_TIP.spider; if (!(S.st.seen & tip0[0])) { S.st.seen |= tip0[0]; toast(tip0[1], tip0[2]); } return; } }
+    if (k === "spider") { var cy0 = spiderCeiling(cx, p.y); if (cy0 > 0 && !litNear(x, cy0 + 1.1)) { var sp0 = newEnemy("spider", x, cy0 + 1.1); sp0.st = "hang"; sp0.ay = cy0; enemies.push(sp0); var tip0 = SEEN_TIP.spider; if (!(S.st.seen & tip0[0])) { S.st.seen |= tip0[0]; toast(tip0[1], tip0[2]); } return; } }
     if (k === "wasp") { var gy = col[cx]; y = Math.min(gy - 3 - Math.random() * 3, p.y - 3); if (y < 2) return; }
     else if (k === "gator") {   // in the lake, at the waterline (or on the shore right beside it)
       x = wx + 0.5; cx = wx; var wy = col[wx] - 1; while (wy > 0 && get(wx, wy - 1) === T.WATER) wy--; y = wy + 0.6;
@@ -2512,6 +2534,7 @@
       }
     }
     if (y < 0 || eBoxHit(x, y, ENEMY[k].w, ENEMY[k].h)) return;
+    if (litNear(x, y)) return;   // a lit area stays safe
     enemies.push(newEnemy(k, x, y));
     if (k === "wolf" && (cnt.wolf || 0) + 1 < ENEMY.wolf.max && !eBoxHit(x - side * 1.6, y, ENEMY.wolf.w, ENEMY.wolf.h)) enemies.push(newEnemy("wolf", x - side * 1.6, y));   // wolves come in pairs
     var tip = SEEN_TIP[k]; if (tip && !(S.st.seen & tip[0])) { S.st.seen |= tip[0]; toast(tip[1], tip[2]); }
@@ -2550,6 +2573,11 @@
     if (b === 0) L.push(["bug", 4]); else if (b === 1) L.push(["wasp", 3]); else if (f >= 3) L.push(["wolf", 2]); else L.push(["slime", 2]);
     return L;
   }
+  function caveLit(F, x, y) {   // cave creatures never start inside the light of the floor's lamps or a torch you placed
+    var L = F.lamps || [], k; for (k = 0; k < L.length; k++) { var dx = L[k].x - x, dy = L[k].y - y; if (dx * dx + dy * dy <= 30) return true; }
+    if (F.torch) for (var yy = Math.max(0, y - 6); yy <= Math.min(F.h - 1, y + 6); yy++) for (var xx = Math.max(0, x - 6); xx <= Math.min(F.w - 1, x + 6); xx++) if (F.torch[yy * F.w + xx] && (xx - x) * (xx - x) + (yy - y) * (yy - y) <= 30) return true;
+    return false;
+  }
   function stockFloor(F, f) {
     F.stocked = true; F.mobs = []; if (F.bld) return;   // cave creatures are there whether or not you carry a weapon (swat them with your paws)
     var n = Math.min(9, 2 + Math.floor(f * 0.6)), L = caveKinds(F.biome, f), tw = 0, free = [], i, x, y;
@@ -2557,7 +2585,7 @@
     for (i = 0; i < F.w * F.h; i++) {
       x = i % F.w; y = (i / F.w) | 0; if (SC.solid(F, x, y)) continue;
       var a = x + 0.5 - F.spawn.x, b2 = y + 0.5 - F.spawn.y, c = x - F.down.x, d = y - F.down.y;
-      if (a * a + b2 * b2 > 64 && c * c + d * d > 9) free.push(i);
+      if (a * a + b2 * b2 > 64 && c * c + d * d > 9 && !caveLit(F, x, y)) free.push(i);
     }
     for (var m = 0; m < n && free.length; m++) {
       var r = Math.random() * tw, k = L[0][0]; for (var q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) { k = L[q][0]; break; } }
@@ -5967,6 +5995,11 @@
     drops.push({ k: k, n: n, x: x + 0.5 + (Math.random() - 0.5) * 0.4, y: y + 0.5, vx: (Math.random() - 0.5) * 3.4, vy: -3 - Math.random() * 2.5, t: 0, on: false, ph: Math.random() * 6 });
     if (drops.length > 400) drops.splice(0, drops.length - 400);
   }
+  function tossDrop(k, n) {   // DROPPING: the item is thrown out in front of you and lands on the ground like a mined block; it waits a moment before it floats back
+    if (!ITEMS[k] || n <= 0) return;
+    var fx = p.face || 1, d = { k: k, n: n, x: p.x + fx * 0.35, y: p.y - 1.05, vx: fx * (5.2 + Math.random() * 1.2), vy: -5.5 - Math.random() * 1.2, t: 0, on: false, ph: Math.random() * 6, toss: true };
+    drops.push(d); if (drops.length > 400) drops.splice(0, drops.length - 400); S.st.tossed = (S.st.tossed || 0) + n;
+  }
   function dropSolid(x, y) { var tx = Math.floor(x), ty = Math.floor(y); if (ty < 0) return false; if (ty >= H) return true; var id = get(tx, ty); return blocks(tx, ty) || (TILES[id].solid && id !== T.LEAVES); }
   function tickDrops(dt) {
     if (cave || !drops.length) return;
@@ -5976,7 +6009,8 @@
       if (Math.abs(d.x - px) > 90) continue;   // far away: frozen where it lies
       if (d.bird) continue;   // being carried
       var dx = px - d.x, dy = py - d.y, dist = Math.sqrt(dx * dx + dy * dy), wet = TILES[get(Math.floor(d.x), Math.floor(d.y))].kind === "water";
-      if (d.t > 0.45 && dist < 3.2 && !(d.full > 0) && hp > 0) {   // close: it floats to you
+      if (d.toss && !d.away && (dist > 4.2 || d.t > 30)) d.away = true;   // something you dropped stays put until you have walked away from it (or 30 s pass)
+      if (d.t > 0.45 && dist < 3.2 && !(d.full > 0) && !(d.toss && !d.away) && hp > 0) {   // close: it floats to you
         var pull = 14 / Math.max(0.6, dist); d.vx += dx / dist * pull * dt * 3; d.vy += dy / dist * pull * dt * 3; d.vx *= 0.9; d.vy *= 0.9; d.on = false;
         d.x += d.vx * dt; d.y += d.vy * dt;
         if (dist < 0.75) { var got = give(d.k, d.n); if (got > 0) { text(d.x, d.y - 0.6, "+" + got + " " + ITEMS[d.k].n, ITEMS[d.k].gem || "#f6eedb"); if (Math.random() < 0.6) thud(640 + Math.random() * 120, 0.025); } d.n -= got; if (d.n <= 0) { drops.splice(i, 1); continue; } d.full = 2; }
@@ -8606,8 +8640,11 @@
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
     if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(cave ? cp.x : p.x, cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
-    if (hp <= 0) faint(why);
+    if (hp <= 0) { hp = 0; if (!faintQ) faintQ = why || "hit"; }   // CRASH FIX: passing out waits for the end of this frame. Respawning right here
+    // emptied the enemy list while the enemy that hit you was still being updated, which threw and stopped the game loop (the game froze)
   }
+  var faintQ = null;
+  function faintNow() { if (!faintQ) return; var w = faintQ; faintQ = null; faint(w); }
   function faint(why) {
     if (BM.on) BM.fail = true;   // BLOOD MOON: no rewards this time
     S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
@@ -8722,7 +8759,7 @@
     else p.vx = 0;
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
-    if (!boxHit(p.x, ny)) p.y = ny;
+    if (!boxHit(p.x, ny) && !(p.vy > 0 && leafLand(p.x, p.y, ny))) p.y = ny;
     else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; p.on = true; p.vy = 0; if (bounceAt(vpre)) { /* PLAYGROUND: boing */ } else if (vpre > FALL_SAFE && !p.wet && !gliding && !fx("feather") && !hasCharm("feather")) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); }
       if (vpre > 3.5 && !reduce) { p.sq = -Math.min(0.3, (vpre - 2) / 48); p.sqv = 0; }
       if (vpre > 7) { landPuff(vpre); var gid = get(Math.floor(p.x), Math.floor(p.y + 0.2)); matStep(gid, Math.min(1, (vpre - 5) / 16)); if (vpre > 16) thud(70, Math.min(0.12, (vpre - 14) / 90)); } }
@@ -9691,6 +9728,16 @@
           if ((v + 1 + k) % 3 === 0) { g.fillStyle = P.g; g.beginPath(); g.arc(S - S * 0.07, (y0 + y1 - ln) / 2, Math.max(1, S / 34), 0, 6.2832); g.fill(); }
         }
         if (vert) g.restore();
+        break;
+      }
+      case "bark": {   // WOOD BLOCK: an upright log seen from the side, rounded light-to-dark across, with bark grooves and the odd knot
+        g.fillStyle = mhgrad(g, 0, S, P.d, P.l, P.d); g.fillRect(0, 0, S, S);
+        g.fillStyle = "rgba(255,255,255,.08)"; g.fillRect(R(S * 0.3), 0, R(S * 0.14), S);
+        var gr2 = 4 + (v & 1); g.fillStyle = P.g;
+        for (k = 0; k < gr2; k++) { var gx = R((k + 0.5 + (mhash(v, k, 41) - 0.5) * 0.5) * S / gr2), gy0 = R(mhash(v, k, 42) * S * 0.35), gl = R(S * (0.45 + mhash(v, k, 43) * 0.55)); g.globalAlpha = 0.55; g.fillRect(gx, gy0, Math.max(1, R(S / 22)), Math.min(S - gy0, gl)); }
+        g.globalAlpha = 1;
+        if (mhash(v, 9, 44) > 0.55) { var kx = R(S * (0.3 + mhash(v, 9, 45) * 0.4)), ky = R(S * (0.3 + mhash(v, 9, 46) * 0.4)); g.fillStyle = P.g; g.beginPath(); g.ellipse(kx, ky, S * 0.08, S * 0.06, 0, 0, 6.2832); g.fill(); g.fillStyle = P.d; g.beginPath(); g.ellipse(kx, ky, S * 0.04, S * 0.03, 0, 0, 6.2832); g.fill(); }
+        g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(0, 0, ln, S); g.fillRect(S - ln, 0, ln, S);
         break;
       }
       case "logs": {   // stacked round logs, two per tile
@@ -11897,10 +11944,17 @@
     idragJust = true; setTimeout(function () { idragJust = false; }, 0);
     if (!drop) return;
     var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]");
+    if (!t && dragOut(el)) {   // DRAG TO DROP: let go over the world (outside the backpack and the hotbar) and the stack is dropped in front of you
+      var dc = S.slots[D.from]; if (!dc) return;
+      if (ITEMS[dc.k] && ITEMS[dc.k].tool) { nag("Tools can't be dropped."); return; }
+      if (hp <= 0 || titleOpen) return;
+      tossSlot(D.from, true, true); return;
+    }
     if (!t) return;
     var to = slotOfEl(t); if (to < 0 || to === D.from || !S.slots[D.from]) return;
     invAsk = ""; invSel = to; moveSlot(D.from, to); snd("coin");
   }
+  function dragOut(el) { return !!el && (el === cv || el === stageEl || (el.classList && (el.classList.contains("sbx-pack") || el.classList.contains("sbx-panel"))) && el.id !== "sbxStory"); }   // the world itself, or the dimmed backdrop around an open window
   function slotOfEl(b) { return b.hasAttribute("data-is") ? +b.getAttribute("data-is") : +b.getAttribute("data-slot"); }   // backpack slots use data-is, hotbar slots data-slot (-1 = a tool)
   [$("sbxPanel"), $("sbxPack"), $("sbxBar")].forEach(function (el) {
     el.addEventListener("pointerdown", function (e) {
@@ -11916,13 +11970,14 @@
       if (Math.abs(e.clientX - D.x0) + Math.abs(e.clientY - D.y0) < D.th) return;
       var c = S.slots[D.from]; if (!c) { idrag = null; return; }
       D.on = true; D.src.classList.add("lift");
-      var g = document.createElement("div"); g.className = "sbx-drag"; g.innerHTML = '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + "</b>"; document.body.appendChild(g); D.ghost = g;
+      var g = document.createElement("div"); g.className = "sbx-drag"; g.innerHTML = '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + '</b><i>Drop</i>'; document.body.appendChild(g); D.ghost = g;
     }
     e.preventDefault();
     D.ghost.style.transform = "translate(" + (e.clientX - 26) + "px," + (e.clientY - 26) + "px)";
     var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]"); if (t && !(slotOfEl(t) >= 0)) t = null;
     [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-slot.drop"), function (b) { if (b !== t) b.classList.remove("drop"); });
     if (t && t !== D.src) t.classList.add("drop");
+    var out = !t && dragOut(el); if (D.ghost.classList.contains("toss") !== out) { D.ghost.classList.toggle("toss", out); }   // over the world: the ghost shows it will be dropped
   }, { passive: false });
   window.addEventListener("pointerup", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(true, e); });
   window.addEventListener("pointercancel", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(false, e); });
@@ -12231,6 +12286,9 @@
   function setUi(v) { UIS = clamp(Math.round(v * 10) / 10, 0.6, 1.8); stageEl.style.setProperty("--cs", UIS); fitDock(); try { localStorage.setItem("swamp-delve-ui", String(UIS)); } catch (e) {} }
   function fitDock() { var d = document.querySelector(".sbx-dock"); if (d && d.offsetWidth) d.style.setProperty("--ds", Math.min(UIS, (stageEl.clientWidth - 12) / d.offsetWidth)); }   // the hotbar grows with the setting only as far as the screen is wide enough
   var last = 0, slowN = 0, frN = 0, lastDraw = 0, rafAvg = 16.7, rafPrev = 0, rafOdd = false;
+  // SAFETY NET: an unexpected error in one frame is logged and the game keeps running (before, any error stopped the loop and the game froze)
+  var LERR = { n: 0, last: "" };
+  function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
     var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on;
     var rgap = now - rafPrev; rafPrev = now; if (rgap > 2 && rgap < 40) rafAvg += (rgap - rafAvg) * 0.05;   // the screen's real refresh interval (smoothed)
@@ -12241,7 +12299,10 @@
     if (!titleOpen) { pumpToasts(); pumpPops(); }
     // automatic quality: if a device is struggling for ~2 seconds, switch off the optional sparkle (ambient motes, aurora, glints)
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
-    if (!document.hidden) { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); mpTick(dt); if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); }
+    if (!document.hidden) {
+      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
+      try { if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); } catch (er) { loopErr(er); }
+    }
     requestAnimationFrame(loop);
   }
   document.addEventListener("visibilitychange", function () {
@@ -12281,6 +12342,7 @@
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
+  window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };
   window.__sbx.pause = { open: function () { openPause(); }, close: function () { closePause(); }, act: function (a) { pauseAct(a); }, opt: function (k) { optAct(k); }, get on() { return pauseOpen; }, get view() { return pauseView; }, OPT: OPT };
   window.__sbx.feel = { la: CAMLA, get sq() { return p.sq || 0; } };
   window.__sbx.cont = { near: function () { return contNear(); }, at: function (x, y) { return contAtCell(x, y); }, open: function (c) { openCont(c); }, act: function (a) { contAct(a); }, map: function () { return cave && cave.F ? contMap(cave.F) : null; }, read: function () { useRead(0); }, sell: function (k) { sellShop(k); }, sellHtml: function () { return sellHtml(); } };

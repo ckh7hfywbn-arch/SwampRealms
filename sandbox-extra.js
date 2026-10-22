@@ -956,6 +956,11 @@
   li("oldbook", "Old Book", { read: "book" }); li("sealedletter", "Sealed Letter", { read: "letter" }); li("parchment", "Blank Parchment"); li("recipecard", "Recipe Card"); li("pressedflower", "Pressed Flower");
   // medicine (4)
   food("bandage", "Bandage", 1, 18, 0); LOOTI.push("bandage"); food("salve", "Healing Salve", 1, 30, 0); LOOTI.push("salve"); food("herbbundle", "Herb Bundle", 4, 10, 0); LOOTI.push("herbbundle"); food("smellingsalts", "Smelling Salts", 1, 8, 0); LOOTI.push("smellingsalts");
+  // 7u. WOOD BLOCK: Wood you place is now a solid upright-log building block you stand on and build walls with. The trunks of
+  // real trees keep their walk-through Swamp Log tile, so forests are unchanged; chopping either one gives Wood back.
+  var WOODB = tile("X_woodblock", "Wood Block", "#7a5236", "#4a301c", TILES[T.LOG].hard, TILES[T.LOG].tier, "wood", true, 0, "woodblock");
+  TILES[WOODB].mat = { f: "bark", p: pal("#8e6440", "#714c30", "#583a22", "#2e1d10", "#170e06") };
+  if (ITEMS.wood) ITEMS.wood.tile = WOODB;
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };

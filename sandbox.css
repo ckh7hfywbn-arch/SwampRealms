@@ -1319,3 +1319,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-stage.paused .sbx-hud,.sbx-stage.paused .sbx-dock,.sbx-stage.paused .sbx-packbtn,.sbx-stage.paused .sbx-menubtn{visibility:hidden}
 .pz-rows,.sbx-pause .pz-keys{text-align:left}
 @media (pointer:coarse){.sbx-pause kbd{display:none}}
+/* drag an item out over the world to drop it */
+.sbx-drag i{position:absolute;left:50%;top:-22px;transform:translateX(-50%);padding:2px 8px;border-radius:99px;background:#f2c14e;color:#2a1a04;font:800 .7rem Nunito,sans-serif;font-style:normal;white-space:nowrap;opacity:0;transition:opacity .12s}
+.sbx-drag.toss{border-color:#ffd36a;box-shadow:0 0 0 3px rgba(242,193,78,.35),0 10px 22px -8px #000}
+.sbx-drag.toss i{opacity:1}
