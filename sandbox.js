@@ -504,7 +504,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -2459,7 +2459,7 @@
   function damageEnemy(e, dmg, face) {
     if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
     if (e.boss) return damageBoss(e, dmg, face);
-    if (e.def) return; e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    if (e.def) return; if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
     if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
@@ -2837,17 +2837,17 @@
   var CRIT = { L: [], t: 2 }, CRITK = { frog: { w: 0.5, h: 0.36, spd: 2.4 }, crab: { w: 0.55, h: 0.32, spd: 2.2 }, hare: { w: 0.55, h: 0.45, spd: 3.4 }, beetle: { w: 0.45, h: 0.26, spd: 1 } };
   function critKind(x) { var b = world.bio[clamp(x, 0, W - 1)], v = varAt(x); if (v === 2) return "crab"; return b === 0 ? "frog" : b === 1 ? "beetle" : "hare"; }
   function spawnCrit() {
-    if (cave || CRIT.L.length >= 4 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 4) return;
+    if (cave || CRIT.L.length >= 6 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 4) return;
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (6 + Math.random() * 14)), 3, W - 4), y = col[x];
     if (skySafe(x) && p.y > world.sky.y + 4) return;
     if (y <= 2 || y >= H - 2 || !blocks(x, y) || blocks(x, y - 1) || TILES[get(x, y - 1)].kind === "water") return;
-    var k = critKind(x), K = CRITK[k]; if (k === "frog" && !isNight(S.time) && Math.random() < 0.3) return;
+    var k = critKind2(x), K = CRITK[k]; if (k === "frog" && !isNight(S.time) && Math.random() < 0.3) return;
     CRIT.L.push({ k: k, x: x + 0.5, y: y, vx: 0, vy: 0, kv: 0, on: true, w: K.w, h: K.h, face: Math.random() < 0.5 ? -1 : 1, t: 0, hop: 0.5 + Math.random() * 2, flee: 0, life: 90 + Math.random() * 60, ph: Math.random() * 6 });
   }
   function critAt(wx, wy) { for (var i = 0; i < CRIT.L.length; i++) { var c = CRIT.L[i]; if (Math.abs(wx - c.x) < c.w / 2 + 0.35 && wy > c.y - c.h - 0.4 && wy < c.y + 0.25) return c; } return null; }
   function boopCrit(c) {
     hearts({ x: c.x, y: c.y, w: c.w, h: c.h }, 4); if (c.on) { c.vy = -7; c.on = false; } c.flee = 0; S.st.boops = (S.st.boops || 0) + 1;
-    var say = { frog: ["ribbit!", "croak?"], crab: ["click click!", "pinch?"], hare: ["!", "*twitch*"], beetle: ["bzzt", "*click*"] }[c.k];
+    var say = { frog: ["ribbit!", "croak?"], crab: ["click click!", "pinch?"], hare: ["!", "*twitch*"], beetle: ["bzzt", "*click*"] }[c.k] || CSAY[c.k];
     bubble({ k: "c", ref: c }, pickL(say), 1.4); funTone(c.k === "frog" ? 220 : c.k === "hare" ? 1200 : 900, c.k === "frog" ? 140 : 0, 0.12, c.k === "frog" ? "square" : "sine", 0.03);
   }
   function tickCrit(dt) {
@@ -2858,7 +2858,8 @@
       if (c.life <= 0 || Math.abs(c.x - p.x) > 36 || Math.abs(c.y - p.y) > 20) { c.gone = true; CRIT.L.splice(i, 1); continue; }
       var dx = c.x - p.x, near = Math.abs(dx) < 3 && Math.abs(c.y - p.y) < 2.2; if (near) { c.flee = 2.2; c.face = dx < 0 ? -1 : 1; }
       c.flee = Math.max(0, c.flee - dt); c.hop -= dt; var vx = 0;
-      if (c.k === "crab") { if (c.flee > 0) vx = c.face * K.spd * 1.8; else if (c.hop > 0 && c.hop < 1.2) vx = c.face * K.spd * 0.6; if (c.hop <= 0) { c.hop = 1.5 + Math.random() * 2.5; if (Math.random() < 0.5) c.face = -c.face; } }
+      if (CWALK[c.k]) vx = cwalk(c, K, dt, dx);
+      else if (c.k === "crab") { if (c.flee > 0) vx = c.face * K.spd * 1.8; else if (c.hop > 0 && c.hop < 1.2) vx = c.face * K.spd * 0.6; if (c.hop <= 0) { c.hop = 1.5 + Math.random() * 2.5; if (Math.random() < 0.5) c.face = -c.face; } }
       else if (c.k === "beetle") { vx = c.face * K.spd * (c.flee > 0 ? 2.6 : c.hop > 1 ? 0.5 : 0); if (c.hop <= 0) { c.hop = 2 + Math.random() * 3; if (Math.random() < 0.4) c.face = -c.face; } }
       else if (c.on && c.hop <= 0) {   // frogs and hares get about in hops
         c.hop = c.flee > 0 ? 0.35 : (c.k === "hare" ? 0.8 : 1.4) + Math.random() * 2; if (!c.flee && Math.random() < 0.35) c.face = -c.face;
@@ -2880,6 +2881,7 @@
       if (c.k === "frog") { R(-4, -5, 8, 5, "#4f9a3c"); R(-3, -6, 6, 1, "#6fbe4f"); R(-1, -8, 3, 3, "#6fbe4f"); R(1, -8, 3, 3, "#6fbe4f"); R(1, -7, 2, 2, "#ffffff"); R(2, -7, 1, 1, "#14161c"); R(-3, -2, 6, 2, "#c8e09a"); if (air) { R(-6, -2, 3, 2, "#4f9a3c"); R(3, -1, 4, 1, "#4f9a3c"); } else { R(-5, -1, 3, 1, "#3a7a2c"); R(3, -1, 3, 1, "#3a7a2c"); } }
       else if (c.k === "crab") { R(-4, -4, 8, 4, "#d8442a"); R(-3, -5, 6, 1, "#ff6a4a"); R(-1, -7, 1, 2, "#d8442a"); R(1, -7, 1, 2, "#d8442a"); R(-1, -8, 1, 1, "#14161c"); R(1, -8, 1, 1, "#14161c"); var cl = Math.sin(c.t * 10) > 0 ? 1 : 0; R(4, -6 - cl, 2, 3, "#ff6a4a"); R(-6, -6 + cl, 2, 3, "#ff6a4a"); for (var l = 0; l < 3; l++) { R(-4 + l * 3, 0, 1, 1, "#a8301a"); } }
       else if (c.k === "hare") { R(-4, -6, 7, 5, "#f4f4f0"); R(1, -8, 4, 4, "#ffffff"); R(2, -12, 1, 4, "#f4f4f0"); R(3, -12, 1, 4, "#ffd0dc"); R(4, -7, 1, 1, "#14161c"); R(-5, -5, 2, 2, "#ffffff"); R(-3, -1, 2, 1, "#d8d8d0"); R(1, -1, 2, 1, "#d8d8d0"); }
+      else if (CART[c.k]) CART[c.k](R, c);
       else { R(-3, -3, 6, 3, "#2a2226"); R(-2, -4, 4, 1, "#4a3a3e"); R(3, -2, 1, 1, "#14161c"); R(-1, -3, 1, 2, "#ff8a3d"); for (var l2 = 0; l2 < 3; l2++) R(-3 + l2 * 2, 0, 1, 1, "#14161c"); if (isNight(S.time) || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) { g.globalAlpha = 0.5 + 0.3 * Math.sin(now / 300 + c.ph); R(-1, -3, 2, 2, "#ffc24a"); g.globalAlpha = 1; } }
       g.restore();
     });
@@ -2974,7 +2976,7 @@
   }
   if (emoEl) emoEl.addEventListener("click", function (e) { var b = e.target.closest("[data-emo]"); if (b) emote(b.getAttribute("data-emo")); });
   (function () { var eb = $("sbxEmoBtn"); if (eb) eb.addEventListener("click", function (e) { e.preventDefault(); if (titleOpen || cave) return; emoBar(); }); })();
-  function tickFun(dt) { tickBubs(dt); tickEmote(dt); tickChat(dt); tickCrit(dt); tickFoot(dt); }
+  function tickFun(dt) { tickBubs(dt); tickEmote(dt); tickChat(dt); tickCrit(dt); tickFoot(dt); tickAmb2(dt); }
   // ---------- PEACEFUL CREATURES CAN BE ATTACKED ----------
   // Freedom: wild animals, the Sky Village villagers and Old Croaker himself can all be attacked. Tap them as before to talk, tame or
   // trade; PRESS AND HOLD on one to attack it (with your weapon, or a paw swat). They are not meant to be wiped out:
@@ -3103,11 +3105,11 @@
     var b = world.bio[cx], night = batNight(S.time), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7, opts = [], tw = 0, wx = -1;
     if (!night && !under) return;   // creatures only come out at night, or in dark places underground (caves); the daytime surface is safe
     function add(k, w) { if ((cnt[k] || 0) < ENEMY[k].max) { opts.push([k, w]); tw += w; } }
-    if (b === 0) { add("bug", under ? 4 : 5); if (!under) add("frog", 3); if (!under && night) add("witch", 1.4); if (!under && (wx = waterNear(cx)) >= 0) add("gator", 3); }
-    else if (b === 1) { if (night && !under) add("wasp", 5); if (under) add("bug", 5); }   // Ember Wasps swarm out at night; Bramble Bugs also burrow through Ember Bog caves
-    else add("wolf", under ? 5 : 4);   // Frost Wolves den in Frostfen caverns too
+    if (b === 0) { add("bug", under ? 4 : 5); if (!under) add("frog", 3); if (!under && night) { add("witch", 1.4); add("lily", 2.2); } if (!under && (wx = waterNear(cx)) >= 0) add("gator", 3); }
+    else if (b === 1) { if (night && !under) { add("wasp", 5); add("imp", 3.5); } if (under) { add("bug", 5); add("imp", 2); } }   // Ember Wasps swarm out at night; Bramble Bugs also burrow through Ember Bog caves
+    else { add("wolf", under ? 5 : 4); add("brute", under ? 2 : 1.6); }   // Frost Wolves den in Frostfen caverns too; Rime Brutes lumber about
     if (under || night) add("slime", b === 0 ? 3 : 5);
-    if (under) add("spider", 4);   // Cave Spiders, under every land
+    if (under) { add("spider", 4); add("crawler", 3); }   // Cave Spiders, under every land
     if (!opts.length) return;
     var r = Math.random() * tw, k = opts[0][0]; for (var q = 0; q < opts.length; q++) { r -= opts[q][1]; if (r <= 0) { k = opts[q][0]; break; } }
     if (k === "spider") { var cy0 = spiderCeiling(cx, p.y); if (cy0 > 0 && !litNear(x, cy0 + 1.1)) { var sp0 = newEnemy("spider", x, cy0 + 1.1); sp0.st = "hang"; sp0.ay = cy0; enemies.push(sp0); var tip0 = SEEN_TIP.spider; if (!(S.st.seen & tip0[0])) { S.st.seen |= tip0[0]; toast(tip0[1], tip0[2]); } return; } }
@@ -3148,7 +3150,7 @@
       if (e.def) { e.dead -= dt; if (e.boss) bossDeathTick(e, dt); if (e.k !== "wyrm") moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
       if (e.leave > 0 && e.k !== "bat" && e.k !== "wasp") { e.leave -= dt; if (e.leave <= 0) e.gone = true; }   // dawn: walkers slip away (bats and wasps fly off on their own)
       if (e.gone || (!e.boss && (Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44))) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
-      mpRun(e, function () { if (e.boss) updBoss(e, dt); else if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else if (e.k === "witch") updateWitch(e, dt); else if (e.k === "spider") updateSpider(e, dt); else updateFrog(e, dt); });
+      mpRun(e, function () { if (e.boss) updBoss(e, dt); else if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else if (e.k === "witch") updateWitch(e, dt); else if (e.k === "spider") updateSpider(e, dt); else if (e.k === "lily") updateLily(e, dt); else if (e.k === "imp") updateImp(e, dt); else if (e.k === "brute") updateBrute(e, dt); else if (e.k === "crawler") updateCrawler(e, dt); else updateFrog(e, dt); });
     }
   }
   // ---------- CAVE CREATURES (hole-cave floors, seen from above) ----------
@@ -3493,6 +3495,286 @@
     g.restore();
   }
   var SHADOW = { bug: 19, frog: 17, wolf: 21, gator: 27, slime: 14, witch: 13, spider: 16 }, HBAR = { bug: 41, bat: 30, frog: 49, wolf: 44, gator: 30, slime: 32, wasp: 30, witch: 62, spider: 30 };
+  // ---------- CREATURE PACK: 4 new hostile creatures, 5 new little critters, and ambient dragonflies, moths, wisps and owls ----------
+  // Snapper Lily (Murkwater, night): looks like a pretty pink bud; when you come close it opens its jaws, then lunges. Step back, or hit it while its mouth hangs open.
+  // Cinder Imp (Ember Bog): keeps its distance and throws fireballs (its hand glows first). Hops away if you rush it. Hurts to touch.
+  // Rime Brute (Frostfen): slow and huge. It raises both fists, then slams: the ground shudders. JUMP as it lands. Slams again after a short rest.
+  // Geode Crawler (every cave): its shell blocks most damage while it is curled up. It curls, rolls at you, then sits dizzy: hit it then.
+  ENEMY.lily = { n: "Snapper Lily", hp: 26, w: 1.0, h: 1.0, dmg: 14, glow: "#ff6aa8", chip: "#58b455", frag: "petalsnap", chance: 0.6, max: 2 };
+  ENEMY.imp = { n: "Cinder Imp", hp: 22, w: 0.8, h: 1.0, dmg: 10, glow: "#ff8a3d", chip: "#a83a10", frag: "imphorn", chance: 0.6, max: 2 };
+  ENEMY.brute = { n: "Rime Brute", hp: 78, w: 1.5, h: 1.7, dmg: 20, glow: "#9fe8ff", chip: "#cfdde6", frag: "rimecore", chance: 0.75, max: 1 };
+  ENEMY.crawler = { n: "Geode Crawler", hp: 34, w: 1.2, h: 0.8, dmg: 14, glow: "#b08aff", chip: "#6a4a9a", frag: "geodechip", chance: 0.65, max: 2 };
+  KSTAT.lily = "lilies"; KSTAT.imp = "imps"; KSTAT.brute = "brutes"; KSTAT.crawler = "crawlers";
+  SHADOW.lily = 14; SHADOW.imp = 11; SHADOW.brute = 27; SHADOW.crawler = 19; HBAR.lily = 44; HBAR.imp = 40; HBAR.brute = 72; HBAR.crawler = 36;
+  SEEN_TIP.lily = [128, "A Snapper Lily! It looks harmless until you get close. When its jaws open, step back, then hit it while its mouth hangs open.", "#ff6aa8"];
+  SEEN_TIP.imp = [256, "A Cinder Imp! Its hand glows just before it throws a fireball. Keep moving, and chase it down: it hops away when you get close.", "#ff8a3d"];
+  SEEN_TIP.brute = [512, "A Rime Brute! When it raises both fists, get ready and JUMP as it slams. It is slow, and tired right after.", "#9fe8ff"];
+  SEEN_TIP.crawler = [1024, "A Geode Crawler! Its shell blocks most hits while it is curled up. Dodge the roll, then strike while it sits dizzy.", "#b08aff"];
+  var IMP = { aggro: 11, wind: 0.55, speed: 2.2 }, BRUTE = { aggro: 9, speed: 1.1, raise: 0.85, slamAt: 2.7, recover: 1.3 }, CRAWL = { aggro: 7, curl: 0.5, roll: 1.1, speed: 7.2, dizzy: 1.5, walk: 1.2 };
+  function updateLily(e, dt) {
+    var dx = p.x - e.x, ad = Math.abs(dx), near = hp > 0 && ad < 3.2 && Math.abs(p.y - e.y) < 2.6; e.dir = dx >= 0 ? 1 : -1; e.kv = 0; e.ext = e.ext || 0;
+    if (e.hurt > 0) { if (e.st === "wind") { e.st = "bud"; e.cd = 0.6; } }
+    else if (e.st === "wind") { e.t -= dt; if (e.t <= 0) { e.st = "snap"; e.t = 0.28; thud(160, 0.08); } }
+    else if (e.st === "snap") { e.t -= dt; e.ext = Math.min(1, e.ext + dt * 8); if (e.t <= 0) { e.st = "recover"; e.t = 1.5; } }
+    else if (e.st === "recover") { e.t -= dt; e.ext = Math.max(0, e.ext - dt * 2.2); if (e.t <= 0) { e.st = "bud"; e.cd = 0.8; } }
+    else { e.st = "bud"; e.ext = Math.max(0, e.ext - dt * 3); if (near && e.cd <= 0) { e.st = "wind"; e.t = 0.6; thud(130, 0.05); } }
+    moveEnemy(e, dt, 0);
+    if (e.st === "snap" && hp > 0 && hurtGrace <= 0 && e.hurt <= 0) { var fx = (p.x - e.x) * e.dir; if (fx > -0.6 && fx < 2.4 && Math.abs(p.y - e.y) < 1.8) { hurt(e.dmg, "lily"); shoved(e); e.st = "recover"; e.t = 1.5; } }
+  }
+  function updateImp(e, dt) {
+    var dx = p.x - e.x, ad = Math.abs(dx), near = hp > 0 && ad < IMP.aggro && Math.abs(p.y - e.y) < 7, vx = 0; e.bcd = (e.bcd || 0) - dt;
+    if (e.hurt > 0) vx = 0;
+    else if (e.st === "wind") {
+      e.t -= dt; e.dir = dx >= 0 ? 1 : -1;
+      if (e.t <= 0) {
+        var T2 = clamp(ad / 8, 0.5, 1.05), g2 = 14, sx = e.x + e.dir * 0.5, sy = e.y - e.h + 0.1, ty = p.y - PH * 0.5, n = e.hp < e.mx * 0.5 ? 2 : 1;
+        for (var q = 0; q < n; q++) shoot(sx, sy, (p.x - sx) / T2 * (1 - q * 0.22), (ty - sy - 0.5 * g2 * T2 * T2) / T2 - q * 2.6, { g: g2, r: 0.28, dmg: e.dmg, k: "fire", life: 3, why: "imp" });
+        thud(420, 0.05); funTone(900, 260, 0.14, "sawtooth", 0.025); e.st = "idle"; e.cd = 2.1 + Math.random() * 1.1;
+      }
+    } else if (near) {
+      e.dir = dx >= 0 ? 1 : -1;
+      if (ad < 2.6 && e.on && e.bcd <= 0) { e.vy = -9; e.on = false; e.hvx = -e.dir * 5.5; e.bcd = 1.6; thud(500, 0.04); }
+      else if (e.cd <= 0 && ad > 2.4) { e.st = "wind"; e.t = IMP.wind; }
+      else if (ad < 4.5) vx = -e.dir * IMP.speed; else if (ad > 8) vx = e.dir * IMP.speed;
+    } else { e.t -= dt; if (e.t <= 0) { e.t = 1.5 + Math.random() * 2.2; e.wv = Math.random() < 0.4 ? 0 : (Math.random() < 0.5 ? -1 : 1) * 1.1; } vx = e.wv || 0; if (vx) e.dir = vx > 0 ? 1 : -1; }
+    if (!e.on && e.hvx) vx = e.hvx; if (e.on) e.hvx = 0;
+    if (e.blocked && e.on && vx) e.vy = -9.5;
+    e.mv = vx; moveEnemy(e, dt, vx);
+    if (hp > 0 && hurtGrace <= 0 && e.hurt <= 0 && overlapP(e)) { hurt(6, "imp"); shoved(e); }
+  }
+  function updateBrute(e, dt) {
+    var dx = p.x - e.x, ad = Math.abs(dx), near = hp > 0 && ad < BRUTE.aggro && Math.abs(p.y - e.y) < 4, vx = 0; e.kv = clamp(e.kv, -1.5, 1.5);
+    if (e.hurt > 0) { if (e.st === "raise") e.t += dt * 0.5; }
+    else if (e.st === "raise") {
+      e.t -= dt; e.dir = dx >= 0 ? 1 : -1;
+      if (e.t <= 0) {
+        e.st = "recover"; e.t = BRUTE.recover; e.cd = 0.8; shake = Math.max(shake, 0.55); thud(70, 0.16); bossRing(e.x, e.y, "#cfeaff", 3.4, 0.7);
+        for (var q = 0; q < 16; q++) parts.push({ x: e.x + (Math.random() - 0.5) * 5, y: e.y - 0.1, vx: (Math.random() - 0.5) * 6, vy: -2 - Math.random() * 4, g: 12, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#e8f8ff" : "#9fe8ff", s: 3 });
+        if (hp > 0 && hurtGrace <= 0 && p.on && Math.abs(p.x - e.x) < 3.8 && Math.abs(p.y - e.y) < 1.6) { hurt(e.dmg, "brute"); p.vy = -8; p.on = false; p.vx = (p.x >= e.x ? 1 : -1) * 5; }
+      }
+    } else if (e.st === "recover") { e.t -= dt; if (e.t <= 0) e.st = "stalk"; }
+    else if (near) {
+      e.st = "stalk"; e.dir = dx >= 0 ? 1 : -1;
+      if (ad < BRUTE.slamAt && e.cd <= 0) { e.st = "raise"; e.t = BRUTE.raise; thud(90, 0.08); }
+      else vx = ad > 1.2 ? e.dir * BRUTE.speed : 0;
+    } else {
+      e.st = "patrol"; e.t -= dt; if (e.t <= 0) { e.t = 2.5 + Math.random() * 3; if (Math.random() < 0.35) e.dir = -e.dir; }
+      var ax = Math.floor(e.x + e.dir * 1.2); if (!blocks(ax, Math.floor(e.y + 0.3)) && !blocks(ax, Math.floor(e.y + 1.3)) && !blocks(ax, Math.floor(e.y + 2.3))) e.dir = -e.dir; vx = e.dir * 0.7;
+    }
+    if (e.blocked && e.on && vx) e.vy = -9;
+    e.mv = vx; moveEnemy(e, dt, vx);
+    if (hp > 0 && hurtGrace <= 0 && e.hurt <= 0 && e.st !== "recover" && overlapP(e)) { hurt(6, "brute"); shoved(e); }
+  }
+  function updateCrawler(e, dt) {
+    var dx = p.x - e.x, ad = Math.abs(dx), near = hp > 0 && ad < CRAWL.aggro && Math.abs(p.y - e.y) < 3, vx = 0; e.sh = e.st === "curl" || e.st === "roll"; e.rot = e.rot || 0;
+    if (e.hurt > 0 && e.st !== "roll") vx = 0;
+    else if (e.st === "curl") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; if (e.t <= 0) { e.st = "roll"; e.t = CRAWL.roll; e.bn = 0; thud(180, 0.06); } }
+    else if (e.st === "roll") {
+      e.t -= dt; vx = e.dir * CRAWL.speed; e.rot += e.dir * dt * 14;
+      if (e.blocked) { if (++e.bn > 2) e.t = 0; else { e.dir = -e.dir; e.vy = -5; e.on = false; thud(260, 0.05); } }
+      if (e.t <= 0) { e.st = "dizzy"; e.t = CRAWL.dizzy; e.cd = 1.2; }
+    } else if (e.st === "dizzy") { e.t -= dt; if (e.t <= 0) e.st = "crawl"; }
+    else if (near && e.cd <= 0 && e.on) { e.st = "curl"; e.t = CRAWL.curl; e.dir = dx >= 0 ? 1 : -1; thud(300, 0.04); }
+    else { e.st = "crawl"; e.t -= dt; if (e.t <= 0) { e.t = 2 + Math.random() * 3; if (Math.random() < 0.35) e.dir = -e.dir; } var ax = Math.floor(e.x + e.dir * 0.9); if (!blocks(ax, Math.floor(e.y + 0.3)) && !blocks(ax, Math.floor(e.y + 1.3))) e.dir = -e.dir; vx = e.dir * CRAWL.walk; if (e.blocked && e.on) e.dir = -e.dir; }
+    e.mv = vx; moveEnemy(e, dt, vx);
+    if (hp > 0 && hurtGrace <= 0 && e.hurt <= 0 && overlapP(e)) {
+      if (e.st === "roll") { hurt(e.dmg, "crawler"); shoved(e); e.st = "dizzy"; e.t = CRAWL.dizzy; e.cd = 1.2; }
+      else if (e.st === "crawl" && e.cd <= 0) { hurt(5, "crawler"); shoved(e); e.cd = 1; }
+    }
+  }
+  function drawLily(g, e, d, flash, h, pd) {
+    var f = e.dir, wind = e.st === "wind", snap = e.st === "snap", rec = e.st === "recover", ext = e.ext || 0, open = snap ? 1 : wind ? 0.35 + 0.65 * (1 - e.t / 0.6) : rec ? Math.max(0.25, ext) : 0;
+    var hx = f * (6 + ext * 22), hy = -24 + ext * 7 + (e.st === "bud" ? Math.sin(e.tt * 2) * 1.2 : 0), pk = flash ? "#fff" : "#ff7ab8", pk2 = flash ? "#ffe6f0" : "#ff4a98";
+    if (wind || snap) eGlow(g, hx, hy, 24, "#ff3a5a", 0.3 + 0.2 * Math.sin(e.tt * 30));
+    g.fillStyle = flash ? "#e8ffe0" : "#2f8a40"; g.strokeStyle = flash ? "#fff" : "#1f5a2a"; g.lineWidth = 1.5;
+    g.beginPath(); g.ellipse(-8 * f, -2, 11, 3.6, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.ellipse(9 * f, -1.5, 9, 3, 0, 0, 7); g.fill(); g.stroke();
+    g.strokeStyle = flash ? "#fff" : "#2a7a30"; g.lineWidth = 5; g.lineCap = "round"; g.beginPath(); g.moveTo(0, -2); g.quadraticCurveTo(-f * 3, -16, hx * 0.9, hy + 5); g.stroke();
+    g.save(); g.translate(hx, hy); g.scale(f, 1);
+    if (open < 0.12) {   // a closed pink bud with green sepals
+      g.fillStyle = pk; g.beginPath(); g.moveTo(-6, 4); g.quadraticCurveTo(-8, -10, 2, -15); g.quadraticCurveTo(10, -9, 8, 4); g.closePath(); g.fill();
+      g.fillStyle = pk2; g.beginPath(); g.moveTo(0, 4); g.quadraticCurveTo(-1, -8, 2, -15); g.quadraticCurveTo(7, -8, 6, 4); g.closePath(); g.fill();
+      g.fillStyle = flash ? "#e8ffe0" : "#3a9a48"; g.beginPath(); g.moveTo(-6, 5); g.lineTo(-9, -3); g.lineTo(-2, 3); g.closePath(); g.fill(); g.beginPath(); g.moveTo(8, 5); g.lineTo(11, -3); g.lineTo(4, 3); g.closePath(); g.fill();
+    } else {   // jaws open: pink petals hinged at the neck, red throat, white teeth
+      var a = open * 0.85;
+      g.fillStyle = flash ? "#ffe0e8" : "#b8183a"; g.beginPath(); g.moveTo(-2, 0); g.lineTo(21, -2 - 8 * open); g.lineTo(21, 2 + 8 * open); g.closePath(); g.fill();
+      g.save(); g.rotate(a); g.fillStyle = pk; g.strokeStyle = pk2; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-2, 0); g.quadraticCurveTo(8, 12, 22, 2); g.quadraticCurveTo(10, 3, -2, 0); g.fill(); g.stroke();
+      g.fillStyle = "#fff"; for (var i = 0; i < 4; i++) { g.beginPath(); g.moveTo(5 + i * 4, 4 - i * 0.6); g.lineTo(7 + i * 4, 0.6); g.lineTo(9 + i * 4, 3.8 - i * 0.6); g.fill(); } g.restore();
+      g.save(); g.rotate(-a); g.fillStyle = pk; g.strokeStyle = pk2; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-2, 0); g.quadraticCurveTo(8, -12, 22, -2); g.quadraticCurveTo(10, -3, -2, 0); g.fill(); g.stroke();
+      g.fillStyle = "#fff"; for (var j = 0; j < 4; j++) { g.beginPath(); g.moveTo(5 + j * 4, -4 + j * 0.6); g.lineTo(7 + j * 4, -0.6); g.lineTo(9 + j * 4, -3.8 + j * 0.6); g.fill(); } g.restore();
+    }
+    g.restore();
+  }
+  function drawImp(g, e, d, flash, h, pd) {
+    var f = e.dir, wind = e.st === "wind", pw = wind ? 1 - e.t / IMP.wind : 0, air = !e.on, stp = !air && Math.abs(e.mv || 0) > 0.1 ? Math.sin(e.tt * 12) * 2 : 0, red = flash ? "#fff" : "#d8452a", red2 = flash ? "#ffe0d8" : "#f08a4a";
+    g.save(); g.scale(f, 1); if (!e.def) eGlow(g, 0, -14, 22, d.glow, 0.26 + (wind ? 0.25 * pw : 0));
+    g.strokeStyle = flash ? "#fff" : "#9a2a1a"; g.lineWidth = 2.4; g.lineCap = "round"; g.beginPath(); g.moveTo(-6, -9); g.quadraticCurveTo(-16, -8 + Math.sin(e.tt * 5) * 2, -17, -20); g.stroke();
+    g.fillStyle = flash ? "#fff" : "#2a1a1a"; g.beginPath(); g.moveTo(-20, -19); g.lineTo(-14, -20); g.lineTo(-17, -26); g.closePath(); g.fill();
+    g.strokeStyle = flash ? "#fff" : "#9a2a1a"; g.lineWidth = 3.2; g.beginPath(); g.moveTo(-3, -6); g.lineTo(-4 + stp, air ? -3 : 0); g.moveTo(3, -6); g.lineTo(4 - stp, air ? -3 : 0); g.stroke();
+    g.fillStyle = red; g.beginPath(); g.ellipse(0, -13, 8, 9, 0, 0, 7); g.fill(); g.fillStyle = red2; g.beginPath(); g.ellipse(1.5, -11, 4.5, 6, 0, 0, 7); g.fill();
+    g.fillStyle = red; g.beginPath(); g.ellipse(2, -25, 7.2, 6.6, 0, 0, 7); g.fill();
+    g.fillStyle = flash ? "#fff" : "#2a1a1a"; g.beginPath(); g.moveTo(-3, -29); g.lineTo(-5, -37); g.lineTo(1, -30); g.closePath(); g.fill(); g.beginPath(); g.moveTo(5, -30); g.lineTo(8, -37); g.lineTo(9, -28); g.closePath(); g.fill();
+    g.fillStyle = flash ? "#ffe9a0" : "#ffe04a"; g.beginPath(); g.ellipse(5, -26, 2.2, 2.8, 0, 0, 7); g.ellipse(-0.5, -26, 2, 2.6, 0, 0, 7); g.fill(); g.fillStyle = "#2a0d08"; g.fillRect(5, -27.6, 1.2, 3.2); g.fillRect(-0.2, -27.4, 1.1, 3);
+    g.strokeStyle = "#2a0d08"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(1, -21); g.quadraticCurveTo(4, -19, 7, -21.5); g.stroke();
+    var ax = wind ? 11 : 9, ay = wind ? -30 - pw * 4 : -12; g.strokeStyle = red; g.lineWidth = 3; g.beginPath(); g.moveTo(5, -16); g.lineTo(ax, ay); g.stroke();
+    g.fillStyle = red2; g.beginPath(); g.arc(ax, ay, 2.6, 0, 7); g.fill();
+    if (wind) { var r = 2 + pw * 5; g.fillStyle = "rgba(255,120,40,.45)"; g.beginPath(); g.arc(ax, ay - r, r + 3, 0, 7); g.fill(); g.fillStyle = "#ff6a1f"; g.beginPath(); g.arc(ax, ay - r, r, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ax - 0.5, ay - r - 0.5, r * 0.5, 0, 7); g.fill(); }
+    g.restore();
+  }
+  function drawBrute(g, e, d, flash, h, pd) {
+    var f = e.dir, st = e.st, lift = st === "raise" ? clamp(1 - e.t / BRUTE.raise, 0, 1) : 0, slam = st === "recover" ? clamp(e.t / BRUTE.recover, 0, 1) : 0, walk = st === "stalk" || st === "patrol" ? Math.sin(e.tt * 5) : 0;
+    var c1 = flash ? "#fff" : "#8fc4e6", c2 = flash ? "#e8f8ff" : "#d4f0ff", c3 = flash ? "#dff" : "#4a7ea8", c4 = flash ? "#fff" : "#2a5078";
+    g.save(); g.scale(f, 1); if (!e.def) eGlow(g, 0, -28, 34, d.glow, 0.2 + 0.1 * Math.sin(e.tt * 3) + lift * 0.2);
+    function blk(x, y, w, hh, col, hi) { g.fillStyle = col; g.fillRect(x, y, w, hh); g.fillStyle = hi; g.fillRect(x, y, w, 2.5); g.fillRect(x, y, 2.5, hh); g.fillStyle = c4; g.globalAlpha = 0.5; g.fillRect(x + w - 2.5, y + 2, 2.5, hh - 2); g.globalAlpha = 1; }
+    blk(-13, -14 + walk * 1.5, 11, 14 - walk * 1.5, c3, c1); blk(2, -14 - walk * 1.5, 11, 14 + walk * 1.5, c3, c1);
+    g.fillStyle = c1; g.beginPath(); g.moveTo(-18, -36 + slam * 2); g.lineTo(18, -36 + slam * 2); g.lineTo(13, -13); g.lineTo(-13, -13); g.closePath(); g.fill();
+    g.fillStyle = c2; g.beginPath(); g.moveTo(-18, -36 + slam * 2); g.lineTo(-4, -36 + slam * 2); g.lineTo(-9, -16); g.lineTo(-13, -13); g.closePath(); g.fill();
+    g.fillStyle = c3; g.beginPath(); g.moveTo(8, -36 + slam * 2); g.lineTo(18, -36 + slam * 2); g.lineTo(13, -13); g.lineTo(6, -13); g.closePath(); g.fill();
+    g.fillStyle = flash ? "#fff" : "rgba(159,232,255," + (0.6 + 0.3 * Math.sin(e.tt * 4)).toFixed(2) + ")"; g.beginPath(); g.moveTo(0, -30); g.lineTo(5, -24); g.lineTo(0, -17); g.lineTo(-5, -24); g.closePath(); g.fill();
+    blk(-8, -48 + slam * 4, 16, 12, c1, c2); g.fillStyle = flash ? "#fff" : "#e8ffff"; g.fillRect(-5, -44 + slam * 4, 4, 2.4); g.fillRect(2, -44 + slam * 4, 4, 2.4);
+    g.fillStyle = c2; g.beginPath(); g.moveTo(-7, -48 + slam * 4); g.lineTo(-4, -56 + slam * 4); g.lineTo(-1, -48 + slam * 4); g.fill(); g.beginPath(); g.moveTo(2, -48 + slam * 4); g.lineTo(5, -55 + slam * 4); g.lineTo(8, -48 + slam * 4); g.fill();
+    for (var s = -1; s <= 1; s += 2) {   // arms: hang at the sides, swing up over the head to slam
+      var sx = s * 18, sy = -34, fx = s * 21 - s * lift * 8, fy = -10 - lift * 40 + slam * 0;
+      g.strokeStyle = c3; g.lineWidth = 9; g.lineCap = "round"; g.beginPath(); g.moveTo(sx, sy); g.lineTo(fx, fy + 6); g.stroke(); g.strokeStyle = c1; g.lineWidth = 5; g.beginPath(); g.moveTo(sx, sy); g.lineTo(fx, fy + 6); g.stroke();
+      blk(fx - 7, fy - 5, 14, 13, c1, c2);
+    }
+    if (st === "recover" && slam > 0.5) { g.strokeStyle = "rgba(207,234,255,.8)"; g.lineWidth = 2; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-14, -3); g.lineTo(-8, 1); g.moveTo(26, 0); g.lineTo(14, -3); g.lineTo(8, 1); g.stroke(); }
+    g.restore();
+  }
+  function drawCrawler(g, e, d, flash, h, pd) {
+    var f = e.dir, ball = e.st === "curl" || e.st === "roll", sh = flash ? "#fff" : "#4a3a66", sh2 = flash ? "#f0e8ff" : "#6a5a86", cr = flash ? "#fff" : "#c8a8ff", cr2 = flash ? "#fff" : "#e8d8ff";
+    g.save(); if (!e.def) eGlow(g, 0, -8, 20, d.glow, 0.22 + (ball ? 0.12 : 0));
+    function crystals(x, y, k) { g.fillStyle = cr; g.beginPath(); g.moveTo(x - 3 * k, y); g.lineTo(x - 1.2 * k, y - 8 * k); g.lineTo(x + 1.5 * k, y); g.fill(); g.fillStyle = cr2; g.beginPath(); g.moveTo(x + 0.5 * k, y); g.lineTo(x + 2.5 * k, y - 6 * k); g.lineTo(x + 5 * k, y); g.fill(); }
+    if (ball) {
+      g.translate(0, -10); g.rotate(e.rot || 0); g.fillStyle = sh; g.beginPath(); g.arc(0, 0, 11, 0, 7); g.fill(); g.fillStyle = sh2; g.beginPath(); g.arc(-2, 2, 7, 0.2, 3.2); g.fill();
+      for (var i = 0; i < 5; i++) { g.save(); g.rotate(i * 1.2566); crystals(0, -9, 0.9); g.restore(); }
+    } else {
+      g.scale(f, 1); var lg = e.st === "crawl" ? Math.sin(e.tt * 12) * 2 : 0;
+      g.strokeStyle = flash ? "#fff" : "#2a2240"; g.lineWidth = 2.4; g.lineCap = "round"; for (var l = 0; l < 3; l++) { g.beginPath(); g.moveTo(-8 + l * 8, -5); g.lineTo(-10 + l * 8 + (l % 2 ? lg : -lg), 0); g.stroke(); }
+      g.fillStyle = sh; g.beginPath(); g.ellipse(0, -9, 16, 11, 0, Math.PI, 0); g.fill(); g.fillRect(-16, -9, 32, 5); g.fillStyle = sh2; g.fillRect(-16, -5, 32, 2.5);
+      crystals(-8, -17, 0.9); crystals(2, -19, 1.1); crystals(10, -14, 0.8);
+      g.fillStyle = flash ? "#fff" : "#3a2d56"; g.beginPath(); g.ellipse(15, -7, 6, 5, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.fillRect(16, -10, 2.4, 2.4); g.fillStyle = "#14101c"; g.fillRect(17, -9.4, 1.2, 1.4);
+      if (e.st === "dizzy") for (var s = 0; s < 3; s++) { var a = e.tt * 6 + s * 2.1; g.fillStyle = "#ffe48a"; g.fillRect(Math.cos(a) * 9 - 1, -26 + Math.sin(a) * 2.5, 2.6, 2.6); }
+    }
+    g.restore();
+  }
+  // ---------- LITTLE CRITTERS: five more (snail, turtle, lizard, snow fox, penguin) ----------
+  CRITK.snail = { w: 0.5, h: 0.4, spd: 0.22 }; CRITK.turtle = { w: 0.8, h: 0.5, spd: 0.45 }; CRITK.lizard = { w: 0.7, h: 0.3, spd: 3.4 }; CRITK.fox = { w: 0.8, h: 0.55, spd: 2.6 }; CRITK.penguin = { w: 0.55, h: 0.7, spd: 1.1 };
+  var CWALK = { snail: 1, turtle: 1, lizard: 1, fox: 1, penguin: 1 };
+  function pickW(L) { var t = 0, i; for (i = 0; i < L.length; i++) t += L[i][1]; var r = Math.random() * t; for (i = 0; i < L.length; i++) { r -= L[i][1]; if (r <= 0) return L[i][0]; } return L[0][0]; }
+  function critKind2(x) {
+    var b = world.bio[clamp(x, 0, W - 1)], v = varAt(x);
+    if (v === 2) return pickW([["crab", 5], ["lizard", 2]]);
+    if (b === 0) return pickW([["frog", 4], ["snail", 3], ["turtle", waterNear(x) >= 0 ? 3 : 0.6]]);
+    if (b === 1) return pickW([["beetle", 4], ["lizard", 4]]);
+    return pickW([["hare", 4], ["fox", 2], ["penguin", 3]]);
+  }
+  function cwalk(c, K, dt, dx) {
+    var vx = 0; c.hide = Math.max(0, (c.hide || 0) - dt);
+    if (c.k === "snail") { if (Math.abs(dx) < 2) c.hide = 1.5; vx = c.hide > 0 ? 0 : c.face * K.spd; if (c.hop <= 0) { c.hop = 3 + Math.random() * 4; if (Math.random() < 0.4) c.face = -c.face; } }
+    else if (c.k === "turtle") { if (Math.abs(dx) < 3) c.hide = 2.2; vx = c.hide > 0 ? 0 : c.face * K.spd * (c.hop > 1.2 ? 1 : 0.2); if (c.hop <= 0) { c.hop = 2 + Math.random() * 3.5; if (Math.random() < 0.4) c.face = -c.face; } }
+    else if (c.k === "lizard") { if (c.flee > 0) vx = c.face * K.spd * 1.5; else { c.sp = (c.sp || 0) - dt; if (c.hop <= 0) { c.hop = 1.2 + Math.random() * 3; c.sp = 0.3 + Math.random() * 0.3; if (Math.random() < 0.5) c.face = -c.face; } vx = c.sp > 0 ? c.face * K.spd : 0; } }
+    else if (c.k === "fox") {   // curious: trots over to look at you, flees only if you crowd it
+      if (Math.abs(dx) >= 1.8) c.flee = 0;
+      if (c.flee > 0) vx = c.face * K.spd * 1.8;
+      else if (Math.abs(dx) < 10 && Math.abs(dx) > 3.4) { c.face = dx < 0 ? 1 : -1; vx = c.face * K.spd * 0.55; }
+      else if (Math.abs(dx) <= 3.4) { c.face = dx < 0 ? 1 : -1; if (!c.yip || c.yip < c.t - 8) { c.yip = c.t; bubble({ k: "c", ref: c }, pickL(["yip!", "*sniff*", "yap?"]), 1.3); funTone(1100, 1500, 0.08, "sine", 0.025); } }
+      else { if (c.hop <= 0) { c.hop = 2 + Math.random() * 3; if (Math.random() < 0.5) c.face = -c.face; } vx = c.hop > 1 ? c.face * K.spd * 0.4 : 0; }
+    }
+    else if (c.k === "penguin") { vx = c.flee > 0 ? c.face * K.spd * 3.2 : (c.hop > 1.3 ? c.face * K.spd * 0.6 : 0); if (c.hop <= 0) { c.hop = 2 + Math.random() * 3; if (Math.random() < 0.4) c.face = -c.face; } }
+    return vx;
+  }
+  var CART = {
+    snail: function (R, c) { if (c.hide > 0) { R(-1, -5, 4, 4, "#a8562a"); R(0, -4, 2, 2, "#d88a4a"); R(-2, -1, 6, 1, "#c8b07a"); return; } R(-3, -2, 7, 2, "#c8b07a"); R(1, -5, 4, 4, "#a8562a"); R(2, -4, 2, 2, "#d88a4a"); R(3, -3, 3, 2, "#c8b07a"); R(5, -5, 1, 2, "#c8b07a"); R(6, -6, 1, 1, "#14161c"); R(4, -5, 1, 2, "#c8b07a"); R(4, -6, 1, 1, "#14161c"); },
+    turtle: function (R, c) { R(-4, -5, 8, 4, "#3f7a3a"); R(-3, -6, 6, 1, "#58a050"); R(-1, -5, 2, 2, "#2a5a2a"); R(-4, -2, 8, 1, "#8ab060"); if (c.hide <= 0) { R(4, -4, 3, 2, "#9ac070"); R(6, -4, 1, 1, "#14161c"); R(-3, -1, 2, 1, "#8ab060"); R(2, -1, 2, 1, "#8ab060"); } else R(-3, -1, 6, 1, "#2a5a2a"); },
+    lizard: function (R, c) { R(-4, -3, 6, 2, "#d86a2a"); R(2, -4, 3, 3, "#e8843a"); R(-8, -2, 4, 1, "#d86a2a"); R(-10, -1, 2, 1, "#b8501a"); R(-2, -4, 1, 1, "#ffc24a"); R(0, -4, 1, 1, "#ffc24a"); R(4, -4, 1, 1, "#14161c"); R(-3, -1, 1, 1, "#8a3a12"); R(1, -1, 1, 1, "#8a3a12"); },
+    fox: function (R, c) { R(-4, -5, 7, 4, "#eef2f4"); R(-3, -2, 5, 1, "#c8d4dc"); R(3, -7, 4, 4, "#eef2f4"); R(3, -9, 1, 2, "#8a96a0"); R(5, -9, 1, 2, "#8a96a0"); R(7, -5, 2, 1, "#f6f8fa"); R(8, -5, 1, 1, "#14161c"); R(5, -6, 1, 1, "#14161c"); R(-8, -6, 4, 3, "#eef2f4"); R(-9, -6, 1, 2, "#8a96a0"); R(-3, -1, 1, 1, "#4a3a2c"); R(2, -1, 1, 1, "#4a3a2c"); },
+    penguin: function (R, c) { if (c.flee > 0) { R(-5, -4, 9, 3, "#1e2430"); R(-4, -2, 7, 1, "#f4f4f0"); R(4, -4, 3, 3, "#1e2430"); R(7, -3, 2, 1, "#f2a63a"); R(5, -4, 1, 1, "#fff"); return; } R(-2, -8, 5, 7, "#1e2430"); R(-1, -7, 3, 5, "#f4f4f0"); R(-1, -10, 4, 3, "#1e2430"); R(3, -8, 2, 1, "#f2a63a"); R(2, -9, 1, 1, "#fff"); R(-3, -6, 1, 3, "#1e2430"); R(-2, -1, 2, 1, "#f2a63a"); R(1, -1, 2, 1, "#f2a63a"); }
+  };
+  var CSAY = { snail: ["*slurp*", "..."], turtle: ["*tuck*", "hmph"], lizard: ["*flick*", "ssst!"], fox: ["yip yip!", "*wag*"], penguin: ["honk!", "*waddle*"] };
+  // ---------- AMBIENT: dragonflies over water by day, moths round lamps, swamp wisps and owls at night ----------
+  var AMB2 = { fly: [], moth: [], wisp: [], owl: null, tf: 1, tm: 1, tw: 3, to: 12 };
+  function lamps2() {   // warm lights that were on screen last frame, as world positions
+    var o = [], i, gl, k; for (i = 0; i < glows.length && o.length < 8; i++) { gl = glows[i]; if (/^255,1[4-9]\d,[3-9]\d$/.test(gl[2]) && gl[3] >= 3) o.push([(gl[0] - ox) / ts, (gl[1] - oy) / ts]); } return o;
+  }
+  function tickAmb2(dt) {
+    if (cave || PHOTO.on && false) { AMB2.fly.length = AMB2.moth.length = AMB2.wisp.length = 0; AMB2.owl = null; return; }
+    var px = clamp(Math.floor(p.x), 0, W - 1), surf = p.y < col[px] + 8, night = isNight(S.time), b = world.bio[px], i, a;
+    // dragonflies
+    AMB2.tf -= dt; if (AMB2.tf <= 0) { AMB2.tf = 2 + Math.random() * 3; var wx = waterNear(px + Math.floor((Math.random() - 0.5) * 20)); if (!night && surf && wx >= 0 && AMB2.fly.length < 4 && !reduce) AMB2.fly.push({ x: wx + Math.random(), y: col[wx] - 2.5, tx: wx, ty: col[wx] - 2.5, vx: 0, vy: 0, t: 0, ph: Math.random() * 6, life: 40 + Math.random() * 40, c: pickL(["#3ad0ff", "#4ee6b4", "#ff6a7a", "#c78bff"]), re: 0 }); }
+    for (i = AMB2.fly.length - 1; i >= 0; i--) {
+      a = AMB2.fly[i]; a.t += dt; a.life -= dt; a.re -= dt;
+      if (a.life <= 0 || night || Math.abs(a.x - p.x) > 34) { AMB2.fly.splice(i, 1); continue; }
+      if (a.re <= 0) { a.re = 0.5 + Math.random() * 1.1; var wx2 = waterNear(Math.floor(a.x)); if (wx2 < 0) wx2 = Math.floor(a.x); a.tx = wx2 + (Math.random() - 0.5) * 5; a.ty = col[clamp(wx2, 0, W - 1)] - 1.6 - Math.random() * 1.8; }
+      var dxp = a.x - p.x, dyp = a.y - (p.y - 1); if (dxp * dxp + dyp * dyp < 6) { a.tx = a.x + (dxp >= 0 ? 4 : -4); a.ty = a.y - 2; a.re = 0.6; }
+      a.vx += (a.tx - a.x) * dt * 14; a.vy += (a.ty - a.y) * dt * 14; a.vx *= Math.max(0, 1 - dt * 4); a.vy *= Math.max(0, 1 - dt * 4); a.x += a.vx * dt; a.y += a.vy * dt;
+    }
+    // moths round warm lights
+    AMB2.tm -= dt; var L = null;
+    if (AMB2.tm <= 0) { AMB2.tm = 1.2 + Math.random() * 1.5; if ((night || !surf) && AMB2.moth.length < 6 && !reduce) { L = lamps2(); if (L.length) { var lp = pickL(L), ang = Math.random() * 6.28; AMB2.moth.push({ x: lp[0] + Math.cos(ang) * 4, y: lp[1] + Math.sin(ang) * 3, lx: lp[0], ly: lp[1], a: ang, r: 4, sp: (1.6 + Math.random() * 1.8) * (Math.random() < 0.5 ? -1 : 1), life: 30 + Math.random() * 30, ph: Math.random() * 6, fade: 0 }); } } }
+    for (i = AMB2.moth.length - 1; i >= 0; i--) {
+      a = AMB2.moth[i]; a.life -= dt; a.ph += dt;
+      var lit = false; for (var q = 0; q < glows.length; q++) { var gl = glows[q]; if (/^255,1[4-9]\d,[3-9]\d$/.test(gl[2]) && gl[3] >= 3) { var gx = (gl[0] - ox) / ts, gy = (gl[1] - oy) / ts; if ((gx - a.lx) * (gx - a.lx) + (gy - a.ly) * (gy - a.ly) < 6) { a.lx = gx; a.ly = gy; lit = true; break; } } }
+      a.fade = clamp(a.fade + (lit && a.life > 0 ? dt * 0.8 : -dt * 0.8), 0, 1);
+      if (a.life <= 0 && a.fade <= 0 || !lit && a.fade <= 0 && a.life < 28 || Math.abs(a.x - p.x) > 34) { AMB2.moth.splice(i, 1); continue; }
+      a.r += ((0.55 + 0.35 * Math.sin(a.ph * 1.7)) - a.r) * Math.min(1, dt * 1.2); a.a += a.sp * dt; a.x = a.lx + Math.cos(a.a) * a.r * 1.3; a.y = a.ly + Math.sin(a.a * 1.3) * a.r * 0.8 + Math.sin(a.ph * 9) * 0.06;
+    }
+    // swamp wisps
+    AMB2.tw -= dt; if (AMB2.tw <= 0) { AMB2.tw = 4 + Math.random() * 5; var wx3 = waterNear(px + Math.floor((Math.random() - 0.5) * 30)); if (night && surf && b === 0 && wx3 >= 0 && AMB2.wisp.length < 3 && !reduce) AMB2.wisp.push({ x: wx3 + Math.random(), y: col[wx3] - 1.8 - Math.random(), hx: wx3, t: 0, ph: Math.random() * 6, life: 30 + Math.random() * 40, a: 0 }); }
+    for (i = AMB2.wisp.length - 1; i >= 0; i--) {
+      a = AMB2.wisp[i]; a.t += dt; a.life -= dt; var dxw = a.x - p.x, nearW = Math.abs(dxw) < 5 && Math.abs(a.y - p.y) < 5;
+      a.x += (Math.sin(a.t * 0.4 + a.ph) * 0.5 + (nearW ? (dxw >= 0 ? 1.6 : -1.6) : 0)) * dt; a.y += Math.sin(a.t * 0.9 + a.ph) * 0.25 * dt;
+      a.a = clamp(a.a + (a.life > 3 && night && !nearW ? dt * 0.5 : -dt * (nearW ? 1.2 : 0.5)), 0, 1);
+      if (a.life <= 0 && a.a <= 0 || !night || Math.abs(a.x - p.x) > 34) { AMB2.wisp.splice(i, 1); }
+    }
+    // owls
+    AMB2.to -= dt; if (!AMB2.owl && AMB2.to <= 0) {
+      AMB2.to = 14 + Math.random() * 14;
+      if (night && surf && b !== 1 && !reduce) for (var tr = 0; tr < 6 && !AMB2.owl; tr++) {
+        var ox2 = clamp(px + Math.floor((Math.random() - 0.5) * 36), 3, W - 4), oy2 = col[ox2] - 1;
+        for (var yy = oy2; yy > oy2 - 16; yy--) { var tid = get(ox2, yy); if ((tid === T.LEAVES || tid === T.LOG) && get(ox2, yy - 1) === T.AIR && Math.abs(ox2 - px) > 5) { AMB2.owl = { x: ox2 + 0.5, y: yy, h: 0.9, face: Math.random() < 0.5 ? -1 : 1, st: "perch", t: 0, hoot: 4 + Math.random() * 8, life: 60 + Math.random() * 60, vx: 0, vy: 0, al: 1, gone: false }; break; } }
+      }
+    }
+    var ow = AMB2.owl; if (ow) {
+      ow.t += dt; ow.life -= dt;
+      if (ow.st === "perch") {
+        var dxo = p.x - ow.x; if (Math.abs(dxo) < 6) ow.face = dxo >= 0 ? 1 : -1;
+        ow.hoot -= dt; if (ow.hoot <= 0 && Math.abs(dxo) < 22) { ow.hoot = 7 + Math.random() * 10; bubble({ k: "c", ref: ow }, "hoo-hoo", 1.6); funTone(330, 280, 0.28, "sine", 0.035); funTone(280, 240, 0.34, "sine", 0.03, 0.34); }
+        if (Math.abs(dxo) < 3.5 && Math.abs(p.y - ow.y) < 6 || !night || ow.life <= 0) { ow.st = "fly"; ow.t = 0; ow.vx = (dxo >= 0 ? -1 : 1) * 5; ow.vy = -2.5; ow.face = ow.vx > 0 ? 1 : -1; funTone(500, 800, 0.12, "triangle", 0.02); }
+      } else { ow.x += ow.vx * dt; ow.y += ow.vy * dt; ow.vy += Math.sin(ow.t * 14) * dt * 4; ow.al = clamp(1 - ow.t / 2.2, 0, 1); if (ow.t > 2.2) { ow.gone = true; AMB2.owl = null; } }
+      if (ow && Math.abs(ow.x - p.x) > 40) { ow.gone = true; AMB2.owl = null; }
+    }
+  }
+  function drawAmb2(g, now) {
+    if (cave) return; var u = ts / 16, i, a, sx, sy;
+    for (i = 0; i < AMB2.fly.length; i++) {
+      a = AMB2.fly[i]; sx = ox + a.x * ts; sy = oy + a.y * ts; if (sx < -30 || sx > vw + 30 || sy < -30 || sy > vh + 30) continue;
+      var f = a.vx >= 0 ? 1 : -1, fl = Math.sin(a.t * 60 + a.ph);
+      g.save(); g.translate(sx, sy); g.scale(f, 1); g.globalAlpha = 0.4; g.fillStyle = "#e8fbff"; g.beginPath(); g.ellipse(-1 * u, -1.6 * u * (0.6 + 0.4 * fl), 3 * u, 0.9 * u, 0.15, 0, 7); g.ellipse(-1 * u, 1.6 * u * (0.6 + 0.4 * fl), 3 * u, 0.9 * u, -0.15, 0, 7); g.ellipse(1.5 * u, -1.2 * u * (0.5 + 0.5 * fl), 2.4 * u, 0.8 * u, 0.1, 0, 7); g.fill(); g.globalAlpha = 1;
+      g.fillStyle = a.c; g.fillRect(-5 * u, -0.4 * u, 7 * u, 0.9 * u); g.fillStyle = "#14161c"; g.fillRect(2 * u, -0.8 * u, 1.6 * u, 1.6 * u); g.restore();
+    }
+    for (i = 0; i < AMB2.moth.length; i++) {
+      a = AMB2.moth[i]; sx = ox + a.x * ts; sy = oy + a.y * ts; if (sx < -30 || sx > vw + 30 || sy < -30 || sy > vh + 30) continue;
+      var w = Math.abs(Math.sin(a.ph * 22)); g.globalAlpha = a.fade; g.fillStyle = "#e8dcc0"; g.fillRect(sx - 2.2 * u * w - 0.4 * u, sy - 1.1 * u, 2.2 * u * w + 0.4 * u, 1.5 * u); g.fillRect(sx, sy - 1.1 * u, 2.2 * u * w + 0.4 * u, 1.5 * u); g.fillStyle = "#6a5a44"; g.fillRect(sx - 0.4 * u, sy - 1.3 * u, 0.9 * u, 2 * u); g.globalAlpha = 1;
+    }
+    var ow = AMB2.owl; if (ow) {
+      sx = ox + ow.x * ts; sy = oy + ow.y * ts; if (sx > -40 && sx < vw + 40 && sy > -40 && sy < vh + 40) {
+        g.save(); g.globalAlpha = ow.al; g.translate(sx, sy); g.scale(ow.face, 1); var blink = Math.sin(now / 1900 + ow.x) > 0.96, fly = ow.st === "fly", wf = fly ? Math.sin(ow.t * 18) * 3 : 0;
+        g.fillStyle = "#8a6a48"; g.fillRect(-3 * u, -8 * u, 6 * u, 8 * u); g.fillStyle = "#b8986c"; g.fillRect(-2 * u, -5 * u, 4 * u, 4 * u); g.fillStyle = "#6a4e32"; g.fillRect(-3 * u, -11 * u, 6 * u, 4 * u); g.fillRect(-3 * u, -12 * u, 1.5 * u, 1.5 * u); g.fillRect(1.5 * u, -12 * u, 1.5 * u, 1.5 * u);
+        g.fillStyle = "#d8c8a0"; g.fillRect(-2.5 * u, -10 * u, 5 * u, 2.6 * u);
+        if (!blink) { g.fillStyle = "#ffd23f"; g.fillRect(-2.2 * u, -9.6 * u, 1.9 * u, 1.9 * u); g.fillRect(0.3 * u, -9.6 * u, 1.9 * u, 1.9 * u); g.fillStyle = "#14161c"; g.fillRect(-1.5 * u, -9 * u, 0.8 * u, 0.9 * u); g.fillRect(0.9 * u, -9 * u, 0.8 * u, 0.9 * u); } else { g.fillStyle = "#14161c"; g.fillRect(-2 * u, -8.8 * u, 4 * u, 0.5 * u); }
+        g.fillStyle = "#f2a63a"; g.fillRect(-0.4 * u, -8 * u, 0.9 * u, 1.2 * u);
+        g.fillStyle = "#6a4e32"; if (fly) { g.fillRect(-9 * u, (-7 + wf * 0.5) * u, 6 * u, 2 * u); g.fillRect(3 * u, (-7 - wf * 0.5) * u, 6 * u, 2 * u); } else { g.fillRect(-4 * u, -7 * u, 1.2 * u, 6 * u); g.fillRect(2.8 * u, -7 * u, 1.2 * u, 6 * u); g.fillStyle = "#f2a63a"; g.fillRect(-2 * u, -0.6 * u, 1.5 * u, 0.7 * u); g.fillRect(0.5 * u, -0.6 * u, 1.5 * u, 0.7 * u); }
+        g.restore();
+      }
+    }
+  }
+  function drawAmb2Glow(g, now) {   // additive pass: wisps and the little halo round each moth
+    if (cave) return; var i, a; g.imageSmoothingEnabled = true;
+    for (i = 0; i < AMB2.wisp.length; i++) { a = AMB2.wisp[i]; if (a.a <= 0.01) continue; var sx = ox + a.x * ts, sy = oy + a.y * ts + Math.sin(a.t * 2 + a.ph) * ts * 0.12, fl = 0.8 + 0.2 * Math.sin(a.t * 11 + a.ph); g.globalAlpha = a.a * 0.55 * fl; g.drawImage(glowSpr("150,255,230"), sx - ts * 1.4, sy - ts * 1.4, ts * 2.8, ts * 2.8); g.globalAlpha = a.a * 0.9; g.drawImage(glowSpr("240,255,250"), sx - ts * 0.35, sy - ts * 0.35, ts * 0.7, ts * 0.7); }
+    for (i = 0; i < AMB2.fly.length; i++) { a = AMB2.fly[i]; g.globalAlpha = 0.35; g.drawImage(glowSpr("120,230,255"), ox + a.x * ts - ts * 0.4, oy + a.y * ts - ts * 0.4, ts * 0.8, ts * 0.8); }
+    g.globalAlpha = 1; g.imageSmoothingEnabled = false;
+  }
+  window.__sbxMobs = { hit: function (e, d, f) { damageEnemy(e, d, f); }, ENEMY: ENEMY, enemies: enemies, newEnemy: newEnemy, AMB2: AMB2, CRIT: CRIT, CRITK: CRITK, spawnCrit: spawnCrit, critKind2: critKind2, tickAmb2: tickAmb2, lamps2: lamps2, get st() { return S.st; } };
   function drawEnemy(g, e, now) {
     if (e.boss) return drawBoss(g, e, now);
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
@@ -3508,6 +3790,10 @@
     else if (e.k === "wasp") drawWasp(g, e, d, flash, h, pd);
     else if (e.k === "witch") drawWitch(g, e, d, flash, h, pd);
     else if (e.k === "spider") drawSpider(g, e, d, flash, h, pd);
+    else if (e.k === "lily") drawLily(g, e, d, flash, h, pd);
+    else if (e.k === "imp") drawImp(g, e, d, flash, h, pd);
+    else if (e.k === "brute") drawBrute(g, e, d, flash, h, pd);
+    else if (e.k === "crawler") drawCrawler(g, e, d, flash, h, pd);
     else if (e.k === "bug") {
       var leg = t * 14;
       g.save(); g.translate(!e.def && h > 0 ? Math.sin(now / 1000 * 90) * 1.6 * h : 0, 0); g.rotate(-f * 0.22 * h); g.scale(f * (1 + 0.5 * pd + 0.16 * h), 1 - 0.75 * pd - 0.14 * h);
@@ -4132,7 +4418,7 @@
   var BTY_CH = 1, talkView = "main", btyChk = 0;
   function dayKey() { var d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); }
   function weekKey(dk) { return Math.floor((dk + 3) / 7); }   // weeks start on Monday
-  function btyStat(s) { return s === "_kills" ? ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps", "witches", "spiders"].reduce(function (a, k) { return a + (S.st[k] || 0); }, 0) : (S.st[s] || 0); }
+  function btyStat(s) { return s === "_kills" ? ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps", "witches", "spiders", "lilies", "imps", "brutes", "crawlers"].reduce(function (a, k) { return a + (S.st[k] || 0); }, 0) : (S.st[s] || 0); }
   function btyOpen() { return curCh() >= BTY_CH; }
   function makeBty(list, avoid, weekly) {
     var c = curCh(), opts = list.filter(function (q) { return q.c <= c && avoid.indexOf(q.id) < 0 && (!q.ok || q.ok()); }); if (!opts.length) opts = list.filter(function (q) { return q.c <= 1; });
@@ -6253,6 +6539,7 @@
   var LORE = typeof DelveLore !== "undefined" ? DelveLore : { THREADS: [], PAGES: [] }, LPG = {}, LTH = {}, loreAt = null;
   LORE.PAGES.forEach(function (q) { LPG[q.id] = q; }); LORE.THREADS.forEach(function (q) { LTH[q.id] = q; });
   CHARMS.order = { n: "Lantern of the Order", d: "Lost pages turn up much more often in chests and pots, and you glow softly.", c: "#f2c14e", g: "#fff4b0" };
+  SPR.charm_order = charmSprite("order");
   function loreHas(id) { return !!(S.lore && S.lore[id]); }
   function loreCount() { return LORE.PAGES.filter(function (q) { return loreHas(q.id); }).length; }
   function lorePick(srcs, gate) {   // an unfound page for any of these sources (chapter-gated when gate), the most specific first
@@ -11044,7 +11331,7 @@
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
     if (!cave) { drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
-    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
@@ -11093,7 +11380,7 @@
     drawWeather(g, now, day, above);
     g.imageSmoothingEnabled = false;
     g.globalCompositeOperation = "lighter";
-    drawGlows(g, glows); drawSparkles(g, X0, X1, Y0, Y1, now, day);
+    drawGlows(g, glows); drawSparkles(g, X0, X1, Y0, Y1, now, day); drawAmb2Glow(g, now);
     g.imageSmoothingEnabled = true; flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)); g.globalAlpha = 0.85 * a; g.drawImage(glowSpr("220,255,120"), fx - ts * 0.7, fy - ts * 0.7, ts * 1.4, ts * 1.4); g.globalAlpha = a; g.fillStyle = "#f4ffc8"; var fc2 = Math.max(2, Math.round(ts / 12)); g.fillRect(Math.round(fx - fc2 / 2), Math.round(fy - fc2 / 2), fc2, fc2); }); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
     drawBlastLit(g);
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
