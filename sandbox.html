@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=delve1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui21-drop">
+<link rel="stylesheet" href="sandbox.css?v=ui25-light">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -120,6 +120,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
   <div class="sbx-hud">
    <div class="sbx-ibtns">
     <a class="sbx-ibtn" href="arcade.html" aria-label="Back to the Arcade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <button type="button" class="sbx-ibtn sbx-emobtn" id="sbxEmoBtn" aria-label="Emotes (T)" title="Emotes (T)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.2c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><path d="M9 9.6h.01M15 9.6h.01"/></svg></button>
     <button type="button" class="sbx-ibtn" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
    </div>
    <div class="sbx-loc" id="sbxLoc" role="status"><i aria-hidden="true"></i><div><b id="sbxBiome">Murkwater Swamp</b><span id="sbxSub"></span></div></div>
@@ -189,6 +190,8 @@ html.dl-on,html.dl-on body{overflow:hidden}
   </section>
   <div class="sbx-chatlog" id="sbxChatLog" aria-live="polite" hidden></div>
   <form class="sbx-chat" id="sbxChat" hidden onsubmit="return false"><input id="sbxChatIn" type="text" maxlength="80" placeholder="Say something…" autocomplete="off" aria-label="Chat message"><button type="button" class="btn" id="sbxChatGo">Send</button></form>
+  <div class="sbx-emo" id="sbxEmo" role="toolbar" aria-label="Emotes" hidden></div>
+  <section class="sbx-photo" id="sbxPhoto" aria-label="Photo mode" hidden></section>
   <section class="sbx-pause" id="sbxPause" role="dialog" aria-modal="true" aria-labelledby="sbxPauseH" hidden>
    <div class="pz-card">
     <p class="pz-sub" id="sbxPauseSub"></p>
@@ -228,11 +231,11 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="account.js" onload="__dl('account')"></script>
 <script src="menu.js" onload="__dl('menu')"></script>
 <script src="sandbox-world.js?v=delve34-lore" onload="__dl('world')"></script>
-<script src="sandbox-extra.js?v=pack47-wood" onload="__dl('extra')"></script>
-<script src="sandbox-cave.js?v=cave21-loot" onload="__dl('cave')"></script>
+<script src="sandbox-extra.js?v=pack50-vein" onload="__dl('extra')"></script>
+<script src="sandbox-cave.js?v=cave22-garage" onload="__dl('cave')"></script>
 <script src="delve-avatar.js?v=delve8-people" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="sandbox.js?v=delve175-leaf" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve181-light" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.

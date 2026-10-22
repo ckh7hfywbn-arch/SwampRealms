@@ -961,10 +961,65 @@
   var WOODB = tile("X_woodblock", "Wood Block", "#7a5236", "#4a301c", TILES[T.LOG].hard, TILES[T.LOG].tier, "wood", true, 0, "woodblock");
   TILES[WOODB].mat = { f: "bark", p: pal("#8e6440", "#714c30", "#583a22", "#2e1d10", "#170e06") };
   if (ITEMS.wood) ITEMS.wood.tile = WOODB;
+  // 7v. GLOWCAPS drop themselves: a Glowcap you pick is a little glowing mushroom you can plant again on soil. Squeeze one into
+  // Glowspore in the Craft tab, or make torches straight from Glowcaps (see recipes below).
+  item("glowcap", "Glowcap", { tile: T.GLOWCAP, put: "floor" }); TILES[T.GLOWCAP].drop = "glowcap";
+  // 7w. THE GARAGE: a 2x2 building you place like a door. Walk up to it and Enter: inside is your workshop and an old motorcycle
+  // stripped down to nothing. Find (or make) its 12 parts and bolt them back on (sandbox.js GARAGE). Registered last, so old saves keep their ids.
+  function garageArt(R) {   // 32 x 32: slate roof, wooden siding, a roll-up door, a lamp and a little wrench sign
+    R(6, 1, 20, 2, "#5a626c"); R(4, 3, 24, 2, "#4a525c"); R(2, 5, 28, 3, "#3a4048"); R(1, 8, 30, 1, "#22262c"); R(6, 1, 20, 1, "#7a828c");
+    for (var sx = 3; sx < 29; sx += 4) R(sx, 5, 1, 3, "#2e343a", 0.6);
+    R(2, 9, 28, 23, "#b89a6a"); for (var y = 11; y < 32; y += 3) R(2, y, 28, 1, "#9a7c50"); R(2, 9, 1, 23, "#7a5c38"); R(29, 9, 1, 23, "#7a5c38");
+    R(5, 13, 22, 19, "#3a3f46"); for (var y2 = 14; y2 < 32; y2 += 3) { R(6, y2, 20, 2, "#9aa4ae"); R(6, y2 + 2, 20, 1, "#6a727c"); }
+    R(6, 14, 20, 1, "#c8d0d8"); R(14, 29, 4, 1, "#2a2e34"); R(5, 31, 22, 1, "#2a2420");
+    R(14, 10, 4, 2, "#2a2e34"); R(15, 11, 2, 1, "#ffd36a"); R(13, 12, 6, 1, "#ffd36a", 0.35);
+    R(21, 10, 6, 2, "#e8c060"); R(22, 10, 1, 2, "#5a6068"); R(25, 10, 1, 2, "#5a6068"); R(22, 11, 4, 1, "#5a6068");
+    R(2, 31, 28, 1, "#5a4a30");
+  }
+  function quad(fn, qx, qy) { return function (rect) { fn(function (x, y, w, h, c, al) { var x0 = Math.max(0, x - qx * 16), y0 = Math.max(0, y - qy * 16), x1 = Math.min(16, x - qx * 16 + w), y1 = Math.min(16, y - qy * 16 + h); if (x1 > x0 && y1 > y0) rect(x0, y0, x1 - x0, y1 - y0, c, al); }); }; }
+  function halfArt(fn) { return function (rect) { fn(function (x, y, w, h, c, al) { var x0 = Math.floor(x / 2), y0 = Math.floor(y / 2), x1 = Math.max(x0 + 1, Math.ceil((x + w) / 2)), y1 = Math.max(y0 + 1, Math.ceil((y + h) / 2)); rect(x0, y0, x1 - x0, y1 - y0, c, al); }); }; }
+  var GQ = {};
+  [["tl", 0, 0], ["tr", 1, 0], ["bl", 0, 1], ["br", 1, 1]].forEach(function (q) {
+    var kk = "garage_" + q[0]; GQ[q[0]] = tile("X_" + kk, "Garage", "#000", "#9aa4ae", 0.9, 0, "garage", false, 0, kk, { gpart: [q[1], q[2]] }); ART[kk] = quad(garageArt, q[1], q[2]);
+  });
+  var GICO = tile("X_garageicon", "Garage", "#000", "#9aa4ae", 0.9, 0, "garage", false, 0, "garageicon"); ART.garageicon = halfArt(garageArt);
+  item("garage", "Garage", { tile: GQ.bl, ico: GICO, garage: 1 });
+  // the 12 motorcycle parts (icons are drawn like tiles); 3 are made at a Workbench, the rest are found in chests, crates and toolboxes
+  var ring = function (R, cx, cy, r1, r2, c) { for (var yy = 0; yy < 16; yy++) for (var xx = 0; xx < 16; xx++) { var d = Math.sqrt((xx + 0.5 - cx) * (xx + 0.5 - cx) + (yy + 0.5 - cy) * (yy + 0.5 - cy)); if (d <= r2 && d >= r1) R(xx, yy, 1, 1, c); } };
+  var MP = [
+    ["frame", "Gator-Spine Frame", function (R) { R(1, 9, 3, 2, "#2f6b4a"); R(3, 7, 3, 2, "#2f6b4a"); R(5, 5, 5, 2, "#2f6b4a"); R(9, 5, 3, 2, "#2f6b4a"); R(11, 3, 2, 3, "#b8863a"); R(12, 6, 2, 8, "#b8863a"); R(7, 7, 2, 5, "#2f6b4a"); R(3, 11, 6, 2, "#2f6b4a"); for (var i = 0; i < 4; i++) R(3 + i * 2, 4 + (i < 2 ? 2 - i : 0), 1, 1, "#1a3f2b"); R(5, 5, 5, 1, "#5fb67a"); }],
+    ["engine", "Spore-Core Engine", function (R) { R(2, 4, 12, 10, "#3a4048"); for (var i = 0; i < 4; i++) R(2, 5 + i * 2, 12, 1, "#5a6068"); ring(R, 8, 9, 0, 3.4, "#b8863a"); ring(R, 8, 9, 0, 1.9, "#4ee6b4"); R(7, 8, 1, 1, "#e0fff4"); R(5, 2, 2, 2, "#c8ccd0"); R(9, 2, 2, 2, "#c8ccd0"); }],
+    ["pistons", "V-Twin Pistons", function (R) { R(2, 3, 4, 6, "#c8ccd0"); R(10, 3, 4, 6, "#c8ccd0"); R(2, 4, 4, 1, "#8a929c"); R(10, 4, 4, 1, "#8a929c"); R(2, 6, 4, 1, "#8a929c"); R(10, 6, 4, 1, "#8a929c"); R(2, 2, 4, 1, "#e8c070"); R(10, 2, 4, 1, "#e8c070"); R(5, 9, 2, 3, "#6a727c"); R(9, 9, 2, 3, "#6a727c"); R(6, 11, 4, 3, "#3a4048"); }],
+    ["carb", "Brass Carburettor", function (R) { ring(R, 8, 8, 0, 4.6, "#b8863a"); ring(R, 8, 8, 0, 2.2, "#4ee6b4"); R(1, 7, 3, 2, "#e8c070"); R(12, 7, 3, 2, "#6a4a1c"); R(6, 6, 1, 1, "#e0fff4"); R(7, 2, 2, 2, "#e8c070"); }],
+    ["exhaust", "Cattail Exhaust", function (R) { R(1, 12, 9, 2, "#e8c070"); R(1, 12, 2, 1, "#b8863a"); R(1, 5, 2, 8, "#e8c070"); R(4, 6, 2, 7, "#b8863a"); R(0, 1, 3, 5, "#7a4a24"); R(4, 2, 2, 5, "#7a4a24"); R(1, 0, 1, 1, "#ffb13b"); R(4, 1, 1, 1, "#ffb13b"); R(9, 11, 5, 4, "#6a4a1c"); }],
+    ["tank", "Frog-Skin Tank", function (R) { R(2, 6, 12, 6, "#2f6b4a"); R(3, 5, 10, 1, "#2f6b4a"); R(4, 4, 8, 1, "#2f6b4a"); R(3, 10, 10, 2, "#c8e09a"); R(4, 5, 7, 1, "#5fb67a"); R(4, 7, 2, 2, "#1a3f2b"); R(8, 6, 2, 2, "#1a3f2b"); R(11, 8, 1, 1, "#1a3f2b"); R(10, 3, 2, 1, "#e8c070"); }],
+    ["seat", "Lily-Pad Seat", function (R) { R(2, 6, 12, 5, "#3f8a4a"); R(3, 5, 10, 1, "#3f8a4a"); R(3, 11, 10, 1, "#3f8a4a"); R(7, 6, 2, 3, "#1a3f2b"); R(4, 8, 3, 1, "#7fc87a"); R(9, 8, 3, 1, "#7fc87a"); R(7, 9, 2, 1, "#7fc87a"); R(11, 5, 2, 2, "#ff9ad0"); R(12, 6, 1, 1, "#ffe0f0"); }],
+    ["bars", "Reed Handlebars", function (R) { R(9, 4, 2, 11, "#b8863a"); R(4, 2, 7, 2, "#b8863a"); R(9, 2, 2, 3, "#e8c070"); R(1, 1, 4, 3, "#7a4a24"); R(2, 1, 1, 1, "#a8703c"); R(10, 14, 3, 2, "#6a4a1c"); }],
+    ["wheelf", "Front Wheel", function (R) { ring(R, 8, 8, 5, 7.4, "#1c1f22"); ring(R, 8, 8, 4, 5, "#4ee6b4"); R(7, 4, 2, 8, "#b8863a"); R(4, 7, 8, 2, "#b8863a"); R(7, 7, 2, 2, "#e8c070"); }],
+    ["wheelr", "Rear Wheel", function (R) { ring(R, 8, 8, 5, 7.6, "#1c1f22"); ring(R, 8, 8, 4, 5, "#4ee6b4"); R(5, 5, 2, 2, "#b8863a"); R(9, 9, 2, 2, "#b8863a"); R(9, 5, 2, 2, "#b8863a"); R(5, 9, 2, 2, "#b8863a"); ring(R, 8, 8, 0, 1.8, "#e8c070"); }],
+    ["chain", "Bronze Drive Chain", function (R) { for (var i = 0; i < 6; i++) { R(1 + i * 2, 4, 2, 2, i % 2 ? "#e8c070" : "#b8863a"); R(1 + i * 2, 10, 2, 2, i % 2 ? "#b8863a" : "#e8c070"); } R(0, 6, 2, 4, "#6a4a1c"); R(13, 6, 2, 4, "#6a4a1c"); }],
+    ["lamp", "Frog-Eye Headlights", function (R) { R(1, 4, 6, 6, "#2f6b4a"); R(9, 4, 6, 6, "#2f6b4a"); R(2, 5, 4, 4, "#ffe48a"); R(10, 5, 4, 4, "#ffe48a"); R(4, 6, 1, 2, "#1c1f22"); R(12, 6, 1, 2, "#1c1f22"); R(2, 5, 1, 1, "#ffffff"); R(10, 5, 1, 1, "#ffffff"); R(6, 10, 4, 2, "#b8863a"); }]
+  ];
+  var MOTO = [];
+  MP.forEach(function (q) { var k = "moto_" + q[0], id = tile("X_" + k, q[1], "#000", "#c8ccd0", 0.5, 0, "", false, 0, k); ART[k] = q[2]; item(k, q[1], { ico: id, motopart: 1 }); MOTO.push(k); });
+  var KICO = tile("X_motokeys", "Swamp Hog", "#000", "#c8302a", 0.5, 0, "", false, 0, "motokeys");
+  ART.motokeys = function (R) { R(2, 3, 6, 6, "#e8c070"); R(4, 5, 2, 2, "#3a2a10"); R(7, 6, 7, 2, "#e8c070"); R(11, 8, 1, 2, "#e8c070"); R(13, 8, 1, 3, "#e8c070"); R(7, 9, 6, 5, "#2f6b4a"); R(8, 10, 1, 1, "#ffe48a"); R(11, 10, 1, 1, "#ffe48a"); R(8, 12, 4, 1, "#c8e09a"); R(2, 3, 6, 1, "#fff2a0"); };
+  item("motorbike", "Swamp Hog", { ico: KICO, ride: 1 });
+  // 7x. VEINSEEKER CHARM: set in your pickaxe at a Jeweler's Table; breaking one ore then breaks the whole connected vein of that ore
+  var VICO = tile("X_veincharm", "Veinseeker Charm", "#000", "#4ee6b4", 0.5, 0, "", false, 0, "veincharm");
+  ART.veincharm = function (R) { R(6, 1, 4, 2, "#b8863a"); R(7, 0, 2, 1, "#e8c070"); R(3, 3, 10, 10, "#b8863a"); R(4, 4, 8, 8, "#2a2e34"); R(5, 5, 2, 2, "#4ee6b4"); R(7, 7, 2, 2, "#4ee6b4"); R(9, 9, 2, 2, "#4ee6b4"); R(9, 5, 2, 2, "#ff8a3d"); R(5, 9, 2, 2, "#bff4ff"); R(6, 6, 1, 1, "#e0fff4"); R(3, 13, 10, 1, "#6a4a1c"); R(7, 14, 2, 2, "#e8c070"); };
+  item("veincharm", "Veinseeker Charm", { ico: VICO, sock: "pick" });
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
   function R(id, n, out, cost, o) { var r = { id: id, n: n, out: out, cost: cost, d: (o && o.d) || "" }; if (o) Object.keys(o).forEach(function (k) { r[k] = o[k]; }); RECIPES.push(r); }
+  R("x_veincharm", "Veinseeker Charm", { veincharm: 1 }, { lodestone: 2, ironingot: 4, quartz: 2, spore: 6 }, { bench: true, d: "A lodestone charm for your pickaxe. Set it at a Jeweler's Table: break one ore and the whole vein of that ore comes out with it." });
+  R("x_garage", "Garage", { garage: 1 }, { planks: 24, stone: 12, ironingot: 4, glass: 2 }, { bench: true, d: "A 2-wide, 2-tall garage you place like a door. Walk up to it and Enter: your old motorcycle is waiting inside, stripped down to nothing." });
+  R("x_moto_seat", "Lily-Pad Seat", { moto_seat: 1 }, { leather: 2, marshlily: 2, canvas: 1 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
+  R("x_moto_chain", "Bronze Drive Chain", { moto_chain: 1 }, { ironingot: 3, gear: 2 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
+  R("x_moto_lamp", "Frog-Eye Headlights", { moto_lamp: 1 }, { glass: 2, copperwire: 2, lampoil: 1 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
+  R("x_torch_cap", "Torches (4)", { torch: 4 }, { stick: 1, glowcap: 1 }, { d: "Torches made with a Glowcap instead of Glowspore. Light up caves. Place next to a wall." });
+  R("x_spore_cap", "Glowspore", { spore: 1 }, { glowcap: 1 }, { d: "Squeeze the glowing spores out of a Glowcap." });
   R("x_trapdoor", "Swamp Trapdoor (2)", { trapdoor: 2 }, { planks: 3, fiber: 1 }, { d: "A wooden hatch for floors. Tap it or press F to open it, press down while standing on it to drop through, jump into it from below to climb up. It shuts behind you." });
   // blasting pack
   R("x_bomb", "Bog Bombs (3)", { bomb: 3 }, { sulfur: 1, charcoal: 2, clay: 1, fiber: 1 }, { bench: true, d: "Hold one and tap where to throw it. It bounces, then blows a hole in the ground and hurts anything close (you too!). Sulfur comes from the Ember Bog." });
@@ -1462,6 +1517,6 @@
   [["silvercoin", 1, 4, 3, 0], ["goldcoin", 1, 2, 2, 1], ["pearl", 1, 1, 1, 1], ["oldbook", 1, 1, 2, 0], ["sealedletter", 1, 1, 2, 0], ["nails", 2, 6, 2, 0], ["hinge", 1, 2, 1, 0], ["bandage", 1, 2, 2, 0], ["lampoil", 1, 2, 1, 0], ["goldbar", 1, 1, 1, 2], ["fireopal", 1, 1, 1, 2]].forEach(function (e) { if (ITEMS[e[0]]) LOOT_ALL.push(e); });
   // Old Croaker's prices: [how many, tokens]
   var VALUE = { silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
-  var api = { CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var api = { MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

@@ -200,7 +200,7 @@
     { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
     { ch: 0, id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
     { ch: 0, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
-    { ch: 0, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
+    { ch: 0, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
     // ---- Chapter 2: food, farm and shelter ----
     { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmland: 4 } },
     { ch: 1, id: "plant", n: "Plant a Garden", d: "Till grass with a Reed Hoe (made by hand) or place Garden Soil, then plant Swamp Carrot Seeds on top. Watered crops grow twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
@@ -439,8 +439,8 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto" };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   var cv = $("sbxCv"), ctx = cv.getContext("2d");
@@ -578,6 +578,7 @@
     if (o.pleaf && typeof o.pleaf === "object" && o.wv === SW.WORLDVER) Object.keys(o.pleaf).forEach(function (k) { if (o.pleaf[k]) d.pleaf[k] = 1; });   // leaves you placed (they never decay)
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
     if (o.razed && typeof o.razed === "object" && o.wv === SW.WORLDVER) { d.razed = {}; Object.keys(o.razed).forEach(function (k) { if (o.razed[k] && /^\d+$/.test(k)) d.razed[k] = 1; }); }   // buildings you knocked down
+    if (o.moto && typeof o.moto === "object") { d.moto = { p: {}, done: o.moto.done ? 1 : 0 }; if (o.moto.p && typeof o.moto.p === "object") Object.keys(o.moto.p).forEach(function (k) { if (/^moto_[a-z]+$/.test(k) && o.moto.p[k]) d.moto.p[k] = 1; }); }   // GARAGE: the motorcycle's parts
     if (Array.isArray(o.croakHome) && o.wv === SW.WORLDVER && o.croakHome.every(function (v) { return Number.isInteger(v) && v >= 0; })) d.croakHome = o.croakHome.slice(0, 2);   // Old Croaker lives in your house
     if (o.lore && typeof o.lore === "object") Object.keys(o.lore).forEach(function (k) { if (o.lore[k] === 1 || o.lore[k] === 2) d.lore[k] = o.lore[k]; });   // LORE pages found
     if (o.lorew && typeof o.lorew === "object") Object.keys(o.lorew).forEach(function (k) { if (o.lorew[k]) d.lorew[k] = 1; });
@@ -1156,7 +1157,7 @@
   // ---------- DAY / NIGHT ----------
   function phaseOf(t) { if (t < 240) return { id: "day", k: t / 240 }; if (t < 280) return { id: "dusk", k: (t - 240) / 40 }; if (t < 440) return { id: "night", k: (t - 280) / 160 }; return { id: "dawn", k: (t - 440) / 40 }; }
   function daylight(t) { var f = phaseOf(t); return f.id === "day" ? 1 : f.id === "dusk" ? 1 - 0.7 * f.k : f.id === "night" ? 0.3 : 0.3 + 0.7 * f.k; }
-  var SKY = { day: [[16, 104, 120], [206, 232, 140]], dusk: [[70, 40, 110], [255, 150, 96]], night: [[6, 13, 36], [26, 90, 94]], dawn: [[44, 70, 130], [255, 176, 120]] };
+  var SKY = { day: [[18, 92, 136], [214, 234, 150]], dusk: [[44, 26, 96], [255, 158, 92]], night: [[4, 8, 28], [22, 70, 88]], dawn: [[36, 52, 118], [255, 186, 128]] };
   var mixC = function (a, b, k) { return [lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k)]; };
   var rgb = function (c) { return "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; };
   function skyAt(t) {
@@ -2086,16 +2087,44 @@
   // ---------- RULES ----------
   function dropQty(td) { return td.kind === "ore" ? 1 + (Math.random() < 0.6 ? 1 : 0) : td.kind === "reed" || td.kind === "vine" ? 1 + (Math.random() < 0.5 ? 1 : 0) : 1; }
   function dropOf(td) { return td.kind === "door" ? "door" : td.hatch ? "trapdoor" : td.drop; }
+  // VEIN MINING (Veinseeker Charm in your pickaxe): break an ore with the pick and every ore of the same kind touching it (sideways or
+  // diagonally, up to 48 blocks) breaks too, one after another in a quick chain, each dropping its ore. Only ores: never stone or dirt.
+  var VEIN = { q: [], t: 0, busy: 0 };
+  function veinOn() { return gem("pick", "veincharm") && (sel === "pick" || bare) && S.tier >= 1; }
+  function veinStart(x, y, id, inCave) {
+    var F = inCave ? cave.F : null, at = function (a, b) { return inCave ? (a < 0 || b < 0 || a >= F.w || b >= F.h ? 0 : F.node[b * F.w + a]) : get(a, b); };
+    var seen = {}, st = [[x, y]], out = []; seen[x + "," + y] = 1;
+    while (st.length && out.length < 48) { var c = st.shift(); for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = c[0] + dx, ny = c[1] + dy, k = nx + "," + ny; if (seen[k]) continue; seen[k] = 1; if (at(nx, ny) === id) { out.push([nx, ny]); st.push([nx, ny]); } } }
+    if (!out.length) return;
+    out.forEach(function (q, i) { VEIN.q.push({ x: q[0], y: q[1], id: id, cave: !!inCave, F: F, t: 0.045 * (i + 1) }); });
+    VEIN.t = 0; S.st.veins = (S.st.veins || 0) + 1; if (out.length >= 4) text(x + 0.5, y - 0.2, "Vein \u00d7" + (out.length + 1), "#4ee6b4");
+    wear("pick", Math.ceil(out.length / 4));
+  }
+  function tickVein(dt) {
+    if (!VEIN.q.length) return; VEIN.t += dt;
+    while (VEIN.q.length && VEIN.q[0].t <= VEIN.t) {
+      var v = VEIN.q.shift(); if (v.cave !== !!cave || (v.cave && cave.F !== v.F)) continue;   // you left: the rest of the vein stays
+      VEIN.busy = 1;
+      try {
+        if (v.cave) { if (cave.F.node[v.y * cave.F.w + v.x] === v.id) { breakRock(v.x, v.y); chips(v.x + 0.5, v.y + 0.5, "#4ee6b4", 3, 3); } }
+        else if (get(v.x, v.y) === v.id) { breakTile(v.x, v.y); chips(v.x + 0.5, v.y + 0.5, "#4ee6b4", 3, 3); }
+      } finally { VEIN.busy = 0; }
+    }
+    if (!VEIN.q.length) VEIN.t = 0;
+  }
   function breakTile(x, y) {   // GROUND DROPS + FELLING + LEAF DECAY wrap the real break below
     var id0 = get(x, y), fell = id0 === T.LOG && !cave ? treeAbove(x, y).length : 0;
+    var vein = !VEIN.busy && !cave && TILES[id0] && TILES[id0].kind === "ore" && veinOn();
     if (id0 === T.LEAVES && S.pleaf) delete S.pleaf[y * W + x];
     DROPMODE++; try { breakTile0(x, y); } finally { DROPMODE--; }
+    if (vein) veinStart(x, y, id0, false);
     if (cave) return;
     if (fell) fellTree(x, y);
     if (id0 === T.LOG || id0 === T.LEAVES) leafCheck(x, y, 6);
   }
   function breakTile0(x, y) {
     var id = get(x, y), td = TILES[id];
+    if (td && td.gpart && garageBreak(x, y)) return;   // GARAGE: comes down all at once
     if (id === T.REALMORE) { S.st.realm++; if (S.st.realm === 1) toast("Realmstone! It hums like it wants to be somewhere else.", "#8affe0"); }
     if (td.kind === "realmgate") brokeGate(x, y);
     if (td.kind === "fallenstar") starMined(x, y);
@@ -2134,6 +2163,7 @@
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
     var t = td.tile, solid = TILES[t].solid;
     if (td.seed) { if (!soilKind(tx, ty + 1)) { nag("Plant seeds on top of Garden Soil."); return false; } return true; }
+    if (item === "garage") return garageCanPlace(tx, ty);
     if (item === "door") {
       if (ty < 2 || get(tx, ty - 1) !== T.AIR) { nag("A door needs two free tiles stacked up."); return false; }
       if (!TILES[get(tx, ty + 1)].solid) { nag("A door needs solid ground under it."); return false; }
@@ -2182,6 +2212,7 @@
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
     setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
+    if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
     else if (ITEMS[item].decor && p.face < 0) { S.dflip = S.dflip || {}; S.dflip[ty * W + tx] = 1; }   // INTERIOR: decor faces the way you were facing
@@ -2462,6 +2493,7 @@
       var dx = e.x - p.x, dy = (e.y - e.h / 2) - (p.y - PH / 2); if (dx * dx + dy * dy <= PAW.near * PAW.near) return e; }
     return null;
   }
+  var PZT = null;
   function pawDmg() { return PAW.dmg * (fx("brute") ? 1.25 : 1); }
   function pawSwing(dt, e) {
     mine = null; pawOn = true; p.face = e.x < p.x ? -1 : 1;
@@ -2472,6 +2504,7 @@
     var f = p.face, xa = p.x - f * 0.3, xb = p.x + f * PAW.reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb), d = pawDmg();
     enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { e.lastHit = 0; damageEnemy(e, d, f); } });
     mpStrikePlayers(lo, hi, d, f);
+    if (PZT) { var pz2 = peaceAim(PAW.near + 0.6); PZT = null; if (pz2) peaceHit(pz2, d, f); }
   }
   function cavePawTarget() {
     var F = cave && cave.F; if (!aim.down || !F || !F.mobs || panelOpen) return null; var wx = (aim.mx - ox) / ts, wy = (aim.my - oy) / ts;
@@ -2485,12 +2518,569 @@
     for (var s2 = 0; s2 < 3; s2++) { var an = Math.atan2(dy, dx) + (s2 - 1) * 0.35; parts.push({ x: cp.x + Math.cos(an) * 0.8, y: cp.y - 0.5 + Math.sin(an) * 0.8, vx: Math.cos(an) * 2, vy: Math.sin(an) * 2 - 0.8, life: 0.16, max: 0.2, c: PAW.c, s: 2.5 }); }
     cave.F.mobs.forEach(function (q) { if (q.def) return; var ex = q.x - cp.x, ey = (q.y - 0.3) - (cp.y - 0.5), dd = Math.sqrt(ex * ex + ey * ey) || 0.01; if (dd > 1.5 + q.r || (ex * dx + ey * dy) / (dd * d) < 0.2) return; damageCaveMob(q, pawDmg(), ex / dd, ey / dd); });
   }
+
+  // ---------- GARAGE + MOTORCYCLE ----------
+  // The Garage (Craft tab > Stations) is a 2 x 2 building you place like a door: aim at the bottom-left cell, with solid ground under both
+  // bottom cells. Walk up to it and Enter (F): inside is your workshop, with an old motorcycle on a stand, stripped right down: nothing
+  // is on it. Its 12 parts are out in the world: cave chests (the Engine Block only from floor 5 down), building chests, toolboxes, tool
+  // chests and supply crates. The Leather Seat, Drive Chain and Headlight are made at a Workbench. Stand by the bike and press F (or tap it)
+  // to bolt on what you carry; the frame goes first. Every garage you place opens onto the same bike (S.moto). Finish it and start it up for
+  // the keys to the Swamp Hog: hold the keys on the hotbar and you ride it (twice as fast) anywhere on the surface.
+  var MOTO_P = (typeof SbxExtra !== "undefined" && SbxExtra.MOTO) || [], GQ = (typeof SbxExtra !== "undefined" && SbxExtra.GQ) || {};
+  var MOTO_HINT = {
+    moto_frame: "The gator-spine backbone. Found in cave chests and building chests.", moto_engine: "Heavy. Found in deep cave chests (floor 5 and below) and building chests.",
+    moto_pistons: "Found in toolboxes, tool chests and cave chests.", moto_carb: "Found in toolboxes, tool chests and cave chests.", moto_bars: "Found in toolboxes, tool chests and cave chests.",
+    moto_exhaust: "Found in supply crates, cave chests and building chests.", moto_tank: "Found in supply crates, cave chests and building chests.",
+    moto_wheelf: "Found in supply crates, cave chests and building chests.", moto_wheelr: "Found in supply crates, cave chests and building chests.",
+    moto_seat: "Made at a Workbench: 2 Leather, 2 Marsh Lilies, 1 Canvas.", moto_chain: "Made at a Workbench: 3 Iron Ingots, 2 Clockwork Gears.", moto_lamp: "Made at a Workbench: 2 Glowspore Glass, 2 Copper Wire, 1 Lamp Oil."
+  };
+  var MOTO_MADE = { moto_seat: 1, moto_chain: 1, moto_lamp: 1 }, MOTO_TOOLS = { moto_pistons: 1, moto_carb: 1, moto_bars: 1 }, MOTO_SUP = { moto_exhaust: 1, moto_tank: 1, moto_wheelf: 1, moto_wheelr: 1 };
+  var MOTO_CELL = { x: 6, y: 4, w: 3, h: 2 };
+  function motoS() { if (!S.moto || typeof S.moto !== "object") S.moto = { p: {}, done: 0 }; if (!S.moto.p) S.moto.p = {}; return S.moto; }
+  function motoHave() { var M = motoS(); return MOTO_P.filter(function (k) { return M.p[k]; }).length; }
+  function motoWant(k) { return ITEMS[k] && !motoS().p[k] && !(S.inv[k] > 0); }
+  function motoLoot(src, tier) {   // maybe one missing part for this chest / crate (never one you already have or have bolted on)
+    if (!MOTO_P.length || motoS().done) return null;
+    var pool = MOTO_P.filter(function (k) {
+      if (MOTO_MADE[k] || !motoWant(k)) return false;
+      if (src === "tools") return !!MOTO_TOOLS[k];
+      if (src === "supply") return !!MOTO_SUP[k];
+      if (k === "moto_engine") return src === "bld" || tier >= 1;
+      return !MOTO_TOOLS[k] || src === "chest";
+    });
+    if (!pool.length) return null;
+    var ch = src === "chest" ? 0.24 + tier * 0.1 : src === "bld" ? 0.35 : src === "pot" ? 0.04 : 0.16;
+    if (!S.st.motoLuck && motoHave() === 0 && pool.indexOf("moto_frame") >= 0 && (src === "chest" || src === "bld")) { S.st.motoLuck = 1; return ["moto_frame", 1]; }   // the first chest after you have a garage: the frame, to get you started
+    if (Math.random() > ch) return null;
+    return [pool[Math.floor(Math.random() * pool.length)], 1];
+  }
+  function garageOwned() { return (S.st.garages || 0) > 0; }
+  // ---- placing and knocking down ----
+  function garageCells(x, y) { return [[x, y, GQ.bl], [x + 1, y, GQ.br], [x, y - 1, GQ.tl], [x + 1, y - 1, GQ.tr]]; }
+  function garageCanPlace(tx, ty) {
+    if (ty < 3 || tx < 1 || tx >= W - 2) return false;
+    var ok = garageCells(tx, ty).every(function (c) { var id = get(c[0], c[1]); return id === T.AIR || (TILES[id] && !TILES[id].solid && TILES[id].sway); });
+    if (!ok) { nag("A garage needs a free space 2 wide and 2 tall."); return false; }
+    if (!TILES[get(tx, ty + 1)].solid || !TILES[get(tx + 1, ty + 1)].solid) { nag("A garage needs solid ground under both of its sides."); return false; }
+    return true;
+  }
+  function garagePlaced(tx, ty) {
+    garageCells(tx, ty).forEach(function (c) { setT(c[0], c[1], c[2]); }); S.st.garages = (S.st.garages || 0) + 1;
+    chips(tx + 1, ty, "#9aa4ae", 14, 5); thud(160, 0.1);
+    if (!S.st.garageTip) { S.st.garageTip = 1; toast("Your Garage is built! Walk up to it and Enter to see the motorcycle.", "#f2c14e"); }
+  }
+  function garageAnchor(x, y) { var g = TILES[get(x, y)].gpart; return g ? [x - g[0], y + (1 - g[1])] : null; }
+  function garageBreak(x, y) {   // any part takes the whole garage down; you get the Garage back (the bike stays as it is)
+    var a = garageAnchor(x, y); if (!a) return false;
+    garageCells(a[0], a[1]).forEach(function (c) { if (TILES[get(c[0], c[1])].gpart) setT(c[0], c[1], T.AIR); });
+    S.st.mined++; chips(a[0] + 1, a[1], "#9aa4ae", 16, 6); matBreak(T.PLANKS); give("garage", 1, a[0], a[1]); return true;
+  }
+  function garageNear() {   // a placed garage right next to you, as a building you can enter
+    if (cave || !GQ.bl) return null; var cx = Math.floor(p.x), cy = Math.floor(p.y - 0.5), best = null, bd = 9;
+    for (var y = cy - 2; y <= cy + 2; y++) for (var x = cx - 3; x <= cx + 2; x++) if (get(x, y) === GQ.bl) {
+      var dx = x + 1 - p.x, dy = y + 0.5 - (p.y - 0.5), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = [x, y]; }
+    }
+    if (!best) return null;
+    return { kind: "garage", name: "Your Garage", dx: best[0] + 0.5, gy: best[1] + 1, outX: best[0], b: world.bio[clamp(best[0], 0, W - 1)], id: 60000 + ((best[0] * 37 + best[1] * 11) % 30000), garage: best };
+  }
+  // ---- the bike ----
+  function motoTube(g, x1, y1, x2, y2, w, c) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+  // THE SWAMP HOG: not a road bike but a bog chopper grown out of the swamp. A gator-spine frame with ridges, a frog-skin tank, a V-twin
+  // whose cylinders kick out like frog legs, a glowing Glowspore core in the engine, a lily-pad seat, cattail exhaust stacks with ember
+  // tips, tall reed handlebars, fat tyres with glowing teal rims and leaf-blade spokes, and two frog-eye headlights.
+  function drawMoto(g, x, y, s, P, now, opts) {   // side view, facing right; left edge x, ground y, s = one tile; P = the parts on it
+    opts = opts || {}; var u = s, ghost = !opts.ride, run = !!opts.run, t = now / 1000, lit = !!opts.lit;
+    var ok = function (k) { return !!P["moto_" + k]; }, GC = "rgba(200,240,225,.15)", show = function (k) { return ok(k) || ghost; };
+    var X = function (v) { return x + v * u; }, Y = function (v) { return y - v * u; };
+    var C = { bog: "#2f6b4a", bogHi: "#5fb67a", bogLo: "#1a3f2b", belly: "#c8e09a", bronze: "#b8863a", bronzeHi: "#e8c070", bronzeLo: "#6a4a1c", dark: "#1c1f22", steel: "#3a4048", glow: "#4ee6b4", ember: "#ffb13b", cat: "#7a4a24" };
+    var col = function (k, c) { return ok(k) ? c : GC; }, lw = Math.max(1.4, u * 0.085);
+    var pulse = 0.65 + 0.35 * Math.sin(t * (run ? 9 : 2.6));
+    var rx = X(0.66), ry = Y(0.54), rr = 0.52 * u, fx2 = X(2.46), fy2 = Y(0.45), fr = 0.43 * u;   // a fat back wheel and a slimmer, raked-out front one
+    g.save(); g.lineJoin = "round"; g.lineCap = "round";
+    if (!opts.ride) {   // a mossy stand under it, and an old oil stain
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(X(1.55), Y(0.03), 1.5 * u, 0.13 * u, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "rgba(20,40,30,.45)"; g.beginPath(); g.ellipse(X(1.25), Y(0.02), 0.5 * u, 0.07 * u, 0, 0, 6.2832); g.fill();
+      g.fillStyle = C.steel; g.fillRect(X(1.12), Y(0.42), 0.86 * u, 0.36 * u); g.fillStyle = "#5a6068"; g.fillRect(X(1.12), Y(0.42), 0.86 * u, 0.06 * u);
+      g.fillStyle = C.bog; g.fillRect(X(1.12), Y(0.12), 0.86 * u, 0.06 * u); g.fillStyle = C.dark; g.fillRect(X(1.02), Y(0.07), 1.06 * u, 0.05 * u);
+    }
+    // ---- wheels: fat knobbly tyres, a glowing teal rim, five leaf-shaped spokes, a gold hub, and a leaf fender over each ----
+    var wheel = function (cx, cy, r, k, front) {
+      if (!show(k)) return; var real = ok(k), sp = run ? -t * 13 : 0.3;
+      g.lineWidth = r * 0.36; g.strokeStyle = real ? C.dark : GC; g.beginPath(); g.arc(cx, cy, r * 0.82, 0, 6.2832); g.stroke();
+      if (!real) return;
+      g.fillStyle = "#2a2e32"; for (var kn = 0; kn < 14; kn++) { var ka = sp + kn * Math.PI / 7; g.beginPath(); g.arc(cx + Math.cos(ka) * r * 0.99, cy + Math.sin(ka) * r * 0.99, r * 0.07, 0, 6.2832); g.fill(); }   // knobs
+      g.save(); g.shadowColor = C.glow; g.shadowBlur = lit ? r * 0.5 : r * 0.2; g.strokeStyle = C.glow; g.globalAlpha = 0.55 + 0.45 * pulse; g.lineWidth = Math.max(1, r * 0.08); g.beginPath(); g.arc(cx, cy, r * 0.62, 0, 6.2832); g.stroke(); g.restore();
+      g.fillStyle = C.bronze; for (var q = 0; q < 5; q++) { var a = sp + q * 1.2566; g.save(); g.translate(cx, cy); g.rotate(a); g.beginPath(); g.ellipse(r * 0.32, 0, r * 0.27, r * 0.08, 0, 0, 6.2832); g.fill(); g.restore(); }
+      g.fillStyle = C.bronzeHi; g.beginPath(); g.arc(cx, cy, r * 0.15, 0, 6.2832); g.fill(); g.fillStyle = C.bronzeLo; g.beginPath(); g.arc(cx, cy, r * 0.06, 0, 6.2832); g.fill();
+      g.fillStyle = C.bog; g.beginPath(); g.ellipse(cx + (front ? 0.06 : -0.08) * u, cy - r * 1.02, r * 0.95, r * 0.2, front ? 0.18 : -0.12, Math.PI, 0); g.fill();   // the leaf fender
+      g.strokeStyle = C.bogHi; g.lineWidth = Math.max(1, u * 0.025); g.beginPath(); g.moveTo(cx - r * 0.7, cy - r * 1.04); g.lineTo(cx + r * 0.7, cy - r * 1.04); g.stroke();
+    };
+    wheel(rx, ry, rr, "wheelr", false); wheel(fx2, fy2, fr, "wheelf", true);
+    // ---- drive chain ----
+    if (show("chain")) { g.setLineDash(ok("chain") ? [u * 0.06, u * 0.05] : []); g.lineDashOffset = run ? -t * u * 3 : 0; motoTube(g, rx, ry, X(1.4), Y(0.6), lw * 0.85, col("chain", C.bronzeLo)); g.setLineDash([]); }
+    // ---- cattail exhaust stacks: two pipes run back from the engine and curl straight up behind the seat ----
+    if (show("exhaust")) {
+      [[0, 0], [0.13, 0.06]].forEach(function (o2, i) {
+        g.strokeStyle = col("exhaust", i ? C.bronze : C.bronzeHi); g.lineWidth = lw * 1.05; g.beginPath(); g.moveTo(X(1.4 - o2[0]), Y(0.5 + o2[1])); g.quadraticCurveTo(X(0.42 - o2[0]), Y(0.42 + o2[1]), X(0.2 - o2[0]), Y(1.15 + o2[1] * 2)); g.stroke();
+        var tx2 = X(0.2 - o2[0]), ty2 = Y(1.15 + o2[1] * 2); g.fillStyle = col("exhaust", C.cat); g.beginPath(); g.ellipse(tx2, ty2 - u * 0.12, u * 0.06, u * 0.16, 0, 0, 6.2832); g.fill();
+        if (ok("exhaust")) { g.fillStyle = lit || run ? C.ember : "#a85a2a"; g.globalAlpha = lit || run ? 0.6 + 0.4 * pulse : 1; g.beginPath(); g.arc(tx2, ty2 - u * 0.3, u * 0.035, 0, 6.2832); g.fill(); g.globalAlpha = 1; }
+      });
+    }
+    // ---- the gator-spine frame: a curved backbone with ridges, a down tube, and a long raked bronze fork ----
+    if (show("frame")) {
+      var fc = col("frame", C.bog);
+      g.strokeStyle = fc; g.lineWidth = lw * 1.15; g.beginPath(); g.moveTo(rx, ry); g.quadraticCurveTo(X(0.95), Y(1.25), X(1.5), Y(1.2)); g.quadraticCurveTo(X(1.95), Y(1.18), X(2.12), Y(1.34)); g.stroke();
+      g.beginPath(); g.moveTo(X(2.1), Y(1.3)); g.quadraticCurveTo(X(1.85), Y(0.85), X(1.55), Y(0.5)); g.lineTo(rx, ry); g.stroke();
+      if (ok("frame")) {
+        g.strokeStyle = C.bogHi; g.lineWidth = Math.max(1, lw * 0.35); g.beginPath(); g.moveTo(X(0.78), Y(0.95)); g.quadraticCurveTo(X(1.0), Y(1.27), X(1.5), Y(1.23)); g.stroke();
+        g.fillStyle = C.bogLo; for (var rd = 0; rd < 6; rd++) { var rt = 0.15 + rd * 0.14, px2 = X(0.72 + rd * 0.24), py2 = Y(1.0 + Math.sin(rt * 3.1) * 0.24 + 0.04); g.beginPath(); g.moveTo(px2 - u * 0.05, py2); g.lineTo(px2, py2 - u * 0.1); g.lineTo(px2 + u * 0.05, py2); g.closePath(); g.fill(); }   // spine ridges
+      }
+      g.strokeStyle = col("frame", C.bronze); g.lineWidth = lw * 0.75; g.beginPath(); g.moveTo(X(2.12), Y(1.34)); g.lineTo(fx2 - u * 0.03, fy2); g.stroke(); g.beginPath(); g.moveTo(X(2.17), Y(1.32)); g.lineTo(fx2 + u * 0.03, fy2); g.stroke();
+      if (ok("frame")) { g.fillStyle = C.bronzeHi; g.beginPath(); g.arc(X(2.13), Y(1.33), u * 0.07, 0, 6.2832); g.fill(); }
+    }
+    // ---- engine: a rounded block with a bronze cover and the Glowspore core glowing through it ----
+    if (show("engine")) {
+      g.fillStyle = col("engine", C.steel); g.beginPath(); if (g.roundRect) g.roundRect(X(1.16), Y(0.98), 0.66 * u, 0.5 * u, 0.1 * u); else g.rect(X(1.16), Y(0.98), 0.66 * u, 0.5 * u); g.fill();
+      if (ok("engine")) {
+        g.fillStyle = C.bronze; g.beginPath(); g.arc(X(1.49), Y(0.73), u * 0.17, 0, 6.2832); g.fill();
+        g.save(); g.shadowColor = C.glow; g.shadowBlur = u * 0.35 * pulse; g.fillStyle = C.glow; g.globalAlpha = 0.6 + 0.4 * pulse; g.beginPath(); g.arc(X(1.49), Y(0.73), u * 0.09, 0, 6.2832); g.fill(); g.restore();
+        g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(X(1.18), Y(0.96), 0.62 * u, Math.max(1, u * 0.04));
+      }
+    }
+    // ---- V-twin pistons: two finned cylinders kicking out like a frog's legs ----
+    if (show("pistons")) {
+      [[-0.5, 1.33], [0.5, 1.63]].forEach(function (q) { g.save(); g.translate(X(q[1]), Y(1.02)); g.rotate(q[0]); g.fillStyle = col("pistons", "#c8ccd0"); g.fillRect(-u * 0.09, -u * 0.26, u * 0.18, u * 0.28); if (ok("pistons")) { g.fillStyle = "#8a929c"; for (var fn = 0; fn < 4; fn++) g.fillRect(-u * 0.12, -u * 0.24 + fn * u * 0.065, u * 0.24, Math.max(1, u * 0.025)); g.fillStyle = C.bronzeHi; g.fillRect(-u * 0.06, -u * 0.31, u * 0.12, u * 0.06); } g.restore(); });
+    }
+    // ---- carburettor: a brass bulb with a little bubble of spore light ----
+    if (show("carb")) { g.fillStyle = col("carb", C.bronze); g.beginPath(); g.arc(X(1.07), Y(0.8), u * 0.11, 0, 6.2832); g.fill(); if (ok("carb")) { g.fillStyle = C.glow; g.globalAlpha = 0.4 + 0.4 * pulse; g.beginPath(); g.arc(X(1.05), Y(0.83), u * 0.04, 0, 6.2832); g.fill(); g.globalAlpha = 1; g.fillStyle = C.bronzeHi; g.fillRect(X(0.94), Y(0.83), 0.08 * u, 0.05 * u); } }
+    // ---- frog-skin fuel tank: green on top, a pale belly, dark spots and a gold cap ----
+    if (show("tank")) {
+      g.fillStyle = col("tank", C.bog); g.beginPath(); g.ellipse(X(1.74), Y(1.31), 0.34 * u, 0.17 * u, -0.12, 0, 6.2832); g.fill();
+      if (ok("tank")) {
+        g.fillStyle = C.belly; g.beginPath(); g.ellipse(X(1.74), Y(1.22), 0.27 * u, 0.06 * u, -0.12, 0, 6.2832); g.fill();
+        g.fillStyle = C.bogLo; [[1.6, 1.37, 0.05], [1.78, 1.4, 0.04], [1.9, 1.33, 0.035], [1.68, 1.29, 0.03]].forEach(function (sp2) { g.beginPath(); g.arc(X(sp2[0]), Y(sp2[1]), sp2[2] * u, 0, 6.2832); g.fill(); });
+        g.fillStyle = C.bogHi; g.beginPath(); g.ellipse(X(1.7), Y(1.42), 0.16 * u, 0.03 * u, -0.12, 0, 6.2832); g.fill();
+        g.fillStyle = C.bronzeHi; g.beginPath(); g.arc(X(1.85), Y(1.46), u * 0.035, 0, 6.2832); g.fill();
+      }
+    }
+    // ---- lily-pad seat ----
+    if (show("seat")) {
+      g.fillStyle = col("seat", "#3f8a4a"); g.beginPath(); g.ellipse(X(1.12), Y(1.27), 0.34 * u, 0.11 * u, -0.05, 0.25, 6.03); g.lineTo(X(1.12), Y(1.27)); g.closePath(); g.fill();   // the notch of a lily pad
+      if (ok("seat")) { g.strokeStyle = "#7fc87a"; g.lineWidth = Math.max(1, u * 0.02); for (var vn = -2; vn <= 2; vn++) { g.beginPath(); g.moveTo(X(1.12), Y(1.27)); g.lineTo(X(1.12 + vn * 0.12), Y(1.27 + (Math.abs(vn) === 2 ? 0.02 : 0.08))); g.stroke(); } g.fillStyle = "#ff9ad0"; g.beginPath(); g.arc(X(0.86), Y(1.33), u * 0.04, 0, 6.2832); g.fill(); }   // and a tiny lily flower
+    }
+    // ---- tall reed handlebars with cattail grips ----
+    if (show("bars")) {
+      g.strokeStyle = col("bars", C.bronze); g.lineWidth = lw * 0.75; g.beginPath(); g.moveTo(X(2.12), Y(1.34)); g.quadraticCurveTo(X(2.12), Y(1.9), X(1.86), Y(1.92)); g.stroke();
+      g.fillStyle = ok("bars") ? C.cat : GC; g.beginPath(); g.ellipse(X(1.8), Y(1.92), 0.1 * u, 0.045 * u, 0, 0, 6.2832); g.fill();
+    }
+    // ---- frog-eye headlights: two bulging eyes on the fork crown, and the beam when lit ----
+    if (show("lamp")) {
+      [[2.2, 1.47], [2.34, 1.44]].forEach(function (e2, i) {
+        g.fillStyle = col("lamp", C.bog); g.beginPath(); g.arc(X(e2[0]), Y(e2[1]), u * 0.1, 0, 6.2832); g.fill();
+        if (ok("lamp")) { g.fillStyle = lit ? "#fff6c0" : "#ffe48a"; g.beginPath(); g.arc(X(e2[0] + 0.015), Y(e2[1] + 0.01), u * 0.07, 0, 6.2832); g.fill(); g.fillStyle = C.dark; g.fillRect(X(e2[0] + 0.02), Y(e2[1] + 0.045), u * 0.03, u * 0.07); }
+      });
+    }
+    if (lit && ok("lamp")) { g.globalCompositeOperation = "lighter"; var bx = X(2.4), by = Y(1.44), gr = g.createRadialGradient(bx, by, 0, bx, by, 2.4 * u); gr.addColorStop(0, "rgba(220,255,200,.34)"); gr.addColorStop(1, "rgba(220,255,200,0)"); g.fillStyle = gr; g.beginPath(); g.moveTo(bx, by); g.arc(bx, by, 2.4 * u, -0.32, 0.38); g.closePath(); g.fill(); g.globalCompositeOperation = "source-over"; }
+    if (lit && ok("frame")) { g.globalCompositeOperation = "lighter"; g.fillStyle = "rgba(255,230,120," + (0.5 + 0.4 * pulse).toFixed(2) + ")"; g.beginPath(); g.arc(X(0.4), Y(1.0), u * 0.045, 0, 6.2832); g.fill(); g.globalCompositeOperation = "source-over"; }   // a firefly tail light
+    g.restore();
+  }
+  function inGarage() { return !!(cave && cave.bld && cave.bld.kind === "garage" && cave.F); }
+  function motoNear() {   // close to the bike, and closer to it than to the door
+    if (!inGarage()) return false; var cx = MOTO_CELL.x + 1.5, cy = MOTO_CELL.y + 1.4, dx = cp.x - cx, dy = cp.y - cy, d = dx * dx + dy * dy; if (d > 3 * 3) return false;
+    var U = cave.F.up, ux = U.x + 0.5 - cp.x, uy = U.y + 0.5 - (cp.y - 0.3); return d < ux * ux + uy * uy;
+  }
+  function motoAtCell(x, y) { return inGarage() && x >= MOTO_CELL.x && x < MOTO_CELL.x + MOTO_CELL.w && y >= MOTO_CELL.y - 1 && y < MOTO_CELL.y + MOTO_CELL.h; }
+  function garageSetup(F) {   // the bike's cells are solid so you walk around it
+    for (var y = MOTO_CELL.y; y < MOTO_CELL.y + MOTO_CELL.h; y++) for (var x = MOTO_CELL.x; x < MOTO_CELL.x + MOTO_CELL.w; x++) F.sol[y * F.w + x] = 1;
+    F.garage = 1;
+  }
+  function drawGarageBike(g, now) { var M = motoS(); drawMoto(g, ox + MOTO_CELL.x * ts, oy + (MOTO_CELL.y + MOTO_CELL.h) * ts - ts * 0.15, ts, M.p, now, { lit: M.done }); }
+  // ---- the workbench window ----
+  var motoMsg = "";
+  function openMoto() {
+    var el = $("sbxStory"); if (!el) return; if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    storyOpen = 218; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null; motoMsg = "";
+    S.st.motoLook = (S.st.motoLook || 0) + 1; thud(180, 0.05); renderMoto();
+  }
+  function renderMoto() {
+    var M = motoS(), n = motoHave(), all = MOTO_P.length, can = MOTO_P.filter(function (k) { return !M.p[k] && S.inv[k] > 0 && (M.p.moto_frame || k === "moto_frame"); });
+    var h = '<div class="mo-box"><div class="mo-head"><canvas class="mo-cv" id="moCv" width="360" height="200" aria-hidden="true"></canvas><div><small>Your Garage</small><h2>' + (M.done ? "The Swamp Hog" : "Old Motorcycle") + "</h2>"
+      + '<p class="mo-sub">' + (M.done ? "Rebuilt from the frame up. It runs like a dream." : n === 0 ? "Stripped down to nothing. Find its parts out in the world and bolt them back on." : n + " of " + all + " parts on. " + (all - n) + " to go.") + "</p>"
+      + '<div class="mo-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + all + '" aria-valuenow="' + n + '"><i style="width:' + Math.round(n / all * 100) + '%"></i></div></div></div>';
+    if (motoMsg) h += '<p class="mo-msg">' + esc(motoMsg) + "</p>";
+    h += '<ul class="mo-list">' + MOTO_P.map(function (k) {
+      var on = !!M.p[k], have = S.inv[k] > 0, needFrame = !M.p.moto_frame && k !== "moto_frame";
+      var st = on ? '<span class="mo-on">Fitted</span>' : have ? (needFrame ? '<span class="mo-wait">Frame first</span>' : '<button type="button" class="btn mo-fit" data-moto="fit:' + k + '">Bolt on</button>') : '<span class="mo-miss">Missing</span>';
+      return '<li class="' + (on ? "on" : have ? "have" : "") + '"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + "</b><small>" + (on ? "On the bike." : have ? "In your bag." : MOTO_HINT[k] || "") + "</small></div>" + st + "</li>";
+    }).join("") + "</ul>";
+    h += '<div class="st-row">' + (M.done ? "" : n === all ? '<button type="button" class="btn mo-start" data-moto="start">Start it up!</button>' : can.length > 1 ? '<button type="button" class="btn" data-moto="all">Bolt on all (' + can.length + ")</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h;
+    var cv = $("moCv"); if (cv) { var g = cv.getContext("2d"); g.clearRect(0, 0, cv.width, cv.height); drawMoto(g, 18, 190, 108, M.p, performance.now(), { lit: M.done }); }
+  }
+  function motoFit(k) {
+    var M = motoS(); if (M.p[k] || !(S.inv[k] > 0)) return false; if (!M.p.moto_frame && k !== "moto_frame") { motoMsg = "Bolt the frame on first: everything else hangs off it."; return false; }
+    S.inv[k]--; if (S.inv[k] <= 0) delete S.inv[k]; M.p[k] = 1; reslot(); hbDirty = true; S.st.motoParts = motoHave();
+    return true;
+  }
+  function motoAct(a) {
+    var M = motoS();
+    if (a.indexOf("fit:") === 0) { var k = a.slice(4); if (motoFit(k)) { motoMsg = ITEMS[k].n + " bolted on. " + (motoHave() < MOTO_P.length ? (MOTO_P.length - motoHave()) + " parts to go." : "That's every part! Time to start it up."); thud(320, 0.08); matHit(T.STONE); snd("coin"); } }
+    else if (a === "all") { var n = 0; if (S.inv.moto_frame > 0 && motoFit("moto_frame")) n++; MOTO_P.forEach(function (k) { if (motoFit(k)) n++; }); if (n) { motoMsg = n + " parts bolted on."; thud(320, 0.1); snd("coin"); } }
+    else if (a === "start" && !M.done && motoHave() === MOTO_P.length) {
+      M.done = 1; S.st.motoDone = 1; give("motorbike", 1, undefined, undefined, true); snd("open", "Legendary"); thud(55, 0.2); setTimeout(function () { thud(70, 0.16); }, 180); setTimeout(function () { thud(90, 0.12); }, 360);
+      popup("It runs!", "The Swamp Hog is yours. Hold its keys on the hotbar to ride.", "#f2c14e", "★"); motoMsg = "VROOM! The engine catches on the first kick. The keys are in your bag: hold them on the hotbar to ride, twice as fast.";
+      if (cave && cave.F) chips(MOTO_CELL.x + 1.5, MOTO_CELL.y + 0.5, "#f2c14e", 30, 9);
+    }
+    checkGoals(); save(); renderMoto();
+  }
+  // ---- riding ----
+  function riding() { return sel === "motorbike" && S.inv.motorbike > 0 && !cave && !p.wet && hp > 0; }
+  var rumT = 0;
+  function tickRide(dt) { if (!riding()) return; rumT -= dt; if (rumT <= 0 && fxReady()) { var sp2 = Math.abs(p.vx); rumT = sp2 > 2 ? 0.09 : 0.22; try { tn(0, 48 + sp2 * 4 + Math.random() * 6, 40, 0.1, "sawtooth", sp2 > 2 ? 0.03 : 0.018); } catch (e) {} } if (Math.abs(p.vx) > 6 && p.on && Math.random() < dt * 14) { parts.push({ x: p.x - p.face * 1.45, y: p.y - 1.25, vx: -p.face * 1.6, vy: -0.9, g: -1.2, life: 0.6, max: 0.7, c: "rgba(140,255,215,.45)", s: 3 + Math.random() * 3, dust: 1 }); if (Math.random() < 0.3) parts.push({ x: p.x - p.face * 1.2, y: p.y - 0.15, vx: -p.face * 2.4, vy: -0.5, g: -0.6, life: 0.4, max: 0.5, c: "rgba(170,150,110,.35)", s: 6, dust: 1 }); } }   // glowing spores from the cattail stacks, and a little mud
+  // =====================================================================================================================================
+  // ---------- FUN PACK: emotes, speech bubbles, chatter, ground critters, footsteps and footprints, dig streaks, lucky finds, photo mode ----------
+  // =====================================================================================================================================
+  function easeBack(t) { var c = 1.7; t = clamp(t, 0, 1) - 1; return 1 + (c + 1) * t * t * t + c * t * t; }
+  function funTone(f, f2, d, type, vol, t0) { if (!fxReady()) return; try { tn(t0 || 0, f, f2, d, type || "sine", vol || 0.04); } catch (e) {} }
+  // ---- SPEECH BUBBLES: a little rounded bubble over whoever is talking (you, Old Croaker, villagers, pets, critters) ----
+  var BUBS = [];
+  function bubble(who, txt, life, col) {
+    BUBS = BUBS.filter(function (b) { return !(b.who.k === who.k && b.who.ref === who.ref); });
+    BUBS.push({ who: who, txt: txt, t: 0, life: life || 2.6, col: col || "#2a1d10" }); if (BUBS.length > 8) BUBS.shift();
+  }
+  function bubAt(w) {
+    if (w.k === "p") return [p.x, p.y - PH - 0.55];
+    if (w.k === "n") return npc.ok && !(npc.ko > 0) ? [npc.x, npc.y - 2.25] : null;
+    if (w.k === "v") return w.ref && !(w.ref.ko > 0) ? [w.ref.x, w.ref.y - vilH(w.ref) - 0.3] : null;
+    if (w.k === "a" || w.k === "c") return w.ref && !w.ref.gone ? [w.ref.x, w.ref.y - (w.ref.h || 0.5) - 0.35] : null;
+    return null;
+  }
+  function tickBubs(dt) { for (var i = BUBS.length - 1; i >= 0; i--) { BUBS[i].t += dt; if (BUBS[i].t >= BUBS[i].life) BUBS.splice(i, 1); } }
+  function drawBubs(g) {
+    if (cave || !BUBS.length || PHOTO.on && PHOTO.clean) return;
+    var fs = Math.max(11, Math.round(ts * 0.42)); g.save(); g.font = "800 " + fs + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    BUBS.forEach(function (b) {
+      var a = bubAt(b.who); if (!a) return; var sx = ox + a[0] * ts, sy = oy + a[1] * ts; if (sx < -200 || sx > vw + 200 || sy < -60 || sy > vh + 60) return;
+      var tin = Math.min(1, b.t / 0.2), tout = Math.min(1, (b.life - b.t) / 0.3), al = Math.min(tin, tout), sc = reduce ? 1 : 0.6 + 0.4 * easeBack(tin);
+      var tw = g.measureText(b.txt).width, pw = tw + fs * 1.1, ph = fs * 1.75, rr = ph / 2;
+      g.save(); g.globalAlpha = al; g.translate(sx, sy - (1 - tout) * ts * 0.25 + (reduce ? 0 : Math.sin(b.t * 3) * 1.2)); g.scale(sc, sc);
+      g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); if (g.roundRect) g.roundRect(-pw / 2 + 2, -ph + 3, pw, ph, rr); else g.rect(-pw / 2 + 2, -ph + 3, pw, ph); g.fill();
+      g.fillStyle = "#fffaf0"; g.strokeStyle = "rgba(60,40,20,.55)"; g.lineWidth = 1.5; g.beginPath(); if (g.roundRect) g.roundRect(-pw / 2, -ph, pw, ph, rr); else g.rect(-pw / 2, -ph, pw, ph); g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(-fs * 0.32, -1); g.lineTo(0, fs * 0.55); g.lineTo(fs * 0.32, -1); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-fs * 0.32, 0); g.lineTo(0, fs * 0.55); g.lineTo(fs * 0.32, 0); g.stroke();
+      g.fillStyle = "#fffaf0"; g.fillRect(-fs * 0.3, -2.5, fs * 0.6, 3);
+      g.fillStyle = b.col; g.fillText(b.txt, 0, -ph / 2 + 1); g.restore();
+    });
+    g.restore();
+  }
+  // ---- EMOTES: T (or the smiley button) opens the emote bar; pick one with a tap or 1-6 ----
+  var EMOTES = [
+    { k: "wave", n: "Wave", g: "✋", d: 2.2 }, { k: "dance", n: "Dance", g: "♪", d: 3.4 }, { k: "cheer", n: "Cheer", g: "★", d: 1.9 },
+    { k: "love", n: "Love", g: "♥", d: 2.4 }, { k: "laugh", n: "Laugh", g: "☺", d: 2.2 }, { k: "nap", n: "Nap", g: "z", d: 4.5 }
+  ];
+  var EMO = { k: "", t: 0, d: 0, beat: 0, open: false, q: [] }, emoEl = $("sbxEmo");
+  var REACT = {
+    croak: { wave: ["Hello there, little one!", "Wave all you like, I'm not getting up."], dance: ["Ribbit! Look at those moves!", "I used to dance like that. In 1842."], cheer: ["Woo! That's the spirit!", "Hooray for... whatever that was!"], love: ["Aw, you old softie.", "Love you too, kid."], laugh: ["Heh heh! What's so funny?", "Your laugh sounds like a happy duck."], nap: ["Don't snore too loud.", "Sleep tight, little digger."] },
+    vil: { wave: null, dance: ["♪ ♪", "Nice moves!", "Ha! Again!"], cheer: ["Hooray!", "Yay!", "Woo-hoo!"], love: ["♥", "Aww!", "♥ ♥"], laugh: ["Haha!", "Hee hee!", "Hah!"], nap: ["Shh...", "Sweet dreams.", "Zzz?"] }
+  };
+  function pickL(L) { return L[Math.floor(Math.random() * L.length)]; }
+  function emoBar(open) {
+    EMO.open = open === undefined ? !EMO.open : !!open; if (!emoEl) return; emoEl.hidden = !EMO.open;
+    if (EMO.open) { emoEl.innerHTML = EMOTES.map(function (e, i) { return '<button type="button" data-emo="' + e.k + '" aria-label="' + e.n + '"><i aria-hidden="true">' + e.g + "</i><span>" + e.n + "</span>" + (coarse ? "" : "<kbd>" + (i + 1) + "</kbd>") + "</button>"; }).join(""); emoEl.classList.remove("in"); void emoEl.offsetWidth; emoEl.classList.add("in"); }
+  }
+  function emote(k) {
+    var E = EMOTES.filter(function (e) { return e.k === k; })[0]; emoBar(false); if (!E || cave || hp <= 0 || titleOpen || panelOpen) return;
+    EMO.k = k; EMO.t = 0; EMO.d = E.d; EMO.beat = 0; S.st.emotes = (S.st.emotes || 0) + 1; mine = null;
+    if (k === "wave") { bubble({ k: "p" }, pickL(["Hi!", "Hello!", "Hey there!"]), 1.8); funTone(660, 880, 0.12, "triangle", 0.05); funTone(880, 1100, 0.12, "triangle", 0.04, 0.12); }
+    if (k === "cheer") { if (p.on) { p.vy = -10.5; p.on = false; } cheerT = 1.9; snd("rise"); confettiPop(p.x, p.y - PH, 26); bubble({ k: "p" }, "Woo-hoo!", 1.6); }
+    if (k === "love") { bubble({ k: "p" }, "♥", 2); funTone(784, 0, 0.3, "sine", 0.05); funTone(1046, 0, 0.35, "sine", 0.04, 0.15); }
+    if (k === "laugh") { bubble({ k: "p" }, pickL(["Ha ha!", "Hee hee!", "Ribbit-ha!"]), 2); }
+    if (k === "nap") { bubble({ k: "p" }, "Zzz...", 2.4, "#3a4a7a"); funTone(330, 220, 0.5, "sine", 0.04); }
+    // the world reacts
+    var ex = p.x, ey = p.y;
+    if (npc.ok && !(npc.angry > 0) && !(npc.ko > 0) && Math.abs(npc.x - ex) < 8 && Math.abs(npc.y - ey) < 4) EMO.q.push({ t: 0.7, fn: function () { bubble({ k: "n" }, pickL(REACT.croak[k]), 2.8); } });
+    (vils || []).filter(function (v) { return !(v.ko > 0) && Math.abs(v.x - ex) < 8 && Math.abs(v.y - ey) < 4; }).slice(0, 3).forEach(function (v, i) {
+      EMO.q.push({ t: 0.6 + i * 0.45, fn: function () { var L = BRAWL.vang > 0 ? ["Hmph!", "Go away!"] : REACT.vil[k] || v.V.hi; bubble({ k: "v", ref: v }, pickL(L), 2.4); } });
+    });
+    allAnimals().forEach(function (a) { if (Math.abs(a.x - ex) < 7 && Math.abs(a.y - ey) < 3) EMO.q.push({ t: 0.3 + Math.random() * 0.5, fn: function () { if (a.on) a.vy = -6.5; if (a.tame || k === "love") hearts(a, a.tame ? 4 : 2); } }); });
+    CRIT.L.forEach(function (c) { if (Math.abs(c.x - ex) < 7 && Math.abs(c.y - ey) < 3) EMO.q.push({ t: 0.2 + Math.random() * 0.4, fn: function () { if (c.on) { c.vy = -6; c.on = false; } } }); });
+  }
+  function confettiPop(x, y, n) { if (reduce) n = Math.ceil(n / 3); var C = ["#f2c14e", "#4ee6b4", "#ff6b9a", "#8fd6ff", "#b58cff", "#ff8a3d"]; for (var i = 0; i < n; i++) { var a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, sp = 5 + Math.random() * 6; parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: 12, life: 1 + Math.random() * 0.6, max: 1.6, c: C[i % C.length], s: 3 + Math.random() * 2, conf: 1, s2: 0.45 }); } }
+  function tickEmote(dt) {
+    for (var i = EMO.q.length - 1; i >= 0; i--) { EMO.q[i].t -= dt; if (EMO.q[i].t <= 0) { var f = EMO.q[i].fn; EMO.q.splice(i, 1); try { f(); } catch (e) {} } }
+    if (!EMO.k) return;
+    var moving = (keys.l || keys.r || tk.l || tk.r || keys.j || tk.j || aim.down) && EMO.t > 0.25;
+    if (moving || cave || hp <= 0) { EMO.k = ""; return; }
+    EMO.t += dt; var k = EMO.k, b = Math.floor(EMO.t / (k === "dance" ? 0.32 : k === "laugh" ? 0.1 : k === "love" ? 0.28 : k === "nap" ? 0.9 : 0.5));
+    if (b !== EMO.beat) {
+      EMO.beat = b;
+      if (k === "dance") { p.face = -p.face; p.sq = 0.17; p.sqv = 1.2; if (b % 2 === 0 && p.on) { p.vy = -5.5; p.on = false; } text(p.x + (Math.random() - 0.5) * 1.2, p.y - PH - 0.1, "♪", ["#ffd36a", "#4ee6b4", "#ff9ad0"][b % 3]); funTone([523, 659, 784, 659, 587, 698, 880, 698][b % 8], 0, 0.16, "triangle", 0.035); }
+      if (k === "laugh") { p.sq = b % 2 ? 0.07 : -0.07; p.sqv = 0; if (b % 3 === 0) funTone(700 + (b % 4) * 90, 520, 0.07, "square", 0.018); }
+      if (k === "love") { hearts({ x: p.x, y: p.y - 0.3, w: 0.7, h: PH }, 2); }
+      if (k === "nap") { text(p.x + 0.4 + (b % 2) * 0.2, p.y - PH - 0.2, b % 2 ? "Z" : "z", "#cfd6ff"); }
+      if (k === "wave") cheerT = Math.max(cheerT, 0.6);
+    }
+    if (k === "nap") { p.land = Math.max(p.land || 0, 0.2); }
+    if (k === "wave" || k === "cheer") cheerT = Math.max(cheerT, 0.3);
+    if (EMO.t >= EMO.d) EMO.k = "";
+  }
+  // ---- CHATTER: Old Croaker and the villagers sometimes say something as you pass ----
+  var CHAT = { t: 6, CROAK: ["Lovely day for digging!", "Mind the gators, ribbit.", "Have you eaten? You look thin.", "Back in my day, we dug with our hands.", "The deeper you go, the shinier it gets.", "Light your base. Bats hate that.", "Ribbit.", "My knees can tell it's going to rain.", "Fancy a quest? I've got plenty."] };
+  function tickChat(dt) {
+    CHAT.t -= dt; if (CHAT.t > 0 || cave || panelOpen || titleOpen) return; CHAT.t = 14 + Math.random() * 16;
+    if (npc.ok && !(npc.angry > 0) && !(npc.ko > 0) && Math.abs(npc.x - p.x) < 6 && Math.abs(npc.y - p.y) < 4 && Math.random() < 0.7) { bubble({ k: "n" }, pickL(CHAT.CROAK), 3.2); return; }
+    var nv = (vils || []).filter(function (v) { return !(v.ko > 0) && Math.abs(v.x - p.x) < 6 && Math.abs(v.y - p.y) < 3; });
+    if (nv.length && BRAWL.vang <= 0) { var v = pickL(nv); bubble({ k: "v", ref: v }, pickL(v.V.hi), 3); }
+  }
+  // ---- GROUND CRITTERS: little life on the ground that runs from you (tap one to boop it) ----
+  // Swamp Frogs hop about Murkwater (and croak at night), Shore Crabs scuttle sideways on the Sunbaked Shores, Snow Hares bound through
+  // Frostfen, and Ember Beetles crawl over Ember Bog with a faint glow. Purely for fun: they can't be hurt and never get in the way.
+  var CRIT = { L: [], t: 2 }, CRITK = { frog: { w: 0.5, h: 0.36, spd: 2.4 }, crab: { w: 0.55, h: 0.32, spd: 2.2 }, hare: { w: 0.55, h: 0.45, spd: 3.4 }, beetle: { w: 0.45, h: 0.26, spd: 1 } };
+  function critKind(x) { var b = world.bio[clamp(x, 0, W - 1)], v = varAt(x); if (v === 2) return "crab"; return b === 0 ? "frog" : b === 1 ? "beetle" : "hare"; }
+  function spawnCrit() {
+    if (cave || CRIT.L.length >= 4 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 4) return;
+    var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (6 + Math.random() * 14)), 3, W - 4), y = col[x];
+    if (skySafe(x) && p.y > world.sky.y + 4) return;
+    if (y <= 2 || y >= H - 2 || !blocks(x, y) || blocks(x, y - 1) || TILES[get(x, y - 1)].kind === "water") return;
+    var k = critKind(x), K = CRITK[k]; if (k === "frog" && !isNight(S.time) && Math.random() < 0.3) return;
+    CRIT.L.push({ k: k, x: x + 0.5, y: y, vx: 0, vy: 0, kv: 0, on: true, w: K.w, h: K.h, face: Math.random() < 0.5 ? -1 : 1, t: 0, hop: 0.5 + Math.random() * 2, flee: 0, life: 90 + Math.random() * 60, ph: Math.random() * 6 });
+  }
+  function critAt(wx, wy) { for (var i = 0; i < CRIT.L.length; i++) { var c = CRIT.L[i]; if (Math.abs(wx - c.x) < c.w / 2 + 0.35 && wy > c.y - c.h - 0.4 && wy < c.y + 0.25) return c; } return null; }
+  function boopCrit(c) {
+    hearts({ x: c.x, y: c.y, w: c.w, h: c.h }, 4); if (c.on) { c.vy = -7; c.on = false; } c.flee = 0; S.st.boops = (S.st.boops || 0) + 1;
+    var say = { frog: ["ribbit!", "croak?"], crab: ["click click!", "pinch?"], hare: ["!", "*twitch*"], beetle: ["bzzt", "*click*"] }[c.k];
+    bubble({ k: "c", ref: c }, pickL(say), 1.4); funTone(c.k === "frog" ? 220 : c.k === "hare" ? 1200 : 900, c.k === "frog" ? 140 : 0, 0.12, c.k === "frog" ? "square" : "sine", 0.03);
+  }
+  function tickCrit(dt) {
+    if (cave) { CRIT.L.length = 0; return; }
+    CRIT.t -= dt; if (CRIT.t <= 0) { CRIT.t = 3 + Math.random() * 4; spawnCrit(); }
+    for (var i = CRIT.L.length - 1; i >= 0; i--) {
+      var c = CRIT.L[i], K = CRITK[c.k]; c.t += dt; c.life -= dt;
+      if (c.life <= 0 || Math.abs(c.x - p.x) > 36 || Math.abs(c.y - p.y) > 20) { c.gone = true; CRIT.L.splice(i, 1); continue; }
+      var dx = c.x - p.x, near = Math.abs(dx) < 3 && Math.abs(c.y - p.y) < 2.2; if (near) { c.flee = 2.2; c.face = dx < 0 ? -1 : 1; }
+      c.flee = Math.max(0, c.flee - dt); c.hop -= dt; var vx = 0;
+      if (c.k === "crab") { if (c.flee > 0) vx = c.face * K.spd * 1.8; else if (c.hop > 0 && c.hop < 1.2) vx = c.face * K.spd * 0.6; if (c.hop <= 0) { c.hop = 1.5 + Math.random() * 2.5; if (Math.random() < 0.5) c.face = -c.face; } }
+      else if (c.k === "beetle") { vx = c.face * K.spd * (c.flee > 0 ? 2.6 : c.hop > 1 ? 0.5 : 0); if (c.hop <= 0) { c.hop = 2 + Math.random() * 3; if (Math.random() < 0.4) c.face = -c.face; } }
+      else if (c.on && c.hop <= 0) {   // frogs and hares get about in hops
+        c.hop = c.flee > 0 ? 0.35 : (c.k === "hare" ? 0.8 : 1.4) + Math.random() * 2; if (!c.flee && Math.random() < 0.35) c.face = -c.face;
+        c.vy = c.k === "hare" ? -7.5 : -6.2; c.on = false; c.jvx = c.face * K.spd * (c.flee > 0 ? 1.7 : 1);
+        if (c.k === "frog" && isNight(S.time) && Math.random() < 0.25 && Math.abs(dx) < 14) { funTone(180 + Math.random() * 40, 120, 0.14, "square", 0.02); if (Math.random() < 0.3) bubble({ k: "c", ref: c }, "ribbit", 1.2); }
+      }
+      if (!c.on && c.jvx) vx = c.jvx; if (c.on) c.jvx = 0;
+      if (c.blocked && c.on && vx) { c.vy = -6.5; c.on = false; }
+      moveEnemy(c, dt, vx);
+      if (TILES[get(Math.floor(c.x), Math.floor(c.y - 0.2))].kind === "water" && c.k !== "frog") c.face = -c.face;
+    }
+  }
+  function drawCrit(g, now) {
+    CRIT.L.forEach(function (c) {
+      var sx = ox + c.x * ts, sy = oy + c.y * ts; if (sx < -ts * 2 || sx > vw + ts * 2 || sy < -ts * 2 || sy > vh + ts * 2) return;
+      var u = ts / 16, air = !c.on, sq = air ? 1.12 : 1 + Math.sin(c.t * 3 + c.ph) * 0.03;
+      g.save(); g.translate(sx, sy); g.scale(c.face * (2 - sq) / 1, sq); var R = function (x, y, w, h, col) { g.fillStyle = col; g.fillRect(Math.round(x * u), Math.round(y * u), Math.max(1, Math.round(w * u)), Math.max(1, Math.round(h * u))); };
+      g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.ellipse(0, 0, 4 * u, 1 * u, 0, 0, 6.2832); g.fill();
+      if (c.k === "frog") { R(-4, -5, 8, 5, "#4f9a3c"); R(-3, -6, 6, 1, "#6fbe4f"); R(-1, -8, 3, 3, "#6fbe4f"); R(1, -8, 3, 3, "#6fbe4f"); R(1, -7, 2, 2, "#ffffff"); R(2, -7, 1, 1, "#14161c"); R(-3, -2, 6, 2, "#c8e09a"); if (air) { R(-6, -2, 3, 2, "#4f9a3c"); R(3, -1, 4, 1, "#4f9a3c"); } else { R(-5, -1, 3, 1, "#3a7a2c"); R(3, -1, 3, 1, "#3a7a2c"); } }
+      else if (c.k === "crab") { R(-4, -4, 8, 4, "#d8442a"); R(-3, -5, 6, 1, "#ff6a4a"); R(-1, -7, 1, 2, "#d8442a"); R(1, -7, 1, 2, "#d8442a"); R(-1, -8, 1, 1, "#14161c"); R(1, -8, 1, 1, "#14161c"); var cl = Math.sin(c.t * 10) > 0 ? 1 : 0; R(4, -6 - cl, 2, 3, "#ff6a4a"); R(-6, -6 + cl, 2, 3, "#ff6a4a"); for (var l = 0; l < 3; l++) { R(-4 + l * 3, 0, 1, 1, "#a8301a"); } }
+      else if (c.k === "hare") { R(-4, -6, 7, 5, "#f4f4f0"); R(1, -8, 4, 4, "#ffffff"); R(2, -12, 1, 4, "#f4f4f0"); R(3, -12, 1, 4, "#ffd0dc"); R(4, -7, 1, 1, "#14161c"); R(-5, -5, 2, 2, "#ffffff"); R(-3, -1, 2, 1, "#d8d8d0"); R(1, -1, 2, 1, "#d8d8d0"); }
+      else { R(-3, -3, 6, 3, "#2a2226"); R(-2, -4, 4, 1, "#4a3a3e"); R(3, -2, 1, 1, "#14161c"); R(-1, -3, 1, 2, "#ff8a3d"); for (var l2 = 0; l2 < 3; l2++) R(-3 + l2 * 2, 0, 1, 1, "#14161c"); if (isNight(S.time) || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) { g.globalAlpha = 0.5 + 0.3 * Math.sin(now / 300 + c.ph); R(-1, -3, 2, 2, "#ffc24a"); g.globalAlpha = 1; } }
+      g.restore();
+    });
+  }
+  // ---- FOOTSTEPS + FOOTPRINTS: soft steps in each ground's own sound; snow, sand and mud keep your prints for a while ----
+  var FOOT = { acc: 0, side: 0, L: [] };
+  function footKind(id) { var td = TILES[id] || {}, n = (td.n || "").toLowerCase(); if (id === T.SNOW || /snow/.test(n)) return "snow"; if (/sand|dune/.test(n)) return "sand"; if (id === T.MUD || id === T.CLAY || /mud|peat|silt/.test(n)) return "mud"; return ""; }
+  function tickFoot(dt) {
+    if (cave || !p.on || p.wet || riding() || Math.abs(p.vx) < 1.5) { FOOT.acc = Math.min(FOOT.acc, 0.5); }
+    else {
+      FOOT.acc += Math.abs(p.vx) * dt;
+      if (FOOT.acc >= 1.05) {
+        FOOT.acc = 0; FOOT.side = 1 - FOOT.side; var gx = Math.floor(p.x), gy = Math.floor(p.y + 0.2), gid = get(gx, gy);
+        if (fxReady()) { var m = matOf(gid); try { if (m === "wood") tn(0, 190 + FOOT.side * 20, 140, 0.05, "triangle", 0.035); else if (m === "stone" || m === "ore" || m === "metal") nz(0, 0.04, 0.05, 1800 + FOOT.side * 200, "bandpass", 1.4); else if (m === "glass") tn(0, 1800, 0, 0.04, "sine", 0.012); else nz(0, 0.06, m === "plant" ? 0.04 : 0.07, footKind(gid) === "snow" ? 2400 : 700 + FOOT.side * 120, footKind(gid) === "snow" ? "highpass" : "lowpass"); } catch (e) {} }
+        var fk = footKind(gid); if (fk && !reduce) { FOOT.L.push({ x: p.x + (FOOT.side ? 0.12 : -0.12) * p.face, y: gy, f: p.face, k: fk, t: 0 }); if (FOOT.L.length > 70) FOOT.L.shift(); }
+      }
+    }
+    for (var i = FOOT.L.length - 1; i >= 0; i--) { FOOT.L[i].t += dt; if (FOOT.L[i].t > 16 || get(Math.floor(FOOT.L[i].x), FOOT.L[i].y) === T.AIR) FOOT.L.splice(i, 1); }
+  }
+  function drawFoot(g) {
+    FOOT.L.forEach(function (f) {
+      var sx = ox + f.x * ts, sy = oy + f.y * ts + ts * 0.06; if (sx < -ts || sx > vw + ts) return; var a = Math.min(1, (16 - f.t) / 4);
+      g.fillStyle = f.k === "snow" ? "rgba(110,135,170," + (0.5 * a).toFixed(3) + ")" : f.k === "sand" ? "rgba(140,100,50," + (0.42 * a).toFixed(3) + ")" : "rgba(30,18,10," + (0.45 * a).toFixed(3) + ")";
+      g.beginPath(); g.ellipse(sx, sy, ts * 0.13, ts * 0.05, 0, 0, 6.2832); g.fill(); g.beginPath(); g.ellipse(sx + f.f * ts * 0.13, sy - ts * 0.005, ts * 0.05, ts * 0.04, 0, 0, 6.2832); g.fill();
+    });
+  }
+  // ---- DIG STREAKS + LUCKY FINDS: break blocks quickly for a combo (with a rising chime); now and then plain dirt or stone hides a lucky find ----
+  var STREAK = { n: 0, last: 0, best: 0 };
+  function funBreak(id, x, y) {
+    var now = performance.now(), td = TILES[id] || {}; if (!td.solid && td.kind !== "ore") return;
+    STREAK.n = now - STREAK.last < 1300 ? STREAK.n + 1 : 1; STREAK.last = now; if (STREAK.n > (S.st.bestStreak || 0)) S.st.bestStreak = STREAK.n;
+    if (STREAK.n >= 3) funTone(440 * Math.pow(2, Math.min(24, STREAK.n - 3) / 12), 0, 0.08, "sine", 0.022);
+    if (STREAK.n >= 5 && STREAK.n % 5 === 0) { text(x + 0.5, y - 0.4, "Streak ×" + STREAK.n + "!", STREAK.n >= 20 ? "#ff9ad0" : STREAK.n >= 10 ? "#ffd36a" : "#9ff3d4"); if (STREAK.n >= 10) chips(x + 0.5, y + 0.5, "#ffd36a", 8, 6); }
+    var plain = td.kind !== "ore" && !td.light && (matOf(id) === "dirt" || matOf(id) === "stone") && (cave ? !cave.bld : tiles[y * W + x] !== undefined);
+    if (plain && Math.random() < (hasCharm("lucky") || fx("luck") ? 1 / 140 : 1 / 260)) luckyFind(x, y);
+  }
+  function luckyFind(x, y) {
+    var L = [["ancientcoin", 1 + Math.floor(Math.random() * 2)], ["goldcoin", 1], ["silvercoin", 2 + Math.floor(Math.random() * 3)], ["amber", 1], ["quartz", 2], ["pearl", 1], ["amethyst", 1], ["frogbrooch", 1]].filter(function (q) { return ITEMS[q[0]]; });
+    var q = pickL(L); S.st.lucky = (S.st.lucky || 0) + 1;
+    if (cave) give(q[0], q[1], undefined, undefined, true); else spawnDrop(q[0], q[1], x, y - 0.2);
+    chips(x + 0.5, y + 0.5, "#ffd36a", 22, 8); chips(x + 0.5, y + 0.5, "#fff6c0", 10, 5); text(x + 0.5, y - 0.6, "Lucky find! " + q[1] + " " + ITEMS[q[0]].n, "#ffd36a"); snd("open", "Rare");
+  }
+  // ---- PHOTO MODE (pause menu): the world holds still, the HUD hides, drag (or the arrow keys) to look around, pick a filter, save a picture ----
+  var PHOTO = { on: false, f: 0, z: 1, clean: true, me: true, drag: null, cx: 0, cy: 0, zoom0: 1 }, phEl = $("sbxPhoto");
+  var PFILT = [["Natural", ""], ["Warm", "sepia(.22) saturate(1.3) brightness(1.04)"], ["Golden", "sepia(.4) saturate(1.5) contrast(1.05) brightness(1.06)"], ["Cool", "hue-rotate(12deg) saturate(1.1) brightness(1.02) contrast(1.05)"], ["Dreamy", "saturate(1.45) brightness(1.1) contrast(.92)"], ["Noir", "grayscale(1) contrast(1.3) brightness(.95)"], ["Retro", "sepia(.5) contrast(1.15) saturate(.85)"]];
+  function openPhoto() {
+    if (!phEl || cave) { if (cave) nag("Photo mode works out in the open world."); return; }
+    if (pauseOpen) closePause(true); PHOTO.on = true; panelOpen = true; PHOTO.cx = cam.x; PHOTO.cy = cam.y; PHOTO.zoom0 = S.zoom; PHOTO.z = 1; PHOTO.me = true;
+    stageEl.classList.add("photo"); phEl.hidden = false; renderPhoto();
+  }
+  function closePhoto() {
+    if (!PHOTO.on) return; PHOTO.on = false; panelOpen = false; phEl.hidden = true; stageEl.classList.remove("photo"); cv.style.filter = "";
+    if (S.zoom !== PHOTO.zoom0) { S.zoom = PHOTO.zoom0; resize(); } cam.x = p.x; cam.y = p.y - 1.1; hbDirty = true;
+  }
+  function renderPhoto() {
+    cv.style.filter = PFILT[PHOTO.f][1];
+    phEl.innerHTML = '<div class="ph-bar" role="toolbar" aria-label="Photo mode"><div class="ph-f" role="group" aria-label="Filter">' + PFILT.map(function (f, i) { return '<button type="button" data-ph="f:' + i + '" aria-pressed="' + (PHOTO.f === i) + '"' + (PHOTO.f === i ? ' class="on"' : "") + ">" + f[0] + "</button>"; }).join("") + "</div>"
+      + '<div class="ph-c"><button type="button" data-ph="z:-1" aria-label="Zoom out">&minus;</button><button type="button" data-ph="z:1" aria-label="Zoom in">+</button><button type="button" data-ph="me" aria-pressed="' + PHOTO.me + '">' + (PHOTO.me ? "Hide me" : "Show me") + '</button></div>'
+      + '<div class="ph-a"><button type="button" class="ph-shot" data-ph="shot">Save photo</button><button type="button" class="ph-done" data-ph="done">Done</button></div></div>'
+      + '<p class="ph-tip">' + (coarse ? "Drag to look around." : "Drag or use the arrow keys to look around. Esc to finish.") + "</p>";
+  }
+  function photoAct(a) {
+    if (a === "done") return closePhoto();
+    if (a === "me") { PHOTO.me = !PHOTO.me; return renderPhoto(); }
+    if (a.indexOf("f:") === 0) { PHOTO.f = clamp(+a.slice(2), 0, PFILT.length - 1); return renderPhoto(); }
+    if (a.indexOf("z:") === 0) { PHOTO.z = clamp(Math.round((PHOTO.z + 0.2 * +a.slice(2)) * 10) / 10, 0.6, 2.2); S.zoom = clamp(PHOTO.zoom0 * PHOTO.z, 0.4, 3); resize(); return; }
+    if (a === "shot") return photoShot();
+  }
+  function photoShot() {
+    try {
+      var c = document.createElement("canvas"); c.width = cv.width; c.height = cv.height; var g = c.getContext("2d");
+      var f = PFILT[PHOTO.f][1] || (cv.classList.contains("grade") ? "saturate(1.1) contrast(1.04)" : ""); if (f && "filter" in g) g.filter = f; g.drawImage(cv, 0, 0); g.filter = "none";
+      var s = Math.max(1, c.width / 900), fs = Math.round(15 * s); g.font = "800 " + fs + "px Nunito, system-ui, sans-serif"; g.textAlign = "right"; g.textBaseline = "bottom";
+      g.fillStyle = "rgba(0,0,0,.45)"; g.fillText("SwampRealms: Delve", c.width - 14 * s + 1.5 * s, c.height - 12 * s + 1.5 * s); g.fillStyle = "rgba(255,246,220,.92)"; g.fillText("SwampRealms: Delve", c.width - 14 * s, c.height - 12 * s);
+      c.toBlob(function (bl) { if (!bl) return; var u = URL.createObjectURL(bl), a = document.createElement("a"); a.href = u; a.download = "delve-photo-" + Date.now() + ".png"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 1500); }, "image/png");
+      S.st.photos = (S.st.photos || 0) + 1;
+    } catch (e) { toast("Couldn't save the photo on this device.", "#f2c14e"); return; }
+    var fl = document.createElement("div"); fl.className = "ph-flash"; stageEl.appendChild(fl); setTimeout(function () { fl.remove(); }, 600);
+    funTone(1800, 900, 0.05, "square", 0.03); nzSafe(0.02, 0.09, 0.08, 3000);
+  }
+  function nzSafe(t0, d, v, f) { if (!fxReady()) return; try { nz(t0, d, v, f, "highpass"); } catch (e) {} }
+  function tickPhoto(dt) {
+    if (!PHOTO.on) return; var sp = 14 * dt / (PHOTO.z || 1);
+    if (keys.l) cam.x -= sp; if (keys.r) cam.x += sp; if (keys.j || keys.u) cam.y -= sp; if (keys.d) cam.y += sp;
+    var halfW = vw / 2 / ts, halfH = vh / 2 / ts; cam.x = clamp(cam.x, halfW, W - halfW); cam.y = clamp(cam.y, halfH, H - halfH + 2);
+  }
+  if (phEl) {
+    phEl.addEventListener("click", function (e) { var b = e.target.closest("[data-ph]"); if (b) photoAct(b.getAttribute("data-ph")); });
+    phEl.addEventListener("pointerdown", function (e) { if (e.target.closest("button")) return; PHOTO.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y }; try { phEl.setPointerCapture(e.pointerId); } catch (x) {} });
+    phEl.addEventListener("pointermove", function (e) { var D = PHOTO.drag; if (!D || D.id !== e.pointerId) return; cam.x = D.cx - (e.clientX - D.x) / ts; cam.y = D.cy - (e.clientY - D.y) / ts; });
+    var phUp = function (e) { if (PHOTO.drag && PHOTO.drag.id === e.pointerId) PHOTO.drag = null; }; phEl.addEventListener("pointerup", phUp); phEl.addEventListener("pointercancel", phUp);
+  }
+  if (emoEl) emoEl.addEventListener("click", function (e) { var b = e.target.closest("[data-emo]"); if (b) emote(b.getAttribute("data-emo")); });
+  (function () { var eb = $("sbxEmoBtn"); if (eb) eb.addEventListener("click", function (e) { e.preventDefault(); if (titleOpen || cave) return; emoBar(); }); })();
+  function tickFun(dt) { tickBubs(dt); tickEmote(dt); tickChat(dt); tickCrit(dt); tickFoot(dt); }
+  // ---------- PEACEFUL CREATURES CAN BE ATTACKED ----------
+  // Freedom: wild animals, the Sky Village villagers and Old Croaker himself can all be attacked. Tap them as before to talk, tame or
+  // trade; PRESS AND HOLD on one to attack it (with your weapon, or a paw swat). They are not meant to be wiped out:
+  //  - Bog Ducks and Mud Pigs run away; Frost Goats charge back. A defeated animal drops meat (and leather or a treat).
+  //  - Hit a villager and the whole village turns on you. Villagers are tough (420 health) and hit hard (18). A beaten villager runs off to
+  //    heal, drops some of their goods, forgets all your hearts with them, and is back a few minutes later.
+  //  - Old Croaker fights back hardest of all (600 health, hits for 22). Beaten, he storms off to cool down and comes back later, so the
+  //    story and the Swap Shop are never lost. Anger fades after a while, or when you pass out.
+  //  - Your own pets are never hit. Not while playing together.
+  var BRAWL = { vang: 0, hold: 320 }, CROAK_HP = 600, VIL_HP = 420, AHP = { duck: 8, pig: 16, goat: 20 };
+  function peaceAt(wx, wy) {
+    if (cave || MP.on || MP.ws || BM.on) return null;
+    if (npcAt(wx, wy)) return { t: "n", x: npc.x, y: npc.y, h: 1.9 };
+    var v = vilAt(wx, wy); if (v) return { t: "v", v: v, x: v.x, y: v.y, h: vilH(v) };
+    var a = animalAt(wx, wy); if (a && !a.tame && wilds.indexOf(a) >= 0) return { t: "a", a: a, x: a.x, y: a.y, h: a.h };
+    return null;
+  }
+  function peaceAim(reach) {   // the peaceful creature you are pressing and holding on, if it is within reach
+    if (!aim.down || panelOpen || performance.now() - aim.t0 < BRAWL.hold) return null;
+    var T2 = peaceAt((aim.mx - ox) / ts, (aim.my - oy) / ts); if (!T2) return null;
+    var dx = T2.x - p.x, dy = (T2.y - T2.h / 2) - (p.y - PH / 2); return dx * dx + dy * dy <= reach * reach ? T2 : null;
+  }
+  function peaceHit(T2, dmg, f) {
+    var c = T2.t === "a" ? T2.a : T2.t === "v" ? T2.v : npc; c.hitT = 4;
+    text(T2.x, T2.y - T2.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(T2.x, T2.y - T2.h * 0.5, T2.t === "a" ? "#c8a070" : "#ff8a6a", 6, 5); thud(200, 0.06);
+    if (T2.t === "a") {
+      var a = T2.a; if (a.hp === undefined) a.hp = AHP[a.k] || 12; a.hp -= dmg; a.kv = f * 7; if (a.on) a.vy = -4.5;
+      if (a.k === "goat") a.mad = 10; else a.flee = 6;
+      if (a.hp <= 0) {
+        var ix = wilds.indexOf(a); if (ix >= 0) wilds.splice(ix, 1); chips(a.x, a.y - a.h / 2, "#d8c8b0", 14, 6); S.st.hunted = (S.st.hunted || 0) + 1;
+        var L = a.k === "duck" ? [["rawmeat", 1], ["duckegg", Math.random() < 0.3 ? 1 : 0]] : a.k === "pig" ? [["rawmeat", 2], ["leather", Math.random() < 0.6 ? 1 : 0], ["truffle", Math.random() < 0.2 ? 1 : 0]] : [["rawmeat", 2], ["leather", 1], ["goatmilk", Math.random() < 0.3 ? 1 : 0]];
+        L.forEach(function (q) { if (q[1] > 0 && ITEMS[q[0]]) spawnDrop(q[0], q[1], a.x - 0.5, a.y - 1); });
+      }
+      return;
+    }
+    if (T2.t === "v") {
+      var v = T2.v; if (v.hp === undefined) v.hp = VIL_HP; v.hp -= dmg; v.hurt = 0.2;
+      if (BRAWL.vang <= 0) { toast("The villagers are furious! They're coming for you.", "#ff6a5a"); thud(90, 0.12); }
+      BRAWL.vang = 150; if (S.vf && S.vf[v.V.id]) S.vf[v.V.id] = Math.max(0, S.vf[v.V.id] - 1);
+      if (v.hp <= 0) {
+        v.ko = 300; v.hp = VIL_HP; chips(v.x, v.y - 1, "#ffffff", 18, 7); S.st.vko = (S.st.vko || 0) + 1; if (S.vf) S.vf[v.V.id] = 0;
+        var tr = v.V.tr && v.V.tr[0] && v.V.tr[0][1]; if (tr) Object.keys(tr).forEach(function (k) { if (ITEMS[k] && k !== "repair") spawnDrop(k, tr[k], v.x - 0.5, v.y - 1.2); });
+        toast(v.V.n + " runs off to lick their wounds. They'll be back, and they won't forget.", "#ff8a6a");
+      }
+      return;
+    }
+    if (npc.hp === undefined) npc.hp = CROAK_HP; npc.hp -= dmg;
+    if (!(npc.angry > 0)) { toast("Old Croaker: \u201cYou dare?! I'll show you why they call me OLD!\u201d", "#ff6a5a"); thud(80, 0.14); }
+    npc.angry = 90;
+    if (npc.hp <= 0) {
+      npc.hp = CROAK_HP; npc.angry = 0; npc.ko = 240; npc.ok = false; chips(npc.x, npc.y - 1, "#3fae5e", 20, 7); S.st.croakko = (S.st.croakko || 0) + 1;
+      if (ITEMS.swamptoken) spawnDrop("swamptoken", 3, npc.x - 0.5, npc.y - 1.2);
+      toast("Old Croaker storms off to cool down. He'll be back later, grumbling.", "#ff8a6a");
+    }
+  }
+  function croakFight(dt, fx, fy) {   // an angry Croaker comes at you with his walking stick
+    npc.angry -= dt * (Math.abs(p.x - npc.x) > 25 ? 3 : 1); npc.cd = (npc.cd || 0) - dt; npc.swing = Math.max(0, (npc.swing || 0) - dt);
+    if (npc.angry <= 0 || hp <= 0) { npc.angry = 0; npc.go = 0; npc.wait = 2; toast("Old Croaker has calmed down. Mostly.", "#3fae5e"); return false; }
+    var dx = p.x - npc.x, ad = Math.abs(dx); npc.face = dx < 0 ? -1 : 1;
+    if (ad < 1.6 && Math.abs(p.y - npc.y) < 2.2) {
+      if (npc.cd <= 0) { npc.cd = 1.15; npc.swing = 0.3; hurt(22, "croaker"); p.vx = npc.face * 11; p.vy = Math.min(p.vy, -6); p.on = false; thud(130, 0.1); }
+      npc.walk = 0; return true;
+    }
+    var go = npc.face, nx = npc.x + go * 3.2 * dt, tx = Math.floor(nx + go * 0.35);
+    if (tx !== fx) { if (npcStand(tx, fy)) {} else if (npcStand(tx, fy - 1) && !npcSolid(fx, fy - 3)) npc.y = fy - 1; else if (npcStand(tx, fy + 1) && !npcSolid(tx, fy)) npc.y = fy + 1; else if (npcStand(tx, fy + 2) && !npcSolid(tx, fy) && !npcSolid(tx, fy + 1)) npc.y = fy + 2; else { npc.walk = 0; return true; } }
+    npc.x = nx; npc.walk = (npc.walk || 0) + dt * 12; return true;
+  }
+  function vilFight(v, dt, s) {   // an angry villager chases you around the island
+    v.cd = (v.cd || 0) - dt; v.swing = Math.max(0, (v.swing || 0) - dt);
+    var dx = p.x - v.x, ad = Math.abs(dx); v.face = dx < 0 ? -1 : 1;
+    if (ad < 1.5 && Math.abs(p.y - v.y) < 2.4) {
+      if (v.cd <= 0) { v.cd = 1 + Math.random() * 0.3; v.swing = 0.3; hurt(18, "villager"); p.vx = v.face * 10; p.vy = Math.min(p.vy, -5); p.on = false; thud(150, 0.09); }
+      return;
+    }
+    var sp = v.V.sp === "heron" ? 4.2 : v.V.sp === "turtle" ? 2.6 : 3.5, st = v.face * sp * dt, nx = v.x + st, cx = Math.floor(nx);
+    if (cx <= s.a || cx >= s.z || blocks(cx, v.y - 1) || !blocks(cx, v.y)) return;
+    v.x = nx; v.walk += dt * 10; v.go = 1;
+  }
+  function animalBrawl(a, dt) {   // a hit animal runs off (ducks, pigs) or charges (goats); returns its walking speed
+    var A = ANIM[a.k], dx = p.x - a.x, dir = dx < 0 ? -1 : 1;
+    if (a.mad > 0) {
+      a.mad -= dt; a.cd = (a.cd || 0) - dt; a.dir = dir; a.st = "walk";
+      if (Math.abs(dx) < (a.w / 2 + 0.6) && Math.abs(p.y - a.y) < 1.4 && a.cd <= 0) { a.cd = 1.3; hurt(8, "goat"); p.vx = dir * 9; p.vy = Math.min(p.vy, -5); p.on = false; thud(170, 0.08); a.kv = -dir * 3; }
+      return dir * A.spd * 3;
+    }
+    a.flee -= dt; a.dir = -dir; a.st = "walk"; return -dir * A.spd * 3.2;
+  }
+  function drawBrawl(g, now) {   // health bars over hurt creatures and an angry mark over villagers and Croaker who are after you
+    if (cave) return;
+    var bar = function (x, y, frac, c) { var w = ts * 1.1, sx = ox + x * ts - w / 2, sy = oy + y * ts; g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(sx - 1, sy - 1, w + 2, 6); g.fillStyle = c; g.fillRect(sx, sy, w * clamp(frac, 0, 1), 4); };
+    var mad = function (x, y) { var sx = ox + x * ts, sy = oy + y * ts + Math.sin(now / 120) * 2; g.font = "900 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText("!!", sx, sy); g.fillStyle = "#ff4a3a"; g.fillText("!!", sx, sy); };
+    if (npc.ok && (npc.angry > 0 || npc.hitT > 0)) { if (npc.hitT > 0) bar(npc.x, npc.y - 2.35, npc.hp / CROAK_HP, "#ff6a5a"); if (npc.angry > 0) mad(npc.x, npc.y - 2.55); }
+    var L = vils || []; L.forEach(function (v) { if (v.ko > 0) return; var h = vilH(v); if (v.hitT > 0) bar(v.x, v.y - h - 0.45, (v.hp === undefined ? VIL_HP : v.hp) / VIL_HP, "#ff6a5a"); if (BRAWL.vang > 0 && Math.abs(v.x - p.x) < 40) mad(v.x, v.y - h - 0.65); });
+    wilds.forEach(function (a) { if (a.hitT > 0 && a.hp !== undefined) bar(a.x, a.y - a.h - 0.4, a.hp / (AHP[a.k] || 12), "#ffd36a"); });
+  }
+  function tickBrawl(dt) {
+    if (npc.hitT > 0) npc.hitT -= dt; (vils || []).forEach(function (v) { if (v.hitT > 0) v.hitT -= dt; }); wilds.forEach(function (a) { if (a.hitT > 0) a.hitT -= dt; });
+    if (BRAWL.vang > 0) { var s2 = world.sky, onI = s2 && p.y <= s2.y + 2 && p.x > s2.a - 3 && p.x < s2.z + 3; BRAWL.vang -= dt * (onI ? 1 : 4); if (BRAWL.vang <= 0) { BRAWL.vang = 0; toast("The villagers have calmed down. They're still a little wary of you.", "#8fd6ff"); } }
+  }
   function strike() {   // one weapon swing: hits every enemy in front of you
     if (toolBroken("wpn")) return;
     var reach = [0, 2.7, 2.2, 2.4, 2.4, 2.6][S.wpn], f = p.face, xa = p.x - f * 0.3, xb = p.x + f * reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb);
     var hits = 0;
     enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; e.lastHit = 0; damageEnemy(e, wDmg(), f); } }); gemLeech(hits);
     hits += mpStrikePlayers(lo, hi, wDmg(), f);
+    var pz = peaceAim(reach + 0.8); if (pz) { hits++; peaceHit(pz, wDmg(), f); }   // pressing and holding on a peaceful creature
     if (hits) wear("wpn", 1);
   }
   // LIGHT KEEPS MONSTERS AWAY: nothing spawns within the glow of a torch, lantern, campfire or other bright light (about 8 tiles for a
@@ -3152,6 +3742,7 @@
         if (a.baby > 0) { a.baby = Math.max(0, a.baby - dt); if (!a.baby) { a.w = A.w; a.h = A.h; } }
       }
       var far = Math.abs(a.x - p.x) > 60 || Math.abs(a.y - p.y) > 45; if (far) return;   // far away: only the timers run
+      if (!a.tame && (a.flee > 0 || a.mad > 0)) { var bvx = animalBrawl(a, dt); if (a.blocked && a.on && bvx) a.vy = -9.5; moveEnemy(a, dt, bvx); a.mv = bvx; return; }
       var dx = p.x - a.x, d = Math.abs(dx), lead = a.tame && A.fav.indexOf(sel) >= 0 && d < 14 && Math.abs(p.y - a.y) < 6, vx = 0, sp = A.spd * (a.baby ? 1.2 : 1);
       if (lead) { a.fol = true; if (d > 1.6) { a.dir = dx > 0 ? 1 : -1; vx = a.dir * Math.min(4.2, sp * 2.6); a.st = "walk"; } else a.st = "idle"; }
       else {
@@ -3348,11 +3939,13 @@
     function giftsWaiting() { var n = [], c = Math.min(curCh(), CG.length); for (var i = 0; i < c; i++) if (!(S.cg & (1 << i))) n.push(i); return n; }
   function updateNpc(dt) {
     if (cave) return; if (BM.on && BM.croak) { bmCroaker(dt); return; } npc.t += dt; npc.chk -= dt;
+    if (npc.ko > 0) { npc.ko -= dt; if (npc.ko <= 0) { npc.ko = 0; npc.chk = 0; toast("Old Croaker is back at camp. He pretends nothing happened.", "#3fae5e"); } return; }   // stormed off after a beating
     if (!npc.ok) { if (npc.chk <= 0) { npc.chk = 2; npcSpot(); } if (!npc.ok) return; }
     var fx = Math.floor(npc.x), fy = Math.round(npc.y);
     if (npcSolid(fx, fy - 1) || npcSolid(fx, fy - 2)) { var f = npcFree(); if (f) { npc.x = f[0] + 0.5; npc.y = f[1]; } fx = Math.floor(npc.x); fy = Math.round(npc.y); }
     else if (!npcSolid(fx, fy)) { npc.vy = Math.min(14, (npc.vy || 0) + 30 * dt); npc.y += npc.vy * dt; if (npc.y > H - 2) { npc.ok = false; return; } var ny = Math.round(npc.y); if (npcSolid(fx, ny) && npc.y >= ny) { npc.y = ny; npc.vy = 0; } npc.walk = 0; return; }   // fell: drop to the floor
     else { npc.vy = 0; npc.y = fy; }
+    if (npc.angry > 0 && croakFight(dt, fx, fy)) return;
     if (npc.chk <= 0) {   // every few seconds: has a house been built around him?
       npc.chk = 2.5; var room = npcRoom(); npc.room = room;
       if (room) { if (!S.croakHome || S.croakHome[0] !== fx || S.croakHome[1] !== fy) { var first = !S.croakHome; S.croakHome = [fx, fy]; if (first) { S.st.croakhome = 1; toast("Old Croaker moved in with you! He will potter about your house from now on.", "#4ee6b4"); save(); } } }
@@ -3439,6 +4032,7 @@
   }
   function talkCroaker() {
     var el = $("sbxStory"); if (!el) return;
+    if (npc.angry > 0) { nag("Old Croaker is far too angry to talk!"); return; }
     if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
     S.st.talks++; talkN++; talkView = "main"; rollBounties();
     storyOpen = 100; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
@@ -5356,7 +5950,7 @@
       g2.fillStyle = hg; g2.beginPath(); g2.arc(hx, hy, ts * 1.4, 0, 7); g2.fill();
     });
   }
-  function drawStarPointer(g, now) {   // a little star at the screen edge pointing at the nearest Fallen Star you have not mined
+  function drawStarPointer(g, now) { if (PHOTO.on) return;   // a little star at the screen edge pointing at the nearest Fallen Star you have not mined
     if (cave || !S.stars || !S.stars.length || panelOpen) return;
     var best = null, bd = 1e9; S.stars.forEach(function (q) { var d = Math.abs(q.x - p.x) + Math.abs(q.y - p.y) * 0.5; if (d < bd) { bd = d; best = q; } });
     if (!best || bd > 260) return;
@@ -5819,6 +6413,8 @@
     if (Math.abs(p.x - (s.a + s.z) / 2) > 80) return;   // far away: they stand still
     L.forEach(function (v) {
       v.t += dt; v.blink -= dt; if (v.blink < -0.14) v.blink = 2 + Math.random() * 3;
+      if (v.ko > 0) { v.ko -= dt; if (v.ko <= 0) { v.ko = 0; v.hp = VIL_HP; v.x = v.hx; } return; }   // off healing after a beating
+      if (BRAWL.vang > 0 && onIsle && hp > 0) { vilFight(v, dt, s); return; }
       var near = Math.abs(p.x - v.x) < 3.2 && Math.abs(p.y - v.y) < 2.5;
       if (near || panelOpen) { v.go = 0; v.face = p.x < v.x ? -1 : 1; return; }
       if (v.go <= 0) { v.go -= dt; if (v.go < -2 - Math.random() * 3) { v.tx = v.hx + (Math.random() - 0.5) * 6; v.go = 1; } return; }
@@ -5828,8 +6424,8 @@
       v.x = nx; v.face = st < 0 ? -1 : 1; v.walk += dt * 6;
     });
   }
-  function vilAt(wx, wy) { var L = vilList(); if (!L || cave) return null; for (var i = 0; i < L.length; i++) { var v = L[i], h = vilH(v); if (Math.abs(wx - v.x) < 0.75 && wy > v.y - h && wy < v.y + 0.2) return v; } return null; }
-  function vilNear() { var L = vilList(); if (!L || cave) return null; var best = null, bd = 2.6; L.forEach(function (v) { var d = Math.abs(v.x - p.x); if (d < bd && Math.abs(v.y - p.y) < 2.5) { bd = d; best = v; } }); return best; }
+  function vilAt(wx, wy) { var L = vilList(); if (!L || cave) return null; for (var i = 0; i < L.length; i++) { var v = L[i], h = vilH(v); if (v.ko > 0) continue; if (Math.abs(wx - v.x) < 0.75 && wy > v.y - h && wy < v.y + 0.2) return v; } return null; }
+  function vilNear() { var L = vilList(); if (!L || cave) return null; var best = null, bd = 2.6; L.forEach(function (v) { if (v.ko > 0) return; var d = Math.abs(v.x - p.x); if (d < bd && Math.abs(v.y - p.y) < 2.5) { bd = d; best = v; } }); return best; }
   // ---- drawing ----
   function vEye(g, x, y, r, shut, line) { if (shut) { g.strokeStyle = line; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - r, y); g.lineTo(x + r, y); g.stroke(); return; } g.fillStyle = "#fff"; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = "#14161c"; g.beginPath(); g.arc(x + r * 0.3, y, r * 0.55, 0, 7); g.fill(); g.fillStyle = "#fff"; g.fillRect(x + r * 0.35, y - r * 0.45, Math.max(0.6, r * 0.3), Math.max(0.6, r * 0.3)); }
   function vEll(g, x, y, rx, ry, fill, line, lw) { g.fillStyle = fill; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 7); g.fill(); if (line) { g.strokeStyle = line; g.lineWidth = lw || 1.4; g.stroke(); } }
@@ -5948,6 +6544,7 @@
   function vilPay(o) { for (var k in o) if ((S.inv[k] || 0) < o[k]) return false; return true; }
   function openVil(v) {
     var el = $("sbxStory"); if (!el) return;
+    if (BRAWL.vang > 0) { nag("The villagers are too angry to talk to you right now!"); return; }
     if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
     vilOpen = v; var V = v.V; if (!S.vis["v_" + V.id]) { S.vis["v_" + V.id] = 1; S.st.vmet = (S.st.vmet || 0) + 1; }
     vilLine = V.hi[Math.floor(Math.random() * V.hi.length)];
@@ -6294,7 +6891,7 @@
     if (S.tmap && S.tmap.x === x && S.tmap.y === y) S.tmap = null; S.st.dug++;
     popup("Treasure found", "Buried Treasure • " + ks.length + " kinds of loot", "#f2c14e", "✦"); snd("open", "Epic"); checkGoals(); save();
   }
-  function drawMapMark(g, now) {   // the red X over the spot, and an arrow at the screen edge while it is off-screen
+  function drawMapMark(g, now) { if (PHOTO.on) return;   // the red X over the spot, and an arrow at the screen edge while it is off-screen
     if (cave || !S.tmap || panelOpen) return;
     if (get(S.tmap.x, S.tmap.y) !== T.X_buried) { S.tmap = null; return; }
     var tx = S.tmap.x, gy = col[tx] !== undefined ? col[tx] : S.tmap.y, sx = ox + (tx + 0.5) * ts, sy = oy + (gy - 0.7) * ts + Math.sin(now / 260) * ts * 0.12, m = 34, r = ts * 0.32;
@@ -6325,7 +6922,7 @@
     try { if (ac && !(typeof SFX !== "undefined" && SFX.on === false)) { var t = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(560 + Math.min(400, vpre * 14), t + 0.16); gn.gain.setValueAtTime(0.09, t); gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.22); o.connect(gn); gn.connect(ac.destination); o.start(t); o.stop(t + 0.25); } } catch (e) {}
     return true;
   }
-  function speedMul() { return p.on && underFeet("speedmoss") ? 1.75 : 1; }
+  function speedMul() { return (p.on && underFeet("speedmoss") ? 1.75 : 1) * (riding() ? 1.8 : 1); }
   function isConf(x, y) { var td = TILES[get(x, y)]; return !!td && td.kind === "confetti"; }
   function popConfetti(x, y) {
     var now = performance.now(); if (now - confAt < 700) return true; confAt = now; S.st.confetti++;
@@ -6386,14 +6983,14 @@
     C.forEach(function (c, i) { g.strokeStyle = "rgb(" + c + ")"; g.beginPath(); g.arc(cx, cy, RB.R * ts - i * bw, Math.PI, 2 * Math.PI); g.stroke(); });
     g.restore();
   }
-  function edgeArrow(g, now, wx, wy, col, label, mark) {   // shared by the pot: an arrow at the screen edge while the spot is off-screen
+  function edgeArrow(g, now, wx, wy, col, label, mark) { if (PHOTO.on) return;   // shared by the pot: an arrow at the screen edge while the spot is off-screen
     var sx = ox + wx * ts, sy = oy + wy * ts, m = 34; if (sx > m && sx < vw - m && sy > m + 40 && sy < vh - m - 60) return;
     var cx = vw / 2, cy = vh / 2, dx = sx - cx, dy = sy - cy, kx = dx ? (vw / 2 - m) / Math.abs(dx) : 1e9, ky = dy ? (vh / 2 - m - 50) / Math.abs(dy) : 1e9, kk = Math.min(kx, ky), ex = cx + dx * kk, ey = cy + dy * kk, rr = 8 * (1 + 0.12 * Math.sin(now / 220));
     g.save(); g.translate(ex, ey); g.fillStyle = "rgba(20,14,6,.8)"; g.beginPath(); g.arc(0, 0, rr + 5, 0, 7); g.fill(); mark(g, rr);
     var ang = Math.atan2(dy, dx); g.rotate(ang); g.fillStyle = col; g.beginPath(); g.moveTo(rr + 12, 0); g.lineTo(rr + 5, -5); g.lineTo(rr + 5, 5); g.closePath(); g.fill(); g.rotate(-ang);
     g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.fillStyle = col; g.strokeText(label, 0, rr + 18); g.fillText(label, 0, rr + 18); g.restore();
   }
-  function drawPotMark(g, now) {
+  function drawPotMark(g, now) { if (PHOTO.on) return;
     if (cave || !S.pot || panelOpen) return;
     edgeArrow(g, now, S.pot.x + 0.5, S.pot.y + 0.5, "#ffd86a", Math.round(Math.abs(S.pot.x + 0.5 - p.x)) + "m", function (g2, rr) { g2.fillStyle = "#ffd86a"; g2.beginPath(); g2.arc(0, 0, rr * 0.55, 0, 7); g2.fill(); g2.fillStyle = "#c98a20"; g2.fillRect(-rr * 0.15, -rr * 0.35, rr * 0.3, rr * 0.7); });
   }
@@ -7143,11 +7740,11 @@
   // ---------- GEM SOCKETS (Jeweler's Table) ----------
   // Each piece of gear has one socket: S.gems = { wpn, arm, pick, bow } = gem item id or "". Socket a gem at a Jeweler's Table (tap it):
   // it costs the gem and 1 Quartz Shard. Swapping hands the old gem back. The bonus depends on the gem and on which gear it is in.
-  var GEMS = ["amber", "ruby", "sapphire", "amethyst", "moonstone"];
+  var GEMS = ["amber", "ruby", "sapphire", "amethyst", "moonstone", "veincharm"];
   var GEMFX = {
     wpn: { amber: "+10% damage", ruby: "+20% damage", sapphire: "Swings 15% faster", amethyst: "Heal 1 health per hit", moonstone: "+30% damage to bosses" },
     arm: { amber: "Hunger drains 15% slower", ruby: "Lava burns 40% less", sapphire: "Blocks 8% more damage", amethyst: "Health comes back 25% faster", moonstone: "Take 20% less damage at night" },
-    pick: { amber: "Dig 10% faster", ruby: "Dig 20% faster", sapphire: "Wears out 35% slower", amethyst: "15% chance of double ore", moonstone: "Dig 30% faster in caves" },
+    pick: { amber: "Dig 10% faster", ruby: "Dig 20% faster", sapphire: "Wears out 35% slower", amethyst: "15% chance of double ore", moonstone: "Dig 30% faster in caves", veincharm: "Vein mining: break one ore and the whole vein comes out" },
     bow: { amber: "+10% damage", ruby: "+20% damage", sapphire: "Shoots 15% faster", amethyst: "25% chance to save ammo", moonstone: "Shots fly 30% faster" }
   };
   var GEM_SLOTS = [["wpn", "Weapon"], ["arm", "Armor"], ["pick", "Pickaxe"], ["bow", "Ranged"]], jewelAt = null;
@@ -7172,7 +7769,7 @@
     GEM_SLOTS.forEach(function (sl) {
       var k = sl[0], own = slotOwned(k), cur = S.gems[k];
       h += '<div class="st-bhead">' + sl[1] + "<em>" + (own ? esc(slotName(k)) + (cur ? " · " + esc(GEMFX[k][cur]) : " · empty") : "Not made yet") + "</em></div>";
-      h += '<div class="st-gems">' + GEMS.map(function (g2) {
+      h += '<div class="st-gems">' + GEMS.filter(function (g2) { return GEMFX[k][g2]; }).map(function (g2) {
         var on = cur === g2, can = own && !on && inv(g2) > 0 && q > 0;
         return '<button type="button" class="' + (on ? "on" : "") + '" data-jewel="' + k + ":" + g2 + '"' + (can ? "" : " disabled") + ' title="' + esc(ITEMS[g2].n + ": " + GEMFX[k][g2]) + '"><img alt="" src="' + icon(g2) + '"><span>' + esc(GEMFX[k][g2]) + "</span><i>" + (on ? "In" : "x" + inv(g2)) + "</i></button>";
       }).join("") + "</div>";
@@ -7181,7 +7778,7 @@
     $("sbxStoryBox").innerHTML = h;
   }
   function jewelAct(a) {
-    var q = a.split(":"), sl = q[0], g2 = q[1]; if (!GEMFX[sl] || GEMS.indexOf(g2) < 0) return;
+    var q = a.split(":"), sl = q[0], g2 = q[1]; if (!GEMFX[sl] || GEMS.indexOf(g2) < 0 || !GEMFX[sl][g2]) return;
     if (!slotOwned(sl) || S.gems[sl] === g2) return;
     if (inv(g2) < 1 || inv("quartz") < 1) { nag("You need the gem and a Quartz Shard."); return; }
     var old = S.gems[sl]; S.inv[g2]--; if (S.inv[g2] <= 0) delete S.inv[g2]; S.inv.quartz--; if (S.inv.quartz <= 0) delete S.inv.quartz;
@@ -7434,6 +8031,7 @@
     var B = BCHEST[cave.bld.kind], L = [], pool = B.L.filter(function (q) { return ITEMS[q[0]]; }), n = Math.min(pool.length, 4 + Math.floor(Math.random() * 2));
     pool = pool.slice().sort(function () { return Math.random() - 0.5; }).slice(0, n);
     pool.forEach(function (q) { L.push([q[0], q[1] + Math.floor(Math.random() * (q[2] - q[1] + 1))]); });
+    if (garageOwned()) { var mp = motoLoot("bld", 2); if (mp) L.push(mp); }
     return L;
   }
   function witchLootList() {
@@ -7505,8 +8103,10 @@
       return L;
     }
     if (!S.cont) S.cont = {}; var key = contKey(c), st = S.cont[key];
+    if (cave.bld && cave.bld.kind === "garage") { if (!st) st = S.cont[key] = { d: 0, L: {} }; return st.L; }   // GARAGE: your own storage, empty until you fill it
     if (!st || (sumL(st.L) <= 0 && (S.days | 0) >= st.d + CONT_DAYS)) {
       first = true; st = S.cont[key] = { d: S.days | 0, L: SbxExtra && SbxExtra.contLoot ? SbxExtra.contLoot(c.type) : {} };
+      if (garageOwned() && cave.bld && cave.bld.kind !== "garage" && (c.type === "tools" || c.type === "supply")) { var mpc = motoLoot(c.type, 0); if (mpc) st.L[mpc[0]] = (st.L[mpc[0]] || 0) + 1; }   // GARAGE: parts in toolboxes and supply crates
       var CT = CONTT[c.type]; if (CT && CT.lore) loreChest(["bld:" + cave.bld.kind, "any"], CT.lore);
       if (hasCharm("lucky") || fx("luck")) { var ex = SbxExtra.contLoot(c.type); var ek = Object.keys(ex)[0]; if (ek && Math.random() < 0.45) st.L[ek] = (st.L[ek] || 0) + ex[ek]; }
       S.st.searched = (S.st.searched || 0) + 1;
@@ -7521,12 +8121,19 @@
   }
   function renderCont() {
     var c = contOpen; if (!c) return; var L = contContents(c), ks = Object.keys(L).filter(function (k) { return L[k] > 0 && ITEMS[k]; });
-    var h = '<div class="ct-box"><div class="ct-head"><img alt="" src="' + icon(c.kind === "chest" ? "chest" : ITEMS[TILES[c.id].drop] ? TILES[c.id].drop : "chest") + '"><span><small>' + (c.kind === "chest" ? "Treasure" : "Searching") + "</small><h2>" + esc(c.n) + "</h2></span></div>";
+    var h = '<div class="ct-box"><div class="ct-head"><img alt="" src="' + icon(c.kind === "chest" ? "chest" : ITEMS[TILES[c.id].drop] ? TILES[c.id].drop : "chest") + '"><span><small>' + (c.kind === "chest" ? "Treasure" : contStore() ? "Garage storage" : "Searching") + "</small><h2>" + esc(c.n) + "</h2></span></div>";
     if (ks.length) {
       h += '<div class="ct-grid">' + ks.map(function (k) { return '<button type="button" class="ct-it" data-cont="take:' + k + '" aria-label="Take ' + L[k] + " " + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + L[k] + "</b><em>" + esc(ITEMS[k].n) + "</em></button>"; }).join("") + "</div>";
       h += '<div class="st-row"><button type="button" class="btn" data-cont="all">Take all</button><button type="button" class="btn ghost" data-story-close>Close</button></div>';
+    } else if (contStore()) {
+      h += '<p class="ct-empty">Empty. Put things away from your bag below.</p>';
     } else {
       h += '<p class="ct-empty">' + (c.kind === "chest" ? "Empty. You took everything." : "Nothing left in here. Come back in a few days.") + '</p><div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div>';
+    }
+    if (contStore()) {   // GARAGE storage: put things away
+      var bk = ORDER.filter(function (k) { return S.inv[k] > 0 && ITEMS[k] && !ITEMS[k].tool; });
+      h += '<h3 class="ct-sub">Your bag <em>tap to put a stack away</em></h3>' + (bk.length ? '<div class="ct-grid ct-bag">' + bk.map(function (k) { return '<button type="button" class="ct-it" data-cont="put:' + k + '" aria-label="Put away ' + S.inv[k] + " " + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + S.inv[k] + "</b><em>" + esc(ITEMS[k].n) + "</em></button>"; }).join("") + "</div>" : '<p class="ct-empty">Your bag is empty.</p>');
+      if (!ks.length) h += '<div class="st-row">' + (bk.length ? '<button type="button" class="btn" data-cont="putall">Put all away</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div>';
     }
     $("sbxStoryBox").style.setProperty("--qc", c.kind === "chest" ? "#f2c14e" : "#c9a46a"); $("sbxStoryBox").innerHTML = h + "</div>";
   }
@@ -7537,7 +8144,16 @@
     if (c.kind === "chest" && sumL(L) <= 0 && cave && cave.F && T.X_openchest !== undefined) cave.F.node[c.i] = T.X_openchest;   // emptied: it stays open
     reslot(); hbDirty = true; checkGoals(); save();
   }
+  function contStore() { return !!(contOpen && contOpen.kind === "deco" && cave && cave.bld && cave.bld.kind === "garage"); }
+  function contPut(k) {   // GARAGE storage: a whole stack from your bag goes in (tools stay with you)
+    var L = contContents(contOpen), n = S.inv[k] || 0; if (n <= 0 || !ITEMS[k] || ITEMS[k].tool) return;
+    if (!L[k] && Object.keys(L).filter(function (q) { return L[q] > 0; }).length >= CHEST_KINDS) { toast("This " + contOpen.n + " is full.", "#f2c14e"); return; }
+    L[k] = (L[k] || 0) + n; delete S.inv[k]; if (sel === k) { sel = "pick"; bare = true; } snd("coin"); reslot(); hbDirty = true; save();
+  }
   function contAct(a) {
+    if (a.indexOf("put:") === 0) { contPut(a.slice(4)); renderCont(); return; }
+    if (a === "putall") { Object.keys(S.inv).forEach(function (k) { if (S.inv[k] > 0 && ITEMS[k] && !ITEMS[k].tool && !ITEMS[k].motopart && k !== "motorbike") contPut(k); }); renderCont(); return; }
+    if (contStore() && a === "all") { var L2 = contContents(contOpen); Object.keys(L2).forEach(function (k) { contTake(k); }); renderCont(); return; }
     if (a === "all") { var L = contContents(contOpen); Object.keys(L).forEach(function (k) { contTake(k); }); if (sumL(L) <= 0) { closeStory(); toast("Took everything.", "#f2c14e"); return; } }
     else if (a.indexOf("take:") === 0) contTake(a.slice(5));
     renderCont();
@@ -7876,7 +8492,8 @@
   var PZ_IC = {
     book: '<path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5zM4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5z"/>',
     keys: '<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7.5 14h9"/>',
-    home: '<path d="M4 11l8-6.5 8 6.5M6.5 9.5V19h11V9.5"/>'
+    home: '<path d="M4 11l8-6.5 8 6.5M6.5 9.5V19h11V9.5"/>',
+    cam: '<path d="M4 8h3.5l1.5-2.2h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.2" r="3.4"/>'
   };
   function pzIcon(k) { return k === "opts" || k === "play" ? ttIcon(k) : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + PZ_IC[k] + "</svg>"; }
   function optSeg(key, cur, opts, label) {
@@ -7893,6 +8510,7 @@
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
+      + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"));
   }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
@@ -7901,6 +8519,7 @@
     else if (k === "fx") { OPT.fx = clamp(Math.round((OPT.fx + 0.1 * +v) * 10) / 10, 0, 1); if (FXB) FXB.gain.value = OPT.fx; try { if (typeof SFX !== "undefined" && SFX.vol) SFX.vol(OPT.fx); } catch (e) {} matHit(T.STONE !== undefined ? T.STONE : 1); }
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
+    else if (k === "bloom") OPT.bloom = v === "1";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
     else if (k === "gq") { OPT.gq = v === "high" || v === "low" ? v : "auto"; if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; } else { lowq = coarse; dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {} } resize(); }
     optSave();
@@ -7913,7 +8532,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -7922,6 +8541,7 @@
       + '<button type="button" data-pz="journal">' + pzIcon("book") + "<span>Journal</span><kbd>E</kbd></button>"
       + '<button type="button" data-pz="set">' + pzIcon("opts") + "<span>Settings</span></button>"
       + '<button type="button" data-pz="keys">' + pzIcon("keys") + "<span>Controls</span></button>"
+      + (cave ? "" : '<button type="button" data-pz="photo">' + pzIcon("cam") + "<span>Photo mode</span></button>")
       + (MP.on || MP.ws ? "" : '<button type="button" data-pz="title">' + pzIcon("home") + "<span>Main menu</span><em>Saves first</em></button>") + "</nav>"
       + '<p class="pz-saved" aria-live="polite">' + (saveFail ? "Couldn't save on this device." : "Game saved.") + "</p>";
   }
@@ -7943,6 +8563,7 @@
     if (a === "set" || a === "keys") { pauseView = a; renderPause(); var b = pzEl.querySelector("[data-pz=back]"); if (b) b.focus({ preventScroll: true }); return; }
     if (a === "journal" || a === "allopts") { closePause(); pauseBack = true; openPanel(a === "allopts" ? "more" : undefined); return; }
     if (a === "title") { closePause(); return openTitle(); }
+    if (a === "photo") return openPhoto();
   }
   if (pzEl) pzEl.addEventListener("click", function (e) {
     var b = e.target.closest("[data-pz],[data-opt]"); if (!b) { if (e.target === pzEl) closePause(); return; }
@@ -7985,6 +8606,7 @@
   function rollLoot(kind, b, tier) {
     var one = function () { return typeof SbxExtra !== "undefined" && SbxExtra.loot ? SbxExtra.loot(kind, b, tier) : [["torch", 4]]; }, L = one();
     if (S.charms && (hasCharm("lucky") || fx("luck")) && Math.random() < 0.45) L = L.concat(one().slice(0, 1));   // the Lucky Clover: sometimes one extra find
+    if (garageOwned() && (kind === "chest" || kind === "pot")) { var mp = motoLoot(kind, tier || 0); if (mp) L = L.concat([mp]); }   // GARAGE: motorcycle parts turn up in chests
     return L;
   }
   function treasureFound(n) { S.st.cchests++; popup("Treasure found", "Cave Chest \u2022 " + n + " kinds of loot", "#f2c14e", "\u2726"); snd("open", "Epic"); checkGoals(); }
@@ -8155,8 +8777,9 @@
       return;
     }
     var pt = pawTarget(); if (pt) { pawLock = true; pawSwing(dt, pt); return; }   // a creature under your aim: swat it, whatever you are holding
+    var pzt = peaceAim(PAW.near + 0.3); if (pzt) { pawLock = true; PZT = pzt; pawSwing(dt, pzt); return; }   // pressing and holding on a peaceful creature: swat it
     if (pawLock) { if (aim.down) { mine = null; return; } pawLock = false; }   // still holding after a swat (the creature dodged): don't dig or build until you let go
-    if (aim.down && aim.tx >= 0 && (animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts))) { mine = null; return; }   // tapping an animal (handled on release)
+    if (aim.down && aim.tx >= 0 && (critAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts))) { mine = null; return; }   // tapping an animal (handled on release)
     if (sel === "rod") { useRod(dt); return; }
     if (sel === "hoe") { useHoe(dt); return; }
     if (sel === "bucket") { useBucket(dt); return; }
@@ -8203,7 +8826,7 @@
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[plantHit && sel !== "pick" ? 0 : effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(id); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
-      if (mine.p >= 1) { breakTile(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && !plantHit) wear("pick", td.hard >= 2 ? 2 : 1); }
+      if (mine.p >= 1) { funBreak(id, tx, ty); breakTile(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && !plantHit) wear("pick", td.hard >= 2 ? 2 : 1); }
     } else {
       cool -= dt; if (cool > 0) return; cool = 0.13;
       if (ITEMS[sel] && ITEMS[sel].wall) { if ((S.inv[sel] || 0) > 0 && canWall(tx, ty, ITEMS[sel].wall)) placeWall(tx, ty, sel); return; }
@@ -8575,7 +9198,7 @@
       }
     }
   }
-  function drawGuide(g, now) {
+  function drawGuide(g, now) { if (PHOTO.on) return;
     if (!guide || panelOpen || titleOpen) return;
     var sx = ox + (guide.x + 0.5) * ts, sy = oy + (guide.y + 0.5) * ts, pu = reduce ? 0 : Math.sin(now / 260), m = 26;
     if (sx > m && sx < vw - m && sy > m && sy < vh - m) {
@@ -8646,6 +9269,7 @@
   var faintQ = null;
   function faintNow() { if (!faintQ) return; var w = faintQ; faintQ = null; faint(w); }
   function faint(why) {
+    BRAWL.vang = 0; if (npc.angry > 0) { npc.angry = 0; npc.go = 0; } wilds.forEach(function (a) { a.mad = 0; a.flee = 0; });   // a fresh start after passing out
     if (BM.on) BM.fail = true;   // BLOOD MOON: no rewards this time
     S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
     var lost = 0, L = dif().loss;
@@ -8812,7 +9436,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
-    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
@@ -9061,7 +9685,9 @@
   function animSwing(i) { var a = AFX.door[i]; if (!a) return -1; var k = (performance.now() - a.t) / DOOR_SWING; if (k >= 1 || reduce) { delete AFX.door[i]; return -1; } var e = 1 - (1 - k) * (1 - k); return a.open ? e : 1 - e; }   // 0 shut .. 1 open, eased
   function flicker(td, i, j, G) {   // fire breathes; cool lights pulse slowly
     if (reduce) return; var t = performance.now();
-    if (FIREK[td.kind]) { var n = Math.sin(t / 83 + i * 3.1 + j) * 0.55 + Math.sin(t / 37 + j * 1.7) * 0.3 + Math.sin(t / 211 + i) * 0.15; G[3] *= 1 + 0.07 * n; G[4] *= 1 + 0.22 * n; }
+    if (FIREK[td.kind]) { var n = Math.sin(t / 83 + i * 3.1 + j) * 0.55 + Math.sin(t / 37 + j * 1.7) * 0.3 + Math.sin(t / 211 + i) * 0.15; G[3] *= 1 + 0.07 * n; G[4] *= 1 + 0.22 * n;
+      glows.push([G[0], G[1] - ts * 0.18, "255,226,150", 0.85 + 0.06 * n, (lowq ? 0.3 : 0.42) * (1 + 0.15 * n)]);
+      if (Math.random() < (lowq ? 0.006 : 0.014) && parts.length < 400) parts.push({ x: i + 0.4 + Math.random() * 0.2, y: j + 0.25, vx: (Math.random() - 0.5) * 0.5, vy: -1.1 - Math.random() * 0.8, g: -0.4, life: 0.9 + Math.random() * 0.6, max: 1.5, c: Math.random() < 0.5 ? "#ffd27a" : "#ff9a40", s: Math.max(2, Math.round(ts / 14)) }); }
     else if (td.glow || td.light) { G[4] *= 1 + 0.12 * Math.sin(t / 900 + i * 1.3 + j * 0.7); }
   }
   function stationPuff(td, i, j, now) {   // smoke from fires and furnaces, steam from pots, bubbles from the brewing stand
@@ -9366,6 +9992,7 @@
       var X = gx0 + i, Y = gy0 + j, id = get(X, Y), L = TILES[id].light * LQ; c = j * gw + i;
       WG[c] = L; if (L) anyLamp = true;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
+      else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
       LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? 3 * LQ : LQ;
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : 10) * LQ);
@@ -9394,7 +10021,7 @@
 
 
   // ---------- RENDER ----------
-  var STARS = []; for (var si = 0; si < 90; si++) STARS.push({ x: Math.random(), y: Math.random() * 0.72, s: Math.random() * 1.7 + 0.5, p: Math.random() * 6, b: Math.random() < 0.12 });
+  var STARS = []; for (var si = 0; si < 170; si++) STARS.push({ x: Math.random(), y: Math.pow(Math.random(), 1.4) * 0.6, s: Math.random() * 1.7 + 0.5, p: Math.random() * 6, b: Math.random() < 0.12 });
   var CLOUDS = []; for (var ci = 0; ci < 7; ci++) CLOUDS.push({ x: Math.random() * 1.5, y: 0.06 + Math.random() * 0.3, s: 0.6 + Math.random() * 0.9, sp: 0.006 + Math.random() * 0.01 });
   var CRACKS = [[0.1, 0.2], [0.9, 0.15], [0.2, 0.9], [0.85, 0.8], [0.5, 0.05], [0.05, 0.55], [0.95, 0.5]];
   // SPREADING CRACKS: each block gets its own jagged crack pattern (from an impact point near the middle, branching out to the edges),
@@ -10199,14 +10826,107 @@
     if (!isFinite(HZS.v) || Math.abs(cx - HZS.x) > 30 || Math.abs(raw - HZS.v) > 40) HZS.v = raw; else HZS.v += (raw - HZS.v) * Math.min(1, dt * 2.5);
     HZS.x = cx; return HZS.v;
   }
+  // ---------- LIGHT & COLOUR PASS ----------
+  // A three-stop sky (top, middle band, horizon) for every time of day, a sunset glow pooled on the horizon under the sun, a Milky Way
+  // band on clear nights, clouds lit on top and shaded underneath, and BLOOM: the brightest parts of the frame (torches, lava, glowspores,
+  // crystals, the sun) are picked out at 1/6 size, blurred, and laid back over the picture so lights glow softly.
+  var SKYM = { day: [104, 186, 184], dusk: [206, 86, 128], night: [14, 34, 70], dawn: [212, 136, 162] };
+  function skyMid(t) {
+    var f = phaseOf(t), k = f.k, m;
+    if (f.id === "day") return SKYM.day; if (f.id === "night") return SKYM.night;
+    var from = f.id === "dusk" ? SKYM.day : SKYM.night, mid = f.id === "dusk" ? SKYM.dusk : SKYM.dawn, to = f.id === "dusk" ? SKYM.night : SKYM.day;
+    if (k < 0.5) return mixC(from, mid, k * 2); return mixC(mid, to, (k - 0.5) * 2);
+  }
+  function sunsetK(t) {   // 0..1: how strong the low-sun glow is (late afternoon into dusk, and dawn into early morning)
+    if (t >= 205 && t < 240) return (t - 205) / 35 * 0.55;
+    if (t >= 240 && t < 290) return 0.55 + 0.45 * Math.sin(Math.min(1, (t - 240) / 50) * Math.PI * 0.5 + (t > 265 ? (t - 265) / 25 * 1.2 : 0)) * (t > 265 ? 1 - (t - 265) / 25 : 1);
+    if (t >= 430) return Math.sin((t - 430) / 50 * Math.PI) * 0.9;
+    if (t < 30) return (1 - t / 30) * 0.45;
+    return 0;
+  }
+  function drawHorizonGlow(g, t, above) {
+    var k = sunsetK(t) * above; if (k < 0.02) return;
+    var dawn = t >= 430 || t < 30, sx = dawn ? vw * (t < 30 ? 0.08 + 0.84 * (t / 280) : 0.06) : vw * (0.08 + 0.84 * Math.min(1, t / 280)), sy = vh * 0.42;
+    var R = Math.max(vw, vh) * 0.75, rg = g.createRadialGradient(sx, sy, 0, sx, sy, R);
+    var c1 = dawn ? "255,190,150" : "255,170,90", c2 = dawn ? "240,120,170" : "240,90,110";
+    rg.addColorStop(0, "rgba(" + c1 + "," + (0.55 * k).toFixed(3) + ")"); rg.addColorStop(0.25, "rgba(" + c2 + "," + (0.3 * k).toFixed(3) + ")"); rg.addColorStop(1, "rgba(" + c2 + ",0)");
+    g.save(); g.globalCompositeOperation = "screen"; g.translate(sx, sy); g.scale(1, 0.45); g.translate(-sx, -sy); g.fillStyle = rg; g.fillRect(sx - R, sy - R, R * 2, R * 2); g.restore();
+  }
+  var MILKY = null;
+  function milkyCanvas() {
+    var w = Math.max(64, Math.round(vw)), h = Math.max(64, Math.round(vh * 0.8));
+    if (MILKY && MILKY.width === w && MILKY.height === h) return MILKY;
+    MILKY = document.createElement("canvas"); MILKY.width = w; MILKY.height = h; var q = MILKY.getContext("2d"), i, rnd = function (a) { return SW.hash(a, 17, 23); };
+    var bandY = function (x) { return h * 0.5 - x / w * h * 0.42 + Math.sin(x / w * 5) * h * 0.035; };   // a gentle diagonal, low left to high right
+    [["120,90,210", 0.3, 0.18], ["90,150,240", 0.26, 0.5], ["210,110,200", 0.2, 0.82], ["110,210,230", 0.16, 0.34]].forEach(function (c) {
+      var x = c[2] * w, y = bandY(x), r = h * 0.42, rg = q.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, "rgba(" + c[0] + "," + c[1] + ")"); rg.addColorStop(1, "rgba(" + c[0] + ",0)");
+      q.save(); q.translate(x, y); q.rotate(-Math.atan2(h * 0.42, w)); q.scale(2.4, 0.42); q.translate(-x, -y); q.fillStyle = rg; q.fillRect(x - r, y - r, r * 2, r * 2); q.restore();
+    });
+    for (i = 0; i < 2600; i++) {   // dust of tiny stars packed along the band
+      var x = rnd(i * 3) * w, sp = (rnd(i * 3 + 1) + rnd(i * 3 + 2) - 1) * h * 0.16, y = bandY(x) + sp, a = (0.25 + rnd(i * 7) * 0.6) * (1 - Math.abs(sp) / (h * 0.17));
+      if (a <= 0) continue; q.globalAlpha = a; q.fillStyle = rnd(i * 11) > 0.8 ? "#cfe0ff" : rnd(i * 11) > 0.6 ? "#ffe6f4" : "#ffffff"; q.fillRect(Math.round(x), Math.round(y), 1, 1);
+    }
+    q.globalAlpha = 1; return MILKY;
+  }
+  function drawMilky(g, a) { if (a < 0.02) return; var m = milkyCanvas(), sx = -((cam.x * ts * 0.01) % vw); g.save(); g.globalAlpha = a; g.globalCompositeOperation = "lighter"; g.drawImage(m, sx, 0, vw, m.height); g.drawImage(m, sx + vw, 0, vw, m.height); g.restore(); }
+  function cloud2(g, x, y, s, lit, shade, a) {   // a cloud with a shaded belly and a sunlit crown
+    var r = 16 * s, B = [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]], k;
+    g.globalAlpha = a; g.fillStyle = shade;
+    for (k = 0; k < B.length; k++) { g.beginPath(); g.ellipse(x + B[k][0] * r, y + B[k][1] * r + r * 0.18, r * B[k][2] * 1.15, r * B[k][2] * 0.62, 0, 0, 6.2832); g.fill(); }
+    g.fillStyle = lit;
+    for (k = 0; k < B.length; k++) { g.beginPath(); g.ellipse(x + B[k][0] * r - r * 0.06, y + B[k][1] * r - r * 0.1, r * B[k][2] * 1.02, r * B[k][2] * 0.5, 0, 0, 6.2832); g.fill(); }
+    g.globalAlpha = 1;
+  }
+  // per-biome skies: [top, middle, horizon] that the time-of-day sky leans toward (Murkwater keeps its own golden-green haze)
+  var BSKY = [null, [[92, 72, 118], [216, 146, 120], [255, 208, 152]], [[24, 84, 160], [118, 178, 228], [222, 240, 255]]];
+  function biomeSky(sk, smd, bw, day) {
+    var o = [sk[0], sk[1], smd];
+    for (var b = 1; b < 3; b++) if (bw[b] > 0.01) { var k = bw[b] * (0.3 + 0.55 * day); o[0] = mixC(o[0], BSKY[b][0], k * 0.85); o[2] = mixC(o[2], BSKY[b][1], k * 0.8); o[1] = mixC(o[1], BSKY[b][2], k * 0.75); }
+    return o;
+  }
+  // TWINKLES: lit ore and crystal blocks catch the light now and then, and fresh snow glitters in the sun
+  function drawSparkles(g, X0, X1, Y0, Y1, now, day) {
+    if (reduce || !LE.a) return; var t = now / 1000, vgw = LE.w, i, j, n = 0;
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
+      if (i < 0 || i >= W || j < 0 || j >= H) continue; var id = tiles[j * W + i], td = TILES[id]; if (!td) continue;
+      var ore = td.kind === "ore" || id === T.CRYSTAL || id === T.SPIKE, snow = !ore && id === T.SNOW && day > 0.6 && j <= col[i] + 1 && !TILES[get(i, j - 1)].solid;
+      if (!ore && !snow) continue;
+      var h = SW.hash(i, j, 91), per = snow ? 9 : 5.5, ph = (t + h * per * 3) % per; if (ph > 0.5) continue;
+      var lv = LE.a[(j - (Y0 - 1)) * vgw + (i - (X0 - 1))] || 0; if (lv < 4 * LQ) continue;
+      var k = Math.sin(ph / 0.5 * Math.PI), sx = ox + (i + 0.2 + SW.hash(i, j, 92) * 0.6) * ts, sy = oy + (j + (snow ? 0.15 : 0.2 + SW.hash(i, j, 93) * 0.6)) * ts, r = ts * (snow ? 0.22 : 0.32) * k;
+      g.globalAlpha = 0.9 * k * Math.min(1, lv / (10 * LQ)); g.fillStyle = snow ? "#ffffff" : td.c2 && td.c2 !== "#000" ? td.c2 : "#fff6d8";
+      g.fillRect(sx - r, sy - 0.75, r * 2, 1.5); g.fillRect(sx - 0.75, sy - r, 1.5, r * 2); g.fillStyle = "#ffffff"; g.fillRect(sx - 1, sy - 1, 2, 2);
+      if (++n > 40) break;
+    }
+    g.globalAlpha = 1;
+  }
+  var BLOOM = { a: null, b: null, ok: true };
+  function drawBloom(g, day, above, now) {
+    if (lowq || reduce || !OPT.bloom || !BLOOM.ok) return;
+    var w = Math.max(8, Math.round(vw / 6)), h = Math.max(8, Math.round(vh / 6));
+    try {
+      if (!BLOOM.a) { BLOOM.a = document.createElement("canvas"); BLOOM.b = document.createElement("canvas"); BLOOM.ax = BLOOM.a.getContext("2d"); BLOOM.bx = BLOOM.b.getContext("2d"); if (BLOOM.ax.filter === undefined) { BLOOM.ok = false; return; } }
+      var fresh = false; if (BLOOM.a.width !== w || BLOOM.a.height !== h) { BLOOM.a.width = BLOOM.b.width = w; BLOOM.a.height = BLOOM.b.height = h; fresh = true; }
+      BLOOM.n = (BLOOM.n || 0) + 1;
+      var th = lerp(0.58, 0.9, day * above), b = (0.5 - 0.5 / 4) / th;   // brightness then contrast(4) keeps only what is brighter than th
+      var A = BLOOM.ax, Bx = BLOOM.bx;
+      if (fresh || (BLOOM.n & 1) || now - (BLOOM.t || 0) > 80) { BLOOM.t = now; A.filter = "none"; A.globalCompositeOperation = "copy"; A.imageSmoothingEnabled = true; A.drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, w, h);
+      Bx.globalCompositeOperation = "copy"; Bx.filter = "brightness(" + b.toFixed(3) + ") contrast(4) saturate(1.35) blur(2.5px)"; Bx.drawImage(BLOOM.a, 0, 0); }   // PERF: the glow layer is rebuilt every other frame
+      g.save(); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.globalCompositeOperation = "screen"; g.globalAlpha = lerp(0.7, 0.24, day * above); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "medium";
+      g.drawImage(BLOOM.b, 0, 0, vw, vh); g.restore();
+    } catch (e) { BLOOM.ok = false; }
+  }
+  function shadowTint(bw, night, deep) {   // the colour of the dark: teal in the swamp, smoky ember in the bog, deep blue in the snow; violet far down
+    var c = mixArr([[4, 14, 17], [17, 7, 8], [5, 10, 25]], bw); c = mixC(c, [7, 9, 28], night * 0.55); return mixC(c, [13, 6, 28], deep);
+  }
   function render(now) {
-    var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t);
+    var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t), BLD, BLA;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
     if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // smooth (not random) shake
     var HZ = horizon(cam.x), bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (HZ + 3)) / 9, 0, 1);   // HZ: the local ground line, so valleys and peaks both get sky
     // --- sky: three-stop gradient, stars, sun/moon, clouds, aurora ---
-    var sk = skyAt(t); VMX = varMix(cam.x);
+    var sk = skyAt(t); VMX = varMix(cam.x); var BSK = biomeSky(sk, skyMid(t), bw, day); sk = [BSK[0], BSK[1]];
     if (VMX[0] + VMX[1] + VMX[2] > 0) { var vsk = [sk[0], sk[1]], vst = 0.22 + 0.2 * day; for (var vq = 0; vq < 3; vq++) if (VMX[vq] > 0) { vsk[0] = mixC(vsk[0], VSKY[vq][0], VMX[vq] * vst); vsk[1] = mixC(vsk[1], VSKY[vq][1], VMX[vq] * vst); } sk = vsk; }   // BIOME VARIANTS tint the sky
     var gr = g.createLinearGradient(0, 0, 0, vh), mid = mixC(sk[0], sk[1], 0.55);
     var dxa = Math.max(0, Math.floor(-ox / ts)), dxb = Math.min(W - 1, Math.floor((vw - ox) / ts)), dtop = Math.floor(-oy / ts), dmx = 0, dq;
@@ -10214,15 +10934,16 @@
     var deepV = dtop > dmx + 1;   // PERF: every pixel is underground, so the sky, hills and clouds could not be seen: just a flat colour behind any water
     if (deepV) { g.fillStyle = rgb(sk[1]); g.fillRect(0, 0, vw, vh); }
     else {
-    gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.6, rgb(mid)); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr; g.fillRect(0, 0, vw, vh);
-    if (night > 0.25) {
-      var sa = clamp((night - 0.25) / 0.45, 0, 1);
+    var smd = mixC(BSK[2], mid, 0.3 + 0.4 * (VMX[0] + VMX[1] + VMX[2])); gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.5, rgb(smd)); gr.addColorStop(0.82, rgb(mixC(smd, sk[1], 0.6))); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr; g.fillRect(0, 0, vw, vh);
+    if (!lowq) drawHorizonGlow(g, t, 1);
+    var starsNow = function () { if (night <= 0.25) return;
+      var sa = clamp((night - 0.25) / 0.45, 0, 1); if (!lowq) drawMilky(g, sa * 0.85 * (1 - bw[1] * 0.4));
       STARS.forEach(function (s) { var tw = 0.55 + 0.45 * Math.sin(now / 650 + s.p); g.globalAlpha = sa * tw; g.fillStyle = "#fff"; g.fillRect(s.x * vw, s.y * vh, s.s, s.s); if (s.b) { g.globalAlpha = sa * tw * 0.5; g.fillRect(s.x * vw - 3, s.y * vh + s.s / 2 - 0.5, 7 + s.s, 1); g.fillRect(s.x * vw + s.s / 2 - 0.5, s.y * vh - 3, 1, 7 + s.s); } }); g.globalAlpha = 1;
-    }
+    };
     var sunF = t / 280, moonF = clamp((t - 280) / 200, 0, 1);
     if (t < 285) sky2(g, sunF, "#fff0b8", "#ffcf5a", 26, now); else sky2(g, moonF, "#f2f6ff", "#9fb4ff", 20, now, true);
     var cg = mixC([255, 255, 255], [255, 170, 130], ph.id === "dusk" || ph.id === "dawn" ? 0.7 : 0); cg = mixC([40, 52, 90], cg, day);
-    CLOUDS.forEach(function (c) { var cx = ((c.x + now * c.sp / 1000) % 1.5 - 0.25) * vw - cam.x * ts * 0.04; cloud(g, cx, c.y * vh, c.s * Math.max(1, ts / 22), rgb(cg), 0.5 * (0.35 + 0.65 * day) * above); });
+    CLOUDS.forEach(function (c) { var cx = ((c.x + now * c.sp / 1000) % 1.5 - 0.25) * vw - cam.x * ts * 0.04; if (lowq) cloud(g, cx, c.y * vh, c.s * Math.max(1, ts / 22), rgb(cg), 0.5 * (0.35 + 0.65 * day) * above); else cloud2(g, cx, c.y * vh, c.s * Math.max(1, ts / 22), rgb(mixC(cg, [255, 250, 236], 0.35 * day)), rgb(mixC(cg, sk[0], 0.32)), 0.55 * (0.4 + 0.6 * day) * above); });
     var aw = bw[2] * night * above;
     if (aw > 0.05 && !reduce) {
       g.globalCompositeOperation = "lighter";
@@ -10252,6 +10973,7 @@
         for (fq = fpts.length - 2; fq >= 0; fq -= 2) { var fjm = fid[fq / 2], jy = snl + (fjm === 1 ? ts * 0.9 : fjm === 2 ? ts * 0.3 : -ts * 0.2); g.lineTo(fpts[fq], Math.max(fpts[fq + 1], jy)); }
         g.closePath(); g.fill();
       }
+      if (FL === 0) starsNow();   // stars over the hazy farthest range (it reads as sky), behind the nearer ridges
     }
     if (bw[1] - VMX[1] > 0.2 && above > 0.05) drawVolcanoes(g, HZ, sk, day, (bw[1] - VMX[1]) * above, now);   // (no volcanoes over the Sunbaked Shores)   // Ember Bog: smoking volcanoes on the horizon
     // --- three parallax hill layers in the colours and shapes of the biome you are in ---
@@ -10293,7 +11015,7 @@
     fg.addColorStop(0, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + ",0)"); fg.addColorStop(1, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + "," + (0.4 * above) + ")");
     g.fillStyle = fg; g.fillRect(0, hz - ts * 7, vw, ts * 8.5);
     }
-    if (!deepV && !lowq && !reduce) drawSunbeams(g, day, above, bw, now);
+    BLD = day; BLA = above; if (cv.classList.contains("grade") === lowq) cv.classList.toggle("grade", !lowq); if (!deepV && !lowq && !reduce) drawSunbeams(g, day, above, bw, now);
     if (!deepV) drawAmbientSky(g, now, day, above, bw);   // birds, bats, shooting stars, aurora
     if (!deepV) drawRainbow(g, above);   // RAINBOWS
     if (!deepV) drawBloodSky(g, above);   // BLOOD MOON
@@ -10322,7 +11044,7 @@
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
     if (!cave) { drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
-    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawBirds(g, now); drawAnimals(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
@@ -10345,7 +11067,7 @@
       var nv = pv + (tgt - pv) * LEk; LEn[j * vgw + i] = Math.abs(tgt - nv) < 0.03 ? tgt : nv;
     }
     LE.a = LEn; LE.n = LEo; LE.x0 = X0 - 1; LE.y0 = Y0 - 1; LE.ok = true;
-    var dk = LID.data, deep = clamp((cam.y - SURF) / 60, 0, 1), dr = Math.round(lerp(lerp(6, 3, day), 12, deep)), dg = Math.round(lerp(lerp(9, 6, day), 6, deep)), db = Math.round(lerp(lerp(22, 12, day), 26, deep));
+    var dk = LID.data, deep = clamp((cam.y - SURF) / 60, 0, 1), shT = shadowTint(cave ? [1, 0, 0] : bw, night, deep), dr = Math.round(shT[0]), dg = Math.round(shT[1]), db = Math.round(shT[2]);
     if (!WC) { WC = document.createElement("canvas"); WCX = WC.getContext("2d"); }
     if (WC.width !== vgw || WC.height !== vgh) { WC.width = vgw; WC.height = vgh; WID = WCX.createImageData(vgw, vgh); MAPPREV.w = null; }
     var wk = WID.data, warmK = clamp(1 - day * 0.75 + deep, 0, 1), anyW = false, Lmax = 15 * LQ, dbx = [vgw, vgh, -1, -1], wbx = [vgw, vgh, -1, -1];
@@ -10367,20 +11089,22 @@
     if (night > 0.35 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var mg = g.createLinearGradient(0, 0, 0, vh), ma = ((night - 0.35) / 0.65 * 0.45 * above).toFixed(3); mg.addColorStop(0, "rgba(110,140,230," + ma + ")"); mg.addColorStop(1, "rgba(70,90,170," + (ma * 0.6).toFixed(3) + ")"); g.fillStyle = mg; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     if (day > 0.6 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     // dusk/dawn colour grade over the open air
-    if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { g.globalCompositeOperation = lowq ? "source-over" : "soft-light"; g.fillStyle = "rgba(255,130,70," + ((lowq ? 0.16 : 0.55) * Math.sin(ph.k * Math.PI) * above) + ")"; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
+    if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { var dka = Math.sin(ph.k * Math.PI) * above; if (lowq) { g.fillStyle = "rgba(255,130,70," + (0.16 * dka) + ")"; g.fillRect(0, 0, vw, vh); } else { g.globalCompositeOperation = "soft-light"; var dgr = g.createLinearGradient(0, 0, 0, vh); dgr.addColorStop(0, "rgba(150,80,220," + (0.5 * dka).toFixed(3) + ")"); dgr.addColorStop(0.45, "rgba(255,120,140," + (0.42 * dka).toFixed(3) + ")"); dgr.addColorStop(1, "rgba(255,170,80," + (0.5 * dka).toFixed(3) + ")"); g.fillStyle = dgr; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; } }
     drawWeather(g, now, day, above);
     g.imageSmoothingEnabled = false;
     g.globalCompositeOperation = "lighter";
-    drawGlows(g, glows);
-    g.imageSmoothingEnabled = true; flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)); g.globalAlpha = 0.85 * a; g.drawImage(glowSpr("220,255,120"), fx - ts * 0.8, fy - ts * 0.8, ts * 1.6, ts * 1.6); }); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
+    drawGlows(g, glows); drawSparkles(g, X0, X1, Y0, Y1, now, day);
+    g.imageSmoothingEnabled = true; flies.forEach(function (fl) { var fx = ox + fl.x * ts, fy = oy + fl.y * ts, a = fl.a * (0.5 + 0.5 * Math.sin(fl.ph * 3)); g.globalAlpha = 0.85 * a; g.drawImage(glowSpr("220,255,120"), fx - ts * 0.7, fy - ts * 0.7, ts * 1.4, ts * 1.4); g.globalAlpha = a; g.fillStyle = "#f4ffc8"; var fc2 = Math.max(2, Math.round(ts / 12)); g.fillRect(Math.round(fx - fc2 / 2), Math.round(fy - fc2 / 2), fc2, fc2); }); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
     drawBlastLit(g);
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
+    drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh);
     var ha = Math.min(0.6, hurtT * 1.2) + (hp <= MAXHP * 0.3 ? (reduce ? 0.18 : 0.16 + 0.08 * Math.sin(now / 280)) : 0);
     if (ha > 0.01) { if (!HVIG) { HVIG = document.createElement("canvas"); HVIG.width = HVIG.height = 128; var hg = HVIG.getContext("2d"), hr = hg.createRadialGradient(64, 64, 34, 64, 64, 92); hr.addColorStop(0, "rgba(200,20,20,0)"); hr.addColorStop(1, "rgba(200,20,20,.9)"); hg.fillStyle = hr; hg.fillRect(0, 0, 128, 128); } g.globalAlpha = ha; g.drawImage(HVIG, 0, 0, vw, vh); g.globalAlpha = 1; }
     g.imageSmoothingEnabled = false;
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
+    drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
@@ -10484,8 +11208,10 @@
     return "idle" + (Math.floor(now / 520) % 2) + (now % 3900 < 140 || (now + 260) % 11700 < 120 ? "b" : "");   // a blink every few seconds, sometimes a double blink
   }
   function drawPlayer(g, now) {
+    if (PHOTO.on && !PHOTO.me) return;
     var sx = ox + p.x * ts, sy = oy + p.y * ts, bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
     drawWings(g, sx, sy + ts * 0.14, now);   // behind the body
+    if (riding()) { g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); drawMoto(g, -1.55 * ts, 0, ts, motoS().p, performance.now(), { ride: true, run: Math.abs(p.vx) > 0.5, lit: true }); g.restore(); sy -= ts * 0.82; sx -= p.face * ts * 0.38; bob = 0; }   // SWAMP HOG: you sit on the bike
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1);
     g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
@@ -10550,6 +11276,7 @@
     return null;
   }
   function structNear() {   // the building door within about 2.5 tiles of you, or null
+    var gn = garageNear(); if (gn) return gn;   // GARAGE
     var L = world.structs, best = null, bd = 6.5; if (!L) return null;
     for (var i = 0; i < L.length; i++) { var s = L[i]; if (s.razed || Math.abs(s.dx - p.x) > 4) continue; var dx = s.dx + 0.5 - p.x, dy = s.gy - 1 - (p.y - 0.7), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = s; } }
     return best;
@@ -10636,7 +11363,8 @@
     cave.f = f; cave.F = F;
     if (cave.bld && cave.bld.kind === "nexus" && !F.nx) nxPrep(F);
     if (cave.bld && cave.bld.kind === "witchhut" && T.X_lootchest !== undefined) { var wci = WCHEST.y * F.w + WCHEST.x; F.node[wci] = witchChestReady(cave.bld.id) ? T.X_lootchest : (T.X_openchest || 0); }
-    if (cave.bld && !F.nx) loreNoteIn(F);   // LORE: a note left inside
+    if (cave.bld && cave.bld.kind === "garage" && !F.garage) garageSetup(F);
+    if (cave.bld && !F.nx && cave.bld.kind !== "garage") loreNoteIn(F);   // LORE: a note left inside
     if (cave.bld && BCHEST[cave.bld.kind] && T.X_lootchest !== undefined) { var bcq = BCHEST[cave.bld.kind]; F.node[bcq.y * F.w + bcq.x] = witchChestReady(cave.bld.id) ? T.X_lootchest : (T.X_openchest || 0); }   // NEW BUILDINGS: a chest that refills
     if (from === "up") {   // you climbed UP from the floor below: you pop out beside this floor's ladder down
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
@@ -10670,6 +11398,7 @@
   }
   function breakRock(x, y) {
     var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++;
+    if (!VEIN.busy && td && td.kind === "ore" && veinOn()) veinStart(x, y, id, true);   // VEIN MINING in caves
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id); matBreak(id);
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
     if (td.kind === "lootchest" && cave.bld && BCHEST[cave.bld.kind]) { bldLoot(x, y); return; }
@@ -10687,6 +11416,7 @@
   }
   function caveTool(dt) {
     var cpress = aim.down && !contPrev; contPrev = aim.down;
+    if (cpress && aim.tx >= 0 && motoAtCell(aim.tx, aim.ty) && motoNear()) { mine = null; openMoto(); return; }   // GARAGE: tap the bike
     if (cpress && aim.tx >= 0 && !(cavePawTarget())) {   // CONTAINERS: a tap on one searches it / opens the chest, whatever you are holding
       var ctc = contAtCell(aim.tx, aim.ty), cdx = aim.tx + 0.5 - cp.x, cdy = aim.ty + 0.5 - (cp.y - 0.4);
       if (ctc && cdx * cdx + cdy * cdy <= CAVE_REACH * CAVE_REACH) { mine = null; openCont(ctc); return; }
@@ -10716,7 +11446,7 @@
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(nid); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
-      if (mine.p >= 1) { breakRock(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
+      if (mine.p >= 1) { funBreak(nid, tx, ty); breakRock(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
       return;
     }
     mine = null; cool -= dt; if (cool > 0) return;
@@ -10754,7 +11484,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
     ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt); tickFx(dt); tickWeather(dt); tickBounties(dt); tickFlow(dt);
-    caveTool(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt); tickGuardian(dt);
+    caveTool(dt); tickVein(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt); tickGuardian(dt);
     var working = !!mine || pawOn; pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
@@ -10812,7 +11542,7 @@
     g.fillStyle = "#a8703c"; g.fillRect(sx + ts * 0.3, sy + ts * 0.15, ts * 0.07, ts * 0.45); g.fillRect(sx + ts * 0.63, sy + ts * 0.15, ts * 0.07, ts * 0.45);
     g.fillStyle = "#c98c4f"; [0.24, 0.37, 0.5].forEach(function (yy) { g.fillRect(sx + ts * 0.3, sy + ts * yy, ts * 0.4, Math.max(2, ts * 0.05)); });
   }
-  function drawPill(g, now, label, sx, sy, no, fn) {   // a tappable pill above a ladder or hole (tap it, or press F)
+  function drawPill(g, now, label, sx, sy, no, fn) { if (PHOTO.on) return;   // a tappable pill above a ladder or hole (tap it, or press F)
     g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
     sy += reduce ? 0 : Math.sin(now / 300) * 2;
     var w = g.measureText(label).width + ts * 1.1, h = Math.max(26, ts * 0.9);
@@ -10852,7 +11582,7 @@
     g.restore();
   }
   function renderCave(now) {
-    var F = cave.F, th = F.theme, g = ctx, i, j, idx;
+    var F = cave.F, th = F.theme, g = ctx, i, j, idx, BLD = clamp(0.25 + (F.amb || 0.07) * 0.9, 0.25, 0.85), BLA = 1;   // bright rooms bloom only their lamps; dark caves glow more
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
     if (F.nx) drawNexusSky(g, now, F); else { g.fillStyle = "#04060a"; g.fillRect(0, 0, vw, vh); }
@@ -10926,6 +11656,7 @@
       if (F.iw) drawRoomWalls(g, rj, X0, X1, now, th);
       if (F.nx) nxRow(g, F, rj, now, glows2);
       if (F.dr && F.dr[rj]) F.dr[rj].forEach(function (e) { if (e.x >= X0 && e.x <= X1) drawRoomPiece(g, e); });
+      if (F.garage && rj === MOTO_CELL.y + MOTO_CELL.h - 1) drawGarageBike(g, now);
       for (var ri = X0; ri <= X1; ri++) {
         var rid = F.node[rj * W2 + ri]; if (!rid) continue;
         var rx = ox + ri * ts, ry2 = oy + rj * ts; g.drawImage(caveNode(rid, ((ri * 7 + rj * 13) & 1)), 0, 0, 16, 16, rx, ry2, ts, ts);
@@ -10957,13 +11688,15 @@
     drawGlows(g, glows2);
     drawBlastLit(g);
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
+    drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     if (!F.nx) { g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
-    if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
-    if (!panelOpen && !trans) {   // ladder prompt
+    if (!panelOpen && !trans && motoNear()) drawPill(g, now, (motoS().done ? "Look at the Swamp Hog" : "Work on the motorcycle") + (coarse ? "" : " (F)"), ox + (MOTO_CELL.x + 1.5) * ts, oy + (MOTO_CELL.y - 0.9) * ts, false, function () { openMoto(); });
+    else if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" || inGarage() ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
+    if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
       if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? 1.3 : 0.5), false, function () { useLadder(ln.k); }); }
     }
@@ -11195,6 +11928,9 @@
     ["Tools|Utility", "shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
     ["Tools|Adventuring", "x_grapple"],
+    ["Stations|Garage", "x_garage"],
+    ["Materials|Motorcycle Parts", "x_moto_seat x_moto_chain x_moto_lamp"],
+    ["Materials|Mushrooms", "x_spore_cap"],
     ["Building|Playground", "x_bounceshroom x_speedmoss"],
     ["Decor|Party", "x_d_confetti x_d_balloons"],
     ["Tools|Blasting", "x_bomb x_stickybomb x_blastkeg x_firework x_starrocket"],
@@ -11205,7 +11941,7 @@
     ["Stations|Workbenches", "bench decorbench"],
     ["Stations|Crafting Stations", "x_cookpot x_brewstand x_furnace x_loom x_mason"],
     ["Potions|Bottles", "x_bottle"],
-    ["Gear|Jewelry", "x_jeweltable"],
+    ["Gear|Jewelry", "x_jeweltable x_veincharm"],
     ["Building|Wood Stains", "x_stain_walnut x_stain_ebony x_stain_honey x_stain_mahogany x_stain_white x_stain_sage x_stain_blue x_stain_plum x_sandpaper"],
     ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
@@ -11238,7 +11974,7 @@
     ["Furniture|Storage", "chest d_shelf d_wardrobe x_dresser x_crate x_sack d_barrel d_bucket"],
     ["Furniture|Beds & Rugs", "bed d_rug"],
     ["Furniture|Clocks & Curios", "x_harp x_clock x_globe x_telescope"],
-    ["Lighting|Torches & Fires", "torch x_slimetorch d_campfire d_hearth x_bonfire d_brazier"],
+    ["Lighting|Torches & Fires", "torch x_torch_cap x_slimetorch d_campfire d_hearth x_bonfire d_brazier"],
     ["Lighting|Lanterns & Lamps", "d_lantern d_sconce d_emberlantern d_frostlantern x_hanginglantern x_streetlamp x_mushlamp x_lavalamp"],
     ["Lighting|Candles & Chandeliers", "x_candelabra d_chandelier x_fairylights"],
     ["Lighting|Lamp Blocks", "x_nb_sporelamp x_nb_paperlamp x_nb_moonlamp x_nb_fireflylamp"],
@@ -12140,7 +12876,7 @@
       if (ddx * ddx + ddy * ddy <= REACH * REACH) toggleDoor(aim.dx, aim.dy, true); else nag("That door is too far away.");
     }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.stn && !isStainTool(sel) && stnKeyAt(aim.dx, aim.dy) === aim.stn) tapStation(aim.dx, aim.dy);   // quick tap on a crafting station: open its window
-    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 300 && !cave && !isStainTool(sel)) { var an = animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts); if (npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { talkCroaker(); aim.chest = false; } else if (vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { openVil(vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { feedBird(birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (an) { useAnimal(an); aim.chest = false; } else if (aim.tx >= 0 && isStand(aim.tx, aim.ty)) { openStand(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isTrap(aim.tx, aim.ty)) { emptyTrap(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isGate(aim.tx, aim.ty)) { openGate(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isJewel(aim.tx, aim.ty)) { openJewel(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && tapHook(aim.tx, aim.ty)) { aim.chest = false; } }   // quick tap on an animal
+    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 300 && !cave && !isStainTool(sel)) { var an = animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts); if (critAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { boopCrit(critAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { talkCroaker(); aim.chest = false; } else if (vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { openVil(vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { feedBird(birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (an) { useAnimal(an); aim.chest = false; } else if (aim.tx >= 0 && isStand(aim.tx, aim.ty)) { openStand(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isTrap(aim.tx, aim.ty)) { emptyTrap(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isGate(aim.tx, aim.ty)) { openGate(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isJewel(aim.tx, aim.ty)) { openJewel(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && tapHook(aim.tx, aim.ty)) { aim.chest = false; } }   // quick tap on an animal
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.chest && isChest(get(aim.dx, aim.dy))) {   // quick tap on a chest: open it
       var cdx = aim.dx + 0.5 - p.x, cdy = aim.dy + 0.5 - (p.y - PH / 2);
       if (cdx * cdx + cdy * cdy <= REACH * REACH) openChest(aim.dx, aim.dy); else nag("That chest is too far away.");
@@ -12173,6 +12909,9 @@
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && !$("sbxMPV").hidden) { closeMPV(); return; }
     if (titleOpen) { if (panelOpen) { if (k === "Escape") closePanel(); } else titleKey(e); return; }
+    if (PHOTO.on) { if (k === "Escape") { e.preventDefault(); closePhoto(); return; } var pk2 = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d", a: "l", d: "r", w: "u", s: "d", A: "l", D: "r", W: "u", S: "d" }[k]; if (pk2) { keys[pk2] = 1; e.preventDefault(); } return; }
+    if (EMO.open) { if (k === "Escape" || k === "t" || k === "T") { e.preventDefault(); emoBar(false); return; } if (k >= "1" && k <= "6") { e.preventDefault(); emote(EMOTES[+k - 1].k); return; } }
+    if ((k === "t" || k === "T") && !panelOpen && !cave && !titleOpen) { e.preventDefault(); emoBar(); return; }
     if (pauseOpen) { if (k === "Escape" || k === "p" || k === "P") { e.preventDefault(); if (pauseView !== "main") pauseAct("back"); else closePause(); } return; }
     if ((k === "Escape" || k === "p" || k === "P") && !panelOpen && !mapOpen && !trans) { openPause(); e.preventDefault(); return; }
     if (k === "Enter" && MP.on && !panelOpen) { openChat(); e.preventDefault(); return; }
@@ -12189,8 +12928,8 @@
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
-      if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
-      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
+      if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
     else if ((k === "r" || k === "R") && !cave && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
@@ -12264,7 +13003,7 @@
   $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
   $("sbxMini").addEventListener("click", function () { if (!panelOpen && !cave) openMap(); });
   $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -12290,7 +13029,7 @@
   var LERR = { n: 0, last: "" };
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
-    var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on;
+    var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on && !PHOTO.on;
     var rgap = now - rafPrev; rafPrev = now; if (rgap > 2 && rgap < 40) rafAvg += (rgap - rafAvg) * 0.05;   // the screen's real refresh interval (smoothed)
     rafOdd = !rafOdd;
     if (paused ? now - lastDraw < 100 : OPT.fps === 30 ? now - lastDraw < 30 : OPT.fps === 60 ? (rafAvg < 9.5 && rafOdd) : false) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other refresh (an even rhythm); menus redraw ~10x a second   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
@@ -12299,6 +13038,7 @@
     if (!titleOpen) { pumpToasts(); pumpPops(); }
     // automatic quality: if a device is struggling for ~2 seconds, switch off the optional sparkle (ambient motes, aurora, glints)
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
+    if (PHOTO.on) tickPhoto(dt);
     if (!document.hidden) {
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try { if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); } catch (er) { loopErr(er); }
@@ -12329,6 +13069,7 @@
     if (row.scrollWidth <= row.clientWidth) return; row.scrollLeft += e.deltaY; e.preventDefault();
   }, { passive: false });
   requestAnimationFrame(loop);
+  window.__sbxLook = { BLOOM: BLOOM, OPT: OPT, get reduce() { return reduce; }, set reduce(v) { reduce = v; }, get lowq() { return lowq; } };
   window.__sbx = { birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
@@ -12342,6 +13083,10 @@
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
+  window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
+  window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
+  window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
+  window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
   window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };
   window.__sbx.pause = { open: function () { openPause(); }, close: function () { closePause(); }, act: function (a) { pauseAct(a); }, opt: function (k) { optAct(k); }, get on() { return pauseOpen; }, get view() { return pauseView; }, OPT: OPT };
   window.__sbx.feel = { la: CAMLA, get sq() { return p.sq || 0; } };

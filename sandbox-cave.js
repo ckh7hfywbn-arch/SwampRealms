@@ -303,6 +303,10 @@
   IMAP.dwarfhold = {"amb": 0.5, "win": "BARS", "floors": [[1, 2, 13, 9, "slatetile"], [5, 3, 9, 6, "crackedbrick"]], "tops": {"6,4": "j", "7,4": "C", "8,4": "f"}, "leg": {"v": "X_minecart"}, "map": ["###############", "#t.e.t.T.t.e.t#", "#B4.Y..^..Y.vv#", "#B...........X#", "#....cTTTC....#", "#y...........y#", "#A...........X#", "#O..........xx#", "#b...........b#", "#yy.........yy#", "###############"]}; IMAP.dwarfhold.th = NEWTH + 5;
   IMAP.sawmill = {"amb": 0.7, "win": "GLASS", "floors": [[1, 2, 11, 7, "pineplanks"]], "tops": {"6,4": "o", "7,4": "p"}, "map": ["#############", "#t.a.w.w.a.t#", "#bb.X.X.X.bb#", "#...........#", "#|.|..TT..|.#", "#...........#", "#XX.......bb#", "#Xb.......Xx#", "#############"]}; IMAP.sawmill.th = NEWTH + 6;
   IMAP.nexus = { th: NEXUS_TH, amb: 1, win: "STAR", map: nexusMap(), floors: [], leg: { y: "X_crystalcluster" } };
+  // GARAGE (placed by the player, see sandbox.js GARAGE): a workshop with the motorcycle on a stand in the middle (drawn by sandbox.js, cells 6-8 x 4-5)
+  IMAP.garage = { "amb": 0.62, "win": "GLASS", "floors": [[1, 2, 13, 7, "slatetile"], [5, 3, 9, 6, "basalttile"]], "tops": { "2,2": "o", "12,2": "c" }, "map": ["###############", "#t.S.w.M.w.S.t#", "#1A..........D#", "#X...........R#", "#x...........b#", "#u...........X#", "#b...........x#", "#XX.........bb#", "###############"] };
+  THEMES.push({ n: "Your Garage", sub: "Oil stains, old tools and a motorcycle in pieces", floor: "#5a5c60", floor2: "#6a6c70", top: "#18191c", topHi: "#2a2c30", face: "#6a6058", faceHi: "#948a7e", faceLo: "#2e2a26", tint: [8, 8, 9], lamp: T.GLOWCAP, glow: "255,214,150" });
+  IMAP.garage.th = THEMES.length - 1;
   var IWIN = { GLASS: "GLASS", BARS: "X_ironbars", GLASSR: "X_stainedred", GLASSB: "X_stainedblue", STAR: "X_starglass" }, ITAP = { keep: "X_tapestry_ember", lodge: "X_tapestry_frost", shrine: "X_tapestry_frost" };
   ITAP.igloo = "X_tapestry_frost"; ITAP.suntemple = "X_tapestry_ember";
   // ---------- INTERIOR UNIQUES: furniture made for one kind of building (sandbox-extra.js 7s) ----------
@@ -334,6 +338,7 @@
     suntemple: { floor: ["coffer", "offeringbowl"] }, skyhall: { floor: ["recordcab", "mailbox", "lockbox"] }, smithy: { floor: ["toolbox", "toolchest"] }, dwarfhold: { floor: ["gemcrate", "ironsafe", "orebin"] },
     sawmill: { floor: ["supplycrate", "toolbox", "sewingbasket"] }
   };
+  UCONT.garage = { floor: ["toolbox", "toolchest", "nailkeg"] }; UNIQ.garage = { wall: ["tongsrack"] };
   Object.keys(UCONT).forEach(function (k) { var U = UNIQ[k] || (UNIQ[k] = {}); ["floor", "wall"].forEach(function (f) { if (UCONT[k][f]) U[f] = (U[f] || []).concat(UCONT[k][f]); }); });
   function placeUniques(kind, D, m, w, h, dx, wall, deco, add) {
     var U = UNIQ[kind]; if (!U) return;

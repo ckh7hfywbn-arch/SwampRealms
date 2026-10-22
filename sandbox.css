@@ -1323,3 +1323,67 @@ body.sbx-app footer{margin-top:28px}
 .sbx-drag i{position:absolute;left:50%;top:-22px;transform:translateX(-50%);padding:2px 8px;border-radius:99px;background:#f2c14e;color:#2a1a04;font:800 .7rem Nunito,sans-serif;font-style:normal;white-space:nowrap;opacity:0;transition:opacity .12s}
 .sbx-drag.toss{border-color:#ffd36a;box-shadow:0 0 0 3px rgba(242,193,78,.35),0 10px 22px -8px #000}
 .sbx-drag.toss i{opacity:1}
+/* GARAGE: the motorcycle workbench window */
+.mo-box{text-align:left}
+.mo-head{display:grid;grid-template-columns:minmax(0,180px) 1fr;gap:14px;align-items:center;margin-bottom:10px}
+.mo-cv{width:100%;height:auto;aspect-ratio:9/5;border-radius:14px;background:radial-gradient(ellipse at 50% 80%,#3a3f46,#1a1c20 70%);border:1px solid rgba(242,193,78,.3)}
+.mo-head small{display:block;font:800 .7rem Nunito,sans-serif;color:#f2c14e}
+.mo-head h2{margin:2px 0 4px;font:900 1.35rem/1.1 Nunito,sans-serif;color:#f6eedb}
+.mo-sub{margin:0 0 8px;font-weight:600;font-size:.84rem;line-height:1.4;color:#c3dccf}
+.mo-bar{height:9px;border-radius:99px;background:rgba(0,0,0,.4);overflow:hidden}
+.mo-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#c8902a,#f2c14e);transition:width .25s}
+.mo-msg{margin:0 0 8px;padding:8px 12px;border-radius:10px;background:rgba(242,193,78,.12);color:#ffe7a8;font-weight:700;font-size:.86rem}
+.mo-list{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:min(46vh,380px);overflow:auto}
+.mo-list li{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+.mo-list li.on{background:rgba(78,230,180,.08);border-color:rgba(78,230,180,.25)}
+.mo-list li.have{border-color:rgba(242,193,78,.45)}
+.mo-list img{flex:none;width:32px;height:32px;image-rendering:pixelated}
+.mo-list li:not(.on):not(.have) img{opacity:.4;filter:grayscale(1)}
+.mo-list div{min-width:0;flex:1}
+.mo-list b{display:block;font-size:.86rem;color:#f6eedb}
+.mo-list small{display:block;font-size:.72rem;line-height:1.3;color:#f6eedb99}
+.mo-on{font:800 .72rem Nunito,sans-serif;color:#4ee6b4}
+.mo-miss{font:800 .72rem Nunito,sans-serif;color:#8f9a94}
+.mo-wait{font:800 .72rem Nunito,sans-serif;color:#c9a46a}
+.mo-list .mo-fit{min-height:32px;padding:3px 10px;font-size:.78rem}
+.mo-start{background:linear-gradient(180deg,#ffdc78,#dc9e2a);color:#1a1405}
+@media (max-width:560px){.mo-head{grid-template-columns:1fr}.mo-list{grid-template-columns:1fr}}
+.mo-list{grid-template-columns:1fr}
+.mo-list small,.mo-head small.mo-k{text-transform:none;letter-spacing:0;font-weight:600}
+.mo-list b{text-transform:none;letter-spacing:0}
+.mo-head h2{text-transform:none;letter-spacing:0}
+.mo-list .mo-fit{flex:none}
+.mo-list div,.mo-list small,.mo-head > div{text-align:left}
+/* GARAGE storage: your bag, under what is stored */
+.ct-sub{margin:12px 0 6px;font:800 .82rem Nunito,sans-serif;color:#f6eedb;text-align:left}
+.ct-sub em{margin-left:6px;font-style:normal;font-weight:700;font-size:.72rem;color:#f6eedb88}
+.ct-bag{max-height:min(30vh,220px);overflow:auto}
+/* ---------- EMOTES ---------- */
+.sbx-emo{position:absolute;left:50%;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 92px);transform:translateX(-50%);z-index:30;display:flex;gap:6px;padding:7px;border-radius:18px;background:rgba(8,20,15,.9);border:1px solid rgba(78,230,180,.3);box-shadow:0 14px 30px -14px #000;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);font-family:Nunito,system-ui,sans-serif}
+.sbx-emo[hidden]{display:none}
+.sbx-emo.in{animation:emoIn .2s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes emoIn{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.92)}to{opacity:1;transform:translateX(-50%)}}
+.sbx-emo button{position:relative;display:grid;justify-items:center;gap:2px;width:62px;padding:8px 4px 6px;border:0;border-radius:13px;background:rgba(255,255,255,.05);color:#f6eedb;cursor:pointer;font:800 .72rem Nunito,system-ui,sans-serif;transition:background .15s,transform .12s}
+.sbx-emo button:hover,.sbx-emo button:focus-visible{outline:none;background:rgba(78,230,180,.16)}
+.sbx-emo button:active{transform:scale(.94)}
+.sbx-emo i{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe48a,#f2c14e 60%,#c8902a);color:#3a2408;font:900 1.05rem/1 Nunito,system-ui,sans-serif;font-style:normal;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2)}
+.sbx-emo kbd{position:absolute;top:3px;right:5px;font:800 .6rem Nunito,sans-serif;color:#8fb3a2}
+.sbx-emobtn svg{width:20px;height:20px}
+@media (max-width:520px){.sbx-emo{gap:4px;padding:5px}.sbx-emo button{width:50px;font-size:.64rem}.sbx-emo i{width:28px;height:28px}}
+@media (prefers-reduced-motion:reduce){.sbx-emo.in{animation:none}}
+/* ---------- PHOTO MODE ---------- */
+.sbx-photo{position:absolute;inset:0;z-index:55;cursor:grab;touch-action:none;font-family:Nunito,system-ui,sans-serif}
+.sbx-photo:active{cursor:grabbing}
+.sbx-photo[hidden]{display:none}
+.sbx-stage.photo .sbx-hud,.sbx-stage.photo .sbx-dock,.sbx-stage.photo .sbx-pops,.sbx-stage.photo .sbx-toast,.sbx-stage.photo .sbx-hint,.sbx-stage.photo .sbx-joy,.sbx-stage.photo .sbx-pad,.sbx-stage.photo .sbx-trail,.sbx-stage.photo .sbx-bcard,.sbx-stage.photo .sbx-banner,.sbx-stage.photo .sbx-emo{visibility:hidden!important}
+.sbx-photo .ph-bar{position:absolute;left:50%;top:max(12px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:8px;border-radius:18px;background:rgba(8,14,12,.82);border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 30px -14px #000;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);cursor:default}
+.sbx-photo .ph-f,.sbx-photo .ph-c,.sbx-photo .ph-a{display:flex;gap:4px;align-items:center}
+.sbx-photo button{min-height:36px;padding:4px 11px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:rgba(255,255,255,.06);color:#f6eedb;font:800 .8rem Nunito,system-ui,sans-serif;cursor:pointer}
+.sbx-photo button.on,.sbx-photo button[aria-pressed="false"][data-ph="me"]{background:#4ee6b4;border-color:#4ee6b4;color:#062016}
+.sbx-photo .ph-shot{background:linear-gradient(180deg,#ffdc78,#dc9e2a);border-color:#8a5a10;color:#1a1405}
+.sbx-photo .ph-tip{position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;padding:6px 14px;border-radius:99px;background:rgba(0,0,0,.45);color:#f6eedbcc;font-weight:700;font-size:.8rem;white-space:nowrap;pointer-events:none}
+.ph-flash{position:absolute;inset:0;z-index:70;background:#fff;pointer-events:none;animation:phFlash .5s ease-out forwards}
+@keyframes phFlash{from{opacity:.85}to{opacity:0}}
+
+/* LIGHT & COLOUR: a gentle grade on the game picture (Photo mode filters replace it) */
+#sbxCv.grade { filter: saturate(1.1) contrast(1.04); }
