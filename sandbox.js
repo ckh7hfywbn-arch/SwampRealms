@@ -768,9 +768,9 @@
   // cgen (counts local saves), csync (time of the last backup), conflict (the newer cloud version, while you decide).
   var CLOUD = { state: WUSER === "guest" ? "guest" : "checking", list: [], t: 0, busy: false, err: "", last: 0, told: {}, delAsk: "" };
   function cloudCall(method, path, body, keep) {
-    var o = { method: method, credentials: "same-origin", cache: "no-store", keepalive: !!keep };
+    var o = { method: method, cache: "no-store", keepalive: !!keep };
     if (body) { o.headers = { "content-type": "application/json" }; o.body = JSON.stringify(body); }
-    return fetch(path, o).then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }, function () { return { s: r.status, j: null }; }); }, function () { return { s: 0, j: null }; });
+    return (window.SV ? window.SV.fetch(path, o) : fetch(path, Object.assign({ credentials: "same-origin" }, o))).then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }, function () { return { s: r.status, j: null }; }); }, function () { return { s: 0, j: null }; });
   }
   function saveHash(o) {   // a fingerprint of a save that ignores what changes just by standing around (clock, weather, position, health, hunger)
     var t = typeof o === "string" ? (function () { try { return JSON.parse(o); } catch (e) { return {}; } })() : o;
@@ -5313,7 +5313,7 @@
     sets: [], walls: [], flushT: 0, sendT: 0, tickT: 0, envT: 0, metaT: 0, last: "", proxy: null, proxyE: null, nid: 0, chat: [], say: "", sayT: 0, status: "", err: "", list: null, view: "home" };
   var mpName = ""; try { mpName = localStorage.getItem("swamp-delve-mpname") || ""; } catch (e) {}
   function mpSend(o) { if (MP.ws && MP.ws.readyState === 1) try { MP.ws.send(JSON.stringify(o)); } catch (e) {} }
-  function mpUrl(code, role, name) { return (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/mp/ws/" + code + "?role=" + role + "&name=" + encodeURIComponent(name || ""); }
+  function mpUrl(code, role, name) { var q = "/api/mp/ws/" + code + "?role=" + role + "&name=" + encodeURIComponent(name || ""); return window.SV ? window.SV.ws(q) : (location.protocol === "https:" ? "wss://" : "ws://") + location.host + q; }
   function mpMe() { mpSend({ t: "me", name: MP.myName, animal: S.animal, outfit: spriteOutfit || null }); }
   function mpPeer(id) { return MP.peers[id] || (MP.peers[id] = { id: id, name: "Player", x: p.x, y: p.y, tx: p.x, ty: p.y, vx: 0, vy: 0, on: true, face: 1, walk: 0, a: 0.3, hp: MAXHP, cave: 0, grace: 0, sp: null }); }
   function mpCount() { MP.npeers = Object.keys(MP.peers).length; }

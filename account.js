@@ -5,6 +5,37 @@
 // visitor's account (via /api/*, see worker.js) and pulls it back on a new device.
 (function () {
   "use strict";
+  // ---- Where the API lives ----
+  // On the website itself the API is on the same address and the session is a cookie. When the game is embedded somewhere else
+  // (itch.io runs it in an iframe on *.itch.zone) relative /api/ calls would hit itch, and browsers block our cookie there. So off-site copies
+  // call the Worker by its full address and sign in with a token kept in localStorage (see "Bearer" in worker.js).
+  // window.SV is shared with sandbox.js: SV.fetch(path, opts) for API calls, SV.ws(path) for the multiplayer socket.
+  var HOME = "https://swamprealms.com";   // the live site and its Worker (custom domain); change this if it ever moves
+  var TOKEN = "swamp-token-v1";
+  var BASE = (function () {
+    if (typeof window.SV_API_BASE === "string") return window.SV_API_BASE.replace(/\/$/, "");
+    return /(^|\.)itch\.(io|zone)$/i.test(location.hostname) ? HOME : "";
+  })();
+  function tok() { try { return localStorage.getItem(TOKEN) || ""; } catch (e) { return ""; } }
+  window.SV = {
+    base: BASE,
+    remote: !!BASE,
+    token: tok,
+    fetch: function (path, o) {
+      o = Object.assign({}, o || {});
+      if (!BASE) { o.credentials = "same-origin"; return fetch(path, o); }
+      o.credentials = "omit";
+      var t = tok(), h = Object.assign({}, o.headers || {});
+      if (t) h.authorization = "Bearer " + t;
+      o.headers = h;
+      return fetch(BASE + path, o);
+    },
+    ws: function (path) {   // path like /api/mp/ws/ABC123?role=host
+      var t = tok(), u = BASE ? BASE.replace(/^http/, "ws") : (location.protocol === "https:" ? "wss://" : "ws://") + location.host;
+      return u + path + (BASE && t ? (path.indexOf("?") > -1 ? "&" : "?") + "t=" + t : "");
+    }
+  };
+
   var LS = { cards: "swamp-cards-v1", packs: "swamp-packs-v1", crystals: "swamp-crystals-v1" };
   var SYNC = "swamp-sync-v1";   // this device's link to the account: {user, rev, base}
   var KEYS = [LS.cards, LS.packs, LS.crystals];
@@ -55,8 +86,8 @@
   }
 
   async function api(method, path, body, keepalive) {
-    var r = await fetch(path, {
-      method: method, credentials: "same-origin", cache: "no-store", keepalive: !!keepalive,
+    var r = await window.SV.fetch(path, {
+      method: method, cache: "no-store", keepalive: !!keepalive,
       headers: body ? { "content-type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined
     });
@@ -86,6 +117,7 @@
 
   function signedOut() {
     S.user = ""; S.rev = 0; S.base = ""; saveS(); ready = false; status = "";
+    try { localStorage.removeItem(TOKEN); } catch (e) {}
   }
 
   // Compare this device with the cloud save and decide what to do
@@ -122,6 +154,7 @@
     var r = await api("POST", mode === "up" ? "/api/register" : "/api/login", { username: username, password: password });
     if (r.status === 503) throw new Error("Accounts aren't switched on for this site yet.");
     if (r.status !== 200 || !r.body || !r.body.user) throw new Error((r.body && r.body.error) || "Something went wrong. Try again.");
+    if (BASE) { try { if (r.body.token) localStorage.setItem(TOKEN, r.body.token); } catch (e) {} }
     S = { user: r.body.user.name, rev: 0, base: "" }; saveS();
     reconcile(r.body.save);
   }
@@ -133,7 +166,7 @@
       if (canon(local()) !== S.base && !confirm("Your latest progress hasn't been saved to your account yet. Sign out anyway and lose it?")) return;
     }
     try { await api("POST", "/api/logout", {}); } catch (e) {}
-    KEYS.concat([SYNC]).forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    KEYS.concat([SYNC, TOKEN]).forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
     location.reload();
   }
 

@@ -17,6 +17,20 @@ const LOGIN_WINDOW = 15 * 60 * 1000;
 const LOGIN_MAX_NAME_IP = 8, LOGIN_MAX_IP = 40, LOGIN_MAX_NAME = 60;
 const REG_MAX = 10, REG_WINDOW = 60 * 60 * 1000;      // 10 new accounts per IP per hour
 
+// ---- itch.io (and other embedded copies of the game) ----
+// The game on itch.io runs in an iframe on *.itch.zone, a different site from this Worker, so browsers won't send our cookie there.
+// Instead those requests sign in with a token: login/register hand one back (when the request comes from an allowed outside origin),
+// and the game sends it as "Authorization: Bearer <token>" (or ?t=<token> for the multiplayer WebSocket). Same sessions table as the cookie.
+const EXTERNAL = [/^https:\/\/([a-z0-9-]+\.)*itch\.zone$/i, /^https:\/\/([a-z0-9-]+\.)*itch\.io$/i];
+const externalOrigin = req => { const o = req.headers.get("origin") || ""; return o && EXTERNAL.some(r => r.test(o)) ? o : ""; };
+const corsHeaders = origin => origin ? { "access-control-allow-origin": origin, "access-control-allow-headers": "authorization, content-type", "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS", "access-control-max-age": "86400", "vary": "Origin" } : {};
+function bearer(req, url) {
+  const m = (req.headers.get("authorization") || "").match(/^Bearer\s+([a-f0-9]{64})$/i);
+  if (m) return m[1];
+  const t = url && url.searchParams.get("t");
+  return t && /^[a-f0-9]{64}$/i.test(t) ? t : "";
+}
+
 const json = (o, status = 200, headers = {}) =>
   new Response(JSON.stringify(o), {
     status,
@@ -69,10 +83,10 @@ async function startSession(db, url, userId) {
   await db.prepare("DELETE FROM sessions WHERE expires < ?").bind(now).run();
   await db.prepare("INSERT INTO sessions (token, user_id, expires) VALUES (?, ?, ?)")
     .bind(await sha256(token), userId, now + SESSION_DAYS * 86400000).run();
-  return setCookie(url, token, SESSION_DAYS * 86400);
+  return { token, cookie: setCookie(url, token, SESSION_DAYS * 86400) };
 }
-async function auth(req, db) {
-  const token = getCookie(req, COOKIE);
+async function auth(req, db, url) {
+  const token = bearer(req, url) || getCookie(req, COOKIE);
   if (!token) return null;
   return (await db.prepare(
     "SELECT u.id AS id, u.display AS name FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires > ?"
@@ -93,16 +107,18 @@ const isObj = o => !!o && typeof o === "object" && !Array.isArray(o);
 
 async function api(req, env, url) {
   if (!env.DB) return json({ error: "Accounts are not set up yet." }, 503);
-  const db = env.DB, path = url.pathname, method = req.method;
+  const db = env.DB, path = url.pathname, method = req.method, ext = externalOrigin(req);
+  // From an outside origin (itch.io) there is no cookie: the session token travels in the JSON reply instead.
+  const sess = (st, body) => ext ? json({ ...body, token: st.token }, 200) : json(body, 200, { "set-cookie": st.cookie });
 
   // Writes must come from this site: same origin, and JSON only (a plain cross-site form can't send JSON)
   if (method !== "GET" && method !== "HEAD") {
     const origin = req.headers.get("origin");
-    if (origin) { let h = ""; try { h = new URL(origin).host; } catch (e) {} if (h !== url.host) return json({ error: "Not allowed" }, 403); }
+    if (origin && !ext) { let h = ""; try { h = new URL(origin).host; } catch (e) {} if (h !== url.host) return json({ error: "Not allowed" }, 403); }
   }
 
   if (path === "/api/me" && method === "GET") {
-    const u = await auth(req, db);
+    const u = await auth(req, db, url);
     if (!u) return json({ error: "Not signed in" }, 401);
     return json({ user: { name: u.name }, save: await cloudSave(db, u.id) });
   }
@@ -123,8 +139,7 @@ async function api(req, env, url) {
         .bind(id, name, b.username, toB64(salt), toB64(hash), ITER, Date.now()).run();
     } catch (e) { return json({ error: "That username is taken." }, 409); }
     await hit(db, ipKey, REG_WINDOW);
-    const cookie = await startSession(db, url, id);
-    return json({ user: { name: b.username }, save: null }, 200, { "set-cookie": cookie });
+    return sess(await startSession(db, url, id), { user: { name: b.username }, save: null });
   }
 
   if (path === "/api/login" && method === "POST") {
@@ -143,18 +158,17 @@ async function api(req, env, url) {
       return json({ error: "Wrong username or password." }, 401);
     }
     await unhit(db, kNameIp);
-    const cookie = await startSession(db, url, u.id);
-    return json({ user: { name: u.display }, save: await cloudSave(db, u.id) }, 200, { "set-cookie": cookie });
+    return sess(await startSession(db, url, u.id), { user: { name: u.display }, save: await cloudSave(db, u.id) });
   }
 
   if (path === "/api/logout" && method === "POST") {
-    const token = getCookie(req, COOKIE);
+    const token = bearer(req, url) || getCookie(req, COOKIE);
     if (token) await db.prepare("DELETE FROM sessions WHERE token = ?").bind(await sha256(token)).run();
     return json({ ok: true }, 200, { "set-cookie": setCookie(url, "", 0) });
   }
 
   if (path === "/api/save" && method === "PUT") {
-    const u = await auth(req, db);
+    const u = await auth(req, db, url);
     if (!u) return json({ error: "Not signed in" }, 401);
     const b = await readJson(req);
     if (!b || !isObj(b.data) || !Number.isInteger(b.baseRev) || b.baseRev < 0) return json({ error: "Bad request" }, 400);
@@ -188,7 +202,7 @@ async function api(req, env, url) {
     await mpTable(db);
     const now = Date.now();
     if (path === "/api/mp/host" && method === "POST") {
-      const u = await auth(req, db); if (!u) return json({ error: "Sign in to host a world." }, 401);
+      const u = await auth(req, db, url); if (!u) return json({ error: "Sign in to host a world." }, 401);
       const b = (await readJson(req)) || {};
       const name = (typeof b.name === "string" ? b.name : "My Swamp").replace(/[^\w '!?.-]/g, "").trim().slice(0, 24) || "My Swamp";
       let code = "";
@@ -210,9 +224,9 @@ async function api(req, env, url) {
     if (m[1] === "room" && room && room.updated < now - 10 * 60000) return json({ error: "That world was closed. Ask your friend for a new code." }, 404);
     if (m[1] === "room") return room ? json({ code: room.code, name: room.name, host: room.host_name, players: room.players, pvp: !!room.pvp }) : json({ error: "No world with that code. Check the code with your friend." }, 404);
     if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ error: "Expected a WebSocket" }, 426);
-    const origin = req.headers.get("origin"); if (origin) { let h = ""; try { h = new URL(origin).host; } catch (e) {} if (h !== url.host) return json({ error: "Not allowed" }, 403); }
+    const origin = req.headers.get("origin"); if (origin && !ext) { let h = ""; try { h = new URL(origin).host; } catch (e) {} if (h !== url.host) return json({ error: "Not allowed" }, 403); }
     if (!room) return json({ error: "No world with that code." }, 404);
-    const role = url.searchParams.get("role") === "host" ? "host" : "guest", u = await auth(req, db);
+    const role = url.searchParams.get("role") === "host" ? "host" : "guest", u = await auth(req, db, url);
     if (role === "host" && (!u || u.id !== room.host_id)) return json({ error: "Only the person who opened this room can host it." }, 403);
     let name = u ? u.name : String(url.searchParams.get("name") || "").replace(/[^\w -]/g, "").trim().slice(0, 16);
     if (!name || name.length < 2) name = "Guest";
@@ -226,7 +240,7 @@ async function api(req, env, url) {
   //   PUT    /api/delve/<wid>    {name, data, baseRev} -> {rev, updated}; 409 {error:"conflict", rev, updated} if the cloud copy changed since baseRev
   //   DELETE /api/delve/<wid>
   if (path === "/api/delve" || path.startsWith("/api/delve/")) {
-    const u = await auth(req, db);
+    const u = await auth(req, db, url);
     if (!u) return json({ error: "Not signed in" }, 401);
     await delveTable(db);
     const wid = path.length > 11 ? decodeURIComponent(path.slice(11)) : "";
@@ -367,7 +381,14 @@ export default {
     const url = new URL(req.url);
     if (!url.pathname.startsWith("/api/"))
       return env.ASSETS ? env.ASSETS.fetch(req) : new Response("Not found", { status: 404 });
-    try { return await api(req, env, url); }
-    catch (e) { console.error(e); return json({ error: "Server error" }, 500); }
+    const cors = corsHeaders(externalOrigin(req));
+    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    let res;
+    try { res = await api(req, env, url); }
+    catch (e) { console.error(e); res = json({ error: "Server error" }, 500); }
+    if (!cors["access-control-allow-origin"] || res.status === 101) return res;
+    const out = new Response(res.body, res);
+    for (const k in cors) out.headers.set(k, cors[k]);
+    return out;
   }
 };

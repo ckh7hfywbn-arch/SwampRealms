@@ -194,6 +194,9 @@ Saving still happens in the browser first. When someone is signed in, `account.j
 
 If the Worker is not named `theswampverse`, change `name` in `wrangler.jsonc` to match it.
 
+### Accounts on itch.io (Delve)
+The itch.io build runs in an iframe on `*.itch.zone`, so the website's cookie can't be used there. `account.js` creates `window.SV`: on the website it calls `/api/*` as before (cookie); on `itch.io` / `itch.zone` it calls the Worker by full address (`HOME` at the top of `account.js`) and signs in with a session token kept in `localStorage` (`swamp-token-v1`). `worker.js` allows CORS only from `*.itch.io` and `*.itch.zone` (`EXTERNAL`), hands back a `token` in the login/register reply for those origins, and accepts it as `Authorization: Bearer <token>` (or `?t=` on the multiplayer WebSocket). Same accounts, same cloud saves and same multiplayer rooms as the website. After changing the Worker, run `npx wrangler deploy`; after changing the game files, push so the itch build updates. The live address is `https://swamprealms.com`; if the site ever moves, update `HOME`.
+
 ## Deploying
 
 Commit the files to GitHub. If the repo is connected to Cloudflare Workers, it redeploys on push.
