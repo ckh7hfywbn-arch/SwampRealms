@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=delve1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui25-light">
+<link rel="stylesheet" href="sandbox.css?v=ui26-csearch">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -199,6 +199,9 @@ html.dl-on,html.dl-on body{overflow:hidden}
     <div class="pz-body" id="sbxPauseBody"></div>
    </div>
   </section>
+  <section class="sbx-dead" id="sbxDead" role="alertdialog" aria-modal="true" aria-labelledby="sbxDeadH" hidden>
+   <div class="dd-card" id="sbxDeadBody"></div>
+  </section>
   <section class="sbx-pack sbx-story" id="sbxStory" role="dialog" aria-modal="true" aria-label="Story" hidden>
    <div class="sbx-sbox2" id="sbxStoryBox"></div>
   </section>
@@ -235,7 +238,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="sandbox-cave.js?v=cave22-garage" onload="__dl('cave')"></script>
 <script src="delve-avatar.js?v=delve8-people" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="sandbox.js?v=delve183-mobs" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve187-maplag" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.

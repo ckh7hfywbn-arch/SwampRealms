@@ -895,3 +895,8 @@ About 24 standalone buildings sit in the Delve world (6 kinds, 2 per biome): Ree
   - **Colour grade:** a gentle saturation and contrast lift, which Photo mode filters replace and which saved photos include.
   - **Phones / Low graphics:** keep the light path. Bloom skips itself if the game has already dropped to reduced effects on a slow machine.
 - **Creature pack**: four new enemies (Snapper Lily in swamp nights, Cinder Imp in the Embers, Rime Brute in the Frostfen, Geode Crawler underground, whose shell blocks 80% of damage while curled), each with a journal entry and a gem drop. Five new passive critters (snail, turtle, lizard, fox, penguin) with boop lines, plus ambient dragonflies, moths, wisps and owls that glow at dusk. New glowing blocks and recipes: Geode, Rime, Imp Brick and Bloomstone. Also fixed the journal Log tab crashing because the Lantern of the Order charm had no icon.
+
+
+## Craft search
+
+Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `csCard` in `sandbox.js`, styles `.sbx-csr` / `.cs-*` in `sandbox.css`). It searches every item, recipe (hand and station), creature, boss and animal friend by name or kind. A result you can make by hand shows a **Craft** button; a station recipe says where and has an Open / Show me button; anything else shows what it is, what it is used for, and what you are missing. It is built from `ITEMS`, `craftAll()`, `ENEMY`, `BOSS` and `ANIM`, so new content appears automatically. When you change `sandbox.js` or `sandbox.css`, bump their `?v=` in `sandbox.html`.

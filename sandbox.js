@@ -59,6 +59,9 @@
   ];
   var TROPHY = { queenchitin: 1, wyrmscale: 1, alphamane: 1, realmshard: 1, ruby: 1, sapphire: 1, moonstone: 1, amethyst: 1, amber: 1 };
   function dif() { return DIFF[S && S.diff >= 0 && S.diff <= 2 ? S.diff : 1]; }
+  // DEATH RULES (world settings, saved with each world): Keep Inventory ON = nothing is lost when you pass out. Otherwise you lose lossPct % of every stack of loose
+  //   materials (tools, gear, potions, trophies and summons are always safe). lossPct null = follow the difficulty (Hard 20%, otherwise 0%).
+  function lossPercent() { return S && S.lossPct !== null && S.lossPct !== undefined ? clamp(+S.lossPct || 0, 0, 100) : Math.round(dif().loss * 100); }
   var WEAPONS = [
     { n: "No Weapon", c: "#8fd37a", dmg: 0, cd: 0 }, { n: "Reed Spear", c: "#c9b58a", dmg: 5, cd: 0.5 }, { n: "Glowspore Blade", c: "#4ee6b4", dmg: 9, cd: 0.42 },
     { n: "Cinder Cleaver", c: "#ff8a3d", dmg: 16, cd: 0.5 }, { n: "Frost Fang", c: "#7fd6ff", dmg: 26, cd: 0.34 }, { n: "Swampking Blade", c: "#c06aff", dmg: 40, cd: 0.32 }
@@ -504,7 +507,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -588,7 +591,13 @@
     if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) };
     if (Array.isArray(o.ways) && o.wv === SW.WORLDVER) d.ways = o.ways.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y), n: String(q.n || "Waystone").slice(0, 24) }; });
     if (o.fx && typeof o.fx === "object") Object.keys(FXN).forEach(function (k) { var v = +o.fx[k]; if (v > 0) d.fx[k] = Math.min(v, 600); });
-    d.cg = clamp(Math.floor(+o.cg) || 0, 0, 63); d.diff = o.diff === 0 || o.diff === 2 ? o.diff : 1; d.wings = o.wings ? 1 : 0; d.done = o.done ? 1 : 0; d.gv = o.gv ? 1 : 0;
+    d.cg = clamp(Math.floor(+o.cg) || 0, 0, 63); d.diff = o.diff === 0 || o.diff === 2 ? o.diff : 1; d.keepInv = o.keepInv ? 1 : 0; d.lossPct = o.lossPct === null || o.lossPct === undefined || !isFinite(+o.lossPct) ? null : clamp(Math.round(+o.lossPct / 10) * 10, 0, 100);   // DEATH RULES (world settings)
+    d.graveMin = clamp(Math.round(+o.graveMin) || 5, 1, 15); d.graves = [];
+    if (Array.isArray(o.graves) && o.wv === SW.WORLDVER) o.graves.slice(0, 3).forEach(function (q) {   // GRAVESTONES still waiting for you (dropped if the world was rebuilt)
+      if (!q || !isFinite(q.x) || !isFinite(q.y) || !(q.t > 0) || !q.L || typeof q.L !== "object") return; var L = {}, c = 0;
+      Object.keys(q.L).forEach(function (k) { if (ITEMS[k] && q.L[k] > 0) { L[k] = Math.min(99999, q.L[k] | 0); c++; } });
+      if (c) d.graves.push({ x: +q.x, y: +q.y, t: Math.min(900, +q.t), m: clamp(+q.m || 300, 60, 900), L: L, n: Math.floor(+q.n) || 0, d: Math.floor(+q.d) || 0 });
+    }); d.wings = o.wings ? 1 : 0; d.done = o.done ? 1 : 0; d.gv = o.gv ? 1 : 0;
     if (o.gates && typeof o.gates === "object" && o.wv === SW.WORLDVER) Object.keys(o.gates).forEach(function (k) { var v = o.gates[k]; if (/^\d+,\d+$/.test(k) && v) { var oo = {}; GATE_OFFER.forEach(function (q) { if (v.o && v.o[q[0]]) oo[q[0]] = 1; }); d.gates[k] = { o: oo, on: v.on && GATE_OFFER.every(function (q) { return oo[q[0]]; }) ? 1 : 0 }; } });
     if (o.traps && typeof o.traps === "object" && o.wv === SW.WORLDVER) Object.keys(o.traps).forEach(function (k) { var v = o.traps[k]; if (/^\d+,\d+$/.test(k) && v) d.traps[k] = { f: (Array.isArray(v.f) ? v.f : []).filter(function (f) { return ITEMS[f]; }).slice(0, TRAP_MAX), t: clamp(+v.t || 0, 0, TRAP_T) }; });
     if (o.stands && typeof o.stands === "object" && o.wv === SW.WORLDVER) Object.keys(o.stands).forEach(function (k) { var v = o.stands[k]; if (/^\d+,\d+$/.test(k) && v) d.stands[k] = { a: clamp(Math.floor(+v.a) || 0, 0, 5), w: clamp(Math.floor(+v.w) || 0, 0, 5) }; });
@@ -8095,7 +8104,7 @@
       var sn = stationNearK(k); if (sn) { openStn(k, sn.x, sn.y); flashRec(id, "sbxStn"); return; }
       toast("Make the " + r.n + " at your " + (k === "bench" ? "Bog Workbench" : STATIONS[k].n) + ". Walk up to it and tap it.", "#f2c14e"); return;
     }
-    ccat = r.cat2 || ccat; csub = r.sub || ""; cready = false; openPanel("craft"); flashRec(id, "sbxPanel");
+    ccat = r.cat2 || ccat; csub = r.sub || ""; cready = false; csearch = ""; openPanel("craft"); flashRec(id, "sbxPanel");
   }
   function flashRec(id, root) {
     setTimeout(function () {
@@ -9539,6 +9548,7 @@
   }
   function hurt(n, why, cont) {
     if (MP.proxy) return mpProxyHurt(n, why);   // a creature on the host's screen hit a visiting player
+    if (deadUI) return;   // the death screen is up: nothing can hurt you until you respawn
     if (n <= 0 || dv("god")) return; if (!cont && hurtGrace > 0) return;
     n *= dif().dmg;   // difficulty
     if (hasCharm("king") && (why === "boss" || BOSS[why])) n *= 0.8;   // the Swampking Sigil
@@ -9559,14 +9569,121 @@
     BRAWL.vang = 0; if (npc.angry > 0) { npc.angry = 0; npc.go = 0; } wilds.forEach(function (a) { a.mad = 0; a.flee = 0; });   // a fresh start after passing out
     if (BM.on) BM.fail = true;   // BLOOD MOON: no rewards this time
     S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
-    var lost = 0, L = dif().loss;
-    if (L > 0) Object.keys(S.inv).forEach(function (k) {   // Hard: a share of each stack of loose materials is lost
-      var it = ITEMS[k]; if (!it || it.tool || it.summon || it.home || POTIONS[k] || TROPHY[k] || !(S.inv[k] > 1)) return;
-      var n = Math.floor(S.inv[k] * L); if (n > 0) { S.inv[k] -= n; lost += n; }
+    var lost = 0, lostMap = {}, L = S.keepInv ? 0 : lossPercent() / 100;
+    if (L > 0) Object.keys(S.inv).forEach(function (k) {   // DEATH RULES: a share of each stack of loose materials is lost (a leftover fraction is a chance of one more)
+      var it = ITEMS[k]; if (!it || it.tool || it.summon || it.home || POTIONS[k] || TROPHY[k] || !(S.inv[k] > 0)) return;
+      var x = S.inv[k] * L, n = Math.floor(x); if (Math.random() < x - n) n++; n = Math.min(n, S.inv[k]); if (n > 0) { S.inv[k] -= n; lost += n; lostMap[k] = n; }
     });
     if (lost) { reslot(); hbDirty = true; }
-    respawn((why === "lava" ? "Burned by lava! You woke up at camp." : "You passed out and woke up at camp.") + (lost ? " (Hard: you lost " + lost + " loose materials.)" : ""));
+    var grave = lost ? makeGrave(lostMap, lost) : null;   // ELIMINATION: the loot you lost waits in a gravestone for a while
+    showDeath(why, lostMap, lost, grave);   // the death screen; Respawn (deadRespawn) puts you back at camp
   }
+
+  // ---------- ELIMINATION, DEATH SCREEN AND GRAVESTONES ----------
+  // When your health runs out you are ELIMINATED: faint() works out what you lose (see DEATH RULES above) and the death screen opens (single player freezes the world;
+  // nothing can hurt you while it is up). Press Respawn to wake at camp or your bed. The loot you lost is kept in a GRAVESTONE (S.graves, saved with the world, up to 3)
+  // where you fell (or at the cave entrance if you fell underground). Walk up and press F (or tap the pill) to take it back before its timer runs out (S.graveMin minutes,
+  // set in Settings, counted only while you play). Keep Inventory means nothing is lost and no gravestone is made.
+  var deadUI = false, deadAt = 0, graveHudEl = null, graveHudT = 0;
+  function deathCause(why) {
+    if (why === "lava") return "Burned by lava"; if (why === "fall") return "Took a nasty fall"; if (why === "bomb") return "Blown up"; if (why === "star") return "Struck by a falling star"; if (why === "pvp") return "Defeated by another player";
+    if (BOSS[why] && BOSS[why].n) return "Defeated by " + BOSS[why].n; if (ENEMY[why] && ENEMY[why].n) return "Defeated by a " + ENEMY[why].n; return "You passed out";
+  }
+  function fmtT(sec) { sec = Math.max(0, Math.ceil(sec)); return Math.floor(sec / 60) + ":" + (sec % 60 < 10 ? "0" : "") + (sec % 60); }
+  function graveSpot(x, y) {   // the nearest safe standing spot (open air above solid ground, not lava or water) to where you fell
+    var tx = clamp(Math.floor(x), 1, W - 2), ty = clamp(Math.floor(y), 1, H - 3), cols = [0, -1, 1, -2, 2, -3, 3], c, d, i;
+    var ok = function (cx, cy) { var id = get(cx, cy); return !blocks(cx, cy) && !TILES[id].solid && id !== T.LAVA && TILES[id].kind !== "water"; };
+    for (c = 0; c < cols.length; c++) {
+      var cx = clamp(tx + cols[c], 1, W - 2), dirs = ok(cx, ty) ? [1, -1] : [-1, 1];
+      for (d = 0; d < 2; d++) for (i = 0; i < 50; i++) {
+        var cy = ty + dirs[d] * i; if (cy < 1 || cy >= H - 2) break;
+        if (ok(cx, cy) && ok(cx, cy - 1) && dropSolid(cx + 0.5, cy + 1.5) && get(cx, cy + 1) !== T.LAVA) return { x: cx + 0.5, y: cy + 1 };
+      }
+    }
+    return { x: world.spawn.x, y: world.spawn.y };
+  }
+  function makeGrave(L, cnt) {
+    var gx, gy; if (cave) { gx = cave.hole.x + 0.5; gy = cave.hole.y + 1; } else { var sp = graveSpot(p.x, p.y); gx = sp.x; gy = sp.y; }
+    var m = clamp(S.graveMin || 5, 1, 15) * 60; if (!S.graves) S.graves = [];
+    var gr = { x: +gx.toFixed(2), y: +gy.toFixed(2), t: m, m: m, L: L, n: cnt, d: S.st.deaths };
+    S.graves.push(gr); while (S.graves.length > 3) S.graves.shift();   // only the 3 newest stones stand; an older one crumbles with its loot
+    graveHudT = 0; return gr;
+  }
+  function graveTick(dt) {
+    var G = S.graves; if (!G || !G.length || deadUI) { if (graveHudEl && !graveHudEl.hidden && (!G || !G.length)) graveHudEl.hidden = true; return; }
+    for (var i = G.length - 1; i >= 0; i--) {
+      var q = G[i]; q.t -= dt;
+      if (q.t <= 0) { G.splice(i, 1); if (!cave && Math.abs(q.x - p.x) < 40) chips(q.x, q.y - 0.6, "#9aa39e", 18, 7); toast("Your gravestone crumbled to dust. The loot is gone.", "#c9a46a"); hbDirty = true; save(); graveHudT = 0; }
+    }
+    graveHudT -= dt; if (graveHudT <= 0) { graveHudT = 0.5; graveHud(); }
+  }
+  function graveHud() {
+    var G = S.graves; if (!graveHudEl) { graveHudEl = document.createElement("div"); graveHudEl.id = "sbxGraveHud"; graveHudEl.className = "sbx-gravehud"; graveHudEl.setAttribute("role", "status"); graveHudEl.hidden = true; stageEl.appendChild(graveHudEl); }
+    if (!G || !G.length || deadUI || titleOpen) { graveHudEl.hidden = true; return; }
+    var px = cave ? cave.hole.x : p.x, q = G[0], i; for (i = 1; i < G.length; i++) if (Math.abs(G[i].x - px) < Math.abs(q.x - px)) q = G[i];
+    var dx = q.x - px, dir = Math.abs(dx) < 3 ? "here" : Math.round(Math.abs(dx)) + (dx < 0 ? " \u2190" : " \u2192");
+    graveHudEl.textContent = "Gravestone " + fmtT(q.t) + " \u00b7 " + dir; graveHudEl.classList.toggle("warn", q.t < 30); graveHudEl.hidden = false;
+  }
+  function graveNear() {
+    if (cave || deadUI || !S.graves) return null;
+    for (var i = 0; i < S.graves.length; i++) { var q = S.graves[i]; if (Math.abs(q.x - p.x) < 1.6 && Math.abs(q.y - p.y) < 2.2) return q; }
+    return null;
+  }
+  function recoverGrave() {
+    var q = graveNear(); if (!q) return; var n = 0;
+    Object.keys(q.L).forEach(function (k) { if (ITEMS[k] && q.L[k] > 0) { give(k, q.L[k], undefined, undefined, true); n += q.L[k]; } });
+    S.graves.splice(S.graves.indexOf(q), 1); chips(q.x, q.y - 0.6, "#f2c14e", 16, 7); snd("coin"); hbDirty = true; graveHudT = 0;
+    popup("Gravestone", "Recovered " + n + " items", "#f2c14e", "\u2020"); toast("You dug up your gravestone and got " + n + " items back.", "#f2c14e"); save();
+  }
+  function gravePill(g, now) {
+    var q = graveNear(); if (!q || panelOpen) return false;
+    drawPill(g, now, "Recover loot" + (coarse ? "" : " (F)"), ox + q.x * ts, oy + (q.y - 2.3) * ts, false, recoverGrave); return true;
+  }
+  function drawGraves(g, now) {
+    var G = S.graves; if (cave || !G || !G.length) return;
+    for (var i = 0; i < G.length; i++) {
+      var q = G[i], sx = ox + q.x * ts, sy = oy + q.y * ts; if (sx < -ts * 2 || sx > vw + ts * 2 || sy < -ts * 8 || sy > vh + ts * 2) continue;
+      var w = ts * 0.64, h = ts * 0.95, pulse = reduce ? 0.6 : 0.5 + 0.5 * Math.sin(now / 420 + i);
+      var bm = g.createLinearGradient(0, sy - ts * 7, 0, sy); bm.addColorStop(0, "rgba(160,255,220,0)"); bm.addColorStop(1, "rgba(160,255,220," + (0.12 + pulse * 0.14).toFixed(2) + ")");
+      g.fillStyle = bm; g.fillRect(sx - ts * 0.28, sy - ts * 7, ts * 0.56, ts * 7);   // a faint beam of light so you can find it from far away
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(sx, sy, w * 0.75, ts * 0.12, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "#5a4630"; g.beginPath(); g.ellipse(sx, sy - ts * 0.04, w * 0.7, ts * 0.13, 0, 0, 6.2832); g.fill();   // the dirt mound
+      var gr = g.createLinearGradient(sx - w / 2, 0, sx + w / 2, 0); gr.addColorStop(0, "#aab3ad"); gr.addColorStop(1, "#6d7771");
+      g.fillStyle = gr; g.strokeStyle = "#3d4541"; g.lineWidth = Math.max(1.5, ts * 0.05);
+      g.beginPath(); g.moveTo(sx - w / 2, sy - ts * 0.04); g.lineTo(sx - w / 2, sy - h * 0.62); g.arc(sx, sy - h * 0.62, w / 2, Math.PI, 0); g.lineTo(sx + w / 2, sy - ts * 0.04); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = "rgba(90,150,80,.8)"; g.beginPath(); g.ellipse(sx - w * 0.28, sy - ts * 0.1, w * 0.2, ts * 0.06, 0, 0, 6.2832); g.fill();   // a little moss
+      g.fillStyle = "#3d4541"; g.fillRect(sx - ts * 0.04, sy - h * 0.86, ts * 0.08, h * 0.44); g.fillRect(sx - ts * 0.14, sy - h * 0.74, ts * 0.28, ts * 0.08);   // the cross
+      if (!reduce) for (var j = 0; j < 3; j++) { var ph = ((now / 1600 + j / 3) % 1); g.fillStyle = "rgba(190,255,230," + (0.55 * (1 - ph)).toFixed(2) + ")"; g.beginPath(); g.arc(sx + Math.sin(now / 500 + j * 2) * ts * 0.18, sy - h - ph * ts * 1.1, ts * 0.05, 0, 6.2832); g.fill(); }   // soul wisps
+      g.font = "800 " + Math.max(10, Math.round(ts * 0.34)) + "px Nunito,sans-serif"; g.textAlign = "center"; g.textBaseline = "alphabetic"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)";
+      var tx = fmtT(q.t); g.strokeText(tx, sx, sy - h - ts * 0.22); g.fillStyle = q.t < 30 ? "#ffb3a8" : "#f6eedb"; g.fillText(tx, sx, sy - h - ts * 0.22);
+    }
+  }
+  function showDeath(why, L, lost, grave) {
+    stopInput(); thud(90, 0.12); deadUI = true; deadAt = performance.now();
+    var el = $("sbxDead"), body = $("sbxDeadBody"); if (!el || !body) { deadUI = false; respawn("You woke up at camp."); return; }
+    var cause = deathCause(why), items = Object.keys(L).sort(function (a, b) { return L[b] - L[a]; });
+    var h = '<div class="dd-sub">Elimination #' + (S.st.deaths | 0) + " \u00b7 Day " + ((S.days | 0) + 1) + '</div><h2 class="dd-h" id="sbxDeadH">ELIMINATED</h2><p class="dd-why">' + esc(cause) + "</p>";
+    if (S.keepInv) h += '<p class="dd-note ok">Keep Inventory is on. You kept everything.</p>';
+    else if (!lost) h += '<p class="dd-note">' + (lossPercent() > 0 ? "You had no loose loot to lose this time." : "Loot loss is set to 0%, so you lost nothing.") + "</p>";
+    else {
+      h += '<div class="dd-loot" aria-label="Loot lost">' + items.slice(0, 12).map(function (k) { var im = ""; try { im = '<img alt="" src="' + esc(icon(k)) + '">'; } catch (e) {} return '<span class="dd-chip" title="' + esc(ITEMS[k].n) + '">' + im + "<b>" + L[k] + "</b></span>"; }).join("") + (items.length > 12 ? '<span class="dd-more">+' + (items.length - 12) + " more</span>" : "") + "</div>";
+      h += '<p class="dd-note">Your gravestone holds <b>' + lost + "</b> items. Reach it within <b>" + fmtT(grave.t) + "</b> and press F (or tap it) to take them back. When the time runs out it crumbles and the loot is gone.</p>";
+    }
+    h += '<button type="button" class="dd-btn" data-dead="respawn" disabled>Respawn</button>';
+    body.innerHTML = h; el.hidden = false; el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
+    if (MP.on) { try { mpSend({ t: "chat", m: ("was eliminated! " + cause).slice(0, 80) }); } catch (e) {} }
+    setTimeout(function () { var b = body.querySelector("[data-dead]"); if (b && deadUI) { b.disabled = false; try { b.focus({ preventScroll: true }); } catch (e) {} } }, 700);
+    if (graveHudEl) graveHudEl.hidden = true;
+  }
+  function deadRespawn() {
+    if (!deadUI || performance.now() - deadAt < 650) return;
+    deadUI = false; var el = $("sbxDead"); if (el) el.hidden = true;
+    respawn("You woke up at camp."); graveHudT = 0;
+    var q = S.graves && S.graves.length ? S.graves[S.graves.length - 1] : null;
+    if (q && q.d === S.st.deaths && !cave) { var dx = q.x - p.x; setTimeout(function () { toast("Your gravestone is " + (Math.abs(dx) < 3 ? "right here" : Math.round(Math.abs(dx)) + " blocks " + (dx < 0 ? "west" : "east")) + ". You have " + fmtT(q.t) + " to reach it.", "#f2c14e"); }, 900); }
+    save();
+  }
+  (function () { var de = $("sbxDead"); if (de) de.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-dead]"); if (b) deadRespawn(); }); })();
   function respawn(msg) {
     if (cave) leaveCaveNow();
     bossGone(); enemies.length = 0; spawnT = 6; swingQ = 0; batT = 8;
@@ -11331,7 +11448,7 @@
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
     if (!cave) { drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
-    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
@@ -11842,6 +11959,7 @@
   }
   function drawHolePrompt(g, now) {   // surface: a pill above a nearby Cave Hole
     actBtn = null; if (panelOpen || sleepT > 0 || trans) return;
+    if (gravePill(g, now)) return;   // GRAVESTONE
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
     drawPill(g, now, coarse ? "Enter cave" : "Enter cave (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 0.8, false, function () { enterCave(h.x, h.y); });
@@ -12298,7 +12416,7 @@
       lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()), can = !owned && !lock && afford;
     return { owned: owned, lock: lock, lock0: lock0, needB: needB, can: can, ready: can && !needB && !(r.stn && !nearStn(r.stn)) };
   }
-  function recCard(r) {
+  function recVis(r) {   // the picture, the one-line note and the status of one recipe (used by recCard and the Craft search)
     var st = recStatus(r), im, note;
     if (r.deco) {
       im = icon(Object.keys(r.out)[0]);
@@ -12307,16 +12425,101 @@
       im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(r.sh ? "shovel" : r.can ? "can" : r.charm ? "charm_" + r.charm : r.hoe ? "hoe" + r.hoe : r.bucket ? (r.bucket >= 2 ? "bkt_i" : "bkt_w") : r.net ? "net" : r.bow ? "bow" + r.bow : r.rod ? "rod" + r.rod : r.bag ? "bag" + r.bag : Object.keys(r.out)[0]);
       note = st.lock && !st.lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : st.lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.rod ? "Craft the Reed Fishing Rod first." : r.hoe ? "Craft the " + HOES[r.hoe - 1].n + " first." : r.bucket ? "Craft the Wooden Bucket first." : r.bow ? "Craft the " + BOWS[r.bow - 1].n + " first." : "Craft the " + PICKS[r.tier - 1].n + " first.") : (st.needB && !st.owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
     }
+    return { st: st, im: im, note: note };
+  }
+  function recCard(r) {
+    var v = recVis(r), st = v.st, im = v.im, note = v.note;
     return '<div class="sbx-card' + (st.owned || st.lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (st.ready ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (st.owned || st.lock ? " disabled" : "") + ">" + (st.owned ? "Owned" : st.lock ? "Locked" : "Craft") + "</button></div>";
   }
   function handAll() { return craftAll().filter(function (r) { return !stnOf(r); }); }   // the Journal only lists what you make by hand
   function handCats() { var all = handAll(); return CRAFT_CATS.filter(function (c) { return c === "Stations" || all.some(function (r) { return r.cat2 === c; }); }); }
+
+  // ---------- CRAFT SEARCH: a search box at the top of Journal > Craft that finds anything in the game ----------
+  // Matches items, recipes (including station recipes), creatures, bosses and animal friends by name or kind. A result you can make by hand has a
+  // Craft button right there; one made at a station says where (and opens that station when you are next to it); anything else shows what it is,
+  // what it is used for and what is still missing. Built from the same data as the Craft list and the item pop-up, so new items appear on their own.
+  var csearch = "", CS_IDX = null;
+  function csName(n) { return String(n || "").replace(/\s*\(\d+\)$/, ""); }
+  function csIndex() {
+    if (CS_IDX) return CS_IDX; itRecIdx();
+    var list = [], seen = {}, byItem = {}, all = craftAll();
+    all.forEach(function (r) { if (r.out) Object.keys(r.out).forEach(function (o) { (byItem[o] = byItem[o] || []).push(r); }); });
+    var add = function (e) {
+      var key = e.n.toLowerCase(), o = seen[key];
+      if (o) { (e.recs || []).forEach(function (r) { if (o.recs.indexOf(r) < 0) o.recs.push(r); }); return; }
+      e.recs = e.recs || []; seen[key] = e; list.push(e);
+    };
+    Object.keys(ITEMS).forEach(function (k) { if (ITEMS[k] && ITEMS[k].n) add({ n: csName(ITEMS[k].n), k: k, recs: (byItem[k] || []).slice() }); });
+    all.forEach(function (r) { var outs = r.out ? Object.keys(r.out).filter(function (o) { return ITEMS[o]; }) : []; if (!outs.length) add({ n: csName(r.n), k: "", recs: [r] }); });
+    Object.keys(ENEMY).forEach(function (k) { var d = ENEMY[k]; if (!d.n || !ITEMS[d.frag]) return; add({ n: d.n, k: d.frag, kind: "Creature", c: d.glow, info: "Hits for up to " + d.dmg + " damage and has " + d.hp + " health. Drops " + ITEMS[d.frag].n + "." }); });
+    Object.keys(BOSS).forEach(function (k) { var B = BOSS[k]; add({ n: B.n, k: B.item && ITEMS[B.item] ? B.item : "", kind: "Boss", c: B.c, info: B.sub + ". " + B.hp + " health, found in " + BIO_NAMES[B.b] + ". " + (ITEMS[B.item] ? "Call it with the " + ITEMS[B.item].n + ". " : "") + "Drops " + Object.keys(B.loot).filter(function (q) { return ITEMS[q]; }).slice(0, 4).map(function (q) { return ITEMS[q].n; }).join(", ") + "." }); });
+    Object.keys(ANIM).forEach(function (k) { var A = ANIM[k]; add({ n: A.n, k: ITEMS[A.prod] ? A.prod : "", kind: "Animal friend", c: "#ff9ac2", info: "Likes " + A.favN + ". Gives " + (ITEMS[A.prod] ? ITEMS[A.prod].n : "a treat") + " every so often once it has a home." }); });
+    list.forEach(function (e) { if (!e.kind) { var I = e.k ? itInfo(e.k) : null; e.kind = I ? I.kind : e.recs.length ? (e.recs[0].cat2 === "Tools" ? "Tool" : e.recs[0].cat2 === "Gear" ? "Gear" : e.recs[0].sub || e.recs[0].cat2 || "Recipe") : "Item"; } e.lk = e.kind.toLowerCase(); e.ln = e.n.toLowerCase(); });
+    return (CS_IDX = list);
+  }
+  function csFind(q) {
+    var terms = q.toLowerCase().split(/\s+/).filter(Boolean), full = terms.join(" "), res = [];
+    if (!terms.length) return res;
+    csIndex().forEach(function (e) {
+      var hay = e.ln + " " + e.lk, ok = terms.every(function (t) { return hay.indexOf(t) > -1; }); if (!ok) return;
+      var sc = e.ln === full ? 0 : e.ln.indexOf(full) === 0 ? 1 : (" " + e.ln).indexOf(" " + full) > -1 ? 2 : terms.every(function (t) { return e.ln.indexOf(t) > -1; }) ? 3 : 4;
+      var rd = 1; e.recs.forEach(function (r) { if (recStatus(r).ready) rd = 0; });
+      res.push({ e: e, sc: sc, rd: rd });
+    });
+    res.sort(function (a, b) { return a.sc - b.sc || a.rd - b.rd || (a.e.ln < b.e.ln ? -1 : a.e.ln > b.e.ln ? 1 : 0); });
+    return res;
+  }
+  function csPick(e) {   // the recipe to show: one you can make now, else one that is open to you, else the first
+    var best = null, pass = 9;
+    e.recs.forEach(function (r) { var st = recStatus(r), q = st.ready ? 0 : st.can ? 1 : !st.owned && !st.lock ? 2 : st.lock ? 3 : 4; if (q < pass) { pass = q; best = r; } });
+    return best;
+  }
+  function csSource(k) {   // where a loose item comes from, when the game data says so
+    var o = [];
+    Object.keys(BOSS).forEach(function (b) { if (BOSS[b].loot && BOSS[b].loot[k]) o.push("Dropped by the " + BOSS[b].n + "."); });
+    if (FISH_ALL.indexOf(k) > -1) o.push("Caught by fishing.");
+    return o.join(" ");
+  }
+  function csCard(e) {
+    var r = csPick(e), I = e.k ? itInfo(e.k) : null, kc = e.c || (I ? I.c : "#c9b58a"), info = e.info || (I ? I.txt : "") || (r && r.d ? itShort(r.d, 130) : ""), uses = I && I.uses.length ? "Used to make " + I.uses.join(", ") + (I.more ? " and " + I.more + " more" : "") + "." : "";
+    var im = r ? recVis(r).im : icon(e.k), cls = "", state = "", btn = "", cost = "", src = !r && e.k && !e.info ? csSource(e.k) : "";
+    if (r) {
+      var v = recVis(r), st = v.st, sk = stnOf(r), sn = sk ? stnName(sk) : "", have = (S.inv[e.k] || 0);
+      var miss = Object.keys(r.cost).filter(function (q) { return haveIt(q) < r.cost[q]; }).map(function (q) { return (r.cost[q] - haveIt(q)) + " " + csName(ITEMS[q].n); });
+      if (st.owned) { cls = "own"; state = "You already have this."; btn = '<button type="button" class="btn ghost" disabled>Owned</button>'; }
+      else if (st.lock) { cls = "lock"; state = "Can't craft yet. " + v.note; btn = '<button type="button" class="btn ghost" disabled>Locked</button>'; }
+      else if (st.ready) {
+        cls = "ok"; state = sk ? "You can craft this: the " + sn + " is next to you." : "You can craft this right now.";
+        btn = sk ? '<button type="button" class="btn" data-sx-goto="' + r.id + '">Open ' + esc(STATIONS[sk] ? STATIONS[sk].sh : sn) + "</button>" : '<button type="button" class="btn" data-sx-craft="' + r.id + '">Craft</button>';
+      } else if (st.can) { cls = "ok2"; state = "You have the materials. Make it at the " + sn + "."; btn = '<button type="button" class="btn ghost" data-sx-goto="' + r.id + '">Show me</button>'; }
+      else { cls = "no"; state = "You can't craft this yet. Missing " + miss.join(", ") + (sk ? ", and it is made at the " + sn + "." : "."); btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
+      if (!st.owned) cost = '<div class="cost">' + costHtml(r.cost) + "</div>";
+      if (e.k && ITEMS[e.k] && have && !(ITEMS[e.k].tool)) state += " You carry " + have + ".";
+    } else {
+      var hv = e.k ? (S.inv[e.k] || 0) : 0; cls = "info"; state = e.info ? "" : "No crafting recipe: you find or earn it out in the world." + (hv ? " You carry " + hv + "." : "");
+    }
+    return '<div class="sbx-card cs-card cs-' + cls + (st_done(cls) ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><div class="cs-h"><b>' + esc(e.n) + '</b><em class="cs-k" style="color:' + kc + '">' + esc(e.kind) + "</em></div>"
+      + (state ? '<span class="cs-st">' + esc(state) + "</span>" : "") + (info ? "<small>" + esc(info) + "</small>" : "") + (src ? "<small>" + esc(src) + "</small>" : "") + (uses && !(r && cls === "ok") ? '<small class="cs-u">' + esc(uses) + "</small>" : "") + cost + "</div>" + btn + "</div>";
+  }
+  function st_done(c) { return c === "own" || c === "lock"; }
+  function csResInner() {
+    var q = csearch.trim(), res = csFind(q), max = 30;
+    if (!res.length) return '<p class="sbx-note">Nothing in the game matches “' + esc(q) + '”. Try another word, like an item, a creature or a station.</p>';
+    return '<p class="sbx-note cs-n">' + res.length + (res.length === 1 ? " result" : " results") + (res.length > max ? ", showing the top " + max + ". Type more to narrow it down." : "") + "</p>" + res.slice(0, max).map(function (x) { return csCard(x.e); }).join("");
+  }
+  function csResHtml() { return '<div id="sbxCRes">' + csResInner() + "</div>"; }
+  function csBar() {
+    return '<div class="sbx-csr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>'
+      + '<input id="sbxCSearch" type="search" value="' + esc(csearch) + '" placeholder="Search anything in the game" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search items, recipes, creatures and more">'
+      + (csearch ? '<button type="button" class="cs-x" data-csclear="1" aria-label="Clear search">&times;</button>' : "") + "</div>";
+  }
   function craftBar() {   // sticky category chips + sub-category chips + the Ready-only switch
     var all = handAll(), cats = handCats(), rd = {}, sr = {}, subs = [];
     if (cats.indexOf(ccat) < 0) ccat = cats[0];
     all.forEach(function (r) { var ok = recStatus(r).ready; if (ok) rd[r.cat2] = (rd[r.cat2] || 0) + 1; if (r.cat2 === ccat) { if (subs.indexOf(r.sub) < 0) subs.push(r.sub); if (ok) sr[r.sub] = (sr[r.sub] || 0) + 1; } });
     if (csub && subs.indexOf(csub) < 0) csub = "";
-    return '<div class="sbx-cbar"><div class="sbx-cats" role="tablist" aria-label="Craft categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === ccat ? "on" : "") + '" data-cc="' + esc(c) + '" aria-selected="' + (c === ccat) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("")
+    if (csearch.trim()) return '<div class="sbx-cbar">' + csBar() + "</div>";
+    return '<div class="sbx-cbar">' + csBar() + '<div class="sbx-cats" role="tablist" aria-label="Craft categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === ccat ? "on" : "") + '" data-cc="' + esc(c) + '" aria-selected="' + (c === ccat) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("")
       + '</div><div class="sbx-subs" aria-label="Sub-categories"><button type="button" class="rdy' + (cready ? " on" : "") + '" data-cready="1" aria-pressed="' + cready + '">Ready</button><button type="button" class="' + (!csub ? "on" : "") + '" data-cs="">All</button>' + subs.map(function (c) { return '<button type="button" class="' + (c === csub ? "on" : "") + '" data-cs="' + esc(c) + '">' + esc(c) + (sr[c] ? "<i>" + sr[c] + "</i>" : "") + "</button>"; }).join("")
       + '</div></div>';
   }
@@ -12711,6 +12914,8 @@
     var h = "";
     if (tab === "quests") {
       h += qbRender();
+    } else if (tab === "craft" && csearch.trim()) {
+      h += craftBar() + csResHtml();
     } else if (tab === "craft") {
       h += craftBar();
       if (ccat === "Tools" || ccat === "Gear" || ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
@@ -12755,6 +12960,9 @@
       h += card("This world",
         row(esc(curEntry() ? curEntry().name : "My Swamp"), "Day " + ((S.days | 0) + 1) + " · saves automatically", '<span class="op-btns"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Worlds</button></span>')
         + row("Difficulty", esc(dif().d), '<span class="sbx-diff op-seg">' + DIFF.map(function (D, i) { return '<button type="button" class="btn' + (S.diff === i ? "" : " ghost") + '" data-diff="' + i + '" aria-pressed="' + (S.diff === i) + '" style="--dc:' + D.c + '">' + D.n + "</button>"; }).join("") + "</span>")
+        + row("Keep inventory", "On: you keep everything when you pass out. Off: you lose some of your loot.", sw("data-keepinvtoggle", S.keepInv, "Keep inventory"))
+        + (S.keepInv ? "" : row("Loot lost on death", "Share of each stack of loose materials lost when you pass out. Tools, gear and potions are always safe." + (S.lossPct === null || S.lossPct === undefined ? " Now following the difficulty." : ""), stp('data-lossstep="%"', lossPercent() + "%", "Loot lost on death")))
+        + (S.keepInv ? "" : row("Gravestone lasts", "The loot you lose waits in a gravestone where you fell. Walk up and press F to take it back before it crumbles.", stp('data-gravemin="%"', (S.graveMin || 5) + " min", "Gravestone time")))
         + row("Hunger", "Your food bar slowly empties. Off for a relaxed game.", sw("data-hungertoggle", !S.nohunger, "Hunger"))
         + row("Day counter", "Show the in-game day under the biome name.", sw("data-daytoggle", SHOWDAYS, "Day counter"))
         + row("Crafting mini-games", "Forge strikes for Masterwork gear, stirring for perfect brews. Off = craft instantly.", sw("data-cgtoggle", CGON, "Crafting mini-games")));
@@ -12793,14 +13001,32 @@
     for (var x = a + 1; x <= z + 1; x++) { var bb = x <= z ? bkeyAt(x) : -1; if (bb !== b && (x > z || x - s0 >= 60)) { if (out.length && out[out.length - 1][2] === b) out[out.length - 1][1] = x; else out.push([s0, x, b]); s0 = x; b = bb; } }
     return (MAPB = out);
   }
-  function mapImg() {   // the explored world, one pixel per tile (rebuilt about twice a second while the map is open)
-    var now = performance.now(); if (M.img && now - M.imgT < 500) return M.img; M.imgT = now;
+  var MAPLUT = null, MAP_UNK = 0xFF090A06, MAP_SKY = 0xFF6A5A2A, MAP_CAVE = 0xFF14110D;   // packed 0xAABBGGRR
+  function mapPack(hex) {
+    hex = String(hex || "#000"); if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+    var r = parseInt(hex.slice(1, 3), 16) || 0, gg = parseInt(hex.slice(3, 5), 16) || 0, b = parseInt(hex.slice(5, 7), 16) || 0; return (0xFF000000 | (b << 16) | (gg << 8) | r) >>> 0;
+  }
+  function mapLut() {   // PERF: one colour per tile type, worked out once (the old map parsed a colour string for every single pixel)
+    if (MAPLUT) return MAPLUT; MAPLUT = {};
+    Object.keys(TILES).forEach(function (k) { var td = TILES[k]; MAPLUT[k] = id2pack(+k, td); }); return MAPLUT;
+  }
+  function id2pack(id, td) { return mapPack(id === T.WATER ? "#2a8f95" : td.kind === "ore" ? td.c2 : td.c); }
+  function mapImg() {   // the explored world, one pixel per tile. PERF: rebuilt only when the land or what you have explored changed (and at most twice a second), with no per-pixel string work
+    var now = performance.now(), key = buildN + ":" + editN + ":" + exVer + ":" + (world.gx0 | 0) + ":" + (world.gx1 | 0) + ":" + W;
+    if (M.img && (M.key === key || now - M.imgT < 500)) return M.img; M.imgT = now; M.key = key;
     var gx0 = world.gx0 !== undefined ? world.gx0 : 0, gw = (world.gx1 !== undefined ? world.gx1 : W - 1) - gx0 + 1;
-    var off = M.img || document.createElement("canvas"); off.width = gw; off.height = H; off.gx0 = gx0; var g = off.getContext("2d"), im = g.createImageData(gw, H), d = im.data, i;
-    for (var mi = 0; mi < gw * H; mi++) {
-      var mx = mi % gw, y = (mi / gw) | 0, x = mx + gx0, k = mi * 4, r = 6, gg = 10, b = 9; i = y * W + x;
-      if (ex[i]) { var id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i]; var td = TILES[id], hex; if (id === T.AIR) hex = y < col[x] ? "#2a5a6a" : "#0d1114"; else if (id === T.WATER) hex = "#2a8f95"; else hex = td.kind === "ore" ? td.c2 : td.c; if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3]; r = parseInt(hex.slice(1, 3), 16); gg = parseInt(hex.slice(3, 5), 16); b = parseInt(hex.slice(5, 7), 16); }
-      d[k] = r; d[k + 1] = gg; d[k + 2] = b; d[k + 3] = 255;
+    var off = M.img || document.createElement("canvas"); if (off.width !== gw || off.height !== H) { off.width = gw; off.height = H; M.im = null; } off.gx0 = gx0;
+    var g = off.getContext("2d"), im = M.im || (M.im = g.createImageData(gw, H)), u = new Uint32Array(im.data.buffer), lut = mapLut(), x, y, mx, i, id, c, row, orow;
+    for (y = 0; y < H; y++) {
+      row = y * W; orow = y * gw;
+      for (mx = 0; mx < gw; mx++) {
+        x = mx + gx0; i = row + x; c = MAP_UNK;
+        if (ex[i]) {
+          id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i];
+          if (id === T.AIR) c = y < col[x] ? MAP_SKY : MAP_CAVE; else { c = lut[id]; if (c === undefined) c = MAP_UNK; }
+        }
+        u[orow + mx] = c;
+      }
     }
     g.putImageData(im, 0, 0); return (M.img = off);
   }
@@ -12812,7 +13038,9 @@
   function drawMapView() {
     var c = $("sbxMapC"); if (!c || !mapOpen) return; var g = c.getContext("2d"), s = M.s;
     g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0); g.fillStyle = "#03080a"; g.fillRect(0, 0, M.cw, M.ch);
-    var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, H); g.imageSmoothingEnabled = false; g.drawImage(MI, 0, 0, MI.width, H, o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
+    var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, H); g.imageSmoothingEnabled = false;
+    var v0 = s2m(0, 0), v1 = s2m(M.cw, M.ch), sx0 = Math.max(0, Math.floor(v0[0] - MI.gx0)), sx1 = Math.min(MI.width, Math.ceil(v1[0] - MI.gx0)), sy0 = Math.max(0, Math.floor(v0[1])), sy1 = Math.min(H, Math.ceil(v1[1]));   // PERF: draw only the part of the map that is on screen
+    if (sx1 > sx0 && sy1 > sy0) { var d0 = m2s(MI.gx0 + sx0, sy0), d1 = m2s(MI.gx0 + sx1, sy1); g.drawImage(MI, sx0, sy0, sx1 - sx0, sy1 - sy0, d0[0], d0[1], d1[0] - d0[0], d1[1] - d0[1]); }
     g.strokeStyle = "#4ee6b455"; g.lineWidth = 1.5; g.strokeRect(o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
     if (s >= 6) {   // tile grid when zoomed right in, every 10 tiles
       g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1; g.beginPath(); var gx0 = Math.max(0, Math.floor(s2m(0, 0)[0] / 10) * 10), gx1 = Math.min(W, s2m(M.cw, 0)[0]), gy0 = Math.max(0, Math.floor(s2m(0, 0)[1] / 10) * 10), gy1 = Math.min(H, s2m(0, M.ch)[1]), q;
@@ -12832,7 +13060,7 @@
     (S.stars || []).forEach(function (st) { var q = m2s(st.x + 0.5, st.y + 0.5), r = 6; g.fillStyle = "#ffe9a0"; g.strokeStyle = "#5a3a08"; g.lineWidth = 1.4; g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(q[0] + Math.cos(a) * rr, q[1] + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); });   // Fallen Stars
     if (S.tmap) { var mq = m2s(S.tmap.x + 0.5, S.tmap.y + 0.5); g.lineCap = "round"; g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 5; g.beginPath(); g.moveTo(mq[0] - 5, mq[1] - 5); g.lineTo(mq[0] + 5, mq[1] + 5); g.moveTo(mq[0] + 5, mq[1] - 5); g.lineTo(mq[0] - 5, mq[1] + 5); g.stroke(); g.strokeStyle = "#ff4a3a"; g.lineWidth = 2.6; g.stroke(); }   // Treasure Map X
     if (npc.ok) {   // Old Croaker's camp: a little frog face (gold ring while he has a gift for you)
-      var cq = m2s(npc.x, npc.y - 1), gw2 = giftsWaiting().length + btyReady(); g.fillStyle = "#06100d"; g.strokeStyle = gw2 ? "#f2c14e" : "#bff4e4"; g.lineWidth = gw2 ? 2.4 : 1.6;
+      var cq = m2s(npc.x, npc.y - 1), nowM = performance.now(); if (!(nowM - (M.gT || 0) < 500)) { M.gT = nowM; M.gN = giftsWaiting().length + btyReady(); } var gw2 = M.gN; g.fillStyle = "#06100d"; g.strokeStyle = gw2 ? "#f2c14e" : "#bff4e4"; g.lineWidth = gw2 ? 2.4 : 1.6;
       g.beginPath(); g.arc(cq[0], cq[1], 8, 0, 6.2832); g.fill(); g.stroke(); g.fillStyle = "#3fae5e"; g.beginPath(); g.ellipse(cq[0], cq[1] + 1.5, 5.6, 3.8, 0, 0, 6.2832); g.fill();
       [-2.8, 2.8].forEach(function (ex) { g.fillStyle = "#3fae5e"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 2.4, 0, 6.2832); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 1.3, 0, 6.2832); g.fill(); });
     }
@@ -12897,8 +13125,8 @@
   }
   function mapDelete() { if (M.sel < 0) return; S.wp.splice(M.sel, 1); M.sel = -1; snd("open"); save(); mapCard(); }
   function openMap() {
-    if (mapOpen) return; if (packOpen) closePack(); else if (panelOpen) closePanel();
-    mapOpen = true; panelOpen = true; M.sel = -1; M.img = null; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
+    if (mapOpen) return; M.dirty = true; if (packOpen) closePack(); else if (panelOpen) closePanel();
+    mapOpen = true; panelOpen = true; M.sel = -1; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
     mapSize(); M.s = clamp(M.cw / 300, mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();
   }
   function closeMap() { mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
@@ -12926,7 +13154,7 @@
     V.addEventListener("click", function (e) {
       var t = e.target.closest("button"); if (!t) return;
       if (t.hasAttribute("data-mclose")) return closeMap();
-      var z = t.getAttribute("data-mz"); if (z) { if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
+      var z = t.getAttribute("data-mz"); if (z) { M.dirty = true; if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
       if (t.hasAttribute("data-wpc") && M.sel >= 0) { S.wp[M.sel].c = +t.getAttribute("data-wpc"); snd("coin"); save(); return mapCard(); }
       if (t.hasAttribute("data-wpi") && M.sel >= 0) { S.wp[M.sel].i = +t.getAttribute("data-wpi"); snd("coin"); save(); return mapCard(); }
       var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete(); if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
@@ -13193,6 +13421,7 @@
   window.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
+    if (deadUI) { if (k === "Enter" || k === " " || k === "r" || k === "R") { e.preventDefault(); deadRespawn(); } return; }   // the death screen
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && !$("sbxMPV").hidden) { closeMPV(); return; }
     if (titleOpen) { if (panelOpen) { if (k === "Escape") closePanel(); } else titleKey(e); return; }
@@ -13205,8 +13434,8 @@
     if (k === "Escape" && panelOpen) { closePanel(); return; }
     if (k === "e" || k === "E") { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); e.preventDefault(); return; }
     if (k === "m" || k === "M") { mapOpen ? closeMap() : openMap(); e.preventDefault(); return; }
-    if (mapOpen && (k === "+" || k === "=")) { zoomAt(M.cw / 2, M.ch / 2, M.s * 1.4); e.preventDefault(); return; }
-    if (mapOpen && (k === "-" || k === "_")) { zoomAt(M.cw / 2, M.ch / 2, M.s / 1.4); e.preventDefault(); return; }
+    if (mapOpen && (k === "+" || k === "=")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s * 1.4); e.preventDefault(); return; }
+    if (mapOpen && (k === "-" || k === "_")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s / 1.4); e.preventDefault(); return; }
     if (k === "b" || k === "B") { packOpen ? closePack() : openPack(); e.preventDefault(); return; }
     if (k === "`" && DEV.on) { if (panelOpen && tab === "dev") closePanel(); else { if (panelOpen) closePanel(); openPanel("dev"); } e.preventDefault(); return; }
     if (panelOpen) return;
@@ -13216,6 +13445,7 @@
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
       if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
     else if ((k === "r" || k === "R") && !cave && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
@@ -13263,12 +13493,17 @@
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.hasAttribute("data-sx-bup")) return upgradeBench();
     if (t.getAttribute("data-sx-craft")) return craft(t.getAttribute("data-sx-craft"));
+    if (t.hasAttribute("data-sx-goto")) return openCraftTo(t.getAttribute("data-sx-goto"));   // CRAFT SEARCH: go to the station recipe
+    if (t.hasAttribute("data-csclear")) { csearch = ""; renderPanel(); var ci = $("sbxCSearch"); if (ci) ci.focus(); return; }
     if (t.hasAttribute("data-is")) return invClick(+t.getAttribute("data-is"));
     if (t.getAttribute("data-iact")) return invAct(t.getAttribute("data-iact"));
     if (t.getAttribute("data-iextra")) return collectExtra(t.getAttribute("data-iextra"));
     if (t.getAttribute("data-hold")) { choose(t.getAttribute("data-hold")); return closePanel(); }
     if (t.getAttribute("data-an")) { S.animal = t.getAttribute("data-an"); try { localStorage.setItem("swamp-delve-char", S.animal); } catch (e) {} mkSprite(); return renderPanel(); }
     if (t.hasAttribute("data-diff")) { var dv = clamp(+t.getAttribute("data-diff") || 0, 0, 2); if (MP.on && MP.role === "guest") { nag("The host picks the difficulty in their world."); return; } S.diff = dv; toast("Difficulty: " + DIFF[dv].n + ". " + DIFF[dv].d, DIFF[dv].c); save(); return renderPanel(); }
+    if (t.hasAttribute("data-keepinvtoggle")) { if (MP.on && MP.role === "guest") { nag("The host picks the death rules in their world."); return; } S.keepInv = S.keepInv ? 0 : 1; toast(S.keepInv ? "Keep inventory is ON. You keep everything when you pass out." : "Keep inventory is OFF. You lose " + lossPercent() + "% of your loose loot when you pass out.", S.keepInv ? "#7fd06a" : "#ff8a3d"); save(); return renderPanel(); }
+    if (t.hasAttribute("data-lossstep")) { if (MP.on && MP.role === "guest") { nag("The host picks the death rules in their world."); return; } S.lossPct = clamp(lossPercent() + 10 * (+t.getAttribute("data-lossstep") || 0), 0, 100); save(); return renderPanel(); }
+    if (t.hasAttribute("data-gravemin")) { if (MP.on && MP.role === "guest") { nag("The host picks the death rules in their world."); return; } S.graveMin = clamp((S.graveMin || 5) + (+t.getAttribute("data-gravemin") || 0), 1, 15); save(); return renderPanel(); }
     if (t.hasAttribute("data-hungertoggle")) { S.nohunger = S.nohunger ? 0 : 1; if (!S.nohunger && S.food < 50) S.food = 50; shownFood = -1; drawFood(); save(); return renderPanel(); }
     if (t.hasAttribute("data-opt")) { optAct(t.getAttribute("data-opt")); return renderPanel(); }
     if (t.hasAttribute("data-musictoggle")) { MUS.on = !MUS.on; try { localStorage.setItem("swamp-delve-music", MUS.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
@@ -13290,6 +13525,25 @@
   $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
   $("sbxMini").addEventListener("click", function () { if (!panelOpen && !cave) openMap(); });
   $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
+  $("sbxBody").addEventListener("input", function (e) {   // CRAFT SEARCH: results update as you type (the box keeps focus)
+    if (e.target.id !== "sbxCSearch") return;
+    var was = !!csearch.trim(); csearch = e.target.value; var now = !!csearch.trim();
+    if (was !== now) { renderPanel(); var i = $("sbxCSearch"); if (i) { i.focus(); try { i.setSelectionRange(csearch.length, csearch.length); } catch (er) {} } }
+    else { var rs = $("sbxCRes"); if (rs) rs.innerHTML = csResInner(); }
+  });
+  $("sbxBody").addEventListener("keydown", function (e) {
+    if (e.target.id !== "sbxCSearch") return;
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); if (csearch) { csearch = ""; renderPanel(); var i = $("sbxCSearch"); if (i) i.focus(); } else e.target.blur(); }
+    else if (e.key === "Enter") { e.preventDefault(); e.target.blur(); }
+  });
+  (function () {   // a redraw while you type (an item picked up, say) must not drop the keyboard
+    var base = renderPanel;
+    renderPanel = function () {
+      var a = document.activeElement, f = a && a.id === "sbxCSearch", ss = f ? a.selectionStart : 0, r = base.apply(this, arguments);
+      if (f) { var i = $("sbxCSearch"); if (i && document.activeElement !== i) { i.focus({ preventScroll: true }); try { i.setSelectionRange(ss, ss); } catch (er) {} } }
+      return r;
+    };
+  })();
   $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
@@ -13327,8 +13581,12 @@
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
     if (PHOTO.on) tickPhoto(dt);
     if (!document.hidden) {
-      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
-      try { if (cave) renderCave(now); else render(now); drawTrans(); if (hbDirty) drawBar(); if (mapOpen) drawMapView(); } catch (er) { loopErr(er); }
+      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
+      try {
+        if (mapOpen) { if (M.drag || M.pinch || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
+        else if (cave) renderCave(now); else render(now);
+        drawTrans(); if (hbDirty) drawBar();
+      } catch (er) { loopErr(er); }
     }
     requestAnimationFrame(loop);
   }
