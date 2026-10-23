@@ -1,0 +1,44 @@
+
+name: Deploy SwampRealms to itch.io
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: itchio-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Prepare browser game files
+        run: |
+          mkdir -p deploy
+          rsync -av ./ deploy/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'worker.js' \
+            --exclude 'wrangler.jsonc' \
+            --exclude 'schema.sql' \
+            --exclude '.assetsignore' \
+            --exclude '_headers' \
+            --exclude '_redirects'
+
+      - name: Install Butler
+        uses: remarkablegames/setup-butler@v3
+
+      - name: Upload game to itch.io
+        run: butler push deploy steweylil/swamprealms:html5
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
