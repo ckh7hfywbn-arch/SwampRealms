@@ -174,7 +174,7 @@ Add a line to `COSMETICS` in `store.js`, then draw it in `avatar.js` (`HAT`, `FA
 
 ## Before going live
 
-`index.html` points social previews at `/preview.jpg` (1200x630). Add that image to this folder.
+`index.html` points social previews at `/preview.jpg` (1200x630, the SwampRealms logo). Links carry `?v=2`; bump it when you change the image so Discord/X/iMessage re-fetch it.
 
 ## Accounts
 

@@ -1009,11 +1009,21 @@
   var VICO = tile("X_veincharm", "Veinseeker Charm", "#000", "#4ee6b4", 0.5, 0, "", false, 0, "veincharm");
   ART.veincharm = function (R) { R(6, 1, 4, 2, "#b8863a"); R(7, 0, 2, 1, "#e8c070"); R(3, 3, 10, 10, "#b8863a"); R(4, 4, 8, 8, "#2a2e34"); R(5, 5, 2, 2, "#4ee6b4"); R(7, 7, 2, 2, "#4ee6b4"); R(9, 9, 2, 2, "#4ee6b4"); R(9, 5, 2, 2, "#ff8a3d"); R(5, 9, 2, 2, "#bff4ff"); R(6, 6, 1, 1, "#e0fff4"); R(3, 13, 10, 1, "#6a4a1c"); R(7, 14, 2, 2, "#e8c070"); };
   item("veincharm", "Veinseeker Charm", { ico: VICO, sock: "pick" });
+  // CREATURE PACK: drops from the new creatures, and glowing blocks to build with them
+  mat("petalsnap", "Snapper Petal", "#ff6aa8"); mat("imphorn", "Imp Horn", "#ff5a2a"); mat("rimecore", "Rime Core", "#9fe8ff"); mat("geodechip", "Geode Chip", "#b08aff");
+  block("geodeblock", "Geode Block", "#4a3a66", "#c8a8ff", 1.2, null, 7, ["176,130,255", 2.2, 0.2]);
+  block("rimeblock", "Rimeglass Block", "#9fd0ee", "#e8f8ff", 0.9, null, 8, ["159,232,255", 2.2, 0.2]);
+  block("impbrick", "Imp Brick", "#8a2a1a", "#ff8a3d", 1.4, null, 6, ["255,130,50", 2.2, 0.18]);
+  block("bloomstone", "Bloomstone", "#c84a88", "#ff9ad0", 1.0, null, 6, ["255,120,190", 2.2, 0.18]);
   // 8. RECIPES. RECIPES = Craft tab (stn = needs that crafting station within a few tiles); DECOR = Decor Workbench tab.
   // ====================================================================================================
   var STN = { furnace: "Stone Furnace", loom: "Weaver's Loom", mason: "Mason's Table", cook: "Cooking Pot", brew: "Brewing Stand" }, STNTILE = { furnace: "furnace", loom: "loom", mason: "masontable", cook: "cookpot", brew: "brewstand" };
   function R(id, n, out, cost, o) { var r = { id: id, n: n, out: out, cost: cost, d: (o && o.d) || "" }; if (o) Object.keys(o).forEach(function (k) { r[k] = o[k]; }); RECIPES.push(r); }
   R("x_veincharm", "Veinseeker Charm", { veincharm: 1 }, { lodestone: 2, ironingot: 4, quartz: 2, spore: 6 }, { bench: true, d: "A lodestone charm for your pickaxe. Set it at a Jeweler's Table: break one ore and the whole vein of that ore comes out with it." });
+  R("x_geodeblock", "Geode Block (2)", { geodeblock: 2 }, { geodechip: 2, stone: 1 }, { d: "A purple crystal block that glows softly. Geode Chips drop from Geode Crawlers in caves." });
+  R("x_rimeblock", "Rimeglass Block (2)", { rimeblock: 2 }, { rimecore: 1, glass: 1 }, { d: "A pale blue glowing block. Rime Cores drop from Rime Brutes in Frostfen." });
+  R("x_impbrick", "Imp Brick (2)", { impbrick: 2 }, { imphorn: 1, cinder: 1 }, { d: "A hot red brick with an ember glow. Imp Horns drop from Cinder Imps in Ember Bog." });
+  R("x_bloomstone", "Bloomstone (2)", { bloomstone: 2 }, { petalsnap: 2, stone: 1 }, { d: "A pink glowing block. Snapper Petals drop from Snapper Lilies in Murkwater." });
   R("x_garage", "Garage", { garage: 1 }, { planks: 24, stone: 12, ironingot: 4, glass: 2 }, { bench: true, d: "A 2-wide, 2-tall garage you place like a door. Walk up to it and Enter: your old motorcycle is waiting inside, stripped down to nothing." });
   R("x_moto_seat", "Lily-Pad Seat", { moto_seat: 1 }, { leather: 2, marshlily: 2, canvas: 1 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
   R("x_moto_chain", "Bronze Drive Chain", { moto_chain: 1 }, { ironingot: 3, gear: 2 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
