@@ -1666,6 +1666,42 @@
   R("x_farmgate", "Farm Gate", { farmgate: 1 }, { planks: 6, fiber: 4, stick: 4 }, { bench: true, d: "The way into your homestead: your own farm to till, water, plant and harvest." });
   var HOMEFARM = { ship: { carrot: 0.5, potato: 0.6, pepper: 1, frostberry: 1.2, reedcorn: 0.8, bogbeans: 0.7, lilyleek: 0.5, marshonion: 0.5, mudmelon: 3, croakpumpkin: 4, roastcarrot: 1.2, bakedpotato: 1.4 },
     seeds: [["seed_carrot", 1], ["seed_potato", 1], ["seed_lilyleek", 1], ["seed_marshonion", 1], ["seed_bogbean", 2], ["seed_reedcorn", 2], ["seed_pepper", 2], ["seed_frost", 3], ["seed_mudmelon", 4], ["seed_croakpumpkin", 5]] };
+  // ---------- HOMESTEAD stage 2: paddy crops (grow in flooded paddies), moon crops (grow only at night), prize quality, compost ----------
+  var HCROPS2 = {
+    bogrice: { n: "Bog Rice", b: -1, t: 34, yld: [3, 5], sd: [1, 2], leaf: "#6aa84a", leaf2: "#b8e07a", fruit: "#f0e0a0", fruit2: "#c8b070", look: "rice", food: [8, 2], pn: "bogrice", wat: 1 },
+    lotus: { n: "Lily Lotus", b: -1, t: 52, yld: [1, 2], sd: [1, 2], leaf: "#3a8a4a", leaf2: "#6ac87a", fruit: "#ff9ad0", fruit2: "#ffe0f0", look: "lotus", food: [12, 6], pn: "lotusroot", pnn: "Lotus Root", wat: 1 },
+    moonpetal: { n: "Moonpetal", b: -1, t: 45, yld: [1, 2], sd: [1, 2], leaf: "#3a5a7a", leaf2: "#7aa8d0", fruit: "#d8ecff", fruit2: "#8ad8ff", look: "petal", food: [6, 8], moon: 1 },
+    glowgourd: { n: "Glowgourd", b: -1, t: 60, yld: [1, 1], sd: [1, 2], leaf: "#2f6a4a", leaf2: "#5ab88a", fruit: "#7af0c8", fruit2: "#e8fff4", look: "gourd", food: [20, 10], moon: 1 }
+  };
+  function cropArt3(C, st) {
+    var base = cropArt(C, st > 2 ? 3 : st);
+    return function (rect) {
+      var L = C.leaf, L2 = C.leaf2, F = C.fruit, F2 = C.fruit2;
+      if (C.look === "rice") { var n = st === 1 ? 2 : st === 2 ? 3 : 5; for (var i = 0; i < n; i++) { var x = 3 + i * 2 + (i % 2), top = st === 1 ? 11 : st === 2 ? 7 : 3; rect(x, top, 1, 16 - top, i % 2 ? L : L2); if (st >= 3) { rect(x - 1, top + 2, 1, 3, L2); } if (st === 4) { rect(x + 1, top, 1, 4, F); rect(x + 1, top + 1, 1, 1, F2); rect(x, top - 1, 1, 2, F); } } return; }
+      if (C.look === "lotus") { rect(2, 11, 6, 3, L); rect(3, 10, 4, 1, L2); rect(9, 12, 5, 2, L); rect(10, 11, 3, 1, L2); if (st === 1) return; rect(7, 6, 1, 6, "#3a6a3a"); if (st === 2) { rect(6, 5, 3, 2, L2); return; } rect(5, 4, 5, 3, st === 4 ? F : L2); if (st === 4) { rect(4, 3, 2, 2, F); rect(9, 3, 2, 2, F); rect(6, 2, 3, 2, F2); rect(7, 4, 1, 1, "#ffe27a"); } return; }
+      if (C.look === "petal") { if (st <= 2) { base(rect); return; } rect(7, 6, 2, 10, L); rect(4, 9, 3, 2, L2); rect(9, 10, 3, 2, L2); if (st === 3) { rect(6, 3, 4, 3, L2); return; } rect(5, 2, 6, 5, F); rect(4, 3, 8, 3, F); rect(7, 1, 2, 7, F); rect(7, 4, 2, 1, F2); rect(6, 3, 1, 1, "#ffffff"); rect(9, 5, 1, 1, "#ffffff"); return; }
+      if (C.look === "gourd") { if (st <= 2) { base(rect); return; } rect(1, 10, 5, 3, L); rect(10, 9, 5, 3, L2); rect(7, 4, 1, 6, "#2f5a3a"); rect(5, 6, 3, 2, L2); if (st === 3) { rect(6, 10, 4, 3, L2); return; } rect(5, 8, 6, 3, F); rect(4, 11, 8, 5, F); rect(5, 9, 2, 2, F2); rect(5, 12, 2, 2, F2); rect(10, 13, 1, 2, "#3aa888"); rect(7, 7, 2, 1, "#2f5a3a"); return; }
+      base(rect);
+    };
+  }
+  Object.keys(HCROPS2).forEach(function (k) {
+    var C = HCROPS2[k]; C.tiles = []; C.home = 1; CROPS[k] = C; HCROPS[k] = C;
+    for (var st = 1; st <= 4; st++) { var id = tile("X_crop_" + k + st, C.n + (st === 4 ? " (ripe)" : " (growing)"), "#000", st === 4 ? C.fruit : C.leaf2, 0.05, 0, null, false, 0, "crop_" + k + st, { crop: k, stage: st, sway: 1 }); ART["crop_" + k + st] = cropArt3(C, st); C.tiles.push(id); }
+    var pk = C.pn || k; C.produce = pk; food(pk, C.pnn || C.n, C.food[0], C.food[1]); SEEDS[k] = "seed_" + k;
+    item("seed_" + k, (k === "bogrice" ? "Bog Rice" : C.n) + (k === "bogrice" ? " Seedlings" : k === "lotus" ? " Bulbs" : " Seeds"), { tile: C.tiles[0], seed: k, d: C.wat ? "Plant in a flooded paddy on your homestead." : C.moon ? "Moon crop: it only grows at night, but fast." : "" });
+  });
+  item("compost", "Bog Compost", { d: "Work it into tilled soil on your homestead. Crops grown on compost turn out Fine or Prize far more often." });
+  R("x_compost", "Bog Compost (4)", { compost: 4 }, { leaves: 4, fiber: 2 }, { d: "Rotted leaves and fiber. Spread it on tilled soil for better crops." });
+  // PRIZE QUALITY: every crop can come out Fine (silver star) or Prize (gold star): more filling, and the cart pays much more for them
+  Object.keys(CROPS).forEach(function (k) {
+    var pk = CROPS[k].produce, I = ITEMS[pk]; if (!I || ITEMS[pk + "_s"]) return;
+    item(pk + "_s", "Fine " + I.n, { food: Math.round((I.food || 6) * 1.25), heal: (I.heal || 0) + 1, cooked: 0, qb: pk, q: 1 });
+    item(pk + "_g", "Prize " + I.n, { food: Math.round((I.food || 6) * 1.5), heal: (I.heal || 0) + 3, cooked: 0, qb: pk, q: 2 });
+  });
+  Object.assign(HOMEFARM.ship, { bogrice: 0.6, lotusroot: 3, moonpetal: 3, glowgourd: 6 });
+  Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, v = HOMEFARM.ship[pk]; if (v) { HOMEFARM.ship[pk + "_s"] = Math.round(v * 1.5 * 10) / 10; HOMEFARM.ship[pk + "_g"] = v * 2; } });
+  HOMEFARM.seeds.push(["seed_bogrice", 3], ["seed_lotus", 4], ["seed_moonpetal", 5], ["seed_glowgourd", 6], ["compost", 1]);
+  HOMEFARM.giant = { mudmelon: 1, croakpumpkin: 1, glowgourd: 1 };
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
