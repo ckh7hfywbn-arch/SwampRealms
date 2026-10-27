@@ -12238,6 +12238,124 @@
     var w = 0, h = 0; N.forEach(function (n) { w = Math.max(w, n.x + 80); h = Math.max(h, n.y + 96); });
     return { N: N, E: E, w: w, h: h };
   }
+  // ---------- QUEST PAGE THEMES: every story chapter and side-quest group gets its own page (background scene, pad style, link style) ----------
+  // QB_TH maps a chapter key to a theme; qbThemeDeco(theme, w, h) draws the scene behind the pads as SVG: "bot" is pinned to the bottom of the page,
+  // "top" to the top. The colours and pad shapes live in sandbox.css under .qb-th-<theme>.
+  var QB_TH = { m0: "fen", m1: "home", m2: "glow", m3: "ember", m4: "frost", m5: "heart", m6: "gate", m7: "cosmos", m8: "dawn",
+    "s:Explorer": "map", "s:Builder": "blueprint", "s:Decorator": "parlor", "s:Crafter": "workshop", "s:Farmer & Cook": "farm", "s:Angler": "lake", "s:Rancher": "ranch",
+    "s:Hunter": "hunt", "s:Delver": "mine", "s:Collector": "vault", "s:Wonders": "fest", "s:Sailor": "sea" };
+  function qbThemeDeco(th, w, h) {
+    var R = function (a, b) { return qbHash(a * 1.31 + 7, b * 2.77 + 3); }, f = function (n) { return n.toFixed(1); }, o = "", t = "", i, x, y, n = Math.max(6, Math.round(w / 90));
+    var ground = function (col, y0, amp) { var d = "M0 " + f(h - y0); for (var xx = 0; xx <= w + 60; xx += 60) d += " Q" + f(xx + 30) + " " + f(h - y0 - amp * (0.5 + R(xx, 1))) + " " + f(xx + 60) + " " + f(h - y0); return '<path fill="' + col + '" d="' + d + " L" + f(w + 60) + " " + h + " L0 " + h + 'Z"/>'; };
+    var hills = function (col, y0, amp, seed) { var d = "M0 " + h; for (var xx = 0; xx <= w + 120; xx += 120) d += " L" + f(xx) + " " + f(h - y0 - amp * R(xx, seed)); return '<path fill="' + col + '" d="' + d + " L" + f(w + 120) + " " + h + 'Z"/>'; };
+    var scatter = function (cls, cnt, y0, y1, r0, r1, seed) { var s = ""; for (var k = 0; k < cnt; k++) s += '<circle class="' + cls + '" cx="' + f(R(k, seed) * w) + '" cy="' + f(y0 + R(k, seed + 1) * (y1 - y0)) + '" r="' + f(r0 + R(k, seed + 2) * (r1 - r0)) + '" style="animation-delay:-' + f(R(k, seed + 3) * 8) + "s;animation-duration:" + f(4 + R(k, seed + 4) * 6) + 's"/>'; return s; };
+    var reed = function (xx, b, hh) { return '<path class="reed" d="M' + f(xx) + " " + b + " Q" + f(xx + 4) + " " + f(b - hh / 2) + " " + f(xx + 2) + " " + f(b - hh) + '"/><ellipse class="cat" cx="' + f(xx + 2.4) + '" cy="' + f(b - hh + 8) + '" rx="3.2" ry="8"/>'; };
+    var pine = function (xx, b, hh, cls) { return '<path class="' + (cls || "pine") + '" d="M' + f(xx) + " " + f(b - hh) + " L" + f(xx + hh * 0.32) + " " + f(b - hh * 0.35) + " L" + f(xx + hh * 0.16) + " " + f(b - hh * 0.35) + " L" + f(xx + hh * 0.4) + " " + b + " L" + f(xx - hh * 0.4) + " " + b + " L" + f(xx - hh * 0.16) + " " + f(b - hh * 0.35) + " L" + f(xx - hh * 0.32) + " " + f(b - hh * 0.35) + 'Z"/>'; };
+    var house = function (xx, b, s, lit) { return '<g class="house"><rect x="' + f(xx - s) + '" y="' + f(b - s * 1.3) + '" width="' + f(s * 2) + '" height="' + f(s * 1.3) + '"/><path d="M' + f(xx - s * 1.25) + " " + f(b - s * 1.25) + " L" + f(xx) + " " + f(b - s * 2.3) + " L" + f(xx + s * 1.25) + " " + f(b - s * 1.25) + 'Z"/>' + (lit ? '<rect class="win" x="' + f(xx - s * 0.6) + '" y="' + f(b - s * 0.95) + '" width="' + f(s * 0.5) + '" height="' + f(s * 0.45) + '"/><rect class="win" x="' + f(xx + s * 0.15) + '" y="' + f(b - s * 0.95) + '" width="' + f(s * 0.5) + '" height="' + f(s * 0.45) + '"/>' : "") + "</g>"; };
+    var mush = function (xx, b, s) { return '<g class="mush"><rect x="' + f(xx - s * 0.18) + '" y="' + f(b - s) + '" width="' + f(s * 0.36) + '" height="' + f(s) + '" rx="' + f(s * 0.1) + '"/><path class="cap" d="M' + f(xx - s * 0.75) + " " + f(b - s * 0.9) + " Q" + f(xx) + " " + f(b - s * 2) + " " + f(xx + s * 0.75) + " " + f(b - s * 0.9) + 'Z"/></g>'; };
+    var gem = function (xx, b, s, cls) { return '<path class="' + (cls || "gem") + '" d="M' + f(xx) + " " + f(b - s * 2.2) + " L" + f(xx + s * 0.55) + " " + f(b - s * 0.6) + " L" + f(xx) + " " + b + " L" + f(xx - s * 0.55) + " " + f(b - s * 0.6) + 'Z"/>'; };
+    var star5 = function (xx, yy, r, cls) { var d = ""; for (var k = 0; k < 10; k++) { var a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; d += (k ? " L" : "M") + f(xx + Math.cos(a) * rr) + " " + f(yy + Math.sin(a) * rr); } return '<path class="' + (cls || "st5") + '" d="' + d + 'Z"/>'; };
+    var heart = function (xx, yy, s) { return '<path class="heartp" d="M' + f(xx) + " " + f(yy + s * 0.9) + " C" + f(xx - s * 1.4) + " " + f(yy - s * 0.1) + " " + f(xx - s * 0.6) + " " + f(yy - s * 1.1) + " " + f(xx) + " " + f(yy - s * 0.35) + " C" + f(xx + s * 0.6) + " " + f(yy - s * 1.1) + " " + f(xx + s * 1.4) + " " + f(yy - s * 0.1) + " " + f(xx) + " " + f(yy + s * 0.9) + 'Z"/>'; };
+    var gear = function (xx, yy, r) { var d = ""; for (var k = 0; k < 16; k++) { var a = k * Math.PI / 8, rr = k % 2 ? r * 0.78 : r; d += (k ? " L" : "M") + f(xx + Math.cos(a) * rr) + " " + f(yy + Math.sin(a) * rr); } return '<g class="gear" style="transform-origin:' + f(xx) + "px " + f(yy) + 'px"><path d="' + d + 'Z"/><circle cx="' + f(xx) + '" cy="' + f(yy) + '" r="' + f(r * 0.3) + '" class="hole"/></g>'; };
+    var burst = function (xx, yy, r, col, k0) { var s = '<g class="burst" style="animation-delay:-' + f(R(k0, 9) * 5) + 's">'; for (var k = 0; k < 12; k++) { var a = k * Math.PI / 6; s += '<line x1="' + f(xx + Math.cos(a) * r * 0.3) + '" y1="' + f(yy + Math.sin(a) * r * 0.3) + '" x2="' + f(xx + Math.cos(a) * r) + '" y2="' + f(yy + Math.sin(a) * r) + '" stroke="' + col + '"/>'; } return s + "</g>"; };
+    if (th === "fen") {   // Washed Up in Murkwater: misty dawn over the reeds
+      o += hills("#1c4a3a", 60, 120, 3) + hills("#245a44", 40, 70, 5) + ground("#2c4a2a", 26, 10);
+      for (x = 14; x < w; x += 26 + R(x, 6) * 30) o += reed(x, h - 22, 34 + R(x, 7) * 50);
+      o += '<rect class="fog" x="0" y="' + (h - 140) + '" width="' + w + '" height="34"/><rect class="fog f2" x="0" y="' + (h - 90) + '" width="' + w + '" height="26"/>' + scatter("ff", 18, h - 260, h - 40, 1.4, 2.6, 11);
+      o += '<g class="drift"><rect x="' + f(w * 0.3) + '" y="' + (h - 30) + '" width="90" height="10" rx="5"/><rect x="' + f(w * 0.3 + 70) + '" y="' + (h - 40) + '" width="6" height="16" rx="3"/></g>';
+    } else if (th === "home") {   // A Place to Call Home: a cosy camp at dusk
+      o += hills("#2a2a1a", 70, 90, 3) + ground("#3a4a2a", 24, 8);
+      for (i = 0; i < Math.max(3, Math.round(w / 300)); i++) { x = 80 + i * (w - 160) / Math.max(2, Math.round(w / 300) - 1); o += house(x, h - 24, 22 + R(i, 4) * 10, 1); o += '<circle class="smoke" cx="' + f(x + 12) + '" cy="' + (h - 90) + '" r="6"/><circle class="smoke s2" cx="' + f(x + 14) + '" cy="' + (h - 104) + '" r="8"/>'; }
+      for (x = 0; x < w; x += 22) o += '<rect class="fence" x="' + x + '" y="' + (h - 40) + '" width="5" height="18"/>'; o += '<rect class="fence" x="0" y="' + (h - 34) + '" width="' + w + '" height="3"/>';
+      o += '<g class="fire"><path d="M' + f(w * 0.55) + " " + (h - 26) + " q8 -26 16 0Z\"/><path class=\"f2\" d=\"M" + f(w * 0.55 + 4) + " " + (h - 26) + ' q4 -14 8 0Z"/></g>' + scatter("tw", 16, 10, h * 0.45, 0.8, 1.8, 13);
+    } else if (th === "glow") {   // The Glow Beneath: a glowing cave
+      t += '<path class="roof" d="M0 0 L' + w + ' 0 L' + w + ' 26'; for (x = w; x >= 0; x -= 30) t += " L" + f(x) + " " + f(26 + (R(x, 2) > 0.6 ? 30 + R(x, 3) * 40 : R(x, 4) * 10)); t += ' L0 26Z"/>';
+      o += hills("#160f24", 30, 60, 6) + ground("#21182e", 20, 8);
+      for (x = 20; x < w; x += 40 + R(x, 8) * 60) o += R(x, 9) < 0.55 ? mush(x, h - 20, 10 + R(x, 10) * 14) : gem(x, h - 20, 8 + R(x, 11) * 8);
+      o += scatter("spore", 30, 40, h - 30, 1.2, 2.8, 17);
+    } else if (th === "ember") {   // Embers in the East: smouldering basalt
+      o += hills("#2a0e0a", 60, 140, 4) + '<rect class="lavaglow" x="0" y="' + (h - 60) + '" width="' + w + '" height="60"/>' + ground("#1a0a08", 22, 12);
+      for (x = 30; x < w; x += 70 + R(x, 5) * 90) o += '<path class="spire" d="M' + f(x - 14) + " " + (h - 22) + " L" + f(x - 4) + " " + f(h - 22 - 60 - R(x, 6) * 80) + " L" + f(x + 6) + " " + f(h - 22 - 40 - R(x, 7) * 60) + " L" + f(x + 14) + " " + (h - 22) + 'Z"/>';
+      o += scatter("emb", 34, h * 0.2, h - 30, 1, 2.6, 19);
+    } else if (th === "frost") {   // The Frozen Fen: snowy pines
+      t += '<path class="ice" d="M0 0 L' + w + ' 0 L' + w + ' 8'; for (x = w; x >= 0; x -= 18) t += " L" + f(x) + " " + f(8 + (R(x, 3) > 0.5 ? 10 + R(x, 4) * 26 : 2)) + " L" + f(x - 9) + " 8"; t += 'Z"/>';
+      o += hills("#a8c8e0", 60, 100, 5) + hills("#c8dff0", 34, 50, 7);
+      for (x = 20; x < w; x += 50 + R(x, 8) * 70) o += pine(x, h - 24, 50 + R(x, 9) * 70);
+      o += ground("#eef6ff", 22, 8) + scatter("flake", 46, 0, h, 1.2, 3, 23);
+    } else if (th === "heart") {   // Heart of the Swamp: a great old tree with glowing roots
+      o += hills("#2a1a3a", 50, 80, 4) + ground("#1a2a1a", 22, 8);
+      var cx = w / 2; o += '<path class="trunk" d="M' + f(cx - 40) + " " + (h - 22) + " Q" + f(cx - 20) + " " + f(h - 160) + " " + f(cx - 60) + " " + f(h - 280) + " L" + f(cx + 60) + " " + f(h - 280) + " Q" + f(cx + 20) + " " + f(h - 160) + " " + f(cx + 40) + " " + (h - 22) + 'Z"/>';
+      for (i = 0; i < 6; i++) o += '<path class="root" d="M' + f(cx + (i - 2.5) * 12) + " " + (h - 24) + " Q" + f(cx + (i - 2.5) * 60) + " " + (h - 10) + " " + f(cx + (i - 2.5) * 120) + " " + (h - 28) + '"/>';
+      o += '<circle class="hglow" cx="' + f(cx) + '" cy="' + f(h - 150) + '" r="40"/>' + heart(cx, h - 150, 18);
+      for (i = 0; i < 10; i++) o += heart(R(i, 30) * w, 60 + R(i, 31) * (h - 200), 4 + R(i, 32) * 4);
+      o += scatter("tw", 20, 20, h - 40, 0.8, 2, 33);
+    } else if (th === "gate") {   // The Realm Gate: runes and a stone arch
+      o += scatter("tw", 40, 0, h - 60, 0.6, 1.6, 41) + ground("#1a1530", 22, 6);
+      var gx = w / 2; o += '<path class="arch" d="M' + f(gx - 70) + " " + (h - 22) + " L" + f(gx - 70) + " " + f(h - 170) + " Q" + f(gx) + " " + f(h - 280) + " " + f(gx + 70) + " " + f(h - 170) + " L" + f(gx + 70) + " " + (h - 22) + " L" + f(gx + 48) + " " + (h - 22) + " L" + f(gx + 48) + " " + f(h - 165) + " Q" + f(gx) + " " + f(h - 248) + " " + f(gx - 48) + " " + f(h - 165) + " L" + f(gx - 48) + " " + (h - 22) + 'Z"/><path class="portal" d="M' + f(gx - 48) + " " + (h - 22) + " L" + f(gx - 48) + " " + f(h - 165) + " Q" + f(gx) + " " + f(h - 248) + " " + f(gx + 48) + " " + f(h - 165) + " L" + f(gx + 48) + " " + (h - 22) + 'Z"/>';
+      for (i = 0; i < 4; i++) { x = (i + 0.5) * w / 4 + (R(i, 42) - 0.5) * 60; y = 80 + R(i, 43) * (h - 260); o += '<g class="rune" style="transform-origin:' + f(x) + "px " + f(y) + 'px"><circle cx="' + f(x) + '" cy="' + f(y) + '" r="34"/><circle cx="' + f(x) + '" cy="' + f(y) + '" r="24"/>' + star5(x, y, 20, "rst") + "</g>"; }
+    } else if (th === "cosmos") {   // Beyond the Swamp: stars, a moon and floating islands
+      o += scatter("tw", 70, 0, h, 0.5, 1.8, 51) + '<circle class="moon" cx="' + f(w * 0.72) + '" cy="' + f(h * 0.3) + '" r="44"/><circle class="moonc" cx="' + f(w * 0.72 + 16) + '" cy="' + f(h * 0.3 - 10) + '" r="40"/>';
+      for (i = 0; i < 3; i++) { x = w * (0.28 + i * 0.22); y = h - 120 - R(i, 52) * 160; o += '<path class="isle" d="M' + f(x - 60) + " " + f(y) + " L" + f(x + 60) + " " + f(y) + " L" + f(x + 20) + " " + f(y + 40) + " L" + f(x) + " " + f(y + 60) + " L" + f(x - 30) + " " + f(y + 36) + 'Z"/><rect class="isleg" x="' + f(x - 60) + '" y="' + f(y - 6) + '" width="120" height="8" rx="4"/>'; }
+      for (i = 0; i < 6; i++) o += star5(R(i, 53) * w, 40 + R(i, 54) * (h - 120), 5 + R(i, 55) * 4);
+    } else if (th === "dawn") {   // Epilogue: sunrise over the swamp
+      o += '<circle class="sunr" cx="' + f(w / 2) + '" cy="' + f(h - 40) + '" r="120"/>' + hills("#5a3a4a", 40, 70, 3) + ground("#3a2a30", 20, 6) + scatter("tw", 20, 0, h * 0.5, 0.6, 1.6, 61);
+    } else if (th === "map") {   // Explorer: an old map
+      o += '<path class="trail" d="M0 ' + f(h * 0.8); for (x = 0; x <= w; x += 120) o += " Q" + f(x + 60) + " " + f(h * (0.3 + R(x, 70) * 0.5)) + " " + f(x + 120) + " " + f(h * (0.5 + R(x, 71) * 0.35)); o += '"/>';
+      for (i = 0; i < n; i++) { x = R(i, 72) * w; y = 80 + R(i, 73) * (h - 160); o += R(i, 74) < 0.5 ? '<path class="mtn" d="M' + f(x - 22) + " " + f(y + 14) + " L" + f(x) + " " + f(y - 16) + " L" + f(x + 22) + " " + f(y + 14) + 'Z"/>' : '<g class="tree0"><circle cx="' + f(x) + '" cy="' + f(y) + '" r="9"/><line x1="' + f(x) + '" y1="' + f(y + 9) + '" x2="' + f(x) + '" y2="' + f(y + 18) + '"/></g>'; }
+      var cxm = w * 0.76, cym = h - 120; o += '<g class="compass"><circle cx="' + cxm + '" cy="' + cym + '" r="46"/>' + star5(cxm, cym, 40, "cst") + '<text x="' + cxm + '" y="' + (cym - 52) + '">N</text></g><text class="xmark" x="' + f(w * 0.62) + '" y="' + f(h * 0.4) + '">✖</text>';
+    } else if (th === "blueprint") {   // Builder: a blueprint
+      for (i = 0; i < 3; i++) { x = w * (0.25 + i * 0.22); y = h - 40; o += '<g class="bp" transform="translate(' + x + " " + y + ") scale(1.5) translate(" + (-x) + " " + (-y) + ')"><rect x="' + (x - 70) + '" y="' + (y - 100) + '" width="140" height="100"/><path d="M' + (x - 86) + " " + (y - 96) + " L" + x + " " + (y - 170) + " L" + (x + 86) + " " + (y - 96) + '"/><rect x="' + (x - 18) + '" y="' + (y - 50) + '" width="36" height="50"/><rect x="' + (x - 56) + '" y="' + (y - 84) + '" width="28" height="24"/><rect x="' + (x + 28) + '" y="' + (y - 84) + '" width="28" height="24"/><line class="dim" x1="' + (x - 70) + '" y1="' + (y + 14) + '" x2="' + (x + 70) + '" y2="' + (y + 14) + '"/><text x="' + x + '" y="' + (y + 28) + '">12 blocks</text></g>'; }
+      var crx = w * 0.84; o += '<g class="bp crane"><path d="M' + crx + " " + (h - 20) + " L" + crx + " " + (h - 300) + " L" + (crx - 180) + " " + (h - 300) + '"/><line x1="' + (crx - 160) + '" y1="' + (h - 300) + '" x2="' + (crx - 160) + '" y2="' + (h - 230) + '"/><rect x="' + (crx - 172) + '" y="' + (h - 230) + '" width="24" height="16"/></g>';
+    } else if (th === "parlor") {   // Decorator: a cosy parlour wall
+      o += '<rect class="wains" x="0" y="' + (h - 90) + '" width="' + w + '" height="90"/><rect class="rail" x="0" y="' + (h - 94) + '" width="' + w + '" height="6"/>';
+      for (i = 0; i < 5; i++) { x = w * (0.18 + i * 0.14) + R(i, 80) * 30; y = 60 + R(i, 81) * (h - 260); var fw = 60 + R(i, 82) * 40; o += '<g class="frame"><rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(fw) + '" height="' + f(fw * 0.75) + '"/><rect class="art" x="' + f(x + 8) + '" y="' + f(y + 8) + '" width="' + f(fw - 16) + '" height="' + f(fw * 0.75 - 16) + '"/></g>'; }
+      for (i = 0; i < 2; i++) { x = (i ? w * 0.8 : w * 0.2); o += '<g class="lamp"><rect x="' + (x - 3) + '" y="' + (h - 150) + '" width="6" height="60"/><path d="M' + (x - 22) + " " + (h - 150) + " L" + (x + 22) + " " + (h - 150) + " L" + (x + 14) + " " + (h - 180) + " L" + (x - 14) + " " + (h - 180) + 'Z"/><circle class="lglow" cx="' + x + '" cy="' + (h - 160) + '" r="40"/></g>'; }
+    } else if (th === "workshop") {   // Crafter: a pegboard of tools and turning gears
+      for (i = 0; i < 6; i++) { x = w * (0.18 + i * 0.13) + R(i, 90) * 30; y = 70 + R(i, 91) * (h - 220);
+        o += R(i, 92) < 0.5 ? '<g class="tool"><rect x="' + f(x - 3) + '" y="' + f(y) + '" width="6" height="56" rx="2"/><rect class="head" x="' + f(x - 16) + '" y="' + f(y - 10) + '" width="32" height="14" rx="3"/></g>' : '<g class="tool"><path class="head" d="M' + f(x - 30) + " " + f(y + 30) + " L" + f(x + 30) + " " + f(y + 30) + " L" + f(x + 30) + " " + f(y + 18) + " L" + f(x - 18) + " " + f(y + 18) + 'Z"/><rect x="' + f(x + 30) + '" y="' + f(y + 12) + '" width="16" height="24" rx="4"/></g>'; }
+      o += gear(w * 0.8, h - 90, 50) + gear(w * 0.8 - 70, h - 40, 30) + gear(w * 0.2, h - 60, 38) + '<rect class="bench" x="0" y="' + (h - 24) + '" width="' + w + '" height="24"/>';
+    } else if (th === "farm") {   // Farmer & Cook: fields under the sun
+      o += '<circle class="sun" cx="' + f(w * 0.76) + '" cy="90" r="40"/>' + hills("#7ab84a", 80, 50, 3);
+      for (i = 0; i < 4; i++) o += '<rect class="row r' + (i % 2) + '" x="0" y="' + (h - 80 + i * 20) + '" width="' + w + '" height="20"/>';
+      for (x = 16; x < w; x += 34) for (i = 0; i < 3; i++) { y = h - 66 + i * 20; o += '<g class="sprout"><line x1="' + f(x + (i % 2) * 17) + '" y1="' + f(y) + '" x2="' + f(x + (i % 2) * 17) + '" y2="' + f(y - 10) + '"/><ellipse cx="' + f(x + (i % 2) * 17 - 4) + '" cy="' + f(y - 10) + '" rx="4" ry="2"/><ellipse cx="' + f(x + (i % 2) * 17 + 4) + '" cy="' + f(y - 12) + '" rx="4" ry="2"/></g>'; }
+      o += '<g class="scare"><line x1="' + f(w * 0.2) + '" y1="' + (h - 80) + '" x2="' + f(w * 0.2) + '" y2="' + (h - 170) + '"/><line x1="' + f(w * 0.2 - 30) + '" y1="' + (h - 140) + '" x2="' + f(w * 0.2 + 30) + '" y2="' + (h - 140) + '"/><circle cx="' + f(w * 0.2) + '" cy="' + (h - 180) + '" r="12"/><path d="M' + f(w * 0.2 - 18) + " " + (h - 186) + " L" + f(w * 0.2 + 18) + " " + (h - 186) + " L" + f(w * 0.2) + " " + (h - 206) + 'Z"/></g>';
+    } else if (th === "lake") {   // Angler: a lake at dusk with bobbers
+      o += '<rect class="lakew" x="0" y="' + (h * 0.45) + '" width="' + w + '" height="' + (h * 0.55) + '"/>' + hills("#2a3a4a", h * 0.55, 60, 5);
+      for (i = 0; i < 14; i++) { x = R(i, 100) * w; y = h * 0.5 + R(i, 101) * h * 0.45; o += '<ellipse class="ripple" cx="' + f(x) + '" cy="' + f(y) + '" rx="' + f(18 + R(i, 102) * 20) + '" ry="4" style="animation-delay:-' + f(R(i, 103) * 4) + 's"/>'; }
+      for (i = 0; i < 4; i++) { x = (i + 0.5) * w / 4; y = h * 0.55 + R(i, 104) * h * 0.3; o += '<g class="bobber"><circle class="bt" cx="' + f(x) + '" cy="' + f(y) + '" r="7"/><path class="bb" d="M' + f(x - 7) + " " + f(y) + " A7 7 0 0 0 " + f(x + 7) + " " + f(y) + 'Z"/><line x1="' + f(x) + '" y1="' + f(y - 7) + '" x2="' + f(x) + '" y2="' + f(y - 16) + '"/></g>'; }
+      for (x = 10; x < w; x += 60 + R(x, 105) * 120) o += reed(x, h * 0.47, 30 + R(x, 106) * 30);
+    } else if (th === "ranch") {   // Rancher: a barnyard
+      o += '<circle class="sun" cx="' + f(w * 0.24) + '" cy="80" r="32"/>' + hills("#8ac85a", 60, 50, 4) + ground("#6aa84a", 22, 6);
+      var bx = w * 0.74; o += '<g class="barn"><rect x="' + (bx - 60) + '" y="' + (h - 130) + '" width="120" height="108"/><path d="M' + (bx - 72) + " " + (h - 126) + " L" + bx + " " + (h - 190) + " L" + (bx + 72) + " " + (h - 126) + 'Z"/><rect class="door" x="' + (bx - 24) + '" y="' + (h - 80) + '" width="48" height="58"/><path class="x" d="M' + (bx - 24) + " " + (h - 80) + " L" + (bx + 24) + " " + (h - 22) + " M" + (bx + 24) + " " + (h - 80) + " L" + (bx - 24) + " " + (h - 22) + '"/></g>';
+      for (x = 0; x < bx - 90; x += 26) o += '<rect class="fence" x="' + x + '" y="' + (h - 46) + '" width="6" height="24"/>'; o += '<rect class="fence" x="0" y="' + (h - 40) + '" width="' + (bx - 90) + '" height="4"/><rect class="fence" x="0" y="' + (h - 30) + '" width="' + (bx - 90) + '" height="4"/>';
+      for (i = 0; i < 3; i++) { x = w * 0.3 + i * 90; o += '<g class="hay"><rect x="' + (x - 22) + '" y="' + (h - 52) + '" width="44" height="30" rx="6"/><line x1="' + (x - 22) + '" y1="' + (h - 44) + '" x2="' + (x + 22) + '" y2="' + (h - 44) + '"/><line x1="' + (x - 22) + '" y1="' + (h - 32) + '" x2="' + (x + 22) + '" y2="' + (h - 32) + '"/></g>'; }
+    } else if (th === "hunt") {   // Hunter: a dark forest under the moon, with claw marks
+      o += '<circle class="moon" cx="' + f(w * 0.26) + '" cy="' + f(h * 0.28) + '" r="34"/>';
+      for (x = 0; x < w; x += 40 + R(x, 110) * 40) o += pine(x, h - 18, 120 + R(x, 111) * 160, "pine dk");
+      o += ground("#0e140e", 18, 6);
+      for (i = 0; i < 3; i++) { x = (i + 0.6) * w / 3; y = 90 + R(i, 112) * (h - 300); o += '<g class="claw"><path d="M' + f(x) + " " + f(y) + " q10 40 0 80\"/><path d=\"M" + f(x + 16) + " " + f(y - 6) + " q10 44 0 88\"/><path d=\"M" + f(x + 32) + " " + f(y) + ' q10 40 0 80"/></g>'; }
+      o += scatter("eye", 8, h * 0.4, h - 60, 1.4, 1.8, 113);
+    } else if (th === "mine") {   // Delver: a mine with rails, a cart and lanterns
+      t += '<rect class="beam" x="0" y="0" width="' + w + '" height="18"/>'; for (x = 40; x < w; x += 180) t += '<rect class="beam" x="' + x + '" y="0" width="14" height="70"/>';
+      o += ground("#2a2220", 30, 10) + '<rect class="rail" x="0" y="' + (h - 34) + '" width="' + w + '" height="4"/>'; for (x = 0; x < w; x += 22) o += '<rect class="tie" x="' + x + '" y="' + (h - 32) + '" width="10" height="8"/>';
+      var cxx = w * 0.62; o += '<g class="cart"><path d="M' + (cxx - 34) + " " + (h - 70) + " L" + (cxx + 34) + " " + (h - 70) + " L" + (cxx + 26) + " " + (h - 40) + " L" + (cxx - 26) + " " + (h - 40) + 'Z"/><circle cx="' + (cxx - 16) + '" cy="' + (h - 36) + '" r="7"/><circle cx="' + (cxx + 16) + '" cy="' + (h - 36) + '" r="7"/>' + gem(cxx - 10, h - 68, 6) + gem(cxx + 8, h - 70, 7, "gem g2") + "</g>";
+      for (x = 70; x < w; x += 180) o += '<g class="lant"><line x1="' + (x + 7) + '" y1="70" x2="' + (x + 7) + '" y2="96"/><rect x="' + x + '" y="96" width="14" height="18" rx="3"/><circle class="lglow" cx="' + (x + 7) + '" cy="105" r="36"/></g>';
+      for (i = 0; i < 14; i++) o += '<circle class="ore o' + (i % 3) + '" cx="' + f(R(i, 120) * w) + '" cy="' + f(140 + R(i, 121) * (h - 220)) + '" r="' + f(2 + R(i, 122) * 3) + '"/>';
+    } else if (th === "vault") {   // Collector: a treasure vault
+      o += ground("#3a2a10", 20, 6);
+      for (i = 0; i < Math.max(3, Math.round(w / 260)); i++) { x = 90 + i * 260 + R(i, 130) * 40; var py = h - 20; for (var c2 = 0; c2 < 14; c2++) { var row = Math.floor(Math.sqrt(c2 * 2)); o += '<ellipse class="coin" cx="' + f(x + (c2 - row * row / 2 - row) * 12 + R(c2, i) * 6) + '" cy="' + f(py - row * 8) + '" rx="10" ry="4"/>'; } o += gem(x + 30, py - 30, 9) + gem(x - 26, py - 20, 7, "gem g2"); }
+      o += '<g class="chestv"><rect x="' + f(w / 2 - 50) + '" y="' + (h - 90) + '" width="100" height="70" rx="6"/><path d="M' + f(w / 2 - 50) + " " + (h - 90) + " Q" + f(w / 2) + " " + (h - 130) + " " + f(w / 2 + 50) + " " + (h - 90) + 'Z"/><rect class="lock" x="' + f(w / 2 - 8) + '" y="' + (h - 82) + '" width="16" height="18" rx="3"/></g>' + scatter("spark", 24, 20, h - 30, 1, 2.4, 131);
+    } else if (th === "fest") {   // Wonders: fireworks and balloons over a night festival
+      o += scatter("tw", 40, 0, h * 0.6, 0.6, 1.6, 141); var cols = ["#ff6b82", "#f2c14e", "#4ee6b4", "#6fb6ff", "#c78bff"];
+      for (i = 0; i < 5; i++) o += burst(R(i, 142) * w, 60 + R(i, 143) * h * 0.4, 30 + R(i, 144) * 30, cols[i % 5], i);
+      for (i = 0; i < 6; i++) { x = R(i, 145) * w; y = h * 0.45 + R(i, 146) * h * 0.35; o += '<g class="balloon" style="animation-delay:-' + f(R(i, 147) * 6) + 's"><ellipse cx="' + f(x) + '" cy="' + f(y) + '" rx="13" ry="16" fill="' + cols[(i + 2) % 5] + '"/><path d="M' + f(x) + " " + f(y + 16) + " q-6 20 2 40\"/></g>"; }
+      o += ground("#1a1430", 20, 6); for (x = 0; x < w; x += 60) o += '<path class="bunting" d="M' + x + " " + (h - 120) + " L" + (x + 15) + " " + (h - 100) + " L" + (x + 30) + " " + (h - 120) + 'Z" fill="' + cols[(x / 60) % 5] + '"/>';
+      o += '<path class="string" d="M0 ' + (h - 120) + " L" + w + " " + (h - 120) + '"/>';
+    }
+    return { bot: o, top: t };
+  }
+  var QB_ROUND = { home: 1, frost: 1, gate: 1, cosmos: 1, map: 1, blueprint: 1, workshop: 1, vault: 1, mine: 1, hunt: 1, lake: 1, ranch: 1, dawn: 1 };   // pages whose pads are round tokens instead of lily pads
+  function qbDecoHtml(th, w, h) { var D = qbThemeDeco(th, w, h); return '<svg class="qb-thdeco" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' + D.bot + "</svg>" + (D.top ? '<svg class="qb-thtop" viewBox="0 0 ' + w + ' 140" preserveAspectRatio="xMidYMin slice" aria-hidden="true">' + D.top + "</svg>" : ""); }
   function qbSeaDeco(w, h) {   // the Sailor page: sun rays, waves along the top, a sandy floor with kelp and coral, drifting fish and rising bubbles
     var R = function (a, b) { return qbHash(a * 1.7 + 3, b * 2.3 + 11); }, o = '<svg class="qb-seadeco" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + " " + h + '" aria-hidden="true"><defs><linearGradient id="qbRay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dffcff" stop-opacity=".16"/><stop offset="1" stop-color="#dffcff" stop-opacity="0"/></linearGradient></defs>', i, x;
     for (i = 0; i < Math.max(4, Math.round(w / 220)); i++) { x = (i + 0.3 + R(i, 1) * 0.4) * w / Math.max(4, Math.round(w / 220)); o += '<polygon class="ray" points="' + (x - 18).toFixed(0) + ",0 " + (x + 22).toFixed(0) + ",0 " + (x + 120).toFixed(0) + "," + (h * 0.8).toFixed(0) + " " + (x + 40).toFixed(0) + "," + (h * 0.8).toFixed(0) + '" fill="url(#qbRay)"/>'; }
@@ -12257,7 +12375,7 @@
   function qbRender() {
     var chs = qbChapters(), cc = curCh();
     if (!QB.ch || !chs.some(function (c) { return c.key === QB.ch; })) { QB.ch = "m" + Math.min(cc, chs.filter(function (c) { return !c.side; }).length - 1); QB.fresh = true; }
-    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), sea = QB.ch === "s:Sailor", h = '<div class="qb' + (sea ? " qb-sea" : "") + '" style="--qc:' + me.c + '">';   // OCEAN: the Sailor chapter is drawn as an undersea page
+    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), sea = QB.ch === "s:Sailor", qth = QB_TH[QB.ch] || "", h = '<div class="qb' + (qth ? " qb-th qb-th-" + qth + (QB_ROUND[qth] ? " qb-round" : "") : "") + (sea ? " qb-sea" : "") + '" style="--qc:' + me.c + '">';   // OCEAN: the Sailor chapter is drawn as an undersea page
     // chapter list
     h += '<nav class="qb-side" aria-label="Quest chapters"><small>Story</small>';
     chs.forEach(function (c, i) {
@@ -12272,7 +12390,7 @@
       + (isMain && ci <= cc ? '<button type="button" class="btn ghost qb-story" data-story="' + ci + '">Story</button>' : "") + "</header>";
     if (isMain && ci === cc && btyOpen()) { rollBounties(); var brd = btyReady(); h += '<div class="qb-bty"><img alt="" src="' + icon("swamptoken") + '"><span>' + (brd ? "<b>" + brd + " bounties ready.</b> Visit Old Croaker!" : "Croaker's bounties: see him at camp.") + "</span></div>"; }
     // the pond
-    h += '<div class="qb-mapwrap"><div class="qb-map" tabindex="-1"><div class="qb-world" style="width:max(100%,' + L.w + "px);height:" + (sea ? "max(100%," + L.h + "px)" : L.h + "px") + '">' + (sea ? qbSeaDeco(Math.max(L.w, 1600), Math.max(L.h, 760)) : "") + '<div class="qb-in" style="width:' + L.w + "px;height:" + L.h + 'px">';
+    h += '<div class="qb-mapwrap"><div class="qb-map" tabindex="-1"><div class="qb-world" style="width:max(100%,' + L.w + "px);height:" + (qth ? "max(100%," + L.h + "px)" : L.h + "px") + '">' + (sea ? qbSeaDeco(Math.max(L.w, 1600), Math.max(L.h, 760)) : qth ? qbDecoHtml(qth, Math.max(L.w, 1600), Math.max(L.h, 760)) : "") + '<div class="qb-in" style="width:' + L.w + "px;height:" + L.h + 'px">';
     h += '<svg class="qb-vines" width="' + L.w + '" height="' + L.h + '" aria-hidden="true">';
     L.E.forEach(function (e) {
       var a = L.N[e[0]], b = L.N[e[1]], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, bend = Math.abs(dy) > Math.abs(dx) ? 26 : 20, cx = mx - dy / Math.hypot(dx, dy) * bend, cy = my + dx / Math.hypot(dx, dy) * bend, d = "M" + a.x + " " + a.y + " Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + b.x + " " + b.y;

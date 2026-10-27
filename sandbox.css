@@ -1581,3 +1581,123 @@ body.sbx-app footer{margin-top:28px}
 .fb-oak{background:linear-gradient(180deg,#5a6a3a 0 38%,#3a4a2a 38% 100%)}
 .fb-shores{background:linear-gradient(180deg,#fff0c0 0 38%,#5ac8c8 38% 100%)}
 @media(max-width:640px){.fb-tabs{overflow-x:auto;justify-content:flex-start;padding-bottom:2px}.fb-tabs button{flex:none;width:34px;height:32px}.fb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-sk.big{width:64px;height:64px}.fb-sk.big img{width:52px;height:52px}}
+/* ===== QUEST PAGE THEMES: each story chapter and side-quest group has its own scene, pads and links (see QB_TH / qbThemeDeco) ===== */
+.qb.qb-th .qb-world{overflow:hidden}
+.qb.qb-th .qb-in{position:relative;z-index:1}
+.qb-thdeco,.qb-thtop{position:absolute;left:0;pointer-events:none;overflow:visible}
+.qb-thdeco{bottom:0}.qb-thtop{top:0}
+.qb.qb-th:not(.qb-sea) .qb-map{background:var(--qbg);background-attachment:local}
+.qb.qb-th:not(.qb-sea) .qb-head{background:linear-gradient(180deg,var(--hb),transparent);border-bottom-color:color-mix(in srgb,var(--qc) 25%,transparent)}
+.qb.qb-th:not(.qb-sea) .qb-n .pad{background:radial-gradient(circle at 36% 30%,var(--p1),var(--p2) 58%,var(--p3) 84%);box-shadow:inset 0 -5px 0 var(--p4),inset 0 3px 0 #ffffff33,0 6px 0 -1px #0009,0 0 0 2px var(--pr)}
+.qb.qb-th:not(.qb-sea) .qb-n.done .pad{background:radial-gradient(circle at 36% 30%,var(--d1),var(--d2) 60%,var(--p3) 88%)}
+.qb.qb-th:not(.qb-sea) .qb-n.lock .pad{background:radial-gradient(circle at 36% 30%,var(--l1),var(--l2) 72%);box-shadow:inset 0 -5px 0 #0004,0 6px 0 -1px #0008,0 0 0 2px #0006}
+.qb.qb-th.qb-round .qb-n .pad{-webkit-mask:none;mask:none}
+.qb.qb-th:not(.qb-sea) .qb-vines .v0{stroke:var(--vo)}
+.qb.qb-th:not(.qb-sea) .qb-vines .v1{stroke:var(--vn)}
+.qb.qb-th:not(.qb-sea) .qb-vines .v2{stroke:var(--vd)}
+.qb.qb-th:not(.qb-sea) .qb-vines .lf1{fill:var(--lf)}.qb.qb-th:not(.qb-sea) .qb-vines .lf0{fill:var(--vd)}
+.qb.qb-th:not(.qb-sea) .qb-n .fl{background:radial-gradient(circle,var(--fc) 0 22%,transparent 24%),conic-gradient(var(--fl) 0 12%,var(--fl2) 12% 20%,var(--fl) 20% 32%,var(--fl2) 32% 40%,var(--fl) 40% 52%,var(--fl2) 52% 60%,var(--fl) 60% 72%,var(--fl2) 72% 80%,var(--fl) 80% 92%,var(--fl2) 92%)}
+.qb.qb-th:not(.qb-sea) .qb-n.done::before{background:conic-gradient(var(--fl) 100%,#0000 0)}
+.qb.qb-th:not(.qb-sea) .qb-card{background:linear-gradient(170deg,var(--cb1),var(--cb2))}
+.qb.qb-th:not(.qb-sea) .qb-ci{background:radial-gradient(circle at 36% 30%,var(--p1),var(--p2) 70%)}
+.qb.qb-th:not(.qb-sea) .qb-n .nm{background:color-mix(in srgb,var(--cb2) 92%,transparent)}
+.qb.qb-th .qb-ch.on{background:linear-gradient(90deg,color-mix(in srgb,var(--cc) 26%,transparent),transparent)}
+/* shared scene bits */
+.qb-thdeco .tw,.qb-thtop .tw{fill:#fff;animation:qtTw 5s ease-in-out infinite}
+@keyframes qtTw{50%{opacity:.25}}
+.qb-thdeco .ff{fill:#efffb0;filter:drop-shadow(0 0 3px #d8ff6a);animation:qtFly 7s ease-in-out infinite}
+@keyframes qtFly{50%{transform:translate(14px,-18px);opacity:.4}}
+.qb-thdeco .reed{fill:none;stroke:#3a6a3a;stroke-width:3;stroke-linecap:round}.qb-thdeco .cat{fill:#6a4426}
+.qb-thdeco .pine{fill:#3a6a5a}.qb-thdeco .pine.dk{fill:#0c1a12}
+.qb-thdeco .moon{fill:#f4f0d8;filter:drop-shadow(0 0 18px #f4f0d888)}
+.qb-thdeco .sun{fill:#ffe27a;filter:drop-shadow(0 0 24px #ffd23f)}
+.qb-thdeco .lglow{fill:#ffd27a33;filter:blur(6px)}
+.qb-thdeco .fence{fill:#8a5a32}
+@media(prefers-reduced-motion:reduce){.qb-thdeco *,.qb-thtop *{animation:none!important}}
+/* m0 Washed Up in Murkwater */
+.qb-th-fen{--qbg:linear-gradient(180deg,#9fc8b0 0,#4a8a72 35%,#1c4a3a 75%,#12301f 100%);--hb:#1c4a3a;--p1:#5aa85a;--p2:#2a6a34;--p3:#173a20;--p4:#0f2a17;--pr:#0a1d12;--d1:#7ad06a;--d2:#2f7a3c;--l1:#2a3a32;--l2:#151f1a;--vo:#03100a;--vn:#5fae46;--vd:#24452c;--lf:#7fd06a;--fl:#ff9ad0;--fl2:#ffc8e6;--fc:#ffe27a;--cb1:#12301f;--cb2:#071510}
+.qb-th-fen .fog{fill:#e8f6ee;opacity:.18;filter:blur(8px)}.qb-th-fen .fog.f2{opacity:.12}.qb-th-fen .drift rect{fill:#6a4a2a}
+/* m1 A Place to Call Home */
+.qb-th-home{--qbg:linear-gradient(180deg,#2a2440 0,#6a4a5a 40%,#c8845a 78%,#3a2a1a 100%);--hb:#4a2e22;--p1:#d8a868;--p2:#9a6a3a;--p3:#5a3a1e;--p4:#3a2210;--pr:#2a1608;--d1:#f2c878;--d2:#b8803a;--l1:#5a4a3a;--l2:#2a2018;--vo:#2a1608;--vn:#c9a876;--vd:#6a5232;--lf:#7dd65a;--fl:#ff9a5a;--fl2:#ffd0a0;--fc:#fff6c0;--cb1:#4a2e22;--cb2:#1e120a}
+.qb-th-home .house rect,.qb-th-home .house path{fill:#2a1a12}.qb-th-home .house .win{fill:#ffd27a;filter:drop-shadow(0 0 6px #ffd27a)}
+.qb-th-home .smoke{fill:#e8e0d8;opacity:.25;animation:qtSmoke 6s ease-out infinite}.qb-th-home .smoke.s2{animation-delay:-3s}
+@keyframes qtSmoke{0%{transform:translateY(10px);opacity:0}30%{opacity:.3}100%{transform:translateY(-60px) scale(2);opacity:0}}
+.qb-th-home .fire path{fill:#ff8a3d;filter:drop-shadow(0 0 10px #ff8a3d)}.qb-th-home .fire .f2{fill:#ffe27a}
+/* m2 The Glow Beneath */
+.qb-th-glow{--qbg:radial-gradient(ellipse at 50% 100%,#1f4a4a,transparent 60%),linear-gradient(180deg,#0a0812,#160f24 60%,#0c0a14);--hb:#18122a;--p1:#6af0e0;--p2:#1f8a80;--p3:#0f3a3a;--p4:#082424;--pr:#04140f;--d1:#a8fff0;--d2:#2fc8b8;--l1:#2a2a3a;--l2:#14141c;--vo:#05040a;--vn:#22d3a6;--vd:#2a3a48;--lf:#7af0ff;--fl:#7af0ff;--fl2:#c8fbff;--fc:#ffffff;--cb1:#18122a;--cb2:#08060e}
+.qb-th-glow .roof{fill:#08060c}.qb-th-glow .mush rect{fill:#c8d8c0}.qb-th-glow .mush .cap{fill:#2fc8b8;filter:drop-shadow(0 0 10px #4ee6e0)}
+.qb-th-glow .gem{fill:#b88aff;filter:drop-shadow(0 0 8px #b88aff)}.qb-th-glow .spore{fill:#7af0e0;filter:drop-shadow(0 0 4px #7af0e0);animation:qtFly 8s ease-in-out infinite}
+/* m3 Embers in the East */
+.qb-th-ember{--qbg:linear-gradient(180deg,#1a0a0a 0,#3a120c 50%,#6a1e0a 100%);--hb:#3a120c;--p1:#5a4a4a;--p2:#2a1e1e;--p3:#140c0c;--p4:#000;--pr:#ff6a2a;--d1:#ff9a4a;--d2:#a83a1a;--l1:#2a1e1e;--l2:#120a0a;--vo:#0a0404;--vn:#ff8a3d;--vd:#5a2a1a;--lf:#ffd27a;--fl:#ffb13b;--fl2:#ffe27a;--fc:#fff6c0;--cb1:#3a120c;--cb2:#140606}
+.qb-th-ember .lavaglow{fill:#ff6a2a;opacity:.35;filter:blur(18px)}.qb-th-ember .spire{fill:#1e0e0a}
+.qb-th-ember .emb{fill:#ffb13b;filter:drop-shadow(0 0 4px #ff6a2a);animation:qtRise 6s linear infinite}
+@keyframes qtRise{0%{transform:translateY(20px);opacity:0}20%{opacity:1}100%{transform:translateY(-160px);opacity:0}}
+/* m4 The Frozen Fen */
+.qb-th-frost{--qbg:linear-gradient(180deg,#5a7a9a 0,#9ac0d8 45%,#d8ecf8 100%);--hb:#3a5a7a;--p1:#ffffff;--p2:#a8d8f0;--p3:#5a8ab0;--p4:#3a6a90;--pr:#2a4a68;--d1:#ffffff;--d2:#7fd6ff;--l1:#7a8a9a;--l2:#4a5a6a;--vo:#2a4a68;--vn:#e8f8ff;--vd:#6a8aa8;--lf:#ffffff;--fl:#bff4ff;--fl2:#ffffff;--fc:#7fd6ff;--cb1:#2a4a68;--cb2:#0e1e2e}
+.qb-th-frost .ice{fill:#e8f8ff;opacity:.85}.qb-th-frost .pine{fill:#2a5a5a}.qb-th-frost .flake{fill:#fff;animation:qtFall 9s linear infinite}
+@keyframes qtFall{0%{transform:translateY(-40px)}100%{transform:translateY(220px) translateX(20px)}}
+/* m5 Heart of the Swamp */
+.qb-th-heart{--qbg:radial-gradient(ellipse at 50% 70%,#6a2a5a,transparent 55%),linear-gradient(180deg,#1a1030,#2a1a3a 50%,#12201a);--hb:#3a1a3a;--p1:#ff9ad0;--p2:#b84a8a;--p3:#5a1a4a;--p4:#3a0a2a;--pr:#1a0a1a;--d1:#ffd0e8;--d2:#ff6ab0;--l1:#3a2a3a;--l2:#1a121a;--vo:#120812;--vn:#f2c14e;--vd:#4a2a4a;--lf:#7fd06a;--fl:#f2c14e;--fl2:#fff0a0;--fc:#ff6ab0;--cb1:#3a1a3a;--cb2:#140814}
+.qb-th-heart .trunk{fill:#2a1a14}.qb-th-heart .root{fill:none;stroke:#2a1a14;stroke-width:8;stroke-linecap:round}
+.qb-th-heart .hglow{fill:#ff6ab0;opacity:.35;filter:blur(14px);animation:qtTw 3s ease-in-out infinite}.qb-th-heart .heartp{fill:#ff6ab0;filter:drop-shadow(0 0 6px #ff6ab0)}
+/* m6 The Realm Gate */
+.qb-th-gate{--qbg:radial-gradient(ellipse at 50% 80%,#2a5a6a,transparent 50%),linear-gradient(180deg,#0a0820,#1a1540 60%,#0c0a1a);--hb:#1a1540;--p1:#8affe0;--p2:#3a6a8a;--p3:#1a2a4a;--p4:#0a1430;--pr:#8affe0;--d1:#d8fff4;--d2:#4ee6b4;--l1:#2a2a4a;--l2:#14142a;--vo:#05040f;--vn:#8affe0;--vd:#2a3a5a;--lf:#c8a8ff;--fl:#c8a8ff;--fl2:#ffffff;--fc:#8affe0;--cb1:#1a1540;--cb2:#08071a}
+.qb-th-gate .arch{fill:#3a3a52}.qb-th-gate .portal{fill:#8affe0;opacity:.3;filter:blur(4px);animation:qtTw 4s ease-in-out infinite}
+.qb-th-gate .rune circle{fill:none;stroke:#8affe0;stroke-opacity:.35;stroke-width:2}.qb-th-gate .rune .rst{fill:none;stroke:#c8a8ff;stroke-opacity:.45;stroke-width:1.5}.qb-th-gate .rune{animation:qtSpin 30s linear infinite}
+@keyframes qtSpin{to{transform:rotate(360deg)}}
+/* m7 Beyond the Swamp */
+.qb-th-cosmos{--qbg:radial-gradient(ellipse at 30% 20%,#4a2a6a,transparent 50%),linear-gradient(180deg,#05041a,#1a1040 70%,#2a1a4a);--hb:#1a1040;--p1:#ffe27a;--p2:#c9962a;--p3:#6a4a1a;--p4:#3a2a0a;--pr:#1a1040;--d1:#fff6c0;--d2:#ffd23f;--l1:#2a2a4a;--l2:#14142a;--vo:#05041a;--vn:#ff9ae0;--vd:#3a2a5a;--lf:#ffe27a;--fl:#ff9ae0;--fl2:#ffd0f4;--fc:#ffe27a;--cb1:#1a1040;--cb2:#08061a}
+.qb-th-cosmos .moonc{fill:#1a1040}.qb-th-cosmos .isle{fill:#3a2a4a}.qb-th-cosmos .isleg{fill:#4a8a4a}.qb-th-cosmos .st5{fill:#ffe27a;animation:qtTw 4s ease-in-out infinite}
+/* m8 Epilogue */
+.qb-th-dawn{--qbg:linear-gradient(180deg,#2a1a4a 0,#c86a8a 50%,#ffc878 100%);--hb:#4a2a4a;--p1:#ffd0a0;--p2:#c8784a;--p3:#6a3a2a;--p4:#3a1a12;--pr:#2a1208;--d1:#fff0c0;--d2:#ffb13b;--l1:#5a3a4a;--l2:#2a1a22;--vo:#2a1208;--vn:#c06aff;--vd:#5a3a5a;--lf:#ffd0a0;--fl:#c06aff;--fl2:#e8c0ff;--fc:#fff0c0;--cb1:#4a2a4a;--cb2:#1a0e1a}
+.qb-th-dawn .sunr{fill:#ffe27a;filter:blur(2px) drop-shadow(0 0 40px #ffb13b)}
+/* Explorer: an old map */
+.qb-th-map{--qbg:radial-gradient(circle at 20% 30%,#c9a86a44 0 60px,transparent 61px),radial-gradient(circle at 80% 70%,#a8865a33 0 90px,transparent 91px),linear-gradient(180deg,#e8d4a8,#d8bf88);--hb:#5a3a1e;--p1:#f6eedb;--p2:#c9a876;--p3:#8a6a3a;--p4:#6a4a22;--pr:#5a3a1e;--d1:#fff6e0;--d2:#7fd06a;--l1:#b8a07a;--l2:#8a7a5a;--vo:#8a6a3a;--vn:#b8342a;--vd:#8a6a3a;--lf:#5a3a1e;--fl:#b8342a;--fl2:#e8705a;--fc:#f6eedb;--cb1:#5a3a1e;--cb2:#2a1a0a}
+.qb-th-map .qb-vines .v1{stroke-dasharray:8 6}
+.qb-th-map .trail{fill:none;stroke:#8a6a3a;stroke-width:2.4;stroke-dasharray:3 7;opacity:.6}.qb-th-map .mtn{fill:none;stroke:#6a4a22;stroke-width:2;opacity:.55}
+.qb-th-map .tree0 circle{fill:none;stroke:#3a6a3a;stroke-width:2;opacity:.55}.qb-th-map .tree0 line{stroke:#6a4a22;stroke-width:2;opacity:.55}
+.qb-th-map .compass circle{fill:none;stroke:#6a4a22;stroke-width:2;opacity:.6}.qb-th-map .cst{fill:#b8342a;opacity:.45}.qb-th-map text{fill:#6a4a22;font:900 14px Nunito,sans-serif;text-anchor:middle;opacity:.7}.qb-th-map .xmark{fill:#b8342a;font-size:26px}
+/* Builder: a blueprint */
+.qb-th-blueprint{--qbg:linear-gradient(#ffffff14 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,#ffffff14 1px,transparent 1px) 0 0/24px 24px,linear-gradient(180deg,#1a4a8a,#0f3466);--hb:#0f3466;--p1:#e8f4ff;--p2:#6a9ad0;--p3:#2a5a9a;--p4:#173e78;--pr:#ffffff88;--d1:#ffffff;--d2:#4ee6b4;--l1:#3a5a8a;--l2:#1a3a6a;--vo:#0a2450;--vn:#ffffff;--vd:#6a8ab8;--lf:#ffe27a;--fl:#ffe27a;--fl2:#ffffff;--fc:#1a4a8a;--cb1:#0f3466;--cb2:#061a3a}
+.qb-th-blueprint .qb-vines .v1{stroke-dasharray:10 5}
+.qb-th-blueprint .bp rect,.qb-th-blueprint .bp path,.qb-th-blueprint .bp line{fill:none;stroke:#fff;stroke-opacity:.75;stroke-width:2.2}.qb-th-blueprint .bp .dim{stroke-dasharray:4 4}.qb-th-blueprint .bp text{fill:#fff;opacity:.5;font:700 11px Nunito,sans-serif;text-anchor:middle}
+/* Decorator: a parlour */
+.qb-th-parlor{--qbg:radial-gradient(circle,#ffffff10 0 3px,transparent 4px) 0 0/32px 32px,linear-gradient(180deg,#5a3a5a,#3a2440);--hb:#4a2a4a;--p1:#ffd0e0;--p2:#c86a8a;--p3:#7a2a4a;--p4:#4a1a2a;--pr:#f2c14e;--d1:#fff0f4;--d2:#4ee6b4;--l1:#5a4a5a;--l2:#2a1e2a;--vo:#1a0e1a;--vn:#f2c14e;--vd:#6a4a6a;--lf:#ff9ac8;--fl:#ff9ac8;--fl2:#fff0f4;--fc:#f2c14e;--cb1:#4a2a4a;--cb2:#1a0e1a}
+.qb-th-parlor .wains{fill:#3a1e20}.qb-th-parlor .rail{fill:#8a5a32}.qb-th-parlor .frame rect{fill:#c9a52a}.qb-th-parlor .frame .art{fill:#4a6a8a;opacity:.8}
+.qb-th-parlor .lamp rect,.qb-th-parlor .lamp path{fill:#c9a52a}.qb-th-parlor .lglow{fill:#ffd27a44}
+/* Crafter: a workshop */
+.qb-th-workshop{--qbg:radial-gradient(circle,#00000030 0 2px,transparent 3px) 12px 12px/24px 24px,repeating-linear-gradient(90deg,#7a5230 0 80px,#6a4426 80px 82px),#7a5230;--hb:#4a2e18;--p1:#d8a868;--p2:#9a6a3a;--p3:#5a3a1e;--p4:#3a2210;--pr:#c9a52a;--d1:#ffd27a;--d2:#c9a52a;--l1:#5a4a3a;--l2:#3a2e22;--vo:#2a1608;--vn:#c9a876;--vd:#4a3a2a;--lf:#ffd27a;--fl:#ffd23f;--fl2:#fff6c0;--fc:#8a5a32;--cb1:#4a2e18;--cb2:#1e120a}
+.qb-th-workshop .tool rect{fill:#4a2e18}.qb-th-workshop .tool .head{fill:#8e969b}.qb-th-workshop .gear path{fill:#5a4a3a}.qb-th-workshop .gear .hole{fill:#7a5230}.qb-th-workshop .gear{animation:qtSpin 20s linear infinite}.qb-th-workshop .bench{fill:#4a2e18}
+/* Farmer & Cook: fields */
+.qb-th-farm{--qbg:linear-gradient(180deg,#8ad8f0 0,#d8f0c0 70%,#8ac85a 100%);--hb:#3a6a2a;--p1:#ffd27a;--p2:#e8963a;--p3:#a85a1a;--p4:#7a3a0a;--pr:#5a3a1a;--d1:#fff0a0;--d2:#7dd65a;--l1:#a89878;--l2:#7a6a5a;--vo:#5a3a1a;--vn:#7dd65a;--vd:#a88a5a;--lf:#7dd65a;--fl:#ff6a4a;--fl2:#ffb0a0;--fc:#ffd23f;--cb1:#3a5a2a;--cb2:#16260e}
+.qb-th-farm .row{fill:#6a4426}.qb-th-farm .row.r1{fill:#7a5230}.qb-th-farm .sprout line{stroke:#3a8a3a;stroke-width:2}.qb-th-farm .sprout ellipse{fill:#5ab84a}
+.qb-th-farm .scare line{stroke:#6a4426;stroke-width:4}.qb-th-farm .scare circle{fill:#e8d090}.qb-th-farm .scare path{fill:#c8963a}
+/* Angler: a lake at dusk */
+.qb-th-lake{--qbg:linear-gradient(180deg,#f0a878 0,#c86a7a 30%,#4a4a7a 46%,#1a4a6a 100%);--hb:#3a3a5a;--p1:#ffffff;--p2:#e8341c;--p3:#8a1a0a;--p4:#5a0a04;--pr:#1a1a22;--d1:#ffffff;--d2:#4ee6b4;--l1:#5a6a7a;--l2:#2a3a4a;--vo:#0a1a2a;--vn:#f6eedb;--vd:#4a6a8a;--lf:#7fd6ff;--fl:#7fd6ff;--fl2:#ffffff;--fc:#e8341c;--cb1:#1a3a5a;--cb2:#081a2a}
+.qb-th-lake.qb-round .qb-n .pad{background:linear-gradient(180deg,#e8341c 0 50%,#ffffff 50%)}.qb-th-lake .qb-n.done .pad{background:linear-gradient(180deg,#4ee6b4 0 50%,#ffffff 50%)}
+.qb-th-lake .lakew{fill:#1a4a6a;opacity:.4}.qb-th-lake .ripple{fill:none;stroke:#e8fbff;stroke-opacity:.3;stroke-width:1.4;animation:qtTw 4s ease-in-out infinite}
+.qb-th-lake .bobber .bt{fill:#fff}.qb-th-lake .bobber .bb{fill:#e8341c}.qb-th-lake .bobber line{stroke:#fff;stroke-width:1.4}
+/* Rancher: a barnyard */
+.qb-th-ranch{--qbg:linear-gradient(180deg,#9ad8f0 0,#e8f8d8 65%,#8ac85a 100%);--hb:#7a3a2a;--p1:#fff6c0;--p2:#e8c86a;--p3:#a8862a;--p4:#7a5a1a;--pr:#5a3a1a;--d1:#ffffff;--d2:#ff9ac2;--l1:#a89878;--l2:#7a6a5a;--vo:#5a3a1a;--vn:#c9963a;--vd:#a88a5a;--lf:#7dd65a;--fl:#ff9ac2;--fl2:#fff0f4;--fc:#ffd23f;--cb1:#5a2a1a;--cb2:#22100a}
+.qb-th-ranch .barn rect,.qb-th-ranch .barn path{fill:#b8342a}.qb-th-ranch .barn .door{fill:#7a1a14}.qb-th-ranch .barn .x{fill:none;stroke:#f6eedb;stroke-width:3}
+.qb-th-ranch .hay rect{fill:#e8c86a}.qb-th-ranch .hay line{stroke:#a8862a;stroke-width:2}.qb-th-ranch .fence{fill:#f6eedb}
+/* Hunter: a dark wood */
+.qb-th-hunt{--qbg:linear-gradient(180deg,#0e1a2a 0,#14261c 60%,#0a120c);--hb:#2a0e0e;--p1:#b8b8c0;--p2:#6a6a78;--p3:#2a2a34;--p4:#14141c;--pr:#b8342a;--d1:#e8e8f0;--d2:#b8342a;--l1:#2a2a2a;--l2:#141414;--vo:#050805;--vn:#b8342a;--vd:#2a3a2a;--lf:#e8e8f0;--fl:#ff4a3a;--fl2:#ffb0a0;--fc:#ffffff;--cb1:#2a1414;--cb2:#0e0808}
+.qb-th-hunt .claw path{fill:none;stroke:#b8342a;stroke-opacity:.5;stroke-width:5;stroke-linecap:round}.qb-th-hunt .eye{fill:#ffd23f;filter:drop-shadow(0 0 4px #ffd23f);animation:qtTw 3s ease-in-out infinite}
+/* Delver: a mine */
+.qb-th-mine{--qbg:radial-gradient(circle,#ffffff08 0 2px,transparent 3px) 0 0/40px 40px,linear-gradient(180deg,#2a2422,#1a1614 70%,#120e0c);--hb:#2a2220;--p1:#9a9a9a;--p2:#5a5a5a;--p3:#2a2a2a;--p4:#141414;--pr:#c9a52a;--d1:#fff0a0;--d2:#c9a52a;--l1:#3a3430;--l2:#1e1a18;--vo:#0a0806;--vn:#c9a876;--vd:#4a3e34;--lf:#ffd27a;--fl:#ffd27a;--fl2:#fff6c0;--fc:#b88aff;--cb1:#2a2220;--cb2:#0e0a08}
+.qb-th-mine .beam{fill:#5a3a1e}.qb-th-mine .rail{fill:#8e969b}.qb-th-mine .tie{fill:#4a2e18}.qb-th-mine .cart path{fill:#5a5a62}.qb-th-mine .cart circle{fill:#2a2a30}
+.qb-th-mine .gem{fill:#7af0ff}.qb-th-mine .gem.g2{fill:#ff6a9a}.qb-th-mine .lant line{stroke:#3a2a1a;stroke-width:2}.qb-th-mine .lant rect{fill:#ffd27a}.qb-th-mine .lglow{fill:#ffd27a33}
+.qb-th-mine .ore{fill:#b88aff}.qb-th-mine .ore.o1{fill:#ffd23f}.qb-th-mine .ore.o2{fill:#7af0ff}
+/* Collector: a treasure vault */
+.qb-th-vault{--qbg:radial-gradient(ellipse at 50% 100%,#c9962a55,transparent 60%),linear-gradient(180deg,#1a1408,#2a2010 60%,#3a2a10);--hb:#3a2a10;--p1:#fff0a0;--p2:#d9a53a;--p3:#8a5a1a;--p4:#5a3a0a;--pr:#3a2a0a;--d1:#ffffff;--d2:#ffd23f;--l1:#4a3e2a;--l2:#241e12;--vo:#140e04;--vn:#ffd23f;--vd:#5a4a2a;--lf:#ff6a9a;--fl:#ff6a9a;--fl2:#ffc0d8;--fc:#ffd23f;--cb1:#3a2a10;--cb2:#140e04}
+.qb-th-vault .coin{fill:#ffd23f;stroke:#a87a1a;stroke-width:1}.qb-th-vault .gem{fill:#7af0ff;filter:drop-shadow(0 0 6px #7af0ff)}.qb-th-vault .gem.g2{fill:#ff6a9a;filter:drop-shadow(0 0 6px #ff6a9a)}
+.qb-th-vault .chestv rect,.qb-th-vault .chestv path{fill:#8a5a32;stroke:#d9a53a;stroke-width:3}.qb-th-vault .chestv .lock{fill:#d9a53a}.qb-th-vault .spark{fill:#fff6c0;animation:qtTw 2.6s ease-in-out infinite}
+/* Wonders: a festival night */
+.qb-th-fest{--qbg:linear-gradient(180deg,#0a0a2a,#2a1a4a 70%,#3a1a3a);--hb:#2a1a4a;--p1:#ff9ad0;--p2:#c84a8a;--p3:#6a1a4a;--p4:#3a0a2a;--pr:#ffe27a;--d1:#fff0a0;--d2:#4ee6b4;--l1:#3a2a4a;--l2:#1a1428;--vo:#0a0618;--vn:#ffe27a;--vd:#4a3a6a;--lf:#6fb6ff;--fl:#4ee6b4;--fl2:#c8fff0;--fc:#ff6b82;--cb1:#2a1a4a;--cb2:#0e0818}
+.qb-th-fest .burst line{stroke-width:2.4;stroke-linecap:round}.qb-th-fest .burst{animation:qtBurst 5s ease-out infinite}
+@keyframes qtBurst{0%{opacity:0;transform:scale(.6)}10%{opacity:1}60%{opacity:.2}100%{opacity:0;transform:scale(1.1)}}
+.qb-th-fest .qb-thdeco .burst{transform-box:fill-box;transform-origin:center}
+.qb-th-fest .balloon path,.qb-th-fest .string{fill:none;stroke:#f6eedb88;stroke-width:1}.qb-th-fest .balloon{animation:qtBob 6s ease-in-out infinite}
+@keyframes qtBob{50%{transform:translateY(-12px)}}
+.qb-thdeco{width:100%;height:100%}.qb-thtop{width:100%;height:140px}
