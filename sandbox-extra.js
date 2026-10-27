@@ -1011,6 +1011,26 @@
   item("veincharm", "Veinseeker Charm", { ico: VICO, sock: "pick" });
   // CREATURE PACK: drops from the new creatures, and glowing blocks to build with them
   mat("petalsnap", "Snapper Petal", "#ff6aa8"); mat("imphorn", "Imp Horn", "#ff5a2a"); mat("rimecore", "Rime Core", "#9fe8ff"); mat("geodechip", "Geode Chip", "#b08aff");
+  // ---------- OCEAN pack: Brinebog Sea loot, scuba gear and the parts of Old Croaker's boat (art is drawn in sandbox.js, OCI) ----------
+  var OCEAN = { TANKS: ["tank1", "tank2", "tank3", "tank4"], BOAT: ["boat_keel", "boat_hull", "boat_mast", "boat_sail", "boat_rudder", "boat_wheel", "boat_lamp", "boat_anchor", "boat_figure"] };
+  mat("blackpearl", "Black Pearl", "#3a2a55"); mat("coral", "Coral Shard", "#ff7a9a"); mat("seaglass", "Sea Glass", "#58d6c4"); mat("shell", "Conch Shell", "#f2b88a");
+  mat("kelp", "Brine Kelp", "#3f9a4c"); mat("inksac", "Ink Sac", "#3b2a66"); mat("pufferspine", "Puffer Spine", "#f1e2b0"); mat("jellygel", "Jelly Gel", "#7af0ff");
+  mat("eelskin", "Eel Skin", "#2c7a78"); mat("lurebulb", "Lure Bulb", "#ffe27a"); mat("urchinspine", "Urchin Spine", "#5a3a7a"); mat("brass", "Salvaged Brass", "#d9a53a");
+  mat("doubloon", "Swamp Doubloon", "#ffd23f");
+  item("kelpwrap", "Kelp Wrap", { food: 28, gem: "#3f9a4c", cooked: 1 }); item("seastew", "Bog Sea Stew", { food: 60, gem: "#ff9a5a", cooked: 1 });
+  item("scubasuit", "Frogskin Scuba Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Needed to dive below the shallows. Pair it with an Air Tank." });
+  item("tank1", "Reed Air Tank", { gem: "#7fbf6a", d: "+45 seconds of air. Dive to 60 m with a Scuba Suit." });
+  item("tank2", "Brass Air Tank", { gem: "#d9a53a", d: "+90 seconds of air. Dive to 90 m." });
+  item("tank3", "Pearl Air Tank", { gem: "#f4e6ff", d: "+160 seconds of air. Dive to 120 m." });
+  item("tank4", "Deepglass Air Tank", { gem: "#7af0ff", d: "+260 seconds of air. Dive to the bottom of the trench." });
+  item("flippers", "Frog Flippers", { gem: "#4ee6b4", d: "Webbed flippers: you swim 30% faster." });
+  item("divelamp", "Dive Lantern", { gem: "#ffd23f", d: "A sealed glowing lantern that lights up the deep around you." });
+  item("boat_keel", "Gator-Bone Keel", { gem: "#c9b28a", boatpart: 1 }); item("boat_hull", "Hull Planks", { gem: "#9a6a3a", boatpart: 1 });
+  item("boat_mast", "Cypress Mast", { gem: "#8a5a32", boatpart: 1 }); item("boat_sail", "Lily-Pad Sail", { gem: "#6aa347", boatpart: 1 });
+  item("boat_rudder", "Rudder", { gem: "#7a5a3a", boatpart: 1 }); item("boat_wheel", "Ship's Wheel", { gem: "#c98c4f", boatpart: 1 });
+  item("boat_lamp", "Frog-Eye Bow Lantern", { gem: "#ffd23f", boatpart: 1 }); item("boat_anchor", "Iron Anchor", { gem: "#8e969b", boatpart: 1 });
+  item("boat_figure", "Frog Figurehead", { gem: "#4ee6b4", boatpart: 1 });
+
   block("geodeblock", "Geode Block", "#4a3a66", "#c8a8ff", 1.2, null, 7, ["176,130,255", 2.2, 0.2]);
   block("rimeblock", "Rimeglass Block", "#9fd0ee", "#e8f8ff", 0.9, null, 8, ["159,232,255", 2.2, 0.2]);
   block("impbrick", "Imp Brick", "#8a2a1a", "#ff8a3d", 1.4, null, 6, ["255,130,50", 2.2, 0.18]);
@@ -1024,6 +1044,19 @@
   R("x_rimeblock", "Rimeglass Block (2)", { rimeblock: 2 }, { rimecore: 1, glass: 1 }, { d: "A pale blue glowing block. Rime Cores drop from Rime Brutes in Frostfen." });
   R("x_impbrick", "Imp Brick (2)", { impbrick: 2 }, { imphorn: 1, cinder: 1 }, { d: "A hot red brick with an ember glow. Imp Horns drop from Cinder Imps in Ember Bog." });
   R("x_bloomstone", "Bloomstone (2)", { bloomstone: 2 }, { petalsnap: 2, stone: 1 }, { d: "A pink glowing block. Snapper Petals drop from Snapper Lilies in Murkwater." });
+  // ocean pack
+  R("x_scubasuit", "Frogskin Scuba Suit", { scubasuit: 1 }, { leather: 6, kelp: 8, glass: 2, pearl: 1 }, { bench: true, d: "Dive below the shallows. A wetsuit and mask in one. Kelp grows in the Brinebog Sea." });
+  R("x_tank1", "Reed Air Tank", { tank1: 1 }, { fiber: 8, clay: 4, glass: 1, kelp: 2 }, { bench: true, d: "+45 s of air. Safe to 60 m." });
+  R("x_tank2", "Brass Air Tank", { tank2: 1 }, { ironingot: 6, brass: 4, glass: 2, kelp: 3 }, { bench: true, d: "+90 s of air. Safe to 90 m." });
+  R("x_tank3", "Pearl Air Tank", { tank3: 1 }, { ironingot: 8, pearl: 6, seaglass: 6, brass: 6 }, { bench: true, d: "+160 s of air. Safe to 120 m." });
+  R("x_tank4", "Deepglass Air Tank", { tank4: 1 }, { ironingot: 10, blackpearl: 2, seaglass: 10, doubloon: 12, jellygel: 4 }, { bench: true, d: "+260 s of air. Safe all the way down." });
+  R("x_flippers", "Frog Flippers", { flippers: 1 }, { leather: 3, kelp: 4, eelskin: 2 }, { bench: true, d: "Swim 30% faster." });
+  R("x_divelamp", "Dive Lantern", { divelamp: 1 }, { glass: 2, jellygel: 2, copperwire: 1, lampoil: 1 }, { bench: true, d: "Lights the deep around you." });
+  R("x_boat_sail", "Lily-Pad Sail", { boat_sail: 1 }, { canvas: 6, fiber: 6, kelp: 4 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
+  R("x_boat_lamp", "Frog-Eye Bow Lantern", { boat_lamp: 1 }, { glass: 2, copperwire: 2, lampoil: 1 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
+  R("x_boat_anchor", "Iron Anchor", { boat_anchor: 1 }, { ironingot: 6, rope: 1 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
+  R("x_kelpwrap", "Kelp Wrap", { kelpwrap: 2 }, { kelp: 2, fiber: 1 }, { d: "A chewy snack. Restores hunger." });
+  R("x_seastew", "Bog Sea Stew", { seastew: 1 }, { kelp: 2, shell: 1, bogminnow: 2 }, { bench: true, d: "A hearty stew from the Brinebog Sea." });
   R("x_garage", "Garage", { garage: 1 }, { planks: 24, stone: 12, ironingot: 4, glass: 2 }, { bench: true, d: "A 2-wide, 2-tall garage you place like a door. Walk up to it and Enter: your old motorcycle is waiting inside, stripped down to nothing." });
   R("x_moto_seat", "Lily-Pad Seat", { moto_seat: 1 }, { leather: 2, marshlily: 2, canvas: 1 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
   R("x_moto_chain", "Bronze Drive Chain", { moto_chain: 1 }, { ironingot: 3, gear: 2 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
@@ -1526,7 +1559,7 @@
   // a few of the new finds turn up in cave chests and pots too
   [["silvercoin", 1, 4, 3, 0], ["goldcoin", 1, 2, 2, 1], ["pearl", 1, 1, 1, 1], ["oldbook", 1, 1, 2, 0], ["sealedletter", 1, 1, 2, 0], ["nails", 2, 6, 2, 0], ["hinge", 1, 2, 1, 0], ["bandage", 1, 2, 2, 0], ["lampoil", 1, 2, 1, 0], ["goldbar", 1, 1, 1, 2], ["fireopal", 1, 1, 1, 2]].forEach(function (e) { if (ITEMS[e[0]]) LOOT_ALL.push(e); });
   // Old Croaker's prices: [how many, tokens]
-  var VALUE = { silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
-  var api = { MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var VALUE = { doubloon: [4, 1], blackpearl: [1, 4], silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
+  var api = { OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

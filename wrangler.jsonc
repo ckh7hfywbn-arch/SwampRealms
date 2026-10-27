@@ -20,5 +20,20 @@
       "database_name": "swampverse",
       "database_id": "705ad90d-818d-4c1d-b583-1d54100fec7a"
     }
-  ]
+  ],
+  // PREVIEWS (test links for branches): previews do not inherit bindings, so they are listed again here. Each preview gets its own
+  // multiplayer rooms. For now previews share the live database (accounts and cloud saves); to keep tests separate, create a D1 database
+  // named swampverse-test, run schema.sql on it, and put its id below.
+  "previews": {
+    "durable_objects": {
+      "bindings": [{ "name": "ROOMS", "class_name": "DelveRoom" }]
+    },
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "swampverse",
+        "database_id": "705ad90d-818d-4c1d-b583-1d54100fec7a"
+      }
+    ]
+  }
 }

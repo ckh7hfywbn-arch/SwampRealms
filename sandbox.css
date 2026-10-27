@@ -1432,3 +1432,23 @@ body.sbx-app footer{margin-top:28px}
 .sbx-gravehud[hidden]{display:none}
 .sbx-gravehud.warn{border-color:#ff8a7a;color:#ffb3a8}
 @media (prefers-reduced-motion:reduce){.sbx-dead.in,.sbx-dead.in .dd-card{animation:none}}
+
+/* OCEAN: the air bar sits beside health and hunger, and all three bars are the same size */
+.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food,.sbx-vrow .sbx-o2{flex:1 1 0;width:auto;min-width:0;height:28px;border-radius:14px}
+.sbx-vrow .sbx-hp .hrt,.sbx-vrow .sbx-food .ic,.sbx-vrow .sbx-o2 .ic{width:28px;height:28px}
+.sbx-vrow .sbx-hp .hrt svg,.sbx-vrow .sbx-food .ic svg,.sbx-vrow .sbx-o2 .ic svg{width:15px;height:15px}
+.sbx-vrow .sbx-hp .trk,.sbx-vrow .sbx-food .trk,.sbx-vrow .sbx-o2 .trk{height:13px;border-radius:7px}
+.sbx-vrow .sbx-hp .trk b,.sbx-vrow .sbx-food .trk b,.sbx-vrow .sbx-o2 .trk b{font-size:.64rem}
+.sbx-vrow .sbx-hp{gap:6px;padding-right:8px}
+.sbx-o2{--oc:#7af0ff;--oc2:#1a8ab8;display:flex;align-items:center;gap:6px;padding:0 8px 0 0;background:linear-gradient(160deg,rgba(8,30,44,.82),rgba(2,8,14,.74));border:1px solid color-mix(in srgb,var(--oc) 55%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px -8px #000;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.sbx-o2[hidden]{display:none}
+.sbx-o2 .ic{flex:none;display:grid;place-items:center;margin:-1px 0 -1px -1px;border-radius:50%;color:#9be8ff;background:radial-gradient(circle at 35% 28%,#123a4a,#020c12 70%);border:1.5px solid var(--oc)}
+.sbx-o2 .trk{position:relative;flex:1;background:rgba(0,0,0,.6);box-shadow:inset 0 1px 3px #000;overflow:hidden}
+.sbx-o2 .trk .fl{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:7px;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.05) 50%,rgba(0,0,0,.12)),linear-gradient(90deg,var(--oc2),var(--oc));box-shadow:0 0 10px var(--oc);transition:width .2s}
+.sbx-o2 .trk b{position:absolute;inset:0;display:grid;place-items:center;font:800 .64rem Nunito,system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px #000}
+.sbx-o2.mid{--oc:#f2c14e;--oc2:#c08a1c}
+.sbx-o2.low{--oc:#ff5a4a;--oc2:#b81d18;animation:sbxLow 1.1s ease-in-out infinite}
+@media(max-width:480px),(max-height:520px) and (orientation:landscape){.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food,.sbx-vrow .sbx-o2{height:26px}.sbx-vrow .sbx-hp .hrt,.sbx-vrow .sbx-food .ic,.sbx-vrow .sbx-o2 .ic{width:26px;height:26px}.sbx-vrow{gap:5px}}
+@media(prefers-reduced-motion:reduce){.sbx-o2.low{animation:none}.sbx-o2 .trk .fl{transition:none}}
+.bo-box .mo-cv{border-radius:12px}
+.mo-list .mo-fit{width:auto;max-width:none}
