@@ -12771,7 +12771,7 @@
   // nothing reaches the Armory, Crystals or anyone else's world. Lock it again from the Dev tab.
   //   toggles (remembered on this device): god mode, fly, ghost (fly through blocks), fast dig, peaceful, FPS counter
   //   actions: heal, best gear, give any item, time of day, events (Blood Moon, star, rainbow), spawn creatures and bosses, teleports, map, quests
-  var DEVH = "4d741228-d2b40119", DEV = { on: false, god: false, fly: false, ghost: false, dig: false, peace: false, fps: false, q: "" };
+  var DEVH = "b947c6e0-cc5d8d9e", DEV = { on: false, god: false, fly: false, ghost: false, dig: false, peace: false, fps: false, q: "" };
   function devHash(s) {   // two FNV-1a passes over the code (trimmed, lower case)
     s = String(s || "").trim().toLowerCase(); var a = 2166136261, b = 3166136261 ^ s.length;
     for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = Math.imul(b ^ (c * 31 + i), 16777619) >>> 0; }
