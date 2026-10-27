@@ -1562,3 +1562,22 @@ body.sbx-app footer{margin-top:28px}
 }
 @media(prefers-reduced-motion:reduce){.fb-book,.fb-book.flip .fb-spread{animation:none}}
 .fb-nav .btn,.fb-nav .btn.ghost{background:#3a2010;border:1px solid #c99a5a88;box-shadow:0 2px 0 #1e0e06;color:#f1e4c4}.fb-pay{box-shadow:0 3px 0 #3a2010!important}
+/* FISH PACK: the Fishing Log shows a chapter's fish as a grid of sketches (right) and the picked one in detail (left) */
+.fb-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fb-card{display:flex;align-items:center;gap:8px;min-width:0;padding:6px 8px 6px 6px;border:0;border-radius:6px;background:#e8d8b2aa;box-shadow:inset 0 0 0 1px #a8865a66;cursor:pointer;text-align:left;color:var(--ink)}
+.fb-card:hover{background:#dcc898}.fb-card.sel{box-shadow:inset 0 0 0 2px #7a4a26,0 2px 0 #a8865a66;background:#f6ead0}
+.fb-card .fb-sk{width:40px;height:40px;transform:none;box-shadow:inset 0 0 0 1px #a8865a66}.fb-card .fb-sk img{width:32px;height:32px}
+.fb-card.no .fb-sk img{filter:brightness(0) opacity(.18)}
+.fb-cn{flex:1;min-width:0;font:800 .78rem/1.15 Nunito,sans-serif;overflow:hidden;text-overflow:ellipsis}
+.fb-card em{flex:none;font:800 .68rem Nunito,sans-serif;font-style:normal;color:var(--rc)}
+.fb-det{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:10px;border-radius:6px;background:#e8d8b277;box-shadow:inset 0 0 0 1px #a8865a66}
+.fb-sk.big{width:84px;height:84px}.fb-sk.big img{width:68px;height:68px}
+.fb-det.no .fb-sk img{filter:brightness(0) opacity(.18)}
+.fb-rar{display:inline-block;margin:2px 0 2px;padding:1px 8px;border-radius:999px;font:900 .64rem Nunito,sans-serif;letter-spacing:.04em;color:#fff;background:var(--rc)}
+.fb-r .fb-pay,.fb-r .fb-stamp,.fb-r .fb-rw{margin-top:12px}
+.fb-scene{height:84px}
+.fb-blossom{background:linear-gradient(180deg,#ffe0ea 0 38%,#e8a8c0 38% 100%)}
+.fb-cave{background:linear-gradient(180deg,#3a3448 0 38%,#6a5a9a 38% 100%)}
+.fb-oak{background:linear-gradient(180deg,#5a6a3a 0 38%,#3a4a2a 38% 100%)}
+.fb-shores{background:linear-gradient(180deg,#fff0c0 0 38%,#5ac8c8 38% 100%)}
+@media(max-width:640px){.fb-tabs{overflow-x:auto;justify-content:flex-start;padding-bottom:2px}.fb-tabs button{flex:none;width:34px;height:32px}.fb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-sk.big{width:64px;height:64px}.fb-sk.big img{width:52px;height:52px}}

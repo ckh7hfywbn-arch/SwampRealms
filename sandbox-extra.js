@@ -1017,6 +1017,63 @@
   mat("kelp", "Brine Kelp", "#3f9a4c"); mat("inksac", "Ink Sac", "#3b2a66"); mat("pufferspine", "Puffer Spine", "#f1e2b0"); mat("jellygel", "Jelly Gel", "#7af0ff");
   mat("eelskin", "Eel Skin", "#2c7a78"); mat("lurebulb", "Lure Bulb", "#ffe27a"); mat("urchinspine", "Urchin Spine", "#5a3a7a"); mat("brass", "Salvaged Brass", "#d9a53a");
   mat("doubloon", "Swamp Doubloon", "#ffd23f");
+  // ---------- FISH PACK: 50 more fish and water creatures. Each row: [id, name, habitat, rarity, min cm, max cm, when, look, Croako's note]
+  // habitat: swamp (Murkwater water), blossom (Cherry Blossom Vale ponds), cave (any water underground), ice (Frostfen ice), oak (Dark Oakwood ponds),
+  //          shores (Sunbaked Shores lagoons), lava (Ember Bog lava, Ember Rod), sea (off Croaker's Pier). rarity: c common, u uncommon, r rare, l legendary.
+  // when: "" any time, "day", "night" or "rain". look: "shape|body|dark|belly|fin|pattern" (drawn in sandbox.js, OCI).
+  var FISH2 = [
+    ["lilyperch", "Lily Perch", "swamp", "c", 10, 25, "", "fish|#7aa84a|#3f6a2a|#e6e0a8|#c9a52a|stripe", "Hides under lily pads. Polite, for a perch."],
+    ["mudskipper", "Mudskipper", "swamp", "c", 8, 15, "day", "long|#8a6a42|#4a3a22|#c9b48a|#6a5232|spot", "Walks better than it swims. Walks better than Croaker, too."],
+    ["bogcrawdad", "Bog Crawdad", "swamp", "c", 6, 14, "", "crayfish|#b8503a|#6a2a1a|#e8a07a|#8a3a2a|plain", "Pinches first. Asks questions never."],
+    ["swampshrimp", "Swamp Shrimp", "swamp", "c", 3, 7, "", "shrimp|#e8907a|#a85a4a|#ffd0b8|#c8705a|plain", "Tiny, twitchy, delicious."],
+    ["spottedgar", "Spotted Gar", "swamp", "u", 40, 120, "", "pike|#6a7a3a|#3a4a1a|#c9c48a|#4a5a2a|spot", "A nose like a needle and manners to match."],
+    ["marshbass", "Marsh Bass", "swamp", "u", 25, 60, "rain", "fish|#4a7a3a|#24401a|#c8d8a0|#3a5a2a|stripe", "Only bites when it's raining. Sulks the rest of the time."],
+    ["kingcroak", "Croaking Kingfish", "swamp", "l", 60, 140, "night", "tall|#3fae5e|#1c5e34|#f1efb4|#ffd23f|glow", "Croaks like my brother. Looks like my brother. Is NOT my brother."],
+    ["petalkoi", "Petal Koi", "blossom", "c", 20, 45, "", "fish|#fff0f4|#e87aa0|#ffffff|#ff9ac8|spot", "Pink as a blossom and twice as vain."],
+    ["blossomminnow", "Blossom Minnow", "blossom", "c", 3, 8, "", "fish|#ffb0c8|#c86a8a|#fff0f4|#ff8ab0|plain", "So small. So pink. So easily startled."],
+    ["dewguppy", "Dewdrop Guppy", "blossom", "c", 2, 5, "day", "fish|#7ac8ff|#3a7ab8|#e0f4ff|#ff9ac8|glow", "Catches the morning light. Keep it in a cup."],
+    ["pinkaxolotl", "Pink Axolotl", "blossom", "u", 15, 30, "", "axolotl|#ffaec8|#c86a8a|#ffe0ea|#ff6a9a|plain", "Smiles at everything. Even the hook."],
+    ["sakuratrout", "Sakura Trout", "blossom", "u", 25, 50, "", "fish|#c8d8e8|#8a6a8a|#fff0f4|#ff8ab0|spot", "Silver with pink freckles. Tastes like spring."],
+    ["moonkoi", "Moon Koi", "blossom", "r", 30, 60, "night", "fish|#f4f4ff|#a8b0e8|#ffffff|#c8d0ff|glow", "Only rises when the moon is out. Pale as a ghost, twice as lucky."],
+    ["blindcave", "Blind Cavefish", "cave", "c", 6, 14, "", "fish|#e8dcd0|#b8a898|#fff6ee|#d8c8b8|plain", "No eyes. All opinions."],
+    ["glowshrimp", "Glow Shrimp", "cave", "c", 3, 6, "", "shrimp|#7af0ff|#2a9ab8|#e0ffff|#4ee6e0|glow", "Lights your way down. Then gets eaten. Circle of life."],
+    ["caveeel", "Cave Eel", "cave", "u", 40, 90, "", "eel|#7a8288|#3a4248|#c8d0d4|#5a6268|plain", "Slides out of the dark like a bad memory."],
+    ["crystalcrab", "Crystal Crab", "cave", "u", 6, 14, "", "crab|#a8e0ff|#4a8ab8|#e8f8ff|#7ac0ff|glow", "You can see what it had for breakfast. Gravel, mostly."],
+    ["paleolm", "Pale Olm", "cave", "u", 15, 30, "", "axolotl|#f0e0d8|#c8a898|#fff6f0|#e8b0a8|plain", "Lives a hundred years in the dark. Never once said thank you."],
+    ["echofish", "Echo Fish", "cave", "r", 15, 30, "", "tall|#8a78c8|#4a3a88|#d8d0f8|#b8a8ff|stripe", "Sing to it and it sings back. Badly."],
+    ["deeplurker", "Deep Lurker", "cave", "l", 50, 120, "", "angler|#3a2a55|#1a1030|#6a5a8a|#ffe27a|glow", "Its lure looks like a lantern. That's the last thing most things see."],
+    ["snowsmelt", "Snow Smelt", "ice", "c", 8, 16, "", "fish|#e8f4ff|#a8c0d8|#ffffff|#c8e0f0|plain", "Melts in your mouth. Freezes your teeth."],
+    ["frostcrab", "Frost Crab", "ice", "c", 8, 18, "", "crab|#bfe0f0|#5a8aa8|#ffffff|#8ac0e0|plain", "Wears a little icicle on each claw. Fashionable."],
+    ["glacierchar", "Glacier Char", "ice", "u", 30, 70, "", "fish|#6a8aa8|#3a5a7a|#ff8a5a|#ff6a3a|spot", "A red belly under all that ice. Warmer than it looks."],
+    ["shiverfin", "Shiverfin", "ice", "u", 15, 30, "", "tall|#9ad0f0|#4a8ab8|#e8f8ff|#c8f0ff|stripe", "Shakes the whole time you hold it. Me too."],
+    ["auroraeel", "Aurora Eel", "ice", "r", 60, 140, "night", "eel|#4ee6b4|#2a8a8a|#c8a8ff|#a86aff|glow", "Comes up under the northern lights, wearing them."],
+    ["acornbream", "Acorn Bream", "oak", "c", 15, 35, "", "tall|#a8743a|#6a4426|#e8c88a|#8a5a32|plain", "Brown, round and nutty. Squirrels hate it."],
+    ["willowfin", "Willowfin", "oak", "c", 10, 24, "", "fish|#7aa86a|#3a6a3a|#d8e8b8|#9ac88a|stripe", "Long trailing fins, like a willow in a breeze."],
+    ["rootcrawdad", "Root Crawdad", "oak", "c", 6, 14, "", "crayfish|#5a4a3a|#2a2018|#a89078|#3a2a1a|plain", "Lives in the roots. Dark, grumpy and crunchy."],
+    ["shadowcarp", "Shadow Carp", "oak", "u", 30, 70, "", "fish|#3a3a4a|#14141c|#7a7a8a|#2a2a38|plain", "You only see it when it's already on the hook."],
+    ["owlcatfish", "Owl-eyed Catfish", "oak", "r", 40, 90, "night", "catfish|#6a5a4a|#3a2a1a|#d8c8a8|#ffd23f|spot", "Two huge yellow eyes. It stares. I stare back. We have an understanding."],
+    ["sunbaker", "Sunbaked Sunfish", "shores", "c", 10, 30, "day", "tall|#ffb04a|#c86a1a|#ffe8a0|#ff8a3a|stripe", "Lies in the warm shallows all afternoon. Living the dream."],
+    ["sandshrimp", "Sand Shrimp", "shores", "c", 3, 7, "", "shrimp|#e8d0a0|#a8905a|#fff4d8|#d8b880|plain", "Looks like sand. Tastes like sand. Mostly sand."],
+    ["clownbog", "Bogclown", "shores", "c", 6, 12, "", "fish|#ff8a3a|#14181c|#ffffff|#ffffff|band", "Orange, stripy and always grinning. Suspicious."],
+    ["lagoonray", "Lagoon Ray", "shores", "u", 30, 80, "", "ray|#d8b880|#8a6a3a|#fff4d8|#a8885a|spot", "Flaps along the bottom like a pancake with ambitions."],
+    ["sunnyhorse", "Sunny Seahorse", "shores", "u", 8, 16, "", "seahorse|#ffd23f|#c8961a|#fff6c0|#ff9a3a|plain", "Holds on to your line with its tail. Won't let go."],
+    ["coconutcrab", "Coconut Crab", "shores", "r", 20, 40, "", "crab|#8a5a32|#4a2a12|#d8a870|#6a4426|plain", "Strong enough to crack a coconut. Or a thumb."],
+    ["cindercrab", "Cinder Crab", "lava", "c", 8, 16, "", "crab|#3a2a2a|#14080a|#ff8a3d|#ff5a2a|glow", "Its shell is still glowing. Don't sit on it."],
+    ["blazefin", "Blazefin", "lava", "c", 15, 30, "", "fish|#ff6a2a|#a82a0a|#ffd27a|#ffb13b|glow", "Fins like candle flames. Smells like toast."],
+    ["slagsnapper", "Slag Snapper", "lava", "u", 20, 45, "", "fish|#5a4a4a|#2a1a1a|#a88a7a|#ff8a3d|spot", "Crusted in slag, snaps at everything, cools down for nobody."],
+    ["obsidianray", "Obsidian Ray", "lava", "r", 40, 90, "", "ray|#1a1420|#000000|#4a3a5a|#ff6a2a|glow", "Black as a volcano's heart. Glides through lava like silk."],
+    ["phoenixkoi", "Phoenix Koi", "lava", "l", 30, 70, "night", "fish|#ffb13b|#ff3a1a|#fff2b0|#ffe27a|glow", "Came back to life on the bank. Twice. Then it winked at me."],
+    ["pierbream", "Pier Bream", "sea", "c", 15, 35, "", "tall|#a8b8c8|#5a6a7a|#e8f0f4|#7a8a9a|plain", "Hangs around the pier posts like it pays rent."],
+    ["bogsardine", "Bog Sardine", "sea", "c", 6, 14, "", "fish|#c8d8e0|#4a6a8a|#ffffff|#7a9ab8|stripe", "Comes in a school of thousands. You got one. Well done."],
+    ["puffling", "Puffling", "sea", "c", 8, 16, "", "puffer|#e8d870|#a8a030|#fff8c0|#c8b850|spot", "Puffs up when you catch it. Puffs up when you look at it. Just puffs."],
+    ["sunsetstar", "Sunset Starfish", "sea", "c", 8, 20, "", "star|#ff8a5a|#c84a2a|#ffd0a0|#ff6a3a|spot", "Hangs on to the line with all five arms. Very determined."],
+    ["grumpflounder", "Grumpy Flounder", "sea", "c", 20, 40, "", "flat|#a8906a|#5a4a32|#e8d8b8|#7a6a4a|spot", "Both eyes on one side of its face. Both of them glaring."],
+    ["inkysquid", "Inky Squid", "sea", "u", 20, 50, "", "squid|#c8607a|#7a2a4a|#ffc8d8|#a84a6a|spot", "Inks your boots the moment it lands. Every. Single. Time."],
+    ["moonjelly", "Moon Jelly", "sea", "u", 10, 30, "night", "jelly|#c8e8ff|#7aa8d8|#ffffff|#a8d0ff|glow", "Comes up to look at the moon. Go gently with it."],
+    ["spinylobster", "Spiny Lobster", "sea", "r", 25, 50, "", "crayfish|#d8502a|#7a1a0a|#ffb08a|#a83a1a|spot", "All spikes and no manners. Makes a fine supper."],
+    ["bogmarlin", "Bog Marlin", "sea", "l", 120, 300, "", "marlin|#3a6ab8|#1a2a5a|#d8e8ff|#2a4a8a|stripe", "Took me three days, two rods and both my boots. Good luck."]
+  ];
+  FISH2.forEach(function (f) { var big = f[5], fv = f[3] === "l" ? [26, 18] : big >= 80 ? [16, 6] : big >= 40 ? [12, 4] : big >= 15 ? [9, 2] : [5, 1]; food(f[0], f[1], fv[0], fv[1]); });
   item("fishlog", "Croako's Fishing Log", { gem: "#7a4a26", book: 1, d: "A battered leather book from Croako. Every fish you catch is written in it. Pick it on your hotbar to read it." });
   food("brinemackerel", "Brine Mackerel", 9, 2); food("kelpsnapper", "Kelp Snapper", 12, 4); food("goldgilly", "Golden Gilly", 24, 18); food("piersushi", "Pier Sushi", 42, 14, 1);   // fished off Croaker's Pier
   item("kelpwrap", "Kelp Wrap", { food: 28, gem: "#3f9a4c", cooked: 1 }); item("seastew", "Bog Sea Stew", { food: 60, gem: "#ff9a5a", cooked: 1 });
@@ -1569,6 +1626,6 @@
   [["silvercoin", 1, 4, 3, 0], ["goldcoin", 1, 2, 2, 1], ["pearl", 1, 1, 1, 1], ["oldbook", 1, 1, 2, 0], ["sealedletter", 1, 1, 2, 0], ["nails", 2, 6, 2, 0], ["hinge", 1, 2, 1, 0], ["bandage", 1, 2, 2, 0], ["lampoil", 1, 2, 1, 0], ["goldbar", 1, 1, 1, 2], ["fireopal", 1, 1, 1, 2]].forEach(function (e) { if (ITEMS[e[0]]) LOOT_ALL.push(e); });
   // Old Croaker's prices: [how many, tokens]
   var VALUE = { doubloon: [4, 1], blackpearl: [1, 4], silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
-  var api = { OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var api = { FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

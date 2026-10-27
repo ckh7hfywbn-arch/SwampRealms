@@ -419,6 +419,9 @@
     sq("dig5", "Wonders", 3, "Pirate Frog", "Dig up 5 Buried Treasures.", 5, st("dug"), { ancientcoin: 4, goldfeather: 1 }),
     sq("bounce50", "Wonders", 1, "Boing!", "Bounce on Bounce Shrooms 50 times (Workbench: Redcaps, Slimeball, Glowspore).", 50, st("bounces"), { bounceshroom: 4 }),
     sq("party", "Wonders", 1, "Party Frog", "Fire a Confetti Cannon 10 times.", 10, st("confetti"), { balloons: 1 }),
+    sq("fish30", "Angler", 1, "Big Book of Fish", "Log 30 different fish in Croako's Fishing Log.", 30, function () { return FISH_ALL.filter(function (k) { return S.fdex[k]; }).length; }, { doubloon: 10 }),
+    sq("fishall", "Angler", 3, "Every Fish in the Swamp", "Log every one of the 62 fish and water creatures.", 62, function () { return FISH_ALL.filter(function (k) { return S.fdex[k]; }).length; }, { goldbar: 2, blackpearl: 1 }),
+    sq("fishleg", "Angler", 2, "Tall Tale", "Land a Legendary fish. Croako will want proof.", 1, st("legfish"), { doubloon: 12 }),
     sq("volc1", "Delver", 3, "Old Flame", "Climb an Ember Bog volcano and go down the vent in its cold crater.", 1, st("volc"), { torch: 6 }),
     sq("volc5", "Delver", 3, "Heart of the Mountain", "Reach floor 5 of the Old Volcano.", 5, st("volcDeep"), { cinder: 6, ironingot: 3 }),
     // ocean update: Croaker's Pier, diving, the boat and the sea
@@ -527,7 +530,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -3969,7 +3972,7 @@
     ice: [["frosttrout", 55], ["icepike", 32], ["crystalcarp", 0]],
     lava: [["emberkoi", 52], ["magmaeel", 35], ["cinderfish", 0]]
   };
-  var FISH_ALL = ["bogminnow", "catfish", "glowfin", "frosttrout", "icepike", "crystalcarp", "emberkoi", "magmaeel", "cinderfish", "brinemackerel", "kelpsnapper", "goldgilly"].filter(function (k) { return ITEMS[k]; });   // the last three bite off Croaker's Pier
+  var FISH_ALL = ["bogminnow", "catfish", "glowfin", "frosttrout", "icepike", "crystalcarp", "emberkoi", "magmaeel", "cinderfish", "brinemackerel", "kelpsnapper", "goldgilly"].concat((typeof SbxExtra !== "undefined" && SbxExtra.FISH2 || []).map(function (r) { return r[0]; })).filter(function (k) { return ITEMS[k]; });   // + the FISH PACK   // the last three bite off Croaker's Pier
   function liquidAt(x, y) { var id = get(x, y); return id === T.WATER ? "water" : id === T.LAVA ? "lava" : id === T.ICE || id === T.X_permafrost ? "ice" : ""; }
   function castTarget(tx, ty) {   // the liquid's surface cell at (or just below) where you tapped
     for (var y = ty; y <= ty + 3; y++) { var lq = liquidAt(tx, y); if (lq) { var top = y; while (top > 0 && liquidAt(tx, top - 1) === lq) top--; if (lq === "ice" && get(tx, top - 1) !== T.AIR) return null; return { x: tx, y: top, lq: lq }; } if (blocks(tx, y)) break; }
@@ -4004,12 +4007,10 @@
     var under = y > col[clamp(x, 0, W - 1)] + 6, night = isNight(S.time), r = Math.random();
     if (r < 0.04) { var L = rollLoot("pot", world.bio[x], under ? 1 : 0); L.forEach(function (q) { give(q[0], q[1], x, y - 0.6); }); popup("Fished up treasure!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#f2c14e", "✦"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.1) { give("oldboot", 1, x, y - 0.6); nag("Just an Old Boot..."); S.st.boots++; checkGoals(); return; }
-    var tab = FISHTAB[F.lq], rare = 0.07 + (F.bait || 0) + (under ? 0.05 : 0) + (hasCharm("angler") ? 0.06 : 0) + (night && F.lq === "water" ? 0.08 : 0), k;
-    if (Math.random() < rare) k = tab[2][0];
-    else { var tw = tab[0][1] + tab[1][1], rr = Math.random() * tw; k = rr < tab[0][1] ? tab[0][0] : tab[1][0]; }
+    var hab = fishHab(F.lq, x, y), k = rollFish(hab, F.bait, under ? 0.4 : 0), frr = FMETA[k] ? FMETA[k][1] : "c";   // FISH PACK: the water decides what bites
     give(k, 1, x, y - 0.6, true); S.st.fish++; S.fdex[k] = 1; if (F.lq === "lava") S.st.lavafish++; var fcm = fishLogged(k); if (fcm) text(x + 0.5, y - 1.4, ITEMS[k].n + " \u00b7 " + fcm + " cm", "#bff4ff");
     chips(x + 0.5, y, F.lq === "lava" ? "#ff8a3d" : "#8fe0ff", 14, 6); thud(420, 0.06);
-    if (k === tab[2][0]) { S.st.rarefish++; popup("Rare catch!", ITEMS[k].n, "#c78bff", "★"); snd("open", "Epic"); } else snd("coin");
+    if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#c78bff", "★"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
     checkTrail(); checkGoals();
   }
   function drawFishing(g, now) {
@@ -12186,7 +12187,7 @@
     if (!ITEMS[k] && !SPR[k] && !/^(wpn|arm|bag)\d$/.test(k) && k !== "shovel" && k !== "can" && k !== "bucket") return null;
     try { return icon(k); } catch (e) { return null; }
   }
-  Object.assign(QB_ICON, { oc_pier: "boat_anchor", oc_dive: "kelp", oc_suit: "scubasuit", oc_suit4: "suit4", volc1: "#\u2668", volc5: "cinder", oc_d30: "coral", oc_d70: "tank2", oc_d110: "tank4", oc_clam5: "pearl", oc_chest5: "doubloon", oc_kill25: "jellygel", oc_pir10: "doubloon", oc_capt: "blackpearl", oc_boat: "boat_keel", oc_sail: "boat_sail", oc_isl5: "boat_wheel", oc_ship3: "boat_figure", oc_site3: "seaglass" });   // OCEAN
+  Object.assign(QB_ICON, { oc_pier: "boat_anchor", oc_dive: "kelp", oc_suit: "scubasuit", oc_suit4: "suit4", volc1: "#\u2668", fish30: "fishlog", fishall: "bogmarlin", fishleg: "kingcroak", volc5: "cinder", oc_d30: "coral", oc_d70: "tank2", oc_d110: "tank4", oc_clam5: "pearl", oc_chest5: "doubloon", oc_kill25: "jellygel", oc_pir10: "doubloon", oc_capt: "blackpearl", oc_boat: "boat_keel", oc_sail: "boat_sail", oc_isl5: "boat_wheel", oc_ship3: "boat_figure", oc_site3: "seaglass" });   // OCEAN
   function qbIconOf(q) { var k = QB_ICON[q.id]; if (!k && q.rw) k = Object.keys(q.rw)[0]; return k || "#★"; }
   function qbPad(k) { var u = qbIco(k); return u ? '<img alt="" src="' + u + '">' : '<span class="qg">' + esc((k || "#★").slice(1)) + "</span>"; }
   function qbHash(a, b) { var h = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return h - Math.floor(h); }
@@ -14132,12 +14133,11 @@
     var say = function (s2, c) { text(pl.x, pl.y - 1.9, s2, c); };
     if (r < 0.05) { var L = [["doubloon", 2 + Math.floor(Math.random() * 4)], ["seaglass", 1 + Math.floor(Math.random() * 2)]]; if (Math.random() < 0.3) L.push(["pearl", 1]); L.forEach(function (q) { if (ITEMS[q[0]]) give(q[0], q[1], undefined, undefined, true); }); popup("Fished up a sunken purse!", L.map(function (q) { return ITEMS[q[0]] ? ITEMS[q[0]].n : ""; }).join(", "), "#f2c14e", "\u2726"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.12) { var junk = Math.random() < 0.5 ? "oldboot" : "kelp"; if (ITEMS[junk]) give(junk, junk === "kelp" ? 2 : 1, undefined, undefined, true); if (junk === "oldboot") { S.st.boots++; nag("Just an Old Boot..."); } else say("+2 Brine Kelp", "#7fd06a"); checkGoals(); return; }
-    var rare = 0.07 + (F.bait || 0) + (hasCharm("angler") ? 0.06 : 0) + (isNight(S.time) ? 0.06 : 0), k;
-    if (Math.random() < rare) k = OFISHR; else { var tw = OFISHT[0][1] + OFISHT[1][1]; k = Math.random() * tw < OFISHT[0][1] ? OFISHT[0][0] : OFISHT[1][0]; }
+    var k = rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
     if (!ITEMS[k]) k = "bogminnow";
     give(k, 1, undefined, undefined, true); S.st.fish++; S.fdex[k] = 1; var fcm = fishLogged(k); say("+1 " + ITEMS[k].n + (fcm ? " \u00b7 " + fcm + " cm" : ""), "#8fe0ff");
     ocFx(14, x, OSEA, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
-    if (k === OFISHR) { S.st.rarefish++; popup("Rare catch!", ITEMS[k].n, "#ffd23f", "\u2605"); snd("open", "Epic"); } else snd("coin");
+    if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#ffd23f", "\u2605"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
     checkTrail(); checkGoals();
   }
   function ocDrawRod(g, now) {
@@ -14183,6 +14183,71 @@
       if (o.stripe) for (var i = 0; i < 3; i++) RC(g, 12 + i * 4, 11, 1.6, 9, b2); E(g, 24, 14, 2, 2, "#ffffff"); E(g, 24.5, 14, 1, 1, "#14180a"); LN(g, "rgba(0,0,0,.35)", 1, [[27, 17], [25, 18]]);
       if (o.glow) { GL(g, 17, 16, 15, "rgba(255,210,63,.35)"); E(g, 13, 13, 3, 1.5, "rgba(255,255,255,.65)", -0.4); }
     };
+    // ---- FISH PACK icons: drawn from a look string "shape|body|dark|belly|fin|pattern" ----
+    var waterArt = function (g, look) {
+      var q = look.split("|"), k = q[0], b = q[1], d = q[2], w = q[3], f = q[4], pat = q[5];
+      var eye = function (x, y, r) { E(g, x, y, r || 1.8, r || 1.8, "#ffffff"); E(g, x + 0.3, y, (r || 1.8) * 0.55, (r || 1.8) * 0.55, "#14180a"); };
+      var deco = function (cx, cy, rx, ry) {
+        if (pat === "stripe") for (var i = -1; i <= 1; i++) RC(g, cx + i * rx * 0.45 - 0.8, cy - ry * 0.8, 1.6, ry * 1.6, d);
+        else if (pat === "spot") [[-0.4, -0.3], [0.1, -0.45], [0.35, 0.05], [-0.15, 0.2]].forEach(function (p) { E(g, cx + p[0] * rx, cy + p[1] * ry, 1.3, 1.3, d); });
+        else if (pat === "band") { RC(g, cx - rx * 0.35, cy - ry, 2.4, ry * 2, w); RC(g, cx + rx * 0.25, cy - ry, 2.4, ry * 2, w); LN(g, d, 0.8, [[cx - rx * 0.35, cy - ry], [cx - rx * 0.35, cy + ry]]); }
+      };
+      if (pat === "glow") GL(g, 16, 16, 16, f + "66");
+      if (k === "fish" || k === "tall" || k === "catfish" || k === "pike" || k === "marlin") {
+        var ry = k === "tall" ? 8 : k === "pike" ? 4 : 6.2, rx = k === "pike" ? 12.5 : k === "tall" ? 9.5 : 11;
+        PG(g, f, [[16 - rx + 2, 16], [3, 16 - ry * 0.9], [3, 16 + ry * 0.9]]);
+        PG(g, f, [[13, 16 - ry + 1], [17, 16 - ry - 4], [21, 16 - ry + 1.5]]);
+        if (k === "tall") PG(g, f, [[13, 16 + ry - 1], [17, 16 + ry + 3.5], [20, 16 + ry - 1]]);
+        E(g, 17, 16, rx, ry, b); E(g, 17.5, 16 + ry * 0.45, rx * 0.8, ry * 0.42, w); deco(17, 15, rx, ry * 0.7);
+        if (k === "pike") PG(g, d, [[27, 15], [31, 16], [27, 17]]);
+        if (k === "marlin") { PG(g, d, [[26, 14.5], [32, 15.5], [26, 16.6]]); PG(g, f, [[11, 10], [17, 2], [22, 10]]); }
+        if (k === "catfish") { LN(g, d, 0.9, [[26, 17], [30, 21]]); LN(g, d, 0.9, [[26, 18], [28, 23]]); LN(g, d, 0.9, [[26, 15], [30, 12]]); }
+        eye(23 + (k === "pike" ? 2 : 0), 14.5, k === "catfish" ? 2.4 : 1.8); LN(g, "rgba(0,0,0,.35)", 1, [[27, 17.5], [25.5, 18.5]]);
+      } else if (k === "long" || k === "eel") {
+        var pts = []; for (var i = 0; i <= 12; i++) pts.push([3 + i * 2.2, 16 + Math.sin(i * 0.8) * (k === "eel" ? 3 : 1.5)]);
+        LN(g, d, k === "eel" ? 6.4 : 7.4, pts); LN(g, b, k === "eel" ? 4.6 : 5.6, pts); LN(g, w, 1.4, pts.map(function (p) { return [p[0], p[1] + 1.6]; }));
+        if (pat === "spot" || pat === "glow") pts.forEach(function (p, j) { if (j % 3 === 1) E(g, p[0], p[1] - 0.6, 0.9, 0.9, pat === "glow" ? f : d); });
+        eye(28, 15, 1.5); if (k === "long") PG(g, f, [[8, 13], [12, 9], [15, 13]]);
+      } else if (k === "flat" || k === "ray") {
+        if (k === "ray") { LN(g, d, 1.2, [[6, 17], [1, 22]]); PG(g, b, [[29, 16], [17, 5], [6, 16], [17, 26]]); E(g, 18, 16, 7, 4, w); deco(18, 15, 8, 4); E(g, 23, 14, 1, 1, "#14180a"); E(g, 23, 18, 1, 1, "#14180a"); }
+        else { PG(g, f, [[6, 16], [2, 11], [2, 21]]); E(g, 17, 16, 12, 8, b); deco(17, 16, 10, 6); E(g, 23, 12, 1.7, 1.7, "#fff"); E(g, 23.3, 12, 0.9, 0.9, "#14180a"); E(g, 26, 14, 1.7, 1.7, "#fff"); E(g, 26.3, 14, 0.9, 0.9, "#14180a"); LN(g, d, 1, [[26, 19], [28, 18]]); }
+      } else if (k === "puffer") {
+        for (var s2 = 0; s2 < 12; s2++) { var a = s2 / 12 * 6.283; LN(g, w, 1, [[16 + Math.cos(a) * 9, 16 + Math.sin(a) * 9], [16 + Math.cos(a) * 12.5, 16 + Math.sin(a) * 12.5]]); }
+        PG(g, f, [[6, 16], [2, 12], [2, 20]]); E(g, 16, 16, 10, 9.5, b); E(g, 16, 19, 8, 5, w); deco(15, 13, 8, 5); eye(21, 13, 2.2); E(g, 25, 17, 1.6, 1, "#8a5a3a");
+      } else if (k === "crab") {
+        for (var l = 0; l < 3; l++) { LN(g, d, 1.4, [[11 + l * 2, 19], [6 + l * 1.5, 24 + l]]); LN(g, d, 1.4, [[21 - l * 2, 19], [26 - l * 1.5, 24 + l]]); }
+        LN(g, b, 2.2, [[9, 15], [5, 10]]); LN(g, b, 2.2, [[23, 15], [27, 10]]); E(g, 5, 8.5, 3.4, 2.6, b); E(g, 27, 8.5, 3.4, 2.6, b); PG(g, d, [[3, 7], [6, 9], [3, 10]]); PG(g, d, [[29, 7], [26, 9], [29, 10]]);
+        E(g, 16, 17, 9.5, 6.5, b); E(g, 16, 15.5, 7.5, 3.6, w); deco(16, 17, 8, 4); LN(g, d, 1, [[13, 12], [13, 9]]); LN(g, d, 1, [[19, 12], [19, 9]]); eye(13, 8.5, 1.4); eye(19, 8.5, 1.4);
+      } else if (k === "shrimp") {
+        var sp = [[24, 13], [20, 11], [15, 12], [11, 15], [9, 19], [10, 23]]; LN(g, d, 6, sp); LN(g, b, 4.4, sp); sp.forEach(function (p, j) { if (j) LN(g, w, 0.8, [[p[0] - 1.6, p[1] - 1.6], [p[0] + 1.6, p[1] + 1.6]]); });
+        PG(g, f, [[10, 23], [6, 27], [14, 27]]); LN(g, d, 0.7, [[25, 12], [31, 5]]); LN(g, d, 0.7, [[25, 13], [31, 9]]); for (var m = 0; m < 4; m++) LN(g, d, 0.8, [[13 + m * 3, 15], [12 + m * 3, 19]]); eye(24, 12, 1.2);
+      } else if (k === "crayfish") {
+        var cp = [[10, 25], [12, 21], [14, 17], [16, 13]]; LN(g, d, 7, cp); LN(g, b, 5.4, cp); cp.forEach(function (p) { LN(g, w, 0.8, [[p[0] - 2.4, p[1]], [p[0] + 2.4, p[1]]]); });
+        PG(g, f, [[10, 25], [5, 29], [15, 29]]); E(g, 17.5, 10, 4, 5, b); LN(g, b, 2, [[15, 8], [9, 4]]); LN(g, b, 2, [[20, 8], [26, 4]]); E(g, 8, 3.5, 3, 2, b); E(g, 27, 3.5, 3, 2, b);
+        LN(g, d, 0.7, [[17, 6], [13, 1]]); LN(g, d, 0.7, [[18, 6], [23, 1]]); if (pat === "spot") [[16, 14], [13, 20], [17, 10]].forEach(function (p) { E(g, p[0], p[1], 0.9, 0.9, d); }); eye(16, 7.5, 1.1); eye(19.5, 7.5, 1.1);
+      } else if (k === "jelly") {
+        for (var t = 0; t < 5; t++) LN(g, f, 1.1, [[9 + t * 3.5, 17], [8 + t * 3.5 + (t % 2 ? 2 : -1), 23], [9 + t * 3.5, 29]]);
+        g.fillStyle = b; g.beginPath(); g.moveTo(5, 17); g.bezierCurveTo(5, 3, 27, 3, 27, 17); g.quadraticCurveTo(16, 20, 5, 17); g.fill(); E(g, 16, 11, 6, 4, w + "aa"); E(g, 11, 9, 2, 1.2, "rgba(255,255,255,.7)");
+      } else if (k === "squid") {
+        for (var a2 = 0; a2 < 6; a2++) LN(g, d, 1.4, [[11 + a2 * 2, 20], [9 + a2 * 2.6, 27 + (a2 % 2) * 2], [10 + a2 * 2.6, 30]]);
+        PG(g, f, [[11, 6], [16, 1], [21, 6]]); E(g, 16, 12, 6.5, 9, b); deco(16, 11, 5, 6); eye(13, 17, 1.6); eye(19, 17, 1.6);
+      } else if (k === "axolotl") {
+        LN(g, b, 4, [[4, 20], [9, 19]]); E(g, 15, 19, 8, 4.5, b); E(g, 15, 21, 6, 2.2, w); [[10, 24], [19, 24]].forEach(function (p) { LN(g, b, 2, [[p[0], 22], [p[0] - 1, p[1] + 2]]); });
+        E(g, 23, 16, 6, 5, b); [[19, 11], [20, 9], [22, 8]].forEach(function (p, j) { LN(g, f, 1.4, [[21, 13], [p[0] - j, p[1] - 1]]); }); [[25, 11], [26, 9], [27, 8.5]].forEach(function (p, j) { LN(g, f, 1.4, [[25, 13], [p[0] + j * 0.6, p[1] - 1]]); });
+        E(g, 21.5, 15, 1.1, 1.1, "#14180a"); E(g, 26, 15, 1.1, 1.1, "#14180a"); LN(g, d, 0.9, [[22.5, 18.5], [24, 19.2], [25.5, 18.5]]);
+      } else if (k === "seahorse") {
+        var hp = [[16, 9], [17.5, 14], [16, 19], [17, 24], [20, 27], [21, 24]]; LN(g, d, 6, hp); LN(g, b, 4.4, hp); E(g, 15, 7, 3.6, 3, b); LN(g, b, 2.4, [[17, 7], [22, 6]]); PG(g, f, [[13, 4], [15, 1], [17, 4]]);
+        LN(g, f, 2, [[19, 12], [21, 16]]); for (var r2 = 0; r2 < 4; r2++) LN(g, w, 0.8, [[14.4, 12 + r2 * 3], [18.6, 12 + r2 * 3]]); E(g, 14.6, 6.5, 1, 1, "#14180a");
+      } else if (k === "star") {
+        g.fillStyle = b; g.beginPath(); for (var p2 = 0; p2 < 10; p2++) { var ang = -Math.PI / 2 + p2 * Math.PI / 5, rr = p2 % 2 ? 5 : 13; p2 ? g.lineTo(16 + Math.cos(ang) * rr, 17 + Math.sin(ang) * rr) : g.moveTo(16 + Math.cos(ang) * rr, 17 + Math.sin(ang) * rr); } g.closePath(); g.fill();
+        for (var p3 = 0; p3 < 5; p3++) { var a3 = -Math.PI / 2 + p3 * 2 * Math.PI / 5; for (var dd = 3; dd < 11; dd += 2.6) E(g, 16 + Math.cos(a3) * dd, 17 + Math.sin(a3) * dd, 0.8, 0.8, w); }
+        E(g, 16, 17, 2.4, 2.4, d);
+      } else if (k === "angler") {
+        PG(g, f, [[6, 18], [2, 13], [2, 23]]); E(g, 16, 18, 11, 8.5, b); E(g, 16, 21, 9, 4, w + "88"); LN(g, d, 1.2, [[18, 10], [22, 4], [26, 5]]); GL(g, 26, 5, 6, f + "cc"); E(g, 26, 5, 2, 2, f);
+        PG(g, "#e8e0d0", [[20, 19], [28, 21], [20, 22]]); for (var z = 0; z < 4; z++) PG(g, "#fff", [[20 + z * 2, 19], [21 + z * 2, 22], [22 + z * 2, 19]]); E(g, 21, 14, 1.8, 1.8, "#fff"); E(g, 21.4, 14, 1, 1, "#ff3a3a");
+      }
+    };
+    (typeof SbxExtra !== "undefined" && SbxExtra.FISH2 || []).forEach(function (r) { OCI[r[0]] = function (g) { waterArt(g, r[7]); }; });
     OCI.fishlog = function (g) {   // a battered leather book with a fish tooled on the cover
       RC(g, 6, 5, 21, 24, "#3a2412"); RC(g, 7, 4, 20, 24, "#7a4a26"); RC(g, 7, 4, 3, 24, "#5a3418"); RC(g, 26, 6, 2, 21, "#efe2c0"); RC(g, 26, 8, 2, 1, "#c9b48a"); RC(g, 26, 14, 2, 1, "#c9b48a"); RC(g, 26, 20, 2, 1, "#c9b48a");
       LN(g, "#c99a5a", 1, [[11, 7], [24, 7], [24, 25], [11, 25], [11, 7]]); E(g, 17.5, 16, 4.6, 2.6, "#c99a5a"); PG(g, "#c99a5a", [[13, 16], [10.5, 13.5], [10.5, 18.5]]); E(g, 20, 15.3, 0.7, 0.7, "#5a3418");
@@ -14893,7 +14958,38 @@
     kelpsnapper: [25, 60, "Off Croaker's Pier", "Hides in the kelp and snaps at anything shiny, including me."],
     goldgilly: [15, 35, "Off Croaker's Pier, best at night", "Pure gold scales. Caught one in '62. Nobody believed me. Now you've got proof."]
   };
-  var FB = { open: false, pg: 0, el: null };
+  var FB = { open: false, pg: 0, el: null, sel: "" };
+  // FISH PACK: every fish has a habitat, a rarity and sometimes a time it bites (FMETA). The old twelve keep their notes in FINFO.
+  var FMETA = { bogminnow: ["swamp", "c", ""], catfish: ["swamp", "c", ""], glowfin: ["swamp", "r", ""], frosttrout: ["ice", "c", ""], icepike: ["ice", "u", ""], crystalcarp: ["ice", "r", ""],
+    emberkoi: ["lava", "c", ""], magmaeel: ["lava", "u", ""], cinderfish: ["lava", "r", ""], brinemackerel: ["sea", "c", ""], kelpsnapper: ["sea", "u", ""], goldgilly: ["sea", "r", ""] };
+  var FHAB = { swamp: "Murkwater water", blossom: "Cherry Blossom Vale ponds", cave: "Water deep underground", ice: "Frostfen ice", oak: "Dark Oakwood ponds", shores: "Sunbaked Shores lagoons", lava: "Ember Bog lava (Ember Rod)", sea: "Off Croaker's Pier" };
+  var FRAR = { c: ["Common", "#8a7a5a", 50], u: ["Uncommon", "#3a8a5a", 20], r: ["Rare", "#3a6ab8", 6], l: ["Legendary", "#b8762a", 1.5] };
+  (typeof SbxExtra !== "undefined" && SbxExtra.FISH2 || []).forEach(function (r) { if (!ITEMS[r[0]]) return; FMETA[r[0]] = [r[2], r[3], r[6]]; FINFO[r[0]] = [r[4], r[5], FHAB[r[2]] + (r[6] ? ", " + (r[6] === "rain" ? "in the rain" : "at " + (r[6] === "day" ? "daytime" : "night")) : ""), r[8]]; });
+  FBOOK = [
+    { id: "swamp", n: "Swamp Waters", sub: "Murkwater ponds, lakes and creeks", c: "#5aa86a", rw: { doubloon: 6, pearl: 1 }, note: "Start here. Any puddle in Murkwater will do. Some only bite in the rain, and one only croaks at night." },
+    { id: "blossom", n: "Blossom Pools", sub: "Ponds in the Cherry Blossom Vale", c: "#ff9ac8", rw: { doubloon: 6, pearl: 2 }, note: "Pretty water, pretty fish, pretty annoying to catch. Bring patience. And petals." },
+    { id: "cave", n: "Cave Pools", sub: "Any water deep underground", c: "#8a78c8", rw: { doubloon: 8, amethyst: 1 }, note: "Dig down till you find a pool, then cast. Things live down there that never saw the sun. Some of them are hungry." },
+    { id: "frost", n: "Under the Ice", sub: "Fish through Frostfen ice", c: "#7fd6ff", rw: { doubloon: 8, crystal: 2 }, note: "Bring a warm scarf. Tap the ice itself and your line goes straight through. Watch the sky at night." },
+    { id: "oak", n: "Oakwood Ponds", sub: "The dark ponds of Dark Oakwood", c: "#8a9a5a", rw: { doubloon: 8, rope: 3 }, note: "Quiet water under the big trees. Something with huge yellow eyes watches from the bottom after dark." },
+    { id: "shores", n: "Sunbaked Lagoons", sub: "Lagoons along the Sunbaked Shores", c: "#ffb04a", rw: { doubloon: 8, seaglass: 3 }, note: "Warm, shallow and full of show-offs. Sun hat recommended." },
+    { id: "lava", n: "Lava Pools", sub: "Ember Bog lava, with the Ember Rod", c: "#ff8a3d", rw: { doubloon: 12, cinder: 4 }, note: "My brother says I'm mad for this one. A reed rod just burns. Get the Ember Rod and keep your whiskers back." },
+    { id: "sea", n: "The Brinebog Sea", sub: "Off the end of Croaker's Pier", c: "#4fd0e8", rw: { doubloon: 15, blackpearl: 1 }, note: "My own water. Cast off the dock and wait for the dip. Somewhere out there is a Bog Marlin with my boots in it." }
+  ];
+  var FCH = { swamp: "swamp", blossom: "blossom", cave: "cave", ice: "frost", oak: "oak", shores: "shores", lava: "lava", sea: "sea" };
+  FBOOK.forEach(function (P) { P.fish = FISH_ALL.filter(function (k) { return FMETA[k] && FCH[FMETA[k][0]] === P.id; }); });
+  function fishHab(lq, x, y) {   // which water you cast into decides what can bite
+    if (lq === "lava") return "lava"; if (lq === "ice") return "ice";
+    var b = world.bio[clamp(x, 0, W - 1)], sb = world.sub && world.sub[clamp(x, 0, W - 1)];
+    if (y > col[clamp(x, 0, W - 1)] + 6) return "cave";
+    return b === 0 ? (sb ? "blossom" : "swamp") : b === 1 ? (sb ? "shores" : "swamp") : sb ? "oak" : "ice";
+  }
+  function rollFish(hab, bait, extraRare) {   // a weighted pick among the fish of that water that bite right now
+    var night = isNight(S.time), rain = !!(S.wx && S.wx.n > 0.3), L = FISH_ALL.filter(function (k) { var m = FMETA[k]; return m && m[0] === hab && (!m[2] || (m[2] === "night" ? night : m[2] === "day" ? !night : rain)); });
+    if (!L.length) L = FISH_ALL.filter(function (k) { return FMETA[k] && FMETA[k][0] === "swamp" && !FMETA[k][2]; });
+    var boost = 1 + (bait || 0) * 8 + (hasCharm("angler") ? 0.6 : 0) + (fx("fish") ? 0.4 : 0) + (extraRare || 0), tw = 0, ws = L.map(function (k) { var r = FMETA[k][1], w = FRAR[r][2] * (r === "r" || r === "l" ? boost * (night ? 1.5 : 1) : 1); tw += w; return w; }), x = Math.random() * tw;
+    for (var i = 0; i < L.length; i++) { x -= ws[i]; if (x <= 0) return L[i]; } return L[L.length - 1];
+  }
+
   function fishLogged(k) {   // a fish was landed: count it, roll its length, keep the best. Returns the length in cm.
     if (!S.fn) S.fn = {}; if (!S.fbig) S.fbig = {}; var I = FINFO[k], first = !(S.fn[k] > 0); S.fn[k] = (S.fn[k] || 0) + 1;
     var cm = I ? Math.round(I[0] + (I[1] - I[0]) * Math.pow(Math.random(), 1.7)) : 0, best = cm > (S.fbig[k] || 0); if (best) S.fbig[k] = cm;
@@ -14974,11 +15070,11 @@
     if (storyOpen >= 0 && panelOpen) closeStory(); if (packOpen) closePack(); if (panelOpen) closePanel();
     if (!FB.el) { FB.el = document.createElement("div"); FB.el.className = "fb"; FB.el.id = "sbxFishBook"; FB.el.setAttribute("role", "dialog"); FB.el.setAttribute("aria-label", "Croako's Fishing Log"); stageEl.appendChild(FB.el);
       FB.el.addEventListener("click", function (e) { var b = e.target.closest("[data-fb]"); if (e.target === FB.el) { closeFishLog(); return; } if (!b) return; var a = b.getAttribute("data-fb");
-        if (a === "x") closeFishLog(); else if (a === "prev") fbGo(FB.pg - 1); else if (a === "next") fbGo(FB.pg + 1); else if (a.indexOf("pg:") === 0) fbGo(+a.slice(3)); else if (a.indexOf("pay:") === 0) fbPay(a.slice(4)); }); }
+        if (a === "x") closeFishLog(); else if (a === "prev") fbGo(FB.pg - 1); else if (a === "next") fbGo(FB.pg + 1); else if (a.indexOf("pg:") === 0) fbGo(+a.slice(3)); else if (a.indexOf("pay:") === 0) fbPay(a.slice(4)); else if (a.indexOf("sel:") === 0) { FB.sel = a.slice(4); try { tn(0, 700, 600, 0.04, "triangle", 0.015); } catch (e2) {} fbRender(); } }); }
     FB.open = true; panelOpen = true; stageEl.classList.add("panel"); stopInput(); FB.pg = pg != null ? pg : FB.pg; FB.el.hidden = false; S.st.fbreads = (S.st.fbreads || 0) + 1; thud(260, 0.05); fbRender();
   }
   function closeFishLog() { if (!FB.open) return; FB.open = false; FB.el.hidden = true; panelOpen = false; stageEl.classList.remove("panel"); thud(200, 0.04); }
-  function fbGo(n) { var N = FBOOK.length; if (n < 0 || n > N) return; FB.pg = n; try { tn(0, 900 + Math.random() * 200, 500, 0.08, "triangle", 0.02); } catch (e) {} fbRender(true); }
+  function fbGo(n) { var N = FBOOK.length; if (n < 0 || n > N) return; FB.pg = n; FB.sel = ""; try { tn(0, 900 + Math.random() * 200, 500, 0.08, "triangle", 0.02); } catch (e) {} fbRender(true); }
   function fbPay(id) {
     var P = FBOOK.filter(function (q) { return q.id === id; })[0]; if (!P || !fbPageDone(P) || (S.fpay && S.fpay[id])) return; if (!S.fpay) S.fpay = {}; S.fpay[id] = 1;
     Object.keys(P.rw).forEach(function (k) { if (ITEMS[k]) give(k, P.rw[k], undefined, undefined, true); }); snd("open", "Epic");
@@ -14993,16 +15089,18 @@
       left = '<div class="fb-pg fb-l"><p class="fb-hand fb-big">Croako\'s<br>Fishing Log</p><div class="fb-crest" aria-hidden="true">' + CROAKO_SVG + '</div><p class="fb-hand">Property of <b>' + esc(WUSER && WUSER !== "guest" ? WUSER : "a brave little angler") + "</b></p><p class=\"fb-small\">If found, return to the end of Croaker's Pier. Reward: one (1) stale biscuit.</p></div>";
       right = '<div class="fb-pg fb-r"><p class="fb-hand">Fish logged</p><p class="fb-count"><b>' + total + "</b> / " + all + '</p><div class="fb-meter"><i style="width:' + Math.round(total / all * 100) + '%"></i></div><ul class="fb-toc">'
         + FBOOK.map(function (P, i) { var n = P.fish.filter(fbCaught).length; return '<li><button type="button" data-fb="pg:' + (i + 1) + '"><span class="dot" style="background:' + P.c + '"></span><span class="fb-hand">' + esc(P.n) + "</span><em>" + n + "/" + P.fish.length + (fbPageDone(P) ? (S.fpay && S.fpay[P.id] ? " ✔" : " ★") : "") + "</em></button></li>"; }).join("") + "</ul>"
-        + '<p class="fb-small">Every fish you land is written in here: how many, and the biggest. Fill a page and Croako pays.</p></div>';
+        + '<p class="fb-small">Every fish you land is written in here: how many, and the biggest. Fill a chapter and Croako pays.</p></div>';
     } else {
-      var P = FBOOK[pg - 1], done = fbPageDone(P), paid = S.fpay && S.fpay[P.id];
-      left = '<div class="fb-pg fb-l" style="--pc:' + P.c + '"><p class="fb-ch">Chapter ' + pg + '</p><p class="fb-hand fb-big">' + esc(P.n) + '</p><p class="fb-small">' + esc(P.sub) + '</p><div class="fb-scene fb-' + P.id + '" aria-hidden="true"><i></i><i></i><i></i></div><p class="fb-hand fb-note">“' + esc(P.note) + "”</p>"
-        + (done ? (paid ? '<div class="fb-stamp">Page complete</div>' : '<button type="button" class="btn fb-pay" data-fb="pay:' + P.id + '">Claim Croako\'s reward</button>') : '<p class="fb-small fb-rw">A full page pays: ' + Object.keys(P.rw).filter(function (k) { return ITEMS[k]; }).map(function (k) { return P.rw[k] + " " + esc(ITEMS[k].n); }).join(", ") + "</p>") + "</div>";
-      right = '<div class="fb-pg fb-r">' + P.fish.map(function (k) {
-        var I = FINFO[k] || [0, 0, "", ""], n = fbCaught(k), got = n > 0, big = S.fbig && S.fbig[k];
-        return '<div class="fb-fish' + (got ? "" : " no") + '"><div class="fb-sk"><img alt="" src="' + icon(k) + '"></div><div class="fb-txt"><b class="fb-hand">' + esc(got ? ITEMS[k].n : "???") + '</b><small>' + esc(got ? I[2] : "Where: " + I[2]) + "</small>"
-          + (got ? '<p class="fb-hand fb-line">' + esc(I[3]) + '</p><span class="fb-st">Caught <b>' + n + "</b>" + (big ? " · Biggest <b>" + big + " cm</b>" : "") + "</span>" : '<p class="fb-hand fb-line fb-blank">(an empty space, waiting for a fish)</p>') + "</div></div>";
-      }).join("") + "</div>";
+      var P = FBOOK[pg - 1], done = fbPageDone(P), paid = S.fpay && S.fpay[P.id], got = P.fish.filter(fbCaught).length;
+      if (!FB.sel || P.fish.indexOf(FB.sel) < 0) FB.sel = P.fish.filter(fbCaught)[0] || P.fish[0];
+      var k = FB.sel, I = FINFO[k] || [0, 0, "", ""], M = FMETA[k] || ["", "c", ""], R = FRAR[M[1]], n = fbCaught(k), big = S.fbig && S.fbig[k];
+      var detail = '<div class="fb-det' + (n ? "" : " no") + '"><div class="fb-sk big"><img alt="" src="' + icon(k) + '"></div><div class="fb-txt"><b class="fb-hand">' + esc(n ? ITEMS[k].n : "???") + '</b><span class="fb-rar" style="--rc:' + R[1] + '">' + R[0] + "</span><small>" + esc(I[2]) + "</small>"
+        + (n ? '<p class="fb-hand fb-line">' + esc(I[3]) + '</p><span class="fb-st">Caught <b>' + n + "</b>" + (big ? " · Biggest <b>" + big + " cm</b>" : "") + "</span>" : '<p class="fb-hand fb-line fb-blank">(an empty space, waiting for a fish)</p>') + "</div></div>";
+      left = '<div class="fb-pg fb-l" style="--pc:' + P.c + '"><p class="fb-ch">Chapter ' + pg + " · " + got + " of " + P.fish.length + ' logged</p><p class="fb-hand fb-big">' + esc(P.n) + '</p><p class="fb-small">' + esc(P.sub) + '</p><div class="fb-scene fb-' + P.id + '" aria-hidden="true"><i></i><i></i><i></i></div><p class="fb-hand fb-note">“' + esc(P.note) + "”</p>" + detail + "</div>";
+      right = '<div class="fb-pg fb-r"><div class="fb-grid">' + P.fish.map(function (q) {
+        var c = fbCaught(q), m = FMETA[q] || ["", "c"]; return '<button type="button" class="fb-card' + (c ? "" : " no") + (q === k ? " sel" : "") + '" data-fb="sel:' + q + '" style="--rc:' + FRAR[m[1]][1] + '"><span class="fb-sk"><img alt="" src="' + icon(q) + '"></span><span class="fb-cn">' + esc(c ? ITEMS[q].n : "???") + "</span><em>" + (c ? "×" + c : FRAR[m[1]][0]) + "</em></button>";
+      }).join("") + "</div>"
+        + (done ? (paid ? '<div class="fb-stamp">Chapter complete</div>' : '<button type="button" class="btn fb-pay" data-fb="pay:' + P.id + '">Claim Croako\'s reward</button>') : '<p class="fb-small fb-rw">A full chapter pays: ' + Object.keys(P.rw).filter(function (q) { return ITEMS[q]; }).map(function (q) { return P.rw[q] + " " + esc(ITEMS[q].n); }).join(", ") + "</p>") + "</div>";
     }
     h = '<div class="fb-book' + (flip ? " flip" : "") + '"><button type="button" class="fb-x" data-fb="x" aria-label="Close the Fishing Log">&times;</button>' + tabs + '<div class="fb-spread">' + left + right + "</div>"
       + '<div class="fb-nav"><button type="button" class="btn ghost" data-fb="prev"' + (pg <= 0 ? " disabled" : "") + '>← Page</button><span class="fb-hand">' + (pg === 0 ? "Inside cover" : FBOOK[pg - 1].n) + '</span><button type="button" class="btn ghost" data-fb="next"' + (pg >= N ? " disabled" : "") + ">Page →</button></div></div>";
@@ -15099,6 +15197,7 @@
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
+  window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
