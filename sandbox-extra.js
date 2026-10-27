@@ -1017,6 +1017,7 @@
   mat("kelp", "Brine Kelp", "#3f9a4c"); mat("inksac", "Ink Sac", "#3b2a66"); mat("pufferspine", "Puffer Spine", "#f1e2b0"); mat("jellygel", "Jelly Gel", "#7af0ff");
   mat("eelskin", "Eel Skin", "#2c7a78"); mat("lurebulb", "Lure Bulb", "#ffe27a"); mat("urchinspine", "Urchin Spine", "#5a3a7a"); mat("brass", "Salvaged Brass", "#d9a53a");
   mat("doubloon", "Swamp Doubloon", "#ffd23f");
+  item("fishlog", "Croako's Fishing Log", { gem: "#7a4a26", book: 1, d: "A battered leather book from Croako. Every fish you catch is written in it. Pick it on your hotbar to read it." });
   food("brinemackerel", "Brine Mackerel", 9, 2); food("kelpsnapper", "Kelp Snapper", 12, 4); food("goldgilly", "Golden Gilly", 24, 18); food("piersushi", "Pier Sushi", 42, 14, 1);   // fished off Croaker's Pier
   item("kelpwrap", "Kelp Wrap", { food: 28, gem: "#3f9a4c", cooked: 1 }); item("seastew", "Bog Sea Stew", { food: 60, gem: "#ff9a5a", cooked: 1 });
   item("scubasuit", "Frogskin Scuba Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Safe to 45 m (20 m without it). Air Tanks give you more air." });
