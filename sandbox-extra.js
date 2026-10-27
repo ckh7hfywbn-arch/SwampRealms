@@ -1626,6 +1626,46 @@
   [["silvercoin", 1, 4, 3, 0], ["goldcoin", 1, 2, 2, 1], ["pearl", 1, 1, 1, 1], ["oldbook", 1, 1, 2, 0], ["sealedletter", 1, 1, 2, 0], ["nails", 2, 6, 2, 0], ["hinge", 1, 2, 1, 0], ["bandage", 1, 2, 2, 0], ["lampoil", 1, 2, 1, 0], ["goldbar", 1, 1, 1, 2], ["fireopal", 1, 1, 1, 2]].forEach(function (e) { if (ITEMS[e[0]]) LOOT_ALL.push(e); });
   // Old Croaker's prices: [how many, tokens]
   var VALUE = { doubloon: [4, 1], blackpearl: [1, 4], silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
-  var api = { FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  // ---------- HOMESTEAD (farming moved onto your own farm, entered through a Farm Gate). Added LAST so no older tile ids move. ----------
+  // New crops (art drawn by cropArt, with new looks), their seeds and produce, the Farm Gate block, and the shipping/seed prices (silver coins).
+  var HCROPS = {
+    reedcorn: { n: "Reedcorn", b: -1, t: 40, yld: [2, 3], sd: [1, 2], leaf: "#5a9a3a", leaf2: "#9ad05a", fruit: "#ffd23f", fruit2: "#c8961a", look: "tall", food: [10, 2] },
+    bogbean: { n: "Bog Beans", b: -1, t: 36, yld: [3, 5], sd: [1, 2], leaf: "#3f8a3a", leaf2: "#7fd06a", fruit: "#6a9a2a", fruit2: "#a8d05a", look: "vine", food: [6, 1], pn: "bogbeans" },
+    lilyleek: { n: "Lily Leek", b: -1, t: 30, yld: [2, 3], sd: [1, 2], leaf: "#4aa86a", leaf2: "#9ae0b0", fruit: "#f6f2e0", fruit2: "#c8d8a0", look: "leek", food: [7, 2] },
+    marshonion: { n: "Marsh Onion", b: -1, t: 34, yld: [2, 3], sd: [1, 2], leaf: "#5aa84a", leaf2: "#a8d878", fruit: "#c86a8a", fruit2: "#8a3a5a", look: "bulb", food: [6, 2] },
+    mudmelon: { n: "Mud Melon", b: -1, t: 70, yld: [1, 1], sd: [1, 3], leaf: "#3a7a3a", leaf2: "#6ab85a", fruit: "#5a8a3a", fruit2: "#c8e8a0", look: "big", food: [24, 8] },
+    croakpumpkin: { n: "Croakin' Pumpkin", b: -1, t: 80, yld: [1, 1], sd: [2, 3], leaf: "#3a7a3a", leaf2: "#6ab85a", fruit: "#ff8a2a", fruit2: "#c85a10", look: "pumpkin", food: [28, 10] }
+  };
+  function cropArt2(C, st) {   // the new looks; stages 1-2 are sprouts like the others
+    var base = cropArt(C, st > 2 ? 3 : st);
+    return function (rect) {
+      if (st <= 2) { base(rect); return; } var L = C.leaf, L2 = C.leaf2, F = C.fruit, F2 = C.fruit2;
+      if (C.look === "tall") { [5, 8, 11].forEach(function (x) { rect(x, 1, 2, 15, L); rect(x - 2, 6, 2, 1, L2); rect(x + 2, 9, 2, 1, L2); }); if (st === 4) [5, 11].forEach(function (x) { rect(x - 1, 4, 3, 6, F); rect(x - 1, 4, 1, 6, F2); rect(x, 2, 1, 2, "#c8a870"); }); }
+      else if (C.look === "vine") { rect(3, 1, 1, 15, "#8a6a3a"); rect(12, 1, 1, 15, "#8a6a3a"); rect(3, 1, 10, 1, "#8a6a3a"); for (var y = 2; y < 15; y += 3) { rect(4 + (y % 2), y, 8, 2, L); rect(5, y + 1, 3, 1, L2); } if (st === 4) [[5, 4], [9, 7], [6, 10], [10, 12]].forEach(function (q) { rect(q[0], q[1], 1, 4, F); rect(q[0] + 1, q[1] + 1, 1, 3, F2); }); }
+      else if (C.look === "leek") { [4, 7, 10].forEach(function (x) { rect(x, 3, 2, 8, L); rect(x - 1, 1, 1, 4, L2); rect(x + 2, 2, 1, 3, L2); if (st === 4) { rect(x, 10, 2, 6, F); rect(x, 15, 2, 1, F2); } }); }
+      else if (C.look === "bulb") { [4, 10].forEach(function (x) { rect(x + 1, 3, 1, 8, L); rect(x - 1, 4, 1, 6, L2); rect(x + 3, 5, 1, 5, L2); if (st === 4) { rect(x - 1, 11, 5, 5, F); rect(x, 10, 3, 1, F); rect(x - 1, 11, 1, 5, F2); rect(x + 1, 15, 1, 1, "#e8d8c8"); } }); }
+      else if (C.look === "big" || C.look === "pumpkin") { rect(1, 9, 5, 3, L); rect(10, 8, 5, 3, L2); rect(3, 6, 3, 3, L2); rect(11, 5, 3, 3, L); rect(7, 5, 1, 4, "#5a7a2a");
+        if (st === 4) { rect(3, 9, 10, 7, F); rect(2, 10, 12, 5, F); for (var k = 0; k < 4; k++) rect(4 + k * 3, 9, 1, 7, F2); rect(7, 7, 2, 2, "#5a7a2a");
+          if (C.look === "pumpkin") { rect(5, 11, 2, 2, "#ffe27a"); rect(10, 11, 2, 2, "#ffe27a"); rect(5, 11, 1, 1, "#3a1a0a"); rect(11, 11, 1, 1, "#3a1a0a"); rect(6, 14, 5, 1, "#3a1a0a"); } }
+        else rect(6, 8, 4, 3, L2); }
+    };
+  }
+  Object.keys(HCROPS).forEach(function (k) {
+    var C = HCROPS[k]; C.tiles = []; C.home = 1; CROPS[k] = C;
+    for (var st = 1; st <= 4; st++) { var id = tile("X_crop_" + k + st, C.n + (st === 4 ? " (ripe)" : " (growing)"), "#000", st === 4 ? C.fruit : C.leaf2, 0.05, 0, null, false, 0, "crop_" + k + st, { crop: k, stage: st, sway: 1 }); ART["crop_" + k + st] = cropArt2(C, st); C.tiles.push(id); }
+    var pk = C.pn || k; C.produce = pk; food(pk, C.n, C.food[0], C.food[1]); SEEDS[k] = "seed_" + k;
+    item("seed_" + k, C.n + " Seeds", { tile: C.tiles[0], seed: k });
+  });
+  var FGATE = tile("X_farmgate", "Farm Gate", "#000", "#8a5a32", 0.6, 0, "farmgate", false, 0, "farmgate");
+  ART.farmgate = function (rect) {   // two posts, a crossbar, a little green sign with a sprout on it
+    rect(2, 3, 2, 13, "#5a3a1e"); rect(12, 3, 2, 13, "#5a3a1e"); rect(2, 3, 1, 13, "#7a5230"); rect(12, 3, 1, 13, "#7a5230");
+    rect(1, 2, 14, 2, "#8a5a32"); rect(1, 2, 14, 1, "#a8743a"); rect(4, 9, 8, 1, "#8a5a32"); rect(4, 12, 8, 1, "#8a5a32");
+    rect(5, 4, 6, 4, "#2f7a3a"); rect(5, 4, 6, 1, "#4aa84a"); rect(7, 5, 2, 2, "#ffe27a"); rect(8, 4, 1, 1, "#7fd06a");
+  };
+  item("farmgate", "Farm Gate", { tile: FGATE, d: "Place it anywhere and step through to your own homestead, where all your farming happens. Every player has their own." });
+  R("x_farmgate", "Farm Gate", { farmgate: 1 }, { planks: 6, fiber: 4, stick: 4 }, { bench: true, d: "The way into your homestead: your own farm to till, water, plant and harvest." });
+  var HOMEFARM = { ship: { carrot: 0.5, potato: 0.6, pepper: 1, frostberry: 1.2, reedcorn: 0.8, bogbeans: 0.7, lilyleek: 0.5, marshonion: 0.5, mudmelon: 3, croakpumpkin: 4, roastcarrot: 1.2, bakedpotato: 1.4 },
+    seeds: [["seed_carrot", 1], ["seed_potato", 1], ["seed_lilyleek", 1], ["seed_marshonion", 1], ["seed_bogbean", 2], ["seed_reedcorn", 2], ["seed_pepper", 2], ["seed_frost", 3], ["seed_mudmelon", 4], ["seed_croakpumpkin", 5]] };
+  var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

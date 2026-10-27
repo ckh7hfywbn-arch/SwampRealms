@@ -205,9 +205,9 @@
     { ch: 0, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
     { ch: 0, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
     // ---- Chapter 2: food, farm and shelter ----
-    { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmland: 4 } },
-    { ch: 1, id: "plant", n: "Plant a Garden", d: "Till grass with a Reed Hoe (made by hand) or place Garden Soil, then plant Swamp Carrot Seeds on top. Watered crops grow twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
-    { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop shows its ripe produce, hold on it to pick it. You get food, plus seeds to plant again.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
+    { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmgate: 1 } },
+    { ch: 1, id: "plant", n: "Plant a Garden", d: "Place your Farm Gate and step through to your homestead. Till the mud with a Reed Hoe (made by hand), then plant Swamp Carrot Seeds. Watered soil, or soil next to the pond, grows crops twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
+    { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop on your homestead shows its ripe produce, tap it to pick it. You get food, plus seeds to plant again. Ship spares in the crate for Silver Coins.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
     { ch: 1, id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food, and it heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
     { ch: 1, id: "bed", n: "Build a Bed", d: "Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
     { ch: 1, id: "door", n: "Close the Door", d: "Craft a Swamp Door and place it in a doorway. Closed doors keep bugs, frogs and bats out.", need: 1, v: function () { return S.st.doors; }, rw: { planks: 6 } },
@@ -245,7 +245,7 @@
     { ch: 4, id: "pick4", n: "Frost Smith", d: "Mine Frostrock and Frost Crystal, then craft the Frost Pick.", need: 1, v: function () { return S.tier >= 4 ? 1 : 0; }, rw: { planks: 10 } },
     { ch: 4, id: "fang", n: "Frost Fang", d: "Craft the Frost Fang. Dusk Bats drop the Bat Wings it needs.", need: 1, v: function () { return S.wpn >= 4 ? 1 : 0; }, rw: { torch: 6 } },
     { ch: 4, id: "shrine", n: "What the Ice Remembers", d: "Step inside a Frozen Shrine or a Frost Lodge.", need: 1, v: function () { return vis("k_shrine") || vis("k_lodge") ? 1 : 0; }, rw: { crystal: 4 } },
-    { ch: 4, id: "berry", n: "Cold Harvest", d: "Grow and harvest a Frostberry. Frost Spikes drop the seeds, and they grow fastest in Frostfen.", need: 1, v: function () { return S.st.cropbits & 8 ? 1 : 0; }, rw: { seed_frost: 2 } },
+    { ch: 4, id: "berry", n: "Cold Harvest", d: "Grow and harvest a Frostberry on your homestead. Frost Spikes drop the seeds, or buy them at your Seed Stall.", need: 1, v: function () { return S.st.cropbits & 8 ? 1 : 0; }, rw: { seed_frost: 2 } },
     { ch: 4, id: "bench4", n: "Frostbound Bench", d: "Upgrade your Workbench to the Frost Workbench.", need: 4, v: function () { return S.bl; }, rw: { planks: 12 } },
     { ch: 4, id: "fplate", n: "Frozen Solid", d: "Craft the Frost Plate armor.", need: 1, v: function () { return S.arm >= 4 ? 1 : 0; }, rw: { torch: 8 } },
     { ch: 4, id: "alpha", n: "Leader of the Pack", d: "Craft a Frost Horn at your Frost Workbench and blow it in Frostfen. Defeat the Frost Alpha: jump its ice shards and step out from under the icicles.", need: 1, v: function () { return S.st.boss & 4 ? 1 : 0; }, rw: { crystal: 6, rawmeat: 3 } },
@@ -349,7 +349,7 @@
     sq("x_cloth", "Crafter", 2, "Weaver", "Weave Cloth on a Weaver's Loom.", 1, function () { return mk("x_cloth") + mk("x_furcloth") || inv("cloth") ? 1 : 0; }, { cotton: 3 }),
     sq("x_mason", "Crafter", 3, "Master Mason", "Cut Red Brick, Quartz Blocks and Obsidian Brick.", 3, function () { return (mk("x_redbrick") ? 1 : 0) + (mk("x_quartzblock") ? 1 : 0) + (mk("x_obsbrick") ? 1 : 0); }, { mortar: 4 }),
     sq("x_glass", "Crafter", 3, "Stained Glass Window", "Make all three stained glass colours.", 3, function () { return (mk("x_stainedred") ? 1 : 0) + (mk("x_stainedblue") ? 1 : 0) + (mk("x_stainedgreen") ? 1 : 0); }, { glass: 4 }),
-    sq("hoe1", "Farmer & Cook", 1, "Hoe Down", "Till 12 tiles of ground with a hoe.", 12, st("tilled"), { seed_potato: 3 }),
+    sq("hoe1", "Farmer & Cook", 1, "Hoe Down", "Till 12 tiles of ground on your homestead with a hoe.", 12, st("tilled"), { seed_potato: 3 }),
     sq("hoe2", "Farmer & Cook", 2, "Swing and Sow", "Harvest 25 ripe crops with a hoe (it replants for you).", 25, st("hoeharv"), { ironingot: 1, seed_pepper: 2 }),
     sq("can1", "Farmer & Cook", 1, "Green Paws", "Water a plant with the Watering Can.", 1, st("watered"), { seed_carrot: 2 }),
     sq("can2", "Farmer & Cook", 1, "Gardener", "Water plants 20 times.", 20, st("watered"), { farmland: 6 }),
@@ -604,7 +604,8 @@
     if (o.pleaf && typeof o.pleaf === "object" && o.wv === SW.WORLDVER) Object.keys(o.pleaf).forEach(function (k) { if (o.pleaf[k]) d.pleaf[k] = 1; });   // leaves you placed (they never decay)
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
     if (o.razed && typeof o.razed === "object" && o.wv === SW.WORLDVER) { d.razed = {}; Object.keys(o.razed).forEach(function (k) { if (o.razed[k] && /^\d+$/.test(k)) d.razed[k] = 1; }); }   // buildings you knocked down
-    if (o.oc) d.oc = ocClean(o.oc);   // OCEAN: boat parts, opened sea chests, dug tiles
+    if (o.oc) d.oc = ocClean(o.oc);
+    if (o.home) d.home = homeClean(o.home);   // HOMESTEAD: your farm   // OCEAN: boat parts, opened sea chests, dug tiles
     if (o.moto && typeof o.moto === "object") { d.moto = { p: {}, done: o.moto.done ? 1 : 0 }; if (o.moto.p && typeof o.moto.p === "object") Object.keys(o.moto.p).forEach(function (k) { if (/^moto_[a-z]+$/.test(k) && o.moto.p[k]) d.moto.p[k] = 1; }); }   // GARAGE: the motorcycle's parts
     if (Array.isArray(o.croakHome) && o.wv === SW.WORLDVER && o.croakHome.every(function (v) { return Number.isInteger(v) && v >= 0; })) d.croakHome = o.croakHome.slice(0, 2);   // Old Croaker lives in your house
     if (o.lore && typeof o.lore === "object") Object.keys(o.lore).forEach(function (k) { if (o.lore[k] === 1 || o.lore[k] === 2) d.lore[k] = o.lore[k]; });   // LORE pages found
@@ -668,7 +669,7 @@
   }
   function start(state) {
     S = state; dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
-    benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; resize(); stageEl.classList.remove("cave", "ocean");
+    benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
@@ -1886,6 +1887,19 @@
   function drawBagIcon(g, t) { drawSpr(g, t >= 2 ? "bag2" : "bag1"); }
   function drawShovelIcon(g) { drawSpr(g, "shovel"); }
   function drawWeaponIcon(g, tier) { if (tier >= 1 && tier <= 5) drawSpr(g, "wpn" + tier); }
+  (function () {   // HOMESTEAD: seed sacks and produce for the new crops
+    var HC = (typeof SbxExtra !== "undefined" && SbxExtra.HCROPS) || {}, b = SPR.seed_carrot;
+    Object.keys(HC).forEach(function (k) { var C = HC[k]; if (b && !SPR["seed_" + k]) SPR["seed_" + k] = { r: b.r, p: Object.assign({}, b.p, { a: C.fruit, b: C.leaf2 }), o: b.o }; });
+    var P = {
+      reedcorn: { r: ["................", "..........g.....", ".........gg.....", "........ggyy....", ".......gyyyy....", "......gyyhyy....", "......gyyyyy....", ".....gyyhyy.....", ".....gyyyyy.....", "....gyyhyy......", "....gyyyy.......", "...ggyyy........", "...gggy.........", "..gg............", "..g.............", "................"], p: { g: "#5a9a3a", y: "#ffd23f", h: "#fff0a0" }, o: "#3a2a10" },
+      bogbeans: { r: ["................", "................", "...........gg...", "..........gllg..", ".........gllg...", "........glgg....", ".......gllg.....", "......gllg..gg..", ".....glgg..gllg.", "....gllg..gllg..", "...gllg..glgg...", "...ggg..gllg....", ".......gllg.....", "......ggg.......", "................", "................"], p: { g: "#4a8a2a", l: "#a8d05a" }, o: "#1e3a10" },
+      lilyleek: { r: ["..g......g......", "..gg....gg......", "...gg..gg.......", "...lg.gl........", "....lggl........", "....lggl........", ".....gg.........", ".....ww.........", ".....ww.........", ".....ww.........", ".....ww.........", ".....wwy........", ".....wwy........", ".....yyy........", "....y.y.y.......", "................"], p: { g: "#4aa86a", l: "#9ae0b0", w: "#f6f2e0", y: "#c8b890" }, o: "#2a3a20" },
+      marshonion: { r: ["................", ".......g........", ".......gg.......", "......g.g.......", "......g.g.......", ".......g........", "......ppp.......", ".....ppppp......", "....pphpppp.....", "...pphppppp.....", "...pppppppd.....", "...pppppppd.....", "....ppppdd......", ".....pddd.......", "......ww........", "................"], p: { g: "#5aa84a", p: "#c86a8a", h: "#f0b0c8", d: "#8a3a5a", w: "#e8d8c8" }, o: "#3a1a2a" },
+      mudmelon: { r: ["................", "................", ".......b........", "......b.........", "....gggggg......", "...gGgGgGgg.....", "..gGgGgGgGgg....", "..GgGgGgGgGg....", ".gGgGgGgGgGgg...", ".gGgGgGgGgGgg...", ".gGgGgGgGgGgg...", "..GgGgGgGgGg....", "..gGgGgGgGgg....", "...gggggggg.....", ".....gggg.......", "................"], p: { g: "#5a8a3a", G: "#a8d880", b: "#6a4a20" }, o: "#1e3010" },
+      croakpumpkin: { r: ["................", "................", ".......bb.......", "........b.......", "....oooOoooo....", "...oOooOooOoo...", "..ooOoyOoyOooo..", "..ooOoyOoyOooo..", "..ooOooOooOooo..", "..ooOooOooOooo..", "..ooOdddddOooo..", "..ooOoddd.Oooo..", "...oOooOooOoo...", "....oooooooo....", "................", "................"], p: { o: "#ff8a2a", O: "#c85a10", y: "#ffe27a", d: "#3a1a0a", b: "#5a7a2a" }, o: "#4a2008" }
+    };
+    Object.keys(P).forEach(function (k) { if (!SPR[k]) SPR[k] = P[k]; });
+  })();
   function heldCan() { return sprCanvas("can"); }
   function icon(id) {
     if (ITEMS[id] && ITEMS[id].tool) return icon(ITEMS[id].tool);
@@ -2199,7 +2213,7 @@
     var id = get(tx, ty), td = ITEMS[item]; if (id !== T.AIR && id !== T.WATER) return false;
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
     var t = td.tile, solid = TILES[t].solid;
-    if (td.seed) { if (!soilKind(tx, ty + 1)) { nag("Plant seeds on top of Garden Soil."); return false; } return true; }
+    if (td.seed) { nag(T.X_farmgate !== undefined ? "Crops grow on your homestead now. Place a Farm Gate and step inside to plant." : "Plant seeds on top of Garden Soil."); return T.X_farmgate === undefined && !!soilKind(tx, ty + 1); }
     if (item === "garage") return garageCanPlace(tx, ty);
     if (item === "door") {
       if (ty < 2 || get(tx, ty - 1) !== T.AIR) { nag("A door needs two free tiles stacked up."); return false; }
@@ -5318,7 +5332,7 @@
     h += '<h3>Fish</h3><div class="lg-book"><img alt="" src="' + icon("fishlog") + '"><div><b>' + ((S.inv.fishlog || 0) > 0 ? "Your fish are written in Croako's Fishing Log" : "Croako keeps the fish records") + "</b><small>" + ((S.inv.fishlog || 0) > 0 ? FISH_ALL.filter(function (k) { return S.fdex[k]; }).length + " of " + FISH_ALL.length + " kinds logged." : "Find Old Croaker's brother on the beach at Croaker's Pier. He has a book for you.") + "</small></div>" + ((S.inv.fishlog || 0) > 0 ? '<button type="button" class="btn" data-fbopen>Open the log</button>' : "") + "</div>";
     var sea = typeof OM !== "undefined" ? Object.keys(OM) : [], sk = (S.oc && S.oc.kills) || {}, seaIc = { snapjaw: "bogminnow", captain: "blackpearl" }, sN = sea.filter(function (k) { return sk[k] > 0; }).length;   // OCEAN
     if (sea.length) h += sect("Sea creatures", sN, sea.length, sea.map(function (k) { var d = OM[k], n = sk[k] || 0, ic = seaIc[k] || (d.drops && d.drops[0] && d.drops[0][0]); return tile(icon(ITEMS[ic] ? ic : "kelp"), d.n, n + " defeated", n > 0, d.boss ? "#a8fff0" : "#4fd0e8"); }).join(""));
-    var crops = [["carrot", 1], ["potato", 2], ["pepper", 4], ["frostberry", 8]], cN = crops.filter(function (q) { return st.cropbits & q[1]; }).length;
+    var crops = [["carrot", 1], ["potato", 2], ["pepper", 4], ["frostberry", 8], ["reedcorn", 16], ["bogbeans", 32], ["lilyleek", 64], ["marshonion", 128], ["mudmelon", 256], ["croakpumpkin", 512]], cN = crops.filter(function (q) { return st.cropbits & q[1]; }).length;
     h += sect("Crops grown", cN, crops.length, crops.map(function (q) { return ITEMS[q[0]] ? tile(icon(q[0]), ITEMS[q[0]].n, "", !!(st.cropbits & q[1]), "#7fd06a") : ""; }).join(""));
     var meals = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked; }), mN = meals.filter(function (k) { return S.ate[k]; }).length;
     h += sect("Meals tasted", mN, meals.length, meals.map(function (k) { return tile(icon(k), ITEMS[k].n, "", !!S.ate[k], "#ffb13b"); }).join(""));
@@ -5336,7 +5350,7 @@
   // Messages (JSON): me (look), p (player state), set / wall (tile edits, batched), tick (host: creatures, shots, its own state), env (time, weather),
   //   hit (guest hit a creature), dmg (a creature hit a guest), kill / bosswin (reward a guest), pvp (player hit), farm / water, chat, cfg (PvP switch).
   // Creatures always chase the nearest player: the host runs each creature's brain with that player standing in for "you" (mpRun).
-  var MP_CHAR = ["inv", "slots", "extra", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "fn", "fbig", "fpay", "rod", "hoe", "bucket", "bkt", "net", "bow", "fx", "gems", "wings", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
+  var MP_CHAR = ["inv", "slots", "extra", "home", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "fn", "fbig", "fpay", "rod", "hoe", "bucket", "bkt", "net", "bow", "fx", "gems", "wings", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
   var MP = { on: false, role: "", ws: null, code: "", id: 0, peers: {}, npeers: 0, pvp: false, pub: false, room: "", hostName: "", own: null, applying: false,
     sets: [], walls: [], flushT: 0, sendT: 0, tickT: 0, envT: 0, metaT: 0, last: "", proxy: null, proxyE: null, nid: 0, chat: [], say: "", sayT: 0, status: "", err: "", list: null, view: "home" };
   var mpName = ""; try { mpName = localStorage.getItem("swamp-delve-mpname") || ""; } catch (e) {}
@@ -5656,6 +5670,7 @@
       if (!n) nag("Not ripe yet. Ripe crops show their fruit or flowers."); else { S.st.hoeharv += n; reslot(); hbDirty = true; thud(380, 0.05); }
       return;
     }
+    if (T.X_farmgate !== undefined) { nag("Farming moved to your homestead! Place a Farm Gate (crafted at the Workbench) and step through to till your own fields."); return; }
     var gy = TILLABLE[get(tx, ty)] ? ty : (!blocks(tx, ty) && TILLABLE[get(tx, ty + 1)]) ? ty + 1 : -1;
     if (gy < 0) { nag(soilKind(tx, ty) || soilKind(tx, ty + 1) ? "That's already Garden Soil. Plant seeds on top!" : "Use the hoe on grass, mud or other soft ground to make Garden Soil."); return; }
     for (x = tx - half; x <= tx + half; x++) {
@@ -9715,6 +9730,7 @@
   (function () { var de = $("sbxDead"); if (de) de.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-dead]"); if (b) deadRespawn(); }); })();
   function respawn(msg) {
     if (OCS) { ocQuit(); resize(); }
+    if (HOME) { HOME = null; HTC = null; stageEl.classList.remove("cave", "home"); resize(); }
     if (cave) leaveCaveNow();
     bossGone(); enemies.length = 0; spawnT = 6; swingQ = 0; batT = 8;
     var sp = world.spawn, bd = S.bed && get(S.bed.x, S.bed.y) === T.BED ? S.bed : null; if (S.bed && !bd) S.bed = null;   // a broken bed is forgotten
@@ -11992,6 +12008,7 @@
     actBtn = null; if (panelOpen || sleepT > 0 || trans) return;
     if (gravePill(g, now)) return;   // GRAVESTONE
     var vnt = ventNear(); if (vnt) { drawPill(g, now, coarse ? "Enter the Old Volcano" : "Enter the Old Volcano (F)", ox + vnt.x * ts, oy + (vnt.y - 2.6) * ts, false, function () { enterVolcano(vnt); }); return; }
+    var fgn = farmGateNear(); if (fgn) { drawPill(g, now, coarse ? "Enter your homestead" : "Enter your homestead (F)", ox + (fgn.x + 0.5) * ts, oy + (fgn.y - 0.9) * ts, false, function () { enterHome(fgn); }); return; }
     var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
@@ -12437,6 +12454,7 @@
   // ---------- HUD AND PANELS ----------
   var HUDC = {}; function hudSet(id, v) { if (HUDC[id] !== v) { HUDC[id] = v; $(id).textContent = v; } }   // PERF: rewriting identical text 4x a second re-blurred and re-laid-out the HUD
   function hud() {
+    if (HOME) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; var ho = homeS(), nc = Object.keys(ho.c).length, nr = Object.keys(ho.c).filter(function (k) { return ho.c[k].s >= 4; }).length; $("sbxBiome").textContent = "Your Homestead"; $("sbxLoc").style.setProperty("--bc", "#7dd65a"); $("sbxSub").textContent = dayTag() + (nc ? nc + " crop" + (nc === 1 ? "" : "s") + (nr ? " \u00b7 " + nr + " ripe" : "") : "Till, plant, water"); if (hbDirty) drawBar(); return; }
     if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
     if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
@@ -12466,7 +12484,7 @@
   // and not as a multiplayer guest (the host's chests are theirs).
   var CHEST_PULL = 10, poolC = null, poolT = 0;
   function nearChestKeys() {
-    if (cave || OCS || (MP.on && MP.role === "guest")) return [];
+    if (cave || OCS || HOME || (MP.on && MP.role === "guest")) return [];
     return Object.keys(S.chests).map(function (key) { var q = key.split(","), x = +q[0], y = +q[1]; return { key: key, x: x, y: y, d: Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)) }; })
       .filter(function (c) { return Math.abs(c.x + 0.5 - p.x) <= CHEST_PULL && Math.abs(c.y + 0.5 - (p.y - 1)) <= CHEST_PULL && isChest(get(c.x, c.y)); })
       .sort(function (a, b) { return a.d - b.d; });
@@ -13548,6 +13566,7 @@
     if (panelOpen || menuOpen || trans || (e.pointerType === "mouse" && e.button !== 0)) return; e.preventDefault();
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
+    if (HOME) { if (homeTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); $("sbxHint").classList.remove("on"); return; }
     if (OCS) { if (ocTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); return; }
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
     if (inNexus() && GD.sleep && GD.wk <= 0) {   // tap the sleeping Warden to wake him
@@ -13560,7 +13579,7 @@
   });
   cv.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse" || e.pointerId === aim.id) setAim(e); });
   var endAim = function (e) {
-    if (OCS) { if (e.pointerId === aim.id) { aim.down = false; aim.id = null; mine = null; if (e.pointerType !== "mouse") aim.tx = -1; } return; }
+    if (OCS || HOME) { if (e.pointerId === aim.id) { aim.down = false; aim.id = null; mine = null; if (e.pointerType !== "mouse") aim.tx = -1; } return; }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.door && !isStainTool(sel) && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy)))) {   // quick tap on a door: open or close it
       var ddx = aim.dx + 0.5 - p.x, ddy = aim.dy + 0.5 - (p.y - PH / 2);
       if (ddx * ddx + ddy * ddy <= REACH * REACH) toggleDoor(aim.dx, aim.dy, true); else nag("That door is too far away.");
@@ -13620,14 +13639,16 @@
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
-      if (OCS) { if (!(OCS.sea ? (seaActions()[0] && (seaActions()[0].fn(), 1)) : ocF())) nag(OCS.sea ? "Sail up to an island or a dive buoy first." : OCS.diving ? "Swim up to the surface by the dock ladder to climb out." : "Walk to the middle of the dock to dive in, or to its end for the boat."); }
+      if (HOME) { if (!homeF()) nag("Walk up to the gate, the shipping crate or the seed stall."); }
+      else if (OCS) { if (!(OCS.sea ? (seaActions()[0] && (seaActions()[0].fn(), 1)) : ocF())) nag(OCS.sea ? "Sail up to an island or a dive buoy first." : OCS.diving ? "Swim up to the surface by the dock ladder to climb out." : "Walk to the middle of the dock to dive in, or to its end for the boat."); }
       else if (pierGateNear()) ocEnterPier();
+      else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
       else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
-    else if ((k === "r" || k === "R") && !cave && !OCS && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
+    else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
@@ -13732,6 +13753,7 @@
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
     ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, coarse ? 24 : 15, 40) * (S ? S.zoom : 1)));
     if (cave && cave.F) ts = caveTs();
+    if (typeof HOME !== "undefined" && HOME) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 26, coarse ? 28 : 20, 48) * (S ? clamp(S.zoom, 0.8, 1.3) : 1)));
     if (typeof OCS !== "undefined" && OCS) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 30, coarse ? 24 : 18, 40)));
     fitDock();
   }
@@ -13811,7 +13833,7 @@
     for (x = sx; x > 2 && best < 0; x--) if (b[x] === 1 && b[x - 1] === 0) best = x - 1;
     OPG.x = best >= 0 ? best : sx + 22; return OPG.x;
   }
-  function pierGateNear() { if (cave || OCS || !SO) return null; var gx = pierGateX() + 0.5; return Math.abs(p.x - gx) < 3.2 && Math.abs(p.y - col[clamp(Math.floor(gx), 0, W - 1)]) < 6 ? { x: gx } : null; }
+  function pierGateNear() { if (cave || OCS || HOME || !SO) return null; var gx = pierGateX() + 0.5; return Math.abs(p.x - gx) < 3.2 && Math.abs(p.y - col[clamp(Math.floor(gx), 0, W - 1)]) < 6 ? { x: gx } : null; }
   function ocEnterPier() {
     if (!SO || cave || OCS || trans || sleepT > 0 || hp <= 0) return;
     if (MP.on) { nag("Croaker's Pier is closed while you play together. It opens in single player."); return; }
@@ -15253,6 +15275,364 @@
   }
   function ocQuit() { if (!OCS) return; OCS = null; stageEl.classList.remove("cave", "ocean"); ocHudO2(); }
 
+  // =====================================================================================================================================
+  // ---------- THE HOMESTEAD: your own farm, entered through a Farm Gate (all farming happens here) ----------
+  // A top-down place like the caves, seen at a gentle tilt (everything that stands up is drawn with its height and sorted by depth).
+  // Every player has their own: it lives in S.home, which travels with your character (MP_CHAR), whichever Farm Gate you use.
+  // S.home = { ed: {"x,y": tile} changes to the starting map, c: {"x,y": {k crop, g growth secs, s stage 1-4}}, w: {"x,y": secs of water left},
+  //            ship: {item: n} waiting in the shipping crate, cr: leftover silver credit, day: the last day the crate was collected }
+  // THE BOG TWIST: water is the puzzle. Soil next to the pond or a canal is always wet (crops grow twice as fast). Dig ditches with the shovel:
+  // a ditch that touches water floods into a canal, so you can bring water to your fields once instead of watering every crop by hand.
+  var HW = 40, HH = 30, HT = { GRASS: 0, MUD: 1, REEDS: 2, SOIL: 3, POND: 4, DITCH: 5, PATH: 6, TREE: 7, HOUSE: 8, CRATE: 9, STALL: 10, GATE: 11, ROCK: 12, STUMP: 13, FENCE: 14, CANAL: 15, FLOWER: 16 };
+  var HSOLID = [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0], HOME = null, HATL = null, HF = (typeof SbxExtra !== "undefined" && SbxExtra.HOMEFARM) || { ship: {}, seeds: [] };
+  var HHOUSE = { x: 4, y: 3, w: 6, h: 4 }, HCRATE = { x: 11, y: 6 }, HSTALL = { x: 13, y: 6 }, HGATE = { x: 19, y: HH - 2 }, HREACH = 2.7;
+  function homeS() { if (!S.home || typeof S.home !== "object") S.home = {}; var o = S.home; ["ed", "c", "w", "ship"].forEach(function (k) { if (!o[k] || typeof o[k] !== "object") o[k] = {}; }); if (!(o.cr >= 0)) o.cr = 0; if (o.day === undefined) o.day = S.days | 0; return o; }
+  function homeGen() {
+    var t = new Uint8Array(HW * HH), x, y, h = function (a, b, s) { return SW.hash(a, b, s); };
+    for (y = 0; y < HH; y++) for (x = 0; x < HW; x++) {
+      var id = HT.MUD, n = h(x >> 2, y >> 2, 31) * 0.6 + h(x, y, 32) * 0.4;
+      if (y <= 8) id = HT.GRASS; else if (n < 0.28) id = HT.GRASS;
+      if (id === HT.MUD) { var r = h(x, y, 33); if (r < 0.3) id = HT.REEDS; else if (r < 0.33) id = HT.ROCK; else if (r < 0.355) id = HT.STUMP; }
+      if (id === HT.GRASS && y > 1 && h(x, y, 34) < 0.07) id = HT.FLOWER;
+      if (x <= 1 || x >= HW - 2 || y <= 1 || y >= HH - 2) id = HT.TREE;
+      t[y * HW + x] = id;
+    }
+    for (y = HHOUSE.y; y < HHOUSE.y + HHOUSE.h; y++) for (x = HHOUSE.x; x < HHOUSE.x + HHOUSE.w; x++) t[y * HW + x] = HT.HOUSE;
+    t[HCRATE.y * HW + HCRATE.x] = HT.CRATE; t[HSTALL.y * HW + HSTALL.x] = HT.STALL; t[HSTALL.y * HW + HSTALL.x + 1] = HT.STALL;
+    for (y = 8; y < HH - 2; y++) { t[y * HW + 19] = HT.PATH; t[y * HW + 20] = HT.PATH; }
+    for (x = 6; x <= 20; x++) t[8 * HW + x] = HT.PATH; t[7 * HW + 6] = HT.PATH; t[7 * HW + 7] = HT.PATH;
+    t[(HH - 2) * HW + 19] = HT.GATE; t[(HH - 2) * HW + 20] = HT.GATE;
+    for (y = 2; y < 12; y++) for (x = 26; x < HW - 2; x++) { var dx = (x - 32) / 4.6, dy = (y - 6) / 2.9; if (dx * dx + dy * dy < 1) t[y * HW + x] = HT.POND; }
+    for (y = 9; y < 15; y++) t[y * HW + 32] = HT.CANAL;   // a little creek runs south out of the pond
+    for (x = 3; x <= 17; x++) if (x !== 6 && x !== 7) t[9 * HW + x] = t[9 * HW + x] === HT.PATH ? HT.PATH : HT.FENCE;
+    return t;
+  }
+  function hmT(x, y) { return x < 0 || y < 0 || x >= HW || y >= HH ? HT.TREE : HOME.t[y * HW + x]; }
+  function homeSet(x, y, id) { if (x < 2 || y < 2 || x >= HW - 2 || y >= HH - 2) return; HOME.t[y * HW + x] = id; var o = homeS(), k = x + "," + y; if (HOME.g[y * HW + x] === id) delete o.ed[k]; else o.ed[k] = id; }
+  function homeSolid(x, y) { return !!HSOLID[hmT(x, y)]; }
+  function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
+  function homeWater(id) { return id === HT.POND || id === HT.CANAL; }
+  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
+  function homeFlood() {   // canals: every ditch connected to the pond fills with water; cut off ones drain
+    var t = HOME.t, i, q = [], seen = new Uint8Array(HW * HH);
+    for (i = 0; i < t.length; i++) { if (t[i] === HT.CANAL) t[i] = HT.DITCH; if (t[i] === HT.POND) { q.push(i); seen[i] = 1; } }
+    while (q.length) { var c = q.pop(), x = c % HW, y = (c / HW) | 0; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var nx = x + d[0], ny = y + d[1]; if (nx < 0 || ny < 0 || nx >= HW || ny >= HH) return; var j = ny * HW + nx; if (seen[j] || t[j] !== HT.DITCH) return; seen[j] = 1; t[j] = HT.CANAL; q.push(j); }); }
+    var o = homeS(); for (i = 0; i < t.length; i++) { var k = (i % HW) + "," + ((i / HW) | 0); if (t[i] !== HOME.g[i]) o.ed[k] = t[i]; else delete o.ed[k]; }
+  }
+  // ---- crops grow wherever you are (called with the surface farm's clock) ----
+  function homeStep(sec) {
+    if (!S.home) return; var o = homeS(), keys = Object.keys(o.c);
+    homeDaily();
+    if (!keys.length && !Object.keys(o.w).length) return;
+    var tiles = HOME ? null : homeTilesC();
+    keys.forEach(function (k) {
+      var e = o.c[k], C = CROPS[e.k]; if (!C) { delete o.c[k]; return; } if (e.s >= 4) return;
+      var q = k.split(","), x = +q[0], y = +q[1], wet = HOME ? homeWet(x, y) : homeWetT(tiles, x, y);
+      e.g += sec * (wet ? 2 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1);
+      while (e.g >= C.t && e.s < 4) { e.g -= C.t; e.s++; if (e.s === 4 && HOME) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); }
+      if (e.s >= 4) e.g = 0;
+    });
+    Object.keys(o.w).forEach(function (k) { o.w[k] -= sec; if (o.w[k] <= 0) delete o.w[k]; });
+  }
+  var HTC = null; function homeTilesC() { if (!HTC || HTC.o !== S.home) HTC = { o: S.home, t: homeTiles() }; return HTC.t; }
+  function homeTiles() { var t = homeGen(), o = homeS(); Object.keys(o.ed).forEach(function (k) { var q = k.split(","); t[+q[1] * HW + +q[0]] = o.ed[k] | 0; }); return t; }
+  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
+  function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
+    var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d;
+    var ks = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }); if (!ks.length) return;
+    var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); o.ship = {}; o.cr += val;
+    var coins = Math.floor(o.cr + 1e-6); o.cr -= coins; if (coins > 0 && ITEMS.silvercoin) give("silvercoin", coins, undefined, undefined, true);
+    S.st.shipped = (S.st.shipped || 0) + n; popup("The cart came by!", n + " things shipped: +" + coins + " Silver Coin" + (coins === 1 ? "" : "s"), "#c8d0d8", "⛀"); snd("coin"); checkGoals();
+  }
+  // ---- entering and leaving ----
+  function farmGateNear() {   // a Farm Gate block within reach on the surface
+    if (cave || (typeof OCS !== "undefined" && OCS) || HOME || T.X_farmgate === undefined) return null;
+    var px = Math.floor(p.x), py = Math.floor(p.y - 0.5);
+    for (var y = py - 2; y <= py + 1; y++) for (var x = px - 2; x <= px + 2; x++) if (get(x, y) === T.X_farmgate) return { x: x, y: y };
+    return null;
+  }
+  function enterHome(g0) {
+    if (!g0 || cave || HOME || trans || sleepT > 0 || hp <= 0) return; if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
+    stopInput(); thud(260, 0.06);
+    trans = { t: 0, done: false, mid: function () {
+      var o = homeS(), gen = homeGen(), t = homeTiles();
+      HOME = { g: gen, t: t, from: { x: g0.x, y: g0.y }, btns: [], pd: false, last: -1, cool: 0, t0: performance.now() };
+      homeFlood(); cp.x = HGATE.x + 1; cp.y = HGATE.y - 0.2; cp.vx = cp.vy = 0; cp.face = 1; cp.back = true;
+      stageEl.classList.add("cave", "home"); enemies.length = 0; $("sbxHint").classList.remove("on"); resize(); cam.x = cp.x; cam.y = cp.y - 2; parts.length = 0; texts.length = 0;
+      S.st.homevisit = (S.st.homevisit || 0) + 1; S.vis.home = 1; homeDaily(); hbDirty = true; hud();
+      var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#7dd65a"); el.querySelector("b").textContent = "Your Homestead"; el.querySelector("small").textContent = "Till, plant, water, harvest"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); }
+      if (!S.st.hometip) { S.st.hometip = 1; toast(coarse ? "Your own farm! Clear the reeds, till the mud with your hoe and plant seeds. Soil next to water stays wet." : "Your own farm! Clear the reeds, till the mud with your hoe (tap or drag) and plant seeds. Soil next to water stays wet: dig ditches from the pond with your shovel.", "#7dd65a"); }
+      save();
+    } };
+  }
+  function leaveHomeNow() {
+    if (!HOME) return; HTC = null; var f = HOME.from; HOME = null; stageEl.classList.remove("cave", "home"); resize(); stopInput(); mine = null;
+    p.x = f.x + 0.5; p.y = f.y + 1; p.vx = p.vy = 0; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
+    enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; HUDC.sbxBiome = HUDC.sbxSub = HUDC.bc = ""; hbDirty = true; hud(); save();
+  }
+  function leaveHome() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: leaveHomeNow }; }
+  // ---- update ----
+  function homeUpdate(dt) {
+    advTime(dt); if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
+    if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }
+    var csp = CAVE_SPEED * 1.05 * (fx("speed") ? 1.25 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
+    if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
+    var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
+    for (i = 0; i < sub; i++) { var nx = cp.x + cp.vx * h; if (!homeBox(nx, cp.y)) cp.x = nx; else cp.vx = 0; var ny = cp.y + cp.vy * h; if (!homeBox(cp.x, ny)) cp.y = ny; else cp.vy = 0; }
+    var spd = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy); p.walk += spd * dt; p.vx = spd > 0.5 ? spd : 0; p.on = true; p.vy = 0; p.face = cp.face;
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = 0; sinceHurt += dt;
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt); drawHp();
+    cam.x += (cp.x - cam.x) * Math.min(1, dt * 8); cam.y += (cp.y - 1 - cam.y) * Math.min(1, dt * 8);
+    var halfW = vw / 2 / ts, halfH = vh / 2 / ts; cam.x = HW <= halfW * 2 ? HW / 2 : clamp(cam.x, halfW, HW - halfW); cam.y = HH <= halfH * 2 ? HH / 2 : clamp(cam.y, halfH - 1, HH - halfH + 1);
+    aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= HW || aim.ty < 0 || aim.ty >= HH) aim.tx = -1;
+    tickFarm(dt); tickHunger(dt); tickFx(dt); tickBounties(dt);
+    homeTool(dt);
+    var working = HOME.work > 0; HOME.work = Math.max(0, (HOME.work || 0) - dt); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
+    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
+    for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
+    msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); } hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); } saveT += dt * 1000; if (saveT >= SAVE_MS) { saveT = 0; save(); }
+  }
+  function hFx(x, y, c, n) { for (var i = 0; i < (n || 6); i++) parts.push({ x: x + 0.5 + (Math.random() - 0.5) * 0.6, y: y + 0.6, vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random() * 3, g: 14, life: 0.5, max: 0.6, c: c, s: 3 }); }
+  function homeTool(dt) {
+    var H2 = HOME, press = aim.down && !H2.pd; H2.pd = aim.down; if (H2.cool > 0) H2.cool -= dt;
+    if (!aim.down || aim.tx < 0) { H2.last = -1; return; }
+    var tx = aim.tx, ty = aim.ty, cell = ty * HW + tx; if (!press && cell === H2.last) { if (sel === "can" && homeWater(hmT(tx, ty))) homeAct(tx, ty, false, dt); return; }
+    H2.last = cell; homeAct(tx, ty, press, dt);
+  }
+  function homeAct(tx, ty, press, dt) {
+    var o = homeS(), id = hmT(tx, ty), key = tx + "," + ty, crop = o.c[key], dxp = tx + 0.5 - cp.x, dyp = ty + 0.5 - (cp.y - 0.3);
+    if (dxp * dxp + dyp * dyp > HREACH * HREACH) { if (press) nag("Walk a little closer."); return; }
+    if (Math.abs(dxp) > 0.3) cp.face = dxp < 0 ? -1 : 1; HOME.work = 0.3;
+    if (id === HT.CRATE) { if (press) openShip(); return; }
+    if (id === HT.STALL) { if (press) openStall(); return; }
+    if (crop && crop.s >= 4 && sel !== "shovel") { if (sel === "hoe" && S.hoe > 1) { var half = (HOES[S.hoe].w - 1) / 2; for (var x = tx - half; x <= tx + half; x++) { var c2 = o.c[x + "," + ty]; if (c2 && c2.s >= 4) homeHarvest(x, ty); } } else homeHarvest(tx, ty); return; }
+    if (sel === "hoe" && S.hoe > 0) {
+      var w2 = (HOES[S.hoe].w - 1) / 2, n = 0;
+      for (var xx = tx - w2; xx <= tx + w2; xx++) { var t2 = hmT(xx, ty); if (t2 === HT.REEDS) { homeSet(xx, ty, HT.MUD); if (Math.random() < 0.5) give("fiber", 1, undefined, undefined, true); hFx(xx, ty, "#6a9a4a"); n++; } else if ((t2 === HT.GRASS || t2 === HT.MUD || t2 === HT.FLOWER) && !o.c[xx + "," + ty]) { homeSet(xx, ty, HT.SOIL); hFx(xx, ty, "#7a5236", 4); n++; S.st.tilled++; } }
+      if (n) { thud(220, 0.05); checkGoals(); } else if (press) nag(id === HT.SOIL ? "That's tilled already. Plant seeds on it!" : "The hoe tills grass and mud, and clears reeds.");
+      return;
+    }
+    if (sel === "shovel" && S.shovel) {
+      if (id === HT.DITCH || id === HT.CANAL) { homeSet(tx, ty, HT.MUD); homeFlood(); thud(200, 0.05); hFx(tx, ty, "#5a3a22"); return; }
+      if ((id === HT.GRASS || id === HT.MUD || id === HT.SOIL || id === HT.FLOWER || id === HT.REEDS) && !crop) { homeSet(tx, ty, HT.DITCH); homeFlood(); S.st.ditches = (S.st.ditches || 0) + 1; thud(180, 0.06); hFx(tx, ty, "#5a3a22", 8); if (hmT(tx, ty) === HT.CANAL) { hFx(tx, ty, "#8fe0ff", 8); if (!S.st.canaltip) { S.st.canaltip = 1; toast("Water flows into your ditch! Soil next to a canal stays wet, so crops there grow twice as fast.", "#8fe0ff"); } } return; }
+      if (press) nag(crop ? "Harvest the crop before digging here." : "Dig ditches in grass, mud or soil. A ditch that touches water fills up."); return;
+    }
+    if (sel === "can" && S.can) {
+      if (homeWater(id)) { if (S.water < CAN.max) { S.water = CAN.max; hbDirty = true; thud(420, 0.03); toast("Watering Can full.", CAN.c); } return; }
+      if (id === HT.SOIL) { if (S.water <= 0) { nag("Your Watering Can is empty. Fill it at the pond or a canal."); return; } if ((o.w[key] || 0) > 100) return; S.water--; o.w[key] = WET_S * 2; hbDirty = true; S.st.watered++; thud(520, 0.02); hFx(tx, ty, "#8fe0ff"); checkGoals(); return; }
+      if (press) nag("Water tilled soil, or fill up at the pond."); return;
+    }
+    if (sel === "pick") {
+      if (id === HT.ROCK) { homeSet(tx, ty, HT.GRASS); give("stone", 2 + Math.floor(Math.random() * 2), undefined, undefined, true); thud(140, 0.08); hFx(tx, ty, "#8a8f99", 10); return; }
+      if (id === HT.STUMP) { homeSet(tx, ty, HT.GRASS); give("wood", 2, undefined, undefined, true); thud(160, 0.07); hFx(tx, ty, "#8a5a32", 10); return; }
+    }
+    var it = ITEMS[sel];
+    if (it && it.seed && (S.inv[sel] || 0) > 0) {
+      if (id !== HT.SOIL) { if (press) nag("Plant seeds on tilled soil. Use your hoe on the mud first."); return; }
+      if (crop) return; if (!CROPS[it.seed]) return;
+      S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; bare = true; } reslot(); hbDirty = true;
+      o.c[key] = { k: it.seed, g: 0, s: 1 }; S.st.planted++; thud(600, 0.03); hFx(tx, ty, "#7fd06a", 4); checkTrail(); checkGoals(); return;
+    }
+    if (id === HT.REEDS) { homeSet(tx, ty, HT.MUD); if (Math.random() < 0.5) give("fiber", 1, undefined, undefined, true); thud(300, 0.04); hFx(tx, ty, "#6a9a4a"); return; }
+    if (press && crop) { nag("Not ripe yet. " + (homeWet(tx, ty) ? "It's well watered." : "Water it to make it grow twice as fast.")); return; }
+    if (press && (id === HT.GRASS || id === HT.MUD) && sel !== "hoe") nag(S.hoe ? "Pick your hoe to till the ground." : "Make a Reed Hoe (by hand) to till the ground.");
+  }
+  var HBITS = { carrot: 1, potato: 2, pepper: 4, frost: 8, reedcorn: 16, bogbean: 32, lilyleek: 64, marshonion: 128, mudmelon: 256, croakpumpkin: 512 };
+  function homeHarvest(x, y) {
+    var o = homeS(), key = x + "," + y, e = o.c[key], C = e && CROPS[e.k]; if (!C) return; delete o.c[key];
+    var n = C.yld[0] + Math.floor(Math.random() * (C.yld[1] - C.yld[0] + 1)), ns = C.sd[0] + Math.floor(Math.random() * (C.sd[1] - C.sd[0] + 1)), sd = SEEDOF[e.k];
+    if (sel === "hoe" && HOES[S.hoe] && HOES[S.hoe].bonus && Math.random() < HOES[S.hoe].bonus) n++;
+    give(C.produce, n, undefined, undefined, true); if (sd && ns > 0) give(sd, ns, undefined, undefined, true);
+    text(x + 0.5, y - 0.4, "+" + n + " " + ITEMS[C.produce].n, "#ffe9a8"); hFx(x, y, C.fruit, 10);
+    if (sel === "hoe" && sd && (S.inv[sd] || 0) > 0) { S.inv[sd]--; if (S.inv[sd] <= 0) delete S.inv[sd]; o.c[key] = { k: e.k, g: 0, s: 1 }; S.st.planted++; reslot(); hbDirty = true; }   // the hoe replants as it harvests
+    S.st.harvests++; S.st.cropbits |= HBITS[e.k] || 0; snd("coin"); checkTrail(); checkGoals();
+  }
+  // ---- the shipping crate and the seed stall ----
+  function openShip() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 223; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderShip();
+  }
+  function renderShip() {
+    var o = homeS(), have = Object.keys(HF.ship).filter(function (k) { return ITEMS[k] && (S.inv[k] || 0) > 0; }), inBox = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }), pend = 0;
+    inBox.forEach(function (k) { pend += (HF.ship[k] || 0) * o.ship[k]; });
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("silvercoin") + '"><div><small>Your Homestead</small><h2>Shipping Crate</h2><p class="mo-sub">Drop your harvest in. Croaker\'s cart comes by every morning and leaves Silver Coins in your bag. Spend them at the Seed Stall.</p></div></div>';
+    h += '<p class="mo-msg">In the crate: <b>' + (inBox.length ? inBox.map(function (k) { return o.ship[k] + " " + esc(ITEMS[k].n); }).join(", ") : "nothing yet") + "</b>" + (pend ? " · worth about <b>" + Math.floor(pend + o.cr) + " Silver</b>" : "") + "</p>";
+    h += '<ul class="mo-list">' + (have.length ? have.map(function (k) { return '<li class="have"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + " ×" + S.inv[k] + "</b><small>" + HF.ship[k] + " Silver each</small></div>" + '<button type="button" class="btn mo-fit" data-hship="' + k + '">Ship all</button></li>'; }).join("") : '<li><div><b>Nothing to ship</b><small>Grow and harvest crops on your homestead.</small></div></li>') + "</ul>";
+    h += '<div class="st-row">' + (have.length > 1 ? '<button type="button" class="btn" data-hship="*">Ship everything</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#c8d0d8"); $("sbxStoryBox").innerHTML = h;
+  }
+  function shipAct(k) {
+    var o = homeS(), L = k === "*" ? Object.keys(HF.ship).filter(function (q) { return ITEMS[q] && (S.inv[q] || 0) > 0; }) : [k];
+    L.forEach(function (q) { var n = S.inv[q] || 0; if (!n) return; o.ship[q] = (o.ship[q] || 0) + n; delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } });
+    reslot(); hbDirty = true; thud(240, 0.06); save(); renderShip();
+  }
+  function openStall() { var el = $("sbxStory"); if (!el) return; storyOpen = 224; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderStall(); }
+  function renderStall() {
+    var coins = S.inv.silvercoin || 0;
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("seed_croakpumpkin") + '"><div><small>Your Homestead</small><h2>Seed Stall</h2><p class="mo-sub">Seeds for your fields, paid in Silver Coins from the shipping crate. You have <b>' + coins + "</b>.</p></div></div>";
+    h += '<ul class="mo-list">' + HF.seeds.filter(function (q) { return ITEMS[q[0]]; }).map(function (q) { var C = CROPS[ITEMS[q[0]].seed], ok = coins >= q[1];
+      return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(q[0]) + '"><div><b>' + esc(ITEMS[q[0]].n) + "</b><small>" + q[1] + " Silver · ripe in about " + Math.round((C ? C.t * 3 : 0) / 60 * 10) / 10 + " min (half with water)</small></div>" + '<button type="button" class="btn mo-fit" data-hbuy="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#7dd65a"); $("sbxStoryBox").innerHTML = h;
+  }
+  function stallBuy(k) { var q = HF.seeds.filter(function (r) { return r[0] === k; })[0]; if (!q || (S.inv.silvercoin || 0) < q[1]) return; S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; give(k, 1, undefined, undefined, true); reslot(); hbDirty = true; snd("coin"); renderStall(); }
+  function homeActions() {
+    var A = [], gx = HGATE.x + 1, gy = HGATE.y;
+    if (Math.abs(cp.x - gx) < 2.2 && Math.abs(cp.y - gy) < 2.2) A.push({ label: "Back to the swamp", ax: gx, ay: gy - 1.6, fn: leaveHome });
+    if (Math.abs(cp.x - (HCRATE.x + 0.5)) < 2 && Math.abs(cp.y - (HCRATE.y + 1)) < 2) A.push({ label: "Shipping Crate", ax: HCRATE.x + 0.5, ay: HCRATE.y - 1.2, fn: openShip });
+    if (Math.abs(cp.x - (HSTALL.x + 1)) < 2.4 && Math.abs(cp.y - (HSTALL.y + 1)) < 2) A.push({ label: "Seed Stall", ax: HSTALL.x + 1, ay: HSTALL.y - 1.6, fn: openStall });
+    A.sort(function (a, b) { return Math.abs(cp.x - a.ax) - Math.abs(cp.x - b.ax); }); return A;
+  }
+  function homeF() { var A = homeActions(); if (A.length) { A[0].fn(); return true; } return false; }
+  function homeTap(e) { var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, pd = e.pointerType === "mouse" ? 4 : 12, B = HOME.btns || []; for (var i = B.length - 1; i >= 0; i--) { var b = B[i]; if (x >= b.x - pd && x <= b.x + b.w + pd && y >= b.y - pd && y <= b.y + b.h + pd) { b.fn(); return true; } } return false; }
+  function homeClean(h) {
+    var d = { ed: {}, c: {}, w: {}, ship: {}, cr: 0, day: 0 }; if (!h || typeof h !== "object") return d;
+    var ok = function (k) { return /^\d+,\d+$/.test(k); };
+    if (h.ed && typeof h.ed === "object") Object.keys(h.ed).forEach(function (k) { var v = h.ed[k] | 0; if (ok(k) && v >= 0 && v <= 16) d.ed[k] = v; });
+    if (h.c && typeof h.c === "object") Object.keys(h.c).forEach(function (k) { var e = h.c[k]; if (ok(k) && e && CROPS[e.k]) d.c[k] = { k: e.k, g: Math.max(0, +e.g || 0), s: clamp(e.s | 0, 1, 4) }; });
+    if (h.w && typeof h.w === "object") Object.keys(h.w).forEach(function (k) { var v = +h.w[k] || 0; if (ok(k) && v > 0) d.w[k] = Math.min(600, v); });
+    if (h.ship && typeof h.ship === "object") Object.keys(h.ship).forEach(function (k) { var v = h.ship[k] | 0; if (ITEMS[k] && v > 0) d.ship[k] = v; });
+    d.cr = clamp(+h.cr || 0, 0, 1); d.day = h.day | 0; return d;
+  }
+  var HCLK = 0; function homeClock(dt) { HCLK += dt; if (HCLK >= 1) { var s = HCLK; HCLK = 0; homeStep(s); } }
+  // ---- homestead art (drawn in code): a little atlas of ground tiles, 4 variants each ----
+  function homeAtlas() {
+    if (HATL) return HATL; var c = document.createElement("canvas"); c.width = 64; c.height = 16 * 8; var g = c.getContext("2d");
+    var rows = [["#4f8f3a", "#64a845", "#3f7a30"], ["#5a4128", "#6e5233", "#463220"], ["#6a4528", "#7c5434", "#53361f"], ["#3e2a1a", "#4c3422", "#2e1f13"], ["#b49a6a", "#c8ae7c", "#9a8258"], ["#3a2818", "#4a3420", "#2a1c10"], ["#2f7fa0", "#4aa8c8", "#256a88"], ["#3c7a2e", "#4f8f3a", "#2f6524"]];
+    rows.forEach(function (R, r) { for (var v = 0; v < 4; v++) { var ox2 = v * 16, oy2 = r * 16; g.fillStyle = R[0]; g.fillRect(ox2, oy2, 16, 16);
+      for (var y = 0; y < 16; y++) for (var x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y + r * 16, 77); if (h < 0.16) { g.fillStyle = R[1]; g.fillRect(ox2 + x, oy2 + y, 1, 1); } else if (h > 0.88) { g.fillStyle = R[2]; g.fillRect(ox2 + x, oy2 + y, 1, 1); } }
+      if (r === 0 || r === 7) for (var k = 0; k < 5; k++) { var gx = Math.floor(SW.hash(k, v, 78) * 14) + 1, gy = Math.floor(SW.hash(k, v, 79) * 13) + 2; g.fillStyle = R[1]; g.fillRect(ox2 + gx, oy2 + gy - 2, 1, 2); g.fillRect(ox2 + gx + 1, oy2 + gy - 1, 1, 1); }
+      if (r === 2 || r === 3) { g.fillStyle = R[2]; for (var yy = 2; yy < 16; yy += 4) g.fillRect(ox2, oy2 + yy, 16, 1); g.fillStyle = R[1]; for (var y2 = 1; y2 < 16; y2 += 4) g.fillRect(ox2, oy2 + y2, 16, 1); }
+      if (r === 3) { g.fillStyle = "rgba(140,210,255,.22)"; g.fillRect(ox2 + 3 + v, oy2 + 5, 3, 1); g.fillRect(ox2 + 10 - v, oy2 + 9, 2, 1); }
+      if (r === 4) { g.fillStyle = "#8a7448"; for (var p2 = 0; p2 < 3; p2++) g.fillRect(ox2 + Math.floor(SW.hash(p2, v, 80) * 13), oy2 + Math.floor(SW.hash(p2, v, 81) * 13), 3, 2); }
+      if (r === 5) { g.fillStyle = "#1e140a"; g.fillRect(ox2 + 2, oy2 + 2, 12, 12); g.fillStyle = "#5a4128"; g.fillRect(ox2 + 2, oy2 + 2, 12, 2); }
+    } });
+    return (HATL = c);
+  }
+  var HROW = [0, 1, 1, 2, 6, 5, 4, 7, 0, 0, 0, 4, 1, 0, 0, 6, 0];   // which atlas row each homestead tile sits on
+  function homeRender(now) {
+    var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
+    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
+    g.fillStyle = "#24461c"; g.fillRect(0, 0, vw, vh);
+    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 2);
+    // --- the ground ---
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
+      var id = t[j * HW + i], sx = ox + i * ts, sy = oy + j * ts, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, row = HROW[id];
+      if (id === HT.SOIL && homeWet(i, j)) row = 3;
+      if (id === HT.HOUSE || id === HT.CRATE || id === HT.STALL || id === HT.FENCE || id === HT.ROCK || id === HT.STUMP || id === HT.FLOWER || id === HT.REEDS) row = id === HT.REEDS || id === HT.STUMP ? 1 : 0;
+      g.drawImage(A, v * 16, row * 16, 16, 16, sx, sy, ts, ts);
+      if (homeWater(id)) {   // water: a shimmer, and a muddy bank where it meets land
+        var ph = Math.sin(T0 * 1.6 + i * 0.9 + j * 0.6); g.fillStyle = "rgba(200,240,255," + (0.18 + 0.12 * ph).toFixed(3) + ")"; g.fillRect(sx + ts * (0.2 + 0.15 * ph), sy + ts * 0.35, ts * 0.3, Math.max(1, ts * 0.06)); g.fillRect(sx + ts * (0.55 - 0.1 * ph), sy + ts * 0.7, ts * 0.22, Math.max(1, ts * 0.05));
+        g.fillStyle = "#4a3420"; var e2 = Math.max(2, Math.round(ts * 0.12));
+        if (!homeWater(hmT(i, j - 1))) g.fillRect(sx, sy, ts, e2); if (!homeWater(hmT(i - 1, j))) g.fillRect(sx, sy, e2, ts); if (!homeWater(hmT(i + 1, j))) g.fillRect(sx + ts - e2, sy, e2, ts);
+        if (!homeWater(hmT(i, j + 1))) { g.fillStyle = "#6e5233"; g.fillRect(sx, sy + ts - e2, ts, e2); }
+        if (id === HT.POND && SW.hash(i, j, 90) < 0.12) { g.fillStyle = "#3f9a4a"; g.beginPath(); g.ellipse(sx + ts * 0.5, sy + ts * 0.5, ts * 0.3, ts * 0.2, 0, 0.5, 6.0); g.lineTo(sx + ts * 0.5, sy + ts * 0.5); g.fill(); if (SW.hash(i, j, 91) < 0.4) { g.fillStyle = "#ff9ad0"; g.fillRect(sx + ts * 0.45, sy + ts * 0.38, ts * 0.12, ts * 0.12); } }
+      }
+      if (id === HT.SOIL && (o.w[i + "," + j] || 0) > 0 && !homeWater(hmT(i, j))) { g.fillStyle = "rgba(20,10,4,.18)"; g.fillRect(sx, sy, ts, ts); }
+    }
+    // --- things that stand up, drawn back to front ---
+    var L = [];
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var id2 = t[j * HW + i]; if (id2 === HT.TREE || id2 === HT.ROCK || id2 === HT.STUMP || id2 === HT.REEDS || id2 === HT.FENCE || id2 === HT.FLOWER) L.push([j + 1, 0, i, j, id2]); var ce = o.c[i + "," + j]; if (ce) L.push([j + 0.95, 1, i, j, ce]); }
+    L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
+    L.sort(function (a, b) { return a[0] - b[0]; });
+    L.forEach(function (e) {
+      if (e[1] === 9) { drawCavePlayer(g, now); return; }
+      if (e[1] === 0) { homeProp(g, e[4], e[2], e[3], T0); return; }
+      if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.sin(T0 * 1.8 + e[2]) * ts * 0.03;
+        g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(sx2 + ts / 2, sy2 + ts * 0.82, ts * 0.32, ts * 0.1, 0, 0, 6.2832); g.fill();
+        g.drawImage(ATLAS, 0, C.tiles[e[4].s - 1] * 16, 16, 16, sx2 + sw, sy2 - ts * 0.3, ts, ts);
+        if (e[4].s >= 4 && !reduce && Math.floor(T0 * 2 + e[2] + e[3]) % 7 === 0) { g.fillStyle = "rgba(255,245,180,.85)"; g.fillRect(sx2 + ts * 0.7, sy2 - ts * 0.25, Math.max(2, ts * 0.08), Math.max(2, ts * 0.08)); }
+        return; }
+      if (e[1] === 2) { homeHouse(g, T0); return; }
+      if (e[1] === 3) { homeCrate(g); return; }
+      if (e[1] === 4) { homeStall(g); return; }
+      if (e[1] === 5) { homeGateArt(g); return; }
+    });
+    // --- the tile you're pointing at ---
+    if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;
+      g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
+    parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
+    // --- the time of day: a warm dusk and a blue night, with fireflies over the fields ---
+    var dl = daylight(S.time); if (dl < 1) { g.fillStyle = "rgba(14,22,60," + ((1 - dl) * 0.62).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh);
+      if (!reduce) for (i = 0; i < 18; i++) { var fx2 = ox + ((SW.hash(i, 1, 95) * HW + Math.sin(T0 * 0.4 + i) * 1.5)) * ts, fy2 = oy + ((10 + SW.hash(i, 2, 95) * 16 + Math.cos(T0 * 0.5 + i * 2) * 1.2)) * ts; g.globalAlpha = (1 - dl) * (0.5 + 0.5 * Math.sin(T0 * 3 + i)); g.fillStyle = "#e8ff8a"; g.fillRect(fx2, fy2, Math.max(2, ts * 0.09), Math.max(2, ts * 0.09)); } g.globalAlpha = 1;
+      var hl = g.createRadialGradient(ox + (HHOUSE.x + 3) * ts, oy + (HHOUSE.y + 4.3) * ts, 0, ox + (HHOUSE.x + 3) * ts, oy + (HHOUSE.y + 4.3) * ts, ts * 3); hl.addColorStop(0, "rgba(255,200,110," + (0.35 * (1 - dl)).toFixed(3) + ")"); hl.addColorStop(1, "rgba(255,200,110,0)"); g.fillStyle = hl; g.fillRect(0, 0, vw, vh); }
+    g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
+    texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
+    // a little sign over a crop you're pointing at: how long until it's ripe
+    if (aim.tx >= 0) { var ce2 = o.c[aim.tx + "," + aim.ty], C2 = ce2 && CROPS[ce2.k]; if (C2) { var wet2 = homeWet(aim.tx, aim.ty), left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (wet2 ? 2 : 1), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (wet2 ? " · watered" : " · dry"));
+      g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var lw = g.measureText(lbl).width + 14, lx = ox + (aim.tx + 0.5) * ts, ly = oy + (aim.ty - 0.75) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(lx - lw / 2, ly - 11, lw, 20); g.fillStyle = ce2.s >= 4 ? "#ffe27a" : wet2 ? "#9ae0ff" : "#f6eedb"; g.fillText(lbl, lx, ly + 4); } }
+    if (!panelOpen && !trans && hp > 0) homeActions().slice(0, 1).forEach(function (a) { homePill(g, now, a.label, ox + a.ax * ts, oy + a.ay * ts, a.fn); });
+  }
+  function homePill(g, now, label, sx, sy, fn) {
+    var pw, ph, x0, y0; label += coarse ? "" : " (F)"; g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    sy += reduce ? 0 : Math.sin(now / 300) * 2; pw = g.measureText(label).width + ts * 1.1; ph = Math.max(26, ts * 0.9);
+    sx = clamp(sx, pw / 2 + 8, vw - pw / 2 - 8); sy = clamp(sy, ph / 2 + 64, vh - ph / 2 - 8); x0 = sx - pw / 2; y0 = sy - ph / 2;
+    g.fillStyle = "rgba(24,40,14,.92)"; g.strokeStyle = "#9ee06a"; g.lineWidth = 2; g.beginPath(); g.arc(x0 + ph / 2, y0 + ph / 2, ph / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + pw - ph / 2, y0 + ph / 2, ph / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#f4ffe8"; g.fillText(label, sx, sy + 1); g.textBaseline = "alphabetic"; HOME.btns.push({ x: x0, y: y0, w: pw, h: ph, fn: fn });
+  }
+  function hR(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }
+  function homeProp(g, id, i, j, T0) {
+    var sx = ox + i * ts, sy = oy + j * ts, u = ts / 16, hs = SW.hash(i, j, 92);
+    if (id === HT.TREE) {   // a round swamp oak: trunk, then a big leafy crown that reaches up over the tile behind it
+      g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.85, ts * 0.55, ts * 0.18, 0, 0, 6.2832); g.fill();
+      hR(g, sx + 6 * u, sy + 4 * u, 4 * u, 11 * u, "#5a3a1e"); hR(g, sx + 6 * u, sy + 4 * u, 1 * u, 11 * u, "#7a5230");
+      var cr = hs < 0.5 ? ["#2f6a2a", "#3f8a34", "#5aa845"] : ["#2a5e30", "#3a7a3e", "#52a050"], cy = sy - ts * (0.55 + hs * 0.25), sw = reduce ? 0 : Math.sin(T0 * 0.7 + i * 0.5) * u * 0.6;
+      g.fillStyle = cr[0]; g.beginPath(); g.ellipse(sx + ts / 2 + sw, cy + ts * 0.25, ts * 0.78, ts * 0.62, 0, 0, 6.2832); g.fill();
+      g.fillStyle = cr[1]; g.beginPath(); g.ellipse(sx + ts * 0.42 + sw, cy + ts * 0.05, ts * 0.6, ts * 0.48, 0, 0, 6.2832); g.fill();
+      g.fillStyle = cr[2]; g.beginPath(); g.ellipse(sx + ts * 0.32 + sw, cy - ts * 0.08, ts * 0.28, ts * 0.2, 0, 0, 6.2832); g.fill();
+      if (hs > 0.8) { g.fillStyle = "#ff8aa8"; g.fillRect(sx + ts * 0.7 + sw, cy + ts * 0.1, u * 2, u * 2); g.fillRect(sx + ts * 0.2 + sw, cy + ts * 0.35, u * 2, u * 2); }
+      return;
+    }
+    if (id === HT.ROCK) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.82, ts * 0.4, ts * 0.12, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "#6a6e74"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.55, ts * 0.4, ts * 0.32, 0, 0, 6.2832); g.fill(); g.fillStyle = "#8a8f96"; g.beginPath(); g.ellipse(sx + ts * 0.42, sy + ts * 0.45, ts * 0.26, ts * 0.18, 0, 0, 6.2832); g.fill(); hR(g, sx + 5 * u, sy + 6 * u, 2 * u, u, "#b0b5bb"); return; }
+    if (id === HT.STUMP) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.85, ts * 0.38, ts * 0.12, 0, 0, 6.2832); g.fill();
+      hR(g, sx + 4 * u, sy + 6 * u, 8 * u, 8 * u, "#6a4426"); hR(g, sx + 4 * u, sy + 6 * u, 2 * u, 8 * u, "#875a34"); g.fillStyle = "#c8a070"; g.beginPath(); g.ellipse(sx + ts / 2, sy + 6 * u, 4 * u, 2 * u, 0, 0, 6.2832); g.fill(); g.strokeStyle = "#8a6440"; g.lineWidth = Math.max(1, u * 0.6); g.beginPath(); g.ellipse(sx + ts / 2, sy + 6 * u, 2 * u, u, 0, 0, 6.2832); g.stroke(); return; }
+    if (id === HT.REEDS) { var sw2 = reduce ? 0 : Math.sin(T0 * 1.4 + i * 0.8 + j) * u * 0.8;
+      [[3, 0.9], [6, 1.15], [9, 1], [12, 0.85]].forEach(function (q, k) { var hx = sx + q[0] * u, top = sy + ts * (0.85 - q[1] * 0.9); g.strokeStyle = k % 2 ? "#6a9a3a" : "#4f8030"; g.lineWidth = Math.max(1.5, u * 1.3); g.beginPath(); g.moveTo(hx, sy + ts * 0.9); g.quadraticCurveTo(hx, sy + ts * 0.4, hx + sw2, top); g.stroke(); if (k === 1 || k === 2) hR(g, hx + sw2 - u, top + u, 2 * u, 4 * u, "#7a4a26"); }); return; }
+    if (id === HT.FLOWER) { var fc = ["#ff8ad0", "#ffe27a", "#9ad0ff", "#fff"][Math.floor(hs * 4)]; [[4, 9], [10, 6], [7, 12]].forEach(function (q) { hR(g, sx + q[0] * u, sy + (q[1] + 1) * u, u, 3 * u, "#3f7a30"); hR(g, sx + (q[0] - 1) * u, sy + q[1] * u, 3 * u, 2 * u, fc); hR(g, sx + q[0] * u, sy + q[1] * u, u, u, "#ffd23f"); }); return; }
+    if (id === HT.FENCE) { hR(g, sx + 1 * u, sy + 2 * u, 3 * u, 13 * u, "#7a5230"); hR(g, sx + 1 * u, sy + 2 * u, 3 * u, 2 * u, "#a8743a");
+      var L2 = hmT(i - 1, j) === HT.FENCE, R2 = hmT(i + 1, j) === HT.FENCE; hR(g, sx + (L2 ? 0 : 2 * u), sy + 5 * u, R2 ? ts - (L2 ? 0 : 2 * u) : (L2 ? 3 * u : 0), 2 * u, "#a8743a"); hR(g, sx + (L2 ? 0 : 2 * u), sy + 10 * u, R2 ? ts - (L2 ? 0 : 2 * u) : (L2 ? 3 * u : 0), 2 * u, "#8a5a32"); return; }
+  }
+  function homeHouse(g, T0) {   // the cottage: a mossy thatched roof, log walls, a round window and a green door
+    var x = ox + HHOUSE.x * ts, y = oy + HHOUSE.y * ts, w = HHOUSE.w * ts, h = HHOUSE.h * ts, u = ts / 16, wy = y + h - ts * 1.9;
+    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(x + u * 4, y + h - u * 2, w, u * 5);
+    hR(g, x + u * 3, wy, w - u * 6, ts * 1.9, "#8a5a32"); for (var k = 0; k < 5; k++) hR(g, x + u * 3, wy + k * ts * 0.38, w - u * 6, u * 1.2, "#6a4426");
+    hR(g, x + u * 3, wy, u * 3, ts * 1.9, "#6a4426"); hR(g, x + w - u * 6, wy, u * 3, ts * 1.9, "#6a4426");
+    var dx = x + w / 2 - ts * 0.45; hR(g, dx - u, wy + ts * 0.45, ts * 0.9 + 2 * u, ts * 1.45, "#4a2e18"); hR(g, dx, wy + ts * 0.55, ts * 0.9, ts * 1.35, "#3f8a3a"); hR(g, dx, wy + ts * 0.55, ts * 0.9, u * 2, "#5aa84a"); hR(g, dx + ts * 0.68, wy + ts * 1.2, u * 2, u * 2, "#ffd23f");
+    [x + ts * 1.1, x + w - ts * 1.9].forEach(function (wx) { hR(g, wx - u, wy + ts * 0.45, ts * 0.8 + 2 * u, ts * 0.75, "#4a2e18"); var dl = daylight(S.time); hR(g, wx, wy + ts * 0.5, ts * 0.8, ts * 0.65, dl < 0.7 ? "#ffd27a" : "#9ad8f0"); hR(g, wx + ts * 0.38, wy + ts * 0.5, u, ts * 0.65, "#4a2e18"); hR(g, wx, wy + ts * 0.8, ts * 0.8, u, "#4a2e18"); hR(g, wx - u * 2, wy + ts * 1.15, ts * 0.8 + 4 * u, u * 2, "#6a4426"); hR(g, wx, wy + ts * 1.05, ts * 0.8, u * 2, "#ff8ad0"); });
+    var ry = y - ts * 0.7, rb = wy + u * 2;   // the roof
+    g.fillStyle = "#6a8a3a"; g.beginPath(); g.moveTo(x, rb); g.lineTo(x + w * 0.12, ry); g.lineTo(x + w * 0.88, ry); g.lineTo(x + w, rb); g.closePath(); g.fill();
+    g.fillStyle = "#86a848"; g.beginPath(); g.moveTo(x + w * 0.12, ry); g.lineTo(x + w * 0.88, ry); g.lineTo(x + w * 0.92, ry + (rb - ry) * 0.35); g.lineTo(x + w * 0.08, ry + (rb - ry) * 0.35); g.closePath(); g.fill();
+    for (var s = 0; s < 9; s++) { var sx = x + w * (0.06 + s * 0.11); hR(g, sx, rb - u * 3, u * 2, u * 4, "#4f6a2a"); }
+    hR(g, x - u, rb - u * 2, w + 2 * u, u * 2, "#4f6a2a");
+    var chx = x + w * 0.72; hR(g, chx, ry - ts * 0.6, ts * 0.55, ts * 0.9, "#7a7066"); hR(g, chx - u, ry - ts * 0.66, ts * 0.55 + 2 * u, u * 2, "#5a524a");
+    if (!reduce) for (var q = 0; q < 3; q++) { var ph = (T0 * 0.35 + q / 3) % 1; g.globalAlpha = 0.45 * (1 - ph); g.fillStyle = "#e8e4dc"; g.beginPath(); g.arc(chx + ts * 0.28 + Math.sin(ph * 6 + q) * ts * 0.25, ry - ts * 0.7 - ph * ts * 1.8, ts * (0.15 + ph * 0.25), 0, 6.2832); g.fill(); } g.globalAlpha = 1;
+    g.font = "900 " + Math.max(9, Math.round(ts * 0.3)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; hR(g, x + w / 2 - ts * 0.9, ry + ts * 0.25, ts * 1.8, ts * 0.42, "#5a3a1e"); g.fillStyle = "#ffe9a8"; g.fillText("HOME", x + w / 2, ry + ts * 0.56);
+  }
+  function homeCrate(g) {   // a wooden crate with a lid and a little flag that goes up when something is in it
+    var x = ox + HCRATE.x * ts, y = oy + HCRATE.y * ts, u = ts / 16, full = Object.keys(homeS().ship).length > 0;
+    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(x + u, y + ts - u * 2, ts, u * 3);
+    hR(g, x + u, y + u * 2, ts - 2 * u, ts - 3 * u, "#9a6a3a"); hR(g, x + u, y + u * 2, ts - 2 * u, u * 3, "#c08a4a"); hR(g, x + u, y + u * 7, ts - 2 * u, u, "#6a4426"); hR(g, x + u, y + u * 11, ts - 2 * u, u, "#6a4426"); hR(g, x + u, y + u * 2, u * 2, ts - 3 * u, "#6a4426"); hR(g, x + ts - 3 * u, y + u * 2, u * 2, ts - 3 * u, "#6a4426");
+    hR(g, x + ts - u * 3, y - ts * 0.6, u, ts * 0.65, "#4a2e18"); hR(g, x + ts - u * 2, y - (full ? ts * 0.6 : ts * 0.2), u * 5, u * 4, full ? "#ff6a4a" : "#c8b890");
+    if (full) { hR(g, x + u * 4, y, u * 3, u * 3, "#ff8a2a"); hR(g, x + u * 8, y - u, u * 3, u * 3, "#ffd23f"); }
+  }
+  function homeStall(g) {   // the seed stall: a little table with seed sacks under a striped awning
+    var x = ox + HSTALL.x * ts, y = oy + HSTALL.y * ts, u = ts / 16, w = ts * 2;
+    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(x + u, y + ts - u * 2, w, u * 3);
+    hR(g, x + u, y - ts * 1.2, u * 2, ts * 2.1, "#6a4426"); hR(g, x + w - u * 3, y - ts * 1.2, u * 2, ts * 2.1, "#6a4426");
+    hR(g, x, y + u * 4, w, u * 4, "#9a6a3a"); hR(g, x, y + u * 4, w, u, "#c08a4a"); hR(g, x + u * 2, y + u * 8, w - u * 4, ts - u * 9, "#7a5230");
+    [["#c8a870", 3], ["#a8c870", 11], ["#e8a8c8", 19], ["#c8c8e8", 26]].forEach(function (q) { hR(g, x + q[1] * u, y - u, u * 5, u * 5, q[0]); hR(g, x + (q[1] + 1) * u, y - u * 2, u * 3, u, q[0]); hR(g, x + (q[1] + 1) * u, y, u * 3, u, "rgba(0,0,0,.2)"); });
+    for (var k = 0; k < 8; k++) hR(g, x - u + k * (w + 2 * u) / 8, y - ts * 1.4, (w + 2 * u) / 8 + 1, ts * 0.45, k % 2 ? "#f6eedb" : "#3f9a4a");
+    for (var k2 = 0; k2 < 8; k2++) { g.fillStyle = k2 % 2 ? "#f6eedb" : "#3f9a4a"; g.beginPath(); var bx = x - u + k2 * (w + 2 * u) / 8; g.moveTo(bx, y - ts * 0.96); g.lineTo(bx + (w + 2 * u) / 16, y - ts * 0.8); g.lineTo(bx + (w + 2 * u) / 8, y - ts * 0.96); g.fill(); }
+  }
+  function homeGateArt(g) {   // the way out: a wooden arch over the path
+    var x = ox + HGATE.x * ts, y = oy + HGATE.y * ts, u = ts / 16, w = ts * 2;
+    hR(g, x - u * 2, y - ts * 1.2, u * 4, ts * 2.1, "#5a3a1e"); hR(g, x + w - u * 2, y - ts * 1.2, u * 4, ts * 2.1, "#5a3a1e");
+    hR(g, x - u * 4, y - ts * 1.4, w + u * 8, u * 4, "#8a5a32"); hR(g, x - u * 4, y - ts * 1.4, w + u * 8, u, "#a8743a");
+    hR(g, x + ts * 0.4, y - ts * 1.15, ts * 1.2, ts * 0.4, "#2f7a3a"); g.font = "900 " + Math.max(8, Math.round(ts * 0.24)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText("SWAMP", x + ts, y - ts * 0.86);
+  }
+
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
     var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on && !PHOTO.on;
@@ -15266,10 +15646,10 @@
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
     if (PHOTO.on) tickPhoto(dt);
     if (!document.hidden) {
-      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
+      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (mapOpen) { if (M.drag || M.pinch || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
-        else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
+        else if (HOME) homeRender(now); else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
         drawTrans(); if (hbDirty) drawBar();
       } catch (er) { loopErr(er); }
     }
@@ -15316,6 +15696,7 @@
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
   window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
+  window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, wet: homeWet, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
