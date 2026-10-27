@@ -1454,3 +1454,43 @@ body.sbx-app footer{margin-top:28px}
 .mo-list .mo-fit{width:auto;max-width:none}
 /* OCEAN on touch screens: the stick swims and walks, and the jump button stays (hop on the dock, swim up, fire the cannons at sea) */
 @media(pointer:coarse),(max-width:760px){.sbx-stage.ocean .sbx-pad{display:flex}.sbx-stage.ocean .sbx-pad .lr{visibility:hidden}}
+/* OCEAN: the Sailor side-quest page is an undersea chart. Buoys for pads, rope for vines, pearls for flowers, kelp and fish behind */
+.qb.qb-sea .qb-map{background:radial-gradient(ellipse at 50% -10%,#7fe6f066,transparent 55%),linear-gradient(180deg,#1a7aa6 0,#0f5486 30%,#0a3566 62%,#061d40 100%);background-attachment:local}
+.qb.qb-sea .qb-head{background:linear-gradient(180deg,#0f4a6e,#08243a00);border-bottom-color:#4fd0e833}
+.qb.qb-sea .qb-head h3{color:#e8fbff;text-shadow:0 2px 0 #062a40}
+.qb.qb-sea .qb-head::after{content:"";position:absolute;right:150px;top:8px;width:64px;height:36px;opacity:.55;pointer-events:none;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 36'%3E%3Cpath d='M6 26 Q32 34 58 26 L52 33 Q32 38 12 33Z' fill='%23c28a52'/%3E%3Cpath d='M30 4 L30 27' stroke='%236a4426' stroke-width='2'/%3E%3Cpath d='M31 6 Q48 12 31 24 Q22 15 31 6Z' fill='%2358b85a'/%3E%3C/svg%3E")}
+.qb.qb-sea .qb-main{background:#061d40}
+.qb-seadeco{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.qb-seadeco .wave{fill:none;stroke:#dffcff;stroke-opacity:.28;stroke-width:3}.qb-seadeco .wave.w2{stroke-opacity:.12}
+.qb-seadeco .sand{fill:#d9c48a;fill-opacity:.32}
+.qb-seadeco .kelp{fill:none;stroke:#3f9a4c;stroke-opacity:.55;stroke-width:6;stroke-linecap:round}
+.qb-seadeco .leaf{fill:#58b85a;fill-opacity:.5}
+.qb-seadeco .coral{fill:none;stroke-width:3.5;stroke-linecap:round;stroke-opacity:.55}.qb-seadeco .coralt{fill-opacity:.7}
+.qb-seadeco .shell path{fill:#f2b88a;fill-opacity:.6}.qb-seadeco .shell .rib{fill:none;stroke:#a8643a;stroke-opacity:.6;stroke-width:1}
+.qb-seadeco .anchor path{fill:none;stroke:#8e969b;stroke-opacity:.45;stroke-width:4;stroke-linecap:round}.qb-seadeco .anchor circle{fill:none;stroke:#8e969b;stroke-opacity:.45;stroke-width:3}
+.qb-seadeco .fish{animation:qbFish 30s linear infinite}.qb-seadeco .fish ellipse,.qb-seadeco .fish path{fill:#bfefff;fill-opacity:.22}.qb-seadeco .fish .eye{fill:#062a40;fill-opacity:.5}
+.qb-seadeco .bub{fill:none;stroke:#e8fbff;stroke-opacity:.4;stroke-width:1.3;animation:qbBub 10s linear infinite}
+@keyframes qbFish{0%{transform:translateX(-160px)}100%{transform:translateX(160px)}}
+@keyframes qbBub{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(-900px);opacity:0}}
+.qb.qb-sea .qb-vines .v0{stroke:#05223a;stroke-width:9}
+.qb.qb-sea .qb-vines .v1{stroke:#d9b97f;stroke-width:5;stroke-dasharray:6 3}
+.qb.qb-sea .qb-vines .v2{stroke:#4f8ab0;stroke-width:3;stroke-dasharray:3 8}
+.qb.qb-sea .qb-vines .lf1{fill:none;stroke:#e8fbff;stroke-width:1.6}.qb.qb-sea .qb-vines .lf0{fill:none;stroke:#4f8ab0;stroke-width:1.4}
+.qb.qb-sea .qb-n .pad{-webkit-mask:none;mask:none;background:radial-gradient(circle at 34% 28%,#bff4ff 0 8%,#4fb8e0 22%,#1a6aa8 62%,#0c3a66 88%);box-shadow:inset 0 -5px 0 #08284a,inset 0 3px 0 #dffcff55,0 6px 0 -1px #021226,0 0 0 2px #e84a3a,0 0 0 5px #ffffff,0 0 0 7px #062a40}
+.qb.qb-sea .qb-n.big .pad{box-shadow:inset 0 -6px 0 #08284a,inset 0 3px 0 #dffcff55,0 7px 0 -1px #021226,0 0 0 3px #ffd23f,0 0 0 6px #c9a52a,0 0 0 8px #062a40}
+.qb.qb-sea .qb-n.done .pad{background:radial-gradient(circle at 34% 28%,#ffffff 0 8%,#8af0ff 24%,#2fb59a 64%,#14605a 90%)}
+.qb.qb-sea .qb-n.done::before{background:conic-gradient(#f4e6ff 100%,#0000 0)}
+.qb.qb-sea .qb-n .fl{background:radial-gradient(circle at 35% 30%,#ffffff,#e8dcff 40%,#a898d8 75%);-webkit-mask:none;mask:none;box-shadow:0 0 8px #f4e6ff,0 1px 0 #0006}
+.qb.qb-sea .qb-n.lock .pad{background:radial-gradient(circle at 34% 28%,#3a5a72,#152a40 72%);box-shadow:inset 0 -5px 0 #08182a,0 6px 0 -1px #021226,0 0 0 2px #2a4a62}
+.qb.qb-sea .qb-n .ff{background:none;border:1.5px solid #e8fbff;box-shadow:0 0 6px #7af0ff;width:8px;height:8px}
+.qb.qb-sea .qb-n .nm{background:#062a40ee}
+.qb.qb-sea .qb-card{background:linear-gradient(170deg,#0f4a6e,#061d40)}
+.qb.qb-sea .qb-ci{background:radial-gradient(circle at 34% 28%,#bff4ff 0 8%,#4fb8e0 24%,#1a6aa8 70%)}
+.qb.qb-sea .qb-n .qg,.qb.qb-sea .qb-ci .qg{color:#e8fbff}
+@media(prefers-reduced-motion:reduce){.qb-seadeco .fish,.qb-seadeco .bub{animation:none}}
+@media(max-width:640px){.qb.qb-sea .qb-head::after{display:none}}
+.qb.qb-sea .qb-head{position:relative}
+.qb.qb-sea .qb-world{overflow:hidden}
+.qb.qb-sea .qb-in{position:relative;z-index:1}
+.qb.qb-sea .qb-seadeco{top:auto;bottom:0;left:0}
+.qb.qb-sea .qb-world::before{content:"";position:absolute;left:0;right:0;top:0;height:30px;pointer-events:none;opacity:.5;background:repeat-x 0 0/80px 30px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Cpath d='M0 10 Q20 2 40 10 T80 10' fill='none' stroke='%23dffcff' stroke-width='3' stroke-opacity='.6'/%3E%3Cpath d='M0 22 Q20 14 40 22 T80 22' fill='none' stroke='%23dffcff' stroke-width='2' stroke-opacity='.3'/%3E%3C/svg%3E")}

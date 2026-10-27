@@ -433,6 +433,26 @@
   }
 
 
-  var api = { NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  // ---- THE OLD VOLCANO (entered through the vent in an Ember Bog crater): cooled lava tubes, glowing magma cracks you must not step on, deep-floor ores ----
+  var VOLC_TH = THEMES.length;
+  THEMES.push({ n: "The Old Volcano", sub: "Cooled lava tubes, still warm underfoot", floor: "#3b2724", floor2: "#5a3326", top: "#120807", topHi: "#2a120c", face: "#4a2620", faceHi: "#8a4630", faceLo: "#1c0c0a", tint: [18, 5, 2], lamp: T.BLOOM, glow: "255,110,40" });
+  function genVolcano(seed, floor) {
+    floor = Math.max(1, floor | 0); var F = gen((seed ^ 0x5e7c0) | 0, floor + 7, 1), n = F.w * F.h, rnd = mulberry((seed * 131 + floor * 7919) | 0), i, k;
+    F.bi = VOLC_TH; F.theme = THEMES[VOLC_TH]; F.volc = 1; F.lava = new Uint8Array(n); F.amb = 0.1;
+    var free = function (j) { return !F.wall[j]; }, spI = Math.floor(F.spawn.y) * F.w + Math.floor(F.spawn.x), dnI = F.down.y * F.w + F.down.x, d0 = bfs(spI, free), keep = {};
+    for (var c = dnI; c >= 0 && c !== spI; c = d0.par[c]) { keep[c] = 1; keep[c - 1] = keep[c + 1] = 1; } keep[spI] = 1;
+    var near = function (j, p, r) { var x = j % F.w, y = (j / F.w) | 0; return Math.abs(x - p.x) <= r && Math.abs(y - p.y) <= r; };
+    var streaks = 3 + Math.min(4, Math.floor(floor / 2)), fl = []; for (i = 0; i < n; i++) if (!F.wall[i]) fl.push(i);
+    for (k = 0; k < streaks && fl.length; k++) {
+      var j = fl[Math.floor(rnd() * fl.length)], len = 6 + Math.floor(rnd() * 10), dir = [1, -1, F.w, -F.w][Math.floor(rnd() * 4)];
+      for (var s2 = 0; s2 < len; s2++) {
+        if (j <= F.w || j >= n - F.w || F.wall[j]) break;
+        if (!keep[j] && !near(j, F.up, 2) && !near(j, F.down, 1)) { F.lava[j] = 1; F.node[j] = 0; }
+        if (rnd() < 0.35) dir = [1, -1, F.w, -F.w][Math.floor(rnd() * 4)]; j += dir;
+      }
+    }
+    return F;
+  }
+  var api = { VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);

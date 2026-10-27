@@ -1017,12 +1017,16 @@
   mat("kelp", "Brine Kelp", "#3f9a4c"); mat("inksac", "Ink Sac", "#3b2a66"); mat("pufferspine", "Puffer Spine", "#f1e2b0"); mat("jellygel", "Jelly Gel", "#7af0ff");
   mat("eelskin", "Eel Skin", "#2c7a78"); mat("lurebulb", "Lure Bulb", "#ffe27a"); mat("urchinspine", "Urchin Spine", "#5a3a7a"); mat("brass", "Salvaged Brass", "#d9a53a");
   mat("doubloon", "Swamp Doubloon", "#ffd23f");
+  food("brinemackerel", "Brine Mackerel", 9, 2); food("kelpsnapper", "Kelp Snapper", 12, 4); food("goldgilly", "Golden Gilly", 24, 18); food("piersushi", "Pier Sushi", 42, 14, 1);   // fished off Croaker's Pier
   item("kelpwrap", "Kelp Wrap", { food: 28, gem: "#3f9a4c", cooked: 1 }); item("seastew", "Bog Sea Stew", { food: 60, gem: "#ff9a5a", cooked: 1 });
-  item("scubasuit", "Frogskin Scuba Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Needed to dive below the shallows. Pair it with an Air Tank." });
-  item("tank1", "Reed Air Tank", { gem: "#7fbf6a", d: "+45 seconds of air. Dive to 60 m with a Scuba Suit." });
-  item("tank2", "Brass Air Tank", { gem: "#d9a53a", d: "+90 seconds of air. Dive to 90 m." });
-  item("tank3", "Pearl Air Tank", { gem: "#f4e6ff", d: "+160 seconds of air. Dive to 120 m." });
-  item("tank4", "Deepglass Air Tank", { gem: "#7af0ff", d: "+260 seconds of air. Dive to the bottom of the trench." });
+  item("scubasuit", "Frogskin Scuba Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Safe to 45 m (20 m without it). Air Tanks give you more air." });
+  item("tank1", "Reed Air Tank", { gem: "#7fbf6a", d: "+45 seconds of air." });
+  item("tank2", "Brass Air Tank", { gem: "#d9a53a", d: "+90 seconds of air." });
+  item("tank3", "Pearl Air Tank", { gem: "#f4e6ff", d: "+160 seconds of air." });
+  item("tank4", "Deepglass Air Tank", { gem: "#7af0ff", d: "+260 seconds of air." });
+  item("suit2", "Brassback Diving Suit", { gem: "#d9a53a", d: "A riveted brass helmet over a tough eelskin suit. Holds out the pressure to 85 m." });
+  item("suit3", "Pearlplate Deep Suit", { gem: "#f4e6ff", d: "Pearl-plated and lined with urchin spines. Safe to 125 m, and you breathe slower (+20 s of air)." });
+  item("suit4", "Gatorhide Abyss Suit", { gem: "#7af0ff", d: "Old gator hide, a glowing lure on the helmet and black pearls in the seams. Safe all the way to the bottom of the trench." });
   item("flippers", "Frog Flippers", { gem: "#4ee6b4", d: "Webbed flippers: you swim 30% faster." });
   item("divelamp", "Dive Lantern", { gem: "#ffd23f", d: "A sealed glowing lantern that lights up the deep around you." });
   item("boat_keel", "Gator-Bone Keel", { gem: "#c9b28a", boatpart: 1 }); item("boat_hull", "Hull Planks", { gem: "#9a6a3a", boatpart: 1 });
@@ -1046,16 +1050,20 @@
   R("x_bloomstone", "Bloomstone (2)", { bloomstone: 2 }, { petalsnap: 2, stone: 1 }, { d: "A pink glowing block. Snapper Petals drop from Snapper Lilies in Murkwater." });
   // ocean pack
   R("x_scubasuit", "Frogskin Scuba Suit", { scubasuit: 1 }, { leather: 6, kelp: 8, glass: 2, pearl: 1 }, { bench: true, d: "Dive below the shallows. A wetsuit and mask in one. Kelp grows in the Brinebog Sea." });
-  R("x_tank1", "Reed Air Tank", { tank1: 1 }, { fiber: 8, clay: 4, glass: 1, kelp: 2 }, { bench: true, d: "+45 s of air. Safe to 60 m." });
-  R("x_tank2", "Brass Air Tank", { tank2: 1 }, { ironingot: 6, brass: 4, glass: 2, kelp: 3 }, { bench: true, d: "+90 s of air. Safe to 90 m." });
-  R("x_tank3", "Pearl Air Tank", { tank3: 1 }, { ironingot: 8, pearl: 6, seaglass: 6, brass: 6 }, { bench: true, d: "+160 s of air. Safe to 120 m." });
-  R("x_tank4", "Deepglass Air Tank", { tank4: 1 }, { ironingot: 10, blackpearl: 2, seaglass: 10, doubloon: 12, jellygel: 4 }, { bench: true, d: "+260 s of air. Safe all the way down." });
+  R("x_suit2", "Brassback Diving Suit", { suit2: 1 }, { scubasuit: 1, brass: 8, ironingot: 6, glass: 2, eelskin: 3 }, { bench: true, d: "Upgrades your Scuba Suit. Safe to 85 m." });
+  R("x_suit3", "Pearlplate Deep Suit", { suit3: 1 }, { suit2: 1, pearl: 8, seaglass: 8, urchinspine: 6, brass: 6 }, { bench: true, d: "Upgrades your Brassback suit. Safe to 125 m." });
+  R("x_suit4", "Gatorhide Abyss Suit", { suit4: 1 }, { suit3: 1, blackpearl: 3, lurebulb: 2, doubloon: 20, jellygel: 6, eelskin: 6 }, { bench: true, d: "Upgrades your Pearlplate suit. Safe all the way down." });
+  R("x_tank1", "Reed Air Tank", { tank1: 1 }, { fiber: 8, clay: 4, glass: 1, kelp: 2 }, { bench: true, d: "+45 s of air." });
+  R("x_tank2", "Brass Air Tank", { tank2: 1 }, { ironingot: 6, brass: 4, glass: 2, kelp: 3 }, { bench: true, d: "+90 s of air." });
+  R("x_tank3", "Pearl Air Tank", { tank3: 1 }, { ironingot: 8, pearl: 6, seaglass: 6, brass: 6 }, { bench: true, d: "+160 s of air." });
+  R("x_tank4", "Deepglass Air Tank", { tank4: 1 }, { ironingot: 10, blackpearl: 2, seaglass: 10, doubloon: 12, jellygel: 4 }, { bench: true, d: "+260 s of air." });
   R("x_flippers", "Frog Flippers", { flippers: 1 }, { leather: 3, kelp: 4, eelskin: 2 }, { bench: true, d: "Swim 30% faster." });
   R("x_divelamp", "Dive Lantern", { divelamp: 1 }, { glass: 2, jellygel: 2, copperwire: 1, lampoil: 1 }, { bench: true, d: "Lights the deep around you." });
   R("x_boat_sail", "Lily-Pad Sail", { boat_sail: 1 }, { canvas: 6, fiber: 6, kelp: 4 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
   R("x_boat_lamp", "Frog-Eye Bow Lantern", { boat_lamp: 1 }, { glass: 2, copperwire: 2, lampoil: 1 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
   R("x_boat_anchor", "Iron Anchor", { boat_anchor: 1 }, { ironingot: 6, rope: 1 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
   R("x_kelpwrap", "Kelp Wrap", { kelpwrap: 2 }, { kelp: 2, fiber: 1 }, { d: "A chewy snack. Restores hunger." });
+  R("x_piersushi", "Pier Sushi", { piersushi: 2 }, { brinemackerel: 1, kelp: 1 }, { stn: "cook", d: "Brine Mackerel rolled in kelp. Fills 42 hunger and heals 14." });
   R("x_seastew", "Bog Sea Stew", { seastew: 1 }, { kelp: 2, shell: 1, bogminnow: 2 }, { bench: true, d: "A hearty stew from the Brinebog Sea." });
   R("x_garage", "Garage", { garage: 1 }, { planks: 24, stone: 12, ironingot: 4, glass: 2 }, { bench: true, d: "A 2-wide, 2-tall garage you place like a door. Walk up to it and Enter: your old motorcycle is waiting inside, stripped down to nothing." });
   R("x_moto_seat", "Lily-Pad Seat", { moto_seat: 1 }, { leather: 2, marshlily: 2, canvas: 1 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });

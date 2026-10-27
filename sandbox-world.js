@@ -536,7 +536,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
       if (f.k !== "volcano") return; var sx = f.x, mn = 999; for (x = f.x - 3; x <= f.x + 3; x++) if (top[x] < mn) { mn = top[x]; sx = x; }
       var rim = top[sx], cw = f.cr, dep = 3 + (f.s % 2);
       for (x = sx - cw; x <= sx + cw; x++) { var dx2 = Math.abs(x - sx); top[x] = Math.max(top[x], rim + (dx2 <= cw - 1 ? dep - (dx2 === cw - 1 ? 1 : 0) : 1)); }
-      craters.push({ x0: sx - cw, x1: sx + cw, lvl: rim + 1 });
+      craters.push({ x0: sx - cw, x1: sx + cw, lvl: rim + 1, sub: !!sub[sx] });
+      if (!sub[sx]) { f.vx = sx - f.x; f.vy = top[sx]; }   // an OLD VOLCANO: the crater is long cold; a vent in its floor leads down inside (sandbox.js draws it and lets you in)
     });
     // ---- 3. ground, strata and ores ----
     var STEEP = new Uint8Array(W);
@@ -569,7 +570,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
         t[y * W + x] = id;
       }
     }
-    craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl; y < top[x]; y++) if (t[y * W + x] === T.AIR) t[y * W + x] = sub[x] ? T.WATER : T.LAVA; });   // a Shores crater is a hilltop lagoon
+    craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl; y < top[x]; y++) if (t[y * W + x] === T.AIR) t[y * W + x] = sub[x] ? T.WATER : T.LAVA; });   // a Shores crater is a hilltop lagoon (Ember Bog crater lava is drained again at the very end: OLD VOLCANOES)
     // ---- 4. caves ----
     var cm = new Uint8Array(W * H), cm2 = new Uint8Array(W * H);
     for (x = 0; x < W; x++) {
@@ -974,6 +975,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       marks.push({ k: "sky", x: A + 33, y: Y - 1, n: "Sky Village" });
       return { a: A, z: A + IW - 1, m0: M0, m1: M1, i0: I0, i1: I1, y: Y, vx: vx, vy: top[vx] - 1 };
     })();
+    craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl - 1; y < top[x] + 1; y++) if (t[y * W + x] === T.LAVA) t[y * W + x] = T.AIR; });   // OLD VOLCANOES: the crater lava drained away long ago (done last, so nothing else in the world moves)
     return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
