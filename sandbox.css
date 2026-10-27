@@ -1452,3 +1452,5 @@ body.sbx-app footer{margin-top:28px}
 @media(prefers-reduced-motion:reduce){.sbx-o2.low{animation:none}.sbx-o2 .trk .fl{transition:none}}
 .bo-box .mo-cv{border-radius:12px}
 .mo-list .mo-fit{width:auto;max-width:none}
+/* OCEAN on touch screens: the stick swims and walks, and the jump button stays (hop on the dock, swim up, fire the cannons at sea) */
+@media(pointer:coarse),(max-width:760px){.sbx-stage.ocean .sbx-pad{display:flex}.sbx-stage.ocean .sbx-pad .lr{visibility:hidden}}

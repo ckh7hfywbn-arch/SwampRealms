@@ -419,10 +419,27 @@
     sq("dig5", "Wonders", 3, "Pirate Frog", "Dig up 5 Buried Treasures.", 5, st("dug"), { ancientcoin: 4, goldfeather: 1 }),
     sq("bounce50", "Wonders", 1, "Boing!", "Bounce on Bounce Shrooms 50 times (Workbench: Redcaps, Slimeball, Glowspore).", 50, st("bounces"), { bounceshroom: 4 }),
     sq("party", "Wonders", 1, "Party Frog", "Fire a Confetti Cannon 10 times.", 10, st("confetti"), { balloons: 1 }),
+    // ocean update: Croaker's Pier, diving, the boat and the sea
+    sq("oc_pier", "Sailor", 0, "Sea Breeze", "Find the Croaker's Pier sign where Murkwater Swamp meets the Ember Bog (east of camp) and walk out onto the pier.", 1, st("ocvisit"), { kelpwrap: 2 }),
+    sq("oc_dive", "Sailor", 0, "Cannonball!", "Dive off Croaker's Pier (halfway along the dock).", 1, st("dives"), { kelp: 4 }),
+    sq("oc_suit", "Sailor", 0, "Frogskin", "Craft the Frogskin Scuba Suit at a Workbench (Gear: Diving).", 1, function () { return inv("scubasuit") ? 1 : 0; }, { pearl: 1 }),
+    sq("oc_d30", "Sailor", 0, "Reef Diver", "Dive 30 m below the surface.", 30, st("ocdeep"), { seaglass: 3 }),
+    sq("oc_d70", "Sailor", 0, "Into the Twilight", "Dive 70 m down. You'll need an Air Tank.", 70, st("ocdeep"), { brass: 4 }),
+    sq("oc_d110", "Sailor", 0, "Trench Walker", "Dive 110 m down into the Abyssal Trench.", 110, st("ocdeep"), { blackpearl: 1 }),
+    sq("oc_clam5", "Sailor", 0, "Pearl Diver", "Pry open 5 Pearl Clams.", 5, st("clams"), { pearl: 2 }),
+    sq("oc_chest5", "Sailor", 0, "Sunken Treasure", "Open 5 sea chests.", 5, st("occhests"), { doubloon: 5 }),
+    sq("oc_kill25", "Sailor", 0, "Sea Monster Hunter", "Defeat 25 sea creatures.", 25, st("ockills"), { jellygel: 2 }),
+    sq("oc_pir10", "Sailor", 0, "Walk the Plank", "Defeat 10 diving Swamp Pirates.", 10, st("pirates"), { doubloon: 8 }),
+    sq("oc_capt", "Sailor", 0, "Gillbeard's Doom", "Defeat Cap'n Gillbeard by his hoard in the Twilight Deep.", 1, st("captain"), { goldbar: 1 }),
+    sq("oc_boat", "Sailor", 0, "Shipwright", "Fit all nine parts to Old Croaker's boat at the end of the pier and launch her.", 1, st("boatDone"), { rope: 3 }),
+    sq("oc_sail", "Sailor", 0, "Set Sail", "Take the Lily Belle out to sea.", 1, st("sails"), { doubloon: 3 }),
+    sq("oc_isl5", "Sailor", 0, "Island Hopper", "Sail to 5 different islands.", 5, st("islands"), { seaglass: 5 }),
+    sq("oc_ship3", "Sailor", 0, "Broadside!", "Sink 3 pirate ships.", 3, st("pships"), { canvas: 3 }),
+    sq("oc_site3", "Sailor", 0, "Wreck Diver", "Dive at 3 buoys out at sea.", 3, st("sitedives"), { pearl: 2 }),
     sq("pot1", "Wonders", 1, "End of the Rainbow", "Find a Pot of Gold where a rainbow touches the ground. Rainbows come out when the rain stops on a sunny day.", 1, st("pots_gold"), { prism: 1 })
   ];
   SIDE.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
-  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders"];
+  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders", "Sailor"];
   var GOALS = SIDE, TRAIL = MAIN;   // older names, still used by a few helpers
   function curCh() { return MAIN[S.qi] ? MAIN[S.qi].ch : CHAPTERS.length - 1; }
   function chQuests(c) { return MAIN.filter(function (q) { return q.ch === c; }); }
@@ -5282,7 +5299,7 @@
     var sect = function (title, done, all, inner) { return '<h3>' + title + ' <small class="lg-n">' + done + " / " + all + '</small></h3><div class="lg-grid">' + inner + "</div>"; };
     var h = '<div class="lg-stats">' + [
       ["Days", (S.days | 0) + 1], ["Deepest", (st.maxDepth | 0) + " m"], ["Dug", st.mined], ["Placed", st.placed], ["Defeated", kills], ["Bosses", st.bossk],
-      ["Fish", st.fish], ["Harvests", st.harvests], ["Meals", st.cooked], ["Bounties", st.bounties], ["Cave floors", st.caveDeep], ["Naps", st.sleeps]
+      ["Fish", st.fish], ["Harvests", st.harvests], ["Meals", st.cooked], ["Bounties", st.bounties], ["Cave floors", st.caveDeep], ["Deepest dive", (st.ocdeep | 0) + " m"], ["Naps", st.sleeps]
     ].map(function (q) { return "<div><b>" + (q[1] || 0) + "</b><span>" + q[0] + "</span></div>"; }).join("") + "</div>";
     var cre = Object.keys(KSTAT), creN = cre.filter(function (k) { return st[KSTAT[k]] > 0; }).length;
     h += sect("Creatures", creN, cre.length, cre.map(function (k) { var d = ENEMY[k], n = st[KSTAT[k]] || 0; return tile(icon(d.frag), d.n, n + " defeated", n > 0, d.glow); }).join(""));
@@ -5292,6 +5309,8 @@
     h += sect("Bosses", bN, bk.length, bk.map(function (k) { var B = BOSS[k], m = { queen: "queenchitin", wyrm: "wyrmscale", alpha: "alphamane" }[k]; return tile(icon(m), B.n, BIO_NAMES[B.b], !!(st.boss & B.bit), B.c); }).join(""));
     var fN = FISH_ALL.filter(function (k) { return S.fdex[k]; }).length;
     h += sect("Fish", fN, FISH_ALL.length, FISH_ALL.map(function (k) { return tile(icon(k), ITEMS[k].n, "", !!S.fdex[k], "#7fd6ff"); }).join(""));
+    var sea = typeof OM !== "undefined" ? Object.keys(OM) : [], sk = (S.oc && S.oc.kills) || {}, seaIc = { snapjaw: "bogminnow", captain: "blackpearl" }, sN = sea.filter(function (k) { return sk[k] > 0; }).length;   // OCEAN
+    if (sea.length) h += sect("Sea creatures", sN, sea.length, sea.map(function (k) { var d = OM[k], n = sk[k] || 0, ic = seaIc[k] || (d.drops && d.drops[0] && d.drops[0][0]); return tile(icon(ITEMS[ic] ? ic : "kelp"), d.n, n + " defeated", n > 0, d.boss ? "#a8fff0" : "#4fd0e8"); }).join(""));
     var crops = [["carrot", 1], ["potato", 2], ["pepper", 4], ["frostberry", 8]], cN = crops.filter(function (q) { return st.cropbits & q[1]; }).length;
     h += sect("Crops grown", cN, crops.length, crops.map(function (q) { return ITEMS[q[0]] ? tile(icon(q[0]), ITEMS[q[0]].n, "", !!(st.cropbits & q[1]), "#7fd06a") : ""; }).join(""));
     var meals = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked; }), mN = meals.filter(function (k) { return S.ate[k]; }).length;
@@ -5300,7 +5319,7 @@
     h += sect("Animal friends", aN, ak.length, ak.map(function (k) { var n = S.pets.filter(function (a) { return a.k === k; }).length; return tile(icon(ANIM[k].prod), ANIM[k].n, n + " at home", n > 0, "#ff9ac2"); }).join(""));
     var ck = Object.keys(CHARMS), chN = ck.filter(function (k) { return S.charms.own[k]; }).length;
     h += sect("Charms", chN, ck.length, ck.map(function (k) { return tile(icon("charm_" + k), CHARMS[k].n, hasCharm(k) ? "Worn" : "", !!S.charms.own[k], CHARMS[k].c); }).join(""));
-    var total = creN + bN + fN + cN + mN + aN + chN, max = cre.length + bk.length + FISH_ALL.length + crops.length + meals.length + ak.length + ck.length;
+    var total = creN + bN + fN + sN + cN + mN + aN + chN, max = cre.length + bk.length + FISH_ALL.length + sea.length + crops.length + meals.length + ak.length + ck.length;
     return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(total / max * 100) + '%"></i></span><em>' + total + " / " + max + " found</em></div>" + h;
   }
   // ---------- MULTIPLAYER (co-op rooms; the server side is DelveRoom in worker.js) ----------
@@ -12149,7 +12168,7 @@
   };
   var QB_BIG = { mwork3: 1, disc10: 1, warden: 1, blood1: 1, queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
   var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate", "starglass"];
-  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework" };
+  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel" };
   var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", stain1: "stain8", bty1: "bty25" };
   function qbIco(k) {   // an icon url for an item key, a tool tier ("pick3"), or null for a glyph ("#⚔")
     if (!k || k.charAt(0) === "#") return null;
@@ -12158,6 +12177,7 @@
     if (!ITEMS[k] && !SPR[k] && !/^(wpn|arm|bag)\d$/.test(k) && k !== "shovel" && k !== "can" && k !== "bucket") return null;
     try { return icon(k); } catch (e) { return null; }
   }
+  Object.assign(QB_ICON, { oc_pier: "boat_anchor", oc_dive: "kelp", oc_suit: "scubasuit", oc_d30: "coral", oc_d70: "tank2", oc_d110: "tank4", oc_clam5: "pearl", oc_chest5: "doubloon", oc_kill25: "jellygel", oc_pir10: "doubloon", oc_capt: "blackpearl", oc_boat: "boat_keel", oc_sail: "boat_sail", oc_isl5: "boat_wheel", oc_ship3: "boat_figure", oc_site3: "seaglass" });   // OCEAN
   function qbIconOf(q) { var k = QB_ICON[q.id]; if (!k && q.rw) k = Object.keys(q.rw)[0]; return k || "#★"; }
   function qbPad(k) { var u = qbIco(k); return u ? '<img alt="" src="' + u + '">' : '<span class="qg">' + esc((k || "#★").slice(1)) + "</span>"; }
   function qbHash(a, b) { var h = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return h - Math.floor(h); }
@@ -13634,8 +13654,14 @@
   }
 
   // ---------- the pier gate near camp: the way in ----------
-  var OPG = { dx: 22 };   // tiles east of where you first woke up
-  function pierGateX() { return Math.floor(world.spawn.x) + OPG.dx; }
+  var OCJ = { t: -1e9 }; try { $("sbxPad").querySelector(".jump").addEventListener("pointerdown", function () { OCJ.t = performance.now(); }); } catch (e) {}   // a quick tap on the jump button still counts as a hop
+  var OPG = { w: null, x: 0 };   // the gate stands where Murkwater Swamp meets the Ember Bog, as if the sea lay just behind that border
+  function pierGateX() {
+    if (OPG.w === world) return OPG.x; OPG.w = world; var b = world.bio, sx = Math.floor(world.spawn.x), x, best = -1;
+    for (x = sx; x < W - 2 && best < 0; x++) if (b[x] === 0 && b[x + 1] === 1) best = x;   // east of camp first (the Ember Bog side)
+    for (x = sx; x > 2 && best < 0; x--) if (b[x] === 1 && b[x - 1] === 0) best = x - 1;
+    OPG.x = best >= 0 ? best : sx + 22; return OPG.x;
+  }
   function pierGateNear() { if (cave || OCS || !SO) return null; var gx = pierGateX() + 0.5; return Math.abs(p.x - gx) < 3.2 && Math.abs(p.y - col[clamp(Math.floor(gx), 0, W - 1)]) < 6 ? { x: gx } : null; }
   function ocEnterPier() {
     if (!SO || cave || OCS || trans || sleepT > 0 || hp <= 0) return;
@@ -13677,7 +13703,7 @@
   }
   function ocT(x, y) { return x < 0 || x >= OCW || y < 0 || y >= OCH ? OT.BED : OCS.t[y * OCW + x]; }
   function ocSetT(x, y, id) { if (x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) return; OCS.t[y * OCW + x] = id; if (OCS.main) { var o = ocS(), k = x + "," + y; if (OCS.m.t[y * OCW + x] === id) delete o.ed[k]; else if (Object.keys(o.ed).length < 3500) o.ed[k] = id; } }
-  function ocSolid(x, y) { var d = OTD[ocT(x, y)]; return !!d && d.solid; }
+  function ocSolid(x, y) { var id = ocT(x, y), d = OTD[id]; if (y < OSEA && (id === OT.CHEST || id === OT.OPEN)) return false; return !!d && d.solid; }   // chests on the dock do not block the walkway
   function ocBox(x, y) {   // does a body with its feet at (x, y) overlap anything solid?
     var x0 = Math.floor(x - 0.27), x1 = Math.floor(x + 0.27), y0 = Math.floor(y - 0.88), y1 = Math.floor(y - 0.001);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (ocSolid(xx, yy)) return true;
@@ -13707,7 +13733,7 @@
   // ---------- update: walking the pier, swimming, air, pressure ----------
   function ocUpdate(dt) {
     var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); sc.mt += dt;
-    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j;
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j || performance.now() - OCJ.t < 160;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
     if (hurtT > 0) { dx *= 0.5; }
     var ssp = ocSwimSp(), shock = pl.shock > 0 ? 0.45 : 1; pl.shock = Math.max(0, pl.shock - dt);
