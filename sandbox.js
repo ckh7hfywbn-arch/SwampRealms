@@ -4043,14 +4043,14 @@
       p.face = dx < 0 ? -1 : 1;
       var bait = takeBait();
       fishing = { x: c.x, y: c.y, lq: c.lq, ph: "wait", bait: bait[1], t: (2.5 + Math.random() * 5) * fishBiteMul() * bait[0], bob: 0 };
-      thud(520, 0.04); chips(c.x + 0.5, c.y + 0.1, c.lq === "lava" ? "#ffb13b" : "#bff4ff", 6, 3); return;
+      thud(520, 0.04); if (c.lq === "lava") chips(c.x + 0.5, c.y + 0.1, "#ffb13b", 6, 3); else if (!cave) waterSplash(c.x + 0.5, waterTopY(c.x + 0.5, c.y + 0.5), 0.45); else chips(c.x + 0.5, c.y + 0.1, "#bff4ff", 6, 3); return;   // the float plops in
     }
     var fx = fishing.x + 0.5 - p.x, fy = fishing.y - (p.y - PH / 2);
     if (fx * fx + fy * fy > (ROD_REACH + 2) * (ROD_REACH + 2) || !liquidAt(fishing.x, fishing.y)) { fishing = null; nag("Your line came loose."); return; }
     fishing.t -= dt; fishing.bob += dt;
     if (fishing.ph === "wait") {
       if (press) { fishing = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
-      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
+      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); if (fishing.lq !== "lava" && !cave) waterSplash(fishing.x + 0.5, waterTopY(fishing.x + 0.5, fishing.y + 0.5), 0.55); else chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
     } else if (fishing.ph === "bite") {
       if (press) return landFish();
       if (fishing.t <= 0) { fishing.ph = "wait"; fishing.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
@@ -9891,7 +9891,8 @@
   function onLadder() { var lx = Math.floor(p.x); for (var yy = Math.floor(p.y - PH * 0.9); yy <= Math.floor(p.y - 0.1); yy++) if (get(lx, yy) === T.LADDER || TILES[get(lx, yy)].climb) return true; var fy = Math.floor(p.y - 0.02), fid = get(lx, fy); return !!(TILES[fid].hatch && TILES[fid].hatch.open && get(lx, fy + 1) === T.LADDER); }   // an open trapdoor on top of a ladder climbs like ladder
   function step(h, dir, jump) {
     var feetWet = wetAt(p.x, p.y - 0.2);
-    p.wet = wetAt(p.x, p.y - PH * 0.5);
+    var wasWet = p.wet; p.wet = wetAt(p.x, p.y - PH * 0.5);
+    if (!cave && p.wet !== wasWet && (p.wet ? p.vy > 3 : p.vy < -3)) { var wty = waterTopY(p.x, p.wet ? p.y - PH * 0.5 : p.y + 0.3); if (get(Math.floor(p.x), Math.floor(wty + 0.01)) === T.WATER) { waterSplash(p.x, wty, p.wet ? clamp(p.vy / 9, 0.6, 2.2) : 0.7); if (p.wet) thud(240, 0.05); } }
     var sp = (p.wet ? 3.6 * (hasCharm("tide") || fx("gill") ? 1.6 : 1) : 6.3) * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1) * speedMul(), acc = p.on ? 70 : 34;
     p.vx = approach(p.vx, dir * sp, (dir ? acc : (p.on ? 60 : 8)) * h);
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
@@ -10138,7 +10139,52 @@
     for (i = AMB.fish.length - 1; i >= 0; i--) { e = AMB.fish[i]; e.vy += 18 * dt; e.x += e.vx * dt; e.y += e.vy * dt; if (e.vy > 0 && e.y >= e.sy + 0.1) { if (Math.abs(e.x - p.x) < 24) splashAt(e.x, e.sy); AMB.rip.push({ x: e.x, y: e.sy + 0.08, t: 0 }); AMB.fish.splice(i, 1); } }
     for (i = AMB.rip.length - 1; i >= 0; i--) { AMB.rip[i].t += dt; if (AMB.rip[i].t > 1.6) AMB.rip.splice(i, 1); }
   }
-  function splashAt(x, y) { for (var k = 0; k < 6; k++) parts.push({ x: x + (Math.random() - 0.5) * 0.4, y: y, vx: (Math.random() - 0.5) * 3, vy: -3 - Math.random() * 3, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#bfeeff" : "#ffffff", s: 2 }); }
+  function splashAt(x, y) { waterSplash(x, y, 0.6); }
+  // ---------- WATER FX: splashes and ripples ----------
+  // A splash throws a crown of droplets that stretch along their path and fall back under gravity (each one lands in its own tiny ring),
+  // a foam puff, a quick column of spray for big ones, and a ripple that runs out across the surface both ways. Ripples also bend the
+  // surface line itself (rippleH), so the water heaves where something hit it. In top-down scenes (td) the rings are round.
+  var DROPS = [], RIPS = [];
+  function waterSplash(x, y, power, td) {
+    if (reduce) power *= 0.6; var n = Math.round(7 + power * 11), i;
+    for (i = 0; i < n; i++) { var a = -Math.PI / 2 + (Math.random() - 0.5) * (td ? 6.2832 : 1.9), sp = (2.2 + Math.random() * 3.4) * Math.pow(power, 0.55) * (td ? 0.5 : 1);
+      DROPS.push({ x: x + (Math.random() - 0.5) * 0.3 * power, y: y - 0.04, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, sy: y, r: (0.035 + Math.random() * 0.05) * (0.8 + power * 0.3), life: 1.6, td: td, h: 0, vh: td ? 2 + Math.random() * 3 * power : 0 }); }
+    if (power > 1.1 && !td) for (i = 0; i < 4; i++) DROPS.push({ x: x + (Math.random() - 0.5) * 0.25, y: y - 0.05, vx: (Math.random() - 0.5) * 0.8, vy: -(5.5 + Math.random() * 3) * Math.pow(power, 0.4), sy: y, r: 0.06 + Math.random() * 0.04, life: 1.6 });   // the spout in the middle
+    if (td !== 2) RIPS.push({ x: x, y: y, t: 0, a: 0.13 * power, w: power, td: td, foam: 1 });   // td 2: water thrown onto land (drops only)
+    if (DROPS.length > 260) DROPS.splice(0, DROPS.length - 260); if (RIPS.length > 60) RIPS.splice(0, RIPS.length - 60);
+  }
+  function waterRing(x, y, a, td) { RIPS.push({ x: x, y: y, t: 0, a: a, w: a * 6, td: td }); if (RIPS.length > 60) RIPS.shift(); }
+  function tickWaterFx(dt) {
+    var i; for (i = DROPS.length - 1; i >= 0; i--) { var d = DROPS[i]; d.life -= dt;
+      if (d.td) { d.vh -= 14 * dt; d.h += d.vh * dt; d.x += d.vx * dt; d.y += d.vy * dt; if (d.h <= 0 && d.vh < 0) { if (d.td === 1 && Math.random() < 0.5) waterRing(d.x, d.y, 0.03, 1); DROPS.splice(i, 1); continue; } }
+      else { d.vy += 19 * dt; d.vx *= 1 - dt * 0.6; d.x += d.vx * dt; d.y += d.vy * dt; if (d.vy > 0 && d.y >= d.sy) { if (Math.random() < 0.6) waterRing(d.x, d.sy, 0.025 + d.r * 0.3); DROPS.splice(i, 1); continue; } }
+      if (d.life <= 0) DROPS.splice(i, 1); }
+    for (i = RIPS.length - 1; i >= 0; i--) { RIPS[i].t += dt; if (RIPS[i].t > 2.4) RIPS.splice(i, 1); }
+  }
+  function rippleH(x, y) {   // how far a ripple pushes the surface down (+) or up (-) at x, in tiles
+    var h = 0; for (var i = 0; i < RIPS.length; i++) { var r = RIPS[i]; if (r.td || Math.abs(r.y - y) > 0.6) continue; var d = Math.abs(x - r.x), f = r.t * 3.4, e = Math.exp(-(d - f) * (d - f) / (0.3 + r.w * 0.12)) * Math.exp(-r.t * 1.7) * r.a; if (e > 0.002) h += e * Math.sin((d - f) * 4.2); }
+    return h;
+  }
+  function drawWaterFx(g, OX, OY, TS) {   // OX, OY, TS: the scene's screen offset and tile size
+    if (!DROPS.length && !RIPS.length) return; OX = OX === undefined ? ox : OX; OY = OY === undefined ? oy : OY; TS = TS || ts; var i;
+    g.save(); g.lineCap = "round";
+    for (i = 0; i < RIPS.length; i++) { var r = RIPS[i], X = OX + r.x * TS, Y = OY + r.y * TS, rad = (0.15 + r.t * (r.td ? 1.5 : 3.4)) * TS * Math.min(1.4, 0.6 + r.w * 0.35), al = Math.exp(-r.t * 1.9) * Math.min(1, r.a * 9);
+      if (X < -rad || X > vw + rad || Y < -rad || Y > vh + rad || al < 0.02) continue;
+      if (r.foam && r.t < 0.7) { var fk = 1 - r.t / 0.7; g.globalAlpha = 0.75 * fk; g.fillStyle = "#f4fdff"; g.beginPath(); g.ellipse(X, Y, TS * (0.25 + r.t * 0.9) * r.w * 0.6, TS * (r.td ? 0.2 + r.t * 0.6 : 0.09 + r.t * 0.1) * r.w * 0.6, 0, 0, 6.2832); g.fill(); }   // the foam where it went in
+      g.globalAlpha = al * 0.85; g.strokeStyle = "#eafcff"; g.lineWidth = Math.max(1, TS * 0.045); g.beginPath(); g.ellipse(X, Y, rad, rad * (r.td ? 0.62 : 0.16), 0, 0, 6.2832); g.stroke();
+      if (rad > TS * 0.5) { g.globalAlpha = al * 0.4; g.beginPath(); g.ellipse(X, Y, rad * 0.62, rad * 0.62 * (r.td ? 0.62 : 0.16), 0, 0, 6.2832); g.stroke(); }   // a second, inner ring
+    }
+    for (i = 0; i < DROPS.length; i++) { var d = DROPS[i], dx = OX + d.x * TS, dy = OY + (d.y - (d.h || 0) * 0.35) * TS; if (dx < -TS || dx > vw + TS || dy < -TS || dy > vh + TS) continue;
+      var vx2 = d.vx, vy2 = d.td ? d.vy - d.vh * 0.35 : d.vy, ln = Math.min(0.32, Math.hypot(vx2, vy2) * 0.03), sp2 = Math.hypot(vx2, vy2) || 1, ex = dx - vx2 / sp2 * ln * TS, ey = dy - vy2 / sp2 * ln * TS, rr = Math.max(1.2, d.r * TS);
+      g.globalAlpha = clamp(d.life * 1.6, 0, 0.95); g.strokeStyle = "rgba(170,230,245,.9)"; g.lineWidth = rr * 2; g.beginPath(); g.moveTo(ex, ey); g.lineTo(dx, dy); g.stroke();   // stretched along its flight
+      g.fillStyle = "#ffffff"; g.beginPath(); g.arc(dx - rr * 0.25, dy - rr * 0.3, rr * 0.55, 0, 6.2832); g.fill();   // the glint on the drop
+      if (d.td) { g.globalAlpha *= 0.3; g.fillStyle = "#06263a"; g.beginPath(); g.ellipse(OX + d.x * TS, OY + d.y * TS, rr, rr * 0.5, 0, 0, 6.2832); g.fill(); }   // its shadow on the water below
+    }
+    g.restore();
+  }
+  function waterTopY(x, y) {   // the world-surface y of the water at column x (from a point inside it)
+    var i = Math.floor(x), j = Math.floor(y); while (j > 0 && get(i, j - 1) === T.WATER) j--; var lv = lvAt(j * W + i); return j + (lv < 8 ? 1 - lv / 8 : 0);
+  }
   function birdShape(g, x, y, s, flap, col, kind) {   // a little bird in flight: body and two wings that beat
     var wy = Math.sin(flap) * s * (kind === "egret" || kind === "goose" ? 0.55 : 0.8);
     g.strokeStyle = col; g.lineWidth = Math.max(1, s * (kind === "egret" || kind === "goose" ? 0.22 : 0.18)); g.lineCap = "round";
@@ -10455,7 +10501,12 @@
         var wl = top ? lvAt(j * W + i) : 8, woff = wl < 8 ? Math.round(ts * (1 - wl / 8)) : 0;   // a part-filled cell: what is behind shows above the surface
         if (woff) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); }
         g.fillStyle = WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")"); g.fillRect(sx3, sy + woff, ts, ts - woff);
-        if (top) { var wy = Math.min(ts - woff - 2, Math.round(CELL.wob * 1.5 + Math.sin(i * 0.9 + now / 400) * 1.2 + 2)); if (wy < 0) wy = 0; g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(sx3, sy + woff + wy, ts, 2); g.fillStyle = "rgba(255,255,255,.25)"; g.fillRect(sx3, sy + woff, ts, wy); }
+        if (top) {   // the surface: a smooth swell that runs on from cell to cell (two waves), bent by any ripples from splashes
+          var wsu = ts / 32, wpts = [], wq, wmax = ts - woff - 2, wsurf = j + woff / ts;
+          for (wq = 0; wq <= 4; wq++) { var wxw = i + wq / 4, wv = CELL.wob * 1.5 + 2 + (Math.sin(wxw * 0.9 + now / 400) * 1.2 + Math.sin(wxw * 2.3 - now / 260) * 0.5) * Math.max(1, wsu * 1.4) + (RIPS.length ? rippleH(wxw, wsurf) * ts : 0); wpts.push(clamp(wv, 0, wmax)); }
+          g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.moveTo(sx3, sy + woff); for (wq = 0; wq <= 4; wq++) g.lineTo(sx3 + ts * wq / 4, sy + woff + wpts[wq]); g.lineTo(sx3 + ts, sy + woff); g.closePath(); g.fill();
+          g.strokeStyle = "rgba(210,255,248,.75)"; g.lineWidth = 2; g.beginPath(); g.moveTo(sx3, sy + woff + wpts[0]); for (wq = 1; wq <= 4; wq++) g.lineTo(sx3 + ts * wq / 4, sy + woff + wpts[wq]); g.stroke();
+        }
         if (!reduce && FLM && FLM[j * W + i] && get(i, j + 1) === T.WATER && !top) { g.fillStyle = "rgba(220,255,250,.28)"; var fo = (now / 60 + i * 7) % ts; g.fillRect(sx3 + ts * 0.3, sy + fo, Math.max(1, ts * 0.08), ts * 0.3); g.fillRect(sx3 + ts * 0.66, sy + (fo + ts * 0.5) % ts, Math.max(1, ts * 0.06), ts * 0.24); }   // moving water: streaks
         else if (!reduce && ((i * 31 + j * 17 + (now / 380 | 0)) % 11) === 0) { g.fillStyle = "rgba(190,255,248,.22)"; g.fillRect(sx3 + ts * 0.2, sy + ts * 0.4, ts * 0.5, 2); }
         return;
@@ -11626,6 +11677,7 @@
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
+    drawWaterFx(g);
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
@@ -14050,7 +14102,7 @@
   }
   function ocBubbles(x, y, n) { for (var i = 0; i < n; i++) OCS.bub.push({ x: x + (Math.random() - 0.5) * 0.5, y: y, vy: -(1.2 + Math.random() * 1.5), r: 0.06 + Math.random() * 0.1, ph: Math.random() * 6.28, life: 2.5 + Math.random() * 2 }); }
   function ocSplash(x, big) {
-    var n = big ? 26 : 10; for (var i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 0.8, y: OSEA - 0.05, vx: (Math.random() - 0.5) * 5, vy: -(2 + Math.random() * (big ? 7 : 4)), g: 22, life: 0.6 + Math.random() * 0.4, max: 1, c: i % 2 ? "#e8fbff" : "#8fe6f2", s: 2 + Math.random() * 3 });
+    waterSplash(x, OSEA - 0.02, big ? 2.4 : 1.2);
     ocBubbles(x, OSEA + 0.4, big ? 12 : 5); try { if (fxReady()) nz(0, big ? 0.35 : 0.2, big ? 0.14 : 0.07, 1100, "bandpass", 0.7); } catch (e) {}
   }
 
@@ -14424,7 +14476,7 @@
     F.t -= dt; F.bob += dt;
     if (F.ph === "wait") {
       if (press) { sc.fish = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
-      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); ocFx(5, F.x + 0.5, OSEA, "#ffffff", { sp: 1.5, g: 6 }); ocBubbles(F.x + 0.5, OSEA + 0.6, 3); }
+      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); waterSplash(F.x + 0.5, OSEA - 0.02, 0.6); ocBubbles(F.x + 0.5, OSEA + 0.6, 3); }
     } else if (F.ph === "bite") {
       if (press) { ocLandFish(F); return; }
       if (F.t <= 0) { F.ph = "wait"; F.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
@@ -14767,6 +14819,29 @@
       var fc = (i + j) % 2 ? "#e870b8" : "#c858e8"; g.save(); g.translate(cx, base); g.rotate(sw * 0.08); for (var q3 = 0; q3 < 6; q3++) { var a2 = -1 + q3 * 0.4; oL(g, fc, 1.1 * u, [[0, 0], [Math.sin(a2) * 5 * u, -Math.cos(a2) * 7 * u], [Math.sin(a2) * 7.5 * u, -Math.cos(a2) * 13 * u]]); } oL(g, fc, 0.8 * u, [[-6 * u, -9 * u], [0, -11 * u], [6 * u, -9 * u]]); oL(g, fc, 0.8 * u, [[-4 * u, -5 * u], [0, -6 * u], [4 * u, -5 * u]]); g.restore();
     } else if (id === OT.TUBE) { [[-4, 9, "#ffb04a"], [0, 13, "#ff9a3a"], [4, 7, "#ffc86a"]].forEach(function (q4) { var x2 = cx + q4[0] * u, h2 = q4[1] * u; oR(g, x2 - 1.6 * u, base - h2, 3.2 * u, h2, q4[2]); oE(g, x2, base - h2, 1.6 * u, 0.8 * u, "#7a3a1a"); }); }
   }
+  // CAUSTICS: the rippling net of sunlight a wavy surface throws on everything below it. A few looping frames of a tileable pattern
+  // (sums of sines whose zero lines are the bright threads), laid over the water, brightest near the surface and fading with depth.
+  var CAUS = null;
+  function causticFrames() {
+    if (CAUS) return CAUS; CAUS = []; var N = 16, Z = 64;
+    for (var f = 0; f < N; f++) { var c = document.createElement("canvas"); c.width = c.height = Z; var q = c.getContext("2d"), im = q.createImageData(Z, Z), d = im.data, ph = f / N * 6.2832;
+      for (var y = 0; y < Z; y++) for (var x = 0; x < Z; x++) { var u = x / Z * 6.2832, v = y / Z * 6.2832;
+        var w1 = Math.sin(u * 2 + Math.sin(v + ph) * 1.3 + ph), w2 = Math.sin(v * 2 + Math.sin(u * 2 - ph) * 1.1 - ph), w3 = Math.sin(u + v * 3 + ph) * 0.7;
+        var br = Math.pow(clamp(1 - Math.abs(w1 + w2 + w3) * 0.8, 0, 1), 7), k2 = (y * Z + x) * 4; d[k2] = 225; d[k2 + 1] = 255; d[k2 + 2] = 248; d[k2 + 3] = Math.round(br * 255); }
+      q.putImageData(im, 0, 0); CAUS.push(c); }
+    return CAUS;
+  }
+  function ocCaustics(g, surf, t, k, solid) {   // k: strength (daylight); bands get weaker with depth. solid: a path of the sea floor cells
+    if (k < 0.03 || reduce || lowq) return; var F = causticFrames(), fr = F[Math.floor(t * 8) % F.length], T2 = ts * 6, bands = 3, bh = ts * 8;
+    var offx = ((ox * 0.96) % T2 + T2) % T2 - T2, offy = ((oy) % T2 + T2) % T2 - T2;
+    g.save(); g.globalCompositeOperation = "lighter"; g.imageSmoothingEnabled = true;
+    for (var b = 0; b < bands; b++) { var y0 = surf + b * bh, y1 = y0 + bh; if (y1 < 0 || y0 > vh) continue; g.save(); g.beginPath(); g.rect(0, Math.max(0, y0), vw, Math.min(vh, y1) - Math.max(0, y0)); g.clip();
+      var fall = Math.pow(1 - b / bands, 1.6), tile = function () { for (var yy = offy; yy < vh; yy += T2) { if (yy + T2 < y0 || yy > y1) continue; for (var xx = offx; xx < vw; xx += T2) g.drawImage(fr, xx, yy, T2, T2); } };
+      if (!solid) { g.globalAlpha = k * 0.07 * fall; tile(); }
+      if (solid) { g.save(); solid(); g.clip(); g.globalAlpha = k * 0.42 * fall; tile(); g.restore(); }   // bright on the sea floor and rocks, where the light lands
+      g.restore(); }
+    g.restore(); g.imageSmoothingEnabled = false;
+  }
   function ocRender(now) {
     var sc = OCS, g = ctx, m = sc.m, pl = sc.pl, i, j, t = now / 1000, A = ocAtlas();
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null; sc.btns = [];
@@ -14795,11 +14870,13 @@
       var y0w = Math.max(0, surf), wg2 = g.createLinearGradient(0, surf, 0, surf + 170 * ts), dk = 0.4 + 0.6 * dl;
       for (i = 0; i < OWATER.length; i++) { var c0 = OWATER[i][1]; wg2.addColorStop(OWATER[i][0] / 170, ocRgb([c0[0] * dk, c0[1] * dk, c0[2] * (0.6 + 0.4 * dk)])); }
       g.fillStyle = wg2; g.fillRect(0, y0w, vw, vh - y0w);
-      if (!reduce && dl > 0.35) for (i = 0; i < 7; i++) {   // god rays
-        var rx = ((i * 0.17 + 0.05) * vw * 1.6 - cam.x * ts * 0.3 + Math.sin(t * 0.3 + i) * ts) % (vw * 1.6); if (rx < -ts * 4) rx += vw * 1.6;
-        var rg = g.createLinearGradient(0, surf, 0, surf + ts * 34); rg.addColorStop(0, "rgba(220,255,250," + (0.12 * dl * (0.6 + 0.4 * Math.sin(t * 0.7 + i * 2))).toFixed(3) + ")"); rg.addColorStop(1, "rgba(220,255,250,0)");
-        g.fillStyle = rg; g.beginPath(); g.moveTo(rx, surf); g.lineTo(rx + ts * 1.4, surf); g.lineTo(rx + ts * 5.5, surf + ts * 34); g.lineTo(rx + ts * 2.5, surf + ts * 34); g.closePath(); g.fill();
-      }
+      var osun = sunState(S.time), slant = -osun.sx * ts * 9 * (osun.up ? 1 : 0.4);   // shafts lean away from the sun (steeper at noon)
+      if (!reduce && dl > 0.35) { g.save(); for (i = 0; i < 5; i++) {   // god rays
+        var rx = ((i * 0.19 + 0.05) * vw * 1.6 - cam.x * ts * 0.3 + Math.sin(t * 0.3 + i) * ts) % (vw * 1.6); if (rx < -ts * 8) rx += vw * 1.6;
+        var rwd = ts * (0.8 + (i % 3) * 0.7), rlen = ts * (18 + (i % 4) * 4), ra = 0.1 * dl * (0.55 + 0.45 * Math.sin(t * 0.6 + i * 2.3)) * (osun.warm > 0.1 ? 1.3 : 1);
+        var rg = g.createLinearGradient(0, surf, 0, surf + rlen); rg.addColorStop(0, "rgba(" + (osun.warm > 0.2 ? "255,226,190" : "210,255,248") + "," + ra.toFixed(3) + ")"); rg.addColorStop(0.5, "rgba(190,250,250," + (ra * 0.45).toFixed(3) + ")"); rg.addColorStop(1, "rgba(190,250,250,0)");
+        g.fillStyle = rg; g.beginPath(); g.moveTo(rx, surf); g.lineTo(rx + rwd, surf); g.lineTo(rx + rwd * 2.2 + slant, surf + rlen); g.lineTo(rx + slant, surf + rlen); g.closePath(); g.fill();
+      } g.restore(); }
       for (i = 0; i < 26; i++) {   // drifting marine snow
         var mxs = ((i * 97.3 + t * 6 + Math.sin(t * 0.4 + i) * 10) % vw + vw) % vw, mys = ((i * 61.7 + t * 9) % (vh + 20)) - 10; if (mys < surf) continue;
         g.globalAlpha = 0.25 + (i % 3) * 0.1; g.fillStyle = "#e8fbff"; g.fillRect(mxs, mys, 2, 2);
@@ -14836,18 +14913,40 @@
     sc.shots.forEach(function (s) { ocDrawShot(g, s, now); });
     // --- you ---
     ocDrawMe(g, now); ocDrawRod(g, now);
+    drawWaterFx(g);
     // --- bubbles and particles ---
     g.strokeStyle = "rgba(232,251,255,.75)"; g.lineWidth = 1.2; sc.bub.forEach(function (b) { var bx2 = ox + b.x * ts, by2 = oy + b.y * ts, r = Math.max(1.5, b.r * ts); g.beginPath(); g.arc(bx2, by2, r, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(bx2 - r * 0.4, by2 - r * 0.5, Math.max(1, r * 0.4), Math.max(1, r * 0.4)); });
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // --- the surface: a wavy bright line and a tinted film over everything under water (clipped to the water, so none of it lies across the beach sand) ---
     g.save(); g.beginPath(); for (i = X0; i <= X1; i++) { var wy0 = OSEA; while (wy0 < OSEA + 40 && OTD[ocT(i, wy0)].solid) wy0++; g.rect(ox + i * ts, oy + wy0 * ts - (wy0 === OSEA ? ts * 0.25 : 0), ts + 0.5, vh); } g.clip();
     if (surf > -ts && surf < vh + ts) {
+      var surfH = function (wx) { return reduce ? 0 : Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035 + Math.sin(wx / ts * 0.37 + t * 0.9) * ts * 0.05 + (RIPS.length ? rippleH((wx - ox) / ts, OSEA - 0.02) * ts : 0); };
       g.fillStyle = "rgba(160,240,255,.55)"; g.beginPath(); g.moveTo(0, surf + 4);
-      for (var wx = 0; wx <= vw + 8; wx += 8) g.lineTo(wx, surf + (reduce ? 0 : Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035));
+      for (var wx = 0; wx <= vw + 4; wx += 4) g.lineTo(wx, surf + surfH(wx));
       g.lineTo(vw, surf + 4); g.closePath(); g.fill();
-      g.fillStyle = "rgba(255,255,255,.65)"; for (wx = 0; wx < vw; wx += ts * 0.9) { var wy2 = surf + Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07; if (Math.sin(wx * 0.31 + t * 1.7) > 0.6) g.fillRect(wx, wy2 - 1, ts * 0.4, 2); }
+      g.strokeStyle = "rgba(240,255,255,.7)"; g.lineWidth = Math.max(1.5, ts * 0.04); g.beginPath(); for (wx = 0; wx <= vw + 4; wx += 4) { if (wx) g.lineTo(wx, surf + surfH(wx) - 1); else g.moveTo(wx, surf + surfH(wx) - 1); } g.stroke();   // the bright skin of the surface
+      g.fillStyle = "rgba(255,255,255,.65)"; for (wx = 0; wx < vw; wx += ts * 0.9) { var wy2 = surf + surfH(wx), fa2 = Math.sin(wx * 0.31 + t * 1.7); if (fa2 > 0.5) { g.globalAlpha = (fa2 - 0.5) * 2; g.fillRect(wx, wy2 - 1, ts * 0.4, 2); } } g.globalAlpha = 1;   // foam flecks fade in and out instead of blinking
+      if (!reduce && surf > 0) {   // the sun (or moon) glitters on the water right under it
+        var gph = S.time / CYCLE, gsa = gph < 0.583 ? gph / 0.583 : (gph - 0.583) / 0.417, gcx = vw * (0.12 + 0.76 * gsa), gday = gph < 0.583;
+        for (wx = gcx - ts * 7; wx < gcx + ts * 7; wx += ts * 0.3) { var gd = 1 - Math.abs(wx - gcx) / (ts * 7), gk = Math.sin(wx * 0.77 + t * 4.1) * Math.sin(wx * 0.23 - t * 2.7); if (gk < 0.35) continue;
+          var gy2 = surf + surfH(wx); g.fillStyle = gday ? "rgba(255,250,215," + (gd * gk).toFixed(3) + ")" : "rgba(220,230,255," + (gd * gk * 0.7).toFixed(3) + ")"; g.fillRect(wx, gy2 - 1.5, ts * (0.2 + gk * 0.35), 2.5); }
+      }
+    }
+    ocCaustics(g, surf, t, clamp((dl - 0.4) / 0.6, 0, 1) * clamp(1.4 - (cam.y - OSEA) / 50, 0.25, 1), function () { g.beginPath(); for (var cj = Math.max(Y0, OSEA + 1); cj <= Math.min(Y1, OSEA + 26); cj++) for (var ci = X0; ci <= X1; ci++) { var cd = OTD[sc.t[cj * OCW + ci]]; if (cd && cd.solid) g.rect(ox + ci * ts, oy + cj * ts, ts, ts); } });
+    if (surf < vh && dl > 0.3) {   // things floating on the surface shade the water under them
+      var shadeAt = function (cx, hw, dep, a) { var sg2 = g.createLinearGradient(0, surf, 0, surf + dep); sg2.addColorStop(0, "rgba(2,14,30," + a + ")"); sg2.addColorStop(1, "rgba(2,14,30,0)"); g.fillStyle = sg2; g.beginPath(); g.moveTo(cx - hw, surf); g.lineTo(cx + hw, surf); g.lineTo(cx + hw * 0.7 + slant * 0.3, surf + dep); g.lineTo(cx - hw * 0.7 + slant * 0.3, surf + dep); g.closePath(); g.fill(); };
+      var sa = (0.32 * dl).toFixed(3);
+      if (sc.main && m.pier) { shadeAt(ox + ((m.pier.x0 + m.pier.x1 + 1) / 2) * ts, (m.pier.x1 - m.pier.x0 + 1) / 2 * ts, ts * 5, sa); shadeAt(ox + (m.pier.x1 + 4.6) * ts, ts * 3.2, ts * 6, sa); }
+      else if (!sc.main) shadeAt(ox + (Math.floor(OCW / 2) + 0.5) * ts, ts * 3.2, ts * 6, sa);
     }
     if (surf < vh) { var tint = g.createLinearGradient(0, surf, 0, surf + 120 * ts); tint.addColorStop(0, "rgba(40,170,210,.10)"); tint.addColorStop(0.3, "rgba(20,80,160,.2)"); tint.addColorStop(1, "rgba(4,10,40,.3)"); g.fillStyle = tint; g.fillRect(0, Math.max(0, surf + 2), vw, vh); } g.restore();
+    // --- the time of day: the beach, pier and water take the day's colour (half strength: the water and sky already carry their own),
+    // and the boat's lantern lights its corner at night ---
+    var oamb = gradeOv(S.time), onk = clamp((0.92 - dl) / 0.62, 0, 1), OLI = [];
+    if (onk > 0) { var lbx = sc.main && m.pier ? ox + (m.pier.x1 + 4.6) * ts : ox + (Math.floor(OCW / 2) + 0.5) * ts, OB = ocS().boat;
+      lights.forEach(function (L) { if (L[1] <= OSEA + 0.6) OLI.push([ox + L[0] * ts, oy + L[1] * ts, L[2] * ts * 0.9, L[3], onk * 0.9, 0.5]); });   // lamps on the pier and the beach light their surroundings
+      if (!sc.main || OB.done || (OB.p && OB.p.boat_lamp)) OLI.push([lbx + 4.1 * ts * 0.62, surf + ts * 0.15 - 1.75 * ts * 0.62, ts * 4.5, "255,206,120", onk * 0.9, 0.5]); OLI.push([ox + pl.x * ts, oy + (pl.y - 0.6) * ts, ts * 3, "230,226,255", onk * 0.35]); }
+    sceneLight(g, { c: oamb.c, a: oamb.a * 0.6 }, OLI); sceneGlow(g, OLI, onk);
     // --- darkness below: lit only by glow coral, lanterns, the angler's lure and your dive lamp ---
     var camD = (cam.y - OSEA), dark = clamp((camD - 6) / 60, 0, 0.94) * (1 - 0.25 * dl * clamp(1 - camD / 40, 0, 1)) + (1 - dl) * 0.35 * clamp(camD / 20 + 0.3, 0, 1);
     dark = clamp(dark, 0, 0.95);
@@ -14865,8 +14964,12 @@
       }
       lights.forEach(function (L) { hole(L[0], L[1], L[2] * 0.8, 0.85); });
       g.imageSmoothingEnabled = true; g.drawImage(OCDK, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
-      g.globalCompositeOperation = "lighter"; lights.forEach(function (L) { var X3 = ox + L[0] * ts, Y3 = oy + L[1] * ts; if (X3 < -ts * 4 || X3 > vw + ts * 4 || Y3 < -ts * 4 || Y3 > vh + ts * 4) return; oG(g, X3, Y3, L[2] * ts * 0.45, "rgba(" + L[3] + "," + (0.16 * dark + 0.04).toFixed(3) + ")"); }); g.globalCompositeOperation = "source-over";
+      g.globalCompositeOperation = "lighter"; lights.forEach(function (L) { var X3 = ox + L[0] * ts, Y3 = oy + L[1] * ts; if (X3 < -ts * 8 || X3 > vw + ts * 8 || Y3 < -ts * 8 || Y3 > vh + ts * 8) return;
+        oG(g, X3, Y3, L[2] * ts * 0.75, "rgba(" + L[3] + "," + (0.24 * dark + 0.05).toFixed(3) + ")"); });   // each light tints what is around it in its own colour, with a bright heart
+      if (lamp && sc.diving) { var Xl = ox + pl.x * ts, Yl = oy + (pl.y - 0.7) * ts, a1 = (pl.face > 0 ? 0 : Math.PI) + pl.ang * pl.face * 0.6, Rl = 11 * ts, lg2 = g.createRadialGradient(Xl, Yl, 0, Xl, Yl, Rl); lg2.addColorStop(0, "rgba(255,240,200," + (0.18 * dark).toFixed(3) + ")"); lg2.addColorStop(1, "rgba(255,240,200,0)"); g.fillStyle = lg2; g.beginPath(); g.moveTo(Xl, Yl); g.arc(Xl, Yl, Rl, a1 - 0.4, a1 + 0.4); g.closePath(); g.fill(); }   // the lamp's beam is warm
+      g.globalCompositeOperation = "source-over";
     }
+    if (dark > 0.5) drawBloom(g, dl, clamp(1 - dark, 0.2, 1), now);   // glow coral, lures and lanterns bloom in the dark
     // --- words and pills ---
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
@@ -15053,6 +15156,7 @@
     if (!blocked) { s.x = clamp(nx, 6, SO.SEAW - 6); s.y = clamp(ny, 6, SO.SEAW - 6); } else s.sp *= 0.3;
     if (s.sp > 1 && Math.random() < dt * 30) { var bk = s.ang + Math.PI, side = Math.random() < 0.5 ? 1 : -1; s.wake.push({ x: s.x + Math.cos(bk) * 2.2 + Math.cos(bk + side * 1.57) * 0.5, y: s.y + Math.sin(bk) * 2.2 + Math.sin(bk + side * 1.57) * 0.5, vx: Math.cos(bk + side * 1.2) * 1.2, vy: Math.sin(bk + side * 1.2) * 1.2, life: 1.6 }); }
     for (i = s.wake.length - 1; i >= 0; i--) { var w = s.wake[i]; w.life -= dt; w.x += w.vx * dt; w.y += w.vy * dt; w.vx *= 0.97; w.vy *= 0.97; if (w.life <= 0) s.wake.splice(i, 1); }
+    seaTrail(s, dt, 2.2);
     // pirates
     s.cd = Math.max(0, s.cd - dt); s.hurt = Math.max(0, (s.hurt || 0) - dt);
     var homeD = Math.hypot(I[0].x - s.x, I[0].y - s.y); s.shipT -= dt; if (s.shipT <= 0) { s.shipT = 22 + Math.random() * 20; if (s.ships.length < 3 && homeD > 40) seaSpawnShip(); }
@@ -15065,6 +15169,7 @@
       if (dd > 110) { s.ships.splice(i, 1); continue; }
       sh.cd -= dt; if (sh.cd <= 0 && dd < 22) { sh.cd = sh.big ? 2.2 : 3.2; var lt = dd / 16, lx = s.x + Math.cos(s.ang) * s.sp * lt * 0.7, ly = s.y + Math.sin(s.ang) * s.sp * lt * 0.7, la = Math.atan2(ly - sh.y, lx - sh.x) + (Math.random() - 0.5) * 0.12; s.balls.push({ x: sh.x, y: sh.y, vx: Math.cos(la) * 16, vy: Math.sin(la) * 16, life: Math.min(1.8, lt + 0.3), mine: 0, big: sh.big }); thud(90, 0.06); }
       if (Math.random() < dt * 8) s.wake.push({ x: sh.x - Math.cos(sh.ang) * 2.4, y: sh.y - Math.sin(sh.ang) * 2.4, vx: 0, vy: 0, life: 1.2 });
+      seaTrail(sh, dt, sh.big ? 2.8 : 2.2);
       if (dd < nd) { nd = dd; nearest = sh; }
     }
     if ((keys.j || tk.j) && nearest && s.cd <= 0) seaFire(nearest, false);
@@ -15074,7 +15179,7 @@
       if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2)) { hit = true; sh2.hp--; sh2.hurt = 0.3; for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
         if (sh2.hp <= 0) { sh2.sink = 0.01; S.st.pships = (S.st.pships || 0) + 1; s.loot.push({ x: sh2.x, y: sh2.y, items: seaLoot(sh2), t: 0 }); snd("coin"); toast(sh2.big ? "You sank a pirate galleon! Its cargo is floating free." : "Pirate sloop sunk! Sail over the floating crate to grab its cargo.", "#7af0ff"); } } });
       else if (Math.hypot(s.x - b.x, s.y - b.y) < 2) { hit = true; seaHurt(b.big ? 16 : 11); for (var q2 = 0; q2 < 8; q2++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); }
-      if (hit || b.life <= 0) { if (!hit) for (var q3 = 0; q3 < 6; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); s.balls.splice(i, 1); }
+      if (hit || b.life <= 0) { if (!hit) { for (var q3 = 0; q3 < 4; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); waterSplash(b.x, b.y, b.big ? 1.6 : 1.2, 1); } s.balls.splice(i, 1); }
     }
     for (i = s.loot.length - 1; i >= 0; i--) { var L = s.loot[i]; L.t += dt; if (Math.hypot(L.x - s.x, L.y - s.y) < 3) { L.items.forEach(function (it) { give(it[0], it[1], undefined, undefined, true); texts.push({ s: "+" + it[1] + " " + ITEMS[it[0]].n, x: cam.x, y: cam.y - 1 - texts.length * 0.4, c: "#ffd23f", life: 1.6 }); }); s.loot.splice(i, 1); snd("coin"); } else if (L.t > 90) s.loot.splice(i, 1); }
     if (s.gulls.length < 4 && Math.random() < dt * 0.3) s.gulls.push({ x: s.x + (Math.random() - 0.5) * 60, y: s.y + (Math.random() - 0.5) * 40, a: Math.random() * 6.28, t: 0, life: 20 });
@@ -15092,9 +15197,16 @@
   }
 
   // ---- drawing ----
+  var SEASUN = null;
+  function seaTrail(o, dt, back) {   // the points a hull's stern has passed through, for its wake (o.trl: x, y, heading, age, speed)
+    var L = o.trl || (o.trl = []), i; for (i = L.length - 1; i >= 0; i--) { L[i].t += dt; if (L[i].t > 2.4) L.splice(i, 1); }
+    o.trT = (o.trT || 0) - dt; if (o.trT <= 0 && (o.sp || 0) > 0.6) { o.trT = 0.08; L.unshift({ x: o.x - Math.cos(o.ang) * back, y: o.y - Math.sin(o.ang) * back, a: o.ang, t: 0, sp: o.sp }); }
+    if (L.length > 40) L.length = 40;
+  }
   function seaBoatTop(g, x, y, ang, k, now, o) {   // the Lily Belle from above (o.pirate draws a pirate sloop instead)
     o = o || {}; g.save(); g.translate(x, y); g.rotate(ang); var pir = o.pirate, big = o.big, L = (big ? 3.4 : 2.6) * k, Wd = (big ? 1.5 : 1.15) * k, rock = reduce ? 0 : Math.sin(now / 500 + (o.ph || 0)) * 0.04;
-    g.rotate(rock); g.fillStyle = "rgba(0,20,40,.25)"; g.beginPath(); g.ellipse(0.2 * k, 0.3 * k, L * 1.02, Wd * 1.05, 0, 0, 6.2832); g.fill();
+    g.rotate(rock); var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, svx = ssn.sx * ssn.len * 0.9 * k, svy = (0.3 + 0.25 * ssn.len) * k, th = -(ang + rock), sdx = svx * Math.cos(th) - svy * Math.sin(th), sdy = svx * Math.sin(th) + svy * Math.cos(th);   // the shadow falls away from the sun, whichever way the boat points
+    g.fillStyle = "rgba(0,20,40," + (0.12 + ssn.a).toFixed(3) + ")"; g.beginPath(); g.ellipse(sdx, sdy, L * 1.02, Wd * 1.05, 0, 0, 6.2832); g.fill();
     var hull = function () { g.beginPath(); g.moveTo(L, 0); g.quadraticCurveTo(L * 0.55, -Wd, -L * 0.2, -Wd); g.lineTo(-L * 0.9, -Wd * 0.78); g.quadraticCurveTo(-L * 1.02, 0, -L * 0.9, Wd * 0.78); g.lineTo(-L * 0.2, Wd); g.quadraticCurveTo(L * 0.55, Wd, L, 0); g.closePath(); };
     hull(); g.fillStyle = o.hurt ? "#ffffff" : pir ? "#3a2418" : "#7a4a2a"; g.fill(); g.save(); hull(); g.clip();
     var deckIn = 0.16 * k; g.fillStyle = pir ? "#5a3a24" : "#b8844a"; g.beginPath(); g.ellipse(-L * 0.05, 0, L * 0.86, Wd - deckIn, 0, 0, 6.2832); g.fill();
@@ -15125,9 +15237,12 @@
       var P = pts.map(function (p2) { return [x + (p2[0] - x) * sc2 + (dx || 0), y + (p2[1] - y) * sc2 + (dy || 0)]; }), L = P.length; g.beginPath(); g.moveTo((P[L - 1][0] + P[0][0]) / 2, (P[L - 1][1] + P[0][1]) / 2);
       for (var j = 0; j < L; j++) { var a2 = P[j], b2 = P[(j + 1) % L]; g.quadraticCurveTo(a2[0], a2[1], (a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2); } g.closePath(); };
     var sh = g.createRadialGradient(x, y, r * 0.6, x, y, r * 2.1); sh.addColorStop(0, "rgba(120,230,220,.75)"); sh.addColorStop(1, "rgba(120,230,220,0)"); g.fillStyle = sh; g.fillRect(x - r * 2.2, y - r * 2.2, r * 4.4, r * 4.4);
+    var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, isx = ssn.sx * ssn.len * 0.9 * k * 1.4, isy = (0.3 + 0.25 * ssn.len) * k * 1.4;
+    poly(1.04, isx, isy); g.fillStyle = "rgba(0,24,44," + (0.1 + ssn.a * 0.7).toFixed(3) + ")"; g.fill();   // the island's shadow on the water
     var foam = reduce ? 0 : Math.sin(now / 700 + Q.id) * 0.03; poly(1.12 + foam); g.fillStyle = "rgba(255,255,255,.55)"; g.fill();
     var K = Q.kind, sand = K === 1 ? "#3a3236" : K === 2 ? "#dfe8ee" : "#e8d29a", land = K === 1 ? "#4a3a3a" : K === 2 ? "#f6fbff" : K === 3 ? "#5a7a4a" : "#5aa24a", land2 = K === 1 ? "#2a2024" : K === 2 ? "#bcd6e8" : K === 3 ? "#3a5a32" : "#3f8a3a";
     poly(1); g.fillStyle = sand; g.fill(); poly(0.74, 0, -r * 0.04); g.fillStyle = land; g.fill(); poly(0.45, -r * 0.05, -r * 0.1); g.fillStyle = land2; g.fill();
+    if (ssn.a > 0.02) { var lgx = -ssn.sx * r, lsh = g.createLinearGradient(x + lgx, y - r * 0.8, x - lgx, y + r * 0.8); lsh.addColorStop(0, "rgba(255,246,214," + (ssn.a * 0.6).toFixed(3) + ")"); lsh.addColorStop(0.5, "rgba(255,246,214,0)"); lsh.addColorStop(1, "rgba(0,20,36," + (ssn.a * 0.9).toFixed(3) + ")"); poly(1); g.fillStyle = lsh; g.fill(); }   // the sunny side and the shady side
     if (Q.pier) { g.fillStyle = "#8a5a32"; g.fillRect(x - r * 0.1, y + r * 0.5, r * 0.2, r * 1.2); g.fillStyle = "#6a4426"; g.fillRect(x - r * 0.35, y + r * 1.5, r * 0.7, r * 0.18); g.fillStyle = "#c28a52"; g.fillRect(x - r * 0.3, y - r * 0.3, r * 0.6, r * 0.45); g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(x - r * 0.4, y - r * 0.3); g.lineTo(x, y - r * 0.65); g.lineTo(x + r * 0.4, y - r * 0.3); g.fill(); }
     else if (K === 1) { g.fillStyle = "#1a1416"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#ff7a2a"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.14, 0, 6.2832); g.fill(); if (!reduce) for (i = 0; i < 4; i++) { var st = ((now / 1000 * 0.4 + i / 4) % 1); g.fillStyle = "rgba(200,200,210," + (0.5 * (1 - st)) + ")"; g.beginPath(); g.arc(x + st * r * 0.6, y - r * 0.2 - st * r * 0.9, r * (0.12 + st * 0.25), 0, 6.2832); g.fill(); } }
     else if (K === 2) { g.fillStyle = "#9ac8e8"; g.beginPath(); g.moveTo(x - r * 0.3, y); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.3, y); g.fill(); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(x - r * 0.12, y - r * 0.4); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.12, y - r * 0.4); g.fill(); }
@@ -15137,16 +15252,36 @@
   function seaRender(now) {
     var sc = OCS, s = sc.sea, g = ctx, k = SEAK(), t = now / 1000, dl = daylight(S.time), I = seaIslands(), i;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = true; actBtn = null; sc.btns = [];
-    var dk = 0.45 + 0.55 * dl; g.fillStyle = ocRgb([28 * dk, 112 * dk, 170 * (0.6 + 0.4 * dk)]); g.fillRect(0, 0, vw, vh);
+    var dk = 0.45 + 0.55 * dl, sun = SEASUN = sunState(S.time), wc0 = [28 * dk, 112 * dk, 170 * (0.6 + 0.4 * dk)], day2 = sun.up ? clamp(sun.e * 3, 0, 1) : 0;
+    // the sky's reflection: the water is a shade brighter (and warmer, with the sun low) on the sun's side (one gradient fill, no extra pass)
+    var shx2 = sun.sx > 0 ? vw * 0.15 : vw * 0.85, shy2 = vh * 0.3, shR = Math.max(vw, vh) * 0.8, wc1 = sun.up ? mixC(wc0, sun.warm > 0.15 ? [255, 196, 140] : [200, 240, 255], 0.2 * day2 + 0.34 * sun.warm) : mixC(wc0, [190, 205, 255], 0.1 * clamp(sun.e * 3, 0, 1));
+    g.fillStyle = ocRgb(mixC(wc0, wc1, 0.5)); g.fillRect(0, 0, vw, vh);   // one flat fill (a full-screen gradient is costly on phones): the water takes a little of the sky's colour
+    if (!reduce) {   // glitter that dances where the light hits the waves
+      g.save();
+      var gN = lowq ? 40 : 110; for (i = 0; i < gN; i++) { var gxs = SW.hash(i, 5, 71) * vw, gys = SW.hash(i, 6, 71) * vh, dd2 = Math.hypot(gxs - shx2, (gys - shy2) * 1.3) / shR, gk2 = Math.sin(t * (2 + SW.hash(i, 7, 71) * 3) + i) ; if (gk2 < 0.55 || dd2 > 1) continue;
+        g.globalAlpha = (gk2 - 0.55) * 2.2 * (1 - dd2) * (sun.up ? 0.9 : 0.5); g.fillStyle = sun.up ? (sun.warm > 0.15 ? "#ffe2b0" : "#ffffff") : "#dfe6ff"; g.fillRect(gxs - k * 0.25, gys, k * 0.5, Math.max(1.5, k * 0.08)); }
+      g.restore();
+    }
     var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
     g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
     var x0 = cam.x - vw / 2 / k - 4, x1 = cam.x + vw / 2 / k + 4, y0 = cam.y - vh / 2 / k - 4, y1 = cam.y + vh / 2 / k + 4, G = 7;
     g.strokeStyle = "rgba(255,255,255," + (0.14 + 0.08 * dl) + ")"; g.lineWidth = Math.max(1, k * 0.1); g.lineCap = "round";   // little wave marks
+    // wave crests: each one rises, rolls a little way downwind and sinks again (it fades in and out, so none of them pop), with the
+    // darker trough just behind it; bigger, slower swells under small quick ripples
+    var wcol = g.strokeStyle, tcol = "rgba(0,34,70," + (0.1 + 0.06 * dl) + ")";
     for (var gx = Math.floor(x0 / G) * G; gx < x1; gx += G) for (var gy = Math.floor(y0 / G) * G; gy < y1; gy += G) {
-      var h1 = SW.hash(gx, gy, 3), h2 = SW.hash(gx, gy, 4), wx = gx + h1 * G, wy = gy + h2 * G + (reduce ? 0 : Math.sin(t * 1.2 + h1 * 6) * 0.4), ln = 0.8 + h2 * 0.8, ph = (t * 0.5 + h1) % 1;
-      g.globalAlpha = Math.sin(ph * Math.PI); g.beginPath(); g.moveTo((wx - ln) * k, wy * k); g.quadraticCurveTo(wx * k, (wy - 0.5) * k, (wx + ln) * k, wy * k); g.stroke();
+      var h1 = SW.hash(gx, gy, 3), h2 = SW.hash(gx, gy, 4), big2 = h2 > 0.62, per = big2 ? 6.5 : 3.6, ph = reduce ? 0.5 : ((t / per + h1) % 1), rise = Math.sin(ph * Math.PI), sm = rise * rise * (3 - 2 * rise);
+      var wx = gx + h1 * G + ph * (big2 ? 1.6 : 1.0), wy = gy + h2 * G + Math.sin(ph * Math.PI) * 0.15, ln = (big2 ? 1.3 : 0.7) * (0.55 + 0.45 * sm), cv2 = (big2 ? 0.55 : 0.35) * (0.6 + 0.4 * sm);
+      g.globalAlpha = sm * (big2 ? 0.9 : 0.75); g.strokeStyle = tcol; g.lineWidth = Math.max(1, k * (big2 ? 0.16 : 0.1)); g.beginPath(); g.moveTo((wx - ln) * k, (wy + 0.28) * k); g.quadraticCurveTo(wx * k, (wy + 0.28 - cv2) * k, (wx + ln) * k, (wy + 0.28) * k); g.stroke();
+      g.strokeStyle = wcol; g.lineWidth = Math.max(1, k * (big2 ? 0.13 : 0.09)); g.beginPath(); g.moveTo((wx - ln) * k, wy * k); g.quadraticCurveTo(wx * k, (wy - cv2) * k, (wx + ln) * k, wy * k); g.stroke();
     }
     g.globalAlpha = 1;
+    // wakes: two lines of foam peeling away from each hull in a V, widening and fading as they fall behind
+    var wakeV = function (trl) { if (!trl || trl.length < 2) return; [1, -1].forEach(function (sd) { for (var q = 1; q < trl.length; q++) { var A2 = trl[q - 1], B2 = trl[q], sa = A2.sp || 1, spA = 0.5 + A2.t * 1.15, spB = 0.5 + B2.t * 1.15, pa = A2.a + Math.PI / 2, pb = B2.a + Math.PI / 2;
+      g.globalAlpha = clamp((1 - A2.t / 2.4) * 0.8 * Math.min(1, sa / 4), 0, 0.8); g.strokeStyle = "#f2fcff"; g.lineWidth = Math.max(1, k * (0.22 - A2.t * 0.06)); g.beginPath(); g.moveTo((A2.x + Math.cos(pa) * spA * sd) * k, (A2.y + Math.sin(pa) * spA * sd) * k); g.lineTo((B2.x + Math.cos(pb) * spB * sd) * k, (B2.y + Math.sin(pb) * spB * sd) * k); g.stroke(); } });
+      for (var q2 = 1; q2 < trl.length; q2++) { var C2 = trl[q2]; g.globalAlpha = clamp((1 - C2.t / 1.6) * 0.3 * Math.min(1, (C2.sp || 1) / 4), 0, 0.3); g.fillStyle = "#e8f8ff"; g.beginPath(); g.ellipse(C2.x * k, C2.y * k, k * (0.35 + C2.t * 0.5), k * (0.25 + C2.t * 0.3), C2.a, 0, 6.2832); g.fill(); }   // churned water down the middle
+      g.globalAlpha = 1; };
+    if (!reduce) { wakeV(s.trl); s.ships.forEach(function (sh) { wakeV(sh.trl); }); }
     if (s.x < 60 || s.y < 60 || s.x > SO.SEAW - 60 || s.y > SO.SEAW - 60) { g.fillStyle = "rgba(220,235,245,.5)"; [[-200, -200, 206, SO.SEAW + 400], [SO.SEAW - 6, -200, 206, SO.SEAW + 400], [-200, -200, SO.SEAW + 400, 206], [-200, SO.SEAW - 6, SO.SEAW + 400, 206]].forEach(function (r) { g.fillRect(r[0] * k, r[1] * k, r[2] * k, r[3] * k); }); }
     I.forEach(function (Q) { if (Q.x + Q.r * 2.2 < x0 || Q.x - Q.r * 2.2 > x1 || Q.y + Q.r * 2.2 < y0 || Q.y - Q.r * 2.2 > y1) return; seaDrawIsland(g, Q, k, now); });
     OSITES.forEach(function (st) { if (st.x < x0 || st.x > x1 || st.y < y0 || st.y > y1) return; var bx = st.x * k, by = st.y * k, bob = reduce ? 0 : Math.sin(t * 2 + st.seed) * k * 0.1;
@@ -15159,11 +15294,17 @@
     seaBoatTop(g, s.x * k, s.y * k, s.ang, k, now, { lit: dl < 0.7, hurt: s.hurt > 0 && Math.floor(now / 70) % 2 === 0 });
     s.balls.forEach(function (b) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = "#1a1a20"; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
     s.gulls.forEach(function (gu) { var fl = Math.sin(gu.t * 9) * 0.5, gx2 = gu.x * k, gy2 = gu.y * k; g.strokeStyle = "#ffffff"; g.lineWidth = Math.max(1.5, k * 0.12); g.beginPath(); g.moveTo(gx2 - k * 0.7, gy2 - fl * k * 0.3); g.quadraticCurveTo(gx2 - k * 0.3, gy2 - k * 0.3, gx2, gy2); g.quadraticCurveTo(gx2 + k * 0.3, gy2 - k * 0.3, gx2 + k * 0.7, gy2 - fl * k * 0.3); g.stroke(); });
+    g.restore(); drawWaterFx(g, vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy, k); g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
     // island names
     g.font = "800 " + Math.max(12, Math.round(k * 1.1)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,20,40,.7)"; g.lineJoin = "round";
     I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); });
     g.restore();
-    if (dl < 0.8) { g.fillStyle = "rgba(4,10,34," + ((0.8 - dl) * 0.7).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); var bp = seaToScreen(s.x, s.y), lg = g.createRadialGradient(bp[0], bp[1], 0, bp[0], bp[1], k * 9); lg.addColorStop(0, "rgba(255,226,122," + ((0.8 - dl) * 0.35).toFixed(3) + ")"); lg.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = lg; g.fillRect(bp[0] - k * 9, bp[1] - k * 9, k * 18, k * 18); }
+    // the time of day over the sea: graded like the homestead, with pools of light from your lantern, pirate lanterns, the pier and the fire isles
+    var snk = clamp((0.92 - dl) / 0.62, 0, 1), SLI = [];
+    if (snk > 0) { var bp = seaToScreen(s.x, s.y); SLI.push([bp[0], bp[1], k * 10, "255,214,130", snk * 0.95, 0.35]);
+      s.ships.forEach(function (sh) { if (sh.sink) return; var q = seaToScreen(sh.x, sh.y); SLI.push([q[0], q[1], k * 7, "255,150,90", snk * 0.8, 0.35]); });
+      I.forEach(function (Q) { if (!Q.pier && Q.kind !== 1) return; var q = seaToScreen(Q.x, Q.y); SLI.push([q[0], q[1], k * Q.r * (Q.pier ? 2.4 : 2.8), Q.pier ? "255,206,130" : "255,120,60", snk * 0.85, 0.3]); }); }
+    var sov = gradeOv(S.time); sceneLight(g, { c: sov.c, a: sov.a * (0.55 + 0.45 * snk) }, SLI); if (snk > 0) sceneGlow(g, SLI, snk);
     // off-screen pointers: home, the target, and pirates
     var arrow = function (wx, wy, col, lbl) { var p2 = seaToScreen(wx, wy); if (p2[0] > 20 && p2[0] < vw - 20 && p2[1] > 70 && p2[1] < vh - 20) return; var a = Math.atan2(p2[1] - vh / 2, p2[0] - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 26, vw - 26), ey = clamp(vh / 2 + Math.sin(a) * vh, 84, vh - 30); g.save(); g.translate(ex, ey); g.rotate(a); g.fillStyle = col; g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, -8); g.lineTo(-6, 8); g.closePath(); g.fill(); g.restore(); if (lbl) { g.font = "800 11px Nunito, system-ui, sans-serif"; g.fillStyle = col; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.strokeText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); g.fillText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); } };
     arrow(I[0].x, I[0].y, "#ffd23f", "Pier"); if (s.tgt && s.tgt.isl) arrow(s.tgt.x, s.tgt.y, "#e8fbff", ""); s.ships.forEach(function (sh) { if (!sh.sink) arrow(sh.x, sh.y, "#ff6a5a", ""); });
@@ -15621,8 +15762,8 @@
       if (press) nag(crop ? "Harvest the crop before digging here." : "Dig ditches in grass, mud or soil. A ditch that touches water fills up."); return;
     }
     if (sel === "can" && S.can) {
-      if (homeWater(id)) { if (S.water < CAN.max) { S.water = CAN.max; hbDirty = true; thud(420, 0.03); toast("Watering Can full.", CAN.c); } return; }
-      if (id === HT.SOIL) { if (S.water <= 0) { nag("Your Watering Can is empty. Fill it at the pond or a canal."); return; } if ((o.w[key] || 0) > 100) return; S.water--; o.w[key] = WET_S * 2; hbDirty = true; hMark(tx, ty, 0); S.st.watered++; thud(520, 0.02); hFx(tx, ty, "#8fe0ff"); homeGoals(); return; }
+      if (homeWater(id)) { if (S.water < CAN.max) { S.water = CAN.max; hbDirty = true; thud(420, 0.03); toast("Watering Can full.", CAN.c); waterSplash(tx + 0.5, ty + 0.5, 0.9, 1); } return; }
+      if (id === HT.SOIL) { if (S.water <= 0) { nag("Your Watering Can is empty. Fill it at the pond or a canal."); return; } if ((o.w[key] || 0) > 100) return; S.water--; o.w[key] = WET_S * 2; hbDirty = true; hMark(tx, ty, 0); S.st.watered++; thud(520, 0.02); hFx(tx, ty, "#8fe0ff"); waterSplash(tx + 0.5, ty + 0.55, 0.45, 2); homeGoals(); return; }
       if (press) nag("Water tilled soil, or fill up at the pond."); return;
     }
     if (sel === "compost" && (S.inv.compost || 0) > 0) {
@@ -16030,6 +16171,70 @@
     d.data.set(o); g.putImageData(d, 0, 0); return c;
   }
   function hOT(id) { var key = "o" + id; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 18); S2.g.drawImage(ATLAS, 0, id * 16, 16, 16, 1, 1, 16, 16); return (HSPR[key] = hpOutline(S2.c)); }
+  // ---------- SCENE LIGHT: one sun, colour grade, light pools and cast shadows for the homestead and the ocean ----------
+  // sunState: where the sun is (u: 0 at sunrise t=440 .. 1 at sunset t=280) or, at night, the moon. sx is the light's side (+1 = it is on
+  // the left, so shadows fall right), e its height (0..1), len how long the shadows are, a how dark they are.
+  function sunState(t) {
+    var u = ((t - 440 + CYCLE) % CYCLE) / 320, up = u <= 1, e, sx;
+    if (up) { e = Math.sin(u * Math.PI); sx = Math.cos(u * Math.PI); } else { var mu = (u * 320 - 320) / 160; e = Math.sin(mu * Math.PI) * 0.6; sx = Math.cos(mu * Math.PI); }
+    return { up: up, e: e, sx: sx, len: clamp(0.4 / Math.max(0.3, e), 0.4, 1.3), a: up ? 0.27 * clamp(e * 4, 0, 1) : 0.1 * clamp(e * 3, 0, 1), warm: sunsetK(t), dl: daylight(t) };
+  }
+  // gradeOv: the time of day as a see-through colour laid over the picture: nothing at midday, a gold film late in the afternoon,
+  // coral at sunset, violet at dusk, deep navy through the night, and a rose dawn. { c: [r, g, b], a: alpha }
+  var GRADE = [[0, [255, 200, 170], 0.1], [40, [255, 220, 190], 0], [165, [255, 210, 150], 0], [222, [255, 186, 100], 0.13], [248, [240, 112, 80], 0.24], [266, [86, 48, 118], 0.42], [284, [22, 26, 72], 0.58],
+    [300, [10, 16, 48], 0.64], [420, [10, 16, 48], 0.64], [444, [52, 40, 104], 0.48], [462, [240, 150, 140], 0.2], [480, [255, 200, 170], 0.1]];
+  function gradeOv(t) { t = ((t % CYCLE) + CYCLE) % CYCLE; for (var i = 1; i < GRADE.length; i++) if (t <= GRADE[i][0]) { var A = GRADE[i - 1], B = GRADE[i], k = (t - A[0]) / (B[0] - A[0]); return { c: mixC(A[1], B[1], k), a: lerp(A[2], B[2], k) }; } return { c: GRADE[0][1], a: GRADE[0][2] }; }
+  // sceneLight: multiply the frame by the ambient colour plus coloured pools of light (lights: [x, y, radius, "r,g,b", strength] in screen px),
+  // painted at half size and stretched (soft). Where a pool is, the picture keeps its own colours; everywhere else takes the grade.
+  var SLB = null;
+  function sceneLight(g, ov, lights, y0, y1, warm) {
+    if (ov.a < 0.006 && !(warm && warm.k > 0.02)) return;
+    // the grade is laid on as one see-through colour (the canvas's fast path; a multiply blend is costly on phones).
+    // Lights then cut soft holes in it and tint their pool with their own colour.
+    var A = clamp(ov.a, 0, 0.95), C = ov.c;
+    var sc = lowq ? 0.25 : 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc)), i;
+    if (!SLB) { SLB = { c: document.createElement("canvas") }; } if (SLB.c.width !== w || SLB.c.height !== h) { SLB.c.width = w; SLB.c.height = h; SLB.x = SLB.c.getContext("2d"); }
+    var q = SLB.x; q.globalCompositeOperation = "copy"; q.fillStyle = "rgba(" + (C[0] | 0) + "," + (C[1] | 0) + "," + (C[2] | 0) + "," + A.toFixed(3) + ")"; q.fillRect(0, 0, w, h); q.globalCompositeOperation = "source-over";
+    if (warm && warm.k > 0.02) {   // a low sun: its side of the picture glows warm, the far side cools a little
+      var wx0 = warm.sx > 0 ? 0 : w, wg = q.createLinearGradient(wx0, 0, w - wx0, h); wg.addColorStop(0, "rgba(255,150,70," + (0.2 * warm.k).toFixed(3) + ")"); wg.addColorStop(0.6, "rgba(255,150,70,0)"); wg.addColorStop(1, "rgba(60,40,110," + (0.16 * warm.k).toFixed(3) + ")"); q.fillStyle = wg; q.fillRect(0, 0, w, h); }
+    var vis = [];
+    for (i = 0; i < lights.length; i++) { var L = lights[i], X = L[0] * sc, Y = L[1] * sc, R = L[2] * sc; if (R < 1 || X < -R || Y < -R || X > w + R || Y > h + R || L[4] <= 0.004) continue; vis.push([X, Y, R, L[3], Math.min(1, L[4])]); }
+    if (vis.length) {
+      q.globalCompositeOperation = "destination-out";
+      vis.forEach(function (L) { var gr = q.createRadialGradient(L[0], L[1], 0, L[0], L[1], L[2]); gr.addColorStop(0, "rgba(0,0,0," + L[4].toFixed(3) + ")"); gr.addColorStop(0.45, "rgba(0,0,0," + (L[4] * 0.55).toFixed(3) + ")"); gr.addColorStop(1, "rgba(0,0,0,0)"); q.fillStyle = gr; q.fillRect(L[0] - L[2], L[1] - L[2], L[2] * 2, L[2] * 2); });
+      q.globalCompositeOperation = "source-over";
+      vis.forEach(function (L) { var gr = q.createRadialGradient(L[0], L[1], 0, L[0], L[1], L[2]); gr.addColorStop(0, "rgba(" + L[3] + "," + (L[4] * 0.16).toFixed(3) + ")"); gr.addColorStop(1, "rgba(" + L[3] + ",0)"); q.fillStyle = gr; q.fillRect(L[0] - L[2], L[1] - L[2], L[2] * 2, L[2] * 2); });   // the light's own colour in its pool
+    }
+    g.save(); g.imageSmoothingEnabled = true;
+    var sy0 = y0 === undefined ? 0 : clamp(Math.floor(y0 * sc), 0, h), sy1 = y1 === undefined ? h : clamp(Math.ceil(y1 * sc), 0, h);
+    if (sy1 > sy0) g.drawImage(SLB.c, 0, sy0, w, sy1 - sy0, 0, sy0 / sc, vw, (sy1 - sy0) / sc); g.restore();
+  }
+  function sceneGlow(g, lights, k) {   // the bright heart of each light, added on top (it reads as glowing, and the bloom picks it up)
+    if (k <= 0.01) return; g.save(); g.globalCompositeOperation = "lighter";
+    lights.forEach(function (L) { if (!L[5]) return; var R = L[2] * L[5]; if (L[0] < -R || L[1] < -R || L[0] > vw + R || L[1] > vh + R) return; var gr = g.createRadialGradient(L[0], L[1], 0, L[0], L[1], R); gr.addColorStop(0, "rgba(" + L[3] + "," + (0.32 * k).toFixed(3) + ")"); gr.addColorStop(1, "rgba(" + L[3] + ",0)"); g.fillStyle = gr; g.fillRect(L[0] - R, L[1] - R, R * 2, R * 2); });
+    g.restore();
+  }
+  // CAST SHADOWS: every sprite drawn through the shadow recorder (SREC) lands as a dark silhouette on a half-size shadow layer, sheared
+  // along the ground away from the sun (long and sideways morning and evening, short at noon, faint moon shadows at night). Shadows that
+  // overlap merge instead of stacking darker. Base: the screen y of the ground line the sprite stands on.
+  var SILH = typeof WeakMap !== "undefined" ? new WeakMap() : null, SHL = null, SHCOL = "#0a1626";
+  function silhouette(img) {
+    var c = SILH.get(img); if (c) return c; var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height; if (!w || !h) return null;
+    c = document.createElement("canvas"); c.width = w; c.height = h; var q = c.getContext("2d"); q.drawImage(img, 0, 0); q.globalCompositeOperation = "source-in"; q.fillStyle = SHCOL; q.fillRect(0, 0, w, h); SILH.set(img, c); return c;
+  }
+  var NOOPR = { addColorStop: function () {}, width: 0 }, SRC0 = { B: 0, a: 0, k: 0.3, on: false, skip: null,
+    drawImage: function (img) { if (!SHL || img === this.skip || img === HSHD) return; var sil = silhouette(img); if (!sil) return; var q = SHL.x, B = this.B, a = this.a, k = this.k, args = Array.prototype.slice.call(arguments); args[0] = sil;
+      q.setTransform(SHL.sc, 0, 0, SHL.sc, 0, 0); q.transform(1, 0, -a, k, a * B, B * (1 - k)); q.drawImage.apply(q, args); },
+    body: function (x, B, rx, hh) {   // a standing figure (you, an animal, Croaka): an upright ellipse cast the same way
+      if (!SHL) return; var q = SHL.x, a = this.a, k = this.k; q.setTransform(SHL.sc, 0, 0, SHL.sc, 0, 0); q.transform(1, 0, -a, k, a * B, B * (1 - k)); q.fillStyle = SHCOL; q.beginPath(); q.ellipse(x, B - hh / 2, rx, hh / 2, 0, 0, 6.2832); q.fill(); } };
+  var SREC = typeof Proxy !== "undefined" ? new Proxy(SRC0, { get: function (t, k) { return k in t ? t[k] : function () { return NOOPR; }; }, set: function (t, k, v) { t[k] = v; return true; } }) : null;
+  function shadowBegin(sun) {   // returns false when there is nothing to cast (sun down and no moon, or a weak device)
+    if (!SREC || !SILH || sun.a < 0.015 || lowq) return false; var sc = 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc));
+    if (!SHL) SHL = { c: document.createElement("canvas") }; if (SHL.c.width !== w || SHL.c.height !== h) { SHL.c.width = w; SHL.c.height = h; SHL.x = SHL.c.getContext("2d"); }
+    SHL.sc = sc; SHL.x.setTransform(1, 0, 0, 1, 0, 0); SHL.x.clearRect(0, 0, w, h); SHL.x.imageSmoothingEnabled = false;
+    SRC0.a = sun.sx * sun.len * 0.9; SRC0.k = -(0.2 + 0.2 * sun.len); return true;   // k < 0: the shadow lies on the ground in front, flipped down from the base
+  }
+  function shadowEnd(g, sun) { if (!SHL) return; g.save(); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.globalAlpha = sun.a; g.imageSmoothingEnabled = true; g.drawImage(SHL.c, 0, 0, SHL.c.width, SHL.c.height, 0, 0, SHL.c.width / SHL.sc, SHL.c.height / SHL.sc); g.restore(); }
   var HSHD = null; function hpShadow(g, cx, cy, rx, ry, a) {
     if (!HSHD) { HSHD = document.createElement("canvas"); HSHD.width = 64; HSHD.height = 32; var q = HSHD.getContext("2d"); q.fillStyle = "rgb(10,14,8)"; q.beginPath(); q.ellipse(32, 16, 31, 15, 0, 0, 6.2832); q.fill(); }
     var ga = g.globalAlpha; g.globalAlpha = ga * a; g.drawImage(HSHD, cx - rx, cy - ry, rx * 2, ry * 2); g.globalAlpha = ga; }
@@ -16166,7 +16371,7 @@
     (o.dr || []).forEach(function (d) { L.push([d.y - 0.01, 11, d]); });
     L.push([CROAKA.y, 12]); L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
     L.sort(function (a, b) { return a[0] - b[0]; });
-    L.forEach(function (e) {
+    var drawE = function (g, e) {
       if (e[1] === 9) { drawCavePlayer(g, now); return; }
       if (e[1] === 0) { homeProp(g, e[4], e[2], e[3], T0); return; }
       if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.round(Math.sin(T0 * 1.6 + e[2] * 0.7 + e[3]) * 0.8);
@@ -16192,10 +16397,22 @@
         hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y - 0.3, 1, 1, wob);
         if (gc.h) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", ox + (gc.x + 1.5) * ts, oy + (gc.y - 0.3) * ts); }
         return; }
-    });
+    };
+    // --- light from the sky: soft shade where the forest walls meet the farm, then every standing thing casts its shadow away from the sun ---
+    homeAO(g); var sun = sunState(S.time); HOME.sun = sun;
+    if (shadowBegin(sun)) {
+      L.forEach(function (e) { var B = oy + e[0] * ts;
+        if (e[1] === 9) { SREC.body(ox + cp.x * ts, oy + cp.y * ts, ts * 0.26, ts * 1.35); return; }
+        if (e[1] === 10) { SREC.body(ox + e[2].x * ts, oy + e[2].y * ts, ts * 0.42, ts * 0.8); return; }
+        if (e[1] === 12) { SREC.body(ox + CROAKA.x * ts, oy + CROAKA.y * ts, ts * 0.3, ts * 1.3); return; }
+        if (e[1] === 11) return;
+        SREC.B = B; drawE(SREC, e); });
+      shadowEnd(g, sun);
+    }
+    L.forEach(function (e) { drawE(g, e); });
     // --- daytime life: slow cloud shadows drifting over the farm, butterflies over the grass ---
     if (!reduce && dlA > 0.6) {
-      for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; hpShadow(g, cxc, cyc, ts * 4.5, ts * 1.6, 0.08); hpShadow(g, cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, 0.08); }
+      for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; var cka = 0.09 * clamp(sun.a / 0.3, 0, 1); hpShadow(g, cxc, cyc, ts * 4.5, ts * 1.6, cka); hpShadow(g, cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, cka); }
       for (i = 0; i < 5; i++) { var bxs = (SW.hash(i, 7, 103) * (HW - 8) + 4) + Math.sin(T0 * 0.45 + i * 2.1) * 3, bys = (SW.hash(i, 8, 103) * (HH - 10) + 4) + Math.cos(T0 * 0.37 + i) * 2 + Math.sin(T0 * 3 + i) * 0.15, flap = Math.floor(T0 * 8 + i) % 2, bsx = ox + bxs * ts, bsy = oy + bys * ts;
         if (bsx < -ts || bsx > vw + ts || bsy < -ts || bsy > vh + ts) continue; var bc = ["#ffe27a", "#ff9ad0", "#ffffff", "#9ad0ff", "#ffb84a"][i];
         g.fillStyle = "rgba(20,14,6,.18)"; g.fillRect(bsx, bsy + ts * 0.9, s16 * 3, s16); g.fillStyle = "#3a2a1a"; g.fillRect(bsx + s16, bsy, s16, s16 * 2);
@@ -16205,14 +16422,29 @@
     if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;
       g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
-    // --- the time of day: a warm dusk and a blue night, with fireflies over the fields ---
-    var dl = daylight(S.time); if (dl < 1) { g.fillStyle = "rgba(14,22,60," + ((1 - dl) * 0.62).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh);
-      if (!reduce) for (i = 0; i < 18; i++) { var fx2 = ox + ((SW.hash(i, 1, 95) * HW + Math.sin(T0 * 0.4 + i) * 1.5)) * ts, fy2 = oy + ((10 + SW.hash(i, 2, 95) * 16 + Math.cos(T0 * 0.5 + i * 2) * 1.2)) * ts; g.globalAlpha = (1 - dl) * (0.5 + 0.5 * Math.sin(T0 * 3 + i)); g.fillStyle = "#e8ff8a"; g.fillRect(fx2, fy2, Math.max(2, ts * 0.09), Math.max(2, ts * 0.09)); } g.globalAlpha = 1;
-      Object.keys(o.c).forEach(function (k) { var e3 = o.c[k], C3 = CROPS[e3.k]; if (!C3 || !C3.moon || e3.s < 3) return; var q3 = k.split(","), gx3 = ox + (+q3[0] + 0.5) * ts, gy3 = oy + (+q3[1] + 0.1) * ts; if (gx3 < -ts || gx3 > vw + ts || gy3 < -ts || gy3 > vh + ts) return;
-        var rg = g.createRadialGradient(gx3, gy3, 0, gx3, gy3, ts * (e3.s >= 4 ? 1.3 : 0.7)); rg.addColorStop(0, (e3.k === "moonpetal" ? "rgba(190,225,255," : "rgba(120,255,200,") + ((1 - dl) * (e3.s >= 4 ? 0.8 : 0.35)).toFixed(3) + ")"); rg.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = rg; g.fillRect(gx3 - ts * 1.4, gy3 - ts * 1.4, ts * 2.8, ts * 2.8);
-        if (e3.s >= 4) { g.globalAlpha = (1 - dl) * 0.9; g.drawImage(ATLAS, 0, C3.tiles[3] * 16, 16, 16, gx3 - ts / 2, gy3 - ts * 0.4, ts, ts); g.globalAlpha = 1; } });
-      (o.gi || []).forEach(function (gc) { if (gc.k !== "croakpumpkin" && gc.k !== "glowgourd") return; var gx4 = ox + (gc.x + 1.5) * ts, gy4 = oy + (gc.y + 1.6) * ts, rg4 = g.createRadialGradient(gx4, gy4, 0, gx4, gy4, ts * 2.6); rg4.addColorStop(0, (gc.k === "glowgourd" ? "rgba(120,255,200," : "rgba(255,190,80,") + ((1 - dl) * 0.55).toFixed(3) + ")"); rg4.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = rg4; g.fillRect(gx4 - ts * 2.6, gy4 - ts * 2.6, ts * 5.2, ts * 5.2); });
-      var hl = g.createRadialGradient(ox + (HHOUSE.x + 3) * ts, oy + (HHOUSE.y + 4.3) * ts, 0, ox + (HHOUSE.x + 3) * ts, oy + (HHOUSE.y + 4.3) * ts, ts * 3); hl.addColorStop(0, "rgba(255,200,110," + (0.35 * (1 - dl)).toFixed(3) + ")"); hl.addColorStop(1, "rgba(255,200,110,0)"); g.fillStyle = hl; g.fillRect(0, 0, vw, vh); }
+    if (!reduce && !panelOpen && Math.random() < 0.035) { var rpx = X0 + Math.floor(Math.random() * (X1 - X0 + 1)), rpy = Y0 + Math.floor(Math.random() * (Y1 - Y0 + 1)); if (homeWater(t[rpy * HW + rpx])) waterRing(rpx + 0.2 + Math.random() * 0.6, rpy + 0.3 + Math.random() * 0.5, 0.05 + Math.random() * 0.04, 1); }   // something rising in the pond
+    drawWaterFx(g);
+    // --- the time of day: the picture is graded (gold late afternoon, rose at dusk, deep blue at night) and lit by its lights: the cottage
+    // windows and porch lantern, the gate lantern, a little light around you, glowing night crops and giant gourds, and the fireflies ---
+    var dl = daylight(S.time), nk = clamp((0.92 - dl) / 0.62, 0, 1), sb = ts / 16, LI = [], fl0 = reduce ? 1 : 0.94 + 0.06 * Math.sin(T0 * 9) * Math.sin(T0 * 5.3);
+    if (nk > 0) {
+      var hx = ox + HHOUSE.x * ts, hy = oy + HHOUSE.y * ts;
+      [18, 78].forEach(function (wx) { LI.push([hx + wx * sb, hy + 42 * sb, ts * 1.1, "255,206,130", nk * 0.9, 1.1]); LI.push([hx + wx * sb, oy + (HHOUSE.y + HHOUSE.h + 0.5) * ts, ts * 2.4, "255,190,110", nk * 0.6]); });
+      LI.push([hx + 65 * sb, hy + 48 * sb, ts * 3.6 * fl0, "255,200,120", nk * 0.95, 0.5]);
+      LI.push([ox + (HGATE.x + 2.5) * ts, oy + (HGATE.y - 0.25) * ts, ts * 3.8 * fl0, "255,196,112", nk * 0.95, 0.5]);
+      LI.push([ox + cp.x * ts, oy + (cp.y - 0.6) * ts, ts * 3.4, "236,226,255", nk * 0.42]);
+      Object.keys(o.c).forEach(function (k) { var e3 = o.c[k], C3 = CROPS[e3.k]; if (!C3 || !C3.moon || e3.s < 3) return; var q3 = k.split(","); LI.push([ox + (+q3[0] + 0.5) * ts, oy + (+q3[1] + 0.2) * ts, ts * (e3.s >= 4 ? 2.2 : 1.2), e3.k === "moonpetal" ? "170,215,255" : "110,255,200", nk * (e3.s >= 4 ? 0.8 : 0.4), e3.s >= 4 ? 0.6 : 0]); });
+      (o.gi || []).forEach(function (gc) { if (gc.k !== "croakpumpkin" && gc.k !== "glowgourd") return; LI.push([ox + (gc.x + 1.5) * ts, oy + (gc.y + 1.6) * ts, ts * 3.6, gc.k === "glowgourd" ? "110,255,200" : "255,180,80", nk * 0.75, 0.5]); });
+      if (!reduce) for (i = 0; i < 18; i++) { var ffx = ox + ((SW.hash(i, 1, 95) * HW + Math.sin(T0 * 0.4 + i) * 1.5)) * ts, ffy = oy + ((10 + SW.hash(i, 2, 95) * 16 + Math.cos(T0 * 0.5 + i * 2) * 1.2)) * ts, fa = nk * (0.5 + 0.5 * Math.sin(T0 * 3 + i)); LI.push([ffx, ffy, ts * 0.9, "220,255,140", fa * 0.55]); }
+    }
+    sceneLight(g, gradeOv(S.time), LI, undefined, undefined, sun.up ? { k: sun.warm, sx: sun.sx } : null);   // at night the dark leans blue
+    if (nk > 0) {
+      sceneGlow(g, LI, nk);
+      if (!reduce) for (i = 0; i < 18; i++) { var fx2 = ox + ((SW.hash(i, 1, 95) * HW + Math.sin(T0 * 0.4 + i) * 1.5)) * ts, fy2 = oy + ((10 + SW.hash(i, 2, 95) * 16 + Math.cos(T0 * 0.5 + i * 2) * 1.2)) * ts; g.globalAlpha = nk * (0.5 + 0.5 * Math.sin(T0 * 3 + i)); g.fillStyle = "#e8ff8a"; g.fillRect(fx2, fy2, Math.max(2, ts * 0.09), Math.max(2, ts * 0.09)); } g.globalAlpha = 1;
+      Object.keys(o.c).forEach(function (k) { var e3 = o.c[k], C3 = CROPS[e3.k]; if (!C3 || !C3.moon || e3.s < 4) return; var q3 = k.split(","), gx3 = ox + (+q3[0] + 0.5) * ts, gy3 = oy + (+q3[1] + 0.1) * ts; if (gx3 < -ts || gx3 > vw + ts || gy3 < -ts || gy3 > vh + ts) return;
+        g.globalAlpha = nk * 0.75; g.drawImage(ATLAS, 0, C3.tiles[3] * 16, 16, 16, gx3 - ts / 2, gy3 - ts * 0.4, ts, ts); g.globalAlpha = 1; });   // glowing crops shine through the dark
+    }
+    if (nk > 0.3) drawBloom(g, dl, 1, now);   // the lit windows and lanterns bloom at night
     if (!HOME.vig || HOME.vig.w !== vw || HOME.vig.h !== vh) { var vc = document.createElement("canvas"); vc.width = Math.max(1, vw >> 2); vc.height = Math.max(1, vh >> 2); var vg = vc.getContext("2d"), rgv = vg.createRadialGradient(vc.width / 2, vc.height / 2, Math.min(vc.width, vc.height) * 0.35, vc.width / 2, vc.height / 2, Math.max(vc.width, vc.height) * 0.75); rgv.addColorStop(0, "rgba(30,20,10,0)"); rgv.addColorStop(1, "rgba(6,16,12,.26)"); vg.fillStyle = rgv; vg.fillRect(0, 0, vc.width, vc.height); HOME.vig = { c: vc, w: vw, h: vh }; }
     if (!coarse && !lowq) { g.imageSmoothingEnabled = true; g.drawImage(HOME.vig.c, 0, 0, vw, vh); g.imageSmoothingEnabled = false; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
@@ -16231,6 +16463,11 @@
     sx = clamp(sx, pw / 2 + 8, vw - pw / 2 - 8); sy = clamp(sy, ph / 2 + 64, vh - ph / 2 - 8); x0 = sx - pw / 2; y0 = sy - ph / 2;
     g.fillStyle = "rgba(24,40,14,.92)"; g.strokeStyle = "#9ee06a"; g.lineWidth = 2; g.beginPath(); g.arc(x0 + ph / 2, y0 + ph / 2, ph / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + pw - ph / 2, y0 + ph / 2, ph / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
     g.fillStyle = "#f4ffe8"; g.fillText(label, sx, sy + 1); g.textBaseline = "alphabetic"; HOME.btns.push({ x: x0, y: y0, w: pw, h: ph, fn: fn });
+  }
+  function homeAO(g) {   // the forest around the farm shades the grass right next to it (a soft fade off the edge of the trees)
+    var band = function (x0, y0, x1, y1, gx0, gy0, gx1, gy1, a) { var X0 = ox + x0 * ts, Y0 = oy + y0 * ts, X1 = ox + x1 * ts, Y1 = oy + y1 * ts; if (X1 < 0 || Y1 < 0 || X0 > vw || Y0 > vh) return;
+      var gr = g.createLinearGradient(ox + gx0 * ts, oy + gy0 * ts, ox + gx1 * ts, oy + gy1 * ts); gr.addColorStop(0, "rgba(8,20,14," + a + ")"); gr.addColorStop(1, "rgba(8,20,14,0)"); g.fillStyle = gr; g.fillRect(X0, Y0, X1 - X0, Y1 - Y0); };
+    band(3, 3, HW - 3, 4.8, 0, 3, 0, 4.8, 0.34); band(3, 3, 4.4, HH - 3, 3, 0, 4.4, 0, 0.28); band(HW - 4.4, 3, HW - 3, HH - 3, HW - 3, 0, HW - 4.4, 0, 0.28); band(3, HH - 3.9, HW - 3, HH - 3, 0, HH - 3, 0, HH - 3.9, 0.2);
   }
   function hR(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }
   function homeDeepTree(i, j) { return hmT(i, j) === HT.TREE && (j + 1 >= HH || hmT(i, j + 1) === HT.TREE || hmT(i, j + 1) === HT.GATE || SW.hash(i, j, 92) < 0.4); }   // only the top edge of the forest shows trunks; the rest is canopy
@@ -16258,10 +16495,10 @@
   }
   function homeHouse(g, T0) {
     var s = ts / 16, bx = ox + HHOUSE.x * ts, by = oy + (HHOUSE.y + HHOUSE.h) * ts;
-    g.fillStyle = "rgba(10,14,8,.26)"; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + HHOUSE.w * ts, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 0.6); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 3.4); g.lineTo(bx + HHOUSE.w * ts, by - ts * 3.6); g.closePath(); g.fill();
+    if (!(HOME.sun && HOME.sun.a > 0.015 && SHL && !lowq)) g.fillStyle = "rgba(10,14,8,.26)"; else g.fillStyle = "rgba(10,14,8,0)"; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + HHOUSE.w * ts, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 0.6); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 3.4); g.lineTo(bx + HHOUSE.w * ts, by - ts * 3.6); g.closePath(); g.fill();
     hDraw(g, hsHouse(), HHOUSE.x, HHOUSE.y, 8, 24);
     if (!reduce) for (var q = 0; q < 3; q++) { var ph = (T0 * 0.3 + q / 3) % 1, cx = ox + (HHOUSE.x + 4.5) * ts + Math.sin(ph * 6 + q) * ts * 0.25, cy = oy + (HHOUSE.y - 1.6) * ts - ph * ts * 1.8; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = "#e8e4dc"; var r = Math.round(2 + ph * 4) * s; g.fillRect(Math.round(cx - r / 2), Math.round(cy - r / 2), r, r); } g.globalAlpha = 1;
-    var dl = daylight(S.time); if (dl < 0.8) { var ga = ((0.8 - dl) * 0.8).toFixed(3); g.fillStyle = "rgba(255,214,120," + ga + ")"; [10, 70].forEach(function (wx) { g.fillRect(bx + (wx - 8 + 2) * s, oy + HHOUSE.y * ts + (34 - 24 + 2) * s, 12 * s, 12 * s); }); }
+    var dl = daylight(S.time); if (dl < 0.8) { var ga = ((0.8 - dl) * 0.8).toFixed(3); g.fillStyle = "rgba(255,214,120," + ga + ")"; [10, 70].forEach(function (wx) { g.fillRect(bx + (wx + 2) * s, oy + HHOUSE.y * ts + (34 + 2) * s, 12 * s, 12 * s); }); }   // the window panes (sprite x wx..wx+16, y 34..50 below the roof line)
   }
   function homeCrate(g) { var full = Object.keys(homeS().ship).length > 0, s = ts / 16;
     hpShadow(g, ox + (HCRATE.x + 0.5) * ts, oy + (HCRATE.y + 0.92) * ts, ts * 0.5, ts * 0.13, 0.25); hTile(g, htid("Wooden Crate"), HCRATE.x, HCRATE.y - 0.1);
@@ -16283,7 +16520,7 @@
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
     if (PHOTO.on) tickPhoto(dt);
     if (!document.hidden) {
-      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
+      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (mapOpen) { if (M.drag || M.pinch || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
         else if (HOME) homeRender(now); else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
@@ -16334,6 +16571,7 @@
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
   window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
   window.__sbx.tour = function () { startTour(true); }; window.__sbx.tourOn = function () { return !!TOUR; };
+  window.__sbx.light = { sun: sunState, grade: gradeOv, splash: waterSplash, ring: waterRing, fx: function () { return [DROPS.length, RIPS.length]; } };
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
