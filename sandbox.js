@@ -355,19 +355,25 @@
     sq("can2", "Farmer & Cook", 1, "Gardener", "Water plants 20 times.", 20, st("watered"), { farmland: 6 }),
     sq("farm25", "Farmer & Cook", 2, "Swamp Farmer", "Harvest 25 ripe crops.", 25, st("harvests"), { seed_potato: 4 }),
     sq("crops4", "Farmer & Cook", 4, "Four Fields", "Harvest Swamp Carrots, Bog Potatoes, Fire Peppers and Frostberries.", 4, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8; q *= 2) if (b & q) n++; return n; }, { seed_pepper: 2, seed_frost: 2 }),
-    sq("home1", "Farmer & Cook", 1, "A Place to Grow", "Place a Farm Gate and step through to your homestead.", 1, st("homevisit"), { seed_lilyleek: 3 }),
-    sq("canal1", "Farmer & Cook", 1, "Water Works", "Dig 8 ditches on your homestead. A ditch that touches water fills into a canal.", 8, st("ditches"), { seed_bogrice: 4 }),
-    sq("ship1", "Farmer & Cook", 1, "Cart Day", "Ship 20 crops in your Shipping Crate.", 20, st("shipped"), { compost: 4 }),
-    sq("paddy1", "Farmer & Cook", 2, "Paddy Farmer", "Harvest Bog Rice or Lily Lotus from a flooded paddy 5 times. Level a ditch with your hoe to make a paddy.", 5, st("paddyharv"), { seed_lotus: 2 }),
-    sq("moon1", "Farmer & Cook", 2, "Moonlighter", "Harvest 3 moon crops. They only grow at night.", 3, st("moonharv"), { seed_glowgourd: 2 }),
-    sq("prize1", "Farmer & Cook", 2, "Blue Ribbon", "Grow 10 Prize crops. Keep them watered and use compost.", 10, st("prize"), { compost: 8 }),
-    sq("giant1", "Farmer & Cook", 3, "Something Big", "Grow a giant crop: a 3 by 3 patch of ripe Mud Melons, Croakin' Pumpkins or Glowgourds can merge into one.", 1, st("giants"), { silvercoin: 10 }),
-    sq("sprk1", "Farmer & Cook", 2, "Rain Maker", "Place 4 Sprinklers on your homestead.", 4, st("hsprk"), { compost: 6 }),
-    sq("keg1", "Farmer & Cook", 2, "In a Pickle", "Make 5 Preserves in a Pickle Keg.", 5, st("preserves"), { silvercoin: 8 }),
-    sq("coop1", "Farmer & Cook", 2, "Feathered Friends", "Build a Duck Coop or Mud Barn and bring home an animal.", 1, st("hanimals"), { fiber: 20 }),
-    sq("eggs1", "Farmer & Cook", 3, "Fresh This Morning", "Collect 10 eggs, truffles or goat milk from your animals.", 10, st("aprod"), { silvercoin: 10 }),
-    sq("pet1", "Farmer & Cook", 3, "Good Boy, Good Girl", "Pet your animals 15 times.", 15, st("petted"), { duckegg: 4 }),
-    sq("ledger1", "Farmer & Cook", 3, "Investments", "Buy 3 upgrades in the Farm Ledger.", 3, st("hups"), { silvercoin: 15 }),
+    sq("croaka1", "Homesteader", 1, "Meet the Neighbor", "Talk to Croaka, Old Croaker's sister, on your homestead.", 1, st("croakamet"), { seed_marshonion: 4 }),
+    sq("order1", "Homesteader", 1, "Neighborly", "Fill one of Croaka's Farm Orders.", 1, st("orders"), { compost: 4 }),
+    sq("order10", "Homesteader", 2, "Good Neighbor", "Fill 10 of Croaka's Farm Orders.", 10, st("orders"), { silvercoin: 15 }),
+    sq("croakaf5", "Homesteader", 2, "Family Friend", "Reach 5 hearts with Croaka.", 5, st("croakaf"), { seed_mudmelon: 4 }),
+    sq("croakaf10", "Homesteader", 3, "Practically Family", "Reach 10 hearts with Croaka.", 10, st("croakaf"), { silvercoin: 30 }),
+    sq("allcrops", "Homesteader", 3, "Master Homesteader", "Grow and harvest all 14 kinds of crop on your homestead.", 14, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8192; q *= 2) if (b & q) n++; return n; }, { silvercoin: 40 }),
+    sq("home1", "Homesteader", 1, "A Place to Grow", "Place a Farm Gate and step through to your homestead.", 1, st("homevisit"), { seed_lilyleek: 3 }),
+    sq("canal1", "Homesteader", 1, "Water Works", "Dig 8 ditches on your homestead. A ditch that touches water fills into a canal.", 8, st("ditches"), { seed_bogrice: 4 }),
+    sq("ship1", "Homesteader", 1, "Cart Day", "Ship 20 crops in your Shipping Crate.", 20, st("shipped"), { compost: 4 }),
+    sq("paddy1", "Homesteader", 2, "Paddy Farmer", "Harvest Bog Rice or Lily Lotus from a flooded paddy 5 times. Level a ditch with your hoe to make a paddy.", 5, st("paddyharv"), { seed_lotus: 2 }),
+    sq("moon1", "Homesteader", 2, "Moonlighter", "Harvest 3 moon crops. They only grow at night.", 3, st("moonharv"), { seed_glowgourd: 2 }),
+    sq("prize1", "Homesteader", 2, "Blue Ribbon", "Grow 10 Prize crops. Keep them watered and use compost.", 10, st("prize"), { compost: 8 }),
+    sq("giant1", "Homesteader", 3, "Something Big", "Grow a giant crop: a 3 by 3 patch of ripe Mud Melons, Croakin' Pumpkins or Glowgourds can merge into one.", 1, st("giants"), { silvercoin: 10 }),
+    sq("sprk1", "Homesteader", 2, "Rain Maker", "Place 4 Sprinklers on your homestead.", 4, st("hsprk"), { compost: 6 }),
+    sq("keg1", "Homesteader", 2, "In a Pickle", "Make 5 Preserves in a Pickle Keg.", 5, st("preserves"), { silvercoin: 8 }),
+    sq("coop1", "Homesteader", 2, "Feathered Friends", "Build a Duck Coop or Mud Barn and bring home an animal.", 1, st("hanimals"), { fiber: 20 }),
+    sq("eggs1", "Homesteader", 3, "Fresh This Morning", "Collect 10 eggs, truffles or goat milk from your animals.", 10, st("aprod"), { silvercoin: 10 }),
+    sq("pet1", "Homesteader", 3, "Good Boy, Good Girl", "Pet your animals 15 times.", 15, st("petted"), { duckegg: 4 }),
+    sq("ledger1", "Homesteader", 3, "Investments", "Buy 3 upgrades in the Farm Ledger.", 3, st("hups"), { silvercoin: 15 }),
     sq("cook5", "Farmer & Cook", 1, "Swamp Chef", "Cook 5 meals at a Cooking Pot.", 5, st("cooked"), { rawmeat: 2 }),
     sq("gourmet", "Farmer & Cook", 3, "Gourmet", "Eat 6 different cooked meals.", 6, function () { return Object.keys(S.ate).length; }, { stew: 1 }),
     sq("boss1", "Hunter", 2, "Big Game", "Defeat a boss. Craft a summon item at the Workbench and use it in its home land.", 1, st("bossk"), { torch: 8, ironingot: 1 }),
@@ -458,7 +464,7 @@
     sq("pot1", "Wonders", 1, "End of the Rainbow", "Find a Pot of Gold where a rainbow touches the ground. Rainbows come out when the rain stops on a sunny day.", 1, st("pots_gold"), { prism: 1 })
   ];
   SIDE.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
-  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders", "Sailor"];
+  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Homesteader", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders", "Sailor"];
   var GOALS = SIDE, TRAIL = MAIN;   // older names, still used by a few helpers
   function curCh() { return MAIN[S.qi] ? MAIN[S.qi].ch : CHAPTERS.length - 1; }
   function chQuests(c) { return MAIN.filter(function (q) { return q.ch === c; }); }
@@ -543,7 +549,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -12223,7 +12229,7 @@
   };
   var QB_BIG = { mwork3: 1, disc10: 1, warden: 1, blood1: 1, queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
   var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate", "starglass"];
-  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel" };
+  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel", Homesteader: "farmgate" };
   var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", stain1: "stain8", bty1: "bty25" };
   function qbIco(k) {   // an icon url for an item key, a tool tier ("pick3"), or null for a glyph ("#⚔")
     if (!k || k.charAt(0) === "#") return null;
@@ -12239,7 +12245,7 @@
   function qbChapters() {   // [{ key, n, c, ic, done, all, lock }]
     var L = [], cc = curCh();
     for (var i = 0; i < CHAPTERS.length; i++) { var ql = chQuests(i); if (!ql.length) continue; L.push({ key: "m" + i, n: CHAPTERS[i].n, c: CHAPTERS[i].c, ic: QB_CHIC[i] || "#★", done: ql.filter(function (q) { return MAIN.indexOf(q) < S.qi; }).length, all: ql.length, lock: i > cc, num: i + 1 }); }
-    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length) return; L.push({ key: "s:" + cat, n: cat, c: cat === "Sailor" ? "#4fd0e8" : "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
+    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length) return; L.push({ key: "s:" + cat, n: cat, c: cat === "Sailor" ? "#4fd0e8" : cat === "Homesteader" ? "#7dd65a" : "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
     return L;
   }
   function qbLayout(key) {   // nodes [{ q, x, y, st, pr, big, rw }] and links [[from, to, done]] in pixels
@@ -12288,7 +12294,7 @@
   // "top" to the top. The colours and pad shapes live in sandbox.css under .qb-th-<theme>.
   var QB_TH = { m0: "fen", m1: "home", m2: "glow", m3: "ember", m4: "frost", m5: "heart", m6: "gate", m7: "cosmos", m8: "dawn",
     "s:Explorer": "map", "s:Builder": "blueprint", "s:Decorator": "parlor", "s:Crafter": "workshop", "s:Farmer & Cook": "farm", "s:Angler": "lake", "s:Rancher": "ranch",
-    "s:Hunter": "hunt", "s:Delver": "mine", "s:Collector": "vault", "s:Wonders": "fest", "s:Sailor": "sea" };
+    "s:Hunter": "hunt", "s:Delver": "mine", "s:Collector": "vault", "s:Wonders": "fest", "s:Sailor": "sea", "s:Homesteader": "barnyard" };
   function qbThemeDeco(th, w, h) {
     var R = function (a, b) { return qbHash(a * 1.31 + 7, b * 2.77 + 3); }, f = function (n) { return n.toFixed(1); }, o = "", t = "", i, x, y, n = Math.max(6, Math.round(w / 90));
     var ground = function (col, y0, amp) { var d = "M0 " + f(h - y0); for (var xx = 0; xx <= w + 60; xx += 60) d += " Q" + f(xx + 30) + " " + f(h - y0 - amp * (0.5 + R(xx, 1))) + " " + f(xx + 60) + " " + f(h - y0); return '<path fill="' + col + '" d="' + d + " L" + f(w + 60) + " " + h + " L0 " + h + 'Z"/>'; };
@@ -12364,6 +12370,14 @@
       for (i = 0; i < 4; i++) o += '<rect class="row r' + (i % 2) + '" x="0" y="' + (h - 80 + i * 20) + '" width="' + w + '" height="20"/>';
       for (x = 16; x < w; x += 34) for (i = 0; i < 3; i++) { y = h - 66 + i * 20; o += '<g class="sprout"><line x1="' + f(x + (i % 2) * 17) + '" y1="' + f(y) + '" x2="' + f(x + (i % 2) * 17) + '" y2="' + f(y - 10) + '"/><ellipse cx="' + f(x + (i % 2) * 17 - 4) + '" cy="' + f(y - 10) + '" rx="4" ry="2"/><ellipse cx="' + f(x + (i % 2) * 17 + 4) + '" cy="' + f(y - 12) + '" rx="4" ry="2"/></g>'; }
       o += '<g class="scare"><line x1="' + f(w * 0.2) + '" y1="' + (h - 80) + '" x2="' + f(w * 0.2) + '" y2="' + (h - 170) + '"/><line x1="' + f(w * 0.2 - 30) + '" y1="' + (h - 140) + '" x2="' + f(w * 0.2 + 30) + '" y2="' + (h - 140) + '"/><circle cx="' + f(w * 0.2) + '" cy="' + (h - 180) + '" r="12"/><path d="M' + f(w * 0.2 - 18) + " " + (h - 186) + " L" + f(w * 0.2 + 18) + " " + (h - 186) + " L" + f(w * 0.2) + " " + (h - 206) + 'Z"/></g>';
+    } else if (th === "barnyard") {   // Homesteader: your farm at golden hour: a barn, the cottage, a fence, sunflowers and hay
+      o += '<circle class="sun" cx="' + f(w * 0.3) + '" cy="110" r="46"/>' + hills("#8a9a4a", 120, 60, 9) + hills("#6a8a3a", 90, 40, 11);
+      o += '<g class="barn"><rect x="' + f(w * 0.62) + '" y="' + (h - 190) + '" width="120" height="100"/><path class="roof" d="M' + f(w * 0.62 - 12) + " " + (h - 188) + " L" + f(w * 0.62 + 60) + " " + (h - 240) + " L" + f(w * 0.62 + 132) + " " + (h - 188) + 'Z"/><rect class="door" x="' + f(w * 0.62 + 40) + '" y="' + (h - 150) + '" width="40" height="60"/><path class="x" d="M' + f(w * 0.62 + 40) + " " + (h - 150) + " L" + f(w * 0.62 + 80) + " " + (h - 90) + " M" + f(w * 0.62 + 80) + " " + (h - 150) + " L" + f(w * 0.62 + 40) + " " + (h - 90) + '"/></g>';
+      o += house(w * 0.16, h - 92, 34, true) + ground("#5a7a2a", 70, 18);
+      for (x = 0; x < w + 30; x += 30) o += '<g class="fence"><rect x="' + x + '" y="' + (h - 100) + '" width="6" height="34"/></g>'; o += '<rect class="rail" x="0" y="' + (h - 92) + '" width="' + w + '" height="5"/><rect class="rail" x="0" y="' + (h - 78) + '" width="' + w + '" height="5"/>';
+      for (i = 0; i < n; i++) { x = R(i, 12) * w; y = h - 30 - R(i, 13) * 30; o += '<g class="sunfl"><line x1="' + f(x) + '" y1="' + f(y) + '" x2="' + f(x) + '" y2="' + f(y - 46) + '"/><circle class="pet" cx="' + f(x) + '" cy="' + f(y - 50) + '" r="10"/><circle class="mid" cx="' + f(x) + '" cy="' + f(y - 50) + '" r="4.5"/></g>'; }
+      for (i = 0; i < 3; i++) { x = w * (0.4 + i * 0.12); o += '<g class="hay"><rect x="' + f(x) + '" y="' + (h - 56) + '" width="40" height="26" rx="6"/><path d="M' + f(x + 6) + " " + (h - 48) + " h28 M" + f(x + 6) + " " + (h - 40) + ' h28"/></g>'; }
+      t += scatter("mote", 14, 40, 260, 1.2, 2.6, 14);
     } else if (th === "lake") {   // Angler: a lake at dusk with bobbers
       o += '<rect class="lakew" x="0" y="' + (h * 0.45) + '" width="' + w + '" height="' + (h * 0.55) + '"/>' + hills("#2a3a4a", h * 0.55, 60, 5);
       for (i = 0; i < 14; i++) { x = R(i, 100) * w; y = h * 0.5 + R(i, 101) * h * 0.45; o += '<ellipse class="ripple" cx="' + f(x) + '" cy="' + f(y) + '" rx="' + f(18 + R(i, 102) * 20) + '" ry="4" style="animation-delay:-' + f(R(i, 103) * 4) + 's"/>'; }
@@ -13775,7 +13789,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -15341,7 +15355,7 @@
   }
   function hmT(x, y) { return x < 0 || y < 0 || x >= HW || y >= HH ? HT.TREE : HOME.t[y * HW + x]; }
   function homeSet(x, y, id) { if (x < 2 || y < 2 || x >= HW - 2 || y >= HH - 2) return; HOME.t[y * HW + x] = id; hMark(x, y, 1); var o = homeS(), k = x + "," + y; if (HOME.g[y * HW + x] === id) delete o.ed[k]; else o.ed[k] = id; }
-  function homeSolid(x, y) { return !!HSOLID[hmT(x, y)] || !!homeGiantAt(x, y) || !!homeMachAt(x, y) || !!homeBldAt(x, y); }
+  function homeSolid(x, y) { return (x === CROAKA.tx && y === CROAKA.ty) || !!HSOLID[hmT(x, y)] || !!homeGiantAt(x, y) || !!homeMachAt(x, y) || !!homeBldAt(x, y); }
   function homeGiantAt(x, y) { var G = S.home && S.home.gi; if (!G) return null; for (var i = 0; i < G.length; i++) { var g2 = G[i]; if (x >= g2.x && x < g2.x + 3 && y >= g2.y && y < g2.y + 3) return g2; } return null; }
   function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
   function homeWater(id) { return id === HT.POND || id === HT.CANAL || id === HT.PADDYW; }
@@ -15465,6 +15479,7 @@
     if (id === HT.CRATE) { if (press) openShip(); return; }
     if (id === HT.STALL) { if (press) openStall(); return; }
     var gc = homeGiantAt(tx, ty); if (gc) { if (press) homeGiantHit(gc); return; }
+    if (press && tx === CROAKA.tx && (ty === CROAKA.ty || ty === CROAKA.ty - 1)) { talkCroaka(); return; }
     if (press && homePickDrop(tx + 0.5, ty + 0.5)) return;
     var anm = press ? homeAnimalAt(tx + 0.5, ty + 0.9) : null; if (anm) { homePet(anm); return; }
     var mch = homeMachAt(tx, ty); if (mch) { if (press) homeMachUse(mch, tx, ty, press); return; }
@@ -15568,6 +15583,7 @@
   function stallBuy(k) { var q = HF.seeds.filter(function (r) { return r[0] === k; })[0]; if (!q || (S.inv.silvercoin || 0) < q[1]) return; S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; give(k, 1, undefined, undefined, true); reslot(); hbDirty = true; snd("coin"); renderStall(); }
   function homeActions() {
     var A = [], gx = HGATE.x + 1, gy = HGATE.y;
+    if (croakaNear()) A.push({ label: "Talk to Croaka", ax: CROAKA.x, ay: CROAKA.y - 2.4, fn: talkCroaka });
     if (Math.abs(cp.x - gx) < 2.2 && Math.abs(cp.y - gy) < 2.2) A.push({ label: "Back to the swamp", ax: gx, ay: gy - 1.6, fn: leaveHome });
     if (Math.abs(cp.x - (HCRATE.x + 0.5)) < 2 && Math.abs(cp.y - (HCRATE.y + 1)) < 2) A.push({ label: "Shipping Crate", ax: HCRATE.x + 0.5, ay: HCRATE.y - 1.2, fn: openShip });
     if (Math.abs(cp.x - (HHOUSE.x + 3)) < 1.6 && Math.abs(cp.y - (HHOUSE.y + HHOUSE.h + 0.6)) < 1.4) A.push({ label: "Farm Ledger", ax: HHOUSE.x + 3, ay: HHOUSE.y + 1.4, fn: openLedger });
@@ -15590,6 +15606,7 @@
       if (!(id === HT.GRASS || id === HT.MUD || id === HT.FLOWER || id === HT.REEDS || id === HT.SOIL)) return false;
       if (o.c[xx + "," + yy] || homeMachAt(xx, yy) || homeBldAt(xx, yy) || homeGiantAt(xx, yy)) return false;
       if (Math.floor(cp.x) === xx && Math.floor(cp.y - 0.2) === yy) return false;
+      if (xx === CROAKA.tx && (yy === CROAKA.ty || yy === CROAKA.ty - 1)) return false;   // Croaka's spot
     } return true;
   }
   function homePlace(tx, ty, k, press) {   // returns true if the selected item was a homestead machine or building
@@ -15671,6 +15688,91 @@
     var bi = -1; (o.b || []).forEach(function (b, i) { if (bi < 0 && b.k === q[2] && homeBldPop(i) < homeBldCap(b)) bi = i; }); if (bi < 0) { nag("Build a " + ITEMS[q[2]].n + " with room first."); return; }
     S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; var A = ANIM[k], nm = A.names[Math.floor(Math.random() * A.names.length)];
     homeAnimals().push({ k: k, b: bi, f: 0, pd: -1, nm: nm }); S.st.hanimals = (S.st.hanimals || 0) + 1; reslot(); hbDirty = true; snd("coin"); toast(nm + " the " + A.n + " moved into your " + ITEMS[q[2]].n + "!", "#7dd65a"); checkGoals(); save(); renderStall(); }
+  // ---------- HOMESTEAD stage 4: CROAKA, Old Croaker's sister, who lives on your homestead ----------
+  // S.home.ka = { met, f friendship 0-10, g highest heart gift given, ord: { day, k item, n, done } }
+  var CROAKA = { x: 10.5, y: 7.85, tx: 10, ty: 7 };
+  var CROAKA_HI = ["Morning, sprout! The soil's warm today.", "Croaker eats my pies and calls them 'fine'. FINE.", "Talk to your crops. I do. Mine say thank you in carrots.",
+    "Croako smells of bait. I smell of compost. Croaker smells of both. Family!", "Rain tonight, maybe. My knees say so.", "A farm's never finished. That's the fun of it."];
+  var CROAKA_TIPS = ["Soil next to water never dries out. Dig a canal and your crops will thank you.", "Compost and steady water make Prize crops. The cart pays double for those.",
+    "Moon crops only grow at night. Plant them at dusk, pick them at dawn.", "A 3 x 3 patch of melons or pumpkins might swell into a giant overnight.",
+    "Fiber is hay. Keep the trough full or the animals sulk.", "Pickle a Prize crop and you get two jars.", "Pet your animals once a day. Happy ducks lay double."];
+  var CROAKA_GIFT = [[2, { sprinkler: 2 }], [4, { picklekeg: 1 }], [6, { seedmaker: 1, compost: 5 }], [8, { silvercoin: 25 }], [10, { goldfrog: 1, silvercoin: 20 }]];
+  function croakaS() { var o = homeS(); if (!o.ka || typeof o.ka !== "object") o.ka = { met: 0, f: 0, g: 0, ord: null }; return o.ka; }
+  function croakaNear() { return HOME && Math.abs(cp.x - CROAKA.x) < 1.6 && Math.abs(cp.y - CROAKA.y) < 1.4; }
+  function croakaOrder() {   // a new request each day, for something you can make
+    var K = croakaS(), d = S.days | 0; if (K.ord && K.ord.day === d) return K.ord;
+    var pool = [], bits = S.st.cropbits || 0, o = homeS();
+    Object.keys(HBITS).forEach(function (c) { if ((bits & HBITS[c]) && CROPS[c]) pool.push(CROPS[c].produce); });
+    if (!pool.length) pool.push("carrot");
+    (o.an || []).forEach(function (a) { var A = ANIM[a.k]; if (A && pool.indexOf(A.prod) < 0) pool.push(A.prod); });
+    if (o.m && Object.keys(o.m).some(function (k) { return o.m[k].k === "picklekeg"; })) pool.push(HF.pres[pool[Math.floor(SW.hash(d, 3, 70) * Math.min(pool.length, 4))]] || "pres_carrot");
+    var k = pool[Math.floor(SW.hash(d, 7, 71) * pool.length)] || "carrot", v = HF.ship[k] || 1, n = clamp(Math.round(5 / v), 1, 8);
+    K.ord = { day: d, k: k, n: n, done: 0 }; return K.ord;
+  }
+  function croakaHave(k) { return (S.inv[k] || 0) + (S.inv[k + "_s"] || 0) + (S.inv[k + "_g"] || 0); }
+  function croakaReward(ord) { return Math.max(3, Math.ceil((HF.ship[ord.k] || 1) * ord.n * 1.6)); }
+  function talkCroaka() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 227; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    var K = croakaS(), first = !K.met; K.said = (K.said || 0) + 1;
+    if (first) { K.met = 1; S.st.croakamet = 1; var gift = { seed_lilyleek: 4, seed_reedcorn: 4, compost: 3, silvercoin: 5 }; Object.keys(gift).forEach(function (k) { if (ITEMS[k]) give(k, gift[k], undefined, undefined, true); }); K.gift0 = gift; homeGoals(); }
+    renderCroaka(first);
+  }
+  function renderCroaka(first) {
+    var K = croakaS(), ord = croakaOrder(), have = croakaHave(ord.k), f = K.f || 0, next = CROAKA_GIFT.filter(function (q) { return q[0] > (K.g || 0); })[0];
+    var h = '<div class="st-croak" aria-hidden="true">' + CROAKA_SVG + "</div><small>Croaka, Old Croaker's sister</small>";
+    if (first) h += '<h2 class="st-hi">So YOU\'RE the one who moved in next to the reeds!</h2><p>“I\'m Croaka. Croaker\'s big sister, whatever he tells you. I\'ve farmed this bog since before he could hop. You\'ve got good soil here, and a pond, and that\'s half of farming. Here, some seeds to get you going, and a little something for the cart. I\'ll need a hand now and then. Come see me every day and I\'ll have a little job for you.”</p>'
+      + '<div class="st-gift">' + Object.keys(K.gift0 || {}).filter(function (k) { return ITEMS[k]; }).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + K.gift0[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>";
+    else h += '<h2 class="st-hi">' + esc(CROAKA_HI[((K.said || 0) + (S.days | 0)) % CROAKA_HI.length]) + "</h2>";
+    h += '<div class="hm-ord"><small>Today\'s Farm Order</small>' + (ord.done ? "<p><b>Done for today. Thank you, sprout!</b> Come back tomorrow.</p>"
+      : '<p><img alt="" src="' + icon(ord.k) + '"> <b>' + ord.n + " " + esc(ITEMS[ord.k] ? ITEMS[ord.k].n : ord.k) + "</b> · you have " + have + "<br><small>Pays " + croakaReward(ord) + " Silver Coins and a heart. Fine and Prize ones count too.</small></p>") + "</div>";
+    h += '<p class="hm-hearts">' + "♥".repeat(f) + '<span>' + "♡".repeat(10 - f) + "</span>" + (next ? " · next gift at " + next[0] + " hearts" : " · best friends!") + "</p>";
+    if (!first) h += '<p class="st-tip"><b>Croaka\'s tip:</b> ' + esc(CROAKA_TIPS[((K.said || 0) * 3 + (S.days | 0)) % CROAKA_TIPS.length]) + "</p>";
+    h += '<div class="st-row">' + (!ord.done ? '<button type="button" class="btn" data-croaka="give"' + (have >= ord.n ? "" : " disabled") + ">Deliver</button>" : "") + '<button type="button" class="btn ghost" data-croaka="book">Farm chapter</button><button type="button" class="btn ghost" data-story-close>Bye, Croaka</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffb0d8"); $("sbxStoryBox").innerHTML = h; save();
+  }
+  function croakaAct(a) {
+    if (a === "book") { closeStory(); QB.ch = "s:Homesteader"; openPanel("quests"); return; }
+    if (a !== "give") return; var K = croakaS(), ord = croakaOrder(); if (ord.done || croakaHave(ord.k) < ord.n) return;
+    var need = ord.n; [ord.k, ord.k + "_s", ord.k + "_g"].forEach(function (q) { var t = Math.min(need, S.inv[q] || 0); if (t > 0) { S.inv[q] -= t; if (S.inv[q] <= 0) { delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } } need -= t; } });
+    ord.done = 1; var pay = croakaReward(ord); give("silvercoin", pay, undefined, undefined, true); K.f = Math.min(10, (K.f || 0) + 1); S.st.orders = (S.st.orders || 0) + 1; S.st.croakaf = K.f;
+    snd("coin"); popup("Croaka's Farm Order", "+" + pay + " Silver Coins · ♥ " + K.f + " / 10", "#ffb0d8", "♥");
+    CROAKA_GIFT.forEach(function (q) { if (K.f >= q[0] && (K.g || 0) < q[0]) { K.g = q[0]; var names = []; Object.keys(q[1]).forEach(function (k) { if (ITEMS[k]) { give(k, q[1][k], undefined, undefined, true); names.push(q[1][k] + " " + ITEMS[k].n); } else give("silvercoin", 15, undefined, undefined, true); }); popup("A gift from Croaka", names.join(", ") || "15 Silver Coins", "#ffb0d8", "❀"); } });
+    reslot(); hbDirty = true; homeGoals(); renderCroaka(false);
+  }
+  var CROAKA_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="46" rx="22" ry="15" fill="#e86a8a" stroke="#8a2a4a" stroke-width="2.5"/>'
+    + '<path d="M14 44 L50 44 L47 58 L17 58Z" fill="#f6eedb"/><path d="M18 46h28M18 50h28M18 54h28M24 44v14M32 44v14M40 44v14" stroke="#e86a8a" stroke-width="1.4" opacity=".6"/>'
+    + '<ellipse cx="32" cy="31" rx="18" ry="12" fill="#7ab84a" stroke="#2f5a1e" stroke-width="2.5"/><circle cx="21" cy="22" r="8" fill="#7ab84a" stroke="#2f5a1e" stroke-width="2.5"/><circle cx="43" cy="22" r="8" fill="#7ab84a" stroke="#2f5a1e" stroke-width="2.5"/>'
+    + '<circle cx="21" cy="22" r="4.6" fill="#ffd23f"/><circle cx="43" cy="22" r="4.6" fill="#ffd23f"/><rect x="19.7" y="19.6" width="2.6" height="4.6" rx="1" fill="#12220f"/><rect x="41.7" y="19.6" width="2.6" height="4.6" rx="1" fill="#12220f"/>'
+    + '<circle cx="16" cy="32" r="3" fill="#ff9ab0" opacity=".7"/><circle cx="48" cy="32" r="3" fill="#ff9ab0" opacity=".7"/><path d="M24 33 Q32 39 40 33" fill="none" stroke="#12220f" stroke-width="2" stroke-linecap="round"/>'
+    + '<ellipse cx="32" cy="14" rx="27" ry="6" fill="#e8c46a" stroke="#8a6a2a" stroke-width="2"/><path d="M18 13 Q32 -3 46 13Z" fill="#f2d27a" stroke="#8a6a2a" stroke-width="2"/><rect x="18" y="10" width="28" height="3" fill="#e86a8a"/>'
+    + '<circle cx="44" cy="10" r="4" fill="#ff7ab0"/><circle cx="44" cy="10" r="1.6" fill="#ffd23f"/></svg>';
+  function drawCroaka(g, now) {   // Croaka: a farmer frog in a straw sun hat with a flower, a gingham dress, a basket of carrots
+    var sx = ox + CROAKA.x * ts, sy = oy + CROAKA.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.4) * 0.7, face = cp.x < CROAKA.x ? -1 : 1, near = croakaNear(), k = ts / 30, K = croakaS(), ord = croakaOrder();
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+    g.fillStyle = "#b07a44"; g.strokeStyle = "#5a3a1e"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-27, -9); g.lineTo(-13, -9); g.lineTo(-14, 0); g.closePath(); g.fill(); g.stroke();   // a basket
+    g.beginPath(); g.arc(-20, -9, 6, Math.PI, 0); g.stroke(); g.fillStyle = "#ff8a2a"; g.fillRect(-24, -12, 3, 4); g.fillRect(-19, -13, 3, 5); g.fillStyle = "#5ab84a"; g.fillRect(-23, -15, 1, 3); g.fillRect(-18, -16, 1, 3);
+    g.save(); g.scale(face, 1); g.translate(0, -br * 0.3);
+    g.fillStyle = "#6aa83a"; g.strokeStyle = "#2f5a1e"; g.lineWidth = 1.6; [-7, 6].forEach(function (fx) { g.beginPath(); g.ellipse(fx, -2.5, 6, 3, 0, 0, 7); g.fill(); g.stroke(); });
+    g.fillStyle = "#e86a8a"; g.strokeStyle = "#8a2a4a"; g.beginPath(); g.moveTo(-14, -3); g.quadraticCurveTo(-13, -22, 0, -24); g.quadraticCurveTo(13, -22, 14, -3); g.closePath(); g.fill(); g.stroke();   // dress
+    g.fillStyle = "rgba(255,240,240,.5)"; for (var gx = -10; gx <= 10; gx += 5) g.fillRect(gx, -21, 2, 18); for (var gy = -20; gy <= -5; gy += 5) g.fillRect(-12, gy, 24, 2);   // gingham
+    g.fillStyle = "#f6eedb"; g.strokeStyle = "#a89878"; g.lineWidth = 1; g.beginPath(); g.moveTo(-7, -18); g.lineTo(7, -18); g.lineTo(8, -4); g.lineTo(-8, -4); g.closePath(); g.fill(); g.stroke();   // apron
+    g.fillStyle = "#7ab84a"; g.strokeStyle = "#2f5a1e"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(1, -28, 12, 8, 0, 0, 7); g.fill(); g.stroke();
+    var blink = (now % 3900) < 140; g.beginPath(); g.arc(-5, -34, 4.6, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.arc(7, -34, 4.6, 0, 7); g.fill(); g.stroke();
+    if (blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; [-5, 7].forEach(function (ex) { g.beginPath(); g.moveTo(ex - 2.6, -34); g.lineTo(ex + 2.6, -34); g.stroke(); }); }
+    else [-5, 7].forEach(function (ex) { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ex, -34, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(ex - 0.8, -35.6, 1.6, 3.2); });
+    g.fillStyle = "rgba(255,140,170,.6)"; g.beginPath(); g.arc(-8, -27, 2.2, 0, 7); g.arc(10, -27, 2.2, 0, 7); g.fill();
+    g.strokeStyle = "#12220f"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-3, -25); g.quadraticCurveTo(1, -22, 6, -25); g.stroke();
+    g.fillStyle = "#e8c46a"; g.strokeStyle = "#8a6a2a"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(1, -38, 19, 4.2, 0, 0, 7); g.fill(); g.stroke();   // straw hat
+    g.beginPath(); g.moveTo(-9, -38); g.quadraticCurveTo(1, -52, 11, -38); g.closePath(); g.fill(); g.stroke(); g.fillStyle = "#e86a8a"; g.fillRect(-9.5, -41, 21, 2.6);
+    g.fillStyle = "#ff7ab0"; g.beginPath(); g.arc(9, -42, 3.2, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(9, -42, 1.3, 0, 7); g.fill();
+    g.restore();
+    var bang = !K.met || !ord.done, by = -62 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
+    if (bang) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = "#ffb0d8"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, 8, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = "#ffb0d8"; g.font = "900 11px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(K.met ? "♥" : "!", 0, by + 4); }
+    if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Croaka").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Croaka", 0, 13); }
+    g.restore();
+  }
   function homeClean(h) {
     var d = { ed: {}, c: {}, w: {}, ship: {}, cr: 0, day: 0 }; if (!h || typeof h !== "object") return d;
     var ok = function (k) { return /^\d+,\d+$/.test(k); };
@@ -15686,6 +15788,7 @@
     if (Array.isArray(h.an)) d.an = h.an.filter(function (a) { return a && ANIM[a.k] && d.b && d.b[a.b | 0]; }).slice(0, 40).map(function (a) { return { k: a.k, b: a.b | 0, f: clamp(+a.f || 0, 0, 10), pd: a.pd | 0, nm: String(a.nm || ANIM[a.k].names[0]).slice(0, 20), hungry: a.hungry ? 1 : 0 }; });
     if (Array.isArray(h.dr)) d.dr = h.dr.filter(function (q) { return q && okI(q.k); }).slice(0, 60).map(function (q) { return { k: q.k, x: clamp(+q.x || 0, 2, HW - 2), y: clamp(+q.y || 0, 2, HH - 2) }; });
     if (h.up && typeof h.up === "object") { d.up = {}; (HF.ups || []).forEach(function (u) { if (h.up[u[0]]) d.up[u[0]] = 1; }); }
+    if (h.ka && typeof h.ka === "object") { var ka = h.ka; d.ka = { met: ka.met ? 1 : 0, f: clamp(ka.f | 0, 0, 10), g: clamp(ka.g | 0, 0, 10), said: ka.said | 0, ord: null }; if (ka.ord && okI(ka.ord.k)) d.ka.ord = { day: ka.ord.day | 0, k: ka.ord.k, n: clamp(ka.ord.n | 0, 1, 20), done: ka.ord.done ? 1 : 0 }; }
     d.cr = clamp(+h.cr || 0, 0, 1); d.day = h.day | 0; return d;
   }
   var HCLK = 0; function homeClock(dt) { HCLK += dt; if (HCLK >= 1) { var s = HCLK; HCLK = 0; homeStep(s); } }
@@ -15851,13 +15954,13 @@
     fstrip(-fM, -fM, HW + fM, 3); fstrip(-fM, HH - 3, HW + fM, HH + fM); fstrip(-fM, 3, 3, HH - 3); fstrip(HW - 3, 3, HW + fM, HH - 3);   // the forest is only around the edges: draw just those strips
     // --- things that stand up, drawn back to front ---
     var L = [];
-    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var id2 = t[j * HW + i]; if ((id2 === HT.TREE && !homeDeepTree(i, j)) || id2 === HT.ROCK || id2 === HT.STUMP || id2 === HT.REEDS || id2 === HT.FENCE || id2 === HT.FLOWER) L.push([j + 1, 0, i, j, id2]); var ce = o.c[i + "," + j]; if (ce) L.push([j + 0.95, 1, i, j, ce]); }
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var id2 = t[j * HW + i]; if (i === CROAKA.tx && (j === CROAKA.ty || j === CROAKA.ty - 1) && id2 !== HT.TREE) id2 = HT.GRASS; if ((id2 === HT.TREE && !homeDeepTree(i, j)) || id2 === HT.ROCK || id2 === HT.STUMP || id2 === HT.REEDS || id2 === HT.FENCE || id2 === HT.FLOWER) L.push([j + 1, 0, i, j, id2]); var ce = o.c[i + "," + j]; if (ce) L.push([j + 0.95, 1, i, j, ce]); }
     (o.gi || []).forEach(function (gc) { L.push([gc.y + 3, 6, gc]); });
     if (o.m) Object.keys(o.m).forEach(function (k) { var q = k.split(","); L.push([+q[1] + 0.98, 7, +q[0], +q[1], o.m[k]]); });
     (o.b || []).forEach(function (b) { L.push([b.y + HF.bld[b.k].h, 8, b]); });
     (o.an || []).forEach(function (a) { if (!a.inside && a.x !== undefined) L.push([a.y, 10, a]); });
     (o.dr || []).forEach(function (d) { L.push([d.y - 0.01, 11, d]); });
-    L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
+    L.push([CROAKA.y, 12]); L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
     L.sort(function (a, b) { return a[0] - b[0]; });
     L.forEach(function (e) {
       if (e[1] === 9) { drawCavePlayer(g, now); return; }
@@ -15879,6 +15982,7 @@
         return; }
       if (e[1] === 8) { var bb = e[2]; hpShadow(g, ox + (bb.x + HF.bld[bb.k].w / 2) * ts, oy + (bb.y + HF.bld[bb.k].h - 0.05) * ts, ts * HF.bld[bb.k].w * 0.55, ts * 0.2, 0.24); hDraw(g, hsBld(bb.k), bb.x, bb.y, 8, 16); return; }
       if (e[1] === 10) { drawAnimal(g, e[2], now); return; }
+      if (e[1] === 12) { drawCroaka(g, now); return; }
       if (e[1] === 11) { var dd2 = e[2], ic2 = hIco(dd2.k), bob2 = reduce ? 0 : Math.sin(T0 * 2.5 + dd2.x * 3) * s16; hpShadow(g, ox + dd2.x * ts, oy + (dd2.y + 0.05) * ts, ts * 0.25, ts * 0.08, 0.25); if (ic2) g.drawImage(ic2, ox + (dd2.x - 0.3) * ts, oy + (dd2.y - 0.6) * ts + bob2, ts * 0.6, ts * 0.6); return; }
       if (e[1] === 6) { var gc = e[2], gsp = hsGiant(gc.k), wob = gc.h ? Math.sin(T0 * 34) * ts * 0.04 * gc.h : 0;
         hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y - 0.3, 1, 1, wob);

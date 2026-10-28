@@ -1712,3 +1712,16 @@ body.sbx-app footer{margin-top:28px}
 .hm-hd h2 { text-align: left; }
 .hm-hd small { display: block; position: static; text-align: left; transform: none; }
 .hm-sub { margin: 10px 0 4px; font-size: 14px; color: #9ee06a; text-align: left; }
+/* HOMESTEADER quest page: your farm at golden hour */
+.qb-th-barnyard{--qbg:linear-gradient(180deg,#5a7ab8 0,#e8a87a 45%,#f2c878 70%,#7a9a3a 100%);--hb:#4a5a1e;--p1:#ffd27a;--p2:#e8963a;--p3:#a85a2a;--p4:#6a3a14;--pr:#4a2a10;--d1:#fff0a0;--d2:#7dd65a;--l1:#b89868;--l2:#7a6040;--vo:#4a2a10;--vn:#ffb0d8;--vd:#a87a4a;--lf:#7dd65a;--fl:#ff7ab0;--fl2:#ffd0e4;--fc:#ffd23f;--cb1:#4a5a2a;--cb2:#1e2a0e}
+.qb-th-barnyard .sun{fill:#ffd27a;filter:drop-shadow(0 0 30px #ffb84a)}
+.qb-th-barnyard .barn rect{fill:#a83a2a}.qb-th-barnyard .barn .roof{fill:#6a2418}.qb-th-barnyard .barn .door{fill:#5a1a10}.qb-th-barnyard .barn .x{stroke:#f6eedb;stroke-width:3;fill:none}
+.qb-th-barnyard .house rect,.qb-th-barnyard .house path{fill:#5a4a2a}.qb-th-barnyard .house .win{fill:#ffd27a;filter:drop-shadow(0 0 6px #ffd27a)}
+.qb-th-barnyard .fence rect,.qb-th-barnyard .rail{fill:#8a5a30}
+.qb-th-barnyard .sunfl line{stroke:#3a7a2a;stroke-width:3}.qb-th-barnyard .sunfl .pet{fill:#ffd23f}.qb-th-barnyard .sunfl .mid{fill:#6a3a14}
+.qb-th-barnyard .hay rect{fill:#e8c46a}.qb-th-barnyard .hay path{stroke:#b8943a;stroke-width:2;fill:none}
+.qb-th-barnyard .mote{fill:#fff6c8;opacity:.6;animation:qtFly 7s ease-in-out infinite}
+/* Croaka's window */
+.hm-ord{margin:10px 0;padding:10px 12px;border-radius:12px;background:#ffb0d81a;border:1px solid #ffb0d855;text-align:left}
+.hm-ord small{color:#ffb0d8;font-weight:800}.hm-ord p{margin:4px 0 0}.hm-ord img{width:28px;height:28px;image-rendering:pixelated;vertical-align:middle}
+.hm-hearts{color:#ff7ab0;font-size:15px;letter-spacing:1px;margin:6px 0}.hm-hearts span{color:#ffb0d866}
