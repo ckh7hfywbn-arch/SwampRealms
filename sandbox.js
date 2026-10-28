@@ -362,6 +362,12 @@
     sq("moon1", "Farmer & Cook", 2, "Moonlighter", "Harvest 3 moon crops. They only grow at night.", 3, st("moonharv"), { seed_glowgourd: 2 }),
     sq("prize1", "Farmer & Cook", 2, "Blue Ribbon", "Grow 10 Prize crops. Keep them watered and use compost.", 10, st("prize"), { compost: 8 }),
     sq("giant1", "Farmer & Cook", 3, "Something Big", "Grow a giant crop: a 3 by 3 patch of ripe Mud Melons, Croakin' Pumpkins or Glowgourds can merge into one.", 1, st("giants"), { silvercoin: 10 }),
+    sq("sprk1", "Farmer & Cook", 2, "Rain Maker", "Place 4 Sprinklers on your homestead.", 4, st("hsprk"), { compost: 6 }),
+    sq("keg1", "Farmer & Cook", 2, "In a Pickle", "Make 5 Preserves in a Pickle Keg.", 5, st("preserves"), { silvercoin: 8 }),
+    sq("coop1", "Farmer & Cook", 2, "Feathered Friends", "Build a Duck Coop or Mud Barn and bring home an animal.", 1, st("hanimals"), { fiber: 20 }),
+    sq("eggs1", "Farmer & Cook", 3, "Fresh This Morning", "Collect 10 eggs, truffles or goat milk from your animals.", 10, st("aprod"), { silvercoin: 10 }),
+    sq("pet1", "Farmer & Cook", 3, "Good Boy, Good Girl", "Pet your animals 15 times.", 15, st("petted"), { duckegg: 4 }),
+    sq("ledger1", "Farmer & Cook", 3, "Investments", "Buy 3 upgrades in the Farm Ledger.", 3, st("hups"), { silvercoin: 15 }),
     sq("cook5", "Farmer & Cook", 1, "Swamp Chef", "Cook 5 meals at a Cooking Pot.", 5, st("cooked"), { rawmeat: 2 }),
     sq("gourmet", "Farmer & Cook", 3, "Gourmet", "Eat 6 different cooked meals.", 6, function () { return Object.keys(S.ate).length; }, { stew: 1 }),
     sq("boss1", "Hunter", 2, "Big Game", "Defeat a boss. Craft a summon item at the Workbench and use it in its home land.", 1, st("bossk"), { torch: 8, ironingot: 1 }),
@@ -537,7 +543,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -1919,6 +1925,12 @@
     if (ICO[key]) return ICO[key];
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
     if (OCI[id]) { try { OCI[id](g); } catch (e) {} return (ICO[key] = c.toDataURL()); }
+    if (ITEMS[id] && ITEMS[id].pb) {   // HOMESTEAD: a jar of preserves in the crop's colour
+      var pcj = ITEMS[id].pc || "#ff8a2a", J = function (x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); };
+      J(9, 9, 14, 20, "#2a1a10"); J(10, 10, 12, 18, "#d8eef0"); J(11, 14, 10, 13, pcj); J(11, 14, 10, 2, "rgba(255,255,255,.35)"); J(12, 17, 2, 7, "rgba(255,255,255,.4)");
+      J(9, 5, 14, 5, "#2a1a10"); J(10, 6, 12, 3, "#c84a3a"); J(10, 6, 12, 1, "#ff8a7a"); J(13, 19, 6, 5, "#f6eedb"); J(14, 20, 4, 1, "#8a6a4a"); J(14, 22, 4, 1, "#8a6a4a");
+      return (ICO[key] = c.toDataURL());
+    }
     if (ITEMS[id] && ITEMS[id].qb && SPR[ITEMS[id].qb]) {   // HOMESTEAD: Fine and Prize crops wear a silver or gold star
       drawSpr(g, ITEMS[id].qb); var sc2 = ITEMS[id].q === 2 ? ["#ffd23f", "#8a5a00"] : ["#e8eef4", "#5a6470"], st5 = function (cx, cy, R, r) { g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } g.closePath(); };
       g.fillStyle = sc2[1]; st5(24, 24, 8, 3.6); g.fill(); g.fillStyle = sc2[0]; st5(24, 24, 6.2, 2.7); g.fill(); return (ICO[key] = c.toDataURL());
@@ -12201,7 +12213,7 @@
     bag1: "bag1", bag2: "bag2", shovel1: "shovel", gem1: "quartz", gem4: "amethyst", king5: "wpn5", arm1: "arm1", x_cloth: "cloth", x_mason: "redbrick", x_glass: "stainedred",
     bow1: "bow1", arrow25: "arrow", bow3: "bow3", witch1: "hexdust", witch5: "hexdust", whut1: "bottle", whut2: "hexdust", glide500: "emberwings", spider10: "silk", boss1: "bugtrophy", boss3: "alphamane", boss10: "wyrmscale",
     bug5: "bugfrag", frog5: "frogfrag", bat1: "batwing", bat10: "battrophy", slime5: "slimeball", gator1: "gatorscale", wasp5: "stinger", wolf5: "wolfpelt", sleep5: "bed",
-    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", home1: "farmgate", canal1: "seed_bogrice", ship1: "silvercoin", paddy1: "bogrice", moon1: "moonpetal", prize1: "croakpumpkin_g", giant1: "mudmelon", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
+    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", home1: "farmgate", sprk1: "sprinkler", keg1: "picklekeg", coop1: "duckcoop", eggs1: "duckegg", pet1: "duckegg", ledger1: "silvercoin", canal1: "seed_bogrice", ship1: "silvercoin", paddy1: "bogrice", moon1: "moonpetal", prize1: "croakpumpkin_g", giant1: "mudmelon", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
     cave2: "stone", cave3: "ladder", ckill10: "wpn2", cclear5: "amethyst", cave15: "moonstone", loot1: "chest", loot10: "ancientcoin", pots20: "pot", home1: "homeshell",
     trap10: "fishtrap", bait10: "firefly", fish10: "bogminnow", fish50: "rod2", rarefish: "glowfin", fishdex: "fishtrophy", lavafish: "rod2", fishloot: "chest", boot: "oldboot",
     pets3: "trough", allpets: "goatmilk", collect20: "duckegg", baby1: "truffle", ffly10: "firefly", scoop10: "bucket", charm1: "goldfeather", charm8: "owlfeather", bty1: "swamptoken", bty25: "swamptoken", shop1: "swamptoken",
@@ -13760,7 +13772,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -15325,11 +15337,11 @@
   }
   function hmT(x, y) { return x < 0 || y < 0 || x >= HW || y >= HH ? HT.TREE : HOME.t[y * HW + x]; }
   function homeSet(x, y, id) { if (x < 2 || y < 2 || x >= HW - 2 || y >= HH - 2) return; HOME.t[y * HW + x] = id; HOME.gd = 1; var o = homeS(), k = x + "," + y; if (HOME.g[y * HW + x] === id) delete o.ed[k]; else o.ed[k] = id; }
-  function homeSolid(x, y) { return !!HSOLID[hmT(x, y)] || !!homeGiantAt(x, y); }
+  function homeSolid(x, y) { return !!HSOLID[hmT(x, y)] || !!homeGiantAt(x, y) || !!homeMachAt(x, y) || !!homeBldAt(x, y); }
   function homeGiantAt(x, y) { var G = S.home && S.home.gi; if (!G) return null; for (var i = 0; i < G.length; i++) { var g2 = G[i]; if (x >= g2.x && x < g2.x + 3 && y >= g2.y && y < g2.y + 3) return g2; } return null; }
   function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
   function homeWater(id) { return id === HT.POND || id === HT.CANAL || id === HT.PADDYW; }
-  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
+  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
   function homeFlood() {   // canals: every ditch connected to the pond fills with water; cut off ones drain
     var t = HOME.t, i, q = [], seen = new Uint8Array(HW * HH);
     for (i = 0; i < t.length; i++) { if (t[i] === HT.CANAL) t[i] = HT.DITCH; if (t[i] === HT.PADDYW) t[i] = HT.PADDY; if (t[i] === HT.POND) { q.push(i); seen[i] = 1; } }
@@ -15339,13 +15351,13 @@
   // ---- crops grow wherever you are (called with the surface farm's clock) ----
   function homeStep(sec) {
     if (!S.home) return; var o = homeS(), keys = Object.keys(o.c);
-    homeDaily();
+    homeDaily(); homeMachTick(sec);
     if (!keys.length && !Object.keys(o.w).length) return;
     var tiles = HOME ? null : homeTilesC();
     keys.forEach(function (k) {
       var e = o.c[k]; if (!e) return; var C = CROPS[e.k]; if (!C) { delete o.c[k]; return; } if (e.s >= 4) return;
-      var q = k.split(","), x = +q[0], y = +q[1], wet = HOME ? homeWet(x, y) : homeWetT(tiles, x, y), mul = (wet ? 2 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1);
-      if (C.wat) { var pid = HOME ? hmT(x, y) : tiles[y * HW + x]; mul = pid === HT.PADDYW ? 2 * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) : 0; wet = mul > 0; }
+      var q = k.split(","), x = +q[0], y = +q[1], wet = HOME ? homeWet(x, y) : homeWetT(tiles, x, y), mul = (wet ? 2 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1);
+      if (C.wat) { var pid = HOME ? hmT(x, y) : tiles[y * HW + x]; mul = pid === HT.PADDYW ? 2 * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1) : 0; wet = mul > 0; }
       if (C.moon) mul = isNight(S.time) ? mul * 1.5 : 0;
       e.d = (e.d || 0) + sec; if (wet) e.w = (e.w || 0) + sec;
       e.g += sec * mul;
@@ -15367,12 +15379,13 @@
     }
   }
   function homeTiles() { var t = homeGen(), o = homeS(); Object.keys(o.ed).forEach(function (k) { var q = k.split(","); t[+q[1] * HW + +q[0]] = o.ed[k] | 0; }); return t; }
-  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
+  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
   function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
     var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d;
     Object.keys(o.c).forEach(function (k) { var e = o.c[k]; if (e && e.s >= 4 && HF.giant && HF.giant[e.k]) { var q = k.split(","); homeGiantTry(+q[0], +q[1], e.k, 0.12); } });   // overnight, a ripe patch may swell into a giant
+    homeAnimalDaily();
     var ks = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }); if (!ks.length) return;
-    var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); o.ship = {}; o.cr += val;
+    var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); if (homeUp("cart")) val *= 1.2; o.ship = {}; o.cr += val;
     var coins = Math.floor(o.cr + 1e-6); o.cr -= coins; if (coins > 0 && ITEMS.silvercoin) give("silvercoin", coins, undefined, undefined, true);
     S.st.shipped = (S.st.shipped || 0) + n; popup("The cart came by!", n + (n === 1 ? " thing" : " things") + " shipped: " + (coins ? "+" + coins + " Silver Coin" + (coins === 1 ? "" : "s") : "not a whole coin yet, saved for next time"), "#c8d0d8", "⛀"); snd("coin"); checkGoals();
   }
@@ -15419,7 +15432,7 @@
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts; cam.x = HW <= halfW * 2 ? HW / 2 : clamp(cam.x, halfW, HW - halfW); cam.y = HH <= halfH * 2 ? HH / 2 : clamp(cam.y, halfH - 1, HH - halfH + 1);
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= HW || aim.ty < 0 || aim.ty >= HH) aim.tx = -1;
     tickFarm(dt); tickHunger(dt); tickFx(dt); tickBounties(dt);
-    homeTool(dt);
+    homeTool(dt); homeAnimalTick(dt);
     var working = HOME.work > 0; HOME.work = Math.max(0, (HOME.work || 0) - dt); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
@@ -15439,6 +15452,11 @@
     if (id === HT.CRATE) { if (press) openShip(); return; }
     if (id === HT.STALL) { if (press) openStall(); return; }
     var gc = homeGiantAt(tx, ty); if (gc) { if (press) homeGiantHit(gc); return; }
+    if (press && homePickDrop(tx + 0.5, ty + 0.5)) return;
+    var anm = press ? homeAnimalAt(tx + 0.5, ty + 0.9) : null; if (anm) { homePet(anm); return; }
+    var mch = homeMachAt(tx, ty); if (mch) { if (press) homeMachUse(mch, tx, ty, press); return; }
+    var bld = homeBldAt(tx, ty); if (bld) { if (press) openBld(bld); return; }
+    if ((HF.mach[sel] || HF.bld[sel]) && (S.inv[sel] || 0) > 0) { if (press) homePlace(tx, ty, sel, press); return; }
     if (crop && crop.s >= 4 && sel !== "shovel") { if (sel === "hoe" && S.hoe > 1) { var half = (HOES[S.hoe].w - 1) / 2; for (var x = tx - half; x <= tx + half; x++) { var c2 = o.c[x + "," + ty]; if (c2 && c2.s >= 4) homeHarvest(x, ty); } } else homeHarvest(tx, ty); return; }
     if (sel === "hoe" && S.hoe > 0) {
       var w2 = (HOES[S.hoe].w - 1) / 2, n = 0;
@@ -15529,6 +15547,8 @@
     var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("seed_croakpumpkin") + '"><div><small>Your Homestead</small><h2>Seed Stall</h2><p class="mo-sub">Seeds for your fields, paid in Silver Coins from the shipping crate. You have <b>' + coins + "</b>.</p></div></div>";
     h += '<ul class="mo-list">' + HF.seeds.filter(function (q) { return ITEMS[q[0]]; }).map(function (q) { var C = CROPS[ITEMS[q[0]].seed], ok = coins >= q[1], info = !C ? "makes crops Fine or Prize more often" : C.moon ? "moon crop: grows only at night" : "ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? " in a flooded paddy" : " (half with water)");
       return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(q[0]) + '"><div><b>' + esc(ITEMS[q[0]].n) + "</b><small>" + q[1] + " Silver · " + info + "</small></div>" + '<button type="button" class="btn mo-fit" data-hbuy="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
+    h += '<h3 class="hm-sub">Animals</h3><ul class="mo-list">' + HF.animals.map(function (q) { var A = ANIM[q[0]], o = homeS(), room = (o.b || []).some(function (b, i) { return b.k === q[2] && homeBldPop(i) < homeBldCap(b); }), ok = room && coins >= q[1];
+      return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(A.prod) + '"><div><b>' + esc(A.n) + "</b><small>" + q[1] + " Silver \u00b7 lives in a " + esc(ITEMS[q[2]].n) + " \u00b7 gives " + esc(ITEMS[A.prod].n) + (room ? "" : " \u00b7 build one with room first") + "</small></div>" + '<button type="button" class="btn mo-fit" data-hanim="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
     h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#7dd65a"); $("sbxStoryBox").innerHTML = h;
   }
@@ -15537,11 +15557,107 @@
     var A = [], gx = HGATE.x + 1, gy = HGATE.y;
     if (Math.abs(cp.x - gx) < 2.2 && Math.abs(cp.y - gy) < 2.2) A.push({ label: "Back to the swamp", ax: gx, ay: gy - 1.6, fn: leaveHome });
     if (Math.abs(cp.x - (HCRATE.x + 0.5)) < 2 && Math.abs(cp.y - (HCRATE.y + 1)) < 2) A.push({ label: "Shipping Crate", ax: HCRATE.x + 0.5, ay: HCRATE.y - 1.2, fn: openShip });
+    if (Math.abs(cp.x - (HHOUSE.x + 3)) < 1.6 && Math.abs(cp.y - (HHOUSE.y + HHOUSE.h + 0.6)) < 1.4) A.push({ label: "Farm Ledger", ax: HHOUSE.x + 3, ay: HHOUSE.y + 1.4, fn: openLedger });
     if (Math.abs(cp.x - (HSTALL.x + 1)) < 2.4 && Math.abs(cp.y - (HSTALL.y + 1)) < 2) A.push({ label: "Seed Stall", ax: HSTALL.x + 1, ay: HSTALL.y - 1.6, fn: openStall });
     A.sort(function (a, b) { return Math.abs(cp.x - a.ax) - Math.abs(cp.x - b.ax); }); return A;
   }
   function homeF() { var A = homeActions(); if (A.length) { A[0].fn(); return true; } return false; }
   function homeTap(e) { var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, pd = e.pointerType === "mouse" ? 4 : 12, B = HOME.btns || []; for (var i = B.length - 1; i >= 0; i--) { var b = B[i]; if (x >= b.x - pd && x <= b.x + b.w + pd && y >= b.y - pd && y <= b.y + b.h + pd) { b.fn(); return true; } } return false; }
+  // ---------- HOMESTEAD stage 3: sprinklers, machines, animal buildings, upgrades ----------
+  // S.home.m = {"x,y": {k machine, i input item, t secs left, o output item, n how many}}, S.home.b = [{k building, x, y, hay}],
+  // S.home.an = [{k animal, b building index, x, y, f friendship 0-10, pd last day petted, nm name}], S.home.dr = [{k item, x, y}] things lying on the ground,
+  // S.home.up = {upgrade: 1}
+  function homeUp(k) { var o = homeS(); return !!(o.up && o.up[k]); }
+  function homeMachAt(x, y) { var o = homeS(); return o.m ? o.m[x + "," + y] : null; }
+  function homeBldAt(x, y) { var o = homeS(), B = o.b || []; for (var i = 0; i < B.length; i++) { var D = HF.bld[B[i].k]; if (D && x >= B[i].x && x < B[i].x + D.w && y >= B[i].y && y < B[i].y + D.h) return B[i]; } return null; }
+  function homeSprk(x, y) { var o = homeS(), r = homeUp("nozzle") ? 2 : 1; if (!o.m) return false; for (var yy = y - r; yy <= y + r; yy++) for (var xx = x - r; xx <= x + r; xx++) { var m = o.m[xx + "," + yy]; if (m && m.k === "sprinkler") return true; } return false; }
+  function homeFreeFor(x, y, w, h) {   // can a machine or building go here?
+    var o = homeS(); for (var yy = y; yy < y + h; yy++) for (var xx = x; xx < x + w; xx++) {
+      var id = hmT(xx, yy); if (xx < 2 || yy < 2 || xx >= HW - 2 || yy >= HH - 2) return false;
+      if (!(id === HT.GRASS || id === HT.MUD || id === HT.FLOWER || id === HT.REEDS || id === HT.SOIL)) return false;
+      if (o.c[xx + "," + yy] || homeMachAt(xx, yy) || homeBldAt(xx, yy) || homeGiantAt(xx, yy)) return false;
+      if (Math.floor(cp.x) === xx && Math.floor(cp.y - 0.2) === yy) return false;
+    } return true;
+  }
+  function homePlace(tx, ty, k, press) {   // returns true if the selected item was a homestead machine or building
+    var o = homeS(), D = HF.bld[k], w = D ? D.w : 1, h = D ? D.h : 1, x0 = D ? tx - Math.floor(w / 2) : tx, y0 = D ? ty - h + 1 : ty;
+    if (!D && !HF.mach[k]) return false;
+    if (!homeFreeFor(x0, y0, w, h)) { if (press) nag(D ? "A " + ITEMS[k].n + " needs a clear " + w + " x " + h + " space of grass or mud." : "Place it on clear grass, mud or soil."); return true; }
+    S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; sel = "pick"; bare = true; } reslot(); hbDirty = true;
+    for (var yy = y0; yy < y0 + h; yy++) for (var xx = x0; xx < x0 + w; xx++) { var id = hmT(xx, yy); if (id === HT.REEDS || id === HT.FLOWER) homeSet(xx, yy, id === HT.REEDS ? HT.MUD : HT.GRASS); }
+    if (D) { if (!o.b) o.b = []; o.b.push({ k: k, x: x0, y: y0, hay: 0 }); S.st.hbuilt = (S.st.hbuilt || 0) + 1; toast("Your " + ITEMS[k].n + " is up! Buy animals at the Seed Stall, and keep its trough full of Fiber (hay).", "#7dd65a"); }
+    else { if (!o.m) o.m = {}; o.m[tx + "," + ty] = { k: k }; if (k === "sprinkler") { S.st.hsprk = (S.st.hsprk || 0) + 1; HOME.gd = 1; if (!S.st.sprktip) { S.st.sprktip = 1; toast("The sprinkler keeps the soil around it watered" + (homeUp("nozzle") ? " (5 x 5)." : " (3 x 3). Brass Nozzles from the Farm Ledger make it 5 x 5."), "#8fe0ff"); } } }
+    thud(200, 0.08); hFx(tx, ty, "#c9a06a", 10); checkGoals(); save(); return true;
+  }
+  function homeMachUse(m, x, y, press) {   // tap a machine: collect, fill, or explain
+    var o = homeS(), it = ITEMS[sel], fast = homeUp("keg") ? 0.6 : 1;
+    if (m.o) { give(m.o, m.n || 1, undefined, undefined, true); text(x + 0.5, y - 0.4, "+" + (m.n || 1) + " " + ITEMS[m.o].n, "#ffe9a8"); if (m.k === "picklekeg") S.st.preserves = (S.st.preserves || 0) + (m.n || 1); if (m.k === "seedmaker") S.st.seedsmade = (S.st.seedsmade || 0) + (m.n || 1); delete m.o; delete m.n; delete m.i; snd("coin"); checkGoals(); return; }
+    if (sel === "pick" && !m.i) { delete o.m[x + "," + y]; give(m.k, 1, undefined, undefined, true); if (m.k === "sprinkler") HOME.gd = 1; thud(160, 0.06); hFx(x, y, "#8a6a4a", 8); return; }
+    if (m.k === "sprinkler") { if (press) nag("The sprinkler waters the soil around it. Use your pick to move it."); return; }
+    if (m.i) { if (press) nag(ITEMS[m.i] ? "Working on " + ITEMS[m.i].n + "... " + Math.ceil(m.t) + " s left." : "Working..."); return; }
+    var have = (S.inv[sel] || 0) > 0, crop = have && it && Object.keys(CROPS).some(function (c) { return CROPS[c].produce === sel || CROPS[c].produce + "_s" === sel || CROPS[c].produce + "_g" === sel; }), base = crop ? sel.replace(/_[sg]$/, "") : null;
+    var take = function (n) { S.inv[sel] -= n; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; bare = true; } reslot(); hbDirty = true; };
+    if (m.k === "picklekeg") { if (!crop || !HF.pres[base]) { if (press) nag("Put a crop in the Pickle Keg: pick one on your hotbar, then tap the keg."); return; } var q = sel; take(1); m.i = q; m.t = m.T = 120 * fast; m.out = HF.pres[base]; m.on = /_g$/.test(q) ? 2 : 1; }
+    else if (m.k === "seedmaker") { var sk = null; Object.keys(CROPS).forEach(function (c) { if (CROPS[c].produce === base) sk = SEEDOF[c]; }); if (!crop || !sk) { if (press) nag("Put a crop in the Seed Maker to get its seeds."); return; } take(1); m.i = base; m.t = m.T = 60 * fast; m.out = sk; m.on = 2 + (Math.random() < 0.5 ? 1 : 0); }
+    else if (m.k === "compostbin") { if (sel !== "fiber" && sel !== "leaves") { if (press) nag("Fill the Compost Bin with Fiber or Leaves (4 at a time)."); return; } if ((S.inv[sel] || 0) < 4) { if (press) nag("You need 4 " + ITEMS[sel].n + "."); return; } var q2 = sel; take(4); m.i = q2; m.t = m.T = 90 * fast; m.out = "compost"; m.on = 3; }
+    thud(260, 0.05); hFx(x, y, "#c9a06a", 6);
+  }
+  function homeMachTick(sec) { var o = homeS(); if (!o.m) return; Object.keys(o.m).forEach(function (k) { var m = o.m[k]; if (!m.i || m.o) return; m.t -= sec; if (m.t <= 0) { m.o = m.out; m.n = m.on || 1; delete m.out; delete m.on; delete m.t; delete m.T; delete m.i; } }); }
+  // ---- animals ----
+  function homeAnimals() { var o = homeS(); if (!o.an) o.an = []; return o.an; }
+  function homeBldCap(b) { return (HF.bld[b.k] ? HF.bld[b.k].cap : 4) * (homeUp("coop") ? 2 : 1); }
+  function homeBldPop(bi) { return homeAnimals().filter(function (a) { return a.b === bi; }).length; }
+  function homeAnimalTick(dt) {   // wander the yard near home; go in at night
+    var o = homeS(), B = o.b || [], night = isNight(S.time);
+    homeAnimals().forEach(function (a) { var b = B[a.b]; if (!b) return; var D = HF.bld[b.k], dx2 = b.x + Math.floor(D.w / 2) + 0.5, dy2 = b.y + D.h + 0.6;
+      a.tt = (a.tt || 0) + dt; a.dir = a.dir || 1; if (a.x === undefined) { a.x = dx2; a.y = dy2; } if (!a.w && ANIM[a.k]) { a.w = ANIM[a.k].w; a.h = ANIM[a.k].h; }
+      if (night) { a.inside = 1; a.x = dx2; a.y = dy2; a.mv = 0; return; } a.inside = 0;
+      a.w2 = (a.w2 || 0) - dt; if (a.w2 <= 0 || a.tx === undefined) { a.w2 = 2 + Math.random() * 4; if (Math.random() < 0.4) { a.tx = a.x; a.ty = a.y; } else { a.tx = dx2 + (Math.random() - 0.5) * 10; a.ty = dy2 + Math.random() * 5 - 1; } }
+      var vx = a.tx - a.x, vy = a.ty - a.y, d = Math.sqrt(vx * vx + vy * vy), sp = (ANIM[a.k] ? ANIM[a.k].spd : 1) * 0.9;
+      if (d > 0.15) { var nx = a.x + vx / d * sp * dt, ny = a.y + vy / d * sp * dt; if (!homeSolid(Math.floor(nx), Math.floor(ny - 0.1)) && !homeWater(hmT(Math.floor(nx), Math.floor(ny - 0.1)))) { a.x = nx; a.y = ny; } else { a.tx = a.x; a.ty = a.y; } a.mv = sp; if (Math.abs(vx) > 0.05) a.dir = vx < 0 ? -1 : 1; } else a.mv = 0;
+    });
+  }
+  function homeAnimalDaily() {   // each morning: animals with hay in their trough leave something behind
+    var o = homeS(), B = o.b || [], made = 0;
+    homeAnimals().forEach(function (a) { var b = B[a.b], A = ANIM[a.k]; if (!b || !A) return;
+      if ((b.hay || 0) <= 0) { a.hungry = 1; return; } b.hay--; a.hungry = 0;
+      var n = 1 + (Math.random() < (a.f || 0) / 20 ? 1 : 0), D = HF.bld[b.k];
+      for (var q = 0; q < n; q++) { if (!o.dr) o.dr = []; if (o.dr.length > 60) break; var px = b.x + Math.random() * (D.w + 2) - 1, py = b.y + D.h + 0.3 + Math.random() * 1.6; o.dr.push({ k: A.prod, x: px, y: py }); made++; }
+    });
+    if (made) popup("Your animals", made + " thing" + (made === 1 ? "" : "s") + " waiting by the coop and barn.", "#f6eedb", "♥");
+    if (homeAnimals().some(function (a) { return a.hungry; })) toast("Some animals had no hay. Put Fiber in their trough so they produce.", "#f2c14e");
+  }
+  function homeAnimalAt(wx, wy) { var L = homeAnimals(); for (var i = 0; i < L.length; i++) { var a = L[i]; if (!a.inside && Math.abs(a.x - wx) < 0.7 && wy > a.y - 1.1 && wy < a.y + 0.3) return a; } return null; }
+  function homePet(a) { var d = S.days | 0; if (a.pd === d) { text(a.x, a.y - 1.2, a.nm + " is happy", "#ffb0d8"); return; } a.pd = d; a.f = Math.min(10, (a.f || 0) + 1); for (var i = 0; i < 5; i++) parts.push({ x: a.x + (Math.random() - 0.5) * 0.6, y: a.y - 1, vx: (Math.random() - 0.5) * 1.5, vy: -1.5 - Math.random(), g: -1, life: 0.9, max: 1, c: "#ff7ab8", s: 4 }); text(a.x, a.y - 1.3, "♥ " + a.nm, "#ff9ad0"); S.st.petted = (S.st.petted || 0) + 1; thud(700, 0.03); checkGoals(); }
+  function homePickDrop(wx, wy) { var o = homeS(), D = o.dr || []; for (var i = 0; i < D.length; i++) if (Math.abs(D[i].x - wx) < 0.6 && Math.abs(D[i].y - 0.3 - wy) < 0.6) { var d = D.splice(i, 1)[0]; give(d.k, 1, undefined, undefined, true); text(d.x, d.y - 0.6, "+1 " + ITEMS[d.k].n, "#ffe9a8"); S.st.aprod = (S.st.aprod || 0) + 1; snd("coin"); checkGoals(); return true; } return false; }
+  // ---- the coop / barn window ----
+  var bldAt = null;
+  function openBld(b) { bldAt = b; var el = $("sbxStory"); if (!el) return; storyOpen = 225; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderBld(); }
+  function renderBld() {
+    var o = homeS(), b = bldAt, D = HF.bld[b.k], bi = (o.b || []).indexOf(b), L = homeAnimals().filter(function (a) { return a.b === bi; }), cap = homeBldCap(b), fib = S.inv.fiber || 0;
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon(b.k) + '"><div><small>Your Homestead</small><h2>' + esc(ITEMS[b.k].n) + '</h2><p class="mo-sub">' + L.length + " / " + cap + " animals. Each morning, every animal eats 1 hay from the trough and leaves " + (b.k === "duckcoop" ? "an egg" : "something") + " outside. Pet them once a day: happy animals sometimes leave two.</p></div></div>";
+    h += '<p class="mo-msg">Hay in the trough: <b>' + (b.hay || 0) + "</b> (Fiber is hay)</p>";
+    h += '<ul class="mo-list">' + (L.length ? L.map(function (a) { var A = ANIM[a.k]; return '<li class="have"><img alt="" src="' + icon(A.prod) + '"><div><b>' + esc(a.nm) + " the " + esc(A.n) + "</b><small>" + "♥".repeat(Math.ceil((a.f || 0) / 2)) + "♡".repeat(5 - Math.ceil((a.f || 0) / 2)) + (a.hungry ? " · hungry" : "") + "</small></div></li>"; }).join("") : '<li><div><b>No animals yet</b><small>Buy them at the Seed Stall.</small></div></li>') + "</ul>";
+    h += '<div class="st-row">' + (fib ? '<button type="button" class="btn" data-hbld="hay">Add ' + Math.min(fib, 40 - (b.hay || 0)) + " Fiber</button>" : "") + (!L.length ? '<button type="button" class="btn ghost" data-hbld="move">Pick it up</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#c9a06a"); $("sbxStoryBox").innerHTML = h;
+  }
+  function bldAct(a) { var o = homeS(), b = bldAt; if (!b) return;
+    if (a === "hay") { var n = Math.min(S.inv.fiber || 0, 40 - (b.hay || 0)); if (n <= 0) return; S.inv.fiber -= n; if (S.inv.fiber <= 0) delete S.inv.fiber; b.hay = (b.hay || 0) + n; reslot(); hbDirty = true; thud(300, 0.04); renderBld(); return; }
+    if (a === "move") { var bi = o.b.indexOf(b); if (homeBldPop(bi)) return; o.b.splice(bi, 1); homeAnimals().forEach(function (q) { if (q.b > bi) q.b--; }); give(b.k, 1, undefined, undefined, true); if (b.hay) give("fiber", b.hay, undefined, undefined, true); closeStory(); thud(160, 0.06); }
+  }
+  // ---- the Farm Ledger (at the cottage door): upgrades ----
+  function openLedger() { var el = $("sbxStory"); if (!el) return; storyOpen = 226; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderLedger(); }
+  function renderLedger() {
+    var coins = S.inv.silvercoin || 0, h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("oldbook") + '"><div><small>Your Homestead</small><h2>Farm Ledger</h2><p class="mo-sub">Improvements for your homestead, paid in Silver Coins. You have <b>' + coins + "</b>.</p></div></div>";
+    h += '<ul class="mo-list">' + HF.ups.map(function (u) { var own = homeUp(u[0]), ok = !own && coins >= u[2]; return '<li class="' + (own || ok ? "have" : "") + '"><div><b>' + esc(u[1]) + "</b><small>" + esc(u[3]) + "</small></div>" + (own ? '<button type="button" class="btn mo-fit" disabled>Done</button>' : '<button type="button" class="btn mo-fit" data-hup="' + u[0] + '"' + (ok ? "" : " disabled") + ">" + u[2] + " Silver</button>") + "</li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffd23f"); $("sbxStoryBox").innerHTML = h;
+  }
+  function ledgerBuy(k) { var u = HF.ups.filter(function (q) { return q[0] === k; })[0], o = homeS(); if (!u || homeUp(k) || (S.inv.silvercoin || 0) < u[2]) return; S.inv.silvercoin -= u[2]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; if (!o.up) o.up = {}; o.up[k] = 1; S.st.hups = (S.st.hups || 0) + 1; if (k === "nozzle" && HOME) HOME.gd = 1; reslot(); hbDirty = true; snd("coin"); popup("Homestead upgrade", u[1], "#ffd23f", "★"); checkGoals(); save(); renderLedger(); }
+  function stallAnimal(k) { var q = HF.animals.filter(function (r) { return r[0] === k; })[0], o = homeS(); if (!q || (S.inv.silvercoin || 0) < q[1]) return;
+    var bi = -1; (o.b || []).forEach(function (b, i) { if (bi < 0 && b.k === q[2] && homeBldPop(i) < homeBldCap(b)) bi = i; }); if (bi < 0) { nag("Build a " + ITEMS[q[2]].n + " with room first."); return; }
+    S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; var A = ANIM[k], nm = A.names[Math.floor(Math.random() * A.names.length)];
+    homeAnimals().push({ k: k, b: bi, f: 0, pd: -1, nm: nm }); S.st.hanimals = (S.st.hanimals || 0) + 1; reslot(); hbDirty = true; snd("coin"); toast(nm + " the " + A.n + " moved into your " + ITEMS[q[2]].n + "!", "#7dd65a"); checkGoals(); save(); renderStall(); }
   function homeClean(h) {
     var d = { ed: {}, c: {}, w: {}, ship: {}, cr: 0, day: 0 }; if (!h || typeof h !== "object") return d;
     var ok = function (k) { return /^\d+,\d+$/.test(k); };
@@ -15551,6 +15667,12 @@
     if (Array.isArray(h.gi)) d.gi = h.gi.filter(function (g) { return g && CROPS[g.k] && g.x >= 2 && g.y >= 2 && g.x < HW - 4 && g.y < HH - 4; }).slice(0, 40).map(function (g) { return { k: g.k, x: g.x | 0, y: g.y | 0, h: 0 }; });
     if (h.w && typeof h.w === "object") Object.keys(h.w).forEach(function (k) { var v = +h.w[k] || 0; if (ok(k) && v > 0) d.w[k] = Math.min(600, v); });
     if (h.ship && typeof h.ship === "object") Object.keys(h.ship).forEach(function (k) { var v = h.ship[k] | 0; if (ITEMS[k] && v > 0) d.ship[k] = v; });
+    var okI = function (k) { return typeof k === "string" && !!ITEMS[k]; };
+    if (h.m && typeof h.m === "object") { d.m = {}; Object.keys(h.m).forEach(function (k) { var m = h.m[k]; if (!ok(k) || !m || !HF.mach || !HF.mach[m.k]) return; var e = { k: m.k }; if (okI(m.o)) { e.o = m.o; e.n = clamp(m.n | 0, 1, 9); } else if (okI(m.i) && okI(m.out)) { e.i = m.i; e.out = m.out; e.on = clamp(m.on | 0, 1, 9); e.t = Math.max(0, +m.t || 0); e.T = Math.max(1, +m.T || 60); } d.m[k] = e; }); }
+    if (Array.isArray(h.b)) d.b = h.b.filter(function (b) { return b && HF.bld && HF.bld[b.k] && b.x >= 2 && b.y >= 2 && b.x < HW - 2 && b.y < HH - 2; }).slice(0, 12).map(function (b) { return { k: b.k, x: b.x | 0, y: b.y | 0, hay: clamp(b.hay | 0, 0, 99) }; });
+    if (Array.isArray(h.an)) d.an = h.an.filter(function (a) { return a && ANIM[a.k] && d.b && d.b[a.b | 0]; }).slice(0, 40).map(function (a) { return { k: a.k, b: a.b | 0, f: clamp(+a.f || 0, 0, 10), pd: a.pd | 0, nm: String(a.nm || ANIM[a.k].names[0]).slice(0, 20), hungry: a.hungry ? 1 : 0 }; });
+    if (Array.isArray(h.dr)) d.dr = h.dr.filter(function (q) { return q && okI(q.k); }).slice(0, 60).map(function (q) { return { k: q.k, x: clamp(+q.x || 0, 2, HW - 2), y: clamp(+q.y || 0, 2, HH - 2) }; });
+    if (h.up && typeof h.up === "object") { d.up = {}; (HF.ups || []).forEach(function (u) { if (h.up[u[0]]) d.up[u[0]] = 1; }); }
     d.cr = clamp(+h.cr || 0, 0, 1); d.day = h.day | 0; return d;
   }
   var HCLK = 0; function homeClock(dt) { HCLK += dt; if (HCLK >= 1) { var s = HCLK; HCLK = 0; homeStep(s); } }
@@ -15671,6 +15793,18 @@
     hAt(g, T.LANTERN, OX + 57, OY + 40); hAt(g, T.BARREL, OX - 8, OY + 48);
     return (HSPR.house = hpOutline(S2.c));
   }
+  function hsBld(k) {   // a coop or barn, built from Delve blocks: Reed Thatch or Red Shingles over Plank Wall, a door, a Feeding Trough
+    var key = "bld" + k; if (HSPR[key]) return HSPR[key]; var D = HF.bld[k], w = D.w, h = D.h, S2 = hpCan(w * 16 + 16, h * 16 + 20), g = S2.g, OX = 8, OY = 16, x, y;
+    var roof = k === "duckcoop" ? T.THATCH : htid("Red Shingles"), rows = h - 1 + 1, wy = OY + (h - 1) * 16;
+    for (y = 0; y < rows; y++) for (x = -1; x <= w; x++) { var m = (y === 0 ? 1 : 0) | (y === rows - 1 ? 2 : 0) | (x === -1 ? 4 : 0) | (x === w ? 8 : 0), rc = hMat(roof, (x & 1) | ((y & 1) << 1), m); if (rc) g.drawImage(rc, OX + x * 16 + (x === -1 ? 8 : x === w ? -8 : 0), OY - 12 + y * 16); }
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(OX, wy, w * 16, 3);
+    for (x = 0; x < w; x++) { var wc = hMat(T.W_PLANK, x % 3, 1 | 2 | (x === 0 ? 4 : 0) | (x === w - 1 ? 8 : 0)); if (wc) g.drawImage(wc, OX + x * 16, wy + 2); }
+    var dx = OX + Math.floor(w / 2) * 16 - (w % 2 ? 0 : 8); if (k === "duckcoop") { g.fillStyle = "#2a1a0c"; g.fillRect(dx + 4, wy + 7, 9, 11); g.fillStyle = "#8a5a30"; g.fillRect(dx + 3, wy + 6, 11, 2); }
+    else { hAt(g, T.DOORO_B, dx, wy + 2); hAt(g, T.DOORO_B, dx + 16, wy + 2, 1); }
+    var tr = htid("Feeding Trough"); hAt(g, tr, OX + (w - 1) * 16 + (k === "duckcoop" ? 0 : 0), wy + 6); if (k === "mudbarn") hAt(g, T.BALE, OX, wy + 4);
+    return (HSPR[key] = hpOutline(S2.c));
+  }
+  var HICO = {}; function hIco(id) { var im = HICO[id]; if (!im) { im = HICO[id] = new Image(); im.src = icon(id); } return im.complete && im.naturalWidth ? im : null; }
   function hDraw(g, c, mx, my, ax, ay, dx) { var s = ts / 16; g.drawImage(c, Math.round(ox + mx * ts - ax * s + (dx || 0)), Math.round(oy + my * ts - ay * s), c.width * s, c.height * s); }
   function hTile(g, id, mx, my, dx, dy) { if (id < 0) return; var s = ts / 16; g.drawImage(hOT(id), Math.round(ox + mx * ts + (dx || 0) - s), Math.round(oy + my * ts + (dy || 0) - s), ts + 2 * s, ts + 2 * s); }
   function hTileSway(g, id, mx, my, sw) {   // a plant whose top half leans in the wind (whole pixels)
@@ -15689,10 +15823,16 @@
     if (!reduce) for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var wid = t[j * HW + i]; if (!homeWater(wid)) continue;
       for (var gl = 0; gl < 2; gl++) { var hgl = SW.hash(i, j, 100 + gl), ph2 = (T0 * 0.9 + hgl * 7) % 3; if (ph2 > 0.5) continue; var gx = ox + (i * 16 + 3 + Math.floor(hgl * 10)) * s16, gy = oy + (j * 16 + 4 + Math.floor(SW.hash(j, i, 102 + gl) * 9)) * s16;
         g.fillStyle = ph2 < 0.25 ? "#ffffff" : "#bfe8f0"; g.fillRect(gx, gy, s16 * 2, s16); if (ph2 < 0.25) g.fillRect(gx + s16 * 0.5, gy - s16, s16, s16 * 3); } }
+    var dlA = daylight(S.time);
     // --- things that stand up, drawn back to front ---
     var L = [];
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var id2 = t[j * HW + i]; if (id2 === HT.TREE || id2 === HT.ROCK || id2 === HT.STUMP || id2 === HT.REEDS || id2 === HT.FENCE || id2 === HT.FLOWER) L.push([j + 1, 0, i, j, id2]); var ce = o.c[i + "," + j]; if (ce) L.push([j + 0.95, 1, i, j, ce]); }
-    (o.gi || []).forEach(function (gc) { L.push([gc.y + 3, 6, gc]); }); L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
+    (o.gi || []).forEach(function (gc) { L.push([gc.y + 3, 6, gc]); });
+    if (o.m) Object.keys(o.m).forEach(function (k) { var q = k.split(","); L.push([+q[1] + 0.98, 7, +q[0], +q[1], o.m[k]]); });
+    (o.b || []).forEach(function (b) { L.push([b.y + HF.bld[b.k].h, 8, b]); });
+    (o.an || []).forEach(function (a) { if (!a.inside && a.x !== undefined) L.push([a.y, 10, a]); });
+    (o.dr || []).forEach(function (d) { L.push([d.y - 0.01, 11, d]); });
+    L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
     L.sort(function (a, b) { return a[0] - b[0]; });
     L.forEach(function (e) {
       if (e[1] === 9) { drawCavePlayer(g, now); return; }
@@ -15706,13 +15846,21 @@
       if (e[1] === 3) { homeCrate(g); return; }
       if (e[1] === 4) { homeStall(g); return; }
       if (e[1] === 5) { homeGateArt(g); return; }
+      if (e[1] === 7) { var mm = e[4], mid = mm.k === "picklekeg" ? T.BARREL : mm.k === "seedmaker" ? T.POT : mm.k === "compostbin" ? T.BALE : T.X_sprinkler;
+        hpShadow(g, ox + (e[2] + 0.5) * ts, oy + (e[3] + 0.92) * ts, ts * 0.42, ts * 0.12, 0.22); hTile(g, mid, e[2], e[3] - 0.15);
+        if (mm.k === "sprinkler" && !reduce && dlA > 0.3) { var spr = (T0 * 2 + e[2]) % 1; g.fillStyle = "rgba(200,240,255,.6)"; for (var sp2 = 0; sp2 < 6; sp2++) { var an2 = sp2 / 6 * 6.2832 + T0, rr2 = spr * ts * (homeUp("nozzle") ? 2.2 : 1.3); g.fillRect(ox + (e[2] + 0.5) * ts + Math.cos(an2) * rr2, oy + (e[3] + 0.2) * ts + Math.sin(an2) * rr2 * 0.6 - Math.sin(spr * 3.14) * ts * 0.5, s16 * 2, s16 * 2); } }
+        if (mm.o) { var ic = hIco(mm.o), by2 = oy + (e[3] - 1.05) * ts + (reduce ? 0 : Math.sin(T0 * 3) * s16 * 1.5); g.fillStyle = "rgba(246,238,219,.95)"; g.fillRect(ox + (e[2] + 0.1) * ts, by2, ts * 0.8, ts * 0.8); g.fillStyle = "#3a2410"; g.fillRect(ox + (e[2] + 0.1) * ts, by2 + ts * 0.8, ts * 0.8, s16); if (ic) g.drawImage(ic, ox + (e[2] + 0.18) * ts, by2 + ts * 0.08, ts * 0.64, ts * 0.64); }
+        else if (mm.i && mm.T) { var pf = 1 - clamp(mm.t / mm.T, 0, 1); g.fillStyle = "rgba(20,14,6,.8)"; g.fillRect(ox + (e[2] + 0.1) * ts, oy + (e[3] - 0.45) * ts, ts * 0.8, s16 * 3); g.fillStyle = "#7dd65a"; g.fillRect(ox + (e[2] + 0.1) * ts + s16, oy + (e[3] - 0.45) * ts + s16, (ts * 0.8 - 2 * s16) * pf, s16); }
+        return; }
+      if (e[1] === 8) { var bb = e[2]; hpShadow(g, ox + (bb.x + HF.bld[bb.k].w / 2) * ts, oy + (bb.y + HF.bld[bb.k].h - 0.05) * ts, ts * HF.bld[bb.k].w * 0.55, ts * 0.2, 0.24); hDraw(g, hsBld(bb.k), bb.x, bb.y, 8, 16); return; }
+      if (e[1] === 10) { drawAnimal(g, e[2], now); return; }
+      if (e[1] === 11) { var dd2 = e[2], ic2 = hIco(dd2.k), bob2 = reduce ? 0 : Math.sin(T0 * 2.5 + dd2.x * 3) * s16; hpShadow(g, ox + dd2.x * ts, oy + (dd2.y + 0.05) * ts, ts * 0.25, ts * 0.08, 0.25); if (ic2) g.drawImage(ic2, ox + (dd2.x - 0.3) * ts, oy + (dd2.y - 0.6) * ts + bob2, ts * 0.6, ts * 0.6); return; }
       if (e[1] === 6) { var gc = e[2], gsp = hsGiant(gc.k), wob = gc.h ? Math.sin(T0 * 34) * ts * 0.04 * gc.h : 0;
         hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y - 0.3, 1, 1, wob);
         if (gc.h) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", ox + (gc.x + 1.5) * ts, oy + (gc.y - 0.3) * ts); }
         return; }
     });
     // --- daytime life: slow cloud shadows drifting over the farm, butterflies over the grass ---
-    var dlA = daylight(S.time);
     if (!reduce && dlA > 0.6) {
       for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; g.fillStyle = "rgba(20,30,40,.07)"; g.beginPath(); g.ellipse(cxc, cyc, ts * 4.5, ts * 1.6, 0, 0, 6.2832); g.fill(); g.beginPath(); g.ellipse(cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, 0, 0, 6.2832); g.fill(); }
       for (i = 0; i < 5; i++) { var bxs = (SW.hash(i, 7, 103) * (HW - 8) + 4) + Math.sin(T0 * 0.45 + i * 2.1) * 3, bys = (SW.hash(i, 8, 103) * (HH - 10) + 4) + Math.cos(T0 * 0.37 + i) * 2 + Math.sin(T0 * 3 + i) * 0.15, flap = Math.floor(T0 * 8 + i) % 2, bsx = ox + bxs * ts, bsy = oy + bys * ts;
@@ -15737,6 +15885,8 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     // a little sign over a crop you're pointing at: how long until it's ripe
+    if (aim.tx >= 0 && o.m && o.m[aim.tx + "," + aim.ty]) { var mh = o.m[aim.tx + "," + aim.ty], ml = ITEMS[mh.k].n + (mh.o ? ": ready! Tap to collect" : mh.i ? ": " + Math.ceil(mh.t) + " s left" : mh.k === "sprinkler" ? ": waters the soil around it" : mh.k === "compostbin" ? ": add 4 Fiber or Leaves" : ": tap with a crop selected");
+      g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var mw = g.measureText(ml).width + 14, mx2 = ox + (aim.tx + 0.5) * ts, my2 = oy + (aim.ty - 1.3) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(mx2 - mw / 2, my2 - 11, mw, 20); g.fillStyle = mh.o ? "#ffe27a" : "#f6eedb"; g.fillText(ml, mx2, my2 + 4); }
     if (aim.tx >= 0) { var ce2 = o.c[aim.tx + "," + aim.ty], C2 = ce2 && CROPS[ce2.k]; if (C2) { var wet2 = homeWet(aim.tx, aim.ty), pidl = hmT(aim.tx, aim.ty);
       if (C2.wat) wet2 = pidl === HT.PADDYW; var left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (C2.moon ? 1.5 * (wet2 ? 2 : 1) : wet2 ? 2 : 1), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : C2.wat && !wet2 ? ": the paddy is dry" : C2.moon && !isNight(S.time) ? ": waits for night" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (C2.wat ? " \u00b7 flooded" : wet2 ? " \u00b7 watered" : " \u00b7 dry")) + (o.f[aim.tx + "," + aim.ty] ? " \u00b7 compost" : "");
       g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var lw = g.measureText(lbl).width + 14, lx = ox + (aim.tx + 0.5) * ts, ly = oy + (aim.ty - 0.75) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(lx - lw / 2, ly - 11, lw, 20); g.fillStyle = ce2.s >= 4 ? "#ffe27a" : wet2 ? "#9ae0ff" : "#f6eedb"; g.fillText(lbl, lx, ly + 4); } }

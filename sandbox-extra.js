@@ -1702,6 +1702,33 @@
   Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, v = HOMEFARM.ship[pk]; if (v) { HOMEFARM.ship[pk + "_s"] = Math.round(v * 1.5 * 10) / 10; HOMEFARM.ship[pk + "_g"] = v * 2; } });
   HOMEFARM.seeds.push(["seed_bogrice", 3], ["seed_lotus", 4], ["seed_moonpetal", 5], ["seed_glowgourd", 6], ["compost", 1]);
   HOMEFARM.giant = { mudmelon: 1, croakpumpkin: 1, glowgourd: 1 };
+  // ---------- HOMESTEAD stage 3: machines, animal buildings, upgrades ----------
+  item("picklekeg", "Pickle Keg", { tile: T.BARREL, d: "Place it on your homestead. Put a crop in and it comes out as Preserves, worth three times as much at the crate." });
+  item("seedmaker", "Seed Maker", { tile: T.POT, d: "Place it on your homestead. Put a crop in and get 2 or 3 of its seeds back." });
+  item("compostbin", "Compost Bin", { tile: T.BALE, d: "Place it on your homestead. Fill it with Fiber or Leaves and it makes Bog Compost." });
+  item("duckcoop", "Duck Coop", { tile: T.THATCH, d: "A 3 x 2 coop for your homestead. Houses Bog Ducks (buy them at the Seed Stall)." });
+  item("mudbarn", "Mud Barn", { tile: T.PLANKS, d: "A 4 x 3 barn for your homestead. Houses Mud Pigs and Frost Goats (buy them at the Seed Stall)." });
+  R("x_picklekeg", "Pickle Keg", { picklekeg: 1 }, { planks: 8, bogiron: 1 }, { bench: true, d: "Turns crops into Preserves." });
+  R("x_seedmaker", "Seed Maker", { seedmaker: 1 }, { clay: 6, stone: 4 }, { bench: true, d: "Turns a crop into 2 or 3 of its seeds." });
+  R("x_compostbin", "Compost Bin", { compostbin: 1 }, { planks: 4, fiber: 6 }, { bench: true, d: "Turns Fiber or Leaves into Bog Compost." });
+  R("x_duckcoop", "Duck Coop", { duckcoop: 1 }, { planks: 20, fiber: 10, stone: 6 }, { bench: true, d: "A home for up to 4 Bog Ducks on your homestead." });
+  R("x_mudbarn", "Mud Barn", { mudbarn: 1 }, { planks: 36, stone: 16, bogiron: 3 }, { bench: true, d: "A home for up to 4 Mud Pigs and Frost Goats on your homestead." });
+  var PRES = {};   // PRESERVES: one jar per crop
+  Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, I = ITEMS[pk]; if (!I || ITEMS["pres_" + pk]) return; PRES[pk] = "pres_" + pk;
+    item("pres_" + pk, I.n + " Preserves", { food: Math.round((I.food || 6) * 2), heal: (I.heal || 0) + 4, cooked: 1, pb: pk, pc: CROPS[k].fruit });
+    if (HOMEFARM.ship[pk]) HOMEFARM.ship["pres_" + pk] = Math.round(HOMEFARM.ship[pk] * 3 * 10) / 10; });
+  Object.assign(HOMEFARM.ship, { duckegg: 1.5, truffle: 4, goatmilk: 3 });
+  HOMEFARM.pres = PRES;
+  HOMEFARM.bld = { duckcoop: { w: 3, h: 2, animals: ["duck"], cap: 4 }, mudbarn: { w: 4, h: 3, animals: ["pig", "goat"], cap: 4 } };
+  HOMEFARM.mach = { picklekeg: 1, seedmaker: 1, compostbin: 1, sprinkler: 1 };
+  HOMEFARM.animals = [["duck", 8, "duckcoop"], ["pig", 15, "mudbarn"], ["goat", 18, "mudbarn"]];
+  HOMEFARM.ups = [
+    ["nozzle", "Brass Nozzles", 30, "Sprinklers water a 5 x 5 square instead of 3 x 3."],
+    ["soil", "Rich Bog Soil", 40, "Every crop on your homestead grows 20% faster."],
+    ["coop", "Roomy Barns", 35, "Coops and barns hold 8 animals instead of 4."],
+    ["cart", "Croaker's Big Cart", 50, "The cart pays 20% more for everything you ship."],
+    ["keg", "Copper Coils", 30, "Kegs, Seed Makers and Compost Bins work 40% faster."]
+  ];
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
