@@ -361,6 +361,8 @@
     sq("croakaf5", "Homesteader", 2, "Family Friend", "Reach 5 hearts with Croaka.", 5, st("croakaf"), { seed_mudmelon: 4 }),
     sq("croakaf10", "Homesteader", 3, "Practically Family", "Reach 10 hearts with Croaka.", 10, st("croakaf"), { silvercoin: 30 }),
     sq("allcrops", "Homesteader", 3, "Master Homesteader", "Grow and harvest all 14 kinds of crop on your homestead.", 14, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8192; q *= 2) if (b & q) n++; return n; }, { silvercoin: 40 }),
+    sq("almanac3", "Homesteader", 2, "Bookworm", "Fill 3 chapters of Croaka's Farm Almanac and claim her rewards.", 3, st("fmpaid"), { silvercoin: 15 }),
+    sq("almanac6", "Homesteader", 3, "The Whole Almanac", "Fill every chapter of Croaka's Farm Almanac.", 6, st("fmpaid"), { goldfrog: 1 }),
     sq("home1", "Homesteader", 1, "A Place to Grow", "Place a Farm Gate and step through to your homestead.", 1, st("homevisit"), { seed_lilyleek: 3 }),
     sq("canal1", "Homesteader", 1, "Water Works", "Dig 8 ditches on your homestead. A ditch that touches water fills into a canal.", 8, st("ditches"), { seed_bogrice: 4 }),
     sq("ship1", "Homesteader", 1, "Cart Day", "Ship 20 crops in your Shipping Crate.", 20, st("shipped"), { compost: 4 }),
@@ -549,7 +551,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -624,7 +626,10 @@
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
     if (o.razed && typeof o.razed === "object" && o.wv === SW.WORLDVER) { d.razed = {}; Object.keys(o.razed).forEach(function (k) { if (o.razed[k] && /^\d+$/.test(k)) d.razed[k] = 1; }); }   // buildings you knocked down
     if (o.oc) d.oc = ocClean(o.oc);
-    if (o.home) d.home = homeClean(o.home);   // HOMESTEAD: your farm   // OCEAN: boat parts, opened sea chests, dug tiles
+    if (o.home) d.home = homeClean(o.home);   // HOMESTEAD: your farm
+    if (o.hb && typeof o.hb === "object") Object.keys(o.hb).forEach(function (k) { if (/^[cgap]:[a-z_]+$/.test(k)) d.hb[k] = Math.max(0, Math.floor(+o.hb[k]) || 0); });   // FARM ALMANAC
+    if (o.hq && typeof o.hq === "object") Object.keys(o.hq).forEach(function (k) { if (CROPS[k]) d.hq[k] = clamp(o.hq[k] | 0, 0, 2); });
+    if (o.hbpay && typeof o.hbpay === "object") Object.keys(o.hbpay).forEach(function (k) { if (/^[a-z]+$/.test(k) && o.hbpay[k]) d.hbpay[k] = 1; });   // OCEAN: boat parts, opened sea chests, dug tiles
     if (o.moto && typeof o.moto === "object") { d.moto = { p: {}, done: o.moto.done ? 1 : 0 }; if (o.moto.p && typeof o.moto.p === "object") Object.keys(o.moto.p).forEach(function (k) { if (/^moto_[a-z]+$/.test(k) && o.moto.p[k]) d.moto.p[k] = 1; }); }   // GARAGE: the motorcycle's parts
     if (Array.isArray(o.croakHome) && o.wv === SW.WORLDVER && o.croakHome.every(function (v) { return Number.isInteger(v) && v >= 0; })) d.croakHome = o.croakHome.slice(0, 2);   // Old Croaker lives in your house
     if (o.lore && typeof o.lore === "object") Object.keys(o.lore).forEach(function (k) { if (o.lore[k] === 1 || o.lore[k] === 2) d.lore[k] = o.lore[k]; });   // LORE pages found
@@ -1198,7 +1203,8 @@
   var bare = false;   // holding nothing (an empty hotbar slot): you dig and pick with bare paws even if you own a pick
   function choose(id, slot) {
     bare = false;
-    if (id === "fishlog") { openFishLog(); return; }   // the Fishing Log opens when you pick it
+    if (id === "fishlog") { openFishLog(); return; }
+    if (id === "farmbook") { openFarmBook(); return; }   // so does Croaka's Farm Almanac   // the Fishing Log opens when you pick it
     if (id === "hand") { sel = "pick"; bare = true; selSlot = slot != null ? slot : -1; }
     else if (TOOLKEY[id]) { if (toolOwned(id)) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(TOOLKEY[id]); } else if (id === "pick") { sel = "pick"; bare = true; selSlot = -1; } mine = null; hbDirty = true; return; }
     else if (id === "weapon") { if (S.wpn) { sel = "weapon"; selSlot = -1; } }
@@ -5363,6 +5369,7 @@
     var bk = Object.keys(BOSS), bN = bk.filter(function (k) { return st.boss & BOSS[k].bit; }).length;
     h += sect("Bosses", bN, bk.length, bk.map(function (k) { var B = BOSS[k], m = { queen: "queenchitin", wyrm: "wyrmscale", alpha: "alphamane" }[k]; return tile(icon(m), B.n, BIO_NAMES[B.b], !!(st.boss & B.bit), B.c); }).join(""));
     var fN = 0;   // FISH live in Croako's Fishing Log now (a book you get from Croako at Croaker's Pier), not here
+    h += '<h3>Farm</h3><div class="lg-book"><img alt="" src="' + icon("farmbook") + '"><div><b>' + ((S.inv.farmbook || 0) > 0 ? "Your harvests are written in Croaka's Farm Almanac" : "Croaka keeps a Farm Almanac") + '</b><small>' + ((S.inv.farmbook || 0) > 0 ? "Pick it on your hotbar to read it." : "Meet her on your homestead (through a Farm Gate).") + "</small></div>" + ((S.inv.farmbook || 0) > 0 ? '<button type="button" class="btn ghost" data-fmopen>Open</button>' : "") + "</div>";
     h += '<h3>Fish</h3><div class="lg-book"><img alt="" src="' + icon("fishlog") + '"><div><b>' + ((S.inv.fishlog || 0) > 0 ? "Your fish are written in Croako's Fishing Log" : "Croako keeps the fish records") + "</b><small>" + ((S.inv.fishlog || 0) > 0 ? FISH_ALL.filter(function (k) { return S.fdex[k]; }).length + " of " + FISH_ALL.length + " kinds logged." : "Find Old Croaker's brother on the beach at Croaker's Pier. He has a book for you.") + "</small></div>" + ((S.inv.fishlog || 0) > 0 ? '<button type="button" class="btn" data-fbopen>Open the log</button>' : "") + "</div>";
     var sea = typeof OM !== "undefined" ? Object.keys(OM) : [], sk = (S.oc && S.oc.kills) || {}, seaIc = { snapjaw: "bogminnow", captain: "blackpearl" }, sN = sea.filter(function (k) { return sk[k] > 0; }).length;   // OCEAN
     if (sea.length) h += sect("Sea creatures", sN, sea.length, sea.map(function (k) { var d = OM[k], n = sk[k] || 0, ic = seaIc[k] || (d.drops && d.drops[0] && d.drops[0][0]); return tile(icon(ITEMS[ic] ? ic : "kelp"), d.n, n + " defeated", n > 0, d.boss ? "#a8fff0" : "#4fd0e8"); }).join(""));
@@ -5384,7 +5391,7 @@
   // Messages (JSON): me (look), p (player state), set / wall (tile edits, batched), tick (host: creatures, shots, its own state), env (time, weather),
   //   hit (guest hit a creature), dmg (a creature hit a guest), kill / bosswin (reward a guest), pvp (player hit), farm / water, chat, cfg (PvP switch).
   // Creatures always chase the nearest player: the host runs each creature's brain with that player standing in for "you" (mpRun).
-  var MP_CHAR = ["inv", "slots", "extra", "home", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "fn", "fbig", "fpay", "rod", "hoe", "bucket", "bkt", "net", "bow", "fx", "gems", "wings", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
+  var MP_CHAR = ["inv", "slots", "extra", "home", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "fn", "fbig", "fpay", "hb", "hq", "hbpay", "rod", "hoe", "bucket", "bkt", "net", "bow", "fx", "gems", "wings", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
   var MP = { on: false, role: "", ws: null, code: "", id: 0, peers: {}, npeers: 0, pvp: false, pub: false, room: "", hostName: "", own: null, applying: false,
     sets: [], walls: [], flushT: 0, sendT: 0, tickT: 0, envT: 0, metaT: 0, last: "", proxy: null, proxyE: null, nid: 0, chat: [], say: "", sayT: 0, status: "", err: "", list: null, view: "home" };
   var mpName = ""; try { mpName = localStorage.getItem("swamp-delve-mpname") || ""; } catch (e) {}
@@ -12219,7 +12226,7 @@
     bag1: "bag1", bag2: "bag2", shovel1: "shovel", gem1: "quartz", gem4: "amethyst", king5: "wpn5", arm1: "arm1", x_cloth: "cloth", x_mason: "redbrick", x_glass: "stainedred",
     bow1: "bow1", arrow25: "arrow", bow3: "bow3", witch1: "hexdust", witch5: "hexdust", whut1: "bottle", whut2: "hexdust", glide500: "emberwings", spider10: "silk", boss1: "bugtrophy", boss3: "alphamane", boss10: "wyrmscale",
     bug5: "bugfrag", frog5: "frogfrag", bat1: "batwing", bat10: "battrophy", slime5: "slimeball", gator1: "gatorscale", wasp5: "stinger", wolf5: "wolfpelt", sleep5: "bed",
-    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", home1: "farmgate", sprk1: "sprinkler", keg1: "picklekeg", coop1: "duckcoop", eggs1: "duckegg", pet1: "duckegg", ledger1: "silvercoin", canal1: "seed_bogrice", ship1: "silvercoin", paddy1: "bogrice", moon1: "moonpetal", prize1: "croakpumpkin_g", giant1: "mudmelon", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
+    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", home1: "farmgate", almanac3: "farmbook", almanac6: "farmbook", sprk1: "sprinkler", keg1: "picklekeg", coop1: "duckcoop", eggs1: "duckegg", pet1: "duckegg", ledger1: "silvercoin", canal1: "seed_bogrice", ship1: "silvercoin", paddy1: "bogrice", moon1: "moonpetal", prize1: "croakpumpkin_g", giant1: "mudmelon", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
     cave2: "stone", cave3: "ladder", ckill10: "wpn2", cclear5: "amethyst", cave15: "moonstone", loot1: "chest", loot10: "ancientcoin", pots20: "pot", home1: "homeshell",
     trap10: "fishtrap", bait10: "firefly", fish10: "bogminnow", fish50: "rod2", rarefish: "glowfin", fishdex: "fishtrophy", lavafish: "rod2", fishloot: "chest", boot: "oldboot",
     pets3: "trough", allpets: "goatmilk", collect20: "duckegg", baby1: "truffle", ffly10: "firefly", scoop10: "bucket", charm1: "goldfeather", charm8: "owlfeather", bty1: "swamptoken", bty25: "swamptoken", shop1: "swamptoken",
@@ -14439,6 +14446,11 @@
       LN(g, "#c99a5a", 1, [[11, 7], [24, 7], [24, 25], [11, 25], [11, 7]]); E(g, 17.5, 16, 4.6, 2.6, "#c99a5a"); PG(g, "#c99a5a", [[13, 16], [10.5, 13.5], [10.5, 18.5]]); E(g, 20, 15.3, 0.7, 0.7, "#5a3418");
       RC(g, 15, 27, 3, 4, "#c83a3a"); PG(g, "#c83a3a", [[15, 31], [16.5, 29.5], [18, 31]]); RC(g, 7, 10, 3, 1, "#3a2412"); RC(g, 7, 20, 3, 1, "#3a2412"); E(g, 22, 25, 2, 1.2, "rgba(0,0,0,.25)");
     };
+    OCI.farmbook = function (g) {   // Croaka's green almanac: a leather book with a sprout tooled on the cover and a pressed flower
+      RC(g, 6, 5, 21, 24, "#1e3a14"); RC(g, 7, 4, 20, 24, "#4a7a2a"); RC(g, 7, 4, 3, 24, "#2f5a1e"); RC(g, 26, 6, 2, 21, "#efe2c0"); RC(g, 26, 8, 2, 1, "#c9b48a"); RC(g, 26, 14, 2, 1, "#c9b48a"); RC(g, 26, 20, 2, 1, "#c9b48a");
+      LN(g, "#c9d87a", 1, [[11, 7], [24, 7], [24, 25], [11, 25], [11, 7]]); LN(g, "#c9d87a", 1.4, [[17.5, 22], [17.5, 13]]); E(g, 14.5, 13.5, 3, 1.8, "#c9d87a", -0.5); E(g, 20.5, 11.5, 3, 1.8, "#c9d87a", 0.5); RC(g, 14, 21, 7, 2, "#8a6a3a");
+      E(g, 23, 6, 2.2, 2.2, "#ff7ab0"); E(g, 23, 6, 0.9, 0.9, "#ffd23f"); RC(g, 15, 27, 3, 4, "#e86a8a"); PG(g, "#e86a8a", [[15, 31], [16.5, 29.5], [18, 31]]); E(g, 22, 25, 2, 1.2, "rgba(0,0,0,.25)");
+    };
     OCI.brinemackerel = function (g) { fishI(g, "#4a8ab8", "#1f4a7a", "#d8e8f0", "#2f5a8a", { stripe: 1 }); };
     OCI.kelpsnapper = function (g) { fishI(g, "#d8503a", "#8a2a1a", "#ffc8a8", "#3f9a4c", { tall: 1 }); };
     OCI.goldgilly = function (g) { fishI(g, "#ffd23f", "#c98a1c", "#fff6c0", "#ff9a3a", { glow: 1, tall: 1 }); };
@@ -15391,7 +15403,7 @@
       var ok = true; for (var yy = y0; yy < y0 + 3 && ok; yy++) for (var xx = x0; xx < x0 + 3; xx++) { var e = o.c[xx + "," + yy]; if (!e || e.k !== k || e.s < 4 || (xx === x && yy === y ? false : false)) { ok = false; break; } }
       if (!ok) continue;
       for (yy = y0; yy < y0 + 3; yy++) for (xx = x0; xx < x0 + 3; xx++) delete o.c[xx + "," + yy];
-      o.gi.push({ k: k, x: x0, y: y0, h: 0 }); S.st.giants = (S.st.giants || 0) + 1;
+      o.gi.push({ k: k, x: x0, y: y0, h: 0 }); S.st.giants = (S.st.giants || 0) + 1; fmLog("g:" + k);
       if (HOME) { for (var i = 0; i < 24; i++) chips(x0 + 1.5, y0 + 1.5, CROPS[k].fruit, 4, 8); thud(90, 0.12); shake = 0.6; }
       popup("Giant crop!", "A giant " + CROPS[k].n + " grew on your homestead!", "#ffd23f", "\u2605"); checkGoals(); return;
     }
@@ -15548,6 +15560,7 @@
     if (sd && ns > 0) give(sd, ns, undefined, undefined, true); if (o.f[key]) { delete o.f[key]; hMark(x, y, 0); }
     text(x + 0.5, y - 0.4, "+" + n + " " + ITEMS[C.produce].n, "#ffe9a8"); if (got[2]) text(x + 0.5, y - 1.1, "\u2605 Prize!", "#ffd23f"); else if (got[1]) text(x + 0.5, y - 1.1, "\u2606 Fine", "#e8eef4"); hFx(x, y, C.fruit, 10);
     if (C.wat) S.st.paddyharv = (S.st.paddyharv || 0) + 1; if (C.moon) S.st.moonharv = (S.st.moonharv || 0) + 1;
+    fmLog("c:" + e.k, 1, got[2] ? 2 : got[1] ? 1 : 0);   // FARM ALMANAC
     if (sel === "hoe" && sd && (S.inv[sd] || 0) > 0) { S.inv[sd]--; if (S.inv[sd] <= 0) delete S.inv[sd]; o.c[key] = { k: e.k, g: 0, s: 1 }; S.st.planted++; reslot(); hbDirty = true; }   // the hoe replants as it harvests
     S.st.harvests++; S.st.cropbits |= HBITS[e.k] || 0; snd("coin"); homeGoals();
   }
@@ -15621,7 +15634,7 @@
   }
   function homeMachUse(m, x, y, press) {   // tap a machine: collect, fill, or explain
     var o = homeS(), it = ITEMS[sel], fast = homeUp("keg") ? 0.6 : 1;
-    if (m.o) { give(m.o, m.n || 1, undefined, undefined, true); text(x + 0.5, y - 0.4, "+" + (m.n || 1) + " " + ITEMS[m.o].n, "#ffe9a8"); if (m.k === "picklekeg") S.st.preserves = (S.st.preserves || 0) + (m.n || 1); if (m.k === "seedmaker") S.st.seedsmade = (S.st.seedsmade || 0) + (m.n || 1); delete m.o; delete m.n; delete m.i; snd("coin"); checkGoals(); return; }
+    if (m.o) { give(m.o, m.n || 1, undefined, undefined, true); text(x + 0.5, y - 0.4, "+" + (m.n || 1) + " " + ITEMS[m.o].n, "#ffe9a8"); if (m.k === "picklekeg") { S.st.preserves = (S.st.preserves || 0) + (m.n || 1); fmLog("p:" + m.o, m.n || 1); } if (m.k === "seedmaker") S.st.seedsmade = (S.st.seedsmade || 0) + (m.n || 1); delete m.o; delete m.n; delete m.i; snd("coin"); checkGoals(); return; }
     if (sel === "pick" && !m.i) { delete o.m[x + "," + y]; give(m.k, 1, undefined, undefined, true); if (m.k === "sprinkler") hMark(x, y, 3); thud(160, 0.06); hFx(x, y, "#8a6a4a", 8); return; }
     if (m.k === "sprinkler") { if (press) nag("The sprinkler waters the soil around it. Use your pick to move it."); return; }
     if (m.i) { if (press) nag(ITEMS[m.i] ? "Working on " + ITEMS[m.i].n + "... " + Math.ceil(m.t) + " s left." : "Working..."); return; }
@@ -15659,7 +15672,7 @@
   }
   function homeAnimalAt(wx, wy) { var L = homeAnimals(); for (var i = 0; i < L.length; i++) { var a = L[i]; if (!a.inside && Math.abs(a.x - wx) < 0.7 && wy > a.y - 1.1 && wy < a.y + 0.3) return a; } return null; }
   function homePet(a) { var d = S.days | 0; if (a.pd === d) { text(a.x, a.y - 1.2, a.nm + " is happy", "#ffb0d8"); return; } a.pd = d; a.f = Math.min(10, (a.f || 0) + 1); for (var i = 0; i < 5; i++) parts.push({ x: a.x + (Math.random() - 0.5) * 0.6, y: a.y - 1, vx: (Math.random() - 0.5) * 1.5, vy: -1.5 - Math.random(), g: -1, life: 0.9, max: 1, c: "#ff7ab8", s: 4 }); text(a.x, a.y - 1.3, "♥ " + a.nm, "#ff9ad0"); S.st.petted = (S.st.petted || 0) + 1; thud(700, 0.03); checkGoals(); }
-  function homePickDrop(wx, wy) { var o = homeS(), D = o.dr || []; for (var i = 0; i < D.length; i++) if (Math.abs(D[i].x - wx) < 0.6 && Math.abs(D[i].y - 0.3 - wy) < 0.6) { var d = D.splice(i, 1)[0]; give(d.k, 1, undefined, undefined, true); text(d.x, d.y - 0.6, "+1 " + ITEMS[d.k].n, "#ffe9a8"); S.st.aprod = (S.st.aprod || 0) + 1; snd("coin"); checkGoals(); return true; } return false; }
+  function homePickDrop(wx, wy) { var o = homeS(), D = o.dr || []; for (var i = 0; i < D.length; i++) if (Math.abs(D[i].x - wx) < 0.6 && Math.abs(D[i].y - 0.3 - wy) < 0.6) { var d = D.splice(i, 1)[0]; give(d.k, 1, undefined, undefined, true); fmLog("a:" + d.k); text(d.x, d.y - 0.6, "+1 " + ITEMS[d.k].n, "#ffe9a8"); S.st.aprod = (S.st.aprod || 0) + 1; snd("coin"); checkGoals(); return true; } return false; }
   // ---- the coop / barn window ----
   var bldAt = null;
   function openBld(b) { bldAt = b; var el = $("sbxStory"); if (!el) return; storyOpen = 225; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderBld(); }
@@ -15714,7 +15727,8 @@
   function talkCroaka() {
     var el = $("sbxStory"); if (!el) return; storyOpen = 227; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
     var K = croakaS(), first = !K.met; K.said = (K.said || 0) + 1;
-    if (first) { K.met = 1; S.st.croakamet = 1; var gift = { seed_lilyleek: 4, seed_reedcorn: 4, compost: 3, silvercoin: 5 }; Object.keys(gift).forEach(function (k) { if (ITEMS[k]) give(k, gift[k], undefined, undefined, true); }); K.gift0 = gift; homeGoals(); }
+    if (!first && !(S.inv.farmbook > 0)) { K.book = 1; give("farmbook", 1, undefined, undefined, true); if (!S.vis.farmbook) { S.vis.farmbook = 1; K.bookNew = 1; popup("Croaka's Farm Almanac", "Everything you grow, raise and jar gets written in it.", "#a8c86a", "\u2740"); } }
+    if (first) { K.met = 1; S.st.croakamet = 1; S.vis.farmbook = 1; var gift = { farmbook: 1, seed_lilyleek: 4, seed_reedcorn: 4, compost: 3, silvercoin: 5 }; Object.keys(gift).forEach(function (k) { if (ITEMS[k]) give(k, gift[k], undefined, undefined, true); }); K.gift0 = gift; homeGoals(); }
     renderCroaka(first);
   }
   function renderCroaka(first) {
@@ -15722,16 +15736,18 @@
     var h = '<div class="st-croak" aria-hidden="true">' + CROAKA_SVG + "</div><small>Croaka, Old Croaker's sister</small>";
     if (first) h += '<h2 class="st-hi">So YOU\'RE the one who moved in next to the reeds!</h2><p>“I\'m Croaka. Croaker\'s big sister, whatever he tells you. I\'ve farmed this bog since before he could hop. You\'ve got good soil here, and a pond, and that\'s half of farming. Here, some seeds to get you going, and a little something for the cart. I\'ll need a hand now and then. Come see me every day and I\'ll have a little job for you.”</p>'
       + '<div class="st-gift">' + Object.keys(K.gift0 || {}).filter(function (k) { return ITEMS[k]; }).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + K.gift0[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>";
+    else if (K.bookNew) { K.bookNew = 0; h += '<h2 class="st-hi">Oh! I nearly forgot. This is for you.</h2><p>\u201cMy old Farm Almanac. Every crop you harvest, every egg, every jar, you write it in here. Fill a chapter and come show me. I pay in silver, and in pie, but mostly silver.\u201d</p><div class="st-gift"><span><img alt="" src="' + icon("farmbook") + '">1 Croaka\'s Farm Almanac</span></div>'; }
     else h += '<h2 class="st-hi">' + esc(CROAKA_HI[((K.said || 0) + (S.days | 0)) % CROAKA_HI.length]) + "</h2>";
     h += '<div class="hm-ord"><small>Today\'s Farm Order</small>' + (ord.done ? "<p><b>Done for today. Thank you, sprout!</b> Come back tomorrow.</p>"
       : '<p><img alt="" src="' + icon(ord.k) + '"> <b>' + ord.n + " " + esc(ITEMS[ord.k] ? ITEMS[ord.k].n : ord.k) + "</b> · you have " + have + "<br><small>Pays " + croakaReward(ord) + " Silver Coins and a heart. Fine and Prize ones count too.</small></p>") + "</div>";
     h += '<p class="hm-hearts">' + "♥".repeat(f) + '<span>' + "♡".repeat(10 - f) + "</span>" + (next ? " · next gift at " + next[0] + " hearts" : " · best friends!") + "</p>";
     if (!first) h += '<p class="st-tip"><b>Croaka\'s tip:</b> ' + esc(CROAKA_TIPS[((K.said || 0) * 3 + (S.days | 0)) % CROAKA_TIPS.length]) + "</p>";
-    h += '<div class="st-row">' + (!ord.done ? '<button type="button" class="btn" data-croaka="give"' + (have >= ord.n ? "" : " disabled") + ">Deliver</button>" : "") + '<button type="button" class="btn ghost" data-croaka="book">Farm chapter</button><button type="button" class="btn ghost" data-story-close>Bye, Croaka</button></div>';
+    h += '<div class="st-row">' + (!ord.done ? '<button type="button" class="btn" data-croaka="give"' + (have >= ord.n ? "" : " disabled") + ">Deliver</button>" : "") + '<button type="button" class="btn ghost" data-croaka="almanac">Farm Almanac</button><button type="button" class="btn ghost" data-croaka="book">Farm chapter</button><button type="button" class="btn ghost" data-story-close>Bye, Croaka</button></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#ffb0d8"); $("sbxStoryBox").innerHTML = h; save();
   }
   function croakaAct(a) {
     if (a === "book") { closeStory(); QB.ch = "s:Homesteader"; openPanel("quests"); return; }
+    if (a === "almanac") { closeStory(); var fpg = FMB.findIndex(function (P) { return fmPageDone(P) && !(S.hbpay && S.hbpay[P.id]); }); openFarmBook(fpg >= 0 ? fpg + 1 : 0); return; }
     if (a !== "give") return; var K = croakaS(), ord = croakaOrder(); if (ord.done || croakaHave(ord.k) < ord.n) return;
     var need = ord.n; [ord.k, ord.k + "_s", ord.k + "_g"].forEach(function (q) { var t = Math.min(need, S.inv[q] || 0); if (t > 0) { S.inv[q] -= t; if (S.inv[q] <= 0) { delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } } need -= t; } });
     ord.done = 1; var pay = croakaReward(ord); give("silvercoin", pay, undefined, undefined, true); K.f = Math.min(10, (K.f || 0) + 1); S.st.orders = (S.st.orders || 0) + 1; S.st.croakaf = K.f;
@@ -15768,11 +15784,90 @@
     g.beginPath(); g.moveTo(-9, -38); g.quadraticCurveTo(1, -52, 11, -38); g.closePath(); g.fill(); g.stroke(); g.fillStyle = "#e86a8a"; g.fillRect(-9.5, -41, 21, 2.6);
     g.fillStyle = "#ff7ab0"; g.beginPath(); g.arc(9, -42, 3.2, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(9, -42, 1.3, 0, 7); g.fill();
     g.restore();
-    var bang = !K.met || !ord.done, by = -62 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
+    var bang = !K.met || !ord.done || (S.inv.farmbook > 0 && FMB.some(function (P) { return fmPageDone(P) && !(S.hbpay && S.hbpay[P.id]); })), by = -62 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
     if (bang) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = "#ffb0d8"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, 8, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = "#ffb0d8"; g.font = "900 11px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(K.met ? "♥" : "!", 0, by + 4); }
     if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Croaka").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Croaka", 0, 13); }
     g.restore();
   }
+  // ---------- CROAKA'S FARM ALMANAC: a log book for everything you grow and make, like Croako's Fishing Log ----------
+  // Entries: "c:<crop>" harvested, "g:<crop>" giant crops grown, "a:<item>" animal products collected, "p:<item>" preserves made.
+  // S.hb = how many of each, S.hq = best quality per crop (1 Fine, 2 Prize), S.hbpay = chapters Croaka has paid for. The book is the item "farmbook".
+  var FMB = [
+    { id: "staples", n: "Garden Staples", sub: "Good soil, a little water, and patience", c: "#a8c86a", e: ["c:carrot", "c:potato", "c:lilyleek", "c:marshonion"], rw: { silvercoin: 6, compost: 3 },
+      note: "Every farm starts here. Till it, plant it, water it, and don't stand there staring. They grow faster when you're not looking." },
+    { id: "field", n: "Field & Vine", sub: "Taller crops for warmer beds", c: "#e8b84a", e: ["c:reedcorn", "c:bogbean", "c:pepper", "c:frost"], rw: { silvercoin: 10, sprinkler: 1 },
+      note: "Reedcorn likes its feet wet. Peppers like to be left alone. Frostberries, well. Frost Spikes drop the seeds, if you're brave." },
+    { id: "water", n: "Paddy & Moon", sub: "Crops of the water and the night", c: "#7ac8e8", e: ["c:bogrice", "c:lotus", "c:moonpetal", "c:glowgourd"], rw: { silvercoin: 12, seed_glowgourd: 2 },
+      note: "Level a ditch with your hoe and you've a paddy. Rice and lotus drink it up. Moon crops sleep all day and grow all night, lazy things." },
+    { id: "big", n: "The Big Ones", sub: "Melons, pumpkins, and the giants", c: "#ff9a4a", e: ["c:mudmelon", "c:croakpumpkin", "g:mudmelon", "g:croakpumpkin", "g:glowgourd"], rw: { silvercoin: 20, compost: 6 },
+      note: "Plant nine in a square and leave them ripe overnight. Sometimes they swell into one great big lump. Bring a strong arm." },
+    { id: "barn", n: "The Barnyard", sub: "Eggs, truffles and milk", c: "#f2d8a8", e: ["a:duckegg", "a:truffle", "a:goatmilk"], rw: { silvercoin: 15, fiber: 30 },
+      note: "Keep the trough full and say good morning. A happy duck lays two. A grumpy goat gives you a look." },
+    { id: "pantry", n: "The Pantry", sub: "Pickled, jarred and put by", c: "#e86a8a", e: ["p:pres_carrot", "p:pres_potato", "p:pres_reedcorn", "p:pres_lotusroot", "p:pres_mudmelon", "p:pres_croakpumpkin"], rw: { silvercoin: 20, picklekeg: 1 },
+      note: "My Pickle Keg is older than Croaker. Drop a crop in, wait, and you've got something the cart pays three times for." }
+  ];
+  var FMNOTE = { carrot: "Sweet and crunchy. Croaker eats them like candy.", potato: "Hides underground. Dig gently.", lilyleek: "Smells like a pond in spring. Lovely in soup.",
+    marshonion: "Makes even Croako cry, and he's tough.", reedcorn: "Tall as a heron by harvest.", bogbean: "Climbs anything. Including you, if you stand still.",
+    pepper: "Hot! Wash your paws before rubbing your eyes.", frost: "Cold to the touch even in summer.", bogrice: "Needs its feet in water every day of its life.",
+    lotus: "The flower's pretty. The root is dinner.", moonpetal: "Glows like a little moon. Picks best at dawn.", glowgourd: "Hums a bit at night. I don't ask.",
+    mudmelon: "Heavier than it looks. Lift with your legs.", croakpumpkin: "Carve a face in it and it croaks back. Probably." };
+  var FMG = { open: false, pg: 0, el: null, sel: "" };
+  function fmCount(k) { var n = (S.hb && S.hb[k]) || 0; if (!n && k.indexOf("c:") === 0) { var c = k.slice(2); if ((S.st.cropbits || 0) & (HBITS[c] || 0)) n = 1; } return n; }
+  function fmPageDone(P) { return P.e.every(function (k) { return fmCount(k) > 0; }); }
+  function fmItem(k) { var t = k.slice(0, 1), v = k.slice(2); return t === "c" || t === "g" ? (CROPS[v] ? CROPS[v].produce : v) : v; }
+  function fmName(k) { var t = k.slice(0, 1), v = k.slice(2), I = ITEMS[fmItem(k)]; if (t === "g") return "Giant " + (CROPS[v] ? CROPS[v].n : v); if (t === "c") return CROPS[v] ? CROPS[v].n : v; return I ? I.n : v; }
+  function fmLog(k, n, q) {   // something new for the almanac
+    if (!S.hb) S.hb = {}; var first = !fmCount(k); S.hb[k] = (S.hb[k] || 0) + (n || 1);
+    if (q && k.indexOf("c:") === 0) { if (!S.hq) S.hq = {}; S.hq[k.slice(2)] = Math.max(S.hq[k.slice(2)] || 0, q); }
+    if (first && (S.inv.farmbook || 0) > 0 && FMB.some(function (P) { return P.e.indexOf(k) >= 0; })) toast("New page in your Farm Almanac: " + fmName(k) + "!", "#a8c86a");
+  }
+  function openFarmBook(pg) {
+    if (!(S.inv.farmbook > 0)) { nag("Croaka on your homestead keeps a Farm Almanac. Go say hello."); return; }
+    if (storyOpen >= 0 && panelOpen) closeStory(); if (packOpen) closePack(); if (panelOpen) closePanel();
+    if (!FMG.el) { FMG.el = document.createElement("div"); FMG.el.className = "fb fm"; FMG.el.id = "sbxFarmBook"; FMG.el.setAttribute("role", "dialog"); FMG.el.setAttribute("aria-label", "Croaka's Farm Almanac"); stageEl.appendChild(FMG.el);
+      FMG.el.addEventListener("click", function (e) { var b = e.target.closest("[data-fm]"); if (e.target === FMG.el) { closeFarmBook(); return; } if (!b) return; var a = b.getAttribute("data-fm");
+        if (a === "x") closeFarmBook(); else if (a === "prev") fmGo(FMG.pg - 1); else if (a === "next") fmGo(FMG.pg + 1); else if (a.indexOf("pg:") === 0) fmGo(+a.slice(3)); else if (a.indexOf("pay:") === 0) fmPay(a.slice(4)); else if (a.indexOf("sel:") === 0) { FMG.sel = a.slice(4); try { tn(0, 700, 600, 0.04, "triangle", 0.015); } catch (e2) {} fmRender(); } }); }
+    FMG.open = true; panelOpen = true; stageEl.classList.add("panel"); stopInput(); FMG.pg = pg != null ? pg : FMG.pg; FMG.el.hidden = false; S.st.fmreads = (S.st.fmreads || 0) + 1; thud(260, 0.05); fmRender();
+  }
+  function closeFarmBook() { if (!FMG.open) return; FMG.open = false; FMG.el.hidden = true; panelOpen = false; stageEl.classList.remove("panel"); thud(200, 0.04); }
+  function fmGo(n) { if (n < 0 || n > FMB.length) return; FMG.pg = n; FMG.sel = ""; try { tn(0, 900 + Math.random() * 200, 500, 0.08, "triangle", 0.02); } catch (e) {} fmRender(true); }
+  function fmPay(id) {
+    var P = FMB.filter(function (q) { return q.id === id; })[0]; if (!P || !fmPageDone(P) || (S.hbpay && S.hbpay[id])) return; if (!S.hbpay) S.hbpay = {}; S.hbpay[id] = 1; S.st.fmpaid = (S.st.fmpaid || 0) + 1;
+    Object.keys(P.rw).forEach(function (k) { if (ITEMS[k]) give(k, P.rw[k], undefined, undefined, true); }); snd("open", "Epic");
+    popup("Croaka is proud of you!", P.n + ": " + Object.keys(P.rw).filter(function (k) { return ITEMS[k]; }).map(function (k) { return P.rw[k] + " " + ITEMS[k].n; }).join(", "), "#a8c86a", "\u2740"); checkGoals(); save(); fmRender();
+  }
+  function fmInfo(k) {   // [where it comes from, how long, a line in Croaka's hand]
+    var t = k.slice(0, 1), v = k.slice(2), C = CROPS[v];
+    if (t === "c" && C) return [C.wat ? "A flooded paddy" : C.moon ? "Tilled soil, at night" : "Tilled soil", C.moon ? "Grows only at night" : "Ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? "" : ", half with water"), FMNOTE[v] || ""];
+    if (t === "g") return ["A 3 x 3 patch of ripe " + (C ? C.n : v) + "s", "Can swell overnight", "Three good whacks and it's yours."];
+    if (t === "a") { var A = Object.keys(ANIM).map(function (q) { return ANIM[q]; }).filter(function (q) { return q.prod === v; })[0]; return [A ? "Your " + A.n + "s" : "Your animals", "Every morning, with hay", A && A.k === "duck" ? "Still warm. Don't drop it." : "Good with everything."]; }
+    return ["A Pickle Keg", "About 2 minutes", "Sealed with love and a lot of vinegar."];
+  }
+  function fmRender(flip) {
+    var N = FMB.length, pg = FMG.pg, total = 0, all = 0, left, right;
+    FMB.forEach(function (P) { all += P.e.length; total += P.e.filter(function (k) { return fmCount(k) > 0; }).length; });
+    var tabs = '<nav class="fb-tabs" aria-label="Chapters">' + ['<button type="button" data-fm="pg:0" class="' + (pg === 0 ? "on" : "") + '" style="--tc:#7a9a3a" title="Inside cover">\u2302</button>'].concat(FMB.map(function (P, i) { return '<button type="button" data-fm="pg:' + (i + 1) + '" class="' + (pg === i + 1 ? "on" : "") + (fmPageDone(P) ? " full" : "") + '" style="--tc:' + P.c + '" title="' + esc(P.n) + '"><img alt="" src="' + icon(fmItem(P.e[0])) + '"></button>'; })).join("") + "</nav>";
+    if (pg === 0) {
+      left = '<div class="fb-pg fb-l"><p class="fb-hand fb-big">Croaka\'s<br>Farm Almanac</p><div class="fb-crest" aria-hidden="true">' + CROAKA_SVG + '</div><p class="fb-hand">Kept by <b>' + esc(WUSER && WUSER !== "guest" ? WUSER : "a hard-working little farmer") + "</b></p><p class=\"fb-small\">Pressed flowers inside. Mind the jam stain on page four. That was Croaker.</p></div>";
+      right = '<div class="fb-pg fb-r"><p class="fb-hand">Entries written</p><p class="fb-count"><b>' + total + "</b> / " + all + '</p><div class="fb-meter"><i style="width:' + Math.round(total / all * 100) + '%"></i></div><ul class="fb-toc">'
+        + FMB.map(function (P, i) { var n = P.e.filter(function (k) { return fmCount(k) > 0; }).length; return '<li><button type="button" data-fm="pg:' + (i + 1) + '"><span class="dot" style="background:' + P.c + '"></span><span class="fb-hand">' + esc(P.n) + "</span><em>" + n + "/" + P.e.length + (fmPageDone(P) ? (S.hbpay && S.hbpay[P.id] ? " \u2714" : " \u2605") : "") + "</em></button></li>"; }).join("") + "</ul>"
+        + '<p class="fb-small">Everything you grow, raise and jar on your homestead is written in here. Fill a chapter and Croaka pays.</p></div>';
+    } else {
+      var P = FMB[pg - 1], done = fmPageDone(P), paid = S.hbpay && S.hbpay[P.id], got = P.e.filter(function (k) { return fmCount(k) > 0; }).length;
+      if (!FMG.sel || P.e.indexOf(FMG.sel) < 0) FMG.sel = P.e.filter(function (k) { return fmCount(k) > 0; })[0] || P.e[0];
+      var k = FMG.sel, n = fmCount(k), I = fmInfo(k), it = fmItem(k), qv = k.indexOf("c:") === 0 ? (S.hq && S.hq[k.slice(2)]) || 0 : 0, tag = k.slice(0, 1) === "g" ? ["Giant", "#ff9a4a"] : k.slice(0, 1) === "a" ? ["Barnyard", "#c9a876"] : k.slice(0, 1) === "p" ? ["Preserves", "#e86a8a"] : qv === 2 ? ["Prize \u2605", "#d8a020"] : qv === 1 ? ["Fine \u2606", "#8a98a8"] : ["Crop", "#6a9a3a"];
+      var verb = k.slice(0, 1) === "c" ? "Harvested" : k.slice(0, 1) === "g" ? "Grown" : k.slice(0, 1) === "a" ? "Collected" : "Made";
+      var detail = '<div class="fb-det' + (n ? "" : " no") + '"><div class="fb-sk big' + (k.slice(0, 1) === "g" ? " fm-giant" : "") + '"><img alt="" src="' + icon(it) + '"></div><div class="fb-txt"><b class="fb-hand">' + esc(n ? fmName(k) : "???") + '</b><span class="fb-rar" style="--rc:' + tag[1] + '">' + tag[0] + "</span><small>" + esc(I[0]) + " \u00b7 " + esc(I[1]) + "</small>"
+        + (n ? '<p class="fb-hand fb-line">' + esc(I[2]) + '</p><span class="fb-st">' + verb + " <b>" + n + "</b>" + (qv ? " \u00b7 Best <b>" + (qv === 2 ? "Prize" : "Fine") + "</b>" : "") + "</span>" : '<p class="fb-hand fb-line fb-blank">(a pressed leaf, waiting for its first harvest)</p>') + "</div></div>";
+      left = '<div class="fb-pg fb-l" style="--pc:' + P.c + '"><p class="fb-ch">Chapter ' + pg + " \u00b7 " + got + " of " + P.e.length + ' written</p><p class="fb-hand fb-big">' + esc(P.n) + '</p><p class="fb-small">' + esc(P.sub) + '</p><div class="fb-scene fm-' + P.id + '" aria-hidden="true"><i></i><i></i><i></i></div><p class="fb-hand fb-note">\u201c' + esc(P.note) + "\u201d</p>" + detail + "</div>";
+      right = '<div class="fb-pg fb-r"><div class="fb-grid">' + P.e.map(function (q) { var c = fmCount(q);
+        return '<button type="button" class="fb-card' + (c ? "" : " no") + (q === k ? " sel" : "") + (q.slice(0, 1) === "g" ? " fm-giant" : "") + '" data-fm="sel:' + q + '" style="--rc:' + P.c + '"><span class="fb-sk"><img alt="" src="' + icon(fmItem(q)) + '"></span><span class="fb-cn">' + esc(c ? fmName(q) : "???") + "</span><em>" + (c ? "\u00d7" + c : "not yet") + "</em></button>"; }).join("") + "</div>"
+        + (done ? (paid ? '<div class="fb-stamp">Chapter complete</div>' : '<button type="button" class="btn fb-pay" data-fm="pay:' + P.id + '">Claim Croaka\'s reward</button>') : '<p class="fb-small fb-rw">A full chapter pays: ' + Object.keys(P.rw).filter(function (q) { return ITEMS[q]; }).map(function (q) { return P.rw[q] + " " + esc(ITEMS[q].n); }).join(", ") + "</p>") + "</div>";
+    }
+    FMG.el.innerHTML = '<div class="fb-book' + (flip ? " flip" : "") + '"><button type="button" class="fb-x" data-fm="x" aria-label="Close the Farm Almanac">&times;</button>' + tabs + '<div class="fb-spread">' + left + right + "</div>"
+      + '<div class="fb-nav"><button type="button" class="btn ghost" data-fm="prev"' + (pg <= 0 ? " disabled" : "") + '>\u2190 Page</button><span class="fb-hand">' + (pg === 0 ? "Inside cover" : FMB[pg - 1].n) + '</span><button type="button" class="btn ghost" data-fm="next"' + (pg >= N ? " disabled" : "") + ">Page \u2192</button></div></div>";
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-fmopen]")) { e.preventDefault(); openFarmBook(0); } });
   function homeClean(h) {
     var d = { ed: {}, c: {}, w: {}, ship: {}, cr: 0, day: 0 }; if (!h || typeof h !== "object") return d;
     var ok = function (k) { return /^\d+,\d+$/.test(k); };
