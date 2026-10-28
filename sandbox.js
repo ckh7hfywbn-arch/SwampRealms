@@ -15726,15 +15726,13 @@
   var HSHD = null; function hpShadow(g, cx, cy, rx, ry, a) {
     if (!HSHD) { HSHD = document.createElement("canvas"); HSHD.width = 64; HSHD.height = 32; var q = HSHD.getContext("2d"); q.fillStyle = "rgb(10,14,8)"; q.beginPath(); q.ellipse(32, 16, 31, 15, 0, 0, 6.2832); q.fill(); }
     var ga = g.globalAlpha; g.globalAlpha = ga * a; g.drawImage(HSHD, cx - rx, cy - ry, rx * 2, ry * 2); g.globalAlpha = ga; }
-  function hMossTop() {   // a top-down Mossy Mud tile, made from the moss colours of the real block
-    if (HSPR.mossTop) return HSPR.mossTop; var src = hpCan(16, 16); src.g.drawImage(ATLAS, 0, T.MOSS * 16, 16, 16, 0, 0, 16, 16);
-    var d = src.g.getImageData(0, 0, 16, 4).data, cols = {}, x, y;
-    for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { var k = d[i] + "," + d[i + 1] + "," + d[i + 2]; cols[k] = (cols[k] || 0) + 1; }
-    var L = Object.keys(cols).map(function (k) { var q = k.split(",").map(Number); return { k: k, n: cols[k], l: q[0] * 0.3 + q[1] * 0.59 + q[2] * 0.11 }; }).sort(function (a, b) { return a.l - b.l; });
-    if (!L.length) L = [{ k: "58,140,70", n: 1 }]; var base = L.slice().sort(function (a, b) { return b.n - a.n; })[0].k, dark = L[0].k, light = L[L.length - 1].k, mid = L[Math.floor(L.length / 2)].k, out = [];
-    for (var v = 0; v < 4; v++) { var S2 = hpCan(16, 16), g = S2.g; g.fillStyle = "rgb(" + base + ")"; g.fillRect(0, 0, 16, 16);
-      for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y, 57), h2 = SW.hash((x >> 2) + v * 4, y >> 2, 59), cl = h < 0.06 ? dark : h < 0.16 || h2 < 0.3 && h < 0.4 ? mid : h > 0.985 ? light : null; if (cl) { g.fillStyle = "rgb(" + cl + ")"; g.fillRect(x, y, 1, 1); } }
-      for (var t2 = 0; t2 < 2; t2++) { var bx = Math.floor(SW.hash(t2, v, 58) * 14) + 1, by = Math.floor(SW.hash(v, t2, 58) * 12) + 2; g.fillStyle = "rgb(" + light + ")"; g.fillRect(bx, by, 1, 2); g.fillRect(bx + 1, by + 1, 1, 1); g.fillStyle = "rgb(" + dark + ")"; g.fillRect(bx, by + 2, 2, 1); }
+  // the homestead's grass uses Murkwater Swamp's own grass colours (GRASSP[0]: lip, top, mint highlight, tufts), as they look on screen
+  var HGR = { base: "#2c9864", mid: "#34a46c", dark: "#247f54", lip: "#2f9a6a", top: "#3fae78", hi: "#6ed098", tuft: "#58d68b" };
+  function hMossTop() {   // a top-down tile of Murkwater grass
+    if (HSPR.mossTop) return HSPR.mossTop; var out = [], x, y;
+    for (var v = 0; v < 4; v++) { var S2 = hpCan(16, 16), g = S2.g; g.fillStyle = HGR.base; g.fillRect(0, 0, 16, 16);
+      for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y, 57), h2 = SW.hash((x >> 2) + v * 4, y >> 2, 59), cl = h < 0.07 ? HGR.dark : h < 0.18 || (h2 < 0.3 && h < 0.42) ? HGR.mid : h > 0.985 ? HGR.hi : null; if (cl) { g.fillStyle = cl; g.fillRect(x, y, 1, 1); } }
+      for (var t2 = 0; t2 < 3; t2++) { var bx = Math.floor(SW.hash(t2, v, 58) * 13) + 1, by = Math.floor(SW.hash(v, t2, 58) * 11) + 3; g.fillStyle = HGR.tuft; g.fillRect(bx, by - 2, 1, 3); g.fillRect(bx + 2, by - 1, 1, 2); g.fillStyle = HGR.hi; g.fillRect(bx, by - 2, 1, 1); g.fillStyle = HGR.dark; g.fillRect(bx - 1, by + 1, 4, 1); }
       out.push(S2.c); }
     return (HSPR.mossTop = out);
   }
@@ -15778,10 +15776,11 @@
     // the raised moss: its side (the real Mossy Mud block face) shows below every south edge, and moss tips spill over the other edges
     for (j = Math.max(0, Y0 - 1); j <= Math.min(HH - 1, Y1 + 1); j++) for (i = Math.max(0, X0 - 1); i <= Math.min(HW - 1, X1 + 1); i++) {
       var c2 = C(i, j); if (!raised(c2)) continue; var X2 = i * 16, Y2 = j * 16, below = C(i, j + 1);
-      if (!raised(below) && j + 1 < HH) { g.drawImage(ATLAS, 0, T.MOSS * 16, 16, 7, X2, Y2 + 16, 16, 7); g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(X2, Y2 + 23, 16, 2); }
+      if (!raised(below) && j + 1 < HH) { g.fillStyle = HGR.lip; g.fillRect(X2, Y2 + 16, 16, 3); for (var sc = 0; sc < 3; sc++) { var scx = X2 + 1 + sc * 5 + Math.floor(SW.hash(i * 3 + sc, j, 60) * 2); g.fillRect(scx, Y2 + 19, 4, 1); g.fillRect(scx + 1, Y2 + 20, 2, 1); }
+        g.fillStyle = HGR.top; g.fillRect(X2, Y2 + 16, 16, 1); g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(X2, Y2 + 21, 16, 2); }
       if (!raised(C(i - 1, j)) && i > 0) { g.fillStyle = "rgba(20,40,20,.55)"; g.fillRect(X2, Y2, 1, 16); g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(X2 - 2, Y2 + 2, 2, 14); }
       if (!raised(C(i + 1, j)) && i + 1 < HW) { g.fillStyle = "rgba(20,40,20,.55)"; g.fillRect(X2 + 15, Y2, 1, 16); g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(X2 + 16, Y2 + 2, 2, 14); }
-      if (!raised(C(i, j - 1)) && j > 0) g.drawImage(ATLAS, 0, T.MOSS * 16, 16, 2, X2, Y2 - 1, 16, 2);
+      if (!raised(C(i, j - 1)) && j > 0) { g.fillStyle = HGR.hi; g.fillRect(X2, Y2, 16, 1); g.fillStyle = HGR.tuft; for (var tp = 0; tp < 4; tp++) if (SW.hash(i * 4 + tp, j, 61) > 0.45) g.fillRect(X2 + tp * 4 + 1, Y2 - 1, 1, 1); }
     }
     g.restore(); if (!R) HOME.gd = 0; HOME.gdr = null;
   }
