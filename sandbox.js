@@ -15581,6 +15581,13 @@
   function hpCan(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; var g = c.getContext("2d"); g.imageSmoothingEnabled = false; return { c: c, g: g }; }
   function hAt(g, id, x, y, flip) { if (id < 0) return; if (flip) { g.save(); g.translate(x + 16, y); g.scale(-1, 1); g.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16); g.restore(); } else g.drawImage(ATLAS, 0, id * 16, 16, 16, x, y, 16, 16); }
   function hMat(id, v, mask) { var F = MATF[id]; if (!F) return null; var key = "m" + id + ":" + v + ":" + mask; return HSPR[key] || (HSPR[key] = paintMat(F, F.p, v, mask, 16)); }
+  function hpOutline(c) {   // a thin dark outline around everything drawn on the canvas (empty pixels that touch it)
+    var g = c.getContext("2d"), W = c.width, H = c.height, d = g.getImageData(0, 0, W, H), a = d.data, o = new Uint8ClampedArray(a), x, y;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) { var i = (y * W + x) * 4; if (a[i + 3] > 60) continue;
+      if ((x > 0 && a[i - 1] > 160) || (x + 1 < W && a[i + 7] > 160) || (y > 0 && a[i - W * 4 + 3] > 160) || (y + 1 < H && a[i + W * 4 + 3] > 160)) { o[i] = 18; o[i + 1] = 14; o[i + 2] = 10; o[i + 3] = 235; } }
+    d.data.set(o); g.putImageData(d, 0, 0); return c;
+  }
+  function hOT(id) { var key = "o" + id; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 18); S2.g.drawImage(ATLAS, 0, id * 16, 16, 16, 1, 1, 16, 16); return (HSPR[key] = hpOutline(S2.c)); }
   function hpShadow(g, cx, cy, rx, ry, a) { g.fillStyle = "rgba(10,14,8," + a + ")"; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, 6.2832); g.fill(); }
   function hMossTop() {   // a top-down Mossy Mud tile, made from the moss colours of the real block
     if (HSPR.mossTop) return HSPR.mossTop; var src = hpCan(16, 16); src.g.drawImage(ATLAS, 0, T.MOSS * 16, 16, 16, 0, 0, 16, 16);
@@ -15643,14 +15650,14 @@
     L.forEach(function (q, n) { hAt(g, T.LEAVES, q[0], q[1], n & 1); if (q[1] >= 30) { g.fillStyle = "rgba(0,20,10,.22)"; g.fillRect(q[0], q[1], 16, 16); } });
     if (v === 1) { hAt(g, T.VINE, 4, 44); hAt(g, T.VINE, 34, 46); }
     if (v === 2) { var fl = htid("Swamp Flower"); g.fillStyle = "#ffb0d8"; for (var f = 0; f < 10; f++) g.fillRect(4 + Math.floor(SW.hash(f, 2, 63) * 38), 6 + Math.floor(SW.hash(f, 3, 63) * 40), 2, 2); }
-    return (HSPR[key] = S2.c);
+    return (HSPR[key] = hpOutline(S2.c));
   }
   function hsStump() { if (HSPR.stump) return HSPR.stump; var S2 = hpCan(16, 16), g = S2.g;
     g.drawImage(ATLAS, 0, T.LOG * 16 + 6, 14, 10, 1, 7, 14, 9);
     var ring = function (rx, ry, c) { for (var yy = 0; yy < 16; yy++) for (var xx = 0; xx < 16; xx++) { var nx = (xx + 0.5 - 8) / rx, ny = (yy + 0.5 - 6) / ry; if (nx * nx + ny * ny <= 1) { g.fillStyle = c; g.fillRect(xx, yy, 1, 1); } } };
     ring(7, 3.2, "#6a4426"); ring(6, 2.5, "#c9a06a"); ring(4, 1.7, "#a87c4e"); ring(2.6, 1.1, "#c9a06a"); ring(1, 0.6, "#8a5e36"); g.fillStyle = "#5a9a3a"; g.fillRect(12, 4, 2, 1);
-    return (HSPR.stump = S2.c); }
-  function hsGiant(k) { var key = "giant" + k; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(48, 48); S2.g.drawImage(ATLAS, 0, CROPS[k].tiles[3] * 16, 16, 16, 0, 0, 48, 48); return (HSPR[key] = S2.c); }
+    return (HSPR.stump = hpOutline(S2.c)); }
+  function hsGiant(k) { var key = "giant" + k; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(50, 50); S2.g.drawImage(ATLAS, 0, CROPS[k].tiles[3] * 16, 16, 16, 1, 1, 48, 48); return (HSPR[key] = hpOutline(S2.c)); }
   function hsHouse() {   // the cottage, all Delve blocks: Mossy Shingles roof, Log Wall front, a Swamp Door, Clear Glass windows with Flower Planters, a Stone Brick chimney
     if (HSPR.house) return HSPR.house; var S2 = hpCan(112, 104), g = S2.g, x, y, OX = 8, OY = 24;   // the sprite's (OX, OY) is the footprint's top-left corner
     var sh = htid("Mossy Shingles"), glass = htid("Clear Glass"), brick = T.BRICK, cob = htid("Cobblestone");
@@ -15662,13 +15669,13 @@
     hAt(g, T.DOORO_T, OX + 40, OY + 32); hAt(g, T.DOORO_B, OX + 40, OY + 48);
     [OX + 10, OX + 70].forEach(function (wx) { var gc2 = hMat(glass, 0, 15); g.fillStyle = "#3a2410"; g.fillRect(wx - 1, OY + 33, 18, 16); if (gc2) g.drawImage(gc2, wx, OY + 34); else hAt(g, glass, wx, OY + 34); hAt(g, T.PLANTER, wx, OY + 48); });
     hAt(g, T.LANTERN, OX + 57, OY + 40); hAt(g, T.BARREL, OX - 8, OY + 48);
-    return (HSPR.house = S2.c);
+    return (HSPR.house = hpOutline(S2.c));
   }
   function hDraw(g, c, mx, my, ax, ay, dx) { var s = ts / 16; g.drawImage(c, Math.round(ox + mx * ts - ax * s + (dx || 0)), Math.round(oy + my * ts - ay * s), c.width * s, c.height * s); }
-  function hTile(g, id, mx, my, dx, dy) { if (id < 0) return; g.drawImage(ATLAS, 0, id * 16, 16, 16, Math.round(ox + mx * ts + (dx || 0)), Math.round(oy + my * ts + (dy || 0)), ts, ts); }
+  function hTile(g, id, mx, my, dx, dy) { if (id < 0) return; var s = ts / 16; g.drawImage(hOT(id), Math.round(ox + mx * ts + (dx || 0) - s), Math.round(oy + my * ts + (dy || 0) - s), ts + 2 * s, ts + 2 * s); }
   function hTileSway(g, id, mx, my, sw) {   // a plant whose top half leans in the wind (whole pixels)
-    if (id < 0) return; var s = ts / 16, X = Math.round(ox + mx * ts), Y = Math.round(oy + my * ts), k = 8, o2 = Math.round(sw) * s;
-    g.drawImage(ATLAS, 0, id * 16, 16, k, X + o2, Y, ts, k * s); g.drawImage(ATLAS, 0, id * 16 + k, 16, 16 - k, X, Y + k * s, ts, (16 - k) * s);
+    if (id < 0) return; var s = ts / 16, c = hOT(id), X = Math.round(ox + mx * ts) - s, Y = Math.round(oy + my * ts) - s, k = 9, o2 = Math.round(sw) * s;
+    g.drawImage(c, 0, 0, 18, k, X + o2, Y, 18 * s, k * s); g.drawImage(c, 0, k, 18, 18 - k, X, Y + k * s, 18 * s, (18 - k) * s);
   }
   function homeRender(now) {
     var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
@@ -15700,7 +15707,7 @@
       if (e[1] === 4) { homeStall(g); return; }
       if (e[1] === 5) { homeGateArt(g); return; }
       if (e[1] === 6) { var gc = e[2], gsp = hsGiant(gc.k), wob = gc.h ? Math.sin(T0 * 34) * ts * 0.04 * gc.h : 0;
-        hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y - 0.3, 0, 0, wob);
+        hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y - 0.3, 1, 1, wob);
         if (gc.h) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", ox + (gc.x + 1.5) * ts, oy + (gc.y - 0.3) * ts); }
         return; }
     });
