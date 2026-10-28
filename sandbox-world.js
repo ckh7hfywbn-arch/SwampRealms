@@ -11,7 +11,7 @@
   // segments of random biomes (one biome each, 480-720 columns) as you walk towards them (genChunk), so it costs nothing until explored.
   // The generator itself works on any width: W / B_FROST / B_EMBER / SPAWNX below are the settings of the map being generated right now.
   var CORE_W = 2160, EXT = 5040, WORLD_W = CORE_W + EXT * 2;
-  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true, GEN_VAR = 0;
+  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true, GEN_VAR = 0, GEN_SPARSE = 0;   // GEN_SPARSE: worlds made from now on have fewer buildings and landmarks (old saves keep theirs exactly)
   var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
@@ -398,7 +398,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
       return { id: idx, ki: P.ki, kind: K.k, name: K.n, b: K.b, x0: x0, x1: x1, w: w, gy: gy, bh: bh, side: side, dx: dx, outX: ox2, doorY: gy - 1, mx0: bx0, mx1: bx1, my0: by0 };
     }
     // one slot every ~58 columns; each tries its kinds for the biome there (hash picks the order) with a few nudges left and right
-    for (slot = 0, x = 34; x < W - 34; slot++, x += 58) {
+    for (slot = 0, x = 34; x < W - 34; slot++, x += GEN_SPARSE ? 120 : 58) {
+      if (GEN_SPARSE && Math.abs(x - SPAWNX) > 120 && hash(slot, 739, seed) < 0.2) continue;   // a few open stretches with nothing built
       var cx0 = x + Math.floor(hash(slot, 735, seed) * 40) - 10, bb = bio[Math.min(W - 1, Math.max(0, cx0))], kinds = [];
       for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb && !STRUCT_KINDS[i].solo && !STRUCT_KINDS[i].nw) kinds.push(i);
       if (!kinds.length) continue;
@@ -409,8 +410,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
         if (P) { var bP = build(P, out.length); out.push(bP); done = true; }
       }
     }
+    // fewer buildings (new worlds): still at least one of each of the seven classic kinds, so the Grand Tour can always be done
+    if (GEN_SPARSE && !GEN_EDGE) ["cabin", "tower", "farm", "forge", "keep", "lodge", "shrine"].forEach(function (kn, kq) {
+      var KI = STRUCT_KINDS.map(function (q) { return q.k; }).indexOf(kn); if (KI < 0 || out.some(function (q) { return q.kind === kn; })) return;
+      for (var tq = 0; tq < 80; tq++) { var tx = Math.floor(30 + hash(tq, 790 + kq * 7, seed) * (W - 60)); if (bio[tx] !== STRUCT_KINDS[KI].b || out.some(function (q) { return Math.abs(q.x0 - tx) < 40; })) continue;
+        var TP = tryPlace(tx, KI); if (TP) { out.push(build(TP, out.length)); break; } }
+    });
     // Witch Huts: up to 3, out in the wilder parts of Murkwater (well away from camp)
-    var WK = STRUCT_KINDS.map(function (q) { return q.k; }).indexOf("witchhut"), huts = 0, hutMax = Math.max(1, Math.min(3, Math.round((Math.min(W, B_EMBER) - Math.max(0, B_FROST)) / 300)));
+    var WK = STRUCT_KINDS.map(function (q) { return q.k; }).indexOf("witchhut"), huts = 0, hutMax = Math.max(1, Math.min(GEN_SPARSE ? 1 : 3, Math.round((Math.min(W, B_EMBER) - Math.max(0, B_FROST)) / 300)));
     for (var wq = 0; wq < 60 && huts < hutMax; wq++) {
       var sw0 = Math.max(0, B_FROST), sw1 = Math.min(W, B_EMBER); if (sw1 - sw0 < 240) break;
       var hx = Math.floor(sw0 + 30 + hash(wq, 761, seed) * (sw1 - sw0 - 60));
@@ -422,7 +429,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       if (!K.nw) return;
       var cols = 0; for (x = 0; x < W; x++) if (bio[x] === K.b && (!sub || (sub[x] ? 1 : 0) === K.sub)) cols++;
       if (cols < 120) return;
-      var want = Math.max(1, Math.min(3, Math.round(cols / 420))), made = 0;
+      var want = GEN_SPARSE ? 1 : Math.max(1, Math.min(3, Math.round(cols / 420))), made = 0;
       for (var nq = 0; nq < 90 && made < want; nq++) {
         var nx = Math.floor(20 + hash(nq, 771 + ki * 13, seed) * (W - 40));
         if (bio[nx] !== K.b || (sub && (sub[nx] ? 1 : 0) !== K.sub)) continue;
@@ -840,8 +847,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
         }
         return null;
       }
-      for (var sx = 50, sl = 0; sx < W - 50; sx += 100, sl++) {
-        if (hash(sl, 960, seed) < 0.22) continue;
+      for (var sx = 50, sl = 0; sx < W - 50; sx += GEN_SPARSE ? 150 : 100, sl++) {
+        if (hash(sl, 960, seed) < (GEN_SPARSE ? 0.3 : 0.22)) continue;
         var cx0 = sx + Math.floor(hash(sl, 964, seed) * 60) - 30, L = LIST[bio[clamp0(cx0)] + ":" + (sub[clamp0(cx0)] ? 1 : 0)], kind = L[Math.floor(hash(sl, 965, seed) * L.length)];
         if (kind === "treehouse") { var th2 = treehouse(cx0); if (th2) marks.push({ k: "treehouse", x: th2.x, y: th2.y, n: th2.n }); continue; }
         var D2 = B[kind];
@@ -992,8 +999,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
     var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
     for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
-    var core; GEN_VAR = bv.c ? 1 : 0;
-    try { core = gen(seed); } finally { GEN_VAR = 0; }   // exactly the original map (W = CORE_W here), so old saves line up
+    var core; GEN_VAR = bv.c ? 1 : 0; GEN_SPARSE = bv.sp ? 1 : 0;
+    try { core = gen(seed); } finally { GEN_VAR = 0; GEN_SPARSE = 0; }   // exactly the original map (W = CORE_W here), so old saves line up
     POST.forEach(function (f) { f(core); });
     for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); wwl.set(core.walls.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); }
     wtop.set(core.top, EXT); wbio.set(core.bio, EXT); wsub.set(core.sub, EXT);
@@ -1014,14 +1021,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
     var n = wd.done[sd], seg = wd.lay[sd][n]; if (!seg) return null;
     var a = seg[0], z = seg[1], w = z - a, b = seg[2], WW = wd.W, y, k;
-    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR], bv = wd.bv || { L: 99, R: 99 };
+    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], bv = wd.bv || { L: 99, R: 99 }; GEN_SPARSE = bv.sp ? 1 : 0;
     W = w; SPAWNX = -100000; GEN_AERIE = false;
     GEN_VAR = n >= (sd < 0 ? bv.L : bv.R) ? (hash(n, sd * 979, wd.seed) < 0.4 ? 2 : 1) : 0;   // newer segments: some are all variant land, the rest get patches
     if (b === 2) { B_FROST = w + 200; B_EMBER = w + 400; } else if (b === 0) { B_FROST = -200; B_EMBER = w + 200; } else { B_FROST = -400; B_EMBER = -200; }
     GEN_EDGE = { side: sd, h: wd.top[sd < 0 ? z : a - 1] };   // the column right next to it, on the side it grows from
     var c;
     try { c = gen((wd.seed * 31 + (sd < 0 ? 7001 : 9001) + n * 131) | 0); }
-    finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; }
+    finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; GEN_SPARSE = keep[7]; }
     POST.forEach(function (f) { f(c); });
     for (y = 0; y < H; y++) { wd.t.set(c.t.subarray(y * w, (y + 1) * w), y * WW + a); wd.walls.set(c.walls.subarray(y * w, (y + 1) * w), y * WW + a); }
     wd.top.set(c.top, a); wd.bio.set(c.bio, a); if (wd.sub) wd.sub.set(c.sub, a);

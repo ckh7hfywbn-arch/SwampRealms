@@ -551,7 +551,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -559,7 +559,7 @@
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
     if (o.wv === SW.WORLDVER) {   // BIOME VARIANTS: a save from before them keeps its land exactly; only land made from now on can be a variant
       var bvo = o.bvar && typeof o.bvar === "object" ? o.bvar : null;
-      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99) } : { c: 0, L: gLR[0], R: gLR[1] };
+      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: bvo.sp ? 1 : 0 } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
     }
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
@@ -8794,7 +8794,7 @@
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
         + '<dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
-        + '<p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
+        + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
       return;
     }
@@ -8847,6 +8847,7 @@
   function titleAct(k) {
     if (k === "play") return closeTitle();
     if (k === "char") return openChar();   // CHARACTERS
+    if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
     if (k === "back") { TC.how = false; renderTitle(); var hb = titleEl.querySelector("[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
     if (k === "worlds" || k === "new") { openWorlds(); if (k === "new") setTimeout(function () { var i = $("sbxWName"); if (i) i.focus(); }, 30); return; }
@@ -9565,7 +9566,7 @@
       + '<button type="button" class="btn" data-story-close>' + (last ? "Keep exploring" : c === 0 ? "Let's begin" : "Onward!") + "</button>";
     if (gestured) snd("rise"); var bt = el.querySelector("[data-story-close]"); if (bt) bt.focus({ preventScroll: true });
   }
-  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); }
+  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); else if ((S.qi | 0) === 0 && !TOUR) setTimeout(function () { if (!panelOpen && storyOpen < 0 && !storyQ.length) startTour(false); }, 700); }
   var CROAK_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="42" rx="24" ry="17" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><ellipse cx="32" cy="48" rx="15" ry="7" fill="#f1efb4"/><circle cx="19" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="45" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="19" cy="24" r="5" fill="#ffd23f"/><circle cx="45" cy="24" r="5" fill="#ffd23f"/><path d="M17 23h4M43 23h4" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 40q12 8 24 0" fill="none" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M12 16q7-9 14-3M38 13q7-6 14 3" fill="none" stroke="#e8e4d8" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="33" r="1.4" fill="#1c5e34"/><circle cx="37" cy="33" r="1.4" fill="#1c5e34"/></svg>';
   function findGuide() {
     var st = MAIN[S.qi]; guide = null; if (!st || !st.tg) return;
@@ -9593,13 +9594,55 @@
   function bestSide() {   // the open side quest closest to done (shown in the tracker once the story is over)
     var best = null, br = -1; SIDE.forEach(function (q) { if (S.ms[q.id] || !sideOpen(q)) return; var r = Math.min(1, q.v() / q.need); if (r > br) { br = r; best = q; } }); return best;
   }
+  // ---------- FIRST-TIME TOUR: a short, skippable walk around the screen (once per device; "Show me around" on How to play replays it) ----------
+  var TOUR = null;
+  function tourSteps() {
+    var L = [
+      { el: "sbxTrail", t: "Your goal right now", d: "It says what to do and how to do it. Tap it any time to see all your quests." },
+      { el: "sbxBar", t: "Your hotbar", d: coarse ? "Tap a tool or an item to hold it, then hold your finger on the world to use it." : "Click a slot (or press 1 to 9) to hold a tool or item, then hold the mouse on the world to use it." },
+      { el: "sbxPackBtn", t: "Your backpack", d: "Everything you carry, plus your armor, weapon and charms." },
+      { el: "sbxMenuBtn", t: "Your journal", d: "Quests, crafting, the map, your collections and the settings. Most things start here." },
+      coarse ? { el: "sbxPad", t: "Moving around", d: "Walk with the arrows (or drag the stick) and jump with the big button. Hold on blocks to dig, chop and build." }
+             : { el: null, t: "Moving around", d: "Walk with A and D, jump with Space. Hold the mouse on blocks to dig, chop and build. F opens doors, chests and caves." },
+      { el: null, t: "That's it!", d: "Follow the goal in the top corner, and the gold ring shows you what to dig. You'll pick up the rest as you go. Have fun!" }
+    ];
+    return L.filter(function (s) { if (!s.el) return true; var e = $(s.el); if (!e || e.hidden) return false; var r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4; });
+  }
+  function startTour(force) {
+    if (TOUR || (!force && (MP.on && MP.role === "guest"))) return;
+    try { if (!force && localStorage.getItem("swamp-delve-tour") === "1") return; } catch (e) {}
+    if (!force && navigator.webdriver) return;   // (automated test browsers: they get the tour only when they ask)
+    if (titleOpen || cave || (typeof OCS !== "undefined" && OCS) || HOME || panelOpen || menuOpen) { if (!force) return; }
+    var steps = tourSteps(); if (!steps.length) return;
+    var el = document.createElement("div"); el.className = "sbx-tour"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "A quick tour");
+    el.innerHTML = '<div class="tr-spot"></div><div class="tr-card"><small class="tr-n"></small><b class="tr-t"></b><p class="tr-d"></p><div class="tr-row"><button type="button" class="btn ghost" data-tr="skip">Skip</button><button type="button" class="btn" data-tr="next">Next</button></div></div>';
+    stageEl.appendChild(el); TOUR = { el: el, i: 0, steps: steps }; panelOpen = true; stopInput();
+    el.addEventListener("click", function (e) { var b = e.target.closest("[data-tr]"); if (!b) return; if (b.getAttribute("data-tr") === "skip") endTour(); else { TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } });
+    tourShow(); try { snd("open"); } catch (e2) {}
+  }
+  function tourShow() {
+    var T2 = TOUR, s = T2.steps[T2.i], el = T2.el, spot = el.querySelector(".tr-spot"), card = el.querySelector(".tr-card"), sr = stageEl.getBoundingClientRect();
+    el.querySelector(".tr-n").textContent = (T2.i + 1) + " of " + T2.steps.length; el.querySelector(".tr-t").textContent = s.t; el.querySelector(".tr-d").textContent = s.d;
+    el.querySelector("[data-tr=next]").textContent = T2.i === T2.steps.length - 1 ? "Let's go!" : "Next"; el.querySelector("[data-tr=skip]").hidden = T2.i === T2.steps.length - 1;
+    var target = s.el && $(s.el);
+    if (target) { var r = target.getBoundingClientRect(), pad = 8, x = r.left - sr.left - pad, y = r.top - sr.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+      spot.style.cssText = "left:" + x + "px;top:" + y + "px;width:" + w + "px;height:" + h + "px"; spot.classList.remove("none");
+      var below = y + h + 170 < sr.height, cw = Math.min(300, sr.width - 24), cx = clamp(x + w / 2 - cw / 2, 12, sr.width - cw - 12);
+      card.style.cssText = "width:" + cw + "px;left:" + cx + "px;" + (below ? "top:" + (y + h + 12) + "px" : "bottom:" + (sr.height - y + 12) + "px");
+    } else { spot.style.cssText = "left:50%;top:50%;width:0;height:0"; spot.classList.add("none"); var cw2 = Math.min(320, sr.width - 24); card.style.cssText = "width:" + cw2 + "px;left:" + (sr.width / 2 - cw2 / 2) + "px;top:" + Math.max(80, sr.height * 0.32) + "px"; }
+    var nb = el.querySelector("[data-tr=next]"); if (nb) nb.focus({ preventScroll: true });
+  }
+  function endTour() { if (!TOUR) return; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; }
+  // the quest tracker's "how" line, for the first chapters: the first sentence of the quest's own instructions
+  function trailTip(q) { var d = String(q.d || ""), m = d.match(/^[^.!?]*[.!?]/); var t = (m ? m[0] : d).trim(); if (t.length > 92) t = t.slice(0, 90).replace(/\s+\S*$/, "") + "…"; return t; }
   function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
     var el = $("sbxTrail"), q = MAIN[S.qi], side = !q; if (side) q = bestSide();
     if (!q) { if (!el.hidden) el.hidden = true; return; }
     var v = Math.min(q.need, Math.floor(q.v())), key = q.id + ":" + v; if (key === trailKey) return; trailKey = key;
     el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c);
     el.title = side ? "Side quest" : "Chapter " + (q.ch + 1) + ": " + CHAPTERS[q.ch].n;
-    el.innerHTML = "<small>" + (side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>';
+    var tip = !side && q.ch <= 2 && !OPT.notips ? trailTip(q) : ""; el.classList.toggle("tip", !!tip);   // NEW PLAYERS: the first chapters say how, right on the tracker
+    el.innerHTML = "<small>" + (side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>' + (tip ? '<span class="tp">' + esc(tip) + "</span>" : "");
   }
   function checkGoals() {
     if (!cave && world) { var bb = world.bio[clamp(Math.floor(p.x), 0, W - 1)]; if (!S.vis["b" + bb]) { S.vis["b" + bb] = 1; trailKey = ""; } var vb = varAt(p.x); if (vb && !S.vis["v" + vb]) { S.vis["v" + vb] = 1; trailKey = ""; popup("New land discovered", VARB[vb - 1].n, VARB[vb - 1].c, "\u2726"); } }
@@ -12077,6 +12120,18 @@
     } else { g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(0, -ts * 0.7, ts * 0.6, 0, 6.2832); g.fill(); }
     g.restore();
   }
+  function drawRugTop(g, F, e, fx, fy) {
+    if (!F.rugs) { F.rugs = {}; F.flat.forEach(function (q) { if (q.id === T.RUG) F.rugs[q.x + "," + q.y] = 1; }); }
+    var R = F.rugs, u = ts / 16, has = function (dx, dy) { return !!R[(e.x + dx) + "," + (e.y + dy)]; }, L = has(-1, 0), Rt = has(1, 0), U = has(0, -1), D = has(0, 1);
+    var x0 = fx + (L ? 0 : u), y0 = fy + (U ? 0 : u), x1 = fx + ts - (Rt ? 0 : u), y1 = fy + ts - (D ? 0 : u);
+    g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(x0 + u, y0 + u, x1 - x0, y1 - y0);   // a soft shadow under the edge
+    g.fillStyle = "#5a3a8a"; g.fillRect(x0, y0, x1 - x0, y1 - y0);   // the border
+    var ix0 = x0 + (L ? 0 : 2 * u), iy0 = y0 + (U ? 0 : 2 * u), ix1 = x1 - (Rt ? 0 : 2 * u), iy1 = y1 - (D ? 0 : 2 * u);
+    g.fillStyle = "#8d63c9"; g.fillRect(ix0, iy0, ix1 - ix0, iy1 - iy0);
+    g.fillStyle = "#b894e8"; for (var k = 0; k < 16; k += 4) { var yy = fy + k * u + 1 * u; if (yy > iy0 && yy + u < iy1) g.fillRect(ix0, yy, ix1 - ix0, u); }   // woven rows
+    g.fillStyle = "#4ee6b4"; var mx = fx + 7 * u; if (mx > ix0 && mx + 2 * u < ix1) for (var k2 = 0; k2 < 16; k2 += 4) { var y2 = fy + (k2 + 3) * u; if (y2 > iy0 && y2 + u < iy1) g.fillRect(mx, y2, 2 * u, u); }   // a teal diamond chain down the middle
+    g.fillStyle = "#e8dcc0"; if (!L) for (var f1 = 2; f1 < 15; f1 += 3) g.fillRect(fx, fy + f1 * u, u, u); if (!Rt) for (var f2 = 2; f2 < 15; f2 += 3) g.fillRect(fx + ts - u, fy + f2 * u, u, u);   // fringe at the ends
+  }
   function renderCave(now) {
     var F = cave.F, th = F.theme, g = ctx, i, j, idx, BLD = clamp(0.25 + (F.amb || 0.07) * 0.9, 0.25, 0.85), BLA = 1;   // bright rooms bloom only their lamps; dark caves glow more
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
@@ -12113,6 +12168,7 @@
           return;
         }
         if (MATF[e.id]) { g.drawImage(matCanvas(e.id, matVar(MATF[e.id], e.x, e.y), 0), fx, fy); return; }   // patterned floors in the Adventure look (any building block works)
+        if (e.id === T.RUG) { drawRugTop(g, F, e, fx, fy); return; }   // rugs, seen from above: one woven rug across all the rug cells (the block art is a side view)
         g.drawImage(ATLAS, 0, e.id * 16, 16, 16, fx, fy, ts, ts);
       });
       if (F.wins) { var dl = daylight(S.time); F.wins.forEach(function (e) {   // windows: a soft shaft of daylight falls across the floor below them (dimmer at night)
@@ -13367,7 +13423,13 @@
   function openMap() {
     if (mapOpen) return; M.dirty = true; if (packOpen) closePack(); else if (panelOpen) closePanel();
     mapOpen = true; panelOpen = true; M.sel = -1; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
-    mapSize(); M.s = clamp(M.cw / 300, mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();
+    mapSize(); var seenW = mapSeenWidth(); M.s = clamp(M.cw / clamp(seenW * 1.6, 130, 300), mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();   // opens zoomed to the land you have seen around you
+  }
+  function mapSeenWidth() {   // how wide the explored stretch of surface around you is (columns), to pick a sensible zoom
+    if (!ex || !col) return 300; var px = clamp(Math.floor(p.x), 0, W - 1), a = px, z = px, gap = 0, x;
+    for (x = px; x >= 0 && gap < 24; x--) { var y = clamp(col[x], 0, H - 1); if (ex[y * W + x]) { a = x; gap = 0; } else gap++; }
+    gap = 0; for (x = px; x < W && gap < 24; x++) { var y2 = clamp(col[x], 0, H - 1); if (ex[y2 * W + x]) { z = x; gap = 0; } else gap++; }
+    return Math.max(1, z - a + 1);
   }
   function closeMap() { mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
   (function () {
@@ -13668,6 +13730,8 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
     if (deadUI) { if (k === "Enter" || k === " " || k === "r" || k === "R") { e.preventDefault(); deadRespawn(); } return; }   // the death screen
+    if (TOUR) { if (k === "Escape") { e.preventDefault(); endTour(); } else if (k === "Enter" || k === " " || k === "ArrowRight") { e.preventDefault(); TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } return; }
+    if (FMG.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFarmBook(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fmGo(FMG.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fmGo(FMG.pg + 1); return; }
     if (FB.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFishLog(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fbGo(FB.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fbGo(FB.pg + 1); return; }   // the Fishing Log
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && !$("sbxMPV").hidden) { closeMPV(); return; }
@@ -16224,6 +16288,7 @@
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
   window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
+  window.__sbx.tour = function () { startTour(true); }; window.__sbx.tourOn = function () { return !!TOUR; };
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
