@@ -13769,7 +13769,7 @@
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
     ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, coarse ? 24 : 15, 40) * (S ? S.zoom : 1)));
     if (cave && cave.F) ts = caveTs();
-    if (typeof HOME !== "undefined" && HOME) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 26, coarse ? 28 : 20, 48) * (S ? clamp(S.zoom, 0.8, 1.3) : 1)));
+    if (typeof HOME !== "undefined" && HOME) ts = Math.max(32, Math.round(clamp(Math.max(vw, vh) / 24, 32, 64) * (S ? clamp(S.zoom, 0.8, 1.3) : 1) / 16) * 16);
     if (typeof OCS !== "undefined" && OCS) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 30, coarse ? 24 : 18, 40)));
     fitDock();
   }
@@ -15324,7 +15324,7 @@
     return t;
   }
   function hmT(x, y) { return x < 0 || y < 0 || x >= HW || y >= HH ? HT.TREE : HOME.t[y * HW + x]; }
-  function homeSet(x, y, id) { if (x < 2 || y < 2 || x >= HW - 2 || y >= HH - 2) return; HOME.t[y * HW + x] = id; var o = homeS(), k = x + "," + y; if (HOME.g[y * HW + x] === id) delete o.ed[k]; else o.ed[k] = id; }
+  function homeSet(x, y, id) { if (x < 2 || y < 2 || x >= HW - 2 || y >= HH - 2) return; HOME.t[y * HW + x] = id; HOME.gd = 1; var o = homeS(), k = x + "," + y; if (HOME.g[y * HW + x] === id) delete o.ed[k]; else o.ed[k] = id; }
   function homeSolid(x, y) { return !!HSOLID[hmT(x, y)] || !!homeGiantAt(x, y); }
   function homeGiantAt(x, y) { var G = S.home && S.home.gi; if (!G) return null; for (var i = 0; i < G.length; i++) { var g2 = G[i]; if (x >= g2.x && x < g2.x + 3 && y >= g2.y && y < g2.y + 3) return g2; } return null; }
   function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
@@ -15352,7 +15352,7 @@
       while (e.g >= C.t && e.s < 4) { e.g -= C.t; e.s++; if (e.s === 4) { if (HOME) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); homeGiantTry(x, y, e.k); } }
       if (e.s >= 4) e.g = 0;
     });
-    Object.keys(o.w).forEach(function (k) { o.w[k] -= sec; if (o.w[k] <= 0) delete o.w[k]; });
+    Object.keys(o.w).forEach(function (k) { o.w[k] -= sec; if (o.w[k] <= 0) { delete o.w[k]; if (HOME) HOME.gd = 1; } });
   }
   var HTC = null; function homeTilesC() { if (!HTC || HTC.o !== S.home) HTC = { o: S.home, t: homeTiles() }; return HTC.t; }
   function homeGiantTry(x, y, k, ch) {   // GIANT CROPS: a 3 x 3 patch of ripe melons, pumpkins or glowgourds can swell into one huge crop
@@ -15374,7 +15374,7 @@
     var ks = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }); if (!ks.length) return;
     var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); o.ship = {}; o.cr += val;
     var coins = Math.floor(o.cr + 1e-6); o.cr -= coins; if (coins > 0 && ITEMS.silvercoin) give("silvercoin", coins, undefined, undefined, true);
-    S.st.shipped = (S.st.shipped || 0) + n; popup("The cart came by!", n + " things shipped: +" + coins + " Silver Coin" + (coins === 1 ? "" : "s"), "#c8d0d8", "⛀"); snd("coin"); checkGoals();
+    S.st.shipped = (S.st.shipped || 0) + n; popup("The cart came by!", n + (n === 1 ? " thing" : " things") + " shipped: " + (coins ? "+" + coins + " Silver Coin" + (coins === 1 ? "" : "s") : "not a whole coin yet, saved for next time"), "#c8d0d8", "⛀"); snd("coin"); checkGoals();
   }
   // ---- entering and leaving ----
   function farmGateNear() {   // a Farm Gate block within reach on the surface
@@ -15455,16 +15455,16 @@
     }
     if (sel === "can" && S.can) {
       if (homeWater(id)) { if (S.water < CAN.max) { S.water = CAN.max; hbDirty = true; thud(420, 0.03); toast("Watering Can full.", CAN.c); } return; }
-      if (id === HT.SOIL) { if (S.water <= 0) { nag("Your Watering Can is empty. Fill it at the pond or a canal."); return; } if ((o.w[key] || 0) > 100) return; S.water--; o.w[key] = WET_S * 2; hbDirty = true; S.st.watered++; thud(520, 0.02); hFx(tx, ty, "#8fe0ff"); checkGoals(); return; }
+      if (id === HT.SOIL) { if (S.water <= 0) { nag("Your Watering Can is empty. Fill it at the pond or a canal."); return; } if ((o.w[key] || 0) > 100) return; S.water--; o.w[key] = WET_S * 2; hbDirty = true; HOME.gd = 1; S.st.watered++; thud(520, 0.02); hFx(tx, ty, "#8fe0ff"); checkGoals(); return; }
       if (press) nag("Water tilled soil, or fill up at the pond."); return;
     }
     if (sel === "compost" && (S.inv.compost || 0) > 0) {
       if (id !== HT.SOIL) { if (press) nag("Spread compost on tilled soil."); return; } if (o.f[key]) { if (press) nag("This soil already has compost in it."); return; }
-      S.inv.compost--; if (S.inv.compost <= 0) { delete S.inv.compost; sel = "pick"; bare = true; } reslot(); hbDirty = true; o.f[key] = 1; S.st.composted = (S.st.composted || 0) + 1; thud(260, 0.04); hFx(tx, ty, "#3a2412", 8); return;
+      S.inv.compost--; if (S.inv.compost <= 0) { delete S.inv.compost; sel = "pick"; bare = true; } reslot(); hbDirty = true; o.f[key] = 1; HOME.gd = 1; S.st.composted = (S.st.composted || 0) + 1; thud(260, 0.04); hFx(tx, ty, "#3a2412", 8); return;
     }
     if (sel === "pick") {
-      if (id === HT.ROCK) { homeSet(tx, ty, HT.GRASS); give("stone", 2 + Math.floor(Math.random() * 2), undefined, undefined, true); thud(140, 0.08); hFx(tx, ty, "#8a8f99", 10); return; }
-      if (id === HT.STUMP) { homeSet(tx, ty, HT.GRASS); give("wood", 2, undefined, undefined, true); thud(160, 0.07); hFx(tx, ty, "#8a5a32", 10); return; }
+      if (id === HT.ROCK) { homeSet(tx, ty, HT.MUD); give("stone", 2 + Math.floor(Math.random() * 2), undefined, undefined, true); thud(140, 0.08); hFx(tx, ty, "#8a8f99", 10); return; }
+      if (id === HT.STUMP) { homeSet(tx, ty, HT.MUD); give("wood", 2, undefined, undefined, true); thud(160, 0.07); hFx(tx, ty, "#8a5a32", 10); return; }
     }
     var it = ITEMS[sel];
     if (it && it.seed && (S.inv[sel] || 0) > 0) {
@@ -15499,7 +15499,7 @@
     for (var i = 0; i < n; i++) { var r = Math.random(); got[r < pg ? 2 : r < pg + ps ? 1 : 0]++; }
     if (got[0]) give(C.produce, got[0], undefined, undefined, true); if (got[1] && ITEMS[C.produce + "_s"]) give(C.produce + "_s", got[1], undefined, undefined, true); else got[0] += got[1];
     if (got[2] && ITEMS[C.produce + "_g"]) { give(C.produce + "_g", got[2], undefined, undefined, true); S.st.prize = (S.st.prize || 0) + got[2]; } else got[0] += got[2];
-    if (sd && ns > 0) give(sd, ns, undefined, undefined, true); delete o.f[key];
+    if (sd && ns > 0) give(sd, ns, undefined, undefined, true); if (o.f[key]) { delete o.f[key]; if (HOME) HOME.gd = 1; }
     text(x + 0.5, y - 0.4, "+" + n + " " + ITEMS[C.produce].n, "#ffe9a8"); if (got[2]) text(x + 0.5, y - 1.1, "\u2605 Prize!", "#ffd23f"); else if (got[1]) text(x + 0.5, y - 1.1, "\u2606 Fine", "#e8eef4"); hFx(x, y, C.fruit, 10);
     if (C.wat) S.st.paddyharv = (S.st.paddyharv || 0) + 1; if (C.moon) S.st.moonharv = (S.st.moonharv || 0) + 1;
     if (sel === "hoe" && sd && (S.inv[sd] || 0) > 0) { S.inv[sd]--; if (S.inv[sd] <= 0) delete S.inv[sd]; o.c[key] = { k: e.k, g: 0, s: 1 }; S.st.planted++; reslot(); hbDirty = true; }   // the hoe replants as it harvests
@@ -15569,37 +15569,195 @@
     return (HATL = c);
   }
   var HROW = [0, 1, 1, 2, 6, 5, 4, 7, 0, 0, 0, 4, 1, 0, 0, 6, 0, 1, 1];   // which atlas row each homestead tile sits on
+  // =====================================================================================================================================
+  // ---------- HOMESTEAD LOOK: everything is pixel art at 16 px per tile, scaled up crisp (the tile size here is a multiple of 16) ----------
+  // The ground is painted once into one canvas (HG) and only repainted when it changes; it gives grass a raised edge that casts a shadow,
+  // tilled beds a sunken rim, water a bank shadow and foam. Everything that stands up is a cached sprite with a dark outline.
+  var HG = null, HSPR = {};
+  function hpCol(h) { var n = parseInt(h.slice(1), 16); return (255 << 24 | (n & 255) << 16 | (n >> 8 & 255) << 8 | n >> 16) >>> 0; }
+  var HPAL = {};
+  function hc(h) { return HPAL[h] || (HPAL[h] = hpCol(h)); }
+  function hpCan(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; var g = c.getContext("2d"); g.imageSmoothingEnabled = false; return { c: c, g: g, R: function (x, y, ww, hh, col) { g.fillStyle = col; g.fillRect(x, y, ww, hh); }, P: function (x, y, col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } }; }
+  function hpOutline(c, k) {   // every empty pixel touching the sprite becomes a dark copy of its neighbour: crisp, tinted outlines
+    var g = c.getContext("2d"), W = c.width, H = c.height, d = g.getImageData(0, 0, W, H), a = d.data, o = new Uint8ClampedArray(a), x, y; k = k || 0.32;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) { var i = (y * W + x) * 4; if (a[i + 3] > 40) continue;
+      var n = -1; if (y + 1 < H && a[i + W * 4 + 3] > 200) n = i + W * 4; else if (x > 0 && a[i - 4 + 3] > 200) n = i - 4; else if (x + 1 < W && a[i + 4 + 3] > 200) n = i + 4; else if (y > 0 && a[i - W * 4 + 3] > 200) n = i - W * 4;
+      if (n < 0) continue; o[i] = a[n] * k; o[i + 1] = a[n + 1] * k; o[i + 2] = a[n + 2] * k * 1.1; o[i + 3] = 255; }
+    d.data.set(o); g.putImageData(d, 0, 0); return c;
+  }
+  function hpBlob(P, cx, cy, rx, ry, cols, seed, tex) {   // a shaded round shape, lit from the upper left, with a little leafy speckle
+    for (var y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (var x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+      var nx = (x + 0.5 - cx) / rx, ny = (y + 0.5 - cy) / ry, r2 = nx * nx + ny * ny; if (r2 > 1) continue;
+      var L = -(nx * 0.55 + ny * 0.85) + (1 - r2) * 0.35 + (tex ? (SW.hash(x, y, seed) - 0.5) * tex : 0);
+      P(x, y, L > 0.62 ? cols[3] : L > 0.12 ? cols[2] : L > -0.4 ? cols[1] : cols[0]);
+    }
+  }
+  function hpShadow(g, cx, cy, rx, ry, a) { g.fillStyle = "rgba(20,14,6," + a + ")"; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, 6.2832); g.fill(); }
+  // ---- the ground ----
+  var HGC = { D: 0, G: 1, S: 2, P: 3, W: 4, T: 5, Y: 6, F: 7, B: 8 };
+  function hgCode(id) { return id === HT.GRASS || id === HT.FLOWER || id === HT.HOUSE || id === HT.CRATE || id === HT.STALL || id === HT.FENCE ? 1 : id === HT.SOIL ? 2 : id === HT.PATH || id === HT.GATE ? 3 : id === HT.POND || id === HT.CANAL || id === HT.PADDYW ? 4 : id === HT.DITCH ? 5 : id === HT.PADDY ? 6 : id === HT.TREE ? 7 : 0; }
+  function homeGround() {
+    var W = HW * 16, H = HH * 16, t = HOME.t, o = homeS(), tc = new Uint8Array(HW * HH), i, x, y;
+    if (!HG) { HG = document.createElement("canvas"); HG.width = W; HG.height = H; }
+    for (i = 0; i < tc.length; i++) tc[i] = hgCode(t[i]);
+    var TC = function (a, b) { return a < 0 || b < 0 || a >= HW || b >= HH ? 7 : tc[b * HW + a]; };
+    var isPad = function (a, b) { var q = a < 0 || b < 0 || a >= HW || b >= HH ? 0 : t[b * HW + a]; return q === HT.PADDY || q === HT.PADDYW; };
+    var pc = new Uint8Array(W * H), RAD = [2, 5, 2, 3, 4, 2, 2, 0, 0];
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {   // pass 1: which kind of ground each pixel is (edges carved, corners rounded)
+      var tx = x >> 4, ty = y >> 4, px = x & 15, py = y & 15, c = tc[ty * HW + tx], q = c;
+      if (isPad(tx, ty)) { if ((!isPad(tx - 1, ty) && px < 2) || (!isPad(tx + 1, ty) && px > 13) || (!isPad(tx, ty - 1) && py < 2) || (!isPad(tx, ty + 1) && py > 13)) q = 8; pc[y * W + x] = q; continue; }
+      if (c !== 0 && c !== 7) {
+        var jg = c === 1 || c === 4 ? (SW.hash(x >> 1, y >> 1, 41) < 0.5 ? 1 : 0) : 0, l = TC(tx - 1, ty) !== c, r = TC(tx + 1, ty) !== c, u = TC(tx, ty - 1) !== c, d = TC(tx, ty + 1) !== c, rr = RAD[c];
+        if ((l && px < jg) || (r && px > 15 - jg) || (u && py < jg) || (d && py > 15 - jg)) q = 0;
+        else if (rr) { var cx2 = l && px < rr ? rr : r && px > 15 - rr ? 15 - rr : -1, cy2 = u && py < rr ? rr : d && py > 15 - rr ? 15 - rr : -1; if (cx2 >= 0 && cy2 >= 0 && (px - cx2) * (px - cx2) + (py - cy2) * (py - cy2) > rr * rr) q = 0; }
+      }
+      pc[y * W + x] = q;
+    }
+    var img = new ImageData(W, H), buf = new Uint32Array(img.data.buffer), P = function (a, b) { return a < 0 || b < 0 || a >= W || b >= H ? 7 : pc[b * W + a]; };
+    var wetT = new Uint8Array(HW * HH); for (i = 0; i < wetT.length; i++) if (t[i] === HT.SOIL && homeWet(i % HW, (i / HW) | 0)) wetT[i] = 1;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {   // pass 2: colour, with raised and sunken edges
+      var k = pc[y * W + x], up = P(x, y - 1), up2 = P(x, y - 2), dn = P(x, y + 1), lf = P(x - 1, y), rt = P(x + 1, y), hh = SW.hash(x, y, 43), lo = SW.hash(x >> 3, y >> 3, 44), col;
+      if (k === 1) {
+        if (dn !== 1 || lf !== 1 || rt !== 1 || up !== 1) col = dn !== 1 ? "#2f5c23" : "#3b7029";
+        else if (up2 !== 1) col = "#8acb57";
+        else if (SW.hash(x >> 2, y >> 2, 55) < 0.16 && ((x & 3) === 1 || (x & 3) === 2) && (y & 3) >= 1) col = (y & 3) === 1 ? ((x & 3) === 1 ? "#8fcf5a" : "#4a8a30") : (y & 3) === 3 ? "#3f7a2a" : "#6fb247";
+        else if (hh < 0.07 && P(x, y + 1) === 1) col = "#8fcf5a"; else if (hh < 0.11) col = "#457f2e"; else if (SW.hash(x, y - 1, 43) < 0.07) col = "#6fb247";
+        else { var l2 = SW.hash(x >> 4, y >> 4, 56) * 0.5 + lo * 0.5; col = l2 < 0.3 ? "#55953a" : l2 < 0.55 ? "#5c9e3c" : l2 < 0.8 ? "#63a742" : "#6aae46"; }
+      } else if (k === 0) {
+        var gu = up === 1 || up === 3, gu2 = up2 === 1 || up2 === 3, nw = up === 4 || dn === 4 || lf === 4 || rt === 4;
+        if (gu) col = "#6d4f2c"; else if (gu2) col = "#81603a"; else if (nw) col = "#6e5232";
+        else if (hh < 0.05) col = "#c09a62"; else if (hh < 0.09) col = "#6f512d"; else col = lo < 0.4 ? "#9a7446" : lo < 0.75 ? "#a17a4a" : "#93703f";
+        if (!gu && !gu2 && SW.hash(x >> 1, y >> 1, 45) < 0.012) col = "#c8a874";
+      } else if (k === 2) {
+        var wt2 = wetT[(y >> 4) * HW + (x >> 4)], py2 = y & 15;
+        if (up !== 2) col = wt2 ? "#24170c" : "#3e2815"; else if (up2 !== 2) col = wt2 ? "#2e1d10" : "#4f341d";
+        else if (dn !== 2) col = wt2 ? "#6a4a2c" : "#a07448"; else if (lf !== 2 || rt !== 2) col = wt2 ? "#3a2614" : "#56391f";
+        else if (py2 % 4 === 3) col = wt2 ? "#3a2614" : "#5a3c21"; else if (py2 % 4 === 0) col = wt2 ? "#5a3b22" : "#86603a";
+        else col = hh < 0.08 ? (wt2 ? "#5e3f25" : "#8a6340") : wt2 ? "#4b311c" : "#6e4a2b";
+      } else if (k === 3) {
+        if (dn !== 3) col = "#8e744c"; else if (up !== 3 || lf !== 3 || rt !== 3) col = "#a88d5e";
+        else { var cxs = x >> 3, cys = y >> 3, ox3 = (x & 7) - 3.5 - (SW.hash(cxs, cys, 52) - 0.5) * 2, oy3 = (y & 7) - 3.5 - (SW.hash(cys, cxs, 53) - 0.5) * 2, st3 = SW.hash(cxs, cys, 54) < 0.55, rr3 = ox3 * ox3 / 9 + oy3 * oy3 / 6;
+          col = st3 && rr3 < 1 ? (oy3 < -1 ? "#e4d2a8" : rr3 > 0.7 && oy3 > 0 ? "#9e8862" : "#cdbb92") : st3 && rr3 < 1.3 && oy3 > 0 ? "#8e744c" : hh < 0.07 ? "#a8875a" : lo < 0.5 ? "#bf9d68" : "#b89562"; }
+      } else if (k === 4) {
+        var nearL = false; for (var d2 = 1; d2 <= 2 && !nearL; d2++) if (P(x - d2, y) !== 4 || P(x + d2, y) !== 4 || P(x, y - d2) !== 4 || P(x, y + d2) !== 4) nearL = true;
+        if (up !== 4 && up !== 8) col = "#21546a"; else if (up2 !== 4 && up2 !== 8) col = "#286178";
+        else if (lf !== 4 || rt !== 4 || dn !== 4) col = "#cfeee8"; else if (nearL) col = "#4ea4b4";
+        else col = (lo < 0.5 ? "#2f7f95" : "#2b768c"); if (!nearL && SW.hash(x >> 2, y, 46) < 0.03) col = "#5aaabd";
+      } else if (k === 5) { col = up !== 5 ? "#24180c" : up2 !== 5 ? "#33231a" : dn !== 5 ? "#7a5a36" : hh < 0.1 ? "#55392a" : "#47301e"; }
+      else if (k === 6) { col = up !== 6 ? "#5a4026" : (SW.hash(x >> 1, y, 47) < 0.06 || SW.hash(x, y >> 1, 48) < 0.06) ? "#5a3e22" : "#86643f"; }
+      else if (k === 8) { col = dn !== 8 ? "#6e5232" : up !== 8 ? "#c49a62" : hh < 0.1 ? "#9a7446" : "#ad844f"; }
+      else { col = hh < 0.06 ? "#2a5226" : lo < 0.5 ? "#335f2a" : "#2f5a28"; }
+      buf[y * W + x] = hc(col);
+    }
+    var PX = function (a, b, col) { if (a >= 0 && b >= 0 && a < W && b < H) buf[b * W + a] = hc(col); };
+    for (i = 0; i < t.length; i++) {   // little details baked in: flowers, lily pads, compost
+      var X = (i % HW) * 16, Y = ((i / HW) | 0) * 16, id = t[i], h1 = SW.hash(i % HW, (i / HW) | 0, 49);
+      if (id === HT.FLOWER) { var fcs = [["#ff8ad0", "#ffd0ec"], ["#ffe27a", "#fff6c8"], ["#9ad0ff", "#e0f2ff"], ["#ffffff", "#fff6c8"]][Math.floor(h1 * 4)];
+        [[4, 6], [10, 4], [7, 11], [12, 10]].forEach(function (f, n) { if (n === 3 && h1 < 0.5) return; var fx = X + f[0], fy = Y + f[1]; PX(fx, fy + 2, "#2f6a24"); PX(fx, fy + 3, "#2f6a24"); PX(fx - 1, fy, fcs[0]); PX(fx + 1, fy, fcs[0]); PX(fx, fy - 1, fcs[0]); PX(fx, fy + 1, fcs[0]); PX(fx, fy, "#ffd23f"); PX(fx - 1, fy - 1, fcs[1]); }); }
+      if (id === HT.POND && h1 < 0.13) { var lx = X + 4 + Math.floor(h1 * 40) % 6, ly = Y + 5; for (var yy = 0; yy < 5; yy++) for (var xx = 0; xx < 7; xx++) { var e2 = ((xx - 3) / 3.5) * ((xx - 3) / 3.5) + ((yy - 2) / 2.5) * ((yy - 2) / 2.5); if (e2 < 1 && !(xx >= 3 && yy <= 1)) PX(lx + xx, ly + yy, e2 > 0.6 ? "#2f7a34" : yy < 2 ? "#6ec25a" : "#4aa040"); } PX(lx + 3, ly + 5, "#1f5a6a"); if (h1 < 0.06) { PX(lx + 2, ly + 1, "#ff9ad0"); PX(lx + 3, ly, "#ffd0ec"); PX(lx + 1, ly, "#ff9ad0"); PX(lx + 2, ly, "#fff"); } }
+      if (id === HT.SOIL && o.f[(i % HW) + "," + ((i / HW) | 0)]) for (var cq = 0; cq < 7; cq++) PX(X + 2 + Math.floor(SW.hash(i, cq, 50) * 12), Y + 3 + Math.floor(SW.hash(cq, i, 51) * 10), cq % 2 ? "#1e1208" : "#6a9a3a");
+    }
+    HG.getContext("2d").putImageData(img, 0, 0); HOME.gd = 0;
+  }
+  // ---- sprites ----
+  function hsTree(v) {   // 3 kinds: a round swamp oak, a weeping bog willow and a blossom tree
+    var key = "tree" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(44, 58), P = S2.P, R = S2.R, x, y;
+    var pal = v === 1 ? ["#3a5a1e", "#5a8a2a", "#86b83a", "#b8e06a"] : v === 2 ? ["#2a5a2a", "#3f7f34", "#5aa046", "#86c862"] : ["#1e4a26", "#2f6b30", "#46923c", "#72bd50"];
+    for (y = 34; y < 54; y++) { var w = y > 49 ? 4 + (y - 49) : 3; for (x = 22 - w; x < 22 + w; x++) P(x, y, x < 20 ? "#4a2e18" : x > 23 ? "#5e3a1e" : SW.hash(x, y, 60) < 0.2 ? "#5e3a1e" : "#7a4e2a"); }
+    R(20, 38, 1, 4, "#9a6a3a"); R(23, 44, 1, 3, "#3a2210");
+    var blobs = v === 1 ? [[22, 22, 18, 13], [11, 26, 9, 9], [33, 26, 9, 9], [16, 14, 10, 8], [29, 13, 10, 8], [22, 8, 9, 6]] : [[22, 24, 18, 14], [10, 28, 9, 8], [34, 28, 9, 8], [15, 15, 10, 9], [30, 14, 10, 9], [22, 7, 10, 7]];
+    blobs.forEach(function (b, n) { hpBlob(P, b[0], b[1], b[2], b[3], pal, 61 + n + v * 7, 0.5); });
+    if (v === 1) for (var s = 0; s < 14; s++) { var sx = 6 + Math.floor(SW.hash(s, 1, 62) * 32), sl = 6 + Math.floor(SW.hash(s, 2, 62) * 12); for (y = 28; y < 28 + sl && y < 50; y++) P(sx + ((y >> 2) % 2), y, y % 3 ? pal[2] : pal[1]); }
+    if (v === 2) for (var f = 0; f < 26; f++) { var fx = 6 + Math.floor(SW.hash(f, 3, 63) * 32), fy = 4 + Math.floor(SW.hash(f, 4, 63) * 30), on = fx > 4 && fx < 40; if (on) { P(fx, fy, "#ffb0d8"); P(fx + 1, fy, "#ff8ac4"); P(fx, fy + 1, "#ff8ac4"); P(fx + 1, fy + 1, "#ffe0f0"); } }
+    hpOutline(S2.c); return (HSPR[key] = S2.c);
+  }
+  function hsBush(v) { var key = "bush" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(26, 16), P = S2.P, pal = v ? ["#24502a", "#357032", "#4c9440", "#7abf56"] : ["#1f4a26", "#2f6b30", "#46923c", "#72bd50"];
+    hpBlob(P, 8, 9, 7.5, 6, pal, 90 + v, 0.5); hpBlob(P, 17, 8, 8.5, 6.5, pal, 91 + v, 0.5); hpBlob(P, 12, 6, 6, 4.5, pal, 92 + v, 0.5);
+    if (v) for (var f = 0; f < 5; f++) { var fx = 4 + Math.floor(SW.hash(f, 5, 94) * 18), fy = 4 + Math.floor(SW.hash(f, 6, 94) * 8); P(fx, fy, "#ffffff"); P(fx + 1, fy, "#ffe27a"); }
+    hpOutline(S2.c); return (HSPR[key] = S2.c); }
+  function hsRock(v) { var key = "rock" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 16), P = S2.P;
+    hpBlob(P, 9, 10, v ? 6.5 : 7.5, v ? 4.6 : 5.2, ["#4a5262", "#68717f", "#8c95a2", "#bcc4cc"], 70 + v, 0.35); if (!v) hpBlob(P, 13, 11, 3.5, 3, ["#4a5262", "#68717f", "#8c95a2", "#bcc4cc"], 72, 0.3);
+    for (var m = 0; m < 7; m++) P(5 + Math.floor(SW.hash(m, v, 73) * 8), 6 + Math.floor(SW.hash(v, m, 73) * 2), m % 2 ? "#5a9a3a" : "#7ab84a");
+    hpOutline(S2.c); return (HSPR[key] = S2.c); }
+  function hsStump() { if (HSPR.stump) return HSPR.stump; var S2 = hpCan(18, 18), P = S2.P, R = S2.R, x, y;
+    for (y = 7; y < 15; y++) for (x = 3; x < 15; x++) P(x, y, x < 5 ? "#4a2e18" : x > 12 ? "#5e3a1e" : (x % 3 === 0 ? "#5e3a1e" : "#7a4e2a"));
+    R(1, 13, 3, 2, "#5e3a1e"); R(14, 13, 3, 2, "#5e3a1e"); R(6, 14, 2, 2, "#4a2e18");
+    for (y = 4; y < 10; y++) for (x = 3; x < 15; x++) { var nx = (x + 0.5 - 9) / 6, ny = (y + 0.5 - 7) / 3; if (nx * nx + ny * ny <= 1) { var r = Math.sqrt(nx * nx + ny * ny); P(x, y, r > 0.8 ? "#a5784a" : r > 0.55 ? "#d6aa70" : r > 0.3 ? "#b88a58" : "#d6aa70"); } }
+    P(12, 5, "#6a9a3a"); P(13, 5, "#7ab84a"); P(12, 6, "#6a9a3a");
+    hpOutline(S2.c); return (HSPR.stump = S2.c); }
+  function hsReeds() { if (HSPR.reeds) return HSPR.reeds; var S2 = hpCan(18, 22), P = S2.P, R = S2.R;
+    [[5, 6, "#5a9a3a", 1], [9, 3, "#6fb047", 1], [13, 8, "#5a9a3a", 0]].forEach(function (s3) { for (var y = s3[1]; y < 21; y++) P(s3[0] + (y < 10 ? 1 : 0), y, s3[2]); if (s3[3]) { R(s3[0], s3[1] + 1, 2, 5, "#8a5a30"); P(s3[0], s3[1] + 1, "#b07a44"); P(s3[0] + 1, s3[1], s3[2]); } });
+    P(3, 15, "#6fb047"); P(4, 16, "#6fb047"); P(2, 17, "#5a9a3a"); P(15, 14, "#6fb047"); P(14, 15, "#6fb047"); P(16, 16, "#5a9a3a"); R(4, 20, 11, 1, "#4a8a30");
+    hpOutline(S2.c, 0.45); return (HSPR.reeds = S2.c); }
+  function hsFence(l, r) { var key = "fence" + l + r; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 22), R = S2.R;
+    if (l) { R(0, 8, 9, 2, "#b07a44"); R(0, 8, 9, 1, "#d09a5a"); R(0, 14, 9, 2, "#9a6838"); }
+    if (r) { R(9, 8, 9, 2, "#b07a44"); R(9, 8, 9, 1, "#d09a5a"); R(9, 14, 9, 2, "#9a6838"); }
+    R(7, 4, 4, 16, "#9a6838"); R(7, 4, 1, 16, "#c08850"); R(10, 4, 1, 16, "#7a4e2a"); R(6, 3, 6, 2, "#b07a44"); R(7, 2, 4, 1, "#d6a468");
+    hpOutline(S2.c); return (HSPR[key] = S2.c); }
+  function hsCrop(tid) {   // a crop's 16 px art from the tile atlas, with an outline, so it pops off the soil
+    var key = "c" + tid; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 18); S2.g.drawImage(ATLAS, 0, tid * 16, 16, 16, 1, 1, 16, 16); hpOutline(S2.c, 0.38); return (HSPR[key] = S2.c); }
+  function hsCrate() { if (HSPR.crate) return HSPR.crate; var S2 = hpCan(18, 20), R = S2.R, P = S2.P;
+    R(2, 6, 14, 12, "#a86e3a"); for (var y = 6; y < 18; y += 4) R(2, y + 3, 14, 1, "#7a4a24"); R(2, 6, 2, 12, "#8a5a2e"); R(14, 6, 2, 12, "#8a5a2e");
+    R(1, 3, 16, 4, "#c48a4e"); R(1, 3, 16, 1, "#e0aa6a"); R(1, 6, 16, 1, "#6a4020"); R(8, 4, 2, 2, "#d8c070"); P(5, 12, "#5a3418"); P(12, 15, "#5a3418");
+    hpOutline(S2.c); return (HSPR.crate = S2.c); }
+  function hsStall() { if (HSPR.stall) return HSPR.stall; var S2 = hpCan(36, 36), R = S2.R, P = S2.P, x;
+    R(3, 12, 3, 22, "#7a4e2a"); R(30, 12, 3, 22, "#7a4e2a"); R(3, 12, 1, 22, "#9a6838");
+    for (x = 0; x < 36; x++) { var st = Math.floor(x / 4) % 2; R(x, 4, 1, 8, st ? "#f4ead0" : "#3f9a5a"); if ((x % 4) < 3) P(x, 12, st ? "#f4ead0" : "#3f9a5a"); if ((x % 4) === 1) P(x, 13, st ? "#f4ead0" : "#3f9a5a"); }
+    R(0, 4, 36, 1, "#2f7a44"); R(0, 3, 36, 1, "#6ac87a");
+    R(2, 24, 32, 4, "#b07a44"); R(2, 24, 32, 1, "#d09a5a"); R(4, 28, 28, 6, "#8a5a2e"); R(4, 28, 28, 1, "#6a4020");
+    [["#d8b878", "#b89858", 5], ["#a8d070", "#86ae50", 12], ["#f0b0c8", "#d08ca8", 19], ["#c8c8f0", "#a8a8d0", 26]].forEach(function (s) { R(s[2], 18, 6, 6, s[0]); R(s[2], 22, 6, 2, s[1]); R(s[2] + 1, 17, 4, 1, s[0]); R(s[2] + 2, 16, 2, 1, "#7a5a36"); P(s[2] + 2, 19, "#fff"); });
+    hpOutline(S2.c); return (HSPR.stall = S2.c); }
+  function hsArch() { if (HSPR.arch) return HSPR.arch; var S2 = hpCan(42, 36), R = S2.R, P = S2.P;
+    R(3, 6, 4, 30, "#7a4e2a"); R(35, 6, 4, 30, "#7a4e2a"); R(3, 6, 1, 30, "#9a6838"); R(35, 6, 1, 30, "#9a6838");
+    R(0, 4, 42, 4, "#9a6838"); R(0, 4, 42, 1, "#c08850"); R(1, 2, 40, 2, "#7a4e2a");
+    R(12, 9, 18, 9, "#3a7a3a"); R(12, 9, 18, 1, "#5aa84a"); R(14, 8, 1, 2, "#5a3a1e"); R(27, 8, 1, 2, "#5a3a1e");
+    for (var k = 0; k < 4; k++) { R(15 + k * 3, 12, 2, 3, "#ffe9a8"); } P(20, 16, "#ffe9a8");
+    R(5, 24, 2, 2, "#ff8ad0"); R(36, 18, 2, 2, "#ffe27a"); R(4, 14, 1, 5, "#5aa84a"); R(37, 22, 1, 6, "#5aa84a");
+    hpOutline(S2.c); return (HSPR.arch = S2.c); }
+  function hsHouse() {   // the cottage, 6 tiles wide: slate-teal shingle roof with moss on the eaves, plank walls, shutters and flower boxes, a stone chimney
+    if (HSPR.house) return HSPR.house; var S2 = hpCan(104, 102), R = S2.R, P = S2.P, x, y;
+    R(6, 90, 92, 10, "#77808a"); for (x = 6; x < 98; x += 7) { R(x, 90, 6, 4, "#9aa3ac"); R(x + 3, 95, 6, 4, "#8a939c"); } R(6, 99, 92, 1, "#525a62");
+    for (x = 8; x < 96; x++) for (y = 54; y < 90; y++) { var pl = Math.floor((x - 8) / 5); P(x, y, (x - 8) % 5 === 0 ? "#7d4a24" : pl % 2 ? "#b9773f" : "#c4824a"); }
+    for (x = 8; x < 96; x++) { if (SW.hash(x, 0, 80) < 0.3) P(x, 60 + Math.floor(SW.hash(x, 1, 80) * 26), "#9a5e30"); }
+    R(8, 54, 88, 4, "#5e3a1e"); R(8, 58, 88, 2, "#8a5530");
+    R(42, 64, 20, 26, "#5e3a1e"); R(44, 66, 16, 24, "#8a5530"); R(44, 66, 16, 1, "#a8703c"); R(46, 70, 5, 8, "#7a4628"); R(53, 70, 5, 8, "#7a4628"); R(46, 80, 5, 8, "#7a4628"); R(53, 80, 5, 8, "#7a4628"); R(56, 78, 2, 2, "#ffd23f");
+    R(48, 67, 8, 2, "#9ad8e8");
+    R(38, 90, 28, 4, "#c08850"); R(38, 90, 28, 1, "#e0aa6a"); R(40, 94, 24, 5, "#a86e3a"); R(40, 94, 24, 1, "#c48a4e");
+    [16, 70].forEach(function (wx) { R(wx - 4, 63, 4, 15, "#3f8a7a"); R(wx + 18, 63, 4, 15, "#3f8a7a"); R(wx - 4, 63, 1, 15, "#5aa898"); R(wx + 18, 63, 1, 15, "#5aa898");
+      R(wx, 63, 18, 15, "#5e3a1e"); R(wx + 1, 64, 16, 13, "#a8d8ea"); R(wx + 1, 64, 16, 4, "#d8f0f8"); R(wx + 8, 64, 2, 13, "#5e3a1e"); R(wx + 1, 70, 16, 1, "#5e3a1e");
+      R(wx - 2, 78, 22, 4, "#8a5530"); R(wx - 2, 78, 22, 1, "#a8703c"); for (var f = 0; f < 6; f++) { var fc = ["#ff8ad0", "#ffe27a", "#ffffff"][f % 3]; R(wx + f * 3 + 1, 76, 2, 2, fc); P(wx + f * 3 + 1, 75, "#4aa040"); } });
+    R(0, 80, 9, 18, "#7a4e2a"); R(0, 80, 9, 2, "#5a6268"); R(0, 88, 9, 1, "#5a6268"); R(0, 95, 9, 1, "#5a6268"); R(1, 82, 2, 13, "#9a6838"); R(1, 79, 7, 2, "#3f7f95");
+    R(74, 0, 13, 24, "#6a727c"); for (y = 1; y < 24; y += 3) for (x = 74 + (y % 2) * 2; x < 87; x += 4) R(x, y, 3, 2, "#8a929c"); R(72, 0, 17, 3, "#525a62");
+    for (y = 6; y < 56; y++) { var inset = Math.round((56 - y) * 0.16), x0 = inset, x1 = 104 - inset, row = Math.floor((y - 6) / 5), yy = (y - 6) % 5;
+      for (x = x0; x < x1; x++) { var sx = (x + (row % 2) * 4) % 8; P(x, y, yy === 4 ? "#24434c" : sx === 0 ? "#2f5660" : yy === 0 ? "#6aa4b0" : yy === 1 ? "#4f8894" : SW.hash(x, y, 81) < 0.06 ? "#5a97a2" : "#3f7380"); } }
+    R(8, 3, 88, 4, "#24434c"); R(8, 3, 88, 1, "#3f7380");
+    R(45, 18, 14, 14, "#5e3a1e"); for (y = 19; y < 31; y++) for (x = 46; x < 58; x++) { var dx = x - 51.5, dy = y - 24.5; if (dx * dx + dy * dy < 30) P(x, y, dy < -1 ? "#d8f0f8" : "#a8d8ea"); } R(51, 19, 1, 12, "#5e3a1e"); R(46, 24, 12, 1, "#5e3a1e");
+    R(0, 54, 104, 3, "#4a2e18"); R(0, 57, 104, 1, "#2e1c10");
+    for (x = 0; x < 104; x++) if (SW.hash(x, 2, 82) < 0.42) { P(x, 53, "#5a9a3a"); if (SW.hash(x, 3, 82) < 0.4) P(x, 52, "#7ab84a"); if (SW.hash(x, 4, 82) < 0.2) P(x, 57, "#4a8a32"); }
+    hpOutline(S2.c); return (HSPR.house = S2.c);
+  }
+  function hsVec(key, w, h, fn) {   // draw a vector shape at 16 px per tile into a small canvas, then outline it, so it matches the pixel art
+    if (HSPR[key]) return HSPR[key]; var S2 = hpCan(w, h), sTs = ts, sOx = ox, sOy = oy; ts = 16; ox = 6; oy = 4;
+    try { fn(S2.g); } catch (e) {} ts = sTs; ox = sOx; oy = sOy; hpOutline(S2.c); return (HSPR[key] = S2.c);
+  }
+  // draw a sprite whose canvas pixel (ax, ay) sits on map point (mx, my)
+  function hDraw(g, c, mx, my, ax, ay, dx) { var s = ts / 16; g.drawImage(c, Math.round(ox + mx * ts - ax * s + (dx || 0)), Math.round(oy + my * ts - ay * s), c.width * s, c.height * s); }
+  function hDrawSway(g, c, mx, my, ax, ay, sw, cut) {   // the top part leans in the wind
+    var s = ts / 16, X = Math.round(ox + mx * ts - ax * s), Y = Math.round(oy + my * ts - ay * s), k = cut || Math.floor(c.height * 0.55);
+    g.drawImage(c, 0, 0, c.width, k, X + Math.round(sw) * s, Y, c.width * s, k * s); g.drawImage(c, 0, k, c.width, c.height - k, X, Y + k * s, c.width * s, (c.height - k) * s);
+  }
   function homeRender(now) {
     var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
-    g.fillStyle = "#24461c"; g.fillRect(0, 0, vw, vh);
-    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 2);
-    // --- the ground ---
-    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
-      var id = t[j * HW + i], sx = ox + i * ts, sy = oy + j * ts, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, row = HROW[id];
-      if (id === HT.SOIL && homeWet(i, j)) row = 3;
-      if (id === HT.HOUSE || id === HT.CRATE || id === HT.STALL || id === HT.FENCE || id === HT.ROCK || id === HT.STUMP || id === HT.FLOWER || id === HT.REEDS) row = id === HT.REEDS || id === HT.STUMP ? 1 : 0;
-      g.drawImage(A, v * 16, row * 16, 16, 16, sx, sy, ts, ts);
-      if (homeWater(id)) {   // water: a shimmer, and a muddy bank where it meets land
-        var ph = Math.sin(T0 * 1.6 + i * 0.9 + j * 0.6); g.fillStyle = "rgba(200,240,255," + (0.18 + 0.12 * ph).toFixed(3) + ")"; g.fillRect(sx + ts * (0.2 + 0.15 * ph), sy + ts * 0.35, ts * 0.3, Math.max(1, ts * 0.06)); g.fillRect(sx + ts * (0.55 - 0.1 * ph), sy + ts * 0.7, ts * 0.22, Math.max(1, ts * 0.05));
-        g.fillStyle = "#4a3420"; var e2 = Math.max(2, Math.round(ts * 0.12));
-        if (!homeWater(hmT(i, j - 1))) g.fillRect(sx, sy, ts, e2); if (!homeWater(hmT(i - 1, j))) g.fillRect(sx, sy, e2, ts); if (!homeWater(hmT(i + 1, j))) g.fillRect(sx + ts - e2, sy, e2, ts);
-        if (!homeWater(hmT(i, j + 1))) { g.fillStyle = "#6e5233"; g.fillRect(sx, sy + ts - e2, ts, e2); }
-        if (id === HT.POND && SW.hash(i, j, 90) < 0.12) { g.fillStyle = "#3f9a4a"; g.beginPath(); g.ellipse(sx + ts * 0.5, sy + ts * 0.5, ts * 0.3, ts * 0.2, 0, 0.5, 6.0); g.lineTo(sx + ts * 0.5, sy + ts * 0.5); g.fill(); if (SW.hash(i, j, 91) < 0.4) { g.fillStyle = "#ff9ad0"; g.fillRect(sx + ts * 0.45, sy + ts * 0.38, ts * 0.12, ts * 0.12); } }
-      }
-      if (id === HT.SOIL && (o.w[i + "," + j] || 0) > 0 && !homeWater(hmT(i, j))) { g.fillStyle = "rgba(20,10,4,.18)"; g.fillRect(sx, sy, ts, ts); }
-      if (id === HT.SOIL && o.f[i + "," + j]) { g.fillStyle = "#24160a"; for (var cq = 0; cq < 5; cq++) g.fillRect(sx + ts * (0.12 + SW.hash(i, j * 5 + cq, 96) * 0.7), sy + ts * (0.12 + SW.hash(i * 3 + cq, j, 97) * 0.7), Math.max(2, ts * 0.12), Math.max(2, ts * 0.08)); }
-      if (id === HT.PADDY || id === HT.PADDYW) {   // a paddy: a low earth bank around a flat of shallow water (or cracked mud when it's cut off)
-        var bk = Math.max(2, Math.round(ts * 0.1)), wt = id === HT.PADDYW, pa = Math.sin(T0 * 1.3 + i + j * 0.7);
-        g.fillStyle = wt ? "#3f8fae" : "#4a3420"; g.fillRect(sx + bk, sy + bk, ts - bk * 2, ts - bk * 2);
-        if (wt) { g.fillStyle = "rgba(210,245,255," + (0.2 + 0.1 * pa).toFixed(3) + ")"; g.fillRect(sx + ts * (0.25 + 0.1 * pa), sy + ts * 0.3, ts * 0.28, Math.max(1, ts * 0.05)); g.fillRect(sx + ts * 0.5, sy + ts * 0.68, ts * 0.2, Math.max(1, ts * 0.05)); }
-        else { g.strokeStyle = "#2e1f13"; g.lineWidth = 1; g.beginPath(); g.moveTo(sx + ts * 0.3, sy + ts * 0.25); g.lineTo(sx + ts * 0.45, sy + ts * 0.5); g.lineTo(sx + ts * 0.7, sy + ts * 0.6); g.moveTo(sx + ts * 0.45, sy + ts * 0.5); g.lineTo(sx + ts * 0.35, sy + ts * 0.75); g.stroke(); }
-        var PB = function (a, b) { var q2 = hmT(a, b); return q2 === HT.PADDY || q2 === HT.PADDYW; };
-        g.fillStyle = "#6e5233"; if (!PB(i, j - 1)) g.fillRect(sx, sy, ts, bk); if (!PB(i - 1, j)) g.fillRect(sx, sy, bk, ts); if (!PB(i + 1, j)) g.fillRect(sx + ts - bk, sy, bk, ts); g.fillStyle = "#8a6a44"; if (!PB(i, j + 1)) g.fillRect(sx, sy + ts - bk, ts, bk);
-        if (wt) { g.fillStyle = id === HT.PADDYW ? "#3f8fae" : "#4a3420"; if (PB(i + 1, j)) g.fillRect(sx + ts - bk, sy + bk, bk, ts - bk * 2); if (PB(i, j + 1)) g.fillRect(sx + bk, sy + ts - bk, ts - bk * 2, bk); if (PB(i - 1, j)) g.fillRect(sx, sy + bk, bk, ts - bk * 2); if (PB(i, j - 1)) g.fillRect(sx + bk, sy, ts - bk * 2, bk); }
-      }
-    }
+    g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh);
+    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 3), s16 = ts / 16;
+    // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
+    if (!HG || HOME.gd || HOME.gdk !== HG) { homeGround(); HOME.gdk = HG; }
+    g.drawImage(HG, ox, oy, HW * ts, HH * ts);
+    if (!reduce) for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var wid = t[j * HW + i]; if (!homeWater(wid)) continue;
+      for (var gl = 0; gl < 2; gl++) { var hgl = SW.hash(i, j, 100 + gl), ph2 = (T0 * 0.9 + hgl * 7) % 3; if (ph2 > 0.5) continue; var gx = ox + (i * 16 + 3 + Math.floor(hgl * 10)) * s16, gy = oy + (j * 16 + 4 + Math.floor(SW.hash(j, i, 102 + gl) * 9)) * s16;
+        g.fillStyle = ph2 < 0.25 ? "#ffffff" : "#bfe8f0"; g.fillRect(gx, gy, s16 * 2, s16); if (ph2 < 0.25) g.fillRect(gx + s16 * 0.5, gy - s16, s16, s16 * 3); } }
     // --- things that stand up, drawn back to front ---
     var L = [];
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var id2 = t[j * HW + i]; if (id2 === HT.TREE || id2 === HT.ROCK || id2 === HT.STUMP || id2 === HT.REEDS || id2 === HT.FENCE || id2 === HT.FLOWER) L.push([j + 1, 0, i, j, id2]); var ce = o.c[i + "," + j]; if (ce) L.push([j + 0.95, 1, i, j, ce]); }
@@ -15608,17 +15766,29 @@
     L.forEach(function (e) {
       if (e[1] === 9) { drawCavePlayer(g, now); return; }
       if (e[1] === 0) { homeProp(g, e[4], e[2], e[3], T0); return; }
-      if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.sin(T0 * 1.8 + e[2]) * ts * 0.03;
-        g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(sx2 + ts / 2, sy2 + ts * 0.82, ts * 0.32, ts * 0.1, 0, 0, 6.2832); g.fill();
-        g.drawImage(ATLAS, 0, C.tiles[e[4].s - 1] * 16, 16, 16, sx2 + sw, sy2 - ts * 0.3, ts, ts);
+      if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.round(Math.sin(T0 * 1.6 + e[2] * 0.7 + e[3]) * 0.8);
+        hpShadow(g, sx2 + ts / 2, sy2 + ts * 0.8, ts * 0.34, ts * 0.11, 0.22);
+        hDrawSway(g, hsCrop(C.tiles[e[4].s - 1]), e[2] + 0.5, e[3] + 1, 9, 19, sw, 10);
         if (e[4].s >= 4 && !reduce && Math.floor(T0 * 2 + e[2] + e[3]) % 7 === 0) { g.fillStyle = "rgba(255,245,180,.85)"; g.fillRect(sx2 + ts * 0.7, sy2 - ts * 0.25, Math.max(2, ts * 0.08), Math.max(2, ts * 0.08)); }
         return; }
       if (e[1] === 2) { homeHouse(g, T0); return; }
       if (e[1] === 3) { homeCrate(g); return; }
       if (e[1] === 4) { homeStall(g); return; }
       if (e[1] === 5) { homeGateArt(g); return; }
-      if (e[1] === 6) { homeGiantArt(g, e[2], T0); return; }
+      if (e[1] === 6) { var gc = e[2], gsp = hsVec("giant" + gc.k, 62, 60, function (q) { homeGiantArt(q, { k: gc.k, x: 0, y: 0, h: 0 }, 0, true); }), wob = gc.h ? Math.sin(T0 * 34) * ts * 0.04 * gc.h : 0;
+        hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y, 6, 4, wob);
+        if (gc.h) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", ox + (gc.x + 1.5) * ts, oy + (gc.y - 0.3) * ts); }
+        return; }
     });
+    // --- daytime life: slow cloud shadows drifting over the farm, butterflies over the grass ---
+    var dlA = daylight(S.time);
+    if (!reduce && dlA > 0.6) {
+      for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; g.fillStyle = "rgba(20,30,40,.07)"; g.beginPath(); g.ellipse(cxc, cyc, ts * 4.5, ts * 1.6, 0, 0, 6.2832); g.fill(); g.beginPath(); g.ellipse(cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, 0, 0, 6.2832); g.fill(); }
+      for (i = 0; i < 5; i++) { var bxs = (SW.hash(i, 7, 103) * (HW - 8) + 4) + Math.sin(T0 * 0.45 + i * 2.1) * 3, bys = (SW.hash(i, 8, 103) * (HH - 10) + 4) + Math.cos(T0 * 0.37 + i) * 2 + Math.sin(T0 * 3 + i) * 0.15, flap = Math.floor(T0 * 8 + i) % 2, bsx = ox + bxs * ts, bsy = oy + bys * ts;
+        if (bsx < -ts || bsx > vw + ts || bsy < -ts || bsy > vh + ts) continue; var bc = ["#ffe27a", "#ff9ad0", "#ffffff", "#9ad0ff", "#ffb84a"][i];
+        g.fillStyle = "rgba(20,14,6,.18)"; g.fillRect(bsx, bsy + ts * 0.9, s16 * 3, s16); g.fillStyle = "#3a2a1a"; g.fillRect(bsx + s16, bsy, s16, s16 * 2);
+        g.fillStyle = bc; if (flap) { g.fillRect(bsx - s16, bsy - s16, s16 * 2, s16 * 2); g.fillRect(bsx + s16 * 2, bsy - s16, s16 * 2, s16 * 2); } else { g.fillRect(bsx, bsy, s16, s16 * 2); g.fillRect(bsx + s16 * 2, bsy, s16, s16 * 2); } }
+    }
     // --- the tile you're pointing at ---
     if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;
       g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
@@ -15631,6 +15801,9 @@
         if (e3.s >= 4) { g.globalAlpha = (1 - dl) * 0.9; g.drawImage(ATLAS, 0, C3.tiles[3] * 16, 16, 16, gx3 - ts / 2, gy3 - ts * 0.4, ts, ts); g.globalAlpha = 1; } });
       (o.gi || []).forEach(function (gc) { if (gc.k !== "croakpumpkin" && gc.k !== "glowgourd") return; var gx4 = ox + (gc.x + 1.5) * ts, gy4 = oy + (gc.y + 1.6) * ts, rg4 = g.createRadialGradient(gx4, gy4, 0, gx4, gy4, ts * 2.6); rg4.addColorStop(0, (gc.k === "glowgourd" ? "rgba(120,255,200," : "rgba(255,190,80,") + ((1 - dl) * 0.55).toFixed(3) + ")"); rg4.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = rg4; g.fillRect(gx4 - ts * 2.6, gy4 - ts * 2.6, ts * 5.2, ts * 5.2); });
       var hl = g.createRadialGradient(ox + (HHOUSE.x + 3) * ts, oy + (HHOUSE.y + 4.3) * ts, 0, ox + (HHOUSE.x + 3) * ts, oy + (HHOUSE.y + 4.3) * ts, ts * 3); hl.addColorStop(0, "rgba(255,200,110," + (0.35 * (1 - dl)).toFixed(3) + ")"); hl.addColorStop(1, "rgba(255,200,110,0)"); g.fillStyle = hl; g.fillRect(0, 0, vw, vh); }
+    if (!HOME.vig || HOME.vig.w !== vw || HOME.vig.h !== vh) { var vc = document.createElement("canvas"); vc.width = Math.max(1, vw >> 2); vc.height = Math.max(1, vh >> 2); var vg = vc.getContext("2d"), rgv = vg.createRadialGradient(vc.width / 2, vc.height / 2, Math.min(vc.width, vc.height) * 0.35, vc.width / 2, vc.height / 2, Math.max(vc.width, vc.height) * 0.75); rgv.addColorStop(0, "rgba(30,20,10,0)"); rgv.addColorStop(1, "rgba(30,20,10,.32)"); vg.fillStyle = rgv; vg.fillRect(0, 0, vc.width, vc.height); HOME.vig = { c: vc, w: vw, h: vh }; }
+    g.imageSmoothingEnabled = true; g.drawImage(HOME.vig.c, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
+    if (dlA > 0.95) { g.fillStyle = "rgba(255,226,160,.05)"; g.fillRect(0, 0, vw, vh); }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     // a little sign over a crop you're pointing at: how long until it's ripe
@@ -15639,9 +15812,9 @@
       g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var lw = g.measureText(lbl).width + 14, lx = ox + (aim.tx + 0.5) * ts, ly = oy + (aim.ty - 0.75) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(lx - lw / 2, ly - 11, lw, 20); g.fillStyle = ce2.s >= 4 ? "#ffe27a" : wet2 ? "#9ae0ff" : "#f6eedb"; g.fillText(lbl, lx, ly + 4); } }
     if (!panelOpen && !trans && hp > 0) homeActions().slice(0, 1).forEach(function (a) { homePill(g, now, a.label, ox + a.ax * ts, oy + a.ay * ts, a.fn); });
   }
-  function homeGiantArt(g, gc, T0) {   // a giant crop, 3 x 3 tiles: a huge melon, pumpkin or glowing gourd sitting in its leaves
+  function homeGiantArt(g, gc, T0, bake) {   // a giant crop, 3 x 3 tiles: a huge melon, pumpkin or glowing gourd sitting in its leaves
     var C = CROPS[gc.k], cx = ox + (gc.x + 1.5) * ts, by = oy + (gc.y + 2.85) * ts, R = ts * 1.45, wob = gc.h ? Math.sin(T0 * 34) * ts * 0.04 * gc.h : 0, u = ts / 16;
-    g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(cx, by, R * 1.12, R * 0.3, 0, 0, 6.2832); g.fill();
+    if (!bake) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(cx, by, R * 1.12, R * 0.3, 0, 0, 6.2832); g.fill(); }
     [[-1.05, -0.15, 0.55, -0.5], [1.0, -0.2, 0.5, 0.4], [-0.55, 0.05, 0.4, -0.2], [0.6, 0.05, 0.42, 0.3]].forEach(function (L, i) { g.fillStyle = i % 2 ? C.leaf2 : C.leaf; g.beginPath(); g.ellipse(cx + L[0] * R, by + L[1] * R, L[2] * R, L[2] * R * 0.45, L[3], 0, 6.2832); g.fill(); });
     var bx = cx + wob, cy = by - R * 0.78, rx = R * (gc.k === "glowgourd" ? 0.82 : 1.02), ry = R * (gc.k === "croakpumpkin" ? 0.72 : gc.k === "glowgourd" ? 0.95 : 0.8);
     if (gc.k === "glowgourd") {   // a tall bottle gourd: a small top bulb on a big round bottom
@@ -15658,13 +15831,13 @@
       g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(bx + rx * 0.1, cy + ry * 0.75, rx * 0.9, ry * 0.3, 0, 0, 6.2832); g.fill(); g.restore();
       g.fillStyle = "#5a7a2a"; g.fillRect(bx - u * 2, cy - ry - u * 3, u * 4, u * 5); g.fillStyle = "#3a5a1a"; g.fillRect(bx - u * 2, cy - ry - u * 3, u * 4, u);
       if (gc.k === "croakpumpkin") {   // a carved frog face, lit from inside at night
-        var glow = 1 - daylight(S.time), fc = glow > 0.3 ? "#ffd24a" : "#3a1a0a";
+        var glow = bake ? 0 : 1 - daylight(S.time), fc = glow > 0.3 ? "#ffd24a" : "#3a1a0a";
         g.fillStyle = fc; g.beginPath(); g.arc(bx - rx * 0.38, cy - ry * 0.2, rx * 0.16, 0, 6.2832); g.arc(bx + rx * 0.38, cy - ry * 0.2, rx * 0.16, 0, 6.2832); g.fill();
         g.beginPath(); g.ellipse(bx, cy + ry * 0.3, rx * 0.5, ry * 0.18, 0, 0, Math.PI); g.fill();
         if (glow <= 0.3) { g.fillStyle = "#fff"; g.fillRect(bx - rx * 0.42, cy - ry * 0.28, u * 2, u * 2); g.fillRect(bx + rx * 0.34, cy - ry * 0.28, u * 2, u * 2); }
       }
     }
-    if (gc.h) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", cx, by - R * 1.85); }
+    if (gc.h && !bake) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", cx, by - R * 1.85); }
   }
   function homePill(g, now, label, sx, sy, fn) {
     var pw, ph, x0, y0; label += coarse ? "" : " (F)"; g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
@@ -15675,66 +15848,29 @@
   }
   function hR(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }
   function homeProp(g, id, i, j, T0) {
-    var sx = ox + i * ts, sy = oy + j * ts, u = ts / 16, hs = SW.hash(i, j, 92);
-    if (id === HT.TREE) {   // a round swamp oak: trunk, then a big leafy crown that reaches up over the tile behind it
-      g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.85, ts * 0.55, ts * 0.18, 0, 0, 6.2832); g.fill();
-      hR(g, sx + 6 * u, sy + 4 * u, 4 * u, 11 * u, "#5a3a1e"); hR(g, sx + 6 * u, sy + 4 * u, 1 * u, 11 * u, "#7a5230");
-      var cr = hs < 0.5 ? ["#2f6a2a", "#3f8a34", "#5aa845"] : ["#2a5e30", "#3a7a3e", "#52a050"], cy = sy - ts * (0.55 + hs * 0.25), sw = reduce ? 0 : Math.sin(T0 * 0.7 + i * 0.5) * u * 0.6;
-      g.fillStyle = cr[0]; g.beginPath(); g.ellipse(sx + ts / 2 + sw, cy + ts * 0.25, ts * 0.78, ts * 0.62, 0, 0, 6.2832); g.fill();
-      g.fillStyle = cr[1]; g.beginPath(); g.ellipse(sx + ts * 0.42 + sw, cy + ts * 0.05, ts * 0.6, ts * 0.48, 0, 0, 6.2832); g.fill();
-      g.fillStyle = cr[2]; g.beginPath(); g.ellipse(sx + ts * 0.32 + sw, cy - ts * 0.08, ts * 0.28, ts * 0.2, 0, 0, 6.2832); g.fill();
-      if (hs > 0.8) { g.fillStyle = "#ff8aa8"; g.fillRect(sx + ts * 0.7 + sw, cy + ts * 0.1, u * 2, u * 2); g.fillRect(sx + ts * 0.2 + sw, cy + ts * 0.35, u * 2, u * 2); }
-      return;
-    }
-    if (id === HT.ROCK) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.82, ts * 0.4, ts * 0.12, 0, 0, 6.2832); g.fill();
-      g.fillStyle = "#6a6e74"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.55, ts * 0.4, ts * 0.32, 0, 0, 6.2832); g.fill(); g.fillStyle = "#8a8f96"; g.beginPath(); g.ellipse(sx + ts * 0.42, sy + ts * 0.45, ts * 0.26, ts * 0.18, 0, 0, 6.2832); g.fill(); hR(g, sx + 5 * u, sy + 6 * u, 2 * u, u, "#b0b5bb"); return; }
-    if (id === HT.STUMP) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx + ts / 2, sy + ts * 0.85, ts * 0.38, ts * 0.12, 0, 0, 6.2832); g.fill();
-      hR(g, sx + 4 * u, sy + 6 * u, 8 * u, 8 * u, "#6a4426"); hR(g, sx + 4 * u, sy + 6 * u, 2 * u, 8 * u, "#875a34"); g.fillStyle = "#c8a070"; g.beginPath(); g.ellipse(sx + ts / 2, sy + 6 * u, 4 * u, 2 * u, 0, 0, 6.2832); g.fill(); g.strokeStyle = "#8a6440"; g.lineWidth = Math.max(1, u * 0.6); g.beginPath(); g.ellipse(sx + ts / 2, sy + 6 * u, 2 * u, u, 0, 0, 6.2832); g.stroke(); return; }
-    if (id === HT.REEDS) { var sw2 = reduce ? 0 : Math.sin(T0 * 1.4 + i * 0.8 + j) * u * 0.8;
-      [[3, 0.9], [6, 1.15], [9, 1], [12, 0.85]].forEach(function (q, k) { var hx = sx + q[0] * u, top = sy + ts * (0.85 - q[1] * 0.9); g.strokeStyle = k % 2 ? "#6a9a3a" : "#4f8030"; g.lineWidth = Math.max(1.5, u * 1.3); g.beginPath(); g.moveTo(hx, sy + ts * 0.9); g.quadraticCurveTo(hx, sy + ts * 0.4, hx + sw2, top); g.stroke(); if (k === 1 || k === 2) hR(g, hx + sw2 - u, top + u, 2 * u, 4 * u, "#7a4a26"); }); return; }
-    if (id === HT.FLOWER) { var fc = ["#ff8ad0", "#ffe27a", "#9ad0ff", "#fff"][Math.floor(hs * 4)]; [[4, 9], [10, 6], [7, 12]].forEach(function (q) { hR(g, sx + q[0] * u, sy + (q[1] + 1) * u, u, 3 * u, "#3f7a30"); hR(g, sx + (q[0] - 1) * u, sy + q[1] * u, 3 * u, 2 * u, fc); hR(g, sx + q[0] * u, sy + q[1] * u, u, u, "#ffd23f"); }); return; }
-    if (id === HT.FENCE) { hR(g, sx + 1 * u, sy + 2 * u, 3 * u, 13 * u, "#7a5230"); hR(g, sx + 1 * u, sy + 2 * u, 3 * u, 2 * u, "#a8743a");
-      var L2 = hmT(i - 1, j) === HT.FENCE, R2 = hmT(i + 1, j) === HT.FENCE; hR(g, sx + (L2 ? 0 : 2 * u), sy + 5 * u, R2 ? ts - (L2 ? 0 : 2 * u) : (L2 ? 3 * u : 0), 2 * u, "#a8743a"); hR(g, sx + (L2 ? 0 : 2 * u), sy + 10 * u, R2 ? ts - (L2 ? 0 : 2 * u) : (L2 ? 3 * u : 0), 2 * u, "#8a5a32"); return; }
+    var h = SW.hash(i, j, 92), s = ts / 16;
+    if (id === HT.TREE) { var v = h < 0.62 ? 0 : h < 0.82 ? 1 : 2, jx = Math.round((SW.hash(i, j, 93) - 0.5) * 6), sw = reduce ? 0 : Math.sin(T0 * 0.6 + i * 0.45 + j) * 0.7;
+      var jy = Math.round((SW.hash(j, i, 95) - 0.5) * 8);
+      hpShadow(g, ox + (i + 0.6) * ts + jx * s, oy + (j + 0.92) * ts, ts * 0.95, ts * 0.3, 0.28); hDrawSway(g, hsTree(v), i + 0.5, j + 1, 22 - jx, 55 + jy, sw, 34);
+      if (hmT(i, j + 1) !== HT.TREE || hmT(i + 1, j) !== HT.TREE && hmT(i - 1, j) !== HT.TREE || (i === 1 || i === HW - 2) && j > 1) hDraw(g, hsBush(h < 0.3 ? 1 : 0), i + 0.5, j + 1, 13, 14); return; }
+    if (id === HT.ROCK) { hpShadow(g, ox + (i + 0.55) * ts, oy + (j + 0.88) * ts, ts * 0.46, ts * 0.14, 0.25); hDraw(g, hsRock(h < 0.5 ? 0 : 1), i + 0.5, j + 1, 9, 15); return; }
+    if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.55) * ts, oy + (j + 0.9) * ts, ts * 0.48, ts * 0.14, 0.25); hDraw(g, hsStump(), i + 0.5, j + 1, 9, 17); return; }
+    if (id === HT.REEDS) { var sw2 = reduce ? 0 : Math.sin(T0 * 1.4 + i * 0.8 + j) * 1.1; hDrawSway(g, hsReeds(), i + 0.5, j + 1, 9, 21, sw2, 11); return; }
+    if (id === HT.FENCE) { hpShadow(g, ox + (i + 0.6) * ts, oy + (j + 0.95) * ts, ts * 0.55, ts * 0.1, 0.18); hDraw(g, hsFence(hmT(i - 1, j) === HT.FENCE ? 1 : 0, hmT(i + 1, j) === HT.FENCE ? 1 : 0), i + 0.5, j + 1, 9, 20); return; }
   }
-  function homeHouse(g, T0) {   // the cottage: a mossy thatched roof, log walls, a round window and a green door
-    var x = ox + HHOUSE.x * ts, y = oy + HHOUSE.y * ts, w = HHOUSE.w * ts, h = HHOUSE.h * ts, u = ts / 16, wy = y + h - ts * 1.9;
-    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(x + u * 4, y + h - u * 2, w, u * 5);
-    hR(g, x + u * 3, wy, w - u * 6, ts * 1.9, "#8a5a32"); for (var k = 0; k < 5; k++) hR(g, x + u * 3, wy + k * ts * 0.38, w - u * 6, u * 1.2, "#6a4426");
-    hR(g, x + u * 3, wy, u * 3, ts * 1.9, "#6a4426"); hR(g, x + w - u * 6, wy, u * 3, ts * 1.9, "#6a4426");
-    var dx = x + w / 2 - ts * 0.45; hR(g, dx - u, wy + ts * 0.45, ts * 0.9 + 2 * u, ts * 1.45, "#4a2e18"); hR(g, dx, wy + ts * 0.55, ts * 0.9, ts * 1.35, "#3f8a3a"); hR(g, dx, wy + ts * 0.55, ts * 0.9, u * 2, "#5aa84a"); hR(g, dx + ts * 0.68, wy + ts * 1.2, u * 2, u * 2, "#ffd23f");
-    [x + ts * 1.1, x + w - ts * 1.9].forEach(function (wx) { hR(g, wx - u, wy + ts * 0.45, ts * 0.8 + 2 * u, ts * 0.75, "#4a2e18"); var dl = daylight(S.time); hR(g, wx, wy + ts * 0.5, ts * 0.8, ts * 0.65, dl < 0.7 ? "#ffd27a" : "#9ad8f0"); hR(g, wx + ts * 0.38, wy + ts * 0.5, u, ts * 0.65, "#4a2e18"); hR(g, wx, wy + ts * 0.8, ts * 0.8, u, "#4a2e18"); hR(g, wx - u * 2, wy + ts * 1.15, ts * 0.8 + 4 * u, u * 2, "#6a4426"); hR(g, wx, wy + ts * 1.05, ts * 0.8, u * 2, "#ff8ad0"); });
-    var ry = y - ts * 0.7, rb = wy + u * 2;   // the roof
-    g.fillStyle = "#6a8a3a"; g.beginPath(); g.moveTo(x, rb); g.lineTo(x + w * 0.12, ry); g.lineTo(x + w * 0.88, ry); g.lineTo(x + w, rb); g.closePath(); g.fill();
-    g.fillStyle = "#86a848"; g.beginPath(); g.moveTo(x + w * 0.12, ry); g.lineTo(x + w * 0.88, ry); g.lineTo(x + w * 0.92, ry + (rb - ry) * 0.35); g.lineTo(x + w * 0.08, ry + (rb - ry) * 0.35); g.closePath(); g.fill();
-    for (var s = 0; s < 9; s++) { var sx = x + w * (0.06 + s * 0.11); hR(g, sx, rb - u * 3, u * 2, u * 4, "#4f6a2a"); }
-    hR(g, x - u, rb - u * 2, w + 2 * u, u * 2, "#4f6a2a");
-    var chx = x + w * 0.72; hR(g, chx, ry - ts * 0.6, ts * 0.55, ts * 0.9, "#7a7066"); hR(g, chx - u, ry - ts * 0.66, ts * 0.55 + 2 * u, u * 2, "#5a524a");
-    if (!reduce) for (var q = 0; q < 3; q++) { var ph = (T0 * 0.35 + q / 3) % 1; g.globalAlpha = 0.45 * (1 - ph); g.fillStyle = "#e8e4dc"; g.beginPath(); g.arc(chx + ts * 0.28 + Math.sin(ph * 6 + q) * ts * 0.25, ry - ts * 0.7 - ph * ts * 1.8, ts * (0.15 + ph * 0.25), 0, 6.2832); g.fill(); } g.globalAlpha = 1;
-    g.font = "900 " + Math.max(9, Math.round(ts * 0.3)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; hR(g, x + w / 2 - ts * 0.9, ry + ts * 0.25, ts * 1.8, ts * 0.42, "#5a3a1e"); g.fillStyle = "#ffe9a8"; g.fillText("HOME", x + w / 2, ry + ts * 0.56);
+  function homeHouse(g, T0) {
+    var s = ts / 16, bx = ox + HHOUSE.x * ts, by = oy + (HHOUSE.y + HHOUSE.h) * ts;
+    g.fillStyle = "rgba(20,14,6,.24)"; g.beginPath(); g.moveTo(bx + ts * 0.3, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.2, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.9, by - ts * 0.8); g.lineTo(bx + HHOUSE.w * ts + ts * 0.9, by - ts * 3.2); g.lineTo(bx + HHOUSE.w * ts, by - ts * 3.4); g.closePath(); g.fill();
+    hDraw(g, hsHouse(), HHOUSE.x, HHOUSE.y + HHOUSE.h, 4, 100);
+    if (!reduce) for (var q = 0; q < 3; q++) { var ph = (T0 * 0.3 + q / 3) % 1, cx = ox + (HHOUSE.x + 4.75) * ts + Math.sin(ph * 6 + q) * ts * 0.25, cy = by - 100 * s - ph * ts * 1.8; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = "#e8e4dc"; var r = Math.round((2 + ph * 4)) * s; g.fillRect(Math.round(cx - r / 2), Math.round(cy - r / 2), r, r); } g.globalAlpha = 1;
+    var dl = daylight(S.time); if (dl < 0.8) { g.fillStyle = "rgba(255,214,120," + ((0.8 - dl) * 0.9).toFixed(3) + ")"; [16, 70].forEach(function (wx) { g.fillRect(bx + (wx + 1 - 4) * s, by - (100 - 64) * s, 16 * s, 13 * s); }); }
   }
-  function homeCrate(g) {   // a wooden crate with a lid and a little flag that goes up when something is in it
-    var x = ox + HCRATE.x * ts, y = oy + HCRATE.y * ts, u = ts / 16, full = Object.keys(homeS().ship).length > 0;
-    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(x + u, y + ts - u * 2, ts, u * 3);
-    hR(g, x + u, y + u * 2, ts - 2 * u, ts - 3 * u, "#9a6a3a"); hR(g, x + u, y + u * 2, ts - 2 * u, u * 3, "#c08a4a"); hR(g, x + u, y + u * 7, ts - 2 * u, u, "#6a4426"); hR(g, x + u, y + u * 11, ts - 2 * u, u, "#6a4426"); hR(g, x + u, y + u * 2, u * 2, ts - 3 * u, "#6a4426"); hR(g, x + ts - 3 * u, y + u * 2, u * 2, ts - 3 * u, "#6a4426");
-    hR(g, x + ts - u * 3, y - ts * 0.6, u, ts * 0.65, "#4a2e18"); hR(g, x + ts - u * 2, y - (full ? ts * 0.6 : ts * 0.2), u * 5, u * 4, full ? "#ff6a4a" : "#c8b890");
-    if (full) { hR(g, x + u * 4, y, u * 3, u * 3, "#ff8a2a"); hR(g, x + u * 8, y - u, u * 3, u * 3, "#ffd23f"); }
-  }
-  function homeStall(g) {   // the seed stall: a little table with seed sacks under a striped awning
-    var x = ox + HSTALL.x * ts, y = oy + HSTALL.y * ts, u = ts / 16, w = ts * 2;
-    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(x + u, y + ts - u * 2, w, u * 3);
-    hR(g, x + u, y - ts * 1.2, u * 2, ts * 2.1, "#6a4426"); hR(g, x + w - u * 3, y - ts * 1.2, u * 2, ts * 2.1, "#6a4426");
-    hR(g, x, y + u * 4, w, u * 4, "#9a6a3a"); hR(g, x, y + u * 4, w, u, "#c08a4a"); hR(g, x + u * 2, y + u * 8, w - u * 4, ts - u * 9, "#7a5230");
-    [["#c8a870", 3], ["#a8c870", 11], ["#e8a8c8", 19], ["#c8c8e8", 26]].forEach(function (q) { hR(g, x + q[1] * u, y - u, u * 5, u * 5, q[0]); hR(g, x + (q[1] + 1) * u, y - u * 2, u * 3, u, q[0]); hR(g, x + (q[1] + 1) * u, y, u * 3, u, "rgba(0,0,0,.2)"); });
-    for (var k = 0; k < 8; k++) hR(g, x - u + k * (w + 2 * u) / 8, y - ts * 1.4, (w + 2 * u) / 8 + 1, ts * 0.45, k % 2 ? "#f6eedb" : "#3f9a4a");
-    for (var k2 = 0; k2 < 8; k2++) { g.fillStyle = k2 % 2 ? "#f6eedb" : "#3f9a4a"; g.beginPath(); var bx = x - u + k2 * (w + 2 * u) / 8; g.moveTo(bx, y - ts * 0.96); g.lineTo(bx + (w + 2 * u) / 16, y - ts * 0.8); g.lineTo(bx + (w + 2 * u) / 8, y - ts * 0.96); g.fill(); }
-  }
-  function homeGateArt(g) {   // the way out: a wooden arch over the path
-    var x = ox + HGATE.x * ts, y = oy + HGATE.y * ts, u = ts / 16, w = ts * 2;
-    hR(g, x - u * 2, y - ts * 1.2, u * 4, ts * 2.1, "#5a3a1e"); hR(g, x + w - u * 2, y - ts * 1.2, u * 4, ts * 2.1, "#5a3a1e");
-    hR(g, x - u * 4, y - ts * 1.4, w + u * 8, u * 4, "#8a5a32"); hR(g, x - u * 4, y - ts * 1.4, w + u * 8, u, "#a8743a");
-    hR(g, x + ts * 0.4, y - ts * 1.15, ts * 1.2, ts * 0.4, "#2f7a3a"); g.font = "900 " + Math.max(8, Math.round(ts * 0.24)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText("SWAMP", x + ts, y - ts * 0.86);
-  }
-
+  function homeCrate(g) { var full = Object.keys(homeS().ship).length > 0, s = ts / 16;
+    hpShadow(g, ox + (HCRATE.x + 0.6) * ts, oy + (HCRATE.y + 0.95) * ts, ts * 0.55, ts * 0.14, 0.25); hDraw(g, hsCrate(), HCRATE.x + 0.5, HCRATE.y + 1, 9, 18);
+    var fx = ox + (HCRATE.x + 0.9) * ts, fy = oy + HCRATE.y * ts; g.fillStyle = "#4a2e18"; g.fillRect(fx, fy - ts * 0.55, s, ts * 0.75); g.fillStyle = full ? "#e8503a" : "#c8b890"; g.fillRect(fx + s, fy - (full ? ts * 0.55 : ts * 0.12), s * 5, s * 3);
+    if (full) { g.fillStyle = "#ff8a2a"; g.fillRect(ox + (HCRATE.x + 0.2) * ts, fy + s * 1, s * 3, s * 2); g.fillStyle = "#ffd23f"; g.fillRect(ox + (HCRATE.x + 0.45) * ts, fy + s * 0, s * 3, s * 2); } }
+  function homeStall(g) { hpShadow(g, ox + (HSTALL.x + 1.1) * ts, oy + (HSTALL.y + 0.95) * ts, ts * 1.15, ts * 0.18, 0.25); hDraw(g, hsStall(), HSTALL.x + 1, HSTALL.y + 1, 18, 34); }
+  function homeGateArt(g) { hDraw(g, hsArch(), HGATE.x + 1, HGATE.y + 1, 21, 34); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
     var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on && !PHOTO.on;
