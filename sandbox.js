@@ -10348,8 +10348,53 @@
   }
   var RPSH = {};
   function roomShadow(id) { var c = RPSH[id]; if (c) return c; c = RPSH[id] = document.createElement("canvas"); c.width = c.height = 16; var q = c.getContext("2d"); q.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16); q.globalCompositeOperation = "source-in"; q.fillStyle = "rgba(0,0,0,.32)"; q.fillRect(0, 0, 16, 16); return c; }
+  // A piece standing against a SIDE wall (e.side: 1 = wall on its left, facing right; -1 = the other way). The camera never turns, so it
+  // is drawn turned on an angle: its front (doors, drawers, shelves) squeezed onto the side that faces the room, and its plain side panel,
+  // in its own colour and a shade darker, running back to the wall. Tall pieces stay upright (spinning them would lay them on their back).
+  var RPSD = {};
+  function tileAvg(id) {
+    var c = document.createElement("canvas"); c.width = c.height = 16; var q = c.getContext("2d"); q.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16);
+    var d = q.getImageData(0, 0, 16, 16).data, r = 0, gg = 0, b = 0, k = 0; for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { var L = d[i] + d[i + 1] + d[i + 2]; if (L < 60 || L > 700) continue; r += d[i]; gg += d[i + 1]; b += d[i + 2]; k++; }
+    return k ? [r / k, gg / k, b / k] : [140, 100, 60];
+  }
+  function sideSprite(id, dir) {
+    var key = id + "_" + dir, c = RPSD[key]; if (c) return c;
+    var FW = 19, SW = 32 - FW, b = document.createElement("canvas"); b.width = b.height = 32; var q = b.getContext("2d"); q.imageSmoothingEnabled = false;
+    q.drawImage(ATLAS, 0, id * 16, 16, 16, SW, 0, FW, 32);   // the front, seen on an angle
+    q.fillStyle = "rgba(0,0,0,.12)"; q.globalCompositeOperation = "source-atop"; q.fillRect(SW, 0, FW, 32); q.globalCompositeOperation = "source-over";
+    var s = document.createElement("canvas"); s.width = s.height = 32; var sq = s.getContext("2d"); sq.imageSmoothingEnabled = false;
+    sq.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, SW + 1, 32);   // the side panel: the piece's outline, filled with its own colour
+    var a = tileAvg(id), col = function (m, al) { return "rgba(" + Math.round(a[0] * m) + "," + Math.round(a[1] * m) + "," + Math.round(a[2] * m) + "," + (al || 1) + ")"; };
+    sq.globalCompositeOperation = "source-atop"; var gr = sq.createLinearGradient(0, 0, SW, 0); gr.addColorStop(0, col(0.62)); gr.addColorStop(1, col(0.86)); sq.fillStyle = gr; sq.fillRect(0, 0, 32, 32);
+    sq.fillStyle = col(1.12); sq.fillRect(0, 0, 32, 2); sq.fillStyle = col(0.5); sq.fillRect(2, 0, 1, 32); sq.fillRect(SW - 3, 0, 1, 32);   // a lit top edge and the panel's frame
+    q.drawImage(s, 0, 0); q.fillStyle = col(0.42); q.fillRect(SW, 1, 1, 30);   // the corner where side meets front
+    if (dir < 0) { var m2 = document.createElement("canvas"); m2.width = m2.height = 32; var mq = m2.getContext("2d"); mq.translate(32, 0); mq.scale(-1, 1); mq.drawImage(b, 0, 0); b = m2; }
+    c = RPSD[key] = document.createElement("canvas"); c.width = c.height = 36; var o = c.getContext("2d"); o.imageSmoothingEnabled = false;
+    [[0, 2], [4, 2], [2, 0], [2, 4]].forEach(function (p) { o.drawImage(b, p[0], p[1]); });
+    o.globalCompositeOperation = "source-in"; o.fillStyle = "rgba(24,14,8,.82)"; o.fillRect(0, 0, 36, 36); o.globalCompositeOperation = "source-over"; o.drawImage(b, 2, 2);
+    return c;
+  }
+  var CHBACK = null;
+  function chairBack() {   // a chair seen from behind, pushed in at a desk or table
+    if (CHBACK) return CHBACK; var b = document.createElement("canvas"); b.width = b.height = 16; var q = b.getContext("2d"), R = function (x, y, w2, h2, c2) { q.fillStyle = c2; q.fillRect(x, y, w2, h2); };
+    R(3, 2, 2, 14, "#a8703c"); R(11, 2, 2, 14, "#a8703c"); R(3, 2, 1, 14, "#dc9a58"); R(11, 2, 1, 14, "#dc9a58");
+    R(3, 2, 10, 2, "#c98c4f"); R(3, 2, 10, 1, "#e4aa6c"); R(5, 6, 6, 1, "#a8703c"); R(6, 4, 1, 5, "#8a5a32"); R(9, 4, 1, 5, "#8a5a32");
+    R(5, 8, 6, 1, "#8d63c9"); R(2, 9, 12, 2, "#c98c4f"); R(2, 9, 12, 1, "#e4aa6c"); R(2, 11, 12, 1, "#6e431f"); R(3, 12, 2, 4, "#8a5a32"); R(11, 12, 2, 4, "#8a5a32");
+    var c = CHBACK = document.createElement("canvas"); c.width = c.height = 18; var o = c.getContext("2d");
+    [[0, 1], [2, 1], [1, 0], [1, 2]].forEach(function (p) { o.drawImage(b, p[0], p[1]); });
+    o.globalCompositeOperation = "source-in"; o.fillStyle = "rgba(24,14,8,.82)"; o.fillRect(0, 0, 18, 18); o.globalCompositeOperation = "source-over"; o.drawImage(b, 1, 1);
+    return c;
+  }
   function drawRoomPiece(g, e) {
     var S = e.wall && e.top === undefined ? 1 : ROOM_S, cw = S * ts, bx = ox + e.x * ts - (cw - ts) / 2, by = oy + (e.y + 1) * ts - cw;
+    if (e.side && e.top === undefined) {
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(ox + (e.x + 0.5) * ts, oy + (e.y + 0.93) * ts, ts * 0.46, ts * 0.13, 0, 0, 6.2832); g.fill();
+      g.imageSmoothingEnabled = false; g.drawImage(sideSprite(e.id, e.side), 0, 0, 36, 36, bx - cw * 2 / 32, by - cw * 2 / 32, cw * 36 / 32, cw * 36 / 32); return;
+    }
+    if (e.back && e.top === undefined) {   // pushed in under the desk in the cell above it
+      var cy0 = by - ts * 0.38; g.fillStyle = "rgba(0,0,0,.26)"; g.beginPath(); g.ellipse(ox + (e.x + 0.5) * ts, cy0 + cw * 0.95, ts * 0.38, ts * 0.11, 0, 0, 6.2832); g.fill();
+      g.imageSmoothingEnabled = false; g.drawImage(chairBack(), 0, 0, 18, 18, bx - cw / 16, cy0 - cw / 16, cw * 18 / 16, cw * 18 / 16); return;
+    }
     if (e.top !== undefined && e.rb && e.onSide) {   // on a counter that runs along a side wall: stand upright on its stone top
       var sw = ts * 0.78, sbx = ox + (e.x + 0.5) * ts - sw / 2, sby = oy + e.y * ts - Math.round(SIDE_H * ts) + ts * 0.8 - sw;
       g.fillStyle = "rgba(0,0,0,.24)"; g.beginPath(); g.ellipse(ox + (e.x + 0.5) * ts, sby + sw * 0.97, sw * 0.38, sw * 0.1, 0, 0, 6.2832); g.fill();
