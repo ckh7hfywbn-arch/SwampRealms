@@ -10479,6 +10479,7 @@
   // ---------- ONE CELL OF THE WORLD: its back wall and its tile, drawn at (sx3, sy). Used by the main view and to paint building pictures. ----------
   var CELL = { wob: 0, edge: 1, sw: 0 };
   function drawCell(g, i, j, sx3, sy, now) {
+    if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }   // FARM GATE: drawn big by drawFarmGates
     drawCell0(g, i, j, sx3, sy, now); if (S.stain[j * W + i] !== undefined) drawStain(g, i, j, sx3, sy);
     var ft = TILES[tiles[j * W + i]];
     if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles[(j - 1) * W + i]; if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
@@ -10823,6 +10824,7 @@
     if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8 * LQ) LG[nc] = 8 * LQ; }   // Night Eye: everything near you is dimly visible
     (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li; LG[k2] = Math.max(LG[k2], l[2] * LQ); WG[k2] = Math.max(WG[k2], l[2] * LQ); } }); });   // building lamps
     if (winNight() > 0) (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.win || !P.win.length || q.razed || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.win.forEach(function (l) { var lv = winLit(l[2], l[3]); if (!lv) return; var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li, v = Math.round(11 * lv) * LQ; LG[k2] = Math.max(LG[k2], v); WG[k2] = Math.max(WG[k2], v); anyLamp = true; } }); });   // lit windows light the dark around them
+    for (var fgk = 0; fgk < FGLAST.length; fgk += 2) { var fli = FGLAST[fgk] + 2 - gx0, flj = FGLAST[fgk + 1] - 1 - gy0; if (fli >= 0 && fli < gw && flj >= 0 && flj < gh) { var fk2 = flj * gw + fli; LG[fk2] = Math.max(LG[fk2], 9 * LQ); WG[fk2] = Math.max(WG[fk2], 9 * LQ); anyLamp = true; } }   // FARM GATE lanterns (last frame's list)
     var MH = world.holes && world.holes[0]; if (MH && get(MH.x, MH.y) === T.HOLE) { var mli = MH.x + 1 - gx0, mlj = MH.y - 1 - gy0; if (mli >= 0 && mli < gw && mlj >= 0 && mlj < gh) { var mk = mlj * gw + mli, mv = 10 * LQ; LG[mk] = Math.max(LG[mk], mv); WG[mk] = Math.max(WG[mk], mv); anyLamp = true; } }   // THE MINE: its lantern
     spread(LG, gw, gh); if (anyLamp) spread(WG, gw, gh);
   }
@@ -11913,7 +11915,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (!cave) { drawMineShaft(g, now); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
+    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
@@ -12435,7 +12437,7 @@
     actBtn = null; if (panelOpen || sleepT > 0 || trans) return;
     if (gravePill(g, now)) return;   // GRAVESTONE
     var vnt = ventNear(); if (vnt) { drawPill(g, now, coarse ? "Enter the Old Volcano" : "Enter the Old Volcano (F)", ox + vnt.x * ts, oy + (vnt.y - 2.6) * ts, false, function () { enterVolcano(vnt); }); return; }
-    var fgn = farmGateNear(); if (fgn) { drawPill(g, now, coarse ? "Enter your homestead" : "Enter your homestead (F)", ox + (fgn.x + 0.5) * ts, oy + (fgn.y - 0.9) * ts, false, function () { enterHome(fgn); }); return; }
+    var fgn = farmGateNear(); if (fgn) { drawPill(g, now, coarse ? "Enter your homestead" : "Enter your homestead (F)", ox + (fgn.x + 0.5) * ts, oy + (fgn.y - 2.9) * ts, false, function () { enterHome(fgn); }); return; }
     var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
@@ -15814,6 +15816,46 @@
   // SIGNS: words painted on signs in the world (MINE, OLD VOLCANO, CROAKER'S PIER...) use the SwampRealms logo font, Bagel Fat One
   // (self-hosted and loaded by delve-logo.js as "DelveBagel"; Nunito stands in for the moment before it has loaded).
   function signFont(px) { return "400 " + px + 'px "DelveBagel", "Bagel Fat One", Nunito, system-ui, sans-serif'; }
+  // FARM GATE: in the world the one-block Farm Gate is drawn as a proper farm entrance about 3 blocks wide and 3 tall (the size of the pier
+  // gate and the Mine): log posts with climbing vines, a HOMESTEAD board on top, a little picket gate standing ajar, a lantern and a pumpkin.
+  // It is still one block in the grid (placed, broken and entered the same way). drawCell lists the visible ones in FGVIS each frame.
+  var FGVIS = [], FGLAST = [];
+  function drawFarmGates(g, now) {
+    if (!FGVIS.length) return; var k = ts, sw = reduce ? 0 : Math.sin(now / 1100) * 0.035, nt = winNight(), fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 180);
+    for (var n = 0; n < FGVIS.length; n += 2) {
+      var gi = FGVIS[n], gj = FGVIS[n + 1], sx = ox + (gi + 0.5) * ts, sy = oy + (gj + 1) * ts;
+      g.save(); g.translate(sx, sy); g.scale(1.15, 1.15);
+      // log posts
+      [-1.25, 1.25].forEach(function (d) {
+        g.fillStyle = "#4a2e18"; g.fillRect(d * k - k * 0.17, -k * 2.75, k * 0.34, k * 2.75); g.fillStyle = "#6e4426"; g.fillRect(d * k - k * 0.17, -k * 2.75, k * 0.1, k * 2.75);
+        g.fillStyle = "#2e1c0e"; for (var r = 0; r < 4; r++) g.fillRect(d * k - k * 0.17, -k * (0.45 + r * 0.62), k * 0.34, k * 0.04);
+        g.fillStyle = "#8a5a32"; g.beginPath(); g.ellipse(d * k, -k * 2.75, k * 0.17, k * 0.07, 0, 0, 6.2832); g.fill();
+        g.strokeStyle = "#3f8f3a"; g.lineWidth = Math.max(1.2, k * 0.06); g.beginPath(); for (var v = 0; v <= 10; v++) { var yy = -v * 0.26 * k, xx = d * k + Math.sin(v * 1.3 + d) * k * 0.2; if (v) g.lineTo(xx, yy); else g.moveTo(xx, yy); } g.stroke();
+        [[0.2, 0.7, "#ff6fb5"], [-0.18, 1.5, "#ffd23f"], [0.16, 2.2, "#ff6fb5"]].forEach(function (f) { g.fillStyle = "#5fb24a"; g.beginPath(); g.ellipse(d * k + f[0] * k * 0.8, -f[1] * k + k * 0.1, k * 0.11, k * 0.06, d * 0.6, 0, 6.2832); g.fill(); g.fillStyle = f[2]; g.beginPath(); g.arc(d * k + f[0] * k, -f[1] * k, k * 0.07, 0, 6.2832); g.fill(); });
+      });
+      // crossbeam and the HOMESTEAD board, swaying a touch on two ropes
+      g.fillStyle = "#3a2412"; g.fillRect(-k * 1.55, -k * 2.62, k * 3.1, k * 0.2); g.fillStyle = "#7a5232"; g.fillRect(-k * 1.55, -k * 2.62, k * 3.1, k * 0.06);
+      g.save(); g.translate(0, -k * 2.42); g.rotate(sw);
+      g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1, k * 0.04); g.beginPath(); g.moveTo(-k * 0.9, 0); g.lineTo(-k * 0.9, k * 0.18); g.moveTo(k * 0.9, 0); g.lineTo(k * 0.9, k * 0.18); g.stroke();
+      g.fillStyle = "#2e1c0e"; g.fillRect(-k * 1.18, k * 0.16, k * 2.36, k * 0.56); g.fillStyle = "#8a5a32"; g.fillRect(-k * 1.13, k * 0.2, k * 2.26, k * 0.48); g.fillStyle = "#a8743a"; g.fillRect(-k * 1.13, k * 0.2, k * 2.26, k * 0.06);
+      g.fillStyle = "#6e4426"; g.fillRect(-k * 1.13, k * 0.44, k * 2.26, k * 0.02);
+      g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("HOMESTEAD", 0, k * 0.45);
+      g.fillStyle = "#4aa84a"; g.beginPath(); g.ellipse(-k * 1.0, k * 0.2, k * 0.12, k * 0.06, -0.5, 0, 6.2832); g.ellipse(k * 1.0, k * 0.2, k * 0.12, k * 0.06, 0.5, 0, 6.2832); g.fill();   // a sprout on each corner
+      g.restore();
+      // the picket gate, left half shut and right half swung open a little
+      function pickets(x0, w, sk) { g.fillStyle = "#c99a62"; for (var q = 0; q < 4; q++) { var px = x0 + (q + 0.5) * w / 4 * sk; g.fillRect(px - k * 0.06, -k * 1.05, k * 0.12, k * 0.95); g.beginPath(); g.moveTo(px - k * 0.06, -k * 1.05); g.lineTo(px, -k * 1.15); g.lineTo(px + k * 0.06, -k * 1.05); g.fill(); }
+        g.fillStyle = "#a8743a"; g.fillRect(Math.min(x0, x0 + w * sk), -k * 0.85, Math.abs(w * sk), k * 0.1); g.fillRect(Math.min(x0, x0 + w * sk), -k * 0.38, Math.abs(w * sk), k * 0.1); }
+      pickets(-k * 1.08, k * 1.06, 1); pickets(k * 1.08, -k * 1.06, 0.62);
+      // a lantern hanging under the beam on the right, and a pumpkin by the left post
+      var lx = k * 1.68, ly = -k * 1.62; g.strokeStyle = "#2a2a30"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(k * 1.42, -k * 2.0); g.lineTo(lx, -k * 2.0); g.lineTo(lx, ly - k * 0.16); g.stroke();
+      g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.16, k * 0.24, k * 0.32); g.fillStyle = "rgba(255,214,110," + (0.55 + 0.4 * fl * Math.max(0.3, nt)).toFixed(3) + ")"; g.fillRect(lx - k * 0.07, ly - k * 0.1, k * 0.14, k * 0.2);
+      if (nt > 0.05) { var gr = g.createRadialGradient(lx, ly, 0, lx, ly, k * 2.2); gr.addColorStop(0, "rgba(255,214,110," + (0.28 * nt * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,214,110,0)"); g.fillStyle = gr; g.fillRect(lx - k * 2.2, ly - k * 2.2, k * 4.4, k * 4.4); }
+      g.fillStyle = "#d9731f"; g.beginPath(); g.ellipse(-k * 1.75, -k * 0.24, k * 0.3, k * 0.24, 0, 0, 6.2832); g.fill(); g.fillStyle = "#f0923a"; g.beginPath(); g.ellipse(-k * 1.75, -k * 0.26, k * 0.12, k * 0.22, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "#3f8f3a"; g.fillRect(-k * 1.78, -k * 0.56, k * 0.07, k * 0.12);
+      g.restore();
+    }
+    FGLAST = FGVIS.slice(); FGVIS.length = 0;
+  }
   // THE MINE: the one way down into the caves, a short walk from where you start. A timber headframe over the shaft with a turning hoist
   // wheel, a bucket on the rope, a lantern, a little rail line with an ore cart and a "MINE" sign. Just a picture over world.holes[0].
   function drawMineShaft(g, now) {
