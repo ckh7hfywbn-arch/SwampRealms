@@ -486,8 +486,8 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full" };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   var cv = $("sbxCv"), ctx = cv.getContext("2d");
@@ -8906,6 +8906,7 @@
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
+      + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
       + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"));
   }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
@@ -8915,6 +8916,7 @@
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
     else if (k === "bloom") OPT.bloom = v === "1";
+    else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
     else if (k === "gq") { OPT.gq = v === "high" || v === "low" ? v : "auto"; if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; } else { lowq = coarse; dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {} } resize(); }
     optSave();
@@ -10029,12 +10031,16 @@
       if (S && S.razed && S.razed[q.id]) { q.razed = 1; razedLift(q, t); return; }
       var x0 = q.mx0 !== undefined ? q.mx0 : q.x0 - 1, x1 = q.mx0 !== undefined ? q.mx1 : q.x1 + 1, y0 = q.mx0 !== undefined ? q.my0 : q.gy - q.bh - 7, y1 = q.gy - 1;
       x0 = clamp(x0, 0, W - 1); x1 = clamp(x1, 0, W - 1); y0 = clamp(y0, 0, H - 1); y1 = clamp(y1, 0, H - 1);
-      var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint16Array(w * h), lt: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
+      var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint16Array(w * h), lt: [], win: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
       for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
         var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
-        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); }
+        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass") P.win.push([x0 + xx, y0 + yy]); }
         if (wv) { P.wl[k] = wv; wl[gi] = 0; any = true; }
+      }
+      if (P.win.length) {   // panes that touch make one window: they light up and go out together (keyed by the window's first pane)
+        var wk = {}; P.win.forEach(function (c) { wk[c[0] + "," + c[1]] = c; });
+        P.win.forEach(function (c) { if (c[2] !== undefined) return; var st = [c], g0 = c; c[2] = g0[0]; c[3] = g0[1]; while (st.length) { var q2 = st.pop(); [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var n2 = wk[(q2[0] + d[0]) + "," + (q2[1] + d[1])]; if (n2 && n2[2] === undefined) { n2[2] = g0[0]; n2[3] = g0[1]; st.push(n2); } }); } });
       }
       if (any) q.pic = P;
     });
@@ -10057,11 +10063,30 @@
     P.gl = glows.splice(g0).map(function (q) { return [P.x0 + q[0] / ts, P.y0 + q[1] / ts, q[2], q[3], q[4]]; });   // its lamps, as world positions
     P.cv = cv; P.cts = ts; return cv;
   }
+  // LIT WINDOWS: after dusk the windows of the buildings out in the world glow warm, as if someone were home. Each window has its own
+  // gentle firelight flicker, a few stay dark, and late at night more of them go out one by one. They also light the dark around them
+  // (winLit, used by the light map) and get a soft halo.
+  function winNight() { var dl = daylight(S.time); return clamp((0.88 - dl) / 0.5, 0, 1); }
+  function winLit(x, y) {   // 0..1: how bright this window is right now (x, y: the window's first pane)
+    var nk = winNight(); if (nk <= 0) return 0; var h = SW.hash(x, y, 211), late = S.time > 380 && S.time < 440 ? (S.time - 380) / 60 : 0;
+    if (h > 0.84 - late * 0.45) return 0; return nk;
+  }
+  function drawWindows(g, P) {
+    var nk = winNight(); if (nk <= 0) return; var now = performance.now(), m = Math.max(1, Math.round(ts * 0.14)), mw = Math.max(1, Math.round(ts * 0.07));
+    for (var q = 0; q < P.win.length; q++) { var wx = P.win[q][0], wy = P.win[q][1], gx = P.win[q][2], gy = P.win[q][3], lv = winLit(gx, gy); if (!lv) continue; var sx = ox + wx * ts, sy = oy + wy * ts; if (sx < -ts || sx > vw || sy < -ts || sy > vh) continue;
+      var h = SW.hash(gx, gy, 212), fl = reduce ? 1 : 0.86 + 0.09 * Math.sin(now / (700 + h * 500) + h * 40) + 0.05 * Math.sin(now / 130 + h * 9), warm = h < 0.3 ? "255,214,150" : h < 0.6 ? "255,190,110" : "255,170,90";
+      var gr = g.createRadialGradient(sx + ts / 2, sy + ts / 2, 0, sx + ts / 2, sy + ts / 2, ts * 0.62); gr.addColorStop(0, "rgba(" + warm + "," + (0.95 * lv * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(" + warm + "," + (0.55 * lv * fl).toFixed(3) + ")");
+      g.fillStyle = gr; g.fillRect(sx + m, sy + m, ts - m * 2, ts - m * 2);
+      g.fillStyle = "rgba(40,24,12," + (0.75 * lv).toFixed(3) + ")"; g.fillRect(sx + ts / 2 - mw / 2, sy + m, mw, ts - m * 2); g.fillRect(sx + m, sy + ts / 2 - mw / 2, ts - m * 2, mw);   // the window bars
+      glows.push([sx + ts / 2, sy + ts / 2, warm, 1.7, 0.2 * lv * fl]);
+    }
+  }
   function drawStructs(g, X0, X1, Y0, Y1) {
     var L = world.structs; if (!L) return;
     for (var i = 0; i < L.length; i++) {
       var P = L[i].pic; if (!P || P.x0 > X1 + 1 || P.x0 + P.w < X0 - 1 || P.y0 > Y1 + 1 || P.y0 + P.h < Y0 - 1) continue;
       var cv = structCanvas(P); g.imageSmoothingEnabled = false; g.drawImage(cv, ox + P.x0 * ts, oy + P.y0 * ts);
+      if (P.win && P.win.length && !L[i].razed) drawWindows(g, P);
       for (var q = 0; q < P.gl.length; q++) { var G = P.gl[q]; glows.push([ox + G[0] * ts, oy + G[1] * ts, G[2], G[3], G[4]]); }
     }
   }
@@ -10212,7 +10237,7 @@
       g.beginPath(); g.moveTo(X - r * 0.4, Y); g.lineTo(X - r, Y - r * (1.2 - k)); g.moveTo(X + r * 0.4, Y); g.lineTo(X + r, Y - r * (1.2 - k)); g.moveTo(X, Y - r * 0.2); g.lineTo(X, Y - r * (1.6 - k)); g.stroke(); });   // a little crown of spray
     g.restore();
   }
-  function rainCount(n, storm) { return Math.round((lowq ? 55 : reduce ? 80 : coarse ? 100 : 150) * n * (1 + storm * 0.6)); }
+  function rainCount(n, storm) { return Math.round((lowq ? 55 : liteFx() ? 70 : coarse ? 100 : 150) * n * (1 + storm * 0.6)); }
   function rainStreaks(g, now, n, storm, land, aimAt) {   // land(x, y): where a drop hit (screen px); aimAt(): a new landing spot [x, y] on screen
     var L = RAIN.d, dt = RAIN.ln ? clamp((now - RAIN.ln) / 1000, 0, 0.05) : 1 / 60, want = rainCount(n, storm), wind = 0.22 + storm * 0.5, lit = 0.35 + 0.65 * daylight(S.time); RAIN.ln = now;
     while (L.length < want) { var a = aimAt(); L.push({ lx: a[0], ly: a[1], T: 0.18 + Math.random() * 0.3, t: Math.random() * 0.4, z: 0.5 + Math.random() * 0.5 }); }
@@ -10728,6 +10753,7 @@
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
     if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8 * LQ) LG[nc] = 8 * LQ; }   // Night Eye: everything near you is dimly visible
     (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li; LG[k2] = Math.max(LG[k2], l[2] * LQ); WG[k2] = Math.max(WG[k2], l[2] * LQ); } }); });   // building lamps
+    if (winNight() > 0) (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.win || !P.win.length || q.razed || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.win.forEach(function (l) { var lv = winLit(l[2], l[3]); if (!lv) return; var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li, v = Math.round(11 * lv) * LQ; LG[k2] = Math.max(LG[k2], v); WG[k2] = Math.max(WG[k2], v); anyLamp = true; } }); });   // lit windows light the dark around them
     spread(LG, gw, gh); if (anyLamp) spread(WG, gw, gh);
   }
   function spread(G, gw, gh) {   // two sweeps each way; a diagonal step costs about 1.4 straight steps
@@ -14931,7 +14957,7 @@
     return CAUS;
   }
   function ocCaustics(g, surf, t, k, solid) {   // k: strength (daylight); bands get weaker with depth. solid: a path of the sea floor cells
-    if (k < 0.03 || reduce || lowq) return; var F = causticFrames(), fr = F[Math.floor(t * 8) % F.length], T2 = ts * 6, bands = 3, bh = ts * 8;
+    if (k < 0.03 || liteFx()) return; var F = causticFrames(), fr = F[Math.floor(t * 8) % F.length], T2 = ts * 6, bands = 3, bh = ts * 8;
     var offx = ((ox * 0.96) % T2 + T2) % T2 - T2, offy = ((oy) % T2 + T2) % T2 - T2;
     g.save(); g.globalCompositeOperation = "lighter"; g.imageSmoothingEnabled = true;
     for (var b = 0; b < bands; b++) { var y0 = surf + b * bh, y1 = y0 + bh; if (y1 < 0 || y0 > vh) continue; g.save(); g.beginPath(); g.rect(0, Math.max(0, y0), vw, Math.min(vh, y1) - Math.max(0, y0)); g.clip();
@@ -14970,7 +14996,7 @@
       for (i = 0; i < OWATER.length; i++) { var c0 = OWATER[i][1]; wg2.addColorStop(OWATER[i][0] / 170, ocRgb([c0[0] * dk, c0[1] * dk, c0[2] * (0.6 + 0.4 * dk)])); }
       g.fillStyle = wg2; g.fillRect(0, y0w, vw, vh - y0w);
       var osun = sunState(S.time), slant = -osun.sx * ts * 9 * (osun.up ? 1 : 0.4);   // shafts lean away from the sun (steeper at noon)
-      if (!reduce && dl > 0.35) { g.save(); for (i = 0; i < 5; i++) {   // god rays
+      if (!liteFx() && dl > 0.35) { g.save(); for (i = 0; i < 5; i++) {   // god rays
         var rx = ((i * 0.19 + 0.05) * vw * 1.6 - cam.x * ts * 0.3 + Math.sin(t * 0.3 + i) * ts) % (vw * 1.6); if (rx < -ts * 8) rx += vw * 1.6;
         var rwd = ts * (0.8 + (i % 3) * 0.7), rlen = ts * (18 + (i % 4) * 4), ra = 0.1 * dl * (0.55 + 0.45 * Math.sin(t * 0.6 + i * 2.3)) * (osun.warm > 0.1 ? 1.3 : 1) * (1 - 0.85 * wxN());
         var rg = g.createLinearGradient(0, surf, 0, surf + rlen); rg.addColorStop(0, "rgba(" + (osun.warm > 0.2 ? "255,226,190" : "210,255,248") + "," + ra.toFixed(3) + ")"); rg.addColorStop(0.5, "rgba(190,250,250," + (ra * 0.45).toFixed(3) + ")"); rg.addColorStop(1, "rgba(190,250,250,0)");
@@ -15025,7 +15051,7 @@
       g.lineTo(vw, surf + 4); g.closePath(); g.fill();
       g.strokeStyle = "rgba(240,255,255,.7)"; g.lineWidth = Math.max(1.5, ts * 0.04); g.beginPath(); for (wx = 0; wx <= vw + 4; wx += 4) { if (wx) g.lineTo(wx, surf + surfH(wx) - 1); else g.moveTo(wx, surf + surfH(wx) - 1); } g.stroke();   // the bright skin of the surface
       g.fillStyle = "rgba(255,255,255,.65)"; for (wx = 0; wx < vw; wx += ts * 0.9) { var wy2 = surf + surfH(wx), fa2 = Math.sin(wx * 0.31 + t * 1.7); if (fa2 > 0.5) { g.globalAlpha = (fa2 - 0.5) * 2; g.fillRect(wx, wy2 - 1, ts * 0.4, 2); } } g.globalAlpha = 1;   // foam flecks fade in and out instead of blinking
-      if (!reduce && surf > 0) {   // the sun (or moon) glitters on the water right under it
+      if (!liteFx() && surf > 0) {   // the sun (or moon) glitters on the water right under it
         var gph = S.time / CYCLE, gsa = gph < 0.583 ? gph / 0.583 : (gph - 0.583) / 0.417, gcx = vw * (0.12 + 0.76 * gsa), gday = gph < 0.583;
         for (wx = gcx - ts * 7; wx < gcx + ts * 7; wx += ts * 0.3) { var gd = 1 - Math.abs(wx - gcx) / (ts * 7), gk = Math.sin(wx * 0.77 + t * 4.1) * Math.sin(wx * 0.23 - t * 2.7); if (gk < 0.35) continue;
           var gy2 = surf + surfH(wx); g.fillStyle = gday ? "rgba(255,250,215," + (gd * gk).toFixed(3) + ")" : "rgba(220,230,255," + (gd * gk * 0.7).toFixed(3) + ")"; g.fillRect(wx, gy2 - 1.5, ts * (0.2 + gk * 0.35), 2.5); }
@@ -15068,7 +15094,7 @@
       if (lamp && sc.diving) { var Xl = ox + pl.x * ts, Yl = oy + (pl.y - 0.7) * ts, a1 = (pl.face > 0 ? 0 : Math.PI) + pl.ang * pl.face * 0.6, Rl = 11 * ts, lg2 = g.createRadialGradient(Xl, Yl, 0, Xl, Yl, Rl); lg2.addColorStop(0, "rgba(255,240,200," + (0.18 * dark).toFixed(3) + ")"); lg2.addColorStop(1, "rgba(255,240,200,0)"); g.fillStyle = lg2; g.beginPath(); g.moveTo(Xl, Yl); g.arc(Xl, Yl, Rl, a1 - 0.4, a1 + 0.4); g.closePath(); g.fill(); }   // the lamp's beam is warm
       g.globalCompositeOperation = "source-over";
     }
-    if (dark > 0.5) drawBloom(g, dl, clamp(1 - dark, 0.2, 1), now);   // glow coral, lures and lanterns bloom in the dark
+    if (dark > 0.5 && !liteFx()) drawBloom(g, dl, clamp(1 - dark, 0.2, 1), now);   // glow coral, lures and lanterns bloom in the dark
     if (wxN() > 0.02 && surf > 0) {   // rain: it rings the sea and spits off the pier and the sand
       rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts; if (sy >= surf - 2) waterRing(wx, OSEA - 0.02, 0.02, 0, 0.7); else rainPip(wx, (sy - oy) / ts, 0); },
         function () { var sx = Math.random() * vw, ci = Math.floor((sx - ox) / ts), y = surf; for (var cj = Math.max(0, Math.floor(-oy / ts)); cj < OSEA; cj++) { var cd = OTD[ocT(ci, cj)]; if (cd && cd.solid) { y = oy + cj * ts; break; } } return [sx, y]; });
@@ -15361,7 +15387,7 @@
     // the sky's reflection: the water is a shade brighter (and warmer, with the sun low) on the sun's side (one gradient fill, no extra pass)
     var shx2 = sun.sx > 0 ? vw * 0.15 : vw * 0.85, shy2 = vh * 0.3, shR = Math.max(vw, vh) * 0.8, wc1 = sun.up ? mixC(wc0, sun.warm > 0.15 ? [255, 196, 140] : [200, 240, 255], 0.2 * day2 + 0.34 * sun.warm) : mixC(wc0, [190, 205, 255], 0.1 * clamp(sun.e * 3, 0, 1));
     g.fillStyle = ocRgb(mixC(wc0, wc1, 0.5)); g.fillRect(0, 0, vw, vh);   // one flat fill (a full-screen gradient is costly on phones): the water takes a little of the sky's colour
-    if (!reduce) {   // glitter that dances where the light hits the waves
+    if (!liteFx()) {   // glitter that dances where the light hits the waves
       g.save();
       var gN = lowq ? 40 : 110; for (i = 0; i < gN; i++) { var gxs = SW.hash(i, 5, 71) * vw, gys = SW.hash(i, 6, 71) * vh, dd2 = Math.hypot(gxs - shx2, (gys - shy2) * 1.3) / shR, gk2 = Math.sin(t * (2 + SW.hash(i, 7, 71) * 3) + i) ; if (gk2 < 0.55 || dd2 > 1) continue;
         g.globalAlpha = (gk2 - 0.55) * 2.2 * (1 - dd2) * (sun.up ? 0.9 : 0.5); g.fillStyle = sun.up ? (sun.warm > 0.15 ? "#ffe2b0" : "#ffffff") : "#dfe6ff"; g.fillRect(gxs - k * 0.25, gys, k * 0.5, Math.max(1.5, k * 0.08)); }
@@ -16282,6 +16308,7 @@
   // ---------- SCENE LIGHT: one sun, colour grade, light pools and cast shadows for the homestead and the ocean ----------
   // sunState: where the sun is (u: 0 at sunrise t=440 .. 1 at sunset t=280) or, at night, the moon. sx is the light's side (+1 = it is on
   // the left, so shadows fall right), e its height (0..1), len how long the shadows are, a how dark they are.
+  function liteFx() { return OPT.light === "simple" || reduce || lowq; }   // the Lighting option (Simple), or a device that has dropped its extras
   function sunState(t) {
     var u = ((t - 440 + CYCLE) % CYCLE) / 320, up = u <= 1, e, sx;
     if (up) { e = Math.sin(u * Math.PI); sx = Math.cos(u * Math.PI); } else { var mu = (u * 320 - 320) / 160; e = Math.sin(mu * Math.PI) * 0.6; sx = Math.cos(mu * Math.PI); }
@@ -16300,7 +16327,7 @@
     // the grade is laid on as one see-through colour (the canvas's fast path; a multiply blend is costly on phones).
     // Lights then cut soft holes in it and tint their pool with their own colour.
     var A = clamp(ov.a, 0, 0.95), C = ov.c;
-    var sc = lowq ? 0.25 : 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc)), i;
+    var sc = liteFx() ? 0.25 : 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc)), i;
     if (!SLB) { SLB = { c: document.createElement("canvas") }; } if (SLB.c.width !== w || SLB.c.height !== h) { SLB.c.width = w; SLB.c.height = h; SLB.x = SLB.c.getContext("2d"); }
     var q = SLB.x; q.globalCompositeOperation = "copy"; q.fillStyle = "rgba(" + (C[0] | 0) + "," + (C[1] | 0) + "," + (C[2] | 0) + "," + A.toFixed(3) + ")"; q.fillRect(0, 0, w, h); q.globalCompositeOperation = "source-over";
     if (warm && warm.k > 0.02) {   // a low sun: its side of the picture glows warm, the far side cools a little
@@ -16337,7 +16364,7 @@
       if (!SHL) return; var q = SHL.x, a = this.a, k = this.k; q.setTransform(SHL.sc, 0, 0, SHL.sc, 0, 0); q.transform(1, 0, -a, k, a * B, B * (1 - k)); q.fillStyle = SHCOL; q.beginPath(); q.ellipse(x, B - hh / 2, rx, hh / 2, 0, 0, 6.2832); q.fill(); } };
   var SREC = typeof Proxy !== "undefined" ? new Proxy(SRC0, { get: function (t, k) { return k in t ? t[k] : function () { return NOOPR; }; }, set: function (t, k, v) { t[k] = v; return true; } }) : null;
   function shadowBegin(sun) {   // returns false when there is nothing to cast (sun down and no moon, or a weak device)
-    if (!SREC || !SILH || sun.a < 0.015 || lowq) return false; var sc = 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc));
+    if (!SREC || !SILH || sun.a < 0.015 || liteFx()) return false; var sc = 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc));
     if (!SHL) SHL = { c: document.createElement("canvas") }; if (SHL.c.width !== w || SHL.c.height !== h) { SHL.c.width = w; SHL.c.height = h; SHL.x = SHL.c.getContext("2d"); }
     SHL.sc = sc; SHL.x.setTransform(1, 0, 0, 1, 0, 0); SHL.x.clearRect(0, 0, w, h); SHL.x.imageSmoothingEnabled = false;
     SRC0.a = sun.sx * sun.len * 0.9; SRC0.k = -(0.2 + 0.2 * sun.len); return true;   // k < 0: the shadow lies on the ground in front, flipped down from the base
@@ -16552,7 +16579,7 @@
       Object.keys(o.c).forEach(function (k) { var e3 = o.c[k], C3 = CROPS[e3.k]; if (!C3 || !C3.moon || e3.s < 4) return; var q3 = k.split(","), gx3 = ox + (+q3[0] + 0.5) * ts, gy3 = oy + (+q3[1] + 0.1) * ts; if (gx3 < -ts || gx3 > vw + ts || gy3 < -ts || gy3 > vh + ts) return;
         g.globalAlpha = nk * 0.75; g.drawImage(ATLAS, 0, C3.tiles[3] * 16, 16, 16, gx3 - ts / 2, gy3 - ts * 0.4, ts, ts); g.globalAlpha = 1; });   // glowing crops shine through the dark
     }
-    if (nk > 0.3) drawBloom(g, dl, 1, now);   // the lit windows and lanterns bloom at night
+    if (nk > 0.3 && !liteFx()) drawBloom(g, dl, 1, now);   // the lit windows and lanterns bloom at night
     if (wxN() > 0.02) {   // rain falling on the farm: rings on the pond and the puddles, little crowns of spray on the ground
       rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts, wy = (sy - oy) / ts, ti = Math.floor(wx), tj = Math.floor(wy); if (ti < 0 || tj < 0 || ti >= HW || tj >= HH) return;
         if (homeWater(t[tj * HW + ti])) waterRing(wx, wy, 0.035, 1, 0.9); else if ((HOME.pud || 0) > 0.3 && homePuddle(ti, tj)) waterRing(wx, wy, 0.022, 1, 0.6); else rainPip(wx, wy, 1); },
@@ -16610,7 +16637,7 @@
   }
   function homeHouse(g, T0) {
     var s = ts / 16, bx = ox + HHOUSE.x * ts, by = oy + (HHOUSE.y + HHOUSE.h) * ts;
-    if (!(HOME.sun && HOME.sun.a > 0.015 && SHL && !lowq)) g.fillStyle = "rgba(10,14,8,.26)"; else g.fillStyle = "rgba(10,14,8,0)"; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + HHOUSE.w * ts, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 0.6); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 3.4); g.lineTo(bx + HHOUSE.w * ts, by - ts * 3.6); g.closePath(); g.fill();
+    if (!(HOME.sun && HOME.sun.a > 0.015 && SHL && !liteFx())) g.fillStyle = "rgba(10,14,8,.26)"; else g.fillStyle = "rgba(10,14,8,0)"; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + HHOUSE.w * ts, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 0.6); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 3.4); g.lineTo(bx + HHOUSE.w * ts, by - ts * 3.6); g.closePath(); g.fill();
     hDraw(g, hsHouse(), HHOUSE.x, HHOUSE.y, 8, 24);
     if (!reduce) for (var q = 0; q < 3; q++) { var ph = (T0 * 0.3 + q / 3) % 1, cx = ox + (HHOUSE.x + 4.5) * ts + Math.sin(ph * 6 + q) * ts * 0.25, cy = oy + (HHOUSE.y - 1.6) * ts - ph * ts * 1.8; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = "#e8e4dc"; var r = Math.round(2 + ph * 4) * s; g.fillRect(Math.round(cx - r / 2), Math.round(cy - r / 2), r, r); } g.globalAlpha = 1;
     var dl = daylight(S.time); if (dl < 0.8) { var ga = ((0.8 - dl) * 0.8).toFixed(3); g.fillStyle = "rgba(255,214,120," + ga + ")"; [10, 70].forEach(function (wx) { g.fillRect(bx + (wx + 2) * s, oy + HHOUSE.y * ts + (34 + 2) * s, 12 * s, 12 * s); }); }   // the window panes (sprite x wx..wx+16, y 34..50 below the roof line)
