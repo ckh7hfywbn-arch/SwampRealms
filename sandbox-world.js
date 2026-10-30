@@ -126,7 +126,7 @@
   tile(T.W_MOSS, "Mossy Wall", "#3b4426", "#58742f", 0.5, 0, "wall_moss", false, 0, "wall");
   tile(T.W_TIMBER, "Timber Frame Wall", "#d6c59c", "#5a3a1e", 0.5, 0, "wall_timber", false, 0, "wall");
   // Cave Hole: a little burrow in the ground. It cannot be broken or built on; tap it (or press F nearby) to climb down into a top-down cave (see sandbox-cave.js).
-  tile(T.HOLE, "Cave Hole", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
+  tile(T.HOLE, "Mine Shaft", "#000", "#1a1410", Infinity, 0, null, false, 2, "hole");
   // Stage 1 (Paws to Pick): bare paws can break soft things; a pick is needed for wood, clay, stone and ore.
   [T.MOSS, T.MUD, T.ASH, T.SNOW, T.LEAVES, T.TORCH, T.GLOWCAP, T.REED, T.BLOOM, T.SPIKE, T.VINE].forEach(function (i) { TILES[i].tier = 0; });
   TILES[T.REED].drop = "fiber"; TILES[T.VINE].drop = "fiber";   // cattails are rare on some seeds, so hanging vines give fiber too
@@ -756,14 +756,18 @@ batwing: { n: "Bat Wing", frag: "bat" },
       for (var k3 = 0; k3 < holes.length; k3++) if (Math.abs(holes[k3].x - hx) < 14) return false;
       return Math.abs(top[hx - 1] - top[hx]) <= 1 && Math.abs(top[hx + 1] - top[hx]) <= 1;
     }
-    function addHole(hx) { var sy = top[hx] - 1; t[sy * W + hx] = T.HOLE; holes.push({ x: hx, y: sy, b: bio[hx] }); }
-    var side = hash(7, 0, seed) < 0.5 ? 1 : -1;
-    for (x = 0; x < 30; x++) { var gx = SPAWNX + side * (12 + x); if (holeOk(gx)) { addHole(gx); break; } }
+    function addHole(hx) { var sy = top[hx] - 1; holes.push({ x: hx, y: sy, b: bio[hx], was: t[sy * W + hx] }); t[sy * W + hx] = T.HOLE; }
+    var side = hash(7, 0, seed) < 0.5 ? 1 : -1, mineH = null;
+    for (x = 0; x < 30; x++) { var gx = SPAWNX + side * (12 + x); if (holeOk(gx)) { addHole(gx); mineH = holes[0]; break; } }
     for (var cx0 = 0; cx0 < W; cx0 += 36) {
       var start = cx0 + Math.floor(hash(cx0, 8, seed) * 36);
       for (x = 0; x < 14; x++) { var hx = (start + x) % W; if (holeOk(hx)) { addHole(hx); break; } }
     }
     holes.sort(function (a, b) { return a.x - b.x; });
+    // THE MINE: there is only ONE way down now, a mineshaft a short walk from the spawn. The other burrows are still worked out above
+    // (so buildings and landmarks keep avoiding those spots and every old world keeps its layout), but they are filled back in at the end.
+    if (!mineH && SPAWNX >= 0) holes.forEach(function (h) { if (!mineH || Math.abs(h.x - SPAWNX) < Math.abs(mineH.x - SPAWNX)) mineH = h; });
+    var oldHoles = holes;
     // ---- 7. structures (see buildStructures): standalone buildings with a door you can walk into ----
     var structs = buildStructures(t, top, bio, seed, holes, walls, sub, GEN_VAR);
     // ---- 7b. LANDMARKS (only in land made after they were added): stone circles, ruined camps, wishing wells, signposts, old mines,
@@ -983,6 +987,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
       return { a: A, z: A + IW - 1, m0: M0, m1: M1, i0: I0, i1: I1, y: Y, vx: vx, vy: top[vx] - 1 };
     })();
     craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl - 1; y < top[x] + 1; y++) if (t[y * W + x] === T.LAVA) t[y * W + x] = T.AIR; });   // OLD VOLCANOES: the crater lava drained away long ago (done last, so nothing else in the world moves)
+    oldHoles.forEach(function (h) { if (h !== mineH && t[h.y * W + h.x] === T.HOLE) t[h.y * W + h.x] = h.was; });   // THE MINE: fill the other burrows back in
+    holes = mineH ? [{ x: mineH.x, y: mineH.y, b: mineH.b, mine: 1 }] : [];
     return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 

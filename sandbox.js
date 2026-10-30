@@ -187,7 +187,7 @@
   var CHAPTERS = [
     { n: "Washed Up in Murkwater", c: "#4ee6b4", s: "You wake on a mossy bank with mud in your fur. A deep, croaky voice drifts out of the reeds: “Easy now, little one. I'm Old Croaker. The Heart of the Swamp, the great crystal that kept these lands glowing, has gone dark, and the swamp is fading with it. Bringing it back will take tools, shelter and a lot of courage. Let's start small: sticks, fibre, stone. Every delver starts with bare paws.”", rw: { torch: 6, planks: 8 } },
     { n: "A Place to Call Home", c: "#7dd65a", s: "“Not bad at all!” croaks Old Croaker. “But a delver needs more than a pick. You'll need food in your belly, a garden that grows while you're away, and a bed to sleep through the dark. Nights bring the Dusk Bats. Build yourself a real home, and the swamp will start to feel like yours.”", rw: { seed_potato: 3, farmland: 6, torch: 6 } },
-    { n: "The Glow Beneath", c: "#22d3a6", s: "“Deep under the mud there's still a little light left: Glowspore. It's the last of the Heart's glow, soaked into the stone. Dig it, forge it, and arm yourself, because the creatures of the swamp have grown restless since the dark came. The Cave Holes lead further down than anyone's dared to go.”", rw: { torch: 10, ironingot: 2 } },
+    { n: "The Glow Beneath", c: "#22d3a6", s: "“Deep under the mud there's still a little light left: Glowspore. It's the last of the Heart's glow, soaked into the stone. Dig it, forge it, and arm yourself, because the creatures of the swamp have grown restless since the dark came. The old Mine leads further down than anyone's dared to go.”", rw: { torch: 10, ironingot: 2 } },
     { n: "Embers in the East", c: "#ff8a3d", s: "“East of the swamp lies Ember Bog, where the ground smoulders and the rivers run with fire. Its fire has been cooling too, and the Ember Wasps are angry about it. Forge a hotter pick, learn to smelt iron, and find the old Forges and Keeps. The bog's Ruby fire is one of the three lights the Heart needs.”", rw: { charcoal: 6, ironingot: 3 } },
     { n: "The Frozen Fen", c: "#7fd6ff", s: "“Far to the west is Frostfen, white and silent. Frost Wolves hunt there in pairs. Under the ice sleep the Frost Sapphire and the pale Moonstone, the cold lights of the Heart. Dress warm, keep your blade sharp, and visit the old Shrines. They remember the Heart.”", rw: { frostberry: 4, torch: 8 } },
     { n: "Heart of the Swamp", c: "#f2c14e", s: "“You've walked all three lands, little one. Now gather their lights: Ember Ruby, Frost Sapphire and Moonstone, bound with Glowspore, Cinder and Frost Crystal. Prove yourself in the deep caves, then shape the Heart of the Swamp at your Decor Workbench and set it down at home. Then the swamp will glow again.”", rw: null },
@@ -222,7 +222,7 @@
     { ch: 2, id: "bug", n: "Squash a Bramble Bug", d: "Bramble Bugs prowl the swamp and its caves. Strike them before they ram you.", need: 1, v: function () { return S.st.bugs; }, rw: { torch: 4 } },
     { ch: 2, id: "frog", n: "Hop to It", d: "A Swamp Frog warns with a ! and then lashes its tongue low. Jump the tongue, then hit it while it's winded.", need: 1, v: function () { return S.st.frogs; }, rw: { planks: 6 } },
     { ch: 2, id: "blade", n: "Spore Blade", d: "Bring 3 Bramble Fragments to your Workbench and craft the Glowspore Blade.", need: 1, v: function () { return S.wpn >= 2 ? 1 : 0; }, rw: { torch: 6 } },
-    { ch: 2, id: "hole", n: "Down the Hole", d: "Find a Cave Hole on the surface and climb down. Each floor has rocks, treasure and creatures.", need: 1, v: function () { return S.st.caves; }, rw: { torch: 6 } },
+    { ch: 2, id: "hole", n: "Down the Hole", d: "Find the Mine near where you started and climb down the shaft. Each floor has rocks, treasure and creatures.", need: 1, v: function () { return S.st.caves; }, rw: { torch: 6 } },
     { ch: 2, id: "sweep", n: "Clean Sweep", d: "Defeat every creature on one cave floor.", need: 1, v: function () { return S.st.cclear; }, rw: { ironingot: 1, torch: 4 } },
     { ch: 2, id: "benchup", n: "Level Up the Bench", d: "Bring Glowspore, Clay, Stone and Bramble and Frog Fragments to your Workbench, open it and press Upgrade.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
     { ch: 2, id: "mail", n: "Suit Up", d: "Craft the Glowspore Mail at your upgraded Workbench.", need: 1, v: function () { return S.arm >= 2 ? 1 : 0; }, rw: { torch: 6 } },
@@ -250,7 +250,7 @@
     { ch: 4, id: "fplate", n: "Frozen Solid", d: "Craft the Frost Plate armor.", need: 1, v: function () { return S.arm >= 4 ? 1 : 0; }, rw: { torch: 8 } },
     { ch: 4, id: "alpha", n: "Leader of the Pack", d: "Craft a Frost Horn at your Frost Workbench and blow it in Frostfen. Defeat the Frost Alpha: jump its ice shards and step out from under the icicles.", need: 1, v: function () { return S.st.boss & 4 ? 1 : 0; }, rw: { crystal: 6, rawmeat: 3 } },
     // ---- Chapter 6: the finale ----
-    { ch: 5, id: "deep10", n: "Into the Deep", d: "Reach floor 10 below a Cave Hole.", need: 10, v: function () { return S.st.caveDeep; }, rw: { ironingot: 2 } },
+    { ch: 5, id: "deep10", n: "Into the Deep", d: "Reach floor 10 down the Mine.", need: 10, v: function () { return S.st.caveDeep; }, rw: { ironingot: 2 } },
     { ch: 5, id: "hoard", n: "Lost Treasures", d: "Open 5 Cave Chests.", need: 5, v: function () { return S.st.cchests; }, rw: { amethyst: 2 } },
     { ch: 5, id: "hunter", n: "Monster Hunter", d: "Defeat one of every creature: bug, frog, bat, wolf, gator, slime and wasp.", need: 7, v: function () { return ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps"].filter(function (k) { return S.st[k] >= 1; }).length; }, rw: { torch: 10 } },
     { ch: 5, id: "feast", n: "Feast of Three Lands", d: "Cook and eat an Explorer's Feast (a stew, a chili and a tart).", need: 1, v: function () { return S.ate.feast ? 1 : 0; }, rw: { roastcarrot: 3 } },
@@ -392,9 +392,9 @@
     sq("wasp5", "Hunter", 3, "Hive Breaker", "Defeat 5 Ember Wasps.", 5, st("wasps"), { stinger: 2 }),
     sq("wolf5", "Hunter", 4, "Pack Leader", "Defeat 5 Frost Wolves.", 5, st("wolves"), { wolfpelt: 2 }),
     sq("sleep5", "Hunter", 2, "Well Rested", "Sleep through 5 nights.", 5, st("sleeps"), { torch: 4 }),
-    sq("cave2", "Delver", 2, "Rock Hound", "Break 25 rocks inside the Cave Holes.", 25, st("cmined"), { torch: 4 }),
+    sq("cave2", "Delver", 2, "Rock Hound", "Break 25 rocks down the Mine.", 25, st("cmined"), { torch: 4 }),
     sq("cave3", "Delver", 2, "Spelunker", "Reach cave floor 5.", 5, st("caveDeep"), { ironingot: 1 }),
-    sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures in the Cave Holes.", 10, st("ckills"), { torch: 6 }),
+    sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures down the Mine.", 10, st("ckills"), { torch: 6 }),
     sq("cclear5", "Delver", 3, "Deep Delver", "Clear 5 cave floors.", 5, st("cclear"), { amethyst: 2 }),
     sq("cave15", "Delver", 5, "Abyss Walker", "Reach cave floor 15.", 15, st("caveDeep"), { moonstone: 1, ruby: 1 }),
     sq("loot1", "Delver", 2, "Treasure Hunter", "Open a Cave Chest. They glow faintly in dark caves.", 1, st("cchests"), { torch: 3 }),
@@ -1619,10 +1619,11 @@
       rect(6, 4, 1, 11, "#6e431f", 0.7); rect(9, 4, 1, 11, "#6e431f", 0.7); rect(3, 6, 10, 1, "#4a4a52"); rect(3, 12, 10, 1, "#4a4a52"); rect(3, 6, 10, 1, "#9aa0ac", 0.25);
       rect(10, 9, 3, 1, "#f2c14e"); rect(12, 9, 1, 2, "#a8740a"); rect(4, 3, 8, 1, "#a8703c"); return;
     }
-    if (kind === "hole") {   // a little stone-ringed burrow in the ground
-      rect(2, 9, 12, 7, "#6b7276"); rect(3, 8, 10, 1, "#82898d"); rect(5, 7, 6, 1, "#82898d"); rect(2, 9, 1, 7, "#8f979b"); rect(13, 10, 1, 6, "#4a5054");
-      rect(4, 10, 8, 6, "#08090a"); rect(5, 9, 6, 1, "#08090a"); rect(5, 11, 6, 5, "#14100c"); rect(6, 13, 1, 1, "#4ee6b4", 0.35); rect(9, 14, 1, 1, "#4ee6b4", 0.25);
-      rect(1, 14, 2, 2, "#5a6064"); rect(13, 14, 2, 2, "#5a6064"); rect(4, 8, 1, 1, "#9aa3a8", 0.7); return;
+    if (kind === "hole") {   // THE MINE: a timber-framed shaft mouth, planks round a dark drop with a glint of glowspore far below
+      rect(1, 9, 14, 7, "#5e4228"); rect(1, 9, 14, 1, "#8a6238"); rect(1, 9, 1, 7, "#a8783f"); rect(14, 9, 1, 7, "#3a2614");
+      rect(3, 10, 10, 6, "#08090a"); rect(4, 11, 8, 5, "#120e0a"); rect(6, 14, 1, 1, "#4ee6b4", 0.4); rect(9, 15, 1, 1, "#4ee6b4", 0.3);
+      rect(1, 12, 2, 1, "#3a2614"); rect(13, 12, 2, 1, "#3a2614"); rect(2, 10, 1, 1, "#c9a27a", 0.7); rect(13, 10, 1, 1, "#c9a27a", 0.5);
+      rect(7, 10, 1, 4, "#c9a876", 0.8); return;   // the end of the hoist rope
     }
     if (kind === "chair") {   // side view: tall back on the left, seat, four legs (the left-facing chair is the mirror image)
       var fl = id === T.CHAIR_L, R2 = function (x2, y2, w2, h2, c2, a2) { rect(fl ? 16 - x2 - w2 : x2, y2, w2, h2, c2, a2); };
@@ -5132,7 +5133,7 @@
     var g = cv.getContext("2d"), sx = cw / tw, sy = ch / th; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, cw, ch); g.drawImage(MINI.off, -(fx0 - ix0) * sx, -(fy0 - iy0) * sy, bw2 * sx, bh2 * sy);
     function at(wx, wy) { var q = [(wx - x0) * sx, (wy - y0) * sy]; return q[0] < -4 || q[0] > cw + 4 || q[1] < -4 || q[1] > ch + 4 ? null : q; }
     function dot(q, r2, fill, ring) { if (!q) return; g.beginPath(); g.arc(q[0], q[1], r2, 0, 6.2832); g.fillStyle = fill; g.fill(); if (ring) { g.lineWidth = 1.2; g.strokeStyle = ring; g.stroke(); } }
-    (world.holes || []).forEach(function (hh) { if (ex[hh.y * W + hh.x]) dot(at(hh.x + 0.5, hh.y), 2.2, "#050607", "#f2c14e"); });
+    (world.holes || []).forEach(function (hh) { if (1) dot(at(hh.x + 0.5, hh.y), 2.2, "#050607", "#f2c14e"); });
     if (S.bed) { var bq = at(S.bed.x + 0.5, S.bed.y + 0.5); if (bq) { g.fillStyle = "#b58cff"; g.fillRect(bq[0] - 2.5, bq[1] - 2, 5, 4); } }
     (S.wp || []).forEach(function (w) { dot(at(w.x + 0.5, w.y + 0.5), 2.8, WP_COL[w.c] || "#f2c14e", "#06100d"); });
     (S.stars || []).forEach(function (st) { dot(at(st.x + 0.5, st.y + 0.5), 2.6 + Math.sin(now / 250) * 0.5, "#ffe9a0", "#7a5a10"); });   // Fallen Stars
@@ -8492,7 +8493,7 @@
         var list;
         if (cave.bld && cave.bld.kind === "witchhut") list = witchLootList();
         else if (cave.bld && BCHEST[cave.bld.kind]) list = bldLootList();
-        else { var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2; list = rollLoot("chest", cave.hole ? cave.hole.b : 0, ct); loreChest(["cave", "b" + (cave.hole ? cave.hole.b : 0)], 0.6); }
+        else { var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2; list = rollLoot("chest", caveB(), ct); loreChest(["cave", "b" + caveB()], 0.6); }
         list.forEach(function (q) { if (ITEMS[q[0]]) L[q[0]] = (L[q[0]] || 0) + q[1]; });
         if (cave.bld) { S.wloot[cave.bld.id] = S.days | 0; S.st.bchests = (S.st.bchests || 0) + 1; if (cave.bld.kind === "suntemple") S.st.templeLoot = (S.st.templeLoot || 0) + 1; loreChest(["bld:" + cave.bld.kind], 0.7); }
         treasureFound(Object.keys(L).length);
@@ -10822,6 +10823,7 @@
     if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8 * LQ) LG[nc] = 8 * LQ; }   // Night Eye: everything near you is dimly visible
     (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li; LG[k2] = Math.max(LG[k2], l[2] * LQ); WG[k2] = Math.max(WG[k2], l[2] * LQ); } }); });   // building lamps
     if (winNight() > 0) (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.win || !P.win.length || q.razed || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.win.forEach(function (l) { var lv = winLit(l[2], l[3]); if (!lv) return; var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li, v = Math.round(11 * lv) * LQ; LG[k2] = Math.max(LG[k2], v); WG[k2] = Math.max(WG[k2], v); anyLamp = true; } }); });   // lit windows light the dark around them
+    var MH = world.holes && world.holes[0]; if (MH && get(MH.x, MH.y) === T.HOLE) { var mli = MH.x + 1 - gx0, mlj = MH.y - 1 - gy0; if (mli >= 0 && mli < gw && mlj >= 0 && mlj < gh) { var mk = mlj * gw + mli, mv = 10 * LQ; LG[mk] = Math.max(LG[mk], mv); WG[mk] = Math.max(WG[mk], mv); anyLamp = true; } }   // THE MINE: its lantern
     spread(LG, gw, gh); if (anyLamp) spread(WG, gw, gh);
   }
   function spread(G, gw, gh) {   // two sweeps each way; a diagonal step costs about 1.4 straight steps
@@ -11911,7 +11913,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (!cave) { drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
+    if (!cave) { drawMineShaft(g, now); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
@@ -12228,7 +12230,8 @@
     } };
   }
   function setFloor(f, from) {
-    var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : cave.volc && SC.genVolcano ? SC.genVolcano(cave.run, f) : SC.gen(cave.run, f, cave.hole.b));
+    var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : cave.volc && SC.genVolcano ? SC.genVolcano(cave.run, f) : SC.gen(cave.run, f, mineBio(f)));
+    var bandNew = !cave.bld && !cave.volc && cave.F && cave.F.biome !== F.biome;
     if (cave.volc && f > (S.st.volcDeep || 0)) S.st.volcDeep = f;
     cave.f = f; cave.F = F;
     if (cave.bld && cave.bld.kind === "nexus" && !F.nx) nxPrep(F);
@@ -12244,8 +12247,13 @@
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
+    if (bandNew) toast(F.biome === 1 ? "The tunnels turn hot. You have reached the Cinder Hollow." : F.biome === 2 ? "The air bites cold. You have reached the Frostvault." : "Back up in the mossy Mudhollow.", BIOMES[F.biome].c);
     hud(); checkGoals();
   }
+  // THE MINE: one shaft, one cave system. It changes as you go down: Mudhollow first, the hot Cinder Hollow from floor 9 (Basalt and
+  // Cinder show up there) and the frozen Frostvault from floor 14 (Frostrock and Crystal), so each new pick has a cave to use it in.
+  function mineBio(f) { return f >= 14 ? 2 : f >= 9 ? 1 : 0; }
+  function caveB() { return !cave ? 0 : cave.bld || cave.volc ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
     if (!cave) return; var h = cave.hole; cave = null; resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
@@ -12273,9 +12281,9 @@
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
     if (td.kind === "lootchest" && cave.bld && BCHEST[cave.bld.kind]) { bldLoot(x, y); return; }
     if (td.kind === "lorenote") { var lpg = LPG[F.lorePg]; F.lorePg = null; chips(x + 0.5, y + 0.5, "#e8d8a8", 10, 5); if (lpg && !loreHas(lpg.id)) loreFind(lpg, true); else nag("Just an old shopping list."); return; }
-    if ((td.kind === "lootchest" || td.kind === "lootpot") && !cave.bld) loreChest(["cave", "b" + (cave.hole ? cave.hole.b : 0)], td.kind === "lootchest" ? 0.6 : 0.1);   // LORE
+    if ((td.kind === "lootchest" || td.kind === "lootpot") && !cave.bld) loreChest(["cave", "b" + caveB()], td.kind === "lootchest" ? 0.6 : 0.1);   // LORE
     if (td.kind === "lootchest" || td.kind === "lootpot") {   // hole-cave treasure: deeper floors hold better loot
-      var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2, cb = cave.hole ? cave.hole.b : 0, CL = rollLoot(td.kind === "lootchest" ? "chest" : "pot", cb, ct);
+      var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2, cb = caveB(), CL = rollLoot(td.kind === "lootchest" ? "chest" : "pot", cb, ct);
       CL.forEach(function (q) { give(q[0], q[1], x, y); });
       if (td.kind === "lootchest") { chips(x + 0.5, y + 0.5, "#f2c14e", 18, 7); treasureFound(CL.length); } else { S.st.pots++; thud(420, 0.06); checkGoals(); }
       return;
@@ -12431,7 +12439,7 @@
     var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
-    drawPill(g, now, coarse ? "Enter cave" : "Enter cave (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 0.8, false, function () { enterCave(h.x, h.y); });
+    drawPill(g, now, coarse ? "Enter the Mine" : "Enter the Mine (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 4.9, false, function () { enterCave(h.x, h.y); });
   }
   function drawCavePlayer(g, now) {
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
@@ -13686,7 +13694,7 @@
     });
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
-    (world.holes || []).forEach(function (hh) { if (!ex[hh.y * W + hh.x]) return; var q = m2s(hh.x, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.6; g.beginPath(); g.arc(q[0], q[1], 3.4, 0, 6.2832); g.fill(); g.stroke(); });
+    (world.holes || []).forEach(function (hh) { var q = m2s(hh.x + 0.5, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.8; g.beginPath(); g.arc(q[0], q[1], 4.6, 0, 6.2832); g.fill(); g.stroke(); g.font = "800 11px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText("Mine", q[0], q[1] - 8); g.fillStyle = "#f2c14e"; g.fillText("Mine", q[0], q[1] - 8); });   // THE MINE: always on the map, so you can find your way back
     (S.ways || []).forEach(function (w) { var q = m2s(w.x + 0.5, w.y + 0.5), r = 5; g.fillStyle = "#4ee6d0"; g.strokeStyle = "#06100d"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0], q[1] - r * 1.3); g.lineTo(q[0] + r, q[1]); g.lineTo(q[0], q[1] + r * 1.3); g.lineTo(q[0] - r, q[1]); g.closePath(); g.fill(); g.stroke(); g.font = "800 11px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText(w.n, q[0], q[1] - 10); g.fillStyle = "#d4fff6"; g.fillText(w.n, q[0], q[1] - 10); });   // WAYSTONES
     (S.stars || []).forEach(function (st) { var q = m2s(st.x + 0.5, st.y + 0.5), r = 6; g.fillStyle = "#ffe9a0"; g.strokeStyle = "#5a3a08"; g.lineWidth = 1.4; g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(q[0] + Math.cos(a) * rr, q[1] + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); });   // Fallen Stars
     if (S.tmap) { var mq = m2s(S.tmap.x + 0.5, S.tmap.y + 0.5); g.lineCap = "round"; g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 5; g.beginPath(); g.moveTo(mq[0] - 5, mq[1] - 5); g.lineTo(mq[0] + 5, mq[1] + 5); g.moveTo(mq[0] + 5, mq[1] - 5); g.lineTo(mq[0] - 5, mq[1] + 5); g.stroke(); g.strokeStyle = "#ff4a3a"; g.lineWidth = 2.6; g.stroke(); }   // Treasure Map X
@@ -15803,6 +15811,46 @@
   }
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-fbopen]")) { e.preventDefault(); openFishLog(0); } });
   // ---------- the Pier Gate near camp (drawn over the world, so world generation and old saves are untouched) ----------
+  // THE MINE: the one way down into the caves, a short walk from where you start. A timber headframe over the shaft with a turning hoist
+  // wheel, a bucket on the rope, a lantern, a little rail line with an ore cart and a "MINE" sign. Just a picture over world.holes[0].
+  function drawMineShaft(g, now) {
+    var M0 = world.holes && world.holes[0]; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return;
+    var k = ts, sx = ox + (M0.x + 0.5) * ts, sy = oy + (M0.y + 1) * ts; if (sx < -k * 6 || sx > vw + k * 6 || sy < -k * 6 || sy > vh + k * 6) return;
+    var t = reduce ? 0 : now / 1000, side = (col[clamp(M0.x + 2, 0, W - 1)] === M0.y + 1 && col[clamp(M0.x + 3, 0, W - 1)] === M0.y + 1) ? 1 : -1;
+    g.save(); g.translate(sx, sy); g.scale(1.2, 1.2);
+    // rails and the ore cart on the flat side
+    var rx = side * 0.8 * k, rw = side * 2.9 * k; g.fillStyle = "#3a2614"; for (var i = 0; i < 4; i++) g.fillRect(rx + side * (0.25 + i * 0.7) * k - k * 0.12, -k * 0.08, k * 0.24, k * 0.08);
+    g.fillStyle = "#8e969b"; g.fillRect(Math.min(rx, rx + rw), -k * 0.13, Math.abs(rw), k * 0.06);
+    var cx = side * 2.35 * k; g.fillStyle = "#2a2a30"; [-0.3, 0.3].forEach(function (d) { g.beginPath(); g.arc(cx + d * k, -k * 0.2, k * 0.12, 0, 6.2832); g.fill(); });
+    g.fillStyle = "#5a626a"; g.beginPath(); g.moveTo(cx - k * 0.55, -k * 0.82); g.lineTo(cx + k * 0.55, -k * 0.82); g.lineTo(cx + k * 0.45, -k * 0.26); g.lineTo(cx - k * 0.45, -k * 0.26); g.fill();
+    g.fillStyle = "#7a838b"; g.fillRect(cx - k * 0.55, -k * 0.82, k * 1.1, k * 0.08); g.fillStyle = "#3e444a"; g.fillRect(cx - k * 0.47, -k * 0.56, k * 0.94, k * 0.06);
+    [[-0.28, -0.92, "#6b7276"], [0.05, -0.98, "#4ee6b4"], [0.3, -0.9, "#8f979b"]].forEach(function (o) { g.fillStyle = o[2]; g.beginPath(); g.arc(cx + o[0] * k, o[1] * k, k * 0.17, 0, 6.2832); g.fill(); });
+    // the headframe: two splayed legs, braces, a top beam
+    function beam(x0, y0, x1, y1, w, c) { g.strokeStyle = c; g.lineWidth = w * k; g.beginPath(); g.moveTo(x0 * k, y0 * k); g.lineTo(x1 * k, y1 * k); g.stroke(); }
+    g.lineCap = "butt";
+    beam(-1.25, 0, -0.32, -3.35, 0.24, "#4a2e18"); beam(1.25, 0, 0.32, -3.35, 0.24, "#4a2e18");
+    beam(-1.2, -0.02, -0.38, -3.3, 0.08, "#7a5232"); beam(0.38, -3.3, 1.2, -0.02, 0.06, "#2e1c0e");
+    beam(-1.02, -0.7, 1.02, -0.7, 0.16, "#5e3c20"); beam(-0.72, -1.8, 0.72, -1.8, 0.14, "#5e3c20"); beam(-1.02, -0.7, 0.72, -1.8, 0.1, "#4a2e18");
+    beam(-0.75, -3.4, 0.75, -3.4, 0.22, "#3a2412"); beam(-0.75, -3.47, 0.75, -3.47, 0.06, "#7a5232");
+    // hoist wheel (turns slowly), the rope and a bucket that bobs
+    var wy = -3.78 * k, wr = 0.46 * k, a = t * 0.9; g.strokeStyle = "#2e1c0e"; g.lineWidth = Math.max(1.5, k * 0.09); g.beginPath(); g.arc(0, wy, wr, 0, 6.2832); g.stroke();
+    g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); for (i = 0; i < 4; i++) { var sa = a + i * Math.PI / 4; g.moveTo(Math.cos(sa) * wr, wy + Math.sin(sa) * wr); g.lineTo(-Math.cos(sa) * wr, wy - Math.sin(sa) * wr); } g.stroke();
+    g.fillStyle = "#8a6238"; g.beginPath(); g.arc(0, wy, k * 0.09, 0, 6.2832); g.fill();
+    var by = (-1.55 + Math.sin(t * 0.6) * 0.35) * k; g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1, k * 0.045); g.beginPath(); g.moveTo(-wr, wy); g.lineTo(-wr, by); g.moveTo(wr, wy); g.lineTo(wr, -k * 0.1); g.stroke();
+    g.fillStyle = "#6e431f"; g.fillRect(-wr - k * 0.2, by, k * 0.4, k * 0.34); g.fillStyle = "#4a4a52"; g.fillRect(-wr - k * 0.2, by + k * 0.08, k * 0.4, k * 0.05); g.fillRect(-wr - k * 0.2, by + k * 0.24, k * 0.4, k * 0.05);
+    // a lantern hung on the brace
+    var nt = winNight(), fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 170), lx = 0.62 * k, ly = -1.55 * k;
+    g.strokeStyle = "#2a2a30"; g.lineWidth = Math.max(1, k * 0.04); g.beginPath(); g.moveTo(lx, -1.8 * k); g.lineTo(lx, ly - k * 0.18); g.stroke();
+    g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.14, ly - k * 0.18, k * 0.28, k * 0.36); g.fillStyle = "rgba(255,214,110," + (0.55 + 0.4 * fl * Math.max(0.3, nt)).toFixed(3) + ")"; g.fillRect(lx - k * 0.09, ly - k * 0.12, k * 0.18, k * 0.24);
+    if (nt > 0.05) { var gr = g.createRadialGradient(lx, ly, 0, lx, ly, k * 2.6); gr.addColorStop(0, "rgba(255,214,110," + (0.3 * nt * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,214,110,0)"); g.fillStyle = gr; g.fillRect(lx - k * 2.6, ly - k * 2.6, k * 5.2, k * 5.2); }
+    // the sign, on the other side from the cart
+    var px = -side * 1.95 * k; g.fillStyle = "#3a2412"; g.fillRect(px - k * 0.06, -k * 1.35, k * 0.12, k * 1.35);
+    g.fillStyle = "#2e1c0e"; g.fillRect(px - k * 0.62, -k * 1.62, k * 1.24, k * 0.5); g.fillStyle = "#8a5a32"; g.fillRect(px - k * 0.57, -k * 1.58, k * 1.14, k * 0.42); g.fillStyle = "#a8703c"; g.fillRect(px - k * 0.57, -k * 1.58, k * 1.14, k * 0.06);
+    g.font = "900 " + Math.max(8, Math.round(k * 0.26)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("MINE", px, -k * 1.36);
+    // crossed picks over the sign
+    g.strokeStyle = "#5a626a"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(px - k * 0.3, -k * 1.95); g.lineTo(px + k * 0.3, -k * 1.68); g.moveTo(px + k * 0.3, -k * 1.95); g.lineTo(px - k * 0.3, -k * 1.68); g.stroke();
+    g.restore();
+  }
   function drawPierGate(g, now) {
     if (!SO || cave) return; var gx = pierGateX(), gy = col[clamp(gx, 0, W - 1)]; if (gy === undefined) return;
     var sx = ox + (gx + 0.5) * ts, sy = oy + gy * ts; if (sx < -ts * 4 || sx > vw + ts * 4 || sy < -ts * 6 || sy > vh + ts * 6) return;
