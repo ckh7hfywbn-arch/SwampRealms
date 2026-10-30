@@ -10035,7 +10035,7 @@
       for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
         var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
-        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass") P.win.push([x0 + xx, y0 + yy]); }
+        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
         if (wv) { P.wl[k] = wv; wl[gi] = 0; any = true; }
       }
       if (P.win.length) {   // panes that touch make one window: they light up and go out together (keyed by the window's first pane)
@@ -10044,6 +10044,61 @@
       }
       if (any) q.pic = P;
     });
+  }
+  // BUILDING DEPTH: baked into each building's picture once (so it costs nothing per frame), with the light from the upper left:
+  // the roof throws a shadow down the wall under its eaves and shows its thickness along the bottom edge, the ridge catches the light,
+  // windows and doors sit back in the wall (shadowed head and side, a lit sill with a drip shadow below), the timber frame stands
+  // proud of the infill walls between it, corners turn toward the light on the left and into shade on the right, and the base sinks
+  // into a soft shadow where the building meets the ground. Everything is painted source-atop, so only the building itself is shaded.
+  var ROOFK = { shinglered: 1, shingleblue: 1, thatch: 1, snow: 1 };
+  function bakeDepth(c, P) {
+    var w = P.w, h = P.h, S = ts;
+    var at = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) return -1; return P.t[y * w + x]; };
+    var kd = function (x, y) { var id = at(x, y); return id > 0 && TILES[id] ? TILES[id].kind || "" : ""; };
+    var roof = function (x, y) { return !!ROOFK[kd(x, y)]; }, win = function (x, y) { var k = kd(x, y); return k === "glass" || /^stained/.test(k); }, door = function (x, y) { return kd(x, y) === "door"; };
+    var solid = function (x, y) { var id = at(x, y); return id > 0 && TILES[id] && TILES[id].solid; };
+    var back = function (x, y) { return x >= 0 && y >= 0 && x < w && y < h && !at(x, y) && !!P.wl[y * w + x]; };
+    var wall = function (x, y) { return solid(x, y) && !roof(x, y) && !win(x, y); };
+    var face = function (x, y) { return wall(x, y) || back(x, y) || win(x, y) || door(x, y); };
+    var empty = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) { var wx = P.x0 + x, wy = P.y0 + y; return wx < 0 || wy < 0 || wx >= W || wy >= H ? true : !TILES[get(wx, wy)].solid; } return !at(x, y) && !P.wl[y * w + x] || (at(x, y) > 0 && !TILES[at(x, y)].solid && !P.wl[y * w + x]); };
+    var ground = function (x, y) { if (y < h && x >= 0 && x < w && at(x, y) > 0) return false; var wx = P.x0 + x, wy = P.y0 + y; return wx >= 0 && wy >= 0 && wx < W && wy < H && TILES[get(wx, wy)].solid; };
+    var band = function (x, y, side, d, a, col) {   // a soft band of shade (or light) from one edge of a cell, d of a tile deep
+      var X = x * S, Y = y * S, g2; col = col || "0,0,0";
+      if (side === "t") g2 = c.createLinearGradient(0, Y, 0, Y + S * d); else if (side === "b") g2 = c.createLinearGradient(0, Y + S, 0, Y + S - S * d); else if (side === "l") g2 = c.createLinearGradient(X, 0, X + S * d, 0); else g2 = c.createLinearGradient(X + S, 0, X + S - S * d, 0);
+      g2.addColorStop(0, "rgba(" + col + "," + a + ")"); g2.addColorStop(1, "rgba(" + col + ",0)"); c.fillStyle = g2;
+      if (side === "t") c.fillRect(X, Y, S, S * d); else if (side === "b") c.fillRect(X, Y + S - S * d, S, S * d); else if (side === "l") c.fillRect(X, Y, S * d, S); else c.fillRect(X + S - S * d, Y, S * d, S);
+    };
+    var line = function (x, y, side, d, col) { var X = x * S, Y = y * S, t2 = Math.max(1, Math.round(S * d)); c.fillStyle = col; if (side === "t") c.fillRect(X, Y, S, t2); else if (side === "b") c.fillRect(X, Y + S - t2, S, t2); else if (side === "l") c.fillRect(X, Y, t2, S); else c.fillRect(X + S - t2, Y, t2, S); };
+    c.save(); c.globalCompositeOperation = "source-atop";
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      if (roof(x, y)) {
+        var dep = 0; for (var yy = y - 1; yy >= 0 && roof(x, yy); yy--) dep++;
+        if (dep) { c.fillStyle = "rgba(20,10,6," + Math.min(0.2, dep * 0.045).toFixed(3) + ")"; c.fillRect(x * S, y * S, S, S); }   // the roof darkens a little toward the eaves
+        if (empty(x, y - 1)) { band(x, y, "t", 0.3, 0.2, "255,246,220"); line(x, y, "t", 0.06, "rgba(255,248,226,.32)"); }   // the ridge and top edge catch the light
+        if (!roof(x, y + 1)) { line(x, y, "b", 0.16, "rgba(34,18,10,.78)"); line(x, y, "b", 0.05, "rgba(255,230,200,.18)"); }   // the roof's thickness along the eaves
+        if (empty(x - 1, y)) band(x, y, "l", 0.3, 0.12, "255,240,214"); if (empty(x + 1, y)) band(x, y, "r", 0.4, 0.3);
+        continue;
+      }
+      if (!face(x, y)) continue;
+      if (roof(x, y - 1)) band(x, y, "t", 1, 0.55);   // shade under the eaves
+      else if (y > 0 && roof(x, y - 2) && !face(x, y - 1)) band(x, y, "t", 0.5, 0.25);
+      if (back(x, y)) {   // the infill walls sit back between the posts and beams
+        c.fillStyle = "rgba(0,0,0,.14)"; c.fillRect(x * S, y * S, S, S);
+        if (wall(x - 1, y)) band(x, y, "l", 0.32, 0.4); if (wall(x, y - 1)) band(x, y, "t", 0.3, 0.38); if (wall(x + 1, y)) band(x, y, "r", 0.12, 0.12, "255,240,214");
+      }
+      if (win(x, y)) {   // windows sit back in the wall
+        if (!win(x, y - 1)) band(x, y, "t", 0.36, 0.6); if (!win(x - 1, y)) band(x, y, "l", 0.24, 0.45); if (!win(x + 1, y)) band(x, y, "r", 0.1, 0.16, "255,240,214");
+        if (!win(x, y + 1)) { line(x, y, "b", 0.1, "rgba(255,238,206,.4)"); if (face(x, y + 1) && !win(x, y + 1)) band(x, y + 1, "t", 0.22, 0.3); }   // the sill, and its drip shadow
+        c.fillStyle = "rgba(255,255,255,.08)"; c.beginPath(); c.moveTo(x * S + S * 0.15, y * S + S); c.lineTo(x * S + S * 0.55, y * S); c.lineTo(x * S + S * 0.75, y * S); c.lineTo(x * S + S * 0.35, y * S + S); c.closePath(); c.fill();   // a glint across the glass
+      }
+      if (door(x, y)) { if (!door(x, y - 1)) band(x, y, "t", 0.34, 0.5); if (!door(x - 1, y)) band(x, y, "l", 0.22, 0.4); if (!door(x + 1, y)) band(x, y, "r", 0.22, 0.32); }   // the doorway is set into the wall
+      if (wall(x, y)) {   // the building's own corners: lit on the left, shaded on the right, and a step down where a wall stands out above an opening
+        if (empty(x - 1, y)) band(x, y, "l", 0.4, 0.2, "255,240,214"); if (empty(x + 1, y)) band(x, y, "r", 0.55, 0.42);
+        if (empty(x, y - 1) && !roof(x, y - 1)) line(x, y, "t", 0.06, "rgba(255,246,222,.28)");
+      }
+      if (ground(x, y + 1) || (y === h - 1)) band(x, y, "b", 0.7, 0.46);   // the base meets the ground
+    }
+    c.restore();
   }
   function structCanvas(P) {
     P.used = ++picUse;
@@ -10060,6 +10115,7 @@
       for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { gi = (P.y0 + yy) * W + P.x0 + xx; tiles[gi] = keepT[yy * w + xx]; walls[gi] = keepW[yy * w + xx]; }
       CELL.wob = cw0; CELL.edge = ce0; CELL.sw = cs0;
     }
+    try { bakeDepth(c, P); } catch (e) {}
     P.gl = glows.splice(g0).map(function (q) { return [P.x0 + q[0] / ts, P.y0 + q[1] / ts, q[2], q[3], q[4]]; });   // its lamps, as world positions
     P.cv = cv; P.cts = ts; return cv;
   }
