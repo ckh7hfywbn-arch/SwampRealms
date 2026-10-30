@@ -9404,7 +9404,7 @@
       st.bub = st.bub.filter(function (b) { b.l -= dt; b.y -= dt * 18; if (b.l > 0) R(b.x, b.y, 3, 3, cgHue(st.hue, 0.78)); return b.l > 0; });
       var sx2 = 80 + Math.cos(st.ang) * 24, sy2 = 50 + Math.sin(st.ang) * 3; g.strokeStyle = "#c98c4f"; g.lineWidth = 3; g.beginPath(); g.moveTo(sx2, sy2); g.lineTo(sx2 + 10, sy2 - 30); g.stroke();   // the spoon
       R(6, 14, 28, 28, "#0a0610"); R(8, 16, 24, 24, cgHue(st.tgt, 0.55)); R(8, 16, 24, 4, cgHue(st.tgt, 0.72));   // target swatch
-      g.fillStyle = "#e6dcff"; g.font = "bold 7px Nunito, sans-serif"; g.textAlign = "center"; g.fillText("TARGET", 20, 50);
+      g.fillStyle = "#e6dcff"; g.font = signFont(7); g.textAlign = "center"; g.fillText("TARGET", 20, 50);
       // colour wheel: where the brew is and where it should be
       var wx = 140, wy = 28;
       for (var a = 0; a < 360; a += 15) { g.fillStyle = cgHue(a); g.beginPath(); g.moveTo(wx, wy); g.arc(wx, wy, 14, (a - 90) * Math.PI / 180, (a - 75) * Math.PI / 180); g.closePath(); g.fill(); }
@@ -13694,7 +13694,7 @@
     });
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
-    (world.holes || []).forEach(function (hh) { var q = m2s(hh.x + 0.5, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.8; g.beginPath(); g.arc(q[0], q[1], 4.6, 0, 6.2832); g.fill(); g.stroke(); g.font = "800 11px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText("Mine", q[0], q[1] - 8); g.fillStyle = "#f2c14e"; g.fillText("Mine", q[0], q[1] - 8); });   // THE MINE: always on the map, so you can find your way back
+    (world.holes || []).forEach(function (hh) { var q = m2s(hh.x + 0.5, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.8; g.beginPath(); g.arc(q[0], q[1], 4.6, 0, 6.2832); g.fill(); g.stroke(); g.font = signFont(12); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText("Mine", q[0], q[1] - 8); g.fillStyle = "#f2c14e"; g.fillText("Mine", q[0], q[1] - 8); });   // THE MINE: always on the map, so you can find your way back
     (S.ways || []).forEach(function (w) { var q = m2s(w.x + 0.5, w.y + 0.5), r = 5; g.fillStyle = "#4ee6d0"; g.strokeStyle = "#06100d"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0], q[1] - r * 1.3); g.lineTo(q[0] + r, q[1]); g.lineTo(q[0], q[1] + r * 1.3); g.lineTo(q[0] - r, q[1]); g.closePath(); g.fill(); g.stroke(); g.font = "800 11px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText(w.n, q[0], q[1] - 10); g.fillStyle = "#d4fff6"; g.fillText(w.n, q[0], q[1] - 10); });   // WAYSTONES
     (S.stars || []).forEach(function (st) { var q = m2s(st.x + 0.5, st.y + 0.5), r = 6; g.fillStyle = "#ffe9a0"; g.strokeStyle = "#5a3a08"; g.lineWidth = 1.4; g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(q[0] + Math.cos(a) * rr, q[1] + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); });   // Fallen Stars
     if (S.tmap) { var mq = m2s(S.tmap.x + 0.5, S.tmap.y + 0.5); g.lineCap = "round"; g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 5; g.beginPath(); g.moveTo(mq[0] - 5, mq[1] - 5); g.lineTo(mq[0] + 5, mq[1] + 5); g.moveTo(mq[0] + 5, mq[1] - 5); g.lineTo(mq[0] - 5, mq[1] + 5); g.stroke(); g.strokeStyle = "#ff4a3a"; g.lineWidth = 2.6; g.stroke(); }   // Treasure Map X
@@ -15147,7 +15147,7 @@
     // --- the pier gate sign at the land end, and the boat at the slip ---
     if (sc.main && m.pier) {
       var gx = ox + 2.5 * ts, gy = surf - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
-      g.font = "800 " + Math.max(9, Math.round(ts * 0.3)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", gx, gy - ts * 2.55);
+      g.font = signFont(Math.max(9, Math.round(ts * 0.27))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", gx, gy - ts * 2.55);
       var B = ocS().boat; ocBoatSide(g, ox + (m.pier.x1 + 4.6) * ts, surf + ts * 0.15, ts * 0.62, B.done ? fullBoatParts() : B.p, now, { nobp: false, lit: dl < 0.6 });
       if (!B.done) { g.font = "800 " + Math.max(10, Math.round(ts * 0.34)) + "px Nunito, system-ui, sans-serif"; g.fillStyle = "rgba(8,34,44,.75)"; var lbl = "Old Croaker's boat: " + ocBoatHave() + " / " + OBOAT.length + " parts", lw = g.measureText(lbl).width + ts * 0.6; g.fillRect(ox + (m.pier.x1 + 4.6) * ts - lw / 2, surf - ts * 5.4, lw, ts * 0.6); g.fillStyle = "#e8fbff"; g.fillText(lbl, ox + (m.pier.x1 + 4.6) * ts, surf - ts * 4.98); }
     }
@@ -15627,7 +15627,7 @@
       if (!reduce) for (var i = 0; i < 5; i++) { var k = (t * 0.25 + i / 5) % 1; g.fillStyle = "rgba(190,180,180," + (0.35 * (1 - k)).toFixed(3) + ")"; g.beginPath(); g.arc(sx + Math.sin(t * 0.8 + i * 1.7) * ts * 0.4 * k, sy - k * ts * 5, ts * (0.25 + k * 0.6), 0, 6.2832); g.fill(); }
       // a little signpost on the rim
       var px = sx + ts * 1.9; g.fillStyle = "#3a2412"; g.fillRect(px - ts * 0.06, sy - ts * 1.4, ts * 0.12, ts * 1.4); g.fillStyle = "#6a4426"; g.fillRect(px - ts * 0.6, sy - ts * 1.55, ts * 1.2, ts * 0.42);
-      g.font = "800 " + Math.max(7, Math.round(ts * 0.17)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffd27a"; g.fillText("OLD VOLCANO", px, sy - ts * 1.27);
+      g.font = signFont(Math.max(7, Math.round(ts * 0.16))); g.textAlign = "center"; g.fillStyle = "#ffd27a"; g.fillText("OLD VOLCANO", px, sy - ts * 1.27);
     });
   }
 
@@ -15811,6 +15811,9 @@
   }
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-fbopen]")) { e.preventDefault(); openFishLog(0); } });
   // ---------- the Pier Gate near camp (drawn over the world, so world generation and old saves are untouched) ----------
+  // SIGNS: words painted on signs in the world (MINE, OLD VOLCANO, CROAKER'S PIER...) use the SwampRealms logo font, Bagel Fat One
+  // (self-hosted and loaded by delve-logo.js as "DelveBagel"; Nunito stands in for the moment before it has loaded).
+  function signFont(px) { return "400 " + px + 'px "DelveBagel", "Bagel Fat One", Nunito, system-ui, sans-serif'; }
   // THE MINE: the one way down into the caves, a short walk from where you start. A timber headframe over the shaft with a turning hoist
   // wheel, a bucket on the rope, a lantern, a little rail line with an ore cart and a "MINE" sign. Just a picture over world.holes[0].
   function drawMineShaft(g, now) {
@@ -15846,7 +15849,7 @@
     // the sign, on the other side from the cart
     var px = -side * 1.95 * k; g.fillStyle = "#3a2412"; g.fillRect(px - k * 0.06, -k * 1.35, k * 0.12, k * 1.35);
     g.fillStyle = "#2e1c0e"; g.fillRect(px - k * 0.62, -k * 1.62, k * 1.24, k * 0.5); g.fillStyle = "#8a5a32"; g.fillRect(px - k * 0.57, -k * 1.58, k * 1.14, k * 0.42); g.fillStyle = "#a8703c"; g.fillRect(px - k * 0.57, -k * 1.58, k * 1.14, k * 0.06);
-    g.font = "900 " + Math.max(8, Math.round(k * 0.26)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("MINE", px, -k * 1.36);
+    g.font = signFont(Math.max(8, Math.round(k * 0.25))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("MINE", px, -k * 1.36);
     // crossed picks over the sign
     g.strokeStyle = "#5a626a"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(px - k * 0.3, -k * 1.95); g.lineTo(px + k * 0.3, -k * 1.68); g.moveTo(px + k * 0.3, -k * 1.95); g.lineTo(px - k * 0.3, -k * 1.68); g.stroke();
     g.restore();
@@ -15859,7 +15862,7 @@
     [-1.3, 1.3].forEach(function (d) { g.fillStyle = "#4a2e18"; g.fillRect(d * k - k * 0.14, -k * 3.1, k * 0.28, k * 3.1); g.fillStyle = "#6a4426"; g.fillRect(d * k - k * 0.14, -k * 3.1, k * 0.09, k * 3.1); g.fillStyle = "#2e5a3a"; for (var i = 0; i < 4; i++) g.fillRect(d * k - k * 0.15, -k * (0.4 + i * 0.6), k * 0.3, k * 0.07); g.fillStyle = "#5a3a1e"; g.beginPath(); g.arc(d * k, -k * 3.15, k * 0.2, 0, 6.2832); g.fill(); });
     g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1.5, k * 0.08); g.beginPath(); g.moveTo(-1.3 * k, -2.9 * k); g.quadraticCurveTo(0, -2.4 * k, 1.3 * k, -2.9 * k); g.stroke();
     g.save(); g.translate(0, -2.62 * k); g.rotate(sw); g.fillStyle = "#3a2412"; g.fillRect(-k * 1.25, -k * 0.05, k * 2.5, k * 0.72); g.fillStyle = "#8a5a32"; g.fillRect(-k * 1.18, 0, k * 2.36, k * 0.6); g.fillStyle = "#c28a52"; g.fillRect(-k * 1.18, 0, k * 2.36, k * 0.09);
-    g.font = "800 " + Math.max(8, Math.round(k * 0.24)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", 0, k * 0.24); g.font = "700 " + Math.max(7, Math.round(k * 0.17)) + "px Nunito, system-ui, sans-serif"; g.fillStyle = "#9be8ff"; g.fillText("to the sea →", 0, k * 0.46); g.textBaseline = "alphabetic"; g.restore();
+    g.font = signFont(Math.max(8, Math.round(k * 0.22))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", 0, k * 0.24); g.font = signFont(Math.max(7, Math.round(k * 0.16))); g.fillStyle = "#9be8ff"; g.fillText("to the sea →", 0, k * 0.46); g.textBaseline = "alphabetic"; g.restore();
     // an anchor leaning on the left post and a lantern on the right
     g.strokeStyle = "#8e969b"; g.lineWidth = Math.max(1.5, k * 0.1); g.beginPath(); g.moveTo(-1.75 * k, -1.4 * k); g.lineTo(-1.75 * k, -0.25 * k); g.moveTo(-2.05 * k, -1.2 * k); g.lineTo(-1.45 * k, -1.2 * k); g.arc(-1.75 * k, -0.55 * k, k * 0.35, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke();
     var fl = 0.8 + 0.2 * Math.sin(now / 160), lx = 1.62 * k, ly = -1.9 * k; g.fillStyle = "#3a2412"; g.fillRect(1.3 * k, ly - k * 0.3, k * 0.32, k * 0.06); g.fillStyle = "#5a626a"; g.fillRect(lx - k * 0.16, ly - k * 0.26, k * 0.32, k * 0.42); g.fillStyle = "rgba(255,226,122," + fl + ")"; g.fillRect(lx - k * 0.1, ly - k * 0.2, k * 0.2, k * 0.3);
