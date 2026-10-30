@@ -473,7 +473,10 @@
   function sideOpen(q) { return q.ch <= curCh(); }
   // Day counter: S.days counts finished day/night cycles in this world (saved with the world). Showing it is a per-device option.
   var SHOWDAYS = false; try { SHOWDAYS = localStorage.getItem("swamp-delve-daycount") === "1"; } catch (e) {}
-  function advTime(dt) { var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
+  // LONGER DAYS: daylight (S.time 0..240) runs at DAY_RATE, so a day lasts about 8 minutes instead of 4 (the very first day of a world
+  // about 11, so there is time to find your feet and craft a workbench before the first night). Dusk, night and dawn are as long as ever.
+  var DAY_RATE = 0.5, FIRST_DAY_RATE = 0.36;
+  function advTime(dt) { if (S.time < 240) dt *= (S.days | 0) === 0 ? FIRST_DAY_RATE : DAY_RATE; var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
   function dayTag() { return SHOWDAYS ? "Day " + (((S.days | 0) + 1)) + " \u00b7 " : ""; }
   var PHN = { day: "Day", dusk: "Dusk", night: "Night", dawn: "Dawn" };
 
@@ -5219,7 +5222,7 @@
   var WX_LEN = { calm: [240, 540], wet: [120, 240], storm: [90, 170] }, WX_NAMES = [["Rain", "Thunderstorm"], ["Ash fall", "Ember storm"], ["Snow", "Blizzard"]];
   function wxNew(k) { var L = WX_LEN[k]; S.wx = { k: k, t: L[0] + Math.random() * (L[1] - L[0]), n: S.wx ? S.wx.n : 0 }; }
   function wxTarget() { return !S.wx || S.wx.k === "calm" ? 0 : S.wx.k === "wet" ? 0.6 : 1; }
-  function wxBio() { return HOME || OCS ? 0 : bioAt(); }   // the homestead and the ocean are swamp country: they always get rain
+  function wxBio() { return HOME ? (seasonOf() === 3 ? 2 : 0) : OCS ? 0 : bioAt(); }   // the homestead and the ocean are swamp country: they always get rain
   function wxN() { return WX.on && S.wx && !cave ? S.wx.n : 0; }   // how hard it is raining right now (0..1)
   function wxStorm() { return WX.on && S.wx && S.wx.k === "storm" && !cave ? clamp((S.wx.n - 0.55) / 0.45, 0, 1) : 0; }
   function thunder(dly, near) {   // a crack, then a long rumble that rolls away (closer strikes crack louder and sooner)
@@ -10072,6 +10075,15 @@
     c.save(); c.globalCompositeOperation = "source-atop";
     for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
       if (roof(x, y)) {
+        var sd = function (xx, yy) { if (xx < 0 || yy < 0 || xx >= w || yy >= h) { var wx = P.x0 + xx, wy = P.y0 + yy; return wx >= 0 && wy >= 0 && wx < W && wy < H && TILES[get(wx, wy)].solid; } return solid(xx, yy); };   // the same test the slope drawing uses
+        var lo = !sd(x - 1, y), ro = !sd(x + 1, y), sl = !sd(x, y - 1) && (lo || ro) ? (lo && ro ? 3 : lo ? 1 : 2) : 0;
+        if (sl) {   // a sloped roof block (see SLOPED ROOFS): clear anything left in the cut-away corner, shade it lightly, and skip the square edges
+          var X = x * S, Y = y * S; c.save(); c.globalCompositeOperation = "destination-out"; c.fillStyle = "#000"; c.beginPath();
+          if (sl === 1) { c.moveTo(X, Y); c.lineTo(X + S, Y); c.lineTo(X, Y + S); } else if (sl === 2) { c.moveTo(X, Y); c.lineTo(X + S, Y); c.lineTo(X + S, Y + S); } else { c.moveTo(X, Y); c.lineTo(X + S / 2, Y); c.lineTo(X, Y + S); c.closePath(); c.moveTo(X + S / 2, Y); c.lineTo(X + S, Y); c.lineTo(X + S, Y + S); }
+          c.closePath(); c.fill(); c.restore();
+          if (!roof(x, y + 1)) { line(x, y, "b", 0.16, "rgba(34,18,10,.78)"); }
+          continue;
+        }
         var dep = 0; for (var yy = y - 1; yy >= 0 && roof(x, yy); yy--) dep++;
         if (dep) { c.fillStyle = "rgba(20,10,6," + Math.min(0.2, dep * 0.045).toFixed(3) + ")"; c.fillRect(x * S, y * S, S, S); }   // the roof darkens a little toward the eaves
         if (empty(x, y - 1)) { band(x, y, "t", 0.3, 0.2, "255,246,220"); line(x, y, "t", 0.06, "rgba(255,248,226,.32)"); }   // the ridge and top edge catch the light
@@ -10115,7 +10127,7 @@
       for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { gi = (P.y0 + yy) * W + P.x0 + xx; tiles[gi] = keepT[yy * w + xx]; walls[gi] = keepW[yy * w + xx]; }
       CELL.wob = cw0; CELL.edge = ce0; CELL.sw = cs0;
     }
-    try { bakeDepth(c, P); } catch (e) {}
+    try { bakeDepth(c, P); } catch (e) { try { console.warn("[Delve] building depth:", e); } catch (e2) {} }
     P.gl = glows.splice(g0).map(function (q) { return [P.x0 + q[0] / ts, P.y0 + q[1] / ts, q[2], q[3], q[4]]; });   // its lamps, as world positions
     P.cv = cv; P.cts = ts; return cv;
   }
@@ -10322,7 +10334,7 @@
   }
   // the homestead: puddles gather on paths and bare ground while it rains, and dry slowly after
   function homeRainTick(dt) {
-    var n = wxN(), o = homeS(); HOME.pud = clamp((HOME.pud || 0) + (n > 0.35 ? dt / 40 : -dt / 120), 0, 1);
+    var n = homeWinter() ? 0 : wxN(), o = homeS(); HOME.pud = clamp((HOME.pud || 0) + (n > 0.35 ? dt / 40 : -dt / 120), 0, 1);
     if (n > 0.3) { HOME.rwT = (HOME.rwT || 0) - dt; if (HOME.rwT <= 0) { HOME.rwT = 2; var wet = 0;   // rain waters every bit of tilled soil
       for (var y = 0; y < HH; y++) for (var x = 0; x < HW; x++) { if (hmT(x, y) !== HT.SOIL) continue; var k = x + "," + y; if (!((o.w[k] || 0) > 0)) { o.w[k] = WET_S; hMark(x, y, 0); wet++; } else if (o.w[k] < WET_S) o.w[k] = WET_S; }
       if (wet && !HOME.rainSaid) { HOME.rainSaid = 1; toast("Rain is watering your crops.", "#9ae0ff"); } } }
@@ -11516,7 +11528,33 @@
     var F = MATF[t], c = document.createElement("canvas"); c.width = c.height = 28; var g = c.getContext("2d");
     g.drawImage(paintMat(F, F.p, 0, 15, 28), 0, 0); return c;
   }
-  function matTile(g, id, i, j, sx, sy, si) { g.drawImage(matCanvas(id, matVar(MATF[id], i, j), matMask(id, i, j, false), si), sx, sy); }
+  // SLOPED ROOFS: a roof block (shingles, slate, thatch...) with open air above it and on one side is drawn as a slope rather than a
+  // square, so a stepped gable reads as one smooth pitched roof; a lone top block becomes a peak. Only the picture changes: the
+  // block is still a whole block to stand on and build against. Each shape is cut once per block, variant and size and cached.
+  var ROOFF = { shingle: 1, thatch: 1 }, SLOPEC = {}, SLOPEN = 0;
+  function roofSlope(id, i, j) {   // 0 square, 1 rising to the right (open on the left), 2 rising to the left (open on the right), 3 a peak
+    var F = MATF[id]; if (!F || !ROOFF[F.f]) return 0; var up = TILES[get(i, j - 1)]; if (up && up.solid) return 0;
+    var L = TILES[get(i - 1, j)], R = TILES[get(i + 1, j)], lo = !(L && L.solid), ro = !(R && R.solid);
+    return lo && ro ? 3 : lo ? 1 : ro ? 2 : 0;
+  }
+  function slopeCanvas(id, v, mask, si, dir) {
+    var key = id + ":" + v + ":" + mask + ":" + (si === undefined ? "" : si) + ":" + dir + ":" + ts; if (SLOPEC[key]) return SLOPEC[key];
+    if (++SLOPEN > 600) { SLOPEC = {}; SLOPEN = 1; }
+    var src = matCanvas(id, v, mask, si), W2 = src.width, H2 = src.height, c = document.createElement("canvas"); c.width = W2; c.height = H2; var q = c.getContext("2d"), P = MATF[id].p;
+    var pts = dir === 1 ? [[0, H2], [W2, 0], [W2, H2]] : dir === 2 ? [[0, 0], [W2, H2], [0, H2]] : [[0, H2], [W2 / 2, 0], [W2, H2]];
+    q.save(); q.beginPath(); q.moveTo(pts[0][0], pts[0][1]); q.lineTo(pts[1][0], pts[1][1]); q.lineTo(pts[2][0], pts[2][1]); q.closePath(); q.clip(); q.drawImage(src, 0, 0); q.restore();
+    var lw = Math.max(1, Math.round(W2 / 16)); q.lineCap = "round";
+    var edge = function (a, b2) { q.strokeStyle = P.o || "#2a1a10"; q.lineWidth = lw * 1.6; q.beginPath(); q.moveTo(a[0], a[1]); q.lineTo(b2[0], b2[1]); q.stroke();   // the outline along the slope
+      var nx = b2[1] - a[1], ny = a[0] - b2[0], nl = Math.hypot(nx, ny) || 1, o = lw * 1.8; if (ny < 0) { nx = -nx; ny = -ny; }   // and a lit edge just inside it
+      q.strokeStyle = P.l || "rgba(255,255,255,.6)"; q.globalAlpha = 0.8; q.lineWidth = lw; q.beginPath(); q.moveTo(a[0] + nx / nl * o, a[1] + ny / nl * o); q.lineTo(b2[0] + nx / nl * o, b2[1] + ny / nl * o); q.stroke(); q.globalAlpha = 1; };
+    if (dir === 1) edge([0, H2], [W2, 0]); else if (dir === 2) edge([0, 0], [W2, H2]); else { edge([0, H2], [W2 / 2, 0]); edge([W2 / 2, 0], [W2, H2]); }
+    return (SLOPEC[key] = c);
+  }
+  function matTile(g, id, i, j, sx, sy, si) {
+    var mask = matMask(id, i, j, false), dir = roofSlope(id, i, j);
+    if (dir) { var k = j * W + i; if (walls[k]) drawWall(g, walls[k], i, j, sx, sy); g.drawImage(slopeCanvas(id, matVar(MATF[id], i, j), mask, si, dir), sx, sy); return; }   // what shows through the cut-away corner: the back wall behind it, if any
+    g.drawImage(matCanvas(id, matVar(MATF[id], i, j), mask, si), sx, sy);
+  }
   function matWall(g, wl, i, j, sx, sy, si) { g.drawImage(matCanvas(wl, matVar(MATF[wl], i, j), matMask(wl, i, j, true), si), sx, sy); }
   // ---- Tree leaves (Adventure look) ----
   // Each leaf tile is painted once per (open-edge mask, variant, tile size) into a small cached canvas, then stamped every frame.
@@ -15819,6 +15857,30 @@
     var o = homeS(); for (i = 0; i < t.length; i++) { if (was && was[i] === t[i]) continue; var k = (i % HW) + "," + ((i / HW) | 0); if (t[i] !== HOME.g[i]) o.ed[k] = t[i]; else delete o.ed[k]; hMark(i % HW, (i / HW) | 0, 1); }
   }
   // ---- crops grow wherever you are (called with the surface farm's clock) ----
+  // ---------- SEASONS (the homestead) ----------
+  // The homestead's year: Spring, Summer, Fall and Winter, SEASON_DAYS days each, counted from S.days (so nothing new is saved
+  // except which season Croaka last welcomed, o.sea). Every crop has its seasons: in season it grows a little faster, out of season
+  // half as fast, and in Winter only a quarter as fast. The farm changes with them: spring grass with petals and blossom on the trees,
+  // the summer swamp, golden fall grass with leaf litter and orange, red and gold trees, then snow, frozen ponds and snowy trees,
+  // with snow instead of rain. Croaka marks each new season with a gift of seeds that suit it.
+  var SEASON_DAYS = 7, SEASONS = [
+    { k: "spring", n: "Spring", c: "#ff9ad0", crops: ["carrot", "potato", "lilyleek", "marshonion", "bogbean", "lotus"], say: "Spring! Everything wants to grow. Carrots, leeks, onions and beans love it, and the lotus wakes up in the paddies." },
+    { k: "summer", n: "Summer", c: "#ffd23f", crops: ["reedcorn", "pepper", "mudmelon", "bogbean", "bogrice", "lotus", "glowgourd"], say: "Summer's here. Hot days for reedcorn, peppers and fat mud melons, and the rice paddies go green." },
+    { k: "fall", n: "Fall", c: "#ff8a2a", crops: ["croakpumpkin", "potato", "marshonion", "reedcorn", "bogrice", "moonpetal"], say: "Fall, my favourite. Pumpkin time! Potatoes and onions do well, and moonpetals glow on the long nights." },
+    { k: "winter", n: "Winter", c: "#bfe8ff", crops: ["frost", "lilyleek", "moonpetal"], say: "Brr, winter. Most things sulk in the cold, but frostberries, lily leeks and moonpetals don't mind it a bit." }];
+  function seasonOf(d) { d = d === undefined ? S.days | 0 : d; return Math.floor(Math.max(0, d) / SEASON_DAYS) % 4; }
+  function seasonDay() { return ((S.days | 0) % SEASON_DAYS) + 1; }
+  function inSeason(k, sn) { return SEASONS[sn === undefined ? seasonOf() : sn].crops.indexOf(k) > -1; }
+  function cropSeasons(k) { return SEASONS.filter(function (q) { return q.crops.indexOf(k) > -1; }).map(function (q) { return q.n; }); }
+  function seasonMul(k) { return inSeason(k) ? 1.15 : seasonOf() === 3 ? 0.25 : 0.5; }
+  function homeWinter() { return !!HOME && seasonOf() === 3; }
+  function seasonWelcome() {   // a new season on the homestead: Croaka says so, and leaves seeds that suit it
+    var o = homeS(), sn = seasonOf(); if (o.sea === sn) return; var first = o.sea === undefined; o.sea = sn; var Sx = SEASONS[sn];
+    var seeds = Sx.crops.map(function (k) { return SEEDOF[k] || "seed_" + k; }).filter(function (k) { return ITEMS[k]; }).slice(0, 3);
+    seeds.forEach(function (k) { give(k, 3, undefined, undefined, true); });
+    popup(Sx.n + " on the homestead", (first ? "The homestead has seasons now, " + SEASON_DAYS + " days each. " : "") + "Croaka: \u201c" + Sx.say + "\u201d She left you " + seeds.map(function (k) { return "3 " + ITEMS[k].n; }).join(", ") + ".", Sx.c, sn === 0 ? "\u2740" : sn === 1 ? "\u2600" : sn === 2 ? "\u2618" : "\u2744");
+    reslot(); hbDirty = true;
+  }
   function homeStep(sec) {
     if (!S.home) return; var o = homeS(), keys = Object.keys(o.c);
     homeDaily(); homeMachTick(sec);
@@ -15829,6 +15891,7 @@
       var q = k.split(","), x = +q[0], y = +q[1], wet = HOME ? homeWet(x, y) : homeWetT(tiles, x, y), mul = (wet ? 2 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1);
       if (C.wat) { var pid = HOME ? hmT(x, y) : tiles[y * HW + x]; mul = pid === HT.PADDYW ? 2 * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1) : 0; wet = mul > 0; }
       if (C.moon) mul = isNight(S.time) ? mul * 1.5 : 0;
+      mul *= seasonMul(e.k);   // SEASONS
       e.d = (e.d || 0) + sec; if (wet) e.w = (e.w || 0) + sec;
       e.g += sec * mul;
       while (e.g >= C.t && e.s < 4) { e.g -= C.t; e.s++; if (e.s === 4) { if (HOME) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); homeGiantTry(x, y, e.k); } }
@@ -15851,7 +15914,7 @@
   function homeTiles() { var t = homeGen(), o = homeS(); Object.keys(o.ed).forEach(function (k) { var q = k.split(","); t[+q[1] * HW + +q[0]] = o.ed[k] | 0; }); return t; }
   function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
   function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
-    var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d;
+    var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d; if (HOME && o.sea !== undefined) seasonWelcome();
     Object.keys(o.c).forEach(function (k) { var e = o.c[k]; if (e && e.s >= 4 && HF.giant && HF.giant[e.k]) { var q = k.split(","); homeGiantTry(+q[0], +q[1], e.k, 0.12); } });   // overnight, a ripe patch may swell into a giant
     homeAnimalDaily();
     var ks = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }); if (!ks.length) return;
@@ -15874,8 +15937,8 @@
       HOME = { g: gen, t: t, from: { x: g0.x, y: g0.y }, btns: [], pd: false, last: -1, cool: 0, t0: performance.now() };
       homeFlood(); homePads(); cp.x = HGATE.x + 1; cp.y = HGATE.y - 0.2; cp.vx = cp.vy = 0; cp.face = 1; cp.back = true;
       stageEl.classList.add("cave", "home"); enemies.length = 0; $("sbxHint").classList.remove("on"); resize(); cam.x = cp.x; cam.y = cp.y - 2; parts.length = 0; texts.length = 0;
-      S.st.homevisit = (S.st.homevisit || 0) + 1; S.vis.home = 1; homeDaily(); hbDirty = true; hud();
-      var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#7dd65a"); el.querySelector("b").textContent = "Your Homestead"; el.querySelector("small").textContent = "Till, plant, water, harvest"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); }
+      S.st.homevisit = (S.st.homevisit || 0) + 1; S.vis.home = 1; homeDaily(); hbDirty = true; hud(); setTimeout(function () { if (HOME) seasonWelcome(); }, 1600);
+      var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#7dd65a"); el.querySelector("b").textContent = "Your Homestead"; el.querySelector("small").textContent = SEASONS[seasonOf()].n + ", day " + seasonDay() + " \u00b7 till, plant, water, harvest"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); }
       if (!S.st.hometip) { S.st.hometip = 1; toast(coarse ? "Your own farm! Clear the reeds, till the mud with your hoe and plant seeds. Soil next to water stays wet." : "Your own farm! Clear the reeds, till the mud with your hoe (tap or drag) and plant seeds. Soil next to water stays wet: dig ditches from the pond with your shovel.", "#7dd65a"); }
       save();
     } };
@@ -16026,8 +16089,9 @@
   function renderStall() {
     var coins = S.inv.silvercoin || 0;
     var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("seed_croakpumpkin") + '"><div><small>Your Homestead</small><h2>Seed Stall</h2><p class="mo-sub">Seeds for your fields, paid in Silver Coins from the shipping crate. You have <b>' + coins + "</b>.</p></div></div>";
-    h += '<ul class="mo-list">' + HF.seeds.filter(function (q) { return ITEMS[q[0]]; }).map(function (q) { var C = CROPS[ITEMS[q[0]].seed], ok = coins >= q[1], info = !C ? "makes crops Fine or Prize more often" : C.moon ? "moon crop: grows only at night" : "ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? " in a flooded paddy" : " (half with water)");
-      return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(q[0]) + '"><div><b>' + esc(ITEMS[q[0]].n) + "</b><small>" + q[1] + " Silver · " + info + "</small></div>" + '<button type="button" class="btn mo-fit" data-hbuy="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
+    var sn0 = seasonOf(); h += '<p class="mo-sub hm-season" style="--sc:' + SEASONS[sn0].c + '">It is <b>' + SEASONS[sn0].n + "</b>, day " + seasonDay() + " of " + SEASON_DAYS + ". Seeds marked <em>in season</em> grow best right now.</p>";
+    h += '<ul class="mo-list">' + HF.seeds.filter(function (q) { return ITEMS[q[0]]; }).slice().sort(function (a, b) { var ia = inSeason(ITEMS[a[0]].seed) ? 0 : 1, ib = inSeason(ITEMS[b[0]].seed) ? 0 : 1; return ia - ib; }).map(function (q) { var sk = ITEMS[q[0]].seed, C = CROPS[sk], ok = coins >= q[1], info = !C ? "makes crops Fine or Prize more often" : (C.moon ? "moon crop: grows only at night" : "ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? " in a flooded paddy" : " (half with water)")) + " \u00b7 " + cropSeasons(sk).join(", ");
+      return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(q[0]) + '"><div><b>' + esc(ITEMS[q[0]].n) + (C && inSeason(sk) ? ' <em class="hm-in">in season</em>' : "") + "</b><small>" + q[1] + " Silver · " + info + "</small></div>" + '<button type="button" class="btn mo-fit" data-hbuy="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
     h += '<h3 class="hm-sub">Animals</h3><ul class="mo-list">' + HF.animals.map(function (q) { var A = ANIM[q[0]], o = homeS(), room = (o.b || []).some(function (b, i) { return b.k === q[2] && homeBldPop(i) < homeBldCap(b); }), ok = room && coins >= q[1];
       return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(A.prod) + '"><div><b>' + esc(A.n) + "</b><small>" + q[1] + " Silver \u00b7 lives in a " + esc(ITEMS[q[2]].n) + " \u00b7 gives " + esc(ITEMS[A.prod].n) + (room ? "" : " \u00b7 build one with room first") + "</small></div>" + '<button type="button" class="btn mo-fit" data-hanim="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
     h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
@@ -16278,7 +16342,7 @@
   }
   function fmInfo(k) {   // [where it comes from, how long, a line in Croaka's hand]
     var t = k.slice(0, 1), v = k.slice(2), C = CROPS[v];
-    if (t === "c" && C) return [C.wat ? "A flooded paddy" : C.moon ? "Tilled soil, at night" : "Tilled soil", C.moon ? "Grows only at night" : "Ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? "" : ", half with water"), FMNOTE[v] || ""];
+    if (t === "c" && C) return [(C.wat ? "A flooded paddy" : C.moon ? "Tilled soil, at night" : "Tilled soil") + " \u00b7 " + cropSeasons(v).join(", "), C.moon ? "Grows only at night" : "Ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? "" : ", half with water"), FMNOTE[v] || ""];
     if (t === "g") return ["A 3 x 3 patch of ripe " + (C ? C.n : v) + "s", "Can swell overnight", "Three good whacks and it's yours."];
     if (t === "a") { var A = Object.keys(ANIM).map(function (q) { return ANIM[q]; }).filter(function (q) { return q.prod === v; })[0]; return [A ? "Your " + A.n + "s" : "Your animals", "Every morning, with hay", A && A.k === "duck" ? "Still warm. Don't drop it." : "Good with everything."]; }
     return ["A Pickle Keg", "About 2 minutes", "Sealed with love and a lot of vinegar."];
@@ -16431,11 +16495,23 @@
     var ga = g.globalAlpha; g.globalAlpha = ga * a; g.drawImage(HSHD, cx - rx, cy - ry, rx * 2, ry * 2); g.globalAlpha = ga; }
   // the homestead's grass uses Murkwater Swamp's own grass colours (GRASSP[0]: lip, top, mint highlight, tufts), as they look on screen
   var HGR = { base: "#2c9864", mid: "#34a46c", dark: "#247f54", lip: "#2f9a6a", top: "#3fae78", hi: "#6ed098", tuft: "#58d68b" };
+  var HGRS = [   // the grass through the year (summer is Murkwater's own)
+    { base: "#34a466", mid: "#40b272", dark: "#2a8a56", lip: "#36a46c", top: "#4cbc80", hi: "#8ae0a8", tuft: "#66e090", dots: ["#ffc8e4", "#ff9ad0", "#ffffff"], dn: 0.012 },
+    { base: "#2c9864", mid: "#34a46c", dark: "#247f54", lip: "#2f9a6a", top: "#3fae78", hi: "#6ed098", tuft: "#58d68b", dots: null, dn: 0 },
+    { base: "#7a8a3c", mid: "#8a9442", dark: "#5e6e30", lip: "#74863c", top: "#94a24a", hi: "#c8c068", tuft: "#a8a84a", dots: ["#e8822a", "#c8402a", "#e8c040", "#a85a2a"], dn: 0.03 },
+    { base: "#e2ecf2", mid: "#d2e0ea", dark: "#b6c8d6", lip: "#c4d6e2", top: "#f2f7fb", hi: "#ffffff", tuft: "#9ab8a6", dots: ["#ffffff", "#cfe4f2"], dn: 0.02 }];
+  var HSEA = -1;   // the season the homestead's art was last built for
+  function homeSeasonArt() {   // a new season: rebuild the grass, trees and forest once
+    var sn = seasonOf(); if (sn === HSEA) return; HSEA = sn; var P2 = HGRS[sn]; Object.keys(HGR).forEach(function (k) { HGR[k] = P2[k]; });
+    Object.keys(HSPR).forEach(function (k) { if (/^(mossTop|tree|house|bld)/.test(k)) delete HSPR[k]; }); HFOR = null; if (HOME) { HOME.fk = null; HOME.gd = 1; }
+  }
   function hMossTop() {   // a top-down tile of Murkwater grass
     if (HSPR.mossTop) return HSPR.mossTop; var out = [], x, y;
+    var SP2 = HGRS[HSEA < 0 ? 1 : HSEA];
     for (var v = 0; v < 4; v++) { var S2 = hpCan(16, 16), g = S2.g; g.fillStyle = HGR.base; g.fillRect(0, 0, 16, 16);
       for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y, 57), h2 = SW.hash((x >> 2) + v * 4, y >> 2, 59), cl = h < 0.07 ? HGR.dark : h < 0.18 || (h2 < 0.3 && h < 0.42) ? HGR.mid : h > 0.985 ? HGR.hi : null; if (cl) { g.fillStyle = cl; g.fillRect(x, y, 1, 1); } }
       for (var t2 = 0; t2 < 3; t2++) { var bx = Math.floor(SW.hash(t2, v, 58) * 13) + 1, by = Math.floor(SW.hash(v, t2, 58) * 11) + 3; g.fillStyle = HGR.tuft; g.fillRect(bx, by - 2, 1, 3); g.fillRect(bx + 2, by - 1, 1, 2); g.fillStyle = HGR.hi; g.fillRect(bx, by - 2, 1, 1); g.fillStyle = HGR.dark; g.fillRect(bx - 1, by + 1, 4, 1); }
+      if (SP2.dots) for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) if (SW.hash(x + v * 16, y, 64) < SP2.dn) { g.fillStyle = SP2.dots[Math.floor(SW.hash(y, x + v, 65) * SP2.dots.length)]; g.fillRect(x, y, HSEA === 2 ? 2 : 1, 1); }   // petals, fallen leaves or snow glints
       out.push(S2.c); }
     return (HSPR.mossTop = out);
   }
@@ -16464,6 +16540,7 @@
         var dd = 0; for (var q = 1; q <= 3; q++) { if (C(i, j - q) === 4 && C(i - q, j) === 4 && C(i + q, j) === 4 && C(i, j + q) === 4) dd = q; else break; }
         g.fillStyle = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.66 + dd * 0.07) + ")"; g.fillRect(X, Y, 16, 16);
         if (t[j * HW + i] === HT.PADDYW) { g.fillStyle = "rgba(150,120,80,.25)"; g.fillRect(X, Y, 16, 16); }
+        if (HSEA === 3) { g.fillStyle = "rgba(214,236,248,.72)"; g.fillRect(X, Y, 16, 16); g.fillStyle = "rgba(255,255,255,.75)"; var ih = SW.hash(i, j, 66); if (ih < 0.5) { g.fillRect(X + 2 + Math.floor(ih * 18), Y + 3, 1, 5); g.fillRect(X + 3 + Math.floor(ih * 18), Y + 7, 3, 1); } if (ih > 0.7) g.fillRect(X + 9, Y + 9, 5, 1); g.fillStyle = "rgba(120,160,190,.35)"; g.fillRect(X + Math.floor(ih * 12), Y + 12, 4, 1); }   // winter: the water freezes over
         if (C(i, j - 1) !== 4) { g.fillStyle = "rgba(10,40,48,.45)"; g.fillRect(X, Y, 16, 3); g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(X, Y + 3, 16, 1); }
         if (C(i, j + 1) !== 4) { g.fillStyle = "rgba(210,255,248,.55)"; g.fillRect(X, Y + 15, 16, 1); }
         if (C(i - 1, j) !== 4) { g.fillStyle = "rgba(210,255,248,.45)"; g.fillRect(X, Y, 1, 16); } if (C(i + 1, j) !== 4) { g.fillStyle = "rgba(210,255,248,.45)"; g.fillRect(X + 15, Y, 1, 16); }
@@ -16488,13 +16565,25 @@
     g.restore(); if (!R) HOME.gd = 0; HOME.gdr = null;
   }
   // ---- objects: real Delve blocks, arranged ----
-  function hsTree(v) {   // a Delve tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees)
-    var key = "tree" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(48, 80), g = S2.g;
+  function snowRoof(g, y0, y1, w) {   // winter: snow lies on a roof (only on what is already drawn there), thickest along the top
+    if (HSEA !== 3) return; g.save(); g.globalCompositeOperation = "source-atop"; var gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, "rgba(248,252,255,.95)"); gr.addColorStop(0.55, "rgba(236,244,250,.78)"); gr.addColorStop(1, "rgba(236,244,250,.25)");
+    g.fillStyle = gr; g.fillRect(0, y0, w, y1 - y0); g.fillStyle = "rgba(150,180,205,.35)"; for (var x = 0; x < w; x += 7) g.fillRect(x, y1 - 2 - (x % 3), 3, 2); g.restore();
+  }
+  function seasonLeaves(c, v) {   // turn a canvas of leaves to the season (it holds only leaves)
+    var sn = HSEA < 0 ? 1 : HSEA, q = c.getContext("2d"); q.save(); q.globalCompositeOperation = "source-atop";
+    if (sn === 2) { q.fillStyle = ["rgba(232,124,36,.62)", "rgba(200,60,36,.6)", "rgba(232,190,56,.62)"][v % 3]; q.fillRect(0, 0, c.width, c.height); }
+    else if (sn === 3) { q.fillStyle = "rgba(236,244,250,.7)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "rgba(120,150,180,.25)"; for (var y = 0; y < c.height; y += 6) q.fillRect(0, y + 4, c.width, 2); }
+    else if (sn === 0) { q.fillStyle = "rgba(170,235,150,.18)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "#ffc0dc"; for (var f = 0; f < c.width * c.height / 60; f++) q.fillRect(Math.floor(SW.hash(f, v, 67) * c.width), Math.floor(SW.hash(v, f, 68) * c.height), 2, 2); }
+    q.restore();
+  }
+  function hsTree(v) {   // a Delve tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees), dressed for the season
+    var key = "tree" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(48, 80), g0 = S2.g, LC = hpCan(48, 80), g = LC.g;
     var L = v === 0 ? [[16, 0], [8, 10], [24, 10], [0, 22], [16, 20], [32, 22], [8, 34], [24, 34], [16, 40]] : v === 1 ? [[16, 6], [4, 16], [20, 14], [32, 18], [8, 30], [24, 30], [16, 40]] : [[12, 4], [24, 6], [4, 18], [18, 18], [32, 20], [10, 32], [26, 32], [18, 42]];
-    hAt(g, T.LOG, 16, 64); hAt(g, T.LOG, 16, 50);
+    hAt(g0, T.LOG, 16, 64); hAt(g0, T.LOG, 16, 50);
     L.forEach(function (q, n) { hAt(g, T.LEAVES, q[0], q[1], n & 1); if (q[1] >= 30) { g.fillStyle = "rgba(0,20,10,.22)"; g.fillRect(q[0], q[1], 16, 16); } });
     if (v === 1) { hAt(g, T.VINE, 4, 44); hAt(g, T.VINE, 34, 46); }
-    if (v === 2) { var fl = htid("Swamp Flower"); g.fillStyle = "#ffb0d8"; for (var f = 0; f < 10; f++) g.fillRect(4 + Math.floor(SW.hash(f, 2, 63) * 38), 6 + Math.floor(SW.hash(f, 3, 63) * 40), 2, 2); }
+    if (v === 2 && HSEA !== 3) { var fl = htid("Swamp Flower"); g.fillStyle = "#ffb0d8"; for (var f = 0; f < 10; f++) g.fillRect(4 + Math.floor(SW.hash(f, 2, 63) * 38), 6 + Math.floor(SW.hash(f, 3, 63) * 40), 2, 2); }
+    seasonLeaves(LC.c, v); g0.drawImage(LC.c, 0, 0);
     return (HSPR[key] = hpOutline(S2.c));
   }
   function hsStump() { if (HSPR.stump) return HSPR.stump; var S2 = hpCan(16, 16), g = S2.g;
@@ -16508,6 +16597,7 @@
     var sh = htid("Mossy Shingles"), glass = htid("Clear Glass"), brick = T.BRICK, cob = htid("Cobblestone");
     var chim = hMat(brick, 0, 1 | 4 | 8), chim2 = hMat(brick, 2, 2 | 4 | 8); g.drawImage(chim, OX + 64, OY - 24); g.drawImage(chim2, OX + 64, OY - 8);
     for (y = 0; y < 3; y++) for (x = -1; x < 7; x++) { var m = (y === 0 ? 1 : 0) | (y === 2 ? 2 : 0) | (x === -1 ? 4 : 0) | (x === 6 ? 8 : 0), rc = hMat(sh, (x & 1) | ((y & 1) << 1), m); if (rc) g.drawImage(rc, OX + x * 16 + (x === -1 ? 8 : x === 6 ? -8 : 0), OY - 16 + y * 16 + 6); }
+    snowRoof(g, 0, OY + 26, S2.c.width);
     g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(OX, OY + 38, 96, 3);
     for (y = 0; y < 2; y++) for (x = 0; x < 6; x++) { var wc = hMat(T.W_LOG, (y % 3 + 3 + 2 * (x % 3)) % 3, (y === 0 ? 1 : 0) | (y === 1 ? 2 : 0) | (x === 0 ? 4 : 0) | (x === 5 ? 8 : 0)); if (wc) g.drawImage(wc, OX + x * 16, OY + 40 + y * 16 - 8); }
     var base = hMat(cob, 0, 1 | 2); for (x = 0; x < 6; x++) if (base) g.drawImage(base, 0, 0, 16, 6, OX + x * 16, OY + 58, 16, 6);
@@ -16520,6 +16610,7 @@
     var key = "bld" + k; if (HSPR[key]) return HSPR[key]; var D = HF.bld[k], w = D.w, h = D.h, S2 = hpCan(w * 16 + 16, h * 16 + 20), g = S2.g, OX = 8, OY = 16, x, y;
     var roof = k === "duckcoop" ? T.THATCH : htid("Red Shingles"), rows = h - 1 + 1, wy = OY + (h - 1) * 16;
     for (y = 0; y < rows; y++) for (x = -1; x <= w; x++) { var m = (y === 0 ? 1 : 0) | (y === rows - 1 ? 2 : 0) | (x === -1 ? 4 : 0) | (x === w ? 8 : 0), rc = hMat(roof, (x & 1) | ((y & 1) << 1), m); if (rc) g.drawImage(rc, OX + x * 16 + (x === -1 ? 8 : x === w ? -8 : 0), OY - 12 + y * 16); }
+    snowRoof(g, 0, wy - 6, S2.c.width);
     g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(OX, wy, w * 16, 3);
     for (x = 0; x < w; x++) { var wc = hMat(T.W_PLANK, x % 3, 1 | 2 | (x === 0 ? 4 : 0) | (x === w - 1 ? 8 : 0)); if (wc) g.drawImage(wc, OX + x * 16, wy + 2); }
     var dx = OX + Math.floor(w / 2) * 16 - (w % 2 ? 0 : 8); if (k === "duckcoop") { g.fillStyle = "#2a1a0c"; g.fillRect(dx + 4, wy + 7, 9, 11); g.fillStyle = "#8a5a30"; g.fillRect(dx + 3, wy + 6, 11, 2); }
@@ -16541,10 +16632,11 @@
     g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh);
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 3), s16 = ts / 16;
     // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
+    homeSeasonArt(); var SN = HSEA;
     if (!HG || HOME.gd || HOME.gdk !== HG) { homeGround(); HOME.gdk = HG; } else if (HOME.gdr) homeGround(HOME.gdr);
     var gx0 = Math.max(0, Math.floor(-ox / ts)), gy0 = Math.max(0, Math.floor(-oy / ts)), gx1 = Math.min(HW, Math.ceil((vw - ox) / ts)), gy1 = Math.min(HH, Math.ceil((vh - oy) / ts));
     if (gx1 > gx0 && gy1 > gy0) g.drawImage(HG, gx0 * 16, gy0 * 16, (gx1 - gx0) * 16, (gy1 - gy0) * 16, ox + gx0 * ts, oy + gy0 * ts, (gx1 - gx0) * ts, (gy1 - gy0) * ts);
-    if (!reduce) for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var wid = t[j * HW + i]; if (!homeWater(wid)) continue;
+    if (!reduce && SN !== 3) for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var wid = t[j * HW + i]; if (!homeWater(wid)) continue;
       for (var gl = 0; gl < 2; gl++) { var hgl = SW.hash(i, j, 100 + gl), ph2 = (T0 * 0.9 + hgl * 7) % 3; if (ph2 > 0.5) continue; var gx = ox + (i * 16 + 3 + Math.floor(hgl * 10)) * s16, gy = oy + (j * 16 + 4 + Math.floor(SW.hash(j, i, 102 + gl) * 9)) * s16;
         g.fillStyle = ph2 < 0.25 ? "#ffffff" : "#bfe8f0"; g.fillRect(gx, gy, s16 * 2, s16); if (ph2 < 0.25) g.fillRect(gx + s16 * 0.5, gy - s16, s16, s16 * 3); } }
     var dlA = daylight(S.time);
@@ -16602,7 +16694,7 @@
     }
     L.forEach(function (e) { drawE(g, e); });
     // --- daytime life: slow cloud shadows drifting over the farm, butterflies over the grass ---
-    if (!reduce && dlA > 0.6) {
+    if (!reduce && dlA > 0.6 && SN < 2) {
       for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; var cka = 0.09 * clamp(sun.a / 0.3, 0, 1); hpShadow(g, cxc, cyc, ts * 4.5, ts * 1.6, cka); hpShadow(g, cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, cka); }
       for (i = 0; i < 5; i++) { var bxs = (SW.hash(i, 7, 103) * (HW - 8) + 4) + Math.sin(T0 * 0.45 + i * 2.1) * 3, bys = (SW.hash(i, 8, 103) * (HH - 10) + 4) + Math.cos(T0 * 0.37 + i) * 2 + Math.sin(T0 * 3 + i) * 0.15, flap = Math.floor(T0 * 8 + i) % 2, bsx = ox + bxs * ts, bsy = oy + bys * ts;
         if (bsx < -ts || bsx > vw + ts || bsy < -ts || bsy > vh + ts) continue; var bc = ["#ffe27a", "#ff9ad0", "#ffffff", "#9ad0ff", "#ffb84a"][i];
@@ -16613,7 +16705,7 @@
     if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;
       g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
-    if (!reduce && !panelOpen && Math.random() < 0.035) { var rpx = X0 + Math.floor(Math.random() * (X1 - X0 + 1)), rpy = Y0 + Math.floor(Math.random() * (Y1 - Y0 + 1)); if (homeWater(t[rpy * HW + rpx])) waterRing(rpx + 0.2 + Math.random() * 0.6, rpy + 0.3 + Math.random() * 0.5, 0.05 + Math.random() * 0.04, 1); }   // something rising in the pond
+    if (!reduce && !panelOpen && SN !== 3 && Math.random() < 0.035) { var rpx = X0 + Math.floor(Math.random() * (X1 - X0 + 1)), rpy = Y0 + Math.floor(Math.random() * (Y1 - Y0 + 1)); if (homeWater(t[rpy * HW + rpx])) waterRing(rpx + 0.2 + Math.random() * 0.6, rpy + 0.3 + Math.random() * 0.5, 0.05 + Math.random() * 0.04, 1); }   // something rising in the pond
     drawWaterFx(g);
     // --- the time of day: the picture is graded (gold late afternoon, rose at dusk, deep blue at night) and lit by its lights: the cottage
     // windows and porch lantern, the gate lantern, a little light around you, glowing night crops and giant gourds, and the fireflies ---
@@ -16636,7 +16728,9 @@
         g.globalAlpha = nk * 0.75; g.drawImage(ATLAS, 0, C3.tiles[3] * 16, 16, 16, gx3 - ts / 2, gy3 - ts * 0.4, ts, ts); g.globalAlpha = 1; });   // glowing crops shine through the dark
     }
     if (nk > 0.3 && !liteFx()) drawBloom(g, dl, 1, now);   // the lit windows and lanterns bloom at night
-    if (wxN() > 0.02) {   // rain falling on the farm: rings on the pond and the puddles, little crowns of spray on the ground
+    homeDrift(g, now, SN);
+    if (wxN() > 0.02 && SN === 3) drawBoltScr(g, 0, vh * 0.6);
+    else if (wxN() > 0.02) {   // rain falling on the farm: rings on the pond and the puddles, little crowns of spray on the ground
       rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts, wy = (sy - oy) / ts, ti = Math.floor(wx), tj = Math.floor(wy); if (ti < 0 || tj < 0 || ti >= HW || tj >= HH) return;
         if (homeWater(t[tj * HW + ti])) waterRing(wx, wy, 0.035, 1, 0.9); else if ((HOME.pud || 0) > 0.3 && homePuddle(ti, tj)) waterRing(wx, wy, 0.022, 1, 0.6); else rainPip(wx, wy, 1); },
         function () { return [Math.random() * vw, Math.random() * (vh + 40) - 20]; });
@@ -16650,7 +16744,7 @@
     if (aim.tx >= 0 && o.m && o.m[aim.tx + "," + aim.ty]) { var mh = o.m[aim.tx + "," + aim.ty], ml = ITEMS[mh.k].n + (mh.o ? ": ready! Tap to collect" : mh.i ? ": " + Math.ceil(mh.t) + " s left" : mh.k === "sprinkler" ? ": waters the soil around it" : mh.k === "compostbin" ? ": add 4 Fiber or Leaves" : ": tap with a crop selected");
       g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var mw = g.measureText(ml).width + 14, mx2 = ox + (aim.tx + 0.5) * ts, my2 = oy + (aim.ty - 1.3) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(mx2 - mw / 2, my2 - 11, mw, 20); g.fillStyle = mh.o ? "#ffe27a" : "#f6eedb"; g.fillText(ml, mx2, my2 + 4); }
     if (aim.tx >= 0) { var ce2 = o.c[aim.tx + "," + aim.ty], C2 = ce2 && CROPS[ce2.k]; if (C2) { var wet2 = homeWet(aim.tx, aim.ty), pidl = hmT(aim.tx, aim.ty);
-      if (C2.wat) wet2 = pidl === HT.PADDYW; var left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (C2.moon ? 1.5 * (wet2 ? 2 : 1) : wet2 ? 2 : 1), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : C2.wat && !wet2 ? ": the paddy is dry" : C2.moon && !isNight(S.time) ? ": waits for night" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (C2.wat ? " \u00b7 flooded" : wet2 ? " \u00b7 watered" : " \u00b7 dry")) + (o.f[aim.tx + "," + aim.ty] ? " \u00b7 compost" : "");
+      if (C2.wat) wet2 = pidl === HT.PADDYW; var left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (C2.moon ? 1.5 * (wet2 ? 2 : 1) : wet2 ? 2 : 1) / seasonMul(ce2.k), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : C2.wat && !wet2 ? ": the paddy is dry" : C2.moon && !isNight(S.time) ? ": waits for night" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (C2.wat ? " \u00b7 flooded" : wet2 ? " \u00b7 watered" : " \u00b7 dry")) + (o.f[aim.tx + "," + aim.ty] ? " \u00b7 compost" : "") + (ce2.s < 4 ? (inSeason(ce2.k) ? " \u00b7 in season" : seasonOf() === 3 ? " \u00b7 too cold, grows very slowly" : " \u00b7 out of season, grows slowly") : "");
       g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var lw = g.measureText(lbl).width + 14, lx = ox + (aim.tx + 0.5) * ts, ly = oy + (aim.ty - 0.75) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(lx - lw / 2, ly - 11, lw, 20); g.fillStyle = ce2.s >= 4 ? "#ffe27a" : wet2 ? "#9ae0ff" : "#f6eedb"; g.fillText(lbl, lx, ly + 4); } }
     if (!panelOpen && !trans && hp > 0) homeActions().slice(0, 1).forEach(function (a) { homePill(g, now, a.label, ox + a.ax * ts, oy + a.ay * ts, a.fn); });
   }
@@ -16660,6 +16754,20 @@
     sx = clamp(sx, pw / 2 + 8, vw - pw / 2 - 8); sy = clamp(sy, ph / 2 + 64, vh - ph / 2 - 8); x0 = sx - pw / 2; y0 = sy - ph / 2;
     g.fillStyle = "rgba(24,40,14,.92)"; g.strokeStyle = "#9ee06a"; g.lineWidth = 2; g.beginPath(); g.arc(x0 + ph / 2, y0 + ph / 2, ph / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + pw - ph / 2, y0 + ph / 2, ph / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
     g.fillStyle = "#f4ffe8"; g.fillText(label, sx, sy + 1); g.textBaseline = "alphabetic"; HOME.btns.push({ x: x0, y: y0, w: pw, h: ph, fn: fn });
+  }
+  // the season in the air: spring petals, fall leaves tumbling down, winter snow (light flurries, a real snowfall when the weather
+  // turns), drifting across the view in screen space (none in summer, when the butterflies are out)
+  var HDRIFT = [];
+  function homeDrift(g, now, sn) {
+    var wn = wxN(), want = reduce ? 0 : sn === 1 ? 0 : sn === 3 ? Math.round((lowq ? 30 : 55) + wn * (lowq ? 70 : 150)) : Math.round(lowq ? 10 : 18), dt = HOME.dl ? clamp((now - HOME.dl) / 1000, 0, 0.05) : 1 / 60; HOME.dl = now;
+    while (HDRIFT.length < want) HDRIFT.push({ x: Math.random() * vw, y: Math.random() * vh, z: 0.5 + Math.random() * 0.5, ph: Math.random() * 6.28, c: Math.floor(Math.random() * 4) });
+    if (HDRIFT.length > want) HDRIFT.length = want; if (!want) return;
+    var wind = (0.3 + wxStorm() * 1.4) * 40, cols = sn === 0 ? ["#ffc8e4", "#ff9ad0", "#ffffff", "#ffb0d8"] : sn === 2 ? ["#e8822a", "#c8402a", "#e8c040", "#a85a2a"] : ["#ffffff", "#f4f8ff", "#e8f2ff", "#ffffff"], lit = 0.4 + 0.6 * daylight(S.time);
+    g.save();
+    HDRIFT.forEach(function (d) { var fall = sn === 3 ? 40 + 50 * d.z * (1 + wn) : sn === 2 ? 34 * d.z : 22 * d.z; d.y += fall * dt; d.x += (Math.sin(now / 900 + d.ph) * (sn === 3 ? 18 : 30) + wind) * dt; if (d.y > vh + 8) { d.y = -8; d.x = Math.random() * vw; } if (d.x > vw + 8) d.x = -8; if (d.x < -8) d.x = vw + 8;
+      var sz = (sn === 3 ? 2.6 : 3.2) * d.z * (ts / 40); g.globalAlpha = (sn === 3 ? 0.9 : 0.85) * lit; g.fillStyle = cols[d.c];
+      if (sn === 3) g.fillRect(d.x, d.y, sz, sz); else { g.save(); g.translate(d.x, d.y); g.rotate(Math.sin(now / 500 + d.ph) * 1.2); g.fillRect(-sz, -sz * 0.45, sz * 2, sz * 0.9); g.restore(); } });   // flakes; petals and leaves tumble
+    g.restore();
   }
   function homeAO(g) {   // the forest around the farm shades the grass right next to it (a soft fade off the edge of the trees)
     var band = function (x0, y0, x1, y1, gx0, gy0, gx1, gy1, a) { var X0 = ox + x0 * ts, Y0 = oy + y0 * ts, X1 = ox + x1 * ts, Y1 = oy + y1 * ts; if (X1 < 0 || Y1 < 0 || X0 > vw || Y0 > vh) return;
@@ -16678,7 +16786,7 @@
       if (inside) { g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y - (up0 ? 2 : 10), 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X + (h < 0.5 ? -8 : 8), Y - (up0 ? 3 : 18), 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y + 3, 16, 16); if (h > 0.85) { g.fillStyle = "#ffb0d8"; g.fillRect(X + 5, Y, 2, 2); g.fillRect(X + 11, Y + 6, 2, 2); } }
       else { g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y - 6, 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X + (h < 0.5 ? -8 : 8), Y + 3, 16, 16); }
     }
-    return (HFOR = c);
+    seasonLeaves(c, 1); return (HFOR = c);
   }
   function homeProp(g, id, i, j, T0) {
     var h = SW.hash(i, j, 92), s = ts / 16;

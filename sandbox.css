@@ -1756,3 +1756,6 @@ body.sbx-app footer{margin-top:28px}
 .sbx-tour .tr-row{display:flex;gap:8px;justify-content:flex-end}.sbx-tour .tr-row .btn{min-width:0;padding:8px 16px}
 .tt-tour{display:block;margin:12px auto 0;padding:10px 18px;border-radius:12px;border:1px solid #4ee6b466;background:#4ee6b41f;color:#f6eedb;font:800 .95rem Nunito,sans-serif;cursor:pointer}
 .sbx-stage.cave .sbx-bcard{top:15%}
+/* homestead seasons: the season line in the Seed Stall and the "in season" tag on seeds that suit it */
+.hm-season { margin: 2px 0 8px; padding: 6px 10px; border-left: 3px solid var(--sc, #7dd65a); background: rgba(0,0,0,.18); border-radius: 6px; text-align: left; }
+.hm-season em, .hm-in { font-style: normal; font-weight: 800; color: #1c2612; background: #9ee06a; border-radius: 999px; padding: 1px 7px; font-size: 11px; margin-left: 4px; white-space: nowrap; }
