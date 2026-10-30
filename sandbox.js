@@ -493,7 +493,7 @@
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
-  var cv = $("sbxCv"), ctx = cv.getContext("2d");
+  var cv = $("sbxCv"), ctx = cv.getContext("2d", { alpha: false });   // PERF: every scene paints its whole background, so the game canvas is opaque (the browser skips blending it with the page)
   var stageEl = $("sbxStage");
 
   // ---------- STATE ----------
@@ -10732,7 +10732,7 @@
         natLeaf(g, i, j, sx3, sy, lmask);
       } else {
         if (NATC[id]) { natTile(g, id, i, j, sx3, sy); return; }
-        if (id === T.LOG) { natLog(g, i, j, sx3, sy); }
+        if (id === T.LOG) { natLogC(g, i, j, sx3, sy); }
         else if (SMGEM[id]) { natTile(g, orePal(td), i, j, sx3, sy); smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }
         else if (td.kind === "door" || td.hatch) matWood(g, td, i, j, sx3, sy);
         else if (MATF[id]) { if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
@@ -10895,6 +10895,12 @@
   var VSKY = [[[150, 190, 255], [255, 210, 230]], [[96, 204, 240], [255, 226, 170]], [[40, 70, 52], [96, 124, 90]]];   // sky tints (top, horizon) per variant
   var VHILL = [[[246, 178, 212], [226, 146, 190], [196, 116, 164]], [[236, 200, 130], [210, 168, 104], [70, 160, 150]], [[34, 70, 44], [24, 52, 34], [14, 36, 24]]];
   function mixArr(arrs, w) { var o = [0, 0, 0]; for (var i = 0; i < 3; i++) for (var c = 0; c < 3; c++) o[c] += arrs[i][c] * w[i]; return o; }
+  function drawVig(g) {   // PERF: the vignette's middle is completely clear, so only the four bands around it are drawn (the same picture)
+    var a = Math.floor(Math.min(vw, vh) * 0.38 / Math.SQRT2) - 2, cx = vw / 2, cy = vh / 2, x0 = Math.round(cx - a), x1 = Math.round(cx + a), y0 = Math.round(cy - a), y1 = Math.round(cy + a), kx = VIG.width / vw, ky = VIG.height / vh;
+    if (a < 8) { g.drawImage(VIG, 0, 0, vw, vh); return; }
+    var part = function (x, y, w, h) { if (w > 0 && h > 0) g.drawImage(VIG, x * kx, y * ky, w * kx, h * ky, x, y, w, h); };
+    part(0, 0, vw, y0); part(0, y1, vw, vh - y1); part(0, y0, x0, y1 - y0); part(x1, y0, vw - x1, y1 - y0);
+  }
   function buildVignette() {
     VIG = document.createElement("canvas"); VIG.width = Math.max(2, Math.round(vw / 2)); VIG.height = Math.max(2, Math.round(vh / 2));
     var g = VIG.getContext("2d"), rg = g.createRadialGradient(VIG.width / 2, VIG.height / 2, Math.min(VIG.width, VIG.height) * 0.38, VIG.width / 2, VIG.height / 2, Math.max(VIG.width, VIG.height) * 0.78);
@@ -10902,9 +10908,10 @@
   }
   function cloud(g, x, y, s, col, a) {
     g.globalAlpha = a; g.fillStyle = col; var r = 16 * s;
-    [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]].forEach(function (b) { g.beginPath(); g.ellipse(x + b[0] * r, y + b[1] * r, r * b[2] * 1.15, r * b[2] * 0.62, 0, 0, 6.2832); g.fill(); });
+    for (var q = 0; q < CLOUDB.length; q++) { var b = CLOUDB[q]; g.beginPath(); g.ellipse(x + b[0] * r, y + b[1] * r, r * b[2] * 1.15, r * b[2] * 0.62, 0, 0, 6.2832); g.fill(); }
     g.globalAlpha = 1;
   }
+  var CLOUDB = [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]];   // PERF: the puffs of a cloud, made once
   function hasW(x, y) { return x >= 0 && x < W && y >= 0 && y < H && walls[y * W + x] > 0; }
   function drawWall(g, wl, i, j, sx, sy) {   // a back wall tile: its picture, pushed back with a dark wash, with a soft edge where the wall stops so rooms read as rooms
     var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, e = Math.max(1, Math.round(ts / 11));
@@ -10940,7 +10947,8 @@
     var hl = document.createElement("canvas"); hl.width = hl.height = N; var hg2 = hl.getContext("2d"); hg2.drawImage(b, 0, 0); hg2.globalCompositeOperation = "source-atop"; var lgg = hg2.createLinearGradient(0, 0, 0, N); lgg.addColorStop(0, "rgba(255,255,255,.18)"); lgg.addColorStop(0.5, "rgba(255,255,255,0)"); lgg.addColorStop(1, "rgba(0,0,30,.22)"); hg2.fillStyle = lgg; hg2.fillRect(0, 0, N, N); og.drawImage(hl, 0, 0);   // soft light from above
     return out;
   }
-  function hexRgb(h) { h = h.replace("#", ""); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+  var HEXRGB = {};
+  function hexRgb(h0) { var c = HEXRGB[h0]; if (c) return c.slice(); var h = h0.replace("#", ""); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; c = HEXRGB[h0] = [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; return c.slice(); }   // PERF: each colour is parsed once
   function smTile(td) {
     var ag = ATLAS.getContext("2d", { willReadFrequently: true }), d = ag.getImageData(0, td.id * 16, 16, 16).data, op = true, x;
     for (x = 0; x < 16; x++) { if (d[(x) * 4 + 3] < 250 || d[(15 * 16 + x) * 4 + 3] < 250 || d[(x * 16) * 4 + 3] < 250 || d[(x * 16 + 15) * 4 + 3] < 250) { op = false; break; } }
@@ -11032,7 +11040,7 @@
     var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES || scen, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
     if (!PERF.nat) { natBody(g, id, i, j, sx, sy, scen, nT, nL, nR); edgeShade(g, i, j, sx, sy, nB, nL, nR); return; }
     var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
-    var key = id + ":" + i + ":" + j + ":" + (nT ? 1 : 0) + (nL ? 1 : 0) + (nR ? 1 : 0) + (scen ? 1 : 0) + varAt(i), cv = NATM.get(key), k2 = S / ts;
+    var key = (((id * W + i) * H + j) * 16 + (nT ? 8 : 0) + (nL ? 4 : 0) + (nR ? 2 : 0) + (scen ? 1 : 0)) * 16 + varAt(i), cv = NATM.get(key), k2 = S / ts;   // PERF: a number, not a string, so no garbage per tile per frame
     if (!cv) {
       var pt = nT ? Math.ceil(ts * 0.42) : 0, px = nT ? Math.ceil(ts * 0.12) : 0;   // room above for the grass lip and tufts
       cv = document.createElement("canvas"); cv.width = Math.ceil((ts + px * 2) * k2); cv.height = Math.ceil((ts + pt) * k2); cv.px = px; cv.pt = pt;
@@ -11084,6 +11092,14 @@
     if (nL && j >= col[i - 1]) { var lfc = shadeC("lf"); g.drawImage(lfc, sx - lfc.width, sy); }
   }
   var BARK = [["#2e1c18", "#6a4838", "#8a6450", "#5b4038", "#271713"], ["#2a1418", "#5e3034", "#7e4a4a", "#52292c", "#1e0c0e"], ["#4a3a22", "#9a7e54", "#c4a672", "#87704a", "#3a2c18"], ["#120c08", "#33261a", "#4a3826", "#2e2216", "#0c0705"]];
+  function natLogC(g, i, j, sx, sy) {   // PERF: each trunk cell's bark (grooves, knot, highlight) is painted once at full resolution and stamped, like natTile
+    if (!PERF.nat) { natLog(g, i, j, sx, sy); return; }
+    var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
+    var key = -((i * H + j) * 16 + varAt(i)) - 1, c = NATM.get(key), k2 = S / ts;   // (negative: never clashes with natTile's keys)
+    if (!c) { c = document.createElement("canvas"); c.width = c.height = S; var q = c.getContext("2d"); q.setTransform(k2, 0, 0, k2, 0, 0); natLog(q, i, j, 0, 0); NATM.set(key, c); NATPX += S * S;
+      if (NATPX > NAT_BUDGET) { var it = NATM.keys(); while (NATPX > NAT_BUDGET * 0.75) { var nx = it.next(); if (nx.done) break; var oc = NATM.get(nx.value); NATPX -= oc.width * oc.height; NATM.delete(nx.value); } } }
+    g.drawImage(c, sx, sy, ts, ts);
+  }
   function natLog(g, i, j, sx, sy) {   // round trunk: dark bark edges, lit centre, bark grooves and the odd knot
     var vk = varAt(i);
     g.drawImage(shadeC("log" + (vk || "")), sx, sy);
@@ -11633,9 +11649,10 @@
     var cv = LEAFCACHE[key] || (LEAFCACHE[key] = buildLeafTile(mask, v, S, vk));
     g.drawImage(cv, 0, 0, S, S, sx, sy, ts, ts);
   }
+  function ridgeHv(n, sd) { return n & 1 ? SW.hash(n, sd, 9) * 0.35 : 0.55 + SW.hash(n, sd, 9) * 0.45; }
   function ridgeLine(wx, seg, sd) {   // 0..1 low-poly mountain line: a peak every `seg` tiles, a valley between, straight edges for a crisp look
-    var u = wx / seg * 2, k = Math.floor(u), f = u - k, hv = function (n) { return n & 1 ? SW.hash(n, sd, 9) * 0.35 : 0.55 + SW.hash(n, sd, 9) * 0.45; };
-    return hv(k) + (hv(k + 1) - hv(k)) * f;
+    var u = wx / seg * 2, k = Math.floor(u), f = u - k, a = ridgeHv(k, sd);
+    return a + (ridgeHv(k + 1, sd) - a) * f;
   }
   function vMote(g, m, kind, tt, above, night) {   // BIOME VARIANTS: the air in each variant land
     if (kind === 0) {   // cherry petals tumbling down on the breeze
@@ -11719,7 +11736,7 @@
   }
   function drawMilky(g, a) { if (a < 0.02) return; var m = milkyCanvas(), sx = -((cam.x * ts * 0.01) % vw); g.save(); g.globalAlpha = a; g.globalCompositeOperation = "lighter"; g.drawImage(m, sx, 0, vw, m.height); g.drawImage(m, sx + vw, 0, vw, m.height); g.restore(); }
   function cloud2(g, x, y, s, lit, shade, a) {   // a cloud with a shaded belly and a sunlit crown
-    var r = 16 * s, B = [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]], k;
+    var r = 16 * s, B = CLOUDB, k;
     g.globalAlpha = a; g.fillStyle = shade;
     for (k = 0; k < B.length; k++) { g.beginPath(); g.ellipse(x + B[k][0] * r, y + B[k][1] * r + r * 0.18, r * B[k][2] * 1.15, r * B[k][2] * 0.62, 0, 0, 6.2832); g.fill(); }
     g.fillStyle = lit;
@@ -11783,7 +11800,9 @@
     var deepV = dtop > dmx + 1;   // PERF: every pixel is underground, so the sky, hills and clouds could not be seen: just a flat colour behind any water
     if (deepV) { g.fillStyle = rgb(sk[1]); g.fillRect(0, 0, vw, vh); }
     else {
-    var smd = mixC(BSK[2], mid, 0.3 + 0.4 * (VMX[0] + VMX[1] + VMX[2])); gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.5, rgb(smd)); gr.addColorStop(0.82, rgb(mixC(smd, sk[1], 0.6))); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr; g.fillRect(0, 0, vw, vh);
+    var smd = mixC(BSK[2], mid, 0.3 + 0.4 * (VMX[0] + VMX[1] + VMX[2])); gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.5, rgb(smd)); gr.addColorStop(0.82, rgb(mixC(smd, sk[1], 0.6))); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr;
+    var skyCut = clamp(Math.ceil(oy + (dmx + 2) * ts), 0, vh);   // PERF: below the lowest ground line on screen the sky is hidden by the ground, so it gets a flat fill (as deepV does) instead of the gradient
+    g.fillRect(0, 0, vw, skyCut); if (skyCut < vh) { g.fillStyle = rgb(sk[1]); g.fillRect(0, skyCut, vw, vh - skyCut); }
     if (!lowq) drawHorizonGlow(g, t, 1);
     var starsNow = function () { if (night <= 0.25) return;
       var sa = clamp((night - 0.25) / 0.45, 0, 1); if (!lowq) drawMilky(g, sa * 0.85 * (1 - bw[1] * 0.4));
@@ -11830,18 +11849,18 @@
       var par = 0.12 + L2 * 0.2, amp = 5 + L2 * 3.5, base = HZ - 3 + L2 * 3.5, f2 = 0.045 + L2 * 0.03, cc = mixArr([HILLS[0][L2], HILLS[1][L2], HILLS[2][L2]], bw);
       for (var vh2 = 0; vh2 < 3; vh2++) if (VMX[vh2] > 0) cc = mixC(cc, VHILL[vh2][L2], VMX[vh2] * 0.8);
       var fog = mixC(cc, sk[1], 0.5 - L2 * 0.2); cc = mixC(cc, fog, 0.55 * (1 - L2 * 0.3));
-      g.fillStyle = rgb(mixC([6, 12, 20], cc, 0.2 + 0.8 * day)); g.beginPath(); g.moveTo(0, vh);
+      g.fillStyle = rgb(mixC([6, 12, 20], cc, 0.2 + 0.8 * day)); g.beginPath(); g.moveTo(-12, Math.min(vh, skyCut + ts));
       var hst = 12 / ts, hwq = Math.floor((cam.x * par - (vw / 2 + 12) / ts) / hst) * hst;   // land-fixed sample grid (no shimmer while walking)
       for (var sx2 = -12; sx2 <= vw + 24; hwq += hst) {
         sx2 = vw / 2 + (hwq - cam.x * par) * ts; var wx = hwq, sm = Math.sin(wx * f2) * amp + Math.sin(wx * f2 * 2.3 + 1) * amp * 0.4;
         var jag = (1 - Math.abs(Math.sin(wx * f2 * 1.7 + L2))) * amp * 1.1, pk = Math.abs(Math.sin(wx * f2 * 1.2 + L2 * 2)) * amp * 1.0;
         g.lineTo(sx2, oy + (base + sm * bw[0] + (jag - amp * 0.4) * bw[1] - (pk - amp * 0.3) * bw[2]) * ts);
       }
-      g.lineTo(vw + 12, vh); g.closePath(); g.fill();
+      g.lineTo(vw + 12, Math.min(vh, skyCut + ts)); g.closePath(); g.fill();   // PERF: the hills stop just under the lowest ground line (the ground hides the rest)
       // mist pooled on top of this layer: farther layers fade into the sky colour (atmospheric perspective)
       var fy0 = oy + (base - amp * 1.6) * ts, fgr = g.createLinearGradient(0, fy0, 0, fy0 + ts * 9);
       fgr.addColorStop(0, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)"); fgr.addColorStop(0.45, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + "," + ((0.3 - L2 * 0.07) * above).toFixed(3) + ")"); fgr.addColorStop(1, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)");
-      g.fillStyle = fgr; g.fillRect(0, fy0, vw, ts * 9);
+      g.fillStyle = fgr; if (fy0 < skyCut) g.fillRect(0, fy0, vw, Math.min(ts * 9, skyCut - fy0));
       if (L2 === 1 && bw[0] > 0.25) {   // giant mangrove silhouettes standing on the middle hills
         var tcol = mixC(cc, [8, 24, 28], 0.45), rim = mixC(cc, sk[1], 0.45), vck = VMX[0] / Math.max(0.01, bw[0]); if (vck > 0) { tcol = mixC(tcol, [196, 92, 146], vck * 0.75); rim = mixC(rim, [255, 200, 226], vck * 0.7); }   /* blossom trees in the distance */ var k0 = Math.floor((cam.x * par - vw / ts) / 16) - 1, k1 = Math.ceil((cam.x * par + vw / ts) / 16) + 1;
         for (var tk = k0; tk <= k1; tk++) {
@@ -11862,7 +11881,7 @@
     }
     var hz = oy + (HZ - 1) * ts, fg = g.createLinearGradient(0, hz - ts * 7, 0, hz + ts * 1.5), fc = sk[1];
     fg.addColorStop(0, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + ",0)"); fg.addColorStop(1, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + "," + (0.4 * above) + ")");
-    g.fillStyle = fg; g.fillRect(0, hz - ts * 7, vw, ts * 8.5);
+    g.fillStyle = fg; if (hz - ts * 7 < skyCut) g.fillRect(0, hz - ts * 7, vw, Math.min(ts * 8.5, skyCut - (hz - ts * 7)));
     }
     BLD = day; BLA = above; if (cv.classList.contains("grade") === lowq) cv.classList.toggle("grade", !lowq); if (!deepV && !lowq && !reduce) drawSunbeams(g, day, above, bw, now);
     if (!deepV) drawAmbientSky(g, now, day, above, bw);   // birds, bats, shooting stars, aurora
@@ -11949,7 +11968,7 @@
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
-    g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh);
+    g.imageSmoothingEnabled = true; drawVig(g);
     var ha = Math.min(0.6, hurtT * 1.2) + (hp <= MAXHP * 0.3 ? (reduce ? 0.18 : 0.16 + 0.08 * Math.sin(now / 280)) : 0);
     if (ha > 0.01) { if (!HVIG) { HVIG = document.createElement("canvas"); HVIG.width = HVIG.height = 128; var hg = HVIG.getContext("2d"), hr = hg.createRadialGradient(64, 64, 34, 64, 64, 92); hr.addColorStop(0, "rgba(200,20,20,0)"); hr.addColorStop(1, "rgba(200,20,20,.9)"); hg.fillStyle = hr; hg.fillRect(0, 0, 128, 128); } g.globalAlpha = ha; g.drawImage(HVIG, 0, 0, vw, vh); g.globalAlpha = 1; }
     g.imageSmoothingEnabled = false;
@@ -12559,7 +12578,7 @@
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
-    if (!F.nx) { g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false; }
+    if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
@@ -15507,7 +15526,7 @@
       for (var q2 = 1; q2 < trl.length; q2++) { var C2 = trl[q2]; g.globalAlpha = clamp((1 - C2.t / 1.6) * 0.3 * Math.min(1, (C2.sp || 1) / 4), 0, 0.3); g.fillStyle = "#e8f8ff"; g.beginPath(); g.ellipse(C2.x * k, C2.y * k, k * (0.35 + C2.t * 0.5), k * (0.25 + C2.t * 0.3), C2.a, 0, 6.2832); g.fill(); }   // churned water down the middle
       g.globalAlpha = 1; };
     if (!reduce) { wakeV(s.trl); s.ships.forEach(function (sh) { wakeV(sh.trl); }); }
-    if (s.x < 60 || s.y < 60 || s.x > SO.SEAW - 60 || s.y > SO.SEAW - 60) { g.fillStyle = "rgba(220,235,245,.5)"; [[-200, -200, 206, SO.SEAW + 400], [SO.SEAW - 6, -200, 206, SO.SEAW + 400], [-200, -200, SO.SEAW + 400, 206], [-200, SO.SEAW - 6, SO.SEAW + 400, 206]].forEach(function (r) { g.fillRect(r[0] * k, r[1] * k, r[2] * k, r[3] * k); }); }
+    if (s.x < 60 || s.y < 60 || s.x > SO.SEAW - 60 || s.y > SO.SEAW - 60) { g.fillStyle = "rgba(220,235,245,.5)"; [[-200, -200, 206, SO.SEAW + 400], [SO.SEAW - 6, -200, 206, SO.SEAW + 400], [-200, -200, SO.SEAW + 400, 206], [-200, SO.SEAW - 6, SO.SEAW + 400, 206]].forEach(function (r) { var ax = Math.max(r[0], x0), ay = Math.max(r[1], y0), bx2 = Math.min(r[0] + r[2], x1), by2 = Math.min(r[1] + r[3], y1); if (bx2 > ax && by2 > ay) g.fillRect(ax * k, ay * k, (bx2 - ax) * k, (by2 - ay) * k); }); }   // PERF: only the part of the edge fog that is on screen
     I.forEach(function (Q) { if (Q.x + Q.r * 2.2 < x0 || Q.x - Q.r * 2.2 > x1 || Q.y + Q.r * 2.2 < y0 || Q.y - Q.r * 2.2 > y1) return; seaDrawIsland(g, Q, k, now); });
     OSITES.forEach(function (st) { if (st.x < x0 || st.x > x1 || st.y < y0 || st.y > y1) return; var bx = st.x * k, by = st.y * k, bob = reduce ? 0 : Math.sin(t * 2 + st.seed) * k * 0.1;
       g.strokeStyle = "rgba(232,251,255,.5)"; g.lineWidth = Math.max(1, k * 0.08); for (var q = 0; q < 3; q++) { var ph2 = (t * 0.5 + q / 3) % 1; g.globalAlpha = 1 - ph2; g.beginPath(); g.arc(bx, by, k * (0.4 + ph2 * 1.6), 0, 6.2832); g.stroke(); } g.globalAlpha = 1;
@@ -16629,7 +16648,7 @@
     var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
-    g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh);
+    if (!(ox <= 0 && oy <= 0 && ox + HW * ts >= vw && oy + HH * ts >= vh)) { g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh); }   // PERF: the farm fills the view; the base colour is only needed past its edge
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 3), s16 = ts / 16;
     // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
     homeSeasonArt(); var SN = HSEA;
