@@ -554,7 +554,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -695,7 +695,7 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
     benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
@@ -6520,6 +6520,7 @@
   function wayDests() {
     var L = wayList().filter(function (w) { return !(w.x === wayAt.x && w.y === wayAt.y); }).map(function (w) { return { n: w.n, x: w.x + 0.5, y: w.y + 1, b: world.bio[w.x] }; });
     L.push({ n: "Camp", x: world.spawn.x, y: world.spawn.y, b: world.bio[clamp(Math.floor(world.spawn.x), 0, W - 1)], camp: 1 });
+    var mh0 = mineDest(); if (mh0) L.push(mh0);
     if (S.bed && get(S.bed.x, S.bed.y) === T.BED) L.push({ n: "Your Bed", x: S.bed.x + 0.5, y: S.bed.y + 1, b: world.bio[S.bed.x], bed: 1 });
     L.forEach(function (d) { d.d = d.x - (wayAt.x + 0.5); }); L.sort(function (a, b) { return Math.abs(a.d) - Math.abs(b.d); });
     return L;
@@ -12220,15 +12221,16 @@
       setFloor(1, "down"); save();
     } };
   }
-  function enterCave(hx, hy) {
+  function enterCave(hx, hy, f0, picked) {
     if (!SC || cave || trans || sleepT > 0 || hp <= 0) return;
     if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
+    if (!picked && liftStops().length > 1) { openLift(hx, hy); return; }   // MINE LIFT: choose a floor first
     var hb = world.bio[clamp(hx, 0, W - 1)];
     stopInput(); thud(150, 0.08);
     trans = { t: 0, done: false, mid: function () {
       cave = { hole: { x: hx, y: hy, b: hb }, run: ((Math.random() * 2e9) | 0) || 1, floors: {}, f: 0, F: null };
       S.st.caves++; enemies.length = 0; stageEl.classList.add("cave"); $("sbxHint").classList.remove("on");
-      setFloor(1, "down"); save();
+      setFloor(f0 > 1 ? f0 : 1, "down"); save();
     } };
   }
   function setFloor(f, from) {
@@ -12247,6 +12249,7 @@
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
     resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
+    if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
     if (bandNew) toast(F.biome === 1 ? "The tunnels turn hot. You have reached the Cinder Hollow." : F.biome === 2 ? "The air bites cold. You have reached the Frostvault." : "Back up in the mossy Mudhollow.", BIOMES[F.biome].c);
@@ -12255,6 +12258,30 @@
   // THE MINE: one shaft, one cave system. It changes as you go down: Mudhollow first, the hot Cinder Hollow from floor 9 (Basalt and
   // Cinder show up there) and the frozen Frostvault from floor 14 (Frostrock and Crystal), so each new pick has a cave to use it in.
   function mineBio(f) { return f >= 14 ? 2 : f >= 9 ? 1 : 0; }
+  // MINE LIFT: every 5th floor of the Mine (5, 10, 15...) has a lift where its ladder up would be. Reaching one unlocks it for good
+  // (S.st.mineLift = the deepest stop): ride it up to the surface from there, and when you enter the Mine you can ride it straight down
+  // to any stop you have unlocked. Worlds from before the lift get the stops their deepest floor already earned.
+  var LIFT_EVERY = 5, liftPick = null;
+  function liftFloor(f) { return !!cave && !cave.bld && !cave.volc && f >= LIFT_EVERY && f % LIFT_EVERY === 0; }
+  function liftStops() { var L = [1], top = S.st.mineLift | 0; for (var f = LIFT_EVERY; f <= top; f += LIFT_EVERY) L.push(f); return L; }
+  function openLift(hx, hy) {
+    var el = $("sbxStory"); if (!el) return;
+    if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    liftPick = { x: hx, y: hy }; storyOpen = 228; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null;
+    var h = '<small>The Mine</small><h2 class="st-hi">Ride the lift</h2><p class="st-tip">Pick a floor. Floor 1 is the ladder at the top; the others are lift stops you have reached.</p><div class="st-ways">';
+    h += liftStops().map(function (f) { var b = mineBio(f), nm = ["Mudhollow", "Cinder Hollow", "Frostvault"][b]; return '<button type="button" data-lift="' + f + '" style="--wc:' + (WBIOC[b] || "#4ee6b4") + '"><i aria-hidden="true"></i><b>Floor ' + f + "</b><em>" + nm + "</em></button>"; }).join("");
+    h += '</div><div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h; snd("coin");
+  }
+  function liftAct(f) { var L = liftPick; liftPick = null; closeStory(); f = Math.floor(+f) || 1; if (!L || liftStops().indexOf(f) < 0) return; enterCave(L.x, L.y, f, true); }
+  // FAST TRAVEL TO THE MINE: from the World Map (and on every waystone's list) you can warp back to the Mine, wherever you are.
+  function mineDest() { var M0 = world.holes && world.holes[0]; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return null; return { n: "The Mine", x: M0.x + 2.5, y: M0.y + 1, b: world.bio[M0.x], mine: 1 }; }
+  function goMine() {
+    var d = mineDest(); if (!d) return; if (cave || HOME || OCS || warp || trans || hp <= 0) return;
+    if (activeBoss()) { nag("Not in the middle of a boss fight!"); return; }
+    if (Math.abs(p.x - d.x) < 6 && Math.abs(p.y - d.y) < 6) { nag("You're already at the Mine."); return; }
+    warp = { t: 0, d: d, from: { x: p.x, y: p.y } }; thud(330, 0.05); snd("rise");
+  }
   function caveB() { return !cave ? 0 : cave.bld || cave.volc ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
     if (!cave) return; var h = cave.hole; cave = null; resize(); stageEl.classList.remove("cave"); stopInput();
@@ -12268,7 +12295,7 @@
   }
   function useLadder(k) {
     if (trans || !cave) return; stopInput(); thud(k === "up" ? 330 : 200, 0.07);
-    if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
+    if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
     else trans = { t: 0, done: false, mid: function () { setFloor(cave.f + 1, "down"); save(); } };
   }
   function cBox(F, x, y) {   // does a body standing with its feet at (x, y) overlap a wall or rock? The footprint is small, so the head can pass in front of things
@@ -12530,7 +12557,8 @@
       g.fillStyle = "#d8a050"; g.fillRect(mx + 4, my + mh / 2 - 1, mw - 8, 2); g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(mx + 2, my + mh - 2, mw - 4, 2);
       var spl = g.createLinearGradient(0, uy, 0, uy - ts * 1.6); spl.addColorStop(0, "rgba(255,225,170,.2)"); spl.addColorStop(1, "rgba(255,225,170,0)"); g.fillStyle = spl; g.fillRect(ux - ts * 0.2, uy - ts * 1.6, ts * 1.4, ts * 1.6);
       srcs.push([F.up.x + 0.5, F.up.y - 0.2, 5, 0.8]); glows2.push([ux + ts / 2, uy - ts * 0.3, "255,225,170", 3, 0.2]);
-    } else {
+    } else if (liftFloor(cave.f)) drawLift(g, ux, uy, now, srcs, glows2);
+    else {
     g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy - ts, ts, ts); g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy, ts, ts); }
     if (!F.bld && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
     if (!F.bld) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
@@ -12596,7 +12624,7 @@
     else if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" || inGarage() ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
     if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
-      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? 1.3 : 0.5), false, function () { useLadder(ln.k); }); }
+      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
     if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
     else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, "Under construction" + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, true, function () { nxPortalTalk(npp); }); }
@@ -13768,6 +13796,7 @@
   function openMap() {
     if (mapOpen) return; M.dirty = true; if (packOpen) closePack(); else if (panelOpen) closePanel();
     mapOpen = true; panelOpen = true; M.sel = -1; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
+    var mb = $("sbxMapMine"); if (mb) mb.hidden = !(world.holes && world.holes[0]) || !!cave || !!HOME || !!OCS;
     mapSize(); var seenW = mapSeenWidth(); M.s = clamp(M.cw / clamp(seenW * 1.6, 130, 300), mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();   // opens zoomed to the land you have seen around you
   }
   function mapSeenWidth() {   // how wide the explored stretch of surface around you is (columns), to pick a sensible zoom
@@ -13801,6 +13830,7 @@
     V.addEventListener("click", function (e) {
       var t = e.target.closest("button"); if (!t) return;
       if (t.hasAttribute("data-mclose")) return closeMap();
+      if (t.hasAttribute("data-mmine")) { closeMap(); goMine(); return; }
       var z = t.getAttribute("data-mz"); if (z) { M.dirty = true; if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
       if (t.hasAttribute("data-wpc") && M.sel >= 0) { S.wp[M.sel].c = +t.getAttribute("data-wpc"); snd("coin"); save(); return mapCard(); }
       if (t.hasAttribute("data-wpi") && M.sel >= 0) { S.wp[M.sel].i = +t.getAttribute("data-wpi"); snd("coin"); save(); return mapCard(); }
@@ -14205,7 +14235,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -15816,6 +15846,23 @@
   // SIGNS: words painted on signs in the world (MINE, OLD VOLCANO, CROAKER'S PIER...) use the SwampRealms logo font, Bagel Fat One
   // (self-hosted and loaded by delve-logo.js as "DelveBagel"; Nunito stands in for the moment before it has loaded).
   function signFont(px) { return "400 " + px + 'px "DelveBagel", "Bagel Fat One", Nunito, system-ui, sans-serif'; }
+  // MINE LIFT (cave view, seen from above): a timber-framed cage on the up-ladder cell, with cables running off the top of the screen,
+  // a brass call lever and a lamp. Drawn instead of the ladder on lift floors (liftFloor).
+  function drawLift(g, ux, uy, now, srcs, glows2) {
+    var k = ts, x0 = ux - k * 0.3, y0 = uy - k * 1.25, w = k * 1.6, h = k * 2.15, sh = reduce ? 0 : Math.sin(now / 700) * k * 0.02;
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(x0 + k * 0.08, y0 + k * 0.12, w, h);
+    g.fillStyle = "#1a1410"; g.fillRect(x0, y0, w, h);
+    g.fillStyle = "#3a2a1c"; g.fillRect(x0 + k * 0.12, y0 + k * 0.12 + sh, w - k * 0.24, h - k * 0.24);   // the cage floor
+    g.strokeStyle = "#5a3f26"; g.lineWidth = Math.max(1, k * 0.04); for (var i = 1; i < 5; i++) { var yy = y0 + k * 0.12 + sh + i * (h - k * 0.24) / 5; g.beginPath(); g.moveTo(x0 + k * 0.12, yy); g.lineTo(x0 + w - k * 0.12, yy); g.stroke(); }
+    g.strokeStyle = "#8e969b"; g.lineWidth = Math.max(1, k * 0.05); for (i = 0; i < 6; i++) { var xx = x0 + k * 0.18 + i * (w - k * 0.36) / 5; g.beginPath(); g.moveTo(xx, y0 + k * 0.1); g.lineTo(xx, y0 + h - k * 0.1); g.stroke(); }   // the bars
+    g.fillStyle = "#6e4426"; g.fillRect(x0 - k * 0.1, y0 - k * 0.1, w + k * 0.2, k * 0.2); g.fillRect(x0 - k * 0.1, y0 + h - k * 0.1, w + k * 0.2, k * 0.2); g.fillRect(x0 - k * 0.1, y0, k * 0.2, h); g.fillRect(x0 + w - k * 0.1, y0, k * 0.2, h);
+    g.fillStyle = "#a8743a"; g.fillRect(x0 - k * 0.1, y0 - k * 0.1, w + k * 0.2, k * 0.06);
+    g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(x0 + w * 0.35, y0 - k * 0.1); g.lineTo(x0 + w * 0.35, y0 - k * 3); g.moveTo(x0 + w * 0.65, y0 - k * 0.1); g.lineTo(x0 + w * 0.65, y0 - k * 3); g.stroke();   // cables
+    var lx = x0 + w + k * 0.28, ly = y0 + h * 0.45; g.fillStyle = "#4a4a52"; g.fillRect(lx - k * 0.06, ly, k * 0.12, k * 0.5); g.strokeStyle = "#d9a441"; g.lineWidth = Math.max(1.5, k * 0.07); g.beginPath(); g.moveTo(lx, ly + k * 0.2); g.lineTo(lx + k * 0.22, ly - k * 0.18); g.stroke(); g.fillStyle = "#ff5a3a"; g.beginPath(); g.arc(lx + k * 0.22, ly - k * 0.18, k * 0.08, 0, 6.2832); g.fill();   // the call lever
+    var fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 170), px = x0 - k * 0.32, py = y0 + k * 0.4; g.fillStyle = "#3e444a"; g.fillRect(px - k * 0.12, py - k * 0.15, k * 0.24, k * 0.3); g.fillStyle = "rgba(255,214,110," + (0.7 + 0.3 * fl).toFixed(3) + ")"; g.fillRect(px - k * 0.07, py - k * 0.1, k * 0.14, k * 0.2);
+    srcs.push([(px - ox) / ts, (py - oy) / ts, 5, 0.8]); glows2.push([px, py, "255,214,110", 3, 0.2 * fl]);
+    g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText("LIFT", x0 + w / 2, y0 - k * 0.42); g.fillStyle = "#f2c14e"; g.fillText("LIFT", x0 + w / 2, y0 - k * 0.42); g.textBaseline = "alphabetic";
+  }
   // FARM GATE: in the world the one-block Farm Gate is drawn as a proper farm entrance about 3 blocks wide and 3 tall (the size of the pier
   // gate and the Mine): log posts with climbing vines, a HOMESTEAD board on top, a little picket gate standing ajar, a lantern and a pumpkin.
   // It is still one block in the grid (placed, broken and entered the same way). drawCell lists the visible ones in FGVIS each frame.

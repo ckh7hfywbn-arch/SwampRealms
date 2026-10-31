@@ -341,6 +341,9 @@ body.sbx-app footer{margin-top:28px}
 .sbx-mtop b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#c8fff4}
 .sbx-mtop span{flex:1;color:#f6eedb99;font:800 .8rem Nunito,system-ui,sans-serif}
 .sbx-mtop .sbx-x{pointer-events:auto}
+.sbx-mmine{pointer-events:auto;flex:none;padding:7px 12px;border-radius:999px;border:1px solid #f2c14e;background:rgba(44,30,8,.85);color:#ffe3a0;font:800 .82rem Nunito,system-ui,sans-serif;cursor:pointer}
+.sbx-mmine:hover,.sbx-mmine:focus-visible{background:#5a3f10;outline:2px solid #f2c14e;outline-offset:2px}
+.sbx-mmine[hidden]{display:none}
 .sbx-mctl{position:absolute;right:max(10px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 54px);display:grid;gap:6px}
 .sbx-mctl button{width:42px;height:42px;display:grid;place-items:center;padding:0;border-radius:12px;border:1px solid #4ee6b455;background:linear-gradient(160deg,rgba(14,34,28,.88),rgba(4,10,8,.85));color:#c8fff4;font:800 1.4rem/1 Nunito,system-ui,sans-serif;cursor:pointer}
 .sbx-mctl button svg{width:20px;height:20px}
