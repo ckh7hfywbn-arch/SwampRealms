@@ -580,6 +580,60 @@
     }); });
     return out;
   }
-  var api = { checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  // THE MINE: which cave type a floor of the Mine is (the one cave system now changes as you go down). sandbox.js uses this too.
+  function mineBio(f) { return f >= 14 ? 2 : f >= 9 ? 1 : 0; }
+
+  // GAME CHECK: builds whole worlds and the Mine's floors and lists anything that would leave a player stuck or confused. Run by the
+  // GitHub check next to checkRooms. Returns a list of plain-English problems (empty when all is well).
+  //   worlds: the Mine exists (exactly one), sits on solid ground with room above it and is a short walk from the spawn; the spawn is not
+  //           inside a block; every building has ground under its door and an open cell outside it; buildings do not overlap.
+  //   Mine:   on floors 1..floors, the arrival spot is open, the ladder down can be reached without digging through walls, and every
+  //           treasure chest can be reached the same way. The same for the Old Volcano's floors (avoiding lava).
+  //   items:  every placeable item points at a real block.
+  function checkGame(seeds, floors) {
+    var out = [], T = SW.T, TL = SW.TILES; seeds = seeds || [777, 12345]; floors = floors || 30;
+    function say(m) { if (out.length < 200) out.push(m); }
+    seeds.forEach(function (sd) {
+      var w = SW.gen(sd), W = w.W, t = w.t, solidAt = function (x, y) { if (x < 0 || x >= W || y < 0 || y >= w.H) return true; var id = t[y * W + x], d = TL[id]; return !!(d && d.solid) && id !== T.LOG && id !== T.LEAVES; };   // trees the world grew are scenery you walk through
+      var tag = "world " + sd + ": ";
+      if (!w.holes || w.holes.length !== 1) say(tag + "there should be exactly one Mine, found " + (w.holes ? w.holes.length : 0));
+      var hc = 0; for (var i = 0; i < t.length; i++) if (t[i] === T.HOLE) hc++; if (hc !== (w.holes ? w.holes.length : 0)) say(tag + hc + " Mine Shaft blocks in the ground but " + (w.holes ? w.holes.length : 0) + " listed");
+      (w.holes || []).forEach(function (h) {
+        if (t[h.y * W + h.x] !== T.HOLE) say(tag + "the Mine at " + h.x + " is not a Mine Shaft block");
+        if (!solidAt(h.x, h.y + 1)) say(tag + "the Mine at " + h.x + " is not on solid ground");
+        if (solidAt(h.x, h.y - 1) || solidAt(h.x, h.y - 2)) say(tag + "the Mine at " + h.x + " has a block right on top of it");
+        if (Math.abs(h.x - w.spawn.x) > 60) say(tag + "the Mine is " + Math.round(Math.abs(h.x - w.spawn.x)) + " tiles from the spawn (should be a short walk)");
+      });
+      var sx = Math.floor(w.spawn.x), sy = Math.floor(w.spawn.y); if (solidAt(sx, sy - 1) || solidAt(sx, sy - 2)) say(tag + "the spawn point is inside a block");
+      var S2 = w.structs || [];
+      S2.forEach(function (q, n) {
+        var nm = q.name || q.kind, dy = q.doorY !== undefined ? q.doorY : q.gy - 1;
+        if (!solidAt(q.dx, dy + 1)) say(tag + nm + " at " + q.dx + " has no ground under its door");
+        var ex = q.mx0 !== undefined ? (q.outX >= q.dx ? q.mx1 + 1 : q.mx0 - 1) : q.outX;   // the first cell past the building's picture (its own blocks become a picture in the game)
+        if (ex !== undefined && solidAt(ex, dy) && solidAt(ex, dy - 1)) say(tag + nm + " at " + q.dx + " has its door walled in from outside");
+        for (var m = n + 1; m < S2.length; m++) { var o = S2[m]; if (q.x0 <= o.x1 && o.x0 <= q.x1 && Math.abs(q.gy - o.gy) < 12) say(tag + nm + " overlaps " + (o.name || o.kind) + " at " + q.x0); }
+      });
+    });
+    function floorCheck(F, tag, avoidLava) {
+      var free = function (j) { return !F.wall[j] && !(avoidLava && F.lava && F.lava[j]); };
+      var spI = Math.floor(F.spawn.y) * F.w + Math.floor(F.spawn.x);
+      if (!free(spI)) { say(tag + "you arrive inside a wall"); return; }
+      if (F.node[spI]) say(tag + "a rock sits on the arrival spot");
+      var d = bfs(spI, free).dist;
+      if (F.down.x >= 0 && d[F.down.y * F.w + F.down.x] < 0) say(tag + "the ladder down can't be reached");
+      if (d[F.up.y * F.w + F.up.x] < 0 && d[(F.up.y + 1) * F.w + F.up.x] < 0) say(tag + "the way up can't be reached");
+      if (T.X_lootchest !== undefined) for (var i = 0; i < F.node.length; i++) if (F.node[i] === T.X_lootchest) {
+        var x = i % F.w, y = (i / F.w) | 0, ok = false; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (o) { var j = (y + o[1]) * F.w + x + o[0]; if (x + o[0] >= 0 && x + o[0] < F.w && j >= 0 && j < d.length && d[j] >= 0) ok = true; });
+        if (!ok) say(tag + "the treasure chest at " + x + "," + y + " can't be reached");
+      }
+    }
+    [11, 4242].forEach(function (run) {
+      for (var f = 1; f <= floors; f++) floorCheck(gen(run, f, mineBio(f)), "Mine floor " + f + " (run " + run + "): ", false);
+      for (var v = 1; v <= 8; v++) floorCheck(genVolcano(run, v), "Old Volcano floor " + v + " (run " + run + "): ", true);
+    });
+    Object.keys(SW.ITEMS).forEach(function (k) { var it = SW.ITEMS[k]; if (it && it.tile !== undefined && !TL[it.tile]) say("the item " + k + " places a block that doesn't exist (" + it.tile + ")"); });
+    return out;
+  }
+  var api = { checkGame: checkGame, mineBio: mineBio, checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);
