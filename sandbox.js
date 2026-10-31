@@ -400,6 +400,8 @@
     sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures down the Mine.", 10, st("ckills"), { torch: 6 }),
     sq("cclear5", "Delver", 3, "Deep Delver", "Clear 5 cave floors.", 5, st("cclear"), { amethyst: 2 }),
     sq("cave15", "Delver", 5, "Abyss Walker", "Reach cave floor 15.", 15, st("caveDeep"), { moonstone: 1, ruby: 1 }),
+    sq("lair", "Delver", 5, "Captain of the Hollow", "Ride down to floor 25 of the Mine and defeat Captain Gillbeard in his secret swamp.", 1, function () { return S.lair && S.lair.own ? 1 : 0; }, { doubloon: 20, ironingot: 4 }),
+    sq("rig1", "Delver", 5, "Rig Bay", "Repair the Bilge Drill in your Rig Bay and collect 30 ore from it.", 30, st("rigOre"), { torch: 10, ironingot: 3 }),
     sq("loot1", "Delver", 2, "Treasure Hunter", "Open a Cave Chest. They glow faintly in dark caves.", 1, st("cchests"), { torch: 3 }),
     sq("loot10", "Delver", 4, "Hoard of Gold", "Open 10 Cave Chests.", 10, st("cchests"), { quartz: 3 }),
     sq("pots20", "Delver", 2, "Pot Smasher", "Smash 20 Cave Pots.", 20, st("pots"), { candle: 4 }),
@@ -557,7 +559,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -632,6 +634,7 @@
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
     if (o.razed && typeof o.razed === "object" && o.wv === SW.WORLDVER) { d.razed = {}; Object.keys(o.razed).forEach(function (k) { if (o.razed[k] && /^\d+$/.test(k)) d.razed[k] = 1; }); }   // buildings you knocked down
     if (o.oc) d.oc = ocClean(o.oc);
+    if (o.lair && typeof o.lair === "object") d.lair = lairClean(o.lair);   // THE SUNKEN HOLLOW
     if (o.home) d.home = homeClean(o.home);   // HOMESTEAD: your farm
     if (o.hb && typeof o.hb === "object") Object.keys(o.hb).forEach(function (k) { if (/^[cgap]:[a-z_]+$/.test(k)) d.hb[k] = Math.max(0, Math.floor(+o.hb[k]) || 0); });   // FARM ALMANAC
     if (o.hq && typeof o.hq === "object") Object.keys(o.hq).forEach(function (k) { if (CROPS[k]) d.hq[k] = clamp(o.hq[k] | 0, 0, 2); });
@@ -3289,7 +3292,8 @@
     return false;
   }
   function stockFloor(F, f) {
-    F.stocked = true; F.mobs = []; if (F.bld) return;   // cave creatures are there whether or not you carry a weapon (swat them with your paws)
+    F.stocked = true; F.mobs = []; if (F.bld) return;
+    if (F.lair) { if (!lairOwned()) F.mobs.push(newCaptain(F)); return; }   // THE SUNKEN HOLLOW: only the Captain (and nothing at all once it is yours)   // cave creatures are there whether or not you carry a weapon (swat them with your paws)
     var n = Math.min(9, 2 + Math.floor(f * 0.6)), L = caveKinds(F.biome, f), tw = 0, free = [], i, x, y;
     L.forEach(function (q) { tw += q[1]; });
     for (i = 0; i < F.w * F.h; i++) {
@@ -3330,9 +3334,9 @@
     hurt(n, m.k); return true;
   }
   function updateCaveMobs(dt) {
-    var F = cave.F; if (!F.stocked) stockFloor(F, cave.f); if (!F.mobs || !F.mobs.length) return;
+    var F = cave.F; if (!F.stocked) stockFloor(F, cave.f); if (F.lair) lairFx(F, dt); if (!F.mobs || !F.mobs.length) return;
     for (var i = F.mobs.length - 1; i >= 0; i--) {
-      var m = F.mobs[i], C = CMOB[m.k]; m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
+      var m = F.mobs[i], C = CMOB[m.k]; if (m.k === "captain") { updCaptain(F, m, dt, i); continue; } m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
       if (m.def) { m.dead -= dt; m.z = Math.max(0, m.z - dt * 3); moveMob(F, m, dt, 0, 0); if (m.dead <= 0) F.mobs.splice(i, 1); continue; }
       var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro && hp > 0, touch = d < m.r + 0.34;
       if (m.hurt > 0) { moveMob(F, m, dt, 0, 0); continue; }
@@ -3395,6 +3399,7 @@
     if (hits) wear("wpn", 1);
   }
   function damageCaveMob(m, dmg, ux, uy) {
+    if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
     m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
@@ -3422,8 +3427,240 @@
       if (Math.floor(m.y) !== rj) return;
       var fly = CMOB[m.k].fly, lift = fly ? 0.55 + Math.sin(m.tt * 3 + m.ph) * 0.08 : m.z || 0, y0 = m.y;
       if (fly || lift > 0.02) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(ox + m.x * ts, oy + m.y * ts, ts * 0.34, ts * 0.11, 0, 0, 6.2832); g.fill(); }
-      m.y = y0 - lift; drawEnemy(g, m, now); m.y = y0;
+      m.y = y0 - lift; if (m.k === "captain") drawCaptain(g, m, now); else drawEnemy(g, m, now); m.y = y0;
     });
+  }
+  // =====================================================================================================================================
+  // ---------- THE SUNKEN HOLLOW (Mine floor 25) and CAPTAIN GILLBEARD ----------
+  // Floor 25 of the Mine is not a normal cave: it is a secret swamp buried under the world (SbxCave.genLair), the hideout of Captain
+  // Gillbeard, a swashbuckling fish-man pirate. He wakes when you come close and fights with a cutlass slash, a three-ball pistol volley,
+  // a charging lunge and (below half health) a tidal stomp ring plus a few Bilge Slimes from his crew. Under 35% he is enraged (faster).
+  // Beat him and the hollow is YOURS for good (S.lair.own): the way down to floor 26 opens, no creatures ever come back, his ship flies
+  // your flag, and the RIG BAY on the west shore becomes the base of your automated mining: three rig pads, the first holding his old
+  // Bilge Drill. Repair it and it digs ore on its own (one piece every RIG_RATE of game time, up to RIG_CAP) whether or not you are there.
+  // S.lair = { own: 0/1, day, rig: [{ t: clock of the last collect }] } (rig[i] exists once pad i holds a working rig).
+  var LAIRB = { n: "Captain Gillbeard", sub: "Swashbuckler of the Sunken Hollow", c: "#3fd6c0", hp: 1500, dmg: 24 };
+  var RIG_RATE = 12, RIG_CAP = 60, RIG_FIX = { ironingot: 4, planks: 12, cinder: 6 }, RIG_ORE = [["stone", 5], ["clay", 1.5], ["spore", 2], ["basalt", 2], ["cinder", 1.5], ["frostrock", 1.2], ["crystal", 0.6]];
+  CMOB.captain = { r: 0.62, spd: 2.6, aggro: 12 };
+  function lairS() { if (!S.lair || typeof S.lair !== "object") S.lair = { own: 0, rig: [] }; if (!Array.isArray(S.lair.rig)) S.lair.rig = []; return S.lair; }
+  function lairOwned() { return !!(S.lair && S.lair.own); }
+  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [] }; if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t) } : null; }); return n; }
+  function isLairFloor(f) { return !!(cave && !cave.bld && !cave.volc && SC && SC.LAIR_F && f === SC.LAIR_F); }
+  function gameClock() { return (S.days | 0) * CYCLE + S.time; }
+  function caveBoss() { var F = cave && cave.F; if (!F || !F.lair || !F.mobs) return null; for (var i = 0; i < F.mobs.length; i++) { var m = F.mobs[i]; if (m.k === "captain" && !m.def && m.awake) return m; } return null; }
+  function newCaptain(F) {
+    var hpv = Math.round(LAIRB.hp * dif().ehp);
+    return { k: "captain", x: F.boss.x, y: F.boss.y, r: 0.62, hp: hpv, mx: hpv, dmg: LAIRB.dmg, st: "idle", t: 0, cd: 1.5, sh: 3.5, dash: 7, tide: 4, dir: 1, tt: 0, hurt: 0, kx: 0, ky: 0, z: 0, ph: 0, awake: false, B: LAIRB, rage: 0, crew: false, say: "", sayT: 0, flash: 0 };
+  }
+  function capSay(m, s, t) { m.say = s; m.sayT = t || 2.6; }
+  function updCaptain(F, m, dt, i) {
+    m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.flash = Math.max(0, m.flash - dt); m.sayT = Math.max(0, m.sayT - dt);
+    F.cshots = F.cshots || []; F.rings = F.rings || [];
+    if (m.def) { m.dead -= dt; if (!reduce && Math.random() < dt * 14) parts.push({ x: m.x + (Math.random() - 0.5) * 1.2, y: m.y - Math.random() * 1.6, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#3fd6c0" : "#bff4ff", s: 3 }); if (m.dead <= 0) { F.mobs.splice(i, 1); claimLair(); } return; }
+    var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, sp = m.rage ? 3.3 : 2.6, vx = 0, vy = 0;
+    if (!m.awake) { if (d < 9 && hp > 0) { m.awake = true; m.st = "intro"; m.t = 2.4; capSay(m, "Arr! Who comes drippin' into Gillbeard's hollow?", 2.8); thud(110, 0.12); snd("rise"); } else { m.dir = dx >= 0 ? 1 : -1; return; } }
+    if (hp <= 0) { m.st = "chase"; moveMob(F, m, dt, 0, 0); return; }
+    if (!m.crew && m.hp < m.mx * 0.5) {   // half health: his crew joins in, and the tidal stomp starts
+      m.crew = true; capSay(m, "Crew, to me! Nobody takes me ship!", 2.6); m.tide = 1.2;
+      for (var c = 0; c < 3; c++) { var a = c * 2.1 + 0.4, kx = m.x + Math.cos(a) * 2, ky = m.y + Math.sin(a) * 1.6, kid = newCaveMob("slime", kx, ky, F, 18); kid.b = 0; if (mobFree(F, kid.x, kid.y, kid.r, false)) { F.mobs.push(kid); chips(kx, ky - 0.3, "#3fd6c0", 10, 5); } }
+    }
+    if (!m.rage && m.hp < m.mx * 0.35) { m.rage = 1; capSay(m, "Now ye've made me angry, ye barnacle!", 2.4); thud(90, 0.14); }
+    m.cd -= dt; m.sh -= dt; m.dash -= dt; if (m.crew) m.tide -= dt;
+    if (m.st === "intro") { m.t -= dt; m.dir = dx >= 0 ? 1 : -1; if (m.t <= 0) m.st = "chase"; }
+    else if (m.st === "chase") {
+      vx = nx * sp; vy = ny * sp; m.dir = dx >= 0 ? 1 : -1;
+      if (d < 2.4 && m.cd <= 0) { m.st = "slashW"; m.t = m.rage ? 0.42 : 0.55; m.ang = Math.atan2(dy, dx); thud(520, 0.05); }
+      else if (m.crew && m.tide <= 0 && d < 6) { m.st = "tideW"; m.t = 0.8; thud(70, 0.1); }
+      else if (m.sh <= 0 && d > 2.8 && d < 11) { m.st = "aimW"; m.t = 0.7; m.ang = Math.atan2(dy, dx); thud(900, 0.04); }
+      else if (m.dash <= 0 && d > 3.6 && d < 10) { m.st = "dashW"; m.t = 0.6; m.ang = Math.atan2(dy, dx); thud(180, 0.07); }
+    }
+    else if (m.st === "slashW") { m.t -= dt; if (m.t > 0.15) m.ang = Math.atan2(dy, dx); m.dir = Math.cos(m.ang) >= 0 ? 1 : -1; if (m.t <= 0) {
+        var hx = Math.cos(m.ang), hy = Math.sin(m.ang), hit = d < 2.6 && (dx * hx + dy * hy) / d > 0.2; thud(260, 0.08); m.st = "slash"; m.t = 0.22;
+        for (var s2 = 0; s2 < 6; s2++) { var an = m.ang + (s2 - 2.5) * 0.3; parts.push({ x: m.x + Math.cos(an) * 1.5, y: m.y - 0.6 + Math.sin(an) * 1.5, vx: Math.cos(an) * 3, vy: Math.sin(an) * 3, life: 0.22, max: 0.25, c: "#e8f6ff", s: 3 }); }
+        if (hit) caveHurt(m, m.dmg); } }
+    else if (m.st === "slash") { m.t -= dt; if (m.t <= 0) { m.st = "recover"; m.t = 0.45; m.cd = m.rage ? 1 : 1.5; } }
+    else if (m.st === "aimW") { m.t -= dt; if (m.t > 0.2) m.ang = Math.atan2(dy, dx); m.dir = Math.cos(m.ang) >= 0 ? 1 : -1; if (m.t <= 0) {
+        var nsh = m.rage ? 5 : 3; for (var k = 0; k < nsh; k++) { var sa = m.ang + (k - (nsh - 1) / 2) * 0.24; F.cshots.push({ x: m.x + Math.cos(sa) * 0.8, y: m.y - 0.7 + Math.sin(sa) * 0.8, vx: Math.cos(sa) * 7.5, vy: Math.sin(sa) * 7.5, life: 2.4 }); }
+        thud(140, 0.14); chips(m.x + Math.cos(m.ang) * 0.9, m.y - 0.8, "#ffd27a", 8, 4); m.st = "recover"; m.t = 0.4; m.sh = m.rage ? 3.2 : 4.6; } }
+    else if (m.st === "dashW") { m.t -= dt; m.dir = Math.cos(m.ang) >= 0 ? 1 : -1; if (m.t <= 0) { m.st = "dash"; m.t = 0.45; m.hitP = false; thud(240, 0.08); } }
+    else if (m.st === "dash") { m.t -= dt; vx = Math.cos(m.ang) * 11; vy = Math.sin(m.ang) * 11; if (!m.hitP && d < m.r + 0.45) { m.hitP = true; caveHurt(m, Math.round(m.dmg * 0.9)); } if (m.t <= 0 || m.blocked) { m.st = "recover"; m.t = 0.6; m.dash = m.rage ? 6 : 8.5; } }
+    else if (m.st === "tideW") { m.t -= dt; if (m.t <= 0) { F.rings.push({ x: m.x, y: m.y - 0.1, r: 0.6, max: 5.4, hit: false }); thud(60, 0.16); m.st = "recover"; m.t = 0.5; m.tide = m.rage ? 7 : 10; } }
+    else if (m.st === "recover") { m.t -= dt; vx = -nx * 0.6; vy = -ny * 0.6; if (m.t <= 0) m.st = "chase"; }
+    moveMob(F, m, dt, vx, vy);
+    if (m.st === "chase" && d < m.r + 0.4 && m.cd <= 0.3 && caveHurt(m, Math.ceil(m.dmg * 0.4))) m.cd = 1.1;
+  }
+  function lairFx(F, dt) {   // the Captain's pistol balls and tide rings
+    var i, q;
+    if (F.cshots) for (i = F.cshots.length - 1; i >= 0; i--) {
+      q = F.cshots[i]; q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt;
+      var tx = Math.floor(q.x), ty = Math.floor(q.y + 0.4);
+      if (q.life <= 0 || tx < 0 || ty < 0 || tx >= F.w || ty >= F.h || F.wall[ty * F.w + tx] || F.node[ty * F.w + tx]) { chips(q.x, q.y, "#9aa3a8", 4, 3); F.cshots.splice(i, 1); continue; }
+      var ddx = cp.x - q.x, ddy = (cp.y - 0.5) - q.y; if (ddx * ddx + ddy * ddy < 0.2 && caveHurt({ x: q.x, y: q.y }, 14)) F.cshots.splice(i, 1);
+    }
+    if (F.rings) for (i = F.rings.length - 1; i >= 0; i--) {
+      q = F.rings[i]; q.r += 5 * dt; var pd = Math.hypot(cp.x - q.x, (cp.y - q.y) * 1.25);
+      if (!q.hit && Math.abs(pd - q.r) < 0.45) { q.hit = true; caveHurt({ x: q.x, y: q.y }, 18); }
+      if (q.r >= q.max) F.rings.splice(i, 1);
+    }
+  }
+  function hitCaptain(m, dmg, ux, uy) {
+    if (m.def) return; if (!m.awake) { m.awake = true; m.st = "chase"; capSay(m, "Ye'll pay for that, ye bilge rat!", 2.4); }
+    m.hp -= dmg; m.flash = 0.12; m.kx = ux * 1.5; m.ky = uy * 1.5; text(m.x, m.y - 2.2, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.9, "#3fd6c0", 8, 6); thud(160 + Math.random() * 50, 0.06);
+    if (m.hp > 0) return;
+    m.hp = 0; m.def = true; m.dead = 2.2; F_clearFx(); capSay(m, "Blast it... the hollow's yours, landlubber. Mind me drill.", 3);
+    (cave.F.mobs || []).forEach(function (o) { if (o !== m && !o.def) { o.def = true; o.dead = 0.6; chips(o.x, o.y - 0.4, "#3fd6c0", 10, 6); } });   // his crew scatters
+    snd("rise"); thud(60, 0.2);
+  }
+  function F_clearFx() { var F = cave && cave.F; if (F) { F.cshots = []; F.rings = []; } }
+  function claimLair() {
+    var L = lairS(); if (L.own) return; L.own = 1; L.day = S.days | 0; S.st.bossk = (S.st.bossk || 0) + 1;
+    var rw = { doubloon: 40, blackpearl: 2, pearl: 6, ironingot: 6, sapphire: 1 };
+    Object.keys(rw).forEach(function (k) { if (ITEMS[k]) give(k, rw[k], cp.x - 0.5, cp.y - 1.2); });
+    popup("Boss defeated", LAIRB.n + " • The Sunken Hollow is yours", LAIRB.c, "⚓"); hbDirty = true; save();
+    var el = $("sbxStory"); if (!el) return; setTimeout(function () {
+      if (!cave || !cave.F || !cave.F.lair) return;
+      storyOpen = 230; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+      $("sbxStoryBox").style.setProperty("--qc", LAIRB.c);
+      $("sbxStoryBox").innerHTML = '<small>Floor ' + SC.LAIR_F + ' of the Mine</small><h2>The Sunken Hollow is yours!</h2><p>Captain Gillbeard drops his cutlass, tips his hat and slips into the black water with a grumble. His crew scatters into the roots.</p><p>Nothing hostile will come back here. The way down to floor ' + (SC.LAIR_F + 1) + ' is open, the lift stops here, and his ship now flies your flag.</p><p><b>The Rig Bay</b> on the west shore is your mining base. The Captain\'s old <b>Bilge Drill</b> sits on the first rig pad: repair it and it digs ore for you, even while you are away.</p><div class="st-row"><button type="button" class="btn" data-story-close>Claim the hollow</button></div>';
+      snd("coin");
+    }, 1600);
+  }
+  // ---- Rig Bay ----
+  function rigCount(i) { var r = lairS().rig[i]; return r ? Math.min(RIG_CAP, Math.floor((gameClock() - r.t) / RIG_RATE)) : 0; }
+  function rigNear() { var F = cave && cave.F; if (!F || !F.lair || !F.pads || !lairOwned()) return null; for (var i = 0; i < F.pads.length; i++) { var q = F.pads[i], dx = q.x + 1 - cp.x, dy = q.y + 0.2 - cp.y; if (dx * dx + dy * dy < 2.4 * 2.4) return i; } return null; }
+  function rigPill() { var i = rigNear(); if (i === null) return null; var on = !!lairS().rig[i], n = rigCount(i);
+    if (i !== 0 && !on) return { i: i, t: "Empty rig pad" }; if (!on) return { i: i, t: "Repair the Bilge Drill" }; return { i: i, t: n ? "Collect " + n + " ore" : "Bilge Drill: digging" }; }
+  function rigAct(i) {
+    var L = lairS();
+    if (i !== 0 && !L.rig[i]) { nag("An empty rig pad. Bigger rigs for your mining base will be built here."); return; }
+    if (!L.rig[i]) { openRig(i); return; }
+    var n = rigCount(i); if (!n) { nag("The Bilge Drill is still digging. Check back in a little while."); return; }
+    var got = {}; for (var k = 0; k < n; k++) { var tot = 0, r, j; RIG_ORE.forEach(function (e) { tot += e[1]; }); r = Math.random() * tot; for (j = 0; j < RIG_ORE.length; j++) { r -= RIG_ORE[j][1]; if (r <= 0) break; } var it = RIG_ORE[Math.min(j, RIG_ORE.length - 1)][0]; if (ITEMS[it]) got[it] = (got[it] || 0) + 1; }
+    var full = n >= RIG_CAP; L.rig[i].t = full ? gameClock() : L.rig[i].t + n * RIG_RATE; S.st.rigOre = (S.st.rigOre || 0) + n;
+    var q = F_pad(i); Object.keys(got).forEach(function (it) { give(it, got[it], q.x + 0.5, q.y - 1); });
+    popup("Rig Bay", "+" + n + " ore from the Bilge Drill", "#f2c14e", "⛏"); snd("coin"); save(); checkGoals();
+  }
+  function F_pad(i) { return cave.F.pads[i]; }
+  function openRig(i) {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 229; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    var can = canPay(RIG_FIX);
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e");
+    $("sbxStoryBox").innerHTML = '<small>Rig Bay · pad ' + (i + 1) + '</small><h2>The Bilge Drill</h2><p>The Captain\'s old drill, rusted and jammed. Fix it up and it chews through the rock below on its own: about one piece of ore every few seconds of game time, up to ' + RIG_CAP + ' waiting for you, even while you are off exploring.</p><div class="sbx-card"><div><b>Repair it</b><div class="cost">' + costHtml(RIG_FIX) + '</div></div></div><div class="st-row"><button type="button" class="btn' + (can ? "" : " ghost") + '" data-rig="fix"' + (can ? "" : " disabled") + '>Repair</button><button type="button" class="btn ghost" data-story-close>Close</button></div>';
+  }
+  function rigFix() { if (!canPay(RIG_FIX)) { nag("You need more materials."); return; } payCost(RIG_FIX); lairS().rig[0] = { t: gameClock() }; S.st.rigs = (S.st.rigs || 0) + 1; closeStory(); popup("Rig Bay", "The Bilge Drill is digging", "#f2c14e", "⛏"); thud(120, 0.12); snd("rise"); save(); checkGoals(); }
+  // ---- drawing ----
+  function lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {
+    var t = reduce ? 0 : now / 1000, i, j, k = ts;
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // black-water swamp: a dark teal sheet, slow shimmer, foam on the shore, lily pads
+      var c = j * F.w + i; if (!F.pool[c]) continue; var sx = ox + i * ts, sy = oy + j * ts, h = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0);
+      g.fillStyle = "#0b2a2c"; g.fillRect(sx, sy, ts, ts);
+      g.fillStyle = "rgba(63,214,192," + (0.06 + 0.05 * Math.sin(t * 1.3 + i * 0.8 + j * 1.1)).toFixed(3) + ")"; g.fillRect(sx, sy + ts * (0.3 + 0.1 * Math.sin(t + i)), ts, ts * 0.12);
+      g.fillStyle = "rgba(190,255,240,.35)"; if (!F.pool[c - F.w]) g.fillRect(sx, sy, ts, Math.max(2, ts * 0.1)); if (!F.pool[c - 1]) g.fillRect(sx, sy, Math.max(2, ts * 0.08), ts); if (!F.pool[c + 1]) g.fillRect(sx + ts - Math.max(2, ts * 0.08), sy, Math.max(2, ts * 0.08), ts);
+      if ((h & 15) === 3) { g.fillStyle = "#3f8f3a"; g.beginPath(); g.arc(sx + ts * 0.5, sy + ts * 0.5, ts * 0.28, 0.4, 6.0); g.lineTo(sx + ts * 0.5, sy + ts * 0.5); g.fill(); if ((h & 63) === 19) { g.fillStyle = "#ff9ad0"; g.beginPath(); g.arc(sx + ts * 0.55, sy + ts * 0.42, ts * 0.08, 0, 6.28); g.fill(); } }
+    }
+    // the rig pads (west shore)
+    F.pads.forEach(function (q, n) {
+      var px = ox + q.x * ts, py = oy + (q.y - 1) * ts, on = lairOwned() && lairS().rig[n];
+      g.fillStyle = "#3a3e44"; g.fillRect(px + 2, py + 2, ts * 2 - 4, ts * 2 - 4); g.fillStyle = "#5a626a"; g.fillRect(px + 4, py + 4, ts * 2 - 8, ts * 2 - 8);
+      g.strokeStyle = "#f2c14e"; g.lineWidth = Math.max(1, ts * 0.05); g.setLineDash([ts * 0.2, ts * 0.12]); g.strokeRect(px + 6, py + 6, ts * 2 - 12, ts * 2 - 12); g.setLineDash([]);
+      g.fillStyle = "#8e969b"; [[0.2, 0.2], [1.8, 0.2], [0.2, 1.8], [1.8, 1.8]].forEach(function (r) { g.fillRect(px + r[0] * ts - 2, py + r[1] * ts - 2, 4, 4); });
+      if (!lairOwned()) { g.fillStyle = "#6e431f"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.8); g.fillStyle = "#8a5a32"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.12); g.fillStyle = "#9a6234"; g.beginPath(); g.ellipse(px + ts * 1.45, py + ts * 1.1, ts * 0.32, ts * 0.42, 0, 0, 6.28); g.fill(); }
+      else if (n === 0) drawDrill(g, px + ts, py + ts, !!on, now);
+      if (lairOwned() && on) { var cnt = rigCount(n); if (cnt) { g.font = signFont(Math.max(9, Math.round(ts * 0.3))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText(cnt + (cnt >= RIG_CAP ? " (full)" : ""), px + ts, py - ts * 0.2); g.fillStyle = "#ffe08a"; g.fillText(cnt + (cnt >= RIG_CAP ? " (full)" : ""), px + ts, py - ts * 0.2); } }
+    });
+    // a RIG BAY sign
+    var bq = F.pads[0], bsx = ox + (bq.x + 3.2) * ts, bsy = oy + (bq.y - 1.6) * ts; g.fillStyle = "#3a2412"; g.fillRect(bsx - k * 0.05, bsy, k * 0.1, k * 0.9); g.font = signFont(Math.max(8, Math.round(k * 0.24))); var bw = g.measureText("RIG BAY").width + k * 0.4;
+    g.fillStyle = "#2e1c0e"; g.fillRect(bsx - bw / 2 - 2, bsy - k * 0.5 - 2, bw + 4, k * 0.48 + 4); g.fillStyle = "#8a5a32"; g.fillRect(bsx - bw / 2, bsy - k * 0.5, bw, k * 0.48); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("RIG BAY", bsx, bsy - k * 0.25); g.textBaseline = "alphabetic";
+    drawWreck(g, F, now, srcs, glows2);
+    // tide rings and pistol balls
+    (F.rings || []).forEach(function (q) { g.strokeStyle = "rgba(120,240,230," + (0.85 * (1 - q.r / q.max)).toFixed(3) + ")"; g.lineWidth = ts * 0.32; g.beginPath(); g.ellipse(ox + q.x * ts, oy + q.y * ts, q.r * ts, q.r * ts * 0.8, 0, 0, 6.2832); g.stroke(); g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 2; g.stroke(); });
+    (F.cshots || []).forEach(function (q) { var sx = ox + q.x * ts, sy = oy + q.y * ts; g.fillStyle = "rgba(255,210,120,.35)"; g.beginPath(); g.arc(sx, sy, ts * 0.22, 0, 6.28); g.fill(); g.fillStyle = "#2a2a30"; g.beginPath(); g.arc(sx, sy, ts * 0.12, 0, 6.28); g.fill(); g.fillStyle = "#c9ccd2"; g.fillRect(sx - ts * 0.05, sy - ts * 0.06, ts * 0.04, ts * 0.04); });
+    // fireflies over the water
+    if (!reduce) for (var f = 0; f < 10; f++) { var fx2 = ox + (12 + (f * 37 % 22) + Math.sin(t * 0.6 + f) * 1.5) * ts, fy2 = oy + (21 + (f * 13 % 7) + Math.cos(t * 0.8 + f * 1.7)) * ts, a2 = 0.5 + 0.5 * Math.sin(t * 3 + f * 2); g.fillStyle = "rgba(220,255,140," + (0.5 * a2).toFixed(3) + ")"; g.fillRect(fx2, fy2, 3, 3); }
+  }
+  function drawDrill(g, cx, cy, on, now) {   // the Bilge Drill on pad 1: a riveted boiler with a funnel, a gear and a drill bit, rust while broken
+    var k = ts, t = reduce ? 0 : now / 1000, sp = on ? t * 6 : 0;
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(cx, cy + k * 0.55, k * 0.8, k * 0.25, 0, 0, 6.28); g.fill();
+    g.fillStyle = on ? "#7a5232" : "#6a4a32"; g.fillRect(cx - k * 0.7, cy - k * 0.45, k * 1.4, k * 0.95);
+    g.fillStyle = on ? "#b8862f" : "#8a6a48"; g.fillRect(cx - k * 0.62, cy - k * 0.38, k * 1.24, k * 0.2);
+    g.fillStyle = "#2e1c0e"; [[-0.5, 0.1], [0.5, 0.1], [-0.5, 0.38], [0.5, 0.38]].forEach(function (r) { g.fillRect(cx + r[0] * k - 1.5, cy + r[1] * k - 1.5, 3, 3); });
+    g.fillStyle = "#3e444a"; g.fillRect(cx + k * 0.25, cy - k * 1.05, k * 0.26, k * 0.62); g.fillStyle = "#5a626a"; g.fillRect(cx + k * 0.2, cy - k * 1.12, k * 0.36, k * 0.1);
+    g.save(); g.translate(cx - k * 0.32, cy - k * 0.62); g.rotate(sp); g.fillStyle = on ? "#d9a441" : "#7a6a52"; for (var q = 0; q < 8; q++) { g.rotate(Math.PI / 4); g.fillRect(-k * 0.05, -k * 0.27, k * 0.1, k * 0.12); } g.beginPath(); g.arc(0, 0, k * 0.18, 0, 6.28); g.fill(); g.fillStyle = "#2e1c0e"; g.beginPath(); g.arc(0, 0, k * 0.06, 0, 6.28); g.fill(); g.restore();
+    var bob = on ? Math.sin(t * 18) * k * 0.03 : 0; g.fillStyle = "#9aa3a8"; g.beginPath(); g.moveTo(cx - k * 0.2, cy + k * 0.5 + bob); g.lineTo(cx + k * 0.2, cy + k * 0.5 + bob); g.lineTo(cx, cy + k * 0.95 + bob); g.closePath(); g.fill();
+    if (!on) { g.fillStyle = "rgba(180,90,40,.55)"; g.fillRect(cx - k * 0.6, cy - k * 0.1, k * 0.35, k * 0.3); g.fillRect(cx + k * 0.1, cy + k * 0.15, k * 0.4, k * 0.2); }
+    if (on && !reduce) for (var s2 = 0; s2 < 3; s2++) { var u = (t * 0.6 + s2 / 3) % 1; g.fillStyle = "rgba(200,205,210," + (0.4 * (1 - u)).toFixed(3) + ")"; g.beginPath(); g.arc(cx + k * 0.38 + u * k * 0.3, cy - k * 1.15 - u * k * 1.2, k * (0.12 + u * 0.25), 0, 6.28); g.fill(); }
+  }
+  function drawWreck(g, F, now, srcs, glows2) {   // the Captain's ship, run aground in the lake: seen from above at a tilt, with a broken mast and his flag (yours, later)
+    var k = ts, cx = ox + F.ship.x * ts, cy = oy + F.ship.y * ts, t = reduce ? 0 : now / 1000, own = lairOwned();
+    g.save(); g.translate(cx, cy); g.rotate(-0.06);
+    g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(k * 0.2, k * 0.4, k * 5.4, k * 1.6, 0, 0, 6.28); g.fill();
+    g.fillStyle = "#3a2212"; g.beginPath(); g.moveTo(-k * 5.2, -k * 0.2); g.quadraticCurveTo(-k * 4.6, -k * 1.5, -k * 2, -k * 1.5); g.lineTo(k * 3.4, -k * 1.4); g.quadraticCurveTo(k * 5.6, -k * 1.1, k * 5.8, 0); g.quadraticCurveTo(k * 5.4, k * 1.2, k * 3.4, k * 1.4); g.lineTo(-k * 2, k * 1.5); g.quadraticCurveTo(-k * 4.6, k * 1.4, -k * 5.2, -k * 0.2); g.fill();
+    g.fillStyle = "#7a5232"; g.beginPath(); g.moveTo(-k * 4.6, -k * 0.2); g.quadraticCurveTo(-k * 4.1, -k * 1.15, -k * 2, -k * 1.15); g.lineTo(k * 3.3, -k * 1.05); g.quadraticCurveTo(k * 5, -k * 0.8, k * 5.15, 0); g.quadraticCurveTo(k * 4.9, k * 0.9, k * 3.3, k * 1.05); g.lineTo(-k * 2, k * 1.15); g.quadraticCurveTo(-k * 4.1, k * 1.05, -k * 4.6, -k * 0.2); g.fill();
+    g.strokeStyle = "#5e3c20"; g.lineWidth = Math.max(1, k * 0.04); for (var p2 = -3; p2 <= 3; p2++) { g.beginPath(); g.moveTo(-k * 4.2, p2 * k * 0.32); g.lineTo(k * 4.8, p2 * k * 0.3); g.stroke(); }
+    g.fillStyle = "#0b2a2c"; g.beginPath(); g.ellipse(k * 1.6, k * 0.55, k * 0.7, k * 0.35, 0.3, 0, 6.28); g.fill();   // a hole in the deck, water inside
+    g.fillStyle = "#5e3c20"; g.fillRect(-k * 3.9, -k * 0.75, k * 1.2, k * 1.5); g.fillStyle = "#8a5a32"; g.fillRect(-k * 3.9, -k * 0.75, k * 1.2, k * 0.16);   // the captain's cabin roof
+    g.fillStyle = "#9a6234"; [[2.8, -0.6], [3.4, -0.2], [-1.6, 0.7]].forEach(function (b) { g.beginPath(); g.ellipse(b[0] * k, b[1] * k, k * 0.24, k * 0.3, 0, 0, 6.28); g.fill(); });   // barrels
+    g.fillStyle = "#b8862f"; g.fillRect(k * 2.1, k * 0.25, k * 0.5, k * 0.36); g.fillStyle = "#f2c14e"; g.fillRect(k * 2.1, k * 0.25, k * 0.5, k * 0.08);   // a chest of doubloons
+    g.fillStyle = "#4a2e18"; g.beginPath(); g.arc(-k * 0.4, -k * 0.1, k * 0.26, 0, 6.28); g.fill();   // the mast stump
+    g.strokeStyle = "#4a2e18"; g.lineWidth = k * 0.22; g.beginPath(); g.moveTo(-k * 0.4, -k * 0.1); g.lineTo(k * 1.8, -k * 2.6); g.stroke();   // the broken mast, leaning over the water
+    g.restore();
+    var fx = cx - k * 0.4, fy = cy - k * 0.2; g.strokeStyle = "#3a2412"; g.lineWidth = Math.max(2, k * 0.1); g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx, fy - k * 2.4); g.stroke();   // the flag pole
+    var wave = reduce ? 0 : Math.sin(t * 3) * k * 0.08; g.fillStyle = own ? "#2f9a5a" : "#14161c"; g.beginPath(); g.moveTo(fx, fy - k * 2.4); g.quadraticCurveTo(fx + k * 0.6, fy - k * 2.5 + wave, fx + k * 1.2, fy - k * 2.4); g.lineTo(fx + k * 1.2, fy - k * 1.6); g.quadraticCurveTo(fx + k * 0.6, fy - k * 1.7 - wave, fx, fy - k * 1.6); g.closePath(); g.fill();
+    if (own) { g.fillStyle = "#ffe08a"; g.beginPath(); for (var s = 0; s < 10; s++) { var an = -Math.PI / 2 + s * Math.PI / 5, rr = s % 2 ? k * 0.1 : k * 0.24; g.lineTo(fx + k * 0.6 + Math.cos(an) * rr, fy - k * 2 + Math.sin(an) * rr); } g.fill(); }
+    else { g.strokeStyle = "#e8e2d0"; g.lineWidth = Math.max(1.5, k * 0.06); g.beginPath(); g.moveTo(fx + k * 0.3, fy - k * 2); g.lineTo(fx + k * 0.9, fy - k * 2); g.moveTo(fx + k * 0.45, fy - k * 2.15); g.lineTo(fx + k * 0.45, fy - k * 1.85); g.moveTo(fx + k * 0.6, fy - k * 2.15); g.lineTo(fx + k * 0.6, fy - k * 1.85); g.moveTo(fx + k * 0.75, fy - k * 2.15); g.lineTo(fx + k * 0.75, fy - k * 1.85); g.stroke(); g.fillStyle = "#e8e2d0"; g.beginPath(); g.moveTo(fx + k * 0.9, fy - k * 2); g.lineTo(fx + k * 1.08, fy - k * 2.14); g.lineTo(fx + k * 1.08, fy - k * 1.86); g.fill(); }   // a fish skeleton on the black flag
+    var gx2 = ox + (F.dock.x + 0.5) * ts, gy2 = oy + (F.dock.y + 0.6) * ts; g.fillStyle = "#6e4426"; g.fillRect(gx2 - k * 0.3, gy2, k * 0.6, cy - k * 1.2 - gy2); g.fillStyle = "#8a5a32"; for (var r2 = gy2; r2 < cy - k * 1.2; r2 += k * 0.3) g.fillRect(gx2 - k * 0.3, r2, k * 0.6, k * 0.06);   // the gangplank
+    [[-3.3, -1.4], [4.4, -0.9]].forEach(function (l) { var lx = cx + l[0] * k, ly = cy + l[1] * k, fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 160 + l[0]); g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.16, k * 0.24, k * 0.32); g.fillStyle = "rgba(255,214,110," + (0.7 + 0.3 * fl).toFixed(3) + ")"; g.fillRect(lx - k * 0.07, ly - k * 0.1, k * 0.14, k * 0.2); srcs.push([(lx - ox) / ts, (ly - oy) / ts, 5, 0.9]); glows2.push([lx, ly, "255,214,110", 3, 0.22 * fl]); });
+  }
+  function drawCaptain(g, m, now) {   // Captain Gillbeard: a big teal fish-man in a navy coat and red tricorn, eyepatch, fin beard, cutlass and pistol, one peg leg
+    var k = ts, sx = ox + m.x * ts, sy = oy + m.y * ts, t = reduce ? 0 : now / 1000, mv = m.st === "chase" || m.st === "dash", bob = mv ? Math.abs(Math.sin(t * 9)) * k * 0.06 : Math.sin(t * 2.2) * k * 0.02;
+    if (m.def) { g.globalAlpha = clamp(m.dead / 2.2, 0, 1); sy += (1 - m.dead / 2.2) * k * 0.6; }
+    // attack tells on the ground
+    if (m.st === "slashW") { g.fillStyle = "rgba(255,70,60,.22)"; g.beginPath(); g.moveTo(sx, sy - k * 0.3); g.arc(sx, sy - k * 0.3, k * 2.6, m.ang - 1.25, m.ang + 1.25); g.closePath(); g.fill(); }
+    if (m.st === "aimW") { g.strokeStyle = "rgba(255,210,120,.55)"; g.lineWidth = 2; g.setLineDash([k * 0.25, k * 0.2]); var nsh = m.rage ? 5 : 3; for (var a = 0; a < nsh; a++) { var sa = m.ang + (a - (nsh - 1) / 2) * 0.24; g.beginPath(); g.moveTo(sx, sy - k * 0.7); g.lineTo(sx + Math.cos(sa) * k * 7, sy - k * 0.7 + Math.sin(sa) * k * 7); g.stroke(); } g.setLineDash([]); }
+    if (m.st === "dashW") { g.save(); g.translate(sx, sy - k * 0.2); g.rotate(m.ang); g.fillStyle = "rgba(255,70,60,.2)"; g.fillRect(0, -k * 0.6, k * 5.2, k * 1.2); g.restore(); }
+    if (m.st === "tideW") { var tw = 1 - m.t / 0.8; g.strokeStyle = "rgba(120,240,230," + (0.3 + 0.5 * tw).toFixed(3) + ")"; g.lineWidth = 3; g.beginPath(); g.ellipse(sx, sy, k * (0.6 + tw * 0.8), k * (0.45 + tw * 0.6), 0, 0, 6.28); g.stroke(); }
+    g.fillStyle = "rgba(0,0,0,.32)"; g.beginPath(); g.ellipse(sx, sy, k * 0.75, k * 0.24, 0, 0, 6.28); g.fill();
+    g.save(); g.translate(sx, sy - bob); g.scale(m.dir, 1); var cr = m.st === "tideW" ? k * 0.15 : 0; g.translate(0, cr);
+    var sw = m.st === "slash" ? 1 : m.st === "slashW" ? -0.6 : 0;
+    // legs: a boot and a peg leg
+    g.fillStyle = "#1c1a22"; g.fillRect(-k * 0.38, -k * 0.5, k * 0.28, k * 0.5); g.fillStyle = "#3a2a1c"; g.fillRect(-k * 0.42, -k * 0.12, k * 0.36, k * 0.12);
+    g.fillStyle = "#8a5a32"; g.fillRect(k * 0.12, -k * 0.5, k * 0.14, k * 0.5); g.fillStyle = "#5e3c20"; g.fillRect(k * 0.1, -k * 0.52, k * 0.2, k * 0.1);
+    // coat with tails, pale belly scales, belt
+    g.fillStyle = "#1f2c5a"; g.beginPath(); g.moveTo(-k * 0.58, -k * 0.42); g.lineTo(-k * 0.5, -k * 1.5); g.lineTo(k * 0.5, -k * 1.5); g.lineTo(k * 0.6, -k * 0.42); g.lineTo(k * 0.3, -k * 0.55); g.lineTo(-k * 0.3, -k * 0.55); g.closePath(); g.fill();
+    g.fillStyle = "#e9e0b8"; g.beginPath(); g.ellipse(0, -k * 1.0, k * 0.26, k * 0.42, 0, 0, 6.28); g.fill(); g.strokeStyle = "#c9bf94"; g.lineWidth = 1; for (var sc = 0; sc < 3; sc++) { g.beginPath(); g.arc(0, -k * (0.75 + sc * 0.18), k * 0.14, 0.2, Math.PI - 0.2); g.stroke(); }
+    g.fillStyle = "#d9a441"; [-1.3, -1.12].forEach(function (b) { g.fillRect(-k * 0.42, b * k, k * 0.07, k * 0.07); g.fillRect(k * 0.35, b * k, k * 0.07, k * 0.07); });
+    g.fillStyle = "#5a3a1e"; g.fillRect(-k * 0.52, -k * 0.74, k * 1.04, k * 0.12); g.fillStyle = "#f2c14e"; g.fillRect(-k * 0.08, -k * 0.76, k * 0.16, k * 0.16);
+    // back arm with the pistol
+    g.fillStyle = "#1a2550"; g.fillRect(-k * 0.72, -k * 1.42, k * 0.22, k * 0.6); g.fillStyle = "#3fa89a"; g.beginPath(); g.arc(-k * 0.61, -k * 0.8, k * 0.12, 0, 6.28); g.fill();
+    g.fillStyle = "#4a2e18"; g.fillRect(-k * 0.95, -k * 0.86, k * 0.34, k * 0.1); g.fillStyle = "#6a6e78"; g.fillRect(-k * 1.2, -k * 0.86, k * 0.28, k * 0.07);
+    // head: a big round fish head, one yellow eye, an eyepatch, a fanged grin, gill slits, a fin crest and a beard of fins
+    g.fillStyle = "#ff7a3a"; g.beginPath(); g.moveTo(-k * 0.5, -k * 2.05); g.lineTo(-k * 0.2, -k * 2.55); g.lineTo(0, -k * 2.15); g.lineTo(k * 0.15, -k * 2.5); g.lineTo(k * 0.32, -k * 2.1); g.closePath(); g.fill();
+    g.fillStyle = "#2fb8a8"; g.beginPath(); g.ellipse(k * 0.08, -k * 1.88, k * 0.62, k * 0.5, 0, 0, 6.28); g.fill();
+    g.fillStyle = "#4fd6c4"; g.beginPath(); g.ellipse(k * 0.15, -k * 2.02, k * 0.44, k * 0.24, 0, 0, 6.28); g.fill();
+    g.strokeStyle = "#1e7a70"; g.lineWidth = Math.max(1, k * 0.04); for (var gl = 0; gl < 3; gl++) { g.beginPath(); g.arc(-k * 0.28 - gl * k * 0.08, -k * 1.82, k * 0.16, -0.9, 0.9); g.stroke(); }
+    g.fillStyle = "#fff6c0"; g.beginPath(); g.arc(k * 0.38, -k * 1.96, k * 0.15, 0, 6.28); g.fill(); g.fillStyle = "#1a1410"; g.beginPath(); g.arc(k * 0.42, -k * 1.95, k * 0.07, 0, 6.28); g.fill(); g.fillStyle = "#fff"; g.fillRect(k * 0.4, -k * 2.0, 2, 2);
+    g.strokeStyle = "#1a1410"; g.lineWidth = Math.max(1.5, k * 0.05); g.beginPath(); g.moveTo(-k * 0.5, -k * 2.2); g.lineTo(k * 0.62, -k * 2.0); g.stroke(); g.fillStyle = "#1a1410"; g.beginPath(); g.ellipse(k * 0.05, -k * 2.06, k * 0.13, k * 0.1, 0, 0, 6.28); g.fill();
+    g.fillStyle = "#123a36"; g.beginPath(); g.moveTo(k * 0.1, -k * 1.66); g.quadraticCurveTo(k * 0.42, -k * 1.56, k * 0.66, -k * 1.72); g.quadraticCurveTo(k * 0.42, -k * 1.62, k * 0.1, -k * 1.66); g.fill();
+    g.fillStyle = "#fff"; for (var ft = 0; ft < 3; ft++) { g.beginPath(); g.moveTo(k * (0.22 + ft * 0.14), -k * 1.67); g.lineTo(k * (0.28 + ft * 0.14), -k * 1.56); g.lineTo(k * (0.34 + ft * 0.14), -k * 1.68); g.fill(); }
+    g.fillStyle = "#e85a2a"; for (var bd = 0; bd < 4; bd++) { var bx2 = -k * 0.2 + bd * k * 0.16, swy = reduce ? 0 : Math.sin(t * 3 + bd) * k * 0.03; g.beginPath(); g.moveTo(bx2 - k * 0.07, -k * 1.5); g.lineTo(bx2 + swy, -k * 1.2); g.lineTo(bx2 + k * 0.07, -k * 1.5); g.fill(); }
+    // the tricorn
+    g.fillStyle = "#a81e2a"; g.beginPath(); g.moveTo(-k * 0.72, -k * 2.28); g.quadraticCurveTo(k * 0.05, -k * 2.05, k * 0.82, -k * 2.3); g.lineTo(k * 0.5, -k * 2.62); g.quadraticCurveTo(k * 0.05, -k * 2.95, -k * 0.42, -k * 2.62); g.closePath(); g.fill();
+    g.strokeStyle = "#f2c14e"; g.lineWidth = Math.max(1.5, k * 0.05); g.beginPath(); g.moveTo(-k * 0.72, -k * 2.28); g.quadraticCurveTo(k * 0.05, -k * 2.05, k * 0.82, -k * 2.3); g.stroke();
+    g.strokeStyle = "#f6f0e0"; g.lineWidth = Math.max(2, k * 0.08); g.beginPath(); g.moveTo(-k * 0.2, -k * 2.7); g.quadraticCurveTo(-k * 0.65, -k * 3.05, -k * 0.95, -k * 2.82); g.stroke();
+    // front arm and the cutlass (swings on a slash)
+    g.save(); g.translate(k * 0.45, -k * 1.32); g.rotate(-0.4 + sw * 1.6);
+    g.fillStyle = "#1f2c5a"; g.fillRect(-k * 0.11, 0, k * 0.22, k * 0.55); g.fillStyle = "#3fa89a"; g.beginPath(); g.arc(0, k * 0.58, k * 0.12, 0, 6.28); g.fill();
+    g.fillStyle = "#d9a441"; g.fillRect(-k * 0.14, k * 0.52, k * 0.28, k * 0.07);
+    g.fillStyle = "#dfe8ee"; g.beginPath(); g.moveTo(-k * 0.04, k * 0.6); g.quadraticCurveTo(k * 0.35, k * 1.2, k * 0.12, k * 1.65); g.lineTo(k * 0.02, k * 1.6); g.quadraticCurveTo(k * 0.18, k * 1.15, -k * 0.1, k * 0.62); g.closePath(); g.fill();
+    g.restore();
+    if (m.flash > 0) { g.globalCompositeOperation = "source-atop"; g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(-k * 1.3, -k * 3.1, k * 2.6, k * 3.2); g.globalCompositeOperation = "source-over"; }
+    g.restore(); g.globalAlpha = 1;
+    if ((m.st === "slashW" || m.st === "aimW" || m.st === "dashW" || m.st === "tideW") && !m.def) bossBadge(g, sx, sy - k * 3.3, 1 - m.t, m.st === "aimW" ? "#ffb13b" : "#ff3a3a");
+    if (m.sayT > 0 && m.say) {   // speech bubble
+      g.font = "800 " + Math.max(11, Math.round(k * 0.34)) + "px Nunito, system-ui, sans-serif"; var tw2 = Math.min(g.measureText(m.say).width, k * 9), bx = sx - tw2 / 2 - 10, by = sy - k * 4.1, bh = k * 0.62;
+      g.globalAlpha = clamp(m.sayT * 2, 0, 1); g.fillStyle = "rgba(250,246,232,.95)"; g.beginPath(); g.roundRect ? g.roundRect(bx, by, tw2 + 20, bh, 10) : g.rect(bx, by, tw2 + 20, bh); g.fill();
+      g.beginPath(); g.moveTo(sx - 6, by + bh); g.lineTo(sx, by + bh + 8); g.lineTo(sx + 6, by + bh); g.fill(); g.fillStyle = "#1a2a2a"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(m.say, sx, by + bh / 2, k * 9); g.textBaseline = "alphabetic"; g.globalAlpha = 1;
+    }
   }
   function eGlow(g, x, y, r, col, a) {
     var c = parseInt(col.slice(1), 16), rr = (c >> 16) & 255, gg = (c >> 8) & 255, bb = c & 255, rg = g.createRadialGradient(x, y, 0, x, y, r);
@@ -4892,11 +5129,11 @@
     });
   }
   function drawBossBar() {
-    var e = activeBoss(), el = $("sbxBoss"); if (!el) return;
+    var e = activeBoss() || (cave ? caveBoss() : null), el = $("sbxBoss"); if (!el) return;
     var key = e ? e.k + ":" + Math.max(0, Math.ceil(e.hp)) + ":" + e.rage : "";
     if (key === bossBarKey) return; bossBarKey = key; if (el.hidden && e) { el.__hp = null; var tr0 = el.querySelector(".bt s"); if (tr0) { tr0.style.transition = "none"; tr0.style.width = "100%"; void tr0.offsetWidth; tr0.style.transition = ""; } }
     el.hidden = !e; stageEl.classList.toggle("bossfight", !!e); if (!e) return;
-    var B = BOSS[e.k], pc = Math.max(0, e.hp / e.mx * 100); el.style.setProperty("--bc", B.c); el.classList.toggle("rage", !!e.rage);
+    var B = BOSS[e.k] || e.B, pc = Math.max(0, e.hp / e.mx * 100); el.style.setProperty("--bc", B.c); el.classList.toggle("rage", !!e.rage);
     el.querySelector("b").textContent = B.n + (e.rage ? " (enraged)" : ""); el.querySelector("i").style.width = pc + "%"; el.querySelector("em").textContent = Math.max(0, Math.ceil(e.hp)) + " / " + e.mx;
     var tr = el.querySelector(".bt s"); if (tr) tr.style.width = pc + "%";   // the pale trail catches up a moment later (CSS), so you can see each chunk you took off
     if (el.__hp != null && e.hp < el.__hp) { el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit"); }
@@ -5182,7 +5419,7 @@
     boss: { root: 110.0, s: [0, 1, 3, 7, 8, 12], wave: "square", beat: 0.3 }
   };
   function musicMood() {
-    if (activeBoss() || BM.on) return "boss";
+    if (activeBoss() || BM.on || (cave && caveBoss())) return "boss";
     if (cave || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7) return "deep";
     return ["swamp", "ember", "frost"][world.bio[clamp(Math.floor(p.x), 0, W - 1)]] || "swamp";
   }
@@ -12261,7 +12498,7 @@
     } };
   }
   function setFloor(f, from) {
-    var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : cave.volc && SC.genVolcano ? SC.genVolcano(cave.run, f) : SC.gen(cave.run, f, mineBio(f)));
+    var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : cave.volc && SC.genVolcano ? SC.genVolcano(cave.run, f) : SC.genLair && f === SC.LAIR_F ? SC.genLair(S.seed | 0) : SC.gen(cave.run, f, mineBio(f)));
     var bandNew = !cave.bld && !cave.volc && cave.F && cave.F.biome !== F.biome;
     if (cave.volc && f > (S.st.volcDeep || 0)) S.st.volcDeep = f;
     cave.f = f; cave.F = F;
@@ -12279,7 +12516,9 @@
     if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
-    if (bandNew) toast(F.biome === 1 ? "The tunnels turn hot. You have reached the Cinder Hollow." : F.biome === 2 ? "The air bites cold. You have reached the Frostvault." : "Back up in the mossy Mudhollow.", BIOMES[F.biome].c);
+    if (F.lair && !lairOwned()) setTimeout(function () { toast("A secret swamp under the Mine... and someone has made it their hideout.", LAIRB.c); }, 900);
+    else if (F.lair) setTimeout(function () { toast("Home sweet hollow. Your Rig Bay is on the west shore.", LAIRB.c); }, 900);
+    else if (bandNew) toast(F.biome === 1 ? "The tunnels turn hot. You have reached the Cinder Hollow." : F.biome === 2 ? "The air bites cold. You have reached the Frostvault." : "Back up in the mossy Mudhollow.", BIOMES[F.biome].c);
     hud(); checkGoals();
   }
   // THE MINE: one shaft, one cave system. It changes as you go down: Mudhollow first, the hot Cinder Hollow from floor 9 (Basalt and
@@ -12321,7 +12560,9 @@
     return r;
   }
   function useLadder(k) {
-    if (trans || !cave) return; stopInput(); thud(k === "up" ? 330 : 200, 0.07);
+    if (trans || !cave) return;
+    if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Gillbeard's crew has chained the way down. Beat the Captain first."); return; }
+    if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
     if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
     else trans = { t: 0, done: false, mid: function () { setFloor(cave.f + 1, "down"); save(); } };
   }
@@ -12532,6 +12773,7 @@
     g.fillStyle = "#e8dcc0"; if (!L) for (var f1 = 2; f1 < 15; f1 += 3) g.fillRect(fx, fy + f1 * u, u, u); if (!Rt) for (var f2 = 2; f2 < 15; f2 += 3) g.fillRect(fx + ts - u, fy + f2 * u, u, u);   // fringe at the ends
   }
   function renderCave(now) {
+    drawBossBar();
     var F = cave.F, th = F.theme, g = ctx, i, j, idx, BLD = clamp(0.25 + (F.amb || 0.07) * 0.9, 0.25, 0.85), BLA = 1;   // bright rooms bloom only their lamps; dark caves glow more
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
     ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
@@ -12554,6 +12796,7 @@
       }
     }
     if (F.lava) volcLava(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE OLD VOLCANO: glowing magma cracks
+    if (F.lair) lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE SUNKEN HOLLOW
     var ux = ox + F.up.x * ts, uy = oy + F.up.y * ts;
     if (F.nx) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
       F.flat.forEach(function (e) {
@@ -12649,7 +12892,8 @@
     if (!panelOpen && !trans) contGlints(g, now);
     if (!panelOpen && !trans && motoNear()) drawPill(g, now, (motoS().done ? "Look at the Swamp Hog" : "Work on the motorcycle") + (coarse ? "" : " (F)"), ox + (MOTO_CELL.x + 1.5) * ts, oy + (MOTO_CELL.y - 0.9) * ts, false, function () { openMoto(); });
     else if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" || inGarage() ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
-    if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
+    var rgp = !panelOpen && !trans ? rigPill() : null; if (rgp) { var rq = F.pads[rgp.i]; drawPill(g, now, rgp.t + (coarse ? "" : " (F)"), ox + (rq.x + 1) * ts, oy + (rq.y - 1.9) * ts, rgp.t === "Bilge Drill: digging" || rgp.t === "Empty rig pad", function () { rigAct(rgp.i); }); }   // RIG BAY
+    else if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
       if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
@@ -14207,7 +14451,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -14308,7 +14552,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigFix(); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -17135,7 +17379,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__sbx = { audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { lair: { cap: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, fix: rigFix, count: rigCount, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
