@@ -1762,3 +1762,76 @@ body.sbx-app footer{margin-top:28px}
 /* homestead seasons: the season line in the Seed Stall and the "in season" tag on seeds that suit it */
 .hm-season { margin: 2px 0 8px; padding: 6px 10px; border-left: 3px solid var(--sc, #7dd65a); background: rgba(0,0,0,.18); border-radius: 6px; text-align: left; }
 .hm-season em, .hm-in { font-style: normal; font-weight: 800; color: #1c2612; background: #9ee06a; border-radius: 999px; padding: 1px 7px; font-size: 11px; margin-left: 4px; white-space: nowrap; }
+
+/* ---------- CRAFT GRID (Journal Craft tab + station windows): recipe slots and one detail card ---------- */
+.crg-bar{gap:8px}
+.crg-tabs button{padding:8px 14px}
+.crg{display:grid;gap:12px;align-items:start}
+.crg-list{display:grid;gap:6px;align-content:start;min-width:0}
+.crg-sub{display:flex;align-items:center;gap:8px;margin:8px 2px 2px;font:800 .78rem Nunito,system-ui,sans-serif;color:#f6eedb8c}
+.crg-sub::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#4ee6b42e,transparent)}
+.crg-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:7px}
+.crg-t{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-height:92px;padding:10px 4px 7px;border-radius:14px;border:1px solid #ffffff12;background:linear-gradient(180deg,#10231c,#0a1712);color:#f6eedbcc;cursor:pointer;font-family:Nunito,system-ui,sans-serif;transition:transform .12s,border-color .12s,background .12s}
+.crg-t img{width:40px;height:40px;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #0008)}
+.crg-t span{font-weight:800;font-size:.7rem;line-height:1.15;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:100%}
+.crg-t:hover{border-color:#4ee6b455;transform:translateY(-1px)}
+.crg-t:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
+.crg-ready{border-color:#4ee6b48c;background:radial-gradient(120% 90% at 50% 25%,#4ee6b42e,transparent 70%),linear-gradient(180deg,#10261e,#0a1712);color:#e8fff7}
+.crg-ready::after{content:"";position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:#f2c14e;box-shadow:0 0 8px #f2c14e}
+.crg-miss img{opacity:.45}.crg-miss span{color:#f6eedb80}
+.crg-can img{opacity:.8}
+.crg-lock img{opacity:.28;filter:grayscale(1)}.crg-lock span{color:#f6eedb59}
+.crg-own img{opacity:.6}.crg-own span{color:#f6eedb73}
+.crg-lk,.crg-ok{position:absolute;top:6px;right:6px;width:15px;height:15px;border-radius:50%;background:#1d2b26 center/10px no-repeat}
+.crg-lk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='2' y='4.4' width='6' height='4.6' rx='1' fill='%23a9b3ae'/%3E%3Cpath d='M3.4 4.6V3.3a1.6 1.6 0 0 1 3.2 0v1.3' fill='none' stroke='%23a9b3ae' stroke-width='1.1'/%3E%3C/svg%3E")}
+.crg-ok{background-color:#2a5a44;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2.2 5.2l1.9 1.9 3.8-4' fill='none' stroke='%23b8ffe2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.crg-t.on{border-color:var(--stn,#4ee6b4);box-shadow:0 0 0 2px var(--stn,#4ee6b4),0 8px 18px -8px var(--stn,#4ee6b4);transform:translateY(-1px)}
+.crg-t.flash{animation:cflash 2.4s ease}
+/* the detail card: sticks to the bottom of the window on phones, sits beside the slots on wide windows */
+.crg-side{position:sticky;bottom:-16px;z-index:2;margin:0 -12px -16px;padding:10px 12px max(14px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#06100ce6 14px,#06100c)}
+.crg-d{display:grid;gap:10px;padding:12px;border-radius:16px;background:linear-gradient(180deg,#132b23,#0a1813);border:1px solid color-mix(in srgb,var(--stn,#4ee6b4) 40%,transparent);box-shadow:0 -10px 30px -18px #000,inset 0 1px 0 #ffffff12}
+.crg-dh{display:flex;align-items:center;gap:12px;min-width:0}
+.crg-big{flex:none;display:grid;place-items:center;width:60px;height:60px;border-radius:14px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--stn,#4ee6b4) 22%,transparent),#0006 75%);border:1px solid #ffffff1a}
+.crg-big img{width:44px;height:44px;image-rendering:pixelated}
+.crg-dh b{display:block;font:400 1.12rem/1.15 "DelveBagel","Bagel Fat One",Nunito,sans-serif;color:#fff4d0}
+.crg-dh small{display:block;margin-top:3px;color:#f6eedbb3;font-size:.8rem;line-height:1.35}
+.crg-cost{display:flex;flex-wrap:wrap;gap:6px}
+.crg-in{display:inline-flex;align-items:center;gap:6px;padding:4px 9px 4px 4px;border-radius:10px;background:#ffffff0a;border:1px solid #4ee6b43d;font-family:Nunito,system-ui,sans-serif}
+.crg-in img{width:24px;height:24px;image-rendering:pixelated;padding:2px;border-radius:7px;background:#0005}
+.crg-in b{font-weight:800;font-size:.76rem;color:#f6eedbd9}
+.crg-in em{font-style:normal;font-weight:900;font-size:.76rem;color:#7dffd0}
+.crg-in.no{border-color:#ff9d8a55;background:#ff9d8a0f}.crg-in.no em{color:#ff9d8a}
+.crg-note{margin:0;font-size:.8rem;color:#f6eedb99;line-height:1.35}
+.crg-btn .btn{width:100%;min-height:46px;font-size:1rem}
+.crg-btn .btn.crg-go{box-shadow:0 0 18px -4px #f2c14e}
+.crg-d .sbx-card{background:transparent;border:0;padding:0}
+.crg-d .sbx-card img.big{display:none}
+.crg-up h3{display:none}.crg-up .sbx-card{grid-template-columns:1fr;gap:8px}.crg-up .sbx-card img.big{display:none}.crg-up .sbx-card .btn{width:100%;min-height:44px}
+.crg-empty p{margin:0;color:#f6eedb99;font-size:.85rem}
+.crg-lvl{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:#ffffff08;border:1px solid color-mix(in srgb,var(--lc,#4ee6b4) 35%,transparent)}
+.crg-lvl img{flex:none;width:32px;height:32px;image-rendering:pixelated}
+.crg-lvl div{flex:1;min-width:0}.crg-lvl b{display:block;font-size:.88rem;color:var(--lc,#c8fff4)}
+.crg-lvl small{display:block;font-size:.74rem;color:#f6eedb99;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crg-lvl .btn{flex:none;padding:8px 13px;font-size:.82rem}
+.crg-chest{margin:0;font:800 .76rem Nunito,system-ui,sans-serif;color:#f2c14ecc}
+/* station windows get room for the card beside the slots */
+.sbx-sbox{width:min(860px,100%);height:min(660px,100%)}
+@media (min-width:700px){
+  .sbx-sbox .crg{grid-template-columns:minmax(0,1fr) 290px}
+  .sbx-sbox .crg-side{position:sticky;top:58px;bottom:auto;margin:0;padding:0;background:none}
+  .sbx-sbox .crg-g{grid-template-columns:repeat(auto-fill,minmax(82px,1fr))}
+}
+@media (prefers-reduced-motion:reduce){.crg-t,.crg-t:hover,.crg-t.on{transition:none;transform:none}.crg-t.flash{animation:none;box-shadow:0 0 0 2px #4ee6b4}}
+.crg,.crg-d,.crg-lvl{text-align:left}
+.crg-list>*,.crg-g>*{min-width:0}
+.crg-lvl{min-width:0;overflow:hidden}
+.crg-dh>div{min-width:0}
+@media (max-width:699px){
+  .crg-d{gap:8px;padding:10px}
+  .crg-big{width:48px;height:48px;border-radius:12px}.crg-big img{width:36px;height:36px}
+  .crg-dh small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .crg-in{padding:3px 8px 3px 3px}.crg-in img{width:20px;height:20px}
+  .crg-btn .btn{min-height:42px}
+  .crg-t{min-height:86px;padding:8px 3px 6px}.crg-t img{width:36px;height:36px}
+}
+.crg-d .sbx-card>div>b{display:none}

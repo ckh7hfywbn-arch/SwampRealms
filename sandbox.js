@@ -8204,14 +8204,14 @@
     var r = recById(id); if (!r) return openPanel("quests");
     var k = stnOf(r);
     if (k) {   // made at a station: open it if one is in reach, otherwise say where
-      var sn = stationNearK(k); if (sn) { openStn(k, sn.x, sn.y); flashRec(id, "sbxStn"); return; }
+      var sn = stationNearK(k); if (sn) { CG_SEL[k] = id; if (r.cat2) stnCat[k] = r.cat2; openStn(k, sn.x, sn.y); flashRec(id, "sbxStn"); return; }
       toast("Make the " + r.n + " at your " + (k === "bench" ? "Bog Workbench" : STATIONS[k].n) + ". Walk up to it and tap it.", "#f2c14e"); return;
     }
-    ccat = r.cat2 || ccat; csub = r.sub || ""; cready = false; csearch = ""; openPanel("craft"); flashRec(id, "sbxPanel");
+    ccat = r.cat2 || ccat; csub = r.sub || ""; cready = false; csearch = ""; CG_SEL.bag = id; openPanel("craft"); flashRec(id, "sbxPanel");
   }
   function flashRec(id, root) {
     setTimeout(function () {
-      var b = document.querySelector("#" + root + ' [data-sx-craft="' + id + '"]'), card = b && b.closest(".sbx-card"); if (!card) return;
+      var b = document.querySelector("#" + root + ' [data-csel="' + id + '"]') || document.querySelector("#" + root + ' [data-sx-craft="' + id + '"]'), card = b && (b.closest(".sbx-card") || b); if (!card) return;
       try { card.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }); } catch (e) { card.scrollIntoView(); }
       card.classList.add("flash"); setTimeout(function () { card.classList.remove("flash"); }, 2600);
     }, 60);
@@ -13100,6 +13100,53 @@
     var v = recVis(r), st = v.st, im = v.im, note = v.note;
     return '<div class="sbx-card' + (st.owned || st.lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (st.ready ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (st.owned || st.lock ? " disabled" : "") + ">" + (st.owned ? "Owned" : st.lock ? "Locked" : "Craft") + "</button></div>";
   }
+  // ---------- CRAFT GRID: recipes as slots (like the bag) with one detail card for the slot you picked ----------
+  // Used by the Journal's Craft tab (ctx "bag") and every station window (ctx = the station key). A slot shows the item and how close
+  // you are: ready (glowing), made elsewhere / short on materials (dimmed), locked (grey with a lock) or owned (a tick). Tap a slot to
+  // see it in the card: picture, what it does, what it costs (you have / you need) and one big button. CG_SEL remembers the pick per window.
+  var CG_SEL = {};
+  function cgState(r) { var st = recStatus(r); return st.owned ? "own" : st.lock ? "lock" : st.ready ? "ready" : st.can ? "can" : "miss"; }
+  function cgOwnKey(r) { return r.tier && r.tier === S.tier ? "pick" : r.wpn && r.wpn === S.wpn ? "wpn" : r.arm && r.arm === S.arm ? "arm" : r.sh ? "shovel" : ""; }
+  function cgPick(ctx, recs) {   // the remembered pick if it is still in the list, else the first one you can make, else the first one
+    var id = CG_SEL[ctx], i; for (i = 0; i < recs.length; i++) if (recs[i].id === id) return recs[i];
+    for (i = 0; i < recs.length; i++) if (cgState(recs[i]) === "ready") return recs[i];
+    for (i = 0; i < recs.length; i++) if (cgState(recs[i]) !== "own") return recs[i];
+    return recs[0] || null;
+  }
+  function cgTile(r, on) {
+    var v = recVis(r), c = cgState(r), lbl = r.n + (c === "ready" ? ", ready to craft" : c === "own" ? ", owned" : c === "lock" ? ", locked" : "");
+    return '<button type="button" class="crg-t crg-' + c + (on ? " on" : "") + '" data-csel="' + r.id + '" aria-pressed="' + !!on + '" aria-label="' + esc(lbl) + '"><img alt="" src="' + v.im + '"><span>' + esc(r.n) + "</span>" + (c === "lock" ? '<i class="crg-lk" aria-hidden="true"></i>' : c === "own" ? '<i class="crg-ok" aria-hidden="true"></i>' : "") + "</button>";
+  }
+  function cgCost(cost) {   // the ingredients as little slots: picture, then have / need
+    var pool = chestPool();
+    return Object.keys(cost).map(function (k) { var bag = S.inv[k] || 0, have = bag + (pool[k] || 0), ok = have >= cost[k], fc = bag < cost[k] && pool[k] > 0;
+      return '<span class="crg-in' + (ok ? "" : " no") + '" title="' + esc(ITEMS[k].n) + (fc ? " (includes some from nearby chests)" : "") + '"><img alt="" src="' + icon(k) + '"><b>' + esc(ITEMS[k].n) + "</b><em>" + Math.min(have, 999) + "/" + cost[k] + "</em></span>"; }).join("");
+  }
+  function cgDetail(r, ctx) {
+    if (!r) return '<div class="crg-d crg-empty"><p>Nothing to make here yet.</p></div>';
+    var v = recVis(r), st = v.st, c = cgState(r), sk = stnOf(r), note = "", btn;
+    var miss = Object.keys(r.cost).filter(function (q) { return haveIt(q) < r.cost[q]; }).map(function (q) { return (r.cost[q] - haveIt(q)) + " " + ITEMS[q].n; });
+    if (c === "own") { btn = '<button type="button" class="btn ghost" disabled>Owned</button>'; note = "You already have this."; }
+    else if (c === "lock") { btn = '<button type="button" class="btn ghost" disabled>Locked</button>'; note = v.note; }
+    else if (c === "ready") btn = '<button type="button" class="btn crg-go" data-sx-craft="' + r.id + '">Craft</button>';
+    else if (st.can) { note = sk && sk !== ctx ? "Made at the " + stnName(sk) + "." : st.needB ? "Made at the Workbench." : r.deco ? "Made at the Decor Workbench." : ""; btn = sk && ctx === "bag" ? '<button type="button" class="btn ghost" data-sx-goto="' + r.id + '">Show me</button>' : '<button type="button" class="btn ghost" disabled>Craft</button>'; }
+    else { note = "Still need " + miss.join(", ") + "."; btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
+    var desc = c === "lock" ? "" : r.d ? itShort(r.d, 150) : "", rep = "";
+    var ok2 = cgOwnKey(r); if (c === "own" && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
+    return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big"><img alt="" src="' + v.im + '"></span><div><b>' + esc(r.n) + "</b>" + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
+      + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
+  }
+  function craftGrid(recs, ctx, pre) {   // recs already filtered to one category; pre = extra HTML above the slots (bench level, experiments)
+    var sel = cgPick(ctx, recs), last = "", h = "";
+    if (sel) CG_SEL[ctx] = sel.id;
+    recs.forEach(function (r) { if (r.sub !== last) { if (last) h += "</div>"; last = r.sub; h += '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">'; } h += cgTile(r, sel && r.id === sel.id); });
+    if (last) h += "</div>";
+    return '<div class="crg"><div class="crg-list">' + (pre || "") + (h || '<p class="sbx-note">Nothing here yet.</p>') + '</div><div class="crg-side">' + cgDetail(sel, ctx) + "</div></div>";
+  }
+  function cgTabs(cats, cur, attr, rd) {
+    if (cats.length < 2) return "";
+    return '<div class="sbx-cats crg-tabs" role="tablist" aria-label="Categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === cur ? "on" : "") + '" ' + attr + '="' + esc(c) + '" aria-selected="' + (c === cur) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("") + "</div>";
+  }
   function handAll() { return craftAll().filter(function (r) { return !stnOf(r); }); }   // the Journal only lists what you make by hand
   function handCats() { var all = handAll(); return CRAFT_CATS.filter(function (c) { return c === "Stations" || all.some(function (r) { return r.cat2 === c; }); }); }
 
@@ -13188,9 +13235,7 @@
     all.forEach(function (r) { var ok = recStatus(r).ready; if (ok) rd[r.cat2] = (rd[r.cat2] || 0) + 1; if (r.cat2 === ccat) { if (subs.indexOf(r.sub) < 0) subs.push(r.sub); if (ok) sr[r.sub] = (sr[r.sub] || 0) + 1; } });
     if (csub && subs.indexOf(csub) < 0) csub = "";
     if (csearch.trim()) return '<div class="sbx-cbar">' + csBar() + "</div>";
-    return '<div class="sbx-cbar">' + csBar() + '<div class="sbx-cats" role="tablist" aria-label="Craft categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === ccat ? "on" : "") + '" data-cc="' + esc(c) + '" aria-selected="' + (c === ccat) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("")
-      + '</div><div class="sbx-subs" aria-label="Sub-categories"><button type="button" class="rdy' + (cready ? " on" : "") + '" data-cready="1" aria-pressed="' + cready + '">Ready</button><button type="button" class="' + (!csub ? "on" : "") + '" data-cs="">All</button>' + subs.map(function (c) { return '<button type="button" class="' + (c === csub ? "on" : "") + '" data-cs="' + esc(c) + '">' + esc(c) + (sr[c] ? "<i>" + sr[c] + "</i>" : "") + "</button>"; }).join("")
-      + '</div></div>';
+    return '<div class="sbx-cbar crg-bar">' + csBar() + cgTabs(cats, ccat, "data-cc", rd) + "</div>";
   }
   function repairHtml(f, atBench) {   // repair cards: hand repairs in the Journal, Glowspore-and-up repairs in the Workbench window
     var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : "", S.arm ? "arm" : ""].filter(Boolean).filter(function (k) { return repairNeedsBench(k) === atBench && (!f || f(k)); });
@@ -13212,10 +13257,11 @@
     return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
   }
   // ---------- STATION WINDOW: its own pop-up with only the recipes made at that station ----------
-  function stnRecs(k) {   // the station's own recipes, then everything you can make by hand (so you never have to leave the station window)
+  function stnRecs(k) {   // the station's own recipes. At the Workbench, everything you make by hand joins them in its own category and section
     var all = craftAll(), own = all.filter(function (r) { return stnOf(r) === k; });
-    var hand = all.filter(function (r) { return stnOf(r) === "" && !r.charm && !(r.tier && S.tier >= r.tier); }).map(function (r) { var w = Object.create(r); w.cat2 = "By hand"; w.sub = r.cat2 + " \u00b7 " + r.sub; return w; });
-    return own.concat(hand);
+    if (k !== "bench") return own;
+    var mine = all.filter(function (r) { var o = stnOf(r); return o === k || (o === "" && !r.charm); });
+    return mine.sort(function (a, b) { return CRAFT_CATS.indexOf(a.cat2) - CRAFT_CATS.indexOf(b.cat2) || (CRAFT_SUBS[a.cat2] || []).indexOf(a.sub) - (CRAFT_SUBS[b.cat2] || []).indexOf(b.sub) || a.rank - b.rank; });
   }
   function renderStn() {
     var k = stnOpen.k;
@@ -13224,17 +13270,16 @@
     recs.forEach(function (r) { if (cats.indexOf(r.cat2) < 0) cats.push(r.cat2); if (recStatus(r).ready) { rd[r.cat2] = (rd[r.cat2] || 0) + 1; total++; } });
     if (sc && cats.indexOf(sc) < 0) sc = stnCat[k] = "";
     $("sbxStnBox").style.setProperty("--stn", stnColor(k));
-    $("sbxStnTitle").innerHTML = '<img alt="" src="' + icon(D.ic) + '"><span>' + esc(stnName(k)) + "<small>" + (total ? total + " ready to craft" : recs.length + " recipes") + "</small></span>";
-    h += '<div class="sbx-cbar"><div class="sbx-cats" role="tablist" aria-label="Station categories"><button type="button" class="rdy' + (stnReady ? " on" : "") + '" data-stready="1" aria-pressed="' + stnReady + '">Ready' + (total ? "<i>" + total + "</i>" : "") + "</button>"
-      + (cats.length > 1 ? '<button type="button" role="tab" class="' + (!sc ? "on" : "") + '" data-stc="" aria-selected="' + !sc + '">All</button>' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === sc ? "on" : "") + '" data-stc="' + esc(c) + '" aria-selected="' + (c === sc) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("") : "")
-      + "</div></div>";
-    var nch = nearChestKeys().length;
-    h += '<p class="sbx-note">' + esc(D.d) + (nch ? ' <b class="stn-ch">Also using ' + nch + " nearby chest" + (nch > 1 ? "s" : "") + ".</b>" : "") + "</p>";
-    if (k === "bench" && !sc && !stnReady) h += benchUpCard() + repairHtml(null, true);
-    if ((k === "cook" || k === "brew") && !sc && !stnReady) { var sct = cgSecrets(k), sfound = sct.filter(function (q) { return S.disc[q[2]]; }).length; h += '<div class="sbx-card cg-card"><img class="big" alt="" src="' + icon(sfound ? sct.filter(function (q) { return S.disc[q[2]]; })[0][2] : k === "cook" ? "glowgoulash" : "tonic_star") + '"><div><b>Experiment</b><small>Mix any three ingredients to discover secret ' + (k === "cook" ? "dishes" : "brews") + ". " + sfound + " of " + sct.length + ' found.</small></div><button type="button" class="btn" data-cg-exp="' + k + '">Experiment</button></div>'; }
-    var shown = recs.filter(function (r) { return (!sc || r.cat2 === sc) && (!stnReady || recStatus(r).ready); }), last = "";
-    if (!shown.length) h += '<p class="sbx-note">' + (stnReady ? "Nothing here can be crafted right now. Turn off Ready to see everything." : "Nothing here yet.") + "</p>";
-    shown.forEach(function (r) { var gh = cats.length > 1 && !sc ? r.cat2 + " · " + r.sub : r.sub; if (gh !== last) { last = gh; h += "<h3>" + esc(gh) + "</h3>"; } h += recCard(r); });
+    $("sbxStnTitle").innerHTML = '<img alt="" src="' + icon(D.ic) + '"><span>' + esc(stnName(k)) + "<small>" + (total ? total + " ready to craft" : esc(D.d)) + "</small></span>";
+    if (!sc || cats.indexOf(sc) < 0) { sc = cats[0] || ""; cats.forEach(function (c) { if (!stnCat[k] && rd[c] && !rd[sc]) sc = c; }); stnCat[k] = sc; }
+    if (cats.length > 1) h += '<div class="sbx-cbar crg-bar">' + cgTabs(cats, sc, "data-stc", rd) + "</div>";
+    var nch = nearChestKeys().length, pre = "";
+    if (nch) pre += '<p class="crg-chest">Also using ' + nch + " nearby chest" + (nch > 1 ? "s" : "") + ".</p>";
+    if (k === "bench" && sc === cats[0]) { var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1]; pre += '<div class="crg-lvl" style="--lc:' + cb.c + '"><img alt="" src="' + icon("bench") + '"><div><b>' + esc(cb.n) + "</b><small>Level " + S.bl + " of " + (BENCH_LV.length - 1) + (nbl ? " · next unlocks " + esc(nbl.gives) : " · fully upgraded") + "</small></div>" + (nbl ? '<button type="button" class="btn' + (canPay(nbl.cost) ? "" : " ghost") + '" data-csel="__bup">Upgrade</button>' : "") + "</div>"; }
+    if ((k === "cook" || k === "brew") && sc === cats[0]) { var sct = cgSecrets(k), sfound = sct.filter(function (q) { return S.disc[q[2]]; }).length; pre += '<div class="crg-lvl" style="--lc:#c08cff"><img alt="" src="' + icon(sfound ? sct.filter(function (q) { return S.disc[q[2]]; })[0][2] : k === "cook" ? "glowgoulash" : "tonic_star") + '"><div><b>Experiment</b><small>Mix three ingredients to find secret ' + (k === "cook" ? "dishes" : "brews") + ". " + sfound + " of " + sct.length + ' found.</small></div><button type="button" class="btn" data-cg-exp="' + k + '">Try it</button></div>'; }
+    var shown = recs.filter(function (r) { return r.cat2 === sc; });
+    if (CG_SEL[k] === "__bup" && k === "bench") h += '<div class="crg"><div class="crg-list">' + pre + shown.map(function (r, i) { return (i === 0 || r.sub !== shown[i - 1].sub ? (i ? "</div>" : "") + '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">' : "") + cgTile(r, false); }).join("") + (shown.length ? "</div>" : "") + '</div><div class="crg-side"><div class="crg-d crg-up">' + benchUpCard().replace(/<h3>[^<]*<\/h3>/, "") + "</div></div></div>";
+    else h += craftGrid(shown, k, pre);
     var bd = $("sbxStnBody"), oc = bd.querySelector(".sbx-cats"), ol = oc ? oc.scrollLeft : 0, st = bd.scrollTop; bd.innerHTML = h; bd.scrollTop = st;
     var row = bd.querySelector(".sbx-cats"); if (row) { row.scrollLeft = ol; var on = row.querySelector("[data-stc].on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; }
   }
@@ -13587,7 +13632,7 @@
       h += craftBar() + csResHtml();
     } else if (tab === "craft") {
       h += craftBar();
-      if (ccat === "Tools" || ccat === "Gear" || ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
+      if (ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
       if (ccat === "Stations") {
         h += '<h3>Crafting stations</h3><p class="sbx-note">Recipes that need a station only show up in that station\'s window. Place one, then tap it (or press F next to it) to open it.</p>';
         STN_ORDER.forEach(function (k) {
@@ -13603,10 +13648,9 @@
         });
         h += "<h3>Make by hand</h3>";
       }
-      h += repairHtml(function (k) { return ccat === "Tools" ? k !== "arm" : ccat === "Gear" && k === "arm"; }, false);
-      var shown = handAll().filter(function (r) { return r.cat2 === ccat && (!csub || r.sub === csub) && (!cready || recStatus(r).ready); }), lastSub = "";
-      if (!shown.length) h += '<p class="sbx-note">' + (cready ? "Nothing in here can be crafted right now. Turn off Ready to see everything." : "Nothing here is made by hand. Open a crafting station to see its recipes.") + "</p>";
-      shown.forEach(function (r) { if (!csub && r.sub !== lastSub) { lastSub = r.sub; h += "<h3>" + esc(r.sub) + "</h3>"; } h += recCard(r); });
+      var shown = handAll().filter(function (r) { return r.cat2 === ccat; });
+      if (!shown.length) h += '<p class="sbx-note">Nothing here is made by hand. Open a crafting station to see its recipes.</p>';
+      else h += craftGrid(shown, "bag");
     } else if (tab === "dev") {
       h += devHtml();
     } else if (tab === "log") {
@@ -14175,7 +14219,7 @@
     if (t.hasAttribute("data-cc")) { ccat = t.getAttribute("data-cc"); csub = ""; renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-cs")) { csub = t.getAttribute("data-cs"); renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-cready")) { cready = !cready; renderPanel(); return; }
-    if (t.hasAttribute("data-stc") && stnOpen) { stnCat[stnOpen.k] = t.getAttribute("data-stc"); renderPanel(); $("sbxStnBody").scrollTop = 0; return; }
+    if (t.hasAttribute("data-stc") && stnOpen) { stnCat[stnOpen.k] = t.getAttribute("data-stc"); if (CG_SEL[stnOpen.k] === "__bup") delete CG_SEL[stnOpen.k]; renderPanel(); $("sbxStnBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-stready") && stnOpen) { stnReady = !stnReady; renderPanel(); return; }
     if (t.getAttribute("data-stn-open")) { var so = stationNearK(t.getAttribute("data-stn-open")); if (so) openStn(so.k, so.x, so.y); else nag("Walk closer to it first."); return; }
     if (t.hasAttribute("data-ch-take")) return chestMove(t.getAttribute("data-ch-take"), true, "take");
@@ -14183,6 +14227,7 @@
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.hasAttribute("data-sx-bup")) return upgradeBench();
+    if (t.hasAttribute("data-csel")) { CG_SEL[stnOpen ? stnOpen.k : "bag"] = t.getAttribute("data-csel"); snd("tick"); return renderPanel(); }   // CRAFT GRID: pick a slot
     if (t.getAttribute("data-sx-craft")) return craft(t.getAttribute("data-sx-craft"));
     if (t.hasAttribute("data-sx-goto")) return openCraftTo(t.getAttribute("data-sx-goto"));   // CRAFT SEARCH: go to the station recipe
     if (t.hasAttribute("data-csclear")) { csearch = ""; renderPanel(); var ci = $("sbxCSearch"); if (ci) ci.focus(); return; }
