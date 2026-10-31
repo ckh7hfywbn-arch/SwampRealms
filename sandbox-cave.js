@@ -236,7 +236,7 @@
   // Each map row is one row of cells. Row 0 = wall, row 1 = the back wall (its letters are things hung on it, "w" = a window that lets daylight in),
   // the last row = the bottom wall (the exit door is put in its centre). Floors: "floors" lists patterned floor zones [x0, y0, x1, y1, block].
   // Floor-row letters: "." floor, "#" inner wall, "r" rug, "~" lava trough, "=" still water, anything else = a piece of furniture from ILEG.
-  var IMAP = {"witchhut":{"th":10,"amb":0.5,"win":"GLASS","map":["#############","#tSw.gtg.wSt#","#KK.5...5.bb#","#K...rrr...b#","#cT..rVr..TC#","###+#rrr....#","#B4.#.....dx#","#B..#l...p.x#","#d..#......q#","#############"],"floors":[[1,2,11,8,"mudbrick"],[1,6,3,8,"woodpanel"]],"tops":{"2,1":"F","10,1":"B","4,2":"Y","8,2":"S","2,4":"b","10,4":"c","2,6":"j"},"flip":["10,6","11,8"],"rot":{"1,3":270,"11,3":90}},"cabin":{"th":3,"amb":0.68,"win":"GLASS","map":["###################","#tw.St#tP.wt#tSw.t#","#B4.K.#.HHH.#1231.#","#B....#..r..#.....#","#f.W..+.rrr.#cTC.b#","#.....#.S6S.#.....#","#.k...#..r..+....1#","###+###.....#..g.3#","#D.c..#.rrr.#....1#","#.....+.rTrC#..X..#","#s...5#.rrr.#b...X#","#bb.a.#.....#u...b#","###################"],"floors":[[1,2,5,6,"oakplanks"],[1,8,5,11,"birchplanks"],[7,2,11,11,"basketweave"],[13,2,17,11,"tealtile"]],"tops":{"4,1":"B","14,1":"n","2,2":"o","13,2":"f","15,2":"p","16,2":"k","14,4":"c","9,5":"b","1,8":"q","5,10":"j","9,9":"v","17,6":"P","17,7":"p"},"flip":["4,11"],"rot":{"8,5":270,"10,5":90,"17,6":90,"17,7":90,"17,8":90}},"tower":{"th":4,"amb":0.6,"win":"GLASS","map":["###############","#tSw.c#M#c.wSt#","###K.K.^.K.K###","##l...5.5...G##","#e...rcTCr...l#","#....rrrrr....#","#######+#######","#R..D.c......M#","#b...V.....s.X#","#b.f.........X#","##u.........b##","##x..a......x##","###.........###","###############"],"floors":[[1,2,13,5,"woodpanel"],[1,7,13,12,"slatetile"]],"tops":{"2,1":"x","12,1":"B","6,3":"o","8,3":"B","7,4":"g","4,7":"q"},"flip":["13,4"],"rot":{"1,7":270,"13,7":90}},"farm":{"th":9,"amb":0.7,"win":"GLASS","map":["###################","#t.w.W.t.P#tS..wgt#","#nnn|nn...#1231.xx#","#n..|...r.#..cTC..#","#n..|..rrr+.......#","#||.|...r.#....b..#","#.......z.#......X#","#nn|nn....###+#####","#n..|.....#....4B.#","#n..|....r#.5....f#","#...|...r.#..cTC..#","#bb.......#.P..u.g#","###################"],"floors":[[11,2,17,6,"terracotta"],[11,8,17,11,"herringbone"]],"tops":{"12,1":"P","11,2":"f","13,2":"p","14,2":"k","14,3":"c","15,8":"o","12,9":"v","14,10":"s"},"rot":{"16,8":90}},"forge":{"th":5,"amb":0.52,"win":"BARS","map":["###################","#t.e.tSx.w.xSt.e.t#","#Y.F.F..HHH..F.F.Y#","#.................#","#R..~~~~...~~~~..M#","#R..~~~~...~~~~..M#","#...A........######","#.5..........#.5..#","#X.X..m.rrr.m#.X.X#","#X.....crTrC.+...X#","#b.......r...#...b#","#bb..........#.bU.#","###################"],"floors":[[1,2,17,11,"basalttile"],[7,3,11,11,"crackedbrick"],[14,7,17,11,"steelplate"]],"tops":{"6,1":"l","12,1":"J","2,7":"p","15,7":"o","9,9":"C"},"rot":{"1,4":270,"1,5":270,"17,4":90,"17,5":90}},"keep":{"th":6,"amb":0.48,"win":"GLASSR","map":["###################","#t.e.T.e.w.e.T.e.t#","#Y.#...lrNrl...#.Y#","#..#.....r.....#..#","#M.#.....r.....#.M#","#..#..Q..r..Q..#..#","#..+.cTTC.cTTC.+..#","#M.#.....r.....#.M#","#..#..Q..r..Q..#..#","#..+.cTTC.cTTC.+..#","#E.#.....r.....#.E#","#bU#.....r.....#Ub#","#X.#.....r.....#.X#","###################"],"floors":[[1,2,17,12,"blackmarble"],[6,2,12,12,"checker"]],"tops":{"6,6":"k","7,6":"C","11,6":"f","12,6":"c","6,9":"s","7,9":"v","11,9":"C","12,9":"p"},"flip":["12,5","12,8"],"rot":{"1,4":270,"1,7":270,"17,4":90,"17,7":90}},"lodge":{"th":7,"amb":0.64,"win":"GLASSB","map":["###################","#t.wSt#h.T.f.wSh.t#","#B4W..#...HHH...K.#","#B....#..r.r.r..K.#","#Z....+...rrr.....#","#.....#S.rr6rr..S.#","#.D...#...rrr.....#","###+###....r......#","#L...q#.....#+#####","#5....+.cTC.#.1231#","#I...s#..r..#....b#","#bb...#.....#..O.x#","###################"],"floors":[[1,2,5,6,"woodpanel"],[1,8,5,11,"oakplanks"],[7,2,17,11,"pineplanks"],[13,9,17,11,"slatetile"]],"tops":{"4,1":"B","14,1":"j","2,2":"o","1,4":"n","11,5":"b","2,6":"q","1,9":"o","9,9":"C","14,9":"f","16,9":"p","17,9":"k"},"rot":{"7,5":270,"16,5":90,"16,2":90,"16,3":90}},"shrine":{"th":8,"amb":0.5,"win":"GLASSB","map":["#################","#tSf.w.T.w.fSt..#","#j.#...rJr...#.j#","#..#L..rrr..L#..#","#..#..=====..#..#","#..#..=====..#..#","#..+..r.o.r..+..#","#..#....r....#..#","#..#I...r...I#..#","#.5+....r....+5.#","#yo#....r....#oy#","#L.#....r....#.L#","#################"],"floors":[[1,2,15,11,"frostcobble"],[6,6,10,11,"moonbrick"]],"tops":{"2,1":"y","12,1":"c","2,9":"c","14,9":"y"},"flip":["15,10"]}};
+  var IMAP = {"witchhut":{"th":10,"amb":0.5,"win":"GLASS","map":["#############","#tSw.gtg.wSt#","#KK.5...5.bb#","#K...rrr...b#","#cT..rVr..TC#","###+#rrr....#","#B4.#.....dx#","#B..#l...p.x#","#d..#......q#","#############"],"floors":[[1,2,11,8,"mudbrick"],[1,6,3,8,"woodpanel"]],"tops":{"2,1":"F","10,1":"B","4,2":"Y","8,2":"S","2,4":"b","10,4":"c","2,6":"j"},"flip":["10,6","11,8"],"rot":{"1,3":270,"11,3":90}},"cabin":{"th":3,"amb":0.68,"win":"GLASS","map":["###################","#tw.St#tP.wt#tSw.t#","#B4.K.#.HHH.#1231.#","#B....#..r..#.....#","#f....+.rrr.#cTC.b#","#W...k#.S6S.#.....#","#.....#..r..+....1#","###+###.....#..g.3#","#D....#.rrr.#....1#","#c....+.rTC.#..X..#","#s...5#.rrr.#b...X#","#bb.a.#.....#u...b#","###################"],"floors":[[1,2,5,6,"oakplanks"],[1,8,5,11,"birchplanks"],[7,2,11,11,"basketweave"],[13,2,17,11,"tealtile"]],"tops":{"4,1":"B","14,1":"n","2,2":"o","13,2":"f","15,2":"p","16,2":"k","14,4":"c","9,5":"b","1,8":"q","5,10":"j","9,9":"v","17,6":"P","17,7":"p"},"flip":["4,11"],"rot":{"8,5":270,"10,5":90,"17,6":90,"17,7":90,"17,8":90}},"tower":{"th":4,"amb":0.6,"win":"GLASS","map":["###############","#tSw.c#M#c.wSt#","###K.K.^.K.K###","##l...5.5...G##","#e...rcTCr...l#","#....rrrrr....#","#######+#######","#R..Dc.......M#","#b...V.....s.X#","#b.f.........X#","##u.........b##","##ax........x##","###.........###","###############"],"floors":[[1,2,13,5,"woodpanel"],[1,7,13,12,"slatetile"]],"tops":{"2,1":"x","12,1":"B","6,3":"o","8,3":"B","7,4":"g","4,7":"q"},"flip":["13,4"],"rot":{"1,7":270,"13,7":90}},"farm":{"th":9,"amb":0.7,"win":"GLASS","map":["###################","#t.w.W.t.P#tS..wgt#","#nnn|nn...#1231.xx#","#n..|...r.#..cTC..#","#n..|..rrr+.......#","#||.|...r.#....b..#","#.......z.#......X#","#nn|nn....###+#####","#n..|.....#....4B.#","#n..|....r#.5....f#","#...|...r.#..cTC..#","#bb.......#.P..u.g#","###################"],"floors":[[11,2,17,6,"terracotta"],[11,8,17,11,"herringbone"]],"tops":{"12,1":"P","11,2":"f","13,2":"p","14,2":"k","14,3":"c","15,8":"o","12,9":"v","14,10":"s"},"rot":{"16,8":90}},"forge":{"th":5,"amb":0.52,"win":"BARS","map":["###################","#t.e.tSx.w.xSt.e.t#","#Y.F.F..HHH..F.F.Y#","#.................#","#R..~~~~...~~~~..M#","#R..~~~~...~~~~..M#","#...A........######","#.5..........#.5..#","#X.X..m.rrr.m#.X.X#","#X......cTC..+...X#","#b.......r...#...b#","#bb..........#.bU.#","###################"],"floors":[[1,2,17,11,"basalttile"],[7,3,11,11,"crackedbrick"],[14,7,17,11,"steelplate"]],"tops":{"6,1":"l","12,1":"J","2,7":"p","15,7":"o","9,9":"C"},"rot":{"1,4":270,"1,5":270,"17,4":90,"17,5":90}},"keep":{"th":6,"amb":0.48,"win":"GLASSR","map":["###################","#t.e.T.e.w.e.T.e.t#","#Y.#...lrNrl...#.Y#","#..#.....r.....#..#","#M.#.....r.....#.M#","#..#..Q..r..Q..#..#","#..+.cTTC.cTTC.+..#","#M.#.....r.....#.M#","#..#..Q..r..Q..#..#","#..+.cTTC.cTTC.+..#","#E.#.....r.....#.E#","#b.#.....r.....#.b#","#X.#.....r.....#.X#","###################"],"floors":[[1,2,17,12,"blackmarble"],[6,2,12,12,"checker"]],"tops":{"6,6":"k","7,6":"C","11,6":"f","12,6":"c","6,9":"s","7,9":"v","11,9":"C","12,9":"p"},"flip":["12,5","12,8"],"rot":{"1,4":270,"1,7":270,"17,4":90,"17,7":90}},"lodge":{"th":7,"amb":0.64,"win":"GLASSB","map":["###################","#t.wSt#h.T.f.wSh.t#","#B4W..#...HHH....K#","#B....#..r.r.r...K#","#Z....+...rrr.....#","#.....#S.rr6rr..S.#","#DC...#...rrr.....#","###+###....r......#","#L...q#.....#+#####","#5....+.cTC.#.1231#","#I...s#..r..#....b#","#bb...#.....#..O.x#","###################"],"floors":[[1,2,5,6,"woodpanel"],[1,8,5,11,"oakplanks"],[7,2,17,11,"pineplanks"],[13,9,17,11,"slatetile"]],"tops":{"4,1":"B","14,1":"j","2,2":"o","1,4":"n","11,5":"b","2,6":"q","1,9":"o","9,9":"C","14,9":"f","16,9":"p","17,9":"k"},"rot":{"7,5":270,"16,5":90}},"shrine":{"th":8,"amb":0.5,"win":"GLASSB","map":["#################","#tSf.w.T.w.fSt..#","#j.#...rJr...#.j#","#..#L..rrr..L#..#","#..#..=====..#..#","#..#..=====..#..#","#..+..r.o.r..+..#","#..#....r....#..#","#..#I...r...I#..#","#5.+....r....+.5#","#yo#....r....#oy#","#L.#....r....#.L#","#################"],"floors":[[1,2,15,11,"frostcobble"],[6,6,10,11,"moonbrick"]],"tops":{"2,1":"y","12,1":"c","1,9":"c","15,9":"y"},"flip":["15,10"]}};
   var ILEG = { B: "BED", K: "BOOKSHELF", H: "HEARTH", W: "WARDROBE", T: "TABLE", c: "CHAIR", C: "CHAIR_L", b: "BARREL", u: "BUCKET", p: "POT", P: "FLOWERPOT", g: "GLOWPOT", V: "CAULDRON",
     Y: "BRAZIER", U: "URN", Q: "GUARDIAN", N: "THRONE", I: "ICESCULPT", J: "FROGSTATUE", L: "FROSTLANTERN", E: "EMBERLANTERN", A: "ANVIL", n: "BALE", i: "CINDERLAMP", j: "CRYSTALLAMP", "^": "LADDER", "|": "FENCE",
     F: "X_furnace", D: "X_desk", S: "X_sofa", k: "X_clock", Z: "X_dresser", O: "X_cookpot", R: "X_weaponrack", M: "X_armorstand", X: "X_crate", x: "X_sack", G: "X_globe", e: "X_telescope",
@@ -293,9 +293,9 @@
   }
   // ---------- NEW BUILDINGS (see sandbox-world.js STRUCT_KINDS nw): the Soggy Log Tavern, the Snow Igloo, the Blossom Tea House, the Sun Temple ----------
   var NEWTH = NEXUS_TH + 1;   // (their themes come right after the SwampRealms theme)
-  IMAP.tavern = {"amb": 0.66, "win": "GLASS", "floors": [[1, 2, 17, 10, "oakplanks"], [1, 2, 8, 2, "herringbone"]], "tops": {"2,2": "p", "3,2": "k", "5,2": "f", "7,2": "o", "5,4": "c", "13,4": "s", "3,6": "f", "13,6": "c", "5,8": "o", "12,8": "p"}, "map": ["###################", "#tS.F.tw.T.wt.F.St#", "#b111111..HH....bb#", "#b.............a.X#", "#...cTC.....cTC...#", "#.................#", "#.cTC.......cTC..f#", "#.................#", "#b..cTC....cTC...h#", "#bb.............bx#", "#X..f.........f.xx#", "###################"]}; IMAP.tavern.th = NEWTH + 0;
+  IMAP.tavern = {"amb": 0.66, "win": "GLASS", "floors": [[1, 2, 17, 10, "oakplanks"], [1, 2, 8, 2, "herringbone"]], "tops": {"2,2": "p", "3,2": "k", "5,2": "f", "7,2": "o", "5,4": "c", "13,4": "s", "3,6": "f", "13,6": "c", "5,8": "o", "12,8": "p"}, "map": ["###################", "#tS.F.tw.T.wt.F.St#", "#b111111..HH....bb#", "#b...............X#", "#...cTC.....cTC...#", "#................a#", "#.cTC.......cTC..f#", "#.................#", "#b..cTC....cTC...h#", "#bb.............bx#", "#X..f.........f.xx#", "###################"]}; IMAP.tavern.th = NEWTH + 0;
   IMAP.igloo = {"amb": 0.6, "win": "GLASSB", "floors": [[1, 2, 9, 7, "frostcobble"]], "tops": {"2,2": "c", "9,5": "p"}, "map": ["###########", "#t.w.T.w.t#", "#B4..H..Lj#", "#B.......x#", "#........X#", "#I......cT#", "#f.......b#", "#.u.....x.#", "###########"]}; IMAP.igloo.th = NEWTH + 1;
-  IMAP.teahouse = {"amb": 0.7, "win": "GLASSR", "floors": [[1, 2, 13, 9, "basketweave"], [1, 8, 4, 9, "terracotta"], [10, 8, 13, 9, "terracotta"]], "tops": {"4,2": "n", "10,2": "o", "3,3": "s", "11,3": "p", "3,6": "v", "11,6": "s", "2,8": "p", "12,8": "k"}, "map": ["###############", "#tg.w.T.T.w.gt#", "#f..5.....5..f#", "#.c6C.....c6C.#", "#.............#", "#f..h.....a..f#", "#.c6C.....c6C.#", "#.............#", "#13.........31#", "#y...........y#", "###############"]}; IMAP.teahouse.th = NEWTH + 2;
+  IMAP.teahouse = {"amb": 0.7, "win": "GLASSR", "floors": [[1, 2, 13, 9, "basketweave"], [1, 8, 4, 9, "terracotta"], [10, 8, 13, 9, "terracotta"]], "tops": {"4,2": "n", "10,2": "o", "3,3": "s", "11,3": "p", "3,6": "v", "11,6": "s", "2,8": "p", "12,8": "k"}, "map": ["###############", "#tg.w.T.T.w.gt#", "#f..5.....5..f#", "#.c6C.....c6C.#", "#.............#", "#f..h........f#", "#.c6C.....c6C.#", "#............a#", "#13.........31#", "#y...........y#", "###############"]}; IMAP.teahouse.th = NEWTH + 2;
   IMAP.suntemple = {"amb": 0.5, "win": "GLASSR", "floors": [[1, 2, 15, 11, "sandbrick"], [7, 3, 9, 11, "checker"]], "tops": {}, "map": ["#################", "#t.T.t.TTT.t.T.t#", "#Y.U..o...o..U.Y#", "#...............#", "#.==..Q...Q..==.#", "#.==.........==.#", "#U.............U#", "#..o.........o..#", "#.==.........==.#", "#.==..Q...Q..==.#", "#Y.............Y#", "#U.x...d.d...x.U#", "#################"]}; IMAP.suntemple.th = NEWTH + 7;
   // ---------- SKY VILLAGE houses (sandbox-world.js gen step 9) ----------
   IMAP.skyhall = {"amb": 0.72, "win": "GLASSB", "floors": [[1, 2, 15, 9, "herringbone"], [3, 3, 13, 6, "checker"]], "tops": {"5,4": "c", "7,4": "f", "9,4": "k", "11,4": "o"}, "map": ["#################", "#tn.M.w.T.w.c.nt#", "#K.K....N....e.K#", "#...............#", "#..cTTTTTTTTTC..#", "#...c.c.c.c.c...#", "#...............#", "#f.Q.........Q.f#", "#s.............s#", "#b.X.........X.b#", "#################"]}; IMAP.skyhall.th = NEWTH + 3;
@@ -351,11 +351,93 @@
       if (/\+/.test(m[y].charAt(x - 1) + m[y].charAt(x + 1) + (m[y - 1] || "").charAt(x) + (m[y + 1] || "").charAt(x))) continue;   // not in front of an inner doorway
       fc.push(i);
     }
+    var cuts = function (cell) {   // would a solid piece here cut off any floor? (flood from the exit, with it in place)
+      var N = w * h, blk = new Uint8Array(N); deco.forEach(function (e) { if (e.solid && !e.flat) blk[e.y * w + e.x] = 1; }); blk[cell] = 1;
+      var r = new Uint8Array(N), st = [(h - 2) * w + dx]; while (st.length) { var c = st.pop(); if (c < 0 || c >= N || r[c] || wall[c] || blk[c]) continue; r[c] = 1; st.push(c + 1, c - 1, c + w, c - w); }
+      for (var q = 2 * w; q < N - w; q++) if (!wall[q] && !blk[q] && !r[q]) return true; return false;
+    };
     (U.floor || []).forEach(function (k, n) {
       var tid = T["X_" + k]; if (tid === undefined || !fc.length) return;
-      var at = Math.min(fc.length - 1, Math.floor((n + 0.5) / U.floor.length * fc.length)), i = fc[at], px = i % w, py = (i / w) | 0;
+      var at = Math.min(fc.length - 1, Math.floor((n + 0.5) / U.floor.length * fc.length)), tries = 0;
+      while (tries < fc.length && cuts(fc[(at + tries) % fc.length])) tries++;   // never where it would seal off a corner of the room
+      if (tries >= fc.length) return; at = (at + tries) % fc.length;
+      var i = fc[at], px = i % w, py = (i / w) | 0;
       fc = fc.filter(function (j) { return Math.abs((j % w) - px) + Math.abs(((j / w) | 0) - py) > 1; });   // keep the pieces apart
       if (TILES[tid] && TILES[tid].rugish) add(px, py, tid, false, true); else add(px, py, tid, true, false);
+    });
+  }
+  // TIDY ROOMS: furniture never stands in a doorway (the cells either side of an inner door, and the two cells in front of the exit),
+  // and never seals off part of a room. A piece in the way is moved to a free spot against a wall (or left out if there is none).
+  // Returns { "old x,y": "new x,y" } so the things that sit on a moved piece (and its flip / turn) move with it.
+  function tidyRoom(m, w, h, dx, wall, sol, deco) {
+    var n = w * h, pass = new Uint8Array(n), moved = {}, x, y, i;
+    var mark = function (px, py) { if (px > 0 && py > 1 && px < w - 1 && py < h - 1) pass[py * w + px] = 1; };
+    for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) if (m[y].charAt(x) === "+") { if (wall[(y - 1) * w + x] && wall[(y + 1) * w + x]) { mark(x - 1, y); mark(x + 1, y); } else { mark(x, y - 1); mark(x, y + 1); } }
+    mark(dx, h - 2); mark(dx, h - 3);
+    var stands = function (e) { return !e.flat && !e.wall && e.top === undefined; };
+    var pool = new Uint8Array(n); deco.forEach(function (e) { if (e.flat && sol[e.y * w + e.x]) pool[e.y * w + e.x] = 1; });   // water and lava troughs stay as they are
+    var taken = function () { var t = new Uint8Array(n); deco.forEach(function (e) { if (stands(e)) t[e.y * w + e.x] = 1; }); return t; };
+    var reach = function () { var r = new Uint8Array(n), st = [(h - 2) * w + dx]; while (st.length) { var c = st.pop(); if (c < 0 || c >= n || r[c] || wall[c] || sol[c]) continue; r[c] = 1; st.push(c + 1, c - 1, c + w, c - w); } return r; };
+    var spotFor = function (avoid) {   // a free, reachable floor cell against a wall, away from doors and the exit
+      var r = reach(), t = taken(), best = -1, bd = 1e9;
+      for (var yy = 2; yy < h - 1; yy++) for (var xx = 1; xx < w - 1; xx++) { var c = yy * w + xx; if (!r[c] || t[c] || pass[c] || pool[c] || m[yy].charAt(xx) === "+" || Math.abs(xx - dx) < 2 && yy >= h - 4) continue;
+        if (!(wall[c - 1] || wall[c + 1] || wall[c - w])) continue; var nearPass = pass[c - 1] || pass[c + 1] || pass[c - w] || pass[c + w]; if (nearPass) continue;
+        var dd = Math.abs(xx - avoid[0]) + Math.abs(yy - avoid[1]); if (dd < bd) { bd = dd; best = c; } }
+      return best;
+    };
+    var move = function (e) {   // take it out of the way; put it back somewhere it does not block anything
+      var i0 = e.y * w + e.x; sol[i0] = 0; e.solid0 = e.solid; e.solid = false; var c = spotFor([e.x, e.y]);
+      if (c >= 0) { var nx = c % w, ny = (c / w) | 0; if (e.solid0) sol[c] = 1; var r0 = reach(), ok = true;
+        for (var k = 0; k < n && ok; k++) if (!wall[k] && !sol[k] && !pool[k] && (k / w | 0) >= 2 && !r0[k] && reachAll[k]) ok = false;
+        if (ok) { moved[e.x + "," + e.y] = nx + "," + ny; deco.forEach(function (q) { if (q !== e && q.top !== undefined && q.x === e.x && q.y === e.y) { q.x = nx; q.y = ny; } }); e.x = nx; e.y = ny; e.solid = !!e.solid0; delete e.solid0; return; }
+        sol[c] = 0; }
+      e.gone = 1; deco.forEach(function (q) { if (q.top !== undefined && q.x === e.x && q.y === e.y) q.gone = 1; });
+    };
+    var reachAll = new Uint8Array(n); for (i = 0; i < n; i++) reachAll[i] = 1;   // (filled in below once the doorways are clear)
+    deco.slice().forEach(function (e) { if (stands(e) && pass[e.y * w + e.x]) move(e); });
+    // anything still sealing off a pocket of floor: move the piece that sits between the pocket and the open room
+    for (var guard = 0; guard < 12; guard++) {
+      var r = reach(), cut = -1;
+      for (i = w * 2; i < n - w; i++) if (!wall[i] && !sol[i] && !pool[i] && !r[i]) { cut = i; break; }
+      if (cut < 0) break;
+      var region = new Uint8Array(n), st = [cut]; while (st.length) { var c2 = st.pop(); if (region[c2] || wall[c2] || sol[c2]) continue; region[c2] = 1; st.push(c2 + 1, c2 - 1, c2 + w, c2 - w); }
+      var cands = []; deco.forEach(function (e) { if (!stands(e) || !e.solid || e.gone) return; var c3 = e.y * w + e.x, nb = [c3 + 1, c3 - 1, c3 + w, c3 - w];
+        if (nb.some(function (b) { return region[b]; }) && nb.some(function (b) { return r[b]; })) cands.push(e); });
+      var sitting = function (e) { return e.id === T.CHAIR || e.id === T.CHAIR_L || e.id === T.TABLE || e.id === T.X_desk || e.id === T.X_coffeetable || e.id === T.X_sidetable; };   // a table and its chairs stay together
+      cands.reverse(); var blocker = cands.filter(function (e) { return !sitting(e); })[0] || cands[0] || null;   // the newest piece (the extras placed last) moves first
+      if (!blocker) { for (i = 0; i < n; i++) if (region[i]) pool[i] = 1; continue; }   // nothing to move (a sealed nook in the plan itself): leave it
+      reachAll = new Uint8Array(n); var rr = reach(); for (i = 0; i < n; i++) reachAll[i] = rr[i] | region[i];
+      sol[blocker.y * w + blocker.x] = 0; var rn = reach(); for (i = 0; i < n; i++) reachAll[i] = rn[i];
+      sol[blocker.y * w + blocker.x] = 1; move(blocker);
+    }
+    for (i = deco.length - 1; i >= 0; i--) if (deco[i].gone) { if (deco[i].solid) sol[deco[i].y * w + deco[i].x] = 0; deco.splice(i, 1); }
+    return moved;
+  }
+  // FACE THE ROOM: a piece with a front (doors, drawers, shelves, a dial) standing against a side wall is turned to face into the room
+  // (e.side, drawn on an angle by sandbox.js) instead of facing the camera as if it stood on the back wall. Tall pieces that a map turned
+  // 90 / 270 stand sideways the same way rather than being spun flat. A chair right below a desk or table is pushed in at it (e.back),
+  // and a chair beside a desk faces the desk.
+  var FACE_IDS = ["WARDROBE", "BOOKSHELF", "X_dresser", "X_desk", "X_nightstand", "X_clock", "X_furnace", "X_stovekettle", "X_icebox", "X_hutch", "X_cupboard",
+    "X_apothecary", "X_potionshelf", "X_recordcab", "X_weaponrack", "X_armorstand", "X_ciderrack", "X_aletap", "X_toolchest", "X_ironsafe", "X_strongbox",
+    "X_warchest", "X_mailbox", "X_scrollcase", "X_breadbin", "X_bellows", "X_gramophone", "X_trunk", "X_footlocker", "X_seedchest", "X_icechest", "X_coffer"], FACE = null;
+  function faceRoom(w, wall, deco) {
+    if (!FACE) { FACE = {}; FACE_IDS.forEach(function (nm) { if (T[nm] !== undefined) FACE[T[nm]] = 1; }); }
+    var at = {}; deco.forEach(function (e) { if (!e.flat && !e.wall && e.top === undefined) at[e.y * w + e.x] = e; });
+    deco.forEach(function (e) {
+      if (e.flat || e.wall || e.top !== undefined || !FACE[e.id]) return;
+      var i = e.y * w + e.x, L = wall[i - 1], R = wall[i + 1], U = wall[i - w];
+      if (e.rot === 90 || e.rot === 270) { e.side = e.rot === 270 ? 1 : -1; e.rot = 0; return; }
+      if (!U && (L || R) && !(L && R)) e.side = L ? 1 : -1;
+    });
+    deco.forEach(function (e) {   // pieces drawn from the side (they face right): against a right-hand wall they turn round to face the room
+      if (e.flat || e.wall || e.top !== undefined || e.id !== T.X_rockingchair) return;
+      var i = e.y * w + e.x; if (wall[i + 1] && !wall[i - 1]) e.flip = 1; else if (wall[i - 1]) e.flip = 0;
+    });
+    deco.forEach(function (e) {
+      if (e.top !== undefined || (e.id !== T.CHAIR && e.id !== T.CHAIR_L)) return;
+      var up = at[(e.y - 1) * w + e.x], lf = at[e.y * w + e.x - 1], rt = at[e.y * w + e.x + 1], desk = function (q) { return q && (q.id === T.X_desk || q.id === T.TABLE) && !q.rot; };
+      if (desk(up) && !desk(lf) && !desk(rt)) { e.back = 1; return; }
+      if (lf && lf.id === T.X_desk) e.id = T.CHAIR_L; else if (rt && rt.id === T.X_desk) e.id = T.CHAIR;
     });
   }
   function mapInterior(kind, biome, id) {
@@ -378,7 +460,8 @@
       else if ((D.leg && D.leg[ch]) || ILEG[ch]) add(x, y, (D.leg && D.leg[ch]) || ILEG[ch], true, false);
     }
     placeUniques(kind, D, m, w, h, dx, wall, deco, add);   // INTERIOR UNIQUES: the pieces only this kind of building has
-    deco.forEach(function (e) { if (e.x === dx && e.y >= h - 3 && !e.flat) { e.solid = false; sol[e.y * w + e.x] = 0; } });   // never block the way to the door
+    var moved = tidyRoom(m, w, h, dx, wall, sol, deco);   // nothing in a doorway or in front of the exit, and every part of the room can be walked to
+    var mv = function (k) { return moved[k] || k; };
     // ROOMS: inner walls ("#" away from the outer walls) stand up tall and fade down while you are in a room they border; "+" is a door in one
     var iw = new Uint8Array(n), room = new Int16Array(n), isDoor = new Uint8Array(n), nroom = 0, i, q2;
     for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) { i = y * w + x; if (wall[i]) iw[i] = 1; if (m[y].charAt(x) === "+") { isDoor[i] = 1; doors.push({ x: x, y: y, vert: !!(wall[i - w] && wall[i + w]) }); } }
@@ -399,10 +482,11 @@
     var wrm = new Uint32Array(n);   // for each inner wall / door cell: the rooms (bits) right next to it
     for (y = 2; y < h - 1; y++) for (x = 1; x < w - 1; x++) { i = y * w + x; if (!iw[i] && !isDoor[i]) continue;
       for (var oy2 = -1; oy2 <= 1; oy2++) for (var ox2 = -1; ox2 <= 1; ox2++) { var r2 = room[(y + oy2) * w + x + ox2]; if (r2 >= 0 && r2 < 32) wrm[i] |= 1 << r2; } }
-    (D.flip || []).forEach(function (k) { var q = k.split(","), fx = +q[0], fy = +q[1]; deco.forEach(function (e) { if (e.x === fx && e.y === fy && !e.flat) e.flip = 1; }); });   // mirrored pieces
-    Object.keys(D.rot || {}).forEach(function (k) { var q = k.split(","), fx = +q[0], fy = +q[1]; deco.forEach(function (e) { if (e.x === fx && e.y === fy && e.top === undefined && !e.flat) e.rot = D.rot[k]; }); });   // turned pieces: 90 / 180 / 270 degrees
+    (D.flip || []).forEach(function (k) { var q = mv(k).split(","), fx = +q[0], fy = +q[1]; deco.forEach(function (e) { if (e.x === fx && e.y === fy && !e.flat) e.flip = 1; }); });   // mirrored pieces
+    Object.keys(D.rot || {}).forEach(function (k) { var q = mv(k).split(","), fx = +q[0], fy = +q[1]; deco.forEach(function (e) { if (e.x === fx && e.y === fy && e.top === undefined && !e.flat) e.rot = D.rot[k]; }); });   // turned pieces: 90 / 180 / 270 degrees
+    faceRoom(w, wall, deco);
     Object.keys(D.tops || {}).forEach(function (k) {   // pieces standing on furniture or a wall shelf
-      var q = k.split(","), tx = +q[0], ty = +q[1], tk = TLEG[D.tops[k]], tid = tk && T[tk]; if (tid === undefined) return;
+      var q = mv(k).split(","), tx = +q[0], ty = +q[1], tk = TLEG[D.tops[k]], tid = tk && T[tk]; if (tid === undefined) return;
       var base = deco.filter(function (e) { return e.x === tx && e.y === ty && !e.flat && TILES[e.id] && TILES[e.id].top !== undefined; })[0]; if (!base) return;
       deco.push({ x: tx, y: ty, id: tid, solid: false, flat: false, wall: base.wall, top: TILES[base.id].top, rb: base.rot || 0, onSide: !!(base.rot && (base.rot === 90 || base.rot === 270) && /^counter/.test(TILES[base.id].kind)), flip: (D.flip || []).indexOf(k + "t") > -1 ? 1 : 0 });
     });
@@ -433,6 +517,123 @@
   }
 
 
-  var api = { NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  // ---- THE OLD VOLCANO (entered through the vent in an Ember Bog crater): cooled lava tubes, glowing magma cracks you must not step on, deep-floor ores ----
+  var VOLC_TH = THEMES.length;
+  THEMES.push({ n: "The Old Volcano", sub: "Cooled lava tubes, still warm underfoot", floor: "#3b2724", floor2: "#5a3326", top: "#120807", topHi: "#2a120c", face: "#4a2620", faceHi: "#8a4630", faceLo: "#1c0c0a", tint: [18, 5, 2], lamp: T.BLOOM, glow: "255,110,40" });
+  function genVolcano(seed, floor) {
+    floor = Math.max(1, floor | 0); var F = gen((seed ^ 0x5e7c0) | 0, floor + 7, 1), n = F.w * F.h, rnd = mulberry((seed * 131 + floor * 7919) | 0), i, k;
+    F.bi = VOLC_TH; F.theme = THEMES[VOLC_TH]; F.volc = 1; F.lava = new Uint8Array(n); F.amb = 0.1;
+    var free = function (j) { return !F.wall[j]; }, spI = Math.floor(F.spawn.y) * F.w + Math.floor(F.spawn.x), dnI = F.down.y * F.w + F.down.x, d0 = bfs(spI, free), keep = {};
+    for (var c = dnI; c >= 0 && c !== spI; c = d0.par[c]) { keep[c] = 1; keep[c - 1] = keep[c + 1] = 1; } keep[spI] = 1;
+    var near = function (j, p, r) { var x = j % F.w, y = (j / F.w) | 0; return Math.abs(x - p.x) <= r && Math.abs(y - p.y) <= r; };
+    var streaks = 3 + Math.min(4, Math.floor(floor / 2)), fl = []; for (i = 0; i < n; i++) if (!F.wall[i]) fl.push(i);
+    for (k = 0; k < streaks && fl.length; k++) {
+      var j = fl[Math.floor(rnd() * fl.length)], len = 6 + Math.floor(rnd() * 10), dir = [1, -1, F.w, -F.w][Math.floor(rnd() * 4)];
+      for (var s2 = 0; s2 < len; s2++) {
+        if (j <= F.w || j >= n - F.w || F.wall[j]) break;
+        if (!keep[j] && !near(j, F.up, 2) && !near(j, F.down, 1)) { F.lava[j] = 1; F.node[j] = 0; }
+        if (rnd() < 0.35) dir = [1, -1, F.w, -F.w][Math.floor(rnd() * 4)]; j += dir;
+      }
+    }
+    return F;
+  }
+  // ROOM CHECK: every building interior, built for a few seeds, checked for the mistakes that are easy to make by hand and hard to
+  // spot: furniture in a doorway or in front of the exit, part of a room cut off, a chest you cannot reach, a tall piece (wardrobe,
+  // shelf, dresser, clock...) standing out in the middle of the floor, a piece with a front that stands against a side wall but still
+  // faces the camera, or that is spun flat, and chairs with no table next to them or facing away from it. Returns a list of problems
+  // ([] when everything is fine). Run it from the browser console (SbxCave.checkRooms()) or with node (the GitHub check does).
+  function checkRooms(seeds) {
+    var out = [], kinds = Object.keys(IMAP).filter(function (k) { return k !== "nexus"; });
+    if (!FACE) { FACE = {}; FACE_IDS.forEach(function (nm) { if (T[nm] !== undefined) FACE[T[nm]] = 1; }); }
+    var TABLEISH = {}; ["TABLE", "X_desk", "X_coffeetable", "X_counter", "X_countersink", "X_counterstove", "X_sidetable"].forEach(function (nm) { if (T[nm] !== undefined) TABLEISH[T[nm]] = 1; });
+    kinds.forEach(function (k) { (seeds || [7919, 15838, 23757]).forEach(function (seed) {
+      var F = interior(k, 0, seed), w = F.w, h = F.h, n = w * h, m = IMAP[k].map, say = function (msg) { var s2 = k + ": " + msg; if (out.indexOf(s2) < 0) out.push(s2); };
+      var nm = function (e) { return TILES[e.id] ? TILES[e.id].n : String(e.id); };
+      var blk = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) return true; var i = y * w + x; return !!(F.wall[i] || F.sol[i]); };
+      var at = {}; F.deco.forEach(function (e) { if (!e.flat && !e.wall && e.top === undefined) at[e.y * w + e.x] = e; });
+      // doorways and the exit
+      for (var y = 2; y < h - 1; y++) for (var x = 1; x < w - 1; x++) if (m[y] && m[y].charAt(x) === "+") {
+        var vert = F.wall[(y - 1) * w + x] && F.wall[(y + 1) * w + x], nb = vert ? [[x - 1, y], [x + 1, y]] : [[x, y - 1], [x, y + 1]];
+        nb.forEach(function (q) { var e = at[q[1] * w + q[0]]; if (e) say(nm(e) + " blocks the doorway at " + x + "," + y); }); }
+      [[F.up.x, F.up.y - 1], [F.up.x, F.up.y - 2]].forEach(function (q) { var e = at[q[1] * w + q[0]]; if (e) say(nm(e) + " stands in front of the exit"); });
+      // every floor cell reachable
+      var seen = new Uint8Array(n), st = [[F.up.x, F.up.y - 1]]; while (st.length) { var q = st.pop(), i = q[1] * w + q[0]; if (q[0] < 0 || q[1] < 0 || q[0] >= w || q[1] >= h || seen[i] || blk(q[0], q[1])) continue; seen[i] = 1; st.push([q[0] + 1, q[1]], [q[0] - 1, q[1]], [q[0], q[1] + 1], [q[0], q[1] - 1]); }
+      var cut = 0; for (var i2 = 0; i2 < n; i2++) if (!F.wall[i2] && !F.sol[i2] && !seen[i2] && (i2 / w | 0) >= 2) cut++; if (cut) say(cut + " floor cells are cut off");
+      F.deco.forEach(function (e) {
+        if (e.flat || e.wall || e.top !== undefined) return; var i = e.y * w + e.x, L = F.wall[i - 1], R = F.wall[i + 1], U = F.wall[i - w], D = F.wall[i + w], td = TILES[e.id] || {};
+        if ((td.cont || /chest|loot/.test(td.kind || "")) && ![[1, 0], [-1, 0], [0, 1], [0, -1]].some(function (d) { return seen[(e.y + d[1]) * w + e.x + d[0]]; })) {   // you can open things up to about 2 tiles away
+          var bd = 99; for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) if (seen[yy * w + xx]) { var ddx = e.x - xx, ddy = e.y + 0.5 - (yy + 0.5), dd = Math.sqrt(ddx * ddx + ddy * ddy); if (dd < bd) bd = dd; }
+          if (bd > 2.05) say("can't reach the " + nm(e) + " at " + e.x + "," + e.y); }
+        if (FACE[e.id]) {
+          if (!L && !R && !U && !D) say(nm(e) + " stands in the middle of the room at " + e.x + "," + e.y);
+          if (!U && (L || R) && !(L && R) && !e.side) say(nm(e) + " on a side wall at " + e.x + "," + e.y + " faces the camera instead of the room");
+          if (e.rot === 90 || e.rot === 270) say(nm(e) + " at " + e.x + "," + e.y + " is spun flat");
+        }
+        if (e.id === T.CHAIR || e.id === T.CHAIR_L) {
+          var tl = at[i - 1], tr = at[i + 1], tu = at[i - w], tb = function (q2) { return q2 && TABLEISH[q2.id]; };
+          if (e.back) { if (!tb(tu)) say("the chair at " + e.x + "," + e.y + " is pushed in at nothing"); return; }
+          if (!tb(tl) && !tb(tr)) say("the chair at " + e.x + "," + e.y + " has no table beside it");
+          else if (e.id === T.CHAIR && !tb(tr)) say("the chair at " + e.x + "," + e.y + " faces away from its table");
+          else if (e.id === T.CHAIR_L && !tb(tl)) say("the chair at " + e.x + "," + e.y + " faces away from its table");
+        }
+      });
+    }); });
+    return out;
+  }
+  // THE MINE: which cave type a floor of the Mine is (the one cave system now changes as you go down). sandbox.js uses this too.
+  function mineBio(f) { return f >= 14 ? 2 : f >= 9 ? 1 : 0; }
+
+  // GAME CHECK: builds whole worlds and the Mine's floors and lists anything that would leave a player stuck or confused. Run by the
+  // GitHub check next to checkRooms. Returns a list of plain-English problems (empty when all is well).
+  //   worlds: the Mine exists (exactly one), sits on solid ground with room above it and is a short walk from the spawn; the spawn is not
+  //           inside a block; every building has ground under its door and an open cell outside it; buildings do not overlap.
+  //   Mine:   on floors 1..floors, the arrival spot is open, the ladder down can be reached without digging through walls, and every
+  //           treasure chest can be reached the same way. The same for the Old Volcano's floors (avoiding lava).
+  //   items:  every placeable item points at a real block.
+  function checkGame(seeds, floors) {
+    var out = [], T = SW.T, TL = SW.TILES; seeds = seeds || [777, 12345]; floors = floors || 30;
+    function say(m) { if (out.length < 200) out.push(m); }
+    seeds.forEach(function (sd) {
+      var w = SW.gen(sd), W = w.W, t = w.t, solidAt = function (x, y) { if (x < 0 || x >= W || y < 0 || y >= w.H) return true; var id = t[y * W + x], d = TL[id]; return !!(d && d.solid) && id !== T.LOG && id !== T.LEAVES; };   // trees the world grew are scenery you walk through
+      var tag = "world " + sd + ": ";
+      if (!w.holes || w.holes.length !== 1) say(tag + "there should be exactly one Mine, found " + (w.holes ? w.holes.length : 0));
+      var hc = 0; for (var i = 0; i < t.length; i++) if (t[i] === T.HOLE) hc++; if (hc !== (w.holes ? w.holes.length : 0)) say(tag + hc + " Mine Shaft blocks in the ground but " + (w.holes ? w.holes.length : 0) + " listed");
+      (w.holes || []).forEach(function (h) {
+        if (t[h.y * W + h.x] !== T.HOLE) say(tag + "the Mine at " + h.x + " is not a Mine Shaft block");
+        if (!solidAt(h.x, h.y + 1)) say(tag + "the Mine at " + h.x + " is not on solid ground");
+        if (solidAt(h.x, h.y - 1) || solidAt(h.x, h.y - 2)) say(tag + "the Mine at " + h.x + " has a block right on top of it");
+        if (Math.abs(h.x - w.spawn.x) > 60) say(tag + "the Mine is " + Math.round(Math.abs(h.x - w.spawn.x)) + " tiles from the spawn (should be a short walk)");
+      });
+      var sx = Math.floor(w.spawn.x), sy = Math.floor(w.spawn.y); if (solidAt(sx, sy - 1) || solidAt(sx, sy - 2)) say(tag + "the spawn point is inside a block");
+      var S2 = w.structs || [];
+      S2.forEach(function (q, n) {
+        var nm = q.name || q.kind, dy = q.doorY !== undefined ? q.doorY : q.gy - 1;
+        if (!solidAt(q.dx, dy + 1)) say(tag + nm + " at " + q.dx + " has no ground under its door");
+        var ex = q.mx0 !== undefined ? (q.outX >= q.dx ? q.mx1 + 1 : q.mx0 - 1) : q.outX;   // the first cell past the building's picture (its own blocks become a picture in the game)
+        if (ex !== undefined && solidAt(ex, dy) && solidAt(ex, dy - 1)) say(tag + nm + " at " + q.dx + " has its door walled in from outside");
+        for (var m = n + 1; m < S2.length; m++) { var o = S2[m]; if (q.x0 <= o.x1 && o.x0 <= q.x1 && Math.abs(q.gy - o.gy) < 12) say(tag + nm + " overlaps " + (o.name || o.kind) + " at " + q.x0); }
+      });
+    });
+    function floorCheck(F, tag, avoidLava) {
+      var free = function (j) { return !F.wall[j] && !(avoidLava && F.lava && F.lava[j]); };
+      var spI = Math.floor(F.spawn.y) * F.w + Math.floor(F.spawn.x);
+      if (!free(spI)) { say(tag + "you arrive inside a wall"); return; }
+      if (F.node[spI]) say(tag + "a rock sits on the arrival spot");
+      var d = bfs(spI, free).dist;
+      if (F.down.x >= 0 && d[F.down.y * F.w + F.down.x] < 0) say(tag + "the ladder down can't be reached");
+      if (d[F.up.y * F.w + F.up.x] < 0 && d[(F.up.y + 1) * F.w + F.up.x] < 0) say(tag + "the way up can't be reached");
+      if (T.X_lootchest !== undefined) for (var i = 0; i < F.node.length; i++) if (F.node[i] === T.X_lootchest) {
+        var x = i % F.w, y = (i / F.w) | 0, ok = false; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (o) { var j = (y + o[1]) * F.w + x + o[0]; if (x + o[0] >= 0 && x + o[0] < F.w && j >= 0 && j < d.length && d[j] >= 0) ok = true; });
+        if (!ok) say(tag + "the treasure chest at " + x + "," + y + " can't be reached");
+      }
+    }
+    [11, 4242].forEach(function (run) {
+      for (var f = 1; f <= floors; f++) floorCheck(gen(run, f, mineBio(f)), "Mine floor " + f + " (run " + run + "): ", false);
+      for (var v = 1; v <= 8; v++) floorCheck(genVolcano(run, v), "Old Volcano floor " + v + " (run " + run + "): ", true);
+    });
+    Object.keys(SW.ITEMS).forEach(function (k) { var it = SW.ITEMS[k]; if (it && it.tile !== undefined && !TL[it.tile]) say("the item " + k + " places a block that doesn't exist (" + it.tile + ")"); });
+    return out;
+  }
+  var api = { checkGame: checkGame, mineBio: mineBio, checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);

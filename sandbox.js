@@ -183,11 +183,12 @@
   function mk(id) { return (S.mk && S.mk[id]) || 0; }   // how many times a recipe was crafted
   function vis(k) { return !!(S.vis && S.vis[k]); }      // places visited: "b0".."b2" biomes, "k_<kind>" buildings
   function inv(k) { return S.inv[k] || 0; }
+  var MAIN_V4 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "lights", "eat", "plant", "harvest", "cook", "bed", "door", "sleep", "stash", "fishing", "tame", "spore", "pick2", "spear", "bug", "frog", "blade", "hole", "sweep", "benchup", "mail", "queen", "ember", "wasp", "pick3", "furnace", "iron", "cleaver", "forge", "aerie", "bench3", "plate", "wyrm", "frost", "wolf", "pick4", "fang", "shrine", "berry", "bench4", "fplate", "alpha", "deep10", "hoard", "hunter", "feast", "gems", "heart", "restore", "pick5", "realm", "gate", "wake", "through", "warden"];   // the quest order before the first-night chapter (saves made then store a position in this list)
   var MAIN_V1 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "lights", "eat", "plant", "harvest", "cook", "bed", "door", "sleep", "stash", "spore", "pick2", "spear", "bug", "frog", "blade", "hole", "sweep", "benchup", "mail", "ember", "wasp", "pick3", "furnace", "iron", "cleaver", "forge", "bench3", "plate", "frost", "wolf", "pick4", "fang", "shrine", "berry", "bench4", "fplate", "deep10", "hoard", "hunter", "feast", "gems", "heart", "restore"];   // MAIN order before fishing and animals (old saves)
   var CHAPTERS = [
-    { n: "Washed Up in Murkwater", c: "#4ee6b4", s: "You wake on a mossy bank with mud in your fur. A deep, croaky voice drifts out of the reeds: “Easy now, little one. I'm Old Croaker. The Heart of the Swamp, the great crystal that kept these lands glowing, has gone dark, and the swamp is fading with it. Bringing it back will take tools, shelter and a lot of courage. Let's start small: sticks, fibre, stone. Every delver starts with bare paws.”", rw: { torch: 6, planks: 8 } },
-    { n: "A Place to Call Home", c: "#7dd65a", s: "“Not bad at all!” croaks Old Croaker. “But a delver needs more than a pick. You'll need food in your belly, a garden that grows while you're away, and a bed to sleep through the dark. Nights bring the Dusk Bats. Build yourself a real home, and the swamp will start to feel like yours.”", rw: { seed_potato: 3, farmland: 6, torch: 6 } },
-    { n: "The Glow Beneath", c: "#22d3a6", s: "“Deep under the mud there's still a little light left: Glowspore. It's the last of the Heart's glow, soaked into the stone. Dig it, forge it, and arm yourself, because the creatures of the swamp have grown restless since the dark came. The Cave Holes lead further down than anyone's dared to go.”", rw: { torch: 10, ironingot: 2 } },
+    { n: "Washed Up in Murkwater", c: "#4ee6b4", s: "You wake on a mossy bank with mud in your fur. A deep, croaky voice drifts out of the reeds: “Easy now, little one. I'm Old Croaker. The Heart of the Swamp, the great crystal that kept these lands glowing, has gone dark, and the swamp is fading with it. Bringing it back will take tools, shelter and a lot of courage. Let's start small: sticks, fibre, stone, then a pick and a spear, a campfire and somewhere to sleep before the sun goes down. Your first night out here is coming fast.”", rw: { torch: 6, planks: 8 } },
+    { n: "A Place to Call Home", c: "#7dd65a", s: "“Not bad at all!” croaks Old Croaker. “You made it through the night! But a delver needs more than a campfire. You'll need a Workbench, food in your belly, a garden that grows while you're away, and a proper bed with a door to keep the Dusk Bats out. Build yourself a real home, and the swamp will start to feel like yours.”", rw: { seed_potato: 3, farmland: 6, torch: 6 } },
+    { n: "The Glow Beneath", c: "#22d3a6", s: "“Deep under the mud there's still a little light left: Glowspore. It's the last of the Heart's glow, soaked into the stone. Dig it, forge it, and arm yourself, because the creatures of the swamp have grown restless since the dark came. The old Mine leads further down than anyone's dared to go.”", rw: { torch: 10, ironingot: 2 } },
     { n: "Embers in the East", c: "#ff8a3d", s: "“East of the swamp lies Ember Bog, where the ground smoulders and the rivers run with fire. Its fire has been cooling too, and the Ember Wasps are angry about it. Forge a hotter pick, learn to smelt iron, and find the old Forges and Keeps. The bog's Ruby fire is one of the three lights the Heart needs.”", rw: { charcoal: 6, ironingot: 3 } },
     { n: "The Frozen Fen", c: "#7fd6ff", s: "“Far to the west is Frostfen, white and silent. Frost Wolves hunt there in pairs. Under the ice sleep the Frost Sapphire and the pale Moonstone, the cold lights of the Heart. Dress warm, keep your blade sharp, and visit the old Shrines. They remember the Heart.”", rw: { frostberry: 4, torch: 8 } },
     { n: "Heart of the Swamp", c: "#f2c14e", s: "“You've walked all three lands, little one. Now gather their lights: Ember Ruby, Frost Sapphire and Moonstone, bound with Glowspore, Cinder and Frost Crystal. Prove yourself in the deep caves, then shape the Heart of the Swamp at your Decor Workbench and set it down at home. Then the swamp will glow again.”", rw: null },
@@ -200,29 +201,31 @@
     { ch: 0, id: "stick", n: "Gather Sticks", d: "Hold on tree leaves to punch them. Leaves sometimes drop Sticks.", need: 5, v: function () { return S.st.stick; }, tg: [T.LEAVES] },
     { ch: 0, id: "fiber", n: "Gather Reed Fiber", d: "Snip cattails by the water, or the vines hanging under tree leaves.", need: 3, v: function () { return S.st.fiber; }, tg: [T.REED, T.VINE], rw: { stick: 2 } },
     { ch: 0, id: "pebble", n: "Dig for Pebbles", d: "Dig mud with your paws. Pebbles pop out now and then.", need: 2, v: function () { return S.st.pebble; }, tg: [T.MOSS, T.MUD], rw: { fiber: 1 } },
-    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
-    { ch: 0, id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
-    { ch: 0, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
-    { ch: 0, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
+    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { stick: 3 } },
+    { ch: 0, id: "spear", n: "Arm Yourself", d: "Night brings creatures. Craft the Reed Spear in the Journal (Sticks, Reed Fiber, Pebbles), pick it in the hotbar and hold to swing.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { pebble: 2 } },
+    { ch: 0, id: "campfire", n: "Make Camp", d: "Chop 4 Wood from a tree trunk with your pick, craft a Campfire in the Journal and place it on the ground. Its light keeps the dark back.", need: 1, v: function () { return S.st.campfires || 0; }, tg: [T.LOG], rw: { fiber: 3 } },
+    { ch: 0, id: "sleepbag", n: "A Place to Sleep", d: "Craft a Sleeping Bag (Reed Fiber and Sticks) and roll it out next to your campfire.", need: 1, v: function () { return S.st.sleepbags || 0; }, tg: [T.REED, T.VINE], rw: { torch: 4 } },
+    { ch: 0, id: "night1", n: "Your First Night", d: "When night falls, stand next to your Sleeping Bag and tap Sleep (or press F). You wake at dawn healed, and the bag becomes your respawn point.", need: 1, v: function () { return S.st.sleeps; }, rw: { planks: 6 } },
     // ---- Chapter 2: food, farm and shelter ----
-    { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmland: 4 } },
-    { ch: 1, id: "plant", n: "Plant a Garden", d: "Till grass with a Reed Hoe (made by hand) or place Garden Soil, then plant Swamp Carrot Seeds on top. Watered crops grow twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
-    { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop shows its ripe produce, hold on it to pick it. You get food, plus seeds to plant again.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
+    { ch: 1, id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
+    { ch: 1, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
+    { ch: 1, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
+    { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmgate: 1 } },
+    { ch: 1, id: "plant", n: "Plant a Garden", d: "Place your Farm Gate and step through to your homestead. Till the mud with a Reed Hoe (made by hand), then plant Swamp Carrot Seeds. Watered soil, or soil next to the pond, grows crops twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
+    { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop on your homestead shows its ripe produce, tap it to pick it. You get food, plus seeds to plant again. Ship spares in the crate for Silver Coins.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
     { ch: 1, id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food, and it heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
-    { ch: 1, id: "bed", n: "Build a Bed", d: "Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
+    { ch: 1, id: "bed", n: "A Real Bed", d: "Time to trade the Sleeping Bag up. Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
     { ch: 1, id: "door", n: "Close the Door", d: "Craft a Swamp Door and place it in a doorway. Closed doors keep bugs, frogs and bats out.", need: 1, v: function () { return S.st.doors; }, rw: { planks: 6 } },
-    { ch: 1, id: "sleep", n: "Sleep Tight", d: "At night, stand next to your bed and tap Sleep (or press F). You wake at dawn with full health, and the bed becomes your respawn point.", need: 1, v: function () { return S.st.sleeps; }, rw: { torch: 6 } },
     { ch: 1, id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest, place it at camp, open it and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8 } },
     { ch: 1, id: "fishing", n: "Gone Fishing", d: "Craft a Reed Fishing Rod by hand, pick it in the hotbar and tap a lake to cast. When the bobber dips and a ! shows, tap again to reel in.", need: 1, v: function () { return S.st.fish; }, rw: { bogminnow: 2, stick: 2 } },
     { ch: 1, id: "tame", n: "A New Friend", d: "Wild Bog Ducks and Mud Pigs wander the swamp. Hold their favourite food (seeds for ducks, carrots or potatoes for pigs) and tap one to tame it.", need: 1, v: function () { return S.st.tamed; }, rw: { trough: 1, seed_carrot: 3 } },
     // ---- Chapter 3: Glowspore, weapons and the caves ----
     { ch: 2, id: "spore", n: "Find Glowspore", d: "Dig down into the stone. The glowing green ore is Glowspore. Collect 16.", need: 16, v: function () { return S.st.spore; }, rw: { wood: 4 } },
     { ch: 2, id: "pick2", n: "Spore Smith", d: "Tap your Workbench to open it and craft the Glowspore Pick.", need: 1, v: function () { return S.tier >= 2 ? 1 : 0; }, rw: { torch: 6 } },
-    { ch: 2, id: "spear", n: "Arm Yourself", d: "Craft the Reed Spear (Sticks, Fiber, Pebbles), pick it in the hotbar and hold to swing. It hits far harder than a paw swat.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { planks: 4 } },
     { ch: 2, id: "bug", n: "Squash a Bramble Bug", d: "Bramble Bugs prowl the swamp and its caves. Strike them before they ram you.", need: 1, v: function () { return S.st.bugs; }, rw: { torch: 4 } },
     { ch: 2, id: "frog", n: "Hop to It", d: "A Swamp Frog warns with a ! and then lashes its tongue low. Jump the tongue, then hit it while it's winded.", need: 1, v: function () { return S.st.frogs; }, rw: { planks: 6 } },
     { ch: 2, id: "blade", n: "Spore Blade", d: "Bring 3 Bramble Fragments to your Workbench and craft the Glowspore Blade.", need: 1, v: function () { return S.wpn >= 2 ? 1 : 0; }, rw: { torch: 6 } },
-    { ch: 2, id: "hole", n: "Down the Hole", d: "Find a Cave Hole on the surface and climb down. Each floor has rocks, treasure and creatures.", need: 1, v: function () { return S.st.caves; }, rw: { torch: 6 } },
+    { ch: 2, id: "hole", n: "Down the Hole", d: "Find the Mine near where you started and climb down the shaft. Each floor has rocks, treasure and creatures.", need: 1, v: function () { return S.st.caves; }, rw: { torch: 6 } },
     { ch: 2, id: "sweep", n: "Clean Sweep", d: "Defeat every creature on one cave floor.", need: 1, v: function () { return S.st.cclear; }, rw: { ironingot: 1, torch: 4 } },
     { ch: 2, id: "benchup", n: "Level Up the Bench", d: "Bring Glowspore, Clay, Stone and Bramble and Frog Fragments to your Workbench, open it and press Upgrade.", need: 2, v: function () { return S.bl; }, rw: { planks: 8 } },
     { ch: 2, id: "mail", n: "Suit Up", d: "Craft the Glowspore Mail at your upgraded Workbench.", need: 1, v: function () { return S.arm >= 2 ? 1 : 0; }, rw: { torch: 6 } },
@@ -245,12 +248,12 @@
     { ch: 4, id: "pick4", n: "Frost Smith", d: "Mine Frostrock and Frost Crystal, then craft the Frost Pick.", need: 1, v: function () { return S.tier >= 4 ? 1 : 0; }, rw: { planks: 10 } },
     { ch: 4, id: "fang", n: "Frost Fang", d: "Craft the Frost Fang. Dusk Bats drop the Bat Wings it needs.", need: 1, v: function () { return S.wpn >= 4 ? 1 : 0; }, rw: { torch: 6 } },
     { ch: 4, id: "shrine", n: "What the Ice Remembers", d: "Step inside a Frozen Shrine or a Frost Lodge.", need: 1, v: function () { return vis("k_shrine") || vis("k_lodge") ? 1 : 0; }, rw: { crystal: 4 } },
-    { ch: 4, id: "berry", n: "Cold Harvest", d: "Grow and harvest a Frostberry. Frost Spikes drop the seeds, and they grow fastest in Frostfen.", need: 1, v: function () { return S.st.cropbits & 8 ? 1 : 0; }, rw: { seed_frost: 2 } },
+    { ch: 4, id: "berry", n: "Cold Harvest", d: "Grow and harvest a Frostberry on your homestead. Frost Spikes drop the seeds, or buy them at your Seed Stall.", need: 1, v: function () { return S.st.cropbits & 8 ? 1 : 0; }, rw: { seed_frost: 2 } },
     { ch: 4, id: "bench4", n: "Frostbound Bench", d: "Upgrade your Workbench to the Frost Workbench.", need: 4, v: function () { return S.bl; }, rw: { planks: 12 } },
     { ch: 4, id: "fplate", n: "Frozen Solid", d: "Craft the Frost Plate armor.", need: 1, v: function () { return S.arm >= 4 ? 1 : 0; }, rw: { torch: 8 } },
     { ch: 4, id: "alpha", n: "Leader of the Pack", d: "Craft a Frost Horn at your Frost Workbench and blow it in Frostfen. Defeat the Frost Alpha: jump its ice shards and step out from under the icicles.", need: 1, v: function () { return S.st.boss & 4 ? 1 : 0; }, rw: { crystal: 6, rawmeat: 3 } },
     // ---- Chapter 6: the finale ----
-    { ch: 5, id: "deep10", n: "Into the Deep", d: "Reach floor 10 below a Cave Hole.", need: 10, v: function () { return S.st.caveDeep; }, rw: { ironingot: 2 } },
+    { ch: 5, id: "deep10", n: "Into the Deep", d: "Reach floor 10 down the Mine.", need: 10, v: function () { return S.st.caveDeep; }, rw: { ironingot: 2 } },
     { ch: 5, id: "hoard", n: "Lost Treasures", d: "Open 5 Cave Chests.", need: 5, v: function () { return S.st.cchests; }, rw: { amethyst: 2 } },
     { ch: 5, id: "hunter", n: "Monster Hunter", d: "Defeat one of every creature: bug, frog, bat, wolf, gator, slime and wasp.", need: 7, v: function () { return ["bugs", "frogs", "bats", "wolves", "gators", "slimes", "wasps"].filter(function (k) { return S.st[k] >= 1; }).length; }, rw: { torch: 10 } },
     { ch: 5, id: "feast", n: "Feast of Three Lands", d: "Cook and eat an Explorer's Feast (a stew, a chili and a tart).", need: 1, v: function () { return S.ate.feast ? 1 : 0; }, rw: { roastcarrot: 3 } },
@@ -349,12 +352,33 @@
     sq("x_cloth", "Crafter", 2, "Weaver", "Weave Cloth on a Weaver's Loom.", 1, function () { return mk("x_cloth") + mk("x_furcloth") || inv("cloth") ? 1 : 0; }, { cotton: 3 }),
     sq("x_mason", "Crafter", 3, "Master Mason", "Cut Red Brick, Quartz Blocks and Obsidian Brick.", 3, function () { return (mk("x_redbrick") ? 1 : 0) + (mk("x_quartzblock") ? 1 : 0) + (mk("x_obsbrick") ? 1 : 0); }, { mortar: 4 }),
     sq("x_glass", "Crafter", 3, "Stained Glass Window", "Make all three stained glass colours.", 3, function () { return (mk("x_stainedred") ? 1 : 0) + (mk("x_stainedblue") ? 1 : 0) + (mk("x_stainedgreen") ? 1 : 0); }, { glass: 4 }),
-    sq("hoe1", "Farmer & Cook", 1, "Hoe Down", "Till 12 tiles of ground with a hoe.", 12, st("tilled"), { seed_potato: 3 }),
+    sq("hoe1", "Farmer & Cook", 1, "Hoe Down", "Till 12 tiles of ground on your homestead with a hoe.", 12, st("tilled"), { seed_potato: 3 }),
     sq("hoe2", "Farmer & Cook", 2, "Swing and Sow", "Harvest 25 ripe crops with a hoe (it replants for you).", 25, st("hoeharv"), { ironingot: 1, seed_pepper: 2 }),
     sq("can1", "Farmer & Cook", 1, "Green Paws", "Water a plant with the Watering Can.", 1, st("watered"), { seed_carrot: 2 }),
     sq("can2", "Farmer & Cook", 1, "Gardener", "Water plants 20 times.", 20, st("watered"), { farmland: 6 }),
     sq("farm25", "Farmer & Cook", 2, "Swamp Farmer", "Harvest 25 ripe crops.", 25, st("harvests"), { seed_potato: 4 }),
     sq("crops4", "Farmer & Cook", 4, "Four Fields", "Harvest Swamp Carrots, Bog Potatoes, Fire Peppers and Frostberries.", 4, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8; q *= 2) if (b & q) n++; return n; }, { seed_pepper: 2, seed_frost: 2 }),
+    sq("croaka1", "Homesteader", 1, "Meet the Neighbor", "Talk to Croaka, Old Croaker's sister, on your homestead.", 1, st("croakamet"), { seed_marshonion: 4 }),
+    sq("order1", "Homesteader", 1, "Neighborly", "Fill one of Croaka's Farm Orders.", 1, st("orders"), { compost: 4 }),
+    sq("order10", "Homesteader", 2, "Good Neighbor", "Fill 10 of Croaka's Farm Orders.", 10, st("orders"), { silvercoin: 15 }),
+    sq("croakaf5", "Homesteader", 2, "Family Friend", "Reach 5 hearts with Croaka.", 5, st("croakaf"), { seed_mudmelon: 4 }),
+    sq("croakaf10", "Homesteader", 3, "Practically Family", "Reach 10 hearts with Croaka.", 10, st("croakaf"), { silvercoin: 30 }),
+    sq("allcrops", "Homesteader", 3, "Master Homesteader", "Grow and harvest all 14 kinds of crop on your homestead.", 14, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8192; q *= 2) if (b & q) n++; return n; }, { silvercoin: 40 }),
+    sq("almanac3", "Homesteader", 2, "Bookworm", "Fill 3 chapters of Croaka's Farm Almanac and claim her rewards.", 3, st("fmpaid"), { silvercoin: 15 }),
+    sq("almanac6", "Homesteader", 3, "The Whole Almanac", "Fill every chapter of Croaka's Farm Almanac.", 6, st("fmpaid"), { goldfrog: 1 }),
+    sq("home1", "Homesteader", 1, "A Place to Grow", "Place a Farm Gate and step through to your homestead.", 1, st("homevisit"), { seed_lilyleek: 3 }),
+    sq("canal1", "Homesteader", 1, "Water Works", "Dig 8 ditches on your homestead. A ditch that touches water fills into a canal.", 8, st("ditches"), { seed_bogrice: 4 }),
+    sq("ship1", "Homesteader", 1, "Cart Day", "Ship 20 crops in your Shipping Crate.", 20, st("shipped"), { compost: 4 }),
+    sq("paddy1", "Homesteader", 2, "Paddy Farmer", "Harvest Bog Rice or Lily Lotus from a flooded paddy 5 times. Level a ditch with your hoe to make a paddy.", 5, st("paddyharv"), { seed_lotus: 2 }),
+    sq("moon1", "Homesteader", 2, "Moonlighter", "Harvest 3 moon crops. They only grow at night.", 3, st("moonharv"), { seed_glowgourd: 2 }),
+    sq("prize1", "Homesteader", 2, "Blue Ribbon", "Grow 10 Prize crops. Keep them watered and use compost.", 10, st("prize"), { compost: 8 }),
+    sq("giant1", "Homesteader", 3, "Something Big", "Grow a giant crop: a 3 by 3 patch of ripe Mud Melons, Croakin' Pumpkins or Glowgourds can merge into one.", 1, st("giants"), { silvercoin: 10 }),
+    sq("sprk1", "Homesteader", 2, "Rain Maker", "Place 4 Sprinklers on your homestead.", 4, st("hsprk"), { compost: 6 }),
+    sq("keg1", "Homesteader", 2, "In a Pickle", "Make 5 Preserves in a Pickle Keg.", 5, st("preserves"), { silvercoin: 8 }),
+    sq("coop1", "Homesteader", 2, "Feathered Friends", "Build a Duck Coop or Mud Barn and bring home an animal.", 1, st("hanimals"), { fiber: 20 }),
+    sq("eggs1", "Homesteader", 3, "Fresh This Morning", "Collect 10 eggs, truffles or goat milk from your animals.", 10, st("aprod"), { silvercoin: 10 }),
+    sq("pet1", "Homesteader", 3, "Good Boy, Good Girl", "Pet your animals 15 times.", 15, st("petted"), { duckegg: 4 }),
+    sq("ledger1", "Homesteader", 3, "Investments", "Buy 3 upgrades in the Farm Ledger.", 3, st("hups"), { silvercoin: 15 }),
     sq("cook5", "Farmer & Cook", 1, "Swamp Chef", "Cook 5 meals at a Cooking Pot.", 5, st("cooked"), { rawmeat: 2 }),
     sq("gourmet", "Farmer & Cook", 3, "Gourmet", "Eat 6 different cooked meals.", 6, function () { return Object.keys(S.ate).length; }, { stew: 1 }),
     sq("boss1", "Hunter", 2, "Big Game", "Defeat a boss. Craft a summon item at the Workbench and use it in its home land.", 1, st("bossk"), { torch: 8, ironingot: 1 }),
@@ -371,9 +395,9 @@
     sq("wasp5", "Hunter", 3, "Hive Breaker", "Defeat 5 Ember Wasps.", 5, st("wasps"), { stinger: 2 }),
     sq("wolf5", "Hunter", 4, "Pack Leader", "Defeat 5 Frost Wolves.", 5, st("wolves"), { wolfpelt: 2 }),
     sq("sleep5", "Hunter", 2, "Well Rested", "Sleep through 5 nights.", 5, st("sleeps"), { torch: 4 }),
-    sq("cave2", "Delver", 2, "Rock Hound", "Break 25 rocks inside the Cave Holes.", 25, st("cmined"), { torch: 4 }),
+    sq("cave2", "Delver", 2, "Rock Hound", "Break 25 rocks down the Mine.", 25, st("cmined"), { torch: 4 }),
     sq("cave3", "Delver", 2, "Spelunker", "Reach cave floor 5.", 5, st("caveDeep"), { ironingot: 1 }),
-    sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures in the Cave Holes.", 10, st("ckills"), { torch: 6 }),
+    sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures down the Mine.", 10, st("ckills"), { torch: 6 }),
     sq("cclear5", "Delver", 3, "Deep Delver", "Clear 5 cave floors.", 5, st("cclear"), { amethyst: 2 }),
     sq("cave15", "Delver", 5, "Abyss Walker", "Reach cave floor 15.", 15, st("caveDeep"), { moonstone: 1, ruby: 1 }),
     sq("loot1", "Delver", 2, "Treasure Hunter", "Open a Cave Chest. They glow faintly in dark caves.", 1, st("cchests"), { torch: 3 }),
@@ -419,17 +443,43 @@
     sq("dig5", "Wonders", 3, "Pirate Frog", "Dig up 5 Buried Treasures.", 5, st("dug"), { ancientcoin: 4, goldfeather: 1 }),
     sq("bounce50", "Wonders", 1, "Boing!", "Bounce on Bounce Shrooms 50 times (Workbench: Redcaps, Slimeball, Glowspore).", 50, st("bounces"), { bounceshroom: 4 }),
     sq("party", "Wonders", 1, "Party Frog", "Fire a Confetti Cannon 10 times.", 10, st("confetti"), { balloons: 1 }),
+    sq("fish30", "Angler", 1, "Big Book of Fish", "Log 30 different fish in Croako's Fishing Log.", 30, function () { return FISH_ALL.filter(function (k) { return S.fdex[k]; }).length; }, { doubloon: 10 }),
+    sq("fishall", "Angler", 3, "Every Fish in the Swamp", "Log every one of the 62 fish and water creatures.", 62, function () { return FISH_ALL.filter(function (k) { return S.fdex[k]; }).length; }, { goldbar: 2, blackpearl: 1 }),
+    sq("fishleg", "Angler", 2, "Tall Tale", "Land a Legendary fish. Croako will want proof.", 1, st("legfish"), { doubloon: 12 }),
+    sq("volc1", "Delver", 3, "Old Flame", "Climb an Ember Bog volcano and go down the vent in its cold crater.", 1, st("volc"), { torch: 6 }),
+    sq("volc5", "Delver", 3, "Heart of the Mountain", "Reach floor 5 of the Old Volcano.", 5, st("volcDeep"), { cinder: 6, ironingot: 3 }),
+    // ocean update: Croaker's Pier, diving, the boat and the sea
+    sq("oc_pier", "Sailor", 0, "Sea Breeze", "Find the Croaker's Pier sign where Murkwater Swamp meets the Ember Bog (east of camp) and walk out onto the pier.", 1, st("ocvisit"), { kelpwrap: 2 }),
+    sq("oc_dive", "Sailor", 0, "Cannonball!", "Dive off Croaker's Pier (halfway along the dock).", 1, st("dives"), { kelp: 4 }),
+    sq("oc_suit", "Sailor", 0, "Frogskin", "Craft the Frogskin Scuba Suit at a Workbench (Gear: Diving).", 1, function () { return inv("scubasuit") ? 1 : 0; }, { pearl: 1 }),
+    sq("oc_d30", "Sailor", 0, "Reef Diver", "Dive 30 m below the surface.", 30, st("ocdeep"), { seaglass: 3 }),
+    sq("oc_d70", "Sailor", 0, "Into the Twilight", "Dive 70 m down. You'll need the Brassback Diving Suit.", 70, st("ocdeep"), { brass: 4 }),
+    sq("oc_d110", "Sailor", 0, "Trench Walker", "Dive 110 m down into the Abyssal Trench (Pearlplate Deep Suit).", 110, st("ocdeep"), { blackpearl: 1 }),
+    sq("oc_clam5", "Sailor", 0, "Pearl Diver", "Pry open 5 Pearl Clams.", 5, st("clams"), { pearl: 2 }),
+    sq("oc_chest5", "Sailor", 0, "Sunken Treasure", "Open 5 sea chests.", 5, st("occhests"), { doubloon: 5 }),
+    sq("oc_kill25", "Sailor", 0, "Sea Monster Hunter", "Defeat 25 sea creatures.", 25, st("ockills"), { jellygel: 2 }),
+    sq("oc_pir10", "Sailor", 0, "Walk the Plank", "Defeat 10 diving Swamp Pirates.", 10, st("pirates"), { doubloon: 8 }),
+    sq("oc_capt", "Sailor", 0, "Gillbeard's Doom", "Defeat Cap'n Gillbeard by his hoard in the Twilight Deep.", 1, st("captain"), { goldbar: 1 }),
+    sq("oc_boat", "Sailor", 0, "Shipwright", "Fit all nine parts to Old Croaker's boat at the end of the pier and launch her.", 1, st("boatDone"), { rope: 3 }),
+    sq("oc_sail", "Sailor", 0, "Set Sail", "Take the Lily Belle out to sea.", 1, st("sails"), { doubloon: 3 }),
+    sq("oc_isl5", "Sailor", 0, "Island Hopper", "Sail to 5 different islands.", 5, st("islands"), { seaglass: 5 }),
+    sq("oc_ship3", "Sailor", 0, "Broadside!", "Sink 3 pirate ships.", 3, st("pships"), { canvas: 3 }),
+    sq("oc_suit4", "Sailor", 0, "Abyss Walker", "Craft the Gatorhide Abyss Suit, the only suit that survives the bottom of the trench.", 1, function () { return inv("suit4") ? 1 : 0; }, { doubloon: 10 }),
+    sq("oc_site3", "Sailor", 0, "Wreck Diver", "Dive at 3 buoys out at sea.", 3, st("sitedives"), { pearl: 2 }),
     sq("pot1", "Wonders", 1, "End of the Rainbow", "Find a Pot of Gold where a rainbow touches the ground. Rainbows come out when the rain stops on a sunny day.", 1, st("pots_gold"), { prism: 1 })
   ];
   SIDE.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
-  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders"];
+  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Homesteader", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders", "Sailor"];
   var GOALS = SIDE, TRAIL = MAIN;   // older names, still used by a few helpers
   function curCh() { return MAIN[S.qi] ? MAIN[S.qi].ch : CHAPTERS.length - 1; }
   function chQuests(c) { return MAIN.filter(function (q) { return q.ch === c; }); }
   function sideOpen(q) { return q.ch <= curCh(); }
   // Day counter: S.days counts finished day/night cycles in this world (saved with the world). Showing it is a per-device option.
   var SHOWDAYS = false; try { SHOWDAYS = localStorage.getItem("swamp-delve-daycount") === "1"; } catch (e) {}
-  function advTime(dt) { var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
+  // LONGER DAYS: daylight (S.time 0..240) runs at DAY_RATE, so a day lasts about 8 minutes instead of 4 (the very first day of a world
+  // about 11, so there is time to find your feet and craft a workbench before the first night). Dusk, night and dawn are as long as ever.
+  var DAY_RATE = 0.5, FIRST_DAY_RATE = 0.36;
+  function advTime(dt) { if (S.time < 240) dt *= (S.days | 0) === 0 ? FIRST_DAY_RATE : DAY_RATE; var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
   function dayTag() { return SHOWDAYS ? "Day " + (((S.days | 0) + 1)) + " \u00b7 " : ""; }
   var PHN = { day: "Day", dusk: "Dusk", night: "Night", dawn: "Dawn" };
 
@@ -442,11 +492,11 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full" };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
-  var cv = $("sbxCv"), ctx = cv.getContext("2d");
+  var cv = $("sbxCv"), ctx = cv.getContext("2d", { alpha: false });   // PERF: every scene paints its whole background, so the game canvas is opaque (the browser skips blending it with the page)
   var stageEl = $("sbxStage");
 
   // ---------- STATE ----------
@@ -507,7 +557,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -515,7 +565,7 @@
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
     if (o.wv === SW.WORLDVER) {   // BIOME VARIANTS: a save from before them keeps its land exactly; only land made from now on can be a variant
       var bvo = o.bvar && typeof o.bvar === "object" ? o.bvar : null;
-      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99) } : { c: 0, L: gLR[0], R: gLR[1] };
+      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: bvo.sp ? 1 : 0 } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
     }
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
@@ -581,6 +631,11 @@
     if (o.pleaf && typeof o.pleaf === "object" && o.wv === SW.WORLDVER) Object.keys(o.pleaf).forEach(function (k) { if (o.pleaf[k]) d.pleaf[k] = 1; });   // leaves you placed (they never decay)
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
     if (o.razed && typeof o.razed === "object" && o.wv === SW.WORLDVER) { d.razed = {}; Object.keys(o.razed).forEach(function (k) { if (o.razed[k] && /^\d+$/.test(k)) d.razed[k] = 1; }); }   // buildings you knocked down
+    if (o.oc) d.oc = ocClean(o.oc);
+    if (o.home) d.home = homeClean(o.home);   // HOMESTEAD: your farm
+    if (o.hb && typeof o.hb === "object") Object.keys(o.hb).forEach(function (k) { if (/^[cgap]:[a-z_]+$/.test(k)) d.hb[k] = Math.max(0, Math.floor(+o.hb[k]) || 0); });   // FARM ALMANAC
+    if (o.hq && typeof o.hq === "object") Object.keys(o.hq).forEach(function (k) { if (CROPS[k]) d.hq[k] = clamp(o.hq[k] | 0, 0, 2); });
+    if (o.hbpay && typeof o.hbpay === "object") Object.keys(o.hbpay).forEach(function (k) { if (/^[a-z]+$/.test(k) && o.hbpay[k]) d.hbpay[k] = 1; });   // OCEAN: boat parts, opened sea chests, dug tiles
     if (o.moto && typeof o.moto === "object") { d.moto = { p: {}, done: o.moto.done ? 1 : 0 }; if (o.moto.p && typeof o.moto.p === "object") Object.keys(o.moto.p).forEach(function (k) { if (/^moto_[a-z]+$/.test(k) && o.moto.p[k]) d.moto.p[k] = 1; }); }   // GARAGE: the motorcycle's parts
     if (Array.isArray(o.croakHome) && o.wv === SW.WORLDVER && o.croakHome.every(function (v) { return Number.isInteger(v) && v >= 0; })) d.croakHome = o.croakHome.slice(0, 2);   // Old Croaker lives in your house
     if (o.lore && typeof o.lore === "object") Object.keys(o.lore).forEach(function (k) { if (o.lore[k] === 1 || o.lore[k] === 2) d.lore[k] = o.lore[k]; });   // LORE pages found
@@ -609,21 +664,28 @@
       d.bty = { day: Math.floor(+o.bty.day) || -1, wk: Math.floor(+o.bty.wk) || -1, d: Array.isArray(o.bty.d) ? o.bty.d.map(okb).filter(Boolean).slice(0, 3) : [], w: okb(o.bty.w), rr: clamp(Math.floor(+o.bty.rr) || 0, 0, 9), full: o.bty.full ? 1 : 0 };
     }
     if (o.fdex && typeof o.fdex === "object") Object.keys(o.fdex).forEach(function (k) { if (ITEMS[k]) d.fdex[k] = 1; });
+    ["fn", "fbig"].forEach(function (f) { if (o[f] && typeof o[f] === "object") Object.keys(o[f]).forEach(function (k) { if (ITEMS[k]) d[f][k] = Math.max(0, Math.min(99999, Math.floor(+o[f][k]) || 0)); }); });   // the Fishing Log
+    if (o.fpay && typeof o.fpay === "object") Object.keys(o.fpay).forEach(function (k) { if (/^[a-z]+$/.test(k) && o.fpay[k]) d.fpay[k] = 1; });
     if (Array.isArray(o.pets) && o.wv === SW.WORLDVER) o.pets.slice(0, PET_MAX).forEach(function (q) {   // tamed animals (dropped if the world was rebuilt)
       if (!q || !ANIM[q.k] || !isFinite(+q.x) || !isFinite(+q.y)) return;
       var a = newAnimal(q.k, clamp(+q.x, 2, W - 2), clamp(+q.y, 2, H - 3), true); a.hx = isFinite(+q.hx) ? +q.hx : a.x; a.fed = clamp(+q.fed || 0, 0, FED_S); a.pr = Math.max(0, +q.pr || 0); a.rdy = clamp(Math.floor(+q.rdy) || 0, 0, 3);
       a.nm = String(q.nm || ANIM[q.k].n).slice(0, 20); a.baby = Math.max(0, +q.baby || 0); if (a.baby) { a.w *= 0.6; a.h *= 0.6; } a.love = Math.max(0, +q.love || 0); d.pets.push(a);
     });
+    var MV4 = MAIN_V4.map(function (id) { return { id: id }; });   // older saves are first brought up to the v4 list, then mapped to today's
     if (o.qv === 1) {   // quest list v1: Chapter 2 gained "Gone Fishing" and "A New Friend", so map the saved quest by its id
-      var oid = MAIN_V1[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V1.length)], ni = oid ? MAIN.map(function (q) { return q.id; }).indexOf(oid) : MAIN.length; o = Object.assign({}, o, { qi: ni < 0 ? MAIN.length : ni, qv: 2 });
+      var oid = MAIN_V1[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V1.length)], ni = oid ? MV4.map(function (q) { return q.id; }).indexOf(oid) : MV4.length; o = Object.assign({}, o, { qi: ni < 0 ? MV4.length : ni, qv: 2 });
     }
     if (o.qv === 2) {   // quest list v2: chapters 3-5 each gained a boss quest at the end, so map the saved quest by its id
-      var oid2 = MAIN.filter(function (q) { return !BOSS[q.id]; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni2 = oid2 ? MAIN.map(function (q) { return q.id; }).indexOf(oid2) : MAIN.length; o = Object.assign({}, o, { qi: ni2 < 0 ? MAIN.length : ni2, qv: 3 });
+      var oid2 = MV4.filter(function (q) { return !BOSS[q.id]; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni2 = oid2 ? MV4.map(function (q) { return q.id; }).indexOf(oid2) : MV4.length; o = Object.assign({}, o, { qi: ni2 < 0 ? MV4.length : ni2, qv: 3 });
     }
     if (o.qv === 3) {   // quest list v3: Chapter 4 gained "Above the Embers", so map the saved quest by its id
-      var oid3 = MAIN.filter(function (q) { return q.id !== "aerie"; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni3 = oid3 ? MAIN.map(function (q) { return q.id; }).indexOf(oid3) : MAIN.length; o = Object.assign({}, o, { qi: ni3 < 0 ? MAIN.length : ni3, qv: 4 });
+      var oid3 = MV4.filter(function (q) { return q.id !== "aerie"; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni3 = oid3 ? MV4.map(function (q) { return q.id; }).indexOf(oid3) : MV4.length; o = Object.assign({}, o, { qi: ni3 < 0 ? MV4.length : ni3, qv: 4 });
     }
-    if (o.qv === 4) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
+    if (o.qv === 4) {   // quest list v4: Chapter 1 now ends with the first night (pick, spear, campfire, sleeping bag, sleep), so map the saved quest by its id
+      var oid4 = MAIN_V4[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V4.length)], ni4 = oid4 === "sleep" ? MAIN.map(function (q) { return q.id; }).indexOf("stash") : oid4 ? MAIN.map(function (q) { return q.id; }).indexOf(oid4) : MAIN.length;
+      var ch4 = Math.floor(+o.qch); o = Object.assign({}, o, { qi: ni4 < 0 ? MAIN.length : ni4, qv: 5, qch: ch4 === 0 && ni4 >= 0 && ni4 < MAIN.length && MAIN[ni4].ch > 0 ? -1 : o.qch });
+    }
+    if (o.qv === 5) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     return d;
   }
@@ -641,12 +703,12 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
-    benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; resize(); stageEl.classList.remove("cave");
+    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
-    if (!S.qv) { S.qv = 4; S.qi = 0; checkTrail(true); S.qch = curCh() - 1; }   // an older save: every quest already done counts, silently, then the current chapter's story is shown
+    if (!S.qv) { S.qv = 5; S.qi = 0; checkTrail(true); S.qch = curCh() - 1; }   // an older save: every quest already done counts, silently, then the current chapter's story is shown
     npc.ok = false; npc.chk = 0; cam.x = p.x; cam.y = p.y - 1; sel = "pick"; selSlot = -1; reslot(); bare = !(S.tier >= 1); if (!bare) selSlot = hotIndex("t_pick"); invSel = -1; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.qi < MAIN.length ? "quests" : "craft"; hbDirty = true;
     storyQ.length = 0; if (S.qch < curCh()) { S.qch = curCh(); storyQ.push(curCh()); setTimeout(showStory, 900); } else if (!S.gv && MAIN[S.qi] && MAIN[S.qi].ch === CHAPTERS.length - 2) { storyQ.push(CHAPTERS.length - 2); setTimeout(showStory, 900); }   // an old save that had already finished: the Realm Gate chapter is new to it
     S.gv = 1; exKey = ""; spriteKey = ""; ICO = {};
@@ -1152,6 +1214,8 @@
   var bare = false;   // holding nothing (an empty hotbar slot): you dig and pick with bare paws even if you own a pick
   function choose(id, slot) {
     bare = false;
+    if (id === "fishlog") { openFishLog(); return; }
+    if (id === "farmbook") { openFarmBook(); return; }   // so does Croaka's Farm Almanac   // the Fishing Log opens when you pick it
     if (id === "hand") { sel = "pick"; bare = true; selSlot = slot != null ? slot : -1; }
     else if (TOOLKEY[id]) { if (toolOwned(id)) { sel = id; selSlot = slot != null && slot >= 0 ? slot : hotIndex(TOOLKEY[id]); } else if (id === "pick") { sel = "pick"; bare = true; selSlot = -1; } mine = null; hbDirty = true; return; }
     else if (id === "weapon") { if (S.wpn) { sel = "weapon"; selSlot = -1; } }
@@ -1563,10 +1627,11 @@
       rect(6, 4, 1, 11, "#6e431f", 0.7); rect(9, 4, 1, 11, "#6e431f", 0.7); rect(3, 6, 10, 1, "#4a4a52"); rect(3, 12, 10, 1, "#4a4a52"); rect(3, 6, 10, 1, "#9aa0ac", 0.25);
       rect(10, 9, 3, 1, "#f2c14e"); rect(12, 9, 1, 2, "#a8740a"); rect(4, 3, 8, 1, "#a8703c"); return;
     }
-    if (kind === "hole") {   // a little stone-ringed burrow in the ground
-      rect(2, 9, 12, 7, "#6b7276"); rect(3, 8, 10, 1, "#82898d"); rect(5, 7, 6, 1, "#82898d"); rect(2, 9, 1, 7, "#8f979b"); rect(13, 10, 1, 6, "#4a5054");
-      rect(4, 10, 8, 6, "#08090a"); rect(5, 9, 6, 1, "#08090a"); rect(5, 11, 6, 5, "#14100c"); rect(6, 13, 1, 1, "#4ee6b4", 0.35); rect(9, 14, 1, 1, "#4ee6b4", 0.25);
-      rect(1, 14, 2, 2, "#5a6064"); rect(13, 14, 2, 2, "#5a6064"); rect(4, 8, 1, 1, "#9aa3a8", 0.7); return;
+    if (kind === "hole") {   // THE MINE: a timber-framed shaft mouth, planks round a dark drop with a glint of glowspore far below
+      rect(1, 9, 14, 7, "#5e4228"); rect(1, 9, 14, 1, "#8a6238"); rect(1, 9, 1, 7, "#a8783f"); rect(14, 9, 1, 7, "#3a2614");
+      rect(3, 10, 10, 6, "#08090a"); rect(4, 11, 8, 5, "#120e0a"); rect(6, 14, 1, 1, "#4ee6b4", 0.4); rect(9, 15, 1, 1, "#4ee6b4", 0.3);
+      rect(1, 12, 2, 1, "#3a2614"); rect(13, 12, 2, 1, "#3a2614"); rect(2, 10, 1, 1, "#c9a27a", 0.7); rect(13, 10, 1, 1, "#c9a27a", 0.5);
+      rect(7, 10, 1, 4, "#c9a876", 0.8); return;   // the end of the hoist rope
     }
     if (kind === "chair") {   // side view: tall back on the left, seat, four legs (the left-facing chair is the mirror image)
       var fl = id === T.CHAIR_L, R2 = function (x2, y2, w2, h2, c2, a2) { rect(fl ? 16 - x2 - w2 : x2, y2, w2, h2, c2, a2); };
@@ -1859,12 +1924,41 @@
   function drawBagIcon(g, t) { drawSpr(g, t >= 2 ? "bag2" : "bag1"); }
   function drawShovelIcon(g) { drawSpr(g, "shovel"); }
   function drawWeaponIcon(g, tier) { if (tier >= 1 && tier <= 5) drawSpr(g, "wpn" + tier); }
+  (function () {   // HOMESTEAD: seed sacks and produce for the new crops
+    var HC = (typeof SbxExtra !== "undefined" && SbxExtra.HCROPS) || {}, b = SPR.seed_carrot;
+    Object.keys(HC).forEach(function (k) { var C = HC[k]; if (b && !SPR["seed_" + k]) SPR["seed_" + k] = { r: b.r, p: Object.assign({}, b.p, { a: C.fruit, b: C.leaf2 }), o: b.o }; });
+    var P = {
+      reedcorn: { r: ["................", "..........g.....", ".........gg.....", "........ggyy....", ".......gyyyy....", "......gyyhyy....", "......gyyyyy....", ".....gyyhyy.....", ".....gyyyyy.....", "....gyyhyy......", "....gyyyy.......", "...ggyyy........", "...gggy.........", "..gg............", "..g.............", "................"], p: { g: "#5a9a3a", y: "#ffd23f", h: "#fff0a0" }, o: "#3a2a10" },
+      bogbeans: { r: ["................", "................", "...........gg...", "..........gllg..", ".........gllg...", "........glgg....", ".......gllg.....", "......gllg..gg..", ".....glgg..gllg.", "....gllg..gllg..", "...gllg..glgg...", "...ggg..gllg....", ".......gllg.....", "......ggg.......", "................", "................"], p: { g: "#4a8a2a", l: "#a8d05a" }, o: "#1e3a10" },
+      lilyleek: { r: ["..g......g......", "..gg....gg......", "...gg..gg.......", "...lg.gl........", "....lggl........", "....lggl........", ".....gg.........", ".....ww.........", ".....ww.........", ".....ww.........", ".....ww.........", ".....wwy........", ".....wwy........", ".....yyy........", "....y.y.y.......", "................"], p: { g: "#4aa86a", l: "#9ae0b0", w: "#f6f2e0", y: "#c8b890" }, o: "#2a3a20" },
+      marshonion: { r: ["................", ".......g........", ".......gg.......", "......g.g.......", "......g.g.......", ".......g........", "......ppp.......", ".....ppppp......", "....pphpppp.....", "...pphppppp.....", "...pppppppd.....", "...pppppppd.....", "....ppppdd......", ".....pddd.......", "......ww........", "................"], p: { g: "#5aa84a", p: "#c86a8a", h: "#f0b0c8", d: "#8a3a5a", w: "#e8d8c8" }, o: "#3a1a2a" },
+      mudmelon: { r: ["................", "................", ".......b........", "......b.........", "....gggggg......", "...gGgGgGgg.....", "..gGgGgGgGgg....", "..GgGgGgGgGg....", ".gGgGgGgGgGgg...", ".gGgGgGgGgGgg...", ".gGgGgGgGgGgg...", "..GgGgGgGgGg....", "..gGgGgGgGgg....", "...gggggggg.....", ".....gggg.......", "................"], p: { g: "#5a8a3a", G: "#a8d880", b: "#6a4a20" }, o: "#1e3010" },
+      croakpumpkin: { r: ["................", "................", ".......bb.......", "........b.......", "....oooOoooo....", "...oOooOooOoo...", "..ooOoyOoyOooo..", "..ooOoyOoyOooo..", "..ooOooOooOooo..", "..ooOooOooOooo..", "..ooOdddddOooo..", "..ooOoddd.Oooo..", "...oOooOooOoo...", "....oooooooo....", "................", "................"], p: { o: "#ff8a2a", O: "#c85a10", y: "#ffe27a", d: "#3a1a0a", b: "#5a7a2a" }, o: "#4a2008" }
+    };
+    P.bogrice = { r: ["................", "................", "................", "................", "........y.......", ".....y.yy.y.....", "....yyhyyhyy....", "...wwwwwwwwww...", "..wbbbbbbbbbbw..", "..wbhbbhbbhbbw..", "..wbbbbbbbbbbw..", "...wbbbbbbbbw...", "....wwwwwwww....", "................", "................", "................"], p: { y: "#f0e0a0", h: "#fff8d8", w: "#7a5a3a", b: "#f6f0dc" }, o: "#3a2a10" };
+    P.lotusroot = { r: ["................", "................", "...........g....", "..........g.....", "...cccc..cccc...", "..cchhccchhccc..", "..cdccdcccdccc..", "..cccccccccccc..", "..cdccdcccdccc..", "...cccc..cccc...", "................", "................", "................", "................", "................", "................"], p: { c: "#e8c8b0", h: "#fff0e0", d: "#8a6a5a", g: "#5a9a4a" }, o: "#4a2a20" };
+    P.moonpetal = { r: ["................", ".......ww.......", "......wwww......", "...ww.wbbw.ww...", "..wwwwbbbbwwww..", "..wbbwwbbwwbbw..", "...wwwbyybwww...", "...wwwbyybwww...", "..wbbwwbbwwbbw..", "..wwwwbbbbwwww..", "...ww.wbbw.ww...", "......wwww......", ".......gg.......", "........g.......", "........g.......", "................"], p: { w: "#d8ecff", b: "#8ad8ff", y: "#fff6c0", g: "#3a5a7a" }, o: "#1a2a4a" };
+    P.glowgourd = { r: ["................", ".......g........", "........g.......", ".......ccc......", "......cmmmc.....", ".....cmhmmmc....", ".....cmmmmmc....", "......cmmmc.....", ".....cmmmmmc....", "....cmhmmmmmc...", "....cmmmmmmmc...", "....cmmmmmmmc...", ".....cmmmmmc....", "......ccccc.....", "................", "................"], p: { c: "#3aa888", m: "#7af0c8", h: "#e8fff4", g: "#2f5a3a" }, o: "#0e3a2a" };
+    P.compost = { r: ["................", "................", "................", "......rrrr......", ".....ssssss.....", "....sddddds.....", "...sddgdddds....", "...sdddddgds....", "..sddgddddddds..", "..sdddddgdddds..", "..sddddddddgds..", "..ssddgdddddss..", "...ssssssssss...", "....ssssssss....", "................", "................"], p: { s: "#8a6a3a", r: "#5a3a1e", d: "#3a2412", g: "#6a9a3a" }, o: "#1e140a" };
+    Object.keys(P).forEach(function (k) { if (!SPR[k]) SPR[k] = P[k]; });
+  })();
   function heldCan() { return sprCanvas("can"); }
   function icon(id) {
     if (ITEMS[id] && ITEMS[id].tool) return icon(ITEMS[id].tool);
     var key = id === "bow" ? "bow" + Math.max(1, S.bow) : id === "bucket" ? bucketKey() : id === "hoe" ? "hoe" + Math.max(1, S.hoe) : id === "rod" ? "rod" + Math.max(1, S.rod) : id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
     if (ICO[key]) return ICO[key];
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
+    if (OCI[id]) { try { OCI[id](g); } catch (e) {} return (ICO[key] = c.toDataURL()); }
+    if (ITEMS[id] && ITEMS[id].pb) {   // HOMESTEAD: a jar of preserves in the crop's colour
+      var pcj = ITEMS[id].pc || "#ff8a2a", J = function (x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); };
+      J(9, 9, 14, 20, "#2a1a10"); J(10, 10, 12, 18, "#d8eef0"); J(11, 14, 10, 13, pcj); J(11, 14, 10, 2, "rgba(255,255,255,.35)"); J(12, 17, 2, 7, "rgba(255,255,255,.4)");
+      J(9, 5, 14, 5, "#2a1a10"); J(10, 6, 12, 3, "#c84a3a"); J(10, 6, 12, 1, "#ff8a7a"); J(13, 19, 6, 5, "#f6eedb"); J(14, 20, 4, 1, "#8a6a4a"); J(14, 22, 4, 1, "#8a6a4a");
+      return (ICO[key] = c.toDataURL());
+    }
+    if (ITEMS[id] && ITEMS[id].qb && SPR[ITEMS[id].qb]) {   // HOMESTEAD: Fine and Prize crops wear a silver or gold star
+      drawSpr(g, ITEMS[id].qb); var sc2 = ITEMS[id].q === 2 ? ["#ffd23f", "#8a5a00"] : ["#e8eef4", "#5a6470"], st5 = function (cx, cy, R, r) { g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } g.closePath(); };
+      g.fillStyle = sc2[1]; st5(24, 24, 8, 3.6); g.fill(); g.fillStyle = sc2[0]; st5(24, 24, 6.2, 2.7); g.fill(); return (ICO[key] = c.toDataURL());
+    }   // OCEAN: the Brinebog Sea's items
     if (id === "pick") {
       drawPickIcon(g, S.tier);
     } else if (id === "arm" || /^arm\d$/.test(id)) {
@@ -2171,7 +2265,7 @@
     var id = get(tx, ty), td = ITEMS[item]; if (id !== T.AIR && id !== T.WATER) return false;
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
     var t = td.tile, solid = TILES[t].solid;
-    if (td.seed) { if (!soilKind(tx, ty + 1)) { nag("Plant seeds on top of Garden Soil."); return false; } return true; }
+    if (td.seed) { nag(T.X_farmgate !== undefined ? "Crops grow on your homestead now. Place a Farm Gate and step inside to plant." : "Plant seeds on top of Garden Soil."); return T.X_farmgate === undefined && !!soilKind(tx, ty + 1); }
     if (item === "garage") return garageCanPlace(tx, ty);
     if (item === "door") {
       if (ty < 2 || get(tx, ty - 1) !== T.AIR) { nag("A door needs two free tiles stacked up."); return false; }
@@ -2219,7 +2313,7 @@
   }
   function place(tx, ty, item) {
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
-    setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++;
+    setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
     if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
@@ -3944,7 +4038,7 @@
     ice: [["frosttrout", 55], ["icepike", 32], ["crystalcarp", 0]],
     lava: [["emberkoi", 52], ["magmaeel", 35], ["cinderfish", 0]]
   };
-  var FISH_ALL = ["bogminnow", "catfish", "glowfin", "frosttrout", "icepike", "crystalcarp", "emberkoi", "magmaeel", "cinderfish"];
+  var FISH_ALL = ["bogminnow", "catfish", "glowfin", "frosttrout", "icepike", "crystalcarp", "emberkoi", "magmaeel", "cinderfish", "brinemackerel", "kelpsnapper", "goldgilly"].concat((typeof SbxExtra !== "undefined" && SbxExtra.FISH2 || []).map(function (r) { return r[0]; })).filter(function (k) { return ITEMS[k]; });   // + the FISH PACK   // the last three bite off Croaker's Pier
   function liquidAt(x, y) { var id = get(x, y); return id === T.WATER ? "water" : id === T.LAVA ? "lava" : id === T.ICE || id === T.X_permafrost ? "ice" : ""; }
   function castTarget(tx, ty) {   // the liquid's surface cell at (or just below) where you tapped
     for (var y = ty; y <= ty + 3; y++) { var lq = liquidAt(tx, y); if (lq) { var top = y; while (top > 0 && liquidAt(tx, top - 1) === lq) top--; if (lq === "ice" && get(tx, top - 1) !== T.AIR) return null; return { x: tx, y: top, lq: lq }; } if (blocks(tx, y)) break; }
@@ -3961,14 +4055,14 @@
       p.face = dx < 0 ? -1 : 1;
       var bait = takeBait();
       fishing = { x: c.x, y: c.y, lq: c.lq, ph: "wait", bait: bait[1], t: (2.5 + Math.random() * 5) * fishBiteMul() * bait[0], bob: 0 };
-      thud(520, 0.04); chips(c.x + 0.5, c.y + 0.1, c.lq === "lava" ? "#ffb13b" : "#bff4ff", 6, 3); return;
+      thud(520, 0.04); if (c.lq === "lava") chips(c.x + 0.5, c.y + 0.1, "#ffb13b", 6, 3); else if (!cave) waterSplash(c.x + 0.5, waterTopY(c.x + 0.5, c.y + 0.5), 0.45); else chips(c.x + 0.5, c.y + 0.1, "#bff4ff", 6, 3); return;   // the float plops in
     }
     var fx = fishing.x + 0.5 - p.x, fy = fishing.y - (p.y - PH / 2);
     if (fx * fx + fy * fy > (ROD_REACH + 2) * (ROD_REACH + 2) || !liquidAt(fishing.x, fishing.y)) { fishing = null; nag("Your line came loose."); return; }
     fishing.t -= dt; fishing.bob += dt;
     if (fishing.ph === "wait") {
       if (press) { fishing = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
-      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
+      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); if (fishing.lq !== "lava" && !cave) waterSplash(fishing.x + 0.5, waterTopY(fishing.x + 0.5, fishing.y + 0.5), 0.55); else chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
     } else if (fishing.ph === "bite") {
       if (press) return landFish();
       if (fishing.t <= 0) { fishing.ph = "wait"; fishing.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
@@ -3979,12 +4073,10 @@
     var under = y > col[clamp(x, 0, W - 1)] + 6, night = isNight(S.time), r = Math.random();
     if (r < 0.04) { var L = rollLoot("pot", world.bio[x], under ? 1 : 0); L.forEach(function (q) { give(q[0], q[1], x, y - 0.6); }); popup("Fished up treasure!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#f2c14e", "✦"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.1) { give("oldboot", 1, x, y - 0.6); nag("Just an Old Boot..."); S.st.boots++; checkGoals(); return; }
-    var tab = FISHTAB[F.lq], rare = 0.07 + (F.bait || 0) + (under ? 0.05 : 0) + (hasCharm("angler") ? 0.06 : 0) + (night && F.lq === "water" ? 0.08 : 0), k;
-    if (Math.random() < rare) k = tab[2][0];
-    else { var tw = tab[0][1] + tab[1][1], rr = Math.random() * tw; k = rr < tab[0][1] ? tab[0][0] : tab[1][0]; }
-    give(k, 1, x, y - 0.6, true); S.st.fish++; S.fdex[k] = 1; if (F.lq === "lava") S.st.lavafish++;
+    var hab = fishHab(F.lq, x, y), k = rollFish(hab, F.bait, under ? 0.4 : 0), frr = FMETA[k] ? FMETA[k][1] : "c";   // FISH PACK: the water decides what bites
+    give(k, 1, x, y - 0.6, true); S.st.fish++; S.fdex[k] = 1; if (F.lq === "lava") S.st.lavafish++; var fcm = fishLogged(k); if (fcm) text(x + 0.5, y - 1.4, ITEMS[k].n + " \u00b7 " + fcm + " cm", "#bff4ff");
     chips(x + 0.5, y, F.lq === "lava" ? "#ff8a3d" : "#8fe0ff", 14, 6); thud(420, 0.06);
-    if (k === tab[2][0]) { S.st.rarefish++; popup("Rare catch!", ITEMS[k].n, "#c78bff", "★"); snd("open", "Epic"); } else snd("coin");
+    if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#c78bff", "★"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
     checkTrail(); checkGoals();
   }
   function drawFishing(g, now) {
@@ -5049,7 +5141,7 @@
     var g = cv.getContext("2d"), sx = cw / tw, sy = ch / th; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, cw, ch); g.drawImage(MINI.off, -(fx0 - ix0) * sx, -(fy0 - iy0) * sy, bw2 * sx, bh2 * sy);
     function at(wx, wy) { var q = [(wx - x0) * sx, (wy - y0) * sy]; return q[0] < -4 || q[0] > cw + 4 || q[1] < -4 || q[1] > ch + 4 ? null : q; }
     function dot(q, r2, fill, ring) { if (!q) return; g.beginPath(); g.arc(q[0], q[1], r2, 0, 6.2832); g.fillStyle = fill; g.fill(); if (ring) { g.lineWidth = 1.2; g.strokeStyle = ring; g.stroke(); } }
-    (world.holes || []).forEach(function (hh) { if (ex[hh.y * W + hh.x]) dot(at(hh.x + 0.5, hh.y), 2.2, "#050607", "#f2c14e"); });
+    (world.holes || []).forEach(function (hh) { if (1) dot(at(hh.x + 0.5, hh.y), 2.2, "#050607", "#f2c14e"); });
     if (S.bed) { var bq = at(S.bed.x + 0.5, S.bed.y + 0.5); if (bq) { g.fillStyle = "#b58cff"; g.fillRect(bq[0] - 2.5, bq[1] - 2, 5, 4); } }
     (S.wp || []).forEach(function (w) { dot(at(w.x + 0.5, w.y + 0.5), 2.8, WP_COL[w.c] || "#f2c14e", "#06100d"); });
     (S.stars || []).forEach(function (st) { dot(at(st.x + 0.5, st.y + 0.5), 2.6 + Math.sin(now / 250) * 0.5, "#ffe9a0", "#7a5a10"); });   // Fallen Stars
@@ -5139,9 +5231,22 @@
   var WX_LEN = { calm: [240, 540], wet: [120, 240], storm: [90, 170] }, WX_NAMES = [["Rain", "Thunderstorm"], ["Ash fall", "Ember storm"], ["Snow", "Blizzard"]];
   function wxNew(k) { var L = WX_LEN[k]; S.wx = { k: k, t: L[0] + Math.random() * (L[1] - L[0]), n: S.wx ? S.wx.n : 0 }; }
   function wxTarget() { return !S.wx || S.wx.k === "calm" ? 0 : S.wx.k === "wet" ? 0.6 : 1; }
+  function wxBio() { return HOME ? (seasonOf() === 3 ? 2 : 0) : OCS ? 0 : bioAt(); }   // the homestead and the ocean are swamp country: they always get rain
+  function wxN() { return WX.on && S.wx && !cave ? S.wx.n : 0; }   // how hard it is raining right now (0..1)
+  function wxStorm() { return WX.on && S.wx && S.wx.k === "storm" && !cave ? clamp((S.wx.n - 0.55) / 0.45, 0, 1) : 0; }
+  function thunder(dly, near) {   // a crack, then a long rumble that rolls away (closer strikes crack louder and sooner)
+    if (!fxReady()) return; try { var d = dly * (1.3 - near * 0.8); nz(d, 0.25, 0.05 + near * 0.08, 2400, "lowpass", 0.7); rumble(d + 0.05, 2.6 + Math.random(), 0.16 + near * 0.1, 150 + near * 120); rumble(d + 0.7, 2, 0.08, 80); } catch (e) {}
+  }
+  function rumble(t0, dur, vol, f) {   // a long looping noise swell (the 0.6 s noise buffer loops, with a slow wobble so it rolls)
+    var t = ac.currentTime + t0, src = ac.createBufferSource(), bq = ac.createBiquadFilter(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
+    src.buffer = nzBuf(); src.loop = true; src.playbackRate.value = 0.5; bq.type = "lowpass"; bq.frequency.value = f; bq.Q.value = 0.9;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.12); g.gain.exponentialRampToValueAtTime(vol * 0.5, t + dur * 0.4); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    lfo.frequency.value = 3 + Math.random() * 3; lg.gain.value = f * 0.35; lfo.connect(lg); lg.connect(bq.frequency);
+    src.connect(bq); bq.connect(g); g.connect(fxOut()); src.start(t); src.stop(t + dur + 0.05); lfo.start(t); lfo.stop(t + dur + 0.05);
+  }
   function wxLabel() {   // for the HUD: what the weather is called where you are standing (empty when calm)
     if (!WX.on || cave || !S.wx || S.wx.n < 0.25) return "";
-    return WX_NAMES[bioAt()][S.wx.k === "storm" && S.wx.n > 0.7 ? 1 : 0];
+    return WX_NAMES[wxBio()][S.wx.k === "storm" && S.wx.n > 0.7 ? 1 : 0];
   }
   function wxOpenSky(x, y) { return col[clamp(x, 0, W - 1)] >= y; }   // nothing solid above (x, y)
   function tickWeather(dt) {
@@ -5156,12 +5261,13 @@
         Object.keys(S.farm).forEach(function (key) { var q = key.split(","), x = +q[0], y = +q[1], e = S.farm[key]; if (world.bio[x] !== 0 || !wxOpenSky(x, y)) return; if (e.w < 40) { e.w = 40; setSoil(x, y + 1, true); } });
       }
     }
-    if (w.k === "storm" && w.n > 0.7 && !cave && bioAt() !== 1) {   // lightning (not in Ember Bog: it gets ember bursts instead)
+    if (w.k === "storm" && w.n > 0.7 && !cave && wxBio() !== 1) {   // lightning (not in Ember Bog: it gets ember bursts instead)
       WX.nextBolt -= dt;
       if (WX.nextBolt <= 0) {
         WX.nextBolt = 5 + Math.random() * 9; WX.flash = 1;
-        var bx = p.x + (Math.random() - 0.5) * (vw / ts) * 0.9; WX.bolt = { x: bx, y: col[clamp(Math.floor(bx), 0, W - 1)], t: 0.35, seed: Math.random() * 1000 };
-        var dly = 0.3 + Math.random() * 1.2; setTimeout(function () { thud(55, 0.11); setTimeout(function () { thud(40, 0.08); }, 160); }, dly * 1000);
+        if (HOME || OCS) WX.bolt = { scr: 1, sx: vw * (0.1 + Math.random() * 0.8), t: 0.35, seed: Math.random() * 1000 };   // the homestead and the sea: a bolt in screen space
+        else { var bx = p.x + (Math.random() - 0.5) * (vw / ts) * 0.9; WX.bolt = { x: bx, y: col[clamp(Math.floor(bx), 0, W - 1)], t: 0.35, seed: Math.random() * 1000 }; }
+        thunder(0.3 + Math.random() * 1.2, Math.random());
       }
     }
     WX.flash = Math.max(0, WX.flash - dt * 3); if (WX.bolt) { WX.bolt.t -= dt; if (WX.bolt.t <= 0) WX.bolt = null; }
@@ -5170,7 +5276,7 @@
   function fishBiteMul() { return (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1) * (fx("fish") ? 0.6 : 1); }
   function tickRainSound() {   // a soft filtered-noise hiss for rain / blizzard wind, following the music switch
     var want = WX.on && MUS.on && gestured && ac && S.wx && S.wx.n > 0.05 && !cave && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden;
-    var above = p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (bioAt() === 1 ? 0.25 : 0.55) : 0;
+    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OSEA + 0.6, above = HOME || OCS ? true : p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
     if (!lvl && !WX.snd) return;
     try {
       if (!WX.snd) {
@@ -5180,14 +5286,14 @@
         var f = ac.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1400; f.Q.value = 0.6; WX.sndF = f;
         WX.sndG = ac.createGain(); WX.sndG.gain.value = 0; WX.snd.connect(f); f.connect(WX.sndG); WX.sndG.connect(ac.destination); WX.snd.start();
       }
-      WX.sndF.frequency.setTargetAtTime(bioAt() === 2 ? 600 : 1400, ac.currentTime, 1);
+      WX.sndF.frequency.setTargetAtTime(under ? 420 : wxBio() === 2 ? 600 : 1400, ac.currentTime, 1);
       WX.sndG.gain.setTargetAtTime(lvl * 0.09, ac.currentTime, 0.8);
     } catch (e) {}
   }
   function drawWeather(g, now, day, above) {
     var w = S.wx; if (!WX.on || !w || cave) return;
     var n = w.n * above; if (n < 0.02 && WX.flash <= 0) return;
-    var b = bioAt(), storm = w.k === "storm" && w.n > 0.7, want = Math.round((lowq ? 70 : 170) * n * (b === 2 && storm ? 1.6 : 1)), L = WX.drops, dt = WX.ln ? clamp((now - WX.ln) / 1000, 0, 0.05) : 1 / 60; WX.ln = now;
+    var b = wxBio(), storm = w.k === "storm" && w.n > 0.7, want = Math.round((lowq ? 70 : 170) * n * (b === 2 && storm ? 1.6 : 1)), L = WX.drops, dt = WX.ln ? clamp((now - WX.ln) / 1000, 0, 0.05) : 1 / 60; WX.ln = now;
     while (L.length < want) L.push({ x: Math.random() * vw, y: Math.random() * vh, z: 0.5 + Math.random() * 0.5, ph: Math.random() * 6.28 });
     if (L.length > want) L.length = want;
     var wind = (storm ? 1 : 0.35) * (b === 2 ? 1.6 : 1), lit = 0.35 + 0.65 * day;
@@ -5280,7 +5386,7 @@
     var sect = function (title, done, all, inner) { return '<h3>' + title + ' <small class="lg-n">' + done + " / " + all + '</small></h3><div class="lg-grid">' + inner + "</div>"; };
     var h = '<div class="lg-stats">' + [
       ["Days", (S.days | 0) + 1], ["Deepest", (st.maxDepth | 0) + " m"], ["Dug", st.mined], ["Placed", st.placed], ["Defeated", kills], ["Bosses", st.bossk],
-      ["Fish", st.fish], ["Harvests", st.harvests], ["Meals", st.cooked], ["Bounties", st.bounties], ["Cave floors", st.caveDeep], ["Naps", st.sleeps]
+      ["Fish", st.fish], ["Harvests", st.harvests], ["Meals", st.cooked], ["Bounties", st.bounties], ["Cave floors", st.caveDeep], ["Deepest dive", (st.ocdeep | 0) + " m"], ["Naps", st.sleeps]
     ].map(function (q) { return "<div><b>" + (q[1] || 0) + "</b><span>" + q[0] + "</span></div>"; }).join("") + "</div>";
     var cre = Object.keys(KSTAT), creN = cre.filter(function (k) { return st[KSTAT[k]] > 0; }).length;
     h += sect("Creatures", creN, cre.length, cre.map(function (k) { var d = ENEMY[k], n = st[KSTAT[k]] || 0; return tile(icon(d.frag), d.n, n + " defeated", n > 0, d.glow); }).join(""));
@@ -5288,9 +5394,12 @@
     h += sect("Discoveries", dN, DISCS.length, DISCS.map(function (k) { return tile(icon(k), ITEMS[k].n, POTIONS[k] ? "Secret brew" : "Secret dish", !!S.disc[k], "#ffd23f"); }).join(""));
     var bk = Object.keys(BOSS), bN = bk.filter(function (k) { return st.boss & BOSS[k].bit; }).length;
     h += sect("Bosses", bN, bk.length, bk.map(function (k) { var B = BOSS[k], m = { queen: "queenchitin", wyrm: "wyrmscale", alpha: "alphamane" }[k]; return tile(icon(m), B.n, BIO_NAMES[B.b], !!(st.boss & B.bit), B.c); }).join(""));
-    var fN = FISH_ALL.filter(function (k) { return S.fdex[k]; }).length;
-    h += sect("Fish", fN, FISH_ALL.length, FISH_ALL.map(function (k) { return tile(icon(k), ITEMS[k].n, "", !!S.fdex[k], "#7fd6ff"); }).join(""));
-    var crops = [["carrot", 1], ["potato", 2], ["pepper", 4], ["frostberry", 8]], cN = crops.filter(function (q) { return st.cropbits & q[1]; }).length;
+    var fN = 0;   // FISH live in Croako's Fishing Log now (a book you get from Croako at Croaker's Pier), not here
+    h += '<h3>Farm</h3><div class="lg-book"><img alt="" src="' + icon("farmbook") + '"><div><b>' + ((S.inv.farmbook || 0) > 0 ? "Your harvests are written in Croaka's Farm Almanac" : "Croaka keeps a Farm Almanac") + '</b><small>' + ((S.inv.farmbook || 0) > 0 ? "Pick it on your hotbar to read it." : "Meet her on your homestead (through a Farm Gate).") + "</small></div>" + ((S.inv.farmbook || 0) > 0 ? '<button type="button" class="btn ghost" data-fmopen>Open</button>' : "") + "</div>";
+    h += '<h3>Fish</h3><div class="lg-book"><img alt="" src="' + icon("fishlog") + '"><div><b>' + ((S.inv.fishlog || 0) > 0 ? "Your fish are written in Croako's Fishing Log" : "Croako keeps the fish records") + "</b><small>" + ((S.inv.fishlog || 0) > 0 ? FISH_ALL.filter(function (k) { return S.fdex[k]; }).length + " of " + FISH_ALL.length + " kinds logged." : "Find Old Croaker's brother on the beach at Croaker's Pier. He has a book for you.") + "</small></div>" + ((S.inv.fishlog || 0) > 0 ? '<button type="button" class="btn" data-fbopen>Open the log</button>' : "") + "</div>";
+    var sea = typeof OM !== "undefined" ? Object.keys(OM) : [], sk = (S.oc && S.oc.kills) || {}, seaIc = { snapjaw: "bogminnow", captain: "blackpearl" }, sN = sea.filter(function (k) { return sk[k] > 0; }).length;   // OCEAN
+    if (sea.length) h += sect("Sea creatures", sN, sea.length, sea.map(function (k) { var d = OM[k], n = sk[k] || 0, ic = seaIc[k] || (d.drops && d.drops[0] && d.drops[0][0]); return tile(icon(ITEMS[ic] ? ic : "kelp"), d.n, n + " defeated", n > 0, d.boss ? "#a8fff0" : "#4fd0e8"); }).join(""));
+    var crops = [["carrot", 1], ["potato", 2], ["pepper", 4], ["frostberry", 8], ["reedcorn", 16], ["bogbeans", 32], ["lilyleek", 64], ["marshonion", 128], ["mudmelon", 256], ["croakpumpkin", 512], ["bogrice", 1024], ["lotusroot", 2048], ["moonpetal", 4096], ["glowgourd", 8192]], cN = crops.filter(function (q) { return st.cropbits & q[1]; }).length;
     h += sect("Crops grown", cN, crops.length, crops.map(function (q) { return ITEMS[q[0]] ? tile(icon(q[0]), ITEMS[q[0]].n, "", !!(st.cropbits & q[1]), "#7fd06a") : ""; }).join(""));
     var meals = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked; }), mN = meals.filter(function (k) { return S.ate[k]; }).length;
     h += sect("Meals tasted", mN, meals.length, meals.map(function (k) { return tile(icon(k), ITEMS[k].n, "", !!S.ate[k], "#ffb13b"); }).join(""));
@@ -5298,7 +5407,7 @@
     h += sect("Animal friends", aN, ak.length, ak.map(function (k) { var n = S.pets.filter(function (a) { return a.k === k; }).length; return tile(icon(ANIM[k].prod), ANIM[k].n, n + " at home", n > 0, "#ff9ac2"); }).join(""));
     var ck = Object.keys(CHARMS), chN = ck.filter(function (k) { return S.charms.own[k]; }).length;
     h += sect("Charms", chN, ck.length, ck.map(function (k) { return tile(icon("charm_" + k), CHARMS[k].n, hasCharm(k) ? "Worn" : "", !!S.charms.own[k], CHARMS[k].c); }).join(""));
-    var total = creN + bN + fN + cN + mN + aN + chN, max = cre.length + bk.length + FISH_ALL.length + crops.length + meals.length + ak.length + ck.length;
+    var total = creN + bN + fN + sN + cN + mN + aN + chN, max = cre.length + bk.length + sea.length + crops.length + meals.length + ak.length + ck.length;
     return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(total / max * 100) + '%"></i></span><em>' + total + " / " + max + " found</em></div>" + h;
   }
   // ---------- MULTIPLAYER (co-op rooms; the server side is DelveRoom in worker.js) ----------
@@ -5308,7 +5417,7 @@
   // Messages (JSON): me (look), p (player state), set / wall (tile edits, batched), tick (host: creatures, shots, its own state), env (time, weather),
   //   hit (guest hit a creature), dmg (a creature hit a guest), kill / bosswin (reward a guest), pvp (player hit), farm / water, chat, cfg (PvP switch).
   // Creatures always chase the nearest player: the host runs each creature's brain with that player standing in for "you" (mpRun).
-  var MP_CHAR = ["inv", "slots", "extra", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "rod", "hoe", "bucket", "bkt", "net", "bow", "fx", "gems", "wings", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
+  var MP_CHAR = ["inv", "slots", "extra", "home", "bag", "can", "water", "tier", "wpn", "arm", "hp", "shovel", "dur", "st", "ms", "mk", "ate", "fdex", "fn", "fbig", "fpay", "hb", "hq", "hbpay", "rod", "hoe", "bucket", "bkt", "net", "bow", "fx", "gems", "wings", "charms", "food", "animal", "qi", "qch", "qv", "cg", "bty", "mru", "zoom"];
   var MP = { on: false, role: "", ws: null, code: "", id: 0, peers: {}, npeers: 0, pvp: false, pub: false, room: "", hostName: "", own: null, applying: false,
     sets: [], walls: [], flushT: 0, sendT: 0, tickT: 0, envT: 0, metaT: 0, last: "", proxy: null, proxyE: null, nid: 0, chat: [], say: "", sayT: 0, status: "", err: "", list: null, view: "home" };
   var mpName = ""; try { mpName = localStorage.getItem("swamp-delve-mpname") || ""; } catch (e) {}
@@ -5628,6 +5737,7 @@
       if (!n) nag("Not ripe yet. Ripe crops show their fruit or flowers."); else { S.st.hoeharv += n; reslot(); hbDirty = true; thud(380, 0.05); }
       return;
     }
+    if (T.X_farmgate !== undefined) { nag("Farming moved to your homestead! Place a Farm Gate (crafted at the Workbench) and step through to till your own fields."); return; }
     var gy = TILLABLE[get(tx, ty)] ? ty : (!blocks(tx, ty) && TILLABLE[get(tx, ty + 1)]) ? ty + 1 : -1;
     if (gy < 0) { nag(soilKind(tx, ty) || soilKind(tx, ty + 1) ? "That's already Garden Soil. Plant seeds on top!" : "Use the hoe on grass, mud or other soft ground to make Garden Soil."); return; }
     for (x = tx - half; x <= tx + half; x++) {
@@ -5767,7 +5877,7 @@
   function emptyTrap(x, y, quiet) {
     var key = x + "," + y, tr = S.traps[key] || (S.traps[key] = { f: [], t: 0 });
     if (!tr.f.length) { if (!quiet) nag(trapWet(x, y) ? "Nothing yet. Check back in a little while." : "A Fish Trap only works under water. Place it on the bottom of a lake."); return; }
-    tr.f.forEach(function (k) { give(k, 1, x, y - 0.6, true); S.fdex[k] = 1; S.st.fish++; S.st.trapped++; });
+    tr.f.forEach(function (k) { give(k, 1, x, y - 0.6, true); S.fdex[k] = 1; S.st.fish++; S.st.trapped++; fishLogged(k); });
     chips(x + 0.5, y + 0.5, "#8fe0ff", 10, 4); snd("coin"); tr.f = []; checkTrail(); checkGoals(); save();
   }
   function drawTraps(g, X0, X1, Y0, Y1) {
@@ -5790,7 +5900,7 @@
     homeT += dt; if (Math.random() < 0.5) parts.push({ x: p.x + (Math.random() - 0.5), y: p.y - Math.random() * 1.6, vx: 0, vy: -1.5, life: 0.6, max: 0.6, c: "#bff4e4", s: 3 });
     if (homeT < 1.2) return;
     homeT = 0; homeLock = true; S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick", bare = true; } reslot(); hbDirty = true;
-    var sp = world.spawn, bd = S.bed && get(S.bed.x, S.bed.y) === T.BED ? S.bed : null;
+    var sp = world.spawn, bd = S.bed && isBed(get(S.bed.x, S.bed.y)) ? S.bed : null;
     chips(p.x, p.y - 1, "#bff4e4", 20, 6);
     if (bd) { p.x = bd.x + 0.5; p.y = bd.y + 1; } else { p.x = sp.x; p.y = sp.y; }
     p.vx = p.vy = 0; var gg = 0; while (boxHit(p.x, p.y) && gg++ < 60) p.y -= 1; cam.x = p.x; cam.y = p.y - 1;
@@ -6021,7 +6131,7 @@
     if (id === T.AIR || id === T.WATER || id === T.LAVA || id === T.BEDROCK || id === T.HOLE || !td || !isFinite(td.hard) || td.tier > 3) return true;
     if (smask && smask[i] && tiles[i] === orig[i]) return true;                                   // generated buildings are scenery
     if ((id === T.LOG || id === T.LEAVES) && tiles[i] === orig[i]) return true;                   // so are world trees
-    if (td.kind === "door" || td.hatch || td.kind === "realmgate" || td.kind === "armorstand" || td.kind === "jeweltable" || td.kind === "fishtrap" || id === T.BED) return true;
+    if (td.kind === "door" || td.hatch || td.kind === "realmgate" || td.kind === "armorstand" || td.kind === "jeweltable" || td.kind === "fishtrap" || isBed(id)) return true;
     if (isChest(id) && chestCount(x + "," + y) > 0) return true;
     if (sdoorAt(x, y)) return true;
     return false;
@@ -6418,7 +6528,8 @@
   function wayDests() {
     var L = wayList().filter(function (w) { return !(w.x === wayAt.x && w.y === wayAt.y); }).map(function (w) { return { n: w.n, x: w.x + 0.5, y: w.y + 1, b: world.bio[w.x] }; });
     L.push({ n: "Camp", x: world.spawn.x, y: world.spawn.y, b: world.bio[clamp(Math.floor(world.spawn.x), 0, W - 1)], camp: 1 });
-    if (S.bed && get(S.bed.x, S.bed.y) === T.BED) L.push({ n: "Your Bed", x: S.bed.x + 0.5, y: S.bed.y + 1, b: world.bio[S.bed.x], bed: 1 });
+    var mh0 = mineDest(); if (mh0) L.push(mh0);
+    if (S.bed && isBed(get(S.bed.x, S.bed.y))) L.push({ n: get(S.bed.x, S.bed.y) === T.BED ? "Your Bed" : "Your Sleeping Bag", x: S.bed.x + 0.5, y: S.bed.y + 1, b: world.bio[S.bed.x], bed: 1 });
     L.forEach(function (d) { d.d = d.x - (wayAt.x + 0.5); }); L.sort(function (a, b) { return Math.abs(a.d) - Math.abs(b.d); });
     return L;
   }
@@ -8087,7 +8198,7 @@
   // Keeps a new player moving: quests that ask you to craft something know their recipe (QRC). When you can make it, the Journal button
   // glows and a tip says so; tapping the quest tracker (or "Show me") opens the Journal right at that recipe. If a Chapter 1-2 quest makes
   // no progress for a while, a tip card repeats what to do. The first dusk gets a warning. Tips can be closed; each shows once per quest.
-  var QRC = { pick1: "pick1", bench: "bench", lights: "torch", bed: "bed", door: "door", stash: "chest", fishing: "x_rod1", plant: "x_hoe1", cook: "x_cookpot" };
+  var QRC = { spear: "wpn1", campfire: "x_campfire", sleepbag: "x_sleepbag", pick1: "pick1", bench: "bench", lights: "torch", bed: "bed", door: "door", stash: "chest", fishing: "x_rod1", plant: "x_hoe1", cook: "x_cookpot" };
   var qh = { id: "", v: -1, t: 0, tick: 0, said: {}, stuck: {} }, tipT = 0;
   function recById(id) { var all = craftAll(); for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i]; return null; }
   function showTip(msg, rc, color) {
@@ -8101,14 +8212,14 @@
     var r = recById(id); if (!r) return openPanel("quests");
     var k = stnOf(r);
     if (k) {   // made at a station: open it if one is in reach, otherwise say where
-      var sn = stationNearK(k); if (sn) { openStn(k, sn.x, sn.y); flashRec(id, "sbxStn"); return; }
+      var sn = stationNearK(k); if (sn) { CG_SEL[k] = id; if (r.cat2) stnCat[k] = r.cat2; openStn(k, sn.x, sn.y); flashRec(id, "sbxStn"); return; }
       toast("Make the " + r.n + " at your " + (k === "bench" ? "Bog Workbench" : STATIONS[k].n) + ". Walk up to it and tap it.", "#f2c14e"); return;
     }
-    ccat = r.cat2 || ccat; csub = r.sub || ""; cready = false; csearch = ""; openPanel("craft"); flashRec(id, "sbxPanel");
+    ccat = r.cat2 || ccat; csub = r.sub || ""; cready = false; csearch = ""; CG_SEL.bag = id; openPanel("craft"); flashRec(id, "sbxPanel");
   }
   function flashRec(id, root) {
     setTimeout(function () {
-      var b = document.querySelector("#" + root + ' [data-sx-craft="' + id + '"]'), card = b && b.closest(".sbx-card"); if (!card) return;
+      var b = document.querySelector("#" + root + ' [data-csel="' + id + '"]') || document.querySelector("#" + root + ' [data-sx-craft="' + id + '"]'), card = b && (b.closest(".sbx-card") || b); if (!card) return;
       try { card.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }); } catch (e) { card.scrollIntoView(); }
       card.classList.add("flash"); setTimeout(function () { card.classList.remove("flash"); }, 2600);
     }, 60);
@@ -8118,7 +8229,7 @@
     qh.tick -= dt; if (qh.tick > 0) return; qh.tick = 0.5;
     var q = MAIN[S.qi], btn = $("sbxMenuBtn");
     // the first dusk
-    if (!cave && !(S.st.htip & 2) && phaseOf(S.time).id === "dusk") { S.st.htip |= 2; showTip(S.st.beds ? "The sun is setting. Sleep in your bed to skip the night, or stay near torchlight: Dusk Bats hunt in the dark." : "The sun is setting! Dusk Bats come out at night. Light torches around camp, and craft a Swamp Bed soon so you can sleep through the dark.", "", "#b58cff"); }
+    if (!cave && !(S.st.htip & 2) && phaseOf(S.time).id === "dusk") { S.st.htip |= 2; showTip(S.st.beds || S.st.sleepbags ? "The sun is setting. Sleep in your " + (S.st.beds ? "bed" : "Sleeping Bag") + " to skip the night, or stay near your campfire: Dusk Bats hunt in the dark." : "The sun is setting! Dusk Bats come out at night. Stay by your campfire, and craft a Sleeping Bag (Reed Fiber and Sticks) so you can sleep through the dark.", "", "#b58cff"); }
     if (!q) { if (btn) btn.classList.remove("pulse"); return; }
     var v = Math.floor(q.v());
     if (q.id !== qh.id) { if (qh.id && S.qi > 0) $("sbxHint").classList.remove("on"); qh.id = q.id; qh.v = v; qh.t = 0; }   // the opening controls hint goes once the first quest is done
@@ -8391,7 +8502,7 @@
         var list;
         if (cave.bld && cave.bld.kind === "witchhut") list = witchLootList();
         else if (cave.bld && BCHEST[cave.bld.kind]) list = bldLootList();
-        else { var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2; list = rollLoot("chest", cave.hole ? cave.hole.b : 0, ct); loreChest(["cave", "b" + (cave.hole ? cave.hole.b : 0)], 0.6); }
+        else { var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2; list = rollLoot("chest", caveB(), ct); loreChest(["cave", "b" + caveB()], 0.6); }
         list.forEach(function (q) { if (ITEMS[q[0]]) L[q[0]] = (L[q[0]] || 0) + q[1]; });
         if (cave.bld) { S.wloot[cave.bld.id] = S.days | 0; S.st.bchests = (S.st.bchests || 0) + 1; if (cave.bld.kind === "suntemple") S.st.templeLoot = (S.st.templeLoot || 0) + 1; loreChest(["bld:" + cave.bld.kind], 0.7); }
         treasureFound(Object.keys(L).length);
@@ -8710,7 +8821,7 @@
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
         + '<dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
-        + '<p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
+        + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
       return;
     }
@@ -8763,6 +8874,7 @@
   function titleAct(k) {
     if (k === "play") return closeTitle();
     if (k === "char") return openChar();   // CHARACTERS
+    if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
     if (k === "back") { TC.how = false; renderTitle(); var hb = titleEl.querySelector("[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
     if (k === "worlds" || k === "new") { openWorlds(); if (k === "new") setTimeout(function () { var i = $("sbxWName"); if (i) i.focus(); }, 30); return; }
@@ -8807,6 +8919,7 @@
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
+      + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
       + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"));
   }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
@@ -8816,6 +8929,7 @@
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
     else if (k === "bloom") OPT.bloom = v === "1";
+    else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
     else if (k === "gq") { OPT.gq = v === "high" || v === "low" ? v : "auto"; if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; } else { lowq = coarse; dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {} } resize(); }
     optSave();
@@ -9299,7 +9413,7 @@
       st.bub = st.bub.filter(function (b) { b.l -= dt; b.y -= dt * 18; if (b.l > 0) R(b.x, b.y, 3, 3, cgHue(st.hue, 0.78)); return b.l > 0; });
       var sx2 = 80 + Math.cos(st.ang) * 24, sy2 = 50 + Math.sin(st.ang) * 3; g.strokeStyle = "#c98c4f"; g.lineWidth = 3; g.beginPath(); g.moveTo(sx2, sy2); g.lineTo(sx2 + 10, sy2 - 30); g.stroke();   // the spoon
       R(6, 14, 28, 28, "#0a0610"); R(8, 16, 24, 24, cgHue(st.tgt, 0.55)); R(8, 16, 24, 4, cgHue(st.tgt, 0.72));   // target swatch
-      g.fillStyle = "#e6dcff"; g.font = "bold 7px Nunito, sans-serif"; g.textAlign = "center"; g.fillText("TARGET", 20, 50);
+      g.fillStyle = "#e6dcff"; g.font = signFont(7); g.textAlign = "center"; g.fillText("TARGET", 20, 50);
       // colour wheel: where the brew is and where it should be
       var wx = 140, wy = 28;
       for (var a = 0; a < 360; a += 15) { g.fillStyle = cgHue(a); g.beginPath(); g.moveTo(wx, wy); g.arc(wx, wy, 14, (a - 90) * Math.PI / 180, (a - 75) * Math.PI / 180); g.closePath(); g.fill(); }
@@ -9481,7 +9595,7 @@
       + '<button type="button" class="btn" data-story-close>' + (last ? "Keep exploring" : c === 0 ? "Let's begin" : "Onward!") + "</button>";
     if (gestured) snd("rise"); var bt = el.querySelector("[data-story-close]"); if (bt) bt.focus({ preventScroll: true });
   }
-  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); }
+  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); else if ((S.qi | 0) === 0 && !TOUR) setTimeout(function () { if (!panelOpen && storyOpen < 0 && !storyQ.length) startTour(false); }, 700); }
   var CROAK_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="42" rx="24" ry="17" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><ellipse cx="32" cy="48" rx="15" ry="7" fill="#f1efb4"/><circle cx="19" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="45" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="19" cy="24" r="5" fill="#ffd23f"/><circle cx="45" cy="24" r="5" fill="#ffd23f"/><path d="M17 23h4M43 23h4" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 40q12 8 24 0" fill="none" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M12 16q7-9 14-3M38 13q7-6 14 3" fill="none" stroke="#e8e4d8" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="33" r="1.4" fill="#1c5e34"/><circle cx="37" cy="33" r="1.4" fill="#1c5e34"/></svg>';
   function findGuide() {
     var st = MAIN[S.qi]; guide = null; if (!st || !st.tg) return;
@@ -9509,13 +9623,55 @@
   function bestSide() {   // the open side quest closest to done (shown in the tracker once the story is over)
     var best = null, br = -1; SIDE.forEach(function (q) { if (S.ms[q.id] || !sideOpen(q)) return; var r = Math.min(1, q.v() / q.need); if (r > br) { br = r; best = q; } }); return best;
   }
+  // ---------- FIRST-TIME TOUR: a short, skippable walk around the screen (once per device; "Show me around" on How to play replays it) ----------
+  var TOUR = null;
+  function tourSteps() {
+    var L = [
+      { el: "sbxTrail", t: "Your goal right now", d: "It says what to do and how to do it. Tap it any time to see all your quests." },
+      { el: "sbxBar", t: "Your hotbar", d: coarse ? "Tap a tool or an item to hold it, then hold your finger on the world to use it." : "Click a slot (or press 1 to 9) to hold a tool or item, then hold the mouse on the world to use it." },
+      { el: "sbxPackBtn", t: "Your backpack", d: "Everything you carry, plus your armor, weapon and charms." },
+      { el: "sbxMenuBtn", t: "Your journal", d: "Quests, crafting, the map, your collections and the settings. Most things start here." },
+      coarse ? { el: "sbxPad", t: "Moving around", d: "Walk with the arrows (or drag the stick) and jump with the big button. Hold on blocks to dig, chop and build." }
+             : { el: null, t: "Moving around", d: "Walk with A and D, jump with Space. Hold the mouse on blocks to dig, chop and build. F opens doors, chests and caves." },
+      { el: null, t: "That's it!", d: "Follow the goal in the top corner, and the gold ring shows you what to dig. You'll pick up the rest as you go. Have fun!" }
+    ];
+    return L.filter(function (s) { if (!s.el) return true; var e = $(s.el); if (!e || e.hidden) return false; var r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4; });
+  }
+  function startTour(force) {
+    if (TOUR || (!force && (MP.on && MP.role === "guest"))) return;
+    try { if (!force && localStorage.getItem("swamp-delve-tour") === "1") return; } catch (e) {}
+    if (!force && navigator.webdriver) return;   // (automated test browsers: they get the tour only when they ask)
+    if (titleOpen || cave || (typeof OCS !== "undefined" && OCS) || HOME || panelOpen || menuOpen) { if (!force) return; }
+    var steps = tourSteps(); if (!steps.length) return;
+    var el = document.createElement("div"); el.className = "sbx-tour"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "A quick tour");
+    el.innerHTML = '<div class="tr-spot"></div><div class="tr-card"><small class="tr-n"></small><b class="tr-t"></b><p class="tr-d"></p><div class="tr-row"><button type="button" class="btn ghost" data-tr="skip">Skip</button><button type="button" class="btn" data-tr="next">Next</button></div></div>';
+    stageEl.appendChild(el); TOUR = { el: el, i: 0, steps: steps }; panelOpen = true; stopInput();
+    el.addEventListener("click", function (e) { var b = e.target.closest("[data-tr]"); if (!b) return; if (b.getAttribute("data-tr") === "skip") endTour(); else { TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } });
+    tourShow(); try { snd("open"); } catch (e2) {}
+  }
+  function tourShow() {
+    var T2 = TOUR, s = T2.steps[T2.i], el = T2.el, spot = el.querySelector(".tr-spot"), card = el.querySelector(".tr-card"), sr = stageEl.getBoundingClientRect();
+    el.querySelector(".tr-n").textContent = (T2.i + 1) + " of " + T2.steps.length; el.querySelector(".tr-t").textContent = s.t; el.querySelector(".tr-d").textContent = s.d;
+    el.querySelector("[data-tr=next]").textContent = T2.i === T2.steps.length - 1 ? "Let's go!" : "Next"; el.querySelector("[data-tr=skip]").hidden = T2.i === T2.steps.length - 1;
+    var target = s.el && $(s.el);
+    if (target) { var r = target.getBoundingClientRect(), pad = 8, x = r.left - sr.left - pad, y = r.top - sr.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+      spot.style.cssText = "left:" + x + "px;top:" + y + "px;width:" + w + "px;height:" + h + "px"; spot.classList.remove("none");
+      var below = y + h + 170 < sr.height, cw = Math.min(300, sr.width - 24), cx = clamp(x + w / 2 - cw / 2, 12, sr.width - cw - 12);
+      card.style.cssText = "width:" + cw + "px;left:" + cx + "px;" + (below ? "top:" + (y + h + 12) + "px" : "bottom:" + (sr.height - y + 12) + "px");
+    } else { spot.style.cssText = "left:50%;top:50%;width:0;height:0"; spot.classList.add("none"); var cw2 = Math.min(320, sr.width - 24); card.style.cssText = "width:" + cw2 + "px;left:" + (sr.width / 2 - cw2 / 2) + "px;top:" + Math.max(80, sr.height * 0.32) + "px"; }
+    var nb = el.querySelector("[data-tr=next]"); if (nb) nb.focus({ preventScroll: true });
+  }
+  function endTour() { if (!TOUR) return; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; }
+  // the quest tracker's "how" line, for the first chapters: the first sentence of the quest's own instructions
+  function trailTip(q) { var d = String(q.d || ""), m = d.match(/^[^.!?]*[.!?]/); var t = (m ? m[0] : d).trim(); if (t.length > 92) t = t.slice(0, 90).replace(/\s+\S*$/, "") + "…"; return t; }
   function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
     var el = $("sbxTrail"), q = MAIN[S.qi], side = !q; if (side) q = bestSide();
     if (!q) { if (!el.hidden) el.hidden = true; return; }
     var v = Math.min(q.need, Math.floor(q.v())), key = q.id + ":" + v; if (key === trailKey) return; trailKey = key;
     el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c);
     el.title = side ? "Side quest" : "Chapter " + (q.ch + 1) + ": " + CHAPTERS[q.ch].n;
-    el.innerHTML = "<small>" + (side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>';
+    var tip = !side && q.ch <= 2 && !OPT.notips ? trailTip(q) : ""; el.classList.toggle("tip", !!tip);   // NEW PLAYERS: the first chapters say how, right on the tracker
+    el.innerHTML = "<small>" + (side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>' + (tip ? '<span class="tp">' + esc(tip) + "</span>" : "");
   }
   function checkGoals() {
     if (!cave && world) { var bb = world.bio[clamp(Math.floor(p.x), 0, W - 1)]; if (!S.vis["b" + bb]) { S.vis["b" + bb] = 1; trailKey = ""; } var vb = varAt(p.x); if (vb && !S.vis["v" + vb]) { S.vis["v" + vb] = 1; trailKey = ""; popup("New land discovered", VARB[vb - 1].n, VARB[vb - 1].c, "\u2726"); } }
@@ -9556,10 +9712,10 @@
     if (gem("arm", "moonstone") && isNight(S.time) && !cave) n *= 0.8;
     if (S.arm > 0 && durOf("arm") > 0) {   // armor blocks a share of the hit (half as much against lava) and wears down on every real hit
       var blocked = n * armRed() * (why === "lava" ? 0.5 : 1); n -= blocked;
-      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text((cave ? cp.x : p.x) + 0.5, cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
+      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text((OCS ? OCS.pl.x : cave ? cp.x : p.x) + 0.5, OCS ? OCS.pl.y - 1.3 : cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
-    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(cave ? cp.x : p.x, cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
+    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(OCS ? OCS.pl.x : cave ? cp.x : p.x, OCS ? OCS.pl.y - 1.5 : cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
     if (hp <= 0) { hp = 0; if (!faintQ) faintQ = why || "hit"; }   // CRASH FIX: passing out waits for the end of this frame. Respawning right here
     // emptied the enemy list while the enemy that hit you was still being updated, which threw and stopped the game loop (the game froze)
   }
@@ -9571,7 +9727,7 @@
     S.st.deaths++; hp = MAXHP; hurtT = hurtGrace = shake = 0; sinceHurt = 99;
     var lost = 0, lostMap = {}, L = S.keepInv ? 0 : lossPercent() / 100;
     if (L > 0) Object.keys(S.inv).forEach(function (k) {   // DEATH RULES: a share of each stack of loose materials is lost (a leftover fraction is a chance of one more)
-      var it = ITEMS[k]; if (!it || it.tool || it.summon || it.home || POTIONS[k] || TROPHY[k] || !(S.inv[k] > 0)) return;
+      var it = ITEMS[k]; if (!it || it.tool || it.book || it.summon || it.home || POTIONS[k] || TROPHY[k] || !(S.inv[k] > 0)) return;
       var x = S.inv[k] * L, n = Math.floor(x); if (Math.random() < x - n) n++; n = Math.min(n, S.inv[k]); if (n > 0) { S.inv[k] -= n; lost += n; lostMap[k] = n; }
     });
     if (lost) { reslot(); hbDirty = true; }
@@ -9586,6 +9742,7 @@
   // set in Settings, counted only while you play). Keep Inventory means nothing is lost and no gravestone is made.
   var deadUI = false, deadAt = 0, graveHudEl = null, graveHudT = 0;
   function deathCause(why) {
+    if (why === "drown") return "Ran out of air"; if (why === "implode") return "Imploded in the deep"; if (why === "pressure") return "Crushed by the deep";
     if (why === "lava") return "Burned by lava"; if (why === "fall") return "Took a nasty fall"; if (why === "bomb") return "Blown up"; if (why === "star") return "Struck by a falling star"; if (why === "pvp") return "Defeated by another player";
     if (BOSS[why] && BOSS[why].n) return "Defeated by " + BOSS[why].n; if (ENEMY[why] && ENEMY[why].n) return "Defeated by a " + ENEMY[why].n; return "You passed out";
   }
@@ -9685,9 +9842,11 @@
   }
   (function () { var de = $("sbxDead"); if (de) de.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-dead]"); if (b) deadRespawn(); }); })();
   function respawn(msg) {
+    if (OCS) { ocQuit(); resize(); }
+    if (HOME) { HOME = null; HTC = null; stageEl.classList.remove("cave", "home"); resize(); }
     if (cave) leaveCaveNow();
     bossGone(); enemies.length = 0; spawnT = 6; swingQ = 0; batT = 8;
-    var sp = world.spawn, bd = S.bed && get(S.bed.x, S.bed.y) === T.BED ? S.bed : null; if (S.bed && !bd) S.bed = null;   // a broken bed is forgotten
+    var sp = world.spawn, bd = S.bed && isBed(get(S.bed.x, S.bed.y)) ? S.bed : null; if (S.bed && !bd) S.bed = null;   // a broken bed is forgotten
     if (bd) { p.x = bd.x + 0.5; p.y = bd.y + 1; msg = msg.replace("at camp", "at your bed"); } else { p.x = sp.x; p.y = sp.y; }
     p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
@@ -9703,9 +9862,10 @@
 
   // ---------- BEDS + SLEEP ----------
   var isNight = function (t) { return t >= 280 && t < 440; };
+  function isBed(id) { return id === T.BED || (T.X_sleepbag !== undefined && id === T.X_sleepbag); }   // the Sleeping Bag sleeps like a bed
   function bedNear() {   // the closest placed bed within about 3.5 tiles, or null
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 13, x, y, dx, dy, d;
-    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (get(x, y) === T.BED) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
+    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (isBed(get(x, y))) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
   function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y) || (smask && smask[y * W + x] && TILES[tiles[y * W + x]].solid)) return true; return false; }   // a roof within 5 tiles overhead
@@ -9761,7 +9921,8 @@
   function onLadder() { var lx = Math.floor(p.x); for (var yy = Math.floor(p.y - PH * 0.9); yy <= Math.floor(p.y - 0.1); yy++) if (get(lx, yy) === T.LADDER || TILES[get(lx, yy)].climb) return true; var fy = Math.floor(p.y - 0.02), fid = get(lx, fy); return !!(TILES[fid].hatch && TILES[fid].hatch.open && get(lx, fy + 1) === T.LADDER); }   // an open trapdoor on top of a ladder climbs like ladder
   function step(h, dir, jump) {
     var feetWet = wetAt(p.x, p.y - 0.2);
-    p.wet = wetAt(p.x, p.y - PH * 0.5);
+    var wasWet = p.wet; p.wet = wetAt(p.x, p.y - PH * 0.5);
+    if (!cave && p.wet !== wasWet && (p.wet ? p.vy > 3 : p.vy < -3)) { var wty = waterTopY(p.x, p.wet ? p.y - PH * 0.5 : p.y + 0.3); if (get(Math.floor(p.x), Math.floor(wty + 0.01)) === T.WATER) { waterSplash(p.x, wty, p.wet ? clamp(p.vy / 9, 0.6, 2.2) : 0.7); if (p.wet) thud(240, 0.05); } }
     var sp = (p.wet ? 3.6 * (hasCharm("tide") || fx("gill") ? 1.6 : 1) : 6.3) * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1) * speedMul(), acc = p.on ? 70 : 34;
     p.vx = approach(p.vx, dir * sp, (dir ? acc : (p.on ? 60 : 8)) * h);
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
@@ -9884,15 +10045,83 @@
       if (S && S.razed && S.razed[q.id]) { q.razed = 1; razedLift(q, t); return; }
       var x0 = q.mx0 !== undefined ? q.mx0 : q.x0 - 1, x1 = q.mx0 !== undefined ? q.mx1 : q.x1 + 1, y0 = q.mx0 !== undefined ? q.my0 : q.gy - q.bh - 7, y1 = q.gy - 1;
       x0 = clamp(x0, 0, W - 1); x1 = clamp(x1, 0, W - 1); y0 = clamp(y0, 0, H - 1); y1 = clamp(y1, 0, H - 1);
-      var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint16Array(w * h), lt: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
+      var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint16Array(w * h), lt: [], win: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
       for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
         var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
-        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); }
+        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
         if (wv) { P.wl[k] = wv; wl[gi] = 0; any = true; }
+      }
+      if (P.win.length) {   // panes that touch make one window: they light up and go out together (keyed by the window's first pane)
+        var wk = {}; P.win.forEach(function (c) { wk[c[0] + "," + c[1]] = c; });
+        P.win.forEach(function (c) { if (c[2] !== undefined) return; var st = [c], g0 = c; c[2] = g0[0]; c[3] = g0[1]; while (st.length) { var q2 = st.pop(); [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var n2 = wk[(q2[0] + d[0]) + "," + (q2[1] + d[1])]; if (n2 && n2[2] === undefined) { n2[2] = g0[0]; n2[3] = g0[1]; st.push(n2); } }); } });
       }
       if (any) q.pic = P;
     });
+  }
+  // BUILDING DEPTH: baked into each building's picture once (so it costs nothing per frame), with the light from the upper left:
+  // the roof throws a shadow down the wall under its eaves and shows its thickness along the bottom edge, the ridge catches the light,
+  // windows and doors sit back in the wall (shadowed head and side, a lit sill with a drip shadow below), the timber frame stands
+  // proud of the infill walls between it, corners turn toward the light on the left and into shade on the right, and the base sinks
+  // into a soft shadow where the building meets the ground. Everything is painted source-atop, so only the building itself is shaded.
+  var ROOFK = { shinglered: 1, shingleblue: 1, thatch: 1, snow: 1 };
+  function bakeDepth(c, P) {
+    var w = P.w, h = P.h, S = ts;
+    var at = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) return -1; return P.t[y * w + x]; };
+    var kd = function (x, y) { var id = at(x, y); return id > 0 && TILES[id] ? TILES[id].kind || "" : ""; };
+    var roof = function (x, y) { return !!ROOFK[kd(x, y)]; }, win = function (x, y) { var k = kd(x, y); return k === "glass" || /^stained/.test(k); }, door = function (x, y) { return kd(x, y) === "door"; };
+    var solid = function (x, y) { var id = at(x, y); return id > 0 && TILES[id] && TILES[id].solid; };
+    var back = function (x, y) { return x >= 0 && y >= 0 && x < w && y < h && !at(x, y) && !!P.wl[y * w + x]; };
+    var wall = function (x, y) { return solid(x, y) && !roof(x, y) && !win(x, y); };
+    var face = function (x, y) { return wall(x, y) || back(x, y) || win(x, y) || door(x, y); };
+    var empty = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) { var wx = P.x0 + x, wy = P.y0 + y; return wx < 0 || wy < 0 || wx >= W || wy >= H ? true : !TILES[get(wx, wy)].solid; } return !at(x, y) && !P.wl[y * w + x] || (at(x, y) > 0 && !TILES[at(x, y)].solid && !P.wl[y * w + x]); };
+    var ground = function (x, y) { if (y < h && x >= 0 && x < w && at(x, y) > 0) return false; var wx = P.x0 + x, wy = P.y0 + y; return wx >= 0 && wy >= 0 && wx < W && wy < H && TILES[get(wx, wy)].solid; };
+    var band = function (x, y, side, d, a, col) {   // a soft band of shade (or light) from one edge of a cell, d of a tile deep
+      var X = x * S, Y = y * S, g2; col = col || "0,0,0";
+      if (side === "t") g2 = c.createLinearGradient(0, Y, 0, Y + S * d); else if (side === "b") g2 = c.createLinearGradient(0, Y + S, 0, Y + S - S * d); else if (side === "l") g2 = c.createLinearGradient(X, 0, X + S * d, 0); else g2 = c.createLinearGradient(X + S, 0, X + S - S * d, 0);
+      g2.addColorStop(0, "rgba(" + col + "," + a + ")"); g2.addColorStop(1, "rgba(" + col + ",0)"); c.fillStyle = g2;
+      if (side === "t") c.fillRect(X, Y, S, S * d); else if (side === "b") c.fillRect(X, Y + S - S * d, S, S * d); else if (side === "l") c.fillRect(X, Y, S * d, S); else c.fillRect(X + S - S * d, Y, S * d, S);
+    };
+    var line = function (x, y, side, d, col) { var X = x * S, Y = y * S, t2 = Math.max(1, Math.round(S * d)); c.fillStyle = col; if (side === "t") c.fillRect(X, Y, S, t2); else if (side === "b") c.fillRect(X, Y + S - t2, S, t2); else if (side === "l") c.fillRect(X, Y, t2, S); else c.fillRect(X + S - t2, Y, t2, S); };
+    c.save(); c.globalCompositeOperation = "source-atop";
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      if (roof(x, y)) {
+        var sd = function (xx, yy) { if (xx < 0 || yy < 0 || xx >= w || yy >= h) { var wx = P.x0 + xx, wy = P.y0 + yy; return wx >= 0 && wy >= 0 && wx < W && wy < H && TILES[get(wx, wy)].solid; } return solid(xx, yy); };   // the same test the slope drawing uses
+        var lo = !sd(x - 1, y), ro = !sd(x + 1, y), sl = !sd(x, y - 1) && (lo || ro) ? (lo && ro ? 3 : lo ? 1 : 2) : 0;
+        if (sl) {   // a sloped roof block (see SLOPED ROOFS): clear anything left in the cut-away corner, shade it lightly, and skip the square edges
+          var X = x * S, Y = y * S; c.save(); c.globalCompositeOperation = "destination-out"; c.fillStyle = "#000"; c.beginPath();
+          if (sl === 1) { c.moveTo(X, Y); c.lineTo(X + S, Y); c.lineTo(X, Y + S); } else if (sl === 2) { c.moveTo(X, Y); c.lineTo(X + S, Y); c.lineTo(X + S, Y + S); } else { c.moveTo(X, Y); c.lineTo(X + S / 2, Y); c.lineTo(X, Y + S); c.closePath(); c.moveTo(X + S / 2, Y); c.lineTo(X + S, Y); c.lineTo(X + S, Y + S); }
+          c.closePath(); c.fill(); c.restore();
+          if (!roof(x, y + 1)) { line(x, y, "b", 0.16, "rgba(34,18,10,.78)"); }
+          continue;
+        }
+        var dep = 0; for (var yy = y - 1; yy >= 0 && roof(x, yy); yy--) dep++;
+        if (dep) { c.fillStyle = "rgba(20,10,6," + Math.min(0.2, dep * 0.045).toFixed(3) + ")"; c.fillRect(x * S, y * S, S, S); }   // the roof darkens a little toward the eaves
+        if (empty(x, y - 1)) { band(x, y, "t", 0.3, 0.2, "255,246,220"); line(x, y, "t", 0.06, "rgba(255,248,226,.32)"); }   // the ridge and top edge catch the light
+        if (!roof(x, y + 1)) { line(x, y, "b", 0.16, "rgba(34,18,10,.78)"); line(x, y, "b", 0.05, "rgba(255,230,200,.18)"); }   // the roof's thickness along the eaves
+        if (empty(x - 1, y)) band(x, y, "l", 0.3, 0.12, "255,240,214"); if (empty(x + 1, y)) band(x, y, "r", 0.4, 0.3);
+        continue;
+      }
+      if (!face(x, y)) continue;
+      if (roof(x, y - 1)) band(x, y, "t", 1, 0.55);   // shade under the eaves
+      else if (y > 0 && roof(x, y - 2) && !face(x, y - 1)) band(x, y, "t", 0.5, 0.25);
+      if (back(x, y)) {   // the infill walls sit back between the posts and beams
+        c.fillStyle = "rgba(0,0,0,.14)"; c.fillRect(x * S, y * S, S, S);
+        if (wall(x - 1, y)) band(x, y, "l", 0.32, 0.4); if (wall(x, y - 1)) band(x, y, "t", 0.3, 0.38); if (wall(x + 1, y)) band(x, y, "r", 0.12, 0.12, "255,240,214");
+      }
+      if (win(x, y)) {   // windows sit back in the wall
+        if (!win(x, y - 1)) band(x, y, "t", 0.36, 0.6); if (!win(x - 1, y)) band(x, y, "l", 0.24, 0.45); if (!win(x + 1, y)) band(x, y, "r", 0.1, 0.16, "255,240,214");
+        if (!win(x, y + 1)) { line(x, y, "b", 0.1, "rgba(255,238,206,.4)"); if (face(x, y + 1) && !win(x, y + 1)) band(x, y + 1, "t", 0.22, 0.3); }   // the sill, and its drip shadow
+        c.fillStyle = "rgba(255,255,255,.08)"; c.beginPath(); c.moveTo(x * S + S * 0.15, y * S + S); c.lineTo(x * S + S * 0.55, y * S); c.lineTo(x * S + S * 0.75, y * S); c.lineTo(x * S + S * 0.35, y * S + S); c.closePath(); c.fill();   // a glint across the glass
+      }
+      if (door(x, y)) { if (!door(x, y - 1)) band(x, y, "t", 0.34, 0.5); if (!door(x - 1, y)) band(x, y, "l", 0.22, 0.4); if (!door(x + 1, y)) band(x, y, "r", 0.22, 0.32); }   // the doorway is set into the wall
+      if (wall(x, y)) {   // the building's own corners: lit on the left, shaded on the right, and a step down where a wall stands out above an opening
+        if (empty(x - 1, y)) band(x, y, "l", 0.4, 0.2, "255,240,214"); if (empty(x + 1, y)) band(x, y, "r", 0.55, 0.42);
+        if (empty(x, y - 1) && !roof(x, y - 1)) line(x, y, "t", 0.06, "rgba(255,246,222,.28)");
+      }
+      if (ground(x, y + 1) || (y === h - 1)) band(x, y, "b", 0.7, 0.46);   // the base meets the ground
+    }
+    c.restore();
   }
   function structCanvas(P) {
     P.used = ++picUse;
@@ -9909,14 +10138,34 @@
       for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { gi = (P.y0 + yy) * W + P.x0 + xx; tiles[gi] = keepT[yy * w + xx]; walls[gi] = keepW[yy * w + xx]; }
       CELL.wob = cw0; CELL.edge = ce0; CELL.sw = cs0;
     }
+    try { bakeDepth(c, P); } catch (e) { try { console.warn("[Delve] building depth:", e); } catch (e2) {} }
     P.gl = glows.splice(g0).map(function (q) { return [P.x0 + q[0] / ts, P.y0 + q[1] / ts, q[2], q[3], q[4]]; });   // its lamps, as world positions
     P.cv = cv; P.cts = ts; return cv;
+  }
+  // LIT WINDOWS: after dusk the windows of the buildings out in the world glow warm, as if someone were home. Each window has its own
+  // gentle firelight flicker, a few stay dark, and late at night more of them go out one by one. They also light the dark around them
+  // (winLit, used by the light map) and get a soft halo.
+  function winNight() { var dl = daylight(S.time); return clamp((0.88 - dl) / 0.5, 0, 1); }
+  function winLit(x, y) {   // 0..1: how bright this window is right now (x, y: the window's first pane)
+    var nk = winNight(); if (nk <= 0) return 0; var h = SW.hash(x, y, 211), late = S.time > 380 && S.time < 440 ? (S.time - 380) / 60 : 0;
+    if (h > 0.84 - late * 0.45) return 0; return nk;
+  }
+  function drawWindows(g, P) {
+    var nk = winNight(); if (nk <= 0) return; var now = performance.now(), m = Math.max(1, Math.round(ts * 0.14)), mw = Math.max(1, Math.round(ts * 0.07));
+    for (var q = 0; q < P.win.length; q++) { var wx = P.win[q][0], wy = P.win[q][1], gx = P.win[q][2], gy = P.win[q][3], lv = winLit(gx, gy); if (!lv) continue; var sx = ox + wx * ts, sy = oy + wy * ts; if (sx < -ts || sx > vw || sy < -ts || sy > vh) continue;
+      var h = SW.hash(gx, gy, 212), fl = reduce ? 1 : 0.86 + 0.09 * Math.sin(now / (700 + h * 500) + h * 40) + 0.05 * Math.sin(now / 130 + h * 9), warm = h < 0.3 ? "255,214,150" : h < 0.6 ? "255,190,110" : "255,170,90";
+      var gr = g.createRadialGradient(sx + ts / 2, sy + ts / 2, 0, sx + ts / 2, sy + ts / 2, ts * 0.62); gr.addColorStop(0, "rgba(" + warm + "," + (0.95 * lv * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(" + warm + "," + (0.55 * lv * fl).toFixed(3) + ")");
+      g.fillStyle = gr; g.fillRect(sx + m, sy + m, ts - m * 2, ts - m * 2);
+      g.fillStyle = "rgba(40,24,12," + (0.75 * lv).toFixed(3) + ")"; g.fillRect(sx + ts / 2 - mw / 2, sy + m, mw, ts - m * 2); g.fillRect(sx + m, sy + ts / 2 - mw / 2, ts - m * 2, mw);   // the window bars
+      glows.push([sx + ts / 2, sy + ts / 2, warm, 1.7, 0.2 * lv * fl]);
+    }
   }
   function drawStructs(g, X0, X1, Y0, Y1) {
     var L = world.structs; if (!L) return;
     for (var i = 0; i < L.length; i++) {
       var P = L[i].pic; if (!P || P.x0 > X1 + 1 || P.x0 + P.w < X0 - 1 || P.y0 > Y1 + 1 || P.y0 + P.h < Y0 - 1) continue;
       var cv = structCanvas(P); g.imageSmoothingEnabled = false; g.drawImage(cv, ox + P.x0 * ts, oy + P.y0 * ts);
+      if (P.win && P.win.length && !L[i].razed) drawWindows(g, P);
       for (var q = 0; q < P.gl.length; q++) { var G = P.gl[q]; glows.push([ox + G[0] * ts, oy + G[1] * ts, G[2], G[3], G[4]]); }
     }
   }
@@ -10008,7 +10257,137 @@
     for (i = AMB.fish.length - 1; i >= 0; i--) { e = AMB.fish[i]; e.vy += 18 * dt; e.x += e.vx * dt; e.y += e.vy * dt; if (e.vy > 0 && e.y >= e.sy + 0.1) { if (Math.abs(e.x - p.x) < 24) splashAt(e.x, e.sy); AMB.rip.push({ x: e.x, y: e.sy + 0.08, t: 0 }); AMB.fish.splice(i, 1); } }
     for (i = AMB.rip.length - 1; i >= 0; i--) { AMB.rip[i].t += dt; if (AMB.rip[i].t > 1.6) AMB.rip.splice(i, 1); }
   }
-  function splashAt(x, y) { for (var k = 0; k < 6; k++) parts.push({ x: x + (Math.random() - 0.5) * 0.4, y: y, vx: (Math.random() - 0.5) * 3, vy: -3 - Math.random() * 3, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#bfeeff" : "#ffffff", s: 2 }); }
+  function splashAt(x, y) { waterSplash(x, y, 0.6); }
+  // ---------- WATER FX: splashes and ripples ----------
+  // A splash throws a crown of droplets that stretch along their path and fall back under gravity (each one lands in its own tiny ring),
+  // a foam puff, a quick column of spray for big ones, and a ripple that runs out across the surface both ways. Ripples also bend the
+  // surface line itself (rippleH), so the water heaves where something hit it. In top-down scenes (td) the rings are round.
+  var DROPS = [], RIPS = [];
+  var SPLT = 0;
+  function waterSplash(x, y, power, td) {
+    if (power >= 0.4 && performance.now() - SPLT > 70 && fxReady()) { SPLT = performance.now(); try { nz(0, 0.16 + power * 0.14, 0.035 * Math.min(2, power), td === 2 ? 2200 : 1100 + Math.random() * 400, "bandpass", 0.8); tn(0, 700 + Math.random() * 300, 260, 0.09, "sine", 0.025 * Math.min(2, power)); if (power > 1.4) nz(0.04, 0.4, 0.04, 500, "lowpass", 0.8); } catch (e) {} }   // a splash, a little bloop, and a deeper wash for big ones
+    if (reduce) power *= 0.6; var n = Math.round(7 + power * 11), i;
+    for (i = 0; i < n; i++) { var a = -Math.PI / 2 + (Math.random() - 0.5) * (td ? 6.2832 : 1.9), sp = (2.2 + Math.random() * 3.4) * Math.pow(power, 0.55) * (td ? 0.5 : 1);
+      DROPS.push({ x: x + (Math.random() - 0.5) * 0.3 * power, y: y - 0.04, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, sy: y, r: (0.035 + Math.random() * 0.05) * (0.8 + power * 0.3), life: 1.6, td: td, h: 0, vh: td ? 2 + Math.random() * 3 * power : 0 }); }
+    if (power > 1.1 && !td) for (i = 0; i < 4; i++) DROPS.push({ x: x + (Math.random() - 0.5) * 0.25, y: y - 0.05, vx: (Math.random() - 0.5) * 0.8, vy: -(5.5 + Math.random() * 3) * Math.pow(power, 0.4), sy: y, r: 0.06 + Math.random() * 0.04, life: 1.6 });   // the spout in the middle
+    if (td !== 2) RIPS.push({ x: x, y: y, t: 0, a: 0.13 * power, w: power, td: td, foam: 1 });   // td 2: water thrown onto land (drops only)
+    if (DROPS.length > 260) DROPS.splice(0, DROPS.length - 260); if (RIPS.length > 60) RIPS.splice(0, RIPS.length - 60);
+  }
+  function waterRing(x, y, a, td, life) { RIPS.push({ x: x, y: y, t: 0, a: a, w: a * 6, td: td, life: life || 2.4 }); if (RIPS.length > 70) RIPS.shift(); }
+  function tickWaterFx(dt) {
+    var i; for (i = DROPS.length - 1; i >= 0; i--) { var d = DROPS[i]; d.life -= dt;
+      if (d.td) { d.vh -= 14 * dt; d.h += d.vh * dt; d.x += d.vx * dt; d.y += d.vy * dt; if (d.h <= 0 && d.vh < 0) { if (d.td === 1 && Math.random() < 0.5) waterRing(d.x, d.y, 0.03, 1); DROPS.splice(i, 1); continue; } }
+      else { d.vy += 19 * dt; d.vx *= 1 - dt * 0.6; d.x += d.vx * dt; d.y += d.vy * dt; if (d.vy > 0 && d.y >= d.sy) { if (Math.random() < 0.6) waterRing(d.x, d.sy, 0.025 + d.r * 0.3); DROPS.splice(i, 1); continue; } }
+      if (d.life <= 0) DROPS.splice(i, 1); }
+    for (i = RIPS.length - 1; i >= 0; i--) { RIPS[i].t += dt; if (RIPS[i].t > (RIPS[i].life || 2.4)) RIPS.splice(i, 1); }
+    tickPips(dt); rainPips(dt);
+  }
+  function rippleH(x, y) {   // how far a ripple pushes the surface down (+) or up (-) at x, in tiles
+    var h = 0; for (var i = 0; i < RIPS.length; i++) { var r = RIPS[i]; if (r.td || Math.abs(r.y - y) > 0.6) continue; var d = Math.abs(x - r.x), f = r.t * 3.4, e = Math.exp(-(d - f) * (d - f) / (0.3 + r.w * 0.12)) * Math.exp(-r.t * 1.7) * r.a; if (e > 0.002) h += e * Math.sin((d - f) * 4.2); }
+    return h;
+  }
+  function drawWaterFx(g, OX, OY, TS) {   // OX, OY, TS: the scene's screen offset and tile size
+    OX = OX === undefined ? ox : OX; OY = OY === undefined ? oy : OY; TS = TS || ts; drawPips(g, OX, OY, TS); if (!DROPS.length && !RIPS.length) return; var i;
+    g.save(); g.lineCap = "round";
+    for (i = 0; i < RIPS.length; i++) { var r = RIPS[i], X = OX + r.x * TS, Y = OY + r.y * TS, rad = (0.15 + r.t * (r.td ? 1.5 : 3.4)) * TS * Math.min(1.4, 0.6 + r.w * 0.35), al = Math.exp(-r.t * 1.9) * Math.min(1, r.a * 9);
+      if (X < -rad || X > vw + rad || Y < -rad || Y > vh + rad || al < 0.02) continue;
+      if (r.foam && r.t < 0.7) { var fk = 1 - r.t / 0.7; g.globalAlpha = 0.75 * fk; g.fillStyle = "#f4fdff"; g.beginPath(); g.ellipse(X, Y, TS * (0.25 + r.t * 0.9) * r.w * 0.6, TS * (r.td ? 0.2 + r.t * 0.6 : 0.09 + r.t * 0.1) * r.w * 0.6, 0, 0, 6.2832); g.fill(); }   // the foam where it went in
+      g.globalAlpha = al * 0.85; g.strokeStyle = "#eafcff"; g.lineWidth = Math.max(1, TS * 0.045); g.beginPath(); g.ellipse(X, Y, rad, rad * (r.td ? 0.62 : 0.16), 0, 0, 6.2832); g.stroke();
+      if (rad > TS * 0.5) { g.globalAlpha = al * 0.4; g.beginPath(); g.ellipse(X, Y, rad * 0.62, rad * 0.62 * (r.td ? 0.62 : 0.16), 0, 0, 6.2832); g.stroke(); }   // a second, inner ring
+    }
+    for (i = 0; i < DROPS.length; i++) { var d = DROPS[i], dx = OX + d.x * TS, dy = OY + (d.y - (d.h || 0) * 0.35) * TS; if (dx < -TS || dx > vw + TS || dy < -TS || dy > vh + TS) continue;
+      var vx2 = d.vx, vy2 = d.td ? d.vy - d.vh * 0.35 : d.vy, ln = Math.min(0.32, Math.hypot(vx2, vy2) * 0.03), sp2 = Math.hypot(vx2, vy2) || 1, ex = dx - vx2 / sp2 * ln * TS, ey = dy - vy2 / sp2 * ln * TS, rr = Math.max(1.2, d.r * TS);
+      g.globalAlpha = clamp(d.life * 1.6, 0, 0.95); g.strokeStyle = "rgba(170,230,245,.9)"; g.lineWidth = rr * 2; g.beginPath(); g.moveTo(ex, ey); g.lineTo(dx, dy); g.stroke();   // stretched along its flight
+      g.fillStyle = "#ffffff"; g.beginPath(); g.arc(dx - rr * 0.25, dy - rr * 0.3, rr * 0.55, 0, 6.2832); g.fill();   // the glint on the drop
+      if (d.td) { g.globalAlpha *= 0.3; g.fillStyle = "#06263a"; g.beginPath(); g.ellipse(OX + d.x * TS, OY + d.y * TS, rr, rr * 0.5, 0, 0, 6.2832); g.fill(); }   // its shadow on the water below
+    }
+    g.restore();
+  }
+  // ---------- RAIN THAT LANDS ----------
+  // Each raindrop is aimed at a spot on screen and falls to it along the wind; where it lands it rings the water (waterRing) or kicks up
+  // a tiny crown off the ground (PIPS). rainTD: the homestead and the sea chart, seen from above. rainSide: the pier and dive scene, where
+  // drops fall to the sea's surface line. rainPips: the main world, where they land on the ground and on ponds.
+  var RAIN = { d: [], ln: 0 }, PIPS = [];
+  function rainPip(x, y, td) { PIPS.push({ x: x, y: y, t: 0, td: td }); if (PIPS.length > 140) PIPS.splice(0, PIPS.length - 140); }
+  function tickPips(dt) { for (var i = PIPS.length - 1; i >= 0; i--) { PIPS[i].t += dt; if (PIPS[i].t > 0.26) PIPS.splice(i, 1); } }
+  function drawPips(g, OX, OY, TS) {
+    if (!PIPS.length) return; g.save(); g.strokeStyle = "rgba(220,240,255,.85)"; g.lineCap = "round"; g.lineWidth = Math.max(1, TS * 0.03);
+    PIPS.forEach(function (q) { var k = q.t / 0.26, X = OX + q.x * TS, Y = OY + q.y * TS, r = TS * (0.05 + k * 0.12); if (X < -TS || X > vw + TS || Y < -TS || Y > vh + TS) return; g.globalAlpha = (1 - k) * 0.9;
+      g.beginPath(); g.moveTo(X - r * 0.4, Y); g.lineTo(X - r, Y - r * (1.2 - k)); g.moveTo(X + r * 0.4, Y); g.lineTo(X + r, Y - r * (1.2 - k)); g.moveTo(X, Y - r * 0.2); g.lineTo(X, Y - r * (1.6 - k)); g.stroke(); });   // a little crown of spray
+    g.restore();
+  }
+  function rainCount(n, storm) { return Math.round((lowq ? 55 : liteFx() ? 70 : coarse ? 100 : 150) * n * (1 + storm * 0.6)); }
+  function rainStreaks(g, now, n, storm, land, aimAt) {   // land(x, y): where a drop hit (screen px); aimAt(): a new landing spot [x, y] on screen
+    var L = RAIN.d, dt = RAIN.ln ? clamp((now - RAIN.ln) / 1000, 0, 0.05) : 1 / 60, want = rainCount(n, storm), wind = 0.22 + storm * 0.5, lit = 0.35 + 0.65 * daylight(S.time); RAIN.ln = now;
+    while (L.length < want) { var a = aimAt(); L.push({ lx: a[0], ly: a[1], T: 0.18 + Math.random() * 0.3, t: Math.random() * 0.4, z: 0.5 + Math.random() * 0.5 }); }
+    if (L.length > want) L.length = want;
+    g.save(); g.strokeStyle = "rgba(205,228,255," + (0.72 * lit).toFixed(3) + ")"; g.lineWidth = 1.5; g.lineCap = "round"; g.beginPath();
+    for (var i = 0; i < L.length; i++) { var d = L[i]; d.t += dt; if (d.t >= d.T) { land(d.lx, d.ly); var a2 = aimAt(); d.lx = a2[0]; d.ly = a2[1]; d.t = 0; d.T = 0.18 + Math.random() * 0.3; continue; }
+      var left = (d.T - d.t), fall = 1100 * d.z, x = d.lx - left * fall * wind, y = d.ly - left * fall, ln = 18 * d.z * (1 + storm * 0.5); g.moveTo(x, y); g.lineTo(x - ln * wind, y - ln); }
+    g.stroke(); g.restore();
+  }
+  function wxOv(ov) {   // the day's grade, with rain clouds laid over it (grey-blue, darker in a storm)
+    var n = wxN(), st = wxStorm(), ra = 0.26 * n + 0.16 * st; if (ra < 0.005) return ov;
+    var A = 1 - (1 - ov.a) * (1 - ra), rc = [36, 46, 62]; return { c: [0, 1, 2].map(function (k) { return (ov.c[k] * ov.a + rc[k] * ra * (1 - ov.a)) / A; }), a: A };
+  }
+  function drawBoltScr(g, x0, y1) {   // a bolt in screen space (the homestead and the sea), and the flash
+    if (WX.bolt && WX.bolt.scr) { var B = WX.bolt, segs = 10, r = B.seed, x = B.sx; g.save(); g.strokeStyle = "rgba(235,245,255," + Math.min(1, B.t * 4).toFixed(3) + ")"; g.lineWidth = 3; g.shadowColor = "#bfe4ff"; g.shadowBlur = lowq ? 0 : 16; g.lineJoin = "round"; g.beginPath(); g.moveTo(x, 0);
+      for (var q = 1; q <= segs; q++) { r = (r * 9301 + 49297) % 233280; x += (r / 233280 - 0.5) * 46; g.lineTo(x, y1 * q / segs); } g.stroke(); g.restore(); }
+    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.5).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+  }
+  // main world: drops landing on the ground under open sky, and on water
+  function rainPips(dt) {
+    var n = wxN(); if (n < 0.08 || HOME || OCS || cave || wxBio() !== 0 || reduce) return; RAIN.acc = (RAIN.acc || 0) + dt * n * (lowq ? 30 : 70);
+    while (RAIN.acc >= 1) { RAIN.acc--; var i = clamp(Math.floor((-ox + Math.random() * vw) / ts), 0, W - 1), j = col[i]; if (j === undefined) continue;
+      var fx2 = i + Math.random(), sy = oy + j * ts; if (sy < 0 || sy > vh) continue;
+      if (get(i, j) === T.WATER || get(i, j - 1) === T.WATER) { var wy = waterTopY(fx2, get(i, j) === T.WATER ? j + 0.5 : j - 0.5); waterRing(fx2, wy, 0.018 + Math.random() * 0.012, 0, 0.8); }
+      else rainPip(fx2, j, 0); }
+  }
+  // the homestead: puddles gather on paths and bare ground while it rains, and dry slowly after
+  function homeRainTick(dt) {
+    var n = homeWinter() ? 0 : wxN(), o = homeS(); HOME.pud = clamp((HOME.pud || 0) + (n > 0.35 ? dt / 40 : -dt / 120), 0, 1);
+    if (n > 0.3) { HOME.rwT = (HOME.rwT || 0) - dt; if (HOME.rwT <= 0) { HOME.rwT = 2; var wet = 0;   // rain waters every bit of tilled soil
+      for (var y = 0; y < HH; y++) for (var x = 0; x < HW; x++) { if (hmT(x, y) !== HT.SOIL) continue; var k = x + "," + y; if (!((o.w[k] || 0) > 0)) { o.w[k] = WET_S; hMark(x, y, 0); wet++; } else if (o.w[k] < WET_S) o.w[k] = WET_S; }
+      if (wet && !HOME.rainSaid) { HOME.rainSaid = 1; toast("Rain is watering your crops.", "#9ae0ff"); } } }
+    else if (n < 0.1) HOME.rainSaid = 0;
+  }
+  function homePuddle(i, j) { var id = hmT(i, j); if (id !== HT.PATH && id !== HT.MUD && id !== HT.GRASS && id !== HT.SOIL) return 0; var h = SW.hash(i, j, 131); return h < (id === HT.GRASS ? 0.05 : 0.16) ? 0.5 + SW.hash(i, j, 132) * 0.5 : 0; }
+  function drawPuddles(g, X0, X1, Y0, Y1) {
+    var pk = HOME.pud || 0; if (pk < 0.02) return; g.save();
+    for (var j = Y0; j <= Y1; j++) for (var i = X0; i <= X1; i++) { var sz = homePuddle(i, j); if (!sz) continue; var cx = ox + (i + 0.2 + SW.hash(i, j, 133) * 0.6) * ts, cy = oy + (j + 0.3 + SW.hash(i, j, 134) * 0.5) * ts, rx = ts * 0.45 * sz * (0.4 + 0.6 * pk), ry = rx * 0.55;
+      g.globalAlpha = 0.55 * pk; g.fillStyle = "#2a4a5e"; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, 6.2832); g.fill();
+      g.globalAlpha = 0.5 * pk; g.fillStyle = "#9cc8dc"; g.beginPath(); g.ellipse(cx - rx * 0.25, cy - ry * 0.3, rx * 0.45, ry * 0.25, 0, 0, 6.2832); g.fill(); }   // the sky caught in it
+    g.restore();
+  }
+  // ---------- AMBIENT SOUND ----------
+  // Waves washing in at the pier and at sea (a looping noise swell that surges and draws back, muffled under water, wilder in a storm);
+  // crickets and frogs on warm swamp nights (the homestead and Murkwater above ground); lanterns that crackle when you stand by them.
+  var AMBS = { wv: null, cr: 1, fr: 3, ck: 0 };
+  function ambWave(lvl, f) {
+    if (!AMBS.wv && lvl > 0) { try { var len = ac.sampleRate * 3, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0), last = 0; for (var i = 0; i < len; i++) { last = last * 0.97 + (Math.random() * 2 - 1) * 0.12; d[i] = last; }
+      var src = ac.createBufferSource(); src.buffer = buf; src.loop = true; var fl = ac.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = f; var gn = ac.createGain(); gn.gain.value = 0; src.connect(fl); fl.connect(gn); gn.connect(fxOut()); src.start(); AMBS.wv = { s: src, f: fl, g: gn }; } catch (e) { return; } }
+    if (!AMBS.wv) return; var t = ac.currentTime; AMBS.wv.g.gain.setTargetAtTime(lvl, t, 0.35); AMBS.wv.f.frequency.setTargetAtTime(f, t, 0.5);
+  }
+  function cricket() { var f = 4200 + Math.random() * 700, n = 3 + Math.floor(Math.random() * 3), v = 0.007 + Math.random() * 0.006; for (var i = 0; i < n; i++) tn(i * 0.055, f, f * 0.97, 0.035, "sine", v); }
+  function frog() { var f = 170 + Math.random() * 90, v = 0.022 + Math.random() * 0.014; tn(0, f * 1.25, f, 0.07, "triangle", v); tn(0.1, f * 1.3, f * 0.9, 0.09, "triangle", v * 0.9); if (Math.random() < 0.3) tn(0.32, f * 1.2, f, 0.07, "triangle", v * 0.7); }
+  function tickAmbSound(dt) {
+    var ok = fxReady() && !document.hidden && !titleOpen && !!world;
+    if (!ok) { if (AMBS.wv && ac) AMBS.wv.g.gain.setTargetAtTime(0, ac.currentTime, 0.3); return; }
+    var nowS = performance.now() / 1000, surge = 0.55 + 0.45 * Math.pow(Math.sin(nowS * 0.48), 2) * (0.7 + 0.3 * Math.sin(nowS * 0.13)), st = wxStorm(), wl = 0, wf = 600;
+    if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OSEA : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
+    ambWave(wl * surge * OPT.fx, wf);
+    var night = daylight(S.time) < 0.6, swampTop = !cave && !OCS && (HOME || (wxBio() === 0 && p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4));
+    if (night && swampTop && wxN() < 0.5) {
+      AMBS.cr -= dt; if (AMBS.cr <= 0) { AMBS.cr = 0.4 + Math.random() * 1.6; cricket(); }
+      AMBS.fr -= dt; if (AMBS.fr <= 0) { AMBS.fr = 2.5 + Math.random() * 6; frog(); }
+    }
+    if (HOME && night) {   // the porch and gate lanterns crackle softly when you are near
+      [[HHOUSE.x + 4.06, HHOUSE.y + 3], [HGATE.x + 2.5, HGATE.y - 0.2]].forEach(function (L) { var d = Math.hypot(cp.x - L[0], cp.y - L[1]); if (d < 3.5 && Math.random() < dt * 4) nz(0, 0.03, 0.03 * (1 - d / 3.5), 2600 + Math.random() * 1500, "highpass", 1); });
+    }
+  }
+  function waterTopY(x, y) {   // the world-surface y of the water at column x (from a point inside it)
+    var i = Math.floor(x), j = Math.floor(y); while (j > 0 && get(i, j - 1) === T.WATER) j--; var lv = lvAt(j * W + i); return j + (lv < 8 ? 1 - lv / 8 : 0);
+  }
   function birdShape(g, x, y, s, flap, col, kind) {   // a little bird in flight: body and two wings that beat
     var wy = Math.sin(flap) * s * (kind === "egret" || kind === "goose" ? 0.55 : 0.8);
     g.strokeStyle = col; g.lineWidth = Math.max(1, s * (kind === "egret" || kind === "goose" ? 0.22 : 0.18)); g.lineCap = "round";
@@ -10110,6 +10489,7 @@
   // ---------- ONE CELL OF THE WORLD: its back wall and its tile, drawn at (sx3, sy). Used by the main view and to paint building pictures. ----------
   var CELL = { wob: 0, edge: 1, sw: 0 };
   function drawCell(g, i, j, sx3, sy, now) {
+    if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }   // FARM GATE: drawn big by drawFarmGates
     drawCell0(g, i, j, sx3, sy, now); if (S.stain[j * W + i] !== undefined) drawStain(g, i, j, sx3, sy);
     var ft = TILES[tiles[j * W + i]];
     if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles[(j - 1) * W + i]; if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
@@ -10218,8 +10598,53 @@
   }
   var RPSH = {};
   function roomShadow(id) { var c = RPSH[id]; if (c) return c; c = RPSH[id] = document.createElement("canvas"); c.width = c.height = 16; var q = c.getContext("2d"); q.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16); q.globalCompositeOperation = "source-in"; q.fillStyle = "rgba(0,0,0,.32)"; q.fillRect(0, 0, 16, 16); return c; }
+  // A piece standing against a SIDE wall (e.side: 1 = wall on its left, facing right; -1 = the other way). The camera never turns, so it
+  // is drawn turned on an angle: its front (doors, drawers, shelves) squeezed onto the side that faces the room, and its plain side panel,
+  // in its own colour and a shade darker, running back to the wall. Tall pieces stay upright (spinning them would lay them on their back).
+  var RPSD = {};
+  function tileAvg(id) {
+    var c = document.createElement("canvas"); c.width = c.height = 16; var q = c.getContext("2d"); q.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16);
+    var d = q.getImageData(0, 0, 16, 16).data, r = 0, gg = 0, b = 0, k = 0; for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { var L = d[i] + d[i + 1] + d[i + 2]; if (L < 60 || L > 700) continue; r += d[i]; gg += d[i + 1]; b += d[i + 2]; k++; }
+    return k ? [r / k, gg / k, b / k] : [140, 100, 60];
+  }
+  function sideSprite(id, dir) {
+    var key = id + "_" + dir, c = RPSD[key]; if (c) return c;
+    var FW = 19, SW = 32 - FW, b = document.createElement("canvas"); b.width = b.height = 32; var q = b.getContext("2d"); q.imageSmoothingEnabled = false;
+    q.drawImage(ATLAS, 0, id * 16, 16, 16, SW, 0, FW, 32);   // the front, seen on an angle
+    q.fillStyle = "rgba(0,0,0,.12)"; q.globalCompositeOperation = "source-atop"; q.fillRect(SW, 0, FW, 32); q.globalCompositeOperation = "source-over";
+    var s = document.createElement("canvas"); s.width = s.height = 32; var sq = s.getContext("2d"); sq.imageSmoothingEnabled = false;
+    sq.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, SW + 1, 32);   // the side panel: the piece's outline, filled with its own colour
+    var a = tileAvg(id), col = function (m, al) { return "rgba(" + Math.round(a[0] * m) + "," + Math.round(a[1] * m) + "," + Math.round(a[2] * m) + "," + (al || 1) + ")"; };
+    sq.globalCompositeOperation = "source-atop"; var gr = sq.createLinearGradient(0, 0, SW, 0); gr.addColorStop(0, col(0.62)); gr.addColorStop(1, col(0.86)); sq.fillStyle = gr; sq.fillRect(0, 0, 32, 32);
+    sq.fillStyle = col(1.12); sq.fillRect(0, 0, 32, 2); sq.fillStyle = col(0.5); sq.fillRect(2, 0, 1, 32); sq.fillRect(SW - 3, 0, 1, 32);   // a lit top edge and the panel's frame
+    q.drawImage(s, 0, 0); q.fillStyle = col(0.42); q.fillRect(SW, 1, 1, 30);   // the corner where side meets front
+    if (dir < 0) { var m2 = document.createElement("canvas"); m2.width = m2.height = 32; var mq = m2.getContext("2d"); mq.translate(32, 0); mq.scale(-1, 1); mq.drawImage(b, 0, 0); b = m2; }
+    c = RPSD[key] = document.createElement("canvas"); c.width = c.height = 36; var o = c.getContext("2d"); o.imageSmoothingEnabled = false;
+    [[0, 2], [4, 2], [2, 0], [2, 4]].forEach(function (p) { o.drawImage(b, p[0], p[1]); });
+    o.globalCompositeOperation = "source-in"; o.fillStyle = "rgba(24,14,8,.82)"; o.fillRect(0, 0, 36, 36); o.globalCompositeOperation = "source-over"; o.drawImage(b, 2, 2);
+    return c;
+  }
+  var CHBACK = null;
+  function chairBack() {   // a chair seen from behind, pushed in at a desk or table
+    if (CHBACK) return CHBACK; var b = document.createElement("canvas"); b.width = b.height = 16; var q = b.getContext("2d"), R = function (x, y, w2, h2, c2) { q.fillStyle = c2; q.fillRect(x, y, w2, h2); };
+    R(3, 2, 2, 14, "#a8703c"); R(11, 2, 2, 14, "#a8703c"); R(3, 2, 1, 14, "#dc9a58"); R(11, 2, 1, 14, "#dc9a58");
+    R(3, 2, 10, 2, "#c98c4f"); R(3, 2, 10, 1, "#e4aa6c"); R(5, 6, 6, 1, "#a8703c"); R(6, 4, 1, 5, "#8a5a32"); R(9, 4, 1, 5, "#8a5a32");
+    R(5, 8, 6, 1, "#8d63c9"); R(2, 9, 12, 2, "#c98c4f"); R(2, 9, 12, 1, "#e4aa6c"); R(2, 11, 12, 1, "#6e431f"); R(3, 12, 2, 4, "#8a5a32"); R(11, 12, 2, 4, "#8a5a32");
+    var c = CHBACK = document.createElement("canvas"); c.width = c.height = 18; var o = c.getContext("2d");
+    [[0, 1], [2, 1], [1, 0], [1, 2]].forEach(function (p) { o.drawImage(b, p[0], p[1]); });
+    o.globalCompositeOperation = "source-in"; o.fillStyle = "rgba(24,14,8,.82)"; o.fillRect(0, 0, 18, 18); o.globalCompositeOperation = "source-over"; o.drawImage(b, 1, 1);
+    return c;
+  }
   function drawRoomPiece(g, e) {
     var S = e.wall && e.top === undefined ? 1 : ROOM_S, cw = S * ts, bx = ox + e.x * ts - (cw - ts) / 2, by = oy + (e.y + 1) * ts - cw;
+    if (e.side && e.top === undefined) {
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(ox + (e.x + 0.5) * ts, oy + (e.y + 0.93) * ts, ts * 0.46, ts * 0.13, 0, 0, 6.2832); g.fill();
+      g.imageSmoothingEnabled = false; g.drawImage(sideSprite(e.id, e.side), 0, 0, 36, 36, bx - cw * 2 / 32, by - cw * 2 / 32, cw * 36 / 32, cw * 36 / 32); return;
+    }
+    if (e.back && e.top === undefined) {   // pushed in under the desk in the cell above it
+      var cy0 = by - ts * 0.38; g.fillStyle = "rgba(0,0,0,.26)"; g.beginPath(); g.ellipse(ox + (e.x + 0.5) * ts, cy0 + cw * 0.95, ts * 0.38, ts * 0.11, 0, 0, 6.2832); g.fill();
+      g.imageSmoothingEnabled = false; g.drawImage(chairBack(), 0, 0, 18, 18, bx - cw / 16, cy0 - cw / 16, cw * 18 / 16, cw * 18 / 16); return;
+    }
     if (e.top !== undefined && e.rb && e.onSide) {   // on a counter that runs along a side wall: stand upright on its stone top
       var sw = ts * 0.78, sbx = ox + (e.x + 0.5) * ts - sw / 2, sby = oy + e.y * ts - Math.round(SIDE_H * ts) + ts * 0.8 - sw;
       g.fillStyle = "rgba(0,0,0,.24)"; g.beginPath(); g.ellipse(ox + (e.x + 0.5) * ts, sby + sw * 0.97, sw * 0.38, sw * 0.1, 0, 0, 6.2832); g.fill();
@@ -10280,7 +10705,12 @@
         var wl = top ? lvAt(j * W + i) : 8, woff = wl < 8 ? Math.round(ts * (1 - wl / 8)) : 0;   // a part-filled cell: what is behind shows above the surface
         if (woff) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); }
         g.fillStyle = WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")"); g.fillRect(sx3, sy + woff, ts, ts - woff);
-        if (top) { var wy = Math.min(ts - woff - 2, Math.round(CELL.wob * 1.5 + Math.sin(i * 0.9 + now / 400) * 1.2 + 2)); if (wy < 0) wy = 0; g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(sx3, sy + woff + wy, ts, 2); g.fillStyle = "rgba(255,255,255,.25)"; g.fillRect(sx3, sy + woff, ts, wy); }
+        if (top) {   // the surface: a smooth swell that runs on from cell to cell (two waves), bent by any ripples from splashes
+          var wsu = ts / 32, wpts = [], wq, wmax = ts - woff - 2, wsurf = j + woff / ts;
+          for (wq = 0; wq <= 4; wq++) { var wxw = i + wq / 4, wv = CELL.wob * 1.5 + 2 + (Math.sin(wxw * 0.9 + now / 400) * 1.2 + Math.sin(wxw * 2.3 - now / 260) * 0.5) * Math.max(1, wsu * 1.4) + (RIPS.length ? rippleH(wxw, wsurf) * ts : 0); wpts.push(clamp(wv, 0, wmax)); }
+          g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.moveTo(sx3, sy + woff); for (wq = 0; wq <= 4; wq++) g.lineTo(sx3 + ts * wq / 4, sy + woff + wpts[wq]); g.lineTo(sx3 + ts, sy + woff); g.closePath(); g.fill();
+          g.strokeStyle = "rgba(210,255,248,.75)"; g.lineWidth = 2; g.beginPath(); g.moveTo(sx3, sy + woff + wpts[0]); for (wq = 1; wq <= 4; wq++) g.lineTo(sx3 + ts * wq / 4, sy + woff + wpts[wq]); g.stroke();
+        }
         if (!reduce && FLM && FLM[j * W + i] && get(i, j + 1) === T.WATER && !top) { g.fillStyle = "rgba(220,255,250,.28)"; var fo = (now / 60 + i * 7) % ts; g.fillRect(sx3 + ts * 0.3, sy + fo, Math.max(1, ts * 0.08), ts * 0.3); g.fillRect(sx3 + ts * 0.66, sy + (fo + ts * 0.5) % ts, Math.max(1, ts * 0.06), ts * 0.24); }   // moving water: streaks
         else if (!reduce && ((i * 31 + j * 17 + (now / 380 | 0)) % 11) === 0) { g.fillStyle = "rgba(190,255,248,.22)"; g.fillRect(sx3 + ts * 0.2, sy + ts * 0.4, ts * 0.5, 2); }
         return;
@@ -10314,7 +10744,7 @@
         natLeaf(g, i, j, sx3, sy, lmask);
       } else {
         if (NATC[id]) { natTile(g, id, i, j, sx3, sy); return; }
-        if (id === T.LOG) { natLog(g, i, j, sx3, sy); }
+        if (id === T.LOG) { natLogC(g, i, j, sx3, sy); }
         else if (SMGEM[id]) { natTile(g, orePal(td), i, j, sx3, sy); smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }
         else if (td.kind === "door" || td.hatch) matWood(g, td, i, j, sx3, sy);
         else if (MATF[id]) { if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
@@ -10403,6 +10833,9 @@
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
     if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8 * LQ) LG[nc] = 8 * LQ; }   // Night Eye: everything near you is dimly visible
     (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li; LG[k2] = Math.max(LG[k2], l[2] * LQ); WG[k2] = Math.max(WG[k2], l[2] * LQ); } }); });   // building lamps
+    if (winNight() > 0) (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.win || !P.win.length || q.razed || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.win.forEach(function (l) { var lv = winLit(l[2], l[3]); if (!lv) return; var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li, v = Math.round(11 * lv) * LQ; LG[k2] = Math.max(LG[k2], v); WG[k2] = Math.max(WG[k2], v); anyLamp = true; } }); });   // lit windows light the dark around them
+    for (var fgk = 0; fgk < FGLAST.length; fgk += 2) { var fli = FGLAST[fgk] + 2 - gx0, flj = FGLAST[fgk + 1] - 1 - gy0; if (fli >= 0 && fli < gw && flj >= 0 && flj < gh) { var fk2 = flj * gw + fli; LG[fk2] = Math.max(LG[fk2], 9 * LQ); WG[fk2] = Math.max(WG[fk2], 9 * LQ); anyLamp = true; } }   // FARM GATE lanterns (last frame's list)
+    var MH = world.holes && world.holes[0]; if (MH && get(MH.x, MH.y) === T.HOLE) { var mli = MH.x + 1 - gx0, mlj = MH.y - 1 - gy0; if (mli >= 0 && mli < gw && mlj >= 0 && mlj < gh) { var mk = mlj * gw + mli, mv = 10 * LQ; LG[mk] = Math.max(LG[mk], mv); WG[mk] = Math.max(WG[mk], mv); anyLamp = true; } }   // THE MINE: its lantern
     spread(LG, gw, gh); if (anyLamp) spread(WG, gw, gh);
   }
   function spread(G, gw, gh) {   // two sweeps each way; a diagonal step costs about 1.4 straight steps
@@ -10476,6 +10909,12 @@
   var VSKY = [[[150, 190, 255], [255, 210, 230]], [[96, 204, 240], [255, 226, 170]], [[40, 70, 52], [96, 124, 90]]];   // sky tints (top, horizon) per variant
   var VHILL = [[[246, 178, 212], [226, 146, 190], [196, 116, 164]], [[236, 200, 130], [210, 168, 104], [70, 160, 150]], [[34, 70, 44], [24, 52, 34], [14, 36, 24]]];
   function mixArr(arrs, w) { var o = [0, 0, 0]; for (var i = 0; i < 3; i++) for (var c = 0; c < 3; c++) o[c] += arrs[i][c] * w[i]; return o; }
+  function drawVig(g) {   // PERF: the vignette's middle is completely clear, so only the four bands around it are drawn (the same picture)
+    var a = Math.floor(Math.min(vw, vh) * 0.38 / Math.SQRT2) - 2, cx = vw / 2, cy = vh / 2, x0 = Math.round(cx - a), x1 = Math.round(cx + a), y0 = Math.round(cy - a), y1 = Math.round(cy + a), kx = VIG.width / vw, ky = VIG.height / vh;
+    if (a < 8) { g.drawImage(VIG, 0, 0, vw, vh); return; }
+    var part = function (x, y, w, h) { if (w > 0 && h > 0) g.drawImage(VIG, x * kx, y * ky, w * kx, h * ky, x, y, w, h); };
+    part(0, 0, vw, y0); part(0, y1, vw, vh - y1); part(0, y0, x0, y1 - y0); part(x1, y0, vw - x1, y1 - y0);
+  }
   function buildVignette() {
     VIG = document.createElement("canvas"); VIG.width = Math.max(2, Math.round(vw / 2)); VIG.height = Math.max(2, Math.round(vh / 2));
     var g = VIG.getContext("2d"), rg = g.createRadialGradient(VIG.width / 2, VIG.height / 2, Math.min(VIG.width, VIG.height) * 0.38, VIG.width / 2, VIG.height / 2, Math.max(VIG.width, VIG.height) * 0.78);
@@ -10483,9 +10922,10 @@
   }
   function cloud(g, x, y, s, col, a) {
     g.globalAlpha = a; g.fillStyle = col; var r = 16 * s;
-    [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]].forEach(function (b) { g.beginPath(); g.ellipse(x + b[0] * r, y + b[1] * r, r * b[2] * 1.15, r * b[2] * 0.62, 0, 0, 6.2832); g.fill(); });
+    for (var q = 0; q < CLOUDB.length; q++) { var b = CLOUDB[q]; g.beginPath(); g.ellipse(x + b[0] * r, y + b[1] * r, r * b[2] * 1.15, r * b[2] * 0.62, 0, 0, 6.2832); g.fill(); }
     g.globalAlpha = 1;
   }
+  var CLOUDB = [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]];   // PERF: the puffs of a cloud, made once
   function hasW(x, y) { return x >= 0 && x < W && y >= 0 && y < H && walls[y * W + x] > 0; }
   function drawWall(g, wl, i, j, sx, sy) {   // a back wall tile: its picture, pushed back with a dark wash, with a soft edge where the wall stops so rooms read as rooms
     var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, e = Math.max(1, Math.round(ts / 11));
@@ -10521,7 +10961,8 @@
     var hl = document.createElement("canvas"); hl.width = hl.height = N; var hg2 = hl.getContext("2d"); hg2.drawImage(b, 0, 0); hg2.globalCompositeOperation = "source-atop"; var lgg = hg2.createLinearGradient(0, 0, 0, N); lgg.addColorStop(0, "rgba(255,255,255,.18)"); lgg.addColorStop(0.5, "rgba(255,255,255,0)"); lgg.addColorStop(1, "rgba(0,0,30,.22)"); hg2.fillStyle = lgg; hg2.fillRect(0, 0, N, N); og.drawImage(hl, 0, 0);   // soft light from above
     return out;
   }
-  function hexRgb(h) { h = h.replace("#", ""); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+  var HEXRGB = {};
+  function hexRgb(h0) { var c = HEXRGB[h0]; if (c) return c.slice(); var h = h0.replace("#", ""); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; c = HEXRGB[h0] = [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; return c.slice(); }   // PERF: each colour is parsed once
   function smTile(td) {
     var ag = ATLAS.getContext("2d", { willReadFrequently: true }), d = ag.getImageData(0, td.id * 16, 16, 16).data, op = true, x;
     for (x = 0; x < 16; x++) { if (d[(x) * 4 + 3] < 250 || d[(15 * 16 + x) * 4 + 3] < 250 || d[(x * 16) * 4 + 3] < 250 || d[(x * 16 + 15) * 4 + 3] < 250) { op = false; break; } }
@@ -10613,7 +11054,7 @@
     var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES || scen, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
     if (!PERF.nat) { natBody(g, id, i, j, sx, sy, scen, nT, nL, nR); edgeShade(g, i, j, sx, sy, nB, nL, nR); return; }
     var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
-    var key = id + ":" + i + ":" + j + ":" + (nT ? 1 : 0) + (nL ? 1 : 0) + (nR ? 1 : 0) + (scen ? 1 : 0) + varAt(i), cv = NATM.get(key), k2 = S / ts;
+    var key = (((id * W + i) * H + j) * 16 + (nT ? 8 : 0) + (nL ? 4 : 0) + (nR ? 2 : 0) + (scen ? 1 : 0)) * 16 + varAt(i), cv = NATM.get(key), k2 = S / ts;   // PERF: a number, not a string, so no garbage per tile per frame
     if (!cv) {
       var pt = nT ? Math.ceil(ts * 0.42) : 0, px = nT ? Math.ceil(ts * 0.12) : 0;   // room above for the grass lip and tufts
       cv = document.createElement("canvas"); cv.width = Math.ceil((ts + px * 2) * k2); cv.height = Math.ceil((ts + pt) * k2); cv.px = px; cv.pt = pt;
@@ -10665,6 +11106,14 @@
     if (nL && j >= col[i - 1]) { var lfc = shadeC("lf"); g.drawImage(lfc, sx - lfc.width, sy); }
   }
   var BARK = [["#2e1c18", "#6a4838", "#8a6450", "#5b4038", "#271713"], ["#2a1418", "#5e3034", "#7e4a4a", "#52292c", "#1e0c0e"], ["#4a3a22", "#9a7e54", "#c4a672", "#87704a", "#3a2c18"], ["#120c08", "#33261a", "#4a3826", "#2e2216", "#0c0705"]];
+  function natLogC(g, i, j, sx, sy) {   // PERF: each trunk cell's bark (grooves, knot, highlight) is painted once at full resolution and stamped, like natTile
+    if (!PERF.nat) { natLog(g, i, j, sx, sy); return; }
+    var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
+    var key = -((i * H + j) * 16 + varAt(i)) - 1, c = NATM.get(key), k2 = S / ts;   // (negative: never clashes with natTile's keys)
+    if (!c) { c = document.createElement("canvas"); c.width = c.height = S; var q = c.getContext("2d"); q.setTransform(k2, 0, 0, k2, 0, 0); natLog(q, i, j, 0, 0); NATM.set(key, c); NATPX += S * S;
+      if (NATPX > NAT_BUDGET) { var it = NATM.keys(); while (NATPX > NAT_BUDGET * 0.75) { var nx = it.next(); if (nx.done) break; var oc = NATM.get(nx.value); NATPX -= oc.width * oc.height; NATM.delete(nx.value); } } }
+    g.drawImage(c, sx, sy, ts, ts);
+  }
   function natLog(g, i, j, sx, sy) {   // round trunk: dark bark edges, lit centre, bark grooves and the odd knot
     var vk = varAt(i);
     g.drawImage(shadeC("log" + (vk || "")), sx, sy);
@@ -11109,7 +11558,33 @@
     var F = MATF[t], c = document.createElement("canvas"); c.width = c.height = 28; var g = c.getContext("2d");
     g.drawImage(paintMat(F, F.p, 0, 15, 28), 0, 0); return c;
   }
-  function matTile(g, id, i, j, sx, sy, si) { g.drawImage(matCanvas(id, matVar(MATF[id], i, j), matMask(id, i, j, false), si), sx, sy); }
+  // SLOPED ROOFS: a roof block (shingles, slate, thatch...) with open air above it and on one side is drawn as a slope rather than a
+  // square, so a stepped gable reads as one smooth pitched roof; a lone top block becomes a peak. Only the picture changes: the
+  // block is still a whole block to stand on and build against. Each shape is cut once per block, variant and size and cached.
+  var ROOFF = { shingle: 1, thatch: 1 }, SLOPEC = {}, SLOPEN = 0;
+  function roofSlope(id, i, j) {   // 0 square, 1 rising to the right (open on the left), 2 rising to the left (open on the right), 3 a peak
+    var F = MATF[id]; if (!F || !ROOFF[F.f]) return 0; var up = TILES[get(i, j - 1)]; if (up && up.solid) return 0;
+    var L = TILES[get(i - 1, j)], R = TILES[get(i + 1, j)], lo = !(L && L.solid), ro = !(R && R.solid);
+    return lo && ro ? 3 : lo ? 1 : ro ? 2 : 0;
+  }
+  function slopeCanvas(id, v, mask, si, dir) {
+    var key = id + ":" + v + ":" + mask + ":" + (si === undefined ? "" : si) + ":" + dir + ":" + ts; if (SLOPEC[key]) return SLOPEC[key];
+    if (++SLOPEN > 600) { SLOPEC = {}; SLOPEN = 1; }
+    var src = matCanvas(id, v, mask, si), W2 = src.width, H2 = src.height, c = document.createElement("canvas"); c.width = W2; c.height = H2; var q = c.getContext("2d"), P = MATF[id].p;
+    var pts = dir === 1 ? [[0, H2], [W2, 0], [W2, H2]] : dir === 2 ? [[0, 0], [W2, H2], [0, H2]] : [[0, H2], [W2 / 2, 0], [W2, H2]];
+    q.save(); q.beginPath(); q.moveTo(pts[0][0], pts[0][1]); q.lineTo(pts[1][0], pts[1][1]); q.lineTo(pts[2][0], pts[2][1]); q.closePath(); q.clip(); q.drawImage(src, 0, 0); q.restore();
+    var lw = Math.max(1, Math.round(W2 / 16)); q.lineCap = "round";
+    var edge = function (a, b2) { q.strokeStyle = P.o || "#2a1a10"; q.lineWidth = lw * 1.6; q.beginPath(); q.moveTo(a[0], a[1]); q.lineTo(b2[0], b2[1]); q.stroke();   // the outline along the slope
+      var nx = b2[1] - a[1], ny = a[0] - b2[0], nl = Math.hypot(nx, ny) || 1, o = lw * 1.8; if (ny < 0) { nx = -nx; ny = -ny; }   // and a lit edge just inside it
+      q.strokeStyle = P.l || "rgba(255,255,255,.6)"; q.globalAlpha = 0.8; q.lineWidth = lw; q.beginPath(); q.moveTo(a[0] + nx / nl * o, a[1] + ny / nl * o); q.lineTo(b2[0] + nx / nl * o, b2[1] + ny / nl * o); q.stroke(); q.globalAlpha = 1; };
+    if (dir === 1) edge([0, H2], [W2, 0]); else if (dir === 2) edge([0, 0], [W2, H2]); else { edge([0, H2], [W2 / 2, 0]); edge([W2 / 2, 0], [W2, H2]); }
+    return (SLOPEC[key] = c);
+  }
+  function matTile(g, id, i, j, sx, sy, si) {
+    var mask = matMask(id, i, j, false), dir = roofSlope(id, i, j);
+    if (dir) { var k = j * W + i; if (walls[k]) drawWall(g, walls[k], i, j, sx, sy); g.drawImage(slopeCanvas(id, matVar(MATF[id], i, j), mask, si, dir), sx, sy); return; }   // what shows through the cut-away corner: the back wall behind it, if any
+    g.drawImage(matCanvas(id, matVar(MATF[id], i, j), mask, si), sx, sy);
+  }
   function matWall(g, wl, i, j, sx, sy, si) { g.drawImage(matCanvas(wl, matVar(MATF[wl], i, j), matMask(wl, i, j, true), si), sx, sy); }
   // ---- Tree leaves (Adventure look) ----
   // Each leaf tile is painted once per (open-edge mask, variant, tile size) into a small cached canvas, then stamped every frame.
@@ -11188,9 +11663,10 @@
     var cv = LEAFCACHE[key] || (LEAFCACHE[key] = buildLeafTile(mask, v, S, vk));
     g.drawImage(cv, 0, 0, S, S, sx, sy, ts, ts);
   }
+  function ridgeHv(n, sd) { return n & 1 ? SW.hash(n, sd, 9) * 0.35 : 0.55 + SW.hash(n, sd, 9) * 0.45; }
   function ridgeLine(wx, seg, sd) {   // 0..1 low-poly mountain line: a peak every `seg` tiles, a valley between, straight edges for a crisp look
-    var u = wx / seg * 2, k = Math.floor(u), f = u - k, hv = function (n) { return n & 1 ? SW.hash(n, sd, 9) * 0.35 : 0.55 + SW.hash(n, sd, 9) * 0.45; };
-    return hv(k) + (hv(k + 1) - hv(k)) * f;
+    var u = wx / seg * 2, k = Math.floor(u), f = u - k, a = ridgeHv(k, sd);
+    return a + (ridgeHv(k + 1, sd) - a) * f;
   }
   function vMote(g, m, kind, tt, above, night) {   // BIOME VARIANTS: the air in each variant land
     if (kind === 0) {   // cherry petals tumbling down on the breeze
@@ -11274,7 +11750,7 @@
   }
   function drawMilky(g, a) { if (a < 0.02) return; var m = milkyCanvas(), sx = -((cam.x * ts * 0.01) % vw); g.save(); g.globalAlpha = a; g.globalCompositeOperation = "lighter"; g.drawImage(m, sx, 0, vw, m.height); g.drawImage(m, sx + vw, 0, vw, m.height); g.restore(); }
   function cloud2(g, x, y, s, lit, shade, a) {   // a cloud with a shaded belly and a sunlit crown
-    var r = 16 * s, B = [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]], k;
+    var r = 16 * s, B = CLOUDB, k;
     g.globalAlpha = a; g.fillStyle = shade;
     for (k = 0; k < B.length; k++) { g.beginPath(); g.ellipse(x + B[k][0] * r, y + B[k][1] * r + r * 0.18, r * B[k][2] * 1.15, r * B[k][2] * 0.62, 0, 0, 6.2832); g.fill(); }
     g.fillStyle = lit;
@@ -11338,7 +11814,9 @@
     var deepV = dtop > dmx + 1;   // PERF: every pixel is underground, so the sky, hills and clouds could not be seen: just a flat colour behind any water
     if (deepV) { g.fillStyle = rgb(sk[1]); g.fillRect(0, 0, vw, vh); }
     else {
-    var smd = mixC(BSK[2], mid, 0.3 + 0.4 * (VMX[0] + VMX[1] + VMX[2])); gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.5, rgb(smd)); gr.addColorStop(0.82, rgb(mixC(smd, sk[1], 0.6))); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr; g.fillRect(0, 0, vw, vh);
+    var smd = mixC(BSK[2], mid, 0.3 + 0.4 * (VMX[0] + VMX[1] + VMX[2])); gr.addColorStop(0, rgb(sk[0])); gr.addColorStop(0.5, rgb(smd)); gr.addColorStop(0.82, rgb(mixC(smd, sk[1], 0.6))); gr.addColorStop(1, rgb(sk[1])); g.fillStyle = gr;
+    var skyCut = clamp(Math.ceil(oy + (dmx + 2) * ts), 0, vh);   // PERF: below the lowest ground line on screen the sky is hidden by the ground, so it gets a flat fill (as deepV does) instead of the gradient
+    g.fillRect(0, 0, vw, skyCut); if (skyCut < vh) { g.fillStyle = rgb(sk[1]); g.fillRect(0, skyCut, vw, vh - skyCut); }
     if (!lowq) drawHorizonGlow(g, t, 1);
     var starsNow = function () { if (night <= 0.25) return;
       var sa = clamp((night - 0.25) / 0.45, 0, 1); if (!lowq) drawMilky(g, sa * 0.85 * (1 - bw[1] * 0.4));
@@ -11385,18 +11863,18 @@
       var par = 0.12 + L2 * 0.2, amp = 5 + L2 * 3.5, base = HZ - 3 + L2 * 3.5, f2 = 0.045 + L2 * 0.03, cc = mixArr([HILLS[0][L2], HILLS[1][L2], HILLS[2][L2]], bw);
       for (var vh2 = 0; vh2 < 3; vh2++) if (VMX[vh2] > 0) cc = mixC(cc, VHILL[vh2][L2], VMX[vh2] * 0.8);
       var fog = mixC(cc, sk[1], 0.5 - L2 * 0.2); cc = mixC(cc, fog, 0.55 * (1 - L2 * 0.3));
-      g.fillStyle = rgb(mixC([6, 12, 20], cc, 0.2 + 0.8 * day)); g.beginPath(); g.moveTo(0, vh);
+      g.fillStyle = rgb(mixC([6, 12, 20], cc, 0.2 + 0.8 * day)); g.beginPath(); g.moveTo(-12, Math.min(vh, skyCut + ts));
       var hst = 12 / ts, hwq = Math.floor((cam.x * par - (vw / 2 + 12) / ts) / hst) * hst;   // land-fixed sample grid (no shimmer while walking)
       for (var sx2 = -12; sx2 <= vw + 24; hwq += hst) {
         sx2 = vw / 2 + (hwq - cam.x * par) * ts; var wx = hwq, sm = Math.sin(wx * f2) * amp + Math.sin(wx * f2 * 2.3 + 1) * amp * 0.4;
         var jag = (1 - Math.abs(Math.sin(wx * f2 * 1.7 + L2))) * amp * 1.1, pk = Math.abs(Math.sin(wx * f2 * 1.2 + L2 * 2)) * amp * 1.0;
         g.lineTo(sx2, oy + (base + sm * bw[0] + (jag - amp * 0.4) * bw[1] - (pk - amp * 0.3) * bw[2]) * ts);
       }
-      g.lineTo(vw + 12, vh); g.closePath(); g.fill();
+      g.lineTo(vw + 12, Math.min(vh, skyCut + ts)); g.closePath(); g.fill();   // PERF: the hills stop just under the lowest ground line (the ground hides the rest)
       // mist pooled on top of this layer: farther layers fade into the sky colour (atmospheric perspective)
       var fy0 = oy + (base - amp * 1.6) * ts, fgr = g.createLinearGradient(0, fy0, 0, fy0 + ts * 9);
       fgr.addColorStop(0, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)"); fgr.addColorStop(0.45, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + "," + ((0.3 - L2 * 0.07) * above).toFixed(3) + ")"); fgr.addColorStop(1, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)");
-      g.fillStyle = fgr; g.fillRect(0, fy0, vw, ts * 9);
+      g.fillStyle = fgr; if (fy0 < skyCut) g.fillRect(0, fy0, vw, Math.min(ts * 9, skyCut - fy0));
       if (L2 === 1 && bw[0] > 0.25) {   // giant mangrove silhouettes standing on the middle hills
         var tcol = mixC(cc, [8, 24, 28], 0.45), rim = mixC(cc, sk[1], 0.45), vck = VMX[0] / Math.max(0.01, bw[0]); if (vck > 0) { tcol = mixC(tcol, [196, 92, 146], vck * 0.75); rim = mixC(rim, [255, 200, 226], vck * 0.7); }   /* blossom trees in the distance */ var k0 = Math.floor((cam.x * par - vw / ts) / 16) - 1, k1 = Math.ceil((cam.x * par + vw / ts) / 16) + 1;
         for (var tk = k0; tk <= k1; tk++) {
@@ -11417,7 +11895,7 @@
     }
     var hz = oy + (HZ - 1) * ts, fg = g.createLinearGradient(0, hz - ts * 7, 0, hz + ts * 1.5), fc = sk[1];
     fg.addColorStop(0, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + ",0)"); fg.addColorStop(1, "rgba(" + (fc[0] | 0) + "," + (fc[1] | 0) + "," + (fc[2] | 0) + "," + (0.4 * above) + ")");
-    g.fillStyle = fg; g.fillRect(0, hz - ts * 7, vw, ts * 8.5);
+    g.fillStyle = fg; if (hz - ts * 7 < skyCut) g.fillRect(0, hz - ts * 7, vw, Math.min(ts * 8.5, skyCut - (hz - ts * 7)));
     }
     BLD = day; BLA = above; if (cv.classList.contains("grade") === lowq) cv.classList.toggle("grade", !lowq); if (!deepV && !lowq && !reduce) drawSunbeams(g, day, above, bw, now);
     if (!deepV) drawAmbientSky(g, now, day, above, bw);   // birds, bats, shooting stars, aurora
@@ -11447,10 +11925,11 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (!cave) { drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
+    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
-    drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
+    drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
+    drawWaterFx(g);
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
@@ -11503,7 +11982,7 @@
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
-    g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh);
+    g.imageSmoothingEnabled = true; drawVig(g);
     var ha = Math.min(0.6, hurtT * 1.2) + (hp <= MAXHP * 0.3 ? (reduce ? 0.18 : 0.16 + 0.08 * Math.sin(now / 280)) : 0);
     if (ha > 0.01) { if (!HVIG) { HVIG = document.createElement("canvas"); HVIG.width = HVIG.height = 128; var hg = HVIG.getContext("2d"), hr = hg.createRadialGradient(64, 64, 34, 64, 64, 92); hr.addColorStop(0, "rgba(200,20,20,0)"); hr.addColorStop(1, "rgba(200,20,20,.9)"); hg.fillStyle = hr; hg.fillRect(0, 0, 128, 128); } g.globalAlpha = ha; g.drawImage(HVIG, 0, 0, vw, vh); g.globalAlpha = 1; }
     g.imageSmoothingEnabled = false;
@@ -11751,19 +12230,22 @@
       setFloor(1, "down"); save();
     } };
   }
-  function enterCave(hx, hy) {
+  function enterCave(hx, hy, f0, picked) {
     if (!SC || cave || trans || sleepT > 0 || hp <= 0) return;
     if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
+    if (!picked && liftStops().length > 1) { openLift(hx, hy); return; }   // MINE LIFT: choose a floor first
     var hb = world.bio[clamp(hx, 0, W - 1)];
     stopInput(); thud(150, 0.08);
     trans = { t: 0, done: false, mid: function () {
       cave = { hole: { x: hx, y: hy, b: hb }, run: ((Math.random() * 2e9) | 0) || 1, floors: {}, f: 0, F: null };
       S.st.caves++; enemies.length = 0; stageEl.classList.add("cave"); $("sbxHint").classList.remove("on");
-      setFloor(1, "down"); save();
+      setFloor(f0 > 1 ? f0 : 1, "down"); save();
     } };
   }
   function setFloor(f, from) {
-    var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : SC.gen(cave.run, f, cave.hole.b));
+    var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : cave.volc && SC.genVolcano ? SC.genVolcano(cave.run, f) : SC.gen(cave.run, f, mineBio(f)));
+    var bandNew = !cave.bld && !cave.volc && cave.F && cave.F.biome !== F.biome;
+    if (cave.volc && f > (S.st.volcDeep || 0)) S.st.volcDeep = f;
     cave.f = f; cave.F = F;
     if (cave.bld && cave.bld.kind === "nexus" && !F.nx) nxPrep(F);
     if (cave.bld && cave.bld.kind === "witchhut" && T.X_lootchest !== undefined) { var wci = WCHEST.y * F.w + WCHEST.x; F.node[wci] = witchChestReady(cave.bld.id) ? T.X_lootchest : (T.X_openchest || 0); }
@@ -11776,10 +12258,40 @@
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
     resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
+    if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
+    if (bandNew) toast(F.biome === 1 ? "The tunnels turn hot. You have reached the Cinder Hollow." : F.biome === 2 ? "The air bites cold. You have reached the Frostvault." : "Back up in the mossy Mudhollow.", BIOMES[F.biome].c);
     hud(); checkGoals();
   }
+  // THE MINE: one shaft, one cave system. It changes as you go down: Mudhollow first, the hot Cinder Hollow from floor 9 (Basalt and
+  // Cinder show up there) and the frozen Frostvault from floor 14 (Frostrock and Crystal), so each new pick has a cave to use it in.
+  function mineBio(f) { return SC && SC.mineBio ? SC.mineBio(f) : f >= 14 ? 2 : f >= 9 ? 1 : 0; }
+  // MINE LIFT: every 5th floor of the Mine (5, 10, 15...) has a lift where its ladder up would be. Reaching one unlocks it for good
+  // (S.st.mineLift = the deepest stop): ride it up to the surface from there, and when you enter the Mine you can ride it straight down
+  // to any stop you have unlocked. Worlds from before the lift get the stops their deepest floor already earned.
+  var LIFT_EVERY = 5, liftPick = null;
+  function liftFloor(f) { return !!cave && !cave.bld && !cave.volc && f >= LIFT_EVERY && f % LIFT_EVERY === 0; }
+  function liftStops() { var L = [1], top = S.st.mineLift | 0; for (var f = LIFT_EVERY; f <= top; f += LIFT_EVERY) L.push(f); return L; }
+  function openLift(hx, hy) {
+    var el = $("sbxStory"); if (!el) return;
+    if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    liftPick = { x: hx, y: hy }; storyOpen = 228; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null;
+    var h = '<small>The Mine</small><h2 class="st-hi">Ride the lift</h2><p class="st-tip">Pick a floor. Floor 1 is the ladder at the top; the others are lift stops you have reached.</p><div class="st-ways">';
+    h += liftStops().map(function (f) { var b = mineBio(f), nm = ["Mudhollow", "Cinder Hollow", "Frostvault"][b]; return '<button type="button" data-lift="' + f + '" style="--wc:' + (WBIOC[b] || "#4ee6b4") + '"><i aria-hidden="true"></i><b>Floor ' + f + "</b><em>" + nm + "</em></button>"; }).join("");
+    h += '</div><div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h; snd("coin");
+  }
+  function liftAct(f) { var L = liftPick; liftPick = null; closeStory(); f = Math.floor(+f) || 1; if (!L || liftStops().indexOf(f) < 0) return; enterCave(L.x, L.y, f, true); }
+  // FAST TRAVEL TO THE MINE: from the World Map (and on every waystone's list) you can warp back to the Mine, wherever you are.
+  function mineDest() { var M0 = world.holes && world.holes[0]; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return null; return { n: "The Mine", x: M0.x + 2.5, y: M0.y + 1, b: world.bio[M0.x], mine: 1 }; }
+  function goMine() {
+    var d = mineDest(); if (!d) return; if (cave || HOME || OCS || warp || trans || hp <= 0) return;
+    if (activeBoss()) { nag("Not in the middle of a boss fight!"); return; }
+    if (Math.abs(p.x - d.x) < 6 && Math.abs(p.y - d.y) < 6) { nag("You're already at the Mine."); return; }
+    warp = { t: 0, d: d, from: { x: p.x, y: p.y } }; thud(330, 0.05); snd("rise");
+  }
+  function caveB() { return !cave ? 0 : cave.bld || cave.volc ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
     if (!cave) return; var h = cave.hole; cave = null; resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
@@ -11792,7 +12304,7 @@
   }
   function useLadder(k) {
     if (trans || !cave) return; stopInput(); thud(k === "up" ? 330 : 200, 0.07);
-    if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
+    if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
     else trans = { t: 0, done: false, mid: function () { setFloor(cave.f + 1, "down"); save(); } };
   }
   function cBox(F, x, y) {   // does a body standing with its feet at (x, y) overlap a wall or rock? The footprint is small, so the head can pass in front of things
@@ -11807,9 +12319,9 @@
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
     if (td.kind === "lootchest" && cave.bld && BCHEST[cave.bld.kind]) { bldLoot(x, y); return; }
     if (td.kind === "lorenote") { var lpg = LPG[F.lorePg]; F.lorePg = null; chips(x + 0.5, y + 0.5, "#e8d8a8", 10, 5); if (lpg && !loreHas(lpg.id)) loreFind(lpg, true); else nag("Just an old shopping list."); return; }
-    if ((td.kind === "lootchest" || td.kind === "lootpot") && !cave.bld) loreChest(["cave", "b" + (cave.hole ? cave.hole.b : 0)], td.kind === "lootchest" ? 0.6 : 0.1);   // LORE
+    if ((td.kind === "lootchest" || td.kind === "lootpot") && !cave.bld) loreChest(["cave", "b" + caveB()], td.kind === "lootchest" ? 0.6 : 0.1);   // LORE
     if (td.kind === "lootchest" || td.kind === "lootpot") {   // hole-cave treasure: deeper floors hold better loot
-      var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2, cb = cave.hole ? cave.hole.b : 0, CL = rollLoot(td.kind === "lootchest" ? "chest" : "pot", cb, ct);
+      var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2, cb = caveB(), CL = rollLoot(td.kind === "lootchest" ? "chest" : "pot", cb, ct);
       CL.forEach(function (q) { give(q[0], q[1], x, y); });
       if (td.kind === "lootchest") { chips(x + 0.5, y + 0.5, "#f2c14e", 18, 7); treasureFound(CL.length); } else { S.st.pots++; thud(420, 0.06); checkGoals(); }
       return;
@@ -11864,7 +12376,7 @@
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
-    advTime(dt);
+    advTime(dt); if (F.lava) volcTick(dt, F);
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
@@ -11960,9 +12472,12 @@
   function drawHolePrompt(g, now) {   // surface: a pill above a nearby Cave Hole
     actBtn = null; if (panelOpen || sleepT > 0 || trans) return;
     if (gravePill(g, now)) return;   // GRAVESTONE
+    var vnt = ventNear(); if (vnt) { drawPill(g, now, coarse ? "Enter the Old Volcano" : "Enter the Old Volcano (F)", ox + vnt.x * ts, oy + (vnt.y - 2.6) * ts, false, function () { enterVolcano(vnt); }); return; }
+    var fgn = farmGateNear(); if (fgn) { drawPill(g, now, coarse ? "Enter your homestead" : "Enter your homestead (F)", ox + (fgn.x + 0.5) * ts, oy + (fgn.y - 2.9) * ts, false, function () { enterHome(fgn); }); return; }
+    var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
-    drawPill(g, now, coarse ? "Enter cave" : "Enter cave (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 0.8, false, function () { enterCave(h.x, h.y); });
+    drawPill(g, now, coarse ? "Enter the Mine" : "Enter the Mine (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 4.9, false, function () { enterCave(h.x, h.y); });
   }
   function drawCavePlayer(g, now) {
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
@@ -11986,6 +12501,18 @@
     } else { g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(0, -ts * 0.7, ts * 0.6, 0, 6.2832); g.fill(); }
     g.restore();
   }
+  function drawRugTop(g, F, e, fx, fy) {
+    if (!F.rugs) { F.rugs = {}; F.flat.forEach(function (q) { if (q.id === T.RUG) F.rugs[q.x + "," + q.y] = 1; }); }
+    var R = F.rugs, u = ts / 16, has = function (dx, dy) { return !!R[(e.x + dx) + "," + (e.y + dy)]; }, L = has(-1, 0), Rt = has(1, 0), U = has(0, -1), D = has(0, 1);
+    var x0 = fx + (L ? 0 : u), y0 = fy + (U ? 0 : u), x1 = fx + ts - (Rt ? 0 : u), y1 = fy + ts - (D ? 0 : u);
+    g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(x0 + u, y0 + u, x1 - x0, y1 - y0);   // a soft shadow under the edge
+    g.fillStyle = "#5a3a8a"; g.fillRect(x0, y0, x1 - x0, y1 - y0);   // the border
+    var ix0 = x0 + (L ? 0 : 2 * u), iy0 = y0 + (U ? 0 : 2 * u), ix1 = x1 - (Rt ? 0 : 2 * u), iy1 = y1 - (D ? 0 : 2 * u);
+    g.fillStyle = "#8d63c9"; g.fillRect(ix0, iy0, ix1 - ix0, iy1 - iy0);
+    g.fillStyle = "#b894e8"; for (var k = 0; k < 16; k += 4) { var yy = fy + k * u + 1 * u; if (yy > iy0 && yy + u < iy1) g.fillRect(ix0, yy, ix1 - ix0, u); }   // woven rows
+    g.fillStyle = "#4ee6b4"; var mx = fx + 7 * u; if (mx > ix0 && mx + 2 * u < ix1) for (var k2 = 0; k2 < 16; k2 += 4) { var y2 = fy + (k2 + 3) * u; if (y2 > iy0 && y2 + u < iy1) g.fillRect(mx, y2, 2 * u, u); }   // a teal diamond chain down the middle
+    g.fillStyle = "#e8dcc0"; if (!L) for (var f1 = 2; f1 < 15; f1 += 3) g.fillRect(fx, fy + f1 * u, u, u); if (!Rt) for (var f2 = 2; f2 < 15; f2 += 3) g.fillRect(fx + ts - u, fy + f2 * u, u, u);   // fringe at the ends
+  }
   function renderCave(now) {
     var F = cave.F, th = F.theme, g = ctx, i, j, idx, BLD = clamp(0.25 + (F.amb || 0.07) * 0.9, 0.25, 0.85), BLA = 1;   // bright rooms bloom only their lamps; dark caves glow more
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
@@ -12008,6 +12535,7 @@
         if (j > 0 && F.wall[idx - W2]) { var sg = g.createLinearGradient(0, sy, 0, sy + ts * 0.5); sg.addColorStop(0, "rgba(0,0,0,.4)"); sg.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sg; g.fillRect(sx, sy, ts, ts * 0.5); }
       }
     }
+    if (F.lava) volcLava(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE OLD VOLCANO: glowing magma cracks
     var ux = ox + F.up.x * ts, uy = oy + F.up.y * ts;
     if (F.nx) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
       F.flat.forEach(function (e) {
@@ -12021,6 +12549,7 @@
           return;
         }
         if (MATF[e.id]) { g.drawImage(matCanvas(e.id, matVar(MATF[e.id], e.x, e.y), 0), fx, fy); return; }   // patterned floors in the Adventure look (any building block works)
+        if (e.id === T.RUG) { drawRugTop(g, F, e, fx, fy); return; }   // rugs, seen from above: one woven rug across all the rug cells (the block art is a side view)
         g.drawImage(ATLAS, 0, e.id * 16, 16, 16, fx, fy, ts, ts);
       });
       if (F.wins) { var dl = daylight(S.time); F.wins.forEach(function (e) {   // windows: a soft shaft of daylight falls across the floor below them (dimmer at night)
@@ -12037,7 +12566,8 @@
       g.fillStyle = "#d8a050"; g.fillRect(mx + 4, my + mh / 2 - 1, mw - 8, 2); g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(mx + 2, my + mh - 2, mw - 4, 2);
       var spl = g.createLinearGradient(0, uy, 0, uy - ts * 1.6); spl.addColorStop(0, "rgba(255,225,170,.2)"); spl.addColorStop(1, "rgba(255,225,170,0)"); g.fillStyle = spl; g.fillRect(ux - ts * 0.2, uy - ts * 1.6, ts * 1.4, ts * 1.6);
       srcs.push([F.up.x + 0.5, F.up.y - 0.2, 5, 0.8]); glows2.push([ux + ts / 2, uy - ts * 0.3, "255,225,170", 3, 0.2]);
-    } else {
+    } else if (liftFloor(cave.f)) drawLift(g, ux, uy, now, srcs, glows2);
+    else {
     g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy - ts, ts, ts); g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy, ts, ts); }
     if (!F.bld && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
     if (!F.bld) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
@@ -12095,7 +12625,7 @@
     g.globalCompositeOperation = "source-over"; drawBloodTint(g);
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
-    if (!F.nx) { g.imageSmoothingEnabled = true; g.drawImage(VIG, 0, 0, vw, vh); g.imageSmoothingEnabled = false; }
+    if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
@@ -12103,7 +12633,7 @@
     else if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" || inGarage() ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
     if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
-      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? 1.3 : 0.5), false, function () { useLadder(ln.k); }); }
+      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
     if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
     else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, "Under construction" + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, true, function () { nxPortalTalk(npp); }); }
@@ -12124,7 +12654,7 @@
   // this only draws MAIN / SIDE / CHAPTERS. QB = { ch: open chapter key, sel: selected quest id, fresh: centre on the current pad }.
   var QB = { ch: "", sel: "", fresh: true, sx: 0, sy: 0 };
   var QB_ICON = {
-    stick: "stick", fiber: "fiber", pebble: "pebble", pick1: "pick1", wood: "wood", bench: "bench", lights: "torch", eat: "redcap", plant: "seed_carrot", harvest: "carrot", cook: "cookpot", bed: "bed", door: "door", sleep: "#☾", stash: "chest", fishing: "bogminnow", tame: "duckegg",
+    stick: "stick", fiber: "fiber", pebble: "pebble", pick1: "pick1", wood: "wood", bench: "bench", lights: "torch", eat: "redcap", plant: "seed_carrot", harvest: "carrot", cook: "cookpot", bed: "bed", door: "door", sleep: "#☾", spear: "wpn1", campfire: "campfire", sleepbag: "sleepbag", night1: "#☾", stash: "chest", fishing: "bogminnow", tame: "duckegg",
     spore: "spore", pick2: "pick2", spear: "wpn1", bug: "bugfrag", frog: "frogfrag", blade: "wpn2", hole: "ladder", sweep: "#⚔", benchup: "bench", mail: "arm2", queen: "queenchitin",
     ember: "cinder", wasp: "stinger", pick3: "pick3", furnace: "furnace", iron: "ironingot", cleaver: "wpn3", forge: "charcoal", aerie: "emberwings", bench3: "bench", plate: "arm3", wyrm: "wyrmscale",
     frost: "crystal", wolf: "wolfpelt", pick4: "pick4", fang: "wpn4", shrine: "#❄", berry: "frostberry", bench4: "bench", fplate: "arm4", alpha: "alphamane",
@@ -12134,7 +12664,7 @@
     bag1: "bag1", bag2: "bag2", shovel1: "shovel", gem1: "quartz", gem4: "amethyst", king5: "wpn5", arm1: "arm1", x_cloth: "cloth", x_mason: "redbrick", x_glass: "stainedred",
     bow1: "bow1", arrow25: "arrow", bow3: "bow3", witch1: "hexdust", witch5: "hexdust", whut1: "bottle", whut2: "hexdust", glide500: "emberwings", spider10: "silk", boss1: "bugtrophy", boss3: "alphamane", boss10: "wyrmscale",
     bug5: "bugfrag", frog5: "frogfrag", bat1: "batwing", bat10: "battrophy", slime5: "slimeball", gator1: "gatorscale", wasp5: "stinger", wolf5: "wolfpelt", sleep5: "bed",
-    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
+    brew1: "bottle", brew7: "tonic_heal", tree3: "sapling", hoe1: "hoe1", hoe2: "hoe2", home1: "farmgate", almanac3: "farmbook", almanac6: "farmbook", sprk1: "sprinkler", keg1: "picklekeg", coop1: "duckcoop", eggs1: "duckegg", pet1: "duckegg", ledger1: "silvercoin", canal1: "seed_bogrice", ship1: "silvercoin", paddy1: "bogrice", moon1: "moonpetal", prize1: "croakpumpkin_g", giant1: "mudmelon", can1: "can", can2: "can", farm25: "carrot", crops4: "frostberry", cook5: "cookpot", gourmet: "stew",
     cave2: "stone", cave3: "ladder", ckill10: "wpn2", cclear5: "amethyst", cave15: "moonstone", loot1: "chest", loot10: "ancientcoin", pots20: "pot", home1: "homeshell",
     trap10: "fishtrap", bait10: "firefly", fish10: "bogminnow", fish50: "rod2", rarefish: "glowfin", fishdex: "fishtrophy", lavafish: "rod2", fishloot: "chest", boot: "oldboot",
     pets3: "trough", allpets: "goatmilk", collect20: "duckegg", baby1: "truffle", ffly10: "firefly", scoop10: "bucket", charm1: "goldfeather", charm8: "owlfeather", bty1: "swamptoken", bty25: "swamptoken", shop1: "swamptoken",
@@ -12144,7 +12674,7 @@
   };
   var QB_BIG = { mwork3: 1, disc10: 1, warden: 1, blood1: 1, queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
   var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate", "starglass"];
-  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework" };
+  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel", Homesteader: "farmgate" };
   var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", stain1: "stain8", bty1: "bty25" };
   function qbIco(k) {   // an icon url for an item key, a tool tier ("pick3"), or null for a glyph ("#⚔")
     if (!k || k.charAt(0) === "#") return null;
@@ -12153,13 +12683,14 @@
     if (!ITEMS[k] && !SPR[k] && !/^(wpn|arm|bag)\d$/.test(k) && k !== "shovel" && k !== "can" && k !== "bucket") return null;
     try { return icon(k); } catch (e) { return null; }
   }
+  Object.assign(QB_ICON, { oc_pier: "boat_anchor", oc_dive: "kelp", oc_suit: "scubasuit", oc_suit4: "suit4", volc1: "#\u2668", fish30: "fishlog", fishall: "bogmarlin", fishleg: "kingcroak", volc5: "cinder", oc_d30: "coral", oc_d70: "tank2", oc_d110: "tank4", oc_clam5: "pearl", oc_chest5: "doubloon", oc_kill25: "jellygel", oc_pir10: "doubloon", oc_capt: "blackpearl", oc_boat: "boat_keel", oc_sail: "boat_sail", oc_isl5: "boat_wheel", oc_ship3: "boat_figure", oc_site3: "seaglass" });   // OCEAN
   function qbIconOf(q) { var k = QB_ICON[q.id]; if (!k && q.rw) k = Object.keys(q.rw)[0]; return k || "#★"; }
   function qbPad(k) { var u = qbIco(k); return u ? '<img alt="" src="' + u + '">' : '<span class="qg">' + esc((k || "#★").slice(1)) + "</span>"; }
   function qbHash(a, b) { var h = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return h - Math.floor(h); }
   function qbChapters() {   // [{ key, n, c, ic, done, all, lock }]
     var L = [], cc = curCh();
     for (var i = 0; i < CHAPTERS.length; i++) { var ql = chQuests(i); if (!ql.length) continue; L.push({ key: "m" + i, n: CHAPTERS[i].n, c: CHAPTERS[i].c, ic: QB_CHIC[i] || "#★", done: ql.filter(function (q) { return MAIN.indexOf(q) < S.qi; }).length, all: ql.length, lock: i > cc, num: i + 1 }); }
-    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length) return; L.push({ key: "s:" + cat, n: cat, c: "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
+    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length) return; L.push({ key: "s:" + cat, n: cat, c: cat === "Sailor" ? "#4fd0e8" : cat === "Homesteader" ? "#7dd65a" : "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
     return L;
   }
   function qbLayout(key) {   // nodes [{ q, x, y, st, pr, big, rw }] and links [[from, to, done]] in pixels
@@ -12203,10 +12734,152 @@
     var w = 0, h = 0; N.forEach(function (n) { w = Math.max(w, n.x + 80); h = Math.max(h, n.y + 96); });
     return { N: N, E: E, w: w, h: h };
   }
+  // ---------- QUEST PAGE THEMES: every story chapter and side-quest group gets its own page (background scene, pad style, link style) ----------
+  // QB_TH maps a chapter key to a theme; qbThemeDeco(theme, w, h) draws the scene behind the pads as SVG: "bot" is pinned to the bottom of the page,
+  // "top" to the top. The colours and pad shapes live in sandbox.css under .qb-th-<theme>.
+  var QB_TH = { m0: "fen", m1: "home", m2: "glow", m3: "ember", m4: "frost", m5: "heart", m6: "gate", m7: "cosmos", m8: "dawn",
+    "s:Explorer": "map", "s:Builder": "blueprint", "s:Decorator": "parlor", "s:Crafter": "workshop", "s:Farmer & Cook": "farm", "s:Angler": "lake", "s:Rancher": "ranch",
+    "s:Hunter": "hunt", "s:Delver": "mine", "s:Collector": "vault", "s:Wonders": "fest", "s:Sailor": "sea", "s:Homesteader": "barnyard" };
+  function qbThemeDeco(th, w, h) {
+    var R = function (a, b) { return qbHash(a * 1.31 + 7, b * 2.77 + 3); }, f = function (n) { return n.toFixed(1); }, o = "", t = "", i, x, y, n = Math.max(6, Math.round(w / 90));
+    var ground = function (col, y0, amp) { var d = "M0 " + f(h - y0); for (var xx = 0; xx <= w + 60; xx += 60) d += " Q" + f(xx + 30) + " " + f(h - y0 - amp * (0.5 + R(xx, 1))) + " " + f(xx + 60) + " " + f(h - y0); return '<path fill="' + col + '" d="' + d + " L" + f(w + 60) + " " + h + " L0 " + h + 'Z"/>'; };
+    var hills = function (col, y0, amp, seed) { var d = "M0 " + h; for (var xx = 0; xx <= w + 120; xx += 120) d += " L" + f(xx) + " " + f(h - y0 - amp * R(xx, seed)); return '<path fill="' + col + '" d="' + d + " L" + f(w + 120) + " " + h + 'Z"/>'; };
+    var scatter = function (cls, cnt, y0, y1, r0, r1, seed) { var s = ""; for (var k = 0; k < cnt; k++) s += '<circle class="' + cls + '" cx="' + f(R(k, seed) * w) + '" cy="' + f(y0 + R(k, seed + 1) * (y1 - y0)) + '" r="' + f(r0 + R(k, seed + 2) * (r1 - r0)) + '" style="animation-delay:-' + f(R(k, seed + 3) * 8) + "s;animation-duration:" + f(4 + R(k, seed + 4) * 6) + 's"/>'; return s; };
+    var reed = function (xx, b, hh) { return '<path class="reed" d="M' + f(xx) + " " + b + " Q" + f(xx + 4) + " " + f(b - hh / 2) + " " + f(xx + 2) + " " + f(b - hh) + '"/><ellipse class="cat" cx="' + f(xx + 2.4) + '" cy="' + f(b - hh + 8) + '" rx="3.2" ry="8"/>'; };
+    var pine = function (xx, b, hh, cls) { return '<path class="' + (cls || "pine") + '" d="M' + f(xx) + " " + f(b - hh) + " L" + f(xx + hh * 0.32) + " " + f(b - hh * 0.35) + " L" + f(xx + hh * 0.16) + " " + f(b - hh * 0.35) + " L" + f(xx + hh * 0.4) + " " + b + " L" + f(xx - hh * 0.4) + " " + b + " L" + f(xx - hh * 0.16) + " " + f(b - hh * 0.35) + " L" + f(xx - hh * 0.32) + " " + f(b - hh * 0.35) + 'Z"/>'; };
+    var house = function (xx, b, s, lit) { return '<g class="house"><rect x="' + f(xx - s) + '" y="' + f(b - s * 1.3) + '" width="' + f(s * 2) + '" height="' + f(s * 1.3) + '"/><path d="M' + f(xx - s * 1.25) + " " + f(b - s * 1.25) + " L" + f(xx) + " " + f(b - s * 2.3) + " L" + f(xx + s * 1.25) + " " + f(b - s * 1.25) + 'Z"/>' + (lit ? '<rect class="win" x="' + f(xx - s * 0.6) + '" y="' + f(b - s * 0.95) + '" width="' + f(s * 0.5) + '" height="' + f(s * 0.45) + '"/><rect class="win" x="' + f(xx + s * 0.15) + '" y="' + f(b - s * 0.95) + '" width="' + f(s * 0.5) + '" height="' + f(s * 0.45) + '"/>' : "") + "</g>"; };
+    var mush = function (xx, b, s) { return '<g class="mush"><rect x="' + f(xx - s * 0.18) + '" y="' + f(b - s) + '" width="' + f(s * 0.36) + '" height="' + f(s) + '" rx="' + f(s * 0.1) + '"/><path class="cap" d="M' + f(xx - s * 0.75) + " " + f(b - s * 0.9) + " Q" + f(xx) + " " + f(b - s * 2) + " " + f(xx + s * 0.75) + " " + f(b - s * 0.9) + 'Z"/></g>'; };
+    var gem = function (xx, b, s, cls) { return '<path class="' + (cls || "gem") + '" d="M' + f(xx) + " " + f(b - s * 2.2) + " L" + f(xx + s * 0.55) + " " + f(b - s * 0.6) + " L" + f(xx) + " " + b + " L" + f(xx - s * 0.55) + " " + f(b - s * 0.6) + 'Z"/>'; };
+    var star5 = function (xx, yy, r, cls) { var d = ""; for (var k = 0; k < 10; k++) { var a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; d += (k ? " L" : "M") + f(xx + Math.cos(a) * rr) + " " + f(yy + Math.sin(a) * rr); } return '<path class="' + (cls || "st5") + '" d="' + d + 'Z"/>'; };
+    var heart = function (xx, yy, s) { return '<path class="heartp" d="M' + f(xx) + " " + f(yy + s * 0.9) + " C" + f(xx - s * 1.4) + " " + f(yy - s * 0.1) + " " + f(xx - s * 0.6) + " " + f(yy - s * 1.1) + " " + f(xx) + " " + f(yy - s * 0.35) + " C" + f(xx + s * 0.6) + " " + f(yy - s * 1.1) + " " + f(xx + s * 1.4) + " " + f(yy - s * 0.1) + " " + f(xx) + " " + f(yy + s * 0.9) + 'Z"/>'; };
+    var gear = function (xx, yy, r) { var d = ""; for (var k = 0; k < 16; k++) { var a = k * Math.PI / 8, rr = k % 2 ? r * 0.78 : r; d += (k ? " L" : "M") + f(xx + Math.cos(a) * rr) + " " + f(yy + Math.sin(a) * rr); } return '<g class="gear" style="transform-origin:' + f(xx) + "px " + f(yy) + 'px"><path d="' + d + 'Z"/><circle cx="' + f(xx) + '" cy="' + f(yy) + '" r="' + f(r * 0.3) + '" class="hole"/></g>'; };
+    var burst = function (xx, yy, r, col, k0) { var s = '<g class="burst" style="animation-delay:-' + f(R(k0, 9) * 5) + 's">'; for (var k = 0; k < 12; k++) { var a = k * Math.PI / 6; s += '<line x1="' + f(xx + Math.cos(a) * r * 0.3) + '" y1="' + f(yy + Math.sin(a) * r * 0.3) + '" x2="' + f(xx + Math.cos(a) * r) + '" y2="' + f(yy + Math.sin(a) * r) + '" stroke="' + col + '"/>'; } return s + "</g>"; };
+    if (th === "fen") {   // Washed Up in Murkwater: misty dawn over the reeds
+      o += hills("#1c4a3a", 60, 120, 3) + hills("#245a44", 40, 70, 5) + ground("#2c4a2a", 26, 10);
+      for (x = 14; x < w; x += 26 + R(x, 6) * 30) o += reed(x, h - 22, 34 + R(x, 7) * 50);
+      o += '<rect class="fog" x="0" y="' + (h - 140) + '" width="' + w + '" height="34"/><rect class="fog f2" x="0" y="' + (h - 90) + '" width="' + w + '" height="26"/>' + scatter("ff", 18, h - 260, h - 40, 1.4, 2.6, 11);
+      o += '<g class="drift"><rect x="' + f(w * 0.3) + '" y="' + (h - 30) + '" width="90" height="10" rx="5"/><rect x="' + f(w * 0.3 + 70) + '" y="' + (h - 40) + '" width="6" height="16" rx="3"/></g>';
+    } else if (th === "home") {   // A Place to Call Home: a cosy camp at dusk
+      o += hills("#2a2a1a", 70, 90, 3) + ground("#3a4a2a", 24, 8);
+      for (i = 0; i < Math.max(3, Math.round(w / 300)); i++) { x = 80 + i * (w - 160) / Math.max(2, Math.round(w / 300) - 1); o += house(x, h - 24, 22 + R(i, 4) * 10, 1); o += '<circle class="smoke" cx="' + f(x + 12) + '" cy="' + (h - 90) + '" r="6"/><circle class="smoke s2" cx="' + f(x + 14) + '" cy="' + (h - 104) + '" r="8"/>'; }
+      for (x = 0; x < w; x += 22) o += '<rect class="fence" x="' + x + '" y="' + (h - 40) + '" width="5" height="18"/>'; o += '<rect class="fence" x="0" y="' + (h - 34) + '" width="' + w + '" height="3"/>';
+      o += '<g class="fire"><path d="M' + f(w * 0.55) + " " + (h - 26) + " q8 -26 16 0Z\"/><path class=\"f2\" d=\"M" + f(w * 0.55 + 4) + " " + (h - 26) + ' q4 -14 8 0Z"/></g>' + scatter("tw", 16, 10, h * 0.45, 0.8, 1.8, 13);
+    } else if (th === "glow") {   // The Glow Beneath: a glowing cave
+      t += '<path class="roof" d="M0 0 L' + w + ' 0 L' + w + ' 26'; for (x = w; x >= 0; x -= 30) t += " L" + f(x) + " " + f(26 + (R(x, 2) > 0.6 ? 30 + R(x, 3) * 40 : R(x, 4) * 10)); t += ' L0 26Z"/>';
+      o += hills("#160f24", 30, 60, 6) + ground("#21182e", 20, 8);
+      for (x = 20; x < w; x += 40 + R(x, 8) * 60) o += R(x, 9) < 0.55 ? mush(x, h - 20, 10 + R(x, 10) * 14) : gem(x, h - 20, 8 + R(x, 11) * 8);
+      o += scatter("spore", 30, 40, h - 30, 1.2, 2.8, 17);
+    } else if (th === "ember") {   // Embers in the East: smouldering basalt
+      o += hills("#2a0e0a", 60, 140, 4) + '<rect class="lavaglow" x="0" y="' + (h - 60) + '" width="' + w + '" height="60"/>' + ground("#1a0a08", 22, 12);
+      for (x = 30; x < w; x += 70 + R(x, 5) * 90) o += '<path class="spire" d="M' + f(x - 14) + " " + (h - 22) + " L" + f(x - 4) + " " + f(h - 22 - 60 - R(x, 6) * 80) + " L" + f(x + 6) + " " + f(h - 22 - 40 - R(x, 7) * 60) + " L" + f(x + 14) + " " + (h - 22) + 'Z"/>';
+      o += scatter("emb", 34, h * 0.2, h - 30, 1, 2.6, 19);
+    } else if (th === "frost") {   // The Frozen Fen: snowy pines
+      t += '<path class="ice" d="M0 0 L' + w + ' 0 L' + w + ' 8'; for (x = w; x >= 0; x -= 18) t += " L" + f(x) + " " + f(8 + (R(x, 3) > 0.5 ? 10 + R(x, 4) * 26 : 2)) + " L" + f(x - 9) + " 8"; t += 'Z"/>';
+      o += hills("#a8c8e0", 60, 100, 5) + hills("#c8dff0", 34, 50, 7);
+      for (x = 20; x < w; x += 50 + R(x, 8) * 70) o += pine(x, h - 24, 50 + R(x, 9) * 70);
+      o += ground("#eef6ff", 22, 8) + scatter("flake", 46, 0, h, 1.2, 3, 23);
+    } else if (th === "heart") {   // Heart of the Swamp: a great old tree with glowing roots
+      o += hills("#2a1a3a", 50, 80, 4) + ground("#1a2a1a", 22, 8);
+      var cx = w / 2; o += '<path class="trunk" d="M' + f(cx - 40) + " " + (h - 22) + " Q" + f(cx - 20) + " " + f(h - 160) + " " + f(cx - 60) + " " + f(h - 280) + " L" + f(cx + 60) + " " + f(h - 280) + " Q" + f(cx + 20) + " " + f(h - 160) + " " + f(cx + 40) + " " + (h - 22) + 'Z"/>';
+      for (i = 0; i < 6; i++) o += '<path class="root" d="M' + f(cx + (i - 2.5) * 12) + " " + (h - 24) + " Q" + f(cx + (i - 2.5) * 60) + " " + (h - 10) + " " + f(cx + (i - 2.5) * 120) + " " + (h - 28) + '"/>';
+      o += '<circle class="hglow" cx="' + f(cx) + '" cy="' + f(h - 150) + '" r="40"/>' + heart(cx, h - 150, 18);
+      for (i = 0; i < 10; i++) o += heart(R(i, 30) * w, 60 + R(i, 31) * (h - 200), 4 + R(i, 32) * 4);
+      o += scatter("tw", 20, 20, h - 40, 0.8, 2, 33);
+    } else if (th === "gate") {   // The Realm Gate: runes and a stone arch
+      o += scatter("tw", 40, 0, h - 60, 0.6, 1.6, 41) + ground("#1a1530", 22, 6);
+      var gx = w / 2; o += '<path class="arch" d="M' + f(gx - 70) + " " + (h - 22) + " L" + f(gx - 70) + " " + f(h - 170) + " Q" + f(gx) + " " + f(h - 280) + " " + f(gx + 70) + " " + f(h - 170) + " L" + f(gx + 70) + " " + (h - 22) + " L" + f(gx + 48) + " " + (h - 22) + " L" + f(gx + 48) + " " + f(h - 165) + " Q" + f(gx) + " " + f(h - 248) + " " + f(gx - 48) + " " + f(h - 165) + " L" + f(gx - 48) + " " + (h - 22) + 'Z"/><path class="portal" d="M' + f(gx - 48) + " " + (h - 22) + " L" + f(gx - 48) + " " + f(h - 165) + " Q" + f(gx) + " " + f(h - 248) + " " + f(gx + 48) + " " + f(h - 165) + " L" + f(gx + 48) + " " + (h - 22) + 'Z"/>';
+      for (i = 0; i < 4; i++) { x = (i + 0.5) * w / 4 + (R(i, 42) - 0.5) * 60; y = 80 + R(i, 43) * (h - 260); o += '<g class="rune" style="transform-origin:' + f(x) + "px " + f(y) + 'px"><circle cx="' + f(x) + '" cy="' + f(y) + '" r="34"/><circle cx="' + f(x) + '" cy="' + f(y) + '" r="24"/>' + star5(x, y, 20, "rst") + "</g>"; }
+    } else if (th === "cosmos") {   // Beyond the Swamp: stars, a moon and floating islands
+      o += scatter("tw", 70, 0, h, 0.5, 1.8, 51) + '<circle class="moon" cx="' + f(w * 0.72) + '" cy="' + f(h * 0.3) + '" r="44"/><circle class="moonc" cx="' + f(w * 0.72 + 16) + '" cy="' + f(h * 0.3 - 10) + '" r="40"/>';
+      for (i = 0; i < 3; i++) { x = w * (0.28 + i * 0.22); y = h - 120 - R(i, 52) * 160; o += '<path class="isle" d="M' + f(x - 60) + " " + f(y) + " L" + f(x + 60) + " " + f(y) + " L" + f(x + 20) + " " + f(y + 40) + " L" + f(x) + " " + f(y + 60) + " L" + f(x - 30) + " " + f(y + 36) + 'Z"/><rect class="isleg" x="' + f(x - 60) + '" y="' + f(y - 6) + '" width="120" height="8" rx="4"/>'; }
+      for (i = 0; i < 6; i++) o += star5(R(i, 53) * w, 40 + R(i, 54) * (h - 120), 5 + R(i, 55) * 4);
+    } else if (th === "dawn") {   // Epilogue: sunrise over the swamp
+      o += '<circle class="sunr" cx="' + f(w / 2) + '" cy="' + f(h - 40) + '" r="120"/>' + hills("#5a3a4a", 40, 70, 3) + ground("#3a2a30", 20, 6) + scatter("tw", 20, 0, h * 0.5, 0.6, 1.6, 61);
+    } else if (th === "map") {   // Explorer: an old map
+      o += '<path class="trail" d="M0 ' + f(h * 0.8); for (x = 0; x <= w; x += 120) o += " Q" + f(x + 60) + " " + f(h * (0.3 + R(x, 70) * 0.5)) + " " + f(x + 120) + " " + f(h * (0.5 + R(x, 71) * 0.35)); o += '"/>';
+      for (i = 0; i < n; i++) { x = R(i, 72) * w; y = 80 + R(i, 73) * (h - 160); o += R(i, 74) < 0.5 ? '<path class="mtn" d="M' + f(x - 22) + " " + f(y + 14) + " L" + f(x) + " " + f(y - 16) + " L" + f(x + 22) + " " + f(y + 14) + 'Z"/>' : '<g class="tree0"><circle cx="' + f(x) + '" cy="' + f(y) + '" r="9"/><line x1="' + f(x) + '" y1="' + f(y + 9) + '" x2="' + f(x) + '" y2="' + f(y + 18) + '"/></g>'; }
+      var cxm = w * 0.76, cym = h - 120; o += '<g class="compass"><circle cx="' + cxm + '" cy="' + cym + '" r="46"/>' + star5(cxm, cym, 40, "cst") + '<text x="' + cxm + '" y="' + (cym - 52) + '">N</text></g><text class="xmark" x="' + f(w * 0.62) + '" y="' + f(h * 0.4) + '">✖</text>';
+    } else if (th === "blueprint") {   // Builder: a blueprint
+      for (i = 0; i < 3; i++) { x = w * (0.25 + i * 0.22); y = h - 40; o += '<g class="bp" transform="translate(' + x + " " + y + ") scale(1.5) translate(" + (-x) + " " + (-y) + ')"><rect x="' + (x - 70) + '" y="' + (y - 100) + '" width="140" height="100"/><path d="M' + (x - 86) + " " + (y - 96) + " L" + x + " " + (y - 170) + " L" + (x + 86) + " " + (y - 96) + '"/><rect x="' + (x - 18) + '" y="' + (y - 50) + '" width="36" height="50"/><rect x="' + (x - 56) + '" y="' + (y - 84) + '" width="28" height="24"/><rect x="' + (x + 28) + '" y="' + (y - 84) + '" width="28" height="24"/><line class="dim" x1="' + (x - 70) + '" y1="' + (y + 14) + '" x2="' + (x + 70) + '" y2="' + (y + 14) + '"/><text x="' + x + '" y="' + (y + 28) + '">12 blocks</text></g>'; }
+      var crx = w * 0.84; o += '<g class="bp crane"><path d="M' + crx + " " + (h - 20) + " L" + crx + " " + (h - 300) + " L" + (crx - 180) + " " + (h - 300) + '"/><line x1="' + (crx - 160) + '" y1="' + (h - 300) + '" x2="' + (crx - 160) + '" y2="' + (h - 230) + '"/><rect x="' + (crx - 172) + '" y="' + (h - 230) + '" width="24" height="16"/></g>';
+    } else if (th === "parlor") {   // Decorator: a cosy parlour wall
+      o += '<rect class="wains" x="0" y="' + (h - 90) + '" width="' + w + '" height="90"/><rect class="rail" x="0" y="' + (h - 94) + '" width="' + w + '" height="6"/>';
+      for (i = 0; i < 5; i++) { x = w * (0.18 + i * 0.14) + R(i, 80) * 30; y = 60 + R(i, 81) * (h - 260); var fw = 60 + R(i, 82) * 40; o += '<g class="frame"><rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(fw) + '" height="' + f(fw * 0.75) + '"/><rect class="art" x="' + f(x + 8) + '" y="' + f(y + 8) + '" width="' + f(fw - 16) + '" height="' + f(fw * 0.75 - 16) + '"/></g>'; }
+      for (i = 0; i < 2; i++) { x = (i ? w * 0.8 : w * 0.2); o += '<g class="lamp"><rect x="' + (x - 3) + '" y="' + (h - 150) + '" width="6" height="60"/><path d="M' + (x - 22) + " " + (h - 150) + " L" + (x + 22) + " " + (h - 150) + " L" + (x + 14) + " " + (h - 180) + " L" + (x - 14) + " " + (h - 180) + 'Z"/><circle class="lglow" cx="' + x + '" cy="' + (h - 160) + '" r="40"/></g>'; }
+    } else if (th === "workshop") {   // Crafter: a pegboard of tools and turning gears
+      for (i = 0; i < 6; i++) { x = w * (0.18 + i * 0.13) + R(i, 90) * 30; y = 70 + R(i, 91) * (h - 220);
+        o += R(i, 92) < 0.5 ? '<g class="tool"><rect x="' + f(x - 3) + '" y="' + f(y) + '" width="6" height="56" rx="2"/><rect class="head" x="' + f(x - 16) + '" y="' + f(y - 10) + '" width="32" height="14" rx="3"/></g>' : '<g class="tool"><path class="head" d="M' + f(x - 30) + " " + f(y + 30) + " L" + f(x + 30) + " " + f(y + 30) + " L" + f(x + 30) + " " + f(y + 18) + " L" + f(x - 18) + " " + f(y + 18) + 'Z"/><rect x="' + f(x + 30) + '" y="' + f(y + 12) + '" width="16" height="24" rx="4"/></g>'; }
+      o += gear(w * 0.8, h - 90, 50) + gear(w * 0.8 - 70, h - 40, 30) + gear(w * 0.2, h - 60, 38) + '<rect class="bench" x="0" y="' + (h - 24) + '" width="' + w + '" height="24"/>';
+    } else if (th === "farm") {   // Farmer & Cook: fields under the sun
+      o += '<circle class="sun" cx="' + f(w * 0.76) + '" cy="90" r="40"/>' + hills("#7ab84a", 80, 50, 3);
+      for (i = 0; i < 4; i++) o += '<rect class="row r' + (i % 2) + '" x="0" y="' + (h - 80 + i * 20) + '" width="' + w + '" height="20"/>';
+      for (x = 16; x < w; x += 34) for (i = 0; i < 3; i++) { y = h - 66 + i * 20; o += '<g class="sprout"><line x1="' + f(x + (i % 2) * 17) + '" y1="' + f(y) + '" x2="' + f(x + (i % 2) * 17) + '" y2="' + f(y - 10) + '"/><ellipse cx="' + f(x + (i % 2) * 17 - 4) + '" cy="' + f(y - 10) + '" rx="4" ry="2"/><ellipse cx="' + f(x + (i % 2) * 17 + 4) + '" cy="' + f(y - 12) + '" rx="4" ry="2"/></g>'; }
+      o += '<g class="scare"><line x1="' + f(w * 0.2) + '" y1="' + (h - 80) + '" x2="' + f(w * 0.2) + '" y2="' + (h - 170) + '"/><line x1="' + f(w * 0.2 - 30) + '" y1="' + (h - 140) + '" x2="' + f(w * 0.2 + 30) + '" y2="' + (h - 140) + '"/><circle cx="' + f(w * 0.2) + '" cy="' + (h - 180) + '" r="12"/><path d="M' + f(w * 0.2 - 18) + " " + (h - 186) + " L" + f(w * 0.2 + 18) + " " + (h - 186) + " L" + f(w * 0.2) + " " + (h - 206) + 'Z"/></g>';
+    } else if (th === "barnyard") {   // Homesteader: your farm at golden hour: a barn, the cottage, a fence, sunflowers and hay
+      o += '<circle class="sun" cx="' + f(w * 0.3) + '" cy="110" r="46"/>' + hills("#8a9a4a", 120, 60, 9) + hills("#6a8a3a", 90, 40, 11);
+      o += '<g class="barn"><rect x="' + f(w * 0.62) + '" y="' + (h - 190) + '" width="120" height="100"/><path class="roof" d="M' + f(w * 0.62 - 12) + " " + (h - 188) + " L" + f(w * 0.62 + 60) + " " + (h - 240) + " L" + f(w * 0.62 + 132) + " " + (h - 188) + 'Z"/><rect class="door" x="' + f(w * 0.62 + 40) + '" y="' + (h - 150) + '" width="40" height="60"/><path class="x" d="M' + f(w * 0.62 + 40) + " " + (h - 150) + " L" + f(w * 0.62 + 80) + " " + (h - 90) + " M" + f(w * 0.62 + 80) + " " + (h - 150) + " L" + f(w * 0.62 + 40) + " " + (h - 90) + '"/></g>';
+      o += house(w * 0.16, h - 92, 34, true) + ground("#5a7a2a", 70, 18);
+      for (x = 0; x < w + 30; x += 30) o += '<g class="fence"><rect x="' + x + '" y="' + (h - 100) + '" width="6" height="34"/></g>'; o += '<rect class="rail" x="0" y="' + (h - 92) + '" width="' + w + '" height="5"/><rect class="rail" x="0" y="' + (h - 78) + '" width="' + w + '" height="5"/>';
+      for (i = 0; i < n; i++) { x = R(i, 12) * w; y = h - 30 - R(i, 13) * 30; o += '<g class="sunfl"><line x1="' + f(x) + '" y1="' + f(y) + '" x2="' + f(x) + '" y2="' + f(y - 46) + '"/><circle class="pet" cx="' + f(x) + '" cy="' + f(y - 50) + '" r="10"/><circle class="mid" cx="' + f(x) + '" cy="' + f(y - 50) + '" r="4.5"/></g>'; }
+      for (i = 0; i < 3; i++) { x = w * (0.4 + i * 0.12); o += '<g class="hay"><rect x="' + f(x) + '" y="' + (h - 56) + '" width="40" height="26" rx="6"/><path d="M' + f(x + 6) + " " + (h - 48) + " h28 M" + f(x + 6) + " " + (h - 40) + ' h28"/></g>'; }
+      t += scatter("mote", 14, 40, 260, 1.2, 2.6, 14);
+    } else if (th === "lake") {   // Angler: a lake at dusk with bobbers
+      o += '<rect class="lakew" x="0" y="' + (h * 0.45) + '" width="' + w + '" height="' + (h * 0.55) + '"/>' + hills("#2a3a4a", h * 0.55, 60, 5);
+      for (i = 0; i < 14; i++) { x = R(i, 100) * w; y = h * 0.5 + R(i, 101) * h * 0.45; o += '<ellipse class="ripple" cx="' + f(x) + '" cy="' + f(y) + '" rx="' + f(18 + R(i, 102) * 20) + '" ry="4" style="animation-delay:-' + f(R(i, 103) * 4) + 's"/>'; }
+      for (i = 0; i < 4; i++) { x = (i + 0.5) * w / 4; y = h * 0.55 + R(i, 104) * h * 0.3; o += '<g class="bobber"><circle class="bt" cx="' + f(x) + '" cy="' + f(y) + '" r="7"/><path class="bb" d="M' + f(x - 7) + " " + f(y) + " A7 7 0 0 0 " + f(x + 7) + " " + f(y) + 'Z"/><line x1="' + f(x) + '" y1="' + f(y - 7) + '" x2="' + f(x) + '" y2="' + f(y - 16) + '"/></g>'; }
+      for (x = 10; x < w; x += 60 + R(x, 105) * 120) o += reed(x, h * 0.47, 30 + R(x, 106) * 30);
+    } else if (th === "ranch") {   // Rancher: a barnyard
+      o += '<circle class="sun" cx="' + f(w * 0.24) + '" cy="80" r="32"/>' + hills("#8ac85a", 60, 50, 4) + ground("#6aa84a", 22, 6);
+      var bx = w * 0.74; o += '<g class="barn"><rect x="' + (bx - 60) + '" y="' + (h - 130) + '" width="120" height="108"/><path d="M' + (bx - 72) + " " + (h - 126) + " L" + bx + " " + (h - 190) + " L" + (bx + 72) + " " + (h - 126) + 'Z"/><rect class="door" x="' + (bx - 24) + '" y="' + (h - 80) + '" width="48" height="58"/><path class="x" d="M' + (bx - 24) + " " + (h - 80) + " L" + (bx + 24) + " " + (h - 22) + " M" + (bx + 24) + " " + (h - 80) + " L" + (bx - 24) + " " + (h - 22) + '"/></g>';
+      for (x = 0; x < bx - 90; x += 26) o += '<rect class="fence" x="' + x + '" y="' + (h - 46) + '" width="6" height="24"/>'; o += '<rect class="fence" x="0" y="' + (h - 40) + '" width="' + (bx - 90) + '" height="4"/><rect class="fence" x="0" y="' + (h - 30) + '" width="' + (bx - 90) + '" height="4"/>';
+      for (i = 0; i < 3; i++) { x = w * 0.3 + i * 90; o += '<g class="hay"><rect x="' + (x - 22) + '" y="' + (h - 52) + '" width="44" height="30" rx="6"/><line x1="' + (x - 22) + '" y1="' + (h - 44) + '" x2="' + (x + 22) + '" y2="' + (h - 44) + '"/><line x1="' + (x - 22) + '" y1="' + (h - 32) + '" x2="' + (x + 22) + '" y2="' + (h - 32) + '"/></g>'; }
+    } else if (th === "hunt") {   // Hunter: a dark forest under the moon, with claw marks
+      o += '<circle class="moon" cx="' + f(w * 0.26) + '" cy="' + f(h * 0.28) + '" r="34"/>';
+      for (x = 0; x < w; x += 40 + R(x, 110) * 40) o += pine(x, h - 18, 120 + R(x, 111) * 160, "pine dk");
+      o += ground("#0e140e", 18, 6);
+      for (i = 0; i < 3; i++) { x = (i + 0.6) * w / 3; y = 90 + R(i, 112) * (h - 300); o += '<g class="claw"><path d="M' + f(x) + " " + f(y) + " q10 40 0 80\"/><path d=\"M" + f(x + 16) + " " + f(y - 6) + " q10 44 0 88\"/><path d=\"M" + f(x + 32) + " " + f(y) + ' q10 40 0 80"/></g>'; }
+      o += scatter("eye", 8, h * 0.4, h - 60, 1.4, 1.8, 113);
+    } else if (th === "mine") {   // Delver: a mine with rails, a cart and lanterns
+      t += '<rect class="beam" x="0" y="0" width="' + w + '" height="18"/>'; for (x = 40; x < w; x += 180) t += '<rect class="beam" x="' + x + '" y="0" width="14" height="70"/>';
+      o += ground("#2a2220", 30, 10) + '<rect class="rail" x="0" y="' + (h - 34) + '" width="' + w + '" height="4"/>'; for (x = 0; x < w; x += 22) o += '<rect class="tie" x="' + x + '" y="' + (h - 32) + '" width="10" height="8"/>';
+      var cxx = w * 0.62; o += '<g class="cart"><path d="M' + (cxx - 34) + " " + (h - 70) + " L" + (cxx + 34) + " " + (h - 70) + " L" + (cxx + 26) + " " + (h - 40) + " L" + (cxx - 26) + " " + (h - 40) + 'Z"/><circle cx="' + (cxx - 16) + '" cy="' + (h - 36) + '" r="7"/><circle cx="' + (cxx + 16) + '" cy="' + (h - 36) + '" r="7"/>' + gem(cxx - 10, h - 68, 6) + gem(cxx + 8, h - 70, 7, "gem g2") + "</g>";
+      for (x = 70; x < w; x += 180) o += '<g class="lant"><line x1="' + (x + 7) + '" y1="70" x2="' + (x + 7) + '" y2="96"/><rect x="' + x + '" y="96" width="14" height="18" rx="3"/><circle class="lglow" cx="' + (x + 7) + '" cy="105" r="36"/></g>';
+      for (i = 0; i < 14; i++) o += '<circle class="ore o' + (i % 3) + '" cx="' + f(R(i, 120) * w) + '" cy="' + f(140 + R(i, 121) * (h - 220)) + '" r="' + f(2 + R(i, 122) * 3) + '"/>';
+    } else if (th === "vault") {   // Collector: a treasure vault
+      o += ground("#3a2a10", 20, 6);
+      for (i = 0; i < Math.max(3, Math.round(w / 260)); i++) { x = 90 + i * 260 + R(i, 130) * 40; var py = h - 20; for (var c2 = 0; c2 < 14; c2++) { var row = Math.floor(Math.sqrt(c2 * 2)); o += '<ellipse class="coin" cx="' + f(x + (c2 - row * row / 2 - row) * 12 + R(c2, i) * 6) + '" cy="' + f(py - row * 8) + '" rx="10" ry="4"/>'; } o += gem(x + 30, py - 30, 9) + gem(x - 26, py - 20, 7, "gem g2"); }
+      o += '<g class="chestv"><rect x="' + f(w / 2 - 50) + '" y="' + (h - 90) + '" width="100" height="70" rx="6"/><path d="M' + f(w / 2 - 50) + " " + (h - 90) + " Q" + f(w / 2) + " " + (h - 130) + " " + f(w / 2 + 50) + " " + (h - 90) + 'Z"/><rect class="lock" x="' + f(w / 2 - 8) + '" y="' + (h - 82) + '" width="16" height="18" rx="3"/></g>' + scatter("spark", 24, 20, h - 30, 1, 2.4, 131);
+    } else if (th === "fest") {   // Wonders: fireworks and balloons over a night festival
+      o += scatter("tw", 40, 0, h * 0.6, 0.6, 1.6, 141); var cols = ["#ff6b82", "#f2c14e", "#4ee6b4", "#6fb6ff", "#c78bff"];
+      for (i = 0; i < 5; i++) o += burst(R(i, 142) * w, 60 + R(i, 143) * h * 0.4, 30 + R(i, 144) * 30, cols[i % 5], i);
+      for (i = 0; i < 6; i++) { x = R(i, 145) * w; y = h * 0.45 + R(i, 146) * h * 0.35; o += '<g class="balloon" style="animation-delay:-' + f(R(i, 147) * 6) + 's"><ellipse cx="' + f(x) + '" cy="' + f(y) + '" rx="13" ry="16" fill="' + cols[(i + 2) % 5] + '"/><path d="M' + f(x) + " " + f(y + 16) + " q-6 20 2 40\"/></g>"; }
+      o += ground("#1a1430", 20, 6); for (x = 0; x < w; x += 60) o += '<path class="bunting" d="M' + x + " " + (h - 120) + " L" + (x + 15) + " " + (h - 100) + " L" + (x + 30) + " " + (h - 120) + 'Z" fill="' + cols[(x / 60) % 5] + '"/>';
+      o += '<path class="string" d="M0 ' + (h - 120) + " L" + w + " " + (h - 120) + '"/>';
+    }
+    return { bot: o, top: t };
+  }
+  var QB_ROUND = { home: 1, frost: 1, gate: 1, cosmos: 1, map: 1, blueprint: 1, workshop: 1, vault: 1, mine: 1, hunt: 1, lake: 1, ranch: 1, dawn: 1 };   // pages whose pads are round tokens instead of lily pads
+  function qbDecoHtml(th, w, h) { var D = qbThemeDeco(th, w, h); return '<svg class="qb-thdeco" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' + D.bot + "</svg>" + (D.top ? '<svg class="qb-thtop" viewBox="0 0 ' + w + ' 140" preserveAspectRatio="xMidYMin slice" aria-hidden="true">' + D.top + "</svg>" : ""); }
+  function qbSeaDeco(w, h) {   // the Sailor page: sun rays, waves along the top, a sandy floor with kelp and coral, drifting fish and rising bubbles
+    var R = function (a, b) { return qbHash(a * 1.7 + 3, b * 2.3 + 11); }, o = '<svg class="qb-seadeco" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + " " + h + '" aria-hidden="true"><defs><linearGradient id="qbRay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dffcff" stop-opacity=".16"/><stop offset="1" stop-color="#dffcff" stop-opacity="0"/></linearGradient></defs>', i, x;
+    for (i = 0; i < Math.max(4, Math.round(w / 220)); i++) { x = (i + 0.3 + R(i, 1) * 0.4) * w / Math.max(4, Math.round(w / 220)); o += '<polygon class="ray" points="' + (x - 18).toFixed(0) + ",0 " + (x + 22).toFixed(0) + ",0 " + (x + 120).toFixed(0) + "," + (h * 0.8).toFixed(0) + " " + (x + 40).toFixed(0) + "," + (h * 0.8).toFixed(0) + '" fill="url(#qbRay)"/>'; }
+    var wv = "M0 10"; for (x = 0; x <= w + 40; x += 40) wv += " Q" + (x + 20) + " " + (x / 40 % 2 ? 4 : 16) + " " + (x + 40) + " 10"; wv = "";
+    var fl = "M0 " + (h - 26); for (x = 0; x <= w + 60; x += 60) fl += " Q" + (x + 30) + " " + (h - 34 - R(x, 3) * 14).toFixed(0) + " " + (x + 60) + " " + (h - 26); o += '<path class="sand" d="' + fl + " L" + (w + 60) + " " + h + " L0 " + h + 'Z"/>';
+    for (x = 20; x < w; x += 46 + R(x, 4) * 50) {
+      var kh = 60 + R(x, 5) * 120, sw = (R(x, 6) - 0.5) * 30, base = h - 28;
+      if (R(x, 7) < 0.62) { o += '<path class="kelp" d="M' + x.toFixed(0) + " " + base + " Q" + (x + sw).toFixed(0) + " " + (base - kh / 2).toFixed(0) + " " + (x - sw * 0.4).toFixed(0) + " " + (base - kh).toFixed(0) + '"/>'; for (var k = 1; k < 4; k++) { var ly = base - kh * k / 4, lx = x + sw * Math.sin(k * 1.3) * 0.6; o += '<ellipse class="leaf" cx="' + (lx + (k % 2 ? 7 : -7)).toFixed(0) + '" cy="' + ly.toFixed(0) + '" rx="9" ry="3.5" transform="rotate(' + (k % 2 ? -30 : 30) + " " + (lx + (k % 2 ? 7 : -7)).toFixed(0) + " " + ly.toFixed(0) + ')"/>'; } }
+      else { var cc2 = ["#ff7a9a", "#ff9a4a", "#5aa8ff", "#c858e8"][Math.floor(R(x, 8) * 4)]; for (var b = 0; b < 5; b++) { var bx = x + (b - 2) * 7, bh = 12 + R(x, 9 + b) * 22; o += '<path class="coral" stroke="' + cc2 + '" d="M' + bx.toFixed(0) + " " + base + " L" + (bx + (b - 2) * 3).toFixed(0) + " " + (base - bh).toFixed(0) + '"/><circle class="coralt" fill="' + cc2 + '" cx="' + (bx + (b - 2) * 3).toFixed(0) + '" cy="' + (base - bh).toFixed(0) + '" r="3.2"/>'; } }
+    }
+    for (i = 0; i < 3; i++) { var sx = R(i, 20) * (w - 60) + 30; o += '<g class="shell" transform="translate(' + sx.toFixed(0) + " " + (h - 20) + ')"><path d="M-7 0 Q0 -12 7 0Z"/><path class="rib" d="M0 0 L0 -8 M-3.5 0 L-2 -7 M3.5 0 L2 -7"/></g>'; }
+    o += '<g class="anchor" transform="translate(' + (w * 0.82).toFixed(0) + " " + (h - 30) + ') rotate(-18)"><path d="M0 -46 L0 0 M-12 -36 L12 -36 M-18 -12 Q0 12 18 -12"/><circle cx="0" cy="-50" r="5"/></g>';
+    for (i = 0; i < Math.max(3, Math.round(w / 260)); i++) { var fy = 50 + R(i, 30) * (h - 140), fx2 = R(i, 31) * w, fsz = 0.8 + R(i, 32) * 0.7; o += '<g class="fish" style="animation-duration:' + (26 + R(i, 33) * 20).toFixed(0) + "s;animation-delay:-" + (R(i, 34) * 30).toFixed(0) + 's"><g transform="translate(' + fx2.toFixed(0) + " " + fy.toFixed(0) + ") scale(" + fsz.toFixed(2) + ')"><ellipse cx="0" cy="0" rx="12" ry="5.5"/><path d="M-10 0 L-19 -6 L-19 6Z"/><circle class="eye" cx="6" cy="-1.5" r="1.4"/></g></g>'; }
+    for (i = 0; i < Math.max(10, Math.round(w / 60)); i++) { var bx2 = R(i, 40) * w, br = 2 + R(i, 41) * 4; o += '<circle class="bub" cx="' + bx2.toFixed(0) + '" cy="' + (h - 30) + '" r="' + br.toFixed(1) + '" style="animation-duration:' + (7 + R(i, 42) * 9).toFixed(1) + "s;animation-delay:-" + (R(i, 43) * 16).toFixed(1) + 's"/>'; }
+    return o + "</svg>";
+  }
   function qbRender() {
     var chs = qbChapters(), cc = curCh();
     if (!QB.ch || !chs.some(function (c) { return c.key === QB.ch; })) { QB.ch = "m" + Math.min(cc, chs.filter(function (c) { return !c.side; }).length - 1); QB.fresh = true; }
-    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), h = '<div class="qb" style="--qc:' + me.c + '">';
+    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), sea = QB.ch === "s:Sailor", qth = QB_TH[QB.ch] || "", h = '<div class="qb' + (qth ? " qb-th qb-th-" + qth + (QB_ROUND[qth] ? " qb-round" : "") : "") + (sea ? " qb-sea" : "") + '" style="--qc:' + me.c + '">';   // OCEAN: the Sailor chapter is drawn as an undersea page
     // chapter list
     h += '<nav class="qb-side" aria-label="Quest chapters"><small>Story</small>';
     chs.forEach(function (c, i) {
@@ -12221,7 +12894,7 @@
       + (isMain && ci <= cc ? '<button type="button" class="btn ghost qb-story" data-story="' + ci + '">Story</button>' : "") + "</header>";
     if (isMain && ci === cc && btyOpen()) { rollBounties(); var brd = btyReady(); h += '<div class="qb-bty"><img alt="" src="' + icon("swamptoken") + '"><span>' + (brd ? "<b>" + brd + " bounties ready.</b> Visit Old Croaker!" : "Croaker's bounties: see him at camp.") + "</span></div>"; }
     // the pond
-    h += '<div class="qb-mapwrap"><div class="qb-map" tabindex="-1"><div class="qb-world" style="width:max(100%,' + L.w + "px);height:" + L.h + 'px"><div class="qb-in" style="width:' + L.w + "px;height:" + L.h + 'px">';
+    h += '<div class="qb-mapwrap"><div class="qb-map" tabindex="-1"><div class="qb-world" style="width:max(100%,' + L.w + "px);height:" + (qth ? "max(100%," + L.h + "px)" : L.h + "px") + '">' + (sea ? qbSeaDeco(Math.max(L.w, 1600), Math.max(L.h, 760)) : qth ? qbDecoHtml(qth, Math.max(L.w, 1600), Math.max(L.h, 760)) : "") + '<div class="qb-in" style="width:' + L.w + "px;height:" + L.h + 'px">';
     h += '<svg class="qb-vines" width="' + L.w + '" height="' + L.h + '" aria-hidden="true">';
     L.E.forEach(function (e) {
       var a = L.N[e[0]], b = L.N[e[1]], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, bend = Math.abs(dy) > Math.abs(dx) ? 26 : 20, cx = mx - dy / Math.hypot(dx, dy) * bend, cy = my + dx / Math.hypot(dx, dy) * bend, d = "M" + a.x + " " + a.y + " Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + b.x + " " + b.y;
@@ -12268,6 +12941,8 @@
   // ---------- HUD AND PANELS ----------
   var HUDC = {}; function hudSet(id, v) { if (HUDC[id] !== v) { HUDC[id] = v; $(id).textContent = v; } }   // PERF: rewriting identical text 4x a second re-blurred and re-laid-out the HUD
   function hud() {
+    if (HOME) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; var ho = homeS(), nc = Object.keys(ho.c).length, nr = Object.keys(ho.c).filter(function (k) { return ho.c[k].s >= 4; }).length; $("sbxBiome").textContent = "Your Homestead"; $("sbxLoc").style.setProperty("--bc", "#7dd65a"); $("sbxSub").textContent = dayTag() + (nc ? nc + " crop" + (nc === 1 ? "" : "s") + (nr ? " \u00b7 " + nr + " ripe" : "") : "Till, plant, water"); if (hbDirty) drawBar(); return; }
+    if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
     if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
@@ -12296,7 +12971,7 @@
   // and not as a multiplayer guest (the host's chests are theirs).
   var CHEST_PULL = 10, poolC = null, poolT = 0;
   function nearChestKeys() {
-    if (cave || (MP.on && MP.role === "guest")) return [];
+    if (cave || OCS || HOME || (MP.on && MP.role === "guest")) return [];
     return Object.keys(S.chests).map(function (key) { var q = key.split(","), x = +q[0], y = +q[1]; return { key: key, x: x, y: y, d: Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)) }; })
       .filter(function (c) { return Math.abs(c.x + 0.5 - p.x) <= CHEST_PULL && Math.abs(c.y + 0.5 - (p.y - 1)) <= CHEST_PULL && isChest(get(c.x, c.y)); })
       .sort(function (a, b) { return a.d - b.d; });
@@ -12330,6 +13005,7 @@
   [
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
+    ["Tools|Camping", "x_campfire x_sleepbag"],
     ["Tools|Utility", "shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
     ["Tools|Adventuring", "x_grapple"],
@@ -12347,6 +13023,9 @@
     ["Stations|Crafting Stations", "x_cookpot x_brewstand x_furnace x_loom x_mason"],
     ["Potions|Bottles", "x_bottle"],
     ["Gear|Jewelry", "x_jeweltable x_veincharm"],
+    ["Gear|Diving", "x_scubasuit x_suit2 x_suit3 x_suit4 x_tank1 x_tank2 x_tank3 x_tank4 x_flippers x_divelamp"],
+    ["Materials|Boat Parts", "x_boat_sail x_boat_lamp x_boat_anchor"],
+    ["Food|From the Sea", "x_kelpwrap x_seastew x_piersushi"],
     ["Building|Wood Stains", "x_stain_walnut x_stain_ebony x_stain_honey x_stain_mahogany x_stain_white x_stain_sage x_stain_blue x_stain_plum x_sandpaper"],
     ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
@@ -12430,6 +13109,53 @@
   function recCard(r) {
     var v = recVis(r), st = v.st, im = v.im, note = v.note;
     return '<div class="sbx-card' + (st.owned || st.lock ? " done" : "") + '"><img class="big" alt="" src="' + im + '"><div><b>' + esc(r.n) + "</b><small>" + esc(note) + '</small><div class="cost">' + costHtml(r.cost) + '</div></div><button type="button" class="btn' + (st.ready ? "" : " ghost") + '" data-sx-craft="' + r.id + '"' + (st.owned || st.lock ? " disabled" : "") + ">" + (st.owned ? "Owned" : st.lock ? "Locked" : "Craft") + "</button></div>";
+  }
+  // ---------- CRAFT GRID: recipes as slots (like the bag) with one detail card for the slot you picked ----------
+  // Used by the Journal's Craft tab (ctx "bag") and every station window (ctx = the station key). A slot shows the item and how close
+  // you are: ready (glowing), made elsewhere / short on materials (dimmed), locked (grey with a lock) or owned (a tick). Tap a slot to
+  // see it in the card: picture, what it does, what it costs (you have / you need) and one big button. CG_SEL remembers the pick per window.
+  var CG_SEL = {};
+  function cgState(r) { var st = recStatus(r); return st.owned ? "own" : st.lock ? "lock" : st.ready ? "ready" : st.can ? "can" : "miss"; }
+  function cgOwnKey(r) { return r.tier && r.tier === S.tier ? "pick" : r.wpn && r.wpn === S.wpn ? "wpn" : r.arm && r.arm === S.arm ? "arm" : r.sh ? "shovel" : ""; }
+  function cgPick(ctx, recs) {   // the remembered pick if it is still in the list, else the first one you can make, else the first one
+    var id = CG_SEL[ctx], i; for (i = 0; i < recs.length; i++) if (recs[i].id === id) return recs[i];
+    for (i = 0; i < recs.length; i++) if (cgState(recs[i]) === "ready") return recs[i];
+    for (i = 0; i < recs.length; i++) if (cgState(recs[i]) !== "own") return recs[i];
+    return recs[0] || null;
+  }
+  function cgTile(r, on) {
+    var v = recVis(r), c = cgState(r), lbl = r.n + (c === "ready" ? ", ready to craft" : c === "own" ? ", owned" : c === "lock" ? ", locked" : "");
+    return '<button type="button" class="crg-t crg-' + c + (on ? " on" : "") + '" data-csel="' + r.id + '" aria-pressed="' + !!on + '" aria-label="' + esc(lbl) + '"><img alt="" src="' + v.im + '"><span>' + esc(r.n) + "</span>" + (c === "lock" ? '<i class="crg-lk" aria-hidden="true"></i>' : c === "own" ? '<i class="crg-ok" aria-hidden="true"></i>' : "") + "</button>";
+  }
+  function cgCost(cost) {   // the ingredients as little slots: picture, then have / need
+    var pool = chestPool();
+    return Object.keys(cost).map(function (k) { var bag = S.inv[k] || 0, have = bag + (pool[k] || 0), ok = have >= cost[k], fc = bag < cost[k] && pool[k] > 0;
+      return '<span class="crg-in' + (ok ? "" : " no") + '" title="' + esc(ITEMS[k].n) + (fc ? " (includes some from nearby chests)" : "") + '"><img alt="" src="' + icon(k) + '"><b>' + esc(ITEMS[k].n) + "</b><em>" + Math.min(have, 999) + "/" + cost[k] + "</em></span>"; }).join("");
+  }
+  function cgDetail(r, ctx) {
+    if (!r) return '<div class="crg-d crg-empty"><p>Nothing to make here yet.</p></div>';
+    var v = recVis(r), st = v.st, c = cgState(r), sk = stnOf(r), note = "", btn;
+    var miss = Object.keys(r.cost).filter(function (q) { return haveIt(q) < r.cost[q]; }).map(function (q) { return (r.cost[q] - haveIt(q)) + " " + ITEMS[q].n; });
+    if (c === "own") { btn = '<button type="button" class="btn ghost" disabled>Owned</button>'; note = "You already have this."; }
+    else if (c === "lock") { btn = '<button type="button" class="btn ghost" disabled>Locked</button>'; note = v.note; }
+    else if (c === "ready") btn = '<button type="button" class="btn crg-go" data-sx-craft="' + r.id + '">Craft</button>';
+    else if (st.can) { note = sk && sk !== ctx ? "Made at the " + stnName(sk) + "." : st.needB ? "Made at the Workbench." : r.deco ? "Made at the Decor Workbench." : ""; btn = sk && ctx === "bag" ? '<button type="button" class="btn ghost" data-sx-goto="' + r.id + '">Show me</button>' : '<button type="button" class="btn ghost" disabled>Craft</button>'; }
+    else { note = "Still need " + miss.join(", ") + "."; btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
+    var desc = c === "lock" ? "" : r.d ? itShort(r.d, 150) : "", rep = "";
+    var ok2 = cgOwnKey(r); if (c === "own" && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
+    return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big"><img alt="" src="' + v.im + '"></span><div><b>' + esc(r.n) + "</b>" + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
+      + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
+  }
+  function craftGrid(recs, ctx, pre) {   // recs already filtered to one category; pre = extra HTML above the slots (bench level, experiments)
+    var sel = cgPick(ctx, recs), last = "", h = "";
+    if (sel) CG_SEL[ctx] = sel.id;
+    recs.forEach(function (r) { if (r.sub !== last) { if (last) h += "</div>"; last = r.sub; h += '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">'; } h += cgTile(r, sel && r.id === sel.id); });
+    if (last) h += "</div>";
+    return '<div class="crg"><div class="crg-list">' + (pre || "") + (h || '<p class="sbx-note">Nothing here yet.</p>') + '</div><div class="crg-side">' + cgDetail(sel, ctx) + "</div></div>";
+  }
+  function cgTabs(cats, cur, attr, rd) {
+    if (cats.length < 2) return "";
+    return '<div class="sbx-cats crg-tabs" role="tablist" aria-label="Categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === cur ? "on" : "") + '" ' + attr + '="' + esc(c) + '" aria-selected="' + (c === cur) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("") + "</div>";
   }
   function handAll() { return craftAll().filter(function (r) { return !stnOf(r); }); }   // the Journal only lists what you make by hand
   function handCats() { var all = handAll(); return CRAFT_CATS.filter(function (c) { return c === "Stations" || all.some(function (r) { return r.cat2 === c; }); }); }
@@ -12519,9 +13245,7 @@
     all.forEach(function (r) { var ok = recStatus(r).ready; if (ok) rd[r.cat2] = (rd[r.cat2] || 0) + 1; if (r.cat2 === ccat) { if (subs.indexOf(r.sub) < 0) subs.push(r.sub); if (ok) sr[r.sub] = (sr[r.sub] || 0) + 1; } });
     if (csub && subs.indexOf(csub) < 0) csub = "";
     if (csearch.trim()) return '<div class="sbx-cbar">' + csBar() + "</div>";
-    return '<div class="sbx-cbar">' + csBar() + '<div class="sbx-cats" role="tablist" aria-label="Craft categories">' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === ccat ? "on" : "") + '" data-cc="' + esc(c) + '" aria-selected="' + (c === ccat) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("")
-      + '</div><div class="sbx-subs" aria-label="Sub-categories"><button type="button" class="rdy' + (cready ? " on" : "") + '" data-cready="1" aria-pressed="' + cready + '">Ready</button><button type="button" class="' + (!csub ? "on" : "") + '" data-cs="">All</button>' + subs.map(function (c) { return '<button type="button" class="' + (c === csub ? "on" : "") + '" data-cs="' + esc(c) + '">' + esc(c) + (sr[c] ? "<i>" + sr[c] + "</i>" : "") + "</button>"; }).join("")
-      + '</div></div>';
+    return '<div class="sbx-cbar crg-bar">' + csBar() + cgTabs(cats, ccat, "data-cc", rd) + "</div>";
   }
   function repairHtml(f, atBench) {   // repair cards: hand repairs in the Journal, Glowspore-and-up repairs in the Workbench window
     var rk = [S.tier >= 1 ? "pick" : "", S.shovel ? "shovel" : "", S.wpn ? "wpn" : "", S.arm ? "arm" : ""].filter(Boolean).filter(function (k) { return repairNeedsBench(k) === atBench && (!f || f(k)); });
@@ -12543,10 +13267,11 @@
     return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
   }
   // ---------- STATION WINDOW: its own pop-up with only the recipes made at that station ----------
-  function stnRecs(k) {   // the station's own recipes, then everything you can make by hand (so you never have to leave the station window)
+  function stnRecs(k) {   // the station's own recipes. At the Workbench, everything you make by hand joins them in its own category and section
     var all = craftAll(), own = all.filter(function (r) { return stnOf(r) === k; });
-    var hand = all.filter(function (r) { return stnOf(r) === "" && !r.charm && !(r.tier && S.tier >= r.tier); }).map(function (r) { var w = Object.create(r); w.cat2 = "By hand"; w.sub = r.cat2 + " \u00b7 " + r.sub; return w; });
-    return own.concat(hand);
+    if (k !== "bench") return own;
+    var mine = all.filter(function (r) { var o = stnOf(r); return o === k || (o === "" && !r.charm); });
+    return mine.sort(function (a, b) { return CRAFT_CATS.indexOf(a.cat2) - CRAFT_CATS.indexOf(b.cat2) || (CRAFT_SUBS[a.cat2] || []).indexOf(a.sub) - (CRAFT_SUBS[b.cat2] || []).indexOf(b.sub) || a.rank - b.rank; });
   }
   function renderStn() {
     var k = stnOpen.k;
@@ -12555,17 +13280,16 @@
     recs.forEach(function (r) { if (cats.indexOf(r.cat2) < 0) cats.push(r.cat2); if (recStatus(r).ready) { rd[r.cat2] = (rd[r.cat2] || 0) + 1; total++; } });
     if (sc && cats.indexOf(sc) < 0) sc = stnCat[k] = "";
     $("sbxStnBox").style.setProperty("--stn", stnColor(k));
-    $("sbxStnTitle").innerHTML = '<img alt="" src="' + icon(D.ic) + '"><span>' + esc(stnName(k)) + "<small>" + (total ? total + " ready to craft" : recs.length + " recipes") + "</small></span>";
-    h += '<div class="sbx-cbar"><div class="sbx-cats" role="tablist" aria-label="Station categories"><button type="button" class="rdy' + (stnReady ? " on" : "") + '" data-stready="1" aria-pressed="' + stnReady + '">Ready' + (total ? "<i>" + total + "</i>" : "") + "</button>"
-      + (cats.length > 1 ? '<button type="button" role="tab" class="' + (!sc ? "on" : "") + '" data-stc="" aria-selected="' + !sc + '">All</button>' + cats.map(function (c) { return '<button type="button" role="tab" class="' + (c === sc ? "on" : "") + '" data-stc="' + esc(c) + '" aria-selected="' + (c === sc) + '">' + esc(c) + (rd[c] ? "<i>" + rd[c] + "</i>" : "") + "</button>"; }).join("") : "")
-      + "</div></div>";
-    var nch = nearChestKeys().length;
-    h += '<p class="sbx-note">' + esc(D.d) + (nch ? ' <b class="stn-ch">Also using ' + nch + " nearby chest" + (nch > 1 ? "s" : "") + ".</b>" : "") + "</p>";
-    if (k === "bench" && !sc && !stnReady) h += benchUpCard() + repairHtml(null, true);
-    if ((k === "cook" || k === "brew") && !sc && !stnReady) { var sct = cgSecrets(k), sfound = sct.filter(function (q) { return S.disc[q[2]]; }).length; h += '<div class="sbx-card cg-card"><img class="big" alt="" src="' + icon(sfound ? sct.filter(function (q) { return S.disc[q[2]]; })[0][2] : k === "cook" ? "glowgoulash" : "tonic_star") + '"><div><b>Experiment</b><small>Mix any three ingredients to discover secret ' + (k === "cook" ? "dishes" : "brews") + ". " + sfound + " of " + sct.length + ' found.</small></div><button type="button" class="btn" data-cg-exp="' + k + '">Experiment</button></div>'; }
-    var shown = recs.filter(function (r) { return (!sc || r.cat2 === sc) && (!stnReady || recStatus(r).ready); }), last = "";
-    if (!shown.length) h += '<p class="sbx-note">' + (stnReady ? "Nothing here can be crafted right now. Turn off Ready to see everything." : "Nothing here yet.") + "</p>";
-    shown.forEach(function (r) { var gh = cats.length > 1 && !sc ? r.cat2 + " · " + r.sub : r.sub; if (gh !== last) { last = gh; h += "<h3>" + esc(gh) + "</h3>"; } h += recCard(r); });
+    $("sbxStnTitle").innerHTML = '<img alt="" src="' + icon(D.ic) + '"><span>' + esc(stnName(k)) + "<small>" + (total ? total + " ready to craft" : esc(D.d)) + "</small></span>";
+    if (!sc || cats.indexOf(sc) < 0) { sc = cats[0] || ""; cats.forEach(function (c) { if (!stnCat[k] && rd[c] && !rd[sc]) sc = c; }); stnCat[k] = sc; }
+    if (cats.length > 1) h += '<div class="sbx-cbar crg-bar">' + cgTabs(cats, sc, "data-stc", rd) + "</div>";
+    var nch = nearChestKeys().length, pre = "";
+    if (nch) pre += '<p class="crg-chest">Also using ' + nch + " nearby chest" + (nch > 1 ? "s" : "") + ".</p>";
+    if (k === "bench" && sc === cats[0]) { var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1]; pre += '<div class="crg-lvl" style="--lc:' + cb.c + '"><img alt="" src="' + icon("bench") + '"><div><b>' + esc(cb.n) + "</b><small>Level " + S.bl + " of " + (BENCH_LV.length - 1) + (nbl ? " · next unlocks " + esc(nbl.gives) : " · fully upgraded") + "</small></div>" + (nbl ? '<button type="button" class="btn' + (canPay(nbl.cost) ? "" : " ghost") + '" data-csel="__bup">Upgrade</button>' : "") + "</div>"; }
+    if ((k === "cook" || k === "brew") && sc === cats[0]) { var sct = cgSecrets(k), sfound = sct.filter(function (q) { return S.disc[q[2]]; }).length; pre += '<div class="crg-lvl" style="--lc:#c08cff"><img alt="" src="' + icon(sfound ? sct.filter(function (q) { return S.disc[q[2]]; })[0][2] : k === "cook" ? "glowgoulash" : "tonic_star") + '"><div><b>Experiment</b><small>Mix three ingredients to find secret ' + (k === "cook" ? "dishes" : "brews") + ". " + sfound + " of " + sct.length + ' found.</small></div><button type="button" class="btn" data-cg-exp="' + k + '">Try it</button></div>'; }
+    var shown = recs.filter(function (r) { return r.cat2 === sc; });
+    if (CG_SEL[k] === "__bup" && k === "bench") h += '<div class="crg"><div class="crg-list">' + pre + shown.map(function (r, i) { return (i === 0 || r.sub !== shown[i - 1].sub ? (i ? "</div>" : "") + '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">' : "") + cgTile(r, false); }).join("") + (shown.length ? "</div>" : "") + '</div><div class="crg-side"><div class="crg-d crg-up">' + benchUpCard().replace(/<h3>[^<]*<\/h3>/, "") + "</div></div></div>";
+    else h += craftGrid(shown, k, pre);
     var bd = $("sbxStnBody"), oc = bd.querySelector(".sbx-cats"), ol = oc ? oc.scrollLeft : 0, st = bd.scrollTop; bd.innerHTML = h; bd.scrollTop = st;
     var row = bd.querySelector(".sbx-cats"); if (row) { row.scrollLeft = ol; var on = row.querySelector("[data-stc].on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; }
   }
@@ -12762,7 +13486,7 @@
   // nothing reaches the Armory, Crystals or anyone else's world. Lock it again from the Dev tab.
   //   toggles (remembered on this device): god mode, fly, ghost (fly through blocks), fast dig, peaceful, FPS counter
   //   actions: heal, best gear, give any item, time of day, events (Blood Moon, star, rainbow), spawn creatures and bosses, teleports, map, quests
-  var DEVH = "4d741228-d2b40119", DEV = { on: false, god: false, fly: false, ghost: false, dig: false, peace: false, fps: false, q: "" };
+  var DEVH = "b947c6e0-cc5d8d9e", DEV = { on: false, god: false, fly: false, ghost: false, dig: false, peace: false, fps: false, q: "" };
   function devHash(s) {   // two FNV-1a passes over the code (trimmed, lower case)
     s = String(s || "").trim().toLowerCase(); var a = 2166136261, b = 3166136261 ^ s.length;
     for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = Math.imul(b ^ (c * 31 + i), 16777619) >>> 0; }
@@ -12918,7 +13642,7 @@
       h += craftBar() + csResHtml();
     } else if (tab === "craft") {
       h += craftBar();
-      if (ccat === "Tools" || ccat === "Gear" || ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
+      if (ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
       if (ccat === "Stations") {
         h += '<h3>Crafting stations</h3><p class="sbx-note">Recipes that need a station only show up in that station\'s window. Place one, then tap it (or press F next to it) to open it.</p>';
         STN_ORDER.forEach(function (k) {
@@ -12934,10 +13658,9 @@
         });
         h += "<h3>Make by hand</h3>";
       }
-      h += repairHtml(function (k) { return ccat === "Tools" ? k !== "arm" : ccat === "Gear" && k === "arm"; }, false);
-      var shown = handAll().filter(function (r) { return r.cat2 === ccat && (!csub || r.sub === csub) && (!cready || recStatus(r).ready); }), lastSub = "";
-      if (!shown.length) h += '<p class="sbx-note">' + (cready ? "Nothing in here can be crafted right now. Turn off Ready to see everything." : "Nothing here is made by hand. Open a crafting station to see its recipes.") + "</p>";
-      shown.forEach(function (r) { if (!csub && r.sub !== lastSub) { lastSub = r.sub; h += "<h3>" + esc(r.sub) + "</h3>"; } h += recCard(r); });
+      var shown = handAll().filter(function (r) { return r.cat2 === ccat; });
+      if (!shown.length) h += '<p class="sbx-note">Nothing here is made by hand. Open a crafting station to see its recipes.</p>';
+      else h += craftGrid(shown, "bag");
     } else if (tab === "dev") {
       h += devHtml();
     } else if (tab === "log") {
@@ -13055,7 +13778,7 @@
     });
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
-    (world.holes || []).forEach(function (hh) { if (!ex[hh.y * W + hh.x]) return; var q = m2s(hh.x, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.6; g.beginPath(); g.arc(q[0], q[1], 3.4, 0, 6.2832); g.fill(); g.stroke(); });
+    (world.holes || []).forEach(function (hh) { var q = m2s(hh.x + 0.5, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.8; g.beginPath(); g.arc(q[0], q[1], 4.6, 0, 6.2832); g.fill(); g.stroke(); g.font = signFont(12); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText("Mine", q[0], q[1] - 8); g.fillStyle = "#f2c14e"; g.fillText("Mine", q[0], q[1] - 8); });   // THE MINE: always on the map, so you can find your way back
     (S.ways || []).forEach(function (w) { var q = m2s(w.x + 0.5, w.y + 0.5), r = 5; g.fillStyle = "#4ee6d0"; g.strokeStyle = "#06100d"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0], q[1] - r * 1.3); g.lineTo(q[0] + r, q[1]); g.lineTo(q[0], q[1] + r * 1.3); g.lineTo(q[0] - r, q[1]); g.closePath(); g.fill(); g.stroke(); g.font = "800 11px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText(w.n, q[0], q[1] - 10); g.fillStyle = "#d4fff6"; g.fillText(w.n, q[0], q[1] - 10); });   // WAYSTONES
     (S.stars || []).forEach(function (st) { var q = m2s(st.x + 0.5, st.y + 0.5), r = 6; g.fillStyle = "#ffe9a0"; g.strokeStyle = "#5a3a08"; g.lineWidth = 1.4; g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(q[0] + Math.cos(a) * rr, q[1] + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); });   // Fallen Stars
     if (S.tmap) { var mq = m2s(S.tmap.x + 0.5, S.tmap.y + 0.5); g.lineCap = "round"; g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 5; g.beginPath(); g.moveTo(mq[0] - 5, mq[1] - 5); g.lineTo(mq[0] + 5, mq[1] + 5); g.moveTo(mq[0] + 5, mq[1] - 5); g.lineTo(mq[0] - 5, mq[1] + 5); g.stroke(); g.strokeStyle = "#ff4a3a"; g.lineWidth = 2.6; g.stroke(); }   // Treasure Map X
@@ -13127,7 +13850,14 @@
   function openMap() {
     if (mapOpen) return; M.dirty = true; if (packOpen) closePack(); else if (panelOpen) closePanel();
     mapOpen = true; panelOpen = true; M.sel = -1; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
-    mapSize(); M.s = clamp(M.cw / 300, mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();
+    var mb = $("sbxMapMine"); if (mb) mb.hidden = !(world.holes && world.holes[0]) || !!cave || !!HOME || !!OCS;
+    mapSize(); var seenW = mapSeenWidth(); M.s = clamp(M.cw / clamp(seenW * 1.6, 130, 300), mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();   // opens zoomed to the land you have seen around you
+  }
+  function mapSeenWidth() {   // how wide the explored stretch of surface around you is (columns), to pick a sensible zoom
+    if (!ex || !col) return 300; var px = clamp(Math.floor(p.x), 0, W - 1), a = px, z = px, gap = 0, x;
+    for (x = px; x >= 0 && gap < 24; x--) { var y = clamp(col[x], 0, H - 1); if (ex[y * W + x]) { a = x; gap = 0; } else gap++; }
+    gap = 0; for (x = px; x < W && gap < 24; x++) { var y2 = clamp(col[x], 0, H - 1); if (ex[y2 * W + x]) { z = x; gap = 0; } else gap++; }
+    return Math.max(1, z - a + 1);
   }
   function closeMap() { mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
   (function () {
@@ -13154,6 +13884,7 @@
     V.addEventListener("click", function (e) {
       var t = e.target.closest("button"); if (!t) return;
       if (t.hasAttribute("data-mclose")) return closeMap();
+      if (t.hasAttribute("data-mmine")) { closeMap(); goMine(); return; }
       var z = t.getAttribute("data-mz"); if (z) { M.dirty = true; if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
       if (t.hasAttribute("data-wpc") && M.sel >= 0) { S.wp[M.sel].c = +t.getAttribute("data-wpc"); snd("coin"); save(); return mapCard(); }
       if (t.hasAttribute("data-wpi") && M.sel >= 0) { S.wp[M.sel].i = +t.getAttribute("data-wpi"); snd("coin"); save(); return mapCard(); }
@@ -13371,10 +14102,15 @@
 
   // ---------- INPUT ----------
   function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
+  ["touchstart", "touchmove", "touchend"].forEach(function (ev) { cv.addEventListener(ev, function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false }); });
+  ["gesturestart", "gesturechange"].forEach(function (ev) { cv.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false }); });
+  cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   cv.addEventListener("pointerdown", function (e) {
     if (panelOpen || menuOpen || trans || (e.pointerType === "mouse" && e.button !== 0)) return; e.preventDefault();
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
+    if (HOME) { if (homeTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); $("sbxHint").classList.remove("on"); return; }
+    if (OCS) { if (ocTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); return; }
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
     if (inNexus() && GD.sleep && GD.wk <= 0) {   // tap the sleeping Warden to wake him
       var zr = cv.getBoundingClientRect(), zx = (e.clientX - zr.left - ox) / ts, zy = (e.clientY - zr.top - oy) / ts;
@@ -13386,6 +14122,7 @@
   });
   cv.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse" || e.pointerId === aim.id) setAim(e); });
   var endAim = function (e) {
+    if (OCS || HOME) { if (e.pointerId === aim.id) { aim.down = false; aim.id = null; mine = null; if (e.pointerType !== "mouse") aim.tx = -1; } return; }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.door && !isStainTool(sel) && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy)))) {   // quick tap on a door: open or close it
       var ddx = aim.dx + 0.5 - p.x, ddy = aim.dy + 0.5 - (p.y - PH / 2);
       if (ddx * ddx + ddy * ddy <= REACH * REACH) toggleDoor(aim.dx, aim.dy, true); else nag("That door is too far away.");
@@ -13422,6 +14159,9 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
     if (deadUI) { if (k === "Enter" || k === " " || k === "r" || k === "R") { e.preventDefault(); deadRespawn(); } return; }   // the death screen
+    if (TOUR) { if (k === "Escape") { e.preventDefault(); endTour(); } else if (k === "Enter" || k === " " || k === "ArrowRight") { e.preventDefault(); TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } return; }
+    if (FMG.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFarmBook(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fmGo(FMG.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fmGo(FMG.pg + 1); return; }
+    if (FB.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFishLog(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fbGo(FB.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fbGo(FB.pg + 1); return; }   // the Fishing Log
     if (menuOpen) { if (k === "Escape") closeWorlds(); return; }
     if (k === "Escape" && !$("sbxMPV").hidden) { closeMPV(); return; }
     if (titleOpen) { if (panelOpen) { if (k === "Escape") closePanel(); } else titleKey(e); return; }
@@ -13444,11 +14184,16 @@
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
-      if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      if (HOME) { if (!homeF()) nag("Walk up to the gate, the shipping crate or the seed stall."); }
+      else if (OCS) { if (!(OCS.sea ? (seaActions()[0] && (seaActions()[0].fn(), 1)) : ocF())) nag(OCS.sea ? "Sail up to an island or a dive buoy first." : OCS.diving ? "Swim up to the surface by the dock ladder to climb out." : "Walk to the middle of the dock to dive in, or to its end for the boat."); }
+      else if (pierGateNear()) ocEnterPier();
+      else if (farmGateNear()) enterHome(farmGateNear());
+      else if (ventNear()) enterVolcano(ventNear());
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(); if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
-    else if ((k === "r" || k === "R") && !cave && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
+    else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
@@ -13484,7 +14229,7 @@
     if (t.hasAttribute("data-cc")) { ccat = t.getAttribute("data-cc"); csub = ""; renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-cs")) { csub = t.getAttribute("data-cs"); renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-cready")) { cready = !cready; renderPanel(); return; }
-    if (t.hasAttribute("data-stc") && stnOpen) { stnCat[stnOpen.k] = t.getAttribute("data-stc"); renderPanel(); $("sbxStnBody").scrollTop = 0; return; }
+    if (t.hasAttribute("data-stc") && stnOpen) { stnCat[stnOpen.k] = t.getAttribute("data-stc"); if (CG_SEL[stnOpen.k] === "__bup") delete CG_SEL[stnOpen.k]; renderPanel(); $("sbxStnBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-stready") && stnOpen) { stnReady = !stnReady; renderPanel(); return; }
     if (t.getAttribute("data-stn-open")) { var so = stationNearK(t.getAttribute("data-stn-open")); if (so) openStn(so.k, so.x, so.y); else nag("Walk closer to it first."); return; }
     if (t.hasAttribute("data-ch-take")) return chestMove(t.getAttribute("data-ch-take"), true, "take");
@@ -13492,6 +14237,7 @@
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.hasAttribute("data-sx-bup")) return upgradeBench();
+    if (t.hasAttribute("data-csel")) { CG_SEL[stnOpen ? stnOpen.k : "bag"] = t.getAttribute("data-csel"); snd("tick"); return renderPanel(); }   // CRAFT GRID: pick a slot
     if (t.getAttribute("data-sx-craft")) return craft(t.getAttribute("data-sx-craft"));
     if (t.hasAttribute("data-sx-goto")) return openCraftTo(t.getAttribute("data-sx-goto"));   // CRAFT SEARCH: go to the station recipe
     if (t.hasAttribute("data-csclear")) { csearch = ""; renderPanel(); var ci = $("sbxCSearch"); if (ci) ci.focus(); return; }
@@ -13544,7 +14290,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -13553,6 +14299,9 @@
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
     ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, coarse ? 24 : 15, 40) * (S ? S.zoom : 1)));
     if (cave && cave.F) ts = caveTs();
+    if (typeof HOME !== "undefined" && HOME) setTimeout(homePads, 0);
+    if (typeof HOME !== "undefined" && HOME) ts = Math.max(32, Math.round(clamp(Math.max(vw, vh) / 24, 32, 64) * (S ? clamp(S.zoom, 0.8, 1.3) : 1) / 16) * 16);
+    if (typeof OCS !== "undefined" && OCS) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 30, coarse ? 24 : 18, 40)));
     fitDock();
   }
   // Inside buildings and caves the tile size is a whole multiple of 16 (so every pixel of art is the same size and stays crisp), and buildings are zoomed so the room fills the screen.
@@ -13568,6 +14317,2716 @@
   var last = 0, slowN = 0, frN = 0, lastDraw = 0, rafAvg = 16.7, rafPrev = 0, rafOdd = false;
   // SAFETY NET: an unexpected error in one frame is logged and the game keeps running (before, any error stopped the loop and the game froze)
   var LERR = { n: 0, last: "" };
+  // =====================================================================================================================================
+  // ---------- THE BRINEBOG SEA: Croaker's Pier, diving, scuba gear, Old Croaker's boat, the sea chart and the swamp pirates ----------
+  // The ocean is its own place (like a cave, but seen from the side): you reach it through the Pier Gate near camp. The map comes from
+  // sandbox-ocean.js (SbxOcean). OCS is the scene while you are there: { site, m (the generated map), t (its tiles, with your changes), pl (you),
+  // mobs, ... }. Mode "dock" = walking Croaker's Pier; "dive" = swimming. Boat: S.oc.boat = { p: { part: 1 }, done }, built at the pier slip like the
+  // motorcycle. OCS.sea is the sea chart when you are sailing (see "SAILING" below). S.oc keeps what lasts: boat parts, opened chests, broken tiles.
+  var SO = typeof SbxOcean !== "undefined" ? SbxOcean : null, OT = SO ? SO.T : {}, OTD = SO ? SO.TD : [], OCS = null, OCW = SO ? SO.W : 0, OCH = SO ? SO.H : 0, OSEA = SO ? SO.SEA : 14;
+  var OTANK = [0, 45, 90, 160, 260], OBOAT = (typeof SbxExtra !== "undefined" && SbxExtra.OCEAN && SbxExtra.OCEAN.BOAT) || [];
+  var OBOAT_HINT = {
+    boat_keel: "Hidden in Croaker's Sea Chest on the pier.", boat_hull: "Sunken pirate wrecks and sea chests.", boat_mast: "Sunken pirate wrecks and sea chests.",
+    boat_rudder: "Sea chests in the shallows and the reef.", boat_wheel: "Deep chests and Gillbeard's Galleon.", boat_figure: "Gillbeard's hoard, deep in the Twilight Deep.",
+    boat_sail: "Made at a Workbench: 6 Canvas, 6 Fiber, 4 Kelp.", boat_lamp: "Made at a Workbench: 2 Glass, 2 Copper Wire, 1 Lamp Oil.", boat_anchor: "Made at a Workbench: 6 Iron Ingots, 1 Rope."
+  };
+  function ocS() {
+    if (!S.oc || typeof S.oc !== "object") S.oc = {}; var o = S.oc;
+    if (!o.boat || typeof o.boat !== "object") o.boat = { p: {}, done: 0, skin: 0 }; if (!o.boat.p) o.boat.p = {};
+    if (!o.open) o.open = {}; if (!o.ed) o.ed = {}; if (!o.kills) o.kills = {}; if (!o.dead) o.dead = {}; if (!o.isl) o.isl = {};
+    return o;
+  }
+  // DIVE SUITS: each tier holds out the pressure deeper. Past your suit's depth the CRUSH TIMER starts: a few seconds to swim back up, or you implode.
+  var OSUIT = [{ id: "", n: "no suit", d: 20 }, { id: "scubasuit", n: "Frogskin Scuba Suit", d: 45, c: "#c9a52a" }, { id: "suit2", n: "Brassback Diving Suit", d: 85, c: "#d9a53a" }, { id: "suit3", n: "Pearlplate Deep Suit", d: 125, c: "#f4e6ff" }, { id: "suit4", n: "Gatorhide Abyss Suit", d: 999, c: "#7af0ff" }], OCRUSH = 6;
+  function ocSuitT() { for (var i = 4; i >= 1; i--) if ((S.inv[OSUIT[i].id] || 0) > 0) return i; return 0; }
+  function ocSuit() { return ocSuitT() > 0; }
+  function ocTank() { for (var i = 4; i >= 1; i--) if ((S.inv["tank" + i] || 0) > 0) return i; return 0; }
+  function ocO2Max() { return 18 + (ocSuit() ? 12 : 0) + OTANK[ocTank()] + (ocSuitT() >= 3 ? 20 : 0); }
+  function ocLimit() { return OSUIT[ocSuitT()].d; }
+  function ocSwimSp() { return 4.3 * ((S.inv.flippers || 0) > 0 ? 1.3 : 1) * (ocSuit() ? 1.06 : 1) * (fx("speed") ? 1.2 : 1); }
+  function ocToday() { return S.days | 0; }
+  function ocBoatHave() { var B = ocS().boat; return OBOAT.filter(function (k) { return B.p[k]; }).length; }
+  function ocPartWant(k) { return ITEMS[k] && !ocS().boat.p[k] && !((S.inv[k] || 0) > 0); }
+  function ocBoatLoot(c) {   // a missing boat part for this chest (never one you already own)
+    if (!OBOAT.length || ocS().boat.done) return null;
+    var B = ocS().boat;
+    if (c.first === 2) return ocPartWant("boat_keel") ? ["boat_keel", 1] : null;
+    var found = ["boat_hull", "boat_mast", "boat_rudder", "boat_wheel", "boat_figure"].filter(ocPartWant);
+    if (c.first === 1) return ocPartWant("boat_rudder") ? ["boat_rudder", 1] : null;
+    if (c.kind === "hoard") { var hp2 = ["boat_figure", "boat_wheel"].filter(ocPartWant); return hp2.length ? [hp2[0], 1] : null; }
+    if (c.kind === "wreck") { var wp = ["boat_hull", "boat_mast"].filter(ocPartWant); if (wp.length && Math.random() < 0.8) return [wp[Math.floor(Math.random() * wp.length)], 1]; }
+    found = found.filter(function (k) { return k !== "boat_figure" || c.tier >= 2; });
+    if (!found.length || Math.random() > 0.2 + c.tier * 0.06) return null;
+    return [found[Math.floor(Math.random() * found.length)], 1];
+  }
+  function ocLoot(c) {   // what a sea chest holds: shallow chests give kelp and shells, deep ones pearls, brass and doubloons
+    var tier = c.tier || 0, L = [], R = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }, add = function (k, a, b, ch) { if (ITEMS[k] && Math.random() < (ch == null ? 1 : ch)) L.push([k, R(a, b)]); };
+    if (c.first === 2) { add("kelp", 4, 5); add("shell", 2, 3); add("seaglass", 2, 3); add("doubloon", 2, 3); }
+    else if (tier === 0) { add("kelp", 2, 4); add("shell", 1, 2, 0.7); add("seaglass", 1, 2, 0.6); add("doubloon", 1, 2, 0.6); add("fiber", 2, 4, 0.7); add("pearl", 1, 1, 0.18); add("kelpwrap", 1, 2, 0.3); }
+    else if (tier === 1) { add("coral", 2, 4); add("brass", 1, 3, 0.7); add("pearl", 1, 1, 0.4); add("doubloon", 1, 3); add("seaglass", 2, 3, 0.6); add("ironingot", 1, 2, 0.3); add("glass", 1, 2, 0.4); add("kelpwrap", 1, 2, 0.3); add("canvas", 1, 2, 0.3); }
+    else if (tier === 2) { add("pearl", 1, 2, 0.7); add("doubloon", 2, 5); add("brass", 2, 4, 0.8); add("blackpearl", 1, 1, 0.12); add("jellygel", 1, 2, 0.5); add("ironingot", 2, 3, 0.5); add("canvas", 2, 3, 0.4); add("copperwire", 1, 2, 0.3); add("lampoil", 1, 2, 0.3); }
+    else { add("pearl", 2, 3); add("blackpearl", 1, 1, 0.3); add("doubloon", 4, 8); add("ironingot", 3, 5, 0.7); add("seaglass", 3, 5, 0.7); add("lurebulb", 1, 1, 0.3); add("goldbar", 1, 1, 0.15); add("brass", 2, 5); }
+    if (c.kind === "hoard") { add("doubloon", 8, 14); add("blackpearl", 1, 2, 0.6); add("goldbar", 1, 2, 0.5); }
+    var bp = ocBoatLoot(c); if (bp) L.push(bp);
+    return L;
+  }
+
+  // ---------- the pier gate near camp: the way in ----------
+  var OCJ = { t: -1e9 }; try { $("sbxPad").querySelector(".jump").addEventListener("pointerdown", function () { OCJ.t = performance.now(); }); } catch (e) {}   // a quick tap on the jump button still counts as a hop
+  var OPG = { w: null, x: 0 };   // the gate stands where Murkwater Swamp meets the Ember Bog, as if the sea lay just behind that border
+  function pierGateX() {
+    if (OPG.w === world) return OPG.x; OPG.w = world; var b = world.bio, sx = Math.floor(world.spawn.x), x, best = -1;
+    for (x = sx; x < W - 2 && best < 0; x++) if (b[x] === 0 && b[x + 1] === 1) best = x;   // east of camp first (the Ember Bog side)
+    for (x = sx; x > 2 && best < 0; x--) if (b[x] === 1 && b[x - 1] === 0) best = x - 1;
+    OPG.x = best >= 0 ? best : sx + 22; return OPG.x;
+  }
+  function pierGateNear() { if (cave || OCS || HOME || !SO) return null; var gx = pierGateX() + 0.5; return Math.abs(p.x - gx) < 3.2 && Math.abs(p.y - col[clamp(Math.floor(gx), 0, W - 1)]) < 6 ? { x: gx } : null; }
+  function ocEnterPier() {
+    if (!SO || cave || OCS || trans || sleepT > 0 || hp <= 0) return;
+    if (MP.on) { nag("Croaker's Pier is closed while you play together. It opens in single player."); return; }
+    if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
+    stopInput(); thud(190, 0.08);
+    trans = { t: 0, done: false, mid: function () { ocBuild(null, true); } };
+  }
+  function ocLeaveNow() {
+    if (!OCS) return; var sea = OCS.sea; OCS = null; stageEl.classList.remove("cave", "ocean"); resize(); stopInput(); mine = null;
+    enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; ocHudO2(); hud(); save();
+  }
+  function ocLeave() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: ocLeaveNow }; }
+
+  // ---------- building the scene ----------
+  function ocSeed() { return (((S.seed | 0) * 7 + 13) >>> 0); }
+  function ocBuild(site, fromGate) {   // site: null = Croaker's Pier; { seed, name } = a dive site from the boat
+    var main = !site, m = SO.gen(main ? ocSeed() : site.seed, main), t = new Uint8Array(m.t), o = ocS();
+    if (main) Object.keys(o.ed).forEach(function (k) { var q = k.split(","), x = +q[0], y = +q[1]; if (x > 0 && x < OCW - 2 && y > 0 && y < OCH - 2) t[y * OCW + x] = o.ed[k] | 0; });
+    m.chests.forEach(function (c) {   // chests you opened stay open until they refill
+      var od = o.open[(main ? "" : site.seed + ":") + c.id], i = c.y * OCW + c.x;
+      if (od !== undefined && (c.first || c.kind === "hoard" || c.kind === "wreck" || ocToday() - od < 3)) t[i] = OT.OPEN;
+    });
+    OCS = { m: m, t: t, main: main, site: site, mode: "dock", diving: false, mobs: [], amb: [], shots: [], fx: [], bub: [], spawnT: 3, cool: 0, mineP: null, t0: performance.now(), mt: 0, o2: ocO2Max(), warnO2: 0, warnPr: 0,
+      pl: { x: m.spawn.x, y: m.spawn.y, vx: 0, vy: 0, face: 1, ang: 0, ph: 0, on: true, kx: 0, ky: 0, shock: 0, splash: 0 }, zone: 0, depthMax: 0, btn: [], btns: [], msg: "", hatch: 0 };
+    var sc = OCS; sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5;
+    if (!main) { sc.diving = true; sc.mode = "dive"; sc.pl.on = false; }
+    m.mobs.forEach(function (q, i) {
+      var id = (main ? "" : site.seed + ":") + "m" + i; if (o.dead[id] !== undefined && ocToday() - o.dead[id] < 2) return;
+      var mb = ocNewMob(q.k, q.x, q.y); mb.id = id; mb.home = { x: q.x, y: q.y }; mb.fixed = 1; sc.mobs.push(mb);
+    });
+    stageEl.classList.add("cave", "ocean"); enemies.length = 0; $("sbxHint").classList.remove("on"); resize();
+    S.st.ocvisit = (S.st.ocvisit || 0) + (fromGate ? 1 : 0); S.vis.ocean = 1;
+    cam.x = sc.pl.x; cam.y = sc.pl.y - 2; hbDirty = true; ocHudO2(); hud(); ocBanner(); save();
+  }
+  function ocBanner() {
+    var el = $("sbxBCard"); if (!el) return; el.style.setProperty("--bc", "#4fd0e8"); el.querySelector("b").textContent = OCS.main ? "Croaker's Pier" : OCS.site.name; el.querySelector("small").textContent = OCS.main ? "The Brinebog Sea" : "Dive site";
+    el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
+  }
+  function ocT(x, y) { return x < 0 || x >= OCW || y < 0 || y >= OCH ? OT.BED : OCS.t[y * OCW + x]; }
+  function ocSetT(x, y, id) { if (x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) return; OCS.t[y * OCW + x] = id; if (OCS.main) { var o = ocS(), k = x + "," + y; if (OCS.m.t[y * OCW + x] === id) delete o.ed[k]; else if (Object.keys(o.ed).length < 3500) o.ed[k] = id; } }
+  function ocSolid(x, y) { var id = ocT(x, y), d = OTD[id]; if (y < OSEA && (id === OT.CHEST || id === OT.OPEN)) return false; return !!d && d.solid; }   // chests on the dock do not block the walkway
+  function ocBox(x, y) {   // does a body with its feet at (x, y) overlap anything solid?
+    var x0 = Math.floor(x - 0.27), x1 = Math.floor(x + 0.27), y0 = Math.floor(y - 0.88), y1 = Math.floor(y - 0.001);
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (ocSolid(xx, yy)) return true;
+    return false;
+  }
+  function ocWet(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return Math.floor(y) >= OSEA && id !== OT.AIR && !OTD[id].solid; }   // water, air pockets and plants all count as water
+  function ocAirAt(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return id === OT.AIRP || (id === OT.AIR) || Math.floor(y) < OSEA; }
+  function ocDepth(y) { return Math.max(0, y - OSEA); }
+  function ocFx(n, x, y, col, o) {
+    for (var i = 0; i < n; i++) { var a = Math.random() * 6.2832, sp = (o && o.sp || 1.5) * (0.4 + Math.random()); parts.push({ x: x + (Math.random() - 0.5) * 0.3, y: y + (Math.random() - 0.5) * 0.3, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (o && o.up || 0), g: (o && o.g != null ? o.g : -1.2), life: 0.5 + Math.random() * 0.6, max: 1.1, c: col, s: 2 + Math.random() * 2.5 }); }
+  }
+  function ocBubbles(x, y, n) { for (var i = 0; i < n; i++) OCS.bub.push({ x: x + (Math.random() - 0.5) * 0.5, y: y, vy: -(1.2 + Math.random() * 1.5), r: 0.06 + Math.random() * 0.1, ph: Math.random() * 6.28, life: 2.5 + Math.random() * 2 }); }
+  function ocSplash(x, big) {
+    waterSplash(x, OSEA - 0.02, big ? 2.4 : 1.2);
+    ocBubbles(x, OSEA + 0.4, big ? 12 : 5); try { if (fxReady()) nz(0, big ? 0.35 : 0.2, big ? 0.14 : 0.07, 1100, "bandpass", 0.7); } catch (e) {}
+  }
+
+  // ---------- the water-bound HUD: oxygen bar ----------
+  var ocShownO2 = -1;
+  function ocHudO2() {
+    var el = $("sbxO2"); if (!el) return; el.hidden = !OCS || !!OCS.sea; if (!OCS || OCS.sea) { ocShownO2 = -1; return; }
+    var mx = ocO2Max(), v = Math.max(0, Math.ceil(OCS.o2 / mx * 100)); if (v === ocShownO2) return; ocShownO2 = v;
+    el.querySelector(".fl").style.width = v + "%"; el.querySelector("b").textContent = Math.max(0, Math.ceil(OCS.o2)) + "s"; el.setAttribute("aria-valuenow", v);
+    el.classList.toggle("low", v <= 25); el.classList.toggle("mid", v > 25 && v <= 55);
+  }
+
+  // ---------- update: walking the pier, swimming, air, pressure ----------
+  function ocUpdate(dt) {
+    var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); tickWeather(dt); sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt); if (p.land) p.land = Math.max(0, p.land - dt * 2.2);   // FIX: a quest cheer no longer gets stuck (arms up) after a swim
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j || performance.now() - OCJ.t < 160;
+    if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
+    if (hurtT > 0) { dx *= 0.5; }
+    var ssp = ocSwimSp(), shock = pl.shock > 0 ? 0.45 : 1; pl.shock = Math.max(0, pl.shock - dt);
+    var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
+    if (!sc.diving) {   // walking Croaker's Pier: gravity, a hop, and railings at both ends
+      var wsp = 5.2 * (fx("speed") ? 1.25 : 1);
+      pl.vx = approach(pl.vx, (dx > 0.2 ? 1 : dx < -0.2 ? -1 : 0) * wsp, 60 * dt); if (dx > 0.2) pl.face = 1; else if (dx < -0.2) pl.face = -1;
+      if (up && pl.on) { pl.vy = -9.2; pl.on = false; thud(260, 0.04); }
+      for (i = 0; i < sub; i++) {
+        pl.vy = Math.min(24, pl.vy + 34 * h); var nx = pl.x + pl.vx * h; if (!ocBox(nx, pl.y)) pl.x = nx; else pl.vx = 0;
+        var ny = pl.y + pl.vy * h; if (!ocBox(pl.x, ny)) { pl.y = ny; pl.on = false; } else { if (pl.vy > 0) pl.on = true; pl.vy = 0; }
+        var lo = 1.2, hi = m.pier ? m.pier.x1 + 0.4 : OCW - 3; pl.x = clamp(pl.x, lo, hi);
+        if (pl.y > OSEA - 1) { pl.y = OSEA - 1; if (pl.vy > 0) pl.vy = 0; pl.on = true; }   // the ladder gap at the dive point is walkable
+      }
+      pl.ang += (0 - pl.ang) * Math.min(1, dt * 8); pl.ph += Math.abs(pl.vx) * dt;
+      if (sc.hatch > 0) sc.hatch -= dt;
+    } else {   // swimming
+      var inW = ocWet(pl.x, pl.y - 0.45), nearTop = pl.y - 0.45 < OSEA + 0.6;
+      var tx = dx * ssp, ty = dy * ssp; if (up && !dy) ty = -ssp;
+      var len = Math.sqrt(dx * dx + dy * dy); if (len > 1) { tx /= len; ty /= len; }
+      var acc = (inW ? 20 : 4) * shock; pl.vx = approach(pl.vx, tx * shock, acc * dt); pl.vy = approach(pl.vy, inW ? ty * shock + (Math.abs(ty) < 0.1 ? 0.06 : 0) : pl.vy, acc * dt);
+      if (!inW) pl.vy += 26 * dt;   // out of the water you fall back in
+      pl.kx = (pl.kx || 0) * Math.max(0, 1 - 7 * dt); pl.ky = (pl.ky || 0) * Math.max(0, 1 - 7 * dt);
+      for (i = 0; i < sub; i++) {
+        var nx2 = pl.x + (pl.vx + pl.kx) * h; if (!ocBox(nx2, pl.y)) pl.x = nx2; else { pl.vx = 0; pl.kx = 0; }
+        var ny2 = pl.y + (pl.vy + pl.ky) * h; if (!ocBox(pl.x, ny2)) pl.y = ny2; else { pl.vy = 0; pl.ky = 0; }
+        pl.x = clamp(pl.x, 1.3, OCW - 3.3);
+      }
+      var spd = Math.sqrt(pl.vx * pl.vx + pl.vy * pl.vy); if (Math.abs(pl.vx) > 0.4) pl.face = pl.vx < 0 ? -1 : 1;
+      var wantA = spd > 0.6 ? clamp(Math.atan2(pl.vy, Math.abs(pl.vx) + 0.001) * 0.9, -1.2, 1.2) * pl.face : 0.05 * pl.face; pl.ang += (wantA - pl.ang) * Math.min(1, dt * 7); pl.ph += spd * dt * 1.4 + dt * 1.5;
+      if (inW && Math.random() < dt * (spd > 1 ? 1.4 : 0.5)) ocBubbles(pl.x + pl.face * 0.2, pl.y - 0.85, 1);
+      if (pl.y - 0.45 < OSEA - 0.2 && pl.vy < -2 && !pl._out) { pl._out = true; ocSplash(pl.x, false); } else if (pl.y - 0.45 > OSEA + 0.3) pl._out = false;
+      pl.on = false;
+    }
+    p.walk += Math.abs(pl.vx) * dt; p.vx = Math.abs(pl.vx); p.face = pl.face;
+    // ----- air and pressure -----
+    var depth = ocDepth(pl.y - 0.45), mx = ocO2Max(), headAir = !sc.diving || ocAirAt(pl.x, pl.y - 0.8);
+    if (headAir) { sc.o2 = Math.min(mx, sc.o2 + dt * 42); sc.warnO2 = 0; if (sc.diving && sc.o2 < mx && Math.random() < dt * 6) ocFx(1, pl.x, pl.y - 0.9, "#e8fbff", { sp: 0.6, g: 0 }); }
+    else {
+      sc.o2 -= dt * (1 + (pl.shock > 0 ? 0.5 : 0)) * (S.oc && 1);
+      if (sc.o2 <= mx * 0.25 && sc.warnO2 === 0) { sc.warnO2 = 1; toast("Low on air! Swim up to the surface or find an air pocket.", "#ff9a5a"); }
+      if (sc.o2 <= 0) { sc.o2 = 0; hurt(7 * dt * 3, "drown", true); if (sc.warnO2 < 2) { sc.warnO2 = 2; toast("You're out of air! Swim up!", "#ff5a4a"); } if (Math.random() < dt * 8) ocBubbles(pl.x, pl.y - 0.8, 1); }
+    }
+    var lim = ocLimit(); sc.lim = lim;
+    if (sc.crush === undefined) sc.crush = OCRUSH;
+    if (sc.diving && depth > lim && hp > 0) {   // past the suit's depth: the crush timer runs (faster the deeper you go)
+      sc.crush -= dt * (1 + Math.min(2, (depth - lim) / 20)); shake = Math.max(shake, 0.2 + 0.5 * (1 - sc.crush / OCRUSH));
+      if (sc.warnPr === 0) { sc.warnPr = 1; var nx2 = OSUIT[ocSuitT() + 1]; toast("Too deep for your " + (ocSuitT() ? OSUIT[ocSuitT()].n : "frog skin") + "! Swim up before you implode!" + (nx2 ? " (" + nx2.n + ": safe to " + (nx2.d > 500 ? "the bottom" : nx2.d + " m") + ")" : ""), "#ff5a4a"); }
+      if (Math.random() < dt * 3) { try { tn(0, 70 + Math.random() * 40, 40, 0.25, "sawtooth", 0.03); } catch (e) {} }
+      if (sc.crush <= 0) { sc.crush = OCRUSH; S.st.implodes = (S.st.implodes || 0) + 1; ocFx(40, pl.x, pl.y - 0.5, "#e8fbff", { sp: 7, g: 0 }); ocBubbles(pl.x, pl.y - 0.5, 30); shake = 1; thud(40, 0.3); hurt(9999, "implode", true); }
+    } else { sc.crush = Math.min(OCRUSH, sc.crush + dt * 2); if (depth < lim - 3) sc.warnPr = 0; }
+    if (!sc.diving && depth > 0) { /* on the pier */ }
+    if (depth > S.st.ocdeep) S.st.ocdeep = Math.floor(depth);
+    if (sc.diving && depth > sc.depthMax) sc.depthMax = depth;
+    var zn = SO.zoneOf(depth); if (sc.diving && zn !== sc.zone) { sc.zone = zn; var Z = SO.ZONES[zn]; var el = $("sbxBCard"); el.style.setProperty("--bc", Z.c); el.querySelector("b").textContent = Z.n; el.querySelector("small").textContent = "Below " + (zn ? SO.ZONES[zn - 1].to : 0) + " m"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); }
+    // ----- health, hunger, potions -----
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt);
+    if (fx("regen") && hp > 0 && hp < MAXHP) hp = Math.min(MAXHP, hp + 3 * dt);
+    drawHp(); ocHudO2(); tickHunger(dt); tickFx(dt); tickBounties(dt);
+    // ----- camera -----
+    var lax = sc.diving ? clamp(pl.vx * 0.28, -2.2, 2.2) : 0, lay = sc.diving ? clamp(pl.vy * 0.2, -1.6, 1.6) : 0;
+    CAMLA.x += (lax - CAMLA.x) * Math.min(1, dt * 1.8); CAMLA.y += (lay - CAMLA.y) * Math.min(1, dt * 1.8);
+    var tcx = pl.x + CAMLA.x, tcy = sc.diving ? pl.y - 0.5 + CAMLA.y : pl.y - 3.2;
+    cam.x += (tcx - cam.x) * Math.min(1, dt * 6); cam.y += (tcy - cam.y) * Math.min(1, dt * 6);
+    var halfW = vw / 2 / ts, halfH = vh / 2 / ts; cam.x = clamp(cam.x, halfW, Math.max(halfW, OCW - halfW)); cam.y = clamp(cam.y, halfH - 8, Math.max(halfH - 8, OCH - halfH + 0.5));
+    aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= OCW || aim.ty < 0 || aim.ty >= OCH) aim.tx = -1;
+    ocMobs(dt); ocTool(dt); ocAmbient(dt); ocSpawn(dt); ocShots(dt);
+    // particles, bubbles, texts
+    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } var g0 = q.g !== undefined ? q.g : 22; q.vy += g0 * dt; if (g0 > 5 && q.y > OSEA) { q.vy *= 0.9; q.vx *= 0.96; } q.x += q.vx * dt; q.y += q.vy * dt; }
+    for (k = sc.bub.length - 1; k >= 0; k--) { var b = sc.bub[k]; b.life -= dt; b.y += b.vy * dt; b.x += Math.sin(sc.mt * 2 + b.ph) * dt * 0.25; if (b.life <= 0 || b.y < OSEA - 0.05) sc.bub.splice(k, 1); }
+    for (var tI = texts.length - 1; tI >= 0; tI--) { texts[tI].life -= dt; texts[tI].y -= dt * 0.9; if (texts[tI].life <= 0) texts.splice(tI, 1); }
+    msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
+    hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); }
+    saveT += dt * 1000; if (saveT >= SAVE_MS) { saveT = 0; save(); }
+  }
+
+  // ---------- sea creatures ----------
+  var OM = {
+    puffer: { n: "Pufferbog", hp: 24, dmg: 9, r: 0.46, drops: [["pufferspine", 1, 2, 0.85], ["bogminnow", 1, 1, 0.4]], c: "#e8c96a", g: "#ffe9a0" },
+    snapjaw: { n: "Snapjaw", hp: 13, dmg: 7, r: 0.36, drops: [["bogminnow", 1, 2, 0.7], ["seaglass", 1, 1, 0.1]], c: "#8a9aa8", g: "#ff7a7a" },
+    eel: { n: "Gulper Eel", hp: 44, dmg: 13, r: 0.5, drops: [["eelskin", 1, 2, 0.85], ["pearl", 1, 1, 0.1]], c: "#2c7a78", g: "#7af0ff" },
+    jelly: { n: "Stinger Jelly", hp: 15, dmg: 8, r: 0.5, drops: [["jellygel", 1, 2, 0.8]], c: "#7af0ff", g: "#b8f8ff" },
+    urchin: { n: "Spine Urchin", hp: 20, dmg: 6, r: 0.4, drops: [["urchinspine", 1, 2, 0.8]], c: "#5a3a7a", g: "#c08aff" },
+    pirate: { n: "Swamp Pirate", hp: 38, dmg: 10, r: 0.55, drops: [["doubloon", 1, 3, 0.95], ["brass", 1, 2, 0.4], ["pearl", 1, 1, 0.1], ["rope", 1, 2, 0.3]], c: "#4a9a52", g: "#ffd23f" },
+    angler: { n: "Lurker Angler", hp: 84, dmg: 22, r: 0.8, drops: [["lurebulb", 1, 2, 0.9], ["blackpearl", 1, 1, 0.18], ["eelskin", 1, 1, 0.5]], c: "#3a2a55", g: "#ffe27a" },
+    captain: { n: "Cap'n Gillbeard", hp: 360, dmg: 18, r: 0.8, boss: 1, drops: [["doubloon", 15, 25, 1], ["blackpearl", 2, 2, 1], ["goldbar", 1, 2, 1], ["brass", 4, 6, 1]], c: "#8ad8c8", g: "#a8fff0" }
+  };
+  var OSPAWN = [[["puffer", 3], ["snapjaw", 2]], [["snapjaw", 3], ["puffer", 1.5], ["jelly", 2]], [["jelly", 3], ["snapjaw", 1.5], ["eel", 1]], [["angler", 2.5], ["jelly", 2], ["eel", 1.5]]], OCAP = [5, 7, 8, 8];
+  function ocNewMob(k, x, y) {
+    var d = OM[k], hp0 = Math.max(1, Math.round(d.hp * dif().ehp));
+    return { k: k, x: x, y: y, vx: 0, vy: 0, r: d.r, hp: hp0, hpm: hp0, face: Math.random() < 0.5 ? -1 : 1, t: Math.random() * 6, st: "idle", cd: 1 + Math.random(), hurt: 0, kx: 0, ky: 0, ph: Math.random() * 6.28, inf: 0, trail: [], tgx: x, tgy: y, wt: 0 };
+  }
+  function ocFree(x, y, r) { r *= 0.7; return !ocSolid(Math.floor(x - r), Math.floor(y - r)) && !ocSolid(Math.floor(x + r), Math.floor(y - r)) && !ocSolid(Math.floor(x - r), Math.floor(y + r)) && !ocSolid(Math.floor(x + r), Math.floor(y + r)); }
+  function ocMove(m, dt) {
+    var vx = m.vx + m.kx, vy = m.vy + m.ky, nx = m.x + vx * dt, ny = m.y + vy * dt;
+    if (ocFree(nx, m.y, m.r) && nx > 1.5 && nx < OCW - 3) m.x = nx; else { m.vx *= -0.4; m.kx = 0; m.tgx = m.x + (Math.random() - 0.5) * 8; }
+    if (ocFree(m.x, ny, m.r) && ny > OSEA + 0.7 && ny < OCH - 3) m.y = ny; else { m.vy *= -0.4; m.ky = 0; m.tgy = m.y + (Math.random() - 0.5) * 6; }
+    m.kx *= Math.max(0, 1 - 6 * dt); m.ky *= Math.max(0, 1 - 6 * dt);
+  }
+  function ocSteer(m, tx, ty, sp, ac, dt) {
+    var dx = tx - m.x, dy = ty - m.y, d = Math.sqrt(dx * dx + dy * dy) || 1; m.vx = approach(m.vx, dx / d * sp, ac * dt); m.vy = approach(m.vy, dy / d * sp, ac * dt); if (Math.abs(m.vx) > 0.2) m.face = m.vx < 0 ? -1 : 1;
+  }
+  function ocWander(m, sp, dt, range) {
+    m.wt -= dt; var home = m.home || { x: m.x, y: m.y }, dd = Math.hypot(m.tgx - m.x, m.tgy - m.y);
+    if (m.wt <= 0 || dd < 0.6) { m.wt = 2 + Math.random() * 3; var tx = home.x + (Math.random() - 0.5) * range * 2, ty = home.y + (Math.random() - 0.5) * range; if (!m.fixed) { tx = m.x + (Math.random() - 0.5) * range * 2; ty = m.y + (Math.random() - 0.5) * range; } if (ocWet(tx, ty) && !ocSolid(Math.floor(tx), Math.floor(ty))) { m.tgx = tx; m.tgy = ty; } }
+    ocSteer(m, m.tgx, m.tgy, sp, 4, dt);
+  }
+  function ocMobs(dt) {
+    var sc = OCS, pl = sc.pl, px = pl.x, py = pl.y - 0.45, i;
+    for (i = sc.mobs.length - 1; i >= 0; i--) {
+      var m = sc.mobs[i], d = OM[m.k]; if (m.dead) { m.dead -= dt; if (m.dead <= 0) sc.mobs.splice(i, 1); continue; }
+      var dx = px - m.x, dy = py - m.y, dist = Math.sqrt(dx * dx + dy * dy); if (dist > 46 && !m.boss) { if (!m.fixed) sc.mobs.splice(i, 1); continue; }
+      if (dist > 36) continue;
+      m.t += dt; m.cd -= dt; m.hurt = Math.max(0, m.hurt - dt); var sees = sc.diving && dist < 20 && (!pl.on);
+      if (m.k === "puffer") {
+        if (sees && dist < 5.2) { m.inf = approach(m.inf, 1, dt * 2.6); ocSteer(m, px, py, 1.5, 3, dt); } else { m.inf = approach(m.inf, 0, dt * 1.1); ocWander(m, 0.9, dt, 7); }
+      } else if (m.k === "snapjaw") {
+        if (m.st === "flee") { m.vx = approach(m.vx, -Math.sign(dx || 1) * 5, 30 * dt); m.vy = approach(m.vy, -Math.sign(dy || 1) * 2.4, 20 * dt); m.t2 -= dt; if (m.t2 <= 0) m.st = "idle"; }
+        else if (sees && dist < 11) ocSteer(m, px, py + Math.sin(m.t * 6 + m.ph) * 0.4, 4.2, 14, dt); else ocWander(m, 1.7, dt, 8);
+      } else if (m.k === "eel" || m.k === "angler") {
+        var big = m.k === "angler", rng = big ? 7 : 8.5, tel = big ? 0.7 : 0.45;
+        if (m.st === "idle") { ocWander(m, big ? 0.8 : 1.1, dt, big ? 10 : 4); if (sees && dist < rng && m.cd <= 0) { m.st = "wind"; m.t2 = tel; m.vx = m.vy = 0; } }
+        else if (m.st === "wind") { m.vx *= 0.8; m.vy *= 0.8; m.face = dx < 0 ? -1 : 1; m.t2 -= dt; if (m.t2 <= 0) { m.st = "dash"; m.t2 = 0.62; var l2 = dist || 1; m.dvx = dx / l2 * (big ? 9 : 9.5); m.dvy = dy / l2 * (big ? 9 : 9.5); snd("hit"); } }
+        else if (m.st === "dash") { m.vx = m.dvx; m.vy = m.dvy; m.t2 -= dt; if (m.t2 <= 0) { m.st = "rest"; m.t2 = 1.2; m.cd = 1.4 + Math.random(); } }
+        else { m.vx *= 0.9; m.vy *= 0.9; m.t2 -= dt; if (m.t2 <= 0) m.st = "idle"; }
+        if (m.k === "eel") { var lt = m.trail[0]; if (!lt || Math.hypot(lt.x - m.x, lt.y - m.y) > 0.22) { m.trail.unshift({ x: m.x, y: m.y }); if (m.trail.length > 14) m.trail.pop(); } }
+      } else if (m.k === "jelly") {
+        if (sees && dist < 9) ocSteer(m, px, py - 0.4, 1.15, 2, dt); else { ocWander(m, 0.5, dt, 6); } m.vy += Math.sin(m.t * 2.2 + m.ph) * 1.2 * dt;
+      } else if (m.k === "urchin") { m.vx = m.vy = 0; }
+      else if (m.k === "pirate") ocPirate(m, dx, dy, dist, sees, dt);
+      else if (m.k === "captain") ocCaptain(m, dx, dy, dist, sees, dt);
+      if (m.k !== "urchin") ocMove(m, dt);
+      // touching you
+      var cr = m.r * (m.k === "puffer" ? 0.8 + m.inf * 0.6 : 1) + 0.32;
+      if (dist < cr && sc.diving && m.cd <= 0 && !(m.k === "pirate" && false)) {
+        var okc = m.k === "puffer" ? m.inf > 0.45 : m.k === "eel" || m.k === "angler" || m.k === "captain" ? m.st === "dash" || m.st === "slash" || m.k === "captain" : true;
+        if (okc) {
+          var dm = Math.round(d.dmg * (m.k === "puffer" ? 1.2 : 1)); hurt(dm, "sea"); pl.kx = (dx / (dist || 1)) * 7; pl.ky = (dy / (dist || 1)) * 5; m.cd = m.k === "urchin" ? 1.0 : 0.9; text(px, py - 1, "-" + dm, "#ff6a6a");
+          if (m.k === "jelly") { pl.shock = 1.4; text(px, py - 1.4, "zap!", "#7af0ff"); }
+          if (m.k === "snapjaw") { m.st = "flee"; m.t2 = 0.7; }
+          if (m.k === "eel" || m.k === "angler") { m.st = "rest"; m.t2 = 1.0; m.vx *= -0.2; m.vy *= -0.2; }
+          ocFx(6, px, py, "#ff8a8a", { sp: 3, g: 4 });
+        }
+      }
+    }
+  }
+  function ocPirate(m, dx, dy, dist, sees, dt) {
+    var want = 5.8; m.face = dx < 0 ? -1 : 1;
+    if (m.st === "aim") { m.vx *= 0.85; m.vy *= 0.85; m.t2 -= dt; if (m.t2 <= 0) { m.st = "idle"; m.cd = 2.3 + Math.random(); var l = dist || 1, sp = 11; OCS.shots.push({ x: m.x + m.face * 0.5, y: m.y, vx: dx / l * sp, vy: dy / l * sp, dmg: OM.pirate.dmg, life: 2.4, k: "harpoon" }); snd("hit"); } return; }
+    if (sees && dist < 16) {
+      var dir = dist < want - 1.5 ? -1 : dist > want + 2 ? 1 : 0; ocSteer(m, m.x + (dx / (dist || 1)) * dir * 3 + 0, m.y + dy / (dist || 1) * dir * 3 + Math.sin(m.t * 1.3 + m.ph) * 1.2, 2.3, 6, dt);
+      if (m.cd <= 0 && dist < 13) { m.st = "aim"; m.t2 = 0.6; }
+    } else ocWander(m, 1.0, dt, 4);
+  }
+  function ocCaptain(m, dx, dy, dist, sees, dt) {
+    var low = m.hp < m.hpm * 0.5; m.face = dx < 0 ? -1 : 1;
+    if (!m.awake) { if (sees && dist < 15) { m.awake = true; toast("Cap'n Gillbeard rises from the wreck!", "#a8fff0"); snd("open", "Epic"); shake = 0.6; } else { m.vx = m.vy = 0; return; } }
+    if (m.st === "idle" || m.st === "rest") {
+      ocSteer(m, OCS.pl.x + (dx < 0 ? 3.5 : -3.5), OCS.pl.y - 1, 2.6, 5, dt); m.t2 = (m.t2 || 0) - dt;
+      if (m.cd <= 0) { if (m.ring === undefined) m.ring = 0; m.ring++; if (m.ring % 3 === 0) { m.st = "cast"; m.t2 = 0.8; } else { m.st = "wind"; m.t2 = low ? 0.5 : 0.75; } }
+    } else if (m.st === "wind") { m.vx *= 0.7; m.vy *= 0.7; m.t2 -= dt; if (m.t2 <= 0) { m.st = "slash"; m.t2 = 0.5; var l2 = dist || 1; m.dvx = dx / l2 * (low ? 13 : 11); m.dvy = dy / l2 * (low ? 13 : 11); } }
+    else if (m.st === "slash") { m.vx = m.dvx; m.vy = m.dvy; m.t2 -= dt; if (m.t2 <= 0) { m.st = "idle"; m.cd = low ? 1.2 : 2; } }
+    else if (m.st === "cast") { m.vx *= 0.8; m.vy *= 0.8; m.t2 -= dt; if (m.t2 <= 0) { m.st = "idle"; m.cd = low ? 1.6 : 2.4; var n = low ? 10 : 7; for (var k = 0; k < n; k++) { var a = k / n * 6.2832 + m.t; OCS.shots.push({ x: m.x, y: m.y, vx: Math.cos(a) * 6, vy: Math.sin(a) * 6, dmg: 10, life: 3, k: "ghost" }); } snd("open", "Rare"); if (low && !m.summoned) { m.summoned = 1; [-3, 3].forEach(function (o) { var pm = ocNewMob("pirate", m.x + o, m.y - 1); if (ocFree(pm.x, pm.y, pm.r)) OCS.mobs.push(pm); }); } } }
+  }
+  function ocShots(dt) {
+    var sc = OCS, pl = sc.pl, px = pl.x, py = pl.y - 0.45;
+    for (var i = sc.shots.length - 1; i >= 0; i--) {
+      var s = sc.shots[i]; s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt; if (s.k === "ghost") s.vy += Math.sin(sc.mt * 5 + i) * 0.2;
+      if (s.life <= 0 || ocSolid(Math.floor(s.x), Math.floor(s.y))) { ocFx(4, s.x, s.y, s.k === "ghost" ? "#a8fff0" : "#cfd6dd", { sp: 2, g: 0 }); sc.shots.splice(i, 1); continue; }
+      if (Math.hypot(s.x - px, s.y - py) < 0.55 && sc.diving) { hurt(s.dmg, "sea"); pl.kx = s.vx * 0.4; pl.ky = s.vy * 0.4; text(px, py - 1, "-" + s.dmg, "#ff6a6a"); ocFx(6, px, py, "#ff8a8a", { sp: 3, g: 3 }); sc.shots.splice(i, 1); }
+    }
+  }
+  function ocHitMob(m, dmg, ux, uy) {
+    m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6 / (m.boss ? 3 : 1); m.ky = uy * 6 / (m.boss ? 3 : 1); text(m.x, m.y - 0.9, "-" + Math.round(dmg), "#ffe48a"); ocFx(7, m.x, m.y, OM[m.k].g, { sp: 3, g: 2 }); thud(190 + Math.random() * 60, 0.06);
+    if (m.st === "aim") m.st = "idle"; if (m.k === "puffer") m.inf = 1;
+    if (m.hp > 0) return;
+    m.dead = 0.5; m.hp = 0; var d = OM[m.k], o = ocS(); o.kills[m.k] = (o.kills[m.k] || 0) + 1; S.st.ockills = (S.st.ockills || 0) + 1; ocFx(16, m.x, m.y, d.g, { sp: 5, g: 1 }); snd("open", "Epic");
+    if (m.fixed && m.id) o.dead[m.id] = ocToday();
+    var got = []; d.drops.forEach(function (q) { if (!ITEMS[q[0]]) return; var first = o.kills[m.k] === 1 && q === d.drops[0]; if (first || Math.random() < q[3]) { var n = q[1] + Math.floor(Math.random() * (q[2] - q[1] + 1)); give(q[0], n, m.x - 0.5, m.y - 1); got.push(n + " " + ITEMS[q[0]].n); } });
+    if (m.k === "captain") { var bp = ["boat_figure", "boat_wheel"].filter(ocPartWant); if (bp.length) { give(bp[0], 1, m.x - 0.5, m.y - 1.6); } S.st.captain = 1; popup("Cap'n Gillbeard defeated", "The galleon's treasure is yours.", "#a8fff0", "⚓"); shake = 0.5; }
+    else popup("Defeated", d.n + (got.length ? " • " + got[0] : ""), d.g, "⚔");
+    if (m.k === "pirate") S.st.pirates = (S.st.pirates || 0) + 1; gemLeech(1); checkGoals();
+  }
+  function ocSpawn(dt) {
+    var sc = OCS; if (!sc.diving) return; sc.spawnT -= dt; if (sc.spawnT > 0) return; sc.spawnT = 2.2 + Math.random() * 1.5;
+    var pl = sc.pl, depth = ocDepth(pl.y), z = SO.zoneOf(depth); if (depth < 5) return;
+    var near = 0; sc.mobs.forEach(function (m) { if (!m.fixed && !m.dead) near++; }); if (near >= OCAP[z]) return;
+    for (var tries = 0; tries < 12; tries++) {
+      var a = Math.random() * 6.2832, r = 15 + Math.random() * 10, x = pl.x + Math.cos(a) * r, y = pl.y + Math.sin(a) * r * 0.7;
+      if (Math.abs(x - pl.x) < vw / ts / 2 + 1.5 && Math.abs(y - pl.y) < vh / ts / 2 + 1.5) continue;
+      if (x < 4 || x > OCW - 5 || y < OSEA + 6 || y > OCH - 5 || !ocWet(x, y) || !ocFree(x, y, 0.6)) continue;
+      var zz = SO.zoneOf(ocDepth(y)), tb = OSPAWN[zz], tot = 0, k; tb.forEach(function (e) { tot += e[1]; }); var rr = Math.random() * tot; k = tb[0][0]; for (var q = 0; q < tb.length; q++) { rr -= tb[q][1]; if (rr <= 0) { k = tb[q][0]; break; } }
+      var n = k === "snapjaw" ? 2 + Math.floor(Math.random() * 3) : 1; for (var j = 0; j < n; j++) { var mb = ocNewMob(k, x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 2); if (ocFree(mb.x, mb.y, mb.r)) sc.mobs.push(mb); }
+      return;
+    }
+  }
+
+  // ---------- peaceful sea life: schools of fish, turtles, rays, seahorses, crabs ----------
+  var OFISH = [["#ffb04a", "#ff7a2a"], ["#5ad0ff", "#2a8ae0"], ["#ff7ab8", "#d83a8a"], ["#b8ff7a", "#5ac03a"], ["#ffe27a", "#d8a82a"]];
+  function ocAmbient(dt) {
+    var sc = OCS, pl = sc.pl, i, depth = ocDepth(pl.y);
+    if (!sc.diving && !sc.main) return; sc.amb = sc.amb || [];
+    sc.ambT = (sc.ambT || 0) - dt;
+    if (sc.ambT <= 0) {
+      sc.ambT = 0.7; var cnt = { fish: 0, turtle: 0, ray: 0, horse: 0, crab: 0, tjelly: 0, lfish: 0 }; sc.amb.forEach(function (a) { cnt[a.k] = (cnt[a.k] || 0) + 1; });
+      var spawn = function (k, x, y, extra) { var a = Object.assign({ k: k, x: x, y: y, vx: 0, vy: 0, face: Math.random() < 0.5 ? -1 : 1, t: Math.random() * 6, ph: Math.random() * 6.28, boop: 0 }, extra || {}); sc.amb.push(a); return a; };
+      for (var tries = 0; tries < 10; tries++) {
+        var ang = Math.random() * 6.2832, r = 11 + Math.random() * 12, x = pl.x + Math.cos(ang) * r, y = pl.y + Math.sin(ang) * r * 0.65;
+        if (x < 4 || x > OCW - 5 || y < OSEA + 2 || y > OCH - 5 || !ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue;
+        var z = SO.zoneOf(ocDepth(y)), roll = Math.random();
+        if (z <= 1 && cnt.fish < 28 && roll < 0.5) { var col = OFISH[Math.floor(Math.random() * OFISH.length)], n = 5 + Math.floor(Math.random() * 5), sch = { x: x, y: y, tx: x, ty: y, t: 0 }; for (var q = 0; q < n; q++) spawn("fish", x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 1.5, { col: col, sch: sch, sz: 0.8 + Math.random() * 0.4 }); break; }
+        else if (z <= 1 && cnt.turtle < 2 && roll < 0.62) { spawn("turtle", x, y); break; }
+        else if (z <= 2 && cnt.ray < 2 && roll < 0.7) { spawn("ray", x, y); break; }
+        else if (z <= 1 && cnt.horse < 3 && roll < 0.8) { spawn("horse", x, y); break; }
+        else if (z >= 1 && cnt.tjelly < 5 && roll < 0.9) { spawn("tjelly", x, y); break; }
+        else if (z >= 2 && cnt.lfish < 12 && roll < 1) { var s2 = { x: x, y: y, tx: x, ty: y, t: 0 }; for (var q2 = 0; q2 < 5; q2++) spawn("lfish", x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5), { sch: s2, sz: 0.9 }); break; }
+      }
+      // crabs walk the sea floor near you
+      if (cnt.crab < 4 && depth > 4 && Math.random() < 0.5) { var cx = pl.x + (Math.random() - 0.5) * 30, cy = ocFloorY(cx, pl.y); if (cy && Math.abs(cx - pl.x) > vw / ts / 2) spawn("crab", cx, cy - 0.3); }
+    }
+    for (i = sc.amb.length - 1; i >= 0; i--) {
+      var a = sc.amb[i]; a.t += dt; a.boop = Math.max(0, a.boop - dt);
+      var dx = a.x - pl.x, dy = a.y - (pl.y - 0.45), d = Math.sqrt(dx * dx + dy * dy); if (d > 44) { sc.amb.splice(i, 1); continue; }
+      if (a.k === "fish" || a.k === "lfish") {
+        var s = a.sch; if (!s.upd || s.upd !== sc.mt) { s.upd = sc.mt; s.t -= dt; if (s.t <= 0 || Math.hypot(s.tx - s.x, s.ty - s.y) < 1) { s.t = 3 + Math.random() * 4; var tx = s.x + (Math.random() - 0.5) * 18, ty = s.y + (Math.random() - 0.5) * 8; if (ocWet(tx, ty) && ocDepth(ty) > 1.5 && !ocSolid(Math.floor(tx), Math.floor(ty))) { s.tx = tx; s.ty = ty; } } var sdx = s.tx - s.x, sdy = s.ty - s.y, sl = Math.hypot(sdx, sdy) || 1; var nsx = s.x + sdx / sl * 1.8 * dt, nsy = s.y + sdy / sl * 0.9 * dt; if (!ocSolid(Math.floor(nsx), Math.floor(nsy)) && ocWet(nsx, nsy)) { s.x = nsx; s.y = nsy; } else s.t = 0; }
+        var fx2 = s.x + Math.sin(a.ph * 3 + a.t * 0.7) * 1.3, fy2 = s.y + Math.cos(a.ph * 2 + a.t * 0.9) * 0.8, flee = d < 3.2 ? 1 : 0;
+        var ax = (fx2 - a.x) * 2 + (flee ? dx / (d || 1) * 7 : 0), ay = (fy2 - a.y) * 2 + (flee ? dy / (d || 1) * 4 : 0);
+        a.vx = approach(a.vx, clamp(ax, -3.4, 3.4), 9 * dt); a.vy = approach(a.vy, clamp(ay, -2, 2), 9 * dt); if (Math.abs(a.vx) > 0.3) a.face = a.vx < 0 ? -1 : 1;
+      } else if (a.k === "turtle") { a.vx = approach(a.vx, a.face * 0.85, dt); a.vy = Math.sin(a.t * 0.6 + a.ph) * 0.25; if (Math.random() < dt * 0.05) a.face = -a.face; }
+      else if (a.k === "ray") { a.vx = approach(a.vx, a.face * 1.5, dt); a.vy = Math.sin(a.t * 0.7 + a.ph) * 0.5; if (Math.random() < dt * 0.04) a.face = -a.face; }
+      else if (a.k === "horse") { a.vx = Math.sin(a.t * 0.4 + a.ph) * 0.3; a.vy = Math.sin(a.t * 0.9 + a.ph) * 0.35; a.face = a.vx < 0 ? -1 : 1; }
+      else if (a.k === "tjelly") { a.vy = Math.sin(a.t * 1.8 + a.ph) * 0.8 - 0.1; a.vx = Math.sin(a.t * 0.5 + a.ph) * 0.4; }
+      else if (a.k === "crab") { a.sc = (a.sc || 0) - dt; if (a.sc <= 0) { a.sc = 1 + Math.random() * 3; a.vx = (Math.random() < 0.3 ? 0 : (Math.random() < 0.5 ? -1 : 1)) * 1.1; } if (d < 4) { a.vx = dx > 0 ? 2.2 : -2.2; } var fl = ocFloorY(a.x, a.y); if (fl) a.y = fl - 0.3; a.face = a.vx < 0 ? -1 : a.vx > 0 ? 1 : a.face; }
+      var nx = a.x + a.vx * dt, ny = a.y + a.vy * dt; if (!ocSolid(Math.floor(nx), Math.floor(a.y)) && (a.k === "crab" || ocWet(nx, a.y))) a.x = nx; else a.vx *= -1;
+      if (a.k !== "crab") { if (!ocSolid(Math.floor(a.x), Math.floor(ny)) && ocWet(a.x, ny) && ny > OSEA + 1) a.y = ny; else a.vy *= -1; }
+    }
+  }
+  function ocFloorY(x, y0) {   // the row of the first solid tile at or below y0 in this column (the sea floor), or 0
+    var X = Math.floor(clamp(x, 2, OCW - 3)); for (var y = Math.floor(clamp(y0, OSEA + 1, OCH - 4)); y < OCH - 2; y++) { if (ocSolid(X, y)) return y; } return 0;
+  }
+  function ocBoop(a) {
+    a.boop = 0.8; ocFx(3, a.x, a.y - 0.3, "#ff8ac0", { sp: 1.2, g: -2, up: 1 }); text(a.x, a.y - 0.8, "♥", "#ff8ac0"); try { if (fxReady()) tn(0, 520 + Math.random() * 200, 900, 0.1, "sine", 0.04); } catch (e) {}
+    if (a.k === "fish" || a.k === "lfish") { a.vx = (Math.random() - 0.5) * 8; a.vy = -2; } S.st.oboops = (S.st.oboops || 0) + 1;
+  }
+
+  // ---------- hands: digging, fighting, chests, boops ----------
+  var OREACH = 3.7;
+  function ocChestAt(x, y) { var L = OCS.m.chests; for (var i = 0; i < L.length; i++) if (L[i].x === x && L[i].y === y) return L[i]; return null; }
+  function ocHaz(dt) {
+    var sc = OCS, pl = sc.pl; if (!sc.diving) return; var id = ocT(Math.floor(pl.x), Math.floor(pl.y - 0.4));
+    if (id === OT.ANEM) { hurt(4 * dt * 2.4, "sting", true); if (Math.random() < dt * 6) ocFx(1, pl.x, pl.y - 0.5, "#ff4a8a", { sp: 1.5, g: 0 }); sc.stingT = (sc.stingT || 0) - dt; if (sc.stingT <= 0) { sc.stingT = 1.2; text(pl.x, pl.y - 1.2, "sting!", "#ff4a8a"); } }
+  }
+  function ocTool(dt) {
+    var sc = OCS, pl = sc.pl, press = aim.down && !sc.pd; sc.pd = aim.down; if (sc.cool > 0) sc.cool -= dt; ocHaz(dt);
+    if (sel === "rod") { ocRod(dt, press); return; } else if (sc.fish) sc.fish = null;
+    if (!aim.down) { sc.mineP = null; mine = null; return; }
+    var pcx = pl.x, pcy = pl.y - 0.45, wx = (aim.mx - ox) / ts, wy = (aim.my - oy) / ts;
+    if (press && sel !== "weapon") {   // a tap on a sea creature or a chest
+      var best = null, bd = 0.9; sc.amb.forEach(function (a) { if (a.k === "crab" && false) return; var d = Math.hypot(a.x - wx, a.y - wy); if (d < bd && Math.hypot(a.x - pcx, a.y - pcy) < 6) { bd = d; best = a; } });
+      if (best) { ocBoop(best); return; }
+    }
+    if (press && aim.tx >= 0) {
+      var ch = ocChestAt(aim.tx, aim.ty); if (ch && ocT(ch.x, ch.y) === OT.CHEST) { if (Math.hypot(ch.x + 0.5 - pcx, ch.y + 0.5 - pcy) <= OREACH) { ocOpenChest(ch); return; } nag("Swim closer to open it."); return; }
+    }
+    if (sel === "weapon") { mine = null; ocSwing(dt); return; }
+    if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
+    if (POTIONS[sel]) { useDrink(dt); return; }
+    ocMine(dt, press);
+  }
+  function ocMine(dt, press) {
+    var sc = OCS, pl = sc.pl, tx = aim.tx, ty = aim.ty; if (tx < 0) { sc.mineP = null; return; }
+    var id = ocT(tx, ty), d = OTD[id]; if (!d || (!d.solid && !d.plant) || d.hard >= 90 || id === OT.CHEST || id === OT.OPEN) { sc.mineP = null; return; }
+    var dx = tx + 0.5 - pl.x, dy = ty + 0.5 - (pl.y - 0.45); if (dx * dx + dy * dy > OREACH * OREACH) { sc.mineP = null; return; }
+    if (Math.abs(dx) > 0.3) pl.face = dx < 0 ? -1 : 1;
+    if (sel !== "pick" && sel !== "shovel") { sc.mineP = null; if (press) nag("Hold your pick to dig coral and rock (press Q)."); return; }
+    if (d.solid && room("stone") <= 0 && d.drops && d.drops[0] && room(d.drops[0][0]) <= 0) { invFull(); sc.mineP = null; return; }
+    if (sel === "shovel" && id !== OT.SAND && id !== OT.SILT && !d.plant) { if (press) nag("A shovel only digs sand and silt. Use your pick."); sc.mineP = null; return; }
+    if (sel === "pick" && d.tier > effTier()) { if (press || !sc.nagT || performance.now() - sc.nagT > 2000) { sc.nagT = performance.now(); nag(S.tier >= d.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[d.tier].n + " to break " + d.n + "."); } sc.mineP = null; return; }
+    if (!sc.mineP || sc.mineP.x !== tx || sc.mineP.y !== ty) sc.mineP = { x: tx, y: ty, p: 0, tick: 0 };
+    var mp = sc.mineP; mp.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") * 0.8 / Math.max(0.05, d.hard); mp.tick -= dt;
+    if (mp.tick <= 0) { mp.tick = 0.2; matHit(id === OT.WOOD || id === OT.BARREL ? T.PLANKS : T.STONE); ocFx(3, tx + 0.5, ty + 0.5, d.c, { sp: 2.5, g: 2 }); }
+    if (mp.p >= 1) { ocBreak(tx, ty); sc.mineP = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && d.solid) wear("pick", d.hard >= 2 ? 2 : 1); }
+  }
+  function ocBreak(x, y) {
+    var id = ocT(x, y), d = OTD[id], sc = OCS, depth = ocDepth(y), got = [];
+    ocSetT(x, y, OT.WATER); S.st.mined++; ocFx(12, x + 0.5, y + 0.5, d.c, { sp: 4, g: 3 }); ocBubbles(x + 0.5, y + 0.5, 3); try { if (fxReady()) nz(0, 0.12, 0.05, 700, "lowpass"); } catch (e) {}
+    var give2 = function (k, n) { if (ITEMS[k] && n > 0) { give(k, n, x, y); got.push(k); } };
+    if (id === OT.CLAM) {
+      if (Math.random() < 0.55) give2("pearl", 1); if (depth > 50 && Math.random() < 0.08) give2("blackpearl", 1); if (Math.random() < 0.6) give2("shell", 1);
+      if (!got.length) text(x + 0.5, y - 0.3, "empty", "#cfd6dd"); else { S.st.clams = (S.st.clams || 0) + 1; ocFx(8, x + 0.5, y + 0.5, "#f4e6ff", { sp: 3, g: -1 }); }
+      return;
+    }
+    if (id === OT.BARREL) { ocLoot({ tier: Math.min(1, SO.zoneOf(depth)), kind: "barrel" }).slice(0, 2).forEach(function (q) { give2(q[0], q[1]); }); if (Math.random() < 0.25) give2("kelpwrap", 1); return; }
+    (d.drops || []).forEach(function (q) { if (Math.random() < q[3]) give2(q[0], q[1] + Math.floor(Math.random() * (q[2] - q[1] + 1))); });
+    if (id === OT.ROCK || id === OT.DEEP) { S.st.cmined = (S.st.cmined || 0) + 1; }
+  }
+  function ocSwing(dt) {
+    var sc = OCS, pl = sc.pl; if (!aim.down || !S.wpn) return;
+    if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
+    if (sc.cool > 0) return; sc.cool = wCd() * 1.15; S.st.swings++;
+    var cx = pl.x, cy = pl.y - 0.45, ax = (aim.mx - ox) / ts - cx, ay = (aim.my - oy) / ts - cy, al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) pl.face = ax < 0 ? -1 : 1;
+    sc.swing = 0.22; sc.swA = Math.atan2(ay, ax); thud(300 + S.wpn * 70, 0.04);
+    for (var s2 = 0; s2 < 5; s2++) { var an = Math.atan2(ay, ax) + (s2 - 2) * 0.32; parts.push({ x: cx + Math.cos(an) * 1.1, y: cy + Math.sin(an) * 1.1, vx: Math.cos(an) * 2.5, vy: Math.sin(an) * 2.5, g: 0, life: 0.2, max: 0.25, c: WEAPONS[S.wpn].c, s: 3 }); }
+    var hits = 0;
+    sc.mobs.forEach(function (m) {
+      if (m.dead) return; var dx = m.x - cx, dy = m.y - cy, d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      if (d > CREACH[S.wpn] + m.r + 0.2 || (dx * ax + dy * ay) / d < 0.15) return;
+      hits++; ocHitMob(m, wDmg(), dx / d, dy / d);
+    });
+    if (hits) wear("wpn", 1);
+  }
+  function ocOpenChest(c) {
+    var sc = OCS, key = (sc.main ? "" : sc.site.seed + ":") + c.id, o = ocS(); if (ocT(c.x, c.y) !== OT.CHEST) return;
+    var L = ocLoot(c); sc.t[c.y * OCW + c.x] = OT.OPEN; o.open[key] = ocToday(); S.st.occhests = (S.st.occhests || 0) + 1;
+    L.forEach(function (q) { give(q[0], q[1], c.x, c.y - 0.3); });
+    ocFx(22, c.x + 0.5, c.y + 0.3, "#ffd23f", { sp: 5, g: -2, up: 2 }); ocBubbles(c.x + 0.5, c.y, 8); snd("open", c.tier >= 2 ? "Epic" : "Rare");
+    var nm = SO.CHEST_NAMES[Math.min(3, c.tier || 0)]; if (c.kind === "hoard") nm = "Gillbeard's Hoard"; if (c.kind === "pier") nm = "Croaker's Sea Chest";
+    popup("Treasure found", nm + " • " + L.length + " kinds of loot", "#f2c14e", "✦"); checkGoals(); save();
+  }
+
+  // ---------- what you can do right now (pills and the F key) ----------
+  function ocActions() {
+    var sc = OCS, pl = sc.pl, m = sc.m, A = [], cx = pl.x, cy = pl.y - 0.45, i;
+    for (i = 0; i < m.chests.length; i++) { var c = m.chests[i]; if (ocT(c.x, c.y) === OT.CHEST && Math.hypot(c.x + 0.5 - cx, c.y + 0.5 - cy) < 2.4) { A.push({ label: "Open " + (c.kind === "pier" ? "Croaker's Sea Chest" : c.kind === "hoard" ? "the hoard" : "chest"), ax: c.x + 0.5, ay: c.y - 0.4, fn: (function (cc) { return function () { ocOpenChest(cc); }; })(c) }); break; } }
+    if (sc.main && !sc.diving) {
+      var P = m.pier;
+      if (croakoNear()) A.push({ label: "Talk to Croako", ax: CROAKO.x, ay: croakoY() - 3.4, fn: talkCroako });
+      if (Math.abs(pl.x - (P.dive + 0.5)) < 2.6) A.push({ label: "Dive in", ax: P.dive + 0.5, ay: OSEA - 2.6, fn: ocDiveIn });
+      if (pl.x > P.slip - 5) A.push({ label: ocS().boat.done ? "Set sail" : "Work on the boat", ax: P.x1 + 2, ay: OSEA - 3.6, fn: function () { if (ocS().boat.done) ocSetSail(); else openBoat(); } });
+      if (pl.x < 5) A.push({ label: "Back to the swamp", ax: 3, ay: OSEA - 3, fn: ocLeave });
+    }
+    if (sc.diving && pl.y - 0.45 < OSEA + 1.6) {
+      if (sc.main) { if (Math.abs(pl.x - (m.pier.dive + 0.5)) < 3) A.push({ label: "Climb onto the dock", ax: m.pier.dive + 0.5, ay: OSEA - 2.8, fn: ocClimb }); else A.push({ label: "Swim back to the pier", ax: pl.x, ay: OSEA - 2.4, fn: ocSwimHome }); }
+      else A.push({ label: "Climb back aboard", ax: pl.x, ay: OSEA - 2.4, fn: seaResume });
+    }
+    return A;
+  }
+
+  // ---------- FISHING OFF CROAKER'S PIER: hold the rod on the dock and tap the water. Wait for the bobber to dip and the "!", then tap to reel in ----------
+  var OFISHT = [["brinemackerel", 55], ["kelpsnapper", 33]], OFISHR = "goldgilly";
+  function ocRod(dt, press) {
+    var sc = OCS, pl = sc.pl, F = sc.fish; mine = null; sc.mineP = null;
+    if (sc.diving) { sc.fish = null; if (press) nag("You can't fish while swimming. Climb back onto the dock."); return; }
+    if (!F) {
+      if (!press || aim.tx < 0) return;
+      var wy = (aim.my - oy) / ts, tx = aim.tx;
+      if (wy < OSEA - 1.4 || ocT(tx, OSEA) !== OT.WATER) { nag("Tap the open water below the dock to cast your line."); return; }
+      var dx = tx + 0.5 - pl.x; if (Math.abs(dx) > 9) { nag("That's too far to cast."); return; }
+      pl.face = dx < 0 ? -1 : 1; var bait = takeBait();
+      sc.fish = { x: tx, ph: "wait", bait: bait[1], t: (2.5 + Math.random() * 5) * fishBiteMul() * bait[0], bob: 0 };
+      thud(520, 0.04); ocFx(6, tx + 0.5, OSEA, "#bff4ff", { sp: 1.2, g: 6 }); return;
+    }
+    if (Math.abs(F.x + 0.5 - pl.x) > 11) { sc.fish = null; nag("Your line came loose."); return; }
+    F.t -= dt; F.bob += dt;
+    if (F.ph === "wait") {
+      if (press) { sc.fish = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
+      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); waterSplash(F.x + 0.5, OSEA - 0.02, 0.6); ocBubbles(F.x + 0.5, OSEA + 0.6, 3); }
+    } else if (F.ph === "bite") {
+      if (press) { ocLandFish(F); return; }
+      if (F.t <= 0) { F.ph = "wait"; F.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
+    }
+  }
+  function ocLandFish(F) {
+    var sc = OCS, pl = sc.pl, x = F.x + 0.5, r = Math.random(); sc.fish = null; S.st.seafish = (S.st.seafish || 0) + 1;
+    var say = function (s2, c) { text(pl.x, pl.y - 1.9, s2, c); };
+    if (r < 0.05) { var L = [["doubloon", 2 + Math.floor(Math.random() * 4)], ["seaglass", 1 + Math.floor(Math.random() * 2)]]; if (Math.random() < 0.3) L.push(["pearl", 1]); L.forEach(function (q) { if (ITEMS[q[0]]) give(q[0], q[1], undefined, undefined, true); }); popup("Fished up a sunken purse!", L.map(function (q) { return ITEMS[q[0]] ? ITEMS[q[0]].n : ""; }).join(", "), "#f2c14e", "\u2726"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
+    if (r < 0.12) { var junk = Math.random() < 0.5 ? "oldboot" : "kelp"; if (ITEMS[junk]) give(junk, junk === "kelp" ? 2 : 1, undefined, undefined, true); if (junk === "oldboot") { S.st.boots++; nag("Just an Old Boot..."); } else say("+2 Brine Kelp", "#7fd06a"); checkGoals(); return; }
+    var k = rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
+    if (!ITEMS[k]) k = "bogminnow";
+    give(k, 1, undefined, undefined, true); S.st.fish++; S.fdex[k] = 1; var fcm = fishLogged(k); say("+1 " + ITEMS[k].n + (fcm ? " \u00b7 " + fcm + " cm" : ""), "#8fe0ff");
+    ocFx(14, x, OSEA, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
+    if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#ffd23f", "\u2605"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
+    checkTrail(); checkGoals();
+  }
+  function ocDrawRod(g, now) {
+    var sc = OCS, F = sc.fish; if (!F || sc.diving) return; var pl = sc.pl, bite = F.ph === "bite";
+    var bx = ox + (F.x + 0.5) * ts, by = oy + OSEA * ts + (bite ? ts * 0.22 : Math.sin(F.bob * 2.4) * ts * 0.05), tx = ox + (pl.x + pl.face * 1.15) * ts, ty = oy + (pl.y - 2.05) * ts;
+    g.strokeStyle = "rgba(246,238,219,.75)"; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + ts * 0.6, bx, by); g.stroke();
+    var r = ts * 0.16; g.fillStyle = "#ffffff"; g.beginPath(); g.arc(bx, by - r * 0.4, r, Math.PI, 0); g.fill(); g.fillStyle = "#e8341c"; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, Math.PI); g.fill();
+    g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, 6.2832); g.stroke();
+    if (bite) {
+      g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 2; var rr = ts * (0.3 + (1 - F.t) * 0.4); g.beginPath(); g.ellipse(bx, by, rr, rr * 0.3, 0, 0, 6.2832); g.stroke();
+      g.font = "900 " + Math.round(ts * 0.8) + "px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.7)"; g.fillStyle = "#ffcf3a";
+      var ey = by - ts * 0.9 - Math.abs(Math.sin(now / 80)) * ts * 0.15; g.strokeText("!", bx, ey); g.fillText("!", bx, ey);
+    }
+  }
+  function ocDiveIn() {
+    var sc = OCS, pl = sc.pl; if (sc.diving || trans) return; sc.diving = true; sc.mode = "dive"; pl.x = SO.DIVEX + 0.5; pl.y = OSEA - 0.4; pl.vx = 0; pl.vy = 3.5; pl.on = false; pl.ang = 0; sc.o2 = Math.max(sc.o2, ocO2Max() * 0.98); ocSplash(pl.x, true);
+    S.st.dives = (S.st.dives || 0) + 1; if (!S.st.divetip) { S.st.divetip = 1; toast("Your air bar is next to your hunger bar. A Scuba Suit and Air Tanks let you dive deeper. Arrows or WASD swim.", "#7af0ff"); }
+    checkGoals();
+  }
+  function ocClimb() { var sc = OCS, pl = sc.pl; sc.diving = false; sc.mode = "dock"; pl.x = SO.DIVEX + 0.5; pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; pl.ang = 0; ocSplash(pl.x, false); sc.o2 = ocO2Max(); stopInput(); }
+  function ocSwimHome() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: function () { var pl = OCS.pl; pl.x = SO.DIVEX + 0.5; pl.y = OSEA + 1.2; pl.vx = pl.vy = 0; cam.x = pl.x; cam.y = pl.y; } }; }
+  function ocF() { var A = ocActions(); if (A.length) { A[0].fn(); return true; } return false; }
+  function ocPill(g, now, label, sx, sy, fn) {   // like drawPill, but several can be on screen and each is tappable
+    var pw, ph, x0, y0; label += coarse ? "" : " (F)"; g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    sy += reduce ? 0 : Math.sin(now / 300) * 2; pw = g.measureText(label).width + ts * 1.1; ph = Math.max(26, ts * 0.9);
+    sx = clamp(sx, pw / 2 + 8, vw - pw / 2 - 8); sy = clamp(sy, ph / 2 + 64, vh - ph / 2 - 8); x0 = sx - pw / 2; y0 = sy - ph / 2;
+    g.fillStyle = "rgba(8,34,44,.9)"; g.strokeStyle = "#7af0ff"; g.lineWidth = 2; g.beginPath(); g.arc(x0 + ph / 2, y0 + ph / 2, ph / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + pw - ph / 2, y0 + ph / 2, ph / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#e8fbff"; g.fillText(label, sx, sy + 1); g.textBaseline = "alphabetic"; OCS.btns.push({ x: x0, y: y0, w: pw, h: ph, fn: fn });
+  }
+
+  // ---------- ocean art, drawn in code ----------
+  // ITEM ICONS (32 x 32): OCI[id](g) paints into a canvas; icon() calls it for any of these ids.
+  var OCI = {};
+  (function () {
+    var E = function (g, x, y, rx, ry, c, rot) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, rot || 0, 0, 6.2832); g.fill(); };
+    var RC = function (g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    var LN = function (g, c, w, pts) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); pts.forEach(function (q, i) { i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.stroke(); };
+    var PG = function (g, c, pts) { g.fillStyle = c; g.beginPath(); pts.forEach(function (q, i) { i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); };
+    var GL = function (g, x, y, r, c) { var gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, c); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
+    var ball = function (g, x, y, r, c1, c2) { var gr = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r); gr.addColorStop(0, c1); gr.addColorStop(1, c2); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
+    var fishI = function (g, b, b2, belly, fin, o) {   // a side-on fish for the sea-fish icons
+      o = o || {}; PG(g, fin, [[7, 16], [1, 9], [1, 23]]); E(g, 17, 16, 11, o.tall ? 8 : 6.5, b); E(g, 18, 19, 9, o.tall ? 4 : 3, belly); PG(g, fin, [[13, o.tall ? 9 : 10.5], [17, o.tall ? 3 : 6], [22, o.tall ? 9 : 10.5]]);
+      if (o.stripe) for (var i = 0; i < 3; i++) RC(g, 12 + i * 4, 11, 1.6, 9, b2); E(g, 24, 14, 2, 2, "#ffffff"); E(g, 24.5, 14, 1, 1, "#14180a"); LN(g, "rgba(0,0,0,.35)", 1, [[27, 17], [25, 18]]);
+      if (o.glow) { GL(g, 17, 16, 15, "rgba(255,210,63,.35)"); E(g, 13, 13, 3, 1.5, "rgba(255,255,255,.65)", -0.4); }
+    };
+    // ---- FISH PACK icons: drawn from a look string "shape|body|dark|belly|fin|pattern" ----
+    var waterArt = function (g, look) {
+      var q = look.split("|"), k = q[0], b = q[1], d = q[2], w = q[3], f = q[4], pat = q[5];
+      var eye = function (x, y, r) { E(g, x, y, r || 1.8, r || 1.8, "#ffffff"); E(g, x + 0.3, y, (r || 1.8) * 0.55, (r || 1.8) * 0.55, "#14180a"); };
+      var deco = function (cx, cy, rx, ry) {
+        if (pat === "stripe") for (var i = -1; i <= 1; i++) RC(g, cx + i * rx * 0.45 - 0.8, cy - ry * 0.8, 1.6, ry * 1.6, d);
+        else if (pat === "spot") [[-0.4, -0.3], [0.1, -0.45], [0.35, 0.05], [-0.15, 0.2]].forEach(function (p) { E(g, cx + p[0] * rx, cy + p[1] * ry, 1.3, 1.3, d); });
+        else if (pat === "band") { RC(g, cx - rx * 0.35, cy - ry, 2.4, ry * 2, w); RC(g, cx + rx * 0.25, cy - ry, 2.4, ry * 2, w); LN(g, d, 0.8, [[cx - rx * 0.35, cy - ry], [cx - rx * 0.35, cy + ry]]); }
+      };
+      if (pat === "glow") GL(g, 16, 16, 16, f + "66");
+      if (k === "fish" || k === "tall" || k === "catfish" || k === "pike" || k === "marlin") {
+        var ry = k === "tall" ? 8 : k === "pike" ? 4 : 6.2, rx = k === "pike" ? 12.5 : k === "tall" ? 9.5 : 11;
+        PG(g, f, [[16 - rx + 2, 16], [3, 16 - ry * 0.9], [3, 16 + ry * 0.9]]);
+        PG(g, f, [[13, 16 - ry + 1], [17, 16 - ry - 4], [21, 16 - ry + 1.5]]);
+        if (k === "tall") PG(g, f, [[13, 16 + ry - 1], [17, 16 + ry + 3.5], [20, 16 + ry - 1]]);
+        E(g, 17, 16, rx, ry, b); E(g, 17.5, 16 + ry * 0.45, rx * 0.8, ry * 0.42, w); deco(17, 15, rx, ry * 0.7);
+        if (k === "pike") PG(g, d, [[27, 15], [31, 16], [27, 17]]);
+        if (k === "marlin") { PG(g, d, [[26, 14.5], [32, 15.5], [26, 16.6]]); PG(g, f, [[11, 10], [17, 2], [22, 10]]); }
+        if (k === "catfish") { LN(g, d, 0.9, [[26, 17], [30, 21]]); LN(g, d, 0.9, [[26, 18], [28, 23]]); LN(g, d, 0.9, [[26, 15], [30, 12]]); }
+        eye(23 + (k === "pike" ? 2 : 0), 14.5, k === "catfish" ? 2.4 : 1.8); LN(g, "rgba(0,0,0,.35)", 1, [[27, 17.5], [25.5, 18.5]]);
+      } else if (k === "long" || k === "eel") {
+        var pts = []; for (var i = 0; i <= 12; i++) pts.push([3 + i * 2.2, 16 + Math.sin(i * 0.8) * (k === "eel" ? 3 : 1.5)]);
+        LN(g, d, k === "eel" ? 6.4 : 7.4, pts); LN(g, b, k === "eel" ? 4.6 : 5.6, pts); LN(g, w, 1.4, pts.map(function (p) { return [p[0], p[1] + 1.6]; }));
+        if (pat === "spot" || pat === "glow") pts.forEach(function (p, j) { if (j % 3 === 1) E(g, p[0], p[1] - 0.6, 0.9, 0.9, pat === "glow" ? f : d); });
+        eye(28, 15, 1.5); if (k === "long") PG(g, f, [[8, 13], [12, 9], [15, 13]]);
+      } else if (k === "flat" || k === "ray") {
+        if (k === "ray") { LN(g, d, 1.2, [[6, 17], [1, 22]]); PG(g, b, [[29, 16], [17, 5], [6, 16], [17, 26]]); E(g, 18, 16, 7, 4, w); deco(18, 15, 8, 4); E(g, 23, 14, 1, 1, "#14180a"); E(g, 23, 18, 1, 1, "#14180a"); }
+        else { PG(g, f, [[6, 16], [2, 11], [2, 21]]); E(g, 17, 16, 12, 8, b); deco(17, 16, 10, 6); E(g, 23, 12, 1.7, 1.7, "#fff"); E(g, 23.3, 12, 0.9, 0.9, "#14180a"); E(g, 26, 14, 1.7, 1.7, "#fff"); E(g, 26.3, 14, 0.9, 0.9, "#14180a"); LN(g, d, 1, [[26, 19], [28, 18]]); }
+      } else if (k === "puffer") {
+        for (var s2 = 0; s2 < 12; s2++) { var a = s2 / 12 * 6.283; LN(g, w, 1, [[16 + Math.cos(a) * 9, 16 + Math.sin(a) * 9], [16 + Math.cos(a) * 12.5, 16 + Math.sin(a) * 12.5]]); }
+        PG(g, f, [[6, 16], [2, 12], [2, 20]]); E(g, 16, 16, 10, 9.5, b); E(g, 16, 19, 8, 5, w); deco(15, 13, 8, 5); eye(21, 13, 2.2); E(g, 25, 17, 1.6, 1, "#8a5a3a");
+      } else if (k === "crab") {
+        for (var l = 0; l < 3; l++) { LN(g, d, 1.4, [[11 + l * 2, 19], [6 + l * 1.5, 24 + l]]); LN(g, d, 1.4, [[21 - l * 2, 19], [26 - l * 1.5, 24 + l]]); }
+        LN(g, b, 2.2, [[9, 15], [5, 10]]); LN(g, b, 2.2, [[23, 15], [27, 10]]); E(g, 5, 8.5, 3.4, 2.6, b); E(g, 27, 8.5, 3.4, 2.6, b); PG(g, d, [[3, 7], [6, 9], [3, 10]]); PG(g, d, [[29, 7], [26, 9], [29, 10]]);
+        E(g, 16, 17, 9.5, 6.5, b); E(g, 16, 15.5, 7.5, 3.6, w); deco(16, 17, 8, 4); LN(g, d, 1, [[13, 12], [13, 9]]); LN(g, d, 1, [[19, 12], [19, 9]]); eye(13, 8.5, 1.4); eye(19, 8.5, 1.4);
+      } else if (k === "shrimp") {
+        var sp = [[24, 13], [20, 11], [15, 12], [11, 15], [9, 19], [10, 23]]; LN(g, d, 6, sp); LN(g, b, 4.4, sp); sp.forEach(function (p, j) { if (j) LN(g, w, 0.8, [[p[0] - 1.6, p[1] - 1.6], [p[0] + 1.6, p[1] + 1.6]]); });
+        PG(g, f, [[10, 23], [6, 27], [14, 27]]); LN(g, d, 0.7, [[25, 12], [31, 5]]); LN(g, d, 0.7, [[25, 13], [31, 9]]); for (var m = 0; m < 4; m++) LN(g, d, 0.8, [[13 + m * 3, 15], [12 + m * 3, 19]]); eye(24, 12, 1.2);
+      } else if (k === "crayfish") {
+        var cp = [[10, 25], [12, 21], [14, 17], [16, 13]]; LN(g, d, 7, cp); LN(g, b, 5.4, cp); cp.forEach(function (p) { LN(g, w, 0.8, [[p[0] - 2.4, p[1]], [p[0] + 2.4, p[1]]]); });
+        PG(g, f, [[10, 25], [5, 29], [15, 29]]); E(g, 17.5, 10, 4, 5, b); LN(g, b, 2, [[15, 8], [9, 4]]); LN(g, b, 2, [[20, 8], [26, 4]]); E(g, 8, 3.5, 3, 2, b); E(g, 27, 3.5, 3, 2, b);
+        LN(g, d, 0.7, [[17, 6], [13, 1]]); LN(g, d, 0.7, [[18, 6], [23, 1]]); if (pat === "spot") [[16, 14], [13, 20], [17, 10]].forEach(function (p) { E(g, p[0], p[1], 0.9, 0.9, d); }); eye(16, 7.5, 1.1); eye(19.5, 7.5, 1.1);
+      } else if (k === "jelly") {
+        for (var t = 0; t < 5; t++) LN(g, f, 1.1, [[9 + t * 3.5, 17], [8 + t * 3.5 + (t % 2 ? 2 : -1), 23], [9 + t * 3.5, 29]]);
+        g.fillStyle = b; g.beginPath(); g.moveTo(5, 17); g.bezierCurveTo(5, 3, 27, 3, 27, 17); g.quadraticCurveTo(16, 20, 5, 17); g.fill(); E(g, 16, 11, 6, 4, w + "aa"); E(g, 11, 9, 2, 1.2, "rgba(255,255,255,.7)");
+      } else if (k === "squid") {
+        for (var a2 = 0; a2 < 6; a2++) LN(g, d, 1.4, [[11 + a2 * 2, 20], [9 + a2 * 2.6, 27 + (a2 % 2) * 2], [10 + a2 * 2.6, 30]]);
+        PG(g, f, [[11, 6], [16, 1], [21, 6]]); E(g, 16, 12, 6.5, 9, b); deco(16, 11, 5, 6); eye(13, 17, 1.6); eye(19, 17, 1.6);
+      } else if (k === "axolotl") {
+        LN(g, b, 4, [[4, 20], [9, 19]]); E(g, 15, 19, 8, 4.5, b); E(g, 15, 21, 6, 2.2, w); [[10, 24], [19, 24]].forEach(function (p) { LN(g, b, 2, [[p[0], 22], [p[0] - 1, p[1] + 2]]); });
+        E(g, 23, 16, 6, 5, b); [[19, 11], [20, 9], [22, 8]].forEach(function (p, j) { LN(g, f, 1.4, [[21, 13], [p[0] - j, p[1] - 1]]); }); [[25, 11], [26, 9], [27, 8.5]].forEach(function (p, j) { LN(g, f, 1.4, [[25, 13], [p[0] + j * 0.6, p[1] - 1]]); });
+        E(g, 21.5, 15, 1.1, 1.1, "#14180a"); E(g, 26, 15, 1.1, 1.1, "#14180a"); LN(g, d, 0.9, [[22.5, 18.5], [24, 19.2], [25.5, 18.5]]);
+      } else if (k === "seahorse") {
+        var hp = [[16, 9], [17.5, 14], [16, 19], [17, 24], [20, 27], [21, 24]]; LN(g, d, 6, hp); LN(g, b, 4.4, hp); E(g, 15, 7, 3.6, 3, b); LN(g, b, 2.4, [[17, 7], [22, 6]]); PG(g, f, [[13, 4], [15, 1], [17, 4]]);
+        LN(g, f, 2, [[19, 12], [21, 16]]); for (var r2 = 0; r2 < 4; r2++) LN(g, w, 0.8, [[14.4, 12 + r2 * 3], [18.6, 12 + r2 * 3]]); E(g, 14.6, 6.5, 1, 1, "#14180a");
+      } else if (k === "star") {
+        g.fillStyle = b; g.beginPath(); for (var p2 = 0; p2 < 10; p2++) { var ang = -Math.PI / 2 + p2 * Math.PI / 5, rr = p2 % 2 ? 5 : 13; p2 ? g.lineTo(16 + Math.cos(ang) * rr, 17 + Math.sin(ang) * rr) : g.moveTo(16 + Math.cos(ang) * rr, 17 + Math.sin(ang) * rr); } g.closePath(); g.fill();
+        for (var p3 = 0; p3 < 5; p3++) { var a3 = -Math.PI / 2 + p3 * 2 * Math.PI / 5; for (var dd = 3; dd < 11; dd += 2.6) E(g, 16 + Math.cos(a3) * dd, 17 + Math.sin(a3) * dd, 0.8, 0.8, w); }
+        E(g, 16, 17, 2.4, 2.4, d);
+      } else if (k === "angler") {
+        PG(g, f, [[6, 18], [2, 13], [2, 23]]); E(g, 16, 18, 11, 8.5, b); E(g, 16, 21, 9, 4, w + "88"); LN(g, d, 1.2, [[18, 10], [22, 4], [26, 5]]); GL(g, 26, 5, 6, f + "cc"); E(g, 26, 5, 2, 2, f);
+        PG(g, "#e8e0d0", [[20, 19], [28, 21], [20, 22]]); for (var z = 0; z < 4; z++) PG(g, "#fff", [[20 + z * 2, 19], [21 + z * 2, 22], [22 + z * 2, 19]]); E(g, 21, 14, 1.8, 1.8, "#fff"); E(g, 21.4, 14, 1, 1, "#ff3a3a");
+      }
+    };
+    (typeof SbxExtra !== "undefined" && SbxExtra.FISH2 || []).forEach(function (r) { OCI[r[0]] = function (g) { waterArt(g, r[7]); }; });
+    OCI.fishlog = function (g) {   // a battered leather book with a fish tooled on the cover
+      RC(g, 6, 5, 21, 24, "#3a2412"); RC(g, 7, 4, 20, 24, "#7a4a26"); RC(g, 7, 4, 3, 24, "#5a3418"); RC(g, 26, 6, 2, 21, "#efe2c0"); RC(g, 26, 8, 2, 1, "#c9b48a"); RC(g, 26, 14, 2, 1, "#c9b48a"); RC(g, 26, 20, 2, 1, "#c9b48a");
+      LN(g, "#c99a5a", 1, [[11, 7], [24, 7], [24, 25], [11, 25], [11, 7]]); E(g, 17.5, 16, 4.6, 2.6, "#c99a5a"); PG(g, "#c99a5a", [[13, 16], [10.5, 13.5], [10.5, 18.5]]); E(g, 20, 15.3, 0.7, 0.7, "#5a3418");
+      RC(g, 15, 27, 3, 4, "#c83a3a"); PG(g, "#c83a3a", [[15, 31], [16.5, 29.5], [18, 31]]); RC(g, 7, 10, 3, 1, "#3a2412"); RC(g, 7, 20, 3, 1, "#3a2412"); E(g, 22, 25, 2, 1.2, "rgba(0,0,0,.25)");
+    };
+    OCI.farmbook = function (g) {   // Croaka's green almanac: a leather book with a sprout tooled on the cover and a pressed flower
+      RC(g, 6, 5, 21, 24, "#1e3a14"); RC(g, 7, 4, 20, 24, "#4a7a2a"); RC(g, 7, 4, 3, 24, "#2f5a1e"); RC(g, 26, 6, 2, 21, "#efe2c0"); RC(g, 26, 8, 2, 1, "#c9b48a"); RC(g, 26, 14, 2, 1, "#c9b48a"); RC(g, 26, 20, 2, 1, "#c9b48a");
+      LN(g, "#c9d87a", 1, [[11, 7], [24, 7], [24, 25], [11, 25], [11, 7]]); LN(g, "#c9d87a", 1.4, [[17.5, 22], [17.5, 13]]); E(g, 14.5, 13.5, 3, 1.8, "#c9d87a", -0.5); E(g, 20.5, 11.5, 3, 1.8, "#c9d87a", 0.5); RC(g, 14, 21, 7, 2, "#8a6a3a");
+      E(g, 23, 6, 2.2, 2.2, "#ff7ab0"); E(g, 23, 6, 0.9, 0.9, "#ffd23f"); RC(g, 15, 27, 3, 4, "#e86a8a"); PG(g, "#e86a8a", [[15, 31], [16.5, 29.5], [18, 31]]); E(g, 22, 25, 2, 1.2, "rgba(0,0,0,.25)");
+    };
+    OCI.brinemackerel = function (g) { fishI(g, "#4a8ab8", "#1f4a7a", "#d8e8f0", "#2f5a8a", { stripe: 1 }); };
+    OCI.kelpsnapper = function (g) { fishI(g, "#d8503a", "#8a2a1a", "#ffc8a8", "#3f9a4c", { tall: 1 }); };
+    OCI.goldgilly = function (g) { fishI(g, "#ffd23f", "#c98a1c", "#fff6c0", "#ff9a3a", { glow: 1, tall: 1 }); };
+    OCI.piersushi = function (g) { E(g, 16, 22, 12, 4, "rgba(0,0,0,.25)"); [[9, 17], [17, 15], [25, 17]].forEach(function (q) { E(g, q[0], q[1], 5.5, 5.5, "#f6f2e8"); E(g, q[0], q[1], 5.5, 2.2, "#2a5a2a"); E(g, q[0], q[1] - 1.5, 3, 2.4, "#ff8a5a"); E(g, q[0] - 1, q[1] - 2.5, 1.2, 0.7, "rgba(255,255,255,.6)"); }); };
+    OCI.blackpearl = function (g) { GL(g, 16, 17, 15, "rgba(150,110,255,.25)"); ball(g, 16, 17, 9, "#8a78c8", "#14091f"); E(g, 12.5, 12.5, 2.4, 1.5, "rgba(255,255,255,.75)", -0.6); };
+    OCI.coral = function (g) { LN(g, "#d84a78", 4.2, [[16, 28], [16, 16], [9, 8]]); LN(g, "#d84a78", 4.2, [[16, 16], [23, 8]]); LN(g, "#d84a78", 3.6, [[16, 22], [9, 20]]); LN(g, "#ff7a9a", 2.2, [[16, 28], [16, 16], [9, 8]]); LN(g, "#ff7a9a", 2.2, [[16, 16], [23, 8]]); LN(g, "#ff7a9a", 1.8, [[16, 22], [9, 20]]); [[9, 8], [23, 8], [9, 20], [16, 14]].forEach(function (q) { E(g, q[0], q[1], 2.6, 2.6, "#ffc0d0"); }); };
+    OCI.seaglass = function (g) { PG(g, "#2a9a8c", [[8, 14], [14, 6], [24, 9], [26, 19], [18, 26], [9, 23]]); PG(g, "#58d6c4", [[10, 14], [15, 8], [23, 11], [24, 18], [18, 24], [11, 21]]); PG(g, "rgba(255,255,255,.5)", [[12, 13], [16, 10], [20, 11], [16, 14]]); };
+    OCI.shell = function (g) { E(g, 16, 18, 10, 8, "#c98a5a"); E(g, 16, 17, 9, 7, "#f2b88a"); for (var i = 0; i < 4; i++) LN(g, "#d89a6a", 1.4, [[16 + (i - 1.5) * 1.5, 25], [16 + (i - 1.5) * 4.6, 12]]); E(g, 22, 13, 4, 3.4, "#f6cfa8"); E(g, 22, 13, 2, 1.6, "#d88a6a"); LN(g, "#e8a478", 1.6, [[8, 17], [12, 24]]); };
+    OCI.kelp = function (g) { [[10, "#2f7a3a"], [16, "#3f9a4c"], [22, "#58b85a"]].forEach(function (q, i) { LN(g, q[1], 4.4, [[q[0], 29], [q[0] + 4, 22], [q[0] - 3, 15], [q[0] + 3, 8], [q[0], 3]]); }); LN(g, "rgba(255,255,255,.3)", 1.2, [[16, 28], [20, 21], [13, 14]]); };
+    OCI.inksac = function (g) { PG(g, "#2a1d4d", [[16, 4], [24, 18], [22, 25], [16, 28], [10, 25], [8, 18]]); E(g, 16, 20, 7.5, 7.5, "#3b2a66"); E(g, 13, 17, 2.2, 3.2, "rgba(255,255,255,.35)", 0.3); E(g, 20, 24, 3, 2, "#1a1030"); };
+    OCI.pufferspine = function (g) { PG(g, "#7a6a3a", [[13, 27], [16, 22], [19, 27]]); PG(g, "#f1e2b0", [[13, 24], [16, 3], [19, 24]]); PG(g, "#fff4d0", [[15, 24], [16, 6], [17, 24]]); };
+    OCI.jellygel = function (g) { GL(g, 16, 17, 15, "rgba(122,240,255,.45)"); E(g, 16, 19, 10, 8, "rgba(60,200,230,.85)"); E(g, 16, 17, 8, 6, "rgba(160,250,255,.9)"); E(g, 12.5, 14, 3, 1.8, "rgba(255,255,255,.8)", -0.4); };
+    OCI.eelskin = function (g) { PG(g, "#1f5a58", [[6, 10], [26, 6], [28, 22], [8, 27]]); PG(g, "#2c7a78", [[7, 11], [25, 8], [26, 21], [9, 25]]); for (var y = 0; y < 3; y++) for (var x = 0; x < 4; x++) E(g, 10 + x * 4.5 + (y % 2) * 2, 12 + y * 4.4, 1.7, 1.4, "#4ab0a8"); };
+    OCI.lurebulb = function (g) { LN(g, "#3a2a55", 2.6, [[6, 28], [10, 14], [20, 8]]); GL(g, 21, 10, 13, "rgba(255,226,122,.7)"); ball(g, 21, 10, 5.5, "#fff6c0", "#ffc83a"); };
+    OCI.urchinspine = function (g) { for (var i = 0; i < 12; i++) { var a = i / 12 * 6.2832; LN(g, i % 2 ? "#7a4aa8" : "#5a3a7a", 2.2, [[16 + Math.cos(a) * 5, 16 + Math.sin(a) * 5], [16 + Math.cos(a) * 13, 16 + Math.sin(a) * 13]]); } E(g, 16, 16, 6, 6, "#3a2455"); E(g, 14, 14, 2, 1.6, "rgba(255,255,255,.3)"); };
+    OCI.brass = function (g) { PG(g, "#7a5a1a", [[5, 9], [27, 7], [28, 23], [6, 25]]); PG(g, "#d9a53a", [[6, 10], [26, 8], [27, 22], [7, 24]]); PG(g, "#f2cf6a", [[7, 11], [25, 9], [25, 13], [8, 14]]); [[9, 12], [23, 11], [9, 21], [24, 20]].forEach(function (q) { E(g, q[0], q[1], 1.5, 1.5, "#8a6a1a"); }); E(g, 17, 18, 3, 2, "#4a9a7a"); };
+    OCI.doubloon = function (g) { GL(g, 16, 16, 15, "rgba(255,210,63,.35)"); ball(g, 16, 16, 11, "#ffe27a", "#b8841a"); E(g, 16, 16, 8.2, 8.2, "#e0a82a"); E(g, 16, 16, 7, 7, "#f6cf5a"); E(g, 16, 18, 3.8, 3, "#8a6a1a"); E(g, 14.4, 14.8, 1.5, 1.5, "#8a6a1a"); E(g, 17.6, 14.8, 1.5, 1.5, "#8a6a1a"); RC(g, 14, 19, 4, 1.2, "#f6cf5a"); LN(g, "#fff3b0", 1.2, [[9, 11], [12, 8]]); };
+    OCI.kelpwrap = function (g) { PG(g, "#2f7a3a", [[5, 12], [27, 9], [28, 21], [6, 24]]); PG(g, "#4aa85a", [[6, 13], [26, 11], [27, 20], [7, 22]]); LN(g, "#2f7a3a", 1.4, [[8, 15], [25, 13]]); LN(g, "#2f7a3a", 1.4, [[8, 19], [26, 17]]); LN(g, "#e8d9a8", 2, [[16, 9], [16, 24]]); E(g, 27, 15, 3, 5, "#e8e0b0"); };
+    OCI.seastew = function (g) { E(g, 16, 22, 12, 4, "#4a3a2a"); PG(g, "#6a4a32", [[4, 18], [28, 18], [24, 27], [8, 27]]); E(g, 16, 18, 11, 3.6, "#ff9a5a"); E(g, 12, 17.5, 2, 1.2, "#ffd07a"); E(g, 19, 18.5, 2.4, 1.3, "#7ac05a"); E(g, 22, 17, 1.6, 1, "#f6eedb"); LN(g, "rgba(255,255,255,.55)", 1.6, [[12, 12], [14, 8], [12, 4]]); LN(g, "rgba(255,255,255,.55)", 1.6, [[19, 12], [21, 8], [19, 4]]); };
+    var suitI = function (g, a, b, trim, ring, glass, o) {
+      PG(g, a, [[10, 8], [22, 8], [28, 13], [25, 18], [22, 15], [22, 29], [10, 29], [10, 15], [7, 18], [4, 13]]); PG(g, b, [[11, 9], [21, 9], [26, 13], [24, 16], [21, 14], [21, 28], [11, 28], [11, 14], [8, 16], [6, 13]]);
+      RC(g, 11, 20, 10, 2, trim); RC(g, 11, 24, 10, 2, trim); if (o && o.glow) GL(g, 16, 7, 12, "rgba(122,240,255,.45)");
+      E(g, 16, 6.5, 7.4, 6.2, ring); E(g, 16, 6.5, 5.2, 4.4, glass); E(g, 14.2, 5, 1.8, 1.1, "rgba(255,255,255,.75)");
+      if (o && o.rivets) [[10, 6.5], [22, 6.5], [16, 1], [16, 12]].forEach(function (q) { E(g, q[0], q[1], 1, 1, "#6a4426"); });
+      if (o && o.pearl) E(g, 16, 0.8, 1.6, 1.6, "#ff9ac8");
+    };
+    OCI.suit2 = function (g) { suitI(g, "#6a4a1a", "#9a7a3a", "#d9a53a", "#d9a53a", "#9be8ff", { rivets: 1 }); };
+    OCI.suit3 = function (g) { suitI(g, "#5a4a7a", "#e8dcff", "#ff9ac8", "#f4e6ff", "#bfefff", { pearl: 1 }); };
+    OCI.suit4 = function (g) { suitI(g, "#14281a", "#2f5a3a", "#7af0ff", "#2a1d44", "#3a2a66", { glow: 1 }); };
+    OCI.scubasuit = function (g) { PG(g, "#1a6a5a", [[10, 8], [22, 8], [28, 13], [25, 18], [22, 15], [22, 29], [10, 29], [10, 15], [7, 18], [4, 13]]); PG(g, "#2fb59a", [[11, 9], [21, 9], [26, 13], [24, 16], [21, 14], [21, 28], [11, 28], [11, 14], [8, 16], [6, 13]]); RC(g, 11, 20, 10, 2, "#ff9a3a"); RC(g, 11, 24, 10, 2, "#ff9a3a"); E(g, 16, 6, 6, 5, "#2a8a7a"); E(g, 16, 6, 4.4, 3.6, "#9be8ff"); E(g, 14.5, 5, 1.6, 1, "rgba(255,255,255,.8)"); LN(g, "#ffd23f", 1.8, [[10, 6], [22, 6]]); };
+    var tank = function (g, body, cap, pips, glass) { RC(g, 14, 3, 4, 4, "#8e969b"); RC(g, 18, 4, 5, 2.4, "#c9a52a"); E(g, 16, 8, 6, 3, cap); PG(g, "#00000033", [[10, 9], [22, 9], [23, 28], [9, 28]]); var gr = g.createLinearGradient(9, 0, 23, 0); gr.addColorStop(0, glass ? "#3a9ab8" : body); gr.addColorStop(0.35, glass ? "#c8f6ff" : "#ffffff55"); gr.addColorStop(0.5, body); gr.addColorStop(1, "#00000055"); g.fillStyle = gr; g.beginPath(); g.moveTo(10, 8); g.lineTo(22, 8); g.lineTo(23, 27); g.quadraticCurveTo(16, 31, 9, 27); g.closePath(); g.fill(); RC(g, 9, 13, 14, 2.4, "#00000044"); for (var i = 0; i < pips; i++) E(g, 16 + (i - (pips - 1) / 2) * 3.4, 20, 1.3, 1.3, "#ffe27a"); E(g, 12.5, 12, 1.4, 4, "rgba(255,255,255,.45)"); };
+    OCI.tank1 = function (g) { tank(g, "#4a8a3a", "#6aaa4a", 1); }; OCI.tank2 = function (g) { tank(g, "#b8841a", "#d9a53a", 2); };
+    OCI.tank3 = function (g) { tank(g, "#d8cce8", "#f4e6ff", 3); }; OCI.tank4 = function (g) { tank(g, "#4ac8e8", "#7af0ff", 4, true); GL(g, 16, 18, 14, "rgba(122,240,255,.25)"); };
+    OCI.flippers = function (g) { [[-3, "#2fb59a"], [4, "#4ee6b4"]].forEach(function (q) { PG(g, "#1a6a5a", [[12 + q[0], 5], [20 + q[0], 5], [24 + q[0], 22], [28 + q[0] * 0.2, 28], [8 + q[0] * 0.2, 28], [10 + q[0], 22]]); PG(g, q[1], [[13 + q[0], 6], [19 + q[0], 6], [22 + q[0], 22], [25 + q[0] * 0.2, 27], [11 + q[0] * 0.2, 27], [12 + q[0], 22]]); LN(g, "#1a6a5a", 1, [[16 + q[0], 12], [16 + q[0], 26]]); LN(g, "#1a6a5a", 1, [[13 + q[0], 22], [12 + q[0], 27]]); LN(g, "#1a6a5a", 1, [[20 + q[0], 22], [22 + q[0], 27]]); }); };
+    OCI.divelamp = function (g) { GL(g, 16, 17, 15, "rgba(255,226,122,.5)"); RC(g, 12, 3, 8, 3, "#8e969b"); E(g, 16, 3, 3, 2, "#c9a52a"); PG(g, "#6a4a1a", [[9, 8], [23, 8], [24, 26], [8, 26]]); E(g, 16, 17, 6.5, 8.4, "#ffe27a"); E(g, 16, 17, 4, 6, "#fff6c0"); [11, 16, 21].forEach(function (x) { LN(g, "#b8841a", 1.6, [[x, 8], [x, 26]]); }); RC(g, 8, 26, 16, 3, "#8e969b"); };
+    OCI.boat_keel = function (g) { LN(g, "#7a6a4a", 5, [[4, 22], [10, 27], [22, 27], [28, 20]]); LN(g, "#e0d2a8", 3, [[4, 22], [10, 27], [22, 27], [28, 20]]); for (var i = 0; i < 5; i++) { var x = 8 + i * 4.4; LN(g, "#cdbd90", 2.4, [[x, 26], [x - 1 + i * 0.6, 14]]); } };
+    OCI.boat_hull = function (g) { [[8, "#8a5a32"], [13, "#9a6a3a"], [18, "#7a4a2a"], [23, "#a07040"]].forEach(function (q) { PG(g, q[1], [[3, q[0] - 3], [29, q[0] - 4], [29, q[0] + 1], [3, q[0] + 2]]); LN(g, "#4a2e18", 1, [[3, q[0] + 2], [29, q[0] + 1]]); E(g, 7, q[0] - 0.5, 0.9, 0.9, "#3a2210"); E(g, 25, q[0] - 1, 0.9, 0.9, "#3a2210"); }); };
+    OCI.boat_mast = function (g) { RC(g, 14, 3, 4, 26, "#6a4426"); RC(g, 15, 3, 1.6, 26, "#8a5a32"); RC(g, 5, 8, 22, 3, "#6a4426"); RC(g, 5, 8, 22, 1.2, "#8a5a32"); E(g, 16, 3, 3.4, 2.4, "#4a2e18"); LN(g, "#c9a876", 1.2, [[5, 11], [14, 20]]); LN(g, "#c9a876", 1.2, [[27, 11], [18, 20]]); };
+    OCI.boat_sail = function (g) { PG(g, "#2f7a3a", [[16, 3], [28, 9], [26, 25], [16, 27], [6, 25], [4, 9]]); PG(g, "#58b85a", [[16, 5], [26, 10], [24, 24], [16, 25], [8, 24], [6, 10]]); LN(g, "#2f7a3a", 1.2, [[16, 5], [16, 25]]); LN(g, "#2f7a3a", 1, [[16, 14], [8, 12]]); LN(g, "#2f7a3a", 1, [[16, 18], [24, 16]]); E(g, 22, 12, 2, 1.2, "rgba(255,255,255,.3)", -0.5); RC(g, 14, 2, 4, 3, "#6a4426"); };
+    OCI.boat_rudder = function (g) { PG(g, "#7a5a3a", [[13, 3], [19, 3], [20, 12], [27, 20], [24, 28], [8, 28], [5, 20], [12, 12]]); PG(g, "#a07a4a", [[14, 5], [18, 5], [19, 12], [25, 20], [22, 26], [10, 26], [7, 20], [13, 12]]); RC(g, 14, 3, 4, 12, "#5a3a1a"); LN(g, "#4a2e18", 1, [[11, 22], [21, 22]]); E(g, 16, 8, 1.2, 1.2, "#c9a52a"); };
+    OCI.boat_wheel = function (g) { for (var i = 0; i < 8; i++) { var a = i / 8 * 6.2832; LN(g, "#8a5a32", 3, [[16 + Math.cos(a) * 4, 16 + Math.sin(a) * 4], [16 + Math.cos(a) * 14, 16 + Math.sin(a) * 14]]); E(g, 16 + Math.cos(a) * 14, 16 + Math.sin(a) * 14, 2.2, 2.2, "#c98c4f"); } g.strokeStyle = "#6a4426"; g.lineWidth = 3; g.beginPath(); g.arc(16, 16, 10, 0, 6.2832); g.stroke(); g.strokeStyle = "#c98c4f"; g.lineWidth = 1.4; g.beginPath(); g.arc(16, 16, 10, 0, 6.2832); g.stroke(); E(g, 16, 16, 4, 4, "#c9a52a"); E(g, 16, 16, 1.6, 1.6, "#6a4a1a"); };
+    OCI.boat_lamp = function (g) { GL(g, 16, 17, 15, "rgba(255,226,122,.5)"); PG(g, "#2f7a3a", [[8, 14], [24, 14], [25, 26], [7, 26]]); E(g, 11, 12, 5, 5, "#58b85a"); E(g, 21, 12, 5, 5, "#58b85a"); E(g, 11, 12, 3.2, 3.2, "#fff6c0"); E(g, 21, 12, 3.2, 3.2, "#fff6c0"); E(g, 11.5, 12.5, 1.5, 2.4, "#14281a"); E(g, 21.5, 12.5, 1.5, 2.4, "#14281a"); RC(g, 9, 26, 14, 3, "#6a4a1a"); LN(g, "#2a5a2a", 1.4, [[16, 17], [16, 25]]); };
+    OCI.boat_anchor = function (g) { LN(g, "#5a626a", 4, [[16, 6], [16, 26]]); LN(g, "#9aa2aa", 2, [[16, 6], [16, 26]]); LN(g, "#5a626a", 4, [[8, 12], [24, 12]]); LN(g, "#9aa2aa", 2, [[8, 12], [24, 12]]); g.strokeStyle = "#5a626a"; g.lineWidth = 4; g.beginPath(); g.arc(16, 18, 9, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); g.strokeStyle = "#9aa2aa"; g.lineWidth = 2; g.beginPath(); g.arc(16, 18, 9, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); g.strokeStyle = "#c9a876"; g.lineWidth = 2.4; g.beginPath(); g.arc(16, 4, 3, 0, 6.2832); g.stroke(); };
+    OCI.boat_figure = function (g) { GL(g, 16, 16, 15, "rgba(78,230,180,.3)"); PG(g, "#1a6a4a", [[7, 29], [8, 18], [24, 18], [25, 29]]); E(g, 16, 14, 9, 8, "#2fb59a"); E(g, 16, 14, 7.6, 6.6, "#4ee6b4"); E(g, 10.5, 8, 3.8, 3.8, "#4ee6b4"); E(g, 21.5, 8, 3.8, 3.8, "#4ee6b4"); E(g, 10.5, 8, 2.4, 2.4, "#fff6c0"); E(g, 21.5, 8, 2.4, 2.4, "#fff6c0"); E(g, 10.8, 8.4, 1.1, 1.5, "#14281a"); E(g, 21.8, 8.4, 1.1, 1.5, "#14281a"); LN(g, "#14281a", 1.6, [[10, 17], [16, 19.5], [22, 17]]); E(g, 13, 12, 0.8, 0.6, "#14281a"); E(g, 19, 12, 0.8, 0.6, "#14281a"); };
+  })();
+
+  // TILE ATLAS: 4 variants of every solid and every object tile, 16 x 16 each (row = tile id). Plants are drawn live with a sway.
+  var OATLAS = null;
+  function ocAtlas() {
+    if (OATLAS) return OATLAS;
+    var c = document.createElement("canvas"); c.width = 64; c.height = 16 * 32; var g = c.getContext("2d"), v, id; g.imageSmoothingEnabled = false;
+    for (id = 0; id < 32; id++) for (v = 0; v < 4; v++) {
+      var ox2 = v * 16, oy2 = id * 16, R = function (x, y, w, h, col, a) { g.globalAlpha = a == null ? 1 : a; g.fillStyle = col; g.fillRect(ox2 + x, oy2 + y, w, h); g.globalAlpha = 1; }, H = function (x, y, s) { return SW.hash(x + v * 16, y + (s || 0) * 7, 4400 + id); }, i, x, y;
+      if (id === OT.SAND || id === OT.SHORE) { R(0, 0, 16, 16, id === OT.SHORE ? "#cdb67a" : "#d9c48a"); for (i = 0; i < 26; i++) { x = (H(i, 1) * 16) | 0; y = (H(i, 2) * 16) | 0; R(x, y, 1, 1, H(i, 3) < 0.5 ? "#c4ad70" : "#ecdba4"); } R(0, 5 + (v % 2), 16, 1, "#cdb87c", 0.5); R(2, 11, 9, 1, "#e6d49a", 0.5); }
+      else if (id === OT.SILT) { R(0, 0, 16, 16, "#6f7f62"); for (i = 0; i < 24; i++) { x = (H(i, 1) * 16) | 0; y = (H(i, 2) * 16) | 0; R(x, y, 1 + (H(i, 4) < 0.3 ? 1 : 0), 1, H(i, 3) < 0.5 ? "#5a6a4e" : "#8a9a78"); } }
+      else if (id === OT.ROCK || id === OT.DEEP || id === OT.BED) { var deep = id !== OT.ROCK; R(0, 0, 16, 16, id === OT.BED ? "#10131c" : deep ? "#252c40" : "#626e7e"); for (i = 0; i < 5; i++) { y = 1 + i * 3 + ((H(i, 5) * 2) | 0); R(0, y, 16, 1, deep ? "#1a2032" : "#56626f", 0.8); } for (i = 0; i < 14; i++) { x = (H(i, 1) * 16) | 0; y = (H(i, 2) * 16) | 0; R(x, y, 2, 1, deep ? (H(i, 6) < 0.5 ? "#3a4462" : "#4a3a6a") : (H(i, 6) < 0.5 ? "#7a8696" : "#4c5764")); } if (H(0, 8) < 0.5) { x = (H(1, 8) * 10 + 2) | 0; R(x, 3, 1, 4, "#00000044"); R(x + 1, 6, 1, 5, "#00000044"); } }
+      else if (id === OT.CPINK || id === OT.CBLUE || id === OT.CORANGE) { var b1 = id === OT.CPINK ? ["#d44a78", "#ff7a9a", "#ffb0c4", "#8a2a4a"] : id === OT.CBLUE ? ["#3a78d8", "#5aa8ff", "#a8d4ff", "#1f4a8a"] : ["#d8762a", "#ff9a4a", "#ffc88a", "#8a3a14"]; R(0, 0, 16, 16, b1[0]); for (i = 0; i < 9; i++) { x = (H(i, 1) * 13 + 1) | 0; y = (H(i, 2) * 13 + 1) | 0; R(x - 1, y, 3, 2, b1[1]); R(x, y - 1, 1, 4, b1[1]); R(x, y, 1, 1, b1[2]); } for (i = 0; i < 6; i++) { x = (H(i, 4) * 15) | 0; y = (H(i, 5) * 15) | 0; R(x, y, 1, 2, b1[3]); } }
+      else if (id === OT.GLOW) { R(0, 0, 16, 16, "#1f3a44"); for (i = 0; i < 6; i++) { x = (H(i, 1) * 12 + 2) | 0; y = (H(i, 2) * 12 + 2) | 0; R(x - 1, y - 2, 3, 5, "#2fc8b8"); R(x, y - 3, 1, 6, "#6af0e0"); R(x, y - 2, 1, 2, "#e8fffb"); } for (i = 0; i < 6; i++) { x = (H(i, 4) * 15) | 0; y = (H(i, 5) * 15) | 0; R(x, y, 1, 1, "#9af8ee", 0.8); } }
+      else if (id === OT.WOOD) { R(0, 0, 16, 16, "#6a4a2c"); [0, 4, 8, 12].forEach(function (yy, k) { R(0, yy, 16, 3, k % 2 ? "#7a5634" : "#62442a"); R(0, yy + 3, 16, 1, "#2e1e10"); R(0, yy, 16, 1, "#8a6642", 0.6); }); R(2 + ((H(0, 1) * 10) | 0), 2, 1, 1, "#2e1e10"); R(3 + ((H(1, 1) * 9) | 0), 10, 1, 1, "#2e1e10"); for (i = 0; i < 7; i++) { x = (H(i, 7) * 16) | 0; y = (H(i, 8) * 16) | 0; R(x, y, 2, 1, "#3a7a4a", 0.7); } }
+      else if (id === OT.PLATE) { R(0, 0, 16, 16, "#8a6a2a"); R(1, 1, 14, 14, "#b8903a"); R(1, 1, 14, 2, "#d9b858"); R(1, 13, 14, 2, "#6a4a1a"); [[2, 2], [13, 2], [2, 13], [13, 13]].forEach(function (q) { R(q[0], q[1], 1, 1, "#4a3210"); }); for (i = 0; i < 8; i++) { x = (H(i, 1) * 12 + 2) | 0; y = (H(i, 2) * 12 + 2) | 0; R(x, y, 2, 1 + (H(i, 3) < 0.4 ? 1 : 0), "#3a9a7a", 0.85); } }
+      else if (id === OT.DOCK) { R(0, 0, 16, 16, "#6a4426"); R(0, 0, 16, 7, "#9a6a3a"); R(0, 0, 16, 1, "#c28a52"); R(0, 6, 16, 1, "#4a2e18"); R(0, 7, 16, 8, "#7a5230"); R(0, 14, 16, 2, "#3a2412"); [4, 12].forEach(function (xx) { R(xx, 0, 1, 7, "#5a3a1e"); }); R(2, 2, 1, 1, "#2e1e10"); R(9, 3, 1, 1, "#2e1e10"); R(3, 9, 1, 1, "#2e1e10"); R(11, 10, 1, 1, "#2e1e10"); }
+      else if (id === OT.CLAM) { E2(g, ox2 + 8, oy2 + 11, 7, 4.5, "#b8a8d8"); E2(g, ox2 + 8, oy2 + 10, 6.4, 3.6, "#e8e0f8"); R(3, 8, 10, 1, "#9a8ac0"); R(3, 11, 10, 1, "#9a8ac0"); R(5, 7, 1, 5, "#9a8ac0"); R(8, 7, 1, 5, "#9a8ac0"); R(11, 7, 1, 5, "#9a8ac0"); E2(g, ox2 + 8, oy2 + 9, 2.4, 2.4, "#fff"); E2(g, ox2 + 7.4, oy2 + 8.4, 0.8, 0.8, "#ffffffcc"); }
+      else if (id === OT.CHEST || id === OT.OPEN) { var op = id === OT.OPEN; R(2, 6, 12, 9, "#5a3a1e"); R(3, 7, 10, 7, "#8a5a2c"); R(3, 7, 10, 1, "#b8843a"); R(2, 10, 12, 1, "#3a2410"); R(7, 9, 2, 3, "#e0b840"); R(2, 6, 1, 9, "#c9a52a"); R(13, 6, 1, 9, "#c9a52a"); if (op) { R(2, 3, 12, 3, "#5a3a1e"); R(3, 3, 10, 2, "#7a4a22"); R(3, 7, 10, 3, "#1a1408"); R(5, 8, 2, 1, "#ffd23f"); R(9, 9, 2, 1, "#ffd23f"); } else { R(2, 4, 12, 3, "#7a4a22"); R(3, 4, 10, 1, "#a8743a"); R(2, 4, 12, 1, "#c9a52a"); R(7, 6, 2, 2, "#ffd23f"); } R(4, 14, 8, 1, "#3a7a4a", 0.6); }
+      else if (id === OT.BARREL) { R(3, 3, 10, 12, "#6a4426"); R(2, 5, 12, 8, "#8a5a32"); R(3, 3, 10, 1, "#a8743a"); R(2, 6, 12, 1, "#4a2e18"); R(2, 11, 12, 1, "#4a2e18"); R(5, 4, 1, 10, "#a8743a", 0.6); R(10, 4, 1, 10, "#4a2e18", 0.6); R(3, 13, 10, 2, "#3a7a4a", 0.5); }
+      else if (id === OT.CANNON) { R(3, 9, 10, 4, "#3a3a42"); R(2, 8, 4, 6, "#4a4a52"); R(12, 9, 3, 4, "#2a2a30"); R(4, 9, 8, 1, "#7a7a86"); R(3, 13, 3, 3, "#6a4426"); R(10, 13, 3, 3, "#6a4426"); R(5, 10, 4, 1, "#7a7a86", 0.6); R(4, 14, 8, 1, "#3a7a4a", 0.7); }
+      else if (id === OT.POST) { R(6, 0, 4, 16, "#4a2e18"); R(7, 0, 1, 16, "#6a4426"); for (i = 0; i < 6; i++) R(5 + (i % 2), 2 + i * 3, 5, 1, "#2e5a3a", 0.8); }
+      else if (id === OT.LADDER) { R(4, 0, 1, 16, "#7a5a3a"); R(11, 0, 1, 16, "#7a5a3a"); [1, 5, 9, 13].forEach(function (yy) { R(4, yy, 8, 2, "#9a7448"); R(4, yy, 8, 1, "#b8905a"); }); }
+      else if (id === OT.LAMP) { R(7, 6, 2, 10, "#3a2412"); R(4, 1, 8, 7, "#8e969b"); R(5, 2, 6, 5, "#ffe27a"); R(6, 3, 4, 3, "#fff6c0"); R(3, 1, 10, 1, "#5a626a"); R(4, 8, 8, 1, "#5a626a"); }
+      else if (id === OT.ROPE) { R(7, 0, 2, 16, "#c9a876"); for (i = 0; i < 8; i++) R(7, i * 2, 2, 1, "#a88a58"); }
+    }
+    OATLAS = c; return c;
+  }
+  function E2(g, x, y, rx, ry, c) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 6.2832); g.fill(); }
+
+  // CREATURES, THE BOAT AND THE PIER: drawn live (g at the creature's centre, u = one sixteenth of a tile)
+  var oE = function (g, x, y, rx, ry, c, rot) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, Math.max(0.01, rx), Math.max(0.01, ry), rot || 0, 0, 6.2832); g.fill(); };
+  var oR = function (g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  var oL = function (g, c, w, pts) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); for (var i = 0; i < pts.length; i++) i ? g.lineTo(pts[i][0], pts[i][1]) : g.moveTo(pts[i][0], pts[i][1]); g.stroke(); };
+  var oP = function (g, c, pts) { g.fillStyle = c; g.beginPath(); for (var i = 0; i < pts.length; i++) i ? g.lineTo(pts[i][0], pts[i][1]) : g.moveTo(pts[i][0], pts[i][1]); g.closePath(); g.fill(); };
+  var oG = function (g, x, y, r, c) { var gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, c); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
+  function ocDrawMob(g, m, now) {
+    var u = ts / 16, sx = ox + m.x * ts, sy = oy + m.y * ts, fl = m.hurt > 0 && Math.floor(now / 70) % 2 === 0, C = function (c) { return fl ? "#ffffff" : c; }, t = m.t, d = OM[m.k];
+    if (sx < -ts * 6 || sx > vw + ts * 6 || sy < -ts * 6 || sy > vh + ts * 6) return;
+    g.save(); g.translate(sx, sy); if (m.dead) { g.globalAlpha = Math.max(0, m.dead / 0.5); }
+    var f = m.face;
+    if (m.k === "puffer") {
+      g.scale(f, 1); var R = 7 * (1 + 0.62 * m.inf) * u / 1, wob = Math.sin(t * 5) * 0.12;
+      oP(g, C("#a8b84a"), [[-R * 0.8, 0], [-R * 1.5, -R * 0.55 + wob * R], [-R * 1.5, R * 0.55 + wob * R]]);
+      oE(g, 0, 0, R, R * 0.92, C("#c8d870")); oE(g, 0, R * 0.25, R * 0.82, R * 0.6, C("#f6f0b8")); oE(g, -R * 0.1, -R * 0.55, R * 0.7, R * 0.3, C("#a8b84a"));
+      for (var i = 0; i < 6; i++) oE(g, (-0.55 + i * 0.22) * R, (-0.2 + ((i * 37) % 5) / 12) * R, R * 0.09, R * 0.09, C("#6a7a2a"));
+      if (m.inf > 0.25) for (var k = 0; k < 14; k++) { var a = k / 14 * 6.2832; oL(g, C("#fff4d0"), Math.max(1, u * 0.9), [[Math.cos(a) * R * 0.9, Math.sin(a) * R * 0.9], [Math.cos(a) * R * (0.9 + 0.55 * m.inf), Math.sin(a) * R * (0.9 + 0.55 * m.inf)]]); }
+      oE(g, R * 0.36, -R * 0.2, R * 0.28, R * 0.28, "#fff"); oE(g, R * 0.42, -R * 0.18, R * 0.15, R * 0.15, "#14180a"); oE(g, R * 0.78, R * 0.18, R * 0.12, R * 0.07, "#8a5a3a");
+      oP(g, C("#a8b84a"), [[-R * 0.1, R * 0.25], [-R * 0.55, R * (0.55 + wob)], [R * 0.15, R * 0.55]]);
+    } else if (m.k === "snapjaw") {
+      g.scale(f, 1); var sw = Math.sin(t * 14 + m.ph) * 2 * u, bite = m.st === "flee" || (m.vx * f > 3) ? 1 : 0;
+      oP(g, C("#5a6e82"), [[-6 * u, 0], [-11 * u, -4 * u + sw], [-11 * u, 4 * u + sw]]); oE(g, 0, 0, 8 * u, 4.2 * u, C("#7a8ea0")); oE(g, 0, 1.8 * u, 7 * u, 2.2 * u, C("#c4d0da"));
+      oP(g, C("#5a6e82"), [[-2 * u, -3.6 * u], [1 * u, -7 * u], [3.4 * u, -3.4 * u]]);
+      oP(g, C("#6a7e92"), [[3 * u, 1.5 * u], [9.5 * u, 3.4 * u + bite * 1.4 * u], [4.5 * u, 4.6 * u]]); for (var q = 0; q < 4; q++) oP(g, "#fff", [[(4.5 + q * 1.3) * u, 1.8 * u + q * 0.15 * u], [(5.1 + q * 1.3) * u, 0.3 * u + q * 0.15 * u], [(5.7 + q * 1.3) * u, 1.8 * u + q * 0.15 * u]]);
+      oE(g, 3.8 * u, -1 * u, 1.7 * u, 1.7 * u, "#fff"); oE(g, 4.1 * u, -1 * u, 0.9 * u, 0.9 * u, "#e02a2a");
+    } else if (m.k === "eel") {
+      if (m.hd === undefined) m.hd = f > 0 ? 0 : Math.PI; var sp = Math.hypot(m.vx, m.vy); if (sp > 0.3) { var tg = Math.atan2(m.vy, m.vx), df = Math.atan2(Math.sin(tg - m.hd), Math.cos(tg - m.hd)); m.hd += df * 0.15; } else { var tg2 = f > 0 ? 0 : Math.PI, df2 = Math.atan2(Math.sin(tg2 - m.hd), Math.cos(tg2 - m.hd)); m.hd += df2 * 0.05; }
+      var px = 0, py = 0, ang = m.hd, N = 11, segs = [];
+      for (var i2 = 0; i2 < N; i2++) { segs.push([px, py]); ang += Math.sin(t * 4 - i2 * 0.7 + m.ph) * (0.16 + 0.1 * Math.min(1, sp / 3)); px -= Math.cos(ang) * 0.46 * ts; py -= Math.sin(ang) * 0.46 * ts; }
+      for (var i3 = N - 1; i3 >= 0; i3--) { var rr = (i3 === 0 ? 0.42 : 0.4 - i3 * 0.027) * ts; oE(g, segs[i3][0], segs[i3][1], rr, rr, C(i3 % 2 ? "#2c7a78" : "#23666a")); oE(g, segs[i3][0], segs[i3][1] + rr * 0.3, rr * 0.7, rr * 0.5, C("#8ad0b0")); if (i3 % 3 === 1) oE(g, segs[i3][0], segs[i3][1] - rr * 0.2, rr * 0.2, rr * 0.2, "#7af0ff"); }
+      var hx = segs[0][0], hy = segs[0][1], open = m.st === "dash" || m.st === "wind"; g.save(); g.translate(hx, hy); g.rotate(m.hd); if (Math.cos(m.hd) < 0) g.scale(1, -1);
+      oE(g, 3 * u, 0, 6.5 * u, 4.4 * u, C("#2c7a78")); oP(g, "#e8f6ee", [[7 * u, -1.8 * u], [10.5 * u, -2.6 * u - (open ? 2.5 * u : 0)], [10 * u, 0]]); oP(g, "#e8f6ee", [[7 * u, 1.8 * u], [10.5 * u, 2.6 * u + (open ? 2.5 * u : 0)], [10 * u, 0]]); oE(g, 7.4 * u, 0, 3 * u, (1.4 + (open ? 2.5 : 0)) * u, "#6a1a2a"); oE(g, 2 * u, -2 * u, 1.7 * u, 1.7 * u, "#fff"); oE(g, 2.4 * u, -2 * u, 0.9 * u, 0.9 * u, m.st === "wind" ? "#ff3a3a" : "#14180a"); g.restore();
+    } else if (m.k === "jelly") {
+      var pu = 1 + Math.sin(t * 4.5 + m.ph) * 0.14; oG(g, 0, 0, 16 * u, "rgba(122,240,255,.28)");
+      for (var j = 0; j < 5; j++) { var tx = (j - 2) * 3 * u, pts = []; for (var s2 = 0; s2 <= 5; s2++) pts.push([tx + Math.sin(t * 3 + j + s2 * 0.9) * 2.2 * u * (s2 / 5), (3 + s2 * 2.8) * u]); oL(g, C("rgba(140,240,255,.75)"), 1.6 * u, pts); }
+      g.beginPath(); g.moveTo(-8 * u, 2 * u); g.bezierCurveTo(-8 * u, -9 * u * pu, 8 * u, -9 * u * pu, 8 * u, 2 * u); g.quadraticCurveTo(0, 5 * u, -8 * u, 2 * u); g.fillStyle = C("rgba(96,214,240,.78)"); g.fill(); oE(g, 0, -2 * u, 5.2 * u, 3.4 * u * pu, C("rgba(200,252,255,.6)")); oE(g, -3 * u, -4.4 * u, 2 * u, 1 * u, "rgba(255,255,255,.65)", -0.4);
+    } else if (m.k === "urchin") {
+      oG(g, 0, 0, 11 * u, "rgba(192,138,255,.22)"); for (var q2 = 0; q2 < 20; q2++) { var a2 = q2 / 20 * 6.2832 - 1.57 * 0, len = (q2 % 2 ? 11 : 9) * u; if (Math.sin(a2) > 0.55) continue; oL(g, C(q2 % 3 ? "#5a3a7a" : "#8a5ab8"), 1.5 * u, [[Math.cos(a2) * 3 * u, Math.sin(a2) * 3 * u], [Math.cos(a2) * len, Math.sin(a2) * len]]); }
+      oE(g, 0, 0, 6.4 * u, 6 * u, C("#3a2455")); oE(g, -1.6 * u, -2 * u, 2.4 * u, 1.4 * u, "rgba(255,255,255,.22)", -0.4); oE(g, 0, 1 * u, 2 * u, 1.5 * u, "#1a1030");
+    } else if (m.k === "pirate") {
+      g.scale(f, 1); var kick = Math.sin(t * 5 + m.ph) * 2 * u, aimA = m.aimA !== undefined ? m.aimA : 0, ox3 = 0;
+      oL(g, "rgba(232,251,255,.55)", 1.2 * u, [[-3 * u, -8 * u], [-7 * u, -11 * u + Math.sin(t * 3) * u], [-6 * u, -15 * u]]);
+      oE(g, -3 * u, 8 * u + kick * 0.3, 2.6 * u, 6 * u, C("#2fb59a"), 0.2 + kick * 0.02); oE(g, 2 * u, 8 * u - kick * 0.3, 2.6 * u, 6 * u, C("#4ee6b4"), -0.1);
+      oE(g, 0, 2 * u, 6.6 * u, 7 * u, C("#8a5a32")); oE(g, 0, 3 * u, 5 * u, 5.4 * u, C("#a8743a")); oR(g, -6 * u, 2 * u, 12 * u, 1.6 * u, "#e8d9a8"); oR(g, -6 * u, 6 * u, 12 * u, 1.6 * u, "#e8d9a8");
+      oE(g, 0, -6 * u, 7.4 * u, 7 * u, C("#d9a53a")); oE(g, 0, -6 * u, 5.8 * u, 5.4 * u, C("#9be8ff")); oE(g, 0, -6 * u, 5.8 * u, 5.4 * u, "rgba(20,60,80,.35)");
+      oE(g, 0.4 * u, -5.4 * u, 4 * u, 3.6 * u, C("#4a9a52")); oE(g, -1.4 * u, -7.4 * u, 1.8 * u, 1.8 * u, "#fff"); oE(g, 2.6 * u, -7.4 * u, 1.8 * u, 1.8 * u, "#fff"); oE(g, -1.1 * u, -7.4 * u, 0.9 * u, 0.9 * u, "#14180a"); oE(g, 3 * u, -7.4 * u, 0.9 * u, 0.9 * u, "#14180a"); oR(g, 1.4 * u, -8.6 * u, 3.6 * u, 2.4 * u, "#14180a");
+      oP(g, C("#1a1420"), [[-8 * u, -10 * u], [0, -17 * u], [8 * u, -10 * u], [5 * u, -9 * u], [0, -11 * u], [-5 * u, -9 * u]]); oL(g, "#d9a53a", 1 * u, [[-8 * u, -10 * u], [0, -17 * u], [8 * u, -10 * u]]); oE(g, 0, -13 * u, 1.3 * u, 1.3 * u, "#e8d9a8");
+      g.save(); g.translate(2 * u, 1 * u); g.rotate(f > 0 ? aimA : Math.PI - aimA); oR(g, 0, -1.4 * u, 11 * u, 2.8 * u, "#4a4a52"); oR(g, 0, -1.4 * u, 11 * u, 1 * u, "#7a7a86"); oP(g, "#cfd6dd", [[11 * u, -1 * u], [15 * u, 0], [11 * u, 1 * u]]); oR(g, -2 * u, -2 * u, 4 * u, 4 * u, "#6a4426"); g.restore();
+      if (m.st === "aim") { g.restore(); g.save(); g.translate(sx, sy); g.strokeStyle = "rgba(255,70,70," + (0.4 + 0.4 * Math.sin(now / 40)) + ")"; g.lineWidth = Math.max(1, u * 0.8); g.setLineDash([u * 2, u * 2]); g.beginPath(); g.moveTo(0, 0); g.lineTo((OCS.pl.x - m.x) * ts, (OCS.pl.y - 0.45 - m.y) * ts); g.stroke(); g.setLineDash([]); }
+    } else if (m.k === "angler") {
+      g.scale(f, 1); var wg = Math.sin(t * 3 + m.ph) * 1.2 * u, open2 = m.st === "dash" || m.st === "wind";
+      oP(g, C("#2a1d44"), [[-10 * u, 0], [-17 * u, -6 * u + wg], [-17 * u, 6 * u + wg]]); oE(g, 0, 0, 13 * u, 9.6 * u, C("#3a2a55")); oE(g, 0, 3 * u, 11 * u, 5.6 * u, C("#5a4a82")); oE(g, -2 * u, -4 * u, 8 * u, 3 * u, C("#2a1d44"));
+      for (var s3 = 0; s3 < 8; s3++) oE(g, (-8 + s3 * 2.2) * u, (-3 + ((s3 * 5) % 4)) * u, 0.7 * u, 0.7 * u, "#7af0ff");
+      oL(g, "#2a1d44", 1.6 * u, [[3 * u, -8 * u], [8 * u, -16 * u], [14 * u, -15 * u]]); oG(g, 14 * u, -14.4 * u, 12 * u, "rgba(255,226,122,.55)"); oE(g, 14 * u, -14.4 * u, 2.6 * u, 2.6 * u, "#fff6c0");
+      oP(g, "#e8e0d0", [[5 * u, -1 * u], [14 * u, 2 * u], [5 * u, 2 * u]]); for (var q3 = 0; q3 < 6; q3++) { oP(g, "#fff", [[(5.5 + q3 * 1.5) * u, -1 * u + q3 * 0.4 * u], [(6.3 + q3 * 1.5) * u, 2.2 * u + q3 * 0.2 * u], [(7.1 + q3 * 1.5) * u, -1 * u + q3 * 0.4 * u]]); }
+      oE(g, 8 * u, 4.4 * u + (open2 ? 3 * u : 0), 5 * u, 2.6 * u + (open2 ? 1.4 * u : 0), C("#6a1a2a")); for (var q4 = 0; q4 < 5; q4++) oP(g, "#fff", [[(4.5 + q4 * 1.6) * u, 3 * u + (open2 ? 2 * u : 0)], [(5.3 + q4 * 1.6) * u, 0.4 * u + (open2 ? 2 * u : 0)], [(6.1 + q4 * 1.6) * u, 3 * u + (open2 ? 2 * u : 0)]]);
+      oE(g, 6 * u, -3 * u, 2.6 * u, 2.6 * u, "#fff"); oE(g, 6.5 * u, -3 * u, 1.4 * u, 1.4 * u, "#ff3a3a");
+    } else if (m.k === "captain") {
+      g.scale(f, 1); var wave = Math.sin(t * 2.4) * 1.2 * u, glow = m.st === "wind" || m.st === "cast"; g.globalAlpha *= 0.9; oG(g, 0, 0, 26 * u, glow ? "rgba(255,90,90,.35)" : "rgba(168,255,240,.3)");
+      oP(g, "rgba(120,220,210,.55)", [[-9 * u, 2 * u], [9 * u, 2 * u], [7 * u, 12 * u + wave], [3 * u, 8 * u], [0, 15 * u - wave], [-3 * u, 8 * u], [-7 * u, 12 * u + wave]]);
+      oP(g, C("#2a4a5a"), [[-9 * u, -3 * u], [9 * u, -3 * u], [10 * u, 8 * u], [-10 * u, 8 * u]]); oP(g, C("#3a6a7a"), [[-7 * u, -3 * u], [7 * u, -3 * u], [8 * u, 7 * u], [-8 * u, 7 * u]]); for (var b = 0; b < 3; b++) oE(g, 0, (-1 + b * 3.4) * u, 1 * u, 1 * u, "#ffd23f"); oR(g, -9 * u, 3 * u, 18 * u, 1.6 * u, "#d9a53a");
+      oE(g, 0, -9 * u, 8 * u, 7 * u, C("#4ee6b4")); oE(g, -4 * u, -12.6 * u, 3.4 * u, 3.4 * u, "#fff6c0"); oE(g, 4 * u, -12.6 * u, 3.4 * u, 3.4 * u, "#fff6c0"); oE(g, -4 * u, -12.4 * u, 1.5 * u, 2 * u, glow ? "#ff3a3a" : "#14281a"); oE(g, 4 * u, -12.4 * u, 1.5 * u, 2 * u, glow ? "#ff3a3a" : "#14281a"); oL(g, "#14281a", 1.4 * u, [[-4 * u, -6 * u], [0, -4.8 * u], [4 * u, -6 * u]]);
+      oP(g, "#1a1420", [[-12 * u, -14 * u], [0, -24 * u], [12 * u, -14 * u], [8 * u, -12 * u], [0, -15 * u], [-8 * u, -12 * u]]); oL(g, "#d9a53a", 1.4 * u, [[-12 * u, -14 * u], [0, -24 * u], [12 * u, -14 * u]]); oE(g, 0, -19 * u, 2 * u, 2 * u, "#e8d9a8"); oE(g, -0.8 * u, -19.2 * u, 0.5 * u, 0.5 * u, "#14181c"); oE(g, 0.8 * u, -19.2 * u, 0.5 * u, 0.5 * u, "#14181c");
+      g.save(); g.translate(8 * u, 1 * u); g.rotate(m.st === "wind" ? -2.2 : m.st === "slash" ? 0.3 : -0.9); oR(g, 0, -1 * u, 17 * u, 2 * u, "#cfe8f0"); oR(g, 0, -0.4 * u, 17 * u, 0.8 * u, "#ffffff"); oR(g, -3 * u, -1.8 * u, 4 * u, 3.6 * u, "#d9a53a"); g.restore();
+    }
+    g.restore();
+    if (m.hp < m.hpm && !m.dead && !m.boss) { var bw = ts * 1.2; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sx - bw / 2, sy - ts * 0.95, bw, 4); g.fillStyle = "#ff6a6a"; g.fillRect(sx - bw / 2, sy - ts * 0.95, bw * Math.max(0, m.hp / m.hpm), 4); }
+  }
+  function ocDrawAmb(g, a, now) {
+    var u = ts / 16, sx = ox + a.x * ts, sy = oy + a.y * ts; if (sx < -ts * 4 || sx > vw + ts * 4 || sy < -ts * 4 || sy > vh + ts * 4) return;
+    g.save(); g.translate(sx, sy); g.scale(a.face, 1); var t = a.t, k = a.k, sz = a.sz || 1;
+    if (a.boop > 0) { var bs = 1 + Math.sin(a.boop * 14) * 0.15; g.scale(bs, bs); }
+    if (k === "fish") { var sw = Math.sin(t * 12 + a.ph) * 1.3 * u * sz; oP(g, a.col[1], [[-3.5 * u * sz, 0], [-6.5 * u * sz, -2.6 * u * sz + sw], [-6.5 * u * sz, 2.6 * u * sz + sw]]); oE(g, 0, 0, 4.4 * u * sz, 2.5 * u * sz, a.col[0]); oE(g, 0.4 * u, 1 * u * sz, 3.4 * u * sz, 1.2 * u * sz, "rgba(255,255,255,.35)"); oP(g, a.col[1], [[-1 * u, -2.2 * u * sz], [1 * u, -3.6 * u * sz], [2 * u, -2 * u * sz]]); oE(g, 2.4 * u * sz, -0.5 * u * sz, 0.8 * u, 0.8 * u, "#14180a"); }
+    else if (k === "lfish") { var sw2 = Math.sin(t * 10 + a.ph) * 1.2 * u; oG(g, 0, 0, 8 * u, "rgba(122,240,255,.3)"); oP(g, "#2a4a8a", [[-3 * u, 0], [-6 * u, -2.2 * u + sw2], [-6 * u, 2.2 * u + sw2]]); oE(g, 0, 0, 4 * u, 2.3 * u, "#3a6ac8"); oE(g, 1 * u, -0.4 * u, 0.9 * u, 0.9 * u, "#e8fbff"); oE(g, -1 * u, 0.6 * u, 0.6 * u, 0.6 * u, "#7af0ff"); oE(g, -2.2 * u, 0.6 * u, 0.5 * u, 0.5 * u, "#7af0ff"); }
+    else if (k === "turtle") { var fl = Math.sin(t * 2.6) * 0.45; g.save(); g.translate(2 * u, 3 * u); g.rotate(0.5 + fl); oE(g, 0, 3 * u, 2 * u, 5 * u, "#5a8a4a"); g.restore(); g.save(); g.translate(-3 * u, 3 * u); g.rotate(-0.4 - fl); oE(g, 0, 3 * u, 1.8 * u, 4 * u, "#4a7a3a"); g.restore(); oE(g, 8 * u, -1 * u, 3 * u, 2.6 * u, "#8aae6a"); oE(g, 9 * u, -1.6 * u, 0.7 * u, 0.7 * u, "#14180a"); oE(g, 0, 0, 8.5 * u, 6 * u, "#4a6a3a"); oE(g, 0, -1 * u, 7 * u, 4.6 * u, "#6a8a4a"); for (var h = 0; h < 5; h++) oE(g, (-4 + h * 2) * u, (-1.5 + (h % 2) * 2) * u, 1.6 * u, 1.4 * u, "#7a9a56"); }
+    else if (k === "ray") { var fl2 = Math.sin(t * 2.2 + a.ph); oL(g, "#4a5a8a", 1.2 * u, [[-8 * u, 0], [-18 * u, 3 * u + fl2 * 2 * u]]); oP(g, "#6a7ab0", [[9 * u, 0], [0, -4 * u - fl2 * 4 * u], [-8 * u, 0], [0, 4 * u - fl2 * 4 * u]]); oE(g, 0, 0, 7 * u, 2.4 * u, "#8a9ad0"); oE(g, 5 * u, -0.8 * u, 0.8 * u, 0.8 * u, "#14180a"); oE(g, 3 * u, 0.8 * u, 4 * u, 1 * u, "rgba(255,255,255,.35)"); }
+    else if (k === "horse") { var sw3 = Math.sin(t * 3 + a.ph); oL(g, "#d8762a", 2 * u, [[0, 2 * u], [-1.6 * u, 6 * u], [-3 * u + sw3 * u, 9 * u], [-1.4 * u + sw3 * u, 11 * u]]); oE(g, 0, 0, 2.4 * u, 4.4 * u, "#ff9a4a"); oE(g, 1.2 * u, -5 * u, 2.2 * u, 1.7 * u, "#ff9a4a"); oL(g, "#ff9a4a", 1 * u, [[2.8 * u, -5 * u], [5 * u, -4.4 * u]]); oE(g, 1.6 * u, -5.4 * u, 0.5 * u, 0.5 * u, "#14180a"); oL(g, "#ffd070", 1 * u, [[0, -4 * u], [0.2 * u, 2 * u]]); oE(g, -2.6 * u, -1 * u, 1.4 * u, 1 * u, "rgba(255,255,255,.5)"); }
+    else if (k === "tjelly") { var pu2 = 1 + Math.sin(t * 4 + a.ph) * 0.15; oG(g, 0, 0, 10 * u, "rgba(220,140,255,.3)"); for (var j = 0; j < 3; j++) oL(g, "rgba(230,170,255,.7)", 1 * u, [[(j - 1) * 2 * u, 2 * u], [(j - 1) * 2 * u + Math.sin(t * 3 + j) * u, 5 * u], [(j - 1) * 2 * u, 8 * u]]); g.beginPath(); g.moveTo(-4 * u, 2 * u); g.bezierCurveTo(-4 * u, -5 * u * pu2, 4 * u, -5 * u * pu2, 4 * u, 2 * u); g.closePath(); g.fillStyle = "rgba(210,130,255,.7)"; g.fill(); oE(g, 0, -1 * u, 2.4 * u, 1.6 * u, "rgba(255,230,255,.6)"); }
+    else if (k === "crab") { var sc2 = Math.sin(t * 9) * 1.2 * u; for (var l = 0; l < 3; l++) { oL(g, "#c84a2a", 1 * u, [[(-3 + l * 3) * u, 1 * u], [(-5 + l * 3.4) * u, 3.4 * u + (l % 2 ? sc2 : -sc2)]]); } oE(g, 0, 0, 5 * u, 3.4 * u, "#e0602a"); oE(g, 0, -1 * u, 4 * u, 2 * u, "#f08a4a"); oL(g, "#e0602a", 1.4 * u, [[4 * u, -1 * u], [7 * u, -4 * u]]); oE(g, 7.4 * u, -4.6 * u, 2 * u, 1.6 * u, "#e0602a"); oL(g, "#e0602a", 1.4 * u, [[-4 * u, -1 * u], [-7 * u, -4 * u]]); oE(g, -7.4 * u, -4.6 * u, 2 * u, 1.6 * u, "#e0602a"); oE(g, 1.6 * u, -3 * u, 0.8 * u, 0.8 * u, "#14180a"); oE(g, -1.6 * u, -3 * u, 0.8 * u, 0.8 * u, "#14180a"); }
+    g.restore();
+  }
+  function ocDrawShot(g, s, now) {
+    var sx = ox + s.x * ts, sy = oy + s.y * ts, u = ts / 16, a = Math.atan2(s.vy, s.vx); g.save(); g.translate(sx, sy); g.rotate(a);
+    if (s.k === "ghost") { oG(g, 0, 0, 12 * u, "rgba(168,255,240,.55)"); oE(g, 0, 0, 3.4 * u, 3.4 * u, "#e8fffb"); oE(g, -3 * u, 0, 4 * u, 2 * u, "rgba(168,255,240,.5)"); }
+    else { oR(g, -9 * u, -0.7 * u, 14 * u, 1.4 * u, "#8a8f99"); oP(g, "#e8eef2", [[5 * u, -2.2 * u], [10 * u, 0], [5 * u, 2.2 * u]]); oP(g, "#6a4426", [[-9 * u, -2 * u], [-6 * u, 0], [-9 * u, 2 * u]]); }
+    g.restore();
+  }
+
+  // ---- Old Croaker's boat, side view (at the pier slip). Fitted parts are solid; missing ones show as a faint blueprint. ----
+  function ocBoatSide(g, sx, sy, k, P, now, o) {   // (sx, sy) = the waterline under the middle of the boat; k = tile size; P = fitted parts
+    o = o || {}; var bob = reduce ? 0 : Math.sin(now / 760) * 0.06 * k, tilt = reduce ? 0 : Math.sin(now / 1100) * 0.012;
+    g.save(); g.translate(sx, sy + bob); g.rotate(tilt);
+    var part = function (id, fn) { var have = P[id]; if (!have && o.nobp) return; g.save(); if (!have) { g.globalAlpha *= 0.26; o.ghost = true; } fn(!have); o.ghost = false; g.restore(); };
+    var Cc = function (c, gh) { return gh ? "#9be8ff" : c; };
+    var hullShape = function () { g.beginPath(); g.moveTo(-4.6 * k, -1.1 * k); g.lineTo(-4.2 * k, 0.7 * k); g.quadraticCurveTo(-1 * k, 1.25 * k, 3.6 * k, 0.5 * k); g.quadraticCurveTo(5 * k, -0.2 * k, 5.1 * k, -1.7 * k); g.lineTo(3.4 * k, -1.3 * k); g.lineTo(-1 * k, -1.0 * k); g.closePath(); };
+    // water-line shadow
+    g.fillStyle = "rgba(0,30,50,.18)"; g.beginPath(); g.ellipse(0, 0.9 * k, 5.4 * k, 0.4 * k, 0, 0, 6.2832); g.fill();
+    part("boat_keel", function (gh) { g.strokeStyle = Cc("#7a6a4a", gh); g.lineWidth = 0.3 * k; g.lineCap = "round"; g.beginPath(); g.moveTo(-4.4 * k, 0.45 * k); g.quadraticCurveTo(-1 * k, 1.2 * k, 4.8 * k, 0.1 * k); g.stroke(); g.strokeStyle = Cc("#e0d2a8", gh); g.lineWidth = 0.17 * k; g.stroke(); if (!P.boat_hull || gh) { for (var i = 0; i < 7; i++) { var x = -3.6 * k + i * 1.2 * k, y = 0.9 * k - Math.sin((i + 0.5) / 7 * Math.PI) * 0.4 * k; g.strokeStyle = Cc("#cdbd90", gh); g.lineWidth = 0.14 * k; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 0.2 * k, y - 0.9 * k, x + 0.5 * k, -1.2 * k + (i * 0.04 * k)); g.stroke(); } } });
+    part("boat_hull", function (gh) {
+      hullShape(); g.fillStyle = Cc("#8a5a32", gh); g.fill(); g.save(); hullShape(); g.clip(); for (var r = 0; r < 4; r++) { g.fillStyle = Cc(r % 2 ? "#9a6a3a" : "#7a4a2a", gh); g.fillRect(-5 * k, (-1.6 + r * 0.7) * k, 11 * k, 0.36 * k); g.fillStyle = Cc("#3a2210", gh); g.fillRect(-5 * k, (-1.3 + r * 0.7) * k, 11 * k, 0.04 * k); }
+      g.fillStyle = Cc("#c28a52", gh); g.fillRect(-5 * k, -1.7 * k, 11 * k, 0.14 * k); g.fillStyle = Cc("#4ee6b4", gh); for (var q = 0; q < 6; q++) { g.beginPath(); g.arc((-3.4 + q * 1.4) * k, -0.5 * k, 0.16 * k, 0, 6.2832); g.fill(); } g.restore();
+      g.strokeStyle = Cc("#4a2e18", gh); g.lineWidth = 0.07 * k; hullShape(); g.stroke(); g.fillStyle = Cc("#5a3a1e", gh); g.fillRect(-1 * k, -1.15 * k, 0.12 * k, 0.5 * k);
+    });
+    part("boat_rudder", function (gh) { g.fillStyle = Cc("#7a5a3a", gh); g.beginPath(); g.moveTo(-4.4 * k, -0.2 * k); g.lineTo(-5.2 * k, 0.5 * k); g.lineTo(-5 * k, 1.6 * k); g.lineTo(-4.3 * k, 1.5 * k); g.lineTo(-4.1 * k, 0.4 * k); g.closePath(); g.fill(); g.strokeStyle = Cc("#4a2e18", gh); g.lineWidth = 0.06 * k; g.stroke(); });
+    part("boat_mast", function (gh) { g.fillStyle = Cc("#6a4426", gh); g.fillRect(0.2 * k, -6.4 * k, 0.3 * k, 5.4 * k); g.fillStyle = Cc("#8a5a32", gh); g.fillRect(0.28 * k, -6.4 * k, 0.1 * k, 5.4 * k); g.fillStyle = Cc("#6a4426", gh); g.fillRect(-1.9 * k, -5.4 * k, 4.6 * k, 0.22 * k); g.fillStyle = Cc("#e8d9a8", gh); g.beginPath(); g.moveTo(0.5 * k, -6.4 * k); g.lineTo(2.1 * k, -6.1 * k); g.lineTo(0.5 * k, -5.8 * k); g.closePath(); g.fill(); g.strokeStyle = Cc("#c9a876", gh); g.lineWidth = 0.04 * k; g.beginPath(); g.moveTo(0.35 * k, -6.2 * k); g.lineTo(4.6 * k, -1.4 * k); g.moveTo(0.35 * k, -6.2 * k); g.lineTo(-4 * k, -1.2 * k); g.stroke(); });
+    part("boat_sail", function (gh) { var bl = reduce ? 0 : Math.sin(now / 900) * 0.12 * k; g.fillStyle = Cc("#2f7a3a", gh); g.beginPath(); g.moveTo(0.4 * k, -5.2 * k); g.bezierCurveTo(3.6 * k + bl, -4.7 * k, 3.9 * k + bl, -2.6 * k, 0.4 * k, -1.6 * k); g.bezierCurveTo(-1.8 * k - bl, -2.4 * k, -1.9 * k - bl, -4.6 * k, 0.4 * k, -5.2 * k); g.fill(); g.fillStyle = Cc("#58b85a", gh); g.beginPath(); g.moveTo(0.4 * k, -4.9 * k); g.bezierCurveTo(3.2 * k + bl, -4.5 * k, 3.4 * k + bl, -2.8 * k, 0.4 * k, -1.9 * k); g.bezierCurveTo(-1.5 * k - bl, -2.6 * k, -1.6 * k - bl, -4.4 * k, 0.4 * k, -4.9 * k); g.fill(); g.strokeStyle = Cc("#2f7a3a", gh); g.lineWidth = 0.05 * k; for (var v = 0; v < 5; v++) { var a = -1.9 + v * 0.95; g.beginPath(); g.moveTo(0.4 * k, -3.4 * k); g.lineTo((0.4 + Math.sin(a) * 1.9) * k, (-3.4 - Math.cos(a) * 1.4) * k); g.stroke(); } g.fillStyle = Cc("#ffffff55", gh); g.beginPath(); g.ellipse(1.6 * k, -4.2 * k, 0.5 * k, 0.2 * k, -0.5, 0, 6.2832); g.fill(); });
+    part("boat_wheel", function (gh) { var cx = -2.6 * k, cy = -2.3 * k; g.fillStyle = Cc("#5a3a1e", gh); g.fillRect(cx - 0.08 * k, cy, 0.16 * k, 1.2 * k); g.strokeStyle = Cc("#c98c4f", gh); g.lineWidth = 0.1 * k; g.beginPath(); g.arc(cx, cy, 0.5 * k, 0, 6.2832); g.stroke(); g.lineWidth = 0.06 * k; for (var s = 0; s < 8; s++) { var a2 = s / 8 * 6.2832 + (o.spin || 0); g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a2) * 0.72 * k, cy + Math.sin(a2) * 0.72 * k); g.stroke(); } g.fillStyle = Cc("#c9a52a", gh); g.beginPath(); g.arc(cx, cy, 0.13 * k, 0, 6.2832); g.fill(); });
+    part("boat_lamp", function (gh) { var cx = 4.1 * k, cy = -1.75 * k; if (!gh) { var gr = g.createRadialGradient(cx, cy, 0, cx, cy, 2.6 * k); gr.addColorStop(0, o.lit ? "rgba(255,226,122,.55)" : "rgba(255,226,122,.25)"); gr.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = gr; g.fillRect(cx - 2.6 * k, cy - 2.6 * k, 5.2 * k, 5.2 * k); } g.fillStyle = Cc("#5a3a1e", gh); g.fillRect(cx - 0.1 * k, cy, 0.2 * k, 0.4 * k); g.fillStyle = Cc("#2f7a3a", gh); g.beginPath(); g.arc(cx - 0.22 * k, cy - 0.15 * k, 0.26 * k, 0, 6.2832); g.arc(cx + 0.22 * k, cy - 0.15 * k, 0.26 * k, 0, 6.2832); g.fill(); g.fillStyle = Cc("#fff6c0", gh); g.beginPath(); g.arc(cx - 0.22 * k, cy - 0.15 * k, 0.16 * k, 0, 6.2832); g.arc(cx + 0.22 * k, cy - 0.15 * k, 0.16 * k, 0, 6.2832); g.fill(); g.fillStyle = Cc("#14281a", gh); g.fillRect(cx - 0.24 * k, cy - 0.22 * k, 0.05 * k, 0.14 * k); g.fillRect(cx + 0.2 * k, cy - 0.22 * k, 0.05 * k, 0.14 * k); });
+    part("boat_anchor", function (gh) { var cx = 3.2 * k, cy = -0.55 * k; g.strokeStyle = Cc("#c9a876", gh); g.lineWidth = 0.05 * k; g.beginPath(); g.moveTo(cx, -1.2 * k); g.lineTo(cx, cy - 0.1 * k); g.stroke(); g.strokeStyle = Cc("#8e969b", gh); g.lineWidth = 0.1 * k; g.beginPath(); g.moveTo(cx, cy - 0.1 * k); g.lineTo(cx, cy + 0.6 * k); g.moveTo(cx - 0.25 * k, cy); g.lineTo(cx + 0.25 * k, cy); g.arc(cx, cy + 0.38 * k, 0.32 * k, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke(); });
+    part("boat_figure", function (gh) { var cx = 5.0 * k, cy = -1.9 * k; g.fillStyle = Cc("#1a6a4a", gh); g.beginPath(); g.moveTo(cx - 0.5 * k, -1.4 * k); g.lineTo(cx - 0.3 * k, cy); g.lineTo(cx + 0.45 * k, cy + 0.1 * k); g.lineTo(cx + 0.3 * k, -1.3 * k); g.closePath(); g.fill(); g.fillStyle = Cc("#4ee6b4", gh); g.beginPath(); g.ellipse(cx + 0.05 * k, cy - 0.12 * k, 0.5 * k, 0.4 * k, 0, 0, 6.2832); g.fill(); g.beginPath(); g.arc(cx - 0.12 * k, cy - 0.46 * k, 0.2 * k, 0, 6.2832); g.arc(cx + 0.25 * k, cy - 0.46 * k, 0.2 * k, 0, 6.2832); g.fill(); g.fillStyle = Cc("#fff6c0", gh); g.beginPath(); g.arc(cx - 0.12 * k, cy - 0.46 * k, 0.11 * k, 0, 6.2832); g.arc(cx + 0.25 * k, cy - 0.46 * k, 0.11 * k, 0, 6.2832); g.fill(); g.fillStyle = Cc("#14281a", gh); g.fillRect(cx - 0.12 * k, cy - 0.5 * k, 0.05 * k, 0.12 * k); g.fillRect(cx + 0.26 * k, cy - 0.5 * k, 0.05 * k, 0.12 * k); g.strokeStyle = Cc("#14281a", gh); g.lineWidth = 0.04 * k; g.beginPath(); g.moveTo(cx - 0.3 * k, cy); g.quadraticCurveTo(cx + 0.1 * k, cy + 0.16 * k, cx + 0.45 * k, cy); g.stroke(); });
+    g.restore();
+  }
+
+  // ---------- RENDER: the dive scene ----------
+  var OCDK = null, OCSTARS = null;
+  function ocRgb(a, al) { return al == null ? "rgb(" + (a[0] | 0) + "," + (a[1] | 0) + "," + (a[2] | 0) + ")" : "rgba(" + (a[0] | 0) + "," + (a[1] | 0) + "," + (a[2] | 0) + "," + al + ")"; }
+  var OWATER = [[0, [62, 200, 220]], [10, [34, 150, 196]], [30, [22, 98, 168]], [62, [14, 52, 120]], [100, [8, 22, 66]], [170, [3, 6, 22]]];   // depth (m) -> water colour
+  function ocWaterAt(d) { for (var i = 1; i < OWATER.length; i++) if (d <= OWATER[i][0]) { var a = OWATER[i - 1], b = OWATER[i], k = (d - a[0]) / (b[0] - a[0]); return [a[1][0] + (b[1][0] - a[1][0]) * k, a[1][1] + (b[1][1] - a[1][1]) * k, a[1][2] + (b[1][2] - a[1][2]) * k]; } return OWATER[OWATER.length - 1][1]; }
+  function ocPlant(g, id, sx, sy, i, j, now) {   // swaying plants, drawn live from the bottom of their cell
+    var t = now / 1000, sw = reduce ? 0 : Math.sin(t * 1.4 + i * 0.7 + j * 0.3), base = sy + ts, cx = sx + ts / 2, u = ts / 16, below = ocT(i, j + 1) === id, above = ocT(i, j - 1) === id;
+    if (id === OT.KELP) {   // tall kelp: each cell is a stretch of stalk with leaves; the top cell gets a bulb
+      var k0 = sw * (ts * 0.12) * (1 + (j % 5) * 0.12), k1 = below ? sw * ts * 0.12 * (1 + ((j + 1) % 5) * 0.12) : 0;
+      oL(g, "#2c7a3a", 2.2 * u, [[cx + k1, base], [cx + (k0 + k1) / 2 + u, sy + ts / 2], [cx + k0, sy]]);
+      oE(g, cx + k0 * 0.6 + 3 * u, sy + ts * 0.45, 3.6 * u, 1.4 * u, (i + j) % 2 ? "#3f9a4c" : "#58b85a", 0.5 + sw * 0.3);
+      oE(g, cx + k0 * 0.6 - 3 * u, sy + ts * 0.8, 3.4 * u, 1.3 * u, "#3f9a4c", -0.5 + sw * 0.3);
+      if (!above) { oE(g, cx + k0, sy + 2 * u, 2.2 * u, 2.6 * u, "#8ad05a"); oE(g, cx + k0 - 0.6 * u, sy + 1.2 * u, 0.8 * u, 0.8 * u, "rgba(255,255,255,.5)"); }
+    } else if (id === OT.GRASS) { for (var q = 0; q < 4; q++) { var bx = sx + (2.5 + q * 3.6) * u, hh = (8 + ((i * 7 + q * 5) % 6)) * u; oL(g, q % 2 ? "#6ab05a" : "#4a9a4a", 1.4 * u, [[bx, base], [bx + sw * 2 * u + (q - 1.5) * u, base - hh * 0.6], [bx + sw * 3.5 * u + (q - 1.5) * 1.5 * u, base - hh]]); } }
+    else if (id === OT.ANEM) {   // stinging anemone: a squat foot and wriggling pink tentacles
+      oE(g, cx, base - 2 * u, 5.5 * u, 3 * u, "#8a2a4a"); for (var q2 = 0; q2 < 7; q2++) { var a = -2.4 + q2 * 0.8, wg = reduce ? 0 : Math.sin(t * 3 + q2 + i) * 0.25; oL(g, q2 % 2 ? "#ff4a8a" : "#ff7ab0", 1.6 * u, [[cx + Math.sin(a) * 3 * u, base - 3 * u], [cx + Math.sin(a + wg) * 6 * u, base - 3 * u - Math.cos(a) * 5 * u - 3 * u]]); oE(g, cx + Math.sin(a + wg) * 6 * u, base - 3 * u - Math.cos(a) * 5 * u - 3 * u, 1 * u, 1 * u, "#ffd0e4"); }
+    } else if (id === OT.FAN) {   // sea fan: a lacy fan of branches
+      var fc = (i + j) % 2 ? "#e870b8" : "#c858e8"; g.save(); g.translate(cx, base); g.rotate(sw * 0.08); for (var q3 = 0; q3 < 6; q3++) { var a2 = -1 + q3 * 0.4; oL(g, fc, 1.1 * u, [[0, 0], [Math.sin(a2) * 5 * u, -Math.cos(a2) * 7 * u], [Math.sin(a2) * 7.5 * u, -Math.cos(a2) * 13 * u]]); } oL(g, fc, 0.8 * u, [[-6 * u, -9 * u], [0, -11 * u], [6 * u, -9 * u]]); oL(g, fc, 0.8 * u, [[-4 * u, -5 * u], [0, -6 * u], [4 * u, -5 * u]]); g.restore();
+    } else if (id === OT.TUBE) { [[-4, 9, "#ffb04a"], [0, 13, "#ff9a3a"], [4, 7, "#ffc86a"]].forEach(function (q4) { var x2 = cx + q4[0] * u, h2 = q4[1] * u; oR(g, x2 - 1.6 * u, base - h2, 3.2 * u, h2, q4[2]); oE(g, x2, base - h2, 1.6 * u, 0.8 * u, "#7a3a1a"); }); }
+  }
+  // CAUSTICS: the rippling net of sunlight a wavy surface throws on everything below it. A few looping frames of a tileable pattern
+  // (sums of sines whose zero lines are the bright threads), laid over the water, brightest near the surface and fading with depth.
+  var CAUS = null;
+  function causticFrames() {
+    if (CAUS) return CAUS; CAUS = []; var N = 16, Z = 64;
+    for (var f = 0; f < N; f++) { var c = document.createElement("canvas"); c.width = c.height = Z; var q = c.getContext("2d"), im = q.createImageData(Z, Z), d = im.data, ph = f / N * 6.2832;
+      for (var y = 0; y < Z; y++) for (var x = 0; x < Z; x++) { var u = x / Z * 6.2832, v = y / Z * 6.2832;
+        var w1 = Math.sin(u * 2 + Math.sin(v + ph) * 1.3 + ph), w2 = Math.sin(v * 2 + Math.sin(u * 2 - ph) * 1.1 - ph), w3 = Math.sin(u + v * 3 + ph) * 0.7;
+        var br = Math.pow(clamp(1 - Math.abs(w1 + w2 + w3) * 0.8, 0, 1), 7), k2 = (y * Z + x) * 4; d[k2] = 225; d[k2 + 1] = 255; d[k2 + 2] = 248; d[k2 + 3] = Math.round(br * 255); }
+      q.putImageData(im, 0, 0); CAUS.push(c); }
+    return CAUS;
+  }
+  function ocCaustics(g, surf, t, k, solid) {   // k: strength (daylight); bands get weaker with depth. solid: a path of the sea floor cells
+    if (k < 0.03 || liteFx()) return; var F = causticFrames(), fr = F[Math.floor(t * 8) % F.length], T2 = ts * 6, bands = 3, bh = ts * 8;
+    var offx = ((ox * 0.96) % T2 + T2) % T2 - T2, offy = ((oy) % T2 + T2) % T2 - T2;
+    g.save(); g.globalCompositeOperation = "lighter"; g.imageSmoothingEnabled = true;
+    for (var b = 0; b < bands; b++) { var y0 = surf + b * bh, y1 = y0 + bh; if (y1 < 0 || y0 > vh) continue; g.save(); g.beginPath(); g.rect(0, Math.max(0, y0), vw, Math.min(vh, y1) - Math.max(0, y0)); g.clip();
+      var fall = Math.pow(1 - b / bands, 1.6), tile = function () { for (var yy = offy; yy < vh; yy += T2) { if (yy + T2 < y0 || yy > y1) continue; for (var xx = offx; xx < vw; xx += T2) g.drawImage(fr, xx, yy, T2, T2); } };
+      if (!solid) { g.globalAlpha = k * 0.07 * fall; tile(); }
+      if (solid) { g.save(); solid(); g.clip(); g.globalAlpha = k * 0.42 * fall; tile(); g.restore(); }   // bright on the sea floor and rocks, where the light lands
+      g.restore(); }
+    g.restore(); g.imageSmoothingEnabled = false;
+  }
+  function ocRender(now) {
+    var sc = OCS, g = ctx, m = sc.m, pl = sc.pl, i, j, t = now / 1000, A = ocAtlas();
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null; sc.btns = [];
+    var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
+    ox = Math.round(vw / 2 - cam.x * ts + shx); oy = Math.round(vh / 2 - cam.y * ts + shy);
+    var surf = oy + OSEA * ts, dl = daylight(S.time), sky = skyAt(S.time);
+    // --- sky ---
+    if (surf > 0) {
+      var sg = g.createLinearGradient(0, 0, 0, surf); sg.addColorStop(0, ocRgb(sky[0])); sg.addColorStop(1, ocRgb(sky[1])); g.fillStyle = sg; g.fillRect(0, 0, vw, surf + 1);
+      if (dl < 0.75) { if (!OCSTARS) { OCSTARS = []; for (i = 0; i < 90; i++) OCSTARS.push([Math.random(), Math.random(), Math.random()]); } g.fillStyle = "#fff"; OCSTARS.forEach(function (s) { g.globalAlpha = (0.75 - dl) * (0.5 + 0.5 * Math.sin(t * 2 + s[2] * 20)); g.fillRect(((s[0] * vw * 1.4 - cam.x * 2) % vw + vw) % vw, s[1] * surf * 0.9, 2, 2); }); g.globalAlpha = 1; }
+      var ph = S.time / CYCLE, sunA = ph < 0.583 ? ph / 0.583 : -1, bx = vw * (0.12 + 0.76 * sunA), by = surf - Math.sin(Math.max(0, sunA) * Math.PI) * surf * 0.78 + ts * 0.5;
+      if (sunA >= 0) { oG(g, bx, by, ts * 5, "rgba(255,236,170,.45)"); oE(g, bx, by, ts * 0.9, ts * 0.9, "#fff4c8"); }
+      else { var ma = (ph - 0.583) / 0.417, mx2 = vw * (0.12 + 0.76 * ma), my2 = surf - Math.sin(ma * Math.PI) * surf * 0.72 + ts * 0.5; oG(g, mx2, my2, ts * 3.4, "rgba(200,220,255,.3)"); oE(g, mx2, my2, ts * 0.7, ts * 0.7, "#e8eeff"); oE(g, mx2 + ts * 0.25, my2 - ts * 0.12, ts * 0.6, ts * 0.6, ocRgb(sky[0])); }
+      for (i = 0; i < 6; i++) {   // drifting clouds
+        var cx2 = (((i * 0.23 + t * 0.006 * (1 + i % 3)) % 1.3) - 0.15) * (vw + ts * 8) - cam.x * ts * 0.05 % (vw * 0.3), cy2 = surf * (0.14 + (i % 3) * 0.13), cw = ts * (2.5 + (i % 2) * 1.6);
+        g.globalAlpha = 0.5 + 0.35 * dl; oE(g, cx2, cy2, cw, ts * 0.55, "#ffffff"); oE(g, cx2 + cw * 0.5, cy2 - ts * 0.3, cw * 0.55, ts * 0.6, "#ffffff"); oE(g, cx2 - cw * 0.45, cy2 + ts * 0.08, cw * 0.5, ts * 0.42, "#f0f6ff"); g.globalAlpha = 1;
+      }
+      for (i = 0; i < 3; i++) {   // islands on the horizon (parallax)
+        var ix = ((i * 0.37 + 0.2) * OCW * ts * 0.3 - cam.x * ts * 0.18) % (vw + ts * 20); if (ix < -ts * 10) ix += vw + ts * 20;
+        g.fillStyle = ocRgb([sky[1][0] * 0.55, sky[1][1] * 0.62, sky[1][2] * 0.66]); g.beginPath(); g.moveTo(ix - ts * 4, surf); g.quadraticCurveTo(ix - ts, surf - ts * (1.4 + i * 0.5), ix + ts * 0.5, surf - ts * (1.1 + i * 0.4)); g.quadraticCurveTo(ix + ts * 2.5, surf - ts * 0.9, ix + ts * 4.5, surf); g.fill();
+        if (i === 1) { oR(g, ix + ts * 0.3, surf - ts * 2.6, ts * 0.12, ts * 1.4, ocRgb([sky[1][0] * 0.45, sky[1][1] * 0.5, sky[1][2] * 0.55])); oE(g, ix + ts * 0.36, surf - ts * 2.6, ts * 0.7, ts * 0.25, ocRgb([sky[1][0] * 0.45, sky[1][1] * 0.5, sky[1][2] * 0.55])); }
+      }
+    }
+    // --- water body ---
+    if (surf < vh) {
+      var y0w = Math.max(0, surf), wg2 = g.createLinearGradient(0, surf, 0, surf + 170 * ts), dk = 0.4 + 0.6 * dl;
+      for (i = 0; i < OWATER.length; i++) { var c0 = OWATER[i][1]; wg2.addColorStop(OWATER[i][0] / 170, ocRgb([c0[0] * dk, c0[1] * dk, c0[2] * (0.6 + 0.4 * dk)])); }
+      g.fillStyle = wg2; g.fillRect(0, y0w, vw, vh - y0w);
+      var osun = sunState(S.time), slant = -osun.sx * ts * 9 * (osun.up ? 1 : 0.4);   // shafts lean away from the sun (steeper at noon)
+      if (!liteFx() && dl > 0.35) { g.save(); for (i = 0; i < 5; i++) {   // god rays
+        var rx = ((i * 0.19 + 0.05) * vw * 1.6 - cam.x * ts * 0.3 + Math.sin(t * 0.3 + i) * ts) % (vw * 1.6); if (rx < -ts * 8) rx += vw * 1.6;
+        var rwd = ts * (0.8 + (i % 3) * 0.7), rlen = ts * (18 + (i % 4) * 4), ra = 0.1 * dl * (0.55 + 0.45 * Math.sin(t * 0.6 + i * 2.3)) * (osun.warm > 0.1 ? 1.3 : 1) * (1 - 0.85 * wxN());
+        var rg = g.createLinearGradient(0, surf, 0, surf + rlen); rg.addColorStop(0, "rgba(" + (osun.warm > 0.2 ? "255,226,190" : "210,255,248") + "," + ra.toFixed(3) + ")"); rg.addColorStop(0.5, "rgba(190,250,250," + (ra * 0.45).toFixed(3) + ")"); rg.addColorStop(1, "rgba(190,250,250,0)");
+        g.fillStyle = rg; g.beginPath(); g.moveTo(rx, surf); g.lineTo(rx + rwd, surf); g.lineTo(rx + rwd * 2.2 + slant, surf + rlen); g.lineTo(rx + slant, surf + rlen); g.closePath(); g.fill();
+      } g.restore(); }
+      for (i = 0; i < 26; i++) {   // drifting marine snow
+        var mxs = ((i * 97.3 + t * 6 + Math.sin(t * 0.4 + i) * 10) % vw + vw) % vw, mys = ((i * 61.7 + t * 9) % (vh + 20)) - 10; if (mys < surf) continue;
+        g.globalAlpha = 0.25 + (i % 3) * 0.1; g.fillStyle = "#e8fbff"; g.fillRect(mxs, mys, 2, 2);
+      }
+      g.globalAlpha = 1;
+    }
+    // --- tiles ---
+    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(OCW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(OCH - 1, Math.floor((vh - oy) / ts)), lights = [];
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
+      var id = sc.t[j * OCW + i], d = OTD[id], sx = ox + i * ts, sy = oy + j * ts;
+      if (id === OT.WATER || id === OT.AIR) continue;
+      if (id === OT.AIRP) { g.fillStyle = "rgba(190,240,255,.22)"; g.fillRect(sx, sy, ts, ts); if (ocT(i, j - 1) !== OT.AIRP && !reduce) { g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(sx, sy, ts, Math.max(2, ts * 0.08)); } if (ocT(i, j + 1) !== OT.AIRP) { g.fillStyle = "rgba(232,251,255,.7)"; g.fillRect(sx, sy + ts - 2 + Math.sin(t * 3 + i) * 1.5, ts, 2); } continue; }
+      if (d.plant) { ocPlant(g, id, sx, sy, i, j, now); if (d.lit) lights.push([i + 0.5, j + 0.6, d.lit, "255,90,160"]); continue; }
+      var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
+      g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
+      if (d.solid && j > OSEA && !OTD[ocT(i, j - 1)].solid) { g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(sx, sy, ts, Math.max(1, ts * 0.07)); }   // a lit top edge
+      if (d.solid && j > OSEA && !OTD[ocT(i, j + 1)].solid) { g.fillStyle = "rgba(0,10,30,.25)"; g.fillRect(sx, sy + ts * 0.86, ts, ts * 0.14); }
+      if (d.lit) lights.push([i + 0.5, j + 0.5, d.lit, id === OT.LAMP ? "255,210,110" : id === OT.CLAM ? "210,190,255" : "110,240,220"]);
+      if (id === OT.CHEST && !reduce && (Math.floor(t * 2 + i) % 3 === 0)) { g.fillStyle = "rgba(255,240,170," + (0.5 + 0.5 * Math.sin(t * 6 + i)) + ")"; g.fillRect(sx + ts * (0.2 + 0.6 * ((t * 0.7 + i * 0.3) % 1)), sy + ts * 0.15, 2, 2); }
+    }
+    if (sc.mineP && sc.mineP.p > 0) { var mp2 = sc.mineP; g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8, ts * 0.12); g.fillStyle = "#7af0ff"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8 * Math.min(1, mp2.p), ts * 0.12); }
+    // --- the pier gate sign at the land end, and the boat at the slip ---
+    if (sc.main && m.pier) {
+      var gx = ox + 2.5 * ts, gy = surf - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
+      g.font = signFont(Math.max(9, Math.round(ts * 0.27))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", gx, gy - ts * 2.55);
+      var B = ocS().boat; ocBoatSide(g, ox + (m.pier.x1 + 4.6) * ts, surf + ts * 0.15, ts * 0.62, B.done ? fullBoatParts() : B.p, now, { nobp: false, lit: dl < 0.6 });
+      if (!B.done) { g.font = "800 " + Math.max(10, Math.round(ts * 0.34)) + "px Nunito, system-ui, sans-serif"; g.fillStyle = "rgba(8,34,44,.75)"; var lbl = "Old Croaker's boat: " + ocBoatHave() + " / " + OBOAT.length + " parts", lw = g.measureText(lbl).width + ts * 0.6; g.fillRect(ox + (m.pier.x1 + 4.6) * ts - lw / 2, surf - ts * 5.4, lw, ts * 0.6); g.fillStyle = "#e8fbff"; g.fillText(lbl, ox + (m.pier.x1 + 4.6) * ts, surf - ts * 4.98); }
+    }
+    if (!sc.main) ocBoatSide(g, ox + (Math.floor(OCW / 2) + 0.5) * ts, surf + ts * 0.15, ts * 0.62, fullBoatParts(), now, { lit: dl < 0.6 });   // the Lily Belle waits above the dive site
+    drawCroako(g, now);   // Croako on the beach
+    // --- life ---
+    sc.amb.forEach(function (a) { ocDrawAmb(g, a, now); });
+    sc.mobs.forEach(function (mb) { ocDrawMob(g, mb, now); if (mb.k === "angler" && !mb.dead) lights.push([mb.x + mb.face * 0.85, mb.y - 0.9, 5, "255,226,122"]); if (mb.k === "jelly" && !mb.dead) lights.push([mb.x, mb.y, 3, "122,240,255"]); if (mb.k === "captain" && !mb.dead) lights.push([mb.x, mb.y, 6, "168,255,240"]); });
+    sc.shots.forEach(function (s) { ocDrawShot(g, s, now); });
+    // --- you ---
+    ocDrawMe(g, now); ocDrawRod(g, now);
+    drawWaterFx(g);
+    // --- bubbles and particles ---
+    g.strokeStyle = "rgba(232,251,255,.75)"; g.lineWidth = 1.2; sc.bub.forEach(function (b) { var bx2 = ox + b.x * ts, by2 = oy + b.y * ts, r = Math.max(1.5, b.r * ts); g.beginPath(); g.arc(bx2, by2, r, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(bx2 - r * 0.4, by2 - r * 0.5, Math.max(1, r * 0.4), Math.max(1, r * 0.4)); });
+    parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
+    // --- the surface: a wavy bright line and a tinted film over everything under water (clipped to the water, so none of it lies across the beach sand) ---
+    g.save(); g.beginPath(); for (i = X0; i <= X1; i++) { var wy0 = OSEA; while (wy0 < OSEA + 40 && OTD[ocT(i, wy0)].solid) wy0++; g.rect(ox + i * ts, oy + wy0 * ts - (wy0 === OSEA ? ts * 0.25 : 0), ts + 0.5, vh); } g.clip();
+    if (surf > -ts && surf < vh + ts) {
+      var wamp = 1 + wxStorm() * 1.8 + wxN() * 0.35, surfH = function (wx) { return reduce ? 0 : (Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035 + Math.sin(wx / ts * 0.37 + t * 0.9) * ts * 0.05) * wamp + (RIPS.length ? rippleH((wx - ox) / ts, OSEA - 0.02) * ts : 0); };
+      g.fillStyle = "rgba(160,240,255,.55)"; g.beginPath(); g.moveTo(0, surf + 4);
+      for (var wx = 0; wx <= vw + 4; wx += 4) g.lineTo(wx, surf + surfH(wx));
+      g.lineTo(vw, surf + 4); g.closePath(); g.fill();
+      g.strokeStyle = "rgba(240,255,255,.7)"; g.lineWidth = Math.max(1.5, ts * 0.04); g.beginPath(); for (wx = 0; wx <= vw + 4; wx += 4) { if (wx) g.lineTo(wx, surf + surfH(wx) - 1); else g.moveTo(wx, surf + surfH(wx) - 1); } g.stroke();   // the bright skin of the surface
+      g.fillStyle = "rgba(255,255,255,.65)"; for (wx = 0; wx < vw; wx += ts * 0.9) { var wy2 = surf + surfH(wx), fa2 = Math.sin(wx * 0.31 + t * 1.7); if (fa2 > 0.5) { g.globalAlpha = (fa2 - 0.5) * 2; g.fillRect(wx, wy2 - 1, ts * 0.4, 2); } } g.globalAlpha = 1;   // foam flecks fade in and out instead of blinking
+      if (!liteFx() && surf > 0) {   // the sun (or moon) glitters on the water right under it
+        var gph = S.time / CYCLE, gsa = gph < 0.583 ? gph / 0.583 : (gph - 0.583) / 0.417, gcx = vw * (0.12 + 0.76 * gsa), gday = gph < 0.583;
+        for (wx = gcx - ts * 7; wx < gcx + ts * 7; wx += ts * 0.3) { var gd = 1 - Math.abs(wx - gcx) / (ts * 7), gk = Math.sin(wx * 0.77 + t * 4.1) * Math.sin(wx * 0.23 - t * 2.7); if (gk < 0.35) continue;
+          var gy2 = surf + surfH(wx); g.fillStyle = gday ? "rgba(255,250,215," + (gd * gk).toFixed(3) + ")" : "rgba(220,230,255," + (gd * gk * 0.7).toFixed(3) + ")"; g.fillRect(wx, gy2 - 1.5, ts * (0.2 + gk * 0.35), 2.5); }
+      }
+    }
+    ocCaustics(g, surf, t, clamp((dl - 0.4) / 0.6, 0, 1) * (1 - 0.85 * wxN()) * clamp(1.4 - (cam.y - OSEA) / 50, 0.25, 1), function () { g.beginPath(); for (var cj = Math.max(Y0, OSEA + 1); cj <= Math.min(Y1, OSEA + 26); cj++) for (var ci = X0; ci <= X1; ci++) { var cd = OTD[sc.t[cj * OCW + ci]]; if (cd && cd.solid) g.rect(ox + ci * ts, oy + cj * ts, ts, ts); } });
+    if (surf < vh && dl > 0.3) {   // things floating on the surface shade the water under them
+      var shadeAt = function (cx, hw, dep, a) { var sg2 = g.createLinearGradient(0, surf, 0, surf + dep); sg2.addColorStop(0, "rgba(2,14,30," + a + ")"); sg2.addColorStop(1, "rgba(2,14,30,0)"); g.fillStyle = sg2; g.beginPath(); g.moveTo(cx - hw, surf); g.lineTo(cx + hw, surf); g.lineTo(cx + hw * 0.7 + slant * 0.3, surf + dep); g.lineTo(cx - hw * 0.7 + slant * 0.3, surf + dep); g.closePath(); g.fill(); };
+      var sa = (0.32 * dl).toFixed(3);
+      if (sc.main && m.pier) { shadeAt(ox + ((m.pier.x0 + m.pier.x1 + 1) / 2) * ts, (m.pier.x1 - m.pier.x0 + 1) / 2 * ts, ts * 5, sa); shadeAt(ox + (m.pier.x1 + 4.6) * ts, ts * 3.2, ts * 6, sa); }
+      else if (!sc.main) shadeAt(ox + (Math.floor(OCW / 2) + 0.5) * ts, ts * 3.2, ts * 6, sa);
+    }
+    if (surf < vh) { var tint = g.createLinearGradient(0, surf, 0, surf + 120 * ts); tint.addColorStop(0, "rgba(40,170,210,.10)"); tint.addColorStop(0.3, "rgba(20,80,160,.2)"); tint.addColorStop(1, "rgba(4,10,40,.3)"); g.fillStyle = tint; g.fillRect(0, Math.max(0, surf + 2), vw, vh); } g.restore();
+    // --- the time of day: the beach, pier and water take the day's colour (half strength: the water and sky already carry their own),
+    // and the boat's lantern lights its corner at night ---
+    var oamb = gradeOv(S.time), onk = clamp((0.92 - dl) / 0.62, 0, 1), OLI = [];
+    if (onk > 0) { var lbx = sc.main && m.pier ? ox + (m.pier.x1 + 4.6) * ts : ox + (Math.floor(OCW / 2) + 0.5) * ts, OB = ocS().boat;
+      lights.forEach(function (L) { if (L[1] <= OSEA + 0.6) OLI.push([ox + L[0] * ts, oy + L[1] * ts, L[2] * ts * 0.9, L[3], onk * 0.9, 0.5]); });   // lamps on the pier and the beach light their surroundings
+      if (!sc.main || OB.done || (OB.p && OB.p.boat_lamp)) OLI.push([lbx + 4.1 * ts * 0.62, surf + ts * 0.15 - 1.75 * ts * 0.62, ts * 4.5, "255,206,120", onk * 0.9, 0.5]); OLI.push([ox + pl.x * ts, oy + (pl.y - 0.6) * ts, ts * 3, "230,226,255", onk * 0.35]); }
+    sceneLight(g, wxOv({ c: oamb.c, a: oamb.a * 0.6 }), OLI); sceneGlow(g, OLI, onk);
+    // --- darkness below: lit only by glow coral, lanterns, the angler's lure and your dive lamp ---
+    var camD = (cam.y - OSEA), dark = clamp((camD - 6) / 60, 0, 0.94) * (1 - 0.25 * dl * clamp(1 - camD / 40, 0, 1)) + (1 - dl) * 0.35 * clamp(camD / 20 + 0.3, 0, 1);
+    dark = clamp(dark, 0, 0.95);
+    if (dark > 0.02) {
+      var sc2 = 0.5, W2 = Math.ceil(vw * sc2), H2 = Math.ceil(vh * sc2); if (!OCDK) OCDK = document.createElement("canvas"); if (OCDK.width !== W2 || OCDK.height !== H2) { OCDK.width = W2; OCDK.height = H2; }
+      var d2 = OCDK.getContext("2d"); d2.setTransform(1, 0, 0, 1, 0, 0); d2.globalCompositeOperation = "source-over"; d2.clearRect(0, 0, W2, H2);
+      var dg = d2.createLinearGradient(0, (surf) * sc2, 0, (surf + 40 * ts) * sc2); dg.addColorStop(0, "rgba(2,6,22," + (dark * 0.4).toFixed(3) + ")"); dg.addColorStop(1, "rgba(2,6,22," + dark.toFixed(3) + ")");
+      d2.fillStyle = dg; d2.fillRect(0, Math.max(0, surf * sc2), W2, H2); if (surf > 0 && dl < 0.6) { d2.fillStyle = "rgba(2,6,22," + ((0.6 - dl) * 0.6).toFixed(3) + ")"; d2.fillRect(0, 0, W2, Math.max(0, surf * sc2)); }
+      d2.globalCompositeOperation = "destination-out";
+      var lamp = (S.inv.divelamp || 0) > 0, hole = function (x, y, r, a) { var X = (ox + x * ts) * sc2, Y = (oy + y * ts) * sc2, R = r * ts * sc2; if (X < -R || X > W2 + R || Y < -R || Y > H2 + R) return; var gr = d2.createRadialGradient(X, Y, 0, X, Y, R); gr.addColorStop(0, "rgba(0,0,0," + a + ")"); gr.addColorStop(0.55, "rgba(0,0,0," + (a * 0.6) + ")"); gr.addColorStop(1, "rgba(0,0,0,0)"); d2.fillStyle = gr; d2.fillRect(X - R, Y - R, R * 2, R * 2); };
+      hole(pl.x, pl.y - 0.5, lamp ? 9 : 4.2, lamp ? 0.97 : 0.75);
+      if (lamp && sc.diving) {   // the dive lamp throws a cone the way you face
+        var a0 = pl.face > 0 ? 0 : Math.PI, X = (ox + pl.x * ts) * sc2, Y = (oy + (pl.y - 0.7) * ts) * sc2, R = 12 * ts * sc2, cg = d2.createRadialGradient(X, Y, 0, X, Y, R); cg.addColorStop(0, "rgba(0,0,0,.9)"); cg.addColorStop(1, "rgba(0,0,0,0)");
+        d2.fillStyle = cg; d2.beginPath(); d2.moveTo(X, Y); d2.arc(X, Y, R, a0 - 0.42 + pl.ang * pl.face * 0.6, a0 + 0.42 + pl.ang * pl.face * 0.6); d2.closePath(); d2.fill();
+      }
+      lights.forEach(function (L) { hole(L[0], L[1], L[2] * 0.8, 0.85); });
+      g.imageSmoothingEnabled = true; g.drawImage(OCDK, 0, 0, vw, vh); g.imageSmoothingEnabled = false;
+      g.globalCompositeOperation = "lighter"; lights.forEach(function (L) { var X3 = ox + L[0] * ts, Y3 = oy + L[1] * ts; if (X3 < -ts * 8 || X3 > vw + ts * 8 || Y3 < -ts * 8 || Y3 > vh + ts * 8) return;
+        oG(g, X3, Y3, L[2] * ts * 0.75, "rgba(" + L[3] + "," + (0.24 * dark + 0.05).toFixed(3) + ")"); });   // each light tints what is around it in its own colour, with a bright heart
+      if (lamp && sc.diving) { var Xl = ox + pl.x * ts, Yl = oy + (pl.y - 0.7) * ts, a1 = (pl.face > 0 ? 0 : Math.PI) + pl.ang * pl.face * 0.6, Rl = 11 * ts, lg2 = g.createRadialGradient(Xl, Yl, 0, Xl, Yl, Rl); lg2.addColorStop(0, "rgba(255,240,200," + (0.18 * dark).toFixed(3) + ")"); lg2.addColorStop(1, "rgba(255,240,200,0)"); g.fillStyle = lg2; g.beginPath(); g.moveTo(Xl, Yl); g.arc(Xl, Yl, Rl, a1 - 0.4, a1 + 0.4); g.closePath(); g.fill(); }   // the lamp's beam is warm
+      g.globalCompositeOperation = "source-over";
+    }
+    if (dark > 0.5 && !liteFx()) drawBloom(g, dl, clamp(1 - dark, 0.2, 1), now);   // glow coral, lures and lanterns bloom in the dark
+    if (wxN() > 0.02 && surf > 0) {   // rain: it rings the sea and spits off the pier and the sand
+      rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts; if (sy >= surf - 2) waterRing(wx, OSEA - 0.02, 0.02, 0, 0.7); else rainPip(wx, (sy - oy) / ts, 0); },
+        function () { var sx = Math.random() * vw, ci = Math.floor((sx - ox) / ts), y = surf; for (var cj = Math.max(0, Math.floor(-oy / ts)); cj < OSEA; cj++) { var cd = OTD[ocT(ci, cj)]; if (cd && cd.solid) { y = oy + cj * ts; break; } } return [sx, y]; });
+    }
+    if (surf > 0 && (WX.flash > 0 || WX.bolt)) drawBoltScr(g, 0, surf);
+    // --- words and pills ---
+    g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
+    texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
+    if (!panelOpen && !trans && hp > 0) ocActions().forEach(function (a) { ocPill(g, now, a.label, ox + a.ax * ts, oy + a.ay * ts, a.fn); });
+    if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down)) {   // the target box
+      var qd = Math.hypot(aim.tx + 0.5 - pl.x, aim.ty + 0.5 - (pl.y - 0.45)), ok = qd <= OREACH, id2 = ocT(aim.tx, aim.ty), d3 = OTD[id2];
+      if (d3 && (d3.solid || d3.plant) && d3.hard < 90) { g.strokeStyle = ok ? "rgba(232,251,255,.9)" : "rgba(255,90,90,.6)"; g.lineWidth = 2; g.strokeRect(ox + aim.tx * ts + 1, oy + aim.ty * ts + 1, ts - 2, ts - 2); }
+    }
+    // --- dive HUD: depth gauge on the right edge, and warnings ---
+    if (sc.diving) {
+      var dep = Math.floor(ocDepth(pl.y - 0.45)), lim = sc.lim || ocLimit(), Z = SO.ZONES[SO.zoneOf(dep)], gh = Math.min(vh * 0.42, 260), gx2 = vw - 26, gy2 = Math.max(80, vh * 0.25);
+      g.fillStyle = "rgba(6,20,34,.7)"; mrr(g, gx2 - 9, gy2 - 10, 18, gh + 20, 9); g.fill();
+      var lim2 = Math.min(lim, 170), maxD = 170; g.fillStyle = "rgba(255,90,74,.45)"; g.fillRect(gx2 - 4, gy2 + gh * lim2 / maxD, 8, gh * (1 - lim2 / maxD));
+      SO.ZONES.forEach(function (z, zi) { var a = zi ? SO.ZONES[zi - 1].to : 0, b = Math.min(maxD, z.to); g.fillStyle = z.c; g.globalAlpha = 0.5; g.fillRect(gx2 - 2, gy2 + gh * a / maxD, 4, gh * (b - a) / maxD); }); g.globalAlpha = 1;
+      var py2 = gy2 + gh * Math.min(1, dep / maxD); g.fillStyle = "#e8fbff"; g.beginPath(); g.moveTo(gx2 - 12, py2); g.lineTo(gx2 - 5, py2 - 5); g.lineTo(gx2 - 5, py2 + 5); g.fill();
+      g.font = "800 13px Nunito, system-ui, sans-serif"; g.textAlign = "right"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.fillStyle = dep > lim ? "#ff7a6a" : "#e8fbff"; g.strokeText(dep + " m", gx2 - 15, py2 + 4); g.fillText(dep + " m", gx2 - 15, py2 + 4);
+      g.font = "700 11px Nunito, system-ui, sans-serif"; g.fillStyle = Z.c; g.strokeText(Z.n, gx2 - 15, py2 + 18); g.fillText(Z.n, gx2 - 15, py2 + 18); g.textAlign = "center";
+      if (sc.crush < OCRUSH - 0.05) {   // the crush timer
+        var ck = clamp(sc.crush / OCRUSH, 0, 1), cy2 = Math.min(vh - 190, vh / 2 + Math.max(84, ts * 2.3)), cr = 30, pulse = reduce ? 1 : 1 + Math.sin(t * (10 - ck * 6)) * 0.05;
+        g.fillStyle = "rgba(40,6,10,.72)"; g.beginPath(); g.arc(vw / 2, cy2, cr * pulse + 8, 0, 6.2832); g.fill();
+        g.strokeStyle = "rgba(255,255,255,.15)"; g.lineWidth = 6; g.beginPath(); g.arc(vw / 2, cy2, cr, 0, 6.2832); g.stroke();
+        g.strokeStyle = ck > 0.5 ? "#ffb13b" : "#ff4a3a"; g.beginPath(); g.arc(vw / 2, cy2, cr, -Math.PI / 2, -Math.PI / 2 + ck * 6.2832); g.stroke();
+        g.font = "900 22px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#fff"; g.fillText(Math.max(0, sc.crush).toFixed(1), vw / 2, cy2 + 8);
+        g.font = "900 15px Nunito, system-ui, sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.75)"; var msg = sc.diving && dep > lim ? "TOO DEEP! SWIM UP!" : "Safe again"; g.strokeText(msg, vw / 2, cy2 + cr + 28); g.fillStyle = sc.diving && dep > lim ? "#ff7a6a" : "#7af0ff"; g.fillText(msg, vw / 2, cy2 + cr + 28);
+      }
+      var warn = (dep > lim && dep > 6 ? 1 : 0), lowA = sc.o2 < ocO2Max() * 0.25 ? 1 - sc.o2 / (ocO2Max() * 0.25) : 0;
+      if (warn || lowA > 0) { var vg = g.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * 0.3, vw / 2, vh / 2, Math.max(vw, vh) * 0.7); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, warn ? "rgba(200,30,30," + (0.3 + 0.15 * Math.sin(t * 8)).toFixed(3) + ")" : "rgba(10,20,60," + (0.55 * lowA).toFixed(3) + ")"); g.fillStyle = vg; g.fillRect(0, 0, vw, vh); }
+    }
+    if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); g.imageSmoothingEnabled = true; try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.imageSmoothingEnabled = false; g.globalAlpha = 1; }
+  }
+  function fullBoatParts() { var o = {}; OBOAT.forEach(function (k) { o[k] = 1; }); return o; }
+  function ocDrawMe(g, now) {   // you, drawn with the normal character sprite, plus the Scuba Suit, mask and tank
+    var sc = OCS, pl = sc.pl, keep = { x: p.x, y: p.y, on: p.on, vy: p.vy, vx: p.vx, wet: p.wet, face: p.face, walk: p.walk };
+    p.x = pl.x; p.y = pl.y; p.face = pl.face; p.vx = sc.diving ? Math.max(Math.abs(pl.vx), Math.abs(pl.vy)) : pl.vx; p.vy = sc.diving ? 0 : pl.vy; p.on = sc.diving ? false : pl.on; p.wet = sc.diving;
+    var sx = ox + pl.x * ts, sy = oy + (pl.y - 0.55) * ts;
+    g.save(); if (sc.diving && !reduce) { g.translate(sx, sy); g.rotate(pl.ang); g.translate(-sx, -sy); }
+    var suit = ocSuit(), tk = ocTank(), u = ts / 16, f = pl.face, bx = ox + pl.x * ts, by = oy + pl.y * ts;
+    if (tk && sc.diving) { var tc = ["", "#c9a52a", "#8ec8d8", "#c86aff", "#ff6a4a"][tk]; g.fillStyle = "#3a3a44"; mrr(g, bx - f * 6 * u - 2.6 * u, by - 22 * u, 5.2 * u, 12 * u, 2.4 * u); g.fill(); g.fillStyle = tc; mrr(g, bx - f * 6 * u - 2 * u, by - 21.4 * u, 4 * u, 10.6 * u, 2 * u); g.fill(); g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(bx - f * 6 * u - 1.2 * u, by - 20.4 * u, 1 * u, 7 * u); }
+    try { drawPlayer(g, now); } catch (e) {}
+    if (suit) {   // the suit: a collar and a round frog-eye mask; deeper suits get a bigger helmet (brass, pearl, then the glowing abyss suit)
+      var hx = bx + f * 0.6 * u, hy = by - 19.5 * u * AVS, stT = ocSuitT(), sc2 = OSUIT[stT].c, hr = [0, 3.6, 5.2, 5.6, 6][stT];
+      if (stT >= 4) oG(g, hx + f * 1.5 * u, hy - 0.5 * u, 12 * u, "rgba(122,240,255,.3)");
+      g.fillStyle = sc2; g.fillRect(hx - 5 * u, hy + 4.6 * u, 10 * u, 1.6 * u);
+      g.strokeStyle = sc2; g.lineWidth = (stT >= 2 ? 2 : 1.4) * u; g.fillStyle = stT >= 4 ? "rgba(40,20,80,.55)" : "rgba(160,240,255,.35)"; g.beginPath(); g.arc(hx + f * (stT >= 2 ? 0.6 : 1.5) * u, hy - 0.5 * u, hr * u, 0, 6.2832); g.fill(); g.stroke();
+      if (stT === 2) { g.fillStyle = "#8a5a1a"; [0, 1.57, 3.14, 4.71].forEach(function (a) { g.fillRect(hx + f * 0.6 * u + Math.cos(a) * hr * u - 0.6 * u, hy - 0.5 * u + Math.sin(a) * hr * u - 0.6 * u, 1.2 * u, 1.2 * u); }); }
+      if (stT === 3) { g.fillStyle = "#ff9ac8"; g.beginPath(); g.arc(hx + f * 0.6 * u, hy - 0.5 * u - hr * u, 1.2 * u, 0, 6.2832); g.fill(); }
+      if (stT >= 4) { g.fillStyle = "#7af0ff"; g.fillRect(hx + f * 0.6 * u - 0.5 * u, hy - 0.5 * u - hr * u - 2.4 * u, 1 * u, 2.4 * u); g.beginPath(); g.arc(hx + f * 0.6 * u, hy - 0.5 * u - hr * u - 2.6 * u, 1.1 * u, 0, 6.2832); g.fill(); }
+      g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx + f * 0.3 * u, hy - 2.6 * u, 1.2 * u, 1.2 * u);
+      if (tk && sc.diving) { g.strokeStyle = "#2a2a30"; g.lineWidth = 1 * u; g.beginPath(); g.moveTo(bx - f * 5 * u, by - 20 * u); g.quadraticCurveTo(hx - f * 3 * u, hy - 5 * u, hx - f * 1.6 * u, hy + 2 * u); g.stroke(); }
+    }
+    if ((S.inv.flippers || 0) > 0 && sc.diving) { var kick = reduce ? 0 : Math.sin(now / 140) * 2 * u; g.fillStyle = "#2fb59a"; g.beginPath(); g.ellipse(bx - f * 5 * u, by - 1 * u + kick, 4 * u, 1.4 * u, -f * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#4ee6b4"; g.beginPath(); g.ellipse(bx - f * 3 * u, by + 0.2 * u - kick, 4 * u, 1.4 * u, -f * 0.2, 0, 6.2832); g.fill(); }
+    g.restore();
+    p.x = keep.x; p.y = keep.y; p.on = keep.on; p.vy = keep.vy; p.vx = keep.vx; p.wet = keep.wet; p.face = keep.face;
+  }
+
+  // ---------- OLD CROAKER'S BOAT: the build window at the pier slip (works like the motorcycle in the garage) ----------
+  var boatMsg = "";
+  function openBoat() {
+    var el = $("sbxStory"); if (!el) return; if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
+    storyOpen = 219; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null; boatMsg = "";
+    S.st.boatLook = (S.st.boatLook || 0) + 1; thud(170, 0.05); renderBoat();
+  }
+  function renderBoat() {
+    var B = ocS().boat, n = ocBoatHave(), all = OBOAT.length, can = OBOAT.filter(function (k) { return !B.p[k] && S.inv[k] > 0 && (B.p.boat_keel || k === "boat_keel" || S.inv.boat_keel > 0); });
+    var h = '<div class="mo-box bo-box"><div class="mo-head"><canvas class="mo-cv" id="boCv" width="360" height="220" aria-hidden="true"></canvas><div><small>Croaker\'s Pier, the slip</small><h2>' + (B.done ? "The Lily Belle" : "Old Croaker's Boat") + "</h2>"
+      + '<p class="mo-sub">' + (B.done ? "Croaker's old boat, seaworthy again. Climb aboard at the slip and set sail." : n === 0 ? "“She sank at her moorings the year the Great Catfish got away. Bring her back and she's yours.” Find her parts in sea chests and wrecks, and make the rest at a Workbench." : n + " of " + all + " parts fitted. " + (all - n) + " to go.") + "</p>"
+      + '<div class="mo-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + all + '" aria-valuenow="' + n + '"><i style="width:' + Math.round(n / all * 100) + '%"></i></div></div></div>';
+    if (boatMsg) h += '<p class="mo-msg">' + esc(boatMsg) + "</p>";
+    h += '<ul class="mo-list">' + OBOAT.map(function (k) {
+      var on = !!B.p[k], have = S.inv[k] > 0, needKeel = !B.p.boat_keel && k !== "boat_keel";
+      var st = on ? '<span class="mo-on">Fitted</span>' : have ? (needKeel ? '<span class="mo-wait">Keel first</span>' : '<button type="button" class="btn mo-fit" data-boat="fit:' + k + '">Fit it</button>') : '<span class="mo-miss">Missing</span>';
+      return '<li class="' + (on ? "on" : have ? "have" : "") + '"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + "</b><small>" + (on ? "On the boat." : have ? "In your bag." : OBOAT_HINT[k] || "") + "</small></div>" + st + "</li>";
+    }).join("") + "</ul>";
+    h += '<div class="st-row">' + (B.done ? '<button type="button" class="btn mo-start" data-boat="sail">Set sail</button>' : n === all ? '<button type="button" class="btn mo-start" data-boat="launch">Launch her!</button>' : can.length > 1 ? '<button type="button" class="btn" data-boat="all">Fit all (' + can.length + ")</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
+    var cv = $("boCv"); if (cv) { var g = cv.getContext("2d"), sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, "#8ad8f0"); sky.addColorStop(1, "#e8f6e0"); g.fillStyle = sky; g.fillRect(0, 0, 360, 150); var sea = g.createLinearGradient(0, 150, 0, 220); sea.addColorStop(0, "#3ec8e0"); sea.addColorStop(1, "#1a6aa8"); g.fillStyle = sea; g.fillRect(0, 150, 360, 70); g.fillStyle = "rgba(255,255,255,.6)"; for (var i = 0; i < 9; i++) g.fillRect(14 + i * 40, 160 + (i % 3) * 14, 18, 2); ocBoatSide(g, 180, 166, 22, B.done ? fullBoatParts() : B.p, performance.now(), { lit: B.done }); }
+  }
+  function boatFit(k) {
+    var B = ocS().boat; if (B.p[k] || !(S.inv[k] > 0)) return false; if (!B.p.boat_keel && k !== "boat_keel") { boatMsg = "Lay the keel first: everything else is built on it."; return false; }
+    S.inv[k]--; if (S.inv[k] <= 0) delete S.inv[k]; B.p[k] = 1; reslot(); hbDirty = true; S.st.boatParts = ocBoatHave(); return true;
+  }
+  function boatAct(a) {
+    var B = ocS().boat;
+    if (a.indexOf("fit:") === 0) { var k = a.slice(4); if (boatFit(k)) { boatMsg = ITEMS[k].n + " fitted. " + (ocBoatHave() < OBOAT.length ? (OBOAT.length - ocBoatHave()) + " parts to go." : "That's every part! Time to launch her."); thud(300, 0.08); snd("coin"); } }
+    else if (a === "all") { var n = 0; if (S.inv.boat_keel > 0 && boatFit("boat_keel")) n++; OBOAT.forEach(function (k2) { if (boatFit(k2)) n++; }); if (n) { boatMsg = n + " parts fitted."; thud(300, 0.1); snd("coin"); } }
+    else if (a === "launch" && !B.done && ocBoatHave() === OBOAT.length) {
+      B.done = 1; B.hp = 100; S.st.boatDone = 1; snd("open", "Legendary"); thud(60, 0.2); setTimeout(function () { thud(80, 0.14); }, 200);
+      popup("The Lily Belle floats!", "Old Croaker's boat is seaworthy again. Set sail from the end of the pier.", "#4fd0e8", "⚓"); boatMsg = "She slides down the slip and bobs up proud. Croaker would cry. Press Set sail to head out to sea.";
+      if (OCS && OCS.main) ocSplash(OCS.m.pier.x1 + 4.6, true);
+    }
+    else if (a === "sail" && B.done) { closeStory(); ocSetSail(); return; }
+    checkGoals(); save(); renderBoat();
+  }
+
+  // =====================================================================================================================================
+  // ---------- SAILING: the sea chart seen from above. Tap an island and the Lily Belle turns and sails to it; swamp pirates hunt you ----------
+  // OCS.sea = { x, y, ang, sp, tgt, ships, balls, loot, wake, cd, hp }. Chart units: SO.SEAW x SO.SEAW. Islands come from SO.seaGen.
+  var OISL = null, OSITES = null;
+  function seaIslands() { if (!OISL || OISL._s !== ocSeed()) { OISL = SO.seaGen(ocSeed()); OISL._s = ocSeed(); OSITES = [];
+      OISL.forEach(function (I) { if (I.pier) return; var a = (I.seed % 628) / 100; OSITES.push({ x: I.x + Math.cos(a) * (I.r + 6), y: I.y + Math.sin(a) * (I.r + 6), seed: I.seed % 1000000007, name: I.n + " Reef", isl: I.id }); });
+      for (var k = 0; k < 8; k++) { var h1 = SW.hash(k, 3, ocSeed() % 9973), h2 = SW.hash(k, 7, ocSeed() % 9973); OSITES.push({ x: 60 + h1 * (SO.SEAW - 120), y: 60 + h2 * (SO.SEAW - 160), seed: Math.floor(SW.hash(k, 11, 5) * 1e9), name: ["Sunken Sloop", "The Bone Garden", "Bubbling Vent", "Gull Wreck", "Old Net Field", "The Glass Hole", "Barnacle Arch", "Lost Lantern"][k], isl: -1, wreck: 1 }); }
+    } return OISL; }
+  function seaNew() {
+    var o = ocS(), I = seaIslands(), home = I[0], sv = o.sea && typeof o.sea === "object" ? o.sea : null;
+    var x = sv && isFinite(sv.x) ? sv.x : home.x, y = sv && isFinite(sv.y) ? sv.y : home.y - home.r - 5;
+    return { on: true, x: x, y: y, ang: sv && isFinite(sv.ang) ? sv.ang : -Math.PI / 2, sp: 0, tgt: null, ships: [], balls: [], loot: [], wake: [], gulls: [], cd: 0, shipT: 14, t: 0, near: null, saveT: 0 };
+  }
+  function ocSetSail() {
+    if (!OCS || trans) return; var B = ocS().boat; if (!B.done) { openBoat(); return; }
+    stopInput(); trans = { t: 0, done: false, mid: function () { OCS.sea = seaNew(); OCS.diving = false; S.st.sails = (S.st.sails || 0) + 1; if (!(B.hp > 0)) B.hp = 100; cam.x = OCS.sea.x; cam.y = OCS.sea.y; ocHudO2(); hud(); var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#4fd0e8"); el.querySelector("b").textContent = "The Brinebog Sea"; el.querySelector("small").textContent = "Tap an island to sail there"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); } if (!S.st.sailtip) { S.st.sailtip = 1; toast(coarse ? "Tap an island and the Lily Belle sails to it. Steer with the stick. Tap a pirate ship to fire." : "Click an island to sail to it, or steer with A/D and W/S. Click a pirate ship (or press Space) to fire the cannons.", "#7af0ff"); } save(); } };
+  }
+  function seaSaveState() { var s = OCS && OCS.sea; if (!s) return; ocS().sea = { x: Math.round(s.x * 10) / 10, y: Math.round(s.y * 10) / 10, ang: Math.round(s.ang * 100) / 100 }; }
+  function seaDock() {   // back to Croaker's Pier
+    if (trans) return; stopInput(); trans = { t: 0, done: false, mid: function () { var o = ocS(); o.sea = null; o.boat.hp = 100; OCS.sea = null; OCS.diving = false; OCS.mode = "dock"; var pl = OCS.pl; pl.x = OCS.m.pier.slip - 1.5; pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; cam.x = pl.x; cam.y = pl.y - 3; ocHudO2(); ocBanner(); save(); } };
+  }
+  function seaDive(site) {   // dive at a site out at sea: the boat waits on the surface above you
+    if (trans) return; seaSaveState(); stopInput(); trans = { t: 0, done: false, mid: function () { OCS = null; ocBuild({ seed: site.seed, name: site.name }); S.st.sitedives = (S.st.sitedives || 0) + 1; var k = "s" + site.seed; ocS().isl[k] = 1; } };
+  }
+  function seaResume() {   // climb back aboard from a dive site
+    if (trans) return; stopInput(); trans = { t: 0, done: false, mid: function () { OCS = null; ocBuild(null); OCS.sea = seaNew(); OCS.diving = false; cam.x = OCS.sea.x; cam.y = OCS.sea.y; ocHudO2(); hud(); } };
+  }
+  var SEAK = function () { return Math.max(9, ts * 0.42); };   // pixels per chart unit
+  function seaToScreen(x, y) { var k = SEAK(); return [vw / 2 + (x - cam.x) * k, vh / 2 + (y - cam.y) * k]; }
+  function seaFromScreen(sx, sy) { var k = SEAK(); return [cam.x + (sx - vw / 2) / k, cam.y + (sy - vh / 2) / k]; }
+  function seaIslAt(x, y) { var I = seaIslands(); for (var i = 0; i < I.length; i++) if (Math.hypot(I[i].x - x, I[i].y - y) < I[i].r + 3) return I[i]; return null; }
+  function seaTap(sx, sy) {   // returns true if the tap was used
+    var s = OCS.sea, w = seaFromScreen(sx, sy), x = w[0], y = w[1];
+    for (var i = 0; i < s.ships.length; i++) { var sh = s.ships[i]; if (!sh.sink && Math.hypot(sh.x - x, sh.y - y) < 4) { seaFire(sh, true); return true; } }
+    var I = seaIslAt(x, y); if (I) { s.tgt = { x: I.x, y: I.y, isl: I }; thud(420, 0.03); if (!ocS().isl[I.id]) { ocS().isl[I.id] = 1; S.st.islands = Object.keys(ocS().isl).filter(function (k) { return /^\d+$/.test(k); }).length; } return true; }
+    for (var j = 0; j < OSITES.length; j++) if (Math.hypot(OSITES[j].x - x, OSITES[j].y - y) < 3) { s.tgt = { x: OSITES[j].x, y: OSITES[j].y, site: OSITES[j] }; return true; }
+    s.tgt = { x: x, y: y }; return true;
+  }
+  function seaFire(sh, manual) {
+    var s = OCS.sea; if (s.cd > 0) { if (manual) nag("The cannons are reloading..."); return; }
+    var d = Math.hypot(sh.x - s.x, sh.y - s.y); if (d > 26) { if (manual) nag("Out of range. Sail closer!"); return; }
+    s.cd = 1.5; var t = d / 22, tx = sh.x + Math.cos(sh.ang) * sh.sp * t, ty = sh.y + Math.sin(sh.ang) * sh.sp * t, a = Math.atan2(ty - s.y, tx - s.x);
+    s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a) * 22, vy: Math.sin(a) * 22, life: Math.min(1.6, t + 0.2), mine: 1 }); thud(70, 0.12); shake = Math.max(shake, 0.15);
+    for (var i = 0; i < 6; i++) s.wake.push({ x: s.x + Math.cos(a) * 1.5, y: s.y + Math.sin(a) * 1.5, life: 0.6, smoke: 1, vx: Math.cos(a) * 2 + (Math.random() - 0.5), vy: Math.sin(a) * 2 + (Math.random() - 0.5) });
+  }
+  function seaSpawnShip() {
+    var s = OCS.sea, a = Math.random() * 6.2832, d = 48 + Math.random() * 14, I = seaIslands(), cove = I.filter(function (q) { return q.kind === 3; }), near = cove.some(function (q) { return Math.hypot(q.x - s.x, q.y - s.y) < 120; });
+    var big = Math.random() < (near ? 0.4 : 0.15); s.ships.push({ x: clamp(s.x + Math.cos(a) * d, 8, SO.SEAW - 8), y: clamp(s.y + Math.sin(a) * d, 8, SO.SEAW - 8), ang: a + Math.PI, sp: 0, hp: big ? 6 : 3, hpm: big ? 6 : 3, big: big, cd: 2 + Math.random() * 2, side: Math.random() < 0.5 ? 1 : -1, hurt: 0, sink: 0, t: 0 });
+    if (!S.st.piratetip) { S.st.piratetip = 1; toast("Pirate sails! Swamp pirates are coming for your cargo. " + (coarse ? "Tap their ship" : "Click their ship or press Space") + " to fire back.", "#ff7a6a"); }
+  }
+  function seaHurt(n) {
+    var B = ocS().boat; B.hp = Math.max(0, (B.hp || 100) - n); shake = Math.max(shake, 0.5); thud(60, 0.14); OCS.sea.hurt = 0.4;
+    if (B.hp <= 0) { toast("The Lily Belle is holed! Old Croaker's friends tow you home.", "#ff7a6a"); var lost = Math.min(S.inv.doubloon || 0, 5); if (lost) { S.inv.doubloon -= lost; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); toast("The pirates got away with " + lost + " Doubloons.", "#ff9a5a"); } seaDock(); }
+  }
+  function seaLoot(sh) {
+    var L = [], R = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }, add = function (k, a, b, ch) { if (ITEMS[k] && Math.random() < (ch == null ? 1 : ch)) L.push([k, R(a, b)]); };
+    add("doubloon", sh.big ? 6 : 3, sh.big ? 12 : 6); add("canvas", 1, 3, 0.6); add("brass", 1, 3, 0.6); add("rope", 1, 2, 0.4); add("pearl", 1, 1, sh.big ? 0.6 : 0.25); add("blackpearl", 1, 1, sh.big ? 0.25 : 0.05); add("ironingot", 1, 3, 0.4); add("lampoil", 1, 2, 0.3); add("kelpwrap", 1, 2, 0.3);
+    return L;
+  }
+  function seaActions() {
+    var s = OCS.sea, A = [], I = seaIslands(), b = function (x, y) { return [x, y]; };
+    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
+    OSITES.forEach(function (st) { if (Math.hypot(st.x - s.x, st.y - s.y) < 4.5) A.push({ label: "Dive here", wx: st.x, wy: st.y - 3, fn: function () { seaDive(st); } }); });
+    return A;
+  }
+  function openIsle(Q) {   // islands: a card for now (landing parties come later)
+    var el = $("sbxStory"); if (!el) return; storyOpen = 220; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS.isleQ = Q;
+    var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0];
+    var h = '<div class="mo-box bo-box"><div class="mo-head"><canvas class="mo-cv" id="isCv" width="360" height="200" aria-hidden="true"></canvas><div><small>An island of the Brinebog Sea</small><h2>' + esc(Q.n) + '</h2><p class="mo-sub">' + esc(Q.d) + "</p></div></div>"
+      + '<p class="mo-msg">Old Croaker squints at the shore: “The tide\'s not right for a landing yet. Give it time.” Exploring islands on foot is coming in a later update. You can still dive the reef around it.</p>'
+      + '<div class="st-row">' + (site ? '<button type="button" class="btn mo-start" data-isle="dive">Dive ' + esc(site.name) + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Back to the helm</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
+    var cv = $("isCv"); if (cv) { var g = cv.getContext("2d"); g.fillStyle = "#2a8ac0"; g.fillRect(0, 0, 360, 200); var k0 = 9, save0 = [cam.x, cam.y]; g.save(); g.translate(180 - Q.x * k0, 100 - Q.y * k0); seaDrawIsland(g, Q, k0, performance.now(), 0, 0); g.restore(); }
+  }
+  function isleAct(a) { var Q = OCS && OCS.isleQ; if (!Q) return; if (a === "dive") { var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0]; closeStory(); if (site) seaDive(site); } }
+
+  // ---- update ----
+  function seaUpdate(dt) {
+    var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
+    var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1);
+    if (joy.x || joy.y) { s.tgt = null; var ja = Math.atan2(joy.y, joy.x), jd = Math.atan2(Math.sin(ja - s.ang), Math.cos(ja - s.ang)); s.ang += clamp(jd, -1, 1) * 2.2 * dt; want = maxSp * Math.min(1, Math.hypot(joy.x, joy.y)); }
+    else if (turn || thr) { if (turn || thr > 0) s.tgt = null; s.ang += turn * 1.9 * dt; want = thr > 0 ? maxSp : thr < 0 ? 0 : (s.tgt ? want : s.sp); if (!thr && !s.tgt) want = s.sp; }
+    if (s.tgt) {
+      var tx = s.tgt.x - s.x, ty = s.tgt.y - s.y, d = Math.hypot(tx, ty), stop = s.tgt.isl ? s.tgt.isl.r + 5 : s.tgt.site ? 1.5 : 1.2, ta = Math.atan2(ty, tx), da = Math.atan2(Math.sin(ta - s.ang), Math.cos(ta - s.ang));
+      s.ang += clamp(da, -1, 1) * 1.8 * dt; want = d < stop ? 0 : maxSp * clamp((d - stop) / 8, 0.25, 1) * (Math.abs(da) > 1.2 ? 0.4 : 1); if (d < stop) s.tgt = s.tgt.isl || s.tgt.site ? s.tgt : null;
+    }
+    s.sp = approach(s.sp, want, (want > s.sp ? 5 : 8) * dt);
+    var nx = s.x + Math.cos(s.ang) * s.sp * dt, ny = s.y + Math.sin(s.ang) * s.sp * dt, I = seaIslands(), blocked = false;
+    I.forEach(function (Q) { if (Math.hypot(Q.x - nx, Q.y - ny) < Q.r + 1.5) blocked = true; });
+    if (!blocked) { s.x = clamp(nx, 6, SO.SEAW - 6); s.y = clamp(ny, 6, SO.SEAW - 6); } else s.sp *= 0.3;
+    if (s.sp > 1 && Math.random() < dt * 30) { var bk = s.ang + Math.PI, side = Math.random() < 0.5 ? 1 : -1; s.wake.push({ x: s.x + Math.cos(bk) * 2.2 + Math.cos(bk + side * 1.57) * 0.5, y: s.y + Math.sin(bk) * 2.2 + Math.sin(bk + side * 1.57) * 0.5, vx: Math.cos(bk + side * 1.2) * 1.2, vy: Math.sin(bk + side * 1.2) * 1.2, life: 1.6 }); }
+    for (i = s.wake.length - 1; i >= 0; i--) { var w = s.wake[i]; w.life -= dt; w.x += w.vx * dt; w.y += w.vy * dt; w.vx *= 0.97; w.vy *= 0.97; if (w.life <= 0) s.wake.splice(i, 1); }
+    seaTrail(s, dt, 2.2);
+    // pirates
+    s.cd = Math.max(0, s.cd - dt); s.hurt = Math.max(0, (s.hurt || 0) - dt);
+    var homeD = Math.hypot(I[0].x - s.x, I[0].y - s.y); s.shipT -= dt; if (s.shipT <= 0) { var stm = wxStorm(); s.shipT = (22 + Math.random() * 20) * (1 - 0.45 * stm); if (s.ships.length < (stm > 0.5 ? 4 : 3) && homeD > 40) seaSpawnShip(); }
+    if (wxStorm() > 0.5 && !s.stormSaid) { s.stormSaid = 1; toast("A storm is rolling in. Pirates love bad weather: watch out!", "#ffb0a0"); } else if (wxStorm() < 0.1) s.stormSaid = 0;
+    var nearest = null, nd = 99;
+    for (i = s.ships.length - 1; i >= 0; i--) {
+      var sh = s.ships[i]; sh.t += dt; sh.hurt = Math.max(0, sh.hurt - dt);
+      if (sh.sink) { sh.sink += dt; if (sh.sink > 2.2) s.ships.splice(i, 1); continue; }
+      var dx = s.x - sh.x, dy = s.y - sh.y, dd = Math.hypot(dx, dy), aim2 = Math.atan2(dy, dx), goal = dd > 16 ? aim2 : aim2 + sh.side * 1.45, dA = Math.atan2(Math.sin(goal - sh.ang), Math.cos(goal - sh.ang));
+      sh.ang += clamp(dA, -1, 1) * 1.1 * dt; sh.sp = approach(sh.sp, dd > 70 ? 3 : 8.5, 3 * dt); var sx2 = sh.x + Math.cos(sh.ang) * sh.sp * dt, sy2 = sh.y + Math.sin(sh.ang) * sh.sp * dt, bl = false; I.forEach(function (Q) { if (Math.hypot(Q.x - sx2, Q.y - sy2) < Q.r + 2) bl = true; }); if (!bl) { sh.x = sx2; sh.y = sy2; } else sh.ang += dt * 2;
+      if (dd > 110) { s.ships.splice(i, 1); continue; }
+      sh.cd -= dt; if (sh.cd <= 0 && dd < 22) { sh.cd = (sh.big ? 2.2 : 3.2) * (1 - 0.3 * wxStorm()); var lt = dd / 16, lx = s.x + Math.cos(s.ang) * s.sp * lt * 0.7, ly = s.y + Math.sin(s.ang) * s.sp * lt * 0.7, la = Math.atan2(ly - sh.y, lx - sh.x) + (Math.random() - 0.5) * 0.12; s.balls.push({ x: sh.x, y: sh.y, vx: Math.cos(la) * 16, vy: Math.sin(la) * 16, life: Math.min(1.8, lt + 0.3), mine: 0, big: sh.big }); thud(90, 0.06); }
+      if (Math.random() < dt * 8) s.wake.push({ x: sh.x - Math.cos(sh.ang) * 2.4, y: sh.y - Math.sin(sh.ang) * 2.4, vx: 0, vy: 0, life: 1.2 });
+      seaTrail(sh, dt, sh.big ? 2.8 : 2.2);
+      if (dd < nd) { nd = dd; nearest = sh; }
+    }
+    if ((keys.j || tk.j) && nearest && s.cd <= 0) seaFire(nearest, false);
+    if (nearest && nd < 18 && s.cd <= 0 && s.auto !== false) seaFire(nearest, false);   // the deckhand frog fires the cannons when pirates come close
+    for (i = s.balls.length - 1; i >= 0; i--) {
+      var b = s.balls[i]; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; var hit = false;
+      if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2)) { hit = true; sh2.hp--; sh2.hurt = 0.3; for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
+        if (sh2.hp <= 0) { sh2.sink = 0.01; S.st.pships = (S.st.pships || 0) + 1; s.loot.push({ x: sh2.x, y: sh2.y, items: seaLoot(sh2), t: 0 }); snd("coin"); toast(sh2.big ? "You sank a pirate galleon! Its cargo is floating free." : "Pirate sloop sunk! Sail over the floating crate to grab its cargo.", "#7af0ff"); } } });
+      else if (Math.hypot(s.x - b.x, s.y - b.y) < 2) { hit = true; seaHurt(b.big ? 16 : 11); for (var q2 = 0; q2 < 8; q2++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); }
+      if (hit || b.life <= 0) { if (!hit) { for (var q3 = 0; q3 < 4; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); waterSplash(b.x, b.y, b.big ? 1.6 : 1.2, 1); } s.balls.splice(i, 1); }
+    }
+    for (i = s.loot.length - 1; i >= 0; i--) { var L = s.loot[i]; L.t += dt; if (Math.hypot(L.x - s.x, L.y - s.y) < 3) { L.items.forEach(function (it) { give(it[0], it[1], undefined, undefined, true); texts.push({ s: "+" + it[1] + " " + ITEMS[it[0]].n, x: cam.x, y: cam.y - 1 - texts.length * 0.4, c: "#ffd23f", life: 1.6 }); }); s.loot.splice(i, 1); snd("coin"); } else if (L.t > 90) s.loot.splice(i, 1); }
+    if (s.gulls.length < 4 && Math.random() < dt * 0.3) s.gulls.push({ x: s.x + (Math.random() - 0.5) * 60, y: s.y + (Math.random() - 0.5) * 40, a: Math.random() * 6.28, t: 0, life: 20 });
+    for (i = s.gulls.length - 1; i >= 0; i--) { var gu = s.gulls[i]; gu.t += dt; gu.life -= dt; gu.a += Math.sin(gu.t * 0.6) * dt * 0.8; gu.x += Math.cos(gu.a) * 7 * dt; gu.y += Math.sin(gu.a) * 7 * dt; if (gu.life <= 0) s.gulls.splice(i, 1); }
+    // ticks shared with the dive scene
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt);
+    drawHp(); tickHunger(dt); tickFx(dt); tickBounties(dt);
+    cam.x += (s.x + Math.cos(s.ang) * s.sp * 0.6 - cam.x) * Math.min(1, dt * 4); cam.y += (s.y + Math.sin(s.ang) * s.sp * 0.6 - cam.y) * Math.min(1, dt * 4);
+    for (var tI = texts.length - 1; tI >= 0; tI--) { texts[tI].life -= dt; texts[tI].y -= dt * 0.9; if (texts[tI].life <= 0) texts.splice(tI, 1); }
+    s.saveT += dt; if (s.saveT > 4) { s.saveT = 0; seaSaveState(); }
+    msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
+    hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); }
+    saveT += dt * 1000; if (saveT >= SAVE_MS) { saveT = 0; save(); }
+  }
+
+  // ---- drawing ----
+  var SEASUN = null;
+  function seaTrail(o, dt, back) {   // the points a hull's stern has passed through, for its wake (o.trl: x, y, heading, age, speed)
+    var L = o.trl || (o.trl = []), i; for (i = L.length - 1; i >= 0; i--) { L[i].t += dt; if (L[i].t > 2.4) L.splice(i, 1); }
+    o.trT = (o.trT || 0) - dt; if (o.trT <= 0 && (o.sp || 0) > 0.6) { o.trT = 0.08; L.unshift({ x: o.x - Math.cos(o.ang) * back, y: o.y - Math.sin(o.ang) * back, a: o.ang, t: 0, sp: o.sp }); }
+    if (L.length > 40) L.length = 40;
+  }
+  function seaBoatTop(g, x, y, ang, k, now, o) {   // the Lily Belle from above (o.pirate draws a pirate sloop instead)
+    o = o || {}; g.save(); g.translate(x, y); g.rotate(ang); var pir = o.pirate, big = o.big, L = (big ? 3.4 : 2.6) * k, Wd = (big ? 1.5 : 1.15) * k, rock = reduce ? 0 : Math.sin(now / (500 - wxStorm() * 180) + (o.ph || 0)) * 0.04 * (1 + wxStorm() * 3);   // storms toss the boats about
+    g.rotate(rock); var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, svx = ssn.sx * ssn.len * 0.9 * k, svy = (0.3 + 0.25 * ssn.len) * k, th = -(ang + rock), sdx = svx * Math.cos(th) - svy * Math.sin(th), sdy = svx * Math.sin(th) + svy * Math.cos(th);   // the shadow falls away from the sun, whichever way the boat points
+    g.fillStyle = "rgba(0,20,40," + (0.12 + ssn.a).toFixed(3) + ")"; g.beginPath(); g.ellipse(sdx, sdy, L * 1.02, Wd * 1.05, 0, 0, 6.2832); g.fill();
+    var hull = function () { g.beginPath(); g.moveTo(L, 0); g.quadraticCurveTo(L * 0.55, -Wd, -L * 0.2, -Wd); g.lineTo(-L * 0.9, -Wd * 0.78); g.quadraticCurveTo(-L * 1.02, 0, -L * 0.9, Wd * 0.78); g.lineTo(-L * 0.2, Wd); g.quadraticCurveTo(L * 0.55, Wd, L, 0); g.closePath(); };
+    hull(); g.fillStyle = o.hurt ? "#ffffff" : pir ? "#3a2418" : "#7a4a2a"; g.fill(); g.save(); hull(); g.clip();
+    var deckIn = 0.16 * k; g.fillStyle = pir ? "#5a3a24" : "#b8844a"; g.beginPath(); g.ellipse(-L * 0.05, 0, L * 0.86, Wd - deckIn, 0, 0, 6.2832); g.fill();
+    g.strokeStyle = pir ? "rgba(0,0,0,.35)" : "rgba(80,40,20,.35)"; g.lineWidth = Math.max(1, k * 0.05); for (var pl2 = -2; pl2 <= 2; pl2++) { g.beginPath(); g.moveTo(-L, pl2 * Wd * 0.3); g.lineTo(L, pl2 * Wd * 0.3); g.stroke(); }
+    g.restore(); g.strokeStyle = pir ? "#1a1008" : "#4a2e18"; g.lineWidth = Math.max(1, k * 0.09); hull(); g.stroke();
+    if (!pir) { g.fillStyle = "#4ee6b4"; for (var q = 0; q < 4; q++) { g.beginPath(); g.arc((-0.6 + q * 0.4) * L, -Wd * 0.92, k * 0.09, 0, 6.2832); g.arc((-0.6 + q * 0.4) * L, Wd * 0.92, k * 0.09, 0, 6.2832); g.fill(); } }
+    // cannons on each side
+    g.fillStyle = "#2a2a30"; [-0.3, 0.25].forEach(function (cx) { g.fillRect(cx * L - k * 0.12, -Wd - k * 0.18, k * 0.24, k * 0.3); g.fillRect(cx * L - k * 0.12, Wd - k * 0.12, k * 0.24, k * 0.3); });
+    // mast and sail (seen from above: the sail is a big leaf that swings with the wind)
+    var sw = reduce ? 0 : Math.sin(now / 900 + (o.ph || 0)) * 0.12;
+    g.save(); g.translate(L * 0.05, 0); g.rotate(1.57 + sw);
+    if (pir) { g.fillStyle = "#1a1420"; g.beginPath(); g.moveTo(-Wd * 1.5, 0); g.quadraticCurveTo(0, -k * 2.3, Wd * 1.5, 0); g.quadraticCurveTo(0, -k * 0.6, -Wd * 1.5, 0); g.fill(); g.fillStyle = "#e8d9a8"; g.beginPath(); g.arc(0, -k * 0.85, k * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#1a1420"; g.fillRect(-k * 0.16, -k * 0.92, k * 0.1, k * 0.1); g.fillRect(k * 0.06, -k * 0.92, k * 0.1, k * 0.1); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(-k * 0.2, -k * 1.12, k * 0.08, 0, 6.2832); g.arc(k * 0.2, -k * 1.12, k * 0.08, 0, 6.2832); g.fill(); }
+    else { g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(-Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 2.5, Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 0.7, -Wd * 1.55, 0); g.fill(); g.fillStyle = "#58b85a"; g.beginPath(); g.moveTo(-Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 2.2, Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 0.8, -Wd * 1.35, -k * 0.08); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.ellipse(-Wd * 0.4, -k * 0.95, k * 0.35, k * 0.12, -0.3, 0, 6.2832); g.fill(); g.strokeStyle = "#2f7a3a"; g.lineWidth = Math.max(1, k * 0.05); for (var v = -2; v <= 2; v++) { g.beginPath(); g.moveTo(0, -k * 0.5); g.lineTo(v * Wd * 0.5, -k * 0.85 + Math.abs(v) * k * 0.15); g.stroke(); } }
+    g.restore(); g.fillStyle = pir ? "#2a1a10" : "#5a3a1e"; g.beginPath(); g.arc(L * 0.05, 0, k * 0.16, 0, 6.2832); g.fill();
+    if (pir) { g.fillStyle = "#c83a3a"; g.beginPath(); g.moveTo(L * 0.05, 0); g.lineTo(L * 0.05 - k * (0.9 + Math.sin(now / 200) * 0.1), -k * 0.15); g.lineTo(L * 0.05 - k * 0.8, k * 0.12); g.closePath(); g.fill(); }
+    else { // the frog figurehead and the wheel
+      g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(L * 0.92, 0, k * 0.24, 0, 6.2832); g.fill(); g.fillStyle = "#fff6c0"; g.beginPath(); g.arc(L * 0.95, -k * 0.14, k * 0.1, 0, 6.2832); g.arc(L * 0.95, k * 0.14, k * 0.1, 0, 6.2832); g.fill();
+      g.strokeStyle = "#c98c4f"; g.lineWidth = Math.max(1, k * 0.07); g.beginPath(); g.arc(-L * 0.62, 0, k * 0.26, 0, 6.2832); g.stroke();
+      if (o.lit) { var lg = g.createRadialGradient(L * 0.8, 0, 0, L * 0.8, 0, k * 4); lg.addColorStop(0, "rgba(255,226,122,.35)"); lg.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = lg; g.fillRect(L * 0.8 - k * 4, -k * 4, k * 8, k * 8); }
+    }
+    if (o.sink) { g.fillStyle = "rgba(20,80,120," + Math.min(0.85, o.sink / 2) + ")"; hull(); g.fill(); }
+    g.restore();
+  }
+  function seaDrawIsland(g, Q, k, now, cx0, cy0) {   // in chart units scaled by k, drawn at (Q.x, Q.y) in the current transform
+    var x = Q.x * k, y = Q.y * k, r = Q.r * k, n = 18, pts = [], i;
+    for (i = 0; i < n; i++) { var a = i / n * 6.2832, rr = r * (0.82 + SW.hash(Q.id, i, 41) * 0.3); pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.86]); }
+    var poly = function (sc2, dx, dy) {   // a smooth blob through the points
+      var P = pts.map(function (p2) { return [x + (p2[0] - x) * sc2 + (dx || 0), y + (p2[1] - y) * sc2 + (dy || 0)]; }), L = P.length; g.beginPath(); g.moveTo((P[L - 1][0] + P[0][0]) / 2, (P[L - 1][1] + P[0][1]) / 2);
+      for (var j = 0; j < L; j++) { var a2 = P[j], b2 = P[(j + 1) % L]; g.quadraticCurveTo(a2[0], a2[1], (a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2); } g.closePath(); };
+    var sh = g.createRadialGradient(x, y, r * 0.6, x, y, r * 2.1); sh.addColorStop(0, "rgba(120,230,220,.75)"); sh.addColorStop(1, "rgba(120,230,220,0)"); g.fillStyle = sh; g.fillRect(x - r * 2.2, y - r * 2.2, r * 4.4, r * 4.4);
+    var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, isx = ssn.sx * ssn.len * 0.9 * k * 1.4, isy = (0.3 + 0.25 * ssn.len) * k * 1.4;
+    poly(1.04, isx, isy); g.fillStyle = "rgba(0,24,44," + (0.1 + ssn.a * 0.7).toFixed(3) + ")"; g.fill();   // the island's shadow on the water
+    var foam = reduce ? 0 : Math.sin(now / 700 + Q.id) * 0.03; poly(1.12 + foam); g.fillStyle = "rgba(255,255,255,.55)"; g.fill();
+    var K = Q.kind, sand = K === 1 ? "#3a3236" : K === 2 ? "#dfe8ee" : "#e8d29a", land = K === 1 ? "#4a3a3a" : K === 2 ? "#f6fbff" : K === 3 ? "#5a7a4a" : "#5aa24a", land2 = K === 1 ? "#2a2024" : K === 2 ? "#bcd6e8" : K === 3 ? "#3a5a32" : "#3f8a3a";
+    poly(1); g.fillStyle = sand; g.fill(); poly(0.74, 0, -r * 0.04); g.fillStyle = land; g.fill(); poly(0.45, -r * 0.05, -r * 0.1); g.fillStyle = land2; g.fill();
+    if (ssn.a > 0.02) { var lgx = -ssn.sx * r, lsh = g.createLinearGradient(x + lgx, y - r * 0.8, x - lgx, y + r * 0.8); lsh.addColorStop(0, "rgba(255,246,214," + (ssn.a * 0.6).toFixed(3) + ")"); lsh.addColorStop(0.5, "rgba(255,246,214,0)"); lsh.addColorStop(1, "rgba(0,20,36," + (ssn.a * 0.9).toFixed(3) + ")"); poly(1); g.fillStyle = lsh; g.fill(); }   // the sunny side and the shady side
+    if (Q.pier) { g.fillStyle = "#8a5a32"; g.fillRect(x - r * 0.1, y + r * 0.5, r * 0.2, r * 1.2); g.fillStyle = "#6a4426"; g.fillRect(x - r * 0.35, y + r * 1.5, r * 0.7, r * 0.18); g.fillStyle = "#c28a52"; g.fillRect(x - r * 0.3, y - r * 0.3, r * 0.6, r * 0.45); g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(x - r * 0.4, y - r * 0.3); g.lineTo(x, y - r * 0.65); g.lineTo(x + r * 0.4, y - r * 0.3); g.fill(); }
+    else if (K === 1) { g.fillStyle = "#1a1416"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#ff7a2a"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.14, 0, 6.2832); g.fill(); if (!reduce) for (i = 0; i < 4; i++) { var st = ((now / 1000 * 0.4 + i / 4) % 1); g.fillStyle = "rgba(200,200,210," + (0.5 * (1 - st)) + ")"; g.beginPath(); g.arc(x + st * r * 0.6, y - r * 0.2 - st * r * 0.9, r * (0.12 + st * 0.25), 0, 6.2832); g.fill(); } }
+    else if (K === 2) { g.fillStyle = "#9ac8e8"; g.beginPath(); g.moveTo(x - r * 0.3, y); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.3, y); g.fill(); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(x - r * 0.12, y - r * 0.4); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.12, y - r * 0.4); g.fill(); }
+    else if (K === 3) { g.fillStyle = "#e8d9a8"; g.beginPath(); g.arc(x + r * 0.15, y - r * 0.1, r * 0.25, 0, 6.2832); g.fill(); g.fillStyle = "#14181c"; g.beginPath(); g.arc(x + r * 0.06, y - r * 0.15, r * 0.07, 0, 6.2832); g.arc(x + r * 0.24, y - r * 0.15, r * 0.07, 0, 6.2832); g.fill(); g.fillStyle = "#4a2e18"; g.fillRect(x - r * 0.4, y - r * 0.75, r * 0.06, r * 0.6); g.fillStyle = "#14181c"; g.fillRect(x - r * 0.34, y - r * 0.75, r * 0.4, r * 0.25); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(x - r * 0.14, y - r * 0.62, r * 0.06, 0, 6.2832); g.fill(); }
+    else for (i = 0; i < 3; i++) { var tx = x + (SW.hash(Q.id, i, 9) - 0.5) * r * 0.9, ty = y + (SW.hash(Q.id, i, 10) - 0.5) * r * 0.6; g.fillStyle = "#2f6a2a"; for (var f = 0; f < 5; f++) { var fa = f / 5 * 6.2832 + Q.id; g.beginPath(); g.ellipse(tx + Math.cos(fa) * r * 0.12, ty + Math.sin(fa) * r * 0.12, r * 0.14, r * 0.05, fa, 0, 6.2832); g.fill(); } g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(tx, ty, r * 0.04, 0, 6.2832); g.fill(); }
+  }
+  function seaRender(now) {
+    var sc = OCS, s = sc.sea, g = ctx, k = SEAK(), t = now / 1000, dl = daylight(S.time), I = seaIslands(), i;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = true; actBtn = null; sc.btns = [];
+    var dk = 0.45 + 0.55 * dl, sun = SEASUN = sunState(S.time), wst = wxStorm(), wrn = wxN(); sun.a *= 1 - 0.85 * wrn; var wc0 = [28 * dk, 112 * dk, 170 * (0.6 + 0.4 * dk)], day2 = sun.up ? clamp(sun.e * 3, 0, 1) : 0;
+    // the sky's reflection: the water is a shade brighter (and warmer, with the sun low) on the sun's side (one gradient fill, no extra pass)
+    var shx2 = sun.sx > 0 ? vw * 0.15 : vw * 0.85, shy2 = vh * 0.3, shR = Math.max(vw, vh) * 0.8, wc1 = sun.up ? mixC(wc0, sun.warm > 0.15 ? [255, 196, 140] : [200, 240, 255], 0.2 * day2 + 0.34 * sun.warm) : mixC(wc0, [190, 205, 255], 0.1 * clamp(sun.e * 3, 0, 1));
+    g.fillStyle = ocRgb(mixC(wc0, wc1, 0.5)); g.fillRect(0, 0, vw, vh);   // one flat fill (a full-screen gradient is costly on phones): the water takes a little of the sky's colour
+    if (!liteFx()) {   // glitter that dances where the light hits the waves
+      g.save();
+      var gN = lowq ? 40 : 110; for (i = 0; i < gN; i++) { var gxs = SW.hash(i, 5, 71) * vw, gys = SW.hash(i, 6, 71) * vh, dd2 = Math.hypot(gxs - shx2, (gys - shy2) * 1.3) / shR, gk2 = Math.sin(t * (2 + SW.hash(i, 7, 71) * 3) + i) ; if (gk2 < 0.55 || dd2 > 1) continue;
+        g.globalAlpha = (gk2 - 0.55) * 2.2 * (1 - dd2) * (sun.up ? 0.9 : 0.5); g.fillStyle = sun.up ? (sun.warm > 0.15 ? "#ffe2b0" : "#ffffff") : "#dfe6ff"; g.fillRect(gxs - k * 0.25, gys, k * 0.5, Math.max(1.5, k * 0.08)); }
+      g.restore();
+    }
+    var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
+    g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
+    var x0 = cam.x - vw / 2 / k - 4, x1 = cam.x + vw / 2 / k + 4, y0 = cam.y - vh / 2 / k - 4, y1 = cam.y + vh / 2 / k + 4, G = 7;
+    g.strokeStyle = "rgba(255,255,255," + (0.14 + 0.08 * dl) + ")"; g.lineWidth = Math.max(1, k * 0.1); g.lineCap = "round";   // little wave marks
+    // wave crests: each one rises, rolls a little way downwind and sinks again (it fades in and out, so none of them pop), with the
+    // darker trough just behind it; bigger, slower swells under small quick ripples
+    var wcol = g.strokeStyle, tcol = "rgba(0,34,70," + (0.1 + 0.06 * dl) + ")";
+    for (var gx = Math.floor(x0 / G) * G; gx < x1; gx += G) for (var gy = Math.floor(y0 / G) * G; gy < y1; gy += G) {
+      var h1 = SW.hash(gx, gy, 3), h2 = SW.hash(gx, gy, 4), big2 = h2 > 0.62 - wst * 0.3, per = (big2 ? 6.5 : 3.6) / (1 + wst * 0.8), ph = reduce ? 0.5 : ((t / per + h1) % 1), rise = Math.sin(ph * Math.PI), sm = rise * rise * (3 - 2 * rise);
+      var wx = gx + h1 * G + ph * (big2 ? 1.6 : 1.0), wy = gy + h2 * G + Math.sin(ph * Math.PI) * 0.15, ln = (big2 ? 1.3 : 0.7) * (0.55 + 0.45 * sm) * (1 + wst * 0.8), cv2 = (big2 ? 0.55 : 0.35) * (0.6 + 0.4 * sm) * (1 + wst * 0.9);   // storms raise bigger, quicker seas
+      g.globalAlpha = sm * (big2 ? 0.9 : 0.75); g.strokeStyle = tcol; g.lineWidth = Math.max(1, k * (big2 ? 0.16 : 0.1)); g.beginPath(); g.moveTo((wx - ln) * k, (wy + 0.28) * k); g.quadraticCurveTo(wx * k, (wy + 0.28 - cv2) * k, (wx + ln) * k, (wy + 0.28) * k); g.stroke();
+      g.strokeStyle = wcol; g.lineWidth = Math.max(1, k * (big2 ? 0.13 : 0.09)); g.beginPath(); g.moveTo((wx - ln) * k, wy * k); g.quadraticCurveTo(wx * k, (wy - cv2) * k, (wx + ln) * k, wy * k); g.stroke();
+    }
+    g.globalAlpha = 1;
+    // wakes: two lines of foam peeling away from each hull in a V, widening and fading as they fall behind
+    var wakeV = function (trl) { if (!trl || trl.length < 2) return; [1, -1].forEach(function (sd) { for (var q = 1; q < trl.length; q++) { var A2 = trl[q - 1], B2 = trl[q], sa = A2.sp || 1, spA = 0.5 + A2.t * 1.15, spB = 0.5 + B2.t * 1.15, pa = A2.a + Math.PI / 2, pb = B2.a + Math.PI / 2;
+      g.globalAlpha = clamp((1 - A2.t / 2.4) * 0.8 * Math.min(1, sa / 4), 0, 0.8); g.strokeStyle = "#f2fcff"; g.lineWidth = Math.max(1, k * (0.22 - A2.t * 0.06)); g.beginPath(); g.moveTo((A2.x + Math.cos(pa) * spA * sd) * k, (A2.y + Math.sin(pa) * spA * sd) * k); g.lineTo((B2.x + Math.cos(pb) * spB * sd) * k, (B2.y + Math.sin(pb) * spB * sd) * k); g.stroke(); } });
+      for (var q2 = 1; q2 < trl.length; q2++) { var C2 = trl[q2]; g.globalAlpha = clamp((1 - C2.t / 1.6) * 0.3 * Math.min(1, (C2.sp || 1) / 4), 0, 0.3); g.fillStyle = "#e8f8ff"; g.beginPath(); g.ellipse(C2.x * k, C2.y * k, k * (0.35 + C2.t * 0.5), k * (0.25 + C2.t * 0.3), C2.a, 0, 6.2832); g.fill(); }   // churned water down the middle
+      g.globalAlpha = 1; };
+    if (!reduce) { wakeV(s.trl); s.ships.forEach(function (sh) { wakeV(sh.trl); }); }
+    if (s.x < 60 || s.y < 60 || s.x > SO.SEAW - 60 || s.y > SO.SEAW - 60) { g.fillStyle = "rgba(220,235,245,.5)"; [[-200, -200, 206, SO.SEAW + 400], [SO.SEAW - 6, -200, 206, SO.SEAW + 400], [-200, -200, SO.SEAW + 400, 206], [-200, SO.SEAW - 6, SO.SEAW + 400, 206]].forEach(function (r) { var ax = Math.max(r[0], x0), ay = Math.max(r[1], y0), bx2 = Math.min(r[0] + r[2], x1), by2 = Math.min(r[1] + r[3], y1); if (bx2 > ax && by2 > ay) g.fillRect(ax * k, ay * k, (bx2 - ax) * k, (by2 - ay) * k); }); }   // PERF: only the part of the edge fog that is on screen
+    I.forEach(function (Q) { if (Q.x + Q.r * 2.2 < x0 || Q.x - Q.r * 2.2 > x1 || Q.y + Q.r * 2.2 < y0 || Q.y - Q.r * 2.2 > y1) return; seaDrawIsland(g, Q, k, now); });
+    OSITES.forEach(function (st) { if (st.x < x0 || st.x > x1 || st.y < y0 || st.y > y1) return; var bx = st.x * k, by = st.y * k, bob = reduce ? 0 : Math.sin(t * 2 + st.seed) * k * 0.1;
+      g.strokeStyle = "rgba(232,251,255,.5)"; g.lineWidth = Math.max(1, k * 0.08); for (var q = 0; q < 3; q++) { var ph2 = (t * 0.5 + q / 3) % 1; g.globalAlpha = 1 - ph2; g.beginPath(); g.arc(bx, by, k * (0.4 + ph2 * 1.6), 0, 6.2832); g.stroke(); } g.globalAlpha = 1;
+      g.fillStyle = "#e84a3a"; g.beginPath(); g.arc(bx, by + bob, k * 0.4, 0, 6.2832); g.fill(); g.fillStyle = "#ffffff"; g.fillRect(bx - k * 0.4, by + bob - k * 0.08, k * 0.8, k * 0.16); g.fillStyle = st.wreck ? "#c9a52a" : "#4ee6b4"; g.beginPath(); g.arc(bx, by + bob - k * 0.55, k * 0.14, 0, 6.2832); g.fill(); });
+    s.loot.forEach(function (L) { var bx = L.x * k, by = L.y * k + (reduce ? 0 : Math.sin(t * 3 + L.x) * k * 0.15); g.fillStyle = "rgba(255,210,63,.25)"; g.beginPath(); g.arc(bx, by, k * 1.4, 0, 6.2832); g.fill(); g.fillStyle = "#8a5a32"; g.fillRect(bx - k * 0.55, by - k * 0.45, k * 1.1, k * 0.9); g.fillStyle = "#c9a52a"; g.fillRect(bx - k * 0.55, by - k * 0.08, k * 1.1, k * 0.16); });
+    s.wake.forEach(function (w) { var a = clamp(w.life / 1.6, 0, 1); if (w.fire) { g.fillStyle = "rgba(255," + (140 + Math.random() * 80 | 0) + ",60," + a * 2 + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * 0.3, 0, 6.2832); g.fill(); return; } if (w.smoke) { g.fillStyle = "rgba(220,220,230," + a + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * (0.6 - a * 0.3), 0, 6.2832); g.fill(); return; } g.fillStyle = "rgba(255,255,255," + (a * (w.spl ? 0.9 : 0.55)) + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * (0.25 + (1 - a) * 0.5), 0, 6.2832); g.fill(); });
+    if (s.tgt) { var px = s.tgt.x * k, py = s.tgt.y * k, pu = 1 + Math.sin(t * 5) * 0.1; g.strokeStyle = "rgba(255,226,122,.8)"; g.lineWidth = 2; g.setLineDash([k * 0.4, k * 0.4]); g.beginPath(); g.moveTo(s.x * k, s.y * k); g.lineTo(px, py); g.stroke(); g.setLineDash([]); if (!s.tgt.isl) { g.beginPath(); g.arc(px, py, k * 0.8 * pu, 0, 6.2832); g.stroke(); } }
+    s.ships.forEach(function (sh) { seaBoatTop(g, sh.x * k, sh.y * k, sh.ang, k, now, { pirate: 1, big: sh.big, hurt: sh.hurt > 0 && Math.floor(now / 70) % 2 === 0, sink: sh.sink, ph: sh.x }); if (!sh.sink && sh.hp < sh.hpm) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sh.x * k - k * 1.5, sh.y * k - k * 2.6, k * 3, 4); g.fillStyle = "#ff6a6a"; g.fillRect(sh.x * k - k * 1.5, sh.y * k - k * 2.6, k * 3 * sh.hp / sh.hpm, 4); } });
+    seaBoatTop(g, s.x * k, s.y * k, s.ang, k, now, { lit: dl < 0.7, hurt: s.hurt > 0 && Math.floor(now / 70) % 2 === 0 });
+    s.balls.forEach(function (b) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = "#1a1a20"; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
+    s.gulls.forEach(function (gu) { var fl = Math.sin(gu.t * 9) * 0.5, gx2 = gu.x * k, gy2 = gu.y * k; g.strokeStyle = "#ffffff"; g.lineWidth = Math.max(1.5, k * 0.12); g.beginPath(); g.moveTo(gx2 - k * 0.7, gy2 - fl * k * 0.3); g.quadraticCurveTo(gx2 - k * 0.3, gy2 - k * 0.3, gx2, gy2); g.quadraticCurveTo(gx2 + k * 0.3, gy2 - k * 0.3, gx2 + k * 0.7, gy2 - fl * k * 0.3); g.stroke(); });
+    g.restore(); drawWaterFx(g, vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy, k); g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
+    // island names
+    g.font = "800 " + Math.max(12, Math.round(k * 1.1)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,20,40,.7)"; g.lineJoin = "round";
+    I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); });
+    g.restore();
+    // the time of day over the sea: graded like the homestead, with pools of light from your lantern, pirate lanterns, the pier and the fire isles
+    var snk = clamp((0.92 - dl) / 0.62, 0, 1), SLI = [];
+    if (snk > 0) { var bp = seaToScreen(s.x, s.y); SLI.push([bp[0], bp[1], k * 10, "255,214,130", snk * 0.95, 0.35]);
+      s.ships.forEach(function (sh) { if (sh.sink) return; var q = seaToScreen(sh.x, sh.y); SLI.push([q[0], q[1], k * 7, "255,150,90", snk * 0.8, 0.35]); });
+      I.forEach(function (Q) { if (!Q.pier && Q.kind !== 1) return; var q = seaToScreen(Q.x, Q.y); SLI.push([q[0], q[1], k * Q.r * (Q.pier ? 2.4 : 2.8), Q.pier ? "255,206,130" : "255,120,60", snk * 0.85, 0.3]); }); }
+    var sov = gradeOv(S.time); sceneLight(g, wxOv({ c: sov.c, a: sov.a * (0.55 + 0.45 * snk) }), SLI);
+    if (wrn > 0.02) { var sox = vw / 2 - cam.x * k + shx, soy = vh / 2 - cam.y * k + shy;
+      rainStreaks(g, now, wrn, wst, function (sx, sy) { var wx = (sx - sox) / k, wy = (sy - soy) / k; if (I.some(function (Q) { return Math.hypot(Q.x - wx, Q.y - wy) < Q.r; })) rainPip(wx, wy, 1); else waterRing(wx, wy, 0.03, 1, 0.7); }, function () { return [Math.random() * vw, Math.random() * (vh + 40) - 20]; });
+      drawBoltScr(g, 0, vh * 0.7); } else if (WX.flash > 0 || WX.bolt) drawBoltScr(g, 0, vh * 0.7); if (snk > 0) sceneGlow(g, SLI, snk);
+    // off-screen pointers: home, the target, and pirates
+    var arrow = function (wx, wy, col, lbl) { var p2 = seaToScreen(wx, wy); if (p2[0] > 20 && p2[0] < vw - 20 && p2[1] > 70 && p2[1] < vh - 20) return; var a = Math.atan2(p2[1] - vh / 2, p2[0] - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 26, vw - 26), ey = clamp(vh / 2 + Math.sin(a) * vh, 84, vh - 30); g.save(); g.translate(ex, ey); g.rotate(a); g.fillStyle = col; g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, -8); g.lineTo(-6, 8); g.closePath(); g.fill(); g.restore(); if (lbl) { g.font = "800 11px Nunito, system-ui, sans-serif"; g.fillStyle = col; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.strokeText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); g.fillText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); } };
+    arrow(I[0].x, I[0].y, "#ffd23f", "Pier"); if (s.tgt && s.tgt.isl) arrow(s.tgt.x, s.tgt.y, "#e8fbff", ""); s.ships.forEach(function (sh) { if (!sh.sink) arrow(sh.x, sh.y, "#ff6a5a", ""); });
+    // hull bar
+    var B = ocS().boat, hw = Math.min(180, vw * 0.36), hx = vw - hw - 22, hy = 132; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx - 8, hy - 18, hw + 16, 34, 10); g.fill();
+    g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = "#e8fbff"; g.fillText("Lily Belle hull", hx, hy - 4); g.textAlign = "right"; g.fillText(Math.round(B.hp || 100) + "%", hx + hw, hy - 4); g.textAlign = "center";
+    g.fillStyle = "rgba(255,255,255,.15)"; g.fillRect(hx, hy + 2, hw, 7); g.fillStyle = (B.hp || 100) > 40 ? "#4fd0e8" : "#ff6a5a"; g.fillRect(hx, hy + 2, hw * (B.hp || 100) / 100, 7);
+    if (s.cd > 0) { g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx, hy + 11, hw * (1 - s.cd / 1.5), 2); }
+    g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)";
+    texts.forEach(function (tx) { var p3 = seaToScreen(tx.x, tx.y); g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, p3[0], p3[1]); g.fillText(tx.s, p3[0], p3[1]); }); g.globalAlpha = 1;
+    if (!panelOpen && !trans) { seaActions().forEach(function (a, n) { var p4 = seaToScreen(a.wx, a.wy); ocPill(g, now, a.label, p4[0], p4[1] - n * 40, a.fn); }); }
+    if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.globalAlpha = 1; }
+  }
+  function ocTick(dt) { if (OCS.sea) seaUpdate(dt); else ocUpdate(dt); }
+  function ocDraw(now) { if (OCS.sea) seaRender(now); else ocRender(now); }
+  function ocTap(e) {   // a tap in the ocean: the pills first, then the sea chart
+    var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, pd = e.pointerType === "mouse" ? 4 : 12, B = OCS.btns || [];
+    for (var i = B.length - 1; i >= 0; i--) { var b = B[i]; if (x >= b.x - pd && x <= b.x + b.w + pd && y >= b.y - pd && y <= b.y + b.h + pd) { b.fn(); return true; } }
+    if (OCS.sea) return seaTap(x, y);
+    return false;
+  }
+
+
+  // ---------- THE OLD VOLCANO: the Ember Bog's volcano craters are long cold. A vent in each crater floor leads down into its lava tubes ----------
+  // Floors come from SbxCave.genVolcano (the cave engine, with its own look, deeper ores and magma cracks that burn). Leaving puts you back in the crater.
+  function volcanoes() { return (world.feats || []).filter(function (f) { return f.k === "volcano" && f.vx !== undefined; }).map(function (f) { return { x: f.x + f.vx + 0.5, y: f.vy, f: f }; }); }
+  function ventNear() { if (cave || (typeof OCS !== "undefined" && OCS) || !SC || !SC.genVolcano) return null; var V = volcanoes(); for (var i = 0; i < V.length; i++) if (Math.abs(p.x - V[i].x) < 3 && Math.abs(p.y - V[i].y) < 3.5) return V[i]; return null; }
+  function enterVolcano(v) {
+    if (!v || cave || trans || sleepT > 0 || hp <= 0) return;
+    if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
+    stopInput(); thud(90, 0.12);
+    trans = { t: 0, done: false, mid: function () {
+      cave = { hole: { x: Math.floor(v.x), y: Math.floor(v.y) - 1, b: 1 }, volc: 1, run: ((Math.floor(v.x) * 2654435761) ^ (S.seed | 0)) | 0 || 7, floors: {}, f: 0, F: null };
+      S.st.volc = (S.st.volc || 0) + 1; enemies.length = 0; stageEl.classList.add("cave"); $("sbxHint").classList.remove("on");
+      setFloor(1, "down"); save();
+      if (!S.st.volctip) { S.st.volctip = 1; toast("The Old Volcano. Its lava cooled long ago, but the glowing cracks still burn: don't step on them.", "#ff9a5a"); }
+    } };
+  }
+  function volcTick(dt, F) {
+    var i = Math.floor(cp.y - 0.25) * F.w + Math.floor(cp.x);
+    if (F.lava[i] && hp > 0) { hurt(20 * dt, "lava", true); if (Math.random() < dt * 10) parts.push({ x: cp.x + (Math.random() - 0.5) * 0.4, y: cp.y - 0.2, vx: (Math.random() - 0.5), vy: -1.5 - Math.random(), g: -1, life: 0.6, max: 0.6, c: "#ffb13b", s: 3 }); if (!F.burnTip) { F.burnTip = 1; nag("Hot! Stay off the glowing cracks."); } }
+    if (Math.random() < dt * 4) { var j = Math.floor(Math.random() * F.lava.length); if (F.lava[j]) parts.push({ x: j % F.w + Math.random(), y: Math.floor(j / F.w) + Math.random(), vx: (Math.random() - 0.5) * 0.4, vy: -0.6 - Math.random() * 0.8, g: -0.3, life: 1.4, max: 1.4, c: Math.random() < 0.5 ? "#ff8a3d" : "#ffd27a", s: 2 }); }
+  }
+  function volcLava(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {
+    var t = now / 1000;
+    for (var j = Y0; j <= Y1; j++) for (var i = X0; i <= X1; i++) {
+      var k = j * F.w + i; if (!F.lava[k]) continue; var sx = ox + i * ts, sy = oy + j * ts, ph = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(t * 2 + i * 0.7 + j * 1.3);
+      g.fillStyle = "#2a1410"; g.fillRect(sx, sy, ts, ts);
+      g.fillStyle = "#c8341a"; g.fillRect(sx + ts * 0.1, sy + ts * 0.1, ts * 0.8, ts * 0.8);
+      g.fillStyle = "rgb(255," + (110 + Math.round(ph * 70)) + ",40)"; g.fillRect(sx + ts * 0.22, sy + ts * 0.22, ts * 0.56, ts * 0.56);
+      g.fillStyle = "#ffe8a0"; g.fillRect(sx + ts * (0.3 + 0.2 * ph), sy + ts * 0.42, ts * 0.16, ts * 0.1);
+      g.fillStyle = "#ff7a2a"; if (F.lava[k - 1]) g.fillRect(sx, sy + ts * 0.38, ts * 0.5, ts * 0.24); if (F.lava[k + 1]) g.fillRect(sx + ts * 0.5, sy + ts * 0.38, ts * 0.5, ts * 0.24); if (F.lava[k - F.w]) g.fillRect(sx + ts * 0.38, sy, ts * 0.24, ts * 0.5); if (F.lava[k + F.w]) g.fillRect(sx + ts * 0.38, sy + ts * 0.5, ts * 0.24, ts * 0.5);   // cracks join up with their neighbours
+      if ((i + j) % 2 === 0) { srcs.push([i + 0.5, j + 0.5, 2.6, 0.7]); glows2.push([sx + ts / 2, sy + ts / 2, "255,110,40", 2.4, 0.16]); }
+    }
+  }
+  function drawVents(g, now) {   // the vent in a cold crater floor: a dark mouth with an ember glow, smoke curling up
+    if (cave || !SC || !SC.genVolcano) return; var t = now / 1000;
+    volcanoes().forEach(function (v) {
+      var sx = ox + v.x * ts, sy = oy + v.y * ts; if (sx < -ts * 6 || sx > vw + ts * 6 || sy < -ts * 10 || sy > vh + ts * 4) return;
+      var gr = g.createRadialGradient(sx, sy, 0, sx, sy, ts * 2.4); gr.addColorStop(0, "rgba(255,120,40,.55)"); gr.addColorStop(1, "rgba(255,120,40,0)"); g.fillStyle = gr; g.fillRect(sx - ts * 2.4, sy - ts * 2.4, ts * 4.8, ts * 4.8);
+      g.fillStyle = "#3a2a2a"; g.beginPath(); g.ellipse(sx, sy + ts * 0.05, ts * 1.35, ts * 0.42, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "#0e0606"; g.beginPath(); g.ellipse(sx, sy + ts * 0.08, ts * 1.05, ts * 0.3, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "rgba(255," + (90 + Math.round(40 * Math.sin(t * 3))) + ",30,.75)"; g.beginPath(); g.ellipse(sx, sy + ts * 0.12, ts * 0.6, ts * 0.12, 0, 0, 6.2832); g.fill();
+      [-1.25, 1.25].forEach(function (d) { g.fillStyle = "#4a3434"; g.beginPath(); g.moveTo(sx + d * ts, sy + ts * 0.1); g.lineTo(sx + d * ts * 0.9, sy - ts * 0.35); g.lineTo(sx + d * ts * 0.65, sy + ts * 0.1); g.fill(); });
+      if (!reduce) for (var i = 0; i < 5; i++) { var k = (t * 0.25 + i / 5) % 1; g.fillStyle = "rgba(190,180,180," + (0.35 * (1 - k)).toFixed(3) + ")"; g.beginPath(); g.arc(sx + Math.sin(t * 0.8 + i * 1.7) * ts * 0.4 * k, sy - k * ts * 5, ts * (0.25 + k * 0.6), 0, 6.2832); g.fill(); }
+      // a little signpost on the rim
+      var px = sx + ts * 1.9; g.fillStyle = "#3a2412"; g.fillRect(px - ts * 0.06, sy - ts * 1.4, ts * 0.12, ts * 1.4); g.fillStyle = "#6a4426"; g.fillRect(px - ts * 0.6, sy - ts * 1.55, ts * 1.2, ts * 0.42);
+      g.font = signFont(Math.max(7, Math.round(ts * 0.16))); g.textAlign = "center"; g.fillStyle = "#ffd27a"; g.fillText("OLD VOLCANO", px, sy - ts * 1.27);
+    });
+  }
+
+  // =====================================================================================================================================
+  // ---------- CROAKO AND THE FISHING LOG ----------
+  // Croako, Old Croaker's salty brother, lives on the beach at the land end of Croaker's Pier. The first time you talk to him he gives you a
+  // battered leather book with empty pages: Croako's Fishing Log. Every fish you land is written into it (how many, and your biggest).
+  // A full page earns a reward from Croako. Hold the book on the hotbar (or tap it) to read it. S.fn = catches per fish, S.fbig = best length (cm),
+  // S.fpay = pages already paid out. The book itself is the item "fishlog" (never lost when you pass out).
+  var FBOOK = [
+    { id: "swamp", n: "Swamp Waters", sub: "Murkwater ponds, lakes and creeks", c: "#5aa86a", fish: ["bogminnow", "catfish", "glowfin"], rw: { doubloon: 5, pearl: 1 },
+      note: "Start here. Any puddle in Murkwater will do. The Glowfin only shows its face after dark, or for bait." },
+    { id: "frost", n: "Under the Ice", sub: "Fish through Frostfen ice", c: "#7fd6ff", fish: ["frosttrout", "icepike", "crystalcarp"], rw: { doubloon: 8, crystal: 2 },
+      note: "Bring a warm scarf. Tap the ice itself and your line goes straight through. The Crystal Carp is shy." },
+    { id: "lava", n: "Lava Pools", sub: "Ember Bog, with the Ember Rod", c: "#ff8a3d", fish: ["emberkoi", "magmaeel", "cinderfish"], rw: { doubloon: 10, cinder: 4 },
+      note: "My brother says I'm mad for this one. A reed rod just burns. Get the Ember Rod and keep your whiskers back." },
+    { id: "sea", n: "The Brinebog Sea", sub: "Off the end of Croaker's Pier", c: "#4fd0e8", fish: ["brinemackerel", "kelpsnapper", "goldgilly"], rw: { doubloon: 15, blackpearl: 1 },
+      note: "My own water. Cast off the dock, wait for the dip. A Golden Gilly at night is worth more than a boat. Nearly." }
+  ];
+  var FINFO = {   // [min cm, max cm, where, a line in Croako's hand]
+    bogminnow: [4, 9, "Murkwater water", "Small, silly and everywhere. Good bait. Better soup."],
+    catfish: [25, 70, "Murkwater water", "Whiskers longer than mine. Fights like a grudge."],
+    glowfin: [12, 30, "Murkwater water, at night", "Lights up the pond like a lantern. Rare. Don't wave it at Croaker, he gets jealous."],
+    frosttrout: [20, 55, "Frostfen ice", "Cold-blooded, even for a fish. Tastes of snow."],
+    icepike: [40, 110, "Frostfen ice", "All teeth and bad temper. Keep your toes in your boots."],
+    crystalcarp: [30, 80, "Frostfen ice (rare)", "You can see straight through it. It can see straight through you."],
+    emberkoi: [20, 50, "Ember Bog lava", "Swims in lava like it's a warm bath. Show-off."],
+    magmaeel: [50, 160, "Ember Bog lava", "Long, hot and slippery. Do NOT hug."],
+    cinderfish: [15, 40, "Ember Bog lava (rare)", "Smoulders for an hour after you land it. Keep it off the boat."],
+    brinemackerel: [20, 45, "Off Croaker's Pier", "The fish of the pier. Bread and butter. Well, kelp and butter."],
+    kelpsnapper: [25, 60, "Off Croaker's Pier", "Hides in the kelp and snaps at anything shiny, including me."],
+    goldgilly: [15, 35, "Off Croaker's Pier, best at night", "Pure gold scales. Caught one in '62. Nobody believed me. Now you've got proof."]
+  };
+  var FB = { open: false, pg: 0, el: null, sel: "" };
+  // FISH PACK: every fish has a habitat, a rarity and sometimes a time it bites (FMETA). The old twelve keep their notes in FINFO.
+  var FMETA = { bogminnow: ["swamp", "c", ""], catfish: ["swamp", "c", ""], glowfin: ["swamp", "r", ""], frosttrout: ["ice", "c", ""], icepike: ["ice", "u", ""], crystalcarp: ["ice", "r", ""],
+    emberkoi: ["lava", "c", ""], magmaeel: ["lava", "u", ""], cinderfish: ["lava", "r", ""], brinemackerel: ["sea", "c", ""], kelpsnapper: ["sea", "u", ""], goldgilly: ["sea", "r", ""] };
+  var FHAB = { swamp: "Murkwater water", blossom: "Cherry Blossom Vale ponds", cave: "Water deep underground", ice: "Frostfen ice", oak: "Dark Oakwood ponds", shores: "Sunbaked Shores lagoons", lava: "Ember Bog lava (Ember Rod)", sea: "Off Croaker's Pier" };
+  var FRAR = { c: ["Common", "#8a7a5a", 50], u: ["Uncommon", "#3a8a5a", 20], r: ["Rare", "#3a6ab8", 6], l: ["Legendary", "#b8762a", 1.5] };
+  (typeof SbxExtra !== "undefined" && SbxExtra.FISH2 || []).forEach(function (r) { if (!ITEMS[r[0]]) return; FMETA[r[0]] = [r[2], r[3], r[6]]; FINFO[r[0]] = [r[4], r[5], FHAB[r[2]] + (r[6] ? ", " + (r[6] === "rain" ? "in the rain" : "at " + (r[6] === "day" ? "daytime" : "night")) : ""), r[8]]; });
+  FBOOK = [
+    { id: "swamp", n: "Swamp Waters", sub: "Murkwater ponds, lakes and creeks", c: "#5aa86a", rw: { doubloon: 6, pearl: 1 }, note: "Start here. Any puddle in Murkwater will do. Some only bite in the rain, and one only croaks at night." },
+    { id: "blossom", n: "Blossom Pools", sub: "Ponds in the Cherry Blossom Vale", c: "#ff9ac8", rw: { doubloon: 6, pearl: 2 }, note: "Pretty water, pretty fish, pretty annoying to catch. Bring patience. And petals." },
+    { id: "cave", n: "Cave Pools", sub: "Any water deep underground", c: "#8a78c8", rw: { doubloon: 8, amethyst: 1 }, note: "Dig down till you find a pool, then cast. Things live down there that never saw the sun. Some of them are hungry." },
+    { id: "frost", n: "Under the Ice", sub: "Fish through Frostfen ice", c: "#7fd6ff", rw: { doubloon: 8, crystal: 2 }, note: "Bring a warm scarf. Tap the ice itself and your line goes straight through. Watch the sky at night." },
+    { id: "oak", n: "Oakwood Ponds", sub: "The dark ponds of Dark Oakwood", c: "#8a9a5a", rw: { doubloon: 8, rope: 3 }, note: "Quiet water under the big trees. Something with huge yellow eyes watches from the bottom after dark." },
+    { id: "shores", n: "Sunbaked Lagoons", sub: "Lagoons along the Sunbaked Shores", c: "#ffb04a", rw: { doubloon: 8, seaglass: 3 }, note: "Warm, shallow and full of show-offs. Sun hat recommended." },
+    { id: "lava", n: "Lava Pools", sub: "Ember Bog lava, with the Ember Rod", c: "#ff8a3d", rw: { doubloon: 12, cinder: 4 }, note: "My brother says I'm mad for this one. A reed rod just burns. Get the Ember Rod and keep your whiskers back." },
+    { id: "sea", n: "The Brinebog Sea", sub: "Off the end of Croaker's Pier", c: "#4fd0e8", rw: { doubloon: 15, blackpearl: 1 }, note: "My own water. Cast off the dock and wait for the dip. Somewhere out there is a Bog Marlin with my boots in it." }
+  ];
+  var FCH = { swamp: "swamp", blossom: "blossom", cave: "cave", ice: "frost", oak: "oak", shores: "shores", lava: "lava", sea: "sea" };
+  FBOOK.forEach(function (P) { P.fish = FISH_ALL.filter(function (k) { return FMETA[k] && FCH[FMETA[k][0]] === P.id; }); });
+  function fishHab(lq, x, y) {   // which water you cast into decides what can bite
+    if (lq === "lava") return "lava"; if (lq === "ice") return "ice";
+    var b = world.bio[clamp(x, 0, W - 1)], sb = world.sub && world.sub[clamp(x, 0, W - 1)];
+    if (y > col[clamp(x, 0, W - 1)] + 6) return "cave";
+    return b === 0 ? (sb ? "blossom" : "swamp") : b === 1 ? (sb ? "shores" : "swamp") : sb ? "oak" : "ice";
+  }
+  function rollFish(hab, bait, extraRare) {   // a weighted pick among the fish of that water that bite right now
+    var night = isNight(S.time), rain = !!(S.wx && S.wx.n > 0.3), L = FISH_ALL.filter(function (k) { var m = FMETA[k]; return m && m[0] === hab && (!m[2] || (m[2] === "night" ? night : m[2] === "day" ? !night : rain)); });
+    if (!L.length) L = FISH_ALL.filter(function (k) { return FMETA[k] && FMETA[k][0] === "swamp" && !FMETA[k][2]; });
+    var boost = 1 + (bait || 0) * 8 + (hasCharm("angler") ? 0.6 : 0) + (fx("fish") ? 0.4 : 0) + (extraRare || 0), tw = 0, ws = L.map(function (k) { var r = FMETA[k][1], w = FRAR[r][2] * (r === "r" || r === "l" ? boost * (night ? 1.5 : 1) : 1); tw += w; return w; }), x = Math.random() * tw;
+    for (var i = 0; i < L.length; i++) { x -= ws[i]; if (x <= 0) return L[i]; } return L[L.length - 1];
+  }
+
+  function fishLogged(k) {   // a fish was landed: count it, roll its length, keep the best. Returns the length in cm.
+    if (!S.fn) S.fn = {}; if (!S.fbig) S.fbig = {}; var I = FINFO[k], first = !(S.fn[k] > 0); S.fn[k] = (S.fn[k] || 0) + 1;
+    var cm = I ? Math.round(I[0] + (I[1] - I[0]) * Math.pow(Math.random(), 1.7)) : 0, best = cm > (S.fbig[k] || 0); if (best) S.fbig[k] = cm;
+    if ((S.inv.fishlog || 0) > 0 && I) { if (first) { toast("New page in your Fishing Log: " + ITEMS[k].n + "!", "#e8c98a"); snd("open"); } else if (best && S.fn[k] > 1) toast("New record in your Fishing Log: " + ITEMS[k].n + ", " + cm + " cm!", "#e8c98a"); }
+    return cm;
+  }
+  // ---- Croako on the beach ----
+  var CROAKO = { x: 7.5, t: 0, blink: 2, said: 0 };
+  function croakoY() { if (!OCS) return OSEA - 1; for (var y = 2; y < OSEA + 4; y++) if (ocSolid(Math.floor(CROAKO.x), y)) return y; return OSEA - 1; }
+  function croakoNear() { return OCS && OCS.main && !OCS.diving && !OCS.sea && Math.abs(OCS.pl.x - CROAKO.x) < 2.3; }
+  var CROAKO_HI = [
+    "Ahoy, little one! Mind the planks, they bite.", "Croaker sends his love? Ha! Croaker sends complaints.", "Smell that? That's the sea. Or the bait bucket. One of those.",
+    "I've fished this pier since before it was a pier.", "Seen any Golden Gillys? No? Night time, little one. Night time.", "Back again? Good. The fish missed you. I didn't."
+  ];
+  var CROAKO_TIPS = [
+    "Fish bite faster in the rain.", "Earthworms and Fireflies on you make the rare ones bite. Carry some.", "Tap too early and the fish swims off laughing.",
+    "The Anglers' charm makes every rod luckier.", "Fill a page in the log and come show me. I pay in doubloons.", "Lava fish need the Ember Rod. I learned that the hard way. Ask Croaker about my eyebrows."
+  ];
+  function talkCroako() {
+    var el = $("sbxStory"); if (!el) return; if (packOpen) closePack();
+    storyOpen = 221; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); CROAKO.said++; S.st.croako = (S.st.croako || 0) + 1;
+    var gave = false; if (!(S.inv.fishlog > 0) && !S.vis.fishlog) { S.vis.fishlog = 1; give("fishlog", 1, undefined, undefined, true); gave = true; popup("Croako's Fishing Log", "A battered leather book with empty pages. Every fish you catch goes in it.", "#e8c98a", "✎"); }
+    else if (!(S.inv.fishlog > 0)) { give("fishlog", 1, undefined, undefined, true); }   // lost it? he has a spare
+    var h = '<div class="st-croak" aria-hidden="true">' + CROAKO_SVG + "</div><small>Croako, Old Croaker's brother</small>";
+    if (gave) h += "<h2 class=\"st-hi\">So you're the one Croaker keeps croaking about.</h2><p>“Here. Take this old book. The pages are empty, see? Fill them. Every fish you pull out of the water, the swamp, the ice, even the lava, you write it in here. A full page and I'll make it worth your while.”</p>"
+      + '<div class="st-gift"><span><img alt="" src="' + icon("fishlog") + '">1 Croako\'s Fishing Log</span></div>';
+    else { var pay = FBOOK.filter(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }).length; h += '<h2 class="st-hi">' + esc(pay ? "A full page? Let's see it! Open the log and I'll pay up." : CROAKO_HI[(CROAKO.said + (S.days | 0)) % CROAKO_HI.length]) + "</h2>"
+      + '<p class="st-tip"><b>Croako\'s tip:</b> ' + esc(CROAKO_TIPS[(CROAKO.said * 5 + (S.days | 0)) % CROAKO_TIPS.length]) + "</p>"; }
+    h += '<div class="st-row"><button type="button" class="btn" data-croako="log">Open the Fishing Log</button><button type="button" class="btn ghost" data-story-close>Bye, Croako</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#e8c98a"); $("sbxStoryBox").innerHTML = h; save();
+  }
+  var CROAKO_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="23" ry="16" fill="#f2c14e" stroke="#8a6a1a" stroke-width="2.5"/><path d="M14 40 L50 40 L48 56 L16 56Z" fill="#e8b23a"/><path d="M31 40v16" stroke="#8a6a1a" stroke-width="1.6"/><circle cx="31" cy="45" r="1.6" fill="#8a6a1a"/><circle cx="31" cy="51" r="1.6" fill="#8a6a1a"/>'
+    + '<ellipse cx="32" cy="30" rx="18" ry="12" fill="#4aa8a0" stroke="#1c5a54" stroke-width="2.5"/><circle cx="21" cy="21" r="8" fill="#4aa8a0" stroke="#1c5a54" stroke-width="2.5"/><circle cx="43" cy="21" r="8" fill="#4aa8a0" stroke="#1c5a54" stroke-width="2.5"/>'
+    + '<circle cx="21" cy="21" r="4.6" fill="#ffd23f"/><circle cx="43" cy="21" r="4.6" fill="#1a1a22"/><path d="M36 17 L50 25" stroke="#1a1a22" stroke-width="2"/><rect x="19.6" y="19" width="2.6" height="4.6" rx="1" fill="#12220f"/>'
+    + '<path d="M18 33 Q32 46 46 33 Q44 42 32 44 Q20 42 18 33Z" fill="#dcd6c8" stroke="#9a9488" stroke-width="1.2"/><path d="M24 32 Q32 36 40 32" fill="none" stroke="#12220f" stroke-width="2" stroke-linecap="round"/>'
+    + '<path d="M40 34 l9 -3" stroke="#6a4426" stroke-width="2.4" stroke-linecap="round"/><circle cx="50" cy="30.5" r="2.6" fill="#8a5a32"/><circle cx="52" cy="25" r="2" fill="#cfd6dd" opacity=".7"/>'
+    + '<path d="M12 18 Q32 2 52 18 L50 14 Q32 0 14 14Z" fill="#2a3a6a"/><path d="M14 14 Q32 4 50 14 L52 18 Q32 8 12 18Z" fill="#3a4e8a" stroke="#1a2448" stroke-width="1.4"/><rect x="13" y="15" width="38" height="4" rx="2" fill="#c83a3a"/><circle cx="32" cy="4" r="3.6" fill="#f6eedb"/></svg>';
+  function drawCroako(g, now) {
+    var sc = OCS; if (!sc || !sc.main) return; var gy = croakoY(), sx = ox + CROAKO.x * ts, sy = oy + gy * ts; if (sx < -ts * 3 || sx > vw + ts * 3) return;
+    CROAKO.t += 0.016; var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.5) * 0.7, face = sc.pl.x < CROAKO.x ? -1 : 1, near = croakoNear(), k = ts / 30;
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+    // a bait bucket and a coil of rope beside him
+    g.fillStyle = "#7a8288"; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-25, -10); g.lineTo(-15, -10); g.lineTo(-14, 0); g.closePath(); g.fill(); g.strokeStyle = "#4a5258"; g.lineWidth = 1.2; g.stroke(); g.beginPath(); g.arc(-20, -10, 5.5, Math.PI, 0); g.stroke();
+    g.fillStyle = "#c9a876"; g.beginPath(); g.ellipse(22, -2.5, 7, 2.6, 0, 0, 7); g.fill(); g.strokeStyle = "#8a6a3a"; g.beginPath(); g.ellipse(22, -2.5, 4.5, 1.5, 0, 0, 7); g.stroke();
+    g.save(); g.scale(face, 1); g.translate(0, -br * 0.3);
+    // a fishing rod over the shoulder, line drooping
+    g.strokeStyle = "#6a4426"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(8, -14); g.lineTo(30, -52); g.stroke(); g.strokeStyle = "rgba(246,238,219,.6)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(30, -52); g.quadraticCurveTo(36, -30, 33, -18); g.stroke(); g.fillStyle = "#e8341c"; g.beginPath(); g.arc(33, -17, 1.6, 0, 7); g.fill();
+    // feet, yellow rain slicker, belly
+    g.fillStyle = "#3a9a90"; g.strokeStyle = "#1c5a54"; g.lineWidth = 1.6; [-7, 6].forEach(function (fx) { g.beginPath(); g.ellipse(fx, -2.5, 6, 3, 0, 0, 7); g.fill(); g.stroke(); });
+    g.fillStyle = "#f2c14e"; g.strokeStyle = "#8a6a1a"; g.beginPath(); g.ellipse(0, -13, 13, 11.5, 0, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = "#e8b23a"; g.fillRect(-1, -23, 2, 20); g.fillStyle = "#8a6a1a"; [-18, -13, -8].forEach(function (yy) { g.beginPath(); g.arc(2.6, yy, 1.2, 0, 7); g.fill(); });
+    g.strokeStyle = "#e8b23a"; g.lineWidth = 3.4; g.beginPath(); g.moveTo(7, -16); g.quadraticCurveTo(10, -15, 9, -12); g.stroke();
+    // head: blue-green, a grey frog beard, an eye patch, a pipe
+    g.fillStyle = "#4aa8a0"; g.strokeStyle = "#1c5a54"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(1, -27, 12, 8, 0, 0, 7); g.fill(); g.stroke();
+    var blink = (now % 4200) < 140;
+    g.beginPath(); g.arc(-5, -33, 4.6, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.arc(7, -33, 4.6, 0, 7); g.fill(); g.stroke();
+    if (blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-7.6, -33); g.lineTo(-2.4, -33); g.stroke(); } else { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(-5, -33, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(-5.3, -34.6, 1.6, 3.2); }
+    g.fillStyle = "#1a1a22"; g.beginPath(); g.arc(7, -33, 3.4, 0, 7); g.fill(); g.strokeStyle = "#1a1a22"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(3, -36); g.lineTo(12, -28); g.stroke();
+    g.fillStyle = "#dcd6c8"; g.strokeStyle = "#9a9488"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-9, -24); g.quadraticCurveTo(1, -14, 11, -24); g.quadraticCurveTo(9, -18, 1, -16); g.quadraticCurveTo(-7, -18, -9, -24); g.fill(); g.stroke();
+    g.strokeStyle = "#12220f"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-4, -25); g.quadraticCurveTo(1, -23, 7, -25); g.stroke();
+    g.strokeStyle = "#6a4426"; g.lineWidth = 2; g.beginPath(); g.moveTo(6, -24); g.lineTo(13, -26); g.stroke(); g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(14, -27, 2.2, 0, 7); g.fill();
+    if (!reduce) for (var i = 0; i < 3; i++) { var ph = (t * 0.5 + i / 3) % 1; g.fillStyle = "rgba(220,225,230," + (0.5 * (1 - ph)).toFixed(3) + ")"; g.beginPath(); g.arc(15 + Math.sin(t + i) * 2 * ph, -30 - ph * 14, 1.4 + ph * 2.6, 0, 7); g.fill(); }
+    // navy knit cap with a red band and a pom-pom
+    g.fillStyle = "#3a4e8a"; g.strokeStyle = "#1a2448"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-10, -37); g.quadraticCurveTo(1, -52, 12, -37); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#c83a3a"; g.fillRect(-10.5, -39, 23, 3); g.fillStyle = "#f6eedb"; g.beginPath(); g.arc(1, -49, 3, 0, 7); g.fill();
+    g.restore();
+    var got = (S.inv.fishlog || 0) > 0, pay = got && FBOOK.some(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }), bang = !got || pay, by = -64 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
+    if (bang || near) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = bang ? "#f2c14e" : "#7af0ff"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, bang ? 8 : 10, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = bang ? "#f2c14e" : "#e8fbff"; g.font = "900 " + (bang ? 12 : 10) + "px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(bang ? "!" : "...", 0, by + (bang ? 4.5 : 2)); }
+    if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Croako").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Croako", 0, 13); }
+    g.restore();
+  }
+  // ---- the book ----
+  function fbPageDone(P) { return P.fish.every(function (k) { return S.fn && S.fn[k] > 0 || S.fdex[k]; }); }
+  function fbCaught(k) { return (S.fn && S.fn[k]) || (S.fdex[k] ? 1 : 0); }
+  function openFishLog(pg) {
+    if (!(S.inv.fishlog > 0)) { nag("Visit Croako on the beach at Croaker's Pier for a Fishing Log."); return; }
+    if (storyOpen >= 0 && panelOpen) closeStory(); if (packOpen) closePack(); if (panelOpen) closePanel();
+    if (!FB.el) { FB.el = document.createElement("div"); FB.el.className = "fb"; FB.el.id = "sbxFishBook"; FB.el.setAttribute("role", "dialog"); FB.el.setAttribute("aria-label", "Croako's Fishing Log"); stageEl.appendChild(FB.el);
+      FB.el.addEventListener("click", function (e) { var b = e.target.closest("[data-fb]"); if (e.target === FB.el) { closeFishLog(); return; } if (!b) return; var a = b.getAttribute("data-fb");
+        if (a === "x") closeFishLog(); else if (a === "prev") fbGo(FB.pg - 1); else if (a === "next") fbGo(FB.pg + 1); else if (a.indexOf("pg:") === 0) fbGo(+a.slice(3)); else if (a.indexOf("pay:") === 0) fbPay(a.slice(4)); else if (a.indexOf("sel:") === 0) { FB.sel = a.slice(4); try { tn(0, 700, 600, 0.04, "triangle", 0.015); } catch (e2) {} fbRender(); } }); }
+    FB.open = true; panelOpen = true; stageEl.classList.add("panel"); stopInput(); FB.pg = pg != null ? pg : FB.pg; FB.el.hidden = false; S.st.fbreads = (S.st.fbreads || 0) + 1; thud(260, 0.05); fbRender();
+  }
+  function closeFishLog() { if (!FB.open) return; FB.open = false; FB.el.hidden = true; panelOpen = false; stageEl.classList.remove("panel"); thud(200, 0.04); }
+  function fbGo(n) { var N = FBOOK.length; if (n < 0 || n > N) return; FB.pg = n; FB.sel = ""; try { tn(0, 900 + Math.random() * 200, 500, 0.08, "triangle", 0.02); } catch (e) {} fbRender(true); }
+  function fbPay(id) {
+    var P = FBOOK.filter(function (q) { return q.id === id; })[0]; if (!P || !fbPageDone(P) || (S.fpay && S.fpay[id])) return; if (!S.fpay) S.fpay = {}; S.fpay[id] = 1;
+    Object.keys(P.rw).forEach(function (k) { if (ITEMS[k]) give(k, P.rw[k], undefined, undefined, true); }); snd("open", "Epic");
+    popup("Croako pays up!", P.n + ": " + Object.keys(P.rw).filter(function (k) { return ITEMS[k]; }).map(function (k) { return P.rw[k] + " " + ITEMS[k].n; }).join(", "), "#e8c98a", "✦"); checkGoals(); save(); fbRender();
+  }
+  function fbRender(flip) {
+    var N = FBOOK.length, pg = FB.pg, total = 0, all = 0, h = "";
+    FBOOK.forEach(function (P) { all += P.fish.length; total += P.fish.filter(fbCaught).length; });
+    var tabs = '<nav class="fb-tabs" aria-label="Chapters">' + ['<button type="button" data-fb="pg:0" class="' + (pg === 0 ? "on" : "") + '" style="--tc:#a8743a" title="Inside cover">⌂</button>'].concat(FBOOK.map(function (P, i) { return '<button type="button" data-fb="pg:' + (i + 1) + '" class="' + (pg === i + 1 ? "on" : "") + (fbPageDone(P) ? " full" : "") + '" style="--tc:' + P.c + '" title="' + esc(P.n) + '"><img alt="" src="' + icon(P.fish[0]) + '"></button>'; })).join("") + "</nav>";
+    var left, right;
+    if (pg === 0) {
+      left = '<div class="fb-pg fb-l"><p class="fb-hand fb-big">Croako\'s<br>Fishing Log</p><div class="fb-crest" aria-hidden="true">' + CROAKO_SVG + '</div><p class="fb-hand">Property of <b>' + esc(WUSER && WUSER !== "guest" ? WUSER : "a brave little angler") + "</b></p><p class=\"fb-small\">If found, return to the end of Croaker's Pier. Reward: one (1) stale biscuit.</p></div>";
+      right = '<div class="fb-pg fb-r"><p class="fb-hand">Fish logged</p><p class="fb-count"><b>' + total + "</b> / " + all + '</p><div class="fb-meter"><i style="width:' + Math.round(total / all * 100) + '%"></i></div><ul class="fb-toc">'
+        + FBOOK.map(function (P, i) { var n = P.fish.filter(fbCaught).length; return '<li><button type="button" data-fb="pg:' + (i + 1) + '"><span class="dot" style="background:' + P.c + '"></span><span class="fb-hand">' + esc(P.n) + "</span><em>" + n + "/" + P.fish.length + (fbPageDone(P) ? (S.fpay && S.fpay[P.id] ? " ✔" : " ★") : "") + "</em></button></li>"; }).join("") + "</ul>"
+        + '<p class="fb-small">Every fish you land is written in here: how many, and the biggest. Fill a chapter and Croako pays.</p></div>';
+    } else {
+      var P = FBOOK[pg - 1], done = fbPageDone(P), paid = S.fpay && S.fpay[P.id], got = P.fish.filter(fbCaught).length;
+      if (!FB.sel || P.fish.indexOf(FB.sel) < 0) FB.sel = P.fish.filter(fbCaught)[0] || P.fish[0];
+      var k = FB.sel, I = FINFO[k] || [0, 0, "", ""], M = FMETA[k] || ["", "c", ""], R = FRAR[M[1]], n = fbCaught(k), big = S.fbig && S.fbig[k];
+      var detail = '<div class="fb-det' + (n ? "" : " no") + '"><div class="fb-sk big"><img alt="" src="' + icon(k) + '"></div><div class="fb-txt"><b class="fb-hand">' + esc(n ? ITEMS[k].n : "???") + '</b><span class="fb-rar" style="--rc:' + R[1] + '">' + R[0] + "</span><small>" + esc(I[2]) + "</small>"
+        + (n ? '<p class="fb-hand fb-line">' + esc(I[3]) + '</p><span class="fb-st">Caught <b>' + n + "</b>" + (big ? " · Biggest <b>" + big + " cm</b>" : "") + "</span>" : '<p class="fb-hand fb-line fb-blank">(an empty space, waiting for a fish)</p>') + "</div></div>";
+      left = '<div class="fb-pg fb-l" style="--pc:' + P.c + '"><p class="fb-ch">Chapter ' + pg + " · " + got + " of " + P.fish.length + ' logged</p><p class="fb-hand fb-big">' + esc(P.n) + '</p><p class="fb-small">' + esc(P.sub) + '</p><div class="fb-scene fb-' + P.id + '" aria-hidden="true"><i></i><i></i><i></i></div><p class="fb-hand fb-note">“' + esc(P.note) + "”</p>" + detail + "</div>";
+      right = '<div class="fb-pg fb-r"><div class="fb-grid">' + P.fish.map(function (q) {
+        var c = fbCaught(q), m = FMETA[q] || ["", "c"]; return '<button type="button" class="fb-card' + (c ? "" : " no") + (q === k ? " sel" : "") + '" data-fb="sel:' + q + '" style="--rc:' + FRAR[m[1]][1] + '"><span class="fb-sk"><img alt="" src="' + icon(q) + '"></span><span class="fb-cn">' + esc(c ? ITEMS[q].n : "???") + "</span><em>" + (c ? "×" + c : FRAR[m[1]][0]) + "</em></button>";
+      }).join("") + "</div>"
+        + (done ? (paid ? '<div class="fb-stamp">Chapter complete</div>' : '<button type="button" class="btn fb-pay" data-fb="pay:' + P.id + '">Claim Croako\'s reward</button>') : '<p class="fb-small fb-rw">A full chapter pays: ' + Object.keys(P.rw).filter(function (q) { return ITEMS[q]; }).map(function (q) { return P.rw[q] + " " + esc(ITEMS[q].n); }).join(", ") + "</p>") + "</div>";
+    }
+    h = '<div class="fb-book' + (flip ? " flip" : "") + '"><button type="button" class="fb-x" data-fb="x" aria-label="Close the Fishing Log">&times;</button>' + tabs + '<div class="fb-spread">' + left + right + "</div>"
+      + '<div class="fb-nav"><button type="button" class="btn ghost" data-fb="prev"' + (pg <= 0 ? " disabled" : "") + '>← Page</button><span class="fb-hand">' + (pg === 0 ? "Inside cover" : FBOOK[pg - 1].n) + '</span><button type="button" class="btn ghost" data-fb="next"' + (pg >= N ? " disabled" : "") + ">Page →</button></div></div>";
+    FB.el.innerHTML = h;
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-fbopen]")) { e.preventDefault(); openFishLog(0); } });
+  // ---------- the Pier Gate near camp (drawn over the world, so world generation and old saves are untouched) ----------
+  // SIGNS: words painted on signs in the world (MINE, OLD VOLCANO, CROAKER'S PIER...) use the SwampRealms logo font, Bagel Fat One
+  // (self-hosted and loaded by delve-logo.js as "DelveBagel"; Nunito stands in for the moment before it has loaded).
+  function signFont(px) { return "400 " + px + 'px "DelveBagel", "Bagel Fat One", Nunito, system-ui, sans-serif'; }
+  // MINE LIFT (cave view, seen from above): a timber-framed cage on the up-ladder cell, with cables running off the top of the screen,
+  // a brass call lever and a lamp. Drawn instead of the ladder on lift floors (liftFloor).
+  function drawLift(g, ux, uy, now, srcs, glows2) {
+    var k = ts, x0 = ux - k * 0.3, y0 = uy - k * 1.25, w = k * 1.6, h = k * 2.15, sh = reduce ? 0 : Math.sin(now / 700) * k * 0.02;
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(x0 + k * 0.08, y0 + k * 0.12, w, h);
+    g.fillStyle = "#1a1410"; g.fillRect(x0, y0, w, h);
+    g.fillStyle = "#3a2a1c"; g.fillRect(x0 + k * 0.12, y0 + k * 0.12 + sh, w - k * 0.24, h - k * 0.24);   // the cage floor
+    g.strokeStyle = "#5a3f26"; g.lineWidth = Math.max(1, k * 0.04); for (var i = 1; i < 5; i++) { var yy = y0 + k * 0.12 + sh + i * (h - k * 0.24) / 5; g.beginPath(); g.moveTo(x0 + k * 0.12, yy); g.lineTo(x0 + w - k * 0.12, yy); g.stroke(); }
+    g.strokeStyle = "#8e969b"; g.lineWidth = Math.max(1, k * 0.05); for (i = 0; i < 6; i++) { var xx = x0 + k * 0.18 + i * (w - k * 0.36) / 5; g.beginPath(); g.moveTo(xx, y0 + k * 0.1); g.lineTo(xx, y0 + h - k * 0.1); g.stroke(); }   // the bars
+    g.fillStyle = "#6e4426"; g.fillRect(x0 - k * 0.1, y0 - k * 0.1, w + k * 0.2, k * 0.2); g.fillRect(x0 - k * 0.1, y0 + h - k * 0.1, w + k * 0.2, k * 0.2); g.fillRect(x0 - k * 0.1, y0, k * 0.2, h); g.fillRect(x0 + w - k * 0.1, y0, k * 0.2, h);
+    g.fillStyle = "#a8743a"; g.fillRect(x0 - k * 0.1, y0 - k * 0.1, w + k * 0.2, k * 0.06);
+    g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(x0 + w * 0.35, y0 - k * 0.1); g.lineTo(x0 + w * 0.35, y0 - k * 3); g.moveTo(x0 + w * 0.65, y0 - k * 0.1); g.lineTo(x0 + w * 0.65, y0 - k * 3); g.stroke();   // cables
+    var lx = x0 + w + k * 0.28, ly = y0 + h * 0.45; g.fillStyle = "#4a4a52"; g.fillRect(lx - k * 0.06, ly, k * 0.12, k * 0.5); g.strokeStyle = "#d9a441"; g.lineWidth = Math.max(1.5, k * 0.07); g.beginPath(); g.moveTo(lx, ly + k * 0.2); g.lineTo(lx + k * 0.22, ly - k * 0.18); g.stroke(); g.fillStyle = "#ff5a3a"; g.beginPath(); g.arc(lx + k * 0.22, ly - k * 0.18, k * 0.08, 0, 6.2832); g.fill();   // the call lever
+    var fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 170), px = x0 - k * 0.32, py = y0 + k * 0.4; g.fillStyle = "#3e444a"; g.fillRect(px - k * 0.12, py - k * 0.15, k * 0.24, k * 0.3); g.fillStyle = "rgba(255,214,110," + (0.7 + 0.3 * fl).toFixed(3) + ")"; g.fillRect(px - k * 0.07, py - k * 0.1, k * 0.14, k * 0.2);
+    srcs.push([(px - ox) / ts, (py - oy) / ts, 5, 0.8]); glows2.push([px, py, "255,214,110", 3, 0.2 * fl]);
+    g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText("LIFT", x0 + w / 2, y0 - k * 0.42); g.fillStyle = "#f2c14e"; g.fillText("LIFT", x0 + w / 2, y0 - k * 0.42); g.textBaseline = "alphabetic";
+  }
+  // FARM GATE: in the world the one-block Farm Gate is drawn as a proper farm entrance about 3 blocks wide and 3 tall (the size of the pier
+  // gate and the Mine): log posts with climbing vines, a HOMESTEAD board on top, a little picket gate standing ajar, a lantern and a pumpkin.
+  // It is still one block in the grid (placed, broken and entered the same way). drawCell lists the visible ones in FGVIS each frame.
+  var FGVIS = [], FGLAST = [];
+  function drawFarmGates(g, now) {
+    if (!FGVIS.length) return; var k = ts, sw = reduce ? 0 : Math.sin(now / 1100) * 0.035, nt = winNight(), fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 180);
+    for (var n = 0; n < FGVIS.length; n += 2) {
+      var gi = FGVIS[n], gj = FGVIS[n + 1], sx = ox + (gi + 0.5) * ts, sy = oy + (gj + 1) * ts;
+      g.save(); g.translate(sx, sy); g.scale(1.15, 1.15);
+      // log posts
+      [-1.25, 1.25].forEach(function (d) {
+        g.fillStyle = "#4a2e18"; g.fillRect(d * k - k * 0.17, -k * 2.75, k * 0.34, k * 2.75); g.fillStyle = "#6e4426"; g.fillRect(d * k - k * 0.17, -k * 2.75, k * 0.1, k * 2.75);
+        g.fillStyle = "#2e1c0e"; for (var r = 0; r < 4; r++) g.fillRect(d * k - k * 0.17, -k * (0.45 + r * 0.62), k * 0.34, k * 0.04);
+        g.fillStyle = "#8a5a32"; g.beginPath(); g.ellipse(d * k, -k * 2.75, k * 0.17, k * 0.07, 0, 0, 6.2832); g.fill();
+        g.strokeStyle = "#3f8f3a"; g.lineWidth = Math.max(1.2, k * 0.06); g.beginPath(); for (var v = 0; v <= 10; v++) { var yy = -v * 0.26 * k, xx = d * k + Math.sin(v * 1.3 + d) * k * 0.2; if (v) g.lineTo(xx, yy); else g.moveTo(xx, yy); } g.stroke();
+        [[0.2, 0.7, "#ff6fb5"], [-0.18, 1.5, "#ffd23f"], [0.16, 2.2, "#ff6fb5"]].forEach(function (f) { g.fillStyle = "#5fb24a"; g.beginPath(); g.ellipse(d * k + f[0] * k * 0.8, -f[1] * k + k * 0.1, k * 0.11, k * 0.06, d * 0.6, 0, 6.2832); g.fill(); g.fillStyle = f[2]; g.beginPath(); g.arc(d * k + f[0] * k, -f[1] * k, k * 0.07, 0, 6.2832); g.fill(); });
+      });
+      // crossbeam and the HOMESTEAD board, swaying a touch on two ropes
+      g.fillStyle = "#3a2412"; g.fillRect(-k * 1.55, -k * 2.62, k * 3.1, k * 0.2); g.fillStyle = "#7a5232"; g.fillRect(-k * 1.55, -k * 2.62, k * 3.1, k * 0.06);
+      g.save(); g.translate(0, -k * 2.42); g.rotate(sw);
+      g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1, k * 0.04); g.beginPath(); g.moveTo(-k * 0.9, 0); g.lineTo(-k * 0.9, k * 0.18); g.moveTo(k * 0.9, 0); g.lineTo(k * 0.9, k * 0.18); g.stroke();
+      g.fillStyle = "#2e1c0e"; g.fillRect(-k * 1.18, k * 0.16, k * 2.36, k * 0.56); g.fillStyle = "#8a5a32"; g.fillRect(-k * 1.13, k * 0.2, k * 2.26, k * 0.48); g.fillStyle = "#a8743a"; g.fillRect(-k * 1.13, k * 0.2, k * 2.26, k * 0.06);
+      g.fillStyle = "#6e4426"; g.fillRect(-k * 1.13, k * 0.44, k * 2.26, k * 0.02);
+      g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("HOMESTEAD", 0, k * 0.45);
+      g.fillStyle = "#4aa84a"; g.beginPath(); g.ellipse(-k * 1.0, k * 0.2, k * 0.12, k * 0.06, -0.5, 0, 6.2832); g.ellipse(k * 1.0, k * 0.2, k * 0.12, k * 0.06, 0.5, 0, 6.2832); g.fill();   // a sprout on each corner
+      g.restore();
+      // the picket gate, left half shut and right half swung open a little
+      function pickets(x0, w, sk) { g.fillStyle = "#c99a62"; for (var q = 0; q < 4; q++) { var px = x0 + (q + 0.5) * w / 4 * sk; g.fillRect(px - k * 0.06, -k * 1.05, k * 0.12, k * 0.95); g.beginPath(); g.moveTo(px - k * 0.06, -k * 1.05); g.lineTo(px, -k * 1.15); g.lineTo(px + k * 0.06, -k * 1.05); g.fill(); }
+        g.fillStyle = "#a8743a"; g.fillRect(Math.min(x0, x0 + w * sk), -k * 0.85, Math.abs(w * sk), k * 0.1); g.fillRect(Math.min(x0, x0 + w * sk), -k * 0.38, Math.abs(w * sk), k * 0.1); }
+      pickets(-k * 1.08, k * 1.06, 1); pickets(k * 1.08, -k * 1.06, 0.62);
+      // a lantern hanging under the beam on the right, and a pumpkin by the left post
+      var lx = k * 1.68, ly = -k * 1.62; g.strokeStyle = "#2a2a30"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(k * 1.42, -k * 2.0); g.lineTo(lx, -k * 2.0); g.lineTo(lx, ly - k * 0.16); g.stroke();
+      g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.16, k * 0.24, k * 0.32); g.fillStyle = "rgba(255,214,110," + (0.55 + 0.4 * fl * Math.max(0.3, nt)).toFixed(3) + ")"; g.fillRect(lx - k * 0.07, ly - k * 0.1, k * 0.14, k * 0.2);
+      if (nt > 0.05) { var gr = g.createRadialGradient(lx, ly, 0, lx, ly, k * 2.2); gr.addColorStop(0, "rgba(255,214,110," + (0.28 * nt * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,214,110,0)"); g.fillStyle = gr; g.fillRect(lx - k * 2.2, ly - k * 2.2, k * 4.4, k * 4.4); }
+      g.fillStyle = "#d9731f"; g.beginPath(); g.ellipse(-k * 1.75, -k * 0.24, k * 0.3, k * 0.24, 0, 0, 6.2832); g.fill(); g.fillStyle = "#f0923a"; g.beginPath(); g.ellipse(-k * 1.75, -k * 0.26, k * 0.12, k * 0.22, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "#3f8f3a"; g.fillRect(-k * 1.78, -k * 0.56, k * 0.07, k * 0.12);
+      g.restore();
+    }
+    FGLAST = FGVIS.slice(); FGVIS.length = 0;
+  }
+  // THE MINE: the one way down into the caves, a short walk from where you start. A timber headframe over the shaft with a turning hoist
+  // wheel, a bucket on the rope, a lantern, a little rail line with an ore cart and a "MINE" sign. Just a picture over world.holes[0].
+  function drawMineShaft(g, now) {
+    var M0 = world.holes && world.holes[0]; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return;
+    var k = ts, sx = ox + (M0.x + 0.5) * ts, sy = oy + (M0.y + 1) * ts; if (sx < -k * 6 || sx > vw + k * 6 || sy < -k * 6 || sy > vh + k * 6) return;
+    var t = reduce ? 0 : now / 1000, side = (col[clamp(M0.x + 2, 0, W - 1)] === M0.y + 1 && col[clamp(M0.x + 3, 0, W - 1)] === M0.y + 1) ? 1 : -1;
+    g.save(); g.translate(sx, sy); g.scale(1.2, 1.2);
+    // rails and the ore cart on the flat side
+    var rx = side * 0.8 * k, rw = side * 2.9 * k; g.fillStyle = "#3a2614"; for (var i = 0; i < 4; i++) g.fillRect(rx + side * (0.25 + i * 0.7) * k - k * 0.12, -k * 0.08, k * 0.24, k * 0.08);
+    g.fillStyle = "#8e969b"; g.fillRect(Math.min(rx, rx + rw), -k * 0.13, Math.abs(rw), k * 0.06);
+    var cx = side * 2.35 * k; g.fillStyle = "#2a2a30"; [-0.3, 0.3].forEach(function (d) { g.beginPath(); g.arc(cx + d * k, -k * 0.2, k * 0.12, 0, 6.2832); g.fill(); });
+    g.fillStyle = "#5a626a"; g.beginPath(); g.moveTo(cx - k * 0.55, -k * 0.82); g.lineTo(cx + k * 0.55, -k * 0.82); g.lineTo(cx + k * 0.45, -k * 0.26); g.lineTo(cx - k * 0.45, -k * 0.26); g.fill();
+    g.fillStyle = "#7a838b"; g.fillRect(cx - k * 0.55, -k * 0.82, k * 1.1, k * 0.08); g.fillStyle = "#3e444a"; g.fillRect(cx - k * 0.47, -k * 0.56, k * 0.94, k * 0.06);
+    [[-0.28, -0.92, "#6b7276"], [0.05, -0.98, "#4ee6b4"], [0.3, -0.9, "#8f979b"]].forEach(function (o) { g.fillStyle = o[2]; g.beginPath(); g.arc(cx + o[0] * k, o[1] * k, k * 0.17, 0, 6.2832); g.fill(); });
+    // the headframe: two splayed legs, braces, a top beam
+    function beam(x0, y0, x1, y1, w, c) { g.strokeStyle = c; g.lineWidth = w * k; g.beginPath(); g.moveTo(x0 * k, y0 * k); g.lineTo(x1 * k, y1 * k); g.stroke(); }
+    g.lineCap = "butt";
+    beam(-1.25, 0, -0.32, -3.35, 0.24, "#4a2e18"); beam(1.25, 0, 0.32, -3.35, 0.24, "#4a2e18");
+    beam(-1.2, -0.02, -0.38, -3.3, 0.08, "#7a5232"); beam(0.38, -3.3, 1.2, -0.02, 0.06, "#2e1c0e");
+    beam(-1.02, -0.7, 1.02, -0.7, 0.16, "#5e3c20"); beam(-0.72, -1.8, 0.72, -1.8, 0.14, "#5e3c20"); beam(-1.02, -0.7, 0.72, -1.8, 0.1, "#4a2e18");
+    beam(-0.75, -3.4, 0.75, -3.4, 0.22, "#3a2412"); beam(-0.75, -3.47, 0.75, -3.47, 0.06, "#7a5232");
+    // hoist wheel (turns slowly), the rope and a bucket that bobs
+    var wy = -3.78 * k, wr = 0.46 * k, a = t * 0.9; g.strokeStyle = "#2e1c0e"; g.lineWidth = Math.max(1.5, k * 0.09); g.beginPath(); g.arc(0, wy, wr, 0, 6.2832); g.stroke();
+    g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); for (i = 0; i < 4; i++) { var sa = a + i * Math.PI / 4; g.moveTo(Math.cos(sa) * wr, wy + Math.sin(sa) * wr); g.lineTo(-Math.cos(sa) * wr, wy - Math.sin(sa) * wr); } g.stroke();
+    g.fillStyle = "#8a6238"; g.beginPath(); g.arc(0, wy, k * 0.09, 0, 6.2832); g.fill();
+    var by = (-1.55 + Math.sin(t * 0.6) * 0.35) * k; g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1, k * 0.045); g.beginPath(); g.moveTo(-wr, wy); g.lineTo(-wr, by); g.moveTo(wr, wy); g.lineTo(wr, -k * 0.1); g.stroke();
+    g.fillStyle = "#6e431f"; g.fillRect(-wr - k * 0.2, by, k * 0.4, k * 0.34); g.fillStyle = "#4a4a52"; g.fillRect(-wr - k * 0.2, by + k * 0.08, k * 0.4, k * 0.05); g.fillRect(-wr - k * 0.2, by + k * 0.24, k * 0.4, k * 0.05);
+    // a lantern hung on the brace
+    var nt = winNight(), fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 170), lx = 0.62 * k, ly = -1.55 * k;
+    g.strokeStyle = "#2a2a30"; g.lineWidth = Math.max(1, k * 0.04); g.beginPath(); g.moveTo(lx, -1.8 * k); g.lineTo(lx, ly - k * 0.18); g.stroke();
+    g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.14, ly - k * 0.18, k * 0.28, k * 0.36); g.fillStyle = "rgba(255,214,110," + (0.55 + 0.4 * fl * Math.max(0.3, nt)).toFixed(3) + ")"; g.fillRect(lx - k * 0.09, ly - k * 0.12, k * 0.18, k * 0.24);
+    if (nt > 0.05) { var gr = g.createRadialGradient(lx, ly, 0, lx, ly, k * 2.6); gr.addColorStop(0, "rgba(255,214,110," + (0.3 * nt * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,214,110,0)"); g.fillStyle = gr; g.fillRect(lx - k * 2.6, ly - k * 2.6, k * 5.2, k * 5.2); }
+    // the sign, on the other side from the cart
+    var px = -side * 1.95 * k; g.fillStyle = "#3a2412"; g.fillRect(px - k * 0.06, -k * 1.35, k * 0.12, k * 1.35);
+    g.fillStyle = "#2e1c0e"; g.fillRect(px - k * 0.62, -k * 1.62, k * 1.24, k * 0.5); g.fillStyle = "#8a5a32"; g.fillRect(px - k * 0.57, -k * 1.58, k * 1.14, k * 0.42); g.fillStyle = "#a8703c"; g.fillRect(px - k * 0.57, -k * 1.58, k * 1.14, k * 0.06);
+    g.font = signFont(Math.max(8, Math.round(k * 0.25))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("MINE", px, -k * 1.36);
+    // crossed picks over the sign
+    g.strokeStyle = "#5a626a"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(px - k * 0.3, -k * 1.95); g.lineTo(px + k * 0.3, -k * 1.68); g.moveTo(px + k * 0.3, -k * 1.95); g.lineTo(px - k * 0.3, -k * 1.68); g.stroke();
+    g.restore();
+  }
+  function drawPierGate(g, now) {
+    if (!SO || cave) return; var gx = pierGateX(), gy = col[clamp(gx, 0, W - 1)]; if (gy === undefined) return;
+    var sx = ox + (gx + 0.5) * ts, sy = oy + gy * ts; if (sx < -ts * 4 || sx > vw + ts * 4 || sy < -ts * 6 || sy > vh + ts * 6) return;
+    var k = ts, sw = reduce ? 0 : Math.sin(now / 900) * 0.05;
+    g.save(); g.translate(sx, sy);
+    [-1.3, 1.3].forEach(function (d) { g.fillStyle = "#4a2e18"; g.fillRect(d * k - k * 0.14, -k * 3.1, k * 0.28, k * 3.1); g.fillStyle = "#6a4426"; g.fillRect(d * k - k * 0.14, -k * 3.1, k * 0.09, k * 3.1); g.fillStyle = "#2e5a3a"; for (var i = 0; i < 4; i++) g.fillRect(d * k - k * 0.15, -k * (0.4 + i * 0.6), k * 0.3, k * 0.07); g.fillStyle = "#5a3a1e"; g.beginPath(); g.arc(d * k, -k * 3.15, k * 0.2, 0, 6.2832); g.fill(); });
+    g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1.5, k * 0.08); g.beginPath(); g.moveTo(-1.3 * k, -2.9 * k); g.quadraticCurveTo(0, -2.4 * k, 1.3 * k, -2.9 * k); g.stroke();
+    g.save(); g.translate(0, -2.62 * k); g.rotate(sw); g.fillStyle = "#3a2412"; g.fillRect(-k * 1.25, -k * 0.05, k * 2.5, k * 0.72); g.fillStyle = "#8a5a32"; g.fillRect(-k * 1.18, 0, k * 2.36, k * 0.6); g.fillStyle = "#c28a52"; g.fillRect(-k * 1.18, 0, k * 2.36, k * 0.09);
+    g.font = signFont(Math.max(8, Math.round(k * 0.22))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", 0, k * 0.24); g.font = signFont(Math.max(7, Math.round(k * 0.16))); g.fillStyle = "#9be8ff"; g.fillText("to the sea →", 0, k * 0.46); g.textBaseline = "alphabetic"; g.restore();
+    // an anchor leaning on the left post and a lantern on the right
+    g.strokeStyle = "#8e969b"; g.lineWidth = Math.max(1.5, k * 0.1); g.beginPath(); g.moveTo(-1.75 * k, -1.4 * k); g.lineTo(-1.75 * k, -0.25 * k); g.moveTo(-2.05 * k, -1.2 * k); g.lineTo(-1.45 * k, -1.2 * k); g.arc(-1.75 * k, -0.55 * k, k * 0.35, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke();
+    var fl = 0.8 + 0.2 * Math.sin(now / 160), lx = 1.62 * k, ly = -1.9 * k; g.fillStyle = "#3a2412"; g.fillRect(1.3 * k, ly - k * 0.3, k * 0.32, k * 0.06); g.fillStyle = "#5a626a"; g.fillRect(lx - k * 0.16, ly - k * 0.26, k * 0.32, k * 0.42); g.fillStyle = "rgba(255,226,122," + fl + ")"; g.fillRect(lx - k * 0.1, ly - k * 0.2, k * 0.2, k * 0.3);
+    var gr = g.createRadialGradient(lx, ly, 0, lx, ly, k * 2.2); gr.addColorStop(0, "rgba(255,226,122," + (0.25 * (1 - daylight(S.time) * 0.6)) + ")"); gr.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = gr; g.fillRect(lx - k * 2.2, ly - k * 2.2, k * 4.4, k * 4.4);
+    g.restore();
+  }
+  function ocClean(o) {   // save sanitizer for S.oc
+    if (!o || typeof o !== "object") return null; var n = { boat: { p: {}, done: 0, hp: 100, skin: 0 }, open: {}, ed: {}, dead: {}, kills: {}, isl: {} }, B = o.boat;
+    if (B && typeof B === "object") { n.boat.done = B.done ? 1 : 0; n.boat.hp = clamp(+B.hp || 100, 0, 100); n.boat.skin = Math.max(0, Math.floor(+B.skin) || 0); if (B.p && typeof B.p === "object") Object.keys(B.p).forEach(function (k) { if (/^boat_[a-z]+$/.test(k) && B.p[k]) n.boat.p[k] = 1; }); }
+    ["open", "dead"].forEach(function (f) { if (o[f] && typeof o[f] === "object") Object.keys(o[f]).slice(0, 4000).forEach(function (k) { if (k.length < 40) n[f][k] = Math.max(0, Math.floor(+o[f][k]) || 0); }); });
+    if (o.ed && typeof o.ed === "object") Object.keys(o.ed).slice(0, 3500).forEach(function (k) { if (/^\d+,\d+$/.test(k)) n.ed[k] = clamp(Math.floor(+o.ed[k]) || 0, 0, 31); });
+    if (o.kills && typeof o.kills === "object") Object.keys(o.kills).forEach(function (k) { if (/^[a-z]+$/.test(k)) n.kills[k] = Math.max(0, Math.floor(+o.kills[k]) || 0); });
+    if (o.isl && typeof o.isl === "object") Object.keys(o.isl).slice(0, 400).forEach(function (k) { if (k.length < 20 && o.isl[k]) n.isl[k] = 1; });
+    if (o.sea && typeof o.sea === "object" && isFinite(+o.sea.x) && isFinite(+o.sea.y)) n.sea = { x: clamp(+o.sea.x, 6, 2000), y: clamp(+o.sea.y, 6, 2000), ang: +o.sea.ang || 0 };
+    return n;
+  }
+  function ocQuit() { if (!OCS) return; OCS = null; stageEl.classList.remove("cave", "ocean"); ocHudO2(); }
+
+  // =====================================================================================================================================
+  // ---------- THE HOMESTEAD: your own farm, entered through a Farm Gate (all farming happens here) ----------
+  // A top-down place like the caves, seen at a gentle tilt (everything that stands up is drawn with its height and sorted by depth).
+  // Every player has their own: it lives in S.home, which travels with your character (MP_CHAR), whichever Farm Gate you use.
+  // S.home = { ed: {"x,y": tile} changes to the starting map, c: {"x,y": {k crop, g growth secs, s stage 1-4}}, w: {"x,y": secs of water left},
+  //            ship: {item: n} waiting in the shipping crate, cr: leftover silver credit, day: the last day the crate was collected }
+  // THE BOG TWIST: water is the puzzle. Soil next to the pond or a canal is always wet (crops grow twice as fast). Dig ditches with the shovel:
+  // a ditch that touches water floods into a canal, so you can bring water to your fields once instead of watering every crop by hand.
+  var HW = 40, HH = 30, HT = { GRASS: 0, MUD: 1, REEDS: 2, SOIL: 3, POND: 4, DITCH: 5, PATH: 6, TREE: 7, HOUSE: 8, CRATE: 9, STALL: 10, GATE: 11, ROCK: 12, STUMP: 13, FENCE: 14, CANAL: 15, FLOWER: 16, PADDY: 17, PADDYW: 18 };
+  var HSOLID = [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0], HOME = null, HATL = null, HF = (typeof SbxExtra !== "undefined" && SbxExtra.HOMEFARM) || { ship: {}, seeds: [] };
+  var HHOUSE = { x: 4, y: 3, w: 6, h: 4 }, HCRATE = { x: 11, y: 6 }, HSTALL = { x: 13, y: 6 }, HGATE = { x: 19, y: HH - 2 }, HREACH = 2.7;
+  function homeS() { if (!S.home || typeof S.home !== "object") S.home = {}; var o = S.home; ["ed", "c", "w", "ship", "f"].forEach(function (k) { if (!o[k] || typeof o[k] !== "object") o[k] = {}; }); if (!(o.cr >= 0)) o.cr = 0; if (!Array.isArray(o.gi)) o.gi = []; if (o.day === undefined) o.day = S.days | 0; return o; }
+  function homeGen() {
+    var t = new Uint8Array(HW * HH), x, y, h = function (a, b, s) { return SW.hash(a, b, s); };
+    for (y = 0; y < HH; y++) for (x = 0; x < HW; x++) {
+      var id = HT.MUD, n = h(x >> 2, y >> 2, 31) * 0.6 + h(x, y, 32) * 0.4;
+      if (y <= 8) id = HT.GRASS; else if (n < 0.28) id = HT.GRASS;
+      if (id === HT.MUD) { var r = h(x, y, 33); if (r < 0.3) id = HT.REEDS; else if (r < 0.33) id = HT.ROCK; else if (r < 0.355) id = HT.STUMP; }
+      if (id === HT.GRASS && y > 1 && h(x, y, 34) < 0.07) id = HT.FLOWER;
+      if (x <= 1 || x >= HW - 2 || y <= 1 || y >= HH - 2) id = HT.TREE;
+      t[y * HW + x] = id;
+    }
+    for (y = HHOUSE.y; y < HHOUSE.y + HHOUSE.h; y++) for (x = HHOUSE.x; x < HHOUSE.x + HHOUSE.w; x++) t[y * HW + x] = HT.HOUSE;
+    t[HCRATE.y * HW + HCRATE.x] = HT.CRATE; t[HSTALL.y * HW + HSTALL.x] = HT.STALL; t[HSTALL.y * HW + HSTALL.x + 1] = HT.STALL;
+    for (y = 8; y < HH - 2; y++) { t[y * HW + 19] = HT.PATH; t[y * HW + 20] = HT.PATH; }
+    for (x = 6; x <= 20; x++) t[8 * HW + x] = HT.PATH; t[7 * HW + 6] = HT.PATH; t[7 * HW + 7] = HT.PATH;
+    t[(HH - 2) * HW + 19] = HT.GATE; t[(HH - 2) * HW + 20] = HT.GATE;
+    for (y = 2; y < 12; y++) for (x = 26; x < HW - 2; x++) { var dx = (x - 32) / 4.6, dy = (y - 6) / 2.9; if (dx * dx + dy * dy < 1) t[y * HW + x] = HT.POND; }
+    for (y = 9; y < 15; y++) t[y * HW + 32] = HT.CANAL;   // a little creek runs south out of the pond
+    for (x = 3; x <= 17; x++) if (x !== 6 && x !== 7) t[9 * HW + x] = t[9 * HW + x] === HT.PATH ? HT.PATH : HT.FENCE;
+    return t;
+  }
+  function hmT(x, y) { return x < 0 || y < 0 || x >= HW || y >= HH ? HT.TREE : HOME.t[y * HW + x]; }
+  function homeSet(x, y, id) { if (x < 2 || y < 2 || x >= HW - 2 || y >= HH - 2) return; HOME.t[y * HW + x] = id; hMark(x, y, 1); var o = homeS(), k = x + "," + y; if (HOME.g[y * HW + x] === id) delete o.ed[k]; else o.ed[k] = id; }
+  function homeSolid(x, y) { return (x === CROAKA.tx && y === CROAKA.ty) || !!HSOLID[hmT(x, y)] || !!homeGiantAt(x, y) || !!homeMachAt(x, y) || !!homeBldAt(x, y); }
+  function homeGiantAt(x, y) { var G = S.home && S.home.gi; if (!G) return null; for (var i = 0; i < G.length; i++) { var g2 = G[i]; if (x >= g2.x && x < g2.x + 3 && y >= g2.y && y < g2.y + 3) return g2; } return null; }
+  function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
+  function homeWater(id) { return id === HT.POND || id === HT.CANAL || id === HT.PADDYW; }
+  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
+  function homeFlood() {   // canals: every ditch connected to the pond fills with water; cut off ones drain
+    var t = HOME.t, i, q = [], seen = new Uint8Array(HW * HH), was = t.slice ? t.slice() : null;
+    for (i = 0; i < t.length; i++) { if (t[i] === HT.CANAL) t[i] = HT.DITCH; if (t[i] === HT.PADDYW) t[i] = HT.PADDY; if (t[i] === HT.POND) { q.push(i); seen[i] = 1; } }
+    while (q.length) { var c = q.pop(), x = c % HW, y = (c / HW) | 0; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var nx = x + d[0], ny = y + d[1]; if (nx < 0 || ny < 0 || nx >= HW || ny >= HH) return; var j = ny * HW + nx; if (seen[j] || (t[j] !== HT.DITCH && t[j] !== HT.PADDY)) return; seen[j] = 1; t[j] = t[j] === HT.DITCH ? HT.CANAL : HT.PADDYW; q.push(j); }); }
+    var o = homeS(); for (i = 0; i < t.length; i++) { if (was && was[i] === t[i]) continue; var k = (i % HW) + "," + ((i / HW) | 0); if (t[i] !== HOME.g[i]) o.ed[k] = t[i]; else delete o.ed[k]; hMark(i % HW, (i / HW) | 0, 1); }
+  }
+  // ---- crops grow wherever you are (called with the surface farm's clock) ----
+  // ---------- SEASONS (the homestead) ----------
+  // The homestead's year: Spring, Summer, Fall and Winter, SEASON_DAYS days each, counted from S.days (so nothing new is saved
+  // except which season Croaka last welcomed, o.sea). Every crop has its seasons: in season it grows a little faster, out of season
+  // half as fast, and in Winter only a quarter as fast. The farm changes with them: spring grass with petals and blossom on the trees,
+  // the summer swamp, golden fall grass with leaf litter and orange, red and gold trees, then snow, frozen ponds and snowy trees,
+  // with snow instead of rain. Croaka marks each new season with a gift of seeds that suit it.
+  var SEASON_DAYS = 7, SEASONS = [
+    { k: "spring", n: "Spring", c: "#ff9ad0", crops: ["carrot", "potato", "lilyleek", "marshonion", "bogbean", "lotus"], say: "Spring! Everything wants to grow. Carrots, leeks, onions and beans love it, and the lotus wakes up in the paddies." },
+    { k: "summer", n: "Summer", c: "#ffd23f", crops: ["reedcorn", "pepper", "mudmelon", "bogbean", "bogrice", "lotus", "glowgourd"], say: "Summer's here. Hot days for reedcorn, peppers and fat mud melons, and the rice paddies go green." },
+    { k: "fall", n: "Fall", c: "#ff8a2a", crops: ["croakpumpkin", "potato", "marshonion", "reedcorn", "bogrice", "moonpetal"], say: "Fall, my favourite. Pumpkin time! Potatoes and onions do well, and moonpetals glow on the long nights." },
+    { k: "winter", n: "Winter", c: "#bfe8ff", crops: ["frost", "lilyleek", "moonpetal"], say: "Brr, winter. Most things sulk in the cold, but frostberries, lily leeks and moonpetals don't mind it a bit." }];
+  function seasonOf(d) { d = d === undefined ? S.days | 0 : d; return Math.floor(Math.max(0, d) / SEASON_DAYS) % 4; }
+  function seasonDay() { return ((S.days | 0) % SEASON_DAYS) + 1; }
+  function inSeason(k, sn) { return SEASONS[sn === undefined ? seasonOf() : sn].crops.indexOf(k) > -1; }
+  function cropSeasons(k) { return SEASONS.filter(function (q) { return q.crops.indexOf(k) > -1; }).map(function (q) { return q.n; }); }
+  function seasonMul(k) { return inSeason(k) ? 1.15 : seasonOf() === 3 ? 0.25 : 0.5; }
+  function homeWinter() { return !!HOME && seasonOf() === 3; }
+  function seasonWelcome() {   // a new season on the homestead: Croaka says so, and leaves seeds that suit it
+    var o = homeS(), sn = seasonOf(); if (o.sea === sn) return; var first = o.sea === undefined; o.sea = sn; var Sx = SEASONS[sn];
+    var seeds = Sx.crops.map(function (k) { return SEEDOF[k] || "seed_" + k; }).filter(function (k) { return ITEMS[k]; }).slice(0, 3);
+    seeds.forEach(function (k) { give(k, 3, undefined, undefined, true); });
+    popup(Sx.n + " on the homestead", (first ? "The homestead has seasons now, " + SEASON_DAYS + " days each. " : "") + "Croaka: \u201c" + Sx.say + "\u201d She left you " + seeds.map(function (k) { return "3 " + ITEMS[k].n; }).join(", ") + ".", Sx.c, sn === 0 ? "\u2740" : sn === 1 ? "\u2600" : sn === 2 ? "\u2618" : "\u2744");
+    reslot(); hbDirty = true;
+  }
+  function homeStep(sec) {
+    if (!S.home) return; var o = homeS(), keys = Object.keys(o.c);
+    homeDaily(); homeMachTick(sec);
+    if (!keys.length && !Object.keys(o.w).length) return;
+    var tiles = HOME ? null : homeTilesC();
+    keys.forEach(function (k) {
+      var e = o.c[k]; if (!e) return; var C = CROPS[e.k]; if (!C) { delete o.c[k]; return; } if (e.s >= 4) return;
+      var q = k.split(","), x = +q[0], y = +q[1], wet = HOME ? homeWet(x, y) : homeWetT(tiles, x, y), mul = (wet ? 2 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1);
+      if (C.wat) { var pid = HOME ? hmT(x, y) : tiles[y * HW + x]; mul = pid === HT.PADDYW ? 2 * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1) : 0; wet = mul > 0; }
+      if (C.moon) mul = isNight(S.time) ? mul * 1.5 : 0;
+      mul *= seasonMul(e.k);   // SEASONS
+      e.d = (e.d || 0) + sec; if (wet) e.w = (e.w || 0) + sec;
+      e.g += sec * mul;
+      while (e.g >= C.t && e.s < 4) { e.g -= C.t; e.s++; if (e.s === 4) { if (HOME) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); homeGiantTry(x, y, e.k); } }
+      if (e.s >= 4) e.g = 0;
+    });
+    Object.keys(o.w).forEach(function (k) { o.w[k] -= sec; if (o.w[k] <= 0) { delete o.w[k]; var qk = k.split(","); hMark(+qk[0], +qk[1], 0); } });
+  }
+  var HTC = null; function homeTilesC() { if (!HTC || HTC.o !== S.home) HTC = { o: S.home, t: homeTiles() }; return HTC.t; }
+  function homeGiantTry(x, y, k, ch) {   // GIANT CROPS: a 3 x 3 patch of ripe melons, pumpkins or glowgourds can swell into one huge crop
+    if (!HF.giant || !HF.giant[k] || Math.random() > (ch || 0.35)) return; var o = homeS(); if (!o.gi) o.gi = [];
+    for (var y0 = y - 2; y0 <= y; y0++) for (var x0 = x - 2; x0 <= x; x0++) {
+      var ok = true; for (var yy = y0; yy < y0 + 3 && ok; yy++) for (var xx = x0; xx < x0 + 3; xx++) { var e = o.c[xx + "," + yy]; if (!e || e.k !== k || e.s < 4 || (xx === x && yy === y ? false : false)) { ok = false; break; } }
+      if (!ok) continue;
+      for (yy = y0; yy < y0 + 3; yy++) for (xx = x0; xx < x0 + 3; xx++) delete o.c[xx + "," + yy];
+      o.gi.push({ k: k, x: x0, y: y0, h: 0 }); S.st.giants = (S.st.giants || 0) + 1; fmLog("g:" + k);
+      if (HOME) { for (var i = 0; i < 24; i++) chips(x0 + 1.5, y0 + 1.5, CROPS[k].fruit, 4, 8); thud(90, 0.12); shake = 0.6; }
+      popup("Giant crop!", "A giant " + CROPS[k].n + " grew on your homestead!", "#ffd23f", "\u2605"); checkGoals(); return;
+    }
+  }
+  function homeTiles() { var t = homeGen(), o = homeS(); Object.keys(o.ed).forEach(function (k) { var q = k.split(","); t[+q[1] * HW + +q[0]] = o.ed[k] | 0; }); return t; }
+  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
+  function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
+    var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d; if (HOME && o.sea !== undefined) seasonWelcome();
+    Object.keys(o.c).forEach(function (k) { var e = o.c[k]; if (e && e.s >= 4 && HF.giant && HF.giant[e.k]) { var q = k.split(","); homeGiantTry(+q[0], +q[1], e.k, 0.12); } });   // overnight, a ripe patch may swell into a giant
+    homeAnimalDaily();
+    var ks = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }); if (!ks.length) return;
+    var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); if (homeUp("cart")) val *= 1.2; o.ship = {}; o.cr += val;
+    var coins = Math.floor(o.cr + 1e-6); o.cr -= coins; if (coins > 0 && ITEMS.silvercoin) give("silvercoin", coins, undefined, undefined, true);
+    S.st.shipped = (S.st.shipped || 0) + n; popup("The cart came by!", n + (n === 1 ? " thing" : " things") + " shipped: " + (coins ? "+" + coins + " Silver Coin" + (coins === 1 ? "" : "s") : "not a whole coin yet, saved for next time"), "#c8d0d8", "⛀"); snd("coin"); checkGoals();
+  }
+  // ---- entering and leaving ----
+  function farmGateNear() {   // a Farm Gate block within reach on the surface
+    if (cave || (typeof OCS !== "undefined" && OCS) || HOME || T.X_farmgate === undefined) return null;
+    var px = Math.floor(p.x), py = Math.floor(p.y - 0.5);
+    for (var y = py - 2; y <= py + 1; y++) for (var x = px - 2; x <= px + 2; x++) if (get(x, y) === T.X_farmgate) return { x: x, y: y };
+    return null;
+  }
+  function enterHome(g0) {
+    if (!g0 || cave || HOME || trans || sleepT > 0 || hp <= 0) return; if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
+    stopInput(); thud(260, 0.06);
+    trans = { t: 0, done: false, mid: function () {
+      var o = homeS(), gen = homeGen(), t = homeTiles();
+      HOME = { g: gen, t: t, from: { x: g0.x, y: g0.y }, btns: [], pd: false, last: -1, cool: 0, t0: performance.now() };
+      homeFlood(); homePads(); cp.x = HGATE.x + 1; cp.y = HGATE.y - 0.2; cp.vx = cp.vy = 0; cp.face = 1; cp.back = true;
+      stageEl.classList.add("cave", "home"); enemies.length = 0; $("sbxHint").classList.remove("on"); resize(); cam.x = cp.x; cam.y = cp.y - 2; parts.length = 0; texts.length = 0;
+      S.st.homevisit = (S.st.homevisit || 0) + 1; S.vis.home = 1; homeDaily(); hbDirty = true; hud(); setTimeout(function () { if (HOME) seasonWelcome(); }, 1600);
+      var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#7dd65a"); el.querySelector("b").textContent = "Your Homestead"; el.querySelector("small").textContent = SEASONS[seasonOf()].n + ", day " + seasonDay() + " \u00b7 till, plant, water, harvest"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); }
+      if (!S.st.hometip) { S.st.hometip = 1; toast(coarse ? "Your own farm! Clear the reeds, till the mud with your hoe and plant seeds. Soil next to water stays wet." : "Your own farm! Clear the reeds, till the mud with your hoe (tap or drag) and plant seeds. Soil next to water stays wet: dig ditches from the pond with your shovel.", "#7dd65a"); }
+      save();
+    } };
+  }
+  function leaveHomeNow() {
+    if (!HOME) return; HTC = null; var f = HOME.from; HOME = null; stageEl.classList.remove("cave", "home"); resize(); stopInput(); mine = null;
+    p.x = f.x + 0.5; p.y = f.y + 1; p.vx = p.vy = 0; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
+    enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; HUDC.sbxBiome = HUDC.sbxSub = HUDC.bc = ""; hbDirty = true; hud(); save();
+  }
+  function leaveHome() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: leaveHomeNow }; }
+  // ---- update ----
+  function homeUpdate(dt) {
+    advTime(dt); tickWeather(dt); homeRainTick(dt); if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
+    if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }
+    var csp = CAVE_SPEED * 1.05 * (fx("speed") ? 1.25 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
+    if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
+    var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
+    for (i = 0; i < sub; i++) { var nx = cp.x + cp.vx * h; if (!homeBox(nx, cp.y)) cp.x = nx; else cp.vx = 0; var ny = cp.y + cp.vy * h; if (!homeBox(cp.x, ny)) cp.y = ny; else cp.vy = 0; }
+    var spd = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy); p.walk += spd * dt; p.vx = spd > 0.5 ? spd : 0; p.on = true; p.vy = 0; p.face = cp.face;
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = 0; sinceHurt += dt;
+    if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt); drawHp();
+    cam.x += (cp.x - cam.x) * Math.min(1, dt * 8); cam.y += (cp.y - 1 - cam.y) * Math.min(1, dt * 8);
+    var halfW = vw / 2 / ts, halfH = vh / 2 / ts, pd = HOME.pad || { t: 1, b: 2, s: 0.5 }; cam.x = clamp(cam.x, halfW - pd.s, HW - halfW + pd.s); cam.y = clamp(cam.y, halfH - pd.t, HH - halfH + pd.b);
+    aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= HW || aim.ty < 0 || aim.ty >= HH) aim.tx = -1;
+    tickFarm(dt); tickHunger(dt); tickFx(dt); tickBounties(dt);
+    homeTool(dt); homeAnimalTick(dt);
+    var working = HOME.work > 0; HOME.work = Math.max(0, (HOME.work || 0) - dt); heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
+    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
+    for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
+    HOME.cgT = (HOME.cgT || 0) - dt; if (HOME.cg && HOME.cgT <= 0) { HOME.cg = 0; HOME.cgT = 0.35; checkTrail(); checkGoals(); }
+    msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); } hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); } saveT += dt * 1000; if (saveT >= SAVE_MS) { saveT = 0; save(); }
+  }
+  function hFx(x, y, c, n) { for (var i = 0; i < (n || 6); i++) parts.push({ x: x + 0.5 + (Math.random() - 0.5) * 0.6, y: y + 0.6, vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random() * 3, g: 14, life: 0.5, max: 0.6, c: c, s: 3 }); }
+  function homeTool(dt) {
+    var H2 = HOME, press = aim.down && !H2.pd; H2.pd = aim.down; if (H2.cool > 0) H2.cool -= dt;
+    if (!aim.down || aim.tx < 0) { H2.last = -1; return; }
+    var tx = aim.tx, ty = aim.ty, cell = ty * HW + tx; if (!press && cell === H2.last) { if (sel === "can" && homeWater(hmT(tx, ty))) homeAct(tx, ty, false, dt); return; }
+    H2.last = cell; homeAct(tx, ty, press, dt);
+  }
+  function homePads() {   // how far the camera may look past each edge: enough that the hotbar, the joystick and the top bar never cover the farm
+    if (!HOME) return; var sr = stageEl.getBoundingClientRect(), bar = $("sbxBar"), joy = $("sbxJoy"), top = sr.bottom;
+    if (bar) { var br = bar.getBoundingClientRect(); if (br.height) top = Math.min(top, br.top); }
+    if (joy && coarse) { var jr = joy.getBoundingClientRect(); if (jr.height) top = Math.min(top, jr.top); }
+    var bPx = Math.max(0, sr.bottom - top) + ts * 0.6;
+    HOME.pad = { t: (70 + ts * 0.3) / ts, b: bPx / ts + 1.2, s: coarse ? 1.5 : 0.8 };
+  }
+  function homeGoals() { if (HOME) HOME.cg = 1; else { checkTrail(); checkGoals(); } }
+  function homeAct(tx, ty, press, dt) {
+    var o = homeS(), id = hmT(tx, ty), key = tx + "," + ty, crop = o.c[key], dxp = tx + 0.5 - cp.x, dyp = ty + 0.5 - (cp.y - 0.3);
+    if (dxp * dxp + dyp * dyp > HREACH * HREACH) { if (press) nag("Walk a little closer."); return; }
+    if (Math.abs(dxp) > 0.3) cp.face = dxp < 0 ? -1 : 1; HOME.work = 0.3;
+    if (id === HT.CRATE) { if (press) openShip(); return; }
+    if (id === HT.STALL) { if (press) openStall(); return; }
+    var gc = homeGiantAt(tx, ty); if (gc) { if (press) homeGiantHit(gc); return; }
+    if (press && tx === CROAKA.tx && (ty === CROAKA.ty || ty === CROAKA.ty - 1)) { talkCroaka(); return; }
+    if (press && homePickDrop(tx + 0.5, ty + 0.5)) return;
+    var anm = press ? homeAnimalAt(tx + 0.5, ty + 0.9) : null; if (anm) { homePet(anm); return; }
+    var mch = homeMachAt(tx, ty); if (mch) { if (press) homeMachUse(mch, tx, ty, press); return; }
+    var bld = homeBldAt(tx, ty); if (bld) { if (press) openBld(bld); return; }
+    if ((HF.mach[sel] || HF.bld[sel]) && (S.inv[sel] || 0) > 0) { if (press) homePlace(tx, ty, sel, press); return; }
+    if (crop && crop.s >= 4 && sel !== "shovel") { if (sel === "hoe" && S.hoe > 1) { var half = (HOES[S.hoe].w - 1) / 2; for (var x = tx - half; x <= tx + half; x++) { var c2 = o.c[x + "," + ty]; if (c2 && c2.s >= 4) homeHarvest(x, ty); } } else homeHarvest(tx, ty); return; }
+    if (sel === "hoe" && S.hoe > 0) {
+      var w2 = (HOES[S.hoe].w - 1) / 2, n = 0;
+      if (id === HT.DITCH || id === HT.CANAL) { if (crop) return; for (var px = tx - w2; px <= tx + w2; px++) { var pt = hmT(px, ty); if ((pt === HT.DITCH || pt === HT.CANAL) && !o.c[px + "," + ty]) { homeSet(px, ty, HT.PADDY); n++; } } homeFlood(); S.st.paddies = (S.st.paddies || 0) + n; thud(240, 0.05); hFx(tx, ty, hmT(tx, ty) === HT.PADDYW ? "#8fe0ff" : "#5a3a22", 8);
+        if (!S.st.paddytip) { S.st.paddytip = 1; toast("You leveled the ditch into a paddy. Flooded paddies (joined to water) grow Bog Rice and Lily Lotus.", "#8fe0ff"); } return; }
+      for (var xx = tx - w2; xx <= tx + w2; xx++) { var t2 = hmT(xx, ty); if (t2 === HT.REEDS) { homeSet(xx, ty, HT.MUD); if (Math.random() < 0.5) give("fiber", 1, undefined, undefined, true); hFx(xx, ty, "#6a9a4a"); n++; } else if ((t2 === HT.GRASS || t2 === HT.MUD || t2 === HT.FLOWER) && !o.c[xx + "," + ty]) { homeSet(xx, ty, HT.SOIL); hFx(xx, ty, "#7a5236", 4); n++; S.st.tilled++; } }
+      if (n) { thud(220, 0.05); homeGoals(); } else if (press) nag(id === HT.SOIL ? "That's tilled already. Plant seeds on it!" : id === HT.PADDY || id === HT.PADDYW ? "That's a paddy. Plant Bog Rice or Lily Lotus in it." : "The hoe tills grass and mud, clears reeds, and levels ditches into paddies.");
+      return;
+    }
+    if (sel === "shovel" && S.shovel) {
+      if (id === HT.DITCH || id === HT.CANAL || ((id === HT.PADDY || id === HT.PADDYW) && !crop)) { homeSet(tx, ty, HT.MUD); homeFlood(); thud(200, 0.05); hFx(tx, ty, "#5a3a22"); return; }
+      if ((id === HT.GRASS || id === HT.MUD || id === HT.SOIL || id === HT.FLOWER || id === HT.REEDS) && !crop) { homeSet(tx, ty, HT.DITCH); homeFlood(); S.st.ditches = (S.st.ditches || 0) + 1; thud(180, 0.06); hFx(tx, ty, "#5a3a22", 8); if (hmT(tx, ty) === HT.CANAL) { hFx(tx, ty, "#8fe0ff", 8); if (!S.st.canaltip) { S.st.canaltip = 1; toast("Water flows into your ditch! Soil next to a canal stays wet, so crops there grow twice as fast.", "#8fe0ff"); } } return; }
+      if (press) nag(crop ? "Harvest the crop before digging here." : "Dig ditches in grass, mud or soil. A ditch that touches water fills up."); return;
+    }
+    if (sel === "can" && S.can) {
+      if (homeWater(id)) { if (S.water < CAN.max) { S.water = CAN.max; hbDirty = true; thud(420, 0.03); toast("Watering Can full.", CAN.c); waterSplash(tx + 0.5, ty + 0.5, 0.9, 1); } return; }
+      if (id === HT.SOIL) { if (S.water <= 0) { nag("Your Watering Can is empty. Fill it at the pond or a canal."); return; } if ((o.w[key] || 0) > 100) return; S.water--; o.w[key] = WET_S * 2; hbDirty = true; hMark(tx, ty, 0); S.st.watered++; thud(520, 0.02); hFx(tx, ty, "#8fe0ff"); waterSplash(tx + 0.5, ty + 0.55, 0.45, 2); homeGoals(); return; }
+      if (press) nag("Water tilled soil, or fill up at the pond."); return;
+    }
+    if (sel === "compost" && (S.inv.compost || 0) > 0) {
+      if (id !== HT.SOIL) { if (press) nag("Spread compost on tilled soil."); return; } if (o.f[key]) { if (press) nag("This soil already has compost in it."); return; }
+      S.inv.compost--; if (S.inv.compost <= 0) { delete S.inv.compost; sel = "pick"; bare = true; } reslot(); hbDirty = true; o.f[key] = 1; hMark(tx, ty, 0); S.st.composted = (S.st.composted || 0) + 1; thud(260, 0.04); hFx(tx, ty, "#3a2412", 8); return;
+    }
+    if (sel === "pick") {
+      if (id === HT.ROCK) { homeSet(tx, ty, HT.MUD); give("stone", 2 + Math.floor(Math.random() * 2), undefined, undefined, true); thud(140, 0.08); hFx(tx, ty, "#8a8f99", 10); return; }
+      if (id === HT.STUMP) { homeSet(tx, ty, HT.MUD); give("wood", 2, undefined, undefined, true); thud(160, 0.07); hFx(tx, ty, "#8a5a32", 10); return; }
+    }
+    var it = ITEMS[sel];
+    if (it && it.seed && (S.inv[sel] || 0) > 0) {
+      var Cs = CROPS[it.seed]; if (!Cs) return;
+      if (Cs.wat) { if (id !== HT.PADDY && id !== HT.PADDYW) { if (press) nag(Cs.n + " grows in a paddy. Dig a ditch from the water with your shovel, then level it with your hoe."); return; } }
+      else if (id !== HT.SOIL) { if (press) nag(id === HT.PADDY || id === HT.PADDYW ? "Only Bog Rice and Lily Lotus grow in paddies." : "Plant seeds on tilled soil. Use your hoe on the mud first."); return; }
+      if (crop) return;
+      if (Cs.moon && !S.st.moontip) { S.st.moontip = 1; toast("Moon crops only grow at night, but fast. They glow in the dark.", "#b8d8ff"); }
+      S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; bare = true; } reslot(); hbDirty = true;
+      o.c[key] = { k: it.seed, g: 0, s: 1 }; S.st.planted++; thud(600, 0.03); hFx(tx, ty, "#7fd06a", 4); homeGoals(); return;
+    }
+    if (id === HT.REEDS) { homeSet(tx, ty, HT.MUD); if (Math.random() < 0.5) give("fiber", 1, undefined, undefined, true); thud(300, 0.04); hFx(tx, ty, "#6a9a4a"); return; }
+    if (press && crop) { var Cn = CROPS[crop.k] || {}; nag("Not ripe yet. " + (Cn.moon && !isNight(S.time) ? "Moon crops only grow at night." : Cn.wat ? (id === HT.PADDYW ? "The paddy is flooded." : "The paddy is dry: join it to water.") : homeWet(tx, ty) ? "It's well watered." : "Water it to make it grow twice as fast.")); return; }
+    if (press && (id === HT.GRASS || id === HT.MUD) && sel !== "hoe") nag(S.hoe ? "Pick your hoe to till the ground." : "Make a Reed Hoe (by hand) to till the ground.");
+  }
+  var HBITS = { carrot: 1, potato: 2, pepper: 4, frost: 8, reedcorn: 16, bogbean: 32, lilyleek: 64, marshonion: 128, mudmelon: 256, croakpumpkin: 512, bogrice: 1024, lotus: 2048, moonpetal: 4096, glowgourd: 8192 };
+  function homeGiantHit(g) {   // a giant crop takes three good whacks
+    g.h = (g.h || 0) + 1; HOME.work = 0.3; thud(120, 0.1); shake = 0.3; chips(g.x + 1.5, g.y + 1.4, CROPS[g.k].fruit, 10, 6);
+    if (g.h < 3) { text(g.x + 1.5, g.y - 0.6, g.h === 1 ? "Whack!" : "Almost...", "#ffe9a8"); return; }
+    var o = homeS(), C = CROPS[g.k]; o.gi.splice(o.gi.indexOf(g), 1);
+    var n = 12 + Math.floor(Math.random() * 7), pz = 2 + Math.floor(Math.random() * 3); give(C.produce, n - pz, undefined, undefined, true); if (ITEMS[C.produce + "_g"]) give(C.produce + "_g", pz, undefined, undefined, true); else give(C.produce, pz, undefined, undefined, true);
+    if (SEEDOF[g.k]) give(SEEDOF[g.k], 3, undefined, undefined, true); S.st.giantharv = (S.st.giantharv || 0) + 1; S.st.harvests++; S.st.cropbits |= HBITS[g.k] || 0;
+    for (var i = 0; i < 30; i++) hFx(g.x + Math.random() * 3 - 0.5, g.y + Math.random() * 3 - 0.5, C.fruit, 1);
+    text(g.x + 1.5, g.y - 0.6, "+" + n + " " + C.n + "!", "#ffd23f"); snd("coin"); cheerT = 1.2; homeGoals(); save();
+  }
+  function homeHarvest(x, y) {
+    var o = homeS(), key = x + "," + y, e = o.c[key], C = e && CROPS[e.k]; if (!C) return; delete o.c[key];
+    var n = C.yld[0] + Math.floor(Math.random() * (C.yld[1] - C.yld[0] + 1)), ns = C.sd[0] + Math.floor(Math.random() * (C.sd[1] - C.sd[0] + 1)), sd = SEEDOF[e.k];
+    if (sel === "hoe" && HOES[S.hoe] && HOES[S.hoe].bonus && Math.random() < HOES[S.hoe].bonus) n++;
+    // QUALITY: how much of its life it spent watered, plus compost, decides how many come out Fine or Prize
+    var wf = e.d > 0 ? clamp((e.w || 0) / e.d, 0, 1) : 0, comp = !!o.f[key], pg = 0.04 + 0.22 * wf + (comp ? 0.3 : 0) + (hasCharm("thumb") ? 0.05 : 0), ps = 0.18 + 0.25 * wf + (comp ? 0.2 : 0), got = [0, 0, 0];
+    for (var i = 0; i < n; i++) { var r = Math.random(); got[r < pg ? 2 : r < pg + ps ? 1 : 0]++; }
+    if (got[0]) give(C.produce, got[0], undefined, undefined, true); if (got[1] && ITEMS[C.produce + "_s"]) give(C.produce + "_s", got[1], undefined, undefined, true); else got[0] += got[1];
+    if (got[2] && ITEMS[C.produce + "_g"]) { give(C.produce + "_g", got[2], undefined, undefined, true); S.st.prize = (S.st.prize || 0) + got[2]; } else got[0] += got[2];
+    if (sd && ns > 0) give(sd, ns, undefined, undefined, true); if (o.f[key]) { delete o.f[key]; hMark(x, y, 0); }
+    text(x + 0.5, y - 0.4, "+" + n + " " + ITEMS[C.produce].n, "#ffe9a8"); if (got[2]) text(x + 0.5, y - 1.1, "\u2605 Prize!", "#ffd23f"); else if (got[1]) text(x + 0.5, y - 1.1, "\u2606 Fine", "#e8eef4"); hFx(x, y, C.fruit, 10);
+    if (C.wat) S.st.paddyharv = (S.st.paddyharv || 0) + 1; if (C.moon) S.st.moonharv = (S.st.moonharv || 0) + 1;
+    fmLog("c:" + e.k, 1, got[2] ? 2 : got[1] ? 1 : 0);   // FARM ALMANAC
+    if (sel === "hoe" && sd && (S.inv[sd] || 0) > 0) { S.inv[sd]--; if (S.inv[sd] <= 0) delete S.inv[sd]; o.c[key] = { k: e.k, g: 0, s: 1 }; S.st.planted++; reslot(); hbDirty = true; }   // the hoe replants as it harvests
+    S.st.harvests++; S.st.cropbits |= HBITS[e.k] || 0; snd("coin"); homeGoals();
+  }
+  // ---- the shipping crate and the seed stall ----
+  function openShip() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 223; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderShip();
+  }
+  function renderShip() {
+    var o = homeS(), have = Object.keys(HF.ship).filter(function (k) { return ITEMS[k] && (S.inv[k] || 0) > 0; }), inBox = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }), pend = 0;
+    inBox.forEach(function (k) { pend += (HF.ship[k] || 0) * o.ship[k]; });
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("silvercoin") + '"><div><small>Your Homestead</small><h2>Shipping Crate</h2><p class="mo-sub">Drop your harvest in. Croaker\'s cart comes by every morning and leaves Silver Coins in your bag. Spend them at the Seed Stall.</p></div></div>';
+    h += '<p class="mo-msg">In the crate: <b>' + (inBox.length ? inBox.map(function (k) { return o.ship[k] + " " + esc(ITEMS[k].n); }).join(", ") : "nothing yet") + "</b>" + (pend ? " · worth about <b>" + Math.floor(pend + o.cr) + " Silver</b>" : "") + "</p>";
+    h += '<ul class="mo-list">' + (have.length ? have.map(function (k) { return '<li class="have"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + " ×" + S.inv[k] + "</b><small>" + HF.ship[k] + " Silver each</small></div>" + '<button type="button" class="btn mo-fit" data-hship="' + k + '">Ship all</button></li>'; }).join("") : '<li><div><b>Nothing to ship</b><small>Grow and harvest crops on your homestead.</small></div></li>') + "</ul>";
+    h += '<div class="st-row">' + (have.length > 1 ? '<button type="button" class="btn" data-hship="*">Ship everything</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#c8d0d8"); $("sbxStoryBox").innerHTML = h;
+  }
+  function shipAct(k) {
+    var o = homeS(), L = k === "*" ? Object.keys(HF.ship).filter(function (q) { return ITEMS[q] && (S.inv[q] || 0) > 0; }) : [k];
+    L.forEach(function (q) { var n = S.inv[q] || 0; if (!n) return; o.ship[q] = (o.ship[q] || 0) + n; delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } });
+    reslot(); hbDirty = true; thud(240, 0.06); save(); renderShip();
+  }
+  function openStall() { var el = $("sbxStory"); if (!el) return; storyOpen = 224; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderStall(); }
+  function renderStall() {
+    var coins = S.inv.silvercoin || 0;
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("seed_croakpumpkin") + '"><div><small>Your Homestead</small><h2>Seed Stall</h2><p class="mo-sub">Seeds for your fields, paid in Silver Coins from the shipping crate. You have <b>' + coins + "</b>.</p></div></div>";
+    var sn0 = seasonOf(); h += '<p class="mo-sub hm-season" style="--sc:' + SEASONS[sn0].c + '">It is <b>' + SEASONS[sn0].n + "</b>, day " + seasonDay() + " of " + SEASON_DAYS + ". Seeds marked <em>in season</em> grow best right now.</p>";
+    h += '<ul class="mo-list">' + HF.seeds.filter(function (q) { return ITEMS[q[0]]; }).slice().sort(function (a, b) { var ia = inSeason(ITEMS[a[0]].seed) ? 0 : 1, ib = inSeason(ITEMS[b[0]].seed) ? 0 : 1; return ia - ib; }).map(function (q) { var sk = ITEMS[q[0]].seed, C = CROPS[sk], ok = coins >= q[1], info = !C ? "makes crops Fine or Prize more often" : (C.moon ? "moon crop: grows only at night" : "ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? " in a flooded paddy" : " (half with water)")) + " \u00b7 " + cropSeasons(sk).join(", ");
+      return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(q[0]) + '"><div><b>' + esc(ITEMS[q[0]].n) + (C && inSeason(sk) ? ' <em class="hm-in">in season</em>' : "") + "</b><small>" + q[1] + " Silver · " + info + "</small></div>" + '<button type="button" class="btn mo-fit" data-hbuy="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
+    h += '<h3 class="hm-sub">Animals</h3><ul class="mo-list">' + HF.animals.map(function (q) { var A = ANIM[q[0]], o = homeS(), room = (o.b || []).some(function (b, i) { return b.k === q[2] && homeBldPop(i) < homeBldCap(b); }), ok = room && coins >= q[1];
+      return '<li class="' + (ok ? "have" : "") + '"><img alt="" src="' + icon(A.prod) + '"><div><b>' + esc(A.n) + "</b><small>" + q[1] + " Silver \u00b7 lives in a " + esc(ITEMS[q[2]].n) + " \u00b7 gives " + esc(ITEMS[A.prod].n) + (room ? "" : " \u00b7 build one with room first") + "</small></div>" + '<button type="button" class="btn mo-fit" data-hanim="' + q[0] + '"' + (ok ? "" : " disabled") + ">Buy</button></li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#7dd65a"); $("sbxStoryBox").innerHTML = h;
+  }
+  function stallBuy(k) { var q = HF.seeds.filter(function (r) { return r[0] === k; })[0]; if (!q || (S.inv.silvercoin || 0) < q[1]) return; S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; give(k, 1, undefined, undefined, true); reslot(); hbDirty = true; snd("coin"); renderStall(); }
+  function homeActions() {
+    var A = [], gx = HGATE.x + 1, gy = HGATE.y;
+    if (croakaNear()) A.push({ label: "Talk to Croaka", ax: CROAKA.x, ay: CROAKA.y - 2.4, fn: talkCroaka });
+    if (Math.abs(cp.x - gx) < 2.2 && Math.abs(cp.y - gy) < 2.2) A.push({ label: "Back to the swamp", ax: gx, ay: gy - 1.6, fn: leaveHome });
+    if (Math.abs(cp.x - (HCRATE.x + 0.5)) < 2 && Math.abs(cp.y - (HCRATE.y + 1)) < 2) A.push({ label: "Shipping Crate", ax: HCRATE.x + 0.5, ay: HCRATE.y - 1.2, fn: openShip });
+    if (Math.abs(cp.x - (HHOUSE.x + 3)) < 1.6 && Math.abs(cp.y - (HHOUSE.y + HHOUSE.h + 0.6)) < 1.4) A.push({ label: "Farm Ledger", ax: HHOUSE.x + 3, ay: HHOUSE.y + 1.4, fn: openLedger });
+    if (Math.abs(cp.x - (HSTALL.x + 1)) < 2.4 && Math.abs(cp.y - (HSTALL.y + 1)) < 2) A.push({ label: "Seed Stall", ax: HSTALL.x + 1, ay: HSTALL.y - 1.6, fn: openStall });
+    A.sort(function (a, b) { return Math.abs(cp.x - a.ax) - Math.abs(cp.x - b.ax); }); return A;
+  }
+  function homeF() { var A = homeActions(); if (A.length) { A[0].fn(); return true; } return false; }
+  function homeTap(e) { var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, pd = e.pointerType === "mouse" ? 4 : 12, B = HOME.btns || []; for (var i = B.length - 1; i >= 0; i--) { var b = B[i]; if (x >= b.x - pd && x <= b.x + b.w + pd && y >= b.y - pd && y <= b.y + b.h + pd) { b.fn(); return true; } } return false; }
+  // ---------- HOMESTEAD stage 3: sprinklers, machines, animal buildings, upgrades ----------
+  // S.home.m = {"x,y": {k machine, i input item, t secs left, o output item, n how many}}, S.home.b = [{k building, x, y, hay}],
+  // S.home.an = [{k animal, b building index, x, y, f friendship 0-10, pd last day petted, nm name}], S.home.dr = [{k item, x, y}] things lying on the ground,
+  // S.home.up = {upgrade: 1}
+  function homeUp(k) { var o = homeS(); return !!(o.up && o.up[k]); }
+  function homeMachAt(x, y) { var o = homeS(); return o.m ? o.m[x + "," + y] : null; }
+  function homeBldAt(x, y) { var o = homeS(), B = o.b || []; for (var i = 0; i < B.length; i++) { var D = HF.bld[B[i].k]; if (D && x >= B[i].x && x < B[i].x + D.w && y >= B[i].y && y < B[i].y + D.h) return B[i]; } return null; }
+  function homeSprk(x, y) { var o = homeS(), r = homeUp("nozzle") ? 2 : 1; if (!o.m) return false; for (var yy = y - r; yy <= y + r; yy++) for (var xx = x - r; xx <= x + r; xx++) { var m = o.m[xx + "," + yy]; if (m && m.k === "sprinkler") return true; } return false; }
+  function homeFreeFor(x, y, w, h) {   // can a machine or building go here?
+    var o = homeS(); for (var yy = y; yy < y + h; yy++) for (var xx = x; xx < x + w; xx++) {
+      var id = hmT(xx, yy); if (xx < 2 || yy < 2 || xx >= HW - 2 || yy >= HH - 2) return false;
+      if (!(id === HT.GRASS || id === HT.MUD || id === HT.FLOWER || id === HT.REEDS || id === HT.SOIL)) return false;
+      if (o.c[xx + "," + yy] || homeMachAt(xx, yy) || homeBldAt(xx, yy) || homeGiantAt(xx, yy)) return false;
+      if (Math.floor(cp.x) === xx && Math.floor(cp.y - 0.2) === yy) return false;
+      if (xx === CROAKA.tx && (yy === CROAKA.ty || yy === CROAKA.ty - 1)) return false;   // Croaka's spot
+    } return true;
+  }
+  function homePlace(tx, ty, k, press) {   // returns true if the selected item was a homestead machine or building
+    var o = homeS(), D = HF.bld[k], w = D ? D.w : 1, h = D ? D.h : 1, x0 = D ? tx - Math.floor(w / 2) : tx, y0 = D ? ty - h + 1 : ty;
+    if (!D && !HF.mach[k]) return false;
+    if (!homeFreeFor(x0, y0, w, h)) { if (press) nag(D ? "A " + ITEMS[k].n + " needs a clear " + w + " x " + h + " space of grass or mud." : "Place it on clear grass, mud or soil."); return true; }
+    S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; sel = "pick"; bare = true; } reslot(); hbDirty = true;
+    for (var yy = y0; yy < y0 + h; yy++) for (var xx = x0; xx < x0 + w; xx++) { var id = hmT(xx, yy); if (id === HT.REEDS || id === HT.FLOWER) homeSet(xx, yy, id === HT.REEDS ? HT.MUD : HT.GRASS); }
+    if (D) { if (!o.b) o.b = []; o.b.push({ k: k, x: x0, y: y0, hay: 0 }); S.st.hbuilt = (S.st.hbuilt || 0) + 1; toast("Your " + ITEMS[k].n + " is up! Buy animals at the Seed Stall, and keep its trough full of Fiber (hay).", "#7dd65a"); }
+    else { if (!o.m) o.m = {}; o.m[tx + "," + ty] = { k: k }; if (k === "sprinkler") { S.st.hsprk = (S.st.hsprk || 0) + 1; hMark(tx, ty, 3); if (!S.st.sprktip) { S.st.sprktip = 1; toast("The sprinkler keeps the soil around it watered" + (homeUp("nozzle") ? " (5 x 5)." : " (3 x 3). Brass Nozzles from the Farm Ledger make it 5 x 5."), "#8fe0ff"); } } }
+    thud(200, 0.08); hFx(tx, ty, "#c9a06a", 10); checkGoals(); save(); return true;
+  }
+  function homeMachUse(m, x, y, press) {   // tap a machine: collect, fill, or explain
+    var o = homeS(), it = ITEMS[sel], fast = homeUp("keg") ? 0.6 : 1;
+    if (m.o) { give(m.o, m.n || 1, undefined, undefined, true); text(x + 0.5, y - 0.4, "+" + (m.n || 1) + " " + ITEMS[m.o].n, "#ffe9a8"); if (m.k === "picklekeg") { S.st.preserves = (S.st.preserves || 0) + (m.n || 1); fmLog("p:" + m.o, m.n || 1); } if (m.k === "seedmaker") S.st.seedsmade = (S.st.seedsmade || 0) + (m.n || 1); delete m.o; delete m.n; delete m.i; snd("coin"); checkGoals(); return; }
+    if (sel === "pick" && !m.i) { delete o.m[x + "," + y]; give(m.k, 1, undefined, undefined, true); if (m.k === "sprinkler") hMark(x, y, 3); thud(160, 0.06); hFx(x, y, "#8a6a4a", 8); return; }
+    if (m.k === "sprinkler") { if (press) nag("The sprinkler waters the soil around it. Use your pick to move it."); return; }
+    if (m.i) { if (press) nag(ITEMS[m.i] ? "Working on " + ITEMS[m.i].n + "... " + Math.ceil(m.t) + " s left." : "Working..."); return; }
+    var have = (S.inv[sel] || 0) > 0, crop = have && it && Object.keys(CROPS).some(function (c) { return CROPS[c].produce === sel || CROPS[c].produce + "_s" === sel || CROPS[c].produce + "_g" === sel; }), base = crop ? sel.replace(/_[sg]$/, "") : null;
+    var take = function (n) { S.inv[sel] -= n; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; bare = true; } reslot(); hbDirty = true; };
+    if (m.k === "picklekeg") { if (!crop || !HF.pres[base]) { if (press) nag("Put a crop in the Pickle Keg: pick one on your hotbar, then tap the keg."); return; } var q = sel; take(1); m.i = q; m.t = m.T = 120 * fast; m.out = HF.pres[base]; m.on = /_g$/.test(q) ? 2 : 1; }
+    else if (m.k === "seedmaker") { var sk = null; Object.keys(CROPS).forEach(function (c) { if (CROPS[c].produce === base) sk = SEEDOF[c]; }); if (!crop || !sk) { if (press) nag("Put a crop in the Seed Maker to get its seeds."); return; } take(1); m.i = base; m.t = m.T = 60 * fast; m.out = sk; m.on = 2 + (Math.random() < 0.5 ? 1 : 0); }
+    else if (m.k === "compostbin") { if (sel !== "fiber" && sel !== "leaves") { if (press) nag("Fill the Compost Bin with Fiber or Leaves (4 at a time)."); return; } if ((S.inv[sel] || 0) < 4) { if (press) nag("You need 4 " + ITEMS[sel].n + "."); return; } var q2 = sel; take(4); m.i = q2; m.t = m.T = 90 * fast; m.out = "compost"; m.on = 3; }
+    thud(260, 0.05); hFx(x, y, "#c9a06a", 6);
+  }
+  function homeMachTick(sec) { var o = homeS(); if (!o.m) return; Object.keys(o.m).forEach(function (k) { var m = o.m[k]; if (!m.i || m.o) return; m.t -= sec; if (m.t <= 0) { m.o = m.out; m.n = m.on || 1; delete m.out; delete m.on; delete m.t; delete m.T; delete m.i; } }); }
+  // ---- animals ----
+  function homeAnimals() { var o = homeS(); if (!o.an) o.an = []; return o.an; }
+  function homeBldCap(b) { return (HF.bld[b.k] ? HF.bld[b.k].cap : 4) * (homeUp("coop") ? 2 : 1); }
+  function homeBldPop(bi) { return homeAnimals().filter(function (a) { return a.b === bi; }).length; }
+  function homeAnimalTick(dt) {   // wander the yard near home; go in at night
+    var o = homeS(), B = o.b || [], night = isNight(S.time);
+    homeAnimals().forEach(function (a) { var b = B[a.b]; if (!b) return; var D = HF.bld[b.k], dx2 = b.x + Math.floor(D.w / 2) + 0.5, dy2 = b.y + D.h + 0.6;
+      a.tt = (a.tt || 0) + dt; a.dir = a.dir || 1; if (a.x === undefined) { a.x = dx2; a.y = dy2; } if (!a.w && ANIM[a.k]) { a.w = ANIM[a.k].w; a.h = ANIM[a.k].h; }
+      if (night) { a.inside = 1; a.x = dx2; a.y = dy2; a.mv = 0; return; } a.inside = 0;
+      a.w2 = (a.w2 || 0) - dt; if (a.w2 <= 0 || a.tx === undefined) { a.w2 = 2 + Math.random() * 4; if (Math.random() < 0.4) { a.tx = a.x; a.ty = a.y; } else { a.tx = dx2 + (Math.random() - 0.5) * 10; a.ty = dy2 + Math.random() * 5 - 1; } }
+      var vx = a.tx - a.x, vy = a.ty - a.y, d = Math.sqrt(vx * vx + vy * vy), sp = (ANIM[a.k] ? ANIM[a.k].spd : 1) * 0.9;
+      if (d > 0.15) { var nx = a.x + vx / d * sp * dt, ny = a.y + vy / d * sp * dt; if (!homeSolid(Math.floor(nx), Math.floor(ny - 0.1)) && !homeWater(hmT(Math.floor(nx), Math.floor(ny - 0.1)))) { a.x = nx; a.y = ny; } else { a.tx = a.x; a.ty = a.y; } a.mv = sp; if (Math.abs(vx) > 0.05) a.dir = vx < 0 ? -1 : 1; } else a.mv = 0;
+    });
+  }
+  function homeAnimalDaily() {   // each morning: animals with hay in their trough leave something behind
+    var o = homeS(), B = o.b || [], made = 0;
+    homeAnimals().forEach(function (a) { var b = B[a.b], A = ANIM[a.k]; if (!b || !A) return;
+      if ((b.hay || 0) <= 0) { a.hungry = 1; return; } b.hay--; a.hungry = 0;
+      var n = 1 + (Math.random() < (a.f || 0) / 20 ? 1 : 0), D = HF.bld[b.k];
+      for (var q = 0; q < n; q++) { if (!o.dr) o.dr = []; if (o.dr.length > 60) break; var px = b.x + Math.random() * (D.w + 2) - 1, py = b.y + D.h + 0.3 + Math.random() * 1.6; o.dr.push({ k: A.prod, x: px, y: py }); made++; }
+    });
+    if (made) popup("Your animals", made + " thing" + (made === 1 ? "" : "s") + " waiting by the coop and barn.", "#f6eedb", "♥");
+    if (homeAnimals().some(function (a) { return a.hungry; })) toast("Some animals had no hay. Put Fiber in their trough so they produce.", "#f2c14e");
+  }
+  function homeAnimalAt(wx, wy) { var L = homeAnimals(); for (var i = 0; i < L.length; i++) { var a = L[i]; if (!a.inside && Math.abs(a.x - wx) < 0.7 && wy > a.y - 1.1 && wy < a.y + 0.3) return a; } return null; }
+  function homePet(a) { var d = S.days | 0; if (a.pd === d) { text(a.x, a.y - 1.2, a.nm + " is happy", "#ffb0d8"); return; } a.pd = d; a.f = Math.min(10, (a.f || 0) + 1); for (var i = 0; i < 5; i++) parts.push({ x: a.x + (Math.random() - 0.5) * 0.6, y: a.y - 1, vx: (Math.random() - 0.5) * 1.5, vy: -1.5 - Math.random(), g: -1, life: 0.9, max: 1, c: "#ff7ab8", s: 4 }); text(a.x, a.y - 1.3, "♥ " + a.nm, "#ff9ad0"); S.st.petted = (S.st.petted || 0) + 1; thud(700, 0.03); checkGoals(); }
+  function homePickDrop(wx, wy) { var o = homeS(), D = o.dr || []; for (var i = 0; i < D.length; i++) if (Math.abs(D[i].x - wx) < 0.6 && Math.abs(D[i].y - 0.3 - wy) < 0.6) { var d = D.splice(i, 1)[0]; give(d.k, 1, undefined, undefined, true); fmLog("a:" + d.k); text(d.x, d.y - 0.6, "+1 " + ITEMS[d.k].n, "#ffe9a8"); S.st.aprod = (S.st.aprod || 0) + 1; snd("coin"); checkGoals(); return true; } return false; }
+  // ---- the coop / barn window ----
+  var bldAt = null;
+  function openBld(b) { bldAt = b; var el = $("sbxStory"); if (!el) return; storyOpen = 225; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderBld(); }
+  function renderBld() {
+    var o = homeS(), b = bldAt, D = HF.bld[b.k], bi = (o.b || []).indexOf(b), L = homeAnimals().filter(function (a) { return a.b === bi; }), cap = homeBldCap(b), fib = S.inv.fiber || 0;
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon(b.k) + '"><div><small>Your Homestead</small><h2>' + esc(ITEMS[b.k].n) + '</h2><p class="mo-sub">' + L.length + " / " + cap + " animals. Each morning, every animal eats 1 hay from the trough and leaves " + (b.k === "duckcoop" ? "an egg" : "something") + " outside. Pet them once a day: happy animals sometimes leave two.</p></div></div>";
+    h += '<p class="mo-msg">Hay in the trough: <b>' + (b.hay || 0) + "</b> (Fiber is hay)</p>";
+    h += '<ul class="mo-list">' + (L.length ? L.map(function (a) { var A = ANIM[a.k]; return '<li class="have"><img alt="" src="' + icon(A.prod) + '"><div><b>' + esc(a.nm) + " the " + esc(A.n) + "</b><small>" + "♥".repeat(Math.ceil((a.f || 0) / 2)) + "♡".repeat(5 - Math.ceil((a.f || 0) / 2)) + (a.hungry ? " · hungry" : "") + "</small></div></li>"; }).join("") : '<li><div><b>No animals yet</b><small>Buy them at the Seed Stall.</small></div></li>') + "</ul>";
+    h += '<div class="st-row">' + (fib ? '<button type="button" class="btn" data-hbld="hay">Add ' + Math.min(fib, 40 - (b.hay || 0)) + " Fiber</button>" : "") + (!L.length ? '<button type="button" class="btn ghost" data-hbld="move">Pick it up</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#c9a06a"); $("sbxStoryBox").innerHTML = h;
+  }
+  function bldAct(a) { var o = homeS(), b = bldAt; if (!b) return;
+    if (a === "hay") { var n = Math.min(S.inv.fiber || 0, 40 - (b.hay || 0)); if (n <= 0) return; S.inv.fiber -= n; if (S.inv.fiber <= 0) delete S.inv.fiber; b.hay = (b.hay || 0) + n; reslot(); hbDirty = true; thud(300, 0.04); renderBld(); return; }
+    if (a === "move") { var bi = o.b.indexOf(b); if (homeBldPop(bi)) return; o.b.splice(bi, 1); homeAnimals().forEach(function (q) { if (q.b > bi) q.b--; }); give(b.k, 1, undefined, undefined, true); if (b.hay) give("fiber", b.hay, undefined, undefined, true); closeStory(); thud(160, 0.06); }
+  }
+  // ---- the Farm Ledger (at the cottage door): upgrades ----
+  function openLedger() { var el = $("sbxStory"); if (!el) return; storyOpen = 226; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderLedger(); }
+  function renderLedger() {
+    var coins = S.inv.silvercoin || 0, h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("oldbook") + '"><div><small>Your Homestead</small><h2>Farm Ledger</h2><p class="mo-sub">Improvements for your homestead, paid in Silver Coins. You have <b>' + coins + "</b>.</p></div></div>";
+    h += '<ul class="mo-list">' + HF.ups.map(function (u) { var own = homeUp(u[0]), ok = !own && coins >= u[2]; return '<li class="' + (own || ok ? "have" : "") + '"><div><b>' + esc(u[1]) + "</b><small>" + esc(u[3]) + "</small></div>" + (own ? '<button type="button" class="btn mo-fit" disabled>Done</button>' : '<button type="button" class="btn mo-fit" data-hup="' + u[0] + '"' + (ok ? "" : " disabled") + ">" + u[2] + " Silver</button>") + "</li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffd23f"); $("sbxStoryBox").innerHTML = h;
+  }
+  function ledgerBuy(k) { var u = HF.ups.filter(function (q) { return q[0] === k; })[0], o = homeS(); if (!u || homeUp(k) || (S.inv.silvercoin || 0) < u[2]) return; S.inv.silvercoin -= u[2]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; if (!o.up) o.up = {}; o.up[k] = 1; S.st.hups = (S.st.hups || 0) + 1; if (k === "nozzle" && HOME) HOME.gd = 1; reslot(); hbDirty = true; snd("coin"); popup("Homestead upgrade", u[1], "#ffd23f", "★"); checkGoals(); save(); renderLedger(); }
+  function stallAnimal(k) { var q = HF.animals.filter(function (r) { return r[0] === k; })[0], o = homeS(); if (!q || (S.inv.silvercoin || 0) < q[1]) return;
+    var bi = -1; (o.b || []).forEach(function (b, i) { if (bi < 0 && b.k === q[2] && homeBldPop(i) < homeBldCap(b)) bi = i; }); if (bi < 0) { nag("Build a " + ITEMS[q[2]].n + " with room first."); return; }
+    S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; var A = ANIM[k], nm = A.names[Math.floor(Math.random() * A.names.length)];
+    homeAnimals().push({ k: k, b: bi, f: 0, pd: -1, nm: nm }); S.st.hanimals = (S.st.hanimals || 0) + 1; reslot(); hbDirty = true; snd("coin"); toast(nm + " the " + A.n + " moved into your " + ITEMS[q[2]].n + "!", "#7dd65a"); checkGoals(); save(); renderStall(); }
+  // ---------- HOMESTEAD stage 4: CROAKA, Old Croaker's sister, who lives on your homestead ----------
+  // S.home.ka = { met, f friendship 0-10, g highest heart gift given, ord: { day, k item, n, done } }
+  var CROAKA = { x: 10.5, y: 7.85, tx: 10, ty: 7 };
+  var CROAKA_HI = ["Morning, sprout! The soil's warm today.", "Croaker eats my pies and calls them 'fine'. FINE.", "Talk to your crops. I do. Mine say thank you in carrots.",
+    "Croako smells of bait. I smell of compost. Croaker smells of both. Family!", "Rain tonight, maybe. My knees say so.", "A farm's never finished. That's the fun of it."];
+  var CROAKA_TIPS = ["Soil next to water never dries out. Dig a canal and your crops will thank you.", "Compost and steady water make Prize crops. The cart pays double for those.",
+    "Moon crops only grow at night. Plant them at dusk, pick them at dawn.", "A 3 x 3 patch of melons or pumpkins might swell into a giant overnight.",
+    "Fiber is hay. Keep the trough full or the animals sulk.", "Pickle a Prize crop and you get two jars.", "Pet your animals once a day. Happy ducks lay double."];
+  var CROAKA_GIFT = [[2, { sprinkler: 2 }], [4, { picklekeg: 1 }], [6, { seedmaker: 1, compost: 5 }], [8, { silvercoin: 25 }], [10, { goldfrog: 1, silvercoin: 20 }]];
+  function croakaS() { var o = homeS(); if (!o.ka || typeof o.ka !== "object") o.ka = { met: 0, f: 0, g: 0, ord: null }; return o.ka; }
+  function croakaNear() { return HOME && Math.abs(cp.x - CROAKA.x) < 1.6 && Math.abs(cp.y - CROAKA.y) < 1.4; }
+  function croakaOrder() {   // a new request each day, for something you can make
+    var K = croakaS(), d = S.days | 0; if (K.ord && K.ord.day === d) return K.ord;
+    var pool = [], bits = S.st.cropbits || 0, o = homeS();
+    Object.keys(HBITS).forEach(function (c) { if ((bits & HBITS[c]) && CROPS[c]) pool.push(CROPS[c].produce); });
+    if (!pool.length) pool.push("carrot");
+    (o.an || []).forEach(function (a) { var A = ANIM[a.k]; if (A && pool.indexOf(A.prod) < 0) pool.push(A.prod); });
+    if (o.m && Object.keys(o.m).some(function (k) { return o.m[k].k === "picklekeg"; })) pool.push(HF.pres[pool[Math.floor(SW.hash(d, 3, 70) * Math.min(pool.length, 4))]] || "pres_carrot");
+    var k = pool[Math.floor(SW.hash(d, 7, 71) * pool.length)] || "carrot", v = HF.ship[k] || 1, n = clamp(Math.round(5 / v), 1, 8);
+    K.ord = { day: d, k: k, n: n, done: 0 }; return K.ord;
+  }
+  function croakaHave(k) { return (S.inv[k] || 0) + (S.inv[k + "_s"] || 0) + (S.inv[k + "_g"] || 0); }
+  function croakaReward(ord) { return Math.max(3, Math.ceil((HF.ship[ord.k] || 1) * ord.n * 1.6)); }
+  function talkCroaka() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 227; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    var K = croakaS(), first = !K.met; K.said = (K.said || 0) + 1;
+    if (!first && !(S.inv.farmbook > 0)) { K.book = 1; give("farmbook", 1, undefined, undefined, true); if (!S.vis.farmbook) { S.vis.farmbook = 1; K.bookNew = 1; popup("Croaka's Farm Almanac", "Everything you grow, raise and jar gets written in it.", "#a8c86a", "\u2740"); } }
+    if (first) { K.met = 1; S.st.croakamet = 1; S.vis.farmbook = 1; var gift = { farmbook: 1, seed_lilyleek: 4, seed_reedcorn: 4, compost: 3, silvercoin: 5 }; Object.keys(gift).forEach(function (k) { if (ITEMS[k]) give(k, gift[k], undefined, undefined, true); }); K.gift0 = gift; homeGoals(); }
+    renderCroaka(first);
+  }
+  function renderCroaka(first) {
+    var K = croakaS(), ord = croakaOrder(), have = croakaHave(ord.k), f = K.f || 0, next = CROAKA_GIFT.filter(function (q) { return q[0] > (K.g || 0); })[0];
+    var h = '<div class="st-croak" aria-hidden="true">' + CROAKA_SVG + "</div><small>Croaka, Old Croaker's sister</small>";
+    if (first) h += '<h2 class="st-hi">So YOU\'RE the one who moved in next to the reeds!</h2><p>“I\'m Croaka. Croaker\'s big sister, whatever he tells you. I\'ve farmed this bog since before he could hop. You\'ve got good soil here, and a pond, and that\'s half of farming. Here, some seeds to get you going, and a little something for the cart. I\'ll need a hand now and then. Come see me every day and I\'ll have a little job for you.”</p>'
+      + '<div class="st-gift">' + Object.keys(K.gift0 || {}).filter(function (k) { return ITEMS[k]; }).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + K.gift0[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>";
+    else if (K.bookNew) { K.bookNew = 0; h += '<h2 class="st-hi">Oh! I nearly forgot. This is for you.</h2><p>\u201cMy old Farm Almanac. Every crop you harvest, every egg, every jar, you write it in here. Fill a chapter and come show me. I pay in silver, and in pie, but mostly silver.\u201d</p><div class="st-gift"><span><img alt="" src="' + icon("farmbook") + '">1 Croaka\'s Farm Almanac</span></div>'; }
+    else h += '<h2 class="st-hi">' + esc(CROAKA_HI[((K.said || 0) + (S.days | 0)) % CROAKA_HI.length]) + "</h2>";
+    h += '<div class="hm-ord"><small>Today\'s Farm Order</small>' + (ord.done ? "<p><b>Done for today. Thank you, sprout!</b> Come back tomorrow.</p>"
+      : '<p><img alt="" src="' + icon(ord.k) + '"> <b>' + ord.n + " " + esc(ITEMS[ord.k] ? ITEMS[ord.k].n : ord.k) + "</b> · you have " + have + "<br><small>Pays " + croakaReward(ord) + " Silver Coins and a heart. Fine and Prize ones count too.</small></p>") + "</div>";
+    h += '<p class="hm-hearts">' + "♥".repeat(f) + '<span>' + "♡".repeat(10 - f) + "</span>" + (next ? " · next gift at " + next[0] + " hearts" : " · best friends!") + "</p>";
+    if (!first) h += '<p class="st-tip"><b>Croaka\'s tip:</b> ' + esc(CROAKA_TIPS[((K.said || 0) * 3 + (S.days | 0)) % CROAKA_TIPS.length]) + "</p>";
+    h += '<div class="st-row">' + (!ord.done ? '<button type="button" class="btn" data-croaka="give"' + (have >= ord.n ? "" : " disabled") + ">Deliver</button>" : "") + '<button type="button" class="btn ghost" data-croaka="almanac">Farm Almanac</button><button type="button" class="btn ghost" data-croaka="book">Farm chapter</button><button type="button" class="btn ghost" data-story-close>Bye, Croaka</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffb0d8"); $("sbxStoryBox").innerHTML = h; save();
+  }
+  function croakaAct(a) {
+    if (a === "book") { closeStory(); QB.ch = "s:Homesteader"; openPanel("quests"); return; }
+    if (a === "almanac") { closeStory(); var fpg = FMB.findIndex(function (P) { return fmPageDone(P) && !(S.hbpay && S.hbpay[P.id]); }); openFarmBook(fpg >= 0 ? fpg + 1 : 0); return; }
+    if (a !== "give") return; var K = croakaS(), ord = croakaOrder(); if (ord.done || croakaHave(ord.k) < ord.n) return;
+    var need = ord.n; [ord.k, ord.k + "_s", ord.k + "_g"].forEach(function (q) { var t = Math.min(need, S.inv[q] || 0); if (t > 0) { S.inv[q] -= t; if (S.inv[q] <= 0) { delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } } need -= t; } });
+    ord.done = 1; var pay = croakaReward(ord); give("silvercoin", pay, undefined, undefined, true); K.f = Math.min(10, (K.f || 0) + 1); S.st.orders = (S.st.orders || 0) + 1; S.st.croakaf = K.f;
+    snd("coin"); popup("Croaka's Farm Order", "+" + pay + " Silver Coins · ♥ " + K.f + " / 10", "#ffb0d8", "♥");
+    CROAKA_GIFT.forEach(function (q) { if (K.f >= q[0] && (K.g || 0) < q[0]) { K.g = q[0]; var names = []; Object.keys(q[1]).forEach(function (k) { if (ITEMS[k]) { give(k, q[1][k], undefined, undefined, true); names.push(q[1][k] + " " + ITEMS[k].n); } else give("silvercoin", 15, undefined, undefined, true); }); popup("A gift from Croaka", names.join(", ") || "15 Silver Coins", "#ffb0d8", "❀"); } });
+    reslot(); hbDirty = true; homeGoals(); renderCroaka(false);
+  }
+  var CROAKA_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="46" rx="22" ry="15" fill="#e86a8a" stroke="#8a2a4a" stroke-width="2.5"/>'
+    + '<path d="M14 44 L50 44 L47 58 L17 58Z" fill="#f6eedb"/><path d="M18 46h28M18 50h28M18 54h28M24 44v14M32 44v14M40 44v14" stroke="#e86a8a" stroke-width="1.4" opacity=".6"/>'
+    + '<ellipse cx="32" cy="31" rx="18" ry="12" fill="#7ab84a" stroke="#2f5a1e" stroke-width="2.5"/><circle cx="21" cy="22" r="8" fill="#7ab84a" stroke="#2f5a1e" stroke-width="2.5"/><circle cx="43" cy="22" r="8" fill="#7ab84a" stroke="#2f5a1e" stroke-width="2.5"/>'
+    + '<circle cx="21" cy="22" r="4.6" fill="#ffd23f"/><circle cx="43" cy="22" r="4.6" fill="#ffd23f"/><rect x="19.7" y="19.6" width="2.6" height="4.6" rx="1" fill="#12220f"/><rect x="41.7" y="19.6" width="2.6" height="4.6" rx="1" fill="#12220f"/>'
+    + '<circle cx="16" cy="32" r="3" fill="#ff9ab0" opacity=".7"/><circle cx="48" cy="32" r="3" fill="#ff9ab0" opacity=".7"/><path d="M24 33 Q32 39 40 33" fill="none" stroke="#12220f" stroke-width="2" stroke-linecap="round"/>'
+    + '<ellipse cx="32" cy="14" rx="27" ry="6" fill="#e8c46a" stroke="#8a6a2a" stroke-width="2"/><path d="M18 13 Q32 -3 46 13Z" fill="#f2d27a" stroke="#8a6a2a" stroke-width="2"/><rect x="18" y="10" width="28" height="3" fill="#e86a8a"/>'
+    + '<circle cx="44" cy="10" r="4" fill="#ff7ab0"/><circle cx="44" cy="10" r="1.6" fill="#ffd23f"/></svg>';
+  function drawCroaka(g, now) {   // Croaka: a farmer frog in a straw sun hat with a flower, a gingham dress, a basket of carrots
+    var sx = ox + CROAKA.x * ts, sy = oy + CROAKA.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.4) * 0.7, face = cp.x < CROAKA.x ? -1 : 1, near = croakaNear(), k = ts / 30, K = croakaS(), ord = croakaOrder();
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+    g.fillStyle = "#b07a44"; g.strokeStyle = "#5a3a1e"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-27, -9); g.lineTo(-13, -9); g.lineTo(-14, 0); g.closePath(); g.fill(); g.stroke();   // a basket
+    g.beginPath(); g.arc(-20, -9, 6, Math.PI, 0); g.stroke(); g.fillStyle = "#ff8a2a"; g.fillRect(-24, -12, 3, 4); g.fillRect(-19, -13, 3, 5); g.fillStyle = "#5ab84a"; g.fillRect(-23, -15, 1, 3); g.fillRect(-18, -16, 1, 3);
+    g.save(); g.scale(face, 1); g.translate(0, -br * 0.3);
+    g.fillStyle = "#6aa83a"; g.strokeStyle = "#2f5a1e"; g.lineWidth = 1.6; [-7, 6].forEach(function (fx) { g.beginPath(); g.ellipse(fx, -2.5, 6, 3, 0, 0, 7); g.fill(); g.stroke(); });
+    g.fillStyle = "#e86a8a"; g.strokeStyle = "#8a2a4a"; g.beginPath(); g.moveTo(-14, -3); g.quadraticCurveTo(-13, -22, 0, -24); g.quadraticCurveTo(13, -22, 14, -3); g.closePath(); g.fill(); g.stroke();   // dress
+    g.fillStyle = "rgba(255,240,240,.5)"; for (var gx = -10; gx <= 10; gx += 5) g.fillRect(gx, -21, 2, 18); for (var gy = -20; gy <= -5; gy += 5) g.fillRect(-12, gy, 24, 2);   // gingham
+    g.fillStyle = "#f6eedb"; g.strokeStyle = "#a89878"; g.lineWidth = 1; g.beginPath(); g.moveTo(-7, -18); g.lineTo(7, -18); g.lineTo(8, -4); g.lineTo(-8, -4); g.closePath(); g.fill(); g.stroke();   // apron
+    g.fillStyle = "#7ab84a"; g.strokeStyle = "#2f5a1e"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(1, -28, 12, 8, 0, 0, 7); g.fill(); g.stroke();
+    var blink = (now % 3900) < 140; g.beginPath(); g.arc(-5, -34, 4.6, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.arc(7, -34, 4.6, 0, 7); g.fill(); g.stroke();
+    if (blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; [-5, 7].forEach(function (ex) { g.beginPath(); g.moveTo(ex - 2.6, -34); g.lineTo(ex + 2.6, -34); g.stroke(); }); }
+    else [-5, 7].forEach(function (ex) { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ex, -34, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(ex - 0.8, -35.6, 1.6, 3.2); });
+    g.fillStyle = "rgba(255,140,170,.6)"; g.beginPath(); g.arc(-8, -27, 2.2, 0, 7); g.arc(10, -27, 2.2, 0, 7); g.fill();
+    g.strokeStyle = "#12220f"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-3, -25); g.quadraticCurveTo(1, -22, 6, -25); g.stroke();
+    g.fillStyle = "#e8c46a"; g.strokeStyle = "#8a6a2a"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(1, -38, 19, 4.2, 0, 0, 7); g.fill(); g.stroke();   // straw hat
+    g.beginPath(); g.moveTo(-9, -38); g.quadraticCurveTo(1, -52, 11, -38); g.closePath(); g.fill(); g.stroke(); g.fillStyle = "#e86a8a"; g.fillRect(-9.5, -41, 21, 2.6);
+    g.fillStyle = "#ff7ab0"; g.beginPath(); g.arc(9, -42, 3.2, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(9, -42, 1.3, 0, 7); g.fill();
+    g.restore();
+    var bang = !K.met || !ord.done || (S.inv.farmbook > 0 && FMB.some(function (P) { return fmPageDone(P) && !(S.hbpay && S.hbpay[P.id]); })), by = -62 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
+    if (bang) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = "#ffb0d8"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, 8, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = "#ffb0d8"; g.font = "900 11px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(K.met ? "♥" : "!", 0, by + 4); }
+    if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Croaka").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Croaka", 0, 13); }
+    g.restore();
+  }
+  // ---------- CROAKA'S FARM ALMANAC: a log book for everything you grow and make, like Croako's Fishing Log ----------
+  // Entries: "c:<crop>" harvested, "g:<crop>" giant crops grown, "a:<item>" animal products collected, "p:<item>" preserves made.
+  // S.hb = how many of each, S.hq = best quality per crop (1 Fine, 2 Prize), S.hbpay = chapters Croaka has paid for. The book is the item "farmbook".
+  var FMB = [
+    { id: "staples", n: "Garden Staples", sub: "Good soil, a little water, and patience", c: "#a8c86a", e: ["c:carrot", "c:potato", "c:lilyleek", "c:marshonion"], rw: { silvercoin: 6, compost: 3 },
+      note: "Every farm starts here. Till it, plant it, water it, and don't stand there staring. They grow faster when you're not looking." },
+    { id: "field", n: "Field & Vine", sub: "Taller crops for warmer beds", c: "#e8b84a", e: ["c:reedcorn", "c:bogbean", "c:pepper", "c:frost"], rw: { silvercoin: 10, sprinkler: 1 },
+      note: "Reedcorn likes its feet wet. Peppers like to be left alone. Frostberries, well. Frost Spikes drop the seeds, if you're brave." },
+    { id: "water", n: "Paddy & Moon", sub: "Crops of the water and the night", c: "#7ac8e8", e: ["c:bogrice", "c:lotus", "c:moonpetal", "c:glowgourd"], rw: { silvercoin: 12, seed_glowgourd: 2 },
+      note: "Level a ditch with your hoe and you've a paddy. Rice and lotus drink it up. Moon crops sleep all day and grow all night, lazy things." },
+    { id: "big", n: "The Big Ones", sub: "Melons, pumpkins, and the giants", c: "#ff9a4a", e: ["c:mudmelon", "c:croakpumpkin", "g:mudmelon", "g:croakpumpkin", "g:glowgourd"], rw: { silvercoin: 20, compost: 6 },
+      note: "Plant nine in a square and leave them ripe overnight. Sometimes they swell into one great big lump. Bring a strong arm." },
+    { id: "barn", n: "The Barnyard", sub: "Eggs, truffles and milk", c: "#f2d8a8", e: ["a:duckegg", "a:truffle", "a:goatmilk"], rw: { silvercoin: 15, fiber: 30 },
+      note: "Keep the trough full and say good morning. A happy duck lays two. A grumpy goat gives you a look." },
+    { id: "pantry", n: "The Pantry", sub: "Pickled, jarred and put by", c: "#e86a8a", e: ["p:pres_carrot", "p:pres_potato", "p:pres_reedcorn", "p:pres_lotusroot", "p:pres_mudmelon", "p:pres_croakpumpkin"], rw: { silvercoin: 20, picklekeg: 1 },
+      note: "My Pickle Keg is older than Croaker. Drop a crop in, wait, and you've got something the cart pays three times for." }
+  ];
+  var FMNOTE = { carrot: "Sweet and crunchy. Croaker eats them like candy.", potato: "Hides underground. Dig gently.", lilyleek: "Smells like a pond in spring. Lovely in soup.",
+    marshonion: "Makes even Croako cry, and he's tough.", reedcorn: "Tall as a heron by harvest.", bogbean: "Climbs anything. Including you, if you stand still.",
+    pepper: "Hot! Wash your paws before rubbing your eyes.", frost: "Cold to the touch even in summer.", bogrice: "Needs its feet in water every day of its life.",
+    lotus: "The flower's pretty. The root is dinner.", moonpetal: "Glows like a little moon. Picks best at dawn.", glowgourd: "Hums a bit at night. I don't ask.",
+    mudmelon: "Heavier than it looks. Lift with your legs.", croakpumpkin: "Carve a face in it and it croaks back. Probably." };
+  var FMG = { open: false, pg: 0, el: null, sel: "" };
+  function fmCount(k) { var n = (S.hb && S.hb[k]) || 0; if (!n && k.indexOf("c:") === 0) { var c = k.slice(2); if ((S.st.cropbits || 0) & (HBITS[c] || 0)) n = 1; } return n; }
+  function fmPageDone(P) { return P.e.every(function (k) { return fmCount(k) > 0; }); }
+  function fmItem(k) { var t = k.slice(0, 1), v = k.slice(2); return t === "c" || t === "g" ? (CROPS[v] ? CROPS[v].produce : v) : v; }
+  function fmName(k) { var t = k.slice(0, 1), v = k.slice(2), I = ITEMS[fmItem(k)]; if (t === "g") return "Giant " + (CROPS[v] ? CROPS[v].n : v); if (t === "c") return CROPS[v] ? CROPS[v].n : v; return I ? I.n : v; }
+  function fmLog(k, n, q) {   // something new for the almanac
+    if (!S.hb) S.hb = {}; var first = !fmCount(k); S.hb[k] = (S.hb[k] || 0) + (n || 1);
+    if (q && k.indexOf("c:") === 0) { if (!S.hq) S.hq = {}; S.hq[k.slice(2)] = Math.max(S.hq[k.slice(2)] || 0, q); }
+    if (first && (S.inv.farmbook || 0) > 0 && FMB.some(function (P) { return P.e.indexOf(k) >= 0; })) toast("New page in your Farm Almanac: " + fmName(k) + "!", "#a8c86a");
+  }
+  function openFarmBook(pg) {
+    if (!(S.inv.farmbook > 0)) { nag("Croaka on your homestead keeps a Farm Almanac. Go say hello."); return; }
+    if (storyOpen >= 0 && panelOpen) closeStory(); if (packOpen) closePack(); if (panelOpen) closePanel();
+    if (!FMG.el) { FMG.el = document.createElement("div"); FMG.el.className = "fb fm"; FMG.el.id = "sbxFarmBook"; FMG.el.setAttribute("role", "dialog"); FMG.el.setAttribute("aria-label", "Croaka's Farm Almanac"); stageEl.appendChild(FMG.el);
+      FMG.el.addEventListener("click", function (e) { var b = e.target.closest("[data-fm]"); if (e.target === FMG.el) { closeFarmBook(); return; } if (!b) return; var a = b.getAttribute("data-fm");
+        if (a === "x") closeFarmBook(); else if (a === "prev") fmGo(FMG.pg - 1); else if (a === "next") fmGo(FMG.pg + 1); else if (a.indexOf("pg:") === 0) fmGo(+a.slice(3)); else if (a.indexOf("pay:") === 0) fmPay(a.slice(4)); else if (a.indexOf("sel:") === 0) { FMG.sel = a.slice(4); try { tn(0, 700, 600, 0.04, "triangle", 0.015); } catch (e2) {} fmRender(); } }); }
+    FMG.open = true; panelOpen = true; stageEl.classList.add("panel"); stopInput(); FMG.pg = pg != null ? pg : FMG.pg; FMG.el.hidden = false; S.st.fmreads = (S.st.fmreads || 0) + 1; thud(260, 0.05); fmRender();
+  }
+  function closeFarmBook() { if (!FMG.open) return; FMG.open = false; FMG.el.hidden = true; panelOpen = false; stageEl.classList.remove("panel"); thud(200, 0.04); }
+  function fmGo(n) { if (n < 0 || n > FMB.length) return; FMG.pg = n; FMG.sel = ""; try { tn(0, 900 + Math.random() * 200, 500, 0.08, "triangle", 0.02); } catch (e) {} fmRender(true); }
+  function fmPay(id) {
+    var P = FMB.filter(function (q) { return q.id === id; })[0]; if (!P || !fmPageDone(P) || (S.hbpay && S.hbpay[id])) return; if (!S.hbpay) S.hbpay = {}; S.hbpay[id] = 1; S.st.fmpaid = (S.st.fmpaid || 0) + 1;
+    Object.keys(P.rw).forEach(function (k) { if (ITEMS[k]) give(k, P.rw[k], undefined, undefined, true); }); snd("open", "Epic");
+    popup("Croaka is proud of you!", P.n + ": " + Object.keys(P.rw).filter(function (k) { return ITEMS[k]; }).map(function (k) { return P.rw[k] + " " + ITEMS[k].n; }).join(", "), "#a8c86a", "\u2740"); checkGoals(); save(); fmRender();
+  }
+  function fmInfo(k) {   // [where it comes from, how long, a line in Croaka's hand]
+    var t = k.slice(0, 1), v = k.slice(2), C = CROPS[v];
+    if (t === "c" && C) return [(C.wat ? "A flooded paddy" : C.moon ? "Tilled soil, at night" : "Tilled soil") + " \u00b7 " + cropSeasons(v).join(", "), C.moon ? "Grows only at night" : "Ripe in about " + Math.round(C.t * 3 / 60 * 10) / 10 + " min" + (C.wat ? "" : ", half with water"), FMNOTE[v] || ""];
+    if (t === "g") return ["A 3 x 3 patch of ripe " + (C ? C.n : v) + "s", "Can swell overnight", "Three good whacks and it's yours."];
+    if (t === "a") { var A = Object.keys(ANIM).map(function (q) { return ANIM[q]; }).filter(function (q) { return q.prod === v; })[0]; return [A ? "Your " + A.n + "s" : "Your animals", "Every morning, with hay", A && A.k === "duck" ? "Still warm. Don't drop it." : "Good with everything."]; }
+    return ["A Pickle Keg", "About 2 minutes", "Sealed with love and a lot of vinegar."];
+  }
+  function fmRender(flip) {
+    var N = FMB.length, pg = FMG.pg, total = 0, all = 0, left, right;
+    FMB.forEach(function (P) { all += P.e.length; total += P.e.filter(function (k) { return fmCount(k) > 0; }).length; });
+    var tabs = '<nav class="fb-tabs" aria-label="Chapters">' + ['<button type="button" data-fm="pg:0" class="' + (pg === 0 ? "on" : "") + '" style="--tc:#7a9a3a" title="Inside cover">\u2302</button>'].concat(FMB.map(function (P, i) { return '<button type="button" data-fm="pg:' + (i + 1) + '" class="' + (pg === i + 1 ? "on" : "") + (fmPageDone(P) ? " full" : "") + '" style="--tc:' + P.c + '" title="' + esc(P.n) + '"><img alt="" src="' + icon(fmItem(P.e[0])) + '"></button>'; })).join("") + "</nav>";
+    if (pg === 0) {
+      left = '<div class="fb-pg fb-l"><p class="fb-hand fb-big">Croaka\'s<br>Farm Almanac</p><div class="fb-crest" aria-hidden="true">' + CROAKA_SVG + '</div><p class="fb-hand">Kept by <b>' + esc(WUSER && WUSER !== "guest" ? WUSER : "a hard-working little farmer") + "</b></p><p class=\"fb-small\">Pressed flowers inside. Mind the jam stain on page four. That was Croaker.</p></div>";
+      right = '<div class="fb-pg fb-r"><p class="fb-hand">Entries written</p><p class="fb-count"><b>' + total + "</b> / " + all + '</p><div class="fb-meter"><i style="width:' + Math.round(total / all * 100) + '%"></i></div><ul class="fb-toc">'
+        + FMB.map(function (P, i) { var n = P.e.filter(function (k) { return fmCount(k) > 0; }).length; return '<li><button type="button" data-fm="pg:' + (i + 1) + '"><span class="dot" style="background:' + P.c + '"></span><span class="fb-hand">' + esc(P.n) + "</span><em>" + n + "/" + P.e.length + (fmPageDone(P) ? (S.hbpay && S.hbpay[P.id] ? " \u2714" : " \u2605") : "") + "</em></button></li>"; }).join("") + "</ul>"
+        + '<p class="fb-small">Everything you grow, raise and jar on your homestead is written in here. Fill a chapter and Croaka pays.</p></div>';
+    } else {
+      var P = FMB[pg - 1], done = fmPageDone(P), paid = S.hbpay && S.hbpay[P.id], got = P.e.filter(function (k) { return fmCount(k) > 0; }).length;
+      if (!FMG.sel || P.e.indexOf(FMG.sel) < 0) FMG.sel = P.e.filter(function (k) { return fmCount(k) > 0; })[0] || P.e[0];
+      var k = FMG.sel, n = fmCount(k), I = fmInfo(k), it = fmItem(k), qv = k.indexOf("c:") === 0 ? (S.hq && S.hq[k.slice(2)]) || 0 : 0, tag = k.slice(0, 1) === "g" ? ["Giant", "#ff9a4a"] : k.slice(0, 1) === "a" ? ["Barnyard", "#c9a876"] : k.slice(0, 1) === "p" ? ["Preserves", "#e86a8a"] : qv === 2 ? ["Prize \u2605", "#d8a020"] : qv === 1 ? ["Fine \u2606", "#8a98a8"] : ["Crop", "#6a9a3a"];
+      var verb = k.slice(0, 1) === "c" ? "Harvested" : k.slice(0, 1) === "g" ? "Grown" : k.slice(0, 1) === "a" ? "Collected" : "Made";
+      var detail = '<div class="fb-det' + (n ? "" : " no") + '"><div class="fb-sk big' + (k.slice(0, 1) === "g" ? " fm-giant" : "") + '"><img alt="" src="' + icon(it) + '"></div><div class="fb-txt"><b class="fb-hand">' + esc(n ? fmName(k) : "???") + '</b><span class="fb-rar" style="--rc:' + tag[1] + '">' + tag[0] + "</span><small>" + esc(I[0]) + " \u00b7 " + esc(I[1]) + "</small>"
+        + (n ? '<p class="fb-hand fb-line">' + esc(I[2]) + '</p><span class="fb-st">' + verb + " <b>" + n + "</b>" + (qv ? " \u00b7 Best <b>" + (qv === 2 ? "Prize" : "Fine") + "</b>" : "") + "</span>" : '<p class="fb-hand fb-line fb-blank">(a pressed leaf, waiting for its first harvest)</p>') + "</div></div>";
+      left = '<div class="fb-pg fb-l" style="--pc:' + P.c + '"><p class="fb-ch">Chapter ' + pg + " \u00b7 " + got + " of " + P.e.length + ' written</p><p class="fb-hand fb-big">' + esc(P.n) + '</p><p class="fb-small">' + esc(P.sub) + '</p><div class="fb-scene fm-' + P.id + '" aria-hidden="true"><i></i><i></i><i></i></div><p class="fb-hand fb-note">\u201c' + esc(P.note) + "\u201d</p>" + detail + "</div>";
+      right = '<div class="fb-pg fb-r"><div class="fb-grid">' + P.e.map(function (q) { var c = fmCount(q);
+        return '<button type="button" class="fb-card' + (c ? "" : " no") + (q === k ? " sel" : "") + (q.slice(0, 1) === "g" ? " fm-giant" : "") + '" data-fm="sel:' + q + '" style="--rc:' + P.c + '"><span class="fb-sk"><img alt="" src="' + icon(fmItem(q)) + '"></span><span class="fb-cn">' + esc(c ? fmName(q) : "???") + "</span><em>" + (c ? "\u00d7" + c : "not yet") + "</em></button>"; }).join("") + "</div>"
+        + (done ? (paid ? '<div class="fb-stamp">Chapter complete</div>' : '<button type="button" class="btn fb-pay" data-fm="pay:' + P.id + '">Claim Croaka\'s reward</button>') : '<p class="fb-small fb-rw">A full chapter pays: ' + Object.keys(P.rw).filter(function (q) { return ITEMS[q]; }).map(function (q) { return P.rw[q] + " " + esc(ITEMS[q].n); }).join(", ") + "</p>") + "</div>";
+    }
+    FMG.el.innerHTML = '<div class="fb-book' + (flip ? " flip" : "") + '"><button type="button" class="fb-x" data-fm="x" aria-label="Close the Farm Almanac">&times;</button>' + tabs + '<div class="fb-spread">' + left + right + "</div>"
+      + '<div class="fb-nav"><button type="button" class="btn ghost" data-fm="prev"' + (pg <= 0 ? " disabled" : "") + '>\u2190 Page</button><span class="fb-hand">' + (pg === 0 ? "Inside cover" : FMB[pg - 1].n) + '</span><button type="button" class="btn ghost" data-fm="next"' + (pg >= N ? " disabled" : "") + ">Page \u2192</button></div></div>";
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-fmopen]")) { e.preventDefault(); openFarmBook(0); } });
+  function homeClean(h) {
+    var d = { ed: {}, c: {}, w: {}, ship: {}, cr: 0, day: 0 }; if (!h || typeof h !== "object") return d;
+    var ok = function (k) { return /^\d+,\d+$/.test(k); };
+    if (h.ed && typeof h.ed === "object") Object.keys(h.ed).forEach(function (k) { var v = h.ed[k] | 0; if (ok(k) && v >= 0 && v <= 18) d.ed[k] = v; });
+    if (h.c && typeof h.c === "object") Object.keys(h.c).forEach(function (k) { var e = h.c[k]; if (ok(k) && e && CROPS[e.k]) d.c[k] = { k: e.k, g: Math.max(0, +e.g || 0), s: clamp(e.s | 0, 1, 4), w: Math.max(0, +e.w || 0), d: Math.max(0, +e.d || 0) }; });
+    if (h.f && typeof h.f === "object") { d.f = {}; Object.keys(h.f).forEach(function (k) { if (ok(k) && h.f[k]) d.f[k] = 1; }); }
+    if (Array.isArray(h.gi)) d.gi = h.gi.filter(function (g) { return g && CROPS[g.k] && g.x >= 2 && g.y >= 2 && g.x < HW - 4 && g.y < HH - 4; }).slice(0, 40).map(function (g) { return { k: g.k, x: g.x | 0, y: g.y | 0, h: 0 }; });
+    if (h.w && typeof h.w === "object") Object.keys(h.w).forEach(function (k) { var v = +h.w[k] || 0; if (ok(k) && v > 0) d.w[k] = Math.min(600, v); });
+    if (h.ship && typeof h.ship === "object") Object.keys(h.ship).forEach(function (k) { var v = h.ship[k] | 0; if (ITEMS[k] && v > 0) d.ship[k] = v; });
+    var okI = function (k) { return typeof k === "string" && !!ITEMS[k]; };
+    if (h.m && typeof h.m === "object") { d.m = {}; Object.keys(h.m).forEach(function (k) { var m = h.m[k]; if (!ok(k) || !m || !HF.mach || !HF.mach[m.k]) return; var e = { k: m.k }; if (okI(m.o)) { e.o = m.o; e.n = clamp(m.n | 0, 1, 9); } else if (okI(m.i) && okI(m.out)) { e.i = m.i; e.out = m.out; e.on = clamp(m.on | 0, 1, 9); e.t = Math.max(0, +m.t || 0); e.T = Math.max(1, +m.T || 60); } d.m[k] = e; }); }
+    if (Array.isArray(h.b)) d.b = h.b.filter(function (b) { return b && HF.bld && HF.bld[b.k] && b.x >= 2 && b.y >= 2 && b.x < HW - 2 && b.y < HH - 2; }).slice(0, 12).map(function (b) { return { k: b.k, x: b.x | 0, y: b.y | 0, hay: clamp(b.hay | 0, 0, 99) }; });
+    if (Array.isArray(h.an)) d.an = h.an.filter(function (a) { return a && ANIM[a.k] && d.b && d.b[a.b | 0]; }).slice(0, 40).map(function (a) { return { k: a.k, b: a.b | 0, f: clamp(+a.f || 0, 0, 10), pd: a.pd | 0, nm: String(a.nm || ANIM[a.k].names[0]).slice(0, 20), hungry: a.hungry ? 1 : 0 }; });
+    if (Array.isArray(h.dr)) d.dr = h.dr.filter(function (q) { return q && okI(q.k); }).slice(0, 60).map(function (q) { return { k: q.k, x: clamp(+q.x || 0, 2, HW - 2), y: clamp(+q.y || 0, 2, HH - 2) }; });
+    if (h.up && typeof h.up === "object") { d.up = {}; (HF.ups || []).forEach(function (u) { if (h.up[u[0]]) d.up[u[0]] = 1; }); }
+    if (h.ka && typeof h.ka === "object") { var ka = h.ka; d.ka = { met: ka.met ? 1 : 0, f: clamp(ka.f | 0, 0, 10), g: clamp(ka.g | 0, 0, 10), said: ka.said | 0, ord: null }; if (ka.ord && okI(ka.ord.k)) d.ka.ord = { day: ka.ord.day | 0, k: ka.ord.k, n: clamp(ka.ord.n | 0, 1, 20), done: ka.ord.done ? 1 : 0 }; }
+    d.cr = clamp(+h.cr || 0, 0, 1); d.day = h.day | 0; return d;
+  }
+  var HCLK = 0; function homeClock(dt) { HCLK += dt; if (HCLK >= 1) { var s = HCLK; HCLK = 0; homeStep(s); } }
+  // ---- homestead art (drawn in code): a little atlas of ground tiles, 4 variants each ----
+  function homeAtlas() {
+    if (HATL) return HATL; var c = document.createElement("canvas"); c.width = 64; c.height = 16 * 8; var g = c.getContext("2d");
+    var rows = [["#4f8f3a", "#64a845", "#3f7a30"], ["#5a4128", "#6e5233", "#463220"], ["#6a4528", "#7c5434", "#53361f"], ["#3e2a1a", "#4c3422", "#2e1f13"], ["#b49a6a", "#c8ae7c", "#9a8258"], ["#3a2818", "#4a3420", "#2a1c10"], ["#2f7fa0", "#4aa8c8", "#256a88"], ["#3c7a2e", "#4f8f3a", "#2f6524"]];
+    rows.forEach(function (R, r) { for (var v = 0; v < 4; v++) { var ox2 = v * 16, oy2 = r * 16; g.fillStyle = R[0]; g.fillRect(ox2, oy2, 16, 16);
+      for (var y = 0; y < 16; y++) for (var x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y + r * 16, 77); if (h < 0.16) { g.fillStyle = R[1]; g.fillRect(ox2 + x, oy2 + y, 1, 1); } else if (h > 0.88) { g.fillStyle = R[2]; g.fillRect(ox2 + x, oy2 + y, 1, 1); } }
+      if (r === 0 || r === 7) for (var k = 0; k < 5; k++) { var gx = Math.floor(SW.hash(k, v, 78) * 14) + 1, gy = Math.floor(SW.hash(k, v, 79) * 13) + 2; g.fillStyle = R[1]; g.fillRect(ox2 + gx, oy2 + gy - 2, 1, 2); g.fillRect(ox2 + gx + 1, oy2 + gy - 1, 1, 1); }
+      if (r === 2 || r === 3) { g.fillStyle = R[2]; for (var yy = 2; yy < 16; yy += 4) g.fillRect(ox2, oy2 + yy, 16, 1); g.fillStyle = R[1]; for (var y2 = 1; y2 < 16; y2 += 4) g.fillRect(ox2, oy2 + y2, 16, 1); }
+      if (r === 3) { g.fillStyle = "rgba(140,210,255,.22)"; g.fillRect(ox2 + 3 + v, oy2 + 5, 3, 1); g.fillRect(ox2 + 10 - v, oy2 + 9, 2, 1); }
+      if (r === 4) { g.fillStyle = "#8a7448"; for (var p2 = 0; p2 < 3; p2++) g.fillRect(ox2 + Math.floor(SW.hash(p2, v, 80) * 13), oy2 + Math.floor(SW.hash(p2, v, 81) * 13), 3, 2); }
+      if (r === 5) { g.fillStyle = "#1e140a"; g.fillRect(ox2 + 2, oy2 + 2, 12, 12); g.fillStyle = "#5a4128"; g.fillRect(ox2 + 2, oy2 + 2, 12, 2); }
+    } });
+    return (HATL = c);
+  }
+  var HROW = [0, 1, 1, 2, 6, 5, 4, 7, 0, 0, 0, 4, 1, 0, 0, 6, 0, 1, 1];   // which atlas row each homestead tile sits on
+  // =====================================================================================================================================
+  // ---------- HOMESTEAD LOOK: built from Delve's own blocks ----------
+  // Every surface and object here is a real Delve block's art (the tile atlas and the block materials), seen from a gentle 3/4 tilt the way
+  // caves and buildings are: Mossy Mud grass sits a step higher than the Mud fields and shows its mossy side along the south edge, Garden Soil
+  // and Watered Soil are the farm blocks, the path is Mossy Cobblestone, water is Delve's teal water over mud, trees are Swamp Log trunks
+  // under Leaves blocks, rocks are the cave boulders, and the cottage is Log Wall, Mossy Shingles, Stone Brick and a Swamp Door.
+  // The ground is painted once (HG, 16 px per tile) and repainted only when it changes.
+  var HG = null, HSPR = {}, HTID = {};
+  function htid(n) { if (HTID[n] !== undefined) return HTID[n]; for (var i = 0; i < TILES.length; i++) if (TILES[i] && TILES[i].n === n) return (HTID[n] = i); return (HTID[n] = -1); }
+  function hpCan(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; var g = c.getContext("2d"); g.imageSmoothingEnabled = false; return { c: c, g: g }; }
+  function hAt(g, id, x, y, flip) { if (id < 0) return; if (flip) { g.save(); g.translate(x + 16, y); g.scale(-1, 1); g.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16); g.restore(); } else g.drawImage(ATLAS, 0, id * 16, 16, 16, x, y, 16, 16); }
+  function hMat(id, v, mask) { var F = MATF[id]; if (!F) return null; var key = "m" + id + ":" + v + ":" + mask; return HSPR[key] || (HSPR[key] = paintMat(F, F.p, v, mask, 16)); }
+  function hpOutline(c) {   // a thin dark outline around everything drawn on the canvas (empty pixels that touch it)
+    var g = c.getContext("2d"), W = c.width, H = c.height, d = g.getImageData(0, 0, W, H), a = d.data, o = new Uint8ClampedArray(a), x, y;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) { var i = (y * W + x) * 4; if (a[i + 3] > 60) continue;
+      if ((x > 0 && a[i - 1] > 160) || (x + 1 < W && a[i + 7] > 160) || (y > 0 && a[i - W * 4 + 3] > 160) || (y + 1 < H && a[i + W * 4 + 3] > 160)) { o[i] = 18; o[i + 1] = 14; o[i + 2] = 10; o[i + 3] = 235; } }
+    d.data.set(o); g.putImageData(d, 0, 0); return c;
+  }
+  function hOT(id) { var key = "o" + id; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 18); S2.g.drawImage(ATLAS, 0, id * 16, 16, 16, 1, 1, 16, 16); return (HSPR[key] = hpOutline(S2.c)); }
+  // ---------- SCENE LIGHT: one sun, colour grade, light pools and cast shadows for the homestead and the ocean ----------
+  // sunState: where the sun is (u: 0 at sunrise t=440 .. 1 at sunset t=280) or, at night, the moon. sx is the light's side (+1 = it is on
+  // the left, so shadows fall right), e its height (0..1), len how long the shadows are, a how dark they are.
+  function liteFx() { return OPT.light === "simple" || reduce || lowq; }   // the Lighting option (Simple), or a device that has dropped its extras
+  function sunState(t) {
+    var u = ((t - 440 + CYCLE) % CYCLE) / 320, up = u <= 1, e, sx;
+    if (up) { e = Math.sin(u * Math.PI); sx = Math.cos(u * Math.PI); } else { var mu = (u * 320 - 320) / 160; e = Math.sin(mu * Math.PI) * 0.6; sx = Math.cos(mu * Math.PI); }
+    return { up: up, e: e, sx: sx, len: clamp(0.4 / Math.max(0.3, e), 0.4, 1.3), a: up ? 0.27 * clamp(e * 4, 0, 1) : 0.1 * clamp(e * 3, 0, 1), warm: sunsetK(t), dl: daylight(t) };
+  }
+  // gradeOv: the time of day as a see-through colour laid over the picture: nothing at midday, a gold film late in the afternoon,
+  // coral at sunset, violet at dusk, deep navy through the night, and a rose dawn. { c: [r, g, b], a: alpha }
+  var GRADE = [[0, [255, 200, 170], 0.1], [40, [255, 220, 190], 0], [165, [255, 210, 150], 0], [222, [255, 186, 100], 0.13], [248, [240, 112, 80], 0.24], [266, [86, 48, 118], 0.42], [284, [22, 26, 72], 0.58],
+    [300, [10, 16, 48], 0.64], [420, [10, 16, 48], 0.64], [444, [52, 40, 104], 0.48], [462, [240, 150, 140], 0.2], [480, [255, 200, 170], 0.1]];
+  function gradeOv(t) { t = ((t % CYCLE) + CYCLE) % CYCLE; for (var i = 1; i < GRADE.length; i++) if (t <= GRADE[i][0]) { var A = GRADE[i - 1], B = GRADE[i], k = (t - A[0]) / (B[0] - A[0]); return { c: mixC(A[1], B[1], k), a: lerp(A[2], B[2], k) }; } return { c: GRADE[0][1], a: GRADE[0][2] }; }
+  // sceneLight: multiply the frame by the ambient colour plus coloured pools of light (lights: [x, y, radius, "r,g,b", strength] in screen px),
+  // painted at half size and stretched (soft). Where a pool is, the picture keeps its own colours; everywhere else takes the grade.
+  var SLB = null;
+  function sceneLight(g, ov, lights, y0, y1, warm) {
+    if (ov.a < 0.006 && !(warm && warm.k > 0.02)) return;
+    // the grade is laid on as one see-through colour (the canvas's fast path; a multiply blend is costly on phones).
+    // Lights then cut soft holes in it and tint their pool with their own colour.
+    var A = clamp(ov.a, 0, 0.95), C = ov.c;
+    var sc = liteFx() ? 0.25 : 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc)), i;
+    if (!SLB) { SLB = { c: document.createElement("canvas") }; } if (SLB.c.width !== w || SLB.c.height !== h) { SLB.c.width = w; SLB.c.height = h; SLB.x = SLB.c.getContext("2d"); }
+    var q = SLB.x; q.globalCompositeOperation = "copy"; q.fillStyle = "rgba(" + (C[0] | 0) + "," + (C[1] | 0) + "," + (C[2] | 0) + "," + A.toFixed(3) + ")"; q.fillRect(0, 0, w, h); q.globalCompositeOperation = "source-over";
+    if (warm && warm.k > 0.02) {   // a low sun: its side of the picture glows warm, the far side cools a little
+      var wx0 = warm.sx > 0 ? 0 : w, wg = q.createLinearGradient(wx0, 0, w - wx0, h); wg.addColorStop(0, "rgba(255,150,70," + (0.2 * warm.k).toFixed(3) + ")"); wg.addColorStop(0.6, "rgba(255,150,70,0)"); wg.addColorStop(1, "rgba(60,40,110," + (0.16 * warm.k).toFixed(3) + ")"); q.fillStyle = wg; q.fillRect(0, 0, w, h); }
+    var vis = [];
+    for (i = 0; i < lights.length; i++) { var L = lights[i], X = L[0] * sc, Y = L[1] * sc, R = L[2] * sc; if (R < 1 || X < -R || Y < -R || X > w + R || Y > h + R || L[4] <= 0.004) continue; vis.push([X, Y, R, L[3], Math.min(1, L[4])]); }
+    if (vis.length) {
+      q.globalCompositeOperation = "destination-out";
+      vis.forEach(function (L) { var gr = q.createRadialGradient(L[0], L[1], 0, L[0], L[1], L[2]); gr.addColorStop(0, "rgba(0,0,0," + L[4].toFixed(3) + ")"); gr.addColorStop(0.45, "rgba(0,0,0," + (L[4] * 0.55).toFixed(3) + ")"); gr.addColorStop(1, "rgba(0,0,0,0)"); q.fillStyle = gr; q.fillRect(L[0] - L[2], L[1] - L[2], L[2] * 2, L[2] * 2); });
+      q.globalCompositeOperation = "source-over";
+      vis.forEach(function (L) { var gr = q.createRadialGradient(L[0], L[1], 0, L[0], L[1], L[2]); gr.addColorStop(0, "rgba(" + L[3] + "," + (L[4] * 0.16).toFixed(3) + ")"); gr.addColorStop(1, "rgba(" + L[3] + ",0)"); q.fillStyle = gr; q.fillRect(L[0] - L[2], L[1] - L[2], L[2] * 2, L[2] * 2); });   // the light's own colour in its pool
+    }
+    g.save(); g.imageSmoothingEnabled = true;
+    var sy0 = y0 === undefined ? 0 : clamp(Math.floor(y0 * sc), 0, h), sy1 = y1 === undefined ? h : clamp(Math.ceil(y1 * sc), 0, h);
+    if (sy1 > sy0) g.drawImage(SLB.c, 0, sy0, w, sy1 - sy0, 0, sy0 / sc, vw, (sy1 - sy0) / sc); g.restore();
+  }
+  function sceneGlow(g, lights, k) {   // the bright heart of each light, added on top (it reads as glowing, and the bloom picks it up)
+    if (k <= 0.01) return; g.save(); g.globalCompositeOperation = "lighter";
+    lights.forEach(function (L) { if (!L[5]) return; var R = L[2] * L[5]; if (L[0] < -R || L[1] < -R || L[0] > vw + R || L[1] > vh + R) return; var gr = g.createRadialGradient(L[0], L[1], 0, L[0], L[1], R); gr.addColorStop(0, "rgba(" + L[3] + "," + (0.32 * k).toFixed(3) + ")"); gr.addColorStop(1, "rgba(" + L[3] + ",0)"); g.fillStyle = gr; g.fillRect(L[0] - R, L[1] - R, R * 2, R * 2); });
+    g.restore();
+  }
+  // CAST SHADOWS: every sprite drawn through the shadow recorder (SREC) lands as a dark silhouette on a half-size shadow layer, sheared
+  // along the ground away from the sun (long and sideways morning and evening, short at noon, faint moon shadows at night). Shadows that
+  // overlap merge instead of stacking darker. Base: the screen y of the ground line the sprite stands on.
+  var SILH = typeof WeakMap !== "undefined" ? new WeakMap() : null, SHL = null, SHCOL = "#0a1626";
+  function silhouette(img) {
+    var c = SILH.get(img); if (c) return c; var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height; if (!w || !h) return null;
+    c = document.createElement("canvas"); c.width = w; c.height = h; var q = c.getContext("2d"); q.drawImage(img, 0, 0); q.globalCompositeOperation = "source-in"; q.fillStyle = SHCOL; q.fillRect(0, 0, w, h); SILH.set(img, c); return c;
+  }
+  var NOOPR = { addColorStop: function () {}, width: 0 }, SRC0 = { B: 0, a: 0, k: 0.3, on: false, skip: null,
+    drawImage: function (img) { if (!SHL || img === this.skip || img === HSHD) return; var sil = silhouette(img); if (!sil) return; var q = SHL.x, B = this.B, a = this.a, k = this.k, args = Array.prototype.slice.call(arguments); args[0] = sil;
+      q.setTransform(SHL.sc, 0, 0, SHL.sc, 0, 0); q.transform(1, 0, -a, k, a * B, B * (1 - k)); q.drawImage.apply(q, args); },
+    body: function (x, B, rx, hh) {   // a standing figure (you, an animal, Croaka): an upright ellipse cast the same way
+      if (!SHL) return; var q = SHL.x, a = this.a, k = this.k; q.setTransform(SHL.sc, 0, 0, SHL.sc, 0, 0); q.transform(1, 0, -a, k, a * B, B * (1 - k)); q.fillStyle = SHCOL; q.beginPath(); q.ellipse(x, B - hh / 2, rx, hh / 2, 0, 0, 6.2832); q.fill(); } };
+  var SREC = typeof Proxy !== "undefined" ? new Proxy(SRC0, { get: function (t, k) { return k in t ? t[k] : function () { return NOOPR; }; }, set: function (t, k, v) { t[k] = v; return true; } }) : null;
+  function shadowBegin(sun) {   // returns false when there is nothing to cast (sun down and no moon, or a weak device)
+    if (!SREC || !SILH || sun.a < 0.015 || liteFx()) return false; var sc = 0.5, w = Math.max(1, Math.ceil(vw * sc)), h = Math.max(1, Math.ceil(vh * sc));
+    if (!SHL) SHL = { c: document.createElement("canvas") }; if (SHL.c.width !== w || SHL.c.height !== h) { SHL.c.width = w; SHL.c.height = h; SHL.x = SHL.c.getContext("2d"); }
+    SHL.sc = sc; SHL.x.setTransform(1, 0, 0, 1, 0, 0); SHL.x.clearRect(0, 0, w, h); SHL.x.imageSmoothingEnabled = false;
+    SRC0.a = sun.sx * sun.len * 0.9; SRC0.k = -(0.2 + 0.2 * sun.len); return true;   // k < 0: the shadow lies on the ground in front, flipped down from the base
+  }
+  function shadowEnd(g, sun) { if (!SHL) return; g.save(); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.globalAlpha = sun.a; g.imageSmoothingEnabled = true; g.drawImage(SHL.c, 0, 0, SHL.c.width, SHL.c.height, 0, 0, SHL.c.width / SHL.sc, SHL.c.height / SHL.sc); g.restore(); }
+  var HSHD = null; function hpShadow(g, cx, cy, rx, ry, a) {
+    if (!HSHD) { HSHD = document.createElement("canvas"); HSHD.width = 64; HSHD.height = 32; var q = HSHD.getContext("2d"); q.fillStyle = "rgb(10,14,8)"; q.beginPath(); q.ellipse(32, 16, 31, 15, 0, 0, 6.2832); q.fill(); }
+    var ga = g.globalAlpha; g.globalAlpha = ga * a; g.drawImage(HSHD, cx - rx, cy - ry, rx * 2, ry * 2); g.globalAlpha = ga; }
+  // the homestead's grass uses Murkwater Swamp's own grass colours (GRASSP[0]: lip, top, mint highlight, tufts), as they look on screen
+  var HGR = { base: "#2c9864", mid: "#34a46c", dark: "#247f54", lip: "#2f9a6a", top: "#3fae78", hi: "#6ed098", tuft: "#58d68b" };
+  var HGRS = [   // the grass through the year (summer is Murkwater's own)
+    { base: "#34a466", mid: "#40b272", dark: "#2a8a56", lip: "#36a46c", top: "#4cbc80", hi: "#8ae0a8", tuft: "#66e090", dots: ["#ffc8e4", "#ff9ad0", "#ffffff"], dn: 0.012 },
+    { base: "#2c9864", mid: "#34a46c", dark: "#247f54", lip: "#2f9a6a", top: "#3fae78", hi: "#6ed098", tuft: "#58d68b", dots: null, dn: 0 },
+    { base: "#7a8a3c", mid: "#8a9442", dark: "#5e6e30", lip: "#74863c", top: "#94a24a", hi: "#c8c068", tuft: "#a8a84a", dots: ["#e8822a", "#c8402a", "#e8c040", "#a85a2a"], dn: 0.03 },
+    { base: "#e2ecf2", mid: "#d2e0ea", dark: "#b6c8d6", lip: "#c4d6e2", top: "#f2f7fb", hi: "#ffffff", tuft: "#9ab8a6", dots: ["#ffffff", "#cfe4f2"], dn: 0.02 }];
+  var HSEA = -1;   // the season the homestead's art was last built for
+  function homeSeasonArt() {   // a new season: rebuild the grass, trees and forest once
+    var sn = seasonOf(); if (sn === HSEA) return; HSEA = sn; var P2 = HGRS[sn]; Object.keys(HGR).forEach(function (k) { HGR[k] = P2[k]; });
+    Object.keys(HSPR).forEach(function (k) { if (/^(mossTop|tree|house|bld)/.test(k)) delete HSPR[k]; }); HFOR = null; if (HOME) { HOME.fk = null; HOME.gd = 1; }
+  }
+  function hMossTop() {   // a top-down tile of Murkwater grass
+    if (HSPR.mossTop) return HSPR.mossTop; var out = [], x, y;
+    var SP2 = HGRS[HSEA < 0 ? 1 : HSEA];
+    for (var v = 0; v < 4; v++) { var S2 = hpCan(16, 16), g = S2.g; g.fillStyle = HGR.base; g.fillRect(0, 0, 16, 16);
+      for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y, 57), h2 = SW.hash((x >> 2) + v * 4, y >> 2, 59), cl = h < 0.07 ? HGR.dark : h < 0.18 || (h2 < 0.3 && h < 0.42) ? HGR.mid : h > 0.985 ? HGR.hi : null; if (cl) { g.fillStyle = cl; g.fillRect(x, y, 1, 1); } }
+      for (var t2 = 0; t2 < 3; t2++) { var bx = Math.floor(SW.hash(t2, v, 58) * 13) + 1, by = Math.floor(SW.hash(v, t2, 58) * 11) + 3; g.fillStyle = HGR.tuft; g.fillRect(bx, by - 2, 1, 3); g.fillRect(bx + 2, by - 1, 1, 2); g.fillStyle = HGR.hi; g.fillRect(bx, by - 2, 1, 1); g.fillStyle = HGR.dark; g.fillRect(bx - 1, by + 1, 4, 1); }
+      if (SP2.dots) for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) if (SW.hash(x + v * 16, y, 64) < SP2.dn) { g.fillStyle = SP2.dots[Math.floor(SW.hash(y, x + v, 65) * SP2.dots.length)]; g.fillRect(x, y, HSEA === 2 ? 2 : 1, 1); }   // petals, fallen leaves or snow glints
+      out.push(S2.c); }
+    return (HSPR.mossTop = out);
+  }
+  function hgCode(id) { return id === HT.GRASS || id === HT.FLOWER || id === HT.HOUSE || id === HT.CRATE || id === HT.STALL || id === HT.FENCE ? 1 : id === HT.SOIL ? 2 : id === HT.PATH || id === HT.GATE ? 3 : id === HT.POND || id === HT.CANAL || id === HT.PADDYW ? 4 : id === HT.DITCH ? 5 : id === HT.PADDY ? 6 : id === HT.TREE ? 7 : 0; }
+  function hMark(x, y, r) {   // this part of the ground needs repainting (r tiles around it)
+    if (!HOME) return; r = r === undefined ? 1 : r; var R = HOME.gdr;
+    if (!R) HOME.gdr = { x0: x - r, y0: y - r, x1: x + r, y1: y + r }; else { R.x0 = Math.min(R.x0, x - r); R.y0 = Math.min(R.y0, y - r); R.x1 = Math.max(R.x1, x + r); R.y1 = Math.max(R.y1, y + r); }
+  }
+  function homeGround(R) {   // R: just repaint these tiles (x0..x1, y0..y1); no R: the whole map
+    var W = HW * 16, H = HH * 16, t = HOME.t, o = homeS(), i, j, x, y;
+    if (!HG) { HG = document.createElement("canvas"); HG.width = W; HG.height = H; R = null; }
+    var X0 = R ? Math.max(0, R.x0) : 0, Y0 = R ? Math.max(0, R.y0) : 0, X1 = R ? Math.min(HW - 1, R.x1) : HW - 1, Y1 = R ? Math.min(HH - 1, R.y1) : HH - 1;
+    var g = HG.getContext("2d"), MT = hMossTop(), cob = htid("Mossy Cobblestone"), soil = htid("Garden Soil"), wsoil = htid("Watered Soil"), peat = htid("Peat"), silt = htid("Silt");
+    g.save(); g.beginPath(); g.rect(X0 * 16, Y0 * 16, (X1 - X0 + 1) * 16, (Y1 - Y0 + 1) * 16); g.clip();
+    g.imageSmoothingEnabled = false; g.clearRect(X0 * 16, Y0 * 16, (X1 - X0 + 1) * 16, (Y1 - Y0 + 1) * 16);
+    var C = function (a, b) { return a < 0 || b < 0 || a >= HW || b >= HH ? 7 : hgCode(t[b * HW + a]); }, raised = function (c) { return c === 1 || c === 7; };
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
+      var c = C(i, j), X = i * 16, Y = j * 16, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
+      if (c === 1 || c === 7) { g.drawImage(MT[v], X, Y); if (c === 7) { g.fillStyle = "rgba(10,30,14,.38)"; g.fillRect(X, Y, 16, 16); } }
+      else if (c === 2) hAt(g, wsoil >= 0 && t[j * HW + i] === HT.SOIL && homeWet(i, j) ? wsoil : soil, X, Y);
+      else if (c === 3) { var cm = (C(i, j - 1) === 3 ? 0 : 1) | (C(i, j + 1) === 3 ? 0 : 2) | (C(i - 1, j) === 3 ? 0 : 4) | (C(i + 1, j) === 3 ? 0 : 8), mc = hMat(cob, (i & 1) | ((j & 1) << 1), cm); if (mc) g.drawImage(mc, X, Y); else hAt(g, cob, X, Y); }
+      else if (c === 5) hAt(g, peat, X, Y, v & 1);
+      else if (c === 6) hAt(g, silt, X, Y, v & 1);
+      else hAt(g, T.MUD, X, Y, v & 1);
+      if (c === 4) {   // Delve's water: teal over the mud, deeper further from the bank, with the bright surface line along the near shore
+        var dd = 0; for (var q = 1; q <= 3; q++) { if (C(i, j - q) === 4 && C(i - q, j) === 4 && C(i + q, j) === 4 && C(i, j + q) === 4) dd = q; else break; }
+        g.fillStyle = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.66 + dd * 0.07) + ")"; g.fillRect(X, Y, 16, 16);
+        if (t[j * HW + i] === HT.PADDYW) { g.fillStyle = "rgba(150,120,80,.25)"; g.fillRect(X, Y, 16, 16); }
+        if (HSEA === 3) { g.fillStyle = "rgba(214,236,248,.72)"; g.fillRect(X, Y, 16, 16); g.fillStyle = "rgba(255,255,255,.75)"; var ih = SW.hash(i, j, 66); if (ih < 0.5) { g.fillRect(X + 2 + Math.floor(ih * 18), Y + 3, 1, 5); g.fillRect(X + 3 + Math.floor(ih * 18), Y + 7, 3, 1); } if (ih > 0.7) g.fillRect(X + 9, Y + 9, 5, 1); g.fillStyle = "rgba(120,160,190,.35)"; g.fillRect(X + Math.floor(ih * 12), Y + 12, 4, 1); }   // winter: the water freezes over
+        if (C(i, j - 1) !== 4) { g.fillStyle = "rgba(10,40,48,.45)"; g.fillRect(X, Y, 16, 3); g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(X, Y + 3, 16, 1); }
+        if (C(i, j + 1) !== 4) { g.fillStyle = "rgba(210,255,248,.55)"; g.fillRect(X, Y + 15, 16, 1); }
+        if (C(i - 1, j) !== 4) { g.fillStyle = "rgba(210,255,248,.45)"; g.fillRect(X, Y, 1, 16); } if (C(i + 1, j) !== 4) { g.fillStyle = "rgba(210,255,248,.45)"; g.fillRect(X + 15, Y, 1, 16); }
+      }
+      if (t[j * HW + i] === HT.PADDY || t[j * HW + i] === HT.PADDYW) {   // paddies: a low Mud bank around each field
+        var pd = function (a, b) { var q2 = a < 0 || b < 0 || a >= HW || b >= HH ? 0 : t[b * HW + a]; return q2 === HT.PADDY || q2 === HT.PADDYW; };
+        g.fillStyle = "#6b4a2e"; if (!pd(i, j - 1)) g.fillRect(X, Y, 16, 2); if (!pd(i - 1, j)) g.fillRect(X, Y, 2, 16); if (!pd(i + 1, j)) g.fillRect(X + 14, Y, 2, 16); if (!pd(i, j + 1)) { g.fillStyle = "#8a6440"; g.fillRect(X, Y + 14, 16, 2); }
+      }
+      if (c === 5) { g.fillStyle = "rgba(0,0,0,.35)"; if (C(i, j - 1) !== 5) g.fillRect(X, Y, 16, 3); }
+      if (c === 2 && C(i, j - 1) !== 2) { g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(X, Y, 16, 2); }   // soil sits a little lower: a shadow along its top edge
+      if (t[j * HW + i] === HT.SOIL && o.f[i + "," + j]) { g.fillStyle = "#24160a"; for (var cq = 0; cq < 6; cq++) g.fillRect(X + 2 + Math.floor(SW.hash(i * 7 + cq, j, 50) * 12), Y + 4 + Math.floor(SW.hash(i, j * 7 + cq, 51) * 10), 2, 1); }
+    }
+    // the raised moss: its side (the real Mossy Mud block face) shows below every south edge, and moss tips spill over the other edges
+    for (j = Math.max(0, Y0 - 1); j <= Math.min(HH - 1, Y1 + 1); j++) for (i = Math.max(0, X0 - 1); i <= Math.min(HW - 1, X1 + 1); i++) {
+      var c2 = C(i, j); if (!raised(c2)) continue; var X2 = i * 16, Y2 = j * 16, below = C(i, j + 1);
+      if (!raised(below) && j + 1 < HH) { g.fillStyle = HGR.lip; g.fillRect(X2, Y2 + 16, 16, 3); for (var sc = 0; sc < 3; sc++) { var scx = X2 + 1 + sc * 5 + Math.floor(SW.hash(i * 3 + sc, j, 60) * 2); g.fillRect(scx, Y2 + 19, 4, 1); g.fillRect(scx + 1, Y2 + 20, 2, 1); }
+        g.fillStyle = HGR.top; g.fillRect(X2, Y2 + 16, 16, 1); g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(X2, Y2 + 21, 16, 2); }
+      if (!raised(C(i - 1, j)) && i > 0) { g.fillStyle = "rgba(20,40,20,.55)"; g.fillRect(X2, Y2, 1, 16); g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(X2 - 2, Y2 + 2, 2, 14); }
+      if (!raised(C(i + 1, j)) && i + 1 < HW) { g.fillStyle = "rgba(20,40,20,.55)"; g.fillRect(X2 + 15, Y2, 1, 16); g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(X2 + 16, Y2 + 2, 2, 14); }
+      if (!raised(C(i, j - 1)) && j > 0) { g.fillStyle = HGR.hi; g.fillRect(X2, Y2, 16, 1); g.fillStyle = HGR.tuft; for (var tp = 0; tp < 4; tp++) if (SW.hash(i * 4 + tp, j, 61) > 0.45) g.fillRect(X2 + tp * 4 + 1, Y2 - 1, 1, 1); }
+    }
+    g.restore(); if (!R) HOME.gd = 0; HOME.gdr = null;
+  }
+  // ---- objects: real Delve blocks, arranged ----
+  function snowRoof(g, y0, y1, w) {   // winter: snow lies on a roof (only on what is already drawn there), thickest along the top
+    if (HSEA !== 3) return; g.save(); g.globalCompositeOperation = "source-atop"; var gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, "rgba(248,252,255,.95)"); gr.addColorStop(0.55, "rgba(236,244,250,.78)"); gr.addColorStop(1, "rgba(236,244,250,.25)");
+    g.fillStyle = gr; g.fillRect(0, y0, w, y1 - y0); g.fillStyle = "rgba(150,180,205,.35)"; for (var x = 0; x < w; x += 7) g.fillRect(x, y1 - 2 - (x % 3), 3, 2); g.restore();
+  }
+  function seasonLeaves(c, v) {   // turn a canvas of leaves to the season (it holds only leaves)
+    var sn = HSEA < 0 ? 1 : HSEA, q = c.getContext("2d"); q.save(); q.globalCompositeOperation = "source-atop";
+    if (sn === 2) { q.fillStyle = ["rgba(232,124,36,.62)", "rgba(200,60,36,.6)", "rgba(232,190,56,.62)"][v % 3]; q.fillRect(0, 0, c.width, c.height); }
+    else if (sn === 3) { q.fillStyle = "rgba(236,244,250,.7)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "rgba(120,150,180,.25)"; for (var y = 0; y < c.height; y += 6) q.fillRect(0, y + 4, c.width, 2); }
+    else if (sn === 0) { q.fillStyle = "rgba(170,235,150,.18)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "#ffc0dc"; for (var f = 0; f < c.width * c.height / 60; f++) q.fillRect(Math.floor(SW.hash(f, v, 67) * c.width), Math.floor(SW.hash(v, f, 68) * c.height), 2, 2); }
+    q.restore();
+  }
+  function hsTree(v) {   // a Delve tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees), dressed for the season
+    var key = "tree" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(48, 80), g0 = S2.g, LC = hpCan(48, 80), g = LC.g;
+    var L = v === 0 ? [[16, 0], [8, 10], [24, 10], [0, 22], [16, 20], [32, 22], [8, 34], [24, 34], [16, 40]] : v === 1 ? [[16, 6], [4, 16], [20, 14], [32, 18], [8, 30], [24, 30], [16, 40]] : [[12, 4], [24, 6], [4, 18], [18, 18], [32, 20], [10, 32], [26, 32], [18, 42]];
+    hAt(g0, T.LOG, 16, 64); hAt(g0, T.LOG, 16, 50);
+    L.forEach(function (q, n) { hAt(g, T.LEAVES, q[0], q[1], n & 1); if (q[1] >= 30) { g.fillStyle = "rgba(0,20,10,.22)"; g.fillRect(q[0], q[1], 16, 16); } });
+    if (v === 1) { hAt(g, T.VINE, 4, 44); hAt(g, T.VINE, 34, 46); }
+    if (v === 2 && HSEA !== 3) { var fl = htid("Swamp Flower"); g.fillStyle = "#ffb0d8"; for (var f = 0; f < 10; f++) g.fillRect(4 + Math.floor(SW.hash(f, 2, 63) * 38), 6 + Math.floor(SW.hash(f, 3, 63) * 40), 2, 2); }
+    seasonLeaves(LC.c, v); g0.drawImage(LC.c, 0, 0);
+    return (HSPR[key] = hpOutline(S2.c));
+  }
+  function hsStump() { if (HSPR.stump) return HSPR.stump; var S2 = hpCan(16, 16), g = S2.g;
+    g.drawImage(ATLAS, 0, T.LOG * 16 + 6, 14, 10, 1, 7, 14, 9);
+    var ring = function (rx, ry, c) { for (var yy = 0; yy < 16; yy++) for (var xx = 0; xx < 16; xx++) { var nx = (xx + 0.5 - 8) / rx, ny = (yy + 0.5 - 6) / ry; if (nx * nx + ny * ny <= 1) { g.fillStyle = c; g.fillRect(xx, yy, 1, 1); } } };
+    ring(7, 3.2, "#6a4426"); ring(6, 2.5, "#c9a06a"); ring(4, 1.7, "#a87c4e"); ring(2.6, 1.1, "#c9a06a"); ring(1, 0.6, "#8a5e36"); g.fillStyle = "#5a9a3a"; g.fillRect(12, 4, 2, 1);
+    return (HSPR.stump = hpOutline(S2.c)); }
+  function hsGiant(k) { var key = "giant" + k; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(50, 50); S2.g.drawImage(ATLAS, 0, CROPS[k].tiles[3] * 16, 16, 16, 1, 1, 48, 48); return (HSPR[key] = hpOutline(S2.c)); }
+  function hsHouse() {   // the cottage, all Delve blocks: Mossy Shingles roof, Log Wall front, a Swamp Door, Clear Glass windows with Flower Planters, a Stone Brick chimney
+    if (HSPR.house) return HSPR.house; var S2 = hpCan(112, 104), g = S2.g, x, y, OX = 8, OY = 24;   // the sprite's (OX, OY) is the footprint's top-left corner
+    var sh = htid("Mossy Shingles"), glass = htid("Clear Glass"), brick = T.BRICK, cob = htid("Cobblestone");
+    var chim = hMat(brick, 0, 1 | 4 | 8), chim2 = hMat(brick, 2, 2 | 4 | 8); g.drawImage(chim, OX + 64, OY - 24); g.drawImage(chim2, OX + 64, OY - 8);
+    for (y = 0; y < 3; y++) for (x = -1; x < 7; x++) { var m = (y === 0 ? 1 : 0) | (y === 2 ? 2 : 0) | (x === -1 ? 4 : 0) | (x === 6 ? 8 : 0), rc = hMat(sh, (x & 1) | ((y & 1) << 1), m); if (rc) g.drawImage(rc, OX + x * 16 + (x === -1 ? 8 : x === 6 ? -8 : 0), OY - 16 + y * 16 + 6); }
+    snowRoof(g, 0, OY + 26, S2.c.width);
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(OX, OY + 38, 96, 3);
+    for (y = 0; y < 2; y++) for (x = 0; x < 6; x++) { var wc = hMat(T.W_LOG, (y % 3 + 3 + 2 * (x % 3)) % 3, (y === 0 ? 1 : 0) | (y === 1 ? 2 : 0) | (x === 0 ? 4 : 0) | (x === 5 ? 8 : 0)); if (wc) g.drawImage(wc, OX + x * 16, OY + 40 + y * 16 - 8); }
+    var base = hMat(cob, 0, 1 | 2); for (x = 0; x < 6; x++) if (base) g.drawImage(base, 0, 0, 16, 6, OX + x * 16, OY + 58, 16, 6);
+    hAt(g, T.DOORO_T, OX + 40, OY + 32); hAt(g, T.DOORO_B, OX + 40, OY + 48);
+    [OX + 10, OX + 70].forEach(function (wx) { var gc2 = hMat(glass, 0, 15); g.fillStyle = "#3a2410"; g.fillRect(wx - 1, OY + 33, 18, 16); if (gc2) g.drawImage(gc2, wx, OY + 34); else hAt(g, glass, wx, OY + 34); hAt(g, T.PLANTER, wx, OY + 48); });
+    hAt(g, T.LANTERN, OX + 57, OY + 40); hAt(g, T.BARREL, OX - 8, OY + 48);
+    return (HSPR.house = hpOutline(S2.c));
+  }
+  function hsBld(k) {   // a coop or barn, built from Delve blocks: Reed Thatch or Red Shingles over Plank Wall, a door, a Feeding Trough
+    var key = "bld" + k; if (HSPR[key]) return HSPR[key]; var D = HF.bld[k], w = D.w, h = D.h, S2 = hpCan(w * 16 + 16, h * 16 + 20), g = S2.g, OX = 8, OY = 16, x, y;
+    var roof = k === "duckcoop" ? T.THATCH : htid("Red Shingles"), rows = h - 1 + 1, wy = OY + (h - 1) * 16;
+    for (y = 0; y < rows; y++) for (x = -1; x <= w; x++) { var m = (y === 0 ? 1 : 0) | (y === rows - 1 ? 2 : 0) | (x === -1 ? 4 : 0) | (x === w ? 8 : 0), rc = hMat(roof, (x & 1) | ((y & 1) << 1), m); if (rc) g.drawImage(rc, OX + x * 16 + (x === -1 ? 8 : x === w ? -8 : 0), OY - 12 + y * 16); }
+    snowRoof(g, 0, wy - 6, S2.c.width);
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(OX, wy, w * 16, 3);
+    for (x = 0; x < w; x++) { var wc = hMat(T.W_PLANK, x % 3, 1 | 2 | (x === 0 ? 4 : 0) | (x === w - 1 ? 8 : 0)); if (wc) g.drawImage(wc, OX + x * 16, wy + 2); }
+    var dx = OX + Math.floor(w / 2) * 16 - (w % 2 ? 0 : 8); if (k === "duckcoop") { g.fillStyle = "#2a1a0c"; g.fillRect(dx + 4, wy + 7, 9, 11); g.fillStyle = "#8a5a30"; g.fillRect(dx + 3, wy + 6, 11, 2); }
+    else { hAt(g, T.DOORO_B, dx, wy + 2); hAt(g, T.DOORO_B, dx + 16, wy + 2, 1); }
+    var tr = htid("Feeding Trough"); hAt(g, tr, OX + (w - 1) * 16 + (k === "duckcoop" ? 0 : 0), wy + 6); if (k === "mudbarn") hAt(g, T.BALE, OX, wy + 4);
+    return (HSPR[key] = hpOutline(S2.c));
+  }
+  var HICO = {}; function hIco(id) { var im = HICO[id]; if (!im) { im = HICO[id] = new Image(); im.src = icon(id); } return im.complete && im.naturalWidth ? im : null; }
+  function hDraw(g, c, mx, my, ax, ay, dx) { var s = ts / 16; g.drawImage(c, Math.round(ox + mx * ts - ax * s + (dx || 0)), Math.round(oy + my * ts - ay * s), c.width * s, c.height * s); }
+  function hTile(g, id, mx, my, dx, dy) { if (id < 0) return; var s = ts / 16; g.drawImage(hOT(id), Math.round(ox + mx * ts + (dx || 0) - s), Math.round(oy + my * ts + (dy || 0) - s), ts + 2 * s, ts + 2 * s); }
+  function hTileSway(g, id, mx, my, sw) {   // a plant whose top half leans in the wind (whole pixels)
+    if (id < 0) return; var s = ts / 16, c = hOT(id), X = Math.round(ox + mx * ts) - s, Y = Math.round(oy + my * ts) - s, k = 9, o2 = Math.round(sw) * s;
+    g.drawImage(c, 0, 0, 18, k, X + o2, Y, 18 * s, k * s); g.drawImage(c, 0, k, 18, 18 - k, X, Y + k * s, 18 * s, (18 - k) * s);
+  }
+  function homeRender(now) {
+    var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
+    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
+    if (!(ox <= 0 && oy <= 0 && ox + HW * ts >= vw && oy + HH * ts >= vh)) { g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh); }   // PERF: the farm fills the view; the base colour is only needed past its edge
+    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 3), s16 = ts / 16;
+    // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
+    homeSeasonArt(); var SN = HSEA;
+    if (!HG || HOME.gd || HOME.gdk !== HG) { homeGround(); HOME.gdk = HG; } else if (HOME.gdr) homeGround(HOME.gdr);
+    var gx0 = Math.max(0, Math.floor(-ox / ts)), gy0 = Math.max(0, Math.floor(-oy / ts)), gx1 = Math.min(HW, Math.ceil((vw - ox) / ts)), gy1 = Math.min(HH, Math.ceil((vh - oy) / ts));
+    if (gx1 > gx0 && gy1 > gy0) g.drawImage(HG, gx0 * 16, gy0 * 16, (gx1 - gx0) * 16, (gy1 - gy0) * 16, ox + gx0 * ts, oy + gy0 * ts, (gx1 - gx0) * ts, (gy1 - gy0) * ts);
+    if (!reduce && SN !== 3) for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var wid = t[j * HW + i]; if (!homeWater(wid)) continue;
+      for (var gl = 0; gl < 2; gl++) { var hgl = SW.hash(i, j, 100 + gl), ph2 = (T0 * 0.9 + hgl * 7) % 3; if (ph2 > 0.5) continue; var gx = ox + (i * 16 + 3 + Math.floor(hgl * 10)) * s16, gy = oy + (j * 16 + 4 + Math.floor(SW.hash(j, i, 102 + gl) * 9)) * s16;
+        g.fillStyle = ph2 < 0.25 ? "#ffffff" : "#bfe8f0"; g.fillRect(gx, gy, s16 * 2, s16); if (ph2 < 0.25) g.fillRect(gx + s16 * 0.5, gy - s16, s16, s16 * 3); } }
+    var dlA = daylight(S.time);
+    if (!HFOR || HOME.fk !== HFOR) { if (!HOME.fk) HFOR = null; homeForest(); HOME.fk = HFOR; }
+    var fM = HFM, fx0 = Math.max(-fM, Math.floor(-ox / ts) - 1), fy0 = Math.max(-fM, Math.floor(-oy / ts) - 1), fx1 = Math.min(HW + fM, Math.ceil((vw - ox) / ts) + 1), fy1 = Math.min(HH + fM, Math.ceil((vh - oy) / ts) + 2);
+    var fstrip = function (a0, b0, a1, b1) { a0 = Math.max(a0, fx0); b0 = Math.max(b0, fy0); a1 = Math.min(a1, fx1); b1 = Math.min(b1, fy1); if (a1 > a0 && b1 > b0) g.drawImage(HFOR, (a0 + fM) * 16, (b0 + fM) * 16, (a1 - a0) * 16, (b1 - b0) * 16, ox + a0 * ts, oy + b0 * ts, (a1 - a0) * ts, (b1 - b0) * ts); };
+    fstrip(-fM, -fM, HW + fM, 3); fstrip(-fM, HH - 3, HW + fM, HH + fM); fstrip(-fM, 3, 3, HH - 3); fstrip(HW - 3, 3, HW + fM, HH - 3);   // the forest is only around the edges: draw just those strips
+    // --- things that stand up, drawn back to front ---
+    var L = [];
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var id2 = t[j * HW + i]; if (i === CROAKA.tx && (j === CROAKA.ty || j === CROAKA.ty - 1) && id2 !== HT.TREE) id2 = HT.GRASS; if ((id2 === HT.TREE && !homeDeepTree(i, j)) || id2 === HT.ROCK || id2 === HT.STUMP || id2 === HT.REEDS || id2 === HT.FENCE || id2 === HT.FLOWER) L.push([j + 1, 0, i, j, id2]); var ce = o.c[i + "," + j]; if (ce) L.push([j + 0.95, 1, i, j, ce]); }
+    (o.gi || []).forEach(function (gc) { L.push([gc.y + 3, 6, gc]); });
+    if (o.m) Object.keys(o.m).forEach(function (k) { var q = k.split(","); L.push([+q[1] + 0.98, 7, +q[0], +q[1], o.m[k]]); });
+    (o.b || []).forEach(function (b) { L.push([b.y + HF.bld[b.k].h, 8, b]); });
+    (o.an || []).forEach(function (a) { if (!a.inside && a.x !== undefined) L.push([a.y, 10, a]); });
+    (o.dr || []).forEach(function (d) { L.push([d.y - 0.01, 11, d]); });
+    L.push([CROAKA.y, 12]); L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
+    L.sort(function (a, b) { return a[0] - b[0]; });
+    var drawE = function (g, e) {
+      if (e[1] === 9) { drawCavePlayer(g, now); return; }
+      if (e[1] === 0) { homeProp(g, e[4], e[2], e[3], T0); return; }
+      if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.round(Math.sin(T0 * 1.6 * (HWIND > 1.5 ? 1.6 : 1) + e[2] * 0.7 + e[3]) * 0.8 * HWIND);
+        hpShadow(g, sx2 + ts / 2, sy2 + ts * 0.82, ts * 0.32, ts * 0.1, 0.18);
+        hTileSway(g, C.tiles[e[4].s - 1], e[2], e[3] - 0.2, sw);
+        if (e[4].s >= 4 && !reduce && Math.floor(T0 * 2 + e[2] + e[3]) % 7 === 0) { g.fillStyle = "rgba(255,245,180,.85)"; g.fillRect(sx2 + ts * 0.7, sy2 - ts * 0.25, Math.max(2, ts * 0.08), Math.max(2, ts * 0.08)); }
+        return; }
+      if (e[1] === 2) { homeHouse(g, T0); return; }
+      if (e[1] === 3) { homeCrate(g); return; }
+      if (e[1] === 4) { homeStall(g); return; }
+      if (e[1] === 5) { homeGateArt(g); return; }
+      if (e[1] === 7) { var mm = e[4], mid = mm.k === "picklekeg" ? T.BARREL : mm.k === "seedmaker" ? T.POT : mm.k === "compostbin" ? T.BALE : T.X_sprinkler;
+        hpShadow(g, ox + (e[2] + 0.5) * ts, oy + (e[3] + 0.92) * ts, ts * 0.42, ts * 0.12, 0.22); hTile(g, mid, e[2], e[3] - 0.15);
+        if (mm.k === "sprinkler" && !reduce && dlA > 0.3) { var spr = (T0 * 2 + e[2]) % 1; g.fillStyle = "rgba(200,240,255,.6)"; for (var sp2 = 0; sp2 < 6; sp2++) { var an2 = sp2 / 6 * 6.2832 + T0, rr2 = spr * ts * (homeUp("nozzle") ? 2.2 : 1.3); g.fillRect(ox + (e[2] + 0.5) * ts + Math.cos(an2) * rr2, oy + (e[3] + 0.2) * ts + Math.sin(an2) * rr2 * 0.6 - Math.sin(spr * 3.14) * ts * 0.5, s16 * 2, s16 * 2); } }
+        if (mm.o) { var ic = hIco(mm.o), by2 = oy + (e[3] - 1.05) * ts + (reduce ? 0 : Math.sin(T0 * 3) * s16 * 1.5); g.fillStyle = "rgba(246,238,219,.95)"; g.fillRect(ox + (e[2] + 0.1) * ts, by2, ts * 0.8, ts * 0.8); g.fillStyle = "#3a2410"; g.fillRect(ox + (e[2] + 0.1) * ts, by2 + ts * 0.8, ts * 0.8, s16); if (ic) g.drawImage(ic, ox + (e[2] + 0.18) * ts, by2 + ts * 0.08, ts * 0.64, ts * 0.64); }
+        else if (mm.i && mm.T) { var pf = 1 - clamp(mm.t / mm.T, 0, 1); g.fillStyle = "rgba(20,14,6,.8)"; g.fillRect(ox + (e[2] + 0.1) * ts, oy + (e[3] - 0.45) * ts, ts * 0.8, s16 * 3); g.fillStyle = "#7dd65a"; g.fillRect(ox + (e[2] + 0.1) * ts + s16, oy + (e[3] - 0.45) * ts + s16, (ts * 0.8 - 2 * s16) * pf, s16); }
+        return; }
+      if (e[1] === 8) { var bb = e[2]; hpShadow(g, ox + (bb.x + HF.bld[bb.k].w / 2) * ts, oy + (bb.y + HF.bld[bb.k].h - 0.05) * ts, ts * HF.bld[bb.k].w * 0.55, ts * 0.2, 0.24); hDraw(g, hsBld(bb.k), bb.x, bb.y, 8, 16); return; }
+      if (e[1] === 10) { drawAnimal(g, e[2], now); return; }
+      if (e[1] === 12) { drawCroaka(g, now); return; }
+      if (e[1] === 11) { var dd2 = e[2], ic2 = hIco(dd2.k), bob2 = reduce ? 0 : Math.sin(T0 * 2.5 + dd2.x * 3) * s16; hpShadow(g, ox + dd2.x * ts, oy + (dd2.y + 0.05) * ts, ts * 0.25, ts * 0.08, 0.25); if (ic2) g.drawImage(ic2, ox + (dd2.x - 0.3) * ts, oy + (dd2.y - 0.6) * ts + bob2, ts * 0.6, ts * 0.6); return; }
+      if (e[1] === 6) { var gc = e[2], gsp = hsGiant(gc.k), wob = gc.h ? Math.sin(T0 * 34) * ts * 0.04 * gc.h : 0;
+        hpShadow(g, ox + (gc.x + 1.5) * ts, oy + (gc.y + 2.85) * ts, ts * 1.6, ts * 0.42, 0.26); hDraw(g, gsp, gc.x, gc.y - 0.3, 1, 1, wob);
+        if (gc.h) { g.font = "900 " + Math.max(11, Math.round(ts * 0.4)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#ffe9a8"; g.fillText(gc.h + " / 3", ox + (gc.x + 1.5) * ts, oy + (gc.y - 0.3) * ts); }
+        return; }
+    };
+    // --- light from the sky: soft shade where the forest walls meet the farm, then every standing thing casts its shadow away from the sun ---
+    drawPuddles(g, X0, X1, Y0, Y1); homeAO(g); var sun = sunState(S.time); sun.a *= 1 - 0.85 * wxN(); HOME.sun = sun; var HWIND = 1 + wxN() * 0.6 + wxStorm() * 1.8;   // rain clouds hide the sun; storms blow the crops about
+    if (shadowBegin(sun)) {
+      L.forEach(function (e) { var B = oy + e[0] * ts;
+        if (e[1] === 9) { SREC.body(ox + cp.x * ts, oy + cp.y * ts, ts * 0.26, ts * 1.35); return; }
+        if (e[1] === 10) { SREC.body(ox + e[2].x * ts, oy + e[2].y * ts, ts * 0.42, ts * 0.8); return; }
+        if (e[1] === 12) { SREC.body(ox + CROAKA.x * ts, oy + CROAKA.y * ts, ts * 0.3, ts * 1.3); return; }
+        if (e[1] === 11) return;
+        SREC.B = B; drawE(SREC, e); });
+      shadowEnd(g, sun);
+    }
+    L.forEach(function (e) { drawE(g, e); });
+    // --- daytime life: slow cloud shadows drifting over the farm, butterflies over the grass ---
+    if (!reduce && dlA > 0.6 && SN < 2) {
+      for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; var cka = 0.09 * clamp(sun.a / 0.3, 0, 1); hpShadow(g, cxc, cyc, ts * 4.5, ts * 1.6, cka); hpShadow(g, cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, cka); }
+      for (i = 0; i < 5; i++) { var bxs = (SW.hash(i, 7, 103) * (HW - 8) + 4) + Math.sin(T0 * 0.45 + i * 2.1) * 3, bys = (SW.hash(i, 8, 103) * (HH - 10) + 4) + Math.cos(T0 * 0.37 + i) * 2 + Math.sin(T0 * 3 + i) * 0.15, flap = Math.floor(T0 * 8 + i) % 2, bsx = ox + bxs * ts, bsy = oy + bys * ts;
+        if (bsx < -ts || bsx > vw + ts || bsy < -ts || bsy > vh + ts) continue; var bc = ["#ffe27a", "#ff9ad0", "#ffffff", "#9ad0ff", "#ffb84a"][i];
+        g.fillStyle = "rgba(20,14,6,.18)"; g.fillRect(bsx, bsy + ts * 0.9, s16 * 3, s16); g.fillStyle = "#3a2a1a"; g.fillRect(bsx + s16, bsy, s16, s16 * 2);
+        g.fillStyle = bc; if (flap) { g.fillRect(bsx - s16, bsy - s16, s16 * 2, s16 * 2); g.fillRect(bsx + s16 * 2, bsy - s16, s16 * 2, s16 * 2); } else { g.fillRect(bsx, bsy, s16, s16 * 2); g.fillRect(bsx + s16 * 2, bsy, s16, s16 * 2); } }
+    }
+    // --- the tile you're pointing at ---
+    if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;
+      g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
+    parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
+    if (!reduce && !panelOpen && SN !== 3 && Math.random() < 0.035) { var rpx = X0 + Math.floor(Math.random() * (X1 - X0 + 1)), rpy = Y0 + Math.floor(Math.random() * (Y1 - Y0 + 1)); if (homeWater(t[rpy * HW + rpx])) waterRing(rpx + 0.2 + Math.random() * 0.6, rpy + 0.3 + Math.random() * 0.5, 0.05 + Math.random() * 0.04, 1); }   // something rising in the pond
+    drawWaterFx(g);
+    // --- the time of day: the picture is graded (gold late afternoon, rose at dusk, deep blue at night) and lit by its lights: the cottage
+    // windows and porch lantern, the gate lantern, a little light around you, glowing night crops and giant gourds, and the fireflies ---
+    var dl = daylight(S.time), nk = clamp((0.92 - dl) / 0.62, 0, 1), sb = ts / 16, LI = [], fl0 = reduce ? 1 : 0.94 + 0.06 * Math.sin(T0 * 9) * Math.sin(T0 * 5.3);
+    if (nk > 0) {
+      var hx = ox + HHOUSE.x * ts, hy = oy + HHOUSE.y * ts;
+      [18, 78].forEach(function (wx) { LI.push([hx + wx * sb, hy + 42 * sb, ts * 1.1, "255,206,130", nk * 0.9, 1.1]); LI.push([hx + wx * sb, oy + (HHOUSE.y + HHOUSE.h + 0.5) * ts, ts * 2.4, "255,190,110", nk * 0.6]); });
+      LI.push([hx + 65 * sb, hy + 48 * sb, ts * 3.6 * fl0, "255,200,120", nk * 0.95, 0.5]);
+      LI.push([ox + (HGATE.x + 2.5) * ts, oy + (HGATE.y - 0.25) * ts, ts * 3.8 * fl0, "255,196,112", nk * 0.95, 0.5]);
+      LI.push([ox + cp.x * ts, oy + (cp.y - 0.6) * ts, ts * 3.4, "236,226,255", nk * 0.42]);
+      Object.keys(o.c).forEach(function (k) { var e3 = o.c[k], C3 = CROPS[e3.k]; if (!C3 || !C3.moon || e3.s < 3) return; var q3 = k.split(","); LI.push([ox + (+q3[0] + 0.5) * ts, oy + (+q3[1] + 0.2) * ts, ts * (e3.s >= 4 ? 2.2 : 1.2), e3.k === "moonpetal" ? "170,215,255" : "110,255,200", nk * (e3.s >= 4 ? 0.8 : 0.4), e3.s >= 4 ? 0.6 : 0]); });
+      (o.gi || []).forEach(function (gc) { if (gc.k !== "croakpumpkin" && gc.k !== "glowgourd") return; LI.push([ox + (gc.x + 1.5) * ts, oy + (gc.y + 1.6) * ts, ts * 3.6, gc.k === "glowgourd" ? "110,255,200" : "255,180,80", nk * 0.75, 0.5]); });
+      if (!reduce) for (i = 0; i < 18; i++) { var ffx = ox + ((SW.hash(i, 1, 95) * HW + Math.sin(T0 * 0.4 + i) * 1.5)) * ts, ffy = oy + ((10 + SW.hash(i, 2, 95) * 16 + Math.cos(T0 * 0.5 + i * 2) * 1.2)) * ts, fa = nk * (0.5 + 0.5 * Math.sin(T0 * 3 + i)); LI.push([ffx, ffy, ts * 0.9, "220,255,140", fa * 0.55]); }
+    }
+    sceneLight(g, wxOv(gradeOv(S.time)), LI, undefined, undefined, sun.up ? { k: sun.warm, sx: sun.sx } : null);   // at night the dark leans blue
+    if (nk > 0) {
+      sceneGlow(g, LI, nk);
+      if (!reduce) for (i = 0; i < 18; i++) { var fx2 = ox + ((SW.hash(i, 1, 95) * HW + Math.sin(T0 * 0.4 + i) * 1.5)) * ts, fy2 = oy + ((10 + SW.hash(i, 2, 95) * 16 + Math.cos(T0 * 0.5 + i * 2) * 1.2)) * ts; g.globalAlpha = nk * (0.5 + 0.5 * Math.sin(T0 * 3 + i)); g.fillStyle = "#e8ff8a"; g.fillRect(fx2, fy2, Math.max(2, ts * 0.09), Math.max(2, ts * 0.09)); } g.globalAlpha = 1;
+      Object.keys(o.c).forEach(function (k) { var e3 = o.c[k], C3 = CROPS[e3.k]; if (!C3 || !C3.moon || e3.s < 4) return; var q3 = k.split(","), gx3 = ox + (+q3[0] + 0.5) * ts, gy3 = oy + (+q3[1] + 0.1) * ts; if (gx3 < -ts || gx3 > vw + ts || gy3 < -ts || gy3 > vh + ts) return;
+        g.globalAlpha = nk * 0.75; g.drawImage(ATLAS, 0, C3.tiles[3] * 16, 16, 16, gx3 - ts / 2, gy3 - ts * 0.4, ts, ts); g.globalAlpha = 1; });   // glowing crops shine through the dark
+    }
+    if (nk > 0.3 && !liteFx()) drawBloom(g, dl, 1, now);   // the lit windows and lanterns bloom at night
+    homeDrift(g, now, SN);
+    if (wxN() > 0.02 && SN === 3) drawBoltScr(g, 0, vh * 0.6);
+    else if (wxN() > 0.02) {   // rain falling on the farm: rings on the pond and the puddles, little crowns of spray on the ground
+      rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts, wy = (sy - oy) / ts, ti = Math.floor(wx), tj = Math.floor(wy); if (ti < 0 || tj < 0 || ti >= HW || tj >= HH) return;
+        if (homeWater(t[tj * HW + ti])) waterRing(wx, wy, 0.035, 1, 0.9); else if ((HOME.pud || 0) > 0.3 && homePuddle(ti, tj)) waterRing(wx, wy, 0.022, 1, 0.6); else rainPip(wx, wy, 1); },
+        function () { return [Math.random() * vw, Math.random() * (vh + 40) - 20]; });
+      drawBoltScr(g, 0, vh * 0.6);
+    } else if (WX.flash > 0 || WX.bolt) drawBoltScr(g, 0, vh * 0.6);
+    if (!HOME.vig || HOME.vig.w !== vw || HOME.vig.h !== vh) { var vc = document.createElement("canvas"); vc.width = Math.max(1, vw >> 2); vc.height = Math.max(1, vh >> 2); var vg = vc.getContext("2d"), rgv = vg.createRadialGradient(vc.width / 2, vc.height / 2, Math.min(vc.width, vc.height) * 0.35, vc.width / 2, vc.height / 2, Math.max(vc.width, vc.height) * 0.75); rgv.addColorStop(0, "rgba(30,20,10,0)"); rgv.addColorStop(1, "rgba(6,16,12,.26)"); vg.fillStyle = rgv; vg.fillRect(0, 0, vc.width, vc.height); HOME.vig = { c: vc, w: vw, h: vh }; }
+    if (!coarse && !lowq) { g.imageSmoothingEnabled = true; g.drawImage(HOME.vig.c, 0, 0, vw, vh); g.imageSmoothingEnabled = false; }
+    g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
+    texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
+    // a little sign over a crop you're pointing at: how long until it's ripe
+    if (aim.tx >= 0 && o.m && o.m[aim.tx + "," + aim.ty]) { var mh = o.m[aim.tx + "," + aim.ty], ml = ITEMS[mh.k].n + (mh.o ? ": ready! Tap to collect" : mh.i ? ": " + Math.ceil(mh.t) + " s left" : mh.k === "sprinkler" ? ": waters the soil around it" : mh.k === "compostbin" ? ": add 4 Fiber or Leaves" : ": tap with a crop selected");
+      g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var mw = g.measureText(ml).width + 14, mx2 = ox + (aim.tx + 0.5) * ts, my2 = oy + (aim.ty - 1.3) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(mx2 - mw / 2, my2 - 11, mw, 20); g.fillStyle = mh.o ? "#ffe27a" : "#f6eedb"; g.fillText(ml, mx2, my2 + 4); }
+    if (aim.tx >= 0) { var ce2 = o.c[aim.tx + "," + aim.ty], C2 = ce2 && CROPS[ce2.k]; if (C2) { var wet2 = homeWet(aim.tx, aim.ty), pidl = hmT(aim.tx, aim.ty);
+      if (C2.wat) wet2 = pidl === HT.PADDYW; var left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (C2.moon ? 1.5 * (wet2 ? 2 : 1) : wet2 ? 2 : 1) / seasonMul(ce2.k), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : C2.wat && !wet2 ? ": the paddy is dry" : C2.moon && !isNight(S.time) ? ": waits for night" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (C2.wat ? " \u00b7 flooded" : wet2 ? " \u00b7 watered" : " \u00b7 dry")) + (o.f[aim.tx + "," + aim.ty] ? " \u00b7 compost" : "") + (ce2.s < 4 ? (inSeason(ce2.k) ? " \u00b7 in season" : seasonOf() === 3 ? " \u00b7 too cold, grows very slowly" : " \u00b7 out of season, grows slowly") : "");
+      g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var lw = g.measureText(lbl).width + 14, lx = ox + (aim.tx + 0.5) * ts, ly = oy + (aim.ty - 0.75) * ts; g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(lx - lw / 2, ly - 11, lw, 20); g.fillStyle = ce2.s >= 4 ? "#ffe27a" : wet2 ? "#9ae0ff" : "#f6eedb"; g.fillText(lbl, lx, ly + 4); } }
+    if (!panelOpen && !trans && hp > 0) homeActions().slice(0, 1).forEach(function (a) { homePill(g, now, a.label, ox + a.ax * ts, oy + a.ay * ts, a.fn); });
+  }
+  function homePill(g, now, label, sx, sy, fn) {
+    var pw, ph, x0, y0; label += coarse ? "" : " (F)"; g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    sy += reduce ? 0 : Math.sin(now / 300) * 2; pw = g.measureText(label).width + ts * 1.1; ph = Math.max(26, ts * 0.9);
+    sx = clamp(sx, pw / 2 + 8, vw - pw / 2 - 8); sy = clamp(sy, ph / 2 + 64, vh - ph / 2 - 8); x0 = sx - pw / 2; y0 = sy - ph / 2;
+    g.fillStyle = "rgba(24,40,14,.92)"; g.strokeStyle = "#9ee06a"; g.lineWidth = 2; g.beginPath(); g.arc(x0 + ph / 2, y0 + ph / 2, ph / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + pw - ph / 2, y0 + ph / 2, ph / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#f4ffe8"; g.fillText(label, sx, sy + 1); g.textBaseline = "alphabetic"; HOME.btns.push({ x: x0, y: y0, w: pw, h: ph, fn: fn });
+  }
+  // the season in the air: spring petals, fall leaves tumbling down, winter snow (light flurries, a real snowfall when the weather
+  // turns), drifting across the view in screen space (none in summer, when the butterflies are out)
+  var HDRIFT = [];
+  function homeDrift(g, now, sn) {
+    var wn = wxN(), want = reduce ? 0 : sn === 1 ? 0 : sn === 3 ? Math.round((lowq ? 30 : 55) + wn * (lowq ? 70 : 150)) : Math.round(lowq ? 10 : 18), dt = HOME.dl ? clamp((now - HOME.dl) / 1000, 0, 0.05) : 1 / 60; HOME.dl = now;
+    while (HDRIFT.length < want) HDRIFT.push({ x: Math.random() * vw, y: Math.random() * vh, z: 0.5 + Math.random() * 0.5, ph: Math.random() * 6.28, c: Math.floor(Math.random() * 4) });
+    if (HDRIFT.length > want) HDRIFT.length = want; if (!want) return;
+    var wind = (0.3 + wxStorm() * 1.4) * 40, cols = sn === 0 ? ["#ffc8e4", "#ff9ad0", "#ffffff", "#ffb0d8"] : sn === 2 ? ["#e8822a", "#c8402a", "#e8c040", "#a85a2a"] : ["#ffffff", "#f4f8ff", "#e8f2ff", "#ffffff"], lit = 0.4 + 0.6 * daylight(S.time);
+    g.save();
+    HDRIFT.forEach(function (d) { var fall = sn === 3 ? 40 + 50 * d.z * (1 + wn) : sn === 2 ? 34 * d.z : 22 * d.z; d.y += fall * dt; d.x += (Math.sin(now / 900 + d.ph) * (sn === 3 ? 18 : 30) + wind) * dt; if (d.y > vh + 8) { d.y = -8; d.x = Math.random() * vw; } if (d.x > vw + 8) d.x = -8; if (d.x < -8) d.x = vw + 8;
+      var sz = (sn === 3 ? 2.6 : 3.2) * d.z * (ts / 40); g.globalAlpha = (sn === 3 ? 0.9 : 0.85) * lit; g.fillStyle = cols[d.c];
+      if (sn === 3) g.fillRect(d.x, d.y, sz, sz); else { g.save(); g.translate(d.x, d.y); g.rotate(Math.sin(now / 500 + d.ph) * 1.2); g.fillRect(-sz, -sz * 0.45, sz * 2, sz * 0.9); g.restore(); } });   // flakes; petals and leaves tumble
+    g.restore();
+  }
+  function homeAO(g) {   // the forest around the farm shades the grass right next to it (a soft fade off the edge of the trees)
+    var band = function (x0, y0, x1, y1, gx0, gy0, gx1, gy1, a) { var X0 = ox + x0 * ts, Y0 = oy + y0 * ts, X1 = ox + x1 * ts, Y1 = oy + y1 * ts; if (X1 < 0 || Y1 < 0 || X0 > vw || Y0 > vh) return;
+      var gr = g.createLinearGradient(ox + gx0 * ts, oy + gy0 * ts, ox + gx1 * ts, oy + gy1 * ts); gr.addColorStop(0, "rgba(8,20,14," + a + ")"); gr.addColorStop(1, "rgba(8,20,14,0)"); g.fillStyle = gr; g.fillRect(X0, Y0, X1 - X0, Y1 - Y0); };
+    band(3, 3, HW - 3, 4.8, 0, 3, 0, 4.8, 0.34); band(3, 3, 4.4, HH - 3, 3, 0, 4.4, 0, 0.28); band(HW - 4.4, 3, HW - 3, HH - 3, HW - 3, 0, HW - 4.4, 0, 0.28); band(3, HH - 3.9, HW - 3, HH - 3, 0, HH - 3, 0, HH - 3.9, 0.2);
+  }
+  function hR(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }
+  function homeDeepTree(i, j) { return hmT(i, j) === HT.TREE && (j + 1 >= HH || hmT(i, j + 1) === HT.TREE || hmT(i, j + 1) === HT.GATE || SW.hash(i, j, 92) < 0.4); }   // only the top edge of the forest shows trunks; the rest is canopy
+  var HFM = 10, HFOR = null;
+  function homeForest() {   // the leafy forest around the farm (and past its edge) never changes: paint it once, 16 px per tile
+    var M = HFM, W = (HW + M * 2) * 16, H = (HH + M * 2) * 16, c = document.createElement("canvas"); c.width = W; c.height = H; var g = c.getContext("2d"), i, j; g.imageSmoothingEnabled = false;
+    for (j = -M; j < HH + M; j++) for (i = -M; i < HW + M; i++) {
+      var inside = i >= 0 && j >= 0 && i < HW && j < HH; if (inside && !homeDeepTree(i, j)) continue;
+      var h = SW.hash(inside ? i : i + 99, inside ? j : j + 99, 92), X = (i + M) * 16, Y = (j + M) * 16;
+      var up0 = j > 0 && hmT(i, j - 1) !== HT.TREE ? 1 : 0;   // the forest edge facing the farm from below: no overhang onto the walkable row
+      if (inside) { g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y - (up0 ? 2 : 10), 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X + (h < 0.5 ? -8 : 8), Y - (up0 ? 3 : 18), 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y + 3, 16, 16); if (h > 0.85) { g.fillStyle = "#ffb0d8"; g.fillRect(X + 5, Y, 2, 2); g.fillRect(X + 11, Y + 6, 2, 2); } }
+      else { g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y - 6, 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X + (h < 0.5 ? -8 : 8), Y + 3, 16, 16); }
+    }
+    seasonLeaves(c, 1); return (HFOR = c);
+  }
+  function homeProp(g, id, i, j, T0) {
+    var h = SW.hash(i, j, 92), s = ts / 16;
+    if (id === HT.TREE) { var v = h < 0.5 ? 0 : h < 0.8 ? 1 : 2, jx = Math.round((SW.hash(i, j, 93) - 0.5) * 6) * s, jy = Math.round((SW.hash(j, i, 95) - 0.5) * 6);
+      hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3); hDraw(g, hsTree(v), i + 0.5, j + 1, 24, 80 + jy, jx); return; }
+    if (id === HT.ROCK) { hDraw(g, caveNode(T.STONE, Math.floor(h * 4)), i, j, 0, 2); return; }
+    if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.5) * ts, oy + (j + 0.9) * ts, ts * 0.45, ts * 0.13, 0.25); hDraw(g, hsStump(), i, j, 0, 1); return; }
+    var wnd = 1 + wxN() * 0.6 + wxStorm() * 1.8;
+    if (id === HT.REEDS) { hTileSway(g, T.REED, i, j - 0.2, reduce ? 0 : Math.sin(T0 * 1.4 * (wnd > 1.5 ? 1.7 : 1) + i * 0.8 + j) * 1.1 * wnd); return; }
+    if (id === HT.FLOWER) { var fl = [htid("Swamp Flower"), htid("Marsh Lily"), htid("Bog Cotton")][Math.floor(h * 3)]; hTileSway(g, fl, i, j - 0.15, reduce ? 0 : Math.sin(T0 * 1.2 * (wnd > 1.5 ? 1.7 : 1) + i + j * 0.5) * 0.8 * wnd); return; }
+    if (id === HT.FENCE) { hTile(g, T.FENCE, i, j - 0.25); return; }
+  }
+  function homeHouse(g, T0) {
+    var s = ts / 16, bx = ox + HHOUSE.x * ts, by = oy + (HHOUSE.y + HHOUSE.h) * ts;
+    if (!(HOME.sun && HOME.sun.a > 0.015 && SHL && !liteFx())) g.fillStyle = "rgba(10,14,8,.26)"; else g.fillStyle = "rgba(10,14,8,0)"; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + HHOUSE.w * ts, by); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 0.6); g.lineTo(bx + HHOUSE.w * ts + ts * 0.8, by - ts * 3.4); g.lineTo(bx + HHOUSE.w * ts, by - ts * 3.6); g.closePath(); g.fill();
+    hDraw(g, hsHouse(), HHOUSE.x, HHOUSE.y, 8, 24);
+    if (!reduce) for (var q = 0; q < 3; q++) { var ph = (T0 * 0.3 + q / 3) % 1, cx = ox + (HHOUSE.x + 4.5) * ts + Math.sin(ph * 6 + q) * ts * 0.25, cy = oy + (HHOUSE.y - 1.6) * ts - ph * ts * 1.8; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = "#e8e4dc"; var r = Math.round(2 + ph * 4) * s; g.fillRect(Math.round(cx - r / 2), Math.round(cy - r / 2), r, r); } g.globalAlpha = 1;
+    var dl = daylight(S.time); if (dl < 0.8) { var ga = ((0.8 - dl) * 0.8).toFixed(3); g.fillStyle = "rgba(255,214,120," + ga + ")"; [10, 70].forEach(function (wx) { g.fillRect(bx + (wx + 2) * s, oy + HHOUSE.y * ts + (34 + 2) * s, 12 * s, 12 * s); }); }   // the window panes (sprite x wx..wx+16, y 34..50 below the roof line)
+  }
+  function homeCrate(g) { var full = Object.keys(homeS().ship).length > 0, s = ts / 16;
+    hpShadow(g, ox + (HCRATE.x + 0.5) * ts, oy + (HCRATE.y + 0.92) * ts, ts * 0.5, ts * 0.13, 0.25); hTile(g, htid("Wooden Crate"), HCRATE.x, HCRATE.y - 0.1);
+    var fx = ox + (HCRATE.x + 0.85) * ts, fy = oy + HCRATE.y * ts; g.fillStyle = "#5a3a1e"; g.fillRect(fx, fy - ts * 0.5, s, ts * 0.6); g.fillStyle = full ? "#e8503a" : "#c8b890"; g.fillRect(fx + s, fy - (full ? ts * 0.5 : ts * 0.1), s * 5, s * 3); }
+  function homeStall(g) { var x = HSTALL.x, y = HSTALL.y;
+    hpShadow(g, ox + (x + 1) * ts, oy + (y + 0.92) * ts, ts * 1.1, ts * 0.16, 0.25); hTile(g, T.TABLE, x, y - 0.1); hTile(g, T.TABLE, x + 1, y - 0.1);
+    hTile(g, htid("Grain Sack"), x - 0.05, y - 0.62); hTile(g, htid("Grain Sack"), x + 0.45, y - 0.66); hTile(g, T.FLOWERPOT, x + 1.05, y - 0.62); hTile(g, T.SIGN, x + 0.5, y - 1.35); }
+  function homeGateArt(g) { hTile(g, T.FENCE, HGATE.x - 1, HGATE.y - 0.25); hTile(g, T.FENCE, HGATE.x + 2, HGATE.y - 0.25); hTile(g, T.SIGN, HGATE.x - 1, HGATE.y - 0.6); hTile(g, T.LANTERN, HGATE.x + 2, HGATE.y - 0.7); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
     var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on && !PHOTO.on;
@@ -13581,10 +17040,11 @@
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
     if (PHOTO.on) tickPhoto(dt);
     if (!document.hidden) {
-      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
+      try { tickAmbSound(dt); } catch (er) {}
+      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (mapOpen) { if (M.drag || M.pinch || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
-        else if (cave) renderCave(now); else render(now);
+        else if (HOME) homeRender(now); else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
         drawTrans(); if (hbDirty) drawBar();
       } catch (er) { loopErr(er); }
     }
@@ -13615,7 +17075,19 @@
   }, { passive: false });
   requestAnimationFrame(loop);
   window.__sbxLook = { BLOOM: BLOOM, OPT: OPT, get reduce() { return reduce; }, set reduce(v) { reduce = v; }, get lowq() { return lowq; } };
-  window.__sbx = { birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  // GAME CHECK (in the browser, where the recipes and quests live): every recipe, decor recipe, quest reward and chest loot roll names
+  // real items, and every quest can be counted. __sbx.audit() returns a list of plain-English problems (empty when all is well).
+  function auditGame() {
+    var out = [], I = ITEMS; function say(m) { if (out.length < 200) out.push(m); }
+    function items(o, where) { if (!o || typeof o !== "object") return; Object.keys(o).forEach(function (k) { if (!I[k]) say(where + " uses \"" + k + "\", which is not an item"); }); }
+    RECIPES.forEach(function (r) { items(r.cost, "the recipe " + r.n); if (r.out) items(r.out, "the recipe " + r.n); });
+    DECOR.forEach(function (r) { items(r.cost, "the decor recipe " + (r.n || r.id)); });
+    MAIN.forEach(function (q) { items(q.rw, "the quest " + q.n); if (typeof q.v !== "function") say("the quest " + q.n + " has no way to count progress"); });
+    SIDE.forEach(function (q) { items(q.rw, "the side quest " + q.n); });
+    if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
+    return out.filter(function (m, i) { return out.indexOf(m) === i; });
+  }
+  window.__sbx = { audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
@@ -13630,6 +17102,11 @@
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
+  window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
+  window.__sbx.tour = function () { startTour(true); }; window.__sbx.tourOn = function () { return !!TOUR; };
+  window.__sbx.light = { sun: sunState, grade: gradeOv, splash: waterSplash, ring: waterRing, fx: function () { return [DROPS.length, RIPS.length]; } };
+  window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
+  window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
   window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };

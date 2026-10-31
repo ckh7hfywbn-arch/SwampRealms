@@ -341,6 +341,9 @@ body.sbx-app footer{margin-top:28px}
 .sbx-mtop b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#c8fff4}
 .sbx-mtop span{flex:1;color:#f6eedb99;font:800 .8rem Nunito,system-ui,sans-serif}
 .sbx-mtop .sbx-x{pointer-events:auto}
+.sbx-mmine{pointer-events:auto;flex:none;padding:7px 12px;border-radius:999px;border:1px solid #f2c14e;background:rgba(44,30,8,.85);color:#ffe3a0;font:800 .82rem Nunito,system-ui,sans-serif;cursor:pointer}
+.sbx-mmine:hover,.sbx-mmine:focus-visible{background:#5a3f10;outline:2px solid #f2c14e;outline-offset:2px}
+.sbx-mmine[hidden]{display:none}
 .sbx-mctl{position:absolute;right:max(10px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 54px);display:grid;gap:6px}
 .sbx-mctl button{width:42px;height:42px;display:grid;place-items:center;padding:0;border-radius:12px;border:1px solid #4ee6b455;background:linear-gradient(160deg,rgba(14,34,28,.88),rgba(4,10,8,.85));color:#c8fff4;font:800 1.4rem/1 Nunito,system-ui,sans-serif;cursor:pointer}
 .sbx-mctl button svg{width:20px;height:20px}
@@ -1432,3 +1435,403 @@ body.sbx-app footer{margin-top:28px}
 .sbx-gravehud[hidden]{display:none}
 .sbx-gravehud.warn{border-color:#ff8a7a;color:#ffb3a8}
 @media (prefers-reduced-motion:reduce){.sbx-dead.in,.sbx-dead.in .dd-card{animation:none}}
+
+/* OCEAN: the air bar sits beside health and hunger, and all three bars are the same size */
+.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food,.sbx-vrow .sbx-o2{flex:1 1 0;width:auto;min-width:0;height:28px;border-radius:14px}
+.sbx-vrow .sbx-hp .hrt,.sbx-vrow .sbx-food .ic,.sbx-vrow .sbx-o2 .ic{width:28px;height:28px}
+.sbx-vrow .sbx-hp .hrt svg,.sbx-vrow .sbx-food .ic svg,.sbx-vrow .sbx-o2 .ic svg{width:15px;height:15px}
+.sbx-vrow .sbx-hp .trk,.sbx-vrow .sbx-food .trk,.sbx-vrow .sbx-o2 .trk{height:13px;border-radius:7px}
+.sbx-vrow .sbx-hp .trk b,.sbx-vrow .sbx-food .trk b,.sbx-vrow .sbx-o2 .trk b{font-size:.64rem}
+.sbx-vrow .sbx-hp{gap:6px;padding-right:8px}
+.sbx-o2{--oc:#7af0ff;--oc2:#1a8ab8;display:flex;align-items:center;gap:6px;padding:0 8px 0 0;background:linear-gradient(160deg,rgba(8,30,44,.82),rgba(2,8,14,.74));border:1px solid color-mix(in srgb,var(--oc) 55%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px -8px #000;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.sbx-o2[hidden]{display:none}
+.sbx-o2 .ic{flex:none;display:grid;place-items:center;margin:-1px 0 -1px -1px;border-radius:50%;color:#9be8ff;background:radial-gradient(circle at 35% 28%,#123a4a,#020c12 70%);border:1.5px solid var(--oc)}
+.sbx-o2 .trk{position:relative;flex:1;background:rgba(0,0,0,.6);box-shadow:inset 0 1px 3px #000;overflow:hidden}
+.sbx-o2 .trk .fl{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:7px;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.05) 50%,rgba(0,0,0,.12)),linear-gradient(90deg,var(--oc2),var(--oc));box-shadow:0 0 10px var(--oc);transition:width .2s}
+.sbx-o2 .trk b{position:absolute;inset:0;display:grid;place-items:center;font:800 .64rem Nunito,system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px #000}
+.sbx-o2.mid{--oc:#f2c14e;--oc2:#c08a1c}
+.sbx-o2.low{--oc:#ff5a4a;--oc2:#b81d18;animation:sbxLow 1.1s ease-in-out infinite}
+@media(max-width:480px),(max-height:520px) and (orientation:landscape){.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food,.sbx-vrow .sbx-o2{height:26px}.sbx-vrow .sbx-hp .hrt,.sbx-vrow .sbx-food .ic,.sbx-vrow .sbx-o2 .ic{width:26px;height:26px}.sbx-vrow{gap:5px}}
+@media(prefers-reduced-motion:reduce){.sbx-o2.low{animation:none}.sbx-o2 .trk .fl{transition:none}}
+.bo-box .mo-cv{border-radius:12px}
+.mo-list .mo-fit{width:auto;max-width:none}
+/* OCEAN on touch screens: the stick swims and walks, and the jump button stays (hop on the dock, swim up, fire the cannons at sea) */
+@media(pointer:coarse),(max-width:760px){.sbx-stage.ocean .sbx-pad{display:flex}.sbx-stage.ocean .sbx-pad .lr{visibility:hidden}}
+/* OCEAN: the Sailor side-quest page is an undersea chart. Buoys for pads, rope for vines, pearls for flowers, kelp and fish behind */
+.qb.qb-sea .qb-map{background:radial-gradient(ellipse at 50% -10%,#7fe6f066,transparent 55%),linear-gradient(180deg,#1a7aa6 0,#0f5486 30%,#0a3566 62%,#061d40 100%);background-attachment:local}
+.qb.qb-sea .qb-head{background:linear-gradient(180deg,#0f4a6e,#08243a00);border-bottom-color:#4fd0e833}
+.qb.qb-sea .qb-head h3{color:#e8fbff;text-shadow:0 2px 0 #062a40}
+.qb.qb-sea .qb-head::after{content:"";position:absolute;right:150px;top:8px;width:64px;height:36px;opacity:.55;pointer-events:none;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 36'%3E%3Cpath d='M6 26 Q32 34 58 26 L52 33 Q32 38 12 33Z' fill='%23c28a52'/%3E%3Cpath d='M30 4 L30 27' stroke='%236a4426' stroke-width='2'/%3E%3Cpath d='M31 6 Q48 12 31 24 Q22 15 31 6Z' fill='%2358b85a'/%3E%3C/svg%3E")}
+.qb.qb-sea .qb-main{background:#061d40}
+.qb-seadeco{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.qb-seadeco .wave{fill:none;stroke:#dffcff;stroke-opacity:.28;stroke-width:3}.qb-seadeco .wave.w2{stroke-opacity:.12}
+.qb-seadeco .sand{fill:#d9c48a;fill-opacity:.32}
+.qb-seadeco .kelp{fill:none;stroke:#3f9a4c;stroke-opacity:.55;stroke-width:6;stroke-linecap:round}
+.qb-seadeco .leaf{fill:#58b85a;fill-opacity:.5}
+.qb-seadeco .coral{fill:none;stroke-width:3.5;stroke-linecap:round;stroke-opacity:.55}.qb-seadeco .coralt{fill-opacity:.7}
+.qb-seadeco .shell path{fill:#f2b88a;fill-opacity:.6}.qb-seadeco .shell .rib{fill:none;stroke:#a8643a;stroke-opacity:.6;stroke-width:1}
+.qb-seadeco .anchor path{fill:none;stroke:#8e969b;stroke-opacity:.45;stroke-width:4;stroke-linecap:round}.qb-seadeco .anchor circle{fill:none;stroke:#8e969b;stroke-opacity:.45;stroke-width:3}
+.qb-seadeco .fish{animation:qbFish 30s linear infinite}.qb-seadeco .fish ellipse,.qb-seadeco .fish path{fill:#bfefff;fill-opacity:.22}.qb-seadeco .fish .eye{fill:#062a40;fill-opacity:.5}
+.qb-seadeco .bub{fill:none;stroke:#e8fbff;stroke-opacity:.4;stroke-width:1.3;animation:qbBub 10s linear infinite}
+@keyframes qbFish{0%{transform:translateX(-160px)}100%{transform:translateX(160px)}}
+@keyframes qbBub{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(-900px);opacity:0}}
+.qb.qb-sea .qb-vines .v0{stroke:#05223a;stroke-width:9}
+.qb.qb-sea .qb-vines .v1{stroke:#d9b97f;stroke-width:5;stroke-dasharray:6 3}
+.qb.qb-sea .qb-vines .v2{stroke:#4f8ab0;stroke-width:3;stroke-dasharray:3 8}
+.qb.qb-sea .qb-vines .lf1{fill:none;stroke:#e8fbff;stroke-width:1.6}.qb.qb-sea .qb-vines .lf0{fill:none;stroke:#4f8ab0;stroke-width:1.4}
+.qb.qb-sea .qb-n .pad{-webkit-mask:none;mask:none;background:radial-gradient(circle at 34% 28%,#bff4ff 0 8%,#4fb8e0 22%,#1a6aa8 62%,#0c3a66 88%);box-shadow:inset 0 -5px 0 #08284a,inset 0 3px 0 #dffcff55,0 6px 0 -1px #021226,0 0 0 2px #e84a3a,0 0 0 5px #ffffff,0 0 0 7px #062a40}
+.qb.qb-sea .qb-n.big .pad{box-shadow:inset 0 -6px 0 #08284a,inset 0 3px 0 #dffcff55,0 7px 0 -1px #021226,0 0 0 3px #ffd23f,0 0 0 6px #c9a52a,0 0 0 8px #062a40}
+.qb.qb-sea .qb-n.done .pad{background:radial-gradient(circle at 34% 28%,#ffffff 0 8%,#8af0ff 24%,#2fb59a 64%,#14605a 90%)}
+.qb.qb-sea .qb-n.done::before{background:conic-gradient(#f4e6ff 100%,#0000 0)}
+.qb.qb-sea .qb-n .fl{background:radial-gradient(circle at 35% 30%,#ffffff,#e8dcff 40%,#a898d8 75%);-webkit-mask:none;mask:none;box-shadow:0 0 8px #f4e6ff,0 1px 0 #0006}
+.qb.qb-sea .qb-n.lock .pad{background:radial-gradient(circle at 34% 28%,#3a5a72,#152a40 72%);box-shadow:inset 0 -5px 0 #08182a,0 6px 0 -1px #021226,0 0 0 2px #2a4a62}
+.qb.qb-sea .qb-n .ff{background:none;border:1.5px solid #e8fbff;box-shadow:0 0 6px #7af0ff;width:8px;height:8px}
+.qb.qb-sea .qb-n .nm{background:#062a40ee}
+.qb.qb-sea .qb-card{background:linear-gradient(170deg,#0f4a6e,#061d40)}
+.qb.qb-sea .qb-ci{background:radial-gradient(circle at 34% 28%,#bff4ff 0 8%,#4fb8e0 24%,#1a6aa8 70%)}
+.qb.qb-sea .qb-n .qg,.qb.qb-sea .qb-ci .qg{color:#e8fbff}
+@media(prefers-reduced-motion:reduce){.qb-seadeco .fish,.qb-seadeco .bub{animation:none}}
+@media(max-width:640px){.qb.qb-sea .qb-head::after{display:none}}
+.qb.qb-sea .qb-head{position:relative}
+.qb.qb-sea .qb-world{overflow:hidden}
+.qb.qb-sea .qb-in{position:relative;z-index:1}
+.qb.qb-sea .qb-seadeco{top:auto;bottom:0;left:0}
+.qb.qb-sea .qb-world::before{content:"";position:absolute;left:0;right:0;top:0;height:30px;pointer-events:none;opacity:.5;background:repeat-x 0 0/80px 30px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Cpath d='M0 10 Q20 2 40 10 T80 10' fill='none' stroke='%23dffcff' stroke-width='3' stroke-opacity='.6'/%3E%3Cpath d='M0 22 Q20 14 40 22 T80 22' fill='none' stroke='%23dffcff' stroke-width='2' stroke-opacity='.3'/%3E%3C/svg%3E")}
+/* ===== CROAKO'S FISHING LOG: a battered leather book with parchment pages, written in Croako's hand ===== */
+.fb{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(6,10,8,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.fb[hidden]{display:none}
+.fb-book{--ink:#3a2a1a;--paper:#f1e4c4;position:relative;width:min(860px,calc(100% - 40px));max-height:100%;min-height:0;display:flex;flex-direction:column;padding:16px 18px 12px;border-radius:14px 18px 18px 14px;
+ background:radial-gradient(ellipse at 20% 10%,#8a5630,transparent 60%),radial-gradient(ellipse at 90% 90%,#4a2a14,transparent 55%),#6a3e20;
+ box-shadow:inset 0 0 0 3px #4a2a14,inset 0 0 0 5px #8a5a32,inset 0 0 0 6px #3a2010,0 30px 60px -20px #000,0 0 0 1px #2a160a;animation:uiIn .2s cubic-bezier(.2,.9,.3,1.2)}
+.fb-book::before{content:"";position:absolute;inset:9px;border-radius:10px 14px 14px 10px;border:2px dashed #c99a5a66;pointer-events:none}
+.fb-x{position:absolute;right:-6px;top:-10px;z-index:3;width:38px;height:38px;border-radius:50%;border:2px solid #8a5a32;background:#3a2010;color:#f1e4c4;font-size:1.4rem;line-height:1;cursor:pointer;box-shadow:0 4px 10px #0008}
+.fb-tabs{position:absolute;right:-30px;top:44px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.fb-tabs button{width:40px;height:34px;padding:0 0 0 8px;border:0;border-radius:0 9px 9px 0;background:var(--tc);color:#3a2010;font:900 1rem Nunito,sans-serif;cursor:pointer;display:grid;place-items:center;box-shadow:2px 2px 0 #0005;filter:saturate(.75) brightness(.9);transform:translateX(-8px);transition:transform .15s}
+.fb-tabs button img{width:22px;height:22px;image-rendering:pixelated}
+.fb-tabs button.on{transform:translateX(0);filter:none}.fb-tabs button.full{box-shadow:2px 2px 0 #0005,inset 0 0 0 2px #fff6}
+.fb-spread{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;border-radius:6px;overflow:hidden;
+ background:radial-gradient(circle at 14% 82%,#d9c08a55 0 40px,transparent 41px),radial-gradient(circle at 88% 18%,#c9a86a33 0 26px,transparent 27px),linear-gradient(90deg,#e6d6b0 0,var(--paper) 6%,var(--paper) 46%,#c8b088 50%,var(--paper) 54%,var(--paper) 94%,#e6d6b0 100%);
+ box-shadow:inset 0 0 30px #a8865a66}
+.fb-book.flip .fb-spread{animation:fbFlip .28s ease-out}
+@keyframes fbFlip{0%{transform:perspective(900px) rotateY(-6deg);opacity:.6}100%{transform:none;opacity:1}}
+.fb-pg{min-width:0;overflow-y:auto;padding:20px 22px 18px;color:var(--ink);scrollbar-width:thin}
+.fb-l{border-right:1px solid #a8865a55}
+.fb-hand{font-family:Caveat,"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:700;font-size:1.35rem;line-height:1.1;color:var(--ink);margin:0}
+.fb-big{font-size:2.3rem;line-height:1;margin:4px 0 6px}
+.fb-ch{margin:0;font:800 .72rem Nunito,sans-serif;letter-spacing:.08em;color:#8a6a4a}
+.fb-small{margin:6px 0 0;font:700 .78rem/1.35 Nunito,sans-serif;color:#6a5236}
+.fb-crest{width:120px;height:120px;margin:10px auto;filter:sepia(.7) saturate(.8) drop-shadow(0 3px 0 #a8865a66)}
+.fb-crest svg{width:100%;height:100%}
+.fb-count{margin:2px 0 6px;font:900 1rem Nunito,sans-serif;color:#6a5236}.fb-count b{font-family:Caveat,cursive;font-size:2.6rem;color:var(--ink)}
+.fb-meter{height:8px;border-radius:5px;background:#d6c49a;box-shadow:inset 0 1px 2px #0003}.fb-meter i{display:block;height:100%;border-radius:5px;background:#7a4a26}
+.fb-toc{list-style:none;margin:14px 0 6px;padding:0;display:grid;gap:4px}
+.fb-toc button{width:100%;display:flex;align-items:center;gap:10px;padding:6px 8px;border:0;border-bottom:1px dashed #a8865a88;background:none;cursor:pointer;text-align:left}
+.fb-toc button:hover{background:#d6c49a55}
+.fb-toc .dot{flex:none;width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 2px #fff8}.fb-toc .fb-hand{flex:1;font-size:1.3rem}.fb-toc em{font:800 .8rem Nunito,sans-serif;font-style:normal;color:#6a5236}
+.fb-scene{position:relative;height:120px;margin:12px 0;border-radius:6px;border:2px solid #a8865a88;overflow:hidden;filter:sepia(.45);
+ background:linear-gradient(180deg,#bfe0d0 0 38%,var(--pc) 38% 100%)}
+.fb-scene i{position:absolute;bottom:14px;width:26px;height:12px;border-radius:50%;background:#3a2a1a88}
+.fb-scene i::after{content:"";position:absolute;left:-9px;top:1px;border:5px solid transparent;border-right:10px solid #3a2a1a88}
+.fb-scene i:nth-child(1){left:20%;bottom:22px}.fb-scene i:nth-child(2){left:55%;bottom:40px;transform:scale(.8)}.fb-scene i:nth-child(3){left:76%;bottom:12px;transform:scale(1.2)}
+.fb-scene::before{content:"";position:absolute;left:0;right:0;top:34%;height:8px;background:repeating-linear-gradient(90deg,#fff9 0 14px,transparent 14px 28px)}
+.fb-frost{background:linear-gradient(180deg,#dfe9f0 0 38%,#eaf6ff 38% 46%,var(--pc) 46% 100%)}
+.fb-lava{background:linear-gradient(180deg,#5a3a30 0 38%,var(--pc) 38% 100%)}.fb-lava::before{background:repeating-linear-gradient(90deg,#ffe0a099 0 10px,transparent 10px 22px)}
+.fb-swamp{background:linear-gradient(180deg,#c9dcb0 0 38%,#5a8a5a 38% 100%)}
+.fb-note{font-size:1.25rem;margin-top:6px}
+.fb-rw{font-style:italic}
+.fb-pay{margin-top:12px;width:100%;background:#7a4a26;border-color:#5a3418;color:#f6eedb}
+.fb-stamp{display:inline-block;margin-top:14px;padding:6px 14px;border:3px solid #b8342a;border-radius:8px;color:#b8342a;font:900 1rem Nunito,sans-serif;letter-spacing:.06em;transform:rotate(-8deg);opacity:.85}
+.fb-fish{display:flex;gap:12px;align-items:flex-start;padding:10px 4px 12px;border-bottom:1px dashed #a8865a88}
+.fb-fish:last-child{border-bottom:0}
+.fb-sk{flex:none;width:66px;height:66px;display:grid;place-items:center;border-radius:4px;background:#e8d8b2;box-shadow:inset 0 0 0 1px #a8865a88,2px 3px 0 #a8865a44;transform:rotate(-2deg)}
+.fb-fish:nth-child(2) .fb-sk{transform:rotate(2deg)}
+.fb-sk img{width:52px;height:52px;image-rendering:pixelated;filter:sepia(.35) saturate(.9)}
+.fb-fish.no .fb-sk img{filter:brightness(0) opacity(.18)}
+.fb-txt{min-width:0}.fb-txt > b{display:block;font-size:1.55rem}
+.fb-txt small{display:block;font:800 .72rem Nunito,sans-serif;color:#8a6a4a;margin-top:1px}
+.fb-line{font-size:1.15rem;font-weight:600;margin-top:4px}.fb-blank{color:#a8906a}
+.fb-st{display:inline-block;margin-top:5px;font:700 .78rem Nunito,sans-serif;color:#6a5236}.fb-st b{color:var(--ink)}
+.fb-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.fb-nav .btn{min-height:34px;padding:5px 12px;font-size:.84rem;color:#f1e4c4;border-color:#c99a5a88}
+.fb-nav .btn:disabled{opacity:.35}.fb-nav .fb-hand{color:#f1e4c4;font-size:1.3rem}
+.lg-book{display:flex;align-items:center;gap:12px;padding:10px 12px;margin:0 0 14px;border-radius:14px;background:linear-gradient(90deg,#6a3e2033,transparent);border:1px solid #c99a5a44}
+.lg-book img{width:40px;height:40px;image-rendering:pixelated}.lg-book div{flex:1;min-width:0}.lg-book b{display:block;color:#f6eedb}.lg-book small{display:block;color:#f6eedbaa}.lg-book .btn{width:auto;min-height:34px;padding:5px 12px}
+@media(max-width:640px){
+ .fb{padding:8px}.fb-book{padding:12px 12px 10px;max-height:calc(100% - 4px)}
+ .fb-spread{grid-template-columns:1fr;overflow-y:auto;background:linear-gradient(90deg,#e6d6b0,var(--paper) 6%,var(--paper) 94%,#e6d6b0)}
+ .fb-pg{overflow:visible}.fb-l{border-right:0;border-bottom:1px dashed #a8865a88}
+ .fb-tabs{position:static;flex-direction:row;justify-content:center;margin:0 0 8px}.fb-tabs button{transform:none;border-radius:9px;padding:0;width:38px}
+ .fb-big{font-size:2rem}.fb-scene{height:80px}.fb-x{right:-2px;top:-4px}
+}
+@media(prefers-reduced-motion:reduce){.fb-book,.fb-book.flip .fb-spread{animation:none}}
+.fb-nav .btn,.fb-nav .btn.ghost{background:#3a2010;border:1px solid #c99a5a88;box-shadow:0 2px 0 #1e0e06;color:#f1e4c4}.fb-pay{box-shadow:0 3px 0 #3a2010!important}
+/* FISH PACK: the Fishing Log shows a chapter's fish as a grid of sketches (right) and the picked one in detail (left) */
+.fb-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fb-card{display:flex;align-items:center;gap:8px;min-width:0;padding:6px 8px 6px 6px;border:0;border-radius:6px;background:#e8d8b2aa;box-shadow:inset 0 0 0 1px #a8865a66;cursor:pointer;text-align:left;color:var(--ink)}
+.fb-card:hover{background:#dcc898}.fb-card.sel{box-shadow:inset 0 0 0 2px #7a4a26,0 2px 0 #a8865a66;background:#f6ead0}
+.fb-card .fb-sk{width:40px;height:40px;transform:none;box-shadow:inset 0 0 0 1px #a8865a66}.fb-card .fb-sk img{width:32px;height:32px}
+.fb-card.no .fb-sk img{filter:brightness(0) opacity(.18)}
+.fb-cn{flex:1;min-width:0;font:800 .78rem/1.15 Nunito,sans-serif;overflow:hidden;text-overflow:ellipsis}
+.fb-card em{flex:none;font:800 .68rem Nunito,sans-serif;font-style:normal;color:var(--rc)}
+.fb-det{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:10px;border-radius:6px;background:#e8d8b277;box-shadow:inset 0 0 0 1px #a8865a66}
+.fb-sk.big{width:84px;height:84px}.fb-sk.big img{width:68px;height:68px}
+.fb-det.no .fb-sk img{filter:brightness(0) opacity(.18)}
+.fb-rar{display:inline-block;margin:2px 0 2px;padding:1px 8px;border-radius:999px;font:900 .64rem Nunito,sans-serif;letter-spacing:.04em;color:#fff;background:var(--rc)}
+.fb-r .fb-pay,.fb-r .fb-stamp,.fb-r .fb-rw{margin-top:12px}
+.fb-scene{height:84px}
+.fb-blossom{background:linear-gradient(180deg,#ffe0ea 0 38%,#e8a8c0 38% 100%)}
+.fb-cave{background:linear-gradient(180deg,#3a3448 0 38%,#6a5a9a 38% 100%)}
+.fb-oak{background:linear-gradient(180deg,#5a6a3a 0 38%,#3a4a2a 38% 100%)}
+.fb-shores{background:linear-gradient(180deg,#fff0c0 0 38%,#5ac8c8 38% 100%)}
+@media(max-width:640px){.fb-tabs{overflow-x:auto;justify-content:flex-start;padding-bottom:2px}.fb-tabs button{flex:none;width:34px;height:32px}.fb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-sk.big{width:64px;height:64px}.fb-sk.big img{width:52px;height:52px}}
+/* ===== QUEST PAGE THEMES: each story chapter and side-quest group has its own scene, pads and links (see QB_TH / qbThemeDeco) ===== */
+.qb.qb-th .qb-world{overflow:hidden}
+.qb.qb-th .qb-in{position:relative;z-index:1}
+.qb-thdeco,.qb-thtop{position:absolute;left:0;pointer-events:none;overflow:visible}
+.qb-thdeco{bottom:0}.qb-thtop{top:0}
+.qb.qb-th:not(.qb-sea) .qb-map{background:var(--qbg);background-attachment:local}
+.qb.qb-th:not(.qb-sea) .qb-head{background:linear-gradient(180deg,var(--hb),transparent);border-bottom-color:color-mix(in srgb,var(--qc) 25%,transparent)}
+.qb.qb-th:not(.qb-sea) .qb-n .pad{background:radial-gradient(circle at 36% 30%,var(--p1),var(--p2) 58%,var(--p3) 84%);box-shadow:inset 0 -5px 0 var(--p4),inset 0 3px 0 #ffffff33,0 6px 0 -1px #0009,0 0 0 2px var(--pr)}
+.qb.qb-th:not(.qb-sea) .qb-n.done .pad{background:radial-gradient(circle at 36% 30%,var(--d1),var(--d2) 60%,var(--p3) 88%)}
+.qb.qb-th:not(.qb-sea) .qb-n.lock .pad{background:radial-gradient(circle at 36% 30%,var(--l1),var(--l2) 72%);box-shadow:inset 0 -5px 0 #0004,0 6px 0 -1px #0008,0 0 0 2px #0006}
+.qb.qb-th.qb-round .qb-n .pad{-webkit-mask:none;mask:none}
+.qb.qb-th:not(.qb-sea) .qb-vines .v0{stroke:var(--vo)}
+.qb.qb-th:not(.qb-sea) .qb-vines .v1{stroke:var(--vn)}
+.qb.qb-th:not(.qb-sea) .qb-vines .v2{stroke:var(--vd)}
+.qb.qb-th:not(.qb-sea) .qb-vines .lf1{fill:var(--lf)}.qb.qb-th:not(.qb-sea) .qb-vines .lf0{fill:var(--vd)}
+.qb.qb-th:not(.qb-sea) .qb-n .fl{background:radial-gradient(circle,var(--fc) 0 22%,transparent 24%),conic-gradient(var(--fl) 0 12%,var(--fl2) 12% 20%,var(--fl) 20% 32%,var(--fl2) 32% 40%,var(--fl) 40% 52%,var(--fl2) 52% 60%,var(--fl) 60% 72%,var(--fl2) 72% 80%,var(--fl) 80% 92%,var(--fl2) 92%)}
+.qb.qb-th:not(.qb-sea) .qb-n.done::before{background:conic-gradient(var(--fl) 100%,#0000 0)}
+.qb.qb-th:not(.qb-sea) .qb-card{background:linear-gradient(170deg,var(--cb1),var(--cb2))}
+.qb.qb-th:not(.qb-sea) .qb-ci{background:radial-gradient(circle at 36% 30%,var(--p1),var(--p2) 70%)}
+.qb.qb-th:not(.qb-sea) .qb-n .nm{background:color-mix(in srgb,var(--cb2) 92%,transparent)}
+.qb.qb-th .qb-ch.on{background:linear-gradient(90deg,color-mix(in srgb,var(--cc) 26%,transparent),transparent)}
+/* shared scene bits */
+.qb-thdeco .tw,.qb-thtop .tw{fill:#fff;animation:qtTw 5s ease-in-out infinite}
+@keyframes qtTw{50%{opacity:.25}}
+.qb-thdeco .ff{fill:#efffb0;filter:drop-shadow(0 0 3px #d8ff6a);animation:qtFly 7s ease-in-out infinite}
+@keyframes qtFly{50%{transform:translate(14px,-18px);opacity:.4}}
+.qb-thdeco .reed{fill:none;stroke:#3a6a3a;stroke-width:3;stroke-linecap:round}.qb-thdeco .cat{fill:#6a4426}
+.qb-thdeco .pine{fill:#3a6a5a}.qb-thdeco .pine.dk{fill:#0c1a12}
+.qb-thdeco .moon{fill:#f4f0d8;filter:drop-shadow(0 0 18px #f4f0d888)}
+.qb-thdeco .sun{fill:#ffe27a;filter:drop-shadow(0 0 24px #ffd23f)}
+.qb-thdeco .lglow{fill:#ffd27a33;filter:blur(6px)}
+.qb-thdeco .fence{fill:#8a5a32}
+@media(prefers-reduced-motion:reduce){.qb-thdeco *,.qb-thtop *{animation:none!important}}
+/* m0 Washed Up in Murkwater */
+.qb-th-fen{--qbg:linear-gradient(180deg,#9fc8b0 0,#4a8a72 35%,#1c4a3a 75%,#12301f 100%);--hb:#1c4a3a;--p1:#5aa85a;--p2:#2a6a34;--p3:#173a20;--p4:#0f2a17;--pr:#0a1d12;--d1:#7ad06a;--d2:#2f7a3c;--l1:#2a3a32;--l2:#151f1a;--vo:#03100a;--vn:#5fae46;--vd:#24452c;--lf:#7fd06a;--fl:#ff9ad0;--fl2:#ffc8e6;--fc:#ffe27a;--cb1:#12301f;--cb2:#071510}
+.qb-th-fen .fog{fill:#e8f6ee;opacity:.18;filter:blur(8px)}.qb-th-fen .fog.f2{opacity:.12}.qb-th-fen .drift rect{fill:#6a4a2a}
+/* m1 A Place to Call Home */
+.qb-th-home{--qbg:linear-gradient(180deg,#2a2440 0,#6a4a5a 40%,#c8845a 78%,#3a2a1a 100%);--hb:#4a2e22;--p1:#d8a868;--p2:#9a6a3a;--p3:#5a3a1e;--p4:#3a2210;--pr:#2a1608;--d1:#f2c878;--d2:#b8803a;--l1:#5a4a3a;--l2:#2a2018;--vo:#2a1608;--vn:#c9a876;--vd:#6a5232;--lf:#7dd65a;--fl:#ff9a5a;--fl2:#ffd0a0;--fc:#fff6c0;--cb1:#4a2e22;--cb2:#1e120a}
+.qb-th-home .house rect,.qb-th-home .house path{fill:#2a1a12}.qb-th-home .house .win{fill:#ffd27a;filter:drop-shadow(0 0 6px #ffd27a)}
+.qb-th-home .smoke{fill:#e8e0d8;opacity:.25;animation:qtSmoke 6s ease-out infinite}.qb-th-home .smoke.s2{animation-delay:-3s}
+@keyframes qtSmoke{0%{transform:translateY(10px);opacity:0}30%{opacity:.3}100%{transform:translateY(-60px) scale(2);opacity:0}}
+.qb-th-home .fire path{fill:#ff8a3d;filter:drop-shadow(0 0 10px #ff8a3d)}.qb-th-home .fire .f2{fill:#ffe27a}
+/* m2 The Glow Beneath */
+.qb-th-glow{--qbg:radial-gradient(ellipse at 50% 100%,#1f4a4a,transparent 60%),linear-gradient(180deg,#0a0812,#160f24 60%,#0c0a14);--hb:#18122a;--p1:#6af0e0;--p2:#1f8a80;--p3:#0f3a3a;--p4:#082424;--pr:#04140f;--d1:#a8fff0;--d2:#2fc8b8;--l1:#2a2a3a;--l2:#14141c;--vo:#05040a;--vn:#22d3a6;--vd:#2a3a48;--lf:#7af0ff;--fl:#7af0ff;--fl2:#c8fbff;--fc:#ffffff;--cb1:#18122a;--cb2:#08060e}
+.qb-th-glow .roof{fill:#08060c}.qb-th-glow .mush rect{fill:#c8d8c0}.qb-th-glow .mush .cap{fill:#2fc8b8;filter:drop-shadow(0 0 10px #4ee6e0)}
+.qb-th-glow .gem{fill:#b88aff;filter:drop-shadow(0 0 8px #b88aff)}.qb-th-glow .spore{fill:#7af0e0;filter:drop-shadow(0 0 4px #7af0e0);animation:qtFly 8s ease-in-out infinite}
+/* m3 Embers in the East */
+.qb-th-ember{--qbg:linear-gradient(180deg,#1a0a0a 0,#3a120c 50%,#6a1e0a 100%);--hb:#3a120c;--p1:#5a4a4a;--p2:#2a1e1e;--p3:#140c0c;--p4:#000;--pr:#ff6a2a;--d1:#ff9a4a;--d2:#a83a1a;--l1:#2a1e1e;--l2:#120a0a;--vo:#0a0404;--vn:#ff8a3d;--vd:#5a2a1a;--lf:#ffd27a;--fl:#ffb13b;--fl2:#ffe27a;--fc:#fff6c0;--cb1:#3a120c;--cb2:#140606}
+.qb-th-ember .lavaglow{fill:#ff6a2a;opacity:.35;filter:blur(18px)}.qb-th-ember .spire{fill:#1e0e0a}
+.qb-th-ember .emb{fill:#ffb13b;filter:drop-shadow(0 0 4px #ff6a2a);animation:qtRise 6s linear infinite}
+@keyframes qtRise{0%{transform:translateY(20px);opacity:0}20%{opacity:1}100%{transform:translateY(-160px);opacity:0}}
+/* m4 The Frozen Fen */
+.qb-th-frost{--qbg:linear-gradient(180deg,#5a7a9a 0,#9ac0d8 45%,#d8ecf8 100%);--hb:#3a5a7a;--p1:#ffffff;--p2:#a8d8f0;--p3:#5a8ab0;--p4:#3a6a90;--pr:#2a4a68;--d1:#ffffff;--d2:#7fd6ff;--l1:#7a8a9a;--l2:#4a5a6a;--vo:#2a4a68;--vn:#e8f8ff;--vd:#6a8aa8;--lf:#ffffff;--fl:#bff4ff;--fl2:#ffffff;--fc:#7fd6ff;--cb1:#2a4a68;--cb2:#0e1e2e}
+.qb-th-frost .ice{fill:#e8f8ff;opacity:.85}.qb-th-frost .pine{fill:#2a5a5a}.qb-th-frost .flake{fill:#fff;animation:qtFall 9s linear infinite}
+@keyframes qtFall{0%{transform:translateY(-40px)}100%{transform:translateY(220px) translateX(20px)}}
+/* m5 Heart of the Swamp */
+.qb-th-heart{--qbg:radial-gradient(ellipse at 50% 70%,#6a2a5a,transparent 55%),linear-gradient(180deg,#1a1030,#2a1a3a 50%,#12201a);--hb:#3a1a3a;--p1:#ff9ad0;--p2:#b84a8a;--p3:#5a1a4a;--p4:#3a0a2a;--pr:#1a0a1a;--d1:#ffd0e8;--d2:#ff6ab0;--l1:#3a2a3a;--l2:#1a121a;--vo:#120812;--vn:#f2c14e;--vd:#4a2a4a;--lf:#7fd06a;--fl:#f2c14e;--fl2:#fff0a0;--fc:#ff6ab0;--cb1:#3a1a3a;--cb2:#140814}
+.qb-th-heart .trunk{fill:#2a1a14}.qb-th-heart .root{fill:none;stroke:#2a1a14;stroke-width:8;stroke-linecap:round}
+.qb-th-heart .hglow{fill:#ff6ab0;opacity:.35;filter:blur(14px);animation:qtTw 3s ease-in-out infinite}.qb-th-heart .heartp{fill:#ff6ab0;filter:drop-shadow(0 0 6px #ff6ab0)}
+/* m6 The Realm Gate */
+.qb-th-gate{--qbg:radial-gradient(ellipse at 50% 80%,#2a5a6a,transparent 50%),linear-gradient(180deg,#0a0820,#1a1540 60%,#0c0a1a);--hb:#1a1540;--p1:#8affe0;--p2:#3a6a8a;--p3:#1a2a4a;--p4:#0a1430;--pr:#8affe0;--d1:#d8fff4;--d2:#4ee6b4;--l1:#2a2a4a;--l2:#14142a;--vo:#05040f;--vn:#8affe0;--vd:#2a3a5a;--lf:#c8a8ff;--fl:#c8a8ff;--fl2:#ffffff;--fc:#8affe0;--cb1:#1a1540;--cb2:#08071a}
+.qb-th-gate .arch{fill:#3a3a52}.qb-th-gate .portal{fill:#8affe0;opacity:.3;filter:blur(4px);animation:qtTw 4s ease-in-out infinite}
+.qb-th-gate .rune circle{fill:none;stroke:#8affe0;stroke-opacity:.35;stroke-width:2}.qb-th-gate .rune .rst{fill:none;stroke:#c8a8ff;stroke-opacity:.45;stroke-width:1.5}.qb-th-gate .rune{animation:qtSpin 30s linear infinite}
+@keyframes qtSpin{to{transform:rotate(360deg)}}
+/* m7 Beyond the Swamp */
+.qb-th-cosmos{--qbg:radial-gradient(ellipse at 30% 20%,#4a2a6a,transparent 50%),linear-gradient(180deg,#05041a,#1a1040 70%,#2a1a4a);--hb:#1a1040;--p1:#ffe27a;--p2:#c9962a;--p3:#6a4a1a;--p4:#3a2a0a;--pr:#1a1040;--d1:#fff6c0;--d2:#ffd23f;--l1:#2a2a4a;--l2:#14142a;--vo:#05041a;--vn:#ff9ae0;--vd:#3a2a5a;--lf:#ffe27a;--fl:#ff9ae0;--fl2:#ffd0f4;--fc:#ffe27a;--cb1:#1a1040;--cb2:#08061a}
+.qb-th-cosmos .moonc{fill:#1a1040}.qb-th-cosmos .isle{fill:#3a2a4a}.qb-th-cosmos .isleg{fill:#4a8a4a}.qb-th-cosmos .st5{fill:#ffe27a;animation:qtTw 4s ease-in-out infinite}
+/* m8 Epilogue */
+.qb-th-dawn{--qbg:linear-gradient(180deg,#2a1a4a 0,#c86a8a 50%,#ffc878 100%);--hb:#4a2a4a;--p1:#ffd0a0;--p2:#c8784a;--p3:#6a3a2a;--p4:#3a1a12;--pr:#2a1208;--d1:#fff0c0;--d2:#ffb13b;--l1:#5a3a4a;--l2:#2a1a22;--vo:#2a1208;--vn:#c06aff;--vd:#5a3a5a;--lf:#ffd0a0;--fl:#c06aff;--fl2:#e8c0ff;--fc:#fff0c0;--cb1:#4a2a4a;--cb2:#1a0e1a}
+.qb-th-dawn .sunr{fill:#ffe27a;filter:blur(2px) drop-shadow(0 0 40px #ffb13b)}
+/* Explorer: an old map */
+.qb-th-map{--qbg:radial-gradient(circle at 20% 30%,#c9a86a44 0 60px,transparent 61px),radial-gradient(circle at 80% 70%,#a8865a33 0 90px,transparent 91px),linear-gradient(180deg,#e8d4a8,#d8bf88);--hb:#5a3a1e;--p1:#f6eedb;--p2:#c9a876;--p3:#8a6a3a;--p4:#6a4a22;--pr:#5a3a1e;--d1:#fff6e0;--d2:#7fd06a;--l1:#b8a07a;--l2:#8a7a5a;--vo:#8a6a3a;--vn:#b8342a;--vd:#8a6a3a;--lf:#5a3a1e;--fl:#b8342a;--fl2:#e8705a;--fc:#f6eedb;--cb1:#5a3a1e;--cb2:#2a1a0a}
+.qb-th-map .qb-vines .v1{stroke-dasharray:8 6}
+.qb-th-map .trail{fill:none;stroke:#8a6a3a;stroke-width:2.4;stroke-dasharray:3 7;opacity:.6}.qb-th-map .mtn{fill:none;stroke:#6a4a22;stroke-width:2;opacity:.55}
+.qb-th-map .tree0 circle{fill:none;stroke:#3a6a3a;stroke-width:2;opacity:.55}.qb-th-map .tree0 line{stroke:#6a4a22;stroke-width:2;opacity:.55}
+.qb-th-map .compass circle{fill:none;stroke:#6a4a22;stroke-width:2;opacity:.6}.qb-th-map .cst{fill:#b8342a;opacity:.45}.qb-th-map text{fill:#6a4a22;font:900 14px Nunito,sans-serif;text-anchor:middle;opacity:.7}.qb-th-map .xmark{fill:#b8342a;font-size:26px}
+/* Builder: a blueprint */
+.qb-th-blueprint{--qbg:linear-gradient(#ffffff14 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,#ffffff14 1px,transparent 1px) 0 0/24px 24px,linear-gradient(180deg,#1a4a8a,#0f3466);--hb:#0f3466;--p1:#e8f4ff;--p2:#6a9ad0;--p3:#2a5a9a;--p4:#173e78;--pr:#ffffff88;--d1:#ffffff;--d2:#4ee6b4;--l1:#3a5a8a;--l2:#1a3a6a;--vo:#0a2450;--vn:#ffffff;--vd:#6a8ab8;--lf:#ffe27a;--fl:#ffe27a;--fl2:#ffffff;--fc:#1a4a8a;--cb1:#0f3466;--cb2:#061a3a}
+.qb-th-blueprint .qb-vines .v1{stroke-dasharray:10 5}
+.qb-th-blueprint .bp rect,.qb-th-blueprint .bp path,.qb-th-blueprint .bp line{fill:none;stroke:#fff;stroke-opacity:.75;stroke-width:2.2}.qb-th-blueprint .bp .dim{stroke-dasharray:4 4}.qb-th-blueprint .bp text{fill:#fff;opacity:.5;font:700 11px Nunito,sans-serif;text-anchor:middle}
+/* Decorator: a parlour */
+.qb-th-parlor{--qbg:radial-gradient(circle,#ffffff10 0 3px,transparent 4px) 0 0/32px 32px,linear-gradient(180deg,#5a3a5a,#3a2440);--hb:#4a2a4a;--p1:#ffd0e0;--p2:#c86a8a;--p3:#7a2a4a;--p4:#4a1a2a;--pr:#f2c14e;--d1:#fff0f4;--d2:#4ee6b4;--l1:#5a4a5a;--l2:#2a1e2a;--vo:#1a0e1a;--vn:#f2c14e;--vd:#6a4a6a;--lf:#ff9ac8;--fl:#ff9ac8;--fl2:#fff0f4;--fc:#f2c14e;--cb1:#4a2a4a;--cb2:#1a0e1a}
+.qb-th-parlor .wains{fill:#3a1e20}.qb-th-parlor .rail{fill:#8a5a32}.qb-th-parlor .frame rect{fill:#c9a52a}.qb-th-parlor .frame .art{fill:#4a6a8a;opacity:.8}
+.qb-th-parlor .lamp rect,.qb-th-parlor .lamp path{fill:#c9a52a}.qb-th-parlor .lglow{fill:#ffd27a44}
+/* Crafter: a workshop */
+.qb-th-workshop{--qbg:radial-gradient(circle,#00000030 0 2px,transparent 3px) 12px 12px/24px 24px,repeating-linear-gradient(90deg,#7a5230 0 80px,#6a4426 80px 82px),#7a5230;--hb:#4a2e18;--p1:#d8a868;--p2:#9a6a3a;--p3:#5a3a1e;--p4:#3a2210;--pr:#c9a52a;--d1:#ffd27a;--d2:#c9a52a;--l1:#5a4a3a;--l2:#3a2e22;--vo:#2a1608;--vn:#c9a876;--vd:#4a3a2a;--lf:#ffd27a;--fl:#ffd23f;--fl2:#fff6c0;--fc:#8a5a32;--cb1:#4a2e18;--cb2:#1e120a}
+.qb-th-workshop .tool rect{fill:#4a2e18}.qb-th-workshop .tool .head{fill:#8e969b}.qb-th-workshop .gear path{fill:#5a4a3a}.qb-th-workshop .gear .hole{fill:#7a5230}.qb-th-workshop .gear{animation:qtSpin 20s linear infinite}.qb-th-workshop .bench{fill:#4a2e18}
+/* Farmer & Cook: fields */
+.qb-th-farm{--qbg:linear-gradient(180deg,#8ad8f0 0,#d8f0c0 70%,#8ac85a 100%);--hb:#3a6a2a;--p1:#ffd27a;--p2:#e8963a;--p3:#a85a1a;--p4:#7a3a0a;--pr:#5a3a1a;--d1:#fff0a0;--d2:#7dd65a;--l1:#a89878;--l2:#7a6a5a;--vo:#5a3a1a;--vn:#7dd65a;--vd:#a88a5a;--lf:#7dd65a;--fl:#ff6a4a;--fl2:#ffb0a0;--fc:#ffd23f;--cb1:#3a5a2a;--cb2:#16260e}
+.qb-th-farm .row{fill:#6a4426}.qb-th-farm .row.r1{fill:#7a5230}.qb-th-farm .sprout line{stroke:#3a8a3a;stroke-width:2}.qb-th-farm .sprout ellipse{fill:#5ab84a}
+.qb-th-farm .scare line{stroke:#6a4426;stroke-width:4}.qb-th-farm .scare circle{fill:#e8d090}.qb-th-farm .scare path{fill:#c8963a}
+/* Angler: a lake at dusk */
+.qb-th-lake{--qbg:linear-gradient(180deg,#f0a878 0,#c86a7a 30%,#4a4a7a 46%,#1a4a6a 100%);--hb:#3a3a5a;--p1:#ffffff;--p2:#e8341c;--p3:#8a1a0a;--p4:#5a0a04;--pr:#1a1a22;--d1:#ffffff;--d2:#4ee6b4;--l1:#5a6a7a;--l2:#2a3a4a;--vo:#0a1a2a;--vn:#f6eedb;--vd:#4a6a8a;--lf:#7fd6ff;--fl:#7fd6ff;--fl2:#ffffff;--fc:#e8341c;--cb1:#1a3a5a;--cb2:#081a2a}
+.qb-th-lake.qb-round .qb-n .pad{background:linear-gradient(180deg,#e8341c 0 50%,#ffffff 50%)}.qb-th-lake .qb-n.done .pad{background:linear-gradient(180deg,#4ee6b4 0 50%,#ffffff 50%)}
+.qb-th-lake .lakew{fill:#1a4a6a;opacity:.4}.qb-th-lake .ripple{fill:none;stroke:#e8fbff;stroke-opacity:.3;stroke-width:1.4;animation:qtTw 4s ease-in-out infinite}
+.qb-th-lake .bobber .bt{fill:#fff}.qb-th-lake .bobber .bb{fill:#e8341c}.qb-th-lake .bobber line{stroke:#fff;stroke-width:1.4}
+/* Rancher: a barnyard */
+.qb-th-ranch{--qbg:linear-gradient(180deg,#9ad8f0 0,#e8f8d8 65%,#8ac85a 100%);--hb:#7a3a2a;--p1:#fff6c0;--p2:#e8c86a;--p3:#a8862a;--p4:#7a5a1a;--pr:#5a3a1a;--d1:#ffffff;--d2:#ff9ac2;--l1:#a89878;--l2:#7a6a5a;--vo:#5a3a1a;--vn:#c9963a;--vd:#a88a5a;--lf:#7dd65a;--fl:#ff9ac2;--fl2:#fff0f4;--fc:#ffd23f;--cb1:#5a2a1a;--cb2:#22100a}
+.qb-th-ranch .barn rect,.qb-th-ranch .barn path{fill:#b8342a}.qb-th-ranch .barn .door{fill:#7a1a14}.qb-th-ranch .barn .x{fill:none;stroke:#f6eedb;stroke-width:3}
+.qb-th-ranch .hay rect{fill:#e8c86a}.qb-th-ranch .hay line{stroke:#a8862a;stroke-width:2}.qb-th-ranch .fence{fill:#f6eedb}
+/* Hunter: a dark wood */
+.qb-th-hunt{--qbg:linear-gradient(180deg,#0e1a2a 0,#14261c 60%,#0a120c);--hb:#2a0e0e;--p1:#b8b8c0;--p2:#6a6a78;--p3:#2a2a34;--p4:#14141c;--pr:#b8342a;--d1:#e8e8f0;--d2:#b8342a;--l1:#2a2a2a;--l2:#141414;--vo:#050805;--vn:#b8342a;--vd:#2a3a2a;--lf:#e8e8f0;--fl:#ff4a3a;--fl2:#ffb0a0;--fc:#ffffff;--cb1:#2a1414;--cb2:#0e0808}
+.qb-th-hunt .claw path{fill:none;stroke:#b8342a;stroke-opacity:.5;stroke-width:5;stroke-linecap:round}.qb-th-hunt .eye{fill:#ffd23f;filter:drop-shadow(0 0 4px #ffd23f);animation:qtTw 3s ease-in-out infinite}
+/* Delver: a mine */
+.qb-th-mine{--qbg:radial-gradient(circle,#ffffff08 0 2px,transparent 3px) 0 0/40px 40px,linear-gradient(180deg,#2a2422,#1a1614 70%,#120e0c);--hb:#2a2220;--p1:#9a9a9a;--p2:#5a5a5a;--p3:#2a2a2a;--p4:#141414;--pr:#c9a52a;--d1:#fff0a0;--d2:#c9a52a;--l1:#3a3430;--l2:#1e1a18;--vo:#0a0806;--vn:#c9a876;--vd:#4a3e34;--lf:#ffd27a;--fl:#ffd27a;--fl2:#fff6c0;--fc:#b88aff;--cb1:#2a2220;--cb2:#0e0a08}
+.qb-th-mine .beam{fill:#5a3a1e}.qb-th-mine .rail{fill:#8e969b}.qb-th-mine .tie{fill:#4a2e18}.qb-th-mine .cart path{fill:#5a5a62}.qb-th-mine .cart circle{fill:#2a2a30}
+.qb-th-mine .gem{fill:#7af0ff}.qb-th-mine .gem.g2{fill:#ff6a9a}.qb-th-mine .lant line{stroke:#3a2a1a;stroke-width:2}.qb-th-mine .lant rect{fill:#ffd27a}.qb-th-mine .lglow{fill:#ffd27a33}
+.qb-th-mine .ore{fill:#b88aff}.qb-th-mine .ore.o1{fill:#ffd23f}.qb-th-mine .ore.o2{fill:#7af0ff}
+/* Collector: a treasure vault */
+.qb-th-vault{--qbg:radial-gradient(ellipse at 50% 100%,#c9962a55,transparent 60%),linear-gradient(180deg,#1a1408,#2a2010 60%,#3a2a10);--hb:#3a2a10;--p1:#fff0a0;--p2:#d9a53a;--p3:#8a5a1a;--p4:#5a3a0a;--pr:#3a2a0a;--d1:#ffffff;--d2:#ffd23f;--l1:#4a3e2a;--l2:#241e12;--vo:#140e04;--vn:#ffd23f;--vd:#5a4a2a;--lf:#ff6a9a;--fl:#ff6a9a;--fl2:#ffc0d8;--fc:#ffd23f;--cb1:#3a2a10;--cb2:#140e04}
+.qb-th-vault .coin{fill:#ffd23f;stroke:#a87a1a;stroke-width:1}.qb-th-vault .gem{fill:#7af0ff;filter:drop-shadow(0 0 6px #7af0ff)}.qb-th-vault .gem.g2{fill:#ff6a9a;filter:drop-shadow(0 0 6px #ff6a9a)}
+.qb-th-vault .chestv rect,.qb-th-vault .chestv path{fill:#8a5a32;stroke:#d9a53a;stroke-width:3}.qb-th-vault .chestv .lock{fill:#d9a53a}.qb-th-vault .spark{fill:#fff6c0;animation:qtTw 2.6s ease-in-out infinite}
+/* Wonders: a festival night */
+.qb-th-fest{--qbg:linear-gradient(180deg,#0a0a2a,#2a1a4a 70%,#3a1a3a);--hb:#2a1a4a;--p1:#ff9ad0;--p2:#c84a8a;--p3:#6a1a4a;--p4:#3a0a2a;--pr:#ffe27a;--d1:#fff0a0;--d2:#4ee6b4;--l1:#3a2a4a;--l2:#1a1428;--vo:#0a0618;--vn:#ffe27a;--vd:#4a3a6a;--lf:#6fb6ff;--fl:#4ee6b4;--fl2:#c8fff0;--fc:#ff6b82;--cb1:#2a1a4a;--cb2:#0e0818}
+.qb-th-fest .burst line{stroke-width:2.4;stroke-linecap:round}.qb-th-fest .burst{animation:qtBurst 5s ease-out infinite}
+@keyframes qtBurst{0%{opacity:0;transform:scale(.6)}10%{opacity:1}60%{opacity:.2}100%{opacity:0;transform:scale(1.1)}}
+.qb-th-fest .qb-thdeco .burst{transform-box:fill-box;transform-origin:center}
+.qb-th-fest .balloon path,.qb-th-fest .string{fill:none;stroke:#f6eedb88;stroke-width:1}.qb-th-fest .balloon{animation:qtBob 6s ease-in-out infinite}
+@keyframes qtBob{50%{transform:translateY(-12px)}}
+.qb-thdeco{width:100%;height:100%}.qb-thtop{width:100%;height:140px}
+/* HOMESTEAD: the shipping crate and the seed stall */
+.hm-box { background: linear-gradient(180deg, #2a3a1a, #1c2612); border: 2px solid #7dd65a55; }
+.hm-hd { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+.hm-hd > img { width: 44px; height: 44px; image-rendering: pixelated; flex: none; background: #3f5a24; border-radius: 10px; padding: 4px; }
+.hm-hd small { color: #9ee06a; font-weight: 800; }
+.hm-hd h2 { margin: 0 0 2px; color: #f4ffe8; }
+.hm-box .mo-list li.have { border-color: #7dd65a66; }
+.hm-hd > div { text-align: left; }
+.hm-hd h2 { text-align: left; }
+.hm-hd small { display: block; position: static; text-align: left; transform: none; }
+.hm-sub { margin: 10px 0 4px; font-size: 14px; color: #9ee06a; text-align: left; }
+/* HOMESTEADER quest page: your farm at golden hour */
+.qb-th-barnyard{--qbg:linear-gradient(180deg,#5a7ab8 0,#e8a87a 45%,#f2c878 70%,#7a9a3a 100%);--hb:#4a5a1e;--p1:#ffd27a;--p2:#e8963a;--p3:#a85a2a;--p4:#6a3a14;--pr:#4a2a10;--d1:#fff0a0;--d2:#7dd65a;--l1:#b89868;--l2:#7a6040;--vo:#4a2a10;--vn:#ffb0d8;--vd:#a87a4a;--lf:#7dd65a;--fl:#ff7ab0;--fl2:#ffd0e4;--fc:#ffd23f;--cb1:#4a5a2a;--cb2:#1e2a0e}
+.qb-th-barnyard .sun{fill:#ffd27a;filter:drop-shadow(0 0 30px #ffb84a)}
+.qb-th-barnyard .barn rect{fill:#a83a2a}.qb-th-barnyard .barn .roof{fill:#6a2418}.qb-th-barnyard .barn .door{fill:#5a1a10}.qb-th-barnyard .barn .x{stroke:#f6eedb;stroke-width:3;fill:none}
+.qb-th-barnyard .house rect,.qb-th-barnyard .house path{fill:#5a4a2a}.qb-th-barnyard .house .win{fill:#ffd27a;filter:drop-shadow(0 0 6px #ffd27a)}
+.qb-th-barnyard .fence rect,.qb-th-barnyard .rail{fill:#8a5a30}
+.qb-th-barnyard .sunfl line{stroke:#3a7a2a;stroke-width:3}.qb-th-barnyard .sunfl .pet{fill:#ffd23f}.qb-th-barnyard .sunfl .mid{fill:#6a3a14}
+.qb-th-barnyard .hay rect{fill:#e8c46a}.qb-th-barnyard .hay path{stroke:#b8943a;stroke-width:2;fill:none}
+.qb-th-barnyard .mote{fill:#fff6c8;opacity:.6;animation:qtFly 7s ease-in-out infinite}
+/* Croaka's window */
+.hm-ord{margin:10px 0;padding:10px 12px;border-radius:12px;background:#ffb0d81a;border:1px solid #ffb0d855;text-align:left}
+.hm-ord small{color:#ffb0d8;font-weight:800}.hm-ord p{margin:4px 0 0}.hm-ord img{width:28px;height:28px;image-rendering:pixelated;vertical-align:middle}
+.hm-hearts{color:#ff7ab0;font-size:15px;letter-spacing:1px;margin:6px 0}.hm-hearts span{color:#ffb0d866}
+/* CROAKA'S FARM ALMANAC: the Fishing Log's twin, in green leather with pressed flowers */
+.fm .fb-book{--ink:#2e3a1a;--paper:#f2ead0;background:radial-gradient(ellipse at 20% 10%,#6a9a3a,transparent 60%),radial-gradient(ellipse at 90% 90%,#2a4a14,transparent 55%),#4a7a2a;
+ box-shadow:inset 0 0 0 3px #2a4a14,inset 0 0 0 5px #8aa84a,inset 0 0 0 6px #1e3a10,0 30px 60px -20px #000,0 0 0 1px #14260a}
+.fm .fb-book::before{border-color:#d8e89a66}
+.fm .fb-x{border-color:#6a9a3a;background:#1e3a10}
+.fm .fb-meter i{background:#4a7a2a}.fm .fb-pay{background:#4a7a2a;border-color:#2f5a1e}
+.fm .fb-spread{background:radial-gradient(circle at 12% 84%,#ffb0d833 0 22px,transparent 23px),radial-gradient(circle at 90% 16%,#c8e08a33 0 26px,transparent 27px),linear-gradient(90deg,#e8dcb4 0,var(--paper) 6%,var(--paper) 46%,#c8b890 50%,var(--paper) 54%,var(--paper) 94%,#e8dcb4 100%)}
+.fm .fb-scene{background:linear-gradient(180deg,#cfe6f0 0 40%,var(--pc) 40% 100%)}
+.fm .fb-scene::before{top:40%;height:6px;background:repeating-linear-gradient(90deg,#6a4426aa 0 10px,transparent 10px 18px)}
+.fm .fb-scene i{width:8px;height:22px;border-radius:4px 4px 0 0;background:#3a7a2a99}
+.fm .fb-scene i::after{left:-6px;top:-6px;border:0;width:20px;height:10px;border-radius:50%;background:#5aa84a99}
+.fm-staples{--pc:#8a6a3a}.fm-field{--pc:#c8a040}.fm-water{background:linear-gradient(180deg,#2a3a6a 0 40%,#3a8ab0 40% 100%)!important}.fm-water::before{background:repeating-linear-gradient(90deg,#dff6ff99 0 10px,transparent 10px 22px)!important}
+.fm-big{--pc:#9a6a3a}.fm-big i{width:22px!important;height:16px!important;border-radius:50%!important;background:#ff9a4a99!important}
+.fm-barn{--pc:#8aa84a}.fm-barn i{width:16px!important;height:12px!important;border-radius:50% 50% 40% 40%!important;background:#f6eedb!important}
+.fm-pantry{background:linear-gradient(180deg,#e8d0b0 0 40%,#a8744a 40% 100%)!important}.fm-pantry i{width:14px!important;height:20px!important;border-radius:3px!important;background:#e86a8acc!important}
+.fm .fm-giant img{transform:scale(1.25)}
+/* quest tracker: the "how" line for new players */
+.sbx-trail.tip{width:216px}
+.sbx-trail .tp{grid-column:1/-1;margin-top:3px;font-size:.66rem;line-height:1.3;font-weight:700;color:#f6eedbd9;white-space:normal}
+@media (max-width:640px){.sbx-trail.tip{width:178px}.sbx-trail .tp{font-size:.62rem}}
+/* first-time tour */
+.sbx-tour{position:absolute;inset:0;z-index:70}
+.sbx-tour .tr-spot{position:absolute;border-radius:14px;box-shadow:0 0 0 3px #f2c14e,0 0 0 9999px rgba(3,8,6,.72);transition:all .28s cubic-bezier(.2,.9,.3,1.1);pointer-events:none}
+.sbx-tour .tr-spot.none{box-shadow:0 0 0 9999px rgba(3,8,6,.72)}
+.sbx-tour .tr-card{position:absolute;padding:14px 16px 12px;border-radius:14px;background:linear-gradient(180deg,#123a2c,#0a1f18);border:1px solid #4ee6b466;color:#f6eedb;box-shadow:0 18px 40px -12px #000;animation:uiIn .2s ease-out;transition:top .28s,left .28s,bottom .28s}
+.sbx-tour .tr-n{display:block;font:800 .7rem Nunito,sans-serif;color:#4ee6b4;letter-spacing:.04em}
+.sbx-tour .tr-t{display:block;margin:2px 0 4px;font:900 1.08rem Nunito,sans-serif}
+.sbx-tour .tr-d{margin:0 0 10px;font:600 .9rem/1.4 Nunito,sans-serif;color:#f6eedbdd}
+.sbx-tour .tr-row{display:flex;gap:8px;justify-content:flex-end}.sbx-tour .tr-row .btn{min-width:0;padding:8px 16px}
+.tt-tour{display:block;margin:12px auto 0;padding:10px 18px;border-radius:12px;border:1px solid #4ee6b466;background:#4ee6b41f;color:#f6eedb;font:800 .95rem Nunito,sans-serif;cursor:pointer}
+.sbx-stage.cave .sbx-bcard{top:15%}
+/* homestead seasons: the season line in the Seed Stall and the "in season" tag on seeds that suit it */
+.hm-season { margin: 2px 0 8px; padding: 6px 10px; border-left: 3px solid var(--sc, #7dd65a); background: rgba(0,0,0,.18); border-radius: 6px; text-align: left; }
+.hm-season em, .hm-in { font-style: normal; font-weight: 800; color: #1c2612; background: #9ee06a; border-radius: 999px; padding: 1px 7px; font-size: 11px; margin-left: 4px; white-space: nowrap; }
+
+/* ---------- CRAFT GRID (Journal Craft tab + station windows): recipe slots and one detail card ---------- */
+.crg-bar{gap:8px}
+.crg-tabs button{padding:8px 14px}
+.crg{display:grid;gap:12px;align-items:start}
+.crg-list{display:grid;gap:6px;align-content:start;min-width:0}
+.crg-sub{display:flex;align-items:center;gap:8px;margin:8px 2px 2px;font:800 .78rem Nunito,system-ui,sans-serif;color:#f6eedb8c}
+.crg-sub::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#4ee6b42e,transparent)}
+.crg-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:7px}
+.crg-t{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-height:92px;padding:10px 4px 7px;border-radius:14px;border:1px solid #ffffff12;background:linear-gradient(180deg,#10231c,#0a1712);color:#f6eedbcc;cursor:pointer;font-family:Nunito,system-ui,sans-serif;transition:transform .12s,border-color .12s,background .12s}
+.crg-t img{width:40px;height:40px;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #0008)}
+.crg-t span{font-weight:800;font-size:.7rem;line-height:1.15;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:100%}
+.crg-t:hover{border-color:#4ee6b455;transform:translateY(-1px)}
+.crg-t:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
+.crg-ready{border-color:#4ee6b48c;background:radial-gradient(120% 90% at 50% 25%,#4ee6b42e,transparent 70%),linear-gradient(180deg,#10261e,#0a1712);color:#e8fff7}
+.crg-ready::after{content:"";position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:#f2c14e;box-shadow:0 0 8px #f2c14e}
+.crg-miss img{opacity:.45}.crg-miss span{color:#f6eedb80}
+.crg-can img{opacity:.8}
+.crg-lock img{opacity:.28;filter:grayscale(1)}.crg-lock span{color:#f6eedb59}
+.crg-own img{opacity:.6}.crg-own span{color:#f6eedb73}
+.crg-lk,.crg-ok{position:absolute;top:6px;right:6px;width:15px;height:15px;border-radius:50%;background:#1d2b26 center/10px no-repeat}
+.crg-lk{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='2' y='4.4' width='6' height='4.6' rx='1' fill='%23a9b3ae'/%3E%3Cpath d='M3.4 4.6V3.3a1.6 1.6 0 0 1 3.2 0v1.3' fill='none' stroke='%23a9b3ae' stroke-width='1.1'/%3E%3C/svg%3E")}
+.crg-ok{background-color:#2a5a44;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2.2 5.2l1.9 1.9 3.8-4' fill='none' stroke='%23b8ffe2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.crg-t.on{border-color:var(--stn,#4ee6b4);box-shadow:0 0 0 2px var(--stn,#4ee6b4),0 8px 18px -8px var(--stn,#4ee6b4);transform:translateY(-1px)}
+.crg-t.flash{animation:cflash 2.4s ease}
+/* the detail card: sticks to the bottom of the window on phones, sits beside the slots on wide windows */
+.crg-side{position:sticky;bottom:-16px;z-index:2;margin:0 -12px -16px;padding:10px 12px max(14px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#06100ce6 14px,#06100c)}
+.crg-d{display:grid;gap:10px;padding:12px;border-radius:16px;background:linear-gradient(180deg,#132b23,#0a1813);border:1px solid color-mix(in srgb,var(--stn,#4ee6b4) 40%,transparent);box-shadow:0 -10px 30px -18px #000,inset 0 1px 0 #ffffff12}
+.crg-dh{display:flex;align-items:center;gap:12px;min-width:0}
+.crg-big{flex:none;display:grid;place-items:center;width:60px;height:60px;border-radius:14px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--stn,#4ee6b4) 22%,transparent),#0006 75%);border:1px solid #ffffff1a}
+.crg-big img{width:44px;height:44px;image-rendering:pixelated}
+.crg-dh b{display:block;font:400 1.12rem/1.15 "DelveBagel","Bagel Fat One",Nunito,sans-serif;color:#fff4d0}
+.crg-dh small{display:block;margin-top:3px;color:#f6eedbb3;font-size:.8rem;line-height:1.35}
+.crg-cost{display:flex;flex-wrap:wrap;gap:6px}
+.crg-in{display:inline-flex;align-items:center;gap:6px;padding:4px 9px 4px 4px;border-radius:10px;background:#ffffff0a;border:1px solid #4ee6b43d;font-family:Nunito,system-ui,sans-serif}
+.crg-in img{width:24px;height:24px;image-rendering:pixelated;padding:2px;border-radius:7px;background:#0005}
+.crg-in b{font-weight:800;font-size:.76rem;color:#f6eedbd9}
+.crg-in em{font-style:normal;font-weight:900;font-size:.76rem;color:#7dffd0}
+.crg-in.no{border-color:#ff9d8a55;background:#ff9d8a0f}.crg-in.no em{color:#ff9d8a}
+.crg-note{margin:0;font-size:.8rem;color:#f6eedb99;line-height:1.35}
+.crg-btn .btn{width:100%;min-height:46px;font-size:1rem}
+.crg-btn .btn.crg-go{box-shadow:0 0 18px -4px #f2c14e}
+.crg-d .sbx-card{background:transparent;border:0;padding:0}
+.crg-d .sbx-card img.big{display:none}
+.crg-up h3{display:none}.crg-up .sbx-card{grid-template-columns:1fr;gap:8px}.crg-up .sbx-card img.big{display:none}.crg-up .sbx-card .btn{width:100%;min-height:44px}
+.crg-empty p{margin:0;color:#f6eedb99;font-size:.85rem}
+.crg-lvl{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:#ffffff08;border:1px solid color-mix(in srgb,var(--lc,#4ee6b4) 35%,transparent)}
+.crg-lvl img{flex:none;width:32px;height:32px;image-rendering:pixelated}
+.crg-lvl div{flex:1;min-width:0}.crg-lvl b{display:block;font-size:.88rem;color:var(--lc,#c8fff4)}
+.crg-lvl small{display:block;font-size:.74rem;color:#f6eedb99;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crg-lvl .btn{flex:none;padding:8px 13px;font-size:.82rem}
+.crg-chest{margin:0;font:800 .76rem Nunito,system-ui,sans-serif;color:#f2c14ecc}
+/* station windows get room for the card beside the slots */
+.sbx-sbox{width:min(860px,100%);height:min(660px,100%)}
+@media (min-width:700px){
+  .sbx-sbox .crg{grid-template-columns:minmax(0,1fr) 290px}
+  .sbx-sbox .crg-side{position:sticky;top:58px;bottom:auto;margin:0;padding:0;background:none}
+  .sbx-sbox .crg-g{grid-template-columns:repeat(auto-fill,minmax(82px,1fr))}
+}
+@media (prefers-reduced-motion:reduce){.crg-t,.crg-t:hover,.crg-t.on{transition:none;transform:none}.crg-t.flash{animation:none;box-shadow:0 0 0 2px #4ee6b4}}
+.crg,.crg-d,.crg-lvl{text-align:left}
+.crg-list>*,.crg-g>*{min-width:0}
+.crg-lvl{min-width:0;overflow:hidden}
+.crg-dh>div{min-width:0}
+@media (max-width:699px){
+  .crg-d{gap:8px;padding:10px}
+  .crg-big{width:48px;height:48px;border-radius:12px}.crg-big img{width:36px;height:36px}
+  .crg-dh small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .crg-in{padding:3px 8px 3px 3px}.crg-in img{width:20px;height:20px}
+  .crg-btn .btn{min-height:42px}
+  .crg-t{min-height:86px;padding:8px 3px 6px}.crg-t img{width:36px;height:36px}
+}
+.crg-d .sbx-card>div>b{display:none}
