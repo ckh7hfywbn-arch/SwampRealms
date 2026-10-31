@@ -557,7 +557,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -2261,12 +2261,27 @@
     else if ((id === T.MUD || id === T.MOSS) && Math.random() < 0.16) give("pebble", 1, x, y - 0.55);         // Stage 1: pebbles from mud
     if (id === T.LOG && get(x, y - 1) === T.LOG) { /* upper trunk stays; keep it simple and forgiving */ }
   }
+  function fgAt(x, y) {   // a Farm Gate whose 3x3 space (one block either side, two above) covers this cell, or null
+    if (T.X_farmgate === undefined) return null;
+    for (var gy = y; gy <= y + 2; gy++) for (var gx = x - 1; gx <= x + 1; gx++) if (get(gx, gy) === T.X_farmgate) return { x: gx, y: gy };
+    return null;
+  }
+  function fgTree(x, y) { var id = get(x, y), i = y * W + x; return id === T.LEAVES && x >= 0 && x < W && y >= 0 && y < H && tiles[i] === orig[i]; }   // leaves of a world tree overhead are fine (they are scenery); trunks are not
   function canPlace(tx, ty, item) {
     var id = get(tx, ty), td = ITEMS[item]; if (id !== T.AIR && id !== T.WATER) return false;
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
     var t = td.tile, solid = TILES[t].solid;
     if (td.seed) { nag(T.X_farmgate !== undefined ? "Crops grow on your homestead now. Place a Farm Gate and step inside to plant." : "Plant seeds on top of Garden Soil."); return T.X_farmgate === undefined && !!soilKind(tx, ty + 1); }
     if (item === "garage") return garageCanPlace(tx, ty);
+    if (T.X_farmgate !== undefined) {   // FARM GATE: it stands 3 blocks wide and 3 tall, so it needs that space clear and keeps it clear
+      if (item === "farmgate") {
+        for (var gy = ty - 2; gy <= ty; gy++) for (var gx = tx - 1; gx <= tx + 1; gx++) { if (gx === tx && gy === ty) continue; var gid = get(gx, gy); if (gid !== T.AIR && !(TILES[gid].sway && !TILES[gid].solid) && !fgTree(gx, gy)) { nag("The Farm Gate needs a clear space 3 blocks wide and 3 tall."); return false; } }
+        for (var fx2 = tx - 1; fx2 <= tx + 1; fx2++) if (!TILES[get(fx2, ty + 1)].solid) { nag("The Farm Gate needs flat, solid ground 3 blocks wide under it."); return false; }
+        if (fgAt(tx, ty)) { nag("That's too close to another Farm Gate."); return false; }
+        return true;
+      }
+      if (fgAt(tx, ty)) { nag("That space belongs to your Farm Gate."); return false; }
+    }
     if (item === "door") {
       if (ty < 2 || get(tx, ty - 1) !== T.AIR) { nag("A door needs two free tiles stacked up."); return false; }
       if (!TILES[get(tx, ty + 1)].solid) { nag("A door needs solid ground under it."); return false; }
@@ -9598,7 +9613,9 @@
   function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); else if ((S.qi | 0) === 0 && !TOUR) setTimeout(function () { if (!panelOpen && storyOpen < 0 && !storyQ.length) startTour(false); }, 700); }
   var CROAK_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="42" rx="24" ry="17" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><ellipse cx="32" cy="48" rx="15" ry="7" fill="#f1efb4"/><circle cx="19" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="45" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="19" cy="24" r="5" fill="#ffd23f"/><circle cx="45" cy="24" r="5" fill="#ffd23f"/><path d="M17 23h4M43 23h4" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 40q12 8 24 0" fill="none" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M12 16q7-9 14-3M38 13q7-6 14 3" fill="none" stroke="#e8e4d8" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="33" r="1.4" fill="#1c5e34"/><circle cx="37" cy="33" r="1.4" fill="#1c5e34"/></svg>';
   function findGuide() {
-    var st = MAIN[S.qi]; guide = null; if (!st || !st.tg) return;
+    var st = MAIN[S.qi]; guide = null;
+    if (st && st.id === "hole" && !cave && world.holes && world.holes[0]) { guide = { x: world.holes[0].x, y: world.holes[0].y }; return; }   // THE MINE: the arrow always points to it, however far away
+    if (!st || !st.tg) return;
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = 1e9, x, y;
     for (x = Math.max(0, cx - 28); x <= Math.min(W - 1, cx + 28); x++) {
       for (y = Math.max(0, cy - 16); y <= Math.min(H - 1, cy + 16); y++) {
@@ -9993,6 +10010,7 @@
     CAMLA.x += (laT - CAMLA.x) * Math.min(1, dt * (Math.abs(laT) > Math.abs(CAMLA.x) ? 1.4 : 0.9));
     var laY = OPT.look && !reduce && !p.on && p.vy > 9 && !p.wet ? Math.min(2.5, (p.vy - 9) * 0.18) : 0; CAMLA.y += (laY - CAMLA.y) * Math.min(1, dt * 2.5);
     var cbo = activeBoss(), ctx2 = p.x + CAMLA.x, cty = p.y - 1.1 + CAMLA.y, cdk = 7;
+    mineIntroTick(dt); if (MPAN) { var mk2 = MPAN.t < 4.2 ? 1 : 0; if (mk2) { ctx2 = MPAN.x; cty = MPAN.y; cdk = 2.4; } }   // THE MINE: first-visit look
     if (cbo && !cbo.def) { var cdx = cbo.x - p.x, lean = cbo.st === "intro" || cbo.st === "introleap" ? 0.55 : 0.36; ctx2 = p.x + clamp(cdx * lean, -7, 7); cty = p.y - 1.1 - clamp((p.y - (cbo.y - cbo.h)) * 0.25, -1.5, 3); cdk = 4.5; }   // BOSS CAMERA: keep the boss in the picture
     cam.x += (ctx2 - cam.x) * Math.min(1, dt * cdk); cam.y += (cty - cam.y) * Math.min(1, dt * 6);
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts;
@@ -11925,7 +11943,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
+    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
@@ -13771,7 +13789,7 @@
       for (q = gy0; q <= gy1; q += 10) { var b2 = m2s(0, q)[1]; g.moveTo(o0[0], b2); g.lineTo(o1[0], b2); }
       g.stroke();
     }
-    g.textAlign = "center"; g.font = "800 13px Nunito,sans-serif";
+    g.textAlign = "center"; g.font = signFont(14);
     mapBands().forEach(function (z) {
       var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BIOX[z[2]].c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, 0), o0[1], Math.min(r, M.cw) - Math.max(l, 0), 4); g.globalAlpha = 0.85;
       if (r > 0 && l < M.cw) g.fillText(BIOX[z[2]].n, (Math.max(l, 0) + Math.min(r, M.cw)) / 2, Math.max(o0[1] + 20, 78)); g.globalAlpha = 1;
@@ -13779,7 +13797,7 @@
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
     (world.holes || []).forEach(function (hh) { var q = m2s(hh.x + 0.5, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.8; g.beginPath(); g.arc(q[0], q[1], 4.6, 0, 6.2832); g.fill(); g.stroke(); g.font = signFont(12); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText("Mine", q[0], q[1] - 8); g.fillStyle = "#f2c14e"; g.fillText("Mine", q[0], q[1] - 8); });   // THE MINE: always on the map, so you can find your way back
-    (S.ways || []).forEach(function (w) { var q = m2s(w.x + 0.5, w.y + 0.5), r = 5; g.fillStyle = "#4ee6d0"; g.strokeStyle = "#06100d"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0], q[1] - r * 1.3); g.lineTo(q[0] + r, q[1]); g.lineTo(q[0], q[1] + r * 1.3); g.lineTo(q[0] - r, q[1]); g.closePath(); g.fill(); g.stroke(); g.font = "800 11px Nunito,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText(w.n, q[0], q[1] - 10); g.fillStyle = "#d4fff6"; g.fillText(w.n, q[0], q[1] - 10); });   // WAYSTONES
+    (S.ways || []).forEach(function (w) { var q = m2s(w.x + 0.5, w.y + 0.5), r = 5; g.fillStyle = "#4ee6d0"; g.strokeStyle = "#06100d"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0], q[1] - r * 1.3); g.lineTo(q[0] + r, q[1]); g.lineTo(q[0], q[1] + r * 1.3); g.lineTo(q[0] - r, q[1]); g.closePath(); g.fill(); g.stroke(); g.font = signFont(11); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText(w.n, q[0], q[1] - 10); g.fillStyle = "#d4fff6"; g.fillText(w.n, q[0], q[1] - 10); });   // WAYSTONES
     (S.stars || []).forEach(function (st) { var q = m2s(st.x + 0.5, st.y + 0.5), r = 6; g.fillStyle = "#ffe9a0"; g.strokeStyle = "#5a3a08"; g.lineWidth = 1.4; g.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(q[0] + Math.cos(a) * rr, q[1] + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); });   // Fallen Stars
     if (S.tmap) { var mq = m2s(S.tmap.x + 0.5, S.tmap.y + 0.5); g.lineCap = "round"; g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 5; g.beginPath(); g.moveTo(mq[0] - 5, mq[1] - 5); g.lineTo(mq[0] + 5, mq[1] + 5); g.moveTo(mq[0] + 5, mq[1] - 5); g.lineTo(mq[0] - 5, mq[1] + 5); g.stroke(); g.strokeStyle = "#ff4a3a"; g.lineWidth = 2.6; g.stroke(); }   // Treasure Map X
     if (npc.ok) {   // Old Croaker's camp: a little frog face (gold ring while he has a gift for you)
@@ -13789,7 +13807,7 @@
     }
     var pq = m2s(p.x, p.y - 1), pulse = 9 + Math.sin(performance.now() / 260) * 1.6;
     g.strokeStyle = "#fff"; g.lineWidth = 2.6; g.beginPath(); g.arc(pq[0], pq[1], pulse, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(pq[0], pq[1], 4.6, 0, 6.2832); g.fill();
-    g.textAlign = "left"; g.font = "800 12px Nunito,sans-serif"; g.textBaseline = "middle";
+    g.textAlign = "left"; g.font = signFont(12); g.textBaseline = "middle";
     (S.wp || []).forEach(function (w, i) {   // waypoint pins: a pointed drop with a ring, name beside it when selected or zoomed in
       var q = m2s(w.x + 0.5, w.y + 0.5), col = WP_COL[w.c], on = i === M.sel; if (q[0] < -30 || q[0] > M.cw + 30 || q[1] < -30 || q[1] > M.ch + 30) return;
       g.save(); g.translate(q[0], q[1]); g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.ellipse(0, 1, 6, 2.2, 0, 0, 6.2832); g.fill();
@@ -15635,7 +15653,7 @@
     s.gulls.forEach(function (gu) { var fl = Math.sin(gu.t * 9) * 0.5, gx2 = gu.x * k, gy2 = gu.y * k; g.strokeStyle = "#ffffff"; g.lineWidth = Math.max(1.5, k * 0.12); g.beginPath(); g.moveTo(gx2 - k * 0.7, gy2 - fl * k * 0.3); g.quadraticCurveTo(gx2 - k * 0.3, gy2 - k * 0.3, gx2, gy2); g.quadraticCurveTo(gx2 + k * 0.3, gy2 - k * 0.3, gx2 + k * 0.7, gy2 - fl * k * 0.3); g.stroke(); });
     g.restore(); drawWaterFx(g, vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy, k); g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
     // island names
-    g.font = "800 " + Math.max(12, Math.round(k * 1.1)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,20,40,.7)"; g.lineJoin = "round";
+    g.font = signFont(Math.max(12, Math.round(k * 1.05))); g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,20,40,.7)"; g.lineJoin = "round";
     I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); });
     g.restore();
     // the time of day over the sea: graded like the homestead, with pools of light from your lantern, pirate lanterns, the pier and the fire isles
@@ -15918,6 +15936,21 @@
     srcs.push([(px - ox) / ts, (py - oy) / ts, 5, 0.8]); glows2.push([px, py, "255,214,110", 3, 0.2 * fl]);
     g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText("LIFT", x0 + w / 2, y0 - k * 0.42); g.fillStyle = "#f2c14e"; g.fillText("LIFT", x0 + w / 2, y0 - k * 0.42); g.textBaseline = "alphabetic";
   }
+  // BUILDING NAME BOARDS: a little post with the building's name in the SwampRealms font, standing on the ground just past the
+  // building's picture on its door side, so you can read what a place is before you walk in. Skipped where the ground there is uneven.
+  function drawBldSigns(g) {
+    var L = world.structs; if (!L || !L.length) return; var k = ts;
+    for (var i = 0; i < L.length; i++) {
+      var q = L[i]; if (q.razed || !q.name || q.outX === undefined) continue;
+      var dir = q.outX >= q.dx ? 1 : -1, bx = dir > 0 ? (q.mx1 !== undefined ? q.mx1 : q.outX) + 1 : (q.mx0 !== undefined ? q.mx0 : q.outX) - 1;
+      if (bx < 0 || bx >= W) continue; var gy = -1; for (var yy = q.gy - 2; yy <= q.gy + 2; yy++) if (blocks(bx, yy)) { gy = yy; break; } if (gy < 0 || blocks(bx, gy - 1) || blocks(bx, gy - 2)) continue;
+      var sx = ox + (bx + 0.5) * ts, sy = oy + gy * ts; if (sx < -k * 4 || sx > vw + k * 4 || sy < -k * 3 || sy > vh + k * 3) continue;
+      g.font = signFont(Math.max(8, Math.round(k * 0.27))); var tw = g.measureText(q.name).width, bw = tw + k * 0.4, bh = k * 0.5, by = sy - k * 1.6;
+      g.fillStyle = "#3a2412"; g.fillRect(sx - k * 0.05, by + bh * 0.5, k * 0.1, sy - by - bh * 0.5);
+      g.fillStyle = "#2e1c0e"; g.fillRect(sx - bw / 2 - 2, by - 2, bw + 4, bh + 4); g.fillStyle = "#8a5a32"; g.fillRect(sx - bw / 2, by, bw, bh); g.fillStyle = "#a8743a"; g.fillRect(sx - bw / 2, by, bw, Math.max(1, bh * 0.14));
+      g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText(q.name, sx, by + bh * 0.56); g.textBaseline = "alphabetic";
+    }
+  }
   // FARM GATE: in the world the one-block Farm Gate is drawn as a proper farm entrance about 3 blocks wide and 3 tall (the size of the pier
   // gate and the Mine): log posts with climbing vines, a HOMESTEAD board on top, a little picket gate standing ajar, a lantern and a pumpkin.
   // It is still one block in the grid (placed, broken and entered the same way). drawCell lists the visible ones in FGVIS each frame.
@@ -15957,6 +15990,21 @@
       g.restore();
     }
     FGLAST = FGVIS.slice(); FGVIS.length = 0;
+  }
+  // MINE INTRO: the first time you come near the Mine, the camera glides over to the headframe and down toward the shaft for a few
+  // seconds while Old Croaker tells you what it is. Once only (S.st.mineIntro); skipped if you have already been down, during a boss
+  // fight, and while a window is open. With reduced motion the camera stays put and only the tip shows.
+  var MPAN = null;
+  function mineIntroTick(dt) {
+    if (MPAN) { MPAN.t += dt; keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; p.vx = 0; if (MPAN.t > 5.6) MPAN = null; return; }
+    if (S.st.mineIntro || cave || HOME || OCS || panelOpen || trans || warp || sleepT > 0 || activeBoss()) return;
+    var M0 = world.holes && world.holes[0]; if (!M0) return;
+    if (S.st.caves) { S.st.mineIntro = 1; return; }
+    if ((S.qi | 0) < 2 || Math.abs(M0.x + 0.5 - p.x) > 15 || Math.abs(M0.y - p.y) > 8) return;   // not in the first minute of a new world
+    S.st.mineIntro = 1; stopInput();
+    if (!reduce) MPAN = { t: 0, x: M0.x + 0.5, y: M0.y - 0.6 };
+    setTimeout(function () { showTip("Old Croaker: “That's the old Mine, the only way down into the caves. It runs deeper than anyone has gone, and every fifth floor has a lift. Come back with a good pick, a spear and plenty of torches.”", "", "#4ee6b4"); }, reduce ? 0 : 1300);
+    snd("rise"); save();
   }
   // THE MINE: the one way down into the caves, a short walk from where you start. A timber headframe over the shaft with a turning hoist
   // wheel, a bucket on the rope, a lantern, a little rail line with an ore cart and a "MINE" sign. Just a picture over world.holes[0].

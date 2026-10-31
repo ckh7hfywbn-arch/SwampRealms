@@ -35,7 +35,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-banner{position:absolute;left:50%;top:22%;transform:translate(-50%,10px) scale(.94);display:grid;gap:2px;justify-items:center;text-align:center;padding:14px 26px;border-radius:18px;background:linear-gradient(160deg,#0b1f19f2,#05100dee);border:1px solid #f2c14e;box-shadow:0 0 40px -10px #f2c14e,0 18px 40px -16px #000;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;max-width:90%}
 .sbx-banner.on{opacity:1;transform:translate(-50%,0) scale(1)}
 .sbx-banner small{color:#f2c14e;font-weight:800;font-size:.74rem}
-.sbx-banner b{font-family:"Bagel Fat One",Nunito,sans-serif;font-size:1.5rem;font-weight:400;color:#fff4d0;letter-spacing:.01em}
+.sbx-banner b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-size:1.5rem;font-weight:400;color:#fff4d0;letter-spacing:.01em}
 .sbx-banner span{color:#f6eedbcc;font-size:.88rem}
 
 /* ---- hotbar ---- */
@@ -113,9 +113,9 @@ body.sbx-app footer{margin-top:28px}
 .sbx-loc{border-color:color-mix(in srgb,var(--bc) 55%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px -10px #000,0 0 22px -10px var(--bc)}
 .sbx-loc i{animation:sbxPulse 2.6s ease-in-out infinite}
 @keyframes sbxPulse{50%{box-shadow:0 0 18px var(--bc);transform:scale(1.15)}}
-.sbx-loc b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;letter-spacing:.01em;font-size:.98rem}
+.sbx-loc b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;letter-spacing:.01em;font-size:.98rem}
 .sbx-bcard{position:absolute;left:50%;top:26%;transform:translate(-50%,8px);display:grid;justify-items:center;gap:4px;text-align:center;pointer-events:none;opacity:0;width:max-content;max-width:92%}
-.sbx-bcard b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:clamp(1.9rem,6.5vw,3rem);line-height:1.05;color:#fff;text-shadow:0 0 28px var(--bc),0 3px 0 rgba(0,0,0,.45)}
+.sbx-bcard b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:clamp(1.9rem,6.5vw,3rem);line-height:1.05;color:#fff;text-shadow:0 0 28px var(--bc),0 3px 0 rgba(0,0,0,.45)}
 .sbx-bcard small{font-weight:800;font-size:.9rem;color:color-mix(in srgb,var(--bc) 60%,#fff);text-shadow:0 2px 8px #000}
 .sbx-bcard::after{content:"";width:min(220px,60%);height:2px;margin-top:4px;background:linear-gradient(90deg,transparent,var(--bc),transparent);box-shadow:0 0 14px var(--bc)}
 .sbx-bcard.on{animation:sbxCard 4s ease forwards}
@@ -207,7 +207,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-worlds{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(3,8,6,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);overflow:auto;touch-action:pan-y}
 .sbx-worlds[hidden]{display:none}
 .sbx-wbox{width:min(540px,100%);max-height:100%;overflow:auto;padding:18px;border-radius:18px;text-align:left;background:linear-gradient(180deg,rgba(11,28,23,.97),rgba(4,10,8,.98));border:1px solid #4ee6b455;box-shadow:0 20px 60px -20px #000}
-.sbx-wbox h2{margin:0 0 4px;font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.6rem;color:#fff}
+.sbx-wbox h2{margin:0 0 4px;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.6rem;color:#fff}
 .sbx-wlist{display:grid;gap:8px;margin:12px 0}
 .sbx-w{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:#ffffff0d;border:1px solid #ffffff1f}
 .sbx-w.cur{border-color:#4ee6b4;box-shadow:0 0 16px -6px #4ee6b4}
@@ -330,7 +330,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-pack[hidden]{display:none}
 .sbx-pbox{width:min(480px,100%);max-height:100%;display:flex;flex-direction:column;border-radius:18px;background:linear-gradient(180deg,#171109f7,#0a0805fb);border:1px solid rgba(242,193,78,.5);box-shadow:0 20px 60px -12px #000,0 0 30px -14px #f2c14e;overflow:hidden}
 .sbx-pbox .sbx-phead{justify-content:space-between;border-bottom-color:rgba(242,193,78,.2)}
-.sbx-pbox h2{margin:0;font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#ffe9a8}
+.sbx-pbox h2{margin:0;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#ffe9a8}
 .sbx-pbox h2 small{font:800 .8rem Nunito,sans-serif;color:#f6eedb99;margin-left:8px}
 
 /* ---- Full-screen map: zoom, pan and waypoints ---- */
@@ -338,7 +338,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-mapv[hidden]{display:none}
 .sbx-mapv canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 .sbx-mtop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:12px;padding:max(10px,env(safe-area-inset-top)) 12px 10px;background:linear-gradient(180deg,rgba(3,8,10,.92),rgba(3,8,10,0));pointer-events:none}
-.sbx-mtop b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#c8fff4}
+.sbx-mtop b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#c8fff4}
 .sbx-mtop span{flex:1;color:#f6eedb99;font:800 .8rem Nunito,system-ui,sans-serif}
 .sbx-mtop .sbx-x{pointer-events:auto}
 .sbx-mmine{pointer-events:auto;flex:none;padding:7px 12px;border-radius:999px;border:1px solid #f2c14e;background:rgba(44,30,8,.85);color:#ffe3a0;font:800 .82rem Nunito,system-ui,sans-serif;cursor:pointer}
@@ -441,7 +441,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-sbox2 .st-croak{width:76px;height:76px;margin:-6px auto 6px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
 .sbx-sbox2 .st-croak svg{width:100%;height:100%}
 .sbx-sbox2 small{display:block;text-align:center;font:900 .72rem Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--qc)}
-.sbx-sbox2 h2{margin:4px 0 12px;text-align:center;font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.55rem;line-height:1.1;color:#fff}
+.sbx-sbox2 h2{margin:4px 0 12px;text-align:center;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.55rem;line-height:1.1;color:#fff}
 .sbx-sbox2 p{margin:0 0 14px;font-size:.95rem;line-height:1.5;color:#f6eedbdd}
 .sbx-sbox2 .st-next{display:grid;gap:2px;margin:0 0 16px;padding:10px 12px;border-radius:12px;background:#ffffff0a;border:1px solid color-mix(in srgb,var(--qc) 35%,transparent)}
 .sbx-sbox2 .st-next span{font:900 .66rem Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--qc)}
@@ -462,7 +462,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-qch .qc-frog{flex:none;width:44px;height:44px}
 .sbx-qch .qc-frog svg{width:100%;height:100%}
 .sbx-qch small{display:block;font:900 .68rem Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--qc)}
-.sbx-qch b{display:block;font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.2rem;color:#fff;line-height:1.15}
+.sbx-qch b{display:block;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.2rem;color:#fff;line-height:1.15}
 .sbx-qch p{margin:8px 0 10px;font-size:.84rem;line-height:1.45;color:#f6eedbbb}
 .sbx-qch .qc-row{display:flex;align-items:center;gap:10px}
 .sbx-qch .qc-row .btn{padding:7px 12px;min-height:34px;font-size:.78rem;flex:none}
@@ -922,7 +922,7 @@ body.sbx-app footer{margin-top:28px}
 .qb-head{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #ffffff10;background:linear-gradient(180deg,color-mix(in srgb,var(--qc) 14%,#08140f),#08140f00)}
 .qb-head>div:first-child{flex:1;min-width:0}
 .qb-head small{display:block;font:900 .64rem Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--qc)}
-.qb-head h3{margin:0;font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.25rem;line-height:1.1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qb-head h3{margin:0;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.25rem;line-height:1.1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qb-hp{display:flex;align-items:center;gap:6px;width:120px}
 .qb-hp .bar{flex:1;margin:0}.qb-hp .bar i{background:var(--qc)}
 .qb-hp em{font-style:normal;font:800 .75rem Nunito,sans-serif;color:#f6eedbcc}
@@ -977,7 +977,7 @@ body.sbx-app footer{margin-top:28px}
 .qb-ci img{width:34px;height:34px;image-rendering:pixelated}
 .qb-ct small{display:block;font:900 .64rem Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--qc)}
 .qb-card.done .qb-ct small{color:#ff9ad0}
-.qb-ct b{display:block;font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.12rem;line-height:1.15;color:#fff}
+.qb-ct b{display:block;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.12rem;line-height:1.15;color:#fff}
 .qb-card p{margin:9px 0 0;font-size:.84rem;line-height:1.45;color:#f6eedbcc}
 .qb-pr{display:flex;align-items:center;gap:8px;margin-top:10px}.qb-pr .bar{flex:1;margin:0}.qb-pr .bar i{background:var(--qc)}.qb-pr em{font-style:normal;font:800 .78rem Nunito,sans-serif}
 .qb-rw{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -1077,7 +1077,7 @@ body.sbx-app footer{margin-top:28px}
 .pk-stage canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
 .pk-stage canvas:active{cursor:grabbing}
 .pk-who{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px}
-.pk-who b{font-family:"Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.02rem;color:#ffe9a8}
+.pk-who b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.02rem;color:#ffe9a8}
 .pk-stats{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .pk-stats i{font-style:normal;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.07);font-weight:800;font-size:.76rem;color:#f6eedb}
 .pk-focus{min-height:38px;margin:6px 0 4px;padding:7px 10px;border-radius:10px;background:rgba(4,10,8,.45);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;justify-content:center;gap:1px}
