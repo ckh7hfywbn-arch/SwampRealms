@@ -183,10 +183,11 @@
   function mk(id) { return (S.mk && S.mk[id]) || 0; }   // how many times a recipe was crafted
   function vis(k) { return !!(S.vis && S.vis[k]); }      // places visited: "b0".."b2" biomes, "k_<kind>" buildings
   function inv(k) { return S.inv[k] || 0; }
+  var MAIN_V4 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "lights", "eat", "plant", "harvest", "cook", "bed", "door", "sleep", "stash", "fishing", "tame", "spore", "pick2", "spear", "bug", "frog", "blade", "hole", "sweep", "benchup", "mail", "queen", "ember", "wasp", "pick3", "furnace", "iron", "cleaver", "forge", "aerie", "bench3", "plate", "wyrm", "frost", "wolf", "pick4", "fang", "shrine", "berry", "bench4", "fplate", "alpha", "deep10", "hoard", "hunter", "feast", "gems", "heart", "restore", "pick5", "realm", "gate", "wake", "through", "warden"];   // the quest order before the first-night chapter (saves made then store a position in this list)
   var MAIN_V1 = ["stick", "fiber", "pebble", "pick1", "wood", "bench", "lights", "eat", "plant", "harvest", "cook", "bed", "door", "sleep", "stash", "spore", "pick2", "spear", "bug", "frog", "blade", "hole", "sweep", "benchup", "mail", "ember", "wasp", "pick3", "furnace", "iron", "cleaver", "forge", "bench3", "plate", "frost", "wolf", "pick4", "fang", "shrine", "berry", "bench4", "fplate", "deep10", "hoard", "hunter", "feast", "gems", "heart", "restore"];   // MAIN order before fishing and animals (old saves)
   var CHAPTERS = [
-    { n: "Washed Up in Murkwater", c: "#4ee6b4", s: "You wake on a mossy bank with mud in your fur. A deep, croaky voice drifts out of the reeds: “Easy now, little one. I'm Old Croaker. The Heart of the Swamp, the great crystal that kept these lands glowing, has gone dark, and the swamp is fading with it. Bringing it back will take tools, shelter and a lot of courage. Let's start small: sticks, fibre, stone. Every delver starts with bare paws.”", rw: { torch: 6, planks: 8 } },
-    { n: "A Place to Call Home", c: "#7dd65a", s: "“Not bad at all!” croaks Old Croaker. “But a delver needs more than a pick. You'll need food in your belly, a garden that grows while you're away, and a bed to sleep through the dark. Nights bring the Dusk Bats. Build yourself a real home, and the swamp will start to feel like yours.”", rw: { seed_potato: 3, farmland: 6, torch: 6 } },
+    { n: "Washed Up in Murkwater", c: "#4ee6b4", s: "You wake on a mossy bank with mud in your fur. A deep, croaky voice drifts out of the reeds: “Easy now, little one. I'm Old Croaker. The Heart of the Swamp, the great crystal that kept these lands glowing, has gone dark, and the swamp is fading with it. Bringing it back will take tools, shelter and a lot of courage. Let's start small: sticks, fibre, stone, then a pick and a spear, a campfire and somewhere to sleep before the sun goes down. Your first night out here is coming fast.”", rw: { torch: 6, planks: 8 } },
+    { n: "A Place to Call Home", c: "#7dd65a", s: "“Not bad at all!” croaks Old Croaker. “You made it through the night! But a delver needs more than a campfire. You'll need a Workbench, food in your belly, a garden that grows while you're away, and a proper bed with a door to keep the Dusk Bats out. Build yourself a real home, and the swamp will start to feel like yours.”", rw: { seed_potato: 3, farmland: 6, torch: 6 } },
     { n: "The Glow Beneath", c: "#22d3a6", s: "“Deep under the mud there's still a little light left: Glowspore. It's the last of the Heart's glow, soaked into the stone. Dig it, forge it, and arm yourself, because the creatures of the swamp have grown restless since the dark came. The old Mine leads further down than anyone's dared to go.”", rw: { torch: 10, ironingot: 2 } },
     { n: "Embers in the East", c: "#ff8a3d", s: "“East of the swamp lies Ember Bog, where the ground smoulders and the rivers run with fire. Its fire has been cooling too, and the Ember Wasps are angry about it. Forge a hotter pick, learn to smelt iron, and find the old Forges and Keeps. The bog's Ruby fire is one of the three lights the Heart needs.”", rw: { charcoal: 6, ironingot: 3 } },
     { n: "The Frozen Fen", c: "#7fd6ff", s: "“Far to the west is Frostfen, white and silent. Frost Wolves hunt there in pairs. Under the ice sleep the Frost Sapphire and the pale Moonstone, the cold lights of the Heart. Dress warm, keep your blade sharp, and visit the old Shrines. They remember the Heart.”", rw: { frostberry: 4, torch: 8 } },
@@ -200,25 +201,27 @@
     { ch: 0, id: "stick", n: "Gather Sticks", d: "Hold on tree leaves to punch them. Leaves sometimes drop Sticks.", need: 5, v: function () { return S.st.stick; }, tg: [T.LEAVES] },
     { ch: 0, id: "fiber", n: "Gather Reed Fiber", d: "Snip cattails by the water, or the vines hanging under tree leaves.", need: 3, v: function () { return S.st.fiber; }, tg: [T.REED, T.VINE], rw: { stick: 2 } },
     { ch: 0, id: "pebble", n: "Dig for Pebbles", d: "Dig mud with your paws. Pebbles pop out now and then.", need: 2, v: function () { return S.st.pebble; }, tg: [T.MOSS, T.MUD], rw: { fiber: 1 } },
-    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { planks: 6 } },
-    { ch: 0, id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
-    { ch: 0, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
-    { ch: 0, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
+    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { stick: 3 } },
+    { ch: 0, id: "spear", n: "Arm Yourself", d: "Night brings creatures. Craft the Reed Spear in the Journal (Sticks, Reed Fiber, Pebbles), pick it in the hotbar and hold to swing.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { pebble: 2 } },
+    { ch: 0, id: "campfire", n: "Make Camp", d: "Chop 4 Wood from a tree trunk with your pick, craft a Campfire in the Journal and place it on the ground. Its light keeps the dark back.", need: 1, v: function () { return S.st.campfires || 0; }, tg: [T.LOG], rw: { fiber: 3 } },
+    { ch: 0, id: "sleepbag", n: "A Place to Sleep", d: "Craft a Sleeping Bag (Reed Fiber and Sticks) and roll it out next to your campfire.", need: 1, v: function () { return S.st.sleepbags || 0; }, tg: [T.REED, T.VINE], rw: { torch: 4 } },
+    { ch: 0, id: "night1", n: "Your First Night", d: "When night falls, stand next to your Sleeping Bag and tap Sleep (or press F). You wake at dawn healed, and the bag becomes your respawn point.", need: 1, v: function () { return S.st.sleeps; }, rw: { planks: 6 } },
     // ---- Chapter 2: food, farm and shelter ----
+    { ch: 1, id: "wood", n: "Chop Wood", d: "Hold your pick on a tree trunk. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
+    { ch: 1, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
+    { ch: 1, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
     { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmgate: 1 } },
     { ch: 1, id: "plant", n: "Plant a Garden", d: "Place your Farm Gate and step through to your homestead. Till the mud with a Reed Hoe (made by hand), then plant Swamp Carrot Seeds. Watered soil, or soil next to the pond, grows crops twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
     { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop on your homestead shows its ripe produce, tap it to pick it. You get food, plus seeds to plant again. Ship spares in the crate for Silver Coins.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
     { ch: 1, id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food, and it heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
-    { ch: 1, id: "bed", n: "Build a Bed", d: "Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
+    { ch: 1, id: "bed", n: "A Real Bed", d: "Time to trade the Sleeping Bag up. Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
     { ch: 1, id: "door", n: "Close the Door", d: "Craft a Swamp Door and place it in a doorway. Closed doors keep bugs, frogs and bats out.", need: 1, v: function () { return S.st.doors; }, rw: { planks: 6 } },
-    { ch: 1, id: "sleep", n: "Sleep Tight", d: "At night, stand next to your bed and tap Sleep (or press F). You wake at dawn with full health, and the bed becomes your respawn point.", need: 1, v: function () { return S.st.sleeps; }, rw: { torch: 6 } },
     { ch: 1, id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest, place it at camp, open it and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8 } },
     { ch: 1, id: "fishing", n: "Gone Fishing", d: "Craft a Reed Fishing Rod by hand, pick it in the hotbar and tap a lake to cast. When the bobber dips and a ! shows, tap again to reel in.", need: 1, v: function () { return S.st.fish; }, rw: { bogminnow: 2, stick: 2 } },
     { ch: 1, id: "tame", n: "A New Friend", d: "Wild Bog Ducks and Mud Pigs wander the swamp. Hold their favourite food (seeds for ducks, carrots or potatoes for pigs) and tap one to tame it.", need: 1, v: function () { return S.st.tamed; }, rw: { trough: 1, seed_carrot: 3 } },
     // ---- Chapter 3: Glowspore, weapons and the caves ----
     { ch: 2, id: "spore", n: "Find Glowspore", d: "Dig down into the stone. The glowing green ore is Glowspore. Collect 16.", need: 16, v: function () { return S.st.spore; }, rw: { wood: 4 } },
     { ch: 2, id: "pick2", n: "Spore Smith", d: "Tap your Workbench to open it and craft the Glowspore Pick.", need: 1, v: function () { return S.tier >= 2 ? 1 : 0; }, rw: { torch: 6 } },
-    { ch: 2, id: "spear", n: "Arm Yourself", d: "Craft the Reed Spear (Sticks, Fiber, Pebbles), pick it in the hotbar and hold to swing. It hits far harder than a paw swat.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { planks: 4 } },
     { ch: 2, id: "bug", n: "Squash a Bramble Bug", d: "Bramble Bugs prowl the swamp and its caves. Strike them before they ram you.", need: 1, v: function () { return S.st.bugs; }, rw: { torch: 4 } },
     { ch: 2, id: "frog", n: "Hop to It", d: "A Swamp Frog warns with a ! and then lashes its tongue low. Jump the tongue, then hit it while it's winded.", need: 1, v: function () { return S.st.frogs; }, rw: { planks: 6 } },
     { ch: 2, id: "blade", n: "Spore Blade", d: "Bring 3 Bramble Fragments to your Workbench and craft the Glowspore Blade.", need: 1, v: function () { return S.wpn >= 2 ? 1 : 0; }, rw: { torch: 6 } },
@@ -554,7 +557,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 4, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, mineLift: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
@@ -668,16 +671,21 @@
       var a = newAnimal(q.k, clamp(+q.x, 2, W - 2), clamp(+q.y, 2, H - 3), true); a.hx = isFinite(+q.hx) ? +q.hx : a.x; a.fed = clamp(+q.fed || 0, 0, FED_S); a.pr = Math.max(0, +q.pr || 0); a.rdy = clamp(Math.floor(+q.rdy) || 0, 0, 3);
       a.nm = String(q.nm || ANIM[q.k].n).slice(0, 20); a.baby = Math.max(0, +q.baby || 0); if (a.baby) { a.w *= 0.6; a.h *= 0.6; } a.love = Math.max(0, +q.love || 0); d.pets.push(a);
     });
+    var MV4 = MAIN_V4.map(function (id) { return { id: id }; });   // older saves are first brought up to the v4 list, then mapped to today's
     if (o.qv === 1) {   // quest list v1: Chapter 2 gained "Gone Fishing" and "A New Friend", so map the saved quest by its id
-      var oid = MAIN_V1[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V1.length)], ni = oid ? MAIN.map(function (q) { return q.id; }).indexOf(oid) : MAIN.length; o = Object.assign({}, o, { qi: ni < 0 ? MAIN.length : ni, qv: 2 });
+      var oid = MAIN_V1[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V1.length)], ni = oid ? MV4.map(function (q) { return q.id; }).indexOf(oid) : MV4.length; o = Object.assign({}, o, { qi: ni < 0 ? MV4.length : ni, qv: 2 });
     }
     if (o.qv === 2) {   // quest list v2: chapters 3-5 each gained a boss quest at the end, so map the saved quest by its id
-      var oid2 = MAIN.filter(function (q) { return !BOSS[q.id]; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni2 = oid2 ? MAIN.map(function (q) { return q.id; }).indexOf(oid2) : MAIN.length; o = Object.assign({}, o, { qi: ni2 < 0 ? MAIN.length : ni2, qv: 3 });
+      var oid2 = MV4.filter(function (q) { return !BOSS[q.id]; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni2 = oid2 ? MV4.map(function (q) { return q.id; }).indexOf(oid2) : MV4.length; o = Object.assign({}, o, { qi: ni2 < 0 ? MV4.length : ni2, qv: 3 });
     }
     if (o.qv === 3) {   // quest list v3: Chapter 4 gained "Above the Embers", so map the saved quest by its id
-      var oid3 = MAIN.filter(function (q) { return q.id !== "aerie"; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni3 = oid3 ? MAIN.map(function (q) { return q.id; }).indexOf(oid3) : MAIN.length; o = Object.assign({}, o, { qi: ni3 < 0 ? MAIN.length : ni3, qv: 4 });
+      var oid3 = MV4.filter(function (q) { return q.id !== "aerie"; }).map(function (q) { return q.id; })[clamp(Math.floor(+o.qi) || 0, 0, 999)], ni3 = oid3 ? MV4.map(function (q) { return q.id; }).indexOf(oid3) : MV4.length; o = Object.assign({}, o, { qi: ni3 < 0 ? MV4.length : ni3, qv: 4 });
     }
-    if (o.qv === 4) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
+    if (o.qv === 4) {   // quest list v4: Chapter 1 now ends with the first night (pick, spear, campfire, sleeping bag, sleep), so map the saved quest by its id
+      var oid4 = MAIN_V4[clamp(Math.floor(+o.qi) || 0, 0, MAIN_V4.length)], ni4 = oid4 === "sleep" ? MAIN.map(function (q) { return q.id; }).indexOf("stash") : oid4 ? MAIN.map(function (q) { return q.id; }).indexOf(oid4) : MAIN.length;
+      var ch4 = Math.floor(+o.qch); o = Object.assign({}, o, { qi: ni4 < 0 ? MAIN.length : ni4, qv: 5, qch: ch4 === 0 && ni4 >= 0 && ni4 < MAIN.length && MAIN[ni4].ch > 0 ? -1 : o.qch });
+    }
+    if (o.qv === 5) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     return d;
   }
@@ -700,7 +708,7 @@
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
-    if (!S.qv) { S.qv = 4; S.qi = 0; checkTrail(true); S.qch = curCh() - 1; }   // an older save: every quest already done counts, silently, then the current chapter's story is shown
+    if (!S.qv) { S.qv = 5; S.qi = 0; checkTrail(true); S.qch = curCh() - 1; }   // an older save: every quest already done counts, silently, then the current chapter's story is shown
     npc.ok = false; npc.chk = 0; cam.x = p.x; cam.y = p.y - 1; sel = "pick"; selSlot = -1; reslot(); bare = !(S.tier >= 1); if (!bare) selSlot = hotIndex("t_pick"); invSel = -1; mine = null; lastBio = -1; trailKey = ""; guide = null; tab = S.qi < MAIN.length ? "quests" : "craft"; hbDirty = true;
     storyQ.length = 0; if (S.qch < curCh()) { S.qch = curCh(); storyQ.push(curCh()); setTimeout(showStory, 900); } else if (!S.gv && MAIN[S.qi] && MAIN[S.qi].ch === CHAPTERS.length - 2) { storyQ.push(CHAPTERS.length - 2); setTimeout(showStory, 900); }   // an old save that had already finished: the Realm Gate chapter is new to it
     S.gv = 1; exKey = ""; spriteKey = ""; ICO = {};
@@ -2305,7 +2313,7 @@
   }
   function place(tx, ty, item) {
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
-    setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++;
+    setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
     if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
@@ -5892,7 +5900,7 @@
     homeT += dt; if (Math.random() < 0.5) parts.push({ x: p.x + (Math.random() - 0.5), y: p.y - Math.random() * 1.6, vx: 0, vy: -1.5, life: 0.6, max: 0.6, c: "#bff4e4", s: 3 });
     if (homeT < 1.2) return;
     homeT = 0; homeLock = true; S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick", bare = true; } reslot(); hbDirty = true;
-    var sp = world.spawn, bd = S.bed && get(S.bed.x, S.bed.y) === T.BED ? S.bed : null;
+    var sp = world.spawn, bd = S.bed && isBed(get(S.bed.x, S.bed.y)) ? S.bed : null;
     chips(p.x, p.y - 1, "#bff4e4", 20, 6);
     if (bd) { p.x = bd.x + 0.5; p.y = bd.y + 1; } else { p.x = sp.x; p.y = sp.y; }
     p.vx = p.vy = 0; var gg = 0; while (boxHit(p.x, p.y) && gg++ < 60) p.y -= 1; cam.x = p.x; cam.y = p.y - 1;
@@ -6123,7 +6131,7 @@
     if (id === T.AIR || id === T.WATER || id === T.LAVA || id === T.BEDROCK || id === T.HOLE || !td || !isFinite(td.hard) || td.tier > 3) return true;
     if (smask && smask[i] && tiles[i] === orig[i]) return true;                                   // generated buildings are scenery
     if ((id === T.LOG || id === T.LEAVES) && tiles[i] === orig[i]) return true;                   // so are world trees
-    if (td.kind === "door" || td.hatch || td.kind === "realmgate" || td.kind === "armorstand" || td.kind === "jeweltable" || td.kind === "fishtrap" || id === T.BED) return true;
+    if (td.kind === "door" || td.hatch || td.kind === "realmgate" || td.kind === "armorstand" || td.kind === "jeweltable" || td.kind === "fishtrap" || isBed(id)) return true;
     if (isChest(id) && chestCount(x + "," + y) > 0) return true;
     if (sdoorAt(x, y)) return true;
     return false;
@@ -6521,7 +6529,7 @@
     var L = wayList().filter(function (w) { return !(w.x === wayAt.x && w.y === wayAt.y); }).map(function (w) { return { n: w.n, x: w.x + 0.5, y: w.y + 1, b: world.bio[w.x] }; });
     L.push({ n: "Camp", x: world.spawn.x, y: world.spawn.y, b: world.bio[clamp(Math.floor(world.spawn.x), 0, W - 1)], camp: 1 });
     var mh0 = mineDest(); if (mh0) L.push(mh0);
-    if (S.bed && get(S.bed.x, S.bed.y) === T.BED) L.push({ n: "Your Bed", x: S.bed.x + 0.5, y: S.bed.y + 1, b: world.bio[S.bed.x], bed: 1 });
+    if (S.bed && isBed(get(S.bed.x, S.bed.y))) L.push({ n: get(S.bed.x, S.bed.y) === T.BED ? "Your Bed" : "Your Sleeping Bag", x: S.bed.x + 0.5, y: S.bed.y + 1, b: world.bio[S.bed.x], bed: 1 });
     L.forEach(function (d) { d.d = d.x - (wayAt.x + 0.5); }); L.sort(function (a, b) { return Math.abs(a.d) - Math.abs(b.d); });
     return L;
   }
@@ -8190,7 +8198,7 @@
   // Keeps a new player moving: quests that ask you to craft something know their recipe (QRC). When you can make it, the Journal button
   // glows and a tip says so; tapping the quest tracker (or "Show me") opens the Journal right at that recipe. If a Chapter 1-2 quest makes
   // no progress for a while, a tip card repeats what to do. The first dusk gets a warning. Tips can be closed; each shows once per quest.
-  var QRC = { pick1: "pick1", bench: "bench", lights: "torch", bed: "bed", door: "door", stash: "chest", fishing: "x_rod1", plant: "x_hoe1", cook: "x_cookpot" };
+  var QRC = { spear: "wpn1", campfire: "x_campfire", sleepbag: "x_sleepbag", pick1: "pick1", bench: "bench", lights: "torch", bed: "bed", door: "door", stash: "chest", fishing: "x_rod1", plant: "x_hoe1", cook: "x_cookpot" };
   var qh = { id: "", v: -1, t: 0, tick: 0, said: {}, stuck: {} }, tipT = 0;
   function recById(id) { var all = craftAll(); for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i]; return null; }
   function showTip(msg, rc, color) {
@@ -8221,7 +8229,7 @@
     qh.tick -= dt; if (qh.tick > 0) return; qh.tick = 0.5;
     var q = MAIN[S.qi], btn = $("sbxMenuBtn");
     // the first dusk
-    if (!cave && !(S.st.htip & 2) && phaseOf(S.time).id === "dusk") { S.st.htip |= 2; showTip(S.st.beds ? "The sun is setting. Sleep in your bed to skip the night, or stay near torchlight: Dusk Bats hunt in the dark." : "The sun is setting! Dusk Bats come out at night. Light torches around camp, and craft a Swamp Bed soon so you can sleep through the dark.", "", "#b58cff"); }
+    if (!cave && !(S.st.htip & 2) && phaseOf(S.time).id === "dusk") { S.st.htip |= 2; showTip(S.st.beds || S.st.sleepbags ? "The sun is setting. Sleep in your " + (S.st.beds ? "bed" : "Sleeping Bag") + " to skip the night, or stay near your campfire: Dusk Bats hunt in the dark." : "The sun is setting! Dusk Bats come out at night. Stay by your campfire, and craft a Sleeping Bag (Reed Fiber and Sticks) so you can sleep through the dark.", "", "#b58cff"); }
     if (!q) { if (btn) btn.classList.remove("pulse"); return; }
     var v = Math.floor(q.v());
     if (q.id !== qh.id) { if (qh.id && S.qi > 0) $("sbxHint").classList.remove("on"); qh.id = q.id; qh.v = v; qh.t = 0; }   // the opening controls hint goes once the first quest is done
@@ -9838,7 +9846,7 @@
     if (HOME) { HOME = null; HTC = null; stageEl.classList.remove("cave", "home"); resize(); }
     if (cave) leaveCaveNow();
     bossGone(); enemies.length = 0; spawnT = 6; swingQ = 0; batT = 8;
-    var sp = world.spawn, bd = S.bed && get(S.bed.x, S.bed.y) === T.BED ? S.bed : null; if (S.bed && !bd) S.bed = null;   // a broken bed is forgotten
+    var sp = world.spawn, bd = S.bed && isBed(get(S.bed.x, S.bed.y)) ? S.bed : null; if (S.bed && !bd) S.bed = null;   // a broken bed is forgotten
     if (bd) { p.x = bd.x + 0.5; p.y = bd.y + 1; msg = msg.replace("at camp", "at your bed"); } else { p.x = sp.x; p.y = sp.y; }
     p.vx = p.vy = 0;
     var guard = 0; while (boxHit(p.x, p.y) && guard++ < 120) p.y -= 1;
@@ -9854,9 +9862,10 @@
 
   // ---------- BEDS + SLEEP ----------
   var isNight = function (t) { return t >= 280 && t < 440; };
+  function isBed(id) { return id === T.BED || (T.X_sleepbag !== undefined && id === T.X_sleepbag); }   // the Sleeping Bag sleeps like a bed
   function bedNear() {   // the closest placed bed within about 3.5 tiles, or null
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 13, x, y, dx, dy, d;
-    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (get(x, y) === T.BED) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
+    for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (isBed(get(x, y))) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
   function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y) || (smask && smask[y * W + x] && TILES[tiles[y * W + x]].solid)) return true; return false; }   // a roof within 5 tiles overhead
@@ -12645,7 +12654,7 @@
   // this only draws MAIN / SIDE / CHAPTERS. QB = { ch: open chapter key, sel: selected quest id, fresh: centre on the current pad }.
   var QB = { ch: "", sel: "", fresh: true, sx: 0, sy: 0 };
   var QB_ICON = {
-    stick: "stick", fiber: "fiber", pebble: "pebble", pick1: "pick1", wood: "wood", bench: "bench", lights: "torch", eat: "redcap", plant: "seed_carrot", harvest: "carrot", cook: "cookpot", bed: "bed", door: "door", sleep: "#☾", stash: "chest", fishing: "bogminnow", tame: "duckegg",
+    stick: "stick", fiber: "fiber", pebble: "pebble", pick1: "pick1", wood: "wood", bench: "bench", lights: "torch", eat: "redcap", plant: "seed_carrot", harvest: "carrot", cook: "cookpot", bed: "bed", door: "door", sleep: "#☾", spear: "wpn1", campfire: "campfire", sleepbag: "sleepbag", night1: "#☾", stash: "chest", fishing: "bogminnow", tame: "duckegg",
     spore: "spore", pick2: "pick2", spear: "wpn1", bug: "bugfrag", frog: "frogfrag", blade: "wpn2", hole: "ladder", sweep: "#⚔", benchup: "bench", mail: "arm2", queen: "queenchitin",
     ember: "cinder", wasp: "stinger", pick3: "pick3", furnace: "furnace", iron: "ironingot", cleaver: "wpn3", forge: "charcoal", aerie: "emberwings", bench3: "bench", plate: "arm3", wyrm: "wyrmscale",
     frost: "crystal", wolf: "wolfpelt", pick4: "pick4", fang: "wpn4", shrine: "#❄", berry: "frostberry", bench4: "bench", fplate: "arm4", alpha: "alphamane",
@@ -12996,6 +13005,7 @@
   [
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
+    ["Tools|Camping", "x_campfire x_sleepbag"],
     ["Tools|Utility", "shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
     ["Tools|Adventuring", "x_grapple"],

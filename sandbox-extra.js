@@ -1656,6 +1656,18 @@
     var pk = C.pn || k; C.produce = pk; food(pk, C.n, C.food[0], C.food[1]); SEEDS[k] = "seed_" + k;
     item("seed_" + k, C.n + " Seeds", { tile: C.tiles[0], seed: k });
   });
+  // FIRST NIGHT: a Sleeping Bag you make by hand (sleep in it like a bed: skips the night, heals you, sets your respawn), and the Campfire
+  // can now be made by hand too, so a first camp needs no Workbench.
+  var SBAG = tile("X_sleepbag", "Sleeping Bag", "#000", "#5f9a4a", 0.3, 0, "sleepbag", false, 0, "sleepbag", { small: 1 });
+  ART.sleepbag = function (rect) {   // side view: a rolled-out green bag with a striped flap, a pillow at the head end
+    rect(1, 12, 14, 4, "#3f6e34"); rect(1, 11, 14, 1, "#5f9a4a"); rect(1, 15, 14, 1, "#2a4a22");
+    rect(6, 10, 9, 2, "#6faa56"); rect(6, 10, 9, 1, "#8fc96e"); rect(8, 11, 1, 3, "#2a4a22", 0.6); rect(11, 11, 1, 3, "#2a4a22", 0.6);
+    rect(1, 9, 5, 3, "#e9dcc0"); rect(1, 9, 5, 1, "#fff4dc"); rect(5, 10, 1, 2, "#b9a888");
+    rect(13, 12, 2, 3, "#c9a24a"); rect(13, 13, 2, 1, "#8a6a28");
+  };
+  item("sleepbag", "Sleeping Bag", { tile: SBAG, d: "Roll it out by your campfire. At night, stand next to it and tap Sleep (or press F): you wake at dawn healed, and it becomes your respawn point." });
+  R("x_sleepbag", "Sleeping Bag", { sleepbag: 1 }, { fiber: 8, stick: 2 }, { d: "Somewhere to sleep through your first night. Works like a bed: skips the night, heals you and sets your respawn." });
+  R("x_campfire", "Campfire", { campfire: 1 }, { wood: 4, pebble: 3 }, { d: "A crackling fire that lights up your camp. Place it on the ground; creatures keep their distance from the light." });
   var FGATE = tile("X_farmgate", "Farm Gate", "#000", "#8a5a32", 0.6, 0, "farmgate", false, 0, "farmgate");
   ART.farmgate = function (rect) {   // two posts, a crossbar, a little green sign with a sprout on it
     rect(2, 3, 2, 13, "#5a3a1e"); rect(12, 3, 2, 13, "#5a3a1e"); rect(2, 3, 1, 13, "#7a5230"); rect(12, 3, 1, 13, "#7a5230");
