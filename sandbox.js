@@ -3099,7 +3099,9 @@
   (function () { var eb = $("sbxEmoBtn"); if (eb) eb.addEventListener("click", function (e) { e.preventDefault(); if (titleOpen || cave) return; emoBar(); }); })();
   function tickFun(dt) { tickBubs(dt); tickEmote(dt); tickChat(dt); tickCrit(dt); tickFoot(dt); tickAmb2(dt); }
   // ---------- PEACEFUL CREATURES CAN BE ATTACKED ----------
-  // Freedom: wild animals, the Sky Village villagers and Old Croaker himself can all be attacked. Tap them as before to talk, tame or
+  // NPCs are safe: Old Croaker, his brother and sister and the Sky Village villagers can never be attacked (peaceAt skips them).
+  // Wild animals can still be hunted. The old villager / Croaker fight code below is kept but nothing can start it now.
+  // Was: wild animals, the Sky Village villagers and Old Croaker himself can all be attacked. Tap them as before to talk, tame or
   // trade; PRESS AND HOLD on one to attack it (with your weapon, or a paw swat). They are not meant to be wiped out:
   //  - Bog Ducks and Mud Pigs run away; Frost Goats charge back. A defeated animal drops meat (and leather or a treat).
   //  - Hit a villager and the whole village turns on you. Villagers are tough (420 health) and hit hard (18). A beaten villager runs off to
@@ -3110,8 +3112,8 @@
   var BRAWL = { vang: 0, hold: 320 }, CROAK_HP = 600, VIL_HP = 420, AHP = { duck: 8, pig: 16, goat: 20 };
   function peaceAt(wx, wy) {
     if (cave || MP.on || MP.ws || BM.on) return null;
-    if (npcAt(wx, wy)) return { t: "n", x: npc.x, y: npc.y, h: 1.9 };
-    var v = vilAt(wx, wy); if (v) return { t: "v", v: v, x: v.x, y: v.y, h: vilH(v) };
+    // Old Croaker, his brother and sister and the Sky Village villagers are friends and can't be attacked; only wild animals can be hunted
+    if (npcAt(wx, wy) || vilAt(wx, wy)) return null;
     var a = animalAt(wx, wy); if (a && !a.tame && wilds.indexOf(a) >= 0) return { t: "a", a: a, x: a.x, y: a.y, h: a.h };
     return null;
   }
