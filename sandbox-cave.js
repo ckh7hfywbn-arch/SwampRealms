@@ -562,27 +562,27 @@
     [[7, 11, 2.1], [36, 12, 1.8]].forEach(function (q) {   // two little side ponds
       for (y = q[1] - 3; y <= q[1] + 3; y++) for (x = q[0] - 3; x <= q[0] + 3; x++) { var d = Math.hypot(x - q[0], (y - q[1]) * 1.3); if (d < q[2] && !wall[y * CW + x]) pool[y * CW + x] = 1; }
     });
-    [[9, 17], [35, 18], [14, 8], [30, 8], [5, 20], [39, 21]].forEach(function (q, k) {   // mangrove-root pillars
+    [[15, 16], [35, 18], [14, 8], [30, 8], [39, 21]].forEach(function (q, k) {   // mangrove-root pillars
       var r2 = k < 4 ? 1 : 0; for (y = q[1]; y <= q[1] + r2; y++) for (x = q[0]; x <= q[0] + r2; x++) { wall[y * CW + x] = 1; pool[y * CW + x] = 0; }
     });
     var spawn = { x: up.x + 0.5, y: up.y + 1.55 };
     var down = { x: 38, y: 25 }; for (y = 23; y <= 27; y++) for (x = 36; x <= 40; x++) { wall[y * CW + x] = 0; pool[y * CW + x] = 0; }   // the way on down, round the east shore
-    var pads = [{ x: 6, y: 24 }, { x: 9, y: 26 }, { x: 6, y: 28 }].map(function (q) { for (var yy = q.y - 1; yy <= q.y; yy++) for (var xx = q.x; xx <= q.x + 1; xx++) { wall[yy * CW + xx] = 0; pool[yy * CW + xx] = 0; } return q; });
-    for (y = 21; y <= 29; y++) for (x = 4; x <= 11; x++) if (wall[y * CW + x] && Math.hypot(x - 7.5, y - 25) < 4.3) wall[y * CW + x] = 0;   // the rig bay: a flat shelf on the west shore
+    for (y = 19; y <= 28; y++) for (x = 3; x <= 12; x++) { var ry = y < 21 || y > 27 || x < 4 || x > 11; if (!(ry && Math.hypot(x - 7.5, y - 23.5) > 5.6)) { wall[y * CW + x] = 0; pool[y * CW + x] = 0; } }   // the rig bay: a big flat shelf on the west shore
+    var pads = [{ x: 4, y: 20 }, { x: 10, y: 20 }, { x: 7, y: 27 }].map(function (q) { for (var yy = q.y - 1; yy <= q.y; yy++) for (var xx = q.x; xx <= q.x + 1; xx++) { wall[yy * CW + xx] = 0; pool[yy * CW + xx] = 0; } return q; });
     for (i = 0; i < n; i++) if (wall[i]) pool[i] = 0;
     var dock = { x: 22, y: 21 };
     for (x = 20; x <= 24; x++) for (y = 19; y <= 21; y++) pool[y * CW + x] = 0;
     // a scatter of boulders and Frostrock / Crystal in the corners, never on the open fighting ground
     for (i = 0; i < n; i++) {
       if (wall[i] || pool[i]) continue; x = i % CW; y = (i / CW) | 0;
-      if (y < 8 || (x > 12 && x < 32 && y < 22) || Math.hypot(x - 7.5, y - 25) < 4.5 || (x >= 35 && y >= 22)) continue;
+      if (y < 8 || (x > 12 && x < 32 && y < 22) || (x <= 13 && y >= 18) || (x >= 35 && y >= 22)) continue;
       var edge = wall[i - 1] + wall[i + 1] + wall[i - CW] + wall[i + CW]; if (edge && rnd() < 0.3) node[i] = rnd() < 0.25 ? T.CRYSTAL : rnd() < 0.5 ? T.FROSTROCK : T.STONE;
     }
     var lamps = [], lc = []; for (i = CW; i < n - CW; i++) if (!wall[i] && !pool[i] && !node[i] && wall[i - CW]) lc.push(i);
     for (var l = 0; l < 14 && lc.length; l++) { var li = lc.splice(Math.floor(rnd() * lc.length), 1)[0]; lamps.push({ x: li % CW, y: (li / CW) | 0 }); }
     var rocks = 0; for (i = 0; i < n; i++) if (node[i]) rocks++;
     return { w: CW, h: CH, floor: LAIR_F, biome: 0, bi: LAIR_TH, seed: seed, theme: THEMES[LAIR_TH], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: down, spawn: spawn, lamps: lamps, rocks: rocks,
-      sol: pool, pool: pool, lair: 1, ship: { x: 22.5, y: 25.6 }, boss: { x: 22.5, y: 15 }, pads: pads, dock: dock, amb: 0.4 };
+      sol: pool, pool: pool, lair: 1, ship: { x: 22.5, y: 25.6 }, boss: { x: 22.5, y: 15 }, pads: pads, dock: dock, amb: 0.5, belt: 23.5 };
   }
   // ROOM CHECK: every building interior, built for a few seeds, checked for the mistakes that are easy to make by hand and hard to
   // spot: furniture in a doorway or in front of the exit, part of a room cut off, a chest you cannot reach, a tall piece (wardrobe,

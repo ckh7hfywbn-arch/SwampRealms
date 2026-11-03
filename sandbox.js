@@ -3590,41 +3590,131 @@
   }
   function rigFix() { rigBtn("fix"); }
   // ---- drawing ----
-  function lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {
-    var t = reduce ? 0 : now / 1000, i, j, k = ts;
-    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // black-water swamp: a dark teal sheet, slow shimmer, foam on the shore, lily pads
-      var c = j * F.w + i; if (!F.pool[c]) continue; var sx = ox + i * ts, sy = oy + j * ts, h = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0);
-      g.fillStyle = "#0b2a2c"; g.fillRect(sx, sy, ts, ts);
-      g.fillStyle = "rgba(63,214,192," + (0.06 + 0.05 * Math.sin(t * 1.3 + i * 0.8 + j * 1.1)).toFixed(3) + ")"; g.fillRect(sx, sy + ts * (0.3 + 0.1 * Math.sin(t + i)), ts, ts * 0.12);
-      g.fillStyle = "rgba(190,255,240,.35)"; if (!F.pool[c - F.w]) g.fillRect(sx, sy, ts, Math.max(2, ts * 0.1)); if (!F.pool[c - 1]) g.fillRect(sx, sy, Math.max(2, ts * 0.08), ts); if (!F.pool[c + 1]) g.fillRect(sx + ts - Math.max(2, ts * 0.08), sy, Math.max(2, ts * 0.08), ts);
-      if ((h & 15) === 3) { g.fillStyle = "#3f8f3a"; g.beginPath(); g.arc(sx + ts * 0.5, sy + ts * 0.5, ts * 0.28, 0.4, 6.0); g.lineTo(sx + ts * 0.5, sy + ts * 0.5); g.fill(); if ((h & 63) === 19) { g.fillStyle = "#ff9ad0"; g.beginPath(); g.arc(sx + ts * 0.55, sy + ts * 0.42, ts * 0.08, 0, 6.28); g.fill(); } }
+  // The hollow's look: deep black-green water that gets darker away from the shore, with slow light ripples, foam wavelets on the shore,
+  // glowing algae, lily pads, drifting mist and fireflies; cattails along the banks, mangrove roots hanging off the cave walls, moss and
+  // little glowing mushroom clusters. All the scenery is worked out once per floor (lairDeco) and only the visible part is drawn.
+  var ORE_IMG = {};
+  function oreImg(k) { var im = ORE_IMG[k]; if (!im) { im = ORE_IMG[k] = new Image(); im.src = icon(k); } return im.complete && im.naturalWidth ? im : null; }
+  function lairDeco(F) {
+    if (F.ldeco) return F.ldeco; var D = F.ldeco = { reed: [], root: [], shroom: [], moss: [], fern: [], puddle: [], peb: [], algae: [], wd: new Uint8Array(F.w * F.h) }, W2 = F.w, i, x, y;
+    var hh = function (a, b, s) { var h = Math.imul(a + 17, 73856093) ^ Math.imul(b + 31, 19349663) ^ Math.imul(s + 7, 83492791); h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+    var nearPad = function (x2, y2) { return F.pads.some(function (q) { return x2 >= q.x - 1 && x2 <= q.x + 2 && y2 >= q.y - 2 && y2 <= q.y + 1; }); };
+    for (i = 0; i < F.w * F.h; i++) {   // how far each water cell is from the shore (0-3), for the depth shading
+      if (!F.pool[i]) continue; x = i % W2; y = (i / W2) | 0; var d = 3;
+      for (var r = 1; r <= 3 && d === 3; r++) for (var oy2 = -r; oy2 <= r; oy2++) for (var ox2 = -r; ox2 <= r; ox2++) { var j = (y + oy2) * W2 + x + ox2; if (j >= 0 && j < F.w * F.h && !F.pool[j] && !F.wall[j]) { d = Math.min(d, r - 1); } }
+      D.wd[i] = d; if (hh(x, y, 5) < 0.05) D.algae.push({ x: x + hh(x, y, 6), y: y + hh(x, y, 7), p: hh(x, y, 8) * 6 });
     }
-    if (lairOwned() && siloOn()) [0, 1].forEach(function (n) { if (!rigOf(n)) return; var a2 = F.pads[n], b2 = F.pads[2], x1 = ox + (a2.x + 1) * ts, y1 = oy + a2.y * ts, x2 = ox + (b2.x + 1) * ts, y2 = oy + (b2.y - 0.4) * ts, L2 = Math.hypot(x2 - x1, y2 - y1), an2 = Math.atan2(y2 - y1, x2 - x1);   // conveyor belts to the Silo
-      g.save(); g.translate(x1, y1); g.rotate(an2); g.fillStyle = "#2a2a30"; g.fillRect(0, -ts * 0.11, L2, ts * 0.22); g.fillStyle = "#4a4a52"; var off = reduce ? 0 : (now / 40) % (ts * 0.4); for (var c2 = -ts * 0.4 + off; c2 < L2; c2 += ts * 0.4) g.fillRect(c2, -ts * 0.08, ts * 0.05, ts * 0.16);
-      if (!reduce && rigCount(n) < rigCap(n)) { var u2 = (now / 1800 + n * 0.5) % 1; g.fillStyle = n ? "#8a7080" : "#8f979b"; g.beginPath(); g.arc(u2 * L2, 0, ts * 0.1, 0, 6.28); g.fill(); }
-      g.restore(); });
-    // the rig pads (west shore)
+    for (y = 1; y < F.h - 1; y++) for (x = 1; x < W2 - 1; x++) {
+      i = y * W2 + x; if (F.wall[i]) { if (!F.wall[i + W2] && !F.pool[i + W2] && hh(x, y, 1) < 0.34) D.root.push({ x: x + 0.2 + hh(x, y, 2) * 0.6, y: y + 1, l: 0.5 + hh(x, y, 3) * 0.9, s: hh(x, y, 4) * 6 }); continue; }
+      if (F.pool[i] || F.node[i] || nearPad(x, y) || (Math.abs(x - F.up.x) <= 1 && y <= F.up.y + 2) || (x === F.down.x && y === F.down.y)) continue;
+      var shore = F.pool[i - 1] || F.pool[i + 1] || F.pool[i - W2] || F.pool[i + W2], wallN = F.wall[i - 1] || F.wall[i + 1] || F.wall[i - W2];
+      if (shore && hh(x, y, 9) < 0.45) D.reed.push({ x: x + 0.2 + hh(x, y, 10) * 0.6, y: y + 0.85, n: 2 + Math.floor(hh(x, y, 11) * 3), s: hh(x, y, 12) * 6 });
+      else if (wallN && hh(x, y, 13) < 0.16) D.shroom.push({ x: x + 0.5, y: y + 0.7, s: hh(x, y, 14) * 6 });
+      else { var rr2 = hh(x, y, 15); if (rr2 < 0.22) D.moss.push({ x: x + hh(x, y, 16) * 0.6, y: y + hh(x, y, 17) * 0.6, r: 0.35 + hh(x, y, 18) * 0.5 }); else if (rr2 < 0.3) D.fern.push({ x: x + 0.5, y: y + 0.75, s: hh(x, y, 19) * 6, n: 4 + Math.floor(hh(x, y, 20) * 3) }); else if (rr2 < 0.33) D.puddle.push({ x: x + 0.5, y: y + 0.5, r: 0.3 + hh(x, y, 21) * 0.3 }); else if (rr2 < 0.42) D.peb.push({ x: x + hh(x, y, 22), y: y + hh(x, y, 23), r: 0.05 + hh(x, y, 24) * 0.07 }); }
+    }
+    return D;
+  }
+  function lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {
+    var t = reduce ? 0 : now / 1000, i, j, k = ts, D = lairDeco(F), inV = function (x, y, m) { return x >= X0 - m && x <= X1 + m && y >= Y0 - m && y <= Y1 + m; };
+    D.moss.forEach(function (q) { if (!inV(q.x, q.y, 1)) return; var sx = ox + q.x * ts + k * 0.3, sy = oy + q.y * ts + k * 0.3; g.fillStyle = "rgba(58,112,50,.7)"; g.beginPath(); g.ellipse(sx, sy, q.r * k, q.r * k * 0.62, 0, 0, 6.28); g.fill(); g.fillStyle = "rgba(96,156,70,.6)"; g.beginPath(); g.ellipse(sx - q.r * k * 0.25, sy - q.r * k * 0.15, q.r * k * 0.55, q.r * k * 0.34, 0, 0, 6.28); g.fill(); g.fillStyle = "rgba(140,200,100,.55)"; g.fillRect(sx - k * 0.08, sy - k * 0.16, 2, k * 0.14); g.fillRect(sx + k * 0.06, sy - k * 0.2, 2, k * 0.16); });
+    D.puddle.forEach(function (q) { if (!inV(q.x, q.y, 1)) return; var sx = ox + q.x * ts, sy = oy + q.y * ts; g.fillStyle = "#0d2a2a"; g.beginPath(); g.ellipse(sx, sy, q.r * k, q.r * k * 0.55, 0, 0, 6.28); g.fill(); g.fillStyle = "rgba(150,255,230,.18)"; g.beginPath(); g.ellipse(sx - q.r * k * 0.25, sy - q.r * k * 0.15, q.r * k * 0.4, q.r * k * 0.12, 0, 0, 6.28); g.fill(); });
+    D.peb.forEach(function (q) { if (!inV(q.x, q.y, 1)) return; var sx = ox + q.x * ts, sy = oy + q.y * ts; g.fillStyle = "#59604f"; g.beginPath(); g.ellipse(sx, sy, q.r * k * 1.3, q.r * k, 0, 0, 6.28); g.fill(); g.fillStyle = "#7a826c"; g.fillRect(sx - q.r * k * 0.5, sy - q.r * k * 0.6, 2, 2); });
+    D.fern.forEach(function (q) { if (!inV(q.x, q.y, 1)) return; var sx = ox + q.x * ts, sy = oy + q.y * ts, sw = reduce ? 0 : Math.sin(t * 1.1 + q.s) * 0.08;   // ferns: a fan of fronds
+      for (var fr = 0; fr < q.n; fr++) { var fa = -Math.PI / 2 + (fr - (q.n - 1) / 2) * 0.42 + sw, fl = k * (0.42 + 0.1 * ((fr + q.s) % 2)), ex = sx + Math.cos(fa) * fl, ey = sy + Math.sin(fa) * fl * 0.85;
+        g.strokeStyle = fr % 2 ? "#3f7a3a" : "#4f9a46"; g.lineWidth = Math.max(1.5, k * 0.07); g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(sx + Math.cos(fa) * fl * 0.5, sy + Math.sin(fa) * fl * 0.3, ex, ey); g.stroke();
+        g.fillStyle = "#5fae52"; for (var lf = 1; lf < 4; lf++) { var lx3 = sx + (ex - sx) * lf / 4, ly3 = sy + (ey - sy) * lf / 4; g.fillRect(lx3 - 1.5, ly3 - 1.5, 3, 3); } } });
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // the water
+      var c = j * F.w + i; if (!F.pool[c]) continue; var sx = ox + i * ts, sy = oy + j * ts, h = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0), dep = D.wd[c];
+      g.fillStyle = ["#123c3a", "#0d302f", "#0a2627", "#071d1f"][dep]; g.fillRect(sx, sy, ts, ts);
+      var w1 = Math.sin(t * 0.9 + i * 0.7 - j * 0.4), w2 = Math.sin(t * 1.4 - i * 0.5 + j * 0.9);
+      g.fillStyle = "rgba(90,230,200," + (0.05 + 0.04 * w1).toFixed(3) + ")"; g.fillRect(sx, sy + ts * (0.25 + 0.12 * w2), ts, ts * 0.09);
+      g.fillStyle = "rgba(150,255,230," + (0.03 + 0.03 * w2).toFixed(3) + ")"; g.fillRect(sx + ts * (0.1 + 0.2 * w1), sy + ts * 0.68, ts * 0.5, ts * 0.06);
+      var ew = Math.max(2, ts * 0.09), fa = (0.35 + 0.15 * Math.sin(t * 2 + i + j)).toFixed(3);
+      g.fillStyle = "rgba(200,255,240," + fa + ")";
+      if (!F.pool[c - F.w] && !F.wall[c - F.w]) { g.fillRect(sx, sy, ts, ew); g.fillStyle = "rgba(200,255,240," + (fa * 0.4).toFixed(3) + ")"; g.fillRect(sx + ts * (0.1 + 0.15 * w1), sy + ew * 1.6, ts * 0.5, ew * 0.6); g.fillStyle = "rgba(200,255,240," + fa + ")"; }
+      if (!F.pool[c - 1] && !F.wall[c - 1]) g.fillRect(sx, sy, ew, ts); if (!F.pool[c + 1] && !F.wall[c + 1]) g.fillRect(sx + ts - ew, sy, ew, ts); if (!F.pool[c + F.w] && !F.wall[c + F.w]) g.fillRect(sx, sy + ts - ew, ts, ew);
+      if ((h & 15) === 3 && dep < 3) { var lx2 = sx + ts * 0.5 + Math.sin(t * 0.5 + i) * ts * 0.04, ly2 = sy + ts * 0.5; g.fillStyle = "#2f7a32"; g.beginPath(); g.arc(lx2, ly2, ts * 0.3, 0.5, 6.0); g.lineTo(lx2, ly2); g.fill(); g.fillStyle = "#4aa84a"; g.beginPath(); g.arc(lx2 - ts * 0.05, ly2 - ts * 0.05, ts * 0.2, 0.6, 5.9); g.lineTo(lx2, ly2); g.fill(); if ((h & 63) === 19) { g.fillStyle = "#ff9ad0"; g.beginPath(); g.arc(lx2 + ts * 0.06, ly2 - ts * 0.06, ts * 0.09, 0, 6.28); g.fill(); g.fillStyle = "#ffe08a"; g.fillRect(lx2 + ts * 0.04, ly2 - ts * 0.08, 2, 2); } }
+    }
+    var gl = 0; D.algae.forEach(function (q) { if (!inV(q.x, q.y, 2)) return; var p = 0.5 + 0.5 * Math.sin(t * 1.6 + q.p), sx = ox + q.x * ts, sy = oy + q.y * ts; g.fillStyle = "rgba(120,255,220," + (0.35 + 0.45 * p).toFixed(3) + ")"; g.fillRect(sx, sy, 3, 3); g.fillRect(sx + 5, sy + 3, 2, 2); if (gl++ < 6) srcs.push([q.x, q.y, 2.6, 0.35 * p + 0.15]); });
+    if (!reduce) for (var b = 0; b < 4; b++) { var bt = (t * 0.35 + b * 0.27) % 1, bx = 14 + ((b * 53) % 17), by = 23 + ((b * 29) % 4); if (F.pool[by * F.w + bx]) { g.strokeStyle = "rgba(190,255,240," + (0.6 * (1 - bt)).toFixed(3) + ")"; g.lineWidth = 1.5; g.beginPath(); g.ellipse(ox + (bx + 0.5) * ts, oy + (by + 0.5) * ts, ts * (0.1 + bt * 0.5), ts * (0.06 + bt * 0.3), 0, 0, 6.28); g.stroke(); } }   // bubbles rising and spreading rings
+    D.root.forEach(function (q) { if (!inV(q.x, q.y, 2)) return; var sx = ox + q.x * ts, sy = oy + q.y * ts, sw = reduce ? 0 : Math.sin(t * 0.8 + q.s) * k * 0.05;   // mangrove roots hanging off the walls
+      g.strokeStyle = "#3a2a1a"; g.lineWidth = Math.max(1.5, k * 0.08); g.beginPath(); g.moveTo(sx, sy - k * 0.05); g.quadraticCurveTo(sx + k * 0.15 + sw, sy + q.l * k * 0.5, sx + sw * 2, sy + q.l * k); g.stroke();
+      g.strokeStyle = "#5a4028"; g.lineWidth = Math.max(1, k * 0.035); g.beginPath(); g.moveTo(sx + k * 0.12, sy - k * 0.05); g.quadraticCurveTo(sx + k * 0.3 + sw, sy + q.l * k * 0.35, sx + k * 0.22 + sw, sy + q.l * k * 0.7); g.stroke();
+      var dp = (t * 0.5 + q.s) % 1; if (q.s > 3) { g.fillStyle = "rgba(120,255,220," + (0.8 * (1 - dp)).toFixed(3) + ")"; g.fillRect(sx + sw * 2 - 1, sy + q.l * k + dp * k * 0.5, 2, 3); } });
+    var sh = 0; D.shroom.forEach(function (q) { if (!inV(q.x, q.y, 2)) return; var sx = ox + q.x * ts, sy = oy + q.y * ts, p = 0.75 + 0.25 * Math.sin(t * 2 + q.s);   // glowing mushroom clusters
+      [[-0.18, 0, 0.16], [0.08, -0.08, 0.22], [0.26, 0.04, 0.12]].forEach(function (m) { g.fillStyle = "#d8f4ea"; g.fillRect(sx + m[0] * k - 1, sy + m[1] * k - m[2] * k * 0.2, 2, m[2] * k * 0.9); g.fillStyle = "rgba(80,240,200," + p.toFixed(3) + ")"; g.beginPath(); g.ellipse(sx + m[0] * k, sy + m[1] * k - m[2] * k * 0.3, m[2] * k, m[2] * k * 0.55, 0, Math.PI, 0); g.fill(); });
+      if (sh++ < 8) { srcs.push([q.x, q.y - 0.2, 3, 0.55]); glows2.push([sx, sy - k * 0.15, "80,240,200", 1.6, 0.16 * p]); } });
+    D.reed.forEach(function (q) { if (!inV(q.x, q.y, 1)) return; var sx = ox + q.x * ts, sy = oy + q.y * ts;   // cattails along the banks, swaying
+      for (var r = 0; r < q.n; r++) { var rx = sx + (r - q.n / 2) * k * 0.14, sw = reduce ? 0 : Math.sin(t * 1.3 + q.s + r) * k * 0.06, hgt = k * (0.55 + 0.12 * ((r + q.s) % 3));
+        g.strokeStyle = "#4f7a3a"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(rx, sy); g.quadraticCurveTo(rx, sy - hgt * 0.6, rx + sw, sy - hgt); g.stroke();
+        if (r % 2 === 0) { g.fillStyle = "#6a4428"; g.fillRect(rx + sw - k * 0.04, sy - hgt - k * 0.02, k * 0.08, k * 0.2); } }
+      g.strokeStyle = "#5f9a4a"; g.lineWidth = Math.max(1, k * 0.04); g.beginPath(); g.moveTo(sx - k * 0.1, sy); g.quadraticCurveTo(sx - k * 0.25, sy - k * 0.2, sx - k * 0.32, sy - k * 0.12); g.stroke(); });
+    lairBay(g, F, now, srcs, glows2);
+    drawWreck(g, F, now, srcs, glows2);
+    if (!reduce) { g.save(); for (var m2 = 0; m2 < 5; m2++) { var mx = ox + (12 + m2 * 4.6 + Math.sin(t * 0.07 + m2) * 3) * ts, my = oy + (24.2 + Math.sin(t * 0.11 + m2 * 2) * 1.2) * ts, mg = g.createRadialGradient(mx, my, 0, mx, my, k * 3.2); mg.addColorStop(0, "rgba(170,230,215,.09)"); mg.addColorStop(1, "rgba(170,230,215,0)"); g.fillStyle = mg; g.fillRect(mx - k * 3.2, my - k * 3.2, k * 6.4, k * 6.4); } g.restore(); }   // mist drifting over the lake
+    (F.rings || []).forEach(function (q) { g.strokeStyle = "rgba(120,240,230," + (0.85 * (1 - q.r / q.max)).toFixed(3) + ")"; g.lineWidth = ts * 0.32; g.beginPath(); g.ellipse(ox + q.x * ts, oy + q.y * ts, q.r * ts, q.r * ts * 0.8, 0, 0, 6.2832); g.stroke(); g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 2; g.stroke(); });
+    (F.cshots || []).forEach(function (q) { var sx = ox + q.x * ts, sy = oy + q.y * ts; g.fillStyle = "rgba(255,210,120,.35)"; g.beginPath(); g.arc(sx, sy, ts * 0.22, 0, 6.28); g.fill(); g.fillStyle = "#2a2a30"; g.beginPath(); g.arc(sx, sy, ts * 0.12, 0, 6.28); g.fill(); g.fillStyle = "#c9ccd2"; g.fillRect(sx - ts * 0.05, sy - ts * 0.06, ts * 0.04, ts * 0.04); });
+    if (!reduce) for (var f = 0; f < 14; f++) { var fx2 = ox + (8 + (f * 37 % 28) + Math.sin(t * 0.6 + f) * 1.5) * ts, fy2 = oy + (9 + (f * 13 % 18) + Math.cos(t * 0.8 + f * 1.7)) * ts, a2 = 0.5 + 0.5 * Math.sin(t * 3 + f * 2); g.fillStyle = "rgba(220,255,140," + (0.6 * a2).toFixed(3) + ")"; g.fillRect(fx2, fy2, 3, 3); g.fillStyle = "rgba(220,255,140," + (0.15 * a2).toFixed(3) + ")"; g.fillRect(fx2 - 3, fy2 - 3, 9, 9); }   // fireflies
+  }
+  // ---- the Rig Bay: steel decks with hazard edges, floodlights, the machines and the conveyor belts ----
+  function lairBay(g, F, now, srcs, glows2) {
+    var k = ts, own = lairOwned();
+    if (own && siloOn()) [0, 1].forEach(function (n) { if (rigOf(n)) drawBelt(g, F, n, now); });
     F.pads.forEach(function (q, n) {
-      var px = ox + q.x * ts, py = oy + (q.y - 1) * ts, on = lairOwned() && lairS().rig[n];
-      g.fillStyle = "#3a3e44"; g.fillRect(px + 2, py + 2, ts * 2 - 4, ts * 2 - 4); g.fillStyle = "#5a626a"; g.fillRect(px + 4, py + 4, ts * 2 - 8, ts * 2 - 8);
-      g.strokeStyle = "#f2c14e"; g.lineWidth = Math.max(1, ts * 0.05); g.setLineDash([ts * 0.2, ts * 0.12]); g.strokeRect(px + 6, py + 6, ts * 2 - 12, ts * 2 - 12); g.setLineDash([]);
-      g.fillStyle = "#8e969b"; [[0.2, 0.2], [1.8, 0.2], [0.2, 1.8], [1.8, 1.8]].forEach(function (r) { g.fillRect(px + r[0] * ts - 2, py + r[1] * ts - 2, 4, 4); });
-      if (!lairOwned()) { g.fillStyle = "#6e431f"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.8); g.fillStyle = "#8a5a32"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.12); g.fillStyle = "#9a6234"; g.beginPath(); g.ellipse(px + ts * 1.45, py + ts * 1.1, ts * 0.32, ts * 0.42, 0, 0, 6.28); g.fill(); }
+      var px = ox + q.x * ts, py = oy + (q.y - 1) * ts, on = own && rigOf(n), W2 = ts * 2;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(px + 4, py + 6, W2 - 4, W2 - 4);
+      g.fillStyle = "#3e434a"; g.fillRect(px + 2, py + 2, W2 - 4, W2 - 4);
+      g.fillStyle = "#555c64"; g.fillRect(px + 5, py + 5, W2 - 10, W2 - 10);
+      g.fillStyle = "#636b74"; for (var dy = 0; dy < 6; dy++) for (var dx = 0; dx < 6; dx++) if ((dx + dy) % 2 === 0) g.fillRect(px + 8 + dx * (W2 - 16) / 6, py + 8 + dy * (W2 - 16) / 6, (W2 - 16) / 12, 2);   // tread plate
+      g.save(); g.beginPath(); g.rect(px + 2, py + 2, W2 - 4, W2 - 4); g.rect(px + 7, py + 7, W2 - 14, W2 - 14); g.clip("evenodd"); for (var s = -W2; s < W2 * 2; s += k * 0.28) { g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(px + s, py); g.lineTo(px + s + k * 0.14, py); g.lineTo(px + s + k * 0.14 - W2, py + W2); g.lineTo(px + s - W2, py + W2); g.fill(); } g.restore();   // hazard stripes on the edge
+      g.fillStyle = "#1c1f24"; g.fillRect(px + 2, py + 2, W2 - 4, 1); g.fillStyle = "#8e969b"; [[0.14, 0.14], [1.86, 0.14], [0.14, 1.86], [1.86, 1.86]].forEach(function (r) { g.fillRect(px + r[0] * ts - 2, py + r[1] * ts - 2, 4, 4); });
+      if (!own) { g.fillStyle = "#6e431f"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.8); g.fillStyle = "#8a5a32"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.12); g.fillStyle = "#9a6234"; g.beginPath(); g.ellipse(px + ts * 1.45, py + ts * 1.1, ts * 0.32, ts * 0.42, 0, 0, 6.28); g.fill(); }
       else if (n === 0) drawDrill(g, px + ts, py + ts, !!on, now);
       else if (on && n === 1) drawBorer(g, px + ts, py + ts, now);
       else if (on && n === 2) drawSilo(g, px + ts, py + ts, now);
-      if (on && rigLv(n) > 1) { g.font = signFont(Math.max(8, Math.round(ts * 0.22))); g.textAlign = "center"; g.fillStyle = "#ffe08a"; g.fillText("Lv " + rigLv(n), px + ts, py + ts * 2.25); }
-      if (lairOwned() && on && !(siloOn() && n !== 2)) { var cnt = n === 2 ? rigTotal() : rigCount(n); if (cnt) { g.font = signFont(Math.max(9, Math.round(ts * 0.3))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; var full = n !== 2 && cnt >= rigCap(n); g.strokeText(cnt + (full ? " (full)" : ""), px + ts, py - ts * 0.2); g.fillStyle = "#ffe08a"; g.fillText(cnt + (full ? " (full)" : ""), px + ts, py - ts * 0.2); } }
+      if (on) { var lx = px - k * 0.15, ly = py + k * 0.1, fl = reduce ? 1 : 0.9 + 0.1 * Math.sin(now / 130 + n);   // a floodlight on a post at the corner of each working pad
+        g.fillStyle = "#2a2a30"; g.fillRect(lx - 1.5, ly, 3, k * 0.9); g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.12, k * 0.24, k * 0.16); g.fillStyle = "rgba(255,240,190," + fl.toFixed(3) + ")"; g.fillRect(lx - k * 0.08, ly - k * 0.06, k * 0.16, k * 0.06);
+        srcs.push([(lx - ox) / ts + 0.6, (ly - oy) / ts + 0.8, 4.5, 0.75]); glows2.push([lx, ly, "255,240,190", 1.4, 0.2 * fl]); }
+      if (on && rigLv(n) > 1) { g.font = signFont(Math.max(8, Math.round(ts * 0.22))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; var lvx = px + ts * 1.72, lvy = py + ts * 0.3; g.fillStyle = "#1c1f24"; g.fillRect(lvx - ts * 0.26, lvy - ts * 0.15, ts * 0.52, ts * 0.3); g.fillStyle = "#ffe08a"; g.textBaseline = "middle"; g.fillText("Lv " + rigLv(n), lvx, lvy + 1); g.textBaseline = "alphabetic"; }
+      if (own && on && !(siloOn() && n !== 2)) { var cnt = n === 2 ? rigTotal() : rigCount(n); if (cnt) { var full = n !== 2 && cnt >= rigCap(n), lb = cnt + (full ? " (full)" : ""); g.font = signFont(Math.max(9, Math.round(ts * 0.3))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText(lb, px + ts, py - ts * 0.2); g.fillStyle = "#ffe08a"; g.fillText(lb, px + ts, py - ts * 0.2); } }
     });
-    // a RIG BAY sign
-    var bq = F.pads[0], bsx = ox + (bq.x + 3.2) * ts, bsy = oy + (bq.y - 1.6) * ts; g.fillStyle = "#3a2412"; g.fillRect(bsx - k * 0.05, bsy, k * 0.1, k * 0.9); g.font = signFont(Math.max(8, Math.round(k * 0.24))); var bw = g.measureText("RIG BAY").width + k * 0.4;
-    g.fillStyle = "#2e1c0e"; g.fillRect(bsx - bw / 2 - 2, bsy - k * 0.5 - 2, bw + 4, k * 0.48 + 4); g.fillStyle = "#8a5a32"; g.fillRect(bsx - bw / 2, bsy - k * 0.5, bw, k * 0.48); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("RIG BAY", bsx, bsy - k * 0.25); g.textBaseline = "alphabetic";
-    drawWreck(g, F, now, srcs, glows2);
-    // tide rings and pistol balls
-    (F.rings || []).forEach(function (q) { g.strokeStyle = "rgba(120,240,230," + (0.85 * (1 - q.r / q.max)).toFixed(3) + ")"; g.lineWidth = ts * 0.32; g.beginPath(); g.ellipse(ox + q.x * ts, oy + q.y * ts, q.r * ts, q.r * ts * 0.8, 0, 0, 6.2832); g.stroke(); g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 2; g.stroke(); });
-    (F.cshots || []).forEach(function (q) { var sx = ox + q.x * ts, sy = oy + q.y * ts; g.fillStyle = "rgba(255,210,120,.35)"; g.beginPath(); g.arc(sx, sy, ts * 0.22, 0, 6.28); g.fill(); g.fillStyle = "#2a2a30"; g.beginPath(); g.arc(sx, sy, ts * 0.12, 0, 6.28); g.fill(); g.fillStyle = "#c9ccd2"; g.fillRect(sx - ts * 0.05, sy - ts * 0.06, ts * 0.04, ts * 0.04); });
-    // fireflies over the water
-    if (!reduce) for (var f = 0; f < 10; f++) { var fx2 = ox + (12 + (f * 37 % 22) + Math.sin(t * 0.6 + f) * 1.5) * ts, fy2 = oy + (21 + (f * 13 % 7) + Math.cos(t * 0.8 + f * 1.7)) * ts, a2 = 0.5 + 0.5 * Math.sin(t * 3 + f * 2); g.fillStyle = "rgba(220,255,140," + (0.5 * a2).toFixed(3) + ")"; g.fillRect(fx2, fy2, 3, 3); }
+    var bq = F.pads[0], bsx = ox + ((F.pads[0].x + F.pads[1].x) / 2 + 1) * ts, bsy = oy + (bq.y - 1.2) * ts; g.fillStyle = "#3a2412"; g.fillRect(bsx - k * 0.05, bsy, k * 0.1, k * 0.9); g.font = signFont(Math.max(8, Math.round(k * 0.24))); var bw = g.measureText("RIG BAY").width + k * 0.4;   // the RIG BAY sign
+    g.fillStyle = "#2e1c0e"; g.fillRect(bsx - bw / 2 - 2, bsy - k * 0.5 - 2, bw + 4, k * 0.48 + 4); g.fillStyle = "#8a5a32"; g.fillRect(bsx - bw / 2, bsy - k * 0.5, bw, k * 0.48); g.fillStyle = "#a8743a"; g.fillRect(bsx - bw / 2, bsy - k * 0.5, bw, k * 0.07); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText("RIG BAY", bsx, bsy - k * 0.25); g.textBaseline = "alphabetic";
+  }
+  // A CONVEYOR BELT from rig n to the Ore Silo, laid like a real one: down from the rig, along the bay floor, then down into the Silo's
+  // hopper, with a spoked roller at every bend. Steel side rails on little legs, a dark rubber belt whose chevron treads roll along,
+  // and the rig's actual ore riding it (the real item pictures, picked from what that rig digs), bobbing as it goes and tipping into
+  // the hopper with a puff of dust. Both rigs' belts meet at a junction and share the last stretch. It stops when the rig is full.
+  function beltPath(F, n) { var a = F.pads[n], b = F.pads[2], J = F.belt || (b.y - 3.5); return [[a.x + 1, a.y + 0.15], [a.x + 1, J], [b.x + 1, J], [b.x + 1, b.y - 0.95]]; }
+  function beltSeg(g, x1, y1, x2, y2, mv, k) {
+    var L = Math.hypot(x2 - x1, y2 - y1); if (L < 1) return; var an = Math.atan2(y2 - y1, x2 - x1), bw = k * 0.42;
+    g.save(); g.translate(x1, y1); g.rotate(an);
+    g.fillStyle = "rgba(0,0,0,.32)"; g.fillRect(0, -bw / 2 + k * 0.12, L, bw);
+    g.fillStyle = "#2a2d33"; for (var lg = k * 0.5; lg < L - k * 0.3; lg += k * 0.9) g.fillRect(lg - k * 0.04, bw / 2 - 2, k * 0.08, k * 0.2);
+    g.fillStyle = "#5a6068"; g.fillRect(0, -bw / 2, L, bw); g.fillStyle = "#9aa3a8"; g.fillRect(0, -bw / 2, L, Math.max(2, k * 0.05)); g.fillStyle = "#33373d"; g.fillRect(0, bw / 2 - Math.max(2, k * 0.05), L, Math.max(2, k * 0.05));
+    g.fillStyle = "#1c1e22"; g.fillRect(0, -bw / 2 + k * 0.07, L, bw - k * 0.14);
+    g.save(); g.beginPath(); g.rect(0, -bw / 2 + k * 0.07, L, bw - k * 0.14); g.clip(); g.fillStyle = "#363a41"; var gap = k * 0.22, off = mv % gap;
+    for (var tr = -gap + off; tr < L; tr += gap) { g.beginPath(); g.moveTo(tr, -bw / 2 + k * 0.07); g.lineTo(tr + k * 0.06, 0); g.lineTo(tr, bw / 2 - k * 0.07); g.lineTo(tr + k * 0.05, bw / 2 - k * 0.07); g.lineTo(tr + k * 0.11, 0); g.lineTo(tr + k * 0.05, -bw / 2 + k * 0.07); g.closePath(); g.fill(); }
+    g.restore(); g.restore();
+  }
+  function beltRoller(g, x, y, mv, k) { var bw = k * 0.42; g.fillStyle = "#8e969b"; g.beginPath(); g.arc(x, y, bw * 0.6, 0, 6.28); g.fill(); g.fillStyle = "#33373d"; g.beginPath(); g.arc(x, y, bw * 0.44, 0, 6.28); g.fill(); g.strokeStyle = "#c0c8ce"; g.lineWidth = Math.max(1, k * 0.04); var ra = mv / (bw * 0.5); for (var sp = 0; sp < 3; sp++) { var aa = ra + sp * 2.094; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(aa) * bw * 0.4, y + Math.sin(aa) * bw * 0.4); g.stroke(); } g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(x, y, bw * 0.12, 0, 6.28); g.fill(); }
+  function drawBelt(g, F, n, now) {
+    var k = ts, P = beltPath(F, n).map(function (q) { return [ox + q[0] * ts, oy + q[1] * ts]; }), run = !reduce && rigCount(n) < rigCap(n), mv = run ? now / 1000 * 0.9 * k : 0, i;
+    var segL = [], L = 0; for (i = 0; i < P.length - 1; i++) { var l = Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]); segL.push(l); L += l; }
+    for (i = 0; i < P.length - 1; i++) if (n === 0 || i < P.length - 2) beltSeg(g, P[i][0], P[i][1], P[i + 1][0], P[i + 1][1], mv, k);   // the shared last stretch is drawn once (by the Bilge Drill's belt)
+    for (i = 0; i < P.length; i++) if (n === 0 || i < P.length - 1) beltRoller(g, P[i][0], P[i][1], mv, k);
+    var at = function (d) { for (var s = 0; s < segL.length; s++) { if (d <= segL[s] || s === segL.length - 1) { var u = segL[s] ? Math.min(1, d / segL[s]) : 0; return [P[s][0] + (P[s + 1][0] - P[s][0]) * u, P[s][1] + (P[s + 1][1] - P[s][1]) * u]; } d -= segL[s]; } return P[P.length - 1]; };
+    var T2 = RIGS[n].ore, tot = 0; T2.forEach(function (e) { tot += e[1]; }); var step = k * 0.66, cnt = Math.ceil(L / step) + 1, base = Math.floor(mv / step);
+    for (var s2 = 0; s2 < cnt; s2++) {   // the ore riding the belt
+      var idx = base - s2, pos = mv - idx * step + (n ? step * 0.5 : 0); if (pos < k * 0.15 || pos > L - k * 0.05) continue;
+      var hsh = ((Math.imul(idx + 977 * (n + 1), 2654435761) >>> 0) % 10000) / 10000; if (hsh > 0.84 || (!run && hsh > 0.5)) continue;
+      var r = hsh * tot / 0.84, it = T2[0][0]; for (var q = 0; q < T2.length; q++) { r -= T2[q][1]; if (r <= 0) { it = T2[q][0]; break; } }
+      var im = oreImg(it), pt = at(pos), bob = run ? Math.abs(Math.sin(pos / k * 3 + idx)) * k * 0.05 : 0, fade = pos > L - k * 0.45 ? (L - pos) / (k * 0.45) : 1, sz = k * 0.48;
+      g.globalAlpha = clamp(fade, 0, 1); g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(pt[0], pt[1] + k * 0.04, sz * 0.36, sz * 0.14, 0, 0, 6.28); g.fill();
+      if (im) g.drawImage(im, pt[0] - sz / 2, pt[1] - sz * 0.72 - bob, sz, sz); else { g.fillStyle = "#8f979b"; g.beginPath(); g.arc(pt[0], pt[1] - sz * 0.3 - bob, sz * 0.25, 0, 6.28); g.fill(); }
+      g.globalAlpha = 1;
+    }
+    if (run && Math.random() < 0.06) { var e = P[P.length - 1]; parts.push({ x: (e[0] - ox) / ts + (Math.random() - 0.5) * 0.3, y: (e[1] - oy) / ts - 0.1, vx: (Math.random() - 0.5) * 0.8, vy: -1.2, life: 0.4, max: 0.4, c: "#c9ccd2", s: 2 }); }
   }
   function drawDrill(g, cx, cy, on, now) {   // the Bilge Drill on pad 1: a riveted boiler with a funnel, a gear and a drill bit, rust while broken
     var k = ts, t = reduce ? 0 : now / 1000, sp = on ? t * 6 : 0;
@@ -3636,6 +3726,7 @@
     g.save(); g.translate(cx - k * 0.32, cy - k * 0.62); g.rotate(sp); g.fillStyle = on ? "#d9a441" : "#7a6a52"; for (var q = 0; q < 8; q++) { g.rotate(Math.PI / 4); g.fillRect(-k * 0.05, -k * 0.27, k * 0.1, k * 0.12); } g.beginPath(); g.arc(0, 0, k * 0.18, 0, 6.28); g.fill(); g.fillStyle = "#2e1c0e"; g.beginPath(); g.arc(0, 0, k * 0.06, 0, 6.28); g.fill(); g.restore();
     var bob = on ? Math.sin(t * 18) * k * 0.03 : 0; g.fillStyle = "#9aa3a8"; g.beginPath(); g.moveTo(cx - k * 0.2, cy + k * 0.5 + bob); g.lineTo(cx + k * 0.2, cy + k * 0.5 + bob); g.lineTo(cx, cy + k * 0.95 + bob); g.closePath(); g.fill();
     if (!on) { g.fillStyle = "rgba(180,90,40,.55)"; g.fillRect(cx - k * 0.6, cy - k * 0.1, k * 0.35, k * 0.3); g.fillRect(cx + k * 0.1, cy + k * 0.15, k * 0.4, k * 0.2); }
+    if (on && !reduce && Math.random() < 0.2) parts.push({ x: (cx - ox) / ts + (Math.random() - 0.5) * 0.4, y: (cy - oy) / ts + 0.85, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 2, life: 0.3, max: 0.3, c: Math.random() < 0.5 ? "#ffd27a" : "#ff9a4a", s: 2 });   // sparks off the bit
     if (on && !reduce) for (var s2 = 0; s2 < 3; s2++) { var u = (t * 0.6 + s2 / 3) % 1; g.fillStyle = "rgba(200,205,210," + (0.4 * (1 - u)).toFixed(3) + ")"; g.beginPath(); g.arc(cx + k * 0.38 + u * k * 0.3, cy - k * 1.15 - u * k * 1.2, k * (0.12 + u * 0.25), 0, 6.28); g.fill(); }
   }
   function drawBorer(g, cx, cy, now) {   // the Steam Borer: a tall copper boiler on legs, a pressure gauge and a spinning auger, steam puffs
@@ -3671,7 +3762,13 @@
     g.fillStyle = "#b8862f"; g.fillRect(k * 2.1, k * 0.25, k * 0.5, k * 0.36); g.fillStyle = "#f2c14e"; g.fillRect(k * 2.1, k * 0.25, k * 0.5, k * 0.08);   // a chest of doubloons
     g.fillStyle = "#4a2e18"; g.beginPath(); g.arc(-k * 0.4, -k * 0.1, k * 0.26, 0, 6.28); g.fill();   // the mast stump
     g.strokeStyle = "#4a2e18"; g.lineWidth = k * 0.22; g.beginPath(); g.moveTo(-k * 0.4, -k * 0.1); g.lineTo(k * 1.8, -k * 2.6); g.stroke();   // the broken mast, leaning over the water
+    var sw2 = reduce ? 0 : Math.sin(t * 0.9) * k * 0.08;   // a torn sail still hanging off the broken mast, and loose rigging
+    g.fillStyle = "rgba(214,200,168,.85)"; g.beginPath(); g.moveTo(k * 0.2, -k * 0.8); g.lineTo(k * 1.5, -k * 2.25); g.quadraticCurveTo(k * 2.2 + sw2, -k * 1.2, k * 1.9 + sw2, -k * 0.2); g.lineTo(k * 1.6 + sw2, -k * 0.45); g.lineTo(k * 1.35 + sw2, -k * 0.1); g.lineTo(k * 1.05, -k * 0.5); g.closePath(); g.fill();
+    g.strokeStyle = "rgba(150,130,100,.8)"; g.lineWidth = 1; g.beginPath(); g.moveTo(k * 0.55, -k * 1.2); g.lineTo(k * 1.7 + sw2, -k * 0.6); g.moveTo(k * 1.0, -k * 1.75); g.lineTo(k * 2.0 + sw2, -k * 1.0); g.stroke();
+    g.strokeStyle = "#2e1c0e"; g.lineWidth = Math.max(1, k * 0.03); g.beginPath(); g.moveTo(k * 1.8, -k * 2.6); g.quadraticCurveTo(k * 3.2, -k * 1.6, k * 4.6, -k * 0.6); g.moveTo(k * 1.2, -k * 1.9); g.quadraticCurveTo(-k * 1.5, -k * 1.7, -k * 3.6, -k * 0.9); g.stroke();
+    [[-2.6, 1.05], [-0.8, 1.12], [1.0, 1.1], [3.0, 1.0]].forEach(function (pp) { g.fillStyle = "#2e1c0e"; g.beginPath(); g.arc(pp[0] * k, pp[1] * k, k * 0.14, 0, 6.28); g.fill(); g.fillStyle = own ? "rgba(255,214,110,.85)" : "rgba(120,240,220,.55)"; g.beginPath(); g.arc(pp[0] * k, pp[1] * k, k * 0.08, 0, 6.28); g.fill(); });   // portholes glowing in the hull
     g.restore();
+    if (!reduce) { var rp = (t * 0.25) % 1; g.strokeStyle = "rgba(190,255,240," + (0.35 * (1 - rp)).toFixed(3) + ")"; g.lineWidth = 2; g.beginPath(); g.ellipse(cx, cy + k * 0.3, k * (5.4 + rp * 1.4), k * (1.6 + rp * 0.5), -0.06, 0, 6.28); g.stroke(); }   // slow ripples around the hull
     var fx = cx - k * 0.4, fy = cy - k * 0.2; g.strokeStyle = "#3a2412"; g.lineWidth = Math.max(2, k * 0.1); g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx, fy - k * 2.4); g.stroke();   // the flag pole
     var wave = reduce ? 0 : Math.sin(t * 3) * k * 0.08; g.fillStyle = own ? "#2f9a5a" : "#14161c"; g.beginPath(); g.moveTo(fx, fy - k * 2.4); g.quadraticCurveTo(fx + k * 0.6, fy - k * 2.5 + wave, fx + k * 1.2, fy - k * 2.4); g.lineTo(fx + k * 1.2, fy - k * 1.6); g.quadraticCurveTo(fx + k * 0.6, fy - k * 1.7 - wave, fx, fy - k * 1.6); g.closePath(); g.fill();
     if (own) { g.fillStyle = "#ffe08a"; g.beginPath(); for (var s = 0; s < 10; s++) { var an = -Math.PI / 2 + s * Math.PI / 5, rr = s % 2 ? k * 0.1 : k * 0.24; g.lineTo(fx + k * 0.6 + Math.cos(an) * rr, fy - k * 2 + Math.sin(an) * rr); } g.fill(); }
