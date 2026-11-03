@@ -1136,7 +1136,11 @@
       if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
       if (tx !== undefined) { if (giveBatch) giveBatch[item] = (giveBatch[item] || 0) + fit; else text(tx + 0.5, ty, "+" + fit + " " + ITEMS[item].n, ITEMS[item].gem || "#f6eedb"); }   // a blast gathers its pickups into one line each
     }
-    if (fit < n) { if (keep) { addExtra(item, n - fit); toast("Inventory full! " + (n - fit) + " " + ITEMS[item].n + " went to Overflow.", "#f2c14e"); } else nag("Inventory full! Press E to make room."); }
+    if (fit < n) {
+      if (keep) { addExtra(item, n - fit); toast("Inventory full! " + (n - fit) + " " + ITEMS[item].n + " went to Overflow.", "#f2c14e"); }
+      else if (tx !== undefined) { addExtra(item, n - fit); nag("Inventory full! What you dig goes to Overflow (open your inventory)."); }   // MINING WHEN FULL: you can keep digging; nothing is lost
+      else nag("Inventory full! Press E to make room.");
+    }
     hbDirty = true; if (panelOpen) renderPanel(); return fit;
   }
   function moveSlot(a, b) {   // tap a, then tap b: move the stack, merge equal stacks, or swap
@@ -2323,7 +2327,6 @@
   }
   function wallMine(dt, tx, ty) {   // hold your pick, shovel or paws on an empty tile with a wall behind it to take the wall down
     var wid = walls[ty * W + tx], item = WALLITEM[wid];
-    if (item && room(item) <= 0) { invFull(); mine = null; return; }
     if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
     mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / 0.45; mine.tick -= dt;
     if (mine.tick <= 0) { mine.tick = 0.17; thud(180 + Math.random() * 40, 0.03); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 1, 3); }
@@ -9716,7 +9719,6 @@
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
       if (plantHit && sel !== "pick" && td.tier > 0) { nag("Hold your pick to break " + td.n + "."); mine = null; return; }
-      var dro = dropOf(td); if (dro && room(dro) <= 0) { invFull(); mine = null; return; }
       if (td.kind === "door" || td.hatch || td.kind === "chest" || td.kind === "lootchest" || td.cont) {   // a quick tap opens/closes the door, so breaking it needs a short hold first
         var dk = tx + "," + ty; if (doorHoldKey !== dk) { doorHoldKey = dk; doorHoldT = 0; }
         doorHoldT += dt; if (doorHoldT < 0.3) { mine = null; return; }
@@ -12852,7 +12854,6 @@
     if (nid) {
       var td = TILES[nid];
       if (sel !== "pick" && sel !== "shovel") { nag("Hold your pick to break rocks (press Q)."); mine = null; return; }
-      if (td.drop && td.kind !== "lootchest" && room(td.drop) <= 0) { invFull(); mine = null; return; }
       if (sel === "shovel" && !SOFT[nid]) { nag("A shovel only digs soft things. Use your pick for " + td.n + "."); mine = null; return; }
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
       if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
@@ -12863,7 +12864,7 @@
       return;
     }
     mine = null; cool -= dt; if (cool > 0) return;
-    if (F.torch[i]) { if (sel === "pick" || sel === "shovel") { if (invFull("torch")) { cool = 0.5; return; } cool = 0.25; F.torch[i] = 0; give("torch", 1, tx, ty); thud(300, 0.04); } return; }
+    if (F.torch[i]) { if (sel === "pick" || sel === "shovel") { cool = 0.25; F.torch[i] = 0; give("torch", 1, tx, ty); thud(300, 0.04); } return; }
     if (F.wall[i] || (F.sol && F.sol[i])) return;
     if (sel === "torch" && (S.inv.torch || 0) > 0) {
       if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y)) return;
@@ -15235,7 +15236,6 @@
     var dx = tx + 0.5 - pl.x, dy = ty + 0.5 - (pl.y - 0.45); if (dx * dx + dy * dy > OREACH * OREACH) { sc.mineP = null; return; }
     if (Math.abs(dx) > 0.3) pl.face = dx < 0 ? -1 : 1;
     if (sel !== "pick" && sel !== "shovel") { sc.mineP = null; if (press) nag("Hold your pick to dig coral and rock (press Q)."); return; }
-    if (d.solid && room("stone") <= 0 && d.drops && d.drops[0] && room(d.drops[0][0]) <= 0) { invFull(); sc.mineP = null; return; }
     if (sel === "shovel" && id !== OT.SAND && id !== OT.SILT && !d.plant) { if (press) nag("A shovel only digs sand and silt. Use your pick."); sc.mineP = null; return; }
     if (sel === "pick" && d.tier > effTier()) { if (press || !sc.nagT || performance.now() - sc.nagT > 2000) { sc.nagT = performance.now(); nag(S.tier >= d.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[d.tier].n + " to break " + d.n + "."); } sc.mineP = null; return; }
     if (!sc.mineP || sc.mineP.x !== tx || sc.mineP.y !== ty) sc.mineP = { x: tx, y: ty, p: 0, tick: 0 };
