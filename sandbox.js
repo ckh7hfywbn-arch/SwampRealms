@@ -7483,6 +7483,7 @@
   // FELLING (like Terraria): break a trunk block and every trunk block above it comes down with it, one after the other, as Wood.
   // LEAF DECAY: leaves need a trunk within 5 leaves of them. When the last log holding them goes, they wither away (sticks and
   // saplings fall out) and the vines hanging under them drop too. Leaves you place yourself never decay (S.pleaf).
+  var DESPAWN = 900;   // DESPAWN: an item left on the ground disappears after 15 minutes of play (it blinks for its last 30 seconds)
   var drops = [], DROPMODE = 0, fellQ = [], decayQ = [], ICIMG = {}, dropT = 0;
   function dropIcon(k) { var im = ICIMG[k]; if (!im) { im = ICIMG[k] = new Image(); try { im.src = icon(k); } catch (e) {} } return im; }
   function spawnDrop(k, n, x, y, quiet) {
@@ -7503,6 +7504,7 @@
     var px = p.x, py = p.y - 0.75;
     for (var i = drops.length - 1; i >= 0; i--) {
       var d = drops[i]; d.t += dt; d.ph += dt * 3;
+      if (d.t > DESPAWN && !d.bird) { drops.splice(i, 1); continue; }
       if (Math.abs(d.x - px) > 90) continue;   // far away: frozen where it lies
       if (d.bird) continue;   // being carried
       var dx = px - d.x, dy = py - d.y, dist = Math.sqrt(dx * dx + dy * dy), wet = TILES[get(Math.floor(d.x), Math.floor(d.y))].kind === "water";
@@ -7529,6 +7531,7 @@
     var sz = Math.max(10, ts * 0.58), sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (var i = 0; i < drops.length; i++) {
       var d = drops[i]; if (d.bird) continue; var sx = ox + d.x * ts, sy = oy + d.y * ts; if (sx < -ts || sx > vw + ts || sy < -ts || sy > vh + ts) continue;
+      if (d.t > DESPAWN - 30 && Math.floor(now / (d.t > DESPAWN - 8 ? 90 : 180)) % 2) continue;   // about to vanish: it blinks
       var bob = d.on && !reduce ? Math.sin(d.ph) * ts * 0.05 : 0, im = dropIcon(d.k);
       g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(sx, sy + ts * 0.3, sz * 0.36, sz * 0.1, 0, 0, 6.2832); g.fill();
       if (im.complete && im.naturalWidth) g.drawImage(im, sx - sz / 2, sy - sz / 2 + bob - ts * 0.05, sz, sz);
@@ -7606,7 +7609,7 @@
       spawnDrop(k, n, X, Y); var d = drops[drops.length - 1]; if (d && d.k === k) d.full = 1.2; return;
     }
     var x = tx !== undefined ? Math.floor(tx) + 0.5 : sc.pl.x, y = tx !== undefined ? Math.floor(ty) + 0.5 : sc.pl.y - (sc.sea ? 0.4 : 0.1), L = sc.L;
-    for (var i = 0; i < L.length; i++) if (L[i].k === k && Math.abs(L[i].x - x) < 0.7 && Math.abs(L[i].y - y) < 0.7) { L[i].n += n; L[i].wait = 1.2; return; }
+    for (var i = 0; i < L.length; i++) if (L[i].k === k && Math.abs(L[i].x - x) < 0.7 && Math.abs(L[i].y - y) < 0.7) { L[i].n += n; L[i].wait = 1.2; L[i].age = 0; return; }
     L.push({ k: k, n: n, x: x + (Math.random() - 0.5) * 0.3, y: y + (Math.random() - 0.5) * 0.3, ph: Math.random() * 6, wait: 1.2 });
     if (L.length > 200) L.splice(0, L.length - 200);
   }
@@ -7623,6 +7626,8 @@
     var L = sc.L, pl = sc.pl, live = !menuOpen && !titleOpen && !panelOpen && !packOpen && hp > 0, sz = Math.max(10, ts * 0.55), sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (var i = L.length - 1; i >= 0; i--) {
       var d = L[i]; d.ph += dt * 3; if (d.wait > 0) d.wait -= dt;
+      if (!menuOpen && !titleOpen && !panelOpen && !packOpen) d.age = (d.age || 0) + dt;
+      if (d.age > DESPAWN) { L.splice(i, 1); continue; }
       var dx = pl.x - d.x, dy = (pl.y - (sc.sea ? 0.4 : 0.1)) - d.y, dist = Math.sqrt(dx * dx + dy * dy);
       if (live && !(d.wait > 0) && dist < 1.6) {   // close: it slides to you
         if (dist < 0.55) {
@@ -7632,14 +7637,15 @@
       }
       var sx = ox + d.x * ts, sy = oy + d.y * ts + Math.sin(d.ph) * ts * 0.06;
       if (sx < -ts || sx > vw + ts || sy < -ts || sy > vh + ts) continue;
+      if (d.age > DESPAWN - 30 && Math.floor(now / (d.age > DESPAWN - 8 ? 90 : 180)) % 2) continue;
       g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(sx, oy + d.y * ts + sz * 0.42, sz * 0.34, sz * 0.12, 0, 0, 6.2832); g.fill();
       var im = dropIcon(d.k); if (im.complete && im.naturalWidth) g.drawImage(im, sx - sz / 2, sy - sz / 2, sz, sz);
       if (d.n > 1) { g.font = "900 " + Math.max(9, Math.round(sz * 0.36)) + "px Nunito,sans-serif"; g.textAlign = "right"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; var lb = d.n > 999 ? "999+" : "" + d.n; g.strokeText(lb, sx + sz * 0.55, sy + sz * 0.5); g.fillStyle = "#fff6dc"; g.fillText(lb, sx + sz * 0.55, sy + sz * 0.5); }
     }
     g.imageSmoothingEnabled = sm;
   }
-  function dropsLoad() { drops = []; (Array.isArray(S.gdrop) ? S.gdrop : []).forEach(function (q) { if (q && ITEMS[q[0]] && q[1] > 0 && isFinite(q[2]) && isFinite(q[3])) drops.push({ k: q[0], n: Math.min(9999, q[1] | 0), x: +q[2], y: +q[3], vx: 0, vy: 0, t: 1, on: false, ph: Math.random() * 6 }); }); fellQ = []; decayQ = []; }
-  function dropsSave() { S.gdrop = drops.filter(function (d) { return !d.bird; }).slice(-300).map(function (d) { return [d.k, d.n, +d.x.toFixed(2), +d.y.toFixed(2)]; }); }
+  function dropsLoad() { drops = []; (Array.isArray(S.gdrop) ? S.gdrop : []).forEach(function (q) { if (q && ITEMS[q[0]] && q[1] > 0 && isFinite(q[2]) && isFinite(q[3])) drops.push({ k: q[0], n: Math.min(9999, q[1] | 0), x: +q[2], y: +q[3], vx: 0, vy: 0, t: isFinite(q[4]) ? Math.max(1, +q[4]) : 1, on: false, ph: Math.random() * 6 }); }); fellQ = []; decayQ = []; }
+  function dropsSave() { S.gdrop = drops.filter(function (d) { return !d.bird; }).slice(-300).map(function (d) { return [d.k, d.n, +d.x.toFixed(2), +d.y.toFixed(2), Math.round(d.t)]; }); }
   // ---------- BIRDS: wild songbirds you can tame; yours rides on your shoulder and fetches what you drop ----------
   // Wild birds hop and peck on open ground in the daytime and fly off if you rush at them. Hold any seeds and they stay put:
   // tap one to feed it a seed (3 seeds and it is yours). Your bird (S.bird: kind and name) rides on your shoulder, and whenever
