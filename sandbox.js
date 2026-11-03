@@ -1119,7 +1119,7 @@
       if (d > 0) { var rest = packInto(S.slots, k, d); if (rest > 0) { S.inv[k] -= rest; S.extra[k] = (S.extra[k] || 0) + rest; lost += rest; } }
       if (S.inv[k] <= 0) delete S.inv[k];
     }
-    if (lost) toast("Inventory full! The extra went to Overflow (open your inventory).", "#f2c14e");
+    if (lost) toast("Inventory full! The extra dropped on the ground.", "#f2c14e");   // S.extra is only a buffer now: flushExtra drops it at your feet
   }
   function room(k) { reslot(); var m = stackMax(k), r = 0; S.slots.forEach(function (c) { if (!c) r += m; else if (c.k === k) r += m - c.n; }); return r; }
   function usedSlots() { reslot(); var n = 0; S.slots.forEach(function (c) { if (c) n++; }); return n; }
@@ -1127,7 +1127,7 @@
   function addExtra(k, n) { S.extra[k] = Math.min(99999, (S.extra[k] || 0) + n); }
   function invFull(item) { if (item && room(item) > 0) return false; nag("Inventory full! Press E to make room."); return true; }
   var giveBatch = null;
-  function give(item, n, tx, ty, keep) {   // keep: loot that must never be lost (rewards, enemy drops). What does not fit waits in Overflow
+  function give(item, n, tx, ty, keep) {   // keep: loot that must never be lost (rewards, enemy drops). What does not fit drops on the ground
     if (DROPMODE && tx !== undefined && !cave && !keep) { spawnDrop(item, n, Math.floor(tx), Math.floor(ty)); return n; }   // GROUND DROPS: what a broken block gives lands on the ground
     var fit = Math.min(n, room(item));
     if (fit > 0) {
@@ -1136,9 +1136,8 @@
       if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
       if (tx !== undefined) { if (giveBatch) giveBatch[item] = (giveBatch[item] || 0) + fit; else text(tx + 0.5, ty, "+" + fit + " " + ITEMS[item].n, ITEMS[item].gem || "#f6eedb"); }   // a blast gathers its pickups into one line each
     }
-    if (fit < n) {
-      if (keep) { addExtra(item, n - fit); toast("Inventory full! " + (n - fit) + " " + ITEMS[item].n + " went to Overflow.", "#f2c14e"); }
-      else if (tx !== undefined) { addExtra(item, n - fit); nag("Inventory full! What you dig goes to Overflow (open your inventory)."); }   // MINING WHEN FULL: you can keep digging; nothing is lost
+    if (fit < n) {   // FULL INVENTORY: like Minecraft, what does not fit drops on the ground where it came from (or at your feet) and waits there
+      if (keep || tx !== undefined) { dropAt(item, n - fit, tx, ty); nag("Inventory full! It dropped on the ground. Make room, then walk over it."); }
       else nag("Inventory full! Press E to make room.");
     }
     hbDirty = true; if (panelOpen) renderPanel(); return fit;
@@ -7499,6 +7498,7 @@
   }
   function dropSolid(x, y) { var tx = Math.floor(x), ty = Math.floor(y); if (ty < 0) return false; if (ty >= H) return true; var id = get(tx, ty); return blocks(tx, ty) || (TILES[id].solid && id !== T.LEAVES); }
   function tickDrops(dt) {
+    if (!cave && !HOME && !OCS) flushExtra();
     if (cave || !drops.length) return;
     var px = p.x, py = p.y - 0.75;
     for (var i = drops.length - 1; i >= 0; i--) {
@@ -7586,6 +7586,57 @@
       if (ITEMS.sapling && Math.random() < 0.035) spawnDrop("sapling", 1, d.x, d.y);
       for (var vy = d.y + 1; vy < H - 1 && get(d.x, vy) === T.VINE; vy++) { setT(d.x, vy, T.AIR); if (Math.random() < 0.3) spawnDrop("fiber", 1, d.x, vy); }   // the vines hanging under it fall too
     }
+  }
+  // ---------- GROUND DROPS IN THE MINE, THE HOMESTEAD AND UNDER THE SEA ----------
+  // The surface has its own physics drops (spawnDrop / tickDrops). The top-down scenes keep a simple list on the scene itself:
+  // cave.F.gd (per floor, kept while you are in the Mine), HOME.gd and OCS.gd. Items bob where they lie; walk over one to pick it up
+  // when you have room. dropAt picks the right place; flushExtra empties the old Overflow (S.extra) onto the ground at your feet.
+  function gdScene() {
+    if (HOME) return { L: HOME.gd || (HOME.gd = []), pl: cp };
+    if (cave && cave.F) return { L: cave.F.gd || (cave.F.gd = []), pl: cp };
+    if (OCS && !OCS.sea && OCS.pl) return { L: OCS.gd || (OCS.gd = []), pl: OCS.pl, sea: 1 };
+    return null;
+  }
+  function dropAt(k, n, tx, ty) {
+    if (!ITEMS[k] || !(n > 0)) return;
+    var sc = gdScene();
+    if (!sc) {   // the surface (or sailing: it waits at your feet on land)
+      if (OCS && OCS.sea) { addExtra(k, n); return; }
+      var X = tx !== undefined ? Math.floor(tx) : Math.floor(p.x), Y = ty !== undefined ? Math.floor(ty) : Math.floor(p.y - 1);
+      spawnDrop(k, n, X, Y); var d = drops[drops.length - 1]; if (d && d.k === k) d.full = 1.2; return;
+    }
+    var x = tx !== undefined ? Math.floor(tx) + 0.5 : sc.pl.x, y = tx !== undefined ? Math.floor(ty) + 0.5 : sc.pl.y - (sc.sea ? 0.4 : 0.1), L = sc.L;
+    for (var i = 0; i < L.length; i++) if (L[i].k === k && Math.abs(L[i].x - x) < 0.7 && Math.abs(L[i].y - y) < 0.7) { L[i].n += n; L[i].wait = 1.2; return; }
+    L.push({ k: k, n: n, x: x + (Math.random() - 0.5) * 0.3, y: y + (Math.random() - 0.5) * 0.3, ph: Math.random() * 6, wait: 1.2 });
+    if (L.length > 200) L.splice(0, L.length - 200);
+  }
+  function flushExtra() {   // NO OVERFLOW: anything waiting in the old Overflow drops at your feet
+    if (!S || !S.extra || (OCS && OCS.sea) || trans) return;
+    var ks = Object.keys(S.extra); if (!ks.length) return;
+    ks.forEach(function (k) { var n = S.extra[k] | 0; delete S.extra[k]; if (n > 0) dropAt(k, n); });
+  }
+  var gdLast = 0;
+  function drawSceneDrops(g, now) {   // tick + draw in one: called from the Mine, homestead and dive renderers
+    var dt = gdLast ? Math.min(0.05, (now - gdLast) / 1000) : 0; gdLast = now;
+    flushExtra();
+    var sc = gdScene(); if (!sc || !sc.L.length) return;
+    var L = sc.L, pl = sc.pl, live = !menuOpen && !titleOpen && !panelOpen && !packOpen && hp > 0, sz = Math.max(10, ts * 0.55), sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
+    for (var i = L.length - 1; i >= 0; i--) {
+      var d = L[i]; d.ph += dt * 3; if (d.wait > 0) d.wait -= dt;
+      var dx = pl.x - d.x, dy = (pl.y - (sc.sea ? 0.4 : 0.1)) - d.y, dist = Math.sqrt(dx * dx + dy * dy);
+      if (live && !(d.wait > 0) && dist < 1.6) {   // close: it slides to you
+        if (dist < 0.55) {
+          var got = give(d.k, d.n); if (got > 0) { text(d.x, d.y - 0.6, "+" + got + " " + ITEMS[d.k].n, ITEMS[d.k].gem || "#f6eedb"); if (Math.random() < 0.6) thud(640 + Math.random() * 120, 0.025); }
+          d.n -= got; if (d.n <= 0) { L.splice(i, 1); continue; } d.wait = 1.5;   // still no room: it waits a moment before trying again
+        } else { var pull = Math.min(dist, dt * 7); d.x += dx / dist * pull; d.y += dy / dist * pull; }
+      }
+      var sx = ox + d.x * ts, sy = oy + d.y * ts + Math.sin(d.ph) * ts * 0.06;
+      if (sx < -ts || sx > vw + ts || sy < -ts || sy > vh + ts) continue;
+      g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(sx, oy + d.y * ts + sz * 0.42, sz * 0.34, sz * 0.12, 0, 0, 6.2832); g.fill();
+      var im = dropIcon(d.k); if (im.complete && im.naturalWidth) g.drawImage(im, sx - sz / 2, sy - sz / 2, sz, sz);
+      if (d.n > 1) { g.font = "900 " + Math.max(9, Math.round(sz * 0.36)) + "px Nunito,sans-serif"; g.textAlign = "right"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; var lb = d.n > 999 ? "999+" : "" + d.n; g.strokeText(lb, sx + sz * 0.55, sy + sz * 0.5); g.fillStyle = "#fff6dc"; g.fillText(lb, sx + sz * 0.55, sy + sz * 0.5); }
+    }
+    g.imageSmoothingEnabled = sm;
   }
   function dropsLoad() { drops = []; (Array.isArray(S.gdrop) ? S.gdrop : []).forEach(function (q) { if (q && ITEMS[q[0]] && q[1] > 0 && isFinite(q[2]) && isFinite(q[3])) drops.push({ k: q[0], n: Math.min(9999, q[1] | 0), x: +q[2], y: +q[3], vx: 0, vy: 0, t: 1, on: false, ph: Math.random() * 6 }); }); fellQ = []; decayQ = []; }
   function dropsSave() { S.gdrop = drops.filter(function (d) { return !d.bird; }).slice(-300).map(function (d) { return [d.k, d.n, +d.x.toFixed(2), +d.y.toFixed(2)]; }); }
@@ -13102,7 +13153,7 @@
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawArrows(g, true); drawGuardian(g, now);
+    drawRocks(Y0, Math.min(Y1, prow)); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
     }
@@ -15752,7 +15803,7 @@
     sc.mobs.forEach(function (mb) { ocDrawMob(g, mb, now); if (mb.k === "angler" && !mb.dead) lights.push([mb.x + mb.face * 0.85, mb.y - 0.9, 5, "255,226,122"]); if (mb.k === "jelly" && !mb.dead) lights.push([mb.x, mb.y, 3, "122,240,255"]); if (mb.k === "captain" && !mb.dead) lights.push([mb.x, mb.y, 6, "168,255,240"]); });
     sc.shots.forEach(function (s) { ocDrawShot(g, s, now); });
     // --- you ---
-    ocDrawMe(g, now); ocDrawRod(g, now);
+    drawSceneDrops(g, now); ocDrawMe(g, now); ocDrawRod(g, now);
     drawWaterFx(g);
     // --- bubbles and particles ---
     g.strokeStyle = "rgba(232,251,255,.75)"; g.lineWidth = 1.2; sc.bub.forEach(function (b) { var bx2 = ox + b.x * ts, by2 = oy + b.y * ts, r = Math.max(1.5, b.r * ts); g.beginPath(); g.arc(bx2, by2, r, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(bx2 - r * 0.4, by2 - r * 0.5, Math.max(1, r * 0.4), Math.max(1, r * 0.4)); });
@@ -17406,7 +17457,7 @@
     L.push([CROAKA.y, 12]); L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
     L.sort(function (a, b) { return a[0] - b[0]; });
     var drawE = function (g, e) {
-      if (e[1] === 9) { drawCavePlayer(g, now); return; }
+      if (e[1] === 9) { drawSceneDrops(g, now); drawCavePlayer(g, now); return; }
       if (e[1] === 0) { homeProp(g, e[4], e[2], e[3], T0); return; }
       if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.round(Math.sin(T0 * 1.6 * (HWIND > 1.5 ? 1.6 : 1) + e[2] * 0.7 + e[3]) * 0.8 * HWIND);
         hpShadow(g, sx2 + ts / 2, sy2 + ts * 0.82, ts * 0.32, ts * 0.1, 0.18);
