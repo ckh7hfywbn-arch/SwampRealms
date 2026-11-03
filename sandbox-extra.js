@@ -1011,6 +1011,88 @@
   item("veincharm", "Veinseeker Charm", { ico: VICO, sock: "pick" });
   // CREATURE PACK: drops from the new creatures, and glowing blocks to build with them
   mat("petalsnap", "Snapper Petal", "#ff6aa8"); mat("imphorn", "Imp Horn", "#ff5a2a"); mat("rimecore", "Rime Core", "#9fe8ff"); mat("geodechip", "Geode Chip", "#b08aff");
+  // ---------- OCEAN pack: Brinebog Sea loot, scuba gear and the parts of Old Croaker's boat (art is drawn in sandbox.js, OCI) ----------
+  var OCEAN = { TANKS: ["tank1", "tank2", "tank3", "tank4"], BOAT: ["boat_keel", "boat_hull", "boat_mast", "boat_sail", "boat_rudder", "boat_wheel", "boat_lamp", "boat_anchor", "boat_figure"] };
+  mat("blackpearl", "Black Pearl", "#3a2a55"); mat("coral", "Coral Shard", "#ff7a9a"); mat("seaglass", "Sea Glass", "#58d6c4"); mat("shell", "Conch Shell", "#f2b88a");
+  mat("kelp", "Brine Kelp", "#3f9a4c"); mat("inksac", "Ink Sac", "#3b2a66"); mat("pufferspine", "Puffer Spine", "#f1e2b0"); mat("jellygel", "Jelly Gel", "#7af0ff");
+  mat("eelskin", "Eel Skin", "#2c7a78"); mat("lurebulb", "Lure Bulb", "#ffe27a"); mat("urchinspine", "Urchin Spine", "#5a3a7a"); mat("brass", "Salvaged Brass", "#d9a53a");
+  mat("doubloon", "Swamp Doubloon", "#ffd23f");
+  // ---------- FISH PACK: 50 more fish and water creatures. Each row: [id, name, habitat, rarity, min cm, max cm, when, look, Croako's note]
+  // habitat: swamp (Murkwater water), blossom (Cherry Blossom Vale ponds), cave (any water underground), ice (Frostfen ice), oak (Dark Oakwood ponds),
+  //          shores (Sunbaked Shores lagoons), lava (Ember Bog lava, Ember Rod), sea (off Croaker's Pier). rarity: c common, u uncommon, r rare, l legendary.
+  // when: "" any time, "day", "night" or "rain". look: "shape|body|dark|belly|fin|pattern" (drawn in sandbox.js, OCI).
+  var FISH2 = [
+    ["lilyperch", "Lily Perch", "swamp", "c", 10, 25, "", "fish|#7aa84a|#3f6a2a|#e6e0a8|#c9a52a|stripe", "Hides under lily pads. Polite, for a perch."],
+    ["mudskipper", "Mudskipper", "swamp", "c", 8, 15, "day", "long|#8a6a42|#4a3a22|#c9b48a|#6a5232|spot", "Walks better than it swims. Walks better than Croaker, too."],
+    ["bogcrawdad", "Bog Crawdad", "swamp", "c", 6, 14, "", "crayfish|#b8503a|#6a2a1a|#e8a07a|#8a3a2a|plain", "Pinches first. Asks questions never."],
+    ["swampshrimp", "Swamp Shrimp", "swamp", "c", 3, 7, "", "shrimp|#e8907a|#a85a4a|#ffd0b8|#c8705a|plain", "Tiny, twitchy, delicious."],
+    ["spottedgar", "Spotted Gar", "swamp", "u", 40, 120, "", "pike|#6a7a3a|#3a4a1a|#c9c48a|#4a5a2a|spot", "A nose like a needle and manners to match."],
+    ["marshbass", "Marsh Bass", "swamp", "u", 25, 60, "rain", "fish|#4a7a3a|#24401a|#c8d8a0|#3a5a2a|stripe", "Only bites when it's raining. Sulks the rest of the time."],
+    ["kingcroak", "Croaking Kingfish", "swamp", "l", 60, 140, "night", "tall|#3fae5e|#1c5e34|#f1efb4|#ffd23f|glow", "Croaks like my brother. Looks like my brother. Is NOT my brother."],
+    ["petalkoi", "Petal Koi", "blossom", "c", 20, 45, "", "fish|#fff0f4|#e87aa0|#ffffff|#ff9ac8|spot", "Pink as a blossom and twice as vain."],
+    ["blossomminnow", "Blossom Minnow", "blossom", "c", 3, 8, "", "fish|#ffb0c8|#c86a8a|#fff0f4|#ff8ab0|plain", "So small. So pink. So easily startled."],
+    ["dewguppy", "Dewdrop Guppy", "blossom", "c", 2, 5, "day", "fish|#7ac8ff|#3a7ab8|#e0f4ff|#ff9ac8|glow", "Catches the morning light. Keep it in a cup."],
+    ["pinkaxolotl", "Pink Axolotl", "blossom", "u", 15, 30, "", "axolotl|#ffaec8|#c86a8a|#ffe0ea|#ff6a9a|plain", "Smiles at everything. Even the hook."],
+    ["sakuratrout", "Sakura Trout", "blossom", "u", 25, 50, "", "fish|#c8d8e8|#8a6a8a|#fff0f4|#ff8ab0|spot", "Silver with pink freckles. Tastes like spring."],
+    ["moonkoi", "Moon Koi", "blossom", "r", 30, 60, "night", "fish|#f4f4ff|#a8b0e8|#ffffff|#c8d0ff|glow", "Only rises when the moon is out. Pale as a ghost, twice as lucky."],
+    ["blindcave", "Blind Cavefish", "cave", "c", 6, 14, "", "fish|#e8dcd0|#b8a898|#fff6ee|#d8c8b8|plain", "No eyes. All opinions."],
+    ["glowshrimp", "Glow Shrimp", "cave", "c", 3, 6, "", "shrimp|#7af0ff|#2a9ab8|#e0ffff|#4ee6e0|glow", "Lights your way down. Then gets eaten. Circle of life."],
+    ["caveeel", "Cave Eel", "cave", "u", 40, 90, "", "eel|#7a8288|#3a4248|#c8d0d4|#5a6268|plain", "Slides out of the dark like a bad memory."],
+    ["crystalcrab", "Crystal Crab", "cave", "u", 6, 14, "", "crab|#a8e0ff|#4a8ab8|#e8f8ff|#7ac0ff|glow", "You can see what it had for breakfast. Gravel, mostly."],
+    ["paleolm", "Pale Olm", "cave", "u", 15, 30, "", "axolotl|#f0e0d8|#c8a898|#fff6f0|#e8b0a8|plain", "Lives a hundred years in the dark. Never once said thank you."],
+    ["echofish", "Echo Fish", "cave", "r", 15, 30, "", "tall|#8a78c8|#4a3a88|#d8d0f8|#b8a8ff|stripe", "Sing to it and it sings back. Badly."],
+    ["deeplurker", "Deep Lurker", "cave", "l", 50, 120, "", "angler|#3a2a55|#1a1030|#6a5a8a|#ffe27a|glow", "Its lure looks like a lantern. That's the last thing most things see."],
+    ["snowsmelt", "Snow Smelt", "ice", "c", 8, 16, "", "fish|#e8f4ff|#a8c0d8|#ffffff|#c8e0f0|plain", "Melts in your mouth. Freezes your teeth."],
+    ["frostcrab", "Frost Crab", "ice", "c", 8, 18, "", "crab|#bfe0f0|#5a8aa8|#ffffff|#8ac0e0|plain", "Wears a little icicle on each claw. Fashionable."],
+    ["glacierchar", "Glacier Char", "ice", "u", 30, 70, "", "fish|#6a8aa8|#3a5a7a|#ff8a5a|#ff6a3a|spot", "A red belly under all that ice. Warmer than it looks."],
+    ["shiverfin", "Shiverfin", "ice", "u", 15, 30, "", "tall|#9ad0f0|#4a8ab8|#e8f8ff|#c8f0ff|stripe", "Shakes the whole time you hold it. Me too."],
+    ["auroraeel", "Aurora Eel", "ice", "r", 60, 140, "night", "eel|#4ee6b4|#2a8a8a|#c8a8ff|#a86aff|glow", "Comes up under the northern lights, wearing them."],
+    ["acornbream", "Acorn Bream", "oak", "c", 15, 35, "", "tall|#a8743a|#6a4426|#e8c88a|#8a5a32|plain", "Brown, round and nutty. Squirrels hate it."],
+    ["willowfin", "Willowfin", "oak", "c", 10, 24, "", "fish|#7aa86a|#3a6a3a|#d8e8b8|#9ac88a|stripe", "Long trailing fins, like a willow in a breeze."],
+    ["rootcrawdad", "Root Crawdad", "oak", "c", 6, 14, "", "crayfish|#5a4a3a|#2a2018|#a89078|#3a2a1a|plain", "Lives in the roots. Dark, grumpy and crunchy."],
+    ["shadowcarp", "Shadow Carp", "oak", "u", 30, 70, "", "fish|#3a3a4a|#14141c|#7a7a8a|#2a2a38|plain", "You only see it when it's already on the hook."],
+    ["owlcatfish", "Owl-eyed Catfish", "oak", "r", 40, 90, "night", "catfish|#6a5a4a|#3a2a1a|#d8c8a8|#ffd23f|spot", "Two huge yellow eyes. It stares. I stare back. We have an understanding."],
+    ["sunbaker", "Sunbaked Sunfish", "shores", "c", 10, 30, "day", "tall|#ffb04a|#c86a1a|#ffe8a0|#ff8a3a|stripe", "Lies in the warm shallows all afternoon. Living the dream."],
+    ["sandshrimp", "Sand Shrimp", "shores", "c", 3, 7, "", "shrimp|#e8d0a0|#a8905a|#fff4d8|#d8b880|plain", "Looks like sand. Tastes like sand. Mostly sand."],
+    ["clownbog", "Bogclown", "shores", "c", 6, 12, "", "fish|#ff8a3a|#14181c|#ffffff|#ffffff|band", "Orange, stripy and always grinning. Suspicious."],
+    ["lagoonray", "Lagoon Ray", "shores", "u", 30, 80, "", "ray|#d8b880|#8a6a3a|#fff4d8|#a8885a|spot", "Flaps along the bottom like a pancake with ambitions."],
+    ["sunnyhorse", "Sunny Seahorse", "shores", "u", 8, 16, "", "seahorse|#ffd23f|#c8961a|#fff6c0|#ff9a3a|plain", "Holds on to your line with its tail. Won't let go."],
+    ["coconutcrab", "Coconut Crab", "shores", "r", 20, 40, "", "crab|#8a5a32|#4a2a12|#d8a870|#6a4426|plain", "Strong enough to crack a coconut. Or a thumb."],
+    ["cindercrab", "Cinder Crab", "lava", "c", 8, 16, "", "crab|#3a2a2a|#14080a|#ff8a3d|#ff5a2a|glow", "Its shell is still glowing. Don't sit on it."],
+    ["blazefin", "Blazefin", "lava", "c", 15, 30, "", "fish|#ff6a2a|#a82a0a|#ffd27a|#ffb13b|glow", "Fins like candle flames. Smells like toast."],
+    ["slagsnapper", "Slag Snapper", "lava", "u", 20, 45, "", "fish|#5a4a4a|#2a1a1a|#a88a7a|#ff8a3d|spot", "Crusted in slag, snaps at everything, cools down for nobody."],
+    ["obsidianray", "Obsidian Ray", "lava", "r", 40, 90, "", "ray|#1a1420|#000000|#4a3a5a|#ff6a2a|glow", "Black as a volcano's heart. Glides through lava like silk."],
+    ["phoenixkoi", "Phoenix Koi", "lava", "l", 30, 70, "night", "fish|#ffb13b|#ff3a1a|#fff2b0|#ffe27a|glow", "Came back to life on the bank. Twice. Then it winked at me."],
+    ["pierbream", "Pier Bream", "sea", "c", 15, 35, "", "tall|#a8b8c8|#5a6a7a|#e8f0f4|#7a8a9a|plain", "Hangs around the pier posts like it pays rent."],
+    ["bogsardine", "Bog Sardine", "sea", "c", 6, 14, "", "fish|#c8d8e0|#4a6a8a|#ffffff|#7a9ab8|stripe", "Comes in a school of thousands. You got one. Well done."],
+    ["puffling", "Puffling", "sea", "c", 8, 16, "", "puffer|#e8d870|#a8a030|#fff8c0|#c8b850|spot", "Puffs up when you catch it. Puffs up when you look at it. Just puffs."],
+    ["sunsetstar", "Sunset Starfish", "sea", "c", 8, 20, "", "star|#ff8a5a|#c84a2a|#ffd0a0|#ff6a3a|spot", "Hangs on to the line with all five arms. Very determined."],
+    ["grumpflounder", "Grumpy Flounder", "sea", "c", 20, 40, "", "flat|#a8906a|#5a4a32|#e8d8b8|#7a6a4a|spot", "Both eyes on one side of its face. Both of them glaring."],
+    ["inkysquid", "Inky Squid", "sea", "u", 20, 50, "", "squid|#c8607a|#7a2a4a|#ffc8d8|#a84a6a|spot", "Inks your boots the moment it lands. Every. Single. Time."],
+    ["moonjelly", "Moon Jelly", "sea", "u", 10, 30, "night", "jelly|#c8e8ff|#7aa8d8|#ffffff|#a8d0ff|glow", "Comes up to look at the moon. Go gently with it."],
+    ["spinylobster", "Spiny Lobster", "sea", "r", 25, 50, "", "crayfish|#d8502a|#7a1a0a|#ffb08a|#a83a1a|spot", "All spikes and no manners. Makes a fine supper."],
+    ["bogmarlin", "Bog Marlin", "sea", "l", 120, 300, "", "marlin|#3a6ab8|#1a2a5a|#d8e8ff|#2a4a8a|stripe", "Took me three days, two rods and both my boots. Good luck."]
+  ];
+  FISH2.forEach(function (f) { var big = f[5], fv = f[3] === "l" ? [26, 18] : big >= 80 ? [16, 6] : big >= 40 ? [12, 4] : big >= 15 ? [9, 2] : [5, 1]; food(f[0], f[1], fv[0], fv[1]); });
+  item("fishlog", "Croako's Fishing Log", { gem: "#7a4a26", book: 1, d: "A battered leather book from Croako. Every fish you catch is written in it. Pick it on your hotbar to read it." });
+  food("brinemackerel", "Brine Mackerel", 9, 2); food("kelpsnapper", "Kelp Snapper", 12, 4); food("goldgilly", "Golden Gilly", 24, 18); food("piersushi", "Pier Sushi", 42, 14, 1);   // fished off Croaker's Pier
+  item("kelpwrap", "Kelp Wrap", { food: 28, gem: "#3f9a4c", cooked: 1 }); item("seastew", "Bog Sea Stew", { food: 60, gem: "#ff9a5a", cooked: 1 });
+  item("scubasuit", "Frogskin Scuba Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Safe to 45 m (20 m without it). Air Tanks give you more air." });
+  item("tank1", "Reed Air Tank", { gem: "#7fbf6a", d: "+45 seconds of air." });
+  item("tank2", "Brass Air Tank", { gem: "#d9a53a", d: "+90 seconds of air." });
+  item("tank3", "Pearl Air Tank", { gem: "#f4e6ff", d: "+160 seconds of air." });
+  item("tank4", "Deepglass Air Tank", { gem: "#7af0ff", d: "+260 seconds of air." });
+  item("suit2", "Brassback Diving Suit", { gem: "#d9a53a", d: "A riveted brass helmet over a tough eelskin suit. Holds out the pressure to 85 m." });
+  item("suit3", "Pearlplate Deep Suit", { gem: "#f4e6ff", d: "Pearl-plated and lined with urchin spines. Safe to 125 m, and you breathe slower (+20 s of air)." });
+  item("suit4", "Gatorhide Abyss Suit", { gem: "#7af0ff", d: "Old gator hide, a glowing lure on the helmet and black pearls in the seams. Safe all the way to the bottom of the trench." });
+  item("flippers", "Frog Flippers", { gem: "#4ee6b4", d: "Webbed flippers: you swim 30% faster." });
+  item("divelamp", "Dive Lantern", { gem: "#ffd23f", d: "A sealed glowing lantern that lights up the deep around you." });
+  item("boat_keel", "Gator-Bone Keel", { gem: "#c9b28a", boatpart: 1 }); item("boat_hull", "Hull Planks", { gem: "#9a6a3a", boatpart: 1 });
+  item("boat_mast", "Cypress Mast", { gem: "#8a5a32", boatpart: 1 }); item("boat_sail", "Lily-Pad Sail", { gem: "#6aa347", boatpart: 1 });
+  item("boat_rudder", "Rudder", { gem: "#7a5a3a", boatpart: 1 }); item("boat_wheel", "Ship's Wheel", { gem: "#c98c4f", boatpart: 1 });
+  item("boat_lamp", "Frog-Eye Bow Lantern", { gem: "#ffd23f", boatpart: 1 }); item("boat_anchor", "Iron Anchor", { gem: "#8e969b", boatpart: 1 });
+  item("boat_figure", "Frog Figurehead", { gem: "#4ee6b4", boatpart: 1 });
+
   block("geodeblock", "Geode Block", "#4a3a66", "#c8a8ff", 1.2, null, 7, ["176,130,255", 2.2, 0.2]);
   block("rimeblock", "Rimeglass Block", "#9fd0ee", "#e8f8ff", 0.9, null, 8, ["159,232,255", 2.2, 0.2]);
   block("impbrick", "Imp Brick", "#8a2a1a", "#ff8a3d", 1.4, null, 6, ["255,130,50", 2.2, 0.18]);
@@ -1024,6 +1106,23 @@
   R("x_rimeblock", "Rimeglass Block (2)", { rimeblock: 2 }, { rimecore: 1, glass: 1 }, { d: "A pale blue glowing block. Rime Cores drop from Rime Brutes in Frostfen." });
   R("x_impbrick", "Imp Brick (2)", { impbrick: 2 }, { imphorn: 1, cinder: 1 }, { d: "A hot red brick with an ember glow. Imp Horns drop from Cinder Imps in Ember Bog." });
   R("x_bloomstone", "Bloomstone (2)", { bloomstone: 2 }, { petalsnap: 2, stone: 1 }, { d: "A pink glowing block. Snapper Petals drop from Snapper Lilies in Murkwater." });
+  // ocean pack
+  R("x_scubasuit", "Frogskin Scuba Suit", { scubasuit: 1 }, { leather: 6, kelp: 8, glass: 2, pearl: 1 }, { bench: true, d: "Dive below the shallows. A wetsuit and mask in one. Kelp grows in the Brinebog Sea." });
+  R("x_suit2", "Brassback Diving Suit", { suit2: 1 }, { scubasuit: 1, brass: 8, ironingot: 6, glass: 2, eelskin: 3 }, { bench: true, d: "Upgrades your Scuba Suit. Safe to 85 m." });
+  R("x_suit3", "Pearlplate Deep Suit", { suit3: 1 }, { suit2: 1, pearl: 8, seaglass: 8, urchinspine: 6, brass: 6 }, { bench: true, d: "Upgrades your Brassback suit. Safe to 125 m." });
+  R("x_suit4", "Gatorhide Abyss Suit", { suit4: 1 }, { suit3: 1, blackpearl: 3, lurebulb: 2, doubloon: 20, jellygel: 6, eelskin: 6 }, { bench: true, d: "Upgrades your Pearlplate suit. Safe all the way down." });
+  R("x_tank1", "Reed Air Tank", { tank1: 1 }, { fiber: 8, clay: 4, glass: 1, kelp: 2 }, { bench: true, d: "+45 s of air." });
+  R("x_tank2", "Brass Air Tank", { tank2: 1 }, { ironingot: 6, brass: 4, glass: 2, kelp: 3 }, { bench: true, d: "+90 s of air." });
+  R("x_tank3", "Pearl Air Tank", { tank3: 1 }, { ironingot: 8, pearl: 6, seaglass: 6, brass: 6 }, { bench: true, d: "+160 s of air." });
+  R("x_tank4", "Deepglass Air Tank", { tank4: 1 }, { ironingot: 10, blackpearl: 2, seaglass: 10, doubloon: 12, jellygel: 4 }, { bench: true, d: "+260 s of air." });
+  R("x_flippers", "Frog Flippers", { flippers: 1 }, { leather: 3, kelp: 4, eelskin: 2 }, { bench: true, d: "Swim 30% faster." });
+  R("x_divelamp", "Dive Lantern", { divelamp: 1 }, { glass: 2, jellygel: 2, copperwire: 1, lampoil: 1 }, { bench: true, d: "Lights the deep around you." });
+  R("x_boat_sail", "Lily-Pad Sail", { boat_sail: 1 }, { canvas: 6, fiber: 6, kelp: 4 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
+  R("x_boat_lamp", "Frog-Eye Bow Lantern", { boat_lamp: 1 }, { glass: 2, copperwire: 2, lampoil: 1 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
+  R("x_boat_anchor", "Iron Anchor", { boat_anchor: 1 }, { ironingot: 6, rope: 1 }, { bench: true, d: "A boat part. Fit it at the end of Croaker's Pier." });
+  R("x_kelpwrap", "Kelp Wrap", { kelpwrap: 2 }, { kelp: 2, fiber: 1 }, { d: "A chewy snack. Restores hunger." });
+  R("x_piersushi", "Pier Sushi", { piersushi: 2 }, { brinemackerel: 1, kelp: 1 }, { stn: "cook", d: "Brine Mackerel rolled in kelp. Fills 42 hunger and heals 14." });
+  R("x_seastew", "Bog Sea Stew", { seastew: 1 }, { kelp: 2, shell: 1, bogminnow: 2 }, { bench: true, d: "A hearty stew from the Brinebog Sea." });
   R("x_garage", "Garage", { garage: 1 }, { planks: 24, stone: 12, ironingot: 4, glass: 2 }, { bench: true, d: "A 2-wide, 2-tall garage you place like a door. Walk up to it and Enter: your old motorcycle is waiting inside, stripped down to nothing." });
   R("x_moto_seat", "Lily-Pad Seat", { moto_seat: 1 }, { leather: 2, marshlily: 2, canvas: 1 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
   R("x_moto_chain", "Bronze Drive Chain", { moto_chain: 1 }, { ironingot: 3, gear: 2 }, { bench: true, d: "A motorcycle part. Bolt it onto the bike in your Garage." });
@@ -1526,7 +1625,123 @@
   // a few of the new finds turn up in cave chests and pots too
   [["silvercoin", 1, 4, 3, 0], ["goldcoin", 1, 2, 2, 1], ["pearl", 1, 1, 1, 1], ["oldbook", 1, 1, 2, 0], ["sealedletter", 1, 1, 2, 0], ["nails", 2, 6, 2, 0], ["hinge", 1, 2, 1, 0], ["bandage", 1, 2, 2, 0], ["lampoil", 1, 2, 1, 0], ["goldbar", 1, 1, 1, 2], ["fireopal", 1, 1, 1, 2]].forEach(function (e) { if (ITEMS[e[0]]) LOOT_ALL.push(e); });
   // Old Croaker's prices: [how many, tokens]
-  var VALUE = { silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
-  var api = { MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
+  var VALUE = { doubloon: [4, 1], blackpearl: [1, 4], silvercoin: [3, 1], goldcoin: [1, 1], ancientcoin: [2, 1], pearl: [1, 2], silverring: [1, 2], ivorycomb: [1, 1], oldcompass: [1, 2], pocketwatch: [1, 3], ambernecklace: [1, 3], frogbrooch: [1, 3], heartlocket: [1, 3], jadecharm: [1, 3], fireopal: [1, 4], goldbar: [1, 5] };
+  // ---------- HOMESTEAD (farming moved onto your own farm, entered through a Farm Gate). Added LAST so no older tile ids move. ----------
+  // New crops (art drawn by cropArt, with new looks), their seeds and produce, the Farm Gate block, and the shipping/seed prices (silver coins).
+  var HCROPS = {
+    reedcorn: { n: "Reedcorn", b: -1, t: 40, yld: [2, 3], sd: [1, 2], leaf: "#5a9a3a", leaf2: "#9ad05a", fruit: "#ffd23f", fruit2: "#c8961a", look: "tall", food: [10, 2] },
+    bogbean: { n: "Bog Beans", b: -1, t: 36, yld: [3, 5], sd: [1, 2], leaf: "#3f8a3a", leaf2: "#7fd06a", fruit: "#6a9a2a", fruit2: "#a8d05a", look: "vine", food: [6, 1], pn: "bogbeans" },
+    lilyleek: { n: "Lily Leek", b: -1, t: 30, yld: [2, 3], sd: [1, 2], leaf: "#4aa86a", leaf2: "#9ae0b0", fruit: "#f6f2e0", fruit2: "#c8d8a0", look: "leek", food: [7, 2] },
+    marshonion: { n: "Marsh Onion", b: -1, t: 34, yld: [2, 3], sd: [1, 2], leaf: "#5aa84a", leaf2: "#a8d878", fruit: "#c86a8a", fruit2: "#8a3a5a", look: "bulb", food: [6, 2] },
+    mudmelon: { n: "Mud Melon", b: -1, t: 70, yld: [1, 1], sd: [1, 3], leaf: "#3a7a3a", leaf2: "#6ab85a", fruit: "#5a8a3a", fruit2: "#c8e8a0", look: "big", food: [24, 8] },
+    croakpumpkin: { n: "Croakin' Pumpkin", b: -1, t: 80, yld: [1, 1], sd: [2, 3], leaf: "#3a7a3a", leaf2: "#6ab85a", fruit: "#ff8a2a", fruit2: "#c85a10", look: "pumpkin", food: [28, 10] }
+  };
+  function cropArt2(C, st) {   // the new looks; stages 1-2 are sprouts like the others
+    var base = cropArt(C, st > 2 ? 3 : st);
+    return function (rect) {
+      if (st <= 2) { base(rect); return; } var L = C.leaf, L2 = C.leaf2, F = C.fruit, F2 = C.fruit2;
+      if (C.look === "tall") { [5, 8, 11].forEach(function (x) { rect(x, 1, 2, 15, L); rect(x - 2, 6, 2, 1, L2); rect(x + 2, 9, 2, 1, L2); }); if (st === 4) [5, 11].forEach(function (x) { rect(x - 1, 4, 3, 6, F); rect(x - 1, 4, 1, 6, F2); rect(x, 2, 1, 2, "#c8a870"); }); }
+      else if (C.look === "vine") { rect(3, 1, 1, 15, "#8a6a3a"); rect(12, 1, 1, 15, "#8a6a3a"); rect(3, 1, 10, 1, "#8a6a3a"); for (var y = 2; y < 15; y += 3) { rect(4 + (y % 2), y, 8, 2, L); rect(5, y + 1, 3, 1, L2); } if (st === 4) [[5, 4], [9, 7], [6, 10], [10, 12]].forEach(function (q) { rect(q[0], q[1], 1, 4, F); rect(q[0] + 1, q[1] + 1, 1, 3, F2); }); }
+      else if (C.look === "leek") { [4, 7, 10].forEach(function (x) { rect(x, 3, 2, 8, L); rect(x - 1, 1, 1, 4, L2); rect(x + 2, 2, 1, 3, L2); if (st === 4) { rect(x, 10, 2, 6, F); rect(x, 15, 2, 1, F2); } }); }
+      else if (C.look === "bulb") { [4, 10].forEach(function (x) { rect(x + 1, 3, 1, 8, L); rect(x - 1, 4, 1, 6, L2); rect(x + 3, 5, 1, 5, L2); if (st === 4) { rect(x - 1, 11, 5, 5, F); rect(x, 10, 3, 1, F); rect(x - 1, 11, 1, 5, F2); rect(x + 1, 15, 1, 1, "#e8d8c8"); } }); }
+      else if (C.look === "big" || C.look === "pumpkin") { rect(1, 9, 5, 3, L); rect(10, 8, 5, 3, L2); rect(3, 6, 3, 3, L2); rect(11, 5, 3, 3, L); rect(7, 5, 1, 4, "#5a7a2a");
+        if (st === 4) { rect(3, 9, 10, 7, F); rect(2, 10, 12, 5, F); for (var k = 0; k < 4; k++) rect(4 + k * 3, 9, 1, 7, F2); rect(7, 7, 2, 2, "#5a7a2a");
+          if (C.look === "pumpkin") { rect(5, 11, 2, 2, "#ffe27a"); rect(10, 11, 2, 2, "#ffe27a"); rect(5, 11, 1, 1, "#3a1a0a"); rect(11, 11, 1, 1, "#3a1a0a"); rect(6, 14, 5, 1, "#3a1a0a"); } }
+        else rect(6, 8, 4, 3, L2); }
+    };
+  }
+  Object.keys(HCROPS).forEach(function (k) {
+    var C = HCROPS[k]; C.tiles = []; C.home = 1; CROPS[k] = C;
+    for (var st = 1; st <= 4; st++) { var id = tile("X_crop_" + k + st, C.n + (st === 4 ? " (ripe)" : " (growing)"), "#000", st === 4 ? C.fruit : C.leaf2, 0.05, 0, null, false, 0, "crop_" + k + st, { crop: k, stage: st, sway: 1 }); ART["crop_" + k + st] = cropArt2(C, st); C.tiles.push(id); }
+    var pk = C.pn || k; C.produce = pk; food(pk, C.n, C.food[0], C.food[1]); SEEDS[k] = "seed_" + k;
+    item("seed_" + k, C.n + " Seeds", { tile: C.tiles[0], seed: k });
+  });
+  // FIRST NIGHT: a Sleeping Bag you make by hand (sleep in it like a bed: skips the night, heals you, sets your respawn), and the Campfire
+  // can now be made by hand too, so a first camp needs no Workbench.
+  var SBAG = tile("X_sleepbag", "Sleeping Bag", "#000", "#5f9a4a", 0.3, 0, "sleepbag", false, 0, "sleepbag", { small: 1 });
+  ART.sleepbag = function (rect) {   // side view: a rolled-out green bag with a striped flap, a pillow at the head end
+    rect(1, 12, 14, 4, "#3f6e34"); rect(1, 11, 14, 1, "#5f9a4a"); rect(1, 15, 14, 1, "#2a4a22");
+    rect(6, 10, 9, 2, "#6faa56"); rect(6, 10, 9, 1, "#8fc96e"); rect(8, 11, 1, 3, "#2a4a22", 0.6); rect(11, 11, 1, 3, "#2a4a22", 0.6);
+    rect(1, 9, 5, 3, "#e9dcc0"); rect(1, 9, 5, 1, "#fff4dc"); rect(5, 10, 1, 2, "#b9a888");
+    rect(13, 12, 2, 3, "#c9a24a"); rect(13, 13, 2, 1, "#8a6a28");
+  };
+  item("sleepbag", "Sleeping Bag", { tile: SBAG, d: "Roll it out by your campfire. At night, stand next to it and tap Sleep (or press F): you wake at dawn healed, and it becomes your respawn point." });
+  R("x_sleepbag", "Sleeping Bag", { sleepbag: 1 }, { fiber: 8, stick: 2 }, { d: "Somewhere to sleep through your first night. Works like a bed: skips the night, heals you and sets your respawn." });
+  R("x_campfire", "Campfire", { campfire: 1 }, { wood: 4, pebble: 3 }, { d: "A crackling fire that lights up your camp. Place it on the ground; creatures keep their distance from the light." });
+  var FGATE = tile("X_farmgate", "Farm Gate", "#000", "#8a5a32", 0.6, 0, "farmgate", false, 0, "farmgate");
+  ART.farmgate = function (rect) {   // two posts, a crossbar, a little green sign with a sprout on it
+    rect(2, 3, 2, 13, "#5a3a1e"); rect(12, 3, 2, 13, "#5a3a1e"); rect(2, 3, 1, 13, "#7a5230"); rect(12, 3, 1, 13, "#7a5230");
+    rect(1, 2, 14, 2, "#8a5a32"); rect(1, 2, 14, 1, "#a8743a"); rect(4, 9, 8, 1, "#8a5a32"); rect(4, 12, 8, 1, "#8a5a32");
+    rect(5, 4, 6, 4, "#2f7a3a"); rect(5, 4, 6, 1, "#4aa84a"); rect(7, 5, 2, 2, "#ffe27a"); rect(8, 4, 1, 1, "#7fd06a");
+  };
+  item("farmgate", "Farm Gate", { tile: FGATE, d: "Place it anywhere and step through to your own homestead, where all your farming happens. Every player has their own." });
+  R("x_farmgate", "Farm Gate", { farmgate: 1 }, { planks: 6, fiber: 4, stick: 4 }, { bench: true, d: "The way into your homestead: your own farm to till, water, plant and harvest." });
+  var HOMEFARM = { ship: { carrot: 0.5, potato: 0.6, pepper: 1, frostberry: 1.2, reedcorn: 0.8, bogbeans: 0.7, lilyleek: 0.5, marshonion: 0.5, mudmelon: 3, croakpumpkin: 4, roastcarrot: 1.2, bakedpotato: 1.4 },
+    seeds: [["seed_carrot", 1], ["seed_potato", 1], ["seed_lilyleek", 1], ["seed_marshonion", 1], ["seed_bogbean", 2], ["seed_reedcorn", 2], ["seed_pepper", 2], ["seed_frost", 3], ["seed_mudmelon", 4], ["seed_croakpumpkin", 5]] };
+  // ---------- HOMESTEAD stage 2: paddy crops (grow in flooded paddies), moon crops (grow only at night), prize quality, compost ----------
+  var HCROPS2 = {
+    bogrice: { n: "Bog Rice", b: -1, t: 34, yld: [3, 5], sd: [1, 2], leaf: "#6aa84a", leaf2: "#b8e07a", fruit: "#f0e0a0", fruit2: "#c8b070", look: "rice", food: [8, 2], pn: "bogrice", wat: 1 },
+    lotus: { n: "Lily Lotus", b: -1, t: 52, yld: [1, 2], sd: [1, 2], leaf: "#3a8a4a", leaf2: "#6ac87a", fruit: "#ff9ad0", fruit2: "#ffe0f0", look: "lotus", food: [12, 6], pn: "lotusroot", pnn: "Lotus Root", wat: 1 },
+    moonpetal: { n: "Moonpetal", b: -1, t: 45, yld: [1, 2], sd: [1, 2], leaf: "#3a5a7a", leaf2: "#7aa8d0", fruit: "#d8ecff", fruit2: "#8ad8ff", look: "petal", food: [6, 8], moon: 1 },
+    glowgourd: { n: "Glowgourd", b: -1, t: 60, yld: [1, 1], sd: [1, 2], leaf: "#2f6a4a", leaf2: "#5ab88a", fruit: "#7af0c8", fruit2: "#e8fff4", look: "gourd", food: [20, 10], moon: 1 }
+  };
+  function cropArt3(C, st) {
+    var base = cropArt(C, st > 2 ? 3 : st);
+    return function (rect) {
+      var L = C.leaf, L2 = C.leaf2, F = C.fruit, F2 = C.fruit2;
+      if (C.look === "rice") { var n = st === 1 ? 2 : st === 2 ? 3 : 5; for (var i = 0; i < n; i++) { var x = 3 + i * 2 + (i % 2), top = st === 1 ? 11 : st === 2 ? 7 : 3; rect(x, top, 1, 16 - top, i % 2 ? L : L2); if (st >= 3) { rect(x - 1, top + 2, 1, 3, L2); } if (st === 4) { rect(x + 1, top, 1, 4, F); rect(x + 1, top + 1, 1, 1, F2); rect(x, top - 1, 1, 2, F); } } return; }
+      if (C.look === "lotus") { rect(2, 11, 6, 3, L); rect(3, 10, 4, 1, L2); rect(9, 12, 5, 2, L); rect(10, 11, 3, 1, L2); if (st === 1) return; rect(7, 6, 1, 6, "#3a6a3a"); if (st === 2) { rect(6, 5, 3, 2, L2); return; } rect(5, 4, 5, 3, st === 4 ? F : L2); if (st === 4) { rect(4, 3, 2, 2, F); rect(9, 3, 2, 2, F); rect(6, 2, 3, 2, F2); rect(7, 4, 1, 1, "#ffe27a"); } return; }
+      if (C.look === "petal") { if (st <= 2) { base(rect); return; } rect(7, 6, 2, 10, L); rect(4, 9, 3, 2, L2); rect(9, 10, 3, 2, L2); if (st === 3) { rect(6, 3, 4, 3, L2); return; } rect(5, 2, 6, 5, F); rect(4, 3, 8, 3, F); rect(7, 1, 2, 7, F); rect(7, 4, 2, 1, F2); rect(6, 3, 1, 1, "#ffffff"); rect(9, 5, 1, 1, "#ffffff"); return; }
+      if (C.look === "gourd") { if (st <= 2) { base(rect); return; } rect(1, 10, 5, 3, L); rect(10, 9, 5, 3, L2); rect(7, 4, 1, 6, "#2f5a3a"); rect(5, 6, 3, 2, L2); if (st === 3) { rect(6, 10, 4, 3, L2); return; } rect(5, 8, 6, 3, F); rect(4, 11, 8, 5, F); rect(5, 9, 2, 2, F2); rect(5, 12, 2, 2, F2); rect(10, 13, 1, 2, "#3aa888"); rect(7, 7, 2, 1, "#2f5a3a"); return; }
+      base(rect);
+    };
+  }
+  Object.keys(HCROPS2).forEach(function (k) {
+    var C = HCROPS2[k]; C.tiles = []; C.home = 1; CROPS[k] = C; HCROPS[k] = C;
+    for (var st = 1; st <= 4; st++) { var id = tile("X_crop_" + k + st, C.n + (st === 4 ? " (ripe)" : " (growing)"), "#000", st === 4 ? C.fruit : C.leaf2, 0.05, 0, null, false, 0, "crop_" + k + st, { crop: k, stage: st, sway: 1 }); ART["crop_" + k + st] = cropArt3(C, st); C.tiles.push(id); }
+    var pk = C.pn || k; C.produce = pk; food(pk, C.pnn || C.n, C.food[0], C.food[1]); SEEDS[k] = "seed_" + k;
+    item("seed_" + k, (k === "bogrice" ? "Bog Rice" : C.n) + (k === "bogrice" ? " Seedlings" : k === "lotus" ? " Bulbs" : " Seeds"), { tile: C.tiles[0], seed: k, d: C.wat ? "Plant in a flooded paddy on your homestead." : C.moon ? "Moon crop: it only grows at night, but fast." : "" });
+  });
+  item("compost", "Bog Compost", { d: "Work it into tilled soil on your homestead. Crops grown on compost turn out Fine or Prize far more often." });
+  R("x_compost", "Bog Compost (4)", { compost: 4 }, { leaves: 4, fiber: 2 }, { d: "Rotted leaves and fiber. Spread it on tilled soil for better crops." });
+  // PRIZE QUALITY: every crop can come out Fine (silver star) or Prize (gold star): more filling, and the cart pays much more for them
+  Object.keys(CROPS).forEach(function (k) {
+    var pk = CROPS[k].produce, I = ITEMS[pk]; if (!I || ITEMS[pk + "_s"]) return;
+    item(pk + "_s", "Fine " + I.n, { food: Math.round((I.food || 6) * 1.25), heal: (I.heal || 0) + 1, cooked: 0, qb: pk, q: 1 });
+    item(pk + "_g", "Prize " + I.n, { food: Math.round((I.food || 6) * 1.5), heal: (I.heal || 0) + 3, cooked: 0, qb: pk, q: 2 });
+  });
+  Object.assign(HOMEFARM.ship, { bogrice: 0.6, lotusroot: 3, moonpetal: 3, glowgourd: 6 });
+  Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, v = HOMEFARM.ship[pk]; if (v) { HOMEFARM.ship[pk + "_s"] = Math.round(v * 1.5 * 10) / 10; HOMEFARM.ship[pk + "_g"] = v * 2; } });
+  HOMEFARM.seeds.push(["seed_bogrice", 3], ["seed_lotus", 4], ["seed_moonpetal", 5], ["seed_glowgourd", 6], ["compost", 1]);
+  HOMEFARM.giant = { mudmelon: 1, croakpumpkin: 1, glowgourd: 1 };
+  // ---------- HOMESTEAD stage 3: machines, animal buildings, upgrades ----------
+  item("picklekeg", "Pickle Keg", { tile: T.BARREL, d: "Place it on your homestead. Put a crop in and it comes out as Preserves, worth three times as much at the crate." });
+  item("seedmaker", "Seed Maker", { tile: T.POT, d: "Place it on your homestead. Put a crop in and get 2 or 3 of its seeds back." });
+  item("compostbin", "Compost Bin", { tile: T.BALE, d: "Place it on your homestead. Fill it with Fiber or Leaves and it makes Bog Compost." });
+  item("duckcoop", "Duck Coop", { tile: T.THATCH, d: "A 3 x 2 coop for your homestead. Houses Bog Ducks (buy them at the Seed Stall)." });
+  item("mudbarn", "Mud Barn", { tile: T.PLANKS, d: "A 4 x 3 barn for your homestead. Houses Mud Pigs and Frost Goats (buy them at the Seed Stall)." });
+  R("x_picklekeg", "Pickle Keg", { picklekeg: 1 }, { planks: 8, bogiron: 1 }, { bench: true, d: "Turns crops into Preserves." });
+  R("x_seedmaker", "Seed Maker", { seedmaker: 1 }, { clay: 6, stone: 4 }, { bench: true, d: "Turns a crop into 2 or 3 of its seeds." });
+  R("x_compostbin", "Compost Bin", { compostbin: 1 }, { planks: 4, fiber: 6 }, { bench: true, d: "Turns Fiber or Leaves into Bog Compost." });
+  R("x_duckcoop", "Duck Coop", { duckcoop: 1 }, { planks: 20, fiber: 10, stone: 6 }, { bench: true, d: "A home for up to 4 Bog Ducks on your homestead." });
+  R("x_mudbarn", "Mud Barn", { mudbarn: 1 }, { planks: 36, stone: 16, bogiron: 3 }, { bench: true, d: "A home for up to 4 Mud Pigs and Frost Goats on your homestead." });
+  var PRES = {};   // PRESERVES: one jar per crop
+  Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, I = ITEMS[pk]; if (!I || ITEMS["pres_" + pk]) return; PRES[pk] = "pres_" + pk;
+    item("pres_" + pk, I.n + " Preserves", { food: Math.round((I.food || 6) * 2), heal: (I.heal || 0) + 4, cooked: 1, pb: pk, pc: CROPS[k].fruit });
+    if (HOMEFARM.ship[pk]) HOMEFARM.ship["pres_" + pk] = Math.round(HOMEFARM.ship[pk] * 3 * 10) / 10; });
+  Object.assign(HOMEFARM.ship, { duckegg: 1.5, truffle: 4, goatmilk: 3 });
+  HOMEFARM.pres = PRES;
+  HOMEFARM.bld = { duckcoop: { w: 3, h: 2, animals: ["duck"], cap: 4 }, mudbarn: { w: 4, h: 3, animals: ["pig", "goat"], cap: 4 } };
+  HOMEFARM.mach = { picklekeg: 1, seedmaker: 1, compostbin: 1, sprinkler: 1 };
+  HOMEFARM.animals = [["duck", 8, "duckcoop"], ["pig", 15, "mudbarn"], ["goat", 18, "mudbarn"]];
+  HOMEFARM.ups = [
+    ["nozzle", "Brass Nozzles", 30, "Sprinklers water a 5 x 5 square instead of 3 x 3."],
+    ["soil", "Rich Bog Soil", 40, "Every crop on your homestead grows 20% faster."],
+    ["coop", "Roomy Barns", 35, "Coops and barns hold 8 animals instead of 4."],
+    ["cart", "Croaker's Big Cart", 50, "The cart pays 20% more for everything you ship."],
+    ["keg", "Copper Coils", 30, "Kegs, Seed Makers and Compost Bins work 40% faster."]
+  ];
+  item("farmbook", "Croaka's Farm Almanac", { gem: "#4a7a2a", book: 1, d: "Croaka's old green almanac. Every crop you harvest, every giant, egg and jar is written in it. Pick it on your hotbar to read it." });
+  var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

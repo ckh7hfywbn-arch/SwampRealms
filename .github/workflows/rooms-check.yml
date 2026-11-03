@@ -1,0 +1,40 @@
+name: Room check
+
+# Builds every building interior and checks it for furniture mistakes: something in a doorway or in front of the exit, part of a
+# room cut off, a chest out of reach, a tall piece in the middle of the floor, a piece on a side wall still facing the camera,
+# chairs with no table or facing away from it. The rules live in sandbox-cave.js (checkRooms).
+# Then builds whole worlds and the Mine's floors (checkGame): one Mine near the spawn, a clear spawn, buildings with an open door,
+# every Mine and Old Volcano floor walkable to its ladders and chests, and every placeable item pointing at a real block.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rooms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check every interior
+        run: |
+          node -e "
+          var vm = require('vm'), fs = require('fs'), c = {}; c.window = c; vm.createContext(c);
+          ['sandbox-world.js', 'sandbox-extra.js', 'sandbox-cave.js'].forEach(function (f) { vm.runInContext(fs.readFileSync(f, 'utf8'), c); });
+          var r = c.SbxCave.checkRooms();
+          if (r.length) { console.log('Room problems:'); r.forEach(function (x) { console.log(' - ' + x); }); process.exit(1); }
+          console.log('All ' + Object.keys(c.SbxCave.IMAP).length + ' interiors look right.');
+          "
+      - name: Check worlds, the Mine and items
+        run: |
+          node -e "
+          var vm = require('vm'), fs = require('fs'), c = {}; c.window = c; vm.createContext(c);
+          ['sandbox-world.js', 'sandbox-extra.js', 'sandbox-cave.js'].forEach(function (f) { vm.runInContext(fs.readFileSync(f, 'utf8'), c); });
+          var r = c.SbxCave.checkGame([777, 12345, 9001]);
+          if (r.length) { console.log('Game problems:'); r.forEach(function (x) { console.log(' - ' + x); }); process.exit(1); }
+          console.log('Worlds, Mine floors and items look right.');
+          "
