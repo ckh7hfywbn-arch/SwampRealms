@@ -3659,6 +3659,7 @@
   // ---- the Rig Bay: steel decks with hazard edges, floodlights, the machines and the conveyor belts ----
   function lairBay(g, F, now, srcs, glows2) {
     var k = ts, own = lairOwned();
+    if (own && F.cons) F.pads.forEach(function (q, n) { if (!rigOf(n)) return; var x1 = ox + (F.cons.x + 0.5) * ts, y1 = oy + (F.cons.y + 0.8) * ts, x2 = ox + (q.x + (q.x < F.cons.x ? 1.9 : 0.1)) * ts, y2 = oy + (q.y + 0.6) * ts; g.strokeStyle = "#15171a"; g.lineWidth = Math.max(2, k * 0.06); g.beginPath(); g.moveTo(x1, y1); g.bezierCurveTo(x1, y1 + k * 0.6, x2, y2 + k * 0.6, x2, y2); g.stroke(); g.strokeStyle = "rgba(242,193,78,.35)"; g.lineWidth = 1; g.stroke(); });   // power cables from the console
     if (own && siloOn()) [0, 1].forEach(function (n) { if (rigOf(n)) drawBelt(g, F, n, now); });
     F.pads.forEach(function (q, n) {
       var px = ox + q.x * ts, py = oy + (q.y - 1) * ts, on = own && rigOf(n), W2 = ts * 2;
@@ -3668,12 +3669,9 @@
       g.fillStyle = "#636b74"; for (var dy = 0; dy < 6; dy++) for (var dx = 0; dx < 6; dx++) if ((dx + dy) % 2 === 0) g.fillRect(px + 8 + dx * (W2 - 16) / 6, py + 8 + dy * (W2 - 16) / 6, (W2 - 16) / 12, 2);   // tread plate
       g.save(); g.beginPath(); g.rect(px + 2, py + 2, W2 - 4, W2 - 4); g.rect(px + 7, py + 7, W2 - 14, W2 - 14); g.clip("evenodd"); for (var s = -W2; s < W2 * 2; s += k * 0.28) { g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(px + s, py); g.lineTo(px + s + k * 0.14, py); g.lineTo(px + s + k * 0.14 - W2, py + W2); g.lineTo(px + s - W2, py + W2); g.fill(); } g.restore();   // hazard stripes on the edge
       g.fillStyle = "#1c1f24"; g.fillRect(px + 2, py + 2, W2 - 4, 1); g.fillStyle = "#8e969b"; [[0.14, 0.14], [1.86, 0.14], [0.14, 1.86], [1.86, 1.86]].forEach(function (r) { g.fillRect(px + r[0] * ts - 2, py + r[1] * ts - 2, 4, 4); });
-      if (!own) { g.fillStyle = "#6e431f"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.8); g.fillStyle = "#8a5a32"; g.fillRect(px + ts * 0.35, py + ts * 0.5, ts * 0.8, ts * 0.12); g.fillStyle = "#9a6234"; g.beginPath(); g.ellipse(px + ts * 1.45, py + ts * 1.1, ts * 0.32, ts * 0.42, 0, 0, 6.28); g.fill(); }
-      else if (n === 0) drawDrill(g, px + ts, py + ts, !!on, now);
-      else if (on && n === 1) drawBorer(g, px + ts, py + ts, now);
-      else if (on && n === 2) drawSilo(g, px + ts, py + ts, now);
-      if (on) { var lx = px - k * 0.15, ly = py + k * 0.1, fl = reduce ? 1 : 0.9 + 0.1 * Math.sin(now / 130 + n);   // a floodlight on a post at the corner of each working pad
-        g.fillStyle = "#2a2a30"; g.fillRect(lx - 1.5, ly, 3, k * 0.9); g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.12, k * 0.24, k * 0.16); g.fillStyle = "rgba(255,240,190," + fl.toFixed(3) + ")"; g.fillRect(lx - k * 0.08, ly - k * 0.06, k * 0.16, k * 0.06);
+      var solidPad = !own || n === 0 || !!on; for (var sy2 = q.y - 1; sy2 <= q.y; sy2++) for (var sx2 = q.x; sx2 <= q.x + 1; sx2++) F.sol[sy2 * F.w + sx2] = solidPad ? 1 : 0;   // a pad with a machine (or crates) on it is solid
+      if (on) { var lx = px - k * 0.15, ly = py + k * 1.9, fl = reduce ? 1 : 0.9 + 0.1 * Math.sin(now / 130 + n);   // a floodlight on a post at the corner of each working pad
+        g.fillStyle = "#2a2a30"; g.fillRect(lx - 1.5, ly - k * 1.4, 3, k * 1.4); g.fillStyle = "#3e444a"; ly -= k * 1.4; g.fillRect(lx - k * 0.12, ly - k * 0.12, k * 0.24, k * 0.16); g.fillStyle = "rgba(255,240,190," + fl.toFixed(3) + ")"; g.fillRect(lx - k * 0.08, ly - k * 0.06, k * 0.16, k * 0.06);
         srcs.push([(lx - ox) / ts + 0.6, (ly - oy) / ts + 0.8, 4.5, 0.75]); glows2.push([lx, ly, "255,240,190", 1.4, 0.2 * fl]); }
       if (on && rigLv(n) > 1) { g.font = signFont(Math.max(8, Math.round(ts * 0.22))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; var lvx = px + ts * 1.72, lvy = py + ts * 0.3; g.fillStyle = "#1c1f24"; g.fillRect(lvx - ts * 0.26, lvy - ts * 0.15, ts * 0.52, ts * 0.3); g.fillStyle = "#ffe08a"; g.textBaseline = "middle"; g.fillText("Lv " + rigLv(n), lvx, lvy + 1); g.textBaseline = "alphabetic"; }
       if (own && on && !(siloOn() && n !== 2)) { var cnt = n === 2 ? rigTotal() : rigCount(n); if (cnt) { var full = n !== 2 && cnt >= rigCap(n), lb = cnt + (full ? " (full)" : ""); g.font = signFont(Math.max(9, Math.round(ts * 0.3))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.strokeText(lb, px + ts, py - ts * 0.2); g.fillStyle = "#ffe08a"; g.fillText(lb, px + ts, py - ts * 0.2); } }
@@ -3716,38 +3714,111 @@
     }
     if (run && Math.random() < 0.06) { var e = P[P.length - 1]; parts.push({ x: (e[0] - ox) / ts + (Math.random() - 0.5) * 0.3, y: (e[1] - oy) / ts - 0.1, vx: (Math.random() - 0.5) * 0.8, vy: -1.2, life: 0.4, max: 0.4, c: "#c9ccd2", s: 2 }); }
   }
-  function drawDrill(g, cx, cy, on, now) {   // the Bilge Drill on pad 1: a riveted boiler with a funnel, a gear and a drill bit, rust while broken
-    var k = ts, t = reduce ? 0 : now / 1000, sp = on ? t * 6 : 0;
-    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(cx, cy + k * 0.55, k * 0.8, k * 0.25, 0, 0, 6.28); g.fill();
-    g.fillStyle = on ? "#7a5232" : "#6a4a32"; g.fillRect(cx - k * 0.7, cy - k * 0.45, k * 1.4, k * 0.95);
-    g.fillStyle = on ? "#b8862f" : "#8a6a48"; g.fillRect(cx - k * 0.62, cy - k * 0.38, k * 1.24, k * 0.2);
-    g.fillStyle = "#2e1c0e"; [[-0.5, 0.1], [0.5, 0.1], [-0.5, 0.38], [0.5, 0.38]].forEach(function (r) { g.fillRect(cx + r[0] * k - 1.5, cy + r[1] * k - 1.5, 3, 3); });
-    g.fillStyle = "#3e444a"; g.fillRect(cx + k * 0.25, cy - k * 1.05, k * 0.26, k * 0.62); g.fillStyle = "#5a626a"; g.fillRect(cx + k * 0.2, cy - k * 1.12, k * 0.36, k * 0.1);
-    g.save(); g.translate(cx - k * 0.32, cy - k * 0.62); g.rotate(sp); g.fillStyle = on ? "#d9a441" : "#7a6a52"; for (var q = 0; q < 8; q++) { g.rotate(Math.PI / 4); g.fillRect(-k * 0.05, -k * 0.27, k * 0.1, k * 0.12); } g.beginPath(); g.arc(0, 0, k * 0.18, 0, 6.28); g.fill(); g.fillStyle = "#2e1c0e"; g.beginPath(); g.arc(0, 0, k * 0.06, 0, 6.28); g.fill(); g.restore();
-    var bob = on ? Math.sin(t * 18) * k * 0.03 : 0; g.fillStyle = "#9aa3a8"; g.beginPath(); g.moveTo(cx - k * 0.2, cy + k * 0.5 + bob); g.lineTo(cx + k * 0.2, cy + k * 0.5 + bob); g.lineTo(cx, cy + k * 0.95 + bob); g.closePath(); g.fill();
-    if (!on) { g.fillStyle = "rgba(180,90,40,.55)"; g.fillRect(cx - k * 0.6, cy - k * 0.1, k * 0.35, k * 0.3); g.fillRect(cx + k * 0.1, cy + k * 0.15, k * 0.4, k * 0.2); }
-    if (on && !reduce && Math.random() < 0.2) parts.push({ x: (cx - ox) / ts + (Math.random() - 0.5) * 0.4, y: (cy - oy) / ts + 0.85, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 2, life: 0.3, max: 0.3, c: Math.random() < 0.5 ? "#ffd27a" : "#ff9a4a", s: 2 });   // sparks off the bit
-    if (on && !reduce) for (var s2 = 0; s2 < 3; s2++) { var u = (t * 0.6 + s2 / 3) % 1; g.fillStyle = "rgba(200,205,210," + (0.4 * (1 - u)).toFixed(3) + ")"; g.beginPath(); g.arc(cx + k * 0.38 + u * k * 0.3, cy - k * 1.15 - u * k * 1.2, k * (0.12 + u * 0.25), 0, 6.28); g.fill(); }
+  // ---- the Rig Bay machines (drawn in the row pass at their pad's front row, so you can walk behind them; their pads are solid) ----
+  function lairRow(g, F, rj, now, srcs, glows2) {
+    if (!F.pads) return; var own = lairOwned();
+    F.pads.forEach(function (q, n) { if (q.y !== rj) return; var cx = ox + (q.x + 1) * ts, cy = oy + (q.y + 0.78) * ts, on = own && rigOf(n);
+      if (!own) drawCrates(g, cx, cy); else if (n === 0) drawDrill(g, cx, cy, !!on, now, srcs, glows2); else if (on && n === 1) drawBorer(g, cx, cy, now, srcs, glows2); else if (on && n === 2) drawSilo(g, cx, cy, now, srcs, glows2); });
+    if (own && F.cons && F.cons.y === rj) drawConsole(g, ox + (F.cons.x + 0.5) * ts, oy + (F.cons.y + 0.85) * ts, now, srcs, glows2);
+    if (own && F.stack && F.stack.y === rj) drawStack(g, ox + (F.stack.x + 0.5) * ts, oy + (F.stack.y + 0.85) * ts);
   }
-  function drawBorer(g, cx, cy, now) {   // the Steam Borer: a tall copper boiler on legs, a pressure gauge and a spinning auger, steam puffs
-    var k = ts, t = reduce ? 0 : now / 1000;
-    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(cx, cy + k * 0.6, k * 0.85, k * 0.25, 0, 0, 6.28); g.fill();
-    g.fillStyle = "#3e444a"; g.fillRect(cx - k * 0.7, cy + k * 0.1, k * 0.12, k * 0.5); g.fillRect(cx + k * 0.58, cy + k * 0.1, k * 0.12, k * 0.5);
-    g.fillStyle = "#b8703a"; g.beginPath(); g.ellipse(cx, cy - k * 0.35, k * 0.62, k * 0.8, 0, 0, 6.28); g.fill(); g.fillStyle = "#d9924e"; g.beginPath(); g.ellipse(cx - k * 0.18, cy - k * 0.55, k * 0.2, k * 0.45, 0, 0, 6.28); g.fill();
-    g.strokeStyle = "#7a4520"; g.lineWidth = Math.max(1, k * 0.05); [-0.7, -0.2, 0.25].forEach(function (b) { g.beginPath(); g.moveTo(cx - k * 0.6, cy + b * k); g.lineTo(cx + k * 0.6, cy + b * k); g.stroke(); });
-    g.fillStyle = "#f6eedb"; g.beginPath(); g.arc(cx + k * 0.25, cy - k * 0.45, k * 0.15, 0, 6.28); g.fill(); g.strokeStyle = "#1a1410"; g.lineWidth = 1.5; g.beginPath(); var ga = -2.2 + (reduce ? 0.6 : Math.sin(t * 2) * 0.4 + 0.6); g.moveTo(cx + k * 0.25, cy - k * 0.45); g.lineTo(cx + k * 0.25 + Math.cos(ga) * k * 0.12, cy - k * 0.45 + Math.sin(ga) * k * 0.12); g.stroke();
-    g.fillStyle = "#3e444a"; g.fillRect(cx - k * 0.1, cy - k * 1.55, k * 0.2, k * 0.45);
-    var sp = t * 8; g.fillStyle = "#9aa3a8"; for (var a = 0; a < 3; a++) { var yy = cy + k * (0.45 + a * 0.15) + (Math.sin(sp + a) * k * 0.02); g.fillRect(cx - k * (0.18 - a * 0.04), yy, k * (0.36 - a * 0.08), k * 0.08); }
-    if (!reduce) for (var s2 = 0; s2 < 4; s2++) { var u = (t * 0.7 + s2 / 4) % 1; g.fillStyle = "rgba(220,225,230," + (0.45 * (1 - u)).toFixed(3) + ")"; g.beginPath(); g.arc(cx + Math.sin(t + s2) * k * 0.2, cy - k * 1.6 - u * k * 1.4, k * (0.14 + u * 0.3), 0, 6.28); g.fill(); }
+  function mShadow(g, cx, cy, w) { g.fillStyle = "rgba(0,0,0,.38)"; g.beginPath(); g.ellipse(cx, cy, w, w * 0.3, 0, 0, 6.28); g.fill(); }
+  function rivets(g, x, y, w, n, c) { g.fillStyle = c || "#2a2d33"; for (var i = 0; i < n; i++) g.fillRect(x + (i + 0.5) * w / n - 1, y - 1, 2, 2); }
+  function beacon(g, x, y, now, on, srcs, glows2) {   // a spinning amber warning beacon
+    var k = ts; g.fillStyle = "#2a2a30"; g.fillRect(x - k * 0.1, y, k * 0.2, k * 0.08);
+    if (!on) { g.fillStyle = "#6a4a1a"; g.beginPath(); g.arc(x, y, k * 0.1, Math.PI, 0); g.fill(); return; }
+    var a = reduce ? 0 : now / 180, br = 0.55 + 0.45 * Math.abs(Math.sin(a));
+    g.fillStyle = "rgba(255,170,40," + br.toFixed(3) + ")"; g.beginPath(); g.arc(x, y, k * 0.11, Math.PI, 0); g.fill(); g.fillStyle = "#fff4c0"; g.fillRect(x - 1 + Math.cos(a) * k * 0.06, y - k * 0.08, 2, k * 0.06);
+    if (!reduce) { g.fillStyle = "rgba(255,180,60,.16)"; g.beginPath(); g.moveTo(x, y - k * 0.05); g.arc(x, y - k * 0.05, k * 1.4, a % 6.28, a % 6.28 + 0.6); g.closePath(); g.fill(); }
+    srcs.push([(x - ox) / ts, (y - oy) / ts, 3, 0.5 * br]); glows2.push([x, y - k * 0.05, "255,170,40", 1.1, 0.25 * br]);
   }
-  function drawSilo(g, cx, cy, now) {   // the Ore Silo: a riveted grey tank on a frame with a funnel on top and an ore hatch
-    var k = ts; g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(cx, cy + k * 0.6, k * 0.8, k * 0.25, 0, 0, 6.28); g.fill();
-    g.fillStyle = "#4a2e18"; g.fillRect(cx - k * 0.65, cy - k * 0.1, k * 0.12, k * 0.7); g.fillRect(cx + k * 0.53, cy - k * 0.1, k * 0.12, k * 0.7);
-    g.fillStyle = "#6a7078"; g.fillRect(cx - k * 0.55, cy - k * 1.3, k * 1.1, k * 1.5); g.fillStyle = "#8e969b"; g.fillRect(cx - k * 0.55, cy - k * 1.3, k * 0.25, k * 1.5);
-    g.fillStyle = "#5a626a"; g.beginPath(); g.moveTo(cx - k * 0.55, cy - k * 1.3); g.lineTo(cx, cy - k * 1.75); g.lineTo(cx + k * 0.55, cy - k * 1.3); g.fill();
-    g.fillStyle = "#2e3338"; [-0.9, -0.4, 0.05].forEach(function (b) { for (var r = 0; r < 4; r++) g.fillRect(cx - k * 0.45 + r * k * 0.28, cy + b * k, 2, 2); });
-    var fill = Math.min(1, rigTotal() / Math.max(1, rigCap(0) + rigCap(1))); g.fillStyle = "#1a1d22"; g.fillRect(cx + k * 0.12, cy - k * 1.1, k * 0.2, k * 1.1); g.fillStyle = "#f2c14e"; g.fillRect(cx + k * 0.12, cy - fill * k * 1.1, k * 0.2, fill * k * 1.1);   // a fill gauge
-    g.fillStyle = "#3a3e44"; g.fillRect(cx - k * 0.3, cy + k * 0.02, k * 0.42, k * 0.2);
+  function drawCrates(g, cx, cy) {   // before the hollow is yours: the Captain's loot crates and a barrel on each pad
+    var k = ts; mShadow(g, cx, cy, k * 0.8);
+    g.fillStyle = "#5e3c20"; g.fillRect(cx - k * 0.75, cy - k * 0.75, k * 0.8, k * 0.75); g.fillStyle = "#8a5a32"; g.fillRect(cx - k * 0.75, cy - k * 0.75, k * 0.8, k * 0.12); g.strokeStyle = "#3a2412"; g.lineWidth = 2; g.strokeRect(cx - k * 0.75, cy - k * 0.75, k * 0.8, k * 0.75); g.beginPath(); g.moveTo(cx - k * 0.75, cy - k * 0.75); g.lineTo(cx + k * 0.05, cy); g.stroke();
+    g.fillStyle = "#7a4a26"; g.beginPath(); g.ellipse(cx + k * 0.45, cy - k * 0.4, k * 0.3, k * 0.42, 0, 0, 6.28); g.fill(); g.fillStyle = "#4a4a52"; g.fillRect(cx + k * 0.15, cy - k * 0.6, k * 0.6, k * 0.05); g.fillRect(cx + k * 0.15, cy - k * 0.22, k * 0.6, k * 0.05);
+  }
+  // THE BILGE DRILL: a steel lattice derrick over the bore hole, a motor housing with a glowing gauge window, a flywheel and a connecting
+  // rod that pumps the drill shaft up and down into the rock (chips fly), an exhaust stack and a spinning beacon on top. Rusty when broken.
+  function drawDrill(g, cx, cy, on, now, srcs, glows2) {
+    var k = ts, t = reduce ? 0 : now / 1000, ph = on ? t * 7 : 0, pump = Math.sin(ph) * k * 0.14, rust = !on;
+    mShadow(g, cx, cy, k * 0.95);
+    g.fillStyle = "#14110e"; g.beginPath(); g.ellipse(cx + k * 0.35, cy - k * 0.06, k * 0.22, k * 0.09, 0, 0, 6.28); g.fill();   // the bore hole
+    var st = rust ? "#6a4a32" : "#5a626a", hi = rust ? "#8a6a48" : "#9aa3a8";
+    g.strokeStyle = st; g.lineWidth = Math.max(2, k * 0.07); g.beginPath(); g.moveTo(cx + k * 0.0, cy); g.lineTo(cx + k * 0.3, cy - k * 2.1); g.lineTo(cx + k * 0.7, cy); g.stroke();   // derrick legs
+    g.lineWidth = Math.max(1, k * 0.035); g.beginPath(); for (var d = 0; d < 4; d++) { var y1 = cy - d * k * 0.5, y2 = cy - (d + 1) * k * 0.5, w1 = 0.35 * (1 - d / 4.2), w2 = 0.35 * (1 - (d + 1) / 4.2); g.moveTo(cx + k * (0.35 - w1), y1); g.lineTo(cx + k * (0.35 + w2), y2); g.moveTo(cx + k * (0.35 + w1), y1); g.lineTo(cx + k * (0.35 - w2), y2); g.moveTo(cx + k * (0.35 - w2), y2); g.lineTo(cx + k * (0.35 + w2), y2); } g.stroke();   // lattice
+    g.fillStyle = hi; g.beginPath(); g.arc(cx + k * 0.3, cy - k * 2.12, k * 0.13, 0, 6.28); g.fill(); g.fillStyle = st; g.beginPath(); g.arc(cx + k * 0.3, cy - k * 2.12, k * 0.05, 0, 6.28); g.fill();   // crown pulley
+    g.strokeStyle = "#c9a876"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(cx + k * 0.38, cy - k * 2.1); g.lineTo(cx + k * 0.38, cy - k * 1.15 + pump); g.stroke();   // cable
+    g.fillStyle = rust ? "#7a6a52" : "#b8c0c6"; g.fillRect(cx + k * 0.3, cy - k * 1.15 + pump, k * 0.14, k * 1.05 - pump); g.fillStyle = "#3e444a"; g.fillRect(cx + k * 0.26, cy - k * 1.2 + pump, k * 0.22, k * 0.1);   // the drill shaft
+    if (on && !reduce && Math.sin(ph) > 0.9 && Math.random() < 0.6) parts.push({ x: (cx - ox) / ts + 0.37 + (Math.random() - 0.5) * 0.3, y: (cy - oy) / ts - 0.1, vx: (Math.random() - 0.5) * 3, vy: -1.5 - Math.random() * 2, life: 0.35, max: 0.35, c: Math.random() < 0.4 ? "#ffd27a" : "#8a8070", s: 2 });
+    // the motor housing on the left
+    var hx = cx - k * 0.95, hy = cy - k * 0.95, hw = k * 0.85, hh = k * 0.95;
+    g.fillStyle = rust ? "#5e4228" : "#3e5a4e"; g.fillRect(hx, hy, hw, hh); g.fillStyle = rust ? "#7a5a38" : "#567a68"; g.fillRect(hx, hy, hw, k * 0.12); g.fillStyle = rust ? "#4a3220" : "#2a3e36"; g.fillRect(hx + hw - k * 0.1, hy, k * 0.1, hh);
+    rivets(g, hx, hy + k * 0.2, hw, 4); rivets(g, hx, hy + hh - k * 0.1, hw, 4);
+    g.fillStyle = "#0e1612"; g.fillRect(hx + k * 0.12, hy + k * 0.3, k * 0.34, k * 0.26); var gw = on ? 0.6 + 0.4 * Math.sin(t * 3) : 0.15; g.fillStyle = "rgba(80,240,190," + gw.toFixed(3) + ")"; g.fillRect(hx + k * 0.15, hy + k * 0.33, k * 0.28, k * 0.2);   // gauge window
+    if (on) { glows2.push([hx + k * 0.29, hy + k * 0.43, "80,240,190", 1, 0.18]); }
+    g.save(); g.translate(hx + hw - k * 0.05, hy + k * 0.6); g.rotate(ph); g.strokeStyle = rust ? "#8a6a48" : "#c0c8ce"; g.lineWidth = Math.max(2, k * 0.05); g.beginPath(); g.arc(0, 0, k * 0.26, 0, 6.28); g.stroke(); g.lineWidth = Math.max(1, k * 0.035); for (var sp = 0; sp < 4; sp++) { g.beginPath(); g.moveTo(0, 0); var aa = sp * Math.PI / 2; g.lineTo(Math.cos(aa) * k * 0.26, Math.sin(aa) * k * 0.26); g.stroke(); } g.restore();   // flywheel
+    var crx = hx + hw - k * 0.05 + Math.cos(ph) * k * 0.2, cry = hy + k * 0.6 + Math.sin(ph) * k * 0.2; g.strokeStyle = "#8e969b"; g.lineWidth = Math.max(2, k * 0.05); g.beginPath(); g.moveTo(crx, cry); g.lineTo(cx + k * 0.3, cy - k * 1.1 + pump); g.stroke();   // connecting rod
+    g.fillStyle = "#2a2d33"; g.fillRect(hx + k * 0.1, hy - k * 0.55, k * 0.16, k * 0.55); g.fillStyle = "#4a4f56"; g.fillRect(hx + k * 0.07, hy - k * 0.6, k * 0.22, k * 0.07);   // exhaust stack
+    if (on && !reduce) for (var s2 = 0; s2 < 3; s2++) { var u = (t * 0.7 + s2 / 3) % 1; g.fillStyle = "rgba(70,72,78," + (0.5 * (1 - u)).toFixed(3) + ")"; g.beginPath(); g.arc(hx + k * 0.18 + u * k * 0.3, hy - k * 0.65 - u * k * 1.1, k * (0.1 + u * 0.24), 0, 6.28); g.fill(); }
+    if (rust) { g.fillStyle = "rgba(170,80,30,.5)"; g.fillRect(hx + k * 0.5, hy + k * 0.45, k * 0.22, k * 0.3); g.fillRect(cx + k * 0.1, cy - k * 0.9, k * 0.12, k * 0.3); }
+    beacon(g, cx + k * 0.3, cy - k * 2.26, now, on, srcs, glows2);
+  }
+  // THE STEAM BORER: a big riveted copper boiler on a cast-iron cradle, a glowing firebox, a pressure gauge, twin pistons driving a
+  // spinning auger screw down into the rock, a brass whistle that vents now and then, and steam everywhere.
+  function drawBorer(g, cx, cy, now, srcs, glows2) {
+    var k = ts, t = reduce ? 0 : now / 1000, ph = t * 6;
+    mShadow(g, cx, cy, k * 1);
+    g.fillStyle = "#2a2d33"; g.fillRect(cx - k * 0.85, cy - k * 0.35, k * 0.16, k * 0.35); g.fillRect(cx + k * 0.69, cy - k * 0.35, k * 0.16, k * 0.35); g.fillRect(cx - k * 0.85, cy - k * 0.42, k * 1.7, k * 0.1);   // cradle
+    var bg = g.createLinearGradient(cx - k * 0.8, 0, cx + k * 0.8, 0); bg.addColorStop(0, "#8a4a22"); bg.addColorStop(0.35, "#e09a5a"); bg.addColorStop(0.6, "#c4743a"); bg.addColorStop(1, "#6a3418");
+    g.fillStyle = bg; g.beginPath(); g.moveTo(cx - k * 0.78, cy - k * 0.45); g.lineTo(cx - k * 0.78, cy - k * 1.5); g.quadraticCurveTo(cx, cy - k * 2.05, cx + k * 0.78, cy - k * 1.5); g.lineTo(cx + k * 0.78, cy - k * 0.45); g.closePath(); g.fill();   // the boiler
+    g.strokeStyle = "#6a3418"; g.lineWidth = Math.max(1.5, k * 0.05); [0.75, 1.1, 1.45].forEach(function (b) { g.beginPath(); g.moveTo(cx - k * 0.78, cy - b * k); g.lineTo(cx + k * 0.78, cy - b * k); g.stroke(); rivets(g, cx - k * 0.78, cy - b * k + 3, k * 1.56, 8, "#5a2a12"); });
+    var fl = reduce ? 0.8 : 0.7 + 0.3 * Math.sin(t * 13) * Math.sin(t * 7); g.fillStyle = "#1a0e08"; g.fillRect(cx - k * 0.32, cy - k * 0.72, k * 0.36, k * 0.26); g.fillStyle = "rgba(255," + (120 + Math.round(fl * 80)) + ",40," + (0.75 + 0.25 * fl).toFixed(3) + ")"; g.fillRect(cx - k * 0.28, cy - k * 0.68, k * 0.28, k * 0.18); g.fillStyle = "#3a2010"; for (var gr = 0; gr < 3; gr++) g.fillRect(cx - k * 0.27 + gr * k * 0.1, cy - k * 0.68, 2, k * 0.18);   // firebox
+    srcs.push([(cx - ox) / ts - 0.15, (cy - oy) / ts - 0.4, 3.4, 0.7 * fl]); glows2.push([cx - k * 0.14, cy - k * 0.6, "255,150,50", 1.5, 0.3 * fl]);
+    g.fillStyle = "#f6eedb"; g.beginPath(); g.arc(cx + k * 0.35, cy - k * 1.28, k * 0.17, 0, 6.28); g.fill(); g.strokeStyle = "#b8862f"; g.lineWidth = 2; g.stroke(); g.strokeStyle = "#a81e2a"; g.lineWidth = 1.5; var ga = -2.4 + 1.6 * (0.5 + 0.5 * Math.sin(t * 0.8)); g.beginPath(); g.moveTo(cx + k * 0.35, cy - k * 1.28); g.lineTo(cx + k * 0.35 + Math.cos(ga) * k * 0.13, cy - k * 1.28 + Math.sin(ga) * k * 0.13); g.stroke();   // pressure gauge
+    g.fillStyle = "#d9a441"; g.fillRect(cx - k * 0.06, cy - k * 2.2, k * 0.12, k * 0.32); g.fillStyle = "#f2c14e"; g.fillRect(cx - k * 0.1, cy - k * 2.24, k * 0.2, k * 0.06);   // brass whistle
+    var vent = !reduce && (t % 6) < 0.8;
+    // twin pistons and the auger
+    [-1, 1].forEach(function (sd) { var px = cx + sd * k * 0.55, pp = Math.sin(ph + (sd > 0 ? Math.PI : 0)) * k * 0.1; g.fillStyle = "#4a4f56"; g.fillRect(px - k * 0.08, cy - k * 0.42, k * 0.16, k * 0.3); g.fillStyle = "#c0c8ce"; g.fillRect(px - k * 0.04, cy - k * 0.15 + pp, k * 0.08, k * 0.2); });
+    g.save(); g.beginPath(); g.rect(cx - k * 0.16, cy - k * 0.42, k * 0.32, k * 0.55); g.clip(); g.fillStyle = "#8e969b"; g.fillRect(cx - k * 0.16, cy - k * 0.42, k * 0.32, k * 0.55); g.fillStyle = "#4a4f56"; var off = (ph * k * 0.05) % (k * 0.14); for (var a = -k * 0.2 + off; a < k * 0.6; a += k * 0.14) { g.beginPath(); g.moveTo(cx - k * 0.16, cy - k * 0.42 + a); g.lineTo(cx + k * 0.16, cy - k * 0.42 + a - k * 0.08); g.lineTo(cx + k * 0.16, cy - k * 0.42 + a - k * 0.03); g.lineTo(cx - k * 0.16, cy - k * 0.42 + a + k * 0.05); g.fill(); } g.restore();   // auger screw turning
+    if (!reduce) for (var s2 = 0; s2 < (vent ? 7 : 3); s2++) { var u = (t * (vent ? 1.6 : 0.6) + s2 / (vent ? 7 : 3)) % 1, sx2 = vent ? cx : cx + k * 0.6; g.fillStyle = "rgba(230,235,240," + ((vent ? 0.6 : 0.4) * (1 - u)).toFixed(3) + ")"; g.beginPath(); g.arc(sx2 + Math.sin(t * 2 + s2) * k * 0.15, cy - k * (vent ? 2.25 : 1.6) - u * k * 1.5, k * (0.12 + u * 0.34), 0, 6.28); g.fill(); }
+    beacon(g, cx - k * 0.6, cy - k * 1.6, now, true, srcs, glows2);
+  }
+  // THE ORE SILO: a tall riveted steel tank with a light band down its side, a domed roof with the hopper where the belts tip in, a
+  // ladder, a window showing the ore piling up inside (in the colours of what is in there), a green ready lamp, a name plate and a
+  // discharge chute with a little heap of ore.
+  function drawSilo(g, cx, cy, now, srcs, glows2) {
+    var k = ts, t = reduce ? 0 : now / 1000, tot = rigTotal(), cap = Math.max(1, (rigOf(0) ? rigCap(0) : 0) + (rigOf(1) ? rigCap(1) : 0)), fill = Math.min(1, tot / cap);
+    mShadow(g, cx, cy, k * 0.95);
+    var x0 = cx - k * 0.7, w = k * 1.4, top = cy - k * 2.3, bot = cy - k * 0.25;
+    g.fillStyle = "#2a2d33"; [-0.6, -0.2, 0.2, 0.6].forEach(function (lx) { g.fillRect(cx + lx * k - k * 0.05, bot, k * 0.1, k * 0.25); });   // legs
+    var sg = g.createLinearGradient(x0, 0, x0 + w, 0); sg.addColorStop(0, "#4a5058"); sg.addColorStop(0.25, "#aab2b8"); sg.addColorStop(0.45, "#7a828a"); sg.addColorStop(1, "#3a3e44");
+    g.fillStyle = sg; g.fillRect(x0, top, w, bot - top); g.beginPath(); g.ellipse(cx, bot, w / 2, k * 0.14, 0, 0, Math.PI); g.fill();
+    g.fillStyle = "#6a7078"; g.beginPath(); g.ellipse(cx, top, w / 2, k * 0.42, 0, Math.PI, 0); g.fill(); g.fillStyle = "#8e969b"; g.beginPath(); g.ellipse(cx - k * 0.15, top - k * 0.12, w * 0.25, k * 0.16, 0, Math.PI, 0); g.fill();   // dome
+    g.fillStyle = "#3a3e44"; g.beginPath(); g.moveTo(cx - k * 0.22, top - k * 0.3); g.lineTo(cx + k * 0.22, top - k * 0.3); g.lineTo(cx + k * 0.12, top - k * 0.05); g.lineTo(cx - k * 0.12, top - k * 0.05); g.fill();   // hopper
+    g.strokeStyle = "#33373d"; g.lineWidth = Math.max(1.5, k * 0.05); [0.3, 0.9, 1.5].forEach(function (b) { g.beginPath(); g.moveTo(x0, top + b * k); g.lineTo(x0 + w, top + b * k); g.stroke(); rivets(g, x0, top + b * k + 3, w, 7); });
+    g.strokeStyle = "#2a2d33"; g.lineWidth = 2; g.beginPath(); g.moveTo(x0 + w - k * 0.08, top + k * 0.1); g.lineTo(x0 + w - k * 0.08, bot); g.moveTo(x0 + w + k * 0.12, top + k * 0.1); g.lineTo(x0 + w + k * 0.12, bot); for (var r = top + k * 0.2; r < bot; r += k * 0.2) { g.moveTo(x0 + w - k * 0.08, r); g.lineTo(x0 + w + k * 0.12, r); } g.stroke();   // ladder
+    var wx = cx - k * 0.42, wy = top + k * 0.42, ww = k * 0.34, wh = k * 1.3;   // the fill window
+    g.fillStyle = "#101216"; g.fillRect(wx, wy, ww, wh); var fh = wh * fill, T2 = RIGS[1].ore.concat(RIGS[0].ore);
+    for (var c = 0; c < 18 && c * wh / 18 < fh; c++) { var oi = T2[(c * 7 + 3) % T2.length][0], col = (ITEMS[oi] && TILES[ITEMS[oi].tile] && TILES[ITEMS[oi].tile].c2) || "#8f979b"; g.fillStyle = col; g.fillRect(wx + 2 + ((c * 5) % 3) * 3, wy + wh - (c + 1) * wh / 18, ww - 4 - ((c * 3) % 2) * 3, wh / 18 + 1); }
+    g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(wx + 2, wy + 2, 3, wh - 4); g.strokeStyle = "#8e969b"; g.lineWidth = 2; g.strokeRect(wx, wy, ww, wh);
+    var lp = tot > 0, bl = lp ? (reduce ? 1 : 0.6 + 0.4 * Math.sin(t * 4)) : 0.25; g.fillStyle = lp ? "rgba(90,255,140," + bl.toFixed(3) + ")" : "#2a3a2e"; g.beginPath(); g.arc(cx + k * 0.25, top + k * 0.55, k * 0.09, 0, 6.28); g.fill();   // ready lamp
+    if (lp) { glows2.push([cx + k * 0.25, top + k * 0.55, "90,255,140", 0.9, 0.3 * bl]); srcs.push([(cx - ox) / ts + 0.25, (top - oy) / ts + 0.55, 2.2, 0.5 * bl]); }
+    g.fillStyle = "#1c1f24"; g.fillRect(cx - k * 0.02, top + k * 1.05, k * 0.62, k * 0.22); g.font = signFont(Math.max(6, Math.round(k * 0.13))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f2c14e"; g.fillText("ORE SILO", cx + k * 0.29, top + k * 1.17); g.textBaseline = "alphabetic";   // name plate
+    g.fillStyle = "#3a3e44"; g.beginPath(); g.moveTo(cx - k * 0.2, bot); g.lineTo(cx + k * 0.2, bot); g.lineTo(cx + k * 0.1, bot + k * 0.12); g.lineTo(cx - k * 0.1, bot + k * 0.12); g.fill();   // chute
+    if (tot) { var hp2 = Math.min(1, tot / 40); [["#8f979b", -0.25], ["#ff8a3d", 0.05], ["#9fe8ff", 0.25], ["#6b7276", -0.05]].forEach(function (h, i) { g.fillStyle = h[0]; g.beginPath(); g.arc(cx + h[1] * k, cy - k * 0.02 - (i % 2) * k * 0.06 * hp2, k * (0.07 + 0.04 * hp2), 0, 6.28); g.fill(); }); }   // ore heap
+  }
+  function drawConsole(g, cx, cy, now, srcs, glows2) {   // the bay's control console: a slanted panel of blinking buttons, a dial and a little screen of waveforms
+    var k = ts, t = reduce ? 0 : now / 1000; mShadow(g, cx, cy, k * 0.55);
+    g.fillStyle = "#3a3e44"; g.fillRect(cx - k * 0.45, cy - k * 0.7, k * 0.9, k * 0.7); g.fillStyle = "#5a626a"; g.beginPath(); g.moveTo(cx - k * 0.5, cy - k * 0.7); g.lineTo(cx + k * 0.5, cy - k * 0.7); g.lineTo(cx + k * 0.4, cy - k * 1.05); g.lineTo(cx - k * 0.4, cy - k * 1.05); g.fill();
+    var cols = ["#ff5a3a", "#f2c14e", "#5aff8c", "#6fb6ff"]; for (var b = 0; b < 6; b++) { var on2 = reduce ? b % 2 : ((t * 2 + b * 1.7) | 0) % 3 !== 0; g.fillStyle = on2 ? cols[b % 4] : "#22262c"; g.fillRect(cx - k * 0.34 + (b % 3) * k * 0.14, cy - k * 0.98 + Math.floor(b / 3) * k * 0.13, k * 0.08, k * 0.07); }
+    g.fillStyle = "#0e1a14"; g.fillRect(cx + k * 0.08, cy - k * 0.98, k * 0.28, k * 0.2); g.strokeStyle = "#5aff8c"; g.lineWidth = 1; g.beginPath(); for (var s = 0; s <= 10; s++) { var xx = cx + k * 0.1 + s * k * 0.024, yy = cy - k * 0.88 + Math.sin(t * 5 + s * 0.9) * k * 0.05; if (s) g.lineTo(xx, yy); else g.moveTo(xx, yy); } g.stroke();
+    glows2.push([cx + k * 0.22, cy - k * 0.88, "90,255,140", 0.8, 0.15]); g.fillStyle = "#2a2d33"; g.fillRect(cx - k * 0.3, cy - k * 0.5, k * 0.6, k * 0.06);
+  }
+  function drawStack(g, cx, cy) {   // a stack of crates and ore sacks
+    var k = ts; mShadow(g, cx, cy, k * 0.6);
+    g.fillStyle = "#6e431f"; g.fillRect(cx - k * 0.5, cy - k * 0.55, k * 0.55, k * 0.55); g.fillStyle = "#8a5a32"; g.fillRect(cx - k * 0.5, cy - k * 0.55, k * 0.55, k * 0.08); g.strokeStyle = "#3a2412"; g.lineWidth = 1.5; g.strokeRect(cx - k * 0.5, cy - k * 0.55, k * 0.55, k * 0.55);
+    g.fillStyle = "#5e3c20"; g.fillRect(cx - k * 0.38, cy - k * 1.0, k * 0.45, k * 0.45); g.fillStyle = "#7a5232"; g.fillRect(cx - k * 0.38, cy - k * 1.0, k * 0.45, k * 0.07); g.strokeRect(cx - k * 0.38, cy - k * 1.0, k * 0.45, k * 0.45);
+    [["#c9b58a", 0.25, -0.2], ["#b8a070", 0.42, -0.12]].forEach(function (sk) { g.fillStyle = sk[0]; g.beginPath(); g.ellipse(cx + sk[1] * k, cy + sk[2] * k, k * 0.17, k * 0.22, 0, 0, 6.28); g.fill(); g.fillStyle = "#6a5a3a"; g.fillRect(cx + sk[1] * k - k * 0.06, cy + sk[2] * k - k * 0.24, k * 0.12, k * 0.05); });
   }
   function drawWreck(g, F, now, srcs, glows2) {   // the Captain's ship, run aground in the lake: seen from above at a tilt, with a broken mast and his flag (yours, later)
     var k = ts, cx = ox + F.ship.x * ts, cy = oy + F.ship.y * ts, t = reduce ? 0 : now / 1000, own = lairOwned();
@@ -13023,6 +13094,7 @@
         var rx = ox + ri * ts, ry2 = oy + rj * ts; g.drawImage(caveNode(rid, ((ri * 7 + rj * 13) & 1)), 0, 0, 16, 16, rx, ry2, ts, ts);
         if (TILES[rid].kind === "ore" && !reduce && ((now / 90 + ri * 7 + rj * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(rx + ts * 0.55, ry2 + ts * 0.3, 2, 2); }
       }
+      if (F.lair) lairRow(g, F, rj, now, srcs, glows2);
       drawCaveMobs(g, now, rj); }
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark

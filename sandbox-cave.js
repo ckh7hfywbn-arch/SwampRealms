@@ -581,8 +581,9 @@
     var lamps = [], lc = []; for (i = CW; i < n - CW; i++) if (!wall[i] && !pool[i] && !node[i] && wall[i - CW]) lc.push(i);
     for (var l = 0; l < 14 && lc.length; l++) { var li = lc.splice(Math.floor(rnd() * lc.length), 1)[0]; lamps.push({ x: li % CW, y: (li / CW) | 0 }); }
     var rocks = 0; for (i = 0; i < n; i++) if (node[i]) rocks++;
+    var sol = new Uint8Array(pool); sol[pads[2].y * CW + pads[2].x + 3] = 1; sol[pads[2].y * CW + pads[2].x - 2] = 1;   // the bay console and the crate stack
     return { w: CW, h: CH, floor: LAIR_F, biome: 0, bi: LAIR_TH, seed: seed, theme: THEMES[LAIR_TH], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: down, spawn: spawn, lamps: lamps, rocks: rocks,
-      sol: pool, pool: pool, lair: 1, ship: { x: 22.5, y: 25.6 }, boss: { x: 22.5, y: 15 }, pads: pads, dock: dock, amb: 0.5, belt: 23.5 };
+      sol: sol, pool: pool, cons: { x: 1 + pads[2].x + 2, y: pads[2].y }, stack: { x: pads[2].x - 2, y: pads[2].y }, lair: 1, ship: { x: 22.5, y: 25.6 }, boss: { x: 22.5, y: 15 }, pads: pads, dock: dock, amb: 0.5, belt: 23.5 };
   }
   // ROOM CHECK: every building interior, built for a few seeds, checked for the mistakes that are easy to make by hand and hard to
   // spot: furniture in a doorway or in front of the exit, part of a room cut off, a chest you cannot reach, a tall piece (wardrobe,
