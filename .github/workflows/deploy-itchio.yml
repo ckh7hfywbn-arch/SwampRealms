@@ -39,6 +39,6 @@ jobs:
         uses: remarkablegames/setup-butler@v3
 
       - name: Upload game to itch.io
-        run: butler push deploy steweylil/swamprealms:html5
+        run: butler push deploy swamprealms/swamprealms:html5
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
