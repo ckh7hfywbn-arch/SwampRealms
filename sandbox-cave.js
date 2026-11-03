@@ -539,7 +539,7 @@
   }
   // ---------- THE SUNKEN HOLLOW (Mine floor 25) ----------
   // A secret swamp buried under the Mine: one big cavern with a black-water lake, mangrove-root pillars, glowcaps and the wreck of a
-  // pirate ship moored on the far shore. It is Captain Gillbeard's hideout (the boss lives in sandbox.js). The same layout every visit
+  // pirate ship moored on the far shore. It is Captain Saltjaw's hideout (the boss lives in sandbox.js). The same layout every visit
   // (built from the world seed), so once you beat him it can be your base. Extras on the floor object:
   //   lair = 1, sol / pool = the water cells (not walkable), ship = { x, y } (the wreck's middle, drawn over the water),
   //   boss = { x, y } where the Captain stands, pads = three rig pads on the west shore (the automated mining bay), dock = the gangplank cell.

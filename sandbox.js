@@ -400,7 +400,7 @@
     sq("ckill10", "Delver", 2, "Cave Crawler", "Defeat 10 creatures down the Mine.", 10, st("ckills"), { torch: 6 }),
     sq("cclear5", "Delver", 3, "Deep Delver", "Clear 5 cave floors.", 5, st("cclear"), { amethyst: 2 }),
     sq("cave15", "Delver", 5, "Abyss Walker", "Reach cave floor 15.", 15, st("caveDeep"), { moonstone: 1, ruby: 1 }),
-    sq("lair", "Delver", 5, "Captain of the Hollow", "Ride down to floor 25 of the Mine and defeat Captain Gillbeard in his secret swamp.", 1, function () { return S.lair && S.lair.own ? 1 : 0; }, { doubloon: 20, ironingot: 4 }),
+    sq("lair", "Delver", 5, "Captain of the Hollow", "Ride down to floor 25 of the Mine and defeat Captain Saltjaw in his secret swamp.", 1, function () { return S.lair && S.lair.own ? 1 : 0; }, { doubloon: 20, ironingot: 4 }),
     sq("rig1", "Delver", 5, "Rig Bay", "Repair the Bilge Drill in your Rig Bay and collect 30 ore from it.", 30, st("rigOre"), { torch: 10, ironingot: 3 }),
     sq("loot1", "Delver", 2, "Treasure Hunter", "Open a Cave Chest. They glow faintly in dark caves.", 1, st("cchests"), { torch: 3 }),
     sq("loot10", "Delver", 4, "Hoard of Gold", "Open 10 Cave Chests.", 10, st("cchests"), { quartz: 3 }),
@@ -3431,15 +3431,15 @@
     });
   }
   // =====================================================================================================================================
-  // ---------- THE SUNKEN HOLLOW (Mine floor 25) and CAPTAIN GILLBEARD ----------
+  // ---------- THE SUNKEN HOLLOW (Mine floor 25) and CAPTAIN SALTJAW ----------
   // Floor 25 of the Mine is not a normal cave: it is a secret swamp buried under the world (SbxCave.genLair), the hideout of Captain
-  // Gillbeard, a swashbuckling fish-man pirate. He wakes when you come close and fights with a cutlass slash, a three-ball pistol volley,
+  // Saltjaw, a swashbuckling fish-man pirate. He wakes when you come close and fights with a cutlass slash, a three-ball pistol volley,
   // a charging lunge and (below half health) a tidal stomp ring plus a few Bilge Slimes from his crew. Under 35% he is enraged (faster).
   // Beat him and the hollow is YOURS for good (S.lair.own): the way down to floor 26 opens, no creatures ever come back, his ship flies
   // your flag, and the RIG BAY on the west shore becomes the base of your automated mining: three rig pads, the first holding his old
   // Bilge Drill. Repair it and it digs ore on its own (one piece every RIG_RATE of game time, up to RIG_CAP) whether or not you are there.
   // S.lair = { own: 0/1, day, rig: [{ t: clock of the last collect }] } (rig[i] exists once pad i holds a working rig).
-  var LAIRB = { n: "Captain Gillbeard", sub: "Swashbuckler of the Sunken Hollow", c: "#3fd6c0", hp: 1500, dmg: 24 };
+  var LAIRB = { n: "Captain Saltjaw", sub: "Swashbuckler of the Sunken Hollow", c: "#3fd6c0", hp: 1500, dmg: 24 };
   var RIG_RATE = 12, RIG_CAP = 60, RIG_FIX = { ironingot: 4, planks: 12, cinder: 6 }, RIG_ORE = [["stone", 5], ["clay", 1.5], ["spore", 2], ["basalt", 2], ["cinder", 1.5], ["frostrock", 1.2], ["crystal", 0.6]];
   CMOB.captain = { r: 0.62, spd: 2.6, aggro: 12 };
   function lairS() { if (!S.lair || typeof S.lair !== "object") S.lair = { own: 0, rig: [] }; if (!Array.isArray(S.lair.rig)) S.lair.rig = []; return S.lair; }
@@ -3458,7 +3458,7 @@
     F.cshots = F.cshots || []; F.rings = F.rings || [];
     if (m.def) { m.dead -= dt; if (!reduce && Math.random() < dt * 14) parts.push({ x: m.x + (Math.random() - 0.5) * 1.2, y: m.y - Math.random() * 1.6, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#3fd6c0" : "#bff4ff", s: 3 }); if (m.dead <= 0) { F.mobs.splice(i, 1); claimLair(); } return; }
     var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, sp = m.rage ? 3.3 : 2.6, vx = 0, vy = 0;
-    if (!m.awake) { if (d < 9 && hp > 0) { m.awake = true; m.st = "intro"; m.t = 2.4; capSay(m, "Arr! Who comes drippin' into Gillbeard's hollow?", 2.8); thud(110, 0.12); snd("rise"); } else { m.dir = dx >= 0 ? 1 : -1; return; } }
+    if (!m.awake) { if (d < 9 && hp > 0) { m.awake = true; m.st = "intro"; m.t = 2.4; capSay(m, "Arr! Who comes drippin' into Saltjaw's hollow?", 2.8); thud(110, 0.12); snd("rise"); } else { m.dir = dx >= 0 ? 1 : -1; return; } }
     if (hp <= 0) { m.st = "chase"; moveMob(F, m, dt, 0, 0); return; }
     if (!m.crew && m.hp < m.mx * 0.5) {   // half health: his crew joins in, and the tidal stomp starts
       m.crew = true; capSay(m, "Crew, to me! Nobody takes me ship!", 2.6); m.tide = 1.2;
@@ -3521,7 +3521,7 @@
       if (!cave || !cave.F || !cave.F.lair) return;
       storyOpen = 230; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
       $("sbxStoryBox").style.setProperty("--qc", LAIRB.c);
-      $("sbxStoryBox").innerHTML = '<small>Floor ' + SC.LAIR_F + ' of the Mine</small><h2>The Sunken Hollow is yours!</h2><p>Captain Gillbeard drops his cutlass, tips his hat and slips into the black water with a grumble. His crew scatters into the roots.</p><p>Nothing hostile will come back here. The way down to floor ' + (SC.LAIR_F + 1) + ' is open, the lift stops here, and his ship now flies your flag.</p><p><b>The Rig Bay</b> on the west shore is your mining base. The Captain\'s old <b>Bilge Drill</b> sits on the first rig pad: repair it and it digs ore for you, even while you are away.</p><div class="st-row"><button type="button" class="btn" data-story-close>Claim the hollow</button></div>';
+      $("sbxStoryBox").innerHTML = '<small>Floor ' + SC.LAIR_F + ' of the Mine</small><h2>The Sunken Hollow is yours!</h2><p>Captain Saltjaw drops his cutlass, tips his hat and slips into the black water with a grumble. His crew scatters into the roots.</p><p>Nothing hostile will come back here. The way down to floor ' + (SC.LAIR_F + 1) + ' is open, the lift stops here, and his ship now flies your flag.</p><p><b>The Rig Bay</b> on the west shore is your mining base. The Captain\'s old <b>Bilge Drill</b> sits on the first rig pad: repair it and it digs ore for you, even while you are away.</p><div class="st-row"><button type="button" class="btn" data-story-close>Claim the hollow</button></div>';
       snd("coin");
     }, 1600);
   }
@@ -3847,7 +3847,7 @@
     var gx2 = ox + (F.dock.x + 0.5) * ts, gy2 = oy + (F.dock.y + 0.6) * ts; g.fillStyle = "#6e4426"; g.fillRect(gx2 - k * 0.3, gy2, k * 0.6, cy - k * 1.2 - gy2); g.fillStyle = "#8a5a32"; for (var r2 = gy2; r2 < cy - k * 1.2; r2 += k * 0.3) g.fillRect(gx2 - k * 0.3, r2, k * 0.6, k * 0.06);   // the gangplank
     [[-3.3, -1.4], [4.4, -0.9]].forEach(function (l) { var lx = cx + l[0] * k, ly = cy + l[1] * k, fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 160 + l[0]); g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.16, k * 0.24, k * 0.32); g.fillStyle = "rgba(255,214,110," + (0.7 + 0.3 * fl).toFixed(3) + ")"; g.fillRect(lx - k * 0.07, ly - k * 0.1, k * 0.14, k * 0.2); srcs.push([(lx - ox) / ts, (ly - oy) / ts, 5, 0.9]); glows2.push([lx, ly, "255,214,110", 3, 0.22 * fl]); });
   }
-  function drawCaptain(g, m, now) {   // Captain Gillbeard: a big teal fish-man in a navy coat and red tricorn, eyepatch, fin beard, cutlass and pistol, one peg leg
+  function drawCaptain(g, m, now) {   // Captain Saltjaw: a big teal fish-man in a navy coat and red tricorn, eyepatch, fin beard, cutlass and pistol, one peg leg
     var k = ts, sx = ox + m.x * ts, sy = oy + m.y * ts, t = reduce ? 0 : now / 1000, mv = m.st === "chase" || m.st === "dash", bob = mv ? Math.abs(Math.sin(t * 9)) * k * 0.06 : Math.sin(t * 2.2) * k * 0.02;
     if (m.def) { g.globalAlpha = clamp(m.dead / 2.2, 0, 1); sy += (1 - m.dead / 2.2) * k * 0.6; }
     // attack tells on the ground
@@ -12797,7 +12797,7 @@
   }
   function useLadder(k) {
     if (trans || !cave) return;
-    if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Gillbeard's crew has chained the way down. Beat the Captain first."); return; }
+    if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Saltjaw's crew has chained the way down. Beat the Captain first."); return; }
     if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
     if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
     else trans = { t: 0, done: false, mid: function () { setFloor(cave.f + 1, "down"); save(); } };
