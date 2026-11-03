@@ -13619,7 +13619,8 @@
   function cgState(r) { var st = recStatus(r); return st.owned ? "own" : st.lock ? "lock" : st.ready ? "ready" : st.can ? "can" : "miss"; }
   function cgOwnKey(r) { return r.tier && r.tier === S.tier ? "pick" : r.wpn && r.wpn === S.wpn ? "wpn" : r.arm && r.arm === S.arm ? "arm" : r.sh ? "shovel" : ""; }
   function cgPick(ctx, recs) {   // the remembered pick if it is still in the list, else the first one you can make, else the first one
-    var id = CG_SEL[ctx], i; for (i = 0; i < recs.length; i++) if (recs[i].id === id) return recs[i];
+    var id = CG_SEL[ctx], i; if (id === "") return null;   // "" = the player cleared it (clicked empty space or the picked slot again)
+    for (i = 0; i < recs.length; i++) if (recs[i].id === id) return recs[i];
     for (i = 0; i < recs.length; i++) if (cgState(recs[i]) === "ready") return recs[i];
     for (i = 0; i < recs.length; i++) if (cgState(recs[i]) !== "own") return recs[i];
     return recs[0] || null;
@@ -13634,7 +13635,7 @@
       return '<span class="crg-in' + (ok ? "" : " no") + '" title="' + esc(ITEMS[k].n) + (fc ? " (includes some from nearby chests)" : "") + '"><img alt="" src="' + icon(k) + '"><b>' + esc(ITEMS[k].n) + "</b><em>" + Math.min(have, 999) + "/" + cost[k] + "</em></span>"; }).join("");
   }
   function cgDetail(r, ctx) {
-    if (!r) return '<div class="crg-d crg-empty"><p>Nothing to make here yet.</p></div>';
+    if (!r) return '<div class="crg-d crg-empty"><p>' + (CG_SEL[ctx] === "" ? "Pick something to see what it needs." : "Nothing to make here yet.") + "</p></div>";
     var v = recVis(r), st = v.st, c = cgState(r), sk = stnOf(r), note = "", btn;
     var miss = Object.keys(r.cost).filter(function (q) { return haveIt(q) < r.cost[q]; }).map(function (q) { return (r.cost[q] - haveIt(q)) + " " + ITEMS[q].n; });
     if (c === "own") { btn = '<button type="button" class="btn ghost" disabled>Owned</button>'; note = "You already have this."; }
@@ -14709,7 +14710,12 @@
   $("sbxPackBtn").addEventListener("click", function () { packOpen ? closePack() : openPack(); });
   $("sbxPack").addEventListener("click", function (e) { if (e.target === this) closePack(); });
   function panelClick(e) {
-    var t = e.target.closest("button"); if (!t) return;
+    var t = e.target.closest("button");
+    if (!t) {   // CRAFT GRID: a click on empty space (not a slot, button, field or link) clears the pick
+      var cz = e.target.closest(".crg") || e.target.closest("#sbxStnBody") || (tab === "craft" && !stnOpen && e.target.closest("#sbxBody"));
+      if (cz && !e.target.closest("input,select,textarea,a,label,[data-csel],.crg-d")) { var ck = stnOpen ? stnOpen.k : "bag"; if (CG_SEL[ck] !== "") { CG_SEL[ck] = ""; renderPanel(); } }
+      return;
+    }
     if (t.hasAttribute("data-close")) return closePanel();
     if (t.hasAttribute("data-lore")) return openLore(t.getAttribute("data-lore"));   // LORE: read a page
     if (t.hasAttribute("data-pkeq")) return pkAct(t.getAttribute("data-pkeq"));   // BACKPACK SCREEN: gear slots
@@ -14738,7 +14744,7 @@
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.hasAttribute("data-sx-bup")) return upgradeBench();
-    if (t.hasAttribute("data-csel")) { CG_SEL[stnOpen ? stnOpen.k : "bag"] = t.getAttribute("data-csel"); snd("tick"); return renderPanel(); }   // CRAFT GRID: pick a slot
+    if (t.hasAttribute("data-csel")) { var ck2 = stnOpen ? stnOpen.k : "bag", cv = t.getAttribute("data-csel"); CG_SEL[ck2] = CG_SEL[ck2] === cv ? "" : cv; snd("tick"); return renderPanel(); }   // CRAFT GRID: pick a slot (the picked one again clears it)
     if (t.getAttribute("data-sx-craft")) return craft(t.getAttribute("data-sx-craft"));
     if (t.hasAttribute("data-sx-goto")) return openCraftTo(t.getAttribute("data-sx-goto"));   // CRAFT SEARCH: go to the station recipe
     if (t.hasAttribute("data-csclear")) { csearch = ""; renderPanel(); var ci = $("sbxCSearch"); if (ci) ci.focus(); return; }
