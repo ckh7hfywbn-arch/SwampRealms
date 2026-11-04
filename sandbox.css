@@ -1854,3 +1854,7 @@ body.sbx-app footer{margin-top:28px}
 .pk-loc .pk-losave{font-size:.78em;padding:5px 6px}
 .crg-chests{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:.82em;font-weight:700;color:#bfe9d8;opacity:.9}
 .crg-chests img{width:18px;height:18px;image-rendering:pixelated}
+/* MAP PINS: notes and tracking */
+.sbx-mcard .wp-note{width:100%;box-sizing:border-box;resize:none;margin:8px 0 6px;padding:7px 9px;border-radius:10px;border:1px solid #4ee6b455;background:#06100dcc;color:#f6eedb;font:600 13px/1.35 Nunito,system-ui,sans-serif}
+.sbx-mcard .wp-note:focus{outline:none;border-color:#4ee6b4}
+.sbx-mcard .wp-track[aria-pressed="true"]{box-shadow:0 0 0 2px #7fd6ff}

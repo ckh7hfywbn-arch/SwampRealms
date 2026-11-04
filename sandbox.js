@@ -606,7 +606,7 @@
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
-      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24) });
+      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24), note: String(w.note || "").slice(0, 140), t: w.t ? 1 : 0 });
     });
     d.days = Math.max(0, Math.min(1e6, Math.floor(+o.days) || 0));
     d.zoom = [0.8, 1, 1.25, 1.5, 2].indexOf(+o.zoom) > -1 ? +o.zoom : 1;
@@ -7953,6 +7953,42 @@
     if (S.tmap && S.tmap.x === x && S.tmap.y === y) S.tmap = null; S.st.dug++;
     popup("Treasure found", "Buried Treasure • " + ks.length + " kinds of loot", "#f2c14e", "✦"); snd("open", "Epic"); checkGoals(); save();
   }
+  // ---------- MAP PINS IN THE WORLD: every pin floats over its spot on the surface; the tracked pin (Track on the map) also gets an
+  // arrow at the screen edge with its distance, and clears itself when you arrive. N drops a pin where you stand. ----------
+  function wpTracked() { var L = S.wp || []; for (var i = 0; i < L.length; i++) if (L[i].t) return L[i]; return null; }
+  function drawWpWorld(g, now) {
+    if (PHOTO.on || cave || OCS || HOME || panelOpen || !S.wp || !S.wp.length) return;
+    var tw = wpTracked();
+    if (tw && Math.abs(tw.x + 0.5 - p.x) < 2.5 && Math.abs(tw.y + 0.5 - (p.y - 1)) < 3) { tw.t = 0; toast("You've reached " + tw.n + ".", WP_COL[tw.c]); snd("rise"); save(); tw = null; }
+    S.wp.forEach(function (w) {
+      var sx = ox + (w.x + 0.5) * ts, sy = oy + (w.y - 0.35) * ts + Math.sin(now / 300 + w.x) * ts * 0.08;
+      if (sx < -ts || sx > vw + ts || sy < -ts * 2 || sy > vh + ts) return;
+      var r = Math.max(7, ts * 0.26) * (w.t ? 1 + 0.1 * Math.sin(now / 160) : 0.85);
+      g.save(); g.translate(sx, sy); g.globalAlpha = w.t ? 1 : 0.8;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(0, r * 1.9, r * 0.6, r * 0.2, 0, 0, 6.2832); g.fill();
+      g.fillStyle = WP_COL[w.c]; g.beginPath(); g.arc(0, 0, r, Math.PI * 0.85, Math.PI * 0.15); g.lineTo(0, r * 1.7); g.closePath(); g.fill();
+      g.strokeStyle = "#06100d"; g.lineWidth = 2; g.stroke(); wpGlyph(g, WP_ICONS[w.i || 0], r * 0.62, "#ffffff");
+      if (w.t || Math.abs(w.x + 0.5 - p.x) < 6) { g.font = "800 " + Math.max(10, Math.round(ts * 0.3)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.fillStyle = "#fff6dc"; g.strokeText(w.n, 0, -r - 6); g.fillText(w.n, 0, -r - 6); }
+      g.restore();
+    });
+    if (!tw) return;
+    var tx = ox + (tw.x + 0.5) * ts, ty = oy + (tw.y - 0.35) * ts, m = 36;
+    if (tx > m && tx < vw - m && ty > m + 40 && ty < vh - m - 60) return;
+    var cx = vw / 2, cy = vh / 2, dx = tx - cx, dy = ty - cy, kx = dx ? (vw / 2 - m) / Math.abs(dx) : 1e9, ky = dy ? (vh / 2 - m - 50) / Math.abs(dy) : 1e9, kk = Math.min(kx, ky), ex = cx + dx * kk, ey = cy + dy * kk, rr = 11 * (1 + 0.1 * Math.sin(now / 220));
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(6,16,13,.85)"; g.beginPath(); g.arc(0, 0, rr + 5, 0, 7); g.fill();
+    g.fillStyle = WP_COL[tw.c]; g.beginPath(); g.arc(0, 0, rr, 0, 7); g.fill(); wpGlyph(g, WP_ICONS[tw.i || 0], rr * 0.6, "#ffffff");
+    var ang = Math.atan2(dy, dx); g.rotate(ang); g.fillStyle = WP_COL[tw.c]; g.beginPath(); g.moveTo(rr + 15, 0); g.lineTo(rr + 6, -7); g.lineTo(rr + 6, 7); g.closePath(); g.fill(); g.rotate(-ang);
+    var dist = Math.round(Math.hypot(tw.x + 0.5 - p.x, tw.y + 0.5 - (p.y - 1)));
+    g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = "#fff6dc";
+    var lbl = tw.n + " · " + dist + "m", lw2 = g.measureText(lbl).width / 2, lx = clamp(0, 8 + lw2 - ex, vw - 8 - lw2 - ex); g.strokeText(lbl, lx, rr + 20); g.fillText(lbl, lx, rr + 20); g.restore();
+  }
+  function dropPinHere() {
+    if (cave || OCS || HOME) { nag("Pins go on the surface map. Drop one up top."); return; }
+    if (S.wp.length >= WP_MAX) { toast("Waypoint limit reached (" + WP_MAX + "). Remove one on the map first.", "#f2c14e"); return; }
+    var used = {}, i; S.wp.forEach(function (w) { var m2 = /^Pin (\d+)$/.exec(w.n); if (m2) used[m2[1]] = 1; }); for (i = 1; used[i]; i++);
+    S.wp.push({ x: clamp(Math.floor(p.x), 0, W - 1), y: clamp(Math.floor(p.y - 1), 0, H - 1), c: (S.wp.length * 5) % WP_COL.length, i: 0, n: "Pin " + i, note: "", t: 0 });
+    snd("coin"); toast("Pin " + i + " dropped here. Open the map (M) to name it or add a note.", WP_COL[(S.wp.length * 5 - 5) % WP_COL.length]); save();
+  }
   function drawMapMark(g, now) { if (PHOTO.on) return;   // the red X over the spot, and an arrow at the screen edge while it is off-screen
     if (cave || !S.tmap || panelOpen) return;
     if (get(S.tmap.x, S.tmap.y) !== T.X_buried) { S.tmap = null; return; }
@@ -9474,7 +9510,7 @@
         + '<h2>How to play</h2>'
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
-        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
+        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
@@ -9597,7 +9633,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -12648,7 +12684,7 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawPotMark(g, now); drawBMHud(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawWpWorld(g, now); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -14502,12 +14538,13 @@
   function mapCard() {
     var cd = $("sbxMapCard"), w = M.sel >= 0 ? S.wp[M.sel] : null; if (!w) { cd.hidden = true; return; }
     cd.hidden = false;
-    var keep = document.activeElement && document.activeElement.id === "sbxWpName";   // re-rendering while typing would lose the cursor: only refresh the rest
-    var head = '<div class="wp-top"><span class="wp-pin" style="background:' + WP_COL[w.c] + '"><img alt="" src="' + wpIconUrl(WP_ICONS[w.i || 0], "#ffffff") + '"></span><div class="wp-meta"><input id="sbxWpName" type="text" maxlength="24" value="' + esc(w.n) + '" aria-label="Waypoint name" spellcheck="false"><small>' + esc(wpText(w)) + '</small></div><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button></div>';
+    var keep = document.activeElement && (document.activeElement.id === "sbxWpName" || document.activeElement.id === "sbxWpNote");   // re-rendering while typing would lose the cursor: only refresh the rest
+    var head = '<div class="wp-top"><span class="wp-pin" style="background:' + WP_COL[w.c] + '"><img alt="" src="' + wpIconUrl(WP_ICONS[w.i || 0], "#ffffff") + '"></span><div class="wp-meta"><input id="sbxWpName" type="text" maxlength="24" value="' + esc(w.n) + '" aria-label="Waypoint name" spellcheck="false"><small>' + esc(wpText(w)) + '</small></div><button type="button" class="btn' + (w.t ? "" : " ghost") + ' wp-track" data-mc="track" aria-pressed="' + !!w.t + '">' + (w.t ? "Tracking" : "Track") + '</button><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button></div>';
     var cols = '<div class="wp-row" role="group" aria-label="Colour">' + WP_COL.map(function (c, n) { return '<button type="button" class="wp-sw' + (n === w.c ? " on" : "") + '" data-wpc="' + n + '" style="background:' + c + '" aria-label="Colour ' + (n + 1) + '" aria-pressed="' + (n === w.c) + '"></button>'; }).join("") + "</div>";
     var ics = '<div class="wp-row" role="group" aria-label="Icon">' + WP_ICONS.map(function (k, n) { return '<button type="button" class="wp-ic' + (n === (w.i || 0) ? " on" : "") + '" data-wpi="' + n + '" title="' + WP_ICON_NAMES[k] + '" aria-label="' + WP_ICON_NAMES[k] + '" aria-pressed="' + (n === (w.i || 0)) + '"><img alt="" src="' + wpIconUrl(k, n === (w.i || 0) ? "#06100d" : "#f6eedb") + '"></button>'; }).join("") + "</div>";
     if (keep) { var sm = cd.querySelector(".wp-meta small"); if (sm) sm.textContent = wpText(w); var pin = cd.querySelector(".wp-pin"); if (pin) pin.style.background = WP_COL[w.c]; return; }
-    cd.innerHTML = head + cols + ics;
+    var note = '<textarea id="sbxWpNote" class="wp-note" maxlength="140" rows="2" placeholder="Add a note (what is here, what to bring...)" aria-label="Waypoint note">' + esc(w.note || "") + "</textarea>";
+    cd.innerHTML = head + note + cols + ics;
   }
   function mapTap(x, y) {
     var i, best = -1, bd = 22 * 22;
@@ -14561,11 +14598,13 @@
       var z = t.getAttribute("data-mz"); if (z) { M.dirty = true; if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
       if (t.hasAttribute("data-wpc") && M.sel >= 0) { S.wp[M.sel].c = +t.getAttribute("data-wpc"); snd("coin"); save(); return mapCard(); }
       if (t.hasAttribute("data-wpi") && M.sel >= 0) { S.wp[M.sel].i = +t.getAttribute("data-wpi"); snd("coin"); save(); return mapCard(); }
-      var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete(); if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
+      var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete();
+      if (m === "track" && M.sel >= 0) { var tw = S.wp[M.sel], on2 = !tw.t; S.wp.forEach(function (q) { q.t = 0; }); tw.t = on2 ? 1 : 0; snd(on2 ? "coin" : "open"); if (on2) toast("Tracking " + tw.n + ". Follow the arrow.", WP_COL[tw.c]); save(); mapCard(); return; } if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
     });
-    V.addEventListener("input", function (e) { if (e.target.id !== "sbxWpName" || M.sel < 0) return; S.wp[M.sel].n = e.target.value.slice(0, 24); });
+    V.addEventListener("input", function (e) { if (M.sel < 0) return; if (e.target.id === "sbxWpNote") { S.wp[M.sel].note = e.target.value.slice(0, 140); return; } if (e.target.id !== "sbxWpName") return; S.wp[M.sel].n = e.target.value.slice(0, 24); });
+    V.addEventListener("change", function (e) { if (e.target.id === "sbxWpNote" && M.sel >= 0) save(); });
     V.addEventListener("change", function (e) { if (e.target.id !== "sbxWpName" || M.sel < 0) return; var w = S.wp[M.sel]; w.n = (e.target.value.trim() || "Waypoint").slice(0, 24); e.target.value = w.n; save(); });
-    V.addEventListener("keydown", function (e) { if (e.target.id === "sbxWpName" && (e.key === "Enter" || e.key === "Escape")) { e.target.blur(); e.stopPropagation(); } }, true);
+    V.addEventListener("keydown", function (e) { if (e.target.id === "sbxWpName" && (e.key === "Enter" || e.key === "Escape")) { e.target.blur(); e.stopPropagation(); } if (e.target.id === "sbxWpNote") { if (e.key === "Escape") e.target.blur(); e.stopPropagation(); } }, true);
     window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
     if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(V);
   })();
@@ -14873,6 +14912,7 @@
     else if (k === "Shift" || k === "c" || k === "C") { if (!e.repeat) tryDodge(); }
     else if (k === "x" || k === "X") { if (!e.repeat) quickStack(); }
     else if (k === "l" || k === "L") { if (!e.repeat) loNext(); }
+    else if (k === "n" || k === "N") { if (!e.repeat) dropPinHere(); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
@@ -17823,6 +17863,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
+  window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
   window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };
