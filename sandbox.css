@@ -1971,3 +1971,4 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .rg-h small{font:700 .72rem Nunito,system-ui,sans-serif;color:#9fc9b6;margin-left:6px}
 .sp-rot{padding:10px 12px;border-radius:12px;background:rgba(140,150,100,.15);border:1px solid #a8c06055;color:#e0e8c8!important;text-transform:none!important;letter-spacing:0!important;font:700 .86rem/1.4 Nunito,system-ui,sans-serif!important}
 .rg-h small{text-transform:none!important;letter-spacing:0!important;display:inline!important}
+.sbx-stage.title .sbx-roll,.sbx-stage.title .sbx-spec{display:none!important}   /* no dodge-roll or special button over the main menu */
