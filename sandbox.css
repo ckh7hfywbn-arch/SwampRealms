@@ -1957,3 +1957,17 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .cr-jobs .btn,.cr-exp .btn{width:auto!important;flex:1 1 auto;margin:0!important;min-width:0}
 .cr-tx small{text-align:left!important}
 .cr-lbl{display:block;margin-top:6px;font:900 .68rem Nunito,system-ui,sans-serif;color:#8fb3a2;text-align:left}
+/* SPORE NETWORK */
+.sp-nodes{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.sp-node{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid #4ee6b455;background:rgba(0,0,0,.25);font:800 .78rem Nunito,system-ui,sans-serif;color:#cfeee0}
+.sp-node i{width:9px;height:9px;border-radius:50%;background:#4ee6b4;box-shadow:0 0 8px #4ee6b4}
+.sp-node.here{border-color:#4ee6b4;color:#fff}
+.sp-node.rot{border-color:#a8c06088;color:#c8d0a0}.sp-node.rot i{background:#8a9070;box-shadow:none}
+.sp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px;margin:4px 0 8px}
+.sp-it{position:relative;display:grid;place-items:center;height:54px;border-radius:10px;border:1px solid #ffffff14;background:rgba(0,0,0,.28);cursor:pointer;padding:0}
+.sp-it img{width:28px;height:28px;image-rendering:pixelated}
+.sp-it b{position:absolute;right:4px;bottom:2px;font:900 .7rem Nunito,system-ui,sans-serif;color:#fff6dc;text-shadow:0 1px 2px #000}
+.sp-it:hover,.sp-it:focus-visible{border-color:#4ee6b4}
+.rg-h small{font:700 .72rem Nunito,system-ui,sans-serif;color:#9fc9b6;margin-left:6px}
+.sp-rot{padding:10px 12px;border-radius:12px;background:rgba(140,150,100,.15);border:1px solid #a8c06055;color:#e0e8c8!important;text-transform:none!important;letter-spacing:0!important;font:700 .86rem/1.4 Nunito,system-ui,sans-serif!important}
+.rg-h small{text-transform:none!important;letter-spacing:0!important;display:inline!important}
