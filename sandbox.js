@@ -172,6 +172,9 @@
     { id: "d_chandelier", cat: "Frostfen Collection", n: "Crystal Chandelier", out: { chandelier: 1 }, cost: { crystal: 8, planks: 4, torch: 4, stick: 2 }, bl: 3, d: "A hanging ring of Frost Crystals and candle flames. Hangs from a wall or a ceiling beam. Very bright." },
     { id: "d_throne", cat: "Frostfen Collection", n: "Frostrock Throne", out: { throne: 1 }, cost: { frostrock: 14, crystal: 6, fiber: 6 }, bl: 4, d: "The grandest piece you can craft: a throne carved from Frostrock. Needs the fully upgraded Frost Workbench." }
   ];
+  // PROSPECTOR'S LANTERN (see PROSPECT below): carry it and ore glows through rock
+  if (!ITEMS.prospect) { ITEMS.prospect = { n: "Prospector's Lantern", d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground." }; if (ORDER.indexOf("prospect") < 0) ORDER.push("prospect"); }
+  RECIPES.push({ id: "prospect", n: "Prospector's Lantern", out: { prospect: 1 }, cost: { ironingot: 4, glass: 2, crystal: 3, spore: 6 }, bench: true, d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground. You only need one." });
   if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
   DECOR.forEach(function (r) { r.deco = 1; });
   // ==================================================================================================
@@ -3421,6 +3424,25 @@
     F.miner = { x: mx + 0.5, y: my + 0.75, n: MINER_N[(f * 3 + (S.seed | 0)) % MINER_N.length], f: f, t: 0 };
     if (rub) for (var oy = -1; oy <= 1; oy++) for (var ox2 = -1; ox2 <= 1; ox2++) { if (!ox2 && !oy) continue; var j = (my + oy) * F.w + mx + ox2; if (mx + ox2 < 1 || my + oy < 1 || mx + ox2 >= F.w - 1 || my + oy >= F.h - 1) continue; if (!SC.solid(F, mx + ox2, my + oy) && !F.node[j]) F.node[j] = rub; }
     setTimeout(function () { if (cave && cave.F === F) toast("You hear someone calling for help on this floor...", "#f2c14e"); }, 1600);
+  }
+  // ---------- PROSPECTOR'S LANTERN: ore within PROSPECT_R tiles glows through rock and the dark (a pulsing outline in the ore's colour) ----------
+  var PROSPECT_R = 9, ORE_CACHE = null;
+  function oreColor(id) {
+    if (!ORE_CACHE) { ORE_CACHE = {}; TILES.forEach(function (t, i) { if (t && /\bOre$/.test(t.n || "") && t.drop) ORE_CACHE[i] = (ITEMS[t.drop] && ITEMS[t.drop].gem) || ({ bogiron: "#d8c0a8", sulfur: "#f0e040", amber: "#ffb13b", ruby: "#ff4a5a", sapphire: "#4a8aff", moonstone: "#d8e0ff", amethyst: "#c78bff" })[t.drop] || "#f2c14e"; }); }
+    return ORE_CACHE[id] || null;
+  }
+  function drawProspect(g, now) {
+    if (!(S.inv.prospect > 0) || PHOTO.on || OCS || HOME) return;
+    var inC = !!cave, F = inC ? cave.F : null; if (inC && (!F || F.bld || F.lair || F.nx)) return;
+    var px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 1, R = PROSPECT_R, t = now / 1000, pulse = 0.6 + 0.4 * Math.sin(t * 3);
+    if (!inC && py < col[clamp(Math.floor(px), 0, W - 1)] - 2) return;   // only once you are at or below the ground
+    for (var y = Math.floor(py - R); y <= Math.ceil(py + R); y++) for (var x = Math.floor(px - R); x <= Math.ceil(px + R); x++) {
+      var id = inC ? (x >= 0 && y >= 0 && x < F.w && y < F.h ? F.node[y * F.w + x] : 0) : get(x, y); if (!id) continue; var c = oreColor(id); if (!c) continue;
+      var d = Math.hypot(x + 0.5 - px, y + 0.5 - py); if (d > R) continue; var a = (1 - d / R) * pulse, sx = ox + x * ts, sy = oy + y * ts;
+      g.globalAlpha = a * 0.35; g.fillStyle = c; g.fillRect(sx + ts * 0.2, sy + ts * 0.2, ts * 0.6, ts * 0.6);
+      g.globalAlpha = a; g.strokeStyle = c; g.lineWidth = Math.max(1.5, ts * 0.07); g.strokeRect(sx + 2, sy + 2, ts - 4, ts - 4);
+    }
+    g.globalAlpha = 1;
   }
   function minerNear() { var M = cave && cave.F && cave.F.miner; return !!M && !M.saved && Math.hypot(M.x - cp.x, M.y - cp.y) < 1.7; }
   function rescueMiner() {
@@ -8454,6 +8476,7 @@
   }
   (function () {
     SPR.grapple = { r: ["................", "..........aa....", ".........a..a...", "........abba....", ".......abbb.....", "......gbb.......", ".....gg.........", "....gl..........", "...gg...........", "..gl.l..........", ".gg..g..........", ".g...gl.........", ".gl...g.........", "..gg.gg.........", "...ggl..........", "................"], p: { a: "#cfd6dc", b: "#7a8290", g: "#4f8a3c", l: "#8fd06a" } };
+    SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
   })();
   // ---------- PLAYGROUND: Bounce Shroom, Speed Moss, Confetti Cannon (playground pack in sandbox-extra.js) ----------
@@ -13249,7 +13272,7 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawWpWorld(g, now); drawPotMark(g, now); drawBMHud(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawWpWorld(g, now); drawProspect(g, now); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -13894,6 +13917,7 @@
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
+    drawProspect(g, now);
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
@@ -14276,7 +14300,7 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
+    ["Tools|Utility", "prospect shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
     ["Tools|Adventuring", "x_grapple"],
     ["Stations|Garage", "x_garage"],
