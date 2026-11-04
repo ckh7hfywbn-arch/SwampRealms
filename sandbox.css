@@ -1942,3 +1942,18 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .rg-mod small{display:block;text-transform:none!important;letter-spacing:0!important;color:#cfe0d6!important;font:700 .8rem/1.35 Nunito,system-ui,sans-serif!important;text-align:left;margin-top:2px}
 .rg-mod.on{border-color:#ff8a3d88}
 .rg-mod .btn{flex:none}
+/* SALTJAW'S CREW */
+.cr-card{--cc:#f2c14e;display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:10px;border-radius:14px;border:1px solid color-mix(in srgb,var(--cc) 45%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 10%,transparent),rgba(0,0,0,.25));text-align:left}
+.cr-face{flex:none;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 40%,#fff 0 9%,#06100d 10% 15%,transparent 16%),radial-gradient(circle at 65% 40%,#fff 0 9%,#06100d 10% 15%,transparent 16%),linear-gradient(var(--cc) 0 26%,#3f9a4a 27%);border:2px solid var(--cc)}
+.cr-tx{min-width:0;flex:1}
+.cr-tx b{display:block;font:900 .95rem Nunito,system-ui,sans-serif;color:#f6eedb}
+.cr-tx b em{font-style:normal;font-size:.75rem;color:var(--cc);margin-left:4px}
+.cr-tx small{display:block;text-transform:none!important;letter-spacing:0!important;color:#bcd2c6!important;font:700 .78rem/1.3 Nunito,system-ui,sans-serif!important;margin:2px 0 6px}
+.cr-jobs,.cr-exp{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.cr-jobs .btn,.cr-exp .btn{min-height:30px;padding:4px 9px;font-size:.76rem}
+.cr-away{margin:6px 0 0;font:800 .8rem Nunito,system-ui,sans-serif;color:#7fd6ff}
+.cr-log{margin:4px 0 8px;padding-left:18px;text-align:left;font:700 .8rem/1.35 Nunito,system-ui,sans-serif;color:#d8e8de}
+.cr-log li{margin:3px 0}
+.cr-jobs .btn,.cr-exp .btn{width:auto!important;flex:1 1 auto;margin:0!important;min-width:0}
+.cr-tx small{text-align:left!important}
+.cr-lbl{display:block;margin-top:6px;font:900 .68rem Nunito,system-ui,sans-serif;color:#8fb3a2;text-align:left}

@@ -3617,6 +3617,93 @@
   };
   var SMELT = [["bogiron", "ironingot"], ["quartz", "glass"]], JUNK = ["stone", "basalt", "frostrock", "mud", "dirt", "clay", "pebble"];
   function modOn(k) { return !!lairS().mods[k]; }
+  // ---------- SALTJAW'S CREW: once the Hollow is yours, the Captain's old crew hangs about a campfire by the ship. Hire them with Swamp
+  // Tokens, then give each a job: work a rig (it digs a third faster), crew your boat (sails faster), or go on an EXPEDITION (real time,
+  // even while the game is closed) that comes back with loot and a logbook entry. Crew level up from expeditions (better loot). ----------
+  var CREW_POOL = [
+    { id: "bea", n: "Barnacle Bea", q: "Talks to the barnacles. They talk back.", c: "#ff6b82" },
+    { id: "tob", n: "Two-Fin Tobias", q: "Swims in circles. Very fast circles.", c: "#6fb6ff" },
+    { id: "pete", n: "Mossy Pete", q: "Hasn't been dry since he was a tadpole.", c: "#7fd06a" },
+    { id: "sal", n: "Salty Sal", q: "Seasons everything. Even the soup. Especially the soup.", c: "#f2c14e" },
+    { id: "gus", n: "Gulp Gus", q: "Once swallowed a lantern. Still glows a bit.", c: "#c78bff" },
+    { id: "ink", n: "Inkeye Iris", q: "Reads maps upside down, and is somehow always right.", c: "#3ad0ff" }
+  ];
+  var EXPS = { short: { n: "Short run", ms: 20 * 60000, d: "20 minutes along the flooded tunnels" }, long: { n: "Long voyage", ms: 2 * 3600000, d: "2 hours out to the far islands" }, epic: { n: "Epic expedition", ms: 8 * 3600000, d: "8 hours to the edge of the map" } };
+  var CREW_LOG = ["{n} fought a squid over a sandwich. Won the sandwich.", "{n} found a cave full of glowing worms and named every one.", "{n} got lost, then found, then lost again. Brought back loot anyway.", "{n} traded a shiny button for a whole sack of ore.", "{n} out-sang a sea witch. Barely.", "{n} slept through a storm in a barrel and woke up rich.", "{n} raced a gator. The gator wants a rematch.", "{n} dug where the map said not to. Good call.", "{n} came back with a new hat and refuses to explain it.", "{n} tamed a crab for a day. It pinched them goodbye."];
+  function crewList() { var L = lairS(); if (!Array.isArray(L.crew)) L.crew = []; if (!Array.isArray(L.log)) L.log = []; return L.crew; }
+  function crewDef(id) { return CREW_POOL.filter(function (q) { return q.id === id; })[0]; }
+  function crewOn(job) { return crewList().some(function (c) { return c.job === job; }); }
+  function crewCost() { return 10 + crewList().length * 10; }
+  function crewCamp(F) {   // a dry spot near the gangplank for the campfire (worked out once per floor)
+    if (F.camp !== undefined) return F.camp; F.camp = null; if (!F.dock) return null;
+    var best = null, bd = 1e9; for (var y = Math.floor(F.dock.y) - 5; y <= Math.floor(F.dock.y) + 5; y++) for (var x = Math.floor(F.dock.x) - 8; x <= Math.floor(F.dock.x) + 2; x++) {
+      var ok = true; for (var yy = y - 1; yy <= y + 1 && ok; yy++) for (var xx = x - 1; xx <= x + 1 && ok; xx++) { var i = yy * F.w + xx; if (xx < 1 || yy < 1 || xx >= F.w - 1 || yy >= F.h - 1 || SC.solid(F, xx, yy) || (F.pool && F.pool[i])) ok = false; }
+      if (!ok) continue; var d = Math.abs(x - (F.dock.x - 4)) + Math.abs(y - F.dock.y) * 1.5; if (d < bd) { bd = d; best = { x: x + 0.5, y: y + 0.5 }; } }
+    return (F.camp = best);
+  }
+  function crewNear() { var F = cave && cave.F; if (!F || !F.lair || !lairOwned()) return false; var c = crewCamp(F); return !!c && Math.hypot(c.x - cp.x, c.y + 0.3 - cp.y) < 2.4; }
+  function crewRebase(fn) {   // keep what the rigs have dug so far when their speed changes
+    var keep = [0, 1].map(function (i) { return rigOf(i) ? rigCount(i) : 0; }); fn();
+    [0, 1].forEach(function (i) { var r = rigOf(i); if (r) r.t = gameClock() - keep[i] * rigRate(i); });
+  }
+  function crewTick() {   // expeditions that have come back
+    var now = Date.now(), L = lairS(), back = [];
+    crewList().forEach(function (c) { if (c.job === "exp" && c.eT && now >= c.eT) back.push(c); });
+    back.forEach(function (c) {
+      var E = EXPS[c.eK] || EXPS.short, k = c.eK === "epic" ? 3 : c.eK === "long" ? 2 : 1, lv = c.lv, D = crewDef(c.id), got = {};
+      var add = function (it, n) { if (ITEMS[it] && n > 0) got[it] = (got[it] || 0) + n; };
+      add("swamptoken", Math.round((4 + Math.random() * 4) * k * (1 + lv * 0.25))); add("doubloon", Math.round((1 + Math.random() * 2) * k)); add(["ironingot", "cinder", "crystal", "bogiron", "quartz"][Math.floor(Math.random() * 5)], Math.round((3 + Math.random() * 5) * k));
+      if (Math.random() < 0.2 * k) add(["ruby", "sapphire", "amethyst", "moonstone", "amber"][Math.floor(Math.random() * 5)], 1); if (k >= 2 && Math.random() < 0.15 * k) add("pearl", 1); if (k === 3 && Math.random() < 0.35) add("goldbar", 1); if (k === 3 && Math.random() < 0.12) add("blackpearl", 1);
+      Object.keys(got).forEach(function (it) { give(it, got[it], undefined, undefined, true); });
+      c.xp += k * 2; while (c.lv < 5 && c.xp >= c.lv * 4) { c.xp -= c.lv * 4; c.lv++; }
+      var line = CREW_LOG[Math.floor(Math.random() * CREW_LOG.length)].replace("{n}", D.n), loot = Object.keys(got).map(function (it) { return got[it] + " " + ITEMS[it].n; }).join(", ");
+      L.log.push({ t: now, s: line + " (" + E.n + ": " + loot + ")" }); if (L.log.length > 24) L.log.splice(0, L.log.length - 24);
+      c.job = "idle"; c.eT = c.eD = 0; c.eK = ""; S.st.expeds = (S.st.expeds || 0) + 1;
+      popup("Crew is back!", D.n + " • " + loot, D.c, "\u2693"); snd("open", "Epic");
+    });
+    if (back.length) save();
+  }
+  function openCrew() {
+    var el = $("sbxStory"); if (!el) return; crewTick(); var L = lairS(), cl = crewList(), h = "";
+    storyOpen = 231; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    h += "<small>The Sunken Hollow · crew camp</small><h2>Saltjaw's crew</h2><p>The Captain's old crew sit around the fire, eyeing your Swamp Tokens. Hire them, then give each one a job.</p>";
+    cl.forEach(function (c, i) { var D = crewDef(c.id), left = c.job === "exp" ? Math.max(0, c.eT - Date.now()) : 0;
+      var jobs = [["idle", "Rest"], ["rig0", "Bilge Drill"], ["rig1", "Steam Borer"], ["ship", "Your boat"]].map(function (j) { var taken = j[0] !== "idle" && cl.some(function (o, k) { return k !== i && o.job === j[0]; }), lock = (j[0] === "rig0" && !rigOf(0)) || (j[0] === "rig1" && !rigOf(1));
+        return '<button type="button" class="btn' + (c.job === j[0] ? "" : " ghost") + '" data-crew="job:' + i + ":" + j[0] + '"' + (taken || lock || c.job === "exp" ? " disabled" : "") + ">" + j[1] + "</button>"; }).join("");
+      var ex = c.job === "exp" ? '<p class="cr-away">Away on a ' + esc(EXPS[c.eK].n.toLowerCase()) + ": back in " + crewTime(left) + ".</p>" : '<div class="cr-exp">' + Object.keys(EXPS).map(function (k) { return '<button type="button" class="btn ghost" data-crew="exp:' + i + ":" + k + '" title="' + esc(EXPS[k].d) + '">' + esc(EXPS[k].n) + "</button>"; }).join("") + "</div>";
+      h += '<div class="cr-card" style="--cc:' + D.c + '"><div class="cr-face" aria-hidden="true"></div><div class="cr-tx"><b>' + esc(D.n) + " <em>Lv " + c.lv + "</em></b><small>" + esc(D.q) + '</small>' + (c.job === "exp" ? "" : '<span class="cr-lbl">Job</span><div class="cr-jobs">' + jobs + "</div>") + (c.job === "exp" ? "" : '<span class="cr-lbl">Send on an expedition</span>') + ex + "</div></div>";
+    });
+    var next = CREW_POOL.filter(function (q) { return !cl.some(function (c) { return c.id === q.id; }); })[0];
+    if (next) { var cost = crewCost(), can = (S.inv.swamptoken || 0) >= cost; h += '<div class="sbx-card rg-mod"><div><b>Hire ' + esc(next.n) + "</b><small>" + esc(next.q) + '</small><div class="cost">' + costHtml({ swamptoken: cost }) + '</div></div><button type="button" class="btn' + (can ? "" : " ghost") + '" data-crew="hire"' + (can ? "" : " disabled") + ">Hire</button></div>"; }
+    if (L.log.length) h += '<h3 class="rg-h">Logbook</h3><ul class="cr-log">' + L.log.slice().reverse().slice(0, 8).map(function (q) { return "<li>" + esc(q.s) + "</li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h;
+  }
+  function crewTime(ms) { var m = Math.ceil(ms / 60000); return m >= 60 ? Math.floor(m / 60) + " h " + (m % 60) + " min" : m + " min"; }
+  function crewBtn(a) {
+    var cl = crewList(), q = a.split(":");
+    if (q[0] === "hire") { var next = CREW_POOL.filter(function (d) { return !cl.some(function (c) { return c.id === d.id; }); })[0], cost = crewCost(); if (!next || (S.inv.swamptoken || 0) < cost) return nag("You need " + cost + " Swamp Tokens."); payCost({ swamptoken: cost }); cl.push({ id: next.id, lv: 1, xp: 0, job: "idle", eT: 0, eD: 0, eK: "" }); popup("New crew mate", next.n + " joins you!", next.c, "\u2693"); snd("coin"); save(); return openCrew(); }
+    var c = cl[+q[1]]; if (!c || c.job === "exp") return;
+    if (q[0] === "job") { crewRebase(function () { c.job = q[2]; }); snd("coin"); save(); return openCrew(); }
+    if (q[0] === "exp" && EXPS[q[2]]) { crewRebase(function () { c.job = "exp"; }); c.eK = q[2]; c.eD = EXPS[q[2]].ms; c.eT = Date.now() + c.eD; toast(crewDef(c.id).n + " sets off: " + EXPS[q[2]].d + ".", crewDef(c.id).c); snd("open"); save(); return openCrew(); }
+  }
+  function drawCrewCamp(g, F, now, srcs, glows2) {   // the campfire, a notice board and whoever is home, bobbing about
+    if (!lairOwned()) return; var c = crewCamp(F); if (!c) return; var k = ts, t = reduce ? 0 : now / 1000, cx = ox + c.x * ts, cy = oy + (c.y + 0.4) * ts, fl = 0.8 + 0.2 * Math.sin(t * 11) * Math.sin(t * 4.1);
+    mShadow(g, cx, cy, k * 0.5); g.fillStyle = "#4a3422"; g.fillRect(cx - k * 0.32, cy - k * 0.1, k * 0.64, k * 0.08); g.fillRect(cx - k * 0.06, cy - k * 0.24, k * 0.12, k * 0.3);
+    for (var f2 = 0; f2 < 3; f2++) { var fh = k * (0.38 + 0.14 * Math.sin(t * 7 + f2 * 2)); g.fillStyle = f2 === 1 ? "#ffd36a" : "#ff7a2d"; g.beginPath(); g.moveTo(cx - k * 0.18 + f2 * k * 0.13, cy - k * 0.08); g.quadraticCurveTo(cx - k * 0.1 + f2 * k * 0.1, cy - fh, cx - k * 0.02 + f2 * k * 0.08, cy - k * 0.08); g.fill(); }
+    glows2.push([cx, cy - k * 0.25, "255,140,50", 1.3, 0.4 * fl]); srcs.push([c.x, c.y + 0.1, 3.4, 0.7 * fl]);
+    var bx = cx + k * 1.4, by = cy; g.fillStyle = "#4a3422"; g.fillRect(bx - k * 0.04, by - k * 1.0, k * 0.08, k * 1.0); g.fillStyle = "#8a6440"; g.fillRect(bx - k * 0.4, by - k * 1.2, k * 0.8, k * 0.5); g.fillStyle = "#f6eedb"; g.fillRect(bx - k * 0.32, by - k * 1.12, k * 0.25, k * 0.18); g.fillRect(bx + k * 0.02, by - k * 1.08, k * 0.28, k * 0.2);   // notice board
+    var home = crewList().filter(function (q) { return q.job !== "exp"; });
+    home.forEach(function (q, i) { var D = crewDef(q.id), a = (i / Math.max(1, home.length)) * 6.28 + 0.6, fx = cx + Math.cos(a) * k * 1.0, fy = cy + Math.sin(a) * k * 0.55 + Math.sin(t * 2 + i) * k * 0.04; drawCrewFrog(g, fx, fy, k * 0.42, D.c, Math.cos(a) > 0 ? -1 : 1, t + i); });
+  }
+  function drawCrewFrog(g, x, y, r, col, face, t) {   // a little pirate frog: round body, belly, bulgy eyes, a coloured bandana
+    g.save(); g.translate(x, y); g.scale(face, 1);
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, r * 0.9, r * 0.25, 0, 0, 6.28); g.fill();
+    g.fillStyle = "#3f9a4a"; g.beginPath(); g.ellipse(0, -r * 0.6, r * 0.85, r * 0.7, 0, 0, 6.28); g.fill(); g.fillStyle = "#b8e08a"; g.beginPath(); g.ellipse(r * 0.1, -r * 0.45, r * 0.45, r * 0.4, 0, 0, 6.28); g.fill();
+    [-0.35, 0.35].forEach(function (ex) { g.fillStyle = "#3f9a4a"; g.beginPath(); g.arc(ex * r, -r * 1.25, r * 0.26, 0, 6.28); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex * r, -r * 1.27, r * 0.16, 0, 6.28); g.fill(); g.fillStyle = "#06100d"; g.beginPath(); g.arc(ex * r + r * 0.05, -r * 1.27, r * 0.08, 0, 6.28); g.fill(); });
+    g.fillStyle = col; g.beginPath(); g.ellipse(0, -r * 1.02, r * 0.72, r * 0.18, 0, Math.PI, 0); g.fill(); g.beginPath(); g.moveTo(-r * 0.62, -r * 1.0); g.lineTo(-r * 1.0, -r * (0.8 + 0.08 * Math.sin(t * 4))); g.lineTo(-r * 0.6, -r * 0.88); g.fill();
+    g.restore();
+  }
   function rigProcess(got, n) {   // runs on everything collected; returns a short note for the popup
     var L = lairS(), notes = [];
     if (L.mods.sort) {
@@ -3629,7 +3716,9 @@
     return notes.join(" • ");
   }
   function lairOwned() { return !!(S.lair && S.lair.own); }
-  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; } if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
+  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; }
+    if (o && Array.isArray(o.crew)) n.crew = o.crew.slice(0, 6).filter(function (c) { return c && CREW_POOL.some(function (q) { return q.id === c.id; }); }).map(function (c) { return { id: c.id, lv: clamp(c.lv | 0 || 1, 1, 5), xp: Math.max(0, c.xp | 0), job: /^(idle|rig0|rig1|ship|exp)$/.test(c.job) ? c.job : "idle", eT: +c.eT || 0, eD: +c.eD || 0, eK: c.eK || "" }; });
+    if (o && Array.isArray(o.log)) n.log = o.log.slice(-24).filter(function (q) { return q && typeof q.s === "string"; }).map(function (q) { return { t: +q.t || 0, s: q.s.slice(0, 200) }; }); if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
   function isLairFloor(f) { return !!(cave && !cave.bld && !cave.volc && SC && SC.LAIR_F && f === SC.LAIR_F); }
   function gameClock() { return (S.days | 0) * CYCLE + S.time; }
   function caveBoss() { var F = cave && cave.F; if (!F || !F.lair || !F.mobs) return null; for (var i = 0; i < F.mobs.length; i++) { var m = F.mobs[i]; if (m.k === "captain" && !m.def && m.awake) return m; } return null; }
@@ -3724,7 +3813,7 @@
   function rigOf(i) { return lairS().rig[i] || null; }
   function siloOn() { return !!rigOf(2); }
   function rigLv(i) { var r = rigOf(i); return r ? clamp(r.lv | 0 || 1, 1, 3) : 0; }
-  function rigRate(i) { return RIGS[i].rate * Math.pow(0.75, rigLv(i) - 1); }
+  function rigRate(i) { return RIGS[i].rate * Math.pow(0.75, rigLv(i) - 1) * (i < 2 && S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "rig" + i; }) ? 0.75 : 1); }
   function rigCap(i) { return (RIGS[i].cap + 20 * (rigLv(i) - 1)) * (siloOn() ? 2 : 1); }
   function rigCount(i) { var r = rigOf(i); if (!r || !RIGS[i].rate) return 0; return Math.max(0, Math.min(rigCap(i), Math.floor((gameClock() - r.t) / rigRate(i)))); }
   function rigTotal() { return rigCount(0) + rigCount(1); }
@@ -3912,6 +4001,7 @@
     if (!F.pads) return; var own = lairOwned();
     F.pads.forEach(function (q, n) { if (q.y !== rj) return; var cx = ox + (q.x + 1) * ts, cy = oy + (q.y + 0.78) * ts, on = own && rigOf(n);
       if (!own) drawCrates(g, cx, cy); else if (n === 0) drawDrill(g, cx, cy, !!on, now, srcs, glows2); else if (on && n === 1) drawBorer(g, cx, cy, now, srcs, glows2); else if (on && n === 2) drawSilo(g, cx, cy, now, srcs, glows2); });
+    if (own && F.camp !== undefined && F.camp && Math.floor(F.camp.y) === rj) drawCrewCamp(g, F, now, srcs, glows2); else if (own && F.camp === undefined) crewCamp(F);
     if (own && F.cons && F.cons.y === rj) drawConsole(g, ox + (F.cons.x + 0.5) * ts, oy + (F.cons.y + 0.85) * ts, now, srcs, glows2);
     if (own && F.stack && F.stack.y === rj) drawStack(g, ox + (F.stack.x + 0.5) * ts, oy + (F.stack.y + 0.85) * ts);
   }
@@ -11052,7 +11142,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt);
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -13513,7 +13603,7 @@
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
-    tickSpecial(dt); tickElites(dt); tickAch(dt); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
+    tickSpecial(dt); tickElites(dt); tickAch(dt); if (lairOwned() && Math.random() < dt) crewTick(); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -13768,6 +13858,7 @@
     if (!panelOpen && !trans) contGlints(g, now);
     if (!panelOpen && !trans && motoNear()) drawPill(g, now, (motoS().done ? "Look at the Swamp Hog" : "Work on the motorcycle") + (coarse ? "" : " (F)"), ox + (MOTO_CELL.x + 1.5) * ts, oy + (MOTO_CELL.y - 0.9) * ts, false, function () { openMoto(); });
     else if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" || inGarage() ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
+    if (!panelOpen && !trans && crewNear()) { var cc2 = crewCamp(F), back2 = crewList().filter(function (q) { return q.job === "exp" && Date.now() >= q.eT; }).length; drawPill(g, now, (back2 ? "Crew is back!" : crewList().length ? "Talk to the crew" : "Meet the crew") + (coarse ? "" : " (F)"), ox + cc2.x * ts, oy + (cc2.y - 1.6) * ts, false, function () { openCrew(); }); }
     var rgp = !panelOpen && !trans ? rigPill() : null; if (rgp) { var rq = F.pads[rgp.i]; drawPill(g, now, rgp.t + (coarse ? "" : " (F)"), ox + (rq.x + 1) * ts, oy + (rq.y - 1.9) * ts, /digging|to the Silo/.test(rgp.t), function () { rigAct(rgp.i); }); }   // RIG BAY
     else if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
@@ -15345,7 +15436,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -15459,7 +15550,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -16649,7 +16740,7 @@
   // ---- update ----
   function seaUpdate(dt) {
     var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
-    var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1);
+    var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1) * (S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "ship"; }) ? 1.2 : 1);
     if (joy.x || joy.y) { s.tgt = null; var ja = Math.atan2(joy.y, joy.x), jd = Math.atan2(Math.sin(ja - s.ang), Math.cos(ja - s.ang)); s.ang += clamp(jd, -1, 1) * 2.2 * dt; want = maxSp * Math.min(1, Math.hypot(joy.x, joy.y)); }
     else if (turn || thr) { if (turn || thr > 0) s.tgt = null; s.ang += turn * 1.9 * dt; want = thr > 0 ? maxSp : thr < 0 ? 0 : (s.tgt ? want : s.sp); if (!thr && !s.tgt) want = s.sp; }
     if (s.tgt) {
@@ -18308,7 +18399,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
