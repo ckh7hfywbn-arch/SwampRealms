@@ -745,6 +745,7 @@
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
     if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
+    if (o.mres && typeof o.mres === "object") { d.mres = {}; Object.keys(o.mres).forEach(function (k) { if (/^\d+$/.test(k)) d.mres[k] = 1; }); }   // LOST MINERS
     if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
     return d;
   }
@@ -3407,6 +3408,43 @@
     if (F.torch) for (var yy = Math.max(0, y - 6); yy <= Math.min(F.h - 1, y + 6); yy++) for (var xx = Math.max(0, x - 6); xx <= Math.min(F.w - 1, x + 6); xx++) if (F.torch[yy * F.w + xx] && (xx - x) * (xx - x) + (yy - y) * (yy - y) <= 30) return true;
     return false;
   }
+  // ---------- LOST MINERS: on about one floor in five (floors 3-24 of the Mine) a miner is stuck behind rubble, calling for help (an
+  // arrow points the way). Dig them out and press F: they thank you with tokens and head down to your Hollow, where every rescued miner
+  // makes your rigs dig 8% faster (up to 5). S.mres[floor] = rescued there. ----------
+  var MINER_N = ["Dusty Doug", "Pickaxe Polly", "Lamp-Eye Lou", "Rubble Rita", "Tunnel Tam", "Grit Gary", "Coaldust Cora", "Shale Shane"];
+  function minerPlace(F, f, free) {
+    if (!cave || cave.volc || cave.bld || F.lair || f < 3 || f > 24 || !free || !free.length) return; if (!S.mres) S.mres = {}; if (S.mres[f]) return;
+    var h = Math.imul((S.seed | 0) + 7919, 2654435761) ^ Math.imul(f + 13, 40503); h = ((h ^ (h >>> 15)) >>> 0) / 4294967296; if (h > 0.22) return;
+    var cnt = {}, best = 0, rub = 0; for (var i = 0; i < F.w * F.h; i++) { var nd = F.node[i]; if (nd) { cnt[nd] = (cnt[nd] || 0) + 1; if (cnt[nd] > best) { best = cnt[nd]; rub = nd; } } }
+    var far = free.filter(function (ci) { var x = ci % F.w, y = (ci / F.w) | 0, dx = x - F.spawn.x, dy = y - F.spawn.y; return dx * dx + dy * dy > 144; }); if (!far.length) far = free;
+    var ci = far[Math.floor(h * 997 * far.length) % far.length], mx = ci % F.w, my = (ci / F.w) | 0;
+    F.miner = { x: mx + 0.5, y: my + 0.75, n: MINER_N[(f * 3 + (S.seed | 0)) % MINER_N.length], f: f, t: 0 };
+    if (rub) for (var oy = -1; oy <= 1; oy++) for (var ox2 = -1; ox2 <= 1; ox2++) { if (!ox2 && !oy) continue; var j = (my + oy) * F.w + mx + ox2; if (mx + ox2 < 1 || my + oy < 1 || mx + ox2 >= F.w - 1 || my + oy >= F.h - 1) continue; if (!SC.solid(F, mx + ox2, my + oy) && !F.node[j]) F.node[j] = rub; }
+    setTimeout(function () { if (cave && cave.F === F) toast("You hear someone calling for help on this floor...", "#f2c14e"); }, 1600);
+  }
+  function minerNear() { var M = cave && cave.F && cave.F.miner; return !!M && !M.saved && Math.hypot(M.x - cp.x, M.y - cp.y) < 1.7; }
+  function rescueMiner() {
+    var F = cave.F, M = F.miner; if (!M || M.saved) return; M.saved = true; if (!S.mres) S.mres = {}; S.mres[M.f] = 1;
+    var L = lairS(); if (!Array.isArray(L.miners)) L.miners = []; crewRebase(function () { L.miners.push({ n: M.n, f: M.f }); }); S.st.rescued = (S.st.rescued || 0) + 1;
+    var tok = 4 + Math.floor(M.f / 3); if (ITEMS.swamptoken) give("swamptoken", tok, M.x - 0.5, M.y - 1, true); if (ITEMS.torch) give("torch", 6, M.x - 0.5, M.y - 1, true);
+    popup("Miner rescued!", M.n + " • heading for " + (lairOwned() ? "your Hollow" : "the Sunken Hollow on floor 25"), "#f2c14e", "\u26CF"); snd("rise"); confettiPop(M.x, M.y - 1, 24);
+    toast(M.n + ": \u201cThank you! I'll work your rigs down in the Hollow" + (lairOwned() ? "" : " once it's yours") + ".\u201d", "#ffe08a"); save();
+  }
+  function minerCount() { var L = S.lair; return L && Array.isArray(L.miners) ? Math.min(5, L.miners.length) : 0; }
+  function drawMinerFrog(g, x, y, r, t, help) {   // a miner frog in a hard hat with a lamp; waving and calling when trapped
+    drawCrewFrog(g, x, y, r, "#6b5a3a", 1, t);
+    g.fillStyle = "#f2c14e"; g.beginPath(); g.ellipse(x, y - r * 1.15, r * 0.78, r * 0.42, 0, Math.PI, 0); g.fill(); g.fillRect(x - r * 0.9, y - r * 1.17, r * 1.8, r * 0.12);
+    g.fillStyle = "#fff6c4"; g.beginPath(); g.arc(x, y - r * 1.35, r * 0.13, 0, 6.28); g.fill();
+    if (help) { var b = Math.sin(t * 4) * r * 0.1; g.font = "900 " + Math.max(10, Math.round(r * 0.75)) + "px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = "#ffe08a"; g.strokeText("Help!", x, y - r * 2.0 + b); g.fillText("Help!", x, y - r * 2.0 + b); }
+  }
+  function drawMiner(g, now) {
+    var F = cave && cave.F, M = F && F.miner; if (!M || M.saved) return; var t = now / 1000, sx = ox + M.x * ts, sy = oy + M.y * ts;
+    if (sx > -ts * 2 && sx < vw + ts * 2 && sy > -ts * 2 && sy < vh + ts * 2) { drawMinerFrog(g, sx, sy, ts * 0.42, t, true); if (minerNear()) drawPill(g, now, "Rescue " + M.n + (coarse ? "" : " (F)"), sx, sy - ts * 1.7, false, function () { rescueMiner(); }); return; }
+    var m = 40, cx = vw / 2, cy = vh / 2, dx = sx - cx, dy = sy - cy, kx = dx ? (vw / 2 - m) / Math.abs(dx) : 1e9, ky = dy ? (vh / 2 - m - 50) / Math.abs(dy) : 1e9, kk = Math.min(kx, ky), ex = cx + dx * kk, ey = cy + dy * kk, rr = 11;
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(6,16,13,.85)"; g.beginPath(); g.arc(0, 0, rr + 5, 0, 7); g.fill(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(0, 0, rr, 0, 7); g.fill();
+    g.fillStyle = "#06100d"; g.font = "900 13px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("!", 0, 1); g.textBaseline = "alphabetic";
+    var ang = Math.atan2(dy, dx); g.rotate(ang); g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(rr + 15, 0); g.lineTo(rr + 6, -7); g.lineTo(rr + 6, 7); g.closePath(); g.fill(); g.restore();
+  }
   function stockFloor(F, f) {
     F.stocked = true; F.mobs = []; if (F.bld) return;
     if (F.lair) { if (!lairOwned()) F.mobs.push(newCaptain(F)); return; }   // THE SUNKEN HOLLOW: only the Captain (and nothing at all once it is yours)   // cave creatures are there whether or not you carry a weapon (swat them with your paws)
@@ -3423,6 +3461,7 @@
       F.mobs.push(makeElite(newCaveMob(k, ci % F.w + 0.5, ((ci / F.w) | 0) + 0.7, F, f), eliteChance(true)));
     }
     F.mobN = F.mobs.length;
+    minerPlace(F, f, free);
   }
   // ---------- ELITES: rare glowing champions (about 1 in 16 on the surface, more at night and deeper in the Mine). Bigger, tougher,
   // named, always showing their health, with one affix: Radiant (3x health, extra loot), Armored (takes half damage), Regenerating
@@ -3694,6 +3733,7 @@
     glows2.push([cx, cy - k * 0.25, "255,140,50", 1.3, 0.4 * fl]); srcs.push([c.x, c.y + 0.1, 3.4, 0.7 * fl]);
     var bx = cx + k * 1.4, by = cy; g.fillStyle = "#4a3422"; g.fillRect(bx - k * 0.04, by - k * 1.0, k * 0.08, k * 1.0); g.fillStyle = "#8a6440"; g.fillRect(bx - k * 0.4, by - k * 1.2, k * 0.8, k * 0.5); g.fillStyle = "#f6eedb"; g.fillRect(bx - k * 0.32, by - k * 1.12, k * 0.25, k * 0.18); g.fillRect(bx + k * 0.02, by - k * 1.08, k * 0.28, k * 0.2);   // notice board
     var home = crewList().filter(function (q) { return q.job !== "exp"; });
+    (lairS().miners || []).slice(0, 5).forEach(function (q, i) { drawMinerFrog(g, cx - k * 2.4 - i * k * 0.75, cy + k * 0.9 + (i % 2) * k * 0.3, k * 0.36, t + i * 1.7, false); });
     home.forEach(function (q, i) { var D = crewDef(q.id), a = (i / Math.max(1, home.length)) * 6.28 + 0.6, fx = cx + Math.cos(a) * k * 1.0, fy = cy + Math.sin(a) * k * 0.55 + Math.sin(t * 2 + i) * k * 0.04; drawCrewFrog(g, fx, fy, k * 0.42, D.c, Math.cos(a) > 0 ? -1 : 1, t + i); });
   }
   function drawCrewFrog(g, x, y, r, col, face, t) {   // a little pirate frog: round body, belly, bulgy eyes, a coloured bandana
@@ -3718,6 +3758,7 @@
   function lairOwned() { return !!(S.lair && S.lair.own); }
   function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; }
     if (o && Array.isArray(o.crew)) n.crew = o.crew.slice(0, 6).filter(function (c) { return c && CREW_POOL.some(function (q) { return q.id === c.id; }); }).map(function (c) { return { id: c.id, lv: clamp(c.lv | 0 || 1, 1, 5), xp: Math.max(0, c.xp | 0), job: /^(idle|rig0|rig1|ship|exp)$/.test(c.job) ? c.job : "idle", eT: +c.eT || 0, eD: +c.eD || 0, eK: c.eK || "" }; });
+    if (o && Array.isArray(o.miners)) n.miners = o.miners.slice(0, 12).filter(function (q) { return q && typeof q.n === "string"; }).map(function (q) { return { n: q.n.slice(0, 24), f: q.f | 0 }; });
     if (o && Array.isArray(o.log)) n.log = o.log.slice(-24).filter(function (q) { return q && typeof q.s === "string"; }).map(function (q) { return { t: +q.t || 0, s: q.s.slice(0, 200) }; }); if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
   function isLairFloor(f) { return !!(cave && !cave.bld && !cave.volc && SC && SC.LAIR_F && f === SC.LAIR_F); }
   function gameClock() { return (S.days | 0) * CYCLE + S.time; }
@@ -3813,7 +3854,7 @@
   function rigOf(i) { return lairS().rig[i] || null; }
   function siloOn() { return !!rigOf(2); }
   function rigLv(i) { var r = rigOf(i); return r ? clamp(r.lv | 0 || 1, 1, 3) : 0; }
-  function rigRate(i) { return RIGS[i].rate * Math.pow(0.75, rigLv(i) - 1) * (i < 2 && S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "rig" + i; }) ? 0.75 : 1); }
+  function rigRate(i) { return RIGS[i].rate * Math.pow(0.75, rigLv(i) - 1) * (1 - 0.08 * minerCount()) * (i < 2 && S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "rig" + i; }) ? 0.75 : 1); }
   function rigCap(i) { return (RIGS[i].cap + 20 * (rigLv(i) - 1)) * (siloOn() ? 2 : 1); }
   function rigCount(i) { var r = rigOf(i); if (!r || !RIGS[i].rate) return 0; return Math.max(0, Math.min(rigCap(i), Math.floor((gameClock() - r.t) / rigRate(i)))); }
   function rigTotal() { return rigCount(0) + rigCount(1); }
@@ -13828,7 +13869,7 @@
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawArrows(g, true); drawGuardian(g, now);
+    drawRocks(Y0, Math.min(Y1, prow)); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawMiner(g, now); drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
     }
@@ -15436,7 +15477,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (minerNear()) rescueMiner(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -18399,7 +18440,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
