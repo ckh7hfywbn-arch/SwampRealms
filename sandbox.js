@@ -3607,9 +3607,29 @@
   var LAIRB = { n: "Captain Saltjaw", sub: "Swashbuckler of the Sunken Hollow", c: "#3fd6c0", hp: 1500, dmg: 24 };
   var RIG_RATE = 12, RIG_CAP = 60, RIG_FIX = { ironingot: 4, planks: 12, cinder: 6 }, RIG_ORE = [["stone", 5], ["clay", 1.5], ["spore", 2], ["basalt", 2], ["cinder", 1.5], ["frostrock", 1.2], ["crystal", 0.6]];
   CMOB.captain = { r: 0.62, spd: 2.6, aggro: 12 };
-  function lairS() { if (!S.lair || typeof S.lair !== "object") S.lair = { own: 0, rig: [] }; if (!Array.isArray(S.lair.rig)) S.lair.rig = []; return S.lair; }
+  function lairS() { if (!S.lair || typeof S.lair !== "object") S.lair = { own: 0, rig: [] }; if (!Array.isArray(S.lair.rig)) S.lair.rig = []; if (!S.lair.mods) S.lair.mods = {}; return S.lair; }
+  // ---------- RIG BAY MACHINES: modules bolted onto the Ore Silo. The SMELTER cooks ore into bars as you collect (2 Bog Iron -> 1 Iron
+  // Ingot, 2 Quartz -> 1 Glowspore Glass). The ORE SORTER throws out junk stone (unless you tell it to keep it) and picks out a bonus gem
+  // for about every 25 ore. Built from the Silo's window; both show up next to the Silo. ----------
+  var MODS = {
+    smelt: { n: "Smelter", cost: { stone: 40, ironingot: 8, cinder: 12 }, d: "A brick furnace fed from the Silo's chute. Bog Iron comes out as Iron Ingots and Quartz as Glowspore Glass, two for one, every time you collect." },
+    sort: { n: "Ore Sorter", cost: { ironingot: 10, planks: 20, crystal: 4 }, d: "A spinning sieve drum. Junk stone goes back into the water, and it picks out a bonus gem for about every 25 ore." }
+  };
+  var SMELT = [["bogiron", "ironingot"], ["quartz", "glass"]], JUNK = ["stone", "basalt", "frostrock", "mud", "dirt", "clay", "pebble"];
+  function modOn(k) { return !!lairS().mods[k]; }
+  function rigProcess(got, n) {   // runs on everything collected; returns a short note for the popup
+    var L = lairS(), notes = [];
+    if (L.mods.sort) {
+      var junk = 0; if (!L.mods.keep) JUNK.forEach(function (k) { if (got[k]) { junk += got[k]; delete got[k]; } }); if (junk) notes.push(junk + " junk sorted out");
+      var gb = Math.floor(n / 25) + (Math.random() < (n % 25) / 25 ? 1 : 0), pool = [["amber", 5], ["ruby", 1.2], ["sapphire", 1.2], ["amethyst", 1.2], ["moonstone", 0.8]];
+      for (var i = 0; i < gb; i++) { var r = Math.random() * 9.4, j; for (j = 0; j < pool.length; j++) { r -= pool[j][1]; if (r <= 0) break; } var gk = pool[Math.min(j, pool.length - 1)][0]; if (ITEMS[gk]) got[gk] = (got[gk] || 0) + 1; }
+      if (gb) notes.push(gb + " bonus gem" + (gb > 1 ? "s" : ""));
+    }
+    if (L.mods.smelt) SMELT.forEach(function (q) { var c = got[q[0]] || 0, b = Math.floor(c / 2); if (b > 0 && ITEMS[q[1]]) { got[q[0]] = c - b * 2; if (!got[q[0]]) delete got[q[0]]; got[q[1]] = (got[q[1]] || 0) + b; notes.push(b + " " + ITEMS[q[1]].n + " smelted"); } });
+    return notes.join(" • ");
+  }
   function lairOwned() { return !!(S.lair && S.lair.own); }
-  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [] }; if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
+  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; } if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
   function isLairFloor(f) { return !!(cave && !cave.bld && !cave.volc && SC && SC.LAIR_F && f === SC.LAIR_F); }
   function gameClock() { return (S.days | 0) * CYCLE + S.time; }
   function caveBoss() { var F = cave && cave.F; if (!F || !F.lair || !F.mobs) return null; for (var i = 0; i < F.mobs.length; i++) { var m = F.mobs[i]; if (m.k === "captain" && !m.def && m.awake) return m; } return null; }
@@ -3725,9 +3745,9 @@
     var got = {}, n = 0, q = cave.F.pads[i];
     if (i === 2) { n += rigTake(0, got); n += rigTake(1, got); } else n = rigTake(i, got);
     if (!n) { nag("Nothing to collect yet. The rigs are still digging."); return; }
-    S.st.rigOre = (S.st.rigOre || 0) + n; Object.keys(got).forEach(function (it) { give(it, got[it], q.x + 0.5, q.y - 1); });
+    S.st.rigOre = (S.st.rigOre || 0) + n; var note = rigProcess(got, n); Object.keys(got).forEach(function (it) { give(it, got[it], q.x + 0.5, q.y - 1); });
     var gems = ["ruby", "sapphire", "amethyst", "moonstone"].filter(function (g) { return got[g]; });
-    popup("Rig Bay", "+" + n + " ore" + (gems.length ? " • " + gems.map(function (g) { return ITEMS[g].n; }).join(", ") + "!" : ""), "#f2c14e", "⛏"); snd("coin"); save(); checkGoals();
+    popup("Rig Bay", "+" + n + " ore" + (gems.length ? " • " + gems.map(function (g) { return ITEMS[g].n; }).join(", ") + "!" : ""), "#f2c14e", "⛏"); if (note) popup("Rig Bay machines", note, "#ff8a3d", "⚙"); snd("coin"); save(); checkGoals();
   }
   function openRig(i) {
     var el = $("sbxStory"); if (!el) return; var R = RIGS[i], r = rigOf(i), lv = rigLv(i), h = "";
@@ -3744,6 +3764,12 @@
       if (i !== 2 && up) h += '<div class="sbx-card"><div><b>Upgrade to level ' + (lv + 1) + '</b><small>A quarter faster and holds 20 more.</small><div class="cost">' + costHtml(up) + "</div></div></div>";
       h += '<div class="st-row">' + (i === 2 || !siloOn() ? '<button type="button" class="btn" data-rig="take">Collect</button>' : "") + (i !== 2 && up ? '<button type="button" class="btn' + (canU ? "" : " ghost") + '" data-rig="up"' + (canU ? "" : " disabled") + ">Upgrade</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div>';
     }
+    if (i === 2 && r) {
+      h += '<h3 class="rg-h">Machines</h3>';
+      Object.keys(MODS).forEach(function (k) { var M = MODS[k], on = modOn(k), can = canPay(M.cost);
+        h += '<div class="sbx-card rg-mod' + (on ? " on" : "") + '"><img class="big" alt="" src="' + icon(k === "smelt" ? "ironingot" : "crystal") + '"><div><b>' + esc(M.n) + (on ? " · working" : "") + "</b><small>" + esc(M.d) + "</small>" + (on ? "" : '<div class="cost">' + costHtml(M.cost) + "</div>") + "</div>"
+          + (on ? (k === "sort" ? '<button type="button" class="btn ghost" data-rig="keep">' + (lairS().mods.keep ? "Keeping stone" : "Tossing stone") + "</button>" : "") : '<button type="button" class="btn' + (can ? "" : " ghost") + '" data-rig="mod:' + k + '"' + (can ? "" : " disabled") + ">Build</button>") + "</div>"; });
+    }
     $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h;
   }
   var rigAt = 0;
@@ -3751,6 +3777,8 @@
     var i = rigAt, R = RIGS[i], L = lairS();
     if (a === "fix") { if (rigOf(i) || !canPay(R.cost)) return nag("You need more materials."); payCost(R.cost); L.rig[i] = { t: gameClock(), lv: 1 }; S.st.rigs = (S.st.rigs || 0) + 1; closeStory(); popup("Rig Bay", "The " + R.n + (i === 2 ? " is up" : " is digging"), "#f2c14e", "⛏"); thud(120, 0.12); snd("rise"); save(); checkGoals(); return; }
     if (a === "take") { closeStory(); return rigCollect(i); }
+    if (a.indexOf("mod:") === 0) { var mk = a.slice(4), M = MODS[mk]; if (!M || L.mods[mk] || !canPay(M.cost)) return nag("You need more materials."); payCost(M.cost); L.mods[mk] = 1; popup("Rig Bay", "The " + M.n + " is bolted on", "#ff8a3d", "⚙"); thud(120, 0.1); sfxHit(true); save(); return openRig(2); }
+    if (a === "keep") { L.mods.keep = L.mods.keep ? 0 : 1; save(); return openRig(2); }
     if (a === "up") { var lv = rigLv(i), up = RIG_UP[lv + 1]; if (!up || !canPay(up)) return nag("You need more materials."); var keep = rigCount(i); payCost(up); L.rig[i].lv = lv + 1; L.rig[i].t = gameClock() - keep * rigRate(i); popup("Rig Bay", R.n + " is now level " + (lv + 1), "#f2c14e", "⛏"); thud(140, 0.1); snd("rise"); save(); openRig(i); }
   }
   function rigFix() { rigBtn("fix"); }
@@ -3970,7 +3998,32 @@
     if (lp) { glows2.push([cx + k * 0.25, top + k * 0.55, "90,255,140", 0.9, 0.3 * bl]); srcs.push([(cx - ox) / ts + 0.25, (top - oy) / ts + 0.55, 2.2, 0.5 * bl]); }
     g.fillStyle = "#1c1f24"; g.fillRect(cx - k * 0.02, top + k * 1.05, k * 0.62, k * 0.22); g.font = signFont(Math.max(6, Math.round(k * 0.13))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f2c14e"; g.fillText("ORE SILO", cx + k * 0.29, top + k * 1.17); g.textBaseline = "alphabetic";   // name plate
     g.fillStyle = "#3a3e44"; g.beginPath(); g.moveTo(cx - k * 0.2, bot); g.lineTo(cx + k * 0.2, bot); g.lineTo(cx + k * 0.1, bot + k * 0.12); g.lineTo(cx - k * 0.1, bot + k * 0.12); g.fill();   // chute
+    if (modOn("smelt")) drawSmelter(g, cx + k * 1.25, cy, now, srcs, glows2);
+    if (modOn("sort")) drawSorter(g, cx - k * 1.25, cy, now, srcs, glows2);
     if (tot) { var hp2 = Math.min(1, tot / 40); [["#8f979b", -0.25], ["#ff8a3d", 0.05], ["#9fe8ff", 0.25], ["#6b7276", -0.05]].forEach(function (h, i) { g.fillStyle = h[0]; g.beginPath(); g.arc(cx + h[1] * k, cy - k * 0.02 - (i % 2) * k * 0.06 * hp2, k * (0.07 + 0.04 * hp2), 0, 6.28); g.fill(); }); }   // ore heap
+  }
+  function drawSmelter(g, cx, cy, now, srcs, glows2) {   // a squat brick furnace: glowing mouth, a chimney puffing smoke, an ingot on the tray
+    var k = ts, t = reduce ? 0 : now / 1000, fl = 0.75 + 0.25 * Math.sin(t * 9) * Math.sin(t * 3.3);
+    mShadow(g, cx, cy, k * 0.55);
+    g.fillStyle = "#5a2e24"; g.fillRect(cx - k * 0.45, cy - k * 1.0, k * 0.9, k * 0.85);
+    g.fillStyle = "#7a3e2e"; for (var r = 0; r < 4; r++) for (var c = 0; c < 3; c++) g.fillRect(cx - k * 0.43 + c * k * 0.3 + (r % 2) * k * 0.14, cy - k * 0.98 + r * k * 0.21, k * 0.26, k * 0.17);
+    g.fillStyle = "#3a1c16"; g.fillRect(cx + k * 0.12, cy - k * 1.55, k * 0.22, k * 0.6);   // chimney
+    g.fillStyle = "#1b0e0a"; g.beginPath(); g.arc(cx, cy - k * 0.42, k * 0.24, Math.PI, 0); g.lineTo(cx + k * 0.24, cy - k * 0.2); g.lineTo(cx - k * 0.24, cy - k * 0.2); g.fill();
+    var gr = g.createRadialGradient(cx, cy - k * 0.33, 1, cx, cy - k * 0.33, k * 0.28); gr.addColorStop(0, "rgba(255,230,140," + fl + ")"); gr.addColorStop(1, "rgba(255,90,20,0)"); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy - k * 0.33, k * 0.28, 0, 6.2832); g.fill();
+    glows2.push([cx, cy - k * 0.35, "255,140,50", 1.1, 0.35 * fl]); srcs.push([(cx - ox) / ts, (cy - k * 0.35 - oy) / ts, 2.6, 0.55 * fl]);
+    g.fillStyle = "#c9cdd2"; g.fillRect(cx - k * 0.5, cy - k * 0.18, k * 1.0, k * 0.06); g.fillStyle = "#9aa3ab"; g.fillRect(cx - k * 0.38, cy - k * 0.3, k * 0.28, k * 0.1);   // tray + an ingot
+    for (var sm = 0; sm < 3; sm++) { var ph = ((t * 0.35 + sm / 3) % 1); g.fillStyle = "rgba(120,120,120," + (0.45 * (1 - ph)) + ")"; g.beginPath(); g.arc(cx + k * 0.23 + Math.sin(ph * 5 + sm) * k * 0.1, cy - k * 1.6 - ph * k * 0.9, k * (0.08 + ph * 0.16), 0, 6.2832); g.fill(); }
+  }
+  function drawSorter(g, cx, cy, now, srcs, glows2) {   // a sieve drum on a stand, spinning, with gems dropping into a bin
+    var k = ts, t = reduce ? 0 : now / 1000, R = k * 0.36, dy = cy - k * 0.78, a = t * 2.4;
+    mShadow(g, cx, cy, k * 0.55);
+    g.fillStyle = "#3a3e44"; g.fillRect(cx - k * 0.42, cy - k * 0.55, k * 0.08, k * 0.5); g.fillRect(cx + k * 0.34, cy - k * 0.55, k * 0.08, k * 0.5);
+    g.fillStyle = "#5c4630"; g.fillRect(cx - k * 0.3, cy - k * 0.3, k * 0.6, k * 0.26); g.fillStyle = "#3e2e1e"; g.fillRect(cx - k * 0.3, cy - k * 0.3, k * 0.6, k * 0.05);   // the gem bin
+    g.fillStyle = "#6f777f"; g.beginPath(); g.arc(cx, dy, R, 0, 6.2832); g.fill(); g.fillStyle = "#2a2d33"; g.beginPath(); g.arc(cx, dy, R * 0.78, 0, 6.2832); g.fill();
+    g.strokeStyle = "#9aa3ab"; g.lineWidth = Math.max(1.5, k * 0.05); for (var s2 = 0; s2 < 6; s2++) { var aa = a + s2 * 1.047; g.beginPath(); g.moveTo(cx, dy); g.lineTo(cx + Math.cos(aa) * R * 0.78, dy + Math.sin(aa) * R * 0.78); g.stroke(); }
+    g.fillStyle = "#c9cdd2"; g.beginPath(); g.arc(cx, dy, R * 0.16, 0, 6.2832); g.fill();
+    var GC = ["#ff5a6a", "#5aa8ff", "#c78bff", "#ffd36a"]; for (var gm = 0; gm < 3; gm++) { var ph = (t * 0.8 + gm / 3) % 1; g.fillStyle = GC[(Math.floor(t * 0.8 + gm / 3) + gm) % 4]; g.globalAlpha = 1 - ph * 0.3; g.fillRect(cx - k * 0.05 + (gm - 1) * k * 0.1, dy + R + ph * k * 0.22, k * 0.08, k * 0.08); } g.globalAlpha = 1;
+    for (var gs = 0; gs < 4; gs++) { g.fillStyle = GC[gs]; g.fillRect(cx - k * 0.24 + gs * k * 0.13, cy - k * 0.24, k * 0.09, k * 0.07); }
   }
   function drawConsole(g, cx, cy, now, srcs, glows2) {   // the bay's control console: a slanted panel of blinking buttons, a dial and a little screen of waveforms
     var k = ts, t = reduce ? 0 : now / 1000; mShadow(g, cx, cy, k * 0.55);

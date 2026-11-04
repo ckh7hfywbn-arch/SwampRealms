@@ -1936,3 +1936,9 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .ach-dots{display:flex;gap:4px;margin-top:5px}
 .ach-dots em{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--dc);opacity:.45}
 .ach-dots em.on{background:var(--dc);opacity:1}
+/* RIG BAY machines in the Silo window */
+.rg-h{margin:14px 0 6px;font:900 1rem Nunito,system-ui,sans-serif;color:#ffe9a8;text-align:left}
+.rg-mod{text-align:left;align-items:center}
+.rg-mod small{display:block;text-transform:none!important;letter-spacing:0!important;color:#cfe0d6!important;font:700 .8rem/1.35 Nunito,system-ui,sans-serif!important;text-align:left;margin-top:2px}
+.rg-mod.on{border-color:#ff8a3d88}
+.rg-mod .btn{flex:none}
