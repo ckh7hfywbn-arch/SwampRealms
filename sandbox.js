@@ -174,6 +174,8 @@
   ];
   // PROSPECTOR'S LANTERN (see PROSPECT below): carry it and ore glows through rock
   if (!ITEMS.prospect) { ITEMS.prospect = { n: "Prospector's Lantern", d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground." }; if (ORDER.indexOf("prospect") < 0) ORDER.push("prospect"); }
+  if (!ITEMS.x_support) { ITEMS.x_support = { n: "Timber Support", d: "Place it in the Mine like a torch. The ceiling within 4 tiles of a support can't cave in." }; if (ORDER.indexOf("x_support") < 0) ORDER.push("x_support"); }
+  RECIPES.push({ id: "x_support", n: "Timber Supports (2)", out: { x_support: 2 }, cost: { planks: 4, stick: 4 }, d: "Place them in the Mine like torches. The ceiling within 4 tiles of a support can't cave in. Pick them back up with your pick." });
   RECIPES.push({ id: "prospect", n: "Prospector's Lantern", out: { prospect: 1 }, cost: { ironingot: 4, glass: 2, crystal: 3, spore: 6 }, bench: true, d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground. You only need one." });
   if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
   DECOR.forEach(function (r) { r.deco = 1; });
@@ -8477,6 +8479,7 @@
   }
   (function () {
     SPR.grapple = { r: ["................", "..........aa....", ".........a..a...", "........abba....", ".......abbb.....", "......gbb.......", ".....gg.........", "....gl..........", "...gg...........", "..gl.l..........", ".gg..g..........", ".g...gl.........", ".gl...g.........", "..gg.gg.........", "...ggl..........", "................"], p: { a: "#cfd6dc", b: "#7a8290", g: "#4f8a3c", l: "#8fd06a" } };
+    SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
     SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
   })();
@@ -13637,8 +13640,45 @@
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (SC.solid(F, xx, yy)) return true;
     return false;
   }
+  // ---------- CAVE-INS: every rock you break on floor 3 and below strains the ceiling a little (more the deeper you are). When it gives, the
+  // ground rumbles and dust falls (shadows show where), and about two seconds later rubble crashes down around where you were digging:
+  // get clear or get hit. A Timber Support within 4 tiles keeps the ceiling up. Never in buildings, the volcano or the Sunken Hollow. ----------
+  var CAVEIN = null;
+  function rubbleId(F) { if (F.rub !== undefined) return F.rub; var cnt = {}, best = 0, rub = 0; for (var i = 0; i < F.w * F.h; i++) { var nd = F.node[i]; if (nd && !oreColor(nd)) { cnt[nd] = (cnt[nd] || 0) + 1; if (cnt[nd] > best) { best = cnt[nd]; rub = nd; } } } return (F.rub = rub); }
+  function shored(F, x, y) { if (!F.sup) return false; for (var yy = y - 4; yy <= y + 4; yy++) for (var xx = x - 4; xx <= x + 4; xx++) { if (xx < 0 || yy < 0 || xx >= F.w || yy >= F.h) continue; if (F.sup[yy * F.w + xx] && (xx - x) * (xx - x) + (yy - y) * (yy - y) <= 16) return true; } return false; }
+  function caveStress(x, y) {
+    var F = cave && cave.F; if (!F || cave.bld || cave.volc || F.lair || F.nx || cave.f < 3 || CAVEIN) return;
+    if (!F.sthr) F.sthr = 34 + Math.random() * 26; F.stress = (F.stress || 0) + 1 + cave.f / 30; if (F.stress < F.sthr) return;
+    F.stress = 0; F.sthr = 30 + Math.random() * 28;
+    if (shored(F, x, y)) { if (!F.shoredTip) { F.shoredTip = 1; toast("The ceiling creaks, but your Timber Support holds it.", "#c8925a"); } return; }
+    var cx = Math.round((x + cp.x) / 2), cy = Math.round((y + cp.y - 0.4) / 2), cells = [], rub = rubbleId(F); if (!rub) return;
+    for (var yy = cy - 2; yy <= cy + 2; yy++) for (var xx = cx - 2; xx <= cx + 2; xx++) {
+      if (xx < 1 || yy < 1 || xx >= F.w - 1 || yy >= F.h - 1) continue; var j = yy * F.w + xx, dd = (xx - cx) * (xx - cx) + (yy - cy) * (yy - cy);
+      if (dd > 5.5 || SC.solid(F, xx, yy) || F.node[j] || F.torch[j] || (F.sup && F.sup[j]) || (xx === F.up.x && yy === F.up.y) || (xx === F.down.x && yy === F.down.y) || Math.random() < 0.25) continue;
+      cells.push(j);
+    }
+    if (cells.length < 3) return;
+    CAVEIN = { F: F, cells: cells, t: 2.2, rub: rub }; S.st.caveins = (S.st.caveins || 0) + 1;
+    toast("The ceiling groans... get clear!", "#ff9a4a"); aRumble(); sfxThump(60, 30, 0.6, 0.2); shake = Math.max(shake, 0.35);
+  }
+  function tickCaveIn(dt) {
+    var C = CAVEIN; if (!C) return; if (!cave || cave.F !== C.F) { CAVEIN = null; return; }
+    C.t -= dt; shake = Math.max(shake, 0.12 + 0.2 * (1 - C.t / 2.2));
+    if (Math.random() < dt * 30) { var j = C.cells[Math.floor(Math.random() * C.cells.length)], F = C.F; parts.push({ x: j % F.w + Math.random(), y: ((j / F.w) | 0) - 0.8 + Math.random() * 0.3, vx: 0, vy: 3 + Math.random() * 2, life: 0.4, max: 0.4, c: "#8a8070", s: 2.5, g: 0 }); }
+    if (C.t > 0) return; CAVEIN = null; var F2 = C.F, pcx = Math.floor(cp.x), pcy = Math.floor(cp.y - 0.2), hit = false;
+    C.cells.forEach(function (j) { var x = j % F2.w, y = (j / F2.w) | 0; if (Math.abs(x + 0.5 - cp.x) < 0.9 && Math.abs(y + 0.5 - (cp.y - 0.3)) < 0.9) { hit = true; return; } if (!F2.node[j]) F2.node[j] = C.rub; chips(x + 0.5, y + 0.5, "#8a8070", 6, 5); });
+    shake = Math.max(shake, 0.9); sfxThump(55, 25, 0.7, 0.3); sfxNoise(0.7, 900, 120, 0.25, "lowpass"); hitStop(0.08, 0.1);
+    if (hit) hurt(16, "cave-in");
+  }
+  function drawCaveIn(g, now) {
+    var C = CAVEIN; if (C && cave && cave.F === C.F) { var F = C.F, k = 1 - C.t / 2.2; C.cells.forEach(function (j) { var x = j % F.w, y = (j / F.w) | 0, sx = ox + (x + 0.5) * ts, sy = oy + (y + 0.6) * ts; g.fillStyle = "rgba(0,0,0," + (0.2 + 0.45 * k) + ")"; g.beginPath(); g.ellipse(sx, sy, ts * 0.45 * (0.4 + 0.6 * k), ts * 0.2 * (0.4 + 0.6 * k), 0, 0, 6.28); g.fill(); }); }
+    var F2 = cave && cave.F; if (!F2 || !F2.sup) return;
+    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F2.w - 1, Math.ceil((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F2.h - 1, Math.ceil((vh - oy) / ts));
+    for (var y = Y0; y <= Y1; y++) for (var x = X0; x <= X1; x++) { if (!F2.sup[y * F2.w + x]) continue; var sx = ox + x * ts, sy = oy + y * ts;
+      g.fillStyle = "#8a5a32"; g.fillRect(sx + ts * 0.12, sy - ts * 0.5, ts * 0.14, ts * 1.4); g.fillRect(sx + ts * 0.74, sy - ts * 0.5, ts * 0.14, ts * 1.4); g.fillStyle = "#c8925a"; g.fillRect(sx + ts * 0.02, sy - ts * 0.6, ts * 0.96, ts * 0.18); g.fillStyle = "#5a3a20"; g.fillRect(sx + ts * 0.02, sy - ts * 0.44, ts * 0.96, ts * 0.04); }
+  }
   function breakRock(x, y) {
-    var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++;
+    var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++; caveStress(x, y);
     if (!VEIN.busy && td && td.kind === "ore" && veinOn()) veinStart(x, y, id, true);   // VEIN MINING in caves
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id); matBreak(id);
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
@@ -13691,12 +13731,18 @@
     }
     mine = null; cool -= dt; if (cool > 0) return;
     if (F.torch[i]) { if (sel === "pick" || sel === "shovel") { cool = 0.25; F.torch[i] = 0; give("torch", 1, tx, ty); thud(300, 0.04); } return; }
+    if (F.sup && F.sup[i]) { if (sel === "pick" || sel === "shovel") { cool = 0.25; F.sup[i] = 0; give("x_support", 1, tx, ty); thud(240, 0.05); } return; }
     if (F.wall[i] || (F.sol && F.sol[i])) return;
+    if (sel === "x_support" && (S.inv.x_support || 0) > 0) {   // CAVE-INS: a timber support
+      if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y) || F.torch[i]) return;
+      if (!F.sup) F.sup = new Uint8Array(F.w * F.h); cool = 0.25; F.sup[i] = 1; S.inv.x_support--; S.st.placed++; reslot(); chips(tx + 0.5, ty + 0.5, "#c8925a", 5, 3); thud(200, 0.06);
+      if (S.inv.x_support <= 0) { delete S.inv.x_support; sel = "pick"; bare = true; } hbDirty = true; toast("Shored up: no cave-ins within 4 tiles of here.", "#c8925a"); return;
+    }
     if (sel === "torch" && (S.inv.torch || 0) > 0) {
       if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y)) return;
       cool = 0.2; F.torch[i] = 1; S.inv.torch--; S.st.torches++; S.st.placed++; chips(tx + 0.5, ty + 0.5, "#ffb13b", 4, 3); thud(420, 0.05);
       if (S.inv.torch <= 0) { delete S.inv.torch; if (sel === "torch") sel = "pick", bare = true; } hbDirty = true; if (panelOpen) renderPanel();
-    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can" && sel !== "rod" && sel !== "hoe" && sel !== "bucket" && sel !== "net" && sel !== "bow") { cool = 0.4; nag("Only torches can be placed in caves."); }
+    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can" && sel !== "rod" && sel !== "hoe" && sel !== "bucket" && sel !== "net" && sel !== "bow" && sel !== "x_support") { cool = 0.4; nag("Only torches can be placed in caves."); }
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
@@ -13705,7 +13751,7 @@
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
-    tickSpecial(dt); tickElites(dt); tickAch(dt); if (lairOwned() && Math.random() < dt) crewTick(); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
+    tickSpecial(dt); tickElites(dt); tickAch(dt); tickCaveIn(dt); if (lairOwned() && Math.random() < dt) crewTick(); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -13930,7 +13976,7 @@
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawCart(g, F, now, srcs, glows2); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawMiner(g, now); if (cartNear() && !panelOpen && !trans) { var cq = cartSpot(F); drawPill(g, now, "Ride the mine cart" + (coarse ? "" : " (F)"), ox + cq.x * ts, oy + (cq.y - 1.4) * ts, false, function () { openCart(); }); } drawArrows(g, true); drawGuardian(g, now);
+    drawRocks(Y0, Math.min(Y1, prow)); drawCart(g, F, now, srcs, glows2); drawCaveIn(g, now); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawMiner(g, now); if (cartNear() && !panelOpen && !trans) { var cq = cartSpot(F); drawPill(g, now, "Ride the mine cart" + (coarse ? "" : " (F)"), ox + cq.x * ts, oy + (cq.y - 1.4) * ts, false, function () { openCart(); }); } drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
     }
@@ -14338,7 +14384,7 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "prospect shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
+    ["Tools|Utility", "prospect x_support shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
     ["Tools|Adventuring", "x_grapple"],
     ["Stations|Garage", "x_garage"],
@@ -18502,7 +18548,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
