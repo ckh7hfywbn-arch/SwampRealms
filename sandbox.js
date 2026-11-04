@@ -750,6 +750,7 @@
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
     if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
+    if (o.speed && typeof o.speed === "object") { d.speed = {}; Object.keys(o.speed).forEach(function (k) { if (/^\d+$/.test(k) && o.speed[k] > 0) d.speed[k] = Math.floor(+o.speed[k]); }); }   // SPEED FLOORS
     if (o.carts && typeof o.carts === "object") { d.carts = {}; Object.keys(o.carts).forEach(function (k) { if (/^\d+$/.test(k) && +k < 200) d.carts[k] = 1; }); }   // MINE CARTS
     if (o.mres && typeof o.mres === "object") { d.mres = {}; Object.keys(o.mres).forEach(function (k) { if (/^\d+$/.test(k)) d.mres[k] = 1; }); }   // LOST MINERS
     if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
@@ -13543,7 +13544,7 @@
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
       for (k = 0; k < o.length; k++) { nx = F.down.x + o[k][0]; ny = F.down.y + o[k][1]; if (!SC.solid(F, nx, ny)) { cp.x = nx + 0.5; cp.y = ny + 0.85; break; } }
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
-    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
+    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true; speedStart(F, f, from);
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
     if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
@@ -13628,8 +13629,39 @@
     [[F.up, "up"], [F.down, "down"]].forEach(function (e) { var dx = e[0].x + 0.5 - cp.x, dy = e[0].y + 0.5 - (cp.y - 0.3), d = dx * dx + dy * dy; if (d <= 2.6 * 2.6 && (!r || d < r.d)) r = { k: e[1], d: d }; });
     return r;
   }
+  // ---------- SPEED FLOORS: every 10th floor of the Mine is a race to the ladder down. A timer starts as you arrive (not when you climb
+  // back up into it); reach the way down in time for a reward: gold, a gem and tokens the first time, a smaller bonus for a new best.
+  // S.speed[floor] = your best time in tenths of a second. ----------
+  var SPEEDF = null;
+  function speedStart(F, f, from) {
+    SPEEDF = null; if (!cave || cave.bld || cave.volc || F.lair || F.nx || f % 10 !== 0 || from === "up" || !F.down) return;
+    var d = Math.hypot(F.down.x - F.spawn.x, F.down.y - F.spawn.y), max = Math.round(24 + d * 1.35);
+    SPEEDF = { f: f, t: max, max: max, go: false }; var best = S.speed && S.speed[f];
+    setTimeout(function () { if (SPEEDF && cave && cave.f === f) { SPEEDF.go = true; popup("Speed floor!", "Reach the ladder down in " + max + " seconds" + (best ? " (best " + (best / 10).toFixed(1) + "s)" : ""), "#ff6b82", "\u23F1"); snd("rise"); } }, 1200);
+  }
+  function tickSpeed(dt) {
+    var Z = SPEEDF; if (!Z || !Z.go) return; if (!cave || cave.f !== Z.f) { SPEEDF = null; return; }
+    var was = Math.ceil(Z.t); Z.t -= dt; if (Z.t <= 10 && Math.ceil(Z.t) !== was && Z.t > 0) tn(0, 880, 880, 0.06, "square", 0.015);
+    if (Z.t <= 0) { SPEEDF = null; toast("Too slow! Come back to floor " + Z.f + " and try again.", "#ff6b82"); thud(120, 0.08); }
+  }
+  function speedWin() {
+    var Z = SPEEDF; if (!Z || !Z.go || !cave || cave.f !== Z.f) return; SPEEDF = null;
+    if (!S.speed) S.speed = {}; var tm = Math.round((Z.max - Z.t) * 10), best = S.speed[Z.f], first = !best, nb = !best || tm < best; if (nb) S.speed[Z.f] = tm;
+    S.st.speedruns = (S.st.speedruns || 0) + 1; var x = cp.x - 0.5, y = cp.y - 1;
+    if (first) { if (ITEMS.goldbar) give("goldbar", 1 + Math.floor(Z.f / 20), x, y, true); var gm = ["ruby", "sapphire", "amethyst", "moonstone"][Math.floor(Math.random() * 4)]; if (ITEMS[gm]) give(gm, 1, x, y, true); }
+    if (ITEMS.swamptoken) give("swamptoken", first ? 15 + Math.floor(Z.f / 2) : nb ? 8 : 3, x, y, true);
+    popup(first ? "Speed floor cleared!" : nb ? "New best time!" : "Speed floor done", (tm / 10).toFixed(1) + "s" + (best && !first ? " (best was " + (best / 10).toFixed(1) + "s)" : ""), "#ff6b82", "\u23F1"); snd("open", "Epic"); try { confettiPop(cp.x, cp.y - 1, 30); } catch (e) {}
+  }
+  function drawSpeed(g, now) {
+    var Z = SPEEDF; if (!Z || !Z.go || !cave || cave.f !== Z.f) return; var t = Math.max(0, Z.t), lo = t <= 10, w = 190, h = 34, x = vw / 2 - w / 2, y = 64;
+    g.fillStyle = lo && Math.floor(now / 250) % 2 ? "rgba(120,20,30,.85)" : "rgba(6,16,13,.85)"; g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, 17) : g.rect(x, y, w, h); g.fill();
+    g.strokeStyle = lo ? "#ff6b82" : "#f2c14e"; g.lineWidth = 2; g.stroke();
+    g.fillStyle = lo ? "#ff6b82" : "#f2c14e"; g.fillRect(x + 12, y + h - 7, (w - 24) * (t / Z.max), 3);
+    g.font = "900 16px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.fillStyle = "#fff6dc"; g.fillText("\u23F1 Speed floor  " + Math.floor(t / 60) + ":" + ("0" + Math.floor(t % 60)).slice(-2) + "." + Math.floor((t % 1) * 10), vw / 2, y + 22);
+  }
   function useLadder(k) {
     if (trans || !cave) return;
+    if (k === "down") speedWin();
     if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Saltjaw's crew has chained the way down. Beat the Captain first."); return; }
     if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
     if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
@@ -13751,7 +13783,7 @@
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
-    tickSpecial(dt); tickElites(dt); tickAch(dt); tickCaveIn(dt); if (lairOwned() && Math.random() < dt) crewTick(); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
+    tickSpecial(dt); tickElites(dt); tickAch(dt); tickCaveIn(dt); tickSpeed(dt); if (lairOwned() && Math.random() < dt) crewTick(); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -14001,7 +14033,7 @@
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
-    drawProspect(g, now);
+    drawProspect(g, now); drawSpeed(g, now);
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
@@ -18548,7 +18580,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
