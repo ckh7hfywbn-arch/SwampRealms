@@ -2690,14 +2690,14 @@
   function damageEnemy(e, dmg, face) {
     if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
     if (e.boss) return damageBoss(e, dmg, face);
-    if (e.def) return; if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    if (e.def) return; dmg = eliteDmg(e, dmg); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(e.hp > 0 ? "hit" : "kill");
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
     if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
     if (e.hp > 0) return;
     if (e.home !== undefined) S.whut[e.home] = S.days | 0;   // a Witch Hut's owner: back tomorrow
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
-    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e);
+    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e); eliteDeath(e, false);
     if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small });
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
@@ -3360,7 +3360,7 @@
     }
     if (y < 0 || eBoxHit(x, y, ENEMY[k].w, ENEMY[k].h)) return;
     if (litNear(x, y)) return;   // a lit area stays safe
-    enemies.push(newEnemy(k, x, y));
+    enemies.push(makeElite(newEnemy(k, x, y), eliteChance(false)));
     if (k === "wolf" && (cnt.wolf || 0) + 1 < ENEMY.wolf.max && !eBoxHit(x - side * 1.6, y, ENEMY.wolf.w, ENEMY.wolf.h)) enemies.push(newEnemy("wolf", x - side * 1.6, y));   // wolves come in pairs
     var tip = SEEN_TIP[k]; if (tip && !(S.st.seen & tip[0])) { S.st.seen |= tip[0]; toast(tip[1], tip[2]); }
   }
@@ -3416,9 +3416,58 @@
     for (var m = 0; m < n && free.length; m++) {
       var r = Math.random() * tw, k = L[0][0]; for (var q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) { k = L[q][0]; break; } }
       var ci = free.splice(Math.floor(Math.random() * free.length), 1)[0];
-      F.mobs.push(newCaveMob(k, ci % F.w + 0.5, ((ci / F.w) | 0) + 0.7, F, f));
+      F.mobs.push(makeElite(newCaveMob(k, ci % F.w + 0.5, ((ci / F.w) | 0) + 0.7, F, f), eliteChance(true)));
     }
     F.mobN = F.mobs.length;
+  }
+  // ---------- ELITES: rare glowing champions (about 1 in 16 on the surface, more at night and deeper in the Mine). Bigger, tougher,
+  // named, always showing their health, with one affix: Radiant (3x health, extra loot), Armored (takes half damage), Regenerating
+  // (heals when left alone) or Volatile (bursts when it dies: roll away!). They always drop loot, tokens and sometimes a gem. ----------
+  var ELITE_A = { radiant: { n: "Radiant", c: "#ffd36a", hp: 3 }, armored: { n: "Armored", c: "#9fc3ff", hp: 2.4 }, regen: { n: "Regenerating", c: "#6dffa8", hp: 2.6 }, volatile: { n: "Volatile", c: "#ff7a3d", hp: 2.2 } };
+  var VOLQ = [];
+  function makeElite(e, chance) {
+    if (!e || e.boss || e.small || Math.random() >= chance) return e;
+    var ks = Object.keys(ELITE_A), a = ks[Math.floor(Math.random() * ks.length)], A = ELITE_A[a];
+    e.elite = { a: a, c: A.c, n: A.n, idle: 0 }; e.hp = e.mx = Math.round(e.mx * A.hp); e.dmg = Math.round((e.dmg || 4) * 1.5); e.sz = 1.28;
+    if (e.w) { e.w *= 1.15; e.h *= 1.15; } if (e.r) e.r *= 1.15;
+    return e;
+  }
+  function eliteChance(cav) { var c = cav ? 0.05 + Math.min(0.06, (cave ? cave.f : 1) * 0.003) : 0.06; if (!cav && isNight(S.time)) c *= 1.5; return c; }
+  function eliteName(e) { var d = ENEMY[e.k]; return e.elite.n + " " + (d && d.n ? d.n : e.k); }
+  function eliteDmg(e, dmg) { if (e.elite) { e.elite.idle = 0; if (e.elite.a === "armored") dmg *= 0.5; } return dmg; }
+  function eliteDeath(e, cav) {
+    if (!e.elite) return; S.st.elites = (S.st.elites || 0) + 1; var A = e.elite, x = e.x - 0.5, y = cav ? e.y - 1 : e.y - (e.h || 1) - 0.8;
+    popup("Elite defeated!", eliteName(e), A.c, "\u2605"); impact("kill"); shake = Math.max(shake, 0.6);
+    var d = ENEMY[e.k]; if (d && d.frag && ITEMS[d.frag]) give(d.frag, A.a === "radiant" ? 3 : 2, x, y, true);
+    if (ITEMS.swamptoken) give("swamptoken", 3 + Math.floor(Math.random() * 4) + (A.a === "radiant" ? 3 : 0), x, y, true);
+    var gems = GEMS.filter(function (g2) { return ITEMS[g2]; }); if (gems.length && Math.random() < (A.a === "radiant" ? 0.5 : 0.25)) give(gems[Math.floor(Math.random() * gems.length)], 1, x, y, true);
+    for (var i = 0; i < 24; i++) { var an = i / 24 * 6.28; parts.push({ x: e.x, y: cav ? e.y - 0.4 : e.y - (e.h || 1) / 2, vx: Math.cos(an) * 6, vy: Math.sin(an) * 6, life: 0.5, max: 0.5, c: A.c, s: 4, g: 0 }); }
+    if (A.a === "volatile") VOLQ.push({ x: e.x, y: cav ? e.y - 0.4 : e.y - (e.h || 1) / 2, t: 0.9, cav: cav, dmg: Math.max(10, Math.round((e.dmg || 8) * 1.4)) });
+  }
+  function tickElites(dt) {
+    var L = cave ? (cave.F && cave.F.mobs) || [] : enemies;
+    L.forEach(function (e) { if (!e.elite || e.def) return; e.elite.idle += dt; if (e.elite.a === "regen" && e.elite.idle > 2 && e.hp < e.mx) { e.hp = Math.min(e.mx, e.hp + e.mx * 0.05 * dt); if (Math.random() < dt * 6) parts.push({ x: e.x + (Math.random() - 0.5), y: (cave ? e.y - 0.4 : e.y - (e.h || 1) / 2) + (Math.random() - 0.5), vx: 0, vy: -1.5, life: 0.5, max: 0.5, c: "#6dffa8", s: 3, g: 0 }); } });
+    for (var i = VOLQ.length - 1; i >= 0; i--) {
+      var v = VOLQ[i]; v.t -= dt; if (v.cav !== !!cave) { VOLQ.splice(i, 1); continue; }
+      if (v.t > 0) continue; VOLQ.splice(i, 1);
+      var px = cave ? cp.x : p.x, py = cave ? cp.y - 0.5 : p.y - 0.9, d = Math.hypot(px - v.x, py - v.y);
+      if (d < 2.8) hurt(v.dmg, "volatile"); shake = Math.max(shake, 0.8); sfxThump(70, 30, 0.5, 0.3); sfxNoise(0.5, 1800, 200, 0.2, "lowpass");
+      for (var k2 = 0; k2 < 30; k2++) { var a2 = Math.random() * 6.28, sp = 4 + Math.random() * 7; parts.push({ x: v.x, y: v.y, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp, life: 0.45, max: 0.5, c: k2 % 3 ? "#ff7a3d" : "#ffd36a", s: 5, g: 0 }); }
+    }
+  }
+  function drawEliteFx(g, now) {   // auras, the name, a health bar, and the warning ring of a Volatile elite that is about to burst
+    var L = cave ? (cave.F && cave.F.mobs) || [] : enemies;
+    L.forEach(function (e) {
+      if (!e.elite || e.def) return; var A = e.elite, cy = cave ? e.y - 0.45 - (e.z || 0) : e.y - (e.h || 1) / 2, sx = ox + e.x * ts, sy = oy + cy * ts;
+      if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+      var R = ts * (1.1 + 0.08 * Math.sin(now / 200 + e.x)), gr = g.createRadialGradient(sx, sy, R * 0.15, sx, sy, R);
+      gr.addColorStop(0, A.c + "55"); gr.addColorStop(1, A.c + "00"); g.fillStyle = gr; g.beginPath(); g.arc(sx, sy, R, 0, 6.2832); g.fill();
+      var top = oy + (cave ? e.y - 1.25 - (e.z || 0) : e.y - (e.h || 1) - 0.55) * ts, bw = ts * 1.3;
+      g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sx - bw / 2 - 1, top - 1, bw + 2, 6); g.fillStyle = A.c; g.fillRect(sx - bw / 2, top, bw * clamp(e.hp / e.mx, 0, 1), 4);
+      g.font = "900 " + Math.max(10, Math.round(ts * 0.3)) + "px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = A.c;
+      var nm = "\u2605 " + eliteName(e); g.strokeText(nm, sx, top - 5); g.fillText(nm, sx, top - 5);
+    });
+    VOLQ.forEach(function (v) { if (v.cav !== !!cave) return; var sx = ox + v.x * ts, sy = oy + v.y * ts, k = 1 - v.t / 0.9; g.strokeStyle = "rgba(255,122,61," + (0.4 + 0.6 * (Math.floor(now / 90) % 2)) + ")"; g.lineWidth = 3; g.beginPath(); g.arc(sx, sy, ts * 2.8 * (0.3 + 0.7 * k), 0, 6.2832); g.stroke(); });
   }
   function newCaveMob(k, x, y, F, f) {
     var e = newEnemy(k, x, y), sc = 1 + 0.08 * (f - 1);
@@ -3513,11 +3562,11 @@
   function damageCaveMob(m, dmg, ux, uy) {
     if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
-    m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
+    dmg = eliteDmg(m, dmg); m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
-    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic");
+    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true);
     if (m.k === "slime" && !m.small) [-1, 1].forEach(function (s2) {   // big slimes split in two
       var kid = newCaveMob("slime", m.x + s2 * 0.25, m.y, F, cave.f); kid.small = true; kid.r = 0.22; kid.hp = kid.mx = Math.round(6 * (1 + 0.08 * (cave.f - 1))); kid.dmg = Math.max(3, Math.round(m.dmg * 0.55)); kid.kx = s2 * 5 + uy * 2; kid.ky = -ux * 2; kid.cd = 0.6; kid.t = 0.5;
       if (mobFree(F, kid.x, kid.y, kid.r, false)) F.mobs.push(kid);
@@ -4483,7 +4532,7 @@
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
     if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
     var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, h = Math.max(0, e.hurt) / 0.3, flash = e.hurt > 0.2 || e.def, d = ENEMY[e.k];
-    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30, ts / 30);
+    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30 * (e.sz || 1), ts / 30 * (e.sz || 1));
     g.globalAlpha = 1 - pd * pd * 0.9;
     if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
     if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
@@ -4550,7 +4599,7 @@
     }
     g.restore();
   }
-  function drawEnemies(g, now) { enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else drawEnemy(g, e, now); }); }
+  function drawEnemies(g, now) { enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
 
   // ---------- FARMING ----------
   // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
@@ -10860,7 +10909,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt); tickCoach(dt); tickSpecial(dt);
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt);
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -13321,7 +13370,7 @@
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
-    tickSpecial(dt); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
+    tickSpecial(dt); tickElites(dt); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -13546,7 +13595,7 @@
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawArrows(g, true); drawGuardian(g, now);
+    drawRocks(Y0, Math.min(Y1, prow)); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
     }
@@ -18113,7 +18162,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
