@@ -494,11 +494,63 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full" };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
-  var cv = $("sbxCv"), ctx = cv.getContext("2d", { alpha: false });   // PERF: every scene paints its whole background, so the game canvas is opaque (the browser skips blending it with the page)
+  // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
+  // a Reduce motion switch that overrides the system setting, softer lightning flashes, and key remapping (KEYMAP below) ----------
+  var CBM = { p: "1 0 0 0 0 -0.255 1.255 0 0 0 0.303 -0.545 1.242 0 0 0 0 0 1 0", d: "1 0 0 0 0 -0.438 1.438 0 0 0 0.262 -0.562 1.3 0 0 0 0 0 1 0", t: "1.05 -0.382 0.332 0 0 0 1.234 -0.234 0 0 0 0 1 0 0 0 0 0 1 0" };
+  function applyA11y() {
+    try {
+      if (!document.getElementById("sbxCBF")) { var d = document.createElement("div"); d.id = "sbxCBF"; d.setAttribute("aria-hidden", "true"); d.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
+        d.innerHTML = '<svg width="0" height="0">' + Object.keys(CBM).map(function (k) { return '<filter id="sbxCB-' + k + '" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="' + CBM[k] + '"/></filter>'; }).join("") + "</svg>"; document.body.appendChild(d); }
+      var c = document.getElementById("sbxCv"); if (c) c.style.filter = OPT.cb !== "off" ? "url(#sbxCB-" + OPT.cb + ")" : "";
+      document.documentElement.style.setProperty("--ui-tx", OPT.tx); document.documentElement.classList.toggle("sbx-txbig", OPT.tx > 1);
+      var sysR = !!(matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      motionOff = OPT.motion === "on" ? true : OPT.motion === "off" ? false : sysR; reduce = motionOff;
+    } catch (e) {}
+  }
+  function flashK() { return OPT.flash ? 1 : 0.15; }
+  // KEY REMAPPING: each action has its default keys (d); you can bind one key of your own (KEYMAP.b[id]). A bound key acts as the
+  // action's first default key, and that action's default LETTER keys stop working (arrow keys always keep working).
+  var KEYACT = [
+    { id: "left", n: "Move left", d: ["a", "ArrowLeft"] }, { id: "right", n: "Move right", d: ["d", "ArrowRight"] },
+    { id: "jump", n: "Jump / climb", d: [" ", "w", "ArrowUp"] }, { id: "down", n: "Down / drop", d: ["s", "ArrowDown"] },
+    { id: "dodge", n: "Dodge roll", d: ["Shift", "c"] }, { id: "use", n: "Use / interact", d: ["f"] }, { id: "swap", n: "Swap to pick", d: ["q"] },
+    { id: "journal", n: "Journal", d: ["e"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
+    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "emote", n: "Emotes", d: ["t"] }
+  ];
+  var KEYMAP = { b: {}, wait: "" };
+  try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); } catch (e) {}
+  function keySave() { try { localStorage.setItem("swamp-delve-keys", JSON.stringify(KEYMAP.b)); } catch (e) {} }
+  function keyNorm(k) { return k && k.length === 1 ? k.toLowerCase() : k; }
+  function keyLabel(k) { return k === " " ? "Space" : k && k.length === 1 ? k.toUpperCase() : (k || "").replace("Arrow", "\u2190\u2192\u2191\u2193".charAt(["Left", "Right", "Up", "Down"].indexOf((k || "").replace("Arrow", ""))) || ""); }
+  function keyRemap(raw) {   // the key the rest of the game should see, or null to ignore it
+    var k = keyNorm(raw), i, a;
+    for (i = 0; i < KEYACT.length; i++) { a = KEYACT[i]; if (KEYMAP.b[a.id] && keyNorm(KEYMAP.b[a.id]) === k) return a.d[0]; }
+    for (i = 0; i < KEYACT.length; i++) { a = KEYACT[i]; if (KEYMAP.b[a.id] && a.d.indexOf(k) >= 0 && k.indexOf("Arrow") !== 0) return null; }   // a default key that was moved
+    return raw;
+  }
+  function keyOwner(k) { k = keyNorm(k); for (var i = 0; i < KEYACT.length; i++) { var a = KEYACT[i], b = KEYMAP.b[a.id]; if (b ? keyNorm(b) === k : a.d.indexOf(k) >= 0) return a; } return null; }
+  function keymapRows() {
+    return '<div class="pz-keymap">' + KEYACT.map(function (a) {
+      var b = KEYMAP.b[a.id], w = KEYMAP.wait === a.id, lbl = b ? keyLabel(b) : a.d.map(keyLabel).join(" / ");
+      return '<div class="pz-krow' + (b ? " custom" : "") + '"><span>' + esc(a.n) + '</span><button type="button" class="pz-kbtn' + (w ? " wait" : "") + '" data-opt="key:' + a.id + '">' + (w ? "Press a key..." : esc(lbl)) + "</button></div>";
+    }).join("") + '</div><div class="pz-row"><div><small>Tap a key to change it, then press the new key (Esc cancels). Arrow keys always work.</small></div><span class="pz-seg"><button type="button" data-opt="key:reset">Reset</button></span></div>';
+  }
+  window.addEventListener("keydown", function (e) {   // waiting for a new key for an action
+    if (!KEYMAP.wait) return; e.preventDefault(); e.stopImmediatePropagation();
+    var id = KEYMAP.wait; KEYMAP.wait = "";
+    if (e.key !== "Escape") {
+      var k = keyNorm(e.key), own = keyOwner(k), act = KEYACT.filter(function (a) { return a.id === id; })[0];
+      if (/^(Enter|Tab|Meta|Control|Alt|CapsLock|`|p|g|r|[1-9])$/.test(k) || k.indexOf("Arrow") === 0) toast("That key is kept for something else. Pick another.", "#f2c14e");
+      else if (own && own.id !== id) toast(keyLabel(k) + " already does " + own.n + ". Pick another key.", "#f2c14e");
+      else { KEYMAP.b[id] = k; keySave(); toast(act.n + " is now " + keyLabel(k) + ".", "#7fd6ff"); }
+    }
+    try { if (pauseOpen) renderPause(); if (panelOpen) renderPanel(); } catch (er) {}
+  }, true);
+  var cv = $("sbxCv"), ctx = cv.getContext("2d", { alpha: false }); setTimeout(applyA11y, 0);   // PERF: every scene paints its whole background, so the game canvas is opaque (the browser skips blending it with the page)
   var stageEl = $("sbxStage");
 
   // ---------- STATE ----------
@@ -5915,7 +5967,7 @@
       g.save(); g.strokeStyle = "rgba(235,245,255," + Math.min(1, B.t * 4).toFixed(3) + ")"; g.lineWidth = 2.5; g.shadowColor = "#bfe4ff"; g.shadowBlur = lowq ? 0 : 14; g.beginPath(); g.moveTo(x, 0);
       for (var s = 1; s <= segs; s++) { r = (r * 9301 + 49297) % 233280; g.lineTo(x + (r / 233280 - 0.5) * 40, y1 * s / segs); } g.stroke(); g.restore();
     }
-    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.45 * above).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.45 * above * flashK()).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
   }
   // ---------- CHARMS ----------
   // Little trinkets worn on a cord. Craft each one once (Craft tab > Gear > Charms), then wear up to 2 of them from the top of your backpack
@@ -9611,7 +9663,13 @@
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
-      + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"));
+      + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"))
+      + '<h3 class="pz-sub">Accessibility</h3>'
+      + r("Colour-blind mode", "Shifts the game's colours so reds, greens and blues are easier to tell apart.", optSeg("cb", OPT.cb, [["off", "Off"], ["p", "Protan"], ["d", "Deutan"], ["t", "Tritan"]], "Colour-blind mode"))
+      + r("Text size", "Makes menus, messages and the Journal bigger.", optSeg("tx", OPT.tx, [[1, "Normal"], [1.15, "Large"], [1.3, "Larger"]], "Text size"))
+      + r("Reduce motion", "Turns off spins, bobbing and camera sway. System follows your device setting.", optSeg("motion", OPT.motion, [["sys", "System"], ["on", "On"], ["off", "Off"]], "Reduce motion"))
+      + r("Lightning flashes", "Off keeps storms from lighting up the whole screen.", optSeg("flash", OPT.flash ? 1 : 0, [[1, "On"], [0, "Soft"]], "Lightning flashes"))
+      + '<h3 class="pz-sub">Controls</h3>' + keymapRows();
   }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
     var i = spec.indexOf(":"), k = spec.slice(0, i), v = spec.slice(i + 1);
@@ -9622,6 +9680,11 @@
     else if (k === "bloom") OPT.bloom = v === "1";
     else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
+    else if (k === "cb") { OPT.cb = /^(p|d|t)$/.test(v) ? v : "off"; applyA11y(); }
+    else if (k === "tx") { OPT.tx = +v === 1.15 || +v === 1.3 ? +v : 1; applyA11y(); }
+    else if (k === "motion") { OPT.motion = v === "on" || v === "off" ? v : "sys"; applyA11y(); }
+    else if (k === "flash") OPT.flash = v === "1";
+    else if (k === "key") { if (v === "reset") { KEYMAP.b = {}; keySave(); toast("Controls reset to the defaults.", "#7fd6ff"); } else { KEYMAP.wait = v; } }
     else if (k === "gq") { OPT.gq = v === "high" || v === "low" ? v : "auto"; if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; } else { lowq = coarse; dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {} } resize(); }
     optSave();
   }
@@ -11028,7 +11091,7 @@
   function drawBoltScr(g, x0, y1) {   // a bolt in screen space (the homestead and the sea), and the flash
     if (WX.bolt && WX.bolt.scr) { var B = WX.bolt, segs = 10, r = B.seed, x = B.sx; g.save(); g.strokeStyle = "rgba(235,245,255," + Math.min(1, B.t * 4).toFixed(3) + ")"; g.lineWidth = 3; g.shadowColor = "#bfe4ff"; g.shadowBlur = lowq ? 0 : 16; g.lineJoin = "round"; g.beginPath(); g.moveTo(x, 0);
       for (var q = 1; q <= segs; q++) { r = (r * 9301 + 49297) % 233280; x += (r / 233280 - 0.5) * 46; g.lineTo(x, y1 * q / segs); } g.stroke(); g.restore(); }
-    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.5).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.5 * flashK()).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
   }
   // main world: drops landing on the ground under open sky, and on water
   function rainPips(dt) {
@@ -14872,6 +14935,7 @@
   window.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
+    k = keyRemap(k); if (k === null) return;   // KEY REMAPPING
     if (deadUI) { if (k === "Enter" || k === " " || k === "r" || k === "R") { e.preventDefault(); deadRespawn(); } return; }   // the death screen
     if (TOUR) { if (k === "Escape") { e.preventDefault(); endTour(); } else if (k === "Enter" || k === " " || k === "ArrowRight") { e.preventDefault(); TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } return; }
     if (FMG.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFarmBook(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fmGo(FMG.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fmGo(FMG.pg + 1); return; }
@@ -14916,7 +14980,7 @@
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
-    var k = e.key; if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 0; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 0; else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 0; if (k !== " ") keys.u = 0; } else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 0;
+    var k = keyRemap(e.key); if (k === null) return; if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 0; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 0; else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 0; if (k !== " ") keys.u = 0; } else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 0;
   });
   window.addEventListener("blur", function () { keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; });
   $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
