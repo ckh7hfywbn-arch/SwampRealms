@@ -178,6 +178,16 @@
   RECIPES.push({ id: "x_support", n: "Timber Supports (2)", out: { x_support: 2 }, cost: { planks: 4, stick: 4 }, d: "Place them in the Mine like torches. The ceiling within 4 tiles of a support can't cave in. Pick them back up with your pick." });
   if (!ITEMS.x_spore) { ITEMS.x_spore = { n: "Mycelium Node", d: "Plant it with F at a base (the surface, your homestead or the Sunken Hollow). Every node shares one Spore Network store." }; if (ORDER.indexOf("x_spore") < 0) ORDER.push("x_spore"); }
   RECIPES.push({ id: "x_spore", n: "Mycelium Node", out: { x_spore: 1 }, cost: { spore: 12, glowcap: 2, fiber: 6 }, d: "Plant it with F at a base: the surface, your homestead or the Sunken Hollow (up to 4). Every node shares one Spore Network store: send items in at one base, take them out at another." });
+  [["x_drill", "Bore Drill", "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on: every block you dig takes the 8 around it too."],
+   ["x_detect", "Metal Detector", "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore."],
+   ["x_jet", "Swamp-Gas Jetpack", "Carry it: keep holding jump at the top of a jump to fly on swamp gas. It refuels on the ground."],
+   ["x_grap2", "Grapple Upgrade: Mk II", "Your grapple reaches half again as far and swings: pump with left and right, reel with up and down, jump to fling off."],
+   ["x_grap3", "Grapple Upgrade: Mk III", "Double reach, and the hook bites into tree leaves and trunks too."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
+  RECIPES.push({ id: "x_detect", n: "Metal Detector", out: { x_detect: 1 }, cost: { ironingot: 4, quartz: 4, glass: 2 }, bench: true, d: "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore within 14 tiles." });
+  RECIPES.push({ id: "x_jet", n: "Swamp-Gas Jetpack", out: { x_jet: 1 }, cost: { ironingot: 8, sulfur: 6, leather: 4, glass: 2 }, bench: true, d: "Carry it: keep holding jump at the top of a jump to fly on swamp gas for a couple of seconds. It refuels whenever you stand on the ground." });
+  RECIPES.push({ id: "x_grap2", n: "Grapple Upgrade: Mk II", out: { x_grap2: 1 }, cost: { ironingot: 5, fiber: 12, leather: 2 }, bench: true, d: "Your grapple reaches half again as far and swings like a vine: pump with left and right, reel in and out with up and down, jump to fling off with your speed." });
+  RECIPES.push({ id: "x_grap3", n: "Grapple Upgrade: Mk III", out: { x_grap3: 1 }, cost: { ironingot: 8, crystal: 4, goldbar: 1 }, bench: true, d: "Needs Mk II. Double the reach, and the hook bites into tree leaves and trunks as well as solid blocks." });
   RECIPES.push({ id: "prospect", n: "Prospector's Lantern", out: { prospect: 1 }, cost: { ironingot: 4, glass: 2, crystal: 3, spore: 6 }, bench: true, d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground. You only need one." });
   if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
   DECOR.forEach(function (r) { r.deco = 1; });
@@ -526,7 +536,7 @@
     { id: "jump", n: "Jump / climb", d: [" ", "w", "ArrowUp"] }, { id: "down", n: "Down / drop", d: ["s", "ArrowDown"] },
     { id: "dodge", n: "Dodge roll", d: ["Shift", "c"] }, { id: "use", n: "Use / interact", d: ["f"] }, { id: "swap", n: "Swap to pick", d: ["q"] },
     { id: "journal", n: "Journal", d: ["e"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
-    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "emote", n: "Emotes", d: ["t"] }
+    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "bore", n: "Bore Drill on/off", d: ["z"] }, { id: "emote", n: "Emotes", d: ["t"] }
   ];
   var KEYMAP = { b: {}, wait: "" };
   try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); } catch (e) {}
@@ -752,6 +762,7 @@
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
     if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
+    d.grapLv = clamp(o.grapLv | 0, 0, 2); d.bore = !!o.bore;   // GADGETS
     if (o.spore && typeof o.spore === "object") { d.spore = { n: [], cache: {}, rotDay: Math.floor(+o.spore.rotDay) || -1, eatDay: Math.floor(+o.spore.eatDay) || -1 }; (Array.isArray(o.spore.n) ? o.spore.n : []).slice(0, 4).forEach(function (q) { if (q && /^(surface|home|hollow)$/.test(q.s) && isFinite(+q.x) && isFinite(+q.y)) d.spore.n.push({ id: String(q.id || Math.random()).slice(0, 16), s: q.s, x: +q.x, y: +q.y, rot: q.rot ? 1 : 0 }); }); if (o.spore.cache) Object.keys(o.spore.cache).forEach(function (k) { if (ITEMS[k] && o.spore.cache[k] > 0) d.spore.cache[k] = Math.min(99999, Math.floor(+o.spore.cache[k])); }); }   // SPORE NETWORK
     if (o.speed && typeof o.speed === "object") { d.speed = {}; Object.keys(o.speed).forEach(function (k) { if (/^\d+$/.test(k) && o.speed[k] > 0) d.speed[k] = Math.floor(+o.speed[k]); }); }   // SPEED FLOORS
     if (o.carts && typeof o.carts === "object") { d.carts = {}; Object.keys(o.carts).forEach(function (k) { if (/^\d+$/.test(k) && +k < 200) d.carts[k] = 1; }); }   // MINE CARTS
@@ -1194,7 +1205,8 @@
   function addExtra(k, n) { S.extra[k] = Math.min(99999, (S.extra[k] || 0) + n); }
   function invFull(item) { if (item && room(item) > 0) return false; nag("Inventory full! Press E to make room."); return true; }
   var giveBatch = null;
-  function give(item, n, tx, ty, keep) {   // keep: loot that must never be lost (rewards, enemy drops). What does not fit drops on the ground
+  function give(item, n, tx, ty, keep) {
+    if (item === "x_grap2" || item === "x_grap3") { var gl2 = item === "x_grap2" ? 1 : 2; if ((S.grapLv | 0) < gl2) { S.grapLv = gl2; popup("Grapple upgraded", "Mk " + (gl2 + 1) + (gl2 === 1 ? ": longer reach and real swinging" : ": double reach, bites into trees"), "#5fa83f", "\u2693"); } return n; }   // keep: loot that must never be lost (rewards, enemy drops). What does not fit drops on the ground
     if (DROPMODE && tx !== undefined && !cave && !keep) { spawnDrop(item, n, Math.floor(tx), Math.floor(ty)); return n; }   // GROUND DROPS: what a broken block gives lands on the ground
     var fit = Math.min(n, room(item));
     if (fit > 0) {
@@ -1342,6 +1354,7 @@
   // Any item can be held; materials that do nothing on their own dig with bare paws.
   var bare = false;   // holding nothing (an empty hotbar slot): you dig and pick with bare paws even if you own a pick
   function choose(id, slot) {
+    if (id === "x_drill") { boreToggle(); id = "pick"; slot = -1; }
     bare = false;
     if (id === "fishlog") { openFishLog(); return; }
     if (id === "farmbook") { openFarmBook(); return; }   // so does Croaka's Farm Almanac   // the Fishing Log opens when you pick it
@@ -8397,18 +8410,69 @@
       var sub = 6, h = dt / sub;
       for (var i = 0; i < sub; i++) {
         hook.x += hook.vx * h; hook.y += hook.vy * h;
-        if (blocks(Math.floor(hook.x), Math.floor(hook.y))) { hook.st = "pull"; hook.t = 0; hook.bx = Math.floor(hook.x); hook.by = Math.floor(hook.y); hook.ax = hook.x - hook.vx * h * 0.5; hook.ay = hook.y - hook.vy * h * 0.5; var td = TILES[get(Math.floor(hook.x), Math.floor(hook.y))]; chips(hook.ax, hook.ay, td ? td.c : "#888", 5, 3); thud(200, 0.06); break; }
-        var ex = hook.x - p.x, ey = hook.y - (p.y - PH * 0.7); if (ex * ex + ey * ey > GRAP_R * GRAP_R) { hook.st = "back"; break; }
+        if (blocks(Math.floor(hook.x), Math.floor(hook.y)) || grapTree(Math.floor(hook.x), Math.floor(hook.y))) { hook.st = "pull"; hook.t = 0; hook.bx = Math.floor(hook.x); hook.by = Math.floor(hook.y); hook.ax = hook.x - hook.vx * h * 0.5; hook.ay = hook.y - hook.vy * h * 0.5; var td = TILES[get(Math.floor(hook.x), Math.floor(hook.y))]; chips(hook.ax, hook.ay, td ? td.c : "#888", 5, 3); thud(200, 0.06); break; }
+        var ex = hook.x - p.x, ey = hook.y - (p.y - PH * 0.7), GR = GRAP_R * (S.grapLv >= 2 ? 2 : S.grapLv >= 1 ? 1.5 : 1); if (ex * ex + ey * ey > GR * GR) { hook.st = "back"; break; }
       }
     } else if (hook.st === "back") {
       var bx = p.x - hook.x, by = (p.y - PH * 0.7) - hook.y, bd = Math.sqrt(bx * bx + by * by) || 1; if (bd < 0.7) { hook = null; return; }
       hook.x += bx / bd * 46 * dt; hook.y += by / bd * 46 * dt;
     } else {
-      if (!blocks(hook.bx, hook.by)) { hook = null; return; }   // the block it bit was broken
-      if (hook.t > (hook.hang ? 8 : 2.2)) { hook = null; return; }
+      if (!blocks(hook.bx, hook.by) && !grapTree(hook.bx, hook.by)) { hook = null; return; }   // the block it bit was broken
+      if (!hook.swing && hook.t > (hook.hang ? 8 : 2.2)) { hook = null; return; } if (hook.swing && hook.t > 20) { hook = null; return; }
     }
   }
-  function grapplePull(h, jump) {   // called from step() while the hook holds: reel in, then hang
+  // ---------- GADGETS ----------
+  // SWAMP-GAS JETPACK: carry it; keep holding jump once you're falling (or near the top of a jump) to thrust up. 2.2 s of gas, refills on the ground.
+  var JET = { f: 2.2, max: 2.2, on: false, puff: 0 };
+  function jetStep(h, jump, lad) {
+    if (!(S.inv.x_jet > 0) || cave) { JET.on = false; return; }
+    if (p.on || lad) { JET.f = Math.min(JET.max, JET.f + h * 1.6); JET.on = false; return; }
+    JET.on = !!jump && !p.wet && JET.f > 0 && p.vy > -3 && !gliding;
+    if (JET.on) { JET.f -= h; p.vy = Math.max(p.vy - 72 * h, -8.5); JET.puff -= h; if (JET.puff <= 0) { JET.puff = 0.04; parts.push({ x: p.x - p.face * 0.25, y: p.y - 0.6, vx: (Math.random() - 0.5) * 1.5, vy: 4 + Math.random() * 2, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#9fe86a" : "#d8ffb0", s: 3, g: -2 }); if (Math.random() < 0.3) nz(0, 0.08, 0.012, 700 + Math.random() * 400, "bandpass", 2); } S.st.jetT = (S.st.jetT || 0) + h; }
+  }
+  function drawJet(g) {
+    if (!(S.inv.x_jet > 0) || cave || JET.f >= JET.max - 0.01) return; var sx = ox + (p.x - 0.75) * ts, sy = oy + (p.y - 1.6) * ts, hh = ts * 1.0;
+    g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(sx - 3, sy - 1, 6, hh + 2); g.fillStyle = JET.f < 0.5 ? "#ff6b82" : "#9fe86a"; g.fillRect(sx - 2, sy + hh * (1 - JET.f / JET.max), 4, hh * JET.f / JET.max);
+  }
+  // BORE DRILL: Z (or tapping it in the hotbar) switches 3x3 digging on and off for the pickaxe (S.bore).
+  function boreToggle() { if (!(S.inv.x_drill > 0)) { nag("Craft a Bore Drill at the Workbench first."); return; } S.bore = !S.bore; toast(S.bore ? "Bore Drill on: your pick digs 3 by 3." : "Bore Drill off.", "#f2c14e"); thud(S.bore ? 220 : 160, 0.06); }
+  function boreSurface(tx, ty) {
+    if (!S.bore || !(S.inv.x_drill > 0) || sel !== "pick") return; var n = 0;
+    for (var yy = ty - 1; yy <= ty + 1; yy++) for (var xx = tx - 1; xx <= tx + 1; xx++) { if (xx === tx && yy === ty) continue; var id = get(xx, yy), td = TILES[id]; if (!id || !td || !td.solid || td.kind === "door" || td.kind === "chest" || td.kind === "lootchest" || td.cont || td.tier > effTier() || td.hard >= 9 || id === T.HOLE) continue; funBreak(id, xx, yy); breakTile(xx, yy); n++; }
+    if (n) { wear("pick", Math.ceil(n / 4)); shake = Math.max(shake, 0.12); }
+  }
+  function boreCave(tx, ty) {
+    if (!S.bore || !(S.inv.x_drill > 0) || sel !== "pick" || !cave) return; var F = cave.F, n = 0;
+    for (var yy = ty - 1; yy <= ty + 1; yy++) for (var xx = tx - 1; xx <= tx + 1; xx++) { if (xx === tx && yy === ty) continue; if (xx < 0 || yy < 0 || xx >= F.w || yy >= F.h) continue; var j = yy * F.w + xx, id = F.node[j], td = TILES[id]; if (!id || !td || td.kind === "lootchest" || td.tier > effTier()) continue; funBreak(id, xx, yy); breakRock(xx, yy); n++; }
+    if (n) { wear("pick", Math.ceil(n / 4)); shake = Math.max(shake, 0.12); }
+  }
+  // METAL DETECTOR: hold it on the surface; the nearest buried treasure, loot chest or gem ore within 14 tiles sets the signal
+  var DET = { t: 0, d: 99, beep: 0, tgt: null };
+  function tickDetect(dt) {
+    if (sel !== "x_detect" || cave || OCS || HOME) { DET.tgt = null; return; }
+    DET.t -= dt; if (DET.t <= 0) { DET.t = 0.3; DET.tgt = null; DET.d = 99; var cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
+      for (var yy = cy - 14; yy <= cy + 14; yy++) for (var xx = cx - 14; xx <= cx + 14; xx++) { var id = get(xx, yy), td = TILES[id]; if (!td) continue; var val = id === T.X_buried || td.kind === "lootchest" || (oreColor(id) && /ruby|sapphire|moonstone|amber|amethyst/.test(td.drop || "")); if (!val) continue; var d = Math.hypot(xx + 0.5 - p.x, yy + 0.5 - (p.y - 1)); if (d < DET.d) { DET.d = d; DET.tgt = { x: xx, y: yy, n: td.n }; } } }
+    if (!DET.tgt) return; DET.beep -= dt; var gap = clamp(DET.d / 14, 0.07, 1) * 1.1; if (DET.beep <= 0) { DET.beep = gap; tn(0, 1400 - DET.d * 40, 1300 - DET.d * 40, 0.05, "sine", 0.018); }
+  }
+  function drawDetect(g, now) {
+    if (sel !== "x_detect" || cave || OCS || HOME) return; var w = 150, h = 30, x = vw / 2 - w / 2, y = 64, sig = DET.tgt ? clamp(1 - DET.d / 14, 0, 1) : 0, bars = Math.ceil(sig * 6);
+    g.fillStyle = "rgba(6,16,13,.85)"; g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, 15) : g.rect(x, y, w, h); g.fill(); g.strokeStyle = "#4ee6b4"; g.lineWidth = 2; g.stroke();
+    g.font = "900 12px Nunito,system-ui,sans-serif"; g.textAlign = "left"; g.fillStyle = "#cfeee0"; g.fillText(DET.tgt && DET.d < 2 ? "Dig right here!" : "Signal", x + 12, y + 19);
+    for (var i = 0; i < 6; i++) { g.fillStyle = i < bars ? (bars >= 5 ? "#f2c14e" : "#4ee6b4") : "rgba(255,255,255,.15)"; g.fillRect(x + 78 + i * 10, y + 22 - (i + 1) * 2.4, 7, (i + 1) * 2.4); }
+  }
+  function grapTree(x, y) { if ((S.grapLv | 0) < 2) return false; var id = get(x, y); return id === T.LEAVES || id === T.LOG || (T.TRUNK !== undefined && id === T.TRUNK); }
+  function grapplePull(h, jump) {   // called from step() while the hook holds: reel in, then hang (Mk II+: swing on the rope instead)
+    if (S.grapLv >= 1) {
+      var ax = hook.ax, ay = hook.ay, rx = p.x - ax, ry = (p.y - PH * 0.6) - ay, rd = Math.sqrt(rx * rx + ry * ry) || 1;
+      if (!hook.swing) { hook.swing = true; hook.L = Math.max(1.6, Math.min(rd * 0.5, 9)); }
+      if (rd > hook.L + 0.35 && !hook.sw2) { p.vx = -rx / rd * 18; p.vy = Math.min(9, -ry / rd * 18); return; }   // reel in to the rope's length first (lifts you off the ground)
+      hook.sw2 = true;
+      if (jump && !p.jprev && hook.t > 0.12) { var keep = Math.min(19, Math.hypot(p.vx, p.vy)); hook = null; p.vy = Math.min(p.vy - 4, -8); p.air2 = true; if (keep > 6) p.vx = Math.sign(p.vx || p.face) * keep; return; }   // fling off
+      if (keys.u || tk.u) hook.L = Math.max(1.4, hook.L - 7 * h); if (keys.d || tk.d) hook.L = Math.min(GRAP_R * 1.4, hook.L + 7 * h);
+      var dirIn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0); p.vx += dirIn * 26 * h; p.vy += 34 * h;   // pump + gravity
+      if (rd > hook.L) { var ux = rx / rd, uy = ry / rd, vr = p.vx * ux + p.vy * uy; if (vr > 0) { p.vx -= vr * ux; p.vy -= vr * uy; } var push = (rd - hook.L) * 12; p.vx -= ux * push * h * 10; p.vy -= uy * push * h * 10; }
+      p.vx *= 0.998; p.vy = Math.min(p.vy, 22); return;
+    }
     if (jump && !p.jprev && hook.t > 0.12) { hook = null; p.vy = Math.min(p.vy, -11); p.air2 = true; return; }   // jump to let go, with a hop
     var cx = p.x, cy = p.y - PH * 0.6, dx = hook.ax - cx, dy = hook.ay - cy, d = Math.sqrt(dx * dx + dy * dy) || 1;
     if (d < 1.15 || hook.hang) { if (!hook.hang) { hook.hang = true; hook.t = 0; } p.vx = 0; p.vy = 0; return; }
@@ -8513,6 +8577,11 @@
   }
   (function () {
     SPR.grapple = { r: ["................", "..........aa....", ".........a..a...", "........abba....", ".......abbb.....", "......gbb.......", ".....gg.........", "....gl..........", "...gg...........", "..gl.l..........", ".gg..g..........", ".g...gl.........", ".gl...g.........", "..gg.gg.........", "...ggl..........", "................"], p: { a: "#cfd6dc", b: "#7a8290", g: "#4f8a3c", l: "#8fd06a" } };
+    SPR.x_drill = { r: ["................", "........aaaa....", ".......abbbba...", "......abccccba..", ".....abcddddcba.", "....abcdeeedcba.", "...abcdeffedcba.", "..abcdeffffedca.", "..abcdefffedcba.", "...abcdeeedcba..", "....abcdddcba...", ".....abcccba....", "......abbba.....", ".......aaa......", "................", "................"], p: { a: "#3a3e44", b: "#6b7279", c: "#9aa3ab", d: "#c9cdd2", e: "#f2c14e", f: "#ff8a3d" } };
+    SPR.x_detect = { r: ["................", "..........aaa...", ".........abbba..", "..........aaa...", "..........a.....", ".........a......", "........a.......", ".......a........", "......a.........", ".....a..........", "...ccccc........", "..cdddddc.......", "..cdeeedc.......", "..cdddddc.......", "...ccccc........", "................"], p: { a: "#6b7279", b: "#ff4a5a", c: "#3a3e44", d: "#9aa3ab", e: "#4ee6b4" } };
+    SPR.x_jet = { r: ["................", "....aa....aa....", "...abba..abba...", "...abba..abba...", "...abcaaaacba...", "...abccddccba...", "...abccddccba...", "...abccccccba...", "...abba..abba...", "...aeea..aeea...", "....ff....ff....", "....gf....fg....", ".....g....g.....", "................", "................", "................"], p: { a: "#3a3e44", b: "#7fd06a", c: "#5a9a4a", d: "#f2c14e", e: "#6b7279", f: "#9fe86a", g: "#d8ffb0" } };
+    SPR.x_grap2 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#9aa0ac", b: "#d8dde4", c: "#5fa83f", d: "#c8925a", e: "#f2c14e" } };
+    SPR.x_grap3 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#f2c14e", b: "#fff3c4", c: "#4ee6b4", d: "#8a5a32", e: "#ff8a3d" } };
     SPR.x_spore = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbcbbcbba...", "...abbbbbbbba...", "....aaaaaaaa....", "......dd........", "......dd..aaa...", "......dd.abcba..", ".....edde.aaa...", "....ee.dd..d....", "...e...dd..d....", "..e...edde.d....", ".....e.dd.edde..", "....e..ee..e.e..", "................"], p: { a: "#2a9a7a", b: "#4ee6b4", c: "#bfffe8", d: "#d8e8d0", e: "#3fd6c0" } };
     SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
     SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
@@ -10019,7 +10088,7 @@
         + '<h2>How to play</h2>'
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
-        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
+        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
@@ -10155,7 +10224,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -10448,7 +10517,7 @@
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[plantHit && sel !== "pick" ? 0 : effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(id); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
-      if (mine.p >= 1) { funBreak(id, tx, ty); breakTile(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && !plantHit) wear("pick", td.hard >= 2 ? 2 : 1); }
+      if (mine.p >= 1) { funBreak(id, tx, ty); breakTile(tx, ty); boreSurface(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && !plantHit) wear("pick", td.hard >= 2 ? 2 : 1); }
     } else {
       cool -= dt; if (cool > 0) return; cool = 0.13;
       if (ITEMS[sel] && ITEMS[sel].wall) { if ((S.inv[sel] || 0) > 0 && canWall(tx, ty, ITEMS[sel].wall)) placeWall(tx, ty, sel); return; }
@@ -10709,6 +10778,8 @@
   }
   function craft(id) {
     var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
+    if (id === "x_grap2" && (S.grapLv | 0) >= 1) { nag("Your grapple already has the Mk II upgrade."); return; } if (id === "x_grap3" && (S.grapLv | 0) < 1) { nag("Install the Mk II upgrade first."); return; } if (id === "x_grap3" && (S.grapLv | 0) >= 2) { nag("Your grapple is already Mk III."); return; }
+    if ((id === "x_drill" || id === "x_detect" || id === "x_jet") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
@@ -11212,6 +11283,7 @@
     if (upd) p.vy = approach(p.vy, gliding ? -17 : -14, 80 * h);   // the hot updraft over a Thermal Vent
     else if (gliding) { p.vy = Math.min(p.vy, GLIDE.fall); p.vx = approach(p.vx, dir * sp * GLIDE.speed, 24 * h); glideDist += Math.abs(p.vx) * h; }
     if (hook && hook.st === "pull") { grapplePull(h, jump); gliding = false; }   // GRAPPLE
+    else jetStep(h, jump, lad);   // SWAMP-GAS JETPACK
     p.jprev = !!jump;   // per physics step, so one press is one jump
     if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
     // horizontal, with automatic one-block step-up
@@ -11245,7 +11317,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); tickDetect(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -13311,7 +13383,7 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawPotMark(g, now); drawBMHud(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -13849,7 +13921,7 @@
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(nid); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
-      if (mine.p >= 1) { funBreak(nid, tx, ty); breakRock(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
+      if (mine.p >= 1) { funBreak(nid, tx, ty); breakRock(tx, ty); boreCave(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
       return;
     }
     mine = null; cool -= dt; if (cool > 0) return;
@@ -14507,7 +14579,7 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "prospect x_support x_spore shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
+    ["Tools|Utility", "prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
     ["Tools|Adventuring", "x_grapple"],
     ["Stations|Garage", "x_garage"],
@@ -15720,6 +15792,7 @@
     else if (k === "l" || k === "L") { if (!e.repeat) loNext(); }
     else if (k === "n" || k === "N") { if (!e.repeat) dropPinHere(); }
     else if (k === "v" || k === "V") { if (!e.repeat) trySpecial(); }
+    else if (k === "z" || k === "Z") { if (!e.repeat) boreToggle(); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
@@ -18672,7 +18745,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
