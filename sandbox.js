@@ -3657,7 +3657,7 @@
       if (Math.floor(m.y) !== rj) return;
       var fly = CMOB[m.k].fly, lift = fly ? 0.55 + Math.sin(m.tt * 3 + m.ph) * 0.08 : m.z || 0, y0 = m.y;
       if (fly || lift > 0.02) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(ox + m.x * ts, oy + m.y * ts, ts * 0.34, ts * 0.11, 0, 0, 6.2832); g.fill(); }
-      m.y = y0 - lift; if (m.k === "captain") drawCaptain(g, m, now); else drawEnemy(g, m, now); m.y = y0;
+      m.y = y0 - lift; if (m.k === "captain") { drawCaptain(g, m, now); drawKingCrown(g, m, now); } else drawEnemy(g, m, now); m.y = y0;
     });
   }
   // =====================================================================================================================================
@@ -3782,7 +3782,7 @@
     return notes.join(" • ");
   }
   function lairOwned() { return !!(S.lair && S.lair.own); }
-  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; }
+  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; } if (o && isFinite(+o.tk)) n.tk = Math.floor(+o.tk); if (o && o.tkn > 0) n.tkn = Math.floor(+o.tkn);
     if (o && Array.isArray(o.crew)) n.crew = o.crew.slice(0, 6).filter(function (c) { return c && CREW_POOL.some(function (q) { return q.id === c.id; }); }).map(function (c) { return { id: c.id, lv: clamp(c.lv | 0 || 1, 1, 5), xp: Math.max(0, c.xp | 0), job: /^(idle|rig0|rig1|ship|exp)$/.test(c.job) ? c.job : "idle", eT: +c.eT || 0, eD: +c.eD || 0, eK: c.eK || "" }; });
     if (o && Array.isArray(o.miners)) n.miners = o.miners.slice(0, 12).filter(function (q) { return q && typeof q.n === "string"; }).map(function (q) { return { n: q.n.slice(0, 24), f: q.f | 0 }; });
     if (o && Array.isArray(o.log)) n.log = o.log.slice(-24).filter(function (q) { return q && typeof q.s === "string"; }).map(function (q) { return { t: +q.t || 0, s: q.s.slice(0, 200) }; }); if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
@@ -3797,7 +3797,7 @@
   function updCaptain(F, m, dt, i) {
     m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.flash = Math.max(0, m.flash - dt); m.sayT = Math.max(0, m.sayT - dt);
     F.cshots = F.cshots || []; F.rings = F.rings || [];
-    if (m.def) { m.dead -= dt; if (!reduce && Math.random() < dt * 14) parts.push({ x: m.x + (Math.random() - 0.5) * 1.2, y: m.y - Math.random() * 1.6, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#3fd6c0" : "#bff4ff", s: 3 }); if (m.dead <= 0) { F.mobs.splice(i, 1); claimLair(); } return; }
+    if (m.def) { m.dead -= dt; if (!reduce && Math.random() < dt * 14) parts.push({ x: m.x + (Math.random() - 0.5) * 1.2, y: m.y - Math.random() * 1.6, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#3fd6c0" : "#bff4ff", s: 3 }); if (m.dead <= 0) { F.mobs.splice(i, 1); if (m.king) kingWin(); else claimLair(); } return; }
     var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, sp = m.rage ? 3.3 : 2.6, vx = 0, vy = 0;
     if (!m.awake) { if (d < 9 && hp > 0) { m.awake = true; m.st = "intro"; m.t = 2.4; capSay(m, "Arr! Who comes drippin' into Saltjaw's hollow?", 2.8); thud(110, 0.12); snd("rise"); } else { m.dir = dx >= 0 ? 1 : -1; return; } }
     if (hp <= 0) { m.st = "chase"; moveMob(F, m, dt, 0, 0); return; }
@@ -3853,6 +3853,32 @@
     snd("rise"); thud(60, 0.2);
   }
   function F_clearFx() { var F = cave && cave.F; if (F) { F.cshots = []; F.rings = []; } }
+  // ---------- THE TIDE KING: once the Hollow is yours, once a week (every 7 days) you can ring the Captain's bell at his old spot to
+  // call him back as Saltjaw, the Tide King: golden and crowned, 2.2x health, harder hits. Beat him for a big haul. S.lair.tk = the last
+  // week you fought him; S.lair.tkn = how many times you've beaten him. ----------
+  var TIDEB = { n: "Saltjaw, the Tide King", sub: "Weekly rematch · ring the bell again next week", c: "#f2c14e", hp: 1500, dmg: 24 };
+  function kingWeek() { return Math.floor((S.days | 0) / 7); }
+  function kingReady() { var L = S.lair; return !!(L && L.own && cave && cave.F && cave.F.lair && L.tk !== kingWeek() && !caveBoss() && !(cave.F.mobs || []).some(function (m) { return m.king && !m.def; })); }
+  function bellNear() { if (!kingReady()) return false; var B = cave.F.boss; return Math.hypot(B.x - cp.x, B.y + 0.6 - cp.y) < 2; }
+  function ringBell() {
+    if (!kingReady()) return; var F = cave.F, L = lairS(); L.tk = kingWeek(); save();
+    for (var i = 0; i < 3; i++) (function (k) { setTimeout(function () { tn(0, 523, 520, 1.4, "sine", 0.05); tn(0, 1046, 1040, 0.9, "sine", 0.02); shake = Math.max(shake, 0.3); }, k * 650); })(i);
+    popup("The tide rises...", "Something big stirs in the black water", TIDEB.c, "\u2693");
+    setTimeout(function () { if (!cave || cave.F !== F) return; var m = newCaptain(F); m.king = true; m.B = TIDEB; m.hp = m.mx = Math.round(m.mx * 2.2); m.dmg = Math.round(m.dmg * 1.4); m.awake = true; m.st = "chase"; capSay(m, "Back for more, are ye? The tide's MINE tonight!", 3); F.mobs.push(m); shake = 0.9; sfxThump(50, 25, 0.8, 0.3); }, 2100);
+  }
+  function kingWin() {
+    var L = lairS(); L.tkn = (L.tkn || 0) + 1; S.st.tidekings = (S.st.tidekings || 0) + 1;
+    var rw = { doubloon: 30, blackpearl: 1 + (L.tkn % 3 === 0 ? 1 : 0), goldbar: 2, swamptoken: 20 }, gm = ["ruby", "sapphire", "amethyst", "moonstone"][L.tkn % 4]; rw[gm] = 1;
+    Object.keys(rw).forEach(function (k) { if (ITEMS[k]) give(k, rw[k], cp.x - 0.5, cp.y - 1.2, true); });
+    popup("Tide King defeated!", "Victory #" + L.tkn + " • ring the bell again next week", TIDEB.c, "\u265B"); snd("open", "Epic"); try { confettiPop(cp.x, cp.y - 1, 50); } catch (e) {} save();
+  }
+  function drawBell(g, F, now) {
+    if (!kingReady()) return; var B = F.boss, k = ts, cx = ox + B.x * ts, cy = oy + (B.y + 0.6) * ts, sw = reduce ? 0 : Math.sin(now / 500) * 0.12;
+    g.fillStyle = "#4a3422"; g.fillRect(cx - k * 0.55, cy - k * 1.8, k * 0.1, k * 1.8); g.fillRect(cx + k * 0.45, cy - k * 1.8, k * 0.1, k * 1.8); g.fillRect(cx - k * 0.6, cy - k * 1.86, k * 1.2, k * 0.12);
+    g.save(); g.translate(cx, cy - k * 1.74); g.rotate(sw); g.fillStyle = "#d8a030"; g.beginPath(); g.moveTo(-k * 0.16, 0); g.quadraticCurveTo(-k * 0.2, k * 0.5, -k * 0.34, k * 0.62); g.lineTo(k * 0.34, k * 0.62); g.quadraticCurveTo(k * 0.2, k * 0.5, k * 0.16, 0); g.closePath(); g.fill();
+    g.fillStyle = "#ffe08a"; g.fillRect(-k * 0.3, k * 0.52, k * 0.6, k * 0.06); g.fillStyle = "#6b4a10"; g.beginPath(); g.arc(0, k * 0.68, k * 0.06, 0, 6.28); g.fill(); g.restore();
+    if (bellNear() && !panelOpen && !trans) drawPill(g, now, "Ring the bell: call the Tide King" + (coarse ? "" : " (F)"), cx, cy - k * 2.3, false, function () { ringBell(); });
+  }
   function claimLair() {
     var L = lairS(); if (L.own) return; L.own = 1; L.day = S.days | 0; S.st.bossk = (S.st.bossk || 0) + 1;
     var rw = { doubloon: 40, blackpearl: 2, pearl: 6, ironingot: 6, sapphire: 1 };
@@ -4222,9 +4248,13 @@
     var gx2 = ox + (F.dock.x + 0.5) * ts, gy2 = oy + (F.dock.y + 0.6) * ts; g.fillStyle = "#6e4426"; g.fillRect(gx2 - k * 0.3, gy2, k * 0.6, cy - k * 1.2 - gy2); g.fillStyle = "#8a5a32"; for (var r2 = gy2; r2 < cy - k * 1.2; r2 += k * 0.3) g.fillRect(gx2 - k * 0.3, r2, k * 0.6, k * 0.06);   // the gangplank
     [[-3.3, -1.4], [4.4, -0.9]].forEach(function (l) { var lx = cx + l[0] * k, ly = cy + l[1] * k, fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 160 + l[0]); g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.16, k * 0.24, k * 0.32); g.fillStyle = "rgba(255,214,110," + (0.7 + 0.3 * fl).toFixed(3) + ")"; g.fillRect(lx - k * 0.07, ly - k * 0.1, k * 0.14, k * 0.2); srcs.push([(lx - ox) / ts, (ly - oy) / ts, 5, 0.9]); glows2.push([lx, ly, "255,214,110", 3, 0.22 * fl]); });
   }
+  function drawKingCrown(g, m, now) { if (!m.king || !m.crownAt || m.def) return; var k = ts, x = m.crownAt[0], y = m.crownAt[1] - k * 2.78 + Math.sin(now / 300) * k * 0.04;
+    g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(x - k * 0.42, y + k * 0.22); g.lineTo(x - k * 0.42, y - k * 0.1); g.lineTo(x - k * 0.22, y + k * 0.06); g.lineTo(x, y - k * 0.22); g.lineTo(x + k * 0.22, y + k * 0.06); g.lineTo(x + k * 0.42, y - k * 0.1); g.lineTo(x + k * 0.42, y + k * 0.22); g.closePath(); g.fill();
+    g.strokeStyle = "#8a5a10"; g.lineWidth = 2; g.stroke(); ["#ff4a5a", "#4a8aff", "#ff4a5a"].forEach(function (c, i) { g.fillStyle = c; g.beginPath(); g.arc(x + (i - 1) * k * 0.26, y + k * 0.1, k * 0.05, 0, 6.28); g.fill(); }); }
   function drawCaptain(g, m, now) {   // Captain Saltjaw: a big teal fish-man in a navy coat and red tricorn, eyepatch, fin beard, cutlass and pistol, one peg leg
     var k = ts, sx = ox + m.x * ts, sy = oy + m.y * ts, t = reduce ? 0 : now / 1000, mv = m.st === "chase" || m.st === "dash", bob = mv ? Math.abs(Math.sin(t * 9)) * k * 0.06 : Math.sin(t * 2.2) * k * 0.02;
     if (m.def) { g.globalAlpha = clamp(m.dead / 2.2, 0, 1); sy += (1 - m.dead / 2.2) * k * 0.6; }
+    if (m.king) { var kg = g.createRadialGradient(sx, sy - k * 1.1, k * 0.2, sx, sy - k * 1.1, k * 2.2); kg.addColorStop(0, "rgba(242,193,78,.35)"); kg.addColorStop(1, "rgba(242,193,78,0)"); g.fillStyle = kg; g.beginPath(); g.arc(sx, sy - k * 1.1, k * 2.2, 0, 6.28); g.fill(); m.crownAt = [sx, sy]; }
     // attack tells on the ground
     if (m.st === "slashW") { g.fillStyle = "rgba(255,70,60,.22)"; g.beginPath(); g.moveTo(sx, sy - k * 0.3); g.arc(sx, sy - k * 0.3, k * 2.6, m.ang - 1.25, m.ang + 1.25); g.closePath(); g.fill(); }
     if (m.st === "aimW") { g.strokeStyle = "rgba(255,210,120,.55)"; g.lineWidth = 2; g.setLineDash([k * 0.25, k * 0.2]); var nsh = m.rage ? 5 : 3; for (var a = 0; a < nsh; a++) { var sa = m.ang + (a - (nsh - 1) / 2) * 0.24; g.beginPath(); g.moveTo(sx, sy - k * 0.7); g.lineTo(sx + Math.cos(sa) * k * 7, sy - k * 0.7 + Math.sin(sa) * k * 7); g.stroke(); } g.setLineDash([]); }
@@ -14008,7 +14038,7 @@
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawCart(g, F, now, srcs, glows2); drawCaveIn(g, now); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawMiner(g, now); if (cartNear() && !panelOpen && !trans) { var cq = cartSpot(F); drawPill(g, now, "Ride the mine cart" + (coarse ? "" : " (F)"), ox + cq.x * ts, oy + (cq.y - 1.4) * ts, false, function () { openCart(); }); } drawArrows(g, true); drawGuardian(g, now);
+    drawRocks(Y0, Math.min(Y1, prow)); drawCart(g, F, now, srcs, glows2); drawCaveIn(g, now); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawMiner(g, now); if (F.lair) drawBell(g, F, now); if (cartNear() && !panelOpen && !trans) { var cq = cartSpot(F); drawPill(g, now, "Ride the mine cart" + (coarse ? "" : " (F)"), ox + cq.x * ts, oy + (cq.y - 1.4) * ts, false, function () { openCart(); }); } drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
     }
@@ -15617,7 +15647,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -18580,7 +18610,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
