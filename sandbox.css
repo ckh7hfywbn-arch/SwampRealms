@@ -1919,3 +1919,20 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 @media(prefers-reduced-motion:reduce){.lg-chest.ready{animation:none}}
 .lg-it.new{position:relative}
 .lg-it.new::after{content:"New";position:absolute;top:3px;right:3px;padding:1px 5px;border-radius:6px;background:#ff6b82;color:#fff;font:900 .6rem Nunito,system-ui,sans-serif}
+/* AWARDS: stamps */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px}
+.ach{--ac:#5b6b63;display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:14px;background:rgba(0,0,0,.22);border:1px solid #ffffff12;min-width:0}
+.ach.t1,.ach.t2,.ach.t3{border-color:color-mix(in srgb,var(--ac) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 14%,transparent),rgba(0,0,0,.22))}
+.ach-st{position:relative;flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;border:3px dashed color-mix(in srgb,var(--ac) 80%,transparent);background:rgba(0,0,0,.3)}
+.ach-st img{width:26px;height:26px;image-rendering:pixelated;filter:grayscale(1) brightness(.55)}
+.ach.t1 .ach-st img,.ach.t2 .ach-st img,.ach.t3 .ach-st img{filter:none}
+.ach.t3 .ach-st{border-style:solid;box-shadow:0 0 14px color-mix(in srgb,var(--ac) 60%,transparent)}
+.ach-ink{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(-12deg);padding:0 5px;border:2px solid var(--ac);border-radius:5px;background:#0a1712;color:var(--ac);font:900 .58rem Nunito,system-ui,sans-serif;font-style:normal;letter-spacing:.03em;white-space:nowrap}
+.ach-tx{min-width:0;flex:1}
+.ach-tx b{display:block;font:900 .9rem Nunito,system-ui,sans-serif;color:#f6eedb}
+.ach-tx small{display:block;font:700 .74rem Nunito,system-ui,sans-serif;color:#a9bfb4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ach-bar{display:block;height:5px;margin-top:5px;border-radius:3px;background:#ffffff14;overflow:hidden}
+.ach-bar i{display:block;height:100%;background:linear-gradient(90deg,#4ee6b4,#f2c14e)}
+.ach-dots{display:flex;gap:4px;margin-top:5px}
+.ach-dots em{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--dc);opacity:.45}
+.ach-dots em.on{background:var(--dc);opacity:1}

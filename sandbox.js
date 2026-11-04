@@ -745,6 +745,7 @@
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
     if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
+    if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
     return d;
   }
   var buildN = 0, exVer = 0, wallN = 0, SVC = {};   // PERF: save() reuses the edit / explored / fluid / wall strings while nothing in them changed
@@ -761,7 +762,7 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
     benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
@@ -6169,6 +6170,55 @@
     S.collR |= 1 << i; Object.keys(M[1]).forEach(function (k) { if (ITEMS[k]) give(k, M[1][k], undefined, undefined, true); });
     popup("Collector's chest", Math.round(M[0] * 100) + "% of the Collection Log", "#f2c14e", "\u2726"); snd("open", "Epic"); save(); renderPanel();
   }
+  // ---------- AWARDS (Journal > Awards): 24 achievements, each with bronze, silver and gold stamps. Checked every couple of seconds;
+  // earning a stamp pops a celebration. S.ach[id] = the best tier stamped (1-3). Old saves are credited for what they already did. ----------
+  var ACH_T = [["Bronze", "#d08a4a", 10], ["Silver", "#cfd8dc", 25], ["Gold", "#f2c14e", 50]];
+  function stK() { return Object.keys(KSTAT).reduce(function (a, k) { return a + (S.st[KSTAT[k]] || 0); }, 0); }
+  function bossN() { return Object.keys(BOSS).filter(function (k) { return S.st.boss & BOSS[k].bit; }).length; }
+  var ACH = [
+    ["dig", "Digger", "Blocks dug", "stone", [100, 1000, 10000], function () { return S.st.mined; }],
+    ["build", "Builder", "Blocks placed", "planks", [100, 1000, 5000], function () { return S.st.placed; }],
+    ["wood", "Lumberjack", "Wood gathered", "wood", [50, 500, 3000], function () { return S.st.wood; }],
+    ["hunt", "Monster Hunter", "Creatures defeated", "swamptoken", [25, 250, 1000], stK],
+    ["elite", "Elite Slayer", "Elites defeated", "swamptoken", [1, 10, 50], function () { return S.st.elites; }],
+    ["boss", "Bossbreaker", "Bosses beaten", "queenchitin", [1, 2, 3], bossN],
+    ["deep", "Deep Delver", "Deepest Mine floor", "torch", [5, 15, 25], function () { return S.st.caveDeep; }],
+    ["clear", "Floor Sweeper", "Mine floors cleared", "torch", [5, 25, 100], function () { return S.st.cclear; }],
+    ["chests", "Treasure Seeker", "Cave chests opened", "chest", [5, 25, 100], function () { return S.st.cchests; }],
+    ["dive", "Deep Diver", "Deepest dive (m)", "pearl", [20, 60, 120], function () { return S.st.ocdeep; }],
+    ["fish", "Angler", "Fish caught", "fishlog", [10, 100, 500], function () { return S.st.fish; }],
+    ["farm", "Green Thumb", "Crops harvested", "carrot", [25, 250, 1000], function () { return S.st.harvests; }],
+    ["cook", "Swamp Chef", "Meals cooked", "carrot", [10, 100, 500], function () { return S.st.cooked; }],
+    ["roll", "Roll Master", "Dodge rolls", "stick", [50, 500, 2000], function () { return S.st.dodges; }],
+    ["spec", "Showstopper", "Weapon specials", "ruby", [5, 50, 250], function () { return S.st.specials; }],
+    ["days", "Survivor", "Days in this world", "bed", [7, 30, 100], function () { return (S.days | 0) + 1; }],
+    ["naps", "Well Rested", "Nights slept", "bed", [5, 25, 100], function () { return S.st.sleeps; }],
+    ["pets", "Animal Friend", "Animals at home", "carrot", [1, 5, 10], function () { return S.pets.length; }],
+    ["trade", "Merchant", "Trades with villagers", "swamptoken", [5, 50, 200], function () { return S.st.vtrades; }],
+    ["bounty", "Bounty Hunter", "Bounties claimed", "doubloon", [3, 15, 50], function () { return S.st.bounties; }],
+    ["lore", "Loremaster", "Lore pages found", "stick", [5, 20, 40], function () { return S.st.lorepages; }],
+    ["isles", "Seafarer", "Islands visited", "doubloon", [1, 5, 15], function () { return S.st.islands; }],
+    ["coll", "Collector", "Collection Log %", "goldbar", [25, 50, 100], function () { var c = collCount(); return Math.floor(c.got / Math.max(1, c.max) * 100); }],
+    ["hollow", "Lord of the Hollow", "Rigs built in the Sunken Hollow", "blackpearl", [1, 2, 3], function () { return lairOwned() ? (S.lair.rig || []).filter(Boolean).length || 0 : 0; }]
+  ];
+  var ACHT = 0;
+  function achTier(A) { var v = +A[5]() || 0, t = 0; for (var i = 0; i < 3; i++) if (v >= A[4][i]) t = i + 1; return t; }
+  function achPoints() { var n = 0; ACH.forEach(function (A) { var t = (S.ach || {})[A[0]] | 0; for (var i = 0; i < t; i++) n += ACH_T[i][2]; }); return n; }
+  function tickAch(dt, quiet) {
+    ACHT -= dt; if (ACHT > 0 && !quiet) return; ACHT = 2;
+    if (!S.ach) S.ach = {};
+    ACH.forEach(function (A) { var t = 0; try { t = achTier(A); } catch (e) { return; } var had = S.ach[A[0]] | 0; if (t <= had) return; S.ach[A[0]] = t;
+      if (quiet) return; var T2 = ACH_T[t - 1]; popup("Award: " + T2[0] + " stamp", A[1] + " \u2022 " + A[2] + " " + A[4][t - 1], T2[1], "\u2605"); snd("rise"); try { confettiPop(cave ? cp.x : p.x, (cave ? cp.y : p.y) - 1.5, 30); } catch (e) {} });
+  }
+  function achHtml() {
+    tickAch(0, false); var A2 = S.ach || {}, got = 0; ACH.forEach(function (A) { got += A2[A[0]] | 0; });
+    var h = '<div class="lg-top"><b>Awards</b><span class="bar"><i style="width:' + Math.round(got / (ACH.length * 3) * 100) + '%"></i></span><em>' + got + " / " + (ACH.length * 3) + " stamps · " + achPoints() + " points</em></div>";
+    h += '<div class="ach-grid">' + ACH.map(function (A) {
+      var t = A2[A[0]] | 0, v = 0; try { v = +A[5]() || 0; } catch (e) {} var next = t < 3 ? A[4][t] : A[4][2], prev = t ? A[4][t - 1] : 0, pc = t >= 3 ? 100 : Math.round(clamp((v - prev) / Math.max(1, next - prev), 0, 1) * 100), T2 = t ? ACH_T[t - 1] : null;
+      return '<div class="ach' + (t ? " t" + t : "") + '"' + (T2 ? ' style="--ac:' + T2[1] + '"' : "") + '><div class="ach-st"><img alt="" src="' + icon(ITEMS[A[3]] ? A[3] : "stone") + '">' + (t ? '<i class="ach-ink">' + T2[0] + "</i>" : "") + '</div><div class="ach-tx"><b>' + esc(A[1]) + "</b><small>" + esc(A[2]) + ": " + Math.min(v, 99999) + (t < 3 ? " / " + next : " · all stamps") + '</small><span class="ach-bar"><i style="width:' + pc + '%"></i></span><span class="ach-dots">' + [0, 1, 2].map(function (i) { return '<em class="' + (i < t ? "on" : "") + '" style="--dc:' + ACH_T[i][1] + '"></em>'; }).join("") + "</span></div></div>";
+    }).join("") + "</div>";
+    return h;
+  }
   function logHtml() {
     var st = S.st, kills = Object.keys(KSTAT).reduce(function (a, k) { return a + (st[KSTAT[k]] || 0); }, 0);
     var tile = function (img, name, sub, got, cc) { return '<div class="lg-it' + (got ? "" : " no") + '"' + (cc ? ' style="--lc:' + cc + '"' : "") + '>' + (got ? '<img alt="" src="' + img + '">' : '<span class="q">?</span>') + "<b>" + esc(got ? name : "???") + "</b>" + (sub && got ? "<em>" + esc(sub) + "</em>" : "") + "</div>"; };
@@ -10949,7 +10999,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt);
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt);
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -13410,7 +13460,7 @@
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
-    tickSpecial(dt); tickElites(dt); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
+    tickSpecial(dt); tickElites(dt); tickAch(dt); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -14671,7 +14721,7 @@
     if (mapOpen) return;
     if (tab === "bag" || tab === "map") tab = "craft";
     if (tab === "trail" || tab === "goals") tab = "quests";
-    var tabs = [["quests", "Quests"], ["log", "Log"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["craft", "Craft"], ["map", "Map"], ["more", "Options"]];
+    var tabs = [["quests", "Quests"], ["log", "Log"], ["awards", "Awards"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["craft", "Craft"], ["map", "Map"], ["more", "Options"]];
     if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "craft";
     if (DEV.on) tabs.push(["dev", "Dev"]); else if (tab === "dev") tab = "more";
     if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
@@ -14706,6 +14756,8 @@
       h += devHtml();
     } else if (tab === "log") {
       h += logHtml();
+    } else if (tab === "awards") {
+      h += achHtml();
     } else if (tab === "lore") {
       h += loreHtml();
     } else if (tab === "chest") {
