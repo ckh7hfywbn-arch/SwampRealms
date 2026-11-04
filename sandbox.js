@@ -9453,7 +9453,7 @@
       cam.y += (titleCamTarget() - cam.y) * Math.min(1, dt * 0.7);
       cam.x = clamp(cam.x, halfW, W - halfW); cam.y = clamp(cam.y, halfH, H - halfH + 2);
     }
-    if (now - TC.logoT > 90) { TC.logoT = now; drawTitleLogo(now); }
+    if (now - TC.logoT > 32) { TC.logoT = now; drawTitleLogo(now); }
   }
   function openTitle() {
     if (titleOpen || MP.on || MP.ws) return;
@@ -12405,7 +12405,8 @@
   function render(now) {
     var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t), BLD, BLA;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
-    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
+    if (titleOpen && dpr >= 2 && dpr % 1 === 0) { ox = Math.round((vw / 2 - cam.x * ts) * dpr) / dpr; oy = Math.round((vh / 2 - cam.y * ts) * dpr) / dpr; }   // main-menu pan: snap to device pixels (half-steps on Retina) so the slow drift is even
+    else { ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts); }
     if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // smooth (not random) shake
     var HZ = horizon(cam.x), bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (HZ + 3)) / 9, 0, 1);   // HZ: the local ground line, so valleys and peaks both get sky
     // --- sky: three-stop gradient, stars, sun/moon, clouds, aurora ---
@@ -17678,7 +17679,8 @@
   function homeGateArt(g) { hTile(g, T.FENCE, HGATE.x - 1, HGATE.y - 0.25); hTile(g, T.FENCE, HGATE.x + 2, HGATE.y - 0.25); hTile(g, T.SIGN, HGATE.x - 1, HGATE.y - 0.6); hTile(g, T.LANTERN, HGATE.x + 2, HGATE.y - 0.7); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
-    var paused = (panelOpen || menuOpen || titleOpen) && !trans && !MP.on && !PHOTO.on;
+    var titleMove = titleOpen && !panelOpen && !menuOpen && !cave && !OCS && !HOME && !mapOpen;   // the main-menu fly-by: draw every frame so the pan glides
+    var paused = (panelOpen || menuOpen || titleOpen) && !titleMove && !trans && !MP.on && !PHOTO.on;
     var rgap = now - rafPrev; rafPrev = now; if (rgap > 2 && rgap < 40) rafAvg += (rgap - rafAvg) * 0.05;   // the screen's real refresh interval (smoothed)
     rafOdd = !rafOdd;
     if (paused ? now - lastDraw < 100 : OPT.fps === 30 ? now - lastDraw < 30 : OPT.fps === 60 ? (rafAvg < 9.5 && rafOdd) : false) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other refresh (an even rhythm); menus redraw ~10x a second   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
