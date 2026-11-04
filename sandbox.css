@@ -1844,3 +1844,9 @@ body.sbx-app footer{margin-top:28px}
 @media(pointer:coarse),(max-width:760px){.sbx-roll{display:grid}.sbx-stage.cave .sbx-roll{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 120px)}.sbx-stage.ocean .sbx-roll,.sbx-stage.panel .sbx-roll{display:none}}
 @media(max-height:520px) and (orientation:landscape){.sbx-roll{bottom:calc(max(6px,env(safe-area-inset-bottom)) + 92px)}}
 .sbx-stage.title .sbx-roll,.sbx-stage.title .sbx-spec{display:none!important}   /* no dodge-roll or special button over the main menu */
+/* the footer links sit in the flow under the menu (not pinned over it), so they can never overlap it; a short screen scrolls instead */
+.sbx-title{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.sbx-title .tt-col{margin-block:auto}
+.sbx-title .tt-foot{position:static;flex:none;margin:14px calc(clamp(14px,3vw,30px) - clamp(20px,6vw,88px)) 0 0}
+@media(max-width:560px){.sbx-title{padding-bottom:max(12px,env(safe-area-inset-bottom))}.sbx-title .tt-col{margin-block:0}.sbx-title .tt-foot{margin:12px 0 0}}
+@media(min-width:561px){.sbx-title .tt-foot{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(clamp(14px,3vw,30px),env(safe-area-inset-right));left:auto;bottom:auto;margin:0;gap:16px}.sbx-title .tt-link{min-height:36px}}   /* wide and landscape screens: the links and full-screen button sit in the empty top-right corner */
