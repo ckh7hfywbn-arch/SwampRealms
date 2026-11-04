@@ -494,8 +494,8 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1 };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -9658,6 +9658,7 @@
     var r = function (name, hint, ctl) { return '<div class="pz-row"><div><b>' + name + "</b>" + (hint ? "<small>" + hint + "</small>" : "") + "</div>" + ctl + "</div>"; };
     return r("Music", "Changes with the land you are in.", optVol("mus", MUS.on ? MUS.vol : 0, "Music volume"))
       + r("Sound effects", "Digging, footsteps, hits and chimes.", optVol("fx", OPT.fx, "Sound effects volume"))
+      + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
@@ -9675,6 +9676,7 @@
     var i = spec.indexOf(":"), k = spec.slice(0, i), v = spec.slice(i + 1);
     if (k === "mus") { var mv = clamp(Math.round(((MUS.on ? MUS.vol : 0) + 0.1 * +v) * 10) / 10, 0, 1); MUS.on = mv > 0; if (mv > 0) MUS.vol = mv; try { localStorage.setItem("swamp-delve-music", MUS.on ? "1" : "0"); localStorage.setItem("swamp-delve-musicvol", String(MUS.vol)); } catch (e) {} }
     else if (k === "fx") { OPT.fx = clamp(Math.round((OPT.fx + 0.1 * +v) * 10) / 10, 0, 1); if (FXB) FXB.gain.value = OPT.fx; try { if (typeof SFX !== "undefined" && SFX.vol) SFX.vol(OPT.fx); } catch (e) {} matHit(T.STONE !== undefined ? T.STONE : 1); }
+    else if (k === "amb") OPT.amb = clamp(Math.round((OPT.amb + 0.1 * +v) * 10) / 10, 0, 1);
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
     else if (k === "bloom") OPT.bloom = v === "1";
@@ -11185,9 +11187,56 @@
   }
   function cricket() { var f = 4200 + Math.random() * 700, n = 3 + Math.floor(Math.random() * 3), v = 0.007 + Math.random() * 0.006; for (var i = 0; i < n; i++) tn(i * 0.055, f, f * 0.97, 0.035, "sine", v); }
   function frog() { var f = 170 + Math.random() * 90, v = 0.022 + Math.random() * 0.014; tn(0, f * 1.25, f, 0.07, "triangle", v); tn(0.1, f * 1.3, f * 0.9, 0.09, "triangle", v * 0.9); if (Math.random() < 0.3) tn(0.32, f * 1.2, f, 0.07, "triangle", v * 0.7); }
+  // ---------- AMBIENCE BEDS: every area has its own soundscape, by day and by night ----------
+  // Looping filtered-noise beds (wind, leaves, insect hum, cave hum, frost whistle, machinery) fade between areas, and timed one-shots
+  // sit on top: birdsong, owls, gulls, hull creaks, cave drips and far rumbles, lava blubs, ice creaks, bubbles and a deep whale moan.
+  // Rain hushes the birds. All of it follows Sound effects and the Ambience slider (OPT.amb).
+  var AMBB = { beds: {}, ev: {}, zone: "" };
+  var BEDS = { air: ["lowpass", 700, 0.6], leaf: ["bandpass", 2200, 0.9], buzz: ["bandpass", 3900, 7], hum: ["lowpass", 160, 0.7], whistle: ["bandpass", 900, 4], machine: ["bandpass", 230, 6], rumble: ["lowpass", 90, 0.8] };
+  function ambBed(name, lvl, f) {
+    var B = AMBB.beds[name];
+    if (!B) { if (lvl <= 0) return; try { var src = ac.createBufferSource(); src.buffer = nzBuf(); src.loop = true; src.playbackRate.value = 0.7 + Math.random() * 0.3; var cfg = BEDS[name], fl = ac.createBiquadFilter(); fl.type = cfg[0]; fl.frequency.value = cfg[1]; fl.Q.value = cfg[2]; var gn = ac.createGain(); gn.gain.value = 0; src.connect(fl); fl.connect(gn); gn.connect(fxOut()); src.start(); B = AMBB.beds[name] = { s: src, f: fl, g: gn }; } catch (e) { return; } }
+    var t = ac.currentTime; B.g.gain.setTargetAtTime(Math.max(0, lvl), t, 0.9); if (f) B.f.frequency.setTargetAtTime(f, t, 1.2);
+  }
+  function ambEvery(key, dt, lo, hi, fn) { var e = AMBB.ev; if (e[key] === undefined) e[key] = lo + Math.random() * (hi - lo); e[key] -= dt; if (e[key] <= 0) { e[key] = lo + Math.random() * (hi - lo); fn(); } }
+  function aTweet() { var f = 2600 + Math.random() * 1800, n = 2 + Math.floor(Math.random() * 4), v = (0.006 + Math.random() * 0.006) * OPT.amb, up = Math.random() < 0.5; for (var i = 0; i < n; i++) tn(i * (0.07 + Math.random() * 0.05), f * (up ? 0.85 : 1.15), f * (up ? 1.15 : 0.85), 0.06, "sine", v); }
+  function aOwl() { var v = 0.012 * OPT.amb; tn(0, 420, 380, 0.32, "sine", v); tn(0.45, 410, 360, 0.5, "sine", v * 0.9); }
+  function aGull() { var f = 1500 + Math.random() * 400, v = 0.008 * OPT.amb; tn(0, f, f * 0.62, 0.26, "triangle", v); tn(0.3, f * 0.95, f * 0.6, 0.2, "triangle", v * 0.8); }
+  function aCreak() { nz(0, 0.5, 0.012 * OPT.amb, 260 + Math.random() * 160, "bandpass", 9); tn(0, 95, 70, 0.45, "sawtooth", 0.003 * OPT.amb); }
+  function aDrip(icy) { var f = (icy ? 2400 : 1500) + Math.random() * 900, v = 0.011 * OPT.amb; tn(0, f, f * 0.42, 0.09, "sine", v); tn(0.16, f * 0.9, f * 0.4, 0.08, "sine", v * 0.35); tn(0.33, f * 0.85, f * 0.4, 0.07, "sine", v * 0.15); }
+  function aRumble() { nz(0, 2.2, 0.035 * OPT.amb, 70, "lowpass", 0.7); nz(0.3, 1.2, 0.012 * OPT.amb, 300, "lowpass", 0.7); }
+  function aBlub() { var f = 80 + Math.random() * 70, v = 0.03 * OPT.amb; tn(0, f, f * 1.8, 0.12, "sine", v); nz(0, 0.12, 0.01 * OPT.amb, 500, "lowpass", 1); }
+  function aIce() { var f = 900 + Math.random() * 600; nz(0, 0.35, 0.01 * OPT.amb, f, "bandpass", 14); tn(0.05, f * 2, f * 1.7, 0.3, "sine", 0.003 * OPT.amb); }
+  function aBubble() { var f = 300 + Math.random() * 500, v = 0.01 * OPT.amb; tn(0, f, f * 2.6, 0.08, "sine", v); }
+  function aWhale() { var f = 110 + Math.random() * 60, v = 0.018 * OPT.amb; tn(0, f, f * 1.5, 1.6, "sine", v); tn(1.4, f * 1.5, f * 0.9, 1.8, "sine", v * 0.8); }
+  function aClank() { tn(0, 520 + Math.random() * 200, 300, 0.09, "square", 0.004 * OPT.amb); nz(0, 0.08, 0.012 * OPT.amb, 2500, "bandpass", 3); }
+  function ambZone() {
+    if (OCS) return OCS.sea ? "sail" : OCS.diving && OCS.pl.y - OSEA > 1 ? "dive" : "shore";
+    if (HOME) return "farm";
+    if (cave) { if (cave.bld) return "indoor"; if (isLairFloor(cave.f)) return "hollow"; if (cave.volc) return "cinder"; var b = caveB(); return b === 1 ? "cinder" : b === 2 ? "frostmine" : "mine"; }
+    if (p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) return "under";
+    var bb = bioAt(); return bb === 1 ? "ember" : bb === 2 ? "frost" : "swamp";
+  }
+  function tickAmbBeds(dt) {
+    var z = ambZone(), night = daylight(S.time) < 0.6, rain = wxN() > 0.45, k = OPT.amb * OPT.fx, L = { air: 0, leaf: 0, buzz: 0, hum: 0, whistle: 0, machine: 0, rumble: 0 }, F = {};
+    AMBB.zone = z;
+    if (z === "swamp" || z === "farm") { L.air = 0.012; L.leaf = night ? 0.004 : 0.008; L.buzz = night ? 0 : 0.0035; if (!night && !rain) ambEvery("tw", dt, 1.4, 4.5, aTweet); if (night) ambEvery("owl", dt, 12, 28, aOwl); }
+    else if (z === "ember") { L.rumble = 0.03; L.air = 0.008; F.air = 500; ambEvery("bl", dt, 2, 5, function () { nz(0, 0.05, 0.012 * OPT.amb, 3200, "highpass", 1); }); }
+    else if (z === "frost") { L.whistle = 0.02 + (night ? 0.008 : 0); F.whistle = 700 + 450 * Math.sin(performance.now() / 4000); L.air = 0.012; ambEvery("ice", dt, 6, 14, aIce); }
+    else if (z === "under" || z === "mine" || z === "indoor") { L.hum = z === "indoor" ? 0.012 : 0.022; ambEvery("dr", dt, 1.2, 4, function () { aDrip(false); }); if (z !== "indoor") ambEvery("rb", dt, 22, 45, aRumble); }
+    else if (z === "cinder") { L.hum = 0.02; L.rumble = 0.035; ambEvery("lv", dt, 0.7, 2, aBlub); ambEvery("cr2", dt, 1.5, 4, function () { nz(0, 0.05, 0.01 * OPT.amb, 3400, "highpass", 1); }); }
+    else if (z === "frostmine") { L.hum = 0.014; L.whistle = 0.016; F.whistle = 1200 + 300 * Math.sin(performance.now() / 3000); ambEvery("dr", dt, 1.5, 4, function () { aDrip(true); }); ambEvery("ice", dt, 8, 16, aIce); }
+    else if (z === "hollow") { L.hum = 0.016; L.leaf = 0.004; ambEvery("dr", dt, 1, 3, function () { aDrip(false); }); var rigs = 0; try { rigs = (S.lair && S.lair.rig || []).filter(Boolean).length; } catch (e) {} if (rigs) { L.machine = 0.006 + 0.004 * rigs; ambEvery("ck", dt, 0.9, 2.2, aClank); } }
+    else if (z === "sail") { L.air = 0.02; F.air = 900; if (!night && !rain) ambEvery("gl", dt, 4, 10, aGull); ambEvery("hc", dt, 3, 7, aCreak); }
+    else if (z === "shore") { L.air = 0.012; if (!night && !rain) ambEvery("gl", dt, 6, 14, aGull); }
+    else if (z === "dive") { var dep = OCS.pl.y - OSEA; L.hum = 0.014 + Math.min(0.012, dep / 4000); ambEvery("bb", dt, 0.6, 2.4, aBubble); if (dep > 30) ambEvery("wh", dt, 25, 55, aWhale); }
+    if (rain) { L.leaf *= 0.5; L.buzz = 0; }
+    for (var n in L) ambBed(n, L[n] * k, F[n]);
+  }
   function tickAmbSound(dt) {
     var ok = fxReady() && !document.hidden && !titleOpen && !!world;
-    if (!ok) { if (AMBS.wv && ac) AMBS.wv.g.gain.setTargetAtTime(0, ac.currentTime, 0.3); return; }
+    if (!ok) { if (AMBS.wv && ac) AMBS.wv.g.gain.setTargetAtTime(0, ac.currentTime, 0.3); for (var bn in AMBB.beds) AMBB.beds[bn].g.gain.setTargetAtTime(0, ac ? ac.currentTime : 0, 0.3); return; }
+    if (OPT.amb > 0) tickAmbBeds(dt); else for (var bn2 in AMBB.beds) AMBB.beds[bn2].g.gain.setTargetAtTime(0, ac.currentTime, 0.3);
     var nowS = performance.now() / 1000, surge = 0.55 + 0.45 * Math.pow(Math.sin(nowS * 0.48), 2) * (0.7 + 0.3 * Math.sin(nowS * 0.13)), st = wxStorm(), wl = 0, wf = 600;
     if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OSEA : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
     ambWave(wl * surge * OPT.fx, wf);
@@ -17986,6 +18035,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
+  window.__sbx.ambb = AMBB;
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
