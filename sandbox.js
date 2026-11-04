@@ -10400,7 +10400,7 @@
     var steps = tourSteps(); if (!steps.length) return;
     var el = document.createElement("div"); el.className = "sbx-tour"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "A quick tour");
     el.innerHTML = '<div class="tr-spot"></div><div class="tr-card"><small class="tr-n"></small><b class="tr-t"></b><p class="tr-d"></p><div class="tr-row"><button type="button" class="btn ghost" data-tr="skip">Skip</button><button type="button" class="btn" data-tr="next">Next</button></div></div>';
-    stageEl.appendChild(el); TOUR = { el: el, i: 0, steps: steps }; panelOpen = true; stopInput();
+    stageEl.appendChild(el); TOUR = { el: el, i: 0, steps: steps, force: !!force }; panelOpen = true; stopInput();
     el.addEventListener("click", function (e) { var b = e.target.closest("[data-tr]"); if (!b) return; if (b.getAttribute("data-tr") === "skip") endTour(); else { TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } });
     tourShow(); try { snd("open"); } catch (e2) {}
   }
@@ -10416,7 +10416,64 @@
     } else { spot.style.cssText = "left:50%;top:50%;width:0;height:0"; spot.classList.add("none"); var cw2 = Math.min(320, sr.width - 24); card.style.cssText = "width:" + cw2 + "px;left:" + (sr.width / 2 - cw2 / 2) + "px;top:" + Math.max(80, sr.height * 0.32) + "px"; }
     var nb = el.querySelector("[data-tr=next]"); if (nb) nb.focus({ preventScroll: true });
   }
-  function endTour() { if (!TOUR) return; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; }
+  function endTour() { if (!TOUR) return; var tf = TOUR.force; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; setTimeout(function () { startCoach(tf); }, 500); }
+  // ---------- TRY IT: after the tour, a hands-on coach. A finger (phones) or key caps (keyboards) point at each control, and every step waits
+  // until you actually do it: walk, jump, dodge roll, gather from the glowing leaves, open the backpack. Once per device; skippable. ----------
+  var COACH = null;
+  function coachSteps() {
+    var t = coarse;
+    return [
+      { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave") ? "#sbxJoy" : "#sbxPad .lr") : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
+      { id: "jump", t: "Jump", d: t ? "Tap the big button to jump." : "Press Space to jump.", el: t ? "#sbxPad .jump" : "", keys: ["Space"], done: function (c) { return c.jumped; } },
+      { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? "#sbxPad .roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
+      { id: "dig", t: "Gather", d: t ? "Hold your finger on the glowing ring to gather from it." : "Hold the mouse on the glowing ring to gather from it.", world: true, keys: [t ? "" : "Hold mouse"], done: function (c) { return (S.st.mined || 0) > c.m0 || (S.inv.stick || 0) > c.s0 || (S.inv.fiber || 0) > c.f0; } },
+      { id: "pack", t: "Your backpack", d: t ? "Tap the backpack to see what you carry." : "Press B to open your backpack.", el: "#sbxPackBtn", keys: ["B"], done: function () { return packOpen; } }
+    ];
+  }
+  function startCoach(force) {
+    if (COACH || (MP.on && MP.role === "guest") || cave || OCS || HOME || titleOpen) return;
+    try { if (!force && localStorage.getItem("swamp-delve-coach") === "1") return; } catch (e) {}
+    if (!force && navigator.webdriver) return;
+    var el = document.createElement("div"); el.className = "sbx-coach"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
+    el.innerHTML = '<div class="co-hand" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M12 3a2.4 2.4 0 012.4 2.4V14l1.1-.3a2.3 2.3 0 012.9 1.6l.1.4.8-.2a2.3 2.3 0 012.8 1.4l.9-.2a2.3 2.3 0 012.8 1.8l.9 5.4a7 7 0 01-5.4 8H17a7 7 0 01-5.7-3l-4.6-6.6a2.3 2.3 0 013.6-2.9l1.3 1.4V5.4A2.4 2.4 0 0112 3z" fill="#fff6dc" stroke="#06100d" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="co-ring" aria-hidden="true"></div>'
+      + '<div class="co-card"><small class="co-n"></small><b class="co-t"></b><p class="co-d"></p><div class="co-keys"></div><button type="button" class="co-skip" data-co="skip">Skip practice</button></div>';
+    stageEl.appendChild(el);
+    el.addEventListener("click", function (e) { if (e.target.closest("[data-co=skip]")) endCoach(false); });
+    COACH = { el: el, steps: coachSteps(), i: -1, ok: 0 }; coachNext();
+  }
+  function coachNext() {
+    var C = COACH; C.i++; if (C.i >= C.steps.length) return endCoach(true);
+    var s = C.steps[C.i]; C.x0 = p.x; C.jumped = false; C.d0 = S.st.dodges || 0; C.m0 = S.st.mined || 0; C.s0 = S.inv.stick || 0; C.f0 = S.inv.fiber || 0; C.ok = 0;
+    var el = C.el; el.querySelector(".co-n").textContent = "Try it · " + (C.i + 1) + " of " + C.steps.length; el.querySelector(".co-t").textContent = s.t; el.querySelector(".co-d").textContent = s.d;
+    el.querySelector(".co-keys").innerHTML = coarse ? "" : s.keys.filter(Boolean).map(function (k) { return "<kbd>" + esc(k) + "</kbd>"; }).join("");
+    el.classList.remove("done"); el.classList.toggle("keys", !coarse);
+  }
+  function endCoach(win) {
+    if (!COACH) return; COACH.el.remove(); COACH = null; stageEl.classList.remove("coaching"); try { localStorage.setItem("swamp-delve-coach", "1"); } catch (e) {}
+    if (win) { toast("You've got the basics. Follow your goal in the corner!", "#4ee6b4"); snd("rise"); }
+  }
+  function coachLeaf() {   // the nearest leaf block (or grass to dig) for the Gather step
+    var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 1e9, x, y;
+    for (y = cy - 7; y <= cy + 2; y++) for (x = cx - 9; x <= cx + 9; x++) { var id = get(x, y); if (id === T.LEAVES) { var d = (x - cx) * (x - cx) + (y - cy) * (y - cy) * 1.5; if (d < bd) { bd = d; best = { x: x, y: y }; } } }
+    return best;
+  }
+  function tickCoach(dt) {
+    var C = COACH; stageEl.classList.toggle("coaching", !!C); if (!C) return; var s = C.steps[C.i], el = C.el;
+    var hide = (panelOpen && s.id !== "pack") || cave || OCS || HOME || titleOpen || mapOpen; el.classList.toggle("off", !!hide); if (hide) return;
+    if (!p.on && p.vy < -3) C.jumped = true;
+    if (C.ok > 0) { C.ok -= dt; if (C.ok <= 0) coachNext(); return; }
+    if (s.done(C)) { C.ok = 0.9; el.classList.add("done"); el.querySelector(".co-t").textContent = "Nice!"; el.querySelector(".co-d").textContent = ""; el.querySelector(".co-keys").innerHTML = ""; thud(660, 0.04); return; }
+    var sr = stageEl.getBoundingClientRect(), x = sr.width / 2, y = sr.height / 2, w = 0, h = 0, target = s.el ? document.querySelector(s.el) : null, show = false;
+    if (target && target.offsetParent) { var r = target.getBoundingClientRect(); x = r.left - sr.left + r.width / 2; y = r.top - sr.top + r.height / 2; w = r.width; h = r.height; show = true; }
+    else if (s.world) { var gt = guide && Math.abs(guide.x - p.x) < 12 ? guide : coachLeaf(); if (gt) { x = ox + (gt.x + 0.5) * ts; y = oy + (gt.y + 0.5) * ts; w = h = ts; show = true; } }
+    var hand = el.querySelector(".co-hand"), ring = el.querySelector(".co-ring"), card = el.querySelector(".co-card");
+    hand.style.display = ring.style.display = show && (coarse || s.world) ? "" : "none";
+    hand.style.transform = "translate(" + Math.round(x - 6) + "px," + Math.round(y + Math.max(8, h * 0.15)) + "px)";
+    ring.style.cssText = "left:" + Math.round(x - Math.max(w, 44) / 2 - 6) + "px;top:" + Math.round(y - Math.max(h, 44) / 2 - 6) + "px;width:" + Math.round(Math.max(w, 44) + 12) + "px;height:" + Math.round(Math.max(h, 44) + 12) + "px;display:" + (show && (coarse || s.world) ? "block" : "none");
+    var cw = Math.min(280, sr.width - 24), above = y > sr.height * 0.45, cx = clamp(x - cw / 2, 12, sr.width - cw - 12);
+    if (!show) { cx = sr.width / 2 - cw / 2; above = false; y = sr.height * 0.22; h = 0; }
+    card.style.cssText = "width:" + cw + "px;left:" + Math.round(cx) + "px;" + (above ? "bottom:" + Math.round(sr.height - y + h / 2 + 22) + "px" : "top:" + Math.round(y + h / 2 + (show && coarse ? 64 : 18)) + "px");
+  }
   // the quest tracker's "how" line, for the first chapters: the first sentence of the quest's own instructions
   function trailTip(q) { var d = String(q.d || ""), m = d.match(/^[^.!?]*[.!?]/); var t = (m ? m[0] : d).trim(); if (t.length > 92) t = t.slice(0, 90).replace(/\s+\S*$/, "") + "…"; return t; }
   function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
@@ -10728,7 +10785,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt);
+    tickDodge(dt); tickCoach(dt);
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -14673,6 +14730,7 @@
   })();
   function openPanel(t) { if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
   function openPack() {
+    setTimeout(function () { if (COACH) tickCoach(0.016); }, 0);   // TRY IT: the backpack step
     if (mapOpen) closeMap(); else if (panelOpen && !packOpen) closePanel();
     packOpen = true; panelOpen = true; invSel = -1; invAsk = ""; PK.pop = ""; PK.focus = ""; $("sbxPack").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPack();
   }
@@ -14927,7 +14985,7 @@
     var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); };
     base.addEventListener("pointerup", up); base.addEventListener("pointercancel", up); base.addEventListener("lostpointercapture", up); base.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
-  (function () { var rb = $("sbxRoll"); if (rb) rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); })();   // DODGE ROLL button (phones)
+  [].forEach.call(document.querySelectorAll("[data-roll]"), function (rb) { rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); });   // DODGE ROLL buttons (phones: in the pad on the surface, on their own in the Mine)
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
     var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; b.classList.remove("on"); };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -17922,6 +17980,7 @@
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
   window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
+  window.__sbx.coach = { go: function () { startCoach(true); }, get C() { return COACH; }, tick: function (d) { tickCoach(d || 0.016); } };
   window.__sbx.tour = function () { startTour(true); }; window.__sbx.tourOn = function () { return !!TOUR; };
   window.__sbx.light = { sun: sunState, grade: gradeOv, splash: waterSplash, ring: waterRing, fx: function () { return [DROPS.length, RIPS.length]; } };
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };

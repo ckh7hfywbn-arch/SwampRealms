@@ -1837,11 +1837,11 @@ body.sbx-app footer{margin-top:28px}
 .crg-d .sbx-card>div>b{display:none}
 
 /* DODGE ROLL button (phones): above the jump button on the surface, bottom right in the Mine and at the homestead; hidden under the sea */
-.sbx-roll{display:none;position:absolute;right:max(14px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 160px);width:58px;height:58px;padding:0;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(127,214,255,.3),rgba(7,18,15,.62));border:2px solid #7fd6ff88;color:#d8f4ff;touch-action:none;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 18px -8px #000;z-index:3}
+.sbx-roll{display:none;position:absolute;right:max(14px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 206px);width:58px;height:58px;padding:0;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(127,214,255,.3),rgba(7,18,15,.62));border:2px solid #7fd6ff88;color:#d8f4ff;touch-action:none;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 18px -8px #000;z-index:3}
 .sbx-roll svg{width:26px;height:26px}
 .sbx-roll.on{background:#7fd6ff40;border-color:#7fd6ff;transform:scale(.93)}
 .sbx-roll:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
-@media(pointer:coarse),(max-width:760px){.sbx-roll{display:grid}.sbx-stage.cave .sbx-roll{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 120px)}.sbx-stage.ocean .sbx-roll,.sbx-stage.panel .sbx-roll{display:none}}
+@media(pointer:coarse),(max-width:760px){.sbx-stage.cave .sbx-roll{display:grid;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 120px)}.sbx-stage.ocean .sbx-roll,.sbx-stage.panel .sbx-roll{display:none}}
 @media(max-height:520px) and (orientation:landscape){.sbx-roll{bottom:calc(max(6px,env(safe-area-inset-bottom)) + 92px)}}
 /* HOTBAR LOADOUTS and the CRAFT FROM CHESTS note */
 .pk-lo{margin-top:10px}
@@ -1871,3 +1871,30 @@ body.sbx-app footer{margin-top:28px}
 @media(prefers-reduced-motion:reduce){.pz-kbtn.wait{animation:none}}
 .pz-kbtn:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
 html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,html.sbx-txbig .sbx-toast,html.sbx-txbig .sbx-hint,html.sbx-txbig .sbx-tip,html.sbx-txbig .sbx-pops,html.sbx-txbig .sbx-banner,html.sbx-txbig .sbx-trail,html.sbx-txbig .sbx-mcard,html.sbx-txbig .sbx-dead>*{zoom:var(--ui-tx,1)}
+/* TRY IT coach */
+.sbx-coach{position:absolute;inset:0;z-index:65;pointer-events:none}
+.sbx-coach.off{display:none}
+.sbx-coach .co-card{position:absolute;padding:12px 14px 10px;border-radius:16px;background:linear-gradient(180deg,#0d2a20f5,#06140ff8);border:2px solid #4ee6b4;box-shadow:0 14px 30px -12px #000;color:#f6eedb;font-family:Nunito,system-ui,sans-serif;transition:top .25s,bottom .25s,left .25s}
+.sbx-coach .co-n{display:block;font:800 .72rem Nunito,system-ui,sans-serif;color:#7fe9c4;opacity:.9}
+.sbx-coach .co-t{display:block;font:900 1.1rem Nunito,system-ui,sans-serif;margin:2px 0}
+.sbx-coach .co-d{margin:0;font:700 .88rem/1.35 Nunito,system-ui,sans-serif;color:#d8e8de}
+.sbx-coach .co-keys{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.sbx-coach .co-keys:empty{display:none}
+.sbx-coach kbd{display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 9px;border-radius:8px;background:#f6eedb;color:#06100d;font:900 .82rem Nunito,system-ui,sans-serif;box-shadow:0 3px 0 #9aa79e;animation:cok 1.2s ease-in-out infinite}
+@keyframes cok{50%{transform:translateY(2px);box-shadow:0 1px 0 #9aa79e}}
+.sbx-coach .co-skip{pointer-events:auto;display:block;margin:8px 0 0 auto;padding:4px 8px;border:0;background:none;color:#9fc9b6;font:800 .76rem Nunito,system-ui,sans-serif;text-decoration:underline;cursor:pointer}
+.sbx-coach.done .co-card{border-color:#f2c14e}
+.sbx-coach.done .co-t{color:#ffe08a}
+.sbx-coach.done .co-skip{display:none}
+.sbx-coach .co-hand{position:absolute;left:0;top:0;width:44px;height:44px;filter:drop-shadow(0 4px 6px #0009);animation:coh 1.1s ease-in-out infinite}
+.sbx-coach .co-hand svg{width:44px;height:44px;animation:cot 1.1s ease-in-out infinite}
+@keyframes cot{0%,100%{transform:translate(0,8px) rotate(-8deg)}50%{transform:translate(0,0) rotate(-8deg) scale(.92)}}
+.sbx-coach .co-ring{position:absolute;border-radius:50%;border:3px solid #f2c14e;box-shadow:0 0 18px #f2c14e88;animation:cor 1.1s ease-out infinite}
+@keyframes cor{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.25);opacity:0}}
+.sbx-coach.done .co-hand,.sbx-coach.done .co-ring{display:none!important}
+@media(prefers-reduced-motion:reduce){.sbx-coach .co-hand svg,.sbx-coach .co-ring,.sbx-coach kbd{animation:none}}
+.sbx-stage.coaching .sbx-hint{display:none!important}
+.sbx-pad .rj{display:flex;align-items:flex-end;gap:10px}
+.sbx-pad .roll{width:56px;height:56px;margin-bottom:4px;border-color:#7fd6ff88;color:#d8f4ff;background:radial-gradient(circle at 35% 30%,rgba(127,214,255,.3),rgba(7,18,15,.62))}
+.sbx-pad .roll svg{width:24px;height:24px}
+.sbx-pad .roll.on{background:#7fd6ff40;border-color:#7fd6ff}
