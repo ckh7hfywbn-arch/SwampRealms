@@ -690,6 +690,7 @@
     }
     if (o.qv === 5) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
+    if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
     return d;
   }
   var buildN = 0, exVer = 0, wallN = 0, SVC = {};   // PERF: save() reuses the edit / explored / fluid / wall strings while nothing in them changed
@@ -1175,6 +1176,61 @@
     for (i = INV_HOT; i < invN(); i++) S.slots[i] = null;
     var tmp = S.slots.slice(INV_HOT); ORDER.forEach(function (k) { if (t[k]) packInto(tmp, k, t[k]); }); for (i = 0; i < tmp.length; i++) S.slots[INV_HOT + i] = tmp[i];
     invSel = -1; hbDirty = true; invAfter();
+  }
+  // ---------- QUICK STACK (X, or the button in the backpack): everything in your bag (not the hotbar, never tools) that a nearby chest
+  // already holds goes into that chest, nearest chest first. Chests within CHEST_PULL tiles on the surface. ----------
+  function quickStack() {
+    if (MP.on && MP.role === "guest") { nag("Only the host can use chests in this world."); return 0; }
+    var CH = nearChestKeys(); if (!CH.length) { nag(cave || OCS || HOME ? "Quick stack works near your chests on the surface." : "No chests nearby. Quick stack fills chests within " + CHEST_PULL + " tiles."); return 0; }
+    reslot(); var bag = {}, i, k;
+    for (i = INV_HOT; i < invN(); i++) { var c = S.slots[i]; if (c && ITEMS[c.k] && !ITEMS[c.k].tool) bag[c.k] = (bag[c.k] || 0) + c.n; }
+    var moved = 0, chests = {};
+    for (k in bag) {
+      var to = null; for (i = 0; i < CH.length; i++) { var cc = S.chests[CH[i].key]; if (cc && cc[k] > 0) { to = CH[i].key; break; } } if (!to) continue;
+      for (i = INV_HOT; i < invN(); i++) if (S.slots[i] && S.slots[i].k === k) S.slots[i] = null;   // the bag's stacks of it leave; the hotbar's stay
+      S.inv[k] -= bag[k]; if (S.inv[k] <= 0) delete S.inv[k];
+      S.chests[to][k] = Math.min(99999, (S.chests[to][k] || 0) + bag[k]); moved += bag[k]; chests[to] = 1;
+    }
+    if (!moved) {
+      var hotM = false; for (i = 0; i < INV_HOT; i++) { var hc = S.slots[i]; if (hc && !ITEMS[hc.k].tool && CH.some(function (q) { return S.chests[q.key] && S.chests[q.key][hc.k] > 0; })) hotM = true; }
+      nag(hotM ? "Quick stack leaves your hotbar alone. Move items to your bag (B) to stack them." : "Nothing in your bag matches what's in your nearby chests."); return 0;
+    }
+    S.st.stashed = (S.st.stashed || 0) + moved; poolDirty(); invSel = -1; reslot(); hbDirty = true; if (sel !== "pick" && !TOOLKEY[sel] && !(S.inv[sel] > 0)) { sel = "pick"; bare = true; selSlot = -1; }
+    var nc = Object.keys(chests).length; toast("Quick stacked " + moved + " item" + (moved === 1 ? "" : "s") + " into " + (nc === 1 ? "1 chest" : nc + " chests") + ".", "#7fd6ff"); snd("coin");
+    if (packOpen) renderPack(); if (panelOpen) renderPanel(); checkTrail();
+    return moved;
+  }
+  // ---------- HOTBAR LOADOUTS (L to switch; save them in the backpack) ----------
+  // S.lo = { i: last used, s: [ { n: name, k: [9 item keys or null] } x3 ] }. Switching swaps the saved items into the hotbar from your bag
+  // (what was there moves to where they were), so nothing is created or lost: it only rearranges your own slots.
+  var LO_NAMES = ["Mining", "Fighting", "Farming"];
+  function loS() { if (!S.lo || !Array.isArray(S.lo.s)) S.lo = { i: -1, s: [] }; for (var q = 0; q < 3; q++) if (!S.lo.s[q]) S.lo.s[q] = { n: LO_NAMES[q], k: null }; return S.lo; }
+  function loSave(i) {
+    var L = loS(), set = L.s[i]; if (!set) return; reslot(); set.k = []; for (var j = 0; j < INV_HOT; j++) set.k.push(S.slots[j] ? S.slots[j].k : null);
+    L.i = i; toast(set.n + " loadout saved.", "#7fd6ff"); snd("coin"); if (packOpen) renderPack();
+  }
+  function loUse(i) {
+    var L = loS(), set = L.s[i]; if (!set || !set.k) { nag("Save the " + (set ? set.n : "") + " loadout in your backpack first."); return false; }
+    reslot(); var taken = {}, j, q, miss = 0;
+    for (j = 0; j < INV_HOT; j++) {
+      var want = set.k[j]; if (!want) continue;
+      if (S.slots[j] && S.slots[j].k === want) { taken[j] = 1; continue; }
+      var best = -1; for (q = 0; q < S.slots.length; q++) { if (q < INV_HOT && (taken[q] || q === j)) continue; if (q < INV_HOT && set.k[q] === (S.slots[q] && S.slots[q].k)) continue; var c = S.slots[q]; if (c && c.k === want && (best < 0 || c.n > S.slots[best].n)) best = q; }
+      if (best < 0) { miss++; continue; }
+      var tmp = S.slots[j]; S.slots[j] = S.slots[best]; S.slots[best] = tmp; taken[j] = 1;
+    }
+    L.i = i; hbDirty = true; invSel = -1;
+    var en = barEntries()[selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0]; if (en && en.id) choose(en.id, en.slot); else if (en) choose("hand", en.slot);
+    toast(set.n + " loadout" + (miss ? " (" + miss + " missing)" : ""), "#7fd6ff"); thud(420, 0.03);
+    if (packOpen) renderPack(); return true;
+  }
+  function loNext() { var L = loS(), n = 0, i = L.i; while (n++ < 3) { i = (i + 1) % 3; if (L.s[i].k) return loUse(i); } nag("Save a loadout in your backpack first (B)."); return false; }
+  function loHtml() {
+    var L = loS();
+    return '<div class="pk-lo"><h3>Loadouts <small>press L to switch</small></h3><div class="pk-lorow">' + L.s.map(function (set, i) {
+      var on = L.i === i && set.k, n = set.k ? set.k.filter(Boolean).length : 0;
+      return '<div class="pk-loc' + (on ? " on" : "") + '"><button type="button" class="btn' + (set.k ? "" : " ghost") + '" data-lo="' + i + '"' + (set.k ? "" : " disabled") + '>' + esc(set.n) + (set.k ? "<small>" + n + " items</small>" : "<small>empty</small>") + '</button><button type="button" class="btn ghost pk-losave" data-losave="' + i + '" aria-label="Save your hotbar as the ' + esc(set.n) + ' loadout">Save hotbar</button></div>';
+    }).join("") + "</div></div>";
   }
   function collectExtra(k) {
     var n = S.extra[k] || 0, fit = Math.min(n, room(k)); if (fit <= 0) { toast("No room yet. Free a slot first.", "#f2c14e"); return; }
@@ -7489,7 +7545,7 @@
     return V._img;
   }
   function vilCost(o) { return Object.keys(o).map(function (k) { if (k === "repair") return "<span>Mend all your gear</span>"; return ITEMS[k] ? '<span><img alt="" src="' + icon(k) + '">' + o[k] + " " + esc(ITEMS[k].n) + "</span>" : ""; }).join(""); }
-  function vilPay(o) { for (var k in o) if ((S.inv[k] || 0) < o[k]) return false; return true; }
+  function vilPay(o) { return canPay(o); }   // CRAFT FROM CHESTS: villager trades count nearby chests too
   function openVil(v) {
     var el = $("sbxStory"); if (!el) return;
     if (BRAWL.vang > 0) { nag("The villagers are too angry to talk to you right now!"); return; }
@@ -7515,7 +7571,7 @@
     var v = vilOpen; if (!v) return; var V = v.V;
     if (a === "chat") { var L2 = V.talk.concat(V.hi); vilLine = L2[(S.st.vchats = (S.st.vchats || 0) + 1) % L2.length]; renderVil(); return; }
     var q = V.tr[+a.split(":")[1]]; if (!q || !vilPay(q[0])) return;
-    for (var k in q[0]) { S.inv[k] -= q[0][k]; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) sel = "pick", bare = true; } }
+    payCost(q[0]); for (var k in q[0]) if (!(S.inv[k] > 0) && sel === k) { sel = "pick"; bare = true; }
     for (k in q[1]) { if (k === "repair") { ["pick", "wpn", "arm", "shovel"].forEach(function (s2) { var m = durMax(s2); if (m > 0) S.dur[s2] = m; }); armKey = ""; toast("Old Shellwick mended all your gear!", "#8fd6ff"); } else give(k, q[1][k], undefined, undefined, true); }
     if (!S.vf) S.vf = {}; S.vf[V.id] = (S.vf[V.id] || 0) + 1; S.st.vtrades = (S.st.vtrades || 0) + 1; reslot(); hbDirty = true;
     vilLine = ["Pleasure doing business!", "Come back any time.", "A fair trade, groundling.", "You drive a hard bargain!", "Lovely, lovely."][S.st.vtrades % 5];
@@ -9418,7 +9474,7 @@
         + '<h2>How to play</h2>'
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
-        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
+        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
@@ -9541,7 +9597,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -13580,7 +13636,7 @@
   // Crafting, upgrading the Workbench and repairing count the items in your backpack PLUS every chest within CHEST_PULL tiles of you,
   // and when you craft, ingredients come out of your backpack first, then out of those chests (nearest first). Not in hole caves,
   // and not as a multiplayer guest (the host's chests are theirs).
-  var CHEST_PULL = 10, poolC = null, poolT = 0;
+  var CHEST_PULL = 14, poolC = null, poolT = 0;   // (was 10)
   function nearChestKeys() {
     if (cave || OCS || HOME || (MP.on && MP.role === "guest")) return [];
     return Object.keys(S.chests).map(function (key) { var q = key.split(","), x = +q[0], y = +q[1]; return { key: key, x: x, y: y, d: Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)) }; })
@@ -13758,7 +13814,12 @@
     return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big"><img alt="" src="' + v.im + '"></span><div><b>' + esc(r.n) + "</b>" + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
       + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
   }
+  function chestNote() {   // CRAFT FROM CHESTS: say when nearby chests are being counted
+    var n = nearChestKeys().length; if (!n) return "";
+    return '<p class="crg-chests"><img alt="" src="' + icon("chest") + '">Also using what\'s in ' + (n === 1 ? "1 chest" : n + " chests") + " nearby</p>";
+  }
   function craftGrid(recs, ctx, pre) {   // recs already filtered to one category; pre = extra HTML above the slots (bench level, experiments)
+    pre = chestNote() + (pre || "");
     var sel = cgPick(ctx, recs), last = "", h = "";
     if (sel) CG_SEL[ctx] = sel.id;
     recs.forEach(function (r) { if (r.sub !== last) { if (last) h += "</div>"; last = r.sub; h += '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">'; } h += cgTile(r, sel && r.id === sel.id); });
@@ -13876,7 +13937,7 @@
   }
   function benchUpCard() {   // the Workbench level + Upgrade button (top of the Workbench window)
     var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1], nb = nearBench();
-    return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
+    return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && canPay(nbl.cost) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
   }
   // ---------- STATION WINDOW: its own pop-up with only the recipes made at that station ----------
   function stnRecs(k) {   // the station's own recipes. At the Workbench, everything you make by hand joins them in its own category and section
@@ -13941,7 +14002,7 @@
           + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
           + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again" : "Drop all") + "</button>")
           : "")
-        + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button></div></div>';
+        + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button><button type="button" class="btn ghost pk-qs" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button></div></div>';
       var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
       if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
       if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
@@ -14054,7 +14115,7 @@
     for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += pkCell(i2); for (i2 = 0; i2 < INV_HOT; i2++) g2 += pkCell(i2);
     var fillPc = Math.round(used / invN() * 100), h = "";
     h += '<div class="pk-sec"><h3>Inventory</h3><div class="pk-cap' + (used >= invN() ? " full" : used >= invN() - 3 ? " near" : "") + '"><span class="bar"><i style="width:' + fillPc + '%"></i></span><b>' + used + " / " + invN() + "</b></div></div>";
-    h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div><h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
+    h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div><h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>" + loHtml();
     var tool2 = cur2 && ITEMS[cur2.k].tool;
     h += '<div class="sbx-iinfo' + (cur2 ? " sel" : "") + '">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small></span></div>" : '<div class="pk-none"><span><small>Tap an item to see what you can do with it. Drag to move, swap or merge.</small></span></div>')
       + '<div class="acts">'
@@ -14064,7 +14125,7 @@
         + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
         + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again" : "Drop all") + "</button>")
         : "")
-      + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button></div></div>';
+      + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button><button type="button" class="btn ghost pk-qs" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button></div></div>';
     var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
     if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " · collect</small></button>"; }).join("") + "</div>";
     if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
@@ -14696,7 +14757,8 @@
   }, true);
   window.addEventListener("blur", itHide);
   function invAct(a) {
-    var c = invSel >= 0 ? S.slots[invSel] : null; if (!c && a !== "sort") return;
+    var c = invSel >= 0 ? S.slots[invSel] : null; if (!c && a !== "sort" && a !== "qstack") return;
+    if (a === "qstack") { quickStack(); return; }
     if (a !== "tossall") invAsk = "";
     if (a === "swap") quickMove(invSel);
     else if (a === "split") splitSlot(invSel);
@@ -14809,6 +14871,8 @@
     else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else if (k === "Shift" || k === "c" || k === "C") { if (!e.repeat) tryDodge(); }
+    else if (k === "x" || k === "X") { if (!e.repeat) quickStack(); }
+    else if (k === "l" || k === "L") { if (!e.repeat) loNext(); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
@@ -14831,6 +14895,8 @@
     if (t.hasAttribute("data-close")) return closePanel();
     if (t.hasAttribute("data-lore")) return openLore(t.getAttribute("data-lore"));   // LORE: read a page
     if (t.hasAttribute("data-pkeq")) return pkAct(t.getAttribute("data-pkeq"));   // BACKPACK SCREEN: gear slots
+    if (t.hasAttribute("data-lo")) return loUse(+t.getAttribute("data-lo"));   // HOTBAR LOADOUTS
+    if (t.hasAttribute("data-losave")) return loSave(+t.getAttribute("data-losave"));
     if (t.hasAttribute("data-pkpop-x")) { PK.pop = ""; return renderPack(); }
     if (t.hasAttribute("data-cg-exp")) return cgExpOpen(t.getAttribute("data-cg-exp"));   // CRAFTING: experiment
     if (t.hasAttribute("data-cgtoggle")) { CGON = !CGON; try { localStorage.setItem("swamp-delve-craftgames", CGON ? "1" : "0"); } catch (e) {} return renderPanel(); }

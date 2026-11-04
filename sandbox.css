@@ -1843,3 +1843,14 @@ body.sbx-app footer{margin-top:28px}
 .sbx-roll:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
 @media(pointer:coarse),(max-width:760px){.sbx-roll{display:grid}.sbx-stage.cave .sbx-roll{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 120px)}.sbx-stage.ocean .sbx-roll,.sbx-stage.panel .sbx-roll{display:none}}
 @media(max-height:520px) and (orientation:landscape){.sbx-roll{bottom:calc(max(6px,env(safe-area-inset-bottom)) + 92px)}}
+/* HOTBAR LOADOUTS and the CRAFT FROM CHESTS note */
+.pk-lo{margin-top:10px}
+.pk-lo h3 small{font-weight:700;opacity:.6;margin-left:6px;font-size:.8em}
+.pk-lorow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pk-loc{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pk-loc .btn{min-width:0;display:flex;flex-direction:column;align-items:center;line-height:1.15;padding:8px 6px}
+.pk-loc .btn small{font-size:.72em;opacity:.75;font-weight:700}
+.pk-loc.on>.btn:first-child{box-shadow:0 0 0 2px #7fd6ff}
+.pk-loc .pk-losave{font-size:.78em;padding:5px 6px}
+.crg-chests{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:.82em;font-weight:700;color:#bfe9d8;opacity:.9}
+.crg-chests img{width:18px;height:18px;image-rendering:pixelated}
