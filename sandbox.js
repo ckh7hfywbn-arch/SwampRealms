@@ -2583,7 +2583,7 @@
     if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
     if (e.boss) return damageBoss(e, dmg, face);
     if (e.def) return; if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
-    chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
+    chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(e.hp > 0 ? "hit" : "kill");
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
     if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
     if (e.hp > 0) return;
@@ -3405,7 +3405,7 @@
   function damageCaveMob(m, dmg, ux, uy) {
     if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
-    m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06);
+    m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
@@ -5179,6 +5179,55 @@
   function bEase(x) { x = clamp(x, 0, 1); return 1 - (1 - x) * (1 - x) * (1 - x); }
   function hitStop(sec, k) { if (HSTOP.t > 0 && HSTOP.k <= k) { HSTOP.t = Math.max(HSTOP.t, sec); return; } HSTOP.t = sec; HSTOP.k = k; }
   function timeScale(dt) { if (HSTOP.t <= 0) return 1; HSTOP.t -= dt; return HSTOP.t > 0 ? HSTOP.k : 1; }   // real seconds, so a slow motion ends on time
+  // ---------- DODGE ROLL (Shift or C; the Roll button on phones) ----------
+  // A quick roll the way you are moving (or facing): a burst of speed and a moment where nothing can hurt you (it reuses hurtGrace, which
+  // every enemy and hazard already checks). Works on the surface (on the ground or in the air), in the Mine and at the homestead; not while
+  // swimming under the sea, sailing, riding the motorbike, climbing a ladder or warping.
+  var DODGE = { t: 0, cd: 0, dx: 1, dy: 0 }, DODGE_T = 0.26, DODGE_CD = 0.62, DODGE_IF = 0.36;
+  function tryDodge() {
+    if (deadUI || panelOpen || packOpen || mapOpen || titleOpen || trans || hp <= 0 || DODGE.cd > 0 || OCS || warp || PHOTO.on) return false;
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = 0;
+    if (cave || HOME) {
+      dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0); if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
+      if (!dx && !dy) dx = cp.face || 1; var L = Math.sqrt(dx * dx + dy * dy) || 1; dx /= L; dy /= L;
+    } else {
+      if (riding() || onLadder()) return false;
+      if (!dx) dx = p.face || 1; if (!p.on && p.vy > 1) p.vy = 1;   // a roll in the air hangs for a moment
+      p.face = dx;
+    }
+    DODGE.t = DODGE_T; DODGE.cd = DODGE_CD; DODGE.dx = dx; DODGE.dy = dy; hurtGrace = Math.max(hurtGrace, DODGE_IF); S.st.dodges = (S.st.dodges || 0) + 1;
+    var px = cave || HOME ? cp.x : p.x, py = cave || HOME ? cp.y - 0.2 : p.y - 0.1; chips(px, py, "#d8e8d0", 7, 3); sfxWhoosh();
+    return true;
+  }
+  function tickDodge(dt) { if (DODGE.t > 0) DODGE.t = Math.max(0, DODGE.t - dt); if (DODGE.cd > 0) DODGE.cd = Math.max(0, DODGE.cd - dt); }
+  function dodgeSpeed(base) { return base * (0.5 + 0.5 * DODGE.t / DODGE_T); }   // fast at the start, easing out
+  function dodgeSpin(g, h) { if (DODGE.t <= 0 || reduce) return; var a = (1 - DODGE.t / DODGE_T) * 6.2832; g.translate(0, -h); g.rotate(a); g.translate(0, h); }
+  // ---------- IMPACT: hit-stop, screen shake and a punchy sound on every hit and kill (respects Reduce motion and the Shake option) ----------
+  var IMPT = 0;
+  function impact(kind) {
+    var kill = kind === "kill";
+    hitStop(kill ? 0.085 : 0.045, kill ? 0.05 : 0.1); shake = Math.max(shake, kill ? 0.42 : 0.17);
+    var now = performance.now(); if (now - IMPT > 45) { IMPT = now; sfxHit(kill); }
+  }
+  function sfxNoise(dur, f0, f1, vol, type) {   // a short filtered noise burst, swept from f0 to f1 Hz
+    if (!fxReady()) return; try {
+      var t = ac.currentTime, n = Math.max(1, Math.floor(ac.sampleRate * dur)), b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = b; f.type = type || "bandpass"; f.Q.value = 1.2;
+      f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(f); f.connect(g); g.connect(fxOut()); src.start(t); src.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  function sfxThump(f0, f1, dur, vol) {
+    if (!fxReady()) return; try {
+      var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.type = "sine";
+      o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(fxOut()); o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  function sfxHit(heavy) { sfxThump(heavy ? 150 : 210, heavy ? 42 : 70, heavy ? 0.22 : 0.11, heavy ? 0.22 : 0.13); sfxNoise(heavy ? 0.16 : 0.07, heavy ? 2600 : 3600, heavy ? 500 : 1200, heavy ? 0.16 : 0.1, "highpass"); }
+  function sfxWhoosh() { sfxNoise(0.22, 500, 2600, 0.09); }
   function bossRing(x, y, c, r, w) { BRINGS.push({ x: x, y: y, c: c, R: r || 7, t: 0, max: 0.55, w: w || 1 }); if (BRINGS.length > 8) BRINGS.shift(); }
   function bossFeel(e, dt) {
     e.fc = e.fc == null ? e.dir : e.fc + (e.dir - e.fc) * Math.min(1, dt * 9);
@@ -9369,7 +9418,7 @@
         + '<h2>How to play</h2>'
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
-        + '<dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
+        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
@@ -9492,7 +9541,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -10266,7 +10315,7 @@
       if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text((OCS ? OCS.pl.x : cave ? cp.x : p.x) + 0.5, OCS ? OCS.pl.y - 1.3 : cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
-    if (!cont) { hurtGrace = 0.5; shake = Math.min(1, n / 40); text(OCS ? OCS.pl.x : cave ? cp.x : p.x, OCS ? OCS.pl.y - 1.5 : cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
+    if (!cont) { hurtGrace = 0.5; shake = Math.max(shake, Math.min(1, 0.2 + n / 35)); if (n >= 8) hitStop(0.06, 0.12); text(OCS ? OCS.pl.x : cave ? cp.x : p.x, OCS ? OCS.pl.y - 1.5 : cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
     if (hp <= 0) { hp = 0; if (!faintQ) faintQ = why || "hit"; }   // CRASH FIX: passing out waits for the end of this frame. Respawning right here
     // emptied the enemy list while the enemy that hit you was still being updated, which threw and stopped the game loop (the game froze)
   }
@@ -10476,6 +10525,7 @@
     if (!cave && p.wet !== wasWet && (p.wet ? p.vy > 3 : p.vy < -3)) { var wty = waterTopY(p.x, p.wet ? p.y - PH * 0.5 : p.y + 0.3); if (get(Math.floor(p.x), Math.floor(wty + 0.01)) === T.WATER) { waterSplash(p.x, wty, p.wet ? clamp(p.vy / 9, 0.6, 2.2) : 0.7); if (p.wet) thud(240, 0.05); } }
     var sp = (p.wet ? 3.6 * (hasCharm("tide") || fx("gill") ? 1.6 : 1) : 6.3) * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1) * speedMul(), acc = p.on ? 70 : 34;
     p.vx = approach(p.vx, dir * sp, (dir ? acc : (p.on ? 60 : 8)) * h);
+    if (DODGE.t > 0) p.vx = DODGE.dx * dodgeSpeed(p.wet ? 8 : 15);   // DODGE ROLL
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
     if (devFly(h, jump)) return;   // DEVELOPER MODE: fly / ghost
     if (fx("feather") && !p.wet && !(keys.d || tk.d) && p.vy > 7) p.vy = 7;   // Featherfall Tonic: drift down (hold down to drop)
@@ -10523,6 +10573,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
+    tickDodge(dt);
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -12648,7 +12699,7 @@
     drawWings(g, sx, sy + ts * 0.14, now);   // behind the body
     if (riding()) { g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); drawMoto(g, -1.55 * ts, 0, ts, motoS().p, performance.now(), { ride: true, run: Math.abs(p.vx) > 0.5, lit: true }); g.restore(); sy -= ts * 0.82; sx -= p.face * ts * 0.38; bob = 0; }   // SWAMP HOG: you sit on the bike
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
-    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1);
+    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); dodgeSpin(g, ts * 0.85);
     g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
     g.scale(1 / sq, sq); g.scale(AVS, AVS); if (p.wet) g.globalAlpha = 0.85;
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
@@ -12935,6 +12986,7 @@
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
+    tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -12942,7 +12994,7 @@
       var ny = cp.y + (cp.vy + cky) * h; if (!cBox(F, cp.x, ny)) cp.y = ny; else { cp.vy = 0; cky = 0; }
     }
     var spd = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy); p.walk += spd * dt; p.vx = spd > 0.5 ? spd : 0; p.on = true; p.vy = 0; p.face = cp.face;
-    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = 0; sinceHurt += dt;
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
     if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt);
     if (fx("regen") && hp > 0 && hp < MAXHP) hp = Math.min(MAXHP, hp + 3 * dt);   // Mending Tonic
     drawHp();
@@ -13036,7 +13088,7 @@
   }
   function drawCavePlayer(g, now) {
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
-    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(cp.face, 1);
+    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(cp.face, 1); dodgeSpin(g, ts * 0.85);
     g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.46, ts * 0.15, 0, 0, 6.2832); g.fill();
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
     var SP = getSprite();
@@ -13072,7 +13124,7 @@
     drawBossBar();
     var F = cave.F, th = F.theme, g = ctx, i, j, idx, BLD = clamp(0.25 + (F.amb || 0.07) * 0.9, 0.25, 0.85), BLA = 1;   // bright rooms bloom only their lamps; dark caves glow more
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
-    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
+    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // SCREEN SHAKE
     if (F.nx) drawNexusSky(g, now, F); else { g.fillStyle = "#04060a"; g.fillRect(0, 0, vw, vh); }
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F.w - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F.h - 1, Math.floor((vh - oy) / ts)), CA = caveAtlas(F.bi != null ? F.bi : F.biome), W2 = F.w;
     var glows2 = [], srcs = [[cp.x, cp.y - 0.6, fx("night") ? 12 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 9 : hasCharm("owl") ? 8.4 : 7.2, 1]];
@@ -14711,6 +14763,7 @@
     var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); };
     base.addEventListener("pointerup", up); base.addEventListener("pointercancel", up); base.addEventListener("lostpointercapture", up); base.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
+  (function () { var rb = $("sbxRoll"); if (rb) rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); })();   // DODGE ROLL button (phones)
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
     var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; b.classList.remove("on"); };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -14755,6 +14808,7 @@
     }
     else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
+    else if (k === "Shift" || k === "c" || k === "C") { if (!e.repeat) tryDodge(); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
@@ -16763,11 +16817,12 @@
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }
     var csp = CAVE_SPEED * 1.05 * (fx("speed") ? 1.25 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
+    tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
     for (i = 0; i < sub; i++) { var nx = cp.x + cp.vx * h; if (!homeBox(nx, cp.y)) cp.x = nx; else cp.vx = 0; var ny = cp.y + cp.vy * h; if (!homeBox(cp.x, ny)) cp.y = ny; else cp.vy = 0; }
     var spd = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy); p.walk += spd * dt; p.vx = spd > 0.5 ? spd : 0; p.on = true; p.vy = 0; p.face = cp.face;
-    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = 0; sinceHurt += dt;
+    hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
     if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt); drawHp();
     cam.x += (cp.x - cam.x) * Math.min(1, dt * 8); cam.y += (cp.y - 1 - cam.y) * Math.min(1, dt * 8);
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts, pd = HOME.pad || { t: 1, b: 2, s: 0.5 }; cam.x = clamp(cam.x, halfW - pd.s, HW - halfW + pd.s); cam.y = clamp(cam.y, halfH - pd.t, HH - halfH + pd.b);
@@ -17436,7 +17491,7 @@
   function homeRender(now) {
     var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
-    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts);
+    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // SCREEN SHAKE
     if (!(ox <= 0 && oy <= 0 && ox + HW * ts >= vw && oy + HH * ts >= vh)) { g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh); }   // PERF: the farm fills the view; the base colour is only needed past its edge
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 3), s16 = ts / 16;
     // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
@@ -17702,6 +17757,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
+  window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
   window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };
   window.__sbx.pause = { open: function () { openPause(); }, close: function () { closePause(); }, act: function (a) { pauseAct(a); }, opt: function (k) { optAct(k); }, get on() { return pauseOpen; }, get view() { return pauseView; }, OPT: OPT };
