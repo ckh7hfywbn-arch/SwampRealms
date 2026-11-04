@@ -676,7 +676,7 @@
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
     if (o.st && typeof o.st === "object") ["dodges", "specials", "elites", "elite_radiant", "elite_armored", "elite_regen", "elite_volatile", "tossed", "sold", "hunted", "croakko", "vko"].forEach(function (k) { if (o.st[k] > 0) d.st[k] = Math.floor(+o.st[k]) || 0; });   // stats added after the first list
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
-      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24), note: String(w.note || "").slice(0, 140), t: w.t ? 1 : 0 });
+      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24), note: String(w.note || "").slice(0, 140), t: w.t ? 1 : 0, quake: w.quake ? 1 : 0 });
     });
     d.days = Math.max(0, Math.min(1e6, Math.floor(+o.days) || 0));
     d.zoom = [0.8, 1, 1.25, 1.5, 2].indexOf(+o.zoom) > -1 ? +o.zoom : 1;
@@ -763,6 +763,7 @@
     if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
     if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
     d.grapLv = clamp(o.grapLv | 0, 0, 2); d.bore = !!o.bore;   // GADGETS
+    if (isFinite(+o.qNext)) d.qNext = Math.floor(+o.qNext); if (o.quake && isFinite(+o.quake.x) && isFinite(+o.quake.y) && o.wv === SW.WORLDVER) d.quake = { x: Math.floor(+o.quake.x), y: Math.floor(+o.quake.y), f: clamp(o.quake.f | 0, 3, 40), day: o.quake.day | 0, prev: o.quake.prev | 0, used: o.quake.used ? 1 : 0 };   // EARTHQUAKES
     if (o.spore && typeof o.spore === "object") { d.spore = { n: [], cache: {}, rotDay: Math.floor(+o.spore.rotDay) || -1, eatDay: Math.floor(+o.spore.eatDay) || -1 }; (Array.isArray(o.spore.n) ? o.spore.n : []).slice(0, 4).forEach(function (q) { if (q && /^(surface|home|hollow)$/.test(q.s) && isFinite(+q.x) && isFinite(+q.y)) d.spore.n.push({ id: String(q.id || Math.random()).slice(0, 16), s: q.s, x: +q.x, y: +q.y, rot: q.rot ? 1 : 0 }); }); if (o.spore.cache) Object.keys(o.spore.cache).forEach(function (k) { if (ITEMS[k] && o.spore.cache[k] > 0) d.spore.cache[k] = Math.min(99999, Math.floor(+o.spore.cache[k])); }); }   // SPORE NETWORK
     if (o.speed && typeof o.speed === "object") { d.speed = {}; Object.keys(o.speed).forEach(function (k) { if (/^\d+$/.test(k) && o.speed[k] > 0) d.speed[k] = Math.floor(+o.speed[k]); }); }   // SPEED FLOORS
     if (o.carts && typeof o.carts === "object") { d.carts = {}; Object.keys(o.carts).forEach(function (k) { if (/^\d+$/.test(k) && +k < 200) d.carts[k] = 1; }); }   // MINE CARTS
@@ -11317,7 +11318,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); tickDetect(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); tickDetect(dt); tickQuake(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -13383,7 +13384,7 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawFissure(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -13624,8 +13625,41 @@
       setFloor(1, "down"); save();
     } };
   }
+  // ---------- EARTHQUAKES: every 4-8 days the ground shakes for a few seconds (rumble, dust, the camera rattles), then a FISSURE splits
+  // open on the surface 25-60 tiles away, pinned and tracked on your map. It drops straight to a floor three past the deepest you have
+  // reached: a shortcut into the deep Mine. It seals behind you once you climb out, or by itself after 3 days. S.quake / S.qNext. ----------
+  var QUAKE = null;
+  function tickQuake(dt) {
+    if (cave || OCS || HOME || !world || titleOpen) return;
+    if (!isFinite(S.qNext)) S.qNext = (S.days | 0) + 4 + Math.floor(Math.random() * 4);
+    if (S.quake && (S.days | 0) > S.quake.day + 3 && !S.quake.used) quakeSeal("The fissure from the last earthquake has sealed itself.");
+    if (!QUAKE && !S.quake && (S.days | 0) >= S.qNext && !activeBoss() && !warp && Math.random() < dt * 0.05) { QUAKE = { t: 4.2 }; toast("EARTHQUAKE!", "#ff9a4a"); aRumble(); sfxThump(45, 22, 1.2, 0.3); }
+    if (!QUAKE) return; QUAKE.t -= dt; shake = Math.max(shake, 0.55 * Math.min(1, QUAKE.t)); if (Math.random() < dt * 6) aRumble();
+    if (Math.random() < dt * 40) parts.push({ x: p.x + (Math.random() - 0.5) * (vw / ts), y: p.y - vh / ts * 0.6 * Math.random(), vx: 0, vy: 2 + Math.random() * 3, life: 0.6, max: 0.6, c: "#8a7a60", s: 2, g: 6 });
+    if (QUAKE.t > 0) return; QUAKE = null; S.qNext = (S.days | 0) + 4 + Math.floor(Math.random() * 4); quakeOpen();
+  }
+  function quakeOpen() {
+    for (var tries = 0; tries < 40; tries++) {
+      var x = clamp(Math.floor(p.x + (Math.random() < 0.5 ? -1 : 1) * (25 + Math.random() * 35)), 4, W - 5), y = col[x];
+      if (!isFinite(y) || skySafe(x)) continue; var id = get(x, y), td = TILES[id]; if (!td || !td.solid || td.kind === "door" || td.kind === "chest" || id === T.WATER || id === T.HOLE || (TILES[get(x, y - 1)] && TILES[get(x, y - 1)].solid) || get(x, y + 1) === T.AIR) continue;
+      var deep = Math.max(3, (S.st.caveDeep | 0) + 3), f = Math.min(deep, 40); if (SC && SC.LAIR_F && f === SC.LAIR_F) f++;
+      S.quake = { x: x, y: y, f: f, day: S.days | 0, prev: id, used: 0 }; setT(x, y, T.HOLE); S.st.quakes = (S.st.quakes || 0) + 1;
+      if (S.wp.length < WP_MAX) { S.wp.forEach(function (q) { q.t = 0; }); S.wp.push({ x: x, y: y, c: 5, i: 8, n: "Fissure", note: "Opened by an earthquake. Drops to floor " + f + ".", t: 1, quake: 1 }); }
+      popup("A fissure opened!", Math.abs(Math.round(x - p.x)) + " tiles " + (x > p.x ? "east" : "west") + " • drops straight to floor " + f, "#ff9a4a", "\u26A0"); save(); return;
+    }
+  }
+  function quakeSeal(msg) {
+    var Q = S.quake; if (!Q) return; S.quake = null; if (get(Q.x, Q.y) === T.HOLE) setT(Q.x, Q.y, Q.prev || T.DIRT || 1);
+    S.wp = (S.wp || []).filter(function (q) { return !(q.quake && q.x === Q.x && q.y === Q.y); }); if (msg) toast(msg, "#ff9a4a"); save();
+  }
+  function drawFissure(g, now) {   // steam and a jagged glowing crack around an open fissure
+    var Q = S.quake; if (!Q || cave) return; var sx = ox + (Q.x + 0.5) * ts, sy = oy + Q.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    g.strokeStyle = "rgba(255,140,60,.8)"; g.lineWidth = Math.max(1.5, ts * 0.06); g.beginPath(); g.moveTo(sx - ts * 1.6, sy + ts * 0.15); g.lineTo(sx - ts * 1.0, sy + ts * 0.3); g.lineTo(sx - ts * 0.6, sy + ts * 0.1); g.lineTo(sx + ts * 0.6, sy + ts * 0.25); g.lineTo(sx + ts * 1.1, sy + ts * 0.05); g.lineTo(sx + ts * 1.7, sy + ts * 0.2); g.stroke();
+    if (!reduce && Math.random() < 0.35) parts.push({ x: Q.x + 0.3 + Math.random() * 0.4, y: Q.y - 0.1, vx: (Math.random() - 0.5) * 0.5, vy: -1.2 - Math.random(), life: 1.2, max: 1.2, c: "rgba(220,220,210,.6)", s: 3, g: -1 });
+  }
   function enterCave(hx, hy, f0, picked) {
     if (!SC || cave || trans || sleepT > 0 || hp <= 0) return;
+    if (S.quake && S.quake.x === hx && S.quake.y === hy) { f0 = S.quake.f; picked = true; S.quake.used = 1; toast("You drop down the fissure... floor " + f0 + "!", "#ff9a4a"); }   // EARTHQUAKES: the fissure is a shortcut deep down
     if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
     if (!picked && liftStops().length > 1) { openLift(hx, hy); return; }   // MINE LIFT: choose a floor first
     var hb = world.bio[clamp(hx, 0, W - 1)];
@@ -13726,7 +13760,7 @@
   }
   function caveB() { return !cave ? 0 : cave.bld || cave.volc ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
-    if (!cave) return; var h = cave.hole; cave = null; resize(); stageEl.classList.remove("cave"); stopInput();
+    if (!cave) return; var h = cave.hole; cave = null; setTimeout(function () { if (S.quake && S.quake.used && S.quake.x === h.x && S.quake.y === h.y) quakeSeal("The fissure rumbles shut behind you."); }, 900); resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; hud(); save();
   }
@@ -14044,7 +14078,7 @@
     var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
-    drawPill(g, now, coarse ? "Enter the Mine" : "Enter the Mine (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 4.9, false, function () { enterCave(h.x, h.y); });
+    var fis = S.quake && S.quake.x === h.x && S.quake.y === h.y; drawPill(g, now, (fis ? "Drop into the fissure: floor " + S.quake.f : "Enter the Mine") + (coarse ? "" : " (F)"), ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * (fis ? 1.9 : 4.9), false, function () { enterCave(h.x, h.y); });
   }
   function drawCavePlayer(g, now) {
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
@@ -18745,7 +18779,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
