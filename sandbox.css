@@ -1898,3 +1898,11 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .sbx-pad .roll{width:56px;height:56px;margin-bottom:4px;border-color:#7fd6ff88;color:#d8f4ff;background:radial-gradient(circle at 35% 30%,rgba(127,214,255,.3),rgba(7,18,15,.62))}
 .sbx-pad .roll svg{width:24px;height:24px}
 .sbx-pad .roll.on{background:#7fd6ff40;border-color:#7fd6ff}
+/* WEAPON SPECIAL button: a star that fills like a clock as you land hits, and glows when ready */
+.sbx-spec{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid #f2c14e66;color:#6b6450;cursor:pointer;background:conic-gradient(#f2c14e var(--fp,0%),rgba(4,10,8,.8) 0);box-shadow:inset 0 0 0 4px rgba(4,10,8,.85),0 8px 22px -10px #000}
+.sbx-spec svg{width:20px;height:20px}
+.sbx-spec.ready{color:#fff3c4;border-color:#ffe08a;box-shadow:inset 0 0 0 3px rgba(60,40,0,.6),0 0 18px #f2c14ecc;animation:spg 1s ease-in-out infinite}
+@keyframes spg{50%{box-shadow:inset 0 0 0 3px rgba(60,40,0,.6),0 0 30px #ffd36a}}
+@media(prefers-reduced-motion:reduce){.sbx-spec.ready{animation:none}}
+.sbx-spec .sbx-kb{position:absolute;right:-4px;bottom:-4px}
+.sbx-spec[hidden]{display:none}

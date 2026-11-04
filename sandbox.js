@@ -519,7 +519,7 @@
     { id: "jump", n: "Jump / climb", d: [" ", "w", "ArrowUp"] }, { id: "down", n: "Down / drop", d: ["s", "ArrowDown"] },
     { id: "dodge", n: "Dodge roll", d: ["Shift", "c"] }, { id: "use", n: "Use / interact", d: ["f"] }, { id: "swap", n: "Swap to pick", d: ["q"] },
     { id: "journal", n: "Journal", d: ["e"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
-    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "emote", n: "Emotes", d: ["t"] }
+    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "emote", n: "Emotes", d: ["t"] }
   ];
   var KEYMAP = { b: {}, wait: "" };
   try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); } catch (e) {}
@@ -5309,11 +5309,83 @@
   }
   function tickDodge(dt) { if (DODGE.t > 0) DODGE.t = Math.max(0, DODGE.t - dt); if (DODGE.cd > 0) DODGE.cd = Math.max(0, DODGE.cd - dt); }
   function dodgeSpeed(base) { return base * (0.5 + 0.5 * DODGE.t / DODGE_T); }   // fast at the start, easing out
-  function dodgeSpin(g, h) { if (DODGE.t <= 0 || reduce) return; var a = (1 - DODGE.t / DODGE_T) * 6.2832; g.translate(0, -h); g.rotate(a); g.translate(0, h); }
+  function dodgeSpin(g, h) {
+    if (reduce) return; var a = 0;
+    if (DODGE.t > 0) a = (1 - DODGE.t / DODGE_T) * 6.2832; else if (SPEC.spin > 0) a = -(1 - SPEC.spin / SPEC.spinT) * 6.2832 * SPEC.turns; else return;
+    g.translate(0, -h); g.rotate(a); g.translate(0, h);
+  }
+  // ---------- WEAPON SPECIALS: landing hits fills the Special meter (FOC); when it is full press V, right-click, or tap the star button ----------
+  // Reed Spear: Lunge (a dash that pierces everything in the way). Glowspore Blade: Spin Slash. Cinder Cleaver: Ember Slam (a ground
+  // shockwave both ways that sets foes alight). Frost Fang: Frost Nova (a wide spin, frost shards, big knockback). Swampking Blade:
+  // Royal Tempest (two spins, the second bigger). Any bow: Volley (five arrows in a fan for one ammo). Works on the surface and in the Mine.
+  var FOC = { v: 0, max: 100, key: "" }, SPEC = { t: 0, k: "", dx: 0, dy: 0, hit: [], spin: 0, spinT: 0.4, turns: 1, q: 0, on: false };
+  var SPECN = ["", "Lunge", "Spin Slash", "Ember Slam", "Frost Nova", "Royal Tempest"];
+  function focGain(kill) { if (SPEC.on) return; if (sel !== "weapon" && sel !== "bow") return; FOC.v = Math.min(FOC.max, FOC.v + (kill ? 20 : 11)); }
+  function specKind() { return sel === "bow" && S.bow ? "volley" : sel === "weapon" && S.wpn ? ["", "lunge", "spin", "slam", "nova", "tempest"][S.wpn] : ""; }
+  function trySpecial() {
+    if (deadUI || panelOpen || packOpen || titleOpen || trans || hp <= 0 || OCS || HOME || PHOTO.on) return false;
+    var k = specKind(); if (!k) { nag("Hold your weapon or bow to use its special move."); return false; }
+    if (FOC.v < FOC.max) { nag("Land more hits to fill your Special (" + Math.floor(FOC.v) + "%)."); return false; }
+    if (k !== "volley" && toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return false; }
+    FOC.v = 0; S.st.specials = (S.st.specials || 0) + 1;
+    var inC = !!cave, px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 0.9, ax = (aim.mx - ox) / ts - px, ay = (aim.my - oy) / ts - py, al = Math.sqrt(ax * ax + ay * ay) || 1;
+    if (!inC) { ax = Math.abs(ax) > 0.2 ? (ax < 0 ? -1 : 1) : p.face || 1; ay = 0; p.face = ax; } else { ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1; }
+    var c = k === "volley" ? "#f2c14e" : WEAPONS[S.wpn].c;
+    toast((k === "volley" ? "Volley" : SPECN[S.wpn]) + "!", c); hitStop(0.07, 0.12); shake = Math.max(shake, 0.5); sfxThump(90, 40, 0.3, 0.2); sfxNoise(0.35, 600, 3200, 0.12);
+    if (k === "volley") { specVolley(inC, ax, ay); return true; }
+    SPEC.k = k; SPEC.hit = []; SPEC.dx = ax; SPEC.dy = ay;
+    if (k === "lunge") { SPEC.t = 0.32; hurtGrace = Math.max(hurtGrace, 0.45); chips(px, py, c, 10, 4); }
+    else { SPEC.spinT = k === "tempest" ? 0.6 : 0.42; SPEC.spin = SPEC.spinT; SPEC.turns = k === "tempest" ? 2 : 1; hurtGrace = Math.max(hurtGrace, 0.3); specBurst(k, 1); if (k === "tempest") SPEC.q = 0.3; }
+    wear("wpn", 2); return true;
+  }
+  function specTargets(R, fn) {   // every foe within R tiles of you (surface enemies or cave creatures)
+    if (cave) { var F = cave.F; if (!F || !F.mobs) return; F.mobs.forEach(function (m) { if (m.def) return; var dx = m.x - cp.x, dy = (m.y - 0.3) - (cp.y - 0.5), d = Math.sqrt(dx * dx + dy * dy) || 0.01; if (d <= R + (m.r || 0.4)) fn(m, dx / d, dy / d, d); }); return; }
+    enemies.forEach(function (e) { if (e.def || e.u) return; var dx = e.x - p.x, dy = (e.y - e.h / 2) - (p.y - 0.9), d = Math.sqrt(dx * dx + dy * dy) || 0.01; if (d <= R + e.w / 2) fn(e, dx / d, dy / d, d); });
+  }
+  function specHit(e, dmg, ux, uy, extra) {
+    SPEC.on = true; try {
+      if (cave) damageCaveMob(e, dmg, ux * 1.8, uy * 1.8); else { e.lastHit = 0; damageEnemy(e, dmg, ux < 0 ? -1 : 1); if (!e.boss && !e.def) { e.kv = (ux < 0 ? -1 : 1) * (extra === "nova" ? 14 : 9); if (e.vy !== undefined) e.vy = Math.min(e.vy || 0, -5); } }
+      if (extra === "slam" && !e.def) { var have = burns.filter(function (b) { return b.e === e; })[0]; if (have) have.t = 4; else burns.push({ e: e, t: 4, tick: 0.6, cave: !!cave }); }
+    } finally { SPEC.on = false; }
+  }
+  function specBurst(k, big) {   // the instant specials: hit everything in a ring around you (or along the ground for the slam)
+    var base = wDmg(), R = k === "slam" ? 5.2 : k === "nova" ? 4.4 : k === "tempest" ? (big > 1 ? 5.2 : 3.8) : 3.4, mul = k === "slam" ? 2.6 : k === "nova" ? 2.3 : k === "tempest" ? 2.4 : 2.2;
+    var inC = !!cave, px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 0.9, c = WEAPONS[S.wpn].c, n = 0;
+    specTargets(R, function (e, ux, uy) { if (k === "slam" && !inC && Math.abs((e.y - e.h / 2) - (p.y - 0.9)) > 2.2) return; specHit(e, base * mul, ux, uy, k); n++; });
+    for (var i = 0; i < 26; i++) { var a = i / 26 * 6.2832, sp2 = (k === "slam" ? 9 : 7) * (0.8 + Math.random() * 0.4); parts.push({ x: px + Math.cos(a) * 0.6, y: py + (k === "slam" && !inC ? 0.8 : Math.sin(a) * 0.6), vx: Math.cos(a) * sp2, vy: k === "slam" && !inC ? -Math.abs(Math.sin(a)) * 4 - 2 : Math.sin(a) * sp2, life: 0.35, max: 0.4, c: k === "nova" ? (i % 2 ? "#d8f4ff" : "#7fd6ff") : k === "slam" ? (i % 2 ? "#ff8a3d" : "#ffd36a") : c, s: 4, g: 0 }); }
+    if (k === "slam" && !inC) dust(14);
+    if (n) wear("wpn", 1);
+  }
+  function specVolley(inC, ax, ay) {
+    var B = BOWS[S.bow], am = bowAmmo(); if (!am) { nag(S.bow === 1 ? "Out of Pebbles." : "Out of Arrows."); FOC.v = FOC.max; return; }
+    S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } hbDirty = true;
+    var px0 = inC ? cp.x : p.x, py0 = inC ? cp.y - 0.5 : p.y - 1.15, base = inC ? Math.atan2(ay, ax) : (ax < 0 ? Math.PI : 0) - 0.06, fire = am === "firearrow";
+    for (var i = -2; i <= 2; i++) { var a = base + i * 0.16, ux = Math.cos(a), uy = Math.sin(a), sp = B.sp * 1.1;
+      arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inC ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * 1.3), fire: fire, peb: am === "pebble", life: 2.2, cave: inC }); }
+    S.st.shots += 5; thud(300, 0.06);
+  }
+  function tickSpecial(dt) {
+    if (SPEC.spin > 0) SPEC.spin = Math.max(0, SPEC.spin - dt);
+    if (SPEC.q > 0) { SPEC.q -= dt; if (SPEC.q <= 0) specBurst("tempest", 2); }
+    if (SPEC.t > 0) {   // LUNGE: everything you pass through takes a big hit, once
+      SPEC.t = Math.max(0, SPEC.t - dt); var px = cave ? cp.x : p.x, py = cave ? cp.y - 0.5 : p.y - 0.9;
+      if (Math.random() < 0.7) parts.push({ x: px - SPEC.dx * 0.5, y: py, vx: -SPEC.dx * 2, vy: -SPEC.dy * 2, life: 0.25, max: 0.3, c: WEAPONS[S.wpn].c, s: 3, g: 0 });
+      specTargets(1.4, function (e, ux, uy) { if (SPEC.hit.indexOf(e) >= 0) return; SPEC.hit.push(e); specHit(e, wDmg() * 2.6, SPEC.dx, SPEC.dy, "lunge"); });
+    }
+    specHud();
+  }
+  function specHud() {
+    var b = $("sbxSpec"); if (!b) return; var k = specKind(), pc = Math.floor(FOC.v), key = (k ? "1" : "0") + pc;
+    if (key === FOC.key) return; FOC.key = key;
+    b.hidden = !k; if (!k) return;
+    b.style.setProperty("--fp", pc + "%"); b.classList.toggle("ready", pc >= 100);
+    b.setAttribute("aria-label", pc >= 100 ? "Special ready: " + (k === "volley" ? "Volley" : SPECN[S.wpn]) + " (V)" : "Special " + pc + "%");
+    b.title = pc >= 100 ? (k === "volley" ? "Volley" : SPECN[S.wpn]) + " ready (V or right-click)" : "Special: land hits to fill it (" + pc + "%)";
+  }
   // ---------- IMPACT: hit-stop, screen shake and a punchy sound on every hit and kill (respects Reduce motion and the Shake option) ----------
   var IMPT = 0;
   function impact(kind) {
-    var kill = kind === "kill";
+    var kill = kind === "kill"; focGain(kill);
     hitStop(kill ? 0.085 : 0.045, kill ? 0.05 : 0.1); shake = Math.max(shake, kill ? 0.42 : 0.17);
     var now = performance.now(); if (now - IMPT > 45) { IMPT = now; sfxHit(kill); }
   }
@@ -9562,7 +9634,7 @@
         + '<h2>How to play</h2>'
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
-        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
+        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
@@ -9698,7 +9770,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -10740,6 +10812,7 @@
     var sp = (p.wet ? 3.6 * (hasCharm("tide") || fx("gill") ? 1.6 : 1) : 6.3) * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1) * speedMul(), acc = p.on ? 70 : 34;
     p.vx = approach(p.vx, dir * sp, (dir ? acc : (p.on ? 60 : 8)) * h);
     if (DODGE.t > 0) p.vx = DODGE.dx * dodgeSpeed(p.wet ? 8 : 15);   // DODGE ROLL
+    if (SPEC.t > 0) p.vx = SPEC.dx * (p.wet ? 12 : 23);   // LUNGE
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
     if (devFly(h, jump)) return;   // DEVELOPER MODE: fly / ghost
     if (fx("feather") && !p.wet && !(keys.d || tk.d) && p.vy > 7) p.vy = 7;   // Featherfall Tonic: drift down (hold down to drop)
@@ -10787,7 +10860,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt); tickCoach(dt);
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt);
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -13248,6 +13321,7 @@
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
+    tickSpecial(dt); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -15034,6 +15108,9 @@
     var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); };
     base.addEventListener("pointerup", up); base.addEventListener("pointercancel", up); base.addEventListener("lostpointercapture", up); base.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
+  (function () { var sb = $("sbxSpec"); if (sb) sb.addEventListener("click", function (e) { e.preventDefault(); trySpecial(); }); })();   // WEAPON SPECIALS button
+  cv.addEventListener("mousedown", function (e) { if (e.button === 2) { e.preventDefault(); trySpecial(); } });   // right-click: special
+  cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   [].forEach.call(document.querySelectorAll("[data-roll]"), function (rb) { rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); });   // DODGE ROLL buttons (phones: in the pad on the surface, on their own in the Mine)
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
     var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; b.classList.remove("on"); };
@@ -15084,6 +15161,7 @@
     else if (k === "x" || k === "X") { if (!e.repeat) quickStack(); }
     else if (k === "l" || k === "L") { if (!e.repeat) loNext(); }
     else if (k === "n" || k === "N") { if (!e.repeat) dropPinHere(); }
+    else if (k === "v" || k === "V") { if (!e.repeat) trySpecial(); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
@@ -17094,7 +17172,7 @@
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }
     var csp = CAVE_SPEED * 1.05 * (fx("speed") ? 1.25 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
-    tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
+    tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL (homestead)
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
     for (i = 0; i < sub; i++) { var nx = cp.x + cp.vx * h; if (!homeBox(nx, cp.y)) cp.x = nx; else cp.vx = 0; var ny = cp.y + cp.vy * h; if (!homeBox(cp.x, ny)) cp.y = ny; else cp.vy = 0; }
@@ -18035,7 +18113,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
-  window.__sbx.ambb = AMBB;
+  window.__sbx.ambb = AMBB; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
