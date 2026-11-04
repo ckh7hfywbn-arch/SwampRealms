@@ -1906,3 +1906,16 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 @media(prefers-reduced-motion:reduce){.sbx-spec.ready{animation:none}}
 .sbx-spec .sbx-kb{position:absolute;right:-4px;bottom:-4px}
 .sbx-spec[hidden]{display:none}
+/* COLLECTION LOG: milestone chests and New ribbons */
+.lg-ms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 4px}
+.lg-chest{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:12px;border:1px solid #ffffff14;background:rgba(0,0,0,.25);color:#9fb3a8;font-family:Nunito,system-ui,sans-serif;cursor:default;min-width:0}
+.lg-chest img{width:28px;height:28px;image-rendering:pixelated;filter:grayscale(1) brightness(.7)}
+.lg-chest b{font:900 .9rem Nunito,system-ui,sans-serif}
+.lg-chest small{font:800 .7rem Nunito,system-ui,sans-serif;opacity:.8}
+.lg-chest.ready{border-color:#f2c14e;color:#ffe9a8;cursor:pointer;box-shadow:0 0 14px #f2c14e66;animation:lgc 1.2s ease-in-out infinite}
+.lg-chest.ready img,.lg-chest.done img{filter:none}
+.lg-chest.done{border-color:#4ee6b455;color:#7fe9c4}
+@keyframes lgc{50%{transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){.lg-chest.ready{animation:none}}
+.lg-it.new{position:relative}
+.lg-it.new::after{content:"New";position:absolute;top:3px;right:3px;padding:1px 5px;border-radius:6px;background:#ff6b82;color:#fff;font:900 .6rem Nunito,system-ui,sans-serif}

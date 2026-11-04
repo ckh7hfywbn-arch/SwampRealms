@@ -657,6 +657,7 @@
     });
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
+    if (o.st && typeof o.st === "object") ["dodges", "specials", "elites", "elite_radiant", "elite_armored", "elite_regen", "elite_volatile", "tossed", "sold", "hunted", "croakko", "vko"].forEach(function (k) { if (o.st[k] > 0) d.st[k] = Math.floor(+o.st[k]) || 0; });   // stats added after the first list
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
       if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24), note: String(w.note || "").slice(0, 140), t: w.t ? 1 : 0 });
     });
@@ -743,6 +744,7 @@
     if (o.qv === 5) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
     if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
+    if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
     return d;
   }
   var buildN = 0, exVer = 0, wallN = 0, SVC = {};   // PERF: save() reuses the edit / explored / fluid / wall strings while nothing in them changed
@@ -1184,6 +1186,7 @@
     if (DROPMODE && tx !== undefined && !cave && !keep) { spawnDrop(item, n, Math.floor(tx), Math.floor(ty)); return n; }   // GROUND DROPS: what a broken block gives lands on the ground
     var fit = Math.min(n, room(item));
     if (fit > 0) {
+      if (!S.found) S.found = {}; if (!S.found[item]) { S.found[item] = 1; collFound(item); }
       S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit);
       if (typeof S.st[item] === "number") S.st[item] += fit;
       if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
@@ -3436,7 +3439,7 @@
   function eliteName(e) { var d = ENEMY[e.k]; return e.elite.n + " " + (d && d.n ? d.n : e.k); }
   function eliteDmg(e, dmg) { if (e.elite) { e.elite.idle = 0; if (e.elite.a === "armored") dmg *= 0.5; } return dmg; }
   function eliteDeath(e, cav) {
-    if (!e.elite) return; S.st.elites = (S.st.elites || 0) + 1; var A = e.elite, x = e.x - 0.5, y = cav ? e.y - 1 : e.y - (e.h || 1) - 0.8;
+    if (!e.elite) return; S.st.elites = (S.st.elites || 0) + 1; S.st["elite_" + e.elite.a] = (S.st["elite_" + e.elite.a] || 0) + 1; var A = e.elite, x = e.x - 0.5, y = cav ? e.y - 1 : e.y - (e.h || 1) - 0.8;
     popup("Elite defeated!", eliteName(e), A.c, "\u2605"); impact("kill"); shake = Math.max(shake, 0.6);
     var d = ENEMY[e.k]; if (d && d.frag && ITEMS[d.frag]) give(d.frag, A.a === "radiant" ? 3 : 2, x, y, true);
     if (ITEMS.swamptoken) give("swamptoken", 3 + Math.floor(Math.random() * 4) + (A.a === "radiant" ? 3 : 0), x, y, true);
@@ -6150,6 +6153,22 @@
   // ---------- COLLECTION LOG (Journal > Log) ----------
   // Everything you have found, caught, grown, cooked, tamed and beaten in this world, with "?" for what is still out there. Read-only: it is all
   // worked out from the save (lifetime stats, the fish log, crop bits, meals eaten, pets, charms and boss bits).
+  // COLLECTION LOG upgrades: S.found (every item you have ever picked up), new sections (ores and gems, treasures and trophies, elites),
+  // fish counted in the total, "New" ribbons on things found since you last looked (S.cnew), a toast when a rare find is logged, and
+  // milestone chests at 25 / 50 / 75 / 100% (S.collR bits) that pay out Swamp Tokens and treasure.
+  var COLL_ORES = ["pebble", "coal", "clay", "ironore", "ironingot", "spore", "cinder", "crystal", "goldbar", "pearl", "blackpearl", "seaglass", "starshard", "amber", "ruby", "sapphire", "amethyst", "moonstone"];
+  var COLL_TREAS = ["queenchitin", "wyrmscale", "alphamane", "realmshard", "doubloon", "goldbar", "blackpearl", "treasuremap", "realmkey", "swamptoken"];
+  var COLL_MS = [[0.25, { swamptoken: 15 }], [0.5, { swamptoken: 30, goldbar: 1 }], [0.75, { swamptoken: 50, blackpearl: 1 }], [1, { swamptoken: 100, goldbar: 3 }]];
+  function collList(L) { return L.filter(function (k) { return ITEMS[k]; }).filter(function (k, i, a) { return a.indexOf(k) === i; }); }
+  function collFound(k) {
+    if (!ITEMS[k]) return; if (!S.cnew) S.cnew = {}; var rare = COLL_ORES.indexOf(k) >= 0 || COLL_TREAS.indexOf(k) >= 0;
+    if (rare) { S.cnew[k] = 1; if (S.st && (S.st.mined || 0) + (S.st.placed || 0) > 5) toast("New in your Collection Log: " + ITEMS[k].n, ITEMS[k].gem || "#f2c14e"); }
+  }
+  function collClaim(i) {
+    var c = collCount(), M = COLL_MS[i]; if (!M || (S.collR & (1 << i)) || c.got / c.max < M[0]) return;
+    S.collR |= 1 << i; Object.keys(M[1]).forEach(function (k) { if (ITEMS[k]) give(k, M[1][k], undefined, undefined, true); });
+    popup("Collector's chest", Math.round(M[0] * 100) + "% of the Collection Log", "#f2c14e", "\u2726"); snd("open", "Epic"); save(); renderPanel();
+  }
   function logHtml() {
     var st = S.st, kills = Object.keys(KSTAT).reduce(function (a, k) { return a + (st[KSTAT[k]] || 0); }, 0);
     var tile = function (img, name, sub, got, cc) { return '<div class="lg-it' + (got ? "" : " no") + '"' + (cc ? ' style="--lc:' + cc + '"' : "") + '>' + (got ? '<img alt="" src="' + img + '">' : '<span class="q">?</span>') + "<b>" + esc(got ? name : "???") + "</b>" + (sub && got ? "<em>" + esc(sub) + "</em>" : "") + "</div>"; };
@@ -6177,8 +6196,29 @@
     h += sect("Animal friends", aN, ak.length, ak.map(function (k) { var n = S.pets.filter(function (a) { return a.k === k; }).length; return tile(icon(ANIM[k].prod), ANIM[k].n, n + " at home", n > 0, "#ff9ac2"); }).join(""));
     var ck = Object.keys(CHARMS), chN = ck.filter(function (k) { return S.charms.own[k]; }).length;
     h += sect("Charms", chN, ck.length, ck.map(function (k) { return tile(icon("charm_" + k), CHARMS[k].n, hasCharm(k) ? "Worn" : "", !!S.charms.own[k], CHARMS[k].c); }).join(""));
-    var total = creN + bN + fN + sN + cN + mN + aN + chN, max = cre.length + bk.length + sea.length + crops.length + meals.length + ak.length + ck.length;
-    return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(total / max * 100) + '%"></i></span><em>' + total + " / " + max + " found</em></div>" + h;
+    var F2 = S.found || {}, nw = S.cnew || {}, ntile = function (k, sub, cc) { return tile(icon(k), ITEMS[k].n, sub, !!F2[k] || (S.inv[k] || 0) > 0, cc).replace('<div class="lg-it', '<div class="lg-it' + (nw[k] ? " new" : "")); };
+    var ores = collList(COLL_ORES), oN = ores.filter(function (k) { return F2[k] || (S.inv[k] || 0) > 0; }).length;
+    h += sect("Ores and gems", oN, ores.length, ores.map(function (k) { return ntile(k, "", ITEMS[k].gem || "#bfe9d8"); }).join(""));
+    var tr = collList(COLL_TREAS), tN = tr.filter(function (k) { return F2[k] || (S.inv[k] || 0) > 0; }).length;
+    h += sect("Treasures and trophies", tN, tr.length, tr.map(function (k) { return ntile(k, TROPHY[k] ? "Trophy" : "", "#ffd36a"); }).join(""));
+    var ea = Object.keys(ELITE_A), eN = ea.filter(function (a) { return st["elite_" + a] > 0; }).length;
+    h += sect("Elites", eN, ea.length, ea.map(function (a) { var A = ELITE_A[a], n = st["elite_" + a] || 0; return tile(icon("swamptoken"), A.n + " elite", n + " defeated", n > 0, A.c); }).join(""));
+    var fishAll = typeof FISH_ALL !== "undefined" ? FISH_ALL : []; fN = fishAll.filter(function (k) { return S.fdex[k]; }).length;
+    var c = collCount(), pc = c.got / c.max;
+    var ms = '<div class="lg-ms">' + COLL_MS.map(function (M, i) { var done = !!(S.collR & (1 << i)), can = !done && pc >= M[0];
+      return '<button type="button" class="lg-chest' + (done ? " done" : can ? " ready" : "") + '" data-collc="' + i + '"' + (can ? "" : " disabled") + ' title="' + esc(Object.keys(M[1]).map(function (k) { return M[1][k] + " " + (ITEMS[k] ? ITEMS[k].n : k); }).join(", ")) + '"><img alt="" src="' + icon("chest") + '"><b>' + Math.round(M[0] * 100) + "%</b><small>" + (done ? "Opened" : can ? "Open!" : "Locked") + "</small></button>"; }).join("") + "</div>";
+    S.cnew = {};   // seen now
+    return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(pc * 100) + '%"></i></span><em>' + c.got + " / " + c.max + " found (" + Math.floor(pc * 100) + "%)</em></div>" + ms + h;
+  }
+  function collCount() {   // everything the log counts, for the total and the milestone chests
+    var st = S.st, F2 = S.found || {}, has = function (k) { return !!F2[k] || (S.inv[k] || 0) > 0; }, got = 0, max = 0, add = function (L, f) { max += L.length; got += L.filter(f).length; };
+    add(Object.keys(KSTAT), function (k) { return st[KSTAT[k]] > 0; }); add(Object.keys(BOSS), function (k) { return st.boss & BOSS[k].bit; });
+    var sea = typeof OM !== "undefined" ? Object.keys(OM) : [], sk = (S.oc && S.oc.kills) || {}; add(sea, function (k) { return sk[k] > 0; });
+    var meals = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked; }); add(meals, function (k) { return S.ate[k]; });
+    add(Object.keys(ANIM), function (k) { return S.pets.some(function (a) { return a.k === k; }); }); add(Object.keys(CHARMS), function (k) { return S.charms.own[k]; });
+    add(DISCS, function (k) { return S.disc[k]; }); add(collList(COLL_ORES), has); add(collList(COLL_TREAS), has); add(Object.keys(ELITE_A), function (a) { return st["elite_" + a] > 0; });
+    if (typeof FISH_ALL !== "undefined") add(FISH_ALL, function (k) { return S.fdex[k]; });
+    return { got: got, max: max };
   }
   // ---------- MULTIPLAYER (co-op rooms; the server side is DelveRoom in worker.js) ----------
   // The HOST's game runs the world: creatures, bosses, crops, time and weather. Up to 3 friends join with a room code (or from the public list).
@@ -15234,6 +15274,7 @@
     if (t.hasAttribute("data-lore")) return openLore(t.getAttribute("data-lore"));   // LORE: read a page
     if (t.hasAttribute("data-pkeq")) return pkAct(t.getAttribute("data-pkeq"));   // BACKPACK SCREEN: gear slots
     if (t.hasAttribute("data-lo")) return loUse(+t.getAttribute("data-lo"));   // HOTBAR LOADOUTS
+    if (t.hasAttribute("data-collc")) return collClaim(+t.getAttribute("data-collc"));   // COLLECTION LOG chests
     if (t.hasAttribute("data-losave")) return loSave(+t.getAttribute("data-losave"));
     if (t.hasAttribute("data-pkpop-x")) { PK.pop = ""; return renderPack(); }
     if (t.hasAttribute("data-cg-exp")) return cgExpOpen(t.getAttribute("data-cg-exp"));   // CRAFTING: experiment
