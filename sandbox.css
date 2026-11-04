@@ -1843,3 +1843,4 @@ body.sbx-app footer{margin-top:28px}
 .sbx-roll:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
 @media(pointer:coarse),(max-width:760px){.sbx-roll{display:grid}.sbx-stage.cave .sbx-roll{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 120px)}.sbx-stage.ocean .sbx-roll,.sbx-stage.panel .sbx-roll{display:none}}
 @media(max-height:520px) and (orientation:landscape){.sbx-roll{bottom:calc(max(6px,env(safe-area-inset-bottom)) + 92px)}}
+.sbx-stage.title .sbx-roll,.sbx-stage.title .sbx-spec{display:none!important}   /* no dodge-roll or special button over the main menu */
