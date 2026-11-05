@@ -8,3 +8,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' wss://theswampverse.m4br6dbmzc.workers.dev https://cloudflareinsights.com; worker-src 'self' blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'
+
+# The game page always checks for a newer copy, so phones pick up fixes right away (its scripts carry ?v= tags).
+/sandbox.html
+  Cache-Control: no-cache
