@@ -12945,7 +12945,7 @@
     if (cpress && aim.tx >= 0 && motoAtCell(aim.tx, aim.ty) && motoNear()) { mine = null; openMoto(); return; }   // GARAGE: tap the bike
     if (cpress && aim.tx >= 0 && !(cavePawTarget())) {   // CONTAINERS: a tap on one searches it / opens the chest, whatever you are holding
       var ctc = contAtCell(aim.tx, aim.ty), cdx = aim.tx + 0.5 - cp.x, cdy = aim.ty + 0.5 - (cp.y - 0.4);
-      if (ctc && cdx * cdx + cdy * cdy <= CAVE_REACH * CAVE_REACH) { mine = null; openCont(ctc); return; }
+      if (ctc && cdx * cdx + cdy * cdy <= CAVE_REACH * CAVE_REACH) { mine = null; if (!inGarage() && !contFull(ctc)) { nag("This " + ctc.n.toLowerCase().replace(/^cave /, "") + " is empty. It restocks in a few days."); return; } openCont(ctc); return; }   // an emptied one doesn't pop open again
     }
     var F = cave.F; if (sel === "weapon") { mine = null; caveSwing(dt); return; }
     var cpt = cavePawTarget(); if (cpt) { pawLock = true; cavePaw(dt, cpt); return; }
