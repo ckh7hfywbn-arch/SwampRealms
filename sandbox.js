@@ -697,6 +697,8 @@
     if (o.gems && typeof o.gems === "object") ["wpn", "arm", "pick", "bow"].forEach(function (k) { if (GEMS.indexOf(o.gems[k]) > -1) d.gems[k] = o.gems[k]; });
     if (Array.isArray(o.stars) && o.wv === SW.WORLDVER) d.stars = o.stars.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y) }; });
     if (isFinite(o.starRoll)) d.starRoll = Math.floor(o.starRoll);
+    ["metNext", "metSaid", "metDone"].forEach(function (f) { if (isFinite(+o[f])) d[f] = Math.floor(+o[f]); });   // METEOR SHOWERS
+    if (Array.isArray(o.flood) && o.wv === SW.WORLDVER) d.flood = o.flood.filter(function (q) { return Array.isArray(q) && isFinite(q[0]) && isFinite(q[1]); }).slice(0, 300).map(function (q) { return [Math.floor(q[0]), Math.floor(q[1])]; });   // SPRING FLOODS
     if (isFinite(o.bmNext)) d.bmNext = Math.floor(o.bmNext);
     d.gmet = o.gmet ? 1 : 0;
     if (o.mw && typeof o.mw === "object") ["pick", "wpn", "arm"].forEach(function (k) { if (isFinite(o.mw[k])) d.mw[k] = clamp(Math.floor(o.mw[k]), 0, 3); });   // CRAFTING: Masterwork stars on your gear
@@ -6283,6 +6285,7 @@
   }
   function wxLabel() {   // for the HUD: what the weather is called where you are standing (empty when calm)
     if (!WX.on || cave || !S.wx || S.wx.n < 0.25) return "";
+    if (typeof FLOOD !== "undefined" && FLOOD.on && !OCS && !HOME && wxBio() === 0) return "Spring flood";
     return WX_NAMES[wxBio()][S.wx.k === "storm" && S.wx.n > 0.7 ? 1 : 0];
   }
   function wxOpenSky(x, y) { return col[clamp(x, 0, W - 1)] >= y; }   // nothing solid above (x, y)
@@ -7403,7 +7406,7 @@
   // bottom: mine it (any pick) for Star Shards and Stardust. Stars you have not mined yet are saved in S.stars = [{ x, y }], marked on the
   // mini-map, and pointed at by a little star at the edge of the screen while they are off-screen.
   var SHOWER = null, fallers = [], starTw = 0;
-  function starTile(x, y) { var td = TILES[get(x, y)]; return !!td && td.kind === "fallenstar"; }
+  function starTile(x, y) { var id = get(x, y), td = TILES[id]; return !!td && (td.kind === "fallenstar" || id === T.METEORITE); }
   function starSite(x) {   // a good place for a star to come down in column x, or -1
     if (x < 6 || x > W - 7) return -1;
     var L = world.structs || []; for (var i = 0; i < L.length; i++) if (x >= L[i].x0 - 4 && x <= L[i].x1 + 4) return -1;
@@ -7440,6 +7443,51 @@
     var where = d < 12 ? "right next to you!" : "to the " + (cx > p.x ? "east" : "west") + ", about " + Math.round(d) + " tiles away.";
     toast("A falling star crashed " + where, "#ffe9a0"); checkGoals(); save();
   }
+
+  // ---------- METEOR SHOWERS ----------
+  // Every 6-12 days (the first one around day 4) a meteor shower lights up the night: the sky streams with shooting stars and 4-7 big
+  // meteors come down near you. Each digs a deep crater and leaves a cluster of glowing Meteorite (Star Ore, a Tier 2 pick) at the bottom.
+  // Star Ore smelts into Starsteel at a Stone Furnace. S.metNext = the day of the next shower; METSH is tonight's shower while it runs.
+  var METSH = null;
+  function tickMeteors(dt) {
+    if (!world || !S || cave || (MP.on && MP.role === "guest")) return;
+    var d = S.days | 0, ph = phaseOf(S.time).id;
+    if (!(S.metNext >= 0)) S.metNext = Math.max(4, d + 2) + Math.floor(Math.random() * 3);
+    if (d === S.metNext && ph === "dusk" && S.metSaid !== d) { S.metSaid = d; toast("Look up tonight: a METEOR SHOWER is coming! Big ones bring Star Ore down with them.", "#9ad8ff"); snd("rise"); }
+    if (d === S.metNext && ph === "night" && !METSH && S.metDone !== d && ambClear()) { METSH = { left: 4 + Math.floor(Math.random() * 4), next: 4, t: 0 }; S.metDone = d; S.st.showers = (S.st.showers || 0) + 1; toast("The meteor shower has begun!", "#9ad8ff"); }
+    if (d > S.metNext) S.metNext = d + 6 + Math.floor(Math.random() * 7);
+    if (!METSH) return;
+    if (ph !== "night") { METSH = null; return; }
+    METSH.t += dt; if (typeof AMB !== "undefined" && AMB.starT > 0.25) AMB.starT = 0.06 + Math.random() * 0.2;   // the sky streams with them
+    METSH.next -= dt; if (METSH.next <= 0 && METSH.left > 0 && !OCS && !HOME) { METSH.next = 7 + Math.random() * 11; if (launchMeteor()) METSH.left--; }
+    if (METSH.left <= 0 && !fallers.length) { METSH = null; toast("The shower is over. Go and find the Meteorite!", "#9ad8ff"); }
+  }
+  function launchMeteor() {
+    var x = -1, y = -1, dir = 1;
+    for (var tr = 0; tr < 16 && y < 0; tr++) { dir = Math.random() < 0.5 ? -1 : 1; x = Math.round(p.x + dir * (12 + Math.random() * 40)); y = starSite(x); }
+    if (y < 0) return false; var sd = Math.random() < 0.5 ? -1 : 1;
+    fallers.push({ tx: x + 0.5, ty: y + 0.2, sx: x + 0.5 - sd * 38, sy: y - 46, t: 0, dur: 1.7, x: x, y: y, dir: dir, met: 1 });
+    try { if (ac && !(typeof SFX !== "undefined" && SFX.on === false)) { var t = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain(); o.type = "sawtooth"; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(60, t + 1.6); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(0.05, t + 0.3); gn.gain.exponentialRampToValueAtTime(0.0001, t + 1.7); o.connect(gn); gn.connect(fxOut()); o.start(t); o.stop(t + 1.8); } } catch (e) {}
+    return true;
+  }
+  function meteorImpact(f) {
+    var x = f.x, y = f.y, cx = x + 0.5, cy = y + 0.6, R = 2.8, d = Math.abs(cx - p.x), far = clamp(1 - d / 70, 0.15, 1);
+    for (var ty = y - 4; ty <= y + 3; ty++) for (var tx = x - 4; tx <= x + 4; tx++) {
+      if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 1) continue; var dx = tx + 0.5 - cx, dy = (ty + 0.5 - cy) * 1.2, dd = Math.sqrt(dx * dx + dy * dy), id = get(tx, ty);
+      if (dd <= R) { if (id !== T.AIR && !bombSafe(tx, ty) && TILES[id].kind !== "blastkeg" && !isChest(id)) setT(tx, ty, T.AIR); }
+      else if (dd <= R + 1.3 && id !== T.AIR && !TILES[id].solid && !bombSafe(tx, ty) && !isChest(id)) setT(tx, ty, T.AIR);
+    }
+    var put = 0, mid = null;
+    for (var q = -1; q <= 1; q++) { var X = x + q, Y = y; while (Y < y + 6 && get(X, Y) === T.AIR) Y++; if (Y >= H - 2 || bombSafe(X, Y) || isChest(get(X, Y))) continue; setT(X, Y, T.METEORITE); put++; if (!q) mid = { x: X, y: Y }; if (!q && get(X, Y - 1) === T.AIR) { setT(X, Y - 1, T.METEORITE); put++; mid = { x: X, y: Y - 1 }; } }
+    if (mid) { S.stars = S.stars || []; S.stars.push({ x: mid.x, y: mid.y }); }   // the edge-of-screen star pointer and the mini-map show it
+    S.st.meteors = (S.st.meteors || 0) + 1; shake = Math.max(shake, 1.2 * far); boomSnd(true);
+    flashes.push({ x: cx, y: cy, r: 7, t: 0.6, max: 0.6, c: "#bfe8ff" });
+    var n = reduce ? 18 : 60; for (var k = 0; k < n; k++) { var a = -Math.PI * Math.random(), v = 4 + Math.random() * 9; parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 9, life: 0.7 + Math.random() * 0.7, max: 1.4, c: Math.random() < 0.5 ? "#bfe8ff" : Math.random() < 0.5 ? "#ffe9a0" : "#ffffff", s: 2 + Math.random() * 3, glw: 1 }); }
+    for (k = 0; k < n / 2; k++) parts.push({ x: cx + (Math.random() - 0.5) * 3, y: cy - Math.random(), vx: (Math.random() - 0.5) * 2, vy: -0.6 - Math.random(), g: -0.5, life: 1.6 + Math.random(), max: 2.6, c: Math.random() < 0.5 ? "#4a4256" : "#6a6078", s: 6 + Math.random() * 6 });
+    enemies.forEach(function (e) { if (e.def || e.u || e.boss) return; var ex = e.x - cx, ey = (e.y - e.h / 2) - cy; if (ex * ex + ey * ey < 14) { e.lastHit = 0; damageEnemy(e, 40, ex < 0 ? -1 : 1); } });
+    var pxd = p.x - cx, pyd = (p.y - PH / 2) - cy; if (pxd * pxd + pyd * pyd < 9 && hp > 0) hurt(24, "star");
+    toast("A meteor struck " + (d < 14 ? "right next to you!" : "to the " + (cx > p.x ? "east" : "west") + ", about " + Math.round(d) + " tiles away.") + (put ? " Meteorite glows in the crater." : ""), "#9ad8ff"); checkGoals(); save();
+  }
   function starMined(x, y) {
     if (!S.stars) return; S.stars = S.stars.filter(function (q) { return !(q.x === x && q.y === y); }); S.st.starsmined++;
     if (S.st.starsmined === 1) toast("You caught a falling star! Stardust makes Starglass, Star Lanterns and Star Rockets.", "#ffe9a0");
@@ -7454,7 +7502,7 @@
     for (var i = fallers.length - 1; i >= 0; i--) {
       var f = fallers[i]; f.t += dt;
       if (!reduce || Math.random() < 0.4) { var k = Math.min(1, f.t / f.dur), fx2 = lerp(f.sx, f.tx, k * k), fy2 = lerp(f.sy, f.ty, k * k); if (Math.abs(fx2 - p.x) < 30) parts.push({ x: fx2, y: fy2, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5, g: 0, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#ffe9a0" : "#ffffff", s: 2 + Math.random() * 2.5, glw: 1 }); }
-      if (f.t >= f.dur) { fallers.splice(i, 1); if (!cave) starImpact(f); }
+      if (f.t >= f.dur) { fallers.splice(i, 1); if (!cave) { if (f.met) meteorImpact(f); else starImpact(f); } }
     }
     if (ph !== "night" || cave || guest) { if (ph !== "night") SHOWER = null; return; }
     if (S.starRoll !== (S.days | 0)) {
@@ -7472,8 +7520,8 @@
   function drawFallers(g2) {
     fallers.forEach(function (f) {
       var k = Math.min(1, f.t / f.dur), k2 = k * k, hx = ox + lerp(f.sx, f.tx, k2) * ts, hy = oy + lerp(f.sy, f.ty, k2) * ts, kb = Math.max(0, k - 0.18), bx = ox + lerp(f.sx, f.tx, kb * kb) * ts, by = oy + lerp(f.sy, f.ty, kb * kb) * ts;
-      var gr = g2.createLinearGradient(hx, hy, bx, by); gr.addColorStop(0, "rgba(255,250,225,.95)"); gr.addColorStop(0.3, "rgba(255,225,140,.55)"); gr.addColorStop(1, "rgba(140,180,255,0)");
-      g2.globalAlpha = 1; g2.strokeStyle = gr; g2.lineCap = "round"; g2.lineWidth = Math.max(3, ts * 0.22); g2.beginPath(); g2.moveTo(bx, by); g2.lineTo(hx, hy); g2.stroke();
+      var gr = g2.createLinearGradient(hx, hy, bx, by); gr.addColorStop(0, "rgba(255,250,225,.95)"); gr.addColorStop(0.3, f.met ? "rgba(150,215,255,.7)" : "rgba(255,225,140,.55)"); gr.addColorStop(1, "rgba(140,180,255,0)");
+      g2.globalAlpha = 1; g2.strokeStyle = gr; g2.lineCap = "round"; g2.lineWidth = Math.max(3, ts * (f.met ? 0.42 : 0.22)); g2.beginPath(); g2.moveTo(bx, by); g2.lineTo(hx, hy); g2.stroke();
       var hg = g2.createRadialGradient(hx, hy, 0, hx, hy, ts * 1.4); hg.addColorStop(0, "rgba(255,255,240,.95)"); hg.addColorStop(0.3, "rgba(255,225,140,.5)"); hg.addColorStop(1, "rgba(255,200,120,0)");
       g2.fillStyle = hg; g2.beginPath(); g2.arc(hx, hy, ts * 1.4, 0, 7); g2.fill();
     });
@@ -11373,7 +11421,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
-    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
@@ -16038,6 +16086,45 @@
   }
 
 
+
+  // ---------- SPRING FLOODS ----------
+  // In Spring, heavy rain over Murkwater swamp makes the land overflow: its lakes and ponds rise and spill over their banks, and water
+  // gathers in the low ground. It is real water (the flowing-water system moves it). When the rain stops, or Spring ends, the flood drains
+  // away again, leaving washed-up finds (driftwood sticks, clay, stranded fish, now and then a bottle). On the homestead, Spring rain
+  // overflows the ditches and waters every crop. S.flood = [[x, y], ...] = where water was added, so the drain can find it again.
+  var FLOOD = { on: false, t: 0, dry: 0, said: -1 };
+  function floodNow() { return seasonOf() === 0 && wxN() > 0.45; }
+  function tickFlood(dt) {
+    if (!world || cave || (typeof OCS !== "undefined" && OCS) || (typeof HOME !== "undefined" && HOME) || (MP.on && MP.role === "guest")) return;
+    if (!S.flood) S.flood = [];
+    var on = floodNow(); FLOOD.on = on && S.flood.length > 6;
+    FLOOD.t -= dt; if (FLOOD.t > 0) return;
+    if (on) {
+      FLOOD.t = 0.22; FLOOD.dry = 0; if (S.flood.length >= 320) return;
+      FLOOD.scan = (FLOOD.scan || 0) - 0.22; if (FLOOD.scan <= 0 || !FLOOD.lk) { FLOOD.scan = 4; FLOOD.lk = []; for (var sx = Math.max(3, Math.floor(p.x) - 60); sx <= Math.min(W - 4, Math.floor(p.x) + 60); sx++) if (world.bio[sx] === 0 && orig[(col[sx] - 1) * W + sx] === T.WATER) FLOOD.lk.push(sx); }   // the ponds and lakes near you
+      if (FLOOD.said !== ((S.days / SEASON_DAYS) | 0) && S.flood.length > 10) { FLOOD.said = (S.days / SEASON_DAYS) | 0; toast("SPRING FLOOD! The swamp is overflowing its banks. It drains away when the rain stops.", "#7ac8ff"); }
+      for (var tr = 0; tr < 8; tr++) {
+        var x = FLOOD.lk.length && Math.random() < 0.75 ? FLOOD.lk[Math.floor(Math.random() * FLOOD.lk.length)] + Math.round((Math.random() - 0.5) * 6) : clamp(Math.round(p.x + (Math.random() - 0.5) * 90), 3, W - 4); x = clamp(x, 3, W - 4); if (world.bio[x] !== 0) continue;
+        var g0 = col[x], top = g0, i;
+        while (top > 2 && get(x, top - 1) === T.WATER) top--;   // the surface of a pond or lake here, if there is one
+        var lake = top < g0, y = top - 1, o0 = g0;
+        for (var yy0 = g0 - 1; yy0 > g0 - 40 && orig[yy0 * W + x] === T.WATER; yy0--) o0 = yy0;   // the water's natural level here (or the ground)
+        if (lake && FL && lvAt(top * W + x) < 8) { var ti = top * W + x, nl = Math.min(8, lvAt(ti) + 4); FL[ti] = nl >= 8 ? 0 : nl; flWake(x, top); S.flood.push([x, top]); break; }   // top up a thin sheet of floodwater first
+        if (y < 3 || get(x, y) !== T.AIR || y < o0 - 2) continue;   // at most two rows above the natural level
+        if (!lake && !(col[x] >= col[x - 1] && col[x] >= col[x + 1] && (col[x] > col[x - 2] || col[x] > col[x + 2]))) continue;   // dry land: only into dips
+        if ((world.structs || []).some(function (L) { return x >= L.x0 - 2 && x <= L.x1 + 2; })) continue;   // not into buildings
+        setT(x, y, T.WATER); S.flood.push([x, y]); break;
+      }
+    } else {
+      FLOOD.t = 0.5; if (!S.flood.length) return; FLOOD.dry += 0.5; if (FLOOD.dry < (seasonOf() === 0 ? 20 : 2)) return;   // it drains a while after the rain stops
+      for (var k = 0; k < 5 && S.flood.length; k++) {
+        var q = S.flood.pop(), qx = q[0], qy = q[1], got = 0;
+        for (var yy = qy - 2; yy <= qy + 1; yy++) for (var xx = qx - 10; xx <= qx + 10; xx++) { if (xx < 1 || xx >= W - 1 || yy < 1 || yy >= H - 1) continue; var j = yy * W + xx; if (tiles[j] === T.WATER && orig[j] !== T.WATER) { setT(xx, yy, T.AIR); got++; } }
+        if (got && Math.random() < 0.3) { var L2 = [["stick", 30], ["clay", 20], ["pebble", 14], ["fiber", 14], ["bogminnow", 12], ["seaglass", 4], ["x_bottle", 2]], tot = 0, r; L2.forEach(function (e2) { tot += e2[1]; }); r = Math.random() * tot; for (var m = 0; m < L2.length; m++) { r -= L2[m][1]; if (r <= 0) { if (ITEMS[L2[m][0]]) spawnDrop(L2[m][0], 1, qx, Math.min(col[qx] - 1, qy + 1)); break; } } }
+      }
+      if (!S.flood.length) { S.st.floods = (S.st.floods || 0) + 1; toast("The flood waters have gone down. See what they washed up!", "#7ac8ff"); }
+    }
+  }
   // ---------- REAL TIDES at Croaker's Pier ----------
   // The sea at the pier rises and falls twice a game day. For a couple of days each week (around days 6-7 of every 7) the SPRING TIDE runs
   // bigger: its lows drain the Tide Cave right down to the Spring-Tide Vault, and its highs wash over the pier planks. OSEA stays the map's
@@ -18024,7 +18111,7 @@
   function homeGiantAt(x, y) { var G = S.home && S.home.gi; if (!G) return null; for (var i = 0; i < G.length; i++) { var g2 = G[i]; if (x >= g2.x && x < g2.x + 3 && y >= g2.y && y < g2.y + 3) return g2; } return null; }
   function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
   function homeWater(id) { return id === HT.POND || id === HT.CANAL || id === HT.PADDYW; }
-  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
+  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y) || floodNow()) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
   function homeFlood() {   // canals: every ditch connected to the pond fills with water; cut off ones drain
     var t = HOME.t, i, q = [], seen = new Uint8Array(HW * HH), was = t.slice ? t.slice() : null;
     for (i = 0; i < t.length; i++) { if (t[i] === HT.CANAL) t[i] = HT.DITCH; if (t[i] === HT.PADDYW) t[i] = HT.PADDY; if (t[i] === HT.POND) { q.push(i); seen[i] = 1; } }
@@ -18087,7 +18174,7 @@
     }
   }
   function homeTiles() { var t = homeGen(), o = homeS(); Object.keys(o.ed).forEach(function (k) { var q = k.split(","); t[+q[1] * HW + +q[0]] = o.ed[k] | 0; }); return t; }
-  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
+  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y) || floodNow()) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
   function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
     var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d; if (HOME && o.sea !== undefined) seasonWelcome();
     Object.keys(o.c).forEach(function (k) { var e = o.c[k]; if (e && e.s >= 4 && HF.giant && HF.giant[e.k]) { var q = k.split(","); homeGiantTry(+q[0], +q[1], e.k, 0.12); } });   // overnight, a ripe patch may swell into a giant
@@ -19073,6 +19160,7 @@
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
   window.__sbx.sea = { wx: seaWx, fog: seaFogN, calm: seaCalmN, up: shipUp, fit: upFit, hullMax: hullMax, lh: lighthouse, openLh: openLighthouse, lhAct: lhAct, fire: seaFire, spawn: seaSpawnShip, hurt: seaHurt, SHIPUP: SHIPUP, ex: seaExA, known: seaKnown };
+  window.__sbx.met = { tick: tickMeteors, launch: launchMeteor, impact: meteorImpact, get SH() { return METSH; }, set SH(v) { METSH = v; } }; window.__sbx.flood = { tick: tickFlood, now: floodNow, F: FLOOD };
   window.__sbx.tide = { off: tideOff, info: tideInfo, dayF: tideDayF, get OWL() { return OWL; }, down: tideDown, up: tideUp, pools: tidePools, vaultOpen: vaultOpen, spring: springIdx, note: bottleNote };
   window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };

@@ -1742,6 +1742,8 @@
     ["keg", "Copper Coils", 30, "Kegs, Seed Makers and Compost Bins work 40% faster."]
   ];
   item("farmbook", "Croaka's Farm Almanac", { gem: "#4a7a2a", book: 1, d: "Croaka's old green almanac. Every crop you harvest, every giant, egg and jar is written in it. Pick it on your hotbar to read it." });
+  // METEOR SHOWERS (sandbox.js): a big meteor leaves a cluster of Meteorite in its crater. Star Ore smelts into Starsteel.
+  ore("METEORITE", "Meteorite", "#2a2238", "#9ad8ff", 2.6, 2, 7, "starore", ["150,210,255", 2.6, 0.18], [["starore", 0.5, 1, 1], ["stardust", 0.35, 1, 1]]);
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
