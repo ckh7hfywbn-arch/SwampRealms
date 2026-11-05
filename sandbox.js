@@ -4407,14 +4407,27 @@
     if (!e.def) eGlow(g, 0, -12, wind ? 30 : 24, wind || lunge ? "#ff6a5a" : d.glow, wind ? 0.25 + 0.4 * pw : 0.16);
     var ph = t * (run ? 17 : 9), sw = walk || run ? 1 : 0, br = Math.sin(t * 3) * 0.4;
     g.lineCap = "round"; g.lineJoin = "round";
-    var leg = function (x0, off, far, front) {   // a furry thigh, a slim shin and a padded paw
+    var leg = function (x0, off, far, front) {   // ONE tapered furry leg: wide at the hip, through the knee (or the backward hock on a hind leg) down to a padded paw
       var a = Math.sin(ph + off) * 4 * sw; if (lunge) a = front ? -5 : 5;
-      var kx = x0 + a * 0.55 + (front ? 0.6 : -0.8), ky = -5, fx = x0 + a, fy = -0.6;
-      g.fillStyle = far ? dk2 : fur; g.strokeStyle = ln; g.lineWidth = 1.1;
-      g.beginPath(); g.ellipse(x0, -10, front ? 2.8 : 3.6, 4.2, 0.15 * (front ? 1 : -1), 0, 7); g.fill();
-      g.strokeStyle = far ? dk2 : fur; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, -9); g.lineTo(kx, ky); g.lineTo(fx, fy - 1); g.stroke();
-      g.strokeStyle = far ? ln : dk; g.lineWidth = 0.8; g.beginPath(); g.moveTo(kx - 0.9, ky - 1.5); g.lineTo(fx - 1.2, fy - 1.4); g.stroke();
-      g.fillStyle = far ? dk : lt; g.strokeStyle = ln; g.lineWidth = 1; g.beginPath(); g.ellipse(fx + 0.8, fy - 0.4, 2.3, 1.3, 0, 0, 7); g.fill(); g.stroke();
+      var P = front ? [[x0, -13], [x0 - 0.4 + a * 0.3, -7.4], [x0 + 0.6 + a * 0.8, -3.2], [x0 + 0.8 + a, -1.1]]
+                    : [[x0, -13.4], [x0 + 2.6 + a * 0.35, -8], [x0 - 1.4 + a * 0.7, -4], [x0 - 0.2 + a, -1.1]];
+      var Wd = front ? [3.4, 2.1, 1.35, 1.3] : [4.6, 2.7, 1.5, 1.3], L = [], Rr = [], k;
+      for (k = 0; k < P.length; k++) { var p0 = P[Math.max(0, k - 1)], p1 = P[Math.min(P.length - 1, k + 1)], dx = p1[0] - p0[0], dy = p1[1] - p0[1], dl = Math.hypot(dx, dy) || 1, nx = -dy / dl, ny = dx / dl; L.push([P[k][0] + nx * Wd[k], P[k][1] + ny * Wd[k]]); Rr.push([P[k][0] - nx * Wd[k], P[k][1] - ny * Wd[k]]); }
+      g.beginPath(); g.moveTo(L[0][0], L[0][1] - 1.5);
+      for (k = 1; k < L.length; k++) g.quadraticCurveTo(L[k - 1][0], L[k - 1][1], (L[k - 1][0] + L[k][0]) / 2, (L[k - 1][1] + L[k][1]) / 2);
+      g.lineTo(L[L.length - 1][0], L[L.length - 1][1]); g.lineTo(Rr[Rr.length - 1][0], Rr[Rr.length - 1][1]);
+      for (k = Rr.length - 2; k >= 0; k--) g.quadraticCurveTo(Rr[k + 1][0], Rr[k + 1][1], (Rr[k + 1][0] + Rr[k][0]) / 2, (Rr[k + 1][1] + Rr[k][1]) / 2);
+      g.lineTo(Rr[0][0], Rr[0][1] - 1.5); g.closePath();
+      aInk(g, far ? aG(g, -14, 0, dk, dk2, F("#2a3440")) : aG(g, -14, 0, fur, fur, dk), ln, 1);
+      if (!far) {   // a fur tuft at the back of the joint, and a light stripe down the front
+        var J = P[front ? 1 : 2], sd = front ? -1 : 1; g.beginPath(); g.moveTo(J[0] + sd * 1.2, J[1] - 1.4); g.lineTo(J[0] + sd * 3, J[1] + 0.2); g.lineTo(J[0] + sd * 1.2, J[1] + 1.2); g.closePath(); aInk(g, fur, ln, 0.8);
+        g.strokeStyle = "rgba(255,255,255,.45)"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(P[0][0] - 1.4, P[0][1] + 2); g.quadraticCurveTo(P[1][0] - 1.2, P[1][1], P[2][0] - 0.6, P[2][1]); g.stroke();
+      }
+      var fx = P[3][0], fy = P[3][1];   // the paw: rounded, with toe lines and a little claw tip
+      g.beginPath(); g.moveTo(fx - 1.8, fy - 0.9); g.quadraticCurveTo(fx - 2, fy + 1, fx, fy + 1); g.lineTo(fx + 2.4, fy + 1); g.quadraticCurveTo(fx + 3.6, fy + 0.8, fx + 2.8, fy - 0.6); g.quadraticCurveTo(fx + 1.6, fy - 1.8, fx - 1.8, fy - 0.9); g.closePath();
+      aInk(g, far ? dk : aG(g, fy - 2, fy + 1, fur, dk, dk2), ln, 0.9);
+      g.strokeStyle = ln; g.lineWidth = 0.5; g.beginPath(); g.moveTo(fx + 0.6, fy - 0.2); g.lineTo(fx + 0.8, fy + 1); g.moveTo(fx + 1.9, fy - 0.3); g.lineTo(fx + 2.1, fy + 0.9); g.stroke();
+      g.fillStyle = ln; g.fillRect(fx + 3, fy + 0.2, 0.9, 0.6);
     };
     leg(-11, 2.4, true, false); leg(8, 3.6, true, true);   // far pair, darker
     // the bushy tail: a ragged strip from the rump, with a frost-white tip
@@ -4527,24 +4540,46 @@
     if (e.b === 1 && !e.def && Math.sin(t * 3) > 0.6) { g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(-9 + Math.sin(t * 7) * 3, -20 - (t * 20 % 6), 1.2, 0, 7); g.fill(); }   // magma sparks
     g.restore();
   }
-  function drawWasp(g, e, d, flash, h, pd) {
-    var t = e.tt, hot = e.st === "wind" || e.st === "dash", flap = Math.abs(Math.sin(e.fl)), curl = e.st === "wind" ? 0.55 : e.st === "dash" ? 0.35 : 0.1;
+  function drawWasp(g, e, d, flash, h, pd) {   // a hornet: head, thorax and a teardrop abdomen joined by a thin waist, banded stripes that wrap the body, a stinger the abdomen tapers into, veined wings hinged at the shoulder
+    var t = e.tt, hot = e.st === "wind" || e.st === "dash", flap = Math.sin(e.fl || t * 40), curl = e.st === "wind" ? 0.55 : e.st === "dash" ? 0.35 : 0.1;
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#140c04"), y1 = F(hot ? "#ffc070" : "#ffe680"), y2 = F(hot ? "#ff9a3a" : "#ffc52a"), y3 = F(hot ? "#c8501a" : "#c88a10"), bk = F("#2a1a0a"), bk2 = F("#120a04");
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, -9); g.scale(e.dir * (1 + 0.4 * pd), 1 - 0.7 * pd);
     if (!e.def) eGlow(g, 0, 0, hot ? 28 : 20, hot ? "#ff3b2a" : d.glow, hot ? 0.55 : 0.25);
-    g.fillStyle = flash ? "rgba(255,255,255,.9)" : "rgba(220,240,255,.55)"; g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 1;
-    g.beginPath(); g.ellipse(-1, -7 - flap * 2, 7, 2.6 + flap * 2.6, -0.5, 0, 7); g.fill(); g.stroke();   // wings: a blur of beats
-    g.beginPath(); g.ellipse(3, -8 - flap * 2, 6, 2.2 + flap * 2.2, -0.2, 0, 7); g.fill(); g.stroke();
-    g.save(); g.translate(-2, 0); g.rotate(curl);   // the striped abdomen and stinger curl forward before a dash
-    var ab = flash ? "#ffffff" : hot ? "#ff9a3a" : "#ffcf3a";
-    g.fillStyle = ab; g.strokeStyle = "#1a1206"; g.lineWidth = 1.4; g.beginPath(); g.ellipse(-6, 1, 8, 5, 0.25, 0, 7); g.fill(); g.stroke();
-    g.fillStyle = "#1a1206"; [[-9, 1.6], [-5, 1.6], [-1.5, 1.4]].forEach(function (b2) { g.save(); g.translate(b2[0], 1); g.rotate(0.25); g.fillRect(-b2[1] / 2, -4.4, b2[1], 8.8); g.restore(); });
-    g.fillStyle = flash ? "#fff" : "#2a1a0a"; poly(g, [-13.5, 2.5, -19, 4.5, -13.5, 4.8]); g.fill();
+    g.lineCap = "round"; g.lineJoin = "round";
+    var wing = function (len, wid, ang, al) {   // a veined wing hinged at the shoulder
+      g.save(); g.translate(1.4, -3.6); g.rotate(ang);
+      g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(-len * 0.35, -wid * 1.1, -len, -wid * 0.35); g.quadraticCurveTo(-len * 1.04, wid * 0.3, -len * 0.7, wid * 0.45); g.quadraticCurveTo(-len * 0.3, wid * 0.5, 0, 0);
+      g.fillStyle = flash ? "rgba(255,255,255,.9)" : "rgba(214,236,255," + al + ")"; g.fill(); g.strokeStyle = flash ? "#fff" : "rgba(40,50,70,.75)"; g.lineWidth = 0.7; g.stroke();
+      g.strokeStyle = flash ? "#fff" : "rgba(60,70,90,.45)"; g.lineWidth = 0.4; g.beginPath(); g.moveTo(0, 0); g.lineTo(-len * 0.92, -wid * 0.2); g.moveTo(-len * 0.3, -wid * 0.45); g.lineTo(-len * 0.62, wid * 0.32); g.moveTo(-len * 0.55, -wid * 0.55); g.lineTo(-len * 0.86, wid * 0.2); g.stroke();
+      if (!flash) aShine(g, -len * 0.45, -wid * 0.3, len * 0.22, wid * 0.14, 0.45, -0.1);
+      g.restore();
+    };
+    var wa = 0.35 + (flap * 0.5 + 0.5) * 0.8;
+    wing(10, 3.8, wa + 0.3, 0.3); wing(10, 3.8, wa - 0.22, 0.14);   // far wing, with a blur of its beat
+    // legs: three jointed legs tucked under the thorax, swinging a little
+    for (var lg = 0; lg < 3; lg++) { var sw2 = Math.sin(t * 9 + lg) * 0.8, lx = 0.4 + lg * 1.9; aLimb(g, [[lx, 2.2], [lx - 1.2 + sw2 * 0.3, 4.4], [lx - 0.4 + sw2, 6.4]], 0.55, bk, ln); g.fillStyle = y2; g.beginPath(); g.arc(lx - 0.4 + sw2, 6.4, 0.45, 0, 7); g.fill(); }
+    // the abdomen hangs from a thin waist and curls its stinger forward before a dash
+    g.save(); g.translate(-2.2, 0.6); g.rotate(curl);
+    g.beginPath(); g.moveTo(0.4, -0.9); g.quadraticCurveTo(-2.6, -4.4, -8, -3.6); g.quadraticCurveTo(-13.4, -2.4, -15.4, 1.6); g.lineTo(-18, 3.2); g.lineTo(-15, 3.4); g.quadraticCurveTo(-11, 5.8, -5.6, 4.4); g.quadraticCurveTo(-1.4, 3.2, 0.4, 0.9); g.closePath();
+    g.save(); aInk(g, aG(g, -5, 6, y1, y2, y3), ln, 1.2); g.clip();
+    g.fillStyle = bk; [-4, -7.8, -11.6].forEach(function (bx) { g.beginPath(); g.moveTo(bx + 0.7, -7); g.quadraticCurveTo(bx - 0.9, 0.6, bx + 0.9, 7); g.lineTo(bx - 0.5, 7); g.quadraticCurveTo(bx - 2.3, 0.6, bx - 0.7, -7); g.closePath(); g.fill(); });   // stripes curve round the body
+    g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(-20, 2.6, 22, 5);
     g.restore();
-    g.fillStyle = flash ? "#fff" : "#3a2a12"; g.strokeStyle = "#1a1206"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(3, -1, 4.6, 3.8, 0, 0, 7); g.fill(); g.stroke();   // thorax
-    g.fillStyle = flash ? "#fff" : "#ffcf3a"; g.beginPath(); g.ellipse(9, -2, 3.6, 3.4, 0, 0, 7); g.fill(); g.stroke();   // head
-    g.fillStyle = flash ? "#fff" : hot ? "#ff2a1a" : "#3a1206"; g.beginPath(); g.ellipse(10.4, -2.6, 2, 2.4, 0, 0, 7); g.fill();
-    g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.moveTo(9, -5); g.quadraticCurveTo(11, -10, 14, -10); g.moveTo(10, -5); g.quadraticCurveTo(13, -8, 15, -7.5); g.stroke();
-    g.strokeStyle = "#1a1206"; g.lineWidth = 1.1; for (var lg = 0; lg < 3; lg++) { g.beginPath(); g.moveTo(1 + lg * 2.4, 2); g.lineTo(lg * 2.4 - 0.5, 6 + Math.sin(t * 9 + lg) * 0.8); g.stroke(); }
+    g.beginPath(); g.moveTo(-16.6, 2.2); g.lineTo(-21.4, 3.6); g.lineTo(-16.6, 3.4); g.closePath(); aInk(g, bk2, ln, 0.5);   // the stinger
+    aShine(g, -7.6, -2.6, 3.6, 1, 0.4, -0.1);
+    g.restore();
+    // thorax: dark, fuzzy-edged, with two yellow shoulder marks
+    g.beginPath(); g.ellipse(2.8, -0.4, 3.9, 3.5, -0.1, 0, 7); aInk(g, aG(g, -4.3, 3.5, F("#5a3a1a"), bk, bk2), ln, 1.1);
+    g.strokeStyle = F("#7a5a2a"); g.lineWidth = 0.4; for (var hz = 0; hz < 7; hz++) { var ha = 3.4 + hz * 0.36; g.beginPath(); g.moveTo(2.6 + Math.cos(ha) * 4.2, -0.4 + Math.sin(ha) * 3.7); g.lineTo(2.6 + Math.cos(ha) * 5, -0.4 + Math.sin(ha) * 4.4); g.stroke(); }
+    g.fillStyle = y2; g.beginPath(); g.ellipse(1.4, -2.6, 1.6, 0.8, -0.3, 0, 7); g.fill(); g.beginPath(); g.ellipse(4.6, -2.4, 1.2, 0.7, 0.3, 0, 7); g.fill();
+    // head: a rounded yellow face, a big wraparound compound eye, mandibles and elbowed antennae
+    aLimb(g, [[8.6, -4.6], [10.2, -8.6], [13.8, -9.6]], 0.6, bk, ln); aLimb(g, [[9.6, -4.2], [12, -7.4], [15.2, -7.2]], 0.6, bk, ln);
+    g.beginPath(); g.ellipse(9.4, -1.6, 3.8, 3.5, 0.15, 0, 7); aInk(g, aG(g, -5.1, 1.9, y1, y2, y3), ln, 1.1);
+    g.beginPath(); g.ellipse(10.4, -2.2, 2.2, 2.9, 0.25, 0, 7); aInk(g, flash ? "#fff" : hot ? aG(g, -5, 1, "#ff6a4a", "#d81a0a", "#5a0400") : aG(g, -5, 1, "#6a3a2a", "#3a1206", "#120402"), ln, 0.6);
+    if (!flash) { g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.ellipse(9.8, -3.6, 0.8, 0.5, -0.4, 0, 7); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; for (var hx = 0; hx < 3; hx++) { g.beginPath(); g.arc(10.6 + (hx % 2) * 0.8, -1.4 + hx * 0.8, 0.35, 0, 7); g.fill(); } }
+    [[-1, 0.35], [1, -0.2]].forEach(function (mq) { var mo = hot ? Math.abs(Math.sin(t * 30)) * 0.35 : 0.1; g.save(); g.translate(12, 0.4); g.rotate(mq[1] + mq[0] * mo); g.beginPath(); g.moveTo(0, -0.6); g.quadraticCurveTo(2, -0.2, 2.2, 1.2); g.quadraticCurveTo(1, 0.6, 0, 0.6); g.closePath(); aInk(g, bk, ln, 0.4); g.restore(); });
+    aShine(g, 8.4, -3.8, 1.4, 0.7, 0.45);
+    wing(12, 4.4, wa + 0.05, 0.5); wing(12, 4.4, wa - 0.3, 0.18);   // near wing on top
     g.restore();
   }
   var SHADOW = { bug: 19, frog: 17, wolf: 21, gator: 27, slime: 14, witch: 13, spider: 16 }, HBAR = { bug: 41, bat: 30, frog: 49, wolf: 44, gator: 30, slime: 32, wasp: 30, witch: 62, spider: 30 };
@@ -4790,22 +4825,31 @@
     }
     if (ball) {
       g.translate(0, -11); g.rotate(e.rot || 0);
+      for (var i = 0; i < 6; i++) { var a = i * 1.047; if (!flash) eGlow(g, Math.cos(a) * 10, Math.sin(a) * 10, 5, "#c8a8ff", 0.3); crystal(Math.cos(a) * 8.2, Math.sin(a) * 8.2, i % 2 ? 0.95 : 1.15, a + 1.5708); crystal(Math.cos(a + 0.42) * 8.6, Math.sin(a + 0.42) * 8.6, 0.55, a + 1.5708 + 0.35); }   // rooted inside the ball, so they grow out of it
       g.beginPath(); g.arc(0, 0, 11, 0, 7); aInk(g, aG(g, -11, 11, p1, p2, p3), ln, 1.3);
-      g.strokeStyle = p3; g.lineWidth = 1; for (var b = -2; b <= 2; b++) { g.beginPath(); g.arc(b * 4.6, 0, 11, -1.1 + Math.abs(b) * 0.2, 1.1 - Math.abs(b) * 0.2); g.stroke(); }   // the plates, rolled up
-      for (var i = 0; i < 6; i++) { var a = i * 1.047; crystal(Math.cos(a) * 9.4, Math.sin(a) * 9.4, 0.8, a + 1.5708); }
+      g.save(); g.beginPath(); g.arc(0, 0, 10.4, 0, 7); g.clip(); g.strokeStyle = p3; g.lineWidth = 1.1; for (var b = -1; b <= 1; b++) { g.beginPath(); g.ellipse(b * 5.4, 0, 3.4 + (1 - Math.abs(b)) * 1.4, 11, 0, 0, 7); g.stroke(); } g.strokeStyle = F("#9a86c4"); g.lineWidth = 0.6; for (var b2 = -1; b2 <= 1; b2++) { g.beginPath(); g.ellipse(b2 * 5.4 - 1, 0, 2.8 + (1 - Math.abs(b2)) * 1.4, 10, 0, 3.6, 5.4); g.stroke(); } g.restore();   // the plates, rolled up
       aShine(g, -3.6, -5, 4, 2.2, 0.28);
     } else {
       g.scale(f, 1); var lg = e.st === "crawl" || e.st === "patrol" ? Math.sin(e.tt * 12) * 2 : 0;
       for (var l = 0; l < 4; l++) { var lx = -11 + l * 6.6, ph = l % 2 ? lg : -lg; aLimb(g, [[lx, -5.4], [lx - 1 + ph * 0.5, -2.6], [lx - 2.4 + ph, 0]], 1.4, F("#3a2e56"), ln); }   // little legs under the plates
+      // the crystals GROW out of the shell: rooted below the plate tops (the plates are drawn over their bases), each leaning out along the curve
+      // of the back, in clusters: a big shard with a smaller one either side; a soft glow where they come out
+      var back = function (x) { return -17.4 - Math.cos(x / 16 * 1.5708) * 4.2; };
+      [[-8.6, 0.85, [[-2.2, 0.55, -0.35], [2, 0.5, 0.3]]], [0.4, 1.2, [[-2.6, 0.62, -0.4], [2.6, 0.7, 0.35], [0.6, 0.5, 0.05]]], [9, 0.8, [[-2, 0.5, -0.3], [2.2, 0.45, 0.4]]]].forEach(function (cl) {
+        var cx2 = cl[0], ry = back(cx2) + 3.2, lean = cx2 / 16 * 0.7;
+        if (!flash) eGlow(g, cx2, ry - 3, 9 * cl[1], "#c8a8ff", 0.35);
+        cl[2].forEach(function (sm) { crystal(cx2 + sm[0], back(cx2 + sm[0]) + 3, sm[1] * cl[1] * 1.3, lean + sm[2]); });
+        crystal(cx2, ry, cl[1] * 1.25, lean);
+      });
       // the shell: five overlapping plates, each lit from the top, the back ones higher
       for (var s = 0; s < 5; s++) {
-        var x0 = -15 + s * 6.2, top = -16 - Math.sin((s + 0.5) / 5 * Math.PI) * 4;
+        var x0 = -15 + s * 6.2, top = back(x0 + 3.6) + 1.4;
         g.beginPath(); g.moveTo(x0 - 1, -4); g.quadraticCurveTo(x0 - 1.6, top + 1, x0 + 3.6, top); g.quadraticCurveTo(x0 + 8.6, top + 1, x0 + 8, -4); g.closePath();
         aInk(g, aG(g, top, -4, p1, p2, p3), ln, 1.1);
         g.strokeStyle = F("#9a86c4"); g.lineWidth = 0.8; g.beginPath(); g.moveTo(x0 + 0.4, top + 3); g.quadraticCurveTo(x0 + 3.6, top + 1.4, x0 + 6.6, top + 3); g.stroke();
+        g.fillStyle = F("#b898f0"); [[x0 + 1.6, top + 6.4], [x0 + 5, top + 8.6]].forEach(function (cp) { g.beginPath(); g.moveTo(cp[0] - 0.8, cp[1]); g.lineTo(cp[0], cp[1] - 1.6); g.lineTo(cp[0] + 0.8, cp[1]); g.closePath(); g.fill(); });   // tiny crystal flecks in the plates
       }
       g.beginPath(); g.moveTo(-16, -5.6); g.lineTo(16, -5.6); g.lineTo(15, -3.2); g.lineTo(-15, -3.2); g.closePath(); aInk(g, p3, ln, 0.9);   // the rim underneath
-      crystal(-9, -18.4, 0.9, -0.25); crystal(-2, -20.6, 1.15, -0.05); crystal(1.8, -20, 0.7, 0.3); crystal(8, -17.6, 0.85, 0.25);
       // head: a rounded snout, a shining eye and two feelers
       var aw = Math.sin(e.tt * 4) * 1.2;
       aLimbQ(g, 17, -10, 21, -15 + aw, 24, -14 + aw, 0.8, F("#6a5a90"), ln); aLimbQ(g, 16, -11, 19, -17 - aw, 21.5, -18 - aw, 0.8, F("#6a5a90"), ln);
@@ -5091,25 +5135,47 @@
       g.rotate(-f * 0.2 * h); g.scale(f * (sxx + 0.5 * pd + 0.14 * h), syy * (1 - 0.75 * pd) - 0.12 * h);
       if (!e.def) eGlow(g, 0, -10, wind ? 30 + 10 * pw : 24, wind || lash ? "#ffb347" : d.glow, wind ? 0.35 + 0.5 * pw : 0.2);
       var dk = flash ? "#f4ffe0" : "#1c5e34", md = flash ? "#ffffff" : "#3fc25f", lt = flash ? "#ffffff" : "#7ee08a", bel = flash ? "#ffffff" : "#f1efb4", spot = flash ? "#ffffff" : "#2a8a47";
-      if (lash && e.ext > 0.02) { var L = FROG.reach * 30 * e.ext; g.strokeStyle = flash ? "#fff" : "#ff7e93"; g.lineWidth = 4; g.lineCap = "round"; g.beginPath(); g.moveTo(16, -10); g.lineTo(16 + L, -10); g.stroke(); g.fillStyle = flash ? "#fff" : "#ff9db0"; g.beginPath(); g.arc(16 + L, -10, 4.2, 0, 7); g.fill(); }
-      g.fillStyle = md; g.beginPath(); g.ellipse(-8, -7, 9, 6.5, -0.3, 0, 7); g.fill(); g.strokeStyle = dk; g.lineWidth = 2; g.beginPath(); g.ellipse(-8, -7, 9, 6.5, -0.3, 0, 7); g.stroke();
-      var kick = air ? (e.vy < 0 ? 1 : 0.4) : 0;
-      g.fillStyle = lt; g.beginPath(); g.ellipse(-17 - kick * 6, -1.5 + kick * 2, 7, 2.4, 0, 0, 7); g.fill();
-      g.strokeStyle = dk; g.lineWidth = 3.2; g.lineCap = "round"; g.beginPath(); g.moveTo(9, -5); g.lineTo(14 + (air ? 3 : 0), -1.5 + (air ? -3 : 0)); g.stroke();
-      var fln = flash ? "#ffffff" : "#0e2a16"; g.beginPath(); g.ellipse(0, -12, 15, 10, 0, 0, 7); aInk(g, flash ? md : aG(g, -22, -2, lt, md, dk), fln, 1.3);
-      g.fillStyle = bel; g.beginPath(); g.ellipse(2, -7, 11, 4.2, 0, 0, Math.PI); g.fill();
-      g.fillStyle = spot; [[-6, -17, 2.4], [0, -19, 1.8], [-11, -12, 2], [-3, -12, 1.6]].forEach(function (w2) { g.beginPath(); g.arc(w2[0], w2[1], w2[2], 0, 7); g.fill(); });
-      g.fillStyle = flash ? "#fff" : "#ffd27a"; g.beginPath(); g.ellipse(12, -7, 4 + (wind ? 4 * pw : 0) + (lash ? 3 : 0), 3 + (wind ? 3.5 * pw : 0) + (lash ? 2 : 0), 0, 0, 7); g.fill();
-      g.beginPath(); g.ellipse(12, -14, 9, 7, 0, 0, 7); aInk(g, flash ? md : aG(g, -21, -7, lt, md, dk), fln, 1.2); aShine(g, -5, -18.6, 5, 1.8, 0.3, -0.15); aShine(g, 9.4, -18.4, 2.6, 1.1, 0.3);
-      if (wind || lash) { g.fillStyle = "#2a0d18"; g.beginPath(); g.ellipse(19, -11, 5, 3.2 + (wind ? 1.6 * pw : 1.4), 0, 0, 7); g.fill(); }
-      else { g.strokeStyle = "#12220f"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(8, -11); g.quadraticCurveTo(15, -8.5, 21, -12); g.stroke(); }
-      [8, 15].forEach(function (ex) {
-        g.fillStyle = flash ? "#fff" : (wind && Math.sin(t * 40) > 0 ? "#fff2a8" : "#ffd23f"); g.beginPath(); g.arc(ex, -21.5, 4.6, 0, 7); g.fill();
-        g.strokeStyle = dk; g.lineWidth = 1.2; g.beginPath(); g.arc(ex, -21.5, 4.6, 0, 7); g.stroke();
-        g.fillStyle = "#12220f"; g.beginPath();
-        if (rec) { g.moveTo(ex - 2.2, -21.5); g.lineTo(ex + 2.2, -21.5); g.lineWidth = 1.4; g.stroke(); }
-        else { g.ellipse(ex + (wind || lash ? 1.3 : 0.6), -21.5, 1.2, 3.4, 0, 0, 7); g.fill(); }
+      // ONE silhouette: body, head and both eye bumps are a single inked shape, the haunch folds into its side, the feet are planted under it
+      var fln = flash ? "#ffffff" : "#0c2a14", sk1 = flash ? "#fff" : "#8aea7a", sk2 = md, sk3 = flash ? "#fff" : "#1f7a3c", ftC = flash ? "#fff" : "#2f9a4a";
+      var kick = air ? (e.vy < 0 ? 1 : 0.4) : 0, puff = wind ? pw : lash ? 0.5 : 0, mo = wind ? 0.5 + 0.5 * pw : lash ? 1 : 0, br = e.st === "idle" ? Math.sin(t * 4) * 0.5 : 0;
+      g.lineCap = "round"; g.lineJoin = "round";
+      if (lash && e.ext > 0.02) { var L = FROG.reach * 30 * e.ext; g.strokeStyle = fln; g.lineWidth = 5.6; g.beginPath(); g.moveTo(19, -10); g.lineTo(19 + L, -10); g.stroke(); g.strokeStyle = flash ? "#fff" : "#ff7e93"; g.lineWidth = 3.8; g.stroke(); g.beginPath(); g.arc(19 + L, -10, 4.2, 0, 7); aInk(g, flash ? "#fff" : aG(g, -14, -6, "#ffc0cc", "#ff8aa0", "#d8506a"), fln, 1); }
+      var web = function (x, y, s, col) { g.beginPath(); g.moveTo(x - 1.4 * s, y - 1.6 * s); g.quadraticCurveTo(x + 1 * s, y - 2 * s, x + 4.2 * s, y - 0.4 * s); g.lineTo(x + 3 * s, y + 0.2 * s); g.lineTo(x + 2.6 * s, y - 0.2 * s); g.lineTo(x + 1.6 * s, y + 0.3 * s); g.lineTo(x + 1.1 * s, y - 0.2 * s); g.lineTo(x - 0.2 * s, y + 0.3 * s); g.lineTo(x - 1.6 * s, y); g.closePath(); aInk(g, col, fln, 0.9); };
+      // far side: the other front hand and back foot peek out, darker
+      web(15.4, -0.4, 0.8, sk3); web(-4 - kick * 7, -0.6 + kick * 1.4, 1, sk3);
+      // the near back leg's shin and webbed foot, folded under the haunch (stretched back while jumping)
+      if (kick) { aLimb(g, [[-10, -6], [-16 - kick * 5, -3 + kick], [-21 - kick * 6, -1 + kick * 2]], 3.6, sk2, fln); web(-23 - kick * 6, -0.2 + kick * 2, 1.1, ftC); }
+      else { g.beginPath(); g.moveTo(-14, -4); g.quadraticCurveTo(-8, -1.4, -1, -2.4); g.lineTo(-0.6, -0.6); g.quadraticCurveTo(-8, 0.2, -14.6, -1.6); g.closePath(); aInk(g, aG(g, -4, 0, sk2, sk3, sk3), fln, 1); web(0.4, -0.4, 1.15, ftC); }
+      // the silhouette
+      var hb = -20.6 - br * 0.4;
+      g.beginPath(); g.moveTo(-12, -1.6); g.quadraticCurveTo(-19, -3, -18.4, -10); g.quadraticCurveTo(-17, -17.4, -6, -18.6 + br);
+      g.quadraticCurveTo(1, -19.4, 3.8, hb + 2.6);   // up the back of the head to the first eye bump
+      g.arc(8, hb, 4.6, Math.PI * 0.85, Math.PI * 1.95); g.quadraticCurveTo(11.6, hb + 2.6, 11.4, hb + 1.4); g.arc(15.2, hb, 4.6, Math.PI * 1.05, Math.PI * 2.05);
+      g.quadraticCurveTo(21, -17, 22.4, -12.6); g.quadraticCurveTo(23, -9.6 + mo * 2, 20.6, -8.2 + mo * 2.6);
+      g.quadraticCurveTo(16 + puff * 2, -2.4 + puff * 1.4, 10, -2.6); g.quadraticCurveTo(0, -0.4, -12, -1.6); g.closePath();
+      g.save(); aInk(g, flash ? "#fff" : aG(g, -24, -1, sk1, sk2, sk3), fln, 1.4); g.clip();
+      g.fillStyle = flash ? "#fff" : aG(g, -9, 0, "#fbf6c8", bel, "#cfc884"); g.beginPath(); g.ellipse(4, -1.6, 15, 6, 0.05, Math.PI, 0); g.fill();   // the pale belly
+      g.fillStyle = spot; [[-7, -15.6, 2.4], [-1.4, -16.6, 1.7], [-13, -10.6, 2], [-4.4, -11.6, 1.6], [3.4, -13.4, 1.3]].forEach(function (w2) { g.beginPath(); g.ellipse(w2[0], w2[1], w2[2], w2[2] * 0.85, 0.3, 0, 7); g.fill(); g.fillStyle = flash ? "#fff" : "#5ad276"; g.beginPath(); g.arc(w2[0] - w2[2] * 0.3, w2[1] - w2[2] * 0.3, w2[2] * 0.35, 0, 7); g.fill(); g.fillStyle = spot; });
+      g.restore();
+      // the haunch: a big folded thigh on its side, shown by a crease rather than a separate blob
+      g.strokeStyle = fln; g.lineWidth = 1.1; g.beginPath(); g.moveTo(-15.6, -4.2); g.quadraticCurveTo(-15.4, -12.4, -6.4, -11.4); g.quadraticCurveTo(-1.4, -10.4, -1.6, -4.4); g.stroke();
+      g.strokeStyle = flash ? "#fff" : "rgba(255,255,255,.35)"; g.lineWidth = 1; g.beginPath(); g.moveTo(-13.6, -6.6); g.quadraticCurveTo(-12.6, -10.6, -7.4, -10.4); g.stroke();
+      // the throat sac puffs out under the chin
+      if (puff > 0.05) { g.beginPath(); g.ellipse(14, -4.4 + puff, 4.6 * puff + 2.4, 3.4 * puff + 1.6, 0, 0, 7); aInk(g, flash ? "#fff" : aG(g, -8, 0, "#fff4c0", "#ffd27a", "#d8a04a"), fln, 1); aShine(g, 12.8, -6 + puff, 1.6 * puff + 0.6, 0.8, 0.5); }
+      // the near front arm: from under the jaw down to a webbed hand
+      aLimb(g, [[10, -7], [12.4, -4], [12.6, -1.4]], 2.8, sk2, fln); web(12.2, -0.4, 0.95, ftC);
+      // mouth: a long smiling seam, or open for the tongue
+      if (mo > 0.05) { g.beginPath(); g.moveTo(9, -10.4); g.quadraticCurveTo(16, -12.6, 22.2, -12); g.quadraticCurveTo(22.6, -8 + mo * 2.4, 20.4, -7.6 + mo * 2.6); g.quadraticCurveTo(14, -6.6 + mo * 2, 9, -10.4); aInk(g, "#3a0a18", fln, 1); g.fillStyle = "#e05a78"; g.beginPath(); g.ellipse(17, -8.6 + mo * 1.8, 3.4, 1.2 + mo * 0.6, 0, 0, 7); g.fill(); }
+      else { g.strokeStyle = fln; g.lineWidth = 1.3; g.beginPath(); g.moveTo(7.6, -10.6); g.quadraticCurveTo(15, -8.4, 22.2, -11.6); g.stroke(); g.beginPath(); g.moveTo(7.6, -10.6); g.quadraticCurveTo(6.8, -10.8, 6.6, -11.8); g.stroke(); }
+      g.fillStyle = fln; g.beginPath(); g.arc(20.4, -14.4, 0.7, 0, 7); g.fill();   // nostril
+      // eyes sit IN the bumps: golden, a sideways frog pupil, a lid line
+      [8, 15.2].forEach(function (ex, ei) {
+        var ey = hb + 0.2; g.fillStyle = flash ? "#fff" : (wind && Math.sin(t * 40) > 0 ? "#fff2a8" : aG(g, ey - 3.4, ey + 3.4, "#fff0a0", "#ffd23f", "#d89a1a")); g.beginPath(); g.arc(ex, ey, 3.3, 0, 7); g.fill(); g.strokeStyle = fln; g.lineWidth = 0.8; g.stroke();
+        if (rec) { g.strokeStyle = fln; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.2, ey); g.lineTo(ex + 2.2, ey); g.stroke(); }
+        else if (!flash) { var lk = wind || lash ? 0.9 : 0.4; g.fillStyle = "#12220f"; g.beginPath(); g.ellipse(ex + lk, ey + 0.2, 2.2, 1.2, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex - 1, ey - 1.2, 0.8, 0, 7); g.fill(); }
+        g.strokeStyle = fln; g.lineWidth = 1; g.beginPath(); g.arc(ex, ey, 3.9, Math.PI * 1.1 + (ei ? 0.1 : 0), Math.PI * 1.75 + (ei ? 0.1 : 0)); g.stroke();
       });
+      aShine(g, -7, -16.4, 5.4, 1.6, 0.32, -0.12); aShine(g, 6.4, hb - 2.6, 1.6, 0.7, 0.45, -0.2);
       g.restore();
       if (rec && !e.def) { g.fillStyle = "#ffe9a0"; for (var si = 0; si < 3; si++) { var an = t * 6 + si * 2.1; g.beginPath(); g.arc(Math.cos(an) * 12, -34 + Math.sin(an) * 3.5, 1.8, 0, 7); g.fill(); } }
       if (wind) { g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); }
@@ -17481,16 +17547,28 @@
       for (var i2 = 0; i2 < N; i2++) { segs.push([px, py, ang]); ang += Math.sin(t * 4 - i2 * 0.7 + m.ph) * (0.16 + 0.1 * Math.min(1, sp / 3)); px -= Math.cos(ang) * 0.46 * ts; py -= Math.sin(ang) * 0.46 * ts; }
       for (var i3 = N - 1; i3 >= 0; i3--) { var rr = (i3 === 0 ? 0.42 : 0.4 - i3 * 0.027) * ts, X = segs[i3][0], Y = segs[i3][1];
         g.beginPath(); g.arc(X, Y, rr, 0, 7); var eg = g.createLinearGradient(X, Y - rr, X, Y + rr); eg.addColorStop(0, C("#4aa8a2")); eg.addColorStop(0.5, C(i3 % 2 ? "#2c7a78" : "#23666a")); eg.addColorStop(1, C("#123e42")); aInk(g, eg, lnE, u * 0.7);
-        g.beginPath(); g.ellipse(X, Y + rr * 0.32, rr * 0.7, rr * 0.45, 0, 0, 7); g.fillStyle = C("#8ad0b0"); g.fill();
+        if (i3 > 0) { g.beginPath(); g.ellipse(X, Y + rr * 0.32, rr * 0.7, rr * 0.45, 0, 0, 7); g.fillStyle = C("#8ad0b0"); g.fill(); }
         if (i3 > 0 && i3 < N - 1) { var up2 = Math.cos(m.hd) < 0 ? 1 : -1, nx3 = -Math.sin(segs[i3][2]) * up2, ny3 = Math.cos(segs[i3][2]) * up2; g.beginPath(); g.moveTo(X + nx3 * rr * 0.7 - ny3 * rr * 0.4, Y + ny3 * rr * 0.7 + nx3 * rr * 0.4); g.lineTo(X + nx3 * rr * 1.35, Y + ny3 * rr * 1.35 + Math.sin(t * 6 + i3) * u * 0.3); g.lineTo(X + nx3 * rr * 0.7 + ny3 * rr * 0.4, Y + ny3 * rr * 0.7 - nx3 * rr * 0.4); aInk(g, C("#1e5a5e"), lnE, u * 0.5); }   // a ridge of fin along the back
         if (i3 % 3 === 1) { g.fillStyle = "#7af0ff"; g.beginPath(); g.arc(X, Y - rr * 0.25, rr * 0.2, 0, 7); g.fill(); oG(g, X, Y - rr * 0.25, rr * 0.8, "rgba(122,240,255,.25)"); } }
       var hx = segs[0][0], hy = segs[0][1], open = m.st === "dash" || m.st === "wind"; g.save(); g.translate(hx, hy); g.rotate(m.hd); if (Math.cos(m.hd) < 0) g.scale(1, -1); g.scale(u, u);
-      var jo = open ? 2.6 : 0;
-      g.beginPath(); g.moveTo(-2, -4.2); g.quadraticCurveTo(6, -5.4, 10.6, -1.6 - jo * 0.4); g.lineTo(6.6, 0); g.lineTo(10.4, 1.6 + jo); g.quadraticCurveTo(5, 4.8, -2, 4.2); g.closePath(); aInk(g, aG(g, -5.4, 4.8, C("#4aa8a2"), C("#2c7a78"), C("#123e42")), lnE, 0.9);
-      g.beginPath(); g.moveTo(6.6, 0); g.lineTo(10.6, -1.6 - jo * 0.4); g.lineTo(10.4, 1.6 + jo); g.closePath(); g.fillStyle = "#6a1a2a"; g.fill();
-      g.fillStyle = "#e8f6ee"; [[7.6, -0.9], [9.2, -1.3]].forEach(function (q2) { g.beginPath(); g.moveTo(q2[0] - 0.5, q2[1] - 0.2); g.lineTo(q2[0], q2[1] + 1.4); g.lineTo(q2[0] + 0.5, q2[1] - 0.2); g.fill(); g.beginPath(); g.moveTo(q2[0] - 0.4, q2[1] + 1.4 + jo); g.lineTo(q2[0], q2[1] + 0.2 + jo * 0.5); g.lineTo(q2[0] + 0.4, q2[1] + 1.4 + jo); g.fill(); });
-      aShine(g, 2, -2.8, 2.6, 0.8, 0.3, -0.1);
-      aEye(g, 3, -1.6, 1.5, m.st === "wind" ? "#ff3a3a" : C("#d8c040"), lnE, fl, 0.6, 0.35);
+      var jo = open ? 3.2 : 0, R0 = 6.7, hg = function (y0, y1) { return aG(g, y0, y1, C("#4aa8a2"), C("#2c7a78"), C("#123e42")); };
+      // the head grows straight out of the neck (same width), slopes up into a brow and tapers to a blunt snout; the lower jaw hinges open below it
+      var jawP = function (cl) { if (cl) { g.moveTo(0, 1); g.lineTo(0, R0 + jo * 0.15); } else g.moveTo(0, R0 + jo * 0.15); g.quadraticCurveTo(5, R0 * 0.9 + jo * 0.5, 9.6, 3.2 + jo); g.quadraticCurveTo(12.4, 2.4 + jo, 13, 1 + jo * 0.7); g.quadraticCurveTo(9, 0.8 + jo * 0.4, 3.6, 1); if (cl) g.closePath(); };
+      g.beginPath(); jawP(true); g.fillStyle = hg(-R0, R0); g.fill(); g.beginPath(); jawP(false); g.strokeStyle = lnE; g.lineWidth = 0.9; g.stroke();   // lower jaw (no seam where it meets the neck)
+      g.beginPath(); g.moveTo(1, R0 * 0.72 + jo * 0.3); g.quadraticCurveTo(5, R0 * 0.6 + jo * 0.5, 11.6, 1.8 + jo * 0.8); g.strokeStyle = C("rgba(138,208,176,.55)"); g.lineWidth = 1.1; g.stroke();   // pale throat edge
+      if (open) { g.beginPath(); g.moveTo(3.6, 0.6); g.quadraticCurveTo(9, 0.2, 13, 1 + jo * 0.7); g.quadraticCurveTo(9, 2.8 + jo * 0.6, 3.6, 0.6); g.fillStyle = "#4a0e1e"; g.fill(); }
+      g.fillStyle = "#e8f6ee"; for (var tq = 0; tq < 4; tq++) { var tx2 = 5.4 + tq * 1.8; g.beginPath(); g.moveTo(tx2 - 0.5, 1.2 + jo * 0.45 + tq * 0.1); g.lineTo(tx2, 0 + jo * 0.3); g.lineTo(tx2 + 0.5, 1.2 + jo * 0.45 + tq * 0.1); g.fill(); }   // lower teeth
+      var headP = function (cl) { g.moveTo(0, -R0); g.quadraticCurveTo(3.4, -R0 * 1.02, 5.8, -4.6); g.quadraticCurveTo(10.4, -3.6, 13.6, -0.6); g.quadraticCurveTo(14.2, 0.6, 12.8, 0.8); g.quadraticCurveTo(8, 0.4, 3.6, 0.8); g.quadraticCurveTo(1, 1.2, 0, 1.4); if (cl) g.closePath(); };
+      g.beginPath(); headP(true); g.fillStyle = hg(-R0, R0); g.fill(); g.beginPath(); headP(false); g.strokeStyle = lnE; g.lineWidth = 1; g.stroke();   // upper head: inked all round except where it grows out of the neck
+      g.save(); g.beginPath(); headP(true); g.clip();
+      g.fillStyle = C("#1e5a5e"); [[-1, -3.4, 1.2], [2.6, -4.6, 0.9], [6, -2.6, 0.8], [0.6, -1, 0.7]].forEach(function (sp2) { g.beginPath(); g.ellipse(sp2[0], sp2[1], sp2[2] * 1.3, sp2[2], 0.3, 0, 7); g.fill(); });   // mottling
+      g.restore();
+      g.fillStyle = "#e8f6ee"; for (var tu = 0; tu < 4; tu++) { var tx3 = 5.8 + tu * 1.8; g.beginPath(); g.moveTo(tx3 - 0.5, 0.6); g.lineTo(tx3, 1.9 + (tu === 1 ? 0.7 : 0)); g.lineTo(tx3 + 0.5, 0.6); g.fill(); }   // upper fangs
+      g.strokeStyle = lnE; g.lineWidth = 0.6; g.beginPath(); g.moveTo(1.6, -3); g.quadraticCurveTo(2.6, -1, 1.6, 0.8); g.stroke();   // gill slit
+      g.beginPath(); g.moveTo(12, -1.6); g.lineTo(13.4, -3); g.strokeStyle = lnE; g.lineWidth = 1.4; g.stroke(); g.strokeStyle = C("#2c7a78"); g.lineWidth = 0.7; g.stroke();   // a nostril tube
+      aShine(g, 1.6, -5, 3.4, 0.9, 0.32, -0.12);
+      aEye(g, 5.6, -2.6, 1.5, m.st === "wind" ? "#ff3a3a" : C("#d8c040"), lnE, fl, 0.6, 0.35);
+      g.strokeStyle = lnE; g.lineWidth = 1; g.beginPath(); g.moveTo(3.4, -4.6); g.quadraticCurveTo(5.6, -5.2, 7.8, -3.8); g.stroke();   // a heavy brow
       g.restore();
     } else if (m.k === "jelly") {   // a jellyfish: a glassy pulsing bell with a frilled rim, an inner glow, trailing tentacles and frilly mouth arms
       g.scale(u, u); var pu = 1 + Math.sin(t * 4.5 + m.ph) * 0.14; oG(g, 0, 0, 16, "rgba(122,240,255,.28)");
