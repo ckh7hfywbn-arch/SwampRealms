@@ -9965,7 +9965,7 @@
   }
   function contNear() {   // the closest container within reach of your feet
     var F = cave && cave.F; if (!F || F.nx) return null; var best = null, bd = 2.1 * 2.1, cx = Math.floor(cp.x), cy = Math.floor(cp.y);
-    for (var y = cy - 3; y <= cy + 2; y++) for (var x = cx - 3; x <= cx + 3; x++) { var c = contAtCell(x, y); if (!c) continue; var dx = x + 0.5 - cp.x, dy = y + 0.5 - (cp.y - 0.4), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } }
+    for (var y = cy - 3; y <= cy + 2; y++) for (var x = cx - 3; x <= cx + 3; x++) { var c = contAtCell(x, y); if (!c || (!inGarage() && !contFull(c))) continue; var dx = x + 0.5 - cp.x, dy = y + 0.5 - (cp.y - 0.4), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } }
     return best;
   }
   function contKey(c) { return "b" + cave.bld.id + ":" + c.x + "," + c.y; }
@@ -13410,8 +13410,9 @@
     var t = S.time, day = daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t), BLD, BLA;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
     if (titleOpen && dpr >= 2 && dpr % 1 === 0) { ox = Math.round((vw / 2 - cam.x * ts) * dpr) / dpr; oy = Math.round((vh / 2 - cam.y * ts) * dpr) / dpr; }   // main-menu pan: snap to device pixels (half-steps on Retina) so the slow drift is even
-    else { ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts); }
+    else { ox = pxS(vw / 2 - cam.x * ts); oy = pxS(vh / 2 - cam.y * ts); }
     if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // smooth (not random) shake
+    ox = pxS(ox); oy = pxS(oy);   // keep every block edge on a whole device pixel (no seams between rows at 125% / 175% / phone scales)
     var HZ = horizon(cam.x), bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (HZ + 3)) / 9, 0, 1);   // HZ: the local ground line, so valleys and peaks both get sky
     // --- sky: three-stop gradient, stars, sun/moon, clouds, aurora ---
     var sk = skyAt(t); VMX = varMix(cam.x); var BSK = biomeSky(sk, skyMid(t), bw, day); sk = [BSK[0], BSK[1]];
@@ -14335,7 +14336,7 @@
     drawBossBar();
     var F = cave.F, th = F.theme, g = ctx, i, j, idx, BLD = clamp(0.25 + (F.amb || 0.07) * 0.9, 0.25, 0.85), BLA = 1;   // bright rooms bloom only their lamps; dark caves glow more
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
-    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // SCREEN SHAKE
+    ox = pxS(vw / 2 - cam.x * ts); oy = pxS(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); } ox = pxS(ox); oy = pxS(oy);   // SCREEN SHAKE
     if (F.nx) drawNexusSky(g, now, F); else { g.fillStyle = "#04060a"; g.fillRect(0, 0, vw, vh); }
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F.w - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F.h - 1, Math.floor((vh - oy) / ts)), CA = caveAtlas(F.bi != null ? F.bi : F.biome), W2 = F.w;
     var glows2 = [], srcs = [[cp.x, cp.y - 0.6, fx("night") ? 12 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 9 : hasCharm("owl") ? 8.4 : 7.2, 1]];
@@ -16036,7 +16037,7 @@
       else if (ventNear()) enterVolcano(ventNear());
       else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
-      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
+      else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip || (SC && holeNear()) ? null : structNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
     else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
@@ -16153,6 +16154,9 @@
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
+  function tsSnap(t) {   // the nearest tile size (whole CSS pixels) that is also a whole number of device pixels: 125% wants a multiple of 4, 150% of 2...
+    if (!(dpr % 1)) return t; for (var n = 1; n <= 10; n++) if (Math.abs(n * dpr - Math.round(n * dpr)) < 0.01) { var r = Math.round(t / n) * n; if (t % 16 === 0 && (16 % n === 0)) return t; return Math.max(n, r); } return t; }
+  function pxS(v) { return dpr % 1 ? Math.round(v * dpr) / dpr : Math.round(v); }   // snap to the device pixel grid
   function resize() {
     var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(dprCap, window.devicePixelRatio || 1);
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
@@ -16161,6 +16165,7 @@
     if (typeof HOME !== "undefined" && HOME) setTimeout(homePads, 0);
     if (typeof HOME !== "undefined" && HOME) ts = Math.max(32, Math.round(clamp(Math.max(vw, vh) / 24, 32, 64) * (S ? clamp(S.zoom, 0.8, 1.3) : 1) / 16) * 16);
     if (typeof OCS !== "undefined" && OCS) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 30, coarse ? 24 : 18, 40)));
+    ts = tsSnap(ts);   // a block is a whole number of device pixels wide too, so rows and columns meet with no hairline gap at 125% / 175% / phone scales
     fitDock();
   }
   // Inside buildings and caves the tile size is a whole multiple of 16 (so every pixel of art is the same size and stays crisp), and buildings are zoomed so the room fills the screen.
@@ -17285,7 +17290,7 @@
     var sc = OCS, g = ctx, m = sc.m, pl = sc.pl, i, j, t = now / 1000, A = ocAtlas();
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null; sc.btns = [];
     var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
-    ox = Math.round(vw / 2 - cam.x * ts + shx); oy = Math.round(vh / 2 - cam.y * ts + shy);
+    ox = pxS(vw / 2 - cam.x * ts + shx); oy = pxS(vh / 2 - cam.y * ts + shy);
     var surf = oy + OWL * ts, dl = daylight(S.time), sky = skyAt(S.time);
     // --- sky ---
     if (surf > 0) {
@@ -19472,7 +19477,7 @@
   function homeRender(now) {
     var g = ctx, A = homeAtlas(), t = HOME.t, o = homeS(), i, j, T0 = now / 1000; HOME.btns = [];
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
-    ox = Math.round(vw / 2 - cam.x * ts); oy = Math.round(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); }   // SCREEN SHAKE
+    ox = pxS(vw / 2 - cam.x * ts); oy = pxS(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); } ox = pxS(ox); oy = pxS(oy);   // SCREEN SHAKE
     if (!(ox <= 0 && oy <= 0 && ox + HW * ts >= vw && oy + HH * ts >= vh)) { g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh); }   // PERF: the farm fills the view; the base colour is only needed past its edge
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts) - 1), Y1 = Math.min(HH - 1, Math.floor((vh - oy) / ts) + 3), s16 = ts / 16;
     // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
