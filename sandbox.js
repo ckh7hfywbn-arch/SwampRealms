@@ -183,6 +183,8 @@
    ["x_jet", "Swamp-Gas Jetpack", "Carry it: keep holding jump at the top of a jump to fly on swamp gas. It refuels on the ground."],
    ["x_grap2", "Grapple Upgrade: Mk II", "Your grapple reaches half again as far and swings: pump with left and right, reel with up and down, jump to fling off."],
    ["x_grap3", "Grapple Upgrade: Mk III", "Double reach, and the hook bites into tree leaves and trunks too."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  // MESSAGE IN A BOTTLE: washes up on the tide flats at low tide (one a day at most). Hold it and tap on land to read it: it marks a Captain's Cache.
+  if (!ITEMS.x_bottle) { ITEMS.x_bottle = { n: "Message in a Bottle", tmap: 1, bottle: 1, d: "Washed up on the tide flats. Hold it on land and tap to uncork it: someone wrote down where they buried something." }; if (ORDER.indexOf("x_bottle") < 0) ORDER.push("x_bottle"); }
   RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
   RECIPES.push({ id: "x_detect", n: "Metal Detector", out: { x_detect: 1 }, cost: { ironingot: 4, quartz: 4, glass: 2 }, bench: true, d: "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore within 14 tiles." });
   RECIPES.push({ id: "x_jet", n: "Swamp-Gas Jetpack", out: { x_jet: 1 }, cost: { ironingot: 8, sulfur: 6, leather: 4, glass: 2 }, bench: true, d: "Carry it: keep holding jump at the top of a jump to fly on swamp gas for a couple of seconds. It refuels whenever you stand on the ground." });
@@ -716,7 +718,7 @@
     if (o.vg && typeof o.vg === "object") Object.keys(o.vg).forEach(function (k) { if (o.vg[k]) d.vg[k] = 1; });   // LANDMARKS: the day of the last Blessing
     if (o.disc && typeof o.disc === "object") Object.keys(o.disc).forEach(function (k) { if (ITEMS[k] && ITEMS[k].disc) d.disc[k] = 1; });   // secret recipes found
     if (o.pot && isFinite(o.pot.x) && isFinite(o.pot.y) && o.wv === SW.WORLDVER) d.pot = { x: Math.floor(o.pot.x), y: Math.floor(o.pot.y) };
-    if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) };
+    if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) { d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) }; if (o.tmap.b) d.tmap.b = 1; }
     if (Array.isArray(o.ways) && o.wv === SW.WORLDVER) d.ways = o.ways.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y), n: String(q.n || "Waystone").slice(0, 24) }; });
     if (o.fx && typeof o.fx === "object") Object.keys(FXN).forEach(function (k) { var v = +o.fx[k]; if (v > 0) d.fx[k] = Math.min(v, 600); });
     d.cg = clamp(Math.floor(+o.cg) || 0, 0, 63); d.diff = o.diff === 0 || o.diff === 2 ? o.diff : 1; d.keepInv = o.keepInv ? 1 : 0; d.lossPct = o.lossPct === null || o.lossPct === undefined || !isFinite(+o.lossPct) ? null : clamp(Math.round(+o.lossPct / 10) * 10, 0, 100);   // DEATH RULES (world settings)
@@ -1207,6 +1209,7 @@
   function invFull(item) { if (item && room(item) > 0) return false; nag("Inventory full! Press E to make room."); return true; }
   var giveBatch = null;
   function give(item, n, tx, ty, keep) {
+    if (item === "x_bottle" && !S.st.btltip) { S.st.btltip = 1; setTimeout(function () { toast("A Message in a Bottle! Hold it on dry land back in the swamp and tap to uncork it.", "#e8d8a8"); }, 400); }
     if (item === "x_grap2" || item === "x_grap3") { var gl2 = item === "x_grap2" ? 1 : 2; if ((S.grapLv | 0) < gl2) { S.grapLv = gl2; popup("Grapple upgraded", "Mk " + (gl2 + 1) + (gl2 === 1 ? ": longer reach and real swinging" : ": double reach, bites into trees"), "#5fa83f", "\u2693"); } return n; }   // keep: loot that must never be lost (rewards, enemy drops). What does not fit drops on the ground
     if (DROPMODE && tx !== undefined && !cave && !keep) { spawnDrop(item, n, Math.floor(tx), Math.floor(ty)); return n; }   // GROUND DROPS: what a broken block gives lands on the ground
     var fit = Math.min(n, room(item));
@@ -6307,7 +6310,7 @@
   function fishBiteMul() { return (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1) * (fx("fish") ? 0.6 : 1); }
   function tickRainSound() {   // a soft filtered-noise hiss for rain / blizzard wind, following the music switch
     var want = WX.on && MUS.on && gestured && ac && S.wx && S.wx.n > 0.05 && !cave && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden;
-    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OSEA + 0.6, above = HOME || OCS ? true : p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
+    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OWL + 0.6, above = HOME || OCS ? true : p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
     if (!lvl && !WX.snd) return;
     try {
       if (!WX.snd) {
@@ -8499,6 +8502,7 @@
     mine = null; if (!aim.down) return; var now = performance.now(); if (now - mapReadAt < 900) return; mapReadAt = now;
     if (cave) { nag("Read it on the surface, where you can see the land."); return; }
     if (S.tmap && get(S.tmap.x, S.tmap.y) === T.X_buried) { nag("You are already following a Treasure Map. Dig up that treasure first!"); return; }
+    var isBottle = !!(ITEMS[sel] && ITEMS[sel].bottle);
     var x = -1, y = -1, dir = 1;
     for (var tr = 0; tr < 30 && y < 0; tr++) {
       dir = Math.random() < 0.5 ? -1 : 1; x = Math.round(p.x + dir * (35 + Math.random() * 70)); var g0 = starSite(x); if (g0 < 0) continue;
@@ -8506,14 +8510,30 @@
       if (yy < H - 12 && TILES[id].solid && !(smask && smask[i]) && id !== T.BEDROCK && TILES[id].tier <= 2 && TILES[id].kind !== "ore" && !isChest(id)) y = yy;
     }
     if (y < 0) { nag("The map's markings don't match the land around here. Try reading it somewhere else."); return; }
-    setT(x, y, T.X_buried); S.tmap = { x: x, y: y }; S.st.maps++;
+    setT(x, y, T.X_buried); S.tmap = { x: x, y: y }; if (isBottle) S.tmap.b = 1; S.st.maps++;
     S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick", bare = true; reslot(); } hbDirty = true;
     var dist = Math.round(Math.abs(x + 0.5 - p.x)); snd("open", "Rare");
+    if (isBottle) { S.st.bottles = (S.st.bottles || 0) + 1; bottleNote(dist, x > p.x ? "east" : "west"); save(); return; }
     toast("X marks the spot: " + dist + " tiles to the " + (x > p.x ? "east" : "west") + ", buried a few blocks down. Follow the red arrow!", "#ff6a5a"); save();
+  }
+
+  // ---------- MESSAGE IN A BOTTLE: a letter from someone at sea, and the X for their Captain's Cache ----------
+  var BTL_FROM = ["Cap'n Mossbeard of the Leaky Lily", "a very lost ferryfrog", "Old Croaker's brother, Bartholomew", "the cook of Gillbeard's galleon", "a lighthouse keeper who misses dry socks", "Pip, cabin boy (age 9 and three-quarters)", "a pirate who has had enough of pirating", "Granny Gullwing"],
+    BTL_WHY = ["before the storm took our mast", "so the pirates wouldn't get it", "for whoever needs it more than me", "because my pockets were full of frogspawn", "the night the Leviathan rose", "and then I forgot where. Then I remembered. Then I wrote it down. Then I lost the paper. This is the copy"],
+    BTL_SIGN = ["Fair winds.", "Dig deep, friend.", "Don't tell Croaker.", "Mind the eels.", "P.S. The left boot is mine. Leave it.", "Yours in brine,"];
+  function bottleNote(dist, dir) {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 240; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    var pk = function (L) { return L[Math.floor(Math.random() * L.length)]; }, from = pk(BTL_FROM);
+    var h = '<div class="mo-box bt-box"><div class="bt-note"><p class="bt-hi">To whoever finds this,</p><p>I buried my cache ' + esc(pk(BTL_WHY)) + '. It lies a few blocks under the ground, about <b>' + dist + " tiles to the " + dir + '</b> of where you read this. I marked it with a red X on the land itself.</p><p class="bt-sign">' + esc(pk(BTL_SIGN)) + "<br>— " + esc(from) + "</p></div>"
+      + '<p class="mo-sub">A red X now marks the Captain\'s Cache on your map, and an arrow at the edge of the screen points the way. Dig it up with any tool.</p>'
+      + '<div class="st-row"><button type="button" class="btn mo-start" data-story-close>Off to dig</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#e8d8a8"); $("sbxStoryBox").innerHTML = h; snd("rise");
   }
   function digTreasure(x, y) {
     var out = {}, add = function (L) { L.forEach(function (q) { out[q[0]] = (out[q[0]] || 0) + q[1]; }); };
     add(rollLoot("chest", world.bio[x], 2)); add(rollLoot("chest", world.bio[x], 1)); add([["ancientcoin", 2 + Math.floor(Math.random() * 3)]]);
+    var cache = !!(S.tmap && S.tmap.x === x && S.tmap.y === y && S.tmap.b);   // a bottle's Captain's Cache: sea treasure on top
+    if (cache) { add([["doubloon", 6 + Math.floor(Math.random() * 7)], ["pearl", 1 + Math.floor(Math.random() * 2)]]); if (Math.random() < 0.35) add([["blackpearl", 1]]); if (Math.random() < 0.45) add([["goldbar", 1]]); if (Math.random() < 0.3) add([["brass", 3]]); S.st.caches = (S.st.caches || 0) + 1; }
     var RARE = ["rec_jig", "rec_lullaby", "rec_caves", "rec_stomp", "goldfeather", "starshard", "trolltusk", "grapple", "blastkeg"].filter(function (k) { return ITEMS[k]; });
     if (Math.random() < 0.45) add([[RARE[Math.floor(Math.random() * RARE.length)], 1]]);
     var ks = Object.keys(out).filter(function (k) { return ITEMS[k]; }); if (!giveBatch) giveBatch = {};
@@ -8522,7 +8542,7 @@
     chips(x + 0.5, y + 0.5, "#f2c14e", 30, 9); flashes.push({ x: x + 0.5, y: y + 0.5, r: 4, t: 0.5, max: 0.5, c: "#f2c14e" });
     for (var q = 0; q < (reduce ? 8 : 20); q++) parts.push({ x: x + 0.5, y: y + 0.3, vx: (Math.random() - 0.5) * 5, vy: -4 - Math.random() * 4, g: 12, life: 0.9, max: 0.9, c: Math.random() < 0.5 ? "#f2c14e" : "#fff2b0", s: 2 + Math.random() * 2, glw: 1 });
     if (S.tmap && S.tmap.x === x && S.tmap.y === y) S.tmap = null; S.st.dug++;
-    popup("Treasure found", "Buried Treasure • " + ks.length + " kinds of loot", "#f2c14e", "✦"); snd("open", "Epic"); checkGoals(); save();
+    popup("Treasure found", (cache ? "Captain's Cache" : "Buried Treasure") + " • " + ks.length + " kinds of loot", "#f2c14e", "✦"); snd("open", "Epic"); checkGoals(); save();
   }
   // ---------- MAP PINS IN THE WORLD: every pin floats over its spot on the surface; the tracked pin (Track on the map) also gets an
   // arrow at the screen edge with its distance, and clears itself when you arrive. N drops a pin where you stand. ----------
@@ -8584,6 +8604,7 @@
     SPR.x_grap2 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#9aa0ac", b: "#d8dde4", c: "#5fa83f", d: "#c8925a", e: "#f2c14e" } };
     SPR.x_grap3 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#f2c14e", b: "#fff3c4", c: "#4ee6b4", d: "#8a5a32", e: "#ff8a3d" } };
     SPR.x_spore = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbcbbcbba...", "...abbbbbbbba...", "....aaaaaaaa....", "......dd........", "......dd..aaa...", "......dd.abcba..", ".....edde.aaa...", "....ee.dd..d....", "...e...dd..d....", "..e...edde.d....", ".....e.dd.edde..", "....e..ee..e.e..", "................"], p: { a: "#2a9a7a", b: "#4ee6b4", c: "#bfffe8", d: "#d8e8d0", e: "#3fd6c0" } };
+    SPR.x_bottle = { r: ["................", "......cc........", "......dd........", ".....abba.......", ".....abba.......", "....abbbba......", "...abbbbbba.....", "...abpppbba.....", "...abpqqpba.....", "...abpqqpba.....", "...abpppbba.....", "...abbbbbba.....", "...abbbbbba.....", "....aaaaaa......", "................", "................"], p: { a: "#2a6a5a", b: "#5ec8a8", c: "#a8743a", d: "#7a5230", p: "#e8d8a8", q: "#a8885a" } };
     SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
     SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
@@ -11742,7 +11763,7 @@
   function aWhale() { var f = 110 + Math.random() * 60, v = 0.018 * OPT.amb; tn(0, f, f * 1.5, 1.6, "sine", v); tn(1.4, f * 1.5, f * 0.9, 1.8, "sine", v * 0.8); }
   function aClank() { tn(0, 520 + Math.random() * 200, 300, 0.09, "square", 0.004 * OPT.amb); nz(0, 0.08, 0.012 * OPT.amb, 2500, "bandpass", 3); }
   function ambZone() {
-    if (OCS) return OCS.sea ? "sail" : OCS.diving && OCS.pl.y - OSEA > 1 ? "dive" : "shore";
+    if (OCS) return OCS.sea ? "sail" : OCS.diving && OCS.pl.y - OWL > 1 ? "dive" : "shore";
     if (HOME) return "farm";
     if (cave) { if (cave.bld) return "indoor"; if (isLairFloor(cave.f)) return "hollow"; if (cave.volc) return "cinder"; var b = caveB(); return b === 1 ? "cinder" : b === 2 ? "frostmine" : "mine"; }
     if (p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) return "under";
@@ -11760,7 +11781,7 @@
     else if (z === "hollow") { L.hum = 0.016; L.leaf = 0.004; ambEvery("dr", dt, 1, 3, function () { aDrip(false); }); var rigs = 0; try { rigs = (S.lair && S.lair.rig || []).filter(Boolean).length; } catch (e) {} if (rigs) { L.machine = 0.006 + 0.004 * rigs; ambEvery("ck", dt, 0.9, 2.2, aClank); } }
     else if (z === "sail") { L.air = 0.02; F.air = 900; if (!night && !rain) ambEvery("gl", dt, 4, 10, aGull); ambEvery("hc", dt, 3, 7, aCreak); }
     else if (z === "shore") { L.air = 0.012; if (!night && !rain) ambEvery("gl", dt, 6, 14, aGull); }
-    else if (z === "dive") { var dep = OCS.pl.y - OSEA; L.hum = 0.014 + Math.min(0.012, dep / 4000); ambEvery("bb", dt, 0.6, 2.4, aBubble); if (dep > 30) ambEvery("wh", dt, 25, 55, aWhale); }
+    else if (z === "dive") { var dep = OCS.pl.y - OWL; L.hum = 0.014 + Math.min(0.012, dep / 4000); ambEvery("bb", dt, 0.6, 2.4, aBubble); if (dep > 30) ambEvery("wh", dt, 25, 55, aWhale); }
     if (rain) { L.leaf *= 0.5; L.buzz = 0; }
     for (var n in L) ambBed(n, L[n] * k, F[n]);
   }
@@ -11769,7 +11790,7 @@
     if (!ok) { if (AMBS.wv && ac) AMBS.wv.g.gain.setTargetAtTime(0, ac.currentTime, 0.3); for (var bn in AMBB.beds) AMBB.beds[bn].g.gain.setTargetAtTime(0, ac ? ac.currentTime : 0, 0.3); return; }
     if (OPT.amb > 0) tickAmbBeds(dt); else for (var bn2 in AMBB.beds) AMBB.beds[bn2].g.gain.setTargetAtTime(0, ac.currentTime, 0.3);
     var nowS = performance.now() / 1000, surge = 0.55 + 0.45 * Math.pow(Math.sin(nowS * 0.48), 2) * (0.7 + 0.3 * Math.sin(nowS * 0.13)), st = wxStorm(), wl = 0, wf = 600;
-    if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OSEA : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
+    if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OWL : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
     ambWave(wl * surge * OPT.fx, wf);
     var night = daylight(S.time) < 0.6, swampTop = !cave && !OCS && (HOME || (wxBio() === 0 && p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4));
     if (night && swampTop && wxN() < 0.5) {
@@ -15964,7 +15985,7 @@
   // sandbox-ocean.js (SbxOcean). OCS is the scene while you are there: { site, m (the generated map), t (its tiles, with your changes), pl (you),
   // mobs, ... }. Mode "dock" = walking Croaker's Pier; "dive" = swimming. Boat: S.oc.boat = { p: { part: 1 }, done }, built at the pier slip like the
   // motorcycle. OCS.sea is the sea chart when you are sailing (see "SAILING" below). S.oc keeps what lasts: boat parts, opened chests, broken tiles.
-  var SO = typeof SbxOcean !== "undefined" ? SbxOcean : null, OT = SO ? SO.T : {}, OTD = SO ? SO.TD : [], OCS = null, OCW = SO ? SO.W : 0, OCH = SO ? SO.H : 0, OSEA = SO ? SO.SEA : 14;
+  var SO = typeof SbxOcean !== "undefined" ? SbxOcean : null, OT = SO ? SO.T : {}, OTD = SO ? SO.TD : [], OCS = null, OCW = SO ? SO.W : 0, OCH = SO ? SO.H : 0, OSEA = SO ? SO.SEA : 14, OWL = OSEA;   // OWL: the waterline right now (REAL TIDES move it at the pier)
   var OTANK = [0, 45, 90, 160, 260], OBOAT = (typeof SbxExtra !== "undefined" && SbxExtra.OCEAN && SbxExtra.OCEAN.BOAT) || [];
   var OBOAT_HINT = {
     boat_keel: "Hidden in Croaker's Sea Chest on the pier.", boat_hull: "Sunken pirate wrecks and sea chests.", boat_mast: "Sunken pirate wrecks and sea chests.",
@@ -16008,8 +16029,89 @@
     else if (tier === 2) { add("pearl", 1, 2, 0.7); add("doubloon", 2, 5); add("brass", 2, 4, 0.8); add("blackpearl", 1, 1, 0.12); add("jellygel", 1, 2, 0.5); add("ironingot", 2, 3, 0.5); add("canvas", 2, 3, 0.4); add("copperwire", 1, 2, 0.3); add("lampoil", 1, 2, 0.3); }
     else { add("pearl", 2, 3); add("blackpearl", 1, 1, 0.3); add("doubloon", 4, 8); add("ironingot", 3, 5, 0.7); add("seaglass", 3, 5, 0.7); add("lurebulb", 1, 1, 0.3); add("goldbar", 1, 1, 0.15); add("brass", 2, 5); }
     if (c.kind === "hoard") { add("doubloon", 8, 14); add("blackpearl", 1, 2, 0.6); add("goldbar", 1, 2, 0.5); }
+    if (c.kind === "vault") { add("doubloon", 10, 18); add("pearl", 2, 4); add("blackpearl", 1, 2); add("goldbar", 1, 2, 0.75); add("starshard", 1, 1, 0.4); add("x_bottle", 1, 1, 0.5); }
     var bp = ocBoatLoot(c); if (bp) L.push(bp);
     return L;
+  }
+
+
+  // ---------- REAL TIDES at Croaker's Pier ----------
+  // The sea at the pier rises and falls twice a game day. For a couple of days each week (around days 6-7 of every 7) the SPRING TIDE runs
+  // bigger: its lows drain the Tide Cave right down to the Spring-Tide Vault, and its highs wash over the pier planks. OSEA stays the map's
+  // mean sea level (the pier, the beach, the dive ladder); OWL is the waterline right now, in rows (bigger = lower water). Dive sites out at
+  // sea have no tides. Low water uncovers the tide flats under the pier: you can walk them, and every low tide leaves new finds in the pools.
+  var TIDE = { hudT: 0, info: null, tpT: 0, floodT: 6, saidHi: 0, saidLo: 0, saidV: 0 };
+  function tideDayF() { return (S.days | 0) + S.time / CYCLE; }
+  function tideSpring(df) { var w = ((df % 7) + 7) % 7, d = Math.abs(w - 6.5); d = Math.min(d, 7 - d); var k = clamp(1 - d / 1.7, 0, 1); return k * k * (3 - 2 * k); }
+  function tideOff(df) {   // how far below mean sea level the water stands (rows): normal tides -0.7..+3.5, spring tides -1.4..+8.6
+    var sf = tideSpring(df), mid = 1.4 + 2.2 * sf, amp = 2.1 + 2.9 * sf;
+    return mid + amp * Math.cos(df * Math.PI * 4 - Math.PI * 2 / 3);   // lows at about 8 in the morning and 8 at night
+  }
+  var VAULT_OPEN = 7.6;   // the vault door unseals when the water is this far down (only spring lows get there)
+  function springIdx() { return Math.floor((tideDayF() + 0.5) / 7); }
+  function tideInfo() {   // for the HUD: where the tide is going, and when it turns
+    var df = tideDayF(), off = tideOff(df), d1 = tideOff(df + 0.004) - off, sf = tideSpring(df), next = null;
+    for (var q = 1; q <= 260; q++) { var a = tideOff(df + q / 480), b = tideOff(df + (q + 1) / 480); if ((b - a) * d1 < 0) { next = { lo: d1 > 0, h: q / 20 }; break; } }
+    var k = off > (sf > 0.45 ? 5 : 2.6) ? "Low tide" : off < (sf > 0.45 ? -0.6 : 0) ? "High tide" : d1 > 0 ? "Falling" : "Rising";
+    return { off: off, sf: sf, k: k, fall: d1 > 0, next: next, vault: off >= VAULT_OPEN, awash: OSEA + off < OSEA - 1 + 0.02 };
+  }
+  function tideStep(dt) {   // called every frame at the pier
+    var sc = OCS; if (!sc) return; if (!sc.main) { OWL = OSEA; return; }
+    var off = tideOff(tideDayF()); OWL = OSEA + off;
+    TIDE.hudT -= dt; if (TIDE.hudT <= 0 || !TIDE.info) { TIDE.hudT = 1; TIDE.info = tideInfo(); var mm = document.querySelector(".sbx-mini"), sr = stageEl.getBoundingClientRect(); TIDE.top = 76; if (mm && mm.offsetParent) { var mr = mm.getBoundingClientRect(); if (mr.right > sr.right - 200) TIDE.top = Math.round(mr.bottom - sr.top + 8); } }   // the tide clock sits under the mini-map
+    var I = TIDE.info;
+    if (I.vault && !TIDE.saidV) { TIDE.saidV = 1; toast("Spring low tide! The sea has drained right out of the Tide Cave. The barnacle door at the bottom is open...", "#7af0ff"); }
+    else if (!I.vault) TIDE.saidV = 0;
+    if (off > 2.6 && !TIDE.saidLo) { TIDE.saidLo = 1; if (!S.st.tidetip) { S.st.tidetip = 1; toast("Low tide: the flats under the pier are out of the water. Climb down off the beach end of the pier and see what the sea left behind.", "#7af0ff"); } }
+    else if (off < 1.6) TIDE.saidLo = 0;
+    if (off > 2.6) tidePools();
+    if (OWL < OSEA - 0.98) {   // the pier is awash: fish flop onto the planks
+      if (!TIDE.saidHi) { TIDE.saidHi = 1; toast("High spring tide! The sea is washing over the pier, and fish are flopping onto the planks.", "#7af0ff"); }
+      TIDE.floodT -= dt; if (TIDE.floodT <= 0 && !sc.diving) { TIDE.floodT = 14 + Math.random() * 16; var fx0 = clamp(Math.round(sc.pl.x + (Math.random() - 0.5) * 16), sc.m.pier.x0 + 1, sc.m.pier.x1 - 1);
+        if (fx0 !== SO.DIVEX) { dropAt(Math.random() < 0.12 ? "kelpsnapper" : Math.random() < 0.5 ? "brinemackerel" : "bogminnow", 1, fx0, OSEA - 2); ocFx(10, fx0 + 0.5, OSEA - 1.2, "#bff4ff", { sp: 2.5, g: 8 }); thud(520, 0.03); } }
+    } else TIDE.saidHi = 0;
+  }
+  function tidePools() {   // each low tide leaves a few new finds on the flats (and in the Tide Cave), once
+    var o = ocS(), ti = Math.floor(tideDayF() * 2 + 1 / 3 + 0.5); if (o.tpi === ti) return; o.tpi = ti;
+    var L = [["shell", 30], ["kelp", 18], ["seaglass", 16], ["pebble", 10], ["coral", 10], ["pearl", 4], ["doubloon", 5]], n = 4 + Math.floor(Math.random() * 4), tries = 0, put = 0;
+    while (put < n && tries++ < 60) {
+      var x = 4 + Math.floor(Math.random() * 26), y; if (x === SO.DIVEX) continue;
+      for (y = OSEA + 1; y < OSEA + 12; y++) if (ocSolid(x, y) && !ocSolid(x, y - 1)) break;
+      if (y >= OSEA + 12 || y > OWL + 0.4) continue;
+      var tot = 0, r, k = L[0][0]; L.forEach(function (q) { tot += q[1]; }); r = Math.random() * tot; for (var j = 0; j < L.length; j++) { r -= L[j][1]; if (r <= 0) { k = L[j][0]; break; } }
+      if (!ITEMS[k]) continue; dropAt(k, 1, x, y - 1); put++;
+    }
+    if ((o.btl | 0) !== ocToday() && Math.random() < 0.55) { var bx = 12 + Math.floor(Math.random() * 14), by; for (by = OSEA + 1; by < OSEA + 12; by++) if (ocSolid(bx, by) && !ocSolid(bx, by - 1)) break; if (by < OSEA + 12 && by <= OWL + 0.4 && bx !== SO.DIVEX) { o.btl = ocToday(); dropAt("x_bottle", 1, bx, by - 1); } }   // MESSAGE IN A BOTTLE
+  }
+  function tideCarve(t, m) {   // the Tide Cave in the shore under the beach, with the Spring-Tide Vault behind a barnacle door at its bottom
+    var set = function (x, y, id) { t[y * OCW + x] = id; }, x, y;
+    for (y = 15; y <= 18; y++) for (x = 4; x <= 11; x++) { var e = ((x - 7.2) * (x - 7.2)) / 12 + ((y - 16.6) * (y - 16.6)) / 3.2; if (e <= 1.05 || x >= 9) set(x, y, OT.WATER); }
+    for (y = 19; y <= 21; y++) for (x = 9; x <= 10; x++) set(x, y, OT.WATER);
+    for (y = 20; y <= 21; y++) for (x = 2; x <= 7; x++) set(x, y, OT.WATER);
+    set(8, 20, OT.VDOOR); set(8, 21, OT.VDOOR); set(4, 18, OT.GLOW); set(10, 14, OT.GLOW); set(2, 19, OT.GLOW);
+    set(5, 19, OT.CLAM); m.clams.push({ x: 5, y: 19 }); set(3, 21, OT.CHEST);
+    m.chests.push({ x: 3, y: 21, tier: 3, kind: "vault", id: "vault" }); m.tcave = { x0: 2, x1: 11, y0: 15, y1: 21, door: 8 };
+  }
+  function vaultInside(x) { return x < 8.4; }
+  function vaultOpen() { return OCS && OCS.main && (OWL - OSEA >= VAULT_OPEN || (OCS.pl && vaultInside(OCS.pl.x) && OCS.pl.y > 19)); }
+  function ocStandY(x, y0) { for (var y = y0; y < OCH - 3; y += 0.05) if (!ocBox(x, y) && ocBox(x, y + 0.06)) return y; return y0; }
+  function tideDown() {   // from the beach end of the pier, down onto the flats
+    var sc = OCS, pl = sc.pl; if (trans) return; stopInput(); sc.diving = true; sc.mode = "dive"; pl.x = 13.5; pl.y = ocStandY(pl.x, 15.6); pl.vx = pl.vy = 0; pl.on = true; pl.ang = 0; thud(220, 0.05);
+    S.st.tideflats = (S.st.tideflats || 0) + 1;
+  }
+  function tideUp() {   // back up onto the pier from the flats or the Tide Cave
+    var sc = OCS, pl = sc.pl; if (trans) return; stopInput(); trans = { t: 0, done: false, mid: function () { sc.diving = false; sc.mode = "dock"; sc.land = false; pl.x = clamp(pl.x < 12 ? 12.5 : Math.abs(pl.x - (SO.DIVEX + 0.5)) < 1.2 ? SO.DIVEX + 2 : pl.x, 1.5, sc.m.pier.x1); pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; pl.ang = 0; sc.o2 = ocO2Max(); cam.x = pl.x; cam.y = pl.y - 3; } };
+  }
+  function drawTideHud(g) {   // a small tide clock under the top bar: the next 24 hours of tide, where the water is now, and what it is doing
+    var sc = OCS; if (!sc || !sc.main || !TIDE.info) return; var I = TIDE.info, h = 44, y = TIDE.top || 76, df = tideDayF();
+    var lbl = I.vault ? "Spring low · the vault is open!" : (I.sf > 0.45 ? "Spring tide · " : "") + I.k + (I.next ? " · " + (I.next.lo ? "low" : "high") + " in " + (I.next.h < 1 ? "<1" : Math.round(I.next.h)) + " h" : "");
+    g.save(); g.font = "800 11px Nunito, system-ui, sans-serif"; var w = Math.max(150, Math.ceil(g.measureText(lbl).width) + 22), x = vw - w - 12;
+    g.fillStyle = "rgba(6,20,34,.74)"; mrr(g, x, y, w, h, 10); g.fill();
+    g.textAlign = "left"; g.fillStyle = I.vault ? "#7af0ff" : "#e8fbff"; g.fillText(lbl, x + 11, y + 15);
+    g.beginPath(); for (var q = 0; q <= 48; q++) { var off = tideOff(df + q / 48), px = x + 10 + (w - 20) * q / 48, py = y + 36 - clamp((3.5 - off) / 5, -0.3, 1.2) * 14; if (q) g.lineTo(px, py); else g.moveTo(px, py); }
+    g.strokeStyle = "rgba(122,240,255,.8)"; g.lineWidth = 2; g.stroke();
+    var oy0 = y + 36 - clamp((3.5 - I.off) / 5, -0.3, 1.2) * 14; g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(x + 10, oy0, 3.5, 0, 6.2832); g.fill();
+    g.restore();
   }
 
   // ---------- the pier gate near camp: the way in ----------
@@ -16039,14 +16141,16 @@
   function ocSeed() { return (((S.seed | 0) * 7 + 13) >>> 0); }
   function ocBuild(site, fromGate) {   // site: null = Croaker's Pier; { seed, name } = a dive site from the boat
     var main = !site, m = SO.gen(main ? ocSeed() : site.seed, main), t = new Uint8Array(m.t), o = ocS();
+    if (main) tideCarve(t, m);   // REAL TIDES: the Tide Cave and the Spring-Tide Vault
     if (main) Object.keys(o.ed).forEach(function (k) { var q = k.split(","), x = +q[0], y = +q[1]; if (x > 0 && x < OCW - 2 && y > 0 && y < OCH - 2) t[y * OCW + x] = o.ed[k] | 0; });
     m.chests.forEach(function (c) {   // chests you opened stay open until they refill
       var od = o.open[(main ? "" : site.seed + ":") + c.id], i = c.y * OCW + c.x;
+      if (c.kind === "vault") { if (o.vault === springIdx()) t[i] = OT.OPEN; return; }   // the vault refills once each spring tide
       if (od !== undefined && (c.first || c.kind === "hoard" || c.kind === "wreck" || ocToday() - od < 3)) t[i] = OT.OPEN;
     });
     OCS = { m: m, t: t, main: main, site: site, mode: "dock", diving: false, mobs: [], amb: [], shots: [], fx: [], bub: [], spawnT: 3, cool: 0, mineP: null, t0: performance.now(), mt: 0, o2: ocO2Max(), warnO2: 0, warnPr: 0,
       pl: { x: m.spawn.x, y: m.spawn.y, vx: 0, vy: 0, face: 1, ang: 0, ph: 0, on: true, kx: 0, ky: 0, shock: 0, splash: 0 }, zone: 0, depthMax: 0, btn: [], btns: [], msg: "", hatch: 0 };
-    var sc = OCS; sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5;
+    var sc = OCS; sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5; OWL = main ? OSEA + tideOff(tideDayF()) : OSEA; TIDE.info = null;
     if (!main) { sc.diving = true; sc.mode = "dive"; sc.pl.on = false; }
     m.mobs.forEach(function (q, i) {
       var id = (main ? "" : site.seed + ":") + "m" + i; if (o.dead[id] !== undefined && ocToday() - o.dead[id] < 2) return;
@@ -16062,22 +16166,22 @@
   }
   function ocT(x, y) { return x < 0 || x >= OCW || y < 0 || y >= OCH ? OT.BED : OCS.t[y * OCW + x]; }
   function ocSetT(x, y, id) { if (x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) return; OCS.t[y * OCW + x] = id; if (OCS.main) { var o = ocS(), k = x + "," + y; if (OCS.m.t[y * OCW + x] === id) delete o.ed[k]; else if (Object.keys(o.ed).length < 3500) o.ed[k] = id; } }
-  function ocSolid(x, y) { var id = ocT(x, y), d = OTD[id]; if (y < OSEA && (id === OT.CHEST || id === OT.OPEN)) return false; return !!d && d.solid; }   // chests on the dock do not block the walkway
+  function ocSolid(x, y) { var id = ocT(x, y), d = OTD[id]; if (y < OSEA && (id === OT.CHEST || id === OT.OPEN)) return false; if (id === OT.VDOOR && vaultOpen()) return false; return !!d && d.solid; }   // chests on the dock do not block the walkway
   function ocBox(x, y) {   // does a body with its feet at (x, y) overlap anything solid?
     var x0 = Math.floor(x - 0.27), x1 = Math.floor(x + 0.27), y0 = Math.floor(y - 0.88), y1 = Math.floor(y - 0.001);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (ocSolid(xx, yy)) return true;
     return false;
   }
-  function ocWet(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return Math.floor(y) >= OSEA && id !== OT.AIR && !OTD[id].solid; }   // water, air pockets and plants all count as water
-  function ocAirAt(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return id === OT.AIRP || (id === OT.AIR) || Math.floor(y) < OSEA; }
-  function ocDepth(y) { return Math.max(0, y - OSEA); }
+  function ocWet(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return y >= OWL && id !== OT.AIRP && !OTD[id].solid; }   // water, air pockets and plants all count as water
+  function ocAirAt(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return id === OT.AIRP || y < OWL; }
+  function ocDepth(y) { return Math.max(0, y - OWL); }
   function ocFx(n, x, y, col, o) {
     for (var i = 0; i < n; i++) { var a = Math.random() * 6.2832, sp = (o && o.sp || 1.5) * (0.4 + Math.random()); parts.push({ x: x + (Math.random() - 0.5) * 0.3, y: y + (Math.random() - 0.5) * 0.3, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (o && o.up || 0), g: (o && o.g != null ? o.g : -1.2), life: 0.5 + Math.random() * 0.6, max: 1.1, c: col, s: 2 + Math.random() * 2.5 }); }
   }
   function ocBubbles(x, y, n) { for (var i = 0; i < n; i++) OCS.bub.push({ x: x + (Math.random() - 0.5) * 0.5, y: y, vy: -(1.2 + Math.random() * 1.5), r: 0.06 + Math.random() * 0.1, ph: Math.random() * 6.28, life: 2.5 + Math.random() * 2 }); }
   function ocSplash(x, big) {
-    waterSplash(x, OSEA - 0.02, big ? 2.4 : 1.2);
-    ocBubbles(x, OSEA + 0.4, big ? 12 : 5); try { if (fxReady()) nz(0, big ? 0.35 : 0.2, big ? 0.14 : 0.07, 1100, "bandpass", 0.7); } catch (e) {}
+    waterSplash(x, OWL - 0.02, big ? 2.4 : 1.2);
+    ocBubbles(x, OWL + 0.4, big ? 12 : 5); try { if (fxReady()) nz(0, big ? 0.35 : 0.2, big ? 0.14 : 0.07, 1100, "bandpass", 0.7); } catch (e) {}
   }
 
   // ---------- the water-bound HUD: oxygen bar ----------
@@ -16091,14 +16195,15 @@
 
   // ---------- update: walking the pier, swimming, air, pressure ----------
   function ocUpdate(dt) {
-    var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); tickWeather(dt); sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt); if (p.land) p.land = Math.max(0, p.land - dt * 2.2);   // FIX: a quest cheer no longer gets stuck (arms up) after a swim
+    var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); tickWeather(dt); tideStep(dt); sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt); if (p.land) p.land = Math.max(0, p.land - dt * 2.2);   // FIX: a quest cheer no longer gets stuck (arms up) after a swim
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j || performance.now() - OCJ.t < 160;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
     if (hurtT > 0) { dx *= 0.5; }
     var ssp = ocSwimSp(), shock = pl.shock > 0 ? 0.45 : 1; pl.shock = Math.max(0, pl.shock - dt);
     var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
     if (!sc.diving) {   // walking Croaker's Pier: gravity, a hop, and railings at both ends
-      var wsp = 5.2 * (fx("speed") ? 1.25 : 1);
+      var wsp = 5.2 * (fx("speed") ? 1.25 : 1) * (OWL < OSEA - 0.98 ? 0.72 : 1);   // wading along a flooded pier is slower
+      if (OWL < OSEA - 0.98 && Math.abs(pl.vx) > 1 && Math.random() < dt * 9) ocFx(1, pl.x - pl.face * 0.2, OWL, "#d8f8ff", { sp: 1.6, g: 9 });
       pl.vx = approach(pl.vx, (dx > 0.2 ? 1 : dx < -0.2 ? -1 : 0) * wsp, 60 * dt); if (dx > 0.2) pl.face = 1; else if (dx < -0.2) pl.face = -1;
       if (up && pl.on) { pl.vy = -9.2; pl.on = false; thud(260, 0.04); }
       for (i = 0; i < sub; i++) {
@@ -16110,22 +16215,22 @@
       pl.ang += (0 - pl.ang) * Math.min(1, dt * 8); pl.ph += Math.abs(pl.vx) * dt;
       if (sc.hatch > 0) sc.hatch -= dt;
     } else {   // swimming
-      var inW = ocWet(pl.x, pl.y - 0.45), nearTop = pl.y - 0.45 < OSEA + 0.6;
+      var inW = ocWet(pl.x, pl.y - 0.45), nearTop = pl.y - 0.45 < OWL + 0.6, grd = !inW && ocBox(pl.x, pl.y + 0.08); sc.land = !inW; sc.landOn = grd;
       var tx = dx * ssp, ty = dy * ssp; if (up && !dy) ty = -ssp;
       var len = Math.sqrt(dx * dx + dy * dy); if (len > 1) { tx /= len; ty /= len; }
       var acc = (inW ? 20 : 4) * shock; pl.vx = approach(pl.vx, tx * shock, acc * dt); pl.vy = approach(pl.vy, inW ? ty * shock + (Math.abs(ty) < 0.1 ? 0.06 : 0) : pl.vy, acc * dt);
-      if (!inW) pl.vy += 26 * dt;   // out of the water you fall back in
+      if (!inW) { pl.vy += 26 * dt; pl.vx = approach(pl.vx, (dx > 0.2 ? 1 : dx < -0.2 ? -1 : 0) * 5.2 * (fx("speed") ? 1.25 : 1), 50 * dt); if (up && grd && pl.vy >= 0) { pl.vy = -9.2; thud(260, 0.04); } }   // out of the water you fall back in, or walk (the tide flats)
       pl.kx = (pl.kx || 0) * Math.max(0, 1 - 7 * dt); pl.ky = (pl.ky || 0) * Math.max(0, 1 - 7 * dt);
       for (i = 0; i < sub; i++) {
-        var nx2 = pl.x + (pl.vx + pl.kx) * h; if (!ocBox(nx2, pl.y)) pl.x = nx2; else { pl.vx = 0; pl.kx = 0; }
+        var nx2 = pl.x + (pl.vx + pl.kx) * h; if (!ocBox(nx2, pl.y)) pl.x = nx2; else if (!inW && grd && !ocBox(nx2, pl.y - 1.05) && !ocBox(pl.x, pl.y - 1.05)) { pl.y -= 1.05; pl.x = nx2; } else { pl.vx = 0; pl.kx = 0; }   // on the tide flats you step up one block
         var ny2 = pl.y + (pl.vy + pl.ky) * h; if (!ocBox(pl.x, ny2)) pl.y = ny2; else { pl.vy = 0; pl.ky = 0; }
         pl.x = clamp(pl.x, 1.3, OCW - 3.3);
       }
       var spd = Math.sqrt(pl.vx * pl.vx + pl.vy * pl.vy); if (Math.abs(pl.vx) > 0.4) pl.face = pl.vx < 0 ? -1 : 1;
-      var wantA = spd > 0.6 ? clamp(Math.atan2(pl.vy, Math.abs(pl.vx) + 0.001) * 0.9, -1.2, 1.2) * pl.face : 0.05 * pl.face; pl.ang += (wantA - pl.ang) * Math.min(1, dt * 7); pl.ph += spd * dt * 1.4 + dt * 1.5;
+      var wantA = !inW ? 0 : spd > 0.6 ? clamp(Math.atan2(pl.vy, Math.abs(pl.vx) + 0.001) * 0.9, -1.2, 1.2) * pl.face : 0.05 * pl.face; pl.ang += (wantA - pl.ang) * Math.min(1, dt * 7); pl.ph += spd * dt * 1.4 + dt * 1.5;
       if (inW && Math.random() < dt * (spd > 1 ? 1.4 : 0.5)) ocBubbles(pl.x + pl.face * 0.2, pl.y - 0.85, 1);
-      if (pl.y - 0.45 < OSEA - 0.2 && pl.vy < -2 && !pl._out) { pl._out = true; ocSplash(pl.x, false); } else if (pl.y - 0.45 > OSEA + 0.3) pl._out = false;
-      pl.on = false;
+      if (pl.y - 0.45 < OWL - 0.2 && pl.vy < -2 && !pl._out) { pl._out = true; ocSplash(pl.x, false); } else if (pl.y - 0.45 > OWL + 0.3) { if (pl._out && pl.vy > 2) ocSplash(pl.x, false); pl._out = false; }
+      pl.on = grd;
     }
     p.walk += Math.abs(pl.vx) * dt; p.vx = Math.abs(pl.vx); p.face = pl.face;
     // ----- air and pressure -----
@@ -16162,8 +16267,8 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= OCW || aim.ty < 0 || aim.ty >= OCH) aim.tx = -1;
     ocMobs(dt); ocTool(dt); ocAmbient(dt); ocSpawn(dt); ocShots(dt);
     // particles, bubbles, texts
-    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } var g0 = q.g !== undefined ? q.g : 22; q.vy += g0 * dt; if (g0 > 5 && q.y > OSEA) { q.vy *= 0.9; q.vx *= 0.96; } q.x += q.vx * dt; q.y += q.vy * dt; }
-    for (k = sc.bub.length - 1; k >= 0; k--) { var b = sc.bub[k]; b.life -= dt; b.y += b.vy * dt; b.x += Math.sin(sc.mt * 2 + b.ph) * dt * 0.25; if (b.life <= 0 || b.y < OSEA - 0.05) sc.bub.splice(k, 1); }
+    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } var g0 = q.g !== undefined ? q.g : 22; q.vy += g0 * dt; if (g0 > 5 && q.y > OWL) { q.vy *= 0.9; q.vx *= 0.96; } q.x += q.vx * dt; q.y += q.vy * dt; }
+    for (k = sc.bub.length - 1; k >= 0; k--) { var b = sc.bub[k]; b.life -= dt; b.y += b.vy * dt; b.x += Math.sin(sc.mt * 2 + b.ph) * dt * 0.25; if (b.life <= 0 || b.y < OWL - 0.05) sc.bub.splice(k, 1); }
     for (var tI = texts.length - 1; tI >= 0; tI--) { texts[tI].life -= dt; texts[tI].y -= dt * 0.9; if (texts[tI].life <= 0) texts.splice(tI, 1); }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
     hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); }
@@ -16190,7 +16295,7 @@
   function ocMove(m, dt) {
     var vx = m.vx + m.kx, vy = m.vy + m.ky, nx = m.x + vx * dt, ny = m.y + vy * dt;
     if (ocFree(nx, m.y, m.r) && nx > 1.5 && nx < OCW - 3) m.x = nx; else { m.vx *= -0.4; m.kx = 0; m.tgx = m.x + (Math.random() - 0.5) * 8; }
-    if (ocFree(m.x, ny, m.r) && ny > OSEA + 0.7 && ny < OCH - 3) m.y = ny; else { m.vy *= -0.4; m.ky = 0; m.tgy = m.y + (Math.random() - 0.5) * 6; }
+    if (ocFree(m.x, ny, m.r) && ny > OWL + 0.7 && ny < OCH - 3) m.y = ny; else { m.vy *= -0.4; m.ky = 0; m.tgy = m.y + (Math.random() - 0.5) * 6; }
     m.kx *= Math.max(0, 1 - 6 * dt); m.ky *= Math.max(0, 1 - 6 * dt);
   }
   function ocSteer(m, tx, ty, sp, ac, dt) {
@@ -16284,7 +16389,7 @@
     for (var tries = 0; tries < 12; tries++) {
       var a = Math.random() * 6.2832, r = 15 + Math.random() * 10, x = pl.x + Math.cos(a) * r, y = pl.y + Math.sin(a) * r * 0.7;
       if (Math.abs(x - pl.x) < vw / ts / 2 + 1.5 && Math.abs(y - pl.y) < vh / ts / 2 + 1.5) continue;
-      if (x < 4 || x > OCW - 5 || y < OSEA + 6 || y > OCH - 5 || !ocWet(x, y) || !ocFree(x, y, 0.6)) continue;
+      if (x < 4 || x > OCW - 5 || y < OWL + 6 || y > OCH - 5 || !ocWet(x, y) || !ocFree(x, y, 0.6)) continue;
       var zz = SO.zoneOf(ocDepth(y)), tb = OSPAWN[zz], tot = 0, k; tb.forEach(function (e) { tot += e[1]; }); var rr = Math.random() * tot; k = tb[0][0]; for (var q = 0; q < tb.length; q++) { rr -= tb[q][1]; if (rr <= 0) { k = tb[q][0]; break; } }
       var n = k === "snapjaw" ? 2 + Math.floor(Math.random() * 3) : 1; for (var j = 0; j < n; j++) { var mb = ocNewMob(k, x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 2); if (ocFree(mb.x, mb.y, mb.r)) sc.mobs.push(mb); }
       return;
@@ -16302,7 +16407,7 @@
       var spawn = function (k, x, y, extra) { var a = Object.assign({ k: k, x: x, y: y, vx: 0, vy: 0, face: Math.random() < 0.5 ? -1 : 1, t: Math.random() * 6, ph: Math.random() * 6.28, boop: 0 }, extra || {}); sc.amb.push(a); return a; };
       for (var tries = 0; tries < 10; tries++) {
         var ang = Math.random() * 6.2832, r = 11 + Math.random() * 12, x = pl.x + Math.cos(ang) * r, y = pl.y + Math.sin(ang) * r * 0.65;
-        if (x < 4 || x > OCW - 5 || y < OSEA + 2 || y > OCH - 5 || !ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue;
+        if (x < 4 || x > OCW - 5 || y < OWL + 2 || y > OCH - 5 || !ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue;
         var z = SO.zoneOf(ocDepth(y)), roll = Math.random();
         if (z <= 1 && cnt.fish < 28 && roll < 0.5) { var col = OFISH[Math.floor(Math.random() * OFISH.length)], n = 5 + Math.floor(Math.random() * 5), sch = { x: x, y: y, tx: x, ty: y, t: 0 }; for (var q = 0; q < n; q++) spawn("fish", x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 1.5, { col: col, sch: sch, sz: 0.8 + Math.random() * 0.4 }); break; }
         else if (z <= 1 && cnt.turtle < 2 && roll < 0.62) { spawn("turtle", x, y); break; }
@@ -16328,7 +16433,7 @@
       else if (a.k === "tjelly") { a.vy = Math.sin(a.t * 1.8 + a.ph) * 0.8 - 0.1; a.vx = Math.sin(a.t * 0.5 + a.ph) * 0.4; }
       else if (a.k === "crab") { a.sc = (a.sc || 0) - dt; if (a.sc <= 0) { a.sc = 1 + Math.random() * 3; a.vx = (Math.random() < 0.3 ? 0 : (Math.random() < 0.5 ? -1 : 1)) * 1.1; } if (d < 4) { a.vx = dx > 0 ? 2.2 : -2.2; } var fl = ocFloorY(a.x, a.y); if (fl) a.y = fl - 0.3; a.face = a.vx < 0 ? -1 : a.vx > 0 ? 1 : a.face; }
       var nx = a.x + a.vx * dt, ny = a.y + a.vy * dt; if (!ocSolid(Math.floor(nx), Math.floor(a.y)) && (a.k === "crab" || ocWet(nx, a.y))) a.x = nx; else a.vx *= -1;
-      if (a.k !== "crab") { if (!ocSolid(Math.floor(a.x), Math.floor(ny)) && ocWet(a.x, ny) && ny > OSEA + 1) a.y = ny; else a.vy *= -1; }
+      if (a.k !== "crab") { if (!ocSolid(Math.floor(a.x), Math.floor(ny)) && ocWet(a.x, ny) && ny > OWL + 1) a.y = ny; else a.vy *= -1; }
     }
   }
   function ocFloorY(x, y0) {   // the row of the first solid tile at or below y0 in this column (the sea floor), or 0
@@ -16409,7 +16514,8 @@
     var L = ocLoot(c); sc.t[c.y * OCW + c.x] = OT.OPEN; o.open[key] = ocToday(); S.st.occhests = (S.st.occhests || 0) + 1;
     L.forEach(function (q) { give(q[0], q[1], c.x, c.y - 0.3); });
     ocFx(22, c.x + 0.5, c.y + 0.3, "#ffd23f", { sp: 5, g: -2, up: 2 }); ocBubbles(c.x + 0.5, c.y, 8); snd("open", c.tier >= 2 ? "Epic" : "Rare");
-    var nm = SO.CHEST_NAMES[Math.min(3, c.tier || 0)]; if (c.kind === "hoard") nm = "Gillbeard's Hoard"; if (c.kind === "pier") nm = "Croaker's Sea Chest";
+    if (c.kind === "vault") { o.vault = springIdx(); S.st.vaults = (S.st.vaults || 0) + 1; shake = Math.max(shake, 0.4); }
+    var nm = SO.CHEST_NAMES[Math.min(3, c.tier || 0)]; if (c.kind === "hoard") nm = "Gillbeard's Hoard"; if (c.kind === "vault") nm = "The Spring-Tide Vault"; if (c.kind === "pier") nm = "Croaker's Sea Chest";
     popup("Treasure found", nm + " • " + L.length + " kinds of loot", "#f2c14e", "✦"); checkGoals(); save();
   }
 
@@ -16423,8 +16529,11 @@
       if (Math.abs(pl.x - (P.dive + 0.5)) < 2.6) A.push({ label: "Dive in", ax: P.dive + 0.5, ay: OSEA - 2.6, fn: ocDiveIn });
       if (pl.x > P.slip - 5) A.push({ label: ocS().boat.done ? "Set sail" : "Work on the boat", ax: P.x1 + 2, ay: OSEA - 3.6, fn: function () { if (ocS().boat.done) ocSetSail(); else openBoat(); } });
       if (pl.x < 5) A.push({ label: "Back to the swamp", ax: 3, ay: OSEA - 3, fn: ocLeave });
+      if (OWL > OSEA + 1.7 && pl.x > 8 && pl.x < 16) A.push({ label: "Climb down to the tide flats", ax: 12.5, ay: OSEA - 2.6, fn: tideDown });   // REAL TIDES
     }
-    if (sc.diving && pl.y - 0.45 < OSEA + 1.6) {
+    if (sc.main && sc.diving && sc.land && sc.landOn && pl.x < m.pier.x1) A.push({ label: "Climb up to the pier", ax: pl.x, ay: pl.y - 2.2, fn: tideUp });
+    if (sc.main && m.tcave && !vaultOpen() && Math.abs(pl.x - 8.5) < 2 && pl.y > 19.5 && pl.y < 22.5) A.push({ label: "Sealed until a spring low tide", ax: 8.5, ay: 19.4, fn: function () { nag("Barnacles hold the door shut. It only opens when a spring low tide drains the cave (watch the tide clock)."); } });
+    if (sc.diving && !sc.land && pl.y - 0.45 < OWL + 1.6) {
       if (sc.main) { if (Math.abs(pl.x - (m.pier.dive + 0.5)) < 3) A.push({ label: "Climb onto the dock", ax: m.pier.dive + 0.5, ay: OSEA - 2.8, fn: ocClimb }); else A.push({ label: "Swim back to the pier", ax: pl.x, ay: OSEA - 2.4, fn: ocSwimHome }); }
       else A.push({ label: "Climb back aboard", ax: pl.x, ay: OSEA - 2.4, fn: seaResume });
     }
@@ -16439,17 +16548,17 @@
     if (!F) {
       if (!press || aim.tx < 0) return;
       var wy = (aim.my - oy) / ts, tx = aim.tx;
-      if (wy < OSEA - 1.4 || ocT(tx, OSEA) !== OT.WATER) { nag("Tap the open water below the dock to cast your line."); return; }
+      if (wy < OSEA - 1.4 || ocT(tx, Math.max(OSEA, Math.ceil(OWL))) !== OT.WATER) { nag("Tap the open water below the dock to cast your line."); return; }
       var dx = tx + 0.5 - pl.x; if (Math.abs(dx) > 9) { nag("That's too far to cast."); return; }
       pl.face = dx < 0 ? -1 : 1; var bait = takeBait();
       sc.fish = { x: tx, ph: "wait", bait: bait[1], t: (2.5 + Math.random() * 5) * fishBiteMul() * bait[0], bob: 0 };
-      thud(520, 0.04); ocFx(6, tx + 0.5, OSEA, "#bff4ff", { sp: 1.2, g: 6 }); return;
+      thud(520, 0.04); ocFx(6, tx + 0.5, OWL, "#bff4ff", { sp: 1.2, g: 6 }); return;
     }
     if (Math.abs(F.x + 0.5 - pl.x) > 11) { sc.fish = null; nag("Your line came loose."); return; }
     F.t -= dt; F.bob += dt;
     if (F.ph === "wait") {
       if (press) { sc.fish = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
-      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); waterSplash(F.x + 0.5, OSEA - 0.02, 0.6); ocBubbles(F.x + 0.5, OSEA + 0.6, 3); }
+      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); waterSplash(F.x + 0.5, OWL - 0.02, 0.6); ocBubbles(F.x + 0.5, OWL + 0.6, 3); }
     } else if (F.ph === "bite") {
       if (press) { ocLandFish(F); return; }
       if (F.t <= 0) { F.ph = "wait"; F.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
@@ -16463,13 +16572,13 @@
     var k = rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
     if (!ITEMS[k]) k = "bogminnow";
     give(k, 1, undefined, undefined, true); S.st.fish++; S.fdex[k] = 1; var fcm = fishLogged(k); say("+1 " + ITEMS[k].n + (fcm ? " \u00b7 " + fcm + " cm" : ""), "#8fe0ff");
-    ocFx(14, x, OSEA, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
+    ocFx(14, x, OWL, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
     if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#ffd23f", "\u2605"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
     checkTrail(); checkGoals();
   }
   function ocDrawRod(g, now) {
     var sc = OCS, F = sc.fish; if (!F || sc.diving) return; var pl = sc.pl, bite = F.ph === "bite";
-    var bx = ox + (F.x + 0.5) * ts, by = oy + OSEA * ts + (bite ? ts * 0.22 : Math.sin(F.bob * 2.4) * ts * 0.05), tx = ox + (pl.x + pl.face * 1.15) * ts, ty = oy + (pl.y - 2.05) * ts;
+    var bx = ox + (F.x + 0.5) * ts, by = oy + OWL * ts + (bite ? ts * 0.22 : Math.sin(F.bob * 2.4) * ts * 0.05), tx = ox + (pl.x + pl.face * 1.15) * ts, ty = oy + (pl.y - 2.05) * ts;
     g.strokeStyle = "rgba(246,238,219,.75)"; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + ts * 0.6, bx, by); g.stroke();
     var r = ts * 0.16; g.fillStyle = "#ffffff"; g.beginPath(); g.arc(bx, by - r * 0.4, r, Math.PI, 0); g.fill(); g.fillStyle = "#e8341c"; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, Math.PI); g.fill();
     g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, 6.2832); g.stroke();
@@ -16654,6 +16763,8 @@
       else if (id === OT.LADDER) { R(4, 0, 1, 16, "#7a5a3a"); R(11, 0, 1, 16, "#7a5a3a"); [1, 5, 9, 13].forEach(function (yy) { R(4, yy, 8, 2, "#9a7448"); R(4, yy, 8, 1, "#b8905a"); }); }
       else if (id === OT.LAMP) { R(7, 6, 2, 10, "#3a2412"); R(4, 1, 8, 7, "#8e969b"); R(5, 2, 6, 5, "#ffe27a"); R(6, 3, 4, 3, "#fff6c0"); R(3, 1, 10, 1, "#5a626a"); R(4, 8, 8, 1, "#5a626a"); }
       else if (id === OT.ROPE) { R(7, 0, 2, 16, "#c9a876"); for (i = 0; i < 8; i++) R(7, i * 2, 2, 1, "#a88a58"); }
+      else if (id === OT.VDOOR) { R(0, 0, 16, 16, "#3e524f"); R(1, 0, 14, 16, "#5f7a76"); [0, 5, 10].forEach(function (yy) { R(1, yy, 14, 1, "#2e3e3c"); }); R(12, 7, 2, 3, "#c9a52a"); for (i = 0; i < 16; i++) { x = (H(i, 1) * 15) | 0; y = (H(i, 2) * 15) | 0; R(x, y, 2, 2, H(i, 3) < 0.5 ? "#d8d0c0" : "#a8a090"); R(x, y, 1, 1, "#f4eee2"); } for (i = 0; i < 4; i++) { x = (H(i, 5) * 13) | 0; R(x, 13 + (i % 2), 3, 2, "#3a9a6a", 0.8); } }
+      else if (id === OT.DGLASS) { R(0, 0, 16, 16, "#bfefff", 0.28); R(0, 0, 16, 1, "#e8fbff", 0.8); R(0, 15, 16, 1, "#7ab8c8", 0.7); R(0, 0, 1, 16, "#d8f8ff", 0.6); R(15, 0, 1, 16, "#7ab8c8", 0.6); R(3, 2, 2, 6, "#ffffff", 0.45); R(6, 2, 1, 3, "#ffffff", 0.35); }
     }
     OATLAS = c; return c;
   }
@@ -16820,7 +16931,7 @@
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null; sc.btns = [];
     var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
     ox = Math.round(vw / 2 - cam.x * ts + shx); oy = Math.round(vh / 2 - cam.y * ts + shy);
-    var surf = oy + OSEA * ts, dl = daylight(S.time), sky = skyAt(S.time);
+    var surf = oy + OWL * ts, dl = daylight(S.time), sky = skyAt(S.time);
     // --- sky ---
     if (surf > 0) {
       var sg = g.createLinearGradient(0, 0, 0, surf); sg.addColorStop(0, ocRgb(sky[0])); sg.addColorStop(1, ocRgb(sky[1])); g.fillStyle = sg; g.fillRect(0, 0, vw, surf + 1);
@@ -16860,7 +16971,7 @@
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(OCW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(OCH - 1, Math.floor((vh - oy) / ts)), lights = [];
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
       var id = sc.t[j * OCW + i], d = OTD[id], sx = ox + i * ts, sy = oy + j * ts;
-      if (id === OT.WATER || id === OT.AIR) continue;
+      if (id === OT.WATER || id === OT.AIR) { if (sc.main && m.tcave && i >= m.tcave.x0 && i <= 10 && j >= m.tcave.y0 && j <= m.tcave.y1) { g.fillStyle = (i + j) % 3 ? "#3a301f" : "#352b1c"; g.fillRect(sx, sy, ts, ts); } continue; }   // the Tide Cave: a dark sandstone back wall
       if (id === OT.AIRP) { g.fillStyle = "rgba(190,240,255,.22)"; g.fillRect(sx, sy, ts, ts); if (ocT(i, j - 1) !== OT.AIRP && !reduce) { g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(sx, sy, ts, Math.max(2, ts * 0.08)); } if (ocT(i, j + 1) !== OT.AIRP) { g.fillStyle = "rgba(232,251,255,.7)"; g.fillRect(sx, sy + ts - 2 + Math.sin(t * 3 + i) * 1.5, ts, 2); } continue; }
       if (d.plant) { ocPlant(g, id, sx, sy, i, j, now); if (d.lit) lights.push([i + 0.5, j + 0.6, d.lit, "255,90,160"]); continue; }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
@@ -16870,10 +16981,11 @@
       if (d.lit) lights.push([i + 0.5, j + 0.5, d.lit, id === OT.LAMP ? "255,210,110" : id === OT.CLAM ? "210,190,255" : "110,240,220"]);
       if (id === OT.CHEST && !reduce && (Math.floor(t * 2 + i) % 3 === 0)) { g.fillStyle = "rgba(255,240,170," + (0.5 + 0.5 * Math.sin(t * 6 + i)) + ")"; g.fillRect(sx + ts * (0.2 + 0.6 * ((t * 0.7 + i * 0.3) % 1)), sy + ts * 0.15, 2, 2); }
     }
+    if (sc.main && m.tcave && vaultOpen() && Y0 <= 21 && Y1 >= 20) { g.fillStyle = "rgba(10,16,20,.55)"; g.fillRect(ox + 8 * ts, oy + 20 * ts, ts, ts * 2); }   // the open vault door: a dark doorway
     if (sc.mineP && sc.mineP.p > 0) { var mp2 = sc.mineP; g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8, ts * 0.12); g.fillStyle = "#7af0ff"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8 * Math.min(1, mp2.p), ts * 0.12); }
     // --- the pier gate sign at the land end, and the boat at the slip ---
     if (sc.main && m.pier) {
-      var gx = ox + 2.5 * ts, gy = surf - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
+      var gx = ox + 2.5 * ts, gy = oy + OSEA * ts - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
       g.font = signFont(Math.max(9, Math.round(ts * 0.27))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", gx, gy - ts * 2.55);
       var B = ocS().boat; ocBoatSide(g, ox + (m.pier.x1 + 4.6) * ts, surf + ts * 0.15, ts * 0.62, B.done ? fullBoatParts() : B.p, now, { nobp: false, lit: dl < 0.6 });
       if (!B.done) { g.font = "800 " + Math.max(10, Math.round(ts * 0.34)) + "px Nunito, system-ui, sans-serif"; g.fillStyle = "rgba(8,34,44,.75)"; var lbl = "Old Croaker's boat: " + ocBoatHave() + " / " + OBOAT.length + " parts", lw = g.measureText(lbl).width + ts * 0.6; g.fillRect(ox + (m.pier.x1 + 4.6) * ts - lw / 2, surf - ts * 5.4, lw, ts * 0.6); g.fillStyle = "#e8fbff"; g.fillText(lbl, ox + (m.pier.x1 + 4.6) * ts, surf - ts * 4.98); }
@@ -16891,9 +17003,9 @@
     g.strokeStyle = "rgba(232,251,255,.75)"; g.lineWidth = 1.2; sc.bub.forEach(function (b) { var bx2 = ox + b.x * ts, by2 = oy + b.y * ts, r = Math.max(1.5, b.r * ts); g.beginPath(); g.arc(bx2, by2, r, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(bx2 - r * 0.4, by2 - r * 0.5, Math.max(1, r * 0.4), Math.max(1, r * 0.4)); });
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // --- the surface: a wavy bright line and a tinted film over everything under water (clipped to the water, so none of it lies across the beach sand) ---
-    g.save(); g.beginPath(); for (i = X0; i <= X1; i++) { var wy0 = OSEA; while (wy0 < OSEA + 40 && OTD[ocT(i, wy0)].solid) wy0++; g.rect(ox + i * ts, oy + wy0 * ts - (wy0 === OSEA ? ts * 0.25 : 0), ts + 0.5, vh); } g.clip();
+    g.save(); g.beginPath(); for (i = X0; i <= X1; i++) { var wf0 = Math.floor(OWL), wy0 = wf0; while (wy0 < wf0 + 40 && OTD[ocT(i, wy0)].solid && ocT(i, wy0) !== OT.VDOOR) wy0++; g.rect(ox + i * ts, wy0 === wf0 ? surf - ts * 0.25 : oy + wy0 * ts, ts + 0.5, vh); } g.clip();
     if (surf > -ts && surf < vh + ts) {
-      var wamp = 1 + wxStorm() * 1.8 + wxN() * 0.35, surfH = function (wx) { return reduce ? 0 : (Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035 + Math.sin(wx / ts * 0.37 + t * 0.9) * ts * 0.05) * wamp + (RIPS.length ? rippleH((wx - ox) / ts, OSEA - 0.02) * ts : 0); };
+      var wamp = 1 + wxStorm() * 1.8 + wxN() * 0.35, surfH = function (wx) { return reduce ? 0 : (Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035 + Math.sin(wx / ts * 0.37 + t * 0.9) * ts * 0.05) * wamp + (RIPS.length ? rippleH((wx - ox) / ts, OWL - 0.02) * ts : 0); };
       g.fillStyle = "rgba(160,240,255,.55)"; g.beginPath(); g.moveTo(0, surf + 4);
       for (var wx = 0; wx <= vw + 4; wx += 4) g.lineTo(wx, surf + surfH(wx));
       g.lineTo(vw, surf + 4); g.closePath(); g.fill();
@@ -16905,7 +17017,7 @@
           var gy2 = surf + surfH(wx); g.fillStyle = gday ? "rgba(255,250,215," + (gd * gk).toFixed(3) + ")" : "rgba(220,230,255," + (gd * gk * 0.7).toFixed(3) + ")"; g.fillRect(wx, gy2 - 1.5, ts * (0.2 + gk * 0.35), 2.5); }
       }
     }
-    ocCaustics(g, surf, t, clamp((dl - 0.4) / 0.6, 0, 1) * (1 - 0.85 * wxN()) * clamp(1.4 - (cam.y - OSEA) / 50, 0.25, 1), function () { g.beginPath(); for (var cj = Math.max(Y0, OSEA + 1); cj <= Math.min(Y1, OSEA + 26); cj++) for (var ci = X0; ci <= X1; ci++) { var cd = OTD[sc.t[cj * OCW + ci]]; if (cd && cd.solid) g.rect(ox + ci * ts, oy + cj * ts, ts, ts); } });
+    ocCaustics(g, surf, t, clamp((dl - 0.4) / 0.6, 0, 1) * (1 - 0.85 * wxN()) * clamp(1.4 - (cam.y - OSEA) / 50, 0.25, 1), function () { g.beginPath(); for (var cj = Math.max(Y0, Math.floor(OWL) + 1); cj <= Math.min(Y1, Math.floor(OWL) + 26); cj++) for (var ci = X0; ci <= X1; ci++) { var cd = OTD[sc.t[cj * OCW + ci]]; if (cd && cd.solid) g.rect(ox + ci * ts, oy + cj * ts, ts, ts); } });
     if (surf < vh && dl > 0.3) {   // things floating on the surface shade the water under them
       var shadeAt = function (cx, hw, dep, a) { var sg2 = g.createLinearGradient(0, surf, 0, surf + dep); sg2.addColorStop(0, "rgba(2,14,30," + a + ")"); sg2.addColorStop(1, "rgba(2,14,30,0)"); g.fillStyle = sg2; g.beginPath(); g.moveTo(cx - hw, surf); g.lineTo(cx + hw, surf); g.lineTo(cx + hw * 0.7 + slant * 0.3, surf + dep); g.lineTo(cx - hw * 0.7 + slant * 0.3, surf + dep); g.closePath(); g.fill(); };
       var sa = (0.32 * dl).toFixed(3);
@@ -16944,8 +17056,8 @@
     }
     if (dark > 0.5 && !liteFx()) drawBloom(g, dl, clamp(1 - dark, 0.2, 1), now);   // glow coral, lures and lanterns bloom in the dark
     if (wxN() > 0.02 && surf > 0) {   // rain: it rings the sea and spits off the pier and the sand
-      rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts; if (sy >= surf - 2) waterRing(wx, OSEA - 0.02, 0.02, 0, 0.7); else rainPip(wx, (sy - oy) / ts, 0); },
-        function () { var sx = Math.random() * vw, ci = Math.floor((sx - ox) / ts), y = surf; for (var cj = Math.max(0, Math.floor(-oy / ts)); cj < OSEA; cj++) { var cd = OTD[ocT(ci, cj)]; if (cd && cd.solid) { y = oy + cj * ts; break; } } return [sx, y]; });
+      rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts; if (sy >= surf - 2) waterRing(wx, OWL - 0.02, 0.02, 0, 0.7); else rainPip(wx, (sy - oy) / ts, 0); },
+        function () { var sx = Math.random() * vw, ci = Math.floor((sx - ox) / ts), y = surf; for (var cj = Math.max(0, Math.floor(-oy / ts)); cj < OWL; cj++) { var cd = OTD[ocT(ci, cj)]; if (cd && cd.solid) { y = oy + cj * ts; break; } } return [sx, y]; });
     }
     if (surf > 0 && (WX.flash > 0 || WX.bolt)) drawBoltScr(g, 0, surf);
     // --- words and pills ---
@@ -16976,14 +17088,16 @@
       var warn = (dep > lim && dep > 6 ? 1 : 0), lowA = sc.o2 < ocO2Max() * 0.25 ? 1 - sc.o2 / (ocO2Max() * 0.25) : 0;
       if (warn || lowA > 0) { var vg = g.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * 0.3, vw / 2, vh / 2, Math.max(vw, vh) * 0.7); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, warn ? "rgba(200,30,30," + (0.3 + 0.15 * Math.sin(t * 8)).toFixed(3) + ")" : "rgba(10,20,60," + (0.55 * lowA).toFixed(3) + ")"); g.fillStyle = vg; g.fillRect(0, 0, vw, vh); }
     }
+    if (!panelOpen) drawTideHud(g);
     if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); g.imageSmoothingEnabled = true; try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.imageSmoothingEnabled = false; g.globalAlpha = 1; }
   }
   function fullBoatParts() { var o = {}; OBOAT.forEach(function (k) { o[k] = 1; }); return o; }
   function ocDrawMe(g, now) {   // you, drawn with the normal character sprite, plus the Scuba Suit, mask and tank
     var sc = OCS, pl = sc.pl, keep = { x: p.x, y: p.y, on: p.on, vy: p.vy, vx: p.vx, wet: p.wet, face: p.face, walk: p.walk };
-    p.x = pl.x; p.y = pl.y; p.face = pl.face; p.vx = sc.diving ? Math.max(Math.abs(pl.vx), Math.abs(pl.vy)) : pl.vx; p.vy = sc.diving ? 0 : pl.vy; p.on = sc.diving ? false : pl.on; p.wet = sc.diving;
+    var swim = sc.diving && !sc.land;   // on the tide flats you walk
+    p.x = pl.x; p.y = pl.y; p.face = pl.face; p.vx = swim ? Math.max(Math.abs(pl.vx), Math.abs(pl.vy)) : pl.vx; p.vy = swim ? 0 : pl.vy; p.on = swim ? false : sc.diving ? !!sc.landOn : pl.on; p.wet = swim;
     var sx = ox + pl.x * ts, sy = oy + (pl.y - 0.55) * ts;
-    g.save(); if (sc.diving && !reduce) { g.translate(sx, sy); g.rotate(pl.ang); g.translate(-sx, -sy); }
+    g.save(); if (swim && !reduce) { g.translate(sx, sy); g.rotate(pl.ang); g.translate(-sx, -sy); }
     var suit = ocSuit(), tk = ocTank(), u = ts / 16, f = pl.face, bx = ox + pl.x * ts, by = oy + pl.y * ts;
     if (tk && sc.diving) { var tc = ["", "#c9a52a", "#8ec8d8", "#c86aff", "#ff6a4a"][tk]; g.fillStyle = "#3a3a44"; mrr(g, bx - f * 6 * u - 2.6 * u, by - 22 * u, 5.2 * u, 12 * u, 2.4 * u); g.fill(); g.fillStyle = tc; mrr(g, bx - f * 6 * u - 2 * u, by - 21.4 * u, 4 * u, 10.6 * u, 2 * u); g.fill(); g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(bx - f * 6 * u - 1.2 * u, by - 20.4 * u, 1 * u, 7 * u); }
     try { drawPlayer(g, now); } catch (e) {}
@@ -17691,6 +17805,7 @@
     if (o.kills && typeof o.kills === "object") Object.keys(o.kills).forEach(function (k) { if (/^[a-z]+$/.test(k)) n.kills[k] = Math.max(0, Math.floor(+o.kills[k]) || 0); });
     if (o.isl && typeof o.isl === "object") Object.keys(o.isl).slice(0, 400).forEach(function (k) { if (k.length < 20 && o.isl[k]) n.isl[k] = 1; });
     if (o.sea && typeof o.sea === "object" && isFinite(+o.sea.x) && isFinite(+o.sea.y)) n.sea = { x: clamp(+o.sea.x, 6, 2000), y: clamp(+o.sea.y, 6, 2000), ang: +o.sea.ang || 0 };
+    ["vault", "tpi", "btl"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });   // REAL TIDES: vault week opened, last low tide's finds, bottle day
     return n;
   }
   function ocQuit() { if (!OCS) return; OCS = null; stageEl.classList.remove("cave", "ocean"); ocHudO2(); }
@@ -18781,6 +18896,7 @@
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
+  window.__sbx.tide = { off: tideOff, info: tideInfo, dayF: tideDayF, get OWL() { return OWL; }, down: tideDown, up: tideUp, pools: tidePools, vaultOpen: vaultOpen, spring: springIdx, note: bottleNote };
   window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
