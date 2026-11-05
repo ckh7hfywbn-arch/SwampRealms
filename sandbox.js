@@ -187,6 +187,9 @@
   if (!ITEMS.x_bottle) { ITEMS.x_bottle = { n: "Message in a Bottle", tmap: 1, bottle: 1, d: "Washed up on the tide flats. Hold it on land and tap to uncork it: someone wrote down where they buried something." }; if (ORDER.indexOf("x_bottle") < 0) ORDER.push("x_bottle"); }
   [["starore", "Star Ore", "A chunk of a fallen meteor, still faintly warm. Smelt it into Starsteel at a Stone Furnace."], ["starsteel", "Starsteel Ingot", "Metal from the sky: light, blue-white and harder than iron. The Lily Belle's best upgrades are made of it."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2], gem: q[0] === "starore" ? "#9ad8ff" : "#d8f0ff" }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
   RECIPES.push({ id: "x_starsteel", n: "Starsteel Ingot", out: { starsteel: 1 }, cost: { starore: 3, charcoal: 1 }, stn: "furnace", d: "Three chunks of Star Ore and a lump of charcoal, smelted at a Stone Furnace. Star Ore falls in meteor showers." });
+  // MIGRATIONS: a keepsake from each season's travellers; all four make the Wanderer's Charm. THE LEVIATHAN leaves its scales.
+  [["goosedown", "Goose Down", "Soft down from a Lily Goose flying north in Spring. Catch it as it drifts down."], ["antlershed", "Elk Antler Shed", "A Bog Elk dropped it on the way south in Fall."], ["turtlescute", "Turtle Scute", "A Shellback Turtle's old shell plate, left as thanks for sailing alongside in Summer."], ["ambergris", "Ambergris", "A waxy, sweet-smelling lump a Brine Whale left floating in Winter. Worth a lot to Old Croaker."], ["levscale", "Leviathan Scale", "A plate as big as a door from the Brinebog Leviathan. Proof you beat the thing under the sea."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  RECIPES.push({ id: "x_ch_wander", n: "Wanderer's Charm", out: null, cost: { goosedown: 4, antlershed: 1, turtlescute: 1, ambergris: 1, rope: 1 }, charm: "wander", bench: true, d: "A keepsake from all four seasons' travellers. Migrations come twice as often and leave twice the keepsakes, and you sail 10% faster." });
   RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
   RECIPES.push({ id: "x_detect", n: "Metal Detector", out: { x_detect: 1 }, cost: { ironingot: 4, quartz: 4, glass: 2 }, bench: true, d: "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore within 14 tiles." });
   RECIPES.push({ id: "x_jet", n: "Swamp-Gas Jetpack", out: { x_jet: 1 }, cost: { ironingot: 8, sulfur: 6, leather: 4, glass: 2 }, bench: true, d: "Carry it: keep holding jump at the top of a jump to fly on swamp gas for a couple of seconds. It refuels whenever you stand on the ground." });
@@ -698,6 +701,7 @@
     if (Array.isArray(o.stars) && o.wv === SW.WORLDVER) d.stars = o.stars.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y) }; });
     if (isFinite(o.starRoll)) d.starRoll = Math.floor(o.starRoll);
     ["metNext", "metSaid", "metDone"].forEach(function (f) { if (isFinite(+o[f])) d[f] = Math.floor(+o[f]); });   // METEOR SHOWERS
+    if (o.mig && isFinite(+o.mig.d)) d.mig = { d: Math.floor(+o.mig.d), n: Math.floor(+o.mig.n) || 1 };   // MIGRATIONS
     if (Array.isArray(o.flood) && o.wv === SW.WORLDVER) d.flood = o.flood.filter(function (q) { return Array.isArray(q) && isFinite(q[0]) && isFinite(q[1]); }).slice(0, 300).map(function (q) { return [Math.floor(q[0]), Math.floor(q[1])]; });   // SPRING FLOODS
     if (isFinite(o.bmNext)) d.bmNext = Math.floor(o.bmNext);
     d.gmet = o.gmet ? 1 : 0;
@@ -6385,7 +6389,8 @@
     owl: { n: "Owl Charm", d: "See farther in the dark.", c: "#e8f4ff", g: "#f2c14e" },
     brute: { n: "Ogre Charm", d: "Your weapon hits 15% harder.", c: "#8a9a5a", g: "#f6eedb" },
     blood: { n: "Crimson Charm", d: "Your weapon hits 20% harder at night.", c: "#e8243a", g: "#ffd0d4" },   // blood moon pack
-    star: { n: "Wishing Star Charm", d: "Falling stars come on every clear night and land closer to you.", c: "#ffe9a0", g: "#7fa8ff" }   // starfall pack
+    star: { n: "Wishing Star Charm", d: "Falling stars come on every clear night and land closer to you.", c: "#ffe9a0", g: "#7fa8ff" },   // starfall pack
+    wander: { n: "Wanderer's Charm", d: "Migrations come twice as often and leave twice the keepsakes, and you sail 10% faster.", c: "#c8a070", g: "#9ad0ff" }   // MIGRATIONS
   };
   function charmSlots() { return (S.st.boss & 7) === 7 ? 3 : 2; }
   function hasCharm(k) { return S.charms.on.indexOf(k) > -1; }
@@ -7444,6 +7449,78 @@
     toast("A falling star crashed " + where, "#ffe9a0"); checkGoals(); save();
   }
 
+
+  // ---------- MIGRATIONS ----------
+  // On days 2-5 of every season, travellers pass through. SPRING: Lily Geese fly over in great V flocks and Goose Down drifts down (catch
+  // it, or pick it up where it lands). FALL: a herd of Bog Elk crosses the swamp, and the stags drop their antlers. SUMMER: Shellback Turtles
+  // swim across the open sea, and sailing alongside them earns a Turtle Scute. WINTER: Brine Whales pass, spouting, and leave Ambergris.
+  // All four keepsakes (with a rope) make the Wanderer's Charm. S.mig = { s: season index the herd last came, d: day } so each herd comes once a day.
+  var MIGF = [], MIGE = [], MIGT = { f: 8, said: -1 };
+  function migSeason() { var d = seasonDay(); return d >= 2 && d <= 5 ? seasonOf() : -1; }
+  var MIG_SAY = ["The Lily Geese are flying north! Catch the Goose Down as it drifts down.", "Shellback Turtles are crossing the open sea this week. Sail alongside them!", "A herd of Bog Elk is moving south through the swamp. The stags drop their antlers as they go.", "Brine Whales are passing through the Brinebog Sea. Go and see them!"];
+  function tickMig(dt) {
+    if (!world || !S || cave || (MP.on && MP.role === "guest")) return;
+    var ms = migSeason(), wd = hasCharm("wander") ? 2 : 1, i;
+    if (ms >= 0 && MIGT.said !== (S.days | 0) && seasonDay() === 2 && phaseOf(S.time).id === "day") { MIGT.said = S.days | 0; toast(MIG_SAY[ms], "#c8a070"); }
+    var surf = !OCS && !HOME && p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, day = daylight(S.time) > 0.5;
+    if (ms === 0 && surf && day) { MIGT.f -= dt * wd; if (MIGT.f <= 0) { MIGT.f = 18 + Math.random() * 18; MIGF.push({ x: p.x + (Math.random() - 0.5) * 22, y: cam.y - vh / 2 / ts - 1, ph: Math.random() * 6, vy: 1.1 + Math.random() * 0.4, life: 40 }); } }
+    for (i = MIGF.length - 1; i >= 0; i--) { var F = MIGF[i]; F.ph += dt * 2.2; F.y += F.vy * dt; F.x += Math.sin(F.ph) * 0.9 * dt; F.life -= dt;
+      if (Math.abs(F.x - p.x) < 0.9 && Math.abs(F.y - (p.y - 0.8)) < 1.1) { give("goosedown", wd, undefined, undefined, true); text(F.x, F.y - 0.4, "+" + wd + " Goose Down", "#f6f2e8"); thud(900, 0.02); S.st.down = (S.st.down || 0) + 1; MIGF.splice(i, 1); continue; }
+      var gy = col[clamp(Math.floor(F.x), 0, W - 1)]; if (F.y >= gy - 0.2 || F.life <= 0) { if (F.life > 0) spawnDrop("goosedown", 1, Math.floor(F.x), gy - 1); MIGF.splice(i, 1); } }
+    if (ms === 2 && surf && day && !MIGE.length && (!S.mig || S.mig.d !== (S.days | 0) || (wd > 1 && S.mig.n < 2)) && Math.random() < dt * 0.05) {   // the elk herd
+      S.mig = { d: S.days | 0, n: S.mig && S.mig.d === (S.days | 0) ? S.mig.n + 1 : 1 }; var dir = Math.random() < 0.5 ? 1 : -1, half = vw / 2 / ts + 6, n = 5 + Math.floor(Math.random() * 4), drop = [Math.floor(Math.random() * n), Math.floor(Math.random() * n)];
+      for (i = 0; i < n; i++) MIGE.push({ x: p.x - dir * (half + i * 2.2 + Math.random()), dir: dir, sp: 2.4 + Math.random() * 0.4, ph: Math.random() * 6, stag: i % 3 === 0, drop: drop.indexOf(i) > -1 ? 6 + Math.random() * 14 : (wd > 1 && i === n - 1 ? 10 : -1), life: 80 });
+      toast("Bog Elk! A herd is crossing the swamp right here.", "#c8a070");
+    }
+    for (i = MIGE.length - 1; i >= 0; i--) { var E = MIGE[i], near = Math.abs(E.x - p.x) < 4; E.ph += dt * (near ? 9 : 6); E.x += E.dir * E.sp * (near ? 1.7 : 1) * dt; E.life -= dt;
+      if (E.drop > 0) { E.drop -= dt; if (E.drop <= 0 && Math.abs(E.x - p.x) < vw / ts) { var ex = clamp(Math.floor(E.x), 1, W - 2); spawnDrop("antlershed", 1, ex, col[ex] - 1); E.drop = -1; } }
+      if (E.life <= 0 || (E.x - p.x) * E.dir > vw / 2 / ts + 14) MIGE.splice(i, 1); }
+  }
+  function drawMig(g2) {
+    var t = performance.now() / 1000;
+    MIGF.forEach(function (F) { var x = ox + F.x * ts, y = oy + F.y * ts, a = Math.sin(F.ph) * 0.6, u = ts / 16; g2.save(); g2.translate(x, y); g2.rotate(a); g2.fillStyle = "rgba(255,255,255,.35)"; g2.beginPath(); g2.arc(0, 0, ts * 0.45, 0, 6.2832); g2.fill(); g2.fillStyle = "#f6f2e8"; g2.beginPath(); g2.ellipse(0, 0, 5 * u, 1.8 * u, 0.5, 0, 6.2832); g2.fill(); g2.strokeStyle = "#a89880"; g2.lineWidth = Math.max(1, u * 0.6); g2.beginPath(); g2.moveTo(-5 * u, -2.6 * u); g2.lineTo(5 * u, 2.6 * u); g2.stroke(); g2.restore(); });
+    MIGE.forEach(function (E) {   // a Bog Elk, side on
+      var gx = clamp(Math.floor(E.x), 0, W - 1), x = ox + E.x * ts, y = oy + col[gx] * ts, u = ts / 16, f = E.dir, leg = Math.sin(E.ph) * 2.2 * u, bob = Math.abs(Math.sin(E.ph)) * u * 0.6;
+      g2.save(); g2.translate(x, y - bob); g2.scale(f, 1);
+      g2.fillStyle = "rgba(0,0,0,.22)"; g2.beginPath(); g2.ellipse(0, bob, 10 * u, 2 * u, 0, 0, 6.2832); g2.fill();
+      g2.strokeStyle = "#4a3220"; g2.lineWidth = 2 * u; g2.lineCap = "round";
+      [[-6, leg], [-3, -leg], [5, -leg], [8, leg]].forEach(function (L) { g2.beginPath(); g2.moveTo(L[0] * u, -10 * u); g2.lineTo(L[0] * u + L[1], 0); g2.stroke(); });
+      g2.fillStyle = "#7a5634"; g2.beginPath(); g2.ellipse(1 * u, -13 * u, 10 * u, 5 * u, 0, 0, 6.2832); g2.fill(); g2.fillStyle = "#9a7448"; g2.beginPath(); g2.ellipse(1 * u, -15 * u, 8 * u, 2.5 * u, 0, 0, 6.2832); g2.fill();
+      g2.fillStyle = "#e8dcc0"; g2.beginPath(); g2.ellipse(-8 * u, -12 * u, 2 * u, 2.4 * u, 0, 0, 6.2832); g2.fill();
+      g2.fillStyle = "#6a4a2c"; g2.beginPath(); g2.moveTo(8 * u, -15 * u); g2.lineTo(12 * u, -22 * u); g2.lineTo(15 * u, -21 * u); g2.lineTo(12 * u, -13 * u); g2.closePath(); g2.fill();
+      g2.fillStyle = "#7a5634"; g2.beginPath(); g2.ellipse(15 * u, -21 * u, 4 * u, 2.6 * u, 0.3, 0, 6.2832); g2.fill(); g2.fillStyle = "#1a1008"; g2.fillRect(15 * u, -22.5 * u, 1.2 * u, 1.2 * u);
+      if (E.stag) { g2.strokeStyle = "#e8dcc0"; g2.lineWidth = 1.4 * u; g2.beginPath(); g2.moveTo(13 * u, -23 * u); g2.lineTo(11 * u, -30 * u); g2.moveTo(11.6 * u, -27 * u); g2.lineTo(8 * u, -29 * u); g2.moveTo(14 * u, -23 * u); g2.lineTo(17 * u, -30 * u); g2.moveTo(16 * u, -27 * u); g2.lineTo(19 * u, -28 * u); g2.stroke(); }
+      g2.restore();
+    });
+  }
+  // ---- at sea: turtles in summer, whales in winter (they also show on the Crow's Nest chart) ----
+  function migSeaStep(s, dt) {
+    if (!s.mig) s.mig = []; var ms = migSeason(), wd = hasCharm("wander") ? 2 : 1, i;
+    if ((ms === 1 || ms === 3) && s.mig.length < wd && Math.random() < dt / (ms === 1 ? 25 : 35)) {
+      var a = s.ang + (Math.random() - 0.5) * 1.2, d = 40 + Math.random() * 20, cx = clamp(s.x + Math.cos(a) * d, 20, SO.SEAW - 20), cy = clamp(s.y + Math.sin(a) * d, 20, SO.SEAW - 20), ha = a + (Math.random() < 0.5 ? 1.57 : -1.57);
+      s.mig.push({ k: ms === 1 ? "turtle" : "whale", x: cx, y: cy, ang: ha, sp: ms === 1 ? 3.2 : 4.4, n: ms === 1 ? 5 + Math.floor(Math.random() * 3) : 2 + Math.floor(Math.random() * 2), t: 0, near: 0, got: 0, ph: Math.random() * 6 });
+      if (!s.migSaid) { s.migSaid = 1; toast(ms === 1 ? "Shellback Turtles ahead! Sail alongside them for a while." : "Whale spout! A pod of Brine Whales is passing. Sail close.", "#9ad0ff"); }
+    }
+    for (i = s.mig.length - 1; i >= 0; i--) { var M = s.mig[i]; M.t += dt; M.ph += dt; M.ang += Math.sin(M.t * 0.15) * 0.05 * dt; M.x += Math.cos(M.ang) * M.sp * dt; M.y += Math.sin(M.ang) * M.sp * dt;
+      var dd = Math.hypot(M.x - s.x, M.y - s.y); if (dd < (M.k === "turtle" ? 8 : 11)) M.near += dt; else M.near = Math.max(0, M.near - dt * 0.5);
+      if (!M.got && M.near > (M.k === "turtle" ? 4 : 2.5)) { M.got = 1; var it = M.k === "turtle" ? "turtlescute" : "ambergris"; s.loot.push({ x: M.x - Math.cos(M.ang) * 3, y: M.y - Math.sin(M.ang) * 3, items: [[it, wd]], t: 0 }); toast(M.k === "turtle" ? "A turtle leaves you a Turtle Scute. Sail over it!" : "The whales leave something floating behind: Ambergris!", "#9ad0ff"); S.st.migsea = (S.st.migsea || 0) + 1; }
+      if (M.k === "whale" && Math.random() < dt * 0.7) { for (var q = 0; q < 8; q++) s.wake.push({ x: M.x + (Math.random() - 0.5) * 0.6, y: M.y + (Math.random() - 0.5) * 0.6, vx: (Math.random() - 0.5) * 2, vy: -1.5 - Math.random() * 2, life: 0.9, spl: 1 }); }
+      if (dd > 140 || M.t > 160) s.mig.splice(i, 1); }
+  }
+  function drawSeaMig(g, k, now) {
+    (OCS.sea.mig || []).forEach(function (M) {
+      for (var n = 0; n < M.n; n++) {
+        var back = n * (M.k === "turtle" ? 2.4 : 6), side = (n % 2 ? 1 : -1) * (n ? 1.2 : 0), x = M.x - Math.cos(M.ang) * back + Math.cos(M.ang + 1.57) * side, y = M.y - Math.sin(M.ang) * back + Math.sin(M.ang + 1.57) * side, sw = Math.sin(M.ph * 3 + n);
+        g.save(); g.translate(x * k, y * k); g.rotate(M.ang);
+        if (M.k === "turtle") { g.fillStyle = "rgba(0,30,40,.25)"; g.beginPath(); g.ellipse(0, 0, k * 1.1, k * 0.8, 0, 0, 6.2832); g.fill(); g.fillStyle = "#4a7a3a"; [[0.5, 1], [0.5, -1], [-0.5, 1], [-0.5, -1]].forEach(function (f) { g.save(); g.translate(f[0] * k, f[1] * k * 0.55); g.rotate(f[1] * (0.5 + sw * 0.4)); g.beginPath(); g.ellipse(0, f[1] * k * 0.2, k * 0.35, k * 0.14, 0, 0, 6.2832); g.fill(); g.restore(); });
+          g.fillStyle = "#6a9a4a"; g.beginPath(); g.ellipse(k * 0.95, 0, k * 0.28, k * 0.22, 0, 0, 6.2832); g.fill(); g.fillStyle = "#3a5a2a"; g.beginPath(); g.ellipse(0, 0, k * 0.8, k * 0.6, 0, 0, 6.2832); g.fill(); g.fillStyle = "#7aa84a"; g.beginPath(); g.ellipse(0, 0, k * 0.6, k * 0.44, 0, 0, 6.2832); g.fill(); g.strokeStyle = "#3a5a2a"; g.lineWidth = Math.max(1, k * 0.06); g.beginPath(); g.moveTo(-k * 0.5, 0); g.lineTo(k * 0.5, 0); g.moveTo(0, -k * 0.4); g.lineTo(0, k * 0.4); g.stroke(); }
+        else { var L = k * 4.2; g.fillStyle = "rgba(0,20,40,.3)"; g.beginPath(); g.ellipse(0, 0, L * 1.05, k * 1.25, 0, 0, 6.2832); g.fill(); g.fillStyle = "#3a5068"; g.beginPath(); g.ellipse(0, 0, L, k * 1.05, 0, 0, 6.2832); g.fill(); g.fillStyle = "#4a6680"; g.beginPath(); g.ellipse(k * 0.6, -k * 0.2, L * 0.7, k * 0.5, 0, 0, 6.2832); g.fill();
+          g.save(); g.translate(-L * 0.95, 0); g.rotate(sw * 0.3); g.fillStyle = "#3a5068"; g.beginPath(); g.moveTo(0, 0); g.lineTo(-k * 1.4, -k * 1.2); g.lineTo(-k * 1.0, 0); g.lineTo(-k * 1.4, k * 1.2); g.closePath(); g.fill(); g.restore();
+          g.fillStyle = "#2a3a4a"; g.beginPath(); g.ellipse(L * 0.45, 0, k * 0.22, k * 0.14, 0, 0, 6.2832); g.fill(); }
+        g.restore();
+      }
+    });
+  }
   // ---------- METEOR SHOWERS ----------
   // Every 6-12 days (the first one around day 4) a meteor shower lights up the night: the sky streams with shooting stars and 4-7 big
   // meteors come down near you. Each digs a deep crater and leaves a cluster of glowing Meteorite (Star Ore, a Tier 2 pick) at the bottom.
@@ -8656,6 +8733,11 @@
     SPR.x_grap3 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#f2c14e", b: "#fff3c4", c: "#4ee6b4", d: "#8a5a32", e: "#ff8a3d" } };
     SPR.x_spore = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbcbbcbba...", "...abbbbbbbba...", "....aaaaaaaa....", "......dd........", "......dd..aaa...", "......dd.abcba..", ".....edde.aaa...", "....ee.dd..d....", "...e...dd..d....", "..e...edde.d....", ".....e.dd.edde..", "....e..ee..e.e..", "................"], p: { a: "#2a9a7a", b: "#4ee6b4", c: "#bfffe8", d: "#d8e8d0", e: "#3fd6c0" } };
     SPR.x_bottle = { r: ["................", "......cc........", "......dd........", ".....abba.......", ".....abba.......", "....abbbba......", "...abbbbbba.....", "...abpppbba.....", "...abpqqpba.....", "...abpqqpba.....", "...abpppbba.....", "...abbbbbba.....", "...abbbbbba.....", "....aaaaaa......", "................", "................"], p: { a: "#2a6a5a", b: "#5ec8a8", c: "#a8743a", d: "#7a5230", p: "#e8d8a8", q: "#a8885a" } };
+    SPR.goosedown = { r: ["................", "..........a.....", ".........aba....", "........abba....", ".......abbba....", "......abbbba....", ".....abbbbba....", "....abbbbba.....", "...abbbbba......", "...abbbba.......", "..abbbba........", "..abbba.........", ".acaaa..........", ".c..............", "c...............", "................"], p: { a: "#c8c0b0", b: "#f6f2e8", c: "#8a7a60" } };
+    SPR.antlershed = { r: ["................", "..a.......a.....", "..a..a...a..a...", "..aa.a..aa.a....", "...aaa..aaa.....", "....aa...a......", "....ab...a......", ".....b..ab......", ".....bbbb.......", "......bb........", "......bc........", ".......c........", ".......c........", "......cc........", "................", "................"], p: { a: "#e8dcc0", b: "#c8b48a", c: "#8a6a42" } };
+    SPR.turtlescute = { r: ["................", "................", ".....aaaaaa.....", "....abbcbbba....", "...abcccccbba...", "..abbcbbbcbbba..", "..abcccbcccbba..", "..abbcbbbcbbba..", "..abcccbcccbba..", "...abbcbbbcba...", "....abbcbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#3a5a2a", b: "#7aa84a", c: "#b8d878" } };
+    SPR.ambergris = { r: ["................", "................", "................", ".....aaaa.......", "...aabbbbaa.....", "..abbcbbbbba....", "..abbbbbcbbba...", ".abbcbbbbbbba...", ".abbbbbcbbbba...", "..abbbbbbbcba...", "...aabbbbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#8a7050", b: "#d8c098", c: "#f0e0c0" } };
+    SPR.levscale = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbccccbba...", "..abbcddddcbba..", "..abcddeeddcba..", ".abbcdeffedcbba.", ".abcddeffeddcba.", ".abbcdeeeedcbba.", "..abcddddddcba..", "..abbccccccbba..", "...abbbbbbbba...", "....aabbbbaa....", "......aaaa......", "................", "................"], p: { a: "#0e2a3a", b: "#1f4a5a", c: "#2f6a72", d: "#3f8a88", e: "#6ac8b8", f: "#c8fff0" } };
     SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
     SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
@@ -9935,6 +10017,7 @@
   }
   // ---- Old Croaker buys valuables ----
   var VALUE = (typeof SbxExtra !== "undefined" && SbxExtra.VALUE) || {};
+  [["goosedown", 3, 1], ["antlershed", 1, 2], ["turtlescute", 1, 3], ["ambergris", 1, 8], ["levscale", 1, 10]].forEach(function (q) { if (!VALUE[q[0]]) VALUE[q[0]] = [q[1], q[2]]; });   // Old Croaker buys keepsakes
   function sellHtml() {
     var ks = Object.keys(VALUE).filter(function (k) { return ITEMS[k] && (S.inv[k] || 0) >= VALUE[k][0]; });
     var h = '<h3 class="st-sellh">Sell valuables</h3>';
@@ -11421,7 +11504,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
-    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
@@ -11607,9 +11690,9 @@
     // sky flocks: spawn just off screen on one side, cross, then go
     var halfT = vw / 2 / ts + 6;
     if (surf && AMB.flocks.length < Math.max(1, Math.round(AMBN.flocks * q)) && Math.random() < dt * (night ? 0.09 : 0.14)) {
-      var kind = night ? (b === 2 ? "" : "bat") : b === 2 ? "goose" : b === 1 ? "crow" : Math.random() < 0.5 ? "egret" : "swallow";
+      var kind = night ? (b === 2 ? "" : "bat") : b === 2 || (migSeason() === 0 && Math.random() < 0.7) ? "goose" : b === 1 ? "crow" : Math.random() < 0.5 ? "egret" : "swallow";   // MIGRATIONS: Lily Geese everywhere in Spring
       if (kind) {
-        var par = 0.25 + Math.random() * 0.5, dir = Math.random() < 0.5 ? -1 : 1, n = kind === "goose" ? 5 + (Math.random() * 6 | 0) : kind === "bat" ? 4 + (Math.random() * 5 | 0) : kind === "egret" ? 2 + (Math.random() * 3 | 0) : 4 + (Math.random() * 6 | 0);
+        var migG = kind === "goose" && migSeason() === 0, par = 0.25 + Math.random() * 0.5, dir = migG ? 1 : Math.random() < 0.5 ? -1 : 1, n = migG ? 9 + (Math.random() * 7 | 0) : kind === "goose" ? 5 + (Math.random() * 6 | 0) : kind === "bat" ? 4 + (Math.random() * 5 | 0) : kind === "egret" ? 2 + (Math.random() * 3 | 0) : 4 + (Math.random() * 6 | 0);
         AMB.flocks.push({ k: kind, par: par, dir: dir, x: cam.x * par - dir * halfT, y: 0.08 + Math.random() * (kind === "bat" ? 0.4 : 0.3), sp: (kind === "goose" ? 2.4 : kind === "egret" ? 1.8 : kind === "bat" ? 3.2 : kind === "crow" ? 2.6 : 3.6) * (0.8 + Math.random() * 0.4), n: n, ph: Math.random() * 6, seed: Math.random() * 100 });
       }
     }
@@ -13393,7 +13476,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
+    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
@@ -17399,7 +17482,7 @@
   }
   function seaSaveState() { var s = OCS && OCS.sea; if (!s) return; ocS().sea = { x: Math.round(s.x * 10) / 10, y: Math.round(s.y * 10) / 10, ang: Math.round(s.ang * 100) / 100 }; }
   function seaDock() {   // back to Croaker's Pier
-    if (trans) return; seaExSave(); stopInput(); trans = { t: 0, done: false, mid: function () { var o = ocS(); o.sea = null; o.boat.hp = 100; OCS.sea = null; OCS.diving = false; OCS.mode = "dock"; var pl = OCS.pl; pl.x = OCS.m.pier.slip - 1.5; pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; cam.x = pl.x; cam.y = pl.y - 3; ocHudO2(); ocBanner(); save(); } };
+    if (trans) return; seaExSave(); if (OCS && OCS.sea) OCS.sea.lev = null; stopInput(); trans = { t: 0, done: false, mid: function () { var o = ocS(); o.sea = null; o.boat.hp = 100; OCS.sea = null; OCS.diving = false; OCS.mode = "dock"; var pl = OCS.pl; pl.x = OCS.m.pier.slip - 1.5; pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; cam.x = pl.x; cam.y = pl.y - 3; ocHudO2(); ocBanner(); save(); } };
   }
   function seaDive(site) {   // dive at a site out at sea: the boat waits on the surface above you
     if (trans) return; seaSaveState(); stopInput(); trans = { t: 0, done: false, mid: function () { OCS = null; ocBuild({ seed: site.seed, name: site.name }); S.st.sitedives = (S.st.sitedives || 0) + 1; var k = "s" + site.seed; ocS().isl[k] = 1; } };
@@ -17413,6 +17496,7 @@
   function seaIslAt(x, y) { var I = seaIslands(); for (var i = 0; i < I.length; i++) if (Math.hypot(I[i].x - x, I[i].y - y) < I[i].r + 3) return I[i]; return null; }
   function seaTap(sx, sy) {   // returns true if the tap was used
     var s = OCS.sea, w = seaFromScreen(sx, sy), x = w[0], y = w[1];
+    if (s.lev && s.lev.up && !s.lev.dead && Math.hypot(s.lev.hx - x, s.lev.hy - y) < 4) { seaFire({ x: s.lev.hx, y: s.lev.hy, ang: 0, sp: 0 }, true); return true; }   // tap the Leviathan to fire
     for (var i = 0; i < s.ships.length; i++) { var sh = s.ships[i]; if (!sh.sink && Math.hypot(sh.x - x, sh.y - y) < 4) { seaFire(sh, true); return true; } }
     var I = seaIslAt(x, y); if (I) { s.tgt = { x: I.x, y: I.y, isl: I }; thud(420, 0.03); if (!ocS().isl[I.id]) { ocS().isl[I.id] = 1; S.st.islands = Object.keys(ocS().isl).filter(function (k) { return /^\d+$/.test(k); }).length; } return true; }
     for (var j = 0; j < OSITES.length; j++) if (Math.hypot(OSITES[j].x - x, OSITES[j].y - y) < 3) { s.tgt = { x: OSITES[j].x, y: OSITES[j].y, site: OSITES[j] }; return true; }
@@ -17460,7 +17544,7 @@
   function seaUpdate(dt) {
     var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1) * (S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "ship"; }) ? 1.2 : 1);
-    seaWxStep(s, dt); maxSp *= s.spMul;   // WEATHER AT SEA
+    seaWxStep(s, dt); maxSp *= s.spMul * (hasCharm("wander") ? 1.1 : 1); migSeaStep(s, dt); levStep(s, dt);   // WEATHER AT SEA, MIGRATIONS, THE LEVIATHAN
     if (joy.x || joy.y) { s.tgt = null; var ja = Math.atan2(joy.y, joy.x), jd = Math.atan2(Math.sin(ja - s.ang), Math.cos(ja - s.ang)); s.ang += clamp(jd, -1, 1) * 2.2 * dt; want = maxSp * Math.min(1, Math.hypot(joy.x, joy.y)); }
     else if (turn || thr) { if (turn || thr > 0) s.tgt = null; s.ang += turn * 1.9 * dt; want = thr > 0 ? maxSp : thr < 0 ? 0 : (s.tgt ? want : s.sp); if (!thr && !s.tgt) want = s.sp; }
     if (s.tgt) {
@@ -17497,6 +17581,7 @@
       if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2)) { hit = true; sh2.hp -= b.dmg || 1; sh2.hurt = 0.3; for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
         if (sh2.hp <= 0) { sh2.sink = 0.01; S.st.pships = (S.st.pships || 0) + 1; s.loot.push({ x: sh2.x, y: sh2.y, items: seaLoot(sh2), t: 0 }); snd("coin"); toast(sh2.big ? "You sank a pirate galleon! Its cargo is floating free." : "Pirate sloop sunk! Sail over the floating crate to grab its cargo.", "#7af0ff"); } } });
       else if (Math.hypot(s.x - b.x, s.y - b.y) < 2) { hit = true; seaHurt(b.big ? 16 : 11); for (var q2 = 0; q2 < 8; q2++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); }
+      if (b.mine && !hit && levHit(b)) hit = true;
       if (hit || b.life <= 0) { if (!hit) { for (var q3 = 0; q3 < 4; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); waterSplash(b.x, b.y, b.big ? 1.6 : 1.2, 1); } s.balls.splice(i, 1); }
     }
     for (i = s.loot.length - 1; i >= 0; i--) { var L = s.loot[i]; L.t += dt; if (Math.hypot(L.x - s.x, L.y - s.y) < 3) { L.items.forEach(function (it) { give(it[0], it[1], undefined, undefined, true); texts.push({ s: "+" + it[1] + " " + ITEMS[it[0]].n, x: cam.x, y: cam.y - 1 - texts.length * 0.4, c: "#ffd23f", life: 1.6 }); }); s.loot.splice(i, 1); snd("coin"); } else if (L.t > 90) s.loot.splice(i, 1); }
@@ -17618,6 +17703,7 @@
     s.loot.forEach(function (L) { var bx = L.x * k, by = L.y * k + (reduce ? 0 : Math.sin(t * 3 + L.x) * k * 0.15); g.fillStyle = "rgba(255,210,63,.25)"; g.beginPath(); g.arc(bx, by, k * 1.4, 0, 6.2832); g.fill(); g.fillStyle = "#8a5a32"; g.fillRect(bx - k * 0.55, by - k * 0.45, k * 1.1, k * 0.9); g.fillStyle = "#c9a52a"; g.fillRect(bx - k * 0.55, by - k * 0.08, k * 1.1, k * 0.16); });
     s.wake.forEach(function (w) { var a = clamp(w.life / 1.6, 0, 1); if (w.fire) { g.fillStyle = "rgba(255," + (140 + Math.random() * 80 | 0) + ",60," + a * 2 + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * 0.3, 0, 6.2832); g.fill(); return; } if (w.smoke) { g.fillStyle = "rgba(220,220,230," + a + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * (0.6 - a * 0.3), 0, 6.2832); g.fill(); return; } g.fillStyle = "rgba(255,255,255," + (a * (w.spl ? 0.9 : 0.55)) + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * (0.25 + (1 - a) * 0.5), 0, 6.2832); g.fill(); });
     if (s.tgt) { var px = s.tgt.x * k, py = s.tgt.y * k, pu = 1 + Math.sin(t * 5) * 0.1; g.strokeStyle = "rgba(255,226,122,.8)"; g.lineWidth = 2; g.setLineDash([k * 0.4, k * 0.4]); g.beginPath(); g.moveTo(s.x * k, s.y * k); g.lineTo(px, py); g.stroke(); g.setLineDash([]); if (!s.tgt.isl) { g.beginPath(); g.arc(px, py, k * 0.8 * pu, 0, 6.2832); g.stroke(); } }
+    drawSeaMig(g, k, now); drawLev(g, k, now);   // MIGRATIONS and THE LEVIATHAN
     s.ships.forEach(function (sh) { seaBoatTop(g, sh.x * k, sh.y * k, sh.ang, k, now, { pirate: 1, big: sh.big, hurt: sh.hurt > 0 && Math.floor(now / 70) % 2 === 0, sink: sh.sink, ph: sh.x }); if (!sh.sink && sh.hp < sh.hpm) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sh.x * k - k * 1.5, sh.y * k - k * 2.6, k * 3, 4); g.fillStyle = "#ff6a6a"; g.fillRect(sh.x * k - k * 1.5, sh.y * k - k * 2.6, k * 3 * sh.hp / sh.hpm, 4); } });
     (s.dol || []).forEach(function (D) { var fa = s.ang + D.side * 1.57, ax = s.x + Math.cos(s.ang) * D.along + Math.cos(fa) * D.off, ay = s.y + Math.sin(s.ang) * D.along + Math.sin(fa) * D.off, jump = Math.max(0, Math.sin(D.ph)), al = clamp(D.life / 3, 0, 1);   // dolphins leaping alongside
       g.save(); g.globalAlpha = al; g.translate(ax * k, ay * k - jump * k * 0.8); g.rotate(s.ang); g.fillStyle = "rgba(0,30,50,.25)"; g.beginPath(); g.ellipse(0, jump * k * 0.8, k * 0.9, k * 0.3, 0, 0, 6.2832); g.fill(); g.fillStyle = "#6a8aa8"; g.beginPath(); g.ellipse(0, 0, k * 0.8 + jump * k * 0.2, k * 0.26, 0, 0, 6.2832); g.fill(); g.fillStyle = "#9ab8d0"; g.beginPath(); g.ellipse(k * 0.1, 0, k * 0.5, k * 0.12, 0, 0, 6.2832); g.fill(); g.fillStyle = "#5a7a98"; g.beginPath(); g.moveTo(-k * 0.75, 0); g.lineTo(-k * 1.1, -k * 0.25); g.lineTo(-k * 1.1, k * 0.25); g.fill(); g.restore();
@@ -17653,11 +17739,87 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)";
     texts.forEach(function (tx) { var p3 = seaToScreen(tx.x, tx.y); g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, p3[0], p3[1]); g.fillText(tx.s, p3[0], p3[1]); }); g.globalAlpha = 1;
     if (!panelOpen && !trans && !s.chart) { seaActions().forEach(function (a, n) { var p4 = seaToScreen(a.wx, a.wy); ocPill(g, now, a.label, p4[0], p4[1] - n * 40, a.fn); }); }
+    drawLevBar(g);
     if (s.chart) drawBigChart(g);
     if (now - (s.miniT || 0) > 160) { s.miniT = now; var mcv = $("sbxMini"); if (mcv) { if (mcv.hidden && MINI.on) mcv.hidden = false; if (!mcv.hidden) drawSeaMini(mcv); } }   // the sea chart in the mini-map
     if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.globalAlpha = 1; }
   }
 
+
+  // ---------- THE BRINEBOG LEVIATHAN: a rare sea serpent far from home ----------
+  // Sailing more than 200 from the pier (never in the lighthouse's beam), there is a small chance each minute that it finds you, more in
+  // storms and fog, at most once a day. It circles under the Lily Belle as a shadow, then rises: its head and coils break the surface for a
+  // few seconds (the only time your cannons can hurt it) and it slams the sea where you are (a ring shows where; sail out of it). Then it
+  // dives and comes up somewhere else. Beat it for its scales and its hoard; sail 75 away and it gives up. s.lev is the fight while it lasts.
+  var LEVHP = 44;
+  function levStep(s, dt) {
+    var o = ocS(), I = seaIslands(), homeD = Math.hypot(I[0].x - s.x, I[0].y - s.y), day = ocToday(), L = s.lev;
+    if (!L) {
+      if (homeD < 200 || lhSafe(s.x, s.y) || o.levDay === day || (o.levWin !== undefined && day - o.levWin < 3)) return;
+      var ch = dt / 420 * (s.wx && s.wx.k === "storm" ? 3 : s.wx && s.wx.k === "fog" ? 2 : 1); if (!(Math.random() < ch)) return;
+      o.levDay = day; s.lev = L = { x: s.x, y: s.y, hp: LEVHP, st: "circle", t: 0, oa: Math.random() * 6.28, hx: s.x, hy: s.y, ha: 0, hurt: 0, ring: null, slam: 0 };
+      shake = Math.max(shake, 0.8); try { rumble(0, 4, 0.22, 90); } catch (e) {} toast("Something ENORMOUS is circling under the Lily Belle...", "#c86aff"); S.st.levseen = (S.st.levseen || 0) + 1; return;
+    }
+    L.t += dt; L.hurt = Math.max(0, L.hurt - dt);
+    if (L.dead) { L.dead += dt; if (L.dead > 3) s.lev = null; return; }
+    if (Math.hypot(L.x - s.x, L.y - s.y) > 75 && L.st !== "rise") { s.lev = null; toast("The Leviathan sinks back into the deep. It will hunt again another day.", "#c86aff"); return; }
+    L.x += (s.x - L.x) * Math.min(1, dt * 0.35); L.y += (s.y - L.y) * Math.min(1, dt * 0.35);   // it follows you
+    L.oa += dt * (L.st === "circle" ? 0.9 : 0.25);
+    if (L.st === "circle" && L.t > 5) { L.st = "rise"; L.t = 0; var ra = L.oa; L.hx = s.x + Math.cos(ra) * 11; L.hy = s.y + Math.sin(ra) * 11; L.ha = Math.atan2(s.y - L.hy, s.x - L.hx); shake = Math.max(shake, 0.6); thud(50, 0.2); for (var q = 0; q < 24; q++) s.wake.push({ x: L.hx + (Math.random() - 0.5) * 4, y: L.hy + (Math.random() - 0.5) * 4, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 1, spl: 1 }); }
+    else if (L.st === "rise" && L.t > 0.8) { L.st = "up"; L.t = 0; L.slam = 1.2; if (!S.st.levtip) { S.st.levtip = 1; toast("The Brinebog Leviathan! Fire at its head while it's up, and sail out of the rings!", "#c86aff"); } }
+    else if (L.st === "up") {
+      L.ha += clamp(Math.atan2(Math.sin(Math.atan2(s.y - L.hy, s.x - L.hx) - L.ha), Math.cos(Math.atan2(s.y - L.hy, s.x - L.hx) - L.ha)), -1, 1) * dt * 1.5;
+      L.slam -= dt; if (L.slam <= 0 && !L.ring) { L.ring = { x: s.x + Math.cos(s.ang) * s.sp * 0.9, y: s.y + Math.sin(s.ang) * s.sp * 0.9, t: 1.35 }; L.slam = 2.6; thud(80, 0.08); }
+      if (L.t > 6.5) { L.st = "dive"; L.t = 0; for (var q2 = 0; q2 < 18; q2++) s.wake.push({ x: L.hx + (Math.random() - 0.5) * 3, y: L.hy + (Math.random() - 0.5) * 3, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 0.9, spl: 1 }); }
+    }
+    else if (L.st === "dive" && L.t > 1) { L.st = "circle"; L.t = 1.5; }
+    if (L.ring) { L.ring.t -= dt; if (L.ring.t <= 0) {   // the slam
+      var hitB = Math.hypot(s.x - L.ring.x, s.y - L.ring.y) < 3.6; for (var q3 = 0; q3 < 30; q3++) s.wake.push({ x: L.ring.x + (Math.random() - 0.5) * 5, y: L.ring.y + (Math.random() - 0.5) * 5, vx: (Math.random() - 0.5) * 9, vy: (Math.random() - 0.5) * 9, life: 1, spl: 1 });
+      waterSplash(L.ring.x, L.ring.y, 2.4, 1); shake = Math.max(shake, hitB ? 1 : 0.5); thud(45, 0.25); if (hitB) seaHurt(14); L.ring = null; } }
+    L.up = L.st === "up" || L.st === "rise";
+    if ((keys.j || tk.j) && L.up && s.cd <= 0) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);
+    if (L.up && s.cd <= 0 && s.auto !== false && Math.hypot(L.hx - s.x, L.hy - s.y) < 20) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);   // the deckhand frog fires too
+  }
+  function levHit(b) {
+    var s = OCS.sea, L = s.lev; if (!L || L.dead || !L.up || Math.hypot(L.hx - b.x, L.hy - b.y) > 3.2) return false;
+    L.hp -= b.dmg || 1; L.hurt = 0.3; thud(110, 0.1); for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 });
+    if (L.hp <= 0) {
+      L.dead = 0.01; L.up = false; L.ring = null; var o = ocS(); o.levWin = ocToday(); S.st.levkills = (S.st.levkills || 0) + 1; shake = 1.2; snd("open", "Legendary");
+      var R2 = function (a, b2) { return a + Math.floor(Math.random() * (b2 - a + 1)); };
+      s.loot.push({ x: L.hx, y: L.hy, items: [["levscale", R2(2, 3)], ["doubloon", R2(30, 50)], ["blackpearl", R2(2, 3)], ["goldbar", 2], ["ambergris", 1], ["starshard", 1]].filter(function (q2) { return ITEMS[q2[0]]; }), t: 0 });
+      popup("The Brinebog Leviathan is beaten!", "Its hoard floats free. Sail over it to haul it aboard.", "#c86aff", "☠"); checkGoals(); save();
+    }
+    return true;
+  }
+  function drawLev(g, k, now) {
+    var s = OCS.sea, L = s.lev; if (!L) return; var t = now / 1000, i;
+    if (L.ring) { var rk = 1 - L.ring.t / 1.35, rx = L.ring.x * k, ry = L.ring.y * k; g.strokeStyle = "rgba(255,90,90," + (0.4 + 0.5 * rk) + ")"; g.lineWidth = Math.max(2, k * 0.18); g.beginPath(); g.arc(rx, ry, k * 3.6, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,60,60," + (0.1 + 0.2 * rk) + ")"; g.beginPath(); g.arc(rx, ry, k * 3.6 * rk, 0, 6.2832); g.fill(); }
+    if (L.dead) { var dk2 = clamp(1 - L.dead / 3, 0, 1); g.globalAlpha = dk2; }
+    if (L.st === "circle" || L.st === "dive") {   // a long dark shadow, circling
+      var cx = s.x, cy = s.y, pts = []; for (i = 0; i < 26; i++) { var a = L.oa - i * 0.09, rr = 12 + Math.sin(i * 0.5 + t * 1.3) * 0.8; pts.push([(cx + Math.cos(a) * rr) * k, (cy + Math.sin(a) * rr) * k]); }
+      g.save(); g.globalAlpha = L.dead ? g.globalAlpha : 1; g.strokeStyle = "rgba(6,12,30,.3)"; g.lineCap = "round"; g.lineJoin = "round";
+      [[26, 1.5], [17, 2.4], [7, 3.2]].forEach(function (seg) { g.lineWidth = k * seg[1]; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (var q = 1; q < seg[0]; q++) g.lineTo(pts[q][0], pts[q][1]); g.stroke(); });   // a tapering body: thick at the head
+      g.restore();
+    } else {   // up: three coils, and the head
+      for (var c = 0; c < 3; c++) { var ca = L.ha + Math.PI + (c - 1) * 0.5, cd = 5 + c * 3.4, cx2 = L.hx + Math.cos(ca) * cd, cy2 = L.hy + Math.sin(ca) * cd, rise = L.st === "rise" ? L.t / 0.8 : 1;
+        g.fillStyle = "rgba(255,255,255,.5)"; g.beginPath(); g.ellipse(cx2 * k, cy2 * k, k * 1.9, k * 1.1, ca, 0, 6.2832); g.fill();
+        g.fillStyle = L.hurt > 0 ? "#ffffff" : "#1f4a5a"; g.beginPath(); g.ellipse(cx2 * k, cy2 * k, k * 1.5 * rise, k * 0.8 * rise, ca + 1.57, 0, 6.2832); g.fill(); g.fillStyle = "#3f8a88"; g.beginPath(); g.ellipse(cx2 * k, cy2 * k - k * 0.2, k * 0.9 * rise, k * 0.35 * rise, ca + 1.57, 0, 6.2832); g.fill(); }
+      g.save(); g.translate(L.hx * k, L.hy * k); g.rotate(L.ha); var sz = (L.st === "rise" ? L.t / 0.8 : 1) * k, jaw = Math.sin(t * 4) * 0.15 + 0.2;
+      g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(0, 0, sz * 3.4, sz * 2.2, 0, 0, 6.2832); g.fill();
+      g.fillStyle = L.hurt > 0 ? "#ffffff" : "#163a48"; g.beginPath(); g.ellipse(0, 0, sz * 2.8, sz * 1.6, 0, 0, 6.2832); g.fill();
+      g.fillStyle = "#1f5a64"; g.beginPath(); g.moveTo(sz * 1.6, -sz * 0.4); g.lineTo(sz * 3.6, -sz * (0.5 + jaw)); g.lineTo(sz * 3.4, 0); g.lineTo(sz * 3.6, sz * (0.5 + jaw)); g.lineTo(sz * 1.6, sz * 0.4); g.closePath(); g.fill();
+      g.fillStyle = "#2f7a7a"; for (i = 0; i < 5; i++) { g.beginPath(); g.moveTo(-sz * 2 + i * sz * 0.8, -sz * 0.2); g.lineTo(-sz * 1.6 + i * sz * 0.8, -sz * 1.3); g.lineTo(-sz * 1.2 + i * sz * 0.8, -sz * 0.2); g.fill(); }
+      g.fillStyle = "#c8fff0"; [-1, 1].forEach(function (sd) { oG(g, sz * 1.4, sd * sz * 0.8, sz * 1.1, "rgba(200,255,240,.6)"); g.beginPath(); g.arc(sz * 1.4, sd * sz * 0.8, sz * 0.28, 0, 6.2832); g.fill(); });
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  }
+  function drawLevBar(g) {
+    var L = OCS.sea.lev; if (!L || L.dead) return; var w = Math.min(320, vw - 60), x = (vw - w) / 2, y = 116;
+    g.fillStyle = "rgba(20,6,30,.78)"; mrr(g, x - 10, y - 6, w + 20, 36, 10); g.fill();
+    g.font = "900 12px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#e0b8ff"; g.fillText(L.up ? "THE BRINEBOG LEVIATHAN" : "The Brinebog Leviathan (under the water)", vw / 2, y + 8);
+    g.fillStyle = "rgba(255,255,255,.15)"; g.fillRect(x, y + 14, w, 8); g.fillStyle = "#c86aff"; g.fillRect(x, y + 14, w * clamp(L.hp / LEVHP, 0, 1), 8);
+  }
   function seaFogDraw(g, now, k, shx, shy) {
     var s = OCS.sea, t = now / 1000, fogn = s.wx && s.wx.k === "fog" ? s.wx.n : 0, L = lighthouse(), lit = !!ocS().lh;
     if (fogn > 0.01) {
@@ -18068,7 +18230,7 @@
     if (o.isl && typeof o.isl === "object") Object.keys(o.isl).slice(0, 400).forEach(function (k) { if (k.length < 20 && o.isl[k]) n.isl[k] = 1; });
     if (o.sea && typeof o.sea === "object" && isFinite(+o.sea.x) && isFinite(+o.sea.y)) n.sea = { x: clamp(+o.sea.x, 6, 2000), y: clamp(+o.sea.y, 6, 2000), ang: +o.sea.ang || 0 };
     ["vault", "tpi", "btl"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });
-    if (o.lh) n.lh = 1; if (typeof o.ex === "string" && /^[01]{1,1200}$/.test(o.ex)) n.ex = o.ex;   // THE OLD LIGHTHOUSE lit; the explored sea chart   // REAL TIDES: vault week opened, last low tide's finds, bottle day
+    if (o.lh) n.lh = 1; ["levDay", "levWin"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });   // THE LEVIATHAN if (typeof o.ex === "string" && /^[01]{1,1200}$/.test(o.ex)) n.ex = o.ex;   // THE OLD LIGHTHOUSE lit; the explored sea chart   // REAL TIDES: vault week opened, last low tide's finds, bottle day
     return n;
   }
   function ocQuit() { if (!OCS) return; OCS = null; stageEl.classList.remove("cave", "ocean"); ocHudO2(); }
@@ -19161,6 +19323,7 @@
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
   window.__sbx.sea = { wx: seaWx, fog: seaFogN, calm: seaCalmN, up: shipUp, fit: upFit, hullMax: hullMax, lh: lighthouse, openLh: openLighthouse, lhAct: lhAct, fire: seaFire, spawn: seaSpawnShip, hurt: seaHurt, SHIPUP: SHIPUP, ex: seaExA, known: seaKnown };
   window.__sbx.met = { tick: tickMeteors, launch: launchMeteor, impact: meteorImpact, get SH() { return METSH; }, set SH(v) { METSH = v; } }; window.__sbx.flood = { tick: tickFlood, now: floodNow, F: FLOOD };
+  window.__sbx.mig = { season: migSeason, tick: tickMig, F: MIGF, E: MIGE, sea: migSeaStep }; window.__sbx.lev = { step: levStep, hit: levHit, HP: LEVHP };
   window.__sbx.tide = { off: tideOff, info: tideInfo, dayF: tideDayF, get OWL() { return OWL; }, down: tideDown, up: tideUp, pools: tidePools, vaultOpen: vaultOpen, spring: springIdx, note: bottleNote };
   window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
