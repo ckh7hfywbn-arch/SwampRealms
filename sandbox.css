@@ -1995,3 +1995,23 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .bo-cost span{padding:1px 7px;border-radius:99px;font-size:.74rem;font-weight:800;background:rgba(78,230,180,.14);color:#9ff3d4}
 .bo-cost span.no{background:rgba(255,106,90,.14);color:#ffb0a0}
 small.bo-cost{display:flex}
+
+/* THE PEARL DIVE DERBY */
+.dy-box{max-width:420px}
+.dy-head small{display:block;color:#7af0ff;font-weight:800;font-size:.78rem}
+.dy-head h2{margin:2px 0 6px}
+.dy-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.dy-stats div{padding:10px 12px;border-radius:12px;background:rgba(122,240,255,.08);border:1px solid rgba(122,240,255,.2)}
+.dy-stats b{display:block;font:900 1.5rem/1 Nunito,system-ui,sans-serif;color:#ffd23f}
+.dy-stats small{display:block;margin-top:4px;color:#c3dccf;font-weight:700;font-size:.78rem}
+.dy-h{margin:4px 0 6px;font:800 .95rem Nunito,system-ui,sans-serif;color:#f6eedb;text-transform:none;letter-spacing:0}
+.dy-list{margin:0;padding:0;list-style:none;display:grid;gap:3px}
+.dy-list li{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;background:rgba(255,255,255,.04);font-weight:700}
+.dy-list li:first-child{background:rgba(255,210,63,.12)}
+.dy-list li.me{outline:2px solid #7af0ff}
+.dy-r{color:#9ad0e0;font-weight:900}.dy-s{color:#ffd23f;font-weight:900}
+.dy-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dy-empty,.dy-you,.dy-prize{margin:8px 0;color:#c3dccf;font-weight:600;font-size:.86rem}
+.dy-prize{color:#9ad0e0}
+.mo-box .dy-head h2{margin:2px 0 6px;font:900 1.5rem/1.15 Nunito,system-ui,sans-serif;text-transform:none;letter-spacing:0;color:#f6eedb}
+.mo-box .dy-stats small{text-transform:none;letter-spacing:0;color:#c3dccf;font-size:.78rem}

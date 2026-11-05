@@ -190,6 +190,9 @@
   // MIGRATIONS: a keepsake from each season's travellers; all four make the Wanderer's Charm. THE LEVIATHAN leaves its scales.
   [["goosedown", "Goose Down", "Soft down from a Lily Goose flying north in Spring. Catch it as it drifts down."], ["antlershed", "Elk Antler Shed", "A Bog Elk dropped it on the way south in Fall."], ["turtlescute", "Turtle Scute", "A Shellback Turtle's old shell plate, left as thanks for sailing alongside in Summer."], ["ambergris", "Ambergris", "A waxy, sweet-smelling lump a Brine Whale left floating in Winter. Worth a lot to Old Croaker."], ["levscale", "Leviathan Scale", "A plate as big as a door from the Brinebog Leviathan. Proof you beat the thing under the sea."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
   RECIPES.push({ id: "x_ch_wander", n: "Wanderer's Charm", out: null, cost: { goosedown: 4, antlershed: 1, turtlescute: 1, ambergris: 1, rope: 1 }, charm: "wander", bench: true, d: "A keepsake from all four seasons' travellers. Migrations come twice as often and leave twice the keepsakes, and you sail 10% faster." });
+  // SEA DOMES: build an air-filled glass dome on the sea floor
+  if (!ITEMS.x_dome) { ITEMS.x_dome = { n: "Sea Dome Kit", d: "A folded glass dome. Dive to the sea floor and build it (a 7 by 5 bubble of air): it refills your air, heals you, and lights the deep. Pack it up again any time." }; if (ORDER.indexOf("x_dome") < 0) ORDER.push("x_dome"); }
+  RECIPES.push({ id: "x_dome", n: "Sea Dome Kit", out: { x_dome: 1 }, cost: { glass: 12, brass: 6, ironingot: 4, seaglass: 4 }, bench: true, d: "A glass dome you build on the sea floor: a bubble of air that refills your air and heals you. Up to 3 at Croaker's Pier and 1 at each dive site." });
   RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
   RECIPES.push({ id: "x_detect", n: "Metal Detector", out: { x_detect: 1 }, cost: { ironingot: 4, quartz: 4, glass: 2 }, bench: true, d: "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore within 14 tiles." });
   RECIPES.push({ id: "x_jet", n: "Swamp-Gas Jetpack", out: { x_jet: 1 }, cost: { ironingot: 8, sulfur: 6, leather: 4, glass: 2 }, bench: true, d: "Carry it: keep holding jump at the top of a jump to fly on swamp gas for a couple of seconds. It refuels whenever you stand on the ground." });
@@ -8738,6 +8741,7 @@
     SPR.turtlescute = { r: ["................", "................", ".....aaaaaa.....", "....abbcbbba....", "...abcccccbba...", "..abbcbbbcbbba..", "..abcccbcccbba..", "..abbcbbbcbbba..", "..abcccbcccbba..", "...abbcbbbcba...", "....abbcbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#3a5a2a", b: "#7aa84a", c: "#b8d878" } };
     SPR.ambergris = { r: ["................", "................", "................", ".....aaaa.......", "...aabbbbaa.....", "..abbcbbbbba....", "..abbbbbcbbba...", ".abbcbbbbbbba...", ".abbbbbcbbbba...", "..abbbbbbbcba...", "...aabbbbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#8a7050", b: "#d8c098", c: "#f0e0c0" } };
     SPR.levscale = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbccccbba...", "..abbcddddcbba..", "..abcddeeddcba..", ".abbcdeffedcbba.", ".abcddeffeddcba.", ".abbcdeeeedcbba.", "..abcddddddcba..", "..abbccccccbba..", "...abbbbbbbba...", "....aabbbbaa....", "......aaaa......", "................", "................"], p: { a: "#0e2a3a", b: "#1f4a5a", c: "#2f6a72", d: "#3f8a88", e: "#6ac8b8", f: "#c8fff0" } };
+    SPR.x_dome = { r: ["................", "................", ".....aaaaaa.....", "....abbbbbba....", "...abccbbbbba...", "..abcbbbbbbbba..", "..abcbbbbdbbba..", ".abbbbbbdddbbba.", ".abbbbbbbdbbbba.", ".abbbbbbbbbbbba.", ".aeeeeeeeeeeeea.", ".ffffffffffffff.", "................", "................", "................", "................"], p: { a: "#7ab8c8", b: "#bfefff", c: "#ffffff", d: "#ffd23f", e: "#9a7a3a", f: "#6a4a1a" } };
     SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
     SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
@@ -16086,7 +16090,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -16208,6 +16212,121 @@
       if (!S.flood.length) { S.st.floods = (S.st.floods || 0) + 1; toast("The flood waters have gone down. See what they washed up!", "#7ac8ff"); }
     }
   }
+
+  // ---------- SEA DOMES: an air-filled glass dome you build on the sea floor ----------
+  // With a Sea Dome Kit, swim down to the floor (4 m or deeper) where a 7 by 5 space is clear water: "Build a Sea Dome here". The dome is a
+  // glass shell with air inside (the air refills your tank), a lamp at the top, and a door on each side at floor level. Inside it you heal.
+  // S.oc.domes = [{ s: "" (the pier) or the dive site's seed, x: centre column, y: the floor row }]. Domes are stamped onto the map when
+  // it is built (nothing goes into S.oc.ed). An arrow at the edge of the screen points to the nearest dome when you dive.
+  var DOME_SHAPE = ["..GGG..", ".GAAAG.", "GAALAAG", "GAAAAAG", "AAAAAAA"];   // G glass, A air, L lamp; the bottom row's ends are the doors
+  function domeKey() { return OCS.main ? "" : String(OCS.site.seed); }
+  function domesHere() { var o = ocS(); if (!Array.isArray(o.domes)) o.domes = []; var k = domeKey(); return o.domes.filter(function (d) { return d.s === k; }); }
+  function domeStamp(t, d) { for (var r = 0; r < 5; r++) for (var c = 0; c < 7; c++) { var ch = DOME_SHAPE[r][c], x = d.x - 3 + c, y = d.y - 5 + r; if (ch === "." || x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) continue; t[y * OCW + x] = ch === "G" ? OT.DGLASS : ch === "L" ? OT.LAMP : OT.AIRP; } }
+  function domeUnstamp(d) { for (var r = 0; r < 5; r++) for (var c = 0; c < 7; c++) { var ch = DOME_SHAPE[r][c], x = d.x - 3 + c, y = d.y - 5 + r; if (ch === "." || x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) continue; OCS.t[y * OCW + x] = OT.WATER; } }
+  function domeSpot() {   // where a dome would go if you built one now (or null)
+    var sc = OCS, pl = sc.pl; if (!sc.diving || sc.land) return null; var x = Math.floor(pl.x), fy = ocFloorY(x, pl.y - 0.5); if (!fy) return null;
+    if (fy - 5 < OWL + 2) return null; var solid = 0;
+    for (var c = -3; c <= 3; c++) { if (ocSolid(x + c, fy)) solid++; for (var r = 1; r <= 5; r++) { var id = ocT(x + c, fy - r); if (id !== OT.WATER && !OTD[id].plant) return null; } }
+    if (solid < 5) return null; if (domesHere().some(function (d) { return Math.abs(d.x - x) < 9 && Math.abs(d.y - fy) < 7; })) return null;
+    return { x: x, y: fy };
+  }
+  function domeIn() { var sc = OCS, pl = sc.pl; var L = domesHere(); for (var i = 0; i < L.length; i++) { var d = L[i]; if (Math.abs(pl.x - (d.x + 0.5)) < 3.3 && pl.y > d.y - 5 && pl.y <= d.y + 0.1) return d; } return null; }
+  function domeBuild() {
+    var sp = domeSpot(), o = ocS(); if (!sp) { nag("Swim down to the sea floor, where there is clear water 7 wide and 5 high."); return; }
+    if (!(S.inv.x_dome > 0)) return; var cap = OCS.main ? 3 : 1; if (domesHere().length >= cap) { nag(OCS.main ? "Croaker's Pier already has 3 Sea Domes. Pack one up to move it." : "This dive site already has a Sea Dome."); return; }
+    S.inv.x_dome--; if (S.inv.x_dome <= 0) delete S.inv.x_dome; reslot(); hbDirty = true;
+    var d = { s: domeKey(), x: sp.x, y: sp.y }; if (!Array.isArray(o.domes)) o.domes = []; o.domes.push(d); domeStamp(OCS.t, d);
+    S.st.domes = (S.st.domes || 0) + 1; ocBubbles(sp.x + 0.5, sp.y - 2, 30); ocFx(30, sp.x + 0.5, sp.y - 2.5, "#bfefff", { sp: 4, g: 0 }); thud(140, 0.12); snd("open", "Epic");
+    popup("Sea Dome built", "A bubble of air on the sea floor. Swim in to breathe and heal.", "#7af0ff", "◒"); checkGoals(); save();
+  }
+  function domePack() {
+    var d = domeIn(), o = ocS(); if (!d) return; domeUnstamp(d); o.domes = o.domes.filter(function (q) { return q !== d; }); give("x_dome", 1, undefined, undefined, true); ocBubbles(d.x + 0.5, d.y - 2, 24); thud(200, 0.08); toast("Sea Dome packed up. Build it again anywhere on the sea floor.", "#7af0ff"); save();
+  }
+  function domeTick(dt) { var sc = OCS; if (!sc.diving) return; var d = domeIn(); if (d && hp > 0 && hp < MAXHP && ocAirAt(sc.pl.x, sc.pl.y - 0.8)) { hp = Math.min(MAXHP, hp + 4 * dt); if (Math.random() < dt * 3) ocFx(1, sc.pl.x, sc.pl.y - 1.2, "#7affc0", { sp: 0.6, g: -1 }); } }
+  function drawDomes(g, now) {   // a soft light inside each dome, and the arrow to the nearest one
+    var sc = OCS, L = domesHere(), t = now / 1000; if (!L.length) return; var best = null, bd = 1e9;
+    L.forEach(function (d) { var cx = ox + (d.x + 0.5) * ts, cy = oy + (d.y - 2.6) * ts; if (cx > -ts * 6 && cx < vw + ts * 6 && cy > -ts * 6 && cy < vh + ts * 6) { g.save(); g.globalCompositeOperation = "lighter"; oG(g, cx, cy, ts * 4.2, "rgba(150,240,255," + (0.12 + 0.04 * Math.sin(t * 2)).toFixed(3) + ")"); g.restore(); }
+      var dd = Math.hypot(d.x + 0.5 - sc.pl.x, d.y - 2 - sc.pl.y); if (dd < bd) { bd = dd; best = d; } });
+    if (!best || !sc.diving || bd < 6) return; var bx = ox + (best.x + 0.5) * ts, by = oy + (best.y - 2.5) * ts, m = 40; if (bx > m && bx < vw - m && by > m && by < vh - m) return;
+    var a = Math.atan2(by - vh / 2, bx - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 30, vw - 30), ey = clamp(vh / 2 + Math.sin(a) * vh, 90, vh - 120);
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(6,20,34,.75)"; g.beginPath(); g.arc(0, 0, 15, 0, 6.2832); g.fill(); g.rotate(a); g.fillStyle = "#7af0ff"; g.beginPath(); g.moveTo(12, 0); g.lineTo(4, -6); g.lineTo(4, 6); g.closePath(); g.fill(); g.rotate(-a);
+    g.strokeStyle = "#bfefff"; g.lineWidth = 2; g.beginPath(); g.arc(0, 3, 6, Math.PI, 0); g.stroke(); g.restore();
+  }
+
+  // ---------- THE PEARL DIVE DERBY: Croaker's weekly contest at the pier ----------
+  // At the derby board on the pier: 90 seconds to collect as many glowing derby pearls as you can (white 1 point, pink 2 deeper, black 4 in the
+  // Twilight Deep). Prizes in Doubloons (and real pearls for big scores). Signed-in players post their best to the weekly leaderboard on the
+  // server (worker.js /api/board/derby, a new board each Monday); everyone keeps their own best. DERBY is the run in progress.
+  var DERBY = null, DERBY_T = 90, DBX = 28, DBOARD = { list: null, me: null, week: 0, err: "", busy: false };
+  function derbyWeek() { return Math.floor((Date.now() / 86400000 + 3) / 7); }
+  function derbyS() { var o = ocS(); if (!o.derby || typeof o.derby !== "object") o.derby = { best: 0, wk: 0, wbest: 0, runs: [] }; if (o.derby.wk !== derbyWeek()) { o.derby.wk = derbyWeek(); o.derby.wbest = 0; } return o.derby; }
+  function derbyFetch() {
+    if (DBOARD.busy) return; DBOARD.busy = true; DBOARD.err = "";
+    cloudCall("GET", "/api/board/derby").then(function (r) { DBOARD.busy = false; if (r.s === 200 && r.j) { DBOARD.list = r.j.top || []; DBOARD.me = r.j.me || null; DBOARD.week = r.j.week; } else DBOARD.err = r.s === 0 ? "offline" : "error"; if (storyOpen === 242) renderDerby(); });
+  }
+  function openDerby() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 242; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderDerby(); derbyFetch();
+  }
+  function renderDerby() {
+    var D = derbyS(), on = CLOUD.state === "on", L = DBOARD.list;
+    var h = '<div class="mo-box dy-box"><div class="dy-head"><small>Croaker\'s Pier</small><h2>Pearl Dive Derby</h2><p class="mo-sub">90 seconds. Dive in and grab the glowing derby pearls: white ones are 1 point, pink ones (deeper down) 2, and black ones in the Twilight Deep 4. Watch your air!</p></div>'
+      + '<div class="dy-stats"><div><b>' + D.wbest + "</b><small>Your best this week</small></div><div><b>" + D.best + "</b><small>Your best ever</small></div></div>"
+      + '<h3 class="dy-h">This week\'s leaderboard</h3>';
+    if (L && L.length) h += '<ol class="dy-list">' + L.map(function (q, i) { return '<li class="' + (DBOARD.me && DBOARD.me.rank === i + 1 ? "me" : "") + '"><span class="dy-r">' + (i + 1) + '</span><span class="dy-n">' + esc(q.name) + '</span><span class="dy-s">' + q.score + "</span></li>"; }).join("") + "</ol>";
+    else h += '<p class="dy-empty">' + (DBOARD.busy ? "Loading the leaderboard..." : DBOARD.err === "offline" ? "The leaderboard needs an internet connection." : DBOARD.err ? "The leaderboard isn't answering right now." : "No scores yet this week. Be the first!") + "</p>";
+    if (DBOARD.me && DBOARD.me.rank > 10) h += '<p class="dy-you">You: #' + DBOARD.me.rank + " with " + DBOARD.me.score + "</p>";
+    if (!on) h += '<p class="dy-you">Sign in to a SwampRealms account to put your scores on the leaderboard.</p>';
+    h += '<p class="dy-prize">Prizes: a Doubloon for every 2 points, a Pearl at 20, a Black Pearl at 35.</p>';
+    h += '<div class="st-row"><button type="button" class="btn mo-start" data-derby="go">Start the derby</button><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f6eedb"); $("sbxStoryBox").innerHTML = h;
+  }
+  function derbyAct(a) { if (a !== "go") return; closeStory(); derbyStart(); }
+  function derbyStart() {
+    var sc = OCS; if (!sc || !sc.main || DERBY) return; if (!sc.diving) ocDiveIn();
+    var P = [], tries = 0; while (P.length < 26 && tries++ < 900) {
+      var x = 16 + Math.random() * 150, fy = ocFloorY(Math.floor(x), OWL + 2); if (!fy) continue; var y = OWL + 3 + Math.random() * Math.max(2, fy - OWL - 5);
+      if (!ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue; var dep = y - OWL, v = dep > 50 ? 4 : dep > 24 ? 2 : 1;
+      if (v === 4 && P.filter(function (q) { return q.v === 4; }).length >= 5) continue; if (P.some(function (q) { return Math.hypot(q.x - x, q.y - y) < 3; })) continue;
+      P.push({ x: x, y: y, v: v, ph: Math.random() * 6 });
+    }
+    DERBY = { t: DERBY_T, score: 0, P: P, n: 0 }; S.st.derbies = (S.st.derbies || 0) + 1;
+    toast("The Pearl Dive Derby has begun! 90 seconds: go!", "#f6eedb"); snd("rise");
+  }
+  function derbyStep(dt) {
+    var sc = OCS, D = DERBY; if (!D) return; if (!sc || !sc.main) { DERBY = null; return; }
+    D.t -= dt; var cx = sc.pl.x, cy = sc.pl.y - 0.45;
+    for (var i = D.P.length - 1; i >= 0; i--) { var q = D.P[i]; q.ph += dt * 3; if (Math.hypot(q.x - cx, q.y - cy) < 1) { D.score += q.v; D.n++; D.P.splice(i, 1); text(q.x, q.y - 0.5, "+" + q.v, q.v >= 4 ? "#c88aff" : q.v >= 2 ? "#ffb0d0" : "#ffffff"); ocFx(10, q.x, q.y, q.v >= 4 ? "#c88aff" : "#fff6e0", { sp: 3, g: 0 }); try { tn(0, 880 + q.v * 120, 1320 + q.v * 120, 0.12, "sine", 0.05); } catch (e) {} } }
+    if (D.t <= 0 || !sc.diving || hp <= 0 || !D.P.length) derbyEnd();
+  }
+  function derbyEnd() {
+    var D = DERBY; if (!D) return; DERBY = null; var B = derbyS(), sc = D.score, best = sc > B.best, wbest = sc > B.wbest;
+    B.runs = (B.runs || []).concat([sc]).sort(function (a, b) { return b - a; }).slice(0, 5); if (best) B.best = sc; if (wbest) B.wbest = sc;
+    var dbl = Math.floor(sc / 2); if (dbl) give("doubloon", dbl, undefined, undefined, true); if (sc >= 20) give("pearl", 1, undefined, undefined, true); if (sc >= 35) give("blackpearl", 1, undefined, undefined, true);
+    popup("Derby over: " + sc + " points", (best ? "A new personal best! " : wbest ? "Your best this week! " : "") + (dbl ? "Prize: " + dbl + " Doubloons" + (sc >= 35 ? ", a Pearl and a Black Pearl." : sc >= 20 ? " and a Pearl." : ".") : "No prize this time."), "#f6eedb", "●");
+    snd("open", sc >= 35 ? "Epic" : "Rare");
+    if (CLOUD.state === "on" && sc > 0) cloudCall("POST", "/api/board/derby", { score: sc }).then(function (r) { if (r.s === 200 && r.j) { DBOARD.list = r.j.top || DBOARD.list; DBOARD.me = r.j.me || DBOARD.me; if (r.j.me && r.j.me.rank) toast("Leaderboard: you're #" + r.j.me.rank + " this week.", "#f6eedb"); } });
+    checkGoals(); save();
+  }
+  function drawDerby(g, now) {
+    var D = DERBY, t = now / 1000; if (!D) return;
+    D.P.forEach(function (q) { var x = ox + q.x * ts, y = oy + (q.y + Math.sin(q.ph) * 0.15) * ts; if (x < -ts || x > vw + ts || y < -ts || y > vh + ts) return; var c = q.v >= 4 ? ["#3a2a55", "#c88aff"] : q.v >= 2 ? ["#ffb0d0", "#ffe0ee"] : ["#f6f2e8", "#ffffff"];
+      g.save(); g.globalCompositeOperation = "lighter"; oG(g, x, y, ts * 0.9, q.v >= 4 ? "rgba(200,140,255,.5)" : "rgba(255,246,220,.45)"); g.restore(); oE(g, x, y, ts * 0.24, ts * 0.24, c[0]); oE(g, x - ts * 0.07, y - ts * 0.08, ts * 0.08, ts * 0.08, c[1]);
+      if (Math.sin(t * 4 + q.ph * 3) > 0.92) { g.fillStyle = "#fff"; g.fillRect(x + ts * 0.18, y - ts * 0.3, 2, 2); } });
+  }
+  function drawDerbyHud(g) {
+    var D = DERBY; if (!D) return; var w = 230, x = (vw - w) / 2, y = 110, sec = Math.max(0, Math.ceil(D.t));
+    g.fillStyle = "rgba(6,20,34,.8)"; mrr(g, x, y, w, 48, 12); g.fill();
+    g.font = "900 16px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = D.t < 10 ? "#ff7a6a" : "#f6eedb"; g.fillText(Math.floor(sec / 60) + ":" + ("0" + sec % 60).slice(-2), x + 14, y + 38);
+    g.textAlign = "right"; g.fillStyle = "#ffd23f"; g.fillText(D.score + " pts", x + w - 14, y + 38); g.textAlign = "center"; g.font = "800 10px Nunito, system-ui, sans-serif"; g.fillStyle = "#9ad0e0"; g.fillText("PEARL DIVE DERBY · " + D.P.length + " left", vw / 2, y + 14);
+  }
+  function drawDerbyBoard(g) {   // the derby board on the pier
+    var x = ox + (DBX + 0.5) * ts, y = oy + (OSEA - 1) * ts, D = derbyS();
+    oR(g, x - ts * 0.9, y - ts * 2.2, ts * 0.12, ts * 2.2, "#4a2e18"); oR(g, x + ts * 0.78, y - ts * 2.2, ts * 0.12, ts * 2.2, "#4a2e18");
+    oR(g, x - ts * 1.15, y - ts * 3.25, ts * 2.3, ts * 1.25, "#2a4a5a"); oR(g, x - ts * 1.15, y - ts * 3.25, ts * 2.3, ts * 0.14, "#7af0ff"); oR(g, x - ts * 1.05, y - ts * 3.05, ts * 2.1, ts * 0.95, "#1a3440");
+    g.font = signFont(Math.max(8, Math.round(ts * 0.22))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("PEARL DIVE", x, y - ts * 2.68); g.fillText("DERBY", x, y - ts * 2.38);
+    g.fillStyle = "#ffd23f"; g.font = "800 " + Math.max(8, Math.round(ts * 0.2)) + "px Nunito, system-ui, sans-serif"; g.fillText("Best " + D.best, x, y - ts * 2.14);
+    oE(g, x - ts * 0.7, y - ts * 3.05, ts * 0.12, ts * 0.12, "#f6f2e8"); oE(g, x + ts * 0.7, y - ts * 3.05, ts * 0.12, ts * 0.12, "#c88aff");
+  }
   // ---------- REAL TIDES at Croaker's Pier ----------
   // The sea at the pier rises and falls twice a game day. For a couple of days each week (around days 6-7 of every 7) the SPRING TIDE runs
   // bigger: its lows drain the Tide Cave right down to the Spring-Tide Vault, and its highs wash over the pier planks. OSEA stays the map's
@@ -16305,7 +16424,7 @@
     trans = { t: 0, done: false, mid: function () { ocBuild(null, true); } };
   }
   function ocLeaveNow() {
-    if (!OCS) return; var sea = OCS.sea; OCS = null; stageEl.classList.remove("cave", "ocean"); resize(); stopInput(); mine = null;
+    if (!OCS) return; if (DERBY) derbyEnd(); var sea = OCS.sea; OCS = null; stageEl.classList.remove("cave", "ocean"); resize(); stopInput(); mine = null;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; ocHudO2(); hud(); save();
   }
   function ocLeave() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: ocLeaveNow }; }
@@ -16323,7 +16442,8 @@
     });
     OCS = { m: m, t: t, main: main, site: site, mode: "dock", diving: false, mobs: [], amb: [], shots: [], fx: [], bub: [], spawnT: 3, cool: 0, mineP: null, t0: performance.now(), mt: 0, o2: ocO2Max(), warnO2: 0, warnPr: 0,
       pl: { x: m.spawn.x, y: m.spawn.y, vx: 0, vy: 0, face: 1, ang: 0, ph: 0, on: true, kx: 0, ky: 0, shock: 0, splash: 0 }, zone: 0, depthMax: 0, btn: [], btns: [], msg: "", hatch: 0 };
-    var sc = OCS; sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5; OWL = main ? OSEA + tideOff(tideDayF()) : OSEA; TIDE.info = null;
+    var sc = OCS; (Array.isArray(o.domes) ? o.domes : []).forEach(function (d) { if (d.s === (main ? "" : String(site.seed))) domeStamp(sc.t, d); });   // SEA DOMES
+    sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5; OWL = main ? OSEA + tideOff(tideDayF()) : OSEA; TIDE.info = null;
     if (!main) { sc.diving = true; sc.mode = "dive"; sc.pl.on = false; }
     m.mobs.forEach(function (q, i) {
       var id = (main ? "" : site.seed + ":") + "m" + i; if (o.dead[id] !== undefined && ocToday() - o.dead[id] < 2) return;
@@ -16438,7 +16558,7 @@
     cam.x += (tcx - cam.x) * Math.min(1, dt * 6); cam.y += (tcy - cam.y) * Math.min(1, dt * 6);
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts; cam.x = clamp(cam.x, halfW, Math.max(halfW, OCW - halfW)); cam.y = clamp(cam.y, halfH - 8, Math.max(halfH - 8, OCH - halfH + 0.5));
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= OCW || aim.ty < 0 || aim.ty >= OCH) aim.tx = -1;
-    ocMobs(dt); ocTool(dt); ocAmbient(dt); ocSpawn(dt); ocShots(dt);
+    ocMobs(dt); ocTool(dt); ocAmbient(dt); ocSpawn(dt); ocShots(dt); domeTick(dt); derbyStep(dt);
     // particles, bubbles, texts
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } var g0 = q.g !== undefined ? q.g : 22; q.vy += g0 * dt; if (g0 > 5 && q.y > OWL) { q.vy *= 0.9; q.vx *= 0.96; } q.x += q.vx * dt; q.y += q.vy * dt; }
     for (k = sc.bub.length - 1; k >= 0; k--) { var b = sc.bub[k]; b.life -= dt; b.y += b.vy * dt; b.x += Math.sin(sc.mt * 2 + b.ph) * dt * 0.25; if (b.life <= 0 || b.y < OWL - 0.05) sc.bub.splice(k, 1); }
@@ -16703,8 +16823,11 @@
       if (pl.x > P.slip - 5) A.push({ label: ocS().boat.done ? "Set sail" : "Work on the boat", ax: P.x1 + 2, ay: OSEA - 3.6, fn: function () { if (ocS().boat.done) ocSetSail(); else openBoat(); } });
       if (pl.x < 5) A.push({ label: "Back to the swamp", ax: 3, ay: OSEA - 3, fn: ocLeave });
       if (OWL > OSEA + 1.7 && pl.x > 8 && pl.x < 16) A.push({ label: "Climb down to the tide flats", ax: 12.5, ay: OSEA - 2.6, fn: tideDown });   // REAL TIDES
+      if (Math.abs(pl.x - (DBX + 0.5)) < 2.2 && !DERBY) A.push({ label: "Pearl Dive Derby", ax: DBX + 0.5, ay: OSEA - 4.2, fn: openDerby });   // THE PEARL DIVE DERBY
     }
-    if (sc.main && sc.diving && sc.land && sc.landOn && pl.x < m.pier.x1) A.push({ label: "Climb up to the pier", ax: pl.x, ay: pl.y - 2.2, fn: tideUp });
+    if (sc.main && sc.diving && sc.land && sc.landOn && pl.x < m.pier.x1 && pl.y < OSEA + 11 && !domeIn()) A.push({ label: "Climb up to the pier", ax: pl.x, ay: pl.y - 2.2, fn: tideUp });   // the tide flats and the Tide Cave only
+    if (sc.diving && (S.inv.x_dome || 0) > 0 && !domeIn() && domeSpot()) A.push({ label: "Build a Sea Dome here", ax: pl.x, ay: pl.y - 2.4, fn: domeBuild });   // SEA DOMES
+    if (sc.diving && domeIn() && !DERBY) A.push({ label: "Pack up the Sea Dome", ax: pl.x, ay: pl.y - 2.6, fn: domePack });
     if (sc.main && m.tcave && !vaultOpen() && Math.abs(pl.x - 8.5) < 2 && pl.y > 19.5 && pl.y < 22.5) A.push({ label: "Sealed until a spring low tide", ax: 8.5, ay: 19.4, fn: function () { nag("Barnacles hold the door shut. It only opens when a spring low tide drains the cave (watch the tide clock)."); } });
     if (sc.diving && !sc.land && pl.y - 0.45 < OWL + 1.6) {
       if (sc.main) { if (Math.abs(pl.x - (m.pier.dive + 0.5)) < 3) A.push({ label: "Climb onto the dock", ax: m.pier.dive + 0.5, ay: OSEA - 2.8, fn: ocClimb }); else A.push({ label: "Swim back to the pier", ax: pl.x, ay: OSEA - 2.4, fn: ocSwimHome }); }
@@ -17170,6 +17293,7 @@
     sc.mobs.forEach(function (mb) { ocDrawMob(g, mb, now); if (mb.k === "angler" && !mb.dead) lights.push([mb.x + mb.face * 0.85, mb.y - 0.9, 5, "255,226,122"]); if (mb.k === "jelly" && !mb.dead) lights.push([mb.x, mb.y, 3, "122,240,255"]); if (mb.k === "captain" && !mb.dead) lights.push([mb.x, mb.y, 6, "168,255,240"]); });
     sc.shots.forEach(function (s) { ocDrawShot(g, s, now); });
     // --- you ---
+    if (sc.main) drawDerbyBoard(g); drawDerby(g, now);
     drawSceneDrops(g, now); ocDrawMe(g, now); ocDrawRod(g, now);
     drawWaterFx(g);
     // --- bubbles and particles ---
@@ -17262,7 +17386,7 @@
       var warn = (dep > lim && dep > 6 ? 1 : 0), lowA = sc.o2 < ocO2Max() * 0.25 ? 1 - sc.o2 / (ocO2Max() * 0.25) : 0;
       if (warn || lowA > 0) { var vg = g.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * 0.3, vw / 2, vh / 2, Math.max(vw, vh) * 0.7); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, warn ? "rgba(200,30,30," + (0.3 + 0.15 * Math.sin(t * 8)).toFixed(3) + ")" : "rgba(10,20,60," + (0.55 * lowA).toFixed(3) + ")"); g.fillStyle = vg; g.fillRect(0, 0, vw, vh); }
     }
-    if (!panelOpen) drawTideHud(g);
+    if (!panelOpen) { drawTideHud(g); drawDomes(g, now); drawDerbyHud(g); }
     if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); g.imageSmoothingEnabled = true; try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.imageSmoothingEnabled = false; g.globalAlpha = 1; }
   }
   function fullBoatParts() { var o = {}; OBOAT.forEach(function (k) { o[k] = 1; }); return o; }
@@ -18230,7 +18354,9 @@
     if (o.isl && typeof o.isl === "object") Object.keys(o.isl).slice(0, 400).forEach(function (k) { if (k.length < 20 && o.isl[k]) n.isl[k] = 1; });
     if (o.sea && typeof o.sea === "object" && isFinite(+o.sea.x) && isFinite(+o.sea.y)) n.sea = { x: clamp(+o.sea.x, 6, 2000), y: clamp(+o.sea.y, 6, 2000), ang: +o.sea.ang || 0 };
     ["vault", "tpi", "btl"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });
-    if (o.lh) n.lh = 1; ["levDay", "levWin"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });   // THE LEVIATHAN if (typeof o.ex === "string" && /^[01]{1,1200}$/.test(o.ex)) n.ex = o.ex;   // THE OLD LIGHTHOUSE lit; the explored sea chart   // REAL TIDES: vault week opened, last low tide's finds, bottle day
+    if (o.lh) n.lh = 1;
+    if (Array.isArray(o.domes)) n.domes = o.domes.filter(function (d) { return d && typeof d.s === "string" && d.s.length < 14 && isFinite(d.x) && isFinite(d.y); }).slice(0, 24).map(function (d) { return { s: d.s, x: clamp(Math.floor(d.x), 4, 335), y: clamp(Math.floor(d.y), 6, 175) }; });   // SEA DOMES
+    if (o.derby && typeof o.derby === "object") n.derby = { best: clamp(Math.floor(+o.derby.best) || 0, 0, 999), wk: Math.floor(+o.derby.wk) || 0, wbest: clamp(Math.floor(+o.derby.wbest) || 0, 0, 999), runs: Array.isArray(o.derby.runs) ? o.derby.runs.slice(0, 5).map(function (v) { return clamp(Math.floor(+v) || 0, 0, 999); }) : [] };   // THE PEARL DIVE DERBY ["levDay", "levWin"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });   // THE LEVIATHAN if (typeof o.ex === "string" && /^[01]{1,1200}$/.test(o.ex)) n.ex = o.ex;   // THE OLD LIGHTHOUSE lit; the explored sea chart   // REAL TIDES: vault week opened, last low tide's finds, bottle day
     return n;
   }
   function ocQuit() { if (!OCS) return; OCS = null; stageEl.classList.remove("cave", "ocean"); ocHudO2(); }
@@ -19324,6 +19450,7 @@
   window.__sbx.sea = { wx: seaWx, fog: seaFogN, calm: seaCalmN, up: shipUp, fit: upFit, hullMax: hullMax, lh: lighthouse, openLh: openLighthouse, lhAct: lhAct, fire: seaFire, spawn: seaSpawnShip, hurt: seaHurt, SHIPUP: SHIPUP, ex: seaExA, known: seaKnown };
   window.__sbx.met = { tick: tickMeteors, launch: launchMeteor, impact: meteorImpact, get SH() { return METSH; }, set SH(v) { METSH = v; } }; window.__sbx.flood = { tick: tickFlood, now: floodNow, F: FLOOD };
   window.__sbx.mig = { season: migSeason, tick: tickMig, F: MIGF, E: MIGE, sea: migSeaStep }; window.__sbx.lev = { step: levStep, hit: levHit, HP: LEVHP };
+  window.__sbx.dome = { spot: domeSpot, build: domeBuild, pack: domePack, here: domesHere, inside: domeIn }; window.__sbx.derby = { open: openDerby, start: derbyStart, end: derbyEnd, step: derbyStep, get D() { return DERBY; }, S: derbyS, B: DBOARD, fetch: derbyFetch };
   window.__sbx.tide = { off: tideOff, info: tideInfo, dayF: tideDayF, get OWL() { return OWL; }, down: tideDown, up: tideUp, pools: tidePools, vaultOpen: vaultOpen, spring: springIdx, note: bottleNote };
   window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
