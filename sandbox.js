@@ -193,6 +193,10 @@
   // SEA DOMES: build an air-filled glass dome on the sea floor
   if (!ITEMS.x_dome) { ITEMS.x_dome = { n: "Sea Dome Kit", d: "A folded glass dome. Dive to the sea floor and build it (a 7 by 5 bubble of air): it refills your air, heals you, and lights the deep. Pack it up again any time." }; if (ORDER.indexOf("x_dome") < 0) ORDER.push("x_dome"); }
   RECIPES.push({ id: "x_dome", n: "Sea Dome Kit", out: { x_dome: 1 }, cost: { glass: 12, brass: 6, ironingot: 4, seaglass: 4 }, bench: true, d: "A glass dome you build on the sea floor: a bubble of air that refills your air and heals you. Up to 3 at Croaker's Pier and 1 at each dive site." });
+  // ISLAND RAIDS: treasure you carry back to the merchants of Driftwood Haven (see TREAS for what each is worth and who buys it)
+  [["t_chest1", "Castaway's Chest", "A battered little chest from a Calm island."], ["t_chest2", "Seafarer's Chest", "A sturdy chest from a Rough island."], ["t_chest3", "Captain's Chest", "A brass-bound chest from a Dangerous island."], ["t_chest4", "Chest of Legends", "A glowing chest from a Deadly island. The Gilded Toad will pay a fortune."],
+   ["t_skull1", "Bilge Skull", "A pirate's old skull. The Bone Bell Society collects them."], ["t_skull2", "Foul Skull", "A pirate skull with a nasty grin."], ["t_skull3", "Bosun's Skull", "The skull of a pirate bosun, still wearing its earring."], ["t_skull4", "Dread Captain's Skull", "It still glows faintly. The Bone Bell Society will want this."],
+   ["t_tea", "Crate of Bog Tea", "Strong, brown and very popular. Croaker & Sons buy it."], ["t_rum", "Barrel of Swamp Rum", "Don't drink it. Sell it to Croaker & Sons."], ["t_silk", "Crate of Spider Silk", "Light as mist. Croaker & Sons pay well."], ["t_spice", "Crate of Fire Spice", "Sneeze-hot. Croaker & Sons' best seller."], ["t_gems", "Pouch of Sea Gems", "A pouch of polished sea gems. The Gilded Toad buys them."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] + " Treasure: sell it at Driftwood Haven, the trading port.", treas: 1 }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
   RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
   RECIPES.push({ id: "x_detect", n: "Metal Detector", out: { x_detect: 1 }, cost: { ironingot: 4, quartz: 4, glass: 2 }, bench: true, d: "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore within 14 tiles." });
   RECIPES.push({ id: "x_jet", n: "Swamp-Gas Jetpack", out: { x_jet: 1 }, cost: { ironingot: 8, sulfur: 6, leather: 4, glass: 2 }, bench: true, d: "Carry it: keep holding jump at the top of a jump to fly on swamp gas for a couple of seconds. It refuels whenever you stand on the ground." });
@@ -684,7 +688,7 @@
     });
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
-    if (o.st && typeof o.st === "object") ["dodges", "specials", "elites", "elite_radiant", "elite_armored", "elite_regen", "elite_volatile", "tossed", "sold", "hunted", "croakko", "vko"].forEach(function (k) { if (o.st[k] > 0) d.st[k] = Math.floor(+o.st[k]) || 0; });   // stats added after the first list
+    if (o.st && typeof o.st === "object") Object.keys(o.st).slice(0, 800).forEach(function (k) { if (d.st[k] === undefined && /^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k) && +o.st[k] > 0 && isFinite(+o.st[k])) d.st[k] = Math.floor(+o.st[k]); });   // stats added after the first list: any counter or "seen this tip" flag is kept
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
       if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24), note: String(w.note || "").slice(0, 140), t: w.t ? 1 : 0, quake: w.quake ? 1 : 0 });
     });
@@ -2535,7 +2539,7 @@
     { n: "Magma Slime", c: "#ff7a2a", hi: "#ffc24a", dk: "#a83a10", glow: "#ff8a3d" },
     { n: "Frost Slime", c: "#6ab8ff", hi: "#c8ecff", dk: "#2a5a9a", glow: "#9fe8ff" }
   ];
-  var KSTAT = { bug: "bugs", frog: "frogs", bat: "bats", wolf: "wolves", gator: "gators", slime: "slimes", wasp: "wasps", witch: "witches", spider: "spiders" };
+  var KSTAT = { crab: "crabs", buccaneer: "buccaneers", bug: "bugs", frog: "frogs", bat: "bats", wolf: "wolves", gator: "gators", slime: "slimes", wasp: "wasps", witch: "witches", spider: "spiders" };
   var FLIER = { bat: 1, wasp: 1 };
   var SEEN_TIP = {
     wolf: [1, "Frost Wolves hunt in pairs! When one crouches, jump over it or back away before it lunges.", "#9fe8ff"],
@@ -3434,7 +3438,7 @@
   // Every biome has slimes and bats; Mudhollow adds Bramble Bugs, Cinder Hollow adds Ember Wasps, Frostvault adds Frost Wolves (floor 3 and down).
   // They reuse the surface art and attacks, flattened to top-down moves: slimes hop at you, bugs charge, bats and wasps circle then dive, wolves lunge.
   // Swing your weapon toward where you aim (tap or click) to hit everything in front of you. Clear a floor for a small reward.
-  var CMOB = { spider: { r: 0.34, spd: 3, aggro: 7.5 }, slime: { r: 0.34, spd: 0, aggro: 7 }, bat: { r: 0.3, spd: 3.2, aggro: 8, fly: 1 }, bug: { r: 0.36, spd: 2.1, aggro: 7 }, wasp: { r: 0.28, spd: 3.8, aggro: 8, fly: 1 }, wolf: { r: 0.44, spd: 3.4, aggro: 8 } };
+  var CMOB = { crab: { r: 0.36, spd: 2.7, aggro: 8 }, buccaneer: { r: 0.38, spd: 2.9, aggro: 10 }, spider: { r: 0.34, spd: 3, aggro: 7.5 }, slime: { r: 0.34, spd: 0, aggro: 7 }, bat: { r: 0.3, spd: 3.2, aggro: 8, fly: 1 }, bug: { r: 0.36, spd: 2.1, aggro: 7 }, wasp: { r: 0.28, spd: 3.8, aggro: 8, fly: 1 }, wolf: { r: 0.44, spd: 3.4, aggro: 8 } };
   var CREACH = [0, 1.9, 1.6, 1.8, 1.8, 2], ckx = 0, cky = 0;
   function caveKinds(b, f) {
     var L = [["slime", 4], ["bat", 3], ["spider", 3]];   // Cave Spiders live under every land
@@ -3503,7 +3507,7 @@
     var ang = Math.atan2(dy, dx); g.rotate(ang); g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(rr + 15, 0); g.lineTo(rr + 6, -7); g.lineTo(rr + 6, 7); g.closePath(); g.fill(); g.restore();
   }
   function stockFloor(F, f) {
-    F.stocked = true; F.mobs = []; if (F.bld) return;
+    F.stocked = true; F.mobs = []; if (F.bld || F.isle) return;   // ISLAND RAIDS: the waves come later
     if (F.lair) { if (!lairOwned()) F.mobs.push(newCaptain(F)); return; }   // THE SUNKEN HOLLOW: only the Captain (and nothing at all once it is yours)   // cave creatures are there whether or not you carry a weapon (swat them with your paws)
     var n = Math.min(9, 2 + Math.floor(f * 0.6)), L = caveKinds(F.biome, f), tw = 0, free = [], i, x, y;
     L.forEach(function (q) { tw += q[1]; });
@@ -3666,7 +3670,7 @@
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
-    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true);
+    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true); isleKill(m);
     if (m.k === "slime" && !m.small) [-1, 1].forEach(function (s2) {   // big slimes split in two
       var kid = newCaveMob("slime", m.x + s2 * 0.25, m.y, F, cave.f); kid.small = true; kid.r = 0.22; kid.hp = kid.mx = Math.round(6 * (1 + 0.08 * (cave.f - 1))); kid.dmg = Math.max(3, Math.round(m.dmg * 0.55)); kid.kx = s2 * 5 + uy * 2; kid.ky = -ux * 2; kid.cd = 0.6; kid.t = 0.5;
       if (mobFree(F, kid.x, kid.y, kid.r, false)) F.mobs.push(kid);
@@ -4530,6 +4534,9 @@
   ENEMY.lily = { n: "Snapper Lily", hp: 26, w: 1.0, h: 1.0, dmg: 14, glow: "#ff6aa8", chip: "#58b455", frag: "petalsnap", chance: 0.6, max: 2 };
   ENEMY.imp = { n: "Cinder Imp", hp: 22, w: 0.8, h: 1.0, dmg: 10, glow: "#ff8a3d", chip: "#a83a10", frag: "imphorn", chance: 0.6, max: 2 };
   ENEMY.brute = { n: "Rime Brute", hp: 78, w: 1.5, h: 1.7, dmg: 20, glow: "#9fe8ff", chip: "#cfdde6", frag: "rimecore", chance: 0.75, max: 1 };
+  // ISLAND RAIDS: the crews who guard the islands
+  ENEMY.crab = { n: "Reef Crab", hp: 16, w: 0.95, h: 0.6, dmg: 7, glow: "#ff7a5a", chip: "#c8502a", frag: "shell", chance: 0.5, max: 2 };
+  ENEMY.buccaneer = { n: "Bilge Pirate", hp: 34, w: 0.9, h: 1.3, dmg: 11, glow: "#ffd23f", chip: "#4a9a52", frag: "doubloon", chance: 0.6, max: 3 };
   ENEMY.crawler = { n: "Geode Crawler", hp: 34, w: 1.2, h: 0.8, dmg: 14, glow: "#b08aff", chip: "#6a4a9a", frag: "geodechip", chance: 0.65, max: 2 };
   KSTAT.lily = "lilies"; KSTAT.imp = "imps"; KSTAT.brute = "brutes"; KSTAT.crawler = "crawlers";
   SHADOW.lily = 14; SHADOW.imp = 11; SHADOW.brute = 27; SHADOW.crawler = 19; HBAR.lily = 44; HBAR.imp = 40; HBAR.brute = 72; HBAR.crawler = 36;
@@ -4802,6 +4809,40 @@
     g.globalAlpha = 1; g.imageSmoothingEnabled = false;
   }
   window.__sbxMobs = { hit: function (e, d, f) { damageEnemy(e, d, f); }, ENEMY: ENEMY, enemies: enemies, newEnemy: newEnemy, AMB2: AMB2, CRIT: CRIT, CRITK: CRITK, spawnCrit: spawnCrit, critKind2: critKind2, tickAmb2: tickAmb2, lamps2: lamps2, get st() { return S.st; } };
+
+  // ---------- ISLAND RAIDS: the Reef Crab and the Bilge Pirate (drawn like the other creatures: 30 units = one tile, feet at 0) ----------
+  function drawCrab(g, e, d, flash, h, pd) {
+    var t = e.tt || 0, f = e.dir || 1, walk = Math.sin(t * 14) * 2.2, pinch = Math.max(0, Math.sin(t * 5)) * 0.3;
+    g.save(); g.scale(1 + 0.4 * pd, 1 - 0.7 * pd); if (!e.def) eGlow(g, 0, -6, 20, d.glow, 0.25);
+    g.strokeStyle = flash ? "#fff" : "#8a2a14"; g.lineWidth = 2.2; g.lineCap = "round";
+    for (var i = 0; i < 3; i++) [-1, 1].forEach(function (sd) { var lx = sd * (6 + i * 3.4); g.beginPath(); g.moveTo(lx * 0.6, -6); g.lineTo(lx + sd * 2, -3 + (i % 2 ? walk : -walk) * 0.4); g.lineTo(lx + sd * 3, 0); g.stroke(); });
+    [-1, 1].forEach(function (sd) { g.save(); g.translate(sd * 12, -10); g.rotate(sd * (-0.4 - pinch)); g.fillStyle = flash ? "#fff" : "#e8502a"; g.beginPath(); g.ellipse(sd * 2, -3, 5, 3.6, sd * 0.3, 0, 7); g.fill(); g.fillStyle = flash ? "#fff" : "#ff8a5a"; g.beginPath(); g.moveTo(sd * 4, -5); g.lineTo(sd * 8, -9 - pinch * 6); g.lineTo(sd * 6, -3); g.fill(); g.restore(); });
+    var bg = g.createLinearGradient(0, -14, 0, -2); bg.addColorStop(0, flash ? "#fff" : "#ff7a4a"); bg.addColorStop(1, flash ? "#ffd8c8" : "#c8401a");
+    g.fillStyle = bg; g.beginPath(); g.ellipse(0, -7, 11, 6.5, 0, 0, 7); g.fill(); g.fillStyle = flash ? "#fff" : "#ffb08a"; g.beginPath(); g.ellipse(-2, -10, 5, 2, 0, 0, 7); g.fill();
+    g.strokeStyle = flash ? "#fff" : "#8a2a14"; g.lineWidth = 1.4; [-3, 3].forEach(function (ex) { g.beginPath(); g.moveTo(ex, -12); g.lineTo(ex * 1.3, -17); g.stroke(); g.fillStyle = "#14100c"; g.beginPath(); g.arc(ex * 1.3, -17.5, 1.8, 0, 7); g.fill(); g.fillStyle = "#fff"; g.fillRect(ex * 1.3 - 0.4, -18.4, 0.9, 0.9); });
+    g.restore();
+  }
+  function drawBuccaneer(g, e, d, flash, h, pd) {
+    var t = e.tt || 0, f = e.dir || 1, moving = e.st === "patrol" || e.st === "charge" || e.st === "chase", leg = moving ? Math.sin(t * 12) * 3 : 0, bob = moving ? Math.abs(Math.sin(t * 12)) * 1.2 : Math.sin(t * 2) * 0.5;
+    var swing = e.st === "wind" ? -1.6 : e.st === "charge" || e.cd > 0.9 ? 0.9 : -0.3;
+    g.save(); g.scale(f * (1 + 0.3 * pd), 1 - 0.7 * pd); if (!e.def) eGlow(g, 0, -18, 24, d.glow, 0.18);
+    var C = function (a, b) { return flash ? "#ffffff" : e.bosun ? b : a; };
+    g.strokeStyle = C("#2f6a36", "#3a4a8a"); g.lineWidth = 3.4; g.lineCap = "round"; g.beginPath(); g.moveTo(-3, -10); g.lineTo(-4 - leg, -1); g.moveTo(3, -10); g.lineTo(4 + leg, -1); g.stroke();
+    g.fillStyle = C("#3a2a1a", "#2a1a10"); g.fillRect(-7 - leg, -2.5, 6, 2.6); g.fillRect(1 + leg, -2.5, 6, 2.6);
+    g.translate(0, -bob);
+    g.fillStyle = C("#e8d8b0", "#f0e8d0"); g.beginPath(); g.ellipse(0, -16, 8, 8.5, 0, 0, 7); g.fill();   // shirt
+    g.fillStyle = C("#a83a2a", "#2a2a5a"); g.fillRect(-8, -14, 16, 3); g.fillStyle = C("#c9a52a", "#ffd23f"); g.fillRect(-2, -14.4, 4, 3.8);   // sash and buckle
+    g.fillStyle = C("#4a9a52", "#5aa8a0"); g.beginPath(); g.ellipse(1, -27, 9, 7.2, 0, 0, 7); g.fill();   // the frog head
+    g.fillStyle = C("#6ac26a", "#7ad0c8"); [[-4, -32], [5, -32]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 3.6, 0, 7); g.fill(); });
+    g.fillStyle = "#14100c"; g.beginPath(); g.arc(-3.4, -32.4, 1.7, 0, 7); g.fill(); if (e.bosun) { g.fillStyle = "#14100c"; g.fillRect(3, -34, 5, 4); g.strokeStyle = "#14100c"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(1, -35); g.lineTo(9, -29); g.stroke(); } else { g.beginPath(); g.arc(5.6, -32.4, 1.7, 0, 7); g.fill(); }
+    g.strokeStyle = "#1a3a1a"; g.lineWidth = 1; g.beginPath(); g.moveTo(-3, -24.5); g.quadraticCurveTo(2, -22.5, 8, -25); g.stroke();
+    g.fillStyle = C("#c83a3a", "#1a1a20"); g.beginPath(); g.moveTo(-9, -31); g.quadraticCurveTo(1, -40, 10, -31); g.lineTo(10, -29.5); g.lineTo(-9, -29.5); g.closePath(); g.fill();   // bandana (the bosun wears a tricorn)
+    if (e.bosun) { g.fillStyle = flash ? "#fff" : "#1a1a20"; g.beginPath(); g.moveTo(-12, -31); g.lineTo(1, -42); g.lineTo(13, -31); g.closePath(); g.fill(); g.fillStyle = "#ffd23f"; g.fillRect(-2, -37, 4, 2); }
+    else { g.fillStyle = C("#c83a3a", "#1a1a20"); g.beginPath(); g.moveTo(-9, -30); g.lineTo(-14, -26); g.lineTo(-11, -30); g.fill(); g.fillStyle = "#fff"; [[-4, -33.5], [3, -33.5]].forEach(function (q) { g.fillRect(q[0], q[1], 1.4, 1.4); }); }
+    g.save(); g.translate(7, -17); g.rotate(swing); g.strokeStyle = C("#4a9a52", "#5aa8a0"); g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(5, 2); g.stroke();   // the cutlass arm
+    g.fillStyle = "#c9a52a"; g.fillRect(4, -0.5, 3, 4); g.strokeStyle = flash ? "#fff" : "#d8e0e8"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(6, 0); g.quadraticCurveTo(14, -6, 19, -13); g.stroke(); g.restore();
+    g.restore();
+  }
   function drawEnemy(g, e, now) {
     if (e.boss) return drawBoss(g, e, now);
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
@@ -4821,6 +4862,8 @@
     else if (e.k === "imp") drawImp(g, e, d, flash, h, pd);
     else if (e.k === "brute") drawBrute(g, e, d, flash, h, pd);
     else if (e.k === "crawler") drawCrawler(g, e, d, flash, h, pd);
+    else if (e.k === "crab") drawCrab(g, e, d, flash, h, pd);
+    else if (e.k === "buccaneer") drawBuccaneer(g, e, d, flash, h, pd);
     else if (e.k === "bug") {
       var leg = t * 14;
       g.save(); g.translate(!e.def && h > 0 ? Math.sin(now / 1000 * 90) * 1.6 * h : 0, 0); g.rotate(-f * 0.22 * h); g.scale(f * (1 + 0.5 * pd + 0.16 * h), 1 - 0.75 * pd - 0.14 * h);
@@ -8742,6 +8785,16 @@
     SPR.ambergris = { r: ["................", "................", "................", ".....aaaa.......", "...aabbbbaa.....", "..abbcbbbbba....", "..abbbbbcbbba...", ".abbcbbbbbbba...", ".abbbbbcbbbba...", "..abbbbbbbcba...", "...aabbbbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#8a7050", b: "#d8c098", c: "#f0e0c0" } };
     SPR.levscale = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbccccbba...", "..abbcddddcbba..", "..abcddeeddcba..", ".abbcdeffedcbba.", ".abcddeffeddcba.", ".abbcdeeeedcbba.", "..abcddddddcba..", "..abbccccccbba..", "...abbbbbbbba...", "....aabbbbaa....", "......aaaa......", "................", "................"], p: { a: "#0e2a3a", b: "#1f4a5a", c: "#2f6a72", d: "#3f8a88", e: "#6ac8b8", f: "#c8fff0" } };
     SPR.x_dome = { r: ["................", "................", ".....aaaaaa.....", "....abbbbbba....", "...abccbbbbba...", "..abcbbbbbbbba..", "..abcbbbbdbbba..", ".abbbbbbdddbbba.", ".abbbbbbbdbbbba.", ".abbbbbbbbbbbba.", ".aeeeeeeeeeeeea.", ".ffffffffffffff.", "................", "................", "................", "................"], p: { a: "#7ab8c8", b: "#bfefff", c: "#ffffff", d: "#ffd23f", e: "#9a7a3a", f: "#6a4a1a" } };
+    (function () {   // ISLAND RAIDS: treasure icons (one shape, many colours)
+      var CH = ["................", "................", "..aaaaaaaaaaaa..", ".abbbbbbbbbbbbba", ".abccccccccccba.", ".abbbbbbbbbbbba.", ".aaaaaaddaaaaaa.", ".abbbbbddbbbbba.", ".abccccccccccba.", ".abbbbbbbbbbbba.", ".abccccccccccba.", ".abbbbbbbbbbbba.", ".aaaaaaaaaaaaaa.", "................", "................", "................"];
+      var SK = ["................", ".....aaaaaa.....", "....abbbbbba....", "...abbbbbbbba...", "...abccbbccba...", "...abccbbccba...", "...abbbbbbbba...", "....abbddbba....", ".....abbbba.....", ".....ababba.....", "......aaaa......", "................", "................", "................", "................", "................"];
+      var CR = ["................", "..aaaaaaaaaaaa..", "..abbbbbbbbbba..", "..abbcccccbbba..", "..abbbbbbbbbba..", "..aaaaaaaaaaaa..", "..abbbbbbbbbba..", "..abbcccccbbba..", "..abbbbbbbbbba..", "..aaaaaaaaaaaa..", "................", "................", "................", "................", "................", "................"];
+      var BR = ["................", "....aaaaaaaa....", "...abbbbbbbba...", "..acccccccccca..", "..abbbbbbbbbba..", "..abbbbbbbbbba..", "..acccccccccca..", "..abbbbbbbbbba..", "..abbbbbbbbbba..", "..acccccccccca..", "...abbbbbbbba...", "....aaaaaaaa....", "................", "................", "................", "................"];
+      var PO = ["................", "......aaaa......", ".......dd.......", ".....aaaaaa.....", "....abbbbbba....", "...abcbbbbcba...", "...abbbcbbbba...", "...abbbbbcbba...", "...abcbbbbbba...", "....abbbbbba....", ".....aaaaaa.....", "................", "................", "................", "................", "................"];
+      [["t_chest1", CH, { a: "#4a2e18", b: "#8a5a32", c: "#a8743a", d: "#c9a52a" }], ["t_chest2", CH, { a: "#2e2a3a", b: "#6a5a7a", c: "#8a7aa0", d: "#e0d0f0" }], ["t_chest3", CH, { a: "#3a2410", b: "#9a6a2a", c: "#e0b840", d: "#fff2b0" }], ["t_chest4", CH, { a: "#1a3a3a", b: "#2fa898", c: "#7af0e0", d: "#ffd23f" }],
+       ["t_skull1", SK, { a: "#5a5040", b: "#d8ccb0", c: "#2a2418", d: "#3a3020" }], ["t_skull2", SK, { a: "#3a4a2a", b: "#b8c890", c: "#1a2010", d: "#2a3018" }], ["t_skull3", SK, { a: "#4a3a1a", b: "#e8d8a8", c: "#2a1a08", d: "#c9a52a" }], ["t_skull4", SK, { a: "#2a1a4a", b: "#c8b8ff", c: "#ff5a8a", d: "#7a5aff" }],
+       ["t_tea", CR, { a: "#4a2e18", b: "#a8743a", c: "#3a8a3a" }], ["t_silk", CR, { a: "#4a2e18", b: "#a8743a", c: "#e8e8f8" }], ["t_spice", CR, { a: "#4a2e18", b: "#a8743a", c: "#e8501a" }], ["t_rum", BR, { a: "#3a2410", b: "#8a5a32", c: "#5a5a62" }], ["t_gems", PO, { a: "#3a2410", b: "#8a5a32", c: "#7af0e0", d: "#c9a52a" }]].forEach(function (q) { SPR[q[0]] = { r: q[1], p: q[2] }; });
+    })();
     SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
     SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
@@ -9905,7 +9958,7 @@
     return F.cmap;
   }
   function contAtCell(x, y) {   // { kind: "deco" | "chest", ... } for a cell of the room you are in
-    var F = cave && cave.F; if (!F || x < 0 || y < 0 || x >= F.w || y >= F.h) return null; var i = y * F.w + x, nd = F.node[i];
+    var F = cave && cave.F; if (!F || F.isle || x < 0 || y < 0 || x >= F.w || y >= F.h) return null; var i = y * F.w + x, nd = F.node[i];
     if (nd && TILES[nd] && TILES[nd].kind === "lootchest") return { kind: "chest", i: i, x: x, y: y, id: nd, n: cave.bld ? (BCHEST[cave.bld.kind] ? BCHEST[cave.bld.kind].n.replace(/^The /, "") : "Witch's Chest") : "Cave Chest" };
     var e = contMap(F)[i]; if (e) return { kind: "deco", i: i, x: x, y: y, id: e.id, type: contTypeOf(e.id), n: TILES[e.id].n };
     return null;
@@ -13848,6 +13901,7 @@
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
     if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
+    if (F.isle && cave.Q) { el.style.setProperty("--bc", cave.port ? "#ffd23f" : TIER_C[cave.tier]); el.querySelector("b").textContent = cave.Q.n; el.querySelector("small").textContent = cave.port ? "The trading port" : skulls(cave.tier) + " " + TIER_N[cave.tier] + " island"; }
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
     if (F.lair && !lairOwned()) setTimeout(function () { toast("A secret swamp under the Mine... and someone has made it their hideout.", LAIRB.c); }, 900);
     else if (F.lair) setTimeout(function () { toast("Home sweet hollow. Your Rig Bay is on the west shore.", LAIRB.c); }, 900);
@@ -13961,6 +14015,7 @@
   }
   function useLadder(k) {
     if (trans || !cave) return;
+    if (cave.isle) { if (k === "up") isleLeave(); return; }   // ISLAND RAIDS: the way back is the boat
     if (k === "down") speedWin();
     if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Saltjaw's crew has chained the way down. Beat the Captain first."); return; }
     if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
@@ -14070,6 +14125,7 @@
     var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++; caveStress(x, y);
     if (!VEIN.busy && td && td.kind === "ore" && veinOn()) veinStart(x, y, id, true);   // VEIN MINING in caves
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id); matBreak(id);
+    if ((td.kind === "lootchest" || td.kind === "lootpot") && cave.isle) { isleBreak(x, y, td); return; }   // ISLAND RAIDS
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
     if (td.kind === "lootchest" && cave.bld && BCHEST[cave.bld.kind]) { bldLoot(x, y); return; }
     if (td.kind === "lorenote") { var lpg = LPG[F.lorePg]; F.lorePg = null; chips(x + 0.5, y + 0.5, "#e8d8a8", 10, 5); if (lpg && !loreHas(lpg.id)) loreFind(lpg, true); else nag("Just an old shopping list."); return; }
@@ -14108,6 +14164,7 @@
     var nid = F.node[i];
     if (nid) {
       var td = TILES[nid];
+      if (cave.isle && td.kind === "lootchest" && ISLW && ISLW.sealed) { nag("A pirate curse seals this chest. Beat every wave of the island's crew first."); mine = null; return; }
       if (sel !== "pick" && sel !== "shovel") { nag("Hold your pick to break rocks (press Q)."); mine = null; return; }
       if (sel === "shovel" && !SOFT[nid]) { nag("A shovel only digs soft things. Use your pick for " + td.n + "."); mine = null; return; }
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
@@ -14135,7 +14192,7 @@
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
-    advTime(dt); if (F.lava) volcTick(dt, F);
+    advTime(dt); if (F.lava) volcTick(dt, F); if (F.isle) isleTick(dt);
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
@@ -14299,8 +14356,9 @@
     }
     if (F.lava) volcLava(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE OLD VOLCANO: glowing magma cracks
     if (F.lair) lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE SUNKEN HOLLOW
+    if (F.isle) isleDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // ISLAND RAIDS
     var ux = ox + F.up.x * ts, uy = oy + F.up.y * ts;
-    if (F.nx) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
+    if (F.nx || F.isle) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
       F.flat.forEach(function (e) {
         var fx = ox + e.x * ts, fy = oy + e.y * ts;
         if (e.id === T.LAVA || e.id === T.WATER) {   // liquids in a stone-rimmed basin, with a slow shimmer
@@ -14332,13 +14390,13 @@
     } else if (liftFloor(cave.f)) drawLift(g, ux, uy, now, srcs, glows2);
     else {
     g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy - ts, ts, ts); g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy, ts, ts); }
-    if (!F.bld && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
-    if (!F.bld) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
+    if (!F.bld && !F.isle && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
+    if (!F.bld && !F.isle) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
     else F.deco.forEach(function (e) { var td = TILES[e.id], gl = td.glow; if (e.flat) { if (e.id === T.LAVA) srcs.push([e.x + 0.5, e.y + 0.5, 2.4, 0.7]); return; }   // floor tiles never light the room (the lava troughs glow a little)
       if (e.id === T.TORCH) { srcs.push([e.x + 0.5, e.y + 0.5, 6, 1]); glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, "255,170,60", 4.2, 0.3]); } else if (td.light || gl) { srcs.push([e.x + 0.5, e.y + 0.5, (td.gr || 3) * 1.3, 0.85]); if (gl) glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, gl, td.gr || 3, td.ga || 0.2]); } });
     F.lamps.forEach(function (l) {
       if (l.x < X0 - 6 || l.x > X1 + 6 || l.y < Y0 - 6 || l.y > Y1 + 6) return;
-      var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);
+      var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; if (!F.isle) g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);   // (island tiki torches draw themselves)
       glows2.push([lx + ts / 2, ly + ts / 2, th.glow, 3.2, 0.2]); srcs.push([l.x + 0.5, l.y + 0.5, 4.6, 0.8]);
     });
     var ey0 = Math.max(0, Y0 - 7), ey1 = Math.min(F.h - 1, Y1 + 7), ex0 = Math.max(0, X0 - 7), ex1 = Math.min(F.w - 1, X1 + 7);
@@ -14361,6 +14419,7 @@
         if (TILES[rid].kind === "ore" && !reduce && ((now / 90 + ri * 7 + rj * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(rx + ts * 0.55, ry2 + ts * 0.3, 2, 2); }
       }
       if (F.lair) lairRow(g, F, rj, now, srcs, glows2);
+      if (F.isle) isleRow(g, F, rj, now);
       drawCaveMobs(g, now, rj); }
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
@@ -14390,7 +14449,7 @@
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
-    drawProspect(g, now); drawSpeed(g, now);
+    drawProspect(g, now); drawSpeed(g, now); drawIsleHud(g, now);
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
@@ -14400,7 +14459,7 @@
     var rgp = !panelOpen && !trans ? rigPill() : null; if (rgp) { var rq = F.pads[rgp.i]; drawPill(g, now, rgp.t + (coarse ? "" : " (F)"), ox + (rq.x + 1) * ts, oy + (rq.y - 1.9) * ts, /digging|to the Silo/.test(rgp.t), function () { rigAct(rgp.i); }); }   // RIG BAY
     else if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
-      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
+      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.isle ? "Back to the boat" : F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
     if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
     else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, "Under construction" + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, true, function () { nxPortalTalk(npp); }); }
@@ -14710,7 +14769,7 @@
   function hud() {
     if (HOME) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; var ho = homeS(), nc = Object.keys(ho.c).length, nr = Object.keys(ho.c).filter(function (k) { return ho.c[k].s >= 4; }).length; $("sbxBiome").textContent = "Your Homestead"; $("sbxLoc").style.setProperty("--bc", "#7dd65a"); $("sbxSub").textContent = dayTag() + (nc ? nc + " crop" + (nc === 1 ? "" : "s") + (nr ? " \u00b7 " + nr + " ripe" : "") : "Till, plant, water"); if (hbDirty) drawBar(); return; }
     if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
-    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
+    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.isle && cave.Q ? cave.Q.n : cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.isle ? (cave.port ? "Trading port" : TIER_N[cave.tier] + " island") : cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
     hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 " + (wxLabel() || "surface")));
@@ -15975,7 +16034,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip ? null : garageNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -16090,7 +16149,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -16133,7 +16192,7 @@
   function ocS() {
     if (!S.oc || typeof S.oc !== "object") S.oc = {}; var o = S.oc;
     if (!o.boat || typeof o.boat !== "object") o.boat = { p: {}, done: 0, skin: 0 }; if (!o.boat.p) o.boat.p = {};
-    if (!o.open) o.open = {}; if (!o.ed) o.ed = {}; if (!o.kills) o.kills = {}; if (!o.dead) o.dead = {}; if (!o.isl) o.isl = {};
+    if (!o.open) o.open = {}; if (!o.ed) o.ed = {}; if (!o.kills) o.kills = {}; if (!o.dead) o.dead = {}; if (!o.isl) o.isl = {}; if (!o.hold) o.hold = {}; if (!o.raid) o.raid = {};
     return o;
   }
   // DIVE SUITS: each tier holds out the pressure deeper. Past your suit's depth the CRUSH TIMER starts: a few seconds to swim back up, or you implode.
@@ -17568,7 +17627,7 @@
     I.forEach(function (Q) { if (!lit && !o.isl[Q.id] && !seaKnown(Q.x, Q.y)) return; var X = tx(Q.x), Y = ty(Q.y), r = Math.max(2.5, Q.r * sc2);
       g.fillStyle = Q.pier ? "#ffd23f" : Q.lh ? "#fff4c0" : Q.kind === 3 ? "#c86a5a" : Q.kind === 1 ? "#6a5a5a" : Q.kind === 2 ? "#e8f4ff" : "#6ac25a"; g.beginPath(); g.arc(X, Y, r, 0, 6.2832); g.fill();
       if (Q.lh && lit) { g.fillStyle = "rgba(255,230,140,.35)"; g.beginPath(); g.arc(X, Y, 130 * sc2, 0, 6.2832); g.fill(); }
-      if (big) { g.font = "700 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#e8fbff"; g.fillText(Q.n, X, Y + r + 12); } });
+      if (big) { g.font = "700 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = Q.port ? "#ffd23f" : "#e8fbff"; g.fillText(Q.n, X, Y + r + 12); var tq2 = isleTier(Q); if (tq2) { g.fillStyle = TIER_C[tq2]; g.fillText(skulls(tq2), X, Y + r + 24); } } });
     seaBlips().forEach(function (b) { g.fillStyle = b[2]; g.beginPath(); g.arc(tx(b[0]), ty(b[1]), b[3], 0, 6.2832); g.fill(); });
     var bx = tx(s.x), by = ty(s.y); g.save(); g.translate(bx, by); g.rotate(s.ang); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(5, 0); g.lineTo(-4, -3.2); g.lineTo(-2, 0); g.lineTo(-4, 3.2); g.closePath(); g.fill(); g.restore();
     if (shipUp("nest")) { g.strokeStyle = "rgba(122,240,255,.35)"; g.beginPath(); g.arc(bx, by, 120 * sc2, 0, 6.2832); g.stroke(); }
@@ -17586,11 +17645,226 @@
     g.beginPath(); g.rect(0, 0, w, h); g.clip(); drawSeaChart(g, SO.SEAW / 2, SO.SEAW / 2, sc2, w, h, true); g.restore();
   }
 
+
+  // =====================================================================================================================================
+  // ---------- ISLAND RAIDS, THE SHIP'S HOLD AND DRIFTWOOD HAVEN ----------
+  // Sail up to an island and "Land ashore": you step onto it (a top-down floor from SbxCave.genIsle, like a cave open to the sky) with
+  // the Lily Belle moored at the beach. Each island has a difficulty (Calm, Rough, Dangerous, Deadly: further from the pier is harder,
+  // pirate coves one step harder). Waves of its crew come at you (2 to 5 waves); beat them all and the curse on its treasure chests lifts.
+  // Smash crates and barrels any time. Treasure goes into your bag; at the boat, stow it in the SHIP'S HOLD (S.oc.hold, 60 pieces).
+  // If the Lily Belle is holed at sea, half the hold goes to the bottom. Sell treasure for Doubloons to the merchants of DRIFTWOOD HAVEN,
+  // the big trading port in the middle of the sea (it comes ashore with you), and spend them at Pip's Shipwright on boat skins and
+  // cannon designs. A raided island restocks after ISLE_RESTOCK days (S.oc.raid[island id] = the day it was cleared).
+  var TIER_N = ["", "Calm", "Rough", "Dangerous", "Deadly"], TIER_C = ["#ffffff", "#7ae0a0", "#ffd23f", "#ff9a4a", "#ff5a6a"], ISLE_RESTOCK = 2, HOLD_MAX = 60, ISLW = null;
+  var TREAS = { t_chest1: [12, "gild"], t_chest2: [25, "gild"], t_chest3: [50, "gild"], t_chest4: [110, "gild"], t_gems: [20, "gild"], t_skull1: [8, "bone"], t_skull2: [18, "bone"], t_skull3: [35, "bone"], t_skull4: [80, "bone"], t_tea: [6, "trade"], t_rum: [9, "trade"], t_silk: [11, "trade"], t_spice: [15, "trade"] };
+  var MERCH = { gild: { n: "The Gilded Toad", d: "Gold hoarders. They buy treasure chests and gem pouches.", c: "#ffd23f" }, bone: { n: "Bone Bell Society", d: "Collectors of pirate skulls. Don't ask why.", c: "#c8b8ff" }, trade: { n: "Croaker & Sons Trading Co.", d: "Old Croaker's cousins. They buy crates of goods and barrels of rum.", c: "#7ae0a0" }, ship: { n: "Pip's Shipwright", d: "Boat skins and cannon designs, paid in Doubloons.", c: "#4fd0e8" } };
+  var SKINS = [
+    { id: "lily", n: "The Lily Belle", p: 0, hull: "#7a4a2a", deck: "#b8844a", sail: ["#2f7a3a", "#58b85a"], trim: "#4ee6b4" },
+    { id: "corsair", n: "Crimson Corsair", p: 120, hull: "#2a1a1a", deck: "#5a3a2a", sail: ["#8a1a1a", "#d83a3a"], trim: "#ffd23f" },
+    { id: "royal", n: "Royal Lotus", p: 200, hull: "#3a2a5a", deck: "#8a6aa8", sail: ["#5a3a9a", "#b08aff"], trim: "#ffd23f" },
+    { id: "coral", n: "Coral Queen", p: 260, hull: "#c85a6a", deck: "#f0c0a0", sail: ["#ff7a9a", "#ffd0dc"], trim: "#6af0e0" },
+    { id: "ghost", n: "Ghost Galleon", p: 420, hull: "#4a5a6a", deck: "#8a9aa8", sail: ["#bfefff", "#e8fbff"], trim: "#7af0ff", glow: 1 },
+    { id: "gold", n: "Golden Gator", p: 800, hull: "#8a6a1a", deck: "#e8c060", sail: ["#c89a2a", "#ffe080"], trim: "#3aa85a" }];
+  var CANS = [
+    { id: "iron", n: "Iron Cannons", p: 0, ball: "#1a1a20", trail: "", barrel: "#2a2a30" },
+    { id: "bronze", n: "Bronze Dragon", p: 90, ball: "#8a4a1a", trail: "255,140,50", barrel: "#c87a3a" },
+    { id: "frost", n: "Frostbite", p: 150, ball: "#9ad8ff", trail: "150,220,255", barrel: "#6ab8e8" },
+    { id: "slime", n: "Swamp Spitter", p: 150, ball: "#5ab84a", trail: "120,230,90", barrel: "#3a8a3a" },
+    { id: "star", n: "Starfall", p: 350, ball: "#ffe27a", trail: "255,230,140", barrel: "#e8c060", sparkle: 1 }];
+  function cosS() { var o = ocS(); if (!o.cos || typeof o.cos !== "object") o.cos = { sk: {}, cn: {} }; if (!o.cos.sk) o.cos.sk = {}; if (!o.cos.cn) o.cos.cn = {}; return o.cos; }
+  function skinOf() { var id = ocS().boat.sk; for (var i = 0; i < SKINS.length; i++) if (SKINS[i].id === id) return SKINS[i]; return SKINS[0]; }
+  function canOf() { var id = ocS().boat.cn; for (var i = 0; i < CANS.length; i++) if (CANS[i].id === id) return CANS[i]; return CANS[0]; }
+  function isleTier(Q) { if (!Q || Q.pier || Q.lh || Q.port) return 0; var I0 = seaIslands()[0], d = Math.hypot(Q.x - I0.x, Q.y - I0.y), t = d < 230 ? 1 : d < 420 ? 2 : d < 600 ? 3 : 4; if (Q.kind === 3) t = Math.min(4, t + 1); return t; }
+  function isleFresh(Q) { var r = ocS().raid[Q.id]; return !(r !== undefined && ocToday() - r < ISLE_RESTOCK); }
+  function skulls(n) { var s2 = ""; for (var i = 0; i < n; i++) s2 += "☠"; return s2; }
+  function holdN() { var H = ocS().hold, n = 0; for (var k in H) n += H[k]; return n; }
+  function treasVal(L) { var v = 0; for (var k in L) if (TREAS[k]) v += TREAS[k][0] * L[k]; return v; }
+  function bagTreas() { var L = {}; Object.keys(S.inv).forEach(function (k) { if (TREAS[k] && S.inv[k] > 0) L[k] = S.inv[k]; }); return L; }
+  function holdStow() {   // everything in the bag that's treasure goes into the hold, as much as fits
+    var o = ocS(), room2 = HOLD_MAX - holdN(), moved = 0; if (room2 <= 0) { nag("The hold is full (" + HOLD_MAX + "). Sell some at Driftwood Haven."); return 0; }
+    Object.keys(bagTreas()).forEach(function (k) { var n = Math.min(S.inv[k], room2 - moved); if (n <= 0) return; S.inv[k] -= n; if (S.inv[k] <= 0) delete S.inv[k]; o.hold[k] = (o.hold[k] || 0) + n; moved += n; });
+    if (moved) { reslot(); hbDirty = true; thud(220, 0.06); snd("coin"); toast(moved + " treasure stowed in the hold (" + holdN() + "/" + HOLD_MAX + ", worth about " + treasVal(o.hold) + " Doubloons).", "#ffd23f"); save(); }
+    return moved;
+  }
+  function holdLoseHalf() { var o = ocS(), lost = 0; Object.keys(o.hold).forEach(function (k) { var n = Math.floor(o.hold[k] / 2 + (o.hold[k] % 2 ? Math.random() : 0)); if (n > 0) { o.hold[k] -= n; lost += n; if (o.hold[k] <= 0) delete o.hold[k]; } }); if (lost) toast(lost + " pieces of treasure from the hold sank with her.", "#ff9a5a"); }
+  function openHold() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 243; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderHold();
+  }
+  function renderHold() {
+    var o = ocS(), H = o.hold, ks = Object.keys(H).filter(function (k) { return H[k] > 0; }), bag = bagTreas(), bn = 0; for (var k in bag) bn += bag[k];
+    var h = '<div class="mo-box bo-box"><div class="dy-head"><small>The Lily Belle</small><h2>Ship\'s Hold</h2><p class="mo-sub">' + holdN() + " of " + HOLD_MAX + " places full. Sell treasure at Driftwood Haven, the trading port in the middle of the sea. If she sinks, half of it goes down with her.</p></div>";
+    h += ks.length ? '<ul class="mo-list">' + ks.map(function (k2) { return '<li class="on"><img alt="" src="' + icon(k2) + '"><div><b>' + esc(ITEMS[k2].n) + " ×" + H[k2] + "</b><small>" + TREAS[k2][0] + " Doubloons each at " + esc(MERCH[TREAS[k2][1]].n) + '</small></div><button type="button" class="btn ghost mo-fit" data-hold="take:' + k2 + '">Take out</button></li>'; }).join("") + "</ul>" : '<p class="dy-empty">The hold is empty. Raid an island and bring its treasure back to the boat.</p>';
+    h += '<p class="dy-prize">Worth about ' + treasVal(H) + " Doubloons.</p>";
+    h += '<div class="st-row">' + (bn ? '<button type="button" class="btn mo-start" data-hold="stow">Stow ' + bn + " from your bag</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffd23f"); $("sbxStoryBox").innerHTML = h;
+  }
+  function holdAct(a) { var o = ocS(); if (a === "stow") holdStow(); else if (a.indexOf("take:") === 0) { var k = a.slice(5), n = o.hold[k] || 0; if (n > 0) { var got = give(k, n, undefined, undefined, true); o.hold[k] -= got; if (o.hold[k] <= 0) delete o.hold[k]; save(); } } renderHold(); }
+
+  // ---- landing and leaving ----
+  function isleLand(Q) {
+    if (trans || !OCS || !OCS.sea || !SC || !SC.genIsle) return; seaSaveState(); seaExSave(); stopInput(); if (panelOpen) closeStory();
+    trans = { t: 0, done: false, mid: function () {
+      var tier = isleTier(Q), fresh = !Q.port && isleFresh(Q), rs = Math.floor(ocToday() / ISLE_RESTOCK), F = Q.port ? SC.genPort((Q.seed | 0) + 77) : SC.genIsle(((Q.seed | 0) ^ Math.imul(rs + 1, 2654435761)) | 0, tier, Q.kind, fresh);
+      OCS = null; stageEl.classList.remove("ocean"); stageEl.classList.add("cave"); enemies.length = 0; mine = null; var gx = pierGateX();
+      cave = { isle: Q.id, tier: tier, port: !!Q.port, Q: Q, hole: { x: gx, y: col[clamp(gx, 0, W - 1)] - 1 }, run: Q.seed | 0, floors: { 1: F }, f: 0, F: null };
+      ISLW = { wave: 0, of: fresh ? tier + 1 : 0, t: 2.8, next: fresh, done: !fresh, sealed: fresh };
+      setFloor(1, "down"); S.st.landings = (S.st.landings || 0) + 1; hud(); save();
+      setTimeout(function () { if (!cave || !cave.isle) return; if (Q.port) toast("Driftwood Haven! Your crew carries the hold ashore. Visit the merchants to sell your treasure.", "#ffd23f"); else if (!fresh) toast("This island has been picked clean. It restocks in " + Math.max(1, ISLE_RESTOCK - (ocToday() - ocS().raid[Q.id])) + " day(s).", "#cfe0e8"); else toast(TIER_N[tier] + " island. Its crew is coming: survive " + ISLW.of + " waves and the treasure chests are yours.", TIER_C[tier]); }, 700);
+    } };
+  }
+  function isleLeave() {
+    if (trans || !cave || !cave.isle) return; stopInput();
+    if (ISLW && ISLW.wave > 0 && !ISLW.done) toast("You row back with the crew still on the island. Its chests stay sealed.", "#cfe0e8");
+    trans = { t: 0, done: false, mid: function () { cave = null; ISLW = null; enemies.length = 0; ocBuild(null); OCS.sea = seaNew(); OCS.diving = false; cam.x = OCS.sea.x; cam.y = OCS.sea.y; ocHudO2(); hud(); save(); } };
+  }
+  function isleKinds(t) { return [null, [["crab", 5], ["slime", 2], ["bug", 2]], [["crab", 3], ["buccaneer", 4], ["wasp", 2], ["bug", 1]], [["buccaneer", 5], ["crab", 2], ["spider", 2], ["wasp", 2]], [["buccaneer", 6], ["spider", 2], ["wasp", 2], ["crab", 1]]][t]; }
+  function isleWave() {   // the next wave comes ashore far from you
+    var F = cave.F, W2 = ISLW, t = cave.tier, L = isleKinds(t), tw = 0, lvl = 2 + t * 4; W2.wave++; L.forEach(function (q) { tw += q[1]; });
+    var n = Math.min(9, 2 + t + W2.wave), spots = F.waves.filter(function (j) { var x = j % F.w + 0.5, y = ((j / F.w) | 0) + 0.7; return Math.hypot(x - cp.x, y - cp.y) > 7 && !SC.solid(F, j % F.w, (j / F.w) | 0); });
+    for (var m = 0; m < n && spots.length; m++) { var r = Math.random() * tw, k = L[0][0]; for (var q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) { k = L[q][0]; break; } }
+      var j = spots.splice(Math.floor(Math.random() * spots.length), 1)[0], mb = makeElite(newCaveMob(k, j % F.w + 0.5, ((j / F.w) | 0) + 0.7, F, lvl), 0.03 + t * 0.04); mb.st = "patrol"; F.mobs.push(mb); chips(mb.x, mb.y - 0.3, "#e8d8a8", 8, 4); }
+    if (W2.wave === W2.of && t >= 2 && spots.length) {   // the last wave brings the bosun
+      var bj = spots[Math.floor(Math.random() * spots.length)], B = makeElite(newCaveMob("buccaneer", bj % F.w + 0.5, ((bj / F.w) | 0) + 0.7, F, lvl + 4), 1); B.bosun = 1; B.hp = B.mx = Math.round(B.mx * 1.4); B.sz = 1.45; if (B.elite) B.elite.n = "Bosun"; F.mobs.push(B);
+    }
+    popup("Wave " + W2.wave + " of " + W2.of, TIER_N[t] + " island • " + F.mobs.filter(function (q2) { return !q2.def; }).length + " coming", TIER_C[t], "⚔"); thud(110, 0.12); shake = Math.max(shake, 0.3);
+  }
+  function isleTick(dt) {
+    var F = cave.F, W2 = ISLW; F.amb = 0.32 + 0.6 * daylight(S.time);
+    if (!W2 || W2.done || cave.port) return;
+    var alive = (F.mobs || []).some(function (q) { return !q.def; });
+    if (alive) return;
+    W2.t -= dt; if (W2.t > 0) return;
+    if (W2.wave < W2.of) { isleWave(); W2.t = 3.2; return; }
+    W2.done = true; W2.sealed = false; ocS().raid[cave.isle] = ocToday(); S.st.raids = (S.st.raids || 0) + 1; S.st["raids" + cave.tier] = (S.st["raids" + cave.tier] || 0) + 1;
+    popup("Island cleared!", "The curse on the treasure chests lifts. Pry them open with your pick.", TIER_C[cave.tier], "★"); snd("open", "Epic"); checkGoals(); save();
+  }
+  function isleBreak(x, y, td) {   // a chest or crate on an island
+    var t = Math.max(1, cave.tier), R2 = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); };
+    if (td.kind === "lootchest") {
+      give("t_chest" + t, 1, x, y); if (Math.random() < 0.15 * t) give("t_gems", 1, x, y); give("doubloon", R2(2, 4 + t * 2), x, y); if (t >= 3 && Math.random() < 0.4) give("pearl", 1, x, y);
+      chips(x + 0.5, y + 0.5, "#f2c14e", 22, 8); popup("Treasure!", ITEMS["t_chest" + t].n, TIER_C[t], "✦"); snd("open", t >= 3 ? "Epic" : "Rare"); S.st.ichests = (S.st.ichests || 0) + 1;
+    } else {
+      var L = [["t_tea", 6 - t], ["t_rum", 4], ["t_silk", 1 + t], ["t_spice", t * 1.2], ["", 4]], tw = 0, r, k = ""; L.forEach(function (q) { tw += q[1]; }); r = Math.random() * tw; for (var i = 0; i < L.length; i++) { r -= L[i][1]; if (r <= 0) { k = L[i][0]; break; } }
+      if (k) give(k, 1, x, y);
+      if (!k) { var S2 = [["planks", 2, 4], ["rope", 1, 2], ["kelpwrap", 1, 2], ["doubloon", 1, 3], ["lampoil", 1, 1]][R2(0, 4)]; if (ITEMS[S2[0]]) give(S2[0], R2(S2[1], S2[2]), x, y); }
+      chips(x + 0.5, y + 0.5, "#a8743a", 14, 6); thud(380, 0.07); S.st.icrates = (S.st.icrates || 0) + 1;
+    }
+    checkGoals();
+  }
+  function isleKill(m) {   // pirates drop their skulls
+    if (!cave || !cave.isle || m.k !== "buccaneer") return; var t = Math.max(1, cave.tier);
+    if (m.bosun) { give("t_skull" + Math.min(4, t + 1), 1, m.x - 0.5, m.y - 1); give("doubloon", 6 + t * 3, m.x - 0.5, m.y - 1); }
+    else if (Math.random() < 0.32) give("t_skull" + Math.min(3, t), 1, m.x - 0.5, m.y - 1);
+  }
+  function isleActs() {   // what you can do on an island right now (pills and the F key)
+    if (!cave || !cave.isle || !cave.F) return []; var F = cave.F, A = [], bt = bagTreas(), bn = 0; for (var k in bt) bn += bt[k];
+    var dB = Math.hypot(F.up.x + 0.5 - cp.x, F.up.y + 0.5 - (cp.y - 0.3)); if (dB < 3 && bn && !cave.port) A.push({ label: "Stow " + bn + " treasure in the hold", x: F.up.x + 0.5, y: F.up.y - 1.3, fn: holdStow });
+    if (cave.port) (F.stalls || []).forEach(function (st) { if (Math.hypot(st.x + 0.5 - cp.x, st.y + 1.6 - cp.y) < 2.4) A.push({ label: st.id === "ship" ? "Visit Pip's Shipwright" : "Trade with " + MERCH[st.id].n, x: st.x + 0.5, y: st.y - 1.6, fn: function () { if (st.id === "ship") openShipwright(); else openMerch(st.id); } }); });
+    return A;
+  }
+  function drawIsleHud(g, now) {
+    if (!cave || !cave.isle) return; var W2 = ISLW, F = cave.F;
+    if (!panelOpen && !trans) isleActs().forEach(function (a) { drawPill(g, now, a.label + (coarse ? "" : " (F)"), ox + a.x * ts, oy + a.y * ts, false, a.fn); });
+    if (cave.port || !W2) return; var w = 240, x = (vw - w) / 2, y = 108, alive = (F.mobs || []).filter(function (q) { return !q.def; }).length;
+    var txt = W2.done ? (W2.of ? "Island cleared: open the chests!" : "Picked clean") : W2.wave ? "Wave " + W2.wave + " of " + W2.of + " · " + alive + " left" : "The crew is coming...";
+    g.fillStyle = "rgba(6,20,34,.8)"; mrr(g, x, y, w, 40, 12); g.fill(); g.font = "800 10px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = TIER_C[cave.tier]; g.fillText(skulls(cave.tier) + " " + TIER_N[cave.tier].toUpperCase() + " ISLAND · " + cave.Q.n, vw / 2, y + 14);
+    g.font = "900 14px Nunito, system-ui, sans-serif"; g.fillStyle = W2.done ? "#ffd23f" : "#f6eedb"; g.fillText(txt, vw / 2, y + 32);
+  }
+  // ---- the merchants and the shipwright ----
+  function openMerch(id) { var el = $("sbxStory"); if (!el) return; storyOpen = 244; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS_MERCH = id; renderMerch(); }
+  var OCS_MERCH = "gild", SHIPTAB = "sk";
+  function merchHave(id) { var o = ocS(), L = {}; Object.keys(TREAS).forEach(function (k) { if (TREAS[k][1] !== id) return; var n = (S.inv[k] || 0) + (o.hold[k] || 0); if (n > 0) L[k] = n; }); return L; }
+  function renderMerch() {
+    var id = OCS_MERCH, M = MERCH[id], L = merchHave(id), ks = Object.keys(L), tot = treasVal(L);
+    var h = '<div class="mo-box bo-box"><div class="dy-head"><small>Driftwood Haven</small><h2>' + esc(M.n) + '</h2><p class="mo-sub">' + esc(M.d) + " They take it from your bag or straight from the hold.</p></div>";
+    h += ks.length ? '<ul class="mo-list">' + ks.map(function (k) { return '<li class="have"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + " ×" + L[k] + "</b><small>" + TREAS[k][0] + " Doubloons each</small></div>" + '<button type="button" class="btn mo-fit" data-merch="sell:' + k + '">Sell for ' + TREAS[k][0] * L[k] + "</button></li>"; }).join("") + "</ul>" : '<p class="dy-empty">You have nothing they want. Raid an island and bring back its treasure.</p>';
+    h += '<div class="st-row">' + (ks.length > 1 ? '<button type="button" class="btn mo-start" data-merch="all">Sell everything for ' + tot + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", M.c); $("sbxStoryBox").innerHTML = h;
+  }
+  function merchSell(k) { var o = ocS(), n = (o.hold[k] || 0) + (S.inv[k] || 0); if (!n || !TREAS[k]) return 0; delete o.hold[k]; if (S.inv[k]) { delete S.inv[k]; reslot(); hbDirty = true; } return TREAS[k][0] * n; }
+  function merchAct(a) {
+    var pay = 0; if (a === "all") Object.keys(merchHave(OCS_MERCH)).forEach(function (k) { pay += merchSell(k); }); else if (a.indexOf("sell:") === 0) pay = merchSell(a.slice(5));
+    if (pay) { give("doubloon", pay, undefined, undefined, true); S.st.sold_d = (S.st.sold_d || 0) + pay; snd("coin"); thud(300, 0.06); popup("Sold!", "+" + pay + " Doubloons from " + MERCH[OCS_MERCH].n, MERCH[OCS_MERCH].c, "◎"); checkGoals(); save(); }
+    renderMerch();
+  }
+  function openShipwright() { var el = $("sbxStory"); if (!el) return; storyOpen = 245; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderShipwright(); }
+  function renderShipwright() {
+    var C = cosS(), B = ocS().boat, dbl = S.inv.doubloon || 0, L = SHIPTAB === "sk" ? SKINS : CANS, own = SHIPTAB === "sk" ? C.sk : C.cn, cur = SHIPTAB === "sk" ? skinOf().id : canOf().id;
+    var h = '<div class="mo-box bo-box"><div class="dy-head"><small>Driftwood Haven</small><h2>Pip\'s Shipwright</h2><p class="mo-sub">“Make her yours!” You have <b>' + dbl + " Doubloons</b>.</p></div>"
+      + '<div class="sw-tabs"><button type="button" class="btn' + (SHIPTAB === "sk" ? "" : " ghost") + '" data-ship="tab:sk">Boat skins</button><button type="button" class="btn' + (SHIPTAB === "cn" ? "" : " ghost") + '" data-ship="tab:cn">Cannon designs</button></div><ul class="mo-list sw-list">';
+    h += L.map(function (it, i) { var has = !it.p || own[it.id], on = it.id === cur;
+      return '<li class="' + (on ? "on" : "") + '"><canvas class="sw-cv" width="96" height="56" data-swcv="' + i + '"></canvas><div><b>' + esc(it.n) + "</b><small>" + (has ? (on ? "In use" : "Yours") : it.p + " Doubloons") + "</small></div>"
+        + (on ? '<span class="mo-on">In use</span>' : has ? '<button type="button" class="btn mo-fit" data-ship="use:' + it.id + '">Use</button>' : '<button type="button" class="btn mo-fit"' + (dbl >= it.p ? "" : " disabled") + ' data-ship="buy:' + it.id + '">Buy</button>') + "</li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
+    [].forEach.call(document.querySelectorAll("[data-swcv]"), function (cv) { var it = L[+cv.getAttribute("data-swcv")], g = cv.getContext("2d"); g.fillStyle = "#1f6a98"; g.fillRect(0, 0, 96, 56);
+      if (SHIPTAB === "sk") seaBoatTop(g, 50, 28, 0, 11, performance.now(), { skin: it, lit: 0 }); else { seaBoatTop(g, 30, 28, 0, 8, performance.now(), { can: it }); g.fillStyle = it.ball; if (it.trail) { var gr = g.createLinearGradient(54, 28, 88, 28); gr.addColorStop(0, "rgba(" + it.trail + ",0)"); gr.addColorStop(1, "rgba(" + it.trail + ",.8)"); g.fillStyle = gr; g.fillRect(54, 24, 34, 8); } g.fillStyle = it.ball; g.beginPath(); g.arc(86, 28, 5, 0, 6.2832); g.fill(); } });
+  }
+  function shipAct2(a) {
+    var C = cosS(), B = ocS().boat;
+    if (a.indexOf("tab:") === 0) SHIPTAB = a.slice(4);
+    else if (a.indexOf("buy:") === 0) { var id = a.slice(4), L = SHIPTAB === "sk" ? SKINS : CANS, it = L.filter(function (q) { return q.id === id; })[0]; if (it && (S.inv.doubloon || 0) >= it.p) { S.inv.doubloon -= it.p; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); hbDirty = true; (SHIPTAB === "sk" ? C.sk : C.cn)[id] = 1; if (SHIPTAB === "sk") B.sk = id; else B.cn = id; S.st.cosbuys = (S.st.cosbuys || 0) + 1; snd("open", "Epic"); popup("New look!", it.n, "#4fd0e8", "⚓"); save(); } }
+    else if (a.indexOf("use:") === 0) { var id2 = a.slice(4); if (SHIPTAB === "sk") B.sk = id2; else B.cn = id2; thud(260, 0.05); save(); }
+    renderShipwright();
+  }
+  // ---- drawing the island ----
+  function isleDeco(F) {
+    if (F.ideco) return F.ideco; var D = F.ideco = { wd: new Uint8Array(F.w * F.h), grass: [], shell: [] }, i, x, y, W2 = F.w;
+    var hh = function (a, b, s3) { var hv = Math.imul(a + 17, 73856093) ^ Math.imul(b + 31, 19349663) ^ Math.imul(s3 + 7, 83492791); hv = Math.imul(hv ^ (hv >>> 15), 2246822507); return ((hv ^ (hv >>> 13)) >>> 0) / 4294967296; };
+    for (i = 0; i < F.w * F.h; i++) { x = i % W2; y = (i / W2) | 0;
+      if (F.pool[i]) { var d = 3; for (var r = 1; r <= 3 && d === 3; r++) for (var oy2 = -r; oy2 <= r; oy2++) for (var ox2 = -r; ox2 <= r; ox2++) { var j = (y + oy2) * W2 + x + ox2; if (j >= 0 && j < F.w * F.h && !F.pool[j]) d = Math.min(d, r - 1); } D.wd[i] = d; continue; }
+      if (F.shoreD[i] >= 3 && !F.wall[i] && hh(x, y, 1) < 0.5) D.grass.push({ x: x + hh(x, y, 2), y: y + hh(x, y, 3), s: hh(x, y, 4) * 6 });
+      else if (F.shoreD[i] === 1 && hh(x, y, 5) < 0.12) D.shell.push({ x: x + hh(x, y, 6), y: y + hh(x, y, 7), c: hh(x, y, 8) < 0.5 ? "#ffd0dc" : "#f6f2e8" }); }
+    return D;
+  }
+  function isleDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {
+    var t = reduce ? 0 : now / 1000, D = isleDeco(F), i, j, k = ts, dl = daylight(S.time), dk = 0.45 + 0.55 * dl;
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var c = j * F.w + i, sx = ox + i * ts, sy = oy + j * ts;
+      if (F.pool[c]) { var col0 = [[110, 220, 225], [60, 186, 214], [36, 140, 190], [24, 104, 160]][D.wd[c]]; g.fillStyle = "rgb(" + (col0[0] * dk | 0) + "," + (col0[1] * dk | 0) + "," + (col0[2] * (0.6 + 0.4 * dk) | 0) + ")"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5);
+        var w1 = Math.sin(t * 1.2 + i * 0.7 - j * 0.5), w2 = Math.sin(t * 0.8 - i * 0.4 + j * 0.9); g.fillStyle = "rgba(255,255,255," + (0.06 + 0.06 * w1).toFixed(3) + ")"; g.fillRect(sx + ts * (0.1 + 0.2 * w2), sy + ts * (0.3 + 0.1 * w1), ts * 0.45, Math.max(1.5, ts * 0.06));
+        if (D.wd[c] === 0) { var ew = Math.max(2, ts * 0.12), fa = (0.5 + 0.25 * Math.sin(t * 2 + i + j)).toFixed(3); g.fillStyle = "rgba(255,255,255," + fa + ")"; if (!F.pool[c - F.w]) g.fillRect(sx, sy, ts, ew); if (!F.pool[c + F.w]) g.fillRect(sx, sy + ts - ew, ts, ew); if (!F.pool[c - 1]) g.fillRect(sx, sy, ew, ts); if (!F.pool[c + 1]) g.fillRect(sx + ts - ew, sy, ew, ts); }
+        continue; }
+      if (F.wall[c] && (F.rk[c] === 1 || F.rk[c] === 5)) { g.fillStyle = F.theme.floor; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); }   // sand under palms and torches (they draw themselves)
+      var sd2 = F.shoreD[c]; if (sd2 >= 3) { g.fillStyle = cave.port ? "rgba(140,100,60,.35)" : "rgba(90,150,70," + (sd2 >= 4 ? 0.55 : 0.32) + ")"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); } else if (sd2 === 1) { g.fillStyle = "rgba(255,246,214,.25)"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); }
+      if (cave.port && sd2 >= 2 && j > 13) { g.fillStyle = "rgba(120,80,40,.55)"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); g.fillStyle = "rgba(60,36,18,.6)"; g.fillRect(sx, sy + ts * 0.48, ts + 0.5, Math.max(1, ts * 0.05)); }   // the port's boardwalk
+    }
+    D.grass.forEach(function (q) { if (q.x < X0 - 1 || q.x > X1 + 1 || q.y < Y0 - 1 || q.y > Y1 + 1) return; var sx = ox + q.x * ts, sy = oy + q.y * ts, sw = Math.sin(t * 1.5 + q.s) * k * 0.05; g.strokeStyle = "#4a8a3a"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx - k * 0.06 + sw, sy - k * 0.22); g.moveTo(sx + k * 0.08, sy); g.lineTo(sx + k * 0.1 + sw, sy - k * 0.26); g.stroke(); });
+    D.shell.forEach(function (q) { if (q.x < X0 - 1 || q.x > X1 + 1 || q.y < Y0 - 1 || q.y > Y1 + 1) return; g.fillStyle = q.c; g.beginPath(); g.ellipse(ox + q.x * ts, oy + q.y * ts, k * 0.08, k * 0.06, 0.4, 0, 6.2832); g.fill(); });
+    // the Lily Belle, moored off the beach (in her skin)
+    var bx = ox + (F.up.x + 0.5) * ts, by = oy + (F.up.y + 2.6) * ts; seaBoatTop(g, bx, by, -Math.PI / 2, ts * 0.78, now, { lit: dl < 0.6, up: ocS().boat.up || {} });
+    g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1.5, ts * 0.06); g.beginPath(); g.moveTo(bx, by - ts * 1.8); g.lineTo(bx, oy + (F.up.y + 0.7) * ts); g.stroke();
+    if (dl < 0.6) srcs.push([F.up.x + 0.5, F.up.y + 2, 5, 0.8]);
+  }
+  function isleRow(g, F, rj, now) {   // palms, ruins, huts, stalls and tiki torches whose base is on this row (so you walk behind them)
+    var t = reduce ? 0 : now / 1000, k = ts;
+    for (var i = 0; i < F.w; i++) { var c = rj * F.w + i, r = F.rk[c]; if (!r) continue; var sx = ox + i * ts, sy = oy + rj * ts; if (sx < -ts * 3 || sx > vw + ts * 3) continue;
+      if (r === 1) { var sw = Math.sin(t * 0.9 + i) * k * 0.08, h = 1.7 + ((i * 7 + rj) % 3) * 0.25; g.fillStyle = "rgba(0,0,0,.2)"; g.beginPath(); g.ellipse(sx + k * 0.5, sy + k * 0.85, k * 0.5, k * 0.16, 0, 0, 6.2832); g.fill();
+        g.strokeStyle = "#7a5634"; g.lineWidth = k * 0.22; g.lineCap = "round"; g.beginPath(); g.moveTo(sx + k * 0.5, sy + k * 0.85); g.quadraticCurveTo(sx + k * 0.35, sy - k * h * 0.4, sx + k * 0.55 + sw, sy - k * h); g.stroke();
+        g.strokeStyle = "#5a3a20"; g.lineWidth = Math.max(1, k * 0.04); for (var q = 0; q < 4; q++) { var yy = sy + k * 0.6 - q * k * h * 0.28; g.beginPath(); g.moveTo(sx + k * 0.38, yy); g.lineTo(sx + k * 0.62, yy - k * 0.04); g.stroke(); }
+        var tx = sx + k * 0.55 + sw, ty = sy - k * h; for (var fr = 0; fr < 6; fr++) { var a = fr / 6 * 6.2832 + Math.sin(t * 0.7 + i) * 0.06, ex = tx + Math.cos(a) * k * 0.95, ey = ty + Math.sin(a) * k * 0.5 + k * 0.15; g.strokeStyle = fr % 2 ? "#2f7a35" : "#4a9a44"; g.lineWidth = k * 0.2; g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + ex) / 2, ty - k * 0.35, ex, ey); g.stroke(); }
+        g.fillStyle = "#6a4a1a"; g.beginPath(); g.arc(tx - k * 0.08, ty + k * 0.1, k * 0.1, 0, 6.2832); g.arc(tx + k * 0.1, ty + k * 0.12, k * 0.1, 0, 6.2832); g.fill(); }
+      else if (r === 2) { g.fillStyle = "#6a6e78"; g.fillRect(sx, sy - k * 0.45, k, k * 1.3); g.fillStyle = "#8a8e98"; g.fillRect(sx, sy - k * 0.45, k, k * 0.3); g.fillStyle = "#4a4e58"; g.fillRect(sx, sy + k * 0.48, k, k * 0.37); g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(sx + k * 0.48, sy - k * 0.15, Math.max(1, k * 0.05), k * 0.6); g.fillStyle = "#4a8a3a"; if ((i + rj) % 2) g.fillRect(sx + k * 0.1, sy - k * 0.5, k * 0.4, k * 0.12); }
+      else if (r === 3) { if (F.rk[c - 1] === 3 && F.rk[c - F.w] !== 3) continue; if (F.rk[c - 1] === 3 || F.rk[c - F.w] === 3) continue; var hw = 0; while (F.rk[c + hw] === 3) hw++; var hh2 = F.rk[c + F.w] === 3 ? 2 : 1;   // a hut: drawn once from its top-left cell
+        g.fillStyle = "#8a5a32"; g.fillRect(sx, sy - k * 0.3, hw * k, (hh2 + 0.3) * k); g.fillStyle = "#6a4426"; for (var pl = 0; pl < hw * 3; pl++) g.fillRect(sx + pl * k / 3, sy - k * 0.3, Math.max(1, k * 0.04), (hh2 + 0.3) * k);
+        g.fillStyle = "#c8a050"; g.beginPath(); g.moveTo(sx - k * 0.3, sy - k * 0.1); g.lineTo(sx + hw * k / 2, sy - k * 1.3); g.lineTo(sx + hw * k + k * 0.3, sy - k * 0.1); g.closePath(); g.fill(); g.strokeStyle = "#a07a30"; g.lineWidth = Math.max(1, k * 0.05); for (var th2 = 0; th2 < 4; th2++) { g.beginPath(); g.moveTo(sx - k * 0.1 + th2 * hw * k / 3.2, sy - k * 0.2); g.lineTo(sx + hw * k / 2, sy - k * 1.2); g.stroke(); }
+        g.fillStyle = "#2a1a10"; g.fillRect(sx + hw * k / 2 - k * 0.25, sy + (hh2 - 0.6) * k, k * 0.5, k * 0.6); }
+      else if (r === 4) { if (F.rk[c - 1] === 4) continue; var st = (F.stalls || []).filter(function (q) { return q.x === i + 1 && q.y === rj; })[0], M = st && MERCH[st.id];   // a market stall
+        g.fillStyle = "#6a4426"; g.fillRect(sx, sy - k * 0.1, k * 3, k * 0.9); g.fillStyle = "#8a5a32"; g.fillRect(sx, sy - k * 0.1, k * 3, k * 0.25);
+        g.fillStyle = "#4a2e18"; g.fillRect(sx + k * 0.05, sy - k * 1.6, k * 0.12, k * 1.6); g.fillRect(sx + k * 2.83, sy - k * 1.6, k * 0.12, k * 1.6);
+        if (st) { var fy = sy - k * 0.55; g.fillStyle = "#4a9a52"; g.beginPath(); g.ellipse(sx + k * 1.5, fy, k * 0.42, k * 0.36, 0, 0, 6.2832); g.fill(); g.fillStyle = "#6ac26a"; g.beginPath(); g.arc(sx + k * 1.32, fy - k * 0.3, k * 0.13, 0, 6.2832); g.arc(sx + k * 1.68, fy - k * 0.3, k * 0.13, 0, 6.2832); g.fill(); g.fillStyle = "#14100c"; g.fillRect(sx + k * 1.29, fy - k * 0.33, k * 0.06, k * 0.06); g.fillRect(sx + k * 1.65, fy - k * 0.33, k * 0.06, k * 0.06);
+          var stripes = M.c; for (var aw = 0; aw < 6; aw++) { g.fillStyle = aw % 2 ? "#f6eedb" : stripes; g.fillRect(sx - k * 0.1 + aw * k * 0.53, sy - k * 1.9, k * 0.53, k * 0.42); } g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(sx - k * 0.1, sy - k * 1.5, k * 3.2, k * 0.08);
+          g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.fillStyle = "#fff6e0"; var nm = M.n.replace("Croaker & Sons Trading Co.", "Croaker & Sons"); g.strokeText(nm, sx + k * 1.5, sy - k * 2.05); g.fillText(nm, sx + k * 1.5, sy - k * 2.05);
+          if (st.id === "gild") { g.fillStyle = "#ffd23f"; g.fillRect(sx + k * 0.3, sy - k * 0.2, k * 0.4, k * 0.18); } else if (st.id === "bone") { g.fillStyle = "#e8dcc0"; g.beginPath(); g.arc(sx + k * 0.5, sy - k * 0.15, k * 0.15, 0, 6.2832); g.fill(); } else if (st.id === "trade") { g.fillStyle = "#a8743a"; g.fillRect(sx + k * 0.3, sy - k * 0.35, k * 0.4, k * 0.3); } else { g.fillStyle = "#4fd0e8"; g.beginPath(); g.moveTo(sx + k * 0.3, sy - k * 0.1); g.lineTo(sx + k * 0.5, sy - k * 0.5); g.lineTo(sx + k * 0.7, sy - k * 0.1); g.fill(); } } }
+      else if (r === 5) { var fl = Math.sin(t * 9 + i * 3) * 0.12; g.fillStyle = "#6a4426"; g.fillRect(sx + k * 0.44, sy - k * 0.7, k * 0.12, k * 1.5); g.fillStyle = "#c9a52a"; g.fillRect(sx + k * 0.36, sy - k * 0.82, k * 0.28, k * 0.2); g.fillStyle = "#ff9a3a"; g.beginPath(); g.ellipse(sx + k * 0.5, sy - k * (1.0 + fl), k * 0.14, k * 0.24, 0, 0, 6.2832); g.fill(); g.fillStyle = "#ffe27a"; g.beginPath(); g.ellipse(sx + k * 0.5, sy - k * (0.95 + fl), k * 0.07, k * 0.13, 0, 0, 6.2832); g.fill(); }
+    }
+  }
+
   // =====================================================================================================================================
   // ---------- SAILING: the sea chart seen from above. Tap an island and the Lily Belle turns and sails to it; swamp pirates hunt you ----------
   // OCS.sea = { x, y, ang, sp, tgt, ships, balls, loot, wake, cd, hp }. Chart units: SO.SEAW x SO.SEAW. Islands come from SO.seaGen.
   var OISL = null, OSITES = null;
   function seaIslands() { if (!OISL || OISL._s !== ocSeed()) { OISL = SO.seaGen(ocSeed()); OISL._s = ocSeed(); OSITES = [];
+      OISL.forEach(function (I) { if (I.n === "Driftwood Haven") { I.port = 1; I.r = 12; I.kind = 5; I.d = "The trading port of the Brinebog Sea, built from a hundred wrecks. Merchants buy treasure here."; } });   // ISLAND RAIDS: the trading port
       OISL.push({ id: 13, n: "Old Lighthouse", d: "A white tower on a black rock, dark for years.", x: LH.x, y: LH.y, r: 6, kind: 4, lh: 1, seed: (ocSeed() * 31 + 7) % 1000000007 });   // THE OLD LIGHTHOUSE
       OISL.forEach(function (I) { if (I.pier) return; var a = (I.seed % 628) / 100; OSITES.push({ x: I.x + Math.cos(a) * (I.r + 6), y: I.y + Math.sin(a) * (I.r + 6), seed: I.seed % 1000000007, name: I.n + " Reef", isl: I.id }); });
       for (var k = 0; k < 8; k++) { var h1 = SW.hash(k, 3, ocSeed() % 9973), h2 = SW.hash(k, 7, ocSeed() % 9973); OSITES.push({ x: 60 + h1 * (SO.SEAW - 120), y: 60 + h2 * (SO.SEAW - 160), seed: Math.floor(SW.hash(k, 11, 5) * 1e9), name: ["Sunken Sloop", "The Bone Garden", "Bubbling Vent", "Gull Wreck", "Old Net Field", "The Glass Hole", "Barnacle Arch", "Lost Lantern"][k], isl: -1, wreck: 1 }); }
@@ -17630,7 +17904,7 @@
     var s = OCS.sea, cl = shipUp("can"), rng = [26, 30, 34][cl]; if (s.cd > 0) { if (manual) nag("The cannons are reloading..."); return; }
     var d = Math.hypot(sh.x - s.x, sh.y - s.y); if (d > rng) { if (manual) nag("Out of range. Sail closer!"); return; }
     s.cd = s.cdMax = [1.5, 1.1, 0.9][cl]; var bs = cl >= 2 ? 26 : 22, t = d / bs, tx = sh.x + Math.cos(sh.ang) * (sh.sp || 0) * t, ty = sh.y + Math.sin(sh.ang) * (sh.sp || 0) * t, a = Math.atan2(ty - s.y, tx - s.x);
-    (cl ? [-0.045, 0.045] : [0]).forEach(function (da) { s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a + da) * bs, vy: Math.sin(a + da) * bs, life: Math.min(1.8, t + 0.2), mine: 1, dmg: cl >= 2 ? 2 : 1, star: cl >= 2 }); }); thud(70, 0.12); shake = Math.max(shake, 0.15);
+    var CD = canOf(); (cl ? [-0.045, 0.045] : [0]).forEach(function (da) { s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a + da) * bs, vy: Math.sin(a + da) * bs, life: Math.min(1.8, t + 0.2), mine: 1, dmg: cl >= 2 ? 2 : 1, star: cl >= 2, cd: CD.id }); }); thud(70, 0.12); shake = Math.max(shake, 0.15);
     for (var i = 0; i < 6; i++) s.wake.push({ x: s.x + Math.cos(a) * 1.5, y: s.y + Math.sin(a) * 1.5, life: 0.6, smoke: 1, vx: Math.cos(a) * 2 + (Math.random() - 0.5), vy: Math.sin(a) * 2 + (Math.random() - 0.5) });
   }
   function seaSpawnShip() {
@@ -17640,7 +17914,7 @@
   }
   function seaHurt(n) {
     var B = ocS().boat; B.hp = Math.max(0, (B.hp || 100) - n * 100 / hullMax()); shake = Math.max(shake, 0.5);   // tougher hulls lose a smaller share thud(60, 0.14); OCS.sea.hurt = 0.4;
-    if (B.hp <= 0) { toast("The Lily Belle is holed! Old Croaker's friends tow you home.", "#ff7a6a"); var lost = Math.min(S.inv.doubloon || 0, 5); if (lost) { S.inv.doubloon -= lost; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); toast("The pirates got away with " + lost + " Doubloons.", "#ff9a5a"); } seaDock(); }
+    if (B.hp <= 0) { toast("The Lily Belle is holed! Old Croaker's friends tow you home.", "#ff7a6a"); holdLoseHalf(); var lost = Math.min(S.inv.doubloon || 0, 5); if (lost) { S.inv.doubloon -= lost; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); toast("The pirates got away with " + lost + " Doubloons.", "#ff9a5a"); } seaDock(); }
   }
   function seaLoot(sh) {
     var L = [], R = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }, add = function (k, a, b, ch) { if (ITEMS[k] && Math.random() < (ch == null ? 1 : ch)) L.push([k, R(a, b)]); };
@@ -17649,7 +17923,7 @@
   }
   function seaActions() {
     var s = OCS.sea, A = [], I = seaIslands(), b = function (x, y) { return [x, y]; };
-    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : Q.lh ? { label: "Climb the lighthouse", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openLighthouse(Q); } } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
+    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : Q.port ? { label: "Moor at Driftwood Haven", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { isleLand(Q); } } : Q.lh ? { label: "Climb the lighthouse", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openLighthouse(Q); } } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
     OSITES.forEach(function (st) { if (Math.hypot(st.x - s.x, st.y - s.y) < 4.5) A.push({ label: "Dive here", wx: st.x, wy: st.y - 3, fn: function () { seaDive(st); } }); });
     return A;
   }
@@ -17657,12 +17931,17 @@
     var el = $("sbxStory"); if (!el) return; storyOpen = 220; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS.isleQ = Q;
     var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0];
     var h = '<div class="mo-box bo-box"><div class="mo-head"><canvas class="mo-cv" id="isCv" width="360" height="200" aria-hidden="true"></canvas><div><small>An island of the Brinebog Sea</small><h2>' + esc(Q.n) + '</h2><p class="mo-sub">' + esc(Q.d) + "</p></div></div>"
-      + '<p class="mo-msg">Old Croaker squints at the shore: “The tide\'s not right for a landing yet. Give it time.” Exploring islands on foot is coming in a later update. You can still dive the reef around it.</p>'
-      + '<div class="st-row">' + (site ? '<button type="button" class="btn mo-start" data-isle="dive">Dive ' + esc(site.name) + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Back to the helm</button></div></div>';
+      + isleCard(Q)
+      + '<div class="st-row"><button type="button" class="btn mo-start" data-isle="land">Land ashore</button>' + (site ? '<button type="button" class="btn" data-isle="dive">Dive ' + esc(site.name) + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Back to the helm</button></div></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
     var cv = $("isCv"); if (cv) { var g = cv.getContext("2d"); g.fillStyle = "#2a8ac0"; g.fillRect(0, 0, 360, 200); var k0 = 9, save0 = [cam.x, cam.y]; g.save(); g.translate(180 - Q.x * k0, 100 - Q.y * k0); seaDrawIsland(g, Q, k0, performance.now(), 0, 0); g.restore(); }
   }
-  function isleAct(a) { var Q = OCS && OCS.isleQ; if (!Q) return; if (a === "dive") { var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0]; closeStory(); if (site) seaDive(site); } }
+  function isleCard(Q) {   // ISLAND RAIDS: what the island card says
+    var t = isleTier(Q), fr = isleFresh(Q), r = ocS().raid[Q.id];
+    return '<p class="is-tier" style="--tc:' + TIER_C[t] + '"><b>' + skulls(t) + " " + TIER_N[t] + " island</b> " + ["", "A small crew of crabs and critters. Easy pickings.", "Pirates and stinging things. Bring a good weapon.", "A hardened pirate crew and their bosun. Bring armour and food.", "The worst crews on the sea, led by a dread bosun. Only for the bold."][t] + "</p>"
+      + '<p class="mo-msg">' + (fr ? "Beat " + (t + 1) + " waves of its crew to break the curse on its treasure chests. Smash the crates and barrels too. Stow what you find in the ship's hold, then sell it at Driftwood Haven." : "You picked this island clean. It restocks in " + Math.max(1, ISLE_RESTOCK - (ocToday() - r)) + " day(s).") + "</p>";
+  }
+  function isleAct(a) { var Q = OCS && OCS.isleQ; if (!Q) return; if (a === "land") { closeStory(); isleLand(Q); return; } if (a === "dive") { var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0]; closeStory(); if (site) seaDive(site); } }
 
   // ---- update ----
   function seaUpdate(dt) {
@@ -17735,25 +18014,27 @@
     g.rotate(rock); var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, svx = ssn.sx * ssn.len * 0.9 * k, svy = (0.3 + 0.25 * ssn.len) * k, th = -(ang + rock), sdx = svx * Math.cos(th) - svy * Math.sin(th), sdy = svx * Math.sin(th) + svy * Math.cos(th);   // the shadow falls away from the sun, whichever way the boat points
     g.fillStyle = "rgba(0,20,40," + (0.12 + ssn.a).toFixed(3) + ")"; g.beginPath(); g.ellipse(sdx, sdy, L * 1.02, Wd * 1.05, 0, 0, 6.2832); g.fill();
     var hull = function () { g.beginPath(); g.moveTo(L, 0); g.quadraticCurveTo(L * 0.55, -Wd, -L * 0.2, -Wd); g.lineTo(-L * 0.9, -Wd * 0.78); g.quadraticCurveTo(-L * 1.02, 0, -L * 0.9, Wd * 0.78); g.lineTo(-L * 0.2, Wd); g.quadraticCurveTo(L * 0.55, Wd, L, 0); g.closePath(); };
-    hull(); g.fillStyle = o.hurt ? "#ffffff" : pir ? "#3a2418" : "#7a4a2a"; g.fill(); g.save(); hull(); g.clip();
-    var deckIn = 0.16 * k; g.fillStyle = pir ? "#5a3a24" : "#b8844a"; g.beginPath(); g.ellipse(-L * 0.05, 0, L * 0.86, Wd - deckIn, 0, 0, 6.2832); g.fill();
+    var SK = pir ? null : o.skin || (o.up ? skinOf() : SKINS[0]), CN = pir ? null : o.can || (o.up ? canOf() : CANS[0]);   // ISLAND RAIDS: Pip's skins and cannon designs
+    if (SK && SK.glow && !reduce) { g.save(); g.globalCompositeOperation = "lighter"; oG(g, 0, 0, L * 1.6, "rgba(160,240,255,.18)"); g.restore(); }
+    hull(); g.fillStyle = o.hurt ? "#ffffff" : pir ? "#3a2418" : SK.hull; g.fill(); g.save(); hull(); g.clip();
+    var deckIn = 0.16 * k; g.fillStyle = pir ? "#5a3a24" : SK.deck; g.beginPath(); g.ellipse(-L * 0.05, 0, L * 0.86, Wd - deckIn, 0, 0, 6.2832); g.fill();
     g.strokeStyle = pir ? "rgba(0,0,0,.35)" : "rgba(80,40,20,.35)"; g.lineWidth = Math.max(1, k * 0.05); for (var pl2 = -2; pl2 <= 2; pl2++) { g.beginPath(); g.moveTo(-L, pl2 * Wd * 0.3); g.lineTo(L, pl2 * Wd * 0.3); g.stroke(); }
     g.restore(); g.strokeStyle = pir ? "#1a1008" : "#4a2e18"; g.lineWidth = Math.max(1, k * 0.09); hull(); g.stroke();
-    if (!pir) { g.fillStyle = "#4ee6b4"; for (var q = 0; q < 4; q++) { g.beginPath(); g.arc((-0.6 + q * 0.4) * L, -Wd * 0.92, k * 0.09, 0, 6.2832); g.arc((-0.6 + q * 0.4) * L, Wd * 0.92, k * 0.09, 0, 6.2832); g.fill(); } }
+    if (!pir) { g.fillStyle = SK.trim; for (var q = 0; q < 4; q++) { g.beginPath(); g.arc((-0.6 + q * 0.4) * L, -Wd * 0.92, k * 0.09, 0, 6.2832); g.arc((-0.6 + q * 0.4) * L, Wd * 0.92, k * 0.09, 0, 6.2832); g.fill(); } }
     var UP = o.up || {};
     if (UP.hull) { g.strokeStyle = UP.hull >= 2 ? "#8a96a4" : "#5a3a20"; g.lineWidth = Math.max(1.5, k * (UP.hull >= 2 ? 0.2 : 0.14)); hull(); g.stroke(); if (UP.hull >= 2) { g.fillStyle = "#d8e0e8"; for (var rv = 0; rv < 7; rv++) { var ra2 = -0.8 + rv * 0.27; g.fillRect(ra2 * L - k * 0.04, -Wd * 0.97, k * 0.08, k * 0.08); g.fillRect(ra2 * L - k * 0.04, Wd * 0.89, k * 0.08, k * 0.08); } } }   // SHIP UPGRADES: plated hulls
     // cannons on each side (Twin Cannons: four a side; Star Cannons: glowing blue barrels)
-    g.fillStyle = UP.can >= 2 ? "#9ad8ff" : "#2a2a30"; (UP.can ? [-0.5, -0.2, 0.1, 0.38] : [-0.3, 0.25]).forEach(function (cx) { g.fillRect(cx * L - k * 0.12, -Wd - k * 0.18, k * 0.24, k * 0.3); g.fillRect(cx * L - k * 0.12, Wd - k * 0.12, k * 0.24, k * 0.3); });
+    g.fillStyle = UP.can >= 2 ? "#9ad8ff" : CN ? CN.barrel : "#2a2a30"; (UP.can ? [-0.5, -0.2, 0.1, 0.38] : [-0.3, 0.25]).forEach(function (cx) { g.fillRect(cx * L - k * 0.12, -Wd - k * 0.18, k * 0.24, k * 0.3); g.fillRect(cx * L - k * 0.12, Wd - k * 0.12, k * 0.24, k * 0.3); });
     // mast and sail (seen from above: the sail is a big leaf that swings with the wind)
     var sw = reduce ? 0 : Math.sin(now / 900 + (o.ph || 0)) * 0.12;
     g.save(); g.translate(L * 0.05, 0); g.rotate(1.57 + sw);
     if (pir) { g.fillStyle = "#1a1420"; g.beginPath(); g.moveTo(-Wd * 1.5, 0); g.quadraticCurveTo(0, -k * 2.3, Wd * 1.5, 0); g.quadraticCurveTo(0, -k * 0.6, -Wd * 1.5, 0); g.fill(); g.fillStyle = "#e8d9a8"; g.beginPath(); g.arc(0, -k * 0.85, k * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#1a1420"; g.fillRect(-k * 0.16, -k * 0.92, k * 0.1, k * 0.1); g.fillRect(k * 0.06, -k * 0.92, k * 0.1, k * 0.1); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(-k * 0.2, -k * 1.12, k * 0.08, 0, 6.2832); g.arc(k * 0.2, -k * 1.12, k * 0.08, 0, 6.2832); g.fill(); }
-    else { g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(-Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 2.5, Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 0.7, -Wd * 1.55, 0); g.fill(); g.fillStyle = "#58b85a"; g.beginPath(); g.moveTo(-Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 2.2, Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 0.8, -Wd * 1.35, -k * 0.08); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.ellipse(-Wd * 0.4, -k * 0.95, k * 0.35, k * 0.12, -0.3, 0, 6.2832); g.fill(); g.strokeStyle = "#2f7a3a"; g.lineWidth = Math.max(1, k * 0.05); for (var v = -2; v <= 2; v++) { g.beginPath(); g.moveTo(0, -k * 0.5); g.lineTo(v * Wd * 0.5, -k * 0.85 + Math.abs(v) * k * 0.15); g.stroke(); } }
+    else { g.fillStyle = SK.sail[0]; g.beginPath(); g.moveTo(-Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 2.5, Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 0.7, -Wd * 1.55, 0); g.fill(); g.fillStyle = SK.sail[1]; g.beginPath(); g.moveTo(-Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 2.2, Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 0.8, -Wd * 1.35, -k * 0.08); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.ellipse(-Wd * 0.4, -k * 0.95, k * 0.35, k * 0.12, -0.3, 0, 6.2832); g.fill(); g.strokeStyle = "#2f7a3a"; g.lineWidth = Math.max(1, k * 0.05); for (var v = -2; v <= 2; v++) { g.beginPath(); g.moveTo(0, -k * 0.5); g.lineTo(v * Wd * 0.5, -k * 0.85 + Math.abs(v) * k * 0.15); g.stroke(); } }
     g.restore(); g.fillStyle = pir ? "#2a1a10" : "#5a3a1e"; g.beginPath(); g.arc(L * 0.05, 0, k * 0.16, 0, 6.2832); g.fill();
     if (UP.nest) { g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(L * 0.05, 0, k * 0.42, 0, 6.2832); g.fill(); g.strokeStyle = "#c28a52"; g.lineWidth = Math.max(1, k * 0.07); g.stroke(); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(L * 0.05 + k * 0.12, k * 0.08, k * 0.14, 0, 6.2832); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.moveTo(L * 0.05, 0); g.lineTo(L * 0.05 - k * (0.7 + Math.sin(now / 240) * 0.08), -k * 0.12); g.lineTo(L * 0.05 - k * 0.6, k * 0.1); g.closePath(); g.fill(); }   // the Crow's Nest and its pennant
     if (pir) { g.fillStyle = "#c83a3a"; g.beginPath(); g.moveTo(L * 0.05, 0); g.lineTo(L * 0.05 - k * (0.9 + Math.sin(now / 200) * 0.1), -k * 0.15); g.lineTo(L * 0.05 - k * 0.8, k * 0.12); g.closePath(); g.fill(); }
     else { // the frog figurehead and the wheel
-      g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(L * 0.92, 0, k * 0.24, 0, 6.2832); g.fill(); g.fillStyle = "#fff6c0"; g.beginPath(); g.arc(L * 0.95, -k * 0.14, k * 0.1, 0, 6.2832); g.arc(L * 0.95, k * 0.14, k * 0.1, 0, 6.2832); g.fill();
+      g.fillStyle = SK.trim; g.beginPath(); g.arc(L * 0.92, 0, k * 0.24, 0, 6.2832); g.fill(); g.fillStyle = "#fff6c0"; g.beginPath(); g.arc(L * 0.95, -k * 0.14, k * 0.1, 0, 6.2832); g.arc(L * 0.95, k * 0.14, k * 0.1, 0, 6.2832); g.fill();
       g.strokeStyle = "#c98c4f"; g.lineWidth = Math.max(1, k * 0.07); g.beginPath(); g.arc(-L * 0.62, 0, k * 0.26, 0, 6.2832); g.stroke();
       if (UP.can >= 2 && !reduce) { g.save(); g.globalCompositeOperation = "lighter"; oG(g, 0, -Wd, k * 0.9, "rgba(120,210,255,.35)"); oG(g, 0, Wd, k * 0.9, "rgba(120,210,255,.35)"); g.restore(); }
       if (o.lit) { var lg = g.createRadialGradient(L * 0.8, 0, 0, L * 0.8, 0, k * 4); lg.addColorStop(0, "rgba(255,226,122,.35)"); lg.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = lg; g.fillRect(L * 0.8 - k * 4, -k * 4, k * 8, k * 8); }
@@ -17771,11 +18052,16 @@
     var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, isx = ssn.sx * ssn.len * 0.9 * k * 1.4, isy = (0.3 + 0.25 * ssn.len) * k * 1.4;
     poly(1.04, isx, isy); g.fillStyle = "rgba(0,24,44," + (0.1 + ssn.a * 0.7).toFixed(3) + ")"; g.fill();   // the island's shadow on the water
     var foam = reduce ? 0 : Math.sin(now / 700 + Q.id) * 0.03; poly(1.12 + foam); g.fillStyle = "rgba(255,255,255,.55)"; g.fill();
-    var K = Q.kind, sand = K === 1 || K === 4 ? "#3a3236" : K === 2 ? "#dfe8ee" : "#e8d29a", land = K === 1 ? "#4a3a3a" : K === 4 ? "#5a5e66" : K === 2 ? "#f6fbff" : K === 3 ? "#5a7a4a" : "#5aa24a", land2 = K === 1 ? "#2a2024" : K === 4 ? "#46494f" : K === 2 ? "#bcd6e8" : K === 3 ? "#3a5a32" : "#3f8a3a";
+    var K = Q.kind, sand = K === 5 ? "#e8d29a" : K === 1 || K === 4 ? "#3a3236" : K === 2 ? "#dfe8ee" : "#e8d29a", land = K === 1 ? "#4a3a3a" : K === 4 ? "#5a5e66" : K === 2 ? "#f6fbff" : K === 3 ? "#5a7a4a" : "#5aa24a", land2 = K === 1 ? "#2a2024" : K === 4 ? "#46494f" : K === 2 ? "#bcd6e8" : K === 3 ? "#3a5a32" : "#3f8a3a";
     poly(1); g.fillStyle = sand; g.fill(); poly(0.74, 0, -r * 0.04); g.fillStyle = land; g.fill(); poly(0.45, -r * 0.05, -r * 0.1); g.fillStyle = land2; g.fill();
     if (ssn.a > 0.02) { var lgx = -ssn.sx * r, lsh = g.createLinearGradient(x + lgx, y - r * 0.8, x - lgx, y + r * 0.8); lsh.addColorStop(0, "rgba(255,246,214," + (ssn.a * 0.6).toFixed(3) + ")"); lsh.addColorStop(0.5, "rgba(255,246,214,0)"); lsh.addColorStop(1, "rgba(0,20,36," + (ssn.a * 0.9).toFixed(3) + ")"); poly(1); g.fillStyle = lsh; g.fill(); }   // the sunny side and the shady side
     if (Q.pier) { g.fillStyle = "#8a5a32"; g.fillRect(x - r * 0.1, y + r * 0.5, r * 0.2, r * 1.2); g.fillStyle = "#6a4426"; g.fillRect(x - r * 0.35, y + r * 1.5, r * 0.7, r * 0.18); g.fillStyle = "#c28a52"; g.fillRect(x - r * 0.3, y - r * 0.3, r * 0.6, r * 0.45); g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(x - r * 0.4, y - r * 0.3); g.lineTo(x, y - r * 0.65); g.lineTo(x + r * 0.4, y - r * 0.3); g.fill(); }
     else if (K === 1) { g.fillStyle = "#1a1416"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#ff7a2a"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.14, 0, 6.2832); g.fill(); if (!reduce) for (i = 0; i < 4; i++) { var st = ((now / 1000 * 0.4 + i / 4) % 1); g.fillStyle = "rgba(200,200,210," + (0.5 * (1 - st)) + ")"; g.beginPath(); g.arc(x + st * r * 0.6, y - r * 0.2 - st * r * 0.9, r * (0.12 + st * 0.25), 0, 6.2832); g.fill(); } }
+    else if (K === 5) {   // DRIFTWOOD HAVEN: piers, huts on stilts and flags
+      g.fillStyle = "#8a5a32"; [[-0.9, 0.55, 0.9, 0.12], [0.2, 0.7, 0.12, 0.6], [-0.6, -0.7, 0.12, 0.5], [0.5, -0.4, 0.8, 0.12]].forEach(function (q2) { g.fillRect(x + q2[0] * r, y + q2[1] * r, q2[2] * r, q2[3] * r); });
+      [[-0.35, -0.2, "#c8a050"], [0.25, 0.1, "#b88a40"], [-0.1, 0.35, "#d8b060"], [0.35, -0.45, "#c8a050"], [-0.5, 0.15, "#b88a40"]].forEach(function (q2, n2) { g.fillStyle = "#6a4426"; g.fillRect(x + q2[0] * r - r * 0.13, y + q2[1] * r - r * 0.1, r * 0.26, r * 0.2); g.fillStyle = q2[2]; g.beginPath(); g.moveTo(x + q2[0] * r - r * 0.17, y + q2[1] * r - r * 0.08); g.lineTo(x + q2[0] * r, y + q2[1] * r - r * 0.25); g.lineTo(x + q2[0] * r + r * 0.17, y + q2[1] * r - r * 0.08); g.closePath(); g.fill();
+        g.fillStyle = ["#ffd23f", "#c8b8ff", "#7ae0a0", "#4fd0e8", "#ff7a6a"][n2]; g.fillRect(x + q2[0] * r + r * 0.12, y + q2[1] * r - r * 0.34, r * 0.1, r * 0.06 + Math.sin(now / 300 + n2) * r * 0.01); });
+    }
     else if (K === 4) {   // THE OLD LIGHTHOUSE: a white tower with red bands, seen from above, its lamp dark or lit
       var lit2 = !!(ocS().lh); g.fillStyle = "#3a3e46"; g.beginPath(); g.arc(x, y - r * 0.05, r * 0.48, 0, 6.2832); g.fill();
       g.fillStyle = "#f4f0e6"; g.beginPath(); g.arc(x, y - r * 0.1, r * 0.34, 0, 6.2832); g.fill(); g.strokeStyle = "#c83a3a"; g.lineWidth = Math.max(1.5, r * 0.08); g.beginPath(); g.arc(x, y - r * 0.1, r * 0.26, 0, 6.2832); g.stroke();
@@ -17833,12 +18119,13 @@
       g.save(); g.globalAlpha = al; g.translate(ax * k, ay * k - jump * k * 0.8); g.rotate(s.ang); g.fillStyle = "rgba(0,30,50,.25)"; g.beginPath(); g.ellipse(0, jump * k * 0.8, k * 0.9, k * 0.3, 0, 0, 6.2832); g.fill(); g.fillStyle = "#6a8aa8"; g.beginPath(); g.ellipse(0, 0, k * 0.8 + jump * k * 0.2, k * 0.26, 0, 0, 6.2832); g.fill(); g.fillStyle = "#9ab8d0"; g.beginPath(); g.ellipse(k * 0.1, 0, k * 0.5, k * 0.12, 0, 0, 6.2832); g.fill(); g.fillStyle = "#5a7a98"; g.beginPath(); g.moveTo(-k * 0.75, 0); g.lineTo(-k * 1.1, -k * 0.25); g.lineTo(-k * 1.1, k * 0.25); g.fill(); g.restore();
       if (jump < 0.05 && Math.random() < 0.05) s.wake.push({ x: ax, y: ay, vx: 0, vy: 0, life: 0.6, spl: 1 }); });
     seaBoatTop(g, s.x * k, s.y * k, s.ang, k, now, { lit: dl < 0.7, hurt: s.hurt > 0 && Math.floor(now / 70) % 2 === 0, up: ocS().boat.up || {} });
-    s.balls.forEach(function (b) { if (b.star) { oG(g, b.x * k, b.y * k, k * 0.9, "rgba(140,220,255,.6)"); } g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = "#1a1a20"; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
+    s.balls.forEach(function (b) { var CB = b.mine ? (CANS.filter(function (q) { return q.id === b.cd; })[0] || CANS[0]) : CANS[0]; if (CB.trail) { var spd = Math.hypot(b.vx, b.vy) || 1, gt = g.createLinearGradient(b.x * k, b.y * k, (b.x - b.vx / spd * 2.4) * k, (b.y - b.vy / spd * 2.4) * k); gt.addColorStop(0, "rgba(" + CB.trail + ",.85)"); gt.addColorStop(1, "rgba(" + CB.trail + ",0)"); g.strokeStyle = gt; g.lineWidth = k * 0.4; g.lineCap = "round"; g.beginPath(); g.moveTo(b.x * k, b.y * k); g.lineTo((b.x - b.vx / spd * 2.4) * k, (b.y - b.vy / spd * 2.4) * k); g.stroke(); if (CB.sparkle && Math.random() < 0.5) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5), vy: (Math.random() - 0.5), life: 0.4, fire: 1 }); }
+      if (b.star) { oG(g, b.x * k, b.y * k, k * 0.9, "rgba(140,220,255,.6)"); } g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = CB.ball; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
     s.gulls.forEach(function (gu) { var fl = Math.sin(gu.t * 9) * 0.5, gx2 = gu.x * k, gy2 = gu.y * k; g.strokeStyle = "#ffffff"; g.lineWidth = Math.max(1.5, k * 0.12); g.beginPath(); g.moveTo(gx2 - k * 0.7, gy2 - fl * k * 0.3); g.quadraticCurveTo(gx2 - k * 0.3, gy2 - k * 0.3, gx2, gy2); g.quadraticCurveTo(gx2 + k * 0.3, gy2 - k * 0.3, gx2 + k * 0.7, gy2 - fl * k * 0.3); g.stroke(); });
     g.restore(); drawWaterFx(g, vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy, k); g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
     // island names
     g.font = signFont(Math.max(12, Math.round(k * 1.05))); g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,20,40,.7)"; g.lineJoin = "round";
-    I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); });
+    I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : Q.port ? "#ffd23f" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); var tq = isleTier(Q); if (tq) { g.fillStyle = TIER_C[tq]; var tl = skulls(tq) + " " + TIER_N[tq] + (isleFresh(Q) ? "" : " (looted)"); g.strokeText(tl, Q.x * k, ly + k * 1.1); g.fillText(tl, Q.x * k, ly + k * 1.1); } else if (Q.port) { g.fillStyle = "#ffd23f"; g.strokeText("Trading port", Q.x * k, ly + k * 1.1); g.fillText("Trading port", Q.x * k, ly + k * 1.1); } });
     g.restore();
     // the time of day over the sea: graded like the homestead, with pools of light from your lantern, pirate lanterns, the pier and the fire isles
     var snk = clamp((0.92 - dl) / 0.62, 0, 1), SLI = [];
@@ -17858,6 +18145,8 @@
     g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = "#e8fbff"; g.fillText("Lily Belle hull", hx, hy - 4); g.textAlign = "right"; g.fillText(Math.round(B.hp || 100) + "%", hx + hw, hy - 4); g.textAlign = "center";
     g.fillStyle = "rgba(255,255,255,.15)"; g.fillRect(hx, hy + 2, hw, 7); g.fillStyle = (B.hp || 100) > 40 ? "#4fd0e8" : "#ff6a5a"; g.fillRect(hx, hy + 2, hw * (B.hp || 100) / 100, 7);
     if (s.cd > 0) { g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx, hy + 11, hw * (1 - s.cd / (s.cdMax || 1.5)), 2); }
+    var hn = holdN(), hcx = hx + hw + 8, hcy = hy + 50, htx = "Ship's hold " + hn + "/" + HOLD_MAX; g.font = "800 11px Nunito, system-ui, sans-serif"; var hww = g.measureText(htx).width + 20;   // ISLAND RAIDS: the hold
+    g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hcx - hww, hcy, hww, 24, 9); g.fill(); g.strokeStyle = "rgba(255,210,63,.5)"; g.lineWidth = 1; g.stroke(); g.fillStyle = "#ffd23f"; g.textAlign = "right"; g.fillText(htx, hcx - 10, hcy + 16); g.textAlign = "center"; sc.btns.push({ x: hcx - hww, y: hcy, w: hww, h: 24, fn: openHold });
     if (s.wx) { var WL = { storm: ["Storm", "the wind is pushing you", "#ffb0a0"], fog: ["Fog", shipUp("nest") ? "the lookout keeps watch" : "you can't see far", "#cfe0e8"], calm: ["Glassy calm", "no wind, no pirates", "#7af0ff"], rain: ["Rain", "", "#bfe0ff"], fair: ["Fair winds", "", "#e8fbff"] }[s.wx.k];
       g.font = "800 11px Nunito, system-ui, sans-serif"; var wtx = WL[0] + (WL[1] ? " \u00b7 " + WL[1] : ""), ww = g.measureText(wtx).width + 20; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx + hw + 8 - ww, hy + 22, ww, 22, 9); g.fill(); g.fillStyle = WL[2]; g.textAlign = "right"; g.fillText(wtx, hx + hw - 2, hy + 37); g.textAlign = "center"; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)";
@@ -18355,6 +18644,10 @@
     if (o.sea && typeof o.sea === "object" && isFinite(+o.sea.x) && isFinite(+o.sea.y)) n.sea = { x: clamp(+o.sea.x, 6, 2000), y: clamp(+o.sea.y, 6, 2000), ang: +o.sea.ang || 0 };
     ["vault", "tpi", "btl"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });
     if (o.lh) n.lh = 1;
+    n.hold = {}; if (o.hold && typeof o.hold === "object") Object.keys(o.hold).forEach(function (k) { if (/^t_[a-z0-9]+$/.test(k) && +o.hold[k] > 0) n.hold[k] = Math.min(999, Math.floor(+o.hold[k])); });   // ISLAND RAIDS: the ship's hold
+    n.raid = {}; if (o.raid && typeof o.raid === "object") Object.keys(o.raid).forEach(function (k) { if (/^\d{1,3}$/.test(k) && isFinite(+o.raid[k])) n.raid[k] = Math.floor(+o.raid[k]); });
+    n.cos = { sk: {}, cn: {} }; if (o.cos && typeof o.cos === "object") ["sk", "cn"].forEach(function (f) { if (o.cos[f] && typeof o.cos[f] === "object") Object.keys(o.cos[f]).forEach(function (k) { if (/^[a-z]{2,12}$/.test(k)) n.cos[f][k] = 1; }); });
+    if (B && typeof B.sk === "string" && /^[a-z]{2,12}$/.test(B.sk)) n.boat.sk = B.sk; if (B && typeof B.cn === "string" && /^[a-z]{2,12}$/.test(B.cn)) n.boat.cn = B.cn;
     if (Array.isArray(o.domes)) n.domes = o.domes.filter(function (d) { return d && typeof d.s === "string" && d.s.length < 14 && isFinite(d.x) && isFinite(d.y); }).slice(0, 24).map(function (d) { return { s: d.s, x: clamp(Math.floor(d.x), 4, 335), y: clamp(Math.floor(d.y), 6, 175) }; });   // SEA DOMES
     if (o.derby && typeof o.derby === "object") n.derby = { best: clamp(Math.floor(+o.derby.best) || 0, 0, 999), wk: Math.floor(+o.derby.wk) || 0, wbest: clamp(Math.floor(+o.derby.wbest) || 0, 0, 999), runs: Array.isArray(o.derby.runs) ? o.derby.runs.slice(0, 5).map(function (v) { return clamp(Math.floor(+v) || 0, 0, 999); }) : [] };   // THE PEARL DIVE DERBY ["levDay", "levWin"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });   // THE LEVIATHAN if (typeof o.ex === "string" && /^[01]{1,1200}$/.test(o.ex)) n.ex = o.ex;   // THE OLD LIGHTHOUSE lit; the explored sea chart   // REAL TIDES: vault week opened, last low tide's finds, bottle day
     return n;
@@ -19451,6 +19744,7 @@
   window.__sbx.met = { tick: tickMeteors, launch: launchMeteor, impact: meteorImpact, get SH() { return METSH; }, set SH(v) { METSH = v; } }; window.__sbx.flood = { tick: tickFlood, now: floodNow, F: FLOOD };
   window.__sbx.mig = { season: migSeason, tick: tickMig, F: MIGF, E: MIGE, sea: migSeaStep }; window.__sbx.lev = { step: levStep, hit: levHit, HP: LEVHP };
   window.__sbx.dome = { spot: domeSpot, build: domeBuild, pack: domePack, here: domesHere, inside: domeIn }; window.__sbx.derby = { open: openDerby, start: derbyStart, end: derbyEnd, step: derbyStep, get D() { return DERBY; }, S: derbyS, B: DBOARD, fetch: derbyFetch };
+  window.__sbx.isle = { rock: function (x, y) { breakRock(x, y); }, islands: function () { return seaIslands(); }, get cave() { return cave; }, tier: isleTier, land: isleLand, leave: isleLeave, get W() { return ISLW; }, wave: isleWave, acts: isleActs, stow: holdStow, hold: openHold, merch: openMerch, merchAct: merchAct, ship: openShipwright, shipAct: shipAct2, TREAS: TREAS, SKINS: SKINS, CANS: CANS, lose: holdLoseHalf };
   window.__sbx.tide = { off: tideOff, info: tideInfo, dayF: tideDayF, get OWL() { return OWL; }, down: tideDown, up: tideUp, pools: tidePools, vaultOpen: vaultOpen, spring: springIdx, note: bottleNote };
   window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
   window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };

@@ -2015,3 +2015,11 @@ small.bo-cost{display:flex}
 .dy-prize{color:#9ad0e0}
 .mo-box .dy-head h2{margin:2px 0 6px;font:900 1.5rem/1.15 Nunito,system-ui,sans-serif;text-transform:none;letter-spacing:0;color:#f6eedb}
 .mo-box .dy-stats small{text-transform:none;letter-spacing:0;color:#c3dccf;font-size:.78rem}
+
+/* ISLAND RAIDS: the island card, Pip's Shipwright */
+.mo-box .is-tier{margin:10px 0 4px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.05);border-left:3px solid var(--tc,#fff);color:#d4ecdf;font-weight:600;font-size:.88rem;line-height:1.4}
+.mo-box .is-tier b{display:block;color:var(--tc,#fff);font-weight:900;font-size:.95rem;margin-bottom:2px}
+.sw-tabs{display:flex;gap:8px;margin:10px 0}
+.sw-tabs .btn{flex:1;min-height:38px}
+.sw-list li{grid-template-columns:96px 1fr auto}
+.sw-cv{width:96px;height:56px;border-radius:8px;display:block}
