@@ -605,6 +605,7 @@
     });
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
+    if (o.st && typeof o.st === "object") Object.keys(o.st).slice(0, 800).forEach(function (k) { if (d.st[k] === undefined && /^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k) && +o.st[k] > 0 && isFinite(+o.st[k])) d.st[k] = Math.floor(+o.st[k]); });   // keep counters a fresh save doesn't list
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
       if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24) });
     });
