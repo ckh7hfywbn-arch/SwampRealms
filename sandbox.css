@@ -1987,3 +1987,11 @@ html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,h
 .bt-note .bt-sign{margin:0;text-align:right;font-style:italic}
 .mo-box .bt-note,.mo-box .bt-note p,.mo-box .bt-note b{color:#4a3418;text-shadow:none}
 .mo-box .bt-note b{color:#8a2a1a}
+
+/* SHIP UPGRADES (boat window) and the lighthouse */
+.bo-uph{margin:14px 0 6px;font:800 .95rem Nunito,system-ui,sans-serif;color:#4fd0e8;text-transform:none;letter-spacing:0}
+.mo-list.bo-up li{grid-template-columns:1fr auto}
+.bo-cost{display:flex;flex-wrap:wrap;gap:4px 6px;margin:6px 0 0}
+.bo-cost span{padding:1px 7px;border-radius:99px;font-size:.74rem;font-weight:800;background:rgba(78,230,180,.14);color:#9ff3d4}
+.bo-cost span.no{background:rgba(255,106,90,.14);color:#ffb0a0}
+small.bo-cost{display:flex}
