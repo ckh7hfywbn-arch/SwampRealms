@@ -915,7 +915,7 @@
   ct("recordcab", "Record Cabinet", "#8a6a4a", "papers", function (R) { R(2, 0, 12, 16, "#7a5a3a"); [1, 6, 11].forEach(function (y) { R(3, y, 10, 4, "#9a7a5a"); R(3, y, 10, 1, "#b89a7a"); R(6, y + 2, 4, 1, "#c8a040"); R(7, y + 1, 2, 1, "#f4f0e8"); }); R(2, 15, 12, 1, "#3a2a1a"); });
   ct("scrollcase", "Scroll Case", "#a46c3c", "papers", function (R) { R(1, 4, 14, 12, "#7a5230"); R(1, 4, 14, 1, "#a46c3c"); for (var y = 0; y < 3; y++) for (var x = 0; x < 4; x++) { R(2 + x * 3, 5 + y * 3, 3, 3, "#3a2414"); R(2 + x * 3, 6 + y * 3, 3, 1, "#f2dcb0"); R(3 + x * 3, 6 + y * 3, 1, 1, "#d8342a"); } });
   ct("mailbox", "Mailbox", "#3a7fd8", "mail", function (R) { R(7, 9, 2, 7, "#7a5230"); R(3, 3, 10, 6, "#3a7fd8"); R(3, 3, 10, 1, "#8fc0ff"); R(3, 8, 10, 1, "#1a4a8a"); R(4, 5, 7, 2, "#1a4a8a"); R(12, 2, 1, 4, "#d8342a"); R(11, 2, 2, 1, "#d8342a"); R(5, 5, 4, 1, "#f4f0e8"); }, { small: 1 });
-  ct("offeringbowl", "Offering Bowl", "#c8a040", "offering", function (R) { R(5, 13, 6, 3, "#8a6a42"); R(2, 9, 12, 4, "#c8a040"); R(3, 12, 10, 1, "#8a5a10"); R(2, 9, 12, 1, "#ffe08a"); R(4, 7, 3, 2, "#f2c14e"); R(8, 6, 3, 3, "#e0364a"); R(10, 7, 2, 2, "#f2c14e"); R(6, 6, 1, 1, "#fff2b0"); }, { small: 1, light: 1, gl: ["255,210,110", 1, 0.08] });
+  ct("offeringbowl", "Gilded Offering Bowl", "#c8a040", "offering", function (R) { R(5, 13, 6, 3, "#8a6a42"); R(2, 9, 12, 4, "#c8a040"); R(3, 12, 10, 1, "#8a5a10"); R(2, 9, 12, 1, "#ffe08a"); R(4, 7, 3, 2, "#f2c14e"); R(8, 6, 3, 3, "#e0364a"); R(10, 7, 2, 2, "#f2c14e"); R(6, 6, 1, 1, "#fff2b0"); }, { small: 1, light: 1, gl: ["255,210,110", 1, 0.08] });
   // medicine, fishing, seeds
   ct("apothecary", "Apothecary Drawers", "#8a5a30", "medicine", function (R) { R(1, 1, 14, 15, "#6a4426"); for (var y = 0; y < 4; y++) for (var x = 0; x < 3; x++) { R(2 + x * 4, 2 + y * 3, 4, 3, "#a46c3c"); R(2 + x * 4, 2 + y * 3, 4, 1, "#c58a52"); R(3 + x * 4, 3 + y * 3, 2, 1, (x + y) % 3 ? "#f4f0e8" : "#7fd06a"); } R(1, 15, 14, 1, "#3a2414"); });
   ct("medcabinet", "Medicine Cabinet", "#e8f0f4", "medicine", function (R) { R(2, 2, 12, 12, "#e8f0f4"); R(2, 2, 12, 1, "#ffffff"); R(2, 13, 12, 1, "#8a98a8"); R(3, 3, 10, 10, "#d4dce4"); R(6, 5, 4, 6, "#e8341c"); R(4, 7, 8, 2, "#e8341c"); R(12, 7, 1, 2, "#8a98a8"); }, { wall: 1 });
@@ -1228,7 +1228,7 @@
   R("x_bow2", "Bogwood Bow", null, { planks: 8, rope: 2, fiber: 6 }, { bow: 2, bench: true, d: "Shoots Arrows in a long arc. Damage 11 (17 with Fire Arrows). Needs the Reed Slingshot and a Workbench." });
   R("x_bow3", "Ember Longbow", null, { planks: 10, ironingot: 4, cinder: 8, ruby: 1 }, { bow: 3, bench: true, bl: 3, d: "A lava-veined longbow with a flat, fast shot. Damage 20 (26 with Fire Arrows). Needs a Cinder Forge Workbench." });
   R("x_arrow", "Arrows (6)", { arrow: 6 }, { stick: 2, pebble: 1, fiber: 1 }, { d: "Ammo for bows. Made by hand." });
-  R("x_firearrow", "Fire Arrows (6)", { firearrow: 6 }, { arrow: 6, cinder: 1, sulfur: 1 }, { d: "+6 damage and sets the target burning for a few seconds. Bows use them before plain Arrows. Made by hand." });
+  R("x_firearrow", "Fire Arrows (6)", { firearrow: 6 }, { arrow: 6, cinder: 1, sulfur: 1 }, { d: "+6 damage and sets the target burning for a few seconds. Tap them in your hotbar to load them. Bows use them before plain Arrows. Made by hand." });
   R("x_brewstand", "Brewing Stand", { brewstand: 1 }, { stone: 6, glass: 2, planks: 4 }, { bench: true, d: "Place it, then tap it to brew potions. Made at the Bog Workbench." });
   R("x_bottle", "Glass Bottles (3)", { bottle: 3 }, { glass: 1 }, { stn: "brew", d: "Every potion starts with one. You get the bottle back after drinking." });
   R("x_tonic_heal", "Healing Tonic", { tonic_heal: 1 }, { bottle: 1, marshlily: 2, redcap: 1 }, { stn: "brew", d: "Heals 40 health right away." });
@@ -1238,6 +1238,25 @@
   R("x_tonic_fire", "Emberguard Potion", { tonic_fire: 1 }, { bottle: 1, emberroot: 2, pepper: 2 }, { stn: "brew", d: "Lava burns you 80% less for 3 minutes." });
   R("x_tonic_hide", "Ironhide Brew", { tonic_hide: 1 }, { bottle: 1, icecap: 2, frostberry: 2 }, { stn: "brew", d: "Take 20% less damage for 3 minutes." });
   R("x_tonic_leap", "Leaping Brew", { tonic_leap: 1 }, { bottle: 1, hexdust: 1, frogfrag: 1 }, { stn: "brew", d: "Jump 30% higher for 3 minutes. Hex Dust comes from Bog Witches." });
+  // ARROW OINTMENTS: tiny vials brewed at the Brewing Stand, then worked into special arrows at a Workbench (6 Arrows + 1 ointment = 6 of them).
+  item("vial", "Tiny Vial", {});
+  [["ot_venom", "Bog Venom"], ["ot_numb", "Numbleaf Salve"], ["ot_sleep", "Dreamcap Draught"], ["ot_mark", "Glowmoss Paste"], ["ot_spark", "Sparkoil"], ["ot_blast", "Popper Paste"], ["ot_leech", "Leechroot Tincture"]].forEach(function (q) { item(q[0], q[1], {}); });
+  [["ar_venom", "Venom Arrow"], ["ar_numb", "Numbing Arrow"], ["ar_sleep", "Sleep Arrow"], ["ar_mark", "Glowmark Arrow"], ["ar_spark", "Spark Arrow"], ["ar_blast", "Popper Arrow"], ["ar_leech", "Leech Arrow"]].forEach(function (q) { item(q[0], q[1], {}); });
+  R("x_vial", "Tiny Vials (4)", { vial: 4 }, { glass: 1 }, { stn: "brew", d: "Little vials for arrow ointments. Brewed at a Brewing Stand." });
+  R("x_ot_venom", "Bog Venom", { ot_venom: 1 }, { vial: 1, stinger: 1, redcap: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_numb", "Numbleaf Salve", { ot_numb: 1 }, { vial: 1, icecap: 1, frostberry: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_sleep", "Dreamcap Draught", { ot_sleep: 1 }, { vial: 1, glowshroom: 1, batwing: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_mark", "Glowmoss Paste", { ot_mark: 1 }, { vial: 1, spore: 2, firefly: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_spark", "Sparkoil", { ot_spark: 1 }, { vial: 1, jellygel: 1, quartz: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_blast", "Popper Paste", { ot_blast: 1 }, { vial: 1, sulfur: 1, cinder: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_leech", "Leechroot Tincture", { ot_leech: 1 }, { vial: 1, leechfang: 1, marshlily: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ar_venom", "Venom Arrows (6)", { ar_venom: 6 }, { arrow: 6, ot_venom: 1 }, { bench: true, d: "Poisons the target: damage over time for 5 seconds, stacking up to 3 times. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_numb", "Numbing Arrows (6)", { ar_numb: 6 }, { arrow: 6, ot_numb: 1 }, { bench: true, d: "The target moves and attacks at half speed for 4 seconds (bosses at 70%). Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_sleep", "Sleep Arrows (6)", { ar_sleep: 6 }, { arrow: 6, ot_sleep: 1 }, { bench: true, d: "Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_mark", "Glowmark Arrows (6)", { ar_mark: 6 }, { arrow: 6, ot_mark: 1 }, { bench: true, d: "The target glows for 8 seconds and takes 30% more damage from everything. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_spark", "Spark Arrows (6)", { ar_spark: 6 }, { arrow: 6, ot_spark: 1 }, { bench: true, d: "A spark jumps from the target to the 2 nearest creatures for 60% damage. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_blast", "Popper Arrows (6)", { ar_blast: 6 }, { arrow: 6, ot_blast: 1 }, { bench: true, d: "Bursts where it lands, even on a wall, hurting creatures close by. Never breaks blocks. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_leech", "Leech Arrows (6)", { ar_leech: 6 }, { arrow: 6, ot_leech: 1 }, { bench: true, d: "Each hit heals you for a quarter of its damage. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
   R("x_tonic_fish", "Angler's Brew", { tonic_fish: 1 }, { bottle: 1, earthworm: 2, catfish: 1 }, { stn: "brew", d: "Fish bite 40% sooner for 5 minutes." });
   R("x_jeweltable", "Jeweler's Table", { jeweltable: 1 }, { stone: 8, planks: 4, quartz: 2 }, { bench: true, d: "Tap it to set gems into your weapon, armor, pick and bow. Each socket costs the gem and a Quartz Shard (from Geodes). Made at the Bog Workbench." });
   R("x_stain_walnut", "Walnut Stain (12)", { stain_walnut: 12 }, { wood: 2, mud: 1 }, { d: "A rich dark brown. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
@@ -1369,7 +1388,6 @@
   Dc("x_snowman", "Frostfen Collection II", "Snowman", { snowman: 1 }, { snow: 12, stick: 2, emberroot: 1 }, "Hat, scarf and a carrot-coloured nose.", 3);
   Dc("x_obelisk", "Frostfen Collection II", "Moonstone Obelisk", { obelisk: 1 }, { moonstone: 4, frostrock: 8, permabrick: 4 }, "A tall pale spire that glows under the moon.", 4);
   Dc("x_weaponrack", "Armory Showpieces", "Weapon Rack", { weaponrack: 1 }, { planks: 10, ironingot: 2, rope: 2 }, "A spear, a sword and an axe on display.");
-  Dc("x_armorstand", "Armory Showpieces", "Armor Stand", { armorstand: 1 }, { ironingot: 4, planks: 6, ruby: 1 }, "A suit of plate with a glowing ember crest.", 2);
   Dc("x_shield", "Armory Showpieces", "Wall Shield", { shield: 1 }, { ironingot: 2, planks: 4, dyeblue: 1 }, "A blue shield with a golden cross.");
   Dc("x_swords", "Armory Showpieces", "Crossed Swords", { crossedswords: 1 }, { ironingot: 4, rope: 1 }, "Two blades crossed over the hearth.");
   Dc("x_battrophy", "Armory Showpieces", "Dusk Bat Trophy", { battrophy: 1 }, { batwing: 3, planks: 2, rope: 1 }, "A Dusk Bat with spread wings on a plaque.");
@@ -1742,6 +1760,8 @@
     ["keg", "Copper Coils", 30, "Kegs, Seed Makers and Compost Bins work 40% faster."]
   ];
   item("farmbook", "Croaka's Farm Almanac", { gem: "#4a7a2a", book: 1, d: "Croaka's old green almanac. Every crop you harvest, every giant, egg and jar is written in it. Pick it on your hotbar to read it." });
+  // METEOR SHOWERS (sandbox.js): a big meteor leaves a cluster of Meteorite in its crater. Star Ore smelts into Starsteel.
+  ore("METEORITE", "Meteorite", "#2a2238", "#9ad8ff", 2.6, 2, 7, "starore", ["150,210,255", 2.6, 0.18], [["starore", 0.5, 1, 1], ["stardust", 0.35, 1, 1]]);
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

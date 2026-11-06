@@ -15,7 +15,7 @@
 
   // ---- tiles ----
   var T = { WATER: 0, AIR: 1, SAND: 2, SILT: 3, ROCK: 4, CPINK: 5, CBLUE: 6, CORANGE: 7, DEEP: 8, WOOD: 9, PLATE: 10, KELP: 11, GRASS: 12, GLOW: 13, CLAM: 14, CHEST: 15, BARREL: 16, ANEM: 17,
-    DOCK: 18, POST: 19, LADDER: 20, CANNON: 21, FAN: 22, BED: 23, AIRP: 24, OPEN: 25, LAMP: 26, SHORE: 27, ROPE: 28, TUBE: 29 };
+    DOCK: 18, POST: 19, LADDER: 20, CANNON: 21, FAN: 22, BED: 23, AIRP: 24, OPEN: 25, LAMP: 26, SHORE: 27, ROPE: 28, TUBE: 29, VDOOR: 30, DGLASS: 31 };
   // solid: blocks the body. hard: mining time scale. tier: pick tier needed (0 hands/any pick). drops: [item, min, max, chance]. lit: light radius in tiles (0 none).
   var TD = [];
   function td(id, n, o) { TD[id] = Object.assign({ n: n, solid: false, hard: 0, tier: 0, lit: 0, plant: 0, drops: null, c: "#000" }, o); }
@@ -48,6 +48,8 @@
   td(T.SHORE, "Shore Sand", { solid: true, hard: 99, c: "#cdb67a" });
   td(T.ROPE, "Rope", { hard: 99, c: "#c9a876" });
   td(T.TUBE, "Tube Sponge", { plant: 1, hard: 0.05, c: "#ffb04a", drops: [["coral", 0, 1, 0.4]] });
+  td(T.VDOOR, "Barnacle Door", { solid: true, hard: 99, c: "#5f7a76" });   // the Spring-Tide Vault (sandbox.js opens it at a spring low tide)
+  td(T.DGLASS, "Dome Glass", { solid: true, hard: 99, c: "#bfefff" });      // a Sea Dome's shell (built by the player, see sandbox.js)
   var TIDS = Object.keys(T).length;
 
   // ---- zones (depth in metres below the surface) ----

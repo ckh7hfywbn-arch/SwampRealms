@@ -239,6 +239,35 @@ async function api(req, env, url) {
   //   GET    /api/delve/<wid>    {wid, name, data, rev, updated}
   //   PUT    /api/delve/<wid>    {name, data, baseRev} -> {rev, updated}; 409 {error:"conflict", rev, updated} if the cloud copy changed since baseRev
   //   DELETE /api/delve/<wid>
+  // ---- weekly leaderboards (the Pearl Dive Derby first): GET the top 10 and your place; POST a score (signed in) and your best this week is kept ----
+  if (path.startsWith("/api/board/")) {
+    const name = path.slice(11), B = BOARDS[name];
+    if (!B) return json({ error: "Not found" }, 404);
+    await boardTable(db);
+    const u = await auth(req, db, url), week = weekNow();
+    const reply = async () => {
+      const top = await db.prepare("SELECT name, score FROM boards WHERE board = ? AND week = ? ORDER BY score DESC, updated ASC LIMIT 10").bind(name, week).all();
+      let me = null;
+      if (u) { const r = await db.prepare("SELECT score FROM boards WHERE board = ? AND week = ? AND user_id = ?").bind(name, week, u.id).first();
+        if (r) { const k = await db.prepare("SELECT COUNT(*) AS n FROM boards WHERE board = ? AND week = ? AND score > ?").bind(name, week, r.score).first(); me = { score: r.score, rank: (k ? k.n : 0) + 1 }; } }
+      return json({ week, top: top.results || [], me });
+    };
+    if (method === "GET") return reply();
+    if (method === "POST") {
+      if (!u) return json({ error: "Not signed in" }, 401);
+      const b = await readJson(req);
+      if (!b || !Number.isInteger(b.score) || b.score < 0 || b.score > B.max) return json({ error: "Bad score" }, 400);
+      const key = "board:" + name + ":" + u.id;
+      if (await blocked(db, key, B.perHour, 3600000)) return json({ error: "Too many scores. Try again later." }, 429);
+      await hit(db, key, 3600000);
+      const now = Date.now();
+      await db.prepare("INSERT INTO boards (board, week, user_id, name, score, updated) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (board, week, user_id) DO UPDATE SET name = excluded.name, updated = CASE WHEN excluded.score > boards.score THEN excluded.updated ELSE boards.updated END, score = MAX(boards.score, excluded.score)")
+        .bind(name, week, u.id, u.name, b.score, now).run();
+      return reply();
+    }
+    return json({ error: "Not found" }, 404);
+  }
+
   if (path === "/api/delve" || path.startsWith("/api/delve/")) {
     const u = await auth(req, db, url);
     if (!u) return json({ error: "Not signed in" }, 401);
@@ -367,6 +396,16 @@ export class DelveRoom {
     rest.forEach(q => this.send(q.w, { t: "leave", id: me.id }));
     await this.listing(rest.length);
   }
+}
+
+// weekly leaderboards: one row per player per week per board, keeping their best. Weeks start on Monday (UTC).
+const BOARDS = { derby: { max: 150, perHour: 40 } };
+const weekNow = () => Math.floor((Date.now() / 86400000 + 3) / 7);
+let boardReady = false;
+async function boardTable(db) {
+  if (boardReady) return;
+  await db.prepare("CREATE TABLE IF NOT EXISTS boards (board TEXT NOT NULL, week INTEGER NOT NULL, user_id TEXT NOT NULL, name TEXT NOT NULL, score INTEGER NOT NULL, updated INTEGER NOT NULL, PRIMARY KEY (board, week, user_id))").run();
+  boardReady = true;
 }
 
 let delveReady = false;

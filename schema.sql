@@ -38,3 +38,7 @@ CREATE TABLE IF NOT EXISTS mp_rooms (   -- open Delve multiplayer rooms (worker.
   code TEXT PRIMARY KEY, host_id TEXT NOT NULL, host_name TEXT NOT NULL, name TEXT NOT NULL,
   pub INTEGER NOT NULL, pvp INTEGER NOT NULL, players INTEGER NOT NULL, updated INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS boards (   -- weekly leaderboards, e.g. the Pearl Dive Derby (worker.js also creates this on first use)
+  board TEXT NOT NULL, week INTEGER NOT NULL, user_id TEXT NOT NULL, name TEXT NOT NULL, score INTEGER NOT NULL, updated INTEGER NOT NULL,
+  PRIMARY KEY (board, week, user_id)
+);

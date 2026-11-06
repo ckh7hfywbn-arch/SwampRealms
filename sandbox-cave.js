@@ -585,6 +585,71 @@
     return { w: CW, h: CH, floor: LAIR_F, biome: 0, bi: LAIR_TH, seed: seed, theme: THEMES[LAIR_TH], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: down, spawn: spawn, lamps: lamps, rocks: rocks,
       sol: sol, pool: pool, cons: { x: 1 + pads[2].x + 2, y: pads[2].y }, stack: { x: pads[2].x - 2, y: pads[2].y }, lair: 1, ship: { x: 22.5, y: 25.6 }, boss: { x: 22.5, y: 15 }, pads: pads, dock: dock, amb: 0.5, belt: 23.5 };
   }
+
+  // ---------- ISLANDS OF THE BRINEBOG SEA (raids) and DRIFTWOOD HAVEN (the trading port) ----------
+  // An island is a top-down floor like a cave, but open to the sky: a sandy island in the sea. pool / sol = the sea (not walkable), wall =
+  // palm clumps, ruins and huts (rk says which: 1 palm, 2 ruin, 3 hut, 4 market stall), node = Cave Chests (sealed treasure) and Cave Pots
+  // (crates and barrels). up = the beach where your boat is moored (the way back), spawn just above it. waves = cells where enemy waves
+  // land. tier 1-4 sets how much treasure there is and how many ruins stand. fresh = 0 for an island already picked clean (no treasure).
+  var ISLE_TH = THEMES.length;
+  THEMES.push({ n: "Island", sub: "The Brinebog Sea", floor: "#e2cc8e", floor2: "#d8c07e", top: "#2f7a35", topHi: "#4a9a44", face: "#6a4a2a", faceHi: "#8a6a3a", faceLo: "#3a2814", tint: [10, 16, 44], lamp: T.TORCH, glow: "255,190,110" });
+  function isleShape(rnd, rx, ry, sd) {   // the island: a wobbly oval, the sea all round it
+    var n = CW * CH, pool = new Uint8Array(n), cx = 22, cy = 14.5, i;
+    for (i = 0; i < n; i++) { var x = i % CW, y = (i / CW) | 0, a = Math.atan2(y - cy, x - cx), rr = 1 + 0.1 * Math.sin(a * 3 + sd % 7) + 0.07 * Math.sin(a * 5 + sd % 11) + 0.05 * Math.sin(a * 9 + 2);
+      var dx = (x - cx) / (rx * rr), dy = (y - cy) / (ry * rr); pool[i] = dx * dx + dy * dy < 1 && x > 1 && y > 1 && x < CW - 2 && y < CH - 3 ? 0 : 1; }
+    var rg = regions(new Uint8Array(pool)), best = 1; for (i = 2; i <= rg.count; i++) if (rg.sizes[i] > rg.sizes[best]) best = i;
+    for (i = 0; i < n; i++) if (!pool[i] && rg.reg[i] !== best) pool[i] = 1;   // one island, no stray sandbars
+    return pool;
+  }
+  function isleBase(seed, rx, ry) {
+    var rnd = mulberry(seed | 0), n = CW * CH, pool = isleShape(rnd, rx, ry, seed >>> 0), wall = new Uint8Array(n), node = new Uint16Array(n), rk = new Uint8Array(n), i, x, y;
+    var up = null; for (y = CH - 2; y > 2 && !up; y--) for (var dx2 = 0; dx2 <= 10 && !up; dx2++) [22 - dx2, 22 + dx2].forEach(function (x2) { if (!up && !pool[y * CW + x2] && !pool[(y - 1) * CW + x2] && !pool[y * CW + x2 - 1] && !pool[y * CW + x2 + 1]) up = { x: x2, y: y }; });
+    var spawn = { x: up.x + 0.5, y: up.y - 0.2 }, land = [];
+    for (i = 0; i < n; i++) if (!pool[i]) land.push(i);
+    var dist = function (j, p) { return Math.hypot(j % CW + 0.5 - p.x, ((j / CW) | 0) + 0.5 - p.y); };
+    var shoreD = new Uint8Array(n); for (i = 0; i < n; i++) { if (pool[i]) continue; var d = 4; x = i % CW; y = (i / CW) | 0; for (var r = 1; r <= 3 && d === 4; r++) for (var oy = -r; oy <= r; oy++) for (var ox = -r; ox <= r; ox++) { var j = (y + oy) * CW + x + ox; if (j < 0 || j >= n || pool[j]) { d = Math.min(d, r); } } shoreD[i] = d; }
+    return { rnd: rnd, pool: pool, wall: wall, node: node, rk: rk, up: up, spawn: spawn, land: land, dist: dist, shoreD: shoreD, n: n };
+  }
+  function isleFree(B, i, pad) {   // a land cell with land (and nothing built) all round it
+    var x = i % CW, y = (i / CW) | 0; for (var oy = -pad; oy <= pad; oy++) for (var ox = -pad; ox <= pad; ox++) { var j = (y + oy) * CW + x + ox; if (j < 0 || j >= B.n || B.pool[j] || B.wall[j] || B.node[j]) return false; } return true;
+  }
+  function isleFinish(B, seed, extra) {
+    var n = B.n, sol = new Uint8Array(B.pool), i; for (i = 0; i < n; i++) if (B.wall[i]) sol[i] = 0;
+    var rocks = 0; for (i = 0; i < n; i++) if (B.node[i]) rocks++;
+    var F = { w: CW, h: CH, floor: 1, biome: 0, bi: ISLE_TH, seed: seed, theme: THEMES[ISLE_TH], wall: B.wall, node: B.node, torch: new Uint8Array(n), up: B.up, down: { x: -20, y: -20 }, spawn: B.spawn, lamps: B.lamps || [], rocks: rocks,
+      sol: sol, pool: B.pool, rk: B.rk, shoreD: B.shoreD, isle: 1, amb: 0.9, deco: [], flat: [] };
+    for (var k in extra) F[k] = extra[k];
+    return F;
+  }
+  function genIsle(seed, tier, kind, fresh) {
+    tier = Math.max(1, Math.min(4, tier | 0)); var B = isleBase(seed, 15 + tier * 1.2 + (seed % 3), 9.5 + tier * 0.5), rnd = B.rnd, i, k, x, y, L = B.land.slice();
+    var pick = function (minD, pad) { for (var t = 0; t < 200; t++) { var j = L[Math.floor(rnd() * L.length)]; if (B.dist(j, B.spawn) >= minD && isleFree(B, j, pad)) return j; } return -1; };
+    for (k = 0; k < 7 + tier; k++) { var pj = pick(4, 1); if (pj < 0) continue; B.wall[pj] = 1; B.rk[pj] = 1; if (rnd() < 0.45 && !B.pool[pj + 1] && isleFree(B, pj + 1, 0)) { B.wall[pj + 1] = 1; B.rk[pj + 1] = 1; } }   // palm clumps
+    for (k = 0; k < tier * 2 - 1; k++) {   // ruins: broken walls of old stone (harder islands have more)
+      var rj = pick(6, 1); if (rj < 0) continue; var dir = rnd() < 0.5 ? 1 : CW, len = 3 + Math.floor(rnd() * 3);
+      for (var s = 0; s < len; s++) { var c = rj + dir * s; if (c < 0 || c >= B.n || B.pool[c] || (s && rnd() < 0.22)) continue; if (B.dist(c, B.spawn) < 4) continue; B.wall[c] = 1; B.rk[c] = 2; }
+    }
+    var ok = function () { var free = function (j) { return !B.pool[j] && !B.wall[j]; }, st = B.up.y * CW + B.up.x, d0 = bfs(st, free), cut = 0; for (var q = 0; q < B.n; q++) if (free(q) && d0.dist[q] < 0) cut++; return cut; };
+    if (ok() > 0) for (i = 0; i < B.n; i++) if (B.rk[i] === 2) { B.wall[i] = 0; B.rk[i] = 0; }   // never wall off part of the island: drop the ruins, then the palms
+    if (ok() > 0) for (i = 0; i < B.n; i++) if (B.rk[i] === 1) { B.wall[i] = 0; B.rk[i] = 0; }
+    if (fresh !== false) {
+      var chests = [1, 1, 2, 2, 3][tier] + (rnd() < 0.5 ? 1 : 0);
+      for (k = 0; k < chests; k++) { var cj = pick(9, 1); if (cj >= 0) B.node[cj] = T.X_lootchest || T.STONE; }
+      for (k = 0; k < 6 + tier * 2; k++) { var pj2 = pick(4, 0); if (pj2 >= 0) B.node[pj2] = T.X_lootpot || T.STONE; }
+    }
+    var waves = []; for (i = 0; i < B.land.length; i++) { var wj = B.land[i]; if (!B.wall[wj] && !B.node[wj] && B.dist(wj, B.spawn) > 8) waves.push(wj); }
+    B.lamps = []; for (k = 0; k < 4 + tier; k++) { var lj = pick(5, 1); if (lj >= 0) { B.lamps.push({ x: lj % CW, y: (lj / CW) | 0 }); B.wall[lj] = 1; B.rk[lj] = 5; } }   // tiki torches
+    return isleFinish(B, seed, { tier: tier, kind: kind | 0, waves: waves, fresh: fresh !== false });
+  }
+  var PORT_STALLS = [{ id: "gild", x: 10, y: 11 }, { id: "bone", x: 17, y: 8 }, { id: "trade", x: 27, y: 8 }, { id: "ship", x: 34, y: 11 }];
+  function genPort(seed) {
+    var B = isleBase(seed, 19.5, 12.2), rnd = B.rnd, i, x, y;
+    PORT_STALLS.forEach(function (st) { for (x = st.x - 1; x <= st.x + 1; x++) { var j = st.y * CW + x; B.pool[j] = 0; B.wall[j] = 1; B.rk[j] = 4; } for (y = st.y - 2; y <= st.y + 3; y++) for (x = st.x - 2; x <= st.x + 2; x++) if (y !== st.y) B.pool[y * CW + x] = 0; });
+    [[6, 16, 3], [38, 16, 3], [21, 4, 4]].forEach(function (h) { for (x = h[0]; x < h[0] + h[2]; x++) for (y = h[1]; y < h[1] + 2; y++) { var j = y * CW + x; if (!B.pool[j]) { B.wall[j] = 1; B.rk[j] = 3; } } });   // huts
+    B.lamps = []; [[8, 13], [15, 11], [20, 11], [25, 11], [30, 11], [36, 13], [14, 20], [30, 20], [22, 16]].forEach(function (q) { var j = q[1] * CW + q[0]; if (!B.pool[j] && !B.wall[j]) { B.wall[j] = 1; B.rk[j] = 5; B.lamps.push({ x: q[0], y: q[1] }); } });
+    for (var k = 0; k < 10; k++) { var j2 = B.land[Math.floor(rnd() * B.land.length)]; if (B.dist(j2, B.spawn) > 5 && isleFree(B, j2, 1) && (j2 / CW | 0) > 13) { B.wall[j2] = 1; B.rk[j2] = 1; } }
+    return isleFinish(B, seed, { port: 1, stalls: PORT_STALLS, tier: 0, waves: [], fresh: false });
+  }
   // ROOM CHECK: every building interior, built for a few seeds, checked for the mistakes that are easy to make by hand and hard to
   // spot: furniture in a doorway or in front of the exit, part of a room cut off, a chest you cannot reach, a tall piece (wardrobe,
   // shelf, dresser, clock...) standing out in the middle of the floor, a piece with a front that stands against a side wall but still
@@ -684,6 +749,6 @@
     Object.keys(SW.ITEMS).forEach(function (k) { var it = SW.ITEMS[k]; if (it && it.tile !== undefined && !TL[it.tile]) say("the item " + k + " places a block that doesn't exist (" + it.tile + ")"); });
     return out;
   }
-  var api = { genLair: genLair, LAIR_F: LAIR_F, LAIR_TH: LAIR_TH, checkGame: checkGame, mineBio: mineBio, checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  var api = { genIsle: genIsle, genPort: genPort, ISLE_TH: ISLE_TH, PORT_STALLS: PORT_STALLS, genLair: genLair, LAIR_F: LAIR_F, LAIR_TH: LAIR_TH, checkGame: checkGame, mineBio: mineBio, checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);

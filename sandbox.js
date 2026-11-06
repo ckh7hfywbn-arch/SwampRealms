@@ -172,6 +172,37 @@
     { id: "d_chandelier", cat: "Frostfen Collection", n: "Crystal Chandelier", out: { chandelier: 1 }, cost: { crystal: 8, planks: 4, torch: 4, stick: 2 }, bl: 3, d: "A hanging ring of Frost Crystals and candle flames. Hangs from a wall or a ceiling beam. Very bright." },
     { id: "d_throne", cat: "Frostfen Collection", n: "Frostrock Throne", out: { throne: 1 }, cost: { frostrock: 14, crystal: 6, fiber: 6 }, bl: 4, d: "The grandest piece you can craft: a throne carved from Frostrock. Needs the fully upgraded Frost Workbench." }
   ];
+  // PROSPECTOR'S LANTERN (see PROSPECT below): carry it and ore glows through rock
+  if (!ITEMS.prospect) { ITEMS.prospect = { n: "Prospector's Lantern", d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground." }; if (ORDER.indexOf("prospect") < 0) ORDER.push("prospect"); }
+  if (!ITEMS.x_support) { ITEMS.x_support = { n: "Timber Support", d: "Place it in the Mine like a torch. The ceiling within 4 tiles of a support can't cave in." }; if (ORDER.indexOf("x_support") < 0) ORDER.push("x_support"); }
+  RECIPES.push({ id: "x_support", n: "Timber Supports (2)", out: { x_support: 2 }, cost: { planks: 4, stick: 4 }, d: "Place them in the Mine like torches. The ceiling within 4 tiles of a support can't cave in. Pick them back up with your pick." });
+  if (!ITEMS.x_spore) { ITEMS.x_spore = { n: "Mycelium Node", d: "Plant it with F at a base (the surface, your homestead or the Sunken Hollow). Every node shares one Spore Network store." }; if (ORDER.indexOf("x_spore") < 0) ORDER.push("x_spore"); }
+  RECIPES.push({ id: "x_spore", n: "Mycelium Node", out: { x_spore: 1 }, cost: { spore: 12, glowcap: 2, fiber: 6 }, d: "Plant it with F at a base: the surface, your homestead or the Sunken Hollow (up to 4). Every node shares one Spore Network store: send items in at one base, take them out at another." });
+  [["x_drill", "Bore Drill", "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on: every block you dig takes the 8 around it too."],
+   ["x_detect", "Metal Detector", "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore."],
+   ["x_jet", "Swamp-Gas Jetpack", "Carry it: keep holding jump at the top of a jump to fly on swamp gas. It refuels on the ground."],
+   ["x_grap2", "Grapple Upgrade: Mk II", "Your grapple reaches half again as far and swings: pump with left and right, reel with up and down, jump to fling off."],
+   ["x_grap3", "Grapple Upgrade: Mk III", "Double reach, and the hook bites into tree leaves and trunks too."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  // MESSAGE IN A BOTTLE: washes up on the tide flats at low tide (one a day at most). Hold it and tap on land to read it: it marks a Captain's Cache.
+  if (!ITEMS.x_bottle) { ITEMS.x_bottle = { n: "Message in a Bottle", tmap: 1, bottle: 1, d: "Washed up on the tide flats. Hold it on land and tap to uncork it: someone wrote down where they buried something." }; if (ORDER.indexOf("x_bottle") < 0) ORDER.push("x_bottle"); }
+  [["starore", "Star Ore", "A chunk of a fallen meteor, still faintly warm. Smelt it into Starsteel at a Stone Furnace."], ["starsteel", "Starsteel Ingot", "Metal from the sky: light, blue-white and harder than iron. The Lily Belle's best upgrades are made of it."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2], gem: q[0] === "starore" ? "#9ad8ff" : "#d8f0ff" }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  RECIPES.push({ id: "x_starsteel", n: "Starsteel Ingot", out: { starsteel: 1 }, cost: { starore: 3, charcoal: 1 }, stn: "furnace", d: "Three chunks of Star Ore and a lump of charcoal, smelted at a Stone Furnace. Star Ore falls in meteor showers." });
+  // MIGRATIONS: a keepsake from each season's travellers; all four make the Wanderer's Charm. THE LEVIATHAN leaves its scales.
+  [["goosedown", "Goose Down", "Soft down from a Lily Goose flying north in Spring. Catch it as it drifts down."], ["antlershed", "Elk Antler Shed", "A Bog Elk dropped it on the way south in Fall."], ["turtlescute", "Turtle Scute", "A Shellback Turtle's old shell plate, left as thanks for sailing alongside in Summer."], ["ambergris", "Ambergris", "A waxy, sweet-smelling lump a Brine Whale left floating in Winter. Worth a lot to Old Croaker."], ["levscale", "Leviathan Scale", "A plate as big as a door from the Brinebog Leviathan. Proof you beat the thing under the sea."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  RECIPES.push({ id: "x_ch_wander", n: "Wanderer's Charm", out: null, cost: { goosedown: 4, antlershed: 1, turtlescute: 1, ambergris: 1, rope: 1 }, charm: "wander", bench: true, d: "A keepsake from all four seasons' travellers. Migrations come twice as often and leave twice the keepsakes, and you sail 10% faster." });
+  // SEA DOMES: build an air-filled glass dome on the sea floor
+  if (!ITEMS.x_dome) { ITEMS.x_dome = { n: "Sea Dome Kit", d: "A folded glass dome. Dive to the sea floor and build it (a 7 by 5 bubble of air): it refills your air, heals you, and lights the deep. Pack it up again any time." }; if (ORDER.indexOf("x_dome") < 0) ORDER.push("x_dome"); }
+  RECIPES.push({ id: "x_dome", n: "Sea Dome Kit", out: { x_dome: 1 }, cost: { glass: 12, brass: 6, ironingot: 4, seaglass: 4 }, bench: true, d: "A glass dome you build on the sea floor: a bubble of air that refills your air and heals you. Up to 3 at Croaker's Pier and 1 at each dive site." });
+  // ISLAND RAIDS: treasure you carry back to the merchants of Driftwood Haven (see TREAS for what each is worth and who buys it)
+  [["t_chest1", "Castaway's Chest", "A battered little chest from a Calm island."], ["t_chest2", "Seafarer's Chest", "A sturdy chest from a Rough island."], ["t_chest3", "Captain's Chest", "A brass-bound chest from a Dangerous island."], ["t_chest4", "Chest of Legends", "A glowing chest from a Deadly island. The Gilded Toad will pay a fortune."],
+   ["t_skull1", "Bilge Skull", "A pirate's old skull. The Bone Bell Society collects them."], ["t_skull2", "Foul Skull", "A pirate skull with a nasty grin."], ["t_skull3", "Bosun's Skull", "The skull of a pirate bosun, still wearing its earring."], ["t_skull4", "Dread Captain's Skull", "It still glows faintly. The Bone Bell Society will want this."],
+   ["t_tea", "Crate of Bog Tea", "Strong, brown and very popular. Croaker & Sons buy it."], ["t_rum", "Barrel of Swamp Rum", "Don't drink it. Sell it to Croaker & Sons."], ["t_silk", "Crate of Spider Silk", "Light as mist. Croaker & Sons pay well."], ["t_spice", "Crate of Fire Spice", "Sneeze-hot. Croaker & Sons' best seller."], ["t_gems", "Pouch of Sea Gems", "A pouch of polished sea gems. The Gilded Toad buys them."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] + " Treasure: sell it at Driftwood Haven, the trading port.", treas: 1 }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
+  RECIPES.push({ id: "x_detect", n: "Metal Detector", out: { x_detect: 1 }, cost: { ironingot: 4, quartz: 4, glass: 2 }, bench: true, d: "Hold it on the surface: it beeps faster and the signal meter fills as you near buried treasure, loot chests and gem ore within 14 tiles." });
+  RECIPES.push({ id: "x_jet", n: "Swamp-Gas Jetpack", out: { x_jet: 1 }, cost: { ironingot: 8, sulfur: 6, leather: 4, glass: 2 }, bench: true, d: "Carry it: keep holding jump at the top of a jump to fly on swamp gas for a couple of seconds. It refuels whenever you stand on the ground." });
+  RECIPES.push({ id: "x_grap2", n: "Grapple Upgrade: Mk II", out: { x_grap2: 1 }, cost: { ironingot: 5, fiber: 12, leather: 2 }, bench: true, d: "Your grapple reaches half again as far and swings like a vine: pump with left and right, reel in and out with up and down, jump to fling off with your speed." });
+  RECIPES.push({ id: "x_grap3", n: "Grapple Upgrade: Mk III", out: { x_grap3: 1 }, cost: { ironingot: 8, crystal: 4, goldbar: 1 }, bench: true, d: "Needs Mk II. Double the reach, and the hook bites into tree leaves and trunks as well as solid blocks." });
+  RECIPES.push({ id: "prospect", n: "Prospector's Lantern", out: { prospect: 1 }, cost: { ironingot: 4, glass: 2, crystal: 3, spore: 6 }, bench: true, d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground. You only need one." });
   if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
   DECOR.forEach(function (r) { r.deco = 1; });
   // ==================================================================================================
@@ -494,11 +525,63 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full" };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1 };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
-  var cv = $("sbxCv"), ctx = cv.getContext("2d", { alpha: false });   // PERF: every scene paints its whole background, so the game canvas is opaque (the browser skips blending it with the page)
+  // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
+  // a Reduce motion switch that overrides the system setting, softer lightning flashes, and key remapping (KEYMAP below) ----------
+  var CBM = { p: "1 0 0 0 0 -0.255 1.255 0 0 0 0.303 -0.545 1.242 0 0 0 0 0 1 0", d: "1 0 0 0 0 -0.438 1.438 0 0 0 0.262 -0.562 1.3 0 0 0 0 0 1 0", t: "1.05 -0.382 0.332 0 0 0 1.234 -0.234 0 0 0 0 1 0 0 0 0 0 1 0" };
+  function applyA11y() {
+    try {
+      if (!document.getElementById("sbxCBF")) { var d = document.createElement("div"); d.id = "sbxCBF"; d.setAttribute("aria-hidden", "true"); d.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
+        d.innerHTML = '<svg width="0" height="0">' + Object.keys(CBM).map(function (k) { return '<filter id="sbxCB-' + k + '" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="' + CBM[k] + '"/></filter>'; }).join("") + "</svg>"; document.body.appendChild(d); }
+      var c = document.getElementById("sbxCv"); if (c) c.style.filter = OPT.cb !== "off" ? "url(#sbxCB-" + OPT.cb + ")" : "";
+      document.documentElement.style.setProperty("--ui-tx", OPT.tx); document.documentElement.classList.toggle("sbx-txbig", OPT.tx > 1);
+      var sysR = !!(matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      motionOff = OPT.motion === "on" ? true : OPT.motion === "off" ? false : sysR; reduce = motionOff;
+    } catch (e) {}
+  }
+  function flashK() { return OPT.flash ? 1 : 0.15; }
+  // KEY REMAPPING: each action has its default keys (d); you can bind one key of your own (KEYMAP.b[id]). A bound key acts as the
+  // action's first default key, and that action's default LETTER keys stop working (arrow keys always keep working).
+  var KEYACT = [
+    { id: "left", n: "Move left", d: ["a", "ArrowLeft"] }, { id: "right", n: "Move right", d: ["d", "ArrowRight"] },
+    { id: "jump", n: "Jump / climb", d: [" ", "w", "ArrowUp"] }, { id: "down", n: "Down / drop", d: ["s", "ArrowDown"] },
+    { id: "dodge", n: "Dodge roll", d: ["Shift", "c"] }, { id: "use", n: "Use / interact", d: ["f"] }, { id: "swap", n: "Swap to pick", d: ["q"] },
+    { id: "journal", n: "Journal", d: ["e"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
+    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "bore", n: "Bore Drill on/off", d: ["z"] }, { id: "emote", n: "Emotes", d: ["t"] }
+  ];
+  var KEYMAP = { b: {}, wait: "" };
+  try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); } catch (e) {}
+  function keySave() { try { localStorage.setItem("swamp-delve-keys", JSON.stringify(KEYMAP.b)); } catch (e) {} }
+  function keyNorm(k) { return k && k.length === 1 ? k.toLowerCase() : k; }
+  function keyLabel(k) { return k === " " ? "Space" : k && k.length === 1 ? k.toUpperCase() : (k || "").replace("Arrow", "\u2190\u2192\u2191\u2193".charAt(["Left", "Right", "Up", "Down"].indexOf((k || "").replace("Arrow", ""))) || ""); }
+  function keyRemap(raw) {   // the key the rest of the game should see, or null to ignore it
+    var k = keyNorm(raw), i, a;
+    for (i = 0; i < KEYACT.length; i++) { a = KEYACT[i]; if (KEYMAP.b[a.id] && keyNorm(KEYMAP.b[a.id]) === k) return a.d[0]; }
+    for (i = 0; i < KEYACT.length; i++) { a = KEYACT[i]; if (KEYMAP.b[a.id] && a.d.indexOf(k) >= 0 && k.indexOf("Arrow") !== 0) return null; }   // a default key that was moved
+    return raw;
+  }
+  function keyOwner(k) { k = keyNorm(k); for (var i = 0; i < KEYACT.length; i++) { var a = KEYACT[i], b = KEYMAP.b[a.id]; if (b ? keyNorm(b) === k : a.d.indexOf(k) >= 0) return a; } return null; }
+  function keymapRows() {
+    return '<div class="pz-keymap">' + KEYACT.map(function (a) {
+      var b = KEYMAP.b[a.id], w = KEYMAP.wait === a.id, lbl = b ? keyLabel(b) : a.d.map(keyLabel).join(" / ");
+      return '<div class="pz-krow' + (b ? " custom" : "") + '"><span>' + esc(a.n) + '</span><button type="button" class="pz-kbtn' + (w ? " wait" : "") + '" data-opt="key:' + a.id + '">' + (w ? "Press a key..." : esc(lbl)) + "</button></div>";
+    }).join("") + '</div><div class="pz-row"><div><small>Tap a key to change it, then press the new key (Esc cancels). Arrow keys always work.</small></div><span class="pz-seg"><button type="button" data-opt="key:reset">Reset</button></span></div>';
+  }
+  window.addEventListener("keydown", function (e) {   // waiting for a new key for an action
+    if (!KEYMAP.wait) return; e.preventDefault(); e.stopImmediatePropagation();
+    var id = KEYMAP.wait; KEYMAP.wait = "";
+    if (e.key !== "Escape") {
+      var k = keyNorm(e.key), own = keyOwner(k), act = KEYACT.filter(function (a) { return a.id === id; })[0];
+      if (/^(Enter|Tab|Meta|Control|Alt|CapsLock|`|p|g|r|[1-9])$/.test(k) || k.indexOf("Arrow") === 0) toast("That key is kept for something else. Pick another.", "#f2c14e");
+      else if (own && own.id !== id) toast(keyLabel(k) + " already does " + own.n + ". Pick another key.", "#f2c14e");
+      else { KEYMAP.b[id] = k; keySave(); toast(act.n + " is now " + keyLabel(k) + ".", "#7fd6ff"); }
+    }
+    try { if (pauseOpen) renderPause(); if (panelOpen) renderPanel(); } catch (er) {}
+  }, true);
+  var cv = $("sbxCv"), ctx = cv.getContext("2d", { alpha: false }); setTimeout(applyA11y, 0);   // PERF: every scene paints its whole background, so the game canvas is opaque (the browser skips blending it with the page)
   var stageEl = $("sbxStage");
 
   // ---------- STATE ----------
@@ -635,9 +718,9 @@
     });
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
     if (o.st && typeof o.st === "object") Object.keys(d.st).forEach(function (k) { d.st[k] = Math.max(0, Math.floor(+o.st[k]) || 0); });
-    if (o.st && typeof o.st === "object") Object.keys(o.st).slice(0, 800).forEach(function (k) { if (d.st[k] === undefined && /^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k) && +o.st[k] > 0 && isFinite(+o.st[k])) d.st[k] = Math.floor(+o.st[k]); });   // keep counters a fresh save doesn't list
+    if (o.st && typeof o.st === "object") Object.keys(o.st).slice(0, 800).forEach(function (k) { if (d.st[k] === undefined && /^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k) && +o.st[k] > 0 && isFinite(+o.st[k])) d.st[k] = Math.floor(+o.st[k]); });   // stats added after the first list: any counter or "seen this tip" flag is kept
     if (Array.isArray(o.wp) && o.wv === SW.WORLDVER) o.wp.slice(0, WP_MAX).forEach(function (w) {   // map waypoints (dropped if the world was rebuilt)
-      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24) });
+      if (w && isFinite(+w.x) && isFinite(+w.y)) d.wp.push({ x: clamp(Math.floor(+w.x), 0, W - 1), y: clamp(Math.floor(+w.y), 0, H - 1), c: clamp(Math.floor(+w.c) || 0, 0, WP_COL.length - 1), i: clamp(Math.floor(+w.i) || 0, 0, WP_ICONS.length - 1), n: String(w.n || "Waypoint").slice(0, 24), note: String(w.note || "").slice(0, 140), t: w.t ? 1 : 0, quake: w.quake ? 1 : 0 });
     });
     d.days = Math.max(0, Math.min(1e6, Math.floor(+o.days) || 0));
     d.zoom = [0.8, 1, 1.25, 1.5, 2].indexOf(+o.zoom) > -1 ? +o.zoom : 1;
@@ -654,6 +737,9 @@
     if (o.gems && typeof o.gems === "object") ["wpn", "arm", "pick", "bow"].forEach(function (k) { if (GEMS.indexOf(o.gems[k]) > -1) d.gems[k] = o.gems[k]; });
     if (Array.isArray(o.stars) && o.wv === SW.WORLDVER) d.stars = o.stars.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y) }; });
     if (isFinite(o.starRoll)) d.starRoll = Math.floor(o.starRoll);
+    ["metNext", "metSaid", "metDone"].forEach(function (f) { if (isFinite(+o[f])) d[f] = Math.floor(+o[f]); });   // METEOR SHOWERS
+    if (o.mig && isFinite(+o.mig.d)) d.mig = { d: Math.floor(+o.mig.d), n: Math.floor(+o.mig.n) || 1 };   // MIGRATIONS
+    if (Array.isArray(o.flood) && o.wv === SW.WORLDVER) d.flood = o.flood.filter(function (q) { return Array.isArray(q) && isFinite(q[0]) && isFinite(q[1]); }).slice(0, 300).map(function (q) { return [Math.floor(q[0]), Math.floor(q[1])]; });   // SPRING FLOODS
     if (isFinite(o.bmNext)) d.bmNext = Math.floor(o.bmNext);
     d.gmet = o.gmet ? 1 : 0;
     if (o.mw && typeof o.mw === "object") ["pick", "wpn", "arm"].forEach(function (k) { if (isFinite(o.mw[k])) d.mw[k] = clamp(Math.floor(o.mw[k]), 0, 3); });   // CRAFTING: Masterwork stars on your gear
@@ -677,8 +763,9 @@
     if (o.vg && typeof o.vg === "object") Object.keys(o.vg).forEach(function (k) { if (o.vg[k]) d.vg[k] = 1; });   // LANDMARKS: the day of the last Blessing
     if (o.disc && typeof o.disc === "object") Object.keys(o.disc).forEach(function (k) { if (ITEMS[k] && ITEMS[k].disc) d.disc[k] = 1; });   // secret recipes found
     if (o.pot && isFinite(o.pot.x) && isFinite(o.pot.y) && o.wv === SW.WORLDVER) d.pot = { x: Math.floor(o.pot.x), y: Math.floor(o.pot.y) };
-    if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) };
+    if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) { d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) }; if (o.tmap.b) d.tmap.b = 1; }
     if (Array.isArray(o.ways) && o.wv === SW.WORLDVER) d.ways = o.ways.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y), n: String(q.n || "Waystone").slice(0, 24) }; });
+    if (typeof o.ammo === "string" && /^(ar_[a-z]+|arrow|firearrow)$/.test(o.ammo)) d.ammo = o.ammo;
     if (o.fx && typeof o.fx === "object") Object.keys(FXN).forEach(function (k) { var v = +o.fx[k]; if (v > 0) d.fx[k] = Math.min(v, 600); });
     d.cg = clamp(Math.floor(+o.cg) || 0, 0, 63); d.diff = o.diff === 0 || o.diff === 2 ? o.diff : 1; d.keepInv = o.keepInv ? 1 : 0; d.lossPct = o.lossPct === null || o.lossPct === undefined || !isFinite(+o.lossPct) ? null : clamp(Math.round(+o.lossPct / 10) * 10, 0, 100);   // DEATH RULES (world settings)
     d.graveMin = clamp(Math.round(+o.graveMin) || 5, 1, 15); d.graves = [];
@@ -721,6 +808,15 @@
     }
     if (o.qv === 5) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
+    if (o.lo && Array.isArray(o.lo.s)) d.lo = { i: clamp(o.lo.i | 0, -1, 2), s: o.lo.s.slice(0, 3).map(function (q, i) { return { n: ["Mining", "Fighting", "Farming"][i], k: q && Array.isArray(q.k) ? q.k.slice(0, INV_HOT).map(function (k) { return typeof k === "string" && ITEMS[k] ? k : null; }) : null }; }) };   // HOTBAR LOADOUTS
+    if (o.found && typeof o.found === "object") { d.found = {}; Object.keys(o.found).forEach(function (k) { if (ITEMS[k]) d.found[k] = 1; }); } if (o.cnew && typeof o.cnew === "object") { d.cnew = {}; Object.keys(o.cnew).slice(0, 80).forEach(function (k) { d.cnew[k] = 1; }); } d.collR = clamp(o.collR | 0, 0, 15);   // COLLECTION LOG
+    d.grapLv = clamp(o.grapLv | 0, 0, 2); d.bore = !!o.bore;   // GADGETS
+    if (isFinite(+o.qNext)) d.qNext = Math.floor(+o.qNext); if (o.quake && isFinite(+o.quake.x) && isFinite(+o.quake.y) && o.wv === SW.WORLDVER) d.quake = { x: Math.floor(+o.quake.x), y: Math.floor(+o.quake.y), f: clamp(o.quake.f | 0, 3, 40), day: o.quake.day | 0, prev: o.quake.prev | 0, used: o.quake.used ? 1 : 0 };   // EARTHQUAKES
+    if (o.spore && typeof o.spore === "object") { d.spore = { n: [], cache: {}, rotDay: Math.floor(+o.spore.rotDay) || -1, eatDay: Math.floor(+o.spore.eatDay) || -1 }; (Array.isArray(o.spore.n) ? o.spore.n : []).slice(0, 4).forEach(function (q) { if (q && /^(surface|home|hollow)$/.test(q.s) && isFinite(+q.x) && isFinite(+q.y)) d.spore.n.push({ id: String(q.id || Math.random()).slice(0, 16), s: q.s, x: +q.x, y: +q.y, rot: q.rot ? 1 : 0 }); }); if (o.spore.cache) Object.keys(o.spore.cache).forEach(function (k) { if (ITEMS[k] && o.spore.cache[k] > 0) d.spore.cache[k] = Math.min(99999, Math.floor(+o.spore.cache[k])); }); }   // SPORE NETWORK
+    if (o.speed && typeof o.speed === "object") { d.speed = {}; Object.keys(o.speed).forEach(function (k) { if (/^\d+$/.test(k) && o.speed[k] > 0) d.speed[k] = Math.floor(+o.speed[k]); }); }   // SPEED FLOORS
+    if (o.carts && typeof o.carts === "object") { d.carts = {}; Object.keys(o.carts).forEach(function (k) { if (/^\d+$/.test(k) && +k < 200) d.carts[k] = 1; }); }   // MINE CARTS
+    if (o.mres && typeof o.mres === "object") { d.mres = {}; Object.keys(o.mres).forEach(function (k) { if (/^\d+$/.test(k)) d.mres[k] = 1; }); }   // LOST MINERS
+    if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
     keepOut(o, d);   // keep aside what this version does not know
     return d;
   }
@@ -738,7 +834,7 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
     benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
@@ -820,41 +916,75 @@
   }
   var wEl = document.createElement("div"); wEl.className = "sbx-worlds"; wEl.id = "sbxWorlds"; wEl.hidden = true; wEl.setAttribute("role", "dialog"); wEl.setAttribute("aria-label", "Your worlds"); stageEl.appendChild(wEl);
   function ago(t) { var m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " d ago"; }
+  // WORLDS: a list of your worlds (one Play button each; rename and delete tucked behind "..."), and a separate step to make a new one
+  // (a name and three difficulty cards). WL.view is "list" or "new"; WL.menu is the world whose "..." is open; WL.ren the one being renamed.
+  var WL = { view: "list", menu: "", ren: "" };
+  var DIFF_SHORT = ["Softer creatures and slower hunger. A relaxed dig.", "The swamp as it was made to be played.", "Tougher creatures that come more often, faster hunger, and passing out costs some materials."];
+  function wlArt(w) {   // a tiny swamp horizon for each world: its own sky, hills tinted by difficulty
+    var h = 0, id = String(w.id || w.name || ""); for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+    var sky = ["#1d3b4a", "#2a2f55", "#1f4438", "#3a2a48", "#2d3f2a"][Math.abs(h) % 5], dc = (DIFF[w.diff == null ? 1 : w.diff] || DIFF[1]).c, sx = 22 + Math.abs(h >> 3) % 50;
+    return '<span class="wl2-art" aria-hidden="true" style="--sky:' + sky + ";--dc:" + dc + ";--sx:" + sx + '%"><i></i></span>';
+  }
   function renderWorlds() {
-    var list = wIdx.list.slice().sort(function (a, b) { return b.played - a.played; });
-    var h = '<div class="sbx-wbox"><h2>Your Worlds</h2><p class="sbx-note">Each world saves on its own in this browser' + (WUSER !== "guest" ? " for " + esc(WUSER) : "") + ". Switch any time, or start a new one.</p>" + cloudSection() + "<div class=\"sbx-wlist\">";
-    list.forEach(function (w) {
-      var cur = w.id === curId, sub = (w.diff === 0 ? "Easy \u00b7 " : w.diff === 2 ? "Hard \u00b7 " : "") + PICKS[w.tier || 0].n + (w.wpn ? " \u00b7 " + WEAPONS[w.wpn].n : "") + " \u00b7 " + (w.ch != null ? "Chapter " + Math.min(6, w.ch + 1) : (w.goals || 0) + " goals") + " \u00b7 " + ago(w.played);
-      h += '<div class="sbx-w' + (cur ? " cur" : "") + '"><div><b>' + esc(w.name) + (cur ? " (playing)" : "") + "</b><small>" + esc(sub) + "</small>" + cloudBadge(w) + '</div><div class="acts">'
-        + '<button type="button" class="btn' + (cur ? "" : " ghost") + '" data-fs-start data-wl-play="' + w.id + '">' + (cur ? "Resume" : "Play") + "</button>"
-        + '<button type="button" class="btn ghost" data-wl-ren="' + w.id + '" aria-label="Rename ' + esc(w.name) + '">Rename</button>'
-        + '<button type="button" class="btn ghost' + (delAsk === w.id ? " warn" : "") + '" data-wl-del="' + w.id + '">' + (delAsk === w.id ? "Tap again to delete" : "Delete") + "</button></div></div>";
-    });
-    h += '</div><div class="sbx-wnew"><input id="sbxWName" type="text" maxlength="24" placeholder="Name your new world" aria-label="New world name" autocomplete="off"><button type="button" class="btn" data-fs-start data-wl-new>New world</button></div>'
-      + '<div class="sbx-row sbx-diff wl-diff" role="group" aria-label="Difficulty for the new world"><span>New world difficulty</span>' + DIFF.map(function (D, i) { return '<button type="button" class="btn' + (newDiff === i ? "" : " ghost") + '" data-wl-diff="' + i + '" aria-pressed="' + (newDiff === i) + '" style="--dc:' + D.c + '">' + D.n + "</button>"; }).join("") + "</div>"
-      + (titleOpen ? '<div class="wl-foot"><button type="button" class="btn" data-wl-close>Back</button></div></div>' : '<div class="wl-foot"><button type="button" class="btn" data-wl-close>Back to game</button><button type="button" class="btn ghost" data-wl-mp>Play together</button><button type="button" class="btn ghost" data-wl-title>Main menu</button></div></div>');
+    var list = wIdx.list.slice().sort(function (a, b) { return b.played - a.played; }), h;
+    if (WL.view === "new") {
+      h = '<div class="sbx-wbox wl2 wl2-newv"><div class="wl2-head"><button type="button" class="wl2-back" data-wl-list>' + (list.length ? "&lsaquo; Your worlds" : "&lsaquo; Back") + '</button><button type="button" class="sbx-x" data-wl-close aria-label="Close">&times;</button></div>'
+        + '<h2>New world</h2><p class="wl2-sub">A fresh swamp to dig, build and explore. Your character comes with you.</p>'
+        + '<label class="wl2-field"><span>Name</span><input id="sbxWName" type="text" maxlength="24" placeholder="My Swamp" autocomplete="off"></label>'
+        + '<div class="wl2-diffs" role="radiogroup" aria-label="Difficulty">' + DIFF.map(function (D, i) { var on = newDiff === i; return '<button type="button" class="wl2-diff' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-wl-diff="' + i + '" style="--dc:' + D.c + '"><b>' + D.n + "</b><small>" + esc(DIFF_SHORT[i] || D.d) + "</small></button>"; }).join("") + "</div>"
+        + (list.length >= MAXW ? '<p class="wl2-warn">You can keep ' + MAXW + " worlds. Delete one first to make room.</p>" : "")
+        + '<button type="button" class="btn wl2-create" data-fs-start data-wl-new' + (list.length >= MAXW ? " disabled" : "") + ">Create world</button></div>";
+    } else {
+      h = '<div class="sbx-wbox wl2"><div class="wl2-head"><h2>Your worlds</h2><span class="wl2-n">' + list.length + " of " + MAXW + '</span><button type="button" class="sbx-x" data-wl-close aria-label="' + (titleOpen ? "Back" : "Back to game") + '">&times;</button></div><div class="wl2-list">';
+      list.forEach(function (w) {
+        var cur = w.id === curId, D = DIFF[w.diff == null ? 1 : w.diff] || DIFF[1], sub = PICKS[w.tier || 0].n + (w.wpn ? " · " + WEAPONS[w.wpn].n : "") + " · " + (w.ch != null ? "Chapter " + Math.min(6, w.ch + 1) : (w.goals || 0) + " goals") + " · " + ago(w.played);
+        var open = WL.menu === w.id, ren = WL.ren === w.id, del = delAsk === w.id;
+        h += '<div class="wl2-w' + (cur ? " cur" : "") + (open || ren || del ? " open" : "") + '">' + wlArt(w) + '<div class="wl2-txt">'
+          + (ren ? '<span class="wl2-ren"><input type="text" maxlength="24" data-wl-renin="' + w.id + '" value="' + esc(w.name) + '" aria-label="New name for ' + esc(w.name) + '"><button type="button" class="btn" data-wl-rensave="' + w.id + '">Save</button><button type="button" class="btn ghost" data-wl-renx>Cancel</button></span>'
+               : '<b>' + esc(w.name) + "</b>")
+          + '<span class="wl2-meta"><em class="wl2-tag" style="--dc:' + D.c + '">' + D.n + "</em>" + (cur ? '<em class="wl2-tag now">Playing</em>' : "") + "<small>" + esc(sub) + "</small></span>" + cloudBadge(w) + "</div>"
+          + '<div class="wl2-go"><button type="button" class="btn' + (cur ? "" : " ghost") + '" data-fs-start data-wl-play="' + w.id + '">' + (cur ? "Resume" : "Play") + '</button><button type="button" class="wl2-more" data-wl-menu="' + w.id + '" aria-expanded="' + open + '" aria-label="More for ' + esc(w.name) + '">&middot;&middot;&middot;</button></div>'
+          + (open && !del && !ren ? '<div class="wl2-menu"><button type="button" data-wl-ren="' + w.id + '">Rename</button><button type="button" class="warn" data-wl-del="' + w.id + '">Delete</button></div>' : "")
+          + (del ? '<div class="wl2-confirm"><span>Delete <b>' + esc(w.name) + "</b>? This can't be undone" + (CLOUD.state === "on" && w.crev ? " (its cloud backup stays)" : "") + '.</span><button type="button" class="btn warn" data-wl-del="' + w.id + '">Delete world</button><button type="button" class="btn ghost" data-wl-delx>Keep it</button></div>' : "")
+          + "</div>";
+      });
+      h += '<button type="button" class="wl2-new" data-wl-newview' + (list.length >= MAXW ? " disabled" : "") + '><b>+</b><span>New world<small>' + (list.length >= MAXW ? "You have the most worlds you can keep" : "Start a fresh swamp") + "</small></span></button></div>"
+        + '<div class="wl2-foot">' + cloudSection() + (titleOpen ? "" : '<div class="wl2-links"><button type="button" class="btn ghost" data-wl-mp>Play together</button><button type="button" class="btn ghost" data-wl-title>Main menu</button></div>') + "</div></div>";
+    }
     var keep = $("sbxWName") ? $("sbxWName").value : ""; wEl.innerHTML = h; if (keep && $("sbxWName")) $("sbxWName").value = keep;
+    var ri = wEl.querySelector("[data-wl-renin]"); if (ri && document.activeElement !== ri) { ri.focus(); ri.select(); }
   }
-  function openWorlds() {
+  function openWorlds(view) {
     if (!wIdx) return; save(); if (panelOpen) closePanel();
-    menuOpen = true; delAsk = ""; keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderWorlds(); wEl.hidden = false;
+    menuOpen = true; delAsk = ""; WL.menu = ""; WL.ren = ""; WL.came = ""; WL.view = view === "new" ? "new" : "list"; keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderWorlds(); wEl.hidden = false;
+    if (WL.view === "new") setTimeout(function () { var i = $("sbxWName"); if (i) i.focus(); }, 30);
   }
-  function closeWorlds() { menuOpen = false; wEl.hidden = true; delAsk = ""; hbDirty = true; }
+  function closeWorlds() { menuOpen = false; wEl.hidden = true; delAsk = ""; WL.menu = ""; WL.ren = ""; hbDirty = true; }
+  function wlRename(id, nm) { var w = wIdx.list.filter(function (x) { return x.id === id; })[0]; if (w && nm && nm.trim()) { w.name = nm.trim().slice(0, 24); w.cdirty = 1; w.cgen = (w.cgen || 0) + 1; saveIdx(); if (CLOUD.state === "on") CLOUD.t = performance.now() + 2000; } WL.ren = ""; WL.menu = ""; renderWorlds(); }
   wEl.addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
+    var b = e.target.closest("button"); if (!b) { if (WL.menu && !e.target.closest(".wl2-menu")) { WL.menu = ""; renderWorlds(); } return; }
     if (cloudClick(b)) return;
     var id = b.getAttribute("data-wl-play"); if (id) return switchWorld(id);
     if (b.hasAttribute("data-wl-close")) return closeWorlds();
     if (b.hasAttribute("data-wl-title")) { closeWorlds(); if (MP.on || MP.ws) mpLeave(); return openTitle(); }
     if (b.hasAttribute("data-wl-mp")) { closeWorlds(); return openMPV(); }
+    if (b.hasAttribute("data-wl-newview")) { WL.view = "new"; WL.menu = ""; delAsk = ""; renderWorlds(); var ni = $("sbxWName"); if (ni) ni.focus(); return; }
+    if (b.hasAttribute("data-wl-list")) { if (!wIdx.list.length || (titleOpen && WL.came === "new")) { WL.came = ""; return closeWorlds(); } WL.view = "list"; return renderWorlds(); }
     if (b.hasAttribute("data-wl-diff")) { newDiff = clamp(+b.getAttribute("data-wl-diff") || 0, 0, 2); return renderWorlds(); }
     if (b.hasAttribute("data-wl-new")) { var inp = $("sbxWName"); createWorld(inp ? inp.value : ""); if (menuOpen) renderWorlds(); return; }
-    var rn = b.getAttribute("data-wl-ren");
-    if (rn) { var w = wIdx.list.filter(function (x) { return x.id === rn; })[0], nm = null; try { nm = window.prompt("Rename world", w.name); } catch (er) {} if (nm && nm.trim()) { w.name = nm.trim().slice(0, 24); w.cdirty = 1; w.cgen = (w.cgen || 0) + 1; saveIdx(); if (CLOUD.state === "on") CLOUD.t = performance.now() + 2000; } return renderWorlds(); }
+    var mn = b.getAttribute("data-wl-menu"); if (mn) { WL.menu = WL.menu === mn ? "" : mn; delAsk = ""; WL.ren = ""; return renderWorlds(); }
+    var rn = b.getAttribute("data-wl-ren"); if (rn) { WL.ren = rn; WL.menu = ""; return renderWorlds(); }
+    var rs = b.getAttribute("data-wl-rensave"); if (rs) { var ri = wEl.querySelector('[data-wl-renin="' + rs + '"]'); return wlRename(rs, ri ? ri.value : ""); }
+    if (b.hasAttribute("data-wl-renx")) { WL.ren = ""; return renderWorlds(); }
+    if (b.hasAttribute("data-wl-delx")) { delAsk = ""; WL.menu = ""; return renderWorlds(); }
     var dl = b.getAttribute("data-wl-del");
-    if (dl) { if (delAsk !== dl) { delAsk = dl; return renderWorlds(); } delAsk = ""; deleteWorld(dl); return renderWorlds(); }
+    if (dl) { if (delAsk !== dl) { delAsk = dl; WL.menu = ""; return renderWorlds(); } delAsk = ""; WL.menu = ""; deleteWorld(dl); return renderWorlds(); }
   });
-  wEl.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "sbxWName") { createWorld(e.target.value); if (menuOpen) renderWorlds(); } });
+  wEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.id === "sbxWName") { createWorld(e.target.value); if (menuOpen) renderWorlds(); }
+    else if (e.key === "Enter" && e.target.hasAttribute("data-wl-renin")) wlRename(e.target.getAttribute("data-wl-renin"), e.target.value);
+    else if (e.key === "Escape" && (WL.ren || WL.menu || delAsk)) { e.stopPropagation(); WL.ren = ""; WL.menu = ""; delAsk = ""; renderWorlds(); }
+  });
 
   // ---------- CLOUD SAVES (when signed in to a SwampRealms account) ----------
   // Every world is also backed up to your account (worker.js, /api/delve): about 15 seconds after it changes, from the Worlds menu
@@ -954,7 +1084,7 @@
   }
   function cloudSection() {
     var h = '<div class="sbx-cloud">';
-    if (CLOUD.state === "guest") return h + '<b>Cloud saves</b><span>Sign in (top right) to back up your worlds to your account and keep playing them on any device.</span></div>';
+    if (CLOUD.state === "guest") return h + '<b>Cloud saves</b><span>Sign in (top right) to back up your worlds and play them on any device.</span></div>';
     if (CLOUD.state === "checking") return h + "<b>Cloud saves</b><span>Checking your account…</span></div>";
     if (CLOUD.state === "signedout") return h + "<b>Cloud saves</b><span>Your sign-in ran out. Sign in again to keep backing up your worlds.</span></div>";
     if (CLOUD.state === "off") return h + '<b>Cloud saves</b><span>Cloud saves are not available right now. Your worlds are still saved in this browser.</span><button type="button" class="btn ghost" data-cl-retry>Try again</button></div>';
@@ -1159,10 +1289,13 @@
   function addExtra(k, n) { S.extra[k] = Math.min(99999, (S.extra[k] || 0) + n); }
   function invFull(item) { if (item && room(item) > 0) return false; nag("Inventory full! Press E to make room."); return true; }
   var giveBatch = null;
-  function give(item, n, tx, ty, keep) {   // keep: loot that must never be lost (rewards, enemy drops). What does not fit drops on the ground
+  function give(item, n, tx, ty, keep) {
+    if (item === "x_bottle" && !S.st.btltip) { S.st.btltip = 1; setTimeout(function () { toast("A Message in a Bottle! Hold it on dry land back in the swamp and tap to uncork it.", "#e8d8a8"); }, 400); }
+    if (item === "x_grap2" || item === "x_grap3") { var gl2 = item === "x_grap2" ? 1 : 2; if ((S.grapLv | 0) < gl2) { S.grapLv = gl2; popup("Grapple upgraded", "Mk " + (gl2 + 1) + (gl2 === 1 ? ": longer reach and real swinging" : ": double reach, bites into trees"), "#5fa83f", "\u2693"); } return n; }   // keep: loot that must never be lost (rewards, enemy drops). What does not fit drops on the ground
     if (DROPMODE && tx !== undefined && !cave && !keep) { spawnDrop(item, n, Math.floor(tx), Math.floor(ty)); return n; }   // GROUND DROPS: what a broken block gives lands on the ground
     var fit = Math.min(n, room(item));
     if (fit > 0) {
+      if (!S.found) S.found = {}; if (!S.found[item]) { S.found[item] = 1; collFound(item); }
       S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit);
       if (typeof S.st[item] === "number") S.st[item] += fit;
       if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
@@ -1208,6 +1341,61 @@
     var tmp = S.slots.slice(INV_HOT); ORDER.forEach(function (k) { if (t[k]) packInto(tmp, k, t[k]); }); for (i = 0; i < tmp.length; i++) S.slots[INV_HOT + i] = tmp[i];
     invSel = -1; hbDirty = true; invAfter();
   }
+  // ---------- QUICK STACK (X, or the button in the backpack): everything in your bag (not the hotbar, never tools) that a nearby chest
+  // already holds goes into that chest, nearest chest first. Chests within CHEST_PULL tiles on the surface. ----------
+  function quickStack() {
+    if (MP.on && MP.role === "guest") { nag("Only the host can use chests in this world."); return 0; }
+    var CH = nearChestKeys(); if (!CH.length) { nag(cave || OCS || HOME ? "Quick stack works near your chests on the surface." : "No chests nearby. Quick stack fills chests within " + CHEST_PULL + " tiles."); return 0; }
+    reslot(); var bag = {}, i, k;
+    for (i = INV_HOT; i < invN(); i++) { var c = S.slots[i]; if (c && ITEMS[c.k] && !ITEMS[c.k].tool) bag[c.k] = (bag[c.k] || 0) + c.n; }
+    var moved = 0, chests = {};
+    for (k in bag) {
+      var to = null; for (i = 0; i < CH.length; i++) { var cc = S.chests[CH[i].key]; if (cc && cc[k] > 0) { to = CH[i].key; break; } } if (!to) continue;
+      for (i = INV_HOT; i < invN(); i++) if (S.slots[i] && S.slots[i].k === k) S.slots[i] = null;   // the bag's stacks of it leave; the hotbar's stay
+      S.inv[k] -= bag[k]; if (S.inv[k] <= 0) delete S.inv[k];
+      S.chests[to][k] = Math.min(99999, (S.chests[to][k] || 0) + bag[k]); moved += bag[k]; chests[to] = 1;
+    }
+    if (!moved) {
+      var hotM = false; for (i = 0; i < INV_HOT; i++) { var hc = S.slots[i]; if (hc && !ITEMS[hc.k].tool && CH.some(function (q) { return S.chests[q.key] && S.chests[q.key][hc.k] > 0; })) hotM = true; }
+      nag(hotM ? "Quick stack leaves your hotbar alone. Move items to your bag (B) to stack them." : "Nothing in your bag matches what's in your nearby chests."); return 0;
+    }
+    S.st.stashed = (S.st.stashed || 0) + moved; poolDirty(); invSel = -1; reslot(); hbDirty = true; if (sel !== "pick" && !TOOLKEY[sel] && !(S.inv[sel] > 0)) { sel = "pick"; bare = true; selSlot = -1; }
+    var nc = Object.keys(chests).length; toast("Quick stacked " + moved + " item" + (moved === 1 ? "" : "s") + " into " + (nc === 1 ? "1 chest" : nc + " chests") + ".", "#7fd6ff"); snd("coin");
+    if (packOpen) renderPack(); if (panelOpen) renderPanel(); checkTrail();
+    return moved;
+  }
+  // ---------- HOTBAR LOADOUTS (L to switch; save them in the backpack) ----------
+  // S.lo = { i: last used, s: [ { n: name, k: [9 item keys or null] } x3 ] }. Switching swaps the saved items into the hotbar from your bag
+  // (what was there moves to where they were), so nothing is created or lost: it only rearranges your own slots.
+  var LO_NAMES = ["Mining", "Fighting", "Farming"];
+  function loS() { if (!S.lo || !Array.isArray(S.lo.s)) S.lo = { i: -1, s: [] }; for (var q = 0; q < 3; q++) if (!S.lo.s[q]) S.lo.s[q] = { n: LO_NAMES[q], k: null }; return S.lo; }
+  function loSave(i) {
+    var L = loS(), set = L.s[i]; if (!set) return; reslot(); set.k = []; for (var j = 0; j < INV_HOT; j++) set.k.push(S.slots[j] ? S.slots[j].k : null);
+    L.i = i; toast(set.n + " loadout saved.", "#7fd6ff"); snd("coin"); if (packOpen) renderPack();
+  }
+  function loUse(i) {
+    var L = loS(), set = L.s[i]; if (!set || !set.k) { nag("Save the " + (set ? set.n : "") + " loadout in your backpack first."); return false; }
+    reslot(); var taken = {}, j, q, miss = 0;
+    for (j = 0; j < INV_HOT; j++) {
+      var want = set.k[j]; if (!want) continue;
+      if (S.slots[j] && S.slots[j].k === want) { taken[j] = 1; continue; }
+      var best = -1; for (q = 0; q < S.slots.length; q++) { if (q < INV_HOT && (taken[q] || q === j)) continue; if (q < INV_HOT && set.k[q] === (S.slots[q] && S.slots[q].k)) continue; var c = S.slots[q]; if (c && c.k === want && (best < 0 || c.n > S.slots[best].n)) best = q; }
+      if (best < 0) { miss++; continue; }
+      var tmp = S.slots[j]; S.slots[j] = S.slots[best]; S.slots[best] = tmp; taken[j] = 1;
+    }
+    L.i = i; hbDirty = true; invSel = -1;
+    var en = barEntries()[selSlot >= 0 && selSlot < INV_HOT ? selSlot : 0]; if (en && en.id) choose(en.id, en.slot); else if (en) choose("hand", en.slot);
+    toast(set.n + " loadout" + (miss ? " (" + miss + " missing)" : ""), "#7fd6ff"); thud(420, 0.03);
+    if (packOpen) renderPack(); return true;
+  }
+  function loNext() { var L = loS(), n = 0, i = L.i; while (n++ < 3) { i = (i + 1) % 3; if (L.s[i].k) return loUse(i); } nag("Save a loadout in your backpack first (B)."); return false; }
+  function loHtml() {
+    var L = loS();
+    return '<div class="pk-lo"><h3>Loadouts <small>L to switch</small></h3><div class="pk-lorow">' + L.s.map(function (set, i) {
+      var on = L.i === i && set.k, n = set.k ? set.k.filter(Boolean).length : 0;
+      return '<div class="pk-loc' + (on ? " on" : "") + '"><button type="button" class="btn' + (set.k ? "" : " ghost") + '" data-lo="' + i + '"' + (set.k ? "" : " disabled") + '>' + esc(set.n) + (set.k ? "<small>" + n + " items</small>" : "<small>empty</small>") + '</button><button type="button" class="btn ghost pk-losave" data-losave="' + i + '" aria-label="Save your hotbar as the ' + esc(set.n) + ' loadout">Save hotbar</button></div>';
+    }).join("") + "</div></div>";
+  }
   function collectExtra(k) {
     var n = S.extra[k] || 0, fit = Math.min(n, room(k)); if (fit <= 0) { toast("No room yet. Free a slot first.", "#f2c14e"); return; }
     S.inv[k] = (S.inv[k] || 0) + fit; packInto(S.slots, k, fit); S.extra[k] -= fit; if (S.extra[k] <= 0) delete S.extra[k];
@@ -1251,6 +1439,7 @@
   // Any item can be held; materials that do nothing on their own dig with bare paws.
   var bare = false;   // holding nothing (an empty hotbar slot): you dig and pick with bare paws even if you own a pick
   function choose(id, slot) {
+    if (id === "x_drill") { boreToggle(); id = "pick"; slot = -1; }
     bare = false;
     if (id === "fishlog") { openFishLog(); return; }
     if (id === "farmbook") { openFarmBook(); return; }   // so does Croaka's Farm Almanac   // the Fishing Log opens when you pick it
@@ -2416,7 +2605,7 @@
     { n: "Magma Slime", c: "#ff7a2a", hi: "#ffc24a", dk: "#a83a10", glow: "#ff8a3d" },
     { n: "Frost Slime", c: "#6ab8ff", hi: "#c8ecff", dk: "#2a5a9a", glow: "#9fe8ff" }
   ];
-  var KSTAT = { bug: "bugs", frog: "frogs", bat: "bats", wolf: "wolves", gator: "gators", slime: "slimes", wasp: "wasps", witch: "witches", spider: "spiders" };
+  var KSTAT = { crab: "crabs", buccaneer: "buccaneers", bug: "bugs", frog: "frogs", bat: "bats", wolf: "wolves", gator: "gators", slime: "slimes", wasp: "wasps", witch: "witches", spider: "spiders" };
   var FLIER = { bat: 1, wasp: 1 };
   var SEEN_TIP = {
     wolf: [1, "Frost Wolves hunt in pairs! When one crouches, jump over it or back away before it lunges.", "#9fe8ff"],
@@ -2613,15 +2802,15 @@
   }
   function damageEnemy(e, dmg, face) {
     if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
-    if (e.boss) return damageBoss(e, dmg, face);
-    if (e.def) return; if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    if (e.boss) return damageBoss(e, coatDmg(e, dmg), face);
+    if (e.def) return; dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(e.hp > 0 ? "hit" : "kill");
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
     if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
     if (e.hp > 0) return;
     if (e.home !== undefined) S.whut[e.home] = S.days | 0;   // a Witch Hut's owner: back tomorrow
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
-    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e);
+    e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e); eliteDeath(e, false);
     if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small });
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
@@ -3284,7 +3473,7 @@
     }
     if (y < 0 || eBoxHit(x, y, ENEMY[k].w, ENEMY[k].h)) return;
     if (litNear(x, y)) return;   // a lit area stays safe
-    enemies.push(newEnemy(k, x, y));
+    enemies.push(makeElite(newEnemy(k, x, y), eliteChance(false)));
     if (k === "wolf" && (cnt.wolf || 0) + 1 < ENEMY.wolf.max && !eBoxHit(x - side * 1.6, y, ENEMY.wolf.w, ENEMY.wolf.h)) enemies.push(newEnemy("wolf", x - side * 1.6, y));   // wolves come in pairs
     var tip = SEEN_TIP[k]; if (tip && !(S.st.seen & tip[0])) { S.st.seen |= tip[0]; toast(tip[1], tip[2]); }
   }
@@ -3302,7 +3491,10 @@
     updateShots(dt); stepArrows(dt); witchHomes(dt); tickMarks(dt); tickVillagers(dt);
     if (glideDist >= 1) { S.st.glided += Math.floor(glideDist); glideDist -= Math.floor(glideDist); }
     if (world.aerie && !S.vis.aerie && !cave && Math.abs(p.x - world.aerie.cx) < 26) { S.vis.aerie = 1; toast("Something floats in the sky above! Stand over the glowing Thermal Vent to ride its updraft up.", "#ffb04a"); }
+    var DT = dt;
     for (var i = enemies.length - 1; i >= 0; i--) {
+      dt = enemies[i].def ? DT : coatDt(enemies[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it (it still falls)
+      if (dt === 0) { var se = enemies[i]; se.hurt = Math.max(0, se.hurt - DT); if (se.k !== "wyrm" && !se.u) moveEnemy(se, DT, 0); continue; }
       var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt);
       if (e.def) { e.dead -= dt; if (e.boss) bossDeathTick(e, dt); if (e.k !== "wyrm") moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
       if (e.leave > 0 && e.k !== "bat" && e.k !== "wasp") { e.leave -= dt; if (e.leave <= 0) e.gone = true; }   // dawn: walkers slip away (bats and wasps fly off on their own)
@@ -3315,7 +3507,7 @@
   // Every biome has slimes and bats; Mudhollow adds Bramble Bugs, Cinder Hollow adds Ember Wasps, Frostvault adds Frost Wolves (floor 3 and down).
   // They reuse the surface art and attacks, flattened to top-down moves: slimes hop at you, bugs charge, bats and wasps circle then dive, wolves lunge.
   // Swing your weapon toward where you aim (tap or click) to hit everything in front of you. Clear a floor for a small reward.
-  var CMOB = { spider: { r: 0.34, spd: 3, aggro: 7.5 }, slime: { r: 0.34, spd: 0, aggro: 7 }, bat: { r: 0.3, spd: 3.2, aggro: 8, fly: 1 }, bug: { r: 0.36, spd: 2.1, aggro: 7 }, wasp: { r: 0.28, spd: 3.8, aggro: 8, fly: 1 }, wolf: { r: 0.44, spd: 3.4, aggro: 8 } };
+  var CMOB = { crab: { r: 0.36, spd: 2.7, aggro: 8 }, buccaneer: { r: 0.38, spd: 2.9, aggro: 10 }, spider: { r: 0.34, spd: 3, aggro: 7.5 }, slime: { r: 0.34, spd: 0, aggro: 7 }, bat: { r: 0.3, spd: 3.2, aggro: 8, fly: 1 }, bug: { r: 0.36, spd: 2.1, aggro: 7 }, wasp: { r: 0.28, spd: 3.8, aggro: 8, fly: 1 }, wolf: { r: 0.44, spd: 3.4, aggro: 8 } };
   var CREACH = [0, 1.9, 1.6, 1.8, 1.8, 2], ckx = 0, cky = 0;
   function caveKinds(b, f) {
     var L = [["slime", 4], ["bat", 3], ["spider", 3]];   // Cave Spiders live under every land
@@ -3327,8 +3519,64 @@
     if (F.torch) for (var yy = Math.max(0, y - 6); yy <= Math.min(F.h - 1, y + 6); yy++) for (var xx = Math.max(0, x - 6); xx <= Math.min(F.w - 1, x + 6); xx++) if (F.torch[yy * F.w + xx] && (xx - x) * (xx - x) + (yy - y) * (yy - y) <= 30) return true;
     return false;
   }
+  // ---------- LOST MINERS: on about one floor in five (floors 3-24 of the Mine) a miner is stuck behind rubble, calling for help (an
+  // arrow points the way). Dig them out and press F: they thank you with tokens and head down to your Hollow, where every rescued miner
+  // makes your rigs dig 8% faster (up to 5). S.mres[floor] = rescued there. ----------
+  var MINER_N = ["Dusty Doug", "Pickaxe Polly", "Lamp-Eye Lou", "Rubble Rita", "Tunnel Tam", "Grit Gary", "Coaldust Cora", "Shale Shane"];
+  function minerPlace(F, f, free) {
+    if (!cave || cave.volc || cave.bld || F.lair || f < 3 || f > 24 || !free || !free.length) return; if (!S.mres) S.mres = {}; if (S.mres[f]) return;
+    var h = Math.imul((S.seed | 0) + 7919, 2654435761) ^ Math.imul(f + 13, 40503); h = ((h ^ (h >>> 15)) >>> 0) / 4294967296; if (h > 0.22) return;
+    var cnt = {}, best = 0, rub = 0; for (var i = 0; i < F.w * F.h; i++) { var nd = F.node[i]; if (nd) { cnt[nd] = (cnt[nd] || 0) + 1; if (cnt[nd] > best) { best = cnt[nd]; rub = nd; } } }
+    var far = free.filter(function (ci) { var x = ci % F.w, y = (ci / F.w) | 0, dx = x - F.spawn.x, dy = y - F.spawn.y; return dx * dx + dy * dy > 144; }); if (!far.length) far = free;
+    var ci = far[Math.floor(h * 997 * far.length) % far.length], mx = ci % F.w, my = (ci / F.w) | 0;
+    F.miner = { x: mx + 0.5, y: my + 0.75, n: MINER_N[(f * 3 + (S.seed | 0)) % MINER_N.length], f: f, t: 0 };
+    if (rub) for (var oy = -1; oy <= 1; oy++) for (var ox2 = -1; ox2 <= 1; ox2++) { if (!ox2 && !oy) continue; var j = (my + oy) * F.w + mx + ox2; if (mx + ox2 < 1 || my + oy < 1 || mx + ox2 >= F.w - 1 || my + oy >= F.h - 1) continue; if (!SC.solid(F, mx + ox2, my + oy) && !F.node[j]) F.node[j] = rub; }
+    setTimeout(function () { if (cave && cave.F === F) toast("You hear someone calling for help on this floor...", "#f2c14e"); }, 1600);
+  }
+  // ---------- PROSPECTOR'S LANTERN: ore within PROSPECT_R tiles glows through rock and the dark (a pulsing outline in the ore's colour) ----------
+  var PROSPECT_R = 9, ORE_CACHE = null;
+  function oreColor(id) {
+    if (!ORE_CACHE) { ORE_CACHE = {}; TILES.forEach(function (t, i) { if (t && /\bOre$/.test(t.n || "") && t.drop) ORE_CACHE[i] = (ITEMS[t.drop] && ITEMS[t.drop].gem) || ({ bogiron: "#d8c0a8", sulfur: "#f0e040", amber: "#ffb13b", ruby: "#ff4a5a", sapphire: "#4a8aff", moonstone: "#d8e0ff", amethyst: "#c78bff" })[t.drop] || "#f2c14e"; }); }
+    return ORE_CACHE[id] || null;
+  }
+  function drawProspect(g, now) {
+    if (!(S.inv.prospect > 0) || PHOTO.on || OCS || HOME) return;
+    var inC = !!cave, F = inC ? cave.F : null; if (inC && (!F || F.bld || F.lair || F.nx)) return;
+    var px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 1, R = PROSPECT_R, t = now / 1000, pulse = 0.6 + 0.4 * Math.sin(t * 3);
+    if (!inC && py < col[clamp(Math.floor(px), 0, W - 1)] - 2) return;   // only once you are at or below the ground
+    for (var y = Math.floor(py - R); y <= Math.ceil(py + R); y++) for (var x = Math.floor(px - R); x <= Math.ceil(px + R); x++) {
+      var id = inC ? (x >= 0 && y >= 0 && x < F.w && y < F.h ? F.node[y * F.w + x] : 0) : get(x, y); if (!id) continue; var c = oreColor(id); if (!c) continue;
+      var d = Math.hypot(x + 0.5 - px, y + 0.5 - py); if (d > R) continue; var a = (1 - d / R) * pulse, sx = ox + x * ts, sy = oy + y * ts;
+      g.globalAlpha = a * 0.35; g.fillStyle = c; g.fillRect(sx + ts * 0.2, sy + ts * 0.2, ts * 0.6, ts * 0.6);
+      g.globalAlpha = a; g.strokeStyle = c; g.lineWidth = Math.max(1.5, ts * 0.07); g.strokeRect(sx + 2, sy + 2, ts - 4, ts - 4);
+    }
+    g.globalAlpha = 1;
+  }
+  function minerNear() { var M = cave && cave.F && cave.F.miner; return !!M && !M.saved && Math.hypot(M.x - cp.x, M.y - cp.y) < 1.7; }
+  function rescueMiner() {
+    var F = cave.F, M = F.miner; if (!M || M.saved) return; M.saved = true; if (!S.mres) S.mres = {}; S.mres[M.f] = 1;
+    var L = lairS(); if (!Array.isArray(L.miners)) L.miners = []; crewRebase(function () { L.miners.push({ n: M.n, f: M.f }); }); S.st.rescued = (S.st.rescued || 0) + 1;
+    var tok = 4 + Math.floor(M.f / 3); if (ITEMS.swamptoken) give("swamptoken", tok, M.x - 0.5, M.y - 1, true); if (ITEMS.torch) give("torch", 6, M.x - 0.5, M.y - 1, true);
+    popup("Miner rescued!", M.n + " • heading for " + (lairOwned() ? "your Hollow" : "the Sunken Hollow on floor 25"), "#f2c14e", "\u26CF"); snd("rise"); confettiPop(M.x, M.y - 1, 24);
+    toast(M.n + ": \u201cThank you! I'll work your rigs down in the Hollow" + (lairOwned() ? "" : " once it's yours") + ".\u201d", "#ffe08a"); save();
+  }
+  function minerCount() { var L = S.lair; return L && Array.isArray(L.miners) ? Math.min(5, L.miners.length) : 0; }
+  function drawMinerFrog(g, x, y, r, t, help) {   // a miner frog in a hard hat with a lamp; waving and calling when trapped
+    drawCrewFrog(g, x, y, r, "#6b5a3a", 1, t);
+    g.fillStyle = "#f2c14e"; g.beginPath(); g.ellipse(x, y - r * 1.15, r * 0.78, r * 0.42, 0, Math.PI, 0); g.fill(); g.fillRect(x - r * 0.9, y - r * 1.17, r * 1.8, r * 0.12);
+    g.fillStyle = "#fff6c4"; g.beginPath(); g.arc(x, y - r * 1.35, r * 0.13, 0, 6.28); g.fill();
+    if (help) { var b = Math.sin(t * 4) * r * 0.1; g.font = "900 " + Math.max(10, Math.round(r * 0.75)) + "px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = "#ffe08a"; g.strokeText("Help!", x, y - r * 2.0 + b); g.fillText("Help!", x, y - r * 2.0 + b); }
+  }
+  function drawMiner(g, now) {
+    var F = cave && cave.F, M = F && F.miner; if (!M || M.saved) return; var t = now / 1000, sx = ox + M.x * ts, sy = oy + M.y * ts;
+    if (sx > -ts * 2 && sx < vw + ts * 2 && sy > -ts * 2 && sy < vh + ts * 2) { drawMinerFrog(g, sx, sy, ts * 0.42, t, true); if (minerNear()) drawPill(g, now, "Rescue " + M.n + (coarse ? "" : " (F)"), sx, sy - ts * 1.7, false, function () { rescueMiner(); }); return; }
+    var m = 40, cx = vw / 2, cy = vh / 2, dx = sx - cx, dy = sy - cy, kx = dx ? (vw / 2 - m) / Math.abs(dx) : 1e9, ky = dy ? (vh / 2 - m - 50) / Math.abs(dy) : 1e9, kk = Math.min(kx, ky), ex = cx + dx * kk, ey = cy + dy * kk, rr = 11;
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(6,16,13,.85)"; g.beginPath(); g.arc(0, 0, rr + 5, 0, 7); g.fill(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(0, 0, rr, 0, 7); g.fill();
+    g.fillStyle = "#06100d"; g.font = "900 13px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("!", 0, 1); g.textBaseline = "alphabetic";
+    var ang = Math.atan2(dy, dx); g.rotate(ang); g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(rr + 15, 0); g.lineTo(rr + 6, -7); g.lineTo(rr + 6, 7); g.closePath(); g.fill(); g.restore();
+  }
   function stockFloor(F, f) {
-    F.stocked = true; F.mobs = []; if (F.bld) return;
+    F.stocked = true; F.mobs = []; if (F.bld || F.isle) return;   // ISLAND RAIDS: the waves come later
     if (F.lair) { if (!lairOwned()) F.mobs.push(newCaptain(F)); return; }   // THE SUNKEN HOLLOW: only the Captain (and nothing at all once it is yours)   // cave creatures are there whether or not you carry a weapon (swat them with your paws)
     var n = Math.min(9, 2 + Math.floor(f * 0.6)), L = caveKinds(F.biome, f), tw = 0, free = [], i, x, y;
     L.forEach(function (q) { tw += q[1]; });
@@ -3340,9 +3588,60 @@
     for (var m = 0; m < n && free.length; m++) {
       var r = Math.random() * tw, k = L[0][0]; for (var q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) { k = L[q][0]; break; } }
       var ci = free.splice(Math.floor(Math.random() * free.length), 1)[0];
-      F.mobs.push(newCaveMob(k, ci % F.w + 0.5, ((ci / F.w) | 0) + 0.7, F, f));
+      F.mobs.push(makeElite(newCaveMob(k, ci % F.w + 0.5, ((ci / F.w) | 0) + 0.7, F, f), eliteChance(true)));
     }
     F.mobN = F.mobs.length;
+    minerPlace(F, f, free);
+  }
+  // ---------- ELITES: rare glowing champions (about 1 in 16 on the surface, more at night and deeper in the Mine). Bigger, tougher,
+  // named, always showing their health, with one affix: Radiant (3x health, extra loot), Armored (takes half damage), Regenerating
+  // (heals when left alone) or Volatile (bursts when it dies: roll away!). They always drop loot, tokens and sometimes a gem. ----------
+  var ELITE_A = { radiant: { n: "Radiant", c: "#ffd36a", hp: 3 }, armored: { n: "Armored", c: "#9fc3ff", hp: 2.4 }, regen: { n: "Regenerating", c: "#6dffa8", hp: 2.6 }, volatile: { n: "Volatile", c: "#ff7a3d", hp: 2.2 } };
+  var VOLQ = [];
+  function makeElite(e, chance) {
+    if (!e || e.boss || e.small || Math.random() >= chance) return e;
+    var ks = Object.keys(ELITE_A), a = ks[Math.floor(Math.random() * ks.length)], A = ELITE_A[a];
+    e.elite = { a: a, c: A.c, n: A.n, idle: 0 }; e.hp = e.mx = Math.round(e.mx * A.hp); e.dmg = Math.round((e.dmg || 4) * 1.5); e.sz = 1.28;
+    if (e.w) { e.w *= 1.15; e.h *= 1.15; } if (e.r) e.r *= 1.15;
+    return e;
+  }
+  function eliteChance(cav) { var c = cav ? 0.05 + Math.min(0.06, (cave ? cave.f : 1) * 0.003) : 0.06; if (!cav && isNight(S.time)) c *= 1.5; return c; }
+  function eliteName(e) { var d = ENEMY[e.k]; return e.elite.n + " " + (d && d.n ? d.n : e.k); }
+  function eliteDmg(e, dmg) { if (e.elite) { e.elite.idle = 0; if (e.elite.a === "armored") dmg *= 0.5; } return dmg; }
+  function eliteDeath(e, cav) {
+    if (!e.elite) return; S.st.elites = (S.st.elites || 0) + 1; S.st["elite_" + e.elite.a] = (S.st["elite_" + e.elite.a] || 0) + 1; var A = e.elite, x = e.x - 0.5, y = cav ? e.y - 1 : e.y - (e.h || 1) - 0.8;
+    popup("Elite defeated!", eliteName(e), A.c, "\u2605"); impact("kill"); shake = Math.max(shake, 0.6);
+    var d = ENEMY[e.k]; if (d && d.frag && ITEMS[d.frag]) give(d.frag, A.a === "radiant" ? 3 : 2, x, y, true);
+    if (ITEMS.swamptoken) give("swamptoken", 3 + Math.floor(Math.random() * 4) + (A.a === "radiant" ? 3 : 0), x, y, true);
+    var gems = GEMS.filter(function (g2) { return ITEMS[g2]; }); if (gems.length && Math.random() < (A.a === "radiant" ? 0.5 : 0.25)) give(gems[Math.floor(Math.random() * gems.length)], 1, x, y, true);
+    for (var i = 0; i < 24; i++) { var an = i / 24 * 6.28; parts.push({ x: e.x, y: cav ? e.y - 0.4 : e.y - (e.h || 1) / 2, vx: Math.cos(an) * 6, vy: Math.sin(an) * 6, life: 0.5, max: 0.5, c: A.c, s: 4, g: 0 }); }
+    if (A.a === "volatile") VOLQ.push({ x: e.x, y: cav ? e.y - 0.4 : e.y - (e.h || 1) / 2, t: 0.9, cav: cav, dmg: Math.max(10, Math.round((e.dmg || 8) * 1.4)) });
+  }
+  function tickElites(dt) {
+    var L = cave ? (cave.F && cave.F.mobs) || [] : enemies;
+    L.forEach(function (e) { if (!e.elite || e.def) return; e.elite.idle += dt; if (e.elite.a === "regen" && e.elite.idle > 2 && e.hp < e.mx) { e.hp = Math.min(e.mx, e.hp + e.mx * 0.05 * dt); if (Math.random() < dt * 6) parts.push({ x: e.x + (Math.random() - 0.5), y: (cave ? e.y - 0.4 : e.y - (e.h || 1) / 2) + (Math.random() - 0.5), vx: 0, vy: -1.5, life: 0.5, max: 0.5, c: "#6dffa8", s: 3, g: 0 }); } });
+    for (var i = VOLQ.length - 1; i >= 0; i--) {
+      var v = VOLQ[i]; v.t -= dt; if (v.cav !== !!cave) { VOLQ.splice(i, 1); continue; }
+      if (v.t > 0) continue; VOLQ.splice(i, 1);
+      var px = cave ? cp.x : p.x, py = cave ? cp.y - 0.5 : p.y - 0.9, d = Math.hypot(px - v.x, py - v.y);
+      if (d < 2.8) hurt(v.dmg, "volatile"); shake = Math.max(shake, 0.8); sfxThump(70, 30, 0.5, 0.3); sfxNoise(0.5, 1800, 200, 0.2, "lowpass");
+      for (var k2 = 0; k2 < 30; k2++) { var a2 = Math.random() * 6.28, sp = 4 + Math.random() * 7; parts.push({ x: v.x, y: v.y, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp, life: 0.45, max: 0.5, c: k2 % 3 ? "#ff7a3d" : "#ffd36a", s: 5, g: 0 }); }
+    }
+  }
+  function drawEliteFx(g, now) {   // auras, the name, a health bar, and the warning ring of a Volatile elite that is about to burst
+    drawCoatFx(g, now);
+    var L = cave ? (cave.F && cave.F.mobs) || [] : enemies;
+    L.forEach(function (e) {
+      if (!e.elite || e.def) return; var A = e.elite, cy = cave ? e.y - 0.45 - (e.z || 0) : e.y - (e.h || 1) / 2, sx = ox + e.x * ts, sy = oy + cy * ts;
+      if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+      var R = ts * (1.1 + 0.08 * Math.sin(now / 200 + e.x)), gr = g.createRadialGradient(sx, sy, R * 0.15, sx, sy, R);
+      gr.addColorStop(0, A.c + "55"); gr.addColorStop(1, A.c + "00"); g.fillStyle = gr; g.beginPath(); g.arc(sx, sy, R, 0, 6.2832); g.fill();
+      var top = oy + (cave ? e.y - 1.25 - (e.z || 0) : e.y - (e.h || 1) - 0.55) * ts, bw = ts * 1.3;
+      g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sx - bw / 2 - 1, top - 1, bw + 2, 6); g.fillStyle = A.c; g.fillRect(sx - bw / 2, top, bw * clamp(e.hp / e.mx, 0, 1), 4);
+      g.font = "900 " + Math.max(10, Math.round(ts * 0.3)) + "px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = A.c;
+      var nm = "\u2605 " + eliteName(e); g.strokeText(nm, sx, top - 5); g.fillText(nm, sx, top - 5);
+    });
+    VOLQ.forEach(function (v) { if (v.cav !== !!cave) return; var sx = ox + v.x * ts, sy = oy + v.y * ts, k = 1 - v.t / 0.9; g.strokeStyle = "rgba(255,122,61," + (0.4 + 0.6 * (Math.floor(now / 90) % 2)) + ")"; g.lineWidth = 3; g.beginPath(); g.arc(sx, sy, ts * 2.8 * (0.3 + 0.7 * k), 0, 6.2832); g.stroke(); });
   }
   function newCaveMob(k, x, y, F, f) {
     var e = newEnemy(k, x, y), sc = 1 + 0.08 * (f - 1);
@@ -3371,7 +3670,10 @@
   }
   function updateCaveMobs(dt) {
     var F = cave.F; if (!F.stocked) stockFloor(F, cave.f); if (F.lair) lairFx(F, dt); if (!F.mobs || !F.mobs.length) return;
+    var DT = dt; coatStep(DT);
     for (var i = F.mobs.length - 1; i >= 0; i--) {
+      dt = F.mobs[i].def ? DT : coatDt(F.mobs[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it
+      if (dt === 0) { F.mobs[i].hurt = Math.max(0, F.mobs[i].hurt - DT); moveMob(F, F.mobs[i], DT, 0, 0); continue; }
       var m = F.mobs[i], C = CMOB[m.k]; if (m.k === "captain") { updCaptain(F, m, dt, i); continue; } m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
       if (m.def) { m.dead -= dt; m.z = Math.max(0, m.z - dt * 3); moveMob(F, m, dt, 0, 0); if (m.dead <= 0) F.mobs.splice(i, 1); continue; }
       var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro && hp > 0, touch = d < m.r + 0.34;
@@ -3437,11 +3739,11 @@
   function damageCaveMob(m, dmg, ux, uy) {
     if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
-    m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
+    dmg = coatDmg(m, eliteDmg(m, dmg)); m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
-    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic");
+    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true); isleKill(m);
     if (m.k === "slime" && !m.small) [-1, 1].forEach(function (s2) {   // big slimes split in two
       var kid = newCaveMob("slime", m.x + s2 * 0.25, m.y, F, cave.f); kid.small = true; kid.r = 0.22; kid.hp = kid.mx = Math.round(6 * (1 + 0.08 * (cave.f - 1))); kid.dmg = Math.max(3, Math.round(m.dmg * 0.55)); kid.kx = s2 * 5 + uy * 2; kid.ky = -ux * 2; kid.cd = 0.6; kid.t = 0.5;
       if (mobFree(F, kid.x, kid.y, kid.r, false)) F.mobs.push(kid);
@@ -3452,7 +3754,7 @@
     if (drop) give(d.frag, 1, m.x - 0.5, m.y - 1);
     if (m.k === "wolf" && ITEMS.rawmeat && Math.random() < 0.6) give("rawmeat", 1, m.x - 0.5, m.y - 1.4);
     if (F.mobN && !F.mobs.some(function (q) { return !q.def; }) && !F.cleared) {   // floor cleared
-      F.cleared = true; S.st.cclear++; var rw = 2 + Math.floor(cave.f / 3); give("torch", rw, cp.x - 0.5, cp.y - 1.2);
+      F.cleared = true; S.st.cclear++; if (!cave.bld && !cave.volc && !F.lair) { if (!S.carts) S.carts = {}; if (!S.carts[cave.f]) { S.carts[cave.f] = 1; setTimeout(function () { toast("A mine cart stop opened on floor " + cave.f + ". Ride it to any floor you've cleared.", "#f2c14e"); }, 1800); } } var rw = 2 + Math.floor(cave.f / 3); give("torch", rw, cp.x - 0.5, cp.y - 1.2);
       popup("Floor cleared", "Floor " + cave.f + " • +" + rw + " Torches", "#f2c14e", "✦"); snd("rise");
     }
     checkGoals();
@@ -3463,7 +3765,7 @@
       if (Math.floor(m.y) !== rj) return;
       var fly = CMOB[m.k].fly, lift = fly ? 0.55 + Math.sin(m.tt * 3 + m.ph) * 0.08 : m.z || 0, y0 = m.y;
       if (fly || lift > 0.02) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(ox + m.x * ts, oy + m.y * ts, ts * 0.34, ts * 0.11, 0, 0, 6.2832); g.fill(); }
-      m.y = y0 - lift; if (m.k === "captain") drawCaptain(g, m, now); else drawEnemy(g, m, now); m.y = y0;
+      m.y = y0 - lift; if (m.k === "captain") { drawCaptain(g, m, now); drawKingCrown(g, m, now); } else drawEnemy(g, m, now); m.y = y0;
     });
   }
   // =====================================================================================================================================
@@ -3478,9 +3780,120 @@
   var LAIRB = { n: "Captain Saltjaw", sub: "Swashbuckler of the Sunken Hollow", c: "#3fd6c0", hp: 1500, dmg: 24 };
   var RIG_RATE = 12, RIG_CAP = 60, RIG_FIX = { ironingot: 4, planks: 12, cinder: 6 }, RIG_ORE = [["stone", 5], ["clay", 1.5], ["spore", 2], ["basalt", 2], ["cinder", 1.5], ["frostrock", 1.2], ["crystal", 0.6]];
   CMOB.captain = { r: 0.62, spd: 2.6, aggro: 12 };
-  function lairS() { if (!S.lair || typeof S.lair !== "object") S.lair = { own: 0, rig: [] }; if (!Array.isArray(S.lair.rig)) S.lair.rig = []; return S.lair; }
+  function lairS() { if (!S.lair || typeof S.lair !== "object") S.lair = { own: 0, rig: [] }; if (!Array.isArray(S.lair.rig)) S.lair.rig = []; if (!S.lair.mods) S.lair.mods = {}; return S.lair; }
+  // ---------- RIG BAY MACHINES: modules bolted onto the Ore Silo. The SMELTER cooks ore into bars as you collect (2 Bog Iron -> 1 Iron
+  // Ingot, 2 Quartz -> 1 Glowspore Glass). The ORE SORTER throws out junk stone (unless you tell it to keep it) and picks out a bonus gem
+  // for about every 25 ore. Built from the Silo's window; both show up next to the Silo. ----------
+  var MODS = {
+    smelt: { n: "Smelter", cost: { stone: 40, ironingot: 8, cinder: 12 }, d: "A brick furnace fed from the Silo's chute. Bog Iron comes out as Iron Ingots and Quartz as Glowspore Glass, two for one, every time you collect." },
+    sort: { n: "Ore Sorter", cost: { ironingot: 10, planks: 20, crystal: 4 }, d: "A spinning sieve drum. Junk stone goes back into the water, and it picks out a bonus gem for about every 25 ore." }
+  };
+  var SMELT = [["bogiron", "ironingot"], ["quartz", "glass"]], JUNK = ["stone", "basalt", "frostrock", "mud", "dirt", "clay", "pebble"];
+  function modOn(k) { return !!lairS().mods[k]; }
+  // ---------- SALTJAW'S CREW: once the Hollow is yours, the Captain's old crew hangs about a campfire by the ship. Hire them with Swamp
+  // Tokens, then give each a job: work a rig (it digs a third faster), crew your boat (sails faster), or go on an EXPEDITION (real time,
+  // even while the game is closed) that comes back with loot and a logbook entry. Crew level up from expeditions (better loot). ----------
+  var CREW_POOL = [
+    { id: "bea", n: "Barnacle Bea", q: "Talks to the barnacles. They talk back.", c: "#ff6b82" },
+    { id: "tob", n: "Two-Fin Tobias", q: "Swims in circles. Very fast circles.", c: "#6fb6ff" },
+    { id: "pete", n: "Mossy Pete", q: "Hasn't been dry since he was a tadpole.", c: "#7fd06a" },
+    { id: "sal", n: "Salty Sal", q: "Seasons everything. Even the soup. Especially the soup.", c: "#f2c14e" },
+    { id: "gus", n: "Gulp Gus", q: "Once swallowed a lantern. Still glows a bit.", c: "#c78bff" },
+    { id: "ink", n: "Inkeye Iris", q: "Reads maps upside down, and is somehow always right.", c: "#3ad0ff" }
+  ];
+  var EXPS = { short: { n: "Short run", ms: 20 * 60000, d: "20 minutes along the flooded tunnels" }, long: { n: "Long voyage", ms: 2 * 3600000, d: "2 hours out to the far islands" }, epic: { n: "Epic expedition", ms: 8 * 3600000, d: "8 hours to the edge of the map" } };
+  var CREW_LOG = ["{n} fought a squid over a sandwich. Won the sandwich.", "{n} found a cave full of glowing worms and named every one.", "{n} got lost, then found, then lost again. Brought back loot anyway.", "{n} traded a shiny button for a whole sack of ore.", "{n} out-sang a sea witch. Barely.", "{n} slept through a storm in a barrel and woke up rich.", "{n} raced a gator. The gator wants a rematch.", "{n} dug where the map said not to. Good call.", "{n} came back with a new hat and refuses to explain it.", "{n} tamed a crab for a day. It pinched them goodbye."];
+  function crewList() { var L = lairS(); if (!Array.isArray(L.crew)) L.crew = []; if (!Array.isArray(L.log)) L.log = []; return L.crew; }
+  function crewDef(id) { return CREW_POOL.filter(function (q) { return q.id === id; })[0]; }
+  function crewOn(job) { return crewList().some(function (c) { return c.job === job; }); }
+  function crewCost() { return 10 + crewList().length * 10; }
+  function crewCamp(F) {   // a dry spot near the gangplank for the campfire (worked out once per floor)
+    if (F.camp !== undefined) return F.camp; F.camp = null; if (!F.dock) return null;
+    var best = null, bd = 1e9; for (var y = Math.floor(F.dock.y) - 5; y <= Math.floor(F.dock.y) + 5; y++) for (var x = Math.floor(F.dock.x) - 8; x <= Math.floor(F.dock.x) + 2; x++) {
+      var ok = true; for (var yy = y - 1; yy <= y + 1 && ok; yy++) for (var xx = x - 1; xx <= x + 1 && ok; xx++) { var i = yy * F.w + xx; if (xx < 1 || yy < 1 || xx >= F.w - 1 || yy >= F.h - 1 || SC.solid(F, xx, yy) || (F.pool && F.pool[i])) ok = false; }
+      if (!ok) continue; var d = Math.abs(x - (F.dock.x - 4)) + Math.abs(y - F.dock.y) * 1.5; if (d < bd) { bd = d; best = { x: x + 0.5, y: y + 0.5 }; } }
+    return (F.camp = best);
+  }
+  function crewNear() { var F = cave && cave.F; if (!F || !F.lair || !lairOwned()) return false; var c = crewCamp(F); return !!c && Math.hypot(c.x - cp.x, c.y + 0.3 - cp.y) < 2.4; }
+  function crewRebase(fn) {   // keep what the rigs have dug so far when their speed changes
+    var keep = [0, 1].map(function (i) { return rigOf(i) ? rigCount(i) : 0; }); fn();
+    [0, 1].forEach(function (i) { var r = rigOf(i); if (r) r.t = gameClock() - keep[i] * rigRate(i); });
+  }
+  function crewTick() {   // expeditions that have come back
+    var now = Date.now(), L = lairS(), back = [];
+    crewList().forEach(function (c) { if (c.job === "exp" && c.eT && now >= c.eT) back.push(c); });
+    back.forEach(function (c) {
+      var E = EXPS[c.eK] || EXPS.short, k = c.eK === "epic" ? 3 : c.eK === "long" ? 2 : 1, lv = c.lv, D = crewDef(c.id), got = {};
+      var add = function (it, n) { if (ITEMS[it] && n > 0) got[it] = (got[it] || 0) + n; };
+      add("swamptoken", Math.round((4 + Math.random() * 4) * k * (1 + lv * 0.25))); add("doubloon", Math.round((1 + Math.random() * 2) * k)); add(["ironingot", "cinder", "crystal", "bogiron", "quartz"][Math.floor(Math.random() * 5)], Math.round((3 + Math.random() * 5) * k));
+      if (Math.random() < 0.2 * k) add(["ruby", "sapphire", "amethyst", "moonstone", "amber"][Math.floor(Math.random() * 5)], 1); if (k >= 2 && Math.random() < 0.15 * k) add("pearl", 1); if (k === 3 && Math.random() < 0.35) add("goldbar", 1); if (k === 3 && Math.random() < 0.12) add("blackpearl", 1);
+      Object.keys(got).forEach(function (it) { give(it, got[it], undefined, undefined, true); });
+      c.xp += k * 2; while (c.lv < 5 && c.xp >= c.lv * 4) { c.xp -= c.lv * 4; c.lv++; }
+      var line = CREW_LOG[Math.floor(Math.random() * CREW_LOG.length)].replace("{n}", D.n), loot = Object.keys(got).map(function (it) { return got[it] + " " + ITEMS[it].n; }).join(", ");
+      L.log.push({ t: now, s: line + " (" + E.n + ": " + loot + ")" }); if (L.log.length > 24) L.log.splice(0, L.log.length - 24);
+      c.job = "idle"; c.eT = c.eD = 0; c.eK = ""; S.st.expeds = (S.st.expeds || 0) + 1;
+      popup("Crew is back!", D.n + " • " + loot, D.c, "\u2693"); snd("open", "Epic");
+    });
+    if (back.length) save();
+  }
+  function openCrew() {
+    var el = $("sbxStory"); if (!el) return; crewTick(); var L = lairS(), cl = crewList(), h = "";
+    storyOpen = 231; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    h += "<small>The Sunken Hollow · crew camp</small><h2>Saltjaw's crew</h2><p>The Captain's old crew sit around the fire, eyeing your Swamp Tokens. Hire them, then give each one a job.</p>";
+    cl.forEach(function (c, i) { var D = crewDef(c.id), left = c.job === "exp" ? Math.max(0, c.eT - Date.now()) : 0;
+      var jobs = [["idle", "Rest"], ["rig0", "Bilge Drill"], ["rig1", "Steam Borer"], ["ship", "Your boat"]].map(function (j) { var taken = j[0] !== "idle" && cl.some(function (o, k) { return k !== i && o.job === j[0]; }), lock = (j[0] === "rig0" && !rigOf(0)) || (j[0] === "rig1" && !rigOf(1));
+        return '<button type="button" class="btn' + (c.job === j[0] ? "" : " ghost") + '" data-crew="job:' + i + ":" + j[0] + '"' + (taken || lock || c.job === "exp" ? " disabled" : "") + ">" + j[1] + "</button>"; }).join("");
+      var ex = c.job === "exp" ? '<p class="cr-away">Away on a ' + esc(EXPS[c.eK].n.toLowerCase()) + ": back in " + crewTime(left) + ".</p>" : '<div class="cr-exp">' + Object.keys(EXPS).map(function (k) { return '<button type="button" class="btn ghost" data-crew="exp:' + i + ":" + k + '" title="' + esc(EXPS[k].d) + '">' + esc(EXPS[k].n) + "</button>"; }).join("") + "</div>";
+      h += '<div class="cr-card" style="--cc:' + D.c + '"><div class="cr-face" aria-hidden="true"></div><div class="cr-tx"><b>' + esc(D.n) + " <em>Lv " + c.lv + "</em></b><small>" + esc(D.q) + '</small>' + (c.job === "exp" ? "" : '<span class="cr-lbl">Job</span><div class="cr-jobs">' + jobs + "</div>") + (c.job === "exp" ? "" : '<span class="cr-lbl">Send on an expedition</span>') + ex + "</div></div>";
+    });
+    var next = CREW_POOL.filter(function (q) { return !cl.some(function (c) { return c.id === q.id; }); })[0];
+    if (next) { var cost = crewCost(), can = (S.inv.swamptoken || 0) >= cost; h += '<div class="sbx-card rg-mod"><div><b>Hire ' + esc(next.n) + "</b><small>" + esc(next.q) + '</small><div class="cost">' + costHtml({ swamptoken: cost }) + '</div></div><button type="button" class="btn' + (can ? "" : " ghost") + '" data-crew="hire"' + (can ? "" : " disabled") + ">Hire</button></div>"; }
+    if (L.log.length) h += '<h3 class="rg-h">Logbook</h3><ul class="cr-log">' + L.log.slice().reverse().slice(0, 8).map(function (q) { return "<li>" + esc(q.s) + "</li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h;
+  }
+  function crewTime(ms) { var m = Math.ceil(ms / 60000); return m >= 60 ? Math.floor(m / 60) + " h " + (m % 60) + " min" : m + " min"; }
+  function crewBtn(a) {
+    var cl = crewList(), q = a.split(":");
+    if (q[0] === "hire") { var next = CREW_POOL.filter(function (d) { return !cl.some(function (c) { return c.id === d.id; }); })[0], cost = crewCost(); if (!next || (S.inv.swamptoken || 0) < cost) return nag("You need " + cost + " Swamp Tokens."); payCost({ swamptoken: cost }); cl.push({ id: next.id, lv: 1, xp: 0, job: "idle", eT: 0, eD: 0, eK: "" }); popup("New crew mate", next.n + " joins you!", next.c, "\u2693"); snd("coin"); save(); return openCrew(); }
+    var c = cl[+q[1]]; if (!c || c.job === "exp") return;
+    if (q[0] === "job") { crewRebase(function () { c.job = q[2]; }); snd("coin"); save(); return openCrew(); }
+    if (q[0] === "exp" && EXPS[q[2]]) { crewRebase(function () { c.job = "exp"; }); c.eK = q[2]; c.eD = EXPS[q[2]].ms; c.eT = Date.now() + c.eD; toast(crewDef(c.id).n + " sets off: " + EXPS[q[2]].d + ".", crewDef(c.id).c); snd("open"); save(); return openCrew(); }
+  }
+  function drawCrewCamp(g, F, now, srcs, glows2) {   // the campfire, a notice board and whoever is home, bobbing about
+    if (!lairOwned()) return; var c = crewCamp(F); if (!c) return; var k = ts, t = reduce ? 0 : now / 1000, cx = ox + c.x * ts, cy = oy + (c.y + 0.4) * ts, fl = 0.8 + 0.2 * Math.sin(t * 11) * Math.sin(t * 4.1);
+    mShadow(g, cx, cy, k * 0.5); g.fillStyle = "#4a3422"; g.fillRect(cx - k * 0.32, cy - k * 0.1, k * 0.64, k * 0.08); g.fillRect(cx - k * 0.06, cy - k * 0.24, k * 0.12, k * 0.3);
+    for (var f2 = 0; f2 < 3; f2++) { var fh = k * (0.38 + 0.14 * Math.sin(t * 7 + f2 * 2)); g.fillStyle = f2 === 1 ? "#ffd36a" : "#ff7a2d"; g.beginPath(); g.moveTo(cx - k * 0.18 + f2 * k * 0.13, cy - k * 0.08); g.quadraticCurveTo(cx - k * 0.1 + f2 * k * 0.1, cy - fh, cx - k * 0.02 + f2 * k * 0.08, cy - k * 0.08); g.fill(); }
+    glows2.push([cx, cy - k * 0.25, "255,140,50", 1.3, 0.4 * fl]); srcs.push([c.x, c.y + 0.1, 3.4, 0.7 * fl]);
+    var bx = cx + k * 1.4, by = cy; g.fillStyle = "#4a3422"; g.fillRect(bx - k * 0.04, by - k * 1.0, k * 0.08, k * 1.0); g.fillStyle = "#8a6440"; g.fillRect(bx - k * 0.4, by - k * 1.2, k * 0.8, k * 0.5); g.fillStyle = "#f6eedb"; g.fillRect(bx - k * 0.32, by - k * 1.12, k * 0.25, k * 0.18); g.fillRect(bx + k * 0.02, by - k * 1.08, k * 0.28, k * 0.2);   // notice board
+    var home = crewList().filter(function (q) { return q.job !== "exp"; });
+    (lairS().miners || []).slice(0, 5).forEach(function (q, i) { drawMinerFrog(g, cx - k * 2.4 - i * k * 0.75, cy + k * 0.9 + (i % 2) * k * 0.3, k * 0.36, t + i * 1.7, false); });
+    home.forEach(function (q, i) { var D = crewDef(q.id), a = (i / Math.max(1, home.length)) * 6.28 + 0.6, fx = cx + Math.cos(a) * k * 1.0, fy = cy + Math.sin(a) * k * 0.55 + Math.sin(t * 2 + i) * k * 0.04; drawCrewFrog(g, fx, fy, k * 0.42, D.c, Math.cos(a) > 0 ? -1 : 1, t + i); });
+  }
+  function drawCrewFrog(g, x, y, r, col, face, t) {   // a little pirate frog: round body, belly, bulgy eyes, a coloured bandana
+    g.save(); g.translate(x, y); g.scale(face, 1);
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, r * 0.9, r * 0.25, 0, 0, 6.28); g.fill();
+    g.fillStyle = "#3f9a4a"; g.beginPath(); g.ellipse(0, -r * 0.6, r * 0.85, r * 0.7, 0, 0, 6.28); g.fill(); g.fillStyle = "#b8e08a"; g.beginPath(); g.ellipse(r * 0.1, -r * 0.45, r * 0.45, r * 0.4, 0, 0, 6.28); g.fill();
+    [-0.35, 0.35].forEach(function (ex) { g.fillStyle = "#3f9a4a"; g.beginPath(); g.arc(ex * r, -r * 1.25, r * 0.26, 0, 6.28); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex * r, -r * 1.27, r * 0.16, 0, 6.28); g.fill(); g.fillStyle = "#06100d"; g.beginPath(); g.arc(ex * r + r * 0.05, -r * 1.27, r * 0.08, 0, 6.28); g.fill(); });
+    g.fillStyle = col; g.beginPath(); g.ellipse(0, -r * 1.02, r * 0.72, r * 0.18, 0, Math.PI, 0); g.fill(); g.beginPath(); g.moveTo(-r * 0.62, -r * 1.0); g.lineTo(-r * 1.0, -r * (0.8 + 0.08 * Math.sin(t * 4))); g.lineTo(-r * 0.6, -r * 0.88); g.fill();
+    g.restore();
+  }
+  function rigProcess(got, n) {   // runs on everything collected; returns a short note for the popup
+    var L = lairS(), notes = [];
+    if (L.mods.sort) {
+      var junk = 0; if (!L.mods.keep) JUNK.forEach(function (k) { if (got[k]) { junk += got[k]; delete got[k]; } }); if (junk) notes.push(junk + " junk sorted out");
+      var gb = Math.floor(n / 25) + (Math.random() < (n % 25) / 25 ? 1 : 0), pool = [["amber", 5], ["ruby", 1.2], ["sapphire", 1.2], ["amethyst", 1.2], ["moonstone", 0.8]];
+      for (var i = 0; i < gb; i++) { var r = Math.random() * 9.4, j; for (j = 0; j < pool.length; j++) { r -= pool[j][1]; if (r <= 0) break; } var gk = pool[Math.min(j, pool.length - 1)][0]; if (ITEMS[gk]) got[gk] = (got[gk] || 0) + 1; }
+      if (gb) notes.push(gb + " bonus gem" + (gb > 1 ? "s" : ""));
+    }
+    if (L.mods.smelt) SMELT.forEach(function (q) { var c = got[q[0]] || 0, b = Math.floor(c / 2); if (b > 0 && ITEMS[q[1]]) { got[q[0]] = c - b * 2; if (!got[q[0]]) delete got[q[0]]; got[q[1]] = (got[q[1]] || 0) + b; notes.push(b + " " + ITEMS[q[1]].n + " smelted"); } });
+    return notes.join(" • ");
+  }
   function lairOwned() { return !!(S.lair && S.lair.own); }
-  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [] }; if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
+  function lairClean(o) { var n = { own: o && o.own ? 1 : 0, day: Math.max(0, Math.floor(+(o && o.day)) || 0), rig: [], mods: {} }; if (o && o.mods && typeof o.mods === "object") { if (o.mods.smelt) n.mods.smelt = 1; if (o.mods.sort) n.mods.sort = 1; if (o.mods.keep) n.mods.keep = 1; } if (o && isFinite(+o.tk)) n.tk = Math.floor(+o.tk); if (o && o.tkn > 0) n.tkn = Math.floor(+o.tkn);
+    if (o && Array.isArray(o.crew)) n.crew = o.crew.slice(0, 6).filter(function (c) { return c && CREW_POOL.some(function (q) { return q.id === c.id; }); }).map(function (c) { return { id: c.id, lv: clamp(c.lv | 0 || 1, 1, 5), xp: Math.max(0, c.xp | 0), job: /^(idle|rig0|rig1|ship|exp)$/.test(c.job) ? c.job : "idle", eT: +c.eT || 0, eD: +c.eD || 0, eK: c.eK || "" }; });
+    if (o && Array.isArray(o.miners)) n.miners = o.miners.slice(0, 12).filter(function (q) { return q && typeof q.n === "string"; }).map(function (q) { return { n: q.n.slice(0, 24), f: q.f | 0 }; });
+    if (o && Array.isArray(o.log)) n.log = o.log.slice(-24).filter(function (q) { return q && typeof q.s === "string"; }).map(function (q) { return { t: +q.t || 0, s: q.s.slice(0, 200) }; }); if (o && Array.isArray(o.rig)) o.rig.slice(0, 3).forEach(function (r, i) { n.rig[i] = r && isFinite(+r.t) ? { t: Math.max(0, +r.t), lv: clamp(Math.floor(+r.lv) || 1, 1, 3) } : null; }); return n; }
   function isLairFloor(f) { return !!(cave && !cave.bld && !cave.volc && SC && SC.LAIR_F && f === SC.LAIR_F); }
   function gameClock() { return (S.days | 0) * CYCLE + S.time; }
   function caveBoss() { var F = cave && cave.F; if (!F || !F.lair || !F.mobs) return null; for (var i = 0; i < F.mobs.length; i++) { var m = F.mobs[i]; if (m.k === "captain" && !m.def && m.awake) return m; } return null; }
@@ -3492,7 +3905,7 @@
   function updCaptain(F, m, dt, i) {
     m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.flash = Math.max(0, m.flash - dt); m.sayT = Math.max(0, m.sayT - dt);
     F.cshots = F.cshots || []; F.rings = F.rings || [];
-    if (m.def) { m.dead -= dt; if (!reduce && Math.random() < dt * 14) parts.push({ x: m.x + (Math.random() - 0.5) * 1.2, y: m.y - Math.random() * 1.6, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#3fd6c0" : "#bff4ff", s: 3 }); if (m.dead <= 0) { F.mobs.splice(i, 1); claimLair(); } return; }
+    if (m.def) { m.dead -= dt; if (!reduce && Math.random() < dt * 14) parts.push({ x: m.x + (Math.random() - 0.5) * 1.2, y: m.y - Math.random() * 1.6, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 2, life: 0.6, max: 0.6, c: Math.random() < 0.5 ? "#3fd6c0" : "#bff4ff", s: 3 }); if (m.dead <= 0) { F.mobs.splice(i, 1); if (m.king) kingWin(); else claimLair(); } return; }
     var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, sp = m.rage ? 3.3 : 2.6, vx = 0, vy = 0;
     if (!m.awake) { if (d < 9 && hp > 0) { m.awake = true; m.st = "intro"; m.t = 2.4; capSay(m, "Arr! Who comes drippin' into Saltjaw's hollow?", 2.8); thud(110, 0.12); snd("rise"); } else { m.dir = dx >= 0 ? 1 : -1; return; } }
     if (hp <= 0) { m.st = "chase"; moveMob(F, m, dt, 0, 0); return; }
@@ -3548,6 +3961,32 @@
     snd("rise"); thud(60, 0.2);
   }
   function F_clearFx() { var F = cave && cave.F; if (F) { F.cshots = []; F.rings = []; } }
+  // ---------- THE TIDE KING: once the Hollow is yours, once a week (every 7 days) you can ring the Captain's bell at his old spot to
+  // call him back as Saltjaw, the Tide King: golden and crowned, 2.2x health, harder hits. Beat him for a big haul. S.lair.tk = the last
+  // week you fought him; S.lair.tkn = how many times you've beaten him. ----------
+  var TIDEB = { n: "Saltjaw, the Tide King", sub: "Weekly rematch · ring the bell again next week", c: "#f2c14e", hp: 1500, dmg: 24 };
+  function kingWeek() { return Math.floor((S.days | 0) / 7); }
+  function kingReady() { var L = S.lair; return !!(L && L.own && cave && cave.F && cave.F.lair && L.tk !== kingWeek() && !caveBoss() && !(cave.F.mobs || []).some(function (m) { return m.king && !m.def; })); }
+  function bellNear() { if (!kingReady()) return false; var B = cave.F.boss; return Math.hypot(B.x - cp.x, B.y + 0.6 - cp.y) < 2; }
+  function ringBell() {
+    if (!kingReady()) return; var F = cave.F, L = lairS(); L.tk = kingWeek(); save();
+    for (var i = 0; i < 3; i++) (function (k) { setTimeout(function () { tn(0, 523, 520, 1.4, "sine", 0.05); tn(0, 1046, 1040, 0.9, "sine", 0.02); shake = Math.max(shake, 0.3); }, k * 650); })(i);
+    popup("The tide rises...", "Something big stirs in the black water", TIDEB.c, "\u2693");
+    setTimeout(function () { if (!cave || cave.F !== F) return; var m = newCaptain(F); m.king = true; m.B = TIDEB; m.hp = m.mx = Math.round(m.mx * 2.2); m.dmg = Math.round(m.dmg * 1.4); m.awake = true; m.st = "chase"; capSay(m, "Back for more, are ye? The tide's MINE tonight!", 3); F.mobs.push(m); shake = 0.9; sfxThump(50, 25, 0.8, 0.3); }, 2100);
+  }
+  function kingWin() {
+    var L = lairS(); L.tkn = (L.tkn || 0) + 1; S.st.tidekings = (S.st.tidekings || 0) + 1;
+    var rw = { doubloon: 30, blackpearl: 1 + (L.tkn % 3 === 0 ? 1 : 0), goldbar: 2, swamptoken: 20 }, gm = ["ruby", "sapphire", "amethyst", "moonstone"][L.tkn % 4]; rw[gm] = 1;
+    Object.keys(rw).forEach(function (k) { if (ITEMS[k]) give(k, rw[k], cp.x - 0.5, cp.y - 1.2, true); });
+    popup("Tide King defeated!", "Victory #" + L.tkn + " • ring the bell again next week", TIDEB.c, "\u265B"); snd("open", "Epic"); try { confettiPop(cp.x, cp.y - 1, 50); } catch (e) {} save();
+  }
+  function drawBell(g, F, now) {
+    if (!kingReady()) return; var B = F.boss, k = ts, cx = ox + B.x * ts, cy = oy + (B.y + 0.6) * ts, sw = reduce ? 0 : Math.sin(now / 500) * 0.12;
+    g.fillStyle = "#4a3422"; g.fillRect(cx - k * 0.55, cy - k * 1.8, k * 0.1, k * 1.8); g.fillRect(cx + k * 0.45, cy - k * 1.8, k * 0.1, k * 1.8); g.fillRect(cx - k * 0.6, cy - k * 1.86, k * 1.2, k * 0.12);
+    g.save(); g.translate(cx, cy - k * 1.74); g.rotate(sw); g.fillStyle = "#d8a030"; g.beginPath(); g.moveTo(-k * 0.16, 0); g.quadraticCurveTo(-k * 0.2, k * 0.5, -k * 0.34, k * 0.62); g.lineTo(k * 0.34, k * 0.62); g.quadraticCurveTo(k * 0.2, k * 0.5, k * 0.16, 0); g.closePath(); g.fill();
+    g.fillStyle = "#ffe08a"; g.fillRect(-k * 0.3, k * 0.52, k * 0.6, k * 0.06); g.fillStyle = "#6b4a10"; g.beginPath(); g.arc(0, k * 0.68, k * 0.06, 0, 6.28); g.fill(); g.restore();
+    if (bellNear() && !panelOpen && !trans) drawPill(g, now, "Ring the bell: call the Tide King" + (coarse ? "" : " (F)"), cx, cy - k * 2.3, false, function () { ringBell(); });
+  }
   function claimLair() {
     var L = lairS(); if (L.own) return; L.own = 1; L.day = S.days | 0; S.st.bossk = (S.st.bossk || 0) + 1;
     var rw = { doubloon: 40, blackpearl: 2, pearl: 6, ironingot: 6, sapphire: 1 };
@@ -3575,7 +4014,7 @@
   function rigOf(i) { return lairS().rig[i] || null; }
   function siloOn() { return !!rigOf(2); }
   function rigLv(i) { var r = rigOf(i); return r ? clamp(r.lv | 0 || 1, 1, 3) : 0; }
-  function rigRate(i) { return RIGS[i].rate * Math.pow(0.75, rigLv(i) - 1); }
+  function rigRate(i) { return RIGS[i].rate * Math.pow(0.75, rigLv(i) - 1) * (1 - 0.08 * minerCount()) * (i < 2 && S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "rig" + i; }) ? 0.75 : 1); }
   function rigCap(i) { return (RIGS[i].cap + 20 * (rigLv(i) - 1)) * (siloOn() ? 2 : 1); }
   function rigCount(i) { var r = rigOf(i); if (!r || !RIGS[i].rate) return 0; return Math.max(0, Math.min(rigCap(i), Math.floor((gameClock() - r.t) / rigRate(i)))); }
   function rigTotal() { return rigCount(0) + rigCount(1); }
@@ -3596,9 +4035,9 @@
     var got = {}, n = 0, q = cave.F.pads[i];
     if (i === 2) { n += rigTake(0, got); n += rigTake(1, got); } else n = rigTake(i, got);
     if (!n) { nag("Nothing to collect yet. The rigs are still digging."); return; }
-    S.st.rigOre = (S.st.rigOre || 0) + n; Object.keys(got).forEach(function (it) { give(it, got[it], q.x + 0.5, q.y - 1); });
+    S.st.rigOre = (S.st.rigOre || 0) + n; var note = rigProcess(got, n); Object.keys(got).forEach(function (it) { give(it, got[it], q.x + 0.5, q.y - 1); });
     var gems = ["ruby", "sapphire", "amethyst", "moonstone"].filter(function (g) { return got[g]; });
-    popup("Rig Bay", "+" + n + " ore" + (gems.length ? " • " + gems.map(function (g) { return ITEMS[g].n; }).join(", ") + "!" : ""), "#f2c14e", "⛏"); snd("coin"); save(); checkGoals();
+    popup("Rig Bay", "+" + n + " ore" + (gems.length ? " • " + gems.map(function (g) { return ITEMS[g].n; }).join(", ") + "!" : ""), "#f2c14e", "⛏"); if (note) popup("Rig Bay machines", note, "#ff8a3d", "⚙"); snd("coin"); save(); checkGoals();
   }
   function openRig(i) {
     var el = $("sbxStory"); if (!el) return; var R = RIGS[i], r = rigOf(i), lv = rigLv(i), h = "";
@@ -3615,6 +4054,12 @@
       if (i !== 2 && up) h += '<div class="sbx-card"><div><b>Upgrade to level ' + (lv + 1) + '</b><small>A quarter faster and holds 20 more.</small><div class="cost">' + costHtml(up) + "</div></div></div>";
       h += '<div class="st-row">' + (i === 2 || !siloOn() ? '<button type="button" class="btn" data-rig="take">Collect</button>' : "") + (i !== 2 && up ? '<button type="button" class="btn' + (canU ? "" : " ghost") + '" data-rig="up"' + (canU ? "" : " disabled") + ">Upgrade</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div>';
     }
+    if (i === 2 && r) {
+      h += '<h3 class="rg-h">Machines</h3>';
+      Object.keys(MODS).forEach(function (k) { var M = MODS[k], on = modOn(k), can = canPay(M.cost);
+        h += '<div class="sbx-card rg-mod' + (on ? " on" : "") + '"><img class="big" alt="" src="' + icon(k === "smelt" ? "ironingot" : "crystal") + '"><div><b>' + esc(M.n) + (on ? " · working" : "") + "</b><small>" + esc(M.d) + "</small>" + (on ? "" : '<div class="cost">' + costHtml(M.cost) + "</div>") + "</div>"
+          + (on ? (k === "sort" ? '<button type="button" class="btn ghost" data-rig="keep">' + (lairS().mods.keep ? "Keeping stone" : "Tossing stone") + "</button>" : "") : '<button type="button" class="btn' + (can ? "" : " ghost") + '" data-rig="mod:' + k + '"' + (can ? "" : " disabled") + ">Build</button>") + "</div>"; });
+    }
     $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h;
   }
   var rigAt = 0;
@@ -3622,6 +4067,8 @@
     var i = rigAt, R = RIGS[i], L = lairS();
     if (a === "fix") { if (rigOf(i) || !canPay(R.cost)) return nag("You need more materials."); payCost(R.cost); L.rig[i] = { t: gameClock(), lv: 1 }; S.st.rigs = (S.st.rigs || 0) + 1; closeStory(); popup("Rig Bay", "The " + R.n + (i === 2 ? " is up" : " is digging"), "#f2c14e", "⛏"); thud(120, 0.12); snd("rise"); save(); checkGoals(); return; }
     if (a === "take") { closeStory(); return rigCollect(i); }
+    if (a.indexOf("mod:") === 0) { var mk = a.slice(4), M = MODS[mk]; if (!M || L.mods[mk] || !canPay(M.cost)) return nag("You need more materials."); payCost(M.cost); L.mods[mk] = 1; popup("Rig Bay", "The " + M.n + " is bolted on", "#ff8a3d", "⚙"); thud(120, 0.1); sfxHit(true); save(); return openRig(2); }
+    if (a === "keep") { L.mods.keep = L.mods.keep ? 0 : 1; save(); return openRig(2); }
     if (a === "up") { var lv = rigLv(i), up = RIG_UP[lv + 1]; if (!up || !canPay(up)) return nag("You need more materials."); var keep = rigCount(i); payCost(up); L.rig[i].lv = lv + 1; L.rig[i].t = gameClock() - keep * rigRate(i); popup("Rig Bay", R.n + " is now level " + (lv + 1), "#f2c14e", "⛏"); thud(140, 0.1); snd("rise"); save(); openRig(i); }
   }
   function rigFix() { rigBtn("fix"); }
@@ -3755,6 +4202,7 @@
     if (!F.pads) return; var own = lairOwned();
     F.pads.forEach(function (q, n) { if (q.y !== rj) return; var cx = ox + (q.x + 1) * ts, cy = oy + (q.y + 0.78) * ts, on = own && rigOf(n);
       if (!own) drawCrates(g, cx, cy); else if (n === 0) drawDrill(g, cx, cy, !!on, now, srcs, glows2); else if (on && n === 1) drawBorer(g, cx, cy, now, srcs, glows2); else if (on && n === 2) drawSilo(g, cx, cy, now, srcs, glows2); });
+    if (own && F.camp !== undefined && F.camp && Math.floor(F.camp.y) === rj) drawCrewCamp(g, F, now, srcs, glows2); else if (own && F.camp === undefined) crewCamp(F);
     if (own && F.cons && F.cons.y === rj) drawConsole(g, ox + (F.cons.x + 0.5) * ts, oy + (F.cons.y + 0.85) * ts, now, srcs, glows2);
     if (own && F.stack && F.stack.y === rj) drawStack(g, ox + (F.stack.x + 0.5) * ts, oy + (F.stack.y + 0.85) * ts);
   }
@@ -3841,7 +4289,32 @@
     if (lp) { glows2.push([cx + k * 0.25, top + k * 0.55, "90,255,140", 0.9, 0.3 * bl]); srcs.push([(cx - ox) / ts + 0.25, (top - oy) / ts + 0.55, 2.2, 0.5 * bl]); }
     g.fillStyle = "#1c1f24"; g.fillRect(cx - k * 0.02, top + k * 1.05, k * 0.62, k * 0.22); g.font = signFont(Math.max(6, Math.round(k * 0.13))); g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f2c14e"; g.fillText("ORE SILO", cx + k * 0.29, top + k * 1.17); g.textBaseline = "alphabetic";   // name plate
     g.fillStyle = "#3a3e44"; g.beginPath(); g.moveTo(cx - k * 0.2, bot); g.lineTo(cx + k * 0.2, bot); g.lineTo(cx + k * 0.1, bot + k * 0.12); g.lineTo(cx - k * 0.1, bot + k * 0.12); g.fill();   // chute
+    if (modOn("smelt")) drawSmelter(g, cx + k * 1.25, cy, now, srcs, glows2);
+    if (modOn("sort")) drawSorter(g, cx - k * 1.25, cy, now, srcs, glows2);
     if (tot) { var hp2 = Math.min(1, tot / 40); [["#8f979b", -0.25], ["#ff8a3d", 0.05], ["#9fe8ff", 0.25], ["#6b7276", -0.05]].forEach(function (h, i) { g.fillStyle = h[0]; g.beginPath(); g.arc(cx + h[1] * k, cy - k * 0.02 - (i % 2) * k * 0.06 * hp2, k * (0.07 + 0.04 * hp2), 0, 6.28); g.fill(); }); }   // ore heap
+  }
+  function drawSmelter(g, cx, cy, now, srcs, glows2) {   // a squat brick furnace: glowing mouth, a chimney puffing smoke, an ingot on the tray
+    var k = ts, t = reduce ? 0 : now / 1000, fl = 0.75 + 0.25 * Math.sin(t * 9) * Math.sin(t * 3.3);
+    mShadow(g, cx, cy, k * 0.55);
+    g.fillStyle = "#5a2e24"; g.fillRect(cx - k * 0.45, cy - k * 1.0, k * 0.9, k * 0.85);
+    g.fillStyle = "#7a3e2e"; for (var r = 0; r < 4; r++) for (var c = 0; c < 3; c++) g.fillRect(cx - k * 0.43 + c * k * 0.3 + (r % 2) * k * 0.14, cy - k * 0.98 + r * k * 0.21, k * 0.26, k * 0.17);
+    g.fillStyle = "#3a1c16"; g.fillRect(cx + k * 0.12, cy - k * 1.55, k * 0.22, k * 0.6);   // chimney
+    g.fillStyle = "#1b0e0a"; g.beginPath(); g.arc(cx, cy - k * 0.42, k * 0.24, Math.PI, 0); g.lineTo(cx + k * 0.24, cy - k * 0.2); g.lineTo(cx - k * 0.24, cy - k * 0.2); g.fill();
+    var gr = g.createRadialGradient(cx, cy - k * 0.33, 1, cx, cy - k * 0.33, k * 0.28); gr.addColorStop(0, "rgba(255,230,140," + fl + ")"); gr.addColorStop(1, "rgba(255,90,20,0)"); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy - k * 0.33, k * 0.28, 0, 6.2832); g.fill();
+    glows2.push([cx, cy - k * 0.35, "255,140,50", 1.1, 0.35 * fl]); srcs.push([(cx - ox) / ts, (cy - k * 0.35 - oy) / ts, 2.6, 0.55 * fl]);
+    g.fillStyle = "#c9cdd2"; g.fillRect(cx - k * 0.5, cy - k * 0.18, k * 1.0, k * 0.06); g.fillStyle = "#9aa3ab"; g.fillRect(cx - k * 0.38, cy - k * 0.3, k * 0.28, k * 0.1);   // tray + an ingot
+    for (var sm = 0; sm < 3; sm++) { var ph = ((t * 0.35 + sm / 3) % 1); g.fillStyle = "rgba(120,120,120," + (0.45 * (1 - ph)) + ")"; g.beginPath(); g.arc(cx + k * 0.23 + Math.sin(ph * 5 + sm) * k * 0.1, cy - k * 1.6 - ph * k * 0.9, k * (0.08 + ph * 0.16), 0, 6.2832); g.fill(); }
+  }
+  function drawSorter(g, cx, cy, now, srcs, glows2) {   // a sieve drum on a stand, spinning, with gems dropping into a bin
+    var k = ts, t = reduce ? 0 : now / 1000, R = k * 0.36, dy = cy - k * 0.78, a = t * 2.4;
+    mShadow(g, cx, cy, k * 0.55);
+    g.fillStyle = "#3a3e44"; g.fillRect(cx - k * 0.42, cy - k * 0.55, k * 0.08, k * 0.5); g.fillRect(cx + k * 0.34, cy - k * 0.55, k * 0.08, k * 0.5);
+    g.fillStyle = "#5c4630"; g.fillRect(cx - k * 0.3, cy - k * 0.3, k * 0.6, k * 0.26); g.fillStyle = "#3e2e1e"; g.fillRect(cx - k * 0.3, cy - k * 0.3, k * 0.6, k * 0.05);   // the gem bin
+    g.fillStyle = "#6f777f"; g.beginPath(); g.arc(cx, dy, R, 0, 6.2832); g.fill(); g.fillStyle = "#2a2d33"; g.beginPath(); g.arc(cx, dy, R * 0.78, 0, 6.2832); g.fill();
+    g.strokeStyle = "#9aa3ab"; g.lineWidth = Math.max(1.5, k * 0.05); for (var s2 = 0; s2 < 6; s2++) { var aa = a + s2 * 1.047; g.beginPath(); g.moveTo(cx, dy); g.lineTo(cx + Math.cos(aa) * R * 0.78, dy + Math.sin(aa) * R * 0.78); g.stroke(); }
+    g.fillStyle = "#c9cdd2"; g.beginPath(); g.arc(cx, dy, R * 0.16, 0, 6.2832); g.fill();
+    var GC = ["#ff5a6a", "#5aa8ff", "#c78bff", "#ffd36a"]; for (var gm = 0; gm < 3; gm++) { var ph = (t * 0.8 + gm / 3) % 1; g.fillStyle = GC[(Math.floor(t * 0.8 + gm / 3) + gm) % 4]; g.globalAlpha = 1 - ph * 0.3; g.fillRect(cx - k * 0.05 + (gm - 1) * k * 0.1, dy + R + ph * k * 0.22, k * 0.08, k * 0.08); } g.globalAlpha = 1;
+    for (var gs = 0; gs < 4; gs++) { g.fillStyle = GC[gs]; g.fillRect(cx - k * 0.24 + gs * k * 0.13, cy - k * 0.24, k * 0.09, k * 0.07); }
   }
   function drawConsole(g, cx, cy, now, srcs, glows2) {   // the bay's control console: a slanted panel of blinking buttons, a dial and a little screen of waveforms
     var k = ts, t = reduce ? 0 : now / 1000; mShadow(g, cx, cy, k * 0.55);
@@ -3883,9 +4356,13 @@
     var gx2 = ox + (F.dock.x + 0.5) * ts, gy2 = oy + (F.dock.y + 0.6) * ts; g.fillStyle = "#6e4426"; g.fillRect(gx2 - k * 0.3, gy2, k * 0.6, cy - k * 1.2 - gy2); g.fillStyle = "#8a5a32"; for (var r2 = gy2; r2 < cy - k * 1.2; r2 += k * 0.3) g.fillRect(gx2 - k * 0.3, r2, k * 0.6, k * 0.06);   // the gangplank
     [[-3.3, -1.4], [4.4, -0.9]].forEach(function (l) { var lx = cx + l[0] * k, ly = cy + l[1] * k, fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(now / 160 + l[0]); g.fillStyle = "#3e444a"; g.fillRect(lx - k * 0.12, ly - k * 0.16, k * 0.24, k * 0.32); g.fillStyle = "rgba(255,214,110," + (0.7 + 0.3 * fl).toFixed(3) + ")"; g.fillRect(lx - k * 0.07, ly - k * 0.1, k * 0.14, k * 0.2); srcs.push([(lx - ox) / ts, (ly - oy) / ts, 5, 0.9]); glows2.push([lx, ly, "255,214,110", 3, 0.22 * fl]); });
   }
+  function drawKingCrown(g, m, now) { if (!m.king || !m.crownAt || m.def) return; var k = ts, x = m.crownAt[0], y = m.crownAt[1] - k * 2.78 + Math.sin(now / 300) * k * 0.04;
+    g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(x - k * 0.42, y + k * 0.22); g.lineTo(x - k * 0.42, y - k * 0.1); g.lineTo(x - k * 0.22, y + k * 0.06); g.lineTo(x, y - k * 0.22); g.lineTo(x + k * 0.22, y + k * 0.06); g.lineTo(x + k * 0.42, y - k * 0.1); g.lineTo(x + k * 0.42, y + k * 0.22); g.closePath(); g.fill();
+    g.strokeStyle = "#8a5a10"; g.lineWidth = 2; g.stroke(); ["#ff4a5a", "#4a8aff", "#ff4a5a"].forEach(function (c, i) { g.fillStyle = c; g.beginPath(); g.arc(x + (i - 1) * k * 0.26, y + k * 0.1, k * 0.05, 0, 6.28); g.fill(); }); }
   function drawCaptain(g, m, now) {   // Captain Saltjaw: a big teal fish-man in a navy coat and red tricorn, eyepatch, fin beard, cutlass and pistol, one peg leg
     var k = ts, sx = ox + m.x * ts, sy = oy + m.y * ts, t = reduce ? 0 : now / 1000, mv = m.st === "chase" || m.st === "dash", bob = mv ? Math.abs(Math.sin(t * 9)) * k * 0.06 : Math.sin(t * 2.2) * k * 0.02;
     if (m.def) { g.globalAlpha = clamp(m.dead / 2.2, 0, 1); sy += (1 - m.dead / 2.2) * k * 0.6; }
+    if (m.king) { var kg = g.createRadialGradient(sx, sy - k * 1.1, k * 0.2, sx, sy - k * 1.1, k * 2.2); kg.addColorStop(0, "rgba(242,193,78,.35)"); kg.addColorStop(1, "rgba(242,193,78,0)"); g.fillStyle = kg; g.beginPath(); g.arc(sx, sy - k * 1.1, k * 2.2, 0, 6.28); g.fill(); m.crownAt = [sx, sy]; }
     // attack tells on the ground
     if (m.st === "slashW") { g.fillStyle = "rgba(255,70,60,.22)"; g.beginPath(); g.moveTo(sx, sy - k * 0.3); g.arc(sx, sy - k * 0.3, k * 2.6, m.ang - 1.25, m.ang + 1.25); g.closePath(); g.fill(); }
     if (m.st === "aimW") { g.strokeStyle = "rgba(255,210,120,.55)"; g.lineWidth = 2; g.setLineDash([k * 0.25, k * 0.2]); var nsh = m.rage ? 5 : 3; for (var a = 0; a < nsh; a++) { var sa = m.ang + (a - (nsh - 1) / 2) * 0.24; g.beginPath(); g.moveTo(sx, sy - k * 0.7); g.lineTo(sx + Math.cos(sa) * k * 7, sy - k * 0.7 + Math.sin(sa) * k * 7); g.stroke(); } g.setLineDash([]); }
@@ -3940,6 +4417,28 @@
     g.globalAlpha = a; g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); g.globalAlpha = 1;
   }
   // The art is the Adventure's own Bramble Bug and Swamp Frog drawing code, drawn in a 30px-per-tile space.
+  // ---------- CREATURE ART KIT ----------
+  // The shared look every creature is drawn in (the same as the wolf and the gator): a dark ink outline, top-lit shading (light on top,
+  // dark underneath), a soft shine, proper eyes with a glint, and limbs that taper. Everything is in creature units (about 30 to a tile).
+  function aG(g, y0, y1, hi, mid, lo) { var q = g.createLinearGradient(0, y0, 0, y1); q.addColorStop(0, hi); q.addColorStop(0.5, mid); q.addColorStop(1, lo); return q; }
+  function aInk(g, fill, ln, lw) { g.fillStyle = fill; g.fill(); if (ln) { g.strokeStyle = ln; g.lineWidth = lw || 1.1; g.stroke(); } }
+  function aShine(g, x, y, rx, ry, al, rot) { g.fillStyle = "rgba(255,255,255," + (al || 0.32) + ")"; g.beginPath(); g.ellipse(x, y, rx, ry, rot === undefined ? -0.5 : rot, 0, 7); g.fill(); }
+  function aEye(g, x, y, r, iris, ln, flash, look, lid) {   // a round eye: white, coloured iris, pupil and a glint; lid 0..1 closes it from the top (a scowl)
+    g.fillStyle = flash ? "#fff" : "#fbf8ee"; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = ln; g.lineWidth = Math.max(0.7, r * 0.26); g.stroke();
+    if (flash) return; var lx = x + (look === undefined ? 0.35 : look) * r * 0.45;
+    g.save(); g.beginPath(); g.arc(x, y, r * 0.92, 0, 7); g.clip();
+    g.fillStyle = iris; g.beginPath(); g.arc(lx, y + r * 0.05, r * 0.64, 0, 7); g.fill(); g.fillStyle = "#120c0a"; g.beginPath(); g.arc(lx + r * 0.08, y + r * 0.05, r * 0.34, 0, 7); g.fill();
+    g.fillStyle = "#fff"; g.beginPath(); g.arc(lx - r * 0.24, y - r * 0.24, r * 0.2, 0, 7); g.fill();
+    if (lid) { g.fillStyle = ln; g.fillRect(x - r, y - r, r * 2, r * 2 * lid * 0.55); }
+    g.restore();
+  }
+  function aLimb(g, pts, w, fill, ln) {   // a limb along points: an ink stroke with the colour inside it
+    g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+    g.strokeStyle = ln; g.lineWidth = w + 1.8; g.stroke(); g.strokeStyle = fill; g.lineWidth = w; g.stroke();
+  }
+  function aLimbQ(g, x0, y0, cx, cy, x1, y1, w, fill, ln) {   // the same along a curve
+    g.lineCap = "round"; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(cx, cy, x1, y1); g.strokeStyle = ln; g.lineWidth = w + 1.8; g.stroke(); g.strokeStyle = fill; g.lineWidth = w; g.stroke();
+  }
   function drawBat(g, e, d, flash, h, pd) {   // front-on bat: flapping scalloped wings, little ears, eyes turn red when it is about to dive
     var up = e.st === "dive" ? 0.25 : Math.sin(e.fl), hot = e.st === "wind" || e.st === "dive";
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(e.tt * 90) * 1.6 * h : 0, -9); g.scale(1 + 0.4 * pd, 1 - 0.7 * pd);
@@ -3981,14 +4480,27 @@
     if (!e.def) eGlow(g, 0, -12, wind ? 30 : 24, wind || lunge ? "#ff6a5a" : d.glow, wind ? 0.25 + 0.4 * pw : 0.16);
     var ph = t * (run ? 17 : 9), sw = walk || run ? 1 : 0, br = Math.sin(t * 3) * 0.4;
     g.lineCap = "round"; g.lineJoin = "round";
-    var leg = function (x0, off, far, front) {   // a furry thigh, a slim shin and a padded paw
+    var leg = function (x0, off, far, front) {   // ONE tapered furry leg: wide at the hip, through the knee (or the backward hock on a hind leg) down to a padded paw
       var a = Math.sin(ph + off) * 4 * sw; if (lunge) a = front ? -5 : 5;
-      var kx = x0 + a * 0.55 + (front ? 0.6 : -0.8), ky = -5, fx = x0 + a, fy = -0.6;
-      g.fillStyle = far ? dk2 : fur; g.strokeStyle = ln; g.lineWidth = 1.1;
-      g.beginPath(); g.ellipse(x0, -10, front ? 2.8 : 3.6, 4.2, 0.15 * (front ? 1 : -1), 0, 7); g.fill();
-      g.strokeStyle = far ? dk2 : fur; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, -9); g.lineTo(kx, ky); g.lineTo(fx, fy - 1); g.stroke();
-      g.strokeStyle = far ? ln : dk; g.lineWidth = 0.8; g.beginPath(); g.moveTo(kx - 0.9, ky - 1.5); g.lineTo(fx - 1.2, fy - 1.4); g.stroke();
-      g.fillStyle = far ? dk : lt; g.strokeStyle = ln; g.lineWidth = 1; g.beginPath(); g.ellipse(fx + 0.8, fy - 0.4, 2.3, 1.3, 0, 0, 7); g.fill(); g.stroke();
+      var P = front ? [[x0, -13], [x0 - 0.4 + a * 0.3, -7.4], [x0 + 0.6 + a * 0.8, -3.2], [x0 + 0.8 + a, -1.1]]
+                    : [[x0, -13.4], [x0 + 2.6 + a * 0.35, -8], [x0 - 1.4 + a * 0.7, -4], [x0 - 0.2 + a, -1.1]];
+      var Wd = front ? [3.4, 2.1, 1.35, 1.3] : [4.6, 2.7, 1.5, 1.3], L = [], Rr = [], k;
+      for (k = 0; k < P.length; k++) { var p0 = P[Math.max(0, k - 1)], p1 = P[Math.min(P.length - 1, k + 1)], dx = p1[0] - p0[0], dy = p1[1] - p0[1], dl = Math.hypot(dx, dy) || 1, nx = -dy / dl, ny = dx / dl; L.push([P[k][0] + nx * Wd[k], P[k][1] + ny * Wd[k]]); Rr.push([P[k][0] - nx * Wd[k], P[k][1] - ny * Wd[k]]); }
+      g.beginPath(); g.moveTo(L[0][0], L[0][1] - 1.5);
+      for (k = 1; k < L.length; k++) g.quadraticCurveTo(L[k - 1][0], L[k - 1][1], (L[k - 1][0] + L[k][0]) / 2, (L[k - 1][1] + L[k][1]) / 2);
+      g.lineTo(L[L.length - 1][0], L[L.length - 1][1]); g.lineTo(Rr[Rr.length - 1][0], Rr[Rr.length - 1][1]);
+      for (k = Rr.length - 2; k >= 0; k--) g.quadraticCurveTo(Rr[k + 1][0], Rr[k + 1][1], (Rr[k + 1][0] + Rr[k][0]) / 2, (Rr[k + 1][1] + Rr[k][1]) / 2);
+      g.lineTo(Rr[0][0], Rr[0][1] - 1.5); g.closePath();
+      aInk(g, far ? aG(g, -14, 0, dk, dk2, F("#2a3440")) : aG(g, -14, 0, fur, fur, dk), ln, 1);
+      if (!far) {   // a fur tuft at the back of the joint, and a light stripe down the front
+        var J = P[front ? 1 : 2], sd = front ? -1 : 1; g.beginPath(); g.moveTo(J[0] + sd * 1.2, J[1] - 1.4); g.lineTo(J[0] + sd * 3, J[1] + 0.2); g.lineTo(J[0] + sd * 1.2, J[1] + 1.2); g.closePath(); aInk(g, fur, ln, 0.8);
+        g.strokeStyle = "rgba(255,255,255,.45)"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(P[0][0] - 1.4, P[0][1] + 2); g.quadraticCurveTo(P[1][0] - 1.2, P[1][1], P[2][0] - 0.6, P[2][1]); g.stroke();
+      }
+      var fx = P[3][0], fy = P[3][1];   // the paw: rounded, with toe lines and a little claw tip
+      g.beginPath(); g.moveTo(fx - 1.8, fy - 0.9); g.quadraticCurveTo(fx - 2, fy + 1, fx, fy + 1); g.lineTo(fx + 2.4, fy + 1); g.quadraticCurveTo(fx + 3.6, fy + 0.8, fx + 2.8, fy - 0.6); g.quadraticCurveTo(fx + 1.6, fy - 1.8, fx - 1.8, fy - 0.9); g.closePath();
+      aInk(g, far ? dk : aG(g, fy - 2, fy + 1, fur, dk, dk2), ln, 0.9);
+      g.strokeStyle = ln; g.lineWidth = 0.5; g.beginPath(); g.moveTo(fx + 0.6, fy - 0.2); g.lineTo(fx + 0.8, fy + 1); g.moveTo(fx + 1.9, fy - 0.3); g.lineTo(fx + 2.1, fy + 0.9); g.stroke();
+      g.fillStyle = ln; g.fillRect(fx + 3, fy + 0.2, 0.9, 0.6);
     };
     leg(-11, 2.4, true, false); leg(8, 3.6, true, true);   // far pair, darker
     // the bushy tail: a ragged strip from the rump, with a frost-white tip
@@ -4101,24 +4613,46 @@
     if (e.b === 1 && !e.def && Math.sin(t * 3) > 0.6) { g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(-9 + Math.sin(t * 7) * 3, -20 - (t * 20 % 6), 1.2, 0, 7); g.fill(); }   // magma sparks
     g.restore();
   }
-  function drawWasp(g, e, d, flash, h, pd) {
-    var t = e.tt, hot = e.st === "wind" || e.st === "dash", flap = Math.abs(Math.sin(e.fl)), curl = e.st === "wind" ? 0.55 : e.st === "dash" ? 0.35 : 0.1;
+  function drawWasp(g, e, d, flash, h, pd) {   // a hornet: head, thorax and a teardrop abdomen joined by a thin waist, banded stripes that wrap the body, a stinger the abdomen tapers into, veined wings hinged at the shoulder
+    var t = e.tt, hot = e.st === "wind" || e.st === "dash", flap = Math.sin(e.fl || t * 40), curl = e.st === "wind" ? 0.55 : e.st === "dash" ? 0.35 : 0.1;
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#140c04"), y1 = F(hot ? "#ffc070" : "#ffe680"), y2 = F(hot ? "#ff9a3a" : "#ffc52a"), y3 = F(hot ? "#c8501a" : "#c88a10"), bk = F("#2a1a0a"), bk2 = F("#120a04");
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, -9); g.scale(e.dir * (1 + 0.4 * pd), 1 - 0.7 * pd);
     if (!e.def) eGlow(g, 0, 0, hot ? 28 : 20, hot ? "#ff3b2a" : d.glow, hot ? 0.55 : 0.25);
-    g.fillStyle = flash ? "rgba(255,255,255,.9)" : "rgba(220,240,255,.55)"; g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 1;
-    g.beginPath(); g.ellipse(-1, -7 - flap * 2, 7, 2.6 + flap * 2.6, -0.5, 0, 7); g.fill(); g.stroke();   // wings: a blur of beats
-    g.beginPath(); g.ellipse(3, -8 - flap * 2, 6, 2.2 + flap * 2.2, -0.2, 0, 7); g.fill(); g.stroke();
-    g.save(); g.translate(-2, 0); g.rotate(curl);   // the striped abdomen and stinger curl forward before a dash
-    var ab = flash ? "#ffffff" : hot ? "#ff9a3a" : "#ffcf3a";
-    g.fillStyle = ab; g.strokeStyle = "#1a1206"; g.lineWidth = 1.4; g.beginPath(); g.ellipse(-6, 1, 8, 5, 0.25, 0, 7); g.fill(); g.stroke();
-    g.fillStyle = "#1a1206"; [[-9, 1.6], [-5, 1.6], [-1.5, 1.4]].forEach(function (b2) { g.save(); g.translate(b2[0], 1); g.rotate(0.25); g.fillRect(-b2[1] / 2, -4.4, b2[1], 8.8); g.restore(); });
-    g.fillStyle = flash ? "#fff" : "#2a1a0a"; poly(g, [-13.5, 2.5, -19, 4.5, -13.5, 4.8]); g.fill();
+    g.lineCap = "round"; g.lineJoin = "round";
+    var wing = function (len, wid, ang, al) {   // a veined wing hinged at the shoulder
+      g.save(); g.translate(1.4, -3.6); g.rotate(ang);
+      g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(-len * 0.35, -wid * 1.1, -len, -wid * 0.35); g.quadraticCurveTo(-len * 1.04, wid * 0.3, -len * 0.7, wid * 0.45); g.quadraticCurveTo(-len * 0.3, wid * 0.5, 0, 0);
+      g.fillStyle = flash ? "rgba(255,255,255,.9)" : "rgba(214,236,255," + al + ")"; g.fill(); g.strokeStyle = flash ? "#fff" : "rgba(40,50,70,.75)"; g.lineWidth = 0.7; g.stroke();
+      g.strokeStyle = flash ? "#fff" : "rgba(60,70,90,.45)"; g.lineWidth = 0.4; g.beginPath(); g.moveTo(0, 0); g.lineTo(-len * 0.92, -wid * 0.2); g.moveTo(-len * 0.3, -wid * 0.45); g.lineTo(-len * 0.62, wid * 0.32); g.moveTo(-len * 0.55, -wid * 0.55); g.lineTo(-len * 0.86, wid * 0.2); g.stroke();
+      if (!flash) aShine(g, -len * 0.45, -wid * 0.3, len * 0.22, wid * 0.14, 0.45, -0.1);
+      g.restore();
+    };
+    var wa = 0.35 + (flap * 0.5 + 0.5) * 0.8;
+    wing(10, 3.8, wa + 0.3, 0.3); wing(10, 3.8, wa - 0.22, 0.14);   // far wing, with a blur of its beat
+    // legs: three jointed legs tucked under the thorax, swinging a little
+    for (var lg = 0; lg < 3; lg++) { var sw2 = Math.sin(t * 9 + lg) * 0.8, lx = 0.4 + lg * 1.9; aLimb(g, [[lx, 2.2], [lx - 1.2 + sw2 * 0.3, 4.4], [lx - 0.4 + sw2, 6.4]], 0.55, bk, ln); g.fillStyle = y2; g.beginPath(); g.arc(lx - 0.4 + sw2, 6.4, 0.45, 0, 7); g.fill(); }
+    // the abdomen hangs from a thin waist and curls its stinger forward before a dash
+    g.save(); g.translate(-2.2, 0.6); g.rotate(curl);
+    g.beginPath(); g.moveTo(0.4, -0.9); g.quadraticCurveTo(-2.6, -4.4, -8, -3.6); g.quadraticCurveTo(-13.4, -2.4, -15.4, 1.6); g.lineTo(-18, 3.2); g.lineTo(-15, 3.4); g.quadraticCurveTo(-11, 5.8, -5.6, 4.4); g.quadraticCurveTo(-1.4, 3.2, 0.4, 0.9); g.closePath();
+    g.save(); aInk(g, aG(g, -5, 6, y1, y2, y3), ln, 1.2); g.clip();
+    g.fillStyle = bk; [-4, -7.8, -11.6].forEach(function (bx) { g.beginPath(); g.moveTo(bx + 0.7, -7); g.quadraticCurveTo(bx - 0.9, 0.6, bx + 0.9, 7); g.lineTo(bx - 0.5, 7); g.quadraticCurveTo(bx - 2.3, 0.6, bx - 0.7, -7); g.closePath(); g.fill(); });   // stripes curve round the body
+    g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(-20, 2.6, 22, 5);
     g.restore();
-    g.fillStyle = flash ? "#fff" : "#3a2a12"; g.strokeStyle = "#1a1206"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(3, -1, 4.6, 3.8, 0, 0, 7); g.fill(); g.stroke();   // thorax
-    g.fillStyle = flash ? "#fff" : "#ffcf3a"; g.beginPath(); g.ellipse(9, -2, 3.6, 3.4, 0, 0, 7); g.fill(); g.stroke();   // head
-    g.fillStyle = flash ? "#fff" : hot ? "#ff2a1a" : "#3a1206"; g.beginPath(); g.ellipse(10.4, -2.6, 2, 2.4, 0, 0, 7); g.fill();
-    g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.moveTo(9, -5); g.quadraticCurveTo(11, -10, 14, -10); g.moveTo(10, -5); g.quadraticCurveTo(13, -8, 15, -7.5); g.stroke();
-    g.strokeStyle = "#1a1206"; g.lineWidth = 1.1; for (var lg = 0; lg < 3; lg++) { g.beginPath(); g.moveTo(1 + lg * 2.4, 2); g.lineTo(lg * 2.4 - 0.5, 6 + Math.sin(t * 9 + lg) * 0.8); g.stroke(); }
+    g.beginPath(); g.moveTo(-16.6, 2.2); g.lineTo(-21.4, 3.6); g.lineTo(-16.6, 3.4); g.closePath(); aInk(g, bk2, ln, 0.5);   // the stinger
+    aShine(g, -7.6, -2.6, 3.6, 1, 0.4, -0.1);
+    g.restore();
+    // thorax: dark, fuzzy-edged, with two yellow shoulder marks
+    g.beginPath(); g.ellipse(2.8, -0.4, 3.9, 3.5, -0.1, 0, 7); aInk(g, aG(g, -4.3, 3.5, F("#5a3a1a"), bk, bk2), ln, 1.1);
+    g.strokeStyle = F("#7a5a2a"); g.lineWidth = 0.4; for (var hz = 0; hz < 7; hz++) { var ha = 3.4 + hz * 0.36; g.beginPath(); g.moveTo(2.6 + Math.cos(ha) * 4.2, -0.4 + Math.sin(ha) * 3.7); g.lineTo(2.6 + Math.cos(ha) * 5, -0.4 + Math.sin(ha) * 4.4); g.stroke(); }
+    g.fillStyle = y2; g.beginPath(); g.ellipse(1.4, -2.6, 1.6, 0.8, -0.3, 0, 7); g.fill(); g.beginPath(); g.ellipse(4.6, -2.4, 1.2, 0.7, 0.3, 0, 7); g.fill();
+    // head: a rounded yellow face, a big wraparound compound eye, mandibles and elbowed antennae
+    aLimb(g, [[8.6, -4.6], [10.2, -8.6], [13.8, -9.6]], 0.6, bk, ln); aLimb(g, [[9.6, -4.2], [12, -7.4], [15.2, -7.2]], 0.6, bk, ln);
+    g.beginPath(); g.ellipse(9.4, -1.6, 3.8, 3.5, 0.15, 0, 7); aInk(g, aG(g, -5.1, 1.9, y1, y2, y3), ln, 1.1);
+    g.beginPath(); g.ellipse(10.4, -2.2, 2.2, 2.9, 0.25, 0, 7); aInk(g, flash ? "#fff" : hot ? aG(g, -5, 1, "#ff6a4a", "#d81a0a", "#5a0400") : aG(g, -5, 1, "#6a3a2a", "#3a1206", "#120402"), ln, 0.6);
+    if (!flash) { g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.ellipse(9.8, -3.6, 0.8, 0.5, -0.4, 0, 7); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; for (var hx = 0; hx < 3; hx++) { g.beginPath(); g.arc(10.6 + (hx % 2) * 0.8, -1.4 + hx * 0.8, 0.35, 0, 7); g.fill(); } }
+    [[-1, 0.35], [1, -0.2]].forEach(function (mq) { var mo = hot ? Math.abs(Math.sin(t * 30)) * 0.35 : 0.1; g.save(); g.translate(12, 0.4); g.rotate(mq[1] + mq[0] * mo); g.beginPath(); g.moveTo(0, -0.6); g.quadraticCurveTo(2, -0.2, 2.2, 1.2); g.quadraticCurveTo(1, 0.6, 0, 0.6); g.closePath(); aInk(g, bk, ln, 0.4); g.restore(); });
+    aShine(g, 8.4, -3.8, 1.4, 0.7, 0.45);
+    wing(12, 4.4, wa + 0.05, 0.5); wing(12, 4.4, wa - 0.3, 0.18);   // near wing on top
     g.restore();
   }
   var SHADOW = { bug: 19, frog: 17, wolf: 21, gator: 27, slime: 14, witch: 13, spider: 16 }, HBAR = { bug: 41, bat: 30, frog: 49, wolf: 44, gator: 30, slime: 32, wasp: 30, witch: 62, spider: 30 };
@@ -4130,6 +4664,9 @@
   ENEMY.lily = { n: "Snapper Lily", hp: 26, w: 1.0, h: 1.0, dmg: 14, glow: "#ff6aa8", chip: "#58b455", frag: "petalsnap", chance: 0.6, max: 2 };
   ENEMY.imp = { n: "Cinder Imp", hp: 22, w: 0.8, h: 1.0, dmg: 10, glow: "#ff8a3d", chip: "#a83a10", frag: "imphorn", chance: 0.6, max: 2 };
   ENEMY.brute = { n: "Rime Brute", hp: 78, w: 1.5, h: 1.7, dmg: 20, glow: "#9fe8ff", chip: "#cfdde6", frag: "rimecore", chance: 0.75, max: 1 };
+  // ISLAND RAIDS: the crews who guard the islands
+  ENEMY.crab = { n: "Reef Crab", hp: 16, w: 0.95, h: 0.6, dmg: 7, glow: "#ff7a5a", chip: "#c8502a", frag: "shell", chance: 0.5, max: 2 };
+  ENEMY.buccaneer = { n: "Bilge Pirate", hp: 34, w: 0.9, h: 1.3, dmg: 11, glow: "#ffd23f", chip: "#4a9a52", frag: "doubloon", chance: 0.6, max: 3 };
   ENEMY.crawler = { n: "Geode Crawler", hp: 34, w: 1.2, h: 0.8, dmg: 14, glow: "#b08aff", chip: "#6a4a9a", frag: "geodechip", chance: 0.65, max: 2 };
   KSTAT.lily = "lilies"; KSTAT.imp = "imps"; KSTAT.brute = "brutes"; KSTAT.crawler = "crawlers";
   SHADOW.lily = 14; SHADOW.imp = 11; SHADOW.brute = 27; SHADOW.crawler = 19; HBAR.lily = 44; HBAR.imp = 40; HBAR.brute = 72; HBAR.crawler = 36;
@@ -4209,78 +4746,191 @@
       else if (e.st === "crawl" && e.cd <= 0) { hurt(5, "crawler"); shoved(e); e.cd = 1; }
     }
   }
-  function drawLily(g, e, d, flash, h, pd) {
-    var f = e.dir, wind = e.st === "wind", snap = e.st === "snap", rec = e.st === "recover", ext = e.ext || 0, open = snap ? 1 : wind ? 0.35 + 0.65 * (1 - e.t / 0.6) : rec ? Math.max(0.25, ext) : 0;
-    var hx = f * (6 + ext * 22), hy = -24 + ext * 7 + (e.st === "bud" ? Math.sin(e.tt * 2) * 1.2 : 0), pk = flash ? "#fff" : "#ff7ab8", pk2 = flash ? "#ffe6f0" : "#ff4a98";
-    if (wind || snap) eGlow(g, hx, hy, 24, "#ff3a5a", 0.3 + 0.2 * Math.sin(e.tt * 30));
-    g.fillStyle = flash ? "#e8ffe0" : "#2f8a40"; g.strokeStyle = flash ? "#fff" : "#1f5a2a"; g.lineWidth = 1.5;
-    g.beginPath(); g.ellipse(-8 * f, -2, 11, 3.6, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.ellipse(9 * f, -1.5, 9, 3, 0, 0, 7); g.fill(); g.stroke();
-    g.strokeStyle = flash ? "#fff" : "#2a7a30"; g.lineWidth = 5; g.lineCap = "round"; g.beginPath(); g.moveTo(0, -2); g.quadraticCurveTo(-f * 3, -16, hx * 0.9, hy + 5); g.stroke();
+  function drawLily(g, e, d, flash, h, pd) {   // a snap-lily: veined lily pads, a curving stem, a layered pink bud that opens into a toothed jaw
+    var f = e.dir, t = e.tt, wind = e.st === "wind", snap = e.st === "snap", rec = e.st === "recover", ext = e.ext || 0, open = snap ? 1 : wind ? 0.35 + 0.65 * (1 - e.t / 0.6) : rec ? Math.max(0.25, ext) : 0;
+    var hx = f * (6 + ext * 22), hy = -24 + ext * 7 + (e.st === "bud" ? Math.sin(t * 2) * 1.2 : 0);
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#15381c"), lnP = F("#6a0e32"), g1 = F("#6ad07a"), g2 = F("#35994a"), g3 = F("#1d5e2c"), pk1 = F("#ffd0e4"), pk2 = F("#ff7ab8"), pk3 = F("#d62a78");
+    g.lineCap = "round"; g.lineJoin = "round";
+    if (wind || snap) eGlow(g, hx, hy, 24, "#ff3a5a", 0.3 + 0.2 * Math.sin(t * 30));
+    // the pads: notched discs with veins, lit from above
+    [[-8 * f, -2, 11.5, 3.8, 1], [9 * f, -1.5, 9.5, 3.2, -1]].forEach(function (pq) {
+      g.save(); g.translate(pq[0], pq[1]); g.beginPath(); g.ellipse(0, 0, pq[2], pq[3], 0, 0.25, 6.03); g.lineTo(0, 0); g.closePath(); aInk(g, aG(g, -pq[3], pq[3], g1, g2, g3), ln, 1.1);
+      g.strokeStyle = F("#2a7a3a"); g.lineWidth = 0.6; for (var v = 0; v < 5; v++) { var va = 0.9 + v * 1.05; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(va) * pq[2] * 0.85, Math.sin(va) * pq[3] * 0.85); g.stroke(); }
+      aShine(g, -pq[2] * 0.3, -pq[3] * 0.45, pq[2] * 0.35, 0.8, 0.3, 0); g.restore();
+    });
+    // the stem: a thick curve, light down one side, with a small leaf
+    var cx = -f * 3, cy = -16, ex = hx * 0.9, ey = hy + 5;
+    aLimbQ(g, 0, -2, cx, cy, ex, ey, 4.6, g2, ln);
+    g.strokeStyle = g1; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-1.2 * f, -3); g.quadraticCurveTo(cx - 1.4 * f, cy, ex - 1.2 * f, ey); g.stroke();
+    g.save(); g.translate(-f * 1.6, -10); g.scale(f, 1); g.rotate(-0.6 + Math.sin(t * 2.4) * 0.12); g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(-4, -4.6, -9, -3); g.quadraticCurveTo(-4, 0.6, 0, 0); g.closePath(); aInk(g, aG(g, -4.6, 0.6, g1, g2, g3), ln, 0.8); g.strokeStyle = g3; g.lineWidth = 0.5; g.beginPath(); g.moveTo(0, 0); g.lineTo(-7.6, -2.8); g.stroke(); g.restore();
     g.save(); g.translate(hx, hy); g.scale(f, 1);
-    if (open < 0.12) {   // a closed pink bud with green sepals
-      g.fillStyle = pk; g.beginPath(); g.moveTo(-6, 4); g.quadraticCurveTo(-8, -10, 2, -15); g.quadraticCurveTo(10, -9, 8, 4); g.closePath(); g.fill();
-      g.fillStyle = pk2; g.beginPath(); g.moveTo(0, 4); g.quadraticCurveTo(-1, -8, 2, -15); g.quadraticCurveTo(7, -8, 6, 4); g.closePath(); g.fill();
-      g.fillStyle = flash ? "#e8ffe0" : "#3a9a48"; g.beginPath(); g.moveTo(-6, 5); g.lineTo(-9, -3); g.lineTo(-2, 3); g.closePath(); g.fill(); g.beginPath(); g.moveTo(8, 5); g.lineTo(11, -3); g.lineTo(4, 3); g.closePath(); g.fill();
-    } else {   // jaws open: pink petals hinged at the neck, red throat, white teeth
+    if (open < 0.12) {   // the closed bud: three overlapping petals over green sepals, breathing gently
+      var br = 1 + Math.sin(t * 2.2) * 0.03; g.scale(br, br);
+      [[-1, -6, -0.35], [1, 7, 0.35]].forEach(function (sq) { g.beginPath(); g.moveTo(sq[1] * 0.3, 4); g.quadraticCurveTo(sq[1] * 1.4, 1, sq[1] * 1.5 + sq[0] * 1.5, -5); g.quadraticCurveTo(sq[1] * 0.5, -1, sq[1] * 0.1, 4.6); g.closePath(); aInk(g, aG(g, -5, 5, g1, g2, g3), ln, 0.8); });
+      g.beginPath(); g.moveTo(-6, 4); g.quadraticCurveTo(-8.6, -9, 1.5, -15.5); g.quadraticCurveTo(9.6, -9, 8, 4); g.quadraticCurveTo(1, 6.2, -6, 4); g.closePath(); aInk(g, aG(g, -15.5, 5, pk1, pk2, pk3), lnP, 1.1);
+      g.beginPath(); g.moveTo(-1, 4.6); g.quadraticCurveTo(-3.6, -6, 1.5, -15.5); g.quadraticCurveTo(-0.4, -6, 2.6, 4.8); g.closePath(); g.fillStyle = F("#ff96c8"); g.fill(); g.strokeStyle = lnP; g.lineWidth = 0.6; g.stroke();
+      g.beginPath(); g.moveTo(2.6, 4.8); g.quadraticCurveTo(6.4, -5, 1.5, -15.5); g.strokeStyle = lnP; g.lineWidth = 0.6; g.stroke();
+      aShine(g, -2.6, -8, 1.6, 4, 0.4, 0.25);
+      g.fillStyle = F("#fff4a0"); g.beginPath(); g.arc(1.5, -14.6, 0.9, 0, 7); g.fill();
+    } else {   // jaws open: two petal lips hinged at the neck, a dark red throat, rows of white teeth and a dribble of nectar
       var a = open * 0.85;
-      g.fillStyle = flash ? "#ffe0e8" : "#b8183a"; g.beginPath(); g.moveTo(-2, 0); g.lineTo(21, -2 - 8 * open); g.lineTo(21, 2 + 8 * open); g.closePath(); g.fill();
-      g.save(); g.rotate(a); g.fillStyle = pk; g.strokeStyle = pk2; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-2, 0); g.quadraticCurveTo(8, 12, 22, 2); g.quadraticCurveTo(10, 3, -2, 0); g.fill(); g.stroke();
-      g.fillStyle = "#fff"; for (var i = 0; i < 4; i++) { g.beginPath(); g.moveTo(5 + i * 4, 4 - i * 0.6); g.lineTo(7 + i * 4, 0.6); g.lineTo(9 + i * 4, 3.8 - i * 0.6); g.fill(); } g.restore();
-      g.save(); g.rotate(-a); g.fillStyle = pk; g.strokeStyle = pk2; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-2, 0); g.quadraticCurveTo(8, -12, 22, -2); g.quadraticCurveTo(10, -3, -2, 0); g.fill(); g.stroke();
-      g.fillStyle = "#fff"; for (var j = 0; j < 4; j++) { g.beginPath(); g.moveTo(5 + j * 4, -4 + j * 0.6); g.lineTo(7 + j * 4, -0.6); g.lineTo(9 + j * 4, -3.8 + j * 0.6); g.fill(); } g.restore();
+      g.beginPath(); g.moveTo(-2, 0); g.lineTo(21, -2 - 8 * open); g.quadraticCurveTo(24, 0, 21, 2 + 8 * open); g.closePath();
+      var tg = g.createLinearGradient(-2, 0, 22, 0); tg.addColorStop(0, F("#4a0418")); tg.addColorStop(1, F("#c8204a")); g.fillStyle = tg; g.fill();
+      [1, -1].forEach(function (sd) {
+        g.save(); g.rotate(a * sd);
+        for (var i = 0; i < 5; i++) { var tx = 4 + i * 3.6; g.beginPath(); g.moveTo(tx, sd * (3.4 - i * 0.4)); g.lineTo(tx + 1.6, sd * 0.4); g.lineTo(tx + 3.2, sd * (3.2 - i * 0.4)); g.closePath(); aInk(g, F("#fffaf0"), F("#8a6a6a"), 0.4); }
+        g.beginPath(); g.moveTo(-2, 0); g.quadraticCurveTo(8, sd * 13, 23, sd * 2); g.quadraticCurveTo(10, sd * 3.6, -2, 0); g.closePath(); aInk(g, aG(g, sd > 0 ? -1 : -13, sd > 0 ? 13 : 1, sd > 0 ? pk2 : pk1, pk2, sd > 0 ? pk3 : pk2), lnP, 1.1);
+        g.strokeStyle = F("#ffb0d6"); g.lineWidth = 0.7; g.beginPath(); g.moveTo(2, sd * 3); g.quadraticCurveTo(9, sd * 8, 18, sd * 3); g.stroke();
+        g.restore();
+      });
+      if (!flash && snap) { g.fillStyle = "rgba(255,240,140,.8)"; g.beginPath(); g.ellipse(14, 4 + Math.sin(t * 9) * 1.4, 0.9, 1.6, 0, 0, 7); g.fill(); }
     }
     g.restore();
   }
-  function drawImp(g, e, d, flash, h, pd) {
-    var f = e.dir, wind = e.st === "wind", pw = wind ? 1 - e.t / IMP.wind : 0, air = !e.on, stp = !air && Math.abs(e.mv || 0) > 0.1 ? Math.sin(e.tt * 12) * 2 : 0, red = flash ? "#fff" : "#d8452a", red2 = flash ? "#ffe0d8" : "#f08a4a";
-    g.save(); g.scale(f, 1); if (!e.def) eGlow(g, 0, -14, 22, d.glow, 0.26 + (wind ? 0.25 * pw : 0));
-    g.strokeStyle = flash ? "#fff" : "#9a2a1a"; g.lineWidth = 2.4; g.lineCap = "round"; g.beginPath(); g.moveTo(-6, -9); g.quadraticCurveTo(-16, -8 + Math.sin(e.tt * 5) * 2, -17, -20); g.stroke();
-    g.fillStyle = flash ? "#fff" : "#2a1a1a"; g.beginPath(); g.moveTo(-20, -19); g.lineTo(-14, -20); g.lineTo(-17, -26); g.closePath(); g.fill();
-    g.strokeStyle = flash ? "#fff" : "#9a2a1a"; g.lineWidth = 3.2; g.beginPath(); g.moveTo(-3, -6); g.lineTo(-4 + stp, air ? -3 : 0); g.moveTo(3, -6); g.lineTo(4 - stp, air ? -3 : 0); g.stroke();
-    g.fillStyle = red; g.beginPath(); g.ellipse(0, -13, 8, 9, 0, 0, 7); g.fill(); g.fillStyle = red2; g.beginPath(); g.ellipse(1.5, -11, 4.5, 6, 0, 0, 7); g.fill();
-    g.fillStyle = red; g.beginPath(); g.ellipse(2, -25, 7.2, 6.6, 0, 0, 7); g.fill();
-    g.fillStyle = flash ? "#fff" : "#2a1a1a"; g.beginPath(); g.moveTo(-3, -29); g.lineTo(-5, -37); g.lineTo(1, -30); g.closePath(); g.fill(); g.beginPath(); g.moveTo(5, -30); g.lineTo(8, -37); g.lineTo(9, -28); g.closePath(); g.fill();
-    g.fillStyle = flash ? "#ffe9a0" : "#ffe04a"; g.beginPath(); g.ellipse(5, -26, 2.2, 2.8, 0, 0, 7); g.ellipse(-0.5, -26, 2, 2.6, 0, 0, 7); g.fill(); g.fillStyle = "#2a0d08"; g.fillRect(5, -27.6, 1.2, 3.2); g.fillRect(-0.2, -27.4, 1.1, 3);
-    g.strokeStyle = "#2a0d08"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(1, -21); g.quadraticCurveTo(4, -19, 7, -21.5); g.stroke();
-    var ax = wind ? 11 : 9, ay = wind ? -30 - pw * 4 : -12; g.strokeStyle = red; g.lineWidth = 3; g.beginPath(); g.moveTo(5, -16); g.lineTo(ax, ay); g.stroke();
-    g.fillStyle = red2; g.beginPath(); g.arc(ax, ay, 2.6, 0, 7); g.fill();
-    if (wind) { var r = 2 + pw * 5; g.fillStyle = "rgba(255,120,40,.45)"; g.beginPath(); g.arc(ax, ay - r, r + 3, 0, 7); g.fill(); g.fillStyle = "#ff6a1f"; g.beginPath(); g.arc(ax, ay - r, r, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ax - 0.5, ay - r - 0.5, r * 0.5, 0, 7); g.fill(); }
+  function drawImp(g, e, d, flash, h, pd) {   // a fire imp: leathery wings, curled horns, a forked tail, a fireball when it winds up
+    var f = e.dir, t = e.tt, wind = e.st === "wind", pw = wind ? 1 - e.t / IMP.wind : 0, air = !e.on, stp = !air && Math.abs(e.mv || 0) > 0.1 ? Math.sin(t * 12) * 2 : 0;
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#3a0a06"), r1 = F("#ff8a52"), r2 = F("#e0472a"), r3 = F("#8e1e12"), bel = F("#ffc07a"), hn1 = F("#7a5a50"), hn2 = F("#24120e");
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.4 * h : 0, 0); g.scale(f, 1); if (!e.def) eGlow(g, 0, -14, 22, d.glow, 0.26 + (wind ? 0.25 * pw : 0));
+    g.lineCap = "round"; g.lineJoin = "round";
+    // wings: two scalloped membranes behind the shoulders, flapping (faster in the air)
+    var fa = Math.sin(t * (air ? 22 : 9)) * (air ? 0.5 : 0.22);
+    [[-0.35, 0.82], [0.2, 1]].forEach(function (wg, wi) {
+      g.save(); g.translate(-3, -19); g.rotate(-0.5 + wg[0] - fa * (wi ? 1 : 0.7)); g.scale(wg[1], wg[1]);
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(-6, -11); g.lineTo(-15, -9); g.quadraticCurveTo(-13, -5, -15, -2); g.quadraticCurveTo(-11, -1, -12, 3); g.quadraticCurveTo(-7, 1, -5, 5); g.closePath();
+      aInk(g, aG(g, -11, 5, F(wi ? "#c23a24" : "#8e2416"), F(wi ? "#8e2416" : "#5e140c"), F("#3a0a06")), ln, 1);
+      g.strokeStyle = F(wi ? "#e8644a" : "#a83a26"); g.lineWidth = 0.7; g.beginPath(); g.moveTo(-1, -1); g.lineTo(-14, -8.5); g.moveTo(-1, 0); g.lineTo(-14, -2); g.moveTo(-1, 1); g.lineTo(-11.5, 2.6); g.stroke();
+      g.restore();
+    });
+    // the tail: a thick curl ending in a spade, swishing
+    var sw = Math.sin(t * 5) * 2.4;
+    aLimbQ(g, -5, -9, -17, -7 + sw, -17, -21, 2.4, r2, ln);
+    g.save(); g.translate(-17, -21); g.rotate(-0.25 + sw * 0.05); g.beginPath(); g.moveTo(0, 1); g.lineTo(-3.6, -1.5); g.lineTo(0, -6.5); g.lineTo(3.6, -1.5); g.closePath(); aInk(g, aG(g, -6.5, 1, F("#5a2a24"), hn2, hn2), ln, 0.9); g.restore();
+    // legs: short and stocky, clawed feet
+    [[-3, stp, 1], [3, -stp, 0]].forEach(function (lg) { var fx = lg[0] + lg[1] * 0.6, fy = air ? -3 : 0; aLimb(g, [[lg[0], -7], [fx, fy - 1.5]], 3.2, lg[2] ? r3 : r2, ln); g.beginPath(); g.ellipse(fx + 1, fy - 0.8, 2.6, 1.4, 0, 0, 7); aInk(g, hn2, ln, 0.8); });
+    // the far arm
+    aLimb(g, [[-5, -17], [-8, -11]], 2.6, r3, ln);
+    // body: a round pot belly, lit from the top
+    g.beginPath(); g.ellipse(0, -13, 8.2, 9, 0, 0, 7); aInk(g, aG(g, -22, -4, r1, r2, r3), ln, 1.2);
+    g.beginPath(); g.ellipse(1.8, -10.5, 4.6, 5.8, 0, 0, 7); g.fillStyle = aG(g, -16, -5, F("#ffd89a"), bel, F("#e0843a")); g.fill();
+    g.strokeStyle = F("#c8602a"); g.lineWidth = 0.6; for (var b = 0; b < 3; b++) { g.beginPath(); g.moveTo(-1.2, -13.5 + b * 2.6); g.quadraticCurveTo(1.8, -12.6 + b * 2.6, 5, -13.5 + b * 2.6); g.stroke(); }
+    aShine(g, -3.4, -17.5, 2.4, 1.4, 0.3);
+    // head: big and round, horns curling back, pointed ears
+    var hx = 2, hy = -25;
+    g.beginPath(); g.moveTo(hx - 6.5, hy - 1); g.lineTo(hx - 11, hy - 4.5); g.lineTo(hx - 5.5, hy + 2); g.closePath(); aInk(g, r2, ln, 0.9);   // ear
+    g.beginPath(); g.ellipse(hx, hy, 7.4, 6.8, 0, 0, 7); aInk(g, aG(g, hy - 7, hy + 7, r1, r2, r3), ln, 1.2);
+    [[-3.6, -1], [4.4, 1]].forEach(function (hq) {   // horns
+      var bx = hx + hq[0], by = hy - 5.2; g.beginPath(); g.moveTo(bx - 1.8, by + 0.6); g.quadraticCurveTo(bx - 2.6 + hq[1], by - 4.4, bx - 5 + hq[1] * 2, by - 7.4); g.quadraticCurveTo(bx - 0.3 + hq[1], by - 4.4, bx + 1.8, by + 0.4); g.closePath();
+      aInk(g, aG(g, by - 7.4, by + 1, hn1, F("#4a2a24"), hn2), ln, 0.9);
+      g.strokeStyle = F("#9a7a70"); g.lineWidth = 0.5; g.beginPath(); g.moveTo(bx - 1.6, by - 2); g.lineTo(bx + 0.6, by - 2.4); g.moveTo(bx - 2.6, by - 4.6); g.lineTo(bx - 0.6, by - 5); g.stroke();
+    });
+    aShine(g, hx - 2.6, hy - 3.6, 2.6, 1.4, 0.3);
+    // eyes: glowing yellow, slit pupils, an angry brow
+    [[hx + 4.4, 2.3], [hx - 0.6, 2.1]].forEach(function (eq, ei) {
+      g.fillStyle = F("#fff4a0"); g.beginPath(); g.ellipse(eq[0], hy - 1, eq[1], eq[1] * 1.2, 0, 0, 7); g.fill(); g.strokeStyle = ln; g.lineWidth = 0.7; g.stroke();
+      if (!flash) { g.fillStyle = "#ff9a1a"; g.beginPath(); g.ellipse(eq[0] + 0.3, hy - 0.8, eq[1] * 0.7, eq[1] * 0.95, 0, 0, 7); g.fill(); g.fillStyle = "#2a0806"; g.beginPath(); g.ellipse(eq[0] + 0.5, hy - 0.8, 0.45, eq[1] * 0.85, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.fillRect(eq[0] - 0.7, hy - 2.4, 0.8, 0.8); }
+      g.strokeStyle = ln; g.lineWidth = 1.2; g.beginPath(); g.moveTo(eq[0] - eq[1] - 0.4, hy - 3.6 - (ei ? 0.6 : 0)); g.lineTo(eq[0] + eq[1] + 0.2, hy - 2.6 - (ei ? 0 : 0.8)); g.stroke();
+    });
+    // a wicked grin with two little fangs
+    g.beginPath(); g.moveTo(hx - 0.5, hy + 2.6); g.quadraticCurveTo(hx + 3, hy + 5.6, hx + 6.6, hy + 2.2); g.quadraticCurveTo(hx + 3, hy + 4, hx - 0.5, hy + 2.6); aInk(g, F("#3a0a06"), ln, 0.8);
+    g.fillStyle = F("#fff"); g.beginPath(); g.moveTo(hx + 1.2, hy + 3.2); g.lineTo(hx + 1.8, hy + 4.8); g.lineTo(hx + 2.4, hy + 3.5); g.fill(); g.beginPath(); g.moveTo(hx + 4.4, hy + 3.4); g.lineTo(hx + 5, hy + 4.8); g.lineTo(hx + 5.6, hy + 3.1); g.fill();
+    // the throwing arm, with a fireball growing over its head while it winds up
+    var ax = wind ? 11 : 9.5, ay = wind ? -30 - pw * 4 : -12;
+    aLimb(g, [[5, -17], [(5 + ax) / 2 + 1, (-17 + ay) / 2], [ax, ay]], 2.8, r2, ln);
+    g.beginPath(); g.arc(ax, ay, 2.4, 0, 7); aInk(g, r1, ln, 0.8); g.fillStyle = hn2; [[-1.6, -1.8], [0, -2.6], [1.6, -1.8]].forEach(function (c) { g.beginPath(); g.moveTo(ax + c[0] - 0.5, ay + c[1] + 0.8); g.lineTo(ax + c[0] * 1.3, ay + c[1] - 0.6); g.lineTo(ax + c[0] + 0.5, ay + c[1] + 0.8); g.fill(); });
+    if (wind) {
+      var r = 2 + pw * 5, fx2 = ax, fy2 = ay - r - 1;
+      g.fillStyle = "rgba(255,120,40,.4)"; g.beginPath(); g.arc(fx2, fy2, r + 3.5, 0, 7); g.fill();
+      for (var fl = 0; fl < 5; fl++) { var fa2 = t * 9 + fl * 1.26, fr = r * (0.55 + 0.25 * Math.sin(t * 20 + fl)); g.fillStyle = fl % 2 ? "#ff6a1f" : "#ff9a2a"; g.beginPath(); g.moveTo(fx2 + Math.cos(fa2) * r * 0.6, fy2 + Math.sin(fa2) * r * 0.6); g.lineTo(fx2 + Math.cos(fa2) * (r + fr), fy2 + Math.sin(fa2) * (r + fr) - fr * 0.6); g.lineTo(fx2 + Math.cos(fa2 + 0.6) * r * 0.6, fy2 + Math.sin(fa2 + 0.6) * r * 0.6); g.fill(); }
+      var fg = g.createRadialGradient(fx2 - r * 0.3, fy2 - r * 0.3, 0, fx2, fy2, r); fg.addColorStop(0, "#fff6c0"); fg.addColorStop(0.45, "#ffd23f"); fg.addColorStop(1, "#ff5a1a");
+      g.fillStyle = fg; g.beginPath(); g.arc(fx2, fy2, r, 0, 7); g.fill();
+    }
     g.restore();
   }
-  function drawBrute(g, e, d, flash, h, pd) {
+  function drawBrute(g, e, d, flash, h, pd) {   // an ice brute: a golem of faceted ice blocks with frosted edges, cracks and a glowing heart; raises both fists and slams
     var f = e.dir, st = e.st, lift = st === "raise" ? clamp(1 - e.t / BRUTE.raise, 0, 1) : 0, slam = st === "recover" ? clamp(e.t / BRUTE.recover, 0, 1) : 0, walk = st === "stalk" || st === "patrol" ? Math.sin(e.tt * 5) : 0;
-    var c1 = flash ? "#fff" : "#8fc4e6", c2 = flash ? "#e8f8ff" : "#d4f0ff", c3 = flash ? "#dff" : "#4a7ea8", c4 = flash ? "#fff" : "#2a5078";
-    g.save(); g.scale(f, 1); if (!e.def) eGlow(g, 0, -28, 34, d.glow, 0.2 + 0.1 * Math.sin(e.tt * 3) + lift * 0.2);
-    function blk(x, y, w, hh, col, hi) { g.fillStyle = col; g.fillRect(x, y, w, hh); g.fillStyle = hi; g.fillRect(x, y, w, 2.5); g.fillRect(x, y, 2.5, hh); g.fillStyle = c4; g.globalAlpha = 0.5; g.fillRect(x + w - 2.5, y + 2, 2.5, hh - 2); g.globalAlpha = 1; }
-    blk(-13, -14 + walk * 1.5, 11, 14 - walk * 1.5, c3, c1); blk(2, -14 - walk * 1.5, 11, 14 + walk * 1.5, c3, c1);
-    g.fillStyle = c1; g.beginPath(); g.moveTo(-18, -36 + slam * 2); g.lineTo(18, -36 + slam * 2); g.lineTo(13, -13); g.lineTo(-13, -13); g.closePath(); g.fill();
-    g.fillStyle = c2; g.beginPath(); g.moveTo(-18, -36 + slam * 2); g.lineTo(-4, -36 + slam * 2); g.lineTo(-9, -16); g.lineTo(-13, -13); g.closePath(); g.fill();
-    g.fillStyle = c3; g.beginPath(); g.moveTo(8, -36 + slam * 2); g.lineTo(18, -36 + slam * 2); g.lineTo(13, -13); g.lineTo(6, -13); g.closePath(); g.fill();
-    g.fillStyle = flash ? "#fff" : "rgba(159,232,255," + (0.6 + 0.3 * Math.sin(e.tt * 4)).toFixed(2) + ")"; g.beginPath(); g.moveTo(0, -30); g.lineTo(5, -24); g.lineTo(0, -17); g.lineTo(-5, -24); g.closePath(); g.fill();
-    blk(-8, -48 + slam * 4, 16, 12, c1, c2); g.fillStyle = flash ? "#fff" : "#e8ffff"; g.fillRect(-5, -44 + slam * 4, 4, 2.4); g.fillRect(2, -44 + slam * 4, 4, 2.4);
-    g.fillStyle = c2; g.beginPath(); g.moveTo(-7, -48 + slam * 4); g.lineTo(-4, -56 + slam * 4); g.lineTo(-1, -48 + slam * 4); g.fill(); g.beginPath(); g.moveTo(2, -48 + slam * 4); g.lineTo(5, -55 + slam * 4); g.lineTo(8, -48 + slam * 4); g.fill();
-    for (var s = -1; s <= 1; s += 2) {   // arms: hang at the sides, swing up over the head to slam
-      var sx = s * 18, sy = -34, fx = s * 21 - s * lift * 8, fy = -10 - lift * 40 + slam * 0;
-      g.strokeStyle = c3; g.lineWidth = 9; g.lineCap = "round"; g.beginPath(); g.moveTo(sx, sy); g.lineTo(fx, fy + 6); g.stroke(); g.strokeStyle = c1; g.lineWidth = 5; g.beginPath(); g.moveTo(sx, sy); g.lineTo(fx, fy + 6); g.stroke();
-      blk(fx - 7, fy - 5, 14, 13, c1, c2);
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#12304a"), i1 = F("#eaf8ff"), i2 = F("#9fd2f0"), i3 = F("#4a86b4"), i4 = F("#28527a"), glowA = (0.6 + 0.3 * Math.sin(e.tt * 4)).toFixed(2);
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(e.tt * 90) * 1.4 * h : 0, 0); g.scale(f, 1); if (!e.def) eGlow(g, 0, -28, 34, d.glow, 0.2 + 0.1 * Math.sin(e.tt * 3) + lift * 0.2);
+    g.lineJoin = "round"; g.lineCap = "round";
+    function blk(x, y, w, hh, cut) {   // an ice block: bevelled corners, a lit top face, a frosted rim and a crack or two
+      var c = cut || 2.4; g.beginPath(); g.moveTo(x + c, y); g.lineTo(x + w - c, y); g.lineTo(x + w, y + c); g.lineTo(x + w, y + hh - c); g.lineTo(x + w - c, y + hh); g.lineTo(x + c, y + hh); g.lineTo(x, y + hh - c); g.lineTo(x, y + c); g.closePath();
+      aInk(g, aG(g, y, y + hh, i2, i3, i4), ln, 1.2);
+      g.beginPath(); g.moveTo(x + c, y + 0.6); g.lineTo(x + w - c, y + 0.6); g.lineTo(x + w - c - 1.4, y + 2.8); g.lineTo(x + c + 1.4, y + 2.8); g.closePath(); g.fillStyle = i1; g.fill();
+      g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 0.7; g.beginPath(); g.moveTo(x + 1.2, y + c + 1); g.lineTo(x + 1.2, y + hh - c - 1); g.stroke();
+      g.strokeStyle = F("#2e6a98"); g.lineWidth = 0.6; g.beginPath(); g.moveTo(x + w * 0.62, y + hh * 0.3); g.lineTo(x + w * 0.5, y + hh * 0.55); g.lineTo(x + w * 0.66, y + hh * 0.8); g.stroke();
     }
-    if (st === "recover" && slam > 0.5) { g.strokeStyle = "rgba(207,234,255,.8)"; g.lineWidth = 2; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-14, -3); g.lineTo(-8, 1); g.moveTo(26, 0); g.lineTo(14, -3); g.lineTo(8, 1); g.stroke(); }
+    blk(-13, -14 + walk * 1.5, 11, 14 - walk * 1.5); blk(2, -14 - walk * 1.5, 11, 14 + walk * 1.5);
+    // the chest: a big faceted wedge with a glowing crystal heart
+    var cy = -36 + slam * 2;
+    g.beginPath(); g.moveTo(-19, cy); g.lineTo(19, cy); g.lineTo(14, -13); g.lineTo(-14, -13); g.closePath(); aInk(g, aG(g, cy, -13, i2, i3, i4), ln, 1.3);
+    g.beginPath(); g.moveTo(-19, cy); g.lineTo(-4, cy); g.lineTo(-9, -16); g.lineTo(-14, -13); g.closePath(); g.fillStyle = "rgba(234,248,255,.55)"; g.fill();
+    g.beginPath(); g.moveTo(8, cy); g.lineTo(19, cy); g.lineTo(14, -13); g.lineTo(6, -13); g.closePath(); g.fillStyle = "rgba(20,50,90,.35)"; g.fill();
+    g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-17, cy + 1.2); g.lineTo(17, cy + 1.2); g.stroke();
+    if (!flash) eGlow(g, 0, -24, 12, "#9fe8ff", 0.5);
+    g.beginPath(); g.moveTo(0, -31); g.lineTo(5.4, -24); g.lineTo(0, -16.5); g.lineTo(-5.4, -24); g.closePath(); aInk(g, flash ? "#fff" : "rgba(170,240,255," + glowA + ")", F("#5ac8f0"), 0.9);
+    g.beginPath(); g.moveTo(0, -31); g.lineTo(-5.4, -24); g.lineTo(0, -24); g.closePath(); g.fillStyle = "rgba(255,255,255,.6)"; g.fill();
+    // the head: a block with frost spikes, two cold glowing eyes and a frown
+    var hy = -48 + slam * 4;
+    blk(-8, hy, 16, 12);
+    [[-7, -4, 8], [-1.5, 0, 9.5], [3, 5, 7.5]].forEach(function (sp) { g.beginPath(); g.moveTo(sp[0], hy + 0.4); g.lineTo((sp[0] + sp[1] + 3) / 2, hy - sp[2]); g.lineTo(sp[1] + 3, hy + 0.4); g.closePath(); aInk(g, aG(g, hy - sp[2], hy, i1, i2, i3), ln, 0.9); });
+    [[-5, 1], [2.4, 1]].forEach(function (ey) { if (!flash) eGlow(g, ey[0] + 1.8, hy + 5.4, 4, "#9fe8ff", 0.7); g.beginPath(); g.rect(ey[0], hy + 4.2, 3.8, 2.4); aInk(g, F("#e8ffff"), ln, 0.6); g.fillStyle = F("#5ad0ff"); g.fillRect(ey[0] + 1.6, hy + 4.6, 1.6, 1.6); });
+    g.strokeStyle = ln; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-5.6, hy + 3.2); g.lineTo(-1.4, hy + 4); g.moveTo(1.6, hy + 4); g.lineTo(5.8, hy + 3.2); g.moveTo(-3, hy + 9.4); g.lineTo(3, hy + 9.4); g.stroke();
+    for (var s = -1; s <= 1; s += 2) {   // arms: hang at the sides, swing up over the head to slam
+      var sx = s * 18, sy = -34, fx = s * 21 - s * lift * 8, fy = -10 - lift * 40;
+      g.beginPath(); g.arc(sx, sy, 5.2, 0, 7); aInk(g, aG(g, sy - 5, sy + 5, i1, i2, i3), ln, 1);
+      aLimb(g, [[sx, sy], [fx, fy + 6]], 7, i3, ln); g.strokeStyle = i2; g.lineWidth = 2.4; g.beginPath(); g.moveTo(sx - s * 1.4, sy); g.lineTo(fx - s * 1.4, fy + 6); g.stroke();
+      blk(fx - 7.5, fy - 5.5, 15, 14, 3);
+      g.strokeStyle = ln; g.lineWidth = 0.8; g.beginPath(); for (var k = 1; k < 3; k++) { g.moveTo(fx - 7.5 + k * 5, fy - 5.5); g.lineTo(fx - 7.5 + k * 5, fy - 1.5); } g.stroke();   // knuckles
+    }
+    if (st === "recover" && slam > 0.5) { g.strokeStyle = "rgba(207,234,255,.85)"; g.lineWidth = 2; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-14, -3); g.lineTo(-8, 1); g.moveTo(26, 0); g.lineTo(14, -3); g.lineTo(8, 1); g.stroke(); }
     g.restore();
   }
-  function drawCrawler(g, e, d, flash, h, pd) {
-    var f = e.dir, ball = e.st === "curl" || e.st === "roll", sh = flash ? "#fff" : "#4a3a66", sh2 = flash ? "#f0e8ff" : "#6a5a86", cr = flash ? "#fff" : "#c8a8ff", cr2 = flash ? "#fff" : "#e8d8ff";
-    g.save(); if (!e.def) eGlow(g, 0, -8, 20, d.glow, 0.22 + (ball ? 0.12 : 0));
-    function crystals(x, y, k) { g.fillStyle = cr; g.beginPath(); g.moveTo(x - 3 * k, y); g.lineTo(x - 1.2 * k, y - 8 * k); g.lineTo(x + 1.5 * k, y); g.fill(); g.fillStyle = cr2; g.beginPath(); g.moveTo(x + 0.5 * k, y); g.lineTo(x + 2.5 * k, y - 6 * k); g.lineTo(x + 5 * k, y); g.fill(); }
+  function drawCrawler(g, e, d, flash, h, pd) {   // a crystal crawler: an armoured pill bug with amethyst growing out of its plates; it curls into a spiked ball to roll at you
+    var f = e.dir, ball = e.st === "curl" || e.st === "roll";
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#120c1e"), p1 = F("#7e6aa6"), p2 = F("#4e3e72"), p3 = F("#2a2042"), cr1 = F("#f4eaff"), cr2 = F("#c8a8ff"), cr3 = F("#7a52c8");
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(e.tt * 90) * 1.4 * h : 0, 0); if (!e.def) eGlow(g, 0, -8, 20, d.glow, 0.22 + (ball ? 0.12 : 0));
+    g.lineCap = "round"; g.lineJoin = "round";
+    function crystal(x, y, k, a) {   // a faceted shard: a lit face and a shaded face, with a bright edge
+      g.save(); g.translate(x, y); g.rotate(a || 0); g.scale(k, k);
+      g.beginPath(); g.moveTo(-2.6, 0); g.lineTo(-1.6, -6.6); g.lineTo(0.2, -9); g.lineTo(2.4, -6); g.lineTo(2.6, 0); g.closePath(); aInk(g, cr3, ln, 0.9 / k);
+      g.beginPath(); g.moveTo(-2.6, 0); g.lineTo(-1.6, -6.6); g.lineTo(0.2, -9); g.lineTo(0, 0); g.closePath(); g.fillStyle = aG(g, -9, 0, cr1, cr2, cr3); g.fill();
+      g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 0.5 / k; g.beginPath(); g.moveTo(-1.6, -6.6); g.lineTo(0.2, -9); g.stroke();
+      g.restore();
+    }
     if (ball) {
-      g.translate(0, -10); g.rotate(e.rot || 0); g.fillStyle = sh; g.beginPath(); g.arc(0, 0, 11, 0, 7); g.fill(); g.fillStyle = sh2; g.beginPath(); g.arc(-2, 2, 7, 0.2, 3.2); g.fill();
-      for (var i = 0; i < 5; i++) { g.save(); g.rotate(i * 1.2566); crystals(0, -9, 0.9); g.restore(); }
+      g.translate(0, -11); g.rotate(e.rot || 0);
+      for (var i = 0; i < 6; i++) { var a = i * 1.047; if (!flash) eGlow(g, Math.cos(a) * 10, Math.sin(a) * 10, 5, "#c8a8ff", 0.3); crystal(Math.cos(a) * 8.2, Math.sin(a) * 8.2, i % 2 ? 0.95 : 1.15, a + 1.5708); crystal(Math.cos(a + 0.42) * 8.6, Math.sin(a + 0.42) * 8.6, 0.55, a + 1.5708 + 0.35); }   // rooted inside the ball, so they grow out of it
+      g.beginPath(); g.arc(0, 0, 11, 0, 7); aInk(g, aG(g, -11, 11, p1, p2, p3), ln, 1.3);
+      g.save(); g.beginPath(); g.arc(0, 0, 10.4, 0, 7); g.clip(); g.strokeStyle = p3; g.lineWidth = 1.1; for (var b = -1; b <= 1; b++) { g.beginPath(); g.ellipse(b * 5.4, 0, 3.4 + (1 - Math.abs(b)) * 1.4, 11, 0, 0, 7); g.stroke(); } g.strokeStyle = F("#9a86c4"); g.lineWidth = 0.6; for (var b2 = -1; b2 <= 1; b2++) { g.beginPath(); g.ellipse(b2 * 5.4 - 1, 0, 2.8 + (1 - Math.abs(b2)) * 1.4, 10, 0, 3.6, 5.4); g.stroke(); } g.restore();   // the plates, rolled up
+      aShine(g, -3.6, -5, 4, 2.2, 0.28);
     } else {
-      g.scale(f, 1); var lg = e.st === "crawl" ? Math.sin(e.tt * 12) * 2 : 0;
-      g.strokeStyle = flash ? "#fff" : "#2a2240"; g.lineWidth = 2.4; g.lineCap = "round"; for (var l = 0; l < 3; l++) { g.beginPath(); g.moveTo(-8 + l * 8, -5); g.lineTo(-10 + l * 8 + (l % 2 ? lg : -lg), 0); g.stroke(); }
-      g.fillStyle = sh; g.beginPath(); g.ellipse(0, -9, 16, 11, 0, Math.PI, 0); g.fill(); g.fillRect(-16, -9, 32, 5); g.fillStyle = sh2; g.fillRect(-16, -5, 32, 2.5);
-      crystals(-8, -17, 0.9); crystals(2, -19, 1.1); crystals(10, -14, 0.8);
-      g.fillStyle = flash ? "#fff" : "#3a2d56"; g.beginPath(); g.ellipse(15, -7, 6, 5, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.fillRect(16, -10, 2.4, 2.4); g.fillStyle = "#14101c"; g.fillRect(17, -9.4, 1.2, 1.4);
-      if (e.st === "dizzy") for (var s = 0; s < 3; s++) { var a = e.tt * 6 + s * 2.1; g.fillStyle = "#ffe48a"; g.fillRect(Math.cos(a) * 9 - 1, -26 + Math.sin(a) * 2.5, 2.6, 2.6); }
+      g.scale(f, 1); var lg = e.st === "crawl" || e.st === "patrol" ? Math.sin(e.tt * 12) * 2 : 0;
+      for (var l = 0; l < 4; l++) { var lx = -11 + l * 6.6, ph = l % 2 ? lg : -lg; aLimb(g, [[lx, -5.4], [lx - 1 + ph * 0.5, -2.6], [lx - 2.4 + ph, 0]], 1.4, F("#3a2e56"), ln); }   // little legs under the plates
+      // the crystals GROW out of the shell: rooted below the plate tops (the plates are drawn over their bases), each leaning out along the curve
+      // of the back, in clusters: a big shard with a smaller one either side; a soft glow where they come out
+      var back = function (x) { return -17.4 - Math.cos(x / 16 * 1.5708) * 4.2; };
+      [[-8.6, 0.85, [[-2.2, 0.55, -0.35], [2, 0.5, 0.3]]], [0.4, 1.2, [[-2.6, 0.62, -0.4], [2.6, 0.7, 0.35], [0.6, 0.5, 0.05]]], [9, 0.8, [[-2, 0.5, -0.3], [2.2, 0.45, 0.4]]]].forEach(function (cl) {
+        var cx2 = cl[0], ry = back(cx2) + 3.2, lean = cx2 / 16 * 0.7;
+        if (!flash) eGlow(g, cx2, ry - 3, 9 * cl[1], "#c8a8ff", 0.35);
+        cl[2].forEach(function (sm) { crystal(cx2 + sm[0], back(cx2 + sm[0]) + 3, sm[1] * cl[1] * 1.3, lean + sm[2]); });
+        crystal(cx2, ry, cl[1] * 1.25, lean);
+      });
+      // the shell: five overlapping plates, each lit from the top, the back ones higher
+      for (var s = 0; s < 5; s++) {
+        var x0 = -15 + s * 6.2, top = back(x0 + 3.6) + 1.4;
+        g.beginPath(); g.moveTo(x0 - 1, -4); g.quadraticCurveTo(x0 - 1.6, top + 1, x0 + 3.6, top); g.quadraticCurveTo(x0 + 8.6, top + 1, x0 + 8, -4); g.closePath();
+        aInk(g, aG(g, top, -4, p1, p2, p3), ln, 1.1);
+        g.strokeStyle = F("#9a86c4"); g.lineWidth = 0.8; g.beginPath(); g.moveTo(x0 + 0.4, top + 3); g.quadraticCurveTo(x0 + 3.6, top + 1.4, x0 + 6.6, top + 3); g.stroke();
+        g.fillStyle = F("#b898f0"); [[x0 + 1.6, top + 6.4], [x0 + 5, top + 8.6]].forEach(function (cp) { g.beginPath(); g.moveTo(cp[0] - 0.8, cp[1]); g.lineTo(cp[0], cp[1] - 1.6); g.lineTo(cp[0] + 0.8, cp[1]); g.closePath(); g.fill(); });   // tiny crystal flecks in the plates
+      }
+      g.beginPath(); g.moveTo(-16, -5.6); g.lineTo(16, -5.6); g.lineTo(15, -3.2); g.lineTo(-15, -3.2); g.closePath(); aInk(g, p3, ln, 0.9);   // the rim underneath
+      // head: a rounded snout, a shining eye and two feelers
+      var aw = Math.sin(e.tt * 4) * 1.2;
+      aLimbQ(g, 17, -10, 21, -15 + aw, 24, -14 + aw, 0.8, F("#6a5a90"), ln); aLimbQ(g, 16, -11, 19, -17 - aw, 21.5, -18 - aw, 0.8, F("#6a5a90"), ln);
+      g.beginPath(); g.ellipse(16, -7.4, 6.2, 5.2, 0, 0, 7); aInk(g, aG(g, -12.6, -2.2, F("#6a5a90"), F("#463a68"), F("#241c3a")), ln, 1.1);
+      aEye(g, 17.6, -9, 1.9, F("#c8a8ff"), ln, flash, 0.6, 0.2);
+      g.strokeStyle = ln; g.lineWidth = 0.8; g.beginPath(); g.moveTo(19.6, -5.4); g.lineTo(21.4, -5.8); g.stroke();
+      aShine(g, -4, -18, 6, 1.4, 0.22, -0.08);
+      if (e.st === "dizzy") for (var z = 0; z < 3; z++) { var za = e.tt * 6 + z * 2.1; g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(Math.cos(za) * 9, -27 + Math.sin(za) * 2.5, 1.5, 0, 7); g.fill(); }
     }
     g.restore();
   }
@@ -4402,12 +5052,120 @@
     g.globalAlpha = 1; g.imageSmoothingEnabled = false;
   }
   window.__sbxMobs = { hit: function (e, d, f) { damageEnemy(e, d, f); }, ENEMY: ENEMY, enemies: enemies, newEnemy: newEnemy, AMB2: AMB2, CRIT: CRIT, CRITK: CRITK, spawnCrit: spawnCrit, critKind2: critKind2, tickAmb2: tickAmb2, lamps2: lamps2, get st() { return S.st; } };
+
+  // ---------- ISLAND RAIDS: the Reef Crab and the Bilge Pirate (drawn like the other creatures: 30 units = one tile, feet at 0) ----------
+  function drawCrab(g, e, d, flash, h, pd) {   // a shore crab: a knobbly shell, jointed legs, two big pincers that snap open and shut
+    var t = e.tt || 0, walk = Math.sin(t * 14) * 2.2, pinch = Math.max(0, Math.sin(t * 5)), mv = e.st === "patrol" || e.st === "charge" || e.st === "chase";
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#4a1206"), s1 = F("#ff9a62"), s2 = F("#e8572e"), s3 = F("#a02a12"), lg1 = F("#e0603a"), lg2 = F("#b23a1c"), tip = F("#5a1a0c");
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.4 * h : 0, 0); g.scale(1 + 0.4 * pd, 1 - 0.7 * pd); if (!e.def) eGlow(g, 0, -6, 20, d.glow, 0.25);
+    g.lineCap = "round"; g.lineJoin = "round";
+    // legs: three a side, two segments each, scuttling sideways out of step
+    for (var i = 0; i < 3; i++) [-1, 1].forEach(function (sd) {
+      var ph = mv ? (i % 2 ? walk : -walk) * (sd > 0 ? 1 : -1) : Math.sin(t * 2 + i) * 0.3, rx = sd * (4.5 + i * 2.6), kx = sd * (9 + i * 3.2) + ph * 0.5, ky = -9 - (1 - i * 0.4) + Math.abs(ph) * 0.3, fx = sd * (11 + i * 3.6) + ph, fy = -0.4;
+      aLimb(g, [[rx, -6.5], [kx, ky]], 2.2, i === 1 ? lg2 : lg1, ln); aLimb(g, [[kx, ky], [fx, fy - 1]], 1.6, lg2, ln);
+      g.strokeStyle = tip; g.lineWidth = 1.6; g.beginPath(); g.moveTo(fx, fy - 1); g.lineTo(fx + sd * 0.8, fy + 0.2); g.stroke();
+    });
+    // the pincers: an arm, then a fat claw with a hinged finger
+    [-1, 1].forEach(function (sd) {
+      var op = 0.15 + pinch * 0.45;
+      aLimb(g, [[sd * 7, -9], [sd * 11, -12], [sd * 13.5, -15]], 2.6, lg1, ln);
+      g.save(); g.translate(sd * 14, -16); g.scale(sd, 1); g.rotate(-0.55);
+      g.beginPath(); g.moveTo(-2.5, 2.2); g.quadraticCurveTo(-3.5, -3.5, 2, -4.2); g.quadraticCurveTo(7.5, -4.4, 9.5, -1.2); g.lineTo(5, -0.6); g.quadraticCurveTo(3, 3.5, -2.5, 2.2); g.closePath();   // the palm and fixed finger
+      aInk(g, aG(g, -4.4, 3, s1, s2, s3), ln, 1);
+      g.save(); g.translate(4.5, 0.4); g.rotate(op); g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(3, 2.6, 6.2, 0.6); g.lineTo(5.8, -0.6); g.quadraticCurveTo(3, 0.6, 0, -1); g.closePath(); aInk(g, aG(g, -1, 3, s1, s2, s3), ln, 0.9); g.restore();   // the moving finger
+      g.fillStyle = F("#fff0d8"); [[6, -1.4], [7.6, -1.6]].forEach(function (q) { g.beginPath(); g.moveTo(q[0] - 0.5, q[1] + 0.2); g.lineTo(q[0], q[1] + 1.1); g.lineTo(q[0] + 0.5, q[1] + 0.2); g.fill(); });   // little teeth on the grip
+      aShine(g, 1, -2.6, 2.6, 1, 0.38, -0.1);
+      g.restore();
+    });
+    // the shell: wide, with a scalloped front rim, knobs and a glossy top
+    g.beginPath(); g.moveTo(-12, -6); g.quadraticCurveTo(-13, -15, -4, -15.5); g.quadraticCurveTo(0, -16.4, 4, -15.5); g.quadraticCurveTo(13, -15, 12, -6);
+    for (var s = 0; s < 6; s++) { var x0 = 12 - s * 4; g.quadraticCurveTo(x0 - 2, -3.4, x0 - 4, -5.4); }
+    g.closePath(); aInk(g, aG(g, -16.4, -3.4, s1, s2, s3), ln, 1.2);
+    g.fillStyle = F("#ffc9a0"); [[-6.5, -11], [-2, -13], [3, -12.6], [7.5, -10.5], [0.5, -9.6]].forEach(function (k) { g.beginPath(); g.arc(k[0], k[1], 1.1, 0, 7); g.fill(); });
+    g.fillStyle = F("#c2401c"); [[-6.5, -10.4], [-2, -12.4], [3, -12], [7.5, -9.9], [0.5, -9]].forEach(function (k) { g.beginPath(); g.arc(k[0], k[1], 0.5, 0, 7); g.fill(); });
+    g.strokeStyle = F("#b8381a"); g.lineWidth = 0.7; g.beginPath(); g.moveTo(-8, -8); g.quadraticCurveTo(0, -6, 8, -8); g.stroke();
+    aShine(g, -4, -13.6, 4.4, 1.2, 0.4, -0.12);
+    // eyes on stalks, bobbing a little out of step
+    [-3, 3].forEach(function (ex, k) { var bob2 = Math.sin(t * 3 + k * 1.7) * 0.6, top = -20.5 + bob2; aLimb(g, [[ex, -15], [ex * 1.25, top + 1.2]], 1.2, lg1, ln); g.beginPath(); g.arc(ex * 1.25, top, 2, 0, 7); aInk(g, F("#1a0e0a"), ln, 0.7); if (!flash) { g.fillStyle = "#fff"; g.beginPath(); g.arc(ex * 1.25 - 0.6, top - 0.6, 0.6, 0, 7); g.fill(); } });
+    g.strokeStyle = ln; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-1.6, -5.2); g.lineTo(-0.6, -4.2); g.lineTo(0.6, -5.2); g.lineTo(1.6, -4.2); g.stroke();   // its little mouth parts
+    g.restore();
+  }
+  function drawBuccaneer(g, e, d, flash, h, pd) {   // a pirate frog: bandana, striped shirt, vest, sash and a cutlass; the bosun gets a tricorn, an eyepatch and a coat
+    var t = e.tt || 0, moving = e.st === "patrol" || e.st === "charge" || e.st === "chase", leg = moving ? Math.sin(t * 12) * 3 : 0, bob = moving ? Math.abs(Math.sin(t * 12)) * 1.2 : Math.sin(t * 2) * 0.5;
+    var swing = e.st === "wind" ? -1.6 : e.st === "charge" || e.cd > 0.9 ? 0.9 : -0.3, B = !!e.bosun;
+    var F = function (c) { return flash ? "#ffffff" : c; }, C = function (a, b) { return F(B ? b : a); };
+    var ln = F("#14200f"), sk1 = C("#8ae07a", "#8ee0d8"), sk2 = C("#4fae52", "#52aea4"), sk3 = C("#2a6a32", "#2a6a6a"), shirt = F("#efe4c6"), stripe = C("#c23a34", "#2a3a7a"), vest = C("#5a3a22", "#1e2a5a"), vest2 = C("#3a2414", "#121a3a");
+    g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.4 * h : 0, 0); g.scale(e.dir * (1 + 0.3 * pd), 1 - 0.7 * pd); if (!e.def) eGlow(g, 0, -18, 24, d.glow, 0.18);
+    g.lineCap = "round"; g.lineJoin = "round";
+    // legs in rolled-up trousers, and boots with turned-down tops
+    [[-3, -leg, 1], [3, leg, 0]].forEach(function (lg) {
+      var fx = lg[0] + lg[1];
+      aLimb(g, [[lg[0], -10], [fx, -3.5]], 3.4, lg[2] ? F("#6a5a48") : F("#8a7660"), ln);
+      g.beginPath(); g.moveTo(fx - 2.4, -4.6); g.lineTo(fx + 2.2, -4.6); g.lineTo(fx + 2, -1.6); g.quadraticCurveTo(fx + 5, -1.8, fx + 4.6, 0); g.lineTo(fx - 2.6, 0); g.closePath(); aInk(g, aG(g, -4.6, 0, F("#5a3a22"), F("#3a2414"), F("#24140a")), ln, 0.9);
+      g.beginPath(); g.moveTo(fx - 2.8, -5.4); g.lineTo(fx + 2.6, -5.4); g.lineTo(fx + 2.3, -3.8); g.lineTo(fx - 2.6, -3.8); g.closePath(); aInk(g, F("#7a5232"), ln, 0.7);
+    });
+    g.translate(0, -bob);
+    // the far arm (fist on the hip)
+    aLimb(g, [[-6, -19], [-9, -14], [-6.5, -11.5]], 2.6, sk3, ln);
+    // torso: striped shirt, an open vest, a red sash and a gold buckle
+    g.beginPath(); g.moveTo(-7.5, -21.5); g.quadraticCurveTo(0, -24, 7.5, -21.5); g.quadraticCurveTo(9, -14, 7, -9.5); g.lineTo(-7, -9.5); g.quadraticCurveTo(-9, -14, -7.5, -21.5); g.closePath();
+    g.save(); aInk(g, aG(g, -24, -9.5, F("#fffaf0"), shirt, F("#c8b892")), ln, 1.1); g.clip();
+    g.fillStyle = stripe; for (var sy = -21; sy < -9; sy += 2.6) g.fillRect(-9, sy, 18, 1.1);
+    g.fillStyle = vest; g.beginPath(); g.moveTo(-9, -24); g.lineTo(-2.2, -22.6); g.lineTo(-3.2, -9); g.lineTo(-9, -9); g.closePath(); g.fill(); g.beginPath(); g.moveTo(9, -24); g.lineTo(3.4, -22.6); g.lineTo(4.4, -9); g.lineTo(9, -9); g.closePath(); g.fill();
+    g.fillStyle = vest2; g.fillRect(-9, -11, 18, 1.6);
+    g.restore();
+    g.strokeStyle = ln; g.lineWidth = 0.7; g.beginPath(); g.moveTo(-2.2, -22.6); g.lineTo(-3.2, -9.5); g.moveTo(3.4, -22.6); g.lineTo(4.4, -9.5); g.stroke();
+    if (B) { g.fillStyle = F("#ffd23f"); [-16, -13].forEach(function (by) { g.beginPath(); g.arc(-5.2, by, 0.8, 0, 7); g.arc(6.4, by, 0.8, 0, 7); g.fill(); }); }
+    g.beginPath(); g.moveTo(-8.2, -14.4); g.quadraticCurveTo(0, -12.6, 8.2, -14.4); g.lineTo(8, -11.4); g.quadraticCurveTo(0, -9.8, -8, -11.4); g.closePath(); aInk(g, aG(g, -14.4, -10, C("#e8504a", "#c8a030"), C("#b8282a", "#8a6a18"), C("#7a1418", "#5a4410")), ln, 0.8);
+    g.beginPath(); g.moveTo(-7.5, -12.4); g.quadraticCurveTo(-11, -9, -10, -5.5); g.lineTo(-8.4, -6.5); g.quadraticCurveTo(-8.8, -9.2, -6, -11.6); g.closePath(); aInk(g, C("#b8282a", "#8a6a18"), ln, 0.7);   // the sash's loose end
+    g.beginPath(); g.rect(-1.9, -14.2, 3.8, 3.4); aInk(g, aG(g, -14.2, -10.8, F("#fff2a0"), F("#e0b030"), F("#8a6010")), ln, 0.7); g.fillStyle = F("#5a3a10"); g.fillRect(-0.8, -13.2, 1.6, 1.4);
+    // the head: a wide frog face with big eyes up top
+    var hy = -28;
+    g.beginPath(); g.ellipse(1, hy, 9.4, 7.2, 0, 0, 7); aInk(g, aG(g, hy - 7, hy + 7, sk1, sk2, sk3), ln, 1.2);
+    g.beginPath(); g.ellipse(2.4, hy + 3.6, 6.6, 2.8, 0, 0, Math.PI); g.fillStyle = F("#d8f0b0"); g.fill();   // pale chin
+    g.fillStyle = sk3; [[-4.6, hy + 0.6, 1.1], [-1.6, hy - 2, 0.8], [6.2, hy + 1.2, 0.9]].forEach(function (s) { g.beginPath(); g.arc(s[0], s[1], s[2], 0, 7); g.fill(); });   // spots
+    aShine(g, -2.4, hy - 4.2, 3, 1.3, 0.28);
+    g.strokeStyle = ln; g.lineWidth = 1.1; g.beginPath(); g.moveTo(-3.6, hy + 2.4); g.quadraticCurveTo(2.6, hy + 4.8, 9.6, hy + 1.6); g.stroke();   // a wide smirk
+    g.beginPath(); g.moveTo(9, hy + 1.8); g.lineTo(10.4, hy + 0.6); g.stroke();
+    var eyes = function () {
+    [[-3.2, hy - 5.6], [5.6, hy - 5.6]].forEach(function (q, k) {   // the eye bumps and eyes (the bosun's left one is patched)
+      g.beginPath(); g.arc(q[0], q[1], 3.9, 0, 7); aInk(g, aG(g, q[1] - 4, q[1] + 4, sk1, sk2, sk3), ln, 1);
+      if (B && k === 1) { g.beginPath(); g.ellipse(q[0] + 0.2, q[1] + 0.2, 2.8, 2.5, 0, 0, 7); aInk(g, F("#14100c"), ln, 0.6); g.strokeStyle = F("#14100c"); g.lineWidth = 0.9; g.beginPath(); g.moveTo(q[0] - 3.6, q[1] - 3.2); g.lineTo(q[0] + 3.8, q[1] + 2.6); g.stroke(); }
+      else aEye(g, q[0] + 0.3, q[1] + 0.2, 2.6, F("#c89a2a"), ln, flash, 0.6, e.st === "charge" || e.st === "wind" ? 0.5 : 0.15);
+    });
+    };
+    if (B) eyes();
+    if (B) {   // the tricorn: a black three-cornered hat with gold trim and a little skull
+      g.beginPath(); g.moveTo(-12.5, hy - 6.4); g.quadraticCurveTo(-6, hy - 4.6, 1, hy - 7.6); g.quadraticCurveTo(8, hy - 4.6, 14, hy - 6.4); g.quadraticCurveTo(12, hy - 10, 8, hy - 11); g.quadraticCurveTo(1, hy - 19, -6, hy - 11); g.quadraticCurveTo(-11, hy - 10, -12.5, hy - 6.4); g.closePath();
+      aInk(g, aG(g, hy - 17, hy - 5, F("#3a3a48"), F("#1a1a22"), F("#0a0a10")), ln, 1.1);
+      g.strokeStyle = F("#ffd23f"); g.lineWidth = 1; g.beginPath(); g.moveTo(-11.8, hy - 6.6); g.quadraticCurveTo(-6, hy - 5, 1, hy - 8); g.quadraticCurveTo(8, hy - 5, 13.4, hy - 6.6); g.stroke();
+      g.fillStyle = F("#f0ead8"); g.beginPath(); g.arc(1, hy - 11.4, 1.9, 0, 7); g.fill(); g.fillRect(0, hy - 10, 2, 1.4); g.fillStyle = F("#14100c"); g.fillRect(0.1, hy - 12, 0.7, 0.7); g.fillRect(1.3, hy - 12, 0.7, 0.7);
+      aShine(g, -5, hy - 10.4, 2.6, 0.9, 0.22, -0.3);
+    } else {   // a red bandana with white spots and two knot tails fluttering behind
+      var fl = Math.sin(t * 8) * 1.2;
+      g.beginPath(); g.moveTo(-9.6, hy - 5.4); g.quadraticCurveTo(1, hy - 15.6, 11, hy - 5.4); g.quadraticCurveTo(1, hy - 8.6, -9.6, hy - 5.4); g.closePath(); aInk(g, aG(g, hy - 14, hy - 5, F("#f0605a"), F("#c8302c"), F("#8a1a1a")), ln, 1);
+      g.fillStyle = F("#fff4ea"); [[-4, hy - 8.6], [1.5, hy - 11], [6.5, hy - 8.8], [-0.5, hy - 7.4]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 0.8, 0, 7); g.fill(); });
+      [[0, 0], [1.6, 1.2]].forEach(function (k) { g.beginPath(); g.moveTo(-9, hy - 6 + k[0]); g.quadraticCurveTo(-13, hy - 6 + fl + k[1], -15.5 - k[0], hy - 3 + fl * 1.4 + k[1] * 2); g.lineTo(-13.8 - k[0], hy - 2.2 + fl + k[1] * 2); g.quadraticCurveTo(-11.6, hy - 4.4 + k[1], -8.6, hy - 4.6 + k[0]); g.closePath(); aInk(g, F(k[0] ? "#a82222" : "#c8302c"), ln, 0.8); });
+      g.beginPath(); g.arc(-9.2, hy - 5.4, 1.4, 0, 7); aInk(g, F("#a82222"), ln, 0.7);
+      g.beginPath(); g.arc(-8.8, hy + 1.4, 1.2, 0, 7); g.strokeStyle = F("#ffd23f"); g.lineWidth = 0.8; g.stroke();   // a gold earring
+    }
+    if (!B) eyes();   // the eyes poke up over the bandana
+    // the cutlass arm: brass guard, a curved blade with a shine down its edge
+    g.save(); g.translate(7, -19); g.rotate(swing);
+    aLimb(g, [[0, 0], [3.4, 2.6], [6, 2.2]], 2.6, sk2, ln);
+    g.beginPath(); g.arc(6.6, 2, 1.9, 0, 7); aInk(g, sk1, ln, 0.8);
+    g.beginPath(); g.moveTo(7.4, 1.4); g.quadraticCurveTo(14, -3.6, 18.6, -12.6); g.quadraticCurveTo(17.4, -5.2, 9, 3.2); g.closePath(); aInk(g, aG(g, -12, 3, F("#ffffff"), F("#cfd8e2"), F("#7a8898")), F("#2a3440"), 0.8);
+    g.strokeStyle = F("#ffffff"); g.lineWidth = 0.6; g.beginPath(); g.moveTo(8.6, 1.4); g.quadraticCurveTo(14, -3, 17.6, -10.6); g.stroke();
+    g.beginPath(); g.moveTo(5.2, 3.8); g.quadraticCurveTo(7, 6.4, 10.4, 3.6); g.lineTo(9.6, 2.6); g.quadraticCurveTo(7.4, 4.4, 6, 2.8); g.closePath(); aInk(g, aG(g, 2.6, 6.4, F("#fff2a0"), F("#d8a830"), F("#8a6010")), ln, 0.7);
+    g.restore();
+    g.restore();
+  }
   function drawEnemy(g, e, now) {
     if (e.boss) return drawBoss(g, e, now);
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
     if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
     var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, h = Math.max(0, e.hurt) / 0.3, flash = e.hurt > 0.2 || e.def, d = ENEMY[e.k];
-    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30, ts / 30);
+    g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30 * (e.sz || 1), ts / 30 * (e.sz || 1));
     g.globalAlpha = 1 - pd * pd * 0.9;
     if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
     if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
@@ -4421,18 +5179,23 @@
     else if (e.k === "imp") drawImp(g, e, d, flash, h, pd);
     else if (e.k === "brute") drawBrute(g, e, d, flash, h, pd);
     else if (e.k === "crawler") drawCrawler(g, e, d, flash, h, pd);
+    else if (e.k === "crab") drawCrab(g, e, d, flash, h, pd);
+    else if (e.k === "buccaneer") drawBuccaneer(g, e, d, flash, h, pd);
     else if (e.k === "bug") {
       var leg = t * 14;
       g.save(); g.translate(!e.def && h > 0 ? Math.sin(now / 1000 * 90) * 1.6 * h : 0, 0); g.rotate(-f * 0.22 * h); g.scale(f * (1 + 0.5 * pd + 0.16 * h), 1 - 0.75 * pd - 0.14 * h);
       if (!e.def) eGlow(g, 0, -2, 26, d.glow, 0.35);
-      g.strokeStyle = flash ? "#ffe9ee" : "#2a1230"; g.lineWidth = 2.2; g.lineCap = "round";
-      for (var i = 0; i < 3; i++) { var lx = -9 + i * 9, ph = (e.st === "patrol" || e.st === "charge" || e.st === "retreat") ? Math.sin(leg + i * 2.1) * 3 : 0; g.beginPath(); g.moveTo(lx, -7); g.lineTo(lx + ph, -1); g.stroke(); }
+      var bln = flash ? "#fff" : "#12060f";
+      for (var i = 0; i < 3; i++) { var lx = -9 + i * 9, ph = (e.st === "patrol" || e.st === "charge" || e.st === "retreat") ? Math.sin(leg + i * 2.1) * 3 : 0; aLimb(g, [[lx, -7], [lx + ph * 0.4 + 1.2, -3.6], [lx + ph, -0.6]], 1.8, flash ? "#ffe9ee" : "#3a1d42", bln); }
       var sg = g.createLinearGradient(0, -24, 0, -4); sg.addColorStop(0, flash ? "#fff" : "#5a2d62"); sg.addColorStop(1, flash ? "#ffd6df" : "#2a1432");
-      g.fillStyle = sg; g.beginPath(); g.ellipse(0, -9, 17, 14, 0, Math.PI, 0); g.fill(); g.fillRect(-17, -9, 34, 6);
+      g.beginPath(); g.ellipse(0, -9, 17, 14, 0, Math.PI, 0); g.lineTo(17, -3); g.lineTo(-17, -3); g.closePath(); aInk(g, sg, bln, 1.3);
+      g.strokeStyle = flash ? "#fff" : "#7a4a86"; g.lineWidth = 0.9; [5.5, 10.5].forEach(function (r) { g.beginPath(); g.ellipse(0, -9, 17 - r * 0.2, 14 - r, 0, Math.PI + 0.25, -0.25); g.stroke(); });
+      g.fillStyle = flash ? "#fff" : "#1e0c24"; g.fillRect(-16.4, -5, 32.8, 1.6);
+      aShine(g, -6, -19, 6, 2, 0.22, -0.2);
       g.fillStyle = flash ? "#ffe0e6" : "#f1e5d0";
-      for (i = -2; i <= 2; i++) { var tx = i * 6.5, th = 7 + (2 - Math.abs(i)) * 2.6; g.beginPath(); g.moveTo(tx - 3, -17 + Math.abs(i) * 2.2); g.lineTo(tx, -17 - th + Math.abs(i) * 2.2); g.lineTo(tx + 3, -17 + Math.abs(i) * 2.2); g.fill(); g.fillStyle = flash ? "#fff" : "#ff6b82"; g.beginPath(); g.arc(tx, -17 - th + Math.abs(i) * 2.2 + 1, 1.6, 0, 7); g.fill(); g.fillStyle = flash ? "#ffe0e6" : "#f1e5d0"; }
+      for (i = -2; i <= 2; i++) { var tx = i * 6.5, th = 7 + (2 - Math.abs(i)) * 2.6; g.beginPath(); g.moveTo(tx - 3, -17 + Math.abs(i) * 2.2); g.lineTo(tx, -17 - th + Math.abs(i) * 2.2); g.lineTo(tx + 3, -17 + Math.abs(i) * 2.2); g.closePath(); aInk(g, flash ? "#fff" : aG(g, -17 - th, -15, "#fffaf0", "#f1e5d0", "#b8a488"), bln, 0.9); g.fillStyle = flash ? "#fff" : "#ff6b82"; g.beginPath(); g.arc(tx, -17 - th + Math.abs(i) * 2.2 + 1, 1.6, 0, 7); g.fill(); g.fillStyle = flash ? "#ffe0e6" : "#f1e5d0"; }
       g.strokeStyle = flash ? "#fff" : "rgba(255,107,130,.4)"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-8, -6); g.quadraticCurveTo(-4, -15, -2, -20); g.moveTo(8, -6); g.quadraticCurveTo(5, -14, 3, -19); g.stroke();
-      g.fillStyle = flash ? "#fff" : "#3a1d42"; g.beginPath(); g.ellipse(14, -8, 7.5, 6.5, 0, 0, 7); g.fill();
+      g.beginPath(); g.ellipse(14, -8, 7.5, 6.5, 0, 0, 7); aInk(g, flash ? "#fff" : aG(g, -14.5, -1.5, "#5e3468", "#3a1d42", "#1e0c24"), bln, 1.2); aShine(g, 11.6, -12, 2.4, 1, 0.25);
       g.fillStyle = e.st === "charge" ? "#ffd0c0" : "#ffb0a0"; g.beginPath(); g.ellipse(15.5, -9.5, 2.3, 3, 0, 0, 7); g.ellipse(11, -9.5, 1.9, 2.6, 0, 0, 7); g.fill();
       g.fillStyle = "#2a0d18"; g.beginPath(); g.arc(16, -9.3, 1, 0, 7); g.arc(11.4, -9.3, 0.9, 0, 7); g.fill();
       g.strokeStyle = "#2a0d18"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(9, -13.5); g.lineTo(14, -11.6); g.moveTo(19, -12.8); g.lineTo(14.5, -11.6); g.stroke();
@@ -4445,25 +5208,47 @@
       g.rotate(-f * 0.2 * h); g.scale(f * (sxx + 0.5 * pd + 0.14 * h), syy * (1 - 0.75 * pd) - 0.12 * h);
       if (!e.def) eGlow(g, 0, -10, wind ? 30 + 10 * pw : 24, wind || lash ? "#ffb347" : d.glow, wind ? 0.35 + 0.5 * pw : 0.2);
       var dk = flash ? "#f4ffe0" : "#1c5e34", md = flash ? "#ffffff" : "#3fc25f", lt = flash ? "#ffffff" : "#7ee08a", bel = flash ? "#ffffff" : "#f1efb4", spot = flash ? "#ffffff" : "#2a8a47";
-      if (lash && e.ext > 0.02) { var L = FROG.reach * 30 * e.ext; g.strokeStyle = flash ? "#fff" : "#ff7e93"; g.lineWidth = 4; g.lineCap = "round"; g.beginPath(); g.moveTo(16, -10); g.lineTo(16 + L, -10); g.stroke(); g.fillStyle = flash ? "#fff" : "#ff9db0"; g.beginPath(); g.arc(16 + L, -10, 4.2, 0, 7); g.fill(); }
-      g.fillStyle = md; g.beginPath(); g.ellipse(-8, -7, 9, 6.5, -0.3, 0, 7); g.fill(); g.strokeStyle = dk; g.lineWidth = 2; g.beginPath(); g.ellipse(-8, -7, 9, 6.5, -0.3, 0, 7); g.stroke();
-      var kick = air ? (e.vy < 0 ? 1 : 0.4) : 0;
-      g.fillStyle = lt; g.beginPath(); g.ellipse(-17 - kick * 6, -1.5 + kick * 2, 7, 2.4, 0, 0, 7); g.fill();
-      g.strokeStyle = dk; g.lineWidth = 3.2; g.lineCap = "round"; g.beginPath(); g.moveTo(9, -5); g.lineTo(14 + (air ? 3 : 0), -1.5 + (air ? -3 : 0)); g.stroke();
-      g.fillStyle = md; g.beginPath(); g.ellipse(0, -12, 15, 10, 0, 0, 7); g.fill();
-      g.fillStyle = bel; g.beginPath(); g.ellipse(2, -7, 11, 4.2, 0, 0, Math.PI); g.fill();
-      g.fillStyle = spot; [[-6, -17, 2.4], [0, -19, 1.8], [-11, -12, 2], [-3, -12, 1.6]].forEach(function (w2) { g.beginPath(); g.arc(w2[0], w2[1], w2[2], 0, 7); g.fill(); });
-      g.fillStyle = flash ? "#fff" : "#ffd27a"; g.beginPath(); g.ellipse(12, -7, 4 + (wind ? 4 * pw : 0) + (lash ? 3 : 0), 3 + (wind ? 3.5 * pw : 0) + (lash ? 2 : 0), 0, 0, 7); g.fill();
-      g.fillStyle = md; g.beginPath(); g.ellipse(12, -14, 9, 7, 0, 0, 7); g.fill();
-      if (wind || lash) { g.fillStyle = "#2a0d18"; g.beginPath(); g.ellipse(19, -11, 5, 3.2 + (wind ? 1.6 * pw : 1.4), 0, 0, 7); g.fill(); }
-      else { g.strokeStyle = "#12220f"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(8, -11); g.quadraticCurveTo(15, -8.5, 21, -12); g.stroke(); }
-      [8, 15].forEach(function (ex) {
-        g.fillStyle = flash ? "#fff" : (wind && Math.sin(t * 40) > 0 ? "#fff2a8" : "#ffd23f"); g.beginPath(); g.arc(ex, -21.5, 4.6, 0, 7); g.fill();
-        g.strokeStyle = dk; g.lineWidth = 1.2; g.beginPath(); g.arc(ex, -21.5, 4.6, 0, 7); g.stroke();
-        g.fillStyle = "#12220f"; g.beginPath();
-        if (rec) { g.moveTo(ex - 2.2, -21.5); g.lineTo(ex + 2.2, -21.5); g.lineWidth = 1.4; g.stroke(); }
-        else { g.ellipse(ex + (wind || lash ? 1.3 : 0.6), -21.5, 1.2, 3.4, 0, 0, 7); g.fill(); }
+      // ONE silhouette: body, head and both eye bumps are a single inked shape, the haunch folds into its side, the feet are planted under it
+      var fln = flash ? "#ffffff" : "#0c2a14", sk1 = flash ? "#fff" : "#8aea7a", sk2 = md, sk3 = flash ? "#fff" : "#1f7a3c", ftC = flash ? "#fff" : "#2f9a4a";
+      var kick = air ? (e.vy < 0 ? 1 : 0.4) : 0, puff = wind ? pw : lash ? 0.5 : 0, mo = wind ? 0.5 + 0.5 * pw : lash ? 1 : 0, br = e.st === "idle" ? Math.sin(t * 4) * 0.5 : 0;
+      g.lineCap = "round"; g.lineJoin = "round";
+      if (lash && e.ext > 0.02) { var L = FROG.reach * 30 * e.ext; g.strokeStyle = fln; g.lineWidth = 5.6; g.beginPath(); g.moveTo(19, -10); g.lineTo(19 + L, -10); g.stroke(); g.strokeStyle = flash ? "#fff" : "#ff7e93"; g.lineWidth = 3.8; g.stroke(); g.beginPath(); g.arc(19 + L, -10, 4.2, 0, 7); aInk(g, flash ? "#fff" : aG(g, -14, -6, "#ffc0cc", "#ff8aa0", "#d8506a"), fln, 1); }
+      var web = function (x, y, s, col) { g.beginPath(); g.moveTo(x - 1.4 * s, y - 1.6 * s); g.quadraticCurveTo(x + 1 * s, y - 2 * s, x + 4.2 * s, y - 0.4 * s); g.lineTo(x + 3 * s, y + 0.2 * s); g.lineTo(x + 2.6 * s, y - 0.2 * s); g.lineTo(x + 1.6 * s, y + 0.3 * s); g.lineTo(x + 1.1 * s, y - 0.2 * s); g.lineTo(x - 0.2 * s, y + 0.3 * s); g.lineTo(x - 1.6 * s, y); g.closePath(); aInk(g, col, fln, 0.9); };
+      // far side: the other front hand and back foot peek out, darker
+      web(15.4, -0.4, 0.8, sk3); web(-4 - kick * 7, -0.6 + kick * 1.4, 1, sk3);
+      // the near back leg's shin and webbed foot, folded under the haunch (stretched back while jumping)
+      if (kick) { aLimb(g, [[-10, -6], [-16 - kick * 5, -3 + kick], [-21 - kick * 6, -1 + kick * 2]], 3.6, sk2, fln); web(-23 - kick * 6, -0.2 + kick * 2, 1.1, ftC); }
+      else { g.beginPath(); g.moveTo(-14, -4); g.quadraticCurveTo(-8, -1.4, -1, -2.4); g.lineTo(-0.6, -0.6); g.quadraticCurveTo(-8, 0.2, -14.6, -1.6); g.closePath(); aInk(g, aG(g, -4, 0, sk2, sk3, sk3), fln, 1); web(0.4, -0.4, 1.15, ftC); }
+      // the silhouette
+      var hb = -20.6 - br * 0.4;
+      g.beginPath(); g.moveTo(-12, -1.6); g.quadraticCurveTo(-19, -3, -18.4, -10); g.quadraticCurveTo(-17, -17.4, -6, -18.6 + br);
+      g.quadraticCurveTo(1, -19.4, 3.8, hb + 2.6);   // up the back of the head to the first eye bump
+      g.arc(8, hb, 4.6, Math.PI * 0.85, Math.PI * 1.95); g.quadraticCurveTo(11.6, hb + 2.6, 11.4, hb + 1.4); g.arc(15.2, hb, 4.6, Math.PI * 1.05, Math.PI * 2.05);
+      g.quadraticCurveTo(21, -17, 22.4, -12.6); g.quadraticCurveTo(23, -9.6 + mo * 2, 20.6, -8.2 + mo * 2.6);
+      g.quadraticCurveTo(16 + puff * 2, -2.4 + puff * 1.4, 10, -2.6); g.quadraticCurveTo(0, -0.4, -12, -1.6); g.closePath();
+      g.save(); aInk(g, flash ? "#fff" : aG(g, -24, -1, sk1, sk2, sk3), fln, 1.4); g.clip();
+      g.fillStyle = flash ? "#fff" : aG(g, -9, 0, "#fbf6c8", bel, "#cfc884"); g.beginPath(); g.ellipse(4, -1.6, 15, 6, 0.05, Math.PI, 0); g.fill();   // the pale belly
+      g.fillStyle = spot; [[-7, -15.6, 2.4], [-1.4, -16.6, 1.7], [-13, -10.6, 2], [-4.4, -11.6, 1.6], [3.4, -13.4, 1.3]].forEach(function (w2) { g.beginPath(); g.ellipse(w2[0], w2[1], w2[2], w2[2] * 0.85, 0.3, 0, 7); g.fill(); g.fillStyle = flash ? "#fff" : "#5ad276"; g.beginPath(); g.arc(w2[0] - w2[2] * 0.3, w2[1] - w2[2] * 0.3, w2[2] * 0.35, 0, 7); g.fill(); g.fillStyle = spot; });
+      g.restore();
+      // the haunch: a big folded thigh on its side, shown by a crease rather than a separate blob
+      g.strokeStyle = fln; g.lineWidth = 1.1; g.beginPath(); g.moveTo(-15.6, -4.2); g.quadraticCurveTo(-15.4, -12.4, -6.4, -11.4); g.quadraticCurveTo(-1.4, -10.4, -1.6, -4.4); g.stroke();
+      g.strokeStyle = flash ? "#fff" : "rgba(255,255,255,.35)"; g.lineWidth = 1; g.beginPath(); g.moveTo(-13.6, -6.6); g.quadraticCurveTo(-12.6, -10.6, -7.4, -10.4); g.stroke();
+      // the throat sac puffs out under the chin
+      if (puff > 0.05) { g.beginPath(); g.ellipse(14, -4.4 + puff, 4.6 * puff + 2.4, 3.4 * puff + 1.6, 0, 0, 7); aInk(g, flash ? "#fff" : aG(g, -8, 0, "#fff4c0", "#ffd27a", "#d8a04a"), fln, 1); aShine(g, 12.8, -6 + puff, 1.6 * puff + 0.6, 0.8, 0.5); }
+      // the near front arm: from under the jaw down to a webbed hand
+      aLimb(g, [[10, -7], [12.4, -4], [12.6, -1.4]], 2.8, sk2, fln); web(12.2, -0.4, 0.95, ftC);
+      // mouth: a long smiling seam, or open for the tongue
+      if (mo > 0.05) { g.beginPath(); g.moveTo(9, -10.4); g.quadraticCurveTo(16, -12.6, 22.2, -12); g.quadraticCurveTo(22.6, -8 + mo * 2.4, 20.4, -7.6 + mo * 2.6); g.quadraticCurveTo(14, -6.6 + mo * 2, 9, -10.4); aInk(g, "#3a0a18", fln, 1); g.fillStyle = "#e05a78"; g.beginPath(); g.ellipse(17, -8.6 + mo * 1.8, 3.4, 1.2 + mo * 0.6, 0, 0, 7); g.fill(); }
+      else { g.strokeStyle = fln; g.lineWidth = 1.3; g.beginPath(); g.moveTo(7.6, -10.6); g.quadraticCurveTo(15, -8.4, 22.2, -11.6); g.stroke(); g.beginPath(); g.moveTo(7.6, -10.6); g.quadraticCurveTo(6.8, -10.8, 6.6, -11.8); g.stroke(); }
+      g.fillStyle = fln; g.beginPath(); g.arc(20.4, -14.4, 0.7, 0, 7); g.fill();   // nostril
+      // eyes sit IN the bumps: golden, a sideways frog pupil, a lid line
+      [8, 15.2].forEach(function (ex, ei) {
+        var ey = hb + 0.2; g.fillStyle = flash ? "#fff" : (wind && Math.sin(t * 40) > 0 ? "#fff2a8" : aG(g, ey - 3.4, ey + 3.4, "#fff0a0", "#ffd23f", "#d89a1a")); g.beginPath(); g.arc(ex, ey, 3.3, 0, 7); g.fill(); g.strokeStyle = fln; g.lineWidth = 0.8; g.stroke();
+        if (rec) { g.strokeStyle = fln; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.2, ey); g.lineTo(ex + 2.2, ey); g.stroke(); }
+        else if (!flash) { var lk = wind || lash ? 0.9 : 0.4; g.fillStyle = "#12220f"; g.beginPath(); g.ellipse(ex + lk, ey + 0.2, 2.2, 1.2, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex - 1, ey - 1.2, 0.8, 0, 7); g.fill(); }
+        g.strokeStyle = fln; g.lineWidth = 1; g.beginPath(); g.arc(ex, ey, 3.9, Math.PI * 1.1 + (ei ? 0.1 : 0), Math.PI * 1.75 + (ei ? 0.1 : 0)); g.stroke();
       });
+      aShine(g, -7, -16.4, 5.4, 1.6, 0.32, -0.12); aShine(g, 6.4, hb - 2.6, 1.6, 0.7, 0.45, -0.2);
       g.restore();
       if (rec && !e.def) { g.fillStyle = "#ffe9a0"; for (var si = 0; si < 3; si++) { var an = t * 6 + si * 2.1; g.beginPath(); g.arc(Math.cos(an) * 12, -34 + Math.sin(an) * 3.5, 1.8, 0, 7); g.fill(); } }
       if (wind) { g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); }
@@ -4474,7 +5259,7 @@
     }
     g.restore();
   }
-  function drawEnemies(g, now) { enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else drawEnemy(g, e, now); }); }
+  function drawEnemies(g, now) { enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
 
   // ---------- FARMING ----------
   // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
@@ -4719,37 +5504,64 @@
     g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 14 * sc * a.w, 3, 0, 0, 7); g.fill();
     g.save(); g.scale(a.dir * sc, sc); g.translate(0, -bob); g.lineJoin = "round"; g.lineCap = "round";
     var leg = function (x0, ph, c, len) { var sw = walk ? Math.sin(t * 9 + ph) * 3 : 0; g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, -len); g.lineTo(x0 + sw, bob - 0.5); g.stroke(); };
-    if (a.k === "duck") {
-      leg(-2, 0, "#ff8a2a", 6); leg(2, 3, "#e8701a", 6);
-      g.fillStyle = "#ff8a2a"; g.fillRect(-4 + (walk ? Math.sin(t * 9) * 3 : 0), -1 + bob, 4, 1.5); g.fillRect(1 + (walk ? Math.sin(t * 9 + 3) * 3 : 0), -1 + bob, 4, 1.5);
-      g.fillStyle = "#8a6a4a"; g.strokeStyle = "#3a2416"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(-1, -11, 10, 6.5, -0.1, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#b8936a"; g.beginPath(); g.ellipse(-1, -8.5, 7, 3, 0, 0, 7); g.fill();
-      g.fillStyle = "#5a4430"; g.beginPath(); g.moveTo(-10, -12); g.lineTo(-15, -15); g.lineTo(-10, -9); g.closePath(); g.fill();   // tail
-      g.fillStyle = "#6a5038"; g.beginPath(); g.ellipse(-2, -12, 6, 3.5, -0.2, 0, 7); g.fill();   // wing
-      g.fillStyle = "#1f8f7e"; g.strokeStyle = "#0e3a32"; g.beginPath(); g.ellipse(7, -19, 4.6, 4.4, 0, 0, 7); g.fill(); g.stroke();   // teal head
-      g.fillStyle = "#f6eedb"; g.fillRect(4, -16, 5, 1.4);   // neck ring
-      g.fillStyle = "#ffb13b"; g.beginPath(); g.moveTo(10.5, -20); g.lineTo(16, -18.5); g.lineTo(10.5, -17); g.closePath(); g.fill();
-      g.fillStyle = "#12220f"; g.beginPath(); g.arc(8.4, -20.4, 1.1, 0, 7); g.fill();
-    } else if (a.k === "pig") {
-      leg(-6, 0, "#c47a6a", 5); leg(-2, 2, "#a8645a", 5); leg(5, 1, "#c47a6a", 5); leg(8, 3, "#a8645a", 5);
-      g.fillStyle = "#e8a090"; g.strokeStyle = "#7a3a30"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, -11, 12, 7, 0, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#7a5a3a"; [[-5, -13, 3.2], [3, -8, 2.6], [-1, -15, 2], [6, -14, 1.8]].forEach(function (m) { g.beginPath(); g.arc(m[0], m[1], m[2], 0, 7); g.fill(); });   // mud spots
-      g.strokeStyle = "#c47a6a"; g.lineWidth = 1.8; g.beginPath(); g.moveTo(-12, -13); g.quadraticCurveTo(-16, -16, -14, -18); g.quadraticCurveTo(-12, -19, -13, -16); g.stroke();   // curly tail
-      g.fillStyle = "#e8a090"; g.strokeStyle = "#7a3a30"; g.beginPath(); g.ellipse(11, -13, 6, 5.5, 0, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#d48878"; g.beginPath(); g.moveTo(8, -18); g.lineTo(10, -22); g.lineTo(12, -18); g.closePath(); g.fill(); g.stroke();   // ear
-      g.fillStyle = "#f0b4a4"; g.beginPath(); g.ellipse(16.5, -12, 2.6, 2.4, 0, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#7a3a30"; g.fillRect(16, -13, 0.9, 1.8); g.fillRect(17.4, -13, 0.9, 1.8);
-      g.fillStyle = "#12220f"; g.beginPath(); g.arc(12.6, -15, 1, 0, 7); g.fill();
-    } else {
-      leg(-6, 0, "#8a8f99", 7); leg(-3, 2, "#6a6f79", 7); leg(4, 1, "#8a8f99", 7); leg(7, 3, "#6a6f79", 7);
-      g.fillStyle = "#f0f4f8"; g.strokeStyle = "#7a8a9a"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, -13, 11, 6.5, 0, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#ffffff"; [[-6, -16], [-1, -18], [4, -17], [-3, -11], [3, -11]].forEach(function (m) { g.beginPath(); g.arc(m[0], m[1], 3, 0, 7); g.fill(); });   // fluffy coat
-      g.fillStyle = "#e0e6ec"; g.beginPath(); g.moveTo(-11, -15); g.lineTo(-14, -18); g.lineTo(-10, -12); g.closePath(); g.fill();
-      g.fillStyle = "#e8eef2"; g.strokeStyle = "#7a8a9a"; g.beginPath(); g.ellipse(10, -20, 4.6, 4, 0.3, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#d0d8e0"; g.beginPath(); g.ellipse(13.5, -18, 3, 2.4, 0.3, 0, 7); g.fill();
-      g.strokeStyle = "#8a7a60"; g.lineWidth = 2; g.beginPath(); g.moveTo(9, -23); g.quadraticCurveTo(6, -28, 2, -26); g.stroke();   // horn
-      g.fillStyle = "#e8eef2"; g.beginPath(); g.moveTo(11, -15); g.lineTo(12.5, -10); g.lineTo(13.5, -15); g.closePath(); g.fill();   // beard
-      g.fillStyle = "#12220f"; g.beginPath(); g.arc(11.5, -21, 1, 0, 7); g.fill();
+    var lnA = "#2a1a12", aleg = function (x0, ph, c, len, w) { var sw = walk ? Math.sin(t * 9 + ph) * 3 : 0; aLimb(g, [[x0, -len], [x0 + sw * 0.5, -len * 0.45 + bob], [x0 + sw, bob - 1]], w || 2.6, c, lnA); return x0 + sw; };
+    if (a.k === "duck") {   // a mallard: brown speckled body, a folded wing, a glossy teal head with a white ring, an orange bill and webbed feet
+      var ln = "#2a1a0e", wg = walk ? Math.sin(t * 9) * 0.06 : Math.sin(t * 2) * 0.03, hb = walk ? Math.sin(t * 9) * 0.8 : 0;
+      [[-2, 0], [2, 3]].forEach(function (lq) { var fx = aleg(lq[0], lq[1], lq[1] ? "#e8701a" : "#ff8a2a", 6, 1.6); g.beginPath(); g.moveTo(fx - 1.6, bob - 0.4); g.lineTo(fx + 3.4, bob - 1.4); g.lineTo(fx + 3.6, bob + 0.4); g.closePath(); aInk(g, "#ff9a3a", "#8a3a0a", 0.6); });
+      g.beginPath(); g.moveTo(-9.5, -12.4); g.lineTo(-15.6, -16.2); g.lineTo(-14, -12.6); g.lineTo(-15.2, -10.2); g.lineTo(-9.6, -9.6); g.closePath(); aInk(g, aG(g, -16, -9.6, "#7a6248", "#4e3a28", "#2e2014"), ln, 0.9);   // tail
+      g.strokeStyle = "#1a1a1a"; g.lineWidth = 1; g.beginPath(); g.moveTo(-12, -13.6); g.quadraticCurveTo(-13.4, -17, -11.4, -17.6); g.stroke();   // the curly drake feather
+      g.beginPath(); g.ellipse(-1, -11, 10.4, 6.8, -0.1, 0, 7); aInk(g, aG(g, -18, -4, "#a8865c", "#8a6a4a", "#5a4430"), ln, 1.2);
+      g.beginPath(); g.ellipse(0, -8.2, 7.4, 3.2, 0, 0, Math.PI); g.fillStyle = "#c8a882"; g.fill();
+      g.fillStyle = "#6a5038"; [[-5, -12], [-2, -14.6], [2, -12.4], [-7, -9], [4, -15]].forEach(function (sp) { g.beginPath(); g.ellipse(sp[0], sp[1], 1, 0.6, 0.3, 0, 7); g.fill(); });
+      g.save(); g.translate(-1, -12); g.rotate(-0.2 + wg); g.beginPath(); g.moveTo(5, -2); g.quadraticCurveTo(-2, -5.6, -9.6, -1); g.quadraticCurveTo(-3, 2.6, 5, 1.4); g.closePath(); aInk(g, aG(g, -5.6, 2.6, "#7a5e44", "#5e4630", "#3e2c1c"), ln, 0.9);
+      g.fillStyle = "#3a6ad0"; g.fillRect(-6, -1.6, 4.4, 1.4); g.fillStyle = "#fff"; g.fillRect(-6, -0.2, 4.4, 0.5);   // the blue speculum
+      g.strokeStyle = "#3e2c1c"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(-2, -2.4); g.lineTo(-8, -0.6); g.moveTo(0, -1); g.lineTo(-6.4, 0.8); g.stroke(); g.restore();
+      aShine(g, -3, -15.4, 4, 1.2, 0.25, -0.1);
+      g.save(); g.translate(0, hb);
+      g.beginPath(); g.moveTo(3.6, -15.6); g.quadraticCurveTo(5, -12, 8, -12.4); g.lineTo(8.6, -16.6); g.closePath(); aInk(g, "#8a6a4a", ln, 0.8);   // neck
+      g.beginPath(); g.rect(3.8, -16.4, 5.6, 1.6); aInk(g, "#f6eedb", ln, 0.6);   // the white neck ring
+      g.beginPath(); g.ellipse(7.4, -19.6, 4.8, 4.5, 0, 0, 7); aInk(g, aG(g, -24, -15, "#46d0b8", "#1f8f7e", "#0e4a40"), "#0a2a24", 1.1);
+      g.fillStyle = "rgba(150,90,220,.45)"; g.beginPath(); g.ellipse(6.4, -21.4, 2.6, 1.6, -0.4, 0, 7); g.fill();   // the purple sheen
+      aShine(g, 5.6, -22, 1.6, 0.9, 0.45);
+      g.beginPath(); g.moveTo(10.6, -20.6); g.quadraticCurveTo(15.6, -20.6, 16.8, -18.6); g.quadraticCurveTo(14, -17, 10.6, -17.6); g.closePath(); aInk(g, aG(g, -21, -17, "#ffd27a", "#ffb13b", "#d0801a"), "#7a3a0a", 0.7);
+      g.strokeStyle = "#7a3a0a"; g.lineWidth = 0.5; g.beginPath(); g.moveTo(11, -18.8); g.lineTo(16.4, -18.7); g.stroke();
+      aEye(g, 8.6, -20.6, 1.25, "#3a2a10", "#0a1a14", false, 0.5);
+      g.restore();
+    } else if (a.k === "pig") {   // a pink pig: round and rosy, a floppy ear, a shiny snout, a curly tail, little hooves and mud patches
+      var ln2 = "#6a2a24", pk = function (y0, y1) { return aG(g, y0, y1, "#ffc8b8", "#eaa090", "#b8645a"); };
+      [[-6, 0, "#c47a6a"], [-2, 2, "#a8645a"], [5, 1, "#c47a6a"], [8, 3, "#a8645a"]].forEach(function (lq) { var fx = aleg(lq[0], lq[1], lq[2], 5, 3); g.beginPath(); g.rect(fx - 1.7, bob - 1.6, 3.4, 1.8); aInk(g, "#4a2a24", ln2, 0.5); });
+      g.strokeStyle = ln2; g.lineWidth = 2.6; g.lineCap = "round"; var tw = Math.sin(t * 4) * 0.8; g.beginPath(); g.moveTo(-11.4, -13); g.quadraticCurveTo(-16, -15 + tw, -14.6, -18); g.quadraticCurveTo(-12, -19.4, -13, -16.4); g.stroke(); g.strokeStyle = "#e8a090"; g.lineWidth = 1.2; g.stroke();   // the curly tail
+      g.beginPath(); g.ellipse(0, -11, 12.2, 7.4, 0, 0, 7); aInk(g, pk(-18.5, -3.6), ln2, 1.2);
+      g.beginPath(); g.ellipse(0, -7, 9, 3, 0, 0, Math.PI); g.fillStyle = "rgba(255,220,210,.6)"; g.fill();   // the paler belly
+      g.fillStyle = "#7a5a3a"; [[-5, -13, 3.2, 2.2], [3, -8, 2.6, 1.6], [-8.5, -8, 2, 1.4]].forEach(function (m) { g.beginPath(); g.ellipse(m[0], m[1], m[2], m[3], 0.3, 0, 7); g.fill(); g.fillStyle = "#5a4028"; g.beginPath(); g.ellipse(m[0] + 0.6, m[1] + 0.5, m[2] * 0.5, m[3] * 0.4, 0.3, 0, 7); g.fill(); g.fillStyle = "#7a5a3a"; });   // mud
+      aShine(g, -3, -15.6, 5, 1.6, 0.35, -0.08);
+      g.beginPath(); g.ellipse(11, -13, 6.4, 5.8, 0, 0, 7); aInk(g, pk(-19, -7), ln2, 1.1);   // head
+      g.beginPath(); g.ellipse(12.2, -9.8, 3, 1.4, 0, 0, 7); g.fillStyle = "rgba(255,120,120,.4)"; g.fill();   // a rosy cheek
+      var ef = walk ? Math.sin(t * 9) * 0.15 : 0; g.save(); g.translate(9, -18); g.rotate(0.5 + ef); g.beginPath(); g.moveTo(-2.4, 0); g.quadraticCurveTo(-1, -6, 3.6, -4.4); g.quadraticCurveTo(3, -1, 2.4, 0.6); g.closePath(); aInk(g, aG(g, -6, 1, "#ffc8b8", "#d88878", "#a85a50"), ln2, 0.9); g.fillStyle = "#ff9aa0"; g.beginPath(); g.ellipse(0.6, -2, 1, 1.8, 0.4, 0, 7); g.fill(); g.restore();   // the floppy ear
+      g.beginPath(); g.ellipse(16.6, -12, 2.8, 2.6, 0, 0, 7); aInk(g, aG(g, -14.6, -9.4, "#ffd8cc", "#f0b4a4", "#c87a6a"), ln2, 0.9);   // the snout
+      g.fillStyle = "#6a2a24"; g.beginPath(); g.ellipse(16, -12, 0.5, 0.9, 0, 0, 7); g.ellipse(17.6, -12, 0.5, 0.9, 0, 0, 7); g.fill(); aShine(g, 15.8, -13.6, 1, 0.5, 0.5);
+      aEye(g, 12.6, -15, 1.3, "#3a2a18", ln2, false, 0.5);
+      g.strokeStyle = ln2; g.lineWidth = 0.7; g.beginPath(); g.moveTo(13.4, -9.6); g.quadraticCurveTo(15, -8.6, 16.4, -9.6); g.stroke();   // a little smile
+    } else {   // a mountain goat: a shaggy white coat, grey legs and hooves, a tufted head, curled horns and a beard
+      var ln3 = "#4a5464", wl = function (y0, y1) { return aG(g, y0, y1, "#ffffff", "#e8eef4", "#a8b4c2"); };
+      [[-6, 0, "#8a8f99"], [-3, 2, "#6a6f79"], [4, 1, "#8a8f99"], [7, 3, "#6a6f79"]].forEach(function (lq) { var fx = aleg(lq[0], lq[1], lq[2], 7, 2.2); g.beginPath(); g.moveTo(fx - 1.4, bob - 1.8); g.lineTo(fx + 1.4, bob - 1.8); g.lineTo(fx + 1.6, bob); g.lineTo(fx - 1.6, bob); g.closePath(); aInk(g, "#2a2a30", ln3, 0.5); });
+      g.beginPath(); g.moveTo(-10.6, -15); g.lineTo(-14.4, -18.4); g.lineTo(-12.6, -14.2); g.lineTo(-10, -12); g.closePath(); aInk(g, wl(-18, -12), ln3, 0.8);   // the stubby tail
+      // the coat: a puffy outline of tufts, lit from the top
+      g.beginPath(); var cx0 = 0, cy0 = -13; for (var k = 0; k <= 16; k++) { var ca = k / 16 * 6.2832, rr = 1 + 0.09 * Math.sin(k * 2.7) + (k % 2 ? 0.07 : 0), px = cx0 + Math.cos(ca) * 11.4 * rr, py = cy0 + Math.sin(ca) * 7 * rr; if (k) g.lineTo(px, py); else g.moveTo(px, py); } g.closePath();
+      aInk(g, wl(-21, -5), ln3, 1.2);
+      g.strokeStyle = "#c8d2de"; g.lineWidth = 0.8; [[-6, -16], [-1, -18.4], [4, -16.6], [-4, -11], [2.4, -11.6], [7, -12.6], [-8.6, -12]].forEach(function (m) { g.beginPath(); g.arc(m[0], m[1], 1.6, 3.4, 6); g.stroke(); });   // curly tufts
+      aShine(g, -3, -17.6, 4.6, 1.4, 0.4, -0.08);
+      g.beginPath(); g.moveTo(5.6, -16); g.quadraticCurveTo(7.6, -12, 10, -13.4); g.lineTo(10.6, -19); g.closePath(); aInk(g, wl(-19, -12), ln3, 0.8);   // neck
+      // horns sweep back over the head, ringed
+      g.beginPath(); g.moveTo(8, -22.6); g.quadraticCurveTo(5.4, -28.6, 0.6, -27.4); g.quadraticCurveTo(-1.4, -26.4, 0.4, -24.8); g.quadraticCurveTo(4, -26, 10.4, -22); g.closePath(); aInk(g, aG(g, -28.6, -22, "#d8c8a0", "#a8946a", "#6a5a3a"), "#3a2e1a", 0.9);
+      g.strokeStyle = "#6a5a3a"; g.lineWidth = 0.5; g.beginPath(); for (var rg = 0; rg < 4; rg++) { var rx = 7.4 - rg * 2, ry = -24 - rg * 0.9; g.moveTo(rx, ry - 0.8); g.lineTo(rx + 0.8, ry + 1.4); } g.stroke();
+      g.beginPath(); g.ellipse(10.4, -20, 4.8, 4.2, 0.3, 0, 7); aInk(g, wl(-24, -16), ln3, 1.1);   // head
+      g.beginPath(); g.ellipse(13.8, -18, 3.2, 2.5, 0.3, 0, 7); aInk(g, aG(g, -20.5, -15.5, "#e8eef4", "#d0d8e0", "#9aa6b4"), ln3, 0.8);   // muzzle
+      g.fillStyle = "#4a4a56"; g.beginPath(); g.ellipse(15.6, -18.4, 0.5, 0.8, 0.3, 0, 7); g.fill();
+      g.save(); g.translate(7.6, -21); g.rotate(-0.9 + (walk ? Math.sin(t * 9) * 0.12 : 0)); g.beginPath(); g.ellipse(-2.6, 0, 3, 1.3, 0, 0, 7); aInk(g, wl(-1.3, 1.3), ln3, 0.7); g.fillStyle = "#ffc8c8"; g.beginPath(); g.ellipse(-2.6, 0.2, 1.8, 0.6, 0, 0, 7); g.fill(); g.restore();   // ear
+      g.beginPath(); g.moveTo(11.8, -15.6); g.quadraticCurveTo(12.6, -10.6, 13.2, -9.4); g.quadraticCurveTo(14, -12, 14.6, -15.8); g.closePath(); aInk(g, wl(-16, -9.4), ln3, 0.7);   // beard
+      aEye(g, 11.4, -21.2, 1.25, "#c8a02a", ln3, false, 0.55);
+      g.fillStyle = "#1a1a1a"; g.fillRect(11.2, -21.5, 1.2, 0.6);   // goats have letterbox pupils
     }
     g.restore();
     if (a.tame) {   // product ready bubble, and a name tag when you are close
@@ -5233,11 +6045,83 @@
   }
   function tickDodge(dt) { if (DODGE.t > 0) DODGE.t = Math.max(0, DODGE.t - dt); if (DODGE.cd > 0) DODGE.cd = Math.max(0, DODGE.cd - dt); }
   function dodgeSpeed(base) { return base * (0.5 + 0.5 * DODGE.t / DODGE_T); }   // fast at the start, easing out
-  function dodgeSpin(g, h) { if (DODGE.t <= 0 || reduce) return; var a = (1 - DODGE.t / DODGE_T) * 6.2832; g.translate(0, -h); g.rotate(a); g.translate(0, h); }
+  function dodgeSpin(g, h) {
+    if (reduce) return; var a = 0;
+    if (DODGE.t > 0) a = (1 - DODGE.t / DODGE_T) * 6.2832; else if (SPEC.spin > 0) a = -(1 - SPEC.spin / SPEC.spinT) * 6.2832 * SPEC.turns; else return;
+    g.translate(0, -h); g.rotate(a); g.translate(0, h);
+  }
+  // ---------- WEAPON SPECIALS: landing hits fills the Special meter (FOC); when it is full press V, right-click, or tap the star button ----------
+  // Reed Spear: Lunge (a dash that pierces everything in the way). Glowspore Blade: Spin Slash. Cinder Cleaver: Ember Slam (a ground
+  // shockwave both ways that sets foes alight). Frost Fang: Frost Nova (a wide spin, frost shards, big knockback). Swampking Blade:
+  // Royal Tempest (two spins, the second bigger). Any bow: Volley (five arrows in a fan for one ammo). Works on the surface and in the Mine.
+  var FOC = { v: 0, max: 100, key: "" }, SPEC = { t: 0, k: "", dx: 0, dy: 0, hit: [], spin: 0, spinT: 0.4, turns: 1, q: 0, on: false };
+  var SPECN = ["", "Lunge", "Spin Slash", "Ember Slam", "Frost Nova", "Royal Tempest"];
+  function focGain(kill) { if (SPEC.on) return; if (sel !== "weapon" && sel !== "bow") return; FOC.v = Math.min(FOC.max, FOC.v + (kill ? 20 : 11)); }
+  function specKind() { return sel === "bow" && S.bow ? "volley" : sel === "weapon" && S.wpn ? ["", "lunge", "spin", "slam", "nova", "tempest"][S.wpn] : ""; }
+  function trySpecial() {
+    if (deadUI || panelOpen || packOpen || titleOpen || trans || hp <= 0 || OCS || HOME || PHOTO.on) return false;
+    var k = specKind(); if (!k) { nag("Hold your weapon or bow to use its special move."); return false; }
+    if (FOC.v < FOC.max) { nag("Land more hits to fill your Special (" + Math.floor(FOC.v) + "%)."); return false; }
+    if (k !== "volley" && toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return false; }
+    FOC.v = 0; S.st.specials = (S.st.specials || 0) + 1;
+    var inC = !!cave, px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 0.9, ax = (aim.mx - ox) / ts - px, ay = (aim.my - oy) / ts - py, al = Math.sqrt(ax * ax + ay * ay) || 1;
+    if (!inC) { ax = Math.abs(ax) > 0.2 ? (ax < 0 ? -1 : 1) : p.face || 1; ay = 0; p.face = ax; } else { ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1; }
+    var c = k === "volley" ? "#f2c14e" : WEAPONS[S.wpn].c;
+    toast((k === "volley" ? "Volley" : SPECN[S.wpn]) + "!", c); hitStop(0.07, 0.12); shake = Math.max(shake, 0.5); sfxThump(90, 40, 0.3, 0.2); sfxNoise(0.35, 600, 3200, 0.12);
+    if (k === "volley") { specVolley(inC, ax, ay); return true; }
+    SPEC.k = k; SPEC.hit = []; SPEC.dx = ax; SPEC.dy = ay;
+    if (k === "lunge") { SPEC.t = 0.32; hurtGrace = Math.max(hurtGrace, 0.45); chips(px, py, c, 10, 4); }
+    else { SPEC.spinT = k === "tempest" ? 0.6 : 0.42; SPEC.spin = SPEC.spinT; SPEC.turns = k === "tempest" ? 2 : 1; hurtGrace = Math.max(hurtGrace, 0.3); specBurst(k, 1); if (k === "tempest") SPEC.q = 0.3; }
+    wear("wpn", 2); return true;
+  }
+  function specTargets(R, fn) {   // every foe within R tiles of you (surface enemies or cave creatures)
+    if (cave) { var F = cave.F; if (!F || !F.mobs) return; F.mobs.forEach(function (m) { if (m.def) return; var dx = m.x - cp.x, dy = (m.y - 0.3) - (cp.y - 0.5), d = Math.sqrt(dx * dx + dy * dy) || 0.01; if (d <= R + (m.r || 0.4)) fn(m, dx / d, dy / d, d); }); return; }
+    enemies.forEach(function (e) { if (e.def || e.u) return; var dx = e.x - p.x, dy = (e.y - e.h / 2) - (p.y - 0.9), d = Math.sqrt(dx * dx + dy * dy) || 0.01; if (d <= R + e.w / 2) fn(e, dx / d, dy / d, d); });
+  }
+  function specHit(e, dmg, ux, uy, extra) {
+    SPEC.on = true; try {
+      if (cave) damageCaveMob(e, dmg, ux * 1.8, uy * 1.8); else { e.lastHit = 0; damageEnemy(e, dmg, ux < 0 ? -1 : 1); if (!e.boss && !e.def) { e.kv = (ux < 0 ? -1 : 1) * (extra === "nova" ? 14 : 9); if (e.vy !== undefined) e.vy = Math.min(e.vy || 0, -5); } }
+      if (extra === "slam" && !e.def) { var have = burns.filter(function (b) { return b.e === e; })[0]; if (have) have.t = 4; else burns.push({ e: e, t: 4, tick: 0.6, cave: !!cave }); }
+    } finally { SPEC.on = false; }
+  }
+  function specBurst(k, big) {   // the instant specials: hit everything in a ring around you (or along the ground for the slam)
+    var base = wDmg(), R = k === "slam" ? 5.2 : k === "nova" ? 4.4 : k === "tempest" ? (big > 1 ? 5.2 : 3.8) : 3.4, mul = k === "slam" ? 2.6 : k === "nova" ? 2.3 : k === "tempest" ? 2.4 : 2.2;
+    var inC = !!cave, px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 0.9, c = WEAPONS[S.wpn].c, n = 0;
+    specTargets(R, function (e, ux, uy) { if (k === "slam" && !inC && Math.abs((e.y - e.h / 2) - (p.y - 0.9)) > 2.2) return; specHit(e, base * mul, ux, uy, k); n++; });
+    for (var i = 0; i < 26; i++) { var a = i / 26 * 6.2832, sp2 = (k === "slam" ? 9 : 7) * (0.8 + Math.random() * 0.4); parts.push({ x: px + Math.cos(a) * 0.6, y: py + (k === "slam" && !inC ? 0.8 : Math.sin(a) * 0.6), vx: Math.cos(a) * sp2, vy: k === "slam" && !inC ? -Math.abs(Math.sin(a)) * 4 - 2 : Math.sin(a) * sp2, life: 0.35, max: 0.4, c: k === "nova" ? (i % 2 ? "#d8f4ff" : "#7fd6ff") : k === "slam" ? (i % 2 ? "#ff8a3d" : "#ffd36a") : c, s: 4, g: 0 }); }
+    if (k === "slam" && !inC) dust(14);
+    if (n) wear("wpn", 1);
+  }
+  function specVolley(inC, ax, ay) {
+    var B = BOWS[S.bow], am = bowAmmo(); if (!am) { nag(S.bow === 1 ? "Out of Pebbles." : "Out of Arrows."); FOC.v = FOC.max; return; }
+    S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } hbDirty = true;
+    var px0 = inC ? cp.x : p.x, py0 = inC ? cp.y - 0.5 : p.y - 1.15, base = inC ? Math.atan2(ay, ax) : (ax < 0 ? Math.PI : 0) - 0.06, fire = am === "firearrow";
+    for (var i = -2; i <= 2; i++) { var a = base + i * 0.16, ux = Math.cos(a), uy = Math.sin(a), sp = B.sp * 1.1;
+      arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inC ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * 1.3), fire: fire, peb: am === "pebble", life: 2.2, cave: inC }); }
+    S.st.shots += 5; thud(300, 0.06);
+  }
+  function tickSpecial(dt) {
+    if (SPEC.spin > 0) SPEC.spin = Math.max(0, SPEC.spin - dt);
+    if (SPEC.q > 0) { SPEC.q -= dt; if (SPEC.q <= 0) specBurst("tempest", 2); }
+    if (SPEC.t > 0) {   // LUNGE: everything you pass through takes a big hit, once
+      SPEC.t = Math.max(0, SPEC.t - dt); var px = cave ? cp.x : p.x, py = cave ? cp.y - 0.5 : p.y - 0.9;
+      if (Math.random() < 0.7) parts.push({ x: px - SPEC.dx * 0.5, y: py, vx: -SPEC.dx * 2, vy: -SPEC.dy * 2, life: 0.25, max: 0.3, c: WEAPONS[S.wpn].c, s: 3, g: 0 });
+      specTargets(1.4, function (e, ux, uy) { if (SPEC.hit.indexOf(e) >= 0) return; SPEC.hit.push(e); specHit(e, wDmg() * 2.6, SPEC.dx, SPEC.dy, "lunge"); });
+    }
+    specHud();
+  }
+  function specHud() {
+    var b = $("sbxSpec"); if (!b) return; var k = specKind(), pc = Math.floor(FOC.v), key = (k ? "1" : "0") + pc;
+    if (key === FOC.key) return; FOC.key = key;
+    b.hidden = !k; if (!k) return;
+    b.style.setProperty("--fp", pc + "%"); b.classList.toggle("ready", pc >= 100);
+    b.setAttribute("aria-label", pc >= 100 ? "Special ready: " + (k === "volley" ? "Volley" : SPECN[S.wpn]) + " (V)" : "Special " + pc + "%");
+    b.title = pc >= 100 ? (k === "volley" ? "Volley" : SPECN[S.wpn]) + " ready (V or right-click)" : "Special: land hits to fill it (" + pc + "%)";
+  }
   // ---------- IMPACT: hit-stop, screen shake and a punchy sound on every hit and kill (respects Reduce motion and the Shake option) ----------
   var IMPT = 0;
   function impact(kind) {
-    var kill = kind === "kill";
+    var kill = kind === "kill"; focGain(kill);
     hitStop(kill ? 0.085 : 0.045, kill ? 0.05 : 0.1); shake = Math.max(shake, kill ? 0.42 : 0.17);
     var now = performance.now(); if (now - IMPT > 45) { IMPT = now; sfxHit(kill); }
   }
@@ -5539,26 +6423,66 @@
     g.imageSmoothingEnabled = true; g.drawImage(oc, -ax, -ay, OW, OH); g.imageSmoothingEnabled = false; g.restore();
     if (e.st === "dazed" && !reduce && !pd) { g.save(); g.translate(sx + e.dir * ts * 1.1, sy - e.h * ts - ts * 0.2); for (var q = 0; q < 3; q++) { var a = now / 200 + q * 2.1; g.fillStyle = "#ffe48a"; g.font = "900 " + Math.round(ts * 0.45) + "px Nunito,sans-serif"; g.fillText("★", Math.cos(a) * ts * 0.6, Math.sin(a) * ts * 0.2); } g.restore(); }
   }
-  function drawQueen(g, e, t, now, fl) {
-    var walk = e.st === "walk" || e.st === "charge", sp = e.st === "charge" ? 22 : 9, ang = e.st === "wind" || e.st === "charge";
-    for (var l = 0; l < 6; l++) {   // six legs
-      var lx = -26 + l * 10, sw = walk ? Math.sin(t * sp + l * 1.7) * 4 : 0; g.strokeStyle = l % 2 ? "#3a1a44" : "#4a2456"; g.lineWidth = 3.4;
-      g.beginPath(); g.moveTo(lx, -14); g.lineTo(lx + sw - 3, -7); g.lineTo(lx + sw, 0); g.stroke();
-    }
-    g.fillStyle = fl ? "#ffffff" : "#5a2468"; g.strokeStyle = "#2a0c34"; g.lineWidth = 2;   // abdomen and shell
-    g.beginPath(); g.ellipse(-12, -24, 26, 17, -0.08, 0, 7); g.fill(); g.stroke();
-    if (!fl) { g.fillStyle = "#8a3aa0"; g.beginPath(); g.ellipse(-14, -30, 18, 8, -0.1, 0, 7); g.fill(); g.strokeStyle = "#2a0c34"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-12, -40); g.lineTo(-12, -9); g.stroke(); }
-    g.fillStyle = "#2f5a2a"; g.strokeStyle = "#16300f"; g.lineWidth = 1.2;   // bramble thorns along the back
-    [[-34, -30], [-26, -38], [-16, -41], [-6, -40], [3, -35]].forEach(function (q, i) { g.beginPath(); g.moveTo(q[0] - 3, q[1] + 2); g.lineTo(q[0] + (i % 2 ? 1 : -1), q[1] - 9); g.lineTo(q[0] + 3, q[1] + 2); g.closePath(); g.fill(); g.stroke(); });
-    g.fillStyle = "#ff6b82"; [[-28, -22], [-8, -18], [-20, -14]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 2.2, 0, 7); g.fill(); });   // glowing spots
-    g.fillStyle = fl ? "#ffffff" : "#4a1c56"; g.strokeStyle = "#2a0c34"; g.lineWidth = 2; g.beginPath(); g.ellipse(18, -20, 14, 12, 0, 0, 7); g.fill(); g.stroke();   // head
-    g.strokeStyle = "#1a0820"; g.lineWidth = 3; var mo = e.st === "volley" || e.roar > 0 || (e.st === "intro" && e.t < 0.9) ? 4 + Math.sin(t * 30) * 1.2 : Math.sin(t * 6) * 1.5;   // mandibles (wide open when she roars)
-    g.beginPath(); g.moveTo(28, -16); g.quadraticCurveTo(37, -18 - mo, 35, -9); g.stroke(); g.beginPath(); g.moveTo(28, -11); g.quadraticCurveTo(37, -6 + mo, 33, -2); g.stroke();
-    var ec = ang ? "#ff3a3a" : "#ff6b82"; g.fillStyle = ec; g.shadowColor = ec; g.shadowBlur = lowq ? 0 : 8; g.beginPath(); g.arc(22, -24, 3.2, 0, 7); g.fill(); g.beginPath(); g.arc(14, -25, 2.6, 0, 7); g.fill(); g.shadowBlur = 0;
-    g.strokeStyle = "#3a1a44"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(16, -31); g.quadraticCurveTo(20, -44, 30, -42); g.stroke(); g.beginPath(); g.moveTo(22, -31); g.quadraticCurveTo(30, -40, 36, -34); g.stroke();   // antennae
-    g.fillStyle = "#f2c14e"; g.strokeStyle = "#8a5a10"; g.lineWidth = 1.2;   // her crown
-    g.beginPath(); g.moveTo(9, -30); g.lineTo(9, -37); g.lineTo(13, -33); g.lineTo(17, -40); g.lineTo(21, -33); g.lineTo(25, -37); g.lineTo(25, -30); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = "#ff3a5a"; g.beginPath(); g.arc(17, -33, 1.6, 0, 7); g.fill();
+  function drawQueen(g, e, t, now, fl) {   // the Swamp Queen: a royal bramble beetle. Glossy split wing cases with a thorny vine wound round them (the thorns grow from the vine),
+    // a plated neck shield joining her head to the shell, six three-jointed legs with hooked feet, glowing compound eyes, jagged mandibles, clubbed antennae and a jewelled crown
+    var walk = e.st === "walk" || e.st === "charge", sp = e.st === "charge" ? 22 : 9, ang = e.st === "wind" || e.st === "charge", br = Math.sin(t * 2) * 0.6;
+    var ln = "#1a0620", sh1 = "#b45ad0", sh2 = "#6a2a80", sh3 = "#2e0c3c", lg1 = "#5a2a6a", lg2 = "#3a1448", vn = "#2f5a2a", vn2 = "#4a8a3a";
+    var leg = function (l, far) {   // coxa at the body, a high knee, a lower joint, then a hooked foot on the ground
+      var lx = -26 + l * 10.4, sw = walk ? Math.sin(t * sp + l * 1.7 + (far ? 1.2 : 0)) * 4 : Math.sin(t * 1.5 + l) * 0.4, up = walk ? Math.max(0, Math.cos(t * sp + l * 1.7 + (far ? 1.2 : 0))) * 2 : 0, sd = l < 3 ? -1 : 1;
+      var kx = lx + sd * 6 + sw * 0.4, ky = -17 - (far ? 0 : 1) - up, jx = lx + sd * 9 + sw * 0.8, jy = -7 - up * 0.6, fx = lx + sd * 10 + sw, fy = -0.6 - up * 0.3, c = far ? lg2 : lg1;
+      aLimb(g, [[lx, -13], [kx, ky]], far ? 3.2 : 4, c, ln); aLimb(g, [[kx, ky], [jx, jy]], far ? 2.4 : 3, c, ln); aLimb(g, [[jx, jy], [fx, fy]], far ? 1.6 : 2, c, ln);
+      g.beginPath(); g.moveTo(fx, fy); g.quadraticCurveTo(fx + sd * 2.6, fy - 0.4, fx + sd * 2.8, fy + 0.6); g.strokeStyle = ln; g.lineWidth = 1.4; g.stroke();
+      if (!far) { g.fillStyle = "#c88ae0"; g.beginPath(); g.arc(kx, ky, 1.2, 0, 7); g.fill(); g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(lx + sd * 0.6, -14); g.lineTo(kx - sd * 0.4, ky + 0.6); g.stroke(); }
+    };
+    for (var l = 0; l < 6; l++) leg(l, true);
+    // the belly plates under the shell
+    g.beginPath(); g.ellipse(-10, -12, 24, 6, 0, 0, Math.PI); aInk(g, aG(g, -12, -6, "#4a1c56", "#2e0c3c", "#1a0620"), ln, 1.4);
+    g.strokeStyle = "#5a2a6a"; g.lineWidth = 0.9; for (var bp = 0; bp < 4; bp++) { g.beginPath(); g.ellipse(-10, -12, 22 - bp * 5, 5 - bp * 1, 0, 0.15, Math.PI - 0.15); g.stroke(); }
+    for (var l2 = 0; l2 < 6; l2 += 2) leg(l2 + 1, false);
+    // the wing cases: one domed shell, split down the middle, glossy with a violet-to-teal sheen
+    g.save(); g.translate(0, br * 0.3);
+    var shell = function () { g.beginPath(); g.moveTo(-37, -14); g.quadraticCurveTo(-40, -36, -18, -42); g.quadraticCurveTo(2, -46, 10, -30); g.quadraticCurveTo(14, -20, 10, -13); g.quadraticCurveTo(-14, -8, -37, -14); g.closePath(); };
+    shell(); aInk(g, aG(g, -46, -10, sh1, sh2, sh3), ln, 2);
+    g.save(); shell(); g.clip();
+    var ir = g.createLinearGradient(-36, -40, 6, -16); ir.addColorStop(0, "rgba(90,220,200,0)"); ir.addColorStop(0.5, "rgba(90,220,200,.22)"); ir.addColorStop(1, "rgba(90,220,200,0)"); g.fillStyle = ir; g.fillRect(-40, -46, 54, 36);   // iridescent sheen
+    g.strokeStyle = "rgba(255,200,255,.22)"; g.lineWidth = 0.9; for (var gr = 0; gr < 4; gr++) { g.beginPath(); g.moveTo(-34 + gr * 2, -16 - gr * 1); g.quadraticCurveTo(-30 + gr * 3, -36 + gr * 4, -12 + gr * 2, -40 + gr * 6); g.stroke(); }   // ridges
+    g.fillStyle = "#ff6b82"; [[-28, -22, 2.4], [-18, -18, 2], [-24, -32, 1.8], [-6, -22, 2.2], [-12, -34, 1.6]].forEach(function (q) { if (!lowq) oG(g, q[0], q[1], q[2] * 3, "rgba(255,107,130,.35)"); g.fillStyle = "#ff8aa0"; g.beginPath(); g.arc(q[0], q[1], q[2], 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(q[0] - q[2] * 0.3, q[1] - q[2] * 0.3, q[2] * 0.35, 0, 7); g.fill(); });   // glowing spots
+    g.restore();
+    g.strokeStyle = ln; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-6, -44); g.quadraticCurveTo(-12, -28, -12, -10); g.stroke();   // the split between the wing cases
+    aShine(g, -22, -36, 10, 3, 0.35, -0.3); aShine(g, -2, -36, 3.6, 1.6, 0.3, -0.5);
+    // a bramble vine winds over the shell; the thorns grow out of it, leaning back along the vine
+    var V = [[-38, -18], [-32, -34], [-20, -40], [-8, -39], [2, -33], [8, -22]];
+    g.beginPath(); g.moveTo(V[0][0], V[0][1]); for (var vi = 1; vi < V.length; vi++) g.quadraticCurveTo(V[vi - 1][0] + 2, V[vi - 1][1] - 3, (V[vi - 1][0] + V[vi][0]) / 2, (V[vi - 1][1] + V[vi][1]) / 2); g.lineTo(V[V.length - 1][0], V[V.length - 1][1]);
+    g.strokeStyle = ln; g.lineWidth = 4.6; g.stroke(); g.strokeStyle = vn; g.lineWidth = 3; g.stroke(); g.strokeStyle = vn2; g.lineWidth = 1; g.stroke();
+    [[-35, -27, -2.2, 8], [-26, -38, -1.6, 10], [-14, -41, -1.2, 11], [-3, -37, -0.7, 10], [5, -28, -0.2, 8]].forEach(function (q, i) {
+      g.save(); g.translate(q[0], q[1]); g.rotate(q[2] + 1.5708 + (i % 2 ? 0.15 : -0.15));
+      g.beginPath(); g.moveTo(-2.6, 0.6); g.quadraticCurveTo(-0.6, -q[3] * 0.4, 0.8, -q[3]); g.quadraticCurveTo(0.8, -q[3] * 0.4, 2.6, 0.6); g.closePath(); aInk(g, aG(g, -q[3], 1, "#6aa85a", vn, "#16300f"), ln, 1);
+      g.restore();
+    });
+    [[-30, -36], [-10, -40.6], [4, -31]].forEach(function (lf, i) { g.save(); g.translate(lf[0], lf[1]); g.rotate(-0.6 + i * 0.5 + Math.sin(t * 2 + i) * 0.1); g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(3, -3.4, 7, -2); g.quadraticCurveTo(3, 1, 0, 0); g.closePath(); aInk(g, aG(g, -3.4, 1, "#7aca5a", "#4a8a3a", "#2a5a22"), ln, 0.8); g.restore(); });   // little leaves on the vine
+    g.restore();
+    // the neck shield (pronotum) joins the head to the shell
+    g.beginPath(); g.moveTo(6, -31); g.quadraticCurveTo(16, -36, 20, -28); g.quadraticCurveTo(22, -18, 16, -12); g.quadraticCurveTo(8, -10, 5, -14); g.quadraticCurveTo(2, -22, 6, -31); g.closePath(); aInk(g, aG(g, -36, -11, "#8a3aa0", "#4a1c56", "#2a0c34"), ln, 1.8);
+    g.strokeStyle = "#a85ac0"; g.lineWidth = 0.9; g.beginPath(); g.moveTo(8, -29); g.quadraticCurveTo(15, -32, 18, -26); g.stroke(); aShine(g, 11, -29, 3.4, 1.2, 0.3, -0.3);
+    // head
+    g.beginPath(); g.ellipse(24, -20, 9.6, 9, 0.1, 0, 7); aInk(g, aG(g, -29, -11, "#6a2a80", "#4a1c56", "#2a0c34"), ln, 1.8);
+    // antennae: jointed, ending in feathered clubs
+    [[22, -28, 1], [27, -27, 0]].forEach(function (an, ai) { var wv = Math.sin(t * 3 + ai) * 1.4; aLimbQ(g, an[0], an[1], an[0] + 2 + ai * 3, an[1] - 12 + wv, an[0] + 10 + ai * 3, an[1] - 14 + wv, 1, ai ? "#5a2a6a" : "#3a1448", ln); g.save(); g.translate(an[0] + 10 + ai * 3, an[1] - 14 + wv); g.rotate(-0.4); g.beginPath(); g.ellipse(2.6, 0, 3.4, 1.8, 0, 0, 7); aInk(g, aG(g, -1.8, 1.8, "#a85ac0", "#6a2a80", "#3a1448"), ln, 0.8); g.strokeStyle = "#c88ae0"; g.lineWidth = 0.5; for (var fb = 0; fb < 3; fb++) { g.beginPath(); g.moveTo(0.8 + fb * 1.6, -1.4); g.lineTo(0.8 + fb * 1.6, 1.4); g.stroke(); } g.restore(); });
+    // mandibles: jagged pincers, wide open when she roars
+    var mo = e.st === "volley" || e.roar > 0 || (e.st === "intro" && e.t < 0.9) ? 4 + Math.sin(t * 30) * 1.2 : Math.sin(t * 6) * 1.5;
+    [[-1, mo], [1, -mo]].forEach(function (mq) { var s2 = mq[0]; g.save(); g.translate(31, -17 + s2 * -2.6); g.rotate(s2 * -0.25 + mq[1] * -0.06 * s2 * s2); g.beginPath(); g.moveTo(0, -1.8 * s2 * -1); g.quadraticCurveTo(7, -3 * s2 * -1, 9, 2.6 * s2 * -1); g.lineTo(7, 1.4 * s2 * -1); g.lineTo(6.6, 3 * s2 * -1); g.lineTo(4.6, 1.2 * s2 * -1); g.lineTo(3.6, 2.4 * s2 * -1); g.quadraticCurveTo(1, 1.6 * s2 * -1, 0, 1.8 * s2 * -1); g.closePath(); aInk(g, aG(g, -3, 3, "#5a2a6a", "#2e0c3c", "#1a0620"), ln, 1); g.restore(); });
+    // compound eyes: big glowing domes with facets and a glint
+    var ec = ang ? "#ff3a3a" : "#ff6b82";
+    [[27.6, -23.4, 3.8], [21, -24.6, 3]].forEach(function (eq) { if (!lowq) oG(g, eq[0], eq[1], eq[2] * 2.6, ang ? "rgba(255,40,40,.45)" : "rgba(255,107,130,.35)"); g.beginPath(); g.arc(eq[0], eq[1], eq[2], 0, 7); aInk(g, aG(g, eq[1] - eq[2], eq[1] + eq[2], "#ffb0c0", ec, "#8a0a1e"), ln, 1); g.strokeStyle = "rgba(90,0,20,.4)"; g.lineWidth = 0.4; for (var fx2 = -1; fx2 <= 1; fx2++) { g.beginPath(); g.moveTo(eq[0] + fx2 * eq[2] * 0.5, eq[1] - eq[2] * 0.9); g.lineTo(eq[0] + fx2 * eq[2] * 0.5, eq[1] + eq[2] * 0.9); g.stroke(); } g.fillStyle = "#fff"; g.beginPath(); g.arc(eq[0] - eq[2] * 0.35, eq[1] - eq[2] * 0.4, eq[2] * 0.28, 0, 7); g.fill(); });
+    aShine(g, 20, -25.6, 3, 1.2, 0.25, -0.3);
+    // her crown sits on top of the head: a gold band with points, gems and a shine
+    g.save(); g.translate(23, -29); g.rotate(0.1);
+    g.beginPath(); g.moveTo(-8, 1); g.lineTo(-8.6, -6); g.lineTo(-4.4, -2.6); g.lineTo(0, -10); g.lineTo(4.4, -2.6); g.lineTo(8.6, -6); g.lineTo(8, 1); g.quadraticCurveTo(0, 3, -8, 1); g.closePath(); aInk(g, aG(g, -10, 2, "#fff2a0", "#f2c14e", "#a8701a"), "#5a3a08", 1.1);
+    g.beginPath(); g.moveTo(-8, -0.6); g.quadraticCurveTo(0, 1.4, 8, -0.6); g.strokeStyle = "#a8701a"; g.lineWidth = 0.8; g.stroke();
+    [[0, -3.6, 1.8, "#ff3a5a"], [-4.6, -0.8, 1.1, "#5ad0ff"], [4.6, -0.8, 1.1, "#5ad0ff"]].forEach(function (gm) { g.beginPath(); g.arc(gm[0], gm[1], gm[2], 0, 7); aInk(g, gm[3], "#5a3a08", 0.6); g.fillStyle = "#fff"; g.fillRect(gm[0] - gm[2] * 0.5, gm[1] - gm[2] * 0.6, gm[2] * 0.5, gm[2] * 0.5); });
+    [[-8.6, -6], [0, -10], [8.6, -6]].forEach(function (pt) { g.fillStyle = "#fff2a0"; g.beginPath(); g.arc(pt[0], pt[1], 0.9, 0, 7); g.fill(); });
+    aShine(g, -3.6, -3.4, 1.2, 2.4, 0.5, 0.4);
+    g.restore();
   }
   // Frost Alpha: the pack leader, a huge silver-white wolf. Shaggy fur with a ragged outline, ice crystals growing out of its spine and
   // mane, an old claw scar over one eye, heavy clawed paws and a crown of ice. Howls with its head thrown back; breathes frost.
@@ -5573,15 +6497,30 @@
       g.beginPath(); g.moveTo(x - wd, y); g.lineTo(x + lean - wd * 0.2, y - hgt); g.lineTo(x + wd, y); g.closePath(); g.fill(); g.stroke();
       g.fillStyle = iceLt; g.beginPath(); g.moveTo(x - wd * 0.6, y - 0.5); g.lineTo(x + lean - wd * 0.2, y - hgt + 1); g.lineTo(x - wd * 0.05, y - 0.5); g.closePath(); g.fill();
     };
-    var leg = function (q, i, far) {   // thick furry thigh, strong shin, big clawed paw
-      var sw = air ? (i < 2 ? -6 : 6) : Math.sin(t * 8 + q[1]) * 4, x0 = q[0], fx = x0 + sw, fy = -low - 1, front = i >= 2;
-      g.fillStyle = far ? dk : sh; g.beginPath(); g.ellipse(x0, -24, front ? 5.4 : 6.8, 8.4, front ? 0.12 : -0.15, 0, 7); g.fill();   // the thigh, blended into the body
-      g.strokeStyle = ln; g.lineWidth = 1.4; g.beginPath(); g.ellipse(x0, -24, front ? 5.4 : 6.8, 8.4, front ? 0.12 : -0.15, front ? -0.3 : 1.6, front ? 1.6 : 3.4); g.stroke();
-      g.strokeStyle = fl ? "#fff" : "rgba(60,82,102,.45)"; g.lineWidth = 1; g.beginPath(); g.moveTo(x0 - 1.5, -27); g.quadraticCurveTo(x0 - 2.5, -23, x0 - 1, -19); g.stroke();
-      g.strokeStyle = far ? dk : sh; g.lineWidth = 6.5; g.beginPath(); g.moveTo(x0, -20); g.lineTo(x0 + sw * 0.5 + (front ? 1 : -1.5), -10 - low * 0.5); g.lineTo(fx, fy - 2); g.stroke();
-      g.strokeStyle = far ? ln : fur; g.lineWidth = 3.4; g.beginPath(); g.moveTo(x0 + 1, -19); g.lineTo(x0 + sw * 0.5 + (front ? 2 : -0.5), -10 - low * 0.5); g.lineTo(fx + 1, fy - 2.5); g.stroke();
-      g.fillStyle = far ? dk : belly; g.strokeStyle = ln; g.lineWidth = 1.3; g.beginPath(); g.ellipse(fx + 1.5, fy - 1.3, 5, 2.6, 0, 0, 7); g.fill(); g.stroke();
-      g.strokeStyle = F("#2a3640"); g.lineWidth = 1; for (var c = 0; c < 3; c++) { g.beginPath(); g.moveTo(fx + 3 + c * 1.6, fy - 0.6); g.lineTo(fx + 4.6 + c * 1.6, fy + 0.6); g.stroke(); }   // claws
+    var leg = function (q, i, far) {   // ONE tapered, shaggy leg: a heavy thigh flowing down through the knee (a backward hock on the hind legs) to a big clawed paw
+      var sw = air ? (i < 2 ? -6 : 6) : Math.sin(t * 8 + q[1]) * 4 * (walk ? 1 : 0.25), x0 = q[0], fy = -low - 1, front = i >= 2;
+      var P = front ? [[x0, -25], [x0 - 1 + sw * 0.3, -15 - low * 0.5], [x0 + 1.2 + sw * 0.8, -6 - low * 0.2], [x0 + 1.6 + sw, fy - 1.8]]
+                    : [[x0, -26], [x0 + 4.6 + sw * 0.35, -16 - low * 0.5], [x0 - 2.6 + sw * 0.7, -7.4 - low * 0.2], [x0 - 0.6 + sw, fy - 1.8]];
+      var Wd = front ? [6.8, 4.4, 2.9, 2.8] : [8.6, 5.4, 3.1, 2.8], L = [], Rr = [], k;
+      for (k = 0; k < P.length; k++) { var p0 = P[Math.max(0, k - 1)], p1 = P[Math.min(P.length - 1, k + 1)], dx = p1[0] - p0[0], dy = p1[1] - p0[1], dl = Math.hypot(dx, dy) || 1, nx = -dy / dl, ny = dx / dl; L.push([P[k][0] + nx * Wd[k], P[k][1] + ny * Wd[k]]); Rr.push([P[k][0] - nx * Wd[k], P[k][1] - ny * Wd[k]]); }
+      var lp = function (cl) { g.moveTo(L[0][0], L[0][1] - 3);
+        for (k = 1; k < L.length; k++) g.quadraticCurveTo(L[k - 1][0], L[k - 1][1], (L[k - 1][0] + L[k][0]) / 2, (L[k - 1][1] + L[k][1]) / 2);
+        g.lineTo(L[L.length - 1][0], L[L.length - 1][1]); g.lineTo(Rr[Rr.length - 1][0], Rr[Rr.length - 1][1]);
+        for (k = Rr.length - 2; k >= 0; k--) g.quadraticCurveTo(Rr[k + 1][0], Rr[k + 1][1], (Rr[k + 1][0] + Rr[k][0]) / 2, (Rr[k + 1][1] + Rr[k][1]) / 2);
+        g.lineTo(Rr[0][0], Rr[0][1] - 3); if (cl) g.quadraticCurveTo(P[0][0], P[0][1] - 8, L[0][0], L[0][1] - 3); };
+      g.beginPath(); lp(true); g.fillStyle = far ? aG(g, -30, 0, sh, dk, F("#4a5e70")) : aG(g, -34, 0, fur, sh, dk); g.fill();
+      g.beginPath(); lp(false); g.strokeStyle = ln; g.lineWidth = 1.4; g.stroke();   // inked down both sides, but not across the top, so the thigh melts into the body
+      if (!far) {   // shaggy tufts at the back of the joint and fur strokes down the leg
+        var J = P[front ? 1 : 2], sd = front ? -1 : 1;
+        for (var tf = 0; tf < 2; tf++) { g.beginPath(); g.moveTo(J[0] + sd * 2.4, J[1] - 2.6 + tf * 2.4); g.lineTo(J[0] + sd * (6 - tf), J[1] - 0.4 + tf * 2.6); g.lineTo(J[0] + sd * 2.2, J[1] + 0.6 + tf * 2.4); g.closePath(); aInk(g, sh, ln, 1); }
+        g.strokeStyle = fl ? "#fff" : "rgba(60,82,102,.45)"; g.lineWidth = 0.9; for (var fs2 = 0; fs2 < 3; fs2++) { g.beginPath(); g.moveTo(P[0][0] - 2 + fs2 * 2, P[0][1] + 4); g.quadraticCurveTo(P[1][0] - 1.6 + fs2 * 1.4, P[1][1], P[1][0] - 1 + fs2 * 1.2, P[1][1] + 4); g.stroke(); }
+        g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(P[0][0] - 3, P[0][1] + 3); g.quadraticCurveTo(P[1][0] - 2.6, P[1][1], P[2][0] - 1.4, P[2][1]); g.stroke();
+      }
+      var fx = P[3][0], py = P[3][1];   // the paw: big and rounded, toe lines, hooked dark claws
+      g.beginPath(); g.moveTo(fx - 3.4, py - 1.4); g.quadraticCurveTo(fx - 3.8, py + 1.8, fx - 0.4, py + 1.8); g.lineTo(fx + 4.4, py + 1.8); g.quadraticCurveTo(fx + 7, py + 1.4, fx + 5.4, py - 1.2); g.quadraticCurveTo(fx + 3, py - 3.4, fx - 3.4, py - 1.4); g.closePath();
+      aInk(g, far ? dk : aG(g, py - 3.4, py + 1.8, belly, fur, sh), ln, 1.3);
+      g.strokeStyle = ln; g.lineWidth = 0.8; [0.8, 3].forEach(function (tx) { g.beginPath(); g.moveTo(fx + tx, py - 0.8); g.lineTo(fx + tx + 0.4, py + 1.6); g.stroke(); });
+      g.fillStyle = F("#2a3640"); for (var c = 0; c < 3; c++) { var cx = fx + 1.6 + c * 2.1; g.beginPath(); g.moveTo(cx, py + 0.8); g.quadraticCurveTo(cx + 2.4, py + 0.8, cx + 2.6, py + 2.8); g.lineTo(cx + 0.8, py + 1.8); g.closePath(); g.fill(); }   // claws
     };
     var legs = [[-26, 0], [-16, 2], [16, 1], [26, 3]];
     leg(legs[1], 1, true); leg(legs[3], 3, true);   // far pair
@@ -5591,6 +6530,7 @@
     g.fillStyle = sh; wolfFur(g, tp, [4, 6, 7.5, 8.5, 9, 8.8, 8, 6.5, 4.5, 2], true, 0); g.fill(); g.strokeStyle = ln; g.lineWidth = 1.6; g.stroke();
     g.fillStyle = fur; wolfFur(g, tp.slice(0, 8), [2.5, 4, 5, 5.6, 5.8, 5.4, 4.4, 3], false, 0); g.fill();
     crystal(tp[9][0] + 1, tp[9][1] + 2, 8, 2.4, -3); crystal(tp[8][0], tp[8][1] - 3, 6, 2, -1);
+    [[-24, -40, 9, 2.6, -1], [-15, -42, 12, 3, 0], [-6, -43, 15, 3.4, 1], [3, -43.5, 11, 2.8, 1.5], [11, -44, 8, 2.4, 2]].forEach(function (c, ci) { crystal(c[0], c[1] + bob + 5, c[2] + 3 + (rage ? 2 : 0), c[3] * 1.15, c[4]); if (ci % 2 === 0) crystal(c[0] + 2.6, c[1] + bob + 5, c[2] * 0.5 + 2, c[3] * 0.7, c[4] + 1.5); });   // ice along the spine, drawn first so the fur covers their roots and they grow out of the back
     // body: ragged spine, deep chest, fur fringe under the belly
     var bg = g.createLinearGradient(0, -44 + bob, 0, -16 + bob); bg.addColorStop(0, F("#93a9bc")); bg.addColorStop(0.4, fur); bg.addColorStop(1, belly);
     g.fillStyle = bg; g.strokeStyle = ln; g.lineWidth = 2;
@@ -5604,7 +6544,6 @@
     [[-28, -31], [-23, -34], [-18, -30], [-13, -33.5], [-8, -29.5], [-3, -33], [2, -29], [7, -32.5], [12, -28.5], [-24, -24], [-14, -23.5], [-4, -24], [6, -23]].forEach(function (q) { g.beginPath(); g.moveTo(q[0], q[1] + bob); g.quadraticCurveTo(q[0] - 2, q[1] + 2 + bob, q[0] - 3.6, q[1] + 4.4 + bob); g.stroke(); });
     g.strokeStyle = fl ? "#fff" : "rgba(255,255,255,.7)"; [[-20, -19.5], [-10, -19], [0, -19.4], [10, -18.6]].forEach(function (q) { g.beginPath(); g.moveTo(q[0], q[1] + bob); g.lineTo(q[0] - 2, q[1] + 2.4 + bob); g.stroke(); });
     g.strokeStyle = F("#e8a8b4"); g.lineWidth = 1.4; [0, 2.6, 5.2].forEach(function (o) { g.beginPath(); g.moveTo(10 + o, -36 + bob); g.lineTo(5 + o, -26 + bob); g.stroke(); });   // old claw scar on the shoulder
-    [[-24, -40, 9, 2.6, -1], [-15, -42, 12, 3, 0], [-6, -43, 15, 3.4, 1], [3, -43.5, 11, 2.8, 1.5], [11, -44, 8, 2.4, 2]].forEach(function (c) { crystal(c[0], c[1] + bob + 2, c[2] + (rage ? 2 : 0), c[3], c[4]); });   // ice along the spine
     leg(legs[0], 0, false); leg(legs[2], 2, false);   // near pair
     // the mane: an enormous ragged fan of white fur, shot through with ice
     var mcx = 30, mcy = -32 + bob, mg = g.createRadialGradient(mcx, mcy, 2, mcx, mcy, 19); mg.addColorStop(0, belly); mg.addColorStop(0.7, fur); mg.addColorStop(1, sh);
@@ -5657,9 +6596,21 @@
       var r = (22 - i * 1.05) * ts / 30, sx2 = ox + q[0] * ts, sy2 = oy + (q[1] - 0.8) * ts;
       g.globalAlpha = pd ? Math.max(0, 1 - pd) : 1;
       if (!lowq && !pd) { var sg = g.createRadialGradient(sx2, sy2, r * 0.3, sx2, sy2, r * 1.6); sg.addColorStop(0, "rgba(255,110,40,.22)"); sg.addColorStop(1, "rgba(255,110,40,0)"); g.fillStyle = sg; g.fillRect(sx2 - r * 1.6, sy2 - r * 1.6, r * 3.2, r * 3.2); }
-      g.fillStyle = fl ? "#ffd8c4" : i % 2 ? "#3a1a14" : "#4a2418"; g.strokeStyle = "#1a0804"; g.lineWidth = Math.max(1, ts / 18); g.beginPath(); g.arc(sx2, sy2, r, 0, 7); g.fill(); g.stroke();
-      g.fillStyle = "#ff6a1f"; g.beginPath(); g.arc(sx2, sy2 - r * 0.15, r * 0.45, 0, 7); g.fill();
-      g.fillStyle = "#ffd23f"; g.globalAlpha *= 0.6 + 0.4 * Math.sin(now / 160 + i); g.beginPath(); g.arc(sx2, sy2 - r * 0.2, r * 0.2, 0, 7); g.fill(); g.globalAlpha = 1;
+      var gl2 = 0.6 + 0.4 * Math.sin(now / 160 + i), lnW = "#120402", nxs = i < segs.length ? segs[i] : null, ang2 = nxs ? Math.atan2(q[1] - nxs[1], q[0] - nxs[0]) : 0;
+      g.save(); g.translate(sx2, sy2); g.lineJoin = "round";
+      // a ridge spike grows out of the top of each ring (drawn first, so the ring covers its root)
+      g.save(); g.rotate(ang2 * 0.3 - (i % 2 ? 0.25 : 0.4) * (e.dir || 1)); g.beginPath(); g.moveTo(-r * 0.38, -r * 0.5); g.quadraticCurveTo(-r * 0.2, -r * 1.2, r * 0.05 - (e.dir || 1) * r * 0.25, -r * (1.45 - i * 0.03)); g.quadraticCurveTo(r * 0.2, -r * 1.0, r * 0.38, -r * 0.5); g.closePath(); aInk(g, fl ? "#ffd8c4" : aG(g, -r * 1.45, -r * 0.5, "#6a3a2a", "#3a1a10", "#1a0804"), lnW, Math.max(1, ts / 22)); g.restore();
+      g.beginPath(); g.arc(0, 0, r, 0, 7); aInk(g, fl ? "#ffd8c4" : aG(g, -r, r, i % 2 ? "#5a3020" : "#6a3a26", i % 2 ? "#3a1a10" : "#44200f", "#1a0804"), lnW, Math.max(1, ts / 16));
+      if (!fl) {
+        g.save(); g.beginPath(); g.arc(0, 0, r * 0.94, 0, 7); g.clip();
+        g.fillStyle = "rgba(255,150,60," + (0.25 * gl2).toFixed(3) + ")"; g.fillRect(-r, r * 0.25, r * 2, r);   // the hot underside
+        g.strokeStyle = "rgba(255," + Math.round(150 + 80 * gl2) + ",60," + (0.75 + 0.25 * gl2).toFixed(3) + ")"; g.lineWidth = Math.max(1, r * 0.12);   // molten seams between the plates
+        g.beginPath(); g.moveTo(-r * 0.7, -r * 0.55); g.lineTo(-r * 0.15, -r * 0.1); g.lineTo(-r * 0.3, r * 0.45); g.moveTo(-r * 0.15, -r * 0.1); g.lineTo(r * 0.5, -r * 0.3); g.lineTo(r * 0.75, r * 0.2); g.stroke();
+        g.strokeStyle = "rgba(255,240,160," + (0.6 * gl2).toFixed(3) + ")"; g.lineWidth = Math.max(0.6, r * 0.04); g.stroke();
+        g.restore();
+        aShine(g, -r * 0.35, -r * 0.5, r * 0.35, r * 0.14, 0.22, -0.4);
+      }
+      g.restore();
     }
     if (e.u && !e.def) {   // underground: a glowing crack where it will come up
       if (e.st === "crack") { var cx = ox + e.x * ts, cy = oy + surfAt(e.x) * ts; g.save(); g.globalAlpha = 0.55 + 0.45 * Math.sin(now / 50); g.strokeStyle = "#ffb13b"; g.lineWidth = Math.max(2, ts / 10); g.beginPath(); g.moveTo(cx - ts, cy); g.lineTo(cx - ts * 0.4, cy - ts * 0.1); g.lineTo(cx, cy + ts * 0.05); g.lineTo(cx + ts * 0.5, cy - ts * 0.1); g.lineTo(cx + ts, cy); g.stroke(); g.restore(); }
@@ -5672,15 +6623,30 @@
     var want = e.st === "leap" ? Math.atan2(e.vy, Math.abs(e.lv * 3) + 0.01) * 0.6 : rear ? -0.25 + (reduce ? 0 : Math.sin(now / 260) * 0.06) : 0; e.wrot = (e.wrot || 0) + (want - (e.wrot || 0)) * 0.25;   // the head turns smoothly along its jump
     var wfc = (e.fc < 0 ? -1 : 1) * Math.max(0.2, Math.abs(e.fc == null ? e.dir : e.fc)); g.scale(wfc, 1); g.rotate(e.wrot);
     if (e.rage && !pd && !lowq) { var wa = g.createRadialGradient(0, 0, 4, 0, 0, 34); wa.addColorStop(0, "rgba(255,200,60," + (0.25 + 0.1 * Math.sin(now / 150)).toFixed(3) + ")"); wa.addColorStop(1, "rgba(255,120,40,0)"); g.fillStyle = wa; g.fillRect(-34, -34, 68, 68); }
-    g.fillStyle = fl ? "#ffd8c4" : "#4a2418"; g.strokeStyle = "#1a0804"; g.lineWidth = 2; g.beginPath(); g.ellipse(0, 0, 18, 14, 0, 0, 7); g.fill(); g.stroke();
-    g.beginPath(); g.moveTo(8, -8); g.lineTo(28, -3); g.lineTo(27, 3); g.lineTo(8, 4); g.closePath(); g.fill(); g.stroke();   // upper jaw
-    var jaw = e.st === "spit" || e.roar > 0 ? 5 + Math.sin(now / 80) * 2 : e.st === "leap" ? 4 : 2; g.beginPath(); g.moveTo(6, 5); g.lineTo(24, 5 + jaw); g.lineTo(6, 12); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = "#ffd23f"; g.beginPath(); g.moveTo(8, 4); g.lineTo(26, 4); g.lineTo(24, 4 + jaw * 0.6); g.lineTo(8, 6); g.closePath(); g.fill();   // fire inside the mouth
-    g.fillStyle = "#e8d8c0"; [12, 17, 22].forEach(function (tx) { g.beginPath(); g.moveTo(tx, 3); g.lineTo(tx + 1.5, 6); g.lineTo(tx + 3, 3); g.fill(); });
-    g.fillStyle = "#2a1008"; g.strokeStyle = "#1a0804"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-6, -10); g.quadraticCurveTo(-16, -26, -2, -30); g.quadraticCurveTo(-10, -20, 0, -12); g.closePath(); g.fill(); g.stroke();   // horns
-    g.beginPath(); g.moveTo(2, -12); g.quadraticCurveTo(0, -26, 12, -26); g.quadraticCurveTo(4, -20, 8, -11); g.closePath(); g.fill(); g.stroke();
-    var ec = e.rage ? "#fff06a" : "#ffb13b"; g.fillStyle = ec; g.shadowColor = "#ff6a1f"; g.shadowBlur = lowq ? 0 : 10; g.beginPath(); g.ellipse(8, -5, 3.6, 2.4, 0.2, 0, 7); g.fill(); g.shadowBlur = 0;
-    g.fillStyle = "#ff6a1f"; [[-8, -2], [-2, 6], [-12, 6]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 2.4, 0, 7); g.fill(); });
+    var lnH = "#120402", pl = function (y0, y1) { return fl ? "#ffd8c4" : aG(g, y0, y1, "#7a4430", "#4a2418", "#1e0a04"); }, glw = 0.6 + 0.4 * Math.sin(now / 160);
+    var jaw = e.st === "spit" || e.roar > 0 ? 5 + Math.sin(now / 80) * 2 : e.st === "leap" ? 4 : 2;
+    // horns: rooted behind the skull, sweeping back in ridged curves
+    [[-6, -6, -18, -24, -4, -31, 0], [3, -9, 0, -25, 13, -27, 1]].forEach(function (hq) { g.beginPath(); g.moveTo(hq[0] - 4, hq[1] + 2); g.quadraticCurveTo(hq[2], hq[3], hq[4], hq[5]); g.quadraticCurveTo(hq[2] + 6, hq[3] + 6, hq[0] + 4, hq[1] + 1); g.closePath(); aInk(g, fl ? "#ffd8c4" : aG(g, hq[5], hq[1] + 2, "#6a4a3a", "#2a1008", "#120402"), lnH, 1.4);
+      g.strokeStyle = fl ? "#fff" : "#8a6a5a"; g.lineWidth = 0.7; for (var rg = 1; rg < 4; rg++) { var tq = rg / 4, bx = (1 - tq) * (1 - tq) * hq[0] + 2 * (1 - tq) * tq * hq[2] + tq * tq * hq[4], by = (1 - tq) * (1 - tq) * hq[1] + 2 * (1 - tq) * tq * hq[3] + tq * tq * hq[5]; g.beginPath(); g.moveTo(bx - 2.4 * (1 - tq), by + 0.6); g.lineTo(bx + 2.4 * (1 - tq), by - 0.6); g.stroke(); } });
+    // the lower jaw hinges open under the skull; fire glows inside
+    g.beginPath(); g.moveTo(-4, 6); g.quadraticCurveTo(8, 13 + jaw * 0.4, 25, 6 + jaw); g.lineTo(24, 4 + jaw * 0.7); g.quadraticCurveTo(12, 6, 2, 3); g.closePath(); aInk(g, pl(2, 14), lnH, 1.6);
+    if (!fl) { g.beginPath(); g.moveTo(4, 3.6); g.quadraticCurveTo(14, 2, 26, 2.6); g.lineTo(24, 4 + jaw * 0.7); g.quadraticCurveTo(12, 6 + jaw * 0.3, 4, 3.6); var fg = g.createLinearGradient(4, 0, 26, 0); fg.addColorStop(0, "#ff6a1f"); fg.addColorStop(1, "#ffe48a"); g.fillStyle = fg; g.fill(); }
+    g.fillStyle = fl ? "#fff" : "#f0e0c8"; for (var tl = 0; tl < 4; tl++) { var tx2 = 9 + tl * 4; g.beginPath(); g.moveTo(tx2, 5.4 + jaw * 0.25 + tl * 0.3 * jaw * 0.2); g.lineTo(tx2 + 1.4, 2.6 + jaw * 0.25); g.lineTo(tx2 + 2.8, 5.4 + jaw * 0.25 + tl * 0.3 * jaw * 0.2); g.fill(); }
+    // the skull: one shape from the back of the head over a heavy brow down a long snout
+    var sk = function () { g.beginPath(); g.moveTo(-17, 4); g.quadraticCurveTo(-20, -10, -8, -13); g.quadraticCurveTo(4, -16, 10, -9.6); g.quadraticCurveTo(20, -7, 28.6, -2.6); g.quadraticCurveTo(30, 0.6, 27, 2.4); g.quadraticCurveTo(14, 4.4, 4, 3.4); g.quadraticCurveTo(-6, 8, -17, 4); g.closePath(); };
+    sk(); aInk(g, pl(-16, 8), lnH, 2);
+    if (!fl) { g.save(); sk(); g.clip();
+      g.strokeStyle = "rgba(255," + Math.round(150 + 80 * glw) + ",60,.9)"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-14, -4); g.lineTo(-8, -1); g.lineTo(-10, 4); g.moveTo(-8, -1); g.lineTo(-1, -5); g.lineTo(2, 1); g.moveTo(14, -4); g.lineTo(20, -2.4); g.stroke();   // molten cracks
+      g.strokeStyle = "rgba(255,240,160," + (0.6 * glw).toFixed(3) + ")"; g.lineWidth = 0.5; g.stroke();
+      g.strokeStyle = "#6a3a26"; g.lineWidth = 0.8; for (var sc = 0; sc < 4; sc++) { g.beginPath(); g.arc(-10 + sc * 5, -9, 3, 3.6, 5.6); g.stroke(); }   // scale rows along the crown
+      g.restore(); }
+    g.fillStyle = fl ? "#fff" : "#f0e0c8"; for (var tu = 0; tu < 4; tu++) { var tx3 = 10 + tu * 4; g.beginPath(); g.moveTo(tx3, 3.2); g.lineTo(tx3 + 1.4, 6 + (tu === 0 ? 1.4 : 0)); g.lineTo(tx3 + 2.8, 3.2); g.fill(); }   // upper fangs
+    g.beginPath(); g.moveTo(1, -12); g.quadraticCurveTo(8, -14, 13, -8); g.quadraticCurveTo(7, -9, 1, -8); g.closePath(); aInk(g, pl(-14, -8), lnH, 1.2);   // the brow ridge
+    var ec = e.rage ? "#fff06a" : "#ffb13b"; if (!lowq && !fl) oG(g, 8, -5.4, 8, "rgba(255,120,30,.45)");
+    g.beginPath(); g.ellipse(8, -5.4, 3.8, 2.4, 0.2, 0, 7); aInk(g, fl ? "#fff" : aG(g, -8, -3, "#fff6c0", ec, "#ff6a1f"), lnH, 1); if (!fl) { g.fillStyle = "#3a0a00"; g.beginPath(); g.ellipse(8.8, -5.2, 0.9, 2, 0.2, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(7, -6.4, 0.7, 0, 7); g.fill(); }
+    g.fillStyle = lnH; g.beginPath(); g.ellipse(25.6, -2.6, 1.2, 0.7, 0.3, 0, 7); g.fill();   // nostril
+    if (!fl && !reduce) { var sm = (now / 900) % 1; g.fillStyle = "rgba(80,60,60," + (0.35 * (1 - sm)).toFixed(3) + ")"; g.beginPath(); g.arc(27 + sm * 4, -4 - sm * 9, 1.4 + sm * 2.6, 0, 7); g.fill(); }   // a wisp of smoke
+    aShine(g, -6, -10.4, 6, 1.6, 0.25, -0.15); aShine(g, 18, -6, 4, 0.9, 0.2, 0.2);
     g.restore();
   }
   // ---------- MINI-MAP (top right, under health and food) ----------
@@ -5694,6 +6660,7 @@
   }
   function drawMini() {
     var cv = $("sbxMini"); if (!cv) return; var show = MINI.on && !cave && !!world; if (cv.hidden === show) cv.hidden = !show; if (!show) return;
+    if (typeof OCS !== "undefined" && OCS && OCS.sea) { drawSeaMini(cv); return; }   // at sea: the sea chart
     // SMOOTH: the view follows the (eased) camera every frame and scrolls by fractions of a tile; the tile picture itself is only rebuilt
     // when the view crosses a tile edge or every 250 ms (for digging and newly explored land), and is drawn one tile bigger than the view
     var now = performance.now(), tw = MINI.tw, th = MINI.th, fx0 = cam.x - tw / 2, fy0 = cam.y - 0.9 - th / 2, ix0 = Math.floor(fx0), iy0 = Math.floor(fy0), bw2 = tw + 1, bh2 = th + 1;
@@ -5819,6 +6786,7 @@
   }
   function wxLabel() {   // for the HUD: what the weather is called where you are standing (empty when calm)
     if (!WX.on || cave || !S.wx || S.wx.n < 0.25) return "";
+    if (typeof FLOOD !== "undefined" && FLOOD.on && !OCS && !HOME && wxBio() === 0) return "Spring flood";
     return WX_NAMES[wxBio()][S.wx.k === "storm" && S.wx.n > 0.7 ? 1 : 0];
   }
   function wxOpenSky(x, y) { return col[clamp(x, 0, W - 1)] >= y; }   // nothing solid above (x, y)
@@ -5849,7 +6817,7 @@
   function fishBiteMul() { return (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1) * (fx("fish") ? 0.6 : 1); }
   function tickRainSound() {   // a soft filtered-noise hiss for rain / blizzard wind, following the music switch
     var want = WX.on && MUS.on && gestured && ac && S.wx && S.wx.n > 0.05 && !cave && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden;
-    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OSEA + 0.6, above = HOME || OCS ? true : p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
+    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OWL + 0.6, above = HOME || OCS ? true : p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
     if (!lvl && !WX.snd) return;
     try {
       if (!WX.snd) {
@@ -5891,7 +6859,7 @@
       g.save(); g.strokeStyle = "rgba(235,245,255," + Math.min(1, B.t * 4).toFixed(3) + ")"; g.lineWidth = 2.5; g.shadowColor = "#bfe4ff"; g.shadowBlur = lowq ? 0 : 14; g.beginPath(); g.moveTo(x, 0);
       for (var s = 1; s <= segs; s++) { r = (r * 9301 + 49297) % 233280; g.lineTo(x + (r / 233280 - 0.5) * 40, y1 * s / segs); } g.stroke(); g.restore();
     }
-    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.45 * above).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.45 * above * flashK()).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
   }
   // ---------- CHARMS ----------
   // Little trinkets worn on a cord. Craft each one once (Craft tab > Gear > Charms), then wear up to 2 of them from the top of your backpack
@@ -5918,7 +6886,8 @@
     owl: { n: "Owl Charm", d: "See farther in the dark.", c: "#e8f4ff", g: "#f2c14e" },
     brute: { n: "Ogre Charm", d: "Your weapon hits 15% harder.", c: "#8a9a5a", g: "#f6eedb" },
     blood: { n: "Crimson Charm", d: "Your weapon hits 20% harder at night.", c: "#e8243a", g: "#ffd0d4" },   // blood moon pack
-    star: { n: "Wishing Star Charm", d: "Falling stars come on every clear night and land closer to you.", c: "#ffe9a0", g: "#7fa8ff" }   // starfall pack
+    star: { n: "Wishing Star Charm", d: "Falling stars come on every clear night and land closer to you.", c: "#ffe9a0", g: "#7fa8ff" },   // starfall pack
+    wander: { n: "Wanderer's Charm", d: "Migrations come twice as often and leave twice the keepsakes, and you sail 10% faster.", c: "#c8a070", g: "#9ad0ff" }   // MIGRATIONS
   };
   function charmSlots() { return (S.st.boss & 7) === 7 ? 3 : 2; }
   function hasCharm(k) { return S.charms.on.indexOf(k) > -1; }
@@ -5953,6 +6922,71 @@
   // ---------- COLLECTION LOG (Journal > Log) ----------
   // Everything you have found, caught, grown, cooked, tamed and beaten in this world, with "?" for what is still out there. Read-only: it is all
   // worked out from the save (lifetime stats, the fish log, crop bits, meals eaten, pets, charms and boss bits).
+  // COLLECTION LOG upgrades: S.found (every item you have ever picked up), new sections (ores and gems, treasures and trophies, elites),
+  // fish counted in the total, "New" ribbons on things found since you last looked (S.cnew), a toast when a rare find is logged, and
+  // milestone chests at 25 / 50 / 75 / 100% (S.collR bits) that pay out Swamp Tokens and treasure.
+  var COLL_ORES = ["pebble", "coal", "clay", "ironore", "ironingot", "spore", "cinder", "crystal", "goldbar", "pearl", "blackpearl", "seaglass", "starshard", "amber", "ruby", "sapphire", "amethyst", "moonstone"];
+  var COLL_TREAS = ["queenchitin", "wyrmscale", "alphamane", "realmshard", "doubloon", "goldbar", "blackpearl", "treasuremap", "realmkey", "swamptoken"];
+  var COLL_MS = [[0.25, { swamptoken: 15 }], [0.5, { swamptoken: 30, goldbar: 1 }], [0.75, { swamptoken: 50, blackpearl: 1 }], [1, { swamptoken: 100, goldbar: 3 }]];
+  function collList(L) { return L.filter(function (k) { return ITEMS[k]; }).filter(function (k, i, a) { return a.indexOf(k) === i; }); }
+  function collFound(k) {
+    if (!ITEMS[k]) return; if (!S.cnew) S.cnew = {}; var rare = COLL_ORES.indexOf(k) >= 0 || COLL_TREAS.indexOf(k) >= 0;
+    if (rare) { S.cnew[k] = 1; if (S.st && (S.st.mined || 0) + (S.st.placed || 0) > 5) toast("New in your Collection Log: " + ITEMS[k].n, ITEMS[k].gem || "#f2c14e"); }
+  }
+  function collClaim(i) {
+    var c = collCount(), M = COLL_MS[i]; if (!M || (S.collR & (1 << i)) || c.got / c.max < M[0]) return;
+    S.collR |= 1 << i; Object.keys(M[1]).forEach(function (k) { if (ITEMS[k]) give(k, M[1][k], undefined, undefined, true); });
+    popup("Collector's chest", Math.round(M[0] * 100) + "% of the Collection Log", "#f2c14e", "\u2726"); snd("open", "Epic"); save(); renderPanel();
+  }
+  // ---------- AWARDS (Journal > Awards): 24 achievements, each with bronze, silver and gold stamps. Checked every couple of seconds;
+  // earning a stamp pops a celebration. S.ach[id] = the best tier stamped (1-3). Old saves are credited for what they already did. ----------
+  var ACH_T = [["Bronze", "#d08a4a", 10], ["Silver", "#cfd8dc", 25], ["Gold", "#f2c14e", 50]];
+  function stK() { return Object.keys(KSTAT).reduce(function (a, k) { return a + (S.st[KSTAT[k]] || 0); }, 0); }
+  function bossN() { return Object.keys(BOSS).filter(function (k) { return S.st.boss & BOSS[k].bit; }).length; }
+  var ACH = [
+    ["dig", "Digger", "Blocks dug", "stone", [100, 1000, 10000], function () { return S.st.mined; }],
+    ["build", "Builder", "Blocks placed", "planks", [100, 1000, 5000], function () { return S.st.placed; }],
+    ["wood", "Lumberjack", "Wood gathered", "wood", [50, 500, 3000], function () { return S.st.wood; }],
+    ["hunt", "Monster Hunter", "Creatures defeated", "swamptoken", [25, 250, 1000], stK],
+    ["elite", "Elite Slayer", "Elites defeated", "swamptoken", [1, 10, 50], function () { return S.st.elites; }],
+    ["boss", "Bossbreaker", "Bosses beaten", "queenchitin", [1, 2, 3], bossN],
+    ["deep", "Deep Delver", "Deepest Mine floor", "torch", [5, 15, 25], function () { return S.st.caveDeep; }],
+    ["clear", "Floor Sweeper", "Mine floors cleared", "torch", [5, 25, 100], function () { return S.st.cclear; }],
+    ["chests", "Treasure Seeker", "Cave chests opened", "chest", [5, 25, 100], function () { return S.st.cchests; }],
+    ["dive", "Deep Diver", "Deepest dive (m)", "pearl", [20, 60, 120], function () { return S.st.ocdeep; }],
+    ["fish", "Angler", "Fish caught", "fishlog", [10, 100, 500], function () { return S.st.fish; }],
+    ["farm", "Green Thumb", "Crops harvested", "carrot", [25, 250, 1000], function () { return S.st.harvests; }],
+    ["cook", "Swamp Chef", "Meals cooked", "carrot", [10, 100, 500], function () { return S.st.cooked; }],
+    ["roll", "Roll Master", "Dodge rolls", "stick", [50, 500, 2000], function () { return S.st.dodges; }],
+    ["spec", "Showstopper", "Weapon specials", "ruby", [5, 50, 250], function () { return S.st.specials; }],
+    ["days", "Survivor", "Days in this world", "bed", [7, 30, 100], function () { return (S.days | 0) + 1; }],
+    ["naps", "Well Rested", "Nights slept", "bed", [5, 25, 100], function () { return S.st.sleeps; }],
+    ["pets", "Animal Friend", "Animals at home", "carrot", [1, 5, 10], function () { return S.pets.length; }],
+    ["trade", "Merchant", "Trades with villagers", "swamptoken", [5, 50, 200], function () { return S.st.vtrades; }],
+    ["bounty", "Bounty Hunter", "Bounties claimed", "doubloon", [3, 15, 50], function () { return S.st.bounties; }],
+    ["lore", "Loremaster", "Lore pages found", "stick", [5, 20, 40], function () { return S.st.lorepages; }],
+    ["isles", "Seafarer", "Islands visited", "doubloon", [1, 5, 15], function () { return S.st.islands; }],
+    ["coll", "Collector", "Collection Log %", "goldbar", [25, 50, 100], function () { var c = collCount(); return Math.floor(c.got / Math.max(1, c.max) * 100); }],
+    ["hollow", "Lord of the Hollow", "Rigs built in the Sunken Hollow", "blackpearl", [1, 2, 3], function () { return lairOwned() ? (S.lair.rig || []).filter(Boolean).length || 0 : 0; }]
+  ];
+  var ACHT = 0;
+  function achTier(A) { var v = +A[5]() || 0, t = 0; for (var i = 0; i < 3; i++) if (v >= A[4][i]) t = i + 1; return t; }
+  function achPoints() { var n = 0; ACH.forEach(function (A) { var t = (S.ach || {})[A[0]] | 0; for (var i = 0; i < t; i++) n += ACH_T[i][2]; }); return n; }
+  function tickAch(dt, quiet) {
+    ACHT -= dt; if (ACHT > 0 && !quiet) return; ACHT = 2;
+    if (!S.ach) S.ach = {};
+    ACH.forEach(function (A) { var t = 0; try { t = achTier(A); } catch (e) { return; } var had = S.ach[A[0]] | 0; if (t <= had) return; S.ach[A[0]] = t;
+      if (quiet) return; var T2 = ACH_T[t - 1]; popup("Award: " + T2[0] + " stamp", A[1] + " \u2022 " + A[2] + " " + A[4][t - 1], T2[1], "\u2605"); snd("rise"); try { confettiPop(cave ? cp.x : p.x, (cave ? cp.y : p.y) - 1.5, 30); } catch (e) {} });
+  }
+  function achHtml() {
+    tickAch(0, false); var A2 = S.ach || {}, got = 0; ACH.forEach(function (A) { got += A2[A[0]] | 0; });
+    var h = '<div class="lg-top"><b>Awards</b><span class="bar"><i style="width:' + Math.round(got / (ACH.length * 3) * 100) + '%"></i></span><em>' + got + " / " + (ACH.length * 3) + " stamps · " + achPoints() + " points</em></div>";
+    h += '<div class="ach-grid">' + ACH.map(function (A) {
+      var t = A2[A[0]] | 0, v = 0; try { v = +A[5]() || 0; } catch (e) {} var next = t < 3 ? A[4][t] : A[4][2], prev = t ? A[4][t - 1] : 0, pc = t >= 3 ? 100 : Math.round(clamp((v - prev) / Math.max(1, next - prev), 0, 1) * 100), T2 = t ? ACH_T[t - 1] : null;
+      return '<div class="ach' + (t ? " t" + t : "") + '"' + (T2 ? ' style="--ac:' + T2[1] + '"' : "") + '><div class="ach-st"><img alt="" src="' + icon(ITEMS[A[3]] ? A[3] : "stone") + '">' + (t ? '<i class="ach-ink">' + T2[0] + "</i>" : "") + '</div><div class="ach-tx"><b>' + esc(A[1]) + "</b><small>" + esc(A[2]) + ": " + Math.min(v, 99999) + (t < 3 ? " / " + next : " · all stamps") + '</small><span class="ach-bar"><i style="width:' + pc + '%"></i></span><span class="ach-dots">' + [0, 1, 2].map(function (i) { return '<em class="' + (i < t ? "on" : "") + '" style="--dc:' + ACH_T[i][1] + '"></em>'; }).join("") + "</span></div></div>";
+    }).join("") + "</div>";
+    return h;
+  }
   function logHtml() {
     var st = S.st, kills = Object.keys(KSTAT).reduce(function (a, k) { return a + (st[KSTAT[k]] || 0); }, 0);
     var tile = function (img, name, sub, got, cc) { return '<div class="lg-it' + (got ? "" : " no") + '"' + (cc ? ' style="--lc:' + cc + '"' : "") + '>' + (got ? '<img alt="" src="' + img + '">' : '<span class="q">?</span>') + "<b>" + esc(got ? name : "???") + "</b>" + (sub && got ? "<em>" + esc(sub) + "</em>" : "") + "</div>"; };
@@ -5980,8 +7014,29 @@
     h += sect("Animal friends", aN, ak.length, ak.map(function (k) { var n = S.pets.filter(function (a) { return a.k === k; }).length; return tile(icon(ANIM[k].prod), ANIM[k].n, n + " at home", n > 0, "#ff9ac2"); }).join(""));
     var ck = Object.keys(CHARMS), chN = ck.filter(function (k) { return S.charms.own[k]; }).length;
     h += sect("Charms", chN, ck.length, ck.map(function (k) { return tile(icon("charm_" + k), CHARMS[k].n, hasCharm(k) ? "Worn" : "", !!S.charms.own[k], CHARMS[k].c); }).join(""));
-    var total = creN + bN + fN + sN + cN + mN + aN + chN, max = cre.length + bk.length + sea.length + crops.length + meals.length + ak.length + ck.length;
-    return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(total / max * 100) + '%"></i></span><em>' + total + " / " + max + " found</em></div>" + h;
+    var F2 = S.found || {}, nw = S.cnew || {}, ntile = function (k, sub, cc) { return tile(icon(k), ITEMS[k].n, sub, !!F2[k] || (S.inv[k] || 0) > 0, cc).replace('<div class="lg-it', '<div class="lg-it' + (nw[k] ? " new" : "")); };
+    var ores = collList(COLL_ORES), oN = ores.filter(function (k) { return F2[k] || (S.inv[k] || 0) > 0; }).length;
+    h += sect("Ores and gems", oN, ores.length, ores.map(function (k) { return ntile(k, "", ITEMS[k].gem || "#bfe9d8"); }).join(""));
+    var tr = collList(COLL_TREAS), tN = tr.filter(function (k) { return F2[k] || (S.inv[k] || 0) > 0; }).length;
+    h += sect("Treasures and trophies", tN, tr.length, tr.map(function (k) { return ntile(k, TROPHY[k] ? "Trophy" : "", "#ffd36a"); }).join(""));
+    var ea = Object.keys(ELITE_A), eN = ea.filter(function (a) { return st["elite_" + a] > 0; }).length;
+    h += sect("Elites", eN, ea.length, ea.map(function (a) { var A = ELITE_A[a], n = st["elite_" + a] || 0; return tile(icon("swamptoken"), A.n + " elite", n + " defeated", n > 0, A.c); }).join(""));
+    var fishAll = typeof FISH_ALL !== "undefined" ? FISH_ALL : []; fN = fishAll.filter(function (k) { return S.fdex[k]; }).length;
+    var c = collCount(), pc = c.got / c.max;
+    var ms = '<div class="lg-ms">' + COLL_MS.map(function (M, i) { var done = !!(S.collR & (1 << i)), can = !done && pc >= M[0];
+      return '<button type="button" class="lg-chest' + (done ? " done" : can ? " ready" : "") + '" data-collc="' + i + '"' + (can ? "" : " disabled") + ' title="' + esc(Object.keys(M[1]).map(function (k) { return M[1][k] + " " + (ITEMS[k] ? ITEMS[k].n : k); }).join(", ")) + '"><img alt="" src="' + icon("chest") + '"><b>' + Math.round(M[0] * 100) + "%</b><small>" + (done ? "Opened" : can ? "Open!" : "Locked") + "</small></button>"; }).join("") + "</div>";
+    S.cnew = {};   // seen now
+    return '<div class="lg-top"><b>Collection Log</b><span class="bar"><i style="width:' + Math.round(pc * 100) + '%"></i></span><em>' + c.got + " / " + c.max + " found (" + Math.floor(pc * 100) + "%)</em></div>" + ms + h;
+  }
+  function collCount() {   // everything the log counts, for the total and the milestone chests
+    var st = S.st, F2 = S.found || {}, has = function (k) { return !!F2[k] || (S.inv[k] || 0) > 0; }, got = 0, max = 0, add = function (L, f) { max += L.length; got += L.filter(f).length; };
+    add(Object.keys(KSTAT), function (k) { return st[KSTAT[k]] > 0; }); add(Object.keys(BOSS), function (k) { return st.boss & BOSS[k].bit; });
+    var sea = typeof OM !== "undefined" ? Object.keys(OM) : [], sk = (S.oc && S.oc.kills) || {}; add(sea, function (k) { return sk[k] > 0; });
+    var meals = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked; }); add(meals, function (k) { return S.ate[k]; });
+    add(Object.keys(ANIM), function (k) { return S.pets.some(function (a) { return a.k === k; }); }); add(Object.keys(CHARMS), function (k) { return S.charms.own[k]; });
+    add(DISCS, function (k) { return S.disc[k]; }); add(collList(COLL_ORES), has); add(collList(COLL_TREAS), has); add(Object.keys(ELITE_A), function (a) { return st["elite_" + a] > 0; });
+    if (typeof FISH_ALL !== "undefined") add(FISH_ALL, function (k) { return S.fdex[k]; });
+    return { got: got, max: max };
   }
   // ---------- MULTIPLAYER (co-op rooms; the server side is DelveRoom in worker.js) ----------
   // The HOST's game runs the world: creatures, bosses, crops, time and weather. Up to 3 friends join with a room code (or from the public list).
@@ -6065,6 +7120,7 @@
       if (m.t === "bosswin") return mpBossWin(m.k);
     } else if (MP.role === "host") {
       if (m.t === "hit") { var e = mpEnemy(m.i); if (e && !e.def) { e.lastHit = m.from; damageEnemy(e, clamp(+m.d || 0, 0, 60), m.f < 0 ? -1 : 1); } return; }
+      if (m.t === "fx") { var ef = mpEnemy(m.i); if (ef && !ef.def && /^(venom|numb|sleep|mark)$/.test(m.fx)) coatHit(m.fx, ef, false, 0); return; }   // a guest's special arrow
       if (m.t === "farm" && typeof m.k === "string" && CROPS[m.c]) { if (!S.farm[m.k]) S.farm[m.k] = { c: m.c, g: 0, w: 0 }; return; }
       if (m.t === "water" && S.farm[m.k]) { S.farm[m.k].w = WET_S; return; }
     }
@@ -6587,12 +7643,12 @@
   // straight in caves. Shots stop at solid blocks. Ammo comes from your bag: Fire Arrows are used first, then plain Arrows.
   var BOWS = [null,
     { n: "Reed Slingshot", c: "#c9b58a", dmg: 4, cd: 0.55, sp: 17, g: 20, ammo: ["pebble"] },
-    { n: "Bogwood Bow", c: "#a8814b", dmg: 11, cd: 0.6, sp: 23, g: 12, ammo: ["firearrow", "arrow"] },
-    { n: "Ember Longbow", c: "#ff8a3d", dmg: 20, cd: 0.5, sp: 29, g: 8, ammo: ["firearrow", "arrow"] }
+    { n: "Bogwood Bow", c: "#a8814b", dmg: 11, cd: 0.6, sp: 23, g: 12, ammo: ["firearrow", "arrow"], any: 1 },
+    { n: "Ember Longbow", c: "#ff8a3d", dmg: 20, cd: 0.5, sp: 29, g: 8, ammo: ["firearrow", "arrow"], any: 1 }
   ];
   var arrows = [], burns = [];
-  function bowAmmo() { var B = BOWS[S.bow]; if (!B) return null; for (var i = 0; i < B.ammo.length; i++) if (inv(B.ammo[i]) > 0) return B.ammo[i]; return null; }
-  function ammoCount() { var B = BOWS[S.bow]; if (!B) return 0; var n = 0; B.ammo.forEach(function (k) { n += inv(k); }); return n; }
+  function bowAmmo() { var B = BOWS[S.bow]; if (!B) return null; if (B.any && S.ammo && inv(S.ammo) > 0) return S.ammo; for (var i = 0; i < B.ammo.length; i++) if (inv(B.ammo[i]) > 0) return B.ammo[i]; return null; }   // the loaded kind first, then Fire Arrows, then plain Arrows
+  function ammoCount() { var B = BOWS[S.bow]; if (!B) return 0; var n = 0; (B.any ? AMMO_ALL : B.ammo).forEach(function (k) { n += inv(k); }); return n; }
   function useBow(dt) {
     mine = null; cool -= dt; if (!aim.down || !S.bow) return;
     var B = BOWS[S.bow], inCave = !!cave, px0 = inCave ? cp.x : p.x, py0 = inCave ? cp.y - 0.5 : p.y - 1.15;
@@ -6604,7 +7660,9 @@
     cool = B.cd * (gem("bow", "sapphire") ? 0.85 : 1); if (!(gem("bow", "amethyst") && Math.random() < 0.25)) { S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } } hbDirty = true; S.st.shots++;
     var fire = am === "firearrow", sp = B.sp * (gem("bow", "moonstone") ? 1.3 : 1), lift = inCave ? 0 : Math.min(0.35, d * 0.012);   // aim a little high on long shots so the arc lands near where you tapped
     var ux = dx / d, uy = dy / d - lift, ul = Math.sqrt(ux * ux + uy * uy); ux /= ul; uy /= ul;
-    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1)), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave });
+    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1)), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave, coat: ARROWK[am] || null });
+    if (S.ammo && am === S.ammo && !(inv(am) > 0)) { toast("Out of " + ITEMS[am].n + "s. Back to " + (inv("firearrow") > 0 ? "Fire Arrows." : "plain Arrows."), "#f6eedb"); S.ammo = null; }
+    if (ARROWK[am] || am === S.ammo) drawFx(true);
     thud(S.bow === 1 ? 420 : 260, 0.04);
   }
   function burnStep(dt) {
@@ -6618,10 +7676,11 @@
     var f = a.vx >= 0 ? 1 : -1;
     if (cv) { var l = Math.sqrt(a.vx * a.vx + a.vy * a.vy) || 1; damageCaveMob(e, a.dmg, a.vx / l, a.vy / l); } else { e.lastHit = 0; damageEnemy(e, a.dmg, f); }
     if (a.fire) { var have = burns.filter(function (b) { return b.e === e; })[0]; if (have) have.t = 3; else burns.push({ e: e, t: 3, tick: 0.6, cave: cv }); }
+    if (a.coat) coatHit(a.coat, e, cv, a.dmg);
     S.st.arrowhits++;
   }
   function stepArrows(dt) {
-    burnStep(dt);
+    burnStep(dt); if (!cave) coatStep(dt);
     for (var i = arrows.length - 1; i >= 0; i--) {
       var a = arrows[i], gone = false;
       if (a.cave !== !!cave) { arrows.splice(i, 1); continue; }
@@ -6630,10 +7689,10 @@
         a.vy += a.g * h; a.x += a.vx * h; a.y += a.vy * h; a.life -= h;
         if (a.life <= 0) { gone = true; break; }
         if (a.cave) {
-          var F = cave.F; if (!mobFree(F, a.x, a.y, 0.05, true)) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); break; }
+          var F = cave.F; if (!mobFree(F, a.x, a.y, 0.05, true)) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); if (a.coat === "blast") coatPop(a.x, a.y, true, a.dmg, null); break; }
           (F.mobs || []).forEach(function (m) { if (gone || m.def) return; var mx = m.x - a.x, my = (m.y - 0.3) - a.y; if (mx * mx + my * my < (m.r + 0.18) * (m.r + 0.18)) { arrowHit(a, m, true); gone = true; } });
         } else {
-          if (blocks(Math.floor(a.x), Math.floor(a.y))) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); break; }
+          if (blocks(Math.floor(a.x), Math.floor(a.y))) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); if (a.coat === "blast") coatPop(a.x - a.vx * 0.012, a.y - a.vy * 0.012, false, a.dmg, null); break; }
           enemies.forEach(function (e) { if (gone || e.def || e.u) return; var top = e.y - e.h - (FLIER[e.k] ? 0.2 : 0); if (a.x > e.x - e.w / 2 - 0.1 && a.x < e.x + e.w / 2 + 0.1 && a.y > top - 0.1 && a.y < e.y + 0.1) { arrowHit(a, e, false); gone = true; } });
         }
       }
@@ -6644,16 +7703,113 @@
     arrows.forEach(function (a) {
       if (a.cave !== cv) return;
       var sx = ox + a.x * ts, sy = oy + a.y * ts, u = ts / 16; g.save(); g.translate(sx, sy);
-      if (a.peb) { g.fillStyle = "#8a8078"; g.beginPath(); g.arc(0, 0, 1.6 * u, 0, 7); g.fill(); g.fillStyle = "#b8aea4"; g.fillRect(-0.8 * u, -0.8 * u, u, u); }
+      var CC = a.coat ? coatOf(a.coat) : null;
+      if (CC && !reduce && Math.random() < 0.45) parts.push({ x: a.x, y: a.y, vx: 0, vy: 0.6, life: 0.3, max: 0.3, c: CC.c, s: 2 });   // a drip of ointment trails the shot
+      if (a.peb) { g.fillStyle = CC ? CC.c : "#8a8078"; g.beginPath(); g.arc(0, 0, 1.6 * u, 0, 7); g.fill(); g.fillStyle = CC ? "#ffffff" : "#b8aea4"; g.fillRect(-0.8 * u, -0.8 * u, u, u); }
       else {
         g.rotate(Math.atan2(a.vy, a.vx)); g.fillStyle = "#8a6a3a"; g.fillRect(-6 * u, -0.5 * u, 10 * u, u);
         g.fillStyle = a.fire ? "#ffd23f" : "#cfd6dc"; g.beginPath(); g.moveTo(6 * u, 0); g.lineTo(3.5 * u, -1.6 * u); g.lineTo(3.5 * u, 1.6 * u); g.closePath(); g.fill();
+        if (CC) { g.fillStyle = CC.c; g.beginPath(); g.moveTo(5.2 * u, 0); g.lineTo(3.5 * u, -1.1 * u); g.lineTo(3.5 * u, 1.1 * u); g.closePath(); g.fill(); g.fillRect(2 * u, -0.7 * u, 1.6 * u, 1.4 * u); }   // the ointment smeared on the head
         g.fillStyle = a.fire ? "#ff6a1f" : "#e8e0c8"; g.fillRect(-7 * u, -1.5 * u, 2 * u, u); g.fillRect(-7 * u, 0.5 * u, 2 * u, u);
         if (a.fire && !reduce && Math.random() < 0.5) parts.push({ x: a.x, y: a.y, vx: 0, vy: -1, life: 0.25, max: 0.25, c: Math.random() < 0.5 ? "#ff8a3d" : "#ffd23f", s: 2 });
       }
       g.restore();
     });
   }
+  // ---------- ARROW OINTMENTS and SPECIAL ARROWS ----------
+  // Ointments are brewed at a Brewing Stand into Tiny Vials, then worked into special arrows at a Workbench (6 Arrows + 1 ointment).
+  // Every kind is its own item: tap a stack of arrows in the hotbar to LOAD it (S.ammo); the bow shoots the loaded kind while you have
+  // any, then falls back to Fire Arrows and plain Arrows. Each creature keeps its own effects in e.sx: venom (stacks, damage over time),
+  // numb (slowed), sleep (out cold until hit), mark (glows, takes 30% more damage). Spark Arrows jump to nearby creatures, Popper Arrows
+  // burst where they land, Leech Arrows heal you per hit.
+  var COATS = {
+    ot_venom: { fx: "venom", c: "#7fd06a", n: "Bog Venom", d: "Coats your next 10 shots. Poisons the target: damage over time, stacking up to 3 times." },
+    ot_numb: { fx: "numb", c: "#7fd6ff", n: "Numbleaf Salve", d: "Coats your next 10 shots. The target moves and attacks at half speed for 4 seconds (bosses less)." },
+    ot_sleep: { fx: "sleep", c: "#b58cff", n: "Dreamcap Draught", d: "Coats your next 10 shots. Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off." },
+    ot_mark: { fx: "mark", c: "#d8ff6a", n: "Glowmoss Paste", d: "Coats your next 10 shots. The target glows for 8 seconds and takes 30% more damage from everything." },
+    ot_spark: { fx: "spark", c: "#ffe48a", n: "Sparkoil", d: "Coats your next 10 shots. A spark jumps from the target to up to 2 creatures nearby." },
+    ot_blast: { fx: "blast", c: "#ff8a3d", n: "Popper Paste", d: "Coats your next 10 shots. The shot pops where it lands, hurting every creature close by (it never breaks blocks)." },
+    ot_leech: { fx: "leech", c: "#ff5a6a", n: "Leechroot Tincture", d: "Coats your next 10 shots. Each hit heals you for a quarter of its damage." }
+  }, sparks = [], pops = [], loadAt = 0;
+  var ARROWK = { ar_venom: "venom", ar_numb: "numb", ar_sleep: "sleep", ar_mark: "mark", ar_spark: "spark", ar_blast: "blast", ar_leech: "leech" };
+  var AMMO_ALL = ["ar_venom", "ar_numb", "ar_sleep", "ar_mark", "ar_spark", "ar_blast", "ar_leech", "firearrow", "arrow"];
+  var ARROWD = { ar_venom: "Poisons the target: damage over time for 5 seconds, stacking up to 3 times.", ar_numb: "The target moves and attacks at half speed for 4 seconds (bosses at 70%).", ar_sleep: "Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off.", ar_mark: "The target glows for 8 seconds and takes 30% more damage from everything.", ar_spark: "A spark jumps from the target to the 2 nearest creatures for 60% damage.", ar_blast: "Bursts where it lands, even on a wall, hurting creatures close by. Never breaks blocks.", ar_leech: "Each hit heals you for a quarter of its damage." };
+  function loadAmmo(k) {   // tap an arrow stack in the hotbar: the bow shoots that kind first
+    if (!(S.inv[k] > 0)) return; if (S.bow < 2) { nag("Arrows need a bow: craft the Bogwood Bow at a Workbench."); return; }
+    S.ammo = k; var C = ARROWK[k] ? coatOf(ARROWK[k]) : null; snd("click"); chips(cave ? cp.x : p.x, (cave ? cp.y : p.y) - 1.1, C ? C.c : k === "firearrow" ? "#ff8a3d" : "#e8e0c8", 8, 3);
+    toast(ITEMS[k].n + "s loaded. Your bow shoots these first (" + S.inv[k] + " left).", C ? C.c : "#f6eedb"); drawFx(true);
+  }
+  function useLoad(dt) { mine = null; var now = performance.now(); if (!aim.down || now - loadAt < 500) return; loadAt = now; loadAmmo(sel); }
+  function coatOf(fx) { for (var k in COATS) if (COATS[k].fx === fx) return COATS[k]; return null; }
+  function sxOf(e) { return e.sx || (e.sx = {}); }
+  function coatHit(fx, e, cv, dmg) {   // what a coated shot does to the creature it hit
+    if (!fx || e.def) return;
+    if (!cv && MP.on && MP.role === "guest" && /^(venom|numb|sleep|mark)$/.test(fx)) { if (e.nid !== undefined) mpSend({ t: "fx", i: e.nid, fx: fx }); return; }   // playing together: the host's creature takes the effect
+    var X = sxOf(e), boss = !!e.boss || e.k === "captain";
+    if (fx === "venom") { X.ven = Math.min(3, (X.ven > 0 && X.vt > 0 ? X.ven : 0) + 1); X.vt = 5; X.vk = X.vk || 0.7; }
+    else if (fx === "numb") X.numb = boss ? 2.5 : 4;
+    else if (fx === "sleep") { if (boss) text(e.x, e.y - (cv ? 1 : e.h + 0.4), "Immune", "#d8c8ff"); else X.sleep = 4; }
+    else if (fx === "mark") X.mark = 8;
+    else if (fx === "leech") { var hl = Math.max(1, Math.round(dmg * 0.25)); if (hp > 0 && hp < MAXHP) { hp = Math.min(MAXHP, hp + hl); drawHp(); text(cave ? cp.x : p.x, (cave ? cp.y - 1 : p.y - 1.9), "+" + hl, "#ff8aa0"); } chips(e.x, e.y - (cv ? 0.4 : e.h * 0.5), "#ff5a6a", 6, 4); }
+    else if (fx === "spark") coatSpark(e, cv, dmg);
+    else if (fx === "blast") coatPop(e.x, e.y - (cv ? 0.3 : e.h * 0.5), cv, dmg, e);
+  }
+  function coatList(cv) { return cv ? (cave && cave.F && cave.F.mobs) || [] : enemies; }
+  function coatHurt(m, n, cv, ux, uy, f) { if (cv) damageCaveMob(m, n, ux || 0, uy || 0); else { m.lastHit = 0; damageEnemy(m, n, f || 0); } }
+  function coatSpark(e, cv, dmg) {   // the spark jumps to the two nearest creatures within 4 tiles
+    var L = coatList(cv).filter(function (m) { return m !== e && !m.def && !m.u && Math.hypot(m.x - e.x, m.y - e.y) < 4; }).sort(function (a, b) { return Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y); }).slice(0, 2);
+    var ey = function (m) { return m.y - (cv ? 0.4 : (m.h || 1) * 0.5); }, from = e;
+    L.forEach(function (m) { sparks.push({ x0: from.x, y0: ey(from), x1: m.x, y1: ey(m), t: 0.28, cv: cv }); coatHurt(m, Math.max(1, Math.round(dmg * 0.6)), cv, 0, 0, m.x > from.x ? 1 : -1); from = m; });
+    sparks.push({ x0: e.x, y0: ey(e) - 0.6, x1: e.x, y1: ey(e) + 0.2, t: 0.2, cv: cv }); thud(1300, 0.03);
+  }
+  function coatPop(x, y, cv, dmg, hitE) {   // a small burst: hurts creatures close by, never breaks blocks
+    pops.push({ x: x, y: y, t: 0.35, cv: cv }); chips(x, y, "#ffb04a", 12, 6); thud(90, 0.12); shake = Math.max(shake, 0.12);
+    coatList(cv).forEach(function (m) { if (m.def || m.u || m === hitE) return; var d = Math.hypot(m.x - x, m.y - (cv ? 0.3 : (m.h || 1) * 0.5) - y); if (d < 1.8) coatHurt(m, Math.max(2, Math.round(dmg * 0.5)), cv, (m.x - x) / (d || 1), 0, m.x > x ? 1 : -1); });
+  }
+  var coatTick = false;   // true while venom deals its damage (so it doesn't wake a sleeper)
+  function coatStep(dt) {   // status timers, venom ticks, sparks and pops
+    [false, true].forEach(function (cv) {
+      if (cv && !cave) return;
+      coatList(cv).forEach(function (m) {
+        var X = m.sx; if (!X || m.def) return;
+        if (X.numb > 0) X.numb -= dt; if (X.sleep > 0) X.sleep -= dt; if (X.mark > 0) X.mark -= dt;
+        if (X.vt > 0) { X.vt -= dt; X.vk -= dt; if (X.vk <= 0) { X.vk = 0.7; coatTick = true; coatHurt(m, 2 * X.ven, cv, 0, 0, 0); coatTick = false; chips(m.x, m.y - (cv ? 0.4 : (m.h || 1) * 0.5), "#7fd06a", 4, 3); } if (X.vt <= 0) X.ven = 0; }
+      });
+    });
+    for (var i = sparks.length - 1; i >= 0; i--) { sparks[i].t -= dt; if (sparks[i].t <= 0) sparks.splice(i, 1); }
+    for (var j = pops.length - 1; j >= 0; j--) { pops[j].t -= dt; if (pops[j].t <= 0) pops.splice(j, 1); }
+  }
+  function coatDt(m, dt) { var X = m.sx; if (!X) return dt; if (X.sleep > 0) return 0; if (X.numb > 0) return dt * (m.boss ? 0.7 : 0.45); return dt; }   // how fast this creature's clock runs
+  function coatDmg(m, dmg) {   // marked creatures take more; any real hit wakes a sleeper
+    var X = m.sx; if (!X) return dmg;
+    if (X.sleep > 0 && !coatTick) { X.sleep = 0; text(m.x, m.y - (cave ? 1 : (m.h || 1) + 0.4), "Awake!", "#d8c8ff"); }
+    return X.mark > 0 ? Math.round(dmg * 1.3) : dmg;
+  }
+  function drawCoatFx(g, now) {   // the effects on creatures: venom bubbles, frost on the numbed, sleepy z's, the glow of a mark; then sparks and pops
+    var cv = !!cave, t = now / 1000;
+    coatList(cv).forEach(function (m) {
+      var X = m.sx; if (!X || m.def) return; var hh = cv ? 0.9 : (m.h || 1), sx = ox + m.x * ts, sy = oy + (m.y - (cv ? (m.z || 0) : 0)) * ts, top = sy - hh * ts, mid = sy - hh * ts * 0.5;
+      if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+      if (X.mark > 0) { var ma = Math.min(1, X.mark) * (0.5 + 0.2 * Math.sin(t * 6)); var mg = g.createRadialGradient(sx, mid, ts * 0.1, sx, mid, ts * (0.4 + hh * 0.6)); mg.addColorStop(0, "rgba(216,255,106,0)"); mg.addColorStop(0.7, "rgba(216,255,106," + (0.3 * ma).toFixed(3) + ")"); mg.addColorStop(1, "rgba(216,255,106,0)"); g.fillStyle = mg; g.beginPath(); g.arc(sx, mid, ts * (0.4 + hh * 0.6), 0, 6.2832); g.fill();
+        g.strokeStyle = "rgba(216,255,106," + ma.toFixed(3) + ")"; g.lineWidth = Math.max(1.5, ts / 14); g.beginPath(); g.moveTo(sx - ts * 0.22, top - ts * 0.25); g.lineTo(sx, top - ts * 0.05); g.lineTo(sx + ts * 0.22, top - ts * 0.25); g.stroke(); }   // a glowing chevron over its head
+      if (X.vt > 0) for (var b = 0; b < X.ven + 1; b++) { var bp = (t * 0.8 + b * 0.37) % 1, bx = sx + Math.sin(b * 2.3 + t * 2) * ts * 0.28; g.fillStyle = "rgba(127,208,106," + (0.8 * (1 - bp)).toFixed(3) + ")"; g.beginPath(); g.arc(bx, mid - bp * ts * 0.9, ts * (0.05 + 0.03 * (1 - bp)), 0, 6.2832); g.fill(); g.strokeStyle = "rgba(30,70,20," + (0.6 * (1 - bp)).toFixed(3) + ")"; g.lineWidth = 1; g.stroke(); }
+      if (X.numb > 0) { g.strokeStyle = "rgba(160,225,255," + (0.5 + 0.2 * Math.sin(t * 8)).toFixed(3) + ")"; g.lineWidth = Math.max(1, ts / 22); for (var f = 0; f < 4; f++) { var fa = f * 1.57 + t * 0.8, fx = sx + Math.cos(fa) * ts * 0.42, fy = mid + Math.sin(fa) * ts * 0.3; g.beginPath(); g.moveTo(fx - ts * 0.08, fy); g.lineTo(fx + ts * 0.08, fy); g.moveTo(fx, fy - ts * 0.08); g.lineTo(fx, fy + ts * 0.08); g.stroke(); } }   // frost sparkles circling it
+      if (X.sleep > 0) { g.save(); g.textAlign = "center"; g.fillStyle = "#e8dcff"; g.strokeStyle = "#3a2a5a"; g.lineWidth = Math.max(2, ts / 12); for (var z = 0; z < 3; z++) { var zp = (t * 0.6 + z / 3) % 1; g.globalAlpha = 1 - zp; g.font = "900 " + Math.round(ts * (0.22 + zp * 0.2)) + "px Nunito,sans-serif"; var zx = sx + ts * (0.2 + zp * 0.4), zy = top - zp * ts * 0.8; g.strokeText("z", zx, zy); g.fillText("z", zx, zy); } g.restore(); }
+    });
+    sparks.forEach(function (q) { if (q.cv !== cv) return; var a = q.t / 0.28, x0 = ox + q.x0 * ts, y0 = oy + q.y0 * ts, x1 = ox + q.x1 * ts, y1 = oy + q.y1 * ts;
+      g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.shadowColor = "#ffe48a"; g.shadowBlur = lowq ? 0 : 10;
+      [[Math.max(2, ts / 8), "rgba(255,228,138," + a.toFixed(3) + ")"], [Math.max(1, ts / 20), "rgba(255,255,255," + a.toFixed(3) + ")"]].forEach(function (w) { g.strokeStyle = w[1]; g.lineWidth = w[0]; g.beginPath(); g.moveTo(x0, y0); for (var k = 1; k < 6; k++) { var r = k / 6; g.lineTo(x0 + (x1 - x0) * r + (Math.random() - 0.5) * ts * 0.35, y0 + (y1 - y0) * r + (Math.random() - 0.5) * ts * 0.35); } g.lineTo(x1, y1); g.stroke(); });
+      g.restore(); });
+    pops.forEach(function (q) { if (q.cv !== cv) return; var k = 1 - q.t / 0.35, X0 = ox + q.x * ts, Y0 = oy + q.y * ts, r = ts * (0.3 + k * 1.5);
+      var pg = g.createRadialGradient(X0, Y0, 0, X0, Y0, r); pg.addColorStop(0, "rgba(255,246,192," + (0.9 * (1 - k)).toFixed(3) + ")"); pg.addColorStop(0.5, "rgba(255,138,61," + (0.6 * (1 - k)).toFixed(3) + ")"); pg.addColorStop(1, "rgba(255,90,30,0)"); g.fillStyle = pg; g.beginPath(); g.arc(X0, Y0, r, 0, 6.2832); g.fill();
+      g.strokeStyle = "rgba(255,200,120," + (0.8 * (1 - k)).toFixed(3) + ")"; g.lineWidth = Math.max(1.5, ts / 14); g.beginPath(); g.arc(X0, Y0, r * 0.9, 0, 6.2832); g.stroke(); });
+  }
+  function vialSprite(c) {   // a small corked vial with a coloured ointment
+    return { r: ["................", "................", "................", ".......mm.......", "......mMMm......", ".......oo.......", ".......gg.......", "......oggo......", "......owLo......", ".....oLwLLo.....", ".....oLLLLo.....", ".....oLLLDo.....", "......oLDo......", ".......oo.......", "................", "................"],
+      p: { o: "#2a3a44", m: "#8a6a3a", M: "#c8a46a", g: "#cfeaf2", w: "#ffffff", L: c, D: "#00000055" }, o: "#16222a" };
+  }
+  SPR.vial = vialSprite("#e8f6fa"); Object.keys(COATS).forEach(function (k) { SPR[k] = vialSprite(COATS[k].c); });
+  Object.keys(ARROWK).forEach(function (k) { var A = SPR.arrow, c = coatOf(ARROWK[k]).c; if (A) SPR[k] = { r: A.r, p: Object.assign({}, A.p, { s: c, w: "#ffffff", f: c }), o: A.o }; });
   // ---------- BLASTING: Bog Bombs, Sticky Bombs, Blast Kegs and Firework Rockets (items from the blasting pack in sandbox-extra.js) ----------
   // Hold a bomb and tap where to throw it: it flies in an arc, bounces (a Sticky Bomb sticks to the first block it touches), its fuse
   // fizzes, then it blows up: blocks in the blast break and drop like you mined them (generated buildings, world trees, bedrock and the
@@ -6853,7 +8009,7 @@
   // bottom: mine it (any pick) for Star Shards and Stardust. Stars you have not mined yet are saved in S.stars = [{ x, y }], marked on the
   // mini-map, and pointed at by a little star at the edge of the screen while they are off-screen.
   var SHOWER = null, fallers = [], starTw = 0;
-  function starTile(x, y) { var td = TILES[get(x, y)]; return !!td && td.kind === "fallenstar"; }
+  function starTile(x, y) { var id = get(x, y), td = TILES[id]; return !!td && (td.kind === "fallenstar" || id === T.METEORITE); }
   function starSite(x) {   // a good place for a star to come down in column x, or -1
     if (x < 6 || x > W - 7) return -1;
     var L = world.structs || []; for (var i = 0; i < L.length; i++) if (x >= L[i].x0 - 4 && x <= L[i].x1 + 4) return -1;
@@ -6890,6 +8046,123 @@
     var where = d < 12 ? "right next to you!" : "to the " + (cx > p.x ? "east" : "west") + ", about " + Math.round(d) + " tiles away.";
     toast("A falling star crashed " + where, "#ffe9a0"); checkGoals(); save();
   }
+
+
+  // ---------- MIGRATIONS ----------
+  // On days 2-5 of every season, travellers pass through. SPRING: Lily Geese fly over in great V flocks and Goose Down drifts down (catch
+  // it, or pick it up where it lands). FALL: a herd of Bog Elk crosses the swamp, and the stags drop their antlers. SUMMER: Shellback Turtles
+  // swim across the open sea, and sailing alongside them earns a Turtle Scute. WINTER: Brine Whales pass, spouting, and leave Ambergris.
+  // All four keepsakes (with a rope) make the Wanderer's Charm. S.mig = { s: season index the herd last came, d: day } so each herd comes once a day.
+  var MIGF = [], MIGE = [], MIGT = { f: 8, said: -1 };
+  function migSeason() { var d = seasonDay(); return d >= 2 && d <= 5 ? seasonOf() : -1; }
+  var MIG_SAY = ["The Lily Geese are flying north! Catch the Goose Down as it drifts down.", "Shellback Turtles are crossing the open sea this week. Sail alongside them!", "A herd of Bog Elk is moving south through the swamp. The stags drop their antlers as they go.", "Brine Whales are passing through the Brinebog Sea. Go and see them!"];
+  function tickMig(dt) {
+    if (!world || !S || cave || (MP.on && MP.role === "guest")) return;
+    var ms = migSeason(), wd = hasCharm("wander") ? 2 : 1, i;
+    if (ms >= 0 && MIGT.said !== (S.days | 0) && seasonDay() === 2 && phaseOf(S.time).id === "day") { MIGT.said = S.days | 0; toast(MIG_SAY[ms], "#c8a070"); }
+    var surf = !OCS && !HOME && p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, day = daylight(S.time) > 0.5;
+    if (ms === 0 && surf && day) { MIGT.f -= dt * wd; if (MIGT.f <= 0) { MIGT.f = 18 + Math.random() * 18; MIGF.push({ x: p.x + (Math.random() - 0.5) * 22, y: cam.y - vh / 2 / ts - 1, ph: Math.random() * 6, vy: 1.1 + Math.random() * 0.4, life: 40 }); } }
+    for (i = MIGF.length - 1; i >= 0; i--) { var F = MIGF[i]; F.ph += dt * 2.2; F.y += F.vy * dt; F.x += Math.sin(F.ph) * 0.9 * dt; F.life -= dt;
+      if (Math.abs(F.x - p.x) < 0.9 && Math.abs(F.y - (p.y - 0.8)) < 1.1) { give("goosedown", wd, undefined, undefined, true); text(F.x, F.y - 0.4, "+" + wd + " Goose Down", "#f6f2e8"); thud(900, 0.02); S.st.down = (S.st.down || 0) + 1; MIGF.splice(i, 1); continue; }
+      var gy = col[clamp(Math.floor(F.x), 0, W - 1)]; if (F.y >= gy - 0.2 || F.life <= 0) { if (F.life > 0) spawnDrop("goosedown", 1, Math.floor(F.x), gy - 1); MIGF.splice(i, 1); } }
+    if (ms === 2 && surf && day && !MIGE.length && (!S.mig || S.mig.d !== (S.days | 0) || (wd > 1 && S.mig.n < 2)) && Math.random() < dt * 0.05) {   // the elk herd
+      S.mig = { d: S.days | 0, n: S.mig && S.mig.d === (S.days | 0) ? S.mig.n + 1 : 1 }; var dir = Math.random() < 0.5 ? 1 : -1, half = vw / 2 / ts + 6, n = 5 + Math.floor(Math.random() * 4), drop = [Math.floor(Math.random() * n), Math.floor(Math.random() * n)];
+      for (i = 0; i < n; i++) MIGE.push({ x: p.x - dir * (half + i * 2.2 + Math.random()), dir: dir, sp: 2.4 + Math.random() * 0.4, ph: Math.random() * 6, stag: i % 3 === 0, drop: drop.indexOf(i) > -1 ? 6 + Math.random() * 14 : (wd > 1 && i === n - 1 ? 10 : -1), life: 80 });
+      toast("Bog Elk! A herd is crossing the swamp right here.", "#c8a070");
+    }
+    for (i = MIGE.length - 1; i >= 0; i--) { var E = MIGE[i], near = Math.abs(E.x - p.x) < 4; E.ph += dt * (near ? 9 : 6); E.x += E.dir * E.sp * (near ? 1.7 : 1) * dt; E.life -= dt;
+      if (E.drop > 0) { E.drop -= dt; if (E.drop <= 0 && Math.abs(E.x - p.x) < vw / ts) { var ex = clamp(Math.floor(E.x), 1, W - 2); spawnDrop("antlershed", 1, ex, col[ex] - 1); E.drop = -1; } }
+      if (E.life <= 0 || (E.x - p.x) * E.dir > vw / 2 / ts + 14) MIGE.splice(i, 1); }
+  }
+  function drawMig(g2) {
+    var t = performance.now() / 1000;
+    MIGF.forEach(function (F) { var x = ox + F.x * ts, y = oy + F.y * ts, a = Math.sin(F.ph) * 0.6, u = ts / 16; g2.save(); g2.translate(x, y); g2.rotate(a); g2.fillStyle = "rgba(255,255,255,.35)"; g2.beginPath(); g2.arc(0, 0, ts * 0.45, 0, 6.2832); g2.fill(); g2.fillStyle = "#f6f2e8"; g2.beginPath(); g2.ellipse(0, 0, 5 * u, 1.8 * u, 0.5, 0, 6.2832); g2.fill(); g2.strokeStyle = "#a89880"; g2.lineWidth = Math.max(1, u * 0.6); g2.beginPath(); g2.moveTo(-5 * u, -2.6 * u); g2.lineTo(5 * u, 2.6 * u); g2.stroke(); g2.restore(); });
+    MIGE.forEach(function (E) {   // a Bog Elk, side on
+      var gx = clamp(Math.floor(E.x), 0, W - 1), x = ox + E.x * ts, y = oy + col[gx] * ts, u = ts / 16, f = E.dir, leg = Math.sin(E.ph) * 2.2 * u, bob = Math.abs(Math.sin(E.ph)) * u * 0.6;
+      g2.save(); g2.translate(x, y - bob); g2.scale(f, 1);
+      g2.fillStyle = "rgba(0,0,0,.22)"; g2.beginPath(); g2.ellipse(0, bob, 10 * u, 2 * u, 0, 0, 6.2832); g2.fill();
+      g2.strokeStyle = "#4a3220"; g2.lineWidth = 2 * u; g2.lineCap = "round";
+      [[-6, leg], [-3, -leg], [5, -leg], [8, leg]].forEach(function (L) { g2.beginPath(); g2.moveTo(L[0] * u, -10 * u); g2.lineTo(L[0] * u + L[1], 0); g2.stroke(); });
+      g2.fillStyle = "#7a5634"; g2.beginPath(); g2.ellipse(1 * u, -13 * u, 10 * u, 5 * u, 0, 0, 6.2832); g2.fill(); g2.fillStyle = "#9a7448"; g2.beginPath(); g2.ellipse(1 * u, -15 * u, 8 * u, 2.5 * u, 0, 0, 6.2832); g2.fill();
+      g2.fillStyle = "#e8dcc0"; g2.beginPath(); g2.ellipse(-8 * u, -12 * u, 2 * u, 2.4 * u, 0, 0, 6.2832); g2.fill();
+      g2.fillStyle = "#6a4a2c"; g2.beginPath(); g2.moveTo(8 * u, -15 * u); g2.lineTo(12 * u, -22 * u); g2.lineTo(15 * u, -21 * u); g2.lineTo(12 * u, -13 * u); g2.closePath(); g2.fill();
+      g2.fillStyle = "#7a5634"; g2.beginPath(); g2.ellipse(15 * u, -21 * u, 4 * u, 2.6 * u, 0.3, 0, 6.2832); g2.fill(); g2.fillStyle = "#1a1008"; g2.fillRect(15 * u, -22.5 * u, 1.2 * u, 1.2 * u);
+      if (E.stag) { g2.strokeStyle = "#e8dcc0"; g2.lineWidth = 1.4 * u; g2.beginPath(); g2.moveTo(13 * u, -23 * u); g2.lineTo(11 * u, -30 * u); g2.moveTo(11.6 * u, -27 * u); g2.lineTo(8 * u, -29 * u); g2.moveTo(14 * u, -23 * u); g2.lineTo(17 * u, -30 * u); g2.moveTo(16 * u, -27 * u); g2.lineTo(19 * u, -28 * u); g2.stroke(); }
+      g2.restore();
+    });
+  }
+  // ---- at sea: turtles in summer, whales in winter (they also show on the Crow's Nest chart) ----
+  function migSeaStep(s, dt) {
+    if (!s.mig) s.mig = []; var ms = migSeason(), wd = hasCharm("wander") ? 2 : 1, i;
+    if ((ms === 1 || ms === 3) && s.mig.length < wd && Math.random() < dt / (ms === 1 ? 25 : 35)) {
+      var a = s.ang + (Math.random() - 0.5) * 1.2, d = 40 + Math.random() * 20, cx = clamp(s.x + Math.cos(a) * d, 20, SO.SEAW - 20), cy = clamp(s.y + Math.sin(a) * d, 20, SO.SEAW - 20), ha = a + (Math.random() < 0.5 ? 1.57 : -1.57);
+      s.mig.push({ k: ms === 1 ? "turtle" : "whale", x: cx, y: cy, ang: ha, sp: ms === 1 ? 3.2 : 4.4, n: ms === 1 ? 5 + Math.floor(Math.random() * 3) : 2 + Math.floor(Math.random() * 2), t: 0, near: 0, got: 0, ph: Math.random() * 6 });
+      if (!s.migSaid) { s.migSaid = 1; toast(ms === 1 ? "Shellback Turtles ahead! Sail alongside them for a while." : "Whale spout! A pod of Brine Whales is passing. Sail close.", "#9ad0ff"); }
+    }
+    for (i = s.mig.length - 1; i >= 0; i--) { var M = s.mig[i]; M.t += dt; M.ph += dt; M.ang += Math.sin(M.t * 0.15) * 0.05 * dt; M.x += Math.cos(M.ang) * M.sp * dt; M.y += Math.sin(M.ang) * M.sp * dt;
+      var dd = Math.hypot(M.x - s.x, M.y - s.y); if (dd < (M.k === "turtle" ? 8 : 11)) M.near += dt; else M.near = Math.max(0, M.near - dt * 0.5);
+      if (!M.got && M.near > (M.k === "turtle" ? 4 : 2.5)) { M.got = 1; var it = M.k === "turtle" ? "turtlescute" : "ambergris"; s.loot.push({ x: M.x - Math.cos(M.ang) * 3, y: M.y - Math.sin(M.ang) * 3, items: [[it, wd]], t: 0 }); toast(M.k === "turtle" ? "A turtle leaves you a Turtle Scute. Sail over it!" : "The whales leave something floating behind: Ambergris!", "#9ad0ff"); S.st.migsea = (S.st.migsea || 0) + 1; }
+      if (M.k === "whale" && Math.random() < dt * 0.7) { for (var q = 0; q < 8; q++) s.wake.push({ x: M.x + (Math.random() - 0.5) * 0.6, y: M.y + (Math.random() - 0.5) * 0.6, vx: (Math.random() - 0.5) * 2, vy: -1.5 - Math.random() * 2, life: 0.9, spl: 1 }); }
+      if (dd > 140 || M.t > 160) s.mig.splice(i, 1); }
+  }
+  function drawSeaMig(g, k, now) {
+    (OCS.sea.mig || []).forEach(function (M) {
+      for (var n = 0; n < M.n; n++) {
+        var back = n * (M.k === "turtle" ? 2.4 : 6), side = (n % 2 ? 1 : -1) * (n ? 1.2 : 0), x = M.x - Math.cos(M.ang) * back + Math.cos(M.ang + 1.57) * side, y = M.y - Math.sin(M.ang) * back + Math.sin(M.ang + 1.57) * side, sw = Math.sin(M.ph * 3 + n);
+        g.save(); g.translate(x * k, y * k); g.rotate(M.ang);
+        if (M.k === "turtle") { g.fillStyle = "rgba(0,30,40,.25)"; g.beginPath(); g.ellipse(0, 0, k * 1.1, k * 0.8, 0, 0, 6.2832); g.fill(); g.fillStyle = "#4a7a3a"; [[0.5, 1], [0.5, -1], [-0.5, 1], [-0.5, -1]].forEach(function (f) { g.save(); g.translate(f[0] * k, f[1] * k * 0.55); g.rotate(f[1] * (0.5 + sw * 0.4)); g.beginPath(); g.ellipse(0, f[1] * k * 0.2, k * 0.35, k * 0.14, 0, 0, 6.2832); g.fill(); g.restore(); });
+          g.fillStyle = "#6a9a4a"; g.beginPath(); g.ellipse(k * 0.95, 0, k * 0.28, k * 0.22, 0, 0, 6.2832); g.fill(); g.fillStyle = "#3a5a2a"; g.beginPath(); g.ellipse(0, 0, k * 0.8, k * 0.6, 0, 0, 6.2832); g.fill(); g.fillStyle = "#7aa84a"; g.beginPath(); g.ellipse(0, 0, k * 0.6, k * 0.44, 0, 0, 6.2832); g.fill(); g.strokeStyle = "#3a5a2a"; g.lineWidth = Math.max(1, k * 0.06); g.beginPath(); g.moveTo(-k * 0.5, 0); g.lineTo(k * 0.5, 0); g.moveTo(0, -k * 0.4); g.lineTo(0, k * 0.4); g.stroke(); }
+        else { var L = k * 4.2; g.fillStyle = "rgba(0,20,40,.3)"; g.beginPath(); g.ellipse(0, 0, L * 1.05, k * 1.25, 0, 0, 6.2832); g.fill(); g.fillStyle = "#3a5068"; g.beginPath(); g.ellipse(0, 0, L, k * 1.05, 0, 0, 6.2832); g.fill(); g.fillStyle = "#4a6680"; g.beginPath(); g.ellipse(k * 0.6, -k * 0.2, L * 0.7, k * 0.5, 0, 0, 6.2832); g.fill();
+          g.save(); g.translate(-L * 0.95, 0); g.rotate(sw * 0.3); g.fillStyle = "#3a5068"; g.beginPath(); g.moveTo(0, 0); g.lineTo(-k * 1.4, -k * 1.2); g.lineTo(-k * 1.0, 0); g.lineTo(-k * 1.4, k * 1.2); g.closePath(); g.fill(); g.restore();
+          g.fillStyle = "#2a3a4a"; g.beginPath(); g.ellipse(L * 0.45, 0, k * 0.22, k * 0.14, 0, 0, 6.2832); g.fill(); }
+        g.restore();
+      }
+    });
+  }
+  // ---------- METEOR SHOWERS ----------
+  // Every 6-12 days (the first one around day 4) a meteor shower lights up the night: the sky streams with shooting stars and 4-7 big
+  // meteors come down near you. Each digs a deep crater and leaves a cluster of glowing Meteorite (Star Ore, a Tier 2 pick) at the bottom.
+  // Star Ore smelts into Starsteel at a Stone Furnace. S.metNext = the day of the next shower; METSH is tonight's shower while it runs.
+  var METSH = null;
+  function tickMeteors(dt) {
+    if (!world || !S || cave || (MP.on && MP.role === "guest")) return;
+    var d = S.days | 0, ph = phaseOf(S.time).id;
+    if (!(S.metNext >= 0)) S.metNext = Math.max(4, d + 2) + Math.floor(Math.random() * 3);
+    if (d === S.metNext && ph === "dusk" && S.metSaid !== d) { S.metSaid = d; toast("Look up tonight: a METEOR SHOWER is coming! Big ones bring Star Ore down with them.", "#9ad8ff"); snd("rise"); }
+    if (d === S.metNext && ph === "night" && !METSH && S.metDone !== d && ambClear()) { METSH = { left: 4 + Math.floor(Math.random() * 4), next: 4, t: 0 }; S.metDone = d; S.st.showers = (S.st.showers || 0) + 1; toast("The meteor shower has begun!", "#9ad8ff"); }
+    if (d > S.metNext) S.metNext = d + 6 + Math.floor(Math.random() * 7);
+    if (!METSH) return;
+    if (ph !== "night") { METSH = null; return; }
+    METSH.t += dt; if (typeof AMB !== "undefined" && AMB.starT > 0.25) AMB.starT = 0.06 + Math.random() * 0.2;   // the sky streams with them
+    METSH.next -= dt; if (METSH.next <= 0 && METSH.left > 0 && !OCS && !HOME) { METSH.next = 7 + Math.random() * 11; if (launchMeteor()) METSH.left--; }
+    if (METSH.left <= 0 && !fallers.length) { METSH = null; toast("The shower is over. Go and find the Meteorite!", "#9ad8ff"); }
+  }
+  function launchMeteor() {
+    var x = -1, y = -1, dir = 1;
+    for (var tr = 0; tr < 16 && y < 0; tr++) { dir = Math.random() < 0.5 ? -1 : 1; x = Math.round(p.x + dir * (12 + Math.random() * 40)); y = starSite(x); }
+    if (y < 0) return false; var sd = Math.random() < 0.5 ? -1 : 1;
+    fallers.push({ tx: x + 0.5, ty: y + 0.2, sx: x + 0.5 - sd * 38, sy: y - 46, t: 0, dur: 1.7, x: x, y: y, dir: dir, met: 1 });
+    try { if (ac && !(typeof SFX !== "undefined" && SFX.on === false)) { var t = ac.currentTime, o = ac.createOscillator(), gn = ac.createGain(); o.type = "sawtooth"; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(60, t + 1.6); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(0.05, t + 0.3); gn.gain.exponentialRampToValueAtTime(0.0001, t + 1.7); o.connect(gn); gn.connect(fxOut()); o.start(t); o.stop(t + 1.8); } } catch (e) {}
+    return true;
+  }
+  function meteorImpact(f) {
+    var x = f.x, y = f.y, cx = x + 0.5, cy = y + 0.6, R = 2.8, d = Math.abs(cx - p.x), far = clamp(1 - d / 70, 0.15, 1);
+    for (var ty = y - 4; ty <= y + 3; ty++) for (var tx = x - 4; tx <= x + 4; tx++) {
+      if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 1) continue; var dx = tx + 0.5 - cx, dy = (ty + 0.5 - cy) * 1.2, dd = Math.sqrt(dx * dx + dy * dy), id = get(tx, ty);
+      if (dd <= R) { if (id !== T.AIR && !bombSafe(tx, ty) && TILES[id].kind !== "blastkeg" && !isChest(id)) setT(tx, ty, T.AIR); }
+      else if (dd <= R + 1.3 && id !== T.AIR && !TILES[id].solid && !bombSafe(tx, ty) && !isChest(id)) setT(tx, ty, T.AIR);
+    }
+    var put = 0, mid = null;
+    for (var q = -1; q <= 1; q++) { var X = x + q, Y = y; while (Y < y + 6 && get(X, Y) === T.AIR) Y++; if (Y >= H - 2 || bombSafe(X, Y) || isChest(get(X, Y))) continue; setT(X, Y, T.METEORITE); put++; if (!q) mid = { x: X, y: Y }; if (!q && get(X, Y - 1) === T.AIR) { setT(X, Y - 1, T.METEORITE); put++; mid = { x: X, y: Y - 1 }; } }
+    if (mid) { S.stars = S.stars || []; S.stars.push({ x: mid.x, y: mid.y }); }   // the edge-of-screen star pointer and the mini-map show it
+    S.st.meteors = (S.st.meteors || 0) + 1; shake = Math.max(shake, 1.2 * far); boomSnd(true);
+    flashes.push({ x: cx, y: cy, r: 7, t: 0.6, max: 0.6, c: "#bfe8ff" });
+    var n = reduce ? 18 : 60; for (var k = 0; k < n; k++) { var a = -Math.PI * Math.random(), v = 4 + Math.random() * 9; parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 9, life: 0.7 + Math.random() * 0.7, max: 1.4, c: Math.random() < 0.5 ? "#bfe8ff" : Math.random() < 0.5 ? "#ffe9a0" : "#ffffff", s: 2 + Math.random() * 3, glw: 1 }); }
+    for (k = 0; k < n / 2; k++) parts.push({ x: cx + (Math.random() - 0.5) * 3, y: cy - Math.random(), vx: (Math.random() - 0.5) * 2, vy: -0.6 - Math.random(), g: -0.5, life: 1.6 + Math.random(), max: 2.6, c: Math.random() < 0.5 ? "#4a4256" : "#6a6078", s: 6 + Math.random() * 6 });
+    enemies.forEach(function (e) { if (e.def || e.u || e.boss) return; var ex = e.x - cx, ey = (e.y - e.h / 2) - cy; if (ex * ex + ey * ey < 14) { e.lastHit = 0; damageEnemy(e, 40, ex < 0 ? -1 : 1); } });
+    var pxd = p.x - cx, pyd = (p.y - PH / 2) - cy; if (pxd * pxd + pyd * pyd < 9 && hp > 0) hurt(24, "star");
+    toast("A meteor struck " + (d < 14 ? "right next to you!" : "to the " + (cx > p.x ? "east" : "west") + ", about " + Math.round(d) + " tiles away.") + (put ? " Meteorite glows in the crater." : ""), "#9ad8ff"); checkGoals(); save();
+  }
   function starMined(x, y) {
     if (!S.stars) return; S.stars = S.stars.filter(function (q) { return !(q.x === x && q.y === y); }); S.st.starsmined++;
     if (S.st.starsmined === 1) toast("You caught a falling star! Stardust makes Starglass, Star Lanterns and Star Rockets.", "#ffe9a0");
@@ -6904,7 +8177,7 @@
     for (var i = fallers.length - 1; i >= 0; i--) {
       var f = fallers[i]; f.t += dt;
       if (!reduce || Math.random() < 0.4) { var k = Math.min(1, f.t / f.dur), fx2 = lerp(f.sx, f.tx, k * k), fy2 = lerp(f.sy, f.ty, k * k); if (Math.abs(fx2 - p.x) < 30) parts.push({ x: fx2, y: fy2, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5, g: 0, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#ffe9a0" : "#ffffff", s: 2 + Math.random() * 2.5, glw: 1 }); }
-      if (f.t >= f.dur) { fallers.splice(i, 1); if (!cave) starImpact(f); }
+      if (f.t >= f.dur) { fallers.splice(i, 1); if (!cave) { if (f.met) meteorImpact(f); else starImpact(f); } }
     }
     if (ph !== "night" || cave || guest) { if (ph !== "night") SHOWER = null; return; }
     if (S.starRoll !== (S.days | 0)) {
@@ -6922,8 +8195,8 @@
   function drawFallers(g2) {
     fallers.forEach(function (f) {
       var k = Math.min(1, f.t / f.dur), k2 = k * k, hx = ox + lerp(f.sx, f.tx, k2) * ts, hy = oy + lerp(f.sy, f.ty, k2) * ts, kb = Math.max(0, k - 0.18), bx = ox + lerp(f.sx, f.tx, kb * kb) * ts, by = oy + lerp(f.sy, f.ty, kb * kb) * ts;
-      var gr = g2.createLinearGradient(hx, hy, bx, by); gr.addColorStop(0, "rgba(255,250,225,.95)"); gr.addColorStop(0.3, "rgba(255,225,140,.55)"); gr.addColorStop(1, "rgba(140,180,255,0)");
-      g2.globalAlpha = 1; g2.strokeStyle = gr; g2.lineCap = "round"; g2.lineWidth = Math.max(3, ts * 0.22); g2.beginPath(); g2.moveTo(bx, by); g2.lineTo(hx, hy); g2.stroke();
+      var gr = g2.createLinearGradient(hx, hy, bx, by); gr.addColorStop(0, "rgba(255,250,225,.95)"); gr.addColorStop(0.3, f.met ? "rgba(150,215,255,.7)" : "rgba(255,225,140,.55)"); gr.addColorStop(1, "rgba(140,180,255,0)");
+      g2.globalAlpha = 1; g2.strokeStyle = gr; g2.lineCap = "round"; g2.lineWidth = Math.max(3, ts * (f.met ? 0.42 : 0.22)); g2.beginPath(); g2.moveTo(bx, by); g2.lineTo(hx, hy); g2.stroke();
       var hg = g2.createRadialGradient(hx, hy, 0, hx, hy, ts * 1.4); hg.addColorStop(0, "rgba(255,255,240,.95)"); hg.addColorStop(0.3, "rgba(255,225,140,.5)"); hg.addColorStop(1, "rgba(255,200,120,0)");
       g2.fillStyle = hg; g2.beginPath(); g2.arc(hx, hy, ts * 1.4, 0, 7); g2.fill();
     });
@@ -7521,7 +8794,7 @@
     return V._img;
   }
   function vilCost(o) { return Object.keys(o).map(function (k) { if (k === "repair") return "<span>Mend all your gear</span>"; return ITEMS[k] ? '<span><img alt="" src="' + icon(k) + '">' + o[k] + " " + esc(ITEMS[k].n) + "</span>" : ""; }).join(""); }
-  function vilPay(o) { for (var k in o) if ((S.inv[k] || 0) < o[k]) return false; return true; }
+  function vilPay(o) { return canPay(o); }   // CRAFT FROM CHESTS: villager trades count nearby chests too
   function openVil(v) {
     var el = $("sbxStory"); if (!el) return;
     if (BRAWL.vang > 0) { nag("The villagers are too angry to talk to you right now!"); return; }
@@ -7547,7 +8820,7 @@
     var v = vilOpen; if (!v) return; var V = v.V;
     if (a === "chat") { var L2 = V.talk.concat(V.hi); vilLine = L2[(S.st.vchats = (S.st.vchats || 0) + 1) % L2.length]; renderVil(); return; }
     var q = V.tr[+a.split(":")[1]]; if (!q || !vilPay(q[0])) return;
-    for (var k in q[0]) { S.inv[k] -= q[0][k]; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) sel = "pick", bare = true; } }
+    payCost(q[0]); for (var k in q[0]) if (!(S.inv[k] > 0) && sel === k) { sel = "pick"; bare = true; }
     for (k in q[1]) { if (k === "repair") { ["pick", "wpn", "arm", "shovel"].forEach(function (s2) { var m = durMax(s2); if (m > 0) S.dur[s2] = m; }); armKey = ""; toast("Old Shellwick mended all your gear!", "#8fd6ff"); } else give(k, q[1][k], undefined, undefined, true); }
     if (!S.vf) S.vf = {}; S.vf[V.id] = (S.vf[V.id] || 0) + 1; S.st.vtrades = (S.st.vtrades || 0) + 1; reslot(); hbDirty = true;
     vilLine = ["Pleasure doing business!", "Come back any time.", "A fair trade, groundling.", "You drive a hard bargain!", "Lovely, lovely."][S.st.vtrades % 5];
@@ -7867,18 +9140,69 @@
       var sub = 6, h = dt / sub;
       for (var i = 0; i < sub; i++) {
         hook.x += hook.vx * h; hook.y += hook.vy * h;
-        if (blocks(Math.floor(hook.x), Math.floor(hook.y))) { hook.st = "pull"; hook.t = 0; hook.bx = Math.floor(hook.x); hook.by = Math.floor(hook.y); hook.ax = hook.x - hook.vx * h * 0.5; hook.ay = hook.y - hook.vy * h * 0.5; var td = TILES[get(Math.floor(hook.x), Math.floor(hook.y))]; chips(hook.ax, hook.ay, td ? td.c : "#888", 5, 3); thud(200, 0.06); break; }
-        var ex = hook.x - p.x, ey = hook.y - (p.y - PH * 0.7); if (ex * ex + ey * ey > GRAP_R * GRAP_R) { hook.st = "back"; break; }
+        if (blocks(Math.floor(hook.x), Math.floor(hook.y)) || grapTree(Math.floor(hook.x), Math.floor(hook.y))) { hook.st = "pull"; hook.t = 0; hook.bx = Math.floor(hook.x); hook.by = Math.floor(hook.y); hook.ax = hook.x - hook.vx * h * 0.5; hook.ay = hook.y - hook.vy * h * 0.5; var td = TILES[get(Math.floor(hook.x), Math.floor(hook.y))]; chips(hook.ax, hook.ay, td ? td.c : "#888", 5, 3); thud(200, 0.06); break; }
+        var ex = hook.x - p.x, ey = hook.y - (p.y - PH * 0.7), GR = GRAP_R * (S.grapLv >= 2 ? 2 : S.grapLv >= 1 ? 1.5 : 1); if (ex * ex + ey * ey > GR * GR) { hook.st = "back"; break; }
       }
     } else if (hook.st === "back") {
       var bx = p.x - hook.x, by = (p.y - PH * 0.7) - hook.y, bd = Math.sqrt(bx * bx + by * by) || 1; if (bd < 0.7) { hook = null; return; }
       hook.x += bx / bd * 46 * dt; hook.y += by / bd * 46 * dt;
     } else {
-      if (!blocks(hook.bx, hook.by)) { hook = null; return; }   // the block it bit was broken
-      if (hook.t > (hook.hang ? 8 : 2.2)) { hook = null; return; }
+      if (!blocks(hook.bx, hook.by) && !grapTree(hook.bx, hook.by)) { hook = null; return; }   // the block it bit was broken
+      if (!hook.swing && hook.t > (hook.hang ? 8 : 2.2)) { hook = null; return; } if (hook.swing && hook.t > 20) { hook = null; return; }
     }
   }
-  function grapplePull(h, jump) {   // called from step() while the hook holds: reel in, then hang
+  // ---------- GADGETS ----------
+  // SWAMP-GAS JETPACK: carry it; keep holding jump once you're falling (or near the top of a jump) to thrust up. 2.2 s of gas, refills on the ground.
+  var JET = { f: 2.2, max: 2.2, on: false, puff: 0 };
+  function jetStep(h, jump, lad) {
+    if (!(S.inv.x_jet > 0) || cave) { JET.on = false; return; }
+    if (p.on || lad) { JET.f = Math.min(JET.max, JET.f + h * 1.6); JET.on = false; return; }
+    JET.on = !!jump && !p.wet && JET.f > 0 && p.vy > -3 && !gliding;
+    if (JET.on) { JET.f -= h; p.vy = Math.max(p.vy - 72 * h, -8.5); JET.puff -= h; if (JET.puff <= 0) { JET.puff = 0.04; parts.push({ x: p.x - p.face * 0.25, y: p.y - 0.6, vx: (Math.random() - 0.5) * 1.5, vy: 4 + Math.random() * 2, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#9fe86a" : "#d8ffb0", s: 3, g: -2 }); if (Math.random() < 0.3) nz(0, 0.08, 0.012, 700 + Math.random() * 400, "bandpass", 2); } S.st.jetT = (S.st.jetT || 0) + h; }
+  }
+  function drawJet(g) {
+    if (!(S.inv.x_jet > 0) || cave || JET.f >= JET.max - 0.01) return; var sx = ox + (p.x - 0.75) * ts, sy = oy + (p.y - 1.6) * ts, hh = ts * 1.0;
+    g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(sx - 3, sy - 1, 6, hh + 2); g.fillStyle = JET.f < 0.5 ? "#ff6b82" : "#9fe86a"; g.fillRect(sx - 2, sy + hh * (1 - JET.f / JET.max), 4, hh * JET.f / JET.max);
+  }
+  // BORE DRILL: Z (or tapping it in the hotbar) switches 3x3 digging on and off for the pickaxe (S.bore).
+  function boreToggle() { if (!(S.inv.x_drill > 0)) { nag("Craft a Bore Drill at the Workbench first."); return; } S.bore = !S.bore; toast(S.bore ? "Bore Drill on: your pick digs 3 by 3." : "Bore Drill off.", "#f2c14e"); thud(S.bore ? 220 : 160, 0.06); }
+  function boreSurface(tx, ty) {
+    if (!S.bore || !(S.inv.x_drill > 0) || sel !== "pick") return; var n = 0;
+    for (var yy = ty - 1; yy <= ty + 1; yy++) for (var xx = tx - 1; xx <= tx + 1; xx++) { if (xx === tx && yy === ty) continue; var id = get(xx, yy), td = TILES[id]; if (!id || !td || !td.solid || td.kind === "door" || td.kind === "chest" || td.kind === "lootchest" || td.cont || td.tier > effTier() || td.hard >= 9 || id === T.HOLE) continue; funBreak(id, xx, yy); breakTile(xx, yy); n++; }
+    if (n) { wear("pick", Math.ceil(n / 4)); shake = Math.max(shake, 0.12); }
+  }
+  function boreCave(tx, ty) {
+    if (!S.bore || !(S.inv.x_drill > 0) || sel !== "pick" || !cave) return; var F = cave.F, n = 0;
+    for (var yy = ty - 1; yy <= ty + 1; yy++) for (var xx = tx - 1; xx <= tx + 1; xx++) { if (xx === tx && yy === ty) continue; if (xx < 0 || yy < 0 || xx >= F.w || yy >= F.h) continue; var j = yy * F.w + xx, id = F.node[j], td = TILES[id]; if (!id || !td || td.kind === "lootchest" || td.tier > effTier()) continue; funBreak(id, xx, yy); breakRock(xx, yy); n++; }
+    if (n) { wear("pick", Math.ceil(n / 4)); shake = Math.max(shake, 0.12); }
+  }
+  // METAL DETECTOR: hold it on the surface; the nearest buried treasure, loot chest or gem ore within 14 tiles sets the signal
+  var DET = { t: 0, d: 99, beep: 0, tgt: null };
+  function tickDetect(dt) {
+    if (sel !== "x_detect" || cave || OCS || HOME) { DET.tgt = null; return; }
+    DET.t -= dt; if (DET.t <= 0) { DET.t = 0.3; DET.tgt = null; DET.d = 99; var cx = Math.floor(p.x), cy = Math.floor(p.y - 1);
+      for (var yy = cy - 14; yy <= cy + 14; yy++) for (var xx = cx - 14; xx <= cx + 14; xx++) { var id = get(xx, yy), td = TILES[id]; if (!td) continue; var val = id === T.X_buried || td.kind === "lootchest" || (oreColor(id) && /ruby|sapphire|moonstone|amber|amethyst/.test(td.drop || "")); if (!val) continue; var d = Math.hypot(xx + 0.5 - p.x, yy + 0.5 - (p.y - 1)); if (d < DET.d) { DET.d = d; DET.tgt = { x: xx, y: yy, n: td.n }; } } }
+    if (!DET.tgt) return; DET.beep -= dt; var gap = clamp(DET.d / 14, 0.07, 1) * 1.1; if (DET.beep <= 0) { DET.beep = gap; tn(0, 1400 - DET.d * 40, 1300 - DET.d * 40, 0.05, "sine", 0.018); }
+  }
+  function drawDetect(g, now) {
+    if (sel !== "x_detect" || cave || OCS || HOME) return; var w = 150, h = 30, x = vw / 2 - w / 2, y = 64, sig = DET.tgt ? clamp(1 - DET.d / 14, 0, 1) : 0, bars = Math.ceil(sig * 6);
+    g.fillStyle = "rgba(6,16,13,.85)"; g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, 15) : g.rect(x, y, w, h); g.fill(); g.strokeStyle = "#4ee6b4"; g.lineWidth = 2; g.stroke();
+    g.font = "900 12px Nunito,system-ui,sans-serif"; g.textAlign = "left"; g.fillStyle = "#cfeee0"; g.fillText(DET.tgt && DET.d < 2 ? "Dig right here!" : "Signal", x + 12, y + 19);
+    for (var i = 0; i < 6; i++) { g.fillStyle = i < bars ? (bars >= 5 ? "#f2c14e" : "#4ee6b4") : "rgba(255,255,255,.15)"; g.fillRect(x + 78 + i * 10, y + 22 - (i + 1) * 2.4, 7, (i + 1) * 2.4); }
+  }
+  function grapTree(x, y) { if ((S.grapLv | 0) < 2) return false; var id = get(x, y); return id === T.LEAVES || id === T.LOG || (T.TRUNK !== undefined && id === T.TRUNK); }
+  function grapplePull(h, jump) {   // called from step() while the hook holds: reel in, then hang (Mk II+: swing on the rope instead)
+    if (S.grapLv >= 1) {
+      var ax = hook.ax, ay = hook.ay, rx = p.x - ax, ry = (p.y - PH * 0.6) - ay, rd = Math.sqrt(rx * rx + ry * ry) || 1;
+      if (!hook.swing) { hook.swing = true; hook.L = Math.max(1.6, Math.min(rd * 0.5, 9)); }
+      if (rd > hook.L + 0.35 && !hook.sw2) { p.vx = -rx / rd * 18; p.vy = Math.min(9, -ry / rd * 18); return; }   // reel in to the rope's length first (lifts you off the ground)
+      hook.sw2 = true;
+      if (jump && !p.jprev && hook.t > 0.12) { var keep = Math.min(19, Math.hypot(p.vx, p.vy)); hook = null; p.vy = Math.min(p.vy - 4, -8); p.air2 = true; if (keep > 6) p.vx = Math.sign(p.vx || p.face) * keep; return; }   // fling off
+      if (keys.u || tk.u) hook.L = Math.max(1.4, hook.L - 7 * h); if (keys.d || tk.d) hook.L = Math.min(GRAP_R * 1.4, hook.L + 7 * h);
+      var dirIn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0); p.vx += dirIn * 26 * h; p.vy += 34 * h;   // pump + gravity
+      if (rd > hook.L) { var ux = rx / rd, uy = ry / rd, vr = p.vx * ux + p.vy * uy; if (vr > 0) { p.vx -= vr * ux; p.vy -= vr * uy; } var push = (rd - hook.L) * 12; p.vx -= ux * push * h * 10; p.vy -= uy * push * h * 10; }
+      p.vx *= 0.998; p.vy = Math.min(p.vy, 22); return;
+    }
     if (jump && !p.jprev && hook.t > 0.12) { hook = null; p.vy = Math.min(p.vy, -11); p.air2 = true; return; }   // jump to let go, with a hop
     var cx = p.x, cy = p.y - PH * 0.6, dx = hook.ax - cx, dy = hook.ay - cy, d = Math.sqrt(dx * dx + dy * dy) || 1;
     if (d < 1.15 || hook.hang) { if (!hook.hang) { hook.hang = true; hook.t = 0; } p.vx = 0; p.vy = 0; return; }
@@ -7904,6 +9228,7 @@
     mine = null; if (!aim.down) return; var now = performance.now(); if (now - mapReadAt < 900) return; mapReadAt = now;
     if (cave) { nag("Read it on the surface, where you can see the land."); return; }
     if (S.tmap && get(S.tmap.x, S.tmap.y) === T.X_buried) { nag("You are already following a Treasure Map. Dig up that treasure first!"); return; }
+    var isBottle = !!(ITEMS[sel] && ITEMS[sel].bottle);
     var x = -1, y = -1, dir = 1;
     for (var tr = 0; tr < 30 && y < 0; tr++) {
       dir = Math.random() < 0.5 ? -1 : 1; x = Math.round(p.x + dir * (35 + Math.random() * 70)); var g0 = starSite(x); if (g0 < 0) continue;
@@ -7911,14 +9236,30 @@
       if (yy < H - 12 && TILES[id].solid && !(smask && smask[i]) && id !== T.BEDROCK && TILES[id].tier <= 2 && TILES[id].kind !== "ore" && !isChest(id)) y = yy;
     }
     if (y < 0) { nag("The map's markings don't match the land around here. Try reading it somewhere else."); return; }
-    setT(x, y, T.X_buried); S.tmap = { x: x, y: y }; S.st.maps++;
+    setT(x, y, T.X_buried); S.tmap = { x: x, y: y }; if (isBottle) S.tmap.b = 1; S.st.maps++;
     S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick", bare = true; reslot(); } hbDirty = true;
     var dist = Math.round(Math.abs(x + 0.5 - p.x)); snd("open", "Rare");
+    if (isBottle) { S.st.bottles = (S.st.bottles || 0) + 1; bottleNote(dist, x > p.x ? "east" : "west"); save(); return; }
     toast("X marks the spot: " + dist + " tiles to the " + (x > p.x ? "east" : "west") + ", buried a few blocks down. Follow the red arrow!", "#ff6a5a"); save();
+  }
+
+  // ---------- MESSAGE IN A BOTTLE: a letter from someone at sea, and the X for their Captain's Cache ----------
+  var BTL_FROM = ["Cap'n Mossbeard of the Leaky Lily", "a very lost ferryfrog", "Old Croaker's brother, Bartholomew", "the cook of Gillbeard's galleon", "a lighthouse keeper who misses dry socks", "Pip, cabin boy (age 9 and three-quarters)", "a pirate who has had enough of pirating", "Granny Gullwing"],
+    BTL_WHY = ["before the storm took our mast", "so the pirates wouldn't get it", "for whoever needs it more than me", "because my pockets were full of frogspawn", "the night the Leviathan rose", "and then I forgot where. Then I remembered. Then I wrote it down. Then I lost the paper. This is the copy"],
+    BTL_SIGN = ["Fair winds.", "Dig deep, friend.", "Don't tell Croaker.", "Mind the eels.", "P.S. The left boot is mine. Leave it.", "Yours in brine,"];
+  function bottleNote(dist, dir) {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 240; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    var pk = function (L) { return L[Math.floor(Math.random() * L.length)]; }, from = pk(BTL_FROM);
+    var h = '<div class="mo-box bt-box"><div class="bt-note"><p class="bt-hi">To whoever finds this,</p><p>I buried my cache ' + esc(pk(BTL_WHY)) + '. It lies a few blocks under the ground, about <b>' + dist + " tiles to the " + dir + '</b> of where you read this. I marked it with a red X on the land itself.</p><p class="bt-sign">' + esc(pk(BTL_SIGN)) + "<br>— " + esc(from) + "</p></div>"
+      + '<p class="mo-sub">A red X now marks the Captain\'s Cache on your map, and an arrow at the edge of the screen points the way. Dig it up with any tool.</p>'
+      + '<div class="st-row"><button type="button" class="btn mo-start" data-story-close>Off to dig</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#e8d8a8"); $("sbxStoryBox").innerHTML = h; snd("rise");
   }
   function digTreasure(x, y) {
     var out = {}, add = function (L) { L.forEach(function (q) { out[q[0]] = (out[q[0]] || 0) + q[1]; }); };
     add(rollLoot("chest", world.bio[x], 2)); add(rollLoot("chest", world.bio[x], 1)); add([["ancientcoin", 2 + Math.floor(Math.random() * 3)]]);
+    var cache = !!(S.tmap && S.tmap.x === x && S.tmap.y === y && S.tmap.b);   // a bottle's Captain's Cache: sea treasure on top
+    if (cache) { add([["doubloon", 6 + Math.floor(Math.random() * 7)], ["pearl", 1 + Math.floor(Math.random() * 2)]]); if (Math.random() < 0.35) add([["blackpearl", 1]]); if (Math.random() < 0.45) add([["goldbar", 1]]); if (Math.random() < 0.3) add([["brass", 3]]); S.st.caches = (S.st.caches || 0) + 1; }
     var RARE = ["rec_jig", "rec_lullaby", "rec_caves", "rec_stomp", "goldfeather", "starshard", "trolltusk", "grapple", "blastkeg"].filter(function (k) { return ITEMS[k]; });
     if (Math.random() < 0.45) add([[RARE[Math.floor(Math.random() * RARE.length)], 1]]);
     var ks = Object.keys(out).filter(function (k) { return ITEMS[k]; }); if (!giveBatch) giveBatch = {};
@@ -7927,7 +9268,43 @@
     chips(x + 0.5, y + 0.5, "#f2c14e", 30, 9); flashes.push({ x: x + 0.5, y: y + 0.5, r: 4, t: 0.5, max: 0.5, c: "#f2c14e" });
     for (var q = 0; q < (reduce ? 8 : 20); q++) parts.push({ x: x + 0.5, y: y + 0.3, vx: (Math.random() - 0.5) * 5, vy: -4 - Math.random() * 4, g: 12, life: 0.9, max: 0.9, c: Math.random() < 0.5 ? "#f2c14e" : "#fff2b0", s: 2 + Math.random() * 2, glw: 1 });
     if (S.tmap && S.tmap.x === x && S.tmap.y === y) S.tmap = null; S.st.dug++;
-    popup("Treasure found", "Buried Treasure • " + ks.length + " kinds of loot", "#f2c14e", "✦"); snd("open", "Epic"); checkGoals(); save();
+    popup("Treasure found", (cache ? "Captain's Cache" : "Buried Treasure") + " • " + ks.length + " kinds of loot", "#f2c14e", "✦"); snd("open", "Epic"); checkGoals(); save();
+  }
+  // ---------- MAP PINS IN THE WORLD: every pin floats over its spot on the surface; the tracked pin (Track on the map) also gets an
+  // arrow at the screen edge with its distance, and clears itself when you arrive. N drops a pin where you stand. ----------
+  function wpTracked() { var L = S.wp || []; for (var i = 0; i < L.length; i++) if (L[i].t) return L[i]; return null; }
+  function drawWpWorld(g, now) {
+    if (PHOTO.on || cave || OCS || HOME || panelOpen || !S.wp || !S.wp.length) return;
+    var tw = wpTracked();
+    if (tw && Math.abs(tw.x + 0.5 - p.x) < 2.5 && Math.abs(tw.y + 0.5 - (p.y - 1)) < 3) { tw.t = 0; toast("You've reached " + tw.n + ".", WP_COL[tw.c]); snd("rise"); save(); tw = null; }
+    S.wp.forEach(function (w) {
+      var sx = ox + (w.x + 0.5) * ts, sy = oy + (w.y - 0.35) * ts + Math.sin(now / 300 + w.x) * ts * 0.08;
+      if (sx < -ts || sx > vw + ts || sy < -ts * 2 || sy > vh + ts) return;
+      var r = Math.max(7, ts * 0.26) * (w.t ? 1 + 0.1 * Math.sin(now / 160) : 0.85);
+      g.save(); g.translate(sx, sy); g.globalAlpha = w.t ? 1 : 0.8;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(0, r * 1.9, r * 0.6, r * 0.2, 0, 0, 6.2832); g.fill();
+      g.fillStyle = WP_COL[w.c]; g.beginPath(); g.arc(0, 0, r, Math.PI * 0.85, Math.PI * 0.15); g.lineTo(0, r * 1.7); g.closePath(); g.fill();
+      g.strokeStyle = "#06100d"; g.lineWidth = 2; g.stroke(); wpGlyph(g, WP_ICONS[w.i || 0], r * 0.62, "#ffffff");
+      if (w.t || Math.abs(w.x + 0.5 - p.x) < 6) { g.font = "800 " + Math.max(10, Math.round(ts * 0.3)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.fillStyle = "#fff6dc"; g.strokeText(w.n, 0, -r - 6); g.fillText(w.n, 0, -r - 6); }
+      g.restore();
+    });
+    if (!tw) return;
+    var tx = ox + (tw.x + 0.5) * ts, ty = oy + (tw.y - 0.35) * ts, m = 36;
+    if (tx > m && tx < vw - m && ty > m + 40 && ty < vh - m - 60) return;
+    var cx = vw / 2, cy = vh / 2, dx = tx - cx, dy = ty - cy, kx = dx ? (vw / 2 - m) / Math.abs(dx) : 1e9, ky = dy ? (vh / 2 - m - 50) / Math.abs(dy) : 1e9, kk = Math.min(kx, ky), ex = cx + dx * kk, ey = cy + dy * kk, rr = 11 * (1 + 0.1 * Math.sin(now / 220));
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(6,16,13,.85)"; g.beginPath(); g.arc(0, 0, rr + 5, 0, 7); g.fill();
+    g.fillStyle = WP_COL[tw.c]; g.beginPath(); g.arc(0, 0, rr, 0, 7); g.fill(); wpGlyph(g, WP_ICONS[tw.i || 0], rr * 0.6, "#ffffff");
+    var ang = Math.atan2(dy, dx); g.rotate(ang); g.fillStyle = WP_COL[tw.c]; g.beginPath(); g.moveTo(rr + 15, 0); g.lineTo(rr + 6, -7); g.lineTo(rr + 6, 7); g.closePath(); g.fill(); g.rotate(-ang);
+    var dist = Math.round(Math.hypot(tw.x + 0.5 - p.x, tw.y + 0.5 - (p.y - 1)));
+    g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = "#fff6dc";
+    var lbl = tw.n + " · " + dist + "m", lw2 = g.measureText(lbl).width / 2, lx = clamp(0, 8 + lw2 - ex, vw - 8 - lw2 - ex); g.strokeText(lbl, lx, rr + 20); g.fillText(lbl, lx, rr + 20); g.restore();
+  }
+  function dropPinHere() {
+    if (cave || OCS || HOME) { nag("Pins go on the surface map. Drop one up top."); return; }
+    if (S.wp.length >= WP_MAX) { toast("Waypoint limit reached (" + WP_MAX + "). Remove one on the map first.", "#f2c14e"); return; }
+    var used = {}, i; S.wp.forEach(function (w) { var m2 = /^Pin (\d+)$/.exec(w.n); if (m2) used[m2[1]] = 1; }); for (i = 1; used[i]; i++);
+    S.wp.push({ x: clamp(Math.floor(p.x), 0, W - 1), y: clamp(Math.floor(p.y - 1), 0, H - 1), c: (S.wp.length * 5) % WP_COL.length, i: 0, n: "Pin " + i, note: "", t: 0 });
+    snd("coin"); toast("Pin " + i + " dropped here. Open the map (M) to name it or add a note.", WP_COL[(S.wp.length * 5 - 5) % WP_COL.length]); save();
   }
   function drawMapMark(g, now) { if (PHOTO.on) return;   // the red X over the spot, and an arrow at the screen edge while it is off-screen
     if (cave || !S.tmap || panelOpen) return;
@@ -7947,6 +9324,31 @@
   }
   (function () {
     SPR.grapple = { r: ["................", "..........aa....", ".........a..a...", "........abba....", ".......abbb.....", "......gbb.......", ".....gg.........", "....gl..........", "...gg...........", "..gl.l..........", ".gg..g..........", ".g...gl.........", ".gl...g.........", "..gg.gg.........", "...ggl..........", "................"], p: { a: "#cfd6dc", b: "#7a8290", g: "#4f8a3c", l: "#8fd06a" } };
+    SPR.x_drill = { r: ["................", "........aaaa....", ".......abbbba...", "......abccccba..", ".....abcddddcba.", "....abcdeeedcba.", "...abcdeffedcba.", "..abcdeffffedca.", "..abcdefffedcba.", "...abcdeeedcba..", "....abcdddcba...", ".....abcccba....", "......abbba.....", ".......aaa......", "................", "................"], p: { a: "#3a3e44", b: "#6b7279", c: "#9aa3ab", d: "#c9cdd2", e: "#f2c14e", f: "#ff8a3d" } };
+    SPR.x_detect = { r: ["................", "..........aaa...", ".........abbba..", "..........aaa...", "..........a.....", ".........a......", "........a.......", ".......a........", "......a.........", ".....a..........", "...ccccc........", "..cdddddc.......", "..cdeeedc.......", "..cdddddc.......", "...ccccc........", "................"], p: { a: "#6b7279", b: "#ff4a5a", c: "#3a3e44", d: "#9aa3ab", e: "#4ee6b4" } };
+    SPR.x_jet = { r: ["................", "....aa....aa....", "...abba..abba...", "...abba..abba...", "...abcaaaacba...", "...abccddccba...", "...abccddccba...", "...abccccccba...", "...abba..abba...", "...aeea..aeea...", "....ff....ff....", "....gf....fg....", ".....g....g.....", "................", "................", "................"], p: { a: "#3a3e44", b: "#7fd06a", c: "#5a9a4a", d: "#f2c14e", e: "#6b7279", f: "#9fe86a", g: "#d8ffb0" } };
+    SPR.x_grap2 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#9aa0ac", b: "#d8dde4", c: "#5fa83f", d: "#c8925a", e: "#f2c14e" } };
+    SPR.x_grap3 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#f2c14e", b: "#fff3c4", c: "#4ee6b4", d: "#8a5a32", e: "#ff8a3d" } };
+    SPR.x_spore = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbcbbcbba...", "...abbbbbbbba...", "....aaaaaaaa....", "......dd........", "......dd..aaa...", "......dd.abcba..", ".....edde.aaa...", "....ee.dd..d....", "...e...dd..d....", "..e...edde.d....", ".....e.dd.edde..", "....e..ee..e.e..", "................"], p: { a: "#2a9a7a", b: "#4ee6b4", c: "#bfffe8", d: "#d8e8d0", e: "#3fd6c0" } };
+    SPR.x_bottle = { r: ["................", "......cc........", "......dd........", ".....abba.......", ".....abba.......", "....abbbba......", "...abbbbbba.....", "...abpppbba.....", "...abpqqpba.....", "...abpqqpba.....", "...abpppbba.....", "...abbbbbba.....", "...abbbbbba.....", "....aaaaaa......", "................", "................"], p: { a: "#2a6a5a", b: "#5ec8a8", c: "#a8743a", d: "#7a5230", p: "#e8d8a8", q: "#a8885a" } };
+    SPR.goosedown = { r: ["................", "..........a.....", ".........aba....", "........abba....", ".......abbba....", "......abbbba....", ".....abbbbba....", "....abbbbba.....", "...abbbbba......", "...abbbba.......", "..abbbba........", "..abbba.........", ".acaaa..........", ".c..............", "c...............", "................"], p: { a: "#c8c0b0", b: "#f6f2e8", c: "#8a7a60" } };
+    SPR.antlershed = { r: ["................", "..a.......a.....", "..a..a...a..a...", "..aa.a..aa.a....", "...aaa..aaa.....", "....aa...a......", "....ab...a......", ".....b..ab......", ".....bbbb.......", "......bb........", "......bc........", ".......c........", ".......c........", "......cc........", "................", "................"], p: { a: "#e8dcc0", b: "#c8b48a", c: "#8a6a42" } };
+    SPR.turtlescute = { r: ["................", "................", ".....aaaaaa.....", "....abbcbbba....", "...abcccccbba...", "..abbcbbbcbbba..", "..abcccbcccbba..", "..abbcbbbcbbba..", "..abcccbcccbba..", "...abbcbbbcba...", "....abbcbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#3a5a2a", b: "#7aa84a", c: "#b8d878" } };
+    SPR.ambergris = { r: ["................", "................", "................", ".....aaaa.......", "...aabbbbaa.....", "..abbcbbbbba....", "..abbbbbcbbba...", ".abbcbbbbbbba...", ".abbbbbcbbbba...", "..abbbbbbbcba...", "...aabbbbbba....", ".....aaaaaa.....", "................", "................", "................", "................"], p: { a: "#8a7050", b: "#d8c098", c: "#f0e0c0" } };
+    SPR.levscale = { r: ["................", "......aaaa......", "....aabbbbaa....", "...abbccccbba...", "..abbcddddcbba..", "..abcddeeddcba..", ".abbcdeffedcbba.", ".abcddeffeddcba.", ".abbcdeeeedcbba.", "..abcddddddcba..", "..abbccccccbba..", "...abbbbbbbba...", "....aabbbbaa....", "......aaaa......", "................", "................"], p: { a: "#0e2a3a", b: "#1f4a5a", c: "#2f6a72", d: "#3f8a88", e: "#6ac8b8", f: "#c8fff0" } };
+    SPR.x_dome = { r: ["................", "................", ".....aaaaaa.....", "....abbbbbba....", "...abccbbbbba...", "..abcbbbbbbbba..", "..abcbbbbdbbba..", ".abbbbbbdddbbba.", ".abbbbbbbdbbbba.", ".abbbbbbbbbbbba.", ".aeeeeeeeeeeeea.", ".ffffffffffffff.", "................", "................", "................", "................"], p: { a: "#7ab8c8", b: "#bfefff", c: "#ffffff", d: "#ffd23f", e: "#9a7a3a", f: "#6a4a1a" } };
+    (function () {   // ISLAND RAIDS: treasure icons (one shape, many colours)
+      var CH = ["................", "................", "..aaaaaaaaaaaa..", ".abbbbbbbbbbbbba", ".abccccccccccba.", ".abbbbbbbbbbbba.", ".aaaaaaddaaaaaa.", ".abbbbbddbbbbba.", ".abccccccccccba.", ".abbbbbbbbbbbba.", ".abccccccccccba.", ".abbbbbbbbbbbba.", ".aaaaaaaaaaaaaa.", "................", "................", "................"];
+      var SK = ["................", ".....aaaaaa.....", "....abbbbbba....", "...abbbbbbbba...", "...abccbbccba...", "...abccbbccba...", "...abbbbbbbba...", "....abbddbba....", ".....abbbba.....", ".....ababba.....", "......aaaa......", "................", "................", "................", "................", "................"];
+      var CR = ["................", "..aaaaaaaaaaaa..", "..abbbbbbbbbba..", "..abbcccccbbba..", "..abbbbbbbbbba..", "..aaaaaaaaaaaa..", "..abbbbbbbbbba..", "..abbcccccbbba..", "..abbbbbbbbbba..", "..aaaaaaaaaaaa..", "................", "................", "................", "................", "................", "................"];
+      var BR = ["................", "....aaaaaaaa....", "...abbbbbbbba...", "..acccccccccca..", "..abbbbbbbbbba..", "..abbbbbbbbbba..", "..acccccccccca..", "..abbbbbbbbbba..", "..abbbbbbbbbba..", "..acccccccccca..", "...abbbbbbbba...", "....aaaaaaaa....", "................", "................", "................", "................"];
+      var PO = ["................", "......aaaa......", ".......dd.......", ".....aaaaaa.....", "....abbbbbba....", "...abcbbbbcba...", "...abbbcbbbba...", "...abbbbbcbba...", "...abcbbbbbba...", "....abbbbbba....", ".....aaaaaa.....", "................", "................", "................", "................", "................"];
+      [["t_chest1", CH, { a: "#4a2e18", b: "#8a5a32", c: "#a8743a", d: "#c9a52a" }], ["t_chest2", CH, { a: "#2e2a3a", b: "#6a5a7a", c: "#8a7aa0", d: "#e0d0f0" }], ["t_chest3", CH, { a: "#3a2410", b: "#9a6a2a", c: "#e0b840", d: "#fff2b0" }], ["t_chest4", CH, { a: "#1a3a3a", b: "#2fa898", c: "#7af0e0", d: "#ffd23f" }],
+       ["t_skull1", SK, { a: "#5a5040", b: "#d8ccb0", c: "#2a2418", d: "#3a3020" }], ["t_skull2", SK, { a: "#3a4a2a", b: "#b8c890", c: "#1a2010", d: "#2a3018" }], ["t_skull3", SK, { a: "#4a3a1a", b: "#e8d8a8", c: "#2a1a08", d: "#c9a52a" }], ["t_skull4", SK, { a: "#2a1a4a", b: "#c8b8ff", c: "#ff5a8a", d: "#7a5aff" }],
+       ["t_tea", CR, { a: "#4a2e18", b: "#a8743a", c: "#3a8a3a" }], ["t_silk", CR, { a: "#4a2e18", b: "#a8743a", c: "#e8e8f8" }], ["t_spice", CR, { a: "#4a2e18", b: "#a8743a", c: "#e8501a" }], ["t_rum", BR, { a: "#3a2410", b: "#8a5a32", c: "#5a5a62" }], ["t_gems", PO, { a: "#3a2410", b: "#8a5a32", c: "#7af0e0", d: "#c9a52a" }]].forEach(function (q) { SPR[q[0]] = { r: q[1], p: q[2] }; });
+    })();
+    SPR.x_support = { r: ["................", "..bbbbbbbbbbbb..", "..aaaaaaaaaaaa..", "..bb........bb..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", "..ab........ab..", ".cccc......cccc.", "................"], p: { a: "#c8925a", b: "#8a5a32", c: "#5a3a20" } };
+    SPR.prospect = { r: ["................", "......aaaa......", ".....a....a.....", "......aaaa......", ".....bbbbbb.....", "....bcggggcb....", "....bgghhggb....", "....bghwwhgb....", "....bghwwhgb....", "....bgghhggb....", "....bcggggcb....", ".....bbbbbb.....", "......bddb......", ".....bbbbbb.....", "................", "................"], p: { a: "#8a929c", b: "#3a3e44", c: "#5c636b", g: "#4ee6b4", h: "#a8ffe8", w: "#ffffff", d: "#c8a060" } };
     SPR.treasuremap = { r: ["................", "..pppppppppppp..", ".pqqqqqqqqqqqqp.", ".pqqbqqqqqqqqqp.", ".pqbqbqqqqrqrqp.", ".pqqqqbqqqqrqqp.", ".pqqqqqbbqrqrqp.", ".pqqqqqqqbqqqqp.", ".pqgqqqqqqbqqqp.", ".pgggqqqqqqbqqp.", ".pqgqqqwwqqqbqp.", ".pqqqqwwwwqqqqp.", ".pqqqqqwwqqqqqp.", ".pqqqqqqqqqqqqp.", "..pppppppppppp..", "................"], p: { p: "#8a5a32", q: "#f2dcb0", b: "#8a6a42", r: "#e8341c", g: "#4f8a3c", w: "#5a8cff" } };
   })();
   // ---------- PLAYGROUND: Bounce Shroom, Speed Moss, Confetti Cannon (playground pack in sandbox-extra.js) ----------
@@ -8684,9 +10086,9 @@
   }
   function drawFx(force) {
     var el = $("sbxFx"); if (!el) return;
-    var ks = Object.keys(S.fx || {}), key = ks.map(function (k) { return k + Math.ceil(S.fx[k] / 5); }).join("|");
-    if (!force && key === fxKey) return; fxKey = key; el.hidden = !ks.length;
-    el.innerHTML = ks.map(function (k) {
+    var ks = Object.keys(S.fx || {}), la = S.ammo && ARROWK[S.ammo] && inv(S.ammo) > 0 ? S.ammo : null, cc = la ? { k: la, n: inv(la) } : null, key = ks.map(function (k) { return k + Math.ceil(S.fx[k] / 5); }).join("|") + (cc ? "|c" + cc.k + cc.n : "");
+    if (!force && key === fxKey) return; fxKey = key; el.hidden = !ks.length && !cc;
+    el.innerHTML = (cc ? '<span class="fx-chip" style="--fc:' + coatOf(ARROWK[cc.k]).c + '" title="' + esc(ITEMS[cc.k].n + 's loaded') + '"><img alt="" src="' + icon(cc.k) + '"><b>' + cc.n + '</b></span>' : "") + ks.map(function (k) {
       var pk = Object.keys(POTIONS).filter(function (q) { return POTIONS[q].fx === k; })[0], t = Math.ceil(S.fx[k]), mm = Math.floor(t / 60), ss = t % 60;
       return '<span class="fx-chip" style="--fc:' + (pk ? POTIONS[pk].c : "#fff") + '" title="' + esc(FXN[k] || k) + '"><img alt="" src="' + icon(pk || "bottle") + '"><b>' + mm + ":" + (ss < 10 ? "0" : "") + ss + "</b></span>";
     }).join("");
@@ -9017,29 +10419,58 @@
     } else { e.t -= dt; if (e.t <= 0) { e.t = 1.5 + Math.random() * 2; e.wv = Math.random() < 0.5 ? 0 : (Math.random() < 0.5 ? -1 : 1) * 0.9; } vx = e.wv || 0; if (vx) e.dir = vx > 0 ? 1 : -1; }
     moveEnemy(e, dt, vx);
   }
-  function drawWitch(g, e, d, flash, h, pd) {
+  function drawWitch(g, e, d, flash, h, pd) {   // the bog witch: a patched swaying robe, a hunched green face with a warty hooked nose, wild hair, a crooked hat; she raises a glowing bottle to throw
     var t = e.tt, f = e.dir, wind = e.st === "wind", bob = Math.sin(t * 2.6) * 0.8;
+    var F = function (c) { return flash ? "#ffffff" : c; }, ln = F("#120818"), r1 = F("#6e4a8c"), r2 = F("#4a2a62"), r3 = F("#24122e"), sk1 = F("#a8dc7a"), sk2 = F("#7fbf5a"), sk3 = F("#3e7a2e"), hr1 = F("#c8c8d2"), hr2 = F("#8a8a96");
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(f * (1 + 0.4 * pd), 1 - 0.7 * pd);
     if (!e.def) eGlow(g, 0, -26, wind ? 30 : 22, wind ? "#d08aff" : d.glow, wind ? 0.5 : 0.28);
-    var robe = flash ? "#ffffff" : "#4a2a62", robe2 = flash ? "#f0e0ff" : "#2e1a40", skin = flash ? "#fff" : "#7fbf5a";
-    // robe (a wide bell that sways), sleeves, belt
-    g.fillStyle = robe; g.strokeStyle = "#140a1c"; g.lineWidth = 1.4;
-    g.beginPath(); g.moveTo(-11 + Math.sin(t * 3) * 1.2, 0); g.lineTo(11 + Math.sin(t * 3 + 1) * 1.2, 0); g.lineTo(5, -28 + bob); g.lineTo(-5, -28 + bob); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = robe2; g.fillRect(-10, -3, 20, 3); g.fillStyle = flash ? "#fff" : "#c8901e"; g.fillRect(-5, -17 + bob, 10, 2.2);
-    // the throwing arm (raised with a glowing bottle while winding up)
-    g.save(); g.translate(4, -24 + bob); g.rotate(wind ? -2.3 + Math.sin(t * 20) * 0.1 : 0.5); g.fillStyle = robe; g.fillRect(-2, 0, 4, 11); g.fillStyle = skin; g.fillRect(-1.5, 10, 3, 3);
-    if (wind) { g.fillStyle = "#cfeaf2"; g.fillRect(-2.5, 12, 5, 6); g.fillStyle = "#b06aff"; g.fillRect(-2.5, 14.5, 5, 3.5); eGlow(g, 0, 15, 10, "#d08aff", 0.6); }
+    g.lineCap = "round"; g.lineJoin = "round";
+    var s1 = Math.sin(t * 3) * 1.2, s2 = Math.sin(t * 3 + 1) * 1.2;
+    // the far arm, holding a gnarled broom-stick staff
+    g.save(); g.translate(-4, -24 + bob); g.rotate(0.25 + Math.sin(t * 1.6) * 0.05);
+    g.strokeStyle = ln; g.lineWidth = 2.8; g.beginPath(); g.moveTo(-2, -6); g.lineTo(-4, 24); g.stroke(); g.strokeStyle = F("#7a5232"); g.lineWidth = 1.6; g.beginPath(); g.moveTo(-2, -6); g.lineTo(-4, 24); g.stroke();
+    g.beginPath(); g.arc(-2, -6.6, 1.8, 0, 7); aInk(g, F("#5a3a22"), ln, 0.7);
+    aLimb(g, [[0, 0], [-1, 5]], 3, r3, ln); g.beginPath(); g.arc(-1.4, 5.6, 1.6, 0, 7); aInk(g, sk3, ln, 0.6);
     g.restore();
-    // head: green face, long nose, glowing eyes, wild grey hair
-    g.fillStyle = flash ? "#fff" : "#9a9aa4"; g.beginPath(); g.ellipse(-2, -31 + bob, 8, 5, 0, 0, 7); g.fill();
-    g.fillStyle = skin; g.strokeStyle = "#1a2a10"; g.beginPath(); g.ellipse(0, -33 + bob, 6, 6.5, 0, 0, 7); g.fill(); g.stroke();
-    g.beginPath(); g.moveTo(5, -34 + bob); g.lineTo(10, -31 + bob); g.lineTo(5, -31 + bob); g.closePath(); g.fill();
-    g.fillStyle = flash ? "#fff" : "#ffd23f"; g.fillRect(1, -36 + bob, 2.4, 2); g.fillRect(-3.4, -36 + bob, 2.4, 2);
-    // the hat: a wide brim and a crooked point
-    g.fillStyle = flash ? "#fff" : "#1e1228"; g.strokeStyle = "#08040c";
-    g.beginPath(); g.ellipse(0, -38 + bob, 11, 2.6, 0, 0, 7); g.fill(); g.stroke();
-    g.beginPath(); g.moveTo(-6, -38.5 + bob); g.lineTo(6, -38.5 + bob); g.lineTo(2, -48 + bob); g.lineTo(-4, -55 + bob + Math.sin(t * 2) * 1); g.lineTo(-2, -47 + bob); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = flash ? "#fff" : "#b06aff"; g.fillRect(-5.5, -41 + bob, 11, 2);
+    // the robe: a wide bell with a ragged hem, folds and a patch, swaying
+    g.beginPath(); g.moveTo(-5, -28 + bob); g.lineTo(5, -28 + bob); g.quadraticCurveTo(9, -14, 12 + s2, 0);
+    for (var r = 0; r < 6; r++) { var rx = 12 + s2 - (r + 1) * (24 + s2 - s1) / 6; g.lineTo(rx + 2, r % 2 ? 0.8 : -1.2); }
+    g.lineTo(-11 + s1, 0); g.quadraticCurveTo(-9, -14, -5, -28 + bob); g.closePath();
+    aInk(g, aG(g, -28, 1, r1, r2, r3), ln, 1.3);
+    g.strokeStyle = F("#2e1a40"); g.lineWidth = 0.9; g.beginPath(); g.moveTo(-1, -15); g.quadraticCurveTo(-3 + s1 * 0.5, -6, -4 + s1, 0); g.moveTo(4, -15); g.quadraticCurveTo(6 + s2 * 0.5, -6, 7 + s2, 0); g.stroke();
+    g.beginPath(); g.rect(-7.6, -10, 4.4, 4); aInk(g, F("#5a7a3a"), ln, 0.6); g.strokeStyle = F("#c8c0a0"); g.lineWidth = 0.5; g.beginPath(); g.moveTo(-7.2, -9.4); g.lineTo(-6.6, -8.6); g.moveTo(-4, -6.6); g.lineTo(-3.6, -7.4); g.stroke();
+    g.beginPath(); g.rect(-6, -18 + bob, 12, 2.4); aInk(g, F("#3a2414"), ln, 0.6); g.beginPath(); g.rect(-1.6, -18.6 + bob, 3.2, 3.4); aInk(g, aG(g, -18.6, -15, F("#fff2a0"), F("#c8901e"), F("#7a5010")), ln, 0.6);   // belt and buckle
+    [[-3.4, -14], [2.4, -13]].forEach(function (pq, i) { g.save(); g.translate(pq[0], pq[1] + bob * 0.4); g.rotate(Math.sin(t * 2 + i) * 0.15); g.strokeStyle = ln; g.lineWidth = 0.6; g.beginPath(); g.moveTo(0, -3.6); g.lineTo(0, -2.4); g.stroke(); g.beginPath(); g.moveTo(-1.3, -2.4); g.lineTo(1.3, -2.4); g.lineTo(1.6, 1); g.quadraticCurveTo(0, 2.2, -1.6, 1); g.closePath(); aInk(g, F(i ? "#5ad0a0" : "#e85a8a"), ln, 0.6); aShine(g, -0.5, -0.8, 0.5, 0.9, 0.6, 0); g.restore(); });   // little potion vials hang from the belt
+    aShine(g, -3.6, -24 + bob, 1.6, 3, 0.18, 0.2);
+    // hair: a wild grey mop behind the head
+    var hy = -33 + bob;
+    g.beginPath(); g.moveTo(-9, hy + 6); for (var k = 0; k < 7; k++) { var a = 3.6 - k * 0.42, rr = 8 + (k % 2) * 2.4 + Math.sin(t * 2 + k) * 0.5; g.lineTo(-2 + Math.cos(a) * rr, hy + Math.sin(a) * rr * 0.8); } g.lineTo(3, hy - 4); g.lineTo(-2, hy + 2); g.closePath(); aInk(g, aG(g, hy - 8, hy + 6, hr1, hr2, F("#5a5a66")), ln, 1);
+    g.strokeStyle = F("#f0f0f6"); g.lineWidth = 0.6; g.beginPath(); g.moveTo(-6, hy - 2); g.quadraticCurveTo(-8, hy + 2, -7, hy + 5); g.moveTo(-3.6, hy - 4); g.quadraticCurveTo(-6.6, hy, -5, hy + 4); g.stroke();
+    // the face: green, hollow cheeks, a hooked warty nose, a crooked grin and glowing eyes
+    g.beginPath(); g.ellipse(0.4, hy, 6, 6.8, 0, 0, 7); aInk(g, aG(g, hy - 7, hy + 7, sk1, sk2, sk3), ln, 1.1);
+    g.beginPath(); g.moveTo(4.4, hy - 1.6); g.quadraticCurveTo(10.6, hy - 1, 10, hy + 3.6); g.quadraticCurveTo(8, hy + 2.2, 5, hy + 2.4); g.closePath(); aInk(g, aG(g, hy - 2, hy + 4, sk1, sk2, sk3), ln, 0.9);
+    g.beginPath(); g.arc(8, hy + 0.2, 0.8, 0, 7); aInk(g, sk3, ln, 0.4);
+    g.beginPath(); g.moveTo(0.6, hy + 4); g.quadraticCurveTo(3.4, hy + 5.4, 5.6, hy + 3.6); g.strokeStyle = ln; g.lineWidth = 0.9; g.stroke(); g.fillStyle = F("#fff8d8"); g.fillRect(2.6, hy + 4.2, 1, 1.1);
+    [[3, 1.5], [-1.6, 1.3]].forEach(function (eq) { if (!flash) eGlow(g, eq[0], hy - 2.4, 3.4, "#ffd23f", 0.6); g.beginPath(); g.ellipse(eq[0], hy - 2.4, eq[1], eq[1] * 0.8, 0, 0, 7); aInk(g, F("#fff4a0"), ln, 0.6); g.fillStyle = F("#2a1a08"); g.beginPath(); g.ellipse(eq[0] + 0.3, hy - 2.4, 0.5, eq[1] * 0.7, 0, 0, 7); g.fill(); g.strokeStyle = ln; g.lineWidth = 0.9; g.beginPath(); g.moveTo(eq[0] - eq[1] - 0.4, hy - 4.6); g.lineTo(eq[0] + eq[1], hy - 3.6); g.stroke(); });
+    aShine(g, -2, hy - 4.6, 1.8, 0.9, 0.3);
+    // the hat: a wide floppy brim and a tall crooked point with a band, a buckle and a patch
+    var hb = hy - 5.4, tip = Math.sin(t * 2) * 1;
+    g.beginPath(); g.ellipse(0, hb, 11.6, 2.8, -0.06, 0, 7); aInk(g, aG(g, hb - 3, hb + 3, F("#3a2848"), F("#1e1228"), F("#0a060e")), ln, 1.1);
+    g.beginPath(); g.moveTo(-6.2, hb - 0.6); g.quadraticCurveTo(-4.6, hb - 8, -1.4, hb - 11); g.quadraticCurveTo(-3, hb - 15 + tip, -8.6, hb - 18.4 + tip); g.quadraticCurveTo(-1, hb - 15.6, 2.6, hb - 10); g.quadraticCurveTo(5.4, hb - 5, 6.4, hb - 0.6); g.closePath();
+    aInk(g, aG(g, hb - 18, hb, F("#3a2848"), F("#24162e"), F("#0e0812")), ln, 1.1);
+    g.beginPath(); g.moveTo(-5.8, hb - 3.4); g.lineTo(5.8, hb - 3.4); g.lineTo(6.2, hb - 1); g.lineTo(-6.2, hb - 1); g.closePath(); aInk(g, F("#b06aff"), ln, 0.6);
+    g.beginPath(); g.rect(-1.4, hb - 3.9, 2.8, 3.3); g.strokeStyle = F("#ffd23f"); g.lineWidth = 0.8; g.stroke();
+    g.beginPath(); g.rect(-3.6, hb - 9, 3, 2.6); aInk(g, F("#4a3a5a"), ln, 0.5);
+    aShine(g, -3, hb - 7, 0.9, 3, 0.16, 0.4);
+    // the throwing arm (raised with a glowing bottle while winding up)
+    g.save(); g.translate(4, -24 + bob); g.rotate(wind ? -2.3 + Math.sin(t * 20) * 0.1 : 0.5);
+    g.beginPath(); g.moveTo(-2.6, -0.6); g.lineTo(2.6, -0.6); g.lineTo(3.2, 10); g.lineTo(-3.2, 10); g.closePath(); aInk(g, aG(g, 0, 10, r1, r2, r3), ln, 0.9);
+    g.beginPath(); g.ellipse(0, 11.6, 1.9, 2, 0, 0, 7); aInk(g, sk2, ln, 0.7);
+    if (wind) { if (!flash) eGlow(g, 0, 16, 11, "#d08aff", 0.7);
+      g.beginPath(); g.moveTo(-1, 12); g.lineTo(1, 12); g.lineTo(1, 13.6); g.quadraticCurveTo(3.6, 14.6, 3.4, 17.4); g.quadraticCurveTo(3, 20.4, 0, 20.4); g.quadraticCurveTo(-3, 20.4, -3.4, 17.4); g.quadraticCurveTo(-3.6, 14.6, -1, 13.6); g.closePath(); aInk(g, "rgba(220,240,250,.85)", ln, 0.7);
+      g.beginPath(); g.moveTo(-3.3, 16.6); g.quadraticCurveTo(0, 15.6 + Math.sin(t * 9) * 0.5, 3.3, 16.6); g.quadraticCurveTo(3, 20.2, 0, 20.2); g.quadraticCurveTo(-3, 20.2, -3.3, 16.6); g.fillStyle = "#b06aff"; g.fill();
+      aShine(g, -1.6, 16.6, 0.6, 1.6, 0.6, 0); g.fillStyle = F("#8a5a32"); g.fillRect(-0.9, 11, 1.8, 1.4); }
+    g.restore();
     g.restore();
   }
   // ---------- WITCH HUTS ----------
@@ -9108,7 +10539,7 @@
     return F.cmap;
   }
   function contAtCell(x, y) {   // { kind: "deco" | "chest", ... } for a cell of the room you are in
-    var F = cave && cave.F; if (!F || x < 0 || y < 0 || x >= F.w || y >= F.h) return null; var i = y * F.w + x, nd = F.node[i];
+    var F = cave && cave.F; if (!F || F.isle || x < 0 || y < 0 || x >= F.w || y >= F.h) return null; var i = y * F.w + x, nd = F.node[i];
     if (nd && TILES[nd] && TILES[nd].kind === "lootchest") return { kind: "chest", i: i, x: x, y: y, id: nd, n: cave.bld ? (BCHEST[cave.bld.kind] ? BCHEST[cave.bld.kind].n.replace(/^The /, "") : "Witch's Chest") : "Cave Chest" };
     var e = contMap(F)[i]; if (e) return { kind: "deco", i: i, x: x, y: y, id: e.id, type: contTypeOf(e.id), n: TILES[e.id].n };
     return null;
@@ -9224,6 +10655,7 @@
   }
   // ---- Old Croaker buys valuables ----
   var VALUE = (typeof SbxExtra !== "undefined" && SbxExtra.VALUE) || {};
+  [["goosedown", 3, 1], ["antlershed", 1, 2], ["turtlescute", 1, 3], ["ambergris", 1, 8], ["levscale", 1, 10]].forEach(function (q) { if (!VALUE[q[0]]) VALUE[q[0]] = [q[1], q[2]]; });   // Old Croaker buys keepsakes
   function sellHtml() {
     var ks = Object.keys(VALUE).filter(function (k) { return ITEMS[k] && (S.inv[k] || 0) >= VALUE[k][0]; });
     var h = '<h3 class="st-sellh">Sell valuables</h3>';
@@ -9397,28 +10829,41 @@
     for (var yy = Math.floor(py) - 9; yy <= Math.floor(py) + 6; yy++) if (blocks(cx, yy - 1) && !blocks(cx, yy) && !blocks(cx, yy + 1) && !blocks(cx, yy + 2) && yy > col[cx] + 3 && TILES[get(cx, yy)].kind !== "water") return yy;
     return -1;
   }
-  function drawSpider(g, e, d, flash, h, pd) {
+  function drawSpider(g, e, d, flash, h, pd) {   // a cave spider: jointed hairy legs, a glossy marked abdomen, fangs and a cluster of red eyes
     var t = e.tt, f = e.dir, crouch = e.st === "crouch" || e.st === "wind", mv = /skitter|pounce|patrol|stalk|lunge|retreat/.test(e.st);
-    var PAL = [["#3a3242", "#6fd06a"], ["#40261e", "#ff7a2f"], ["#38485a", "#9fe8ff"]][e.b] || ["#2a2430", "#6fd06a"], body = flash ? "#ffffff" : PAL[0], mark = flash ? "#ffe0e6" : PAL[1];
+    var PAL = [["#3a3242", "#6fd06a", "#6a5e72"], ["#40261e", "#ff7a2f", "#74503e"], ["#38485a", "#9fe8ff", "#62788c"]][e.b] || ["#2a2430", "#6fd06a", "#5a5064"];
+    var F = function (c) { return flash ? "#ffffff" : c; }, body = F(PAL[0]), mark = F(PAL[1]), hi = F(PAL[2]), ln = F("#08050a"), legC = F(PAL[0]), legH = F(PAL[2]);
     if (e.st === "hang" && !cave && e.ay !== undefined) {   // the silk thread up to the ceiling
       g.strokeStyle = "rgba(240,240,250,.85)"; g.lineWidth = 1.1; g.beginPath(); g.moveTo(0, -10); g.lineTo(0, -10 - (e.y - e.ay) * 30); g.stroke();
     }
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, crouch ? 2 : 0); g.scale(f * 1.3 * (1 + 0.4 * pd), 1.3 * (1 - 0.7 * pd) * (crouch ? 0.85 : 1));
     if (!e.def) eGlow(g, 2, -8, crouch ? 26 : 20, d.glow, crouch ? 0.5 : 0.3);
-    g.strokeStyle = flash ? "#ffffff" : "#120c14"; g.lineWidth = 1.8; g.lineCap = "round";
-    for (var i = 0; i < 4; i++) {   // eight legs: two rows of four, scuttling out of phase
-      var ph = mv ? Math.sin(t * 22 + i * 1.6) * 3 : Math.sin(t * 2 + i) * 0.6, lx = -6 + i * 4.2;
-      [-1, 1].forEach(function (sd) {
-        var kx = lx + sd * (4 + i * 0.6) + (sd > 0 ? ph : -ph) * 0.5, ky = -12 - (i === 1 || i === 2 ? 2 : 0);
-        g.beginPath(); g.moveTo(lx, -6); g.lineTo(kx, ky); g.lineTo(kx + sd * 3 + ph * 0.3, 0); g.stroke();
-      });
-    }
-    var bg = g.createLinearGradient(0, -16, 0, -2); bg.addColorStop(0, flash ? "#fff" : "#6a5e72"); bg.addColorStop(1, body);
-    g.fillStyle = bg; g.strokeStyle = "#0a060c"; g.lineWidth = 1.2;
-    g.beginPath(); g.ellipse(-5, -8, 8, 6.5, -0.15, 0, 7); g.fill(); g.stroke();   // abdomen
-    g.fillStyle = mark; g.beginPath(); g.moveTo(-7, -12); g.lineTo(-4, -9); g.lineTo(-7, -6); g.lineTo(-10, -9); g.closePath(); g.fill();   // the marking on its back
-    g.fillStyle = body; g.beginPath(); g.ellipse(5, -6.5, 5, 4.2, 0, 0, 7); g.fill(); g.stroke();   // head
-    g.fillStyle = flash ? "#fff" : crouch ? "#ff2a3a" : "#ff6a7a"; [[7, -8], [9, -7.2], [6.5, -6], [8.6, -5.4]].forEach(function (q) { g.fillRect(q[0], q[1], 1.6, 1.4); });   // four little red eyes
+    g.lineCap = "round"; g.lineJoin = "round";
+    var legs = function (far) {   // four a side: thigh up to a sharp knee, then the shin down to a pointed foot, with a few bristles
+      for (var i = 0; i < 4; i++) {
+        var ph = mv ? Math.sin(t * 22 + i * 1.6 + (far ? 1.4 : 0)) * 3 : Math.sin(t * 2 + i) * 0.6, lx = -5 + i * 3.6, sd = i < 2 ? -1 : 1;
+        var kx = lx + sd * (3.6 + Math.abs(i - 1.5) * 1.6) + ph * 0.5 + (far ? -0.8 : 0), ky = -13.5 - (i === 1 || i === 2 ? 2 : 0) + (far ? 1 : 0), fx = kx + sd * (3.4 + i * 0.3) + ph * 0.4, fy = far ? -0.8 : 0;
+        aLimb(g, [[lx, -6.5], [kx, ky]], far ? 0.9 : 1.2, far ? F(PAL[0]) : legH, ln); aLimb(g, [[kx, ky], [fx, fy]], far ? 0.6 : 0.8, far ? F(PAL[0]) : legH, ln);
+        if (!far) { g.strokeStyle = legH; g.lineWidth = 0.5; g.beginPath(); g.moveTo(kx - sd * 0.3, ky + 0.4); g.lineTo((kx + fx) / 2, (ky + fy) / 2 - 0.2); g.stroke();
+          g.strokeStyle = ln; g.lineWidth = 0.45; for (var b = 1; b <= 2; b++) { var bx = kx + (fx - kx) * b / 3, by = ky + (fy - ky) * b / 3; g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + sd * 1.1, by - 0.6); g.stroke(); } }
+      }
+    };
+    legs(true);
+    // abdomen: big and round, glossy, with its marking and fine hairs at the rear
+    g.beginPath(); g.ellipse(-5, -8.4, 8.2, 6.8, -0.15, 0, 7); aInk(g, aG(g, -15, -2, hi, body, F("#0e0a12")), ln, 1.1);
+    g.beginPath(); g.moveTo(-6.4, -13.2); g.lineTo(-3.4, -9.6); g.lineTo(-5, -8.4); g.lineTo(-3.4, -7); g.lineTo(-6.4, -4.4); g.lineTo(-9.4, -7); g.lineTo(-7.8, -8.4); g.lineTo(-9.4, -9.6); g.closePath(); aInk(g, mark, ln, 0.6);   // an hourglass marking
+    if (!flash) { eGlow(g, -6.4, -8.6, 6, PAL[1], 0.25); }
+    g.strokeStyle = ln; g.lineWidth = 0.5; for (var hr = 0; hr < 5; hr++) { var ha = 2.2 + hr * 0.28; g.beginPath(); g.moveTo(-5 + Math.cos(ha) * 8, -8.4 + Math.sin(ha) * 6.6); g.lineTo(-5 + Math.cos(ha) * 9.4, -8.4 + Math.sin(ha) * 7.8); g.stroke(); }
+    aShine(g, -8, -12.4, 3.4, 1.5, 0.35, -0.35);
+    legs(false);
+    // head and chest: smaller, with fangs and eight eyes (four big, four small)
+    g.beginPath(); g.ellipse(4.6, -6.8, 5.2, 4.4, 0.05, 0, 7); aInk(g, aG(g, -11, -2.6, hi, body, F("#0e0a12")), ln, 1);
+    var fo = crouch ? 0.5 : 0.15 + Math.max(0, Math.sin(t * 3)) * 0.15;
+    [[8, -4.2, 1], [6.8, -3.6, -1]].forEach(function (fq) { g.save(); g.translate(fq[0], fq[1]); g.rotate(fq[2] * fo); g.beginPath(); g.moveTo(-0.8, 0); g.quadraticCurveTo(1.4, 1, 0.6, 3.2); g.quadraticCurveTo(0.2, 1.4, -0.8, 0.9); g.closePath(); aInk(g, F("#e8dcc8"), ln, 0.5); g.restore(); });
+    var ec = flash ? "#fff" : crouch ? "#ff2a3a" : "#ff5a6a";
+    [[7.4, -8.6, 1], [5.4, -8.4, 1], [8.8, -7, 0.75], [4.4, -7, 0.75], [6.4, -10.2, 0.6], [8.2, -10, 0.55]].forEach(function (q) { g.fillStyle = ec; g.beginPath(); g.arc(q[0], q[1], q[2], 0, 7); g.fill(); if (!flash) { g.fillStyle = "#fff"; g.fillRect(q[0] - q[2] * 0.5, q[1] - q[2] * 0.6, q[2] * 0.5, q[2] * 0.5); } });
+    if (crouch && !flash) eGlow(g, 6.6, -8.4, 7, "#ff2a3a", 0.35);
+    aShine(g, 2.6, -9.2, 1.8, 0.8, 0.28);
     g.restore();
   }
   // ---------- MAIN MENU (title screen) ----------
@@ -9450,7 +10895,7 @@
         + '<h2>How to play</h2>'
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
-        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
+        + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
@@ -9508,7 +10953,7 @@
     if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
     if (k === "back") { TC.how = false; renderTitle(); var hb = titleEl.querySelector("[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
-    if (k === "worlds" || k === "new") { openWorlds(); if (k === "new") setTimeout(function () { var i = $("sbxWName"); if (i) i.focus(); }, 30); return; }
+    if (k === "worlds" || k === "new") { openWorlds(k === "new" ? "new" : "list"); WL.came = k; return; }
     if (k === "mp") return openMPV();
     if (k === "opts") return openPanel("more");
   }
@@ -9546,22 +10991,35 @@
     var r = function (name, hint, ctl) { return '<div class="pz-row"><div><b>' + name + "</b>" + (hint ? "<small>" + hint + "</small>" : "") + "</div>" + ctl + "</div>"; };
     return r("Music", "Changes with the land you are in.", optVol("mus", MUS.on ? MUS.vol : 0, "Music volume"))
       + r("Sound effects", "Digging, footsteps, hits and chimes.", optVol("fx", OPT.fx, "Sound effects volume"))
+      + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
-      + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"));
+      + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"))
+      + '<h3 class="pz-sub">Accessibility</h3>'
+      + r("Colour-blind mode", "Shifts the game's colours so reds, greens and blues are easier to tell apart.", optSeg("cb", OPT.cb, [["off", "Off"], ["p", "Protan"], ["d", "Deutan"], ["t", "Tritan"]], "Colour-blind mode"))
+      + r("Text size", "Makes menus, messages and the Journal bigger.", optSeg("tx", OPT.tx, [[1, "Normal"], [1.15, "Large"], [1.3, "Larger"]], "Text size"))
+      + r("Reduce motion", "Turns off spins, bobbing and camera sway. System follows your device setting.", optSeg("motion", OPT.motion, [["sys", "System"], ["on", "On"], ["off", "Off"]], "Reduce motion"))
+      + r("Lightning flashes", "Off keeps storms from lighting up the whole screen.", optSeg("flash", OPT.flash ? 1 : 0, [[1, "On"], [0, "Soft"]], "Lightning flashes"))
+      + '<h3 class="pz-sub">Controls</h3>' + keymapRows();
   }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
     var i = spec.indexOf(":"), k = spec.slice(0, i), v = spec.slice(i + 1);
     if (k === "mus") { var mv = clamp(Math.round(((MUS.on ? MUS.vol : 0) + 0.1 * +v) * 10) / 10, 0, 1); MUS.on = mv > 0; if (mv > 0) MUS.vol = mv; try { localStorage.setItem("swamp-delve-music", MUS.on ? "1" : "0"); localStorage.setItem("swamp-delve-musicvol", String(MUS.vol)); } catch (e) {} }
     else if (k === "fx") { OPT.fx = clamp(Math.round((OPT.fx + 0.1 * +v) * 10) / 10, 0, 1); if (FXB) FXB.gain.value = OPT.fx; try { if (typeof SFX !== "undefined" && SFX.vol) SFX.vol(OPT.fx); } catch (e) {} matHit(T.STONE !== undefined ? T.STONE : 1); }
+    else if (k === "amb") OPT.amb = clamp(Math.round((OPT.amb + 0.1 * +v) * 10) / 10, 0, 1);
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
     else if (k === "bloom") OPT.bloom = v === "1";
     else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
+    else if (k === "cb") { OPT.cb = /^(p|d|t)$/.test(v) ? v : "off"; applyA11y(); }
+    else if (k === "tx") { OPT.tx = +v === 1.15 || +v === 1.3 ? +v : 1; applyA11y(); }
+    else if (k === "motion") { OPT.motion = v === "on" || v === "off" ? v : "sys"; applyA11y(); }
+    else if (k === "flash") OPT.flash = v === "1";
+    else if (k === "key") { if (v === "reset") { KEYMAP.b = {}; keySave(); toast("Controls reset to the defaults.", "#7fd6ff"); } else { KEYMAP.wait = v; } }
     else if (k === "gq") { OPT.gq = v === "high" || v === "low" ? v : "auto"; if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; } else { lowq = coarse; dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {} } resize(); }
     optSave();
   }
@@ -9573,7 +11031,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -9832,6 +11290,7 @@
     if (ITEMS[sel] && ITEMS[sel].summon) { useSummon(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].home) { useHome(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
+    if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }   // holding food: tap to eat
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }   // LOOT PACK: open an old book or a sealed letter
@@ -9866,7 +11325,7 @@
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[plantHit && sel !== "pick" ? 0 : effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(id); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
-      if (mine.p >= 1) { funBreak(id, tx, ty); breakTile(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && !plantHit) wear("pick", td.hard >= 2 ? 2 : 1); }
+      if (mine.p >= 1) { funBreak(id, tx, ty); breakTile(tx, ty); boreSurface(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0 && !plantHit) wear("pick", td.hard >= 2 ? 2 : 1); }
     } else {
       cool -= dt; if (cool > 0) return; cool = 0.13;
       if (ITEMS[sel] && ITEMS[sel].wall) { if ((S.inv[sel] || 0) > 0 && canWall(tx, ty, ITEMS[sel].wall)) placeWall(tx, ty, sel); return; }
@@ -10120,13 +11579,15 @@
       setTimeout(function () { cgExpOpen(stnSave); if (CGS && CGS.k === "exp") { CGS.msg = first ? "<b>New discovery: " + esc(ITEMS[out].n) + "!</b> " + esc(itemDesc(out)) : ""; cgExpRender(); } }, 80);
     }, back);
   }
-  function itemDesc(k) { var it = ITEMS[k]; if (POTIONS[k]) return POTIONS[k].d; if (it.food) return "Fills " + it.food + " food, heals " + (it.heal || 0) + (it.efx ? ", and gives " + (FXN[it.efx[0]] || it.efx[0]) + " for " + Math.round(it.efx[1] / 60) + " min" : "") + "."; return ""; }
+  function itemDesc(k) { var it = ITEMS[k]; if (POTIONS[k]) return POTIONS[k].d; if (COATS[k]) return "An arrow ointment: " + COATS[k].d.replace("Coats your next 10 shots. ", "") + " Work it into Arrows at a Workbench."; if (ARROWD[k]) return ARROWD[k] + " Tap it in the hotbar to load it into your bow."; if (it.food) return "Fills " + it.food + " food, heals " + (it.heal || 0) + (it.efx ? ", and gives " + (FXN[it.efx[0]] || it.efx[0]) + " for " + Math.round(it.efx[1] / 60) + " min" : "") + "."; return ""; }
   function tickMw(dt) {   // a Masterwork pick or weapon you are holding glints now and then
     var k = sel === "pick" ? "pick" : sel === "weapon" ? "wpn" : ""; if (!k || mwStars(k) < 3 || reduce || cave) return;
     if (Math.random() < dt * 2.2) parts.push({ x: p.x + p.face * (0.5 + Math.random() * 0.4), y: p.y - 1.15 - Math.random() * 0.5, vx: 0, vy: -0.4, g: 0, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#fff6c2" : "#ffd23f", s: 2.5, glw: 1 });
   }
   function craft(id) {
     var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
+    if (id === "x_grap2" && (S.grapLv | 0) >= 1) { nag("Your grapple already has the Mk II upgrade."); return; } if (id === "x_grap3" && (S.grapLv | 0) < 1) { nag("Install the Mk II upgrade first."); return; } if (id === "x_grap3" && (S.grapLv | 0) >= 2) { nag("Your grapple is already Mk III."); return; }
+    if ((id === "x_drill" || id === "x_detect" || id === "x_jet") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
@@ -10277,7 +11738,7 @@
     var steps = tourSteps(); if (!steps.length) return;
     var el = document.createElement("div"); el.className = "sbx-tour"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "A quick tour");
     el.innerHTML = '<div class="tr-spot"></div><div class="tr-card"><small class="tr-n"></small><b class="tr-t"></b><p class="tr-d"></p><div class="tr-row"><button type="button" class="btn ghost" data-tr="skip">Skip</button><button type="button" class="btn" data-tr="next">Next</button></div></div>';
-    stageEl.appendChild(el); TOUR = { el: el, i: 0, steps: steps }; panelOpen = true; stopInput();
+    stageEl.appendChild(el); TOUR = { el: el, i: 0, steps: steps, force: !!force }; panelOpen = true; stopInput();
     el.addEventListener("click", function (e) { var b = e.target.closest("[data-tr]"); if (!b) return; if (b.getAttribute("data-tr") === "skip") endTour(); else { TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } });
     tourShow(); try { snd("open"); } catch (e2) {}
   }
@@ -10293,7 +11754,64 @@
     } else { spot.style.cssText = "left:50%;top:50%;width:0;height:0"; spot.classList.add("none"); var cw2 = Math.min(320, sr.width - 24); card.style.cssText = "width:" + cw2 + "px;left:" + (sr.width / 2 - cw2 / 2) + "px;top:" + Math.max(80, sr.height * 0.32) + "px"; }
     var nb = el.querySelector("[data-tr=next]"); if (nb) nb.focus({ preventScroll: true });
   }
-  function endTour() { if (!TOUR) return; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; }
+  function endTour() { if (!TOUR) return; var tf = TOUR.force; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; setTimeout(function () { startCoach(tf); }, 500); }
+  // ---------- TRY IT: after the tour, a hands-on coach. A finger (phones) or key caps (keyboards) point at each control, and every step waits
+  // until you actually do it: walk, jump, dodge roll, gather from the glowing leaves, open the backpack. Once per device; skippable. ----------
+  var COACH = null;
+  function coachSteps() {
+    var t = coarse;
+    return [
+      { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave") ? "#sbxJoy" : "#sbxPad .lr") : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
+      { id: "jump", t: "Jump", d: t ? "Tap the big button to jump." : "Press Space to jump.", el: t ? "#sbxPad .jump" : "", keys: ["Space"], done: function (c) { return c.jumped; } },
+      { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? "#sbxPad .roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
+      { id: "dig", t: "Gather", d: t ? "Hold your finger on the glowing ring to gather from it." : "Hold the mouse on the glowing ring to gather from it.", world: true, keys: [t ? "" : "Hold mouse"], done: function (c) { return (S.st.mined || 0) > c.m0 || (S.inv.stick || 0) > c.s0 || (S.inv.fiber || 0) > c.f0; } },
+      { id: "pack", t: "Your backpack", d: t ? "Tap the backpack to see what you carry." : "Press B to open your backpack.", el: "#sbxPackBtn", keys: ["B"], done: function () { return packOpen; } }
+    ];
+  }
+  function startCoach(force) {
+    if (COACH || (MP.on && MP.role === "guest") || cave || OCS || HOME || titleOpen) return;
+    try { if (!force && localStorage.getItem("swamp-delve-coach") === "1") return; } catch (e) {}
+    if (!force && navigator.webdriver) return;
+    var el = document.createElement("div"); el.className = "sbx-coach"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
+    el.innerHTML = '<div class="co-hand" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M12 3a2.4 2.4 0 012.4 2.4V14l1.1-.3a2.3 2.3 0 012.9 1.6l.1.4.8-.2a2.3 2.3 0 012.8 1.4l.9-.2a2.3 2.3 0 012.8 1.8l.9 5.4a7 7 0 01-5.4 8H17a7 7 0 01-5.7-3l-4.6-6.6a2.3 2.3 0 013.6-2.9l1.3 1.4V5.4A2.4 2.4 0 0112 3z" fill="#fff6dc" stroke="#06100d" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="co-ring" aria-hidden="true"></div>'
+      + '<div class="co-card"><small class="co-n"></small><b class="co-t"></b><p class="co-d"></p><div class="co-keys"></div><button type="button" class="co-skip" data-co="skip">Skip practice</button></div>';
+    stageEl.appendChild(el);
+    el.addEventListener("click", function (e) { if (e.target.closest("[data-co=skip]")) endCoach(false); });
+    COACH = { el: el, steps: coachSteps(), i: -1, ok: 0 }; coachNext();
+  }
+  function coachNext() {
+    var C = COACH; C.i++; if (C.i >= C.steps.length) return endCoach(true);
+    var s = C.steps[C.i]; C.x0 = p.x; C.jumped = false; C.d0 = S.st.dodges || 0; C.m0 = S.st.mined || 0; C.s0 = S.inv.stick || 0; C.f0 = S.inv.fiber || 0; C.ok = 0;
+    var el = C.el; el.querySelector(".co-n").textContent = "Try it · " + (C.i + 1) + " of " + C.steps.length; el.querySelector(".co-t").textContent = s.t; el.querySelector(".co-d").textContent = s.d;
+    el.querySelector(".co-keys").innerHTML = coarse ? "" : s.keys.filter(Boolean).map(function (k) { return "<kbd>" + esc(k) + "</kbd>"; }).join("");
+    el.classList.remove("done"); el.classList.toggle("keys", !coarse);
+  }
+  function endCoach(win) {
+    if (!COACH) return; COACH.el.remove(); COACH = null; stageEl.classList.remove("coaching"); try { localStorage.setItem("swamp-delve-coach", "1"); } catch (e) {}
+    if (win) { toast("You've got the basics. Follow your goal in the corner!", "#4ee6b4"); snd("rise"); }
+  }
+  function coachLeaf() {   // the nearest leaf block (or grass to dig) for the Gather step
+    var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 1e9, x, y;
+    for (y = cy - 7; y <= cy + 2; y++) for (x = cx - 9; x <= cx + 9; x++) { var id = get(x, y); if (id === T.LEAVES) { var d = (x - cx) * (x - cx) + (y - cy) * (y - cy) * 1.5; if (d < bd) { bd = d; best = { x: x, y: y }; } } }
+    return best;
+  }
+  function tickCoach(dt) {
+    var C = COACH; stageEl.classList.toggle("coaching", !!C); if (!C) return; var s = C.steps[C.i], el = C.el;
+    var hide = (panelOpen && s.id !== "pack") || cave || OCS || HOME || titleOpen || mapOpen; el.classList.toggle("off", !!hide); if (hide) return;
+    if (!p.on && p.vy < -3) C.jumped = true;
+    if (C.ok > 0) { C.ok -= dt; if (C.ok <= 0) coachNext(); return; }
+    if (s.done(C)) { C.ok = 0.9; el.classList.add("done"); el.querySelector(".co-t").textContent = "Nice!"; el.querySelector(".co-d").textContent = ""; el.querySelector(".co-keys").innerHTML = ""; thud(660, 0.04); return; }
+    var sr = stageEl.getBoundingClientRect(), x = sr.width / 2, y = sr.height / 2, w = 0, h = 0, target = s.el ? document.querySelector(s.el) : null, show = false;
+    if (target && target.offsetParent) { var r = target.getBoundingClientRect(); x = r.left - sr.left + r.width / 2; y = r.top - sr.top + r.height / 2; w = r.width; h = r.height; show = true; }
+    else if (s.world) { var gt = guide && Math.abs(guide.x - p.x) < 12 ? guide : coachLeaf(); if (gt) { x = ox + (gt.x + 0.5) * ts; y = oy + (gt.y + 0.5) * ts; w = h = ts; show = true; } }
+    var hand = el.querySelector(".co-hand"), ring = el.querySelector(".co-ring"), card = el.querySelector(".co-card");
+    hand.style.display = ring.style.display = show && (coarse || s.world) ? "" : "none";
+    hand.style.transform = "translate(" + Math.round(x - 6) + "px," + Math.round(y + Math.max(8, h * 0.15)) + "px)";
+    ring.style.cssText = "left:" + Math.round(x - Math.max(w, 44) / 2 - 6) + "px;top:" + Math.round(y - Math.max(h, 44) / 2 - 6) + "px;width:" + Math.round(Math.max(w, 44) + 12) + "px;height:" + Math.round(Math.max(h, 44) + 12) + "px;display:" + (show && (coarse || s.world) ? "block" : "none");
+    var cw = Math.min(280, sr.width - 24), above = y > sr.height * 0.45, cx = clamp(x - cw / 2, 12, sr.width - cw - 12);
+    if (!show) { cx = sr.width / 2 - cw / 2; above = false; y = sr.height * 0.22; h = 0; }
+    card.style.cssText = "width:" + cw + "px;left:" + Math.round(cx) + "px;" + (above ? "bottom:" + Math.round(sr.height - y + h / 2 + 22) + "px" : "top:" + Math.round(y + h / 2 + (show && coarse ? 64 : 18)) + "px");
+  }
   // the quest tracker's "how" line, for the first chapters: the first sentence of the quest's own instructions
   function trailTip(q) { var d = String(q.d || ""), m = d.match(/^[^.!?]*[.!?]/); var t = (m ? m[0] : d).trim(); if (t.length > 92) t = t.slice(0, 90).replace(/\s+\S*$/, "") + "…"; return t; }
   function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
@@ -10558,6 +12076,7 @@
     var sp = (p.wet ? 3.6 * (hasCharm("tide") || fx("gill") ? 1.6 : 1) : 6.3) * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1) * speedMul(), acc = p.on ? 70 : 34;
     p.vx = approach(p.vx, dir * sp, (dir ? acc : (p.on ? 60 : 8)) * h);
     if (DODGE.t > 0) p.vx = DODGE.dx * dodgeSpeed(p.wet ? 8 : 15);   // DODGE ROLL
+    if (SPEC.t > 0) p.vx = SPEC.dx * (p.wet ? 12 : 23);   // LUNGE
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
     if (devFly(h, jump)) return;   // DEVELOPER MODE: fly / ghost
     if (fx("feather") && !p.wet && !(keys.d || tk.d) && p.vy > 7) p.vy = 7;   // Featherfall Tonic: drift down (hold down to drop)
@@ -10572,6 +12091,7 @@
     if (upd) p.vy = approach(p.vy, gliding ? -17 : -14, 80 * h);   // the hot updraft over a Thermal Vent
     else if (gliding) { p.vy = Math.min(p.vy, GLIDE.fall); p.vx = approach(p.vx, dir * sp * GLIDE.speed, 24 * h); glideDist += Math.abs(p.vx) * h; }
     if (hook && hook.st === "pull") { grapplePull(h, jump); gliding = false; }   // GRAPPLE
+    else jetStep(h, jump, lad);   // SWAMP-GAS JETPACK
     p.jprev = !!jump;   // per physics step, so one press is one jump
     if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
     // horizontal, with automatic one-block step-up
@@ -10605,7 +12125,7 @@
     if (p.sq || p.sqv) { var sqa = -380 * p.sq - 15 * p.sqv; p.sqv += sqa * dt; p.sq += p.sqv * dt; if (Math.abs(p.sq) < 0.002 && Math.abs(p.sqv) < 0.05) p.sq = p.sqv = 0; }   // SQUASH & STRETCH: a damped spring, so a landing squashes, overshoots a touch and settles
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
-    tickDodge(dt);
+    tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); tickDetect(dt); tickQuake(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
     var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
@@ -10636,7 +12156,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
-    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
@@ -10822,9 +12342,9 @@
     // sky flocks: spawn just off screen on one side, cross, then go
     var halfT = vw / 2 / ts + 6;
     if (surf && AMB.flocks.length < Math.max(1, Math.round(AMBN.flocks * q)) && Math.random() < dt * (night ? 0.09 : 0.14)) {
-      var kind = night ? (b === 2 ? "" : "bat") : b === 2 ? "goose" : b === 1 ? "crow" : Math.random() < 0.5 ? "egret" : "swallow";
+      var kind = night ? (b === 2 ? "" : "bat") : b === 2 || (migSeason() === 0 && Math.random() < 0.7) ? "goose" : b === 1 ? "crow" : Math.random() < 0.5 ? "egret" : "swallow";   // MIGRATIONS: Lily Geese everywhere in Spring
       if (kind) {
-        var par = 0.25 + Math.random() * 0.5, dir = Math.random() < 0.5 ? -1 : 1, n = kind === "goose" ? 5 + (Math.random() * 6 | 0) : kind === "bat" ? 4 + (Math.random() * 5 | 0) : kind === "egret" ? 2 + (Math.random() * 3 | 0) : 4 + (Math.random() * 6 | 0);
+        var migG = kind === "goose" && migSeason() === 0, par = 0.25 + Math.random() * 0.5, dir = migG ? 1 : Math.random() < 0.5 ? -1 : 1, n = migG ? 9 + (Math.random() * 7 | 0) : kind === "goose" ? 5 + (Math.random() * 6 | 0) : kind === "bat" ? 4 + (Math.random() * 5 | 0) : kind === "egret" ? 2 + (Math.random() * 3 | 0) : 4 + (Math.random() * 6 | 0);
         AMB.flocks.push({ k: kind, par: par, dir: dir, x: cam.x * par - dir * halfT, y: 0.08 + Math.random() * (kind === "bat" ? 0.4 : 0.3), sp: (kind === "goose" ? 2.4 : kind === "egret" ? 1.8 : kind === "bat" ? 3.2 : kind === "crow" ? 2.6 : 3.6) * (0.8 + Math.random() * 0.4), n: n, ph: Math.random() * 6, seed: Math.random() * 100 });
       }
     }
@@ -10968,7 +12488,7 @@
   function drawBoltScr(g, x0, y1) {   // a bolt in screen space (the homestead and the sea), and the flash
     if (WX.bolt && WX.bolt.scr) { var B = WX.bolt, segs = 10, r = B.seed, x = B.sx; g.save(); g.strokeStyle = "rgba(235,245,255," + Math.min(1, B.t * 4).toFixed(3) + ")"; g.lineWidth = 3; g.shadowColor = "#bfe4ff"; g.shadowBlur = lowq ? 0 : 16; g.lineJoin = "round"; g.beginPath(); g.moveTo(x, 0);
       for (var q = 1; q <= segs; q++) { r = (r * 9301 + 49297) % 233280; x += (r / 233280 - 0.5) * 46; g.lineTo(x, y1 * q / segs); } g.stroke(); g.restore(); }
-    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.5).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
+    if (WX.flash > 0) { g.fillStyle = "rgba(230,240,255," + (WX.flash * 0.5 * flashK()).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
   }
   // main world: drops landing on the ground under open sky, and on water
   function rainPips(dt) {
@@ -11005,11 +12525,58 @@
   }
   function cricket() { var f = 4200 + Math.random() * 700, n = 3 + Math.floor(Math.random() * 3), v = 0.007 + Math.random() * 0.006; for (var i = 0; i < n; i++) tn(i * 0.055, f, f * 0.97, 0.035, "sine", v); }
   function frog() { var f = 170 + Math.random() * 90, v = 0.022 + Math.random() * 0.014; tn(0, f * 1.25, f, 0.07, "triangle", v); tn(0.1, f * 1.3, f * 0.9, 0.09, "triangle", v * 0.9); if (Math.random() < 0.3) tn(0.32, f * 1.2, f, 0.07, "triangle", v * 0.7); }
+  // ---------- AMBIENCE BEDS: every area has its own soundscape, by day and by night ----------
+  // Looping filtered-noise beds (wind, leaves, insect hum, cave hum, frost whistle, machinery) fade between areas, and timed one-shots
+  // sit on top: birdsong, owls, gulls, hull creaks, cave drips and far rumbles, lava blubs, ice creaks, bubbles and a deep whale moan.
+  // Rain hushes the birds. All of it follows Sound effects and the Ambience slider (OPT.amb).
+  var AMBB = { beds: {}, ev: {}, zone: "" };
+  var BEDS = { air: ["lowpass", 700, 0.6], leaf: ["bandpass", 2200, 0.9], buzz: ["bandpass", 3900, 7], hum: ["lowpass", 160, 0.7], whistle: ["bandpass", 900, 4], machine: ["bandpass", 230, 6], rumble: ["lowpass", 90, 0.8] };
+  function ambBed(name, lvl, f) {
+    var B = AMBB.beds[name];
+    if (!B) { if (lvl <= 0) return; try { var src = ac.createBufferSource(); src.buffer = nzBuf(); src.loop = true; src.playbackRate.value = 0.7 + Math.random() * 0.3; var cfg = BEDS[name], fl = ac.createBiquadFilter(); fl.type = cfg[0]; fl.frequency.value = cfg[1]; fl.Q.value = cfg[2]; var gn = ac.createGain(); gn.gain.value = 0; src.connect(fl); fl.connect(gn); gn.connect(fxOut()); src.start(); B = AMBB.beds[name] = { s: src, f: fl, g: gn }; } catch (e) { return; } }
+    var t = ac.currentTime; B.g.gain.setTargetAtTime(Math.max(0, lvl), t, 0.9); if (f) B.f.frequency.setTargetAtTime(f, t, 1.2);
+  }
+  function ambEvery(key, dt, lo, hi, fn) { var e = AMBB.ev; if (e[key] === undefined) e[key] = lo + Math.random() * (hi - lo); e[key] -= dt; if (e[key] <= 0) { e[key] = lo + Math.random() * (hi - lo); fn(); } }
+  function aTweet() { var f = 2600 + Math.random() * 1800, n = 2 + Math.floor(Math.random() * 4), v = (0.006 + Math.random() * 0.006) * OPT.amb, up = Math.random() < 0.5; for (var i = 0; i < n; i++) tn(i * (0.07 + Math.random() * 0.05), f * (up ? 0.85 : 1.15), f * (up ? 1.15 : 0.85), 0.06, "sine", v); }
+  function aOwl() { var v = 0.012 * OPT.amb; tn(0, 420, 380, 0.32, "sine", v); tn(0.45, 410, 360, 0.5, "sine", v * 0.9); }
+  function aGull() { var f = 1500 + Math.random() * 400, v = 0.008 * OPT.amb; tn(0, f, f * 0.62, 0.26, "triangle", v); tn(0.3, f * 0.95, f * 0.6, 0.2, "triangle", v * 0.8); }
+  function aCreak() { nz(0, 0.5, 0.012 * OPT.amb, 260 + Math.random() * 160, "bandpass", 9); tn(0, 95, 70, 0.45, "sawtooth", 0.003 * OPT.amb); }
+  function aDrip(icy) { var f = (icy ? 2400 : 1500) + Math.random() * 900, v = 0.011 * OPT.amb; tn(0, f, f * 0.42, 0.09, "sine", v); tn(0.16, f * 0.9, f * 0.4, 0.08, "sine", v * 0.35); tn(0.33, f * 0.85, f * 0.4, 0.07, "sine", v * 0.15); }
+  function aRumble() { nz(0, 2.2, 0.035 * OPT.amb, 70, "lowpass", 0.7); nz(0.3, 1.2, 0.012 * OPT.amb, 300, "lowpass", 0.7); }
+  function aBlub() { var f = 80 + Math.random() * 70, v = 0.03 * OPT.amb; tn(0, f, f * 1.8, 0.12, "sine", v); nz(0, 0.12, 0.01 * OPT.amb, 500, "lowpass", 1); }
+  function aIce() { var f = 900 + Math.random() * 600; nz(0, 0.35, 0.01 * OPT.amb, f, "bandpass", 14); tn(0.05, f * 2, f * 1.7, 0.3, "sine", 0.003 * OPT.amb); }
+  function aBubble() { var f = 300 + Math.random() * 500, v = 0.01 * OPT.amb; tn(0, f, f * 2.6, 0.08, "sine", v); }
+  function aWhale() { var f = 110 + Math.random() * 60, v = 0.018 * OPT.amb; tn(0, f, f * 1.5, 1.6, "sine", v); tn(1.4, f * 1.5, f * 0.9, 1.8, "sine", v * 0.8); }
+  function aClank() { tn(0, 520 + Math.random() * 200, 300, 0.09, "square", 0.004 * OPT.amb); nz(0, 0.08, 0.012 * OPT.amb, 2500, "bandpass", 3); }
+  function ambZone() {
+    if (OCS) return OCS.sea ? "sail" : OCS.diving && OCS.pl.y - OWL > 1 ? "dive" : "shore";
+    if (HOME) return "farm";
+    if (cave) { if (cave.bld) return "indoor"; if (isLairFloor(cave.f)) return "hollow"; if (cave.volc) return "cinder"; var b = caveB(); return b === 1 ? "cinder" : b === 2 ? "frostmine" : "mine"; }
+    if (p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) return "under";
+    var bb = bioAt(); return bb === 1 ? "ember" : bb === 2 ? "frost" : "swamp";
+  }
+  function tickAmbBeds(dt) {
+    var z = ambZone(), night = daylight(S.time) < 0.6, rain = wxN() > 0.45, k = OPT.amb * OPT.fx, L = { air: 0, leaf: 0, buzz: 0, hum: 0, whistle: 0, machine: 0, rumble: 0 }, F = {};
+    AMBB.zone = z;
+    if (z === "swamp" || z === "farm") { L.air = 0.012; L.leaf = night ? 0.004 : 0.008; L.buzz = night ? 0 : 0.0035; if (!night && !rain) ambEvery("tw", dt, 1.4, 4.5, aTweet); if (night) ambEvery("owl", dt, 12, 28, aOwl); }
+    else if (z === "ember") { L.rumble = 0.03; L.air = 0.008; F.air = 500; ambEvery("bl", dt, 2, 5, function () { nz(0, 0.05, 0.012 * OPT.amb, 3200, "highpass", 1); }); }
+    else if (z === "frost") { L.whistle = 0.02 + (night ? 0.008 : 0); F.whistle = 700 + 450 * Math.sin(performance.now() / 4000); L.air = 0.012; ambEvery("ice", dt, 6, 14, aIce); }
+    else if (z === "under" || z === "mine" || z === "indoor") { L.hum = z === "indoor" ? 0.012 : 0.022; ambEvery("dr", dt, 1.2, 4, function () { aDrip(false); }); if (z !== "indoor") ambEvery("rb", dt, 22, 45, aRumble); }
+    else if (z === "cinder") { L.hum = 0.02; L.rumble = 0.035; ambEvery("lv", dt, 0.7, 2, aBlub); ambEvery("cr2", dt, 1.5, 4, function () { nz(0, 0.05, 0.01 * OPT.amb, 3400, "highpass", 1); }); }
+    else if (z === "frostmine") { L.hum = 0.014; L.whistle = 0.016; F.whistle = 1200 + 300 * Math.sin(performance.now() / 3000); ambEvery("dr", dt, 1.5, 4, function () { aDrip(true); }); ambEvery("ice", dt, 8, 16, aIce); }
+    else if (z === "hollow") { L.hum = 0.016; L.leaf = 0.004; ambEvery("dr", dt, 1, 3, function () { aDrip(false); }); var rigs = 0; try { rigs = (S.lair && S.lair.rig || []).filter(Boolean).length; } catch (e) {} if (rigs) { L.machine = 0.006 + 0.004 * rigs; ambEvery("ck", dt, 0.9, 2.2, aClank); } }
+    else if (z === "sail") { L.air = 0.02; F.air = 900; if (!night && !rain) ambEvery("gl", dt, 4, 10, aGull); ambEvery("hc", dt, 3, 7, aCreak); }
+    else if (z === "shore") { L.air = 0.012; if (!night && !rain) ambEvery("gl", dt, 6, 14, aGull); }
+    else if (z === "dive") { var dep = OCS.pl.y - OWL; L.hum = 0.014 + Math.min(0.012, dep / 4000); ambEvery("bb", dt, 0.6, 2.4, aBubble); if (dep > 30) ambEvery("wh", dt, 25, 55, aWhale); }
+    if (rain) { L.leaf *= 0.5; L.buzz = 0; }
+    for (var n in L) ambBed(n, L[n] * k, F[n]);
+  }
   function tickAmbSound(dt) {
     var ok = fxReady() && !document.hidden && !titleOpen && !!world;
-    if (!ok) { if (AMBS.wv && ac) AMBS.wv.g.gain.setTargetAtTime(0, ac.currentTime, 0.3); return; }
+    if (!ok) { if (AMBS.wv && ac) AMBS.wv.g.gain.setTargetAtTime(0, ac.currentTime, 0.3); for (var bn in AMBB.beds) AMBB.beds[bn].g.gain.setTargetAtTime(0, ac ? ac.currentTime : 0, 0.3); return; }
+    if (OPT.amb > 0) tickAmbBeds(dt); else for (var bn2 in AMBB.beds) AMBB.beds[bn2].g.gain.setTargetAtTime(0, ac.currentTime, 0.3);
     var nowS = performance.now() / 1000, surge = 0.55 + 0.45 * Math.pow(Math.sin(nowS * 0.48), 2) * (0.7 + 0.3 * Math.sin(nowS * 0.13)), st = wxStorm(), wl = 0, wf = 600;
-    if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OSEA : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
+    if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OWL : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
     ambWave(wl * surge * OPT.fx, wf);
     var night = daylight(S.time) < 0.6, swampTop = !cave && !OCS && (HOME || (wxBio() === 0 && p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4));
     if (night && swampTop && wxN() < 0.5) {
@@ -12562,7 +14129,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); }
+    if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
@@ -12626,7 +14193,7 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawPotMark(g, now); drawBMHud(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawFissure(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -12720,12 +14287,47 @@
     var moving = Math.abs(p.vx) > 0.5, f4 = Math.floor(p.walk / 0.8) % 4;
     if (reduce) return !p.on ? (p.vy < 0 ? "jump" : "fall") : moving ? "walk" + f4 : "idle0";
     if (hurtT > 0.12) return "hurt";
-    if (p.wet && !p.on) return "swim" + (Math.floor(now / (moving || Math.abs(p.vy) > 0.6 ? 150 : 330)) % 4);
+    if (p.wet && !p.on) return "swim" + (Math.floor(SWIM.ph * 4) % 4);   // the kick follows the stroke (faster when you swim faster)
     if (!p.on) return p.vy < -3 ? "jump" : p.vy < 3.5 ? "tuck" : "fall";
     if (p.land > 0.12) return "land";
     if (cheerT > 0 && !moving) return "cheer" + (Math.floor(now / 190) % 2);
     if (moving) return (Math.abs(p.vx) > 7.2 ? "run" : "walk") + f4;
     return "idle" + (Math.floor(now / 520) % 2) + (now % 3900 < 140 || (now + 260) % 11700 < 120 ? "b" : "");   // a blink every few seconds, sometimes a double blink
+  }
+  // SWIMMING: one stroke phase drives the whole body. It speeds up as you swim faster, so the kick, the front-crawl arm and the bob
+  // stay in step. The body leans into the stroke (eased, never snapping), froth trails off your feet, bubbles rise when you are under,
+  // and treading water at the top rings little ripples out across the surface.
+  var SWIM = { ph: 0, a: 0, t: 0, k: 0, fx: [], rt: 0, bt: 0, on: false };
+  function swimStep(now) {
+    var dt = clamp((now - (SWIM.t || now)) / 1000, 0, 0.1); SWIM.t = now;
+    var on = p.wet && !p.on && !riding(); if (on && !SWIM.on) SWIM.k = 0; SWIM.on = on;
+    var sp = Math.hypot(p.vx, p.vy), mv = clamp(sp / 6, 0, 1);
+    SWIM.k += ((on ? mv : 0) - SWIM.k) * Math.min(1, dt * 6);   // 0 treading water .. 1 full speed (eased)
+    SWIM.ph = (SWIM.ph + dt * (on ? 0.9 + SWIM.k * 1.5 : 0)) % 1000;
+    var dive = typeof OCS !== "undefined" && OCS, tgt = !on ? 0 : dive ? clamp(Math.abs(p.vx) / 6, 0, 1) * 0.85 : clamp(Math.abs(p.vx) / 7, 0, 1) * 0.62 - clamp(-p.vy / 6, -0.6, 1) * 0.28 * (Math.abs(p.vx) > 1 ? 1 : 0.4);   // diving you stretch out flat (the dive's own tilt adds climbing and sinking)
+    SWIM.a += (tgt - SWIM.a) * Math.min(1, dt * 5);
+    if (reduce) { SWIM.a = 0; return dt; }
+    if (on && !dive && !lowq) {
+      var sx = ox + p.x * ts, sy = oy + p.y * ts, top = null; for (var yy = Math.floor(p.y - 0.4); yy > p.y - 3.2; yy--) { if (liquidAt(Math.floor(p.x), yy) !== "water") { top = yy + 1; break; } }
+      var atTop = top !== null && p.y - PH - top < 0.55;
+      SWIM.bt -= dt; if (SWIM.bt <= 0) {   // froth off the kicking feet, more when fast; under water it is bubbles
+        SWIM.bt = 0.09 - SWIM.k * 0.05; if (SWIM.k < 0.2 && Math.random() < 0.75) SWIM.bt = 0.12; else { var fx = p.x - p.face * (0.35 + SWIM.a * 0.5), fy = p.y - 0.2 - SWIM.a * 0.35;
+        SWIM.fx.push({ k: atTop && fy - top < 0.6 ? 1 : 0, x: fx + (Math.random() - 0.5) * 0.25, y: fy + (Math.random() - 0.5) * 0.2, vx: -p.face * (0.4 + SWIM.k * 1.2) + (Math.random() - 0.5) * 0.4, vy: -0.3 - Math.random() * 0.5, r: 0.05 + Math.random() * 0.06, t: 0, life: 0.55 + Math.random() * 0.4, top: top });
+        if (!atTop && Math.random() < 0.25) SWIM.fx.push({ k: 2, x: p.x + p.face * 0.25, y: p.y - PH + 0.25, vx: (Math.random() - 0.5) * 0.3, vy: -1.2, r: 0.06 + Math.random() * 0.05, t: 0, life: 1.6, top: top, w: Math.random() * 6 });   // a breath of bubbles from the mouth
+      } }
+      SWIM.rt -= dt; if (atTop && SWIM.rt <= 0) { SWIM.rt = 0.5 - SWIM.k * 0.28; SWIM.fx.push({ k: 3, x: p.x + (SWIM.k > 0.3 ? -p.face * 0.3 : 0), y: top, t: 0, life: 1.1, r: 0.3 }); }   // ripples on the surface
+    }
+    for (var i = SWIM.fx.length - 1; i >= 0; i--) { var q = SWIM.fx[i]; q.t += dt; if (q.t >= q.life || (q.top !== null && q.top !== undefined && q.k === 2 && q.y < q.top + 0.05)) { SWIM.fx.splice(i, 1); continue; }
+      if (q.k < 3) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= 1 - dt * 2.4; if (q.k === 2) { q.vy = -1.2; q.x += Math.sin(q.t * 7 + q.w) * dt * 0.25; } } }
+    if (SWIM.fx.length > 90) SWIM.fx.splice(0, SWIM.fx.length - 90);
+    return dt;
+  }
+  function drawSwimFx(g) {
+    for (var i = 0; i < SWIM.fx.length; i++) { var q = SWIM.fx[i], a = 1 - q.t / q.life, X = ox + q.x * ts, Y = oy + q.y * ts;
+      if (q.k === 3) { var rr = ts * (0.25 + q.t * 1.1); g.strokeStyle = "rgba(225,255,250," + (0.55 * a).toFixed(3) + ")"; g.lineWidth = Math.max(1, ts * 0.05 * a + 0.5); g.beginPath(); g.ellipse(X, Y + ts * 0.04, rr, rr * 0.22, 0, Math.PI, 2 * Math.PI); g.stroke(); continue; }   // a ripple ring, seen side-on
+      if (q.k === 2) { var br = q.r * ts; g.strokeStyle = "rgba(220,255,250," + (0.7 * Math.min(1, a * 2)).toFixed(3) + ")"; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.arc(X, Y, br, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,255,255," + (0.6 * a).toFixed(3) + ")"; g.fillRect(X - br * 0.45, Y - br * 0.5, Math.max(1, br * 0.4), Math.max(1, br * 0.4)); continue; }
+      var fr = q.r * ts * (1 + q.t * 1.5); g.fillStyle = q.k === 1 ? "rgba(240,255,252," + (0.75 * a).toFixed(3) + ")" : "rgba(200,245,240," + (0.5 * a).toFixed(3) + ")"; g.beginPath(); g.arc(X, Y, fr, 0, 6.2832); g.fill();
+    }
   }
   function drawPlayer(g, now) {
     if (PHOTO.on && !PHOTO.me) return;
@@ -12733,8 +14335,10 @@
     drawWings(g, sx, sy + ts * 0.14, now);   // behind the body
     if (riding()) { g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); drawMoto(g, -1.55 * ts, 0, ts, motoS().p, performance.now(), { ride: true, run: Math.abs(p.vx) > 0.5, lit: true }); g.restore(); sy -= ts * 0.82; sx -= p.face * ts * 0.38; bob = 0; }   // SWAMP HOG: you sit on the bike
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
+    swimStep(now); var swimN = SWIM.on && !riding(); if (swimN) drawSwimFx(g);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); dodgeSpin(g, ts * 0.85);
-    g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
+    if (swimN && !reduce) { var swb = Math.sin(SWIM.ph * 6.2832 * 2) * ts * (0.035 + 0.02 * (1 - SWIM.k)); g.translate(0, swb - ts * 0.75); g.rotate(SWIM.a + Math.sin(SWIM.ph * 6.2832) * 0.05 * SWIM.k); g.translate(0, ts * 0.75); }   // bob and lean into the stroke
+    if (!swimN) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill(); }
     g.scale(1 / sq, sq); g.scale(AVS, AVS); if (p.wet) g.globalAlpha = 0.85;
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
     var SP = getSprite();
@@ -12743,7 +14347,7 @@
       var pose = climbing ? (Math.abs(p.vy) > 0.3 && !reduce ? "climb" + (Math.floor(p.y * 1.6) & 1) : "back0") : playerPose(now);
       var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), tp = toolPose(), sm0 = g.imageSmoothingEnabled;
       if (!reduce && heldAmt < 0.2) {   // the free arm joins in: a swimming stroke, or waving after a quest
-        if (pose.indexOf("swim") === 0) tp = { ang: tp.ang, phi: 1.5 + Math.sin(now / 210) * 1.1, has: tp.has, kind: tp.kind };
+        if (pose.indexOf("swim") === 0) { var sc0 = 1.6 + Math.sin(SWIM.ph * 6.2832) * 0.9, cr = 3.3 - SWIM.ph % 1 * 6.2832, kk = clamp((SWIM.k - 0.25) / 0.45, 0, 1); var dphi = ((cr - sc0 + Math.PI) % 6.2832 + 6.2832) % 6.2832 - Math.PI; tp = { ang: tp.ang, phi: sc0 + dphi * kk, has: tp.has, kind: tp.kind }; }   // treading: a scull; swimming: the front crawl, the arm windmilling over
         else if (pose.indexOf("cheer") === 0) tp = { ang: tp.ang - 0.4, phi: 2.75 + Math.sin(now / 110) * 0.28, has: tp.has, kind: tp.kind };
       }
       if (climbing) {   // the back: the body (both arms), then the backpack strapped on it; no tool in hand
@@ -12867,8 +14471,41 @@
       setFloor(1, "down"); save();
     } };
   }
+  // ---------- EARTHQUAKES: every 4-8 days the ground shakes for a few seconds (rumble, dust, the camera rattles), then a FISSURE splits
+  // open on the surface 25-60 tiles away, pinned and tracked on your map. It drops straight to a floor three past the deepest you have
+  // reached: a shortcut into the deep Mine. It seals behind you once you climb out, or by itself after 3 days. S.quake / S.qNext. ----------
+  var QUAKE = null;
+  function tickQuake(dt) {
+    if (cave || OCS || HOME || !world || titleOpen) return;
+    if (!isFinite(S.qNext)) S.qNext = (S.days | 0) + 4 + Math.floor(Math.random() * 4);
+    if (S.quake && (S.days | 0) > S.quake.day + 3 && !S.quake.used) quakeSeal("The fissure from the last earthquake has sealed itself.");
+    if (!QUAKE && !S.quake && (S.days | 0) >= S.qNext && !activeBoss() && !warp && Math.random() < dt * 0.05) { QUAKE = { t: 4.2 }; toast("EARTHQUAKE!", "#ff9a4a"); aRumble(); sfxThump(45, 22, 1.2, 0.3); }
+    if (!QUAKE) return; QUAKE.t -= dt; shake = Math.max(shake, 0.55 * Math.min(1, QUAKE.t)); if (Math.random() < dt * 6) aRumble();
+    if (Math.random() < dt * 40) parts.push({ x: p.x + (Math.random() - 0.5) * (vw / ts), y: p.y - vh / ts * 0.6 * Math.random(), vx: 0, vy: 2 + Math.random() * 3, life: 0.6, max: 0.6, c: "#8a7a60", s: 2, g: 6 });
+    if (QUAKE.t > 0) return; QUAKE = null; S.qNext = (S.days | 0) + 4 + Math.floor(Math.random() * 4); quakeOpen();
+  }
+  function quakeOpen() {
+    for (var tries = 0; tries < 40; tries++) {
+      var x = clamp(Math.floor(p.x + (Math.random() < 0.5 ? -1 : 1) * (25 + Math.random() * 35)), 4, W - 5), y = col[x];
+      if (!isFinite(y) || skySafe(x)) continue; var id = get(x, y), td = TILES[id]; if (!td || !td.solid || td.kind === "door" || td.kind === "chest" || id === T.WATER || id === T.HOLE || (TILES[get(x, y - 1)] && TILES[get(x, y - 1)].solid) || get(x, y + 1) === T.AIR) continue;
+      var deep = Math.max(3, (S.st.caveDeep | 0) + 3), f = Math.min(deep, 40); if (SC && SC.LAIR_F && f === SC.LAIR_F) f++;
+      S.quake = { x: x, y: y, f: f, day: S.days | 0, prev: id, used: 0 }; setT(x, y, T.HOLE); S.st.quakes = (S.st.quakes || 0) + 1;
+      if (S.wp.length < WP_MAX) { S.wp.forEach(function (q) { q.t = 0; }); S.wp.push({ x: x, y: y, c: 5, i: 8, n: "Fissure", note: "Opened by an earthquake. Drops to floor " + f + ".", t: 1, quake: 1 }); }
+      popup("A fissure opened!", Math.abs(Math.round(x - p.x)) + " tiles " + (x > p.x ? "east" : "west") + " • drops straight to floor " + f, "#ff9a4a", "\u26A0"); save(); return;
+    }
+  }
+  function quakeSeal(msg) {
+    var Q = S.quake; if (!Q) return; S.quake = null; if (get(Q.x, Q.y) === T.HOLE) setT(Q.x, Q.y, Q.prev || T.DIRT || 1);
+    S.wp = (S.wp || []).filter(function (q) { return !(q.quake && q.x === Q.x && q.y === Q.y); }); if (msg) toast(msg, "#ff9a4a"); save();
+  }
+  function drawFissure(g, now) {   // steam and a jagged glowing crack around an open fissure
+    var Q = S.quake; if (!Q || cave) return; var sx = ox + (Q.x + 0.5) * ts, sy = oy + Q.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    g.strokeStyle = "rgba(255,140,60,.8)"; g.lineWidth = Math.max(1.5, ts * 0.06); g.beginPath(); g.moveTo(sx - ts * 1.6, sy + ts * 0.15); g.lineTo(sx - ts * 1.0, sy + ts * 0.3); g.lineTo(sx - ts * 0.6, sy + ts * 0.1); g.lineTo(sx + ts * 0.6, sy + ts * 0.25); g.lineTo(sx + ts * 1.1, sy + ts * 0.05); g.lineTo(sx + ts * 1.7, sy + ts * 0.2); g.stroke();
+    if (!reduce && Math.random() < 0.35) parts.push({ x: Q.x + 0.3 + Math.random() * 0.4, y: Q.y - 0.1, vx: (Math.random() - 0.5) * 0.5, vy: -1.2 - Math.random(), life: 1.2, max: 1.2, c: "rgba(220,220,210,.6)", s: 3, g: -1 });
+  }
   function enterCave(hx, hy, f0, picked) {
     if (!SC || cave || trans || sleepT > 0 || hp <= 0) return;
+    if (S.quake && S.quake.x === hx && S.quake.y === hy) { f0 = S.quake.f; picked = true; S.quake.used = 1; toast("You drop down the fissure... floor " + f0 + "!", "#ff9a4a"); }   // EARTHQUAKES: the fissure is a shortcut deep down
     if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
     if (!picked && liftStops().length > 1) { openLift(hx, hy); return; }   // MINE LIFT: choose a floor first
     var hb = world.bio[clamp(hx, 0, W - 1)];
@@ -12893,10 +14530,11 @@
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
       for (k = 0; k < o.length; k++) { nx = F.down.x + o[k][0]; ny = F.down.y + o[k][1]; if (!SC.solid(F, nx, ny)) { cp.x = nx + 0.5; cp.y = ny + 0.85; break; } }
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
-    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true;
+    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true; speedStart(F, f, from);
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
     if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
     var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld ? F.theme.sub : F.theme.n;
+    if (F.isle && cave.Q) { el.style.setProperty("--bc", cave.port ? "#ffd23f" : TIER_C[cave.tier]); el.querySelector("b").textContent = cave.Q.n; el.querySelector("small").textContent = cave.port ? "The trading port" : skulls(cave.tier) + " " + TIER_N[cave.tier] + " island"; }
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
     if (F.lair && !lairOwned()) setTimeout(function () { toast("A secret swamp under the Mine... and someone has made it their hideout.", LAIRB.c); }, 900);
     else if (F.lair) setTimeout(function () { toast("Home sweet hollow. Your Rig Bay is on the west shore.", LAIRB.c); }, 900);
@@ -12921,6 +14559,43 @@
     h += '</div><div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h; snd("coin");
   }
+  // ---------- MINE CARTS: every floor you clear of creatures gets a cart stop by its entrance (S.carts[floor]). On a cleared floor, ride
+  // the cart (F) to any other cleared floor: a rattling ride through the tunnels. ----------
+  function cartStops() { var L = []; for (var k in (S.carts || {})) if (/^\d+$/.test(k)) L.push(+k); return L.sort(function (a, b) { return a - b; }); }
+  function cartOK() { return !!cave && !cave.bld && !cave.volc && cave.F && !cave.F.lair && S.carts && S.carts[cave.f] && cartStops().length >= 2; }
+  function cartSpot(F) {
+    if (F.cart !== undefined) return F.cart; F.cart = null; var best = null, bd = 1e9;
+    for (var y = Math.floor(F.spawn.y) - 4; y <= Math.floor(F.spawn.y) + 4; y++) for (var x = Math.floor(F.spawn.x) - 5; x <= Math.floor(F.spawn.x) + 5; x++) {
+      var ok = true; for (var xx = x - 1; xx <= x + 1 && ok; xx++) if (xx < 1 || y < 1 || xx >= F.w - 1 || y >= F.h - 1 || SC.solid(F, xx, y) || F.node[y * F.w + xx]) ok = false;
+      if (!ok) continue; var d = Math.abs(Math.hypot(x - F.spawn.x, y - F.spawn.y) - 2.5); if (d < bd) { bd = d; best = { x: x + 0.5, y: y + 0.6 }; } }
+    return (F.cart = best);
+  }
+  function cartNear() { if (!cartOK()) return false; var c = cartSpot(cave.F); return !!c && Math.hypot(c.x - cp.x, c.y - cp.y) < 1.8; }
+  function openCart() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 232; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    var h = '<small>The Mine</small><h2 class="st-hi">Ride the mine cart</h2><p class="st-tip">The rails run to every floor you have cleared.</p><div class="st-ways">';
+    h += cartStops().map(function (f) { var b = mineBio(f), nm = ["Mudhollow", "Cinder Hollow", "Frostvault"][b], here = f === cave.f; return '<button type="button" data-cart="' + f + '" style="--wc:' + (WBIOC[b] || "#4ee6b4") + '"' + (here ? " disabled" : "") + '><i aria-hidden="true"></i><b>Floor ' + f + "</b><small>" + nm + (here ? " · you are here" : "") + "</small></button>"; }).join("");
+    h += '</div><div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f2c14e"); $("sbxStoryBox").innerHTML = h; snd("coin");
+  }
+  function cartGo(f) {
+    f = Math.floor(+f) || 0; closeStory(); if (!cartOK() || f === cave.f || cartStops().indexOf(f) < 0 || trans) return;
+    S.st.cartrides = (S.st.cartrides || 0) + 1; shake = Math.max(shake, 0.4);
+    for (var i = 0; i < 9; i++) (function (k) { setTimeout(function () { tn(0, 260 + Math.random() * 80, 180, 0.05, "square", 0.012); nz(0, 0.05, 0.02, 1800, "bandpass", 3); }, k * 110); })(i);
+    trans = { t: 0, done: false, mid: function () { setFloor(f); toast("Floor " + f + ". End of the line!", "#f2c14e"); } };
+  }
+  function drawCart(g, F, now, srcs, glows2) {
+    if (!cartOK()) return; var c = cartSpot(F); if (!c) return; var k = ts, cx = ox + c.x * ts, cy = oy + c.y * ts, t = reduce ? 0 : now / 1000;
+    g.fillStyle = "#5a4630"; for (var i = -2; i <= 2; i++) g.fillRect(cx + i * k * 0.5 - k * 0.06, cy - k * 0.02, k * 0.12, k * 0.26);   // sleepers
+    g.fillStyle = "#9aa3ab"; g.fillRect(cx - k * 1.3, cy + k * 0.02, k * 2.6, k * 0.05); g.fillRect(cx - k * 1.3, cy + k * 0.16, k * 2.6, k * 0.05);   // rails
+    g.fillStyle = "#c83a2a"; g.fillRect(cx - k * 1.36, cy - k * 0.12, k * 0.08, k * 0.36); g.fillRect(cx + k * 1.28, cy - k * 0.12, k * 0.08, k * 0.36);   // buffers
+    mShadow(g, cx, cy + k * 0.12, k * 0.5);
+    g.fillStyle = "#4a4f56"; g.beginPath(); g.moveTo(cx - k * 0.5, cy - k * 0.55); g.lineTo(cx + k * 0.5, cy - k * 0.55); g.lineTo(cx + k * 0.4, cy - k * 0.05); g.lineTo(cx - k * 0.4, cy - k * 0.05); g.fill();
+    g.fillStyle = "#6b7279"; g.fillRect(cx - k * 0.5, cy - k * 0.58, k * 1.0, k * 0.07);
+    [["#8f979b", -0.25], ["#ff8a3d", 0.05], ["#9fe8ff", 0.25], ["#f2c14e", -0.05]].forEach(function (o, i) { g.fillStyle = o[0]; g.beginPath(); g.arc(cx + o[1] * k, cy - k * 0.6 - (i % 2) * k * 0.08, k * 0.11, 0, 6.28); g.fill(); });
+    g.fillStyle = "#1c1f24"; [-0.28, 0.28].forEach(function (wx) { g.beginPath(); g.arc(cx + wx * k, cy, k * 0.11, 0, 6.28); g.fill(); });
+    var gl = 0.5 + 0.5 * Math.sin(t * 2.2); glows2.push([cx, cy - k * 0.65, "255,210,120", 0.7, 0.12 * gl]);
+  }
   function liftAct(f) { var L = liftPick; liftPick = null; closeStory(); f = Math.floor(+f) || 1; if (!L || liftStops().indexOf(f) < 0) return; enterCave(L.x, L.y, f, true); }
   // FAST TRAVEL TO THE MINE: from the World Map (and on every waystone's list) you can warp back to the Mine, wherever you are.
   function mineDest() { var M0 = world.holes && world.holes[0]; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return null; return { n: "The Mine", x: M0.x + 2.5, y: M0.y + 1, b: world.bio[M0.x], mine: 1 }; }
@@ -12932,7 +14607,7 @@
   }
   function caveB() { return !cave ? 0 : cave.bld || cave.volc ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
-    if (!cave) return; var h = cave.hole; cave = null; resize(); stageEl.classList.remove("cave"); stopInput();
+    if (!cave) return; var h = cave.hole; cave = null; setTimeout(function () { if (S.quake && S.quake.used && S.quake.x === h.x && S.quake.y === h.y) quakeSeal("The fissure rumbles shut behind you."); }, 900); resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; hud(); save();
   }
@@ -12941,8 +14616,40 @@
     [[F.up, "up"], [F.down, "down"]].forEach(function (e) { var dx = e[0].x + 0.5 - cp.x, dy = e[0].y + 0.5 - (cp.y - 0.3), d = dx * dx + dy * dy; if (d <= 2.6 * 2.6 && (!r || d < r.d)) r = { k: e[1], d: d }; });
     return r;
   }
+  // ---------- SPEED FLOORS: every 10th floor of the Mine is a race to the ladder down. A timer starts as you arrive (not when you climb
+  // back up into it); reach the way down in time for a reward: gold, a gem and tokens the first time, a smaller bonus for a new best.
+  // S.speed[floor] = your best time in tenths of a second. ----------
+  var SPEEDF = null;
+  function speedStart(F, f, from) {
+    SPEEDF = null; if (!cave || cave.bld || cave.volc || F.lair || F.nx || f % 10 !== 0 || from === "up" || !F.down) return;
+    var d = Math.hypot(F.down.x - F.spawn.x, F.down.y - F.spawn.y), max = Math.round(24 + d * 1.35);
+    SPEEDF = { f: f, t: max, max: max, go: false }; var best = S.speed && S.speed[f];
+    setTimeout(function () { if (SPEEDF && cave && cave.f === f) { SPEEDF.go = true; popup("Speed floor!", "Reach the ladder down in " + max + " seconds" + (best ? " (best " + (best / 10).toFixed(1) + "s)" : ""), "#ff6b82", "\u23F1"); snd("rise"); } }, 1200);
+  }
+  function tickSpeed(dt) {
+    var Z = SPEEDF; if (!Z || !Z.go) return; if (!cave || cave.f !== Z.f) { SPEEDF = null; return; }
+    var was = Math.ceil(Z.t); Z.t -= dt; if (Z.t <= 10 && Math.ceil(Z.t) !== was && Z.t > 0) tn(0, 880, 880, 0.06, "square", 0.015);
+    if (Z.t <= 0) { SPEEDF = null; toast("Too slow! Come back to floor " + Z.f + " and try again.", "#ff6b82"); thud(120, 0.08); }
+  }
+  function speedWin() {
+    var Z = SPEEDF; if (!Z || !Z.go || !cave || cave.f !== Z.f) return; SPEEDF = null;
+    if (!S.speed) S.speed = {}; var tm = Math.round((Z.max - Z.t) * 10), best = S.speed[Z.f], first = !best, nb = !best || tm < best; if (nb) S.speed[Z.f] = tm;
+    S.st.speedruns = (S.st.speedruns || 0) + 1; var x = cp.x - 0.5, y = cp.y - 1;
+    if (first) { if (ITEMS.goldbar) give("goldbar", 1 + Math.floor(Z.f / 20), x, y, true); var gm = ["ruby", "sapphire", "amethyst", "moonstone"][Math.floor(Math.random() * 4)]; if (ITEMS[gm]) give(gm, 1, x, y, true); }
+    if (ITEMS.swamptoken) give("swamptoken", first ? 15 + Math.floor(Z.f / 2) : nb ? 8 : 3, x, y, true);
+    popup(first ? "Speed floor cleared!" : nb ? "New best time!" : "Speed floor done", (tm / 10).toFixed(1) + "s" + (best && !first ? " (best was " + (best / 10).toFixed(1) + "s)" : ""), "#ff6b82", "\u23F1"); snd("open", "Epic"); try { confettiPop(cp.x, cp.y - 1, 30); } catch (e) {}
+  }
+  function drawSpeed(g, now) {
+    var Z = SPEEDF; if (!Z || !Z.go || !cave || cave.f !== Z.f) return; var t = Math.max(0, Z.t), lo = t <= 10, w = 190, h = 34, x = vw / 2 - w / 2, y = 64;
+    g.fillStyle = lo && Math.floor(now / 250) % 2 ? "rgba(120,20,30,.85)" : "rgba(6,16,13,.85)"; g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, 17) : g.rect(x, y, w, h); g.fill();
+    g.strokeStyle = lo ? "#ff6b82" : "#f2c14e"; g.lineWidth = 2; g.stroke();
+    g.fillStyle = lo ? "#ff6b82" : "#f2c14e"; g.fillRect(x + 12, y + h - 7, (w - 24) * (t / Z.max), 3);
+    g.font = "900 16px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.fillStyle = "#fff6dc"; g.fillText("\u23F1 Speed floor  " + Math.floor(t / 60) + ":" + ("0" + Math.floor(t % 60)).slice(-2) + "." + Math.floor((t % 1) * 10), vw / 2, y + 22);
+  }
   function useLadder(k) {
     if (trans || !cave) return;
+    if (cave.isle) { if (k === "up") isleLeave(); return; }   // ISLAND RAIDS: the way back is the boat
+    if (k === "down") speedWin();
     if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Saltjaw's crew has chained the way down. Beat the Captain first."); return; }
     if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
     if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
@@ -12953,10 +14660,105 @@
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (SC.solid(F, xx, yy)) return true;
     return false;
   }
+  // ---------- CAVE-INS: every rock you break on floor 3 and below strains the ceiling a little (more the deeper you are). When it gives, the
+  // ground rumbles and dust falls (shadows show where), and about two seconds later rubble crashes down around where you were digging:
+  // get clear or get hit. A Timber Support within 4 tiles keeps the ceiling up. Never in buildings, the volcano or the Sunken Hollow. ----------
+  var CAVEIN = null;
+  function rubbleId(F) { if (F.rub !== undefined) return F.rub; var cnt = {}, best = 0, rub = 0; for (var i = 0; i < F.w * F.h; i++) { var nd = F.node[i]; if (nd && !oreColor(nd)) { cnt[nd] = (cnt[nd] || 0) + 1; if (cnt[nd] > best) { best = cnt[nd]; rub = nd; } } } return (F.rub = rub); }
+  function shored(F, x, y) { if (!F.sup) return false; for (var yy = y - 4; yy <= y + 4; yy++) for (var xx = x - 4; xx <= x + 4; xx++) { if (xx < 0 || yy < 0 || xx >= F.w || yy >= F.h) continue; if (F.sup[yy * F.w + xx] && (xx - x) * (xx - x) + (yy - y) * (yy - y) <= 16) return true; } return false; }
+  function caveStress(x, y) {
+    var F = cave && cave.F; if (!F || cave.bld || cave.volc || F.lair || F.nx || cave.f < 3 || CAVEIN) return;
+    if (!F.sthr) F.sthr = 34 + Math.random() * 26; F.stress = (F.stress || 0) + 1 + cave.f / 30; if (F.stress < F.sthr) return;
+    F.stress = 0; F.sthr = 30 + Math.random() * 28;
+    if (shored(F, x, y)) { if (!F.shoredTip) { F.shoredTip = 1; toast("The ceiling creaks, but your Timber Support holds it.", "#c8925a"); } return; }
+    var cx = Math.round((x + cp.x) / 2), cy = Math.round((y + cp.y - 0.4) / 2), cells = [], rub = rubbleId(F); if (!rub) return;
+    for (var yy = cy - 2; yy <= cy + 2; yy++) for (var xx = cx - 2; xx <= cx + 2; xx++) {
+      if (xx < 1 || yy < 1 || xx >= F.w - 1 || yy >= F.h - 1) continue; var j = yy * F.w + xx, dd = (xx - cx) * (xx - cx) + (yy - cy) * (yy - cy);
+      if (dd > 5.5 || SC.solid(F, xx, yy) || F.node[j] || F.torch[j] || (F.sup && F.sup[j]) || (xx === F.up.x && yy === F.up.y) || (xx === F.down.x && yy === F.down.y) || Math.random() < 0.25) continue;
+      cells.push(j);
+    }
+    if (cells.length < 3) return;
+    CAVEIN = { F: F, cells: cells, t: 2.2, rub: rub }; S.st.caveins = (S.st.caveins || 0) + 1;
+    toast("The ceiling groans... get clear!", "#ff9a4a"); aRumble(); sfxThump(60, 30, 0.6, 0.2); shake = Math.max(shake, 0.35);
+  }
+  function tickCaveIn(dt) {
+    var C = CAVEIN; if (!C) return; if (!cave || cave.F !== C.F) { CAVEIN = null; return; }
+    C.t -= dt; shake = Math.max(shake, 0.12 + 0.2 * (1 - C.t / 2.2));
+    if (Math.random() < dt * 30) { var j = C.cells[Math.floor(Math.random() * C.cells.length)], F = C.F; parts.push({ x: j % F.w + Math.random(), y: ((j / F.w) | 0) - 0.8 + Math.random() * 0.3, vx: 0, vy: 3 + Math.random() * 2, life: 0.4, max: 0.4, c: "#8a8070", s: 2.5, g: 0 }); }
+    if (C.t > 0) return; CAVEIN = null; var F2 = C.F, pcx = Math.floor(cp.x), pcy = Math.floor(cp.y - 0.2), hit = false;
+    C.cells.forEach(function (j) { var x = j % F2.w, y = (j / F2.w) | 0; if (Math.abs(x + 0.5 - cp.x) < 0.9 && Math.abs(y + 0.5 - (cp.y - 0.3)) < 0.9) { hit = true; return; } if (!F2.node[j]) F2.node[j] = C.rub; chips(x + 0.5, y + 0.5, "#8a8070", 6, 5); });
+    shake = Math.max(shake, 0.9); sfxThump(55, 25, 0.7, 0.3); sfxNoise(0.7, 900, 120, 0.25, "lowpass"); hitStop(0.08, 0.1);
+    if (hit) hurt(16, "cave-in");
+  }
+  function drawCaveIn(g, now) {
+    var C = CAVEIN; if (C && cave && cave.F === C.F) { var F = C.F, k = 1 - C.t / 2.2; C.cells.forEach(function (j) { var x = j % F.w, y = (j / F.w) | 0, sx = ox + (x + 0.5) * ts, sy = oy + (y + 0.6) * ts; g.fillStyle = "rgba(0,0,0," + (0.2 + 0.45 * k) + ")"; g.beginPath(); g.ellipse(sx, sy, ts * 0.45 * (0.4 + 0.6 * k), ts * 0.2 * (0.4 + 0.6 * k), 0, 0, 6.28); g.fill(); }); }
+    var F2 = cave && cave.F; if (!F2 || !F2.sup) return;
+    var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F2.w - 1, Math.ceil((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F2.h - 1, Math.ceil((vh - oy) / ts));
+    for (var y = Y0; y <= Y1; y++) for (var x = X0; x <= X1; x++) { if (!F2.sup[y * F2.w + x]) continue; var sx = ox + x * ts, sy = oy + y * ts;
+      g.fillStyle = "#8a5a32"; g.fillRect(sx + ts * 0.12, sy - ts * 0.5, ts * 0.14, ts * 1.4); g.fillRect(sx + ts * 0.74, sy - ts * 0.5, ts * 0.14, ts * 1.4); g.fillStyle = "#c8925a"; g.fillRect(sx + ts * 0.02, sy - ts * 0.6, ts * 0.96, ts * 0.18); g.fillStyle = "#5a3a20"; g.fillRect(sx + ts * 0.02, sy - ts * 0.44, ts * 0.96, ts * 0.04); }
+  }
+  // ---------- THE SPORE NETWORK: Mycelium Nodes planted at your bases (surface, homestead, Sunken Hollow; up to 4) share one store
+  // (S.spore.cache). At any node: send items in from your bag, take them out, see every node, and, with a node in the Hollow, pull the
+  // rigs' ore into the network from wherever you are. Every few days ROT creeps into a node: while any node is rotten the network loses
+  // a little of what it holds each day, and the rotten node won't open until you scrape it off (2 Glowspore). ----------
+  var SPORE_MAX = 4;
+  function sporeS() { if (!S.spore || typeof S.spore !== "object") S.spore = { n: [], cache: {}, rotDay: -1, eatDay: -1 }; if (!Array.isArray(S.spore.n)) S.spore.n = []; if (!S.spore.cache) S.spore.cache = {}; return S.spore; }
+  function sporeScene() { return HOME ? "home" : cave ? (cave.F && cave.F.lair && lairOwned() ? "hollow" : "") : OCS ? "" : "surface"; }
+  function sporeHere() { var sc = sporeScene(); if (!sc) return null; var px = sc === "surface" ? p.x : cp.x, py = sc === "surface" ? p.y : cp.y, best = null, bd = 2.2; sporeS().n.forEach(function (q) { if (q.s !== sc) return; var d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = q; } }); return best; }
+  function sporeName(sc) { return sc === "home" ? "Homestead" : sc === "hollow" ? "Sunken Hollow" : "Surface"; }
+  function plantSpore() {
+    var sc = sporeScene(), N = sporeS(); if (!sc) { nag("Mycelium Nodes grow at your bases: the surface, your homestead or the Sunken Hollow (once it's yours)."); return; }
+    if (N.n.length >= SPORE_MAX) { nag("The network holds " + SPORE_MAX + " nodes. Dig one up first (open it and choose Dig up)."); return; }
+    if (sporeHere()) { nag("There's already a node right here."); return; }
+    var px = sc === "surface" ? p.x : cp.x, py = sc === "surface" ? p.y : cp.y;
+    N.n.push({ id: Date.now().toString(36), s: sc, x: Math.round(px * 2) / 2, y: Math.round(py * 2) / 2, rot: 0 }); S.inv.x_spore--; if (S.inv.x_spore <= 0) { delete S.inv.x_spore; sel = "pick"; bare = true; } reslot(); hbDirty = true;
+    popup("Mycelium Node planted", sporeName(sc) + " joins the Spore Network (" + N.n.length + " / " + SPORE_MAX + ")", "#4ee6b4", "\u2735"); snd("rise"); chips(px, py - 0.4, "#4ee6b4", 16, 5); save();
+  }
+  function sporeTick() {   // once a day: maybe some rot; rot eats 5% of the store each day it stays
+    var N = S.spore; if (!N || !N.n || !N.n.length) return; var d = S.days | 0;
+    if (N.rotDay < 0) N.rotDay = d + 3; if (d >= N.rotDay) { var q = N.n[Math.floor(Math.random() * N.n.length)]; q.rot = 1; N.rotDay = d + 3 + Math.floor(Math.random() * 3); toast("Rot is creeping into your " + sporeName(q.s) + " Mycelium Node!", "#a8c060"); }
+    if (N.n.some(function (q) { return q.rot; }) && N.eatDay !== d) { N.eatDay = d; Object.keys(N.cache).forEach(function (k) { var e = Math.floor(N.cache[k] * 0.05); if (e > 0) { N.cache[k] -= e; } if (N.cache[k] <= 0) delete N.cache[k]; }); }
+  }
+  function openSpore(q) {
+    var el = $("sbxStory"); if (!el) return; var N = sporeS(), h = ""; sporeAt = q.id; storyOpen = 233; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput();
+    h += "<small>Spore Network · " + esc(sporeName(q.s)) + " node</small><h2>The Spore Network</h2>";
+    if (q.rot) { h += '<p class="sp-rot">Grey rot has crept into this node. While any node is rotten, the network loses 5% of what it holds every day.</p><div class="st-row"><button type="button" class="btn" data-spore="clean">Scrape off the rot (2 Glowspore)</button><button type="button" class="btn ghost" data-story-close>Close</button></div>'; $("sbxStoryBox").style.setProperty("--qc", "#a8c060"); $("sbxStoryBox").innerHTML = h; return; }
+    h += '<div class="sp-nodes">' + N.n.map(function (o) { return '<span class="sp-node' + (o.id === q.id ? " here" : "") + (o.rot ? " rot" : "") + '"><i></i>' + esc(sporeName(o.s)) + (o.id === q.id ? " (here)" : o.rot ? " · rot!" : "") + "</span>"; }).join("") + "</div>";
+    if (N.n.some(function (o) { return o.s === "hollow"; }) && siloOn()) { var tot = rigTotal(); h += '<div class="sbx-card rg-mod"><img class="big" alt="" src="' + icon("ironingot") + '"><div><b>Rig Bay</b><small>' + tot + " ore waiting in the Ore Silo.</small></div>" + '<button type="button" class="btn' + (tot ? "" : " ghost") + '" data-spore="rigs"' + (tot ? "" : " disabled") + ">Pull it into the network</button></div>"; }
+    var ck = ORDER.filter(function (k) { return N.cache[k] > 0; }), tot2 = 0; ck.forEach(function (k) { tot2 += N.cache[k]; });
+    h += '<h3 class="rg-h">In the network <small>' + tot2 + " items · tap to take</small></h3>" + (ck.length ? '<div class="sp-grid">' + ck.map(function (k) { return '<button type="button" class="sp-it" data-spore="take:' + k + '" title="Take ' + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + N.cache[k] + "</b></button>"; }).join("") + "</div>" : '<p class="sbx-note">Nothing yet. Send things in from your bag below.</p>');
+    var bk = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && ITEMS[k] && !ITEMS[k].tool && k !== "x_spore"; });
+    h += '<h3 class="rg-h">Your bag <small>tap to send in</small></h3>' + (bk.length ? '<div class="sp-grid">' + bk.map(function (k) { return '<button type="button" class="sp-it" data-spore="send:' + k + '" title="Send ' + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + S.inv[k] + "</b></button>"; }).join("") + "</div>" : '<p class="sbx-note">Your bag is empty.</p>');
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-spore="dig">Dig up this node</button><button type="button" class="btn" data-story-close>Close</button></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#4ee6b4"); $("sbxStoryBox").innerHTML = h;
+  }
+  var sporeAt = "";
+  function sporeBtn(a) {
+    var N = sporeS(), q = N.n.filter(function (o) { return o.id === sporeAt; })[0]; if (!q) return closeStory(); var k = a.split(":")[1];
+    if (a === "clean") { if ((S.inv.spore || 0) < 2) return nag("You need 2 Glowspore to scrape off the rot."); payCost({ spore: 2 }); q.rot = 0; toast("The rot is gone. The node glows again.", "#4ee6b4"); snd("rise"); save(); return openSpore(q); }
+    if (a === "rigs") { var got = {}, n = rigTake(0, got) + rigTake(1, got); rigProcess(got, n); Object.keys(got).forEach(function (it) { N.cache[it] = Math.min(99999, (N.cache[it] || 0) + got[it]); }); S.st.rigOre = (S.st.rigOre || 0) + n; toast(n + " ore pulled through the roots into the network.", "#4ee6b4"); snd("coin"); save(); return openSpore(q); }
+    if (a === "dig") { N.n = N.n.filter(function (o) { return o.id !== q.id; }); give("x_spore", 1, undefined, undefined, true); closeStory(); toast("You dug up the node. The network keeps what it holds.", "#4ee6b4"); save(); return; }
+    if (a.indexOf("take:") === 0 && N.cache[k] > 0) { var fit = Math.min(N.cache[k], room(k)); if (fit <= 0) return nag("No room in your bag."); give(k, fit, undefined, undefined, true); N.cache[k] -= fit; if (N.cache[k] <= 0) delete N.cache[k]; snd("coin"); save(); return openSpore(q); }
+    if (a.indexOf("send:") === 0 && (S.inv[k] || 0) > 0) { if (!N.cache[k] && Object.keys(N.cache).length >= 60) return nag("The network can hold 60 kinds of things."); var nn = S.inv[k]; N.cache[k] = Math.min(99999, (N.cache[k] || 0) + nn); delete S.inv[k]; if (sel === k) { sel = "pick"; bare = true; } reslot(); hbDirty = true; S.st.sporesent = (S.st.sporesent || 0) + nn; snd("coin"); save(); return openSpore(q); }
+  }
+  function drawSpore(g, now) {   // the nodes in this scene: a glowing mushroom cluster with root tendrils; rot turns them grey
+    var sc = sporeScene(); if (!sc || !S.spore || !S.spore.n) return; var t = reduce ? 0 : now / 1000;
+    S.spore.n.forEach(function (q) {
+      if (q.s !== sc) return; var k = ts, cx = ox + q.x * ts, cy = oy + q.y * ts, gl = q.rot ? 0.15 : 0.55 + 0.25 * Math.sin(t * 2 + q.x), cc = q.rot ? "#8a9070" : "#4ee6b4";
+      if (cx < -k * 3 || cx > vw + k * 3 || cy < -k * 3 || cy > vh + k * 3) return;
+      var gr = g.createRadialGradient(cx, cy - k * 0.4, 2, cx, cy - k * 0.4, k * 1.6); gr.addColorStop(0, q.rot ? "rgba(140,150,100,.25)" : "rgba(78,230,180," + (0.35 * gl) + ")"); gr.addColorStop(1, "rgba(78,230,180,0)"); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy - k * 0.4, k * 1.6, 0, 6.28); g.fill();
+      g.strokeStyle = cc; g.globalAlpha = 0.6; g.lineWidth = Math.max(1, k * 0.05); for (var r = 0; r < 5; r++) { var a = r * 1.26 + 0.3; g.beginPath(); g.moveTo(cx, cy); g.quadraticCurveTo(cx + Math.cos(a) * k * 0.6, cy + k * 0.1, cx + Math.cos(a) * k * 1.1, cy + Math.sin(a) * k * 0.25 + k * 0.1); g.stroke(); } g.globalAlpha = 1;
+      [[-0.3, 0.55, 0.28], [0.12, 0.85, 0.38], [0.42, 0.45, 0.22]].forEach(function (m) { var mx = cx + m[0] * k, top = cy - m[1] * k; g.fillStyle = q.rot ? "#c8c8b0" : "#d8f0e0"; g.fillRect(mx - k * 0.05, top, k * 0.1, cy - top); g.fillStyle = cc; g.beginPath(); g.ellipse(mx, top, m[2] * k, m[2] * k * 0.6, 0, Math.PI, 0); g.fill(); g.fillStyle = q.rot ? "#6a7058" : "#bfffe8"; g.beginPath(); g.arc(mx - m[2] * k * 0.3, top - m[2] * k * 0.25, k * 0.05, 0, 6.28); g.fill(); });
+      if (!q.rot && Math.random() < 0.05) parts.push({ x: q.x + (Math.random() - 0.5), y: q.y - 0.8, vx: 0, vy: -0.6, life: 1, max: 1, c: "#bfffe8", s: 2, g: 0 });
+    });
+    var here = sporeHere(); if (here && !panelOpen && !trans) drawPill(g, now, (here.rot ? "Clear the rot" : "Spore Network") + (coarse ? "" : " (F)"), ox + here.x * ts, oy + (here.y - 1.6) * ts, false, function () { openSpore(here); });
+    else if (sel === "x_spore" && !panelOpen && !trans) { var sx = sc === "surface" ? p.x : cp.x, sy = sc === "surface" ? p.y : cp.y; drawPill(g, now, "Plant the Mycelium Node here" + (coarse ? "" : " (F)"), ox + sx * ts, oy + (sy - 2) * ts, false, function () { plantSpore(); }); }
+  }
   function breakRock(x, y) {
-    var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++;
+    var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++; caveStress(x, y);
     if (!VEIN.busy && td && td.kind === "ore" && veinOn()) veinStart(x, y, id, true);   // VEIN MINING in caves
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id); matBreak(id);
+    if ((td.kind === "lootchest" || td.kind === "lootpot") && cave.isle) { isleBreak(x, y, td); return; }   // ISLAND RAIDS
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
     if (td.kind === "lootchest" && cave.bld && BCHEST[cave.bld.kind]) { bldLoot(x, y); return; }
     if (td.kind === "lorenote") { var lpg = LPG[F.lorePg]; F.lorePg = null; chips(x + 0.5, y + 0.5, "#e8d8a8", 10, 5); if (lpg && !loreHas(lpg.id)) loreFind(lpg, true); else nag("Just an old shopping list."); return; }
@@ -12985,6 +14787,7 @@
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
+    if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].summon) { mine = null; if (aim.down) nag("Bosses only answer the call on the surface world."); return; }
     if (ITEMS[sel] && ITEMS[sel].home) { mine = null; if (aim.down) nag("The shell needs open sky. Use it on the surface."); return; }
@@ -12995,6 +14798,7 @@
     var nid = F.node[i];
     if (nid) {
       var td = TILES[nid];
+      if (cave.isle && td.kind === "lootchest" && ISLW && ISLW.sealed) { nag("A pirate curse seals this chest. Beat every wave of the island's crew first."); mine = null; return; }
       if (sel !== "pick" && sel !== "shovel") { nag("Hold your pick to break rocks (press Q)."); mine = null; return; }
       if (sel === "shovel" && !SOFT[nid]) { nag("A shovel only digs soft things. Use your pick for " + td.n + "."); mine = null; return; }
       if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
@@ -13002,25 +14806,32 @@
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(nid); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
-      if (mine.p >= 1) { funBreak(nid, tx, ty); breakRock(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
+      if (mine.p >= 1) { funBreak(nid, tx, ty); breakRock(tx, ty); boreCave(tx, ty); mine = null; if (sel === "shovel") wear("shovel", 1); else if (effTier() > 0) wear("pick", td.hard >= 2 ? 2 : 1); }
       return;
     }
     mine = null; cool -= dt; if (cool > 0) return;
     if (F.torch[i]) { if (sel === "pick" || sel === "shovel") { cool = 0.25; F.torch[i] = 0; give("torch", 1, tx, ty); thud(300, 0.04); } return; }
+    if (F.sup && F.sup[i]) { if (sel === "pick" || sel === "shovel") { cool = 0.25; F.sup[i] = 0; give("x_support", 1, tx, ty); thud(240, 0.05); } return; }
     if (F.wall[i] || (F.sol && F.sol[i])) return;
+    if (sel === "x_support" && (S.inv.x_support || 0) > 0) {   // CAVE-INS: a timber support
+      if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y) || F.torch[i]) return;
+      if (!F.sup) F.sup = new Uint8Array(F.w * F.h); cool = 0.25; F.sup[i] = 1; S.inv.x_support--; S.st.placed++; reslot(); chips(tx + 0.5, ty + 0.5, "#c8925a", 5, 3); thud(200, 0.06);
+      if (S.inv.x_support <= 0) { delete S.inv.x_support; sel = "pick"; bare = true; } hbDirty = true; toast("Shored up: no cave-ins within 4 tiles of here.", "#c8925a"); return;
+    }
     if (sel === "torch" && (S.inv.torch || 0) > 0) {
       if ((tx === F.up.x && ty === F.up.y) || (tx === F.down.x && ty === F.down.y)) return;
       cool = 0.2; F.torch[i] = 1; S.inv.torch--; S.st.torches++; S.st.placed++; chips(tx + 0.5, ty + 0.5, "#ffb13b", 4, 3); thud(420, 0.05);
       if (S.inv.torch <= 0) { delete S.inv.torch; if (sel === "torch") sel = "pick", bare = true; } hbDirty = true; if (panelOpen) renderPanel();
-    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can" && sel !== "rod" && sel !== "hoe" && sel !== "bucket" && sel !== "net" && sel !== "bow") { cool = 0.4; nag("Only torches can be placed in caves."); }
+    } else if (sel !== "pick" && sel !== "shovel" && sel !== "weapon" && sel !== "can" && sel !== "rod" && sel !== "hoe" && sel !== "bucket" && sel !== "net" && sel !== "bow" && sel !== "x_support") { cool = 0.4; nag("Only torches can be placed in caves."); }
   }
   function caveUpdate(dt) {
     var F = cave.F, i;
-    advTime(dt); if (F.lava) volcTick(dt, F);
+    advTime(dt); if (F.lava) volcTick(dt, F); if (F.isle) isleTick(dt);
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }   // analog stick: the further you push, the faster you walk
     var csp = CAVE_SPEED * (hasCharm("bramble") ? 1.15 : 1) * (fx("speed") ? 1.25 : 1) * (hexSlow > 0 ? 0.55 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
     tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
+    tickSpecial(dt); tickElites(dt); tickAch(dt); tickCaveIn(dt); tickSpeed(dt); if (lairOwned() && Math.random() < dt) crewTick(); if (SPEC.t > 0) { cp.vx = SPEC.dx * 21; cp.vy = SPEC.dy * 21; }   // LUNGE
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub;
     for (i = 0; i < sub; i++) {
@@ -13118,7 +14929,7 @@
     var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
-    drawPill(g, now, coarse ? "Enter the Mine" : "Enter the Mine (F)", ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * 4.9, false, function () { enterCave(h.x, h.y); });
+    var fis = S.quake && S.quake.x === h.x && S.quake.y === h.y; drawPill(g, now, (fis ? "Drop into the fissure: floor " + S.quake.f : "Enter the Mine") + (coarse ? "" : " (F)"), ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * (fis ? 1.9 : 4.9), false, function () { enterCave(h.x, h.y); });
   }
   function drawCavePlayer(g, now) {
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
@@ -13179,8 +14990,9 @@
     }
     if (F.lava) volcLava(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE OLD VOLCANO: glowing magma cracks
     if (F.lair) lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE SUNKEN HOLLOW
+    if (F.isle) isleDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // ISLAND RAIDS
     var ux = ox + F.up.x * ts, uy = oy + F.up.y * ts;
-    if (F.nx) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
+    if (F.nx || F.isle) {} else if (F.bld) {   // inside a building: rugs on the floor, the exit door in the bottom wall with a doormat and daylight spilling in
       F.flat.forEach(function (e) {
         var fx = ox + e.x * ts, fy = oy + e.y * ts;
         if (e.id === T.LAVA || e.id === T.WATER) {   // liquids in a stone-rimmed basin, with a slow shimmer
@@ -13212,13 +15024,13 @@
     } else if (liftFloor(cave.f)) drawLift(g, ux, uy, now, srcs, glows2);
     else {
     g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy - ts, ts, ts); g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy, ts, ts); }
-    if (!F.bld && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
-    if (!F.bld) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
+    if (!F.bld && !F.isle && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
+    if (!F.bld && !F.isle) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
     else F.deco.forEach(function (e) { var td = TILES[e.id], gl = td.glow; if (e.flat) { if (e.id === T.LAVA) srcs.push([e.x + 0.5, e.y + 0.5, 2.4, 0.7]); return; }   // floor tiles never light the room (the lava troughs glow a little)
       if (e.id === T.TORCH) { srcs.push([e.x + 0.5, e.y + 0.5, 6, 1]); glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, "255,170,60", 4.2, 0.3]); } else if (td.light || gl) { srcs.push([e.x + 0.5, e.y + 0.5, (td.gr || 3) * 1.3, 0.85]); if (gl) glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, gl, td.gr || 3, td.ga || 0.2]); } });
     F.lamps.forEach(function (l) {
       if (l.x < X0 - 6 || l.x > X1 + 6 || l.y < Y0 - 6 || l.y > Y1 + 6) return;
-      var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);
+      var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; if (!F.isle) g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);   // (island tiki torches draw themselves)
       glows2.push([lx + ts / 2, ly + ts / 2, th.glow, 3.2, 0.2]); srcs.push([l.x + 0.5, l.y + 0.5, 4.6, 0.8]);
     });
     var ey0 = Math.max(0, Y0 - 7), ey1 = Math.min(F.h - 1, Y1 + 7), ex0 = Math.max(0, X0 - 7), ex1 = Math.min(F.w - 1, X1 + 7);
@@ -13241,11 +15053,12 @@
         if (TILES[rid].kind === "ore" && !reduce && ((now / 90 + ri * 7 + rj * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(rx + ts * 0.55, ry2 + ts * 0.3, 2, 2); }
       }
       if (F.lair) lairRow(g, F, rj, now, srcs, glows2);
+      if (F.isle) isleRow(g, F, rj, now);
       drawCaveMobs(g, now, rj); }
     };
     if (F.mobs) F.mobs.forEach(function (m) { if (!m.def) srcs.push([m.x, m.y - 0.4, 1.7, 0.32]); });   // creatures glow faintly, so you can just make them out in the dark
     if (F.iw) roomFade(now);
-    drawRocks(Y0, Math.min(Y1, prow)); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawArrows(g, true); drawGuardian(g, now);
+    drawRocks(Y0, Math.min(Y1, prow)); drawCart(g, F, now, srcs, glows2); drawCaveIn(g, now); drawSceneDrops(g, now); drawCavePlayer(g, now); drawRocks(Math.max(Y0, prow + 1), Math.min(F.h - 1, Y1 + (F.nx ? 4 : 1))); drawEliteFx(g, now); drawMiner(g, now); if (F.lair) { drawBell(g, F, now); drawSpore(g, now); } if (cartNear() && !panelOpen && !trans) { var cq = cartSpot(F); drawPill(g, now, "Ride the mine cart" + (coarse ? "" : " (F)"), ox + cq.x * ts, oy + (cq.y - 1.4) * ts, false, function () { openCart(); }); } drawArrows(g, true); drawGuardian(g, now);
     if (mine) {
       drawCracks(g, mine, ox + mine.x * ts, oy + mine.y * ts);
     }
@@ -13270,15 +15083,17 @@
     drawBloom(g, BLD, BLA, now);
     if (!VIG || VIG.width !== Math.max(2, Math.round(vw / 2))) buildVignette();
     if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
+    drawProspect(g, now); drawSpeed(g, now); drawIsleHud(g, now);
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
     if (!panelOpen && !trans && motoNear()) drawPill(g, now, (motoS().done ? "Look at the Swamp Hog" : "Work on the motorcycle") + (coarse ? "" : " (F)"), ox + (MOTO_CELL.x + 1.5) * ts, oy + (MOTO_CELL.y - 0.9) * ts, false, function () { openMoto(); });
     else if (!panelOpen && !trans && !ladderNear()) { var cnp = contNear(); if (cnp) drawPill(g, now, (cnp.kind === "chest" || inGarage() ? "Open " : "Search ") + cnp.n + (coarse ? "" : " (F)"), ox + (cnp.x + 0.5) * ts, oy + cnp.y * ts - ts * 0.55, false, function () { openCont(cnp); }); }   // CONTAINERS
+    if (!panelOpen && !trans && crewNear()) { var cc2 = crewCamp(F), back2 = crewList().filter(function (q) { return q.job === "exp" && Date.now() >= q.eT; }).length; drawPill(g, now, (back2 ? "Crew is back!" : crewList().length ? "Talk to the crew" : "Meet the crew") + (coarse ? "" : " (F)"), ox + cc2.x * ts, oy + (cc2.y - 1.6) * ts, false, function () { openCrew(); }); }
     var rgp = !panelOpen && !trans ? rigPill() : null; if (rgp) { var rq = F.pads[rgp.i]; drawPill(g, now, rgp.t + (coarse ? "" : " (F)"), ox + (rq.x + 1) * ts, oy + (rq.y - 1.9) * ts, /digging|to the Silo/.test(rgp.t), function () { rigAct(rgp.i); }); }   // RIG BAY
     else if (!panelOpen && !trans && !motoNear()) {   // ladder prompt
       var ln = ladderNear();
-      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
+      if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.isle ? "Back to the boat" : F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
     if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
     else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, "Under construction" + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, true, function () { nxPortalTalk(npp); }); }
@@ -13588,7 +15403,7 @@
   function hud() {
     if (HOME) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; var ho = homeS(), nc = Object.keys(ho.c).length, nr = Object.keys(ho.c).filter(function (k) { return ho.c[k].s >= 4; }).length; $("sbxBiome").textContent = "Your Homestead"; $("sbxLoc").style.setProperty("--bc", "#7dd65a"); $("sbxSub").textContent = dayTag() + (nc ? nc + " crop" + (nc === 1 ? "" : "s") + (nr ? " \u00b7 " + nr + " ripe" : "") : "Till, plant, water"); if (hbDirty) drawBar(); return; }
     if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
-    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
+    if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.isle && cave.Q ? cave.Q.n : cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.isle ? (cave.port ? "Trading port" : TIER_N[cave.tier] + " island") : cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
     hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 " + (wxLabel() || "surface")));
@@ -13614,7 +15429,7 @@
   // Crafting, upgrading the Workbench and repairing count the items in your backpack PLUS every chest within CHEST_PULL tiles of you,
   // and when you craft, ingredients come out of your backpack first, then out of those chests (nearest first). Not in hole caves,
   // and not as a multiplayer guest (the host's chests are theirs).
-  var CHEST_PULL = 10, poolC = null, poolT = 0;
+  var CHEST_PULL = 14, poolC = null, poolT = 0;   // (was 10)
   function nearChestKeys() {
     if (cave || OCS || HOME || (MP.on && MP.role === "guest")) return [];
     return Object.keys(S.chests).map(function (key) { var q = key.split(","), x = +q[0], y = +q[1]; return { key: key, x: x, y: y, d: Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)) }; })
@@ -13651,8 +15466,9 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
-    ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
+    ["Tools|Utility", "prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
+    ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3"],
+    ["Tools|Arrows", "x_arrow x_firearrow x_ar_venom x_ar_numb x_ar_sleep x_ar_mark x_ar_spark x_ar_blast x_ar_leech"],
     ["Tools|Adventuring", "x_grapple"],
     ["Stations|Garage", "x_garage"],
     ["Materials|Motorcycle Parts", "x_moto_seat x_moto_chain x_moto_lamp"],
@@ -13663,30 +15479,31 @@
     ["Gear|Armor", "arm1 arm2 arm3 arm4 arm5"],
     ["Gear|Backpacks", "bag1 bag2"],
     ["Gear|Boss Summons", "x_lure x_idol x_horn"],
-    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky x_ch_glow x_ch_tide x_ch_king x_ch_feather x_ch_spring x_ch_leech x_ch_lode x_ch_owl x_ch_brute x_ch_star x_ch_blood"],
+    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky x_ch_glow x_ch_tide x_ch_king x_ch_feather x_ch_spring x_ch_leech x_ch_lode x_ch_owl x_ch_brute x_ch_star x_ch_blood x_ch_wander"],
     ["Stations|Workbenches", "bench decorbench"],
     ["Stations|Crafting Stations", "x_cookpot x_brewstand x_furnace x_loom x_mason"],
     ["Potions|Bottles", "x_bottle"],
     ["Gear|Jewelry", "x_jeweltable x_veincharm"],
-    ["Gear|Diving", "x_scubasuit x_suit2 x_suit3 x_suit4 x_tank1 x_tank2 x_tank3 x_tank4 x_flippers x_divelamp"],
+    ["Gear|Diving", "x_scubasuit x_suit2 x_suit3 x_suit4 x_tank1 x_tank2 x_tank3 x_tank4 x_flippers x_divelamp x_dome"],
     ["Materials|Boat Parts", "x_boat_sail x_boat_lamp x_boat_anchor"],
     ["Food|From the Sea", "x_kelpwrap x_seastew x_piersushi"],
     ["Building|Wood Stains", "x_stain_walnut x_stain_ebony x_stain_honey x_stain_mahogany x_stain_white x_stain_sage x_stain_blue x_stain_plum x_sandpaper"],
-    ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire"],
+    ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire x_m_bandage x_m_salve"],
+    ["Potions|Arrow Ointments", "x_vial x_ot_venom x_ot_numb x_ot_sleep x_ot_mark x_ot_spark x_ot_blast x_ot_leech"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
     ["Potions|Wonders", "x_tonic_regen x_tonic_grand x_tonic_glow x_tonic_feather x_tonic_luck x_tonic_grow x_tonic_gill x_tonic_brute"],
-    ["Food|Farming", "x_farmland x_sprinkler x_trough x_fishtrap"],
+    ["Food|Farming", "x_farmland x_sprinkler x_trough x_fishtrap x_compost x_compostbin x_seedmaker x_picklekeg x_farmgate x_duckcoop x_mudbarn"],
     ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat x_grilledfish x_omelette x_milkshake"],
-    ["Food|Soups & Snacks", "x_f_swampsalad x_f_redcapsoup x_f_glowbroth x_f_buttermash x_f_frostjam x_f_swamptea x_f_bogkebab x_f_emberkebab"],
-    ["Food|Hearty Meals", "x_f_carproll x_f_fishpie x_f_carrotcake x_f_eelcurry x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast"],
-    ["Materials|Fibre & Cloth", "x_rope x_cloth x_furcloth x_candle"],
-    ["Materials|Dyes", "x_dyered x_dyeblue x_dyegreen"],
-    ["Materials|Smelted & Fired", "x_charcoal x_ingot x_claybrick x_mortar"],
+    ["Food|Soups & Snacks", "x_f_swampsalad x_f_redcapsoup x_f_glowbroth x_f_buttermash x_f_frostjam x_f_swamptea x_f_bogkebab x_f_emberkebab x_f_cocoa x_f_sandwich x_f_lilycookie x_f_mossmuffin x_f_dumplings"],
+    ["Food|Hearty Meals", "x_f_carproll x_f_fishpie x_f_carrotcake x_f_eelcurry x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast x_f_breadloaf x_f_noodles x_f_mushroompie"],
+    ["Materials|Fibre & Cloth", "x_rope x_cloth x_furcloth x_candle x_fernfiber"],
+    ["Materials|Dyes", "x_dyered x_dyeblue x_dyegreen x_dyegreen2 x_dyered2"],
+    ["Materials|Smelted & Fired", "x_charcoal x_ingot x_claybrick x_mortar x_starsteel"],
     ["Materials|Silk", "x_silkrope"],
     ["Building|Basics", "planks ladder door x_trapdoor"],
-    ["Stations|Travel", "x_waystone"],
-    ["Building|Stone & Brick", "d_brick x_cobble x_redbrick x_mossbrick x_plaster d_bbrick d_ibrick x_permabrick x_obsbrick x_moonbrick x_quartzblock x_quartzpillar"],
-    ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock x_starglass x_rainbowglass"],
+    ["Stations|Travel", "x_waystone x_realmgate"],
+    ["Building|Stone & Brick", "d_brick x_cobble x_redbrick x_mossbrick x_plaster d_bbrick d_ibrick x_permabrick x_obsbrick x_moonbrick x_quartzblock x_quartzpillar x_rimeblock x_impbrick x_geodeblock x_bloomstone"],
+    ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock x_starglass x_rainbowglass x_sandglass"],
     ["Building|Metal", "x_ironblock x_bars"],
     ["Building|Floors & Roofs", "x_parquet x_checker d_thatch x_shinglered x_shingleblue"],
     ["Building|Woodwork", "x_nb_oakplanks x_nb_birchplanks x_nb_mangroveplanks x_nb_pineplanks x_nb_charredplanks x_nb_basketweave x_nb_bamboo x_nb_wicker x_nb_logsiding x_nb_woodpanel x_nb_timberblock"],
@@ -13792,7 +15609,12 @@
     return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big"><img alt="" src="' + v.im + '"></span><div><b>' + esc(r.n) + "</b>" + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
       + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
   }
+  function chestNote() {   // CRAFT FROM CHESTS: say when nearby chests are being counted
+    var n = nearChestKeys().length; if (!n) return "";
+    return '<p class="crg-chests"><img alt="" src="' + icon("chest") + '">Also using what\'s in ' + (n === 1 ? "1 chest" : n + " chests") + " nearby</p>";
+  }
   function craftGrid(recs, ctx, pre) {   // recs already filtered to one category; pre = extra HTML above the slots (bench level, experiments)
+    pre = chestNote() + (pre || "");
     var sel = cgPick(ctx, recs), last = "", h = "";
     if (sel) CG_SEL[ctx] = sel.id;
     recs.forEach(function (r) { if (r.sub !== last) { if (last) h += "</div>"; last = r.sub; h += '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">'; } h += cgTile(r, sel && r.id === sel.id); });
@@ -13910,7 +15732,7 @@
   }
   function benchUpCard() {   // the Workbench level + Upgrade button (top of the Workbench window)
     var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1], nb = nearBench();
-    return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && Object.keys(nbl.cost).every(function (k) { return (S.inv[k] || 0) >= nbl.cost[k]; }) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
+    return '<h3>Workbench level</h3><div class="sbx-card"><img class="big" alt="" src="' + icon("bench") + '"><div><b style="color:' + cb.c + '">' + esc(cb.n) + " (level " + S.bl + " of " + (BENCH_LV.length - 1) + ")</b><small>" + esc(nbl ? "Next: the " + nbl.n + " unlocks " + nbl.gives + ". Needs loot from " + nbl.from + "." : "Fully upgraded. Everything can be crafted here.") + "</small>" + (nbl ? '<div class="cost">' + costHtml(nbl.cost) + "</div>" : "") + "</div>" + (nbl ? '<button type="button" class="btn' + (nb && canPay(nbl.cost) ? "" : " ghost") + '" data-sx-bup="1">Upgrade</button>' : '<button type="button" class="btn ghost" disabled>Maxed</button>') + "</div>";
   }
   // ---------- STATION WINDOW: its own pop-up with only the recipes made at that station ----------
   function stnRecs(k) {   // the station's own recipes. At the Workbench, everything you make by hand joins them in its own category and section
@@ -13975,7 +15797,7 @@
           + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
           + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again" : "Drop all") + "</button>")
           : "")
-        + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button></div></div>';
+        + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button><button type="button" class="btn ghost pk-qs" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button></div></div>';
       var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
       if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
       if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
@@ -14054,11 +15876,12 @@
     L += pkSlot('data-pkeq="pick"', icon(S.tier ? "pick" + S.tier : "paw"), "Pickaxe", PICKS[S.tier].n, PK.focus === "pick").replace("</small></button>", "</small>" + pkStars("pick") + "</button>");
     var n = charmSlots();
     for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; R += pkSlot('data-pkeq="charm"', ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "✦"); }
-    R += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.pop === "bag", "🎒");
+    R += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.focus === "bag", "🎒");
     return [L, R];
   }
   function pkFocusHtml() {
-    var f = PK.focus; if (!f) return '<span class="pk-hint">Tap a gear slot to see what it does.</span>';
+    var f = PK.focus; if (!f) return "";
+    if (f === "bag") return S.bag ? "<b>" + esc(BAGS[S.bag].n) + "</b><span>+" + BAGS[S.bag].x + " slots: the tinted ones in your items</span>" : "<b>No backpack</b><span>Craft a Reed Backpack (Craft tab, Gear) for 12 more slots.</span>";
     if (f === "arm") return S.arm ? "<b>" + esc(mwName("arm", ARMORS[S.arm].n)) + "</b><span>Blocks " + Math.round(armRed() * 100) + "% of damage · " + pkDur("arm") + "</span>" : "<b>No armor</b><span>Armor is made at your Workbench.</span>";
     if (f === "wpn") return S.wpn ? "<b>" + esc(mwName("wpn", WEAPONS[S.wpn].n)) + "</b><span>Damage " + Math.round(wDmg()) + " · " + pkDur("wpn") + "</span>" : "<b>No weapon</b><span>Craft the Reed Spear by hand (Craft tab).</span>";
     if (f === "pick") return "<b>" + esc(S.tier ? mwName("pick", PICKS[S.tier].n) : PICKS[0].n) + "</b><span>" + (S.tier ? "Tier " + S.tier + " · " + pkDur("pick") : "Craft the Reed Pick to dig faster.") + "</span>";
@@ -14084,45 +15907,50 @@
     return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '">' + (ITEMS[c.k].tool ? "" : "<b>" + c.n + "</b>") : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
   }
   function pkInvHtml() {
-    reslot(); var used = usedSlots(), g1 = "", g2 = "", i2, cur2 = invSel >= 0 ? S.slots[invSel] : null;
-    for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += pkCell(i2); for (i2 = 0; i2 < INV_HOT; i2++) g2 += pkCell(i2);
-    var fillPc = Math.round(used / invN() * 100), h = "";
-    h += '<div class="pk-sec"><h3>Inventory</h3><div class="pk-cap' + (used >= invN() ? " full" : used >= invN() - 3 ? " near" : "") + '"><span class="bar"><i style="width:' + fillPc + '%"></i></span><b>' + used + " / " + invN() + "</b></div></div>";
-    h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div><h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
+    reslot(); var used = usedSlots(), cells = "", hot = "", i2, cur2 = invSel >= 0 ? S.slots[invSel] : null, N = invN(), bagN = S.bag ? N - INV_BASE : 0;
+    for (i2 = INV_HOT; i2 < N; i2++) cells += pkCell(i2).replace('class="sbx-is', 'class="sbx-is' + (i2 >= INV_BASE ? " bagx" : ""));
+    for (i2 = 0; i2 < INV_HOT; i2++) hot += pkCell(i2);
+    var h = '<div class="pk2-gridwrap"><div class="pk2-lbl"><b>Items</b><span>' + (bagN ? (INV_BASE - INV_HOT) + " slots + " + bagN + " from your " + esc(BAGS[S.bag].n) : (INV_BASE - INV_HOT) + " slots · craft a backpack for more") + '</span></div><div class="sbx-igrid pk2-grid">' + cells + "</div></div>";
+    var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
+    if (ek.length) h += '<div class="pk2-over"><div class="pk2-lbl warn"><b>Didn\'t fit</b><span>Free a slot, then tap to collect</span></div><div class="pk2-overrow">' + ek.map(function (k) { return '<button type="button" class="pk2-ov" data-iextra="' + k + '" title="' + esc(ITEMS[k].n) + ': collect"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b></button>"; }).join("") + "</div></div>";
+    h += '<div class="pk2-hot"><div class="pk2-lbl"><b>Hotbar</b><span>keys 1 to 9</span></div><div class="sbx-igrid hot">' + hot + "</div></div>";
     var tool2 = cur2 && ITEMS[cur2.k].tool;
-    h += '<div class="sbx-iinfo' + (cur2 ? " sel" : "") + '">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small></span></div>" : '<div class="pk-none"><span><small>Tap an item to see what you can do with it. Drag to move, swap or merge.</small></span></div>')
-      + '<div class="acts">'
-      + (cur2 ? '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
+    h += '<div class="pk2-act' + (cur2 ? " sel" : "") + '">' + (cur2
+      ? '<img alt="" src="' + icon(cur2.k) + '"><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + '</small></span><span class="pk2-btns">'
+        + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
         + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "")
         + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
         + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
-        + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again" : "Drop all") + "</button>")
-        : "")
-      + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button></div></div>';
-    var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
-    if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " · collect</small></button>"; }).join("") + "</div>";
-    if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
+        + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again to drop all" : "Drop all") + "</button>")
+        + "</span>"
+      : '<span class="pk2-hint">' + (used ? "Tap an item to use, move or drop it. Drag to rearrange." : "Your bag is empty. Hold on tree leaves to gather Sticks.") + "</span>") + "</div>";
     return h;
   }
   function pkName() { return charName(S.animal); }
   function renderPack() {
-    var t = $("sbxPackTitle"); if (t) t.innerHTML = "Backpack <small>" + usedSlots() + " / " + invN() + "</small>";
+    var t = $("sbxPackTitle"), used = usedSlots(), N = invN();
+    if (t) t.innerHTML = 'Backpack <small class="pk2-cnt' + (used >= N ? " full" : used >= N - 3 ? " near" : "") + '">' + used + " / " + N + "</small>";
+    var hd = t && t.parentNode, tools = $("pk2Tools");
+    if (hd && !tools) { tools = document.createElement("div"); tools.id = "pk2Tools"; tools.className = "pk2-tools"; hd.insertBefore(tools, hd.querySelector(".sbx-x")); }
+    if (tools) tools.innerHTML = '<button type="button" class="btn ghost" data-iact="sort">Sort</button><button type="button" class="btn ghost" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button>';
     var bd = $("sbxPackBody"), stp = bd.scrollTop;
     if (!$("pkCv")) {
-      bd.innerHTML = '<div class="pk-show"><div class="pk-eq l" id="pkEqL"></div><div class="pk-stage"><canvas id="pkCv" aria-label="Your character, wearing your gear." role="img"></canvas><div class="pk-pop" id="pkPop" hidden></div></div><div class="pk-eq r" id="pkEqR"></div></div>'
-        + '<div class="pk-who"><b id="pkName"></b><span class="pk-stats" id="pkStats"></span></div><div class="pk-focus" id="pkFocus"></div><div id="pkInv"></div>';
+      bd.innerHTML = '<div class="pk2"><aside class="pk2-side"><div class="pk-stage"><canvas id="pkCv" aria-label="Your character, wearing your gear." role="img"></canvas><div class="pk-pop" id="pkPop" hidden></div></div>'
+        + '<div class="pk-who"><b id="pkName"></b><span class="pk-stats" id="pkStats"></span></div><div class="pk2-gear" id="pkEq"></div><div class="pk-focus" id="pkFocus"></div><div id="pkLo"></div></aside>'
+        + '<div class="pk2-main" id="pkInv"></div></div>';
       pvBind($("pkCv"));
     }
-    var eq = pkEqHtml(); $("pkEqL").innerHTML = eq[0]; $("pkEqR").innerHTML = eq[1];
+    var eq = pkEqHtml(); $("pkEq").innerHTML = eq[0] + eq[1];
     $("pkName").textContent = pkName();
     $("pkStats").innerHTML = '<i title="Health">❤ ' + Math.ceil(hp) + "</i>" + '<i title="Damage blocked">🛡 ' + Math.round(armRed() * 100) + "%</i>" + (S.wpn ? '<i title="Weapon damage">⚔ ' + Math.round(wDmg()) + "</i>" : "") + '<i title="Pickaxe tier">⛏ ' + S.tier + "</i>";
-    $("pkFocus").innerHTML = pkFocusHtml();
+    var fh = pkFocusHtml(); $("pkFocus").innerHTML = fh; $("pkFocus").hidden = !fh;
+    $("pkLo").innerHTML = loHtml();
     var pp = $("pkPop"), ph = PK.pop ? pkPopHtml() : ""; pp.hidden = !ph; pp.innerHTML = ph; pp.className = "pk-pop" + (PK.pop ? " " + PK.pop : "");
     $("pkInv").innerHTML = pkInvHtml(); bd.scrollTop = stp;
     pvStart();
   }
   function pkAct(a) {
-    if (a === "bag" || a === "charm") { PK.pop = PK.pop === a ? "" : a; PK.focus = ""; thud(380, 0.03); }
+    if (a === "charm") { PK.pop = PK.pop === a ? "" : a; PK.focus = ""; thud(380, 0.03); }
     else { PK.focus = PK.focus === a ? "" : a; PK.pop = ""; }
     renderPack();
   }
@@ -14276,7 +16104,7 @@
     if (mapOpen) return;
     if (tab === "bag" || tab === "map") tab = "craft";
     if (tab === "trail" || tab === "goals") tab = "quests";
-    var tabs = [["quests", "Quests"], ["log", "Log"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["craft", "Craft"], ["map", "Map"], ["more", "Options"]];
+    var tabs = [["quests", "Quests"], ["log", "Log"], ["awards", "Awards"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["craft", "Craft"], ["map", "Map"], ["more", "Options"]];
     if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "craft";
     if (DEV.on) tabs.push(["dev", "Dev"]); else if (tab === "dev") tab = "more";
     if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
@@ -14311,6 +16139,8 @@
       h += devHtml();
     } else if (tab === "log") {
       h += logHtml();
+    } else if (tab === "awards") {
+      h += achHtml();
     } else if (tab === "lore") {
       h += loreHtml();
     } else if (tab === "chest") {
@@ -14475,12 +16305,13 @@
   function mapCard() {
     var cd = $("sbxMapCard"), w = M.sel >= 0 ? S.wp[M.sel] : null; if (!w) { cd.hidden = true; return; }
     cd.hidden = false;
-    var keep = document.activeElement && document.activeElement.id === "sbxWpName";   // re-rendering while typing would lose the cursor: only refresh the rest
-    var head = '<div class="wp-top"><span class="wp-pin" style="background:' + WP_COL[w.c] + '"><img alt="" src="' + wpIconUrl(WP_ICONS[w.i || 0], "#ffffff") + '"></span><div class="wp-meta"><input id="sbxWpName" type="text" maxlength="24" value="' + esc(w.n) + '" aria-label="Waypoint name" spellcheck="false"><small>' + esc(wpText(w)) + '</small></div><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button></div>';
+    var keep = document.activeElement && (document.activeElement.id === "sbxWpName" || document.activeElement.id === "sbxWpNote");   // re-rendering while typing would lose the cursor: only refresh the rest
+    var head = '<div class="wp-top"><span class="wp-pin" style="background:' + WP_COL[w.c] + '"><img alt="" src="' + wpIconUrl(WP_ICONS[w.i || 0], "#ffffff") + '"></span><div class="wp-meta"><input id="sbxWpName" type="text" maxlength="24" value="' + esc(w.n) + '" aria-label="Waypoint name" spellcheck="false"><small>' + esc(wpText(w)) + '</small></div><button type="button" class="btn' + (w.t ? "" : " ghost") + ' wp-track" data-mc="track" aria-pressed="' + !!w.t + '">' + (w.t ? "Tracking" : "Track") + '</button><button type="button" class="btn ghost" data-mc="go">Centre</button><button type="button" class="btn warn" data-mc="del">Remove</button></div>';
     var cols = '<div class="wp-row" role="group" aria-label="Colour">' + WP_COL.map(function (c, n) { return '<button type="button" class="wp-sw' + (n === w.c ? " on" : "") + '" data-wpc="' + n + '" style="background:' + c + '" aria-label="Colour ' + (n + 1) + '" aria-pressed="' + (n === w.c) + '"></button>'; }).join("") + "</div>";
     var ics = '<div class="wp-row" role="group" aria-label="Icon">' + WP_ICONS.map(function (k, n) { return '<button type="button" class="wp-ic' + (n === (w.i || 0) ? " on" : "") + '" data-wpi="' + n + '" title="' + WP_ICON_NAMES[k] + '" aria-label="' + WP_ICON_NAMES[k] + '" aria-pressed="' + (n === (w.i || 0)) + '"><img alt="" src="' + wpIconUrl(k, n === (w.i || 0) ? "#06100d" : "#f6eedb") + '"></button>'; }).join("") + "</div>";
     if (keep) { var sm = cd.querySelector(".wp-meta small"); if (sm) sm.textContent = wpText(w); var pin = cd.querySelector(".wp-pin"); if (pin) pin.style.background = WP_COL[w.c]; return; }
-    cd.innerHTML = head + cols + ics;
+    var note = '<textarea id="sbxWpNote" class="wp-note" maxlength="140" rows="2" placeholder="Add a note (what is here, what to bring...)" aria-label="Waypoint note">' + esc(w.note || "") + "</textarea>";
+    cd.innerHTML = head + note + cols + ics;
   }
   function mapTap(x, y) {
     var i, best = -1, bd = 22 * 22;
@@ -14534,16 +16365,19 @@
       var z = t.getAttribute("data-mz"); if (z) { M.dirty = true; if (z === "in") zoomAt(M.cw / 2, M.ch / 2, M.s * 1.6); else if (z === "out") zoomAt(M.cw / 2, M.ch / 2, M.s / 1.6); else if (z === "me") mapMe(); else mapFit(); return; }
       if (t.hasAttribute("data-wpc") && M.sel >= 0) { S.wp[M.sel].c = +t.getAttribute("data-wpc"); snd("coin"); save(); return mapCard(); }
       if (t.hasAttribute("data-wpi") && M.sel >= 0) { S.wp[M.sel].i = +t.getAttribute("data-wpi"); snd("coin"); save(); return mapCard(); }
-      var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete(); if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
+      var m = t.getAttribute("data-mc"); if (m === "del") return mapDelete();
+      if (m === "track" && M.sel >= 0) { var tw = S.wp[M.sel], on2 = !tw.t; S.wp.forEach(function (q) { q.t = 0; }); tw.t = on2 ? 1 : 0; snd(on2 ? "coin" : "open"); if (on2) toast("Tracking " + tw.n + ". Follow the arrow.", WP_COL[tw.c]); save(); mapCard(); return; } if (m === "go" && M.sel >= 0) { var w = S.wp[M.sel]; M.cx = w.x; M.cy = w.y; M.s = Math.max(M.s, clamp(M.cw / 140, mapMin(), 44)); mapClamp(); }
     });
-    V.addEventListener("input", function (e) { if (e.target.id !== "sbxWpName" || M.sel < 0) return; S.wp[M.sel].n = e.target.value.slice(0, 24); });
+    V.addEventListener("input", function (e) { if (M.sel < 0) return; if (e.target.id === "sbxWpNote") { S.wp[M.sel].note = e.target.value.slice(0, 140); return; } if (e.target.id !== "sbxWpName") return; S.wp[M.sel].n = e.target.value.slice(0, 24); });
+    V.addEventListener("change", function (e) { if (e.target.id === "sbxWpNote" && M.sel >= 0) save(); });
     V.addEventListener("change", function (e) { if (e.target.id !== "sbxWpName" || M.sel < 0) return; var w = S.wp[M.sel]; w.n = (e.target.value.trim() || "Waypoint").slice(0, 24); e.target.value = w.n; save(); });
-    V.addEventListener("keydown", function (e) { if (e.target.id === "sbxWpName" && (e.key === "Enter" || e.key === "Escape")) { e.target.blur(); e.stopPropagation(); } }, true);
+    V.addEventListener("keydown", function (e) { if (e.target.id === "sbxWpName" && (e.key === "Enter" || e.key === "Escape")) { e.target.blur(); e.stopPropagation(); } if (e.target.id === "sbxWpNote") { if (e.key === "Escape") e.target.blur(); e.stopPropagation(); } }, true);
     window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
     if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(V);
   })();
   function openPanel(t) { if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
   function openPack() {
+    setTimeout(function () { if (COACH) tickCoach(0.016); }, 0);   // TRY IT: the backpack step
     if (mapOpen) closeMap(); else if (panelOpen && !packOpen) closePanel();
     packOpen = true; panelOpen = true; invSel = -1; invAsk = ""; PK.pop = ""; PK.focus = ""; $("sbxPack").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPack();
   }
@@ -14730,7 +16564,8 @@
   }, true);
   window.addEventListener("blur", itHide);
   function invAct(a) {
-    var c = invSel >= 0 ? S.slots[invSel] : null; if (!c && a !== "sort") return;
+    var c = invSel >= 0 ? S.slots[invSel] : null; if (!c && a !== "sort" && a !== "qstack") return;
+    if (a === "qstack") { quickStack(); return; }
     if (a !== "tossall") invAsk = "";
     if (a === "swap") quickMove(invSel);
     else if (a === "split") splitSlot(invSel);
@@ -14797,7 +16632,10 @@
     var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); };
     base.addEventListener("pointerup", up); base.addEventListener("pointercancel", up); base.addEventListener("lostpointercapture", up); base.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
-  (function () { var rb = $("sbxRoll"); if (rb) rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); })();   // DODGE ROLL button (phones)
+  (function () { var sb = $("sbxSpec"); if (sb) sb.addEventListener("click", function (e) { e.preventDefault(); trySpecial(); }); })();   // WEAPON SPECIALS button
+  cv.addEventListener("mousedown", function (e) { if (e.button === 2) { e.preventDefault(); trySpecial(); } });   // right-click: special
+  cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  [].forEach.call(document.querySelectorAll("[data-roll]"), function (rb) { rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); });   // DODGE ROLL buttons (phones: in the pad on the surface, on their own in the Mine)
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
     var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; b.classList.remove("on"); };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -14805,6 +16643,7 @@
   window.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
+    k = keyRemap(k); if (k === null) return;   // KEY REMAPPING
     if (deadUI) { if (k === "Enter" || k === " " || k === "r" || k === "R") { e.preventDefault(); deadRespawn(); } return; }   // the death screen
     if (TOUR) { if (k === "Escape") { e.preventDefault(); endTour(); } else if (k === "Enter" || k === " " || k === "ArrowRight") { e.preventDefault(); TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } return; }
     if (FMG.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFarmBook(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fmGo(FMG.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fmGo(FMG.pg + 1); return; }
@@ -14831,22 +16670,28 @@
     else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 1; if (k !== " ") keys.u = 1; }
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
+      var spq = sporeHere(); if (spq) { openSpore(spq); e.preventDefault(); return; } if (sel === "x_spore" && sporeScene()) { plantSpore(); e.preventDefault(); return; }
       if (HOME) { if (!homeF()) nag("Walk up to the gate, the shipping crate or the seed stall."); }
       else if (OCS) { if (!(OCS.sea ? (seaActions()[0] && (seaActions()[0].fn(), 1)) : ocF())) nag(OCS.sea ? "Sail up to an island or a dive buoy first." : OCS.diving ? "Swim up to the surface by the dock ladder to climb out." : "Walk to the middle of the dock to dive in, or to its end for the boat."); }
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(); if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip || (SC && holeNear()) ? null : structNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
     else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else if (k === "Shift" || k === "c" || k === "C") { if (!e.repeat) tryDodge(); }
+    else if (k === "x" || k === "X") { if (!e.repeat) quickStack(); }
+    else if (k === "l" || k === "L") { if (!e.repeat) loNext(); }
+    else if (k === "n" || k === "N") { if (!e.repeat) dropPinHere(); }
+    else if (k === "v" || k === "V") { if (!e.repeat) trySpecial(); }
+    else if (k === "z" || k === "Z") { if (!e.repeat) boreToggle(); }
     else return; e.preventDefault(); $("sbxHint").classList.remove("on");
   });
   window.addEventListener("keyup", function (e) {
-    var k = e.key; if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 0; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 0; else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 0; if (k !== " ") keys.u = 0; } else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 0;
+    var k = keyRemap(e.key); if (k === null) return; if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 0; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 0; else if (k === " " || k === "ArrowUp" || k === "w" || k === "W") { keys.j = 0; if (k !== " ") keys.u = 0; } else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 0;
   });
   window.addEventListener("blur", function () { keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; });
   $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
@@ -14865,6 +16710,9 @@
     if (t.hasAttribute("data-close")) return closePanel();
     if (t.hasAttribute("data-lore")) return openLore(t.getAttribute("data-lore"));   // LORE: read a page
     if (t.hasAttribute("data-pkeq")) return pkAct(t.getAttribute("data-pkeq"));   // BACKPACK SCREEN: gear slots
+    if (t.hasAttribute("data-lo")) return loUse(+t.getAttribute("data-lo"));   // HOTBAR LOADOUTS
+    if (t.hasAttribute("data-collc")) return collClaim(+t.getAttribute("data-collc"));   // COLLECTION LOG chests
+    if (t.hasAttribute("data-losave")) return loSave(+t.getAttribute("data-losave"));
     if (t.hasAttribute("data-pkpop-x")) { PK.pop = ""; return renderPack(); }
     if (t.hasAttribute("data-cg-exp")) return cgExpOpen(t.getAttribute("data-cg-exp"));   // CRAFTING: experiment
     if (t.hasAttribute("data-cgtoggle")) { CGON = !CGON; try { localStorage.setItem("swamp-delve-craftgames", CGON ? "1" : "0"); } catch (e) {} return renderPanel(); }
@@ -14922,7 +16770,7 @@
   $("sbxChatGo").addEventListener("click", sendChat);
   setInterval(drawChat, 2000);
   $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
-  $("sbxMini").addEventListener("click", function () { if (!panelOpen && !cave) openMap(); });
+  $("sbxMini").addEventListener("click", function () { if (OCS && OCS.sea) { OCS.sea.chart = !OCS.sea.chart; return; } if (!panelOpen && !cave) openMap(); });
   $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
   $("sbxBody").addEventListener("input", function (e) {   // CRAFT SEARCH: results update as you type (the box keeps focus)
     if (e.target.id !== "sbxCSearch") return;
@@ -14943,7 +16791,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -14980,7 +16828,7 @@
   // sandbox-ocean.js (SbxOcean). OCS is the scene while you are there: { site, m (the generated map), t (its tiles, with your changes), pl (you),
   // mobs, ... }. Mode "dock" = walking Croaker's Pier; "dive" = swimming. Boat: S.oc.boat = { p: { part: 1 }, done }, built at the pier slip like the
   // motorcycle. OCS.sea is the sea chart when you are sailing (see "SAILING" below). S.oc keeps what lasts: boat parts, opened chests, broken tiles.
-  var SO = typeof SbxOcean !== "undefined" ? SbxOcean : null, OT = SO ? SO.T : {}, OTD = SO ? SO.TD : [], OCS = null, OCW = SO ? SO.W : 0, OCH = SO ? SO.H : 0, OSEA = SO ? SO.SEA : 14;
+  var SO = typeof SbxOcean !== "undefined" ? SbxOcean : null, OT = SO ? SO.T : {}, OTD = SO ? SO.TD : [], OCS = null, OCW = SO ? SO.W : 0, OCH = SO ? SO.H : 0, OSEA = SO ? SO.SEA : 14, OWL = OSEA;   // OWL: the waterline right now (REAL TIDES move it at the pier)
   var OTANK = [0, 45, 90, 160, 260], OBOAT = (typeof SbxExtra !== "undefined" && SbxExtra.OCEAN && SbxExtra.OCEAN.BOAT) || [];
   var OBOAT_HINT = {
     boat_keel: "Hidden in Croaker's Sea Chest on the pier.", boat_hull: "Sunken pirate wrecks and sea chests.", boat_mast: "Sunken pirate wrecks and sea chests.",
@@ -14990,7 +16838,7 @@
   function ocS() {
     if (!S.oc || typeof S.oc !== "object") S.oc = {}; var o = S.oc;
     if (!o.boat || typeof o.boat !== "object") o.boat = { p: {}, done: 0, skin: 0 }; if (!o.boat.p) o.boat.p = {};
-    if (!o.open) o.open = {}; if (!o.ed) o.ed = {}; if (!o.kills) o.kills = {}; if (!o.dead) o.dead = {}; if (!o.isl) o.isl = {};
+    if (!o.open) o.open = {}; if (!o.ed) o.ed = {}; if (!o.kills) o.kills = {}; if (!o.dead) o.dead = {}; if (!o.isl) o.isl = {}; if (!o.hold) o.hold = {}; if (!o.raid) o.raid = {};
     return o;
   }
   // DIVE SUITS: each tier holds out the pressure deeper. Past your suit's depth the CRUSH TIMER starts: a few seconds to swim back up, or you implode.
@@ -15024,8 +16872,243 @@
     else if (tier === 2) { add("pearl", 1, 2, 0.7); add("doubloon", 2, 5); add("brass", 2, 4, 0.8); add("blackpearl", 1, 1, 0.12); add("jellygel", 1, 2, 0.5); add("ironingot", 2, 3, 0.5); add("canvas", 2, 3, 0.4); add("copperwire", 1, 2, 0.3); add("lampoil", 1, 2, 0.3); }
     else { add("pearl", 2, 3); add("blackpearl", 1, 1, 0.3); add("doubloon", 4, 8); add("ironingot", 3, 5, 0.7); add("seaglass", 3, 5, 0.7); add("lurebulb", 1, 1, 0.3); add("goldbar", 1, 1, 0.15); add("brass", 2, 5); }
     if (c.kind === "hoard") { add("doubloon", 8, 14); add("blackpearl", 1, 2, 0.6); add("goldbar", 1, 2, 0.5); }
+    if (c.kind === "vault") { add("doubloon", 10, 18); add("pearl", 2, 4); add("blackpearl", 1, 2); add("goldbar", 1, 2, 0.75); add("starshard", 1, 1, 0.4); add("x_bottle", 1, 1, 0.5); }
     var bp = ocBoatLoot(c); if (bp) L.push(bp);
     return L;
+  }
+
+
+
+  // ---------- SPRING FLOODS ----------
+  // In Spring, heavy rain over Murkwater swamp makes the land overflow: its lakes and ponds rise and spill over their banks, and water
+  // gathers in the low ground. It is real water (the flowing-water system moves it). When the rain stops, or Spring ends, the flood drains
+  // away again, leaving washed-up finds (driftwood sticks, clay, stranded fish, now and then a bottle). On the homestead, Spring rain
+  // overflows the ditches and waters every crop. S.flood = [[x, y], ...] = where water was added, so the drain can find it again.
+  var FLOOD = { on: false, t: 0, dry: 0, said: -1 };
+  function floodNow() { return seasonOf() === 0 && wxN() > 0.45; }
+  function tickFlood(dt) {
+    if (!world || cave || (typeof OCS !== "undefined" && OCS) || (typeof HOME !== "undefined" && HOME) || (MP.on && MP.role === "guest")) return;
+    if (!S.flood) S.flood = [];
+    var on = floodNow(); FLOOD.on = on && S.flood.length > 6;
+    FLOOD.t -= dt; if (FLOOD.t > 0) return;
+    if (on) {
+      FLOOD.t = 0.22; FLOOD.dry = 0; if (S.flood.length >= 320) return;
+      FLOOD.scan = (FLOOD.scan || 0) - 0.22; if (FLOOD.scan <= 0 || !FLOOD.lk) { FLOOD.scan = 4; FLOOD.lk = []; for (var sx = Math.max(3, Math.floor(p.x) - 60); sx <= Math.min(W - 4, Math.floor(p.x) + 60); sx++) if (world.bio[sx] === 0 && orig[(col[sx] - 1) * W + sx] === T.WATER) FLOOD.lk.push(sx); }   // the ponds and lakes near you
+      if (FLOOD.said !== ((S.days / SEASON_DAYS) | 0) && S.flood.length > 10) { FLOOD.said = (S.days / SEASON_DAYS) | 0; toast("SPRING FLOOD! The swamp is overflowing its banks. It drains away when the rain stops.", "#7ac8ff"); }
+      for (var tr = 0; tr < 8; tr++) {
+        var x = FLOOD.lk.length && Math.random() < 0.75 ? FLOOD.lk[Math.floor(Math.random() * FLOOD.lk.length)] + Math.round((Math.random() - 0.5) * 6) : clamp(Math.round(p.x + (Math.random() - 0.5) * 90), 3, W - 4); x = clamp(x, 3, W - 4); if (world.bio[x] !== 0) continue;
+        var g0 = col[x], top = g0, i;
+        while (top > 2 && get(x, top - 1) === T.WATER) top--;   // the surface of a pond or lake here, if there is one
+        var lake = top < g0, y = top - 1, o0 = g0;
+        for (var yy0 = g0 - 1; yy0 > g0 - 40 && orig[yy0 * W + x] === T.WATER; yy0--) o0 = yy0;   // the water's natural level here (or the ground)
+        if (lake && FL && lvAt(top * W + x) < 8) { var ti = top * W + x, nl = Math.min(8, lvAt(ti) + 4); FL[ti] = nl >= 8 ? 0 : nl; flWake(x, top); S.flood.push([x, top]); break; }   // top up a thin sheet of floodwater first
+        if (y < 3 || get(x, y) !== T.AIR || y < o0 - 2) continue;   // at most two rows above the natural level
+        if (!lake && !(col[x] >= col[x - 1] && col[x] >= col[x + 1] && (col[x] > col[x - 2] || col[x] > col[x + 2]))) continue;   // dry land: only into dips
+        if ((world.structs || []).some(function (L) { return x >= L.x0 - 2 && x <= L.x1 + 2; })) continue;   // not into buildings
+        setT(x, y, T.WATER); S.flood.push([x, y]); break;
+      }
+    } else {
+      FLOOD.t = 0.5; if (!S.flood.length) return; FLOOD.dry += 0.5; if (FLOOD.dry < (seasonOf() === 0 ? 20 : 2)) return;   // it drains a while after the rain stops
+      for (var k = 0; k < 5 && S.flood.length; k++) {
+        var q = S.flood.pop(), qx = q[0], qy = q[1], got = 0;
+        for (var yy = qy - 2; yy <= qy + 1; yy++) for (var xx = qx - 10; xx <= qx + 10; xx++) { if (xx < 1 || xx >= W - 1 || yy < 1 || yy >= H - 1) continue; var j = yy * W + xx; if (tiles[j] === T.WATER && orig[j] !== T.WATER) { setT(xx, yy, T.AIR); got++; } }
+        if (got && Math.random() < 0.3) { var L2 = [["stick", 30], ["clay", 20], ["pebble", 14], ["fiber", 14], ["bogminnow", 12], ["seaglass", 4], ["x_bottle", 2]], tot = 0, r; L2.forEach(function (e2) { tot += e2[1]; }); r = Math.random() * tot; for (var m = 0; m < L2.length; m++) { r -= L2[m][1]; if (r <= 0) { if (ITEMS[L2[m][0]]) spawnDrop(L2[m][0], 1, qx, Math.min(col[qx] - 1, qy + 1)); break; } } }
+      }
+      if (!S.flood.length) { S.st.floods = (S.st.floods || 0) + 1; toast("The flood waters have gone down. See what they washed up!", "#7ac8ff"); }
+    }
+  }
+
+  // ---------- SEA DOMES: an air-filled glass dome you build on the sea floor ----------
+  // With a Sea Dome Kit, swim down to the floor (4 m or deeper) where a 7 by 5 space is clear water: "Build a Sea Dome here". The dome is a
+  // glass shell with air inside (the air refills your tank), a lamp at the top, and a door on each side at floor level. Inside it you heal.
+  // S.oc.domes = [{ s: "" (the pier) or the dive site's seed, x: centre column, y: the floor row }]. Domes are stamped onto the map when
+  // it is built (nothing goes into S.oc.ed). An arrow at the edge of the screen points to the nearest dome when you dive.
+  var DOME_SHAPE = ["..GGG..", ".GAAAG.", "GAALAAG", "GAAAAAG", "AAAAAAA"];   // G glass, A air, L lamp; the bottom row's ends are the doors
+  function domeKey() { return OCS.main ? "" : String(OCS.site.seed); }
+  function domesHere() { var o = ocS(); if (!Array.isArray(o.domes)) o.domes = []; var k = domeKey(); return o.domes.filter(function (d) { return d.s === k; }); }
+  function domeStamp(t, d) { for (var r = 0; r < 5; r++) for (var c = 0; c < 7; c++) { var ch = DOME_SHAPE[r][c], x = d.x - 3 + c, y = d.y - 5 + r; if (ch === "." || x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) continue; t[y * OCW + x] = ch === "G" ? OT.DGLASS : ch === "L" ? OT.LAMP : OT.AIRP; } }
+  function domeUnstamp(d) { for (var r = 0; r < 5; r++) for (var c = 0; c < 7; c++) { var ch = DOME_SHAPE[r][c], x = d.x - 3 + c, y = d.y - 5 + r; if (ch === "." || x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) continue; OCS.t[y * OCW + x] = OT.WATER; } }
+  function domeSpot() {   // where a dome would go if you built one now (or null)
+    var sc = OCS, pl = sc.pl; if (!sc.diving || sc.land) return null; var x = Math.floor(pl.x), fy = ocFloorY(x, pl.y - 0.5); if (!fy) return null;
+    if (fy - 5 < OWL + 2) return null; var solid = 0;
+    for (var c = -3; c <= 3; c++) { if (ocSolid(x + c, fy)) solid++; for (var r = 1; r <= 5; r++) { var id = ocT(x + c, fy - r); if (id !== OT.WATER && !OTD[id].plant) return null; } }
+    if (solid < 5) return null; if (domesHere().some(function (d) { return Math.abs(d.x - x) < 9 && Math.abs(d.y - fy) < 7; })) return null;
+    return { x: x, y: fy };
+  }
+  function domeIn() { var sc = OCS, pl = sc.pl; var L = domesHere(); for (var i = 0; i < L.length; i++) { var d = L[i]; if (Math.abs(pl.x - (d.x + 0.5)) < 3.3 && pl.y > d.y - 5 && pl.y <= d.y + 0.1) return d; } return null; }
+  function domeBuild() {
+    var sp = domeSpot(), o = ocS(); if (!sp) { nag("Swim down to the sea floor, where there is clear water 7 wide and 5 high."); return; }
+    if (!(S.inv.x_dome > 0)) return; var cap = OCS.main ? 3 : 1; if (domesHere().length >= cap) { nag(OCS.main ? "Croaker's Pier already has 3 Sea Domes. Pack one up to move it." : "This dive site already has a Sea Dome."); return; }
+    S.inv.x_dome--; if (S.inv.x_dome <= 0) delete S.inv.x_dome; reslot(); hbDirty = true;
+    var d = { s: domeKey(), x: sp.x, y: sp.y }; if (!Array.isArray(o.domes)) o.domes = []; o.domes.push(d); domeStamp(OCS.t, d);
+    S.st.domes = (S.st.domes || 0) + 1; ocBubbles(sp.x + 0.5, sp.y - 2, 30); ocFx(30, sp.x + 0.5, sp.y - 2.5, "#bfefff", { sp: 4, g: 0 }); thud(140, 0.12); snd("open", "Epic");
+    popup("Sea Dome built", "A bubble of air on the sea floor. Swim in to breathe and heal.", "#7af0ff", "◒"); checkGoals(); save();
+  }
+  function domePack() {
+    var d = domeIn(), o = ocS(); if (!d) return; domeUnstamp(d); o.domes = o.domes.filter(function (q) { return q !== d; }); give("x_dome", 1, undefined, undefined, true); ocBubbles(d.x + 0.5, d.y - 2, 24); thud(200, 0.08); toast("Sea Dome packed up. Build it again anywhere on the sea floor.", "#7af0ff"); save();
+  }
+  function domeTick(dt) { var sc = OCS; if (!sc.diving) return; var d = domeIn(); if (d && hp > 0 && hp < MAXHP && ocAirAt(sc.pl.x, sc.pl.y - 0.8)) { hp = Math.min(MAXHP, hp + 4 * dt); if (Math.random() < dt * 3) ocFx(1, sc.pl.x, sc.pl.y - 1.2, "#7affc0", { sp: 0.6, g: -1 }); } }
+  function drawDomes(g, now) {   // a soft light inside each dome, and the arrow to the nearest one
+    var sc = OCS, L = domesHere(), t = now / 1000; if (!L.length) return; var best = null, bd = 1e9;
+    L.forEach(function (d) { var cx = ox + (d.x + 0.5) * ts, cy = oy + (d.y - 2.6) * ts; if (cx > -ts * 6 && cx < vw + ts * 6 && cy > -ts * 6 && cy < vh + ts * 6) { g.save(); g.globalCompositeOperation = "lighter"; oG(g, cx, cy, ts * 4.2, "rgba(150,240,255," + (0.12 + 0.04 * Math.sin(t * 2)).toFixed(3) + ")"); g.restore(); }
+      var dd = Math.hypot(d.x + 0.5 - sc.pl.x, d.y - 2 - sc.pl.y); if (dd < bd) { bd = dd; best = d; } });
+    if (!best || !sc.diving || bd < 6) return; var bx = ox + (best.x + 0.5) * ts, by = oy + (best.y - 2.5) * ts, m = 40; if (bx > m && bx < vw - m && by > m && by < vh - m) return;
+    var a = Math.atan2(by - vh / 2, bx - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 30, vw - 30), ey = clamp(vh / 2 + Math.sin(a) * vh, 90, vh - 120);
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(6,20,34,.75)"; g.beginPath(); g.arc(0, 0, 15, 0, 6.2832); g.fill(); g.rotate(a); g.fillStyle = "#7af0ff"; g.beginPath(); g.moveTo(12, 0); g.lineTo(4, -6); g.lineTo(4, 6); g.closePath(); g.fill(); g.rotate(-a);
+    g.strokeStyle = "#bfefff"; g.lineWidth = 2; g.beginPath(); g.arc(0, 3, 6, Math.PI, 0); g.stroke(); g.restore();
+  }
+
+  // ---------- THE PEARL DIVE DERBY: Croaker's weekly contest at the pier ----------
+  // At the derby board on the pier: 90 seconds to collect as many glowing derby pearls as you can (white 1 point, pink 2 deeper, black 4 in the
+  // Twilight Deep). Prizes in Doubloons (and real pearls for big scores). Signed-in players post their best to the weekly leaderboard on the
+  // server (worker.js /api/board/derby, a new board each Monday); everyone keeps their own best. DERBY is the run in progress.
+  var DERBY = null, DERBY_T = 90, DBX = 28, DBOARD = { list: null, me: null, week: 0, err: "", busy: false };
+  function derbyWeek() { return Math.floor((Date.now() / 86400000 + 3) / 7); }
+  function derbyS() { var o = ocS(); if (!o.derby || typeof o.derby !== "object") o.derby = { best: 0, wk: 0, wbest: 0, runs: [] }; if (o.derby.wk !== derbyWeek()) { o.derby.wk = derbyWeek(); o.derby.wbest = 0; } return o.derby; }
+  function derbyFetch() {
+    if (DBOARD.busy) return; DBOARD.busy = true; DBOARD.err = "";
+    cloudCall("GET", "/api/board/derby").then(function (r) { DBOARD.busy = false; if (r.s === 200 && r.j) { DBOARD.list = r.j.top || []; DBOARD.me = r.j.me || null; DBOARD.week = r.j.week; } else DBOARD.err = r.s === 0 ? "offline" : "error"; if (storyOpen === 242) renderDerby(); });
+  }
+  function openDerby() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 242; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderDerby(); derbyFetch();
+  }
+  function renderDerby() {
+    var D = derbyS(), on = CLOUD.state === "on", L = DBOARD.list;
+    var h = '<div class="mo-box dy-box"><div class="dy-head"><small>Croaker\'s Pier</small><h2>Pearl Dive Derby</h2><p class="mo-sub">90 seconds. Dive in and grab the glowing derby pearls: white ones are 1 point, pink ones (deeper down) 2, and black ones in the Twilight Deep 4. Watch your air!</p></div>'
+      + '<div class="dy-stats"><div><b>' + D.wbest + "</b><small>Your best this week</small></div><div><b>" + D.best + "</b><small>Your best ever</small></div></div>"
+      + '<h3 class="dy-h">This week\'s leaderboard</h3>';
+    if (L && L.length) h += '<ol class="dy-list">' + L.map(function (q, i) { return '<li class="' + (DBOARD.me && DBOARD.me.rank === i + 1 ? "me" : "") + '"><span class="dy-r">' + (i + 1) + '</span><span class="dy-n">' + esc(q.name) + '</span><span class="dy-s">' + q.score + "</span></li>"; }).join("") + "</ol>";
+    else h += '<p class="dy-empty">' + (DBOARD.busy ? "Loading the leaderboard..." : DBOARD.err === "offline" ? "The leaderboard needs an internet connection." : DBOARD.err ? "The leaderboard isn't answering right now." : "No scores yet this week. Be the first!") + "</p>";
+    if (DBOARD.me && DBOARD.me.rank > 10) h += '<p class="dy-you">You: #' + DBOARD.me.rank + " with " + DBOARD.me.score + "</p>";
+    if (!on) h += '<p class="dy-you">Sign in to a SwampRealms account to put your scores on the leaderboard.</p>';
+    h += '<p class="dy-prize">Prizes: a Doubloon for every 2 points, a Pearl at 20, a Black Pearl at 35.</p>';
+    h += '<div class="st-row"><button type="button" class="btn mo-start" data-derby="go">Start the derby</button><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#f6eedb"); $("sbxStoryBox").innerHTML = h;
+  }
+  function derbyAct(a) { if (a !== "go") return; closeStory(); derbyStart(); }
+  function derbyStart() {
+    var sc = OCS; if (!sc || !sc.main || DERBY) return; if (!sc.diving) ocDiveIn();
+    var P = [], tries = 0; while (P.length < 26 && tries++ < 900) {
+      var x = 16 + Math.random() * 150, fy = ocFloorY(Math.floor(x), OWL + 2); if (!fy) continue; var y = OWL + 3 + Math.random() * Math.max(2, fy - OWL - 5);
+      if (!ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue; var dep = y - OWL, v = dep > 50 ? 4 : dep > 24 ? 2 : 1;
+      if (v === 4 && P.filter(function (q) { return q.v === 4; }).length >= 5) continue; if (P.some(function (q) { return Math.hypot(q.x - x, q.y - y) < 3; })) continue;
+      P.push({ x: x, y: y, v: v, ph: Math.random() * 6 });
+    }
+    DERBY = { t: DERBY_T, score: 0, P: P, n: 0 }; S.st.derbies = (S.st.derbies || 0) + 1;
+    toast("The Pearl Dive Derby has begun! 90 seconds: go!", "#f6eedb"); snd("rise");
+  }
+  function derbyStep(dt) {
+    var sc = OCS, D = DERBY; if (!D) return; if (!sc || !sc.main) { DERBY = null; return; }
+    D.t -= dt; var cx = sc.pl.x, cy = sc.pl.y - 0.45;
+    for (var i = D.P.length - 1; i >= 0; i--) { var q = D.P[i]; q.ph += dt * 3; if (Math.hypot(q.x - cx, q.y - cy) < 1) { D.score += q.v; D.n++; D.P.splice(i, 1); text(q.x, q.y - 0.5, "+" + q.v, q.v >= 4 ? "#c88aff" : q.v >= 2 ? "#ffb0d0" : "#ffffff"); ocFx(10, q.x, q.y, q.v >= 4 ? "#c88aff" : "#fff6e0", { sp: 3, g: 0 }); try { tn(0, 880 + q.v * 120, 1320 + q.v * 120, 0.12, "sine", 0.05); } catch (e) {} } }
+    if (D.t <= 0 || !sc.diving || hp <= 0 || !D.P.length) derbyEnd();
+  }
+  function derbyEnd() {
+    var D = DERBY; if (!D) return; DERBY = null; var B = derbyS(), sc = D.score, best = sc > B.best, wbest = sc > B.wbest;
+    B.runs = (B.runs || []).concat([sc]).sort(function (a, b) { return b - a; }).slice(0, 5); if (best) B.best = sc; if (wbest) B.wbest = sc;
+    var dbl = Math.floor(sc / 2); if (dbl) give("doubloon", dbl, undefined, undefined, true); if (sc >= 20) give("pearl", 1, undefined, undefined, true); if (sc >= 35) give("blackpearl", 1, undefined, undefined, true);
+    popup("Derby over: " + sc + " points", (best ? "A new personal best! " : wbest ? "Your best this week! " : "") + (dbl ? "Prize: " + dbl + " Doubloons" + (sc >= 35 ? ", a Pearl and a Black Pearl." : sc >= 20 ? " and a Pearl." : ".") : "No prize this time."), "#f6eedb", "●");
+    snd("open", sc >= 35 ? "Epic" : "Rare");
+    if (CLOUD.state === "on" && sc > 0) cloudCall("POST", "/api/board/derby", { score: sc }).then(function (r) { if (r.s === 200 && r.j) { DBOARD.list = r.j.top || DBOARD.list; DBOARD.me = r.j.me || DBOARD.me; if (r.j.me && r.j.me.rank) toast("Leaderboard: you're #" + r.j.me.rank + " this week.", "#f6eedb"); } });
+    checkGoals(); save();
+  }
+  function drawDerby(g, now) {
+    var D = DERBY, t = now / 1000; if (!D) return;
+    D.P.forEach(function (q) { var x = ox + q.x * ts, y = oy + (q.y + Math.sin(q.ph) * 0.15) * ts; if (x < -ts || x > vw + ts || y < -ts || y > vh + ts) return; var c = q.v >= 4 ? ["#3a2a55", "#c88aff"] : q.v >= 2 ? ["#ffb0d0", "#ffe0ee"] : ["#f6f2e8", "#ffffff"];
+      g.save(); g.globalCompositeOperation = "lighter"; oG(g, x, y, ts * 0.9, q.v >= 4 ? "rgba(200,140,255,.5)" : "rgba(255,246,220,.45)"); g.restore(); oE(g, x, y, ts * 0.24, ts * 0.24, c[0]); oE(g, x - ts * 0.07, y - ts * 0.08, ts * 0.08, ts * 0.08, c[1]);
+      if (Math.sin(t * 4 + q.ph * 3) > 0.92) { g.fillStyle = "#fff"; g.fillRect(x + ts * 0.18, y - ts * 0.3, 2, 2); } });
+  }
+  function drawDerbyHud(g) {
+    var D = DERBY; if (!D) return; var w = 230, x = (vw - w) / 2, y = 110, sec = Math.max(0, Math.ceil(D.t));
+    g.fillStyle = "rgba(6,20,34,.8)"; mrr(g, x, y, w, 48, 12); g.fill();
+    g.font = "900 16px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = D.t < 10 ? "#ff7a6a" : "#f6eedb"; g.fillText(Math.floor(sec / 60) + ":" + ("0" + sec % 60).slice(-2), x + 14, y + 38);
+    g.textAlign = "right"; g.fillStyle = "#ffd23f"; g.fillText(D.score + " pts", x + w - 14, y + 38); g.textAlign = "center"; g.font = "800 10px Nunito, system-ui, sans-serif"; g.fillStyle = "#9ad0e0"; g.fillText("PEARL DIVE DERBY · " + D.P.length + " left", vw / 2, y + 14);
+  }
+  function drawDerbyBoard(g) {   // the derby board on the pier
+    var x = ox + (DBX + 0.5) * ts, y = oy + (OSEA - 1) * ts, D = derbyS();
+    oR(g, x - ts * 0.9, y - ts * 2.2, ts * 0.12, ts * 2.2, "#4a2e18"); oR(g, x + ts * 0.78, y - ts * 2.2, ts * 0.12, ts * 2.2, "#4a2e18");
+    oR(g, x - ts * 1.15, y - ts * 3.25, ts * 2.3, ts * 1.25, "#2a4a5a"); oR(g, x - ts * 1.15, y - ts * 3.25, ts * 2.3, ts * 0.14, "#7af0ff"); oR(g, x - ts * 1.05, y - ts * 3.05, ts * 2.1, ts * 0.95, "#1a3440");
+    g.font = signFont(Math.max(8, Math.round(ts * 0.22))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("PEARL DIVE", x, y - ts * 2.68); g.fillText("DERBY", x, y - ts * 2.38);
+    g.fillStyle = "#ffd23f"; g.font = "800 " + Math.max(8, Math.round(ts * 0.2)) + "px Nunito, system-ui, sans-serif"; g.fillText("Best " + D.best, x, y - ts * 2.14);
+    oE(g, x - ts * 0.7, y - ts * 3.05, ts * 0.12, ts * 0.12, "#f6f2e8"); oE(g, x + ts * 0.7, y - ts * 3.05, ts * 0.12, ts * 0.12, "#c88aff");
+  }
+  // ---------- REAL TIDES at Croaker's Pier ----------
+  // The sea at the pier rises and falls twice a game day. For a couple of days each week (around days 6-7 of every 7) the SPRING TIDE runs
+  // bigger: its lows drain the Tide Cave right down to the Spring-Tide Vault, and its highs wash over the pier planks. OSEA stays the map's
+  // mean sea level (the pier, the beach, the dive ladder); OWL is the waterline right now, in rows (bigger = lower water). Dive sites out at
+  // sea have no tides. Low water uncovers the tide flats under the pier: you can walk them, and every low tide leaves new finds in the pools.
+  var TIDE = { hudT: 0, info: null, tpT: 0, floodT: 6, saidHi: 0, saidLo: 0, saidV: 0 };
+  function tideDayF() { return (S.days | 0) + S.time / CYCLE; }
+  function tideSpring(df) { var w = ((df % 7) + 7) % 7, d = Math.abs(w - 6.5); d = Math.min(d, 7 - d); var k = clamp(1 - d / 1.7, 0, 1); return k * k * (3 - 2 * k); }
+  function tideOff(df) {   // how far below mean sea level the water stands (rows): normal tides -0.7..+3.5, spring tides -1.4..+8.6
+    var sf = tideSpring(df), mid = 1.4 + 2.2 * sf, amp = 2.1 + 2.9 * sf;
+    return mid + amp * Math.cos(df * Math.PI * 4 - Math.PI * 2 / 3);   // lows at about 8 in the morning and 8 at night
+  }
+  var VAULT_OPEN = 7.6;   // the vault door unseals when the water is this far down (only spring lows get there)
+  function springIdx() { return Math.floor((tideDayF() + 0.5) / 7); }
+  function tideInfo() {   // for the HUD: where the tide is going, and when it turns
+    var df = tideDayF(), off = tideOff(df), d1 = tideOff(df + 0.004) - off, sf = tideSpring(df), next = null;
+    for (var q = 1; q <= 260; q++) { var a = tideOff(df + q / 480), b = tideOff(df + (q + 1) / 480); if ((b - a) * d1 < 0) { next = { lo: d1 > 0, h: q / 20 }; break; } }
+    var k = off > (sf > 0.45 ? 5 : 2.6) ? "Low tide" : off < (sf > 0.45 ? -0.6 : 0) ? "High tide" : d1 > 0 ? "Falling" : "Rising";
+    return { off: off, sf: sf, k: k, fall: d1 > 0, next: next, vault: off >= VAULT_OPEN, awash: OSEA + off < OSEA - 1 + 0.02 };
+  }
+  function tideStep(dt) {   // called every frame at the pier
+    var sc = OCS; if (!sc) return; if (!sc.main) { OWL = OSEA; return; }
+    var off = tideOff(tideDayF()); OWL = OSEA + off;
+    TIDE.hudT -= dt; if (TIDE.hudT <= 0 || !TIDE.info) { TIDE.hudT = 1; TIDE.info = tideInfo(); var mm = document.querySelector(".sbx-mini"), sr = stageEl.getBoundingClientRect(); TIDE.top = 76; if (mm && mm.offsetParent) { var mr = mm.getBoundingClientRect(); if (mr.right > sr.right - 200) TIDE.top = Math.round(mr.bottom - sr.top + 8); } }   // the tide clock sits under the mini-map
+    var I = TIDE.info;
+    if (I.vault && !TIDE.saidV) { TIDE.saidV = 1; toast("Spring low tide! The sea has drained right out of the Tide Cave. The barnacle door at the bottom is open...", "#7af0ff"); }
+    else if (!I.vault) TIDE.saidV = 0;
+    if (off > 2.6 && !TIDE.saidLo) { TIDE.saidLo = 1; if (!S.st.tidetip) { S.st.tidetip = 1; toast("Low tide: the flats under the pier are out of the water. Climb down off the beach end of the pier and see what the sea left behind.", "#7af0ff"); } }
+    else if (off < 1.6) TIDE.saidLo = 0;
+    if (off > 2.6) tidePools();
+    if (OWL < OSEA - 0.98) {   // the pier is awash: fish flop onto the planks
+      if (!TIDE.saidHi) { TIDE.saidHi = 1; toast("High spring tide! The sea is washing over the pier, and fish are flopping onto the planks.", "#7af0ff"); }
+      TIDE.floodT -= dt; if (TIDE.floodT <= 0 && !sc.diving) { TIDE.floodT = 14 + Math.random() * 16; var fx0 = clamp(Math.round(sc.pl.x + (Math.random() - 0.5) * 16), sc.m.pier.x0 + 1, sc.m.pier.x1 - 1);
+        if (fx0 !== SO.DIVEX) { dropAt(Math.random() < 0.12 ? "kelpsnapper" : Math.random() < 0.5 ? "brinemackerel" : "bogminnow", 1, fx0, OSEA - 2); ocFx(10, fx0 + 0.5, OSEA - 1.2, "#bff4ff", { sp: 2.5, g: 8 }); thud(520, 0.03); } }
+    } else TIDE.saidHi = 0;
+  }
+  function tidePools() {   // each low tide leaves a few new finds on the flats (and in the Tide Cave), once
+    var o = ocS(), ti = Math.floor(tideDayF() * 2 + 1 / 3 + 0.5); if (o.tpi === ti) return; o.tpi = ti;
+    var L = [["shell", 30], ["kelp", 18], ["seaglass", 16], ["pebble", 10], ["coral", 10], ["pearl", 4], ["doubloon", 5]], n = 4 + Math.floor(Math.random() * 4), tries = 0, put = 0;
+    while (put < n && tries++ < 60) {
+      var x = 4 + Math.floor(Math.random() * 26), y; if (x === SO.DIVEX) continue;
+      for (y = OSEA + 1; y < OSEA + 12; y++) if (ocSolid(x, y) && !ocSolid(x, y - 1)) break;
+      if (y >= OSEA + 12 || y > OWL + 0.4) continue;
+      var tot = 0, r, k = L[0][0]; L.forEach(function (q) { tot += q[1]; }); r = Math.random() * tot; for (var j = 0; j < L.length; j++) { r -= L[j][1]; if (r <= 0) { k = L[j][0]; break; } }
+      if (!ITEMS[k]) continue; dropAt(k, 1, x, y - 1); put++;
+    }
+    if ((o.btl | 0) !== ocToday() && Math.random() < 0.55) { var bx = 12 + Math.floor(Math.random() * 14), by; for (by = OSEA + 1; by < OSEA + 12; by++) if (ocSolid(bx, by) && !ocSolid(bx, by - 1)) break; if (by < OSEA + 12 && by <= OWL + 0.4 && bx !== SO.DIVEX) { o.btl = ocToday(); dropAt("x_bottle", 1, bx, by - 1); } }   // MESSAGE IN A BOTTLE
+  }
+  function tideCarve(t, m) {   // the Tide Cave in the shore under the beach, with the Spring-Tide Vault behind a barnacle door at its bottom
+    var set = function (x, y, id) { t[y * OCW + x] = id; }, x, y;
+    for (y = 15; y <= 18; y++) for (x = 4; x <= 11; x++) { var e = ((x - 7.2) * (x - 7.2)) / 12 + ((y - 16.6) * (y - 16.6)) / 3.2; if (e <= 1.05 || x >= 9) set(x, y, OT.WATER); }
+    for (y = 19; y <= 21; y++) for (x = 9; x <= 10; x++) set(x, y, OT.WATER);
+    for (y = 20; y <= 21; y++) for (x = 2; x <= 7; x++) set(x, y, OT.WATER);
+    set(8, 20, OT.VDOOR); set(8, 21, OT.VDOOR); set(4, 18, OT.GLOW); set(10, 14, OT.GLOW); set(2, 19, OT.GLOW);
+    set(5, 19, OT.CLAM); m.clams.push({ x: 5, y: 19 }); set(3, 21, OT.CHEST);
+    m.chests.push({ x: 3, y: 21, tier: 3, kind: "vault", id: "vault" }); m.tcave = { x0: 2, x1: 11, y0: 15, y1: 21, door: 8 };
+  }
+  function vaultInside(x) { return x < 8.4; }
+  function vaultOpen() { return OCS && OCS.main && (OWL - OSEA >= VAULT_OPEN || (OCS.pl && vaultInside(OCS.pl.x) && OCS.pl.y > 19)); }
+  function ocStandY(x, y0) { for (var y = y0; y < OCH - 3; y += 0.05) if (!ocBox(x, y) && ocBox(x, y + 0.06)) return y; return y0; }
+  function tideDown() {   // from the beach end of the pier, down onto the flats
+    var sc = OCS, pl = sc.pl; if (trans) return; stopInput(); sc.diving = true; sc.mode = "dive"; pl.x = 13.5; pl.y = ocStandY(pl.x, 15.6); pl.vx = pl.vy = 0; pl.on = true; pl.ang = 0; thud(220, 0.05);
+    S.st.tideflats = (S.st.tideflats || 0) + 1;
+  }
+  function tideUp() {   // back up onto the pier from the flats or the Tide Cave
+    var sc = OCS, pl = sc.pl; if (trans) return; stopInput(); trans = { t: 0, done: false, mid: function () { sc.diving = false; sc.mode = "dock"; sc.land = false; pl.x = clamp(pl.x < 12 ? 12.5 : Math.abs(pl.x - (SO.DIVEX + 0.5)) < 1.2 ? SO.DIVEX + 2 : pl.x, 1.5, sc.m.pier.x1); pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; pl.ang = 0; sc.o2 = ocO2Max(); cam.x = pl.x; cam.y = pl.y - 3; } };
+  }
+  function drawTideHud(g) {   // a small tide clock under the top bar: the next 24 hours of tide, where the water is now, and what it is doing
+    var sc = OCS; if (!sc || !sc.main || !TIDE.info) return; var I = TIDE.info, h = 44, y = TIDE.top || 76, df = tideDayF();
+    var lbl = I.vault ? "Spring low · the vault is open!" : (I.sf > 0.45 ? "Spring tide · " : "") + I.k + (I.next ? " · " + (I.next.lo ? "low" : "high") + " in " + (I.next.h < 1 ? "<1" : Math.round(I.next.h)) + " h" : "");
+    g.save(); g.font = "800 11px Nunito, system-ui, sans-serif"; var w = Math.max(150, Math.ceil(g.measureText(lbl).width) + 22), x = vw - w - 12;
+    g.fillStyle = "rgba(6,20,34,.74)"; mrr(g, x, y, w, h, 10); g.fill();
+    g.textAlign = "left"; g.fillStyle = I.vault ? "#7af0ff" : "#e8fbff"; g.fillText(lbl, x + 11, y + 15);
+    g.beginPath(); for (var q = 0; q <= 48; q++) { var off = tideOff(df + q / 48), px = x + 10 + (w - 20) * q / 48, py = y + 36 - clamp((3.5 - off) / 5, -0.3, 1.2) * 14; if (q) g.lineTo(px, py); else g.moveTo(px, py); }
+    g.strokeStyle = "rgba(122,240,255,.8)"; g.lineWidth = 2; g.stroke();
+    var oy0 = y + 36 - clamp((3.5 - I.off) / 5, -0.3, 1.2) * 14; g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(x + 10, oy0, 3.5, 0, 6.2832); g.fill();
+    g.restore();
   }
 
   // ---------- the pier gate near camp: the way in ----------
@@ -15046,7 +17129,7 @@
     trans = { t: 0, done: false, mid: function () { ocBuild(null, true); } };
   }
   function ocLeaveNow() {
-    if (!OCS) return; var sea = OCS.sea; OCS = null; stageEl.classList.remove("cave", "ocean"); resize(); stopInput(); mine = null;
+    if (!OCS) return; if (DERBY) derbyEnd(); var sea = OCS.sea; OCS = null; stageEl.classList.remove("cave", "ocean"); resize(); stopInput(); mine = null;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; ocHudO2(); hud(); save();
   }
   function ocLeave() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: ocLeaveNow }; }
@@ -15055,14 +17138,17 @@
   function ocSeed() { return (((S.seed | 0) * 7 + 13) >>> 0); }
   function ocBuild(site, fromGate) {   // site: null = Croaker's Pier; { seed, name } = a dive site from the boat
     var main = !site, m = SO.gen(main ? ocSeed() : site.seed, main), t = new Uint8Array(m.t), o = ocS();
+    if (main) tideCarve(t, m);   // REAL TIDES: the Tide Cave and the Spring-Tide Vault
     if (main) Object.keys(o.ed).forEach(function (k) { var q = k.split(","), x = +q[0], y = +q[1]; if (x > 0 && x < OCW - 2 && y > 0 && y < OCH - 2) t[y * OCW + x] = o.ed[k] | 0; });
     m.chests.forEach(function (c) {   // chests you opened stay open until they refill
       var od = o.open[(main ? "" : site.seed + ":") + c.id], i = c.y * OCW + c.x;
+      if (c.kind === "vault") { if (o.vault === springIdx()) t[i] = OT.OPEN; return; }   // the vault refills once each spring tide
       if (od !== undefined && (c.first || c.kind === "hoard" || c.kind === "wreck" || ocToday() - od < 3)) t[i] = OT.OPEN;
     });
     OCS = { m: m, t: t, main: main, site: site, mode: "dock", diving: false, mobs: [], amb: [], shots: [], fx: [], bub: [], spawnT: 3, cool: 0, mineP: null, t0: performance.now(), mt: 0, o2: ocO2Max(), warnO2: 0, warnPr: 0,
       pl: { x: m.spawn.x, y: m.spawn.y, vx: 0, vy: 0, face: 1, ang: 0, ph: 0, on: true, kx: 0, ky: 0, shock: 0, splash: 0 }, zone: 0, depthMax: 0, btn: [], btns: [], msg: "", hatch: 0 };
-    var sc = OCS; sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5;
+    var sc = OCS; (Array.isArray(o.domes) ? o.domes : []).forEach(function (d) { if (d.s === (main ? "" : String(site.seed))) domeStamp(sc.t, d); });   // SEA DOMES
+    sc.pl.x = main ? 16.5 : Math.floor(OCW / 2) + 0.5; sc.pl.y = main ? OSEA - 1 : OSEA + 0.5; OWL = main ? OSEA + tideOff(tideDayF()) : OSEA; TIDE.info = null;
     if (!main) { sc.diving = true; sc.mode = "dive"; sc.pl.on = false; }
     m.mobs.forEach(function (q, i) {
       var id = (main ? "" : site.seed + ":") + "m" + i; if (o.dead[id] !== undefined && ocToday() - o.dead[id] < 2) return;
@@ -15078,22 +17164,22 @@
   }
   function ocT(x, y) { return x < 0 || x >= OCW || y < 0 || y >= OCH ? OT.BED : OCS.t[y * OCW + x]; }
   function ocSetT(x, y, id) { if (x < 1 || x >= OCW - 2 || y < 1 || y >= OCH - 2) return; OCS.t[y * OCW + x] = id; if (OCS.main) { var o = ocS(), k = x + "," + y; if (OCS.m.t[y * OCW + x] === id) delete o.ed[k]; else if (Object.keys(o.ed).length < 3500) o.ed[k] = id; } }
-  function ocSolid(x, y) { var id = ocT(x, y), d = OTD[id]; if (y < OSEA && (id === OT.CHEST || id === OT.OPEN)) return false; return !!d && d.solid; }   // chests on the dock do not block the walkway
+  function ocSolid(x, y) { var id = ocT(x, y), d = OTD[id]; if (y < OSEA && (id === OT.CHEST || id === OT.OPEN)) return false; if (id === OT.VDOOR && vaultOpen()) return false; return !!d && d.solid; }   // chests on the dock do not block the walkway
   function ocBox(x, y) {   // does a body with its feet at (x, y) overlap anything solid?
     var x0 = Math.floor(x - 0.27), x1 = Math.floor(x + 0.27), y0 = Math.floor(y - 0.88), y1 = Math.floor(y - 0.001);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (ocSolid(xx, yy)) return true;
     return false;
   }
-  function ocWet(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return Math.floor(y) >= OSEA && id !== OT.AIR && !OTD[id].solid; }   // water, air pockets and plants all count as water
-  function ocAirAt(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return id === OT.AIRP || (id === OT.AIR) || Math.floor(y) < OSEA; }
-  function ocDepth(y) { return Math.max(0, y - OSEA); }
+  function ocWet(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return y >= OWL && id !== OT.AIRP && !OTD[id].solid; }   // water, air pockets and plants all count as water
+  function ocAirAt(x, y) { var id = ocT(Math.floor(x), Math.floor(y)); return id === OT.AIRP || y < OWL; }
+  function ocDepth(y) { return Math.max(0, y - OWL); }
   function ocFx(n, x, y, col, o) {
     for (var i = 0; i < n; i++) { var a = Math.random() * 6.2832, sp = (o && o.sp || 1.5) * (0.4 + Math.random()); parts.push({ x: x + (Math.random() - 0.5) * 0.3, y: y + (Math.random() - 0.5) * 0.3, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (o && o.up || 0), g: (o && o.g != null ? o.g : -1.2), life: 0.5 + Math.random() * 0.6, max: 1.1, c: col, s: 2 + Math.random() * 2.5 }); }
   }
   function ocBubbles(x, y, n) { for (var i = 0; i < n; i++) OCS.bub.push({ x: x + (Math.random() - 0.5) * 0.5, y: y, vy: -(1.2 + Math.random() * 1.5), r: 0.06 + Math.random() * 0.1, ph: Math.random() * 6.28, life: 2.5 + Math.random() * 2 }); }
   function ocSplash(x, big) {
-    waterSplash(x, OSEA - 0.02, big ? 2.4 : 1.2);
-    ocBubbles(x, OSEA + 0.4, big ? 12 : 5); try { if (fxReady()) nz(0, big ? 0.35 : 0.2, big ? 0.14 : 0.07, 1100, "bandpass", 0.7); } catch (e) {}
+    waterSplash(x, OWL - 0.02, big ? 2.4 : 1.2);
+    ocBubbles(x, OWL + 0.4, big ? 12 : 5); try { if (fxReady()) nz(0, big ? 0.35 : 0.2, big ? 0.14 : 0.07, 1100, "bandpass", 0.7); } catch (e) {}
   }
 
   // ---------- the water-bound HUD: oxygen bar ----------
@@ -15107,14 +17193,15 @@
 
   // ---------- update: walking the pier, swimming, air, pressure ----------
   function ocUpdate(dt) {
-    var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); tickWeather(dt); sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt); if (p.land) p.land = Math.max(0, p.land - dt * 2.2);   // FIX: a quest cheer no longer gets stuck (arms up) after a swim
+    var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); tickWeather(dt); tideStep(dt); sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt); if (p.land) p.land = Math.max(0, p.land - dt * 2.2);   // FIX: a quest cheer no longer gets stuck (arms up) after a swim
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j || performance.now() - OCJ.t < 160;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
     if (hurtT > 0) { dx *= 0.5; }
     var ssp = ocSwimSp(), shock = pl.shock > 0 ? 0.45 : 1; pl.shock = Math.max(0, pl.shock - dt);
     var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
     if (!sc.diving) {   // walking Croaker's Pier: gravity, a hop, and railings at both ends
-      var wsp = 5.2 * (fx("speed") ? 1.25 : 1);
+      var wsp = 5.2 * (fx("speed") ? 1.25 : 1) * (OWL < OSEA - 0.98 ? 0.72 : 1);   // wading along a flooded pier is slower
+      if (OWL < OSEA - 0.98 && Math.abs(pl.vx) > 1 && Math.random() < dt * 9) ocFx(1, pl.x - pl.face * 0.2, OWL, "#d8f8ff", { sp: 1.6, g: 9 });
       pl.vx = approach(pl.vx, (dx > 0.2 ? 1 : dx < -0.2 ? -1 : 0) * wsp, 60 * dt); if (dx > 0.2) pl.face = 1; else if (dx < -0.2) pl.face = -1;
       if (up && pl.on) { pl.vy = -9.2; pl.on = false; thud(260, 0.04); }
       for (i = 0; i < sub; i++) {
@@ -15126,22 +17213,22 @@
       pl.ang += (0 - pl.ang) * Math.min(1, dt * 8); pl.ph += Math.abs(pl.vx) * dt;
       if (sc.hatch > 0) sc.hatch -= dt;
     } else {   // swimming
-      var inW = ocWet(pl.x, pl.y - 0.45), nearTop = pl.y - 0.45 < OSEA + 0.6;
+      var inW = ocWet(pl.x, pl.y - 0.45), nearTop = pl.y - 0.45 < OWL + 0.6, grd = !inW && ocBox(pl.x, pl.y + 0.08); sc.land = !inW; sc.landOn = grd;
       var tx = dx * ssp, ty = dy * ssp; if (up && !dy) ty = -ssp;
       var len = Math.sqrt(dx * dx + dy * dy); if (len > 1) { tx /= len; ty /= len; }
       var acc = (inW ? 20 : 4) * shock; pl.vx = approach(pl.vx, tx * shock, acc * dt); pl.vy = approach(pl.vy, inW ? ty * shock + (Math.abs(ty) < 0.1 ? 0.06 : 0) : pl.vy, acc * dt);
-      if (!inW) pl.vy += 26 * dt;   // out of the water you fall back in
+      if (!inW) { pl.vy += 26 * dt; pl.vx = approach(pl.vx, (dx > 0.2 ? 1 : dx < -0.2 ? -1 : 0) * 5.2 * (fx("speed") ? 1.25 : 1), 50 * dt); if (up && grd && pl.vy >= 0) { pl.vy = -9.2; thud(260, 0.04); } }   // out of the water you fall back in, or walk (the tide flats)
       pl.kx = (pl.kx || 0) * Math.max(0, 1 - 7 * dt); pl.ky = (pl.ky || 0) * Math.max(0, 1 - 7 * dt);
       for (i = 0; i < sub; i++) {
-        var nx2 = pl.x + (pl.vx + pl.kx) * h; if (!ocBox(nx2, pl.y)) pl.x = nx2; else { pl.vx = 0; pl.kx = 0; }
+        var nx2 = pl.x + (pl.vx + pl.kx) * h; if (!ocBox(nx2, pl.y)) pl.x = nx2; else if (!inW && grd && !ocBox(nx2, pl.y - 1.05) && !ocBox(pl.x, pl.y - 1.05)) { pl.y -= 1.05; pl.x = nx2; } else { pl.vx = 0; pl.kx = 0; }   // on the tide flats you step up one block
         var ny2 = pl.y + (pl.vy + pl.ky) * h; if (!ocBox(pl.x, ny2)) pl.y = ny2; else { pl.vy = 0; pl.ky = 0; }
         pl.x = clamp(pl.x, 1.3, OCW - 3.3);
       }
       var spd = Math.sqrt(pl.vx * pl.vx + pl.vy * pl.vy); if (Math.abs(pl.vx) > 0.4) pl.face = pl.vx < 0 ? -1 : 1;
-      var wantA = spd > 0.6 ? clamp(Math.atan2(pl.vy, Math.abs(pl.vx) + 0.001) * 0.9, -1.2, 1.2) * pl.face : 0.05 * pl.face; pl.ang += (wantA - pl.ang) * Math.min(1, dt * 7); pl.ph += spd * dt * 1.4 + dt * 1.5;
+      var wantA = !inW ? 0 : spd > 0.6 ? clamp(Math.atan2(pl.vy, Math.abs(pl.vx) + 0.001) * 0.9, -1.2, 1.2) * pl.face : 0.05 * pl.face; pl.ang += (wantA - pl.ang) * Math.min(1, dt * 7); pl.ph += spd * dt * 1.4 + dt * 1.5;
       if (inW && Math.random() < dt * (spd > 1 ? 1.4 : 0.5)) ocBubbles(pl.x + pl.face * 0.2, pl.y - 0.85, 1);
-      if (pl.y - 0.45 < OSEA - 0.2 && pl.vy < -2 && !pl._out) { pl._out = true; ocSplash(pl.x, false); } else if (pl.y - 0.45 > OSEA + 0.3) pl._out = false;
-      pl.on = false;
+      if (pl.y - 0.45 < OWL - 0.2 && pl.vy < -2 && !pl._out) { pl._out = true; ocSplash(pl.x, false); } else if (pl.y - 0.45 > OWL + 0.3) { if (pl._out && pl.vy > 2) ocSplash(pl.x, false); pl._out = false; }
+      pl.on = grd;
     }
     p.walk += Math.abs(pl.vx) * dt; p.vx = Math.abs(pl.vx); p.face = pl.face;
     // ----- air and pressure -----
@@ -15176,10 +17263,10 @@
     cam.x += (tcx - cam.x) * Math.min(1, dt * 6); cam.y += (tcy - cam.y) * Math.min(1, dt * 6);
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts; cam.x = clamp(cam.x, halfW, Math.max(halfW, OCW - halfW)); cam.y = clamp(cam.y, halfH - 8, Math.max(halfH - 8, OCH - halfH + 0.5));
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts); if (aim.tx < 0 || aim.tx >= OCW || aim.ty < 0 || aim.ty >= OCH) aim.tx = -1;
-    ocMobs(dt); ocTool(dt); ocAmbient(dt); ocSpawn(dt); ocShots(dt);
+    ocMobs(dt); ocTool(dt); ocAmbient(dt); ocSpawn(dt); ocShots(dt); domeTick(dt); derbyStep(dt);
     // particles, bubbles, texts
-    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } var g0 = q.g !== undefined ? q.g : 22; q.vy += g0 * dt; if (g0 > 5 && q.y > OSEA) { q.vy *= 0.9; q.vx *= 0.96; } q.x += q.vx * dt; q.y += q.vy * dt; }
-    for (k = sc.bub.length - 1; k >= 0; k--) { var b = sc.bub[k]; b.life -= dt; b.y += b.vy * dt; b.x += Math.sin(sc.mt * 2 + b.ph) * dt * 0.25; if (b.life <= 0 || b.y < OSEA - 0.05) sc.bub.splice(k, 1); }
+    for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } var g0 = q.g !== undefined ? q.g : 22; q.vy += g0 * dt; if (g0 > 5 && q.y > OWL) { q.vy *= 0.9; q.vx *= 0.96; } q.x += q.vx * dt; q.y += q.vy * dt; }
+    for (k = sc.bub.length - 1; k >= 0; k--) { var b = sc.bub[k]; b.life -= dt; b.y += b.vy * dt; b.x += Math.sin(sc.mt * 2 + b.ph) * dt * 0.25; if (b.life <= 0 || b.y < OWL - 0.05) sc.bub.splice(k, 1); }
     for (var tI = texts.length - 1; tI >= 0; tI--) { texts[tI].life -= dt; texts[tI].y -= dt * 0.9; if (texts[tI].life <= 0) texts.splice(tI, 1); }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
     hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); }
@@ -15206,7 +17293,7 @@
   function ocMove(m, dt) {
     var vx = m.vx + m.kx, vy = m.vy + m.ky, nx = m.x + vx * dt, ny = m.y + vy * dt;
     if (ocFree(nx, m.y, m.r) && nx > 1.5 && nx < OCW - 3) m.x = nx; else { m.vx *= -0.4; m.kx = 0; m.tgx = m.x + (Math.random() - 0.5) * 8; }
-    if (ocFree(m.x, ny, m.r) && ny > OSEA + 0.7 && ny < OCH - 3) m.y = ny; else { m.vy *= -0.4; m.ky = 0; m.tgy = m.y + (Math.random() - 0.5) * 6; }
+    if (ocFree(m.x, ny, m.r) && ny > OWL + 0.7 && ny < OCH - 3) m.y = ny; else { m.vy *= -0.4; m.ky = 0; m.tgy = m.y + (Math.random() - 0.5) * 6; }
     m.kx *= Math.max(0, 1 - 6 * dt); m.ky *= Math.max(0, 1 - 6 * dt);
   }
   function ocSteer(m, tx, ty, sp, ac, dt) {
@@ -15300,7 +17387,7 @@
     for (var tries = 0; tries < 12; tries++) {
       var a = Math.random() * 6.2832, r = 15 + Math.random() * 10, x = pl.x + Math.cos(a) * r, y = pl.y + Math.sin(a) * r * 0.7;
       if (Math.abs(x - pl.x) < vw / ts / 2 + 1.5 && Math.abs(y - pl.y) < vh / ts / 2 + 1.5) continue;
-      if (x < 4 || x > OCW - 5 || y < OSEA + 6 || y > OCH - 5 || !ocWet(x, y) || !ocFree(x, y, 0.6)) continue;
+      if (x < 4 || x > OCW - 5 || y < OWL + 6 || y > OCH - 5 || !ocWet(x, y) || !ocFree(x, y, 0.6)) continue;
       var zz = SO.zoneOf(ocDepth(y)), tb = OSPAWN[zz], tot = 0, k; tb.forEach(function (e) { tot += e[1]; }); var rr = Math.random() * tot; k = tb[0][0]; for (var q = 0; q < tb.length; q++) { rr -= tb[q][1]; if (rr <= 0) { k = tb[q][0]; break; } }
       var n = k === "snapjaw" ? 2 + Math.floor(Math.random() * 3) : 1; for (var j = 0; j < n; j++) { var mb = ocNewMob(k, x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 2); if (ocFree(mb.x, mb.y, mb.r)) sc.mobs.push(mb); }
       return;
@@ -15318,7 +17405,7 @@
       var spawn = function (k, x, y, extra) { var a = Object.assign({ k: k, x: x, y: y, vx: 0, vy: 0, face: Math.random() < 0.5 ? -1 : 1, t: Math.random() * 6, ph: Math.random() * 6.28, boop: 0 }, extra || {}); sc.amb.push(a); return a; };
       for (var tries = 0; tries < 10; tries++) {
         var ang = Math.random() * 6.2832, r = 11 + Math.random() * 12, x = pl.x + Math.cos(ang) * r, y = pl.y + Math.sin(ang) * r * 0.65;
-        if (x < 4 || x > OCW - 5 || y < OSEA + 2 || y > OCH - 5 || !ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue;
+        if (x < 4 || x > OCW - 5 || y < OWL + 2 || y > OCH - 5 || !ocWet(x, y) || ocSolid(Math.floor(x), Math.floor(y))) continue;
         var z = SO.zoneOf(ocDepth(y)), roll = Math.random();
         if (z <= 1 && cnt.fish < 28 && roll < 0.5) { var col = OFISH[Math.floor(Math.random() * OFISH.length)], n = 5 + Math.floor(Math.random() * 5), sch = { x: x, y: y, tx: x, ty: y, t: 0 }; for (var q = 0; q < n; q++) spawn("fish", x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 1.5, { col: col, sch: sch, sz: 0.8 + Math.random() * 0.4 }); break; }
         else if (z <= 1 && cnt.turtle < 2 && roll < 0.62) { spawn("turtle", x, y); break; }
@@ -15344,7 +17431,7 @@
       else if (a.k === "tjelly") { a.vy = Math.sin(a.t * 1.8 + a.ph) * 0.8 - 0.1; a.vx = Math.sin(a.t * 0.5 + a.ph) * 0.4; }
       else if (a.k === "crab") { a.sc = (a.sc || 0) - dt; if (a.sc <= 0) { a.sc = 1 + Math.random() * 3; a.vx = (Math.random() < 0.3 ? 0 : (Math.random() < 0.5 ? -1 : 1)) * 1.1; } if (d < 4) { a.vx = dx > 0 ? 2.2 : -2.2; } var fl = ocFloorY(a.x, a.y); if (fl) a.y = fl - 0.3; a.face = a.vx < 0 ? -1 : a.vx > 0 ? 1 : a.face; }
       var nx = a.x + a.vx * dt, ny = a.y + a.vy * dt; if (!ocSolid(Math.floor(nx), Math.floor(a.y)) && (a.k === "crab" || ocWet(nx, a.y))) a.x = nx; else a.vx *= -1;
-      if (a.k !== "crab") { if (!ocSolid(Math.floor(a.x), Math.floor(ny)) && ocWet(a.x, ny) && ny > OSEA + 1) a.y = ny; else a.vy *= -1; }
+      if (a.k !== "crab") { if (!ocSolid(Math.floor(a.x), Math.floor(ny)) && ocWet(a.x, ny) && ny > OWL + 1) a.y = ny; else a.vy *= -1; }
     }
   }
   function ocFloorY(x, y0) {   // the row of the first solid tile at or below y0 in this column (the sea floor), or 0
@@ -15377,6 +17464,7 @@
     if (sel === "weapon") { mine = null; ocSwing(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
+    if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     ocMine(dt, press);
   }
   function ocMine(dt, press) {
@@ -15425,7 +17513,8 @@
     var L = ocLoot(c); sc.t[c.y * OCW + c.x] = OT.OPEN; o.open[key] = ocToday(); S.st.occhests = (S.st.occhests || 0) + 1;
     L.forEach(function (q) { give(q[0], q[1], c.x, c.y - 0.3); });
     ocFx(22, c.x + 0.5, c.y + 0.3, "#ffd23f", { sp: 5, g: -2, up: 2 }); ocBubbles(c.x + 0.5, c.y, 8); snd("open", c.tier >= 2 ? "Epic" : "Rare");
-    var nm = SO.CHEST_NAMES[Math.min(3, c.tier || 0)]; if (c.kind === "hoard") nm = "Gillbeard's Hoard"; if (c.kind === "pier") nm = "Croaker's Sea Chest";
+    if (c.kind === "vault") { o.vault = springIdx(); S.st.vaults = (S.st.vaults || 0) + 1; shake = Math.max(shake, 0.4); }
+    var nm = SO.CHEST_NAMES[Math.min(3, c.tier || 0)]; if (c.kind === "hoard") nm = "Gillbeard's Hoard"; if (c.kind === "vault") nm = "The Spring-Tide Vault"; if (c.kind === "pier") nm = "Croaker's Sea Chest";
     popup("Treasure found", nm + " • " + L.length + " kinds of loot", "#f2c14e", "✦"); checkGoals(); save();
   }
 
@@ -15439,8 +17528,14 @@
       if (Math.abs(pl.x - (P.dive + 0.5)) < 2.6) A.push({ label: "Dive in", ax: P.dive + 0.5, ay: OSEA - 2.6, fn: ocDiveIn });
       if (pl.x > P.slip - 5) A.push({ label: ocS().boat.done ? "Set sail" : "Work on the boat", ax: P.x1 + 2, ay: OSEA - 3.6, fn: function () { if (ocS().boat.done) ocSetSail(); else openBoat(); } });
       if (pl.x < 5) A.push({ label: "Back to the swamp", ax: 3, ay: OSEA - 3, fn: ocLeave });
+      if (OWL > OSEA + 1.7 && pl.x > 8 && pl.x < 16) A.push({ label: "Climb down to the tide flats", ax: 12.5, ay: OSEA - 2.6, fn: tideDown });   // REAL TIDES
+      if (Math.abs(pl.x - (DBX + 0.5)) < 2.2 && !DERBY) A.push({ label: "Pearl Dive Derby", ax: DBX + 0.5, ay: OSEA - 4.2, fn: openDerby });   // THE PEARL DIVE DERBY
     }
-    if (sc.diving && pl.y - 0.45 < OSEA + 1.6) {
+    if (sc.main && sc.diving && sc.land && sc.landOn && pl.x < m.pier.x1 && pl.y < OSEA + 11 && !domeIn()) A.push({ label: "Climb up to the pier", ax: pl.x, ay: pl.y - 2.2, fn: tideUp });   // the tide flats and the Tide Cave only
+    if (sc.diving && (S.inv.x_dome || 0) > 0 && !domeIn() && domeSpot()) A.push({ label: "Build a Sea Dome here", ax: pl.x, ay: pl.y - 2.4, fn: domeBuild });   // SEA DOMES
+    if (sc.diving && domeIn() && !DERBY) A.push({ label: "Pack up the Sea Dome", ax: pl.x, ay: pl.y - 2.6, fn: domePack });
+    if (sc.main && m.tcave && !vaultOpen() && Math.abs(pl.x - 8.5) < 2 && pl.y > 19.5 && pl.y < 22.5) A.push({ label: "Sealed until a spring low tide", ax: 8.5, ay: 19.4, fn: function () { nag("Barnacles hold the door shut. It only opens when a spring low tide drains the cave (watch the tide clock)."); } });
+    if (sc.diving && !sc.land && pl.y - 0.45 < OWL + 1.6) {
       if (sc.main) { if (Math.abs(pl.x - (m.pier.dive + 0.5)) < 3) A.push({ label: "Climb onto the dock", ax: m.pier.dive + 0.5, ay: OSEA - 2.8, fn: ocClimb }); else A.push({ label: "Swim back to the pier", ax: pl.x, ay: OSEA - 2.4, fn: ocSwimHome }); }
       else A.push({ label: "Climb back aboard", ax: pl.x, ay: OSEA - 2.4, fn: seaResume });
     }
@@ -15455,17 +17550,17 @@
     if (!F) {
       if (!press || aim.tx < 0) return;
       var wy = (aim.my - oy) / ts, tx = aim.tx;
-      if (wy < OSEA - 1.4 || ocT(tx, OSEA) !== OT.WATER) { nag("Tap the open water below the dock to cast your line."); return; }
+      if (wy < OSEA - 1.4 || ocT(tx, Math.max(OSEA, Math.ceil(OWL))) !== OT.WATER) { nag("Tap the open water below the dock to cast your line."); return; }
       var dx = tx + 0.5 - pl.x; if (Math.abs(dx) > 9) { nag("That's too far to cast."); return; }
       pl.face = dx < 0 ? -1 : 1; var bait = takeBait();
       sc.fish = { x: tx, ph: "wait", bait: bait[1], t: (2.5 + Math.random() * 5) * fishBiteMul() * bait[0], bob: 0 };
-      thud(520, 0.04); ocFx(6, tx + 0.5, OSEA, "#bff4ff", { sp: 1.2, g: 6 }); return;
+      thud(520, 0.04); ocFx(6, tx + 0.5, OWL, "#bff4ff", { sp: 1.2, g: 6 }); return;
     }
     if (Math.abs(F.x + 0.5 - pl.x) > 11) { sc.fish = null; nag("Your line came loose."); return; }
     F.t -= dt; F.bob += dt;
     if (F.ph === "wait") {
       if (press) { sc.fish = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
-      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); waterSplash(F.x + 0.5, OSEA - 0.02, 0.6); ocBubbles(F.x + 0.5, OSEA + 0.6, 3); }
+      if (F.t <= 0) { F.ph = "bite"; F.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); waterSplash(F.x + 0.5, OWL - 0.02, 0.6); ocBubbles(F.x + 0.5, OWL + 0.6, 3); }
     } else if (F.ph === "bite") {
       if (press) { ocLandFish(F); return; }
       if (F.t <= 0) { F.ph = "wait"; F.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
@@ -15479,13 +17574,13 @@
     var k = rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
     if (!ITEMS[k]) k = "bogminnow";
     give(k, 1, undefined, undefined, true); S.st.fish++; S.fdex[k] = 1; var fcm = fishLogged(k); say("+1 " + ITEMS[k].n + (fcm ? " \u00b7 " + fcm + " cm" : ""), "#8fe0ff");
-    ocFx(14, x, OSEA, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
+    ocFx(14, x, OWL, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
     if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#ffd23f", "\u2605"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
     checkTrail(); checkGoals();
   }
   function ocDrawRod(g, now) {
     var sc = OCS, F = sc.fish; if (!F || sc.diving) return; var pl = sc.pl, bite = F.ph === "bite";
-    var bx = ox + (F.x + 0.5) * ts, by = oy + OSEA * ts + (bite ? ts * 0.22 : Math.sin(F.bob * 2.4) * ts * 0.05), tx = ox + (pl.x + pl.face * 1.15) * ts, ty = oy + (pl.y - 2.05) * ts;
+    var bx = ox + (F.x + 0.5) * ts, by = oy + OWL * ts + (bite ? ts * 0.22 : Math.sin(F.bob * 2.4) * ts * 0.05), tx = ox + (pl.x + pl.face * 1.15) * ts, ty = oy + (pl.y - 2.05) * ts;
     g.strokeStyle = "rgba(246,238,219,.75)"; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + ts * 0.6, bx, by); g.stroke();
     var r = ts * 0.16; g.fillStyle = "#ffffff"; g.beginPath(); g.arc(bx, by - r * 0.4, r, Math.PI, 0); g.fill(); g.fillStyle = "#e8341c"; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, Math.PI); g.fill();
     g.strokeStyle = "#1a1206"; g.lineWidth = 1; g.beginPath(); g.arc(bx, by - r * 0.4, r, 0, 6.2832); g.stroke();
@@ -15670,6 +17765,8 @@
       else if (id === OT.LADDER) { R(4, 0, 1, 16, "#7a5a3a"); R(11, 0, 1, 16, "#7a5a3a"); [1, 5, 9, 13].forEach(function (yy) { R(4, yy, 8, 2, "#9a7448"); R(4, yy, 8, 1, "#b8905a"); }); }
       else if (id === OT.LAMP) { R(7, 6, 2, 10, "#3a2412"); R(4, 1, 8, 7, "#8e969b"); R(5, 2, 6, 5, "#ffe27a"); R(6, 3, 4, 3, "#fff6c0"); R(3, 1, 10, 1, "#5a626a"); R(4, 8, 8, 1, "#5a626a"); }
       else if (id === OT.ROPE) { R(7, 0, 2, 16, "#c9a876"); for (i = 0; i < 8; i++) R(7, i * 2, 2, 1, "#a88a58"); }
+      else if (id === OT.VDOOR) { R(0, 0, 16, 16, "#3e524f"); R(1, 0, 14, 16, "#5f7a76"); [0, 5, 10].forEach(function (yy) { R(1, yy, 14, 1, "#2e3e3c"); }); R(12, 7, 2, 3, "#c9a52a"); for (i = 0; i < 16; i++) { x = (H(i, 1) * 15) | 0; y = (H(i, 2) * 15) | 0; R(x, y, 2, 2, H(i, 3) < 0.5 ? "#d8d0c0" : "#a8a090"); R(x, y, 1, 1, "#f4eee2"); } for (i = 0; i < 4; i++) { x = (H(i, 5) * 13) | 0; R(x, 13 + (i % 2), 3, 2, "#3a9a6a", 0.8); } }
+      else if (id === OT.DGLASS) { R(0, 0, 16, 16, "#bfefff", 0.28); R(0, 0, 16, 1, "#e8fbff", 0.8); R(0, 15, 16, 1, "#7ab8c8", 0.7); R(0, 0, 1, 16, "#d8f8ff", 0.6); R(15, 0, 1, 16, "#7ab8c8", 0.6); R(3, 2, 2, 6, "#ffffff", 0.45); R(6, 2, 1, 3, "#ffffff", 0.35); }
     }
     OATLAS = c; return c;
   }
@@ -15681,64 +17778,145 @@
   var oL = function (g, c, w, pts) { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); for (var i = 0; i < pts.length; i++) i ? g.lineTo(pts[i][0], pts[i][1]) : g.moveTo(pts[i][0], pts[i][1]); g.stroke(); };
   var oP = function (g, c, pts) { g.fillStyle = c; g.beginPath(); for (var i = 0; i < pts.length; i++) i ? g.lineTo(pts[i][0], pts[i][1]) : g.moveTo(pts[i][0], pts[i][1]); g.closePath(); g.fill(); };
   var oG = function (g, x, y, r, c) { var gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, c); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
-  function ocDrawMob(g, m, now) {
+  function ocDrawMob(g, m, now) {   // sea creatures, drawn in the same inked and shaded style as the land ones (1 unit = ts / 16)
     var u = ts / 16, sx = ox + m.x * ts, sy = oy + m.y * ts, fl = m.hurt > 0 && Math.floor(now / 70) % 2 === 0, C = function (c) { return fl ? "#ffffff" : c; }, t = m.t, d = OM[m.k];
     if (sx < -ts * 6 || sx > vw + ts * 6 || sy < -ts * 6 || sy > vh + ts * 6) return;
     g.save(); g.translate(sx, sy); if (m.dead) { g.globalAlpha = Math.max(0, m.dead / 0.5); }
-    var f = m.face;
-    if (m.k === "puffer") {
-      g.scale(f, 1); var R = 7 * (1 + 0.62 * m.inf) * u / 1, wob = Math.sin(t * 5) * 0.12;
-      oP(g, C("#a8b84a"), [[-R * 0.8, 0], [-R * 1.5, -R * 0.55 + wob * R], [-R * 1.5, R * 0.55 + wob * R]]);
-      oE(g, 0, 0, R, R * 0.92, C("#c8d870")); oE(g, 0, R * 0.25, R * 0.82, R * 0.6, C("#f6f0b8")); oE(g, -R * 0.1, -R * 0.55, R * 0.7, R * 0.3, C("#a8b84a"));
-      for (var i = 0; i < 6; i++) oE(g, (-0.55 + i * 0.22) * R, (-0.2 + ((i * 37) % 5) / 12) * R, R * 0.09, R * 0.09, C("#6a7a2a"));
-      if (m.inf > 0.25) for (var k = 0; k < 14; k++) { var a = k / 14 * 6.2832; oL(g, C("#fff4d0"), Math.max(1, u * 0.9), [[Math.cos(a) * R * 0.9, Math.sin(a) * R * 0.9], [Math.cos(a) * R * (0.9 + 0.55 * m.inf), Math.sin(a) * R * (0.9 + 0.55 * m.inf)]]); }
-      oE(g, R * 0.36, -R * 0.2, R * 0.28, R * 0.28, "#fff"); oE(g, R * 0.42, -R * 0.18, R * 0.15, R * 0.15, "#14180a"); oE(g, R * 0.78, R * 0.18, R * 0.12, R * 0.07, "#8a5a3a");
-      oP(g, C("#a8b84a"), [[-R * 0.1, R * 0.25], [-R * 0.55, R * (0.55 + wob)], [R * 0.15, R * 0.55]]);
-    } else if (m.k === "snapjaw") {
-      g.scale(f, 1); var sw = Math.sin(t * 14 + m.ph) * 2 * u, bite = m.st === "flee" || (m.vx * f > 3) ? 1 : 0;
-      oP(g, C("#5a6e82"), [[-6 * u, 0], [-11 * u, -4 * u + sw], [-11 * u, 4 * u + sw]]); oE(g, 0, 0, 8 * u, 4.2 * u, C("#7a8ea0")); oE(g, 0, 1.8 * u, 7 * u, 2.2 * u, C("#c4d0da"));
-      oP(g, C("#5a6e82"), [[-2 * u, -3.6 * u], [1 * u, -7 * u], [3.4 * u, -3.4 * u]]);
-      oP(g, C("#6a7e92"), [[3 * u, 1.5 * u], [9.5 * u, 3.4 * u + bite * 1.4 * u], [4.5 * u, 4.6 * u]]); for (var q = 0; q < 4; q++) oP(g, "#fff", [[(4.5 + q * 1.3) * u, 1.8 * u + q * 0.15 * u], [(5.1 + q * 1.3) * u, 0.3 * u + q * 0.15 * u], [(5.7 + q * 1.3) * u, 1.8 * u + q * 0.15 * u]]);
-      oE(g, 3.8 * u, -1 * u, 1.7 * u, 1.7 * u, "#fff"); oE(g, 4.1 * u, -1 * u, 0.9 * u, 0.9 * u, "#e02a2a");
-    } else if (m.k === "eel") {
+    var f = m.face; g.lineCap = "round"; g.lineJoin = "round";
+    var fin = function (pts, fill, ln, lw) { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); aInk(g, fill, ln, lw); };
+    if (m.k === "puffer") {   // a pufferfish: speckled and round, a frilly tail; it swells up and its spines stand out
+      g.scale(f * u, u); var R = 7 * (1 + 0.62 * m.inf), wob = Math.sin(t * 5) * 0.12, ln = C("#3a4410");
+      g.beginPath(); g.moveTo(-R * 0.8, 0); g.quadraticCurveTo(-R * 1.3, -R * 0.2, -R * 1.6, -R * 0.6 + wob * R); g.quadraticCurveTo(-R * 1.4, 0, -R * 1.6, R * 0.6 + wob * R); g.quadraticCurveTo(-R * 1.3, R * 0.2, -R * 0.8, 0); aInk(g, aG(g, -R, R, C("#d8e88a"), C("#a8b84a"), C("#6a7a2a")), ln, 0.9);
+      g.strokeStyle = C("#6a7a2a"); g.lineWidth = 0.4; g.beginPath(); g.moveTo(-R * 0.95, 0); g.lineTo(-R * 1.45, -R * 0.4); g.moveTo(-R * 0.95, 0); g.lineTo(-R * 1.45, R * 0.4); g.stroke();
+      if (m.inf > 0.25) for (var k = 0; k < 16; k++) { var a = k / 16 * 6.2832, l0 = R * 0.9, l1 = R * (0.92 + 0.5 * m.inf); g.beginPath(); g.moveTo(Math.cos(a - 0.12) * l0, Math.sin(a - 0.12) * l0); g.lineTo(Math.cos(a) * l1, Math.sin(a) * l1); g.lineTo(Math.cos(a + 0.12) * l0, Math.sin(a + 0.12) * l0); aInk(g, C("#fff4d0"), ln, 0.5); }
+      g.beginPath(); g.ellipse(0, 0, R, R * 0.92, 0, 0, 7); aInk(g, aG(g, -R, R, C("#e4f09a"), C("#c8d870"), C("#8a9a3a")), ln, 1);
+      g.beginPath(); g.ellipse(0.1 * R, R * 0.3, R * 0.8, R * 0.55, 0, 0, 7); g.fillStyle = C("#f6f0b8"); g.fill();
+      g.fillStyle = C("#6a7a2a"); for (var i = 0; i < 9; i++) { g.beginPath(); g.arc((-0.6 + (i % 5) * 0.26) * R, (-0.55 + Math.floor(i / 5) * 0.28 + ((i * 37) % 5) / 30) * R, R * 0.075, 0, 7); g.fill(); }
+      aShine(g, -R * 0.3, -R * 0.55, R * 0.4, R * 0.16, 0.4);
+      aEye(g, R * 0.4, -R * 0.2, R * 0.27, C("#2a3a10"), ln, fl, 0.5);
+      g.beginPath(); g.ellipse(R * 0.84, R * 0.16, R * 0.12, R * 0.08, 0, 0, 7); aInk(g, C("#a8643a"), ln, 0.5);
+      g.beginPath(); g.moveTo(-R * 0.05, R * 0.25); g.quadraticCurveTo(-R * 0.5, R * (0.4 + wob), -R * 0.55, R * (0.62 + wob)); g.quadraticCurveTo(-R * 0.1, R * 0.62, R * 0.15, R * 0.5); g.closePath(); aInk(g, C("#b8c85a"), ln, 0.6);   // pectoral fin
+    } else if (m.k === "snapjaw") {   // a snapjaw: a little grey shark, white belly, gill slits and a mouthful of teeth
+      g.scale(f * u, u); var sw = Math.sin(t * 14 + m.ph) * 2, bite = m.st === "flee" || (m.vx * f > 3) ? 1 : 0, ln = C("#16222e");
+      fin([[-6, 0], [-9, -2 + sw * 0.5], [-12.4, -5.6 + sw], [-10.6, 0.4 + sw * 0.6], [-12, 5 + sw], [-8.6, 1.6 + sw * 0.4]], aG(g, -6, 5, C("#8aa0b4"), C("#5a6e82"), C("#3a4a5a")), ln, 0.8);
+      fin([[-2.4, -3.4], [0.4, -7.6], [3.4, -3.2]], aG(g, -7.6, -3, C("#8aa0b4"), C("#5a6e82"), C("#3a4a5a")), ln, 0.8);
+      g.beginPath(); g.moveTo(-7, 0); g.quadraticCurveTo(-3, -4.6, 4, -3.6); g.quadraticCurveTo(9.4, -2.4, 9.8, 1.2); g.quadraticCurveTo(6, 4.6, -1, 4); g.quadraticCurveTo(-5.4, 3.2, -7, 0); aInk(g, aG(g, -4.6, 4.6, C("#a4b6c8"), C("#7a8ea0"), C("#4a5e70")), ln, 0.9);
+      g.beginPath(); g.moveTo(-5, 1.6); g.quadraticCurveTo(1, 4.6, 8.6, 2); g.quadraticCurveTo(2, 2.6, -5, 1.6); g.fillStyle = C("#e0e8f0"); g.fill();
+      g.strokeStyle = C("#3a4a5a"); g.lineWidth = 0.45; for (var gl = 0; gl < 3; gl++) { g.beginPath(); g.moveTo(1 - gl * 1.1, -1.6); g.quadraticCurveTo(0.4 - gl * 1.1, 0, 1 - gl * 1.1, 1.4); g.stroke(); }
+      fin([[2.6, 1.6], [0.2, 4.4 + Math.sin(t * 6) * 0.4], [4.4, 2.8]], C("#5a6e82"), ln, 0.6);
+      g.beginPath(); g.moveTo(4.6, 1.8); g.lineTo(9.8, 1.2 + bite * 0.4); g.lineTo(8.6, 3 + bite * 1.6); g.quadraticCurveTo(6.4, 3.8 + bite, 4.6, 1.8); aInk(g, C("#5a1a26"), ln, 0.6);
+      g.fillStyle = "#fff"; for (var q = 0; q < 4; q++) { g.beginPath(); g.moveTo(5.2 + q * 1.1, 1.7 - q * 0.1); g.lineTo(5.7 + q * 1.1, 2.8 + bite * 0.6); g.lineTo(6.2 + q * 1.1, 1.6 - q * 0.1); g.fill(); g.beginPath(); g.moveTo(5.4 + q * 1.1, 3.4 + bite * 1.4); g.lineTo(5.9 + q * 1.1, 2.5 + bite * 0.8); g.lineTo(6.4 + q * 1.1, 3.3 + bite * 1.4); g.fill(); }
+      aShine(g, 0, -2.6, 3.6, 0.8, 0.35, -0.08);
+      aEye(g, 5, -0.9, 1.3, C("#e02a2a"), ln, fl, 0.6, bite ? 0.5 : 0.25);
+    } else if (m.k === "eel") {   // a moray-ish eel: a segmented, glowing-spotted body that waves along, a fanged head
       if (m.hd === undefined) m.hd = f > 0 ? 0 : Math.PI; var sp = Math.hypot(m.vx, m.vy); if (sp > 0.3) { var tg = Math.atan2(m.vy, m.vx), df = Math.atan2(Math.sin(tg - m.hd), Math.cos(tg - m.hd)); m.hd += df * 0.15; } else { var tg2 = f > 0 ? 0 : Math.PI, df2 = Math.atan2(Math.sin(tg2 - m.hd), Math.cos(tg2 - m.hd)); m.hd += df2 * 0.05; }
-      var px = 0, py = 0, ang = m.hd, N = 11, segs = [];
-      for (var i2 = 0; i2 < N; i2++) { segs.push([px, py]); ang += Math.sin(t * 4 - i2 * 0.7 + m.ph) * (0.16 + 0.1 * Math.min(1, sp / 3)); px -= Math.cos(ang) * 0.46 * ts; py -= Math.sin(ang) * 0.46 * ts; }
-      for (var i3 = N - 1; i3 >= 0; i3--) { var rr = (i3 === 0 ? 0.42 : 0.4 - i3 * 0.027) * ts; oE(g, segs[i3][0], segs[i3][1], rr, rr, C(i3 % 2 ? "#2c7a78" : "#23666a")); oE(g, segs[i3][0], segs[i3][1] + rr * 0.3, rr * 0.7, rr * 0.5, C("#8ad0b0")); if (i3 % 3 === 1) oE(g, segs[i3][0], segs[i3][1] - rr * 0.2, rr * 0.2, rr * 0.2, "#7af0ff"); }
-      var hx = segs[0][0], hy = segs[0][1], open = m.st === "dash" || m.st === "wind"; g.save(); g.translate(hx, hy); g.rotate(m.hd); if (Math.cos(m.hd) < 0) g.scale(1, -1);
-      oE(g, 3 * u, 0, 6.5 * u, 4.4 * u, C("#2c7a78")); oP(g, "#e8f6ee", [[7 * u, -1.8 * u], [10.5 * u, -2.6 * u - (open ? 2.5 * u : 0)], [10 * u, 0]]); oP(g, "#e8f6ee", [[7 * u, 1.8 * u], [10.5 * u, 2.6 * u + (open ? 2.5 * u : 0)], [10 * u, 0]]); oE(g, 7.4 * u, 0, 3 * u, (1.4 + (open ? 2.5 : 0)) * u, "#6a1a2a"); oE(g, 2 * u, -2 * u, 1.7 * u, 1.7 * u, "#fff"); oE(g, 2.4 * u, -2 * u, 0.9 * u, 0.9 * u, m.st === "wind" ? "#ff3a3a" : "#14180a"); g.restore();
-    } else if (m.k === "jelly") {
-      var pu = 1 + Math.sin(t * 4.5 + m.ph) * 0.14; oG(g, 0, 0, 16 * u, "rgba(122,240,255,.28)");
-      for (var j = 0; j < 5; j++) { var tx = (j - 2) * 3 * u, pts = []; for (var s2 = 0; s2 <= 5; s2++) pts.push([tx + Math.sin(t * 3 + j + s2 * 0.9) * 2.2 * u * (s2 / 5), (3 + s2 * 2.8) * u]); oL(g, C("rgba(140,240,255,.75)"), 1.6 * u, pts); }
-      g.beginPath(); g.moveTo(-8 * u, 2 * u); g.bezierCurveTo(-8 * u, -9 * u * pu, 8 * u, -9 * u * pu, 8 * u, 2 * u); g.quadraticCurveTo(0, 5 * u, -8 * u, 2 * u); g.fillStyle = C("rgba(96,214,240,.78)"); g.fill(); oE(g, 0, -2 * u, 5.2 * u, 3.4 * u * pu, C("rgba(200,252,255,.6)")); oE(g, -3 * u, -4.4 * u, 2 * u, 1 * u, "rgba(255,255,255,.65)", -0.4);
-    } else if (m.k === "urchin") {
-      oG(g, 0, 0, 11 * u, "rgba(192,138,255,.22)"); for (var q2 = 0; q2 < 20; q2++) { var a2 = q2 / 20 * 6.2832 - 1.57 * 0, len = (q2 % 2 ? 11 : 9) * u; if (Math.sin(a2) > 0.55) continue; oL(g, C(q2 % 3 ? "#5a3a7a" : "#8a5ab8"), 1.5 * u, [[Math.cos(a2) * 3 * u, Math.sin(a2) * 3 * u], [Math.cos(a2) * len, Math.sin(a2) * len]]); }
-      oE(g, 0, 0, 6.4 * u, 6 * u, C("#3a2455")); oE(g, -1.6 * u, -2 * u, 2.4 * u, 1.4 * u, "rgba(255,255,255,.22)", -0.4); oE(g, 0, 1 * u, 2 * u, 1.5 * u, "#1a1030");
-    } else if (m.k === "pirate") {
-      g.scale(f, 1); var kick = Math.sin(t * 5 + m.ph) * 2 * u, aimA = m.aimA !== undefined ? m.aimA : 0, ox3 = 0;
-      oL(g, "rgba(232,251,255,.55)", 1.2 * u, [[-3 * u, -8 * u], [-7 * u, -11 * u + Math.sin(t * 3) * u], [-6 * u, -15 * u]]);
-      oE(g, -3 * u, 8 * u + kick * 0.3, 2.6 * u, 6 * u, C("#2fb59a"), 0.2 + kick * 0.02); oE(g, 2 * u, 8 * u - kick * 0.3, 2.6 * u, 6 * u, C("#4ee6b4"), -0.1);
-      oE(g, 0, 2 * u, 6.6 * u, 7 * u, C("#8a5a32")); oE(g, 0, 3 * u, 5 * u, 5.4 * u, C("#a8743a")); oR(g, -6 * u, 2 * u, 12 * u, 1.6 * u, "#e8d9a8"); oR(g, -6 * u, 6 * u, 12 * u, 1.6 * u, "#e8d9a8");
-      oE(g, 0, -6 * u, 7.4 * u, 7 * u, C("#d9a53a")); oE(g, 0, -6 * u, 5.8 * u, 5.4 * u, C("#9be8ff")); oE(g, 0, -6 * u, 5.8 * u, 5.4 * u, "rgba(20,60,80,.35)");
-      oE(g, 0.4 * u, -5.4 * u, 4 * u, 3.6 * u, C("#4a9a52")); oE(g, -1.4 * u, -7.4 * u, 1.8 * u, 1.8 * u, "#fff"); oE(g, 2.6 * u, -7.4 * u, 1.8 * u, 1.8 * u, "#fff"); oE(g, -1.1 * u, -7.4 * u, 0.9 * u, 0.9 * u, "#14180a"); oE(g, 3 * u, -7.4 * u, 0.9 * u, 0.9 * u, "#14180a"); oR(g, 1.4 * u, -8.6 * u, 3.6 * u, 2.4 * u, "#14180a");
-      oP(g, C("#1a1420"), [[-8 * u, -10 * u], [0, -17 * u], [8 * u, -10 * u], [5 * u, -9 * u], [0, -11 * u], [-5 * u, -9 * u]]); oL(g, "#d9a53a", 1 * u, [[-8 * u, -10 * u], [0, -17 * u], [8 * u, -10 * u]]); oE(g, 0, -13 * u, 1.3 * u, 1.3 * u, "#e8d9a8");
-      g.save(); g.translate(2 * u, 1 * u); g.rotate(f > 0 ? aimA : Math.PI - aimA); oR(g, 0, -1.4 * u, 11 * u, 2.8 * u, "#4a4a52"); oR(g, 0, -1.4 * u, 11 * u, 1 * u, "#7a7a86"); oP(g, "#cfd6dd", [[11 * u, -1 * u], [15 * u, 0], [11 * u, 1 * u]]); oR(g, -2 * u, -2 * u, 4 * u, 4 * u, "#6a4426"); g.restore();
+      var px = 0, py = 0, ang = m.hd, N = 11, segs = [], lnE = C("#0a2426");
+      for (var i2 = 0; i2 < N; i2++) { segs.push([px, py, ang]); ang += Math.sin(t * 4 - i2 * 0.7 + m.ph) * (0.16 + 0.1 * Math.min(1, sp / 3)); px -= Math.cos(ang) * 0.46 * ts; py -= Math.sin(ang) * 0.46 * ts; }
+      for (var i3 = N - 1; i3 >= 0; i3--) { var rr = (i3 === 0 ? 0.42 : 0.4 - i3 * 0.027) * ts, X = segs[i3][0], Y = segs[i3][1];
+        g.beginPath(); g.arc(X, Y, rr, 0, 7); var eg = g.createLinearGradient(X, Y - rr, X, Y + rr); eg.addColorStop(0, C("#4aa8a2")); eg.addColorStop(0.5, C(i3 % 2 ? "#2c7a78" : "#23666a")); eg.addColorStop(1, C("#123e42")); aInk(g, eg, lnE, u * 0.7);
+        if (i3 > 0) { g.beginPath(); g.ellipse(X, Y + rr * 0.32, rr * 0.7, rr * 0.45, 0, 0, 7); g.fillStyle = C("#8ad0b0"); g.fill(); }
+        if (i3 > 0 && i3 < N - 1) { var up2 = Math.cos(m.hd) < 0 ? 1 : -1, nx3 = -Math.sin(segs[i3][2]) * up2, ny3 = Math.cos(segs[i3][2]) * up2; g.beginPath(); g.moveTo(X + nx3 * rr * 0.7 - ny3 * rr * 0.4, Y + ny3 * rr * 0.7 + nx3 * rr * 0.4); g.lineTo(X + nx3 * rr * 1.35, Y + ny3 * rr * 1.35 + Math.sin(t * 6 + i3) * u * 0.3); g.lineTo(X + nx3 * rr * 0.7 + ny3 * rr * 0.4, Y + ny3 * rr * 0.7 - nx3 * rr * 0.4); aInk(g, C("#1e5a5e"), lnE, u * 0.5); }   // a ridge of fin along the back
+        if (i3 % 3 === 1) { g.fillStyle = "#7af0ff"; g.beginPath(); g.arc(X, Y - rr * 0.25, rr * 0.2, 0, 7); g.fill(); oG(g, X, Y - rr * 0.25, rr * 0.8, "rgba(122,240,255,.25)"); } }
+      var hx = segs[0][0], hy = segs[0][1], open = m.st === "dash" || m.st === "wind"; g.save(); g.translate(hx, hy); g.rotate(m.hd); if (Math.cos(m.hd) < 0) g.scale(1, -1); g.scale(u, u);
+      var jo = open ? 3.2 : 0, R0 = 6.7, hg = function (y0, y1) { return aG(g, y0, y1, C("#4aa8a2"), C("#2c7a78"), C("#123e42")); };
+      // the head grows straight out of the neck (same width), slopes up into a brow and tapers to a blunt snout; the lower jaw hinges open below it
+      var jawP = function (cl) { if (cl) { g.moveTo(0, 1); g.lineTo(0, R0 + jo * 0.15); } else g.moveTo(0, R0 + jo * 0.15); g.quadraticCurveTo(5, R0 * 0.9 + jo * 0.5, 9.6, 3.2 + jo); g.quadraticCurveTo(12.4, 2.4 + jo, 13, 1 + jo * 0.7); g.quadraticCurveTo(9, 0.8 + jo * 0.4, 3.6, 1); if (cl) g.closePath(); };
+      g.beginPath(); jawP(true); g.fillStyle = hg(-R0, R0); g.fill(); g.beginPath(); jawP(false); g.strokeStyle = lnE; g.lineWidth = 0.9; g.stroke();   // lower jaw (no seam where it meets the neck)
+      g.beginPath(); g.moveTo(1, R0 * 0.72 + jo * 0.3); g.quadraticCurveTo(5, R0 * 0.6 + jo * 0.5, 11.6, 1.8 + jo * 0.8); g.strokeStyle = C("rgba(138,208,176,.55)"); g.lineWidth = 1.1; g.stroke();   // pale throat edge
+      if (open) { g.beginPath(); g.moveTo(3.6, 0.6); g.quadraticCurveTo(9, 0.2, 13, 1 + jo * 0.7); g.quadraticCurveTo(9, 2.8 + jo * 0.6, 3.6, 0.6); g.fillStyle = "#4a0e1e"; g.fill(); }
+      g.fillStyle = "#e8f6ee"; for (var tq = 0; tq < 4; tq++) { var tx2 = 5.4 + tq * 1.8; g.beginPath(); g.moveTo(tx2 - 0.5, 1.2 + jo * 0.45 + tq * 0.1); g.lineTo(tx2, 0 + jo * 0.3); g.lineTo(tx2 + 0.5, 1.2 + jo * 0.45 + tq * 0.1); g.fill(); }   // lower teeth
+      var headP = function (cl) { g.moveTo(0, -R0); g.quadraticCurveTo(3.4, -R0 * 1.02, 5.8, -4.6); g.quadraticCurveTo(10.4, -3.6, 13.6, -0.6); g.quadraticCurveTo(14.2, 0.6, 12.8, 0.8); g.quadraticCurveTo(8, 0.4, 3.6, 0.8); g.quadraticCurveTo(1, 1.2, 0, 1.4); if (cl) g.closePath(); };
+      g.beginPath(); headP(true); g.fillStyle = hg(-R0, R0); g.fill(); g.beginPath(); headP(false); g.strokeStyle = lnE; g.lineWidth = 1; g.stroke();   // upper head: inked all round except where it grows out of the neck
+      g.save(); g.beginPath(); headP(true); g.clip();
+      g.fillStyle = C("#1e5a5e"); [[-1, -3.4, 1.2], [2.6, -4.6, 0.9], [6, -2.6, 0.8], [0.6, -1, 0.7]].forEach(function (sp2) { g.beginPath(); g.ellipse(sp2[0], sp2[1], sp2[2] * 1.3, sp2[2], 0.3, 0, 7); g.fill(); });   // mottling
+      g.restore();
+      g.fillStyle = "#e8f6ee"; for (var tu = 0; tu < 4; tu++) { var tx3 = 5.8 + tu * 1.8; g.beginPath(); g.moveTo(tx3 - 0.5, 0.6); g.lineTo(tx3, 1.9 + (tu === 1 ? 0.7 : 0)); g.lineTo(tx3 + 0.5, 0.6); g.fill(); }   // upper fangs
+      g.strokeStyle = lnE; g.lineWidth = 0.6; g.beginPath(); g.moveTo(1.6, -3); g.quadraticCurveTo(2.6, -1, 1.6, 0.8); g.stroke();   // gill slit
+      g.beginPath(); g.moveTo(12, -1.6); g.lineTo(13.4, -3); g.strokeStyle = lnE; g.lineWidth = 1.4; g.stroke(); g.strokeStyle = C("#2c7a78"); g.lineWidth = 0.7; g.stroke();   // a nostril tube
+      aShine(g, 1.6, -5, 3.4, 0.9, 0.32, -0.12);
+      aEye(g, 5.6, -2.6, 1.5, m.st === "wind" ? "#ff3a3a" : C("#d8c040"), lnE, fl, 0.6, 0.35);
+      g.strokeStyle = lnE; g.lineWidth = 1; g.beginPath(); g.moveTo(3.4, -4.6); g.quadraticCurveTo(5.6, -5.2, 7.8, -3.8); g.stroke();   // a heavy brow
+      g.restore();
+    } else if (m.k === "jelly") {   // a jellyfish: a glassy pulsing bell with a frilled rim, an inner glow, trailing tentacles and frilly mouth arms
+      g.scale(u, u); var pu = 1 + Math.sin(t * 4.5 + m.ph) * 0.14; oG(g, 0, 0, 16, "rgba(122,240,255,.28)");
+      for (var j = 0; j < 6; j++) { var tx = (j - 2.5) * 2.8, pts = []; g.beginPath(); for (var s2 = 0; s2 <= 7; s2++) { var X2 = tx + Math.sin(t * 3 + j + s2 * 0.9) * 2.2 * (s2 / 7), Y2 = 3 + s2 * 2.4; if (s2) g.lineTo(X2, Y2); else g.moveTo(X2, Y2); } g.strokeStyle = C("rgba(140,240,255,.7)"); g.lineWidth = j % 2 ? 0.8 : 1.2; g.stroke(); }
+      [-1.6, 1.6].forEach(function (mx, mi) { g.beginPath(); for (var s4 = 0; s4 <= 6; s4++) { var X3 = mx + Math.sin(t * 2.4 + s4 * 0.8 + mi) * 1.4, Y3 = 2 + s4 * 1.6; if (s4) g.lineTo(X3, Y3); else g.moveTo(X3, Y3); } g.strokeStyle = C("rgba(255,170,230,.55)"); g.lineWidth = 1.2; g.stroke(); });   // the frilly mouth arms
+      g.beginPath(); g.moveTo(-8.4, 2); g.bezierCurveTo(-8.4, -9 * pu, 8.4, -9 * pu, 8.4, 2); for (var sc = 0; sc < 6; sc++) { var x0 = 8.4 - sc * 2.8; g.quadraticCurveTo(x0 - 1.4, 3.8, x0 - 2.8, 2); } g.closePath();
+      var jg = g.createLinearGradient(0, -9, 0, 3); jg.addColorStop(0, C("rgba(170,240,255,.92)")); jg.addColorStop(1, C("rgba(70,190,230,.8)")); aInk(g, jg, C("rgba(20,90,130,.9)"), 0.8);
+      g.beginPath(); g.ellipse(0, -1.6, 4.6, 3 * pu, 0, 0, 7); g.fillStyle = C("rgba(255,180,240,.45)"); g.fill();   // the glowing inside
+      g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 0.5; for (var r2 = -2; r2 <= 2; r2++) { g.beginPath(); g.moveTo(r2 * 1.6, -6.6 * pu + Math.abs(r2) * 0.8); g.quadraticCurveTo(r2 * 3, -2, r2 * 3.6, 1.6); g.stroke(); }
+      aShine(g, -3.2, -4.6, 2.4, 1.1, 0.7, -0.4);
+    } else if (m.k === "urchin") {   // a sea urchin: a dark spiny ball, spines tipped pale and glowing, a little mouth underneath
+      g.scale(u, u); oG(g, 0, 0, 11, "rgba(192,138,255,.22)"); var lnU = C("#120a1e");
+      for (var q2 = 0; q2 < 22; q2++) { var a2 = q2 / 22 * 6.2832 + Math.sin(t * 1.4 + q2) * 0.04, len = (q2 % 2 ? 11 : 9); if (Math.sin(a2) > 0.6) continue; var bx = Math.cos(a2) * 4.4, by = Math.sin(a2) * 4.4, ex2 = Math.cos(a2) * len, ey2 = Math.sin(a2) * len, nx2 = -Math.sin(a2) * 0.7, ny2 = Math.cos(a2) * 0.7;
+        g.beginPath(); g.moveTo(bx + nx2, by + ny2); g.lineTo(ex2, ey2); g.lineTo(bx - nx2, by - ny2); g.closePath(); aInk(g, aG(g, -len, len, C(q2 % 3 ? "#7a52a8" : "#a87ad8"), C("#5a3a7a"), C("#3a2455")), lnU, 0.4); g.fillStyle = C("#e8d0ff"); g.beginPath(); g.arc(ex2, ey2, 0.45, 0, 7); g.fill(); }
+      g.beginPath(); g.ellipse(0, 0, 6.6, 6.2, 0, 0, 7); aInk(g, aG(g, -6.2, 6.2, C("#5e3e82"), C("#3a2455"), C("#1e1032")), lnU, 0.9);
+      g.fillStyle = C("#7a5aa6"); for (var bm = 0; bm < 7; bm++) { var ba = bm * 0.9 + 0.3; g.beginPath(); g.arc(Math.cos(ba) * 3.8, Math.sin(ba) * 3.4 - 0.6, 0.6, 0, 7); g.fill(); }
+      aShine(g, -2, -2.8, 2.6, 1.3, 0.3); g.beginPath(); g.ellipse(0, 3.2, 1.8, 1.1, 0, 0, 7); aInk(g, C("#1a1030"), lnU, 0.5);
+    } else if (m.k === "pirate") {   // a diving pirate: a brass diving helmet over a frog face, a striped barrel-chest, flippers and a harpoon gun
+      g.scale(f, 1); var kick = Math.sin(t * 5 + m.ph) * 2, aimA = m.aimA !== undefined ? m.aimA : 0, lnP = C("#1a120a");
+      g.save(); g.scale(u, u);
+      oL(g, "rgba(232,251,255,.55)", 1.2, [[-3, -8], [-7, -11 + Math.sin(t * 3)], [-6, -15]]); [[-6.4, -13.6, 0.9], [-5.6, -16.4, 0.6]].forEach(function (bb) { g.strokeStyle = "rgba(232,251,255,.7)"; g.lineWidth = 0.4; g.beginPath(); g.arc(bb[0], bb[1] + Math.sin(t * 2) * 0.3, bb[2], 0, 7); g.stroke(); });
+      [[-3, 8 + kick * 0.3, 0.2 + kick * 0.02, "#2fb59a"], [2, 8 - kick * 0.3, -0.1, "#4ee6b4"]].forEach(function (fq) { g.save(); g.translate(fq[0], fq[1]); g.rotate(fq[2]); g.beginPath(); g.moveTo(-1.6, -5); g.lineTo(1.6, -5); g.lineTo(3, 5.6); g.quadraticCurveTo(0, 7, -3, 5.6); g.closePath(); aInk(g, aG(g, -5, 6, C("#8af0d0"), C(fq[3]), C("#1a6a5a")), lnP, 0.7); g.strokeStyle = C("#1a6a5a"); g.lineWidth = 0.4; g.beginPath(); g.moveTo(0, -3); g.lineTo(0, 5.4); g.stroke(); g.restore(); });
+      g.beginPath(); g.ellipse(0, 2, 6.6, 7, 0, 0, 7); aInk(g, aG(g, -5, 9, C("#c8945a"), C("#8a5a32"), C("#4a2e14")), lnP, 0.9);
+      g.save(); g.beginPath(); g.ellipse(0, 2, 6.6, 7, 0, 0, 7); g.clip(); g.fillStyle = C("#efe4c6"); [-2, 2, 6].forEach(function (yy) { g.fillRect(-7, yy, 14, 1.6); }); g.fillStyle = "rgba(0,0,0,.18)"; g.fillRect(-7, 6.4, 14, 3); g.restore();
+      g.beginPath(); g.rect(-6.4, 0.2, 12.8, 1.4); aInk(g, C("#3a2414"), lnP, 0.4);
+      g.beginPath(); g.ellipse(0, -6, 7.6, 7.2, 0, 0, 7); aInk(g, aG(g, -13, 1, C("#ffe08a"), C("#d9a53a"), C("#7a5414")), lnP, 1);   // brass helmet
+      [[-6.6, -6], [6.6, -6], [0, -12.6]].forEach(function (bl) { g.beginPath(); g.arc(bl[0], bl[1], 0.7, 0, 7); aInk(g, C("#ffe8a0"), lnP, 0.3); });
+      g.beginPath(); g.ellipse(0, -6, 5.6, 5.2, 0, 0, 7); aInk(g, C("#1e4a5a"), lnP, 0.7);   // the porthole glass, with a frog inside
+      g.save(); g.beginPath(); g.ellipse(0, -6, 5.4, 5, 0, 0, 7); g.clip();
+      g.beginPath(); g.ellipse(0.4, -4.8, 4.2, 3.8, 0, 0, 7); aInk(g, aG(g, -8.6, -1, C("#8ae07a"), C("#4a9a52"), C("#2a6a32")), lnP, 0.5);
+      aEye(g, -1.6, -7.2, 1.4, C("#c89a2a"), lnP, fl, 0.6); g.beginPath(); g.ellipse(2.8, -7.2, 1.6, 1.3, 0, 0, 7); aInk(g, C("#14100c"), lnP, 0.3); g.strokeStyle = C("#14100c"); g.lineWidth = 0.4; g.beginPath(); g.moveTo(0.4, -9.2); g.lineTo(5, -5.6); g.stroke();
+      g.strokeStyle = lnP; g.lineWidth = 0.5; g.beginPath(); g.moveTo(-1.6, -3.6); g.quadraticCurveTo(1, -2.2, 3.6, -3.8); g.stroke();
+      g.fillStyle = "rgba(160,230,255,.25)"; g.fillRect(-6, -12, 12, 12); aShine(g, -2.4, -9, 2, 1.2, 0.5, -0.5);
+      g.restore();
+      g.beginPath(); g.moveTo(-8.4, -10); g.quadraticCurveTo(-4, -9, 0, -11.4); g.quadraticCurveTo(4, -9, 8.4, -10); g.quadraticCurveTo(5, -13, 3, -13.4); g.quadraticCurveTo(0, -18.4, -3, -13.4); g.quadraticCurveTo(-5, -13, -8.4, -10); g.closePath(); aInk(g, aG(g, -17, -9, C("#3a3a48"), C("#1a1420"), C("#0a0a10")), lnP, 0.8);   // the tricorn on top
+      g.strokeStyle = C("#d9a53a"); g.lineWidth = 0.7; g.beginPath(); g.moveTo(-8, -10.2); g.quadraticCurveTo(-4, -9.4, 0, -11.6); g.quadraticCurveTo(4, -9.4, 8, -10.2); g.stroke(); g.fillStyle = C("#e8d9a8"); g.beginPath(); g.arc(0, -13.6, 1.2, 0, 7); g.fill();
+      g.restore();
+      g.save(); g.translate(2 * u, 1 * u); g.rotate(f > 0 ? aimA : Math.PI - aimA); g.scale(u, u);   // the harpoon gun
+      g.beginPath(); g.rect(-2, -2, 4.4, 4); aInk(g, aG(g, -2, 2, C("#8a5a32"), C("#6a4426"), C("#3a2414")), lnP, 0.5);
+      g.beginPath(); g.rect(0, -1.4, 11, 2.8); aInk(g, aG(g, -1.4, 1.4, C("#8a8a96"), C("#4a4a52"), C("#2a2a30")), lnP, 0.6); g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(0.6, -1, 10, 0.5);
+      g.beginPath(); g.moveTo(11, -1.4); g.lineTo(15.6, 0); g.lineTo(11, 1.4); g.lineTo(12, 0); g.closePath(); aInk(g, C("#dfe6ec"), lnP, 0.5);
+      g.restore();
       if (m.st === "aim") { g.restore(); g.save(); g.translate(sx, sy); g.strokeStyle = "rgba(255,70,70," + (0.4 + 0.4 * Math.sin(now / 40)) + ")"; g.lineWidth = Math.max(1, u * 0.8); g.setLineDash([u * 2, u * 2]); g.beginPath(); g.moveTo(0, 0); g.lineTo((OCS.pl.x - m.x) * ts, (OCS.pl.y - 0.45 - m.y) * ts); g.stroke(); g.setLineDash([]); }
-    } else if (m.k === "angler") {
-      g.scale(f, 1); var wg = Math.sin(t * 3 + m.ph) * 1.2 * u, open2 = m.st === "dash" || m.st === "wind";
-      oP(g, C("#2a1d44"), [[-10 * u, 0], [-17 * u, -6 * u + wg], [-17 * u, 6 * u + wg]]); oE(g, 0, 0, 13 * u, 9.6 * u, C("#3a2a55")); oE(g, 0, 3 * u, 11 * u, 5.6 * u, C("#5a4a82")); oE(g, -2 * u, -4 * u, 8 * u, 3 * u, C("#2a1d44"));
-      for (var s3 = 0; s3 < 8; s3++) oE(g, (-8 + s3 * 2.2) * u, (-3 + ((s3 * 5) % 4)) * u, 0.7 * u, 0.7 * u, "#7af0ff");
-      oL(g, "#2a1d44", 1.6 * u, [[3 * u, -8 * u], [8 * u, -16 * u], [14 * u, -15 * u]]); oG(g, 14 * u, -14.4 * u, 12 * u, "rgba(255,226,122,.55)"); oE(g, 14 * u, -14.4 * u, 2.6 * u, 2.6 * u, "#fff6c0");
-      oP(g, "#e8e0d0", [[5 * u, -1 * u], [14 * u, 2 * u], [5 * u, 2 * u]]); for (var q3 = 0; q3 < 6; q3++) { oP(g, "#fff", [[(5.5 + q3 * 1.5) * u, -1 * u + q3 * 0.4 * u], [(6.3 + q3 * 1.5) * u, 2.2 * u + q3 * 0.2 * u], [(7.1 + q3 * 1.5) * u, -1 * u + q3 * 0.4 * u]]); }
-      oE(g, 8 * u, 4.4 * u + (open2 ? 3 * u : 0), 5 * u, 2.6 * u + (open2 ? 1.4 * u : 0), C("#6a1a2a")); for (var q4 = 0; q4 < 5; q4++) oP(g, "#fff", [[(4.5 + q4 * 1.6) * u, 3 * u + (open2 ? 2 * u : 0)], [(5.3 + q4 * 1.6) * u, 0.4 * u + (open2 ? 2 * u : 0)], [(6.1 + q4 * 1.6) * u, 3 * u + (open2 ? 2 * u : 0)]]);
-      oE(g, 6 * u, -3 * u, 2.6 * u, 2.6 * u, "#fff"); oE(g, 6.5 * u, -3 * u, 1.4 * u, 1.4 * u, "#ff3a3a");
-    } else if (m.k === "captain") {
-      g.scale(f, 1); var wave = Math.sin(t * 2.4) * 1.2 * u, glow = m.st === "wind" || m.st === "cast"; g.globalAlpha *= 0.9; oG(g, 0, 0, 26 * u, glow ? "rgba(255,90,90,.35)" : "rgba(168,255,240,.3)");
-      oP(g, "rgba(120,220,210,.55)", [[-9 * u, 2 * u], [9 * u, 2 * u], [7 * u, 12 * u + wave], [3 * u, 8 * u], [0, 15 * u - wave], [-3 * u, 8 * u], [-7 * u, 12 * u + wave]]);
-      oP(g, C("#2a4a5a"), [[-9 * u, -3 * u], [9 * u, -3 * u], [10 * u, 8 * u], [-10 * u, 8 * u]]); oP(g, C("#3a6a7a"), [[-7 * u, -3 * u], [7 * u, -3 * u], [8 * u, 7 * u], [-8 * u, 7 * u]]); for (var b = 0; b < 3; b++) oE(g, 0, (-1 + b * 3.4) * u, 1 * u, 1 * u, "#ffd23f"); oR(g, -9 * u, 3 * u, 18 * u, 1.6 * u, "#d9a53a");
-      oE(g, 0, -9 * u, 8 * u, 7 * u, C("#4ee6b4")); oE(g, -4 * u, -12.6 * u, 3.4 * u, 3.4 * u, "#fff6c0"); oE(g, 4 * u, -12.6 * u, 3.4 * u, 3.4 * u, "#fff6c0"); oE(g, -4 * u, -12.4 * u, 1.5 * u, 2 * u, glow ? "#ff3a3a" : "#14281a"); oE(g, 4 * u, -12.4 * u, 1.5 * u, 2 * u, glow ? "#ff3a3a" : "#14281a"); oL(g, "#14281a", 1.4 * u, [[-4 * u, -6 * u], [0, -4.8 * u], [4 * u, -6 * u]]);
-      oP(g, "#1a1420", [[-12 * u, -14 * u], [0, -24 * u], [12 * u, -14 * u], [8 * u, -12 * u], [0, -15 * u], [-8 * u, -12 * u]]); oL(g, "#d9a53a", 1.4 * u, [[-12 * u, -14 * u], [0, -24 * u], [12 * u, -14 * u]]); oE(g, 0, -19 * u, 2 * u, 2 * u, "#e8d9a8"); oE(g, -0.8 * u, -19.2 * u, 0.5 * u, 0.5 * u, "#14181c"); oE(g, 0.8 * u, -19.2 * u, 0.5 * u, 0.5 * u, "#14181c");
-      g.save(); g.translate(8 * u, 1 * u); g.rotate(m.st === "wind" ? -2.2 : m.st === "slash" ? 0.3 : -0.9); oR(g, 0, -1 * u, 17 * u, 2 * u, "#cfe8f0"); oR(g, 0, -0.4 * u, 17 * u, 0.8 * u, "#ffffff"); oR(g, -3 * u, -1.8 * u, 4 * u, 3.6 * u, "#d9a53a"); g.restore();
+    } else if (m.k === "angler") {   // an anglerfish: a lumpy dark body with glowing spots, a lure on a rod, an underbite full of needle teeth
+      g.scale(f * u, u); var wg = Math.sin(t * 3 + m.ph) * 1.2, open2 = m.st === "dash" || m.st === "wind", lnA = C("#0c0818"), jaw = open2 ? 3 : 0;
+      fin([[-10, 0], [-14, -3 + wg * 0.5], [-17.6, -7 + wg], [-15.6, 0 + wg * 0.6], [-17.6, 7 + wg], [-14, 3 + wg * 0.5]], aG(g, -7, 7, C("#4a3a70"), C("#2a1d44"), C("#140c24")), lnA, 0.9);
+      g.strokeStyle = C("#5a4a82"); g.lineWidth = 0.4; g.beginPath(); g.moveTo(-11, 0); g.lineTo(-16.4, -5); g.moveTo(-11, 0); g.lineTo(-16.4, 5); g.stroke();
+      fin([[-6, -8.4], [-2, -12 + wg * 0.4], [2, -9.2]], C("#2a1d44"), lnA, 0.7);
+      g.beginPath(); g.moveTo(-11, 0); g.quadraticCurveTo(-10, -10.4, 1, -9.8); g.quadraticCurveTo(12, -9, 13, -2); g.lineTo(12.6, 1 + jaw * 0.3); g.quadraticCurveTo(10, 9.6, -2, 9); g.quadraticCurveTo(-10, 8, -11, 0); aInk(g, aG(g, -10, 9, C("#5a4a80"), C("#3a2a55"), C("#1a1030")), lnA, 1.1);
+      g.beginPath(); g.ellipse(-1, 4.6, 9.4, 3.8, 0, 0, Math.PI); g.fillStyle = C("#5a4a82"); g.fill();
+      for (var s3 = 0; s3 < 8; s3++) { var gx = (-8 + s3 * 2.2), gy = (-3 + ((s3 * 5) % 4)); oG(g, gx, gy, 1.8, "rgba(122,240,255,.35)"); g.fillStyle = "#9af6ff"; g.beginPath(); g.arc(gx, gy, 0.6, 0, 7); g.fill(); }
+      aShine(g, -3, -6.4, 4.6, 1.2, 0.18, -0.1);
+      var lx2 = 14, ly2 = -15 + Math.sin(t * 2.2) * 0.8; aLimbQ(g, 3, -9, 6, -17, lx2, ly2 + 0.6, 0.9, C("#3a2a55"), lnA);
+      oG(g, lx2, ly2, 12, "rgba(255,226,122,.5)"); g.beginPath(); g.arc(lx2, ly2, 2.6, 0, 7); var lg2 = g.createRadialGradient(lx2 - 0.8, ly2 - 0.8, 0, lx2, ly2, 2.6); lg2.addColorStop(0, "#ffffff"); lg2.addColorStop(0.5, "#fff6a0"); lg2.addColorStop(1, "#ffb43a"); g.fillStyle = lg2; g.fill();
+      g.beginPath(); g.moveTo(4, 2 + jaw * 0.5); g.lineTo(13.4, 1.6 + jaw); g.quadraticCurveTo(12, 6.6 + jaw, 6, 6.4 + jaw); g.quadraticCurveTo(3, 5.2 + jaw, 4, 2 + jaw * 0.5); aInk(g, C("#4a0e1e"), lnA, 0.7);   // the open mouth
+      g.fillStyle = "#fff"; for (var q3 = 0; q3 < 6; q3++) { g.beginPath(); g.moveTo(5 + q3 * 1.5, -0.6 + q3 * 0.3); g.lineTo(5.6 + q3 * 1.5, 2.8 + q3 * 0.15 + jaw * 0.3); g.lineTo(6.2 + q3 * 1.5, -0.6 + q3 * 0.3); g.fill(); }
+      for (var q4 = 0; q4 < 5; q4++) { g.beginPath(); g.moveTo(5.4 + q4 * 1.6, 5.6 + jaw); g.lineTo(6.2 + q4 * 1.6, 2 + jaw * 0.6); g.lineTo(7 + q4 * 1.6, 5.4 + jaw); g.fill(); }
+      g.beginPath(); g.moveTo(3.6, -1); g.lineTo(13.2, -2); g.lineTo(13.4, 0.6 + jaw * 0.3); g.lineTo(4.4, 1.6); g.closePath(); g.strokeStyle = lnA; g.lineWidth = 0.8; g.stroke();
+      aEye(g, 6, -3.4, 2.4, open2 ? "#ff3a3a" : C("#ff6a3a"), lnA, fl, 0.6, 0.3);
+    } else if (m.k === "captain") {   // the ghost captain: a translucent frog in a tattered coat and tricorn, glowing eyes, a spectral cutlass
+      g.scale(f * u, u); var wave = Math.sin(t * 2.4) * 1.2, glow = m.st === "wind" || m.st === "cast", lnC = C("#0a2a2a"); g.globalAlpha *= 0.9; oG(g, 0, 0, 26, glow ? "rgba(255,90,90,.35)" : "rgba(168,255,240,.3)");
+      g.beginPath(); g.moveTo(-9, 2); g.lineTo(9, 2); g.lineTo(7.4, 12 + wave); g.lineTo(4.6, 9); g.lineTo(2.4, 14 - wave); g.lineTo(0, 10); g.lineTo(-2.4, 15 - wave); g.lineTo(-4.6, 9); g.lineTo(-7.4, 12 + wave); g.closePath();
+      var gg = g.createLinearGradient(0, 2, 0, 15); gg.addColorStop(0, "rgba(140,240,220,.7)"); gg.addColorStop(1, "rgba(140,240,220,0)"); g.fillStyle = gg; g.fill();   // the wispy ghost tail
+      g.beginPath(); g.moveTo(-9, -3); g.lineTo(9, -3); g.quadraticCurveTo(10.6, 2, 10, 8); g.lineTo(6, 7); g.lineTo(3, 9); g.lineTo(0, 7.4); g.lineTo(-3, 9); g.lineTo(-6, 7); g.lineTo(-10, 8); g.quadraticCurveTo(-10.6, 2, -9, -3); g.closePath(); aInk(g, aG(g, -3, 9, C("#3a7a8a"), C("#2a4a5a"), C("#142a36")), lnC, 0.9);   // the tattered coat
+      g.beginPath(); g.moveTo(-2.4, -3); g.lineTo(0, 1); g.lineTo(2.4, -3); g.closePath(); g.fillStyle = C("#e8f4f0"); g.fill();
+      g.strokeStyle = C("#d9a53a"); g.lineWidth = 0.6; g.beginPath(); g.moveTo(-8.6, -2.4); g.lineTo(-9.4, 7.4); g.moveTo(8.6, -2.4); g.lineTo(9.4, 7.4); g.stroke();
+      for (var b = 0; b < 3; b++) { g.beginPath(); g.arc(-3.4, (0 + b * 2.6), 0.8, 0, 7); g.arc(3.4, (0 + b * 2.6), 0.8, 0, 7); g.fillStyle = C("#ffd23f"); g.fill(); }
+      g.beginPath(); g.rect(-9.6, 3.4, 19.2, 1.6); aInk(g, aG(g, 3.4, 5, C("#ffe08a"), C("#d9a53a"), C("#7a5414")), lnC, 0.4);
+      g.beginPath(); g.ellipse(0, -9, 8.2, 7, 0, 0, 7); aInk(g, aG(g, -16, -2, C("#a8ffe0"), C("#4ee6b4"), C("#1e8a6a")), lnC, 1);
+      [[-4, -12.6], [4, -12.6]].forEach(function (eq) { g.beginPath(); g.arc(eq[0], eq[1], 3.4, 0, 7); aInk(g, aG(g, eq[1] - 3.4, eq[1] + 3.4, C("#a8ffe0"), C("#4ee6b4"), C("#1e8a6a")), lnC, 0.8); if (!fl) oG(g, eq[0], eq[1], 4, glow ? "rgba(255,60,60,.55)" : "rgba(255,246,192,.5)"); g.beginPath(); g.ellipse(eq[0], eq[1] + 0.2, 2.2, 2.4, 0, 0, 7); g.fillStyle = glow ? "#ff3a3a" : "#fff6c0"; g.fill(); g.fillStyle = glow ? "#5a0000" : "#14281a"; g.beginPath(); g.ellipse(eq[0] + 0.3, eq[1] + 0.3, 0.8, 1.6, 0, 0, 7); g.fill(); });
+      g.strokeStyle = lnC; g.lineWidth = 0.9; g.beginPath(); g.moveTo(-4.6, -6.2); g.quadraticCurveTo(0, -4, 4.6, -6.2); g.stroke();
+      aShine(g, -3, -13.8, 2.2, 0.9, 0.35); aShine(g, -4.6, -10, 2, 0.8, 0.2);
+      g.beginPath(); g.moveTo(-12.6, -14); g.quadraticCurveTo(-6, -12.2, 0, -15.6); g.quadraticCurveTo(6, -12.2, 12.6, -14); g.quadraticCurveTo(9, -18, 6, -18.4); g.quadraticCurveTo(0, -26, -6, -18.4); g.quadraticCurveTo(-9, -18, -12.6, -14); g.closePath(); aInk(g, aG(g, -24, -13, C("#3a3a48"), C("#1a1420"), C("#0a0a10")), lnC, 1);
+      g.strokeStyle = C("#d9a53a"); g.lineWidth = 1; g.beginPath(); g.moveTo(-12, -14.2); g.quadraticCurveTo(-6, -12.6, 0, -15.8); g.quadraticCurveTo(6, -12.6, 12, -14.2); g.stroke();
+      g.fillStyle = C("#e8d9a8"); g.beginPath(); g.arc(0, -19.4, 2, 0, 7); g.fill(); g.fillRect(-1, -18, 2, 1.6); g.fillStyle = "#14181c"; g.beginPath(); g.arc(-0.8, -19.6, 0.5, 0, 7); g.arc(0.8, -19.6, 0.5, 0, 7); g.fill();
+      g.save(); g.translate(8, 1); g.rotate(m.st === "wind" ? -2.2 : m.st === "slash" ? 0.3 : -0.9);   // the spectral cutlass
+      if (!fl) oG(g, 10, 0, 8, "rgba(168,255,240,.35)");
+      g.beginPath(); g.moveTo(1, -1.2); g.quadraticCurveTo(10, -2.8, 18.4, -0.4); g.quadraticCurveTo(10, 0.4, 1, 1.2); g.closePath(); aInk(g, aG(g, -2.6, 1.2, "#ffffff", "#cfe8f0", "#7ab8c8"), "#2a5a6a", 0.6);
+      g.beginPath(); g.moveTo(-0.4, -2.4); g.quadraticCurveTo(-3, 0, -0.4, 2.4); g.lineTo(1, 1.6); g.lineTo(1, -1.6); g.closePath(); aInk(g, aG(g, -2.4, 2.4, "#ffe08a", "#d9a53a", "#7a5414"), lnC, 0.5);
+      g.beginPath(); g.rect(-3.6, -0.7, 3.4, 1.4); aInk(g, "#5a3a22", lnC, 0.4);
+      g.restore();
     }
     g.restore();
     if (m.hp < m.hpm && !m.dead && !m.boss) { var bw = ts * 1.2; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sx - bw / 2, sy - ts * 0.95, bw, 4); g.fillStyle = "#ff6a6a"; g.fillRect(sx - bw / 2, sy - ts * 0.95, bw * Math.max(0, m.hp / m.hpm), 4); }
@@ -15836,7 +18014,7 @@
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null; sc.btns = [];
     var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
     ox = pxS(vw / 2 - cam.x * ts + shx); oy = pxS(vh / 2 - cam.y * ts + shy);
-    var surf = oy + OSEA * ts, dl = daylight(S.time), sky = skyAt(S.time);
+    var surf = oy + OWL * ts, dl = daylight(S.time), sky = skyAt(S.time);
     // --- sky ---
     if (surf > 0) {
       var sg = g.createLinearGradient(0, 0, 0, surf); sg.addColorStop(0, ocRgb(sky[0])); sg.addColorStop(1, ocRgb(sky[1])); g.fillStyle = sg; g.fillRect(0, 0, vw, surf + 1);
@@ -15876,7 +18054,7 @@
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(OCW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(OCH - 1, Math.floor((vh - oy) / ts)), lights = [];
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
       var id = sc.t[j * OCW + i], d = OTD[id], sx = ox + i * ts, sy = oy + j * ts;
-      if (id === OT.WATER || id === OT.AIR) continue;
+      if (id === OT.WATER || id === OT.AIR) { if (sc.main && m.tcave && i >= m.tcave.x0 && i <= 10 && j >= m.tcave.y0 && j <= m.tcave.y1) { g.fillStyle = (i + j) % 3 ? "#3a301f" : "#352b1c"; g.fillRect(sx, sy, ts, ts); } continue; }   // the Tide Cave: a dark sandstone back wall
       if (id === OT.AIRP) { g.fillStyle = "rgba(190,240,255,.22)"; g.fillRect(sx, sy, ts, ts); if (ocT(i, j - 1) !== OT.AIRP && !reduce) { g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(sx, sy, ts, Math.max(2, ts * 0.08)); } if (ocT(i, j + 1) !== OT.AIRP) { g.fillStyle = "rgba(232,251,255,.7)"; g.fillRect(sx, sy + ts - 2 + Math.sin(t * 3 + i) * 1.5, ts, 2); } continue; }
       if (d.plant) { ocPlant(g, id, sx, sy, i, j, now); if (d.lit) lights.push([i + 0.5, j + 0.6, d.lit, "255,90,160"]); continue; }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
@@ -15886,10 +18064,11 @@
       if (d.lit) lights.push([i + 0.5, j + 0.5, d.lit, id === OT.LAMP ? "255,210,110" : id === OT.CLAM ? "210,190,255" : "110,240,220"]);
       if (id === OT.CHEST && !reduce && (Math.floor(t * 2 + i) % 3 === 0)) { g.fillStyle = "rgba(255,240,170," + (0.5 + 0.5 * Math.sin(t * 6 + i)) + ")"; g.fillRect(sx + ts * (0.2 + 0.6 * ((t * 0.7 + i * 0.3) % 1)), sy + ts * 0.15, 2, 2); }
     }
+    if (sc.main && m.tcave && vaultOpen() && Y0 <= 21 && Y1 >= 20) { g.fillStyle = "rgba(10,16,20,.55)"; g.fillRect(ox + 8 * ts, oy + 20 * ts, ts, ts * 2); }   // the open vault door: a dark doorway
     if (sc.mineP && sc.mineP.p > 0) { var mp2 = sc.mineP; g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8, ts * 0.12); g.fillStyle = "#7af0ff"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8 * Math.min(1, mp2.p), ts * 0.12); }
     // --- the pier gate sign at the land end, and the boat at the slip ---
     if (sc.main && m.pier) {
-      var gx = ox + 2.5 * ts, gy = surf - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
+      var gx = ox + 2.5 * ts, gy = oy + OSEA * ts - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
       g.font = signFont(Math.max(9, Math.round(ts * 0.27))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", gx, gy - ts * 2.55);
       var B = ocS().boat; ocBoatSide(g, ox + (m.pier.x1 + 4.6) * ts, surf + ts * 0.15, ts * 0.62, B.done ? fullBoatParts() : B.p, now, { nobp: false, lit: dl < 0.6 });
       if (!B.done) { g.font = "800 " + Math.max(10, Math.round(ts * 0.34)) + "px Nunito, system-ui, sans-serif"; g.fillStyle = "rgba(8,34,44,.75)"; var lbl = "Old Croaker's boat: " + ocBoatHave() + " / " + OBOAT.length + " parts", lw = g.measureText(lbl).width + ts * 0.6; g.fillRect(ox + (m.pier.x1 + 4.6) * ts - lw / 2, surf - ts * 5.4, lw, ts * 0.6); g.fillStyle = "#e8fbff"; g.fillText(lbl, ox + (m.pier.x1 + 4.6) * ts, surf - ts * 4.98); }
@@ -15901,15 +18080,16 @@
     sc.mobs.forEach(function (mb) { ocDrawMob(g, mb, now); if (mb.k === "angler" && !mb.dead) lights.push([mb.x + mb.face * 0.85, mb.y - 0.9, 5, "255,226,122"]); if (mb.k === "jelly" && !mb.dead) lights.push([mb.x, mb.y, 3, "122,240,255"]); if (mb.k === "captain" && !mb.dead) lights.push([mb.x, mb.y, 6, "168,255,240"]); });
     sc.shots.forEach(function (s) { ocDrawShot(g, s, now); });
     // --- you ---
+    if (sc.main) drawDerbyBoard(g); drawDerby(g, now);
     drawSceneDrops(g, now); ocDrawMe(g, now); ocDrawRod(g, now);
     drawWaterFx(g);
     // --- bubbles and particles ---
     g.strokeStyle = "rgba(232,251,255,.75)"; g.lineWidth = 1.2; sc.bub.forEach(function (b) { var bx2 = ox + b.x * ts, by2 = oy + b.y * ts, r = Math.max(1.5, b.r * ts); g.beginPath(); g.arc(bx2, by2, r, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.fillRect(bx2 - r * 0.4, by2 - r * 0.5, Math.max(1, r * 0.4), Math.max(1, r * 0.4)); });
     parts.forEach(function (q) { g.globalAlpha = clamp(q.life / q.max * 1.4, 0, 1); g.fillStyle = q.c; g.fillRect(Math.round(ox + q.x * ts - q.s / 2), Math.round(oy + q.y * ts - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     // --- the surface: a wavy bright line and a tinted film over everything under water (clipped to the water, so none of it lies across the beach sand) ---
-    g.save(); g.beginPath(); for (i = X0; i <= X1; i++) { var wy0 = OSEA; while (wy0 < OSEA + 40 && OTD[ocT(i, wy0)].solid) wy0++; g.rect(ox + i * ts, oy + wy0 * ts - (wy0 === OSEA ? ts * 0.25 : 0), ts + 0.5, vh); } g.clip();
+    g.save(); g.beginPath(); for (i = X0; i <= X1; i++) { var wf0 = Math.floor(OWL), wy0 = wf0; while (wy0 < wf0 + 40 && OTD[ocT(i, wy0)].solid && ocT(i, wy0) !== OT.VDOOR) wy0++; g.rect(ox + i * ts, wy0 === wf0 ? surf - ts * 0.25 : oy + wy0 * ts, ts + 0.5, vh); } g.clip();
     if (surf > -ts && surf < vh + ts) {
-      var wamp = 1 + wxStorm() * 1.8 + wxN() * 0.35, surfH = function (wx) { return reduce ? 0 : (Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035 + Math.sin(wx / ts * 0.37 + t * 0.9) * ts * 0.05) * wamp + (RIPS.length ? rippleH((wx - ox) / ts, OSEA - 0.02) * ts : 0); };
+      var wamp = 1 + wxStorm() * 1.8 + wxN() * 0.35, surfH = function (wx) { return reduce ? 0 : (Math.sin(wx / ts * 0.9 + t * 2.2) * ts * 0.07 + Math.sin(wx / ts * 2.3 - t * 3.1) * ts * 0.035 + Math.sin(wx / ts * 0.37 + t * 0.9) * ts * 0.05) * wamp + (RIPS.length ? rippleH((wx - ox) / ts, OWL - 0.02) * ts : 0); };
       g.fillStyle = "rgba(160,240,255,.55)"; g.beginPath(); g.moveTo(0, surf + 4);
       for (var wx = 0; wx <= vw + 4; wx += 4) g.lineTo(wx, surf + surfH(wx));
       g.lineTo(vw, surf + 4); g.closePath(); g.fill();
@@ -15921,7 +18101,7 @@
           var gy2 = surf + surfH(wx); g.fillStyle = gday ? "rgba(255,250,215," + (gd * gk).toFixed(3) + ")" : "rgba(220,230,255," + (gd * gk * 0.7).toFixed(3) + ")"; g.fillRect(wx, gy2 - 1.5, ts * (0.2 + gk * 0.35), 2.5); }
       }
     }
-    ocCaustics(g, surf, t, clamp((dl - 0.4) / 0.6, 0, 1) * (1 - 0.85 * wxN()) * clamp(1.4 - (cam.y - OSEA) / 50, 0.25, 1), function () { g.beginPath(); for (var cj = Math.max(Y0, OSEA + 1); cj <= Math.min(Y1, OSEA + 26); cj++) for (var ci = X0; ci <= X1; ci++) { var cd = OTD[sc.t[cj * OCW + ci]]; if (cd && cd.solid) g.rect(ox + ci * ts, oy + cj * ts, ts, ts); } });
+    ocCaustics(g, surf, t, clamp((dl - 0.4) / 0.6, 0, 1) * (1 - 0.85 * wxN()) * clamp(1.4 - (cam.y - OSEA) / 50, 0.25, 1), function () { g.beginPath(); for (var cj = Math.max(Y0, Math.floor(OWL) + 1); cj <= Math.min(Y1, Math.floor(OWL) + 26); cj++) for (var ci = X0; ci <= X1; ci++) { var cd = OTD[sc.t[cj * OCW + ci]]; if (cd && cd.solid) g.rect(ox + ci * ts, oy + cj * ts, ts, ts); } });
     if (surf < vh && dl > 0.3) {   // things floating on the surface shade the water under them
       var shadeAt = function (cx, hw, dep, a) { var sg2 = g.createLinearGradient(0, surf, 0, surf + dep); sg2.addColorStop(0, "rgba(2,14,30," + a + ")"); sg2.addColorStop(1, "rgba(2,14,30,0)"); g.fillStyle = sg2; g.beginPath(); g.moveTo(cx - hw, surf); g.lineTo(cx + hw, surf); g.lineTo(cx + hw * 0.7 + slant * 0.3, surf + dep); g.lineTo(cx - hw * 0.7 + slant * 0.3, surf + dep); g.closePath(); g.fill(); };
       var sa = (0.32 * dl).toFixed(3);
@@ -15960,10 +18140,11 @@
     }
     if (dark > 0.5 && !liteFx()) drawBloom(g, dl, clamp(1 - dark, 0.2, 1), now);   // glow coral, lures and lanterns bloom in the dark
     if (wxN() > 0.02 && surf > 0) {   // rain: it rings the sea and spits off the pier and the sand
-      rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts; if (sy >= surf - 2) waterRing(wx, OSEA - 0.02, 0.02, 0, 0.7); else rainPip(wx, (sy - oy) / ts, 0); },
-        function () { var sx = Math.random() * vw, ci = Math.floor((sx - ox) / ts), y = surf; for (var cj = Math.max(0, Math.floor(-oy / ts)); cj < OSEA; cj++) { var cd = OTD[ocT(ci, cj)]; if (cd && cd.solid) { y = oy + cj * ts; break; } } return [sx, y]; });
+      rainStreaks(g, now, wxN(), wxStorm(), function (sx, sy) { var wx = (sx - ox) / ts; if (sy >= surf - 2) waterRing(wx, OWL - 0.02, 0.02, 0, 0.7); else rainPip(wx, (sy - oy) / ts, 0); },
+        function () { var sx = Math.random() * vw, ci = Math.floor((sx - ox) / ts), y = surf; for (var cj = Math.max(0, Math.floor(-oy / ts)); cj < OWL; cj++) { var cd = OTD[ocT(ci, cj)]; if (cd && cd.solid) { y = oy + cj * ts; break; } } return [sx, y]; });
     }
     if (surf > 0 && (WX.flash > 0 || WX.bolt)) drawBoltScr(g, 0, surf);
+    var pfog = seaFogN(); if (pfog > 0.02 && surf > 0) { var fgg = g.createLinearGradient(0, 0, 0, surf + ts * 2); fgg.addColorStop(0, "rgba(210,222,228," + (pfog * 0.55).toFixed(3) + ")"); fgg.addColorStop(1, "rgba(210,222,228," + (pfog * 0.8).toFixed(3) + ")"); g.fillStyle = fgg; g.fillRect(0, 0, vw, surf + ts * 2); }   // WEATHER AT SEA: fog over the pier
     // --- words and pills ---
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
@@ -15992,14 +18173,16 @@
       var warn = (dep > lim && dep > 6 ? 1 : 0), lowA = sc.o2 < ocO2Max() * 0.25 ? 1 - sc.o2 / (ocO2Max() * 0.25) : 0;
       if (warn || lowA > 0) { var vg = g.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * 0.3, vw / 2, vh / 2, Math.max(vw, vh) * 0.7); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, warn ? "rgba(200,30,30," + (0.3 + 0.15 * Math.sin(t * 8)).toFixed(3) + ")" : "rgba(10,20,60," + (0.55 * lowA).toFixed(3) + ")"); g.fillStyle = vg; g.fillRect(0, 0, vw, vh); }
     }
+    if (!panelOpen) { drawTideHud(g); drawDomes(g, now); drawDerbyHud(g); }
     if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); g.imageSmoothingEnabled = true; try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.imageSmoothingEnabled = false; g.globalAlpha = 1; }
   }
   function fullBoatParts() { var o = {}; OBOAT.forEach(function (k) { o[k] = 1; }); return o; }
   function ocDrawMe(g, now) {   // you, drawn with the normal character sprite, plus the Scuba Suit, mask and tank
     var sc = OCS, pl = sc.pl, keep = { x: p.x, y: p.y, on: p.on, vy: p.vy, vx: p.vx, wet: p.wet, face: p.face, walk: p.walk };
-    p.x = pl.x; p.y = pl.y; p.face = pl.face; p.vx = sc.diving ? Math.max(Math.abs(pl.vx), Math.abs(pl.vy)) : pl.vx; p.vy = sc.diving ? 0 : pl.vy; p.on = sc.diving ? false : pl.on; p.wet = sc.diving;
+    var swim = sc.diving && !sc.land;   // on the tide flats you walk
+    p.x = pl.x; p.y = pl.y; p.face = pl.face; p.vx = swim ? Math.max(Math.abs(pl.vx), Math.abs(pl.vy)) : pl.vx; p.vy = swim ? 0 : pl.vy; p.on = swim ? false : sc.diving ? !!sc.landOn : pl.on; p.wet = swim;
     var sx = ox + pl.x * ts, sy = oy + (pl.y - 0.55) * ts;
-    g.save(); if (sc.diving && !reduce) { g.translate(sx, sy); g.rotate(pl.ang); g.translate(-sx, -sy); }
+    g.save(); if (swim && !reduce) { g.translate(sx, sy); g.rotate(pl.ang); g.translate(-sx, -sy); }
     var suit = ocSuit(), tk = ocTank(), u = ts / 16, f = pl.face, bx = ox + pl.x * ts, by = oy + pl.y * ts;
     if (tk && sc.diving) { var tc = ["", "#c9a52a", "#8ec8d8", "#c86aff", "#ff6a4a"][tk]; g.fillStyle = "#3a3a44"; mrr(g, bx - f * 6 * u - 2.6 * u, by - 22 * u, 5.2 * u, 12 * u, 2.4 * u); g.fill(); g.fillStyle = tc; mrr(g, bx - f * 6 * u - 2 * u, by - 21.4 * u, 4 * u, 10.6 * u, 2 * u); g.fill(); g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(bx - f * 6 * u - 1.2 * u, by - 20.4 * u, 1 * u, 7 * u); }
     try { drawPlayer(g, now); } catch (e) {}
@@ -16032,11 +18215,13 @@
       + '<p class="mo-sub">' + (B.done ? "Croaker's old boat, seaworthy again. Climb aboard at the slip and set sail." : n === 0 ? "“She sank at her moorings the year the Great Catfish got away. Bring her back and she's yours.” Find her parts in sea chests and wrecks, and make the rest at a Workbench." : n + " of " + all + " parts fitted. " + (all - n) + " to go.") + "</p>"
       + '<div class="mo-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + all + '" aria-valuenow="' + n + '"><i style="width:' + Math.round(n / all * 100) + '%"></i></div></div></div>';
     if (boatMsg) h += '<p class="mo-msg">' + esc(boatMsg) + "</p>";
-    h += '<ul class="mo-list">' + OBOAT.map(function (k) {
+    if (B.done) h += '<p class="mo-msg bo-done">All ' + all + ' parts fitted. She is ready for the open sea.</p>';
+    else h += '<ul class="mo-list">' + OBOAT.map(function (k) {
       var on = !!B.p[k], have = S.inv[k] > 0, needKeel = !B.p.boat_keel && k !== "boat_keel";
       var st = on ? '<span class="mo-on">Fitted</span>' : have ? (needKeel ? '<span class="mo-wait">Keel first</span>' : '<button type="button" class="btn mo-fit" data-boat="fit:' + k + '">Fit it</button>') : '<span class="mo-miss">Missing</span>';
       return '<li class="' + (on ? "on" : have ? "have" : "") + '"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + "</b><small>" + (on ? "On the boat." : have ? "In your bag." : OBOAT_HINT[k] || "") + "</small></div>" + st + "</li>";
     }).join("") + "</ul>";
+    h += upHtml();   // SHIP UPGRADES
     h += '<div class="st-row">' + (B.done ? '<button type="button" class="btn mo-start" data-boat="sail">Set sail</button>' : n === all ? '<button type="button" class="btn mo-start" data-boat="launch">Launch her!</button>' : can.length > 1 ? '<button type="button" class="btn" data-boat="all">Fit all (' + can.length + ")</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
     var cv = $("boCv"); if (cv) { var g = cv.getContext("2d"), sky = g.createLinearGradient(0, 0, 0, 150); sky.addColorStop(0, "#8ad8f0"); sky.addColorStop(1, "#e8f6e0"); g.fillStyle = sky; g.fillRect(0, 0, 360, 150); var sea = g.createLinearGradient(0, 150, 0, 220); sea.addColorStop(0, "#3ec8e0"); sea.addColorStop(1, "#1a6aa8"); g.fillStyle = sea; g.fillRect(0, 150, 360, 70); g.fillStyle = "rgba(255,255,255,.6)"; for (var i = 0; i < 9; i++) g.fillRect(14 + i * 40, 160 + (i % 3) * 14, 18, 2); ocBoatSide(g, 180, 166, 22, B.done ? fullBoatParts() : B.p, performance.now(), { lit: B.done }); }
@@ -16047,6 +18232,7 @@
   }
   function boatAct(a) {
     var B = ocS().boat;
+    if (a.indexOf("up:") === 0) { upFit(a.slice(3)); checkGoals(); save(); renderBoat(); return; }
     if (a.indexOf("fit:") === 0) { var k = a.slice(4); if (boatFit(k)) { boatMsg = ITEMS[k].n + " fitted. " + (ocBoatHave() < OBOAT.length ? (OBOAT.length - ocBoatHave()) + " parts to go." : "That's every part! Time to launch her."); thud(300, 0.08); snd("coin"); } }
     else if (a === "all") { var n = 0; if (S.inv.boat_keel > 0 && boatFit("boat_keel")) n++; OBOAT.forEach(function (k2) { if (boatFit(k2)) n++; }); if (n) { boatMsg = n + " parts fitted."; thud(300, 0.1); snd("coin"); } }
     else if (a === "launch" && !B.done && ocBoatHave() === OBOAT.length) {
@@ -16058,11 +18244,356 @@
     checkGoals(); save(); renderBoat();
   }
 
+
+  // =====================================================================================================================================
+  // ---------- WEATHER AT SEA, SHIP UPGRADES AND THE OLD LIGHTHOUSE ----------
+  // The sea has its own moods on top of the world's weather. STORMS (the world's thunderstorms) push the Lily Belle off course and throw
+  // waves over her deck. FOG rolls in on some mornings and some nights and hides everything past a short way (a Crow's Nest sees further;
+  // the relit lighthouse's beam cuts through). GLASSY CALM days are flat and windless: slower sailing, the pirates stay home, dolphins play.
+  function seaFogN() {
+    var d = Math.floor(tideDayF()), tt = S.time, k = 0, sd = ocSeed() % 9973;
+    if (SW.hash(d, 17, sd) < 0.38) { if (tt >= 430) k = clamp((tt - 430) / 30, 0, 1); else if (tt < 150) k = clamp(1 - (tt - 70) / 80, 0, 1); }   // morning fog: thick at dawn, burns off by late morning
+    if (SW.hash(d, 19, sd) < 0.25 && tt > 290 && tt < 430) k = Math.max(k, clamp(Math.min((tt - 290) / 30, (430 - tt) / 30), 0, 1) * 0.85);   // night fog
+    return k * (1 - wxStorm()) * (S.wx && S.wx.k === "wet" ? 0.6 : 1) * (WX.on ? 1 : 0);
+  }
+  function seaCalmN() { var d = Math.floor(tideDayF()), tt = S.time; if (SW.hash(d, 23, ocSeed() % 9973) >= 0.35 || wxN() > 0.2) return 0; return clamp(Math.min((tt - 60) / 30, (250 - tt) / 30), 0, 1); }
+  function seaWx() { var st = wxStorm(), f = seaFogN(), c = seaCalmN(); return st > 0.3 ? { k: "storm", n: st } : f > 0.2 ? { k: "fog", n: f } : c > 0.2 ? { k: "calm", n: c } : wxN() > 0.3 ? { k: "rain", n: wxN() } : { k: "fair", n: 1 }; }
+  function seaWindA() { return SW.hash(Math.floor(tideDayF() * 3), 29, ocSeed() % 9973) * 6.2832; }
+  function seaSight() { return 15 + shipUp("nest") * 14; }   // how far you can see in thick fog (chart units)
+  var SEAX = 30, SEAXN = Math.ceil((SO ? SO.SEAW : 900) / 30);   // the sea chart's explored cells (30 x 30 chart units each)
+  function seaExA() { var o = ocS(), n = SEAXN * SEAXN; if (!OCS.sea.exA) { var a = new Uint8Array(n), str = typeof o.ex === "string" ? o.ex : ""; for (var i = 0; i < n && i < str.length; i++) a[i] = str.charCodeAt(i) === 49 ? 1 : 0; OCS.sea.exA = a; } return OCS.sea.exA; }
+  function seaExSave() { var a = OCS && OCS.sea && OCS.sea.exA; if (!a) return; var str = ""; for (var i = 0; i < a.length; i++) str += a[i] ? "1" : "0"; ocS().ex = str; }
+  function seaExMark(x, y, r) { var a = seaExA(), c0 = Math.floor((x - r) / SEAX), c1 = Math.floor((x + r) / SEAX), r0 = Math.floor((y - r) / SEAX), r1 = Math.floor((y + r) / SEAX), ch = 0;
+    for (var cy = Math.max(0, r0); cy <= Math.min(SEAXN - 1, r1); cy++) for (var cx = Math.max(0, c0); cx <= Math.min(SEAXN - 1, c1); cx++) { var i = cy * SEAXN + cx; if (!a[i] && Math.hypot((cx + 0.5) * SEAX - x, (cy + 0.5) * SEAX - y) < r + SEAX * 0.7) { a[i] = 1; ch = 1; } } return ch; }
+  function seaKnown(x, y) { if (ocS().lh) return true; var a = seaExA(), cx = Math.floor(x / SEAX), cy = Math.floor(y / SEAX); return cx >= 0 && cy >= 0 && cx < SEAXN && cy < SEAXN && !!a[cy * SEAXN + cx]; }
+  function seaWxStep(s, dt) {   // called from seaUpdate: weather news, wind, waves, dolphins, charting
+    var W2 = seaWx(), was = s.wxk; s.wx = W2; s.spMul = W2.k === "calm" ? 1 - 0.3 * W2.n : 1;
+    if (W2.k !== was) { s.wxk = W2.k; if (was !== undefined) { if (W2.k === "fog") toast("A fog bank rolls in. You can't see far, and pirates love to hide in it." + (shipUp("nest") ? " Your lookout in the Crow's Nest keeps watch." : ""), "#cfe0e8"); else if (W2.k === "calm" && !s.calmSaid) { s.calmSaid = 1; toast("Glassy calm. Not a breath of wind, so sailing is slow, but the pirates stay home. Dolphins!", "#7af0ff"); } } }
+    if (W2.k === "storm") {   // wind pushes you, and big seas break over the deck
+      var wa = seaWindA(), wp = 2.4 * W2.n, nx = s.x + Math.cos(wa) * wp * dt, ny = s.y + Math.sin(wa) * wp * dt;
+      if (!seaIslands().some(function (Q) { return Math.hypot(Q.x - nx, Q.y - ny) < Q.r + 1.5; })) { s.x = clamp(nx, 6, SO.SEAW - 6); s.y = clamp(ny, 6, SO.SEAW - 6); }
+      s.waveT = (s.waveT === undefined ? 8 : s.waveT) - dt * W2.n;
+      if (s.waveT <= 0) { s.waveT = 7 + Math.random() * 7; shake = Math.max(shake, 0.6); for (var q = 0; q < 14; q++) s.wake.push({ x: s.x + (Math.random() - 0.5) * 3, y: s.y + (Math.random() - 0.5) * 3, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 0.8, spl: 1 });
+        if (shipUp("hull") >= 2) { if (!s.iwSaid) { s.iwSaid = 1; toast("A wave crashes over the deck, but the Ironclad hull shrugs it off.", "#cfe0e8"); } } else { seaHurt(4); if (!s.wvSaid) { s.wvSaid = 1; toast("A big wave breaks over the deck! Storms batter the hull. An Ironclad hull would shrug it off.", "#ffb0a0"); } } }
+    }
+    if (!s.dol) s.dol = [];   // dolphins on calm days race the boat
+    if (W2.k === "calm" && s.dol.length < 4 && s.sp > 2 && Math.random() < dt * 0.4) s.dol.push({ side: Math.random() < 0.5 ? 1 : -1, off: 2.5 + Math.random() * 2.5, ph: Math.random() * 6, along: -6, life: 18 + Math.random() * 10 });
+    for (var i = s.dol.length - 1; i >= 0; i--) { var D = s.dol[i]; D.life -= dt; D.ph += dt * 3.2; D.along = approach(D.along, 1.5 + Math.sin(D.ph * 0.2) * 2, dt * 3); if (D.life <= 0 || W2.k !== "calm" && D.life > 3) D.life = Math.min(D.life, 3); if (D.life <= 0) s.dol.splice(i, 1); }
+    s.exT = (s.exT || 0) - dt; if (s.exT <= 0) { s.exT = 0.5; if (seaExMark(s.x, s.y, W2.k === "fog" ? seaSight() + 6 : 36 + shipUp("nest") * 22)) s.exDirty = 1; }
+  }
+  function seeShip(sh) { var s = OCS.sea; if (!s.wx || s.wx.k !== "fog") return true; return Math.hypot(sh.x - s.x, sh.y - s.y) < seaSight() + 4 || shipUp("nest") > 0; }
+
+  // ---- SHIP UPGRADES: fitted in the boat window at the pier slip. S.oc.boat.up = { can: 0-2, hull: 0-2, nest: 0-1 } ----
+  var SHIPUP = {
+    can: { n: "Cannons", L: [{ n: "Old Cannons", d: "One ball a shot." },
+      { n: "Twin Cannons", d: "Two cannonballs every shot, faster reloads and a little more range.", cost: { ironingot: 8, brass: 6, planks: 6 } },
+      { n: "Star Cannons", d: "Starsteel barrels: every ball hits twice as hard and flies further, glowing blue.", cost: { starsteel: 4, brass: 8, blackpearl: 1 } }] },
+    hull: { n: "Hull", L: [{ n: "Old Planking", d: "She does her best." },
+      { n: "Reinforced Hull", d: "Doubled planking: she takes half again as much before she's holed.", cost: { planks: 20, ironingot: 6, rope: 4 } },
+      { n: "Ironclad Hull", d: "Iron and Starsteel plates: more than twice as tough, and storm waves can't hurt her.", cost: { ironingot: 16, starsteel: 3, brass: 6 } }] },
+    nest: { n: "Crow's Nest", L: [{ n: "No lookout", d: "Just the mast." },
+      { n: "Crow's Nest", d: "A lookout on the mast: see twice as far in fog, and the sea chart shows pirates, sea creatures and dive sites around you.", cost: { planks: 10, rope: 6, canvas: 4, glass: 2 } }] }
+  };
+  function shipUp(k) { var B = ocS().boat; return (B.up && B.up[k]) | 0; }
+  function hullMax() { return [100, 150, 220][shipUp("hull")]; }
+  function upHave(cost) { return Object.keys(cost).every(function (k) { return (S.inv[k] || 0) >= cost[k]; }); }
+  function upHtml() {
+    var B = ocS().boat; if (!B.done) return "";
+    return '<h3 class="bo-uph">Upgrades</h3><ul class="mo-list bo-up">' + Object.keys(SHIPUP).map(function (k) {
+      var U = SHIPUP[k], lv = shipUp(k), cur = U.L[lv], nx = U.L[lv + 1];
+      var cost = nx ? Object.keys(nx.cost).map(function (c) { var hv = S.inv[c] || 0, ok = hv >= nx.cost[c]; return '<span class="' + (ok ? "ok" : "no") + '">' + nx.cost[c] + " " + esc(ITEMS[c] ? ITEMS[c].n : c) + (ok ? "" : " (" + hv + ")") + "</span>"; }).join(" ") : "";
+      return '<li class="' + (nx ? "" : "on") + '"><div><b>' + esc(U.n) + ": " + esc(cur.n) + "</b><small>" + esc(nx ? "Next: " + nx.n + ". " + nx.d : cur.d) + "</small>" + (nx ? '<small class="bo-cost">' + cost + "</small>" : "") + "</div>"
+        + (nx ? '<button type="button" class="btn mo-fit"' + (upHave(nx.cost) ? "" : " disabled") + ' data-boat="up:' + k + '">Fit it</button>' : '<span class="mo-on">Best</span>') + "</li>";
+    }).join("") + "</ul>";
+  }
+  function upFit(k) {
+    var B = ocS().boat, U = SHIPUP[k], lv = shipUp(k), nx = U && U.L[lv + 1]; if (!nx || !upHave(nx.cost)) return false;
+    Object.keys(nx.cost).forEach(function (c) { S.inv[c] -= nx.cost[c]; if (S.inv[c] <= 0) delete S.inv[c]; }); reslot(); hbDirty = true;
+    if (!B.up) B.up = {}; B.up[k] = lv + 1; S.st.shipups = (S.st.shipups || 0) + 1; boatMsg = nx.n + " fitted. " + nx.d;
+    popup("Ship upgrade", "The Lily Belle: " + nx.n, "#4fd0e8", "⚓"); snd("open", lv ? "Epic" : "Rare"); thud(120, 0.12); return true;
+  }
+
+  // ---- THE OLD LIGHTHOUSE: far to the north, dark for years. Relight it and its beam charts the whole sea ----
+  var LH = { x: 440, y: 96 };
+  function lighthouse() { var I = seaIslands(); for (var i = 0; i < I.length; i++) if (I[i].lh) return I[i]; return null; }
+  function openLighthouse(Q) {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 241; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS.isleQ = Q;
+    var lit = !!ocS().lh, need = { lampoil: 3, glass: 2, copperwire: 1 }, ok = upHave(need);
+    var h = '<div class="mo-box bo-box"><div class="mo-head"><canvas class="mo-cv" id="lhCv" width="360" height="200" aria-hidden="true"></canvas><div><small>The far north of the Brinebog Sea</small><h2>The Old Lighthouse</h2><p class="mo-sub">'
+      + (lit ? "Its lamp burns again. The beam sweeps the whole sea, the chart in your cabin is complete, and no pirate sails inside its light." : "A tower of white stone on a black rock, dark for years. Gulls nest on the gallery. The great lamp at the top is cold, its oil long gone.") + "</p></div></div>";
+    if (!lit) h += '<p class="mo-msg">Old Croaker always said: “Light the old lamp and you\'ll never be lost at sea again.” Refill it and fix the wiring to relight it.</p><p class="bo-cost">' + Object.keys(need).map(function (c) { var hv = S.inv[c] || 0; return '<span class="' + (hv >= need[c] ? "ok" : "no") + '">' + need[c] + " " + esc(ITEMS[c] ? ITEMS[c].n : c) + (hv >= need[c] ? "" : " (" + hv + ")") + "</span>"; }).join(" ") + "</p>";
+    h += '<div class="st-row">' + (lit ? "" : '<button type="button" class="btn mo-start" data-lh="lit"' + (ok ? "" : " disabled") + ">Relight the lamp</button>") + '<button type="button" class="btn ghost" data-story-close>Back to the helm</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffd23f"); $("sbxStoryBox").innerHTML = h;
+    var cv = $("lhCv"); if (cv) { var g = cv.getContext("2d"); g.fillStyle = lit ? "#1a2a4a" : "#2a8ac0"; g.fillRect(0, 0, 360, 200); var k0 = 9; g.save(); g.translate(180 - Q.x * k0, 100 - Q.y * k0); seaDrawIsland(g, Q, k0, performance.now(), 0, 0); g.restore(); if (lit) { g.globalCompositeOperation = "lighter"; var lg = g.createRadialGradient(180, 92, 0, 180, 92, 80); lg.addColorStop(0, "rgba(255,230,140,.7)"); lg.addColorStop(1, "rgba(255,230,140,0)"); g.fillStyle = lg; g.fillRect(0, 0, 360, 200); g.globalCompositeOperation = "source-over"; } }
+  }
+  function lhAct(a) {
+    var Q = OCS && OCS.isleQ; if (a !== "lit" || !Q || ocS().lh) return; var need = { lampoil: 3, glass: 2, copperwire: 1 }; if (!upHave(need)) return;
+    Object.keys(need).forEach(function (c) { S.inv[c] -= need[c]; if (S.inv[c] <= 0) delete S.inv[c]; }); reslot(); hbDirty = true;
+    var o = ocS(); o.lh = 1; seaIslands().forEach(function (I) { o.isl[I.id] = 1; }); S.st.islands = Object.keys(o.isl).filter(function (k) { return /^\d+$/.test(k); }).length; S.st.lhlit = 1;
+    if (OCS.sea) { var a2 = seaExA(); for (var i = 0; i < a2.length; i++) a2[i] = 1; seaExSave(); }
+    snd("open", "Legendary"); thud(60, 0.2); shake = 0.4; closeStory();
+    popup("The Old Lighthouse burns again!", "Its beam charts the whole sea: every island and dive site is on your sea chart now.", "#ffd23f", "❂");
+    toast("No pirate will sail inside the lighthouse's beam. Tap the sea chart (top right) to see the whole sea.", "#ffd23f"); checkGoals(); save();
+  }
+  function lhSafe(x, y) { if (!ocS().lh) return false; var L = lighthouse(); return !!L && Math.hypot(L.x - x, L.y - y) < 130; }
+
+  // ---- the sea chart: the mini-map at sea, and the big chart (tap the mini-map) ----
+  function seaBlips() {   // what the Crow's Nest lookout reports (and what you can see anyway)
+    var s = OCS.sea, L = [], nest = shipUp("nest") > 0, R2 = nest ? 120 : 0;
+    s.ships.forEach(function (sh) { if (!sh.sink && (nest ? Math.hypot(sh.x - s.x, sh.y - s.y) < R2 : seeShip(sh))) L.push([sh.x, sh.y, "#ff6a5a", 2.2]); });
+    if (s.lev && !s.lev.dead && (nest || s.lev.up)) L.push([s.lev.x, s.lev.y, "#c86aff", 3.2]);
+    (s.mig || []).forEach(function (M) { if (nest && Math.hypot(M.x - s.x, M.y - s.y) < R2) L.push([M.x, M.y, M.k === "whale" ? "#9ad0ff" : "#7ae0a0", 1.8]); });
+    return L;
+  }
+  function drawSeaChart(g, cx, cy, sc2, w, h, big) {   // the chart centred on (cx, cy) chart units, sc2 pixels per unit, into a w x h box at 0,0
+    var s = OCS.sea, I = seaIslands(), a = seaExA(), o = ocS(), lit = !!o.lh, i;
+    g.fillStyle = "#08243a"; g.fillRect(0, 0, w, h);
+    var tx = function (x) { return w / 2 + (x - cx) * sc2; }, ty = function (y) { return h / 2 + (y - cy) * sc2; };
+    g.fillStyle = "#14507a"; for (var cy2 = 0; cy2 < SEAXN; cy2++) for (var cx2 = 0; cx2 < SEAXN; cx2++) if (lit || a[cy2 * SEAXN + cx2]) { var X = tx(cx2 * SEAX), Y = ty(cy2 * SEAX), S2 = SEAX * sc2 + 0.6; if (X > w || Y > h || X + S2 < 0 || Y + S2 < 0) continue; g.fillRect(X, Y, S2, S2); }
+    g.strokeStyle = "rgba(255,255,255,.25)"; g.lineWidth = 1; g.strokeRect(tx(0), ty(0), SO.SEAW * sc2, SO.SEAW * sc2);
+    if (lit || big) OSITES.forEach(function (st) { if (!lit && !seaKnown(st.x, st.y)) return; g.fillStyle = st.wreck ? "#c9a52a" : "#4ee6b4"; g.fillRect(tx(st.x) - 1.5, ty(st.y) - 1.5, 3, 3); });
+    I.forEach(function (Q) { if (!lit && !o.isl[Q.id] && !seaKnown(Q.x, Q.y)) return; var X = tx(Q.x), Y = ty(Q.y), r = Math.max(2.5, Q.r * sc2);
+      g.fillStyle = Q.pier ? "#ffd23f" : Q.lh ? "#fff4c0" : Q.kind === 3 ? "#c86a5a" : Q.kind === 1 ? "#6a5a5a" : Q.kind === 2 ? "#e8f4ff" : "#6ac25a"; g.beginPath(); g.arc(X, Y, r, 0, 6.2832); g.fill();
+      if (Q.lh && lit) { g.fillStyle = "rgba(255,230,140,.35)"; g.beginPath(); g.arc(X, Y, 130 * sc2, 0, 6.2832); g.fill(); }
+      if (big) { g.font = "700 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = Q.port ? "#ffd23f" : "#e8fbff"; g.fillText(Q.n, X, Y + r + 12); var tq2 = isleTier(Q); if (tq2) { g.fillStyle = TIER_C[tq2]; g.fillText(skulls(tq2), X, Y + r + 24); } } });
+    seaBlips().forEach(function (b) { g.fillStyle = b[2]; g.beginPath(); g.arc(tx(b[0]), ty(b[1]), b[3], 0, 6.2832); g.fill(); });
+    var bx = tx(s.x), by = ty(s.y); g.save(); g.translate(bx, by); g.rotate(s.ang); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(5, 0); g.lineTo(-4, -3.2); g.lineTo(-2, 0); g.lineTo(-4, 3.2); g.closePath(); g.fill(); g.restore();
+    if (shipUp("nest")) { g.strokeStyle = "rgba(122,240,255,.35)"; g.beginPath(); g.arc(bx, by, 120 * sc2, 0, 6.2832); g.stroke(); }
+  }
+  function drawSeaMini(cv) {
+    var dpr2 = Math.min(2, window.devicePixelRatio || 1), cw = cv.clientWidth || 140, ch = cv.clientHeight || 88;
+    if (cv.width !== Math.round(cw * dpr2) || cv.height !== Math.round(ch * dpr2)) { cv.width = Math.round(cw * dpr2); cv.height = Math.round(ch * dpr2); }
+    var g = cv.getContext("2d"); g.setTransform(dpr2, 0, 0, dpr2, 0, 0); drawSeaChart(g, OCS.sea.x, OCS.sea.y, cw / 260, cw, ch, false);
+  }
+  function drawBigChart(g) {
+    var w = Math.min(vw - 40, 620), h = Math.min(vh - 140, 620), x = (vw - w) / 2, y = Math.max(70, (vh - h) / 2), sc2 = Math.min(w, h) / (SO.SEAW + 40);
+    g.save(); g.fillStyle = "rgba(0,8,16,.6)"; g.fillRect(0, 0, vw, vh); g.translate(x, y); g.fillStyle = "#06182a"; mrr(g, -6, -30, w + 12, h + 52, 14); g.fill();
+    g.font = "800 14px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = "#e8fbff"; g.fillText(ocS().lh ? "Sea chart (the lighthouse charted it all)" : "Sea chart: what you have explored", 6, -10);
+    g.textAlign = "right"; g.fillStyle = "#9ad0e0"; g.fillText("Tap to close", w - 4, -10);
+    g.beginPath(); g.rect(0, 0, w, h); g.clip(); drawSeaChart(g, SO.SEAW / 2, SO.SEAW / 2, sc2, w, h, true); g.restore();
+  }
+
+
+  // =====================================================================================================================================
+  // ---------- ISLAND RAIDS, THE SHIP'S HOLD AND DRIFTWOOD HAVEN ----------
+  // Sail up to an island and "Land ashore": you step onto it (a top-down floor from SbxCave.genIsle, like a cave open to the sky) with
+  // the Lily Belle moored at the beach. Each island has a difficulty (Calm, Rough, Dangerous, Deadly: further from the pier is harder,
+  // pirate coves one step harder). Waves of its crew come at you (2 to 5 waves); beat them all and the curse on its treasure chests lifts.
+  // Smash crates and barrels any time. Treasure goes into your bag; at the boat, stow it in the SHIP'S HOLD (S.oc.hold, 60 pieces).
+  // If the Lily Belle is holed at sea, half the hold goes to the bottom. Sell treasure for Doubloons to the merchants of DRIFTWOOD HAVEN,
+  // the big trading port in the middle of the sea (it comes ashore with you), and spend them at Pip's Shipwright on boat skins and
+  // cannon designs. A raided island restocks after ISLE_RESTOCK days (S.oc.raid[island id] = the day it was cleared).
+  var TIER_N = ["", "Calm", "Rough", "Dangerous", "Deadly"], TIER_C = ["#ffffff", "#7ae0a0", "#ffd23f", "#ff9a4a", "#ff5a6a"], ISLE_RESTOCK = 2, HOLD_MAX = 60, ISLW = null;
+  var TREAS = { t_chest1: [12, "gild"], t_chest2: [25, "gild"], t_chest3: [50, "gild"], t_chest4: [110, "gild"], t_gems: [20, "gild"], t_skull1: [8, "bone"], t_skull2: [18, "bone"], t_skull3: [35, "bone"], t_skull4: [80, "bone"], t_tea: [6, "trade"], t_rum: [9, "trade"], t_silk: [11, "trade"], t_spice: [15, "trade"] };
+  var MERCH = { gild: { n: "The Gilded Toad", d: "Gold hoarders. They buy treasure chests and gem pouches.", c: "#ffd23f" }, bone: { n: "Bone Bell Society", d: "Collectors of pirate skulls. Don't ask why.", c: "#c8b8ff" }, trade: { n: "Croaker & Sons Trading Co.", d: "Old Croaker's cousins. They buy crates of goods and barrels of rum.", c: "#7ae0a0" }, ship: { n: "Pip's Shipwright", d: "Boat skins and cannon designs, paid in Doubloons.", c: "#4fd0e8" } };
+  var SKINS = [
+    { id: "lily", n: "The Lily Belle", p: 0, hull: "#7a4a2a", deck: "#b8844a", sail: ["#2f7a3a", "#58b85a"], trim: "#4ee6b4" },
+    { id: "corsair", n: "Crimson Corsair", p: 120, hull: "#2a1a1a", deck: "#5a3a2a", sail: ["#8a1a1a", "#d83a3a"], trim: "#ffd23f" },
+    { id: "royal", n: "Royal Lotus", p: 200, hull: "#3a2a5a", deck: "#8a6aa8", sail: ["#5a3a9a", "#b08aff"], trim: "#ffd23f" },
+    { id: "coral", n: "Coral Queen", p: 260, hull: "#c85a6a", deck: "#f0c0a0", sail: ["#ff7a9a", "#ffd0dc"], trim: "#6af0e0" },
+    { id: "ghost", n: "Ghost Galleon", p: 420, hull: "#4a5a6a", deck: "#8a9aa8", sail: ["#bfefff", "#e8fbff"], trim: "#7af0ff", glow: 1 },
+    { id: "gold", n: "Golden Gator", p: 800, hull: "#8a6a1a", deck: "#e8c060", sail: ["#c89a2a", "#ffe080"], trim: "#3aa85a" }];
+  var CANS = [
+    { id: "iron", n: "Iron Cannons", p: 0, ball: "#1a1a20", trail: "", barrel: "#2a2a30" },
+    { id: "bronze", n: "Bronze Dragon", p: 90, ball: "#8a4a1a", trail: "255,140,50", barrel: "#c87a3a" },
+    { id: "frost", n: "Frostbite", p: 150, ball: "#9ad8ff", trail: "150,220,255", barrel: "#6ab8e8" },
+    { id: "slime", n: "Swamp Spitter", p: 150, ball: "#5ab84a", trail: "120,230,90", barrel: "#3a8a3a" },
+    { id: "star", n: "Starfall", p: 350, ball: "#ffe27a", trail: "255,230,140", barrel: "#e8c060", sparkle: 1 }];
+  function cosS() { var o = ocS(); if (!o.cos || typeof o.cos !== "object") o.cos = { sk: {}, cn: {} }; if (!o.cos.sk) o.cos.sk = {}; if (!o.cos.cn) o.cos.cn = {}; return o.cos; }
+  function skinOf() { var id = ocS().boat.sk; for (var i = 0; i < SKINS.length; i++) if (SKINS[i].id === id) return SKINS[i]; return SKINS[0]; }
+  function canOf() { var id = ocS().boat.cn; for (var i = 0; i < CANS.length; i++) if (CANS[i].id === id) return CANS[i]; return CANS[0]; }
+  function isleTier(Q) { if (!Q || Q.pier || Q.lh || Q.port) return 0; var I0 = seaIslands()[0], d = Math.hypot(Q.x - I0.x, Q.y - I0.y), t = d < 230 ? 1 : d < 420 ? 2 : d < 600 ? 3 : 4; if (Q.kind === 3) t = Math.min(4, t + 1); return t; }
+  function isleFresh(Q) { var r = ocS().raid[Q.id]; return !(r !== undefined && ocToday() - r < ISLE_RESTOCK); }
+  function skulls(n) { var s2 = ""; for (var i = 0; i < n; i++) s2 += "☠"; return s2; }
+  function holdN() { var H = ocS().hold, n = 0; for (var k in H) n += H[k]; return n; }
+  function treasVal(L) { var v = 0; for (var k in L) if (TREAS[k]) v += TREAS[k][0] * L[k]; return v; }
+  function bagTreas() { var L = {}; Object.keys(S.inv).forEach(function (k) { if (TREAS[k] && S.inv[k] > 0) L[k] = S.inv[k]; }); return L; }
+  function holdStow() {   // everything in the bag that's treasure goes into the hold, as much as fits
+    var o = ocS(), room2 = HOLD_MAX - holdN(), moved = 0; if (room2 <= 0) { nag("The hold is full (" + HOLD_MAX + "). Sell some at Driftwood Haven."); return 0; }
+    Object.keys(bagTreas()).forEach(function (k) { var n = Math.min(S.inv[k], room2 - moved); if (n <= 0) return; S.inv[k] -= n; if (S.inv[k] <= 0) delete S.inv[k]; o.hold[k] = (o.hold[k] || 0) + n; moved += n; });
+    if (moved) { reslot(); hbDirty = true; thud(220, 0.06); snd("coin"); toast(moved + " treasure stowed in the hold (" + holdN() + "/" + HOLD_MAX + ", worth about " + treasVal(o.hold) + " Doubloons).", "#ffd23f"); save(); }
+    return moved;
+  }
+  function holdLoseHalf() { var o = ocS(), lost = 0; Object.keys(o.hold).forEach(function (k) { var n = Math.floor(o.hold[k] / 2 + (o.hold[k] % 2 ? Math.random() : 0)); if (n > 0) { o.hold[k] -= n; lost += n; if (o.hold[k] <= 0) delete o.hold[k]; } }); if (lost) toast(lost + " pieces of treasure from the hold sank with her.", "#ff9a5a"); }
+  function openHold() {
+    var el = $("sbxStory"); if (!el) return; storyOpen = 243; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderHold();
+  }
+  function renderHold() {
+    var o = ocS(), H = o.hold, ks = Object.keys(H).filter(function (k) { return H[k] > 0; }), bag = bagTreas(), bn = 0; for (var k in bag) bn += bag[k];
+    var h = '<div class="mo-box bo-box"><div class="dy-head"><small>The Lily Belle</small><h2>Ship\'s Hold</h2><p class="mo-sub">' + holdN() + " of " + HOLD_MAX + " places full. Sell treasure at Driftwood Haven, the trading port in the middle of the sea. If she sinks, half of it goes down with her.</p></div>";
+    h += ks.length ? '<ul class="mo-list">' + ks.map(function (k2) { return '<li class="on"><img alt="" src="' + icon(k2) + '"><div><b>' + esc(ITEMS[k2].n) + " ×" + H[k2] + "</b><small>" + TREAS[k2][0] + " Doubloons each at " + esc(MERCH[TREAS[k2][1]].n) + '</small></div><button type="button" class="btn ghost mo-fit" data-hold="take:' + k2 + '">Take out</button></li>'; }).join("") + "</ul>" : '<p class="dy-empty">The hold is empty. Raid an island and bring its treasure back to the boat.</p>';
+    h += '<p class="dy-prize">Worth about ' + treasVal(H) + " Doubloons.</p>";
+    h += '<div class="st-row">' + (bn ? '<button type="button" class="btn mo-start" data-hold="stow">Stow ' + bn + " from your bag</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#ffd23f"); $("sbxStoryBox").innerHTML = h;
+  }
+  function holdAct(a) { var o = ocS(); if (a === "stow") holdStow(); else if (a.indexOf("take:") === 0) { var k = a.slice(5), n = o.hold[k] || 0; if (n > 0) { var got = give(k, n, undefined, undefined, true); o.hold[k] -= got; if (o.hold[k] <= 0) delete o.hold[k]; save(); } } renderHold(); }
+
+  // ---- landing and leaving ----
+  function isleLand(Q) {
+    if (trans || !OCS || !OCS.sea || !SC || !SC.genIsle) return; seaSaveState(); seaExSave(); stopInput(); if (panelOpen) closeStory();
+    trans = { t: 0, done: false, mid: function () {
+      var tier = isleTier(Q), fresh = !Q.port && isleFresh(Q), rs = Math.floor(ocToday() / ISLE_RESTOCK), F = Q.port ? SC.genPort((Q.seed | 0) + 77) : SC.genIsle(((Q.seed | 0) ^ Math.imul(rs + 1, 2654435761)) | 0, tier, Q.kind, fresh);
+      OCS = null; stageEl.classList.remove("ocean"); stageEl.classList.add("cave"); enemies.length = 0; mine = null; var gx = pierGateX();
+      cave = { isle: Q.id, tier: tier, port: !!Q.port, Q: Q, hole: { x: gx, y: col[clamp(gx, 0, W - 1)] - 1 }, run: Q.seed | 0, floors: { 1: F }, f: 0, F: null };
+      ISLW = { wave: 0, of: fresh ? tier + 1 : 0, t: 2.8, next: fresh, done: !fresh, sealed: fresh };
+      setFloor(1, "down"); S.st.landings = (S.st.landings || 0) + 1; hud(); save();
+      setTimeout(function () { if (!cave || !cave.isle) return; if (Q.port) toast("Driftwood Haven! Your crew carries the hold ashore. Visit the merchants to sell your treasure.", "#ffd23f"); else if (!fresh) toast("This island has been picked clean. It restocks in " + Math.max(1, ISLE_RESTOCK - (ocToday() - ocS().raid[Q.id])) + " day(s).", "#cfe0e8"); else toast(TIER_N[tier] + " island. Its crew is coming: survive " + ISLW.of + " waves and the treasure chests are yours.", TIER_C[tier]); }, 700);
+    } };
+  }
+  function isleLeave() {
+    if (trans || !cave || !cave.isle) return; stopInput();
+    if (ISLW && ISLW.wave > 0 && !ISLW.done) toast("You row back with the crew still on the island. Its chests stay sealed.", "#cfe0e8");
+    trans = { t: 0, done: false, mid: function () { cave = null; ISLW = null; enemies.length = 0; ocBuild(null); OCS.sea = seaNew(); OCS.diving = false; cam.x = OCS.sea.x; cam.y = OCS.sea.y; ocHudO2(); hud(); save(); } };
+  }
+  function isleKinds(t) { return [null, [["crab", 5], ["slime", 2], ["bug", 2]], [["crab", 3], ["buccaneer", 4], ["wasp", 2], ["bug", 1]], [["buccaneer", 5], ["crab", 2], ["spider", 2], ["wasp", 2]], [["buccaneer", 6], ["spider", 2], ["wasp", 2], ["crab", 1]]][t]; }
+  function isleWave() {   // the next wave comes ashore far from you
+    var F = cave.F, W2 = ISLW, t = cave.tier, L = isleKinds(t), tw = 0, lvl = 2 + t * 4; W2.wave++; L.forEach(function (q) { tw += q[1]; });
+    var n = Math.min(9, 2 + t + W2.wave), spots = F.waves.filter(function (j) { var x = j % F.w + 0.5, y = ((j / F.w) | 0) + 0.7; return Math.hypot(x - cp.x, y - cp.y) > 7 && !SC.solid(F, j % F.w, (j / F.w) | 0); });
+    for (var m = 0; m < n && spots.length; m++) { var r = Math.random() * tw, k = L[0][0]; for (var q = 0; q < L.length; q++) { r -= L[q][1]; if (r <= 0) { k = L[q][0]; break; } }
+      var j = spots.splice(Math.floor(Math.random() * spots.length), 1)[0], mb = makeElite(newCaveMob(k, j % F.w + 0.5, ((j / F.w) | 0) + 0.7, F, lvl), 0.03 + t * 0.04); mb.st = "patrol"; F.mobs.push(mb); chips(mb.x, mb.y - 0.3, "#e8d8a8", 8, 4); }
+    if (W2.wave === W2.of && t >= 2 && spots.length) {   // the last wave brings the bosun
+      var bj = spots[Math.floor(Math.random() * spots.length)], B = makeElite(newCaveMob("buccaneer", bj % F.w + 0.5, ((bj / F.w) | 0) + 0.7, F, lvl + 4), 1); B.bosun = 1; B.hp = B.mx = Math.round(B.mx * 1.4); B.sz = 1.45; if (B.elite) B.elite.n = "Bosun"; F.mobs.push(B);
+    }
+    popup("Wave " + W2.wave + " of " + W2.of, TIER_N[t] + " island • " + F.mobs.filter(function (q2) { return !q2.def; }).length + " coming", TIER_C[t], "⚔"); thud(110, 0.12); shake = Math.max(shake, 0.3);
+  }
+  function isleTick(dt) {
+    var F = cave.F, W2 = ISLW; F.amb = 0.32 + 0.6 * daylight(S.time);
+    if (!W2 || W2.done || cave.port) return;
+    var alive = (F.mobs || []).some(function (q) { return !q.def; });
+    if (alive) return;
+    W2.t -= dt; if (W2.t > 0) return;
+    if (W2.wave < W2.of) { isleWave(); W2.t = 3.2; return; }
+    W2.done = true; W2.sealed = false; ocS().raid[cave.isle] = ocToday(); S.st.raids = (S.st.raids || 0) + 1; S.st["raids" + cave.tier] = (S.st["raids" + cave.tier] || 0) + 1;
+    popup("Island cleared!", "The curse on the treasure chests lifts. Pry them open with your pick.", TIER_C[cave.tier], "★"); snd("open", "Epic"); checkGoals(); save();
+  }
+  function isleBreak(x, y, td) {   // a chest or crate on an island
+    var t = Math.max(1, cave.tier), R2 = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); };
+    if (td.kind === "lootchest") {
+      give("t_chest" + t, 1, x, y); if (Math.random() < 0.15 * t) give("t_gems", 1, x, y); give("doubloon", R2(2, 4 + t * 2), x, y); if (t >= 3 && Math.random() < 0.4) give("pearl", 1, x, y);
+      chips(x + 0.5, y + 0.5, "#f2c14e", 22, 8); popup("Treasure!", ITEMS["t_chest" + t].n, TIER_C[t], "✦"); snd("open", t >= 3 ? "Epic" : "Rare"); S.st.ichests = (S.st.ichests || 0) + 1;
+    } else {
+      var L = [["t_tea", 6 - t], ["t_rum", 4], ["t_silk", 1 + t], ["t_spice", t * 1.2], ["", 4]], tw = 0, r, k = ""; L.forEach(function (q) { tw += q[1]; }); r = Math.random() * tw; for (var i = 0; i < L.length; i++) { r -= L[i][1]; if (r <= 0) { k = L[i][0]; break; } }
+      if (k) give(k, 1, x, y);
+      if (!k) { var S2 = [["planks", 2, 4], ["rope", 1, 2], ["kelpwrap", 1, 2], ["doubloon", 1, 3], ["lampoil", 1, 1]][R2(0, 4)]; if (ITEMS[S2[0]]) give(S2[0], R2(S2[1], S2[2]), x, y); }
+      chips(x + 0.5, y + 0.5, "#a8743a", 14, 6); thud(380, 0.07); S.st.icrates = (S.st.icrates || 0) + 1;
+    }
+    checkGoals();
+  }
+  function isleKill(m) {   // pirates drop their skulls
+    if (!cave || !cave.isle || m.k !== "buccaneer") return; var t = Math.max(1, cave.tier);
+    if (m.bosun) { give("t_skull" + Math.min(4, t + 1), 1, m.x - 0.5, m.y - 1); give("doubloon", 6 + t * 3, m.x - 0.5, m.y - 1); }
+    else if (Math.random() < 0.32) give("t_skull" + Math.min(3, t), 1, m.x - 0.5, m.y - 1);
+  }
+  function isleActs() {   // what you can do on an island right now (pills and the F key)
+    if (!cave || !cave.isle || !cave.F) return []; var F = cave.F, A = [], bt = bagTreas(), bn = 0; for (var k in bt) bn += bt[k];
+    var dB = Math.hypot(F.up.x + 0.5 - cp.x, F.up.y + 0.5 - (cp.y - 0.3)); if (dB < 3 && bn && !cave.port) A.push({ label: "Stow " + bn + " treasure in the hold", x: F.up.x + 0.5, y: F.up.y - 1.3, fn: holdStow });
+    if (cave.port) (F.stalls || []).forEach(function (st) { if (Math.hypot(st.x + 0.5 - cp.x, st.y + 1.6 - cp.y) < 2.4) A.push({ label: st.id === "ship" ? "Visit Pip's Shipwright" : "Trade with " + MERCH[st.id].n, x: st.x + 0.5, y: st.y - 1.6, fn: function () { if (st.id === "ship") openShipwright(); else openMerch(st.id); } }); });
+    return A;
+  }
+  function drawIsleHud(g, now) {
+    if (!cave || !cave.isle) return; var W2 = ISLW, F = cave.F;
+    if (!panelOpen && !trans) isleActs().forEach(function (a) { drawPill(g, now, a.label + (coarse ? "" : " (F)"), ox + a.x * ts, oy + a.y * ts, false, a.fn); });
+    if (cave.port || !W2) return; var w = 240, x = (vw - w) / 2, y = 108, alive = (F.mobs || []).filter(function (q) { return !q.def; }).length;
+    var txt = W2.done ? (W2.of ? "Island cleared: open the chests!" : "Picked clean") : W2.wave ? "Wave " + W2.wave + " of " + W2.of + " · " + alive + " left" : "The crew is coming...";
+    g.fillStyle = "rgba(6,20,34,.8)"; mrr(g, x, y, w, 40, 12); g.fill(); g.font = "800 10px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = TIER_C[cave.tier]; g.fillText(skulls(cave.tier) + " " + TIER_N[cave.tier].toUpperCase() + " ISLAND · " + cave.Q.n, vw / 2, y + 14);
+    g.font = "900 14px Nunito, system-ui, sans-serif"; g.fillStyle = W2.done ? "#ffd23f" : "#f6eedb"; g.fillText(txt, vw / 2, y + 32);
+  }
+  // ---- the merchants and the shipwright ----
+  function openMerch(id) { var el = $("sbxStory"); if (!el) return; storyOpen = 244; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS_MERCH = id; renderMerch(); }
+  var OCS_MERCH = "gild", SHIPTAB = "sk";
+  function merchHave(id) { var o = ocS(), L = {}; Object.keys(TREAS).forEach(function (k) { if (TREAS[k][1] !== id) return; var n = (S.inv[k] || 0) + (o.hold[k] || 0); if (n > 0) L[k] = n; }); return L; }
+  function renderMerch() {
+    var id = OCS_MERCH, M = MERCH[id], L = merchHave(id), ks = Object.keys(L), tot = treasVal(L);
+    var h = '<div class="mo-box bo-box"><div class="dy-head"><small>Driftwood Haven</small><h2>' + esc(M.n) + '</h2><p class="mo-sub">' + esc(M.d) + " They take it from your bag or straight from the hold.</p></div>";
+    h += ks.length ? '<ul class="mo-list">' + ks.map(function (k) { return '<li class="have"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + " ×" + L[k] + "</b><small>" + TREAS[k][0] + " Doubloons each</small></div>" + '<button type="button" class="btn mo-fit" data-merch="sell:' + k + '">Sell for ' + TREAS[k][0] * L[k] + "</button></li>"; }).join("") + "</ul>" : '<p class="dy-empty">You have nothing they want. Raid an island and bring back its treasure.</p>';
+    h += '<div class="st-row">' + (ks.length > 1 ? '<button type="button" class="btn mo-start" data-merch="all">Sell everything for ' + tot + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", M.c); $("sbxStoryBox").innerHTML = h;
+  }
+  function merchSell(k) { var o = ocS(), n = (o.hold[k] || 0) + (S.inv[k] || 0); if (!n || !TREAS[k]) return 0; delete o.hold[k]; if (S.inv[k]) { delete S.inv[k]; reslot(); hbDirty = true; } return TREAS[k][0] * n; }
+  function merchAct(a) {
+    var pay = 0; if (a === "all") Object.keys(merchHave(OCS_MERCH)).forEach(function (k) { pay += merchSell(k); }); else if (a.indexOf("sell:") === 0) pay = merchSell(a.slice(5));
+    if (pay) { give("doubloon", pay, undefined, undefined, true); S.st.sold_d = (S.st.sold_d || 0) + pay; snd("coin"); thud(300, 0.06); popup("Sold!", "+" + pay + " Doubloons from " + MERCH[OCS_MERCH].n, MERCH[OCS_MERCH].c, "◎"); checkGoals(); save(); }
+    renderMerch();
+  }
+  function openShipwright() { var el = $("sbxStory"); if (!el) return; storyOpen = 245; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderShipwright(); }
+  function renderShipwright() {
+    var C = cosS(), B = ocS().boat, dbl = S.inv.doubloon || 0, L = SHIPTAB === "sk" ? SKINS : CANS, own = SHIPTAB === "sk" ? C.sk : C.cn, cur = SHIPTAB === "sk" ? skinOf().id : canOf().id;
+    var h = '<div class="mo-box bo-box"><div class="dy-head"><small>Driftwood Haven</small><h2>Pip\'s Shipwright</h2><p class="mo-sub">“Make her yours!” You have <b>' + dbl + " Doubloons</b>.</p></div>"
+      + '<div class="sw-tabs"><button type="button" class="btn' + (SHIPTAB === "sk" ? "" : " ghost") + '" data-ship="tab:sk">Boat skins</button><button type="button" class="btn' + (SHIPTAB === "cn" ? "" : " ghost") + '" data-ship="tab:cn">Cannon designs</button></div><ul class="mo-list sw-list">';
+    h += L.map(function (it, i) { var has = !it.p || own[it.id], on = it.id === cur;
+      return '<li class="' + (on ? "on" : "") + '"><canvas class="sw-cv" width="96" height="56" data-swcv="' + i + '"></canvas><div><b>' + esc(it.n) + "</b><small>" + (has ? (on ? "In use" : "Yours") : it.p + " Doubloons") + "</small></div>"
+        + (on ? '<span class="mo-on">In use</span>' : has ? '<button type="button" class="btn mo-fit" data-ship="use:' + it.id + '">Use</button>' : '<button type="button" class="btn mo-fit"' + (dbl >= it.p ? "" : " disabled") + ' data-ship="buy:' + it.id + '">Buy</button>') + "</li>"; }).join("") + "</ul>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
+    [].forEach.call(document.querySelectorAll("[data-swcv]"), function (cv) { var it = L[+cv.getAttribute("data-swcv")], g = cv.getContext("2d"); g.fillStyle = "#1f6a98"; g.fillRect(0, 0, 96, 56);
+      if (SHIPTAB === "sk") seaBoatTop(g, 50, 28, 0, 11, performance.now(), { skin: it, lit: 0 }); else { seaBoatTop(g, 30, 28, 0, 8, performance.now(), { can: it }); g.fillStyle = it.ball; if (it.trail) { var gr = g.createLinearGradient(54, 28, 88, 28); gr.addColorStop(0, "rgba(" + it.trail + ",0)"); gr.addColorStop(1, "rgba(" + it.trail + ",.8)"); g.fillStyle = gr; g.fillRect(54, 24, 34, 8); } g.fillStyle = it.ball; g.beginPath(); g.arc(86, 28, 5, 0, 6.2832); g.fill(); } });
+  }
+  function shipAct2(a) {
+    var C = cosS(), B = ocS().boat;
+    if (a.indexOf("tab:") === 0) SHIPTAB = a.slice(4);
+    else if (a.indexOf("buy:") === 0) { var id = a.slice(4), L = SHIPTAB === "sk" ? SKINS : CANS, it = L.filter(function (q) { return q.id === id; })[0]; if (it && (S.inv.doubloon || 0) >= it.p) { S.inv.doubloon -= it.p; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); hbDirty = true; (SHIPTAB === "sk" ? C.sk : C.cn)[id] = 1; if (SHIPTAB === "sk") B.sk = id; else B.cn = id; S.st.cosbuys = (S.st.cosbuys || 0) + 1; snd("open", "Epic"); popup("New look!", it.n, "#4fd0e8", "⚓"); save(); } }
+    else if (a.indexOf("use:") === 0) { var id2 = a.slice(4); if (SHIPTAB === "sk") B.sk = id2; else B.cn = id2; thud(260, 0.05); save(); }
+    renderShipwright();
+  }
+  // ---- drawing the island ----
+  function isleDeco(F) {
+    if (F.ideco) return F.ideco; var D = F.ideco = { wd: new Uint8Array(F.w * F.h), grass: [], shell: [] }, i, x, y, W2 = F.w;
+    var hh = function (a, b, s3) { var hv = Math.imul(a + 17, 73856093) ^ Math.imul(b + 31, 19349663) ^ Math.imul(s3 + 7, 83492791); hv = Math.imul(hv ^ (hv >>> 15), 2246822507); return ((hv ^ (hv >>> 13)) >>> 0) / 4294967296; };
+    for (i = 0; i < F.w * F.h; i++) { x = i % W2; y = (i / W2) | 0;
+      if (F.pool[i]) { var d = 3; for (var r = 1; r <= 3 && d === 3; r++) for (var oy2 = -r; oy2 <= r; oy2++) for (var ox2 = -r; ox2 <= r; ox2++) { var j = (y + oy2) * W2 + x + ox2; if (j >= 0 && j < F.w * F.h && !F.pool[j]) d = Math.min(d, r - 1); } D.wd[i] = d; continue; }
+      if (F.shoreD[i] >= 3 && !F.wall[i] && hh(x, y, 1) < 0.5) D.grass.push({ x: x + hh(x, y, 2), y: y + hh(x, y, 3), s: hh(x, y, 4) * 6 });
+      else if (F.shoreD[i] === 1 && hh(x, y, 5) < 0.12) D.shell.push({ x: x + hh(x, y, 6), y: y + hh(x, y, 7), c: hh(x, y, 8) < 0.5 ? "#ffd0dc" : "#f6f2e8" }); }
+    return D;
+  }
+  function isleDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {
+    var t = reduce ? 0 : now / 1000, D = isleDeco(F), i, j, k = ts, dl = daylight(S.time), dk = 0.45 + 0.55 * dl;
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var c = j * F.w + i, sx = ox + i * ts, sy = oy + j * ts;
+      if (F.pool[c]) { var col0 = [[110, 220, 225], [60, 186, 214], [36, 140, 190], [24, 104, 160]][D.wd[c]]; g.fillStyle = "rgb(" + (col0[0] * dk | 0) + "," + (col0[1] * dk | 0) + "," + (col0[2] * (0.6 + 0.4 * dk) | 0) + ")"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5);
+        var w1 = Math.sin(t * 1.2 + i * 0.7 - j * 0.5), w2 = Math.sin(t * 0.8 - i * 0.4 + j * 0.9); g.fillStyle = "rgba(255,255,255," + (0.06 + 0.06 * w1).toFixed(3) + ")"; g.fillRect(sx + ts * (0.1 + 0.2 * w2), sy + ts * (0.3 + 0.1 * w1), ts * 0.45, Math.max(1.5, ts * 0.06));
+        if (D.wd[c] === 0) { var ew = Math.max(2, ts * 0.12), fa = (0.5 + 0.25 * Math.sin(t * 2 + i + j)).toFixed(3); g.fillStyle = "rgba(255,255,255," + fa + ")"; if (!F.pool[c - F.w]) g.fillRect(sx, sy, ts, ew); if (!F.pool[c + F.w]) g.fillRect(sx, sy + ts - ew, ts, ew); if (!F.pool[c - 1]) g.fillRect(sx, sy, ew, ts); if (!F.pool[c + 1]) g.fillRect(sx + ts - ew, sy, ew, ts); }
+        continue; }
+      if (F.wall[c] && (F.rk[c] === 1 || F.rk[c] === 5)) { g.fillStyle = F.theme.floor; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); }   // sand under palms and torches (they draw themselves)
+      var sd2 = F.shoreD[c]; if (sd2 >= 3) { g.fillStyle = cave.port ? "rgba(140,100,60,.35)" : "rgba(90,150,70," + (sd2 >= 4 ? 0.55 : 0.32) + ")"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); } else if (sd2 === 1) { g.fillStyle = "rgba(255,246,214,.25)"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); }
+      if (cave.port && sd2 >= 2 && j > 13) { g.fillStyle = "rgba(120,80,40,.55)"; g.fillRect(sx, sy, ts + 0.5, ts + 0.5); g.fillStyle = "rgba(60,36,18,.6)"; g.fillRect(sx, sy + ts * 0.48, ts + 0.5, Math.max(1, ts * 0.05)); }   // the port's boardwalk
+    }
+    D.grass.forEach(function (q) { if (q.x < X0 - 1 || q.x > X1 + 1 || q.y < Y0 - 1 || q.y > Y1 + 1) return; var sx = ox + q.x * ts, sy = oy + q.y * ts, sw = Math.sin(t * 1.5 + q.s) * k * 0.05; g.strokeStyle = "#4a8a3a"; g.lineWidth = Math.max(1, k * 0.05); g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx - k * 0.06 + sw, sy - k * 0.22); g.moveTo(sx + k * 0.08, sy); g.lineTo(sx + k * 0.1 + sw, sy - k * 0.26); g.stroke(); });
+    D.shell.forEach(function (q) { if (q.x < X0 - 1 || q.x > X1 + 1 || q.y < Y0 - 1 || q.y > Y1 + 1) return; g.fillStyle = q.c; g.beginPath(); g.ellipse(ox + q.x * ts, oy + q.y * ts, k * 0.08, k * 0.06, 0.4, 0, 6.2832); g.fill(); });
+    // the Lily Belle, moored off the beach (in her skin)
+    var bx = ox + (F.up.x + 0.5) * ts, by = oy + (F.up.y + 2.6) * ts; seaBoatTop(g, bx, by, -Math.PI / 2, ts * 0.78, now, { lit: dl < 0.6, up: ocS().boat.up || {} });
+    g.strokeStyle = "#c9a876"; g.lineWidth = Math.max(1.5, ts * 0.06); g.beginPath(); g.moveTo(bx, by - ts * 1.8); g.lineTo(bx, oy + (F.up.y + 0.7) * ts); g.stroke();
+    if (dl < 0.6) srcs.push([F.up.x + 0.5, F.up.y + 2, 5, 0.8]);
+  }
+  function isleRow(g, F, rj, now) {   // palms, ruins, huts, stalls and tiki torches whose base is on this row (so you walk behind them)
+    var t = reduce ? 0 : now / 1000, k = ts;
+    for (var i = 0; i < F.w; i++) { var c = rj * F.w + i, r = F.rk[c]; if (!r) continue; var sx = ox + i * ts, sy = oy + rj * ts; if (sx < -ts * 3 || sx > vw + ts * 3) continue;
+      if (r === 1) { var sw = Math.sin(t * 0.9 + i) * k * 0.08, h = 1.7 + ((i * 7 + rj) % 3) * 0.25; g.fillStyle = "rgba(0,0,0,.2)"; g.beginPath(); g.ellipse(sx + k * 0.5, sy + k * 0.85, k * 0.5, k * 0.16, 0, 0, 6.2832); g.fill();
+        g.strokeStyle = "#7a5634"; g.lineWidth = k * 0.22; g.lineCap = "round"; g.beginPath(); g.moveTo(sx + k * 0.5, sy + k * 0.85); g.quadraticCurveTo(sx + k * 0.35, sy - k * h * 0.4, sx + k * 0.55 + sw, sy - k * h); g.stroke();
+        g.strokeStyle = "#5a3a20"; g.lineWidth = Math.max(1, k * 0.04); for (var q = 0; q < 4; q++) { var yy = sy + k * 0.6 - q * k * h * 0.28; g.beginPath(); g.moveTo(sx + k * 0.38, yy); g.lineTo(sx + k * 0.62, yy - k * 0.04); g.stroke(); }
+        var tx = sx + k * 0.55 + sw, ty = sy - k * h; for (var fr = 0; fr < 6; fr++) { var a = fr / 6 * 6.2832 + Math.sin(t * 0.7 + i) * 0.06, ex = tx + Math.cos(a) * k * 0.95, ey = ty + Math.sin(a) * k * 0.5 + k * 0.15; g.strokeStyle = fr % 2 ? "#2f7a35" : "#4a9a44"; g.lineWidth = k * 0.2; g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + ex) / 2, ty - k * 0.35, ex, ey); g.stroke(); }
+        g.fillStyle = "#6a4a1a"; g.beginPath(); g.arc(tx - k * 0.08, ty + k * 0.1, k * 0.1, 0, 6.2832); g.arc(tx + k * 0.1, ty + k * 0.12, k * 0.1, 0, 6.2832); g.fill(); }
+      else if (r === 2) { g.fillStyle = "#6a6e78"; g.fillRect(sx, sy - k * 0.45, k, k * 1.3); g.fillStyle = "#8a8e98"; g.fillRect(sx, sy - k * 0.45, k, k * 0.3); g.fillStyle = "#4a4e58"; g.fillRect(sx, sy + k * 0.48, k, k * 0.37); g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(sx + k * 0.48, sy - k * 0.15, Math.max(1, k * 0.05), k * 0.6); g.fillStyle = "#4a8a3a"; if ((i + rj) % 2) g.fillRect(sx + k * 0.1, sy - k * 0.5, k * 0.4, k * 0.12); }
+      else if (r === 3) { if (F.rk[c - 1] === 3 && F.rk[c - F.w] !== 3) continue; if (F.rk[c - 1] === 3 || F.rk[c - F.w] === 3) continue; var hw = 0; while (F.rk[c + hw] === 3) hw++; var hh2 = F.rk[c + F.w] === 3 ? 2 : 1;   // a hut: drawn once from its top-left cell
+        g.fillStyle = "#8a5a32"; g.fillRect(sx, sy - k * 0.3, hw * k, (hh2 + 0.3) * k); g.fillStyle = "#6a4426"; for (var pl = 0; pl < hw * 3; pl++) g.fillRect(sx + pl * k / 3, sy - k * 0.3, Math.max(1, k * 0.04), (hh2 + 0.3) * k);
+        g.fillStyle = "#c8a050"; g.beginPath(); g.moveTo(sx - k * 0.3, sy - k * 0.1); g.lineTo(sx + hw * k / 2, sy - k * 1.3); g.lineTo(sx + hw * k + k * 0.3, sy - k * 0.1); g.closePath(); g.fill(); g.strokeStyle = "#a07a30"; g.lineWidth = Math.max(1, k * 0.05); for (var th2 = 0; th2 < 4; th2++) { g.beginPath(); g.moveTo(sx - k * 0.1 + th2 * hw * k / 3.2, sy - k * 0.2); g.lineTo(sx + hw * k / 2, sy - k * 1.2); g.stroke(); }
+        g.fillStyle = "#2a1a10"; g.fillRect(sx + hw * k / 2 - k * 0.25, sy + (hh2 - 0.6) * k, k * 0.5, k * 0.6); }
+      else if (r === 4) { if (F.rk[c - 1] === 4) continue; var st = (F.stalls || []).filter(function (q) { return q.x === i + 1 && q.y === rj; })[0], M = st && MERCH[st.id];   // a market stall
+        g.fillStyle = "#6a4426"; g.fillRect(sx, sy - k * 0.1, k * 3, k * 0.9); g.fillStyle = "#8a5a32"; g.fillRect(sx, sy - k * 0.1, k * 3, k * 0.25);
+        g.fillStyle = "#4a2e18"; g.fillRect(sx + k * 0.05, sy - k * 1.6, k * 0.12, k * 1.6); g.fillRect(sx + k * 2.83, sy - k * 1.6, k * 0.12, k * 1.6);
+        if (st) { var fy = sy - k * 0.55; g.fillStyle = "#4a9a52"; g.beginPath(); g.ellipse(sx + k * 1.5, fy, k * 0.42, k * 0.36, 0, 0, 6.2832); g.fill(); g.fillStyle = "#6ac26a"; g.beginPath(); g.arc(sx + k * 1.32, fy - k * 0.3, k * 0.13, 0, 6.2832); g.arc(sx + k * 1.68, fy - k * 0.3, k * 0.13, 0, 6.2832); g.fill(); g.fillStyle = "#14100c"; g.fillRect(sx + k * 1.29, fy - k * 0.33, k * 0.06, k * 0.06); g.fillRect(sx + k * 1.65, fy - k * 0.33, k * 0.06, k * 0.06);
+          var stripes = M.c; for (var aw = 0; aw < 6; aw++) { g.fillStyle = aw % 2 ? "#f6eedb" : stripes; g.fillRect(sx - k * 0.1 + aw * k * 0.53, sy - k * 1.9, k * 0.53, k * 0.42); } g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(sx - k * 0.1, sy - k * 1.5, k * 3.2, k * 0.08);
+          g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.fillStyle = "#fff6e0"; var nm = M.n.replace("Croaker & Sons Trading Co.", "Croaker & Sons"); g.strokeText(nm, sx + k * 1.5, sy - k * 2.05); g.fillText(nm, sx + k * 1.5, sy - k * 2.05);
+          if (st.id === "gild") { g.fillStyle = "#ffd23f"; g.fillRect(sx + k * 0.3, sy - k * 0.2, k * 0.4, k * 0.18); } else if (st.id === "bone") { g.fillStyle = "#e8dcc0"; g.beginPath(); g.arc(sx + k * 0.5, sy - k * 0.15, k * 0.15, 0, 6.2832); g.fill(); } else if (st.id === "trade") { g.fillStyle = "#a8743a"; g.fillRect(sx + k * 0.3, sy - k * 0.35, k * 0.4, k * 0.3); } else { g.fillStyle = "#4fd0e8"; g.beginPath(); g.moveTo(sx + k * 0.3, sy - k * 0.1); g.lineTo(sx + k * 0.5, sy - k * 0.5); g.lineTo(sx + k * 0.7, sy - k * 0.1); g.fill(); } } }
+      else if (r === 5) { var fl = Math.sin(t * 9 + i * 3) * 0.12; g.fillStyle = "#6a4426"; g.fillRect(sx + k * 0.44, sy - k * 0.7, k * 0.12, k * 1.5); g.fillStyle = "#c9a52a"; g.fillRect(sx + k * 0.36, sy - k * 0.82, k * 0.28, k * 0.2); g.fillStyle = "#ff9a3a"; g.beginPath(); g.ellipse(sx + k * 0.5, sy - k * (1.0 + fl), k * 0.14, k * 0.24, 0, 0, 6.2832); g.fill(); g.fillStyle = "#ffe27a"; g.beginPath(); g.ellipse(sx + k * 0.5, sy - k * (0.95 + fl), k * 0.07, k * 0.13, 0, 0, 6.2832); g.fill(); }
+    }
+  }
+
   // =====================================================================================================================================
   // ---------- SAILING: the sea chart seen from above. Tap an island and the Lily Belle turns and sails to it; swamp pirates hunt you ----------
   // OCS.sea = { x, y, ang, sp, tgt, ships, balls, loot, wake, cd, hp }. Chart units: SO.SEAW x SO.SEAW. Islands come from SO.seaGen.
   var OISL = null, OSITES = null;
   function seaIslands() { if (!OISL || OISL._s !== ocSeed()) { OISL = SO.seaGen(ocSeed()); OISL._s = ocSeed(); OSITES = [];
+      OISL.forEach(function (I) { if (I.n === "Driftwood Haven") { I.port = 1; I.r = 12; I.kind = 5; I.d = "The trading port of the Brinebog Sea, built from a hundred wrecks. Merchants buy treasure here."; } });   // ISLAND RAIDS: the trading port
+      OISL.push({ id: 13, n: "Old Lighthouse", d: "A white tower on a black rock, dark for years.", x: LH.x, y: LH.y, r: 6, kind: 4, lh: 1, seed: (ocSeed() * 31 + 7) % 1000000007 });   // THE OLD LIGHTHOUSE
       OISL.forEach(function (I) { if (I.pier) return; var a = (I.seed % 628) / 100; OSITES.push({ x: I.x + Math.cos(a) * (I.r + 6), y: I.y + Math.sin(a) * (I.r + 6), seed: I.seed % 1000000007, name: I.n + " Reef", isl: I.id }); });
       for (var k = 0; k < 8; k++) { var h1 = SW.hash(k, 3, ocSeed() % 9973), h2 = SW.hash(k, 7, ocSeed() % 9973); OSITES.push({ x: 60 + h1 * (SO.SEAW - 120), y: 60 + h2 * (SO.SEAW - 160), seed: Math.floor(SW.hash(k, 11, 5) * 1e9), name: ["Sunken Sloop", "The Bone Garden", "Bubbling Vent", "Gull Wreck", "Old Net Field", "The Glass Hole", "Barnacle Arch", "Lost Lantern"][k], isl: -1, wreck: 1 }); }
     } return OISL; }
@@ -16077,7 +18608,7 @@
   }
   function seaSaveState() { var s = OCS && OCS.sea; if (!s) return; ocS().sea = { x: Math.round(s.x * 10) / 10, y: Math.round(s.y * 10) / 10, ang: Math.round(s.ang * 100) / 100 }; }
   function seaDock() {   // back to Croaker's Pier
-    if (trans) return; stopInput(); trans = { t: 0, done: false, mid: function () { var o = ocS(); o.sea = null; o.boat.hp = 100; OCS.sea = null; OCS.diving = false; OCS.mode = "dock"; var pl = OCS.pl; pl.x = OCS.m.pier.slip - 1.5; pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; cam.x = pl.x; cam.y = pl.y - 3; ocHudO2(); ocBanner(); save(); } };
+    if (trans) return; seaExSave(); if (OCS && OCS.sea) OCS.sea.lev = null; stopInput(); trans = { t: 0, done: false, mid: function () { var o = ocS(); o.sea = null; o.boat.hp = 100; OCS.sea = null; OCS.diving = false; OCS.mode = "dock"; var pl = OCS.pl; pl.x = OCS.m.pier.slip - 1.5; pl.y = OSEA - 1; pl.vx = pl.vy = 0; pl.on = true; cam.x = pl.x; cam.y = pl.y - 3; ocHudO2(); ocBanner(); save(); } };
   }
   function seaDive(site) {   // dive at a site out at sea: the boat waits on the surface above you
     if (trans) return; seaSaveState(); stopInput(); trans = { t: 0, done: false, mid: function () { OCS = null; ocBuild({ seed: site.seed, name: site.name }); S.st.sitedives = (S.st.sitedives || 0) + 1; var k = "s" + site.seed; ocS().isl[k] = 1; } };
@@ -16091,26 +18622,27 @@
   function seaIslAt(x, y) { var I = seaIslands(); for (var i = 0; i < I.length; i++) if (Math.hypot(I[i].x - x, I[i].y - y) < I[i].r + 3) return I[i]; return null; }
   function seaTap(sx, sy) {   // returns true if the tap was used
     var s = OCS.sea, w = seaFromScreen(sx, sy), x = w[0], y = w[1];
+    if (s.lev && s.lev.up && !s.lev.dead && Math.hypot(s.lev.hx - x, s.lev.hy - y) < 4) { seaFire({ x: s.lev.hx, y: s.lev.hy, ang: 0, sp: 0 }, true); return true; }   // tap the Leviathan to fire
     for (var i = 0; i < s.ships.length; i++) { var sh = s.ships[i]; if (!sh.sink && Math.hypot(sh.x - x, sh.y - y) < 4) { seaFire(sh, true); return true; } }
     var I = seaIslAt(x, y); if (I) { s.tgt = { x: I.x, y: I.y, isl: I }; thud(420, 0.03); if (!ocS().isl[I.id]) { ocS().isl[I.id] = 1; S.st.islands = Object.keys(ocS().isl).filter(function (k) { return /^\d+$/.test(k); }).length; } return true; }
     for (var j = 0; j < OSITES.length; j++) if (Math.hypot(OSITES[j].x - x, OSITES[j].y - y) < 3) { s.tgt = { x: OSITES[j].x, y: OSITES[j].y, site: OSITES[j] }; return true; }
     s.tgt = { x: x, y: y }; return true;
   }
   function seaFire(sh, manual) {
-    var s = OCS.sea; if (s.cd > 0) { if (manual) nag("The cannons are reloading..."); return; }
-    var d = Math.hypot(sh.x - s.x, sh.y - s.y); if (d > 26) { if (manual) nag("Out of range. Sail closer!"); return; }
-    s.cd = 1.5; var t = d / 22, tx = sh.x + Math.cos(sh.ang) * sh.sp * t, ty = sh.y + Math.sin(sh.ang) * sh.sp * t, a = Math.atan2(ty - s.y, tx - s.x);
-    s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a) * 22, vy: Math.sin(a) * 22, life: Math.min(1.6, t + 0.2), mine: 1 }); thud(70, 0.12); shake = Math.max(shake, 0.15);
+    var s = OCS.sea, cl = shipUp("can"), rng = [26, 30, 34][cl]; if (s.cd > 0) { if (manual) nag("The cannons are reloading..."); return; }
+    var d = Math.hypot(sh.x - s.x, sh.y - s.y); if (d > rng) { if (manual) nag("Out of range. Sail closer!"); return; }
+    s.cd = s.cdMax = [1.5, 1.1, 0.9][cl]; var bs = cl >= 2 ? 26 : 22, t = d / bs, tx = sh.x + Math.cos(sh.ang) * (sh.sp || 0) * t, ty = sh.y + Math.sin(sh.ang) * (sh.sp || 0) * t, a = Math.atan2(ty - s.y, tx - s.x);
+    var CD = canOf(); (cl ? [-0.045, 0.045] : [0]).forEach(function (da) { s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a + da) * bs, vy: Math.sin(a + da) * bs, life: Math.min(1.8, t + 0.2), mine: 1, dmg: cl >= 2 ? 2 : 1, star: cl >= 2, cd: CD.id }); }); thud(70, 0.12); shake = Math.max(shake, 0.15);
     for (var i = 0; i < 6; i++) s.wake.push({ x: s.x + Math.cos(a) * 1.5, y: s.y + Math.sin(a) * 1.5, life: 0.6, smoke: 1, vx: Math.cos(a) * 2 + (Math.random() - 0.5), vy: Math.sin(a) * 2 + (Math.random() - 0.5) });
   }
   function seaSpawnShip() {
-    var s = OCS.sea, a = Math.random() * 6.2832, d = 48 + Math.random() * 14, I = seaIslands(), cove = I.filter(function (q) { return q.kind === 3; }), near = cove.some(function (q) { return Math.hypot(q.x - s.x, q.y - s.y) < 120; });
+    var s = OCS.sea, a = Math.random() * 6.2832, d = (s.wx && s.wx.k === "fog" ? seaSight() + 10 : 48) + Math.random() * 14, I = seaIslands(), cove = I.filter(function (q) { return q.kind === 3; }), near = cove.some(function (q) { return Math.hypot(q.x - s.x, q.y - s.y) < 120; });
     var big = Math.random() < (near ? 0.4 : 0.15); s.ships.push({ x: clamp(s.x + Math.cos(a) * d, 8, SO.SEAW - 8), y: clamp(s.y + Math.sin(a) * d, 8, SO.SEAW - 8), ang: a + Math.PI, sp: 0, hp: big ? 6 : 3, hpm: big ? 6 : 3, big: big, cd: 2 + Math.random() * 2, side: Math.random() < 0.5 ? 1 : -1, hurt: 0, sink: 0, t: 0 });
     if (!S.st.piratetip) { S.st.piratetip = 1; toast("Pirate sails! Swamp pirates are coming for your cargo. " + (coarse ? "Tap their ship" : "Click their ship or press Space") + " to fire back.", "#ff7a6a"); }
   }
   function seaHurt(n) {
-    var B = ocS().boat; B.hp = Math.max(0, (B.hp || 100) - n); shake = Math.max(shake, 0.5); thud(60, 0.14); OCS.sea.hurt = 0.4;
-    if (B.hp <= 0) { toast("The Lily Belle is holed! Old Croaker's friends tow you home.", "#ff7a6a"); var lost = Math.min(S.inv.doubloon || 0, 5); if (lost) { S.inv.doubloon -= lost; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); toast("The pirates got away with " + lost + " Doubloons.", "#ff9a5a"); } seaDock(); }
+    var B = ocS().boat; B.hp = Math.max(0, (B.hp || 100) - n * 100 / hullMax()); shake = Math.max(shake, 0.5);   // tougher hulls lose a smaller share thud(60, 0.14); OCS.sea.hurt = 0.4;
+    if (B.hp <= 0) { toast("The Lily Belle is holed! Old Croaker's friends tow you home.", "#ff7a6a"); holdLoseHalf(); var lost = Math.min(S.inv.doubloon || 0, 5); if (lost) { S.inv.doubloon -= lost; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); toast("The pirates got away with " + lost + " Doubloons.", "#ff9a5a"); } seaDock(); }
   }
   function seaLoot(sh) {
     var L = [], R = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }, add = function (k, a, b, ch) { if (ITEMS[k] && Math.random() < (ch == null ? 1 : ch)) L.push([k, R(a, b)]); };
@@ -16119,7 +18651,7 @@
   }
   function seaActions() {
     var s = OCS.sea, A = [], I = seaIslands(), b = function (x, y) { return [x, y]; };
-    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
+    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : Q.port ? { label: "Moor at Driftwood Haven", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { isleLand(Q); } } : Q.lh ? { label: "Climb the lighthouse", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openLighthouse(Q); } } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
     OSITES.forEach(function (st) { if (Math.hypot(st.x - s.x, st.y - s.y) < 4.5) A.push({ label: "Dive here", wx: st.x, wy: st.y - 3, fn: function () { seaDive(st); } }); });
     return A;
   }
@@ -16127,17 +18659,23 @@
     var el = $("sbxStory"); if (!el) return; storyOpen = 220; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS.isleQ = Q;
     var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0];
     var h = '<div class="mo-box bo-box"><div class="mo-head"><canvas class="mo-cv" id="isCv" width="360" height="200" aria-hidden="true"></canvas><div><small>An island of the Brinebog Sea</small><h2>' + esc(Q.n) + '</h2><p class="mo-sub">' + esc(Q.d) + "</p></div></div>"
-      + '<p class="mo-msg">Old Croaker squints at the shore: “The tide\'s not right for a landing yet. Give it time.” Exploring islands on foot is coming in a later update. You can still dive the reef around it.</p>'
-      + '<div class="st-row">' + (site ? '<button type="button" class="btn mo-start" data-isle="dive">Dive ' + esc(site.name) + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Back to the helm</button></div></div>';
+      + isleCard(Q)
+      + '<div class="st-row"><button type="button" class="btn mo-start" data-isle="land">Land ashore</button>' + (site ? '<button type="button" class="btn" data-isle="dive">Dive ' + esc(site.name) + "</button>" : "") + '<button type="button" class="btn ghost" data-story-close>Back to the helm</button></div></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
     var cv = $("isCv"); if (cv) { var g = cv.getContext("2d"); g.fillStyle = "#2a8ac0"; g.fillRect(0, 0, 360, 200); var k0 = 9, save0 = [cam.x, cam.y]; g.save(); g.translate(180 - Q.x * k0, 100 - Q.y * k0); seaDrawIsland(g, Q, k0, performance.now(), 0, 0); g.restore(); }
   }
-  function isleAct(a) { var Q = OCS && OCS.isleQ; if (!Q) return; if (a === "dive") { var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0]; closeStory(); if (site) seaDive(site); } }
+  function isleCard(Q) {   // ISLAND RAIDS: what the island card says
+    var t = isleTier(Q), fr = isleFresh(Q), r = ocS().raid[Q.id];
+    return '<p class="is-tier" style="--tc:' + TIER_C[t] + '"><b>' + skulls(t) + " " + TIER_N[t] + " island</b> " + ["", "A small crew of crabs and critters. Easy pickings.", "Pirates and stinging things. Bring a good weapon.", "A hardened pirate crew and their bosun. Bring armour and food.", "The worst crews on the sea, led by a dread bosun. Only for the bold."][t] + "</p>"
+      + '<p class="mo-msg">' + (fr ? "Beat " + (t + 1) + " waves of its crew to break the curse on its treasure chests. Smash the crates and barrels too. Stow what you find in the ship's hold, then sell it at Driftwood Haven." : "You picked this island clean. It restocks in " + Math.max(1, ISLE_RESTOCK - (ocToday() - r)) + " day(s).") + "</p>";
+  }
+  function isleAct(a) { var Q = OCS && OCS.isleQ; if (!Q) return; if (a === "land") { closeStory(); isleLand(Q); return; } if (a === "dive") { var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0]; closeStory(); if (site) seaDive(site); } }
 
   // ---- update ----
   function seaUpdate(dt) {
     var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
-    var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1);
+    var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1) * (S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "ship"; }) ? 1.2 : 1);
+    seaWxStep(s, dt); maxSp *= s.spMul * (hasCharm("wander") ? 1.1 : 1); migSeaStep(s, dt); levStep(s, dt);   // WEATHER AT SEA, MIGRATIONS, THE LEVIATHAN
     if (joy.x || joy.y) { s.tgt = null; var ja = Math.atan2(joy.y, joy.x), jd = Math.atan2(Math.sin(ja - s.ang), Math.cos(ja - s.ang)); s.ang += clamp(jd, -1, 1) * 2.2 * dt; want = maxSp * Math.min(1, Math.hypot(joy.x, joy.y)); }
     else if (turn || thr) { if (turn || thr > 0) s.tgt = null; s.ang += turn * 1.9 * dt; want = thr > 0 ? maxSp : thr < 0 ? 0 : (s.tgt ? want : s.sp); if (!thr && !s.tgt) want = s.sp; }
     if (s.tgt) {
@@ -16153,7 +18691,7 @@
     seaTrail(s, dt, 2.2);
     // pirates
     s.cd = Math.max(0, s.cd - dt); s.hurt = Math.max(0, (s.hurt || 0) - dt);
-    var homeD = Math.hypot(I[0].x - s.x, I[0].y - s.y); s.shipT -= dt; if (s.shipT <= 0) { var stm = wxStorm(); s.shipT = (22 + Math.random() * 20) * (1 - 0.45 * stm); if (s.ships.length < (stm > 0.5 ? 4 : 3) && homeD > 40) seaSpawnShip(); }
+    var homeD = Math.hypot(I[0].x - s.x, I[0].y - s.y); s.shipT -= dt; if (s.shipT <= 0) { var stm = wxStorm(); s.shipT = (22 + Math.random() * 20) * (1 - 0.45 * stm) * (s.wx && s.wx.k === "calm" ? 2.4 : 1); if (s.ships.length < (stm > 0.5 ? 4 : 3) && homeD > 40 && !lhSafe(s.x, s.y)) seaSpawnShip(); }
     if (wxStorm() > 0.5 && !s.stormSaid) { s.stormSaid = 1; toast("A storm is rolling in. Pirates love bad weather: watch out!", "#ffb0a0"); } else if (wxStorm() < 0.1) s.stormSaid = 0;
     var nearest = null, nd = 99;
     for (i = s.ships.length - 1; i >= 0; i--) {
@@ -16171,9 +18709,10 @@
     if (nearest && nd < 18 && s.cd <= 0 && s.auto !== false) seaFire(nearest, false);   // the deckhand frog fires the cannons when pirates come close
     for (i = s.balls.length - 1; i >= 0; i--) {
       var b = s.balls[i]; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; var hit = false;
-      if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2)) { hit = true; sh2.hp--; sh2.hurt = 0.3; for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
+      if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2)) { hit = true; sh2.hp -= b.dmg || 1; sh2.hurt = 0.3; for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
         if (sh2.hp <= 0) { sh2.sink = 0.01; S.st.pships = (S.st.pships || 0) + 1; s.loot.push({ x: sh2.x, y: sh2.y, items: seaLoot(sh2), t: 0 }); snd("coin"); toast(sh2.big ? "You sank a pirate galleon! Its cargo is floating free." : "Pirate sloop sunk! Sail over the floating crate to grab its cargo.", "#7af0ff"); } } });
       else if (Math.hypot(s.x - b.x, s.y - b.y) < 2) { hit = true; seaHurt(b.big ? 16 : 11); for (var q2 = 0; q2 < 8; q2++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); }
+      if (b.mine && !hit && levHit(b)) hit = true;
       if (hit || b.life <= 0) { if (!hit) { for (var q3 = 0; q3 < 4; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); waterSplash(b.x, b.y, b.big ? 1.6 : 1.2, 1); } s.balls.splice(i, 1); }
     }
     for (i = s.loot.length - 1; i >= 0; i--) { var L = s.loot[i]; L.t += dt; if (Math.hypot(L.x - s.x, L.y - s.y) < 3) { L.items.forEach(function (it) { give(it[0], it[1], undefined, undefined, true); texts.push({ s: "+" + it[1] + " " + ITEMS[it[0]].n, x: cam.x, y: cam.y - 1 - texts.length * 0.4, c: "#ffd23f", life: 1.6 }); }); s.loot.splice(i, 1); snd("coin"); } else if (L.t > 90) s.loot.splice(i, 1); }
@@ -16185,7 +18724,7 @@
     drawHp(); tickHunger(dt); tickFx(dt); tickBounties(dt);
     cam.x += (s.x + Math.cos(s.ang) * s.sp * 0.6 - cam.x) * Math.min(1, dt * 4); cam.y += (s.y + Math.sin(s.ang) * s.sp * 0.6 - cam.y) * Math.min(1, dt * 4);
     for (var tI = texts.length - 1; tI >= 0; tI--) { texts[tI].life -= dt; texts[tI].y -= dt * 0.9; if (texts[tI].life <= 0) texts.splice(tI, 1); }
-    s.saveT += dt; if (s.saveT > 4) { s.saveT = 0; seaSaveState(); }
+    s.saveT += dt; if (s.saveT > 4) { s.saveT = 0; seaSaveState(); if (s.exDirty) { s.exDirty = 0; seaExSave(); } }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
     hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); }
     saveT += dt * 1000; if (saveT >= SAVE_MS) { saveT = 0; save(); }
@@ -16203,23 +18742,29 @@
     g.rotate(rock); var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, svx = ssn.sx * ssn.len * 0.9 * k, svy = (0.3 + 0.25 * ssn.len) * k, th = -(ang + rock), sdx = svx * Math.cos(th) - svy * Math.sin(th), sdy = svx * Math.sin(th) + svy * Math.cos(th);   // the shadow falls away from the sun, whichever way the boat points
     g.fillStyle = "rgba(0,20,40," + (0.12 + ssn.a).toFixed(3) + ")"; g.beginPath(); g.ellipse(sdx, sdy, L * 1.02, Wd * 1.05, 0, 0, 6.2832); g.fill();
     var hull = function () { g.beginPath(); g.moveTo(L, 0); g.quadraticCurveTo(L * 0.55, -Wd, -L * 0.2, -Wd); g.lineTo(-L * 0.9, -Wd * 0.78); g.quadraticCurveTo(-L * 1.02, 0, -L * 0.9, Wd * 0.78); g.lineTo(-L * 0.2, Wd); g.quadraticCurveTo(L * 0.55, Wd, L, 0); g.closePath(); };
-    hull(); g.fillStyle = o.hurt ? "#ffffff" : pir ? "#3a2418" : "#7a4a2a"; g.fill(); g.save(); hull(); g.clip();
-    var deckIn = 0.16 * k; g.fillStyle = pir ? "#5a3a24" : "#b8844a"; g.beginPath(); g.ellipse(-L * 0.05, 0, L * 0.86, Wd - deckIn, 0, 0, 6.2832); g.fill();
+    var SK = pir ? null : o.skin || (o.up ? skinOf() : SKINS[0]), CN = pir ? null : o.can || (o.up ? canOf() : CANS[0]);   // ISLAND RAIDS: Pip's skins and cannon designs
+    if (SK && SK.glow && !reduce) { g.save(); g.globalCompositeOperation = "lighter"; oG(g, 0, 0, L * 1.6, "rgba(160,240,255,.18)"); g.restore(); }
+    hull(); g.fillStyle = o.hurt ? "#ffffff" : pir ? "#3a2418" : SK.hull; g.fill(); g.save(); hull(); g.clip();
+    var deckIn = 0.16 * k; g.fillStyle = pir ? "#5a3a24" : SK.deck; g.beginPath(); g.ellipse(-L * 0.05, 0, L * 0.86, Wd - deckIn, 0, 0, 6.2832); g.fill();
     g.strokeStyle = pir ? "rgba(0,0,0,.35)" : "rgba(80,40,20,.35)"; g.lineWidth = Math.max(1, k * 0.05); for (var pl2 = -2; pl2 <= 2; pl2++) { g.beginPath(); g.moveTo(-L, pl2 * Wd * 0.3); g.lineTo(L, pl2 * Wd * 0.3); g.stroke(); }
     g.restore(); g.strokeStyle = pir ? "#1a1008" : "#4a2e18"; g.lineWidth = Math.max(1, k * 0.09); hull(); g.stroke();
-    if (!pir) { g.fillStyle = "#4ee6b4"; for (var q = 0; q < 4; q++) { g.beginPath(); g.arc((-0.6 + q * 0.4) * L, -Wd * 0.92, k * 0.09, 0, 6.2832); g.arc((-0.6 + q * 0.4) * L, Wd * 0.92, k * 0.09, 0, 6.2832); g.fill(); } }
-    // cannons on each side
-    g.fillStyle = "#2a2a30"; [-0.3, 0.25].forEach(function (cx) { g.fillRect(cx * L - k * 0.12, -Wd - k * 0.18, k * 0.24, k * 0.3); g.fillRect(cx * L - k * 0.12, Wd - k * 0.12, k * 0.24, k * 0.3); });
+    if (!pir) { g.fillStyle = SK.trim; for (var q = 0; q < 4; q++) { g.beginPath(); g.arc((-0.6 + q * 0.4) * L, -Wd * 0.92, k * 0.09, 0, 6.2832); g.arc((-0.6 + q * 0.4) * L, Wd * 0.92, k * 0.09, 0, 6.2832); g.fill(); } }
+    var UP = o.up || {};
+    if (UP.hull) { g.strokeStyle = UP.hull >= 2 ? "#8a96a4" : "#5a3a20"; g.lineWidth = Math.max(1.5, k * (UP.hull >= 2 ? 0.2 : 0.14)); hull(); g.stroke(); if (UP.hull >= 2) { g.fillStyle = "#d8e0e8"; for (var rv = 0; rv < 7; rv++) { var ra2 = -0.8 + rv * 0.27; g.fillRect(ra2 * L - k * 0.04, -Wd * 0.97, k * 0.08, k * 0.08); g.fillRect(ra2 * L - k * 0.04, Wd * 0.89, k * 0.08, k * 0.08); } } }   // SHIP UPGRADES: plated hulls
+    // cannons on each side (Twin Cannons: four a side; Star Cannons: glowing blue barrels)
+    g.fillStyle = UP.can >= 2 ? "#9ad8ff" : CN ? CN.barrel : "#2a2a30"; (UP.can ? [-0.5, -0.2, 0.1, 0.38] : [-0.3, 0.25]).forEach(function (cx) { g.fillRect(cx * L - k * 0.12, -Wd - k * 0.18, k * 0.24, k * 0.3); g.fillRect(cx * L - k * 0.12, Wd - k * 0.12, k * 0.24, k * 0.3); });
     // mast and sail (seen from above: the sail is a big leaf that swings with the wind)
     var sw = reduce ? 0 : Math.sin(now / 900 + (o.ph || 0)) * 0.12;
     g.save(); g.translate(L * 0.05, 0); g.rotate(1.57 + sw);
     if (pir) { g.fillStyle = "#1a1420"; g.beginPath(); g.moveTo(-Wd * 1.5, 0); g.quadraticCurveTo(0, -k * 2.3, Wd * 1.5, 0); g.quadraticCurveTo(0, -k * 0.6, -Wd * 1.5, 0); g.fill(); g.fillStyle = "#e8d9a8"; g.beginPath(); g.arc(0, -k * 0.85, k * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#1a1420"; g.fillRect(-k * 0.16, -k * 0.92, k * 0.1, k * 0.1); g.fillRect(k * 0.06, -k * 0.92, k * 0.1, k * 0.1); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(-k * 0.2, -k * 1.12, k * 0.08, 0, 6.2832); g.arc(k * 0.2, -k * 1.12, k * 0.08, 0, 6.2832); g.fill(); }
-    else { g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(-Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 2.5, Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 0.7, -Wd * 1.55, 0); g.fill(); g.fillStyle = "#58b85a"; g.beginPath(); g.moveTo(-Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 2.2, Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 0.8, -Wd * 1.35, -k * 0.08); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.ellipse(-Wd * 0.4, -k * 0.95, k * 0.35, k * 0.12, -0.3, 0, 6.2832); g.fill(); g.strokeStyle = "#2f7a3a"; g.lineWidth = Math.max(1, k * 0.05); for (var v = -2; v <= 2; v++) { g.beginPath(); g.moveTo(0, -k * 0.5); g.lineTo(v * Wd * 0.5, -k * 0.85 + Math.abs(v) * k * 0.15); g.stroke(); } }
+    else { g.fillStyle = SK.sail[0]; g.beginPath(); g.moveTo(-Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 2.5, Wd * 1.55, 0); g.quadraticCurveTo(0, -k * 0.7, -Wd * 1.55, 0); g.fill(); g.fillStyle = SK.sail[1]; g.beginPath(); g.moveTo(-Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 2.2, Wd * 1.35, -k * 0.08); g.quadraticCurveTo(0, -k * 0.8, -Wd * 1.35, -k * 0.08); g.fill(); g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.ellipse(-Wd * 0.4, -k * 0.95, k * 0.35, k * 0.12, -0.3, 0, 6.2832); g.fill(); g.strokeStyle = "#2f7a3a"; g.lineWidth = Math.max(1, k * 0.05); for (var v = -2; v <= 2; v++) { g.beginPath(); g.moveTo(0, -k * 0.5); g.lineTo(v * Wd * 0.5, -k * 0.85 + Math.abs(v) * k * 0.15); g.stroke(); } }
     g.restore(); g.fillStyle = pir ? "#2a1a10" : "#5a3a1e"; g.beginPath(); g.arc(L * 0.05, 0, k * 0.16, 0, 6.2832); g.fill();
+    if (UP.nest) { g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(L * 0.05, 0, k * 0.42, 0, 6.2832); g.fill(); g.strokeStyle = "#c28a52"; g.lineWidth = Math.max(1, k * 0.07); g.stroke(); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(L * 0.05 + k * 0.12, k * 0.08, k * 0.14, 0, 6.2832); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.moveTo(L * 0.05, 0); g.lineTo(L * 0.05 - k * (0.7 + Math.sin(now / 240) * 0.08), -k * 0.12); g.lineTo(L * 0.05 - k * 0.6, k * 0.1); g.closePath(); g.fill(); }   // the Crow's Nest and its pennant
     if (pir) { g.fillStyle = "#c83a3a"; g.beginPath(); g.moveTo(L * 0.05, 0); g.lineTo(L * 0.05 - k * (0.9 + Math.sin(now / 200) * 0.1), -k * 0.15); g.lineTo(L * 0.05 - k * 0.8, k * 0.12); g.closePath(); g.fill(); }
     else { // the frog figurehead and the wheel
-      g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(L * 0.92, 0, k * 0.24, 0, 6.2832); g.fill(); g.fillStyle = "#fff6c0"; g.beginPath(); g.arc(L * 0.95, -k * 0.14, k * 0.1, 0, 6.2832); g.arc(L * 0.95, k * 0.14, k * 0.1, 0, 6.2832); g.fill();
+      g.fillStyle = SK.trim; g.beginPath(); g.arc(L * 0.92, 0, k * 0.24, 0, 6.2832); g.fill(); g.fillStyle = "#fff6c0"; g.beginPath(); g.arc(L * 0.95, -k * 0.14, k * 0.1, 0, 6.2832); g.arc(L * 0.95, k * 0.14, k * 0.1, 0, 6.2832); g.fill();
       g.strokeStyle = "#c98c4f"; g.lineWidth = Math.max(1, k * 0.07); g.beginPath(); g.arc(-L * 0.62, 0, k * 0.26, 0, 6.2832); g.stroke();
+      if (UP.can >= 2 && !reduce) { g.save(); g.globalCompositeOperation = "lighter"; oG(g, 0, -Wd, k * 0.9, "rgba(120,210,255,.35)"); oG(g, 0, Wd, k * 0.9, "rgba(120,210,255,.35)"); g.restore(); }
       if (o.lit) { var lg = g.createRadialGradient(L * 0.8, 0, 0, L * 0.8, 0, k * 4); lg.addColorStop(0, "rgba(255,226,122,.35)"); lg.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = lg; g.fillRect(L * 0.8 - k * 4, -k * 4, k * 8, k * 8); }
     }
     if (o.sink) { g.fillStyle = "rgba(20,80,120," + Math.min(0.85, o.sink / 2) + ")"; hull(); g.fill(); }
@@ -16235,11 +18780,22 @@
     var ssn = SEASUN || { sx: 0.3, len: 0.5, a: 0.27 }, isx = ssn.sx * ssn.len * 0.9 * k * 1.4, isy = (0.3 + 0.25 * ssn.len) * k * 1.4;
     poly(1.04, isx, isy); g.fillStyle = "rgba(0,24,44," + (0.1 + ssn.a * 0.7).toFixed(3) + ")"; g.fill();   // the island's shadow on the water
     var foam = reduce ? 0 : Math.sin(now / 700 + Q.id) * 0.03; poly(1.12 + foam); g.fillStyle = "rgba(255,255,255,.55)"; g.fill();
-    var K = Q.kind, sand = K === 1 ? "#3a3236" : K === 2 ? "#dfe8ee" : "#e8d29a", land = K === 1 ? "#4a3a3a" : K === 2 ? "#f6fbff" : K === 3 ? "#5a7a4a" : "#5aa24a", land2 = K === 1 ? "#2a2024" : K === 2 ? "#bcd6e8" : K === 3 ? "#3a5a32" : "#3f8a3a";
+    var K = Q.kind, sand = K === 5 ? "#e8d29a" : K === 1 || K === 4 ? "#3a3236" : K === 2 ? "#dfe8ee" : "#e8d29a", land = K === 1 ? "#4a3a3a" : K === 4 ? "#5a5e66" : K === 2 ? "#f6fbff" : K === 3 ? "#5a7a4a" : "#5aa24a", land2 = K === 1 ? "#2a2024" : K === 4 ? "#46494f" : K === 2 ? "#bcd6e8" : K === 3 ? "#3a5a32" : "#3f8a3a";
     poly(1); g.fillStyle = sand; g.fill(); poly(0.74, 0, -r * 0.04); g.fillStyle = land; g.fill(); poly(0.45, -r * 0.05, -r * 0.1); g.fillStyle = land2; g.fill();
     if (ssn.a > 0.02) { var lgx = -ssn.sx * r, lsh = g.createLinearGradient(x + lgx, y - r * 0.8, x - lgx, y + r * 0.8); lsh.addColorStop(0, "rgba(255,246,214," + (ssn.a * 0.6).toFixed(3) + ")"); lsh.addColorStop(0.5, "rgba(255,246,214,0)"); lsh.addColorStop(1, "rgba(0,20,36," + (ssn.a * 0.9).toFixed(3) + ")"); poly(1); g.fillStyle = lsh; g.fill(); }   // the sunny side and the shady side
     if (Q.pier) { g.fillStyle = "#8a5a32"; g.fillRect(x - r * 0.1, y + r * 0.5, r * 0.2, r * 1.2); g.fillStyle = "#6a4426"; g.fillRect(x - r * 0.35, y + r * 1.5, r * 0.7, r * 0.18); g.fillStyle = "#c28a52"; g.fillRect(x - r * 0.3, y - r * 0.3, r * 0.6, r * 0.45); g.fillStyle = "#2f7a3a"; g.beginPath(); g.moveTo(x - r * 0.4, y - r * 0.3); g.lineTo(x, y - r * 0.65); g.lineTo(x + r * 0.4, y - r * 0.3); g.fill(); }
     else if (K === 1) { g.fillStyle = "#1a1416"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#ff7a2a"; g.beginPath(); g.arc(x, y - r * 0.15, r * 0.14, 0, 6.2832); g.fill(); if (!reduce) for (i = 0; i < 4; i++) { var st = ((now / 1000 * 0.4 + i / 4) % 1); g.fillStyle = "rgba(200,200,210," + (0.5 * (1 - st)) + ")"; g.beginPath(); g.arc(x + st * r * 0.6, y - r * 0.2 - st * r * 0.9, r * (0.12 + st * 0.25), 0, 6.2832); g.fill(); } }
+    else if (K === 5) {   // DRIFTWOOD HAVEN: piers, huts on stilts and flags
+      g.fillStyle = "#8a5a32"; [[-0.9, 0.55, 0.9, 0.12], [0.2, 0.7, 0.12, 0.6], [-0.6, -0.7, 0.12, 0.5], [0.5, -0.4, 0.8, 0.12]].forEach(function (q2) { g.fillRect(x + q2[0] * r, y + q2[1] * r, q2[2] * r, q2[3] * r); });
+      [[-0.35, -0.2, "#c8a050"], [0.25, 0.1, "#b88a40"], [-0.1, 0.35, "#d8b060"], [0.35, -0.45, "#c8a050"], [-0.5, 0.15, "#b88a40"]].forEach(function (q2, n2) { g.fillStyle = "#6a4426"; g.fillRect(x + q2[0] * r - r * 0.13, y + q2[1] * r - r * 0.1, r * 0.26, r * 0.2); g.fillStyle = q2[2]; g.beginPath(); g.moveTo(x + q2[0] * r - r * 0.17, y + q2[1] * r - r * 0.08); g.lineTo(x + q2[0] * r, y + q2[1] * r - r * 0.25); g.lineTo(x + q2[0] * r + r * 0.17, y + q2[1] * r - r * 0.08); g.closePath(); g.fill();
+        g.fillStyle = ["#ffd23f", "#c8b8ff", "#7ae0a0", "#4fd0e8", "#ff7a6a"][n2]; g.fillRect(x + q2[0] * r + r * 0.12, y + q2[1] * r - r * 0.34, r * 0.1, r * 0.06 + Math.sin(now / 300 + n2) * r * 0.01); });
+    }
+    else if (K === 4) {   // THE OLD LIGHTHOUSE: a white tower with red bands, seen from above, its lamp dark or lit
+      var lit2 = !!(ocS().lh); g.fillStyle = "#3a3e46"; g.beginPath(); g.arc(x, y - r * 0.05, r * 0.48, 0, 6.2832); g.fill();
+      g.fillStyle = "#f4f0e6"; g.beginPath(); g.arc(x, y - r * 0.1, r * 0.34, 0, 6.2832); g.fill(); g.strokeStyle = "#c83a3a"; g.lineWidth = Math.max(1.5, r * 0.08); g.beginPath(); g.arc(x, y - r * 0.1, r * 0.26, 0, 6.2832); g.stroke();
+      g.fillStyle = lit2 ? "#ffe27a" : "#5a5e66"; g.beginPath(); g.arc(x, y - r * 0.1, r * 0.15, 0, 6.2832); g.fill(); if (lit2) oG(g, x, y - r * 0.1, r * 0.9, "rgba(255,230,140,.55)");
+      g.fillStyle = "#e8e4dc"; for (i = 0; i < 4; i++) { var gx3 = x + Math.cos(now / 1800 + i * 1.6) * r * 0.75, gy3 = y + Math.sin(now / 1800 + i * 1.6) * r * 0.55; g.fillRect(gx3 - 1, gy3, 3, 1.5); }   // gulls on the rocks
+    }
     else if (K === 2) { g.fillStyle = "#9ac8e8"; g.beginPath(); g.moveTo(x - r * 0.3, y); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.3, y); g.fill(); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(x - r * 0.12, y - r * 0.4); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.12, y - r * 0.4); g.fill(); }
     else if (K === 3) { g.fillStyle = "#e8d9a8"; g.beginPath(); g.arc(x + r * 0.15, y - r * 0.1, r * 0.25, 0, 6.2832); g.fill(); g.fillStyle = "#14181c"; g.beginPath(); g.arc(x + r * 0.06, y - r * 0.15, r * 0.07, 0, 6.2832); g.arc(x + r * 0.24, y - r * 0.15, r * 0.07, 0, 6.2832); g.fill(); g.fillStyle = "#4a2e18"; g.fillRect(x - r * 0.4, y - r * 0.75, r * 0.06, r * 0.6); g.fillStyle = "#14181c"; g.fillRect(x - r * 0.34, y - r * 0.75, r * 0.4, r * 0.25); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(x - r * 0.14, y - r * 0.62, r * 0.06, 0, 6.2832); g.fill(); }
     else for (i = 0; i < 3; i++) { var tx = x + (SW.hash(Q.id, i, 9) - 0.5) * r * 0.9, ty = y + (SW.hash(Q.id, i, 10) - 0.5) * r * 0.6; g.fillStyle = "#2f6a2a"; for (var f = 0; f < 5; f++) { var fa = f / 5 * 6.2832 + Q.id; g.beginPath(); g.ellipse(tx + Math.cos(fa) * r * 0.12, ty + Math.sin(fa) * r * 0.12, r * 0.14, r * 0.05, fa, 0, 6.2832); g.fill(); } g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(tx, ty, r * 0.04, 0, 6.2832); g.fill(); }
@@ -16263,11 +18819,11 @@
     g.strokeStyle = "rgba(255,255,255," + (0.14 + 0.08 * dl) + ")"; g.lineWidth = Math.max(1, k * 0.1); g.lineCap = "round";   // little wave marks
     // wave crests: each one rises, rolls a little way downwind and sinks again (it fades in and out, so none of them pop), with the
     // darker trough just behind it; bigger, slower swells under small quick ripples
-    var wcol = g.strokeStyle, tcol = "rgba(0,34,70," + (0.1 + 0.06 * dl) + ")";
+    var wcol = g.strokeStyle, tcol = "rgba(0,34,70," + (0.1 + 0.06 * dl) + ")", calmK = 1 - 0.75 * (s.wx && s.wx.k === "calm" ? s.wx.n : 0);   // glassy calm: hardly a ripple
     for (var gx = Math.floor(x0 / G) * G; gx < x1; gx += G) for (var gy = Math.floor(y0 / G) * G; gy < y1; gy += G) {
       var h1 = SW.hash(gx, gy, 3), h2 = SW.hash(gx, gy, 4), big2 = h2 > 0.62 - wst * 0.3, per = (big2 ? 6.5 : 3.6) / (1 + wst * 0.8), ph = reduce ? 0.5 : ((t / per + h1) % 1), rise = Math.sin(ph * Math.PI), sm = rise * rise * (3 - 2 * rise);
       var wx = gx + h1 * G + ph * (big2 ? 1.6 : 1.0), wy = gy + h2 * G + Math.sin(ph * Math.PI) * 0.15, ln = (big2 ? 1.3 : 0.7) * (0.55 + 0.45 * sm) * (1 + wst * 0.8), cv2 = (big2 ? 0.55 : 0.35) * (0.6 + 0.4 * sm) * (1 + wst * 0.9);   // storms raise bigger, quicker seas
-      g.globalAlpha = sm * (big2 ? 0.9 : 0.75); g.strokeStyle = tcol; g.lineWidth = Math.max(1, k * (big2 ? 0.16 : 0.1)); g.beginPath(); g.moveTo((wx - ln) * k, (wy + 0.28) * k); g.quadraticCurveTo(wx * k, (wy + 0.28 - cv2) * k, (wx + ln) * k, (wy + 0.28) * k); g.stroke();
+      g.globalAlpha = sm * (big2 ? 0.9 : 0.75) * calmK; g.strokeStyle = tcol; g.lineWidth = Math.max(1, k * (big2 ? 0.16 : 0.1)); g.beginPath(); g.moveTo((wx - ln) * k, (wy + 0.28) * k); g.quadraticCurveTo(wx * k, (wy + 0.28 - cv2) * k, (wx + ln) * k, (wy + 0.28) * k); g.stroke();
       g.strokeStyle = wcol; g.lineWidth = Math.max(1, k * (big2 ? 0.13 : 0.09)); g.beginPath(); g.moveTo((wx - ln) * k, wy * k); g.quadraticCurveTo(wx * k, (wy - cv2) * k, (wx + ln) * k, wy * k); g.stroke();
     }
     g.globalAlpha = 1;
@@ -16285,14 +18841,19 @@
     s.loot.forEach(function (L) { var bx = L.x * k, by = L.y * k + (reduce ? 0 : Math.sin(t * 3 + L.x) * k * 0.15); g.fillStyle = "rgba(255,210,63,.25)"; g.beginPath(); g.arc(bx, by, k * 1.4, 0, 6.2832); g.fill(); g.fillStyle = "#8a5a32"; g.fillRect(bx - k * 0.55, by - k * 0.45, k * 1.1, k * 0.9); g.fillStyle = "#c9a52a"; g.fillRect(bx - k * 0.55, by - k * 0.08, k * 1.1, k * 0.16); });
     s.wake.forEach(function (w) { var a = clamp(w.life / 1.6, 0, 1); if (w.fire) { g.fillStyle = "rgba(255," + (140 + Math.random() * 80 | 0) + ",60," + a * 2 + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * 0.3, 0, 6.2832); g.fill(); return; } if (w.smoke) { g.fillStyle = "rgba(220,220,230," + a + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * (0.6 - a * 0.3), 0, 6.2832); g.fill(); return; } g.fillStyle = "rgba(255,255,255," + (a * (w.spl ? 0.9 : 0.55)) + ")"; g.beginPath(); g.arc(w.x * k, w.y * k, k * (0.25 + (1 - a) * 0.5), 0, 6.2832); g.fill(); });
     if (s.tgt) { var px = s.tgt.x * k, py = s.tgt.y * k, pu = 1 + Math.sin(t * 5) * 0.1; g.strokeStyle = "rgba(255,226,122,.8)"; g.lineWidth = 2; g.setLineDash([k * 0.4, k * 0.4]); g.beginPath(); g.moveTo(s.x * k, s.y * k); g.lineTo(px, py); g.stroke(); g.setLineDash([]); if (!s.tgt.isl) { g.beginPath(); g.arc(px, py, k * 0.8 * pu, 0, 6.2832); g.stroke(); } }
+    drawSeaMig(g, k, now); drawLev(g, k, now);   // MIGRATIONS and THE LEVIATHAN
     s.ships.forEach(function (sh) { seaBoatTop(g, sh.x * k, sh.y * k, sh.ang, k, now, { pirate: 1, big: sh.big, hurt: sh.hurt > 0 && Math.floor(now / 70) % 2 === 0, sink: sh.sink, ph: sh.x }); if (!sh.sink && sh.hp < sh.hpm) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(sh.x * k - k * 1.5, sh.y * k - k * 2.6, k * 3, 4); g.fillStyle = "#ff6a6a"; g.fillRect(sh.x * k - k * 1.5, sh.y * k - k * 2.6, k * 3 * sh.hp / sh.hpm, 4); } });
-    seaBoatTop(g, s.x * k, s.y * k, s.ang, k, now, { lit: dl < 0.7, hurt: s.hurt > 0 && Math.floor(now / 70) % 2 === 0 });
-    s.balls.forEach(function (b) { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = "#1a1a20"; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
+    (s.dol || []).forEach(function (D) { var fa = s.ang + D.side * 1.57, ax = s.x + Math.cos(s.ang) * D.along + Math.cos(fa) * D.off, ay = s.y + Math.sin(s.ang) * D.along + Math.sin(fa) * D.off, jump = Math.max(0, Math.sin(D.ph)), al = clamp(D.life / 3, 0, 1);   // dolphins leaping alongside
+      g.save(); g.globalAlpha = al; g.translate(ax * k, ay * k - jump * k * 0.8); g.rotate(s.ang); g.fillStyle = "rgba(0,30,50,.25)"; g.beginPath(); g.ellipse(0, jump * k * 0.8, k * 0.9, k * 0.3, 0, 0, 6.2832); g.fill(); g.fillStyle = "#6a8aa8"; g.beginPath(); g.ellipse(0, 0, k * 0.8 + jump * k * 0.2, k * 0.26, 0, 0, 6.2832); g.fill(); g.fillStyle = "#9ab8d0"; g.beginPath(); g.ellipse(k * 0.1, 0, k * 0.5, k * 0.12, 0, 0, 6.2832); g.fill(); g.fillStyle = "#5a7a98"; g.beginPath(); g.moveTo(-k * 0.75, 0); g.lineTo(-k * 1.1, -k * 0.25); g.lineTo(-k * 1.1, k * 0.25); g.fill(); g.restore();
+      if (jump < 0.05 && Math.random() < 0.05) s.wake.push({ x: ax, y: ay, vx: 0, vy: 0, life: 0.6, spl: 1 }); });
+    seaBoatTop(g, s.x * k, s.y * k, s.ang, k, now, { lit: dl < 0.7, hurt: s.hurt > 0 && Math.floor(now / 70) % 2 === 0, up: ocS().boat.up || {} });
+    s.balls.forEach(function (b) { var CB = b.mine ? (CANS.filter(function (q) { return q.id === b.cd; })[0] || CANS[0]) : CANS[0]; if (CB.trail) { var spd = Math.hypot(b.vx, b.vy) || 1, gt = g.createLinearGradient(b.x * k, b.y * k, (b.x - b.vx / spd * 2.4) * k, (b.y - b.vy / spd * 2.4) * k); gt.addColorStop(0, "rgba(" + CB.trail + ",.85)"); gt.addColorStop(1, "rgba(" + CB.trail + ",0)"); g.strokeStyle = gt; g.lineWidth = k * 0.4; g.lineCap = "round"; g.beginPath(); g.moveTo(b.x * k, b.y * k); g.lineTo((b.x - b.vx / spd * 2.4) * k, (b.y - b.vy / spd * 2.4) * k); g.stroke(); if (CB.sparkle && Math.random() < 0.5) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5), vy: (Math.random() - 0.5), life: 0.4, fire: 1 }); }
+      if (b.star) { oG(g, b.x * k, b.y * k, k * 0.9, "rgba(140,220,255,.6)"); } g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = CB.ball; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
     s.gulls.forEach(function (gu) { var fl = Math.sin(gu.t * 9) * 0.5, gx2 = gu.x * k, gy2 = gu.y * k; g.strokeStyle = "#ffffff"; g.lineWidth = Math.max(1.5, k * 0.12); g.beginPath(); g.moveTo(gx2 - k * 0.7, gy2 - fl * k * 0.3); g.quadraticCurveTo(gx2 - k * 0.3, gy2 - k * 0.3, gx2, gy2); g.quadraticCurveTo(gx2 + k * 0.3, gy2 - k * 0.3, gx2 + k * 0.7, gy2 - fl * k * 0.3); g.stroke(); });
     g.restore(); drawWaterFx(g, vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy, k); g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
     // island names
     g.font = signFont(Math.max(12, Math.round(k * 1.05))); g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,20,40,.7)"; g.lineJoin = "round";
-    I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); });
+    I.forEach(function (Q) { if (Q.x < x0 - 20 || Q.x > x1 + 20 || Q.y < y0 - 10 || Q.y > y1 + 10) return; var ly = (Q.y + Q.r + 2.6) * k; g.fillStyle = Q.kind === 3 ? "#ffb0a0" : Q.port ? "#ffd23f" : "#f6eedb"; g.strokeText(Q.n, Q.x * k, ly); g.fillText(Q.n, Q.x * k, ly); var tq = isleTier(Q); if (tq) { g.fillStyle = TIER_C[tq]; var tl = skulls(tq) + " " + TIER_N[tq] + (isleFresh(Q) ? "" : " (looted)"); g.strokeText(tl, Q.x * k, ly + k * 1.1); g.fillText(tl, Q.x * k, ly + k * 1.1); } else if (Q.port) { g.fillStyle = "#ffd23f"; g.strokeText("Trading port", Q.x * k, ly + k * 1.1); g.fillText("Trading port", Q.x * k, ly + k * 1.1); } });
     g.restore();
     // the time of day over the sea: graded like the homestead, with pools of light from your lantern, pirate lanterns, the pier and the fire isles
     var snk = clamp((0.92 - dl) / 0.62, 0, 1), SLI = [];
@@ -16303,24 +18864,150 @@
     if (wrn > 0.02) { var sox = vw / 2 - cam.x * k + shx, soy = vh / 2 - cam.y * k + shy;
       rainStreaks(g, now, wrn, wst, function (sx, sy) { var wx = (sx - sox) / k, wy = (sy - soy) / k; if (I.some(function (Q) { return Math.hypot(Q.x - wx, Q.y - wy) < Q.r; })) rainPip(wx, wy, 1); else waterRing(wx, wy, 0.03, 1, 0.7); }, function () { return [Math.random() * vw, Math.random() * (vh + 40) - 20]; });
       drawBoltScr(g, 0, vh * 0.7); } else if (WX.flash > 0 || WX.bolt) drawBoltScr(g, 0, vh * 0.7); if (snk > 0) sceneGlow(g, SLI, snk);
+    seaFogDraw(g, now, k, shx, shy);   // WEATHER AT SEA: fog, then the lighthouse beam cutting through it
     // off-screen pointers: home, the target, and pirates
     var arrow = function (wx, wy, col, lbl) { var p2 = seaToScreen(wx, wy); if (p2[0] > 20 && p2[0] < vw - 20 && p2[1] > 70 && p2[1] < vh - 20) return; var a = Math.atan2(p2[1] - vh / 2, p2[0] - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 26, vw - 26), ey = clamp(vh / 2 + Math.sin(a) * vh, 84, vh - 30); g.save(); g.translate(ex, ey); g.rotate(a); g.fillStyle = col; g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, -8); g.lineTo(-6, 8); g.closePath(); g.fill(); g.restore(); if (lbl) { g.font = "800 11px Nunito, system-ui, sans-serif"; g.fillStyle = col; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.strokeText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); g.fillText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); } };
-    arrow(I[0].x, I[0].y, "#ffd23f", "Pier"); if (s.tgt && s.tgt.isl) arrow(s.tgt.x, s.tgt.y, "#e8fbff", ""); s.ships.forEach(function (sh) { if (!sh.sink) arrow(sh.x, sh.y, "#ff6a5a", ""); });
+    arrow(I[0].x, I[0].y, "#ffd23f", "Pier"); if (s.tgt && s.tgt.isl) arrow(s.tgt.x, s.tgt.y, "#e8fbff", ""); s.ships.forEach(function (sh) { if (!sh.sink && seeShip(sh)) arrow(sh.x, sh.y, "#ff6a5a", ""); });
     // hull bar
     var B = ocS().boat, hw = Math.min(180, vw * 0.36), hx = vw - hw - 22, hy = 132; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx - 8, hy - 18, hw + 16, 34, 10); g.fill();
     g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = "#e8fbff"; g.fillText("Lily Belle hull", hx, hy - 4); g.textAlign = "right"; g.fillText(Math.round(B.hp || 100) + "%", hx + hw, hy - 4); g.textAlign = "center";
     g.fillStyle = "rgba(255,255,255,.15)"; g.fillRect(hx, hy + 2, hw, 7); g.fillStyle = (B.hp || 100) > 40 ? "#4fd0e8" : "#ff6a5a"; g.fillRect(hx, hy + 2, hw * (B.hp || 100) / 100, 7);
-    if (s.cd > 0) { g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx, hy + 11, hw * (1 - s.cd / 1.5), 2); }
+    if (s.cd > 0) { g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx, hy + 11, hw * (1 - s.cd / (s.cdMax || 1.5)), 2); }
+    var hn = holdN(), hcx = hx + hw + 8, hcy = hy + 50, htx = "Ship's hold " + hn + "/" + HOLD_MAX; g.font = "800 11px Nunito, system-ui, sans-serif"; var hww = g.measureText(htx).width + 20;   // ISLAND RAIDS: the hold
+    g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hcx - hww, hcy, hww, 24, 9); g.fill(); g.strokeStyle = "rgba(255,210,63,.5)"; g.lineWidth = 1; g.stroke(); g.fillStyle = "#ffd23f"; g.textAlign = "right"; g.fillText(htx, hcx - 10, hcy + 16); g.textAlign = "center"; sc.btns.push({ x: hcx - hww, y: hcy, w: hww, h: 24, fn: openHold });
+    if (s.wx) { var WL = { storm: ["Storm", "the wind is pushing you", "#ffb0a0"], fog: ["Fog", shipUp("nest") ? "the lookout keeps watch" : "you can't see far", "#cfe0e8"], calm: ["Glassy calm", "no wind, no pirates", "#7af0ff"], rain: ["Rain", "", "#bfe0ff"], fair: ["Fair winds", "", "#e8fbff"] }[s.wx.k];
+      g.font = "800 11px Nunito, system-ui, sans-serif"; var wtx = WL[0] + (WL[1] ? " \u00b7 " + WL[1] : ""), ww = g.measureText(wtx).width + 20; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx + hw + 8 - ww, hy + 22, ww, 22, 9); g.fill(); g.fillStyle = WL[2]; g.textAlign = "right"; g.fillText(wtx, hx + hw - 2, hy + 37); g.textAlign = "center"; }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)";
     texts.forEach(function (tx) { var p3 = seaToScreen(tx.x, tx.y); g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, p3[0], p3[1]); g.fillText(tx.s, p3[0], p3[1]); }); g.globalAlpha = 1;
-    if (!panelOpen && !trans) { seaActions().forEach(function (a, n) { var p4 = seaToScreen(a.wx, a.wy); ocPill(g, now, a.label, p4[0], p4[1] - n * 40, a.fn); }); }
+    if (!panelOpen && !trans && !s.chart) { seaActions().forEach(function (a, n) { var p4 = seaToScreen(a.wx, a.wy); ocPill(g, now, a.label, p4[0], p4[1] - n * 40, a.fn); }); }
+    drawLevBar(g);
+    if (s.chart) drawBigChart(g);
+    if (now - (s.miniT || 0) > 160) { s.miniT = now; var mcv = $("sbxMini"); if (mcv) { if (mcv.hidden && MINI.on) mcv.hidden = false; if (!mcv.hidden) drawSeaMini(mcv); } }   // the sea chart in the mini-map
     if (hurtT > 0 && HVIG) { g.globalAlpha = Math.min(1, hurtT * 2.4); try { g.drawImage(HVIG, 0, 0, vw, vh); } catch (e) {} g.globalAlpha = 1; }
+  }
+
+
+  // ---------- THE BRINEBOG LEVIATHAN: a rare sea serpent far from home ----------
+  // Sailing more than 200 from the pier (never in the lighthouse's beam), there is a small chance each minute that it finds you, more in
+  // storms and fog, at most once a day. It circles under the Lily Belle as a shadow, then rises: its head and coils break the surface for a
+  // few seconds (the only time your cannons can hurt it) and it slams the sea where you are (a ring shows where; sail out of it). Then it
+  // dives and comes up somewhere else. Beat it for its scales and its hoard; sail 75 away and it gives up. s.lev is the fight while it lasts.
+  var LEVHP = 44;
+  function levStep(s, dt) {
+    var o = ocS(), I = seaIslands(), homeD = Math.hypot(I[0].x - s.x, I[0].y - s.y), day = ocToday(), L = s.lev;
+    if (!L) {
+      if (homeD < 200 || lhSafe(s.x, s.y) || o.levDay === day || (o.levWin !== undefined && day - o.levWin < 3)) return;
+      var ch = dt / 420 * (s.wx && s.wx.k === "storm" ? 3 : s.wx && s.wx.k === "fog" ? 2 : 1); if (!(Math.random() < ch)) return;
+      o.levDay = day; s.lev = L = { x: s.x, y: s.y, hp: LEVHP, st: "circle", t: 0, oa: Math.random() * 6.28, hx: s.x, hy: s.y, ha: 0, hurt: 0, ring: null, slam: 0 };
+      shake = Math.max(shake, 0.8); try { rumble(0, 4, 0.22, 90); } catch (e) {} toast("Something ENORMOUS is circling under the Lily Belle...", "#c86aff"); S.st.levseen = (S.st.levseen || 0) + 1; return;
+    }
+    L.t += dt; L.hurt = Math.max(0, L.hurt - dt);
+    if (L.dead) { L.dead += dt; if (L.dead > 3) s.lev = null; return; }
+    if (Math.hypot(L.x - s.x, L.y - s.y) > 75 && L.st !== "rise") { s.lev = null; toast("The Leviathan sinks back into the deep. It will hunt again another day.", "#c86aff"); return; }
+    L.x += (s.x - L.x) * Math.min(1, dt * 0.35); L.y += (s.y - L.y) * Math.min(1, dt * 0.35);   // it follows you
+    L.oa += dt * (L.st === "circle" ? 0.9 : 0.25);
+    if (L.st === "circle" && L.t > 5) { L.st = "rise"; L.t = 0; var ra = L.oa; L.hx = s.x + Math.cos(ra) * 11; L.hy = s.y + Math.sin(ra) * 11; L.ha = Math.atan2(s.y - L.hy, s.x - L.hx); shake = Math.max(shake, 0.6); thud(50, 0.2); for (var q = 0; q < 24; q++) s.wake.push({ x: L.hx + (Math.random() - 0.5) * 4, y: L.hy + (Math.random() - 0.5) * 4, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 1, spl: 1 }); }
+    else if (L.st === "rise" && L.t > 0.8) { L.st = "up"; L.t = 0; L.slam = 1.2; if (!S.st.levtip) { S.st.levtip = 1; toast("The Brinebog Leviathan! Fire at its head while it's up, and sail out of the rings!", "#c86aff"); } }
+    else if (L.st === "up") {
+      L.ha += clamp(Math.atan2(Math.sin(Math.atan2(s.y - L.hy, s.x - L.hx) - L.ha), Math.cos(Math.atan2(s.y - L.hy, s.x - L.hx) - L.ha)), -1, 1) * dt * 1.5;
+      L.slam -= dt; if (L.slam <= 0 && !L.ring) { L.ring = { x: s.x + Math.cos(s.ang) * s.sp * 0.9, y: s.y + Math.sin(s.ang) * s.sp * 0.9, t: 1.35 }; L.slam = 2.6; thud(80, 0.08); }
+      if (L.t > 6.5) { L.st = "dive"; L.t = 0; for (var q2 = 0; q2 < 18; q2++) s.wake.push({ x: L.hx + (Math.random() - 0.5) * 3, y: L.hy + (Math.random() - 0.5) * 3, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 0.9, spl: 1 }); }
+    }
+    else if (L.st === "dive" && L.t > 1) { L.st = "circle"; L.t = 1.5; }
+    if (L.ring) { L.ring.t -= dt; if (L.ring.t <= 0) {   // the slam
+      var hitB = Math.hypot(s.x - L.ring.x, s.y - L.ring.y) < 3.6; for (var q3 = 0; q3 < 30; q3++) s.wake.push({ x: L.ring.x + (Math.random() - 0.5) * 5, y: L.ring.y + (Math.random() - 0.5) * 5, vx: (Math.random() - 0.5) * 9, vy: (Math.random() - 0.5) * 9, life: 1, spl: 1 });
+      waterSplash(L.ring.x, L.ring.y, 2.4, 1); shake = Math.max(shake, hitB ? 1 : 0.5); thud(45, 0.25); if (hitB) seaHurt(14); L.ring = null; } }
+    L.up = L.st === "up" || L.st === "rise";
+    if ((keys.j || tk.j) && L.up && s.cd <= 0) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);
+    if (L.up && s.cd <= 0 && s.auto !== false && Math.hypot(L.hx - s.x, L.hy - s.y) < 20) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);   // the deckhand frog fires too
+  }
+  function levHit(b) {
+    var s = OCS.sea, L = s.lev; if (!L || L.dead || !L.up || Math.hypot(L.hx - b.x, L.hy - b.y) > 3.2) return false;
+    L.hp -= b.dmg || 1; L.hurt = 0.3; thud(110, 0.1); for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 });
+    if (L.hp <= 0) {
+      L.dead = 0.01; L.up = false; L.ring = null; var o = ocS(); o.levWin = ocToday(); S.st.levkills = (S.st.levkills || 0) + 1; shake = 1.2; snd("open", "Legendary");
+      var R2 = function (a, b2) { return a + Math.floor(Math.random() * (b2 - a + 1)); };
+      s.loot.push({ x: L.hx, y: L.hy, items: [["levscale", R2(2, 3)], ["doubloon", R2(30, 50)], ["blackpearl", R2(2, 3)], ["goldbar", 2], ["ambergris", 1], ["starshard", 1]].filter(function (q2) { return ITEMS[q2[0]]; }), t: 0 });
+      popup("The Brinebog Leviathan is beaten!", "Its hoard floats free. Sail over it to haul it aboard.", "#c86aff", "☠"); checkGoals(); save();
+    }
+    return true;
+  }
+  function drawLev(g, k, now) {
+    var s = OCS.sea, L = s.lev; if (!L) return; var t = now / 1000, i;
+    if (L.ring) { var rk = 1 - L.ring.t / 1.35, rx = L.ring.x * k, ry = L.ring.y * k; g.strokeStyle = "rgba(255,90,90," + (0.4 + 0.5 * rk) + ")"; g.lineWidth = Math.max(2, k * 0.18); g.beginPath(); g.arc(rx, ry, k * 3.6, 0, 6.2832); g.stroke(); g.fillStyle = "rgba(255,60,60," + (0.1 + 0.2 * rk) + ")"; g.beginPath(); g.arc(rx, ry, k * 3.6 * rk, 0, 6.2832); g.fill(); }
+    if (L.dead) { var dk2 = clamp(1 - L.dead / 3, 0, 1); g.globalAlpha = dk2; }
+    if (L.st === "circle" || L.st === "dive") {   // a long dark shadow, circling
+      var cx = s.x, cy = s.y, pts = []; for (i = 0; i < 26; i++) { var a = L.oa - i * 0.09, rr = 12 + Math.sin(i * 0.5 + t * 1.3) * 0.8; pts.push([(cx + Math.cos(a) * rr) * k, (cy + Math.sin(a) * rr) * k]); }
+      g.save(); g.globalAlpha = L.dead ? g.globalAlpha : 1; g.strokeStyle = "rgba(6,12,30,.3)"; g.lineCap = "round"; g.lineJoin = "round";
+      [[26, 1.5], [17, 2.4], [7, 3.2]].forEach(function (seg) { g.lineWidth = k * seg[1]; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (var q = 1; q < seg[0]; q++) g.lineTo(pts[q][0], pts[q][1]); g.stroke(); });   // a tapering body: thick at the head
+      g.restore();
+    } else {   // up: three coils, and the head
+      var hu = L.hurt > 0, lnL = "#06141c", LG = function (y0, y1) { return hu ? "#ffffff" : aG(g, y0, y1, "#4a9a98", "#1f5a64", "#0c2a34"); }, rise = L.st === "rise" ? L.t / 0.8 : 1;
+      // coils: humps arching out of the water, each in a ring of churning foam, a ridge of spines along the top and a wet shine
+      for (var c = 2; c >= 0; c--) { var ca = L.ha + Math.PI + (c - 1) * 0.5, cd = 5 + c * 3.4, cx2 = L.hx + Math.cos(ca) * cd, cy2 = L.hy + Math.sin(ca) * cd, cs = k * rise * (1 - c * 0.12);
+        g.save(); g.translate(cx2 * k, cy2 * k); g.rotate(ca + 1.5708);
+        for (var fr = 0; fr < 2; fr++) { var fp = (t * 0.8 + fr * 0.5 + c * 0.3) % 1; g.strokeStyle = "rgba(255,255,255," + (0.6 * (1 - fp)).toFixed(3) + ")"; g.lineWidth = Math.max(1, k * 0.12); g.beginPath(); g.ellipse(0, 0, cs * (1.7 + fp * 0.9), cs * (1 + fp * 0.6), 0, 0, 6.2832); g.stroke(); }
+        g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(0, 0, cs * 1.75, cs * 1.05, 0, 0, 6.2832); g.fill();
+        g.beginPath(); g.ellipse(0, 0, cs * 1.5, cs * 0.82, 0, 0, 6.2832); aInk(g, LG(-cs * 0.8, cs * 0.8), lnL, Math.max(1, k * 0.1));
+        if (!hu) { g.strokeStyle = "rgba(90,180,170,.55)"; g.lineWidth = Math.max(0.6, k * 0.06); for (var sc = -1; sc <= 1; sc++) { g.beginPath(); g.ellipse(sc * cs * 0.55, 0, cs * 0.4, cs * 0.7, 0, 1.9, 4.4); g.stroke(); } }   // scale bands
+        for (var sp = -2; sp <= 2; sp++) { var spx = sp * cs * 0.5, sh2 = cs * (0.55 - Math.abs(sp) * 0.12); g.beginPath(); g.moveTo(spx - cs * 0.16, 0); g.lineTo(spx + cs * 0.12, -sh2); g.lineTo(spx + cs * 0.2, 0); g.closePath(); aInk(g, hu ? "#fff" : aG(g, -sh2, 0, "#6ac8c0", "#2f7a7a", "#14404a"), lnL, Math.max(0.6, k * 0.06)); }
+        aShine(g, -cs * 0.5, -cs * 0.4, cs * 0.5, cs * 0.14, 0.4, 0);
+        g.restore(); }
+      g.save(); g.translate(L.hx * k, L.hy * k); g.rotate(L.ha); var sz = rise * k, jaw = Math.sin(t * 4) * 0.15 + 0.2, lw = Math.max(1, k * 0.11);
+      g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(-sz * 0.2, 0, sz * 3.6, sz * 2.4, 0, 0, 6.2832); g.fill();   // the foam it pushes up
+      // ribbed fins fan out behind the skull, rippling
+      [-1, 1].forEach(function (sd) { var wv = Math.sin(t * 3 + sd) * 0.12; g.save(); g.translate(-sz * 1.4, sd * sz * 1.1); g.rotate(sd * (0.7 + wv)); g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(-sz * 0.6, sd * sz * 1.4, -sz * 1.9, sd * sz * 1.3); g.lineTo(-sz * 1.5, sd * sz * 0.7); g.lineTo(-sz * 1.9, sd * sz * 0.35); g.quadraticCurveTo(-sz, sd * sz * 0.1, 0, 0); g.closePath(); aInk(g, hu ? "#fff" : aG(g, -sz, sz, "#6ac8c0", "#2f8a88", "#14404a"), lnL, lw);
+        g.strokeStyle = hu ? "#fff" : "rgba(10,40,50,.6)"; g.lineWidth = Math.max(0.6, k * 0.05); for (var rb = 1; rb <= 3; rb++) { g.beginPath(); g.moveTo(0, 0); g.lineTo(-sz * (0.6 + rb * 0.4), sd * sz * (0.3 + rb * 0.3)); g.stroke(); } g.restore(); });
+      // the jaws gape open at the front: a dark throat and rows of teeth
+      var jo = sz * (0.45 + jaw);
+      g.beginPath(); g.moveTo(sz * 1.2, 0); g.lineTo(sz * 3.7, -jo); g.lineTo(sz * 3.7, jo); g.closePath(); g.fillStyle = "#3a0a18"; g.fill();
+      g.fillStyle = "#f0f6ea"; for (var tq = 0; tq < 4; tq++) { var tx = sz * (1.8 + tq * 0.48); [-1, 1].forEach(function (sd) { var ey = sd * (jo * (tx - sz * 1.2) / (sz * 2.5)); g.beginPath(); g.moveTo(tx - sz * 0.16, ey); g.lineTo(tx, ey - sd * sz * 0.3); g.lineTo(tx + sz * 0.16, ey); g.fill(); }); }
+      // the skull: one long tapering shape, notched open at the mouth
+      var skull = function () { g.beginPath(); g.moveTo(-sz * 2.9, 0); g.quadraticCurveTo(-sz * 2.8, -sz * 1.6, -sz * 0.6, -sz * 1.7); g.quadraticCurveTo(sz * 1.6, -sz * 1.6, sz * 3.9, -jo - sz * 0.15); g.lineTo(sz * 1.3, -sz * 0.05); g.lineTo(sz * 1.3, sz * 0.05); g.lineTo(sz * 3.9, jo + sz * 0.15); g.quadraticCurveTo(sz * 1.6, sz * 1.6, -sz * 0.6, sz * 1.7); g.quadraticCurveTo(-sz * 2.8, sz * 1.6, -sz * 2.9, 0); g.closePath(); };
+      skull(); aInk(g, hu ? "#fff" : aG(g, -sz * 1.7, sz * 1.7, "#3f8a88", "#163a48", "#0a2230"), lnL, lw * 1.3);
+      if (!hu) { g.save(); skull(); g.clip(); g.strokeStyle = "rgba(90,180,170,.4)"; g.lineWidth = Math.max(0.6, k * 0.05); for (var sb = 0; sb < 4; sb++) { g.beginPath(); g.arc(-sz * 2.2 + sb * sz * 0.8, 0, sz * 1.2, -0.9, 0.9); g.stroke(); } g.restore(); }   // scales
+      for (var dr = 0; dr < 5; dr++) { var dx = -sz * 2.4 + dr * sz * 0.7, dh = sz * (0.5 - Math.abs(dr - 1.5) * 0.08); g.beginPath(); g.moveTo(dx - sz * 0.22, 0); g.lineTo(dx - sz * 0.5, -dh * 0.1); g.lineTo(dx + sz * 0.22, -sz * 0.03); g.lineTo(dx - sz * 0.5, dh * 0.1); g.closePath(); aInk(g, hu ? "#fff" : "#6ac8c0", lnL, Math.max(0.6, k * 0.05)); }   // a ridge of spines down the middle
+      [-1, 1].forEach(function (sd) {   // heavy brows over glowing eyes, and a nostril near the snout
+        g.beginPath(); g.moveTo(sz * 0.4, sd * sz * 1.25); g.quadraticCurveTo(sz * 1.3, sd * sz * 1.6, sz * 2.2, sd * sz * 1.05); g.quadraticCurveTo(sz * 1.3, sd * sz * 1.05, sz * 0.4, sd * sz * 1.25); g.closePath(); aInk(g, hu ? "#fff" : "#0c2a34", lnL, lw * 0.8);
+        oG(g, sz * 1.4, sd * sz * 0.85, sz * 1.1, L.st === "lunge" || L.st === "spit" ? "rgba(255,90,90,.6)" : "rgba(200,255,240,.6)");
+        g.beginPath(); g.ellipse(sz * 1.4, sd * sz * 0.85, sz * 0.38, sz * 0.26, sd * 0.3, 0, 6.2832); aInk(g, hu ? "#fff" : "#c8fff0", lnL, Math.max(0.6, k * 0.06));
+        if (!hu) { g.fillStyle = "#0a2a2a"; g.beginPath(); g.ellipse(sz * 1.5, sd * sz * 0.85, sz * 0.1, sz * 0.22, sd * 0.3, 0, 6.2832); g.fill(); }
+        g.fillStyle = lnL; g.beginPath(); g.ellipse(sz * 3.1, sd * sz * 0.62, sz * 0.12, sz * 0.07, 0, 0, 6.2832); g.fill();
+      });
+      aShine(g, -sz * 1, -sz * 0.9, sz * 1, sz * 0.25, 0.35, 0);
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  }
+  function drawLevBar(g) {
+    var L = OCS.sea.lev; if (!L || L.dead) return; var w = Math.min(320, vw - 60), x = (vw - w) / 2, y = 116;
+    g.fillStyle = "rgba(20,6,30,.78)"; mrr(g, x - 10, y - 6, w + 20, 36, 10); g.fill();
+    g.font = "900 12px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#e0b8ff"; g.fillText(L.up ? "THE BRINEBOG LEVIATHAN" : "The Brinebog Leviathan (under the water)", vw / 2, y + 8);
+    g.fillStyle = "rgba(255,255,255,.15)"; g.fillRect(x, y + 14, w, 8); g.fillStyle = "#c86aff"; g.fillRect(x, y + 14, w * clamp(L.hp / LEVHP, 0, 1), 8);
+  }
+  function seaFogDraw(g, now, k, shx, shy) {
+    var s = OCS.sea, t = now / 1000, fogn = s.wx && s.wx.k === "fog" ? s.wx.n : 0, L = lighthouse(), lit = !!ocS().lh;
+    if (fogn > 0.01) {
+      var bp = seaToScreen(s.x, s.y), R0 = seaSight() * k, a = clamp(fogn * 0.92, 0, 0.92), fg = g.createRadialGradient(bp[0], bp[1], R0 * 0.35, bp[0], bp[1], R0 * 1.25);
+      fg.addColorStop(0, "rgba(206,218,224,0)"); fg.addColorStop(0.55, "rgba(206,218,224," + (a * 0.55).toFixed(3) + ")"); fg.addColorStop(1, "rgba(206,218,224," + a.toFixed(3) + ")");
+      g.fillStyle = fg; g.fillRect(0, 0, vw, vh);
+      if (!liteFx()) for (var i = 0; i < 7; i++) { var fx2 = ((i * 0.31 + t * 0.01 * (1 + i % 3)) % 1.4 - 0.2) * vw, fy2 = vh * (0.1 + (i * 0.137) % 0.85); g.globalAlpha = a * 0.35; oE(g, fx2, fy2, vw * 0.22, vh * 0.07, "#e4ecf0"); } g.globalAlpha = 1;   // drifting banks
+    }
+    if (lit && L) {   // the beam: two arms sweeping round, brightest at night and in fog
+      var dl = daylight(S.time), bA = clamp((1 - dl) * 0.9 + fogn * 0.8, 0.12, 1), lp = seaToScreen(L.x, L.y), ra = t * 0.9, len = 150 * k;
+      if (lp[0] > -len && lp[0] < vw + len && lp[1] > -len && lp[1] < vh + len) {
+        g.save(); g.globalCompositeOperation = "lighter";
+        [0, Math.PI].forEach(function (off) { var a0 = ra + off, gb = g.createRadialGradient(lp[0], lp[1], 0, lp[0], lp[1], len); gb.addColorStop(0, "rgba(255,236,160," + (0.55 * bA).toFixed(3) + ")"); gb.addColorStop(1, "rgba(255,236,160,0)"); g.fillStyle = gb; g.beginPath(); g.moveTo(lp[0], lp[1]); g.arc(lp[0], lp[1], len, a0 - 0.16, a0 + 0.16); g.closePath(); g.fill(); });
+        oG(g, lp[0], lp[1], k * 16, "rgba(255,226,140," + (0.22 * bA).toFixed(3) + ")"); oG(g, lp[0], lp[1], k * 3, "rgba(255,240,180," + (0.8 * bA).toFixed(3) + ")"); g.restore();
+      }
+    }
   }
   function ocTick(dt) { if (OCS.sea) seaUpdate(dt); else ocUpdate(dt); }
   function ocDraw(now) { if (OCS.sea) seaRender(now); else ocRender(now); }
   function ocTap(e) {   // a tap in the ocean: the pills first, then the sea chart
     var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, pd = e.pointerType === "mouse" ? 4 : 12, B = OCS.btns || [];
     for (var i = B.length - 1; i >= 0; i--) { var b = B[i]; if (x >= b.x - pd && x <= b.x + b.w + pd && y >= b.y - pd && y <= b.y + b.h + pd) { b.fn(); return true; } }
+    if (OCS.sea && OCS.sea.chart) { OCS.sea.chart = false; return true; }   // a tap closes the big sea chart
     if (OCS.sea) return seaTap(x, y);
     return false;
   }
@@ -16701,12 +19388,20 @@
   }
   function ocClean(o) {   // save sanitizer for S.oc
     if (!o || typeof o !== "object") return null; var n = { boat: { p: {}, done: 0, hp: 100, skin: 0 }, open: {}, ed: {}, dead: {}, kills: {}, isl: {} }, B = o.boat;
-    if (B && typeof B === "object") { n.boat.done = B.done ? 1 : 0; n.boat.hp = clamp(+B.hp || 100, 0, 100); n.boat.skin = Math.max(0, Math.floor(+B.skin) || 0); if (B.p && typeof B.p === "object") Object.keys(B.p).forEach(function (k) { if (/^boat_[a-z]+$/.test(k) && B.p[k]) n.boat.p[k] = 1; }); }
+    if (B && typeof B === "object") { n.boat.done = B.done ? 1 : 0; n.boat.hp = clamp(+B.hp || 100, 0, 100); n.boat.skin = Math.max(0, Math.floor(+B.skin) || 0); if (B.up && typeof B.up === "object") { n.boat.up = {}; [["can", 2], ["hull", 2], ["nest", 1]].forEach(function (q) { var v = Math.floor(+B.up[q[0]]) || 0; if (v > 0) n.boat.up[q[0]] = Math.min(q[1], v); }); } if (B.p && typeof B.p === "object") Object.keys(B.p).forEach(function (k) { if (/^boat_[a-z]+$/.test(k) && B.p[k]) n.boat.p[k] = 1; }); }
     ["open", "dead"].forEach(function (f) { if (o[f] && typeof o[f] === "object") Object.keys(o[f]).slice(0, 4000).forEach(function (k) { if (k.length < 40) n[f][k] = Math.max(0, Math.floor(+o[f][k]) || 0); }); });
     if (o.ed && typeof o.ed === "object") Object.keys(o.ed).slice(0, 3500).forEach(function (k) { if (/^\d+,\d+$/.test(k)) n.ed[k] = clamp(Math.floor(+o.ed[k]) || 0, 0, 31); });
     if (o.kills && typeof o.kills === "object") Object.keys(o.kills).forEach(function (k) { if (/^[a-z]+$/.test(k)) n.kills[k] = Math.max(0, Math.floor(+o.kills[k]) || 0); });
     if (o.isl && typeof o.isl === "object") Object.keys(o.isl).slice(0, 400).forEach(function (k) { if (k.length < 20 && o.isl[k]) n.isl[k] = 1; });
     if (o.sea && typeof o.sea === "object" && isFinite(+o.sea.x) && isFinite(+o.sea.y)) n.sea = { x: clamp(+o.sea.x, 6, 2000), y: clamp(+o.sea.y, 6, 2000), ang: +o.sea.ang || 0 };
+    ["vault", "tpi", "btl"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });
+    if (o.lh) n.lh = 1;
+    n.hold = {}; if (o.hold && typeof o.hold === "object") Object.keys(o.hold).forEach(function (k) { if (/^t_[a-z0-9]+$/.test(k) && +o.hold[k] > 0) n.hold[k] = Math.min(999, Math.floor(+o.hold[k])); });   // ISLAND RAIDS: the ship's hold
+    n.raid = {}; if (o.raid && typeof o.raid === "object") Object.keys(o.raid).forEach(function (k) { if (/^\d{1,3}$/.test(k) && isFinite(+o.raid[k])) n.raid[k] = Math.floor(+o.raid[k]); });
+    n.cos = { sk: {}, cn: {} }; if (o.cos && typeof o.cos === "object") ["sk", "cn"].forEach(function (f) { if (o.cos[f] && typeof o.cos[f] === "object") Object.keys(o.cos[f]).forEach(function (k) { if (/^[a-z]{2,12}$/.test(k)) n.cos[f][k] = 1; }); });
+    if (B && typeof B.sk === "string" && /^[a-z]{2,12}$/.test(B.sk)) n.boat.sk = B.sk; if (B && typeof B.cn === "string" && /^[a-z]{2,12}$/.test(B.cn)) n.boat.cn = B.cn;
+    if (Array.isArray(o.domes)) n.domes = o.domes.filter(function (d) { return d && typeof d.s === "string" && d.s.length < 14 && isFinite(d.x) && isFinite(d.y); }).slice(0, 24).map(function (d) { return { s: d.s, x: clamp(Math.floor(d.x), 4, 335), y: clamp(Math.floor(d.y), 6, 175) }; });   // SEA DOMES
+    if (o.derby && typeof o.derby === "object") n.derby = { best: clamp(Math.floor(+o.derby.best) || 0, 0, 999), wk: Math.floor(+o.derby.wk) || 0, wbest: clamp(Math.floor(+o.derby.wbest) || 0, 0, 999), runs: Array.isArray(o.derby.runs) ? o.derby.runs.slice(0, 5).map(function (v) { return clamp(Math.floor(+v) || 0, 0, 999); }) : [] };   // THE PEARL DIVE DERBY ["levDay", "levWin"].forEach(function (f) { if (isFinite(+o[f])) n[f] = Math.floor(+o[f]); });   // THE LEVIATHAN if (typeof o.ex === "string" && /^[01]{1,1200}$/.test(o.ex)) n.ex = o.ex;   // THE OLD LIGHTHOUSE lit; the explored sea chart   // REAL TIDES: vault week opened, last low tide's finds, bottle day
     return n;
   }
   function ocQuit() { if (!OCS) return; OCS = null; stageEl.classList.remove("cave", "ocean"); ocHudO2(); }
@@ -16749,7 +19444,7 @@
   function homeGiantAt(x, y) { var G = S.home && S.home.gi; if (!G) return null; for (var i = 0; i < G.length; i++) { var g2 = G[i]; if (x >= g2.x && x < g2.x + 3 && y >= g2.y && y < g2.y + 3) return g2; } return null; }
   function homeBox(x, y) { var x0 = Math.floor(x - 0.26), x1 = Math.floor(x + 0.26), y0 = Math.floor(y - 0.32), y1 = Math.floor(y - 0.001); for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (homeSolid(xx, yy)) return true; return false; }
   function homeWater(id) { return id === HT.POND || id === HT.CANAL || id === HT.PADDYW; }
-  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
+  function homeWet(x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y) || floodNow()) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) if (homeWater(hmT(xx, yy))) return true; return false; }
   function homeFlood() {   // canals: every ditch connected to the pond fills with water; cut off ones drain
     var t = HOME.t, i, q = [], seen = new Uint8Array(HW * HH), was = t.slice ? t.slice() : null;
     for (i = 0; i < t.length; i++) { if (t[i] === HT.CANAL) t[i] = HT.DITCH; if (t[i] === HT.PADDYW) t[i] = HT.PADDY; if (t[i] === HT.POND) { q.push(i); seen[i] = 1; } }
@@ -16812,7 +19507,7 @@
     }
   }
   function homeTiles() { var t = homeGen(), o = homeS(); Object.keys(o.ed).forEach(function (k) { var q = k.split(","); t[+q[1] * HW + +q[0]] = o.ed[k] | 0; }); return t; }
-  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y)) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
+  function homeWetT(t, x, y) { var o = homeS(); if ((o.w[x + "," + y] || 0) > 0 || homeSprk(x, y) || floodNow()) return true; for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 1; xx <= x + 1; xx++) { var id = xx < 0 || yy < 0 || xx >= HW || yy >= HH ? 7 : t[yy * HW + xx]; if (homeWater(id)) return true; } return false; }
   function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
     var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d; if (HOME && o.sea !== undefined) seasonWelcome();
     Object.keys(o.c).forEach(function (k) { var e = o.c[k]; if (e && e.s >= 4 && HF.giant && HF.giant[e.k]) { var q = k.split(","); homeGiantTry(+q[0], +q[1], e.k, 0.12); } });   // overnight, a ripe patch may swell into a giant
@@ -16855,7 +19550,7 @@
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }
     var csp = CAVE_SPEED * 1.05 * (fx("speed") ? 1.25 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
-    tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL
+    tickDodge(dt); if (DODGE.t > 0) { var dsp = dodgeSpeed(14); cp.vx = DODGE.dx * dsp; cp.vy = DODGE.dy * dsp; }   // DODGE ROLL (homestead)
     if (Math.abs(dx) > 0.2) cp.face = dx < 0 ? -1 : 1;
     var sub = Math.ceil(dt / 0.02), h = dt / sub, i;
     for (i = 0; i < sub; i++) { var nx = cp.x + cp.vx * h; if (!homeBox(nx, cp.y)) cp.x = nx; else cp.vx = 0; var ny = cp.y + cp.vy * h; if (!homeBox(cp.x, ny)) cp.y = ny; else cp.vy = 0; }
@@ -17556,7 +20251,7 @@
     L.push([CROAKA.y, 12]); L.push([HHOUSE.y + HHOUSE.h, 2]); L.push([HCRATE.y + 1, 3]); L.push([HSTALL.y + 1, 4]); L.push([HGATE.y + 1, 5]); L.push([cp.y, 9]);
     L.sort(function (a, b) { return a[0] - b[0]; });
     var drawE = function (g, e) {
-      if (e[1] === 9) { drawSceneDrops(g, now); drawCavePlayer(g, now); return; }
+      if (e[1] === 9) { drawSceneDrops(g, now); drawSpore(g, now); drawCavePlayer(g, now); return; }
       if (e[1] === 0) { homeProp(g, e[4], e[2], e[3], T0); return; }
       if (e[1] === 1) { var C = CROPS[e[4].k]; if (!C) return; var sx2 = ox + e[2] * ts, sy2 = oy + e[3] * ts, sw = reduce ? 0 : Math.round(Math.sin(T0 * 1.6 * (HWIND > 1.5 ? 1.6 : 1) + e[2] * 0.7 + e[3]) * 0.8 * HWIND);
         hpShadow(g, sx2 + ts / 2, sy2 + ts * 0.82, ts * 0.32, ts * 0.1, 0.18);
@@ -17791,16 +20486,27 @@
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
   window.__sbx.vein = { V: VEIN, on: function () { return veinOn(); }, jewel: function (a) { jewelAct(a); } };
   window.__sbx.icon = icon; window.__sbx.rollFish = rollFish;
+  window.__sbx.coach = { go: function () { startCoach(true); }, get C() { return COACH; }, tick: function (d) { tickCoach(d || 0.016); } };
   window.__sbx.tour = function () { startTour(true); }; window.__sbx.tourOn = function () { return !!TOUR; };
   window.__sbx.light = { sun: sunState, grade: gradeOv, splash: waterSplash, ring: waterRing, fx: function () { return [DROPS.length, RIPS.length]; } };
   window.__sbx.home = { S: function () { return homeS(); }, scene: function () { return HOME; }, enter: function () { enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) - 1 }); }, leave: leaveHome, act: function (x, y, it) { if (it) { sel = it; bare = false; } homeAct(x, y, true, 0.016); }, at: function (x, y) { cp.x = x; cp.y = y; }, tile: function (x, y) { return hmT(x, y); }, set: function (x, y, id) { homeSet(x, y, id); }, wet: homeWet, hg: function (full) { if (full) homeGround(); else if (HOME.gdr) homeGround(HOME.gdr); return HG ? HG.toDataURL() : ""; }, step: homeStep, daily: homeDaily, ship: shipAct, buy: stallBuy, gateNear: farmGateNear, HT: HT };
   window.__sbx.ocean = { S: function () { return ocS(); }, toScreen: function (x, y) { var r = cv.getBoundingClientRect(); return [r.left + ox + x * ts, r.top + oy + y * ts]; }, scene: function () { return OCS; }, enter: function () { if (!OCS) ocBuild(null, true); }, leave: function () { ocLeaveNow(); }, dive: function () { ocDiveIn(); }, sail: function () { OCS.sea = seaNew(); }, openBoat: function () { openBoat(); }, isl: function () { return seaIslands(); }, sites: function () { seaIslands(); return OSITES; }, gate: function () { return pierGateX(); }, near: function () { return pierGateNear(); }, site: function (st) { OCS = null; ocBuild(st); } };
   window.__sbx.moto = { S: function () { return motoS(); }, open: function () { openMoto(); }, act: function (a) { motoAct(a); }, near: function () { return motoNear(); }, garageNear: function () { return garageNear(); }, loot: function (s2, t) { return motoLoot(s2, t); }, riding: function () { return riding(); }, P: MOTO_P };
+  window.__sbx.sea = { wx: seaWx, fog: seaFogN, calm: seaCalmN, up: shipUp, fit: upFit, hullMax: hullMax, lh: lighthouse, openLh: openLighthouse, lhAct: lhAct, fire: seaFire, spawn: seaSpawnShip, hurt: seaHurt, SHIPUP: SHIPUP, ex: seaExA, known: seaKnown };
+  window.__sbx.met = { tick: tickMeteors, launch: launchMeteor, impact: meteorImpact, get SH() { return METSH; }, set SH(v) { METSH = v; } }; window.__sbx.flood = { tick: tickFlood, now: floodNow, F: FLOOD };
+  window.__sbx.mig = { season: migSeason, tick: tickMig, F: MIGF, E: MIGE, sea: migSeaStep }; window.__sbx.lev = { step: levStep, hit: levHit, HP: LEVHP };
+  window.__sbx.dome = { spot: domeSpot, build: domeBuild, pack: domePack, here: domesHere, inside: domeIn }; window.__sbx.derby = { open: openDerby, start: derbyStart, end: derbyEnd, step: derbyStep, get D() { return DERBY; }, S: derbyS, B: DBOARD, fetch: derbyFetch };
+  window.__sbx.isle = { rock: function (x, y) { breakRock(x, y); }, islands: function () { return seaIslands(); }, get cave() { return cave; }, tier: isleTier, land: isleLand, leave: isleLeave, get W() { return ISLW; }, wave: isleWave, acts: isleActs, stow: holdStow, hold: openHold, merch: openMerch, merchAct: merchAct, ship: openShipwright, shipAct: shipAct2, TREAS: TREAS, SKINS: SKINS, CANS: CANS, lose: holdLoseHalf };
+  window.__sbx.tide = { off: tideOff, info: tideInfo, dayF: tideDayF, get OWL() { return OWL; }, down: tideDown, up: tideUp, pools: tidePools, vaultOpen: vaultOpen, spring: springIdx, note: bottleNote };
+  window.__sbx.ambb = AMBB; window.__sbx.quake = { open: quakeOpen, seal: quakeSeal, start: function () { QUAKE = { t: 4.2 }; }, get Q() { return QUAKE; } }; window.__sbx.gadget = { JET: JET, DET: DET, bore: boreToggle, get hook() { return hook; } }; window.__sbx.spore = { plant: plantSpore, here: sporeHere, open: openSpore, btn: sporeBtn, S: sporeS, tick: sporeTick }; window.__sbx.king = { ready: kingReady, ring: ringBell, near: bellNear }; window.__sbx.speed = { get Z() { return SPEEDF; }, win: speedWin }; window.__sbx.cavein = { get C() { return CAVEIN; }, stress: caveStress }; window.__sbx.cart = { near: cartNear, open: openCart, go: cartGo, spot: function () { return cave && cave.F ? cartSpot(cave.F) : null; } }; window.__sbx.miner = { near: minerNear, save: rescueMiner, count: minerCount }; window.__sbx.crew = { open: openCrew, btn: crewBtn, list: crewList, tick: crewTick, camp: function () { return cave && cave.F ? crewCamp(cave.F) : null; } }; window.__sbx.elite = { make: makeElite, A: ELITE_A, V: VOLQ }; window.__sbx.spec = { F: FOC, S: SPEC, go: trySpecial };
+  window.__sbx.map = { M: M, card: function () { mapCard(); }, pin: function () { dropPinHere(); } };
   window.__sbx.dodge = { D: DODGE, go: tryDodge, impact: impact, H: HSTOP };
   window.__sbx.brawl = { B: BRAWL, at: function (x, y) { return peaceAt(x, y); }, hit: function (T2, d) { peaceHit(T2, d, 1); }, npc: npc, vils: function () { return vilList(); }, wilds: function () { return wilds; } };
   window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };
   window.__sbx.pause = { open: function () { openPause(); }, close: function () { closePause(); }, act: function (a) { pauseAct(a); }, opt: function (k) { optAct(k); }, get on() { return pauseOpen; }, get view() { return pauseView; }, OPT: OPT };
   window.__sbx.feel = { la: CAMLA, get sq() { return p.sq || 0; } };
+  window.__sbx.coat = { C: COATS, A: ARROWK, load: loadAmmo, ammo: function () { return bowAmmo(); }, hit: coatHit, step: coatStep, dt: coatDt };
+  window.__sbx.art = { e: function (g, e, now) { drawEnemy(g, e, now); }, a: function (g, a, now) { drawAnimal(g, a, now); }, view: function () { return { ox: ox, oy: oy, ts: ts }; }, crit: CRIT, npc: npc, oc: function (g, m, now) { ocDrawMob(g, m, now); }, ocNew: function (k, x, y) { return ocNewMob(k, x, y); }, boss: function (g, e, now) { drawBoss(g, e, now); }, bossNew: function (k, x, y) { return newBoss(k, x, y); }, zaruk: function (g, x, y, sc, t, f, sl) { drawZaruk(g, x, y, sc, t, f, 1, sl || 0); } };   // draw one creature onto any canvas (art checks)
   window.__sbx.cont = { near: function () { return contNear(); }, at: function (x, y) { return contAtCell(x, y); }, open: function (c) { openCont(c); }, act: function (a) { contAct(a); }, map: function () { return cave && cave.F ? contMap(cave.F) : null; }, read: function () { useRead(0); }, sell: function (k) { sellShop(k); }, sellHtml: function () { return sellHtml(); } };
   window.__sbx.paw = { target: function () { return pawTarget(); }, PAW: PAW, get cool() { return cool; } };
   window.__sbx.fun = { bombs: bombs, kegs: kegs, explode: explode, lightKeg: lightKeg, tapHook: tapHook, fHook: fHook, useThrow: useThrow, flashes: flashes };
