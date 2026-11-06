@@ -560,8 +560,38 @@
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
   function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
+  // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
+  // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
+  function keepIn(o) {
+    var x = o && o.xk; if (!x || typeof x !== "object") return o; o = Object.assign({}, o); delete o.xk;
+    if (x.inv && typeof x.inv === "object") {   // items come back into empty bag slots (the bag is saved as slots), the rest into Overflow
+      o.inv = Object.assign({}, o.inv || {}); var sl = Array.isArray(o.slots) ? o.slots.slice() : null, ex = Object.assign({}, o.extra || {});
+      Object.keys(x.inv).forEach(function (k) { if (o.inv[k] > 0 || !ITEMS[k]) return; var n = Math.floor(+x.inv[k]) || 0; if (n <= 0) return; o.inv[k] = n;
+        if (sl) { for (var i = 0; i < sl.length && n > 0; i++) if (!sl[i] || !sl[i].k) { var m = Math.min(n, stackMax(k)); sl[i] = { k: k, n: m }; n -= m; } if (n > 0) ex[k] = (ex[k] || 0) + n; } });
+      if (sl) { o.slots = sl; o.extra = ex; }
+      var still = {}; Object.keys(x.inv).forEach(function (k) { if (!ITEMS[k]) still[k] = x.inv[k]; }); x = Object.assign({}, x, { inv: still });   // ones this version doesn't know either stay kept aside
+      o.xk = x;
+    }
+    if (x.top && typeof x.top === "object") Object.keys(x.top).forEach(function (k) { if (o[k] === undefined && k !== "xk") o[k] = x.top[k]; });
+    if (o.oc && typeof o.oc === "object" && (x.oc || x.boat)) { o.oc = Object.assign({}, o.oc); if (x.oc) Object.keys(x.oc).forEach(function (k) { if (o.oc[k] === undefined) o.oc[k] = x.oc[k]; });
+      if (x.boat && o.oc.boat && typeof o.oc.boat === "object") { o.oc.boat = Object.assign({}, o.oc.boat); Object.keys(x.boat).forEach(function (k) { if (o.oc.boat[k] === undefined) o.oc.boat[k] = x.boat[k]; }); } }
+    else if (x.oc && !o.oc) o.oc = Object.assign({}, x.oc, x.boat ? {} : {});
+    return o;
+  }
+  function keepOut(o, d) {
+    var x0 = o.xk && typeof o.xk === "object" ? o.xk : {}, x = { inv: Object.assign({}, x0.inv || {}), top: {}, oc: {}, boat: {} }, any = Object.keys(x.inv).length > 0, ok = function (v) { try { return JSON.stringify(v).length < 60000; } catch (e) { return false; } };
+    if (o.inv && typeof o.inv === "object") Object.keys(o.inv).forEach(function (k) { var n = Math.floor(+o.inv[k]); if (!ITEMS[k] && /^[a-z][a-z0-9_]{0,40}$/.test(k) && n > 0) { x.inv[k] = Math.min(n, 99999); any = true; } });
+    Object.keys(o).forEach(function (k) { if (k !== "xk" && d[k] === undefined && /^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k) && o[k] !== null && ok(o[k])) { x.top[k] = o[k]; any = true; } });
+    if (o.oc && typeof o.oc === "object" && d.oc && typeof d.oc === "object") {
+      Object.keys(o.oc).forEach(function (k) { if (d.oc[k] === undefined && o.oc[k] !== null && ok(o.oc[k])) { x.oc[k] = o.oc[k]; any = true; } });
+      if (o.oc.boat && d.oc.boat && typeof o.oc.boat === "object") Object.keys(o.oc.boat).forEach(function (k) { if (d.oc.boat[k] === undefined && o.oc.boat[k] !== null && ok(o.oc.boat[k])) { x.boat[k] = o.oc.boat[k]; any = true; } });
+    }
+    if (any) d.xk = x;
+  }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
+    o = keepIn(o);   // put back what another version kept aside
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
     var gLR = o.wv === SW.WORLDVER ? [clamp(Math.floor(+o.genL) || 0, 0, 99), clamp(Math.floor(+o.genR) || 0, 0, 99)] : [0, 0];
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
@@ -691,6 +721,7 @@
     }
     if (o.qv === 5) { d.qi = clamp(Math.floor(+o.qi) || 0, 0, MAIN.length); d.qch = clamp(Math.floor(+o.qch), -1, CHAPTERS.length - 1); if (!isFinite(d.qch)) d.qch = -1; }
     else d.qv = 0;   // a save from before the quest system: start() fast-forwards it (see quests)
+    keepOut(o, d);   // keep aside what this version does not know
     return d;
   }
   var buildN = 0, exVer = 0, wallN = 0, SVC = {};   // PERF: save() reuses the edit / explored / fluid / wall strings while nothing in them changed
