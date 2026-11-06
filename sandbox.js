@@ -735,6 +735,7 @@
     if (o.pot && isFinite(o.pot.x) && isFinite(o.pot.y) && o.wv === SW.WORLDVER) d.pot = { x: Math.floor(o.pot.x), y: Math.floor(o.pot.y) };
     if (o.tmap && isFinite(o.tmap.x) && isFinite(o.tmap.y) && o.wv === SW.WORLDVER) { d.tmap = { x: Math.floor(o.tmap.x), y: Math.floor(o.tmap.y) }; if (o.tmap.b) d.tmap.b = 1; }
     if (Array.isArray(o.ways) && o.wv === SW.WORLDVER) d.ways = o.ways.filter(function (q) { return q && isFinite(q.x) && isFinite(q.y); }).slice(0, 40).map(function (q) { return { x: Math.floor(q.x), y: Math.floor(q.y), n: String(q.n || "Waystone").slice(0, 24) }; });
+    if (typeof o.ammo === "string" && /^(ar_[a-z]+|arrow|firearrow)$/.test(o.ammo)) d.ammo = o.ammo;
     if (o.fx && typeof o.fx === "object") Object.keys(FXN).forEach(function (k) { var v = +o.fx[k]; if (v > 0) d.fx[k] = Math.min(v, 600); });
     d.cg = clamp(Math.floor(+o.cg) || 0, 0, 63); d.diff = o.diff === 0 || o.diff === 2 ? o.diff : 1; d.keepInv = o.keepInv ? 1 : 0; d.lossPct = o.lossPct === null || o.lossPct === undefined || !isFinite(+o.lossPct) ? null : clamp(Math.round(+o.lossPct / 10) * 10, 0, 100);   // DEATH RULES (world settings)
     d.graveMin = clamp(Math.round(+o.graveMin) || 5, 1, 15); d.graves = [];
@@ -2736,8 +2737,8 @@
   }
   function damageEnemy(e, dmg, face) {
     if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
-    if (e.boss) return damageBoss(e, dmg, face);
-    if (e.def) return; dmg = eliteDmg(e, dmg); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    if (e.boss) return damageBoss(e, coatDmg(e, dmg), face);
+    if (e.def) return; dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(e.hp > 0 ? "hit" : "kill");
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
     if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
@@ -3425,7 +3426,10 @@
     updateShots(dt); stepArrows(dt); witchHomes(dt); tickMarks(dt); tickVillagers(dt);
     if (glideDist >= 1) { S.st.glided += Math.floor(glideDist); glideDist -= Math.floor(glideDist); }
     if (world.aerie && !S.vis.aerie && !cave && Math.abs(p.x - world.aerie.cx) < 26) { S.vis.aerie = 1; toast("Something floats in the sky above! Stand over the glowing Thermal Vent to ride its updraft up.", "#ffb04a"); }
+    var DT = dt;
     for (var i = enemies.length - 1; i >= 0; i--) {
+      dt = enemies[i].def ? DT : coatDt(enemies[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it (it still falls)
+      if (dt === 0) { var se = enemies[i]; se.hurt = Math.max(0, se.hurt - DT); if (se.k !== "wyrm" && !se.u) moveEnemy(se, DT, 0); continue; }
       var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt);
       if (e.def) { e.dead -= dt; if (e.boss) bossDeathTick(e, dt); if (e.k !== "wyrm") moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
       if (e.leave > 0 && e.k !== "bat" && e.k !== "wasp") { e.leave -= dt; if (e.leave <= 0) e.gone = true; }   // dawn: walkers slip away (bats and wasps fly off on their own)
@@ -3560,6 +3564,7 @@
     }
   }
   function drawEliteFx(g, now) {   // auras, the name, a health bar, and the warning ring of a Volatile elite that is about to burst
+    drawCoatFx(g, now);
     var L = cave ? (cave.F && cave.F.mobs) || [] : enemies;
     L.forEach(function (e) {
       if (!e.elite || e.def) return; var A = e.elite, cy = cave ? e.y - 0.45 - (e.z || 0) : e.y - (e.h || 1) / 2, sx = ox + e.x * ts, sy = oy + cy * ts;
@@ -3600,7 +3605,10 @@
   }
   function updateCaveMobs(dt) {
     var F = cave.F; if (!F.stocked) stockFloor(F, cave.f); if (F.lair) lairFx(F, dt); if (!F.mobs || !F.mobs.length) return;
+    var DT = dt; coatStep(DT);
     for (var i = F.mobs.length - 1; i >= 0; i--) {
+      dt = F.mobs[i].def ? DT : coatDt(F.mobs[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it
+      if (dt === 0) { F.mobs[i].hurt = Math.max(0, F.mobs[i].hurt - DT); moveMob(F, F.mobs[i], DT, 0, 0); continue; }
       var m = F.mobs[i], C = CMOB[m.k]; if (m.k === "captain") { updCaptain(F, m, dt, i); continue; } m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
       if (m.def) { m.dead -= dt; m.z = Math.max(0, m.z - dt * 3); moveMob(F, m, dt, 0, 0); if (m.dead <= 0) F.mobs.splice(i, 1); continue; }
       var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro && hp > 0, touch = d < m.r + 0.34;
@@ -3666,7 +3674,7 @@
   function damageCaveMob(m, dmg, ux, uy) {
     if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
-    dmg = eliteDmg(m, dmg); m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
+    dmg = coatDmg(m, eliteDmg(m, dmg)); m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
@@ -7569,12 +7577,12 @@
   // straight in caves. Shots stop at solid blocks. Ammo comes from your bag: Fire Arrows are used first, then plain Arrows.
   var BOWS = [null,
     { n: "Reed Slingshot", c: "#c9b58a", dmg: 4, cd: 0.55, sp: 17, g: 20, ammo: ["pebble"] },
-    { n: "Bogwood Bow", c: "#a8814b", dmg: 11, cd: 0.6, sp: 23, g: 12, ammo: ["firearrow", "arrow"] },
-    { n: "Ember Longbow", c: "#ff8a3d", dmg: 20, cd: 0.5, sp: 29, g: 8, ammo: ["firearrow", "arrow"] }
+    { n: "Bogwood Bow", c: "#a8814b", dmg: 11, cd: 0.6, sp: 23, g: 12, ammo: ["firearrow", "arrow"], any: 1 },
+    { n: "Ember Longbow", c: "#ff8a3d", dmg: 20, cd: 0.5, sp: 29, g: 8, ammo: ["firearrow", "arrow"], any: 1 }
   ];
   var arrows = [], burns = [];
-  function bowAmmo() { var B = BOWS[S.bow]; if (!B) return null; for (var i = 0; i < B.ammo.length; i++) if (inv(B.ammo[i]) > 0) return B.ammo[i]; return null; }
-  function ammoCount() { var B = BOWS[S.bow]; if (!B) return 0; var n = 0; B.ammo.forEach(function (k) { n += inv(k); }); return n; }
+  function bowAmmo() { var B = BOWS[S.bow]; if (!B) return null; if (B.any && S.ammo && inv(S.ammo) > 0) return S.ammo; for (var i = 0; i < B.ammo.length; i++) if (inv(B.ammo[i]) > 0) return B.ammo[i]; return null; }   // the loaded kind first, then Fire Arrows, then plain Arrows
+  function ammoCount() { var B = BOWS[S.bow]; if (!B) return 0; var n = 0; (B.any ? AMMO_ALL : B.ammo).forEach(function (k) { n += inv(k); }); return n; }
   function useBow(dt) {
     mine = null; cool -= dt; if (!aim.down || !S.bow) return;
     var B = BOWS[S.bow], inCave = !!cave, px0 = inCave ? cp.x : p.x, py0 = inCave ? cp.y - 0.5 : p.y - 1.15;
@@ -7586,7 +7594,9 @@
     cool = B.cd * (gem("bow", "sapphire") ? 0.85 : 1); if (!(gem("bow", "amethyst") && Math.random() < 0.25)) { S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } } hbDirty = true; S.st.shots++;
     var fire = am === "firearrow", sp = B.sp * (gem("bow", "moonstone") ? 1.3 : 1), lift = inCave ? 0 : Math.min(0.35, d * 0.012);   // aim a little high on long shots so the arc lands near where you tapped
     var ux = dx / d, uy = dy / d - lift, ul = Math.sqrt(ux * ux + uy * uy); ux /= ul; uy /= ul;
-    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1)), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave });
+    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1)), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave, coat: ARROWK[am] || null });
+    if (S.ammo && am === S.ammo && !(inv(am) > 0)) { toast("Out of " + ITEMS[am].n + "s. Back to " + (inv("firearrow") > 0 ? "Fire Arrows." : "plain Arrows."), "#f6eedb"); S.ammo = null; }
+    if (ARROWK[am] || am === S.ammo) drawFx(true);
     thud(S.bow === 1 ? 420 : 260, 0.04);
   }
   function burnStep(dt) {
@@ -7600,10 +7610,11 @@
     var f = a.vx >= 0 ? 1 : -1;
     if (cv) { var l = Math.sqrt(a.vx * a.vx + a.vy * a.vy) || 1; damageCaveMob(e, a.dmg, a.vx / l, a.vy / l); } else { e.lastHit = 0; damageEnemy(e, a.dmg, f); }
     if (a.fire) { var have = burns.filter(function (b) { return b.e === e; })[0]; if (have) have.t = 3; else burns.push({ e: e, t: 3, tick: 0.6, cave: cv }); }
+    if (a.coat) coatHit(a.coat, e, cv, a.dmg);
     S.st.arrowhits++;
   }
   function stepArrows(dt) {
-    burnStep(dt);
+    burnStep(dt); if (!cave) coatStep(dt);
     for (var i = arrows.length - 1; i >= 0; i--) {
       var a = arrows[i], gone = false;
       if (a.cave !== !!cave) { arrows.splice(i, 1); continue; }
@@ -7612,10 +7623,10 @@
         a.vy += a.g * h; a.x += a.vx * h; a.y += a.vy * h; a.life -= h;
         if (a.life <= 0) { gone = true; break; }
         if (a.cave) {
-          var F = cave.F; if (!mobFree(F, a.x, a.y, 0.05, true)) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); break; }
+          var F = cave.F; if (!mobFree(F, a.x, a.y, 0.05, true)) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); if (a.coat === "blast") coatPop(a.x, a.y, true, a.dmg, null); break; }
           (F.mobs || []).forEach(function (m) { if (gone || m.def) return; var mx = m.x - a.x, my = (m.y - 0.3) - a.y; if (mx * mx + my * my < (m.r + 0.18) * (m.r + 0.18)) { arrowHit(a, m, true); gone = true; } });
         } else {
-          if (blocks(Math.floor(a.x), Math.floor(a.y))) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); break; }
+          if (blocks(Math.floor(a.x), Math.floor(a.y))) { gone = true; chips(a.x, a.y, a.peb ? "#9a9088" : "#c9a46a", 4, 3); if (a.coat === "blast") coatPop(a.x - a.vx * 0.012, a.y - a.vy * 0.012, false, a.dmg, null); break; }
           enemies.forEach(function (e) { if (gone || e.def || e.u) return; var top = e.y - e.h - (FLIER[e.k] ? 0.2 : 0); if (a.x > e.x - e.w / 2 - 0.1 && a.x < e.x + e.w / 2 + 0.1 && a.y > top - 0.1 && a.y < e.y + 0.1) { arrowHit(a, e, false); gone = true; } });
         }
       }
@@ -7626,16 +7637,111 @@
     arrows.forEach(function (a) {
       if (a.cave !== cv) return;
       var sx = ox + a.x * ts, sy = oy + a.y * ts, u = ts / 16; g.save(); g.translate(sx, sy);
-      if (a.peb) { g.fillStyle = "#8a8078"; g.beginPath(); g.arc(0, 0, 1.6 * u, 0, 7); g.fill(); g.fillStyle = "#b8aea4"; g.fillRect(-0.8 * u, -0.8 * u, u, u); }
+      var CC = a.coat ? coatOf(a.coat) : null;
+      if (CC && !reduce && Math.random() < 0.45) parts.push({ x: a.x, y: a.y, vx: 0, vy: 0.6, life: 0.3, max: 0.3, c: CC.c, s: 2 });   // a drip of ointment trails the shot
+      if (a.peb) { g.fillStyle = CC ? CC.c : "#8a8078"; g.beginPath(); g.arc(0, 0, 1.6 * u, 0, 7); g.fill(); g.fillStyle = CC ? "#ffffff" : "#b8aea4"; g.fillRect(-0.8 * u, -0.8 * u, u, u); }
       else {
         g.rotate(Math.atan2(a.vy, a.vx)); g.fillStyle = "#8a6a3a"; g.fillRect(-6 * u, -0.5 * u, 10 * u, u);
         g.fillStyle = a.fire ? "#ffd23f" : "#cfd6dc"; g.beginPath(); g.moveTo(6 * u, 0); g.lineTo(3.5 * u, -1.6 * u); g.lineTo(3.5 * u, 1.6 * u); g.closePath(); g.fill();
+        if (CC) { g.fillStyle = CC.c; g.beginPath(); g.moveTo(5.2 * u, 0); g.lineTo(3.5 * u, -1.1 * u); g.lineTo(3.5 * u, 1.1 * u); g.closePath(); g.fill(); g.fillRect(2 * u, -0.7 * u, 1.6 * u, 1.4 * u); }   // the ointment smeared on the head
         g.fillStyle = a.fire ? "#ff6a1f" : "#e8e0c8"; g.fillRect(-7 * u, -1.5 * u, 2 * u, u); g.fillRect(-7 * u, 0.5 * u, 2 * u, u);
         if (a.fire && !reduce && Math.random() < 0.5) parts.push({ x: a.x, y: a.y, vx: 0, vy: -1, life: 0.25, max: 0.25, c: Math.random() < 0.5 ? "#ff8a3d" : "#ffd23f", s: 2 });
       }
       g.restore();
     });
   }
+  // ---------- ARROW OINTMENTS and SPECIAL ARROWS ----------
+  // Ointments are brewed at a Brewing Stand into Tiny Vials, then worked into special arrows at a Workbench (6 Arrows + 1 ointment).
+  // Every kind is its own item: tap a stack of arrows in the hotbar to LOAD it (S.ammo); the bow shoots the loaded kind while you have
+  // any, then falls back to Fire Arrows and plain Arrows. Each creature keeps its own effects in e.sx: venom (stacks, damage over time),
+  // numb (slowed), sleep (out cold until hit), mark (glows, takes 30% more damage). Spark Arrows jump to nearby creatures, Popper Arrows
+  // burst where they land, Leech Arrows heal you per hit.
+  var COATS = {
+    ot_venom: { fx: "venom", c: "#7fd06a", n: "Bog Venom", d: "Coats your next 10 shots. Poisons the target: damage over time, stacking up to 3 times." },
+    ot_numb: { fx: "numb", c: "#7fd6ff", n: "Numbleaf Salve", d: "Coats your next 10 shots. The target moves and attacks at half speed for 4 seconds (bosses less)." },
+    ot_sleep: { fx: "sleep", c: "#b58cff", n: "Dreamcap Draught", d: "Coats your next 10 shots. Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off." },
+    ot_mark: { fx: "mark", c: "#d8ff6a", n: "Glowmoss Paste", d: "Coats your next 10 shots. The target glows for 8 seconds and takes 30% more damage from everything." },
+    ot_spark: { fx: "spark", c: "#ffe48a", n: "Sparkoil", d: "Coats your next 10 shots. A spark jumps from the target to up to 2 creatures nearby." },
+    ot_blast: { fx: "blast", c: "#ff8a3d", n: "Popper Paste", d: "Coats your next 10 shots. The shot pops where it lands, hurting every creature close by (it never breaks blocks)." },
+    ot_leech: { fx: "leech", c: "#ff5a6a", n: "Leechroot Tincture", d: "Coats your next 10 shots. Each hit heals you for a quarter of its damage." }
+  }, sparks = [], pops = [], loadAt = 0;
+  var ARROWK = { ar_venom: "venom", ar_numb: "numb", ar_sleep: "sleep", ar_mark: "mark", ar_spark: "spark", ar_blast: "blast", ar_leech: "leech" };
+  var AMMO_ALL = ["ar_venom", "ar_numb", "ar_sleep", "ar_mark", "ar_spark", "ar_blast", "ar_leech", "firearrow", "arrow"];
+  var ARROWD = { ar_venom: "Poisons the target: damage over time for 5 seconds, stacking up to 3 times.", ar_numb: "The target moves and attacks at half speed for 4 seconds (bosses at 70%).", ar_sleep: "Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off.", ar_mark: "The target glows for 8 seconds and takes 30% more damage from everything.", ar_spark: "A spark jumps from the target to the 2 nearest creatures for 60% damage.", ar_blast: "Bursts where it lands, even on a wall, hurting creatures close by. Never breaks blocks.", ar_leech: "Each hit heals you for a quarter of its damage." };
+  function loadAmmo(k) {   // tap an arrow stack in the hotbar: the bow shoots that kind first
+    if (!(S.inv[k] > 0)) return; if (S.bow < 2) { nag("Arrows need a bow: craft the Bogwood Bow at a Workbench."); return; }
+    S.ammo = k; var C = ARROWK[k] ? coatOf(ARROWK[k]) : null; snd("click"); chips(cave ? cp.x : p.x, (cave ? cp.y : p.y) - 1.1, C ? C.c : k === "firearrow" ? "#ff8a3d" : "#e8e0c8", 8, 3);
+    toast(ITEMS[k].n + "s loaded. Your bow shoots these first (" + S.inv[k] + " left).", C ? C.c : "#f6eedb"); drawFx(true);
+  }
+  function useLoad(dt) { mine = null; var now = performance.now(); if (!aim.down || now - loadAt < 500) return; loadAt = now; loadAmmo(sel); }
+  function coatOf(fx) { for (var k in COATS) if (COATS[k].fx === fx) return COATS[k]; return null; }
+  function sxOf(e) { return e.sx || (e.sx = {}); }
+  function coatHit(fx, e, cv, dmg) {   // what a coated shot does to the creature it hit
+    if (!fx || e.def) return; var X = sxOf(e), boss = !!e.boss || e.k === "captain";
+    if (fx === "venom") { X.ven = Math.min(3, (X.ven > 0 && X.vt > 0 ? X.ven : 0) + 1); X.vt = 5; X.vk = X.vk || 0.7; }
+    else if (fx === "numb") X.numb = boss ? 2.5 : 4;
+    else if (fx === "sleep") { if (boss) text(e.x, e.y - (cv ? 1 : e.h + 0.4), "Immune", "#d8c8ff"); else X.sleep = 4; }
+    else if (fx === "mark") X.mark = 8;
+    else if (fx === "leech") { var hl = Math.max(1, Math.round(dmg * 0.25)); if (hp > 0 && hp < MAXHP) { hp = Math.min(MAXHP, hp + hl); drawHp(); text(cave ? cp.x : p.x, (cave ? cp.y - 1 : p.y - 1.9), "+" + hl, "#ff8aa0"); } chips(e.x, e.y - (cv ? 0.4 : e.h * 0.5), "#ff5a6a", 6, 4); }
+    else if (fx === "spark") coatSpark(e, cv, dmg);
+    else if (fx === "blast") coatPop(e.x, e.y - (cv ? 0.3 : e.h * 0.5), cv, dmg, e);
+  }
+  function coatList(cv) { return cv ? (cave && cave.F && cave.F.mobs) || [] : enemies; }
+  function coatHurt(m, n, cv, ux, uy, f) { if (cv) damageCaveMob(m, n, ux || 0, uy || 0); else { m.lastHit = 0; damageEnemy(m, n, f || 0); } }
+  function coatSpark(e, cv, dmg) {   // the spark jumps to the two nearest creatures within 4 tiles
+    var L = coatList(cv).filter(function (m) { return m !== e && !m.def && !m.u && Math.hypot(m.x - e.x, m.y - e.y) < 4; }).sort(function (a, b) { return Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y); }).slice(0, 2);
+    var ey = function (m) { return m.y - (cv ? 0.4 : (m.h || 1) * 0.5); }, from = e;
+    L.forEach(function (m) { sparks.push({ x0: from.x, y0: ey(from), x1: m.x, y1: ey(m), t: 0.28, cv: cv }); coatHurt(m, Math.max(1, Math.round(dmg * 0.6)), cv, 0, 0, m.x > from.x ? 1 : -1); from = m; });
+    sparks.push({ x0: e.x, y0: ey(e) - 0.6, x1: e.x, y1: ey(e) + 0.2, t: 0.2, cv: cv }); thud(1300, 0.03);
+  }
+  function coatPop(x, y, cv, dmg, hitE) {   // a small burst: hurts creatures close by, never breaks blocks
+    pops.push({ x: x, y: y, t: 0.35, cv: cv }); chips(x, y, "#ffb04a", 12, 6); thud(90, 0.12); shake = Math.max(shake, 0.12);
+    coatList(cv).forEach(function (m) { if (m.def || m.u || m === hitE) return; var d = Math.hypot(m.x - x, m.y - (cv ? 0.3 : (m.h || 1) * 0.5) - y); if (d < 1.8) coatHurt(m, Math.max(2, Math.round(dmg * 0.5)), cv, (m.x - x) / (d || 1), 0, m.x > x ? 1 : -1); });
+  }
+  var coatTick = false;   // true while venom deals its damage (so it doesn't wake a sleeper)
+  function coatStep(dt) {   // status timers, venom ticks, sparks and pops
+    [false, true].forEach(function (cv) {
+      if (cv && !cave) return;
+      coatList(cv).forEach(function (m) {
+        var X = m.sx; if (!X || m.def) return;
+        if (X.numb > 0) X.numb -= dt; if (X.sleep > 0) X.sleep -= dt; if (X.mark > 0) X.mark -= dt;
+        if (X.vt > 0) { X.vt -= dt; X.vk -= dt; if (X.vk <= 0) { X.vk = 0.7; coatTick = true; coatHurt(m, 2 * X.ven, cv, 0, 0, 0); coatTick = false; chips(m.x, m.y - (cv ? 0.4 : (m.h || 1) * 0.5), "#7fd06a", 4, 3); } if (X.vt <= 0) X.ven = 0; }
+      });
+    });
+    for (var i = sparks.length - 1; i >= 0; i--) { sparks[i].t -= dt; if (sparks[i].t <= 0) sparks.splice(i, 1); }
+    for (var j = pops.length - 1; j >= 0; j--) { pops[j].t -= dt; if (pops[j].t <= 0) pops.splice(j, 1); }
+  }
+  function coatDt(m, dt) { var X = m.sx; if (!X) return dt; if (X.sleep > 0) return 0; if (X.numb > 0) return dt * (m.boss ? 0.7 : 0.45); return dt; }   // how fast this creature's clock runs
+  function coatDmg(m, dmg) {   // marked creatures take more; any real hit wakes a sleeper
+    var X = m.sx; if (!X) return dmg;
+    if (X.sleep > 0 && !coatTick) { X.sleep = 0; text(m.x, m.y - (cave ? 1 : (m.h || 1) + 0.4), "Awake!", "#d8c8ff"); }
+    return X.mark > 0 ? Math.round(dmg * 1.3) : dmg;
+  }
+  function drawCoatFx(g, now) {   // the effects on creatures: venom bubbles, frost on the numbed, sleepy z's, the glow of a mark; then sparks and pops
+    var cv = !!cave, t = now / 1000;
+    coatList(cv).forEach(function (m) {
+      var X = m.sx; if (!X || m.def) return; var hh = cv ? 0.9 : (m.h || 1), sx = ox + m.x * ts, sy = oy + (m.y - (cv ? (m.z || 0) : 0)) * ts, top = sy - hh * ts, mid = sy - hh * ts * 0.5;
+      if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+      if (X.mark > 0) { var ma = Math.min(1, X.mark) * (0.5 + 0.2 * Math.sin(t * 6)); var mg = g.createRadialGradient(sx, mid, ts * 0.1, sx, mid, ts * (0.4 + hh * 0.6)); mg.addColorStop(0, "rgba(216,255,106,0)"); mg.addColorStop(0.7, "rgba(216,255,106," + (0.3 * ma).toFixed(3) + ")"); mg.addColorStop(1, "rgba(216,255,106,0)"); g.fillStyle = mg; g.beginPath(); g.arc(sx, mid, ts * (0.4 + hh * 0.6), 0, 6.2832); g.fill();
+        g.strokeStyle = "rgba(216,255,106," + ma.toFixed(3) + ")"; g.lineWidth = Math.max(1.5, ts / 14); g.beginPath(); g.moveTo(sx - ts * 0.22, top - ts * 0.25); g.lineTo(sx, top - ts * 0.05); g.lineTo(sx + ts * 0.22, top - ts * 0.25); g.stroke(); }   // a glowing chevron over its head
+      if (X.vt > 0) for (var b = 0; b < X.ven + 1; b++) { var bp = (t * 0.8 + b * 0.37) % 1, bx = sx + Math.sin(b * 2.3 + t * 2) * ts * 0.28; g.fillStyle = "rgba(127,208,106," + (0.8 * (1 - bp)).toFixed(3) + ")"; g.beginPath(); g.arc(bx, mid - bp * ts * 0.9, ts * (0.05 + 0.03 * (1 - bp)), 0, 6.2832); g.fill(); g.strokeStyle = "rgba(30,70,20," + (0.6 * (1 - bp)).toFixed(3) + ")"; g.lineWidth = 1; g.stroke(); }
+      if (X.numb > 0) { g.strokeStyle = "rgba(160,225,255," + (0.5 + 0.2 * Math.sin(t * 8)).toFixed(3) + ")"; g.lineWidth = Math.max(1, ts / 22); for (var f = 0; f < 4; f++) { var fa = f * 1.57 + t * 0.8, fx = sx + Math.cos(fa) * ts * 0.42, fy = mid + Math.sin(fa) * ts * 0.3; g.beginPath(); g.moveTo(fx - ts * 0.08, fy); g.lineTo(fx + ts * 0.08, fy); g.moveTo(fx, fy - ts * 0.08); g.lineTo(fx, fy + ts * 0.08); g.stroke(); } }   // frost sparkles circling it
+      if (X.sleep > 0) { g.save(); g.textAlign = "center"; g.fillStyle = "#e8dcff"; g.strokeStyle = "#3a2a5a"; g.lineWidth = Math.max(2, ts / 12); for (var z = 0; z < 3; z++) { var zp = (t * 0.6 + z / 3) % 1; g.globalAlpha = 1 - zp; g.font = "900 " + Math.round(ts * (0.22 + zp * 0.2)) + "px Nunito,sans-serif"; var zx = sx + ts * (0.2 + zp * 0.4), zy = top - zp * ts * 0.8; g.strokeText("z", zx, zy); g.fillText("z", zx, zy); } g.restore(); }
+    });
+    sparks.forEach(function (q) { if (q.cv !== cv) return; var a = q.t / 0.28, x0 = ox + q.x0 * ts, y0 = oy + q.y0 * ts, x1 = ox + q.x1 * ts, y1 = oy + q.y1 * ts;
+      g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.shadowColor = "#ffe48a"; g.shadowBlur = lowq ? 0 : 10;
+      [[Math.max(2, ts / 8), "rgba(255,228,138," + a.toFixed(3) + ")"], [Math.max(1, ts / 20), "rgba(255,255,255," + a.toFixed(3) + ")"]].forEach(function (w) { g.strokeStyle = w[1]; g.lineWidth = w[0]; g.beginPath(); g.moveTo(x0, y0); for (var k = 1; k < 6; k++) { var r = k / 6; g.lineTo(x0 + (x1 - x0) * r + (Math.random() - 0.5) * ts * 0.35, y0 + (y1 - y0) * r + (Math.random() - 0.5) * ts * 0.35); } g.lineTo(x1, y1); g.stroke(); });
+      g.restore(); });
+    pops.forEach(function (q) { if (q.cv !== cv) return; var k = 1 - q.t / 0.35, X0 = ox + q.x * ts, Y0 = oy + q.y * ts, r = ts * (0.3 + k * 1.5);
+      var pg = g.createRadialGradient(X0, Y0, 0, X0, Y0, r); pg.addColorStop(0, "rgba(255,246,192," + (0.9 * (1 - k)).toFixed(3) + ")"); pg.addColorStop(0.5, "rgba(255,138,61," + (0.6 * (1 - k)).toFixed(3) + ")"); pg.addColorStop(1, "rgba(255,90,30,0)"); g.fillStyle = pg; g.beginPath(); g.arc(X0, Y0, r, 0, 6.2832); g.fill();
+      g.strokeStyle = "rgba(255,200,120," + (0.8 * (1 - k)).toFixed(3) + ")"; g.lineWidth = Math.max(1.5, ts / 14); g.beginPath(); g.arc(X0, Y0, r * 0.9, 0, 6.2832); g.stroke(); });
+  }
+  function vialSprite(c) {   // a small corked vial with a coloured ointment
+    return { r: ["................", "................", "................", ".......mm.......", "......mMMm......", ".......oo.......", ".......gg.......", "......oggo......", "......owLo......", ".....oLwLLo.....", ".....oLLLLo.....", ".....oLLLDo.....", "......oLDo......", ".......oo.......", "................", "................"],
+      p: { o: "#2a3a44", m: "#8a6a3a", M: "#c8a46a", g: "#cfeaf2", w: "#ffffff", L: c, D: "#00000055" }, o: "#16222a" };
+  }
+  SPR.vial = vialSprite("#e8f6fa"); Object.keys(COATS).forEach(function (k) { SPR[k] = vialSprite(COATS[k].c); });
+  Object.keys(ARROWK).forEach(function (k) { var A = SPR.arrow, c = coatOf(ARROWK[k]).c; if (A) SPR[k] = { r: A.r, p: Object.assign({}, A.p, { s: c, w: "#ffffff", f: c }), o: A.o }; });
   // ---------- BLASTING: Bog Bombs, Sticky Bombs, Blast Kegs and Firework Rockets (items from the blasting pack in sandbox-extra.js) ----------
   // Hold a bomb and tap where to throw it: it flies in an arc, bounces (a Sticky Bomb sticks to the first block it touches), its fuse
   // fizzes, then it blows up: blocks in the blast break and drop like you mined them (generated buildings, world trees, bedrock and the
@@ -9912,9 +10018,9 @@
   }
   function drawFx(force) {
     var el = $("sbxFx"); if (!el) return;
-    var ks = Object.keys(S.fx || {}), key = ks.map(function (k) { return k + Math.ceil(S.fx[k] / 5); }).join("|");
-    if (!force && key === fxKey) return; fxKey = key; el.hidden = !ks.length;
-    el.innerHTML = ks.map(function (k) {
+    var ks = Object.keys(S.fx || {}), la = S.ammo && ARROWK[S.ammo] && inv(S.ammo) > 0 ? S.ammo : null, cc = la ? { k: la, n: inv(la) } : null, key = ks.map(function (k) { return k + Math.ceil(S.fx[k] / 5); }).join("|") + (cc ? "|c" + cc.k + cc.n : "");
+    if (!force && key === fxKey) return; fxKey = key; el.hidden = !ks.length && !cc;
+    el.innerHTML = (cc ? '<span class="fx-chip" style="--fc:' + coatOf(ARROWK[cc.k]).c + '" title="' + esc(ITEMS[cc.k].n + 's loaded') + '"><img alt="" src="' + icon(cc.k) + '"><b>' + cc.n + '</b></span>' : "") + ks.map(function (k) {
       var pk = Object.keys(POTIONS).filter(function (q) { return POTIONS[q].fx === k; })[0], t = Math.ceil(S.fx[k]), mm = Math.floor(t / 60), ss = t % 60;
       return '<span class="fx-chip" style="--fc:' + (pk ? POTIONS[pk].c : "#fff") + '" title="' + esc(FXN[k] || k) + '"><img alt="" src="' + icon(pk || "bottle") + '"><b>' + mm + ":" + (ss < 10 ? "0" : "") + ss + "</b></span>";
     }).join("");
@@ -11116,6 +11222,7 @@
     if (ITEMS[sel] && ITEMS[sel].summon) { useSummon(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].home) { useHome(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
+    if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }   // holding food: tap to eat
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }   // LOOT PACK: open an old book or a sealed letter
@@ -11404,7 +11511,7 @@
       setTimeout(function () { cgExpOpen(stnSave); if (CGS && CGS.k === "exp") { CGS.msg = first ? "<b>New discovery: " + esc(ITEMS[out].n) + "!</b> " + esc(itemDesc(out)) : ""; cgExpRender(); } }, 80);
     }, back);
   }
-  function itemDesc(k) { var it = ITEMS[k]; if (POTIONS[k]) return POTIONS[k].d; if (it.food) return "Fills " + it.food + " food, heals " + (it.heal || 0) + (it.efx ? ", and gives " + (FXN[it.efx[0]] || it.efx[0]) + " for " + Math.round(it.efx[1] / 60) + " min" : "") + "."; return ""; }
+  function itemDesc(k) { var it = ITEMS[k]; if (POTIONS[k]) return POTIONS[k].d; if (COATS[k]) return "An arrow ointment: " + COATS[k].d.replace("Coats your next 10 shots. ", "") + " Work it into Arrows at a Workbench."; if (ARROWD[k]) return ARROWD[k] + " Tap it in the hotbar to load it into your bow."; if (it.food) return "Fills " + it.food + " food, heals " + (it.heal || 0) + (it.efx ? ", and gives " + (FXN[it.efx[0]] || it.efx[0]) + " for " + Math.round(it.efx[1] / 60) + " min" : "") + "."; return ""; }
   function tickMw(dt) {   // a Masterwork pick or weapon you are holding glints now and then
     var k = sel === "pick" ? "pick" : sel === "weapon" ? "wpn" : ""; if (!k || mwStars(k) < 3 || reduce || cave) return;
     if (Math.random() < dt * 2.2) parts.push({ x: p.x + p.face * (0.5 + Math.random() * 0.4), y: p.y - 1.15 - Math.random() * 0.5, vx: 0, vy: -0.4, g: 0, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#fff6c2" : "#ffd23f", s: 2.5, glw: 1 });
@@ -14612,6 +14719,7 @@
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
+    if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].summon) { mine = null; if (aim.down) nag("Bosses only answer the call on the surface world."); return; }
     if (ITEMS[sel] && ITEMS[sel].home) { mine = null; if (aim.down) nag("The shell needs open sky. Use it on the surface."); return; }
@@ -15291,7 +15399,8 @@
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
     ["Tools|Utility", "prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
-    ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_arrow x_firearrow"],
+    ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3"],
+    ["Tools|Arrows", "x_arrow x_firearrow x_ar_venom x_ar_numb x_ar_sleep x_ar_mark x_ar_spark x_ar_blast x_ar_leech"],
     ["Tools|Adventuring", "x_grapple"],
     ["Stations|Garage", "x_garage"],
     ["Materials|Motorcycle Parts", "x_moto_seat x_moto_chain x_moto_lamp"],
@@ -15312,6 +15421,7 @@
     ["Food|From the Sea", "x_kelpwrap x_seastew x_piersushi"],
     ["Building|Wood Stains", "x_stain_walnut x_stain_ebony x_stain_honey x_stain_mahogany x_stain_white x_stain_sage x_stain_blue x_stain_plum x_sandpaper"],
     ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire"],
+    ["Potions|Arrow Ointments", "x_vial x_ot_venom x_ot_numb x_ot_sleep x_ot_mark x_ot_spark x_ot_blast x_ot_leech"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
     ["Potions|Wonders", "x_tonic_regen x_tonic_grand x_tonic_glow x_tonic_feather x_tonic_luck x_tonic_grow x_tonic_gill x_tonic_brute"],
     ["Food|Farming", "x_farmland x_sprinkler x_trough x_fishtrap"],
@@ -17280,6 +17390,7 @@
     if (sel === "weapon") { mine = null; ocSwing(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
+    if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     ocMine(dt, press);
   }
   function ocMine(dt, press) {
@@ -20320,6 +20431,7 @@
   window.__sbx.t2 = { lit: function (x, y) { return litNear(x, y); }, toss: function (i, all) { tossSlot(i, all, true); }, leafTop: function (x, y) { return leafTop(x, y); }, keys: keys, spawn: function () { spawnEnemy(); } };
   window.__sbx.pause = { open: function () { openPause(); }, close: function () { closePause(); }, act: function (a) { pauseAct(a); }, opt: function (k) { optAct(k); }, get on() { return pauseOpen; }, get view() { return pauseView; }, OPT: OPT };
   window.__sbx.feel = { la: CAMLA, get sq() { return p.sq || 0; } };
+  window.__sbx.coat = { C: COATS, A: ARROWK, load: loadAmmo, ammo: function () { return bowAmmo(); }, hit: coatHit, step: coatStep, dt: coatDt };
   window.__sbx.art = { e: function (g, e, now) { drawEnemy(g, e, now); }, a: function (g, a, now) { drawAnimal(g, a, now); }, view: function () { return { ox: ox, oy: oy, ts: ts }; }, crit: CRIT, npc: npc, oc: function (g, m, now) { ocDrawMob(g, m, now); }, ocNew: function (k, x, y) { return ocNewMob(k, x, y); }, boss: function (g, e, now) { drawBoss(g, e, now); }, bossNew: function (k, x, y) { return newBoss(k, x, y); }, zaruk: function (g, x, y, sc, t, f, sl) { drawZaruk(g, x, y, sc, t, f, 1, sl || 0); } };   // draw one creature onto any canvas (art checks)
   window.__sbx.cont = { near: function () { return contNear(); }, at: function (x, y) { return contAtCell(x, y); }, open: function (c) { openCont(c); }, act: function (a) { contAct(a); }, map: function () { return cave && cave.F ? contMap(cave.F) : null; }, read: function () { useRead(0); }, sell: function (k) { sellShop(k); }, sellHtml: function () { return sellHtml(); } };
   window.__sbx.paw = { target: function () { return pawTarget(); }, PAW: PAW, get cool() { return cool; } };

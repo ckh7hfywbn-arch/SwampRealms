@@ -1228,7 +1228,7 @@
   R("x_bow2", "Bogwood Bow", null, { planks: 8, rope: 2, fiber: 6 }, { bow: 2, bench: true, d: "Shoots Arrows in a long arc. Damage 11 (17 with Fire Arrows). Needs the Reed Slingshot and a Workbench." });
   R("x_bow3", "Ember Longbow", null, { planks: 10, ironingot: 4, cinder: 8, ruby: 1 }, { bow: 3, bench: true, bl: 3, d: "A lava-veined longbow with a flat, fast shot. Damage 20 (26 with Fire Arrows). Needs a Cinder Forge Workbench." });
   R("x_arrow", "Arrows (6)", { arrow: 6 }, { stick: 2, pebble: 1, fiber: 1 }, { d: "Ammo for bows. Made by hand." });
-  R("x_firearrow", "Fire Arrows (6)", { firearrow: 6 }, { arrow: 6, cinder: 1, sulfur: 1 }, { d: "+6 damage and sets the target burning for a few seconds. Bows use them before plain Arrows. Made by hand." });
+  R("x_firearrow", "Fire Arrows (6)", { firearrow: 6 }, { arrow: 6, cinder: 1, sulfur: 1 }, { d: "+6 damage and sets the target burning for a few seconds. Tap them in your hotbar to load them. Bows use them before plain Arrows. Made by hand." });
   R("x_brewstand", "Brewing Stand", { brewstand: 1 }, { stone: 6, glass: 2, planks: 4 }, { bench: true, d: "Place it, then tap it to brew potions. Made at the Bog Workbench." });
   R("x_bottle", "Glass Bottles (3)", { bottle: 3 }, { glass: 1 }, { stn: "brew", d: "Every potion starts with one. You get the bottle back after drinking." });
   R("x_tonic_heal", "Healing Tonic", { tonic_heal: 1 }, { bottle: 1, marshlily: 2, redcap: 1 }, { stn: "brew", d: "Heals 40 health right away." });
@@ -1238,6 +1238,25 @@
   R("x_tonic_fire", "Emberguard Potion", { tonic_fire: 1 }, { bottle: 1, emberroot: 2, pepper: 2 }, { stn: "brew", d: "Lava burns you 80% less for 3 minutes." });
   R("x_tonic_hide", "Ironhide Brew", { tonic_hide: 1 }, { bottle: 1, icecap: 2, frostberry: 2 }, { stn: "brew", d: "Take 20% less damage for 3 minutes." });
   R("x_tonic_leap", "Leaping Brew", { tonic_leap: 1 }, { bottle: 1, hexdust: 1, frogfrag: 1 }, { stn: "brew", d: "Jump 30% higher for 3 minutes. Hex Dust comes from Bog Witches." });
+  // ARROW OINTMENTS: tiny vials brewed at the Brewing Stand, then worked into special arrows at a Workbench (6 Arrows + 1 ointment = 6 of them).
+  item("vial", "Tiny Vial", {});
+  [["ot_venom", "Bog Venom"], ["ot_numb", "Numbleaf Salve"], ["ot_sleep", "Dreamcap Draught"], ["ot_mark", "Glowmoss Paste"], ["ot_spark", "Sparkoil"], ["ot_blast", "Popper Paste"], ["ot_leech", "Leechroot Tincture"]].forEach(function (q) { item(q[0], q[1], {}); });
+  [["ar_venom", "Venom Arrow"], ["ar_numb", "Numbing Arrow"], ["ar_sleep", "Sleep Arrow"], ["ar_mark", "Glowmark Arrow"], ["ar_spark", "Spark Arrow"], ["ar_blast", "Popper Arrow"], ["ar_leech", "Leech Arrow"]].forEach(function (q) { item(q[0], q[1], {}); });
+  R("x_vial", "Tiny Vials (4)", { vial: 4 }, { glass: 1 }, { stn: "brew", d: "Little vials for arrow ointments. Brewed at a Brewing Stand." });
+  R("x_ot_venom", "Bog Venom", { ot_venom: 1 }, { vial: 1, stinger: 1, redcap: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_numb", "Numbleaf Salve", { ot_numb: 1 }, { vial: 1, icecap: 1, frostberry: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_sleep", "Dreamcap Draught", { ot_sleep: 1 }, { vial: 1, glowshroom: 1, batwing: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_mark", "Glowmoss Paste", { ot_mark: 1 }, { vial: 1, spore: 2, firefly: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_spark", "Sparkoil", { ot_spark: 1 }, { vial: 1, jellygel: 1, quartz: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_blast", "Popper Paste", { ot_blast: 1 }, { vial: 1, sulfur: 1, cinder: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_leech", "Leechroot Tincture", { ot_leech: 1 }, { vial: 1, leechfang: 1, marshlily: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ar_venom", "Venom Arrows (6)", { ar_venom: 6 }, { arrow: 6, ot_venom: 1 }, { bench: true, d: "Poisons the target: damage over time for 5 seconds, stacking up to 3 times. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_numb", "Numbing Arrows (6)", { ar_numb: 6 }, { arrow: 6, ot_numb: 1 }, { bench: true, d: "The target moves and attacks at half speed for 4 seconds (bosses at 70%). Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_sleep", "Sleep Arrows (6)", { ar_sleep: 6 }, { arrow: 6, ot_sleep: 1 }, { bench: true, d: "Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_mark", "Glowmark Arrows (6)", { ar_mark: 6 }, { arrow: 6, ot_mark: 1 }, { bench: true, d: "The target glows for 8 seconds and takes 30% more damage from everything. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_spark", "Spark Arrows (6)", { ar_spark: 6 }, { arrow: 6, ot_spark: 1 }, { bench: true, d: "A spark jumps from the target to the 2 nearest creatures for 60% damage. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_blast", "Popper Arrows (6)", { ar_blast: 6 }, { arrow: 6, ot_blast: 1 }, { bench: true, d: "Bursts where it lands, even on a wall, hurting creatures close by. Never breaks blocks. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
+  R("x_ar_leech", "Leech Arrows (6)", { ar_leech: 6 }, { arrow: 6, ot_leech: 1 }, { bench: true, d: "Each hit heals you for a quarter of its damage. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
   R("x_tonic_fish", "Angler's Brew", { tonic_fish: 1 }, { bottle: 1, earthworm: 2, catfish: 1 }, { stn: "brew", d: "Fish bite 40% sooner for 5 minutes." });
   R("x_jeweltable", "Jeweler's Table", { jeweltable: 1 }, { stone: 8, planks: 4, quartz: 2 }, { bench: true, d: "Tap it to set gems into your weapon, armor, pick and bow. Each socket costs the gem and a Quartz Shard (from Geodes). Made at the Bog Workbench." });
   R("x_stain_walnut", "Walnut Stain (12)", { stain_walnut: 12 }, { wood: 2, mud: 1 }, { d: "A rich dark brown. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
