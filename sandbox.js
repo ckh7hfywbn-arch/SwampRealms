@@ -6030,7 +6030,7 @@
   var DODGE = { t: 0, cd: 0, dx: 1, dy: 0 }, DODGE_T = 0.26, DODGE_CD = 0.62, DODGE_IF = 0.36;
   function tryDodge() {
     if (deadUI || panelOpen || packOpen || mapOpen || titleOpen || trans || hp <= 0 || DODGE.cd > 0 || OCS || warp || PHOTO.on) return false;
-    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = 0;
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0) || (joy.x > 0.3 ? 1 : joy.x < -0.3 ? -1 : 0), dy = 0;
     if (cave || HOME) {
       dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0); if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
       if (!dx && !dy) dx = cp.face || 1; var L = Math.sqrt(dx * dx + dy * dy) || 1; dx /= L; dy /= L;
@@ -11760,9 +11760,9 @@
   function coachSteps() {
     var t = coarse;
     return [
-      { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave") ? "#sbxJoy" : "#sbxPad .lr") : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
-      { id: "jump", t: "Jump", d: t ? "Tap the big button to jump." : "Press Space to jump.", el: t ? "#sbxPad .jump" : "", keys: ["Space"], done: function (c) { return c.jumped; } },
-      { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? "#sbxPad .roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
+      { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave,.sbx-stage.joyall") ? "#sbxJoy" : document.querySelector("#sbxPad .lr [data-k]") ? "#sbxPad .lr" : '[data-k="l"]') : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
+      { id: "jump", t: "Jump", d: t ? "Tap the big button to jump." : "Press Space to jump.", el: t ? ".sbx-stage .jump" : "", keys: ["Space"], done: function (c) { return c.jumped; } },
+      { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? ".sbx-stage button.roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
       { id: "dig", t: "Gather", d: t ? "Hold your finger on the glowing ring to gather from it." : "Hold the mouse on the glowing ring to gather from it.", world: true, keys: [t ? "" : "Hold mouse"], done: function (c) { return (S.st.mined || 0) > c.m0 || (S.inv.stick || 0) > c.s0 || (S.inv.fiber || 0) > c.f0; } },
       { id: "pack", t: "Your backpack", d: t ? "Tap the backpack to see what you carry." : "Press B to open your backpack.", el: "#sbxPackBtn", keys: ["B"], done: function () { return packOpen; } }
     ];
@@ -12125,7 +12125,7 @@
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
     tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); tickDetect(dt); tickQuake(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
-    var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), jump = keys.j || tk.j;
+    var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0) || (joy.x > 0.3 ? 1 : joy.x < -0.3 ? -1 : 0), jump = keys.j || tk.j;   // STICK EVERYWHERE: the walk stick walks on the surface too
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
     updateDoors(dt, dir); updateHatches(dt, dir);
@@ -16175,7 +16175,9 @@
         + row("Weather", "Rain, snow and ash. Waters crops, and fish bite sooner.", sw("data-wxtoggle", WX.on, "Weather"))
         + row("Mini-map", "Tap it to open the World Map.", sw("data-minitoggle", MINI.on, "Mini-map"))
         + row("Zoom", "How close the camera is.", stp('data-zoom="%"', Math.round(S.zoom * 100) + "%", "Zoom"))
-        + row("Control size", "Touch stick, buttons, hotbar and HUD.", '<span class="op-btns">' + stp('data-ui="%"', Math.round(UIS * 100) + "%", "Control size") + '<button type="button" class="btn ghost op-mini" data-ui="0" aria-label="Reset control size">Reset</button></span>'));
+        + row("Control size", "Touch stick, buttons, hotbar and HUD.", '<span class="op-btns">' + stp('data-ui="%"', Math.round(UIS * 100) + "%", "Control size") + '<button type="button" class="btn ghost op-mini" data-ui="0" aria-label="Reset control size">Reset</button></span>')
+        + (CTLMQ.matches ? row("Movement", JOYALL ? "The walk stick everywhere." : "Arrows on the surface, the stick in caves, the Mine and at sea.", '<span class="op-btns op-seg"><button type="button" class="btn' + (JOYALL ? " ghost" : "") + '" data-joyall="0" aria-pressed="' + !JOYALL + '">Arrows</button><button type="button" class="btn' + (JOYALL ? "" : " ghost") + '" data-joyall="1" aria-pressed="' + JOYALL + '">Stick</button></span>')
+          + row("Button layout", "Move and resize jump, dodge roll, special and the arrows.", '<button type="button" class="btn" data-layout>Customize</button>') : ""));
       h += card("Play together", row(MP.on ? (MP.role === "host" ? "Room " + esc(MP.code) : "Visiting") : "Multiplayer", MP.on ? (MP.role === "host" ? (MP.npeers + 1) + " / 4 players in your world." : "You are in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs.", '<button type="button" class="btn" data-mpopen>' + (MP.on ? "Manage" : "Play together") + "</button>"));
       if (!DEV.on) h += card("Developer mode", row("Dev code", "Unlocks a cheat menu on this device, for trying things out.", '<span class="op-btns"><input id="devCode" class="dev-q dev-code" type="password" autocomplete="off" placeholder="Code" aria-label="Dev code"><button type="button" class="btn" data-devunlock>Unlock</button></span>'));
       h += '<p class="sbx-note op-seed">World seed ' + S.seed + "</p>";
@@ -16628,11 +16630,11 @@
     var base = $("sbxJoy"), knob = $("sbxJoyKnob"), id = null, R = 52; if (!base) return;
     function mv(e) {
       var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, d / (R * UIS));
-      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; knob.style.transform = "translate(" + (dx / d * Math.min(d, R * UIS) / UIS) + "px," + (dy / d * Math.min(d, R * UIS) / UIS) + "px)";
+      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0;   // on the surface, pull down to drop or climb down knob.style.transform = "translate(" + (dx / d * Math.min(d, R * UIS) / UIS) + "px," + (dy / d * Math.min(d, R * UIS) / UIS) + "px)";
     }
     base.addEventListener("pointerdown", function (e) { e.preventDefault(); id = e.pointerId; try { base.setPointerCapture(id); } catch (x) {} base.classList.add("on"); $("sbxHint").classList.remove("on"); mv(e); });
     base.addEventListener("pointermove", function (e) { if (e.pointerId === id) mv(e); });
-    var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); };
+    var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); if (!cave && !OCS && !HOME) tk.d = 0; };
     base.addEventListener("pointerup", up); base.addEventListener("pointercancel", up); base.addEventListener("lostpointercapture", up); base.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
   (function () { var sb = $("sbxSpec"); if (sb) sb.addEventListener("click", function (e) { e.preventDefault(); trySpecial(); }); })();   // WEAPON SPECIALS button
@@ -16647,6 +16649,7 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return; var k = e.key;
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;   // typing a name never moves you or closes the map
     k = keyRemap(k); if (k === null) return;   // KEY REMAPPING
+    if (LAYE) { if (k === "Escape") { e.preventDefault(); closeLayout(false); } return; }   // the button-layout editor
     if (deadUI) { if (k === "Enter" || k === " " || k === "r" || k === "R") { e.preventDefault(); deadRespawn(); } return; }   // the death screen
     if (TOUR) { if (k === "Escape") { e.preventDefault(); endTour(); } else if (k === "Enter" || k === " " || k === "ArrowRight") { e.preventDefault(); TOUR.i++; if (TOUR.i >= TOUR.steps.length) endTour(); else tourShow(); } return; }
     if (FMG.open) { if (k === "Escape" || k === "e" || k === "E") { e.preventDefault(); closeFarmBook(); } else if (k === "ArrowLeft" || k === "a" || k === "A") fmGo(FMG.pg - 1); else if (k === "ArrowRight" || k === "d" || k === "D") fmGo(FMG.pg + 1); return; }
@@ -16762,6 +16765,8 @@
     if (t.hasAttribute("data-wxtoggle")) { WX.on = !WX.on; WX.drops.length = 0; try { localStorage.setItem("swamp-delve-weather", WX.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
     if (t.hasAttribute("data-minitoggle")) { MINI.on = !MINI.on; MINI.t = 0; try { localStorage.setItem("swamp-delve-minimap", MINI.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
     if (t.hasAttribute("data-daytoggle")) { SHOWDAYS = !SHOWDAYS; try { localStorage.setItem("swamp-delve-daycount", SHOWDAYS ? "1" : "0"); } catch (e) {} hud(); return renderPanel(); }
+    if (t.hasAttribute("data-joyall")) { setJoyAll(t.getAttribute("data-joyall") === "1"); return renderPanel(); }
+    if (t.hasAttribute("data-layout")) return openLayout();
     if (t.hasAttribute("data-ui")) { var uv = +t.getAttribute("data-ui"); setUi(uv === 0 ? 1 : UIS + uv * 0.1); return renderPanel(); }
     if (t.hasAttribute("data-zoom")) { var Z = [0.8, 1, 1.25, 1.5, 2], zi = clamp(Z.indexOf(S.zoom) + +t.getAttribute("data-zoom"), 0, Z.length - 1); S.zoom = Z[zi]; resize(); return renderPanel(); }
     if (t.hasAttribute("data-camp")) { respawn("Back at camp."); return closePanel(); }
@@ -16809,6 +16814,7 @@
     if (typeof HOME !== "undefined" && HOME) setTimeout(homePads, 0);
     if (typeof HOME !== "undefined" && HOME) ts = Math.max(32, Math.round(clamp(Math.max(vw, vh) / 24, 32, 64) * (S ? clamp(S.zoom, 0.8, 1.3) : 1) / 16) * 16);
     if (typeof OCS !== "undefined" && OCS) ts = Math.max(16, Math.round(clamp(Math.max(vw, vh) / 30, coarse ? 24 : 18, 40)));
+    if (typeof CTLR !== "undefined" && CTLR) { if (LAYE) CTLK.forEach(function (k) { layPlace(k, LAYE.w[k]); }); else applyLayout(); }
     ts = tsSnap(ts);   // a block is a whole number of device pixels wide too, so rows and columns meet with no hairline gap at 125% / 175% / phone scales
     fitDock();
   }
@@ -16822,6 +16828,129 @@
   var UIS = 1; try { UIS = +localStorage.getItem("swamp-delve-ui") || 1; } catch (e) {}
   function setUi(v) { UIS = clamp(Math.round(v * 10) / 10, 0.6, 1.8); stageEl.style.setProperty("--cs", UIS); fitDock(); try { localStorage.setItem("swamp-delve-ui", String(UIS)); } catch (e) {} }
   function fitDock() { var d = document.querySelector(".sbx-dock"); if (d && d.offsetWidth) d.style.setProperty("--ds", Math.min(UIS, (stageEl.clientWidth - 12) / d.offsetWidth)); }   // the hotbar grows with the setting only as far as the screen is wide enough
+  // ---------- CUSTOM BUTTON LAYOUT (phones and tablets): drag the jump, dodge roll, special and arrow buttons anywhere, and resize them ----------
+  // Options > Controls > Button layout opens the editor. Each button you move gets its own spot (a fraction of the screen, so it survives turning
+  // the phone), size and see-through level, kept per device in localStorage ("swamp-delve-layout"). A moved button is lifted out of the pad into
+  // the .sbx-ctl layer; "Reset" puts it back where it was. The two dodge-roll buttons (surface pad, Mine) share one spot.
+  // MOVEMENT MODE ("swamp-delve-joy"): "all" = the walk stick everywhere (the arrows hide), otherwise arrows on the surface and the stick in caves.
+  var CTLMQ = matchMedia ? matchMedia("(pointer:coarse),(max-width:760px)") : { matches: false };
+  var JOYALL = false; try { JOYALL = localStorage.getItem("swamp-delve-joy") === "all"; } catch (e) {}
+  function setJoyAll(on) { JOYALL = !!on; stageEl.classList.toggle("joyall", JOYALL); stopInput(); try { localStorage.setItem("swamp-delve-joy", JOYALL ? "all" : "caves"); } catch (e) {} }
+  stageEl.classList.toggle("joyall", JOYALL);
+  var CTLN = { l: "Left arrow", r: "Right arrow", j: "Jump", roll: "Dodge roll", spec: "Special" }, CTLK = ["l", "r", "j", "roll", "spec"];
+  var CTLD = { l: { x: 0.1, y: 0.7 }, r: { x: 0.24, y: 0.7 }, j: { x: 0.9, y: 0.7 }, roll: { x: 0.78, y: 0.6 }, spec: { x: 0.9, y: 0.5 } };   // fallback spots when a button is not on screen to measure
+  var CTLR = null, CTLL = null, LAYD = {};
+  try { LAYD = JSON.parse(localStorage.getItem("swamp-delve-layout") || "{}") || {}; } catch (e) { LAYD = {}; }
+  function layClean(L) { return { x: clamp(+L.x || 0.5, 0, 1), y: clamp(+L.y || 0.5, 0, 1), s: clamp(+L.s || 1, 0.5, 2.2), o: clamp(L.o == null ? 1 : +L.o, 0.25, 1) }; }
+  function layInit() {
+    var P = $("sbxPad"); if (!P || CTLR) return;
+    CTLR = { l: [P.querySelector('[data-k="l"]')], r: [P.querySelector('[data-k="r"]')], j: [P.querySelector('[data-k="j"]')], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")] };
+    CTLL = document.createElement("div"); CTLL.className = "sbx-ctl"; CTLL.id = "sbxCtl"; stageEl.insertBefore(CTLL, $("sbxRoll") || P.nextSibling);
+    CTLK.forEach(function (k) { CTLR[k] = CTLR[k].filter(Boolean); CTLR[k].forEach(function (el) { el.__h = { p: el.parentNode, n: el.nextSibling }; el.setAttribute("data-lk", k); el.setAttribute("data-ln", CTLN[k]); }); });
+  }
+  function layFree(k) { CTLR[k].forEach(function (el) { if (el.parentNode !== CTLL) CTLL.appendChild(el); }); }
+  function layHome(k) {
+    CTLR[k].forEach(function (el) {
+      if (el.parentNode === CTLL) { var h = el.__h; if (h.n && h.n.parentNode === h.p) h.p.insertBefore(el, h.n); else h.p.appendChild(el); }
+      el.style.left = el.style.top = el.style.opacity = ""; el.style.removeProperty("--bs");
+    });
+  }
+  function layPlace(k, L) {
+    var W = stageEl.clientWidth || 1, H = stageEl.clientHeight || 1;
+    CTLR[k].forEach(function (el) {
+      var half = (el.offsetWidth || 64) * L.s / 2 + 4, cx = clamp(L.x * W, half, Math.max(half, W - half)), cy = clamp(L.y * H, half, Math.max(half, H - half));
+      el.style.left = cx + "px"; el.style.top = cy + "px"; el.style.setProperty("--bs", L.s); el.style.opacity = L.o < 1 ? L.o : "";
+    });
+  }
+  function applyLayout() {
+    if (!CTLR || LAYE) return;
+    CTLK.forEach(function (k) { if (CTLMQ.matches && LAYD[k]) { layFree(k); layPlace(k, layClean(LAYD[k])); } else layHome(k); });
+  }
+  // ---- the editor ----
+  var LAYE = null;   // { w: working copy, sel, grid, ptr: {id:{x,y}}, drag, pinch, back: the journal tab to return to }
+  function layMeasure(k) {
+    var W = stageEl.clientWidth || 1, H = stageEl.clientHeight || 1, sr = stageEl.getBoundingClientRect();
+    if (LAYD[k]) return layClean(LAYD[k]);
+    var vis = CTLR[k].filter(function (e) { return e.offsetParent && e.getBoundingClientRect().width > 4; })[0], r = vis ? vis.getBoundingClientRect() : null;
+    if (r) return { x: (r.left + r.width / 2 - sr.left) / W, y: (r.top + r.height / 2 - sr.top) / H, s: 1, o: 1 };
+    return { x: CTLD[k].x, y: CTLD[k].y, s: 1, o: 1 };
+  }
+  function openLayout() {
+    layInit(); if (!CTLR) return;
+    var back = panelOpen ? tab : ""; if (panelOpen) closePanel();
+    var w = {}; CTLK.forEach(function (k) { w[k] = layMeasure(k); });   // measure where every button sits now, before lifting any out
+    LAYE = { w: w, sel: "", grid: true, ptr: {}, drag: null, pinch: null, back: back };
+    panelOpen = true; stopInput(); stageEl.classList.add("lay-ed");
+    CTLK.forEach(function (k) { layFree(k); layPlace(k, w[k]); });
+    var ov = document.createElement("div"); ov.className = "sbx-lay grid"; ov.id = "sbxLay"; stageEl.appendChild(ov);
+    var ui = document.createElement("div"); ui.className = "sbx-lay-ui"; ui.id = "sbxLayUi"; stageEl.appendChild(ui);
+    ui.addEventListener("click", layClick); ui.addEventListener("input", layInput);
+    layUi();
+  }
+  function closeLayout(keep) {
+    if (!LAYE) return; var E = LAYE;
+    if (keep) { var n = {}; CTLK.forEach(function (k) { if (E.w[k].ed || LAYD[k]) { var c = layClean(E.w[k]); n[k] = { x: +c.x.toFixed(4), y: +c.y.toFixed(4), s: +c.s.toFixed(2), o: +c.o.toFixed(2) }; } }); LAYD = n; try { localStorage.setItem("swamp-delve-layout", JSON.stringify(LAYD)); } catch (e) {} }
+    else { try { LAYD = JSON.parse(localStorage.getItem("swamp-delve-layout") || "{}") || {}; } catch (e) { LAYD = {}; } }   // Cancel: forget any resets too
+    LAYE = null; [$("sbxLay"), $("sbxLayUi")].forEach(function (el) { if (el) el.remove(); });
+    stageEl.classList.remove("lay-ed"); CTLK.forEach(function (k) { CTLR[k].forEach(function (el) { el.classList.remove("lay-sel", "on"); }); layHome(k); });
+    panelOpen = false; applyLayout();
+    if (keep) toast("Button layout saved.");
+    if (E.back) openPanel(E.back);
+  }
+  function layUi() {
+    var ui = $("sbxLayUi"); if (!ui || !LAYE) return; var E = LAYE, s = E.sel, L = s ? E.w[s] : null;
+    var h = '<div class="ly-bar"><div class="ly-t"><b>Customize Controls</b><small>' + (s ? "Drag to move. Pinch or use the sliders to resize." : "Tap a button to pick it, then drag it anywhere.") + "</small></div>"
+      + '<div class="ly-btns"><button type="button" class="btn ghost' + (E.grid ? " on" : "") + '" data-ly="grid" aria-pressed="' + E.grid + '">Snap</button><button type="button" class="btn ghost" data-ly="reset">Reset all</button><button type="button" class="btn ghost" data-ly="cancel">Cancel</button><button type="button" class="btn" data-ly="done">Done</button></div></div>';
+    if (L) h += '<div class="ly-sheet' + (L.y >= 0.45 ? " top" : "") + '"><div class="ly-sh"><b>' + CTLN[s] + '</b><button type="button" class="btn ghost op-mini" data-ly="one">Default</button></div>'
+      + '<label class="ly-sl"><span>Size</span><input type="range" min="50" max="220" step="5" value="' + Math.round(L.s * 100) + '" data-lyr="s" aria-label="Button size"><b>' + Math.round(L.s * 100) + "%</b></label>"
+      + '<label class="ly-sl"><span>Solid</span><input type="range" min="25" max="100" step="5" value="' + Math.round(L.o * 100) + '" data-lyr="o" aria-label="How solid the button is"><b>' + Math.round(L.o * 100) + "%</b></label></div>";
+    ui.innerHTML = h; $("sbxLay").classList.toggle("grid", E.grid);
+    CTLK.forEach(function (k) { CTLR[k].forEach(function (el) { el.classList.toggle("lay-sel", k === s); }); });
+  }
+  function layInput(e) {
+    var t = e.target; if (!LAYE || !LAYE.sel || !t.hasAttribute("data-lyr")) return; var L = LAYE.w[LAYE.sel], f = t.getAttribute("data-lyr");
+    L[f] = +t.value / 100; L.ed = 1; layPlace(LAYE.sel, L); var b = t.parentNode.querySelector("b"); if (b) b.textContent = t.value + "%";
+  }
+  function layClick(e) {
+    var b = e.target.closest("[data-ly]"); if (!b || !LAYE) return; var a = b.getAttribute("data-ly"), E = LAYE;
+    if (a === "done") return closeLayout(true);
+    if (a === "cancel") return closeLayout(false);
+    if (a === "grid") { E.grid = !E.grid; return layUi(); }
+    if (a === "reset" || a === "one") {   // back to the built-in spot: put it home, measure it there, lift it out again
+      var ks = a === "one" ? [E.sel] : CTLK.slice(); ks.forEach(function (k) { delete LAYD[k]; layHome(k); });
+      ks.forEach(function (k) { E.w[k] = layMeasure(k); E.w[k].ed = 0; }); ks.forEach(function (k) { layFree(k); layPlace(k, E.w[k]); });
+      if (a === "reset") E.sel = "";
+      return layUi();
+    }
+  }
+  function layPt(e) { var r = stageEl.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  stageEl.addEventListener("pointerdown", function (e) {
+    if (!LAYE || e.target.closest("#sbxLayUi")) return;
+    e.preventDefault(); e.stopPropagation(); var E = LAYE, q = layPt(e); E.ptr[e.pointerId] = q;
+    var ids = Object.keys(E.ptr);
+    if (ids.length >= 2 && E.sel) {   // second finger: pinch the picked button
+      var a = E.ptr[ids[0]], b = E.ptr[ids[1]]; E.drag = null; E.pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, s0: E.w[E.sel].s }; return;
+    }
+    var el = e.target.closest("[data-lk]");
+    if (!el || el.parentNode !== CTLL) { if (E.sel) { E.sel = ""; layUi(); } return; }
+    var k = el.getAttribute("data-lk"), W = stageEl.clientWidth, H = stageEl.clientHeight;
+    if (E.sel !== k) { E.sel = k; layUi(); }
+    E.drag = { id: e.pointerId, k: k, ox: q.x - E.w[k].x * W, oy: q.y - E.w[k].y * H };
+  }, true);
+  window.addEventListener("pointermove", function (e) {
+    if (!LAYE || !LAYE.ptr[e.pointerId]) return; var E = LAYE, q = layPt(e); E.ptr[e.pointerId] = q; e.preventDefault();
+    if (E.pinch && E.sel) { var ids = Object.keys(E.ptr); if (ids.length < 2) return; var a = E.ptr[ids[0]], b = E.ptr[ids[1]], L = E.w[E.sel]; L.s = clamp(E.pinch.s0 * Math.hypot(a.x - b.x, a.y - b.y) / E.pinch.d0, 0.5, 2.2); L.ed = 1; layPlace(E.sel, L); layUiNums(); return; }
+    if (!E.drag || E.drag.id !== e.pointerId) return;
+    var W = stageEl.clientWidth || 1, H = stageEl.clientHeight || 1, cx = q.x - E.drag.ox, cy = q.y - E.drag.oy, G = 16;
+    if (E.grid) { cx = Math.round(cx / G) * G; cy = Math.round(cy / G) * G; }
+    var M = E.w[E.drag.k]; M.x = clamp(cx / W, 0, 1); M.y = clamp(cy / H, 0, 1); M.ed = 1; layPlace(E.drag.k, M);
+    var sh = document.querySelector("#sbxLayUi .ly-sheet"); if (sh) sh.classList.toggle("top", M.y >= 0.45);
+  }, { passive: false, capture: true });
+  function layUp(e) { if (!LAYE || !LAYE.ptr[e.pointerId]) return; delete LAYE.ptr[e.pointerId]; if (Object.keys(LAYE.ptr).length < 2) LAYE.pinch = null; if (LAYE.drag && LAYE.drag.id === e.pointerId) LAYE.drag = null; }
+  window.addEventListener("pointerup", layUp, true); window.addEventListener("pointercancel", layUp, true);
+  stageEl.addEventListener("click", function (e) { if (LAYE && !e.target.closest("#sbxLayUi")) { e.preventDefault(); e.stopPropagation(); } }, true);   // no jumping, rolling or specials while you arrange
+  function layUiNums() { var E = LAYE, L = E && E.sel && E.w[E.sel]; if (!L) return; [].forEach.call(document.querySelectorAll("#sbxLayUi [data-lyr]"), function (r) { var v = Math.round(L[r.getAttribute("data-lyr")] * 100); r.value = v; var b = r.parentNode.querySelector("b"); if (b) b.textContent = v + "%"; }); }
+  if (CTLMQ.addEventListener) CTLMQ.addEventListener("change", function () { applyLayout(); });
   var last = 0, slowN = 0, frN = 0, lastDraw = 0, rafAvg = 16.7, rafPrev = 0, rafOdd = false;
   // SAFETY NET: an unexpected error in one frame is logged and the game keeps running (before, any error stopped the loop and the game froze)
   var LERR = { n: 0, last: "" };
@@ -20418,8 +20547,8 @@
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
 
-  buildAtlas(); load(); resize(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
-  $("sbxHint").textContent = S.qi === 0 ? (coarse ? "Use the arrows to walk. Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? "Use the arrows to walk. Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your Journal, B your Backpack.";
+  buildAtlas(); load(); layInit(); resize(); applyLayout(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
+  $("sbxHint").textContent = S.qi === 0 ? (coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your Journal, B your Backpack.";
   stageEl.classList.add("title"); titleEl.hidden = false; cam.x = p.x; cam.y = titleCamTarget(); renderTitle(); drawTitleLogo(performance.now());
   window.__sbxReady = true; if (window.__dlDone) window.__dlDone();   // tell the loading screen the world is built
   // UI feel: a soft tick on every button in a window (follows the sound switch), and mouse-wheel scrolling across the category chip rows
