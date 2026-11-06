@@ -643,8 +643,38 @@
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
   function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
+  // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
+  // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
+  function keepIn(o) {
+    var x = o && o.xk; if (!x || typeof x !== "object") return o; o = Object.assign({}, o); delete o.xk;
+    if (x.inv && typeof x.inv === "object") {   // items come back into empty bag slots (the bag is saved as slots), the rest into Overflow
+      o.inv = Object.assign({}, o.inv || {}); var sl = Array.isArray(o.slots) ? o.slots.slice() : null, ex = Object.assign({}, o.extra || {});
+      Object.keys(x.inv).forEach(function (k) { if (o.inv[k] > 0 || !ITEMS[k]) return; var n = Math.floor(+x.inv[k]) || 0; if (n <= 0) return; o.inv[k] = n;
+        if (sl) { for (var i = 0; i < sl.length && n > 0; i++) if (!sl[i] || !sl[i].k) { var m = Math.min(n, stackMax(k)); sl[i] = { k: k, n: m }; n -= m; } if (n > 0) ex[k] = (ex[k] || 0) + n; } });
+      if (sl) { o.slots = sl; o.extra = ex; }
+      var still = {}; Object.keys(x.inv).forEach(function (k) { if (!ITEMS[k]) still[k] = x.inv[k]; }); x = Object.assign({}, x, { inv: still });   // ones this version doesn't know either stay kept aside
+      o.xk = x;
+    }
+    if (x.top && typeof x.top === "object") Object.keys(x.top).forEach(function (k) { if (o[k] === undefined && k !== "xk") o[k] = x.top[k]; });
+    if (o.oc && typeof o.oc === "object" && (x.oc || x.boat)) { o.oc = Object.assign({}, o.oc); if (x.oc) Object.keys(x.oc).forEach(function (k) { if (o.oc[k] === undefined) o.oc[k] = x.oc[k]; });
+      if (x.boat && o.oc.boat && typeof o.oc.boat === "object") { o.oc.boat = Object.assign({}, o.oc.boat); Object.keys(x.boat).forEach(function (k) { if (o.oc.boat[k] === undefined) o.oc.boat[k] = x.boat[k]; }); } }
+    else if (x.oc && !o.oc) o.oc = Object.assign({}, x.oc, x.boat ? {} : {});
+    return o;
+  }
+  function keepOut(o, d) {
+    var x0 = o.xk && typeof o.xk === "object" ? o.xk : {}, x = { inv: Object.assign({}, x0.inv || {}), top: {}, oc: {}, boat: {} }, any = Object.keys(x.inv).length > 0, ok = function (v) { try { return JSON.stringify(v).length < 60000; } catch (e) { return false; } };
+    if (o.inv && typeof o.inv === "object") Object.keys(o.inv).forEach(function (k) { var n = Math.floor(+o.inv[k]); if (!ITEMS[k] && /^[a-z][a-z0-9_]{0,40}$/.test(k) && n > 0) { x.inv[k] = Math.min(n, 99999); any = true; } });
+    Object.keys(o).forEach(function (k) { if (k !== "xk" && d[k] === undefined && /^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k) && o[k] !== null && ok(o[k])) { x.top[k] = o[k]; any = true; } });
+    if (o.oc && typeof o.oc === "object" && d.oc && typeof d.oc === "object") {
+      Object.keys(o.oc).forEach(function (k) { if (d.oc[k] === undefined && o.oc[k] !== null && ok(o.oc[k])) { x.oc[k] = o.oc[k]; any = true; } });
+      if (o.oc.boat && d.oc.boat && typeof o.oc.boat === "object") Object.keys(o.oc.boat).forEach(function (k) { if (d.oc.boat[k] === undefined && o.oc.boat[k] !== null && ok(o.oc.boat[k])) { x.boat[k] = o.oc.boat[k]; any = true; } });
+    }
+    if (any) d.xk = x;
+  }
   function clean(o) {
     if (!o || typeof o !== "object" || !o.seed) return null;
+    o = keepIn(o);   // put back what another version kept aside
     if (o.wv === 7 && SW.WORLDVER === 8 && SW.EXT) o = widenSave(o, SW.EXT, SW.CORE_W);   // the map became the middle of an endless world: move everything over
     var gLR = o.wv === SW.WORLDVER ? [clamp(Math.floor(+o.genL) || 0, 0, 99), clamp(Math.floor(+o.genR) || 0, 0, 99)] : [0, 0];
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
@@ -787,6 +817,7 @@
     if (o.carts && typeof o.carts === "object") { d.carts = {}; Object.keys(o.carts).forEach(function (k) { if (/^\d+$/.test(k) && +k < 200) d.carts[k] = 1; }); }   // MINE CARTS
     if (o.mres && typeof o.mres === "object") { d.mres = {}; Object.keys(o.mres).forEach(function (k) { if (/^\d+$/.test(k)) d.mres[k] = 1; }); }   // LOST MINERS
     if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
+    keepOut(o, d);   // keep aside what this version does not know
     return d;
   }
   var buildN = 0, exVer = 0, wallN = 0, SVC = {};   // PERF: save() reuses the edit / explored / fluid / wall strings while nothing in them changed
@@ -7055,6 +7086,7 @@
       if (m.t === "bosswin") return mpBossWin(m.k);
     } else if (MP.role === "host") {
       if (m.t === "hit") { var e = mpEnemy(m.i); if (e && !e.def) { e.lastHit = m.from; damageEnemy(e, clamp(+m.d || 0, 0, 60), m.f < 0 ? -1 : 1); } return; }
+      if (m.t === "fx") { var ef = mpEnemy(m.i); if (ef && !ef.def && /^(venom|numb|sleep|mark)$/.test(m.fx)) coatHit(m.fx, ef, false, 0); return; }   // a guest's special arrow
       if (m.t === "farm" && typeof m.k === "string" && CROPS[m.c]) { if (!S.farm[m.k]) S.farm[m.k] = { c: m.c, g: 0, w: 0 }; return; }
       if (m.t === "water" && S.farm[m.k]) { S.farm[m.k].w = WET_S; return; }
     }
@@ -7677,7 +7709,9 @@
   function coatOf(fx) { for (var k in COATS) if (COATS[k].fx === fx) return COATS[k]; return null; }
   function sxOf(e) { return e.sx || (e.sx = {}); }
   function coatHit(fx, e, cv, dmg) {   // what a coated shot does to the creature it hit
-    if (!fx || e.def) return; var X = sxOf(e), boss = !!e.boss || e.k === "captain";
+    if (!fx || e.def) return;
+    if (!cv && MP.on && MP.role === "guest" && /^(venom|numb|sleep|mark)$/.test(fx)) { if (e.nid !== undefined) mpSend({ t: "fx", i: e.nid, fx: fx }); return; }   // playing together: the host's creature takes the effect
+    var X = sxOf(e), boss = !!e.boss || e.k === "captain";
     if (fx === "venom") { X.ven = Math.min(3, (X.ven > 0 && X.vt > 0 ? X.ven : 0) + 1); X.vt = 5; X.vk = X.vk || 0.7; }
     else if (fx === "numb") X.numb = boss ? 2.5 : 4;
     else if (fx === "sleep") { if (boss) text(e.x, e.y - (cv ? 1 : e.h + 0.4), "Immune", "#d8c8ff"); else X.sleep = 4; }
@@ -15411,31 +15445,31 @@
     ["Gear|Armor", "arm1 arm2 arm3 arm4 arm5"],
     ["Gear|Backpacks", "bag1 bag2"],
     ["Gear|Boss Summons", "x_lure x_idol x_horn"],
-    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky x_ch_glow x_ch_tide x_ch_king x_ch_feather x_ch_spring x_ch_leech x_ch_lode x_ch_owl x_ch_brute x_ch_star x_ch_blood"],
+    ["Gear|Charms", "x_ch_bramble x_ch_magma x_ch_alpha x_ch_miner x_ch_angler x_ch_thumb x_ch_hearty x_ch_lucky x_ch_glow x_ch_tide x_ch_king x_ch_feather x_ch_spring x_ch_leech x_ch_lode x_ch_owl x_ch_brute x_ch_star x_ch_blood x_ch_wander"],
     ["Stations|Workbenches", "bench decorbench"],
     ["Stations|Crafting Stations", "x_cookpot x_brewstand x_furnace x_loom x_mason"],
     ["Potions|Bottles", "x_bottle"],
     ["Gear|Jewelry", "x_jeweltable x_veincharm"],
-    ["Gear|Diving", "x_scubasuit x_suit2 x_suit3 x_suit4 x_tank1 x_tank2 x_tank3 x_tank4 x_flippers x_divelamp"],
+    ["Gear|Diving", "x_scubasuit x_suit2 x_suit3 x_suit4 x_tank1 x_tank2 x_tank3 x_tank4 x_flippers x_divelamp x_dome"],
     ["Materials|Boat Parts", "x_boat_sail x_boat_lamp x_boat_anchor"],
     ["Food|From the Sea", "x_kelpwrap x_seastew x_piersushi"],
     ["Building|Wood Stains", "x_stain_walnut x_stain_ebony x_stain_honey x_stain_mahogany x_stain_white x_stain_sage x_stain_blue x_stain_plum x_sandpaper"],
-    ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire"],
+    ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire x_m_bandage x_m_salve"],
     ["Potions|Arrow Ointments", "x_vial x_ot_venom x_ot_numb x_ot_sleep x_ot_mark x_ot_spark x_ot_blast x_ot_leech"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
     ["Potions|Wonders", "x_tonic_regen x_tonic_grand x_tonic_glow x_tonic_feather x_tonic_luck x_tonic_grow x_tonic_gill x_tonic_brute"],
-    ["Food|Farming", "x_farmland x_sprinkler x_trough x_fishtrap"],
+    ["Food|Farming", "x_farmland x_sprinkler x_trough x_fishtrap x_compost x_compostbin x_seedmaker x_picklekeg x_farmgate x_duckcoop x_mudbarn"],
     ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat x_grilledfish x_omelette x_milkshake"],
-    ["Food|Soups & Snacks", "x_f_swampsalad x_f_redcapsoup x_f_glowbroth x_f_buttermash x_f_frostjam x_f_swamptea x_f_bogkebab x_f_emberkebab"],
-    ["Food|Hearty Meals", "x_f_carproll x_f_fishpie x_f_carrotcake x_f_eelcurry x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast"],
-    ["Materials|Fibre & Cloth", "x_rope x_cloth x_furcloth x_candle"],
-    ["Materials|Dyes", "x_dyered x_dyeblue x_dyegreen"],
-    ["Materials|Smelted & Fired", "x_charcoal x_ingot x_claybrick x_mortar"],
+    ["Food|Soups & Snacks", "x_f_swampsalad x_f_redcapsoup x_f_glowbroth x_f_buttermash x_f_frostjam x_f_swamptea x_f_bogkebab x_f_emberkebab x_f_cocoa x_f_sandwich x_f_lilycookie x_f_mossmuffin x_f_dumplings"],
+    ["Food|Hearty Meals", "x_f_carproll x_f_fishpie x_f_carrotcake x_f_eelcurry x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast x_f_breadloaf x_f_noodles x_f_mushroompie"],
+    ["Materials|Fibre & Cloth", "x_rope x_cloth x_furcloth x_candle x_fernfiber"],
+    ["Materials|Dyes", "x_dyered x_dyeblue x_dyegreen x_dyegreen2 x_dyered2"],
+    ["Materials|Smelted & Fired", "x_charcoal x_ingot x_claybrick x_mortar x_starsteel"],
     ["Materials|Silk", "x_silkrope"],
     ["Building|Basics", "planks ladder door x_trapdoor"],
-    ["Stations|Travel", "x_waystone"],
-    ["Building|Stone & Brick", "d_brick x_cobble x_redbrick x_mossbrick x_plaster d_bbrick d_ibrick x_permabrick x_obsbrick x_moonbrick x_quartzblock x_quartzpillar"],
-    ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock x_starglass x_rainbowglass"],
+    ["Stations|Travel", "x_waystone x_realmgate"],
+    ["Building|Stone & Brick", "d_brick x_cobble x_redbrick x_mossbrick x_plaster d_bbrick d_ibrick x_permabrick x_obsbrick x_moonbrick x_quartzblock x_quartzpillar x_rimeblock x_impbrick x_geodeblock x_bloomstone"],
+    ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock x_starglass x_rainbowglass x_sandglass"],
     ["Building|Metal", "x_ironblock x_bars"],
     ["Building|Floors & Roofs", "x_parquet x_checker d_thatch x_shinglered x_shingleblue"],
     ["Building|Woodwork", "x_nb_oakplanks x_nb_birchplanks x_nb_mangroveplanks x_nb_pineplanks x_nb_charredplanks x_nb_basketweave x_nb_bamboo x_nb_wicker x_nb_logsiding x_nb_woodpanel x_nb_timberblock"],
