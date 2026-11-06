@@ -916,41 +916,75 @@
   }
   var wEl = document.createElement("div"); wEl.className = "sbx-worlds"; wEl.id = "sbxWorlds"; wEl.hidden = true; wEl.setAttribute("role", "dialog"); wEl.setAttribute("aria-label", "Your worlds"); stageEl.appendChild(wEl);
   function ago(t) { var m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " d ago"; }
+  // WORLDS: a list of your worlds (one Play button each; rename and delete tucked behind "..."), and a separate step to make a new one
+  // (a name and three difficulty cards). WL.view is "list" or "new"; WL.menu is the world whose "..." is open; WL.ren the one being renamed.
+  var WL = { view: "list", menu: "", ren: "" };
+  var DIFF_SHORT = ["Softer creatures and slower hunger. A relaxed dig.", "The swamp as it was made to be played.", "Tougher creatures that come more often, faster hunger, and passing out costs some materials."];
+  function wlArt(w) {   // a tiny swamp horizon for each world: its own sky, hills tinted by difficulty
+    var h = 0, id = String(w.id || w.name || ""); for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+    var sky = ["#1d3b4a", "#2a2f55", "#1f4438", "#3a2a48", "#2d3f2a"][Math.abs(h) % 5], dc = (DIFF[w.diff == null ? 1 : w.diff] || DIFF[1]).c, sx = 22 + Math.abs(h >> 3) % 50;
+    return '<span class="wl2-art" aria-hidden="true" style="--sky:' + sky + ";--dc:" + dc + ";--sx:" + sx + '%"><i></i></span>';
+  }
   function renderWorlds() {
-    var list = wIdx.list.slice().sort(function (a, b) { return b.played - a.played; });
-    var h = '<div class="sbx-wbox"><h2>Your Worlds</h2><p class="sbx-note">Each world saves on its own in this browser' + (WUSER !== "guest" ? " for " + esc(WUSER) : "") + ". Switch any time, or start a new one.</p>" + cloudSection() + "<div class=\"sbx-wlist\">";
-    list.forEach(function (w) {
-      var cur = w.id === curId, sub = (w.diff === 0 ? "Easy \u00b7 " : w.diff === 2 ? "Hard \u00b7 " : "") + PICKS[w.tier || 0].n + (w.wpn ? " \u00b7 " + WEAPONS[w.wpn].n : "") + " \u00b7 " + (w.ch != null ? "Chapter " + Math.min(6, w.ch + 1) : (w.goals || 0) + " goals") + " \u00b7 " + ago(w.played);
-      h += '<div class="sbx-w' + (cur ? " cur" : "") + '"><div><b>' + esc(w.name) + (cur ? " (playing)" : "") + "</b><small>" + esc(sub) + "</small>" + cloudBadge(w) + '</div><div class="acts">'
-        + '<button type="button" class="btn' + (cur ? "" : " ghost") + '" data-fs-start data-wl-play="' + w.id + '">' + (cur ? "Resume" : "Play") + "</button>"
-        + '<button type="button" class="btn ghost" data-wl-ren="' + w.id + '" aria-label="Rename ' + esc(w.name) + '">Rename</button>'
-        + '<button type="button" class="btn ghost' + (delAsk === w.id ? " warn" : "") + '" data-wl-del="' + w.id + '">' + (delAsk === w.id ? "Tap again to delete" : "Delete") + "</button></div></div>";
-    });
-    h += '</div><div class="sbx-wnew"><input id="sbxWName" type="text" maxlength="24" placeholder="Name your new world" aria-label="New world name" autocomplete="off"><button type="button" class="btn" data-fs-start data-wl-new>New world</button></div>'
-      + '<div class="sbx-row sbx-diff wl-diff" role="group" aria-label="Difficulty for the new world"><span>New world difficulty</span>' + DIFF.map(function (D, i) { return '<button type="button" class="btn' + (newDiff === i ? "" : " ghost") + '" data-wl-diff="' + i + '" aria-pressed="' + (newDiff === i) + '" style="--dc:' + D.c + '">' + D.n + "</button>"; }).join("") + "</div>"
-      + (titleOpen ? '<div class="wl-foot"><button type="button" class="btn" data-wl-close>Back</button></div></div>' : '<div class="wl-foot"><button type="button" class="btn" data-wl-close>Back to game</button><button type="button" class="btn ghost" data-wl-mp>Play together</button><button type="button" class="btn ghost" data-wl-title>Main menu</button></div></div>');
+    var list = wIdx.list.slice().sort(function (a, b) { return b.played - a.played; }), h;
+    if (WL.view === "new") {
+      h = '<div class="sbx-wbox wl2 wl2-newv"><div class="wl2-head"><button type="button" class="wl2-back" data-wl-list>' + (list.length ? "&lsaquo; Your worlds" : "&lsaquo; Back") + '</button><button type="button" class="sbx-x" data-wl-close aria-label="Close">&times;</button></div>'
+        + '<h2>New world</h2><p class="wl2-sub">A fresh swamp to dig, build and explore. Your character comes with you.</p>'
+        + '<label class="wl2-field"><span>Name</span><input id="sbxWName" type="text" maxlength="24" placeholder="My Swamp" autocomplete="off"></label>'
+        + '<div class="wl2-diffs" role="radiogroup" aria-label="Difficulty">' + DIFF.map(function (D, i) { var on = newDiff === i; return '<button type="button" class="wl2-diff' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-wl-diff="' + i + '" style="--dc:' + D.c + '"><b>' + D.n + "</b><small>" + esc(DIFF_SHORT[i] || D.d) + "</small></button>"; }).join("") + "</div>"
+        + (list.length >= MAXW ? '<p class="wl2-warn">You can keep ' + MAXW + " worlds. Delete one first to make room.</p>" : "")
+        + '<button type="button" class="btn wl2-create" data-fs-start data-wl-new' + (list.length >= MAXW ? " disabled" : "") + ">Create world</button></div>";
+    } else {
+      h = '<div class="sbx-wbox wl2"><div class="wl2-head"><h2>Your worlds</h2><span class="wl2-n">' + list.length + " of " + MAXW + '</span><button type="button" class="sbx-x" data-wl-close aria-label="' + (titleOpen ? "Back" : "Back to game") + '">&times;</button></div><div class="wl2-list">';
+      list.forEach(function (w) {
+        var cur = w.id === curId, D = DIFF[w.diff == null ? 1 : w.diff] || DIFF[1], sub = PICKS[w.tier || 0].n + (w.wpn ? " · " + WEAPONS[w.wpn].n : "") + " · " + (w.ch != null ? "Chapter " + Math.min(6, w.ch + 1) : (w.goals || 0) + " goals") + " · " + ago(w.played);
+        var open = WL.menu === w.id, ren = WL.ren === w.id, del = delAsk === w.id;
+        h += '<div class="wl2-w' + (cur ? " cur" : "") + (open || ren || del ? " open" : "") + '">' + wlArt(w) + '<div class="wl2-txt">'
+          + (ren ? '<span class="wl2-ren"><input type="text" maxlength="24" data-wl-renin="' + w.id + '" value="' + esc(w.name) + '" aria-label="New name for ' + esc(w.name) + '"><button type="button" class="btn" data-wl-rensave="' + w.id + '">Save</button><button type="button" class="btn ghost" data-wl-renx>Cancel</button></span>'
+               : '<b>' + esc(w.name) + "</b>")
+          + '<span class="wl2-meta"><em class="wl2-tag" style="--dc:' + D.c + '">' + D.n + "</em>" + (cur ? '<em class="wl2-tag now">Playing</em>' : "") + "<small>" + esc(sub) + "</small></span>" + cloudBadge(w) + "</div>"
+          + '<div class="wl2-go"><button type="button" class="btn' + (cur ? "" : " ghost") + '" data-fs-start data-wl-play="' + w.id + '">' + (cur ? "Resume" : "Play") + '</button><button type="button" class="wl2-more" data-wl-menu="' + w.id + '" aria-expanded="' + open + '" aria-label="More for ' + esc(w.name) + '">&middot;&middot;&middot;</button></div>'
+          + (open && !del && !ren ? '<div class="wl2-menu"><button type="button" data-wl-ren="' + w.id + '">Rename</button><button type="button" class="warn" data-wl-del="' + w.id + '">Delete</button></div>' : "")
+          + (del ? '<div class="wl2-confirm"><span>Delete <b>' + esc(w.name) + "</b>? This can't be undone" + (CLOUD.state === "on" && w.crev ? " (its cloud backup stays)" : "") + '.</span><button type="button" class="btn warn" data-wl-del="' + w.id + '">Delete world</button><button type="button" class="btn ghost" data-wl-delx>Keep it</button></div>' : "")
+          + "</div>";
+      });
+      h += '<button type="button" class="wl2-new" data-wl-newview' + (list.length >= MAXW ? " disabled" : "") + '><b>+</b><span>New world<small>' + (list.length >= MAXW ? "You have the most worlds you can keep" : "Start a fresh swamp") + "</small></span></button></div>"
+        + '<div class="wl2-foot">' + cloudSection() + (titleOpen ? "" : '<div class="wl2-links"><button type="button" class="btn ghost" data-wl-mp>Play together</button><button type="button" class="btn ghost" data-wl-title>Main menu</button></div>') + "</div></div>";
+    }
     var keep = $("sbxWName") ? $("sbxWName").value : ""; wEl.innerHTML = h; if (keep && $("sbxWName")) $("sbxWName").value = keep;
+    var ri = wEl.querySelector("[data-wl-renin]"); if (ri && document.activeElement !== ri) { ri.focus(); ri.select(); }
   }
-  function openWorlds() {
+  function openWorlds(view) {
     if (!wIdx) return; save(); if (panelOpen) closePanel();
-    menuOpen = true; delAsk = ""; keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderWorlds(); wEl.hidden = false;
+    menuOpen = true; delAsk = ""; WL.menu = ""; WL.ren = ""; WL.came = ""; WL.view = view === "new" ? "new" : "list"; keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderWorlds(); wEl.hidden = false;
+    if (WL.view === "new") setTimeout(function () { var i = $("sbxWName"); if (i) i.focus(); }, 30);
   }
-  function closeWorlds() { menuOpen = false; wEl.hidden = true; delAsk = ""; hbDirty = true; }
+  function closeWorlds() { menuOpen = false; wEl.hidden = true; delAsk = ""; WL.menu = ""; WL.ren = ""; hbDirty = true; }
+  function wlRename(id, nm) { var w = wIdx.list.filter(function (x) { return x.id === id; })[0]; if (w && nm && nm.trim()) { w.name = nm.trim().slice(0, 24); w.cdirty = 1; w.cgen = (w.cgen || 0) + 1; saveIdx(); if (CLOUD.state === "on") CLOUD.t = performance.now() + 2000; } WL.ren = ""; WL.menu = ""; renderWorlds(); }
   wEl.addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
+    var b = e.target.closest("button"); if (!b) { if (WL.menu && !e.target.closest(".wl2-menu")) { WL.menu = ""; renderWorlds(); } return; }
     if (cloudClick(b)) return;
     var id = b.getAttribute("data-wl-play"); if (id) return switchWorld(id);
     if (b.hasAttribute("data-wl-close")) return closeWorlds();
     if (b.hasAttribute("data-wl-title")) { closeWorlds(); if (MP.on || MP.ws) mpLeave(); return openTitle(); }
     if (b.hasAttribute("data-wl-mp")) { closeWorlds(); return openMPV(); }
+    if (b.hasAttribute("data-wl-newview")) { WL.view = "new"; WL.menu = ""; delAsk = ""; renderWorlds(); var ni = $("sbxWName"); if (ni) ni.focus(); return; }
+    if (b.hasAttribute("data-wl-list")) { if (!wIdx.list.length || (titleOpen && WL.came === "new")) { WL.came = ""; return closeWorlds(); } WL.view = "list"; return renderWorlds(); }
     if (b.hasAttribute("data-wl-diff")) { newDiff = clamp(+b.getAttribute("data-wl-diff") || 0, 0, 2); return renderWorlds(); }
     if (b.hasAttribute("data-wl-new")) { var inp = $("sbxWName"); createWorld(inp ? inp.value : ""); if (menuOpen) renderWorlds(); return; }
-    var rn = b.getAttribute("data-wl-ren");
-    if (rn) { var w = wIdx.list.filter(function (x) { return x.id === rn; })[0], nm = null; try { nm = window.prompt("Rename world", w.name); } catch (er) {} if (nm && nm.trim()) { w.name = nm.trim().slice(0, 24); w.cdirty = 1; w.cgen = (w.cgen || 0) + 1; saveIdx(); if (CLOUD.state === "on") CLOUD.t = performance.now() + 2000; } return renderWorlds(); }
+    var mn = b.getAttribute("data-wl-menu"); if (mn) { WL.menu = WL.menu === mn ? "" : mn; delAsk = ""; WL.ren = ""; return renderWorlds(); }
+    var rn = b.getAttribute("data-wl-ren"); if (rn) { WL.ren = rn; WL.menu = ""; return renderWorlds(); }
+    var rs = b.getAttribute("data-wl-rensave"); if (rs) { var ri = wEl.querySelector('[data-wl-renin="' + rs + '"]'); return wlRename(rs, ri ? ri.value : ""); }
+    if (b.hasAttribute("data-wl-renx")) { WL.ren = ""; return renderWorlds(); }
+    if (b.hasAttribute("data-wl-delx")) { delAsk = ""; WL.menu = ""; return renderWorlds(); }
     var dl = b.getAttribute("data-wl-del");
-    if (dl) { if (delAsk !== dl) { delAsk = dl; return renderWorlds(); } delAsk = ""; deleteWorld(dl); return renderWorlds(); }
+    if (dl) { if (delAsk !== dl) { delAsk = dl; WL.menu = ""; return renderWorlds(); } delAsk = ""; WL.menu = ""; deleteWorld(dl); return renderWorlds(); }
   });
-  wEl.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "sbxWName") { createWorld(e.target.value); if (menuOpen) renderWorlds(); } });
+  wEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.id === "sbxWName") { createWorld(e.target.value); if (menuOpen) renderWorlds(); }
+    else if (e.key === "Enter" && e.target.hasAttribute("data-wl-renin")) wlRename(e.target.getAttribute("data-wl-renin"), e.target.value);
+    else if (e.key === "Escape" && (WL.ren || WL.menu || delAsk)) { e.stopPropagation(); WL.ren = ""; WL.menu = ""; delAsk = ""; renderWorlds(); }
+  });
 
   // ---------- CLOUD SAVES (when signed in to a SwampRealms account) ----------
   // Every world is also backed up to your account (worker.js, /api/delve): about 15 seconds after it changes, from the Worlds menu
@@ -1050,7 +1084,7 @@
   }
   function cloudSection() {
     var h = '<div class="sbx-cloud">';
-    if (CLOUD.state === "guest") return h + '<b>Cloud saves</b><span>Sign in (top right) to back up your worlds to your account and keep playing them on any device.</span></div>';
+    if (CLOUD.state === "guest") return h + '<b>Cloud saves</b><span>Sign in (top right) to back up your worlds and play them on any device.</span></div>';
     if (CLOUD.state === "checking") return h + "<b>Cloud saves</b><span>Checking your account…</span></div>";
     if (CLOUD.state === "signedout") return h + "<b>Cloud saves</b><span>Your sign-in ran out. Sign in again to keep backing up your worlds.</span></div>";
     if (CLOUD.state === "off") return h + '<b>Cloud saves</b><span>Cloud saves are not available right now. Your worlds are still saved in this browser.</span><button type="button" class="btn ghost" data-cl-retry>Try again</button></div>';
@@ -1357,7 +1391,7 @@
   function loNext() { var L = loS(), n = 0, i = L.i; while (n++ < 3) { i = (i + 1) % 3; if (L.s[i].k) return loUse(i); } nag("Save a loadout in your backpack first (B)."); return false; }
   function loHtml() {
     var L = loS();
-    return '<div class="pk-lo"><h3>Loadouts <small>press L to switch</small></h3><div class="pk-lorow">' + L.s.map(function (set, i) {
+    return '<div class="pk-lo"><h3>Loadouts <small>L to switch</small></h3><div class="pk-lorow">' + L.s.map(function (set, i) {
       var on = L.i === i && set.k, n = set.k ? set.k.filter(Boolean).length : 0;
       return '<div class="pk-loc' + (on ? " on" : "") + '"><button type="button" class="btn' + (set.k ? "" : " ghost") + '" data-lo="' + i + '"' + (set.k ? "" : " disabled") + '>' + esc(set.n) + (set.k ? "<small>" + n + " items</small>" : "<small>empty</small>") + '</button><button type="button" class="btn ghost pk-losave" data-losave="' + i + '" aria-label="Save your hotbar as the ' + esc(set.n) + ' loadout">Save hotbar</button></div>';
     }).join("") + "</div></div>";
@@ -10919,7 +10953,7 @@
     if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
     if (k === "back") { TC.how = false; renderTitle(); var hb = titleEl.querySelector("[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
-    if (k === "worlds" || k === "new") { openWorlds(); if (k === "new") setTimeout(function () { var i = $("sbxWName"); if (i) i.focus(); }, 30); return; }
+    if (k === "worlds" || k === "new") { openWorlds(k === "new" ? "new" : "list"); WL.came = k; return; }
     if (k === "mp") return openMPV();
     if (k === "opts") return openPanel("more");
   }
@@ -15842,11 +15876,12 @@
     L += pkSlot('data-pkeq="pick"', icon(S.tier ? "pick" + S.tier : "paw"), "Pickaxe", PICKS[S.tier].n, PK.focus === "pick").replace("</small></button>", "</small>" + pkStars("pick") + "</button>");
     var n = charmSlots();
     for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; R += pkSlot('data-pkeq="charm"', ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "✦"); }
-    R += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.pop === "bag", "🎒");
+    R += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.focus === "bag", "🎒");
     return [L, R];
   }
   function pkFocusHtml() {
-    var f = PK.focus; if (!f) return '<span class="pk-hint">Tap a gear slot to see what it does.</span>';
+    var f = PK.focus; if (!f) return "";
+    if (f === "bag") return S.bag ? "<b>" + esc(BAGS[S.bag].n) + "</b><span>+" + BAGS[S.bag].x + " slots: the tinted ones in your items</span>" : "<b>No backpack</b><span>Craft a Reed Backpack (Craft tab, Gear) for 12 more slots.</span>";
     if (f === "arm") return S.arm ? "<b>" + esc(mwName("arm", ARMORS[S.arm].n)) + "</b><span>Blocks " + Math.round(armRed() * 100) + "% of damage · " + pkDur("arm") + "</span>" : "<b>No armor</b><span>Armor is made at your Workbench.</span>";
     if (f === "wpn") return S.wpn ? "<b>" + esc(mwName("wpn", WEAPONS[S.wpn].n)) + "</b><span>Damage " + Math.round(wDmg()) + " · " + pkDur("wpn") + "</span>" : "<b>No weapon</b><span>Craft the Reed Spear by hand (Craft tab).</span>";
     if (f === "pick") return "<b>" + esc(S.tier ? mwName("pick", PICKS[S.tier].n) : PICKS[0].n) + "</b><span>" + (S.tier ? "Tier " + S.tier + " · " + pkDur("pick") : "Craft the Reed Pick to dig faster.") + "</span>";
@@ -15872,45 +15907,50 @@
     return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '">' + (ITEMS[c.k].tool ? "" : "<b>" + c.n + "</b>") : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
   }
   function pkInvHtml() {
-    reslot(); var used = usedSlots(), g1 = "", g2 = "", i2, cur2 = invSel >= 0 ? S.slots[invSel] : null;
-    for (i2 = INV_HOT; i2 < INV_BASE; i2++) g1 += pkCell(i2); for (i2 = 0; i2 < INV_HOT; i2++) g2 += pkCell(i2);
-    var fillPc = Math.round(used / invN() * 100), h = "";
-    h += '<div class="pk-sec"><h3>Inventory</h3><div class="pk-cap' + (used >= invN() ? " full" : used >= invN() - 3 ? " near" : "") + '"><span class="bar"><i style="width:' + fillPc + '%"></i></span><b>' + used + " / " + invN() + "</b></div></div>";
-    h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div><h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>" + loHtml();
+    reslot(); var used = usedSlots(), cells = "", hot = "", i2, cur2 = invSel >= 0 ? S.slots[invSel] : null, N = invN(), bagN = S.bag ? N - INV_BASE : 0;
+    for (i2 = INV_HOT; i2 < N; i2++) cells += pkCell(i2).replace('class="sbx-is', 'class="sbx-is' + (i2 >= INV_BASE ? " bagx" : ""));
+    for (i2 = 0; i2 < INV_HOT; i2++) hot += pkCell(i2);
+    var h = '<div class="pk2-gridwrap"><div class="pk2-lbl"><b>Items</b><span>' + (bagN ? (INV_BASE - INV_HOT) + " slots + " + bagN + " from your " + esc(BAGS[S.bag].n) : (INV_BASE - INV_HOT) + " slots · craft a backpack for more") + '</span></div><div class="sbx-igrid pk2-grid">' + cells + "</div></div>";
+    var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
+    if (ek.length) h += '<div class="pk2-over"><div class="pk2-lbl warn"><b>Didn\'t fit</b><span>Free a slot, then tap to collect</span></div><div class="pk2-overrow">' + ek.map(function (k) { return '<button type="button" class="pk2-ov" data-iextra="' + k + '" title="' + esc(ITEMS[k].n) + ': collect"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b></button>"; }).join("") + "</div></div>";
+    h += '<div class="pk2-hot"><div class="pk2-lbl"><b>Hotbar</b><span>keys 1 to 9</span></div><div class="sbx-igrid hot">' + hot + "</div></div>";
     var tool2 = cur2 && ITEMS[cur2.k].tool;
-    h += '<div class="sbx-iinfo' + (cur2 ? " sel" : "") + '">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small></span></div>" : '<div class="pk-none"><span><small>Tap an item to see what you can do with it. Drag to move, swap or merge.</small></span></div>')
-      + '<div class="acts">'
-      + (cur2 ? '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
+    h += '<div class="pk2-act' + (cur2 ? " sel" : "") + '">' + (cur2
+      ? '<img alt="" src="' + icon(cur2.k) + '"><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + '</small></span><span class="pk2-btns">'
+        + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
         + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "")
         + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
         + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
-        + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again" : "Drop all") + "</button>")
-        : "")
-      + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button><button type="button" class="btn ghost pk-qs" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button></div></div>';
-    var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
-    if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " · collect</small></button>"; }).join("") + "</div>";
-    if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
+        + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again to drop all" : "Drop all") + "</button>")
+        + "</span>"
+      : '<span class="pk2-hint">' + (used ? "Tap an item to use, move or drop it. Drag to rearrange." : "Your bag is empty. Hold on tree leaves to gather Sticks.") + "</span>") + "</div>";
     return h;
   }
   function pkName() { return charName(S.animal); }
   function renderPack() {
-    var t = $("sbxPackTitle"); if (t) t.innerHTML = "Backpack <small>" + usedSlots() + " / " + invN() + "</small>";
+    var t = $("sbxPackTitle"), used = usedSlots(), N = invN();
+    if (t) t.innerHTML = 'Backpack <small class="pk2-cnt' + (used >= N ? " full" : used >= N - 3 ? " near" : "") + '">' + used + " / " + N + "</small>";
+    var hd = t && t.parentNode, tools = $("pk2Tools");
+    if (hd && !tools) { tools = document.createElement("div"); tools.id = "pk2Tools"; tools.className = "pk2-tools"; hd.insertBefore(tools, hd.querySelector(".sbx-x")); }
+    if (tools) tools.innerHTML = '<button type="button" class="btn ghost" data-iact="sort">Sort</button><button type="button" class="btn ghost" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button>';
     var bd = $("sbxPackBody"), stp = bd.scrollTop;
     if (!$("pkCv")) {
-      bd.innerHTML = '<div class="pk-show"><div class="pk-eq l" id="pkEqL"></div><div class="pk-stage"><canvas id="pkCv" aria-label="Your character, wearing your gear." role="img"></canvas><div class="pk-pop" id="pkPop" hidden></div></div><div class="pk-eq r" id="pkEqR"></div></div>'
-        + '<div class="pk-who"><b id="pkName"></b><span class="pk-stats" id="pkStats"></span></div><div class="pk-focus" id="pkFocus"></div><div id="pkInv"></div>';
+      bd.innerHTML = '<div class="pk2"><aside class="pk2-side"><div class="pk-stage"><canvas id="pkCv" aria-label="Your character, wearing your gear." role="img"></canvas><div class="pk-pop" id="pkPop" hidden></div></div>'
+        + '<div class="pk-who"><b id="pkName"></b><span class="pk-stats" id="pkStats"></span></div><div class="pk2-gear" id="pkEq"></div><div class="pk-focus" id="pkFocus"></div><div id="pkLo"></div></aside>'
+        + '<div class="pk2-main" id="pkInv"></div></div>';
       pvBind($("pkCv"));
     }
-    var eq = pkEqHtml(); $("pkEqL").innerHTML = eq[0]; $("pkEqR").innerHTML = eq[1];
+    var eq = pkEqHtml(); $("pkEq").innerHTML = eq[0] + eq[1];
     $("pkName").textContent = pkName();
     $("pkStats").innerHTML = '<i title="Health">❤ ' + Math.ceil(hp) + "</i>" + '<i title="Damage blocked">🛡 ' + Math.round(armRed() * 100) + "%</i>" + (S.wpn ? '<i title="Weapon damage">⚔ ' + Math.round(wDmg()) + "</i>" : "") + '<i title="Pickaxe tier">⛏ ' + S.tier + "</i>";
-    $("pkFocus").innerHTML = pkFocusHtml();
+    var fh = pkFocusHtml(); $("pkFocus").innerHTML = fh; $("pkFocus").hidden = !fh;
+    $("pkLo").innerHTML = loHtml();
     var pp = $("pkPop"), ph = PK.pop ? pkPopHtml() : ""; pp.hidden = !ph; pp.innerHTML = ph; pp.className = "pk-pop" + (PK.pop ? " " + PK.pop : "");
     $("pkInv").innerHTML = pkInvHtml(); bd.scrollTop = stp;
     pvStart();
   }
   function pkAct(a) {
-    if (a === "bag" || a === "charm") { PK.pop = PK.pop === a ? "" : a; PK.focus = ""; thud(380, 0.03); }
+    if (a === "charm") { PK.pop = PK.pop === a ? "" : a; PK.focus = ""; thud(380, 0.03); }
     else { PK.focus = PK.focus === a ? "" : a; PK.pop = ""; }
     renderPack();
   }
