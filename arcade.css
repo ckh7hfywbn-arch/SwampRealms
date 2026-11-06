@@ -1,0 +1,89 @@
+/* ===== ARCADE LAYER (main pages): same SwampRealms colours and fonts, turned into a swamp arcade =====
+   Loaded after styles.css and ui.css on Home, Arcade, Packs & Collection and Shop.
+   - neon signs: headings glow like mint and gold neon tubes, and flicker on once when the page opens
+   - cabinets: game cards are arcade machines (lit marquee with chasing bulbs, a screen in a bezel with glass glare, a control deck with buttons)
+   - chunky buttons that press down like arcade buttons; score-screen stat tiles; a neon tube under the header */
+:root{--neon-m:#4ee6b4;--neon-g:#f2c14e;--cab:#0a120e;--cab2:#050907;--ledge-g:#9c6f14;--ledge-m:#0f3d2e}
+
+/* ---------- neon signs ---------- */
+h2{color:#eafff7;text-shadow:0 0 2px #fff9,0 0 8px #4ee6b4cc,0 0 22px #4ee6b499,0 0 46px #4ee6b455}
+h1{text-shadow:0 0 2px #fff6,0 0 10px #f2c14ecc,0 0 28px #f2c14e88,0 0 60px #f2c14e44}
+h1 span{text-shadow:0 0 8px #4ee6b466}
+.arc-more,.feat-title{text-shadow:0 0 10px #f2c14e66}
+@media (prefers-reduced-motion:no-preference){
+ h1,main h2:first-of-type,section:first-of-type>h2{animation:neonOn 1.4s steps(1,end) .15s both}
+}
+@keyframes neonOn{0%{opacity:.15;text-shadow:none}8%{opacity:1}11%{opacity:.25;text-shadow:none}18%{opacity:1}21%{opacity:.5}27%,100%{opacity:1}}
+
+/* the header gets a neon tube along its bottom edge */
+header{border-bottom-color:transparent}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;pointer-events:none;
+ background:linear-gradient(90deg,transparent,#4ee6b4 18%,#f2c14e 50%,#4ee6b4 82%,transparent);box-shadow:0 0 10px #4ee6b4,0 0 22px #4ee6b488}
+header nav .bank{box-shadow:inset 0 0 14px -6px var(--neon-g),0 0 14px -6px var(--neon-g)}
+header nav a[aria-current=page]{text-shadow:0 0 10px #f2c14e99}
+header nav a[aria-current=page]::after{box-shadow:0 0 8px #f2c14e,0 0 16px #f2c14e88}
+footer{border-top-color:transparent;position:relative}
+footer::before{content:"";position:absolute;left:10%;right:10%;top:-1px;height:2px;background:linear-gradient(90deg,transparent,#4ee6b4aa,transparent);box-shadow:0 0 14px #4ee6b4}
+
+/* ---------- arcade buttons: a chunky ledge underneath, they press down when tapped ---------- */
+.btn{position:relative;box-shadow:0 5px 0 var(--ledge-g),0 7px 14px -2px #0009,0 0 26px -6px var(--neon-g);transition:transform .08s,box-shadow .08s,filter .2s;
+ background-image:linear-gradient(180deg,#ffe18a,#f2c14e 45%,#e0a83a)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ledge-g),0 2px 6px -2px #0009,0 0 30px -4px var(--neon-g)}
+.btn.ghost{background-image:linear-gradient(180deg,#0f1c16,#08100c);box-shadow:0 0 0 1.5px #4ee6b466 inset,0 4px 0 var(--ledge-m),0 6px 12px -2px #0009,0 0 22px -10px var(--neon-m)}
+.btn.ghost:hover{box-shadow:0 0 0 1.5px var(--neon-m) inset,0 4px 0 var(--ledge-m),0 6px 12px -2px #0009,0 0 26px -6px var(--neon-m)}
+.btn.ghost:active{transform:translateY(3px);box-shadow:0 0 0 1.5px var(--neon-m) inset,0 1px 0 var(--ledge-m),0 0 26px -6px var(--neon-m)}
+.btn[disabled]{box-shadow:0 3px 0 #3a2c0c}
+
+/* ---------- score screens: the stat tiles read like an arcade high-score display ---------- */
+.stat{background:radial-gradient(120% 90% at 50% 0,#0f241c,#050907 70%);box-shadow:inset 0 0 0 1px #4ee6b422,inset 0 0 24px -8px #4ee6b4,0 0 30px -16px var(--neon-m),0 16px 30px -22px #000}
+.stat b{font-size:30px;color:#eafff7;text-shadow:0 0 6px #4ee6b4,0 0 18px #4ee6b4aa}
+.stat:nth-child(4) b,.stat:nth-child(1) b{color:#fff3d0;text-shadow:0 0 6px #f2c14e,0 0 18px #f2c14eaa}
+
+/* ---------- THE CABINET: game cards are arcade machines ---------- */
+.feat{padding-top:44px;border:3px solid transparent;border-radius:26px;
+ background:linear-gradient(180deg,#0c1612,#060a08) padding-box,linear-gradient(160deg,#f2c14e,#4ee6b4 45%,#f2c14e 80%,#4ee6b4) border-box;
+ box-shadow:0 0 0 1px #000,0 0 36px -8px #f2c14e88,0 0 70px -24px #4ee6b4,0 28px 50px -26px #000}
+.feat:hover{box-shadow:0 0 0 1px #000,0 0 46px -6px #f2c14eaa,0 0 90px -20px #4ee6b4,0 28px 50px -26px #000}
+/* the lit marquee across the top, with a row of chasing bulbs above and below its sign */
+.feat::before{content:"★  Now playing  ★";position:absolute;left:0;right:0;top:0;height:40px;display:flex;align-items:center;justify-content:center;z-index:2;
+ font:900 13px/1 Nunito,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#1a1405;text-shadow:0 1px 0 #fff6;
+ background:radial-gradient(circle,#fff6c8 0 2px,#f2c14e00 3px) 0 4px/18px 6px repeat-x,radial-gradient(circle,#fff6c8 0 2px,#f2c14e00 3px) 9px 30px/18px 6px repeat-x,
+  linear-gradient(180deg,#ffe592,#f2c14e 55%,#c98d22);border-bottom:2px solid #000;box-shadow:inset 0 -6px 12px -6px #7a520e,0 0 24px #f2c14e88}
+@media (prefers-reduced-motion:no-preference){.feat::before{animation:chase 1.1s steps(2) infinite}}
+@keyframes chase{to{background-position:18px 4px,27px 30px,0 0}}
+/* the screen: a deep bezel, a soft inner glow, and glass glare across the top */
+.feat-art{margin:14px;border-radius:16px;box-shadow:0 0 0 6px #020403,0 0 0 8px #4ee6b433,0 0 26px 2px #4ee6b444,inset 0 0 30px #000}
+.feat-art::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+ background:linear-gradient(165deg,#ffffff26 0,#ffffff08 22%,transparent 38%),radial-gradient(120% 120% at 50% 50%,transparent 60%,#0008)}
+.feat-art img{border-radius:16px;transition:transform .5s var(--ease-out,ease),filter .3s}
+.feat:hover .feat-art img{transform:scale(1.04);filter:brightness(1.08) saturate(1.08)}
+.feat-badge{display:none}   /* the marquee says it now */
+/* the control deck: a slanted panel with two lit arcade buttons beside the Play button */
+.feat-body{position:relative;background:linear-gradient(180deg,#0d1914,#08100c);border-radius:0 0 22px 22px}
+@media(min-width:640px){.feat-body{border-radius:0 22px 22px 0;margin:14px 14px 14px 0;border:1px solid #4ee6b422;box-shadow:inset 0 1px 0 #ffffff10}}
+.feat-body::after{content:"";position:absolute;right:20px;bottom:24px;width:62px;height:26px;pointer-events:none;
+ background:radial-gradient(circle at 13px 13px,#7dffd2 0 4px,#2fb98a 5px 10px,#0c2e22 11px 12px,transparent 13px),radial-gradient(circle at 49px 13px,#ffe59a 0 4px,#e0a83a 5px 10px,#4a330a 11px 12px,transparent 13px);
+ filter:drop-shadow(0 0 6px #4ee6b4aa) drop-shadow(0 3px 0 #000)}
+.feat-cta{font-size:17px;padding:13px 30px}
+.feat:active .feat-cta{transform:translateY(4px);box-shadow:0 1px 0 var(--ledge-g),0 0 30px -4px var(--neon-g)}
+.feat-chips i{box-shadow:0 0 10px -4px #4ee6b4}
+
+/* ---------- mini cabinets: the "More games" and other tiles ---------- */
+.tile{padding-top:34px;overflow:hidden;border-color:#4ee6b444}
+.tile::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;pointer-events:none;
+ background:radial-gradient(circle,#eafff7 0 1.5px,transparent 2.5px) 0 4px/14px 6px repeat-x,linear-gradient(180deg,#6dffcf,#2fb98a);box-shadow:0 0 18px #4ee6b4aa;border-bottom:1px solid #000}
+.tile svg{width:46px;height:46px;padding:8px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#15372b,#06100c);box-shadow:0 0 0 2px #4ee6b466,0 4px 0 var(--ledge-m),0 0 18px -4px var(--neon-m)}
+.tile:hover svg{filter:drop-shadow(0 0 10px #4ee6b4)}
+.tile:active{transform:translateY(2px) scale(.99)}
+
+/* ---------- packs, streak and shop panels: neon edges ---------- */
+.streak,.ptile,.shopcard{border-color:#4ee6b444}
+.shopcard{padding-top:40px;overflow:hidden}
+.shopcard::before{content:"";position:absolute;left:0;right:0;top:0;height:16px;pointer-events:none;
+ background:radial-gradient(circle,#fff6c8 0 1.8px,transparent 2.8px) 0 5px/16px 6px repeat-x,linear-gradient(180deg,#ffe592,#d99a2a);box-shadow:0 0 22px #f2c14e99;border-bottom:1px solid #000}
+.shopcard:hover,.ptile:hover{border-color:#4ee6b4aa;box-shadow:0 0 40px -10px var(--neon-m),0 18px 36px -22px #000}
+.ps .pack:not(.locked){filter:drop-shadow(0 0 22px #f2c14e66)}
+@media (prefers-reduced-motion:reduce){.feat::before{animation:none}.btn,.btn:active{transition:none}}
+/* the new Delve cover keeps its logo on the left and the fight in the middle: aim the cabinet screen there */
+.feat-delve .feat-art img{object-position:30% 30%}
