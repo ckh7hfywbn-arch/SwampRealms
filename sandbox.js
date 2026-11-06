@@ -6786,7 +6786,6 @@
   }
   function wxLabel() {   // for the HUD: what the weather is called where you are standing (empty when calm)
     if (!WX.on || cave || !S.wx || S.wx.n < 0.25) return "";
-    if (typeof FLOOD !== "undefined" && FLOOD.on && !OCS && !HOME && wxBio() === 0) return "Spring flood";
     return WX_NAMES[wxBio()][S.wx.k === "storm" && S.wx.n > 0.7 ? 1 : 0];
   }
   function wxOpenSky(x, y) { return col[clamp(x, 0, W - 1)] >= y; }   // nothing solid above (x, y)
@@ -16879,43 +16878,16 @@
 
 
 
-  // ---------- SPRING FLOODS ----------
-  // In Spring, heavy rain over Murkwater swamp makes the land overflow: its lakes and ponds rise and spill over their banks, and water
-  // gathers in the low ground. It is real water (the flowing-water system moves it). When the rain stops, or Spring ends, the flood drains
-  // away again, leaving washed-up finds (driftwood sticks, clay, stranded fish, now and then a bottle). On the homestead, Spring rain
-  // overflows the ditches and waters every crop. S.flood = [[x, y], ...] = where water was added, so the drain can find it again.
-  var FLOOD = { on: false, t: 0, dry: 0, said: -1 };
-  function floodNow() { return seasonOf() === 0 && wxN() > 0.45; }
-  function tickFlood(dt) {
-    if (!world || cave || (typeof OCS !== "undefined" && OCS) || (typeof HOME !== "undefined" && HOME) || (MP.on && MP.role === "guest")) return;
-    if (!S.flood) S.flood = [];
-    var on = floodNow(); FLOOD.on = on && S.flood.length > 6;
-    FLOOD.t -= dt; if (FLOOD.t > 0) return;
-    if (on) {
-      FLOOD.t = 0.22; FLOOD.dry = 0; if (S.flood.length >= 320) return;
-      FLOOD.scan = (FLOOD.scan || 0) - 0.22; if (FLOOD.scan <= 0 || !FLOOD.lk) { FLOOD.scan = 4; FLOOD.lk = []; for (var sx = Math.max(3, Math.floor(p.x) - 60); sx <= Math.min(W - 4, Math.floor(p.x) + 60); sx++) if (world.bio[sx] === 0 && orig[(col[sx] - 1) * W + sx] === T.WATER) FLOOD.lk.push(sx); }   // the ponds and lakes near you
-      if (FLOOD.said !== ((S.days / SEASON_DAYS) | 0) && S.flood.length > 10) { FLOOD.said = (S.days / SEASON_DAYS) | 0; toast("SPRING FLOOD! The swamp is overflowing its banks. It drains away when the rain stops.", "#7ac8ff"); }
-      for (var tr = 0; tr < 8; tr++) {
-        var x = FLOOD.lk.length && Math.random() < 0.75 ? FLOOD.lk[Math.floor(Math.random() * FLOOD.lk.length)] + Math.round((Math.random() - 0.5) * 6) : clamp(Math.round(p.x + (Math.random() - 0.5) * 90), 3, W - 4); x = clamp(x, 3, W - 4); if (world.bio[x] !== 0) continue;
-        var g0 = col[x], top = g0, i;
-        while (top > 2 && get(x, top - 1) === T.WATER) top--;   // the surface of a pond or lake here, if there is one
-        var lake = top < g0, y = top - 1, o0 = g0;
-        for (var yy0 = g0 - 1; yy0 > g0 - 40 && orig[yy0 * W + x] === T.WATER; yy0--) o0 = yy0;   // the water's natural level here (or the ground)
-        if (lake && FL && lvAt(top * W + x) < 8) { var ti = top * W + x, nl = Math.min(8, lvAt(ti) + 4); FL[ti] = nl >= 8 ? 0 : nl; flWake(x, top); S.flood.push([x, top]); break; }   // top up a thin sheet of floodwater first
-        if (y < 3 || get(x, y) !== T.AIR || y < o0 - 2) continue;   // at most two rows above the natural level
-        if (!lake && !(col[x] >= col[x - 1] && col[x] >= col[x + 1] && (col[x] > col[x - 2] || col[x] > col[x + 2]))) continue;   // dry land: only into dips
-        if ((world.structs || []).some(function (L) { return x >= L.x0 - 2 && x <= L.x1 + 2; })) continue;   // not into buildings
-        setT(x, y, T.WATER); S.flood.push([x, y]); break;
-      }
-    } else {
-      FLOOD.t = 0.5; if (!S.flood.length) return; FLOOD.dry += 0.5; if (FLOOD.dry < (seasonOf() === 0 ? 20 : 2)) return;   // it drains a while after the rain stops
-      for (var k = 0; k < 5 && S.flood.length; k++) {
-        var q = S.flood.pop(), qx = q[0], qy = q[1], got = 0;
-        for (var yy = qy - 2; yy <= qy + 1; yy++) for (var xx = qx - 10; xx <= qx + 10; xx++) { if (xx < 1 || xx >= W - 1 || yy < 1 || yy >= H - 1) continue; var j = yy * W + xx; if (tiles[j] === T.WATER && orig[j] !== T.WATER) { setT(xx, yy, T.AIR); got++; } }
-        if (got && Math.random() < 0.3) { var L2 = [["stick", 30], ["clay", 20], ["pebble", 14], ["fiber", 14], ["bogminnow", 12], ["seaglass", 4], ["x_bottle", 2]], tot = 0, r; L2.forEach(function (e2) { tot += e2[1]; }); r = Math.random() * tot; for (var m = 0; m < L2.length; m++) { r -= L2[m][1]; if (r <= 0) { if (ITEMS[L2[m][0]]) spawnDrop(L2[m][0], 1, qx, Math.min(col[qx] - 1, qy + 1)); break; } } }
-      }
-      if (!S.flood.length) { S.st.floods = (S.st.floods || 0) + 1; toast("The flood waters have gone down. See what they washed up!", "#7ac8ff"); }
-    }
+  // ---------- SPRING FLOODS: removed ----------
+  // Spring floods were taken out of the game. A save made while a flood was up still lists the water it added in S.flood, so the
+  // first tick after loading takes that water away again (only cells that were not water in the original world) and forgets the list.
+  var FLOOD = { on: false };
+  function floodNow() { return false; }
+  function tickFlood() {
+    if (!world || !S || !S.flood || !S.flood.length || cave || (typeof OCS !== "undefined" && OCS) || (typeof HOME !== "undefined" && HOME) || (MP.on && MP.role === "guest")) return;
+    S.flood.forEach(function (q) { var qx = q[0], qy = q[1];
+      for (var yy = qy - 2; yy <= qy + 1; yy++) for (var xx = qx - 10; xx <= qx + 10; xx++) { if (xx < 1 || xx >= W - 1 || yy < 1 || yy >= H - 1) continue; var j = yy * W + xx; if (tiles[j] === T.WATER && orig[j] !== T.WATER) setT(xx, yy, T.AIR); } });
+    S.flood = [];
   }
 
   // ---------- SEA DOMES: an air-filled glass dome you build on the sea floor ----------
