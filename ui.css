@@ -316,6 +316,22 @@ html{scroll-behavior:smooth}
 
 /* ===== Picture pack covers ===== */
 .pk-img{object-fit:cover;object-position:center top;border-radius:12px;-webkit-user-drag:none;user-select:none}
+/* the card-back packs: a gold foil edge, a holo sheen that sweeps across now and then, and the pack's name on a foil ribbon */
+.pk-wrap{container-type:inline-size}
+.pk-wrap:has(.pk-img)::before{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:1;padding:1.6cqw;
+ background:linear-gradient(135deg,#fff3b8,#f2c14e 30%,#b9831b 55%,#ffe58a 75%,#c8902a);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.pk-wrap:has(.pk-img)::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:1;mix-blend-mode:soft-light;
+ background:linear-gradient(115deg,transparent 30%,#7ff7ff 40%,#ffffffcc 47%,#ff9be8 54%,transparent 64%) -150% 0/250% 100% no-repeat;animation:pkholo 5.5s ease-in-out 1s infinite}
+@keyframes pkholo{0%{background-position:-150% 0}40%,100%{background-position:250% 0}}
+.locked .pk-wrap::after,.ptile .pk-wrap::after{animation:none;opacity:0}
+@media (prefers-reduced-motion:reduce){.pk-wrap::after{animation:none;opacity:0}}
+.pk-tag{position:absolute;left:50%;bottom:6%;translate:-50% 0;z-index:2;display:flex;align-items:center;gap:3cqw;padding:2.4cqw 3cqw 2.6cqw 5.6cqw;border-radius:999px;white-space:nowrap;pointer-events:none;
+ background:linear-gradient(#22573c,#123322) padding-box,linear-gradient(135deg,#fff3b8,#f2c14e 40%,#a8731a 70%,#ffe58a) border-box;border:1.2cqw solid transparent;
+ box-shadow:0 2cqw 5cqw #0006,inset 0 1cqw 0 #ffffff26}
+.pk-tag b{font:400 8.8cqw/1 "Bagel Fat One",Nunito,sans-serif;color:#fff3d6;letter-spacing:.01em;text-shadow:0 .8cqw 0 #0a1f14}
+.pk-tag i{font:900 5.4cqw/1 Nunito,system-ui,sans-serif;font-style:normal;color:#fff;padding:1.9cqw 3.2cqw;border-radius:2.4cqw;rotate:-7deg;translate:0 -.6cqw;
+ background:linear-gradient(160deg,color-mix(in srgb,var(--bc) 60%,#fff),var(--bc) 55%,color-mix(in srgb,var(--bc) 70%,#000));border:.9cqw solid #fff;box-shadow:0 1.2cqw 2.4cqw #0007;text-shadow:0 .5cqw 0 #0005}
+.ps.tear .pk-tag{opacity:.9}
 .strip.img{left:0;right:0;border:0;border-radius:12px 12px 0 0;clip-path:none;background-color:transparent;background-repeat:no-repeat;background-position:center top;background-size:auto 1163%}
 
 .bsimg{object-fit:cover;object-position:center;-webkit-user-drag:none;user-select:none}
