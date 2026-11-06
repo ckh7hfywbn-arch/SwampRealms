@@ -13257,8 +13257,10 @@
     var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
     var key = (((id * W + i) * H + j) * 16 + (nT ? 8 : 0) + (nL ? 4 : 0) + (nR ? 2 : 0) + (scen ? 1 : 0)) * 16 + varAt(i), cv = NATM.get(key), k2 = S / ts;   // PERF: a number, not a string, so no garbage per tile per frame
     if (!cv) {
-      var pt = nT ? Math.ceil(ts * 0.42) : 0, px = nT ? Math.ceil(ts * 0.12) : 0;   // room above for the grass lip and tufts
-      cv = document.createElement("canvas"); cv.width = Math.ceil((ts + px * 2) * k2); cv.height = Math.ceil((ts + pt) * k2); cv.px = px; cv.pt = pt;
+      // room above for the grass lip and tufts, in WHOLE canvas pixels: at a 1.5x canvas a margin of 11 CSS px is 16.5 px, which put every surface block
+      // half a pixel off the grid, and phone GPUs (Safari most of all) then soften its side edges into faint lines between the blocks
+      var pt = nT ? Math.ceil(ts * 0.42 * k2) / k2 : 0, px = nT ? Math.ceil(ts * 0.12 * k2) / k2 : 0;
+      cv = document.createElement("canvas"); cv.width = Math.round((ts + px * 2) * k2); cv.height = Math.round((ts + pt) * k2); cv.px = px; cv.pt = pt;
       var q = cv.getContext("2d"); q.setTransform(k2, 0, 0, k2, 0, 0); natBody(q, id, i, j, px, pt, scen, nT, nL, nR);
       NATM.set(key, cv); NATPX += cv.width * cv.height;
       if (NATPX > NAT_BUDGET) { var it = NATM.keys(); while (NATPX > NAT_BUDGET * 0.75) { var ok = it.next(); if (ok.done) break; var oc = NATM.get(ok.value); NATPX -= oc.width * oc.height; NATM.delete(ok.value); } }
@@ -13271,7 +13273,9 @@
     ["#1f5a34", "#2d6e3c", "rgba(150,200,130,.45)", "#3f8a46", ["#7a5a2a", "#5a4020", "#8a7a3a"]]];
   function natBody(g, id, i, j, sx, sy, scen, nT, nL, nR) {
     var pal = NATC[id], d0 = clamp((j - SURF) / 46, 0, 1), d1 = clamp((j + 1 - SURF) / 46, 0, 1), hh = function (k) { return SW.hash(i, j, k); };
-    g.drawImage(soilC(id, j, pal, d0, d1), sx, sy);
+    // the soil's depth gradient is painted as a shape, not a small picture stretched to the canvas scale: a stretched picture's outer pixels fade on
+    // phones, which showed as a faint line between the bright top-row blocks
+    var sgr = g.createLinearGradient(0, sy, 0, sy + ts); sgr.addColorStop(0, mixRgb(pal[0], pal[1], d0)); sgr.addColorStop(1, mixRgb(pal[0], pal[1], d1)); g.fillStyle = sgr; g.fillRect(sx, sy, ts, ts);
     var hi = mixRgb(pal[0], [255, 255, 255], 0.14), n = 2 + (hh(1) > 0.5 ? 1 : 0), k;
     for (k = 0; k < n; k++) {   // round pebbles with a soft shadow underneath
       var px = sx + ts * (0.15 + hh(k * 3 + 2) * 0.7), py = sy + ts * (0.15 + hh(k * 3 + 3) * 0.7), pr = ts * (0.07 + hh(k * 3 + 4) * 0.09);
@@ -13287,7 +13291,7 @@
       g.fillStyle = GP[2]; g.fillRect(sx, sy - ts * 0.04, ts, Math.max(1, ts * 0.04));
       if (GP[4]) for (k = 0; k < 3; k++) if (hh(k + 60) > 0.45) { g.fillStyle = GP[4][k % GP[4].length]; g.fillRect(sx + ts * (0.1 + hh(k + 63) * 0.8), sy + ts * (-0.02 + hh(k + 66) * 0.12), Math.max(1, ts * 0.09), Math.max(1, ts * 0.06)); }   // fallen petals / leaf litter
       if (hh(40) > 0.55) { g.fillStyle = GP[3]; var tx = sx + ts * (0.2 + hh(41) * 0.6); g.beginPath(); g.moveTo(tx - 2, sy); g.lineTo(tx, sy - ts * 0.3); g.lineTo(tx + 2, sy); g.fill(); g.beginPath(); g.moveTo(tx + 1, sy); g.lineTo(tx + 4, sy - ts * 0.22); g.lineTo(tx + 4, sy); g.fill(); }
-      g.drawImage(shadeC("moss"), sx, sy);
+      var mgr = g.createLinearGradient(0, sy, 0, sy + Math.ceil(ts * 0.7)); mgr.addColorStop(0, "rgba(63,174,120,.35)"); mgr.addColorStop(1, "rgba(63,174,120,0)"); g.fillStyle = mgr; g.fillRect(sx, sy, ts, Math.ceil(ts * 0.7));   // (a shape, for the same reason)
       if (scen) {   // grass blades across the foot of the trunk, so it reads as standing behind the turf
         for (k = 0; k < 5; k++) { var bx2 = sx + ts * (0.06 + k * 0.2 + (hh(k + 90) - 0.5) * 0.08), bh2 = ts * (0.16 + hh(k + 95) * 0.16); g.fillStyle = k & 1 ? GP[1] : GP[3]; g.beginPath(); g.moveTo(bx2 - ts * 0.05, sy + ts * 0.02); g.lineTo(bx2 + (hh(k + 99) - 0.5) * ts * 0.08, sy - bh2); g.lineTo(bx2 + ts * 0.05, sy + ts * 0.02); g.fill(); }
       }
