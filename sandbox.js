@@ -9110,7 +9110,7 @@
       out.push([qx, qy]);
       st.push([qx, qy - 1], [qx - 1, qy], [qx + 1, qy], [qx - 1, qy - 1], [qx + 1, qy - 1], [qx, qy + 1]);
     }
-    return leafy ? out : [];
+    return leafy || (out.length && origTree(x, y)) ? out : [];   // (a world tree's trunk falls too after its leaves are gone)
   }
   // FELLING (TREES): the whole tree comes down at once and topples over, away from you, like a real tree: trunk, crown, boughs and roots are
   // lifted out of the world in one go and painted into a picture (the same pixel art as the standing tree), which swings down around the cut,
@@ -14490,8 +14490,15 @@
     if (get(i, j - 1) !== T.AIR) return 0; var l = get(i - 1, j - 1) === T.LOG && get(i - 1, j) !== T.LOG, r = get(i + 1, j - 1) === T.LOG && get(i + 1, j) !== T.LOG;
     return l && !r ? -1 : r && !l ? 1 : 0;
   }
+  function origTree(i, j) {   // was this block part of a world tree's trunk when the world was made (a column of logs, leaning for palms, under a crown)?
+    if (!orig || orig[j * W + i] !== T.LOG || walls[j * W + i]) return false;
+    for (var y = j, n = 0; y > 1 && n < 30; y--, n++) { var u = orig[(y - 1) * W + i]; if (u === T.LEAVES) return true; if (u === T.LOG) continue;
+      var l = orig[(y - 1) * W + i - 1] === T.LOG, r = orig[(y - 1) * W + i + 1] === T.LOG; if (l !== r) { i += l ? -1 : 1; continue; } return false; }
+    return false;
+  }
   function trunkTree(i, j) {   // is this log part of a tree (a trunk crowned with leaves, or a world tree that lost them), not a house beam?
-    for (var y = j; y > j - 24 && y > 0; y--) { var id = get(i, y); if (id === T.LEAVES) return true; if (id !== T.LOG) return orig[y * W + i] === T.LEAVES && orig[(y + 1) * W + i] === T.LOG; if (canStyle(i) === 2 && get(i, y - 1) === T.AIR) { var b = bendUp(i, y); if (!b) return false; i += b; } }
+    if (origTree(i, j)) return true;   // a world tree, even with its leaves picked or its top broken off
+    for (var y = j; y > j - 24 && y > 0; y--) { var id = get(i, y); if (id === T.LEAVES) return true; if (id !== T.LOG) return false; if (canStyle(i) === 2 && get(i, y - 1) === T.AIR) { var b = bendUp(i, y); if (!b) return false; i += b; } }
     return false;
   }
   function pineRun(i, j) {   // part of a pine row: a pine leaf, or the trunk with pine leaves beside it
@@ -14640,7 +14647,7 @@
     if (st === 2 && dn === T.AIR) { if (get(i - 1, j + 1) === T.LOG && bendUp(i - 1, j + 1) === 1) bd = -1; else if (get(i + 1, j + 1) === T.LOG && bendUp(i + 1, j + 1) === -1) bd = 1; }
     if (up === T.LOG || up === T.LEAVES || bb || bd || (dn === T.LOG || TILES[dn].solid) && !Ls && !Rs) {   // an upright trunk block
       var top = j, foot = j; while (get(i, top - 1) === T.LOG) top--; while (get(i, foot + 1) === T.LOG) foot++;
-      var bare = get(i, top - 1) !== T.LEAVES && orig[(top - 1) * W + i] === T.LEAVES && orig[top * W + i] === T.LOG;   // a world tree whose leaves were all picked: still a trunk, with a broken top
+      var bare = get(i, top - 1) !== T.LEAVES && origTree(i, top) && !(st === 2 && bendUp(i, top));   // a world tree whose leaves were picked or whose top was broken off: still a round trunk, with a splintered top
       var crown = get(i, top - 1) === T.LEAVES || st === 2 && trunkTree(i, j) || bare; if (!crown) return null;
       if (Ls && get(i - 1, j) !== T.LOG && Rs && get(i + 1, j) !== T.LOG) return null;
       var twinL = get(i + 1, j) === T.LOG && get(i + 1, j - 1) !== T.AIR && get(i + 1, j + 1) !== T.AIR, twinR = get(i - 1, j) === T.LOG && get(i - 1, j - 1) !== T.AIR && get(i - 1, j + 1) !== T.AIR;
