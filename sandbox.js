@@ -6842,12 +6842,40 @@
       o.connect(g); g.connect(MUS.flt); o.start(t); o.stop(t + len + 0.05);
     });
   }
+  // ---------- RECORDED MUSIC (audio/music, CC0, see LICENSE.txt there): two looping tracks, cross-faded by mood ----------
+  // "forest" plays while you explore (darker and softer underground and at night, through a low-pass filter); "battle" takes over for
+  // boss fights and island raid waves, starting from its top each time. They load after your first tap (about 3.6 MB). Until "forest"
+  // has loaded, or if it fails, the old made-up-as-it-goes synth music keeps playing.
+  var MREC = { want: false, buf: {}, src: {}, g: {}, cur: "", out: null, flt: null };
+  function mrecLoad(n) {
+    if (MREC.buf[n] !== undefined || typeof fetch !== "function") return; MREC.buf[n] = null;
+    fetch("audio/music/" + n + ".mp3?v=1").then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function (b) { return new Promise(function (res, rej) { ac.decodeAudioData(b, res, rej); }); }).then(function (d) { MREC.buf[n] = d; }).catch(function () { MREC.buf[n] = false; });
+  }
+  function mrecStart(n, now) {   // (re)start a track from the top, silent; its gain fades it in
+    try { if (MREC.src[n]) MREC.src[n].stop(); } catch (e) {}
+    var s2 = ac.createBufferSource(); s2.buffer = MREC.buf[n]; s2.loop = true; s2.connect(MREC.g[n]); s2.start(now); MREC.src[n] = s2;
+  }
+  function musRec(mood, night, now) {   // true while the recorded music is in charge
+    if (!MREC.out) { try { MREC.out = ac.createGain(); MREC.out.gain.value = 0; MREC.flt = ac.createBiquadFilter(); MREC.flt.type = "lowpass"; MREC.flt.frequency.value = 18000; MREC.flt.connect(MREC.out); MREC.out.connect(ac.destination); ["forest", "battle"].forEach(function (n) { MREC.g[n] = ac.createGain(); MREC.g[n].gain.value = 0; MREC.g[n].connect(MREC.flt); }); } catch (e) { MREC.out = null; return false; } }
+    mrecLoad("forest"); mrecLoad("battle");
+    if (!MREC.buf.forest) return false;
+    var fight = mood === "boss" || !!(cave && cave.isle && ISLW && !ISLW.done && ISLW.wave > 0), want = fight && MREC.buf.battle ? "battle" : "forest";
+    if (!MREC.src.forest) mrecStart("forest", now);
+    if (want !== MREC.cur) { if (want === "battle") mrecStart("battle", now); MREC.cur = want; }
+    MREC.g.forest.gain.setTargetAtTime(want === "forest" ? 1 : 0, now, want === "forest" ? 1.2 : 0.4);
+    MREC.g.battle.gain.setTargetAtTime(want === "battle" ? 1 : 0, now, want === "battle" ? 0.3 : 1.4);
+    MREC.out.gain.setTargetAtTime(0.5 * MUS.vol * (night && !fight ? 0.8 : 1) * (1 - jbDuck), now, 0.6);   // ducks under a nearby record, like the synth
+    MREC.flt.frequency.setTargetAtTime(fight ? 18000 : mood === "deep" ? 1100 : night ? 2600 : 18000, now, 0.8);   // muffled underground, softer at night
+    return true;
+  }
   function tickMusic() {
     var want = MUS.on && gestured && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden && !!world;
-    if (!want) { if (MUS.out && ac) MUS.out.gain.setTargetAtTime(0, ac.currentTime, 0.4); return; }
+    if (!want) { if (MUS.out && ac) MUS.out.gain.setTargetAtTime(0, ac.currentTime, 0.4); if (MREC.out && ac) MREC.out.gain.setTargetAtTime(0, ac.currentTime, 0.4); return; }
     try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { return; }
     if (!musicOut()) return;
     var mood = musicMood(), Sc = SCALES[mood], night = isNight(S.time), now = ac.currentTime;
+    if (musRec(mood, night, now)) { MUS.out.gain.setTargetAtTime(0, now, 0.6); MUS.mood = ""; return; }   // recorded music is playing: the synth stays quiet
     MUS.out.gain.setTargetAtTime(0.16 * MUS.vol * (night ? 0.8 : 1) * (1 - jbDuck), now, 0.6);   // ducks under a nearby record
     MUS.flt.frequency.setTargetAtTime(mood === "deep" ? 900 : mood === "boss" ? 1800 : night ? 1500 : 2600, now, 0.5);
     if (mood !== MUS.mood) { MUS.mood = mood; MUS.nextT = Math.max(MUS.nextT, now + 0.2); MUS.step = 0; }
