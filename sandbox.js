@@ -2303,6 +2303,25 @@
     if (typeof SFX !== "undefined" && SFX.on === false) return false; if (!gestured && !ac) return false; if (OPT.fx <= 0.001) return false;
     try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); return true; } catch (e) { return false; }
   }
+
+  // ---------- RECORDED SOUNDS: real recordings from Kenney's CC0 packs (audio/sfx, see the LICENSE files there) ----------
+  // Each group has a few takes; a random take plays with a small pitch and volume wobble so repeats never sound copy-pasted.
+  // They load after your first tap (about 0.7 MB in all). Until a take has loaded, or if it fails, the old synth sound plays instead.
+  var SMPN = { footstep_grass: 5, footstep_concrete: 5, footstep_wood: 5, footstep_snow: 5, impactMining: 5, impactSoft_medium: 5, impactSoft_heavy: 5, impactWood_light: 5, impactWood_heavy: 5, impactGlass_light: 5, impactGlass_heavy: 5, impactMetal_light: 5, impactMetal_heavy: 5, impactPunch_medium: 5, impactPunch_heavy: 5, impactPlank_medium: 5, impactGeneric_light: 5, ui_open: 3, ui_close: 3, ui_select: 4, ui_confirm: 3, ui_error: 3, ui_drop: 3 };
+  var SMP = { buf: {}, want: {}, pre: false, last: {} };
+  function smpLoad(n) {
+    if (SMP.want[n] || !ac || typeof fetch !== "function") return; SMP.want[n] = 1;
+    fetch("audio/sfx/" + n + ".mp3?v=1").then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function (b) { return new Promise(function (res, rej) { ac.decodeAudioData(b, res, rej); }); }).then(function (d) { SMP.buf[n] = d; }).catch(function () {});
+  }
+  function smpPreload() { if (SMP.pre || !ac) return; SMP.pre = true; Object.keys(SMPN).forEach(function (g) { for (var i = 0; i < SMPN[g]; i++) smpLoad(g + "_" + i); }); }
+  function smp(g, vol, rate) {   // play a random take of group g; false when nothing is loaded yet (the caller then falls back to the synth)
+    if (!fxReady()) return false; smpPreload(); var c = SMPN[g]; if (!c) return false;
+    var i = Math.floor(Math.random() * c); if (c > 1 && i === SMP.last[g]) i = (i + 1) % c; var b = SMP.buf[g + "_" + i];
+    if (!b) { for (var k = 0; k < c && !b; k++) { b = SMP.buf[g + "_" + k]; if (b) i = k; } } if (!b) return false; SMP.last[g] = i;
+    try { var src = ac.createBufferSource(), gn = ac.createGain(); src.buffer = b; src.playbackRate.value = (rate || 1) * (0.93 + Math.random() * 0.14); gn.gain.value = (vol == null ? 0.5 : vol) * (0.88 + Math.random() * 0.24); src.connect(gn); gn.connect(fxOut()); src.start(); return true; } catch (e) { return false; }
+  }
+  function uiSnd(g, vol) { var now = performance.now(); if (now - (SMP.ui || 0) < 60) return; SMP.ui = now; smp("ui_" + g, vol == null ? 0.45 : vol); }
   // ---------- MATERIAL SOUNDS: every block family hits and breaks with its own sound (dirt crunch, stone crack, wood knock, leaf rustle, glass chime, metal ring) ----------
   var NZB = null, MATC = {};
   function nzBuf() { if (NZB) return NZB; var n = Math.floor(ac.sampleRate * 0.6); NZB = ac.createBuffer(1, n, ac.sampleRate); var d = NZB.getChannelData(0); for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return NZB; }
@@ -2329,6 +2348,8 @@
   }
   function matHit(id) {   // one tap of the pick or shovel
     if (!fxReady()) return; var m = matOf(id), r = 0.9 + Math.random() * 0.2;
+    var HG = { dirt: ["impactSoft_medium", 0.42, 1.05], wood: ["impactWood_light", 0.5, 1], glass: ["impactGlass_light", 0.4, 1.05], metal: ["impactMetal_light", 0.4, 1], stone: ["impactMining", 0.42, 1.08], ore: ["impactMining", 0.45, 1.15] }[m];
+    if (HG && smp(HG[0], HG[1], HG[2])) { if (m === "ore") try { tn(0.01, 1900 * r, 0, 0.06, "sine", 0.018); } catch (e) {} return; }   // a recorded hit (ore keeps its little glint)
     try {
       if (m === "dirt") { nz(0, 0.07, 0.16, 700 * r, "lowpass"); tn(0, 120 * r, 80, 0.05, "sine", 0.05); }
       else if (m === "plant") nz(0, 0.06, 0.09, 3200 * r, "highpass");
@@ -2340,6 +2361,8 @@
   }
   function matBreak(id) {   // the block gives way
     if (!fxReady()) return; var m = matOf(id), r = 0.92 + Math.random() * 0.16;
+    var BG = { dirt: ["impactSoft_heavy", 0.55, 0.95], wood: ["impactWood_heavy", 0.55, 1], glass: ["impactGlass_heavy", 0.5, 1], metal: ["impactMetal_heavy", 0.45, 1], stone: ["impactMining", 0.6, 0.82], ore: ["impactMining", 0.6, 0.9] }[m];
+    if (BG && smp(BG[0], BG[1], BG[2])) { try { if (m === "stone" || m === "ore") tn(0, 125 * r, 55, 0.16, "triangle", 0.08); if (m === "ore") tn(0.02, 2200 * r, 0, 0.12, "sine", 0.025); } catch (e) {} return; }   // recorded crack, with a low body under rock
     try {
       if (m === "dirt") { nz(0, 0.2, 0.2, 900 * r, "lowpass"); nz(0.03, 0.14, 0.08, 1800, "bandpass", 0.7); tn(0, 110 * r, 60, 0.12, "sine", 0.1); }
       else if (m === "plant") { nz(0, 0.2, 0.11, 2600 * r, "bandpass", 0.9); nz(0.05, 0.16, 0.06, 5000, "highpass"); }
@@ -2349,8 +2372,9 @@
       else { nz(0, 0.2, 0.18, 1500 * r, "bandpass", 1.1); tn(0, 125 * r, 55, 0.16, "triangle", 0.12); nz(0.035, 0.025, 0.08, 4200, "highpass"); nz(0.075, 0.02, 0.06, 3600, "highpass"); if (m === "ore") { tn(0.02, 1760, 0, 0.18, "sine", 0.03); tn(0.07, 2350, 0, 0.16, "sine", 0.025); } }
     } catch (e) {}
   }
+  function stepGroup(id) { var m = matOf(id), n = ((TILES[id] || {}).n || "") + ""; return /snow|ice|frost/i.test(n) ? "footstep_snow" : m === "wood" ? "footstep_wood" : m === "stone" || m === "ore" || m === "metal" || m === "glass" ? "footstep_concrete" : "footstep_grass"; }
   function matStep(id, vol) {   // a landing: a soft thump in the ground's own voice
-    if (!fxReady()) return; var m = matOf(id);
+    if (!fxReady()) return; if (smp(stepGroup(id), 0.35 + 0.4 * vol, 0.85)) return; var m = matOf(id);
     try { if (m === "wood") tn(0, 160, 100, 0.08, "triangle", 0.1 * vol); else if (m === "plant" || m === "dirt") nz(0, 0.1, 0.18 * vol, 600, "lowpass"); else nz(0, 0.08, 0.14 * vol, 1200, "bandpass", 1.2); tn(0, 85, 50, 0.1, "sine", 0.12 * vol); } catch (e) {}
   }
 
@@ -2394,7 +2418,7 @@
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
   }
   var QUIET = 0;   // set while the placement preview asks canPlace() without wanting its messages
-  function nag(msg) { if (QUIET) return; if (performance.now() - nagT < 1800) return; nagT = performance.now(); toast(msg, "#f2c14e"); }
+  function nag(msg) { if (QUIET) return; if (performance.now() - nagT < 1800) return; nagT = performance.now(); toast(msg, "#f2c14e"); uiSnd("error", 0.3); }
   // Small pop-ups in the bottom-right corner. They queue: at most 2 show at once, one new one every ~0.9 s, and none while a window
   // (Journal, backpack, station...) is open, so they never cover what you are reading. A big pile collapses into "+N more".
   var popQ = [], popNext = 0;
@@ -3242,7 +3266,7 @@
       FOOT.acc += Math.abs(p.vx) * dt;
       if (FOOT.acc >= 1.05) {
         FOOT.acc = 0; FOOT.side = 1 - FOOT.side; var gx = Math.floor(p.x), gy = Math.floor(p.y + 0.2), gid = get(gx, gy);
-        if (fxReady()) { var m = matOf(gid); try { if (m === "wood") tn(0, 190 + FOOT.side * 20, 140, 0.05, "triangle", 0.035); else if (m === "stone" || m === "ore" || m === "metal") nz(0, 0.04, 0.05, 1800 + FOOT.side * 200, "bandpass", 1.4); else if (m === "glass") tn(0, 1800, 0, 0.04, "sine", 0.012); else nz(0, 0.06, m === "plant" ? 0.04 : 0.07, footKind(gid) === "snow" ? 2400 : 700 + FOOT.side * 120, footKind(gid) === "snow" ? "highpass" : "lowpass"); } catch (e) {} }
+        if (fxReady() && !smp(stepGroup(gid), 0.2, 1)) { var m = matOf(gid); try { if (m === "wood") tn(0, 190 + FOOT.side * 20, 140, 0.05, "triangle", 0.035); else if (m === "stone" || m === "ore" || m === "metal") nz(0, 0.04, 0.05, 1800 + FOOT.side * 200, "bandpass", 1.4); else if (m === "glass") tn(0, 1800, 0, 0.04, "sine", 0.012); else nz(0, 0.06, m === "plant" ? 0.04 : 0.07, footKind(gid) === "snow" ? 2400 : 700 + FOOT.side * 120, footKind(gid) === "snow" ? "highpass" : "lowpass"); } catch (e) {} }
         var fk = footKind(gid); if (fk && !reduce) { FOOT.L.push({ x: p.x + (FOOT.side ? 0.12 : -0.12) * p.face, y: gy, f: p.face, k: fk, t: 0 }); if (FOOT.L.length > 70) FOOT.L.shift(); }
       }
     }
@@ -6209,7 +6233,7 @@
   function impact(kind) {
     var kill = kind === "kill"; focGain(kill);
     hitStop(kill ? 0.085 : 0.045, kill ? 0.05 : 0.1); shake = Math.max(shake, kill ? 0.42 : 0.17);
-    var now = performance.now(); if (now - IMPT > 45) { IMPT = now; sfxHit(kill); }
+    var now = performance.now(); if (now - IMPT > 45) { IMPT = now; if (smp(kill ? "impactPunch_heavy" : "impactPunch_medium", kill ? 0.62 : 0.5, kill ? 0.9 : 1.05)) sfxThump(kill ? 150 : 210, kill ? 42 : 70, kill ? 0.18 : 0.09, kill ? 0.12 : 0.06); else sfxHit(kill); }   // recorded punch, with a little synth body under it
   }
   function sfxNoise(dur, f0, f1, vol, type) {   // a short filtered noise burst, swept from f0 to f1 Hz
     if (!fxReady()) return; try {
@@ -11725,7 +11749,7 @@
     else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. You take " + Math.round(ARMORS[r.arm].red * 100) + "% less damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { if (fromChests) text(p.x, p.y - PH - 0.6, "used " + fromChests + " from chests", "#e8d9a8"); for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } if (r.stn === "cook") { S.st.cooked++; checkTrail(); checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
-    cgApply(r, CQ);
+    uiSnd("confirm", 0.4); cgApply(r, CQ);
     S.mk[r.id] = (S.mk[r.id] || 0) + 1; checkGoals();
     hbDirty = true; renderPanel(); save();
   }
@@ -16466,20 +16490,20 @@
     window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
     if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(V);
   })();
-  function openPanel(t) { if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
+  function openPanel(t) { if (!panelOpen) uiSnd("open"); if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
   function openPack() {
     setTimeout(function () { if (COACH) tickCoach(0.016); }, 0);   // TRY IT: the backpack step
     if (mapOpen) closeMap(); else if (panelOpen && !packOpen) closePanel();
-    packOpen = true; panelOpen = true; invSel = -1; invAsk = ""; PK.pop = ""; PK.focus = ""; $("sbxPack").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPack();
+    uiSnd("open"); packOpen = true; panelOpen = true; invSel = -1; invAsk = ""; PK.pop = ""; PK.focus = ""; $("sbxPack").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPack();
   }
-  function closePack() { itHide(); packOpen = false; panelOpen = false; $("sbxPack").hidden = true; stageEl.classList.remove("panel"); $("sbxPackBtn").focus({ preventScroll: true }); }
+  function closePack() { uiSnd("close", 0.35); itHide(); packOpen = false; panelOpen = false; $("sbxPack").hidden = true; stageEl.classList.remove("panel"); $("sbxPackBtn").focus({ preventScroll: true }); }
   function closePanel() {
     if (pauseOpen) return closePause();
     var r = closePanel0();
     if (pauseBack && !panelOpen && !titleOpen) { pauseBack = false; setTimeout(function () { if (!panelOpen && !titleOpen && !pauseOpen) openPause(); }, 0); }
     return r;
   }
-  function closePanel0() { if (storyOpen >= 0) return closeStory(); if (stnOpen) return closeStn(); if (mapOpen) return closeMap(); if (packOpen) return closePack(); panelOpen = false; if (chestKey) { chestKey = ""; if (tab === "chest") tab = "craft"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
+  function closePanel0() { if (storyOpen >= 0) return closeStory(); if (stnOpen) return closeStn(); if (mapOpen) return closeMap(); if (packOpen) return closePack(); panelOpen = false; uiSnd("close", 0.35); if (chestKey) { chestKey = ""; if (tab === "chest") tab = "craft"; save(); } $("sbxPanel").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
 
   // ---------- INVENTORY SCREEN ----------
   function invClick(i, shift) {
