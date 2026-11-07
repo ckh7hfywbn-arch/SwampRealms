@@ -13086,7 +13086,7 @@
         if (id === T.LOG) { natLogC(g, i, j, sx3, sy); }
         else if (SMGEM[id]) { NATOV = function () { smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }; natTile(g, orePal(td), i, j, sx3, sy); NATOV = null; }   // the gems are drawn inside the rounded clip
         else if (td.kind === "door" || td.hatch) matWood(g, td, i, j, sx3, sy);
-        else if (MATF[id]) { if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
+        else if (MATF[id]) { cvA = carveBuildStart(g, id, i, j, sx3, sy); if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
         else { var cvA = carveAtlasStart(g, id, i, j, sx3, sy); sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, 0, 16, 16, sx3, sy, ts, ts); }
         // exposed faces get a lit rim on top and a shadow on the sides and bottom, so caves and cliffs read clearly
         var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
@@ -13107,7 +13107,7 @@
           }
         }
       }
-      if (cvA) { g.restore(); carveRim(g, id, i, j, sx3, sy, cvA[0], cvA[1], cvA[2], cvA[3], false); cvA = null; }   // CARVED TERRAIN: close a rounded atlas block
+      if (cvA) { g.restore(); carveRim(g, id, i, j, sx3, sy, cvA[0], cvA[1], cvA[2], cvA[3], cvA.build ? "build" : false); cvA = null; }   // CARVED TERRAIN: close a rounded atlas block
       if (td.light >= 3 && td.solid === false || td.light >= 6) glowPush(td, i, j, [sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
       if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
   }
@@ -13420,9 +13420,14 @@
   function carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, grass) {   // grass round the top corners (or a lit edge), a shadowed edge round the bottom ones
     var lw = Math.max(1, CELL.edge), arc = function (cx, cy, r, a0, a1, col2, w2) { if (!r) return; g.strokeStyle = col2; g.lineWidth = w2; g.beginPath(); g.arc(cx, cy, Math.max(0.5, r - w2 / 2), a0, a1); g.stroke(); };
     var H = Math.PI;
-    if (grass) {
+    if (grass === true) {
       var GP = GRASSP[varAt(i)] || GRASSP[0], gw2 = ts * 0.17;
       [[tl, sx + tl, sy + tl, H, H * 1.5], [tr, sx + ts - tr, sy + tr, H * 1.5, H * 2]].forEach(function (c) { if (!c[0]) return; arc(c[1], c[2], c[0], c[3], c[4], GP[0], gw2); arc(c[1], c[2], c[0], c[3], c[4], GP[1], gw2 * 0.55); arc(c[1], c[2], c[0], c[3] + 0.08, c[4] - 0.08, GP[2], Math.max(1, ts * 0.04)); });
+    } else if (grass === "build") {   // a building block: its dark outline runs round every rounded corner, with a lit inner line on the top ones
+      var ow = Math.max(1, Math.round(ts / 14)), oc = "rgba(18,22,26,.78)";
+      arc(sx + tl, sy + tl, tl, H, H * 1.5, oc, ow); arc(sx + ts - tr, sy + tr, tr, H * 1.5, H * 2, oc, ow); arc(sx + ts - br, sy + ts - br, br, 0, H * 0.5, oc, ow); arc(sx + bl, sy + ts - bl, bl, H * 0.5, H, oc, ow);
+      if (tl) arc(sx + tl, sy + tl, tl - ow, H, H * 1.5, "rgba(255,255,255,.2)", Math.max(1, ow * 0.7)); if (tr) arc(sx + ts - tr, sy + tr, tr - ow, H * 1.5, H * 2, "rgba(255,255,255,.2)", Math.max(1, ow * 0.7));
+      return;
     } else { arc(sx + tl, sy + tl, tl, H, H * 1.5, "rgba(255,255,255,.16)", lw); arc(sx + ts - tr, sy + tr, tr, H * 1.5, H * 2, "rgba(255,255,255,.16)", lw); }
     arc(sx + ts - br, sy + ts - br, br, 0, H * 0.5, "rgba(0,0,0,.32)", lw * 1.5); arc(sx + bl, sy + ts - bl, bl, H * 0.5, H, "rgba(0,0,0,.32)", lw * 1.5);
   }
@@ -13446,10 +13451,15 @@
     for (var sd = 0; sd < 4; sd++) { var nid = nb[sd]; if (CARVE_SOFT[nid] && NATC[nid]) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq), sx, sy, ts, ts); }
   }
   var NATOV = null, CARVE_AT = null;   // NATOV: an overlay (an ore's gems) drawn inside the rounded clip; CARVE_AT: atlas-drawn natural blocks that round too
-  function carveCorners(i, j, nT, nB, nL, nR) {   // [tl, tr, br, bl] corner radii in pixels, or null when no corner rounds
+  function carveCorners(i, j, nT, nB, nL, nR, k) {   // [tl, tr, br, bl] corner radii in pixels, or null when no corner rounds (k: radius as a share of a tile)
     if (!(nT || nB) || !(nL || nR) || i <= 0 || i >= W - 1 || OPT.carve === false) return null;
-    var oT = carveOpen(i, j - 1), oB = carveOpen(i, j + 1), oL = carveOpen(i - 1, j), oR = carveOpen(i + 1, j), rr = Math.round(ts * 0.42);
+    var oT = carveOpen(i, j - 1), oB = carveOpen(i, j + 1), oL = carveOpen(i - 1, j), oR = carveOpen(i + 1, j), rr = Math.round(ts * (k || 0.42));
     var c = [oT && oL ? rr : 0, oT && oR ? rr : 0, oB && oR ? rr : 0, oB && oL ? rr : 0]; return c[0] || c[1] || c[2] || c[3] ? c : null;
+  }
+  function carveBuildStart(g, id, i, j, sx, sy) {   // BUILDING BLOCKS (bricks, planks, shingles...): smaller, tidier rounded corners, outline follows the curve
+    var M = MATF[id]; if (!M || M.see || roofSlope(id, i, j)) return null;
+    var nT = !TILES[get(i, j - 1)].solid, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid, c = carveCorners(i, j, nT, nB, nL, nR, 0.24);
+    if (!c) return null; carveBack(g, i, j, sx, sy, c[0], c[1], c[3], c[2]); g.save(); carvePath(g, sx, sy, c[0], c[1], c[2], c[3], false); g.clip(); c.build = 1; return c;
   }
   function carveAtlasStart(g, id, i, j, sx, sy) {   // for Fossil Blocks, Buried Caches, Charcoal Seams, Garden Soil: clip before the block and its shading are drawn
     if (!CARVE_AT) { CARVE_AT = {}; TILES.forEach(function (td, k) { if (td && /^(Fossil Block|Buried Cache|Charcoal Seam|Garden Soil)$/.test(td.n || "")) CARVE_AT[k] = 1; }); }
