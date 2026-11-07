@@ -1242,7 +1242,7 @@
   function boxHit(x, y) {
     var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4), y0 = Math.floor(y - PH + 1e-4), y1 = Math.floor(y - 1e-4);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) {
-      if (SHAPEN && !cave) { var sh = S.shape[yy * W + xx]; if (sh && !shapeHit(sh, xx, yy, x - PW / 2, x + PW / 2, y - PH, y)) continue; }   // MALLET: only the solid part of a shaped block counts
+      if (SHAPEN && !cave) { var sh = shapeAt(yy * W + xx); if (sh && !shapeHit(sh, xx, yy, x - PW / 2, x + PW / 2, y - PH, y)) continue; }   // MALLET: only the solid part of a shaped block counts
       return true;
     }
     return false;
@@ -1252,7 +1252,22 @@
   // 5 ceiling ramp (solid top-right). Saved with the world; the shape goes away when the block is broken or replaced (setT).
   // Only the player's box uses the exact shape (boxHit); creatures, light and water still treat a shaped block as a full one.
   var SHAPEN = 0;
-  function shapeCount() { SHAPEN = S && S.shape ? Object.keys(S.shape).length : 0; }
+  function shapeCount() { SHAPEN = (S && S.shape ? Object.keys(S.shape).length : 0) + (OPT.autoramp === false ? 0 : 1); }
+  // AUTO RAMPS: wherever the natural ground steps up by exactly one block, that step is a ramp, so hills read (and walk) as slopes instead of
+  // staircases. Worked out live from the ground (never saved): an untouched natural top block, open sky above it, ground exactly one block lower
+  // on one side and as high or higher on the other. Dig or build next to it and it goes back to a plain block. A shape set with the
+  // Bog Mallet (S.shape, where 0 means "keep it a full block") always wins.
+  function autoShape(ix) {
+    if (cave || OPT.autoramp === false) return 0;
+    var i = ix % W, j = (ix / W) | 0; if (i < 1 || i >= W - 1 || col[i] !== j || j < 2) return 0;
+    var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !rampFree(tiles[ix - W])) return 0;
+    var L = col[i - 1], R = col[i + 1];
+    if (L === j + 1 && R <= j && rampFree(tiles[ix - 1]) && TILES[tiles[ix + W - 1]].solid) return 2;   // ground one lower on the left: a ramp rising to the right
+    if (R === j + 1 && L <= j && rampFree(tiles[ix + 1]) && TILES[tiles[ix + W + 1]].solid) return 3;   // one lower on the right: rising to the left
+    return 0;
+  }
+  function rampFree(id) { if (id === T.AIR) return true; var td = TILES[id]; return !td.solid && !td.liquid && id !== T.WATER && id !== T.LAVA && (td.sway || /^(reed|bloom|glowcap|flower)$/.test(td.kind || "")); }   // open, or just a small plant (it settles onto the slope)
+  function shapeAt(ix) { var v = S.shape[ix]; return v !== undefined ? v : autoShape(ix); }
   function shapeHit(sh, cx, cy, bx0, bx1, by0, by1) {   // does the box [bx0,bx1]x[by0,by1] overlap the solid part of shaped cell (cx, cy)?
     var lx0 = clamp(bx0 - cx, 0, 1), lx1 = clamp(bx1 - cx, 0, 1), ly0 = clamp(by0 - cy, 0, 1), ly1 = clamp(by1 - cy, 0, 1), e = 1e-4;
     if (lx1 - lx0 < e || ly1 - ly0 < e) return false;
@@ -10585,7 +10600,7 @@
     var ix = ty * W + tx, id = tiles[ix];
     if (!malletOk(id)) { nag(TILES[id] && TILES[id].solid ? (MATF[id] && ROOFF[MATF[id].f] ? "Roof tiles already slope at a roof's edge." : "The Mallet can't shape that.") : "Tap a solid block to shape it."); return; }
     if (smask && smask[ix] && tiles[ix] === orig[ix]) { nag("That is part of an old building."); return; }
-    var cur = S.shape[ix] | 0, nx = (cur + 1) % 6; if (nx) S.shape[ix] = nx; else delete S.shape[ix]; shapeCount(); editN++;
+    var cur = shapeAt(ix) | 0, nx = (cur + 1) % 6; if (nx) S.shape[ix] = nx; else if (autoShape(ix)) S.shape[ix] = 0; else delete S.shape[ix]; shapeCount(); editN++;   // (0: keep a natural ramp a full block)
     var g2 = 0; while (boxHit(p.x, p.y) && g2++ < 30) p.y -= 0.05;   // never trap yourself in the new shape
     S.st.malleted = (S.st.malleted || 0) + 1;
     var td = TILES[id]; chips(tx + 0.5, ty + 0.4, td.c2 || td.c || "#c9b58a", 5, 4); matHit(id); if (!reduce) shake = Math.max(shake, 0.06);
@@ -12900,8 +12915,9 @@
   var CELL = { wob: 0, edge: 1, sw: 0 };
   function drawCell(g, i, j, sx3, sy, now) {
     if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }   // FARM GATE: drawn big by drawFarmGates
-    var shp = SHAPEN && !cave ? S.shape[j * W + i] : 0;
+    var shp = SHAPEN && !cave ? shapeAt(j * W + i) : 0;
     if (shp) { shapeDraw(g, i, j, sx3, sy, now, shp); return; }   // MALLET: a half-block or ramp
+    if (SHAPEN && !cave && j < H - 1 && tiles[j * W + i] !== T.AIR && !TILES[tiles[j * W + i]].solid) { var bs = shapeAt((j + 1) * W + i); if (bs === 2 || bs === 3) { g.save(); g.translate(0, Math.round(ts * 0.45)); drawCell0(g, i, j, sx3, sy, now); g.restore(); return; } }   // AUTO RAMPS: a plant on a slope settles onto it
     drawCell0(g, i, j, sx3, sy, now); if (S.stain[j * W + i] !== undefined) drawStain(g, i, j, sx3, sy);
     var ft = TILES[tiles[j * W + i]];
     if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles[(j - 1) * W + i]; if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
@@ -12915,7 +12931,7 @@
   var SHEDGE = [null, [0, 0.5, 1, 0.5], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 1], [0, 0, 1, 1]];
   function shapeDraw(g, i, j, sx, sy, now, sh) {
     var ix = j * W + i, under = j >= col[i] && j > world.top[i], id = tiles[ix], td = TILES[id];
-    if (!TLNB && under) drawBackRock(g, i, j, sx, sy);
+    if (walls[ix]) drawWall(g, walls[ix], i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
     var P = SHPOLY[sh], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]);
     var x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, nat = NATC[id] ? id : SMGEM[id] ? orePal(td) : 0;
     g.save(); g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); g.clip();
@@ -13306,7 +13322,7 @@
       WG[c] = L; if (L) { anyLamp = true; var lrc = lightRGB(id); CRG[c] = (L * lrc[0] / 255) | 0; CGG[c] = (L * lrc[1] / 255) | 0; CBG[c] = (L * lrc[2] / 255) | 0; } else CRG[c] = CGG[c] = CBG[c] = 0;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
-      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && X >= 0 && X < W && Y >= 0 && Y < H && S.shape[Y * W + X] ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
+      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : 10) * LQ);
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
@@ -13629,8 +13645,41 @@
   function carveEnd(g, id, i, j, sx, sy, nB, nL, nR, tl, tr, br, bl, nT) {   // the overlay, seams and the bottom shadow inside the clip, then the rims, then side shadows outside it
     if (NATOV) { var ov = NATOV; NATOV = null; ov(); }
     drawSeams(g, id, i, j, sx, sy);
+    grassSide(g, id, i, j, sx, sy, tl, tr);
     if (tl || tr || br || bl) { edgeShade(g, i, j, sx, sy, nB, false, false); g.restore(); carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, id === T.MOSS && nT); edgeShade(g, i, j, sx, sy, false, nL, nR); }
     else edgeShade(g, i, j, sx, sy, nB, nL, nR);
+  }
+  // SUNLIT GRASS SIDES: grass grows down any face of the ground the sun can see, like on the top: the side of a grassy block and the cliff face
+  // under it get a grass strip (full on the top two blocks, then breaking into drips and fading out by the fourth). Faces under an overhang or in a
+  // cave stay bare. Each strip is painted once per (side, depth, variant, land, corner) and stamped.
+  var GSC = {}, GSK = 0;
+  function grassSide(g, id, i, j, sx, sy, tl, tr) {
+    if (cave || OPT.gside === false || !(id === T.MOSS || id === T.MUD || id === T.CLAY || id === T.X_peat || id === T.X_silt)) return;
+    var top = col[i], d = j - top; if (d < 0 || d > 3 || tiles[top * W + i] !== T.MOSS) return;
+    for (var s = -1; s <= 1; s += 2) {
+      var nb = get(i + s, j); if (TILES[nb].solid || nb === T.WATER || nb === T.LAVA || j >= col[i + s]) continue;   // only a face open to the sky
+      var rc = d === 0 && (s < 0 ? tl : tr) ? 1 : 0; g.drawImage(grassSideC(s, d, SW.hash(i, j, 77 + s) * 4 | 0, varAt(i), rc), sx, sy, ts, ts);
+    }
+  }
+  function grassSideC(s, d, v, vk, rc) {
+    var S = Math.max(2, Math.round(ts * dpr)); if (GSK !== S) { GSC = {}; GSK = S; }
+    var key = s + "," + d + "," + v + "," + vk + "," + rc, c = GSC[key]; if (c) return c;
+    c = GSC[key] = document.createElement("canvas"); c.width = c.height = S; var q = c.getContext("2d"), k, n = 0;
+    q.scale(S, S); if (s > 0) { q.translate(1, 0); q.scale(-1, 1); }   // drawn for the left face, mirrored for the right
+    var GP = GRASSP[vk] || GRASSP[0], seed = (v * 97 + d * 13 + vk * 7 + 3) >>> 0, rnd = function () { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+    var y0 = rc ? 0.42 : 0, w = 0.15;
+    var strips = d <= 1 ? [[0, 1, w]] : d === 2 ? [[0, 0.35 + rnd() * 0.55, w * 0.95]] : [];
+    if (d >= 2) for (k = 0; k < (d === 2 ? 1 : 2); k++) if (rnd() < (d === 2 ? 0.7 : 0.55)) strips.push([0, 0.12 + rnd() * (d === 2 ? 0.75 : 0.35), w * (0.45 + rnd() * 0.3), 0.02 + rnd() * 0.04]);   // drips
+    strips.forEach(function (st) {
+      var a = Math.max(st[0], d === 0 ? y0 : 0), b = st[1], ww = st[2], ox = st[3] || 0; if (b <= a) return;
+      q.fillStyle = GP[0]; q.fillRect(ox, a, ww, b - a);
+      if (b < 1) { q.beginPath(); q.arc(ox + ww / 2, b, ww / 2, 0, 3.1416); q.fill(); }   // a rounded drip end
+      for (var y = a + 0.12; y < b - 0.06; y += 0.3) { q.beginPath(); q.arc(ox + ww * 0.75, y + rnd() * 0.08, ww * (0.55 + rnd() * 0.25), 0, 6.2832); q.fill(); }   // scalloped inner edge
+      q.fillStyle = GP[1]; q.fillRect(ox, a, ww * 0.55, b - a);
+      q.fillStyle = s < 0 ? GP[2] : "rgba(0,40,20,.25)"; q.fillRect(ox, a, Math.max(1 / S, ww * 0.22), b - a);   // the lit edge on a left face, a little shade on a right one
+    });
+    if (d <= 1) { var mg = q.createLinearGradient(0, 0, 0.45, 0); mg.addColorStop(0, "rgba(63,174,120,.3)"); mg.addColorStop(1, "rgba(63,174,120,0)"); q.fillStyle = mg; q.fillRect(w * 0.6, d === 0 ? y0 : 0, 0.45, 1); }   // a green wash into the dirt
+    return c;
   }
   // grass lip colours per land type: [lip, top, highlight, tuft, litter colours]
   var GRASSP = [["#2f9a6a", "#3fae78", "rgba(155,245,191,.65)", "#58d68b"], ["#3fa86a", "#5cc47e", "rgba(200,255,210,.7)", "#7ade8e", ["#ff9ad0", "#ffc8e4", "#f07ab0"]], null,
@@ -21307,7 +21356,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount };
+  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
