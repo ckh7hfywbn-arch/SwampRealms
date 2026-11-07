@@ -14429,6 +14429,10 @@
         if (oR) CL.push({ x: cx2 + 5, y: cy2 + (h0(8) - 0.5) * 4, r: rr - 2, dk: dk, top: oT });
         if (oT) CL.push({ x: cx2 + (h0(9) - 0.5) * 5, y: cy2 - 6, r: rr - 1.5, dk: Math.max(0, dk - 1), top: true });
       }
+      for (q = 0; q < L.length; q += 2) {   // a solid, shaded base under every leaf block, so no sky shows through the middle of a crown
+        var bi = L[q], bj = L[q + 1], bd2 = 0; while (bd2 < 3 && isLeaf(bi, bj - bd2 - 1)) bd2++;
+        for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) set(PX(bi) + x, PY(bj) + y, bd2 >= 2 || y > 10 ? 2 : 3);
+      }
       for (k = 0; k < CL.length; k++) { var c = CL[k];
         for (y = Math.floor(c.y - c.r - 1); y <= c.y + c.r + 1; y++) for (x = Math.floor(c.x - c.r - 1); x <= c.x + c.r + 1; x++) {
           var ddx = x + 0.5 - c.x, ddy = y + 0.5 - c.y, rn = c.r + (thash(x, y, st + 3) - 0.5) * 1.8; if (ddx * ddx + ddy * ddy > rn * rn) continue;
@@ -14444,6 +14448,14 @@
         if (hv < 0.06) { buf[kk2] = v + 1; if (own[kk2 + pw + 1] === own[kk2]) buf[kk2 + pw + 1] = v - 1; }   // leaf flecks
         else if (st === 1 && hv > 0.965 && v >= 4) { buf[kk2] = 7; if (buf[kk2 + 1] >= 4) buf[kk2 + 1] = 6; }   // blossoms
         else if (st === 3 && hv > 0.993) buf[kk2] = 7; }   // lichen
+    }
+    if (st !== 2) {   // close up any small hole the leaves wrap round (sky showing through between clusters) with deep shade
+      var fill = [], R = 9;
+      for (y = 1; y < ph - 1; y++) for (x = 1; x < pw - 1; x++) { if (buf[y * pw + x]) continue;
+        var hit = 0; for (var dd = 1; dd <= R && !(hit & 1); dd++) if (x - dd >= 0 && buf[y * pw + x - dd]) hit |= 1; for (dd = 1; dd <= R && !(hit & 2); dd++) if (x + dd < pw && buf[y * pw + x + dd]) hit |= 2;
+        if (hit !== 3) continue; for (dd = 1; dd <= R && !(hit & 4); dd++) if (y - dd >= 0 && buf[(y - dd) * pw + x]) hit |= 4; for (dd = 1; dd <= R && !(hit & 8); dd++) if (y + dd < ph && buf[(y + dd) * pw + x]) hit |= 8;
+        if (hit === 15) fill.push(y * pw + x); }
+      for (k = 0; k < fill.length; k++) buf[fill[k]] = thash(fill[k] % pw, (fill[k] / pw) | 0, 17) < 0.14 ? 3 : 2;   // (a few shaded leaves in it, so it reads as foliage)
     }
     outlinePx(buf, pw, ph);
     return pxCanvas(buf, pw, ph, palRgb("c" + st, CPAL[st]));
@@ -14536,7 +14548,7 @@
         if ((s < 0 ? Ls || rL : Rs || rR) || st === 2) continue; var ln = 4 + thash(i, s, 61) * 4;
         thick(8 + s * 4, 11, 8 + s * (5 + ln), 16.5, 8 + s * (4 + ln * 0.4), 15, 2.2, 0.8, true);
       }
-      if (j > top + 1 && j < foot - 1 && !twinL && !twinR) for (var s3 = -1; s3 <= 1; s3 += 2) if (isLeaf(i + s3, j) && !isLeaf(i, j - 1)) thick(8 + s3 * 3, 12, 8 + s3 * 13, 7, 8 + s3 * 8, 12, 2.2, 1.2, true);   // a bough into a leafy tuft
+      if (j > top + 1 && j < foot - 1) for (var s3 = -1; s3 <= 1; s3 += 2) if (isLeaf(i + s3, j) && !isLeaf(i, j - 1) && !(twinL && s3 > 0) && !(twinR && s3 < 0)) thick(8 + s3 * 3, 12, 8 + s3 * 13, 7, 8 + s3 * 8, 12, 2.2, 1.2, true);   // a bough into a leafy tuft
       outlinePx(buf, N, N, deco);
       return pxCanvas(buf, N, N, palRgb("b" + st, BPAL[st]));
     }
