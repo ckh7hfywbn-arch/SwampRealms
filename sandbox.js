@@ -13553,24 +13553,31 @@
     } else { arc(sx + tl, sy + tl, tl, H, H * 1.5, "rgba(255,255,255,.16)", lw); arc(sx + ts - tr, sy + tr, tr, H * 1.5, H * 2, "rgba(255,255,255,.16)", lw); }
     arc(sx + ts - br, sy + ts - br, br, 0, H * 0.5, "rgba(0,0,0,.32)", lw * 1.5); arc(sx + bl, sy + ts - bl, bl, H * 0.5, H, "rgba(0,0,0,.32)", lw * 1.5);
   }
-  function seamCanvas(nid, side, v, dq) {   // a jagged tongue of soft ground nid reaching into a rock block from one side (cached)
-    var key = nid + "," + side + "," + v + "," + dq + "," + ts, c = SEAMC.get(key); if (c) return c;
+  // SOIL MIXING: where two different soils meet (peat or clay pockets in mud, say) the rarer one reaches into the commoner one in soft
+  // tongues with a few loose crumbs, so pockets blend into the ground instead of sitting in it as square patches. Rank decides who reaches.
+  var SRANK = {}; [[T.MOSS, 1], [T.MUD, 1], [T.SNOW, 2], [T.X_sand, 3], [T.X_silt, 4], [T.ASH, 5], [T.CLAY, 6], [T.X_peat, 7]].forEach(function (r) { if (r[0] !== undefined) SRANK[r[0]] = r[1]; });
+  function seamCanvas(nid, side, v, dq, soft) {   // a jagged tongue of soft ground nid reaching into a rock block (or a softer soil) from one side (cached)
+    var key = nid + "," + side + "," + v + "," + dq + "," + ts + (soft ? "s" : ""), c = SEAMC.get(key); if (c) return c;
     var S2 = Math.max(2, Math.round(ts * dpr)), k2 = S2 / ts; c = document.createElement("canvas"); c.width = c.height = S2; var q = c.getContext("2d"); q.setTransform(k2, 0, 0, k2, 0, 0);
     q.translate(ts / 2, ts / 2); q.rotate(side * Math.PI / 2); q.translate(-ts / 2, -ts / 2);   // drawn for the top side, turned for the others
     var pal = NATC[nid], d = dq / 4, n = 6, pts = [];
-    for (var k = 0; k <= n; k++) { var e2 = k === 0 || k === n ? 0.02 : 0.07 + SW.hash(nid * 7 + v, k, 31 + side) * 0.2; pts.push([ts * k / n, ts * e2]); }
+    for (var k = 0; k <= n; k++) { var e2 = k === 0 || k === n ? 0.02 : (soft ? 0.06 + SW.hash(nid * 7 + v, k, 31 + side) * 0.3 : 0.07 + SW.hash(nid * 7 + v, k, 31 + side) * 0.2); pts.push([ts * k / n, ts * e2]); }
     q.fillStyle = mixRgb(pal[0], pal[1], d); q.beginPath(); q.moveTo(0, 0); q.lineTo(ts, 0); q.lineTo(pts[n][0], pts[n][1]);
     for (k = n - 1; k >= 1; k--) { var mx = (pts[k][0] + pts[k + 1][0]) / 2, my = (pts[k][1] + pts[k + 1][1]) / 2; q.quadraticCurveTo(pts[k + 1][0], pts[k + 1][1], mx, my); }
     q.lineTo(pts[0][0], pts[0][1]); q.closePath(); q.fill();
-    q.strokeStyle = "rgba(0,0,0,.3)"; q.lineWidth = Math.max(1, ts / 18); q.beginPath(); q.moveTo(pts[n][0], pts[n][1]);
+    if (soft) { for (k = 0; k < 4; k++) { var cxk = ts * (0.12 + SW.hash(nid + v, k, 71 + side) * 0.76), cyk = ts * (0.3 + SW.hash(nid + v, k, 73 + side) * 0.22), rk = ts * (0.025 + SW.hash(nid + v, k, 75) * 0.03);
+      q.beginPath(); q.ellipse(cxk, cyk, rk * 1.3, rk, 0, 0, 6.2832); q.fill(); } }   // loose crumbs past the tongue
+    q.strokeStyle = soft ? "rgba(0,0,0,.13)" : "rgba(0,0,0,.3)"; q.lineWidth = Math.max(1, ts / 18); q.beginPath(); q.moveTo(pts[n][0], pts[n][1]);
     for (k = n - 1; k >= 1; k--) { var mx2 = (pts[k][0] + pts[k + 1][0]) / 2, my2 = (pts[k][1] + pts[k + 1][1]) / 2; q.quadraticCurveTo(pts[k + 1][0], pts[k + 1][1], mx2, my2); } q.lineTo(pts[0][0], pts[0][1]); q.stroke();
     q.fillStyle = "rgba(255,255,255,.08)"; for (k = 1; k < n; k += 2) { q.beginPath(); q.ellipse(pts[k][0], pts[k][1] * 0.45, ts * 0.05, ts * 0.03, 0, 0, 6.2832); q.fill(); }
     if (SEAMC.size > 600) SEAMC.clear(); SEAMC.set(key, c); return c;
   }
   function drawSeams(g, id, i, j, sx, sy) {
-    if (!CARVE_HARD[id]) return; var dq = Math.round(clamp((j - SURF) / 46, 0, 1) * 4), v = ((i * 7 + j * 13) >>> 0) & 3;
+    var hard = CARVE_HARD[id], rk = SRANK[id]; if (!hard && !rk) return; var dq = Math.round(clamp((j - SURF) / 46, 0, 1) * 4), v = ((i * 7 + j * 13) >>> 0) & 3;
     var nb = [get(i, j - 1), get(i + 1, j), get(i, j + 1), get(i - 1, j)];
-    for (var sd = 0; sd < 4; sd++) { var nid = nb[sd]; if (CARVE_SOFT[nid] && NATC[nid]) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq), sx, sy, ts, ts); }
+    for (var sd = 0; sd < 4; sd++) { var nid = nb[sd]; if (!CARVE_SOFT[nid] || !NATC[nid]) continue;
+      if (hard) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq), sx, sy, ts, ts);
+      else if (SRANK[nid] > rk) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq, true), sx, sy, ts, ts); }
   }
   var NATOV = null, CARVE_AT = null;   // NATOV: an overlay (an ore's gems) drawn inside the rounded clip; CARVE_AT: atlas-drawn natural blocks that round too
   function carveCorners(i, j, nT, nB, nL, nR, k) {   // [tl, tr, br, bl] corner radii in pixels, or null when no corner rounds (k: radius as a share of a tile)
