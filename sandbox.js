@@ -12907,7 +12907,7 @@
   var SHEDGE = [null, [0, 0.5, 1, 0.5], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 1], [0, 0, 1, 1]];
   function shapeDraw(g, i, j, sx, sy, now, sh) {
     var ix = j * W + i, under = j >= col[i] && j > world.top[i], id = tiles[ix], td = TILES[id];
-    if (walls[ix]) drawWall(g, walls[ix], i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
+    if (!TLNB && under) drawBackRock(g, i, j, sx, sy);
     var P = SHPOLY[sh], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]);
     var x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, nat = NATC[id] ? id : SMGEM[id] ? orePal(td) : 0;
     g.save(); g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); g.clip();
@@ -13202,10 +13202,11 @@
         var lo = function (a, b) { return !TILES[get(a, b)].solid; };
         var lmask = (lo(i, j - 1) ? 1 : 0) | (lo(i, j + 1) ? 2 : 0) | (lo(i - 1, j) ? 4 : 0) | (lo(i + 1, j) ? 8 : 0);
         lmask |= (!(lmask & 5) && lo(i - 1, j - 1) ? 16 : 0) | (!(lmask & 9) && lo(i + 1, j - 1) ? 32 : 0) | (!(lmask & 6) && lo(i - 1, j + 1) ? 64 : 0) | (!(lmask & 10) && lo(i + 1, j + 1) ? 128 : 0);   // inner corners get a rounded notch
-        natLeaf(g, i, j, sx3, sy, lmask);
+        if (OPT.canopy === false) natLeaf(g, i, j, sx3, sy, lmask);
+        else if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy);   // TREE CANOPIES: the leaves themselves are painted after all the blocks (drawCanopies)
       } else {
         if (NATC[id]) { natTile(g, id, i, j, sx3, sy); return; }
-        if (id === T.LOG) { natLogC(g, i, j, sx3, sy); }
+        if (id === T.LOG) { if (OPT.canopy === false || cave || !treeLogC(g, i, j, sx3, sy, under)) natLogC(g, i, j, sx3, sy); }
         else if (SMGEM[id]) { NATOV = function () { smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }; natTile(g, orePal(td), i, j, sx3, sy); NATOV = null; }   // the gems are drawn inside the rounded clip
         else if (td.kind === "door" || td.hatch) matWood(g, td, i, j, sx3, sy);
         else if (MATF[id]) { cvA = carveBuildStart(g, id, i, j, sx3, sy); if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
@@ -14313,6 +14314,308 @@
     var cv = LEAFCACHE[key] || (LEAFCACHE[key] = buildLeafTile(mask, v, S, vk));
     g.drawImage(cv, 0, 0, S, S, sx, sy, ts, ts);
   }
+  // ===== TREE CANOPIES (a canopy per tree, not a stack of leaf blocks) =====
+  // Leaves are still blocks for play (punch them for sticks, stand on the top, they wither when the trunk goes), but they are no longer drawn
+  // one square at a time. After every block is drawn, drawCanopies() paints each leaf block as a round clump a bit bigger than its cell,
+  // in passes over the whole canopy: a dark ink silhouette first (so the whole crown gets one outline), then the clumps from the bottom row
+  // up (each row's clumps overlap the row below, so the crown reads as layered, fluffy foliage), then sunlit clumps on the top edge.
+  // Clumps are shaded by how deep they sit in the crown (lighter on top, darker underneath) and sway a little in the wind.
+  // Each land has its own tree: round swamp crowns, pink cherry clouds, palm fronds, heavy dark-oak crowns and snow-capped pine tiers.
+  // Trunks get a little dressing too: flared roots over the ground and the odd side branch with a tuft of leaves.
+  // Every clump look is painted once per (style, tone, size) into a small cached canvas and stamped, so a forest costs a few drawImages a block.
+  var CANC = {}, CANK = 0, CAN_TONES = 5;
+  function canHex(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  // per style: ink, deep, body, lit, tip
+  var CANP = [["#0b2a1a", "#17543a", "#2a8a52", "#4fbf6e", "#a6e889"],    // 0 swamp
+    ["#5a1638", "#a83a72", "#e06aa2", "#ff9fc8", "#ffe2ef"],                 // 1 cherry blossom
+    ["#123a14", "#2a6e2a", "#45a040", "#7fd060", "#c8f08c"],                 // 2 palm
+    ["#071a0c", "#14361d", "#22522c", "#3a7640", "#7aa84e"],                 // 3 dark oak
+    ["#06201e", "#0f3d36", "#1d5c4c", "#2f7d62", "#62a888"]].map(function (p) { return p.map(canHex); });   // 4 frost pine
+  function canStyle(i) { var vk = varAt(i); if (vk) return vk; return world.bio[clamp(i, 0, W - 1)] === 2 ? 4 : 0; }
+  function canShape(q, st, R, rnd, sc) {   // the clump's outline as one path: a round, lobed puff (or a drooping pine tier)
+    R *= sc || 1;
+    if (st === 4) {   // a pine tier: a low peak, wide drooping sides and a toothed underside of needle tips
+      q.moveTo(-R * 1.18, R * 0.3); q.quadraticCurveTo(-R * 0.55, -R * 0.1, 0, -R * 0.62); q.quadraticCurveTo(R * 0.55, -R * 0.1, R * 1.18, R * 0.3);
+      for (var t = 5; t >= 0; t--) { var x = -R * 1.18 + R * 2.36 * t / 5, xm = x + R * 0.236; q.lineTo(xm, R * (0.48 + rnd() * 0.12)); q.lineTo(x, R * 0.3); }
+      q.closePath(); return;
+    }
+    var n = st === 3 ? 8 : 7, rot = rnd() * 6.283, lr = st === 1 ? 0.5 : 0.46;
+    q.moveTo(R * 0.72, 0); q.arc(0, 0, R * 0.72, 0, 6.283);
+    for (var k = 0; k < n; k++) { var a = rot + k * 6.283 / n, d = R * 0.5, rr = R * lr * (0.85 + rnd() * 0.3), cx = Math.cos(a) * d, cy = Math.sin(a) * d * 0.9; q.moveTo(cx + rr, cy); q.arc(cx, cy, rr, 0, 6.283); }
+  }
+  function canSprite(st, kind, tone, v) {   // kind 0 ink, 1 body, 2 sunlit top (snow cap on pines), 3 small tuft
+    var S = Math.max(2, Math.round(ts * dpr)); if (CANK !== S) { CANC = {}; CANK = S; }
+    var key = st * 1000 + kind * 100 + tone * 10 + v, c = CANC[key]; if (c) return c;
+    var P = CANP[st], C = Math.round(S * 2.4); c = document.createElement("canvas"); c.width = c.height = C;
+    var q = c.getContext("2d"), seed = (st * 977 + v * 131 + 7) >>> 0, rnd = function () { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+    q.translate(C / 2, C / 2); q.scale(S, S);   // units: one block
+    var R = 0.66, tk = tone / (CAN_TONES - 1), k, s0 = seed;
+    if (kind === 0) {   // ink: the same puff a touch bigger, in the crown's dark outline colour
+      q.beginPath(); canShape(q, st, R, rnd, 1.1); q.fillStyle = rgbA(P[0]); q.fill(); c.ox = 0; return (CANC[key] = c);
+    }
+    var sc = kind === 2 ? (st === 4 ? 1 : 0.62) : kind === 3 ? 0.5 : 1;
+    q.beginPath(); canShape(q, st, R, rnd, sc); q.save(); q.clip();
+    var top = kind === 2 ? (st === 4 ? [238, 246, 251] : P[4]) : mixA(P[3], P[1], tk * 0.85), mid = kind === 2 ? (st === 4 ? [196, 220, 232] : P[3]) : mixA(P[2], P[1], 0.25 + tk * 0.6), bot = kind === 2 ? (st === 4 ? [150, 186, 204] : P[2]) : mixA(P[1], P[0], 0.2 + tk * 0.5);
+    var lg = q.createLinearGradient(0, -R * sc, 0, R * sc * 0.9); lg.addColorStop(0, rgbA(top)); lg.addColorStop(0.5, rgbA(mid)); lg.addColorStop(1, rgbA(bot));
+    q.fillStyle = lg; q.fillRect(-1.2, -1.2, 2.4, 2.4);
+    if (st === 4 && kind === 2) {   // snow cap: only the top of the tier is white, the needles still show underneath
+      q.fillStyle = rgbA(mixA(P[2], P[1], 0.3)); q.beginPath(); q.moveTo(-1.2, R * 0.12); for (k = 0; k <= 8; k++) q.quadraticCurveTo(-1.2 + k * 0.3 - 0.15, R * (0.32 + rnd() * 0.18), -1.2 + k * 0.3, R * 0.12); q.lineTo(1.2, 1.2); q.lineTo(-1.2, 1.2); q.fill();
+      q.fillStyle = "rgba(255,255,255,.9)"; for (k = 0; k < 3; k++) q.fillRect(-0.5 + rnd(), -0.3 + rnd() * 0.25, 0.04, 0.04);
+    } else if (st === 4) {   // needles: short strokes fanning down from the peak
+      q.lineWidth = 0.035; q.lineCap = "round";
+      for (k = 0; k < 16; k++) { var nx = (rnd() - 0.5) * 2.1 * R, ny = -R * 0.3 + rnd() * R * 0.75, dn = nx > 0 ? 1 : -1; q.strokeStyle = k % 3 ? rgbA(P[1], 0.7) : rgbA(P[4], 0.55); q.beginPath(); q.moveTo(nx, ny); q.lineTo(nx + dn * 0.1, ny + 0.12); q.stroke(); }
+    } else if (st === 2) {   // palm leaflets
+      q.lineWidth = 0.04; for (k = 0; k < 10; k++) { var px = (rnd() - 0.5) * 1.2 * R, py = (rnd() - 0.5) * 1.1 * R; q.strokeStyle = rgbA(k & 1 ? P[1] : P[4], 0.6); q.beginPath(); q.moveTo(px, py); q.lineTo(px + 0.1, py + 0.14); q.stroke(); }
+    } else {   // leaves: little pointed leaf shapes, lit ones up top, shaded ones low down
+      for (k = 0; k < 14; k++) {
+        var lx = (rnd() - 0.5) * 1.7 * R * sc, ly = (rnd() - 0.5) * 1.6 * R * sc, la = -1.2 + (rnd() - 0.5) * 2.2, ll = (st === 1 ? 0.1 : 0.15) * (0.8 + rnd() * 0.4), up = ly < 0;
+        q.fillStyle = up ? rgbA(mixA(P[4], P[3], tk), 0.55) : rgbA(P[1], 0.55);
+        q.beginPath(); q.ellipse(lx, ly, ll, ll * 0.45, la, 0, 6.283); q.fill();
+      }
+      if (st === 1) for (k = 0; k < 7; k++) { q.fillStyle = k % 3 ? "rgba(255,240,248,.95)" : "rgba(255,214,120,.95)"; q.beginPath(); q.arc((rnd() - 0.5) * 1.5 * R * sc, (rnd() - 0.6) * 1.3 * R * sc, 0.035, 0, 6.283); q.fill(); }   // blossoms
+      if (st === 3 && rnd() < 0.6) { q.fillStyle = "rgba(200,220,110,.5)"; q.fillRect(-0.2 + rnd() * 0.3, -0.3 + rnd() * 0.2, 0.06, 0.06); }
+    }
+    if (!(st === 4 && kind === 2)) {
+      q.fillStyle = rgbA(P[0], v & 2 ? 0.14 : 0.28); q.beginPath(); q.ellipse(0.05, R * sc * 0.82, R * sc * 1.05, R * sc * 0.42, 0, 0, 6.283); q.fill();   // the shadow along the clump's underside
+      q.fillStyle = "rgba(255,255,240," + (kind === 2 ? 0.22 : 0.12) + ")"; q.beginPath(); q.ellipse(-R * sc * 0.3, -R * sc * 0.38, R * sc * 0.36, R * sc * 0.2, -0.5, 0, 6.283); q.fill();   // soft shine top-left
+    }
+    q.restore();
+    return (CANC[key] = c);
+  }
+  function canStamp(g, c, cx, cy, sc) { var w = c.width / CANK * ts * (sc || 1); g.drawImage(c, cx - w / 2, cy - w / 2, w, w); }
+  function isLeaf(i, j) { return get(i, j) === T.LEAVES; }
+  function palmHub(i, j) {   // the top of the palm trunk under this frond: where its fronds spring from
+    for (var y = j; y <= j + 4; y++) for (var d = 0; d <= 4; d++) for (var s = -1; s <= 1; s += 2) { var x = i + d * s; if (get(x, y) === T.LOG && get(x, y - 1) !== T.LOG) return [x + 0.5, y - 0.15]; if (!d) break; }
+    return null;
+  }
+  function drawFrond(g, hx, hy, tx, ty, P, sw, ink) {   // a palm frond: an arched, drooping leaf from the crown out past its block, with leaflets
+    var dx = tx - hx, dy = ty - hy, L = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / L, uy = dy / L, ex = tx + ux * 0.55 + sw, ey = ty + uy * 0.35 + 0.35;
+    var mx = (hx + ex) / 2 + 0, my = Math.min(hy, ey) - 0.45 - L * 0.05, X = function (x) { return ox + x * ts; }, Y = function (y) { return oy + y * ts; };
+    var nx = -uy, ny = ux, w = 0.22;
+    g.beginPath(); g.moveTo(X(hx), Y(hy)); g.quadraticCurveTo(X(mx + nx * w), Y(my - Math.abs(ny) * w), X(ex), Y(ey)); g.quadraticCurveTo(X(mx - nx * w * 0.4), Y(my + 0.18), X(hx), Y(hy + 0.08)); g.closePath();
+    if (ink) { g.lineWidth = Math.max(2, ts * 0.12); g.lineJoin = "round"; g.strokeStyle = rgbA(P[0]); g.stroke(); return; }
+    var lg = g.createLinearGradient(0, Y(my - 0.2), 0, Y(ey)); lg.addColorStop(0, rgbA(P[3])); lg.addColorStop(1, rgbA(P[1])); g.fillStyle = lg; g.fill();
+    g.strokeStyle = rgbA(P[4], 0.7); g.lineWidth = Math.max(1, ts * 0.04); g.beginPath(); g.moveTo(X(hx), Y(hy)); g.quadraticCurveTo(X(mx), Y(my), X(ex), Y(ey)); g.stroke();   // the midrib
+    g.strokeStyle = rgbA(P[0], 0.45); g.lineWidth = Math.max(1, ts * 0.03);
+    for (var k = 1; k < 6; k++) { var t = k / 6, bx = (1 - t) * (1 - t) * hx + 2 * t * (1 - t) * mx + t * t * ex, by = (1 - t) * (1 - t) * hy + 2 * t * (1 - t) * my + t * t * ey; g.beginPath(); g.moveTo(X(bx), Y(by)); g.lineTo(X(bx + ux * 0.12), Y(by + 0.2)); g.stroke(); }   // leaflet cuts
+  }
+  function bendUp(i, j) {   // a leaning trunk (palms): the log above-left or above-right carries on when straight up is open
+    if (get(i, j - 1) !== T.AIR) return 0; var l = get(i - 1, j - 1) === T.LOG && get(i - 1, j) !== T.LOG, r = get(i + 1, j - 1) === T.LOG && get(i + 1, j) !== T.LOG;
+    return l && !r ? -1 : r && !l ? 1 : 0;
+  }
+  function trunkTree(i, j) {   // is this log part of a tree (a trunk crowned with leaves), not a house beam?
+    for (var y = j; y > j - 16 && y > 0; y--) { var id = get(i, y); if (id === T.LEAVES) return true; if (id !== T.LOG) return false; if (canStyle(i) === 2 && get(i, y - 1) === T.AIR) { var b = bendUp(i, y); if (!b) return false; i += b; } }
+    return false;
+  }
+  // PERF: a whole crown (one connected clump of leaf blocks) is painted once into its own canvas and kept until any of its leaves change;
+  // each frame it is stamped with a gentle shear for the wind, so a forest costs one drawImage per tree.
+  var CANT = new Map(), CANT_PX = 0, CSTAMP = null, CSTN = 0, CANL = [], CANBFS = [];
+  function canPasses(g, L) {   // L: [i, j, i, j, ...] sorted bottom row first; draws ink, clumps and sunlit tops (no sway: the crown sways as a whole)
+    var q, i, j, st, tt = 0, sw = 0;
+    for (q = 0; q < L.length; q += 2) {   // 1. ink: one dark outline round the whole crown (palms: an outline round each frond)
+      i = L[q]; j = L[q + 1]; st = canStyle(i);
+      if (st === 2) { var hb = palmHub(i, j); if (hb) { drawFrond(g, hb[0], hb[1], i + 0.5, j + 0.5, CANP[2], 0, true); continue; } }
+      if (st === 4) continue;
+      canStamp(g, canSprite(st, 0, 0, (i * 7 + j * 3) & 3), ox + (i + 0.5 + (SW.hash(i, j, 91) - 0.5) * 0.24) * ts, oy + (j + 0.55 + (SW.hash(i, j, 92) - 0.5) * 0.2) * ts, 0.9 + SW.hash(i, j, 93) * 0.22);
+    }
+    for (q = 0; q < L.length; q += 2) {   // 2. the clumps, bottom row first so each row overlaps the one below it
+      i = L[q]; j = L[q + 1]; st = canStyle(i);
+      if (st === 2) { var hb2 = palmHub(i, j); if (hb2) { drawFrond(g, hb2[0], hb2[1], i + 0.5, j + 0.5, CANP[2], 0, false); continue; } }
+      if (st === 4) { if (!pineRun(i - 1, j)) pineTier(g, i, j, 0); continue; }   // a pine: one tier per row of leaves
+      var d = 0; while (d < 3 && isLeaf(i, j - d - 1)) d++;
+      var ob = !isLeaf(i, j + 1), tone = clamp(Math.round((d * 0.28 + (ob ? 0.3 : 0)) * (CAN_TONES - 1)), 0, CAN_TONES - 1);
+      var jx = (SW.hash(i, j, 91) - 0.5) * 0.24, jy = (SW.hash(i, j, 92) - 0.5) * 0.2, js = 0.9 + SW.hash(i, j, 93) * 0.22;   // a little jitter so the crown never looks like a grid
+      canStamp(g, canSprite(st, 1, tone, (i * 5 + j * 11) & 3), ox + (i + 0.5 + jx) * ts, oy + (j + 0.5 + jy) * ts, js);
+    }
+    for (q = 0; q < L.length; q += 2) {   // 3. sunlit clumps along the top of the crown (pines carry their snow in the tier itself)
+      i = L[q]; j = L[q + 1]; st = canStyle(i); if (st === 2 || st === 4 || isLeaf(i, j - 1)) continue;
+      canStamp(g, canSprite(st, 2, 0, (i * 3 + j) & 3), ox + (i + 0.36) * ts, oy + (j + 0.28) * ts);
+    }
+    for (q = 0; q < L.length; q += 2) {   // palm crowns: a tight, lit knot of frond bases at the top of the trunk
+      i = L[q]; j = L[q + 1]; if (canStyle(i) !== 2 || get(i, j + 1) !== T.LOG) continue;
+      canStamp(g, canSprite(2, 1, 0, 1), ox + (i + 0.5) * ts, oy + (j + 0.7) * ts, 0.8);
+    }
+  }
+  function drawCanopies(g, now, X0, X1, Y0, Y1) {
+    var i, j, q, tt = now / 1000, S = Math.max(2, Math.round(ts * dpr));
+    if (CANK !== S) { CANC = {}; CANK = S; CANT.clear(); CANT_PX = 0; }
+    if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Uint32Array(W * H); CSTN++;
+    for (j = Math.max(1, Y0 - 1); j <= Math.min(H - 2, Y1 + 1); j++) for (i = Math.max(1, X0 - 1); i <= Math.min(W - 2, X1 + 1); i++) {
+      var id = get(i, j);
+      if (id === T.LOG) { if (!cave) trunkDeco(g, i, j, tt); continue; }
+      if (id !== T.LEAVES || CSTAMP[j * W + i] === CSTN) continue;
+      // the whole crown this leaf belongs to (leaves touching, corners included), its bounds and a signature of its shape
+      CANL.length = 0; CANBFS.length = 0; CANBFS.push(j * W + i); CSTAMP[j * W + i] = CSTN;
+      var x0 = i, x1 = i, y0 = j, y1 = j, mn = j * W + i, sig = 0, n = 0;
+      while (CANBFS.length && n < 900) {
+        var c = CANBFS.pop(), cx = c % W, cy = (c / W) | 0; n++; CANL.push(cx, cy); if (c < mn) mn = c; sig = (sig + Math.imul(c, 2654435761)) | 0;
+        if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; if (cy > y1) y1 = cy;
+        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; var nx = cx + dx, ny = cy + dy; if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue; var ni = ny * W + nx; if (CSTAMP[ni] !== CSTN && tiles[ni] === T.LEAVES) { CSTAMP[ni] = CSTN; CANBFS.push(ni); } }
+      }
+      var e = CANT.get(mn), M = 1.8;
+      if (!e || e.sig !== sig || e.n !== n) {
+        var k2 = Math.min(dpr, 1.5), cw = Math.ceil((x1 - x0 + 1 + M * 2) * ts * k2), ch = Math.ceil((y1 - y0 + 1 + M * 2) * ts * k2);
+        if (e) { CANT_PX -= e.cv.width * e.cv.height; CANT.delete(mn); }
+        if (CANT_PX + cw * ch > 9e6) { var it = CANT.keys(); while (CANT_PX + cw * ch > 6e6) { var ok = it.next(); if (ok.done) break; var oe = CANT.get(ok.value); CANT_PX -= oe.cv.width * oe.cv.height; CANT.delete(ok.value); } }
+        var cv = document.createElement("canvas"); cv.width = cw; cv.height = ch; var cg = cv.getContext("2d"); cg.scale(k2, k2);
+        var L = []; for (q = 0; q < CANL.length; q += 2) L.push([CANL[q], CANL[q + 1]]);
+        L.sort(function (a, b) { return b[1] - a[1] || b[0] - a[0]; }); var LF = []; L.forEach(function (t) { LF.push(t[0], t[1]); });
+        var sox = ox, soy = oy; ox = (M - x0) * ts; oy = (M - y0) * ts;
+        try { canPasses(cg, LF); } finally { ox = sox; oy = soy; }
+        e = { sig: sig, n: n, cv: cv, x0: x0, y0: y0, x1: x1, y1: y1, k: k2 }; CANT.set(mn, e); CANT_PX += cw * ch;
+      }
+      var px = ox + (e.x0 - M) * ts, py = oy + (e.y0 - M) * ts, w = e.cv.width / e.k, h = e.cv.height / e.k;
+      var shear = reduce ? 0 : Math.sin(tt * 1.15 + (mn % 997) * 0.37) * 0.018 + Math.sin(tt * 2.7 + mn % 13) * 0.006, base = oy + (e.y1 + 1) * ts;
+      if (shear) { g.save(); g.translate(0, base); g.transform(1, 0, -shear, 1, 0, 0); g.translate(0, -base); g.drawImage(e.cv, px, py, w, h); g.restore(); }
+      else g.drawImage(e.cv, px, py, w, h);
+    }
+  }
+  function pineRun(i, j) {   // part of a pine row: a pine leaf, or the trunk with pine leaves on the far side of it
+    if (canStyle(i) !== 4) return false; if (isLeaf(i, j)) return true;
+    return get(i, j) === T.LOG && (isLeaf(i - 1, j) || isLeaf(i + 1, j));
+  }
+  function pineTier(g, i, j, tt) {   // one drooping, snow-capped tier for a whole row of pine leaves (i = the row's leftmost leaf; the tier runs across the trunk)
+    var i2 = i; while (pineRun(i2 + 1, j) && (isLeaf(i2 + 1, j) || isLeaf(i2 + 2, j))) i2++;
+    var P = CANP[4], sw = reduce ? 0 : Math.sin(tt * 1.2 + i * 0.5 + j * 0.3) * 0.035, L = i - 0.62 + sw, R = i2 + 1.62 + sw, C = (L + R) / 2, wdt = R - L;
+    var X = function (x) { return ox + x * ts; }, Y = function (y) { return oy + y * ts; }, n = Math.max(3, Math.round(wdt * 1.6)), k;
+    var pk = j - 0.3 - Math.min(0.35, wdt * 0.05), tip = j + 0.92;
+    var path = function () {
+      g.beginPath(); g.moveTo(X(L), Y(tip)); g.quadraticCurveTo(X(L + wdt * 0.28), Y(j + 0.35), X(C), Y(pk)); g.quadraticCurveTo(X(R - wdt * 0.28), Y(j + 0.35), X(R), Y(tip));
+      for (k = n - 1; k >= 0; k--) { var x = L + wdt * k / n, xm = x + wdt / n / 2; g.lineTo(X(xm), Y(j + 0.74 + SW.hash(i + k, j, 66) * 0.08)); g.lineTo(X(x), Y(j + 0.9)); }
+      g.closePath();
+    };
+    path(); g.lineJoin = "round"; g.lineWidth = Math.max(2, ts * 0.1); g.strokeStyle = rgbA(P[0]); g.stroke();
+    var lg = g.createLinearGradient(0, Y(pk), 0, Y(tip)); lg.addColorStop(0, rgbA(P[3])); lg.addColorStop(0.55, rgbA(P[2])); lg.addColorStop(1, rgbA(P[1])); g.fillStyle = lg; g.fill();
+    g.save(); path(); g.clip();
+    g.lineWidth = Math.max(1, ts * 0.04); g.lineCap = "round";   // needles fanning out and down from the middle
+    for (k = 0; k < Math.round(wdt * 5); k++) { var nx = L + 0.2 + SW.hash(i * 31 + k, j, 67) * (wdt - 0.4), ny = j + 0.15 + SW.hash(i * 31 + k, j, 68) * 0.6, dn = nx > C ? 1 : -1; g.strokeStyle = k % 3 ? rgbA(P[1], 0.6) : rgbA(P[4], 0.5); g.beginPath(); g.moveTo(X(nx), Y(ny)); g.lineTo(X(nx + dn * 0.14), Y(ny + 0.16)); g.stroke(); }
+    g.fillStyle = rgbA(P[0], 0.35); g.fillRect(X(L), Y(j + 0.7), wdt * ts, ts * 0.3);   // shade along the underside
+    if (world.bio[clamp(i, 0, W - 1)] === 2) {   // snow lying along the top of the tier, with a soft, drippy lower edge
+      g.beginPath(); g.moveTo(X(L - 0.1), Y(tip - 0.02)); g.quadraticCurveTo(X(L + wdt * 0.28), Y(j + 0.35), X(C), Y(pk - 0.1)); g.quadraticCurveTo(X(R - wdt * 0.28), Y(j + 0.35), X(R + 0.1), Y(tip - 0.02));
+      for (k = n; k >= 0; k--) { var sx2 = L + wdt * k / n, f = Math.abs(sx2 - C) / (wdt / 2); g.quadraticCurveTo(X(sx2 + wdt / n / 2), Y(j + 0.12 + f * 0.62 + SW.hash(k + i, j, 69) * 0.12), X(sx2), Y(j + 0.02 + f * 0.6)); }
+      g.closePath(); var sg = g.createLinearGradient(0, Y(pk), 0, Y(tip)); sg.addColorStop(0, "#f6fbff"); sg.addColorStop(1, "#b8d4e4"); g.fillStyle = sg; g.fill();
+      g.fillStyle = "rgba(255,255,255,.95)"; for (k = 0; k < Math.ceil(wdt); k++) if (SW.hash(i + k, j, 70) > 0.5) g.fillRect(X(L + 0.3 + SW.hash(i + k, j, 71) * (wdt - 0.6)), Y(j + 0.1 + SW.hash(i + k, j, 72) * 0.25), Math.max(1, ts * 0.05), Math.max(1, ts * 0.05));
+    }
+    g.restore(); g.lineCap = "butt";
+  }
+  var TBARK = { 0: ["#1e120a", "#5e4024", "#7a5634", "#3e2814"], 1: ["#2e1820", "#6a4048", "#8e6066", "#4a2c34"], 2: ["#3a2810", "#a07c48", "#c8a46a", "#7a5a30"], 3: ["#100806", "#3a2618", "#553a24", "#24160c"], 4: ["#1a120c", "#5a3e28", "#7a5a3c", "#3a2618"] };
+  // PERF: each trunk block's look is painted once into a small canvas (with room round it for boughs and roots) and kept while the
+  // blocks round it stay the same; only the cave rock behind it is drawn live.
+  var TLC = new Map(), TLNB = 0, TLS = 0;
+  function treeLogC(g, i, j, sx, sy, under) {
+    var ix = j * W + i; if (walls[ix] || tiles[ix] !== orig[ix]) return false;
+    var S = Math.max(2, Math.round(ts * dpr)); if (S !== TLS) { TLC.clear(); TLS = S; }
+    var t = j, f = j; while (get(i, t - 1) === T.LOG && j - t < 24) t--; while (get(i, f + 1) === T.LOG && f - j < 24) f++;
+    var sig = (t * 131 + f) | 0, dx, dy;
+    for (dy = -2; dy <= 2; dy++) for (dx = -1; dx <= 1; dx++) sig = (Math.imul(sig, 31) + get(i + dx, j + dy)) | 0;
+    sig = (Math.imul(sig, 31) + get(i, t - 1) + get(i - 1, t - 1) * 7 + get(i + 1, t - 1) * 13 + (canStyle(i) === 2 && trunkTree(i, j) ? 999 : 0)) | 0;
+    var e = TLC.get(ix);
+    if (!e || e.sig !== sig) {
+      var m = 0.7, cw = Math.ceil((1 + m * 2) * S), cv = document.createElement("canvas"); cv.width = cv.height = cw; var cg = cv.getContext("2d"); cg.scale(S / ts, S / ts);
+      TLNB = 1; var ok = false; try { ok = treeLog(cg, i, j, m * ts, m * ts, false); } finally { TLNB = 0; }
+      e = { sig: sig, cv: ok ? cv : null, m: m }; if (TLC.size > 2500) TLC.clear(); TLC.set(ix, e);
+    }
+    if (!e.cv) return false;
+    if (under) drawBackRock(g, i, j, sx, sy);
+    g.drawImage(e.cv, sx - e.m * ts, sy - e.m * ts, ts * (1 + e.m * 2), ts * (1 + e.m * 2));
+    return true;
+  }
+  function treeLog(g, i, j, sx, sy, under) {   // TREE CANOPIES: a tree's trunk is drawn as a round, tapered trunk (not a full square block); returns false for logs in buildings
+    var ix = j * W + i; if (walls[ix] || tiles[ix] !== orig[ix]) return false;
+    var up = get(i, j - 1), dn = get(i, j + 1), Ls = TILES[get(i - 1, j)].solid && get(i - 1, j) !== T.LEAVES, Rs = TILES[get(i + 1, j)].solid && get(i + 1, j) !== T.LEAVES, st = canStyle(i), B = TBARK[st] || TBARK[0];
+    var X = function (x) { return sx + x * ts; }, Y = function (y) { return sy + y * ts; };
+    var bu = st === 2 ? bendUp(i, j) : 0, bd = 0;
+    if (st === 2 && get(i, j + 1) === T.AIR) { if (get(i - 1, j + 1) === T.LOG && bendUp(i - 1, j + 1) === 1) bd = -1; else if (get(i + 1, j + 1) === T.LOG && bendUp(i + 1, j + 1) === -1) bd = 1; }
+    if (up === T.LOG || up === T.LEAVES || bu || bd || (dn === T.LOG || TILES[dn].solid) && !Ls && !Rs) {   // upright trunk
+      var col2 = i, top = j; while (get(col2, top - 1) === T.LOG) top--; var crown = get(col2, top - 1) === T.LEAVES || st === 2 && trunkTree(i, j), foot = j; while (get(col2, foot + 1) === T.LOG) foot++;
+      var twin = get(i - 1, j) === T.LOG && get(i - 1, j - 1) !== T.AIR || get(i + 1, j) === T.LOG && get(i + 1, j - 1) !== T.AIR;   // the dark oak's two-wide trunk stays wide
+      if (twin && st === 3) {   // the dark oak's two-wide trunk: one thick trunk over both blocks, inked on its outer side only
+        var lft = get(i + 1, j) === T.LOG && get(i + 1, j - 1) !== T.AIR, ins = 0.1 + (1 - (j - top) / Math.max(1, foot - top + 1)) * 0.06;
+        if (!TLNB && under) drawBackRock(g, i, j, sx, sy);
+        var xa = lft ? ins : 0, xb = lft ? 1 : 1 - ins, tg = g.createLinearGradient(lft ? X(0) : X(-1), 0, lft ? X(2) : X(1), 0);
+        tg.addColorStop(0, B[2]); tg.addColorStop(0.3, B[1]); tg.addColorStop(1, B[3]); g.fillStyle = tg; g.fillRect(X(xa), Y(-0.03), (xb - xa) * ts + 1, ts * 1.06);
+        g.strokeStyle = rgbA(canHex(B[0]), 0.5); g.lineWidth = Math.max(1, ts * 0.045);
+        for (var kk = 0; kk < 3; kk++) { var gx2 = xa + 0.15 + kk * 0.3 + (SW.hash(i, kk, 81) - 0.5) * 0.08; g.beginPath(); g.moveTo(X(gx2), Y(0)); g.quadraticCurveTo(X(gx2 + (SW.hash(i, j, 82 + kk) - 0.5) * 0.14), Y(0.5), X(gx2), Y(1)); g.stroke(); }
+        if (SW.hash(i, j, 85) > 0.88) { g.fillStyle = B[0]; g.beginPath(); g.ellipse(X(0.5), Y(0.5), ts * 0.12, ts * 0.16, 0, 0, 6.2832); g.fill(); }
+        g.strokeStyle = B[0]; g.lineWidth = Math.max(1, ts / 12); g.beginPath(); g.moveTo(X(lft ? xa : xb), Y(0)); g.lineTo(X(lft ? xa : xb), Y(1)); g.stroke();
+        return true;
+      }
+      if (!crown) return false;   // a log post that isn't a tree (a building's post, a bare snag) keeps its block look
+      if (Ls && get(i - 1, j) !== T.LOG && Rs && get(i + 1, j) !== T.LOG) return false;
+      var h = foot - top + 1, f0 = (j - top) / Math.max(1, h), f1 = (j + 1 - top) / Math.max(1, h), w0 = 0.42 + f0 * 0.16, w1 = 0.42 + f1 * 0.16;   // wider toward the foot
+      if (st === 2) { w0 = w1 = 0.46; }
+      if (st === 3 && (get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG) && up !== T.AIR) { w0 = 0.8; w1 = 0.95; }   // the dark oak's trunk carries on thick into the crown
+      if (!TLNB && under) drawBackRock(g, i, j, sx, sy);
+      var cx = 0.5 + (st === 2 ? Math.sin((j - foot) * 0.35) * 0.06 : 0);
+      var ct = cx + bu * 0.5, cb = cx + bd * 0.5;   // a lean: the top or bottom edge shifts half a block toward the next trunk block
+      g.beginPath(); g.moveTo(X(ct - w0 / 2), Y(-0.03)); g.lineTo(X(ct + w0 / 2), Y(-0.03)); g.lineTo(X(cb + w1 / 2), Y(1.03)); g.lineTo(X(cb - w1 / 2), Y(1.03)); g.closePath();   // (a hair taller than the block so no seam shows between trunk blocks)
+      var lg = g.createLinearGradient(X(cx - w1 / 2), 0, X(cx + w1 / 2), 0); lg.addColorStop(0, B[2]); lg.addColorStop(0.35, B[1]); lg.addColorStop(1, B[3]); g.fillStyle = lg; g.fill();
+      g.save(); g.clip();
+      if (st === 2) { g.fillStyle = rgbA(canHex(B[3]), 0.8); for (var r = 0; r < 3; r++) { g.beginPath(); g.ellipse(X(ct + (cb - ct) * (r / 3 + 0.05)), Y(r / 3 + 0.05), w1 * ts * 0.55, ts * 0.06, 0, 0, 3.1416); g.fill(); } }   // palm rings
+      else {
+        g.strokeStyle = rgbA(canHex(B[0]), 0.45); g.lineWidth = Math.max(1, ts * 0.04);   // bark grooves running up the trunk
+        for (var k = 0; k < 3; k++) { var gx = cx - w1 * 0.3 + k * w1 * 0.28 + (SW.hash(i, k, 81) - 0.5) * 0.06; g.beginPath(); g.moveTo(X(gx), Y(0)); g.quadraticCurveTo(X(gx + (SW.hash(i, j, 82 + k) - 0.5) * 0.12), Y(0.5), X(gx), Y(1)); g.stroke(); }
+        if (SW.hash(i, j, 85) > 0.84 && j > top && j < foot) { g.fillStyle = B[0]; g.beginPath(); g.ellipse(X(cx + 0.03), Y(0.5), w0 * ts * 0.22, ts * 0.13, 0, 0, 6.2832); g.fill(); g.strokeStyle = B[2]; g.lineWidth = Math.max(1, ts * 0.035); g.beginPath(); g.arc(X(cx + 0.03), Y(0.5), w0 * ts * 0.24, 3.6, 5.6); g.stroke(); }   // a knot
+        if (st === 4 && world.bio[clamp(i, 0, W - 1)] === 2 && SW.hash(i, j, 86) > 0.6) { g.fillStyle = "rgba(240,248,255,.85)"; g.fillRect(X(cx - w0 / 2), Y(0.2 + SW.hash(i, j, 87) * 0.5), w0 * ts * 0.4, Math.max(1, ts * 0.05)); }   // frost on the bark
+      }
+      g.restore();
+      var rL = j === foot && get(i - 1, j) === T.LOG && get(i - 1, j - 1) === T.AIR, rR = j === foot && get(i + 1, j) === T.LOG && get(i + 1, j - 1) === T.AIR;   // a root block alongside: no outline where the root joins
+      g.strokeStyle = B[0]; g.lineWidth = Math.max(1, ts / 14); g.beginPath(); g.moveTo(X(ct - w0 / 2), Y(0)); g.lineTo(X(cb - w1 / 2), Y(rL ? 0.12 : 1)); g.moveTo(X(ct + w0 / 2), Y(0)); g.lineTo(X(cb + w1 / 2), Y(rR ? 0.12 : 1)); g.stroke();   // ink down both sides (no seam between trunk blocks)
+      return true;
+    }
+    if (up === T.AIR && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES) {   // a root block beside the foot of a trunk: a big buttress root sloping down to the ground
+      var sd = get(i - 1, j) === T.LOG && trunkTree(i - 1, j) ? -1 : get(i + 1, j) === T.LOG && trunkTree(i + 1, j) ? 1 : 0; if (!sd) return false;
+      if (!TLNB && under) drawBackRock(g, i, j, sx, sy);
+      var te = sd > 0 ? 1.27 : -0.27, fr = sd > 0 ? -0.05 : 1.05, mid = (te + fr) / 2;   // te: the trunk's edge (in the next block), fr: the far tip on the ground
+      var rpath = function () { g.beginPath(); g.moveTo(X(te), Y(0.05)); g.bezierCurveTo(X(te - sd * 0.15), Y(0.55), X(mid + sd * 0.1), Y(0.9), X(fr), Y(1.02)); g.lineTo(X(te), Y(1.02)); g.closePath(); };
+      rpath(); var rg = g.createLinearGradient(X(fr), 0, X(te), 0); rg.addColorStop(0, B[3]); rg.addColorStop(0.6, B[1]); rg.addColorStop(1, sd > 0 ? B[3] : B[2]); g.fillStyle = rg; g.fill();
+      g.strokeStyle = B[0]; g.lineWidth = Math.max(1, ts / 14); g.beginPath(); g.moveTo(X(te), Y(0.05)); g.bezierCurveTo(X(te - sd * 0.15), Y(0.55), X(mid + sd * 0.1), Y(0.9), X(fr), Y(1.02)); g.stroke();
+      g.strokeStyle = rgbA(canHex(B[0]), 0.4); g.lineWidth = Math.max(1, ts * 0.04); g.beginPath(); g.moveTo(X(te - sd * 0.12), Y(0.35)); g.quadraticCurveTo(X(te - sd * 0.3), Y(0.85), X(mid), Y(1)); g.stroke();   // a groove along the root
+      return true;
+    }
+    if (up !== T.LOG && dn !== T.LOG && (get(i - 1, j) === T.LOG || get(i + 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG)) {   // a side branch: a thick bough instead of a block
+      if (TILES[dn].solid && dn !== T.LEAVES) return false;
+      var leafy = false; for (var ly = j - 3; ly <= j + 1 && !leafy; ly++) for (var lx = i - 3; lx <= i + 3; lx++) if (isLeaf(lx, ly)) { leafy = true; break; }
+      if (!leafy) return false;   // bare snags keep their block look
+      if (!TLNB && under) drawBackRock(g, i, j, sx, sy);
+      var lL = get(i - 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG, lR = get(i + 1, j) === T.LOG || get(i + 1, j + 1) === T.LOG, yl = get(i - 1, j) === T.LOG ? 0.5 : 0.95, yr = get(i + 1, j) === T.LOG ? 0.5 : 0.95;
+      var x0 = lL ? -0.3 : 0.15, x1 = lR ? 1.3 : 0.85, y0 = lL ? yl : 0.5, y1 = lR ? yr : 0.5, th = 0.36;
+      g.lineCap = "round"; g.strokeStyle = B[0]; g.lineWidth = th * ts + Math.max(2, ts / 7); g.beginPath(); g.moveTo(X(x0), Y(y0)); g.quadraticCurveTo(X(0.5), Y(0.5), X(x1), Y(y1)); g.stroke();
+      g.strokeStyle = B[1]; g.lineWidth = th * ts; g.stroke(); g.strokeStyle = B[2]; g.lineWidth = Math.max(1, ts * 0.07); g.beginPath(); g.moveTo(X(x0), Y(y0 - th * 0.25)); g.quadraticCurveTo(X(0.5), Y(0.5 - th * 0.25), X(x1), Y(y1 - th * 0.25)); g.stroke(); g.lineCap = "butt";
+      return true;
+    }
+    return false;
+  }
+  function trunkDeco(g, i, j, tt) {   // roots over the ground at the foot of a trunk, and the odd side branch with a tuft of leaves
+    var up = get(i, j - 1), below = get(i, j + 1), st, P;
+    if (up !== T.LOG && up !== T.LEAVES) return;   // the tip of a side-branch block, or a log sticking up on its own
+    if (TILES[below].solid && below !== T.LOG && below !== T.LEAVES) {   // the foot of the trunk: flared roots gripping the ground
+      if (!trunkTree(i, j)) return;
+      st = canStyle(i); if (st === 2 || (TILES[get(i - 1, j)].solid && TILES[get(i + 1, j)].solid)) return; var B = TBARK[st] || TBARK[0];
+      var bx = ox + (i + 0.5) * ts, by = oy + (j + 1) * ts;
+      for (var s = -1; s <= 1; s += 2) for (var rr = 0; rr < 2; rr++) {   // two tapering roots each side, curling down into the ground
+        if (TILES[get(i + s, j)].solid && get(i + s, j) !== T.LEAVES) continue;
+        var L = ts * (rr ? 0.38 + SW.hash(i, s, 63) * 0.2 : 0.6 + SW.hash(i, s, 61) * 0.35), hgt = ts * (rr ? 0.3 : 0.5), xe = bx + s * ts * 0.27, tw = ts * (rr ? 0.1 : 0.16);
+        g.beginPath(); g.moveTo(xe - s * ts * 0.06, by - hgt);
+        g.quadraticCurveTo(xe + s * L * 0.15, by - hgt * 0.15, xe + s * L, by + ts * (rr ? 0.1 : 0.05));   // upper edge out to the tip
+        g.quadraticCurveTo(xe + s * L * 0.3, by + tw * 0.2, xe - s * ts * 0.06, by + tw * 0.3);           // underside back in
+        g.closePath(); g.fillStyle = rr ? B[3] : B[1]; g.fill(); g.strokeStyle = B[0]; g.lineWidth = Math.max(1, ts / 16); g.stroke();
+        if (!rr) { g.strokeStyle = B[2]; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.moveTo(xe, by - hgt * 0.85); g.quadraticCurveTo(xe + s * L * 0.18, by - hgt * 0.2, xe + s * L * 0.8, by - ts * 0.01); g.stroke(); }
+      }
+      return;
+    }
+    if (up !== T.LOG || below !== T.LOG || get(i, j + 2) !== T.LOG || isLeaf(i, j - 2) || SW.hash(i, j, 77) > 0.3 || get(i, j - 1) === get(i, j - 2) && SW.hash(i, j - 1, 77) <= 0.3) return;   // mid-trunk, clear of crown and foot, never two in a row
+    if (TILES[get(i - 1, j)].solid || TILES[get(i + 1, j)].solid) return;
+    if (!trunkTree(i, j)) return;
+    st = canStyle(i); if (st === 2) return; P = CANP[st];
+    var sd = SW.hash(i, j, 78) < 0.5 ? -1 : 1, x0 = ox + (i + 0.5 + sd * 0.3) * ts, y0 = oy + (j + 0.7) * ts, x1 = x0 + sd * ts * 0.85, y1 = y0 - ts * 0.55;
+    var bk = st === 1 ? "#6a4048" : st === 4 ? "#4a3424" : st === 3 ? "#3a2618" : "#5e4024";
+    g.lineCap = "round"; g.strokeStyle = rgbA(P[0]); g.lineWidth = Math.max(2, ts * 0.2); g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x0 + sd * ts * 0.5, y0, x1, y1); g.stroke();
+    g.strokeStyle = bk; g.lineWidth = Math.max(1, ts * 0.12); g.stroke(); g.lineCap = "butt";
+    if (st === 4) { canStamp(g, canSprite(4, 0, 0, 2), x1, y1 + ts * 0.05, 0.55); canStamp(g, canSprite(4, 1, 1, 2), x1, y1, 0.5); canStamp(g, canSprite(4, 2, 0, 2), x1, y1 - ts * 0.04, 0.5); return; }
+    var sw = reduce ? 0 : Math.sin(tt * 1.6 + i + j) * ts * 0.03;
+    canStamp(g, canSprite(st, 0, 0, 3), x1 + sw, y1 + ts * 0.04, 0.6); canStamp(g, canSprite(st, 1, 1, 3), x1 + sw, y1, 0.58); canStamp(g, canSprite(st, 2, 0, 3), x1 + sw - ts * 0.08, y1 - ts * 0.1, 0.55);
+  }
   function ridgeHv(n, sd) { return n & 1 ? SW.hash(n, sd, 9) * 0.35 : 0.55 + SW.hash(n, sd, 9) * 0.45; }
   function ridgeLine(wx, seg, sd) {   // 0..1 low-poly mountain line: a peak every `seg` tiles, a valley between, straight edges for a crisp look
     var u = wx / seg * 2, k = Math.floor(u), f = u - k, a = ridgeHv(k, sd);
@@ -14578,6 +14881,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
+    if (OPT.canopy !== false) drawCanopies(g, now, X0, X1, Y0, Y1);   // TREE CANOPIES: one crown per tree over the trunks, roots and branches
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
