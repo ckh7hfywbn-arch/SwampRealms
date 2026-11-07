@@ -12908,24 +12908,55 @@
   function shapeDraw(g, i, j, sx, sy, now, sh) {
     var ix = j * W + i, under = j >= col[i] && j > world.top[i], id = tiles[ix], td = TILES[id];
     if (walls[ix]) drawWall(g, walls[ix], i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
-    var P = SHPOLY[sh]; g.save(); g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); g.clip();
-    drawCell0(g, i, j, sx, sy, now); if (S.stain[ix] !== undefined) drawStain(g, i, j, sx, sy);
-    if (sh === 1 || sh === 2 || sh === 3) {   // the cut face: a soft shade just under the new surface, so it reads as the top of the block
-      var E0 = SHEDGE[sh], gx0 = sx + E0[0] * ts, gy0 = sy + E0[1] * ts, gx1 = sx + E0[2] * ts, gy1 = sy + E0[3] * ts, mxp = (gx0 + gx1) / 2, myp = (gy0 + gy1) / 2;
-      var sgr = g.createLinearGradient(mxp, myp, mxp, myp + ts * 0.5); sgr.addColorStop(0, "rgba(255,255,255,.10)"); sgr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = sgr; g.fillRect(sx, sy, ts, ts);
+    var P = SHPOLY[sh], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]);
+    var x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, nat = NATC[id] ? id : SMGEM[id] ? orePal(td) : 0;
+    g.save(); g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); g.clip();
+    if (nat) {   // natural ground: just the body (no flat-top grass, no rounded corners, no seams), so nothing pokes out of the new shape
+      natBody(g, nat, i, j, sx, sy, false, false, false, false);
+      if (SMGEM[id]) smDraw(g, varAt(i), id, 0, 0, 16, 16, sx, sy, ts, ts);
+    } else drawCell0(g, i, j, sx, sy, now);
+    if (S.stain[ix] !== undefined) drawStain(g, i, j, sx, sy);
+    g.restore();
+    if (sx === ox + i * ts && sy === oy + j * ts) SHQ.push(i, j, sh); else shapeTop(g, i, j, sx, sy, sh);   // (a block popping in draws its own edge)
+  }
+  var SHQ = [];
+  function drawShapeTops(g) { for (var q = 0; q < SHQ.length; q += 3) shapeTop(g, SHQ[q], SHQ[q + 1], ox + SHQ[q] * ts, oy + SHQ[q + 1] * ts, SHQ[q + 2]); SHQ.length = 0; }
+  function shapeTop(g, i, j, sx, sy, sh) {
+    var id = tiles[j * W + i], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]), x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, k, GP, hh = function (q) { return SW.hash(i, j, q + 300); };
+    // along the cut, inside the block: top-lit for a floor (it is now the top), shadowed for a ceiling ramp. It may reach a little into the
+    // solid block beside or below (that is why this runs after all the blocks), but never above the cut.
+    g.save(); g.beginPath(); g.rect(sx - ts * 0.25, sy - ts * 0.45, ts * 1.5, ts * 1.7); g.clip();
+    g.translate(x0, y0); g.rotate(ang); if (sh === 5) g.scale(1, -1);   // local frame: x runs along the cut, +y points into the block
+    if (floor && id === T.MOSS) {
+      GP = GRASSP[varAt(i)] || GRASSP[0];
+      var mgr = g.createLinearGradient(0, 0, 0, ts * 0.34); mgr.addColorStop(0, "rgba(63,174,120,.3)"); mgr.addColorStop(1, "rgba(63,174,120,0)"); g.fillStyle = mgr; g.fillRect(-2, 0, L + 4, ts * 0.34);   // a thin wash: a deep one lit the whole ramp and showed the block steps under it
+      g.fillStyle = GP[0]; g.fillRect(-2, -ts * 0.04, L + 4, ts * 0.16);
+      var nsc = Math.max(2, Math.round(L / ts * 3)); for (k = 0; k < nsc; k++) { g.beginPath(); g.arc(L * (k + 0.5) / nsc + (hh(k) - 0.5) * ts * 0.1, ts * 0.1, ts * (0.15 + hh(k + 10) * 0.05), 0, 6.2832); g.fill(); }
+    } else if (floor) {
+      var lg = g.createLinearGradient(0, 0, 0, ts * 0.32); lg.addColorStop(0, "rgba(255,255,255,.22)"); lg.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = lg; g.fillRect(-2, 0, L + 4, ts * 0.32);
+    } else {
+      var dg = g.createLinearGradient(0, 0, 0, ts * 0.34); dg.addColorStop(0, "rgba(0,0,0,.38)"); dg.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = dg; g.fillRect(-2, 0, L + 4, ts * 0.34);
     }
     g.restore();
-    var E = SHEDGE[sh], x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, x1 = sx + E[2] * ts, y1 = sy + E[3] * ts, floor = sh <= 3, lw = Math.max(1, Math.round(ts / 14));
+    // on top of the cut: the grass lip and tufts, a crisp lit edge, or an outline
+    g.save(); g.beginPath(); g.rect(sx - 1, sy - ts * 0.45, ts + 2, ts * 1.45); g.clip(); g.translate(x0, y0); g.rotate(ang); if (sh === 5) g.scale(1, -1);
     g.lineCap = "round";
-    if (MATF[id]) { g.strokeStyle = "rgba(18,22,26,.78)"; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
-    if (floor && id === T.MOSS) {   // grass runs along the new top
-      var GP = GRASSP[varAt(i)] || GRASSP[0], gw = ts * 0.16;
-      g.strokeStyle = GP[0]; g.lineWidth = gw; g.beginPath(); g.moveTo(x0, y0 + gw * 0.35); g.lineTo(x1, y1 + gw * 0.35); g.stroke();
-      g.strokeStyle = GP[1]; g.lineWidth = gw * 0.5; g.beginPath(); g.moveTo(x0, y0 + gw * 0.2); g.lineTo(x1, y1 + gw * 0.2); g.stroke();
-      g.strokeStyle = GP[2]; g.lineWidth = Math.max(1, ts * 0.035); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
-    } else if (floor) { g.strokeStyle = "rgba(255,255,255,.28)"; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0 + lw * 0.6); g.lineTo(x1, y1 + lw * 0.6); g.stroke(); }
-    else { g.strokeStyle = "rgba(0,0,0,.38)"; g.lineWidth = lw * 1.4; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
-    g.lineCap = "butt";
+    if (floor && id === T.MOSS) {
+      GP = GRASSP[varAt(i)] || GRASSP[0];
+      g.fillStyle = GP[1]; g.fillRect(-2, -ts * 0.04, L + 4, ts * 0.09);
+      g.fillStyle = GP[2]; g.fillRect(-2, -ts * 0.04, L + 4, Math.max(1, ts * 0.04));
+      var nt = Math.round(L / ts * 2); for (k = 0; k < nt; k++) if (hh(k + 40) > 0.4) {   // grass tufts, standing straight up out of the slope
+        var tx = L * (0.15 + 0.7 * (k + hh(k + 50)) / Math.max(1, nt)), th = ts * (0.18 + hh(k + 60) * 0.14);
+        g.save(); g.translate(tx, 0); g.rotate(-ang);
+        g.fillStyle = GP[3]; g.beginPath(); g.moveTo(-2, 1); g.lineTo(0, -th); g.lineTo(2, 1); g.fill(); g.beginPath(); g.moveTo(1, 1); g.lineTo(4, -th * 0.72); g.lineTo(4, 1); g.fill(); g.restore();
+      }
+    } else if (floor) {
+      g.strokeStyle = MATF[id] ? "rgba(18,22,26,.8)" : "rgba(0,0,0,.28)"; g.lineWidth = Math.max(1, Math.round(ts / 14)); g.beginPath(); g.moveTo(0, 0); g.lineTo(L, 0); g.stroke();
+      g.strokeStyle = "rgba(255,255,255,.3)"; g.lineWidth = Math.max(1, ts / 24); g.beginPath(); g.moveTo(1, ts / 14); g.lineTo(L - 1, ts / 14); g.stroke();
+    } else {
+      g.strokeStyle = MATF[id] ? "rgba(18,22,26,.8)" : "rgba(0,0,0,.4)"; g.lineWidth = Math.max(1, Math.round(ts / 14)); g.beginPath(); g.moveTo(0, 0); g.lineTo(L, 0); g.stroke();
+    }
+    g.restore();
   }
   // ---------- ROOMS INSIDE BUILDINGS (Sims-style cutaway) ----------
   // Inner walls (F.iw, from "#" in the floor plan) are drawn as blocks standing ROOM_H tiles tall: the top face sits above the cell and covers
@@ -13266,7 +13297,7 @@
       WG[c] = L; if (L) { anyLamp = true; var lrc = lightRGB(id); CRG[c] = (L * lrc[0] / 255) | 0; CGG[c] = (L * lrc[1] / 255) | 0; CBG[c] = (L * lrc[2] / 255) | 0; } else CRG[c] = CGG[c] = CBG[c] = 0;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
-      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? 3 * LQ : LQ;
+      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && X >= 0 && X < W && Y >= 0 && Y < H && S.shape[Y * W + X] ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : 10) * LQ);
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
@@ -14439,6 +14470,7 @@
     var X0 = Math.floor(-ox / ts), X1 = Math.floor((vw - ox) / ts), Y0 = Math.floor(-oy / ts), Y1 = Math.floor((vh - oy) / ts);
     glows.length = 0; CELL.wob = Math.sin(now / 500); CELL.edge = Math.max(1, Math.round(ts / 9)); CELL.sw = Math.sin(now / 700);
     drawStructs(g, X0, X1, Y0, Y1);   // buildings first: they are pictures behind everything you build
+    SHQ.length = 0;   // MALLET: ramp edges queued by this frame's blocks only
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
       if (i < 0 || i >= W || j < 0 || j >= H) continue;
       var pfk = AFX.place[j * W + i];
@@ -14449,6 +14481,7 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
+    if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
