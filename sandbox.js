@@ -13619,17 +13619,107 @@
   // grass lip colours per land type: [lip, top, highlight, tuft, litter colours]
   var GRASSP = [["#2f9a6a", "#3fae78", "rgba(155,245,191,.65)", "#58d68b"], ["#3fa86a", "#5cc47e", "rgba(200,255,210,.7)", "#7ade8e", ["#ff9ad0", "#ffc8e4", "#f07ab0"]], null,
     ["#1f5a34", "#2d6e3c", "rgba(150,200,130,.45)", "#3f8a46", ["#7a5a2a", "#5a4020", "#8a7a3a"]]];
+  // ---------- BLOCK TEXTURES: every natural material has its own look (drawn once per block, then reused from the cache) ----------
+  // Dirt: soft clumps, crevices, a pebble, roots near the surface. Peat: dark fibres. Clay: layered bands that line up from block to block.
+  // Silt: fine grain and ripples. Stone, frost rock, bedrock: embedded rock chunks lit on top (frost rock's are rimed with frost,
+  // bedrock's are heavy and dark). Basalt: column joints. Ash: grey speckles and faint embers. Snow: a soft shadowed hollow, a drift line and a sparkle. Ice: glassy
+  // streaks, bubbles and fine cracks. Clean shapes, top-lit, no noise, to match the polished SwampRealms style.
+  function mixA(a, b, k) { return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; }
+  function rgbA(a, al) { return "rgba(" + (a[0] | 0) + "," + (a[1] | 0) + "," + (a[2] | 0) + "," + (al == null ? 1 : al) + ")"; }
+  var WH = [255, 255, 255], BK = [0, 0, 0];
+  function natDetail(g, id, i, j, sx, sy, pal, dm, hh) {
+    var base = mixA(pal[0], pal[1], dm), lit = mixA(base, WH, 0.2), dark = mixA(base, BK, 0.42), k, x, y, r;
+    var P = function (a, b) { return [sx + ts * a, sy + ts * b]; };
+    if (id === T.STONE || id === T.FROSTROCK || id === T.BEDROCK) {   // embedded rock chunks: irregular stones, lit on top, shadowed underneath
+      var nch = 2 + (hh(10) > 0.6 ? 1 : 0), heavy = id === T.BEDROCK;
+      for (k = 0; k < nch; k++) {
+        var ccx = 0.22 + hh(11 + k) * 0.56, ccy = 0.22 + hh(14 + k) * 0.56, rr = (k === 0 ? 0.2 : 0.13) + hh(17 + k) * 0.08, nv = 6, poly = [];
+        for (var v = 0; v < nv; v++) { var av = v / nv * 6.283 + hh(20 + k * 7 + v) * 0.5, rv = rr * (0.75 + hh(40 + k * 7 + v) * 0.4); poly.push([sx + ts * (ccx + Math.cos(av) * rv), sy + ts * (ccy + Math.sin(av) * rv * 0.8)]); }
+        var path = function (dx, dy) { g.beginPath(); g.moveTo(poly[0][0] + dx, poly[0][1] + dy); for (var w = 1; w < nv; w++) g.lineTo(poly[w][0] + dx, poly[w][1] + dy); g.closePath(); };
+        path(0, Math.max(1, ts / 16)); g.fillStyle = rgbA(dark, heavy ? 0.7 : 0.55); g.fill();   // its shadow below
+        path(0, 0); g.fillStyle = rgbA(mixA(base, WH, heavy ? 0.04 : 0.1), 1); g.fill();
+        g.save(); g.clip(); g.fillStyle = rgbA(lit, heavy ? 0.25 : 0.5); g.fillRect(sx, sy + ts * (ccy - rr * 0.8), ts, Math.max(1, ts * rr * 0.35)); g.restore();   // lit top face
+        if (id === T.FROSTROCK) { g.strokeStyle = "rgba(230,248,255,.7)"; g.lineWidth = Math.max(1, ts / 26); g.beginPath(); g.moveTo(poly[3][0], poly[3][1]); g.lineTo(poly[4][0], poly[4][1]); g.lineTo(poly[5][0], poly[5][1]); g.stroke(); }
+      }
+      if (hh(60) > 0.5) { g.strokeStyle = rgbA(dark, 0.5); g.lineWidth = Math.max(1, ts / 26); var fx0 = 0.15 + hh(61) * 0.7; g.beginPath(); g.moveTo(sx + ts * fx0, sy + ts * 0.1); g.lineTo(sx + ts * (fx0 + (hh(62) - 0.5) * 0.2), sy + ts * 0.32); g.stroke(); }   // a hairline crack now and then
+      for (k = 0; k < 2; k++) { x = 0.08 + hh(70 + k) * 0.84; y = 0.08 + hh(72 + k) * 0.84; g.fillStyle = rgbA(k ? dark : lit, 0.45); g.fillRect(sx + ts * x, sy + ts * y, Math.max(1, ts / 18), Math.max(1, ts / 18)); }
+      if (heavy && hh(55) > 0.6) { g.fillStyle = "rgba(160,110,220,.35)"; g.beginPath(); g.arc(sx + ts * (0.2 + hh(56) * 0.6), sy + ts * (0.2 + hh(57) * 0.6), ts * 0.04, 0, 6.283); g.fill(); }
+      return;
+    }
+    if (id === T.BASALT) {   // column joints: two vertical joints and a few short cross-breaks, faces lit on the left
+      var jx = [0.18 + hh(11) * 0.14, 0.58 + hh(12) * 0.14];
+      jx.forEach(function (fx, n) {
+        g.fillStyle = rgbA(lit, 0.13); g.fillRect(sx + ts * fx, sy, ts * 0.14, ts);
+        g.strokeStyle = rgbA(dark, 0.85); g.lineWidth = Math.max(1, ts / 18); g.beginPath(); g.moveTo(sx + ts * fx, sy); g.lineTo(sx + ts * (fx + (hh(14 + n) - 0.5) * 0.05), sy + ts); g.stroke();
+        var by = 0.25 + hh(16 + n) * 0.5; g.beginPath(); g.moveTo(sx + ts * fx, sy + ts * by); g.lineTo(sx + ts * (fx + 0.22), sy + ts * (by + 0.06)); g.stroke();
+      });
+      for (k = 0; k < 2; k++) { g.fillStyle = rgbA(lit, 0.35); g.fillRect(sx + ts * (0.1 + hh(20 + k) * 0.8), sy + ts * (0.1 + hh(22 + k) * 0.8), Math.max(1, ts / 18), Math.max(1, ts / 18)); }
+      return;
+    }
+    if (id === T.CLAY) {   // strata: soft bands keyed to world row AND world x, so they flow on unbroken from block to block
+      var wv = function (wx, k) { return Math.sin(wx * 0.9 + k * 2.1 + j * 0.7) * 0.05 + Math.sin(wx * 2.3 + k) * 0.02; };
+      for (k = 0; k < 2; k++) {
+        var by2 = k ? 0.62 : 0.18, bh = k ? 0.2 : 0.14;
+        g.fillStyle = rgbA(k ? dark : lit, k ? 0.2 : 0.16); g.beginPath();
+        for (var q = 0; q <= 6; q++) { var tx = q / 6; g.lineTo(sx + ts * tx, sy + ts * (by2 + wv(i + tx, k))); }
+        for (q = 6; q >= 0; q--) { tx = q / 6; g.lineTo(sx + ts * tx, sy + ts * (by2 + bh + wv(i + tx, k + 3) * 0.6)); }
+        g.closePath(); g.fill();
+      }
+      if (hh(30) > 0.55) { g.fillStyle = rgbA(lit, 0.45); g.beginPath(); g.ellipse(sx + ts * (0.2 + hh(31) * 0.6), sy + ts * (0.45 + hh(32) * 0.1), ts * 0.07, ts * 0.04, 0, 0, 6.283); g.fill(); }
+      return;
+    }
+    if (id === T.X_silt || id === T.ASH) {   // fine grain (and for ash, a faint ember or two)
+      for (k = 0; k < 9; k++) { x = hh(11 + k) * 0.92; y = hh(30 + k) * 0.92; g.fillStyle = rgbA(k % 3 ? dark : lit, k % 3 ? 0.32 : 0.45); g.fillRect(sx + ts * x, sy + ts * y, Math.max(1, ts / 18), Math.max(1, ts / 18)); }
+      if (id === T.X_silt) { g.strokeStyle = rgbA(lit, 0.22); g.lineWidth = Math.max(1, ts / 22); for (k = 0; k < 2; k++) { var ry = sy + ts * (0.3 + k * 0.4); g.beginPath(); g.moveTo(sx, ry); g.bezierCurveTo(sx + ts * 0.3, ry - ts * 0.05, sx + ts * 0.6, ry + ts * 0.05, sx + ts, ry); g.stroke(); } }
+      else if (hh(50) > 0.7) { g.fillStyle = "rgba(255,130,60,.55)"; g.fillRect(sx + ts * (0.2 + hh(51) * 0.6), sy + ts * (0.2 + hh(52) * 0.6), Math.max(1, ts / 16), Math.max(1, ts / 16)); }
+      return;
+    }
+    if (id === T.SNOW) {   // packed snow: one soft blue-shadowed hollow, a faint drift line and a sparkle
+      x = 0.3 + hh(11) * 0.4; y = 0.45 + hh(12) * 0.25;
+      var sg = g.createRadialGradient(sx + ts * x, sy + ts * y, 0, sx + ts * x, sy + ts * y, ts * 0.35); sg.addColorStop(0, "rgba(140,185,225,.22)"); sg.addColorStop(1, "rgba(140,185,225,0)"); g.fillStyle = sg; g.fillRect(sx, sy, ts, ts);
+      g.strokeStyle = "rgba(255,255,255,.6)"; g.lineWidth = Math.max(1, ts / 20); var dy0 = sy + ts * (0.25 + hh(13) * 0.2); g.beginPath(); g.moveTo(sx + ts * 0.1, dy0); g.quadraticCurveTo(sx + ts * 0.5, dy0 - ts * 0.08, sx + ts * 0.85, dy0 + ts * 0.02); g.stroke();
+      if (hh(20) > 0.35) { x = sx + ts * (0.15 + hh(21) * 0.7); y = sy + ts * (0.15 + hh(22) * 0.7); g.fillStyle = "rgba(255,255,255,.95)"; g.fillRect(x - ts * 0.05, y - 0.5, ts * 0.1, 1); g.fillRect(x - 0.5, y - ts * 0.05, 1, ts * 0.1); }
+      return;
+    }
+    if (id === T.ICE) {   // glassy: two diagonal light streaks, a few bubbles and a fine crack
+      g.save(); g.beginPath(); g.rect(sx, sy, ts, ts); g.clip();
+      g.fillStyle = "rgba(255,255,255,.22)"; var o = hh(11) * 0.4; g.beginPath(); g.moveTo(sx + ts * (o - 0.1), sy + ts); g.lineTo(sx + ts * (o + 0.2), sy + ts); g.lineTo(sx + ts * (o + 0.75), sy); g.lineTo(sx + ts * (o + 0.45), sy); g.closePath(); g.fill();
+      g.fillStyle = "rgba(255,255,255,.14)"; g.beginPath(); g.moveTo(sx + ts * (o + 0.3), sy + ts); g.lineTo(sx + ts * (o + 0.38), sy + ts); g.lineTo(sx + ts * (o + 0.93), sy); g.lineTo(sx + ts * (o + 0.85), sy); g.closePath(); g.fill();
+      g.restore();
+      for (k = 0; k < 3; k++) { g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 1; g.beginPath(); g.arc(sx + ts * (0.15 + hh(20 + k) * 0.7), sy + ts * (0.15 + hh(23 + k) * 0.7), ts * (0.025 + hh(26 + k) * 0.03), 0, 6.283); g.stroke(); }
+      g.strokeStyle = "rgba(40,90,140,.4)"; g.lineWidth = Math.max(1, ts / 26); g.beginPath(); var ix0 = 0.2 + hh(30) * 0.3; g.moveTo(sx + ts * ix0, sy + ts * 0.15); g.lineTo(sx + ts * (ix0 + 0.15), sy + ts * 0.45); g.lineTo(sx + ts * (ix0 + 0.08), sy + ts * 0.7); g.stroke();
+      return;
+    }
+    // DIRT (mossy mud, mud) and peat: soft lumps lit from above, dark crevices between them, the odd pebble, roots near the top
+    for (k = 0; k < 3; k++) {
+      x = 0.18 + hh(11 + k) * 0.64; y = 0.2 + hh(14 + k) * 0.6; r = 0.12 + hh(17 + k) * 0.08;
+      g.fillStyle = rgbA(dark, 0.35); g.beginPath(); g.ellipse(sx + ts * x, sy + ts * (y + r * 0.35), ts * r * 1.05, ts * r * 0.62, 0, 0, 6.283); g.fill();   // crevice under the lump
+      g.fillStyle = rgbA(lit, 0.42 * (1 - dm * 0.5)); g.beginPath(); g.ellipse(sx + ts * x, sy + ts * y, ts * r, ts * r * 0.66, 0, 0, 6.283); g.fill();
+      g.fillStyle = rgbA(WH, 0.1); g.beginPath(); g.ellipse(sx + ts * (x - r * 0.3), sy + ts * (y - r * 0.25), ts * r * 0.45, ts * r * 0.25, -0.4, 0, 6.283); g.fill();   // its highlight
+    }
+    if (hh(30) > 0.55) {   // a small grey pebble pressed into the soil
+      x = sx + ts * (0.15 + hh(31) * 0.7); y = sy + ts * (0.2 + hh(32) * 0.65); r = ts * (0.05 + hh(33) * 0.03);
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x + 1, y + r * 0.4, r * 1.1, r * 0.8, 0, 0, 6.283); g.fill();
+      g.fillStyle = "#8d8a96"; g.beginPath(); g.ellipse(x, y, r, r * 0.8, 0, 0, 6.283); g.fill(); g.fillStyle = "rgba(255,255,255,.45)"; g.fillRect(x - r * 0.5, y - r * 0.45, Math.max(1, r * 0.6), Math.max(1, r * 0.35));
+    }
+    if (id === T.X_peat) {   // peat: short matted fibres at random angles (never edge to edge, so no plank look) and a lit fleck
+      g.lineCap = "round"; g.lineWidth = Math.max(1, ts / 26);
+      for (k = 0; k < 4; k++) { x = 0.15 + hh(40 + k) * 0.7; y = 0.15 + hh(44 + k) * 0.7; var an = (hh(48 + k) - 0.5) * 2.2, ln = 0.12 + hh(52 + k) * 0.12, cx2 = Math.cos(an) * ln, cy2 = Math.sin(an) * ln;
+        g.strokeStyle = k % 2 ? "rgba(20,10,8,.32)" : rgbA(lit, 0.18); g.beginPath(); g.moveTo(sx + ts * (x - cx2), sy + ts * (y - cy2)); g.quadraticCurveTo(sx + ts * (x + cy2 * 0.5), sy + ts * (y - cx2 * 0.5), sx + ts * (x + cx2), sy + ts * (y + cy2)); g.stroke(); }
+      g.lineCap = "butt";
+    }
+    else if (dm < 0.3 && hh(50) > 0.82) {   // now and then, a fine root near the surface
+      g.strokeStyle = "rgba(120,84,58,.38)"; g.lineWidth = Math.max(1, ts / 26); x = sx + ts * (0.2 + hh(51) * 0.6);
+      g.beginPath(); g.moveTo(x, sy + ts * 0.05); g.quadraticCurveTo(x + (hh(52) - 0.5) * ts * 0.4, sy + ts * 0.45, x + (hh(53) - 0.5) * ts * 0.3, sy + ts * 0.85); g.stroke();
+      g.beginPath(); g.moveTo(x + (hh(52) - 0.5) * ts * 0.2, sy + ts * 0.4); g.lineTo(x + ts * 0.15, sy + ts * 0.55); g.stroke();
+    }
+  }
   function natBody(g, id, i, j, sx, sy, scen, nT, nL, nR) {
     var pal = NATC[id], d0 = clamp((j - SURF) / 46, 0, 1), d1 = clamp((j + 1 - SURF) / 46, 0, 1), hh = function (k) { return SW.hash(i, j, k); };
     // the soil's depth gradient is painted as a shape, not a small picture stretched to the canvas scale: a stretched picture's outer pixels fade on
     // phones, which showed as a faint line between the bright top-row blocks
     var sgr = g.createLinearGradient(0, sy, 0, sy + ts); sgr.addColorStop(0, mixRgb(pal[0], pal[1], d0)); sgr.addColorStop(1, mixRgb(pal[0], pal[1], d1)); g.fillStyle = sgr; g.fillRect(sx, sy, ts, ts);
-    var hi = mixRgb(pal[0], [255, 255, 255], 0.14), n = 2 + (hh(1) > 0.5 ? 1 : 0), k;
-    for (k = 0; k < n; k++) {   // round pebbles with a soft shadow underneath
-      var px = sx + ts * (0.15 + hh(k * 3 + 2) * 0.7), py = sy + ts * (0.15 + hh(k * 3 + 3) * 0.7), pr = ts * (0.07 + hh(k * 3 + 4) * 0.09);
-      g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.ellipse(px + 1, py + pr * 0.5, pr * 1.1, pr * 0.8, 0, 0, 6.2832); g.fill();
-      g.fillStyle = hi; g.globalAlpha = 0.55 * (1 - d0 * 0.6); g.beginPath(); g.ellipse(px, py, pr, pr * 0.8, 0, 0, 6.2832); g.fill(); g.globalAlpha = 1;
-    }
+    var k; natDetail(g, id, i, j, sx, sy, pal, (d0 + d1) / 2, hh);   // BLOCK TEXTURES: each material's own look
     // (scen: a world tree's trunk stands BEHIND the ground, like the buildings: the grass runs in front of it)
     if (id === T.MOSS && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
       var GP = GRASSP[varAt(i)] || GRASSP[0];   // BIOME VARIANTS: spring grass in the Cherry Blossom Vale, dark moss in the Dark Oakwood
