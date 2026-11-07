@@ -347,6 +347,7 @@
     rect(7, 8, 2, 8, "#6e431f"); rect(4, 5, 4, 3, "#4f9a3a"); rect(8, 3, 4, 4, "#6ac04a"); rect(5, 9, 3, 2, "#3f8a2a"); rect(9, 2, 2, 1, "#9fe07a");
   });
   [["stain_walnut", "Walnut Stain"], ["stain_ebony", "Ebony Stain"], ["stain_honey", "Honey Oak Stain"], ["stain_mahogany", "Mahogany Stain"], ["stain_white", "Whitewash"], ["stain_sage", "Sage Stain"], ["stain_blue", "Bog Blue Stain"], ["stain_plum", "Plum Stain"], ["sandpaper", "Sandpaper"]].forEach(function (q) { item(q[0], q[1], {}); });   // wood stains (see WOOD STAINS in sandbox.js)
+  item("mallet", "Bog Mallet", {});   // MALLET: reshapes blocks (see MALLET in sandbox.js)
   item("emberwings", "Emberfly Wings", {});   // found in the Cinder Aerie's chest; worn at once (see EMBERFLY WINGS in sandbox.js)
   deco("thermalvent", "Thermal Vent", "#ffb04a", function (rect) {   // a cracked basalt mouth breathing hot air
     rect(1, 11, 14, 5, "#3b3036"); rect(1, 11, 14, 1, "#55444d"); rect(4, 12, 8, 3, "#1c1418"); rect(5, 12, 6, 2, "#ff6a1f"); rect(6, 12, 4, 1, "#ffd25a");
@@ -1267,6 +1268,7 @@
   R("x_stain_sage", "Sage Stain (12)", { stain_sage: 12 }, { wood: 1, leaves: 3 }, { d: "A soft swampy green. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
   R("x_stain_blue", "Bog Blue Stain (12)", { stain_blue: 12 }, { wood: 1, frostbell: 1 }, { d: "A cool grey-blue. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
   R("x_stain_plum", "Plum Stain (12)", { stain_plum: 12 }, { wood: 1, thistle: 1 }, { d: "A dusky purple. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
+  R("x_mallet", "Bog Mallet", { mallet: 1 }, { wood: 4, stone: 3, fiber: 2 }, { d: "A heavy wooden mallet with a mossy grip. Hold it and tap a block to reshape it: half-block, ramps either way, ceiling ramps, then back to full. Walk up ramps smoothly. Never wears out. Made by hand." });
   R("x_sandpaper", "Sandpaper (12)", { sandpaper: 12 }, { fiber: 2, pebble: 2 }, { d: "Hold it and tap stained wood to sand the stain off. Made by hand." });
   R("x_silkrope", "Silk Rope (3)", { rope: 3 }, { silk: 2 }, { d: "Spider Silk twists into strong rope. Made by hand." });
   R("x_cobweb", "Cobweb (2)", { cobweb: 2 }, { silk: 2 }, { d: "A dusty corner web for haunted houses and witchy builds. Hangs on a wall or ceiling. Made by hand." });

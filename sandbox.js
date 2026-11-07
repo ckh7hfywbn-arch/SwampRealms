@@ -602,7 +602,7 @@
     var lists = function (str) { return typeof str === "string" && str ? str.split(",").map(function (q) { var a = q.split(":"); return a.length === 2 && /^\d+$/.test(a[0]) ? six(a[0]) + ":" + a[1] : null; }).filter(Boolean).join(",") : ""; };
     n.e = lists(o.e); n.we = lists(o.we);
     if (typeof o.ex === "string" && o.ex) { var a0 = new Uint8Array(cw * H), a1 = new Uint8Array(W * H); unrle(o.ex, a0); for (var y = 0; y < H; y++) a1.set(a0.subarray(y * cw, (y + 1) * cw), y * W + ext); n.ex = rle(a1); }
-    ["stain", "wstain", "dflip"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { if (/^\d+$/.test(q)) m[six(q)] = o[k][q]; }); n[k] = m; } });
+    ["stain", "wstain", "dflip", "shape"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { if (/^\d+$/.test(q)) m[six(q)] = o[k][q]; }); n[k] = m; } });
     ["chests", "farm", "saps", "gates", "traps", "stands"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { var a = q.split(","); if (a.length === 2) m[sx(a[0]) + "," + a[1]] = o[k][q]; }); n[k] = m; } });
     if (Array.isArray(o.wp)) n.wp = o.wp.map(function (w) { return w && typeof w === "object" ? Object.assign({}, w, { x: sx(w.x) }) : w; });
     if (Array.isArray(o.pets)) n.pets = o.pets.map(function (q) { return q && typeof q === "object" ? Object.assign({}, q, { x: sx(q.x), hx: q.hx !== undefined ? sx(q.hx) : q.hx }) : q; });
@@ -642,7 +642,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
   // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
   // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
@@ -731,6 +731,7 @@
     if (o.vis && typeof o.vis === "object") Object.keys(o.vis).forEach(function (k) { if (o.vis[k]) d.vis[k] = 1; });
     if (o.ms && o.ms.ember) d.vis.b1 = 1; if (o.ms && o.ms.frost) d.vis.b2 = 1;
     d.rod = clamp(Math.floor(+o.rod) || 0, 0, 2); d.hoe = clamp(Math.floor(+o.hoe) || 0, 0, 3); d.bucket = clamp(Math.floor(+o.bucket) || 0, 0, 2); d.bkt = o.bkt === "water" || (o.bkt === "lava" && d.bucket >= 2) ? o.bkt : ""; d.bow = clamp(Math.floor(+o.bow) || 0, 0, 3); d.net = o.net ? 1 : 0; ["whut", "wloot"].forEach(function (mk3) { var src3 = o[mk3]; if (src3 && typeof src3 === "object" && o.wv === SW.WORLDVER) Object.keys(src3).forEach(function (k) { var v = Math.floor(+src3[k]); if (/^\d+$/.test(k) && v >= -1 && v < 1e6) d[mk3][k] = v; }); });
+    d.shape = {}; if (o.shape && typeof o.shape === "object" && o.wv === SW.WORLDVER) Object.keys(o.shape).forEach(function (k) { var v = Math.floor(+o.shape[k]); if (/^\d+$/.test(k) && v >= 1 && v <= 5) d.shape[k] = v; });   // MALLET block shapes
     ["stain", "wstain", "dflip"].forEach(function (mk2) { if (!d[mk2]) d[mk2] = {}; var src = o[mk2]; if (src && typeof src === "object" && o.wv === SW.WORLDVER) Object.keys(src).forEach(function (k) { var v = Math.floor(+src[k]); if (/^\d+$/.test(k) && v >= 0 && v < STAINS.length) d[mk2][k] = v; }); });
     if (o.saps && typeof o.saps === "object" && o.wv === SW.WORLDVER) Object.keys(o.saps).forEach(function (k) { if (/^\d+,\d+$/.test(k)) d.saps[k] = clamp(+o.saps[k] || 0, 0, 600); });
     if (o.pity && typeof o.pity === "object") Object.keys(o.pity).forEach(function (k) { if (ITEMS[k]) d.pity[k] = clamp(Math.floor(+o.pity[k]) || 0, 0, 9); });
@@ -834,7 +835,7 @@
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
   }
   function start(state) {
-    S = state; if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    S = state; if (!S.shape) S.shape = {}; shapeCount(); if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
     benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
@@ -1130,8 +1131,8 @@
     col[x] = H;
   }
   var editN = 0;
-  function setT(x, y, id) {
-    var i = y * W + x; if (FL && !isLiq(id)) FL[i] = 0; editN++; if (S.dflip && S.dflip[i] && tiles[i] !== id) delete S.dflip[i]; animDoorNote(i, tiles[i], id); tiles[i] = id; mpTileEdit(x, y, id); flWake(x, y);
+  function setT(x, y, id) {   // (MALLET: a broken or replaced block loses its shape)
+    var i = y * W + x; if (S.shape && S.shape[i] !== undefined && tiles[i] !== id) { delete S.shape[i]; shapeCount(); } if (FL && !isLiq(id)) FL[i] = 0; editN++; if (S.dflip && S.dflip[i] && tiles[i] !== id) delete S.dflip[i]; animDoorNote(i, tiles[i], id); tiles[i] = id; mpTileEdit(x, y, id); flWake(x, y);
     if (S.stain && S.stain[i] !== undefined && !STAINABLE[id]) delete S.stain[i];   // broken or replaced: the stain goes with it (an opening door keeps its stain)
     if (id === orig[i]) delete edits[i]; else edits[i] = id;
     recalc(x);
@@ -1229,8 +1230,37 @@
   }
   function boxHit(x, y) {
     var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4), y0 = Math.floor(y - PH + 1e-4), y1 = Math.floor(y - 1e-4);
-    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) return true;
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) {
+      if (SHAPEN && !cave) { var sh = S.shape[yy * W + xx]; if (sh && !shapeHit(sh, xx, yy, x - PW / 2, x + PW / 2, y - PH, y)) continue; }   // MALLET: only the solid part of a shaped block counts
+      return true;
+    }
     return false;
+  }
+  // ---------- MALLET: BLOCK SHAPES (half-blocks and ramps) ----------
+  // S.shape[tileIndex] = 1 half-block (bottom half solid), 2 ramp rising to the right, 3 ramp rising to the left, 4 ceiling ramp (solid top-left),
+  // 5 ceiling ramp (solid top-right). Saved with the world; the shape goes away when the block is broken or replaced (setT).
+  // Only the player's box uses the exact shape (boxHit); creatures, light and water still treat a shaped block as a full one.
+  var SHAPEN = 0;
+  function shapeCount() { SHAPEN = S && S.shape ? Object.keys(S.shape).length : 0; }
+  function shapeHit(sh, cx, cy, bx0, bx1, by0, by1) {   // does the box [bx0,bx1]x[by0,by1] overlap the solid part of shaped cell (cx, cy)?
+    var lx0 = clamp(bx0 - cx, 0, 1), lx1 = clamp(bx1 - cx, 0, 1), ly0 = clamp(by0 - cy, 0, 1), ly1 = clamp(by1 - cy, 0, 1), e = 1e-4;
+    if (lx1 - lx0 < e || ly1 - ly0 < e) return false;
+    if (sh === 1) return ly1 > 0.5 + e;
+    var cxl = clamp((bx0 + bx1) / 2 - cx, 0, 1);   // floor ramps hold you up at your middle (feet on the slope, not on the box's uphill corner)
+    if (sh === 2) return ly1 > 1 - cxl + e;
+    if (sh === 3) return ly1 > cxl + e;
+    if (sh === 4) return ly0 < 1 - lx0 - e;
+    if (sh === 5) return ly0 < lx1 - e;
+    return true;
+  }
+  function slopeLift(nx, y) {   // walking into a ramp or a half-block: the smallest lift (up to just over half a block) that clears it, or -1
+    for (var d = 0.03; d <= 0.62; d += 0.03) if (!boxHit(nx, y - d) && !boxHit(p.x, y - d)) return d;
+    return -1;
+  }
+  function settleDown(x, lo, hi) {   // lo is free, hi hits: the lowest free height between them (to a hair)
+    if (!boxHit(x, hi)) return hi;
+    for (var k = 0; k < 14; k++) { var m = (lo + hi) / 2; if (boxHit(x, m)) hi = m; else lo = m; }
+    return lo;
   }
   function touches(kind) {
     var x0 = Math.floor(p.x - PW / 2), x1 = Math.floor(p.x + PW / 2), y0 = Math.floor(p.y - PH), y1 = Math.floor(p.y - 0.05);
@@ -2128,6 +2158,7 @@
     "stain_sage": {"r": ["................", "................", "................", "....oooooooo....", "...ommmmmmmmo...", "...oLLLLLLLLo...", "...oLwLLLLLLo...", "...oLLLLLLLLo...", "...oLLLLLLDDo...", "...oLLLLLLDDo...", "...oLLLLLLLLo...", "...ommmmmmmmo...", "....oooooooo....", "................", "................", "................"], "p": {"o": "#2a2a30", "m": "#9aa4ac", "L": "#5a7a4a", "w": "#ffffff66", "D": "#00000033"}, "o": "#16161a"},
     "stain_blue": {"r": ["................", "................", "................", "....oooooooo....", "...ommmmmmmmo...", "...oLLLLLLLLo...", "...oLwLLLLLLo...", "...oLLLLLLLLo...", "...oLLLLLLDDo...", "...oLLLLLLDDo...", "...oLLLLLLLLo...", "...ommmmmmmmo...", "....oooooooo....", "................", "................", "................"], "p": {"o": "#2a2a30", "m": "#9aa4ac", "L": "#3a5a74", "w": "#ffffff66", "D": "#00000033"}, "o": "#16161a"},
     "stain_plum": {"r": ["................", "................", "................", "....oooooooo....", "...ommmmmmmmo...", "...oLLLLLLLLo...", "...oLwLLLLLLo...", "...oLLLLLLLLo...", "...oLLLLLLDDo...", "...oLLLLLLDDo...", "...oLLLLLLLLo...", "...ommmmmmmmo...", "....oooooooo....", "................", "................", "................"], "p": {"o": "#2a2a30", "m": "#9aa4ac", "L": "#6a3a72", "w": "#ffffff66", "D": "#00000033"}, "o": "#16161a"},
+    "mallet": {"r": ["................", "....oooooooooo..", "...oHhhhhhhhhHo.", "...oHhhwhhhhhHo.", "...oGGGGGGGGGGo.", "...oGgGGgGGgGGo.", "...oHHHHHHHHHHo.", "...oDDDDDDDDDDo.", "....oooowWoooo..", ".......owWo.....", "......owWo......", ".....owWo.......", "....owWo........", "...owWo.........", "..oDDo..........", "..ooo..........."], "p": {"o": "#24160c", "H": "#a8703c", "h": "#dca36a", "w": "#f2d39a", "D": "#6a4020", "G": "#2fa878", "g": "#58d68b", "W": "#b8834a"}, "o": "#24160c"},
     "sandpaper": {"r": ["................", "................", "................", "...oooooooooo...", "...oSSsSSSsSo...", "...oSsSSsSSSo...", "...oSSSsSSsSo...", "...osSSSSsSSo...", "...oSSsSSSSso...", "...oSSSSsSSSo...", "...oooooooooo...", "................", "................", "................", "................", "................"], "p": {"o": "#8a6a3a", "S": "#e8d8b0", "s": "#b8a47a"}, "o": "#3a2a1a"}
   });
   SPR = Object.assign(SPR, {   // Emberfly Wings
@@ -10527,6 +10558,32 @@
     chips(tx + 0.5, ty + 0.5, sand ? "#e8dcc0" : STAINS[si].p[1], 6, 3); thud(sand ? 520 : 340, 0.03);
     checkGoals(); save();
   }
+  // ---------- MALLET: tap a block to reshape it (full, half, ramp right, ramp left, ceiling ramp right, ceiling ramp left, then full again) ----------
+  // Works on natural ground, rock and ore, and on building blocks. Not on doors, trunks, leaves, furniture, roof tiles (those slope on their own)
+  // or bedrock. One shape per tap; hold and drag does nothing more. The shape is free: the Mallet never wears out.
+  var MAL = { was: false };
+  function malletOk(id) {
+    var td = TILES[id]; if (!td || !td.solid || id === T.BEDROCK || id === T.LOG || id === T.LEAVES || td.kind === "door" || td.hatch || td.kind === "ladder" || td.small) return false;
+    if (MATF[id] && ROOFF[MATF[id].f]) return false;
+    return !!(NATC[id] || SMGEM[id] || MATF[id] || /^(Fossil Block|Buried Cache|Charcoal Seam|Garden Soil)$/.test(td.n || ""));
+  }
+  function useMallet(dt) {
+    mine = null; aim.door = false; aim.stn = ""; aim.chest = false;
+    var tap = aim.down && !MAL.was; MAL.was = aim.down; if (!tap) return;
+    if (cave) { nag("The Mallet shapes blocks on the surface."); return; }
+    if (MP.on && MP.role === "guest") { nag("The Mallet works in your own world for now."); return; }
+    var tx = aim.tx, ty = aim.ty; if (tx < 0) return;
+    var ddx = tx + 0.5 - p.x, ddy = ty + 0.5 - (p.y - PH / 2); if (ddx * ddx + ddy * ddy > REACH * REACH) { nag("That is too far away."); return; }
+    var ix = ty * W + tx, id = tiles[ix];
+    if (!malletOk(id)) { nag(TILES[id] && TILES[id].solid ? (MATF[id] && ROOFF[MATF[id].f] ? "Roof tiles already slope at a roof's edge." : "The Mallet can't shape that.") : "Tap a solid block to shape it."); return; }
+    if (smask && smask[ix] && tiles[ix] === orig[ix]) { nag("That is part of an old building."); return; }
+    var cur = S.shape[ix] | 0, nx = (cur + 1) % 6; if (nx) S.shape[ix] = nx; else delete S.shape[ix]; shapeCount(); editN++;
+    var g2 = 0; while (boxHit(p.x, p.y) && g2++ < 30) p.y -= 0.05;   // never trap yourself in the new shape
+    S.st.malleted = (S.st.malleted || 0) + 1;
+    var td = TILES[id]; chips(tx + 0.5, ty + 0.4, td.c2 || td.c || "#c9b58a", 5, 4); matHit(id); if (!reduce) shake = Math.max(shake, 0.06);
+    if (!S.mk.mallet_tip) { S.mk.mallet_tip = 1; toast("Full, half, ramp right, ramp left, ceiling ramps, then full again. Walk up ramps smoothly!", "#f2c14e"); }
+    save();
+  }
   // ---------- BOG WITCH ----------
   // A Murkwater night creature (and, later, the owner of the Witch Huts). She keeps 5-8 tiles away, winds up and lobs a hex bottle in an arc
   // that bursts where it lands (a direct hit also slows you for a moment), and blinks a few tiles away in a puff if you get within reach.
@@ -11428,6 +11485,7 @@
     if (ITEMS[sel] && ITEMS[sel].home) { useHome(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
     if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
+    if (sel === "mallet") { useMallet(dt); return; }   // MALLET
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }   // holding food: tap to eat
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }   // LOOT PACK: open an old book or a sealed letter
@@ -11716,7 +11774,7 @@
       setTimeout(function () { cgExpOpen(stnSave); if (CGS && CGS.k === "exp") { CGS.msg = first ? "<b>New discovery: " + esc(ITEMS[out].n) + "!</b> " + esc(itemDesc(out)) : ""; cgExpRender(); } }, 80);
     }, back);
   }
-  function itemDesc(k) { var it = ITEMS[k]; if (POTIONS[k]) return POTIONS[k].d; if (COATS[k]) return "An arrow ointment: " + COATS[k].d.replace("Coats your next 10 shots. ", "") + " Work it into Arrows at a Workbench."; if (ARROWD[k]) return ARROWD[k] + " Tap it in the hotbar to load it into your bow."; if (it.food) return "Fills " + it.food + " food, heals " + (it.heal || 0) + (it.efx ? ", and gives " + (FXN[it.efx[0]] || it.efx[0]) + " for " + Math.round(it.efx[1] / 60) + " min" : "") + "."; return ""; }
+  function itemDesc(k) { var it = ITEMS[k]; if (k === "mallet") return "Hold it and tap a block to reshape it: half-block, ramps either way, ceiling ramps, then back to full. Walk up ramps smoothly. Never wears out."; if (POTIONS[k]) return POTIONS[k].d; if (COATS[k]) return "An arrow ointment: " + COATS[k].d.replace("Coats your next 10 shots. ", "") + " Work it into Arrows at a Workbench."; if (ARROWD[k]) return ARROWD[k] + " Tap it in the hotbar to load it into your bow."; if (it.food) return "Fills " + it.food + " food, heals " + (it.heal || 0) + (it.efx ? ", and gives " + (FXN[it.efx[0]] || it.efx[0]) + " for " + Math.round(it.efx[1] / 60) + " min" : "") + "."; return ""; }
   function tickMw(dt) {   // a Masterwork pick or weapon you are holding glints now and then
     var k = sel === "pick" ? "pick" : sel === "weapon" ? "wpn" : ""; if (!k || mwStars(k) < 3 || reduce || cave) return;
     if (Math.random() < dt * 2.2) parts.push({ x: p.x + p.face * (0.5 + Math.random() * 0.4), y: p.y - 1.15 - Math.random() * 0.5, vx: 0, vy: -0.4, g: 0, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#fff6c2" : "#ffd23f", s: 2.5, glw: 1 });
@@ -11724,7 +11782,7 @@
   function craft(id) {
     var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
     if (id === "x_grap2" && (S.grapLv | 0) >= 1) { nag("Your grapple already has the Mk II upgrade."); return; } if (id === "x_grap3" && (S.grapLv | 0) < 1) { nag("Install the Mk II upgrade first."); return; } if (id === "x_grap3" && (S.grapLv | 0) >= 2) { nag("Your grapple is already Mk III."); return; }
-    if ((id === "x_drill" || id === "x_detect" || id === "x_jet") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
+    if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
@@ -12233,13 +12291,18 @@
     if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
     // horizontal, with automatic one-block step-up
     var nx = clamp(p.x + p.vx * h, 1, W - 1);
+    var wasOn = p.on, sl;
     if (!boxHit(nx, p.y)) p.x = nx;
+    else if (SHAPEN && (p.on || feetWet) && (sl = slopeLift(nx, p.y)) >= 0) { p.x = nx; p.y -= sl; }   // MALLET: walk up a ramp or onto a half-block smoothly
     else if ((p.on || feetWet) && !boxHit(nx, p.y - 1.001) && !boxHit(p.x, p.y - 1.001)) { p.x = nx; p.y -= 1; }
     else p.vx = 0;
+    if (SHAPEN && wasOn && p.vy >= 0 && !lad && !p.wet && !boxHit(p.x, p.y + 0.02)) {   // MALLET: walking down a ramp (or off a half-block) hugs the ground instead of hopping
+      for (var sd = 0.06; sd <= 0.62; sd += 0.06) if (boxHit(p.x, p.y + sd)) { p.y = settleDown(p.x, p.y, p.y + sd); break; }
+    }
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
     if (!boxHit(p.x, ny) && !(p.vy > 0 && leafLand(p.x, p.y, ny))) p.y = ny;
-    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; p.on = true; p.vy = 0; if (bounceAt(vpre)) { /* PLAYGROUND: boing */ } else if (vpre > FALL_SAFE && !p.wet && !gliding && !fx("feather") && !hasCharm("feather")) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); }
+    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; if (SHAPEN && ny > p.y) p.y = settleDown(p.x, p.y, ny); p.on = true; p.vy = 0; if (bounceAt(vpre)) { /* PLAYGROUND: boing */ } else if (vpre > FALL_SAFE && !p.wet && !gliding && !fx("feather") && !hasCharm("feather")) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); }
       if (vpre > 3.5 && !reduce) { p.sq = -Math.min(0.3, (vpre - 2) / 48); p.sqv = 0; }
       if (vpre > 7) { landPuff(vpre); var gid = get(Math.floor(p.x), Math.floor(p.y + 0.2)); matStep(gid, Math.min(1, (vpre - 5) / 16)); if (vpre > 16) thud(70, Math.min(0.12, (vpre - 14) / 90)); } }
     else { p.y = Math.ceil(ny - PH) + PH; p.vy = 0; }
@@ -12829,12 +12892,40 @@
   var CELL = { wob: 0, edge: 1, sw: 0 };
   function drawCell(g, i, j, sx3, sy, now) {
     if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }   // FARM GATE: drawn big by drawFarmGates
+    var shp = SHAPEN && !cave ? S.shape[j * W + i] : 0;
+    if (shp) { shapeDraw(g, i, j, sx3, sy, now, shp); return; }   // MALLET: a half-block or ramp
     drawCell0(g, i, j, sx3, sy, now); if (S.stain[j * W + i] !== undefined) drawStain(g, i, j, sx3, sy);
     var ft = TILES[tiles[j * W + i]];
     if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles[(j - 1) * W + i]; if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
       var op = Math.round(ft.top * ts / 16), uv = ((Math.imul(i, 73856093) ^ Math.imul(j - 1, 19349663)) >>> 0) & 3, fl = S.dflip && S.dflip[(j - 1) * W + i];
       if (fl) { g.save(); g.translate(sx3 * 2 + ts, 0); g.scale(-1, 1); } decoPart(g, uv, uid, 16 - ft.top, ft.top, sx3, sy, ts, op); if (fl) g.restore();
     } }
+  }
+  // MALLET: drawing a shaped block: what is behind it (back wall, cave rock or sky), the block clipped to its shape, then a rim along the cut
+  // edge (grass on mossy ground, a lit edge on ramps you stand on, a shadow on ceiling ramps), and a dark outline on building blocks.
+  var SHPOLY = [null, [[0, 0.5], [1, 0.5], [1, 1], [0, 1]], [[1, 0], [1, 1], [0, 1]], [[0, 0], [1, 1], [0, 1]], [[0, 0], [1, 0], [0, 1]], [[0, 0], [1, 0], [1, 1]]];
+  var SHEDGE = [null, [0, 0.5, 1, 0.5], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 1], [0, 0, 1, 1]];
+  function shapeDraw(g, i, j, sx, sy, now, sh) {
+    var ix = j * W + i, under = j >= col[i] && j > world.top[i], id = tiles[ix], td = TILES[id];
+    if (walls[ix]) drawWall(g, walls[ix], i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
+    var P = SHPOLY[sh]; g.save(); g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); g.clip();
+    drawCell0(g, i, j, sx, sy, now); if (S.stain[ix] !== undefined) drawStain(g, i, j, sx, sy);
+    if (sh === 1 || sh === 2 || sh === 3) {   // the cut face: a soft shade just under the new surface, so it reads as the top of the block
+      var E0 = SHEDGE[sh], gx0 = sx + E0[0] * ts, gy0 = sy + E0[1] * ts, gx1 = sx + E0[2] * ts, gy1 = sy + E0[3] * ts, mxp = (gx0 + gx1) / 2, myp = (gy0 + gy1) / 2;
+      var sgr = g.createLinearGradient(mxp, myp, mxp, myp + ts * 0.5); sgr.addColorStop(0, "rgba(255,255,255,.10)"); sgr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = sgr; g.fillRect(sx, sy, ts, ts);
+    }
+    g.restore();
+    var E = SHEDGE[sh], x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, x1 = sx + E[2] * ts, y1 = sy + E[3] * ts, floor = sh <= 3, lw = Math.max(1, Math.round(ts / 14));
+    g.lineCap = "round";
+    if (MATF[id]) { g.strokeStyle = "rgba(18,22,26,.78)"; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+    if (floor && id === T.MOSS) {   // grass runs along the new top
+      var GP = GRASSP[varAt(i)] || GRASSP[0], gw = ts * 0.16;
+      g.strokeStyle = GP[0]; g.lineWidth = gw; g.beginPath(); g.moveTo(x0, y0 + gw * 0.35); g.lineTo(x1, y1 + gw * 0.35); g.stroke();
+      g.strokeStyle = GP[1]; g.lineWidth = gw * 0.5; g.beginPath(); g.moveTo(x0, y0 + gw * 0.2); g.lineTo(x1, y1 + gw * 0.2); g.stroke();
+      g.strokeStyle = GP[2]; g.lineWidth = Math.max(1, ts * 0.035); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+    } else if (floor) { g.strokeStyle = "rgba(255,255,255,.28)"; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0 + lw * 0.6); g.lineTo(x1, y1 + lw * 0.6); g.stroke(); }
+    else { g.strokeStyle = "rgba(0,0,0,.38)"; g.lineWidth = lw * 1.4; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+    g.lineCap = "butt";
   }
   // ---------- ROOMS INSIDE BUILDINGS (Sims-style cutaway) ----------
   // Inner walls (F.iw, from "#" in the floor plan) are drawn as blocks standing ROOM_H tiles tall: the top face sits above the cell and covers
@@ -15019,6 +15110,7 @@
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }
     if (POTIONS[sel]) { useDrink(dt); return; }
     if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
+    if (sel === "mallet") { useMallet(dt); return; }   // MALLET
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].summon) { mine = null; if (aim.down) nag("Bosses only answer the call on the surface world."); return; }
     if (ITEMS[sel] && ITEMS[sel].home) { mine = null; if (aim.down) nag("The shell needs open sky. Use it on the surface."); return; }
@@ -15697,7 +15789,7 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
+    ["Tools|Utility", "x_mallet prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3"],
     ["Tools|Arrows", "x_arrow x_firearrow x_ar_venom x_ar_numb x_ar_sleep x_ar_mark x_ar_spark x_ar_blast x_ar_leech"],
     ["Tools|Adventuring", "x_grapple"],
@@ -16698,7 +16790,7 @@
   }
   function itInfo(k) {
     var it = ITEMS[k]; if (!it) return null; itRecIdx();
-    var kind = "Material", c = "#c9b58a", txt = "", rec = IT_REC[k];
+    var kind = "Material", c = "#c9b58a", txt = "", rec = IT_REC[k]; if (k === "mallet") { kind = "Tool"; c = "#7fd6ff"; txt = itemDesc(k); }   // MALLET
     if (it.tool) {
       kind = "Tool"; c = "#7fd6ff";
       if (it.tool === "pick") txt = "Mines blocks. Tier " + S.tier + " of " + (PICKS.length - 1) + ": better picks dig faster and break tougher stone and ore.";
@@ -20828,6 +20920,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
+  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
