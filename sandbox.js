@@ -13153,17 +13153,25 @@
     } else g.drawImage(src, bx0, by0, bw, bh, dx + bx0 * ts, dy + by0 * ts, bw * ts, bh * ts);
     g.globalCompositeOperation = "source-over";
   }
-  var LKEY = "", LPAR = 0;
+  var LKEY = "", LPAR = 0, CRG = null, CGG = null, CBG = null, LRGB = {};
+  // COLOURED LIGHT: every light-giving block also spreads its own colour (three extra grids, spread the same way as the light), so a torch
+  // warms the rock around it, Glowcaps wash a cave in teal, crystals in ice blue and lava or embers in red-orange. Lights that are not blocks
+  // (building windows, the farm gate, the mine shaft) still add plain warm light. The colour is the same one the block's halo uses.
+  function lightRGB(id) {
+    if (LRGB[id]) return LRGB[id]; var td = TILES[id] || {};
+    var s2 = td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.LAVA ? "255,110,30" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : /lamp|torch|lantern|candle|fire|hearth|stove|forge|kiln|furnace/.test((td.kind || "") + " " + (td.n || "").toLowerCase()) ? "255,170,60" : "80,240,190";
+    var a = s2.split(",").map(Number); return (LRGB[id] = [a[0] | 0, a[1] | 0, a[2] | 0]);
+  }
   function lightGrid(gx0, gy0, gw, gh, day, pcx, pcy) {
     var n = gw * gh, skyL = Math.round(day * 15 * LQ), i, j, c;
     // PERF (phones): the light only changes when the view moves, the time of day steps, or something changes; reuse it on alternate frames
     var key = gx0 + "," + gy0 + "," + gw + "," + gh + "," + skyL + "," + pcx + "," + pcy + "," + editN;
     if (lowq && LG && LG.length >= n && key === LKEY && (LPAR = 1 - LPAR)) return;
     LKEY = key; var anyLamp = false;
-    if (!LG || LG.length < n) { LG = new Uint8Array(n); OP = new Uint8Array(n); WG = new Uint8Array(n); }
+    if (!LG || LG.length < n) { LG = new Uint8Array(n); OP = new Uint8Array(n); WG = new Uint8Array(n); CRG = new Uint8Array(n); CGG = new Uint8Array(n); CBG = new Uint8Array(n); }
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
       var X = gx0 + i, Y = gy0 + j, id = get(X, Y), L = TILES[id].light * LQ; c = j * gw + i;
-      WG[c] = L; if (L) anyLamp = true;
+      WG[c] = L; if (L) { anyLamp = true; var lrc = lightRGB(id); CRG[c] = (L * lrc[0] / 255) | 0; CGG[c] = (L * lrc[1] / 255) | 0; CBG[c] = (L * lrc[2] / 255) | 0; } else CRG[c] = CGG[c] = CBG[c] = 0;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
       LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? 3 * LQ : LQ;
@@ -13175,7 +13183,7 @@
     if (winNight() > 0) (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.win || !P.win.length || q.razed || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.win.forEach(function (l) { var lv = winLit(l[2], l[3]); if (!lv) return; var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li, v = Math.round(11 * lv) * LQ; LG[k2] = Math.max(LG[k2], v); WG[k2] = Math.max(WG[k2], v); anyLamp = true; } }); });   // lit windows light the dark around them
     for (var fgk = 0; fgk < FGLAST.length; fgk += 2) { var fli = FGLAST[fgk] + 2 - gx0, flj = FGLAST[fgk + 1] - 1 - gy0; if (fli >= 0 && fli < gw && flj >= 0 && flj < gh) { var fk2 = flj * gw + fli; LG[fk2] = Math.max(LG[fk2], 9 * LQ); WG[fk2] = Math.max(WG[fk2], 9 * LQ); anyLamp = true; } }   // FARM GATE lanterns (last frame's list)
     var MH = world.holes && world.holes[0]; if (MH && get(MH.x, MH.y) === T.HOLE) { var mli = MH.x + 1 - gx0, mlj = MH.y - 1 - gy0; if (mli >= 0 && mli < gw && mlj >= 0 && mlj < gh) { var mk = mlj * gw + mli, mv = 10 * LQ; LG[mk] = Math.max(LG[mk], mv); WG[mk] = Math.max(WG[mk], mv); anyLamp = true; } }   // THE MINE: its lantern
-    spread(LG, gw, gh); if (anyLamp) spread(WG, gw, gh);
+    spread(LG, gw, gh); if (anyLamp) { spread(WG, gw, gh); spread(CRG, gw, gh); spread(CGG, gw, gh); spread(CBG, gw, gh); }
   }
   function spread(G, gw, gh) {   // two sweeps each way; a diagonal step costs about 1.4 straight steps
     var i, j, a, v, o, od;
@@ -13388,10 +13396,65 @@
   // painted once at full device resolution into a small canvas and stamped; the soft shade it throws onto its neighbours is still drawn
   // live (edgeShade) so everything stacks exactly as before. NATM is a Map in insertion order, trimmed to a pixel budget (about 16 MB).
   var NATM = new Map(), NATS = 0, NATPX = 0, NAT_BUDGET = 4e6, PERF = { nat: true, dark: true, vig: true };
+  // ---------- CARVED TERRAIN: rounded outer corners, grass that wraps round them, and soft ground bleeding into rock ----------
+  // A natural block with two open sides meeting at a corner gets that corner rounded (what is behind it shows through: sky, cave wall or a
+  // back wall). Water and lava count as filled, so lake beds stay square. Grass lips follow the curve. Where soft ground (mud, clay, sand,
+  // snow, ash, peat, silt) touches rock, a jagged tongue of the soft ground runs into the rock, so layers meet like real strata.
+  var CARVE_SOFT = {}, CARVE_HARD = {}, SEAMC = new Map(), SEAMS = 0;
+  [T.MOSS, T.MUD, T.CLAY, T.ASH, T.SNOW, T.X_sand, T.X_peat, T.X_silt].forEach(function (k) { if (k !== undefined) CARVE_SOFT[k] = 1; });
+  [T.STONE, T.BASALT, T.FROSTROCK, T.ICE, T.X_obsidian, T.X_permafrost, T.BEDROCK].forEach(function (k) { if (k !== undefined) CARVE_HARD[k] = 1; });
+  function carveOpen(x, y) { var k = get(x, y); return !TILES[k].solid && k !== T.WATER && k !== T.LAVA; }
+  function carveUnder(x, y) { return x >= 0 && x < W && y >= col[x] && y > world.top[x]; }
+  function carveBack(g, i, j, sx, sy, tl, tr, bl, br) {   // what shows through a rounded corner: a back wall, cave rock, or nothing (open sky)
+    var wl = walls[j * W + i] || ((tl || bl) && walls[j * W + i - 1]) || ((tl || tr) && j > 0 && walls[(j - 1) * W + i]) || ((tr || br) && walls[j * W + i + 1]) || ((bl || br) && walls[(j + 1) * W + i]);
+    if (wl) { drawWall(g, wl, i, j, sx, sy); return; }
+    if (((tl || bl) && carveUnder(i - 1, j)) || ((tr || br) && carveUnder(i + 1, j)) || ((tl || tr) && carveUnder(i, j - 1)) || ((bl || br) && carveUnder(i, j + 1))) drawBackRock(g, i, j, sx, sy);
+  }
+  function carvePath(g, x0, y0, tl, tr, br, bl, lip) {
+    var x1 = x0 + ts, y1 = y0 + ts; g.beginPath();
+    g.moveTo(x0 + tl, y0); g.lineTo(x1 - tr, y0); if (tr) g.arcTo(x1, y0, x1, y0 + tr, tr); g.lineTo(x1, y1 - br); if (br) g.arcTo(x1, y1, x1 - br, y1, br);
+    g.lineTo(x0 + bl, y1); if (bl) g.arcTo(x0, y1, x0, y1 - bl, bl); g.lineTo(x0, y0 + tl); if (tl) g.arcTo(x0, y0, x0 + tl, y0, tl); g.closePath();
+    if (lip) { var la = x0 + (tl ? tl * 0.7 : -ts * 0.25), lb = x1 - (tr ? tr * 0.7 : -ts * 0.25); if (lb > la) { g.moveTo(la, y0 - ts * 0.5); g.lineTo(lb, y0 - ts * 0.5); g.lineTo(lb, y0 + 1); g.lineTo(la, y0 + 1); g.closePath(); } }
+  }
+  function carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, grass) {   // grass round the top corners (or a lit edge), a shadowed edge round the bottom ones
+    var lw = Math.max(1, CELL.edge), arc = function (cx, cy, r, a0, a1, col2, w2) { if (!r) return; g.strokeStyle = col2; g.lineWidth = w2; g.beginPath(); g.arc(cx, cy, Math.max(0.5, r - w2 / 2), a0, a1); g.stroke(); };
+    var H = Math.PI;
+    if (grass) {
+      var GP = GRASSP[varAt(i)] || GRASSP[0], gw2 = ts * 0.17;
+      [[tl, sx + tl, sy + tl, H, H * 1.5], [tr, sx + ts - tr, sy + tr, H * 1.5, H * 2]].forEach(function (c) { if (!c[0]) return; arc(c[1], c[2], c[0], c[3], c[4], GP[0], gw2); arc(c[1], c[2], c[0], c[3], c[4], GP[1], gw2 * 0.55); arc(c[1], c[2], c[0], c[3] + 0.08, c[4] - 0.08, GP[2], Math.max(1, ts * 0.04)); });
+    } else { arc(sx + tl, sy + tl, tl, H, H * 1.5, "rgba(255,255,255,.16)", lw); arc(sx + ts - tr, sy + tr, tr, H * 1.5, H * 2, "rgba(255,255,255,.16)", lw); }
+    arc(sx + ts - br, sy + ts - br, br, 0, H * 0.5, "rgba(0,0,0,.32)", lw * 1.5); arc(sx + bl, sy + ts - bl, bl, H * 0.5, H, "rgba(0,0,0,.32)", lw * 1.5);
+  }
+  function seamCanvas(nid, side, v, dq) {   // a jagged tongue of soft ground nid reaching into a rock block from one side (cached)
+    var key = nid + "," + side + "," + v + "," + dq + "," + ts, c = SEAMC.get(key); if (c) return c;
+    var S2 = Math.max(2, Math.round(ts * dpr)), k2 = S2 / ts; c = document.createElement("canvas"); c.width = c.height = S2; var q = c.getContext("2d"); q.setTransform(k2, 0, 0, k2, 0, 0);
+    q.translate(ts / 2, ts / 2); q.rotate(side * Math.PI / 2); q.translate(-ts / 2, -ts / 2);   // drawn for the top side, turned for the others
+    var pal = NATC[nid], d = dq / 4, n = 6, pts = [];
+    for (var k = 0; k <= n; k++) { var e2 = k === 0 || k === n ? 0.02 : 0.07 + SW.hash(nid * 7 + v, k, 31 + side) * 0.2; pts.push([ts * k / n, ts * e2]); }
+    q.fillStyle = mixRgb(pal[0], pal[1], d); q.beginPath(); q.moveTo(0, 0); q.lineTo(ts, 0); q.lineTo(pts[n][0], pts[n][1]);
+    for (k = n - 1; k >= 1; k--) { var mx = (pts[k][0] + pts[k + 1][0]) / 2, my = (pts[k][1] + pts[k + 1][1]) / 2; q.quadraticCurveTo(pts[k + 1][0], pts[k + 1][1], mx, my); }
+    q.lineTo(pts[0][0], pts[0][1]); q.closePath(); q.fill();
+    q.strokeStyle = "rgba(0,0,0,.3)"; q.lineWidth = Math.max(1, ts / 18); q.beginPath(); q.moveTo(pts[n][0], pts[n][1]);
+    for (k = n - 1; k >= 1; k--) { var mx2 = (pts[k][0] + pts[k + 1][0]) / 2, my2 = (pts[k][1] + pts[k + 1][1]) / 2; q.quadraticCurveTo(pts[k + 1][0], pts[k + 1][1], mx2, my2); } q.lineTo(pts[0][0], pts[0][1]); q.stroke();
+    q.fillStyle = "rgba(255,255,255,.08)"; for (k = 1; k < n; k += 2) { q.beginPath(); q.ellipse(pts[k][0], pts[k][1] * 0.45, ts * 0.05, ts * 0.03, 0, 0, 6.2832); q.fill(); }
+    if (SEAMC.size > 600) SEAMC.clear(); SEAMC.set(key, c); return c;
+  }
+  function drawSeams(g, id, i, j, sx, sy) {
+    if (!CARVE_HARD[id]) return; var dq = Math.round(clamp((j - SURF) / 46, 0, 1) * 4), v = ((i * 7 + j * 13) >>> 0) & 3;
+    var nb = [get(i, j - 1), get(i + 1, j), get(i, j + 1), get(i - 1, j)];
+    for (var sd = 0; sd < 4; sd++) { var nid = nb[sd]; if (CARVE_SOFT[nid] && NATC[nid]) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq), sx, sy, ts, ts); }
+  }
   function natTile(g, id, i, j, sx, sy) {
     var up = (j - 1) * W + i, scen = j > 0 && i >= 0 && i < W && tiles[up] === T.LOG && orig[up] === T.LOG;
     var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES || scen, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
-    if (!PERF.nat) { natBody(g, id, i, j, sx, sy, scen, nT, nL, nR); edgeShade(g, i, j, sx, sy, nB, nL, nR); return; }
+    var tl = 0, tr = 0, br = 0, bl = 0;
+    if (!scen && (nT || nB) && (nL || nR) && i > 0 && i < W - 1 && OPT.carve !== false) {
+      var oT = carveOpen(i, j - 1), oB = carveOpen(i, j + 1), oL = carveOpen(i - 1, j), oR = carveOpen(i + 1, j), rr = Math.round(ts * 0.42);
+      tl = oT && oL ? rr : 0; tr = oT && oR ? rr : 0; br = oB && oR ? rr : 0; bl = oB && oL ? rr : 0;
+    }
+    var carved = tl || tr || br || bl;
+    if (carved) { carveBack(g, i, j, sx, sy, tl, tr, bl, br); g.save(); carvePath(g, sx, sy, tl, tr, br, bl, nT); g.clip(); }
+    if (!PERF.nat) { natBody(g, id, i, j, sx, sy, scen, nT, nL, nR); carveEnd(g, id, i, j, sx, sy, nB, nL, nR, tl, tr, br, bl, nT); return; }
     var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { NATM.clear(); NATS = S; NATPX = 0; }
     var key = (((id * W + i) * H + j) * 16 + (nT ? 8 : 0) + (nL ? 4 : 0) + (nR ? 2 : 0) + (scen ? 1 : 0)) * 16 + varAt(i), cv = NATM.get(key), k2 = S / ts;   // PERF: a number, not a string, so no garbage per tile per frame
     if (!cv) {
@@ -13404,7 +13467,12 @@
       if (NATPX > NAT_BUDGET) { var it = NATM.keys(); while (NATPX > NAT_BUDGET * 0.75) { var ok = it.next(); if (ok.done) break; var oc = NATM.get(ok.value); NATPX -= oc.width * oc.height; NATM.delete(ok.value); } }
     }
     g.drawImage(cv, sx - cv.px, sy - cv.pt, cv.width / k2, cv.height / k2);
-    edgeShade(g, i, j, sx, sy, nB, nL, nR);
+    carveEnd(g, id, i, j, sx, sy, nB, nL, nR, tl, tr, br, bl, nT);
+  }
+  function carveEnd(g, id, i, j, sx, sy, nB, nL, nR, tl, tr, br, bl, nT) {   // seams and the bottom shadow inside the clip, then the rims, then side shadows outside it
+    drawSeams(g, id, i, j, sx, sy);
+    if (tl || tr || br || bl) { edgeShade(g, i, j, sx, sy, nB, false, false); g.restore(); carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, id === T.MOSS && nT); edgeShade(g, i, j, sx, sy, false, nL, nR); }
+    else edgeShade(g, i, j, sx, sy, nB, nL, nR);
   }
   // grass lip colours per land type: [lip, top, highlight, tuft, litter colours]
   var GRASSP = [["#2f9a6a", "#3fae78", "rgba(155,245,191,.65)", "#58d68b"], ["#3fa86a", "#5cc47e", "rgba(200,255,210,.7)", "#7ade8e", ["#ff9ad0", "#ffc8e4", "#f07ab0"]], null,
@@ -14302,12 +14370,14 @@
     for (j = 0; j < vgh; j++) for (i = 0; i < vgw; i++) {
       var gi2 = (j + M) * gw + (i + M), lv = LE.a[j * vgw + i], k = (j * vgw + i) * 4, al = 1 - Math.pow(Math.min(Lmax, lv) / Lmax, 0.85);
       var wv = warmK ? WG[gi2] / Lmax : 0, wa = wv > 0.05 ? Math.pow(wv, 1.6) * warmK : 0;   // warm light: strongest right by the lamp, fading out
-      if (lowq && wa > 0.02) {   // phones: blend the warm tint into the darkness pixel itself (no second full-screen pass)
+      var lr = 255, lgc = 150, lb = 70;   // COLOURED LIGHT: this cell's light colour (plain warm where only non-block lights reach)
+      if (wa > 0.02 && CRG) { var cr2 = CRG[gi2], cg2 = CGG[gi2], cb2 = CBG[gi2], cm = Math.max(cr2, cg2, cb2); if (cm > 0) { var ct = clamp(cm / Math.max(1, WG[gi2]) * 1.15, 0, 1); lr = Math.round(255 + (cr2 / cm * 255 - 255) * ct); lgc = Math.round(150 + (cg2 / cm * 255 - 150) * ct); lb = Math.round(70 + (cb2 / cm * 255 - 70) * ct); } }
+      if (lowq && wa > 0.02) {   // phones: blend the light's tint into the darkness pixel itself (no second full-screen pass)
         var wt = clamp(wa * 0.32, 0, 0.32), A = clamp(al, 0, 0.97), A2 = A + wt * (1 - A), f = A2 > 0 ? wt * (1 - A) / A2 : 0;
-        dk[k] = Math.round(dr + (255 - dr) * f); dk[k + 1] = Math.round(dg + (140 - dg) * f); dk[k + 2] = Math.round(db + (60 - db) * f); dk[k + 3] = Math.round(A2 * 255);
+        dk[k] = Math.round(dr + (lr - dr) * f); dk[k + 1] = Math.round(dg + (Math.max(0, lgc - 10) - dg) * f); dk[k + 2] = Math.round(db + (Math.max(0, lb - 10) - db) * f); dk[k + 3] = Math.round(A2 * 255);
       } else { dk[k] = dr; dk[k + 1] = dg; dk[k + 2] = db; dk[k + 3] = Math.round(clamp(al, 0, 0.97) * 255); }
       if (dk[k + 3]) { if (i < dbx[0]) dbx[0] = i; if (j < dbx[1]) dbx[1] = j; if (i > dbx[2]) dbx[2] = i; if (j > dbx[3]) dbx[3] = j; }
-      if (!lowq) { wk[k] = 255; wk[k + 1] = 150; wk[k + 2] = 70; wk[k + 3] = Math.round(clamp(wa, 0, 1) * 150); if (wa > 0.02) anyW = true; if (wk[k + 3]) { if (i < wbx[0]) wbx[0] = i; if (j < wbx[1]) wbx[1] = j; if (i > wbx[2]) wbx[2] = i; if (j > wbx[3]) wbx[3] = j; } }
+      if (!lowq) { wk[k] = lr; wk[k + 1] = lgc; wk[k + 2] = lb; wk[k + 3] = Math.round(clamp(wa, 0, 1) * 150); if (wa > 0.02) anyW = true; if (wk[k + 3]) { if (i < wbx[0]) wbx[0] = i; if (j < wbx[1]) wbx[1] = j; if (i > wbx[2]) wbx[2] = i; if (j > wbx[3]) wbx[3] = j; } }
     }
     var dDirty = mapDirty("d", dk), wDirty = anyW && !lowq ? mapDirty("w", wk) : true;
     if (dDirty) LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "low";
