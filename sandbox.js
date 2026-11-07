@@ -53,9 +53,9 @@
   //   dmg: damage you take   ehp: creature and boss health   hunger: how fast the food bar empties   spawn: time between creature spawns
   //   loss: on Hard, passing out costs you a share of each stack of loose materials (tools, gear, potions, trophies and summons are safe)
   var DIFF = [
-    { n: "Easy", c: "#7fd06a", dmg: 0.6, ehp: 0.75, hunger: 0.7, spawn: 1.4, loss: 0, d: "Creatures hit softer and have less health, hunger drains slower and fewer creatures show up." },
-    { n: "Medium", c: "#f2c14e", dmg: 1, ehp: 1, hunger: 1, spawn: 1, loss: 0, d: "The game as it was made to be played." },
-    { n: "Hard", c: "#ff6b82", dmg: 1.3, ehp: 1.25, hunger: 1.25, spawn: 0.8, loss: 0.2, d: "Creatures hit harder, have more health and show up more often, hunger drains faster, and passing out loses a fifth of your loose materials." }
+    { n: "Easy", c: "#7fd06a", dmg: 0.6, ehp: 0.75, hunger: 0.7, spawn: 1.4, loss: 0, ai: { tok: 1, dodge: 0.1, lead: 0.35, feint: 0.08 }, d: "Creatures hit softer and have less health, hunger drains slower and fewer creatures show up." },
+    { n: "Medium", c: "#f2c14e", dmg: 1, ehp: 1, hunger: 1, spawn: 1, loss: 0, ai: { tok: 2, dodge: 0.26, lead: 0.7, feint: 0.2 }, d: "The game as it was made to be played." },
+    { n: "Hard", c: "#ff6b82", dmg: 1.3, ehp: 1.25, hunger: 1.25, spawn: 0.8, loss: 0.2, ai: { tok: 3, dodge: 0.4, lead: 0.9, feint: 0.3 }, d: "Creatures hit harder, have more health and show up more often, hunger drains faster, and passing out loses a fifth of your loose materials." }
   ];
   var TROPHY = { queenchitin: 1, wyrmscale: 1, alphamane: 1, realmshard: 1, ruby: 1, sapphire: 1, moonstone: 1, amethyst: 1, amber: 1 };
   function dif() { return DIFF[S && S.diff >= 0 && S.diff <= 2 ? S.diff : 1]; }
@@ -2615,12 +2615,14 @@
     spider: [32, "A Cave Spider! They hang from cave ceilings and drop when you pass under. Watch for the silk threads, and dodge the pounce or you will be webbed.", "#ff4a6a"],
     witch: [16, "A Bog Witch! She lobs hex bottles from a distance and blinks away if you rush her. Dodge the bottles, then strike.", "#b06aff"]
   };
+  function aiA(e) { return e.alert > 0 ? 1.7 : 1; }   // an alarmed surface creature hunts from further away
+  function aiL() { return (dif().ai || { lead: 0.7 }).lead; }   // how well creatures lead a moving target
   function updateWolf(e, dt) {
-    var dx = p.x - e.x, near = Math.abs(dx) < WOLF.aggro && Math.abs(p.y - e.y) < 4 && hp > 0, vx = 0;
+    var dx = p.x - e.x, near = Math.abs(dx) < WOLF.aggro * aiA(e) && Math.abs(p.y - e.y) < 4 * aiA(e) && hp > 0, vx = 0;
     if (e.hurt > 0) { if (e.st === "wind") e.st = "stalk"; vx = e.on ? 0 : e.hvx; }
     else if (e.st === "lunge") { e.t += dt; vx = e.hvx; if (e.on && e.t > 0.15) { e.st = "recover"; e.t = WOLF.recover; e.cd = 1.2; } }
     else if (e.st === "recover") { e.t -= dt; if (e.t <= 0) e.st = "stalk"; }
-    else if (e.st === "wind") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; if (e.t <= 0) { e.st = "lunge"; e.t = 0; e.vy = -WOLF.lungeUp; e.on = false; e.hvx = e.dir * WOLF.lungeV; thud(240, 0.07); } }
+    else if (e.st === "wind") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; if (e.t <= 0) { var ldx = dx + p.vx * 0.45 * aiL(); if (ldx * dx > 0) e.dir = ldx >= 0 ? 1 : -1; e.st = "lunge"; e.t = 0; e.vy = -WOLF.lungeUp; e.on = false; e.hvx = e.dir * WOLF.lungeV * clamp(Math.abs(ldx) / (Math.abs(dx) || 1), 0.85, 1.3); thud(240, 0.07); } }
     else if (near) {
       e.st = "stalk"; e.dir = dx >= 0 ? 1 : -1;
       if (Math.abs(dx) < WOLF.lungeAt && e.cd <= 0 && e.on) { e.st = "wind"; e.t = WOLF.wind; thud(130, 0.06); }
@@ -2638,7 +2640,7 @@
   }
   function gatorWet(e) { return TILES[get(Math.floor(e.x), Math.floor(e.y - 0.35))].kind === "water"; }
   function updateGator(e, dt) {
-    var dx = p.x - e.x, near = Math.abs(dx) < GATOR.aggro && Math.abs(p.y - e.y) < 3 && hp > 0, vx = 0, wet = gatorWet(e); e.wet = wet;
+    var dx = p.x - e.x, near = Math.abs(dx) < GATOR.aggro * aiA(e) && Math.abs(p.y - e.y) < 3 * aiA(e) && hp > 0, vx = 0, wet = gatorWet(e); e.wet = wet;
     if (wet) e.vy = Math.min(e.vy, -1.5);   // floats: bobs along the surface with only its back, eyes and snout above the water
     if (e.hurt > 0) { if (e.st === "wind") { e.st = "stalk"; e.jaw = 0; } }
     else if (e.st === "wind") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; e.jaw = 0.6 * (1 - e.t / GATOR.wind); if (e.t <= 0) { e.st = "snap"; e.t = GATOR.snap; e.hvx = e.dir * 6.5; thud(160, 0.08); } }
@@ -2662,7 +2664,7 @@
     if (e.st !== "recover" && overlapP(e)) { hurt(GATOR.body, "gator"); shoved(e); }
   }
   function updateSlime(e, dt) {
-    var dx = p.x - e.x, near = Math.abs(dx) < SLIME.aggro && Math.abs(p.y - e.y) < 5 && hp > 0, sm = e.small ? 0.8 : 1;
+    var dx = p.x - e.x, near = Math.abs(dx) < SLIME.aggro * aiA(e) && Math.abs(p.y - e.y) < 5 && hp > 0, sm = e.small ? 0.8 : 1;
     e.sq = Math.max(0, (e.sq || 0) - dt * 4);
     if (e.on) {
       if (e.st === "hop") { e.st = "rest"; e.t = (near ? 0.5 : 1.1) + Math.random() * 0.8; e.sq = 1; }
@@ -2670,7 +2672,7 @@
       if (e.hurt <= 0) {
         e.t -= dt;
         if (e.t <= 0) {
-          if (near) e.dir = dx >= 0 ? 1 : -1; else if (Math.abs(e.x - e.hx) > 7) e.dir = e.hx > e.x ? 1 : -1; else if (Math.random() < 0.4) e.dir = -e.dir;
+          if (near) { var sdx = dx + p.vx * 0.5 * aiL(); e.dir = sdx >= 0 ? 1 : -1; } else if (Math.abs(e.x - e.hx) > 7) e.dir = e.hx > e.x ? 1 : -1; else if (Math.random() < 0.4) e.dir = -e.dir;
           e.st = "hop"; e.vy = -SLIME.hopV * sm * (near ? 1 : 0.75); e.on = false; e.hvx = e.dir * SLIME.hopX * sm * (near ? 1.15 : 0.6);
         }
       }
@@ -2724,7 +2726,7 @@
     var d = ENEMY[k], hp0 = Math.max(1, Math.round((k === "bat" ? d.hp + 4 * S.wpn : d.hp) * dif().ehp)); return { k: k, x: x, y: y, hx: x, vx: 0, vy: 0, kv: 0, on: false, dir: Math.random() < 0.5 ? -1 : 1, hp: hp0, mx: hp0, dmg: k === "bat" ? d.dmg + 2 * S.wpn : d.dmg, w: d.w, h: d.h, hurt: 0, dead: 0, def: false, st: k === "frog" ? "idle" : k === "bat" || k === "wasp" ? "hover" : k === "gator" ? "lurk" : k === "slime" ? "rest" : "patrol", b: world.bio[clamp(Math.floor(x), 0, W - 1)], jaw: 0, sq: 0, mv: 0, wet: false, small: false, t: 1 + Math.random() * 2, tt: Math.random() * 6, cd: 0, ext: 0, hvx: 0, blocked: false, fl: Math.random() * 6, ph: Math.random() * 6, leave: 0, gone: false, ax: 0, ay: 0 };
   }
   function updateBug(e, dt) {
-    var dx = p.x - e.x, near = Math.abs(dx) < 7.5 && Math.abs(p.y - e.y) < 3.2 && hp > 0, vx = 0;
+    var dx = p.x - e.x, near = Math.abs(dx) < 7.5 * aiA(e) && Math.abs(p.y - e.y) < 3.2 * aiA(e) && hp > 0, vx = 0;
     if (e.hurt > 0) vx = 0;
     else if (e.st === "retreat") { e.t -= dt; vx = e.dir * 2.4; if (e.t <= 0) e.st = "patrol"; }
     else if (near && e.cd <= 0) { e.st = "charge"; e.dir = dx >= 0 ? 1 : -1; vx = e.dir * 3.6; }
@@ -2737,7 +2739,7 @@
     if (e.hurt <= 0 && e.cd <= 0 && overlapP(e) && hp > 0 && hurtGrace <= 0) { hurt(ENEMY.bug.dmg, "bug"); shoved(e); e.st = "retreat"; e.t = 0.9; e.dir = dx >= 0 ? -1 : 1; e.cd = 1.2; }
   }
   function updateFrog(e, dt) {
-    var dx = p.x - e.x, near = Math.abs(dx) < FROG.aggro && Math.abs(p.y - e.y) < 3 && hp > 0, vx = 0;
+    var dx = p.x - e.x, near = Math.abs(dx) < FROG.aggro * aiA(e) && Math.abs(p.y - e.y) < 3 * aiA(e) && hp > 0, vx = 0;
     if (e.hurt > 0) { if (e.st === "wind" || e.st === "lash") { e.st = "idle"; e.t = 0.4; e.ext = 0; } vx = e.on ? 0 : e.hvx; }
     else if (e.on) {
       if (e.st === "hop") { e.st = "idle"; e.t = 0.4 + Math.random() * 0.5; }
@@ -2747,7 +2749,7 @@
         if (e.t <= 0) {
           if (near && e.cd <= 0) { e.st = "wind"; e.t = FROG.wind; e.dir = dx >= 0 ? 1 : -1; thud(520, 0.05); }
           else {
-            if (near) e.dir = dx >= 0 ? 1 : -1; else if (Math.abs(e.x - e.hx) > 6) e.dir = e.hx > e.x ? 1 : -1; else if (Math.random() < 0.3) e.dir = -e.dir;
+            if (near) { var sdx = dx + p.vx * 0.5 * aiL(); e.dir = sdx >= 0 ? 1 : -1; } else if (Math.abs(e.x - e.hx) > 6) e.dir = e.hx > e.x ? 1 : -1; else if (Math.random() < 0.3) e.dir = -e.dir;
             e.st = "hop"; e.vy = -FROG.hopV; e.on = false; e.hvx = e.dir * FROG.hopX;
           }
         }
@@ -2803,7 +2805,8 @@
   function damageEnemy(e, dmg, face) {
     if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
     if (e.boss) return damageBoss(e, coatDmg(e, dmg), face);
-    if (e.def) return; dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    if (e.def) return; enemies.forEach(function (o) { if (o !== e && !o.def && !o.boss && Math.abs(o.x - e.x) < 9 && Math.abs(o.y - e.y) < 5) o.alert = Math.max(o.alert || 0, 5); }); e.alert = 6;   // ALARM: a hurt creature calls the others nearby
+    dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(e.hp > 0 ? "hit" : "kill");
     if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
     if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
@@ -3495,7 +3498,7 @@
     for (var i = enemies.length - 1; i >= 0; i--) {
       dt = enemies[i].def ? DT : coatDt(enemies[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it (it still falls)
       if (dt === 0) { var se = enemies[i]; se.hurt = Math.max(0, se.hurt - DT); if (se.k !== "wyrm" && !se.u) moveEnemy(se, DT, 0); continue; }
-      var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt);
+      var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt); if (e.alert > 0) e.alert -= dt;
       if (e.def) { e.dead -= dt; if (e.boss) bossDeathTick(e, dt); if (e.k !== "wyrm") moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
       if (e.leave > 0 && e.k !== "bat" && e.k !== "wasp") { e.leave -= dt; if (e.leave <= 0) e.gone = true; }   // dawn: walkers slip away (bats and wasps fly off on their own)
       if (e.gone || (!e.boss && (Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44))) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
@@ -3668,23 +3671,92 @@
     var dx = cp.x - m.x, dy = cp.y - m.y, l = Math.sqrt(dx * dx + dy * dy) || 1; ckx = dx / l * 7; cky = dy / l * 7;
     hurt(n, m.k); return true;
   }
+
+  // ---------- CREATURE BRAINS (caves, the Mine, islands): how the top-down creatures think ----------
+  // 1. PATHS: a flow field from the player (a breadth-first search over open ground, redone when you change tile) lets ground creatures walk
+  //    around boulders, walls and trees instead of pushing into them. Fliers still cut straight over boulders.
+  // 2. TURNS: only a few creatures (dif().ai.tok: Easy 1, Medium 2, Hard 3) may attack at once. The rest circle you at a distance on their own
+  //    spot of a ring, step in to threaten, and take over when an attacker backs off. Bosuns and bosses always attack.
+  // 3. FLANKS AND LEADS: an attacker comes in from your side or back when it can, and its charge, lunge or dive aims where you are going
+  //    (your speed times dif().ai.lead), so running straight away no longer dodges everything.
+  // 4. READING YOU: a creature in front of you that sees your swing coming may sidestep it (dif().ai.dodge, once per swing, then a cooldown).
+  // 5. NERVES: hurt critters (crabs, bugs, wolves, spiders) under a third of their health back off for a moment, then come again. Pirates
+  //    never run; their wind-up is sometimes a feint (dif().ai.feint): they stop, hop back and make you waste your swing.
+  // 6. ALARM: a hurt creature calls the others within 8 tiles, and an alarmed creature hunts from much further away (m.alert).
+  var CAI = { cell: -1, t: 0, ff: null, w: 0, tokT: 0, swingId: 0, lastSwing: false };
+  function aiOpen(F, i) { return !F.wall[i] && !F.node[i] && !(F.sol && F.sol[i]); }
+  function aiFlow(F, dt) {   // distance from the player to every open tile within ~26 steps
+    var W = F.w, cx = Math.floor(cp.x), cy = Math.floor(cp.y - 0.01), c0 = cy * W + cx; CAI.t -= dt;
+    if (CAI.ff && CAI.F === F && CAI.cell === c0 && CAI.t > 0) return CAI.ff;
+    CAI.cell = c0; CAI.t = 0.5; CAI.F = F; CAI.w = W;
+    var N = W * F.h, ff = CAI.ff && CAI.ff.length === N ? CAI.ff : new Int16Array(N); ff.fill(-1);
+    if (cx < 0 || cy < 0 || cx >= W || cy >= F.h) return (CAI.ff = ff);
+    var q = [c0], h = 0; ff[c0] = 0;
+    while (h < q.length) {
+      var c = q[h++], x = c % W, y = (c / W) | 0, dd = ff[c]; if (dd >= 26) continue;
+      for (var k = 0; k < 4; k++) { var nx = x + (k === 0 ? 1 : k === 1 ? -1 : 0), ny = y + (k === 2 ? 1 : k === 3 ? -1 : 0); if (nx < 0 || ny < 0 || nx >= W || ny >= F.h) continue; var n = ny * W + nx; if (ff[n] !== -1 || !aiOpen(F, n)) continue; ff[n] = dd + 1; q.push(n); }
+    }
+    return (CAI.ff = ff);
+  }
+  function aiClear(F, x0, y0, x1, y1) {   // can a ground creature walk straight from (x0,y0) to (x1,y1)?
+    var dx = x1 - x0, dy = y1 - y0, n = Math.ceil(Math.hypot(dx, dy) * 2.5);
+    for (var k = 1; k < n; k++) { var x = Math.floor(x0 + dx * k / n), y = Math.floor(y0 + dy * k / n - 0.05); if (x < 0 || y < 0 || x >= F.w || y >= F.h || !aiOpen(F, y * F.w + x)) return false; }
+    return true;
+  }
+  function aiSteer(F, m, tx, ty, fly) {   // a unit step toward (tx, ty): straight when the way is clear, else down the flow field
+    var dx = tx - m.x, dy = ty - m.y, d = Math.hypot(dx, dy) || 0.01;
+    if (fly || aiClear(F, m.x, m.y, tx, ty)) return [dx / d, dy / d];
+    var ff = CAI.ff; if (!ff || CAI.F !== F) return [dx / d, dy / d];
+    var W = F.w, x = Math.floor(m.x), y = Math.floor(m.y - 0.01), here = ff[y * W + x], best = -1, bx = 0, by = 0;
+    for (var oy2 = -1; oy2 <= 1; oy2++) for (var ox2 = -1; ox2 <= 1; ox2++) {
+      if (!ox2 && !oy2) continue; var nx = x + ox2, ny = y + oy2; if (nx < 0 || ny < 0 || nx >= W || ny >= F.h) continue; var v = ff[ny * W + nx]; if (v < 0) continue;
+      if (ox2 && oy2 && (ff[y * W + nx] < 0 || ff[ny * W + x] < 0)) continue;
+      if (best < 0 || v < best) { best = v; bx = nx + 0.5; by = ny + 0.75; }
+    }
+    if (best < 0 || (here >= 0 && best >= here)) return [dx / d, dy / d];
+    var ex = bx - m.x, ey = by - m.y, el = Math.hypot(ex, ey) || 1; return [ex / el, ey / el];
+  }
+  function aiFrame(F, dt) {   // once a frame, before the creatures move
+    aiFlow(F, dt);
+    var sw = !!(aim.down && S.wpn && cool <= 0.14); if (sw && !CAI.lastSwing) CAI.swingId++; CAI.lastSwing = sw; CAI.swing = sw;
+    CAI.tokT -= dt; if (CAI.tokT > 0) return; CAI.tokT = 0.3;
+    var A = dif().ai || { tok: 2 }, L = F.mobs.filter(function (m) { return !m.def && m.k !== "captain" && m.k !== "slime" && (m.alert > 0 || Math.hypot(cp.x - m.x, cp.y - m.y) < CMOB[m.k].aggro * 1.8); });
+    var busy = L.filter(function (m) { return m.bosun || /^(wind|charge|lunge|dive|dash)$/.test(m.st); });   // anyone mid-attack keeps their turn
+    L.sort(function (a, b) { return Math.hypot(cp.x - a.x, cp.y - a.y) - Math.hypot(cp.x - b.x, cp.y - b.y); });
+    var n = busy.filter(function (m) { return !m.bosun; }).length;
+    L.forEach(function (m, i) { m.slot = i; if (m.bosun || busy.indexOf(m) >= 0) m.tok = 1; else if (n < A.tok) { m.tok = 1; n++; } else m.tok = 0; });
+  }
+  function aiAlarm(F, m) { m.alert = 6; (F.mobs || []).forEach(function (o) { if (o !== m && !o.def && Math.hypot(o.x - m.x, o.y - m.y) < 8) o.alert = Math.max(o.alert || 0, 5); }); }
+  function aiLead(dx, dy, d, spd) {   // aim at where the player will be when a charge of speed spd gets there
+    var L = (dif().ai || { lead: 0.7 }).lead, t = Math.min(0.9, d / spd), tx = dx + cp.vx * t * L, ty = dy + cp.vy * t * L, l = Math.hypot(tx, ty) || 1; return [tx / l, ty / l];
+  }
+  function aiDodge(m, d, C) {   // sidestep a swing that is coming (in front of you, inside your reach)
+    if (!CAI.swing || m.dgId === CAI.swingId || (m.dgCd || 0) > 0 || m.bosun) return false; m.dgId = CAI.swingId;
+    var ax = (aim.mx - ox) / ts - cp.x, ay = (aim.my - oy) / ts - (cp.y - 0.5), al = Math.hypot(ax, ay) || 1, ex = m.x - cp.x, ey = (m.y - 0.3) - (cp.y - 0.5), ed = Math.hypot(ex, ey) || 1;
+    if (d > CREACH[S.wpn] + m.r + 0.5 || (ex * ax + ey * ay) / (ed * al) < 0.3) return false;
+    if (Math.random() >= (dif().ai || { dodge: 0.26 }).dodge * (m.k === "crab" || m.k === "wolf" || m.k === "buccaneer" ? 1.2 : 0.8)) return false;
+    var sd = Math.random() < 0.5 ? 1 : -1; m.kx = (-ay / al * sd * 7.5) + ex / ed * 3; m.ky = (ax / al * sd * 7.5) + ey / ed * 3; m.dgCd = 2.2; m.dodged = 0.35;
+    chips(m.x, m.y - 0.1, "#d8c8a0", 5, 3); return true;
+  }
   function updateCaveMobs(dt) {
     var F = cave.F; if (!F.stocked) stockFloor(F, cave.f); if (F.lair) lairFx(F, dt); if (!F.mobs || !F.mobs.length) return;
-    var DT = dt; coatStep(DT);
+    var DT = dt; coatStep(DT); aiFrame(F, DT);
     for (var i = F.mobs.length - 1; i >= 0; i--) {
       dt = F.mobs[i].def ? DT : coatDt(F.mobs[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it
       if (dt === 0) { F.mobs[i].hurt = Math.max(0, F.mobs[i].hurt - DT); moveMob(F, F.mobs[i], DT, 0, 0); continue; }
       var m = F.mobs[i], C = CMOB[m.k]; if (m.k === "captain") { updCaptain(F, m, dt, i); continue; } m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
       if (m.def) { m.dead -= dt; m.z = Math.max(0, m.z - dt * 3); moveMob(F, m, dt, 0, 0); if (m.dead <= 0) F.mobs.splice(i, 1); continue; }
-      var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro && hp > 0, touch = d < m.r + 0.34;
+      var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro * (m.alert > 0 ? 1.8 : 1) && hp > 0, touch = d < m.r + 0.34;
+      if (m.alert > 0) m.alert -= dt; if (m.dgCd > 0) m.dgCd -= dt; if (m.dodged > 0) m.dodged -= dt;
       if (m.hurt > 0) { moveMob(F, m, dt, 0, 0); continue; }
+      if (near && m.st !== "wind" && m.st !== "charge" && m.st !== "lunge" && m.st !== "dive" && m.st !== "dash" && m.st !== "hop" && aiDodge(m, d, C)) { moveMob(F, m, dt, 0, 0); continue; }
       if (m.k === "slime") {
         m.sq = Math.max(0, (m.sq || 0) - dt * 4);
         if (m.st === "hop") {
           m.t += dt; var pr = m.t / 0.42; m.z = Math.sin(Math.PI * Math.min(1, pr)) * (m.small ? 0.3 : 0.45); m.on = false; m.vy = pr < 0.5 ? -6 : 6; vx = m.hvx; vy = m.hvy;
           if (pr >= 1) { m.st = "rest"; m.t = (near ? 0.45 : 1) + Math.random() * 0.7; m.z = 0; m.on = true; m.vy = 0; m.sq = 1; }
         } else {
-          m.t -= dt; if (m.t <= 0) { var a = near ? Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.4 : Math.random() * 6.28, sp = (m.small ? 2.6 : 3.2) * (near ? 1.15 : 0.6); m.hvx = Math.cos(a) * sp; m.hvy = Math.sin(a) * sp; m.st = "hop"; m.t = 0; }
+          m.t -= dt; if (m.t <= 0) { var sl = near ? aiLead(dx, dy, d, 3.4) : null, sg2 = near ? aiSteer(F, m, m.x + sl[0] * 2, m.y + sl[1] * 2, false) : null, a = near ? Math.atan2(sg2[1], sg2[0]) + (Math.random() - 0.5) * 0.3 : Math.random() * 6.28, sp = (m.small ? 2.6 : 3.2) * (near ? 1.15 : 0.6); m.hvx = Math.cos(a) * sp; m.hvy = Math.sin(a) * sp; m.st = "hop"; m.t = 0; }
         }
         if (Math.abs(m.hvx) > 0.1) m.dir = m.hvx > 0 ? 1 : -1;
         moveMob(F, m, dt, vx, vy);
@@ -3695,12 +3767,12 @@
         m.fl += dt * (m.k === "wasp" ? 38 : 11);
         var dive = m.k === "wasp" ? "dash" : "dive", spd = m.k === "wasp" ? 10.5 : 8.5;
         if (m.st === "away") { m.t -= dt; vx = -nx * 3; vy = -ny * 3; if (m.t <= 0) m.st = "hover"; }
-        else if (m.st === "wind") { m.t -= dt; vx = Math.sin(m.tt * 60) * 0.8; if (m.t <= 0) { m.ax = nx * spd; m.ay = ny * spd; m.st = dive; m.t = 0.42; thud(m.k === "wasp" ? 900 : 300, 0.04); } }
+        else if (m.st === "wind") { m.t -= dt; vx = Math.sin(m.tt * 60) * 0.8; if (m.t <= 0) { var fl2 = aiLead(dx, dy, d, spd); m.ax = fl2[0] * spd; m.ay = fl2[1] * spd; m.st = dive; m.t = 0.42; thud(m.k === "wasp" ? 900 : 300, 0.04); } }
         else if (m.st === dive) { m.t -= dt; vx = m.ax; vy = m.ay; if (m.t <= 0 || m.blocked) { m.st = "away"; m.t = 0.6; m.cd = 1.3 + Math.random(); } }
         else if (near) {
-          m.ang += dt * (m.k === "wasp" ? 1.8 : 1.2); var orb = m.k === "wasp" ? 2.2 : 2.7, tx = cp.x + Math.cos(m.ang) * orb, ty = cp.y - 0.4 + Math.sin(m.ang) * orb * 0.7;
+          m.ang += dt * (m.k === "wasp" ? 1.8 : 1.2) * (m.slot % 2 ? -1 : 1); var orb = (m.k === "wasp" ? 2.2 : 2.7) + (m.tok ? 0 : 1.3), tx = cp.x + Math.cos(m.ang) * orb, ty = cp.y - 0.4 + Math.sin(m.ang) * orb * 0.7;
           vx = clamp((tx - m.x) * 2.2, -C.spd, C.spd); vy = clamp((ty - m.y) * 2.2, -C.spd, C.spd);
-          if (m.cd <= 0 && d < 4.5) { m.st = "wind"; m.t = 0.45; thud(m.k === "wasp" ? 1100 : 760, 0.04); }
+          if (m.cd <= 0 && d < 4.5 && m.tok) { m.st = "wind"; m.t = 0.45; thud(m.k === "wasp" ? 1100 : 760, 0.04); }
         } else { m.t -= dt; if (m.t <= 0) { var wa = Math.random() * 6.28; m.wx = Math.cos(wa) * 1.4; m.wy = Math.sin(wa) * 1.4; m.t = 1 + Math.random() * 2; } vx = m.wx; vy = m.wy; }
         m.dir = m.st === dive ? (m.ax >= 0 ? 1 : -1) : dx >= 0 ? 1 : -1;
         moveMob(F, m, dt, vx, vy); if (m.blocked && m.st !== dive) { m.wx = -m.wx; m.wy = -m.wy; }
@@ -3709,12 +3781,26 @@
       }
       // ground hunters: Bramble Bug (charges) and Frost Wolf (crouches, then lunges in a leap)
       var wolf = m.k === "wolf" || m.k === "spider", go = wolf ? "lunge" : "charge", wind = m.k === "spider" ? 0.3 : wolf ? 0.45 : 0.35;
-      if (m.st === "wind") { m.t -= dt; m.dir = dx >= 0 ? 1 : -1; if (m.t <= 0) { m.st = go; m.t = wolf ? 0.4 : 0.5; m.ax = nx * (wolf ? 9 : 7.5); m.ay = ny * (wolf ? 9 : 7.5); thud(wolf ? 240 : 200, 0.06); } }
+      if (m.st === "wind") { m.t -= dt; m.dir = dx >= 0 ? 1 : -1; if (m.t <= 0) {
+          if (m.feint) { m.feint = 0; m.st = "retreat"; m.t = 0.35; m.cd = 0.5; m.kx = -nx * 5; m.ky = -ny * 5; }   // a pirate's feint: it hops back instead
+          else { var gl = aiLead(dx, dy, d, wolf ? 9 : 7.5); m.st = go; m.t = wolf ? 0.4 : 0.5; m.ax = gl[0] * (wolf ? 9 : 7.5); m.ay = gl[1] * (wolf ? 9 : 7.5); thud(wolf ? 240 : 200, 0.06); } } }
       else if (m.st === go) { m.t -= dt; vx = m.ax; vy = m.ay; if (wolf) { m.z = Math.sin(Math.PI * clamp(1 - m.t / 0.4, 0, 1)) * 0.5; m.vy = m.t > 0.2 ? -6 : 6; } if (m.t <= 0 || m.blocked) { m.st = "retreat"; m.t = 0.55; m.cd = 1.2; m.z = 0; m.vy = 0; } }
       else if (m.st === "retreat") { m.t -= dt; vx = -nx * 1.6; vy = -ny * 1.6; if (m.t <= 0) m.st = "patrol"; }
+      else if (m.st === "flee") { m.t -= dt; var fs = aiSteer(F, m, m.x - nx * 4, m.y - ny * 4, false); vx = fs[0] * C.spd * 1.15; vy = fs[1] * C.spd * 1.15; if (m.t <= 0 || m.blocked) { m.st = "patrol"; m.cd = 0.4; } }
+      else if (near && !m.fled && m.k !== "buccaneer" && m.hp < m.mx * 0.33 && d < 4) { m.fled = 1; m.st = "flee"; m.t = 1.3; }   // a badly hurt critter backs off, then comes again
       else if (near) {
-        m.st = wolf ? "stalk" : "patrol"; vx = nx * C.spd; vy = ny * C.spd;
-        if (d < (wolf ? 3.6 : 3.1) && m.cd <= 0) { m.st = "wind"; m.t = wind; thud(wolf ? 130 : 520, 0.05); vx = vy = 0; }
+        m.st = wolf ? "stalk" : "patrol";
+        if (m.tok) {   // its turn: come in from your side or back, around anything in the way
+          var fa = Math.atan2(-dy, -dx), back = Math.atan2(-(aim.my - oy) / ts + cp.y, -(aim.mx - ox) / ts + cp.x), side = ((m.slot || 0) % 2 ? 1 : -1) * 0.7;
+          var ga2 = d > 2.4 ? fa + clamp(Math.atan2(Math.sin(back - fa), Math.cos(back - fa)), -0.9, 0.9) * 0.5 + side * 0.35 : fa, gx = cp.x + Math.cos(ga2) * Math.min(d, 1.2), gy = cp.y + Math.sin(ga2) * Math.min(d, 1.2), st2 = aiSteer(F, m, gx, gy, false);
+          vx = st2[0] * C.spd; vy = st2[1] * C.spd;
+          if (d < (wolf ? 3.6 : 3.1) && m.cd <= 0 && aiClear(F, m.x, m.y, cp.x, cp.y)) { m.st = "wind"; m.t = wind; thud(wolf ? 130 : 520, 0.05); vx = vy = 0; if (m.k === "buccaneer" && !m.bosun && Math.random() < (dif().ai || { feint: 0.2 }).feint) m.feint = 1; }
+        } else {   // waiting its turn: hold a spot on a ring around you, drifting round, and now and then step in to keep you busy
+          m.ring = (m.ring || 0) + dt * 0.35 * ((m.slot || 0) % 2 ? 1 : -1); var ra = (m.slot || 0) * 2.1 + m.ring, rr = 3.6 + ((m.slot || 0) % 3) * 0.5 - (Math.sin(m.tt * 1.3 + m.slot) > 0.85 ? 1.6 : 0);
+          var rx2 = cp.x + Math.cos(ra) * rr, ry2 = cp.y + Math.sin(ra) * rr, rd = Math.hypot(rx2 - m.x, ry2 - m.y), rs = aiSteer(F, m, rx2, ry2, false), rsp = C.spd * clamp(rd / 1.5, 0, 0.85);
+          vx = rs[0] * rsp; vy = rs[1] * rsp; if (d < 1.6) { vx -= nx * 1.5; vy -= ny * 1.5; }
+          if (rd < 0.6) m.dir = dx >= 0 ? 1 : -1;
+        }
       } else { m.st = "patrol"; m.t -= dt; if (m.t <= 0) { var ga = Math.random() * 6.28; m.wx = Math.cos(ga) * C.spd * 0.4; m.wy = Math.sin(ga) * C.spd * 0.4; m.t = 1.2 + Math.random() * 2; } vx = m.wx; vy = m.wy; }
       if (Math.abs(vx) > 0.2 && m.st !== "wind") m.dir = vx > 0 ? 1 : -1;
       m.mv = Math.sqrt(vx * vx + vy * vy); moveMob(F, m, dt, vx, vy); if (m.blocked && m.st === "patrol") { m.wx = -m.wx; m.wy = -m.wy; }
@@ -3723,8 +3809,8 @@
   }
   function caveSwing(dt) {   // weapon in a cave: a swing toward where you aim hits every creature in a cone in front of you
     if (!aim.down || !S.wpn) return;
-    if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
-    cool -= dt; if (cool > 0) return; cool = wCd(); S.st.swings++;
+    var brk = toolBroken("wpn"); if (brk) nag("Your weapon is broken: you are only swatting. Repair it in the Craft tab.");   // a broken blade still swats weakly, so a fight can always be finished
+    cool -= dt; if (cool > 0) return; cool = brk ? 0.55 : wCd(); S.st.swings++;
     var ax = (aim.mx - ox) / ts - cp.x, ay = (aim.my - oy) / ts - (cp.y - 0.5), al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1;
     thud(300 + S.wpn * 70, 0.04);
     for (var s2 = 0; s2 < 5; s2++) { var an = Math.atan2(ay, ax) + (s2 - 2) * 0.32; parts.push({ x: cp.x + Math.cos(an) * 1.1, y: cp.y - 0.5 + Math.sin(an) * 1.1, vx: Math.cos(an) * 2.5, vy: Math.sin(an) * 2.5 - 1, life: 0.2, max: 0.25, c: WEAPONS[S.wpn].c, s: 3 }); }
@@ -3732,14 +3818,14 @@
     F.mobs.forEach(function (m) {
       if (m.def) return; var dx = m.x - cp.x, dy = (m.y - 0.3) - (cp.y - 0.5), d = Math.sqrt(dx * dx + dy * dy) || 0.01;
       if (d > CREACH[S.wpn] + m.r || (dx * ax + dy * ay) / d < 0.2) return;
-      hits++; damageCaveMob(m, wDmg(), dx / d, dy / d); gemLeech(1);
+      hits++; damageCaveMob(m, brk ? Math.max(2, Math.round(wDmg() * 0.3)) : wDmg(), dx / d, dy / d); if (!brk) gemLeech(1);
     });
-    if (hits) wear("wpn", 1);
+    if (hits && !brk && !(cave.isle && Math.random() < 0.5)) wear("wpn", 1);   // island raids wear a blade at half rate (a Rough raid used to eat a whole Cinder Cleaver)
   }
   function damageCaveMob(m, dmg, ux, uy) {
     if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
-    dmg = coatDmg(m, eliteDmg(m, dmg)); m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
+    dmg = coatDmg(m, eliteDmg(m, dmg)); m.hp -= dmg; m.hurt = 0.3; if (F.mobs) aiAlarm(F, m); m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
     if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
@@ -18591,7 +18677,7 @@
   }
   function isleActs() {   // what you can do on an island right now (pills and the F key)
     if (!cave || !cave.isle || !cave.F) return []; var F = cave.F, A = [], bt = bagTreas(), bn = 0; for (var k in bt) bn += bt[k];
-    var dB = Math.hypot(F.up.x + 0.5 - cp.x, F.up.y + 0.5 - (cp.y - 0.3)); if (dB < 3 && bn && !cave.port) A.push({ label: "Stow " + bn + " treasure in the hold", x: F.up.x + 0.5, y: F.up.y - 1.3, fn: holdStow });
+    var dB = Math.hypot(F.up.x + 0.5 - cp.x, F.up.y + 0.5 - (cp.y - 0.3)); if (dB < 3 && bn && !cave.port) A.push({ label: "Stow " + bn + " treasure in the hold", x: F.up.x + 0.5, y: F.up.y - 2.55, fn: holdStow });   // above the "Back to the boat" pill, never under it
     if (cave.port) (F.stalls || []).forEach(function (st) { if (Math.hypot(st.x + 0.5 - cp.x, st.y + 1.6 - cp.y) < 2.4) A.push({ label: st.id === "ship" ? "Visit Pip's Shipwright" : "Trade with " + MERCH[st.id].n, x: st.x + 0.5, y: st.y - 1.6, fn: function () { if (st.id === "ship") openShipwright(); else openMerch(st.id); } }); });
     return A;
   }
@@ -18769,14 +18855,34 @@
     $("sbxStoryBox").style.setProperty("--qc", "#4fd0e8"); $("sbxStoryBox").innerHTML = h;
     var cv = $("isCv"); if (cv) { var g = cv.getContext("2d"); g.fillStyle = "#2a8ac0"; g.fillRect(0, 0, 360, 200); var k0 = 9, save0 = [cam.x, cam.y]; g.save(); g.translate(180 - Q.x * k0, 100 - Q.y * k0); seaDrawIsland(g, Q, k0, performance.now(), 0, 0); g.restore(); }
   }
+  // WORN GEAR CHECK before a landing: a raid costs a fresh blade about a third of its life, so warn when the weapon or armour won't last.
+  function gearWarn(t) {
+    var w = [], need = 0.3 + 0.1 * t;
+    if (S.wpn) { var mw = durMax("wpn"), dw = durOf("wpn"); if (mw > 0 && dw / mw < need) w.push(toolName("wpn") + " " + (dw <= 0 ? "is broken" : "is at " + Math.round(dw / mw * 100) + "%")); }
+    if (S.arm) { var ma = durMax("arm"), da = durOf("arm"); if (ma > 0 && da / ma < need) w.push(toolName("arm") + " " + (da <= 0 ? "is broken" : "is at " + Math.round(da / ma * 100) + "%")); }
+    return w.length ? '<p class="is-warn"><b>\u26a0 Worn gear.</b> Your ' + esc(w.join(" and your ")) + ". It may not last the raid: repair it in the Craft tab first.</p>" : "";
+  }
   function isleCard(Q) {   // ISLAND RAIDS: what the island card says
     var t = isleTier(Q), fr = isleFresh(Q), r = ocS().raid[Q.id];
     return '<p class="is-tier" style="--tc:' + TIER_C[t] + '"><b>' + skulls(t) + " " + TIER_N[t] + " island</b> " + ["", "A small crew of crabs and critters. Easy pickings.", "Pirates and stinging things. Bring a good weapon.", "A hardened pirate crew and their bosun. Bring armour and food.", "The worst crews on the sea, led by a dread bosun. Only for the bold."][t] + "</p>"
+      + gearWarn(t)
       + '<p class="mo-msg">' + (fr ? "Beat " + (t + 1) + " waves of its crew to break the curse on its treasure chests. Smash the crates and barrels too. Stow what you find in the ship's hold, then sell it at Driftwood Haven." : "You picked this island clean. It restocks in " + Math.max(1, ISLE_RESTOCK - (ocToday() - r)) + " day(s).") + "</p>";
   }
   function isleAct(a) { var Q = OCS && OCS.isleQ; if (!Q) return; if (a === "land") { closeStory(); isleLand(Q); return; } if (a === "dive") { var site = OSITES.filter(function (st) { return st.isl === Q.id; })[0]; closeStory(); if (site) seaDive(site); } }
 
   // ---- update ----
+  // SEA DETOUR: a tapped course that runs through another island bends around it. The nearest island in the way is passed on the side
+  // the boat is already on (a waypoint just off its shore); once it is behind you, the boat turns back onto the straight line.
+  function seaDetour(s, T, d) {
+    var ux = (T.x - s.x) / (d || 1), uy = (T.y - s.y) / (d || 1), best = null, bt = 1e9;
+    seaIslands().forEach(function (Q) {
+      if (Q === T.isl) return; var qx = Q.x - s.x, qy = Q.y - s.y, along = qx * ux + qy * uy, c = ux * qy - uy * qx, cl = Q.r + 4;
+      if (along < -2 || along > d + cl || Math.abs(c) >= cl) return; if (along < bt) { bt = along; best = Q; }
+    });
+    if (!best) return T;
+    var c2 = ux * (best.y - s.y) - uy * (best.x - s.x), sg = c2 > 0 ? -1 : 1, R = best.r + 6;
+    return { x: best.x - uy * sg * R + ux * 2, y: best.y + ux * sg * R + uy * 2 };
+  }
   function seaUpdate(dt) {
     var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1) * (S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "ship"; }) ? 1.2 : 1);
@@ -18784,13 +18890,18 @@
     if (joy.x || joy.y) { s.tgt = null; var ja = Math.atan2(joy.y, joy.x), jd = Math.atan2(Math.sin(ja - s.ang), Math.cos(ja - s.ang)); s.ang += clamp(jd, -1, 1) * 2.2 * dt; want = maxSp * Math.min(1, Math.hypot(joy.x, joy.y)); }
     else if (turn || thr) { if (turn || thr > 0) s.tgt = null; s.ang += turn * 1.9 * dt; want = thr > 0 ? maxSp : thr < 0 ? 0 : (s.tgt ? want : s.sp); if (!thr && !s.tgt) want = s.sp; }
     if (s.tgt) {
-      var tx = s.tgt.x - s.x, ty = s.tgt.y - s.y, d = Math.hypot(tx, ty), stop = s.tgt.isl ? s.tgt.isl.r + 5 : s.tgt.site ? 1.5 : 1.2, ta = Math.atan2(ty, tx), da = Math.atan2(Math.sin(ta - s.ang), Math.cos(ta - s.ang));
+      var tx = s.tgt.x - s.x, ty = s.tgt.y - s.y, d = Math.hypot(tx, ty), stop = s.tgt.isl ? s.tgt.isl.r + 5 : s.tgt.site ? 1.5 : 1.2, wp = seaDetour(s, s.tgt, d), ta = Math.atan2(wp.y - s.y, wp.x - s.x), da = Math.atan2(Math.sin(ta - s.ang), Math.cos(ta - s.ang));
       s.ang += clamp(da, -1, 1) * 1.8 * dt; want = d < stop ? 0 : maxSp * clamp((d - stop) / 8, 0.25, 1) * (Math.abs(da) > 1.2 ? 0.4 : 1); if (d < stop) s.tgt = s.tgt.isl || s.tgt.site ? s.tgt : null;
     }
     s.sp = approach(s.sp, want, (want > s.sp ? 5 : 8) * dt);
     var nx = s.x + Math.cos(s.ang) * s.sp * dt, ny = s.y + Math.sin(s.ang) * s.sp * dt, I = seaIslands(), blocked = false;
-    I.forEach(function (Q) { if (Math.hypot(Q.x - nx, Q.y - ny) < Q.r + 1.5) blocked = true; });
-    if (!blocked) { s.x = clamp(nx, 6, SO.SEAW - 6); s.y = clamp(ny, 6, SO.SEAW - 6); } else s.sp *= 0.3;
+    var bq = null; I.forEach(function (Q) { if (Math.hypot(Q.x - nx, Q.y - ny) < Q.r + 1.5) { blocked = true; bq = Q; } });
+    if (!blocked) { s.x = clamp(nx, 6, SO.SEAW - 6); s.y = clamp(ny, 6, SO.SEAW - 6); }
+    else {   // SHORE SLIDE: run along the coast instead of grinding to a stop against it
+      var rx = s.x - bq.x, ry = s.y - bq.y, rl = Math.hypot(rx, ry) || 1, tnx = -ry / rl, tny = rx / rl; if (tnx * Math.cos(s.ang) + tny * Math.sin(s.ang) < 0) { tnx = -tnx; tny = -tny; }
+      var sx3 = s.x + tnx * s.sp * 0.6 * dt + rx / rl * 0.02, sy3 = s.y + tny * s.sp * 0.6 * dt + ry / rl * 0.02, ok3 = true; I.forEach(function (Q) { if (Math.hypot(Q.x - sx3, Q.y - sy3) < Q.r + 1.5) ok3 = false; });
+      if (ok3) { s.x = clamp(sx3, 6, SO.SEAW - 6); s.y = clamp(sy3, 6, SO.SEAW - 6); s.sp *= 0.85; } else s.sp *= 0.3;
+    }
     if (s.sp > 1 && Math.random() < dt * 30) { var bk = s.ang + Math.PI, side = Math.random() < 0.5 ? 1 : -1; s.wake.push({ x: s.x + Math.cos(bk) * 2.2 + Math.cos(bk + side * 1.57) * 0.5, y: s.y + Math.sin(bk) * 2.2 + Math.sin(bk + side * 1.57) * 0.5, vx: Math.cos(bk + side * 1.2) * 1.2, vy: Math.sin(bk + side * 1.2) * 1.2, life: 1.6 }); }
     for (i = s.wake.length - 1; i >= 0; i--) { var w = s.wake[i]; w.life -= dt; w.x += w.vx * dt; w.y += w.vy * dt; w.vx *= 0.97; w.vy *= 0.97; if (w.life <= 0) s.wake.splice(i, 1); }
     seaTrail(s, dt, 2.2);

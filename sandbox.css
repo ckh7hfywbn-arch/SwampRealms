@@ -2251,3 +2251,5 @@ small.bo-cost{display:flex}
 .ly-sl input{width:100%;accent-color:#4ee6b4;height:28px}
 @media(max-height:520px) and (orientation:landscape){.ly-bar{padding:6px 10px}.ly-sheet.top{top:calc(max(6px,env(safe-area-inset-top)) + 60px)}}
 @media(prefers-reduced-motion:reduce){.sbx-stage.lay-ed .sbx-ctl>*{animation:none}}
+.is-warn{margin:8px 0;padding:8px 12px;border-radius:12px;border:1px solid #ff9f5a88;background:rgba(255,122,61,.12);color:#ffd9b8;font-size:.9rem}
+.is-warn b{color:#ff9f5a}
