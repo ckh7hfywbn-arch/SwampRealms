@@ -645,7 +645,9 @@ batwing: { n: "Bat Wing", frag: "bat" },
     });
     // ---- 5. trees and plants ----
     function put(px, py, id) { if (px < 0 || px >= W || py < 0) return; var i2 = py * W + px; if (t[i2] === T.AIR) t[i2] = id; }
+    var TREC = [];   // TREES: every tree made here, reshaped at the very end of the map (see treeGrow)
     function plant(x) {   // a Murkwater mangrove
+      TREC.push({ x: x, k: "swamp" });
       var tp2 = top[x], th = 4 + Math.floor(rnd() * 4), cy = tp2 - th - 1, hs = function (a) { return hash(x, 300 + a, seed); };
       function blob(cx, cy2, rx, ry) {
         for (var dy = -Math.ceil(ry); dy <= Math.ceil(ry); dy++) for (var dx = -Math.ceil(rx); dx <= Math.ceil(rx); dx++)
@@ -671,11 +673,13 @@ batwing: { n: "Bat Wing", frag: "bat" },
       }
     }
     function pine(x) {   // a Frostfen pine: a straight trunk and stacked tiers that widen, step in, and widen again
+      TREC.push({ x: x, k: "pine" });
       var tp2 = top[x], th = 6 + Math.floor(hash(x, 310, seed) * 5), P = [0, 1, 1, 2, 1, 2, 3, 2, 3], k2, row;
       for (k2 = 1; k2 <= th; k2++) t[(tp2 - k2) * W + x] = T.LOG;
       for (row = 0; row < Math.min(9, th - 1); row++) for (var dx = -P[row]; dx <= P[row]; dx++) put(x + dx, tp2 - th - 1 + row, T.LEAVES);
     }
     function snag(x) {   // an Ember Bog dead tree: a charred trunk with a couple of bare branches
+      TREC.push({ x: x, k: "snag" });
       var tp2 = top[x], th = 3 + Math.floor(hash(x, 320, seed) * 4), k2;
       for (k2 = 1; k2 <= th; k2++) t[(tp2 - k2) * W + x] = T.LOG;
       var s1 = hash(x, 321, seed) < 0.5 ? -1 : 1; put(x + s1, tp2 - th + 1, T.LOG); put(x + s1 * 2, tp2 - th, T.LOG);
@@ -685,11 +689,13 @@ batwing: { n: "Bat Wing", frag: "bat" },
     function blobL(cx, cy2, rx, ry, k9) { for (var dy = -Math.ceil(ry); dy <= Math.ceil(ry); dy++) for (var dx = -Math.ceil(rx); dx <= Math.ceil(rx); dx++) if (dx * dx / (rx * rx) + dy * dy / (ry * ry) <= 1 + (hash(cx + dx, cy2 + dy, seed + k9) - 0.5) * 0.4) put(cx + dx, cy2 + dy, T.LEAVES); }
     function trunk(x2, tp2, th) { for (var k2 = 1; k2 <= th; k2++) { var ti = (tp2 - k2) * W + x2; if (t[ti] === T.AIR || t[ti] === T.LEAVES) t[ti] = T.LOG; } }
     function cherry(x) {   // Cherry Blossom Vale: a short trunk that forks, under a wide, flat-bottomed cloud of blossom
+      TREC.push({ x: x, k: "cherry" });
       var tp2 = top[x], th = 4 + Math.floor(hash(x, 330, seed) * 3), cy = tp2 - th - 1, side = hash(x, 331, seed) < 0.5 ? -1 : 1;
       blobL(x, cy, 3.6, 2.1, 12); blobL(x + side * 3, cy + 1, 2.4, 1.5, 13); blobL(x - side * 2, cy - 1, 2.3, 1.5, 14); blobL(x + side, cy - 2, 2, 1.2, 15);
       trunk(x, tp2, th + 1); put(x + side, tp2 - th + 1, T.LOG); put(x + side * 2, tp2 - th, T.LOG);
     }
     function palm(x) {   // Sunbaked Shores: a tall, leaning trunk and a crown of drooping fronds
+      TREC.push({ x: x, k: "palm" });
       var tp2 = top[x], th = 6 + Math.floor(hash(x, 340, seed) * 4), lean = hash(x, 341, seed) < 0.5 ? -1 : 1, k2, cx = x;
       for (k2 = 1; k2 <= th; k2++) { if (k2 === Math.ceil(th * 0.6)) cx += lean; var ti = (tp2 - k2) * W + cx; if (t[ti] === T.AIR) t[ti] = T.LOG; }
       var cy = tp2 - th - 1;
@@ -697,6 +703,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       for (var sd = -1; sd <= 1; sd += 2) { put(cx + sd * 2, cy, T.LEAVES); put(cx + sd * 3, cy + 1, T.LEAVES); put(cx + sd * 4, cy + 2, T.LEAVES); put(cx + sd * 2, cy - 1, T.LEAVES); put(cx + sd * 3, cy - 1, T.LEAVES); }
     }
     function darkoak(x) {   // Dark Oakwood: a thick two-wide trunk with roots and a huge, heavy crown
+      TREC.push({ x: x, k: "oak" });
       var tp2 = top[x], th = 6 + Math.floor(hash(x, 350, seed) * 4), cy = tp2 - th - 2;
       blobL(x, cy, 4, 2.4, 16); blobL(x + 1, cy - 2, 3.4, 2, 17); blobL(x - 4, cy + 1, 2.6, 1.7, 18); blobL(x + 5, cy + 1, 2.6, 1.7, 19); blobL(x - 1, cy - 4, 2.2, 1.3, 20); blobL(x + 3, cy - 4, 2, 1.3, 21);
       trunk(x, tp2, th + 1); trunk(x + 1, tp2, th);
@@ -989,7 +996,72 @@ batwing: { n: "Bat Wing", frag: "bat" },
     craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl - 1; y < top[x] + 1; y++) if (t[y * W + x] === T.LAVA) t[y * W + x] = T.AIR; });   // OLD VOLCANOES: the crater lava drained away long ago (done last, so nothing else in the world moves)
     oldHoles.forEach(function (h) { if (h !== mineH && t[h.y * W + h.x] === T.HOLE) t[h.y * W + h.x] = h.was; });   // THE MINE: fill the other burrows back in
     holes = mineH ? [{ x: mineH.x, y: mineH.y, b: mineH.b, mine: 1 }] : [];
-    return { W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+    // ---- TREES, RESHAPED: the very last step, so every other part of the map is made exactly as before (old saves line up). Each tree the
+    // map grew above is taken out and grown again in the same spot in its new shape (tall trunk, compact crown, leafy branches, roots). ----
+    var TREES = [], tok = TREC.map(function (r) { var b = top[r.x] - 1; return b > 2 && t[b * W + r.x] === T.LOG; });
+    TREC.forEach(function (r, n) {   // 1. take every old tree out (all of them first, so a crown touching the next tree can't stop that one regrowing)
+      if (!tok[n]) return; var x0 = r.x, base = top[x0] - 1, q = [base * W + x0], seen = {}; seen[q[0]] = 1;
+      while (q.length) { var c = q.pop(), cx = c % W, cy = (c / W) | 0; t[c] = T.AIR;
+        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = cx + dx, ny = cy + dy, ni = ny * W + nx; if (nx < 1 || nx >= W - 1 || ny < 1 || Math.abs(nx - x0) > 9 || ny < base - 26 || ny >= top[nx] || seen[ni] || walls[ni]) continue; var id = t[ni]; if (id === T.LOG || id === T.LEAVES || id === T.VINE) { seen[ni] = 1; q.push(ni); } } }
+    });
+    TREC.forEach(function (r, n) {   // 2. grow each one back in its new shape
+      if (!tok[n]) return; var x0 = r.x, by = top[x0] - 1;
+      var b = treeGrow(r.k, x0, by, function (a) { return hash(x0, 500 + a, seed); }, function (px, py) { return px > 0 && px < W - 1 && py > 0 && py < H && t[py * W + px] === T.AIR && !walls[py * W + px]; },
+        function (px, py, id) { if (px > 0 && px < W - 1 && py > 0 && t[py * W + px] === T.AIR) t[py * W + px] = id; }, function (px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; });
+      if (b) TREES.push({ x: x0, k: r.k, b: b });
+    });
+    return { trees: TREES, W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
+  }
+
+  // ---- TREE SHAPES (Terraria-like): a tall trunk, a compact crown at the top, small leafy branches up the trunk and roots at the foot ----
+  // k: swamp | pine | cherry | palm | oak | snag. by: the lowest trunk block. hs(n): a number 0..1 for this tree. can(x, y): the block is free.
+  // put(x, y, id): set it. solid(x, y): ground there. Tries the full height first and shorter ones if something is in the way; returns the bounds or null.
+  function treeShape(k, x, by, h, hs) {
+    var c = [], q, dx, dy, yT = by - h + 1, L = T.LOG, F = T.LEAVES;
+    var trunk = function (tx, n) { for (var a = 0; a < n; a++) c.push([tx, by - a, L]); };
+    var row = function (yy, a, b) { for (var xx = a; xx <= b; xx++) c.push([xx, yy, F]); };
+    var tufts = function (lo, hi, n, side0) { var last = -9, made = 0; for (q = lo; q <= hi && made < n; q++) { if (q - last < 3 || hs(30 + q) > 0.34) continue; var sd = side0 || (hs(40 + q) < 0.5 ? -1 : 1); c.push([x + sd, by - q, F]); if (hs(50 + q) < 0.35) c.push([x + sd * 2, by - q - 1, F]); last = q; made++; } };
+    var roots = function (a, b) { if (hs(70) < 0.55) c.push([a, by, L, "root"]); if (hs(71) < 0.55) c.push([b, by, L, "root"]); };
+    if (k === "pine") {
+      trunk(x, h); var P = [0, 1, 1, 2, 1, 2, 2, 3, 2, 3, 3, 4], n = Math.min(P.length, h - 3);
+      for (q = 0; q < n; q++) row(yT - 1 + q, x - P[q], x + P[q]);
+    } else if (k === "palm") {
+      var lean = hs(5) < 0.5 ? -1 : 1, cx = x, bend = Math.ceil(h * 0.6);
+      for (q = 0; q < h; q++) { if (q === bend) cx += lean; c.push([cx, by - q, L]); }
+      var cy = by - h; [[0, 0], [-1, 0], [1, 0], [0, -1], [-2, 0], [2, 0], [-3, 1], [3, 1], [-4, 2], [4, 2], [-2, -1], [2, -1], [-3, -1], [3, -1]].forEach(function (o) { c.push([cx + o[0], cy + o[1], F]); });
+    } else if (k === "oak") {
+      trunk(x, h + 1); trunk(x + 1, h); yT = by - h;
+      [[-4, 4], [-3, 6], [-2, 8], [-1, 8], [0, 8], [1, 6]].forEach(function (r) { var w = r[1] / 2 - 1; row(yT + r[0], x - w + (r[0] === -4 && hs(8) < 0.5 ? 1 : 0), x + 1 + w); });
+      for (q = 3; q <= h - 4; q++) { if (hs(30 + q) > 0.3) continue; var sd2 = hs(40 + q) < 0.5 ? -1 : 1; c.push([sd2 < 0 ? x - 1 : x + 2, by - q, F]); q += 2; }
+      roots(x - 1, x + 2);
+    } else if (k === "snag") {
+      trunk(x, h); var s1 = hs(6) < 0.5 ? -1 : 1;
+      c.push([x + s1, yT + 1, L]); c.push([x + s1 * 2, yT, L]); if (h >= 6) { c.push([x - s1, yT + 3, L]); if (hs(7) < 0.5) c.push([x - s1 * 2, yT + 2, L]); }
+      roots(x - 1, x + 1);
+    } else if (k === "cherry") {
+      trunk(x, h); var o = hs(5) < 0.5 ? -1 : 1;
+      [[-3, 2, o], [-2, 3, o], [-1, 4, 0], [0, 4, 0], [1, 3, 0]].forEach(function (r) { row(yT + r[0], x - r[1] + r[2], x + r[1] + r[2]); });
+      tufts(2, h - 3, 1); roots(x - 1, x + 1);
+    } else {   // swamp
+      trunk(x, h);
+      [[-4, 1], [-3, 2], [-2, 2], [-1, 2], [0, 1]].forEach(function (r, ri) { var a = r[1] + (ri > 0 && ri < 4 && hs(10 + ri) < 0.3 ? 1 : 0), b = r[1] + (ri > 0 && ri < 4 && hs(20 + ri) < 0.3 ? 1 : 0); row(yT + r[0], x - a, x + b); });
+      tufts(2, h - 3, 2);
+      for (dx = -2; dx <= 2; dx += 4) if (hs(60 + dx) < 0.55) { var ln = 1 + Math.floor(hs(62 + dx) * 3); for (dy = 0; dy < ln; dy++) c.push([x + dx, yT + dy, T.VINE]); }   // vines from under the crown
+      roots(x - 1, x + 1);
+    }
+    return c;
+  }
+  function treeGrow(k, x, by, hs, can, put, solid) {
+    var R = { swamp: [6, 4], pine: [9, 4], cherry: [5, 3], palm: [8, 3], oak: [7, 4], snag: [5, 4] }[k] || [6, 4], want = R[0] + Math.floor(hs(1) * R[1]);
+    for (var h = want; h >= Math.max(4, want - 5); h--) {   // (heights keep the crown on screen at normal zoom)
+      var c = treeShape(k, x, by, h, hs), ok = true, lv = 0, lf = 0, q;
+      for (q = 0; q < c.length && ok; q++) { var e = c[q]; if (e[3] === "root") continue; if (e[2] === T.LOG) { if (!can(e[0], e[1])) ok = false; } else { lv++; if (can(e[0], e[1])) lf++; } }
+      if (!ok || (lv && lf < lv * 0.85)) continue;
+      var b = { x0: x, x1: x, y0: by, y1: by };
+      for (q = 0; q < c.length; q++) { e = c[q]; if (e[3] === "root" && !(solid(e[0], e[1] + 1) && can(e[0], e[1]))) continue; if (e[2] === T.VINE && !can(e[0], e[1])) continue; put(e[0], e[1], e[2]); if (e[0] < b.x0) b.x0 = e[0]; if (e[0] > b.x1) b.x1 = e[0]; if (e[1] < b.y0) b.y0 = e[1]; if (e[1] > b.y1) b.y1 = e[1]; }
+      return b;
+    }
+    return null;
   }
 
   var POST = [];   // content packs add their extras to every generated map (the original one and each new segment), in that map's own columns
@@ -997,6 +1069,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     o.holes.forEach(function (q) { q.x += dx; });
     o.structs.forEach(function (q) { ["x0", "x1", "dx", "outX", "mx0", "mx1"].forEach(function (k) { if (q[k] !== undefined) q[k] += dx; }); });
     o.feats.forEach(function (q) { q.x += dx; });
+    (o.trees || []).forEach(function (q) { q.x += dx; q.b.x0 += dx; q.b.x1 += dx; });
     (o.marks || []).forEach(function (q) { q.x += dx; });
     if (o.aerie) ["x0", "x1", "cx", "vx"].forEach(function (k) { o.aerie[k] += dx; });
     if (o.sky) ["a", "z", "m0", "m1", "i0", "i1", "vx"].forEach(function (k) { o.sky[k] += dx; });
@@ -1021,7 +1094,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
         lay[sd].push([a, z, b]); prev = b; edge = sd < 0 ? a : z; n++;
       }
     });
-    return { W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, marks: core.marks || [], holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie, sky: core.sky,
+    return { trees: core.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, marks: core.marks || [], holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie, sky: core.sky,
       spawn: { x: SPAWNX + EXT + 0.5, y: core.top[SPAWNX] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: EXT, gx1: EXT + CORE_W - 1 };
   }
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
@@ -1041,11 +1114,12 @@ batwing: { n: "Bat Wing", frag: "bat" },
     shiftX(c, a);
     var base = (sd < 0 ? 100000 : 200000) + n * 100;   // building ids that never collide and stay the same every time this segment is made
     c.structs.forEach(function (q, i) { q.id = base + i; });
+    wd.trees = (wd.trees || []).concat(c.trees || []);
     wd.holes = wd.holes.concat(c.holes).sort(function (p, q) { return p.x - q.x; }); wd.feats = wd.feats.concat(c.feats); wd.marks = (wd.marks || []).concat(c.marks || []);
     for (k = 0; k < c.structs.length; k++) wd.structs.push(c.structs[k]);
     wd.done[sd] = n + 1; if (sd < 0) wd.gx0 = a; else wd.gx1 = z - 1;
     return { x0: a, x1: z - 1, structs: c.structs, b: b };
   }
-  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, hash: hash, mulberry: mulberry };
+  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);
