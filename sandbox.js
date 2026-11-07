@@ -1242,7 +1242,8 @@
   function boxHit(x, y) {
     var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4), y0 = Math.floor(y - PH + 1e-4), y1 = Math.floor(y - 1e-4);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) {
-      if (SHAPEN && !cave) { var sh = shapeAt(yy * W + xx); if (sh && !shapeHit(sh, xx, yy, x - PW / 2, x + PW / 2, y - PH, y)) continue; }   // MALLET: only the solid part of a shaped block counts
+      if (SHAPEN && !cave) { var sh = shapeAt(yy * W + xx); if (sh && !shapeHit(sh, xx, yy, x - PW / 2, x + PW / 2, y - PH, y)) continue;
+        if (!sh && y - yy < 1.001 && ((xx > x && shapeAt(yy * W + xx - 1) === 2 && x < xx) || (xx + 1 < x && shapeAt(yy * W + xx + 1) === 3))) continue; }   // MALLET: only the solid part of a shaped block counts; the block at the top of a ramp holds you up at your middle too, so the walk up carries on smoothly instead of hitching
       return true;
     }
     return false;
@@ -1259,14 +1260,17 @@
   // Bog Mallet (S.shape, where 0 means "keep it a full block") always wins.
   function autoShape(ix) {
     if (cave || OPT.autoramp === false) return 0;
-    var i = ix % W, j = (ix / W) | 0; if (i < 1 || i >= W - 1 || col[i] !== j || j < 2) return 0;
+    var i = ix % W, j = (ix / W) | 0; if (i < 2 || i >= W - 2 || j < 2 || j >= H - 2) return 0;
     var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !rampFree(tiles[ix - W])) return 0;
-    var L = col[i - 1], R = col[i + 1];
-    if (L === j + 1 && R <= j && !(R === j && col[i + 2] === j + 1) && rampFree(tiles[ix - 1]) && TILES[tiles[ix + W - 1]].solid) return 2;   // (never two ramps back to back into a sharp peak)   // ground one lower on the left: a ramp rising to the right
-    if (R === j + 1 && L <= j && !(L === j && col[i - 2] === j + 1) && rampFree(tiles[ix + 1]) && TILES[tiles[ix + W + 1]].solid) return 3;   // one lower on the right: rising to the left
-    return 0;
+    var sL = TILES[tiles[ix - 1]].solid, sR = TILES[tiles[ix + 1]].solid;
+    if (sL === sR) return 0;   // flat ground, a wall on both sides, or a lone peak
+    var low = sL ? 1 : -1, n = ix + low;   // the open side
+    if (!rampFree(tiles[n]) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
+    var o = ix - low;   // the other side is ground as high or higher; never two ramps back to back into a sharp peak
+    if (rampFree(tiles[o - W]) && NATC[tiles[o]] && !TILES[tiles[o - low]].solid && TILES[tiles[o - low + W]].solid) return 0;
+    return low > 0 ? 3 : 2;   // open on the right: rising to the left; open on the left: rising to the right
   }
-  function rampFree(id) { if (id === T.AIR) return true; var td = TILES[id]; return !td.solid && !td.liquid && id !== T.WATER && id !== T.LAVA && (td.sway || /^(reed|bloom|glowcap|flower)$/.test(td.kind || "")); }   // open, or just a small plant (it settles onto the slope)
+  function rampFree(id) { if (id === T.AIR) return true; var td = TILES[id]; return !td.solid && !td.liquid && id !== T.WATER && id !== T.LAVA && !td.small && td.kind !== "door" && td.kind !== "ladder" && td.kind !== "chest" && !td.light && (td.sway || td.tier === 0 || /reed|bloom|glowcap|flower|shroom|mushroom|grass|fern|tuft|plant|bush|cattail|cactus|shell|petal/i.test((td.kind || "") + " " + (td.n || ""))); }   // open, or just a small plant (it settles onto the slope)   // open, or just a small plant (it settles onto the slope)
   function shapeAt(ix) { var v = S.shape[ix]; return v !== undefined ? v : autoShape(ix); }
   function shapeHit(sh, cx, cy, bx0, bx1, by0, by1) {   // does the box [bx0,bx1]x[by0,by1] overlap the solid part of shaped cell (cx, cy)?
     var lx0 = clamp(bx0 - cx, 0, 1), lx1 = clamp(bx1 - cx, 0, 1), ly0 = clamp(by0 - cy, 0, 1), ly1 = clamp(by1 - cy, 0, 1), e = 1e-4;
@@ -1280,7 +1284,8 @@
     return true;
   }
   function slopeLift(nx, y) {   // walking into a ramp or a half-block: the smallest lift (up to just over half a block) that clears it, or -1
-    for (var d = 0.03; d <= 0.62; d += 0.03) if (!boxHit(nx, y - d) && !boxHit(p.x, y - d)) return d;
+    var lo = 0, ok = function (d) { return !boxHit(nx, y - d) && !boxHit(p.x, y - d); };
+    for (var d = 0.03; d <= 0.62; d += 0.03) { if (ok(d)) { for (var k = 0; k < 8; k++) { var m = (lo + d) / 2; if (ok(m)) d = m; else lo = m; } return d; } lo = d; }   // (refined to a hair, so you stay on the slope instead of popping up and dropping back)
     return -1;
   }
   function settleDown(x, lo, hi) {   // lo is free, hi hits: the lowest free height between them (to a hair)
@@ -12372,13 +12377,13 @@
     if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
     // horizontal, with automatic one-block step-up
     var nx = clamp(p.x + p.vx * h, 1, W - 1);
-    var wasOn = p.on, sl;
+    var wasOn = p.on, sl, hugd = false;
     if (!boxHit(nx, p.y)) p.x = nx;
     else if (SHAPEN && (p.on || feetWet) && (sl = slopeLift(nx, p.y)) >= 0) { p.x = nx; p.y -= sl; }   // MALLET: walk up a ramp or onto a half-block smoothly
     else if ((p.on || feetWet) && !boxHit(nx, p.y - 1.001) && !boxHit(p.x, p.y - 1.001)) { p.x = nx; p.y -= 1; }
     else p.vx = 0;
-    if (SHAPEN && wasOn && p.vy >= 0 && !lad && !p.wet && !boxHit(p.x, p.y + 0.02)) {   // MALLET: walking down a ramp (or off a half-block) hugs the ground instead of hopping
-      for (var sd = 0.06; sd <= 0.62; sd += 0.06) if (boxHit(p.x, p.y + sd)) { p.y = settleDown(p.x, p.y, p.y + sd); break; }
+    if (SHAPEN && wasOn && p.vy >= 0 && !lad && !p.wet && !boxHit(p.x, p.y + 0.002)) {   // MALLET: walking down a ramp (or off a half-block) hugs the ground instead of hopping (checked to a hair: a looser check let you float off the slope for a few frames)
+      for (var sd = 0.03; sd <= 0.63; sd += 0.03) if (boxHit(p.x, p.y + sd)) { p.y = settleDown(p.x, p.y, p.y + sd); p.vy = 0; hugd = true; break; }
     }
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
@@ -12387,6 +12392,7 @@
       if (vpre > 3.5 && !reduce) { p.sq = -Math.min(0.3, (vpre - 2) / 48); p.sqv = 0; }
       if (vpre > 7) { landPuff(vpre); var gid = get(Math.floor(p.x), Math.floor(p.y + 0.2)); matStep(gid, Math.min(1, (vpre - 5) / 16)); if (vpre > 16) thud(70, Math.min(0.12, (vpre - 14) / 90)); } }
     else { p.y = Math.ceil(ny - PH) + PH; p.vy = 0; }
+    if (hugd && !p.on && p.vy >= 0 && p.vy < 1) { p.on = true; p.vy = 0; }   // (settled onto the slope this step: still standing on it)
     if (p.y > H - 2) { p.y = H - 2.01; p.vy = 0; }
   }
   var dustT = 0, CAMLA = { x: 0, y: 0 };
@@ -14592,7 +14598,7 @@
         if (CANT_PX > 4e6) { CANT.clear(); CANT_PX = 0; }
         e = { sig: sig, n: n, cv: cv, x0: x0, y0: y0 }; CANT.set(mn, e); CANT_PX += cv.width * cv.height;
       }
-      var u = ts / 16, sw = reduce ? 0 : Math.round(Math.sin(tt * 1.1 + (mn % 997) * 0.37) * 0.9 + Math.sin(tt * 2.3 + mn % 13) * 0.3);   // the wind nudges the crown a pixel either way
+      var u = ts / 16, sw = 0;   // (no wind shift: in pixel art a crown can only jump a whole pixel, which read as a jitter)
       g.drawImage(e.cv, Math.round(ox + (e.x0 - M) * ts + sw * u), Math.round(oy + (e.y0 - M) * ts), e.cv.width * u, e.cv.height * u);
     }
     g.imageSmoothingEnabled = sm;
@@ -15150,7 +15156,7 @@
   }
   function drawPlayer(g, now) {
     if (PHOTO.on && !PHOTO.me) return;
-    var sx = ox + p.x * ts, sy = oy + p.y * ts, bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
+    var sx = pxS(ox + p.x * ts), sy = pxS(oy + p.y * ts), bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
     drawWings(g, sx, sy + ts * 0.14, now);   // behind the body
     if (riding()) { g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); drawMoto(g, -1.55 * ts, 0, ts, motoS().p, performance.now(), { ride: true, run: Math.abs(p.vx) > 0.5, lit: true }); g.restore(); sy -= ts * 0.82; sx -= p.face * ts * 0.38; bob = 0; }   // SWAMP HOG: you sit on the bike
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
@@ -21417,7 +21423,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, get orig() { return orig; } };
+  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
