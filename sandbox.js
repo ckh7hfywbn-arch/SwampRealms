@@ -1262,8 +1262,8 @@
     var i = ix % W, j = (ix / W) | 0; if (i < 1 || i >= W - 1 || col[i] !== j || j < 2) return 0;
     var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !rampFree(tiles[ix - W])) return 0;
     var L = col[i - 1], R = col[i + 1];
-    if (L === j + 1 && R <= j && rampFree(tiles[ix - 1]) && TILES[tiles[ix + W - 1]].solid) return 2;   // ground one lower on the left: a ramp rising to the right
-    if (R === j + 1 && L <= j && rampFree(tiles[ix + 1]) && TILES[tiles[ix + W + 1]].solid) return 3;   // one lower on the right: rising to the left
+    if (L === j + 1 && R <= j && !(R === j && col[i + 2] === j + 1) && rampFree(tiles[ix - 1]) && TILES[tiles[ix + W - 1]].solid) return 2;   // (never two ramps back to back into a sharp peak)   // ground one lower on the left: a ramp rising to the right
+    if (R === j + 1 && L <= j && !(L === j && col[i - 2] === j + 1) && rampFree(tiles[ix + 1]) && TILES[tiles[ix + W + 1]].solid) return 3;   // one lower on the right: rising to the left
     return 0;
   }
   function rampFree(id) { if (id === T.AIR) return true; var td = TILES[id]; return !td.solid && !td.liquid && id !== T.WATER && id !== T.LAVA && (td.sway || /^(reed|bloom|glowcap|flower)$/.test(td.kind || "")); }   // open, or just a small plant (it settles onto the slope)
@@ -9099,19 +9099,77 @@
     }
     return leafy ? out : [];
   }
+  // FELLING (TREES): the whole tree comes down at once and topples over, away from you, like a real tree: trunk, crown, boughs and roots are
+  // lifted out of the world in one go and painted into a picture (the same pixel art as the standing tree), which swings down around the cut,
+  // lands with a thud and a burst of leaves, and drops its Wood, Sticks and the odd Sapling where it fell. (Old way: logs vanished one by one
+  // from the bottom while the crown hung in the air.)
+  var FALLING = [];
   function fellTree(x, y) {
     var L = treeAbove(x, y); if (!L.length) return;
-    L.forEach(function (q) { fellQ.push({ x: q[0], y: q[1], t: (y - q[1]) * 0.045 + Math.abs(q[0] - x) * 0.03 }); });
-    S.st.felled = (S.st.felled || 0) + 1; thud(120, 0.1); if (!S.vis.felltip) { S.vis.felltip = 1; toast("Timber! Chop the bottom of a trunk and the whole tree comes down. Walk over what falls to pick it up.", "#c58a52"); }
+    var logs = {}, leaves = [], q, k;
+    L.forEach(function (c) { logs[c[1] * W + c[0]] = 1; });
+    for (var s2 = -1; s2 <= 1; s2 += 2) if (get(x + s2, y) === T.LOG && get(x + s2, y - 1) === T.AIR && TILES[get(x + s2, y + 1)].solid) { logs[y * W + x + s2] = 1; L.push([x + s2, y]); }   // the root blocks at its foot
+    var st = L.slice(), seen = {};   // the crown: every leaf joined to the trunk (corners too), unless you placed it
+    while (st.length && leaves.length < 400) { var c = st.pop(); for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = c[0] + dx, ny = c[1] + dy, nk = ny * W + nx; if (seen[nk] || Math.abs(nx - x) > 8 || ny > y) continue; seen[nk] = 1; if (get(nx, ny) === T.LEAVES && !(S.pleaf && S.pleaf[nk])) { leaves.push([nx, ny]); st.push([nx, ny]); } } }
+    var all = L.concat(leaves), x0 = x, x1 = x, y0 = y, y1 = y; all.forEach(function (c) { if (c[0] < x0) x0 = c[0]; if (c[0] > x1) x1 = c[0]; if (c[1] < y0) y0 = c[1]; if (c[1] > y1) y1 = c[1]; });
+    // paint it as it stands (before anything is taken out)
+    var M = 2, A = 16, cw = (x1 - x0 + 1 + M * 2) * A, ch = (y1 - y0 + 1 + M * 2) * A, cv = document.createElement("canvas"); cv.width = cw; cv.height = ch; var cg = cv.getContext("2d");
+    L.forEach(function (c) { var pc = treePix(c[0], c[1]); if (pc) cg.drawImage(pc, (c[0] - x0 + M) * A - 8, (c[1] - y0 + M) * A - 8); else { cg.fillStyle = "#5e4024"; cg.fillRect((c[0] - x0 + M) * A + 4, (c[1] - y0 + M) * A, 8, 16); } });
+    if (leaves.length) { var lf = leaves.slice().sort(function (a, b) { return b[1] - a[1] || a[0] - b[0]; }), LF = []; lf.forEach(function (t) { LF.push(t[0], t[1]); }); cg.drawImage(crownPaint(LF, x0, y0, x1, y1, M), 0, 0); }
+    // take it out of the world: wood for every log, a stick or sapling now and then from the leaves, the vines under it
+    var yield2 = [];
+    L.forEach(function (c) { setT(c[0], c[1], T.AIR); S.st.mined++; yield2.push(["wood", c[0], c[1]]); recalc(c[0]); });
+    leaves.forEach(function (c) { setT(c[0], c[1], T.AIR); if (Math.random() < 0.22) yield2.push(["stick", c[0], c[1]]); if (ITEMS.sapling && Math.random() < 0.035) yield2.push(["sapling", c[0], c[1]]); for (var vy = c[1] + 1; vy < H - 1 && get(c[0], vy) === T.VINE; vy++) { setT(c[0], vy, T.AIR); if (Math.random() < 0.3) yield2.push(["fiber", c[0], vy]); } });
+    for (k = x0; k <= x1; k++) recalc(k);
+    var dir = p.x < x + 0.5 ? 1 : -1;   // it falls away from you
+    FALLING.push({ cv: cv, px: x + 0.5, py: y, ox: (x0 - M) - (x + 0.5), oy: (y0 - M) - y, a: 0, va: 0, dir: dir, t: 0, land: 0, items: yield2, h: Math.max(1, y - y0) });
+    S.st.felled = (S.st.felled || 0) + 1; thud(120, 0.1); chips(x + 0.5, y - 0.2, "#8a6450", 10, 5);
+    if (!S.vis.felltip) { S.vis.felltip = 1; toast("Timber! Chop the bottom of a trunk and the whole tree comes down. Walk over what falls to pick it up.", "#c58a52"); }
   }
   function tickFell(dt) {
-    if (!fellQ.length) return;
-    for (var i = fellQ.length - 1; i >= 0; i--) {
-      var f = fellQ[i]; f.t -= dt; if (f.t > 0) continue; fellQ.splice(i, 1);
-      if (get(f.x, f.y) !== T.LOG) continue;
-      setT(f.x, f.y, T.AIR); S.st.mined++; spawnDrop(TILES[T.LOG].drop || "wood", 1, f.x, f.y); chips(f.x + 0.5, f.y + 0.5, "#8a6450", 8, 5); if (Math.random() < 0.4) thud(150 + Math.random() * 40, 0.05);
-      recalc(f.x); leafCheck(f.x, f.y, 7, 0.25);
+    for (var i = FALLING.length - 1; i >= 0; i--) {
+      var f = FALLING[i]; f.t += dt;
+      if (!f.land) {
+        f.va += (0.8 + Math.sin(Math.abs(f.a)) * 7.5) * dt; f.a += f.va * dt * f.dir;   // slow to start, then it really goes
+        if (Math.abs(f.a) >= 1.48) {   // down: the wood and the rest drop where each piece came to rest
+          f.a = 1.48 * f.dir; f.land = f.t; thud(90, 0.14); shake = Math.max(shake, 0.18);
+          var ca = Math.cos(f.a), sa = Math.sin(f.a);
+          f.items.forEach(function (it) { var rx = it[1] + 0.5 - f.px, ry = it[2] + 0.5 - f.py, wx = f.px + rx * ca - ry * sa, wy = f.py + rx * sa + ry * ca; var gx = clamp(Math.floor(wx), 1, W - 2), gy = Math.min(Math.floor(wy), col[gx] - 1); spawnDrop(it[0], 1, gx, gy - 0.5); });
+          for (var k = 0; k < 30; k++) { var t2 = Math.random() * (f.h + 3), lx = f.px + Math.sin(f.a) * t2, ly = f.py - Math.cos(f.a) * t2 * 0.2; parts.push({ x: lx, y: ly - 0.3, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3, life: 0.9, max: 0.9, c: Math.random() < 0.5 ? "#58b455" : "#3a8a44", s: 3 }); }
+          chips(f.px + f.dir * (f.h * 0.5), f.py - 0.3, "#8a6450", 14, 6);
+        }
+      } else if (f.t - f.land > 0.45) FALLING.splice(i, 1);
     }
+    if (fellQ.length) fellQ.length = 0;
+    regrowT -= dt; if (regrowT <= 0) { regrowT = 3; regrowLeaves(); }
+  }
+  // LEAVES GROW BACK: a world tree you picked the leaves off (its trunk still standing) slowly fills its crown in again, a few leaves at a time,
+  // and only while it is off screen, so nothing pops in in front of you.
+  var regrowT = 3;
+  function regrowLeaves() {
+    if (cave || !world.trees || !world.trees.length) return;
+    var half = vw / ts / 2 + 4, cx = cam.x, n = 0, tr = world.trees;
+    for (var tries = 0; tries < 12 && n < 1; tries++) {
+      var r = tr[(Math.random() * tr.length) | 0], b = r.b; if (Math.abs(r.x - p.x) > 160 || (b.x1 > cx - half && b.x0 < cx + half)) continue;
+      var x, y, i, ok = true, miss = [], by = r.b.y1;
+      for (var tx = r.x; tx <= r.x + (r.k === "oak" ? 1 : 0); tx++) for (y = by; y >= b.y0; y--) { i = y * W + tx; if (orig[i] !== T.LOG) continue; if (tiles[i] !== T.LOG) { ok = false; break; } }   // its own trunk still standing
+      if (!ok) continue;
+      var st = [], seen = {}; for (y = b.y0; y <= b.y1; y++) for (x = b.x0; x <= b.x1; x++) { i = y * W + x; if (orig[i] === T.LOG && tiles[i] === T.LOG && Math.abs(x - r.x) <= 1) { st.push(i); seen[i] = 1; } }
+      while (st.length) { var c0 = st.pop(), cx0 = c0 % W, cy0 = (c0 / W) | 0; for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = cx0 + dx, ny = cy0 + dy, ni = ny * W + nx; if (seen[ni] || nx < b.x0 || nx > b.x1 || ny < b.y0 || ny > b.y1 || orig[ni] !== T.LEAVES) continue; seen[ni] = 1; st.push(ni); if (tiles[ni] === T.AIR) miss.push(ni); } }   // only leaves of its own crown
+      miss.sort(function (a2, b2) { return b2 - a2; });   // from the trunk outward and upward
+      if (!ok || !miss.length) continue;
+      for (var k = 0; k < Math.min(8, miss.length); k++) { i = miss[k]; setT(i % W, (i / W) | 0, T.LEAVES); } n++;
+    }
+  }
+  function drawFalling(g) {
+    if (!FALLING.length || cave) return;
+    var u = ts / 16, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
+    FALLING.forEach(function (f) {
+      var al = f.land ? Math.max(0, 1 - (f.t - f.land) / 0.45) : 1; if (al <= 0) return;
+      g.save(); g.globalAlpha = al; g.translate(ox + f.px * ts, oy + f.py * ts); g.rotate(f.a);
+      g.drawImage(f.cv, f.ox * ts, f.oy * ts, f.cv.width * u, f.cv.height * u); g.restore();
+    });
+    g.imageSmoothingEnabled = sm;
   }
   // ---- leaf decay ----
   function leafCheck(cx, cy, r, fast) {   // every leaf in the box that cannot reach a log through 5 leaves starts to wither
@@ -14418,8 +14476,8 @@
     if (get(i, j - 1) !== T.AIR) return 0; var l = get(i - 1, j - 1) === T.LOG && get(i - 1, j) !== T.LOG, r = get(i + 1, j - 1) === T.LOG && get(i + 1, j) !== T.LOG;
     return l && !r ? -1 : r && !l ? 1 : 0;
   }
-  function trunkTree(i, j) {   // is this log part of a tree (a trunk crowned with leaves), not a house beam?
-    for (var y = j; y > j - 24 && y > 0; y--) { var id = get(i, y); if (id === T.LEAVES) return true; if (id !== T.LOG) return false; if (canStyle(i) === 2 && get(i, y - 1) === T.AIR) { var b = bendUp(i, y); if (!b) return false; i += b; } }
+  function trunkTree(i, j) {   // is this log part of a tree (a trunk crowned with leaves, or a world tree that lost them), not a house beam?
+    for (var y = j; y > j - 24 && y > 0; y--) { var id = get(i, y); if (id === T.LEAVES) return true; if (id !== T.LOG) return orig[y * W + i] === T.LEAVES && orig[(y + 1) * W + i] === T.LOG; if (canStyle(i) === 2 && get(i, y - 1) === T.AIR) { var b = bendUp(i, y); if (!b) return false; i += b; } }
     return false;
   }
   function pineRun(i, j) {   // part of a pine row: a pine leaf, or the trunk with pine leaves beside it
@@ -14568,7 +14626,8 @@
     if (st === 2 && dn === T.AIR) { if (get(i - 1, j + 1) === T.LOG && bendUp(i - 1, j + 1) === 1) bd = -1; else if (get(i + 1, j + 1) === T.LOG && bendUp(i + 1, j + 1) === -1) bd = 1; }
     if (up === T.LOG || up === T.LEAVES || bb || bd || (dn === T.LOG || TILES[dn].solid) && !Ls && !Rs) {   // an upright trunk block
       var top = j, foot = j; while (get(i, top - 1) === T.LOG) top--; while (get(i, foot + 1) === T.LOG) foot++;
-      var crown = get(i, top - 1) === T.LEAVES || st === 2 && trunkTree(i, j); if (!crown) return null;
+      var bare = get(i, top - 1) !== T.LEAVES && orig[(top - 1) * W + i] === T.LEAVES && orig[top * W + i] === T.LOG;   // a world tree whose leaves were all picked: still a trunk, with a broken top
+      var crown = get(i, top - 1) === T.LEAVES || st === 2 && trunkTree(i, j) || bare; if (!crown) return null;
       if (Ls && get(i - 1, j) !== T.LOG && Rs && get(i + 1, j) !== T.LOG) return null;
       var twinL = get(i + 1, j) === T.LOG && get(i + 1, j - 1) !== T.AIR && get(i + 1, j + 1) !== T.AIR, twinR = get(i - 1, j) === T.LOG && get(i - 1, j - 1) !== T.AIR && get(i - 1, j + 1) !== T.AIR;
       var isFoot = TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES, hgt = foot - top + 1;
@@ -14591,6 +14650,7 @@
           set(x, y, tn);
         }
         if (st === 4 && world.bio[clamp(i, 0, W - 1)] === 2 && thash(i, j * 16 + y, 12) > 0.86) set(Lx + 1, y, 6);   // frost on the bark
+        if (bare && j === top && y < 5) for (x = Lx; x <= Rx; x++) { var jag = 1 + (thash(i, x, 13) * 4 | 0); if (y < jag) set(x, y, 0); else if (y === jag) set(x, y, x === Lx || x === Rx ? 1 : 5); }   // the broken top: splintered, pale wood showing
       }
       if (thash(i, j, 85) > 0.84 && j > top + 1 && j < foot && !twinR) { var kx = 8 + bb * 4 + (twinL ? 4 : 0); for (y = 5; y <= 10; y++) for (x = kx - 2; x <= kx + 2; x++) { var ex = (x - kx) / 2.2, ey = (y - 7.5) / 2.8, d2 = ex * ex + ey * ey; if (d2 <= 1) set(x, y, d2 > 0.55 ? (y < 7 ? 4 : 2) : 1); } }   // a knot
       if (isFoot && !twinL && !twinR) for (var s = -1; s <= 1; s += 2) {   // little roots gripping the ground
@@ -14883,7 +14943,8 @@
       }
       drawCell(g, i, j, ox + i * ts, oy + j * ts, now);
     }
-    if (OPT.canopy !== false) drawCanopies(g, now, X0, X1, Y0, Y1);   // TREE CANOPIES: one crown per tree over the trunks, roots and branches
+    if (OPT.canopy !== false) drawCanopies(g, now, X0, X1, Y0, Y1);
+    drawFalling(g);   // FELLING: a tree coming down   // TREE CANOPIES: one crown per tree over the trunks, roots and branches
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
