@@ -639,10 +639,11 @@
   }
   function charAct(a) {
     if (a !== "go") { charPick = a; renderChar(); snd("coin"); return; }
+    if (!curId) TC.pickedChar = charPick;   // picked on the main menu: the world you play next gets it
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 1, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 1 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 1, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 2 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
   // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
   // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
@@ -680,7 +681,7 @@
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
     if (o.wv === SW.WORLDVER) {   // BIOME VARIANTS: a save from before them keeps its land exactly; only land made from now on can be a variant
       var bvo = o.bvar && typeof o.bvar === "object" ? o.bvar : null;
-      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: bvo.sp ? 1 : 0 } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
+      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: bvo.sp >= 2 ? 2 : bvo.sp ? 1 : 0 } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
     }
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
@@ -750,6 +751,7 @@
     if (Array.isArray(o.gdrop) && o.wv === SW.WORLDVER) d.gdrop = o.gdrop.slice(-300);   // GROUND DROPS still lying around
     if (o.pleaf && typeof o.pleaf === "object" && o.wv === SW.WORLDVER) Object.keys(o.pleaf).forEach(function (k) { if (o.pleaf[k]) d.pleaf[k] = 1; });   // leaves you placed (they never decay)
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
+    if (o.rzm && typeof o.rzm === "object" && o.wv === SW.WORLDVER) { d.rzm = {}; Object.keys(o.rzm).forEach(function (k) { if (/^\d+$/.test(k) && typeof o.rzm[k] === "string" && /^[0-9a-f]{1,400}$/.test(o.rzm[k])) d.rzm[k] = o.rzm[k]; }); }
     if (o.razed && typeof o.razed === "object" && o.wv === SW.WORLDVER) { d.razed = {}; Object.keys(o.razed).forEach(function (k) { if (o.razed[k] && /^\d+$/.test(k)) d.razed[k] = 1; }); }   // buildings you knocked down
     if (o.oc) d.oc = ocClean(o.oc);
     if (o.lair && typeof o.lair === "object") d.lair = lairClean(o.lair);   // THE SUNKEN HOLLOW
@@ -840,6 +842,7 @@
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
     if (!state.trv) { treesMigrate(); state.trv = 1; }
     smask = null;   // buildings are pictures now (see BUILDING PICTURES), so nothing in the grid is scenery
+    rzLoad(state);
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
     flLoad(state.fl); ex = new Uint8Array(W * H); unrle(state.ex, ex);
     walls = world.walls ? world.walls.slice() : new Uint16Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
@@ -860,7 +863,9 @@
   }
   function save() {
     if (MP.on && MP.role === "guest") { mpSaveChar(); cloudDirty(); return; }
+    if (!curId) return;   // the menu's scenery world is never saved
     try {
+      rzSaveAll();
       reslot(); S.hp = Math.max(1, Math.round(hp));
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
       var ek = buildN + ":" + editN, xk = buildN + ":" + exVer, wk2 = buildN + ":" + wallN;
@@ -871,10 +876,19 @@
       localStorage.setItem(wkey(curId), JSON.stringify(S)); cloudDirty(); touchIdx(); saveFail = false;
     } catch (e) { if (!saveFail) { saveFail = true; try { toast("Could not save: browser storage is full or blocked. Delete a world you do not need.", "#ff8a3d"); } catch (x) {} } }
   }
-  function load() {
-    wIdx = readIdx();
-    if (wIdx.list.length) curId = wIdx.last; else addWorld("My Swamp");
-    start(readWorld(curId) || fresh(randSeed())); saveIdx(); cloudInit();
+  function load() {   // WORLDS: the page opens on the main menu over a scenery world that is never saved; no world of yours runs until you pick Play
+    wIdx = readIdx(); claimGuest(); backdrop(); saveIdx(); cloudInit();
+  }
+  var BACKDROP_SEED = 424242;
+  function backdrop() { curId = ""; var an = defaultAnimal(); start(Object.assign(fresh(BACKDROP_SEED), { animal: an, qi: 3 })); }   // the scenery behind the menus (not one of your worlds)
+  function claimGuest() {   // signed in for the first time on this device: the worlds you made before signing in move into your account (once)
+    if (WUSER === "guest") return;
+    try {
+      var gk = "swamp-delve-worlds:guest", g = JSON.parse(localStorage.getItem(gk) || "null"); if (!g || !Array.isArray(g.list) || !g.list.length) return;
+      g.list.forEach(function (w) { if (wIdx.list.length >= MAXW || wEntry(w.id)) return; var d = localStorage.getItem("swamp-delve-w:guest:" + w.id); if (!d) return;
+        localStorage.setItem(wkey(w.id), d); localStorage.removeItem("swamp-delve-w:guest:" + w.id); w.cdirty = 1; w.crev = 0; wIdx.list.push(w); if (!wIdx.last) wIdx.last = w.id; });
+      g.list = g.list.filter(function (w) { return !!localStorage.getItem("swamp-delve-w:guest:" + w.id); }); localStorage.setItem(gk, JSON.stringify(g));
+    } catch (e) {}
   }
 
   // ---------- WORLDS: several saves per player ----------
@@ -906,7 +920,8 @@
   }
   function switchWorld(id) {
     if (MP.on || MP.ws) mpLeave();
-    if (id !== curId) { bossGone(); save(); curId = id; start(readWorld(id) || fresh(randSeed())); touchIdx(); toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); }
+    if (id !== curId) { var tw = readWorld(id); if (!tw) { if (CLOUD.state === "on" && CLOUD.list.some(function (q) { return q.wid === id; })) { toast("Getting that world from your account…", "#4ee6b4"); cloudPull(id, true).then(function (ok) { if (ok) switchWorld(id); }); } else toast("That world could not be read.", "#ff8a3d"); return; }
+      bossGone(); save(); curId = id; start(tw); if (TC.pickedChar) { S.animal = TC.pickedChar; TC.pickedChar = ""; mkSprite(); } touchIdx(); if (!titleOpen) toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); }
     closeWorlds(); if (titleOpen) closeTitle();
   }
   var newDiff = 1;
@@ -921,8 +936,7 @@
     wIdx.list = wIdx.list.filter(function (w) { return w.id !== id; });
     if (id === curId) {
       var z = S.zoom, an = S.animal;
-      if (wIdx.list.length) { var nx = wIdx.list.slice().sort(function (a, b) { return b.played - a.played; })[0]; curId = nx.id; start(readWorld(curId) || fresh(randSeed())); }
-      else { addWorld("My Swamp"); start(Object.assign(fresh(randSeed()), { zoom: z, animal: an })); save(); }
+      backdrop(); if (!titleOpen) { closeWorlds(); openTitle(); }   // back to the main menu: no world runs until you pick one
     }
     saveIdx();
   }
@@ -1032,7 +1046,13 @@
       if (!cw) { if (!e.crev) e.cdirty = 1; return; }   // never backed up (or deleted from the cloud): back it up
       if (cw.rev > (e.crev || 0)) { if (!e.cdirty) cloudPull(e.id, true); else e.conflict = cw.rev; }
     });
-    saveIdx(); CLOUD.t = performance.now() + 3000;
+    saveIdx(); CLOUD.t = performance.now() + 3000; setTimeout(cloudFetchAll, 400);
+  }
+  function cloudFetchAll() {   // CLOUD: every world in your account comes down to this device by itself (no Download buttons), one at a time
+    if (CLOUD.state !== "on") return; if (CLOUD.busy) { setTimeout(cloudFetchAll, 500); return; }
+    var q = CLOUD.list.filter(function (c) { return !wEntry(c.wid); }).sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })[0];
+    if (!q || wIdx.list.length >= MAXW) { if (titleOpen) renderTitle(); return; }
+    cloudPull(q.wid, true).then(function (ok) { if (titleOpen) renderTitle(); if (ok) setTimeout(cloudFetchAll, 200); });
   }
   function cloudDirty() {   // called from save(): this world changed, back it up soon
     var e = curEntry(); if (!e || CLOUD.state === "checking") return;   // the save made while the page loads is not a change
@@ -1125,6 +1145,27 @@
   // Generated buildings (the standalone structures) are scenery: you walk straight through their walls, roofs and doors as if they were in the background.
   // smask marks the footprint (built in build()); only tiles still equal to the generated world count, so anything you place or dig yourself behaves normally.
   var smask = null;
+  // KNOCKED-DOWN BUILDINGS stay walk-past: once a building is turned into ordinary blocks, those blocks can be broken and kept, but you (and
+  // creatures) still walk in front of them, exactly as when it was a picture. rmask holds the block id each such cell had; a cell stops
+  // counting the moment its block is broken, so anything you place there yourself is solid as usual. S.rzm keeps it per building for reloads.
+  var rmask = null;
+  function rzBox(q) { var a = q.mx0 !== undefined; return [clamp(a ? q.mx0 : q.x0 - 1, 0, W - 1), clamp(a ? q.mx1 : q.x1 + 1, 0, W - 1), clamp(a ? q.my0 : q.gy - q.bh - 7, 0, H - 1), clamp(q.gy - 1, 0, H - 1)]; }
+  function rzPack(q) {   // -> hex string, one bit per cell of the building's box
+    var b = rzBox(q), out = "", acc = 0, n = 0;
+    for (var y = b[2]; y <= b[3]; y++) for (var x = b[0]; x <= b[1]; x++) { var i = y * W + x; if (rmask[i] && tiles[i] !== rmask[i]) rmask[i] = 0; acc = acc << 1 | (rmask[i] ? 1 : 0); if (++n === 4) { out += acc.toString(16); acc = 0; n = 0; } }
+    if (n) out += (acc << (4 - n)).toString(16); return out;
+  }
+  function rzSaveAll() { if (!rmask || !S.razed) return; if (!S.rzm) S.rzm = {}; (world.structs || []).forEach(function (q) { if (q.razed) S.rzm[q.id] = rzPack(q); }); }
+  function rzLoad(state) {   // after the world and your edits are in place
+    rmask = null; if (!state.razed) return;
+    (world.structs || []).forEach(function (q) {
+      if (!state.razed[q.id]) return; if (!rmask) rmask = new Uint16Array(W * H);
+      var b = rzBox(q), hex = state.rzm && state.rzm[q.id], n = 0;
+      for (var y = b[2]; y <= b[3]; y++) for (var x = b[0]; x <= b[1]; x++, n++) { var i = y * W + x, id = tiles[i]; if (!TILES[id].solid) continue;
+        var on = hex ? (parseInt(hex.charAt(n >> 2), 16) >> (3 - (n & 3))) & 1 : (id === orig[i] && id !== T.LOG && id !== T.LEAVES);   // older saves: every untouched block of it
+        if (on) rmask[i] = id; }
+    });
+  }
   function buildSMask() {
     smask = new Uint8Array(W * H); var ss = world.structs || [], i, x, y;
     function mark(x0, x1, y0, y1) { for (y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) for (x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) smask[y * W + x] = 1; }
@@ -1133,6 +1174,7 @@
   function blocks(x, y) {
     var id = get(x, y); if (!TILES[id].solid) return false;
     if (smask && x >= 0 && x < W && y >= 0 && y < H && smask[y * W + x] && tiles[y * W + x] === orig[y * W + x]) return false;
+    if (rmask && x >= 0 && x < W && y >= 0 && y < H && rmask[y * W + x] === id) return false;
     if ((id === T.LOG || id === T.LEAVES) && x >= 0 && x < W && y >= 0 && y < H && tiles[y * W + x] === orig[y * W + x]) return false;
     return true;
   }
@@ -1149,7 +1191,7 @@
     return PCOL.v;
   }
   function recalc(x) {   // first row that counts as ground/roof (sets sky light and the dark backwall). World-generated trunks are scenery, so they never count: no backwall appears under a tree when you chop it.
-    for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i])) { col[x] = y; return; } }   // generated buildings are scenery: sky light passes them
+    for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i]) && !(rmask && rmask[i] === id)) { col[x] = y; return; } }   // generated buildings are scenery: sky light passes them
     col[x] = H;
   }
   var editN = 0;
@@ -1563,7 +1605,7 @@
   // Foliage is built from small pointed leaves (lit top-left, a shadow pixel under each) instead of random squares. Interior tiles wrap, so canopies tile without seams.
   // LEAFATLAS holds every tile for each combination of open edges (mask: 1 top, 2 bottom, 4 left, 8 right): open edges get ragged leaf tips and a sunlit or shaded rim,
   // so a tree canopy has a rounded, leafy outline instead of a square block.
-  var LEAFATLAS, LEAFC = ["#0f3320", "#1a4d2c", "#2a6b38", "#3a8a44", "#58b455", "#8ddb70", "#c6f59a"];
+  var LEAFATLAS, LEAFC = ["#0d2a1e", "#145038", "#1d7249", "#2f9a6a", "#3fae78", "#58d68b", "#9bf5bf"];
   function paintLeaf(g, ox, oy, v, mask) {
     var hh = function (x, y, s2) { return SW.hash(x + v * 16, y + 6 * 31, s2 + 6); };
     var px = function (x, y, c, a) { x = ((x % 16) + 16) % 16; y = ((y % 16) + 16) % 16; g.globalAlpha = a == null ? 1 : a; g.fillStyle = c; g.fillRect(ox + x, oy + y, 1, 1); g.globalAlpha = 1; };
@@ -1907,10 +1949,10 @@
     }
     if (kind === "glowcap") { rect(7, 9, 2, 7, "#cfe3cb"); rect(7, 9, 1, 7, "#f2fff0"); rect(4, 6, 8, 4, "#22a883"); rect(5, 5, 6, 2, "#4ee6b4"); rect(6, 4, 4, 1, "#9bfbe0"); rect(6, 7, 1, 1, "#d8fff6"); rect(9, 8, 1, 1, "#d8fff6"); rect(10, 6, 1, 1, "#d8fff6"); rect(3, 8, 1, 1, "#4ee6b4", 0.7); return; }
     if (kind === "vine") {
-      [[3, 16, "#3f8f3a"], [8, 12, "#4aa043"], [12, 15, "#3a8434"]].forEach(function (c, n) { var len = c[1] - (hh(n, 0, 3) > 0.5 ? 2 : 0); rect(c[0], 0, 1, len, c[2]); rect(c[0] + 1, 0, 1, len - 4, "#2a6a2a", 0.8); for (var yy = 3; yy < len; yy += 4) { rect(c[0] - 1, yy, 1, 2, "#6ec35c"); rect(c[0] + 2, yy + 2, 1, 2, "#5fb24a"); } rect(c[0], len - 1, 1, 1, "#c8ff9a", 0.9); });
+      [[3, 16, "#2f9a6a"], [8, 12, "#3fae78"], [12, 15, "#289862"]].forEach(function (c, n) { var len = c[1] - (hh(n, 0, 3) > 0.5 ? 2 : 0); rect(c[0], 0, 1, len, c[2]); rect(c[0] + 1, 0, 1, len - 4, "#1d7249", 0.8); for (var yy = 3; yy < len; yy += 4) { rect(c[0] - 1, yy, 1, 2, "#58d68b"); rect(c[0] + 2, yy + 2, 1, 2, "#58d68b"); } rect(c[0], len - 1, 1, 1, "#9bf5bf", 0.9); });
       return;
     }
-    if (kind === "reed") { [[3, 9], [7, 14], [11, 10]].forEach(function (s) { rect(s[0], 16 - s[1], 1, s[1], "#4f8a3c"); rect(s[0] + 1, 16 - s[1] + 3, 1, s[1] - 3, "#3b6a2c"); rect(s[0] - 1, 16 - s[1] + 4, 1, 3, "#6aa347"); rect(s[0] + 2, 16 - s[1] + 6, 1, 3, "#6aa347"); }); rect(6, 1, 3, 5, "#6b4a2a"); rect(6, 1, 3, 1, "#a07a46"); rect(6, 1, 1, 5, "#8a6238"); rect(10, 5, 2, 4, "#6b4a2a"); rect(10, 5, 2, 1, "#a07a46"); return; }
+    if (kind === "reed") { [[3, 9], [7, 14], [11, 10]].forEach(function (s) { rect(s[0], 16 - s[1], 1, s[1], "#2f9a6a"); rect(s[0] + 1, 16 - s[1] + 3, 1, s[1] - 3, "#1d7249"); rect(s[0] - 1, 16 - s[1] + 4, 1, 3, "#58d68b"); rect(s[0] + 2, 16 - s[1] + 6, 1, 3, "#58d68b"); }); rect(6, 1, 3, 5, "#6b4a2a"); rect(6, 1, 3, 1, "#a07a46"); rect(6, 1, 1, 5, "#8a6238"); rect(10, 5, 2, 4, "#6b4a2a"); rect(10, 5, 2, 1, "#a07a46"); return; }
     if (kind === "bloom") { rect(7, 9, 2, 7, "#3a2a2a"); rect(4, 11, 3, 1, "#3a2a2a"); rect(9, 12, 3, 1, "#3a2a2a"); rect(5, 5, 6, 5, "#e8541a"); rect(6, 4, 4, 2, "#ff8a3d"); rect(7, 6, 2, 3, "#ffd25a"); rect(7, 7, 2, 1, "#fff2b0"); rect(3, 3, 1, 1, "#ffb13b", 0.8); rect(12, 4, 1, 1, "#ffb13b", 0.8); rect(11, 1, 1, 1, "#ffb13b", 0.6); return; }
     if (kind === "spike") { rect(3, 7, 3, 9, "#7fd6f0"); rect(4, 4, 1, 3, "#cdf6ff"); rect(3, 7, 1, 9, "#cdf6ff", 0.8); rect(7, 2, 3, 14, "#9fe8ff"); rect(8, 0, 1, 2, "#e6fbff"); rect(7, 2, 1, 14, "#ffffff", 0.7); rect(9, 6, 1, 10, "#5fb8d6", 0.7); rect(11, 8, 3, 8, "#7fd6f0"); rect(12, 5, 1, 3, "#cdf6ff"); rect(11, 8, 1, 8, "#cdf6ff", 0.8); return; }
     if (kind === "flower") {   // three stems with blooms; the colour comes from the variant (pink, yellow, blue, lilac)
@@ -2592,6 +2634,7 @@
   }
   function breakTile0(x, y) {
     var id = get(x, y), td = TILES[id];
+    if (rmask && x >= 0 && x < W && y >= 0 && y < H) rmask[y * W + x] = 0;
     if (td && td.gpart && garageBreak(x, y)) return;   // GARAGE: comes down all at once
     if (id === T.REALMORE) { S.st.realm++; if (S.st.realm === 1) toast("Realmstone! It hums like it wants to be somewhere else.", "#8affe0"); }
     if (td.kind === "realmgate") brokeGate(x, y);
@@ -7312,6 +7355,7 @@
   // ---- hosting ----
   function mpHost(pub, pvp) {
     if (MP.on) return; if (CLOUD.state === "guest") { MP.err = "Sign in (top right) to host your world."; renderMP(); return; }
+    if (!curId) { MP.err = "Open one of your worlds first (Continue or Worlds), then host it from here."; renderMP(); return; }
     MP.err = ""; MP.status = "Opening your world…"; renderMP();
     var e = curEntry();
     cloudCall("POST", "/api/mp/host", { name: e ? e.name : "My Swamp", pub: !!pub, pvp: !!pvp }).then(function (r) {
@@ -7397,7 +7441,7 @@
     toast("You joined " + MP.hostName + "'s world! Your backpack and gear came with you.", "#4ee6b4"); addChat("", "Joined " + MP.hostName + "'s world. Press Enter to chat."); renderMP();
   }
   function mpSaveChar() {   // guest: write the character back into your own world slot (the host's world is never saved here)
-    if (!MP.own) return; reslot(); S.hp = Math.max(1, Math.round(hp));
+    if (!MP.own || !MP.own.id) return; reslot(); S.hp = Math.max(1, Math.round(hp));
     var own = null; try { own = JSON.parse(localStorage.getItem(wkey(MP.own.id))); } catch (e) {} if (!own) return;
     MP_CHAR.forEach(function (k) { if (S[k] !== undefined) own[k] = S[k]; });
     try { localStorage.setItem(wkey(MP.own.id), JSON.stringify(own)); } catch (e) {}
@@ -7407,7 +7451,7 @@
     var wasGuest = MP.role === "guest" && MP.on, wasOn = MP.on;
     if (wasGuest) { mpSaveChar(); }
     MP.on = false; MP.role = ""; MP.peers = {}; MP.npeers = 0; MP.ws = null; MP.code = wasOn ? "" : MP.code; MP.status = ""; MP.why = ""; MP.sets.length = 0; MP.walls.length = 0;
-    if (wasGuest) { var own = readWorld(MP.own.id); MP.own = null; if (own) start(own); enemies.length = 0; bshots.length = 0; }
+    if (wasGuest) { var own = MP.own.id ? readWorld(MP.own.id) : null; MP.own = null; if (own) start(own); else { backdrop(); setTimeout(openTitle, 0); } enemies.length = 0; bshots.length = 0; }
     if (why && (wasOn || !MP.err)) { if (!wasOn) MP.err = why; toast(why, "#f2c14e"); }
     if (wasOn) addChat("", why || "Disconnected.");
     renderMP(); hbDirty = true;
@@ -9210,7 +9254,7 @@
       } else if (f.t - f.rest > 0.9) FALLING.splice(i, 1);   // it lies there a moment, then fades away (its wood is already on the ground)
     }
     if (fellQ.length) fellQ.length = 0;
-    regrowT -= dt; if (regrowT <= 0) { regrowT = 3; regrowLeaves(); }
+    regrowT -= dt; if (regrowT <= 0) { regrowT = 3; regrowLeaves(); grassGrow(); }
   }
   // LEAVES GROW BACK: a world tree you picked the leaves off (its trunk still standing) slowly fills its crown in again, a few leaves at a time,
   // and only while it is off screen, so nothing pops in in front of you.
@@ -9228,6 +9272,19 @@
       miss.sort(function (a2, b2) { return b2 - a2; });   // from the trunk outward and upward
       if (!ok || !miss.length) continue;
       for (var k = 0; k < Math.min(8, miss.length); k++) { i = miss[k]; setT(i % W, (i / W) | 0, T.LEAVES); } n++;
+    }
+  }
+  // GRASS GROWS ON DIRT: a dirt block left open to the sky slowly turns to grass in daylight (a few minutes of sun). It happens to dirt you
+  // placed and to dirt you uncovered by digging; mud flats the world was made with stay mud. A block you placed keeps its full square shape.
+  function grassGrow() {
+    if (cave || OCS || HOME || !isDayish() || (MP.on && MP.role === "guest")) return;
+    for (var n = 0; n < 24; n++) {
+      var x = Math.floor(p.x) + ((Math.random() * 240) | 0) - 120; if (x < 1 || x >= W - 1 || world.bio[x] !== 0) continue;
+      var y = col[x], i = y * W + x; if (y < 2 || y >= H - 1 || tiles[i] !== T.MUD) continue;
+      var up = tiles[i - W]; if (TILES[up].solid || up === T.WATER || up === T.LAVA) continue;
+      if (orig[i] === T.MUD && !TILES[orig[i - W]].solid) continue;   // open mud the world was made with
+      if (Math.random() > 0.15) continue;
+      var sh = S.shape ? S.shape[i] : undefined; setT(x, y, T.MOSS); if (sh !== undefined) { S.shape[i] = sh; shapeCount(); }
     }
   }
   function drawFalling(g) {
@@ -11229,12 +11286,13 @@
     how: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 014.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17.2v.1"/>'
   };
   function ttIcon(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TT_IC[k] + "</svg>"; }
-  function titleIsNew() { return !S.st.mined && !S.qi && wIdx && wIdx.list.length <= 1; }
+  function titleIsNew() { return !wIdx || !wIdx.list.length; }
+  function lastWorld() { return wIdx && (wEntry(wIdx.last) || wIdx.list.slice().sort(function (a, b) { return b.played - a.played; })[0]); }
   function titleSub() {
-    var w = curEntry(), bits = [w ? w.name : "Your world"];
-    if (S.diff === 0) bits.push("Easy"); else if (S.diff === 2) bits.push("Hard");
-    bits.push(S.qi >= MAIN.length ? "Story complete" : "Chapter " + Math.min(CHAPTERS.length - 1, curCh() + 1));
-    if (S.tier) bits.push(PICKS[S.tier].n);
+    var w = curId ? curEntry() : lastWorld(); if (!w) return "Your world";
+    var bits = [w.name]; if (w.diff === 0) bits.push("Easy"); else if (w.diff === 2) bits.push("Hard");
+    bits.push(w.trail >= MAIN.length ? "Story complete" : "Chapter " + Math.min(CHAPTERS.length - 1, (w.ch || 0) + 1));
+    if (w.tier) bits.push(PICKS[w.tier].n);
     return bits.join(" · ");
   }
   function renderTitle() {
@@ -11251,7 +11309,7 @@
       return;
     }
     var nw = titleIsNew(), n = wIdx ? wIdx.list.length : 1;
-    B.innerHTML = '<button type="button" class="tt-play" data-tt="play" data-fs-start><span class="tt-pi">' + ttIcon("play") + '</span><span class="tt-pt"><b>' + (nw ? "Start digging" : "Continue") + "</b><small>" + esc(nw ? "Your swamp is ready" : titleSub()) + "</small></span></button>"
+    B.innerHTML = '<button type="button" class="tt-play" data-tt="play" data-fs-start><span class="tt-pi">' + ttIcon("play") + '</span><span class="tt-pt"><b>' + (nw ? "Create your world" : "Continue") + "</b><small>" + esc(nw ? "Name it, pick a difficulty, start digging" : titleSub()) + "</small></span></button>"
       + '<nav class="tt-list" aria-label="Main menu">'
       + '<button type="button" data-tt="char" class="tt-char"><img alt="" src="' + charThumb(S.animal, 2) + '"><span>Character</span><em>' + esc(charName(S.animal).split(" ")[0]) + "</em></button>"
       + '<button type="button" data-tt="new">' + ttIcon("new") + "<span>New world</span></button>"
@@ -11284,6 +11342,7 @@
   function openTitle() {
     if (titleOpen || MP.on || MP.ws) return;
     bossGone(); save(); if (panelOpen) closePanel(); if (menuOpen) closeWorlds(); closeMPV();
+    if (curId) { touchIdx(); backdrop(); }   // your world stops running; the menu shows the scenery world
     keys.l = keys.r = keys.j = keys.d = keys.u = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
     titleOpen = true; TC.how = false; stageEl.classList.add("title"); titleEl.hidden = false; titleEl.classList.remove("in"); void titleEl.offsetWidth; titleEl.classList.add("in");
     cam.y = titleCamTarget(); renderTitle(); drawTitleLogo(performance.now());
@@ -11297,7 +11356,7 @@
     try { cv.focus({ preventScroll: true }); } catch (e) {}
   }
   function titleAct(k) {
-    if (k === "play") return closeTitle();
+    if (k === "play") { if (titleIsNew()) { openWorlds("new"); WL.came = "new"; return; } if (curId) return closeTitle(); return switchWorld(lastWorld().id); }   // WORLDS: Continue loads your last world now
     if (k === "char") return openChar();   // CHARACTERS
     if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
@@ -11341,6 +11400,7 @@
     return r("Music", "Changes with the land you are in.", optVol("mus", MUS.on ? MUS.vol : 0, "Music volume"))
       + r("Sound effects", "Digging, footsteps, hits and chimes.", optVol("fx", OPT.fx, "Sound effects volume"))
       + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
+      + r("Full screen", "Fills the whole screen. Delve does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
@@ -11354,8 +11414,14 @@
       + r("Lightning flashes", "Off keeps storms from lighting up the whole screen.", optSeg("flash", OPT.flash ? 1 : 0, [[1, "On"], [0, "Soft"]], "Lightning flashes"))
       + '<h3 class="pz-sub">Controls</h3>' + keymapRows();
   }
+  var FSPEND = null;
+  function fsWant() { if (FSPEND !== null) return FSPEND; try { return window.__gfs && window.__gfs.active ? 1 : 0; } catch (e) { return 0; } }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
     var i = spec.indexOf(":"), k = spec.slice(0, i), v = spec.slice(i + 1);
+    if (k === "fs") {   // full screen lives here now (no button on the page); the browser takes a moment to switch, so show the choice straight away
+      FSPEND = +v ? 1 : 0; try { if (window.__gfs) { if (+v) window.__gfs.enter(); else window.__gfs.leave(); } } catch (e) {}
+      setTimeout(function () { FSPEND = null; if (pauseOpen) renderPause(); else if (panelOpen && tab === "more") renderPanel(); }, 700); return;
+    }
     if (k === "mus") { var mv = clamp(Math.round(((MUS.on ? MUS.vol : 0) + 0.1 * +v) * 10) / 10, 0, 1); MUS.on = mv > 0; if (mv > 0) MUS.vol = mv; try { localStorage.setItem("swamp-delve-music", MUS.on ? "1" : "0"); localStorage.setItem("swamp-delve-musicvol", String(MUS.vol)); } catch (e) {} }
     else if (k === "fx") { OPT.fx = clamp(Math.round((OPT.fx + 0.1 * +v) * 10) / 10, 0, 1); if (FXB) FXB.gain.value = OPT.fx; try { if (typeof SFX !== "undefined" && SFX.vol) SFX.vol(OPT.fx); } catch (e) {} matHit(T.STONE !== undefined ? T.STONE : 1); }
     else if (k === "amb") OPT.amb = clamp(Math.round((OPT.amb + 0.1 * +v) * 10) / 10, 0, 1);
@@ -13421,7 +13487,7 @@
     var top = j; while (top > 0 && get(i, top - 1) === T.VINE) top--;
     var d0 = j - top, d1 = d0 + 1, end = get(i, j + 1) !== T.VINE, cx = sx + ts * (0.42 + (SW.hash(i, 0, 61) - 0.5) * 0.3);
     var x0 = cx + vineSway(i, d0, now) * ts, x1 = cx + vineSway(i, end ? d0 + 0.8 : d1, now) * ts, y0 = sy, y1 = end ? sy + ts * 0.8 : sy + ts, mx = (x0 + x1) / 2 + vineSway(i, d0 + 0.5, now) * ts * 0.35, my = (y0 + y1) / 2;
-    var vk = varAt(i), dk2 = vk === 3 ? "#1f4a26" : "#2a6a32", lt = vk === 3 ? "#3f7a3a" : vk === 1 ? "#6ac07a" : "#4fae4a";
+    var vk = varAt(i), dk2 = vk === 3 ? "#1f5a34" : "#1d7249", lt = vk === 3 ? "#3f8a46" : vk === 1 ? "#7ade8e" : "#3fae78";
     g.lineCap = "round"; g.strokeStyle = dk2; g.lineWidth = Math.max(1.5, ts * 0.1); g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(mx, my, x1, y1); g.stroke();
     g.strokeStyle = lt; g.lineWidth = Math.max(1, ts * 0.04); g.beginPath(); g.moveTo(x0 - ts * 0.02, y0); g.quadraticCurveTo(mx - ts * 0.02, my, x1 - ts * 0.02, y1); g.stroke();
     for (var k = 0; k < 2; k++) {   // two leaves per block, on alternating sides
@@ -13478,7 +13544,7 @@
       WG[c] = L; if (L) { anyLamp = true; var lrc = lightRGB(id); CRG[c] = (L * lrc[0] / 255) | 0; CGG[c] = (L * lrc[1] / 255) | 0; CBG[c] = (L * lrc[2] / 255) | 0; } else CRG[c] = CGG[c] = CBG[c] = 0;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
-      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
+      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(rmask && X >= 0 && X < W && Y >= 0 && Y < H && rmask[Y * W + X] === id) && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : 10) * LQ);
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
@@ -14539,10 +14605,10 @@
   // block to block, knots, palm rings, frost; the foot flares into roots; a block beside a leafy tuft grows a bough into it; root and branch
   // blocks become buttress roots and boughs. Logs in buildings, logs you placed and bare snags keep their block look.
   var CPAL = {   // index 1 outline, 2-6 dark to light, 7 accent (blossom, snow, coconut, lichen)
-    0: ["#10261a", "#1a4a2c", "#23673a", "#2f8746", "#4aa956", "#7ccb6a", "#b6e88a"],
+    0: ["#0d2a1e", "#145038", "#1d7249", "#2f9a6a", "#3fae78", "#58d68b", "#9bf5bf"],   // ONE GREEN: the same greens as the grass (GRASSP[0]: lip, top, tuft, highlight)
     1: ["#4a1630", "#8c2f5c", "#b8487a", "#d86a98", "#f08fb6", "#ffc2da", "#fff3f8"],
     2: ["#163514", "#24561f", "#33742a", "#46913a", "#64b04c", "#94d26a", "#7a4a22"],
-    3: ["#0a1a0e", "#13301a", "#1c4524", "#275a2e", "#3a743a", "#5c9446", "#a8c060"],
+    3: ["#0a1a10", "#113020", "#18462a", "#1f5a34", "#2d6e3c", "#3f8a46", "#a8c060"],   // Dark Oakwood grass greens (GRASSP[3])
     4: ["#0a1f1d", "#12352f", "#1b4a3f", "#24604f", "#337a62", "#c6dbe8", "#f4fbff"] };
   var BPAL = {   // bark: 1 outline, 2 dark, 3 mid, 4 light, 5 highlight, 6 frost
     0: ["#24140a", "#4a2e18", "#6a4426", "#8a5c34", "#a87a4a", "#eef6fb"],
@@ -15382,6 +15448,8 @@
       }
       if (wv) { var cw = walls[gi]; worigW[gi] = wv; if (!cw) { walls[gi] = wv; delete wedits[gi]; } else if (cw !== wv) wedits[gi] = cw; else delete wedits[gi]; }
     }
+    if (!rmask) rmask = new Uint16Array(W * H);
+    for (yy = 0; yy < P.h; yy++) for (xx = 0; xx < P.w; xx++) { var gi2 = (P.y0 + yy) * W + P.x0 + xx, id2 = P.t[yy * P.w + xx]; if (id2 && TILES[id2].solid && tiles[gi2] === id2) rmask[gi2] = id2; }   // still walk-past (see rmask)
     for (var cx = Math.max(0, P.x0 - 1); cx <= Math.min(W - 1, P.x0 + P.w); cx++) recalc(cx);
     q.pic = null; q.razed = 1; if (!S.razed) S.razed = {}; S.razed[q.id] = 1; S.st.razed = (S.st.razed || 0) + 1;
     editN++; wallN++; buildN++; if (typeof M !== "undefined" && M) M.img = null; MAPB = null;
@@ -17113,7 +17181,8 @@
       var stp = function (attr, val, label) { return '<span class="op-stp"><button type="button" class="btn ghost" ' + attr.replace("%", "-1") + ' aria-label="' + esc(label) + ' down">&minus;</button><b>' + val + '</b><button type="button" class="btn ghost" ' + attr.replace("%", "1") + ' aria-label="' + esc(label) + ' up">+</button></span>'; };
       var row = function (name, hint, ctl) { return '<div class="op-row"><div><b>' + name + "</b>" + (hint ? "<small>" + hint + "</small>" : "") + "</div>" + ctl + "</div>"; };
       var card = function (title, body) { return '<section class="op-card"><h3>' + title + "</h3>" + body + "</section>"; };
-      h += card("This world",
+      if (curId && !titleOpen && !MP.on && !MP.ws) h += '<button type="button" class="op-tomenu" data-tomenu>' + pzIcon("home") + "<span><b>Return to menu</b><small>Saves your world first</small></span></button>";
+      if (curId) h += card("This world",
         row(esc(curEntry() ? curEntry().name : "My Swamp"), "Day " + ((S.days | 0) + 1) + " · saves automatically", '<span class="op-btns"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Worlds</button></span>')
         + row("Difficulty", esc(dif().d), '<span class="sbx-diff op-seg">' + DIFF.map(function (D, i) { return '<button type="button" class="btn' + (S.diff === i ? "" : " ghost") + '" data-diff="' + i + '" aria-pressed="' + (S.diff === i) + '" style="--dc:' + D.c + '">' + D.n + "</button>"; }).join("") + "</span>")
         + row("Keep inventory", "On: you keep everything when you pass out. Off: you lose some of your loot.", sw("data-keepinvtoggle", S.keepInv, "Keep inventory"))
@@ -17726,6 +17795,7 @@
     if (t.hasAttribute("data-layout")) return openLayout();
     if (t.hasAttribute("data-ui")) { var uv = +t.getAttribute("data-ui"); setUi(uv === 0 ? 1 : UIS + uv * 0.1); return renderPanel(); }
     if (t.hasAttribute("data-zoom")) { var Z = [0.8, 1, 1.25, 1.5, 2], zi = clamp(Z.indexOf(S.zoom) + +t.getAttribute("data-zoom"), 0, Z.length - 1); S.zoom = Z[zi]; resize(); return renderPanel(); }
+    if (t.hasAttribute("data-tomenu")) { pauseBack = false; closePanel(); return openTitle(); }
     if (t.hasAttribute("data-camp")) { respawn("Back at camp."); return closePanel(); }
     if (t.hasAttribute("data-wl-open")) return openWorlds();
   }
@@ -20348,17 +20418,16 @@
     srcs.push([(px - ox) / ts, (py - oy) / ts, 5, 0.8]); glows2.push([px, py, "255,214,110", 3, 0.2 * fl]);
     g.font = signFont(Math.max(8, Math.round(k * 0.24))); g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText("LIFT", x0 + w / 2, y0 - k * 0.42); g.fillStyle = "#f2c14e"; g.fillText("LIFT", x0 + w / 2, y0 - k * 0.42); g.textBaseline = "alphabetic";
   }
-  // BUILDING NAME BOARDS: a little post with the building's name in the SwampRealms font, standing on the ground just past the
-  // building's picture on its door side, so you can read what a place is before you walk in. Skipped where the ground there is uneven.
+  // BUILDING NAME BOARDS: the building's name in the SwampRealms font on a board hung on the wall over its door. It belongs to the
+  // picture, not the ground, so it never falls or jumps when you dig near the house.
   function drawBldSigns(g) {
     var L = world.structs; if (!L || !L.length) return; var k = ts;
     for (var i = 0; i < L.length; i++) {
       var q = L[i]; if (q.razed || !q.name || q.outX === undefined) continue;
-      var dir = q.outX >= q.dx ? 1 : -1, bx = dir > 0 ? (q.mx1 !== undefined ? q.mx1 : q.outX) + 1 : (q.mx0 !== undefined ? q.mx0 : q.outX) - 1;
-      if (bx < 0 || bx >= W) continue; var gy = -1; for (var yy = q.gy - 2; yy <= q.gy + 2; yy++) if (blocks(bx, yy)) { gy = yy; break; } if (gy < 0 || blocks(bx, gy - 1) || blocks(bx, gy - 2)) continue;
-      var sx = ox + (bx + 0.5) * ts, sy = oy + gy * ts; if (sx < -k * 4 || sx > vw + k * 4 || sy < -k * 3 || sy > vh + k * 3) continue;
-      g.font = signFont(Math.max(8, Math.round(k * 0.27))); var tw = g.measureText(q.name).width, bw = tw + k * 0.4, bh = k * 0.5, by = sy - k * 1.6;
-      g.fillStyle = "#3a2412"; g.fillRect(sx - k * 0.05, by + bh * 0.5, k * 0.1, sy - by - bh * 0.5);
+      var sx = ox + (q.dx + 0.5) * ts, sy = oy + (q.gy - 2) * ts;   // hung on the wall over the door: part of the house, so digging around it never moves it
+      if (sx < -k * 4 || sx > vw + k * 4 || sy < -k * 3 || sy > vh + k * 3) continue;
+      g.font = signFont(Math.max(8, Math.round(k * 0.27))); var tw = g.measureText(q.name).width, bw = tw + k * 0.4, bh = k * 0.5, by = sy - bh - k * 0.12;
+      g.fillStyle = "#1c120a"; g.fillRect(sx - bw * 0.36, by - k * 0.1, Math.max(1, k * 0.05), k * 0.1); g.fillRect(sx + bw * 0.36, by - k * 0.1, Math.max(1, k * 0.05), k * 0.1);   // two little hooks
       g.fillStyle = "#2e1c0e"; g.fillRect(sx - bw / 2 - 2, by - 2, bw + 4, bh + 4); g.fillStyle = "#8a5a32"; g.fillRect(sx - bw / 2, by, bw, bh); g.fillStyle = "#a8743a"; g.fillRect(sx - bw / 2, by, bw, Math.max(1, bh * 0.14));
       g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#f6e3b8"; g.fillText(q.name, sx, by + bh * 0.56); g.textBaseline = "alphabetic";
     }
@@ -21557,7 +21626,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };

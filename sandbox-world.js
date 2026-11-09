@@ -398,8 +398,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
       return { id: idx, ki: P.ki, kind: K.k, name: K.n, b: K.b, x0: x0, x1: x1, w: w, gy: gy, bh: bh, side: side, dx: dx, outX: ox2, doorY: gy - 1, mx0: bx0, mx1: bx1, my0: by0 };
     }
     // one slot every ~58 columns; each tries its kinds for the biome there (hash picks the order) with a few nudges left and right
-    for (slot = 0, x = 34; x < W - 34; slot++, x += GEN_SPARSE ? 120 : 58) {
-      if (GEN_SPARSE && Math.abs(x - SPAWNX) > 120 && hash(slot, 739, seed) < 0.2) continue;   // a few open stretches with nothing built
+    for (slot = 0, x = 34; x < W - 34; slot++, x += GEN_SPARSE > 1 ? 320 : GEN_SPARSE ? 120 : 58) {
+      if (GEN_SPARSE && Math.abs(x - SPAWNX) > 120 && hash(slot, 739, seed) < (GEN_SPARSE > 1 ? 0.35 : 0.2)) continue;   // a few open stretches with nothing built
       var cx0 = x + Math.floor(hash(slot, 735, seed) * 40) - 10, bb = bio[Math.min(W - 1, Math.max(0, cx0))], kinds = [];
       for (i = 0; i < STRUCT_KINDS.length; i++) if (STRUCT_KINDS[i].b === bb && !STRUCT_KINDS[i].solo && !STRUCT_KINDS[i].nw) kinds.push(i);
       if (!kinds.length) continue;
@@ -427,6 +427,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     // NEW BUILDINGS: their own pass after everything else (only in new land), a few of each, spread out
     if (nw) STRUCT_KINDS.forEach(function (K, ki) {
       if (!K.nw) return;
+      if (GEN_SPARSE > 1 && GEN_EDGE && hash(ki, 773, seed) < 0.6) return;   // open land: past the middle, most places have only some of the newer buildings (the middle keeps one of each for the Grand Tour)
       var cols = 0; for (x = 0; x < W; x++) if (bio[x] === K.b && (!sub || (sub[x] ? 1 : 0) === K.sub)) cols++;
       if (cols < 120) return;
       var want = GEN_SPARSE ? 1 : Math.max(1, Math.min(3, Math.round(cols / 420))), made = 0;
@@ -858,8 +859,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
         }
         return null;
       }
-      for (var sx = 50, sl = 0; sx < W - 50; sx += GEN_SPARSE ? 150 : 100, sl++) {
-        if (hash(sl, 960, seed) < (GEN_SPARSE ? 0.3 : 0.22)) continue;
+      for (var sx = 50, sl = 0; sx < W - 50; sx += GEN_SPARSE > 1 ? 300 : GEN_SPARSE ? 150 : 100, sl++) {
+        if (hash(sl, 960, seed) < (GEN_SPARSE > 1 ? 0.4 : GEN_SPARSE ? 0.3 : 0.22)) continue;
         var cx0 = sx + Math.floor(hash(sl, 964, seed) * 60) - 30, L = LIST[bio[clamp0(cx0)] + ":" + (sub[clamp0(cx0)] ? 1 : 0)], kind = L[Math.floor(hash(sl, 965, seed) * L.length)];
         if (kind === "treehouse") { var th2 = treehouse(cx0); if (th2) marks.push({ k: "treehouse", x: th2.x, y: th2.y, n: th2.n }); continue; }
         var D2 = B[kind];
@@ -1078,7 +1079,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
     var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
     for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
-    var core; GEN_VAR = bv.c ? 1 : 0; GEN_SPARSE = bv.sp ? 1 : 0;
+    var core; GEN_VAR = bv.c ? 1 : 0; GEN_SPARSE = bv.sp | 0;
     try { core = gen(seed); } finally { GEN_VAR = 0; GEN_SPARSE = 0; }   // exactly the original map (W = CORE_W here), so old saves line up
     POST.forEach(function (f) { f(core); });
     for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); wwl.set(core.walls.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); }
@@ -1088,7 +1089,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     [-1, 1].forEach(function (sd) {
       var prev = sd < 0 ? 2 : 1, edge = sd < 0 ? EXT : EXT + CORE_W, n = 0;
       while (sd < 0 ? edge > 0 : edge < WW) {
-        var w = 480 + Math.floor(hash(n, sd * 977, seed) * 241), b = (prev + 1 + Math.floor(hash(n, sd * 978, seed) * 2)) % 3;   // never the same biome twice in a row
+        var w = bv.sp > 1 ? 760 + Math.floor(hash(n, sd * 977, seed) * 401) : 480 + Math.floor(hash(n, sd * 977, seed) * 241),   // OPEN LAND (sp 2, worlds from now on): each land past the middle is about half as wide again, with far fewer buildings
+          b = (prev + 1 + Math.floor(hash(n, sd * 978, seed) * 2)) % 3;   // never the same biome twice in a row
         var a = sd < 0 ? Math.max(0, edge - w) : edge, z = sd < 0 ? edge : Math.min(WW, edge + w);
         if (z - a < 160) { if (lay[sd].length) { var L = lay[sd][lay[sd].length - 1]; if (sd < 0) L[0] = 0; else L[1] = WW; } break; }   // a sliver at the very end joins the last segment
         lay[sd].push([a, z, b]); prev = b; edge = sd < 0 ? a : z; n++;
@@ -1100,7 +1102,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
     var n = wd.done[sd], seg = wd.lay[sd][n]; if (!seg) return null;
     var a = seg[0], z = seg[1], w = z - a, b = seg[2], WW = wd.W, y, k;
-    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], bv = wd.bv || { L: 99, R: 99 }; GEN_SPARSE = bv.sp ? 1 : 0;
+    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], bv = wd.bv || { L: 99, R: 99 }; GEN_SPARSE = bv.sp | 0;
     W = w; SPAWNX = -100000; GEN_AERIE = false;
     GEN_VAR = n >= (sd < 0 ? bv.L : bv.R) ? (hash(n, sd * 979, wd.seed) < 0.4 ? 2 : 1) : 0;   // newer segments: some are all variant land, the rest get patches
     if (b === 2) { B_FROST = w + 200; B_EMBER = w + 400; } else if (b === 0) { B_FROST = -200; B_EMBER = w + 200; } else { B_FROST = -400; B_EMBER = -200; }

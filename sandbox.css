@@ -2259,3 +2259,9 @@ small.bo-cost{display:flex}
 .sbx-trail.nudge{animation:sbxNudge .65s ease 4}
 @keyframes sbxNudge{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 3px var(--qc,#4ee6b4),0 0 22px var(--qc,#4ee6b4)}}
 @media (prefers-reduced-motion:reduce){.sbx-trail.nudge{animation:none;box-shadow:0 0 0 2px var(--qc,#4ee6b4)}}
+
+/* Options: the big way out, at the very top (phones have no Esc key) */
+.op-tomenu{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:14px 16px;border-radius:16px;border:1px solid #4ee6b455;background:linear-gradient(180deg,#1d5a45,#123c2e);color:#eafff5;cursor:pointer;text-align:left;box-shadow:0 4px 0 #0a2219}
+.op-tomenu:active{transform:translateY(2px);box-shadow:0 2px 0 #0a2219}
+.op-tomenu svg{width:26px;height:26px;flex:none}
+.op-tomenu b{display:block;font:900 1.05rem Nunito,sans-serif}.op-tomenu small{display:block;opacity:.75;font:700 .78rem Nunito,sans-serif}

@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=cardback1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui62-packworlds-brains-calmui">
+<link rel="stylesheet" href="sandbox.css?v=ui63-shell">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -119,9 +119,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
   <canvas id="sbxCv" aria-label="The Delve world. Dig, build and explore."></canvas>
   <div class="sbx-hud">
    <div class="sbx-ibtns">
-    <a class="sbx-ibtn" href="arcade.html" aria-label="Back to the Arcade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
     <button type="button" class="sbx-ibtn sbx-emobtn" id="sbxEmoBtn" aria-label="Emotes (T)" title="Emotes (T)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.2c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><path d="M9 9.6h.01M15 9.6h.01"/></svg></button>
-    <button type="button" class="sbx-ibtn" id="fsb" data-fs aria-pressed="false" aria-label="Enter full screen"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
    </div>
    <div class="sbx-loc" id="sbxLoc" role="status"><i aria-hidden="true"></i><div><b id="sbxBiome">Murkwater Swamp</b><span id="sbxSub"></span></div></div>
    <div class="sbx-mpchip" id="sbxMPChip" role="button" tabindex="0" aria-label="Multiplayer room" hidden></div>
@@ -170,7 +168,6 @@ html.dl-on,html.dl-on body{overflow:hidden}
    <div class="tt-foot">
     <a class="tt-link" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>SwampRealms home</a>
     <a class="tt-link" href="arcade.html">More games</a>
-    <button type="button" class="tt-fs gfs" data-fs aria-pressed="false" aria-label="Enter full screen" title="Full screen (G)"><svg class="en" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
    </div>
   </section>
   <section class="sbx-panel" id="sbxPanel" aria-label="Journal: crafting, map and goals" hidden>
@@ -237,19 +234,19 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="store.js?v=cos4" onload="__dl('store')"></script>
 <script src="account.js?v=itch2" onload="__dl('account')"></script>
 <script src="menu.js" onload="__dl('menu')"></script>
-<script src="sandbox-world.js?v=delve38-trees" onload="__dl('world')"></script>
+<script src="sandbox-world.js?v=delve39-openland" onload="__dl('world')"></script>
 <script src="sandbox-extra.js?v=extra-mallet" onload="__dl('extra')"></script>
 <script src="sandbox-cave.js?v=cave31-isles" onload="__dl('cave')"></script>
 <script src="sandbox-ocean.js?v=ocean2-tides" onload="__dl('ocean')"></script>
 <script src="delve-avatar.js?v=delve9-strides" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="sandbox.js?v=delve300-noteleport" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve301-worlds" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.
   // If the browser still takes Esc to leave (Firefox, Safari), the game gets the same Esc here, and your next tap goes back to full screen.
   var __escT = 0; addEventListener("keydown", function (e) { if (e.key === "Escape") __escT = Date.now(); }, true);
-  GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG",keepEsc:true,onEsc:function () {
+  window.__gfs = GameFS.attach({stage:"#sbxStage",start:"[data-fs-start]",key:"KeyG",keepEsc:true,onEsc:function () {
     if (Date.now() - __escT < 400) return;   // the game already saw this Esc
     try { window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true })); } catch (e) {}
   }});
