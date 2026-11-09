@@ -1263,7 +1263,11 @@
     var i = ix % W, j = (ix / W) | 0; if (i < 2 || i >= W - 2 || j < 2 || j >= H - 2) return 0;
     var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !rampFree(tiles[ix - W])) return 0;
     var sL = TILES[tiles[ix - 1]].solid, sR = TILES[tiles[ix + 1]].solid;
-    if (sL === sR) return 0;   // flat ground, a wall on both sides, or a lone peak
+    var step = function (k) { return rampFree(tiles[k]) && TILES[tiles[k + W]].solid; };   // open beside, with ground one block lower
+    if (!sL && !sR) return step(ix - 1) && step(ix + 1) ? 1 : 0;   // a lone block sticking up one step: a low half-height bump (like Terraria's smoothing)
+    var m = sL ? ix - 1 : ix + 1, mo = sL ? -1 : 1;   // a mound two blocks wide and one high: both halves become a low bump
+    if (step(ix - mo) && NATC[tiles[m]] && tiles[m] === orig[m] && rampFree(tiles[m - W]) && !TILES[tiles[m + mo]].solid && step(m + mo) && !TILES[tiles[ix - mo]].solid && S.shape[m] === undefined) return 1;
+    if (sL === sR) return 0;   // flat ground or a wall on both sides
     var low = sL ? 1 : -1, n = ix + low;   // the open side
     if (!rampFree(tiles[n]) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
     // (a mound two blocks wide slopes on both sides into a little hump, so the grass runs over it unbroken)
@@ -1271,7 +1275,7 @@
   }
   function rampFree(id) {   // open, or just a plant (wild or one you planted: it stands on the slope)
     if (id === T.AIR) return true; var td = TILES[id]; if (!td || td.solid || td.liquid || id === T.WATER || id === T.LAVA || id === T.LEAVES || id === T.VINE) return false;
-    if (td.kind === "door" || td.kind === "ladder" || td.kind === "chest" || td.hatch || td.light || /torch|lantern|lamp|candle|sign|post|fence|pot/i.test((td.kind || "") + " " + (td.n || ""))) return false;   // lights and placed things want a flat block under them
+    if (td.kind === "door" || td.kind === "ladder" || td.kind === "chest" || td.hatch || /torch|lantern|lamp|candle|sign|post|fence|flower ?pot|planter/i.test((td.kind || "") + " " + (td.n || ""))) return false;   // lights and placed things want a flat block under them
     return !!(td.sway || td.tier === 0 || matOf(id) === "plant" || /reed|bloom|glowcap|flower|shroom|mushroom|grass|fern|tuft|plant|bush|cattail|cactus|shell|petal|sapling|crop|seed|sprout|herb|berry/i.test((td.kind || "") + " " + (td.n || "")));
   }
   function shapeAt(ix) { var v = S.shape[ix]; return v !== undefined ? v : autoShape(ix); }
@@ -13027,7 +13031,7 @@
     if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }   // FARM GATE: drawn big by drawFarmGates
     var shp = SHAPEN && !cave ? shapeAt(j * W + i) : 0;
     if (shp) { shapeDraw(g, i, j, sx3, sy, now, shp); return; }   // MALLET: a half-block or ramp
-    if (SHAPEN && !cave && j < H - 1 && tiles[j * W + i] !== T.AIR && !TILES[tiles[j * W + i]].solid) { var bs = shapeAt((j + 1) * W + i); if (bs === 2 || bs === 3) { g.save(); g.translate(0, Math.round(ts * 0.5)); drawCell0(g, i, j, sx3, sy, now); g.restore(); return; } }   // AUTO RAMPS: a plant on a slope settles onto it
+    if (SHAPEN && !cave && j < H - 1 && tiles[j * W + i] !== T.AIR && !TILES[tiles[j * W + i]].solid) { var bs = shapeAt((j + 1) * W + i); if (bs === 1 || bs === 2 || bs === 3) { g.save(); g.translate(0, Math.round(ts * 0.5)); drawCell0(g, i, j, sx3, sy, now); g.restore(); return; } }   // AUTO RAMPS: a plant on a slope settles onto it
     drawCell0(g, i, j, sx3, sy, now); if (S.stain[j * W + i] !== undefined) drawStain(g, i, j, sx3, sy);
     var ft = TILES[tiles[j * W + i]];
     if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles[(j - 1) * W + i]; if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
@@ -13039,12 +13043,19 @@
   // edge (grass on mossy ground, a lit edge on ramps you stand on, a shadow on ceiling ramps), and a dark outline on building blocks.
   var SHPOLY = [null, [[0, 0.5], [1, 0.5], [1, 1], [0, 1]], [[1, 0], [1, 1], [0, 1]], [[0, 0], [1, 1], [0, 1]], [[0, 0], [1, 0], [0, 1]], [[0, 0], [1, 0], [1, 1]]];
   var SHEDGE = [null, [0, 0.5, 1, 0.5], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 1], [0, 0, 1, 1]];
+  function halfRound(g, i, j, sx, sy, top) {   // a half-block's outline with its open top corners rounded off (only on natural ground)
+    var rl = !TILES[get(i - 1, j)].solid && !walls[j * W + i - 1], rr = !TILES[get(i + 1, j)].solid, r = ts * 0.24, y0 = sy + ts * top;
+    g.beginPath(); g.moveTo(sx, sy + ts * 1.2);
+    if (rl) { g.lineTo(sx, y0 + r); g.quadraticCurveTo(sx, y0, sx + r, y0); } else g.lineTo(sx, y0);
+    if (rr) { g.lineTo(sx + ts - r, y0); g.quadraticCurveTo(sx + ts, y0, sx + ts, y0 + r); } else g.lineTo(sx + ts, y0);
+    g.lineTo(sx + ts, sy + ts * 1.2); g.closePath();
+  }
   function shapeDraw(g, i, j, sx, sy, now, sh) {
     var ix = j * W + i, under = j > col[i] && j > world.top[i], id = tiles[ix], td = TILES[id];   // (a sloped block on the top of the ground shows the sky above its slope, not cave rock)
     if (walls[ix]) drawWall(g, walls[ix], i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
     var P = SHPOLY[sh], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]);
     var x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, nat = NATC[id] ? id : SMGEM[id] ? orePal(td) : 0;
-    g.save(); g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); g.clip();
+    g.save(); if (sh === 1 && NATC[id]) halfRound(g, i, j, sx, sy, 0.5); else { g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); } g.clip();
     if (nat) {   // natural ground: just the body (no flat-top grass, no rounded corners, no seams), so nothing pokes out of the new shape
       natBody(g, nat, i, j, sx, sy, false, false, false, false);
       if (SMGEM[id]) smDraw(g, varAt(i), id, 0, 0, 16, 16, sx, sy, ts, ts);
@@ -13070,7 +13081,7 @@
     var id = tiles[j * W + i], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]), x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, k, GP, hh = function (q) { return SW.hash(i, j, q + 300); };
     // along the cut, inside the block: top-lit for a floor (it is now the top), shadowed for a ceiling ramp. It may reach a little into the
     // solid block beside or below (that is why this runs after all the blocks), but never above the cut.
-    g.save(); g.beginPath(); g.rect(sx - ts * 0.25, sy - ts * 0.45, ts * 1.5, ts * 1.7); g.clip();
+    g.save(); if (sh === 1 && NATC[id]) halfRound(g, i, j, sx, sy, 0.5); else { g.beginPath(); g.rect(sx - ts * 0.25, sy - ts * 0.45, ts * 1.5, ts * 1.7); } g.clip();
     g.translate(x0, y0); g.rotate(ang); if (sh === 5) g.scale(1, -1);   // local frame: x runs along the cut, +y points into the block
     if (floor && id === T.MOSS) {
       GP = GRASSP[varAt(i)] || GRASSP[0];
@@ -13084,7 +13095,7 @@
     }
     g.restore();
     // on top of the cut: the grass lip and tufts, a crisp lit edge, or an outline
-    g.save(); g.beginPath(); g.rect(sx - 1, sy - ts * 0.45, ts + 2, ts * 1.45); g.clip(); g.translate(x0, y0); g.rotate(ang); if (sh === 5) g.scale(1, -1);
+    g.save(); if (sh === 1 && NATC[id]) halfRound(g, i, j, sx, sy, 0.44); else { g.beginPath(); g.rect(sx - 1, sy - ts * 0.45, ts + 2, ts * 1.45); } g.clip(); g.translate(x0, y0); g.rotate(ang); if (sh === 5) g.scale(1, -1);
     g.lineCap = "round";
     if (floor && id === T.MOSS) {
       GP = GRASSP[varAt(i)] || GRASSP[0];
