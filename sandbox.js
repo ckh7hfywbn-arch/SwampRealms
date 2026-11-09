@@ -9141,17 +9141,25 @@
   }
   function tickFell(dt) {
     for (var i = FALLING.length - 1; i >= 0; i--) {
-      var f = FALLING[i]; f.t += dt;
-      if (!f.land) {
-        f.va += (0.8 + Math.sin(Math.abs(f.a)) * 7.5) * dt; f.a += f.va * dt * f.dir;   // slow to start, then it really goes
-        if (Math.abs(f.a) >= 1.48) {   // down: the wood and the rest drop where each piece came to rest
-          f.a = 1.48 * f.dir; f.land = f.t; thud(90, 0.14); shake = Math.max(shake, 0.18);
+      var f = FALLING[i], A = 1.5 * f.dir; f.t += dt;
+      if (f.st === undefined) { f.st = 0; f.a = 0; f.va = 0; f.hit = 0; }
+      if (f.st === 0) {   // a creak: it shivers and starts to lean
+        f.a = f.dir * (0.05 * Math.min(1, f.t / 0.3)) + Math.sin(f.t * 40) * 0.006 * (1 - f.t / 0.3);
+        if (f.t >= 0.3) { f.st = 1; f.va = 0.35; }
+      } else if (f.st === 1) {   // it goes over like a real tree: slow at first, faster as it leans (a hinged pole under gravity)
+        f.va += (1.2 + 9 * Math.sin(Math.abs(f.a))) * dt; f.a += f.va * dt * f.dir;
+        if (Math.random() < dt * 14) { var t3 = Math.random() * f.h, cx3 = f.px + Math.sin(f.a) * t3, cy3 = f.py - Math.cos(f.a) * t3; parts.push({ x: cx3, y: cy3, vx: (Math.random() - 0.5) * 2, vy: Math.random(), life: 1.1, max: 1.1, c: Math.random() < 0.5 ? "#58b455" : "#3a8a44", s: 3 }); }   // leaves shaken loose on the way down
+        if (Math.abs(f.a) >= 1.5) {   // the first hit: thud, shake, a burst of leaves, and the wood drops where it lands
+          f.a = A; f.va = -f.va * 0.22; f.st = 2; f.hit = f.t; thud(90, 0.14); shake = Math.max(shake, 0.22);
           var ca = Math.cos(f.a), sa = Math.sin(f.a);
           f.items.forEach(function (it) { var rx = it[1] + 0.5 - f.px, ry = it[2] + 0.5 - f.py, wx = f.px + rx * ca - ry * sa, wy = f.py + rx * sa + ry * ca; var gx = clamp(Math.floor(wx), 1, W - 2), gy = Math.min(Math.floor(wy), col[gx] - 1); spawnDrop(it[0], 1, gx, gy - 0.5); });
-          for (var k = 0; k < 30; k++) { var t2 = Math.random() * (f.h + 3), lx = f.px + Math.sin(f.a) * t2, ly = f.py - Math.cos(f.a) * t2 * 0.2; parts.push({ x: lx, y: ly - 0.3, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3, life: 0.9, max: 0.9, c: Math.random() < 0.5 ? "#58b455" : "#3a8a44", s: 3 }); }
+          for (var k = 0; k < 34; k++) { var t2 = Math.random() * (f.h + 3), lx = f.px + Math.sin(f.a) * t2, ly = f.py - Math.cos(f.a) * t2 * 0.2; parts.push({ x: lx, y: ly - 0.3, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3.2, life: 1, max: 1, c: Math.random() < 0.5 ? "#58b455" : "#3a8a44", s: 3 }); }
           chips(f.px + f.dir * (f.h * 0.5), f.py - 0.3, "#8a6450", 14, 6);
         }
-      } else if (f.t - f.land > 0.45) FALLING.splice(i, 1);
+      } else if (f.st === 2) {   // a small bounce, then it settles flat
+        f.va += 9 * dt; f.a += f.va * dt * f.dir;
+        if (Math.abs(f.a) >= 1.5 && f.va > 0) { f.a = A; if (f.va > 0.4) { f.va = -f.va * 0.3; thud(110, 0.04); } else { f.va = 0; f.st = 3; f.rest = f.t; } }
+      } else if (f.t - f.rest > 0.9) FALLING.splice(i, 1);   // it lies there a moment, then fades away (its wood is already on the ground)
     }
     if (fellQ.length) fellQ.length = 0;
     regrowT -= dt; if (regrowT <= 0) { regrowT = 3; regrowLeaves(); }
@@ -9176,14 +9184,17 @@
   }
   function drawFalling(g) {
     if (!FALLING.length || cave) return;
-    var u = ts / 16, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
+    var u = ts / 16, sm = g.imageSmoothingEnabled;
     FALLING.forEach(function (f) {
-      var al = f.land ? Math.max(0, 1 - (f.t - f.land) / 0.45) : 1; if (al <= 0) return;
-      g.save(); g.globalAlpha = al; g.translate(ox + f.px * ts, oy + f.py * ts); g.rotate(f.a);
+      var al = f.st === 3 ? Math.max(0, 1 - Math.max(0, f.t - f.rest - 0.45) / 0.45) : 1; if (al <= 0) return;
+      var sink = f.st === 3 ? Math.max(0, f.t - f.rest - 0.45) * 0.25 : 0;
+      g.save(); g.globalAlpha = al; g.translate(ox + f.px * ts, oy + (f.py + sink) * ts); g.rotate(f.a);
+      g.imageSmoothingEnabled = Math.abs(f.a) > 0.002;   // a tilted picture is smoothed: nearest-neighbour stair-steps crawl along the edges as it turns
       g.drawImage(f.cv, f.ox * ts, f.oy * ts, f.cv.width * u, f.cv.height * u); g.restore();
     });
     g.imageSmoothingEnabled = sm;
   }
+
   // ---- leaf decay ----
   function leafCheck(cx, cy, r, fast) {   // every leaf in the box that cannot reach a log through 5 leaves starts to wither
     var x0 = cx - r, x1 = cx + r, y0 = Math.max(1, cy - r - 4), y1 = Math.min(H - 2, cy + r), bw = x1 - x0 + 1, dist = {}, q = [], x, y, k;
@@ -14613,8 +14624,8 @@
         if (CANT_PX > 4e6) { CANT.clear(); CANT_PX = 0; }
         e = { sig: sig, n: n, cv: cv, x0: x0, y0: y0 }; CANT.set(mn, e); CANT_PX += cv.width * cv.height;
       }
-      var u = ts / 16, sw = 0;   // (no wind shift: in pixel art a crown can only jump a whole pixel, which read as a jitter)
-      g.drawImage(e.cv, Math.round(ox + (e.x0 - M) * ts + sw * u), Math.round(oy + (e.y0 - M) * ts), e.cv.width * u, e.cv.height * u);
+      var u = ts / 16, sw = reduce ? 0 : Math.round((Math.sin(tt * 0.9 + (mn % 997) * 0.37) * 0.8 + Math.sin(tt * 2.1 + mn % 13) * 0.2) * Math.max(1, dpr) * ts / 28) / Math.max(1, dpr) / u;   // a gentle sway in the wind, in device-pixel steps (whole art-pixel jumps read as a jitter)
+      var dq = Math.max(1, dpr); g.drawImage(e.cv, Math.round((ox + (e.x0 - M) * ts + sw * u) * dq) / dq, Math.round((oy + (e.y0 - M) * ts) * dq) / dq, e.cv.width * u, e.cv.height * u);
     }
     g.imageSmoothingEnabled = sm;
   }
