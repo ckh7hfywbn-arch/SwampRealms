@@ -1254,7 +1254,7 @@
     var x0 = Math.floor(x - PW / 2 + 1e-4), x1 = Math.floor(x + PW / 2 - 1e-4), y0 = Math.floor(y - PH + 1e-4), y1 = Math.floor(y - 1e-4);
     for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) if (blocks(xx, yy)) {
       if (SHAPEN && !cave) { var sh = shapeAt(yy * W + xx); if (sh && !shapeHit(sh, xx, yy, x - PW / 2, x + PW / 2, y - PH, y)) continue;
-        if (!sh && y - yy < 1.001 && ((xx > x && shapeAt(yy * W + xx - 1) === 2 && x < xx) || (xx + 1 < x && shapeAt(yy * W + xx + 1) === 3))) continue; }   // MALLET: only the solid part of a shaped block counts; the block at the top of a ramp holds you up at your middle too, so the walk up carries on smoothly instead of hitching
+        if (!sh && y - yy < 1.001 && !TILES[get(xx, yy - 1)].solid && ((xx > x && shapeAt(yy * W + xx - 1) === 2 && x < xx) || (xx + 1 < x && shapeAt(yy * W + xx + 1) === 3))) continue; }   // (only a block with open space above it: never a wall)   // MALLET: only the solid part of a shaped block counts; the block at the top of a ramp holds you up at your middle too, so the walk up carries on smoothly instead of hitching
       return true;
     }
     return false;
@@ -1281,6 +1281,7 @@
     if (sL === sR) return 0;   // flat ground or a wall on both sides
     var low = sL ? 1 : -1, n = ix + low;   // the open side
     if (!rampFree(tiles[n]) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
+    var hi = ix - low - W; if (!rampFree(tiles[hi]) && !(NATC[tiles[hi]] && rampFree(tiles[hi - W]))) return 0;   // the high side goes on up as a slope (a staircase) or levels off, but a ramp never runs into a wall (it lifted you into the wall)
     // (a mound two blocks wide slopes on both sides into a little hump, so the grass runs over it unbroken)
     return low > 0 ? 3 : 2;   // open on the right: rising to the left; open on the left: rising to the right
   }
@@ -12446,6 +12447,7 @@
     else jetStep(h, jump, lad);   // SWAMP-GAS JETPACK
     p.jprev = !!jump;   // per physics step, so one press is one jump
     if (touches("lava")) { p.vy = Math.min(p.vy, 4); if (jump) p.vy = Math.max(p.vy - 50 * h, -5); }   // lava is thick: you sink slowly and can climb out
+    var PX0 = p.x;   // (where you stood before moving sideways this step)
     // horizontal, with automatic one-block step-up
     var nx = clamp(p.x + p.vx * h, 1, W - 1);
     var wasOn = p.on, sl, hugd = false;
@@ -12459,7 +12461,8 @@
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
     if (!boxHit(p.x, ny) && !(p.vy > 0 && leafLand(p.x, p.y, ny))) p.y = ny;
-    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1; if (SHAPEN && ny > p.y) p.y = settleDown(p.x, p.y, ny); p.on = true; p.vy = 0; if (bounceAt(vpre)) { /* PLAYGROUND: boing */ } else if (vpre > FALL_SAFE && !p.wet && !gliding && !fx("feather") && !hasCharm("feather")) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); }
+    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1;
+      if (g > 1 && p.x !== PX0 && !boxHit(PX0, Math.floor(ny))) { p.x = PX0; p.y = Math.floor(ny); }   /* NO TELEPORTS: overlapping a wall on landing never pops you up onto it; you go back to where you stood */ if (SHAPEN && ny > p.y) p.y = settleDown(p.x, p.y, ny); p.on = true; p.vy = 0; if (bounceAt(vpre)) { /* PLAYGROUND: boing */ } else if (vpre > FALL_SAFE && !p.wet && !gliding && !fx("feather") && !hasCharm("feather")) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); }
       if (vpre > 3.5 && !reduce) { p.sq = -Math.min(0.3, (vpre - 2) / 48); p.sqv = 0; }
       if (vpre > 7) { landPuff(vpre); var gid = get(Math.floor(p.x), Math.floor(p.y + 0.2)); matStep(gid, Math.min(1, (vpre - 5) / 16)); if (vpre > 16) thud(70, Math.min(0.12, (vpre - 14) / 90)); } }
     else { p.y = Math.ceil(ny - PH) + PH; p.vy = 0; }
