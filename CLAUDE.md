@@ -34,6 +34,16 @@ Use the shared art kit in `sandbox.js` (search `CREATURE ART KIT`):
 - Render it large next to the wolf and gator, in every state (idle, moving, wind-up, attack, hurt), and look at it. Then check it
   once in game at normal zoom, so the detail still reads at play size.
 
+## Progression (every update must fit this)
+A fresh player starts with bare paws. The early chain must always be doable in order, with only what the player has at that point:
+1. **Bare paws:** dig soft ground (mud, moss, peat, clay is slower), punch leaves (Sticks), snip reeds and vines (Fiber), dig for Pebbles,
+   and chop **Murkwater (swamp) tree trunks** for Wood. Every other tree (cherry, palm, dark oak, pine, snags) and all stone need a pick.
+2. **Reed Pick** (Sticks, Fiber, Pebbles) opens every tree, stone and clay; then the Workbench and the pick tiers per biome.
+- What paws can break lives in ONE place: `PAWS` / `pawChop` in `sandbox.js` (search `PROGRESSION:`). Change it there, nowhere else.
+- When you add a block, tree, biome or recipe: give it a pick tier that matches where it appears, and check the Chapter 1 quests (`MAIN`, `ch: 0`)
+  and the first recipes can still be finished without anything the player cannot have yet. Quest text must say what tool is needed.
+- A new biome's trees need the Reed Pick unless it is the starting biome. If the starting biome ever changes, update `pawChop` to match.
+
 ## Workflow
 - Big features go to the `ocean-update` branch (test site: ocean-update.swamprealms.com). Small fixes go to `main` through a PR.
 - Bump the `?v=` tags in `sandbox.html`, add README bullets, and run the smoke test (expect `AUDIT []` and `ERRORS 0`) before committing.
