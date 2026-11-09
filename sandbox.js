@@ -7495,7 +7495,7 @@
       g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill();
       g.save(); g.scale(q.face, 1); g.scale(AVS, AVS);
       if (SP) {
-        var pose = !q.on ? (q.vy < 0 ? "jump" : "fall") : Math.abs(q.vx) > 0.5 ? "walk" + (Math.floor(q.walk / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2);
+        var pose = !q.on ? (q.vy < 0 ? "jump" : "fall") : Math.abs(q.vx) > 0.5 ? "walk" + walkF(q.walk) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2);
         var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), sm0 = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
         g.drawImage(SP.frame(pose), fx, fy); g.save(); g.translate(fx + sh[0], fy + sh[1]); g.rotate(-q.a); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore(); g.imageSmoothingEnabled = sm0;
       } else { g.fillStyle = "#3fae5e"; g.fillRect(-ts * 0.35, -ts * 1.3, ts * 0.7, ts * 1.2); }
@@ -15162,8 +15162,25 @@
     g.imageSmoothingEnabled = sm;
   }
   // MORE ANIMATION: which frame the side-on player shows (blinks, runs, tucks at the top of a jump, crouches on landing, kicks when swimming, flinches, cheers)
+  var LEAN = { a: 0, t: 0 }, SWO = { th: null, arc: [] };
+  function swoosh(g, shx, shy, tp, SP) {   // ANIMATION: a swoosh trails the blade's tip through the last few frames (bright for weapons, faint for tools)
+    if (reduce || !(tp.kind === "weapon" || tp.kind === "pick") || !tp.has || heldAmt < 0.5) { SWO.arc.length = 0; return; }
+    var hx = shx + SP.armLen * Math.sin(tp.phi), hy = shy + SP.armLen * Math.cos(tp.phi), L = ts * (tp.kind === "weapon" ? 0.95 : 0.75), ca = Math.cos(tp.ang), sa = Math.sin(tp.ang);
+    var tx = hx + (ca * 0.7 + sa * 0.7) * L, ty = hy + (sa * 0.7 - ca * 0.7) * L;   // the tool art points up and forward from the grip
+    var last = SWO.arc[0]; if (!last || Math.hypot(tx - last[0], ty - last[1]) > ts * 0.04) SWO.arc.unshift([tx, ty, hx, hy]); else if (SWO.arc.length > 1) SWO.arc.pop();
+    if (SWO.arc.length > 6) SWO.arc.pop();
+    if (SWO.arc.length < 3) return;
+    var wpn = tp.kind === "weapon", al = wpn ? 0.55 : 0.22, n = SWO.arc.length, k, q;
+    g.beginPath(); g.moveTo(SWO.arc[0][0], SWO.arc[0][1]);
+    for (k = 1; k < n; k++) g.lineTo(SWO.arc[k][0], SWO.arc[k][1]);
+    for (k = n - 1; k >= 0; k--) { q = SWO.arc[k]; var f = 0.35 + 0.4 * (k / n); g.lineTo(q[0] + (q[2] - q[0]) * f, q[1] + (q[3] - q[1]) * f); }
+    g.closePath(); g.fillStyle = "rgba(205,255,238," + al + ")"; g.fill();
+    g.strokeStyle = "rgba(20,70,60," + (al * 0.6).toFixed(3) + ")"; g.lineWidth = Math.max(1, ts * 0.035); g.beginPath(); g.moveTo(SWO.arc[0][0], SWO.arc[0][1]); for (k = 1; k < n; k++) g.lineTo(SWO.arc[k][0], SWO.arc[k][1]); g.stroke();
+  }
+
+  function walkF(w) { return Math.floor(w / (3.2 / 6)) % 6; }   // ANIMATION: 6 frames a stride cycle (the same distance a cycle took before)
   function playerPose(now) {
-    var moving = Math.abs(p.vx) > 0.5, f4 = Math.floor(p.walk / 0.8) % 4;
+    var moving = Math.abs(p.vx) > 0.5, f4 = walkF(p.walk);
     if (reduce) return !p.on ? (p.vy < 0 ? "jump" : "fall") : moving ? "walk" + f4 : "idle0";
     if (hurtT > 0.12) return "hurt";
     if (p.wet && !p.on) return "swim" + (Math.floor(SWIM.ph * 4) % 4);   // the kick follows the stroke (faster when you swim faster)
@@ -15216,6 +15233,11 @@
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
     swimStep(now); var swimN = SWIM.on && !riding(); if (swimN) drawSwimFx(g);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); dodgeSpin(g, ts * 0.85);
+    if (!reduce && !swimN && !riding()) {   // ANIMATION: the body leans, eased, from the feet: forward into a run, into a jump, back when you are hit
+      var ldt = clamp((now - (LEAN.t || now)) / 1000, 0, 0.1); LEAN.t = now;
+      var sp = Math.abs(p.vx), tgt = (p.on ? clamp((sp - 1.5) / 7, 0, 1) * 0.11 : clamp(-p.vy / 10, -0.4, 1) * 0.07 + clamp(sp / 8, 0, 1) * 0.05) - (hurtT > 0 ? 0.22 * clamp(hurtT / 0.3, 0, 1) : 0) - (p.land > 0.05 ? 0.03 : 0);
+      LEAN.a += (tgt - LEAN.a) * Math.min(1, ldt * (hurtT > 0 ? 18 : 8)); if (Math.abs(LEAN.a) > 0.002) g.rotate(LEAN.a);
+    }
     if (swimN && !reduce) { var swb = Math.sin(SWIM.ph * 6.2832 * 2) * ts * (0.035 + 0.02 * (1 - SWIM.k)); g.translate(0, swb - ts * 0.75); g.rotate(SWIM.a + Math.sin(SWIM.ph * 6.2832) * 0.05 * SWIM.k); g.translate(0, ts * 0.75); }   // bob and lean into the stroke
     if (!swimN) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill(); }
     g.scale(1 / sq, sq); g.scale(AVS, AVS); if (p.wet) g.globalAlpha = 0.85;
@@ -15247,6 +15269,7 @@
       }
       g.drawImage(SP.frame(pose), fx, fy);
       var shx = fx + sh[0], shy = fy + sh[1];
+      swoosh(g, shx, shy, tp, SP);
       g.save(); g.translate(shx, shy); g.rotate(-tp.phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
       g.imageSmoothingEnabled = sm0;
       drawHeld(g, shx + SP.armLen * Math.sin(tp.phi), shy + SP.armLen * Math.cos(tp.phi), tp);
@@ -15790,12 +15813,12 @@
     g.fillStyle = "#a8703c"; g.fillRect(sx + ts * 0.3, sy + ts * 0.15, ts * 0.07, ts * 0.45); g.fillRect(sx + ts * 0.63, sy + ts * 0.15, ts * 0.07, ts * 0.45);
     g.fillStyle = "#c98c4f"; [0.24, 0.37, 0.5].forEach(function (yy) { g.fillRect(sx + ts * 0.3, sy + ts * yy, ts * 0.4, Math.max(2, ts * 0.05)); });
   }
-  var CTLR = [], CTLRT = 0;
+  var CTLRECT = [], CTLRECTECTT = 0;
   function ctlRects() {   // where the on-screen controls are, in canvas pixels (re-measured a few times a second)
-    var now = performance.now(); if (now - CTLRT < 300) return CTLR; CTLRT = now; CTLR = [];
-    var cv = $("sbxCv"); if (!cv) return CTLR; var R = cv.getBoundingClientRect(); if (!R.width) return CTLR; var sc = vw / R.width;
-    document.querySelectorAll("#sbxJoy, .sbx-pad button, #sbxCtl > *").forEach(function (e) { if (!e.offsetParent) return; var cs = getComputedStyle(e); if (cs.visibility === "hidden" || cs.opacity === "0" || cs.display === "none") return; var r = e.getBoundingClientRect(); if (!r.width) return; CTLR.push({ l: (r.left - R.left) * sc, r: (r.right - R.left) * sc, t: (r.top - R.top) * sc, b: (r.bottom - R.top) * sc }); });
-    return CTLR;
+    var now = performance.now(); if (now - CTLRECTECTT < 300) return CTLRECT; CTLRECTECTT = now; CTLRECT = [];
+    var cv = $("sbxCv"); if (!cv) return CTLRECT; var R = cv.getBoundingClientRect(); if (!R.width) return CTLRECT; var sc = vw / R.width;
+    document.querySelectorAll("#sbxJoy, .sbx-pad button, #sbxCtl > *").forEach(function (e) { if (!e.offsetParent) return; var cs = getComputedStyle(e); if (cs.visibility === "hidden" || cs.opacity === "0" || cs.display === "none") return; var r = e.getBoundingClientRect(); if (!r.width) return; CTLRECT.push({ l: (r.left - R.left) * sc, r: (r.right - R.left) * sc, t: (r.top - R.top) * sc, b: (r.bottom - R.top) * sc }); });
+    return CTLRECT;
   }
   function drawPill(g, now, label, sx, sy, no, fn) { if (PHOTO.on) return;   // a tappable pill above a ladder or hole (tap it, or press F)
     g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
@@ -15829,7 +15852,7 @@
     if (SP) {
       if (moving && Math.abs(cp.vy) > Math.abs(cp.vx) * 0.9) cp.back = cp.vy < 0; else if (moving && Math.abs(cp.vx) > 0.5) cp.back = false;   // BACK VIEW: walking away from you (up the screen)
       var back = cp.back && heldAmt < 0.2 && !mine;
-      var pose = back ? (moving ? "bwalk" + (Math.floor(p.walk / 0.8) % 4) : "back" + (reduce ? 0 : Math.floor(now / 520) % 2)) : moving ? "walk" + (Math.floor(p.walk / 0.8) % 4) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2 + (now % 3900 < 140 ? "b" : ""));
+      var pose = back ? (moving ? "bwalk" + (Math.floor(p.walk / 0.8) % 4) : "back" + (reduce ? 0 : Math.floor(now / 520) % 2)) : moving ? "walk" + walkF(p.walk) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2 + (now % 3900 < 140 ? "b" : ""));
       var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), tp = toolPose(), sm0 = g.imageSmoothingEnabled;
       g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
       if (back) {
@@ -21489,7 +21512,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };

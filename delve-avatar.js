@@ -340,9 +340,11 @@ var DelveAv = (function () {
   // ---------- poses: by = body bob, L/R = [dx, lift], ab = back-arm shift ----------
   var POSE = {
     idle0: { by: 0, L: [0, 0], R: [0, 0], ab: 0 }, idle1: { by: 1, L: [0, 0], R: [0, 0], ab: 0 },
-    walk0: { by: -1, L: [0, 0], R: [0, 2], ab: 1 }, walk1: { by: 0, L: [0, 0], R: [0, 0], ab: 0 },
-    walk2: { by: -1, L: [0, 2], R: [0, 0], ab: -1 }, walk3: { by: 0, L: [0, 0], R: [0, 0], ab: 0 },
-    jump: { by: -1, L: [1, 3], R: [-1, 3], ab: -1 }, fall: { by: 0, L: [-1, 0], R: [1, 0], ab: -1 },
+    // STRIDES: L/R = [foot dx (forward is +), lift, knee bend]. A leg runs from its hip to its foot on a slant, bending at the knee,
+    // so a step reads as a step. Walk and run are 6 frames a cycle: contact (legs apart), passing (one knee up), contact the other way...
+    walk0: { by: 0, L: [-1, 0], R: [1, 0], ab: -1 }, walk1: { by: -1, L: [-1, 0], R: [1, 3], ab: 0 }, walk2: { by: -1, L: [0, 0], R: [1, 1], ab: 1 },
+    walk3: { by: 0, L: [-1, 0], R: [1, 0], ab: 1 }, walk4: { by: -1, L: [-1, 3], R: [1, 0], ab: 0 }, walk5: { by: -1, L: [-1, 1], R: [0, 0], ab: -1 },
+    jump: { by: -1, L: [-1, 3], R: [1, 1], ab: -2 }, fall: { by: 0, L: [-2, 0], R: [2, 1], ab: -2 },
     // the back view: standing, walking away, and climbing (one arm reaching up, the other leg stepping up)
     back0: { by: 0, L: [0, 0], R: [0, 0], ab: 0, back: 1 }, back1: { by: 1, L: [0, 0], R: [0, 0], ab: 0, back: 1 },
     bwalk0: { by: -1, L: [0, 0], R: [0, 2], ab: 1, back: 1 }, bwalk1: { by: 0, L: [0, 0], R: [0, 0], ab: 0, back: 1 },
@@ -350,10 +352,11 @@ var DelveAv = (function () {
     climb0: { by: 0, L: [0, 0], R: [0, 3], ab: 0, back: 1, climb: -1 }, climb1: { by: 0, L: [0, 3], R: [0, 0], ab: 0, back: 1, climb: 1 },
     // MORE ANIMATION: blinking, a running stride, tucked jump apex, landing crouch, swimming kicks, flinching, cheering
     idle0b: { by: 0, L: [0, 0], R: [0, 0], ab: 0, blink: 1 }, idle1b: { by: 1, L: [0, 0], R: [0, 0], ab: 0, blink: 1 },
-    run0: { by: -2, L: [1, 0], R: [-1, 3], ab: 2 }, run1: { by: -1, L: [0, 1], R: [0, 1], ab: 0 }, run2: { by: -2, L: [-1, 3], R: [1, 0], ab: -2 }, run3: { by: -1, L: [0, 1], R: [0, 1], ab: 0 },
-    tuck: { by: -1, L: [1, 4], R: [-1, 4], ab: -2 }, land: { by: 2, L: [-1, 0], R: [1, 0], ab: 1 },
+    run0: { by: -1, L: [-2, 0], R: [2, 0], ab: -2 }, run1: { by: -2, L: [-2, 0], R: [1, 4], ab: 0 }, run2: { by: -2, L: [-1, 0], R: [2, 2], ab: 2 },
+    run3: { by: -1, L: [-2, 0], R: [2, 0], ab: 2 }, run4: { by: -2, L: [-1, 4], R: [2, 0], ab: 0 }, run5: { by: -2, L: [-2, 2], R: [1, 0], ab: -2 },
+    tuck: { by: -2, L: [0, 4], R: [0, 4], ab: -2 }, land: { by: 2, L: [-2, 0], R: [2, 0], ab: 1 },
     swim0: { by: 1, L: [-1, 2], R: [1, 0], ab: 1 }, swim1: { by: 1, L: [0, 1], R: [0, 1], ab: 0 }, swim2: { by: 1, L: [-1, 0], R: [1, 2], ab: -1 }, swim3: { by: 1, L: [0, 1], R: [0, 1], ab: 0 },
-    hurt: { by: 1, L: [-1, 0], R: [1, 1], ab: -2, blink: 1 }, cheer0: { by: -1, L: [0, 1], R: [0, 1], ab: -1 }, cheer1: { by: -2, L: [1, 2], R: [-1, 2], ab: -2 }
+    hurt: { by: 1, L: [-2, 0], R: [2, 1], ab: -2, blink: 1 }, cheer0: { by: -1, L: [0, 1], R: [0, 1], ab: -1 }, cheer1: { by: -2, L: [1, 2], R: [-1, 2], ab: -2 }
   };
 
   // ---------- arms ----------
@@ -448,14 +451,18 @@ var DelveAv = (function () {
     if (POSE[pose] && POSE[pose].back) return drawBack(o, POSE[pose]);
     var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a), PO = POSE[pose] || POSE.idle0, by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i;
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null;
-    B.cur = 9; if (o.neck === "cape") CAPE_BACK(B, by, pose.indexOf("walk") === 0 ? (pose === "walk0" || pose === "walk2" ? 1 : 0) : 0);
+    B.cur = 9; if (o.neck === "cape") CAPE_BACK(B, by, /^(walk|run)/.test(pose) ? (PO.by < 0 ? 1 : 0) : 0);
     B.cur = 2; if (shirt === "hoodie") { B.r(7, 16 + by, 8, 3, "#4a2a9a"); B.p(7, 16 + by, "#6a3fc4"); }
     B.cur = 1;
     // legs + shoes
     var legC = A.leg, sh = SHOES[o.shoes];
-    [[7, PO.L, 1], [12, PO.R, -1]].forEach(function (lg) {
-      var x = lg[0] + lg[1][0], lift = lg[1][1], bot = 30 - lift, top = 24 + by, side = lg[2];
-      for (var y = top; y <= bot; y++) { B.p(x, y, side > 0 ? lt(legC, 0.2) : dk(legC, 0.3)); B.p(x + 1, y, legC); B.p(x + 2, y, side > 0 ? dk(legC, 0.3) : lt(legC, 0.2)); }
+    [[12, PO.R, -1], [7, PO.L, 1]].forEach(function (lg) {   // (the far leg first, so the near leg crosses in front of it)
+      var hx = lg[0], fdx = lg[1][0], lift = lg[1][1], knee = lg[1][2] || 0, bot = 30 - lift, top = 24 + by, side = lg[2], x = hx + fdx, y;
+      for (y = top; y <= bot; y++) {   // hip to foot on a slant, the knee pushed forward when it bends
+        var t = (y - top) / Math.max(1, bot - top), xx = Math.round(hx + fdx * t + knee * Math.sin(Math.PI * Math.min(1, t * 1.15)) * 0.6);
+        var far = side < 0, cL = far ? dk(legC, 0.18) : lt(legC, 0.2), cM = far ? dk(legC, 0.1) : legC, cR = dk(legC, far ? 0.4 : 0.3);
+        B.p(xx, y, side > 0 ? cL : cR); B.p(xx + 1, y, cM); B.p(xx + 2, y, side > 0 ? cR : cL);
+      }
       if (shirt === "tux") { B.cur = 2; for (y = top; y < top + 2; y++) B.r(x, y, 3, 1, "#25252f"); B.cur = 1; }
       if (sh) { B.cur = 8;
         var rows = sh.rows, n = rows.length, y0 = bot - n + 1, fx = side > 0 ? x - 1 : x;
