@@ -1266,8 +1266,7 @@
     if (sL === sR) return 0;   // flat ground, a wall on both sides, or a lone peak
     var low = sL ? 1 : -1, n = ix + low;   // the open side
     if (!rampFree(tiles[n]) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
-    var o = ix - low;   // the other side is ground as high or higher; never two ramps back to back into a sharp peak
-    if (rampFree(tiles[o - W]) && NATC[tiles[o]] && !TILES[tiles[o - low]].solid && TILES[tiles[o - low + W]].solid) return 0;
+    // (a mound two blocks wide slopes on both sides into a little hump, so the grass runs over it unbroken)
     return low > 0 ? 3 : 2;   // open on the right: rising to the left; open on the left: rising to the right
   }
   function rampFree(id) {   // open, or just a plant (wild or one you planted: it stands on the slope)
@@ -13055,7 +13054,18 @@
     if (sx === ox + i * ts && sy === oy + j * ts) SHQ.push(i, j, sh); else shapeTop(g, i, j, sx, sy, sh);   // (a block popping in draws its own edge)
   }
   var SHQ = [];
-  function drawShapeTops(g) { for (var q = 0; q < SHQ.length; q += 3) shapeTop(g, SHQ[q], SHQ[q + 1], ox + SHQ[q] * ts, oy + SHQ[q + 1] * ts, SHQ[q + 2]); SHQ.length = 0; }
+  function drawShapeTops(g) {
+    for (var q = 0; q < SHQ.length; q += 3) shapeTop(g, SHQ[q], SHQ[q + 1], ox + SHQ[q] * ts, oy + SHQ[q + 1] * ts, SHQ[q + 2]);
+    for (q = 0; q < SHQ.length; q += 3) {   // where two ramps meet back to back (a little mound), the top is rounded off into a soft grassy cap
+      var i = SHQ[q], j = SHQ[q + 1]; if (SHQ[q + 2] !== 2 || shapeAt(j * W + i + 1) !== 3) continue;
+      var grassy = tiles[j * W + i] === T.MOSS, GP = GRASSP[varAt(i)] || GRASSP[0], cx = ox + (i + 1) * ts, cy = oy + j * ts, rx = ts * 0.24, ry = ts * 0.13;
+      var top = grassy ? GP[0] : null;
+      if (!top) { var pal = NATC[tiles[j * W + i]]; top = pal ? (pal.top || pal[0] || "#6a5a4a") : "#6a5a4a"; }
+      g.fillStyle = typeof top === "string" ? top : rgbA(top); g.beginPath(); g.ellipse(cx, cy + ry, rx, ry, 0, Math.PI, 0); g.lineTo(cx + rx * 1.3, cy + ry * 2.3); g.lineTo(cx - rx * 1.3, cy + ry * 2.3); g.closePath(); g.fill();
+      if (grassy) { g.fillStyle = GP[1]; g.beginPath(); g.ellipse(cx, cy + ry * 1.15, rx * 0.8, ry * 0.8, 0, Math.PI, 0); g.closePath(); g.fill(); g.fillStyle = GP[2]; g.beginPath(); g.ellipse(cx - rx * 0.25, cy + ry * 0.9, rx * 0.3, ry * 0.3, 0, Math.PI, 0); g.closePath(); g.fill(); }
+    }
+    SHQ.length = 0;
+  }
   function shapeTop(g, i, j, sx, sy, sh) {
     var id = tiles[j * W + i], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]), x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, k, GP, hh = function (q) { return SW.hash(i, j, q + 300); };
     // along the cut, inside the block: top-lit for a floor (it is now the top), shadowed for a ceiling ramp. It may reach a little into the
