@@ -1137,6 +1137,17 @@
     return true;
   }
   var opaque = function (id) { return TILES[id].solid && id !== T.LEAVES; };
+  // SURFACE OR UNDERGROUND: where the open sky starts over you. Standing at the edge of a shaft or a step, one column can be open to the sky
+  // and the next roofed, so reading only the column under your middle flipped "surface"/"depth" back and forth every few frames (the label,
+  // the music, rain, fireflies and birds all flickered). Now the more open of the columns under your feet wins, held a moment before it changes.
+  var PCOL = { v: 0, t: 0, x: -1 };
+  function pcol() {
+    var a = col[clamp(Math.floor(p.x - 0.32), 0, W - 1)], b = col[clamp(Math.floor(p.x + 0.32), 0, W - 1)], c = col[clamp(Math.floor(p.x), 0, W - 1)], v = Math.max(a, b, c), now = performance.now();
+    if (PCOL.x < 0 || Math.abs(v - PCOL.v) > 6) { PCOL.v = v; PCOL.pv = v; PCOL.t = now; PCOL.x = 1; }   // a big change (a teleport, falling down a hole) counts at once
+    else if (v !== PCOL.v) { if (v !== PCOL.pv) { PCOL.pv = v; PCOL.t = now; } else if (now - PCOL.t > 400) PCOL.v = v; }   // a small one only once it has held for a moment
+    else PCOL.pv = v;
+    return PCOL.v;
+  }
   function recalc(x) {   // first row that counts as ground/roof (sets sky light and the dark backwall). World-generated trunks are scenery, so they never count: no backwall appears under a tree when you chop it.
     for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i])) { col[x] = y; return; } }   // generated buildings are scenery: sky light passes them
     col[x] = H;
@@ -3301,7 +3312,7 @@
   var CRIT = { L: [], t: 2 }, CRITK = { frog: { w: 0.5, h: 0.36, spd: 2.4 }, crab: { w: 0.55, h: 0.32, spd: 2.2 }, hare: { w: 0.55, h: 0.45, spd: 3.4 }, beetle: { w: 0.45, h: 0.26, spd: 1 } };
   function critKind(x) { var b = world.bio[clamp(x, 0, W - 1)], v = varAt(x); if (v === 2) return "crab"; return b === 0 ? "frog" : b === 1 ? "beetle" : "hare"; }
   function spawnCrit() {
-    if (cave || CRIT.L.length >= 6 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 4) return;
+    if (cave || CRIT.L.length >= 6 || p.y > pcol() + 4) return;
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (6 + Math.random() * 14)), 3, W - 4), y = col[x];
     if (skySafe(x) && p.y > world.sky.y + 4) return;
     if (y <= 2 || y >= H - 2 || !blocks(x, y) || blocks(x, y - 1) || TILES[get(x, y - 1)].kind === "water") return;
@@ -3346,7 +3357,7 @@
       else if (c.k === "crab") { R(-4, -4, 8, 4, "#d8442a"); R(-3, -5, 6, 1, "#ff6a4a"); R(-1, -7, 1, 2, "#d8442a"); R(1, -7, 1, 2, "#d8442a"); R(-1, -8, 1, 1, "#14161c"); R(1, -8, 1, 1, "#14161c"); var cl = Math.sin(c.t * 10) > 0 ? 1 : 0; R(4, -6 - cl, 2, 3, "#ff6a4a"); R(-6, -6 + cl, 2, 3, "#ff6a4a"); for (var l = 0; l < 3; l++) { R(-4 + l * 3, 0, 1, 1, "#a8301a"); } }
       else if (c.k === "hare") { R(-4, -6, 7, 5, "#f4f4f0"); R(1, -8, 4, 4, "#ffffff"); R(2, -12, 1, 4, "#f4f4f0"); R(3, -12, 1, 4, "#ffd0dc"); R(4, -7, 1, 1, "#14161c"); R(-5, -5, 2, 2, "#ffffff"); R(-3, -1, 2, 1, "#d8d8d0"); R(1, -1, 2, 1, "#d8d8d0"); }
       else if (CART[c.k]) CART[c.k](R, c);
-      else { R(-3, -3, 6, 3, "#2a2226"); R(-2, -4, 4, 1, "#4a3a3e"); R(3, -2, 1, 1, "#14161c"); R(-1, -3, 1, 2, "#ff8a3d"); for (var l2 = 0; l2 < 3; l2++) R(-3 + l2 * 2, 0, 1, 1, "#14161c"); if (isNight(S.time) || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) { g.globalAlpha = 0.5 + 0.3 * Math.sin(now / 300 + c.ph); R(-1, -3, 2, 2, "#ffc24a"); g.globalAlpha = 1; } }
+      else { R(-3, -3, 6, 3, "#2a2226"); R(-2, -4, 4, 1, "#4a3a3e"); R(3, -2, 1, 1, "#14161c"); R(-1, -3, 1, 2, "#ff8a3d"); for (var l2 = 0; l2 < 3; l2++) R(-3 + l2 * 2, 0, 1, 1, "#14161c"); if (isNight(S.time) || p.y > pcol() + 6) { g.globalAlpha = 0.5 + 0.3 * Math.sin(now / 300 + c.ph); R(-1, -3, 2, 2, "#ffc24a"); g.globalAlpha = 1; } }
       g.restore();
     });
   }
@@ -3572,7 +3583,7 @@
     if (tot >= 5) return;
     var side = Math.random() < 0.5 ? -1 : 1, x = clamp(Math.floor(p.x + side * (vw / 2 / ts + 2 + Math.random() * 8)), 3, W - 4) + 0.5, y = -1, cx = Math.floor(x);
     if (skySafe(cx)) return;   // SKY VILLAGE: no monsters on the island
-    var b = world.bio[cx], night = batNight(S.time), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7, opts = [], tw = 0, wx = -1;
+    var b = world.bio[cx], night = batNight(S.time), under = p.y > pcol() + 7, opts = [], tw = 0, wx = -1;
     if (!night && !under) return;   // creatures only come out at night, or in dark places underground (caves); the daytime surface is safe
     function add(k, w) { if ((cnt[k] || 0) < ENEMY[k].max) { opts.push([k, w]); tw += w; } }
     if (b === 0) { add("bug", under ? 4 : 5); if (!under) add("frog", 3); if (!under && night) { add("witch", 1.4); add("lily", 2.2); } if (!under && (wx = waterNear(cx)) >= 0) add("gator", 3); }
@@ -3604,7 +3615,7 @@
   function updateEnemies(dt) {
     if (panelOpen && !MP.on) return;
     if (MP.on && MP.role === "guest") { mpGhostStep(dt); return; }   // a guest only mirrors the host's creatures
-    var underground = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7;
+    var underground = p.y > pcol() + 7;
     spawnT -= dt; if (spawnT <= 0) { spawnT = (underground ? 2.3 + Math.random() * 1.8 : 3.5 + Math.random() * 2.6) * dif().spawn; if (!activeBoss()) spawnEnemy(); }   // caves are busier (creatures come out whether or not you have a weapon yet)
     batT -= dt; if (batT <= 0) { batT = (3.2 + Math.random() * 3) * (1 - 0.35 * clamp((S.time - BAT.from) / 150, 0, 1)); if (batNight(S.time) && !underground && !activeBoss()) spawnBat(); }   // bats arrive faster as the night goes on
     enemies.forEach(function (e) { if (e.k === "bat" && !e.def && !e.leave && (!batNight(S.time) || underground)) e.leave = underground ? 4 : 3 + Math.random() * 2; });   // dawn, or you went underground
@@ -5623,7 +5634,7 @@
   function newAnimal(k, x, y, tame) { var A = ANIM[k]; return { k: k, x: x, y: y, vx: 0, vy: 0, kv: 0, on: false, w: A.w, h: A.h, dir: Math.random() < 0.5 ? -1 : 1, t: 1 + Math.random() * 2, st: "idle", tt: Math.random() * 6, tame: !!tame, hx: x, fed: 0, pr: 0, rdy: 0, nm: "", baby: 0, love: 0, tm: 0, fol: false, hop: 0 }; }
   function allAnimals() { return S.pets.concat(wilds); }
   function spawnWild() {
-    if (cave || wilds.length >= 3 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) return;
+    if (cave || wilds.length >= 3 || p.y > pcol() + 6) return;
     var side = Math.random() < 0.5 ? -1 : 1, cx = clamp(Math.floor(p.x + side * (vw / 2 / ts + 3 + Math.random() * 8)), 3, W - 4), b = world.bio[cx], opts = [];
     if (skySafe(cx)) return;
     Object.keys(ANIM).forEach(function (k) { if (ANIM[k].b.indexOf(b) >= 0) opts.push(k); }); if (!opts.length) return;
@@ -6915,7 +6926,7 @@
   };
   function musicMood() {
     if (activeBoss() || BM.on || (cave && caveBoss())) return "boss";
-    if (cave || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 7) return "deep";
+    if (cave || p.y > pcol() + 7) return "deep";
     return ["swamp", "ember", "frost"][world.bio[clamp(Math.floor(p.x), 0, W - 1)]] || "swamp";
   }
   function musicOut() {
@@ -7051,7 +7062,7 @@
   function fishBiteMul() { return (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1) * (fx("fish") ? 0.6 : 1); }
   function tickRainSound() {   // a soft filtered-noise hiss for rain / blizzard wind, following the music switch
     var want = WX.on && MUS.on && gestured && ac && S.wx && S.wx.n > 0.05 && !cave && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden;
-    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OWL + 0.6, above = HOME || OCS ? true : p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
+    var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OWL + 0.6, above = HOME || OCS ? true : p.y <= pcol() + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
     if (!lvl && !WX.snd) return;
     try {
       if (!WX.snd) {
@@ -8294,7 +8305,7 @@
     if (!world || !S || cave || (MP.on && MP.role === "guest")) return;
     var ms = migSeason(), wd = hasCharm("wander") ? 2 : 1, i;
     if (ms >= 0 && MIGT.said !== (S.days | 0) && seasonDay() === 2 && phaseOf(S.time).id === "day") { MIGT.said = S.days | 0; toast(MIG_SAY[ms], "#c8a070"); }
-    var surf = !OCS && !HOME && p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, day = daylight(S.time) > 0.5;
+    var surf = !OCS && !HOME && p.y < pcol() + 8, day = daylight(S.time) > 0.5;
     if (ms === 0 && surf && day) { MIGT.f -= dt * wd; if (MIGT.f <= 0) { MIGT.f = 18 + Math.random() * 18; MIGF.push({ x: p.x + (Math.random() - 0.5) * 22, y: cam.y - vh / 2 / ts - 1, ph: Math.random() * 6, vy: 1.1 + Math.random() * 0.4, life: 40 }); } }
     for (i = MIGF.length - 1; i >= 0; i--) { var F = MIGF[i]; F.ph += dt * 2.2; F.y += F.vy * dt; F.x += Math.sin(F.ph) * 0.9 * dt; F.life -= dt;
       if (Math.abs(F.x - p.x) < 0.9 && Math.abs(F.y - (p.y - 0.8)) < 1.1) { give("goosedown", wd, undefined, undefined, true); text(F.x, F.y - 0.4, "+" + wd + " Goose Down", "#f6f2e8"); thud(900, 0.02); S.st.down = (S.st.down || 0) + 1; MIGF.splice(i, 1); continue; }
@@ -9318,7 +9329,7 @@
   var wbirds = [], birdT = 4, pet = null;
   function holdingSeed() { return !!(ITEMS[sel] && ITEMS[sel].seed && (S.inv[sel] || 0) > 0); }
   function spawnBird() {
-    if (cave || wbirds.length >= 3 || !isDayish() || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 4) return;
+    if (cave || wbirds.length >= 3 || !isDayish() || p.y > pcol() + 4) return;
     var side = Math.random() < 0.5 ? -1 : 1, cx = clamp(Math.floor(p.x + side * (vw / 2 / ts + 2 + Math.random() * 7)), 3, W - 4), b = world.bio[cx], opts = [];
     if (skySafe(cx) && Math.random() < 0.5) return;
     Object.keys(BIRDK).forEach(function (k) { if (BIRDK[k].b.indexOf(b) >= 0) opts.push(k); }); if (!opts.length) return;
@@ -12674,7 +12685,7 @@
   function ambClear() { return !S.wx || S.wx.k === "calm" || S.wx.n < 0.35; }
   function tickAmbient(dt) {
     if (motionOff || cave || !world) return;
-    var day = daylight(S.time), night = day < 0.4, surf = p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, b = world.bio[clamp(Math.floor(p.x), 0, W - 1)], q = reduce ? 0.35 : lowq ? 0.5 : 1, i, e;   // a slow device keeps a thinner version
+    var day = daylight(S.time), night = day < 0.4, surf = p.y < pcol() + 8, b = world.bio[clamp(Math.floor(p.x), 0, W - 1)], q = reduce ? 0.35 : lowq ? 0.5 : 1, i, e;   // a slow device keeps a thinner version
     AMB.t += dt;
     // sky flocks: spawn just off screen on one side, cross, then go
     var halfT = vw / 2 / ts + 6;
@@ -12889,7 +12900,7 @@
     if (OCS) return OCS.sea ? "sail" : OCS.diving && OCS.pl.y - OWL > 1 ? "dive" : "shore";
     if (HOME) return "farm";
     if (cave) { if (cave.bld) return "indoor"; if (isLairFloor(cave.f)) return "hollow"; if (cave.volc) return "cinder"; var b = caveB(); return b === 1 ? "cinder" : b === 2 ? "frostmine" : "mine"; }
-    if (p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 6) return "under";
+    if (p.y > pcol() + 6) return "under";
     var bb = bioAt(); return bb === 1 ? "ember" : bb === 2 ? "frost" : "swamp";
   }
   function tickAmbBeds(dt) {
@@ -12915,7 +12926,7 @@
     var nowS = performance.now() / 1000, surge = 0.55 + 0.45 * Math.pow(Math.sin(nowS * 0.48), 2) * (0.7 + 0.3 * Math.sin(nowS * 0.13)), st = wxStorm(), wl = 0, wf = 600;
     if (OCS) { if (OCS.sea) { wl = 0.05 + 0.05 * st; wf = 520 + st * 500; } else { var dep = OCS.diving ? OCS.pl.y - OWL : 0; if (dep > 1) { wl = clamp(0.04 - dep / 1200, 0.01, 0.04); wf = 240; } else { wl = 0.07 + 0.04 * st; wf = 700 + st * 500; } } }
     ambWave(wl * surge * OPT.fx, wf);
-    var night = daylight(S.time) < 0.6, swampTop = !cave && !OCS && (HOME || (wxBio() === 0 && p.y <= col[clamp(Math.floor(p.x), 0, W - 1)] + 4));
+    var night = daylight(S.time) < 0.6, swampTop = !cave && !OCS && (HOME || (wxBio() === 0 && p.y <= pcol() + 4));
     if (night && swampTop && wxN() < 0.5) {
       AMBS.cr -= dt; if (AMBS.cr <= 0) { AMBS.cr = 0.4 + Math.random() * 1.6; cricket(); }
       AMBS.fr -= dt; if (AMBS.fr <= 0) { AMBS.fr = 2.5 + Math.random() * 6; frog(); }
@@ -15278,7 +15289,7 @@
         g.imageSmoothingEnabled = sm0; g.restore(); return;
       }
       var gl2 = 1 - daylight(S.time);
-      if (!lowq && (gl2 > 0.2 || p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 3)) { g.shadowColor = "rgba(110,255,210,.45)"; g.shadowBlur = ts * 0.4; }
+      if (!lowq && (gl2 > 0.2 || p.y > pcol() + 3)) { g.shadowColor = "rgba(110,255,210,.45)"; g.shadowBlur = ts * 0.4; }
       g.imageSmoothingEnabled = false;
       if (S.bag > 0) {   // the backpack, on the back (the side away from the way you face), drawn first so the body overlaps it
         var bs = SP.s, by0 = fy + SP.footY - 31 * bs + 13 * bs, bx0 = fx + 1.5 * bs, big = S.bag >= 2, bc = big ? "#1f7a6a" : "#b88a52", bd = big ? "#0f3f38" : "#6b4a26", bf = big ? "#2fb59a" : "#d3a96b";
@@ -16337,7 +16348,7 @@
     if (HOME) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; var ho = homeS(), nc = Object.keys(ho.c).length, nr = Object.keys(ho.c).filter(function (k) { return ho.c[k].s >= 4; }).length; $("sbxBiome").textContent = "Your Homestead"; $("sbxLoc").style.setProperty("--bc", "#7dd65a"); $("sbxSub").textContent = dayTag() + (nc ? nc + " crop" + (nc === 1 ? "" : "s") + (nr ? " \u00b7 " + nr + " ripe" : "") : "Till, plant, water"); if (hbDirty) drawBar(); return; }
     if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
     if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.isle && cave.Q ? cave.Q.n : cf.bld ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.isle ? (cave.port ? "Trading port" : TIER_N[cave.tier] + " island") : cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
-    var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > col[clamp(Math.floor(p.x), 0, W - 1)] + 2;
+    var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > pcol() + 2;
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
     hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 " + (wxLabel() || "surface")));
     if (lastBio !== b) { bcard(bi, b); lastBio = b; }
@@ -21533,8 +21544,8 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
-  window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
