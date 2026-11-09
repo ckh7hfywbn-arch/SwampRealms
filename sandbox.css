@@ -30,7 +30,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-hint{position:absolute;left:50%;top:62px;transform:translate(-50%,-6px);max-width:min(92%,460px);padding:9px 14px;border-radius:12px;background:#07120fe6;border:1px solid #f2c14e66;color:#f6eedb;font-size:.84rem;font-weight:800;text-align:center;opacity:0;pointer-events:none;transition:opacity .4s,transform .4s}
 .sbx-hint.on{opacity:1;transform:translate(-50%,0)}
 .sbx-toast{position:absolute;left:50%;top:64px;transform:translate(-50%,-8px);padding:8px 16px;border-radius:999px;background:#07120ff0;border:1px solid var(--tc,#4ee6b4);color:#f6eedb;font-weight:800;font-size:.86rem;opacity:0;pointer-events:none;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 22px -8px var(--tc,#4ee6b4)}
-.sbx-toast.on{animation:sbxToast 2.4s ease forwards}
+.sbx-toast.on{animation:sbxToast var(--td,2.4s) ease forwards}
 @keyframes sbxToast{0%{opacity:0;transform:translate(-50%,-8px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-4px)}}
 .sbx-banner{position:absolute;left:50%;top:22%;transform:translate(-50%,10px) scale(.94);display:grid;gap:2px;justify-items:center;text-align:center;padding:14px 26px;border-radius:18px;background:linear-gradient(160deg,#0b1f19f2,#05100dee);border:1px solid #f2c14e;box-shadow:0 0 40px -10px #f2c14e,0 18px 40px -16px #000;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;max-width:90%}
 .sbx-banner.on{opacity:1;transform:translate(-50%,0) scale(1)}
@@ -1221,6 +1221,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-itip.on{opacity:1;transform:none}
 .sbx-itip::after{content:"";position:absolute;left:var(--ax,50%);bottom:-6px;width:10px;height:10px;margin-left:-5px;background:rgba(8,18,13,.97);border:solid color-mix(in srgb,var(--ic,#4ee6b4) 55%,transparent);border-width:0 1px 1px 0;transform:rotate(45deg)}
 .sbx-itip.below::after{bottom:auto;top:-6px;border-width:1px 0 0 1px}
+.sbx-itip.dock{max-width:min(420px,calc(100vw - 16px));width:calc(100vw - 16px)}.sbx-itip.dock::after{display:none}
 .sbx-itip .it-h{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .sbx-itip .it-h img{width:30px;height:30px;flex:none;image-rendering:pixelated;padding:3px;border-radius:8px;background:rgba(255,255,255,.06)}
 .sbx-itip .it-h span{display:grid;gap:1px;min-width:0}
@@ -2253,3 +2254,8 @@ small.bo-cost{display:flex}
 @media(prefers-reduced-motion:reduce){.sbx-stage.lay-ed .sbx-ctl>*{animation:none}}
 .is-warn{margin:8px 0;padding:8px 12px;border-radius:12px;border:1px solid #ff9f5a88;background:rgba(255,122,61,.12);color:#ffd9b8;font-size:.9rem}
 .is-warn b{color:#ff9f5a}
+
+/* NOTICES: the quest tracker pulses when there is something new to do (in place of tip cards that repeated it) */
+.sbx-trail.nudge{animation:sbxNudge .65s ease 4}
+@keyframes sbxNudge{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 3px var(--qc,#4ee6b4),0 0 22px var(--qc,#4ee6b4)}}
+@media (prefers-reduced-motion:reduce){.sbx-trail.nudge{animation:none;box-shadow:0 0 0 2px var(--qc,#4ee6b4)}}

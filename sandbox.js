@@ -2462,18 +2462,42 @@
   function text(x, y, s, c) { texts.push({ x: x, y: y, life: 1.3, s: s, c: c }); }
   // Toasts queue up instead of overwriting each other: each one gets at least ~1.7 s on screen, repeats are dropped, and at most 3 wait.
   var toastQ = [], toastUntil = 0, toastCur = "";
+  var NLOG = [];   // (test hook: the last notices asked for)
+  function nlog(a, b) { NLOG.push([a, Math.round(performance.now() / 1000), b]); if (NLOG.length > 60) NLOG.shift(); }
   function toast(msg, color) {
+    nlog("toast", msg);
     var now = performance.now();
     if (msg === toastCur && now < toastUntil + 400) return;
     if (toastQ.some(function (q) { return q[0] === msg; })) return;
-    if (now < toastUntil) { toastQ.push([msg, color]); if (toastQ.length > 3) toastQ.shift(); return; }
+    if (now < toastUntil) { toastQ.push([msg, color]); if (toastQ.length > 1) toastQ.shift(); return; }   // NOTICES: one waiting at most (the newest); older ones are dropped, never piled up
     showToast(msg, color);
   }
   function showToast(msg, color) {
     var el = $("sbxToast"); toastCur = msg; el.textContent = msg; el.style.setProperty("--tc", color || "#4ee6b4"); el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
-    toastUntil = performance.now() + (toastQ.length ? 1700 : 2300);
+    toastUntil = performance.now() + Math.min(4800, 2000 + Math.max(0, msg.length - 40) * 38);   // long enough to read, no longer
+    el.style.setProperty("--td", ((toastUntil - performance.now()) / 1000 + 0.2).toFixed(2) + "s");
   }
-  function pumpToasts() { if (toastQ.length && performance.now() >= toastUntil) { var q = toastQ.shift(); showToast(q[0], q[1]); } }
+  function pumpToasts() { if (toastQ.length && performance.now() >= toastUntil + 450) { var q = toastQ.shift(); showToast(q[0], q[1]); } }
+  // NOTICE LANE: the tip card, the message line and the land-name card stack in one column under whatever sits at the top of the screen
+  // (the top bar, the quest tracker, a boss bar), so they never land on top of it or of each other. Re-measured a few times a second.
+  var laneT = 0, laneSig = "";
+  function noticeLane() {
+    var now = performance.now(); if (now - laneT < 180) return; laneT = now;
+    var st = $("sbxStage") || document.querySelector(".sbx-stage"), tip = $("sbxTip"), to = $("sbxToast"), bc = $("sbxBCard"); if (!st || !tip || !to) return;
+    if (panelOpen || menuOpen) { if (laneSig) { tip.style.top = to.style.top = ""; if (bc) bc.style.top = ""; laneSig = ""; } return; }
+    var R = st.getBoundingClientRect(); if (!R.width) return;
+    var lw = Math.min(560, R.width - 24), lx0 = R.left + (R.width - lw) / 2, lx1 = lx0 + lw, top = 8;
+    [".sbx-hud", "#sbxTrail", "#sbxBoss", "#sbxMPChip"].forEach(function (sel) {
+      var el = document.querySelector(sel); if (!el || el.hidden || !el.offsetParent) return;
+      var kids = sel === ".sbx-hud" ? el.children : [el];
+      for (var k = 0; k < kids.length; k++) { var e = kids[k]; if (e.hidden || !e.offsetParent) continue; var r = e.getBoundingClientRect(); if (!r.width || r.right < lx0 || r.left > lx1 || r.top - R.top > R.height * 0.45) continue; top = Math.max(top, r.bottom - R.top + 8); }
+    });
+    var y = top, tipH = tip.hidden ? 0 : tip.offsetHeight;
+    tip.style.top = y + "px"; if (tipH) y += tipH + 8;
+    to.style.top = y + "px"; var toH = to.classList.contains("on") && to.textContent ? to.offsetHeight + 8 : 0;
+    if (bc) bc.style.top = Math.max(R.height * 0.26, y + toH) + "px";
+    laneSig = "on";
+  }
   var BSUB = ["Mud, mangroves and glowing spores", "Basalt, lava and Cinder Ore", "Frostrock and Frost Crystal", "Murkwater in bloom: petals on the wind", "Ember Bog's sunny side: palms, dunes and lagoons", "Frostfen thawed into an old, shadowy forest"];
   // BIOME VARIANTS: each land has a second type (sandbox-world.js gen: world.sub). Same creatures, ores and rules as its land, a different look.
   var VARB = [{ id: "cherry", n: "Cherry Blossom Vale", c: "#ff9ad0" }, { id: "shores", n: "Sunbaked Shores", c: "#ffd36a" }, { id: "oak", n: "Dark Oakwood", c: "#8fc070" }], BIOX = BIOMES.concat(VARB);
@@ -2488,12 +2512,12 @@
   // Small pop-ups in the bottom-right corner. They queue: at most 2 show at once, one new one every ~0.9 s, and none while a window
   // (Journal, backpack, station...) is open, so they never cover what you are reading. A big pile collapses into "+N more".
   var popQ = [], popNext = 0;
-  function popup(label, title, color, icon) { popQ.push([label, title, color, icon]); if (popQ.length > 6) { var extra = popQ.length - 4; popQ.splice(3, extra, ["More progress", "+" + extra + " more \u2014 see your Journal", "#f2c14e", "\u2605"]); } }
+  function popup(label, title, color, icon) { nlog("pop", label + ": " + title); popQ.push([label, title, color, icon]); if (popQ.length > 3) { var extra = popQ.length - 2; popQ.splice(2, extra, ["More progress", "+" + extra + " more \u2014 see your Journal", "#f2c14e", "\u2605"]); } }
   function pumpPops() {
-    var box = $("sbxPops"); if (!box || !popQ.length || panelOpen || menuOpen || performance.now() < popNext || box.children.length >= 2) return;
+    var box = $("sbxPops"); if (!box || !popQ.length || panelOpen || menuOpen || performance.now() < popNext || box.children.length >= 1 || performance.now() < toastUntil) return;   // NOTICES: one corner pop-up at a time
     var q = popQ.shift(), el = document.createElement("div"); el.className = "sbx-pop"; el.style.setProperty("--pc", q[2] || "#f2c14e");
     el.innerHTML = "<i aria-hidden=\"true\">" + (q[3] || "\u2713") + "</i><small>" + esc(q[0]) + "</small><b>" + esc(q[1]) + "</b>";
-    box.appendChild(el); popNext = performance.now() + 900;
+    box.appendChild(el); popNext = performance.now() + 3300;
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3100);
   }
   function banner(title, desc, label) { popup(label || "Goal complete", title + (desc ? " \u2022 " + desc : ""), "#f2c14e", "\u2713"); snd("rise"); }
@@ -2698,12 +2722,12 @@
   var KSTAT = { crab: "crabs", buccaneer: "buccaneers", bug: "bugs", frog: "frogs", bat: "bats", wolf: "wolves", gator: "gators", slime: "slimes", wasp: "wasps", witch: "witches", spider: "spiders" };
   var FLIER = { bat: 1, wasp: 1 };
   var SEEN_TIP = {
-    wolf: [1, "Frost Wolves hunt in pairs! When one crouches, jump over it or back away before it lunges.", "#9fe8ff"],
-    gator: [2, "A Bog Gator lurks in the water! When its jaws open, get out of reach.", "#a8e05a"],
+    wolf: [1, "Frost Wolves! When one crouches, jump or back away.", "#9fe8ff"],
+    gator: [2, "A Bog Gator! When its jaws open, get out of reach.", "#a8e05a"],
     slime: [4, "Slimes! Big ones split in two when you pop them.", "#7dff6a"],
-    wasp: [8, "Ember Wasps! When one glows red it is about to dash at you: step aside.", "#ffcf3a"],
-    spider: [32, "A Cave Spider! They hang from cave ceilings and drop when you pass under. Watch for the silk threads, and dodge the pounce or you will be webbed.", "#ff4a6a"],
-    witch: [16, "A Bog Witch! She lobs hex bottles from a distance and blinks away if you rush her. Dodge the bottles, then strike.", "#b06aff"]
+    wasp: [8, "Ember Wasps! When one glows red, step aside.", "#ffcf3a"],
+    spider: [32, "A Cave Spider! It drops on you from the ceiling: dodge the pounce.", "#ff4a6a"],
+    witch: [16, "A Bog Witch! Dodge her hex bottles, then strike.", "#b06aff"]
   };
   function aiA(e) { return e.alert > 0 ? 1.7 : 1; }   // an alarmed surface creature hunts from further away
   function aiL() { return (dif().ai || { lead: 0.7 }).lead; }   // how well creatures lead a moving target
@@ -5604,7 +5628,7 @@
     if (cy <= 1 || cy >= H || blocks(cx, cy - 1) || TILES[get(cx, cy - 1)].kind === "water" || TILES[get(cx, cy)].kind === "water") return;
     var a = newAnimal(k, cx + 0.5, cy, false); if (eBoxHit(a.x, a.y, a.w, a.h)) return;
     wilds.push(a);
-    if (!(S.st.seen & 16)) { S.st.seen |= 16; toast("A wild " + ANIM[k].n + "! Hold " + ANIM[k].favN + " and tap it to tame it.", "#f2c14e"); }
+    if (!(S.st.seen & 16)) { S.st.seen |= 16; toast("A wild " + ANIM[k].n + "! Tame it with " + ANIM[k].favN + ".", "#f2c14e"); }
   }
   function troughNear(x, y) { if (T.X_trough === undefined) return null; for (var d = 0; d <= 8; d++) for (var s2 = -1; s2 <= 1; s2 += 2) { var xx = Math.floor(x) + d * s2; for (var yy = Math.floor(y) - 3; yy <= Math.floor(y) + 2; yy++) if (get(xx, yy) === T.X_trough) return xx + 0.5; } return null; }
   function updateAnimals(dt) { if (MP.on && MP.role === "guest") return;
@@ -7138,7 +7162,7 @@
   function collList(L) { return L.filter(function (k) { return ITEMS[k]; }).filter(function (k, i, a) { return a.indexOf(k) === i; }); }
   function collFound(k) {
     if (!ITEMS[k]) return; if (!S.cnew) S.cnew = {}; var rare = COLL_ORES.indexOf(k) >= 0 || COLL_TREAS.indexOf(k) >= 0;
-    if (rare) { S.cnew[k] = 1; if (S.st && (S.st.mined || 0) + (S.st.placed || 0) > 5) toast("New in your Collection Log: " + ITEMS[k].n, ITEMS[k].gem || "#f2c14e"); }
+    if (rare) { S.cnew[k] = 1; }   // (NOTICES: no message any more; the Collection Log marks what is new)
   }
   function collClaim(i) {
     var c = collCount(), M = COLL_MS[i]; if (!M || (S.collR & (1 << i)) || c.got / c.max < M[0]) return;
@@ -9137,7 +9161,7 @@
     var dir = p.x < x + 0.5 ? 1 : -1;   // it falls away from you
     FALLING.push({ cv: cv, px: x + 0.5, py: y, ox: (x0 - M) - (x + 0.5), oy: (y0 - M) - y, a: 0, va: 0, dir: dir, t: 0, land: 0, items: yield2, h: Math.max(1, y - y0) });
     S.st.felled = (S.st.felled || 0) + 1; thud(120, 0.1); chips(x + 0.5, y - 0.2, "#8a6450", 10, 5);
-    if (!S.vis.felltip) { S.vis.felltip = 1; toast("Timber! Chop the bottom of a trunk and the whole tree comes down. Walk over what falls to pick it up.", "#c58a52"); }
+    if (!S.vis.felltip) { S.vis.felltip = 1; toast("Timber! Chop the bottom of a trunk to fell the whole tree.", "#c58a52"); }
   }
   function tickFell(dt) {
     for (var i = FALLING.length - 1; i >= 0; i--) {
@@ -10511,11 +10535,13 @@
   var qh = { id: "", v: -1, t: 0, tick: 0, said: {}, stuck: {} }, tipT = 0;
   function recById(id) { var all = craftAll(); for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i]; return null; }
   function showTip(msg, rc, color) {
+    nlog("tip", msg);
     var el = $("sbxTip"); if (!el) return;
     el.style.setProperty("--tc", color || "#f2c14e");
     el.innerHTML = '<p>' + esc(msg) + "</p>" + (rc ? '<button type="button" class="btn" data-tip="show">Show me</button>' : "") + '<button type="button" class="tip-x" data-tip="x" aria-label="Close tip">×</button>';
     el.setAttribute("data-rc", rc || ""); el.hidden = false; tipT = 14;
   }
+  function trailNudge() { var el = $("sbxTrail"); if (!el || el.hidden) return; el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge"); setTimeout(function () { el.classList.remove("nudge"); }, 2600); }
   function hideTip() { var el = $("sbxTip"); if (el) el.hidden = true; tipT = 0; }
   function openCraftTo(id) {   // the Journal's Craft tab, scrolled to one recipe, which flashes
     var r = recById(id); if (!r) return openPanel("quests");
@@ -10546,7 +10572,7 @@
     var rc = QRC[q.id], r = rc && recById(rc), st = r && recStatus(r), ready = !!(st && st.ready && !st.owned && !stnOf(r));
     if (btn) btn.classList.toggle("pulse", ready && !panelOpen);
     if (ready && !qh.said[q.id] && !panelOpen) { qh.said[q.id] = 1; showTip("You have everything for the " + r.n + "! Open your Journal (" + (coarse ? "the book button" : "E") + ") or tap Show me.", rc, "#4ee6b4"); }
-    if (q.ch <= 1 && qh.t >= 70 && !qh.stuck[q.id] && !panelOpen) { qh.stuck[q.id] = 1; showTip("Tip for “" + q.n + "”: " + q.d, rc && r ? rc : "", "#f2c14e"); }
+    if (q.ch <= 1 && qh.t >= 70 && !qh.stuck[q.id] && !panelOpen) { qh.stuck[q.id] = 1; trailNudge(); }   // stuck a while: the tracker (which says how, and opens the recipe when tapped) pulses
   }
   // ---------- PACING: saplings and bad-luck protection ----------
   // Trees were finite (about 900 log tiles in a world), so leaves now drop Saplings. Plant one on mud, moss or snow with open sky above:
@@ -11962,7 +11988,7 @@
       if (silent) continue;
       giveRw(q.rw);
       banner(q.n, q.rw ? "Reward: " + rewardText(q.rw) : "Quest complete!", "Chapter " + (ch0 + 1) + " \u00b7 quest " + pos + " of " + list.length); cheerT = 1.6;   // MORE ANIMATION: a little victory wave
-      if (ch0 === 0 && MAIN[S.qi] && MAIN[S.qi].ch === 0) { var nq = MAIN[S.qi]; setTimeout(function () { if (MAIN[S.qi] === nq && !panelOpen) showTip("Next: " + nq.n + ". " + nq.d, QRC[nq.id] || "", CHAPTERS[0].c); }, 1600); }
+      if (ch0 === 0 && MAIN[S.qi] && MAIN[S.qi].ch === 0) setTimeout(trailNudge, 1600);   // NOTICES: the tracker already says what is next and how; it pulses instead of a tip card repeating it
       var ch1 = curCh();
       if (ch1 !== ch0) {
         var C = CHAPTERS[ch0]; giveRw(C.rw);
@@ -12352,6 +12378,8 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
     var w = g.measureText(label).width + ts * 1.1, h = Math.max(26, ts * 0.9);
     sx = clamp(sx, w / 2 + 8, vw - w / 2 - 8); sy = clamp(sy, h / 2 + 64, vh - h / 2 - 8);   // POLISH: always fully on screen (clear of the top bar)
+    var cr = ctlRects();   // and clear of the on-screen controls (joystick, buttons): above them, so a thumb can tap it
+    for (var it = 0; it < 6; it++) { var hit = null; for (var k = 0; k < cr.length; k++) { var r = cr[k]; if (sx + w / 2 > r.l - 6 && sx - w / 2 < r.r + 6 && sy + h / 2 > r.t - 6 && sy - h / 2 < r.b + 6) { hit = r; break; } } if (!hit) break; var ny = Math.max(h / 2 + 64, hit.t - h / 2 - 12); if (ny === sy) break; sy = ny; }
     var x0 = sx - w / 2, y0 = sy - h / 2;
     g.fillStyle = no ? "rgba(70,34,40,.88)" : "rgba(40,28,84,.9)"; g.strokeStyle = no ? "#ff8a7a" : "#b58cff"; g.lineWidth = 2;
     g.beginPath(); g.arc(x0 + h / 2, y0 + h / 2, h / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + w - h / 2, y0 + h / 2, h / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
@@ -15762,11 +15790,20 @@
     g.fillStyle = "#a8703c"; g.fillRect(sx + ts * 0.3, sy + ts * 0.15, ts * 0.07, ts * 0.45); g.fillRect(sx + ts * 0.63, sy + ts * 0.15, ts * 0.07, ts * 0.45);
     g.fillStyle = "#c98c4f"; [0.24, 0.37, 0.5].forEach(function (yy) { g.fillRect(sx + ts * 0.3, sy + ts * yy, ts * 0.4, Math.max(2, ts * 0.05)); });
   }
+  var CTLR = [], CTLRT = 0;
+  function ctlRects() {   // where the on-screen controls are, in canvas pixels (re-measured a few times a second)
+    var now = performance.now(); if (now - CTLRT < 300) return CTLR; CTLRT = now; CTLR = [];
+    var cv = $("sbxCv"); if (!cv) return CTLR; var R = cv.getBoundingClientRect(); if (!R.width) return CTLR; var sc = vw / R.width;
+    document.querySelectorAll("#sbxJoy, .sbx-pad button, #sbxCtl > *").forEach(function (e) { if (!e.offsetParent) return; var cs = getComputedStyle(e); if (cs.visibility === "hidden" || cs.opacity === "0" || cs.display === "none") return; var r = e.getBoundingClientRect(); if (!r.width) return; CTLR.push({ l: (r.left - R.left) * sc, r: (r.right - R.left) * sc, t: (r.top - R.top) * sc, b: (r.bottom - R.top) * sc }); });
+    return CTLR;
+  }
   function drawPill(g, now, label, sx, sy, no, fn) { if (PHOTO.on) return;   // a tappable pill above a ladder or hole (tap it, or press F)
     g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
     sy += reduce ? 0 : Math.sin(now / 300) * 2;
     var w = g.measureText(label).width + ts * 1.1, h = Math.max(26, ts * 0.9);
     sx = clamp(sx, w / 2 + 8, vw - w / 2 - 8); sy = clamp(sy, h / 2 + 64, vh - h / 2 - 8);   // POLISH: always fully on screen (clear of the top bar)
+    var cr = ctlRects();   // and clear of the on-screen controls (joystick, buttons): above them, so a thumb can tap it
+    for (var it = 0; it < 6; it++) { var hit = null; for (var k = 0; k < cr.length; k++) { var r = cr[k]; if (sx + w / 2 > r.l - 6 && sx - w / 2 < r.r + 6 && sy + h / 2 > r.t - 6 && sy - h / 2 < r.b + 6) { hit = r; break; } } if (!hit) break; var ny = Math.max(h / 2 + 64, hit.t - h / 2 - 12); if (ny === sy) break; sy = ny; }
     var x0 = sx - w / 2, y0 = sy - h / 2;
     g.fillStyle = no ? "rgba(70,34,40,.88)" : "rgba(38,30,10,.92)"; g.strokeStyle = no ? "#ff8a7a" : "#f2c14e"; g.lineWidth = 2;
     g.beginPath(); g.arc(x0 + h / 2, y0 + h / 2, h / 2, Math.PI / 2, Math.PI * 1.5); g.arc(x0 + w - h / 2, y0 + h / 2, h / 2, -Math.PI / 2, Math.PI / 2); g.closePath(); g.fill(); g.stroke();
@@ -17359,6 +17396,9 @@
     var r = b.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight, vw2 = window.innerWidth, gap = 10;
     var x = Math.max(8, Math.min(vw2 - w - 8, r.left + r.width / 2 - w / 2)), y = r.top - h - gap, below = y < 8;
     if (below) y = r.bottom + gap;
+    var dock = coarse && !ITIP.mouse;   // PHONES: docked to the screen edge away from your thumb, so it never sits over the gear or the slots round it
+    el.classList.toggle("dock", dock); if (dock) { w = el.offsetWidth; h = el.offsetHeight; }
+    if (dock) { var ih = window.innerHeight; x = Math.max(8, (vw2 - w) / 2); below = false; if (r.top + r.height / 2 > ih * 0.68) { y = r.top - h - gap; dock = false; el.classList.remove("dock"); x = Math.max(8, Math.min(vw2 - w - 8, r.left + r.width / 2 - w / 2)); } else { y = ih - h - 18; var acts = [].filter.call(document.querySelectorAll("[data-iact]"), function (a) { return a.offsetParent && a.getBoundingClientRect().top > r.bottom; }), at = acts.reduce(function (m, a) { return Math.min(m, a.getBoundingClientRect().top); }, 1e9); if (at < 1e9) y = Math.min(y, at - h - 8); } }   // (the gear is at the top: never over it; nor over the item's buttons)
     el.style.left = Math.round(x) + "px"; el.style.top = Math.round(Math.max(8, Math.min(window.innerHeight - h - 8, y))) + "px";
     el.classList.toggle("below", below); el.style.setProperty("--ax", Math.round(r.left + r.width / 2 - x) + "px");
     if (!quiet) void el.offsetWidth; el.classList.add("on"); ITIP.at = b;
@@ -17378,7 +17418,7 @@
   }
   document.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") { ITIP.mx = e.clientX; ITIP.my = e.clientY; } }, true);
   document.addEventListener("pointerover", function (e) {   // desktop: hover
-    if (e.pointerType !== "mouse") return; ITIP.mx = e.clientX; ITIP.my = e.clientY; var b = itSlot(e);
+    if (e.pointerType !== "mouse") return; ITIP.mouse = true; ITIP.mx = e.clientX; ITIP.my = e.clientY; var b = itSlot(e);
     if (!b) { if (ITIP.at && !(e.target.closest && e.target.closest(".sbx-itip"))) itHide(); return; }
     if (b === ITIP.at || (idrag && idrag.on)) return;
     clearTimeout(ITIP.t); var wasOpen = !!ITIP.at; var sel2 = b.hasAttribute("data-is") ? '[data-is="' + b.getAttribute("data-is") + '"]' : '.sbx-slot[data-slot="' + b.getAttribute("data-slot") + '"]';
@@ -17390,7 +17430,7 @@
     clearTimeout(ITIP.t); if (ITIP.at === b) itHide();
   });
   document.addEventListener("pointerdown", function (e) {
-    if (e.pointerType === "mouse") { itHide(); return; }
+    if (e.pointerType === "mouse") { itHide(); return; } ITIP.mouse = false;
     var b = itSlot(e); if (ITIP.at && ITIP.at !== b) itHide(); if (!b) return;   // phone: press and hold
     clearTimeout(ITIP.hold && ITIP.hold.t); ITIP.held = 0;
     var H2 = ITIP.hold = { b: b, id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -21397,7 +21437,7 @@
     if (paused ? now - lastDraw < 100 : OPT.fps === 30 ? now - lastDraw < 30 : OPT.fps === 60 ? (rafAvg < 9.5 && rafOdd) : false) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other refresh (an even rhythm); menus redraw ~10x a second   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
     lastDraw = now;
     var raw = (now - last) / 1000 || 0.016, dt = Math.min(0.05, raw); last = now;
-    if (!titleOpen) { pumpToasts(); pumpPops(); }
+    if (!titleOpen) { pumpToasts(); pumpPops(); noticeLane(); }
     // automatic quality: if a device is struggling for ~2 seconds, switch off the optional sparkle (ambient motes, aurora, glints)
     if (!paused && !document.hidden && raw < 0.5 && OPT.gq === "auto" && OPT.fps !== 30) { frN++; if (raw > 0.026) slowN++; if (frN >= 90) { if (slowN > 55) { if (dprCap > 1) { dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} resize(); } else reduce = true; } frN = slowN = 0; } }
     if (PHOTO.on) tickPhoto(dt);
@@ -21449,7 +21489,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < col[clamp(Math.floor(p.x), 0, W - 1)] + 8, col: col[clamp(Math.floor(p.x), 0, W - 1)] }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
