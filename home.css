@@ -1,0 +1,94 @@
+/* ==========================================================================
+   SwampRealms home: Delve first
+   The first screen is the game: a real in-game night by a Reed Cabin (delve-hero*.jpg), drifting fireflies and rain on a canvas,
+   the DELVE wordmark (delve-logo.js) and a big Play button. Then the story, the world, what you do, and the cards further down.
+   ========================================================================== */
+body.home header{position:fixed;left:0;right:0;background:linear-gradient(180deg,#05080699,transparent);border-bottom-color:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;transition:background .35s,box-shadow .35s,border-color .35s}
+body.home header.scrolled{background:#070b09f0;border-bottom-color:var(--mint-line);box-shadow:0 12px 30px -22px var(--mint);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+
+/* ---- the hero ---- */
+.dh{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden;isolation:isolate;background:#05090c}
+.dh-bg{position:absolute;inset:0;z-index:-3;background:url(delve-hero-phone.jpg) center top/100% auto no-repeat;transform-origin:60% 40%;animation:dhZoom 26s var(--ease-in-out) infinite alternate}
+.dh-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#05090c00 30%,#05090ccc 58%,#070b09 74%)}
+@media(min-width:701px){
+ .dh-bg{background:url(delve-hero-md.jpg) 0% 40%/cover no-repeat}
+ .dh-bg::after{background:linear-gradient(90deg,#05090cf0 0%,#05090cb0 34%,#05090c00 62%),linear-gradient(180deg,#05090c00 70%,#070b09 100%)}
+}
+@media(min-width:1300px){.dh-bg{background-image:url(delve-hero.jpg)}}
+@keyframes dhZoom{from{transform:scale(1)}to{transform:scale(1.07)}}
+.dh-fx{position:absolute;inset:0;z-index:-2;width:100%;height:100%;pointer-events:none}
+.dh-flash{position:absolute;inset:0;z-index:-1;background:#cfe6ff;opacity:0;pointer-events:none;mix-blend-mode:screen}
+.dh-flash.on{animation:dhFlash .9s ease-out}
+@keyframes dhFlash{0%{opacity:0}6%{opacity:.5}12%{opacity:.08}20%{opacity:.34}100%{opacity:0}}
+
+.dh-in{width:100%;max-width:1180px;margin:0 auto;padding:0 20px calc(118px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;text-align:center}
+@media(min-width:701px){.dh{align-items:center}.dh-in{align-items:flex-start;text-align:left;padding:120px 48px 90px}}
+.dh-logo{display:block;max-width:100%;height:auto;margin:0 0 6px -6px;filter:drop-shadow(0 10px 24px #000c)}
+.dh-tag{margin:4px 0 8px;font:800 clamp(19px,4.6vw,26px)/1.25 Nunito,sans-serif;color:#f6eedb;text-shadow:0 2px 12px #000}
+.dh-tag b{color:#7af0c8;font-weight:800}
+.dh-sub{max-width:44ch;margin:0 0 22px;color:#e8e4d4cc;font-size:16px;text-shadow:0 2px 10px #000}
+.dh-cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+@media(min-width:701px){.dh-cta{justify-content:flex-start}}
+.dh-play{display:inline-flex;align-items:center;gap:14px;padding:12px 30px 12px 12px;border-radius:999px;text-decoration:none;color:#2a1a04;background:linear-gradient(180deg,#ffe08a,#f2c14e 55%,#d89e2e);
+ box-shadow:0 0 0 2px #fff4c8 inset,0 10px 30px -8px #f2c14ecc,0 0 60px -14px #f2c14e;transition:transform .25s var(--ease-spring),filter .2s;animation:dhPulse 2.6s ease-in-out infinite}
+.dh-play:hover{filter:brightness(1.06);transform:translateY(-2px)}
+.dh-play:active{transform:scale(.97)}
+.dh-pi{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#2a1a04;color:#ffe08a;flex:none}
+.dh-pi svg{width:26px;height:26px;margin-left:3px}
+.dh-play span:last-child{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1}
+.dh-play b{font:400 26px/1 'Bagel Fat One',Nunito,sans-serif;letter-spacing:.01em}
+.dh-play small{font:800 13px Nunito,sans-serif;opacity:.75;margin-top:3px}
+@keyframes dhPulse{0%,100%{box-shadow:0 0 0 2px #fff4c8 inset,0 10px 30px -8px #f2c14ecc,0 0 60px -14px #f2c14e}50%{box-shadow:0 0 0 2px #fff4c8 inset,0 10px 30px -8px #f2c14ecc,0 0 80px -6px #f2c14e}}
+.dh-sec{padding:14px 22px;border-radius:999px;color:#c8fff4;text-decoration:none;font:800 15px Nunito,sans-serif;background:#05090c99;box-shadow:0 0 0 1.5px #4ee6b466 inset;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.dh-sec:hover{box-shadow:0 0 0 1.5px var(--mint) inset}
+.dh-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;list-style:none;margin:22px 0 0;padding:0}
+@media(min-width:701px){.dh-chips{justify-content:flex-start}}
+.dh-chips li{padding:5px 11px;border-radius:999px;font:800 12px Nunito,sans-serif;color:#d8f8ec;background:#ffffff10;border:1px solid #ffffff1c}
+.dh-down{position:absolute;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:26px;height:40px;margin-left:-13px;border:2px solid #ffffff55;border-radius:14px;display:none}
+.dh-down span{position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#fff;animation:dhDown 1.8s ease-in-out infinite}
+@media(min-width:701px){.dh-down{display:block;bottom:28px}}
+@keyframes dhDown{0%{transform:translateY(0);opacity:0}30%{opacity:1}100%{transform:translateY(14px);opacity:0}}
+
+/* ---- sections ---- */
+.ds{max-width:1080px}
+.eyebrow{margin:0 0 6px;font:800 13px Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mint,#4ee6b4)}
+.tl{list-style:none;margin:8px auto 0;padding:0;max-width:760px;text-align:left;position:relative}
+.tl::before{content:"";position:absolute;left:21px;top:10px;bottom:10px;width:2px;background:linear-gradient(180deg,#f2c14e,#ff6a5a,#4ee6b4,#c88ae8);opacity:.5}
+.tl li{position:relative;display:flex;gap:16px;padding:0 0 22px}
+.tl-n{position:relative;flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;font:400 20px 'Bagel Fat One',sans-serif;color:#0a0f0c;background:var(--c);box-shadow:0 0 0 5px #070b09,0 0 26px -4px var(--c)}
+.tl li>div{padding:14px 16px;border-radius:18px;background:var(--panel);border:1px solid var(--mint-line);flex:1}
+.tl b{display:block;font:800 18px Nunito,sans-serif;color:var(--c);margin-bottom:4px}
+.tl p{margin:0;color:var(--muted)}
+.dq{margin:22px auto 0;max-width:620px;font:400 clamp(22px,5vw,30px)/1.3 'Bagel Fat One',sans-serif;color:#ffe9a8;text-shadow:0 0 30px #f2c14e55}
+.dq cite{display:block;margin-top:8px;font:800 14px Nunito,sans-serif;font-style:normal;color:var(--muted)}
+
+.lands{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.lands{grid-template-columns:1fr 1fr}}
+.land{position:relative;margin:0;border-radius:20px;overflow:hidden;border:1px solid var(--mint-line);background:#05090c;text-align:left;box-shadow:0 18px 40px -26px #000}
+.land img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;transition:transform .8s var(--ease-out)}
+.land:hover img{transform:scale(1.05)}
+.land figcaption{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;background:linear-gradient(180deg,transparent,#05090ce8 60%)}
+.land b{display:block;font:400 22px 'Bagel Fat One',sans-serif;color:var(--c);text-shadow:0 2px 8px #000}
+.land span{display:block;font-size:14px;color:#e8e4d4d9}
+.lands-more{margin:16px auto 0;max-width:60ch;color:var(--muted)}
+.lands-more b{color:var(--text)}
+
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left}
+@media(min-width:800px){.feats{grid-template-columns:repeat(3,1fr)}}
+.ft{padding:16px;border-radius:18px;background:var(--panel);border:1px solid var(--mint-line);position:relative;overflow:hidden}
+.ft::before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 35%,transparent),transparent 70%)}
+.ft i{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;font-style:normal;font-size:22px;background:color-mix(in srgb,var(--c) 22%,#0a100c);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 55%,transparent) inset;margin-bottom:10px}
+.ft b{display:block;font:800 16px Nunito,sans-serif;color:var(--text)}
+.ft p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+
+.dband{max-width:none;margin-top:60px;padding:70px 18px;background:radial-gradient(600px 260px at 50% 100%,#f2c14e22,transparent 70%),linear-gradient(180deg,transparent,#4ee6b40c)}
+.dband .dh-play{margin-top:4px}
+
+.cards-wrap{display:grid;gap:18px;align-items:center;justify-items:center;margin:0 0 18px}
+@media(min-width:800px){.cards-wrap{grid-template-columns:auto 1fr}}
+.cards-wrap .status{width:100%}
+@media(prefers-reduced-motion:reduce){.dh-bg,.dh-play,.dh-down span{animation:none}}
+.cards-wrap .showcase{width:clamp(240px,70vw,320px);margin:24px auto 8px}
+.cards-wrap .status{margin:0 auto}
+@media(max-width:700px){.dh-chips{display:none}.dh-in{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}.dh-sub{font-size:15px;margin-bottom:18px}.dh-logo{margin-bottom:0}}
+.land figcaption b{font-family:"Bagel Fat One",Nunito,sans-serif!important;font-weight:400!important;font-size:22px!important}

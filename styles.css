@@ -412,3 +412,13 @@ body:has(#preview[open]),body:has(#odds[open]){overflow:hidden}
  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
  .js .reveal,.js .reveal :is(.steps li,.tile){opacity:1;transform:none}
 }
+
+/* ===== Delve first: the gold Play button in the tab bar and the header ===== */
+.tabbar a.tb-play{position:relative;flex:1.15;color:#ffe9a8}
+.tabbar a.tb-play i{display:grid;place-items:center;width:52px;height:52px;margin:-26px 0 1px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe08a,#f2c14e 55%,#c8902a);color:#2a1a04;box-shadow:0 0 0 4px #070b09,0 6px 18px -4px #f2c14eaa,0 0 26px -6px #f2c14e;transition:transform .25s var(--ease-spring)}
+.tabbar a.tb-play svg{width:26px;height:26px}
+.tabbar a.tb-play:active i{transform:scale(.9)}
+.tabbar a.tb-play[aria-current=page]{color:var(--gold)}
+header nav a.play{padding:7px 14px;border-radius:999px;background:var(--gold);color:#1a1405;opacity:1;box-shadow:0 0 22px -6px var(--gold)}
+header nav a.play[aria-current=page]::after{display:none}
+header nav a.play:hover{filter:brightness(1.08)}
