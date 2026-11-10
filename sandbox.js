@@ -17535,7 +17535,7 @@
       if (Object.keys(M.pts).length === 1) { var k = Object.keys(M.pts)[0]; M.drag = { x: M.pts[k].x, y: M.pts[k].y, cx: M.cx, cy: M.cy, t: 0, moved: true }; }
     };
     c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up); c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
-    c.addEventListener("wheel", function (e) { e.preventDefault(); var q = pt(e); zoomAt(q.x, q.y, M.s * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
+    c.addEventListener("wheel", function (e) { e.preventDefault(); M.dirty = true; var q = pt(e); zoomAt(q.x, q.y, M.s * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
     V.addEventListener("click", function (e) {
       var t = e.target.closest("button"); if (!t) return;
       if (t.hasAttribute("data-mclose")) return closeMap();
@@ -21854,7 +21854,7 @@
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   function loop(now) {
     var titleMove = titleOpen && !panelOpen && !menuOpen && !cave && !OCS && !HOME && !mapOpen;   // the main-menu fly-by: draw every frame so the pan glides
-    var paused = (panelOpen || menuOpen || titleOpen) && !titleMove && !trans && !MP.on && !PHOTO.on;
+    var paused = (panelOpen || menuOpen || titleOpen) && !titleMove && !trans && !MP.on && !PHOTO.on && !(mapOpen && (M.drag || M.pinch || M.fling || M.dirty));   // (the map is a menu, but while you move it it runs at full frame rate: at 10 a second it felt choppy)
     var rgap = now - rafPrev; rafPrev = now; if (rgap > 2 && rgap < 40) rafAvg += (rgap - rafAvg) * 0.05;   // the screen's real refresh interval (smoothed)
     rafOdd = !rafOdd;
     if (paused ? now - lastDraw < 100 : OPT.fps === 30 ? now - lastDraw < 30 : OPT.fps === 60 ? (rafAvg < 9.5 && rafOdd) : false) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other refresh (an even rhythm); menus redraw ~10x a second   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
