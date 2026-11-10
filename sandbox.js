@@ -1447,7 +1447,7 @@
     if (all && A.n > 1 && !noAsk && invAsk !== "t" + a) { invAsk = "t" + a; renderPanel(); return; }
     invAsk = ""; var k = A.k, n = all ? A.n : 1; A.n -= n; if (A.n <= 0) { S.slots[a] = null; invSel = -1; }
     S.inv[k] = (S.inv[k] || 0) - n; if (S.inv[k] <= 0) delete S.inv[k]; if (sel === k && !(S.inv[k] > 0)) { sel = "pick", bare = true; selSlot = -1; }
-    if (!cave) tossDrop(k, n); else toast("Dropped " + n + " " + ITEMS[k].n + ". (Things dropped underground are lost.)", "#c9a46a");
+    if (gdScene()) sceneToss(k, n); else tossDrop(k, n);
     snd("coin"); hbDirty = true; invAfter();
   }
   function sortInv() {   // tidy the bag (not the hotbar): merge stacks, then order like the item list
@@ -4000,7 +4000,7 @@
   function caveSwing(dt) {   // weapon in a cave: a swing toward where you aim hits every creature in a cone in front of you
     if (!aim.down || !S.wpn) return;
     var brk = toolBroken("wpn"); if (brk) nag("Your weapon is broken: you are only swatting. Repair it in the Craft tab.");   // a broken blade still swats weakly, so a fight can always be finished
-    cool -= dt; if (cool > 0) return; cool = brk ? 0.55 : wCd(); S.st.swings++;
+    cool -= dt; if (cool > 0) return; cool = brk ? 0.55 : wCd(); S.st.swings++; heldPh = 0;   // the swing starts with the hit
     var ax = (aim.mx - ox) / ts - cp.x, ay = (aim.my - oy) / ts - (cp.y - 0.5), al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1;
     thud(300 + S.wpn * 70, 0.04);
     for (var s2 = 0; s2 < 5; s2++) { var an = Math.atan2(ay, ax) + (s2 - 2) * 0.32; parts.push({ x: cp.x + Math.cos(an) * 1.1, y: cp.y - 0.5 + Math.sin(an) * 1.1, vx: Math.cos(an) * 2.5, vy: Math.sin(an) * 2.5 - 1, life: 0.2, max: 0.25, c: WEAPONS[S.wpn].c, s: 3 }); }
@@ -5646,8 +5646,8 @@
   // 80+ = well fed: health comes back 60% faster.  Under 25 = hungry: health stops coming back.  0 = starving: you slowly lose health, but never below 10.
   // Hunger can be switched off per world in the Options tab.
   var HUNGER_RATE = 100 / 620, starveT = 0, shownFood = -1;
-  function meX() { return cave ? cp.x : p.x; }
-  function meY() { return cave ? cp.y - 1.4 : p.y - PH - 0.3; }
+  function meX() { return cave || HOME ? cp.x : p.x; }
+  function meY() { return cave || HOME ? cp.y - 1.4 : p.y - PH - 0.3; }
   function regenMul() { var hc = (hasCharm("hearty") ? 1.2 : 1) * (gem("arm", "amethyst") ? 1.25 : 1); if (S.nohunger) return hc; return (S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1) * hc; }
   function drawFood() {
     var el = $("sbxFood"); if (!el) return; el.hidden = !!S.nohunger; if (S.nohunger) return;
@@ -5673,11 +5673,10 @@
     if (it.heal) { hp = Math.min(MAXHP, hp + it.heal); drawHp(); }
     if (it.efx && S.fx) { S.fx[it.efx[0]] = Math.max(S.fx[it.efx[0]] || 0, it.efx[1]); drawFx(true); }   // DISCOVERIES: secret dishes give a potion effect too
     S.st.eaten++; if (it.cooked) S.ate[k] = 1; shownFood = -1; drawFood();
-    text(meX(), meY(), "+" + it.food + " food" + (it.heal ? "  +" + it.heal + " hp" : ""), "#ffd27a"); thud(560, 0.04);
-    for (var q = 0; q < 6; q++) parts.push({ x: meX() + (Math.random() - 0.5) * 0.5, y: (cave ? cp.y - 0.9 : p.y - 1.1), vx: (Math.random() - 0.5) * 2, vy: -1.5 - Math.random(), life: 0.4, max: 0.5, c: "#e0b070", s: 3 });
+    text(meX(), meY(), "+" + it.food + " food" + (it.heal ? "  +" + it.heal + " hp" : ""), "#ffd27a"); actStart("eat", k);   // three bites, with crumbs (actFx)
     hbDirty = true; checkTrail(); checkGoals(); if (panelOpen) renderPanel();
   }
-  function useFood(dt) { mine = null; if (!aim.down) return; cool -= dt; if (cool > 0) return; cool = 0.7; eat(sel); }
+  function useFood(dt) { mine = null; if (!aim.down || actT() >= 0) return; cool -= dt; if (cool > 0) return; cool = 0.7; eat(sel); }
   // ---------- FISHING ----------
   // Pick the rod (S.rod: 1 Reed Rod, 2 Ember Rod) and tap water to cast. The bobber floats... when it dips and a "!" shows, tap again quickly to reel in.
   // Tapping too early pulls the line in. The Reed Rod fishes water, and also through Frostfen ice; the Ember Rod can fish in lava too.
@@ -9416,7 +9415,12 @@
     if (OCS && !OCS.sea && OCS.pl) return { L: OCS.gd || (OCS.gd = []), pl: OCS.pl, sea: 1 };
     return null;
   }
-  function dropAt(k, n, tx, ty) {
+  function sceneToss(k, n) {   // dropping in a top-down scene: thrown out in front of you, it hops, lands and waits a moment before you can pick it up again
+    var sc = gdScene(); if (!sc || !ITEMS[k] || !(n > 0)) return; var f = sc.pl.face || cp.face || 1;
+    sc.L.push({ k: k, n: n, x: sc.pl.x + f * 0.4, y: sc.pl.y - (sc.sea ? 0.4 : 0.1), ph: Math.random() * 6, wait: 2.2, z: 0.5, vz: 3.2, vx: f * 2.8, vy: (Math.random() - 0.5) * 0.6 }); S.st.tossed = (S.st.tossed || 0) + n; thud(300, 0.03);
+  }
+  function sceneSY(y) { return HOME && HOME.hk ? HOME.piv + (y - HOME.piv) * HOME.hk : y; }   // the homestead's tilted ground (see homeRender)
+  function dropAt(k, n, tx, ty, pop) {   // pop: loot from something you broke: it hops out of the spot, bounces and slides to you
     if (!ITEMS[k] || !(n > 0)) return;
     var sc = gdScene();
     if (!sc) {   // the surface (or sailing: it waits at your feet on land)
@@ -9425,7 +9429,8 @@
       spawnDrop(k, n, X, Y); var d = drops[drops.length - 1]; if (d && d.k === k) d.full = 1.2; return;
     }
     var x = tx !== undefined ? Math.floor(tx) + 0.5 : sc.pl.x, y = tx !== undefined ? Math.floor(ty) + 0.5 : sc.pl.y - (sc.sea ? 0.4 : 0.1), L = sc.L;
-    for (var i = 0; i < L.length; i++) if (L[i].k === k && Math.abs(L[i].x - x) < 0.7 && Math.abs(L[i].y - y) < 0.7) { L[i].n += n; L[i].wait = 1.2; L[i].age = 0; return; }
+    for (var i = 0; i < L.length; i++) if (L[i].k === k && Math.abs(L[i].x - x) < 0.7 && Math.abs(L[i].y - y) < 0.7 && !L[i].vz) { L[i].n += n; L[i].wait = pop ? 0.5 : 1.2; L[i].age = 0; return; }
+    if (pop) { for (var j = 0; j < n && j < 4; j++) { var an = Math.random() * 6.283, m = j === Math.min(n, 4) - 1 ? n - j : 1; L.push({ k: k, n: m, x: x, y: y, ph: Math.random() * 6, wait: 0.55, z: 0.3, vz: 4 + Math.random() * 1.5, vx: Math.cos(an) * (1 + Math.random()), vy: Math.sin(an) * (0.7 + Math.random() * 0.6) }); } return; }
     L.push({ k: k, n: n, x: x + (Math.random() - 0.5) * 0.3, y: y + (Math.random() - 0.5) * 0.3, ph: Math.random() * 6, wait: 1.2 });
     if (L.length > 200) L.splice(0, L.length - 200);
   }
@@ -9442,6 +9447,10 @@
     var L = sc.L, pl = sc.pl, live = !menuOpen && !titleOpen && !panelOpen && !packOpen && hp > 0, sz = Math.max(10, ts * 0.55), sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (var i = L.length - 1; i >= 0; i--) {
       var d = L[i]; d.ph += dt * 3; if (d.wait > 0) d.wait -= dt;
+      if (d.vz !== undefined) {   // a hop out of the spot: up, down, a little bounce, then it settles
+        d.vz -= 20 * dt; d.z += d.vz * dt; d.x += d.vx * dt; d.y += d.vy * dt; d.vx *= Math.max(0, 1 - 3 * dt); d.vy *= Math.max(0, 1 - 3 * dt);
+        if (d.z <= 0) { d.z = 0; if (d.vz < -2.2) d.vz = -d.vz * 0.38; else { delete d.vz; d.vx = d.vy = 0; } }
+      }
       if (!menuOpen && !titleOpen && !panelOpen && !packOpen) d.age = (d.age || 0) + dt;
       if (d.age > DESPAWN) { L.splice(i, 1); continue; }
       var dx = pl.x - d.x, dy = (pl.y - (sc.sea ? 0.4 : 0.1)) - d.y, dist = Math.sqrt(dx * dx + dy * dy);
@@ -9451,10 +9460,10 @@
           d.n -= got; if (d.n <= 0) { L.splice(i, 1); continue; } d.wait = 1.5;   // still no room: it waits a moment before trying again
         } else { var pull = Math.min(dist, dt * 7); d.x += dx / dist * pull; d.y += dy / dist * pull; }
       }
-      var sx = ox + d.x * ts, sy = oy + d.y * ts + Math.sin(d.ph) * ts * 0.06;
+      var gy0 = sceneSY(oy + d.y * ts), sx = ox + d.x * ts, sy = gy0 + (d.vz !== undefined ? -d.z * ts : Math.sin(d.ph) * ts * 0.06);
       if (sx < -ts || sx > vw + ts || sy < -ts || sy > vh + ts) continue;
       if (d.age > DESPAWN - 30 && Math.floor(now / (d.age > DESPAWN - 8 ? 90 : 180)) % 2) continue;
-      g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(sx, oy + d.y * ts + sz * 0.42, sz * 0.34, sz * 0.12, 0, 0, 6.2832); g.fill();
+      var shk = d.vz !== undefined ? Math.max(0.4, 1 - d.z * 0.5) : 1; g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(sx, gy0 + sz * 0.42, sz * 0.34 * shk, sz * 0.12 * shk, 0, 0, 6.2832); g.fill();
       var im = dropIcon(d.k); if (im.complete && im.naturalWidth) g.drawImage(im, sx - sz / 2, sy - sz / 2, sz, sz);
       if (d.n > 1) { g.font = "900 " + Math.max(9, Math.round(sz * 0.36)) + "px Nunito,sans-serif"; g.textAlign = "right"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; var lb = d.n > 999 ? "999+" : "" + d.n; g.strokeText(lb, sx + sz * 0.55, sy + sz * 0.5); g.fillStyle = "#fff6dc"; g.fillText(lb, sx + sz * 0.55, sy + sz * 0.5); }
     }
@@ -10619,11 +10628,11 @@
     S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) sel = "pick", bare = true; } give("bottle", 1, p.x, p.y - 1, true); reslot(); hbDirty = true;
     if (P.heal) { hp = Math.min(MAXHP, hp + P.heal); drawHp(); }
     if (P.fx) { S.fx[P.fx] = P.t; drawFx(true); }
-    S.st.drunk++; S.mk["drank_" + k] = 1; chips(cave ? cp.x : p.x, (cave ? cp.y : p.y) - 1.2, P.c, 14, 5); snd("rise");
+    S.st.drunk++; S.mk["drank_" + k] = 1; actStart("drink", k); thud(380, 0.03); if (reduce) { chips(meX(), meY() + 0.6, P.c, 14, 5); snd("rise"); }   // the sparkle bursts at the last gulp (actFx)
     toast(ITEMS[k].n + ": " + P.d, P.c); checkGoals(); save();
   }
   var drankAt = 0;
-  function useDrink(dt) { mine = null; var now = performance.now(); if (!aim.down || now - drankAt < 800) return; drankAt = now; drink(sel); }   // its own timer: the shared tool cooldown only ticks while that tool is held
+  function useDrink(dt) { mine = null; var now = performance.now(); if (!aim.down || now - drankAt < 800 || actT() >= 0) return; drankAt = now; drink(sel); }   // its own timer: the shared tool cooldown only ticks while that tool is held
   function potionSprite(c) {
     return { r: ["................", "......oooo......", "......mmmm......", ".......oo.......", ".......gg.......", "......oggo......", ".....oggggo.....", "....ogwggggo....", "....ogLLLLLo....", "....oLLwLLLo....", "....oLLLLLLo....", "....oLLLLLDo....", ".....oLLLDo.....", "......oooo......", "................", "................"],
       p: { o: "#2a3a44", m: "#8a6a3a", g: "#cfeaf2", w: "#ffffff", L: c, D: "#00000055" }, o: "#16222a" };
@@ -15399,7 +15408,27 @@
   function heldShovel() { return sprCanvas("shovel"); }
   function heldWeapon(tier) { return sprCanvas("wpn" + tier); }
   // Arm angle (phi: 0 = hanging, ~2.5 = raised overhead) and tool angle for the current swing, so the arm and the tool move as one
+  // ACTIONS (drinking a potion, eating): a short arm animation shared by every scene. The paw brings the item up to the mouth, a bottle
+  // tips and gulps (bubbles), food is bitten three times (crumbs, the bite shrinks it), and the paw comes back down. The potion's sparkle
+  // bursts at the last gulp. ACT = { kind, k, t0, d, fx } (times in seconds from performance.now()).
+  var ACT = null;
+  function actStart(kind, k) { ACT = { kind: kind, k: k, t0: performance.now(), d: kind === "drink" ? 1.0 : 1.15, fx: 0, bites: 0 }; }
+  function actT() { if (!ACT) return -1; var t = ACT.freeze !== undefined ? ACT.freeze : (performance.now() - ACT.t0) / 1000; if (t >= ACT.d || reduce) { ACT = null; return -1; } return t; }
+  function actEase(x) { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); }
+  function actPose(t) {   // { ang, phi } for the arm and the item at time t of the action
+    var A = ACT, up = actEase(t / 0.22) * (1 - actEase((t - (A.d - 0.22)) / 0.22)), ang, phi = 1.05 + up * 1.22;
+    if (A.kind === "drink") { var tip = actEase((t - 0.24) / 0.16) * (1 - actEase((t - (A.d - 0.3)) / 0.12)); ang = -0.3 * up - tip * 1.6 + Math.sin(t * 22) * 0.07 * tip; phi += tip * 0.08; }
+    else { var bite = up > 0.9 ? Math.max(0, Math.sin((t - 0.22) / (A.d - 0.5) * Math.PI * 3)) : 0; ang = -1.25 * up; phi -= bite * 0.14; }
+    return { ang: ang, phi: phi, has: true, kind: "act", up: up };
+  }
+  function actFx(t, hx, hy) {   // particles during the action, in world units (called from the draw: hx, hy = the paw on screen)
+    var A = ACT, wx = (hx - ox) / ts, wy = (hy - oy) / ts, P = A.kind === "drink" ? POTIONS[A.k] : null, c = P ? P.c : (ITEMS[A.k] && ITEMS[A.k].gem) || "#e0b070";
+    if (A.kind === "drink" && t > 0.3 && t < A.d - 0.3 && Math.random() < 0.45) parts.push({ x: wx + (Math.random() - 0.5) * 0.2, y: wy - 0.25, vx: (Math.random() - 0.5) * 0.6, vy: -1.4 - Math.random(), g: -1.5, life: 0.45, max: 0.5, c: Math.random() < 0.5 ? "#ffffff" : c, s: 2 });
+    if (A.kind === "eat") { var nb = Math.floor((t - 0.22) / ((A.d - 0.5) / 3)); if (t > 0.3 && nb > A.bites && A.bites < 3) { A.bites = nb; thud(520 + A.bites * 40, 0.035); for (var q = 0; q < 5; q++) parts.push({ x: wx + (Math.random() - 0.5) * 0.3, y: wy - 0.1, vx: (Math.random() - 0.5) * 2.2, vy: -1.2 - Math.random() * 1.4, life: 0.45, max: 0.5, c: c, s: 2.5 }); } }
+    if (A.kind === "drink" && !A.fx && t > A.d - 0.32) { A.fx = 1; snd("rise"); chips(meX(), meY() + 0.6, c, 16, 5); for (var r = 0; r < 12; r++) { var an = r / 12 * 6.283; parts.push({ x: meX() + Math.cos(an) * 0.3, y: meY() + 0.9 + Math.sin(an) * 0.2, vx: Math.cos(an) * 2.4, vy: Math.sin(an) * 1.2 - 0.8, g: -0.5, life: 0.6, max: 0.6, c: c, s: 3 }); } }
+  }
   function toolPose() {
+    var at = actT(); if (at >= 0) return actPose(at);
     var sway = reduce ? 0 : Math.sin(p.walk * 5), moving = p.on && Math.abs(p.vx) > 0.5 ? 1 : 0;
     if (sel === "bucket") return { ang: 0.05, phi: 0.7, has: S.bucket >= 1, kind: "can" };
     if (sel === "net") return { ang: -0.6 + heldAmt * 0.9, phi: 1.2 + heldAmt * 0.6, has: S.net >= 1, kind: "can" };
@@ -15409,16 +15438,37 @@
     var kind = sel === "pick" || sel === "shovel" || sel === "hoe" ? "pick" : sel === "weapon" ? "weapon" : "item", sw = 0, base = 0.15, k1 = -0.55, k2 = 1.9, amp = 0.06, has = false, ph;
     if (kind === "pick") { has = sel === "shovel" ? S.shovel >= 1 : sel === "hoe" ? S.hoe >= 1 : S.tier >= 1 && !bare; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.55) * Math.PI * 0.5) * (ph < 0.55 ? 1 : 1 - (ph - 0.55) / 0.45); }
     else if (kind === "weapon") { has = S.wpn >= 1; ph = heldPh % 1; sw = Math.sin(Math.min(1, ph / 0.4) * Math.PI * 0.5) * (ph < 0.4 ? 1 : 1 - (ph - 0.4) / 0.6); base = 0.2; k1 = -0.7; k2 = 2.2; amp = 0.05; }
-    else has = !!(ITEMS[sel] && ITEMS[sel].tile !== undefined);
+    else has = !!(ITEMS[sel] && (S.inv[sel] || 0) > 0);   // anything in your paw is held (blocks, food, potions, materials)
     var ang = base + heldAmt * (k1 + sw * k2) + sway * amp * (1 - heldAmt), phi;
-    if (kind === "item") phi = (has ? 0.85 : 0.3 + sway * 0.4 * moving) + heldAmt * Math.sin(heldPh * 6.28) * 0.3;
+    if (kind === "item") phi = (has ? 1.05 + sway * 0.05 * moving : 0.3 + sway * 0.4 * moving) + heldAmt * Math.sin(heldPh * 6.28) * 0.3;
     else {
       var idle = has ? 0.38 + sway * 0.12 * moving : 0.3 + sway * 0.45 * moving, work = 2.5 - (base + k1 + sw * k2 + 0.4) * 0.8;
       phi = idle * (1 - heldAmt) + work * heldAmt;
     }
     return { ang: ang, phi: phi, has: has, kind: kind };
   }
+  // HOLDING THINGS: an item sits in the paw (drawn before the arm, so the paw wraps round it): a block as a small outlined block, a torch
+  // upright with its flame, anything else as its icon, tilted with the arm. During an action (drinking, eating) the item follows actPose.
+  function heldItem(g, k, hx, hy, tp, sc) {
+    var it = ITEMS[k]; if (!it) return; var sm = g.imageSmoothingEnabled, bob = heldAmt * Math.sin(heldPh * 6.28) * ts * 0.04; g.save(); g.translate(hx, hy + bob); if (tp.kind === "act" && ACT && ACT.kind === "eat") g.translate(-ts * 0.24 * (tp.up || 0), ts * 0.08 * (tp.up || 0)); g.rotate(tp.ang * (tp.kind === "act" ? (ACT && ACT.kind === "eat" ? 0.4 : 1) : 0.6)); g.imageSmoothingEnabled = false;
+    if (k === "torch" && it.tile !== undefined) {   // a torch: upright, gripped near the foot of the stick, the flame glowing
+      var tz = ts * 0.62, fl = reduce ? 1 : 0.85 + 0.15 * Math.sin(performance.now() / 90);
+      var gg = g.createRadialGradient(0, -tz * 0.62, 0, 0, -tz * 0.62, ts * 0.55); gg.addColorStop(0, "rgba(255,200,90," + (0.35 * fl).toFixed(3) + ")"); gg.addColorStop(1, "rgba(255,200,90,0)"); g.fillStyle = gg; g.beginPath(); g.arc(0, -tz * 0.62, ts * 0.55, 0, 7); g.fill();
+      g.drawImage(hOT(it.tile), -tz / 2 - tz / 16, -tz * 0.84 - tz / 16, tz * 18 / 16, tz * 18 / 16);
+    } else if (it.tile !== undefined && tp.kind !== "act") {   // a block: held up in front, the paw under its front corner
+      var bz = ts * 0.5; g.drawImage(hOT(it.tile), -bz * 0.28 - bz / 16, -bz * 0.86 - bz / 16, bz * 18 / 16, bz * 18 / 16);
+    } else {   // an icon (food, potions, materials), the paw at its lower middle
+      var im = dropIcon(k), iz = ts * 0.64 * (sc || 1); if (im.complete && im.naturalWidth) g.drawImage(im, -iz * 0.42, -iz * 0.8, iz, iz);
+    }
+    g.imageSmoothingEnabled = sm; g.restore();
+  }
+  function drawHeldAct(g, hx, hy, tp) {   // the drink or the food during an action, in the paw (before the arm)
+    var t = actT(); if (t < 0 || !ACT) return; actFx(t, hx, hy);
+    var sc = ACT.kind === "eat" ? 1 - 0.22 * Math.min(3, ACT.bites) : 1; if (sc > 0.3) heldItem(g, ACT.k, hx, hy, tp, sc);
+  }
+  function heldFirst(tp) { return tp.kind === "act" ? !!ACT && ACT.kind === "drink" : tp.kind === "item" && tp.has; }   // (food you are biting sits in front of the paw, at your mouth)   // these sit inside the paw: draw them before the arm
   function drawHeld(g, hx, hy, tp) {
+    if (tp.kind === "act") { drawHeldAct(g, hx, hy, tp); return; }
     g.shadowBlur = 0; g.shadowColor = "transparent";
     var sm = g.imageSmoothingEnabled;
     var hpx = Math.max(1, Math.round(ts * 1.7 / 24));   // one avatar art pixel; tools are drawn a touch smaller than that so they read as small, neat props
@@ -15450,12 +15500,7 @@
     } else if (sel === "weapon") {
       if (S.wpn < 1) return;
       put(heldWeapon(S.wpn), 0.85, 4, 11.5);
-    } else if (ITEMS[sel] && ITEMS[sel].tile !== undefined && (S.inv[sel] || 0) > 0) {
-      var bob = heldAmt * Math.sin(heldPh * 6.28) * ts * 0.06, bs = ts * 0.55;
-      g.save(); g.translate(hx + ts * 0.12, hy - ts * 0.1 + bob); g.imageSmoothingEnabled = false;
-      g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(-bs / 2 - 1, -bs / 2 - 1, bs + 2, bs + 2);
-      g.drawImage(ATLAS, 0, ITEMS[sel].tile * 16, 16, 16, -bs / 2, -bs / 2, bs, bs); g.restore();
-    }
+    } else if (ITEMS[sel] && (S.inv[sel] || 0) > 0) heldItem(g, sel, hx, hy, tp, 1);
     g.imageSmoothingEnabled = sm;
   }
   // MORE ANIMATION: which frame the side-on player shows (blinks, runs, tucks at the top of a jump, crouches on landing, kicks when swimming, flinches, cheers)
@@ -15533,6 +15578,7 @@
     if (!reduce && !swimN && !riding()) {   // ANIMATION: the body leans, eased, from the feet: forward into a run, into a jump, back when you are hit
       var ldt = clamp((now - (LEAN.t || now)) / 1000, 0, 0.1); LEAN.t = now;
       var sp = Math.abs(p.vx), tgt = (p.on ? clamp((sp - 1.5) / 7, 0, 1) * 0.11 : clamp(-p.vy / 10, -0.4, 1) * 0.07 + clamp(sp / 8, 0, 1) * 0.05) - (hurtT > 0 ? 0.22 * clamp(hurtT / 0.3, 0, 1) : 0) - (p.land > 0.05 ? 0.03 : 0);
+      var atL = actT(); if (atL >= 0 && ACT.kind === "drink") tgt -= 0.1 * actEase((atL - 0.22) / 0.2) * (1 - actEase((atL - (ACT.d - 0.3)) / 0.2));   // tip the head back to gulp
       LEAN.a += (tgt - LEAN.a) * Math.min(1, ldt * (hurtT > 0 ? 18 : 8)); if (Math.abs(LEAN.a) > 0.002) g.rotate(LEAN.a);
     }
     if (swimN && !reduce) { var swb = Math.sin(SWIM.ph * 6.2832 * 2) * ts * (0.035 + 0.02 * (1 - SWIM.k)); g.translate(0, swb - ts * 0.75); g.rotate(SWIM.a + Math.sin(SWIM.ph * 6.2832) * 0.05 * SWIM.k); g.translate(0, ts * 0.75); }   // bob and lean into the stroke
@@ -15565,11 +15611,12 @@
         else { g.fillStyle = "#f2c14e"; g.fillRect(bx0 + bs * 1.8, by0 + bs * 1.6, bs * 1.4, bs * 1.6); }
       }
       g.drawImage(SP.frame(pose), fx, fy);
-      var shx = fx + sh[0], shy = fy + sh[1];
+      var shx = fx + sh[0], shy = fy + sh[1], hx0 = shx + SP.armLen * Math.sin(tp.phi), hy0 = shy + SP.armLen * Math.cos(tp.phi);
       swoosh(g, shx, shy, tp, SP);
+      if (heldFirst(tp)) { g.imageSmoothingEnabled = sm0; if (tp.kind === "act") drawHeldAct(g, hx0, hy0, tp); else drawHeld(g, hx0, hy0, tp); g.imageSmoothingEnabled = false; }
       g.save(); g.translate(shx, shy); g.rotate(-tp.phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
       g.imageSmoothingEnabled = sm0;
-      drawHeld(g, shx + SP.armLen * Math.sin(tp.phi), shy + SP.armLen * Math.cos(tp.phi), tp);
+      if (!heldFirst(tp)) drawHeld(g, hx0, hy0, tp);
       try {   // rarity aura: a few twinkles around the avatar when the outfit is rare
         var ac = typeof AV !== "undefined" && AV.aura ? AV.aura(spriteOutfit || {}) : "";
         if (ac && !reduce) { g.shadowBlur = 0; g.shadowColor = "transparent"; g.fillStyle = ac; for (var ti = 0; ti < 3; ti++) { var ta = now / 1100 + ti * 2.1, tw = 0.5 + 0.5 * Math.sin(now / 260 + ti * 1.7), px = Math.max(2, Math.round(ts * 0.09)); g.globalAlpha = 0.25 + 0.6 * tw; g.fillRect(Math.cos(ta) * ts * 0.62 - px / 2, -ts * (0.9 + 0.35 * Math.sin(ta * 1.3)), px, px); } g.globalAlpha = 1; }
@@ -16055,7 +16102,7 @@
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
     ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt); tickFx(dt); tickWeather(dt); tickBounties(dt); tickFlow(dt);
     caveTool(dt); tickVein(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt); tickGuardian(dt);
-    var working = !!mine || pawOn; pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * 5.4;
+    var working = !!mine || pawOn || (sel === "weapon" && aim.down && S.wpn > 0 && !panelOpen); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "weapon" && S.wpn > 0 ? 1 / wCd() : 5.4);   // a weapon swings at its own speed, like outside
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
@@ -16142,25 +16189,41 @@
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
     var fis = S.quake && S.quake.x === h.x && S.quake.y === h.y; drawPill(g, now, (fis ? "Drop into the fissure: floor " + S.quake.f : "Enter the Mine") + (coarse ? "" : " (F)"), ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * (fis ? 1.9 : 4.9), false, function () { enterCave(h.x, h.y); });
   }
-  function drawCavePlayer(g, now) {
+  function drawCavePlayer(g, now) {   // you in the top-down scenes (the Mine, the homestead): the same animation as outside: swings with a swoosh,
+    // items in the paw, drinking and eating, a flinch when you are hit, a lean into the swing, the backpack, and the same size
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(cp.face, 1); dodgeSpin(g, ts * 0.85);
-    g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.46, ts * 0.15, 0, 0, 6.2832); g.fill();
+    g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.42, ts * 0.13, 0, 0, 6.2832); g.fill();
+    if (!reduce) {   // the body leans, eased: into a weapon swing, back when you are hit, back to gulp a drink
+      var ldt = clamp((now - (LEAN.t || now)) / 1000, 0, 0.1); LEAN.t = now; var tpL = toolPose();
+      var tgt = (moving ? 0.05 : 0) + (tpL.kind === "weapon" && tpL.has ? heldAmt * 0.12 * Math.sin(Math.min(1, (heldPh % 1) / 0.4) * Math.PI) : 0) - (hurtT > 0 ? 0.22 * clamp(hurtT / 0.3, 0, 1) : 0);
+      var atL = actT(); if (atL >= 0 && ACT.kind === "drink") tgt -= 0.1 * actEase((atL - 0.22) / 0.2) * (1 - actEase((atL - (ACT.d - 0.3)) / 0.2));
+      LEAN.a += (tgt - LEAN.a) * Math.min(1, ldt * (hurtT > 0 ? 18 : 10)); if (Math.abs(LEAN.a) > 0.002) g.rotate(LEAN.a);
+    }
+    g.scale(AVS, AVS);
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
     var SP = getSprite();
     if (SP) {
       if (moving && Math.abs(cp.vy) > Math.abs(cp.vx) * 0.9) cp.back = cp.vy < 0; else if (moving && Math.abs(cp.vx) > 0.5) cp.back = false;   // BACK VIEW: walking away from you (up the screen)
-      var back = cp.back && heldAmt < 0.2 && !mine;
-      var pose = back ? (moving ? "bwalk" + (Math.floor(p.walk / 0.8) % 4) : "back" + (reduce ? 0 : Math.floor(now / 520) % 2)) : moving ? "walk" + walkF(p.walk) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2 + (now % 3900 < 140 ? "b" : ""));
+      var back = cp.back && heldAmt < 0.2 && !mine && actT() < 0;
+      var pose = back ? (moving ? "bwalk" + (Math.floor(p.walk / 0.8) % 4) : "back" + (reduce ? 0 : Math.floor(now / 520) % 2)) : hurtT > 0.12 && !reduce ? "hurt" : moving ? "walk" + walkF(p.walk) : "idle" + (reduce ? 0 : Math.floor(now / 520) % 2 + (now % 3900 < 140 ? "b" : ""));
       var fx = -SP.fw / 2, fy = -SP.footY - ts * 0.12, sh = SP.shoulder(pose), tp = toolPose(), sm0 = g.imageSmoothingEnabled;
-      g.imageSmoothingEnabled = false; g.drawImage(SP.frame(pose), fx, fy);
+      g.imageSmoothingEnabled = false;
       if (back) {
-        if (S.bag > 0) { var bs3 = SP.s, big3 = S.bag >= 2, bx3 = fx + 8 * bs3, by3 = fy + 20 * bs3; g.fillStyle = big3 ? "#0f3f38" : "#6b4a26"; g.fillRect(bx3 - bs3 * 0.5, by3 - bs3 * 0.5, bs3 * 7, bs3 * 10); g.fillStyle = big3 ? "#1f7a6a" : "#b88a52"; g.fillRect(bx3, by3, bs3 * 6, bs3 * 9); g.fillStyle = big3 ? "#2fb59a" : "#d3a96b"; g.fillRect(bx3, by3, bs3 * 6, bs3 * 3); g.fillStyle = big3 ? "#7dffe0" : "#f2c14e"; g.fillRect(bx3 + bs3 * 2, by3 + bs3, bs3 * 2, bs3 * 2); }
+        g.drawImage(SP.frame(pose), fx, fy);
+        if (S.bag > 0) { var bs3 = SP.s, big3 = S.bag >= 2, bx3 = fx + 8 * bs3, by3 = fy + 20 * bs3; g.fillStyle = big3 ? "#0f3f38" : "#6b4a26"; g.fillRect(bx3 - bs3 * 0.5, by3 - bs3 * 0.5, bs3 * 7, bs3 * 10); g.fillStyle = big3 ? "#1f7a6a" : "#b88a52"; g.fillRect(bx3, by3, bs3 * 6, bs3 * 9); g.fillStyle = big3 ? "#2fb59a" : "#d3a96b"; g.fillRect(bx3, by3, bs3 * 6, bs3 * 2.4); }
         g.imageSmoothingEnabled = sm0; g.restore(); return;
       }
-      var shx = fx + sh[0], shy = fy + sh[1];
+      if (S.bag > 0) {   // the backpack on your back (the side away from the way you face), drawn first so the body overlaps it
+        var bs = SP.s, by0 = fy + SP.footY - 31 * bs + 13 * bs, bx0 = fx + 1.5 * bs, big = S.bag >= 2;
+        g.fillStyle = big ? "#0f3f38" : "#6b4a26"; g.fillRect(bx0 - bs * 0.6, by0 - bs * 0.6, bs * 6.2, bs * 10.2); g.fillStyle = big ? "#1f7a6a" : "#b88a52"; g.fillRect(bx0, by0, bs * 5, bs * 9); g.fillStyle = big ? "#2fb59a" : "#d3a96b"; g.fillRect(bx0, by0, bs * 5, bs * 2.6);
+      }
+      g.drawImage(SP.frame(pose), fx, fy);
+      var shx = fx + sh[0], shy = fy + sh[1], hx0 = shx + SP.armLen * Math.sin(tp.phi), hy0 = shy + SP.armLen * Math.cos(tp.phi);
+      swoosh(g, shx, shy, tp, SP);
+      if (heldFirst(tp)) { g.imageSmoothingEnabled = sm0; if (tp.kind === "act") drawHeldAct(g, hx0, hy0, tp); else drawHeld(g, hx0, hy0, tp); g.imageSmoothingEnabled = false; }
       g.save(); g.translate(shx, shy); g.rotate(-tp.phi); g.drawImage(SP.arm, -SP.armPivot[0], -SP.armPivot[1]); g.restore();
-      g.imageSmoothingEnabled = sm0; drawHeld(g, shx + SP.armLen * Math.sin(tp.phi), shy + SP.armLen * Math.cos(tp.phi), tp);
+      g.imageSmoothingEnabled = sm0; if (!heldFirst(tp)) drawHeld(g, hx0, hy0, tp);
     } else { g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(0, -ts * 0.7, ts * 0.6, 0, 6.2832); g.fill(); }
     g.restore();
   }
@@ -21194,8 +21257,8 @@
   function hFx(x, y, c, n) { for (var i = 0; i < (n || 6); i++) parts.push({ x: x + 0.5 + (Math.random() - 0.5) * 0.6, y: y + 0.6, vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random() * 3, g: 14, life: 0.5, max: 0.6, c: c, s: 3 }); }
   function homeTool(dt) {
     var H2 = HOME, press = aim.down && !H2.pd; H2.pd = aim.down; if (H2.cool > 0) H2.cool -= dt;
-    if (!aim.down || aim.tx < 0) { H2.last = -1; return; }
-    var tx = aim.tx, ty = aim.ty, cell = ty * HW + tx; if (!press && cell === H2.last) { if (sel === "can" && homeWater(hmT(tx, ty))) homeAct(tx, ty, false, dt); return; }
+    if (!aim.down || aim.tx < 0) { H2.last = -1; H2.mn = null; return; }
+    var tx = aim.tx, ty = aim.ty, cell = ty * HW + tx; if (!press && cell === H2.last) { var hid = hmT(tx, ty); if ((sel === "can" && homeWater(hid)) || (sel === "pick" && (hid === HT.ROCK || hid === HT.STUMP))) homeAct(tx, ty, false, dt); return; }   // keep watering, keep swinging at a rock
     H2.last = cell; homeAct(tx, ty, press, dt);
   }
   function homePads() {   // how far the camera may look past each edge: enough that the hotbar, the joystick and the top bar never cover the farm
@@ -21224,7 +21287,7 @@
       var w2 = (HOES[S.hoe].w - 1) / 2, n = 0;
       if (id === HT.DITCH || id === HT.CANAL) { if (crop) return; for (var px = tx - w2; px <= tx + w2; px++) { var pt = hmT(px, ty); if ((pt === HT.DITCH || pt === HT.CANAL) && !o.c[px + "," + ty]) { homeSet(px, ty, HT.PADDY); n++; } } homeFlood(); S.st.paddies = (S.st.paddies || 0) + n; thud(240, 0.05); hFx(tx, ty, hmT(tx, ty) === HT.PADDYW ? "#8fe0ff" : "#5a3a22", 8);
         if (!S.st.paddytip) { S.st.paddytip = 1; toast("You leveled the ditch into a paddy. Flooded paddies (joined to water) grow Bog Rice and Lily Lotus.", "#8fe0ff"); } return; }
-      for (var xx = tx - w2; xx <= tx + w2; xx++) { var t2 = hmT(xx, ty); if (t2 === HT.REEDS) { homeSet(xx, ty, HT.MUD); if (Math.random() < 0.5) give("fiber", 1, undefined, undefined, true); hFx(xx, ty, "#6a9a4a"); n++; } else if ((t2 === HT.GRASS || t2 === HT.MUD || t2 === HT.FLOWER) && !o.c[xx + "," + ty]) { homeSet(xx, ty, HT.SOIL); hFx(xx, ty, "#7a5236", 4); n++; S.st.tilled++; } }
+      for (var xx = tx - w2; xx <= tx + w2; xx++) { var t2 = hmT(xx, ty); if (t2 === HT.REEDS) { homeSet(xx, ty, HT.MUD); if (Math.random() < 0.5) dropAt("fiber", 1, xx, ty, 1); hFx(xx, ty, "#6a9a4a"); n++; } else if ((t2 === HT.GRASS || t2 === HT.MUD || t2 === HT.FLOWER) && !o.c[xx + "," + ty]) { homeSet(xx, ty, HT.SOIL); hFx(xx, ty, "#7a5236", 4); n++; S.st.tilled++; } }
       if (n) { thud(220, 0.05); homeGoals(); } else if (press) nag(id === HT.SOIL ? "That's tilled already. Plant seeds on it!" : id === HT.PADDY || id === HT.PADDYW ? "That's a paddy. Plant Bog Rice or Lily Lotus in it." : "The hoe tills grass and mud, clears reeds, and levels ditches into paddies.");
       return;
     }
@@ -21243,8 +21306,14 @@
       S.inv.compost--; if (S.inv.compost <= 0) { delete S.inv.compost; sel = "pick"; bare = true; } reslot(); hbDirty = true; o.f[key] = 1; hMark(tx, ty, 0); S.st.composted = (S.st.composted || 0) + 1; thud(260, 0.04); hFx(tx, ty, "#3a2412", 8); return;
     }
     if (sel === "pick") {
-      if (id === HT.ROCK) { homeSet(tx, ty, HT.MUD); give("stone", 2 + Math.floor(Math.random() * 2), undefined, undefined, true); thud(140, 0.08); hFx(tx, ty, "#8a8f99", 10); return; }
-      if (id === HT.STUMP) { homeSet(tx, ty, HT.MUD); give("wood", 2, undefined, undefined, true); thud(160, 0.07); hFx(tx, ty, "#8a5a32", 10); return; }
+      if (id === HT.ROCK || id === HT.STUMP) {   // HOLD TO BREAK, like mining outside: a few swings, the rock shakes and cracks, then breaks and its loot pops out
+        var rk = id === HT.ROCK, need = (rk ? 0.8 : 0.65) / (1 + 0.3 * Math.max(0, (S.tier | 0) - 1)) * (fx("mine") ? 0.6 : 1) * (bare || S.tier < 1 ? 1.6 : 1), M2 = HOME.mn;
+        if (!M2 || M2.k !== key) M2 = HOME.mn = { k: key, x: tx, y: ty, t: 0, need: need, last: -1 };
+        M2.t += press ? 0.04 : dt; HOME.work = 0.3;
+        if (M2.t - M2.last > 0.2) { M2.last = M2.t; thud(rk ? 150 : 175, 0.05); chips(tx + 0.5, ty + 0.4, rk ? "#9aa0a8" : "#9a6a3a", 4, 4); shake = Math.max(shake, 0.06); }
+        if (M2.t >= M2.need) { HOME.mn = null; homeSet(tx, ty, HT.MUD); dropAt(rk ? "stone" : "wood", rk ? 2 + Math.floor(Math.random() * 2) : 2, tx, ty, 1); if (!rk && Math.random() < 0.4) dropAt("stick", 1, tx, ty, 1); thud(rk ? 120 : 140, 0.09); hFx(tx, ty, rk ? "#8a8f99" : "#8a5a32", 12); impact("hit"); homeGoals(); }
+        return;
+      }
     }
     var it = ITEMS[sel];
     if (it && it.seed && (S.inv[sel] || 0) > 0) {
@@ -21256,7 +21325,7 @@
       S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; bare = true; } reslot(); hbDirty = true;
       o.c[key] = { k: it.seed, g: 0, s: 1 }; S.st.planted++; thud(600, 0.03); hFx(tx, ty, "#7fd06a", 4); homeGoals(); return;
     }
-    if (id === HT.REEDS) { homeSet(tx, ty, HT.MUD); if (Math.random() < 0.5) give("fiber", 1, undefined, undefined, true); thud(300, 0.04); hFx(tx, ty, "#6a9a4a"); return; }
+    if (id === HT.REEDS) { homeSet(tx, ty, HT.MUD); if (Math.random() < 0.5) dropAt("fiber", 1, tx, ty, 1); thud(300, 0.04); hFx(tx, ty, "#6a9a4a"); return; }
     if (press && crop) { var Cn = CROPS[crop.k] || {}; nag("Not ripe yet. " + (Cn.moon && !isNight(S.time) ? "Moon crops only grow at night." : Cn.wat ? (id === HT.PADDYW ? "The paddy is flooded." : "The paddy is dry: join it to water.") : homeWet(tx, ty) ? "It's well watered." : "Water it to make it grow twice as fast.")); return; }
     if (press && (id === HT.GRASS || id === HT.MUD) && sel !== "hoe") nag(S.hoe ? "Pick your hoe to till the ground." : "Make a Reed Hoe (by hand) to till the ground.");
   }
@@ -21965,10 +22034,11 @@
         return; }
     };
     // --- light from the sky: soft shade where the forest walls meet the farm, then every standing thing casts its shadow away from the sun ---
-    drawPuddles(g, X0, X1, Y0, Y1); homeAO(g); drawWaterFx(g); drawSceneDrops(g, now);
+    drawPuddles(g, X0, X1, Y0, Y1); homeAO(g); drawWaterFx(g);
     if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;   // the tile you're pointing at, on the ground
       g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2 / HK; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
     g.restore();
+    drawSceneDrops(g, now);   // what lies on the ground stands up (sceneSY puts it on the tilted ground)
     var sun = sunState(S.time); sun.a *= 1 - 0.85 * wxN(); HOME.sun = sun; var HWIND = 1 + wxN() * 0.6 + wxStorm() * 1.8;   // rain clouds hide the sun; storms blow the crops about
     if (shadowBegin(sun)) {
       L.forEach(function (e) { var B = SY(oy + e[0] * ts);
@@ -22094,12 +22164,17 @@
     });
     seasonLeaves(c, 1); return (HFOR = c);
   }
+  function homeCracks(g, i, j, k, dx) {   // cracks spreading over a rock or stump you are breaking (whole pixels)
+    var s = ts / 16, cx = ox + (i + 0.5) * ts + dx, cy = oy + (j + 0.45) * ts, n = 1 + Math.floor(k * 4); g.fillStyle = "rgba(20,14,10,.8)";
+    for (var c = 0; c < n; c++) { var an = SW.hash(i, j + c, 77) * 6.283, len = (2 + k * 5) * (0.6 + SW.hash(j, i + c, 78) * 0.6), x = 0, y = 0; for (var q = 0; q < len; q++) { x += Math.cos(an + Math.sin(q * 1.7 + c) * 0.6); y += Math.sin(an + Math.sin(q * 1.7 + c) * 0.6) * 0.8; g.fillRect(Math.round(cx + x * s), Math.round(cy + y * s), s, s); } }
+  }
   function homeProp(g, id, i, j, T0) {
     var h = SW.hash(i, j, 92), s = ts / 16;
     if (id === HT.TREE) { var v = h < 0.5 ? 0 : h < 0.8 ? 1 : 2, jx = Math.round((SW.hash(i, j, 93) - 0.5) * 6) * s, jy = Math.round((SW.hash(j, i, 95) - 0.5) * 6), wt = hsWTree(Math.floor(h * 4));
       if (wt) { if (SW.hash(i, j, 97) < 0.42 || (i > 0 && i < HW - 1 && hmT(i - 1, j) !== HT.TREE)) { hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3); hDraw(g, wt.c, i + 0.5, j + 1, wt.bx, wt.by - 3 + jy, jx); } } else if (hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3) || 1) hDraw(g, hsTree(v), i + 0.5, j + 1, 24, 80 + jy, jx); return; }
-    if (id === HT.ROCK) { hDraw(g, caveNode(T.STONE, Math.floor(h * 4)), i, j, 0, 2); return; }
-    if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.5) * ts, oy + (j + 0.9) * ts, ts * 0.45, ts * 0.13, 0.25); hDraw(g, hsStump(), i, j, 0, 1); return; }
+    var MN = HOME.mn && HOME.mn.x === i && HOME.mn.y === j ? HOME.mn : null, mk = MN ? clamp(MN.t / MN.need, 0, 1) : 0, jit = MN && !reduce ? Math.round(Math.sin(T0 * 60) * s * (0.5 + mk)) : 0;
+    if (id === HT.ROCK) { hDraw(g, caveNode(T.STONE, Math.floor(h * 4)), i, j, 0, 2, jit); if (MN) homeCracks(g, i, j, mk, jit); return; }
+    if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.5) * ts, oy + (j + 0.9) * ts, ts * 0.45, ts * 0.13, 0.25); hDraw(g, hsStump(), i, j, 0, 1, jit); if (MN) homeCracks(g, i, j, mk, jit); return; }
     var wnd = 1 + wxN() * 0.6 + wxStorm() * 1.8;
     if (id === HT.REEDS) { hTileSway(g, T.REED, i, j - 0.2, reduce ? 0 : Math.sin(T0 * 1.4 * (wnd > 1.5 ? 1.7 : 1) + i * 0.8 + j) * 1.1 * wnd); return; }
     if (id === HT.FLOWER) { var fl = [htid("Swamp Flower"), htid("Marsh Lily"), htid("Bog Cotton")][Math.floor(h * 3)]; hTileSway(g, fl, i, j - 0.15, reduce ? 0 : Math.sin(T0 * 1.2 * (wnd > 1.5 ? 1.7 : 1) + i + j * 0.5) * 0.8 * wnd); return; }
@@ -22218,6 +22293,7 @@
   window.__sbx.feel = { la: CAMLA, get sq() { return p.sq || 0; } };
   window.__sbx.coat = { C: COATS, A: ARROWK, load: loadAmmo, ammo: function () { return bowAmmo(); }, hit: coatHit, step: coatStep, dt: coatDt };
   window.__sbx.tour = { cave: function (f) { var h = (world.holes || [])[0] || { x: Math.floor(p.x), y: Math.floor(p.y) }; enterCave(h.x, h.y, f || 1, true); }, sea: function () { ocEnterPier(); } };
+  window.__sbx.act = { freeze: function (kind, k, t) { actStart(kind, k); ACT.t0 = performance.now() - t * 1000; ACT.freeze = t; }, toss: function (a) { tossSlot(a, false, true); }, drink: function (k) { drink(k); }, eat: function (k) { eat(k); }, get mn() { return HOME && HOME.mn; }, gd: function () { var sc = gdScene(); return sc ? sc.L : null; }, get cp() { return cp; }, hmT: function (x, y) { return hmT(x, y); }, HT: function () { return HT; } };
   window.__sbx.wta = function () { WTA = null; return worldTreeArt().map(function (q) { return [q.h, q.t.width, q.t.height, q.bx, q.by]; }); };
   window.__sbx.art = { e: function (g, e, now) { drawEnemy(g, e, now); }, a: function (g, a, now) { drawAnimal(g, a, now); }, view: function () { return { ox: ox, oy: oy, ts: ts }; }, crit: CRIT, npc: npc, oc: function (g, m, now) { ocDrawMob(g, m, now); }, ocNew: function (k, x, y) { return ocNewMob(k, x, y); }, boss: function (g, e, now) { drawBoss(g, e, now); }, bossNew: function (k, x, y) { return newBoss(k, x, y); }, zaruk: function (g, x, y, sc, t, f, sl) { drawZaruk(g, x, y, sc, t, f, 1, sl || 0); }, crew: function (g, x, y, r, col, f, t) { drawCrewFrog(g, x, y, r, col, f, t); }, miner: function (g, x, y, r, t, h) { drawMinerFrog(g, x, y, r, t, h); }, vil: function (g, v, now) { drawVil(g, v, now); }, vils: function () { return vilList(); }, saltjaw: function (g, m, now) { drawCaptain(g, m, now); }, npcDraw: function (g, now) { drawNpc(g, now || 1000); }, anim: function (k, x, y) { return newAnimal(k, x, y, true); } };   // draw one creature onto any canvas (art checks)
   window.__sbx.cont = { near: function () { return contNear(); }, at: function (x, y) { return contAtCell(x, y); }, open: function (c) { openCont(c); }, act: function (a) { contAct(a); }, map: function () { return cave && cave.F ? contMap(cave.F) : null; }, read: function () { useRead(0); }, sell: function (k) { sellShop(k); }, sellHtml: function () { return sellHtml(); } };
