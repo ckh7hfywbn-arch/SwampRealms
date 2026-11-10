@@ -1119,3 +1119,4 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Slots:** crafting-style tiles. Filled ones glow in their rarity colour (Epic and above pulse), the selected one is ringed in gold, the held one in teal, and counts are bold and outlined. The hotbar sits in its own tray.
   - **Item card:** it replaces the old hint, like the crafting card: a big icon tile, the name, a rarity tag, the stack count, a short description, and the actions (a gold Hold button, then To hotbar, Split, Drop).
   - **Phones:** Sort and Quick stack get their own row under the title, and the item card sticks to the bottom so its buttons are always in reach.
+- **Torches are Common** (`RARX.torch = 0`): they were showing as Uncommon in the backpack and the crafting list.
