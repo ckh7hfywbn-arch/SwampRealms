@@ -585,6 +585,11 @@
     rect(2, 3, 1, 13, "#f2c14e"); rect(13, 3, 1, 13, "#f2c14e"); rect(4, 11, 8, 3, "#2a1a14"); [5, 7, 9].forEach(function (x) { rect(x, 11, 1, 3, "#c9a43a"); });
     rect(3, 14, 10, 2, "#4a2a14"); rect(4, 15, 2, 1, "#2a1a0c"); rect(10, 15, 2, 1, "#2a1a0c"); rect(3, 10, 10, 1, "#ffd23f");
   }, 8, ["255,140,210", 2.4, 0.14]); FUN.push("jukebox");
+  deco("radio", "Swamp Radio", "#f2a03a", function (rect) {   // Croaker's call-in show, the weather, the tides, and a few tunes it knows by heart
+    rect(8, 0, 1, 5, "#3a2a1a"); rect(7, 0, 3, 1, "#ff6a5a"); rect(2, 5, 12, 10, "#6a3a1a"); rect(3, 5, 10, 1, "#b06a34"); rect(2, 14, 12, 1, "#3a1e0c");
+    rect(3, 6, 6, 7, "#c88a52"); [7, 9, 11].forEach(function (y) { rect(3, y, 6, 1, "#7a4a22"); }); rect(10, 6, 3, 3, "#ffe08a"); rect(11, 7, 1, 1, "#c8603a");
+    rect(10, 10, 3, 1, "#2a1a0c"); rect(10, 12, 1, 1, "#f2c14e"); rect(12, 12, 1, 1, "#f2c14e"); rect(3, 15, 2, 1, "#2a1a0c"); rect(11, 15, 2, 1, "#2a1a0c");
+  }, 6, ["255,200,120", 1.8, 0.1]); FUN.push("radio");
   deco("musicbox", "Music Box", "#c9a43a", function (rect) {
     rect(3, 11, 10, 5, "#8a4a26"); rect(3, 11, 10, 1, "#b06a34"); rect(3, 15, 10, 1, "#5a2e14"); rect(7, 12, 2, 2, "#f2c14e");
     rect(3, 6, 10, 2, "#b06a34"); rect(3, 8, 1, 3, "#8a4a26"); rect(4, 9, 8, 2, "#ffd0ec"); rect(5, 10, 6, 1, "#c9a43a");
@@ -1450,6 +1455,7 @@
   Dc("x_d_inkquill", "Tables & Tabletops", "Ink & Quill", { inkquill: 1 }, { bottle: 1, batwing: 1, charcoal: 1 }, "For writing letters at your desk.");
   Dc("x_d_bonsai", "Tables & Tabletops", "Bonsai Tree", { bonsai: 1 }, { pot: 1, leaves: 3, wood: 1 }, "A tiny, patient tree.");
   Dc("x_d_starlantern", "Curiosities", "Star Lantern", { starlantern: 1 }, { glass: 1, ironingot: 1, stardust: 2 }, "A brass lantern with a captured star inside. Bright, and small enough for a table.");
+  Dc("x_d_radio", "Music", "Swamp Radio", { radio: 1 }, { planks: 4, ironingot: 1, glass: 1 }, "Tune in to Croaker's Call-In show, the weather and tides, and a few tunes. Tap it to switch it on.", 1);
   Dc("x_d_jukebox", "Music", "Swamp Jukebox", { jukebox: 1 }, { planks: 6, ironingot: 2, glass: 2, amber: 2 }, "Plays any Music Record you own, louder than a gramophone. Tap it to change the song.", 2);
   Dc("x_d_musicbox", "Music", "Music Box", { musicbox: 1 }, { planks: 2, ironingot: 1, amber: 1 }, "A wind-up box with a tiny dancer. Plays the Frostfen Lullaby. Fits on a table.");
   Dc("x_d_rec_waltz", "Music", "Record: Swamp Waltz", { rec_waltz: 1 }, { charcoal: 2, amber: 1 }, "A gentle three-step for the swamp. Other records turn up in chests and pots.");

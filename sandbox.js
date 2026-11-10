@@ -476,13 +476,13 @@
   var GOALS = SIDE, TRAIL = MAIN;   // older names, still used by a few helpers
   function curCh() { return MAIN[S.qi] ? MAIN[S.qi].ch : CHAPTERS.length - 1; }
   function chQuests(c) { return MAIN.filter(function (q) { return q.ch === c; }); }
-  function sideOpen(q) { return q.ch <= curCh(); }
+  function sideOpen(q) { return q.ch <= curCh() && (!q.show || !!q.show()); }
   // Day counter: S.days counts finished day/night cycles in this world (saved with the world). Showing it is a per-device option.
   var SHOWDAYS = false; try { SHOWDAYS = localStorage.getItem("swamp-delve-daycount") === "1"; } catch (e) {}
   // LONGER DAYS: daylight (S.time 0..240) runs at DAY_RATE, so a day lasts about 8 minutes instead of 4 (the very first day of a world
   // about 11, so there is time to find your feet and craft a workbench before the first night). Dusk, night and dawn are as long as ever.
   var DAY_RATE = 0.5, FIRST_DAY_RATE = 0.36;
-  function advTime(dt) { if (S.time < 240) dt *= (S.days | 0) === 0 ? FIRST_DAY_RATE : DAY_RATE; var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
+  function advTime(dt) { p4Tick(dt); if (S.time < 240) dt *= (S.days | 0) === 0 ? FIRST_DAY_RATE : DAY_RATE; var nt = S.time + dt; if (nt >= CYCLE) S.days = (S.days | 0) + Math.floor(nt / CYCLE); S.time = nt % CYCLE; }
   function dayTag() { return SHOWDAYS ? "Day " + (((S.days | 0) + 1)) + " \u00b7 " : ""; }
   var PHN = { day: "Day", dusk: "Dusk", night: "Night", dawn: "Dawn" };
 
@@ -5648,7 +5648,7 @@
   var HUNGER_RATE = 100 / 620, starveT = 0, shownFood = -1;
   function meX() { return cave || HOME ? cp.x : p.x; }
   function meY() { return cave || HOME ? cp.y - 1.4 : p.y - PH - 0.3; }
-  function regenMul() { var hc = (hasCharm("hearty") ? 1.2 : 1) * (gem("arm", "amethyst") ? 1.25 : 1); if (S.nohunger) return hc; return (S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1) * hc; }
+  function regenMul() { var hc = (hasCharm("hearty") ? 1.2 : 1) * (gem("arm", "amethyst") ? 1.25 : 1) * (fx("fed") ? 1.5 : 1); if (S.nohunger) return hc; return (S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1) * hc; }
   function drawFood() {
     var el = $("sbxFood"); if (!el) return; el.hidden = !!S.nohunger; if (S.nohunger) return;
     var v = Math.max(0, Math.ceil(S.food)); if (v === shownFood) return; shownFood = v;
@@ -5658,7 +5658,7 @@
   function tickHunger(dt) {
     if (S.nohunger) { drawFood(); return; }
     if (dv("god")) { S.food = 100; drawFood(); return; }
-    var was = S.food; S.food = Math.max(0, S.food - dt * HUNGER_RATE * (hasCharm("hearty") ? 0.65 : 1) * (gem("arm", "amber") ? 0.85 : 1) * dif().hunger);
+    var was = S.food; S.food = Math.max(0, S.food - dt * HUNGER_RATE * (fx("fed") ? 0.6 : 1) * (hasCharm("hearty") ? 0.65 : 1) * (gem("arm", "amber") ? 0.85 : 1) * dif().hunger);
     if (was >= 50 && S.food < 50 && !(S.st.htip & 1)) { S.st.htip |= 1; toast("Getting hungry! Pick food in the hotbar and tap to eat. Cattails drop carrot seeds, and Redcap Mushrooms are edible.", "#f2c14e"); }
     if (was >= 25 && S.food < 25) toast("You are hungry: your health stops coming back until you eat.", "#f2a14e");
     if (was > 0 && S.food <= 0) toast("Starving! Eat something soon.", "#ff7a5a");
@@ -5722,7 +5722,11 @@
     var under = y > col[clamp(x, 0, W - 1)] + 6, night = isNight(S.time), r = Math.random();
     if (r < 0.04) { var L = rollLoot("pot", world.bio[x], under ? 1 : 0); L.forEach(function (q) { give(q[0], q[1], x, y - 0.6); }); popup("Fished up treasure!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#f2c14e", "✦"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.1) { give("oldboot", 1, x, y - 0.6); nag("Just an Old Boot..."); S.st.boots++; checkGoals(); return; }
-    var hab = fishHab(F.lq, x, y), k = rollFish(hab, F.bait, under ? 0.4 : 0), frr = FMETA[k] ? FMETA[k][1] : "c";   // FISH PACK: the water decides what bites
+    var hab = fishHab(F.lq, x, y), k = goldFish(hab) || rollFish(hab, F.bait, under ? 0.4 : 0), frr = FMETA[k] ? FMETA[k][1] : "c";   // FISH PACK: the water decides what bites
+    if (frr === "l") { rhythmStart(k, function (win) { if (win) landFin(F, k, frr, x, y); else { nag("The legendary fish snapped your line!"); thud(150, 0.1); } }); return; }   // #47 a legendary fights back
+    landFin(F, k, frr, x, y);
+  }
+  function landFin(F, k, frr, x, y) {
     give(k, 1, x, y - 0.6, true); S.st.fish++; S.fdex[k] = 1; if (F.lq === "lava") S.st.lavafish++; var fcm = fishLogged(k); if (fcm) text(x + 0.5, y - 1.4, ITEMS[k].n + " \u00b7 " + fcm + " cm", "#bff4ff");
     chips(x + 0.5, y, F.lq === "lava" ? "#ff8a3d" : "#8fe0ff", 14, 6); thud(420, 0.06);
     if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#c78bff", "★"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
@@ -6037,14 +6041,8 @@
   }
   function npcAt(wx, wy) { return npc.ok && !cave && Math.abs(wx - npc.x) < 0.8 && wy > npc.y - 1.9 && wy < npc.y + 0.2; }
   function npcNear() { return npc.ok && !cave && Math.abs(npc.x - p.x) < 2.6 && Math.abs(npc.y - p.y) < 2.5; }
-  function drawNpc(g, now) {
-    if (!npc.ok || cave) return;
-    var sx = ox + npc.x * ts, sy = oy + npc.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) return;
-    var t = npc.t, br = reduce ? 0 : Math.sin(t * 1.6) * 0.8, near = npcNear();
-    var hop = npc.walk && !reduce ? Math.abs(Math.sin(npc.walk)) * ts * 0.07 : 0;
-    g.save(); g.translate(sx, sy + ts * 0.04 - hop); g.scale(ts / 30, ts / 30); g.lineJoin = "round"; g.lineCap = "round";
-    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 15, 3.2, 0, 0, 7); g.fill();
-    g.save(); g.scale(npc.face, 1);
+  function croakerArt(g, now, br, o) {   // Old Croaker, drawn at (0, 0) = his feet, facing right, 30 units to a tile. o: { blink, bm }
+    o = o || {};
     // OLD CROAKER in the house style: body, head and eye bumps are one inked silhouette (with the belly and his mossy shawl clipped to it),
     // the stick and his webbed feet sit behind, the arm reaches out to the stick, and the brows, moustache and straw hat are inked on top.
     var IN = "#0e3a1c", SK = aG(g, -40, 0, "#86e48a", "#3fae5e", "#1f7a3c");
@@ -6070,8 +6068,8 @@
     g.beginPath(); g.ellipse(12.8, -20.4, 2.4, 2, 0, 0, 7); aInk(g, "#3fae5e", IN, 1);
     [-5, 7].forEach(function (ex) {
       var ey = hb + 0.2;
-      if (npc.blink < 0) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.8, ey); g.quadraticCurveTo(ex, ey + 1.4, ex + 2.8, ey); g.stroke(); }
-      else if (BM.on && BM.croak) { g.fillStyle = "rgba(255,40,50,.4)"; g.beginPath(); g.arc(ex, ey, 6.5, 0, 7); g.fill(); g.beginPath(); g.arc(ex, ey, 3.2, 0, 7); aInk(g, "#ff2a3a", "#5a0a10", 0.8); g.fillStyle = "#ffe0e0"; g.fillRect(ex - 0.6 + npc.face * 0.3, ey - 1.6, 1.6, 3.2); }   // BLOOD MOON: burning red eyes
+      if (o.blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.8, ey); g.quadraticCurveTo(ex, ey + 1.4, ex + 2.8, ey); g.stroke(); }
+      else if (o.bm) { g.fillStyle = "rgba(255,40,50,.4)"; g.beginPath(); g.arc(ex, ey, 6.5, 0, 7); g.fill(); g.beginPath(); g.arc(ex, ey, 3.2, 0, 7); aInk(g, "#ff2a3a", "#5a0a10", 0.8); g.fillStyle = "#ffe0e0"; g.fillRect(ex - 0.6 + 0.3, ey - 1.6, 1.6, 3.2); }   // BLOOD MOON: burning red eyes
       else { g.beginPath(); g.arc(ex, ey, 3.3, 0, 7); aInk(g, aG(g, ey - 3.3, ey + 3.3, "#fff0a0", "#ffd23f", "#d89a1a"), IN, 0.9); g.fillStyle = "#12220f"; g.beginPath(); g.ellipse(ex + 0.4, ey + 0.2, 0.9, 2.2, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex - 1, ey - 1.3, 0.8, 0, 7); g.fill(); }
     });
     // big white bushy brows and a droopy moustache: he's very old
@@ -6085,6 +6083,16 @@
     g.beginPath(); g.moveTo(-5.4, -43.6); g.quadraticCurveTo(1, -42.2, 7.4, -43.6); g.lineTo(7.6, -41.2); g.quadraticCurveTo(1, -39.8, -5.6, -41.2); g.closePath(); aInk(g, aG(g, -44, -40, "#e8705a", "#c0503a", "#8a2a1a"), "#4a1408", 0.8);
     g.beginPath(); g.ellipse(1, -39.6, 12, 2.8, -0.03, 0, 7); aInk(g, aG(g, -42.4, -36.8, "#f6dc8a", "#d8b45a", "#9a7a2a"), "#5a3e0e", 1.1);
     aShine(g, -1.6, -48, 2.6, 0.9, 0.4, -0.3);
+      }
+  function drawNpc(g, now) {
+    if (!npc.ok || cave) return;
+    var sx = ox + npc.x * ts, sy = oy + npc.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 3) return;
+    var t = npc.t, br = reduce ? 0 : Math.sin(t * 1.6) * 0.8, near = npcNear();
+    var hop = npc.walk && !reduce ? Math.abs(Math.sin(npc.walk)) * ts * 0.07 : 0;
+    g.save(); g.translate(sx, sy + ts * 0.04 - hop); g.scale(ts / 30, ts / 30); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 15, 3.2, 0, 0, 7); g.fill();
+    g.save(); g.scale(npc.face, 1);
+    croakerArt(g, now, br, { blink: npc.blink < 0, bm: BM.on && BM.croak });
     g.restore();
     // bubble: a gift is waiting, or you're close enough to talk
     var gw = giftsWaiting().length + btyReady(), by = -60 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
@@ -6105,7 +6113,7 @@
     var el = $("sbxStory"); if (!el) return;
     if (npc.angry > 0) { nag("Old Croaker is far too angry to talk!"); return; }
     if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
-    S.st.talks++; talkN++; talkView = "main"; rollBounties();
+    S.st.talks++; talkN++; talkView = "main"; rollBounties(); famChat("croaker"); P4V.r = null;
     storyOpen = 100; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
     renderTalk(true); checkGoals(); save();
   }
@@ -6113,7 +6121,7 @@
     var c = curCh(), C = CHAPTERS[c], q = MAIN[S.qi], gifts = giftsWaiting(), h = "";
     $("sbxStoryBox").style.setProperty("--qc", C.c);
     if (talkView === "bty" || talkView === "shop") { $("sbxStoryBox").innerHTML = talkView === "bty" ? renderBty() : renderShop(); var b2 = $("sbxStoryBox").querySelector("[data-talk^=claim],[data-story-close]"); if (b2) b2.focus({ preventScroll: true }); return; }
-    h += '<div class="st-croak" aria-hidden="true">' + CROAK_SVG + "</div><small>Old Croaker</small>";
+    h += famHead("croaker");
     if (gifts.length) {
       var gc = gifts[0], G = CG[gc];
       h += "<h2>A gift for you!</h2><p>“You finished <b>" + esc(CHAPTERS[gc].n) + "</b>. I've been saving this for a delver like you. Go on, take it!”</p>"
@@ -6129,6 +6137,7 @@
       h += '<p class="st-tip"><b>Swamp wisdom:</b> ' + esc(CROAK_TIPS[(talkN * 7 + S.days) % CROAK_TIPS.length]) + "</p>";
       if (btyOpen()) { var rd = btyReady(); h += '<button type="button" class="btn st-bbtn' + (rd ? " ready" : "") + '" data-talk="bty">' + (rd ? rd + " bounty reward" + (rd > 1 ? "s" : "") + " to claim!" : "Bounties and Swap Shop") + "</button>"; }
       else h += '<p class="st-tip"><b>Bounties:</b> “Settle in first, little one. Once you have finished Chapter 1, I will have odd jobs for you every day.”</p>';
+      h += p4CroakerRow();
       h += '<div class="st-row"><button type="button" class="btn ghost" data-talk="story">Retell the story</button><button type="button" class="btn ghost" data-talk="log">Quest log</button><button type="button" class="btn" data-story-close>Bye for now</button></div>';
     }
     $("sbxStoryBox").innerHTML = h;
@@ -6297,7 +6306,7 @@
   function surfAt(x) { var cx = clamp(Math.floor(x), 0, W - 1), y = col[cx]; while (y < H - 1 && (get(cx, y) === T.LEAVES || get(cx, y) === T.LOG || !blocks(cx, y))) y++; return y; }
   function shoot(x, y, vx, vy, o) { bshots.push(Object.assign({ x: x, y: y, vx: vx, vy: vy, g: 0, r: 0.28, dmg: 10, k: "thorn", life: 4, wait: 0, why: "boss" }, o)); }
   function newBoss(k, x, y) {
-    var B = BOSS[k], e = newEnemy("bug", x, y);
+    rivalBoss(k); var B = BOSS[k], e = newEnemy("bug", x, y);
     Object.assign(e, { k: k, boss: 1, w: B.w, h: B.h, hp: Math.round(B.hp * dif().ehp), mx: Math.round(B.hp * dif().ehp), dmg: B.dmg, st: "intro", t: 1.8, cd: 1.5, dir: p.x < x ? -1 : 1, rage: 0, u: false, hist: [], dust: 0, fc: p.x < x ? -1 : 1, sq: 0, sqv: 0, ry: 0, rot: 0, svx: 0, roar: 0 });
     return e;
   }
@@ -7851,7 +7860,13 @@
     }
     if (!flies.length) nag("Fireflies come out on swamp nights, close to the ground.");
   }
+  var GOLDB = false;
+  function goldFish(hab) {   // Golden Bait: the next fish is a legendary from that water (or any legendary)
+    if (!GOLDB) return ""; GOLDB = false; var L = FISH_ALL.filter(function (k) { return FMETA[k] && FMETA[k][1] === "l" && FMETA[k][0] === hab && ITEMS[k]; }); if (!L.length) L = FISH_ALL.filter(function (k) { return FMETA[k] && FMETA[k][1] === "l" && ITEMS[k]; });
+    return L.length ? L[Math.floor(Math.random() * L.length)] : "";
+  }
   function takeBait() {   // one Earthworm or Firefly per cast, if you carry any: [bite time multiplier, extra rare chance]
+    if ((S.inv.goldbait || 0) > 0) { S.inv.goldbait--; if (S.inv.goldbait <= 0) delete S.inv.goldbait; reslot(); hbDirty = true; S.st.baited++; GOLDB = true; toast("Golden Bait on the hook. Something legendary will bite!", "#ffd76a"); return [0.5, 0.2]; }
     var k = (S.inv.earthworm || 0) > 0 ? "earthworm" : (S.inv.firefly || 0) > 0 ? "firefly" : ""; if (!k) return [1, 0];
     S.inv[k]--; if (S.inv[k] <= 0) delete S.inv[k]; reslot(); hbDirty = true; S.st.baited++;
     if (!(S.st.htip & 2)) { S.st.htip |= 2; toast("Baited the hook with " + (k === "firefly" ? "a Firefly" : "an Earthworm") + "! Bait makes fish bite sooner and brings rare fish.", "#7fd6ff"); }
@@ -8300,7 +8315,7 @@
     for (var y = by - 2; y <= by + 2; y++) for (var x = bx - 2; x <= bx + 2; x++) if (kegAt(x, y)) { var d = Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)); if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
-  function tapHook(tx, ty) { if (!cave && kegAt(tx, ty)) { lightKeg(tx, ty, BOMBK.keg.fuse); return true; } if (!cave && jbKind(tx, ty)) return jbPlay(tx, ty); if (!cave && isWay(tx, ty)) { openWay(tx, ty); return true; } if (!cave && isConf(tx, ty)) return popConfetti(tx, ty); if (!cave && isPot(tx, ty)) return takePot(tx, ty); if (!cave && markTap(tx, ty)) return true; return false; }
+  function tapHook(tx, ty) { if (!cave && kegAt(tx, ty)) { lightKeg(tx, ty, BOMBK.keg.fuse); return true; } if (!cave && radioAt(tx, ty) && !(JB.on && JB.x === tx && JB.y === ty)) { radioOpen(tx, ty); return true; } if (!cave && jbKind(tx, ty)) return jbPlay(tx, ty); if (!cave && isWay(tx, ty)) { openWay(tx, ty); return true; } if (!cave && isConf(tx, ty)) return popConfetti(tx, ty); if (!cave && isPot(tx, ty)) return takePot(tx, ty); if (!cave && markTap(tx, ty)) return true; return false; }
   function fHook() { var vn = vilNear(); if (vn) { openVil(vn); return true; } var k = kegNear(); if (k) { lightKeg(k.x, k.y, BOMBK.keg.fuse); return true; } if (markF()) return true; var jn = jbNear(); if (jn) return jbPlay(jn.x, jn.y); var wn = wayNear(); if (wn) { openWay(wn.x, wn.y); return true; } for (var cy2 = Math.floor(p.y - 1) - 1; cy2 <= Math.floor(p.y - 1) + 1; cy2++) for (var cx2 = Math.floor(p.x) - 2; cx2 <= Math.floor(p.x) + 2; cx2++) if (isConf(cx2, cy2)) return popConfetti(cx2, cy2); return false; }
   function stepBlast(dt) {
     for (var f = flashes.length - 1; f >= 0; f--) { flashes[f].t -= dt; if (flashes[f].t <= 0) flashes.splice(f, 1); }
@@ -8627,7 +8642,7 @@
     var sg = SONGS[k], at = 0; sg.byBeat = {}; sg.len = sg.chords.length * sg.bpb;
     sg.lead.forEach(function (q) { var b = Math.floor(at + 1e-6); if (q[0] !== null) (sg.byBeat[b] = sg.byBeat[b] || []).push({ off: at - b, semi: q[0], len: q[1] }); at += q[1]; });
   });
-  var JBK = { gramophone: { n: "Gramophone", knows: ["waltz"], vol: 0.8, any: true }, jukebox: { n: "Swamp Jukebox", knows: [], vol: 1, any: true }, musicbox: { n: "Music Box", knows: ["lullaby"], vol: 0.55, any: false } };
+  var JBK = { gramophone: { n: "Gramophone", knows: ["waltz"], vol: 0.8, any: true }, jukebox: { n: "Swamp Jukebox", knows: [], vol: 1, any: true }, musicbox: { n: "Music Box", knows: ["lullaby"], vol: 0.55, any: false }, radio: { n: "Swamp Radio", knows: ["waltz", "jig", "stomp"], vol: 0.7, any: true } };
   var JB = { on: false, x: 0, y: 0, k: "", song: "", beat: 0, nextT: 0, t0: 0, vis: [], notes: [], out: null, pan: null, dl: null }, jbDuck = 0;
   function jbKind(x, y) { var td = TILES[get(x, y)]; return td && JBK[td.kind] ? td.kind : ""; }
   function jbList(kind) {   // songs this player can play, in order
@@ -10619,7 +10634,7 @@
     if (!force && key === fxKey) return; fxKey = key; el.hidden = !ks.length && !cc;
     el.innerHTML = (cc ? '<span class="fx-chip" style="--fc:' + coatOf(ARROWK[cc.k]).c + '" title="' + esc(ITEMS[cc.k].n + 's loaded') + '"><img alt="" src="' + icon(cc.k) + '"><b>' + cc.n + '</b></span>' : "") + ks.map(function (k) {
       var pk = Object.keys(POTIONS).filter(function (q) { return POTIONS[q].fx === k; })[0], t = Math.ceil(S.fx[k]), mm = Math.floor(t / 60), ss = t % 60;
-      return '<span class="fx-chip" style="--fc:' + (pk ? POTIONS[pk].c : "#fff") + '" title="' + esc(FXN[k] || k) + '"><img alt="" src="' + icon(pk || "bottle") + '"><b>' + mm + ":" + (ss < 10 ? "0" : "") + ss + "</b></span>";
+      return '<span class="fx-chip" style="--fc:' + (pk ? POTIONS[pk].c : k === "fed" ? "#ffb070" : "#fff") + '" title="' + esc(FXN[k] || k) + '"><img alt="" src="' + icon(k === "fed" ? "croakersoup" : pk || "bottle") + '"><b>' + mm + ":" + (ss < 10 ? "0" : "") + ss + "</b></span>";
     }).join("");
   }
   function drink(k) {
@@ -15313,7 +15328,7 @@
     drawFalling(g);   // FELLING: a tree coming down   // TREE CANOPIES: one crown per tree over the trunks, roots and branches
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     if (!cave) { drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
-    drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); drawPlayer(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
@@ -16182,6 +16197,7 @@
   function drawHolePrompt(g, now) {   // surface: a pill above a nearby Cave Hole
     actBtn = null; if (panelOpen || sleepT > 0 || trans) return;
     if (gravePill(g, now)) return;   // GRAVESTONE
+    P4ACT = null; if (p4Pill(g, now)) return;   // PHASE 4: the mailbox, the family dinner, the notice board, the radio, the rival
     var vnt = ventNear(); if (vnt) { drawPill(g, now, coarse ? "Enter the Old Volcano" : "Enter the Old Volcano (F)", ox + vnt.x * ts, oy + (vnt.y - 2.6) * ts, false, function () { enterVolcano(vnt); }); return; }
     var fgn = farmGateNear(); if (fgn) { drawPill(g, now, coarse ? "Enter your homestead" : "Enter your homestead (F)", ox + (fgn.x + 0.5) * ts, oy + (fgn.y - 2.9) * ts, false, function () { enterHome(fgn); }); return; }
     var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
@@ -16809,7 +16825,7 @@
     ["Decor|Tables & Tabletops", "x_d_nightstand x_d_sidetable x_d_coffeetable x_d_tablecandle x_d_oillamp x_d_openbook x_d_inkquill x_d_bonsai x_d_lilyvase"],
     ["Decor|Cosy Corners", "x_d_pottedfern x_d_cattailvase x_d_glowjar x_d_hangingherbs x_d_stackedbooks x_d_teaset"],
     ["Decor|Curiosities", "x_d_shipbottle x_d_gramophone x_d_frogidol x_d_crystalcluster x_d_starchart x_d_birdcage x_d_windchime x_d_starlantern x_d_bloodlantern x_d_paperlantern x_d_tent x_d_minecart"],
-    ["Decor|Music", "x_d_jukebox x_d_musicbox x_d_rec_waltz x_d_rec_starfall"],
+    ["Decor|Music", "x_d_radio x_d_jukebox x_d_musicbox x_d_rec_waltz x_d_rec_starfall"],
     ["Decor|Statues & Showpieces", "d_frogstatue d_guardian d_icesculpt x_snowman x_obelisk d_anvil x_aquarium"],
     ["Decor|Building Furniture", (typeof SbxExtra !== "undefined" && SbxExtra.FURN2 ? SbxExtra.FURN2 : []).map(function (k) { return "x_d_" + k; }).join(" ")],
     ["Decor|Storage", (typeof SbxExtra !== "undefined" && SbxExtra.CONTK ? SbxExtra.CONTK : []).map(function (k) { return "x_s_" + k; }).join(" ")]
@@ -17482,7 +17498,7 @@
     } else if (tab === "awards") {
       h += achHtml();
     } else if (tab === "lore") {
-      h += loreHtml();
+      h += famJournalHtml() + loreHtml();
     } else if (tab === "chest") {
       var cc = S.chests[chestKey] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
       var ckx = chestKey.split(","), ctd = TILES[get(+ckx[0], +ckx[1])], cname = ctd.kind === "lootchest" ? "Cave Chest" : ctd.cont ? ctd.n : "Wooden Chest";
@@ -18122,6 +18138,7 @@
     else if (k >= "1" && k <= "9") { var en = barEntries()[+k - 1]; if (en && en.id) choose(en.id, en.slot); else if (en && en.slot >= 0) choose("hand", en.slot); }
     else if (k === "f" || k === "F") {
       var spq = sporeHere(); if (spq) { openSpore(spq); e.preventDefault(); return; } if (sel === "x_spore" && sporeScene()) { plantSpore(); e.preventDefault(); return; }
+      if (!HOME && !OCS && !cave && P4ACT) { var p4f = P4ACT; P4ACT = null; p4f(); e.preventDefault(); return; }
       if (HOME) { if (!homeF()) nag("Walk up to the gate, the shipping crate or the seed stall."); }
       else if (OCS) { if (!(OCS.sea ? (seaActions()[0] && (seaActions()[0].fn(), 1)) : ocF())) nag(OCS.sea ? "Sail up to an island or a dive buoy first." : OCS.diving ? "Swim up to the surface by the dock ladder to climb out." : "Walk to the middle of the dock to dive in, or to its end for the boat."); }
       else if (pierGateNear()) ocEnterPier();
@@ -18259,7 +18276,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -19156,13 +19173,14 @@
     ocFx(22, c.x + 0.5, c.y + 0.3, "#ffd23f", { sp: 5, g: -2, up: 2 }); ocBubbles(c.x + 0.5, c.y, 8); snd("open", c.tier >= 2 ? "Epic" : "Rare");
     if (c.kind === "vault") { o.vault = springIdx(); S.st.vaults = (S.st.vaults || 0) + 1; shake = Math.max(shake, 0.4); }
     var nm = SO.CHEST_NAMES[Math.min(3, c.tier || 0)]; if (c.kind === "hoard") nm = "Gillbeard's Hoard"; if (c.kind === "vault") nm = "The Spring-Tide Vault"; if (c.kind === "pier") nm = "Croaker's Sea Chest";
-    popup("Treasure found", nm + " • " + L.length + " kinds of loot", "#f2c14e", "✦"); checkGoals(); save();
+    popup("Treasure found", nm + " • " + L.length + " kinds of loot", "#f2c14e", "✦"); p4SeaChest(c, sc); checkGoals(); save();
   }
 
   // ---------- what you can do right now (pills and the F key) ----------
   function ocActions() {
     var sc = OCS, pl = sc.pl, m = sc.m, A = [], cx = pl.x, cy = pl.y - 0.45, i;
     for (i = 0; i < m.chests.length; i++) { var c = m.chests[i]; if (ocT(c.x, c.y) === OT.CHEST && Math.hypot(c.x + 0.5 - cx, c.y + 0.5 - cy) < 2.4) { A.push({ label: "Open " + (c.kind === "pier" ? "Croaker's Sea Chest" : c.kind === "hoard" ? "the hoard" : "chest"), ax: c.x + 0.5, ay: c.y - 0.4, fn: (function (cc) { return function () { ocOpenChest(cc); }; })(c) }); break; } }
+    var cpN = compassNear(); if (cpN) A.push({ label: "Pick up the old compass", ax: cpN.x, ay: cpN.y - 1.2, fn: compassTake });
     if (sc.main && !sc.diving) {
       var P = m.pier;
       if (croakoNear()) A.push({ label: "Talk to Croako", ax: CROAKO.x, ay: croakoY() - 3.4, fn: talkCroako });
@@ -19212,8 +19230,12 @@
     var say = function (s2, c) { text(pl.x, pl.y - 1.9, s2, c); };
     if (r < 0.05) { var L = [["doubloon", 2 + Math.floor(Math.random() * 4)], ["seaglass", 1 + Math.floor(Math.random() * 2)]]; if (Math.random() < 0.3) L.push(["pearl", 1]); L.forEach(function (q) { if (ITEMS[q[0]]) give(q[0], q[1], undefined, undefined, true); }); popup("Fished up a sunken purse!", L.map(function (q) { return ITEMS[q[0]] ? ITEMS[q[0]].n : ""; }).join(", "), "#f2c14e", "\u2726"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.12) { var junk = Math.random() < 0.5 ? "oldboot" : "kelp"; if (ITEMS[junk]) give(junk, junk === "kelp" ? 2 : 1, undefined, undefined, true); if (junk === "oldboot") { S.st.boots++; nag("Just an Old Boot..."); } else say("+2 Brine Kelp", "#7fd06a"); checkGoals(); return; }
-    var k = rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
+    var k = goldFish("sea") || rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
     if (!ITEMS[k]) k = "bogminnow";
+    if (frr === "l") { rhythmStart(k, function (win) { if (win) ocLandFin(F, k, frr, x, say); else { nag("The legendary fish snapped your line!"); thud(150, 0.1); } }); return; }
+    ocLandFin(F, k, frr, x, say);
+  }
+  function ocLandFin(F, k, frr, x, say) {
     give(k, 1, undefined, undefined, true); S.st.fish++; S.fdex[k] = 1; var fcm = fishLogged(k); say("+1 " + ITEMS[k].n + (fcm ? " \u00b7 " + fcm + " cm" : ""), "#8fe0ff");
     ocFx(14, x, OWL, "#8fe0ff", { sp: 3, g: 10 }); ocSplash(x, false); thud(420, 0.06);
     if (frr === "r" || frr === "l") { S.st.rarefish++; if (frr === "l") S.st.legfish = (S.st.legfish || 0) + 1; popup(frr === "l" ? "Legendary catch!" : "Rare catch!", ITEMS[k].n, frr === "l" ? "#ffb13b" : "#ffd23f", "\u2605"); snd("open", frr === "l" ? "Legendary" : "Epic"); } else snd("coin");
@@ -19716,6 +19738,7 @@
     }
     if (!sc.main) ocBoatSide(g, ox + (Math.floor(OCW / 2) + 0.5) * ts, surf + ts * 0.15, ts * 0.62, fullBoatParts(), now, { lit: dl < 0.6 });   // the Lily Belle waits above the dive site
     drawCroako(g, now);   // Croako on the beach
+    drawCompassGlint(g, now);   // PHASE 4: Croaker's lost compass on the sea floor
     // --- life ---
     sc.amb.forEach(function (a) { ocDrawAmb(g, a, now); });
     sc.mobs.forEach(function (mb) { ocDrawMob(g, mb, now); if (mb.k === "angler" && !mb.dead) lights.push([mb.x + mb.face * 0.85, mb.y - 0.9, 5, "255,226,122"]); if (mb.k === "jelly" && !mb.dead) lights.push([mb.x, mb.y, 3, "122,240,255"]); if (mb.k === "captain" && !mb.dead) lights.push([mb.x, mb.y, 6, "168,255,240"]); });
@@ -19958,7 +19981,7 @@
   var LH = { x: 440, y: 96 };
   function lighthouse() { var I = seaIslands(); for (var i = 0; i < I.length; i++) if (I[i].lh) return I[i]; return null; }
   function openLighthouse(Q) {
-    var el = $("sbxStory"); if (!el) return; storyOpen = 241; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS.isleQ = Q;
+    var el = $("sbxStory"); if (!el) return; storyOpen = 241; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); OCS.isleQ = Q; if (lbStarted()) setTimeout(function () { lbFind("LB3"); }, 700);
     var lit = !!ocS().lh, need = { lampoil: 3, glass: 2, copperwire: 1 }, ok = upHave(need);
     var h = '<div class="mo-box bo-box"><div class="mo-head"><canvas class="mo-cv" id="lhCv" width="360" height="200" aria-hidden="true"></canvas><div><small>The far north of the Brinebog Sea</small><h2>The Old Lighthouse</h2><p class="mo-sub">'
       + (lit ? "Its lamp burns again. The beam sweeps the whole sea, the chart in your cabin is complete, and no pirate sails inside its light." : "A tower of white stone on a black rock, dark for years. Gulls nest on the gallery. The great lamp at the top is cold, its oil long gone.") + "</p></div></div>";
@@ -20071,7 +20094,7 @@
 
   // ---- landing and leaving ----
   function isleLand(Q) {
-    if (trans || !OCS || !OCS.sea || !SC || !SC.genIsle) return; seaSaveState(); seaExSave(); stopInput(); if (panelOpen) closeStory();
+    if (trans || !OCS || !OCS.sea || !SC || !SC.genIsle) return; if (lbStarted() && !Q.port) setTimeout(function () { lbFind("LB4"); }, 2500); seaSaveState(); seaExSave(); stopInput(); if (panelOpen) closeStory();
     trans = { t: 0, done: false, mid: function () {
       var tier = isleTier(Q), fresh = !Q.port && isleFresh(Q), rs = Math.floor(ocToday() / ISLE_RESTOCK), F = Q.port ? SC.genPort((Q.seed | 0) + 77) : SC.genIsle(((Q.seed | 0) ^ Math.imul(rs + 1, 2654435761)) | 0, tier, Q.kind, fresh);
       OCS = null; stageEl.classList.remove("ocean"); stageEl.classList.add("cave"); enemies.length = 0; mine = null; var gx = pierGateX();
@@ -20237,6 +20260,7 @@
       OISL.push({ id: 13, n: "Old Lighthouse", d: "A white tower on a black rock, dark for years.", x: LH.x, y: LH.y, r: 6, kind: 4, lh: 1, seed: (ocSeed() * 31 + 7) % 1000000007 });   // THE OLD LIGHTHOUSE
       OISL.forEach(function (I) { if (I.pier) return; var a = (I.seed % 628) / 100; OSITES.push({ x: I.x + Math.cos(a) * (I.r + 6), y: I.y + Math.sin(a) * (I.r + 6), seed: I.seed % 1000000007, name: I.n + " Reef", isl: I.id }); });
       for (var k = 0; k < 8; k++) { var h1 = SW.hash(k, 3, ocSeed() % 9973), h2 = SW.hash(k, 7, ocSeed() % 9973); OSITES.push({ x: 60 + h1 * (SO.SEAW - 120), y: 60 + h2 * (SO.SEAW - 160), seed: Math.floor(SW.hash(k, 11, 5) * 1e9), name: ["Sunken Sloop", "The Bone Garden", "Bubbling Vent", "Gull Wreck", "Old Net Field", "The Glass Hole", "Barnacle Arch", "Lost Lantern"][k], isl: -1, wreck: 1 }); }
+      OISL.push({ id: 14, n: "Castaway Rock", d: "A lonely rock with a single palm.", x: Math.min(SO.SEAW - 30, LH.x + 70), y: Math.max(30, LH.y - 40), r: 4, kind: 0, castaway: 1, seed: 1414 });   // PHASE 4: where Bartholomew waits
     } return OISL; }
   function seaNew() {
     var o = ocS(), I = seaIslands(), home = I[0], sv = o.sea && typeof o.sea === "object" ? o.sea : null;
@@ -20292,7 +20316,7 @@
   }
   function seaActions() {
     var s = OCS.sea, A = [], I = seaIslands(), b = function (x, y) { return [x, y]; };
-    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : Q.port ? { label: "Moor at Driftwood Haven", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { isleLand(Q); } } : Q.lh ? { label: "Climb the lighthouse", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openLighthouse(Q); } } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
+    I.forEach(function (Q) { var d = Math.hypot(Q.x - s.x, Q.y - s.y); if (Q.castaway) { if (d < Q.r + 7) A.push(castawayAct(Q)); return; } if (d < Q.r + 7) A.push(Q.pier ? { label: "Dock at Croaker's Pier", wx: Q.x, wy: Q.y - Q.r - 2, fn: seaDock } : Q.port ? { label: "Moor at Driftwood Haven", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { isleLand(Q); } } : Q.lh ? { label: "Climb the lighthouse", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openLighthouse(Q); } } : { label: "Enter " + Q.n, wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { openIsle(Q); } }); });
     OSITES.forEach(function (st) { if (Math.hypot(st.x - s.x, st.y - s.y) < 4.5) A.push({ label: "Dive here", wx: st.x, wy: st.y - 3, fn: function () { seaDive(st); } }); });
     return A;
   }
@@ -20334,7 +20358,7 @@
     return { x: best.x - uy * sg * R + ux * 2, y: best.y + ux * sg * R + uy * 2 };
   }
   function seaUpdate(dt) {
-    var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
+    var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); p4SeaTick(dt, s); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1) * (S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "ship"; }) ? 1.2 : 1);
     seaWxStep(s, dt); maxSp *= s.spMul * (hasCharm("wander") ? 1.1 : 1); migSeaStep(s, dt); levStep(s, dt);   // WEATHER AT SEA, MIGRATIONS, THE LEVIATHAN
     if (joy.x || joy.y) { s.tgt = null; var ja = Math.atan2(joy.y, joy.x), jd = Math.atan2(Math.sin(ja - s.ang), Math.cos(ja - s.ang)); s.ang += clamp(jd, -1, 1) * 2.2 * dt; want = maxSp * Math.min(1, Math.hypot(joy.x, joy.y)); }
@@ -20464,6 +20488,7 @@
     }
     else if (K === 2) { g.fillStyle = "#9ac8e8"; g.beginPath(); g.moveTo(x - r * 0.3, y); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.3, y); g.fill(); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(x - r * 0.12, y - r * 0.4); g.lineTo(x, y - r * 0.7); g.lineTo(x + r * 0.12, y - r * 0.4); g.fill(); }
     else if (K === 3) { g.fillStyle = "#e8d9a8"; g.beginPath(); g.arc(x + r * 0.15, y - r * 0.1, r * 0.25, 0, 6.2832); g.fill(); g.fillStyle = "#14181c"; g.beginPath(); g.arc(x + r * 0.06, y - r * 0.15, r * 0.07, 0, 6.2832); g.arc(x + r * 0.24, y - r * 0.15, r * 0.07, 0, 6.2832); g.fill(); g.fillStyle = "#4a2e18"; g.fillRect(x - r * 0.4, y - r * 0.75, r * 0.06, r * 0.6); g.fillStyle = "#14181c"; g.fillRect(x - r * 0.34, y - r * 0.75, r * 0.4, r * 0.25); g.fillStyle = "#4ee6b4"; g.beginPath(); g.arc(x - r * 0.14, y - r * 0.62, r * 0.06, 0, 6.2832); g.fill(); }
+    else if (Q.castaway) drawCastaway(g, Q, x, y, r, now);
     else for (i = 0; i < 3; i++) { var tx = x + (SW.hash(Q.id, i, 9) - 0.5) * r * 0.9, ty = y + (SW.hash(Q.id, i, 10) - 0.5) * r * 0.6; g.fillStyle = "#2f6a2a"; for (var f = 0; f < 5; f++) { var fa = f / 5 * 6.2832 + Q.id; g.beginPath(); g.ellipse(tx + Math.cos(fa) * r * 0.12, ty + Math.sin(fa) * r * 0.12, r * 0.14, r * 0.05, fa, 0, 6.2832); g.fill(); } g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(tx, ty, r * 0.04, 0, 6.2832); g.fill(); }
   }
   function seaRender(now) {
@@ -20812,12 +20837,13 @@
     storyOpen = 221; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); CROAKO.said++; S.st.croako = (S.st.croako || 0) + 1;
     var gave = false; if (!(S.inv.fishlog > 0) && !S.vis.fishlog) { S.vis.fishlog = 1; give("fishlog", 1, undefined, undefined, true); gave = true; popup("Croako's Fishing Log", "A battered leather book with empty pages. Every fish you catch goes in it.", "#e8c98a", "✎"); }
     else if (!(S.inv.fishlog > 0)) { give("fishlog", 1, undefined, undefined, true); }   // lost it? he has a spare
-    var h = '<div class="st-croak" aria-hidden="true">' + CROAKO_SVG + "</div><small>Croako, Old Croaker's brother</small>";
+    famChat("croako"); P4V.r = null; var h = famHead("croako", "Old Croaker's brother");
     if (gave) h += "<h2 class=\"st-hi\">So you're the one Croaker keeps croaking about.</h2><p>“Here. Take this old book. The pages are empty, see? Fill them. Every fish you pull out of the water, the swamp, the ice, even the lava, you write it in here. A full page and I'll make it worth your while.”</p>"
       + '<div class="st-gift"><span><img alt="" src="' + icon("fishlog") + '">1 Croako\'s Fishing Log</span></div>';
     else { var pay = FBOOK.filter(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }).length; h += '<h2 class="st-hi">' + esc(pay ? "A full page? Let's see it! Open the log and I'll pay up." : CROAKO_HI[(CROAKO.said + (S.days | 0)) % CROAKO_HI.length]) + "</h2>"
       + '<p class="st-tip"><b>Croako\'s tip:</b> ' + esc(CROAKO_TIPS[(CROAKO.said * 5 + (S.days | 0)) % CROAKO_TIPS.length]) + "</p>"; }
-    h += '<div class="st-row"><button type="button" class="btn" data-croako="log">Open the Fishing Log</button><button type="button" class="btn ghost" data-story-close>Bye, Croako</button></div>';
+    h += p4CroakoRow();
+    h += '<div class="st-row"><button type="button" class="btn" data-croako="log">Open the Fishing Log</button><button type="button" class="btn ghost" data-p4="gift:croako">Give a gift</button><button type="button" class="btn ghost" data-story-close>Bye, Croako</button></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#e8c98a"); $("sbxStoryBox").innerHTML = h; save();
   }
   var CROAKO_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="44" rx="23" ry="16" fill="#f2c14e" stroke="#8a6a1a" stroke-width="2.5"/><path d="M14 40 L50 40 L48 56 L16 56Z" fill="#e8b23a"/><path d="M31 40v16" stroke="#8a6a1a" stroke-width="1.6"/><circle cx="31" cy="45" r="1.6" fill="#8a6a1a"/><circle cx="31" cy="51" r="1.6" fill="#8a6a1a"/>'
@@ -20845,11 +20871,8 @@
       if (o.blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.8, ey); g.quadraticCurveTo(ex, ey + 1.4, ex + 2.8, ey); g.stroke(); }
       else { g.beginPath(); g.arc(ex, ey, 3.3, 0, 7); aInk(g, aG(g, ey - 3.3, ey + 3.3, "#fff0a0", "#ffd23f", "#d89a1a"), IN, 0.9); g.fillStyle = "#12220f"; g.beginPath(); g.ellipse(ex + 0.4, ey + 0.2, 0.9, 2.2, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex - 1, ey - 1.3, 0.8, 0, 7); g.fill(); } });
   }
-  function drawCroako(g, now) {
-    var sc = OCS; if (!sc || !sc.main) return; var gy = croakoY(), sx = ox + CROAKO.x * ts, sy = oy + gy * ts; if (sx < -ts * 3 || sx > vw + ts * 3) return;
-    CROAKO.t += 0.016; var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.5) * 0.7, face = sc.pl.x < CROAKO.x ? -1 : 1, near = croakoNear(), k = ts / 30;
-    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
-    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+  function croakoArt(g, now, face, br) {   // Croako with his bucket and rope, at (0, 0) = his feet, 30 units to a tile
+    var t = now / 1000;
     // a bait bucket and a coil of rope beside him (inked)
     g.beginPath(); g.moveTo(-26, 0); g.lineTo(-25.4, -10); g.lineTo(-14.6, -10); g.lineTo(-14, 0); g.closePath(); aInk(g, aG(g, -10, 0, "#c8d0d6", "#8a949a", "#565e64"), "#2a3036", 1.1);
     g.fillStyle = "rgba(255,255,255,.3)"; g.fillRect(-23.6, -9, 1.4, 8); g.strokeStyle = "#2a3036"; g.lineWidth = 1.1; g.beginPath(); g.arc(-20, -10, 5.5, Math.PI, 0); g.stroke(); g.beginPath(); g.ellipse(-20, -10, 5.4, 1.3, 0, 0, 7); aInk(g, "#1e4a5a", "#2a3036", 0.8);
@@ -20880,6 +20903,13 @@
     g.fillStyle = aG(g, -41, -37, "#ff6a5a", "#c83a3a", "#8a1a1a"); g.fillRect(-11, -41, 24, 3.6); g.restore();
     g.beginPath(); g.arc(1.4, -52, 3.2, 0, 7); aInk(g, aG(g, -55, -49, "#ffffff", "#f6eedb", "#c8c0a8"), "#7a7462", 0.9); aShine(g, -3.6, -48, 2.4, 0.9, 0.35, -0.3);
     g.restore();
+  }
+  function drawCroako(g, now) {
+    var sc = OCS; if (!sc || !sc.main) return; var gy = croakoY(), sx = ox + CROAKO.x * ts, sy = oy + gy * ts; if (sx < -ts * 3 || sx > vw + ts * 3) return;
+    CROAKO.t += 0.016; var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.5) * 0.7, face = sc.pl.x < CROAKO.x ? -1 : 1, near = croakoNear(), k = ts / 30;
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+    croakoArt(g, now, face, br);
     var got = (S.inv.fishlog || 0) > 0, pay = got && FBOOK.some(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }), bang = !got || pay, by = -64 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
     if (bang || near) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = bang ? "#f2c14e" : "#7af0ff"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, bang ? 8 : 10, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = bang ? "#f2c14e" : "#e8fbff"; g.font = "900 " + (bang ? 12 : 10) + "px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(bang ? "!" : "...", 0, by + (bang ? 4.5 : 2)); }
     if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Croako").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Croako", 0, 13); }
@@ -21240,7 +21270,7 @@
   function leaveHome() { if (trans) return; stopInput(); trans = { t: 0, done: false, mid: leaveHomeNow }; }
   // ---- update ----
   function homeUpdate(dt) {
-    advTime(dt); tickWeather(dt); homeRainTick(dt); if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
+    advTime(dt); p4HomeTick(dt); tickWeather(dt); homeRainTick(dt); if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), len = Math.sqrt(dx * dx + dy * dy) || 1, mag = 1;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; mag = Math.min(1, Math.sqrt(dx * dx + dy * dy)); len = Math.sqrt(dx * dx + dy * dy) || 1; }
     var csp = CAVE_SPEED * 1.05 * (fx("speed") ? 1.25 : 1); cp.vx = approach(cp.vx, dx / len * csp * mag, 70 * dt); cp.vy = approach(cp.vy, dy / len * csp * mag, 70 * dt);
@@ -21407,6 +21437,7 @@
   function homeActions() {
     var A = [], gx = HGATE.x + 1, gy = HGATE.y;
     if (croakaNear()) A.push({ label: "Talk to Croaka", ax: CROAKA.x, ay: CROAKA.y - 2.4, fn: talkCroaka });
+    p4HomeActs(A);
     if (Math.abs(cp.x - gx) < 2.2 && Math.abs(cp.y - gy) < 2.2) A.push({ label: "Back to the swamp", ax: gx, ay: gy - 1.6, fn: leaveHome });
     if (Math.abs(cp.x - (HCRATE.x + 0.5)) < 2 && Math.abs(cp.y - (HCRATE.y + 1)) < 2) A.push({ label: "Shipping Crate", ax: HCRATE.x + 0.5, ay: HCRATE.y - 1.2, fn: openShip });
     if (Math.abs(cp.x - (HHOUSE.x + 3)) < 1.6 && Math.abs(cp.y - (HHOUSE.y + HHOUSE.h + 0.6)) < 1.4) A.push({ label: "Farm Ledger", ax: HHOUSE.x + 3, ay: HHOUSE.y + 1.4, fn: openLedger });
@@ -21511,6 +21542,910 @@
     var bi = -1; (o.b || []).forEach(function (b, i) { if (bi < 0 && b.k === q[2] && homeBldPop(i) < homeBldCap(b)) bi = i; }); if (bi < 0) { nag("Build a " + ITEMS[q[2]].n + " with room first."); return; }
     S.inv.silvercoin -= q[1]; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; var A = ANIM[k], nm = A.names[Math.floor(Math.random() * A.names.length)];
     homeAnimals().push({ k: k, b: bi, f: 0, pd: -1, nm: nm }); S.st.hanimals = (S.st.hanimals || 0) + 1; reslot(); hbDirty = true; snd("coin"); toast(nm + " the " + A.n + " moved into your " + ITEMS[q[2]].n + "!", "#7dd65a"); checkGoals(); save(); renderStall(); }
+  // =====================================================================================================================================
+  // ===== PHASE 4: CHARACTERS AND STORY (roadmap #41 to #54) ==========================================================================
+  // Everything is kept in S.p4 (one object, so old saves just start it empty):
+  //   h: friendship points per family frog (0..1000, 100 a heart)   gd / td: the day of the last gift / first chat of the day per frog
+  //   mail: the day the mailbox was last emptied   din: the week of the last family dinner   tl: tale levels (how often each was told)
+  //   q: the sailor backstory quests   lb: Logbook pages found   tour: the fishing tournament   nb: the notice board   th: the crop thief
+  //   rv: the rival   ch: choices (who moves to town)   bt: the lost brother   ms: heart milestones given
+  // The family: Old Croaker (camp), Croako (his brother, the pier), Croaka (his big sister, your homestead) and, once found, Bartholomew.
+  var FAM = {
+    croaker: { n: "Old Croaker", c: "#4ee6b4", love: ["swamptea", "croakersoup", "carrotcake", "honeyjar", "lilycookie"], like: ["stew", "roastcarrot", "redcapsoup", "mushroompie", "glowbroth", "marshlily", "flower", "teaset", "dumplings", "tealeaves"], hate: ["mud", "stone", "pebble", "slimeball", "bugfrag"],
+      say: { love: "Oh! Oh my. You remembered. Nobody remembers.", like: "Well now, isn't that thoughtful. Thank you, little one.", meh: "Ah. A... gift. I'll find a place for it.", hate: "Is this... a joke? Are you teasing an old frog?" } },
+    croako: { n: "Croako", c: "#f2c14e", love: ["fishpie", "piersushi", "kingcroak", "blackpearl", "doubloon", "seastew"], like: ["grilledfish", "fishchips", "kelpwrap", "driedfish", "pearl", "seashell", "shell", "kelp", "catfish", "frosttrout", "marshbass", "pierbream", "lilyperch"], hate: ["carrot", "flower", "marshlily", "cotton", "pressedflower"],
+      say: { love: "Now THAT is a gift a frog can respect. You're all right, you know that?", like: "Huh. Not bad. Not bad at all.", meh: "...Thanks. I guess.", hate: "Flowers? FLOWERS? Do I look like my sister?" } },
+    croaka: { n: "Croaka", c: "#ff9ab0", love: ["carrotcake", "rainbowcake", "honeyjar", "pressedflower", "lilyvase", "berrypie"], like: ["carrot", "potato", "pepper", "mudmelon", "croakpumpkin", "flower", "marshlily", "cotton", "compost", "lilycookie", "roastcarrot"], hate: ["slimeball", "catfish", "driedfish", "bugfrag", "mud"],
+      say: { love: "For ME? Oh, you sweet thing. Come here. No, closer. There.", like: "That's lovely, dear. You've got good taste, unlike my brothers.", meh: "Thank you, dear. I'll put it with the other... things.", hate: "What is that SMELL? Take it back out, please." } },
+    barty: { n: "Bartholomew", c: "#7ac8e8", love: ["starpancakes", "doubloon", "ancientcoin", "blackpearl", "croakersoup"], like: ["kelp", "seashell", "noodles", "dumplings", "pearl", "shell", "honeyjar"], hate: ["driedfish", "kelpwrap", "seastew"],
+      say: { love: "Ha HA! Twenty years on a rock and THIS is what I missed. Thank you!", like: "Kind of you. Very kind. I'd forgotten kind.", meh: "Mm. Useful. Probably.", hate: "No. No more sea food. I ate seaweed for a decade." } }
+  };
+  var FAM_MS = {   // heart milestones: a present (and what it opens up)
+    croaker: { 2: { rw: { swamptea: 2 }, msg: "Croaker has a tale to tell you: talk to him." }, 4: { rw: { lilycookie: 3 }, msg: "A second Tall Tale is ready." }, 6: { rw: { croakersoup: 1 }, msg: "The last Tall Tale: the night with Saltjaw." }, 8: { rw: { goldcoin: 2 }, msg: "Croaker trusts you with his old compass. Ask him about his brother." }, 10: { rw: { croakerlamp: 1 }, msg: "Old Croaker thinks of you as family now." } },
+    croako: { 2: { rw: { kelpwrap: 3 }, msg: "Croako invites you to his weekly Fishing Tournament (Fishday)." }, 4: { rw: { goldbait: 1 }, msg: "Croako gave you Golden Bait: legendary fish can't resist it." }, 6: { rw: { doubloon: 6 }, msg: "" }, 10: { rw: { goldbait: 2, blackpearl: 1 }, msg: "Croako says you're the best angler in the swamp. Don't tell him he said it." } },
+    croaka: { 2: { rw: { seed_carrot: 6 }, msg: "" }, 4: { rw: { compost: 6 }, msg: "Croaka will tell you about the crop trouble if you ask." }, 6: { rw: { honeyjar: 2 }, msg: "" }, 10: { rw: { rainbowcake: 1, compost: 10 }, msg: "Croaka calls you her favourite neighbour. To your face, even." } },
+    barty: { 2: { rw: { ancientcoin: 1 }, msg: "" }, 5: { rw: { blackpearl: 1 }, msg: "" }, 10: { rw: { starpancakes: 3 }, msg: "Bartholomew says you're the reason he's home." } }
+  };
+  var WEEKDAY = ["Mossday", "Mudday", "Reedday", "Lilyday", "Frogday", "Fishday", "Feastday"];
+  function p4() {
+    if (!S.p4 || typeof S.p4 !== "object") S.p4 = {}; var o = S.p4;
+    ["h", "gd", "td", "tl", "q", "lb", "ch", "nb", "th", "rv", "bt", "ms", "tour"].forEach(function (k) { if (!o[k] || typeof o[k] !== "object") o[k] = {}; });
+    return o;
+  }
+  function wkday(d) { return WEEKDAY[((d === undefined ? S.days : d) | 0) % 7]; }
+  function famMet(w) { return w === "croaker" ? true : w === "croako" ? (S.st.croako || 0) > 0 : w === "croaka" ? !!(S.st.croakamet || (S.home && S.home.cr)) : !!p4().bt.home; }
+  function famPts(w) { var o = p4(); if (w === "croaka" && S.home) { var K = croakaS(); o.h.croaka = Math.max(o.h.croaka || 0, (K.f || 0) * 100); } return o.h[w] || 0; }   // (Croaka's farm-order hearts count too)
+  function famHearts(w) { return Math.min(10, Math.floor(famPts(w) / 100)); }
+  function famAdd(w, n, quiet) {
+    var o = p4(), h0 = famHearts(w); o.h[w] = clamp((o.h[w] || 0) + n, 0, 1000); var h1 = famHearts(w); if (w === "croaka" && S.home) { var K2 = croakaS(); K2.f = Math.max(K2.f || 0, h1); }
+    for (var hh = h0 + 1; hh <= h1; hh++) famMilestone(w, hh, quiet);
+    S.st.famhearts = Object.keys(FAM).reduce(function (a, k) { return a + famHearts(k); }, 0);
+  }
+  function famMilestone(w, hh, quiet) {
+    var o = p4(), key = w + hh; if (o.ms[key]) return; o.ms[key] = 1;
+    var M = FAM_MS[w] && FAM_MS[w][hh]; if (M) { var rw = {}; Object.keys(M.rw).forEach(function (k) { if (ITEMS[k]) rw[k] = M.rw[k]; }); giveRw(rw); }
+    if (!quiet) { popup(FAM[w].n + ": " + hh + (hh === 1 ? " heart" : " hearts"), M && M.msg ? M.msg : M ? rewardText(Object.keys(M.rw).reduce(function (a, k) { if (ITEMS[k]) a[k] = M.rw[k]; return a; }, {})) : "Your friendship grows.", FAM[w].c, "♥"); snd("open", "Epic"); }
+  }
+  function famHeartsHtml(w) {
+    var pts = famPts(w), full = Math.floor(pts / 100), part = (pts % 100) / 100, h = '<div class="p4-hearts" title="' + famHearts(w) + ' of 10 hearts" aria-label="' + famHearts(w) + ' of 10 hearts">';
+    for (var i = 0; i < 10; i++) h += '<i class="' + (i < full ? "on" : i === full && part > 0 ? "part" : "") + '"' + (i === full && part > 0 ? ' style="--p:' + Math.round(part * 100) + '%"' : "") + "></i>";
+    return h + "</div>";
+  }
+  function famChat(w) { var o = p4(); if (o.td[w] !== (S.days | 0)) { o.td[w] = S.days | 0; famAdd(w, 8, false); } }
+  function famPref(w, k) { var F = FAM[w]; return F.love.indexOf(k) >= 0 ? "love" : F.like.indexOf(k) >= 0 || (w === "croako" && FISH_ALL.indexOf(k) >= 0) || (w === "croaka" && CROPS[k]) ? "like" : F.hate.indexOf(k) >= 0 ? "hate" : "meh"; }
+  // portraits: the in-game art, drawn once into a small picture (the old flat portraits are gone)
+  var FAMPIC = {};
+  function famArt(g, w, now, face) {
+    if (w === "croaker") croakerArt(g, now, 0, {}); else if (w === "croako") croakoArt(g, now, face || 1, 0); else if (w === "croaka") croakaArt(g, now, face || 1, 0); else bartyArt(g, now, face || 1, 0);
+  }
+  function famPic(w) {
+    if (FAMPIC[w]) return FAMPIC[w]; var c = document.createElement("canvas"); c.width = c.height = 200; var g = c.getContext("2d"); g.translate(100, 190); g.scale(3.3, 3.3); g.lineJoin = "round"; g.lineCap = "round";
+    try { famArt(g, w, 0, 1); } catch (e) {} var u = c.toDataURL(); cvFree(c); return (FAMPIC[w] = u);
+  }
+  function famHead(w, sub) { return '<div class="st-croak p4-pic"><img alt="" src="' + famPic(w) + '"></div><small>' + esc(FAM[w].n) + (sub ? " · " + esc(sub) : "") + "</small>" + famHeartsHtml(w); }
+  // GIFTS (#41): one a day for each of them. Loved +80, liked +45, anything else +20, something they hate -20.
+  var P4V = { w: "", r: null };
+  function famGiftable() { return ORDER.filter(function (k) { var it = ITEMS[k]; return it && (S.inv[k] || 0) > 0 && !it.tool && k !== "fishlog" && k !== "farmbook" && !/^charm_|^x_(grap|drill|jet|detect)/.test(k); }); }
+  function famGiftView(w) {
+    var o = p4(), done = o.gd[w] === (S.days | 0), h = famHead(w, "a gift");
+    if (P4V.r) { var R = P4V.r; h += '<h2 class="st-hi">' + esc(FAM[w].say[R.p]) + '</h2><div class="st-gift p4-react p4-' + R.p + '"><span><img alt="" src="' + icon(R.k) + '">' + esc(ITEMS[R.k].n) + "</span><b>" + (R.n > 0 ? "+" : "") + R.n + "</b></div>"; }
+    else if (done) h += '<h2 class="st-hi">“You already gave me something today. Come back tomorrow, if you like.”</h2>';
+    else {
+      var L = famGiftable();
+      h += '<h2 class="st-hi">Pick something to give ' + esc(FAM[w].n) + "</h2>";
+      h += L.length ? '<div class="p4-giftgrid">' + L.map(function (k) { return '<button type="button" class="p4-gi" data-p4="give:' + w + ":" + k + '" aria-label="Give ' + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + S.inv[k] + "</b></button>"; }).join("") + "</div>"
+        : '<p class="st-tip">You have nothing to give. Cook something, catch a fish, pick a flower.</p>';
+      var lk = FAM[w].love.filter(function (k) { return ITEMS[k] && S.found && S.found[k]; }).slice(0, 3);
+      if (lk.length) h += '<p class="st-tip"><b>You\'ve noticed:</b> ' + esc(FAM[w].n) + " lights up at " + lk.map(function (k) { return ITEMS[k].n; }).join(", ") + ".</p>";
+    }
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-p4="back:' + w + '">Back</button><button type="button" class="btn" data-story-close>Bye for now</button></div>';
+    return h;
+  }
+  function famGive(w, k) {
+    var o = p4(); if (o.gd[w] === (S.days | 0) || !(S.inv[k] > 0)) return;
+    S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) { sel = "pick"; bare = true; } } reslot(); hbDirty = true;
+    var pr = famPref(w, k), n = { love: 80, like: 45, meh: 20, hate: -20 }[pr]; o.gd[w] = S.days | 0; S.st.famgifts = (S.st.famgifts || 0) + 1;
+    P4V.r = { k: k, p: pr, n: n }; famAdd(w, n); if (pr === "hate") thud(150, 0.06); else snd(pr === "love" ? "open" : "coin", pr === "love" ? "Epic" : undefined); checkGoals(); save();
+  }
+  function p4Open(id) { var el = $("sbxStory"); if (!el) return false; if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel(); storyOpen = id; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); return true; }
+  function p4Box(h, col) { var b = $("sbxStoryBox"); b.style.setProperty("--qc", col || "#4ee6b4"); b.innerHTML = h; var f = b.querySelector(".btn:not(.ghost)") || b.querySelector(".btn"); if (f) f.focus({ preventScroll: true }); }
+  function p4Back(w) { P4V.r = null; if (w === "croaker") { talkView = "main"; renderTalk(); } else if (w === "croako") talkCroako(); else if (w === "croaka") talkCroaka(); else if (w === "barty") talkBarty(); }
+  // ---------- #54 CROAKER'S MAILBOX: a letter and a little present every day, from whichever of the family thinks of you ----------
+  var MAILX = null;
+  function mailSpot() {
+    if (MAILX && MAILX.w === world) return MAILX.x; var sx = Math.floor(world.spawn.x); MAILX = { w: world, x: -1 };
+    for (var d = 2; d < 14; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = sx + sg * d; if (x < 2 || x >= W - 2 || MAILX.x >= 0) continue; var gy = col[x]; if (gy && !TILES[get(x, gy - 1)].solid && !TILES[get(x, gy - 2)].solid && TILES[get(x, gy)].solid) MAILX.x = x; }
+    return MAILX.x;
+  }
+  function mailReady() { return (S.days | 0) >= 1 && p4().mail !== (S.days | 0); }
+  function mailNear() { var x = mailSpot(); return x >= 0 && !cave && !HOME && !OCS && Math.abs(x + 0.5 - p.x) < 1.6 && Math.abs(col[x] - p.y) < 2.2; }
+  function drawMailbox(g, now) {
+    var x = mailSpot(); if (x < 0 || cave) return; var gy = col[x], sx = ox + (x + 0.5) * ts, sy = oy + gy * ts; if (sx < -ts * 2 || sx > vw + ts * 2 || sy < -ts * 3 || sy > vh + ts * 2) return;
+    var rd = mailReady(), k = ts / 30; g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
+    g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, 0, 8, 2, 0, 0, 7); g.fill();
+    g.beginPath(); g.rect(-1.8, -22, 3.6, 22); aInk(g, aG(g, -22, 0, "#a8703a", "#7a4a22", "#4a2a10"), "#2a1606", 1);   // the post
+    g.beginPath(); g.moveTo(-9, -21); g.lineTo(-9, -31); g.quadraticCurveTo(-9, -37, 0, -37); g.quadraticCurveTo(9, -37, 9, -31); g.lineTo(9, -21); g.closePath(); aInk(g, aG(g, -37, -21, "#6ab8e8", "#3a7ab8", "#1e4a7a"), "#0e2238", 1.2);   // the box
+    g.beginPath(); g.moveTo(-9, -21); g.lineTo(-9, -31); g.quadraticCurveTo(-9, -36, -6, -36.6); g.lineTo(-6, -21); g.closePath(); g.fillStyle = "rgba(255,255,255,.12)"; g.fill();
+    g.fillStyle = "#0e2238"; g.fillRect(-6, -30, 12, 1.2); aShine(g, -5, -34, 3, 1, 0.35, -0.3);
+    var fa = rd ? -Math.PI / 2 + (reduce ? 0 : Math.sin(now / 260) * 0.12) : 0;   // the red flag: up when there's a letter
+    g.save(); g.translate(9, -28); g.rotate(fa); g.beginPath(); g.rect(0, -1, 9, 2); aInk(g, "#8a8f99", "#2a2e34", 0.7); g.beginPath(); g.rect(6, -1, 4, 5); aInk(g, "#e8503a", "#5a1408", 0.8); g.restore();
+    if (rd) { var ry = -46 + (reduce ? 0 : Math.sin(now / 320) * 1.6); g.beginPath(); g.rect(-6, ry - 4, 12, 8); aInk(g, "#fff6dc", "#8a6a3a", 0.8); g.strokeStyle = "#8a6a3a"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-6, ry - 4); g.lineTo(0, ry + 0.6); g.lineTo(6, ry - 4); g.stroke(); g.beginPath(); g.arc(0, ry + 0.6, 1.2, 0, 7); aInk(g, "#e8503a", "#5a1408", 0.4); }
+    g.restore();
+  }
+  var MAIL_POOL = {   // by heart tier: 0 (0-2 hearts), 1 (3-5), 2 (6-8), 3 (9-10)
+    croaker: [[["lilycookie", 1], ["swamptea", 1], ["torch", 4]], [["swamptea", 2], ["stew", 1], ["silvercoin", 2]], [["croakersoup", 1], ["goldcoin", 1], ["honeyjar", 1]], [["goldcoin", 2], ["croakersoup", 2], ["ancientcoin", 1]]],
+    croako: [[["kelpwrap", 1], ["driedfish", 1], ["doubloon", 1]], [["piersushi", 1], ["doubloon", 2], ["pearl", 1]], [["fishpie", 1], ["doubloon", 4], ["goldbait", 1]], [["blackpearl", 1], ["goldbait", 1], ["doubloon", 6]]],
+    croaka: [[["carrot", 2], ["seed_carrot", 3], ["roastcarrot", 1]], [["carrotcake", 1], ["compost", 3], ["honeyjar", 1]], [["rainbowcake", 1], ["compost", 6], ["berrypie", 1]], [["rainbowcake", 2], ["honeyjar", 2], ["goldcoin", 1]]],
+    barty: [[["kelp", 3], ["seashell", 1], ["pearl", 1]], [["pearl", 2], ["noodles", 1], ["doubloon", 2]], [["blackpearl", 1], ["ancientcoin", 1], ["goldcoin", 1]], [["starpancakes", 2], ["ancientcoin", 2], ["blackpearl", 1]]]
+  };
+  var MAIL_TXT = {
+    croaker: ["Dear little one,\n\nThe reeds were whispering about you again. Nothing bad. Mostly about your hat.\n\nHere's a little something for the road.\n\nOld Croaker", "Little one,\n\nI found this by the fire this morning and thought: that delver could use it. So now you can.\n\nMind the gators.\n\nCroaker", "Dear delver,\n\nI've been telling the fish about you. They are very impressed. The fish are always impressed.\n\nYours, Croaker"],
+    croako: ["Oi.\n\nCaught too many again. Have one. Don't make it weird.\n\nC.", "You.\n\nBrother says you're doing well. Brother says a lot of things. This one he got right.\n\nCroako", "Weather's turning. Fish are biting. Here's bait money. Use it on bait, not on cake.\n\nCroako"],
+    croaka: ["Dear neighbour,\n\nThe carrots came up early this week, so I'm sharing. Eat your greens. Oranges. You know what I mean.\n\nLove, Croaka", "Darling,\n\nYou've been working too hard, I can tell from here. Have this and sit down for once.\n\nCroaka (the sensible one)", "Dear heart,\n\nIf my little brother asks, this was from him. He'd want to be the kind one for a change.\n\nCroaka"],
+    barty: ["Friend!\n\nDry land is wonderful. Beds are wonderful. Spoons! Did you know about spoons?\n\nHere, a bit of my sea treasure.\n\nBarty", "Friend,\n\nI still wake up and listen for the waves. Then I hear Croaka snoring and remember I'm home.\n\nBartholomew"]
+  };
+  function mailOpen() {
+    if (!mailReady()) { nag("The mailbox is empty. New letters come every morning."); return; }
+    var o = p4(), L = Object.keys(FAM).filter(famMet), tot = 0; L.forEach(function (w) { tot += 1 + famHearts(w); });
+    var r = Math.random() * tot, w = L[0]; for (var i = 0; i < L.length; i++) { r -= 1 + famHearts(L[i]); if (r <= 0) { w = L[i]; break; } }
+    var tier = Math.min(3, Math.floor(famHearts(w) / 3)), pool = MAIL_POOL[w][tier].filter(function (q) { return ITEMS[q[0]]; }), pk = pool[Math.floor(Math.random() * pool.length)] || ["lilycookie", 1];
+    o.mail = S.days | 0; S.st.letters = (S.st.letters || 0) + 1;
+    var tx = MAIL_TXT[w][(S.days | 0) % MAIL_TXT[w].length], extra = "";
+    if (wkday((S.days | 0)) === "Feastday") extra = "\n\nP.S. Family dinner tonight at the Sky Village, at dusk. Bring something tasty!";
+    else if (wkday((S.days | 0)) === "Fishday" && famHearts("croako") >= 2) extra = "\n\nP.S. Croako's Fishing Tournament is today, on the pier.";
+    if (!p4Open(250)) return; give(pk[0], pk[1], undefined, undefined, true); thud(600, 0.04); snd("open");
+    p4Box(famHead(w, "a letter") + '<div class="p4-letter">' + esc(tx + extra).replace(/\n/g, "<br>") + '</div><div class="st-gift"><span><img alt="" src="' + icon(pk[0]) + '">' + pk[1] + " " + esc(ITEMS[pk[0]].n) + '</span></div><div class="st-row"><button type="button" class="btn" data-story-close>Lovely</button></div>', FAM[w].c);
+    save();
+  }
+  // ---------- #45 FAMILY DINNER: every Feastday at dusk the family eats together at the Sky Village ----------
+  var DINX = null;
+  function dinSpot() {   // an open stretch of five tiles in the middle of the Sky Village
+    var s = world && world.sky; if (!s) return null; if (DINX && DINX.w === world) return DINX.v; DINX = { w: world, v: null };
+    var mid = Math.floor((s.a + s.z) / 2);
+    for (var d = 0; d < 40 && !DINX.v; d++) for (var sg = -1; sg <= 1; sg += 2) { var x0 = mid + sg * d, ok = true; for (var x = x0 - 2; x <= x0 + 2; x++) { if (!TILES[get(x, s.y)].solid || TILES[get(x, s.y - 1)].solid || TILES[get(x, s.y - 2)].solid || TILES[get(x, s.y - 3)].solid) ok = false; } if (ok && !DINX.v) DINX.v = { x: x0 + 0.5, y: s.y }; }
+    return DINX.v;
+  }
+  function dinNow() { return wkday() === "Feastday" && S.time >= 200 && S.time < 340; }
+  function dinWeek() { return Math.floor((S.days | 0) / 7); }
+  function dinNear() { var D = dinSpot(); return D && dinNow() && !cave && !HOME && !OCS && Math.abs(D.x - p.x) < 3.4 && Math.abs(D.y - p.y) < 2.5; }
+  function dinWho() { return ["croaker", "croaka", "croako", "barty"].filter(famMet); }
+  function drawDinner(g, now) {
+    var D = dinSpot(); if (!D || !dinNow() || cave) return; var sx = ox + D.x * ts, sy = oy + D.y * ts; if (sx < -ts * 5 || sx > vw + ts * 5 || sy < -ts * 4 || sy > vh + ts * 3) return;
+    var k = ts / 30, t = now / 1000, who = dinWho(), done = p4().din === dinWeek(); g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    // lanterns on poles at each end, glowing
+    [-62, 62].forEach(function (lx) { g.beginPath(); g.rect(lx - 1.2, -44, 2.4, 44); aInk(g, "#6a4426", "#2a1606", 0.8); var gl = g.createRadialGradient(lx, -46, 0, lx, -46, 26); gl.addColorStop(0, "rgba(255,210,120,.45)"); gl.addColorStop(1, "rgba(255,210,120,0)"); g.fillStyle = gl; g.beginPath(); g.arc(lx, -46, 26, 0, 7); g.fill(); g.beginPath(); g.rect(lx - 3.4, -50, 6.8, 8); aInk(g, "#ffd76a", "#5a3a06", 0.9); });
+    g.strokeStyle = "#5a3a1a"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-62, -44); g.quadraticCurveTo(0, -30, 62, -44); g.stroke();   // a string of lights
+    for (var b = 0; b < 9; b++) { var bx = -48 + b * 12, by = -44 + 14 * (1 - Math.pow((bx) / 62, 2)) * 0.95; g.fillStyle = ["#ffd76a", "#ff8ab0", "#7ae0ff", "#9af58a"][b % 4]; g.globalAlpha = 0.7 + 0.3 * Math.sin(t * 3 + b); g.beginPath(); g.arc(bx, by + 2, 1.6, 0, 7); g.fill(); } g.globalAlpha = 1;
+    // the family, standing behind the table
+    var seats = [[-36, "croaker"], [-12, "croaka"], [12, "croako"], [36, "barty"]];
+    seats.forEach(function (st2, i) { if (who.indexOf(st2[1]) < 0) return; g.save(); g.translate(st2[0], 0); var f = st2[0] < 0 ? 1 : -1; g.scale(0.92, 0.92); var br = reduce ? 0 : Math.sin(t * 1.5 + i) * 0.7;
+      if (st2[1] === "croaker") { g.scale(f, 1); croakerArt(g, now, br, { blink: (now + i * 900) % 4100 < 140 }); } else if (st2[1] === "croako") { g.scale(1, 1); frogOnly(g, "croako", now, f, br); } else if (st2[1] === "croaka") frogOnly(g, "croaka", now, f, br); else bartyArt(g, now, f, br, true);
+      g.restore(); });
+    // the table: a long plank top on trestles, a checked cloth, candles and the dishes
+    g.beginPath(); g.rect(-50, -14, 4, 14); g.rect(46, -14, 4, 14); aInk(g, "#7a4a22", "#2a1606", 1);
+    g.beginPath(); g.moveTo(-54, -20); g.lineTo(54, -20); g.lineTo(52, -14); g.lineTo(-52, -14); g.closePath(); aInk(g, aG(g, -20, -14, "#c88a52", "#9a6232", "#6a4020"), "#2a1606", 1.1);
+    g.beginPath(); g.moveTo(-50, -20.6); g.lineTo(50, -20.6); g.lineTo(46, -8); g.lineTo(-46, -8); g.closePath(); g.save(); aInk(g, aG(g, -21, -8, "#ffffff", "#f2ece0", "#c8c0b0"), "#7a6a5a", 0.8); g.clip();
+    g.fillStyle = "rgba(200,60,70,.28)"; for (var cx = -50; cx < 50; cx += 8) g.fillRect(cx, -21, 4, 14); for (var cy = -20; cy < -8; cy += 6) g.fillRect(-52, cy, 104, 3); g.restore();
+    [-22, 22].forEach(function (cx2) { g.beginPath(); g.rect(cx2 - 1.2, -30, 2.4, 9); aInk(g, "#fff6dc", "#8a7a5a", 0.6); var fl = reduce ? 1 : 0.8 + 0.2 * Math.sin(t * 12 + cx2); g.fillStyle = "rgba(255,190,80," + (0.5 * fl).toFixed(2) + ")"; g.beginPath(); g.arc(cx2, -32, 4 * fl, 0, 7); g.fill(); g.beginPath(); g.ellipse(cx2, -32, 1.2, 2.2, 0, 0, 7); aInk(g, "#ffd76a", "#a8501a", 0.4); });
+    ["croakersoup", "carrotcake", "fishpie", "noodles", "roastcarrot"].forEach(function (dk, i) { var im = dropIcon(dk); if (im.complete && im.naturalWidth) { g.imageSmoothingEnabled = false; g.drawImage(im, -44 + i * 19, -31, 12, 12); } });
+    if (!done && !reduce) { g.fillStyle = "rgba(255,240,200,.8)"; for (var st3 = 0; st3 < 3; st3++) { var ph = (t * 0.6 + st3 / 3) % 1; g.globalAlpha = 0.6 * (1 - ph); g.beginPath(); g.arc(-34 + st3 * 30 + Math.sin(t + st3) * 2, -34 - ph * 16, 1.6 + ph * 2, 0, 7); g.fill(); } g.globalAlpha = 1; }   // steam
+    g.restore();
+  }
+  function frogOnly(g, w, now, face, br) {   // a family frog without the props beside them (they're at the table)
+    g.save(); g.scale(face, 1);
+    if (w === "croako") frogNpc(g, { hi: "#86e8d8", mid: "#4aa8a0", lo: "#1f6a64", ink: "#0c3632", br: br, blink: (now % 4200) < 140, patch: 1, belly: false, inner: function (g) { g.beginPath(); g.moveTo(-16, -21); g.quadraticCurveTo(0, -25, 16, -21); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#ffe07a", "#f2c14e", "#b8862a"); g.fill(); } });
+    else frogNpc(g, { hi: "#b2ec84", mid: "#7ab84a", lo: "#3e7a28", ink: "#163010", br: br, blink: (now % 3900) < 140, belly: false, inner: function (g) { g.beginPath(); g.moveTo(-16, -20); g.quadraticCurveTo(0, -25.6, 16, -20); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#ff9ab0", "#e86a8a", "#a83a5a"); g.fill(); } });
+    if (w === "croako") { g.beginPath(); g.ellipse(7, -33, 3.6, 3.3, 0.1, 0, 7); aInk(g, "#1c1414", "#000", 0.8); g.beginPath(); g.moveTo(-10.4, -37); g.quadraticCurveTo(-9.6, -51.6, 1.4, -51.6); g.quadraticCurveTo(12.4, -51.6, 12.6, -37); g.closePath(); aInk(g, aG(g, -52, -37, "#5a70b0", "#3a4e8a", "#1e2a58"), "#10183a", 1.2); g.beginPath(); g.arc(1.4, -52, 3.2, 0, 7); aInk(g, "#f6eedb", "#7a7462", 0.9); }
+    else { g.beginPath(); g.moveTo(-8.6, -38.4); g.quadraticCurveTo(-8, -51, 1.4, -51.2); g.quadraticCurveTo(10.8, -51, 11.4, -38.4); g.closePath(); aInk(g, aG(g, -51, -38, "#f8e09a", "#e8c46a", "#a8862a"), "#5a3e0e", 1.1); g.beginPath(); g.ellipse(1.4, -38.4, 19, 4.2, -0.02, 0, 7); aInk(g, aG(g, -42.6, -34.2, "#f8e09a", "#e8c46a", "#a8862a"), "#5a3e0e", 1.1); }
+    g.strokeStyle = "#163010"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-3.4, -25.4); g.quadraticCurveTo(1, -22, 6, -25.4); g.stroke();
+    g.restore();
+  }
+  var DIN_LINES = {   // [early, warm, family] by hearts (0-3, 4-7, 8-10)
+    croaker: ["Sit, sit! Mind the soup, it bites back.", "To the delver! Our delver. Who still hasn't tidied my camp.", "Look at us. A proper family table. Mother would have cried into the stew."],
+    croaka: ["Elbows off the table, dear. Not you, Croako. You're hopeless.", "I made extra. I always make extra now. You know why.", "Next week you're helping me cook. No arguing. You're one of us."],
+    croako: ["Hmph. Pass the fish.", "You caught that one? Not bad. For a land-lubber.", "...Glad you came. Don't make it a thing."],
+    barty: ["Food that isn't seaweed! I could weep. I might weep.", "Twenty years of dinners alone on a rock. This is better. This is much better.", "My brother, my sister, and you. Best crew I ever had."]
+  };
+  function dinOpen(pick) {
+    if (!dinNow()) { nag("Dinner is at dusk on Feastday."); return; }
+    if (!p4Open(251)) return; var o = p4(), who = dinWho(), done = o.din === dinWeek(), h = '<div class="p4-row">' + who.map(function (w) { return '<img alt="" src="' + famPic(w) + '" title="' + esc(FAM[w].n) + '">'; }).join("") + "</div>";
+    if (done && !pick) { h += '<h2 class="st-hi">“Full as a tick, little one. Same time next Feastday!”</h2><div class="st-row"><button type="button" class="btn" data-story-close>Goodnight</button></div>'; p4Box(h, "#ffb070"); return; }
+    if (!pick) {
+      var dishes = ORDER.filter(function (k) { return ITEMS[k] && ITEMS[k].cooked && (S.inv[k] || 0) > 0; });
+      h += '<h2 class="st-hi">Family dinner! What did you bring?</h2><p class="st-tip">A dish someone loves makes them happier. Everyone at the table goes to bed Well Fed: health comes back faster and hunger goes down slower all through the next day.</p>';
+      h += dishes.length ? '<div class="p4-giftgrid">' + dishes.map(function (k) { return '<button type="button" class="p4-gi" data-p4="dish:' + k + '" aria-label="Bring ' + esc(ITEMS[k].n) + '"><img alt="" src="' + icon(k) + '"><b>' + S.inv[k] + "</b></button>"; }).join("") + "</div>" : '<p class="st-tip">You haven\'t got a cooked dish. Bring yourself, then.</p>';
+      h += '<div class="st-row"><button type="button" class="btn ghost" data-p4="dish:none">Just bring myself</button><button type="button" class="btn ghost" data-story-close>Not tonight</button></div>';
+      p4Box(h, "#ffb070"); return;
+    }
+    // eat: lines from each of them, hearts, the buff
+    var dk = pick === "none" ? null : pick; if (dk) { if (!(S.inv[dk] > 0)) return; S.inv[dk]--; if (S.inv[dk] <= 0) delete S.inv[dk]; reslot(); hbDirty = true; }
+    o.din = dinWeek(); S.st.dinners = (S.st.dinners || 0) + 1;
+    h += '<h2 class="st-hi">' + (dk ? "You set down the " + esc(ITEMS[dk].n) + ". Everyone leans in." : "You squeeze in at the end of the bench.") + "</h2><div class=\"p4-din\">";
+    who.forEach(function (w) {
+      var tier = famHearts(w) >= 8 ? 2 : famHearts(w) >= 4 ? 1 : 0, pr = dk ? famPref(w, dk) : "meh", bonus = dk ? { love: 60, like: 30, meh: 10, hate: -10 }[pr] : 0;
+      famAdd(w, 40 + bonus, true);
+      h += '<div class="p4-dl"><img alt="" src="' + famPic(w) + '"><span><b>' + esc(FAM[w].n) + (dk && pr === "love" ? ' <em class="p4-love">loves it!</em>' : dk && pr === "hate" ? ' <em class="p4-hate">pushes it away</em>' : "") + "</b>“" + esc(DIN_LINES[w][tier]) + "”</span></div>";
+    });
+    h += "</div>";
+    if (!S.fx) S.fx = {}; S.fx.fed = 600; if (dk && ITEMS[dk].efx) S.fx[ITEMS[dk].efx[0]] = Math.max(S.fx[ITEMS[dk].efx[0]] || 0, ITEMS[dk].efx[1]); drawFx(true);
+    hp = MAXHP; drawHp(); S.food = 100; drawFood();
+    h += '<p class="st-tip"><b>Well Fed</b> for the whole next day, and full health and food tonight.</p><div class="st-row"><button type="button" class="btn" data-story-close>Goodnight, everyone</button></div>';
+    p4Box(h, "#ffb070"); snd("open", "Epic"); checkGoals(); save();
+  }
+  // ---------- #42 CROAKER'S TALL TALES: playable flashbacks, and every time he tells one it gets bigger ----------
+  // A tale plays as a short sepia memory on its own screen: you are young Croaker. Three tales, unlocked by his hearts (2, 4, 6):
+  //   moon    "The Gator Who Swallowed the Moon": hop over snapping gators across the night swamp while the giant gator chases you
+  //   storm   "Through the Thunderstorm": steer the Leaky Lily up and down past rocks, lightning and (later) kraken arms
+  //   saltjaw "The Night I Out-Croaked Saltjaw": dodge cannonballs and grab doubloons on the deck of his ship
+  // Level = how many times he has told it (0..3): each retelling the danger grows and so does his story (and the prize).
+  var TALES = [
+    { id: "moon", n: "The Gator Who Swallowed the Moon", need: 2, mode: "hop", c: "#c8a46a",
+      cap: [[[0.5, "I was barely bigger than a tadpole, and the swamp was dark as soup."], [8, "Then the gator came. Big as a log, it was."], [17, "I hopped and hopped, pad to pad!"], [27, "Nearly home now..."]],
+            [[0.5, "I was small, but brave. Braver than most grown frogs."], [8, "The gator was big as a BOAT. Bigger!"], [17, "Its teeth were the size of your arm!"], [27, "But I was quicker than the wind."]],
+            [[0.5, "It was the darkest night the swamp had ever known."], [8, "That gator was big as a HOUSE, little one. A house!"], [17, "Bats everywhere! Thousands of them!"], [27, "I could feel its breath on my tail..."]],
+            [[0.5, "This is the night the moon went out. I was there."], [8, "The gator was big as a MOUNTAIN, and it had swallowed the MOON. You could see it glowing in its belly!"], [17, "Bats! Wasps! Probably a dragon!"], [27, "And then I hopped clean over its nose."]]],
+      end: ["And that, little one, is how I got home with a jar full of fireflies.", "And that is how I outran a gator the size of a boat.", "And that's how I outran a gator as big as a house. True story.", "And I tickled its nose and it coughed the moon right back up into the sky. You're welcome."] },
+    { id: "storm", n: "Through the Thunderstorm", need: 4, mode: "sail", c: "#8aa6b8",
+      cap: [[[0.5, "I was a deckhand on the Leaky Lily. Youngest on the crew."], [8, "The storm came out of nowhere. Rocks to port, rocks to starboard!"], [18, "I took the wheel. Somebody had to."], [28, "There! Calm water ahead..."]],
+            [[0.5, "I was the BEST deckhand the Leaky Lily ever had."], [8, "Lightning! Three bolts at once!"], [18, "The waves were tall as trees."], [28, "Steady... steady..."]],
+            [[0.5, "The captain was seasick, so I was in charge. Obviously."], [8, "Lightning, rocks, and then... the arms came up out of the water."], [18, "A KRAKEN, little one. A real one."], [28, "I gave it a stern look. It backed off."]],
+            [[0.5, "The worst storm in the history of storms. They still talk about it."], [8, "Fifty bolts of lightning! A hundred!"], [18, "TWO krakens, and the sea was on fire somehow!"], [28, "I steered with one hand and bailed water with the other."]]],
+      end: ["We limped into port with a broken mast and one very proud deckhand.", "The crew carried me on their shoulders. Well, one of them did. For a bit.", "The kraken waved goodbye. I think it respected me.", "And the storm itself apologised. Lovely manners, storms, once you get to know them."] },
+    { id: "saltjaw", n: "The Night I Out-Croaked Saltjaw", need: 6, mode: "deck", c: "#c88a6a",
+      cap: [[[0.5, "Saltjaw and I sailed together once. Before he went bad."], [8, "We had a falling out over the treasure. He fired the cannons!"], [18, "I dodged, I grabbed what I could..."], [28, "And then I jumped ship."]],
+            [[0.5, "Saltjaw was my first mate. I taught him everything he knows."], [8, "He fired every cannon on the ship. At ME!"], [18, "I juggled the doubloons as I ran!"], [28, "Almost to the rail..."]],
+            [[0.5, "Saltjaw. My oldest friend. And my greatest rival."], [8, "Cannons! Barrels! He threw his own boots at me!"], [18, "I caught one boot and threw it back. It hit him right in the eyepatch."], [28, "That's how he lost the eye, you know. Probably."]],
+            [[0.5, "The night I out-croaked Saltjaw. The whole sea heard it."], [8, "He fired a thousand cannonballs! I counted!"], [18, "I croaked so loud his hat flew off and the moon blinked."], [28, "And then I walked off the plank. On purpose. In style."]]],
+      end: ["I swam home with a pocket full of gold. Saltjaw kept the ship. Fair's fair.", "He still owes me for that night, you know. Twelve doubloons.", "We haven't spoken since. I think he's still embarrassed.", "To this day the gulls still sing about it. Badly, but they sing."] }
+  ];
+  var TL = null;   // the tale being played
+  function taleLvl(id) { return Math.min(3, p4().tl[id] || 0); }
+  function taleOpen() { return TALES.filter(function (T) { return famHearts("croaker") >= T.need; }); }
+  function talesView() {
+    var h = famHead("croaker", "Tall Tales") + '<h2 class="st-hi">“Sit down, sit down. Have I told you about...”</h2><div class="p4-tales">';
+    TALES.forEach(function (T) {
+      var open = famHearts("croaker") >= T.need, lv = taleLvl(T.id), n = p4().tl[T.id] || 0, today = p4().tl[T.id + "_d"] === (S.days | 0);
+      h += '<div class="p4-tale' + (open ? "" : " lock") + '" style="--tc:' + T.c + '"><b>' + esc(T.n) + "</b><small>" + (open ? (n ? "Told " + n + (n === 1 ? " time" : " times") + (lv < 3 ? " · it'll be bigger next time" : " · as big as it gets") : "Never told") + (today ? " · prize collected today" : "") : "Unlocks at " + T.need + " hearts with Croaker") + "</small>"
+        + '<div class="p4-tlv">' + [0, 1, 2, 3].map(function (q) { return '<i class="' + (q < Math.min(3, n) || (q === 3 && n >= 4) ? "on" : "") + '"></i>'; }).join("") + "</div>"
+        + (open ? '<button type="button" class="btn" data-p4="tale:' + T.id + '">' + (n ? "Tell it again" : "Tell me!") + "</button>" : "") + "</div>";
+    });
+    h += '</div><p class="st-tip">You play young Croaker. Each time he tells a tale he exaggerates a little more: tougher, wilder, and a better prize (once a day per tale).</p>';
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-p4="back:croaker">Back</button><button type="button" class="btn" data-story-close>Bye for now</button></div>';
+    return h;
+  }
+  // the tale screen
+  function taleEl() {
+    var el = $("sbxTale"); if (el) return el; el = document.createElement("section"); el.id = "sbxTale"; el.className = "sbx-tale"; el.hidden = true; el.setAttribute("aria-label", "Croaker's tale");
+    el.innerHTML = '<canvas id="sbxTaleC"></canvas><div class="tl-top"><b id="tlTitle"></b><span id="tlInfo"></span><button type="button" class="sbx-x" id="tlX" aria-label="Stop the tale">&times;</button></div><div class="tl-cap" id="tlCap"></div><div class="tl-end" id="tlEnd" hidden></div><div class="tl-help" id="tlHelp"></div>';
+    stageEl.appendChild(el);
+    var cv2 = el.querySelector("canvas"), pt2 = function (e) { var r = cv2.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    cv2.addEventListener("pointerdown", function (e) { if (!TL || TL.over) return; e.preventDefault(); var q = pt2(e); TL.pd = 1; TL.px = q[0]; TL.py = q[1]; if (TL.mode === "hop") TL.jumpQ = 0.15; try { cv2.setPointerCapture(e.pointerId); } catch (er) {} });
+    cv2.addEventListener("pointermove", function (e) { if (!TL || !TL.pd) return; var q = pt2(e); TL.px = q[0]; TL.py = q[1]; });
+    var up = function () { if (TL) TL.pd = 0; }; cv2.addEventListener("pointerup", up); cv2.addEventListener("pointercancel", up);
+    el.querySelector("#tlX").addEventListener("click", function () { taleClose(); });
+    el.querySelector("#tlEnd").addEventListener("click", function (e) { var b = e.target.closest("[data-tl]"); if (!b) return; var a = b.getAttribute("data-tl"); if (a === "again") taleStart(TL.id); else taleClose(true); });
+    return el;
+  }
+  var TLK = {};
+  window.addEventListener("keydown", function (e) { if (!TL || TL.over) return; var k = e.key; if (k === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); taleClose(); return; } TLK[k] = 1; if ((k === " " || k === "ArrowUp" || k === "w" || k === "W") && TL.mode === "hop") TL.jumpQ = 0.15; if (/^(Arrow|[wasdWASD ])/.test(k)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+  window.addEventListener("keyup", function (e) { delete TLK[e.key]; }, true);
+  function taleStart(id) {
+    var T = TALES.filter(function (q) { return q.id === id; })[0]; if (!T) return; closeStory();
+    var el = taleEl(), lv = taleLvl(id); el.hidden = false; panelOpen = true; storyOpen = 252; stageEl.classList.add("panel"); stopInput(); $("tlEnd").hidden = true;
+    TL = { id: id, T: T, mode: T.mode, lv: lv, t: 0, dur: 34, lives: 3, score: 0, inv: 0, over: false, obs: [], col: [], fx: [], spawn: 1.2, spawn2: 2.5, P: { x: 2.4, y: 7.4, vy: 0, on: true }, jumpQ: 0, shake: 0, capI: -1, last: 0, scroll: 0 };
+    $("tlTitle").textContent = T.n; $("tlCap").textContent = ""; $("tlHelp").textContent = T.mode === "hop" ? (coarse ? "Tap to hop" : "Tap, Space or Up to hop") : T.mode === "sail" ? (coarse ? "Hold and drag up or down to steer" : "Up and Down (or drag) to steer") : (coarse ? "Hold and drag to run along the deck" : "Left and Right (or drag) to run");
+    snd("open"); TL.raf = requestAnimationFrame(taleLoop);
+  }
+  function taleClose(keep) { var el = $("sbxTale"); if (el) el.hidden = true; if (TL && TL.raf) cancelAnimationFrame(TL.raf); TL = null; TLK = {}; panelOpen = false; storyOpen = -1; stageEl.classList.remove("panel"); if (keep) { talkCroaker(); talkView = "tales"; p4Box(talesView(), "#4ee6b4"); } }
+  var TLP = {   // per mode and level: [speed, spawn gap, extra]
+    hop: [[6.2, 1.7, 0], [7, 1.45, 0], [7.8, 1.25, 1], [8.6, 1.05, 2]],
+    sail: [[5.6, 1.5, 0], [6.4, 1.3, 1], [7.2, 1.15, 2], [8, 1, 3]],
+    deck: [[5.2, 0.95, 0], [6.4, 0.8, 1], [7.4, 0.68, 2], [8.4, 0.55, 3]]
+  };
+  function taleLoop(now) {
+    if (!TL) return; var cv2 = $("sbxTaleC"), W2 = cv2.clientWidth, H2 = cv2.clientHeight, dpr2 = Math.min(2, window.devicePixelRatio || 1);
+    if (cv2.width !== Math.round(W2 * dpr2) || cv2.height !== Math.round(H2 * dpr2)) { cv2.width = Math.round(W2 * dpr2); cv2.height = Math.round(H2 * dpr2); }
+    var dt = TL.last ? Math.min(0.05, (now - TL.last) / 1000) : 0; TL.last = now;
+    if (!TL.over) taleStep(dt, W2, H2);
+    var g = cv2.getContext("2d"); g.setTransform(dpr2, 0, 0, dpr2, 0, 0); taleDraw(g, W2, H2, now);
+    TL.raf = requestAnimationFrame(taleLoop);
+  }
+  function taleStep(dt, W2, H2) {
+    var L = TL, U = H2 / 10, P = L.P, prm = TLP[L.mode][L.lv], sp = prm[0], i;
+    L.t += dt; L.scroll += sp * dt; if (L.inv > 0) L.inv -= dt; if (L.shake > 0) L.shake -= dt;
+    var caps = L.T.cap[L.lv]; for (i = caps.length - 1; i >= 0; i--) if (L.t >= caps[i][0]) { if (L.capI !== i) { L.capI = i; var ce = $("tlCap"); ce.textContent = "“" + caps[i][1] + "”"; ce.classList.remove("in"); void ce.offsetWidth; ce.classList.add("in"); } break; }
+    var Wd = W2 / U;   // the width in units
+    // the player
+    if (L.mode === "hop") { if (L.jumpQ > 0) { L.jumpQ -= dt; if (P.on) { P.vy = -11.5; P.on = false; L.jumpQ = 0; thud(500, 0.02); } } P.vy += 30 * dt; P.y += P.vy * dt; if (P.y >= 7.4) { P.y = 7.4; P.vy = 0; P.on = true; } }
+    else if (L.mode === "sail") { var ty = P.y; if (L.pd) ty = clamp(L.py / U, 1.6, 8.4); else if (TLK.ArrowUp || TLK.w || TLK.W) ty = P.y - 7 * dt; else if (TLK.ArrowDown || TLK.s || TLK.S) ty = P.y + 7 * dt; P.y += clamp(ty - P.y, -8 * dt, 8 * dt); P.y = clamp(P.y, 1.6, 8.4); }
+    else { var tx = P.x; if (L.pd) tx = clamp(L.px / U, 0.8, Wd - 0.8); else if (TLK.ArrowLeft || TLK.a || TLK.A) tx = P.x - 9 * dt; else if (TLK.ArrowRight || TLK.d || TLK.D) tx = P.x + 9 * dt; P.x += clamp(tx - P.x, -9 * dt, 9 * dt); P.x = clamp(P.x, 0.8, Wd - 3.2); P.y = 8; }
+    // spawns
+    L.spawn -= dt; L.spawn2 -= dt;
+    if (L.t < L.dur - 2.5) {
+      if (L.mode === "hop") {
+        if (L.spawn <= 0) { L.spawn = prm[1] * (0.75 + Math.random() * 0.6); L.obs.push({ k: "gator", x: Wd + 1, y: 7.4, r: 0.55 + L.lv * 0.06, ph: Math.random() * 6 }); if (Math.random() < 0.7) L.col.push({ k: "fly", x: Wd + 1 + Math.random() * 2, y: 4.2 + Math.random() * 2.2 }); }
+        if (prm[2] && L.spawn2 <= 0) { L.spawn2 = 2.6 - prm[2] * 0.5; L.obs.push({ k: "bat", x: Wd + 1, y: 3.6 + Math.random() * 1.2, r: 0.42, ph: 0 }); }
+      } else if (L.mode === "sail") {
+        if (L.spawn <= 0) { L.spawn = prm[1] * (0.75 + Math.random() * 0.6); var top = Math.random() < 0.5; L.obs.push({ k: "rock", x: Wd + 1, y: top ? 1.2 + Math.random() * 1.6 : 7.4 + Math.random() * 1.4, r: 0.75 + Math.random() * 0.35, top: top }); L.col.push({ k: "pearl", x: Wd + 2.5, y: 2.4 + Math.random() * 5.2 }); }
+        if (prm[2] >= 1 && L.spawn2 <= 0) { L.spawn2 = 3.2 - prm[2] * 0.55; L.obs.push({ k: "bolt", x: 3 + Math.random() * (Wd - 5), y: 0, r: 0.6, w: 0.9, live: 0 }); }
+        if (prm[2] >= 2 && Math.random() < dt * (0.25 + prm[2] * 0.08)) L.obs.push({ k: "arm", x: Wd + 1, y: 10, r: 0.5, ph: 0 });
+      } else {
+        if (L.spawn <= 0) { L.spawn = prm[1] * (0.7 + Math.random() * 0.6); L.obs.push({ k: "ball", x: 0.8 + Math.random() * (Wd - 4.5), y: -1, vy: 0, r: 0.42 + (prm[2] >= 3 ? 0.08 : 0), sh: 0 }); if (Math.random() < 0.55) L.col.push({ k: "coin", x: 0.8 + Math.random() * (Wd - 4.5), y: -1, vy: 0 }); }
+        if (prm[2] >= 2 && L.spawn2 <= 0) { L.spawn2 = 3 - prm[2] * 0.4; L.obs.push({ k: "barrel", x: Wd - 2.6, y: 7.9, r: 0.42, vx: -(3 + prm[2]) }); }
+      }
+    }
+    // move things
+    L.obs.forEach(function (o) {
+      if (o.k === "gator" || o.k === "rock") o.x -= sp * dt; else if (o.k === "bat") { o.x -= sp * 1.25 * dt; o.ph += dt * 10; o.y += Math.sin(o.ph) * dt * 1.2; }
+      else if (o.k === "bolt") { o.live += dt; } else if (o.k === "arm") { o.x -= sp * 0.9 * dt; o.ph += dt; o.y = 10 - Math.min(5.2, o.ph * 4.4) + Math.sin(o.ph * 3) * 0.3; }
+      else if (o.k === "ball") { o.vy += 14 * dt; o.y += o.vy * dt; } else if (o.k === "barrel") { o.x += o.vx * dt; o.rot = (o.rot || 0) + o.vx * dt * 2; }
+    });
+    L.col.forEach(function (c) { if (c.k === "coin") { c.vy += 12 * dt; c.y += c.vy * dt; } else c.x -= sp * dt; });
+    // hits
+    var px = P.x, py = L.mode === "hop" ? P.y - 0.6 : L.mode === "sail" ? P.y : P.y - 0.55, pr = L.mode === "sail" ? 0.55 : 0.48;
+    L.obs = L.obs.filter(function (o) {
+      if (o.k === "bolt") { if (o.live > 0.85 && o.live < 1.15 && Math.abs(o.x - px) < o.w * 0.5 + pr * 0.6 && L.inv <= 0) taleHit(); if (o.live > 0.85 && !o.boom) { o.boom = 1; thud(90, 0.1); L.shake = 0.25; } return o.live < 1.3; }
+      if (o.k === "ball" && o.y > 8.1) { L.fx.push({ k: "splash", x: o.x, y: 8, t: 0 }); thud(140, 0.05); return false; }
+      var oy2 = o.k === "gator" ? o.y - 0.45 : o.y, dx = o.x - px, dy = oy2 - py;
+      if (L.inv <= 0 && dx * dx + dy * dy < (o.r + pr) * (o.r + pr)) { taleHit(); if (o.k === "ball") return false; }
+      return o.x > -3 && o.y < 12;
+    });
+    L.col = L.col.filter(function (c) { var dx = c.x - px, dy = c.y - py; if (dx * dx + dy * dy < 0.8 * 0.8) { L.score++; L.fx.push({ k: "spark", x: c.x, y: c.y, t: 0 }); thud(900 + Math.random() * 200, 0.02); return false; } return c.x > -2 && c.y < 9; });
+    L.fx = L.fx.filter(function (f) { f.t += dt; return f.t < 0.5; });
+    $("tlInfo").textContent = "♥".repeat(L.lives) + "♡".repeat(3 - L.lives) + "   " + (L.mode === "hop" ? "Fireflies" : L.mode === "sail" ? "Pearls" : "Doubloons") + " " + L.score;
+    if (L.lives <= 0) taleEnd(false); else if (L.t >= L.dur) taleEnd(true);
+  }
+  function taleHit() { var L = TL; L.lives--; L.inv = 1.3; L.shake = 0.35; thud(120, 0.1); if (L.mode === "hop" && L.P.on) { L.P.vy = -6; L.P.on = false; } }
+  function taleEnd(win) {
+    var L = TL; L.over = true; var o = p4(), first = !(o.tl[L.id] > 0), today = o.tl[L.id + "_d"] === (S.days | 0), lv = L.lv, rw = {};
+    if (win) {
+      o.tl[L.id] = (o.tl[L.id] || 0) + 1; S.st["tale_" + L.id] = (S.st["tale_" + L.id] || 0) + 1; S.st.tales = (S.st.tales || 0) + 1;
+      if (!today) { o.tl[L.id + "_d"] = S.days | 0; var base = [{ doubloon: 2, lilycookie: 1 }, { doubloon: 4, swamptea: 1 }, { doubloon: 6, goldcoin: 1 }, { doubloon: 8, goldcoin: 2, ancientcoin: 1 }][lv]; Object.keys(base).forEach(function (k) { if (ITEMS[k]) rw[k] = base[k]; }); if (L.score > 0 && ITEMS.silvercoin) rw.silvercoin = Math.max(1, Math.round(L.score / 3)); giveRw(rw); famAdd("croaker", 30, true); }
+      if (first && !o.q[L.id]) { o.q[L.id] = 1; }
+      if (L.id === "storm" && !loreHas("LB1")) setTimeout(function () { toast("Croaker presses a water-stained page into your paw: “The first page of my old logbook. The rest blew away in that storm.”", "#7ac8e8"); lbFind("LB1"); }, 900);
+    }
+    var e = $("tlEnd"), endTxt = win ? L.T.end[lv] : "...Well, it didn't go QUITE like that. Let me start again.";
+    e.innerHTML = '<p class="tl-q">“' + esc(endTxt) + '”</p>' + (win && Object.keys(rw).length ? '<div class="st-gift">' + Object.keys(rw).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + rw[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>" : win && today ? '<p class="tl-s">You already got today\'s prize for this tale.</p>' : "")
+      + (win && first ? '<p class="tl-s">A new quest: ' + esc(TQ[L.id].n) + ". Ask Croaker about it.</p>" : "") + (win && lv < 3 ? '<p class="tl-s">Next time he tells it, it\'ll be even bigger.</p>' : "")
+      + '<div class="st-row"><button type="button" class="btn" data-tl="done">' + (win ? "What a story" : "Back") + '</button><button type="button" class="btn ghost" data-tl="again">' + (win ? "Tell it again" : "Try again") + "</button></div>";
+    e.hidden = false; $("tlCap").textContent = ""; if (win) snd("open", "Epic"); checkGoals(); save();
+  }
+  function taleDraw(g, W2, H2, now) {
+    var L = TL, U = H2 / 10, t = now / 1000, sk = L.shake > 0 && !reduce ? (Math.random() - 0.5) * U * 0.2 * L.shake * 3 : 0, Wd = W2 / U;
+    g.save(); g.translate(sk, 0);
+    // sepia palette
+    var C = { sky0: "#3a2a18", sky1: "#7a5a36", far: "#5a4228", mid: "#4a3420", near: "#2a1c10", ink: "#1e140a", hi: "#f2e2b8", gold: "#ffd88a", water: "#5e4a30" };
+    var sky = g.createLinearGradient(0, 0, 0, H2); sky.addColorStop(0, L.mode === "deck" ? "#4a321e" : C.sky0); sky.addColorStop(1, C.sky1); g.fillStyle = sky; g.fillRect(-20, 0, W2 + 40, H2);
+    if (L.mode === "hop") {   // a moon (or not, at level 3: it's inside the gator), reeds and lily water
+      if (L.lv < 3) { g.fillStyle = "rgba(255,236,190,.85)"; g.beginPath(); g.arc(W2 * 0.78, U * 1.8, U * 0.9, 0, 7); g.fill(); }
+      for (var r = 0; r < 3; r++) { g.fillStyle = [C.far, C.mid, C.near][r]; var off = (L.scroll * (0.2 + r * 0.3) * U) % (U * 3); for (var x = -U * 3; x < W2 + U * 3; x += U * 1.5) { var hh = (2 + Math.sin(x * 0.07 + r * 2) * 0.8) * U * (0.6 + r * 0.25); g.fillRect(x - off, H2 * (0.55 + r * 0.08) - hh, U * 0.18, hh); g.beginPath(); g.ellipse(x - off, H2 * (0.55 + r * 0.08) - hh, U * 0.14, U * 0.45, 0, 0, 7); g.fill(); } }
+      g.fillStyle = C.water; g.fillRect(-20, U * 7.4, W2 + 40, H2); g.strokeStyle = "rgba(255,230,180,.18)"; g.lineWidth = 1; for (var wv = 0; wv < 6; wv++) { var wx = ((wv * 97 - L.scroll * U * 0.6) % (W2 + 60) + W2 + 60) % (W2 + 60) - 30; g.beginPath(); g.moveTo(wx, U * (7.8 + wv * 0.3)); g.lineTo(wx + U * 0.8, U * (7.8 + wv * 0.3)); g.stroke(); }
+      for (var lp = 0; lp < 8; lp++) { var lx = ((lp * U * 1.9 - L.scroll * U) % (W2 + U * 4) + W2 + U * 4) % (W2 + U * 4) - U * 2; g.fillStyle = "#6a5a34"; g.beginPath(); g.ellipse(lx, U * 7.45, U * 0.7, U * 0.16, 0, 0, 7); g.fill(); }
+      // the giant gator chasing: bigger every retelling
+      var gs = (0.9 + L.lv * 0.45) * U, gx = -gs * 0.6 + Math.sin(t * 2) * U * 0.2, gy = U * 7.6, jaw = Math.abs(Math.sin(t * 3)) * 0.35;
+      g.save(); g.translate(gx, gy); g.fillStyle = "#3a2c16"; g.beginPath(); g.ellipse(0, 0, gs * 1.6, gs * 0.7, 0, Math.PI, 0); g.fill();
+      g.beginPath(); g.moveTo(gs * 0.9, -gs * 0.2); g.lineTo(gs * 2.6, -gs * 0.2 - jaw * gs); g.lineTo(gs * 2.6, -gs * 0.05 - jaw * gs); g.lineTo(gs * 0.9, gs * 0.1); g.closePath(); g.fill();
+      g.beginPath(); g.moveTo(gs * 0.9, gs * 0.05); g.lineTo(gs * 2.5, gs * 0.12 + jaw * gs * 0.4); g.lineTo(gs * 0.9, gs * 0.35); g.closePath(); g.fill();
+      g.fillStyle = C.hi; for (var tt = 0; tt < 6; tt++) { g.beginPath(); g.moveTo(gs * (1.1 + tt * 0.24), -gs * 0.05 - jaw * gs * (0.2 + tt * 0.12)); g.lineTo(gs * (1.2 + tt * 0.24), gs * 0.1 - jaw * gs * (0.15 + tt * 0.1)); g.lineTo(gs * (1.3 + tt * 0.24), -gs * 0.05 - jaw * gs * (0.2 + tt * 0.12)); g.fill(); }
+      g.fillStyle = "#ffd88a"; g.beginPath(); g.arc(gs * 0.75, -gs * 0.45, gs * 0.12, 0, 7); g.fill(); g.fillStyle = C.ink; g.fillRect(gs * 0.73, -gs * 0.52, gs * 0.05, gs * 0.15);
+      if (L.lv >= 3) { var mg = g.createRadialGradient(-gs * 0.2, -gs * 0.3, 0, -gs * 0.2, -gs * 0.3, gs * 0.6); mg.addColorStop(0, "rgba(255,240,200,.9)"); mg.addColorStop(1, "rgba(255,240,200,0)"); g.fillStyle = mg; g.beginPath(); g.arc(-gs * 0.2, -gs * 0.3, gs * 0.6, 0, 7); g.fill(); }
+      g.restore();
+    } else if (L.mode === "sail") {
+      g.fillStyle = "rgba(20,14,8,.35)"; for (var cl = 0; cl < 4; cl++) { var cx3 = ((cl * U * 4 - L.scroll * U * 0.3) % (W2 + U * 6) + W2 + U * 6) % (W2 + U * 6) - U * 3; g.beginPath(); g.ellipse(cx3, U * 0.6, U * 2.4, U * 0.9, 0, 0, 7); g.fill(); }
+      for (var wl = 0; wl < 3; wl++) { g.fillStyle = ["#5a4630", "#4a3a26", "#3a2c1c"][wl]; g.beginPath(); g.moveTo(-20, H2); for (var x2 = -20; x2 <= W2 + 20; x2 += 12) g.lineTo(x2, U * (3.6 + wl * 2.2) + Math.sin(x2 * 0.03 + t * (1.5 + wl * 0.4) + L.scroll * 0.6) * U * (0.25 + 0.12 * L.lv)); g.lineTo(W2 + 20, H2); g.closePath(); g.globalAlpha = 0.55 + wl * 0.15; g.fill(); } g.globalAlpha = 1;
+      if (!reduce && Math.random() < 0.02 + L.lv * 0.02) { g.fillStyle = "rgba(255,240,200,.18)"; g.fillRect(-20, 0, W2 + 40, H2); }
+    } else {   // the deck of Saltjaw's ship: planks, the rail, the mast, Saltjaw firing from the stern
+      g.fillStyle = "#2a1c10"; g.fillRect(W2 - U * 0.5, 0, U * 0.4, H2);
+      g.fillStyle = "#6a4c2c"; g.fillRect(-20, U * 8, W2 + 40, H2); g.strokeStyle = "#3a2814"; g.lineWidth = 1.2; for (var pl = 0; pl < 3; pl++) { g.beginPath(); g.moveTo(-20, U * (8.4 + pl * 0.5)); g.lineTo(W2 + 20, U * (8.4 + pl * 0.5)); g.stroke(); }
+      g.fillStyle = "#4a3420"; g.fillRect(-20, U * 6.8, W2 + 40, U * 0.25); for (var bl = 0; bl < W2; bl += U * 0.8) g.fillRect(bl, U * 6.8, U * 0.14, U * 1.2);
+      g.fillStyle = "#3a2814"; g.fillRect(W2 * 0.35, 0, U * 0.35, U * 8); g.fillStyle = "rgba(242,226,184,.5)"; g.beginPath(); g.moveTo(W2 * 0.35 + U * 0.4, U * 0.6); g.quadraticCurveTo(W2 * 0.35 + U * 3.4, U * 2.6, W2 * 0.35 + U * 0.4, U * 4.8); g.fill();
+      var sjx = Wd - 1.7, sjs = 1 + L.lv * 0.18;
+      g.save(); g.translate(sjx * U, U * 8); g.scale(U / 30 * 1.3 * sjs, U / 30 * 1.3 * sjs); g.scale(-1, 1);
+      frogNpc(g, { hi: "#c8b48a", mid: "#9a845a", lo: "#5a4a2a", ink: "#2a1c0e", br: Math.sin(t * 3) * 0.7, patch: 1, belly: false, inner: function (g) { g.fillStyle = "#3a2a1a"; g.fillRect(-16, -22, 32, 26); } });
+      g.beginPath(); g.moveTo(-22, -38); g.quadraticCurveTo(1, -31, 25, -39); g.lineTo(16, -49); g.quadraticCurveTo(1, -60, -13, -49); g.closePath(); aInk(g, "#4a3020", "#1e140a", 1.2);
+      g.restore();
+    }
+    // things
+    var Uu = U;
+    L.col.forEach(function (c) { var cx = c.x * Uu, cy = c.y * Uu; var gl = g.createRadialGradient(cx, cy, 0, cx, cy, Uu * 0.5); gl.addColorStop(0, "rgba(255,224,150,.8)"); gl.addColorStop(1, "rgba(255,224,150,0)"); g.fillStyle = gl; g.beginPath(); g.arc(cx, cy, Uu * 0.5, 0, 7); g.fill(); g.fillStyle = c.k === "coin" ? "#f2c870" : "#fff0c8"; g.beginPath(); g.arc(cx, cy, Uu * (c.k === "fly" ? 0.12 : 0.2), 0, 7); g.fill(); });
+    L.obs.forEach(function (o) {
+      var ox2 = o.x * Uu, oy2 = o.y * Uu, rr = o.r * Uu;
+      if (o.k === "gator") { var sn = Math.abs(Math.sin(t * 5 + o.ph)); g.fillStyle = "#3a2c16"; g.beginPath(); g.ellipse(ox2, oy2, rr * 1.2, rr * 0.5, 0, Math.PI, 0); g.fill(); g.beginPath(); g.moveTo(ox2 - rr, oy2 - rr * 0.3); g.lineTo(ox2 - rr * 2.1, oy2 - rr * (0.4 + sn * 0.7)); g.lineTo(ox2 - rr * 2.1, oy2 - rr * (0.1 + sn * 0.5)); g.lineTo(ox2 - rr, oy2); g.closePath(); g.fill(); g.fillStyle = "#ffd88a"; g.beginPath(); g.arc(ox2 - rr * 0.5, oy2 - rr * 0.55, rr * 0.13, 0, 7); g.fill(); }
+      else if (o.k === "bat") { var fl = Math.sin(o.ph) * rr * 0.6; g.fillStyle = "#2a1c10"; g.beginPath(); g.moveTo(ox2, oy2); g.lineTo(ox2 - rr * 1.4, oy2 - fl); g.lineTo(ox2 - rr * 0.5, oy2 + rr * 0.2); g.lineTo(ox2, oy2 + rr * 0.4); g.lineTo(ox2 + rr * 0.5, oy2 + rr * 0.2); g.lineTo(ox2 + rr * 1.4, oy2 - fl); g.closePath(); g.fill(); }
+      else if (o.k === "rock") { g.fillStyle = "#2e2214"; g.beginPath(); if (o.top) { g.moveTo(ox2 - rr * 1.2, 0); g.lineTo(ox2 + rr * 1.2, 0); g.lineTo(ox2 + rr * 0.3, oy2 + rr); g.lineTo(ox2 - rr * 0.4, oy2 + rr * 0.6); } else { g.moveTo(ox2 - rr * 1.2, H2); g.lineTo(ox2 + rr * 1.2, H2); g.lineTo(ox2 + rr * 0.4, oy2 - rr); g.lineTo(ox2 - rr * 0.3, oy2 - rr * 0.5); } g.closePath(); g.fill(); g.fillStyle = "rgba(255,230,180,.12)"; g.fill(); }
+      else if (o.k === "bolt") { if (o.live < 0.85) { g.fillStyle = "rgba(255,240,200," + (0.12 + 0.18 * Math.sin(o.live * 30) * Math.sin(o.live * 30)) + ")"; g.fillRect(ox2 - o.w * Uu * 0.5, 0, o.w * Uu, H2); } else { g.strokeStyle = "#fff6dc"; g.lineWidth = Uu * 0.18; g.beginPath(); g.moveTo(ox2, 0); for (var by = 0; by < 10; by++) g.lineTo(ox2 + (Math.random() - 0.5) * Uu * 0.8, (by + 1) * Uu); g.stroke(); g.fillStyle = "rgba(255,246,220,.25)"; g.fillRect(-20, 0, W2 + 40, H2); } }
+      else if (o.k === "arm") { g.strokeStyle = "#3a2410"; g.lineWidth = rr * 1.4; g.lineCap = "round"; g.beginPath(); g.moveTo(ox2, H2 + 10); g.quadraticCurveTo(ox2 + Math.sin(o.ph * 3) * rr * 2, (oy2 + H2) / 2, ox2 + Math.sin(o.ph * 2) * rr, oy2); g.stroke(); g.fillStyle = "#c8a46a"; for (var su = 0; su < 4; su++) { g.beginPath(); g.arc(ox2 + Math.sin(o.ph * 2) * rr * (1 - su * 0.2) - rr * 0.3, oy2 + su * rr * 0.9 + rr * 0.4, rr * 0.18, 0, 7); g.fill(); } }
+      else if (o.k === "ball") { g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(ox2, 8 * Uu, rr * (0.4 + 0.6 * clamp(o.y / 8, 0, 1)), rr * 0.25, 0, 0, 7); g.fill(); g.fillStyle = "#1e140a"; g.beginPath(); g.arc(ox2, oy2, rr, 0, 7); g.fill(); g.fillStyle = "rgba(255,230,180,.25)"; g.beginPath(); g.arc(ox2 - rr * 0.3, oy2 - rr * 0.3, rr * 0.3, 0, 7); g.fill(); }
+      else if (o.k === "barrel") { g.save(); g.translate(ox2, oy2); g.rotate(o.rot || 0); g.fillStyle = "#6a4420"; g.beginPath(); g.arc(0, 0, rr, 0, 7); g.fill(); g.strokeStyle = "#2a1a0a"; g.lineWidth = 2; g.stroke(); g.beginPath(); g.moveTo(-rr, 0); g.lineTo(rr, 0); g.moveTo(0, -rr); g.lineTo(0, rr); g.stroke(); g.restore(); }
+    });
+    L.fx.forEach(function (f) { var a = 1 - f.t / 0.5; g.globalAlpha = a; g.fillStyle = f.k === "spark" ? "#fff0c8" : "#c8b48a"; for (var q = 0; q < 6; q++) { var an = q / 6 * 6.28; g.beginPath(); g.arc(f.x * Uu + Math.cos(an) * f.t * Uu * 2, f.y * Uu + Math.sin(an) * f.t * Uu * (f.k === "spark" ? 2 : 1) - (f.k === "splash" ? f.t * Uu * 2 : 0), Uu * 0.07, 0, 7); g.fill(); } }); g.globalAlpha = 1;
+    // young Croaker (a boat, or on his feet)
+    var P = L.P, blinkInv = L.inv > 0 && Math.floor(t * 12) % 2;
+    if (!blinkInv) {
+      g.save(); g.translate(P.x * Uu, (L.mode === "sail" ? P.y + 0.45 : P.y) * Uu); var s3 = Uu / 30 * 1.25; g.scale(s3, s3);
+      if (L.mode === "sail") { g.beginPath(); g.moveTo(-26, -8); g.lineTo(26, -8); g.lineTo(18, 6); g.lineTo(-20, 6); g.closePath(); aInk(g, "#7a5432", "#1e140a", 1.6); g.fillStyle = "#3a2410"; g.fillRect(-1.2, -52, 2.4, 44); g.beginPath(); g.moveTo(1.2, -50); g.quadraticCurveTo(22, -32, 1.2, -14); g.closePath(); aInk(g, "#e8d8b0", "#3a2410", 1); }
+      if (L.mode === "hop" && !P.on) g.rotate(-0.15);
+      frogNpc(g, { hi: "#efe0b4", mid: "#bca06a", lo: "#7a5c34", ink: "#2a1a0a", br: Math.sin(t * 6) * (L.mode === "deck" && L.pd ? 1 : 0.4), blink: (t * 1000) % 3000 < 120 });
+      g.beginPath(); g.moveTo(-9, -37.4); g.quadraticCurveTo(1, -48, 11, -37.4); g.closePath(); aInk(g, "#f2e8d0", "#2a1a0a", 1);   // a little sailor cap
+      g.fillStyle = "#5a3a1e"; g.fillRect(-9.4, -39.6, 20.4, 2.4);
+      g.strokeStyle = "#2a1a0a"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-4, -25.6); g.quadraticCurveTo(1, -21.6, 6, -25.6); g.stroke();
+      g.restore();
+    }
+    g.restore();
+    // the memory: warm vignette, grain, flicker
+    var vg = g.createRadialGradient(W2 / 2, H2 / 2, Math.min(W2, H2) * 0.3, W2 / 2, H2 / 2, Math.max(W2, H2) * 0.72); vg.addColorStop(0, "rgba(40,24,8,0)"); vg.addColorStop(1, "rgba(30,18,6,.72)"); g.fillStyle = vg; g.fillRect(0, 0, W2, H2);
+    if (!reduce) { g.fillStyle = "rgba(255,240,210,.06)"; for (var gr = 0; gr < 60; gr++) g.fillRect(Math.random() * W2, Math.random() * H2, 1.5, 1.5); if (Math.random() < 0.08) { g.fillStyle = "rgba(255,240,210,.05)"; g.fillRect(Math.random() * W2, 0, 1, H2); } g.globalAlpha = 0.04 * Math.random(); g.fillStyle = "#fff"; g.fillRect(0, 0, W2, H2); g.globalAlpha = 1; }
+  }
+  // ---------- #43 CROAKER'S SAILOR DAYS: a quest after each tale ----------
+  var TQ = {
+    moon: { n: "The Moon-Eater's Cousins", d: "Croaker swears the giant gator had cousins. Defeat 3 Bog Gators, then tell him.", need: 3, v: function () { var o = p4(); if (o.q.moon < 1) return 0; if (o.q.moon_b === undefined) o.q.moon_b = S.st.gators || 0; return Math.min(3, (S.st.gators || 0) - o.q.moon_b); }, rw: { gatorscale: 2, doubloon: 4 }, done: "Three of them? Ha! Then my gator really was the biggest. I knew it." },
+    storm: { n: "Croaker's Lost Compass", d: "He lost his compass when the Leaky Lily came home. Look for a glint on the sea floor off Croaker's Pier (dive in).", need: 1, v: function () { return p4().q.compass ? 1 : 0; }, rw: { pearl: 2, goldcoin: 1 }, done: "My compass! Look, it still points... huh. It never pointed north. It points at my brother. It always did." },
+    saltjaw: { n: "Old Shipmates", d: "Croaker and Saltjaw sailed together. Beat Captain Saltjaw in the Sunken Hollow, then tell Croaker.", need: 1, v: function () { return S.lair && S.lair.own ? 1 : 0; }, rw: { ancientcoin: 2, goldcoin: 2 }, done: "You beat old Saltjaw? Then he's lost his ship twice now, poor fool. He was my first mate, you know. Before the gold went to his head." }
+  };
+  Object.keys(TQ).forEach(function (id) { var Q = TQ[id]; SIDE.push({ id: "p4_" + id, cat: "Family & Friends", ch: 0, n: Q.n, d: Q.d, need: Q.need, v: Q.v, rw: Q.rw, show: function () { return (p4().q[id] || 0) >= 1; } }); });
+  SIDE_CATS.push("Family & Friends"); QB_SIDEIC["Family & Friends"] = "swamptea";
+  function p4CroakerRow() {
+    var o = p4(), h = "", tl = taleOpen(), fresh = tl.filter(function (T) { return !(o.tl[T.id] > 0); }).length;
+    // quest replies: when a backstory quest is finished he has something to say
+    Object.keys(TQ).forEach(function (id) { if (S.ms["p4_" + id] && !o.q[id + "_said"]) { o.q[id + "_said"] = 1; h += '<p class="st-tip p4-said"><b>' + esc(TQ[id].n) + ":</b> “" + esc(TQ[id].done) + "”</p>"; if (id === "storm") { o.bt.compass = 1; } } });
+    if (wkday() === "Feastday" && !dinNow() && S.time < 200) h += '<p class="st-tip"><b>Tonight:</b> family dinner at the Sky Village at dusk. “Bring something tasty, little one!”</p>';
+    if (dinNow() && o.din !== dinWeek()) h += '<p class="st-tip"><b>Dinner time!</b> “Up to the Sky Village with you, the family\'s waiting.”</p>';
+    h += '<div class="st-row p4-acts"><button type="button" class="btn ghost" data-p4="gift:croaker">Give a gift</button><button type="button" class="btn' + (fresh ? "" : " ghost") + '" data-p4="tales">' + (tl.length ? "Tall Tales" + (fresh ? ' <i class="p4-new">' + fresh + "</i>" : "") : "Tall Tales (2 ♥)") + "</button>" + (o.bt.compass && !o.bt.home ? '<button type="button" class="btn ghost" data-p4="brother">Your brother?</button>' : "") + "</div>";
+    return h;
+  }
+  function p4CroakoRow() { var h = ""; if (famHearts("croako") >= 2) h += tourLine(); return h; }
+  function p4CroakaRow() { var h = famHeartsHtml("croaka").replace("p4-hearts", "p4-hearts p4-hsm"); h += thiefLine(); return h; }
+  function p4Act(a) {
+    var q = a.split(":");
+    if (q[0] === "gift") { P4V.r = null; p4Box(famGiftView(q[1]), FAM[q[1]].c); }
+    else if (q[0] === "give") { famGive(q[1], q[2]); p4Box(famGiftView(q[1]), FAM[q[1]].c); }
+    else if (q[0] === "back") p4Back(q[1]);
+    else if (q[0] === "tales") p4Box(talesView(), "#4ee6b4");
+    else if (q[0] === "tale") taleStart(q[1]);
+    else if (q[0] === "dish") dinOpen(q[1]);
+    else if (q[0] === "brother") p4Box(brotherView(), "#7ac8e8");
+    else if (q[0] === "tour") tourAct(q[1]);
+    else if (q[0] === "nb") nbAct(q[1], q[2]);
+    else if (q[0] === "thief") thiefAct(q[1]);
+    else if (q[0] === "rival") rivalAct(q[1]);
+    else if (q[0] === "barty") bartyAct(q[1]);
+    else if (q[0] === "radio") radioAct(q[1]);
+  }
+  // BARTHOLOMEW ("Barty"), the lost fourth sibling: a castaway in a patched striped shirt, a palm-leaf hat and a wild grey beard
+  function bartyArt(g, now, face, br, bare) {
+    g.save(); g.scale(face || 1, 1);
+    if (!bare) { g.beginPath(); g.moveTo(16, 0); g.lineTo(26, -24); g.strokeStyle = "#2a1606"; g.lineWidth = 3.4; g.stroke(); g.strokeStyle = "#9a6a3a"; g.lineWidth = 1.8; g.stroke(); g.beginPath(); g.arc(27, -26, 5.5, 0, 7); aInk(g, aG(g, -32, -20, "#e8d0a0", "#c8a46a", "#8a6a3a"), "#4a3416", 1); g.strokeStyle = "rgba(74,52,22,.5)"; g.lineWidth = 0.7; g.beginPath(); g.moveTo(23, -28); g.lineTo(31, -24); g.stroke(); }   // his bindle
+    frogNpc(g, { hi: "#a8dcef", mid: "#5a9ab8", lo: "#2a5a78", ink: "#0c2434", br: br || 0, blink: (now % 4600) < 140, belly: false,
+      inner: function (g) {   // a sun-faded sailor's shirt, blue and white stripes, patched
+        g.beginPath(); g.moveTo(-16, -21); g.quadraticCurveTo(0, -25, 16, -21); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#fff8ec", "#efe4d0", "#c8bca4"); g.fill();
+        g.fillStyle = aG(g, -24, 0, "#7ab0e0", "#4a7ab8", "#2a4a7a"); for (var y = -20; y < 2; y += 4.2) { g.beginPath(); g.moveTo(-16, y); g.quadraticCurveTo(0, y - 1.6, 16, y); g.lineTo(16, y + 2); g.quadraticCurveTo(0, y + 0.4, -16, y + 2); g.closePath(); g.fill(); }
+        g.beginPath(); g.rect(4, -12, 6, 6); aInk(g, "#c8603a", "#5a2a14", 0.7); g.strokeStyle = "#5a2a14"; g.lineWidth = 0.5; g.beginPath(); g.moveTo(5, -11); g.lineTo(9, -7); g.moveTo(9, -11); g.lineTo(5, -7); g.stroke(); } });
+    g.beginPath(); g.moveTo(-10.6, -24.6); g.quadraticCurveTo(-12, -10, -4, -9.4); g.lineTo(-1, -6.6); g.lineTo(1.6, -9.4); g.lineTo(4.6, -6.4); g.lineTo(6.6, -9.6); g.quadraticCurveTo(13.6, -10, 12.4, -24.6); g.quadraticCurveTo(1, -16, -10.6, -24.6); g.closePath(); aInk(g, aG(g, -25, -7, "#ffffff", "#d8d4cc", "#9a968c"), "#5a5650", 0.9);   // the beard
+    g.strokeStyle = "rgba(90,86,80,.55)"; g.lineWidth = 0.6; [-6, -2, 3, 8].forEach(function (x) { g.beginPath(); g.moveTo(x, -21); g.lineTo(x + 0.6, -12); g.stroke(); });
+    g.strokeStyle = "#0c2434"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-4.4, -25.4); g.quadraticCurveTo(1, -23.4, 6.6, -25.4); g.stroke();
+    g.beginPath(); g.moveTo(-14, -38.6); g.quadraticCurveTo(1, -35, 16, -38.6); g.lineTo(12, -41); g.quadraticCurveTo(1, -54, -10, -41); g.closePath(); g.save(); aInk(g, aG(g, -54, -36, "#d8e08a", "#a8b85a", "#6a7a2a"), "#2a3008", 1.1); g.clip();   // a hat woven from a palm leaf
+    g.strokeStyle = "rgba(42,48,8,.5)"; g.lineWidth = 0.7; for (var x2 = -12; x2 < 16; x2 += 3) { g.beginPath(); g.moveTo(x2, -36); g.lineTo(x2 + 4, -50); g.stroke(); } g.restore();
+    [[-14, -38.6, -19, -34], [16, -38.6, 21, -35]].forEach(function (f) { g.beginPath(); g.moveTo(f[0], f[1]); g.quadraticCurveTo((f[0] + f[2]) / 2, f[1] - 3, f[2], f[3]); g.strokeStyle = "#6a7a2a"; g.lineWidth = 2; g.stroke(); });   // frayed leaf ends
+    aShine(g, -3, -47, 2.6, 0.9, 0.35, -0.3);
+    g.restore();
+  }
+  // ---------- a little HUD line for timed things (the tournament, the race, the stakeout) ----------
+  function p4Hud(txt, col) {
+    var el = $("p4Hud"); if (!txt) { if (el) el.hidden = true; return; }
+    if (!el) { el = document.createElement("div"); el.id = "p4Hud"; el.className = "p4-hud"; el.setAttribute("aria-live", "polite"); stageEl.appendChild(el); }
+    if (el.textContent !== txt) el.textContent = txt; el.style.setProperty("--hc", col || "#4ee6b4"); el.hidden = false;
+  }
+  function mmss(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t / 60) + ":" + ("0" + (t % 60)).slice(-2); }
+  function p4Tick(dt) {   // called every frame from advTime, in every scene
+    if (!S) return; var o = p4(), hud = "";
+    var T = o.tour; if (T.st === 1) { T.t -= dt; T.sc = (S.st.fish - T.b[0]) + 3 * ((S.st.rarefish || 0) - T.b[1]) + 6 * ((S.st.legfish || 0) - T.b[2]); var el2 = (150 - T.t) / 150; T.R.forEach(function (r) { r.s = Math.floor(r.r * el2 + r.j * Math.sin(el2 * 9 + r.r)); r.s = Math.max(0, r.s); }); var best = T.R.reduce(function (a, r) { return r.s > a.s ? r : a; }, T.R[0]);
+      hud = "Fishing Tournament " + mmss(T.t) + " · You " + T.sc + " · " + best.n + " " + best.s; if (T.t <= 0) tourFinish(); }
+    var R = o.rv.race; if (R) { hud = rivalTick(dt, R) || hud; }
+    if (o.th.st === 2 && HOME && isNight(S.time)) hud = hud || "Stakeout: watch the crops for the thief";
+    if (!hud && $("p4Hud") && !$("p4Hud").hidden) p4Hud(""); else if (hud) p4Hud(hud, R ? "#c88ae8" : T.st === 1 ? "#f2c14e" : "#ff9ab0");
+  }
+  // ---------- #46 CROAKO'S FISHING TOURNAMENT: every Fishday, on the pier (or anywhere you can cast) ----------
+  var TOUR_R = [["Old Finn", 9], ["Molly Mudskip", 11], ["Gus Gillwater", 13]];
+  function tourWeek() { return Math.floor((S.days | 0) / 7); }
+  function tourOpen() { return wkday() === "Fishday" && S.time >= 10 && S.time < 230 && famHearts("croako") >= 2; }
+  function tourLine() {
+    var T = p4().tour, h = "";
+    if (T.st === 1) return '<p class="st-tip"><b>Tournament on!</b> ' + mmss(T.t) + " left. You have " + T.sc + " points. Any fish 1, rare 3 more, legendary 6 more.</p>";
+    if (T.st === 2 && T.wk === tourWeek() && !T.seen) return '<div class="st-row"><button type="button" class="btn" data-p4="tour:results">See the tournament results</button></div>';
+    if (tourOpen() && T.wk !== tourWeek()) return '<p class="st-tip"><b>Fishing Tournament today!</b> “Two and a half minutes. Most points wins. Any fish counts, rare ones count more, legendary ones... well. Good luck catching one.”</p><div class="st-row"><button type="button" class="btn" data-p4="tour:start">Enter the tournament</button></div>';
+    if (wkday() !== "Fishday") h += '<p class="st-tip">“Tournament\'s on Fishday. Don\'t be late. I won\'t wait.” (Today is ' + wkday() + ".)</p>";
+    return h;
+  }
+  function tourAct(a) {
+    var T = p4().tour;
+    if (a === "start") { if (!tourOpen() || T.wk === tourWeek()) return; T.st = 1; T.wk = tourWeek(); T.t = 150; T.sc = 0; T.seen = 0; T.b = [S.st.fish || 0, S.st.rarefish || 0, S.st.legfish || 0]; var lvl = Math.min(6, T.won || 0);
+      T.R = TOUR_R.map(function (r) { return { n: r[0], r: r[1] * (0.7 + Math.random() * 0.6) * (1 + lvl * 0.12), j: 1 + Math.random() * 1.5, s: 0 }; }); closeStory(); popup("Fishing Tournament", "Go! Most points in 2:30 wins.", "#f2c14e", "★"); snd("open"); save(); }
+    else if (a === "results") tourResults();
+    else if (a === "share" || a === "keep") { var o = p4(); choiceSet("tour", a); if (a === "keep") { giveRw({ doubloon: 8 }); } else famAdd("croako", 30, true); o.tour.chose = 1; p4Box(famHead("croako") + '<h2 class="st-hi">' + (a === "share" ? "“Huh. You gave Finn half? ...That's decent of you. Real decent.”" : "“Your prize, your call. Finn'll live.”") + '</h2><div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>', "#f2c14e"); save(); }
+  }
+  function tourFinish() { var T = p4().tour; T.st = 2; T.t = 0; snd("open", "Rare"); popup("Time's up!", "Talk to Croako for the results.", "#f2c14e", "★"); p4Hud(""); save(); }
+  function tourResults() {
+    var T = p4().tour; if (T.st !== 2 || !T.R) return; T.seen = 1; var L = T.R.map(function (r) { return { n: r.n, s: r.s }; }).concat([{ n: "You", s: T.sc, me: 1 }]).sort(function (a, b) { return b.s - a.s || (a.me ? -1 : 1); });
+    var place = L.findIndex(function (q) { return q.me; }) + 1, rw = place === 1 ? { goldbait: 1, doubloon: 10 } : place === 2 ? { doubloon: 6, kelpwrap: 2 } : place === 3 ? { doubloon: 3 } : { kelpwrap: 1 };
+    if (place === 1) { T.won = (T.won || 0) + 1; S.st.tourwins = (S.st.tourwins || 0) + 1; if (!S.inv.trophy_fish && ITEMS.mountedfish && T.won === 1) rw.mountedfish = 1; }
+    famAdd("croako", place === 1 ? 50 : 25, true); S.st.tours = (S.st.tours || 0) + 1; var rr = {}; Object.keys(rw).forEach(function (k) { if (ITEMS[k]) rr[k] = rw[k]; }); giveRw(rr);
+    var h = famHead("croako", "the results") + '<h2 class="st-hi">' + ["", "“You WON. Fine. Fine! You're good. Here.”", "“Second. Not bad. Next week, maybe.”", "“Third. You caught some fish. Congratulations, I guess.”", "“Last. Don't worry. Finn was last for thirty years.”"][place] + '</h2><ol class="p4-board">' + L.map(function (q) { return "<li" + (q.me ? ' class="me"' : "") + "><span>" + esc(q.n) + "</span><b>" + q.s + "</b></li>"; }).join("") + '</ol><div class="st-gift">' + Object.keys(rr).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + rr[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>";
+    if (place === 1 && !p4().ch.tour) h += '<p class="st-tip">Old Finn is packing up his rod, looking glum. “Needed that prize for my grandkids\' boat repair,” he mutters.</p><div class="st-row"><button type="button" class="btn" data-p4="tour:share">Share the prize with Finn</button><button type="button" class="btn ghost" data-p4="tour:keep">Keep it all</button></div>';
+    else h += '<div class="st-row"><button type="button" class="btn" data-story-close>See you next Fishday</button></div>';
+    if (!p4Open(257)) return; p4Box(h, "#f2c14e"); checkGoals(); save();
+  }
+  // ---------- #47 RHYTHM FISHING: a legendary fish fights back. Tap with the beat to reel it in ----------
+  var RF = null;
+  function reelEl() {
+    var el = $("sbxReel"); if (el) return el; el = document.createElement("section"); el.id = "sbxReel"; el.className = "sbx-reel"; el.hidden = true; el.setAttribute("aria-label", "Reel in the legendary fish");
+    el.innerHTML = '<canvas id="sbxReelC"></canvas><div class="rf-top"><b id="rfName"></b><span id="rfInfo"></span></div><div class="rf-help">' + (coarse ? "Tap" : "Tap, Space or F") + ' as each ring reaches the hook</div>';
+    stageEl.appendChild(el); var cv2 = el.querySelector("canvas"); cv2.addEventListener("pointerdown", function (e) { e.preventDefault(); reelHit(); });
+    return el;
+  }
+  window.addEventListener("keydown", function (e) { if (!RF || RF.over) return; if (e.key === " " || e.key === "f" || e.key === "F" || e.key === "Enter") { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) reelHit(); } else if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+  function rhythmStart(k, cb) {
+    var el = reelEl(); el.hidden = false; panelOpen = true; storyOpen = 255; stageEl.classList.add("panel"); stopInput();
+    var bpm = 100 + Math.random() * 30, beat = 60 / bpm, N = [], t0 = 1.6, tt = t0; for (var i = 0; i < 60; i++) { N.push({ t: tt, hit: 0 }); tt += beat * [1, 1, 0.5, 1.5, 1, 2][Math.floor(Math.random() * 6)]; }
+    RF = { k: k, cb: cb, t: 0, N: N, pr: 0.35, line: 3, combo: 0, over: false, last: 0, beat: beat, fb: [], shake: 0, win: false };
+    $("rfName").textContent = "Legendary bite: " + ITEMS[k].n + "!"; snd("open", "Legendary"); RF.raf = requestAnimationFrame(reelLoop);
+  }
+  function reelHit() {
+    var R = RF; if (!R || R.over) return; var best = null, bd = 9; R.N.forEach(function (n) { if (n.hit) return; var d = Math.abs(n.t - R.t); if (d < bd) { bd = d; best = n; } });
+    if (best && bd < 0.08) { best.hit = 2; R.pr += 0.085; R.combo++; R.fb.push({ s: "Perfect!", t: 0, c: "#ffe08a" }); thud(880 + R.combo * 20, 0.05); }
+    else if (best && bd < 0.16) { best.hit = 1; R.pr += 0.055; R.combo++; R.fb.push({ s: "Good", t: 0, c: "#9af5d4" }); thud(700, 0.04); }
+    else { R.pr -= 0.05; R.combo = 0; R.shake = 0.25; R.fb.push({ s: "Too early", t: 0, c: "#ff9a8a" }); thud(200, 0.05); }
+  }
+  function reelLoop(now) {
+    var R = RF; if (!R) return; var cv2 = $("sbxReelC"), W2 = cv2.clientWidth, H2 = cv2.clientHeight, dpr2 = Math.min(2, window.devicePixelRatio || 1);
+    if (cv2.width !== Math.round(W2 * dpr2) || cv2.height !== Math.round(H2 * dpr2)) { cv2.width = Math.round(W2 * dpr2); cv2.height = Math.round(H2 * dpr2); }
+    var dt = R.last ? Math.min(0.05, (now - R.last) / 1000) : 0; R.last = now;
+    if (!R.over) {
+      R.t += dt; R.pr -= dt * 0.035; if (R.shake > 0) R.shake -= dt;
+      R.N.forEach(function (n) { if (!n.hit && R.t - n.t > 0.16) { n.hit = -1; R.line--; R.combo = 0; R.shake = 0.35; R.fb.push({ s: "Missed!", t: 0, c: "#ff6a5a" }); thud(150, 0.07); } });
+      R.fb = R.fb.filter(function (f) { f.t += dt; return f.t < 0.7; });
+      if (R.pr >= 1) reelEnd(true); else if (R.pr <= 0 || R.line <= 0) reelEnd(false);
+      $("rfInfo").textContent = "Line " + "❤".repeat(Math.max(0, R.line)) + (R.combo > 2 ? "  · Combo " + R.combo : "");
+    }
+    var g = cv2.getContext("2d"); g.setTransform(dpr2, 0, 0, dpr2, 0, 0); reelDraw(g, W2, H2, now); R.raf = requestAnimationFrame(reelLoop);
+  }
+  function reelDraw(g, W2, H2, now) {
+    var R = RF, t = now / 1000, sk = R.shake > 0 && !reduce ? (Math.random() - 0.5) * 8 : 0; g.save(); g.translate(sk, 0);
+    var bg = g.createLinearGradient(0, 0, 0, H2); bg.addColorStop(0, "#0a2a3a"); bg.addColorStop(0.45, "#0e4a5e"); bg.addColorStop(1, "#04121a"); g.fillStyle = bg; g.fillRect(-10, 0, W2 + 20, H2);
+    for (var i = 0; i < 18; i++) { var bx = (i * 97 + t * 30) % W2, by = H2 - ((t * 40 + i * 53) % H2); g.fillStyle = "rgba(200,240,255,.12)"; g.beginPath(); g.arc(bx, by, 2 + i % 3, 0, 7); g.fill(); }
+    var lane = H2 * 0.56, hx = W2 * 0.18, spd = Math.min(W2 * 0.42, 340);
+    g.strokeStyle = "rgba(255,255,255,.12)"; g.lineWidth = 3; g.beginPath(); g.moveTo(0, lane); g.lineTo(W2, lane); g.stroke();
+    // the fish, fighting on the line: big, thrashing on the right
+    var fx = W2 * 0.78 + Math.sin(t * 5) * 18 * (1 - R.pr * 0.6), fy = H2 * 0.3 + Math.sin(t * 3.3) * 16, im = dropIcon(R.k);
+    g.strokeStyle = "rgba(240,250,255,.6)"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(hx, lane); g.quadraticCurveTo((hx + fx) / 2, lane - 40 - R.pr * 30 + Math.sin(t * 8) * 6, fx - 10, fy + 8); g.stroke();
+    if (im.complete && im.naturalWidth) { g.save(); g.translate(fx, fy); g.rotate(Math.sin(t * 7) * 0.35); g.imageSmoothingEnabled = false; var fz = Math.min(W2, H2) * 0.22; g.drawImage(im, -fz / 2, -fz / 2, fz, fz); g.restore(); }
+    var sp = g.createRadialGradient(fx, fy, 0, fx, fy, 70); sp.addColorStop(0, "rgba(255,210,120,.25)"); sp.addColorStop(1, "rgba(255,210,120,0)"); g.fillStyle = sp; g.beginPath(); g.arc(fx, fy, 70, 0, 7); g.fill();
+    // the hook target and the incoming rings
+    var pulse = 1 + 0.08 * Math.sin(t / R.beat * 6.283);
+    g.lineWidth = 4; g.strokeStyle = "#ffe08a"; g.beginPath(); g.arc(hx, lane, 26 * pulse, 0, 7); g.stroke(); g.fillStyle = "rgba(255,224,138,.12)"; g.fill();
+    g.strokeStyle = "#ffe08a"; g.lineWidth = 2.5; g.beginPath(); g.arc(hx, lane + 4, 8, 0, Math.PI); g.moveTo(hx + 8, lane + 4); g.lineTo(hx + 8, lane - 8); g.stroke();
+    R.N.forEach(function (n) { if (n.hit > 0) return; var x = hx + (n.t - R.t) * spd; if (x < -30 || x > W2 + 30) return; var a = n.hit < 0 ? 0.25 : 1; g.globalAlpha = a; g.lineWidth = 5; g.strokeStyle = "#7ae0ff"; g.beginPath(); g.arc(x, lane, 20, 0, 7); g.stroke(); g.fillStyle = "rgba(122,224,255,.22)"; g.fill(); g.globalAlpha = 1; });
+    // progress: how close it is to the surface
+    var bw = Math.min(W2 * 0.7, 420), bx2 = (W2 - bw) / 2, by2 = H2 * 0.8; g.fillStyle = "#0008"; g.fillRect(bx2, by2, bw, 14); var pg = g.createLinearGradient(bx2, 0, bx2 + bw, 0); pg.addColorStop(0, "#4ee6b4"); pg.addColorStop(1, "#ffe08a"); g.fillStyle = pg; g.fillRect(bx2 + 2, by2 + 2, (bw - 4) * clamp(R.pr, 0, 1), 10);
+    g.font = "800 12px Nunito,sans-serif"; g.textAlign = "center"; g.fillStyle = "#e8fff7"; g.fillText("Reel it up", W2 / 2, by2 - 6);
+    R.fb.forEach(function (f, i) { g.globalAlpha = 1 - f.t / 0.7; g.font = "900 20px Nunito,sans-serif"; g.fillStyle = f.c; g.fillText(f.s, hx + 10, lane - 44 - f.t * 30); }); g.globalAlpha = 1;
+    g.restore();
+  }
+  function reelEnd(win) {
+    var R = RF; R.over = true; setTimeout(function () { var el = $("sbxReel"); if (el) el.hidden = true; if (R.raf) cancelAnimationFrame(R.raf); RF = null; panelOpen = false; storyOpen = -1; stageEl.classList.remove("panel"); S.st.rhythm = (S.st.rhythm || 0) + (win ? 1 : 0); R.cb(win); }, win ? 500 : 700);
+    if (win) snd("open", "Legendary"); else thud(110, 0.12);
+  }
+  // ---------- #48 THE NOTICE BOARD in the Sky Village: villagers post little jobs every day ----------
+  var NBX = null;
+  function nbSpot() {
+    var s = world && world.sky, D = dinSpot(); if (!s || !D) return null; if (NBX && NBX.w === world) return NBX.v; NBX = { w: world, v: null };
+    for (var d = 5; d < 30 && !NBX.v; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(D.x) + sg * d; if (!NBX.v && TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid) NBX.v = { x: x + 1, y: s.y }; }
+    return NBX.v;
+  }
+  var NB_GIVE = [["planks", 12, "needs planks to fix the roof"], ["torch", 6, "is scared of the dark"], ["carrot", 4, "is baking carrot bread"], ["fiber", 10, "is weaving new baskets"], ["stone", 15, "is building a garden wall"], ["glass", 3, "broke a window (again)"], ["kelpwrap", 2, "is craving kelp wraps"], ["wood", 20, "needs firewood for the winter"], ["mushroompie", 1, "forgot a friend's birthday"], ["bogiron", 6, "is fixing the village bell"], ["swamptea", 2, "has a sore throat"], ["pearl", 1, "wants to propose to someone"], ["clay", 10, "is making flower pots"], ["honeyjar", 1, "has a sweet tooth"]];
+  var NB_DO = [["fish", 3, "wants 3 fish caught (any kind)"], ["mined", 40, "wants 40 blocks dug for a new cellar"], ["fish", 6, "is hosting a fish fry and needs 6 fish caught"], ["mined", 80, "wants you to clear 80 blocks of rubble"]];
+  function nbJobs() {
+    var o = p4(), V = vilList() || []; if (o.nb.d === (S.days | 0) && o.nb.J) return o.nb.J; if (!V.length) return [];
+    var J = [], used = {}, seed = (S.days | 0) * 7919 + (world.seed | 0);
+    for (var i = 0; i < 3; i++) { var v = V[(Math.floor(SW.hash(1, seed % 1000, 41) * V.length) + i * 3) % V.length] || V[0], kind = i === 2 ? "do" : "give", P = kind === "give" ? NB_GIVE : NB_DO, q = P[Math.floor(SW.hash(seed % 997, i, 43) * P.length)];
+      if (used[q[0]] || (kind === "give" && !ITEMS[q[0]])) q = kind === "give" ? NB_GIVE[i] : NB_DO[0]; used[q[0]] = 1;
+      J.push({ v: v.V.id, vn: v.V.n, k: kind, it: q[0], n: q[1], d: q[2], b: kind === "do" ? (S.st[q[0]] || 0) : 0, rw: 2 + Math.floor(SW.hash(i, seed % 991, 47) * 4) + (kind === "do" ? 2 : 0), done: 0 }); }
+    o.nb.d = S.days | 0; o.nb.J = J; return J;
+  }
+  function nbNear() { var B = nbSpot(); return B && !cave && !HOME && !OCS && Math.abs(B.x - p.x) < 2 && Math.abs(B.y - p.y) < 2.4; }
+  function drawBoard(g, now) {
+    var B = nbSpot(); if (!B || cave) return; var sx = ox + B.x * ts, sy = oy + B.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 4 || sy > vh + ts * 2) return;
+    var J = nbJobs(), k = ts / 30; g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 24, 3, 0, 0, 7); g.fill();
+    [-18, 16].forEach(function (x) { g.beginPath(); g.rect(x, -40, 3, 40); aInk(g, aG(g, -40, 0, "#9a6a3a", "#7a4a22", "#4a2a10"), "#2a1606", 1); });
+    g.beginPath(); g.rect(-24, -46, 48, 30); aInk(g, aG(g, -46, -16, "#c88a52", "#9a6232", "#6a4020"), "#2a1606", 1.2);
+    g.beginPath(); g.moveTo(-27, -46); g.lineTo(0, -54); g.lineTo(27, -46); g.closePath(); aInk(g, aG(g, -54, -46, "#6a8a4a", "#4a6a2a", "#2a4012"), "#16240a", 1);   // a little roof
+    J.forEach(function (j, i) { var x = -19 + i * 13.5, tl = (i - 1) * 0.08; g.save(); g.translate(x + 5, -31); g.rotate(tl); g.beginPath(); g.rect(-5, -8, 11, 14); aInk(g, j.done ? "#c8d8b8" : "#fbf3dc", "#8a7a5a", 0.7); g.fillStyle = "rgba(90,70,40,.5)"; for (var l = 0; l < 4; l++) g.fillRect(-3, -5 + l * 3, 7 - (l % 2) * 2, 0.8); g.beginPath(); g.arc(0.5, -7, 1.2, 0, 7); aInk(g, "#e8503a", "#5a1408", 0.4); if (j.done) { g.strokeStyle = "#2f8a3a"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-3, 1); g.lineTo(0, 4); g.lineTo(5, -3); g.stroke(); } g.restore(); });
+    g.restore();
+  }
+  function nbOpen() {
+    if (!p4Open(258)) return; var J = nbJobs(), h = '<h2 class="st-hi">Sky Village Notice Board</h2><p class="st-tip">New jobs go up every morning. Each one pays Silver Coins and makes that villager like you more.</p><div class="p4-jobs">';
+    J.forEach(function (j, i) {
+      var have = j.k === "give" ? (S.inv[j.it] || 0) : Math.max(0, (S.st[j.it] || 0) - j.b), ok = !j.done && have >= j.n;
+      h += '<div class="p4-job' + (j.done ? " done" : "") + '">' + (j.k === "give" ? '<img alt="" src="' + icon(j.it) + '">' : '<span class="p4-jic">' + (j.it === "fish" ? "🎣" : "⛏") + "</span>") + "<span><b>" + esc(j.vn) + " " + esc(j.d) + ".</b><small>" + (j.k === "give" ? "Bring " + j.n + " " + esc(ITEMS[j.it].n) + " (you have " + have + ")" : "Progress " + Math.min(have, j.n) + " / " + j.n) + " · pays " + j.rw + " Silver</small></span>"
+        + (j.done ? '<em class="p4-ok">Done</em>' : '<button type="button" class="btn' + (ok ? "" : " ghost") + '" data-p4="nb:do:' + i + '"' + (ok ? "" : " disabled") + ">" + (j.k === "give" ? "Hand over" : "Claim") + "</button>") + "</div>";
+    });
+    h += '</div><div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>'; p4Box(h, "#c88a52");
+  }
+  function nbAct(a, i) {
+    var J = nbJobs(), j = J[+i]; if (a !== "do" || !j || j.done) return;
+    if (j.k === "give") { if (!(S.inv[j.it] >= j.n)) return; S.inv[j.it] -= j.n; if (S.inv[j.it] <= 0) delete S.inv[j.it]; reslot(); hbDirty = true; } else if ((S.st[j.it] || 0) - j.b < j.n) return;
+    j.done = 1; giveRw({ silvercoin: j.rw }); if (!S.vf) S.vf = {}; S.vf[j.v] = Math.min(9, (S.vf[j.v] || 0) + 1); S.st.nbjobs = (S.st.nbjobs || 0) + 1; snd("coin"); checkGoals(); save(); nbOpen();
+  }
+  SIDE.push({ id: "p4_board", cat: "Family & Friends", ch: 0, n: "Pillar of the Village", d: "Finish 10 jobs from the Sky Village Notice Board.", need: 10, v: function () { return S.st.nbjobs || 0; }, rw: { goldcoin: 2, swamptea: 2 }, show: function () { return (S.st.nbjobs || 0) > 0; } });
+  // ---------- #49 MYSTERY: who is stealing Croaka's crops at night? ----------
+  // th.st: 1 find the 3 clues on your homestead (by day), 2 stake out the farm at night, 3 caught: forgive or report, 4 solved
+  var TH_CLUE = [["pawprints", "Muddy little pawprints, webbed, going round and round the carrot patch.", "#6a4a2a"], ["acorn", "Half a nibbled carrot, and the bite marks are tiny. Very tiny.", "#ff8a2a"], ["fur", "A tuft of soft brown fur caught on the fence. Wet. It smells like the river.", "#8a5a32"]];
+  function thiefLine() {
+    var T = p4().th, h = "";
+    if (!T.st && famHearts("croaka") >= 4 && S.home) h += '<div class="st-row"><button type="button" class="btn" data-p4="thief:start">“You look worried, Croaka.”</button></div>';
+    else if (T.st === 1) h += '<p class="st-tip"><b>The crop thief:</b> look for clues around the farm by day. Found ' + (T.c || []).filter(Boolean).length + " of 3.</p>";
+    else if (T.st === 2) h += '<p class="st-tip"><b>The crop thief:</b> stay on the farm after dark and catch whoever it is in the act.</p>';
+    else if (T.st === 4) h += '<p class="st-tip">' + (p4().ch.thief === "forgive" ? "“Nibbles has been such a help in the garden. Who knew otters could weed?”" : "“The constable's been very thorough. Very... thorough.”") + "</p>";
+    return h;
+  }
+  function thiefAct(a) {
+    var T = p4().th;
+    if (a === "start") { T.st = 1; T.c = [0, 0, 0]; p4Box(famHead("croaka") + '<h2 class="st-hi">“Somebody\'s been at my carrots, dear. Every night, a few more gone. Nibbled! I won\'t have it.”</h2><p>“Have a look around your farm in the daylight. Whoever it is, they\'ve left a trail. They always do.”</p><div class="st-row"><button type="button" class="btn" data-story-close>I\'ll find them</button></div>', "#ff9ab0"); save(); }
+    else if (a === "forgive" || a === "report") { T.st = 4; choiceSet("thief", a); var rw = a === "forgive" ? { seed_carrot: 8, compost: 6 } : { silvercoin: 8 }; giveRw(rw); famAdd("croaka", 60); S.st.thief = 1;
+      p4Box('<div class="st-croak p4-pic"><img alt="" src="' + nibPic() + '"></div><small>Nibbles</small><h2 class="st-hi">' + (a === "forgive" ? "“You... you're not cross? I'll pay it back! I'll weed! I'm a very good weeder!”" : "“A CONSTABLE? Aw, buckets.”") + "</h2><p>" + (a === "forgive" ? "Nibbles the otter pup promises to work off every carrot. Croaka says he can stay, as long as he wipes his feet. He'll move to town when it's built." : "The Sky Village sends Constable Croakwell to sort it out. Nibbles works off the carrots under his very stern eye. The constable will move to town when it's built.") + '</p><div class="st-row"><button type="button" class="btn" data-story-close>Case closed</button></div>', "#ff9ab0"); popup("Mystery solved", "The crop thief", "#ff9ab0", "?"); checkGoals(); save(); }
+  }
+  var THF = { on: false, x: 0, y: 0, vx: 0, vy: 0, t: 0, run: 0, face: 1, sp: null };
+  function thClueSpots() {   // three open spots on the farm, the same every time for this world
+    var T = p4().th; if (T.cs) return T.cs; var L = [], seed = (world.seed | 0) % 997;
+    for (var n = 0; n < 400 && L.length < 3; n++) { var x = 4 + Math.floor(SW.hash(n, seed, 51) * (HW - 8)), y = 6 + Math.floor(SW.hash(seed, n, 52) * (HH - 12)); if (!homeSolid(x, y) && !L.some(function (q) { return Math.abs(q[0] - x) + Math.abs(q[1] - y) < 8; })) L.push([x, y]); }
+    T.cs = L; return L;
+  }
+  function p4HomeActs(A) {   // added to homeActions
+    var T = p4().th; if (T.st !== 1) return; var C = thClueSpots();
+    C.forEach(function (q, i) { if (T.c[i]) return; if (Math.abs(cp.x - (q[0] + 0.5)) < 1.6 && Math.abs(cp.y - (q[1] + 0.9)) < 1.6) A.push({ label: "Look closer", ax: q[0] + 0.5, ay: q[1] - 0.8, fn: function () { T.c[i] = 1; toast(TH_CLUE[i][1], "#ff9ab0"); thud(500, 0.04); if (T.c.every(Boolean)) { T.st = 2; setTimeout(function () { popup("All the clues", "Stay on the farm after dark and catch the thief.", "#ff9ab0", "?"); }, 900); } save(); } }); });
+  }
+  function p4HomeTick(dt) {
+    var T = p4().th; if (T.st !== 2 || !HOME) { THF.on = false; return; }
+    if (!isNight(S.time)) { THF.on = false; return; }
+    if (!THF.on) { THF.t += dt; if (THF.t > 4) { var C = thClueSpots(); THF.on = true; THF.t = 0; THF.x = C[0][0] + 0.5; THF.y = C[0][1] + 0.9; THF.run = 0; } return; }
+    var dx = cp.x - THF.x, dy = cp.y - THF.y, d = Math.hypot(dx, dy); THF.t += dt;
+    if (d < 1.1) { THF.on = false; T.st = 3; if (p4Open(259)) p4Box('<div class="st-croak p4-pic"><img alt="" src="' + nibPic() + '"></div><small>The crop thief</small><h2 class="st-hi">“Eep! Don\'t squash me! I was HUNGRY! The river\'s all muddy and there\'s no fish and carrots are SO crunchy...”</h2><p>A soggy little otter pup, cheeks full of carrot. He says his name is Nibbles.</p><div class="st-row"><button type="button" class="btn" data-p4="thief:forgive">Forgive him</button><button type="button" class="btn ghost" data-p4="thief:report">Report him to the Sky Village</button></div>', "#ff9ab0"); return; }
+    var sp = d < 4 ? 4.6 : 1.2; if (d < 4) THF.run = 1;   // scampers away when you get close (a bit slower than you)
+    var tx = d < 4 ? THF.x - dx / d : THF.x + Math.sin(THF.t * 0.7) * 0.5, ty = d < 4 ? THF.y - dy / d : THF.y + Math.cos(THF.t * 0.9) * 0.4;
+    var nx = clamp(THF.x + clamp(tx - THF.x, -1, 1) * sp * dt, 2, HW - 3), ny = clamp(THF.y + clamp(ty - THF.y, -1, 1) * sp * dt, 3, HH - 3); if (!homeSolid(Math.floor(nx), Math.floor(ny - 0.3))) { THF.x = nx; THF.y = ny; } else THF.x += (Math.random() - 0.5) * 0.2;
+    THF.face = dx > 0 ? -1 : 1; if (d < 4) THF.face = dx > 0 ? -1 : 1;
+  }
+  function otterArt(g, t, run) {   // Nibbles the otter pup, inked, sneaking with a stolen carrot
+    var b = Math.sin(t * (run ? 18 : 6)) * (run ? 1.4 : 0.6), IN = "#2a1606";
+    g.beginPath(); g.moveTo(-10, -4); g.quadraticCurveTo(-20, -2, -22, -8 + b); g.quadraticCurveTo(-18, -6, -10, -7); g.closePath(); aInk(g, aG(g, -10, -2, "#a8784a", "#7a4e2a", "#4a2c14"), IN, 1);   // tail
+    var st2 = run ? Math.sin(t * 18) * 2.2 : 0;   // four short tapered legs, drawn first so the body covers their roots
+    [[-7, -1, -st2, "#7a4e2a"], [5, -1, st2, "#7a4e2a"], [-4, -1, st2, "#9a6a3e"], [8, -1, -st2, "#9a6a3e"]].forEach(function (L) { var hx = L[0], fx2 = hx + L[2]; g.beginPath(); g.moveTo(hx - 2.6, L[1] - 3); g.lineTo(hx + 2.6, L[1] - 3); g.lineTo(fx2 + 1.4, 1.2); g.quadraticCurveTo(fx2 + 2.6, 2.4, fx2 + 1, 2.6); g.lineTo(fx2 - 2, 2.6); g.quadraticCurveTo(fx2 - 2.4, 1.6, fx2 - 1.2, 1.2); g.closePath(); aInk(g, aG(g, -4, 3, L[3], "#5a3a1a", "#3a2410"), IN, 0.9); g.strokeStyle = "rgba(42,22,6,.6)"; g.lineWidth = 0.4; g.beginPath(); g.moveTo(fx2 - 0.4, 1.6); g.lineTo(fx2 - 0.4, 2.6); g.moveTo(fx2 + 0.8, 1.6); g.lineTo(fx2 + 0.8, 2.6); g.stroke(); });
+    g.beginPath(); g.moveTo(-11, -2); g.quadraticCurveTo(-12, -12, -2, -13 + b * 0.3); g.quadraticCurveTo(6, -14, 9, -12); g.arc(10.5, -12.6, 5.2, Math.PI * 1.1, Math.PI * 0.35); g.quadraticCurveTo(10, -3, 4, -1.6); g.quadraticCurveTo(-4, 0, -11, -2); g.closePath();
+    g.save(); aInk(g, aG(g, -18, 0, "#c8986a", "#9a6a3e", "#5a3a1a"), IN, 1.2); g.clip(); g.fillStyle = "#f0dcc0"; g.beginPath(); g.ellipse(9, -9.5, 5, 3.6, 0, 0, 7); g.ellipse(0, -2, 8, 3, 0, 0, 7); g.fill(); g.restore();
+    g.beginPath(); g.arc(8, -17.4, 1.8, 0, 7); aInk(g, "#7a4e2a", IN, 0.8); aEye(g, 11.6, -13.6, 1.5, "#2a1606", IN, false, 0.6); g.fillStyle = IN; g.beginPath(); g.ellipse(15.4, -11.4, 1.3, 1, 0, 0, 7); g.fill();
+    g.strokeStyle = "rgba(42,22,6,.6)"; g.lineWidth = 0.5; g.beginPath(); g.moveTo(15, -10.4); g.lineTo(19, -11); g.moveTo(15, -10); g.lineTo(18.6, -9); g.stroke();
+    g.save(); g.translate(14, -8); g.rotate(0.5); g.beginPath(); g.moveTo(-1.6, 0); g.lineTo(1.6, 0); g.lineTo(0, 7); g.closePath(); aInk(g, "#ff8a2a", "#5a2406", 0.6); g.strokeStyle = "#2f7a1e"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, 0); g.lineTo(-1, -2.4); g.moveTo(0, 0); g.lineTo(1.2, -2); g.stroke(); g.restore();
+    aShine(g, -3, -10.6, 3, 1, 0.3, -0.2);
+  }
+  var NIBPIC = null;
+  function nibPic() { if (NIBPIC) return NIBPIC; var c = document.createElement("canvas"); c.width = c.height = 160; var g = c.getContext("2d"); g.translate(88, 104); g.scale(3.2, 3.2); g.lineJoin = "round"; otterArt(g, 0, 0); NIBPIC = c.toDataURL(); cvFree(c); return NIBPIC; }
+  function p4HomeDraw(g, now, SY) {
+    var T = p4().th, t = now / 1000;
+    if (T.st === 1) thClueSpots().forEach(function (q, i) { if (T.c[i]) return; var sx = ox + (q[0] + 0.5) * ts, sy = SY(oy + (q[1] + 0.8) * ts), a = 0.5 + 0.5 * Math.sin(t * 3 + i); g.fillStyle = "rgba(255,240,200," + (0.25 + 0.35 * a).toFixed(2) + ")"; for (var s2 = 0; s2 < 4; s2++) { var an = t * 1.5 + s2 * 1.57; g.fillRect(Math.round(sx + Math.cos(an) * ts * 0.35), Math.round(sy - ts * 0.2 + Math.sin(an) * ts * 0.18), 2, 2); } g.fillStyle = TH_CLUE[i][2]; g.globalAlpha = 0.7; for (var pp = 0; pp < 3; pp++) { g.beginPath(); g.ellipse(sx - ts * 0.25 + pp * ts * 0.25, sy - pp % 2 * ts * 0.1, ts * 0.06, ts * 0.04, 0, 0, 7); g.fill(); } g.globalAlpha = 1; });
+    if (THF.on) { var sx2 = ox + THF.x * ts, sy2 = SY(oy + THF.y * ts), k = ts / 30; g.save(); g.translate(sx2, sy2); g.scale(k * THF.face, k); g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 12, 2.6, 0, 0, 7); g.fill(); otterArt(g, t, THF.run); g.restore(); }
+  }
+  SIDE.push({ id: "p4_thief", cat: "Family & Friends", ch: 0, n: "The Carrot Caper", d: "Find out who is stealing Croaka's crops at night.", need: 1, v: function () { return p4().th.st === 4 ? 1 : 0; }, rw: { goldcoin: 2, carrotcake: 1 }, show: function () { return (p4().th.st || 0) >= 1; } });
+  // ---------- #50 THE RIVAL: Rook Ribbitson, a cocky adventurer frog who races you to treasure ----------
+  var ROOK = { on: false, x: 0, y: 0, face: 1, t: 0, say: "", sayT: 0 };
+  var ROOK_HI = ["The name's Rook. Rook Ribbitson. You've probably heard of me.", "Back again? I'll try to go easy on you. I won't, but I'll try.", "Ribbit-son. Two words. Well, one word. Look, just remember it.", "I've been everywhere you've been. Usually first."];
+  function rivalCan() { var o = p4(); return !cave && !HOME && !OCS && !panelOpen && (S.days | 0) >= 2 && !isNight(S.time) && (S.days | 0) >= (o.rv.next || 0) && !o.rv.race && curCh() >= 1; }
+  function rivalSpawn() {   // Rook strolls in a few tiles from you
+    var dir = p.face || 1, x = Math.floor(p.x) + dir * 7; if (x < 3 || x >= W - 3 || !col[x]) return; ROOK.on = true; ROOK.x = x + 0.5; ROOK.y = col[x]; ROOK.face = -dir; ROOK.t = 0; ROOK.say = p4().rv.met ? "Well well. Fancy a rematch?" : "Hey! You! Yeah, you."; ROOK.sayT = 4;
+  }
+  function rivalNear() { return ROOK.on && !p4().rv.race && Math.abs(ROOK.x - p.x) < 2.4 && Math.abs(ROOK.y - p.y) < 2.6; }
+  function rivalAct(a) {
+    var o = p4();
+    if (a === "talk") { var first = !o.rv.met; o.rv.met = 1; if (!p4Open(260)) return;
+      var h = '<div class="st-croak p4-pic"><img alt="" src="' + rookPic() + '"></div><small>Rook Ribbitson, adventurer</small><h2 class="st-hi">“' + esc(first ? ROOK_HI[0] : ROOK_HI[1 + (S.days | 0) % 3]) + "”</h2>";
+      h += "<p>" + (first ? "A frog in a red scarf and flying goggles looks you up and down. “See that glint over there? Treasure. First one there keeps it. Unless you're scared.”" : "“Same deal. First to the treasure keeps it.” Record: you " + (o.rv.w || 0) + ", Rook " + (o.rv.l || 0) + ".") + "</p>";
+      h += '<div class="st-row"><button type="button" class="btn" data-p4="rival:race">You\'re on</button><button type="button" class="btn ghost" data-p4="rival:no">Not now</button></div>'; p4Box(h, "#c88ae8"); return; }
+    if (a === "no") { ROOK.on = false; o.rv.next = (S.days | 0) + 1; closeStory(); toast("“Suit yourself. Chicken.”", "#c88ae8"); save(); return; }
+    if (a === "race") { closeStory(); var dir = Math.random() < 0.5 ? -1 : 1, d = 28 + Math.floor(Math.random() * 16), tx = clamp(Math.floor(p.x) + dir * d, 4, W - 5); for (var k = 0; k < 20 && (!col[tx] || TILES[get(tx, col[tx] - 1)].solid); k++) tx += dir; o.rv.race = { tx: tx + 0.5, ty: col[tx], t: 0 }; ROOK.x = p.x - dir * 0.6; ROOK.y = col[Math.floor(ROOK.x)] || p.y; ROOK.face = dir; ROOK.say = "Ready... GO!"; ROOK.sayT = 1.6; snd("open"); save(); return; }
+    if (a === "friend" || a === "rival2") { choiceSet("rival", a === "friend" ? "friend" : "rival"); closeStory(); toast(a === "friend" ? "“...Friends? Huh. Yeah. Friends. But I'm still faster.”" : "“Ha! Good. I like a proper rival.”", "#c88ae8"); save(); }
+  }
+  function rivalTick(dt, R) {
+    if (cave || HOME || OCS) return ""; R.t += dt; var dir = R.tx > ROOK.x ? 1 : -1, sp = 5 + Math.min(1.4, (p4().rv.w || 0) * 0.25);
+    if (R.t > 0.8) { var nx = ROOK.x + dir * sp * dt; ROOK.x = Math.abs(R.tx - nx) < sp * dt ? R.tx : nx; ROOK.y += ((col[Math.floor(ROOK.x)] || ROOK.y) - ROOK.y) * Math.min(1, dt * 12); ROOK.face = dir; }
+    if (Math.abs(p.x - R.tx) < 1 && Math.abs(p.y - R.ty) < 2.4) { rivalEnd(true); return ""; }
+    if (Math.abs(ROOK.x - R.tx) < 0.6) { rivalEnd(false); return ""; }
+    if (R.t > 60) { rivalEnd(false); return ""; }
+    return "Race Rook to the treasure! " + Math.round(Math.abs(R.tx - p.x)) + "m to go · Rook " + Math.round(Math.abs(R.tx - ROOK.x)) + "m";
+  }
+  function rivalEnd(win) {
+    var o = p4(), R = o.rv.race; o.rv.race = null; o.rv.next = (S.days | 0) + 2; p4Hud("");
+    if (win) { o.rv.w = (o.rv.w || 0) + 1; S.st.rivalwins = (S.st.rivalwins || 0) + 1; var L = rollLoot("chest", world.bio[Math.floor(R.tx)] || 0, 0); L.forEach(function (q) { give(q[0], q[1], R.tx, R.ty - 1); }); popup("You beat Rook!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#c88ae8", "★"); snd("open", "Epic"); ROOK.say = "WHAT? You cheated. You definitely cheated."; }
+    else { o.rv.l = (o.rv.l || 0) + 1; ROOK.say = "Too slow! Better luck next time, slowpoke!"; thud(200, 0.06); toast("Rook got there first and grabbed the treasure.", "#c88ae8"); }
+    ROOK.sayT = 3.5; setTimeout(function () { ROOK.on = false; }, 4200);
+    if ((o.rv.w || 0) + (o.rv.l || 0) >= 3 && !o.ch.rival) setTimeout(function () { if (!p4Open(261)) return; p4Box('<div class="st-croak p4-pic"><img alt="" src="' + rookPic() + '"></div><small>Rook Ribbitson</small><h2 class="st-hi">“You know... you\'re not bad. For a mud-digger. Most folks quit after the first race.”</h2><p>Rook scuffs his boot and doesn\'t quite look at you.</p><div class="st-row"><button type="button" class="btn" data-p4="rival:friend">“Friends, then?”</button><button type="button" class="btn ghost" data-p4="rival:rival2">“Next time I\'ll crush you.”</button></div>', "#c88ae8"); }, 4500);
+    checkGoals(); save();
+  }
+  function rivalBoss(k) { var o = p4(); if (!o.rv.met || cave) return; var L = ["That one's MINE, slowpoke! ...After you soften it up a bit.", "Ha! I've beaten bigger. Probably.", "Go on then. I'll be right behind you. Way behind you. For safety."]; setTimeout(function () { toast("Rook: “" + L[(S.st.bossk || 0) % L.length] + "”", "#c88ae8"); }, 2200); }
+  function rookArt(g, t, run) {   // Rook Ribbitson: a lilac frog, flying goggles up on his head, a red scarf streaming, a brown flight jacket
+    var fl = Math.sin(t * (run ? 16 : 4)) * (run ? 3 : 1.4);
+    g.beginPath(); g.moveTo(-8, -24); g.quadraticCurveTo(-18, -26 + fl, -28, -22 + fl * 1.4); g.lineTo(-26, -19 + fl); g.quadraticCurveTo(-17, -21, -8, -20); g.closePath(); aInk(g, aG(g, -26, -18, "#ff6a5a", "#d83a3a", "#8a1a1a"), "#4a0a0a", 0.9);   // scarf tail
+    frogNpc(g, { hi: "#e0b8f8", mid: "#b07ad8", lo: "#6a3a98", ink: "#2a1040", br: run ? Math.sin(t * 16) * 1.2 : Math.sin(t * 2) * 0.6, blink: (t * 1000) % 3700 < 130, belly: false,
+      inner: function (g) { g.beginPath(); g.moveTo(-16, -20); g.quadraticCurveTo(0, -24, 16, -20); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#b07a4a", "#8a5a32", "#5a3a1a"); g.fill(); g.strokeStyle = "rgba(255,240,220,.35)"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(0.6, -21); g.lineTo(0.6, 2); g.stroke(); g.fillStyle = "#e8d8b8"; g.beginPath(); g.moveTo(-16, -20); g.lineTo(-8, -20.6); g.lineTo(-11, -12); g.closePath(); g.moveTo(16, -20); g.lineTo(8, -20.6); g.lineTo(11, -12); g.closePath(); g.fill(); } });
+    g.beginPath(); g.moveTo(-10, -21.6); g.quadraticCurveTo(1, -16.6, 12, -21.6); g.lineTo(11, -18.4); g.quadraticCurveTo(1, -13.6, -9, -18.4); g.closePath(); aInk(g, aG(g, -22, -14, "#ff6a5a", "#d83a3a", "#8a1a1a"), "#4a0a0a", 0.9);   // the scarf
+    g.strokeStyle = "#2a1040"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-3.4, -25.6); g.quadraticCurveTo(2, -23.4, 7.6, -26.4); g.stroke();   // a smug grin
+    g.strokeStyle = "#3a2a1a"; g.lineWidth = 2; g.beginPath(); g.moveTo(-10, -39); g.quadraticCurveTo(1, -42, 12.6, -39); g.stroke();   // goggles strap
+    [[-4.4, -40], [7, -40.4]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 3.6, 0, 7); aInk(g, aG(g, q[1] - 3.6, q[1] + 3.6, "#e8c87a", "#c8a04a", "#8a6a1a"), "#3a2a06", 1); g.beginPath(); g.arc(q[0], q[1], 2.4, 0, 7); aInk(g, aG(g, q[1] - 2.4, q[1] + 2.4, "#bff0ff", "#6ac8e8", "#2a7a9a"), "#0a2a3a", 0.6); g.fillStyle = "rgba(255,255,255,.8)"; g.fillRect(q[0] - 1.4, q[1] - 1.6, 1.2, 1.2); });
+  }
+  var ROOKPIC = null;
+  function rookPic() { if (ROOKPIC) return ROOKPIC; var c = document.createElement("canvas"); c.width = c.height = 200; var g = c.getContext("2d"); g.translate(100, 190); g.scale(3.3, 3.3); g.lineJoin = "round"; g.lineCap = "round"; rookArt(g, 2, 0); ROOKPIC = c.toDataURL(); cvFree(c); return ROOKPIC; }
+  function drawRival(g, now, dt0) {
+    var o = p4(); if (!ROOK.on && rivalCan() && Math.random() < 0.002) rivalSpawn(); if (!ROOK.on || cave) return;
+    var R = o.rv.race, sx = ox + ROOK.x * ts, sy = oy + ROOK.y * ts, t = now / 1000, k = ts / 30;
+    if (R) { var tx2 = ox + R.tx * ts, ty2 = oy + R.ty * ts; var gl = g.createRadialGradient(tx2, ty2 - ts * 0.4, 0, tx2, ty2 - ts * 0.4, ts * 1.6); gl.addColorStop(0, "rgba(255,220,120,.55)"); gl.addColorStop(1, "rgba(255,220,120,0)"); g.fillStyle = gl; g.beginPath(); g.arc(tx2, ty2 - ts * 0.4, ts * 1.6, 0, 7); g.fill();
+      g.save(); g.translate(tx2, ty2); g.scale(k, k); g.beginPath(); g.rect(-9, -14, 18, 14); aInk(g, aG(g, -14, 0, "#c88a52", "#9a6232", "#6a4020"), "#2a1606", 1.1); g.beginPath(); g.moveTo(-9, -14); g.quadraticCurveTo(0, -22, 9, -14); g.closePath(); aInk(g, aG(g, -22, -14, "#d8a060", "#a87038", "#6a4020"), "#2a1606", 1.1); g.beginPath(); g.rect(-2, -16, 4, 6); aInk(g, "#ffd76a", "#5a3a06", 0.8); g.restore();
+      edgeArrow(g, now, R.tx, R.ty - 0.5, "#ffd76a", Math.round(Math.abs(R.tx - p.x)) + "m", function (g2, rr) { g2.fillStyle = "#ffd76a"; g2.font = "900 " + Math.round(rr * 1.5) + "px Nunito,sans-serif"; g2.textAlign = "center"; g2.textBaseline = "middle"; g2.fillText("\u2605", 0, 1); }); }
+    if (sx < -ts * 3 || sx > vw + ts * 3) return;
+    g.save(); g.translate(sx, sy); g.scale(k * ROOK.face, k); g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, 0, 13, 3, 0, 0, 7); g.fill(); if (R && R.t > 0.8) g.translate(0, -Math.abs(Math.sin(t * 16)) * 3); rookArt(g, t, !!(R && R.t > 0.8)); g.restore();
+    if (ROOK.sayT > 0) { ROOK.sayT -= 1 / 60; g.font = "800 12px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText(ROOK.say).width + 16, bx = sx, by = sy - ts * 2.6; g.fillStyle = "rgba(255,255,255,.95)"; g.beginPath(); g.roundRect ? g.roundRect(bx - tw / 2, by - 12, tw, 22, 10) : g.rect(bx - tw / 2, by - 12, tw, 22); g.fill(); g.fillStyle = "#2a1040"; g.fillText(ROOK.say, bx, by + 3); }
+  }
+  SIDE.push({ id: "p4_rival", cat: "Family & Friends", ch: 0, n: "Faster Than Rook", d: "Beat Rook Ribbitson in 3 treasure races.", need: 3, v: function () { return p4().rv.w || 0; }, rw: { goldcoin: 3, doubloon: 6 }, show: function () { return !!p4().rv.met; } });
+  // ---------- #53 THE SWAMP RADIO: Croaker's call-in show, weather and tides, and tunes ----------
+  function radioAt(x, y) { var td = TILES[get(x, y)]; return !!(td && td.kind === "radio"); }
+  function radioNear() { if (cave || HOME || OCS) return null; var px = Math.floor(p.x), py = Math.floor(p.y - 0.5); for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) if (radioAt(px + dx, py + dy)) return { x: px + dx, y: py + dy }; return null; }
+  var RADIO = { x: 0, y: 0, st: 0 };
+  function radioShow() {   // today's call-in show, built from what is going on in your game
+    var o = p4(), d = S.days | 0, L = [["Old Croaker", "Good evening, swamp! You're listening to Croaker's Call-In, the only show hosted by a frog older than the moon. Lines are open!"]];
+    var callers = [];
+    if (o.bt.home) callers.push(["Bartholomew", "Hi Croaker! It's Barty! Your brother! I'm calling from... four feet away. I just wanted to try the radio."]);
+    if (famMet("croako")) callers.push(["Croako", famHearts("croako") >= 5 ? "Yeah, it's me. Just wanted to say the delver caught more fish than me this week. Don't make it weird." : "Fish are biting by the pier. That's it. That's the call."]);
+    if (famMet("croaka")) callers.push(["Croaka", o.th.st === 4 ? (o.ch.thief === "forgive" ? "Little Nibbles weeded my whole garden. Sweetest thief I ever had." : "The constable says the carrot case is closed. Thank goodness.") : o.th.st >= 1 ? "Somebody is STILL nibbling my carrots. If you hear crunching at night, call me!" : "Just calling to say: eat your vegetables. All of you. I'm watching."]);
+    if (o.rv.met) callers.push(["Rook Ribbitson", "Shout-out to me, the fastest frog in the swamp. Record: " + (o.rv.l || 0) + " wins. Ignore the other number."]);
+    (vilList() || []).slice(0, 4).forEach(function (v, i) { callers.push([v.V.n, ["Is it true there's a dinner every Feastday? Am I invited? I'm asking for me.", "I lost my hat in the wind. If anyone finds a hat, it's mine. Probably.", "The notice board has my job up. Please. I'm begging. Please.", "Has anyone seen the Bog Witch lately? Asking for a friend. The friend is scared."][i % 4]]); });
+    callers.push(["A mysterious caller", "...the ancient lights stir beneath the swamp... also, can you play the Ember Jig?"]);
+    for (var i = 0; i < 3; i++) L.push(callers[(d * 3 + i) % callers.length]);
+    L.push(["Old Croaker", wkday() === "Feastday" ? "Don't forget, family dinner tonight at the Sky Village. Bring something tasty!" : wkday() === "Fishday" ? "It's Fishday! My brother's tournament is on at the pier. He'll pretend he doesn't care. He cares." : "That's all for today. Stay dry, stay curious, and don't lick the glowcaps."]);
+    return L;
+  }
+  function radioWx() {
+    var w = S.wx && S.wx.n > 0.3 ? (wxStorm() > 0.3 ? "Stormy, with thunder" : "Rainy") : "Clear skies", ti = (typeof tideInfo === "function") ? tideInfo() : null, sea = OCS ? "" : "";
+    return [["Weather", w + " over the swamp right now. " + (isNight(S.time) ? "A cool night." : "A warm day.")], ["Tides at the pier", ti ? ti.k + (ti.next ? ", turning in about " + Math.max(1, Math.round(ti.next.h)) + " hours." : ".") : "The tide comes and goes, as tides do."], ["Calendar", "Today is " + wkday() + ". " + (wkday() === "Fishday" ? "Fishing Tournament on the pier." : wkday() === "Feastday" ? "Family dinner at dusk." : "Tournament on Fishday, family dinner on Feastday.")]];
+  }
+  function radioOpen(x, y, stn) {
+    if (x !== undefined) { RADIO.x = x; RADIO.y = y; } if (stn !== undefined) RADIO.st = stn; if (!p4Open(262)) return;
+    var L = RADIO.st === 1 ? radioWx() : radioShow(), h = '<div class="p4-radio"><div class="p4-dial">' + ["Croaker's Call-In", "Weather & Tides", "Swamp Tunes"].map(function (n, i) { return '<button type="button" class="' + (RADIO.st === i ? "on" : "") + '" data-p4="radio:st' + i + '">' + n + "</button>"; }).join("") + "</div>";
+    if (RADIO.st === 2) h += '<p class="st-tip">Tunes play from the radio itself. Tap the radio again to change the song.</p><div class="st-row"><button type="button" class="btn" data-p4="radio:play">Play a tune</button></div>';
+    else h += '<div class="p4-feed">' + L.map(function (q) { return "<p><b>" + esc(q[0]) + ":</b> " + esc(q[1]) + "</p>"; }).join("") + "</div>";
+    h += '</div><div class="st-row"><button type="button" class="btn ghost" data-story-close>Switch off</button></div>';
+    p4Box(h, "#f2a03a"); thud(1200, 0.02);
+  }
+  function radioAct(a) { if (a.indexOf("st") === 0) radioOpen(undefined, undefined, +a.slice(2)); else if (a === "play") { closeStory(); jbPlay(RADIO.x, RADIO.y); } }
+  // ---------- the Journal: Family & Town ----------
+  function famJournalHtml() {
+    var h = '<div class="p4-jfam"><h3>Family</h3>' + Object.keys(FAM).filter(famMet).map(function (w) { return '<div class="p4-jf"><img alt="" src="' + famPic(w) + '"><span><b>' + esc(FAM[w].n) + "</b>" + famHeartsHtml(w) + "</span></div>"; }).join("");
+    var T = townList(); h += "<h3>Moving to town</h3>" + (T.length ? T.map(function (c) { return "<p><b>" + esc(c.who) + "</b> · " + esc(c.why) + "</p>"; }).join("") : '<p class="st-tip">Nobody yet. Your choices in the family and village stories decide who moves in when the town is built.</p>');
+    return h + "</div>";
+  }
+  var P4ACT = null;
+  function p4Pill(g, now) {   // a pill over whichever Phase 4 thing you are standing at (tap it, or press F)
+    var L = "", fn = null, x = 0, y = 0, F2 = coarse ? "" : " (F)";
+    if (mailNear()) { var mx = mailSpot(); L = (mailReady() ? "Read your letter" : "Mailbox") + F2; fn = mailOpen; x = mx + 0.5; y = col[mx] - 2.4; }
+    else if (dinNear()) { var D = dinSpot(); L = (p4().din === dinWeek() ? "Family dinner" : "Join the family dinner") + F2; fn = function () { dinOpen(); }; x = D.x; y = D.y - 2.6; }
+    else { var o2 = p4Pill2(); if (o2) { L = o2.l + F2; fn = o2.fn; x = o2.x; y = o2.y; } }
+    if (!fn) return false; P4ACT = fn; drawPill(g, now, L, ox + x * ts, oy + y * ts, false, fn); return true;
+  }
+  function p4Pill2() { if (bartyNear()) return { l: "Talk to Bartholomew", fn: talkBarty, x: BARTY.x, y: BARTY.y - 2.4 }; return p4Pill3(); }
+  function p4Pill3() {
+    var B = nbSpot(); if (nbNear()) return { l: "Notice Board", fn: nbOpen, x: B.x, y: B.y - 2.6 };
+    if (rivalNear()) return { l: "Talk to Rook", fn: function () { rivalAct("talk"); }, x: ROOK.x, y: ROOK.y - 2.4 };
+    var r = radioNear(); if (r) return { l: "Tune the radio", fn: function () { radioOpen(r.x, r.y); }, x: r.x + 0.5, y: r.y - 1.2 };
+    return null;
+  }
+  function p4WorldDraw(g, now) { drawBartyWorld(g, now); p4WorldDraw2(g, now); }
+  function p4WorldDraw2(g, now) { drawBoard(g, now); drawRival(g, now); }
+  // ---------- #44 CROAKER'S LOGBOOK: his sailor's log, torn up in the storm and scattered across the Brinebog Sea ----------
+  // Eight pages (a Lore thread, so they're read in Journal > Lore like the others). Where each one turns up:
+  //   LB1 Croaker hands it over after the thunderstorm tale    LB2 a sea chest off Croaker's Pier    LB3 the Old Lighthouse
+  //   LB4 the first island you land on    LB5 a chest at a dive site out at sea    LB6 a wreck or the Spring-Tide Vault
+  //   LB7 blown onto your deck while you sail through a storm    LB8 Gillbeard's Hoard: the last page, with the way to Castaway Rock
+  if (LORE && LORE.THREADS) {
+    LORE.THREADS.push({ id: "logbook", n: "Croaker's Logbook", c: "#7ac8e8", d: "Water-stained pages from Old Croaker's sailing days.", rw: { item: "goldcoin", n: 3 } });
+    var LBP = [
+      ["LB1", "The Leaky Lily, Day 1", "Signed on as deckhand today. Barty signed on too, because Barty does everything I do, only louder. Captain says we sail at dawn. Saltjaw says the captain snores. Saltjaw is the cook. He is a terrible cook.\n\nWe're going to be famous. Barty says so."],
+      ["LB2", "Day 12", "Barty fell in twice today. Once on purpose (for a bet), once not (a gull). He came up the second time holding a pearl, so now he says he meant it.\n\nSaltjaw has started calling himself 'first mate'. Nobody gave him that job."],
+      ["LB3", "Day 30", "Passed the white tower on the black rock tonight. The lamp was lit then, sweeping the whole sea. Barty waved at it. I told him lighthouses can't wave back. He said this one did. Maybe it did."],
+      ["LB4", "Day 41", "Shore leave on an island with more turtles than sand. Barty traded his good boots for a hat made of a palm leaf. He looks ridiculous. He says it's 'island fashion'. I say his feet will get cold."],
+      ["LB5", "Day 58", "Dove for a wreck today. Found nothing but a jar of very old pickles and an angry eel. Saltjaw ate the pickles. Saltjaw was not well afterwards. Serves him right for the soup."],
+      ["LB6", "Day 77", "Saltjaw found a map in the wreck's hold. He won't let anyone see it. He's been staring at the captain's chair a lot. I don't like the way he says 'my ship'."],
+      ["LB7", "The Storm", "Worst storm I've ever seen. Masts down. Saltjaw tried to take the wheel for himself and the Lily went sideways into the swell.\n\nBarty took the little boat out to save the captain's dog. The rope snapped. I saw his lamp for a long time. Then I didn't."],
+      ["LB8", "Last Page", "I looked for him every summer for years.\n\nOnce, two days' sail north-east of the old lighthouse, I saw a light on a lonely rock with a single palm. By the time I turned the boat, the fog came down and it was gone.\n\nIf anyone reads this: Castaway Rock. Look there. Please. His name is Bartholomew. He'll be wearing a silly hat."]
+    ];
+    LBP.forEach(function (q, i) { var pg = { id: q[0], th: "logbook", ch: 0, src: ["logbook"], t: q[1], by: "Old Croaker, long ago", x: q[2], f: "reenie", m: "paper", k: "#1e3a5a" }; LORE.PAGES.push(pg); LPG[pg.id] = pg; });
+    LTH.logbook = LORE.THREADS[LORE.THREADS.length - 1];
+  }
+  function lbFind(id, open) { if (!LPG[id] || loreHas(id)) return false; loreFind(LPG[id], open); var n = ["LB1", "LB2", "LB3", "LB4", "LB5", "LB6", "LB7", "LB8"].filter(loreHas).length; S.st.logpages = n; if (id === "LB8") { p4().bt.chart = 1; setTimeout(function () { toast("Castaway Rock: north-east of the Old Lighthouse. Look for a single palm.", "#7ac8e8"); }, 1400); } return true; }
+  function lbStarted() { return loreHas("LB1"); }
+  function p4SeaChest(c, sc) {   // a sea chest was opened: maybe a Logbook page
+    if (!lbStarted()) return;
+    if (c.kind === "hoard") lbFind("LB8", true);
+    else if (c.kind === "wreck" || c.kind === "vault") lbFind("LB6", true);
+    else if (sc.main && c.kind !== "pier") lbFind("LB2", true);
+    else if (!sc.main) lbFind("LB5", true);
+  }
+  function p4SeaTick(dt, s) {   // sailing: a page blows onto the deck in a storm
+    if (!lbStarted() || loreHas("LB7")) return; var o = p4();
+    if (s.wx && s.wx.k === "storm") { o.bt.stormT = (o.bt.stormT || 0) + dt; if (o.bt.stormT > 18) { toast("A soggy page slaps onto the deck in the wind!", "#7ac8e8"); lbFind("LB7", true); } }
+  }
+  // the compass on the sea floor off Croaker's Pier (quest "Croaker's Lost Compass")
+  function compassSpot() { if (!OCS || !OCS.main || !OCS.m || !OCS.m.bed) return null; var x = Math.min(OCW - 4, 74); return { x: x + 0.5, y: OCS.m.bed[x] - 0.5 }; }
+  function compassWant() { var o = p4(); return (o.q.storm || 0) >= 1 && !o.q.compass; }
+  function drawCompassGlint(g, now) {
+    if (!compassWant()) return; var C = compassSpot(); if (!C) return; var sx = ox + C.x * ts, sy = oy + C.y * ts, t = now / 1000; if (sx < -ts || sx > vw + ts || sy < -ts || sy > vh + ts) return;
+    var gl = g.createRadialGradient(sx, sy, 0, sx, sy, ts * 0.9); gl.addColorStop(0, "rgba(255,230,140,.6)"); gl.addColorStop(1, "rgba(255,230,140,0)"); g.fillStyle = gl; g.beginPath(); g.arc(sx, sy, ts * 0.9, 0, 7); g.fill();
+    g.save(); g.translate(sx, sy); g.scale(ts / 30, ts / 30); g.beginPath(); g.arc(0, 0, 6, 0, 7); aInk(g, aG(g, -6, 6, "#ffe08a", "#d8a43a", "#8a6a1a"), "#3a2a06", 1.1); g.beginPath(); g.arc(0, 0, 4.2, 0, 7); aInk(g, "#f6eedb", "#5a4a2a", 0.6);
+    g.rotate(Math.sin(t * 1.3) * 0.6 + 0.7); g.fillStyle = "#c83a3a"; g.beginPath(); g.moveTo(0, -3.6); g.lineTo(1.1, 0); g.lineTo(-1.1, 0); g.fill(); g.fillStyle = "#3a4a5a"; g.beginPath(); g.moveTo(0, 3.6); g.lineTo(1.1, 0); g.lineTo(-1.1, 0); g.fill(); g.restore();
+    if (!reduce && Math.floor(t * 2) % 3 === 0) { g.fillStyle = "#fff8d0"; g.fillRect(sx + ts * 0.25, sy - ts * 0.3, 2, 2); }
+  }
+  function compassNear() { var C = compassSpot(); return C && compassWant() && OCS.diving && Math.hypot(OCS.pl.x - C.x, OCS.pl.y - C.y) < 2.4 ? C : null; }
+  function compassTake() { var o = p4(); o.q.compass = 1; S.st.compass = 1; popup("Croaker's Old Compass", "Engraved inside the lid: “To C., so you can always find your way home. Love, B.”", "#ffd23f", "✦"); snd("open", "Epic"); checkGoals(); save(); }
+  // ---------- #52 BARTHOLOMEW, the missing fourth sibling ----------
+  function brotherView() {   // Croaker talks about his brother (once you have the compass)
+    var o = p4(), h = famHead("croaker", "about Barty");
+    h += o.bt.chart ? '<h2 class="st-hi">“Castaway Rock. You found the last page. Then go, little one. Please. I\'m too old for the sea now, but you\'re not.”</h2><p class="st-tip"><b>Where:</b> north-east of the Old Lighthouse, a lonely rock with a single palm. Set sail from the end of the pier.</p>'
+      : '<h2 class="st-hi">“My little brother Bartholomew. Barty. Lost in the storm the night the Leaky Lily went down. The compass points to him, you know. It always did.”</h2><p class="st-tip">My old logbook was blown all over the Brinebog Sea in that storm. The last page says where I last saw his light. Find the pages: sea chests, the lighthouse, wrecks, islands, even the storm itself.</p>';
+    h += '<p class="st-tip"><b>Logbook pages:</b> ' + (S.st.logpages || 0) + " of 8 found</p>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-p4="back:croaker">Back</button><button type="button" class="btn" data-story-close>I\'ll find him</button></div>';
+    return h;
+  }
+  function castawayAct(Q) {
+    var o = p4();
+    if (o.bt.chart && !o.bt.home) return { label: "Row ashore to the castaway", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { bartyMeet(); } };
+    return { label: "Castaway Rock", wx: Q.x, wy: Q.y - Q.r - 2, fn: function () { toast(o.bt.home ? "Barty's old camp. He left his hat-making leaves behind." : "A lonely rock with a single palm. Nothing here but gulls. For now.", "#7ac8e8"); } };
+  }
+  function drawCastaway(g, Q, x, y, r, now) {   // on the chart: the palm, and Barty's signal fire once you know to look
+    g.strokeStyle = "#6a4426"; g.lineWidth = Math.max(1.5, r * 0.12); g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + r * 0.2, y - r * 0.5, x + r * 0.1, y - r * 0.9); g.stroke();
+    g.fillStyle = "#3a8a3a"; for (var f = 0; f < 5; f++) { var a = f / 5 * 6.28; g.beginPath(); g.ellipse(x + r * 0.1 + Math.cos(a) * r * 0.32, y - r * 0.9 + Math.sin(a) * r * 0.16, r * 0.34, r * 0.1, a, 0, 6.28); g.fill(); }
+    var o = p4(); if (o.bt.chart && !o.bt.home) { var t = now / 1000; g.fillStyle = "#ff9a3a"; g.beginPath(); g.arc(x - r * 0.35, y - r * 0.1, r * 0.12 * (0.8 + 0.2 * Math.sin(t * 9)), 0, 6.28); g.fill(); for (var sm = 0; sm < 4; sm++) { var ph = (t * 0.4 + sm / 4) % 1; g.fillStyle = "rgba(220,225,230," + (0.6 * (1 - ph)).toFixed(2) + ")"; g.beginPath(); g.arc(x - r * 0.35 + Math.sin(t + sm) * r * 0.2 * ph, y - r * 0.2 - ph * r * 2, r * (0.1 + ph * 0.25), 0, 6.28); g.fill(); } }
+  }
+  function bartyMeet() {
+    if (!p4Open(253)) return; var o = p4();
+    var h = famHead("barty", "on Castaway Rock") + '<h2 class="st-hi">“A BOAT! A real one! I haven\'t seen a boat in... what year is it? Don\'t tell me. No, tell me.”</h2>'
+      + "<p>A wild-bearded frog in a palm-leaf hat waves both arms at you from the rocks. He squints at the compass in your paw.</p><p>“That compass... that's Croaker's! I gave him that! Is he... is my brother still...?”</p>"
+      + '<div class="st-row"><button type="button" class="btn" data-p4="barty:home">“He\'s alive. Come home, Barty.”</button><button type="button" class="btn ghost" data-p4="barty:hat">“Nice hat.”</button></div>';
+    p4Box(h, "#7ac8e8");
+  }
+  function bartyAct(a) {
+    var o = p4();
+    if (a === "hat") { p4Box(famHead("barty") + '<h2 class="st-hi">“Thank you! I made it myself. I\'ve made four hundred of them. I had a lot of time.”</h2><div class="st-row"><button type="button" class="btn" data-p4="barty:home">“Come home, Barty. Your brother never stopped looking.”</button></div>', "#7ac8e8"); return; }
+    if (a === "home") {
+      o.bt.home = S.days | 0; S.st.bartyhome = 1; famAdd("barty", 120, true); famAdd("croaker", 150); if (famMet("croaka")) famAdd("croaka", 80, true); famAdd("croako", 80, true); ocS();
+      var h = famHead("barty") + '<h2 class="st-hi">Bartholomew is coming home!</h2><p>He climbs aboard with a sack of shells, three hundred and ninety-nine palm-leaf hats (he wears the four hundredth) and a coconut named Gerald.</p>'
+        + "<p>Back at the camp, Old Croaker drops his walking stick. He doesn't say anything at all for a long while. Then he laughs until he cries, and Barty does too.</p>"
+        + '<p class="st-tip">Barty now lives by Croaker\'s camp. He\'ll come to family dinners, write you letters, and he loves gifts from the sea (but please, no more seaweed).</p>'
+        + '<div class="st-row"><button type="button" class="btn" data-story-close>Welcome home, Barty</button></div>';
+      choiceSet("barty", "home"); p4Box(h, "#7ac8e8"); snd("open", "Epic"); popup("Family reunited", "Bartholomew is home", "#7ac8e8", "♥"); checkGoals(); save(); return;
+    }
+  }
+  // where Barty lives: beside Croaker's camp
+  var BARTY = { x: 0, y: 0, ok: false, w: null, t: 0, face: 1 };
+  function bartySpot() {
+    if (BARTY.w === world) return BARTY.ok; BARTY.w = world; BARTY.ok = false; var sx = Math.floor(world.spawn.x) - 9;
+    for (var d = 0; d < 12 && !BARTY.ok; d++) for (var sg = -1; sg <= 1; sg += 2) { var x = sx + sg * d, gy = col[x]; if (!BARTY.ok && gy && TILES[get(x, gy)].solid && !TILES[get(x, gy - 1)].solid && !TILES[get(x, gy - 2)].solid && x !== mailSpot()) { BARTY.x = x + 0.5; BARTY.y = gy; BARTY.ok = true; } }
+    return BARTY.ok;
+  }
+  function bartyNear() { return p4().bt.home && bartySpot() && !cave && !HOME && !OCS && Math.abs(BARTY.x - p.x) < 2.4 && Math.abs(BARTY.y - p.y) < 2.4; }
+  function drawBartyWorld(g, now) {
+    if (!p4().bt.home || cave || !bartySpot() || dinNow()) return; var sx = ox + BARTY.x * ts, sy = oy + BARTY.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    BARTY.face = p.x < BARTY.x ? -1 : 1; var k = ts / 30; g.save(); g.translate(sx, sy + ts * 0.04); g.scale(k, k); g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+    bartyArt(g, now, BARTY.face, reduce ? 0 : Math.sin(now / 640) * 0.7); if (bartyNear()) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Bartholomew").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Bartholomew", 0, 13); }
+    g.restore();
+  }
+  var BARTY_HI = ["Did you know beds are SOFT? Nobody told me! Twenty years!", "Croaker still snores like a foghorn. I missed it. Don't tell him.", "I've been teaching Croako how to make hats. He hates it. He's very good at it.", "Gerald says hello. Gerald is a coconut. We've been through a lot.", "Sometimes I still talk to the gulls. They've stopped answering. Rude."];
+  function talkBarty() {
+    if (!p4Open(254)) return; famChat("barty"); P4V.r = null;
+    var h = famHead("barty", "Old Croaker's little brother") + '<h2 class="st-hi">“' + esc(BARTY_HI[((S.days | 0) + (S.st.bartytalk = (S.st.bartytalk || 0) + 1)) % BARTY_HI.length]) + "”</h2>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-p4="gift:barty">Give a gift</button><button type="button" class="btn" data-story-close>See you, Barty</button></div>';
+    p4Box(h, "#7ac8e8"); save();
+  }
+  SIDE.push({ id: "p4_logbook", cat: "Family & Friends", ch: 0, n: "Pages in the Wind", d: "Find all 8 pages of Croaker's Logbook around the Brinebog Sea.", need: 8, v: function () { return S.st.logpages || 0; }, rw: { pearl: 3, doubloon: 10 }, show: function () { return lbStarted(); } });
+  SIDE.push({ id: "p4_barty", cat: "Family & Friends", ch: 0, n: "The Fourth Sibling", d: "Sail to Castaway Rock and bring Croaker's brother home.", need: 1, v: function () { return p4().bt.home ? 1 : 0; }, rw: { goldbait: 1, blackpearl: 1, goldcoin: 3 }, show: function () { return !!p4().bt.compass || lbStarted(); } });
+  // #51 CHOICES that decide who moves to town (Phase 5 builds the town; the Journal shows the list now)
+  var CHOICES = {
+    barty: { home: { who: "Bartholomew", why: "You brought him home" } },
+    thief: { forgive: { who: "Nibbles", why: "You forgave the hungry otter pup who took your crops" }, report: { who: "Constable Croakwell", why: "You reported the crop thief, so the Sky Village sends a constable" } },
+    rival: { friend: { who: "Rook Ribbitson", why: "You and Rook are friendly rivals now" }, rival: { who: "", why: "" } },
+    tour: { share: { who: "Old Finn the angler", why: "You shared the tournament prize with old Finn" }, keep: { who: "", why: "" } }
+  };
+  function choiceSet(k, v) { var o = p4(); o.ch[k] = v; S.st["ch_" + k] = 1; }
+  function townList() { var o = p4(), L = []; Object.keys(CHOICES).forEach(function (k) { var c = o.ch[k] && CHOICES[k][o.ch[k]]; if (c && c.who) L.push(c); }); return L; }
+//P4STUB_END
+  // ---------- items Phase 4 adds ----------
+  ITEMS.goldbait = { n: "Golden Bait", gem: "#ffd23f" }; ORDER.push("goldbait");
+  OCI.goldbait = function (g) { var E = function (x, y, rx, ry, c) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 6.3); g.fill(); }; g.fillStyle = "#5a3a06"; g.beginPath(); g.ellipse(16, 18, 11, 7, -0.4, 0, 6.3); g.fill(); E(16, 17, 10, 6, "#f2b83a"); E(14, 15, 6, 3, "#ffe08a"); E(12, 14, 2, 1.2, "#fff"); g.strokeStyle = "#8a6a1a"; g.lineWidth = 1; for (var i = 0; i < 3; i++) { g.beginPath(); g.arc(16 + i * 3 - 3, 17, 5, -0.6, 0.6); g.stroke(); } g.fillStyle = "#c8d0d8"; g.fillRect(24, 6, 2, 9); g.beginPath(); g.arc(23, 15, 3, 0, 3.2); g.strokeStyle = "#c8d0d8"; g.lineWidth = 1.6; g.stroke(); };
+  FXN.fed = "Well Fed";
   // ---------- HOMESTEAD stage 4: CROAKA, Old Croaker's sister, who lives on your homestead ----------
   // S.home.ka = { met, f friendship 0-10, g highest heart gift given, ord: { day, k item, n, done } }
   var CROAKA = { x: 10.5, y: 7.85, tx: 10, ty: 7 };
@@ -21543,16 +22478,16 @@
   }
   function renderCroaka(first) {
     var K = croakaS(), ord = croakaOrder(), have = croakaHave(ord.k), f = K.f || 0, next = CROAKA_GIFT.filter(function (q) { return q[0] > (K.g || 0); })[0];
-    var h = '<div class="st-croak" aria-hidden="true">' + CROAKA_SVG + "</div><small>Croaka, Old Croaker's sister</small>";
+    if (!first) famChat("croaka"); P4V.r = null; var h = famHead("croaka", "Old Croaker's sister");
     if (first) h += '<h2 class="st-hi">So YOU\'RE the one who moved in next to the reeds!</h2><p>“I\'m Croaka. Croaker\'s big sister, whatever he tells you. I\'ve farmed this bog since before he could hop. You\'ve got good soil here, and a pond, and that\'s half of farming. Here, some seeds to get you going, and a little something for the cart. I\'ll need a hand now and then. Come see me every day and I\'ll have a little job for you.”</p>'
       + '<div class="st-gift">' + Object.keys(K.gift0 || {}).filter(function (k) { return ITEMS[k]; }).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + K.gift0[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + "</div>";
     else if (K.bookNew) { K.bookNew = 0; h += '<h2 class="st-hi">Oh! I nearly forgot. This is for you.</h2><p>\u201cMy old Farm Almanac. Every crop you harvest, every egg, every jar, you write it in here. Fill a chapter and come show me. I pay in silver, and in pie, but mostly silver.\u201d</p><div class="st-gift"><span><img alt="" src="' + icon("farmbook") + '">1 Croaka\'s Farm Almanac</span></div>'; }
     else h += '<h2 class="st-hi">' + esc(CROAKA_HI[((K.said || 0) + (S.days | 0)) % CROAKA_HI.length]) + "</h2>";
     h += '<div class="hm-ord"><small>Today\'s Farm Order</small>' + (ord.done ? "<p><b>Done for today. Thank you, sprout!</b> Come back tomorrow.</p>"
       : '<p><img alt="" src="' + icon(ord.k) + '"> <b>' + ord.n + " " + esc(ITEMS[ord.k] ? ITEMS[ord.k].n : ord.k) + "</b> · you have " + have + "<br><small>Pays " + croakaReward(ord) + " Silver Coins and a heart. Fine and Prize ones count too.</small></p>") + "</div>";
-    h += '<p class="hm-hearts">' + "♥".repeat(f) + '<span>' + "♡".repeat(10 - f) + "</span>" + (next ? " · next gift at " + next[0] + " hearts" : " · best friends!") + "</p>";
+    h += p4CroakaRow();
     if (!first) h += '<p class="st-tip"><b>Croaka\'s tip:</b> ' + esc(CROAKA_TIPS[((K.said || 0) * 3 + (S.days | 0)) % CROAKA_TIPS.length]) + "</p>";
-    h += '<div class="st-row">' + (!ord.done ? '<button type="button" class="btn" data-croaka="give"' + (have >= ord.n ? "" : " disabled") + ">Deliver</button>" : "") + '<button type="button" class="btn ghost" data-croaka="almanac">Farm Almanac</button><button type="button" class="btn ghost" data-croaka="book">Farm chapter</button><button type="button" class="btn ghost" data-story-close>Bye, Croaka</button></div>';
+    h += '<div class="st-row">' + (!ord.done ? '<button type="button" class="btn" data-croaka="give"' + (have >= ord.n ? "" : " disabled") + ">Deliver</button>" : "") + '<button type="button" class="btn ghost" data-p4="gift:croaka">Give a gift</button><button type="button" class="btn ghost" data-croaka="almanac">Farm Almanac</button><button type="button" class="btn ghost" data-croaka="book">Farm chapter</button><button type="button" class="btn ghost" data-story-close>Bye, Croaka</button></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#ffb0d8"); $("sbxStoryBox").innerHTML = h; save();
   }
   function croakaAct(a) {
@@ -21572,11 +22507,7 @@
     + '<circle cx="16" cy="32" r="3" fill="#ff9ab0" opacity=".7"/><circle cx="48" cy="32" r="3" fill="#ff9ab0" opacity=".7"/><path d="M24 33 Q32 39 40 33" fill="none" stroke="#12220f" stroke-width="2" stroke-linecap="round"/>'
     + '<ellipse cx="32" cy="14" rx="27" ry="6" fill="#e8c46a" stroke="#8a6a2a" stroke-width="2"/><path d="M18 13 Q32 -3 46 13Z" fill="#f2d27a" stroke="#8a6a2a" stroke-width="2"/><rect x="18" y="10" width="28" height="3" fill="#e86a8a"/>'
     + '<circle cx="44" cy="10" r="4" fill="#ff7ab0"/><circle cx="44" cy="10" r="1.6" fill="#ffd23f"/></svg>';
-  function drawCroaka(g, now) {   // Croaka: a farmer frog in a straw sun hat with a flower, a gingham dress, a basket of carrots
-    var sx = ox + CROAKA.x * ts, sy = oy + CROAKA.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
-    var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.4) * 0.7, face = cp.x < CROAKA.x ? -1 : 1, near = croakaNear(), k = ts / 30, K = croakaS(), ord = croakaOrder();
-    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
-    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+  function croakaArt(g, now, face, br) {   // Croaka with her basket, at (0, 0) = her feet, 30 units to a tile
     // a woven basket of carrots beside her (inked), then Croaka herself on the shared frog body
     [[-24, -15, -1], [-19, -16, 1]].forEach(function (c) { g.beginPath(); g.moveTo(c[0] - 1.6, c[1] + 4); g.lineTo(c[0] + 0.4 * c[2], c[1] + 9); g.lineTo(c[0] + 1.6, c[1] + 4); g.closePath(); aInk(g, aG(g, c[1] + 3, c[1] + 9, "#ffb05a", "#ff8a2a", "#c85a10"), "#5a2406", 0.8); g.strokeStyle = "#2f7a1e"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(c[0], c[1] + 4); g.lineTo(c[0] - 1, c[1]); g.moveTo(c[0], c[1] + 4); g.lineTo(c[0] + 1.4, c[1] + 0.6); g.stroke(); });
     g.beginPath(); g.moveTo(-26, 0); g.lineTo(-27.4, -9); g.lineTo(-12.6, -9); g.lineTo(-14, 0); g.closePath(); g.save(); aInk(g, aG(g, -9, 0, "#d8a060", "#b07a44", "#7a4e22"), "#3a220e", 1.2); g.clip();
@@ -21600,6 +22531,13 @@
     for (var pt = 0; pt < 5; pt++) { var pa = pt / 5 * 6.283; g.beginPath(); g.arc(10 + Math.cos(pa) * 2.2, -42.4 + Math.sin(pa) * 2.2, 1.8, 0, 7); aInk(g, "#ff8ab8", "#8a2450", 0.6); }
     g.beginPath(); g.arc(10, -42.4, 1.4, 0, 7); aInk(g, "#ffd23f", "#8a5a06", 0.6); aShine(g, -3, -47.6, 2.6, 0.9, 0.4, -0.3);
     g.restore();
+  }
+  function drawCroaka(g, now) {   // Croaka: a farmer frog in a straw sun hat with a flower, a gingham dress, a basket of carrots
+    var sx = ox + CROAKA.x * ts, sy = oy + CROAKA.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
+    var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.4) * 0.7, face = cp.x < CROAKA.x ? -1 : 1, near = croakaNear(), k = ts / 30, K = croakaS(), ord = croakaOrder();
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
+    croakaArt(g, now, face, br);
     var bang = !K.met || !ord.done || (S.inv.farmbook > 0 && FMB.some(function (P) { return fmPageDone(P) && !(S.hbpay && S.hbpay[P.id]); })), by = -62 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
     if (bang) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = "#ffb0d8"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, 8, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = "#ffb0d8"; g.font = "900 11px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(K.met ? "♥" : "!", 0, by + 4); }
     if (near) { g.font = "800 9px Nunito,sans-serif"; g.textAlign = "center"; var tw = g.measureText("Croaka").width + 10; g.fillStyle = "rgba(10,20,16,.75)"; g.fillRect(-tw / 2, 4, tw, 12); g.fillStyle = "#ffe9a8"; g.fillText("Croaka", 0, 13); }
@@ -22046,7 +22984,7 @@
     if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;   // the tile you're pointing at, on the ground
       g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2 / HK; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
     g.restore();
-    drawSceneDrops(g, now);   // what lies on the ground stands up (sceneSY puts it on the tilted ground)
+    drawSceneDrops(g, now); p4HomeDraw(g, now, SY);   // what lies on the ground stands up (sceneSY puts it on the tilted ground)
     var sun = sunState(S.time); sun.a *= 1 - 0.85 * wxN(); HOME.sun = sun; var HWIND = 1 + wxN() * 0.6 + wxStorm() * 1.8;   // rain clouds hide the sun; storms blow the crops about
     if (shadowBegin(sun)) {
       L.forEach(function (e) { var B = SY(oy + e[0] * ts);
@@ -22302,6 +23240,8 @@
   window.__sbx.coat = { C: COATS, A: ARROWK, load: loadAmmo, ammo: function () { return bowAmmo(); }, hit: coatHit, step: coatStep, dt: coatDt };
   window.__sbx.tour = { cave: function (f) { var h = (world.holes || [])[0] || { x: Math.floor(p.x), y: Math.floor(p.y) }; enterCave(h.x, h.y, f || 1, true); }, sea: function () { ocEnterPier(); } };
   window.__sbx.rar = function () { var o = {}; Object.keys(ITEMS).forEach(function (k) { o[k] = [rarItem(k), ITEMS[k].n]; }); return o; };
+  window.__sbx.p5 = { nibPic: nibPic, rookPic: rookPic, tour: tourAct, tourFin: tourFinish, reel: rhythmStart, hit: reelHit, RF: function () { return RF; }, nb: nbOpen, jobs: nbJobs, nbAct: nbAct, nbSpot: nbSpot, thief: thiefAct, clues: thClueSpots, THF: THF, rival: rivalAct, spawn: rivalSpawn, ROOK: ROOK, radio: radioOpen, jrn: famJournalHtml, tick: p4Tick, gold: function () { GOLDB = true; }, land: landFish };
+  window.__sbx.p4 = { talk: function () { talkCroaker(); }, act: function (a) { p4Act(a); }, add: function (w, n) { famAdd(w, n); }, mail: function () { mailOpen(); }, din: function (k) { dinOpen(k); }, tale: function (id) { taleStart(id); }, S: function () { return p4(); }, din0: function () { return dinSpot(); }, mail0: function () { return mailSpot(); }, get TL() { return TL; }, croako: function () { talkCroako(); }, close: function () { closeStory(); } };
   window.__sbx.act = { freeze: function (kind, k, t) { actStart(kind, k); ACT.t0 = performance.now() - t * 1000; ACT.freeze = t; }, toss: function (a) { tossSlot(a, false, true); }, drink: function (k) { drink(k); }, eat: function (k) { eat(k); }, get mn() { return HOME && HOME.mn; }, gd: function () { var sc = gdScene(); return sc ? sc.L : null; }, get cp() { return cp; }, hmT: function (x, y) { return hmT(x, y); }, HT: function () { return HT; } };
   window.__sbx.wta = function () { WTA = null; return worldTreeArt().map(function (q) { return [q.h, q.t.width, q.t.height, q.bx, q.by]; }); };
   window.__sbx.art = { e: function (g, e, now) { drawEnemy(g, e, now); }, a: function (g, a, now) { drawAnimal(g, a, now); }, view: function () { return { ox: ox, oy: oy, ts: ts }; }, crit: CRIT, npc: npc, oc: function (g, m, now) { ocDrawMob(g, m, now); }, ocNew: function (k, x, y) { return ocNewMob(k, x, y); }, boss: function (g, e, now) { drawBoss(g, e, now); }, bossNew: function (k, x, y) { return newBoss(k, x, y); }, zaruk: function (g, x, y, sc, t, f, sl) { drawZaruk(g, x, y, sc, t, f, 1, sl || 0); }, crew: function (g, x, y, r, col, f, t) { drawCrewFrog(g, x, y, r, col, f, t); }, miner: function (g, x, y, r, t, h) { drawMinerFrog(g, x, y, r, t, h); }, vil: function (g, v, now) { drawVil(g, v, now); }, vils: function () { return vilList(); }, saltjaw: function (g, m, now) { drawCaptain(g, m, now); }, npcDraw: function (g, now) { drawNpc(g, now || 1000); }, anim: function (k, x, y) { return newAnimal(k, x, y, true); } };   // draw one creature onto any canvas (art checks)

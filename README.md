@@ -1121,3 +1121,17 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Phones:** Sort and Quick stack get their own row under the title, and the item card sticks to the bottom so its buttons are always in reach.
 - **Torches are Common** (`RARX.torch = 0`): they were showing as Uncommon in the backpack and the crafting list.
 - **Glass Bottle, Clear Glass and Iron Nails are Common** too (`RARX`).
+- **Phase 4: Family & Friends (roadmap #41–#54).** All state lives in `S.p4` (see `PHASE 4` in sandbox.js). New side-quest category "Family & Friends" (a quest can now have a `show` function that hides it until it starts).
+  - **Hearts and gifts (#41):** Croaker, Croako, Croaka and Bartholomew each have 10 hearts. One gift a day each: loved +80, liked +45, anything else +20, hated −20. Heart milestones give rewards. Their talk windows show a portrait and hearts.
+  - **Croaker's Tall Tales (#42):** three stories (the Moon Hop, the Great Storm, Saltjaw's Deck) told as short animated sepia scenes. Each has backstory quests (#43).
+  - **Croaker's Logbook (#44):** 8 torn pages scattered over the Brinebog Sea (sea chests, the lighthouse, islands, storms). The last one gives his sea chart.
+  - **Family dinner (#45):** every Feastday at dusk, a lantern-lit table in the Sky Village. Pick a dish: hearts for everyone, full health and food, and **Well Fed** (faster healing, slower hunger).
+  - **Croako's Fishing Tournament (#46):** every Fishday (2+ hearts with Croako). 2:30 on the clock, any fish 1 point, rare +3, legendary +6, against Old Finn, Molly Mudskip and Gus Gillwater. The winner gets **Golden Bait**. The first win asks whether to share the prize with Finn.
+  - **Rhythm fishing (#47):** legendary fish fight back. Tap (or Space/F) as each ring reaches the hook to reel them up; miss three and the line snaps. **Golden Bait** makes the next bite a legendary from that water. Works on the sea too.
+  - **Notice Board (#48):** in the Sky Village. Three jobs a day (bring items, catch fish, dig blocks) pay Silver Coins and give that villager a heart. Side quest "Pillar of the Village".
+  - **The Carrot Caper (#49):** with 4 hearts, Croaka asks you to find who is stealing her crops. Find 3 clues on the homestead by day, then catch **Nibbles** the otter pup at night. Forgive him or report him.
+  - **Rook Ribbitson (#50):** a cocky rival frog in goggles and a red scarf who turns up from day 2 and races you to treasure (an arrow points the way). He heckles you at boss fights. After 3 races: friends or rivals.
+  - **Choices that matter (#51):** Barty's home, the thief, the rival and the tournament prize decide who moves to town. The Journal's Lore tab now opens with your family's hearts and the "Moving to town" list.
+  - **Bartholomew (#52):** the lost fourth sibling, a castaway on Castaway Rock. Bring him home with his hat.
+  - **Swamp Radio (#53):** a new decor piece (Decor Workbench, Music). Croaker's Call-In (callers change with what you've done), Weather & Tides, and Swamp Tunes (plays like a jukebox).
+  - **The mailbox (#54):** by your camp. A letter from the family most mornings, sometimes with a gift.

@@ -2447,3 +2447,74 @@ small.bo-cost{display:flex}
  #sbxPack .pk2-tools .btn{min-height:36px}
 }
 @media(max-width:600px){#sbxPack .pk2-act.sel{position:sticky;bottom:0;z-index:3;box-shadow:inset 0 1px 0 #ffffff12,0 -14px 24px -6px #020806}}
+/* ===== PHASE 4: family hearts, gifts, letters, dinner, tales ===== */
+.p4-pic{background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--qc,#4ee6b4) 26%,transparent),transparent 70%)!important}
+.p4-pic img{width:100%;height:100%;object-fit:contain;object-position:50% 85%;image-rendering:auto}
+.p4-hearts{display:flex;justify-content:center;gap:3px;margin:4px 0 6px}
+.p4-hearts i{position:relative;width:15px;height:14px;background:#ffffff1a;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M12 21S1 14 1 7a5.5 5.5 0 0 1 11-1.6A5.5 5.5 0 0 1 23 7c0 7-11 14-11 14z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M12 21S1 14 1 7a5.5 5.5 0 0 1 11-1.6A5.5 5.5 0 0 1 23 7c0 7-11 14-11 14z'/%3E%3C/svg%3E") center/contain no-repeat}
+.p4-hearts i.on{background:linear-gradient(180deg,#ffb0c8,#ff5a8a)}
+.p4-hearts i.part{background:linear-gradient(90deg,#ff7aa0 var(--p),#ffffff1a var(--p))}
+.p4-hsm{justify-content:flex-start;margin:6px 0}
+.p4-giftgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;max-height:212px;overflow:auto;padding:4px;margin:8px 0;border-radius:12px;background:#0003}
+.p4-gi{position:relative;aspect-ratio:1;display:grid;place-items:center;border-radius:11px;border:1px solid #ffffff14;background:linear-gradient(180deg,#14291f,#0a1712);cursor:pointer}
+.p4-gi:hover{border-color:#4ee6b477;transform:translateY(-1px)}.p4-gi img{width:64%;height:64%;image-rendering:pixelated}
+.p4-gi b{position:absolute;right:4px;bottom:1px;font:900 .66rem Nunito,sans-serif;color:#fff;text-shadow:0 0 2px #000,0 1px 0 #000}
+.p4-react{display:flex;align-items:center;justify-content:center;gap:12px}.p4-react b{font:900 1.1rem Nunito,sans-serif;color:#9af5d4}
+.p4-love b{color:#ff8ab0}.p4-hate b{color:#ff8a7a}
+.p4-letter{margin:8px 0 10px;padding:14px 16px;border-radius:10px;background:linear-gradient(180deg,#fbf3dc,#efe2c0);color:#3a2a14;font:600 .92rem/1.5 "Patrick Hand","Comic Neue",Nunito,sans-serif;box-shadow:inset 0 0 0 1px #c8b48a,0 6px 18px -8px #000;text-align:left;transform:rotate(-.6deg)}
+.p4-row{display:flex;justify-content:center;gap:4px;margin-bottom:6px}.p4-row img{width:66px;height:66px;object-fit:contain;object-position:50% 90%}
+.p4-din{display:grid;gap:8px;margin:8px 0;text-align:left}
+.p4-dl{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff10}
+.p4-dl img{width:44px;height:44px;flex:none;object-fit:contain;object-position:50% 90%}
+.p4-dl span{font:600 .84rem/1.4 Nunito,sans-serif;color:#f6eedbd0}.p4-dl b{display:block;font-weight:900;color:#fff4d0}
+.p4-love{font-style:normal;color:#ff8ab0;font-size:.74rem}.p4-hate{font-style:normal;color:#ff8a7a;font-size:.74rem}
+.p4-acts{flex-wrap:wrap}.p4-new{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 4px;border-radius:9px;background:#f2c14e;color:#2a1a04;font:900 .7rem Nunito,sans-serif;font-style:normal}
+.p4-said{border-left:3px solid #4ee6b4}
+.p4-tales{display:grid;gap:8px;margin:8px 0;text-align:left}
+.p4-tale{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid color-mix(in srgb,var(--tc) 45%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 18%,#120c06),#0a0806)}
+.p4-tale b{font:400 1rem/1.2 "DelveBagel","Bagel Fat One",Nunito,sans-serif;color:#ffe9c8}
+.p4-tale small{grid-column:1;font:600 .74rem Nunito,sans-serif;color:#e8d8b8b0}
+.p4-tale .btn{grid-row:1/4;grid-column:2}
+.p4-tale.lock{opacity:.55}
+.p4-tlv{display:flex;gap:4px}.p4-tlv i{width:22px;height:5px;border-radius:3px;background:#ffffff1a}.p4-tlv i.on{background:var(--tc)}
+/* the tale screen: an old, flickering memory */
+.sbx-tale{position:absolute;inset:0;z-index:6;background:#1a1006}
+.sbx-tale[hidden]{display:none}
+.sbx-tale canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.tl-top{position:absolute;left:10px;right:10px;top:10px;display:flex;align-items:center;gap:10px;color:#f2e2b8;font:800 .86rem Nunito,sans-serif;text-shadow:0 1px 2px #000}
+.tl-top b{flex:1;font:400 1.05rem "DelveBagel","Bagel Fat One",Nunito,sans-serif;color:#ffe2a8}
+.tl-top span{padding:4px 10px;border-radius:999px;background:#0008}
+.tl-cap{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);width:min(560px,88%);text-align:center;color:#fff4d8;font:italic 700 1.05rem/1.35 Georgia,"Times New Roman",serif;text-shadow:0 2px 6px #000,0 0 2px #000;opacity:0;pointer-events:none}
+.tl-cap.in{animation:tlCap 4.6s ease forwards}
+@keyframes tlCap{0%{opacity:0;transform:translate(-50%,8px)}10%,82%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.tl-help{position:absolute;left:0;right:0;bottom:12px;text-align:center;color:#f2e2b8a0;font:800 .78rem Nunito,sans-serif;pointer-events:none}
+.tl-end{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,90%);padding:18px;border-radius:18px;background:linear-gradient(180deg,#2a1c0ef2,#140c06f8);border:1px solid #c8a46a77;color:#f2e2b8;text-align:center;box-shadow:0 20px 60px -10px #000}
+.tl-end[hidden]{display:none}
+.tl-q{font:italic 700 1.05rem/1.4 Georgia,serif;margin:0 0 10px;color:#fff0d0}.tl-s{font:700 .8rem Nunito,sans-serif;color:#e8c890;margin:6px 0}
+/* Phase 4 part 5: tournament, rhythm reel, notice board, radio, journal family */
+.p4-hud{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 122px);transform:translateX(-50%);z-index:30;padding:6px 14px;border-radius:999px;background:#08140fd9;border:1.5px solid var(--hc);color:#f2fff9;font:800 .8rem Nunito,sans-serif;white-space:nowrap;box-shadow:0 4px 14px #0006;pointer-events:none;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
+.p4-board{list-style:none;counter-reset:pb;margin:0 0 14px;padding:0;display:grid;gap:5px}
+.p4-board li{counter-increment:pb;display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:12px;background:#ffffff0b;font:700 .9rem Nunito,sans-serif}
+.p4-board li::before{content:counter(pb);width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:#ffffff14;font-weight:900;font-size:.78rem}
+.p4-board li:first-child::before{background:#f2c14e;color:#2a1a04}
+.p4-board li span{flex:1}.p4-board li.me{background:#f2c14e22;outline:1.5px solid #f2c14e88}
+.sbx-reel{position:absolute;inset:0;z-index:60;background:#04121a}.sbx-reel canvas{width:100%;height:100%;display:block;touch-action:none}
+.rf-top{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 16px);display:flex;flex-direction:column;align-items:center;gap:4px;color:#fff;font:900 1.05rem Nunito,sans-serif;pointer-events:none;text-shadow:0 2px 6px #000a}
+.rf-top span{font-size:.85rem;color:#ffb0b0}
+.rf-help{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center;color:#cfeee6;font:700 .85rem Nunito,sans-serif;pointer-events:none}
+.p4-jobs{display:grid;gap:8px;margin:0 0 14px}
+.p4-job{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:#ffffff0b;border:1px solid #ffffff14;text-align:left}
+.p4-job img,.p4-jic{width:34px;height:34px;image-rendering:pixelated;flex:none;display:grid;place-items:center;font-size:1.4rem}
+.p4-job>span{flex:1;display:flex;flex-direction:column;gap:2px;font:700 .86rem Nunito,sans-serif}.p4-job small{opacity:.75;font-weight:700}
+.p4-job .btn{padding:7px 12px;font-size:.8rem}.p4-job.done{opacity:.6}.p4-ok{font:900 .8rem Nunito,sans-serif;color:#7fe0a0;font-style:normal}
+.p4-radio{margin:0 0 12px}.p4-dial{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto}
+.p4-dial button{flex:1;padding:8px 6px;border-radius:12px;border:1.5px solid #f2a03a55;background:#2a1a0a;color:#f8e8d0;font:800 .78rem Nunito,sans-serif;white-space:nowrap}
+.p4-dial button.on{background:#f2a03a;color:#2a1404;border-color:#f2a03a}
+.p4-feed{display:grid;gap:8px;text-align:left;max-height:44vh;overflow:auto;padding:10px 12px;border-radius:14px;background:repeating-linear-gradient(0deg,#ffffff06 0 2px,transparent 2px 4px),#120c06;border:1px solid #f2a03a33}
+.p4-feed p{margin:0;font:600 .88rem/1.4 Nunito,sans-serif}.p4-feed b{color:#f2c86a}
+.p4-jfam{margin:0 0 16px}.p4-jfam h3{margin:6px 0 8px}
+.p4-jf{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:12px;background:#ffffff0a;margin:0 0 6px}
+.p4-jf img{width:44px;height:44px;border-radius:50%;background:#ffffff10}.p4-jf span{display:flex;flex-direction:column;gap:2px;font:800 .9rem Nunito,sans-serif}
+.p4-job small{text-transform:none;letter-spacing:0;font:700 .76rem Nunito,sans-serif;color:inherit}.p4-job>span{min-width:0}.p4-job .btn{flex:none;width:auto;min-width:0;margin:0}
+.p4-job b{font-weight:800}
+.p4-job>span{text-align:left}.p4-jic{font-style:normal}
