@@ -2363,3 +2363,8 @@ small.bo-cost{display:flex}
 .sbx-mpop small{grid-column:2;font:700 .68rem Nunito,sans-serif;opacity:.65}
 .mp-i{grid-row:1/3;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#4ee6b4;color:#062018}.mp-i svg{width:16px;height:16px}
 .mp-t{background:#ffd36a;border:2px dashed #3a2a06;width:24px;height:24px}
+/* BUILD MODE: everything but the hotbar (and the build button) goes away */
+.sbx-stage.buildm .sbx-hud>*:not(.sbx-ibtns),.sbx-stage.buildm .sbx-ibtns>*:not(.sbx-buildbtn),.sbx-stage.buildm .sbx-trail,.sbx-stage.buildm .sbx-hint,.sbx-stage.buildm .sbx-tip,.sbx-stage.buildm .sbx-bcard,.sbx-stage.buildm .sbx-toast,.sbx-stage.buildm .sbx-banner,.sbx-stage.buildm .sbx-pops,.sbx-stage.buildm .sbx-pad,.sbx-stage.buildm .sbx-roll,.sbx-stage.buildm .sbx-joy,.sbx-stage.buildm .sbx-ctl,.sbx-stage.buildm .sbx-vrow,.sbx-stage.buildm .sbx-emo{visibility:hidden!important;pointer-events:none!important}
+.sbx-buildbtn .bx{opacity:0;transition:opacity .15s}
+.sbx-buildbtn.on{background:radial-gradient(circle at 35% 30%,#ffe08a,#e0a020);color:#3a2a06;border-color:#fff2b0;box-shadow:0 0 0 3px #f2c14e55,0 6px 16px -6px #000;opacity:.85}
+.sbx-buildbtn.on .bx{opacity:1}
