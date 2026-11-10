@@ -14773,7 +14773,7 @@
     if (CANS !== S) { CANS = S; canFree(); }
     if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Uint32Array(W * H); CSTN++;
     var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
-    for (j = Math.max(1, Y0 - 1); j <= Math.min(H - 2, Y1 + 1); j++) for (i = Math.max(1, X0 - 1); i <= Math.min(W - 2, X1 + 1); i++) {
+    for (j = Math.max(1, Y0 - 3); j <= Math.min(H - 2, Y1 + 3); j++) for (i = Math.max(1, X0 - 3); i <= Math.min(W - 2, X1 + 3); i++) {   // (crowns are fluffier than their leaves: look a few tiles past the screen)
       if (tiles[j * W + i] !== T.LEAVES || CSTAMP[j * W + i] === CSTN) continue;
       CANL.length = 0; CANBFS.length = 0; CANBFS.push(j * W + i); CSTAMP[j * W + i] = CSTN;
       var x0 = i, x1 = i, y0 = j, y1 = j, mn = j * W + i, sig = 0, n = 0;
@@ -15156,7 +15156,7 @@
     glows.length = 0; CELL.wob = Math.sin(now / 500); CELL.edge = Math.max(1, Math.round(ts / 9)); CELL.sw = Math.sin(now / 700);
     drawStructs(g, X0, X1, Y0, Y1);   // buildings first: they are pictures behind everything you build
     SHQ.length = 0;   // MALLET: ramp edges queued by this frame's blocks only
-    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
+    for (j = Y0 - 1; j <= Y1 + 2; j++) for (i = X0 - 2; i <= X1 + 2; i++) {   // (a little past the edges: trunks, roots and plants reach into the next tile, so nothing pops out before it has left the screen)
       if (i < 0 || i >= W || j < 0 || j >= H) continue;
       var pfk = AFX.place[j * W + i];
       if (pfk) {   // a block you just placed pops in (grows from 70% with a little overshoot)
