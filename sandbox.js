@@ -207,6 +207,10 @@
   RECIPES.push({ id: "x_grap3", n: "Grapple Upgrade: Mk III", out: { x_grap3: 1 }, cost: { ironingot: 8, crystal: 4, goldbar: 1 }, bench: true, d: "Needs Mk II. Double the reach, and the hook bites into tree leaves and trunks as well as solid blocks." });
   RECIPES.push({ id: "prospect", n: "Prospector's Lantern", out: { prospect: 1 }, cost: { ironingot: 4, glass: 2, crystal: 3, spore: 6 }, bench: true, d: "Carry it and every ore and gem within 9 tiles glows through rock and darkness, in the Mine and underground. You only need one." });
   if (typeof SbxExtra !== "undefined") { RECIPES.push.apply(RECIPES, SbxExtra.RECIPES); DECOR.push.apply(DECOR, SbxExtra.DECOR); }   // Content Pack 1 (sandbox-extra.js)
+  // FARMING LIVES ON THE HOMESTEAD: there is no Garden Soil to make or carry. Farm tools, buildings and machines are still crafted, but crops
+  // only grow inside your homestead (through the Farm Gate), where the hoe makes its own soil. Old soil in the world breaks into Mud.
+  RECIPES = RECIPES.filter(function (r) { return r.id !== "x_farmland"; });
+  if (T.X_farmland !== undefined) TILES[T.X_farmland].drop = "mud"; if (T.X_farmwet !== undefined) TILES[T.X_farmwet].drop = "mud";
   DECOR.forEach(function (r) { r.deco = 1; });
   // ==================================================================================================
   // QUESTS: the story of Delve. One main quest line in six chapters (S.qi = index into MAIN), told by Old Croaker,
@@ -389,7 +393,7 @@
     sq("hoe1", "Farmer & Cook", 1, "Hoe Down", "Till 12 tiles of ground on your homestead with a hoe.", 12, st("tilled"), { seed_potato: 3 }),
     sq("hoe2", "Farmer & Cook", 2, "Swing and Sow", "Harvest 25 ripe crops with a hoe (it replants for you).", 25, st("hoeharv"), { ironingot: 1, seed_pepper: 2 }),
     sq("can1", "Farmer & Cook", 1, "Green Paws", "Water a plant with the Watering Can.", 1, st("watered"), { seed_carrot: 2 }),
-    sq("can2", "Farmer & Cook", 1, "Gardener", "Water plants 20 times.", 20, st("watered"), { farmland: 6 }),
+    sq("can2", "Farmer & Cook", 1, "Gardener", "Water plants 20 times.", 20, st("watered"), { seed_carrot: 6 }),
     sq("farm25", "Farmer & Cook", 2, "Swamp Farmer", "Harvest 25 ripe crops.", 25, st("harvests"), { seed_potato: 4 }),
     sq("crops4", "Farmer & Cook", 4, "Four Fields", "Harvest Swamp Carrots, Bog Potatoes, Fire Peppers and Frostberries.", 4, function () { var b = S.st.cropbits || 0, n = 0; for (var q = 1; q <= 8; q *= 2) if (b & q) n++; return n; }, { seed_pepper: 2, seed_frost: 2 }),
     sq("croaka1", "Homesteader", 1, "Meet the Neighbor", "Talk to Croaka, Old Croaker's sister, on your homestead.", 1, st("croakamet"), { seed_marshonion: 4 }),
@@ -2706,6 +2710,7 @@
     var t = td.tile, solid = TILES[t].solid;
     if (td.seed) { nag(T.X_farmgate !== undefined ? "Crops grow on your homestead now. Place a Farm Gate and step inside to plant." : "Plant seeds on top of Garden Soil."); return T.X_farmgate === undefined && !!soilKind(tx, ty + 1); }
     if (item === "garage") return garageCanPlace(tx, ty);
+    if (item === "farmland" || TILES[t].kind === "farmland" || TILES[t].kind === "farmwet") { nag("Garden Soil only exists on your homestead. Step through your Farm Gate and use a hoe there."); return false; }
     if (T.X_farmgate !== undefined) {   // FARM GATE: it stands 3 blocks wide and 3 tall, so it needs that space clear and keeps it clear
       if (item === "farmgate") {
         for (var gy = ty - 2; gy <= ty; gy++) for (var gx = tx - 1; gx <= tx + 1; gx++) { if (gx === tx && gy === ty) continue; var gid = get(gx, gy); if (gid !== T.AIR && !(TILES[gid].sway && !TILES[gid].solid) && !fgTree(gx, gy)) { nag("The Farm Gate needs a clear space 3 blocks wide and 3 tall."); return false; } }
@@ -9735,6 +9740,8 @@
   (function () {
     SPR.grapple = { r: ["................", "..........aa....", ".........a..a...", "........abba....", ".......abbb.....", "......gbb.......", ".....gg.........", "....gl..........", "...gg...........", "..gl.l..........", ".gg..g..........", ".g...gl.........", ".gl...g.........", "..gg.gg.........", "...ggl..........", "................"], p: { a: "#cfd6dc", b: "#7a8290", g: "#4f8a3c", l: "#8fd06a" } };
     SPR.x_drill = { r: ["................", "........aaaa....", ".......abbbba...", "......abccccba..", ".....abcddddcba.", "....abcdeeedcba.", "...abcdeffedcba.", "..abcdeffffedca.", "..abcdefffedcba.", "...abcdeeedcba..", "....abcdddcba...", ".....abcccba....", "......abbba.....", ".......aaa......", "................", "................"], p: { a: "#3a3e44", b: "#6b7279", c: "#9aa3ab", d: "#c9cdd2", e: "#f2c14e", f: "#ff8a3d" } };
+    SPR.mudbarn = { r: ["................", ".....aaaaaa.....", "....abbbbbba....", "...abbbbbbbba...", "..abbbbccbbbba..", ".abbbbbccbbbbba.", "dddddddddddddddd", ".deeiedddddeiee.", ".deeiedgffgdiee.", ".deeiedfggfdiee.", ".deeiedfggfdiee.", ".deeiedgffgdiee.", ".deeiedddddeiee.", ".deeieeeeeeeiee.", ".hhhhhhhhhhhhhh.", "................"],
+      p: { a: "#5a1a12", b: "#d0473a", c: "#fff4d8", d: "#f6eedb", e: "#c23a30", f: "#7a2a1e", g: "#f6eedb", h: "#5a4630", i: "#9e2c24" } };   // a red gambrel barn with white trim and crossed doors
     SPR.clippers = { r: ["................", ".a...........a..", ".ba.........ab..", "..ba.......ab...", "...ba.....ab....", "....ba...ab.....", ".....babab......", "......aca.......", ".....ddcdd......", "....dd...dd.....", "...dd.....dd....", "..ee.......ee...", ".eef.......fee..", ".eef.......fee..", "..ee.......ee...", "................"], p: { a: "#5a6068", b: "#c8d2da", c: "#3a2a1a", d: "#8a5a32", e: "#2f9a6a", f: "#58d68b" } };
     SPR.x_detect = { r: ["................", "..........aaa...", ".........abbba..", "..........aaa...", "..........a.....", ".........a......", "........a.......", ".......a........", "......a.........", ".....a..........", "...ccccc........", "..cdddddc.......", "..cdeeedc.......", "..cdddddc.......", "...ccccc........", "................"], p: { a: "#6b7279", b: "#ff4a5a", c: "#3a3e44", d: "#9aa3ab", e: "#4ee6b4" } };
     SPR.x_jet = { r: ["................", "....aa....aa....", "...abba..abba...", "...abba..abba...", "...abcaaaacba...", "...abccddccba...", "...abccddccba...", "...abccccccba...", "...abba..abba...", "...aeea..aeea...", "....ff....ff....", "....gf....fg....", ".....g....g.....", "................", "................", "................"], p: { a: "#3a3e44", b: "#7fd06a", c: "#5a9a4a", d: "#f2c14e", e: "#6b7279", f: "#9fe86a", g: "#d8ffb0" } };
@@ -16588,7 +16595,7 @@
     ["Potions|Arrow Ointments", "x_vial x_ot_venom x_ot_numb x_ot_sleep x_ot_mark x_ot_spark x_ot_blast x_ot_leech"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
     ["Potions|Wonders", "x_tonic_regen x_tonic_grand x_tonic_glow x_tonic_feather x_tonic_luck x_tonic_grow x_tonic_gill x_tonic_brute"],
-    ["Food|Farming", "x_farmland x_sprinkler x_trough x_fishtrap x_compost x_compostbin x_seedmaker x_picklekeg x_farmgate x_duckcoop x_mudbarn"],
+    ["Food|Farming", "x_sprinkler x_trough x_fishtrap x_compost x_compostbin x_seedmaker x_picklekeg x_farmgate x_duckcoop x_mudbarn"],
     ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat x_grilledfish x_omelette x_milkshake"],
     ["Food|Soups & Snacks", "x_f_swampsalad x_f_redcapsoup x_f_glowbroth x_f_buttermash x_f_frostjam x_f_swamptea x_f_bogkebab x_f_emberkebab x_f_cocoa x_f_sandwich x_f_lilycookie x_f_mossmuffin x_f_dumplings"],
     ["Food|Hearty Meals", "x_f_carproll x_f_fishpie x_f_carrotcake x_f_eelcurry x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast x_f_breadloaf x_f_noodles x_f_mushroompie"],
