@@ -15235,7 +15235,7 @@
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
-    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawFissure(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now);
+    drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawTmpWp(g, now); drawFissure(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now);
     drawBedPrompt(g, now);
     drawHolePrompt(g, now);
     // cursor: animated corner brackets
@@ -17351,7 +17351,7 @@
     c.width = Math.round((M.cw + M.pad * 2) * M.dpr); c.height = Math.round((M.ch + M.pad * 2) * M.dpr); M.dr = null;
   }
   function mapFlingStep() { if (M.fling) { var fn = performance.now(), fdt = Math.min(50, fn - M.fling.t); M.fling.t = fn; M.cx -= M.fling.vx * fdt / M.s; M.cy -= M.fling.vy * fdt / M.s; mapClamp(); var fd = Math.pow(0.0035, fdt / 1000); M.fling.vx *= fd; M.fling.vy *= fd; if (Math.hypot(M.fling.vx, M.fling.vy) < 0.02) M.fling = null; } }
-  function mapGlide() {   // during a gesture: slide the last drawing into place, or redraw if it no longer covers the screen
+  function mapGlide() { mapPopClose();   // during a gesture: slide the last drawing into place, or redraw if it no longer covers the screen
     var D = M.dr, c = $("sbxMapC"); if (!D) return drawMapView();
     var k = M.s / D.s, tx = M.s * (D.cx - M.cx) + (M.cw / 2 + M.pad) * (1 - k), ty = M.s * (D.cy - M.cy) + (M.ch / 2 + M.pad) * (1 - k);
     var x0 = -M.pad + tx, y0 = -M.pad + ty, x1 = x0 + (M.cw + M.pad * 2) * k, y1 = y0 + (M.ch + M.pad * 2) * k;   // where the drawn canvas lands on screen
@@ -17439,6 +17439,7 @@
       g.beginPath(); g.arc(cq[0], cq[1], 8, 0, 6.2832); g.fill(); g.stroke(); g.fillStyle = "#3fae5e"; g.beginPath(); g.ellipse(cq[0], cq[1] + 1.5, 5.6, 3.8, 0, 0, 6.2832); g.fill();
       [-2.8, 2.8].forEach(function (ex) { g.fillStyle = "#3fae5e"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 2.4, 0, 6.2832); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 1.3, 0, 6.2832); g.fill(); });
     }
+    if (TMPW) { var tq = m2s(TMPW.x + 0.5, TMPW.y + 0.5); g.save(); g.translate(tq[0], tq[1]); g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(-11, -12, -8, -23, 0, -23); g.bezierCurveTo(8, -23, 11, -12, 0, 0); g.closePath(); g.fillStyle = "#ffd36a"; g.fill(); g.setLineDash([3, 2]); g.lineWidth = 2; g.strokeStyle = "#3a2a06"; g.stroke(); g.setLineDash([]); g.fillStyle = "#3a2a06"; g.beginPath(); g.arc(0, -14, 4, 0, 6.3); g.fill(); g.restore(); }
     var pq = m2s(p.x, p.y - 1), pulse = 9 + Math.sin(performance.now() / 260) * 1.6;
     g.strokeStyle = "#fff"; g.lineWidth = 2.6; g.beginPath(); g.arc(pq[0], pq[1], pulse, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(pq[0], pq[1], 4.6, 0, 6.2832); g.fill();
     g.textAlign = "left"; g.font = signFont(12); g.textBaseline = "middle";
@@ -17492,12 +17493,47 @@
   function mapTap(x, y) {
     var i, best = -1, bd = 22 * 22;
     (S.wp || []).forEach(function (w, n) { var q = m2s(w.x + 0.5, w.y + 0.5), dx = q[0] - x, dy = q[1] - 13 - y, d = Math.min(dx * dx + dy * dy, dx * dx + (q[1] - y) * (q[1] - y)); if (d < bd) { bd = d; best = n; } });
-    if (best >= 0) { M.sel = best; mapCard(); return; }
+    if (best >= 0) { mapPopClose(); M.sel = best; mapCard(); return; }
+    if (M.sel >= 0 || $("sbxMapPop")) { M.sel = -1; mapCard(); mapPopClose(); M.dirty = true; return; }   // a tap away from a selected pin (or the menu) just lets go of it
     var w2 = s2m(x, y), tx = Math.floor(w2[0]), ty = Math.floor(w2[1]); if (tx < 0 || ty < 0 || tx >= W || ty >= H) return;
+    mapPopOpen(x, y, tx, ty);   // TAP MENU: Create waypoint / Create temp waypoint
+  }
+  function mapPopClose() { var q = $("sbxMapPop"); if (q) q.remove(); }
+  function mapPopOpen(x, y, tx, ty) {
+    mapPopClose(); var d = document.createElement("div"); d.className = "sbx-mpop"; d.id = "sbxMapPop";
+    d.innerHTML = '<button type="button" data-mpop="wp"><span class="mp-i">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0113 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/></svg>' + '</span>Create waypoint</button><button type="button" data-mpop="tmp"><span class="mp-i mp-t"></span>Create temp waypoint<small>Shows the way, gone when you get there</small></button>';
+    $("sbxMapV").appendChild(d); var bw = d.offsetWidth || 220, bh = d.offsetHeight || 96;
+    d.style.left = clamp(x - bw / 2, 8, M.cw - bw - 8) + "px"; d.style.top = clamp(y + 14, 60, M.ch - bh - 8) + "px";
+    d.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    d.addEventListener("click", function (e) { var b = e.target.closest("[data-mpop]"); if (!b) return; var k = b.getAttribute("data-mpop"); mapPopClose(); if (k === "wp") mapAddWp(tx, ty); else mapAddTmp(tx, ty); });
+    snd("open");
+  }
+  // TEMP WAYPOINT: one at a time, not counted in your waypoints and not saved. It shows on the map and in the world (with an arrow at the
+  // screen edge while it is off screen) and clears itself when you get within a few tiles of it.
+  var TMPW = null;
+  function mapAddTmp(tx, ty) { TMPW = { x: tx, y: ty }; snd("coin"); M.dirty = true; toast("Temp waypoint set. Follow the arrow.", "#ffd36a"); }
+  function drawTmpWp(g, now) {
+    if (!TMPW || cave || OCS || HOME || PHOTO.on || panelOpen) return;
+    if (Math.abs(TMPW.x + 0.5 - p.x) < 2.5 && Math.abs(TMPW.y + 0.5 - p.y) < 4) { TMPW = null; toast("You reached your temp waypoint.", "#ffd36a"); snd("coin"); return; }
+    var sx = ox + (TMPW.x + 0.5) * ts, sy = oy + (TMPW.y + 0.5) * ts, m = 34, bob = Math.sin(now / 260) * ts * 0.12;
+    if (sx > -ts && sx < vw + ts && sy > -ts * 2 && sy < vh + ts) {
+      g.save(); g.translate(sx, sy - ts * 0.6 + bob); g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(0, ts * 0.62 - bob, ts * 0.28, ts * 0.09, 0, 0, 6.3); g.fill();
+      g.beginPath(); g.moveTo(0, ts * 0.5); g.bezierCurveTo(-ts * 0.5, 0, -ts * 0.36, -ts * 0.55, 0, -ts * 0.55); g.bezierCurveTo(ts * 0.36, -ts * 0.55, ts * 0.5, 0, 0, ts * 0.5); g.fillStyle = "#ffd36a"; g.fill(); g.lineWidth = 2; g.strokeStyle = "#3a2a06"; g.setLineDash([4, 3]); g.stroke(); g.setLineDash([]);
+      g.fillStyle = "#3a2a06"; g.beginPath(); g.arc(0, -ts * 0.15, ts * 0.13, 0, 6.3); g.fill(); g.restore();
+    }
+    if (sx > m && sx < vw - m && sy > m + 40 && sy < vh - m - 60) return;
+    var cx = vw / 2, cy = vh / 2, dx = sx - cx, dy = sy - cy, kx = dx ? (vw / 2 - m) / Math.abs(dx) : 1e9, ky = dy ? (vh / 2 - m - 50) / Math.abs(dy) : 1e9, kk = Math.min(kx, ky), ex = cx + dx * kk, ey = cy + dy * kk, rr = 8 * (1 + 0.12 * Math.sin(now / 220));
+    g.save(); g.translate(ex, ey); g.fillStyle = "rgba(30,20,4,.82)"; g.beginPath(); g.arc(0, 0, rr + 5, 0, 7); g.fill(); g.fillStyle = "#ffd36a"; g.beginPath(); g.arc(0, 0, rr * 0.55, 0, 7); g.fill();
+    var ang = Math.atan2(dy, dx); g.rotate(ang); g.beginPath(); g.moveTo(rr + 12, 0); g.lineTo(rr + 5, -5); g.lineTo(rr + 5, 5); g.closePath(); g.fill(); g.rotate(-ang);
+    g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; g.fillStyle = "#fff0c8"; var lbl = Math.round(Math.hypot(TMPW.x + 0.5 - p.x, TMPW.y + 0.5 - p.y)) + "m"; g.strokeText(lbl, 0, rr + 18); g.fillText(lbl, 0, rr + 18);
+    g.restore();
+  }
+  function mapAddWp(tx, ty) {
+    var i;
     if (S.wp.length >= WP_MAX) { toast("Waypoint limit reached (" + WP_MAX + "). Remove one first.", "#f2c14e"); return; }
     var used = {}; S.wp.forEach(function (w) { var m2 = /^Waypoint (\d+)$/.exec(w.n); if (m2) used[m2[1]] = 1; }); for (i = 1; used[i]; i++);
     var col = 0, cnt = {}; S.wp.forEach(function (w) { cnt[w.c] = (cnt[w.c] || 0) + 1; }); WP_COL.forEach(function (_, ci) { if ((cnt[ci] || 0) < (cnt[col] || 0)) col = ci; });
-    S.wp.push({ x: tx, y: ty, c: col, i: 0, n: "Waypoint " + i }); M.sel = S.wp.length - 1; snd("coin"); save(); mapCard();
+    S.wp.push({ x: tx, y: ty, c: col, i: 0, n: "Waypoint " + i }); M.sel = S.wp.length - 1; snd("coin"); save(); mapCard(); M.dirty = true;
   }
   function mapDelete() { if (M.sel < 0) return; S.wp.splice(M.sel, 1); M.sel = -1; snd("open"); save(); mapCard(); }
   function openMap() {
@@ -17512,7 +17548,7 @@
     gap = 0; for (x = px; x < W && gap < 24; x++) { var y2 = clamp(col[x], 0, H - 1); if (ex[y2 * W + x]) { z = x; gap = 0; } else gap++; }
     return Math.max(1, z - a + 1);
   }
-  function closeMap() { mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
+  function closeMap() { mapPopClose(); mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
   (function () {
     var c = $("sbxMapC"), V = $("sbxMapV");
     function pt(e) { var r = V.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }   // (the canvas itself is bigger and slides about)
@@ -17535,7 +17571,7 @@
       if (Object.keys(M.pts).length === 1) { var k = Object.keys(M.pts)[0]; M.drag = { x: M.pts[k].x, y: M.pts[k].y, cx: M.cx, cy: M.cy, t: 0, moved: true }; }
     };
     c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up); c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
-    c.addEventListener("wheel", function (e) { e.preventDefault(); M.dirty = true; var q = pt(e); zoomAt(q.x, q.y, M.s * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
+    c.addEventListener("wheel", function (e) { e.preventDefault(); M.dirty = true; mapPopClose(); var q = pt(e); zoomAt(q.x, q.y, M.s * (e.deltaY < 0 ? 1.25 : 0.8)); }, { passive: false });
     V.addEventListener("click", function (e) {
       var t = e.target.closest("button"); if (!t) return;
       if (t.hasAttribute("data-mclose")) return closeMap();

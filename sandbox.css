@@ -2355,3 +2355,11 @@ small.bo-cost{display:flex}
 .sbx-stage .sbx-panel.qbook:not(.craftwin) .sbx-body{max-width:none}
 .sbx-stage .sbx-panel:not(.craftwin){background:linear-gradient(180deg,#0b1c16,#050e0b)!important}
 .sbx-stage.panel:not(.lay-ed) .sbx-pad,.sbx-stage.panel:not(.lay-ed) .sbx-joy{visibility:hidden}
+/* map tap menu */
+.sbx-mpop{position:absolute;z-index:5;display:grid;gap:6px;min-width:220px;padding:8px;border-radius:16px;background:linear-gradient(180deg,#10261d,#08130e);border:1px solid #4ee6b455;box-shadow:0 14px 30px -10px #000;animation:mpopIn .14s ease-out}
+@keyframes mpopIn{from{transform:translateY(-6px) scale(.96);opacity:0}}
+.sbx-mpop button{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:10px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid #4ee6b433;background:#0f2a20;color:#eafff5;font:800 .92rem Nunito,sans-serif;cursor:pointer}
+.sbx-mpop button:active{transform:scale(.97)}
+.sbx-mpop small{grid-column:2;font:700 .68rem Nunito,sans-serif;opacity:.65}
+.mp-i{grid-row:1/3;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#4ee6b4;color:#062018}.mp-i svg{width:16px;height:16px}
+.mp-t{background:#ffd36a;border:2px dashed #3a2a06;width:24px;height:24px}
