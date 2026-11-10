@@ -1768,6 +1768,25 @@
   Dc("x_d_plaque", "Wall Art", "Trophy Plaque", { plaque: 1 }, { planks: 3, goldbar: 1 }, "Hang it on a wall and tap it holding a boss trophy, a rare fish or a ribbon to mount it. Tap it with your pick to take it down.");
   Dc("x_d_waterspout", "Garden & Curios", "Waterfall Spout", { waterspout: 1 }, { stone: 6, ironingot: 1, glass: 1 }, "A stone spout that pours a waterfall down to the ground below. Just for looks: the water never floods.");
   Dc("x_d_flagbanner", "Wall Art", "Custom Banner", { flagbanner: 1 }, { cloth: 3, stick: 2 }, "Hang it and tap it to design it: colours, a pattern and an emblem. You can fly the same design on your boat.");
+  deco("terrarium", "Terrarium", "#7af0c8", function (rect) { rect(2, 3, 12, 12, "#9adcd0"); rect(3, 4, 10, 10, "#cdf4ec"); rect(2, 3, 12, 1, "#e8fff8"); rect(3, 11, 10, 3, "#6a4a2a"); rect(4, 9, 2, 2, "#4aa84a"); rect(9, 8, 2, 3, "#4aa84a"); rect(7, 6, 2, 1, "#ff8a2a"); rect(2, 14, 12, 1, "#3a6a5a"); });
+  deco("mossaltar", "Mossy Altar", "#7ae07a", function (rect) { rect(3, 8, 10, 7, "#7a7a72"); rect(2, 7, 12, 2, "#9a9a92"); rect(2, 7, 12, 1, "#5aa84a"); rect(5, 10, 6, 3, "#5a5a54"); rect(7, 3, 2, 4, "#7af0ff"); rect(6, 4, 4, 2, "#aff8ff"); rect(3, 14, 2, 1, "#4a8a3a"); rect(11, 14, 2, 1, "#4a8a3a"); }, 6, ["122,240,255", 2, 0.14]);
+  Dc("x_d_terrarium", "Garden & Curios", "Terrarium", { terrarium: 1 }, { glass: 4, planks: 2, spore: 4 }, "A glass home for bugs. Tap it to put bugs you caught inside and watch them flutter about.");
+  Dc("x_d_mossaltar", "Garden & Curios", "Mossy Altar", { mossaltar: 1 }, { stone: 10, spore: 6, crystal: 3, starshard: 1 }, "An old swamp altar humming with Heart light. Tap it to enchant your weapon, pick and armor with Glowspores and crystals.");
+  // PHASE 8 START: the Glow Marsh, the Mangrove Maze, the Bog Witch's Tower and the sky islands
+  ore("LUMENORE", "Lumen Ore", "#16303a", "#7affe0", 1.6, 1, 9, "lumen", ["120,255,220", 2.6, 0.2]);
+  ore("MOONBLOOM", "Moonbloom", "#1e3a3a", "#e8d0ff", 0.3, 0, 10, "moonbloom", ["220,190,255", 2.4, 0.18]);
+  ore("SKYORE", "Skystone Ore", "#b8c8d8", "#ffffff", 2.0, 2, 4, "skystone", ["220,240,255", 2, 0.1]);
+  mat("lumen", "Lumen Shard", "#7affe0"); mat("skystone", "Skystone", "#e8f4ff");
+  item("moonbloom", "Moonbloom", { food: 8, heal: 12, d: "A flower that only opens in the Glow Marsh. Sweet, and it mends a little health." });
+  tile("X_witchgate", "Witch's Seal", "#3a1a5a", "#b06aff", Infinity, 9, null, true, 7, "witchgate");
+  glow(T.X_witchgate, "180,110,255", 2.2, 0.16);
+  deco("witchrune", "Witch Rune", "#b06aff", function (rect) { rect(4, 9, 8, 7, "#4a3a5a"); rect(4, 9, 8, 1, "#6a5a7a"); rect(6, 4, 4, 5, "#5a4a6a"); rect(7, 5, 2, 3, "#d8a8ff"); rect(5, 11, 6, 3, "#3a2a4a"); }, 4, ["180,110,255", 1.6, 0.1]);
+  TILES[T.X_witchrune].hard = Infinity; TILES[T.X_witchrune].tier = 9;
+  item("balloon", "Hot-Air Balloon", { mount: 1, d: "Hold it in your hotbar and hold Jump to rise; let go to drift gently down. Fly up to the sky islands." });
+  R("x_balloon", "Hot-Air Balloon", { balloon: 1 }, { cloth: 10, rope: 6, planks: 6, lumen: 4 }, { bench: true, d: "A wicker basket and a patchwork balloon, warmed by a Lumen burner. Hold Jump to rise to the sky islands." });
+  item("m_broom", "Witch's Broom", { mount: 1, d: "Taken from the top of the Bog Witch's Tower. Hold it to ride: five flaps in the air and a long glide." });
+  deco("lumenlamp", "Lumen Lamp", "#7affe0", function (rect) { rect(6, 2, 4, 2, "#3a4a4a"); rect(5, 4, 6, 8, "#2a5a5a"); rect(6, 5, 4, 6, "#7affe0"); rect(7, 6, 1, 3, "#e8fff8"); rect(6, 12, 4, 3, "#3a4a4a"); }, 12, ["120,255,220", 3, 0.2]);
+  Dc("x_d_lumenlamp", "Garden & Curios", "Lumen Lamp", { lumenlamp: 2 }, { lumen: 1, glass: 1, ironingot: 1 }, "A cold blue-green lamp from the Glow Marsh. Very bright.");
   var PRES = {};   // PRESERVES: one jar per crop
   Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, I = ITEMS[pk]; if (!I || ITEMS["pres_" + pk]) return; PRES[pk] = "pres_" + pk;
     item("pres_" + pk, I.n + " Preserves", { food: Math.round((I.food || 6) * 2), heal: (I.heal || 0) + 4, cooked: 1, pb: pk, pc: CROPS[k].fruit });

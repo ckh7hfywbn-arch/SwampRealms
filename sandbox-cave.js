@@ -537,6 +537,51 @@
     }
     return F;
   }
+  // ---- THE GLOW MARSH (#91): a night-only marsh under the swamp. Pools of glowing water you cannot walk through, Lumen Ore and Moonblooms ----
+  var GLOW_TH = THEMES.length;
+  THEMES.push({ n: "The Glow Marsh", sub: "It only opens at night", floor: "#1e3a3a", floor2: "#24464a", top: "#06121a", topHi: "#103040", face: "#173a44", faceHi: "#2e7a7a", faceLo: "#071a20", tint: [0, 10, 24], lamp: T.GLOWCAP, glow: "120,255,220" });
+  function genGlow(seed) {
+    var F = gen((seed ^ 0x61a55) | 0, 4, 0), n = F.w * F.h, rnd = mulberry((seed * 911 + 17) | 0), i, k;
+    F.bi = GLOW_TH; F.theme = THEMES[GLOW_TH]; F.glowm = 1; F.amb = 0.12; F.pool = new Uint8Array(n); F.down = { x: -60, y: -60 };
+    var free = function (j) { return !F.wall[j]; }, spI = Math.floor(F.spawn.y) * F.w + Math.floor(F.spawn.x), d0 = bfs(spI, free), keep = {}, far = 0, fi = spI;
+    for (i = 0; i < n; i++) if (d0.dist[i] > far && d0.dist[i] < 1e8) { far = d0.dist[i]; fi = i; }
+    for (var c = fi; c >= 0 && c !== spI; c = d0.par[c]) { keep[c] = keep[c - 1] = keep[c + 1] = keep[c - F.w] = keep[c + F.w] = 1; } keep[spI] = 1;
+    var fl = []; for (i = 0; i < n; i++) if (!F.wall[i] && !F.node[i]) fl.push(i);
+    for (k = 0; k < 9 && fl.length; k++) {   // round glowing pools, never across the main path
+      var j = fl[Math.floor(rnd() * fl.length)], cx = j % F.w, cy = (j / F.w) | 0, r = 1.4 + rnd() * 2.2;
+      for (var y = cy - 4; y <= cy + 4; y++) for (var x = cx - 5; x <= cx + 5; x++) { var q = y * F.w + x; if (x < 1 || y < 1 || x >= F.w - 1 || y >= F.h - 1 || F.wall[q] || keep[q]) continue; if (Math.hypot(x - cx, (y - cy) * 1.3) < r && Math.abs(x - F.up.x) + Math.abs(y - F.up.y) > 3) { F.pool[q] = 1; F.node[q] = 0; } }
+    }
+    for (i = 0; i < n; i++) { if (F.wall[i] || F.pool[i] || F.node[i] || keep[i]) continue; var wn = F.wall[i - 1] + F.wall[i + 1] + F.wall[i - F.w] + F.wall[i + F.w];
+      if (wn && T.LUMENORE && rnd() < 0.07) F.node[i] = T.LUMENORE; else if (!wn && T.MOONBLOOM && rnd() < 0.025) F.node[i] = T.MOONBLOOM; }
+    F.sol = new Uint8Array(F.pool); F.rocks = 0; for (i = 0; i < n; i++) if (F.node[i]) F.rocks++;
+    F.lamps = F.lamps.concat(F.lamps.map(function (L) { return { x: L.x, y: L.y }; })).slice(0, 14);
+    F.prize = { x: fi % F.w, y: (fi / F.w) | 0 };   // the Moon Pool at the far end: a gift once a night
+    return F;
+  }
+  // ---- THE MANGROVE MAZE (#92): a maze of mangrove roots and black water. Its paths regrow every night (seed = the day). The treasure waits at the far end ----
+  var MAZE_TH = THEMES.length;
+  THEMES.push({ n: "The Mangrove Maze", sub: "Its paths change every night", floor: "#3a3a22", floor2: "#46462a", top: "#141a0a", topHi: "#2a3414", face: "#4a3a1e", faceHi: "#7a6a3a", faceLo: "#1e160a", tint: [6, 10, 2], lamp: T.TORCH, glow: "255,200,120" });
+  function genMaze(seed) {
+    var w = CW, h = CH, n = w * h, wall = new Uint8Array(n).fill(1), pool = new Uint8Array(n), node = new Uint16Array(n), rnd = mulberry((seed ^ 0x3a2e) | 0), i, x, y;
+    var MX = Math.floor((w - 3) / 3), MY = Math.floor((h - 4) / 3), vis = new Uint8Array(MX * MY), cell = function (cx, cy) { return { x: 2 + cx * 3, y: 2 + cy * 3 }; };
+    var carve = function (x0, y0, x1, y1) { for (var yy = Math.min(y0, y1); yy <= Math.max(y0, y1) + 1; yy++) for (var xx = Math.min(x0, x1); xx <= Math.max(x0, x1) + 1; xx++) wall[yy * w + xx] = 0; };
+    var st = [[Math.floor(MX / 2), MY - 1]]; vis[(MY - 1) * MX + Math.floor(MX / 2)] = 1;
+    while (st.length) { var cur = st[st.length - 1], nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(function (d) { return [cur[0] + d[0], cur[1] + d[1]]; }).filter(function (q) { return q[0] >= 0 && q[1] >= 0 && q[0] < MX && q[1] < MY && !vis[q[1] * MX + q[0]]; });
+      if (!nb.length) { st.pop(); continue; } var nx = nb[Math.floor(rnd() * nb.length)]; vis[nx[1] * MX + nx[0]] = 1; var a = cell(cur[0], cur[1]), b = cell(nx[0], nx[1]); carve(a.x, a.y, b.x, b.y); st.push(nx); }
+    for (var lp = 0; lp < 7; lp++) { var rx = 1 + Math.floor(rnd() * (MX - 2)), ry = 1 + Math.floor(rnd() * (MY - 2)), A2 = cell(rx, ry), B2 = cell(rx + 1, ry); carve(A2.x, A2.y, B2.x, B2.y); }   // a few loops, so it is not one long corridor
+    for (i = 0; i < n; i++) { x = i % w; y = (i / w) | 0; if (!wall[i] && rnd() < 0.05 && x > 3 && y > 3) pool[i] = 0; }
+    var s0 = cell(Math.floor(MX / 2), MY - 1), up = { x: s0.x, y: s0.y + 1 }; wall[up.y * w + up.x] = 0; wall[(up.y + 1) * w + up.x] = 0;
+    var spawn = { x: s0.x + 0.5, y: s0.y + 0.9 }, spI = s0.y * w + s0.x, d0 = bfs(spI, function (j) { return !wall[j]; }), far = 0, fi = spI;
+    for (i = 0; i < n; i++) if (d0.dist[i] > far && d0.dist[i] < 1e8) { far = d0.dist[i]; fi = i; }
+    var onPath = {}; for (var c = fi; c >= 0 && c !== spI; c = d0.par[c]) onPath[c] = 1;
+    for (i = 0; i < n; i++) { if (wall[i] || onPath[i] || i === spI) continue; x = i % w; y = (i / w) | 0; var wn = wall[i - 1] + wall[i + 1] + wall[i - w] + wall[i + w]; if (wn === 3 && rnd() < 0.5) pool[i] = 1; }   // dead ends flood with black water
+    if (T.X_lootchest) node[fi] = T.X_lootchest; if (T.X_lootpot) for (var pq = 0; pq < 6; pq++) { var pi = Math.floor(rnd() * n); if (!wall[pi] && !pool[pi] && !onPath[pi] && pi !== spI && !node[pi]) node[pi] = T.X_lootpot; }
+    var lamps = [], lc = []; for (i = w; i < n - w; i++) if (!wall[i] && !pool[i] && !node[i] && wall[i - w]) lc.push(i);
+    for (var l = 0; l < 10 && lc.length; l++) { var li = lc.splice(Math.floor(rnd() * lc.length), 1)[0]; lamps.push({ x: li % w, y: (li / w) | 0 }); }
+    var rocks = 0; for (i = 0; i < n; i++) if (node[i]) rocks++;
+    return { w: w, h: h, floor: 1, biome: 0, bi: MAZE_TH, seed: seed, theme: THEMES[MAZE_TH], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: { x: -60, y: -60 }, spawn: spawn, lamps: lamps, rocks: rocks,
+      sol: new Uint8Array(pool), pool: pool, maze: 1, amb: 0.35, prize: { x: fi % w, y: (fi / w) | 0 } };
+  }
   // ---------- THE SUNKEN HOLLOW (Mine floor 25) ----------
   // A secret swamp buried under the Mine: one big cavern with a black-water lake, mangrove-root pillars, glowcaps and the wreck of a
   // pirate ship moored on the far shore. It is Captain Saltjaw's hideout (the boss lives in sandbox.js). The same layout every visit
@@ -749,6 +794,6 @@
     Object.keys(SW.ITEMS).forEach(function (k) { var it = SW.ITEMS[k]; if (it && it.tile !== undefined && !TL[it.tile]) say("the item " + k + " places a block that doesn't exist (" + it.tile + ")"); });
     return out;
   }
-  var api = { genIsle: genIsle, genPort: genPort, ISLE_TH: ISLE_TH, PORT_STALLS: PORT_STALLS, genLair: genLair, LAIR_F: LAIR_F, LAIR_TH: LAIR_TH, checkGame: checkGame, mineBio: mineBio, checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
+  var api = { genGlow: genGlow, genMaze: genMaze, GLOW_TH: GLOW_TH, MAZE_TH: MAZE_TH, genIsle: genIsle, genPort: genPort, ISLE_TH: ISLE_TH, PORT_STALLS: PORT_STALLS, genLair: genLair, LAIR_F: LAIR_F, LAIR_TH: LAIR_TH, checkGame: checkGame, mineBio: mineBio, checkRooms: checkRooms, VOLC_TH: VOLC_TH, genVolcano: genVolcano, NEXUS_TH: NEXUS_TH, IMAP: IMAP, ILEG: ILEG, TLEG: TLEG, IWALL: IWALL, W: CW, H: CH, THEMES: THEMES, BANDS: BANDS, gen: gen, interior: interior, KINDS: KINDS, solid: solid, weights: weights, regions: regions, bfs: bfs, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxCave = api;
 })(typeof window !== "undefined" ? window : this);
