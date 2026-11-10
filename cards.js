@@ -125,7 +125,8 @@ const backImg=u=>`<img class="bsv bsimg" src="${u}" alt="" draggable="false">`;
 // Card backs: the SwampRealms logo picture (card-back.jpg, 2:3). Same back for every pack.
 const BACK_SVG=backImg("card-back.jpg?v=2");
 const BACK_SVG2=BACK_SVG;
-function cardHTML(c){const [t,u]=c.name.split(/:\s*/);return `<div class="card" data-r="${c.rarity}" style="--c:${c.color};background-image:url('${c.img}')"><span class="holo"></span><span class="rar">${c.rarity}</span><div class="bar"><b>${t}</b>${u?`<small>${u}</small>`:""}</div></div>`}
+function statBadge(c){try{const t=cardStats(c);return `<span class="cst" style="--e:${ELC[t.el]}" title="${ELN[t.el]}, power ${t.pw}"><i>${ELI[t.el]}</i><b>${t.pw}</b></span>`}catch(e){return""}}
+function cardHTML(c){const [t,u]=c.name.split(/:\s*/);return `<div class="card" data-r="${c.rarity}" style="--c:${c.color};background-image:url('${c.img}')"><span class="holo"></span><span class="rar">${c.rarity}</span>${statBadge(c)}<div class="bar"><b>${t}</b>${u?`<small>${u}</small>`:""}</div></div>`}
 
 
 // ===== Shared helpers (shop, game, catalog) =====
