@@ -12731,7 +12731,8 @@
     P.used = ++picUse;
     if (P.cv && P.cts === ts) return P.cv;
     var live = (world.structs || []).filter(function (q) { return q.pic && q.pic.cv; });
-    if (live.length >= PIC_MAX) { live.sort(function (a, b) { return a.pic.used - b.pic.used; }); live[0].pic.cv = null; }   // keep only the most recently seen pictures in memory
+    if (P.cv) { cvFree(P.cv); P.cv = null; }
+    if (live.length >= (coarse ? 5 : PIC_MAX)) { live.sort(function (a, b) { return a.pic.used - b.pic.used; }); cvFree(live[0].pic.cv); live[0].pic.cv = null; }   // keep only the most recently seen pictures in memory
     var cv = document.createElement("canvas"), w = P.w, h = P.h; cv.width = w * ts; cv.height = h * ts; var c = cv.getContext("2d"); c.imageSmoothingEnabled = false;
     // put the building back into the world for a moment, so edge shading and wall borders see their real neighbours
     var keepT = [], keepW = [], k, xx, yy, gi;
@@ -14543,6 +14544,10 @@
   // Overlapping pointed leaves in four tones (dark back layer, mid, light, sunlit tips) with a soft shadow under each leaf. Open edges get a scalloped,
   // rounded silhouette instead of a square block: a lit rim on top, a deep shadow underneath, and light/dark sides. Leaf shapes wrap around the tile
   // so neighbouring tiles blend into one canopy with no visible grid.
+  // MEMORY (phones): a canvas you drop keeps its memory until the browser gets round to collecting it, and iPhones stop drawing new
+  // canvases altogether once the total gets too big (the world goes blank). So every cache below empties its canvases (width 0) the
+  // moment it lets them go, and CVWATCH (below) steps the graphics down if drawing ever starts to fail.
+  function cvFree(c) { try { if (c && c.width) { c.width = 0; c.height = 0; } } catch (e) {} }
   var LEAFCACHE = {}, LEAFKEY = 0, LEAFVARIANTS = 6;
   // leaf colours per land type: base, deep, body, lit, tips, sparkle, top light, leaf edge, rim lit, rim dark, buried shade
   var LPAL = [["#1d7249", "#0f4a33", "#289862", "#45c07c", "#94eca4", "rgba(235,255,190,.85)", "215,255,170", "rgba(4,40,22,.6)", "rgba(190,255,150,.65)", "rgba(4,30,18,.55)", "0,25,12"],
@@ -14611,7 +14616,7 @@
   }
   function natLeaf(g, i, j, sx, sy, mask) {
     var S = Math.max(2, Math.round(ts * dpr)), v = Math.floor(SW.hash(i, j, 90) * LEAFVARIANTS) % LEAFVARIANTS, vk = varAt(i), key = mask * 8 + v + vk * 4096;
-    if (LEAFKEY !== S) { LEAFCACHE = {}; LEAFKEY = S; }
+    if (LEAFKEY !== S) { Object.keys(LEAFCACHE).forEach(function (k2) { cvFree(LEAFCACHE[k2]); }); LEAFCACHE = {}; LEAFKEY = S; }
     var cv = LEAFCACHE[key] || (LEAFCACHE[key] = buildLeafTile(mask, v, S, vk));
     g.drawImage(cv, 0, 0, S, S, sx, sy, ts, ts);
   }
@@ -14761,10 +14766,11 @@
     return pxCanvas(buf, pw, ph, palRgb("c" + st, CPAL[st]));
   }
   // PERF: a whole crown is painted once and kept until any of its leaves change; each frame it is one drawImage.
+  function canFree() { CANT.forEach(function (e) { cvFree(e.cv); }); CANT.clear(); CANT_PX = 0; }
   var CANT = new Map(), CANT_PX = 0, CSTAMP = null, CSTN = 0, CANL = [], CANBFS = [], CANS = 0;
   function drawCanopies(g, now, X0, X1, Y0, Y1) {
     var i, j, q, tt = now / 1000, S = Math.max(2, Math.round(ts * dpr));
-    if (CANS !== S) { CANS = S; CANT.clear(); CANT_PX = 0; }
+    if (CANS !== S) { CANS = S; canFree(); }
     if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Uint32Array(W * H); CSTN++;
     var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (j = Math.max(1, Y0 - 1); j <= Math.min(H - 2, Y1 + 1); j++) for (i = Math.max(1, X0 - 1); i <= Math.min(W - 2, X1 + 1); i++) {
@@ -14778,11 +14784,11 @@
       }
       var e = CANT.get(mn), M = 2;
       if (!e || e.sig !== sig || e.n !== n) {
-        if (e) { CANT_PX -= e.cv.width * e.cv.height; CANT.delete(mn); }
+        if (e) { CANT_PX -= e.cv.width * e.cv.height; cvFree(e.cv); CANT.delete(mn); }
         var L = []; for (q = 0; q < CANL.length; q += 2) L.push([CANL[q], CANL[q + 1]]);
         L.sort(function (a, b) { return b[1] - a[1] || a[0] - b[0]; }); var LF = []; L.forEach(function (t2) { LF.push(t2[0], t2[1]); });
         var cv = crownPaint(LF, x0, y0, x1, y1, M);
-        if (CANT_PX > 4e6) { CANT.clear(); CANT_PX = 0; }
+        if (CANT_PX > (coarse ? 1.5e6 : 4e6)) canFree();
         e = { sig: sig, n: n, cv: cv, x0: x0, y0: y0 }; CANT.set(mn, e); CANT_PX += cv.width * cv.height;
       }
       var u = ts / 16, sw = reduce ? 0 : Math.round((Math.sin(tt * 0.9 + (mn % 997) * 0.37) * 0.8 + Math.sin(tt * 2.1 + mn % 13) * 0.2) * Math.max(1, dpr) * ts / 28) / Math.max(1, dpr) / u;   // a gentle sway in the wind, in device-pixel steps (whole art-pixel jumps read as a jitter)
@@ -17989,6 +17995,23 @@
   function tsSnap(t) {   // the nearest tile size (whole CSS pixels) that is also a whole number of device pixels: 125% wants a multiple of 4, 150% of 2...
     if (!(dpr % 1)) return t; for (var n = 1; n <= 10; n++) if (Math.abs(n * dpr - Math.round(n * dpr)) < 0.01) { var r = Math.round(t / n) * n; if (t % 16 === 0 && (16 % n === 0)) return t; return Math.max(n, r); } return t; }
   function pxS(v) { return dpr % 1 ? Math.round(v * dpr) / dpr : Math.round(v); }   // snap to the device pixel grid
+  // CVWATCH: every 2 s a tiny test canvas is drawn and read back. If drawing has stopped working (a phone out of graphics memory: the
+  // world turns blank and everything lags), every picture cache is emptied and the game drops to its low-memory graphics, once.
+  var CVW = { bad: 0, low: false };
+  function cvStepDown() {
+    canFree(); Object.keys(LEAFCACHE).forEach(function (k) { cvFree(LEAFCACHE[k]); }); LEAFCACHE = {}; LEAFKEY = 0;
+    (world && world.structs || []).forEach(function (q) { if (q.pic && q.pic.cv) { cvFree(q.pic.cv); q.pic.cv = null; } });
+    if (!HOME) { cvFree(HG); HG = null; cvFree(HFOR); HFOR = null; }
+    if (SLB) { cvFree(SLB.c); SLB = null; } if (SHL) { cvFree(SHL.c); SHL = null; } if (typeof WeakMap !== "undefined") SILH = new WeakMap();
+    sprite = null; spriteKey = "";
+    if (!CVW.low) { CVW.low = true; lowq = true; dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} toast("Your device ran low on graphics memory, so Delve switched to lighter graphics. You can change it in Options > Graphics.", "#f2c14e"); }
+    resize();
+  }
+  setInterval(function () {
+    if (document.hidden || !world) return; var c = document.createElement("canvas"), ok = false; c.width = c.height = 2; var q = null; try { q = c.getContext("2d"); } catch (e) {}
+    if (q) { try { q.fillStyle = "#ff0000"; q.fillRect(0, 0, 2, 2); ok = q.getImageData(0, 0, 1, 1).data[0] > 200; } catch (e) { ok = true; } }   // (a read that is refused is not a memory problem)
+    cvFree(c); if (ok) { CVW.bad = 0; return; } if (++CVW.bad >= 2) { CVW.bad = 0; cvStepDown(); }
+  }, 2000);
   function resize() {
     var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(dprCap, window.devicePixelRatio || 1);
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
@@ -20905,7 +20928,7 @@
     } };
   }
   function leaveHomeNow() {
-    if (!HOME) return; HTC = null; var f = HOME.from; HOME = null; stageEl.classList.remove("cave", "home"); resize(); stopInput(); mine = null;
+    if (!HOME) return; HTC = null; var f = HOME.from; HOME = null; cvFree(HG); HG = null; cvFree(HFOR); HFOR = null; /* the homestead's big pictures are let go at once (rebuilt next visit) */ stageEl.classList.remove("cave", "home"); resize(); stopInput(); mine = null;
     p.x = f.x + 0.5; p.y = f.y + 1; p.vx = p.vy = 0; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; HUDC.sbxBiome = HUDC.sbxSub = HUDC.bc = ""; hbDirty = true; hud(); save();
   }
@@ -21475,15 +21498,15 @@
   var HSEA = -1;   // the season the homestead's art was last built for
   function homeSeasonArt() {   // a new season: rebuild the grass, trees and forest once
     var sn = seasonOf(); if (sn === HSEA) return; HSEA = sn; var P2 = HGRS[sn]; Object.keys(HGR).forEach(function (k) { HGR[k] = P2[k]; });
-    Object.keys(HSPR).forEach(function (k) { if (/^(mossTop|tree|house|bld)/.test(k)) delete HSPR[k]; }); HFOR = null; if (HOME) { HOME.fk = null; HOME.gd = 1; }
+    Object.keys(HSPR).forEach(function (k) { if (/^(mossTop|tree|house|bld)/.test(k)) delete HSPR[k]; }); cvFree(HFOR); HFOR = null; if (HOME) { HOME.fk = null; HOME.gd = 1; }
   }
   function hMossTop() {   // a top-down tile of Murkwater grass
     if (HSPR.mossTop) return HSPR.mossTop; var out = [], x, y;
     var SP2 = HGRS[HSEA < 0 ? 1 : HSEA];
     for (var v = 0; v < 4; v++) { var S2 = hpCan(16, 16), g = S2.g; g.fillStyle = HGR.base; g.fillRect(0, 0, 16, 16);
-      for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y, 57), h2 = SW.hash((x >> 2) + v * 4, y >> 2, 59), cl = h < 0.07 ? HGR.dark : h < 0.18 || (h2 < 0.3 && h < 0.42) ? HGR.mid : h > 0.985 ? HGR.hi : null; if (cl) { g.fillStyle = cl; g.fillRect(x, y, 1, 1); } }
+      for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var h = SW.hash(x + v * 16, y, 57), h2 = SW.hash((x >> 2) + v * 4, y >> 2, 59), cl = h < 0.025 ? HGR.dark : h < 0.08 || (h2 < 0.22 && h < 0.26) ? HGR.mid : h > 0.993 ? HGR.hi : null; /* calm: a few soft patches, not static */ if (cl) { g.fillStyle = cl; g.fillRect(x, y, 1, 1); } }
       for (var t2 = 0; t2 < 3; t2++) { var bx = Math.floor(SW.hash(t2, v, 58) * 13) + 1, by = Math.floor(SW.hash(v, t2, 58) * 11) + 3; g.fillStyle = HGR.tuft; g.fillRect(bx, by - 2, 1, 3); g.fillRect(bx + 2, by - 1, 1, 2); g.fillStyle = HGR.hi; g.fillRect(bx, by - 2, 1, 1); g.fillStyle = HGR.dark; g.fillRect(bx - 1, by + 1, 4, 1); }
-      if (SP2.dots) for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) if (SW.hash(x + v * 16, y, 64) < SP2.dn) { g.fillStyle = SP2.dots[Math.floor(SW.hash(y, x + v, 65) * SP2.dots.length)]; g.fillRect(x, y, HSEA === 2 ? 2 : 1, 1); }   // petals, fallen leaves or snow glints
+      if (SP2.dots) for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) if (SW.hash(x + v * 16, y, 64) < SP2.dn * 0.45) { g.fillStyle = SP2.dots[Math.floor(SW.hash(y, x + v, 65) * SP2.dots.length)]; g.fillRect(x, y, HSEA === 2 ? 2 : 1, 1); }   // petals, fallen leaves or snow glints
       out.push(S2.c); }
     return (HSPR.mossTop = out);
   }
@@ -21545,7 +21568,7 @@
     var sn = HSEA < 0 ? 1 : HSEA, q = c.getContext("2d"); q.save(); q.globalCompositeOperation = "source-atop";
     if (sn === 2) { q.fillStyle = ["rgba(232,124,36,.62)", "rgba(200,60,36,.6)", "rgba(232,190,56,.62)"][v % 3]; q.fillRect(0, 0, c.width, c.height); }
     else if (sn === 3) { q.fillStyle = "rgba(236,244,250,.7)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "rgba(120,150,180,.25)"; for (var y = 0; y < c.height; y += 6) q.fillRect(0, y + 4, c.width, 2); }
-    else if (sn === 0) { q.fillStyle = "rgba(170,235,150,.18)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "#ffc0dc"; for (var f = 0; f < c.width * c.height / 60; f++) q.fillRect(Math.floor(SW.hash(f, v, 67) * c.width), Math.floor(SW.hash(v, f, 68) * c.height), 2, 2); }
+    else if (sn === 0) { q.fillStyle = "rgba(170,235,150,.18)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "#ffc0dc"; for (var f = 0; f < c.width * c.height / 700; f++) q.fillRect(Math.floor(SW.hash(f, v, 67) * c.width), Math.floor(SW.hash(v, f, 68) * c.height), 2, 2); }
     q.restore();
   }
   function hsTree(v) {   // a Delve tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees), dressed for the season
@@ -21751,12 +21774,19 @@
   var HFM = 10, HFOR = null;
   function homeForest() {   // the leafy forest around the farm (and past its edge) never changes: paint it once, 16 px per tile
     var M = HFM, W = (HW + M * 2) * 16, H = (HH + M * 2) * 16, c = document.createElement("canvas"); c.width = W; c.height = H; var g = c.getContext("2d"), i, j; g.imageSmoothingEnabled = false;
+    // the canopy seen from above: round leafy clumps in the grass greens, lit from the top-left, so it reads as treetops (not static)
+    var LCl = ["#0d2a1e", "#145038", "#1d7249", "#2f9a6a", "#58d68b"];
+    function clump(cx, cy, r, hv) { var k = hv % 1;
+      g.fillStyle = LCl[0]; g.beginPath(); g.arc(cx + 1, cy + 2, r, 0, 6.2832); g.fill();
+      g.fillStyle = LCl[1 + (k < 0.4 ? 0 : 1)]; g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.fill();
+      g.fillStyle = LCl[3]; g.beginPath(); g.arc(cx - r * 0.25, cy - r * 0.3, r * 0.62, 0, 6.2832); g.fill();
+      g.fillStyle = LCl[4]; g.globalAlpha = 0.55; g.beginPath(); g.arc(cx - r * 0.4, cy - r * 0.48, r * 0.26, 0, 6.2832); g.fill(); g.globalAlpha = 1; }
     for (j = -M; j < HH + M; j++) for (i = -M; i < HW + M; i++) {
       var inside = i >= 0 && j >= 0 && i < HW && j < HH; if (inside && !homeDeepTree(i, j)) continue;
       var h = SW.hash(inside ? i : i + 99, inside ? j : j + 99, 92), X = (i + M) * 16, Y = (j + M) * 16;
       var up0 = j > 0 && hmT(i, j - 1) !== HT.TREE ? 1 : 0;   // the forest edge facing the farm from below: no overhang onto the walkable row
-      if (inside) { g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y - (up0 ? 2 : 10), 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X + (h < 0.5 ? -8 : 8), Y - (up0 ? 3 : 18), 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y + 3, 16, 16); if (h > 0.85) { g.fillStyle = "#ffb0d8"; g.fillRect(X + 5, Y, 2, 2); g.fillRect(X + 11, Y + 6, 2, 2); } }
-      else { g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X, Y - 6, 16, 16); g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, X + (h < 0.5 ? -8 : 8), Y + 3, 16, 16); }
+      if (inside) { clump(X + 8, Y + (up0 ? 6 : -2), 9, h); clump(X + 8 + (h < 0.5 ? -8 : 8), Y + (up0 ? 5 : -10), 8, h * 7); clump(X + 8, Y + 11, 9, h * 3); if (h > 0.85) { g.fillStyle = "#ffb0d8"; g.fillRect(X + 5, Y, 2, 2); g.fillRect(X + 11, Y + 6, 2, 2); } }
+      else { clump(X + 8, Y + 2, 10, h); clump(X + 8 + (h < 0.5 ? -8 : 8), Y + 11, 9, h * 5); }
     }
     seasonLeaves(c, 1); return (HFOR = c);
   }
@@ -21846,7 +21876,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
