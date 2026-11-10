@@ -17194,8 +17194,10 @@
   }
   function pvStart() { if (!PV.raf) { PV.last = 0; PV.raf = requestAnimationFrame(pvDraw); } }
   function pvBind(cv) {}
+  // gear slot icons, drawn (not emoji): faint outlines in the empty slots
+  var PKI = { "\ud83d\udee1": '<path d="M12 3l7 3v5.5c0 4.3-3 7.6-7 9.5-4-1.9-7-5.2-7-9.5V6z"/>', "\u2694": '<path d="M20 4L9.6 14.4M20 4h-3.4M20 4v3.4"/><path d="M6.6 11.8l5.6 5.6M9.4 14.6L4.4 19.6"/>', "\u2726": '<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>', "\ud83c\udf92": '<rect x="5" y="7" width="14" height="13" rx="3"/><path d="M9 7V5.5a3 3 0 016 0V7M8.5 13h7v3h-7z"/>', "+": '<path d="M12 6v12M6 12h12"/>' };
   function pkSlot(attr, ic, label, sub, on, extra) {
-    return '<button type="button" class="pk-slot' + (ic ? "" : " empty") + (on ? " on" : "") + '" ' + attr + ' aria-label="' + esc(label + (sub ? ": " + sub : "")) + '">' + (ic ? '<img alt="" src="' + ic + '">' : '<i aria-hidden="true">' + (extra || "+") + "</i>") + "<small>" + esc(label) + "</small></button>";
+    return '<button type="button" class="pk-slot' + (ic ? "" : " empty") + (on ? " on" : "") + '" ' + attr + ' aria-label="' + esc(label + (sub ? ": " + sub : "")) + '">' + (ic ? '<img alt="" src="' + ic + '">' : '<svg class="pk-sil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">' + (PKI[extra] || PKI["+"]) + "</svg>") + "<small>" + esc(label) + "</small></button>";
   }
   function pkStars(k) { var n = mwStars(k); return n >= 2 ? '<em class="pk-st' + (n >= 3 ? " mw" : "") + '">' + (n >= 3 ? "★★★" : "★★") + "</em>" : ""; }
   function pkEqHtml() {
@@ -17233,7 +17235,13 @@
   }
   function pkCell(i) {
     var c = S.slots[i], on = invSel === i;
-    return '<button type="button" class="sbx-is' + (c ? "" : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '" data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '">' + (ITEMS[c.k].tool ? "" : "<b>" + c.n + "</b>") : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
+    var rr = c ? rarItem(c.k) : 0;
+    return '<button type="button" class="sbx-is' + (c ? " rar-" + rr : " empty") + (on ? " on" : "") + (i < INV_HOT ? " hot" : "") + (c && sel === c.k && selSlot === i ? " held" : "") + '"' + (c ? ' style="--rc:' + RARC[rr] + '"' : "") + ' data-is="' + i + '" aria-pressed="' + on + '" aria-label="' + (c ? ITEMS[c.k].n + ", " + c.n + (i < INV_HOT ? ", hotbar slot " + (i + 1) : "") : (i < INV_HOT ? "Empty hotbar slot " + (i + 1) : "Empty slot")) + '">' + (c ? '<img alt="" src="' + icon(c.k) + '">' + (ITEMS[c.k].tool ? "" : "<b>" + c.n + "</b>") : "") + (i < INV_HOT ? "<i>" + (i + 1) + "</i>" : "") + "</button>";
+  }
+  function itemBlurb(k) {   // a line about an item for the backpack card: its own description, or what its recipe says
+    var d = itemDesc(k); if (d) return d; var it = ITEMS[k] || {}; if (it.d) return it.d;
+    for (var i = 0; i < RECIPES.length; i++) { var r = RECIPES[i]; if (r.out && r.out[k] && r.d) return r.d; }
+    return it.tool ? "A tool. Hold it to use it." : it.tile !== undefined ? "A block. Hold it and tap to place it." : "";
   }
   function pkInvHtml() {
     reslot(); var used = usedSlots(), cells = "", hot = "", i2, cur2 = invSel >= 0 ? S.slots[invSel] : null, N = invN(), bagN = S.bag ? N - INV_BASE : 0;
@@ -17243,9 +17251,9 @@
     var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
     if (ek.length) h += '<div class="pk2-over"><div class="pk2-lbl warn"><b>Didn\'t fit</b><span>Free a slot, then tap to collect</span></div><div class="pk2-overrow">' + ek.map(function (k) { return '<button type="button" class="pk2-ov" data-iextra="' + k + '" title="' + esc(ITEMS[k].n) + ': collect"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b></button>"; }).join("") + "</div></div>";
     h += '<div class="pk2-hot"><div class="pk2-lbl"><b>Hotbar</b><span>keys 1 to 9</span></div><div class="sbx-igrid hot">' + hot + "</div></div>";
-    var tool2 = cur2 && ITEMS[cur2.k].tool;
+    var tool2 = cur2 && ITEMS[cur2.k].tool, rr2 = cur2 ? rarItem(cur2.k) : 0, bl = cur2 ? itemBlurb(cur2.k) : "";
     h += '<div class="pk2-act' + (cur2 ? " sel" : "") + '">' + (cur2
-      ? '<img alt="" src="' + icon(cur2.k) + '"><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + '</small></span><span class="pk2-btns">'
+      ? '<span class="crg-big pk2-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + icon(cur2.k) + '"></span><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + rarTag(rr2) + " " + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small>" + (bl ? '<em class="pk2-bl">' + esc(bl) + "</em>" : "") + '</span><span class="pk2-btns">'
         + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
         + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "")
         + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
@@ -17258,7 +17266,7 @@
   function pkName() { return charName(S.animal); }
   function renderPack() {
     var t = $("sbxPackTitle"), used = usedSlots(), N = invN();
-    if (t) t.innerHTML = 'Backpack <small class="pk2-cnt' + (used >= N ? " full" : used >= N - 3 ? " near" : "") + '">' + used + " / " + N + "</small>";
+    if (t) t.innerHTML = '<svg class="pk2-ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="13" rx="3"/><path d="M9 7V5.5a3 3 0 016 0V7M8.5 13h7v3h-7z"/></svg>Backpack <small class="pk2-cnt' + (used >= N ? " full" : used >= N - 3 ? " near" : "") + '"><span class="pk2-cbar"><i style="width:' + Math.round(used / N * 100) + '%"></i></span>' + used + " / " + N + "</small>";
     var hd = t && t.parentNode, tools = $("pk2Tools");
     if (hd && !tools) { tools = document.createElement("div"); tools.id = "pk2Tools"; tools.className = "pk2-tools"; hd.insertBefore(tools, hd.querySelector(".sbx-x")); }
     if (tools) tools.innerHTML = '<button type="button" class="btn ghost" data-iact="sort">Sort</button><button type="button" class="btn ghost" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button>';
