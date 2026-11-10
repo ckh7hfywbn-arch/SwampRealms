@@ -364,6 +364,8 @@ var DelveAv = (function () {
     run3: { by: -1, L: [-2, 0], R: [2, 0], ab: 2 }, run4: { by: -2, L: [-1, 4], R: [2, 0], ab: 0 }, run5: { by: -2, L: [-2, 2], R: [1, 0], ab: -2 },
     tuck: { by: -2, L: [0, 4], R: [0, 4], ab: -2 }, land: { by: 2, L: [-2, 0], R: [2, 0], ab: 1 },
     swim0: { by: 1, L: [-1, 2], R: [1, 0], ab: 1 }, swim1: { by: 1, L: [0, 1], R: [0, 1], ab: 0 }, swim2: { by: 1, L: [-1, 0], R: [1, 2], ab: -1 }, swim3: { by: 1, L: [0, 1], R: [0, 1], ab: 0 },
+    // RIDING: sitting in a saddle, knees forward (two frames, rocked by the mount's gait)
+    ride0: { by: 2, L: [3, 2, 2], R: [2, 2, 2], ab: 1 }, ride1: { by: 3, L: [3, 2, 2], R: [2, 2, 2], ab: 2 },
     hurt: { by: 1, L: [-2, 0], R: [2, 1], ab: -2, blink: 1 }, cheer0: { by: -1, L: [0, 1], R: [0, 1], ab: -1 }, cheer1: { by: -2, L: [1, 2], R: [-1, 2], ab: -2 }
   };
 

@@ -6357,7 +6357,7 @@
     if (e.hp > 0) { if (!e.rage && e.hp < e.mx * 0.4) { e.rage = 1; e.roar = e.u ? 0 : 1.15; e.rr = 0; if (e.u) bossRing(e.x, surfAt(e.x) - 0.5, B.c, 8); shake = 0.6; toast("The " + B.n + " is enraged!", B.c); thud(70, 0.12); } return; }
     e.def = true; e.dead = BOSS_DIE; e.burst = 0; e.u = false; bshots.length = 0; S.bossOn = ""; shake = 1; chips(e.x, e.y - e.h * 0.5, B.c, 18, 8); hitStop(0.9, 0.28); thud(55, 0.2);
     enemies.forEach(function (q) { if (q.minion && !q.def) q.gone = true; });
-    var first = !(S.st.boss & B.bit); S.st.boss |= B.bit; S.st.bossk++; if (MP.role === "host" && MP.npeers) mpSend({ t: "bosswin", k: e.k });
+    var first = !(S.st.boss & B.bit); S.st.boss |= B.bit; S.st.bossk++; try { cardDrop(e.k, e.x, e.y, true); } catch (er2) {} if (MP.role === "host" && MP.npeers) mpSend({ t: "bosswin", k: e.k });
     var L = Object.assign({}, B.loot); if (first) L[B.item] = 0;
     Object.keys(L).forEach(function (q, i) { if (L[q] > 0) setTimeout(function () { give(q, L[q], e.x - 0.5 + (i - 2) * 0.4, e.y - e.h - 0.8, true); }, 250 + i * 140); });
     setTimeout(function () { banner(B.n + " defeated!", (first ? "First victory! " : "") + rewardText(L), "Boss"); snd("open", "Epic"); }, 500);
@@ -15567,6 +15567,7 @@
     var moving = Math.abs(p.vx) > 0.5, f4 = walkF(p.walk);
     if (reduce) return !p.on ? (p.vy < 0 ? "jump" : "fall") : moving ? "walk" + f4 : "idle0";
     if (hurtT > 0.12) return "hurt";
+    if (MR.pose) return MR.pose;   // RIDING
     if (p.wet && !p.on) return "swim" + (Math.floor(SWIM.ph * 4) % 4);   // the kick follows the stroke (faster when you swim faster)
     if (!p.on) return p.vy < -3 ? "jump" : p.vy < 3.5 ? "tuck" : "fall";
     if (p.land > 0.12) return "land";
@@ -15614,18 +15615,19 @@
     var sx = pxS(ox + p.x * ts), sy = pxS(oy + p.y * ts), bob = p.on && Math.abs(p.vx) > 0.5 ? Math.sin(p.walk * 5) : 0;
     drawWings(g, sx, sy + ts * 0.14, now);   // behind the body
     if (riding()) { g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); drawMoto(g, -1.55 * ts, 0, ts, motoS().p, performance.now(), { ride: true, run: Math.abs(p.vx) > 0.5, lit: true }); g.restore(); sy -= ts * 0.82; sx -= p.face * ts * 0.38; bob = 0; }   // SWAMP HOG: you sit on the bike
-    if (mountK()) { sy -= drawMountUnder(g, sx, sy, performance.now()); bob = 0; }   // MOUNTS: you sit in the saddle
+    var T0 = g.getTransform(), RIDE = drawMountUnder(g, sx, sy, performance.now()); if (RIDE) { sy -= RIDE.lift; sx += RIDE.dx; bob = 0; }   // MOUNTS: hop into the saddle and ride
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
     swimStep(now); var swimN = SWIM.on && !riding(); if (swimN) drawSwimFx(g);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); dodgeSpin(g, ts * 0.85);
-    if (!reduce && !swimN && !riding()) {   // ANIMATION: the body leans, eased, from the feet: forward into a run, into a jump, back when you are hit
+    if (RIDE && RIDE.seated && !reduce) g.rotate(Math.sin(now / 1000 * (Math.abs(p.vx) > 0.5 ? 12 : 1.8)) * (Math.abs(p.vx) > 0.5 ? 0.04 : 0.012));   // rock with the gait
+    if (!reduce && !swimN && !riding() && !RIDE) {   // ANIMATION: the body leans, eased, from the feet: forward into a run, into a jump, back when you are hit
       var ldt = clamp((now - (LEAN.t || now)) / 1000, 0, 0.1); LEAN.t = now;
       var sp = Math.abs(p.vx), tgt = (p.on ? clamp((sp - 1.5) / 7, 0, 1) * 0.11 : clamp(-p.vy / 10, -0.4, 1) * 0.07 + clamp(sp / 8, 0, 1) * 0.05) - (hurtT > 0 ? 0.22 * clamp(hurtT / 0.3, 0, 1) : 0) - (p.land > 0.05 ? 0.03 : 0);
       var atL = actT(); if (atL >= 0 && ACT.kind === "drink") tgt -= 0.1 * actEase((atL - 0.22) / 0.2) * (1 - actEase((atL - (ACT.d - 0.3)) / 0.2));   // tip the head back to gulp
       LEAN.a += (tgt - LEAN.a) * Math.min(1, ldt * (hurtT > 0 ? 18 : 8)); if (Math.abs(LEAN.a) > 0.002) g.rotate(LEAN.a);
     }
     if (swimN && !reduce) { var swb = Math.sin(SWIM.ph * 6.2832 * 2) * ts * (0.035 + 0.02 * (1 - SWIM.k)); g.translate(0, swb - ts * 0.75); g.rotate(SWIM.a + Math.sin(SWIM.ph * 6.2832) * 0.05 * SWIM.k); g.translate(0, ts * 0.75); }   // bob and lean into the stroke
-    if (!swimN) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill(); }
+    if (!swimN && !RIDE) { g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.48, ts * 0.13, 0, 0, 6.2832); g.fill(); }
     g.scale(1 / sq, sq); g.scale(AVS, AVS); if (p.wet) g.globalAlpha = 0.85; if (molt() === "glass") g.globalAlpha *= 0.72;   // GLASS FROG: see-through
     if (hurtT > 0 && (reduce || Math.floor(now / 70) % 2)) g.globalAlpha = 0.45;
     var SP = getSprite();
@@ -15654,6 +15656,7 @@
         else { g.fillStyle = "#f2c14e"; g.fillRect(bx0 + bs * 1.8, by0 + bs * 1.6, bs * 1.4, bs * 1.6); }
       }
       g.drawImage(SP.frame(pose), fx, fy);
+      if (RIDE) { g.save(); g.setTransform(T0); g.globalAlpha = 1; g.shadowBlur = 0; drawMountFront(g, RIDE.mx, RIDE.my, now, RIDE); g.restore(); }   // the saddle flap / basket / broom handle over your legs
       var shx = fx + sh[0], shy = fy + sh[1], hx0 = shx + SP.armLen * Math.sin(tp.phi), hy0 = shy + SP.armLen * Math.cos(tp.phi);
       swoosh(g, shx, shy, tp, SP);
       if (heldFirst(tp)) { g.imageSmoothingEnabled = sm0; if (tp.kind === "act") drawHeldAct(g, hx0, hy0, tp); else drawHeld(g, hx0, hy0, tp); g.imageSmoothingEnabled = false; }
@@ -24021,7 +24024,7 @@
       g.beginPath(); g.ellipse(16, -56, 3.4, 2.8, 0, 0, 7); aInk(g, "#d8e4f0", "#2a3440", 0.9); g.beginPath(); g.moveTo(18.6, -57); g.lineTo(28, -55.4); g.lineTo(18.6, -54.6); g.closePath(); aInk(g, "#ffb02a", "#5a3406", 0.7);
       g.strokeStyle = "#2a2a3a"; g.lineWidth = 1; g.beginPath(); g.moveTo(14, -58); g.quadraticCurveTo(8, -60, 4, -57); g.stroke(); aEye(g, 17, -57, 1.2, "#ffd23f", "#2a3440", false, 0.5);
       g.beginPath(); g.moveTo(-10, -34); g.quadraticCurveTo(-2, -38, 6, -34); g.lineTo(5, -30); g.lineTo(-9, -30); g.closePath(); aInk(g, aG(g, -38, -30, "#8a5ad8", "#6a3aa8", "#3a1a6a"), "#1a0a3a", 1);   // a violet saddle cloth
-    } else if (k === "m_broom") broomArt(g, t, run); else if (k === "balloon") balloonArt(g, t, BAL.up);
+    } else if (k === "m_broom") broomArt(g, t, run, "back"); else if (k === "balloon") balloonArt(g, t, BAL.up, "back");
     else {   // the museum's skeletons, walking
       var M = MOUNTS[k], B = M.bones, sw2 = run ? Math.sin(st) : 0, big = k === "m_mammoth" ? 1.15 : 1; g.scale(big, big);
       g.lineCap = "round"; g.lineJoin = "round"; var BIN = "#3a3020", bone = function (w, path, back) { g.beginPath(); path(); g.strokeStyle = BIN; g.lineWidth = w + 1.8; g.stroke(); g.strokeStyle = back ? aG(g, -30, 0, B, "#b8ae94", "#8a8270") : aG(g, -30, 0, "#ffffff", B, "#c8bea4"); g.lineWidth = w; g.stroke(); };
@@ -24037,12 +24040,56 @@
       g.beginPath(); g.moveTo(-8, -31); g.quadraticCurveTo(0, -35, 8, -31); g.lineTo(7, -27); g.lineTo(-7, -27); g.closePath(); aInk(g, aG(g, -35, -27, "#c8884a", "#a86a3a", "#6a4020"), "#2a1606", 1);
     }
   }
-  function drawMountUnder(g, sx, sy, now) {   // called from drawPlayer: draws the mount and returns how far to lift the rider
-    var k = mountK(); if (!k) return 0; var kk = ts / 30;
-    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face * kk, kk); g.lineJoin = "round"; g.lineCap = "round";
+  // ---------- RIDING: hop on and off with an arc, sit in the saddle, rock with the mount's gait ----------
+  // Saddle (seat) heights in mount units (30 = one tile), where the rider's hips sit; sx = how far forward the saddle is.
+  var SADL = { m_toad: [27, -4], m_gator: [17, 0], m_heron: [36, -2], m_mudo: [33, 0], m_drake: [33, 0], m_mammoth: [38, 0], m_broom: [41, 2], balloon: [0, 0] };
+  var MSZ = { m_toad: 1.3, m_gator: 1.15, m_heron: 1.45, m_mudo: 1.25, m_drake: 1.25, m_mammoth: 1.2, m_broom: 1.05, balloon: 1.1 };   // mounts are drawn bigger than their art units so a rider fits
+  var MR = { k: "", a: "", t: 0, dk: "", last: 0, pose: "", dx: 0 }, MR_T = 0.42;
+  function rideBob(k, t, run) {   // the up-and-down of the saddle (mount units), the same numbers the art uses
+    var st = run ? t * 12 : 0;
+    if (k === "m_toad") return run ? -Math.abs(Math.sin(st * 0.5)) * 4 : 0;
+    if (k === "m_broom") return Math.sin(t * 3) * 1.5;
+    if (k === "balloon") return 0;
+    if (k === "m_gator") return run ? Math.sin(st * 2) * 0.6 : Math.sin(t * 1.6) * 0.3;
+    return run ? -Math.abs(Math.sin(st)) * 1.4 : Math.sin(t * 1.8) * 0.4;   // a walking beast: up on each step, breathing when still
+  }
+  function rideState(now) {
+    var dt = clamp((now - (MR.last || now)) / 1000, 0, 0.1); MR.last = now; var k = mountK();
+    if (k !== MR.k) { if (MR.k && k) { MR.a = ""; MR.dk = k; } else if (k) { MR.a = "on"; MR.t = 0; MR.dk = k; rideFx(k, true); } else { MR.a = "off"; MR.t = 0; MR.dk = MR.k; rideFx(MR.k, false); } MR.k = k; }
+    if (MR.a) { MR.t += dt; if (MR.t >= MR_T) MR.a = ""; }
+    if (reduce && MR.a) MR.a = "";
+    var u = MR.a ? MR.t / MR_T : 1, kk = MR.a === "off" ? "" : k;
+    MR.pose = !kk && !MR.a ? "" : MR.dk === "balloon" ? "" : MR.a === "on" ? (u < 0.75 ? "tuck" : "ride0") : MR.a === "off" ? (u < 0.8 ? "tuck" : "land") : (Math.abs(p.vx) > 0.5 && p.on ? (Math.floor(now / 1000 * 6) % 2 ? "ride1" : "ride0") : !p.on && !p.wet && MOUNTS[k].flap ? "ride1" : "ride0");
+  }
+  function rideFx(k, on) {   // a puff of dust (or sparkles) as the mount appears or trots off
+    if (reduce) return; var c = k === "balloon" ? "#ffe0c0" : k === "m_broom" ? "#d8a8ff" : /m_(mudo|drake|mammoth)/.test(k) ? "#f4ecd8" : "#c8b890";
+    for (var i = 0; i < 14; i++) parts.push({ x: p.x + (Math.random() - 0.5) * 1.6, y: p.y - Math.random() * 0.6, vx: (Math.random() - 0.5) * 4, vy: -0.6 - Math.random() * 1.6, g: 1.4, life: 0.5, max: 0.5, c: c, s: 3 + Math.random() * 3, dust: 1 });
+    funTone(on ? 300 : 520, on ? 620 : 260, 0.12, "triangle", 0.03);
+  }
+  function mountEase(u) { return 1 - Math.pow(1 - u, 3); }
+  function drawMountUnder(g, sx, sy, now) {   // called from drawPlayer: draws the mount (and its hop-on/off animation); returns how far to lift the rider and nudge them
+    rideState(now); var k = MR.a ? MR.dk : mountK(); if (!k || !MOUNTS[k]) return null; var kk = ts / 30 * (MSZ[k] || 1), t = now / 1000, run = Math.abs(p.vx) > 0.5 && !MR.a, air = !p.on && !p.wet, u = MR.a ? clamp(MR.t / MR_T, 0, 1) : 1;
+    var sc = MR.a === "on" ? 0.55 + 0.45 * mountEase(clamp(u * 1.6, 0, 1)) + Math.sin(clamp(u * 1.6, 0, 1) * Math.PI) * 0.08 : MR.a === "off" ? 1 - 0.4 * clamp((u - 0.45) / 0.55, 0, 1) : 1;
+    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face * kk * sc, kk * sc); g.lineJoin = "round"; g.lineCap = "round"; if (MR.a === "off") g.globalAlpha = 1 - clamp((u - 0.45) / 0.55, 0, 1);
     g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, -1, k === "m_gator" ? 34 : 18, 3, 0, 0, 7); g.fill();
-    mountArt(g, k, now / 1000, Math.abs(p.vx) > 0.5, !p.on && !p.wet); g.restore();
-    return ts * MOUNTS[k].seat;
+    mountArt(g, k, t, run, air); g.restore();
+    var SP = getSprite(), hip = SP ? 5 * SP.s * AVS : ts * 0.2, seatPx = SADL[k][0] * kk - rideBob(k, t, run) * kk, lift = k === "balloon" ? 2 * kk : Math.max(0, seatPx - ts * 0.12 - hip), dx = SADL[k][1] * kk * p.face;
+    if (MR.a === "on") { var e = mountEase(u); lift = lift * e + Math.sin(u * Math.PI) * ts * 0.7; dx = dx * e - p.face * ts * 0.5 * (1 - e); }   // a hop up, from just behind
+    else if (MR.a === "off") { var e2 = mountEase(u); lift = lift * (1 - e2) + Math.sin(u * Math.PI) * ts * 0.6; dx = dx * (1 - e2) - p.face * ts * 0.7 * e2; }   // and a hop down, backwards
+    return { mx: sx, my: sy, lift: lift, dx: dx, k: k, seated: !MR.a || (MR.a === "on" && u > 0.75) };
+  }
+  function drawMountFront(g, sx, sy, now, R) {   // what goes OVER the rider: the saddle flap and girth (over the thigh), the broom handle, the balloon basket
+    if (!R || !R.seated || MR.a === "off") return; var k = R.k, kk = ts / 30 * (MSZ[k] || 1), t = now / 1000, run = Math.abs(p.vx) > 0.5;
+    g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face * kk, kk); g.lineJoin = "round"; g.lineCap = "round";
+    if (k === "balloon") balloonArt(g, t, BAL.up, "front");
+    else if (k === "m_broom") broomArt(g, t, run, "front");
+    else { var S2 = SADL[k], y = -S2[0] + rideBob(k, t, run), x = S2[1], big = k === "m_mammoth" ? 1.15 : 1, IN = "#2a1606";
+      g.translate(x, y); g.scale(big, big);
+      g.beginPath(); g.moveTo(-7, 0.5); g.quadraticCurveTo(-8, 7, -5, 10); g.lineTo(5, 10); g.quadraticCurveTo(8, 7, 7, 0.5); g.closePath(); aInk(g, aG(g, 0, 10, "#d89a5a", "#a86a3a", "#6a4020"), IN, 1);   // the saddle flap over the near leg
+      g.strokeStyle = "#e8c070"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-5, 2); g.quadraticCurveTo(0, 3.4, 5, 2); g.stroke();   // stitching
+      g.beginPath(); g.rect(-1.2, 9.4, 2.4, 3.2); aInk(g, "#c8c0b0", "#3a3428", 0.7);   // a little stirrup
+    }
+    g.restore();
   }
   // ---------- #82 PET EVOLUTION: your bird and your farm animals grow into grand forms as friendship grows ----------
   function birdStage() { var n = S.st.fetched || 0; return n >= 200 ? 2 : n >= 60 ? 1 : 0; }
@@ -24147,7 +24194,7 @@
   }
   var SMPIC = {};
   function smPic(st) { if (SMPIC[st]) return SMPIC[st]; var c = document.createElement("canvas"); c.width = c.height = 160; var g = c.getContext("2d"); g.translate(80, st === 1 ? 140 : 150); g.scale(st === 1 ? 6 : 3.4, st === 1 ? 6 : 3.4); g.lineJoin = "round"; smArt(g, st, 0); SMPIC[st] = c.toDataURL(); cvFree(c); return SMPIC[st]; }
-  function smDraw(g, now) {
+  function seaMonDraw(g, now) {
     var o = p8().sm; if (!o.st || cave || HOME || OCS || !world) return; var x = pierGateX() + 4, gy = col[x]; if (!gy) return; var sx = ox + (x + 0.5) * ts, sy = oy + gy * ts; if (sx < -ts * 4 || sx > vw + ts * 4) return;
     var k = ts / 30; g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
     g.beginPath(); g.ellipse(0, 0, 26, 5, 0, 0, 7); aInk(g, aG(g, -5, 5, "#5ac8e8", "#2a8ab8", "#145a7a"), "#3a2a1a", 2);   // the pier pool, a wooden tub sunk in the bank
@@ -24179,7 +24226,7 @@
   }
   function drawMuseum(g, now) {
     var M = museumSpot(); if (!M || cave) return; var sx = ox + M.x * ts, sy = oy + M.y * ts; if (sx < -ts * 5 || sx > vw + ts * 5 || sy < -ts * 6 || sy > vh + ts * 2) return; var k = ts / 30;
-    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
+    g.save(); g.translate(sx, sy); g.scale(k * 1.3, k * 1.3); g.lineJoin = "round";
     g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 36, 3, 0, 0, 7); g.fill();
     g.beginPath(); g.rect(-30, -46, 60, 46); aInk(g, aG(g, -46, 0, "#e8e0d0", "#c8c0b0", "#8a8478"), "#3a3428", 1.2);
     [-22, -8, 8, 22].forEach(function (x) { g.beginPath(); g.rect(x - 3, -44, 6, 44); aInk(g, aG(g, -44, 0, "#ffffff", "#d8d2c4", "#a8a294"), "#3a3428", 0.8); });
@@ -24253,7 +24300,7 @@
   function p8FosMul() { return (skHas("eye") ? 2 : 1) * (1 + 0.5 * enLv("pick", "luck")); }
   function p8Kill(e) {   // a defeated creature: heal perks, and sometimes its Croak Card
     var heal = 2 * enLv("wpn", "heart") + (skHas("hide2") ? 3 : 0); if (heal && hp > 0) { hp = Math.min(MAXHP, hp + heal); drawHp(); text(p.x, p.y - 2, "+" + heal, "#7aff9a"); }
-    if (CARDS[e.k] && Math.random() < (cardsOwn()[e.k] ? 0.04 : 0.12)) cardGive(e.k, e.x, e.y);
+    cardDrop(e.k, e.x, e.y, false);
   }
   // ---------- #88 THE SWAMP REMEMBERS: each stretch of land blooms or sours with how you treat it ----------
   var ZW = 64, SWR = { t: 2, last: null, mote: 0 };
@@ -24353,65 +24400,119 @@
   var MEIMG = null, MEKEY = "";
   function mePicImg() { var src = typeof mePic === "function" ? mePic() : ""; if (!MEIMG || MEKEY !== src) { MEIMG = new Image(); MEIMG.src = src; MEKEY = src; } return MEIMG; }
   function dreamEnd() { if (!DRM || DRM.end) return; DRM.end = 1; var n = DRM.n + (DRM.n === DRM.sh.length ? 2 : 0); if (n) give("dreamshard", n, undefined, undefined, true); S.st.dshards = (S.st.dshards || 0) + n; snd("open", n >= 8 ? "Legendary" : "Rare"); checkGoals(); save(); setTimeout(function () { if (storyOpen === 278) closeStory(); DRM = null; }, 2600); }
-  // ---------- #90 CROAK CARDS: collect creature cards and play best-of-three against the swamp folk ----------
-  var CARDS = {   // el: 0 Swamp, 1 Ember, 2 Frost. Swamp beats Ember, Ember beats Frost, Frost beats Swamp.
-    bug: { p: 2, el: 0 }, frog: { p: 3, el: 0 }, slime: { p: 2, el: 0 }, gator: { p: 6, el: 0 }, bat: { p: 2, el: 1 }, wasp: { p: 3, el: 1 }, spider: { p: 4, el: 1 }, wolf: { p: 5, el: 2 }, witch: { p: 7, el: 2 },
-    queen: { p: 8, el: 0, boss: 1 }, wyrm: { p: 9, el: 1, boss: 1 }, alpha: { p: 10, el: 2, boss: 1 },
-    croaker: { p: 7, el: 0, npc: "Croaker", c: "#5ab84a" }, croaka: { p: 6, el: 2, npc: "Croaka", c: "#ff9ac8" }, rook: { p: 8, el: 1, npc: "Rook", c: "#3a3a4a" }, pondsworth: { p: 5, el: 2, npc: "Prof. Pondsworth", c: "#efe6cf" }
-  };
+  // ---------- #90 CROAK CARDS: battles with your REAL SwampRealms card collection (one shared save with the Cards pages, see cards.js SwampCards) ----------
+  // Every card has a power and an element (Swamp beats Ember, Ember beats Frost, Frost beats Swamp: +3). The Delve Edition pack holds the game's
+  // creatures, bosses and swamp folk; they also drop from creatures you defeat. Winning pays Swamp Coins (the site's money) and Delve packs.
   var CEL = [["Swamp", "#5ad04a", "☘"], ["Ember", "#ff7a2a", "♨"], ["Frost", "#7ad8ff", "❄"]];
-  function cardName(k) { var C = CARDS[k]; return C.npc || (C.boss ? BOSS[k].n : ENEMY[k].n); }
-  function cardsOwn() { var o = p8(); if (!o.cd || typeof o.cd !== "object") o.cd = {}; return o.cd; }
-  function cardGive(k, x, y) { var O = cardsOwn(), first = !O[k]; O[k] = (O[k] || 0) + 1; S.st.cards = (S.st.cards || 0) + 1; if (first) popup("New Croak Card!", cardName(k) + " (" + CEL[CARDS[k].el][0] + ", power " + CARDS[k].p + ")", CEL[CARDS[k].el][1], "♠"); else toast("Croak Card: " + cardName(k), CEL[CARDS[k].el][1]); if (x !== undefined) chips(x, y - 0.5, "#ffe08a", 10, 4); save(); }
-  var CPIC = {};
-  function cardPic(k) {   // the card's portrait: the real creature, drawn small, or a villager badge
-    if (CPIC[k]) return CPIC[k]; var C = CARDS[k], c = document.createElement("canvas"); c.width = 96; c.height = 72; var g = c.getContext("2d"), E = CEL[C.el];
-    var bg = g.createLinearGradient(0, 0, 0, 72); bg.addColorStop(0, E[1]); bg.addColorStop(1, "#1a1a24"); g.fillStyle = bg; g.fillRect(0, 0, 96, 72);
-    try {
-      if (C.npc) { g.save(); g.translate(48, 66); g.scale(1.6, 1.6); g.lineJoin = "round"; if (k === "rook") rookArt(g, 0, 0, 0); else { g.beginPath(); g.ellipse(0, -12, 13, 11, 0, 0, 7); aInk(g, aG(g, -24, 0, "#ffffff", C.c, "#2a2a2a"), "#1a1a14", 1.2); aEye(g, -5, -20, 3.4, "#3a2a14", "#1a1a14", false, 0); aEye(g, 5, -20, 3.4, "#3a2a14", "#1a1a14", false, 0); g.strokeStyle = "#1a1a14"; g.lineWidth = 1; g.beginPath(); g.arc(0, -12, 5, 0.3, 2.8); g.stroke(); } g.restore(); }
-      else { var e = C.boss ? newBoss(k, 10, 10) : newEnemy(k, 10, 10), ots = ts, oox = ox, ooy = oy, big = C.boss ? 13 : k === "gator" ? 26 : k === "witch" ? 26 : k === "wolf" ? 34 : 42; ts = big; ox = 48 - 10 * ts; oy = 68 - 10 * ts; e.hurt = 0; e.st = "idle"; e.alert = 0; if (C.boss) drawBoss(g, e, 1000); else drawEnemy(g, e, 1000); ts = ots; ox = oox; oy = ooy; }
-    } catch (er) { ts = ts || 30; }
-    CPIC[k] = c.toDataURL(); cvFree(c); return CPIC[k];
+  function SCB() { return window.SwampCards || null; }
+  function cardById(id) { var B = SCB(); if (!B) return null; var L = B.cards(); for (var i = 0; i < L.length; i++) if (L[i].id === id) return L[i]; return null; }
+  function cardSt(c) { var B = SCB(); return B ? B.stats(c) : { pw: 3, el: 0 }; }
+  function cardsOwn() { var B = SCB(); return B ? B.owned() : {}; }
+  function cardName(c) { return c.name.replace(/:\s*Delve Edition$/, "").replace(/:\s*Abstract Edition$/, " (Abstract)"); }
+  function cardGive(id, x, y) {
+    var B = SCB(), c = cardById(id); if (!B || !c) return; var n = B.add(id, 1); S.st.cards = (S.st.cards || 0) + 1; var st = cardSt(c);
+    if (n === 1) popup("New card!", cardName(c) + " · " + c.rarity + " · " + CEL[st.el][0] + " " + st.pw + ". It's in your Collection on the site too.", c.color, "♠"); else toast("Card: " + cardName(c) + " (×" + n + ")", c.color);
+    if (x !== undefined) chips(x, y - 0.5, c.color, 12, 5); snd("open", c.rarity === "Mythical" || c.rarity === "Legendary" ? "Legendary" : "Rare");
   }
-  function cardHtml(k, attr, cls) { var C = CARDS[k], E = CEL[C.el]; return '<button type="button" class="p8-card ' + (cls || "") + '" style="--c:' + E[1] + '"' + (attr || " disabled") + '><img alt="" src="' + cardPic(k) + '"><b>' + esc(cardName(k)) + '</b><span><i>' + E[2] + " " + E[0] + "</i><em>" + C.p + "</em></span></button>"; }
+  function cardDrop(k, x, y, boss) { var id = "dlv-" + k; if (!cardById(id)) return; var own = cardsOwn()[id] > 0; if (boss ? !own || Math.random() < 0.25 : Math.random() < (own ? 0.03 : 0.08)) cardGive(id, x, y); }
+  function cardHtml(c, attr, cls) {
+    var st = cardSt(c), E = CEL[st.el];
+    return '<button type="button" class="p8-card ' + (cls || "") + '" style="--c:' + c.color + ";--e:" + E[1] + '"' + (attr || " disabled") + '><i class="p8-art" style="background-image:url(\'' + c.img + '\')"></i><em class="p8-pw">' + st.pw + '</em><i class="p8-el" title="' + E[0] + '">' + E[2] + "</i><b>" + esc(cardName(c)) + "</b><small>" + c.rarity + "</small></button>";
+  }
   var FOES = [
-    { id: "croaker", n: "Croaker", deck: ["frog", "bug", "slime", "gator", "croaker", "bat"], rw: 15, ok: function () { return true; } },
-    { id: "croaka", n: "Croaka", deck: ["frog", "slime", "wolf", "croaka", "wasp", "bug"], rw: 20, ok: function () { return (S.st.croakaf || 0) > 0 || (S.days | 0) > 3; } },
-    { id: "pond", n: "Prof. Pondsworth", deck: ["wolf", "witch", "spider", "pondsworth", "gator", "queen"], rw: 35, ok: function () { return (S.st.donated || 0) > 0; } },
-    { id: "rook", n: "Rook", deck: ["witch", "spider", "wolf", "rook", "wyrm", "gator", "alpha"], rw: 60, ok: function () { return curCh() >= 1 && (S.days | 0) >= 4; } }
+    { id: "croaker", n: "Old Croaker", deck: ["dlv-frog", "dlv-bug", "dlv-slime", "dlv-gator", "dlv-croaker", "dlv-bat"], rw: 15, ok: function () { return true; } },
+    { id: "croaka", n: "Croaka", deck: ["dlv-frog", "dlv-slime", "dlv-wolf", "dlv-croaka", "dlv-wasp", "dlv-bug"], rw: 20, ok: function () { return (S.st.croakaf || 0) > 0 || (S.days | 0) > 3; } },
+    { id: "croako", n: "Croako", deck: ["dlv-croako", "dlv-spider", "dlv-wasp", "dlv-gator", "dlv-bat", "dlv-wolf"], rw: 30, ok: function () { return (S.st.fish || 0) > 5; } },
+    { id: "rook", n: "Rook", deck: ["dlv-witch", "dlv-spider", "dlv-wolf", "dlv-rook", "dlv-wyrm", "dlv-gator", "dlv-queen"], rw: 60, ok: function () { return curCh() >= 1 && (S.days | 0) >= 4; } }
   ];
-  var DUEL = null;
-  function cardsStarter() { var O = cardsOwn(); if (Object.keys(O).length) return; ["frog", "bug", "slime", "bat", "wasp", "wolf"].forEach(function (k) { O[k] = 1; }); save(); }
-  function cardsOpen() {
-    if (!p4Open(279)) return; cardsStarter(); var O = cardsOwn(), have = Object.keys(CARDS).filter(function (k) { return O[k]; });
-    var h = '<h2 class="st-hi">Croak Cards</h2><p class="st-tip">Best of three. Each round you both play a card; higher power wins. An element advantage adds 3 power: Swamp beats Ember, Ember beats Frost, Frost beats Swamp. Win cards from creatures you defeat, and from the folk you beat.</p>';
-    h += "<h3>Challenge</h3>" + '<div class="p4-jobs">' + FOES.map(function (F) { var ok = F.ok(); return '<div class="p4-job' + (ok ? "" : " done") + '"><i class="p4-jic">♠</i><span><b>' + esc(F.n) + "</b><small>" + (ok ? "Wins pay " + F.rw + " Silver" + (S.p8.cw && S.p8.cw[F.id] ? " · beaten " + S.p8.cw[F.id] + "×" : "") : "Not met yet") + '</small></span><button type="button" class="btn"' + (ok && have.length >= 3 ? "" : " disabled") + ' data-p8="cd:duel:' + F.id + '">Play</button></div>'; }).join("") + "</div>";
-    h += "<h3>Your cards: " + have.length + " of " + Object.keys(CARDS).length + '</h3><div class="p8-cards">' + Object.keys(CARDS).map(function (k) { return O[k] ? cardHtml(k, "", "") : '<button type="button" class="p8-card off" disabled><b>???</b></button>'; }).join("") + "</div>";
+  var DUEL = null, CTAB = "play", CFIL = "all", CREV = null;
+  function cardsStarter() {   // your first visit: a starter deck of Delve cards, so you can play straight away (only if you have fewer than 5 cards)
+    var B = SCB(), o = p8(); if (!B || o.cstart) return; o.cstart = 1; var have = Object.keys(B.owned()).filter(function (k) { return B.owned()[k] > 0 && cardById(k); }).length;
+    if (have < 5) { ["dlv-frog", "dlv-bug", "dlv-slime", "dlv-bat", "dlv-wasp", "dlv-wolf"].forEach(function (id) { B.add(id, 1); }); toast("Croaker gave you a starter deck of six Delve cards!", "#ffe08a"); } save();
+  }
+  function myCards() { var O = cardsOwn(); return (SCB() ? SCB().cards() : []).filter(function (c) { return O[c.id] > 0; }); }
+  function cardsOpen(tab) {
+    if (tab) CTAB = tab; if (!p4Open(279)) return; var B = SCB();
+    if (!B) { p4Box('<h2 class="st-hi">Croak Cards</h2><p class="st-tip">Your card collection could not be loaded.</p><div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>', "#ffe08a"); return; }
+    cardsStarter(); var mine = myCards(), all = B.cards(), O = cardsOwn();
+    var h = '<h2 class="st-hi">Croak Cards</h2><div class="p7-tabs">' + [["play", "Play"], ["coll", "Collection"], ["packs", "Packs"]].map(function (t) { return '<button type="button" class="' + (CTAB === t[0] ? "on" : "") + '" data-p8="cd:tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + "</div>";
+    h += '<div class="p8-bank"><span>◉ <b>' + B.coins() + "</b> Swamp Coins</span><span>♠ <b>" + mine.length + "</b> of " + all.length + " cards</span></div>";
+    if (CTAB === "play") {
+      h += '<p class="st-tip">Best of three. You both play a card each round; higher power wins. An element advantage adds 3: <b style="color:#5ad04a">☘ Swamp</b> beats <b style="color:#ff7a2a">♨ Ember</b> beats <b style="color:#7ad8ff">❄ Frost</b> beats Swamp. Your hand comes from your whole collection, the same cards as on the site.</p>';
+      h += '<div class="p4-jobs">' + FOES.map(function (F) { var ok = F.ok(), bt = (p8().cw || {})[F.id] || 0, fresh = (p8().cwd || {})[F.id] !== (S.days | 0); return '<div class="p4-job' + (ok ? "" : " done") + '"><i class="p4-jic">♠</i><span><b>' + esc(F.n) + "</b><small>" + (ok ? F.rw + " Swamp Coins a win" + (fresh ? " · first win today: a Delve pack" : "") + (bt ? " · beaten " + bt + "×" : "") : "Not met yet") + '</small></span><button type="button" class="btn"' + (ok && mine.length >= 3 ? "" : " disabled") + ' data-p8="cd:duel:' + F.id + '">Play</button></div>'; }).join("") + "</div>";
+    } else if (CTAB === "coll") {
+      h += '<div class="p5-ch">' + [["all", "All"], ["delve", "Delve"], ["adventures", "Adventures"], ["abstract", "Abstract"]].map(function (f) { return '<button type="button" class="' + (CFIL === f[0] ? "on" : "") + '" data-p8="cd:fil:' + f[0] + '">' + f[1] + "</button>"; }).join("") + "</div>";
+      h += '<div class="p8-cards">' + all.filter(function (c) { return CFIL === "all" || c.pack === CFIL; }).sort(function (a, b) { return (O[b.id] > 0) - (O[a.id] > 0); }).map(function (c) { return O[c.id] > 0 ? cardHtml(c, "", O[c.id] > 1 ? "x" + Math.min(9, O[c.id]) : "") : '<button type="button" class="p8-card off" disabled style="--c:' + c.color + '"><b>???</b><small>' + c.rarity + "</small></button>"; }).join("") + "</div>";
+      h += '<p class="st-tip">Trade duplicates for Swamp Coins on the <a href="catalog.html" target="_blank" rel="noopener">Cards page</a>.</p>';
+    } else {
+      if (CREV) h += '<div class="p8-rev" style="--c:' + CREV.card.color + '"><div class="p8-flip">' + cardHtml(CREV.card, "", "big") + '</div><p><b>' + esc(cardName(CREV.card)) + "</b> · " + CREV.card.rarity + (CREV.dupe ? " · duplicate" : " · new!") + "</p></div>";
+      h += '<div class="p4-jobs">' + B.packs().map(function (P) { var n = B.stock(P.id); return '<div class="p4-job"><i class="p4-jic">❖</i><span><b>' + esc(P.name) + "</b><small>" + n + " ready to open" + (P.price ? " · " + P.price + " coins in the Shop" : "") + '</small></span><button type="button" class="btn"' + (n ? "" : " disabled") + ' data-p8="cd:open:' + P.id + '">Open</button></div>'; }).join("") + "</div>";
+      h += '<p class="st-tip">Packs are shared with the site: the free daily packs, ones you buy in the <a href="shop.html" target="_blank" rel="noopener">Shop</a>, and Delve packs you win here.</p>';
+    }
     h += '<div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>'; p4Box(h, "#ffe08a");
   }
+  function cardPackOpen(id) { var B = SCB(); if (!B) return; var r = B.open(id); if (!r) return; CREV = r; S.st.packs = (S.st.packs || 0) + 1; snd("open", r.card.rarity === "Mythical" || r.card.rarity === "Legendary" ? "Legendary" : r.card.rarity === "Epic" ? "Epic" : "Rare"); cardsOpen("packs"); setTimeout(function () { CREV = null; }, 50); }
   function duelStart(id) {
-    var F = FOES.filter(function (f) { return f.id === id; })[0], O = cardsOwn(); if (!F) return; var mine = []; Object.keys(O).forEach(function (k) { if (CARDS[k]) for (var i = 0; i < Math.min(2, O[k]); i++) mine.push(k); });
+    var F = FOES.filter(function (f) { return f.id === id; })[0]; if (!F) return; var O = cardsOwn(), mine = [];
+    myCards().forEach(function (c) { for (var i = 0; i < Math.min(2, O[c.id]); i++) mine.push(c.id); });
     var shuf = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-    DUEL = { F: F, hand: shuf(mine).slice(0, 5), foe: shuf(F.deck).slice(0, 5), me: 0, them: 0, log: [], r: 0 }; duelShow();
+    var hand = []; shuf(mine).forEach(function (q) { if (hand.length < 5 && hand.indexOf(q) < 0) hand.push(q); }); while (hand.length < 3 && mine.length) hand.push(mine[hand.length % mine.length]);
+    DUEL = { F: F, hand: hand, foe: shuf(F.deck).slice(0, 5).filter(cardById), me: 0, them: 0, r: 0 }; duelShow();
   }
-  function duelPow(k, vs) { var C = CARDS[k], V = CARDS[vs]; return C.p + ((C.el + 1) % 3 === V.el ? 3 : 0); }
+  function duelPow(a, b) { var A = cardSt(cardById(a)), Bq = cardSt(cardById(b)); return A.pw + ((A.el + 1) % 3 === Bq.el ? 3 : 0); }
   function duelShow(last) {
     if (!DUEL || !p4Open(279)) return; var D = DUEL, h = '<h2 class="st-hi">Croak Cards vs ' + esc(D.F.n) + '</h2><div class="p5-bank"><div><small>You</small><b>' + D.me + "</b></div><div><small>Round</small><b>" + Math.min(3, D.r + 1) + "/3</b></div><div><small>" + esc(D.F.n) + "</small><b>" + D.them + "</b></div></div>";
-    if (last) h += '<div class="p8-duel">' + cardHtml(last[0], "", "big") + '<strong class="' + (last[2] > 0 ? "win" : last[2] < 0 ? "lose" : "") + '">' + (last[2] > 0 ? "You win the round!" : last[2] < 0 ? "They win the round" : "A draw") + "<small>" + last[3] + " vs " + last[4] + "</small></strong>" + cardHtml(last[1], "", "big") + "</div>";
-    var over = D.me >= 2 || D.them >= 2 || D.r >= 3 && D.me !== D.them || D.r >= 5;
-    if (over) { var won = D.me > D.them; h += '<h2 class="st-hi">' + (won ? "You won the match!" : D.me === D.them ? "A tied match." : esc(D.F.n) + " won the match.") + "</h2>";
-      if (won && !D.paid) { D.paid = 1; give("silvercoin", D.F.rw, undefined, undefined, true); var cw = S.p8.cw || (S.p8.cw = {}); cw[D.F.id] = (cw[D.F.id] || 0) + 1; S.st.cardwins = (S.st.cardwins || 0) + 1; var prize = D.F.deck.filter(function (k) { return !cardsOwn()[k]; })[0]; if (prize && Math.random() < 0.6) cardGive(prize); snd("open", "Epic"); checkGoals(); save(); }
+    if (last) h += '<div class="p8-duel">' + cardHtml(cardById(last[0]), "", "big") + '<strong class="' + (last[2] > 0 ? "win" : last[2] < 0 ? "lose" : "") + '">' + (last[2] > 0 ? "You win the round!" : last[2] < 0 ? "They win the round" : "A draw") + "<small>" + last[3] + " vs " + last[4] + "</small></strong>" + cardHtml(cardById(last[1]), "", "big") + "</div>";
+    var over = D.me >= 2 || D.them >= 2 || (D.r >= 3 && D.me !== D.them) || D.r >= 5 || !D.hand.length;
+    if (over) { var won = D.me > D.them, msg = "";
+      if (won && !D.paid) { D.paid = 1; var B = SCB(); B.coins(D.F.rw); var cw = p8().cw || (p8().cw = {}), cwd = p8().cwd || (p8().cwd = {}); cw[D.F.id] = (cw[D.F.id] || 0) + 1; S.st.cardwins = (S.st.cardwins || 0) + 1; msg = "+" + D.F.rw + " Swamp Coins";
+        if (cwd[D.F.id] !== (S.days | 0)) { cwd[D.F.id] = S.days | 0; B.givePack("delve", 1); msg += " · +1 Delve pack"; }
+        var prize = D.F.deck.filter(function (k) { return !(cardsOwn()[k] > 0); })[0]; if (prize && Math.random() < 0.4) { setTimeout(function () { cardGive(prize); }, 600); msg += " · and " + esc(D.F.n) + " hands you a card!"; }
+        snd("open", "Epic"); checkGoals(); save(); D.msg = msg; }
+      h += '<h2 class="st-hi">' + (won ? "You won the match!" : D.me === D.them ? "A tied match." : esc(D.F.n) + " won the match.") + "</h2>" + (D.msg ? '<p class="st-tip">' + D.msg + "</p>" : "");
       h += '<div class="st-row"><button type="button" class="btn" data-p8="cd:duel:' + D.F.id + '">Rematch</button><button type="button" class="btn ghost" data-p8="cd:list">Back</button></div>'; p4Box(h, "#ffe08a"); return; }
-    h += "<h3>Play a card</h3>" + '<div class="p8-cards">' + D.hand.map(function (k, i) { return cardHtml(k, ' data-p8="cd:play:' + i + '"', ""); }).join("") + "</div>";
+    h += "<h3>Play a card</h3>" + '<div class="p8-cards">' + D.hand.map(function (k, i) { return cardHtml(cardById(k), ' data-p8="cd:play:' + i + '"', ""); }).join("") + "</div>";
     h += '<div class="st-row"><button type="button" class="btn ghost" data-p8="cd:list">Give up</button></div>'; p4Box(h, "#ffe08a");
   }
   function duelPlay(i) {
     var D = DUEL; if (!D || !D.hand[i]) return; var k = D.hand.splice(i, 1)[0], best = -1, bi = 0;
-    D.foe.forEach(function (q, j) { var s = duelPow(q, k) + Math.random() * 3; if (s > best) { best = s; bi = j; } }); var f = D.foe.splice(bi, 1)[0] || "bug";
+    D.foe.forEach(function (q, j) { var s2 = duelPow(q, k) + Math.random() * 3; if (s2 > best) { best = s2; bi = j; } }); var f = D.foe.splice(bi, 1)[0] || "dlv-bug";
     var a = duelPow(k, f), b = duelPow(f, k), res = a > b ? 1 : a < b ? -1 : 0; if (res > 0) D.me++; else if (res < 0) D.them++; D.r++; funTone(res > 0 ? 660 : 300, res > 0 ? 990 : 200, 0.14, "triangle", 0.04);
-    if (!D.hand.length) D.r = 5; duelShow([k, f, res, a, b]);
+    duelShow([k, f, res, a, b]);
   }
-  SIDE.push({ id: "p8_cards", cat: "Collector", ch: 0, n: "Card Shark", d: "Win 5 games of Croak Cards against the swamp folk.", need: 5, v: function () { return S.st.cardwins || 0; }, rw: { goldcoin: 3, silvercoin: 40 }, show: function () { return (S.st.cards || 0) > 0 || !!(S.p8 && S.p8.cd && Object.keys(S.p8.cd).length); } });
+  function cardAct(q) {
+    if (q[1] === "list") { DUEL = null; cardsOpen("play"); } else if (q[1] === "duel") duelStart(q[2]); else if (q[1] === "play") duelPlay(+q[2]);
+    else if (q[1] === "tab") cardsOpen(q[2]); else if (q[1] === "fil") { CFIL = q[2]; cardsOpen("coll"); } else if (q[1] === "open") cardPackOpen(q[2]);
+  }
+  SIDE.push({ id: "p8_cards", cat: "Collector", ch: 0, n: "Card Shark", d: "Win 5 games of Croak Cards against the swamp folk.", need: 5, v: function () { return S.st.cardwins || 0; }, rw: { goldcoin: 3, silvercoin: 40 }, show: function () { return (S.st.cards || 0) > 0 || !!(S.p8 && S.p8.cstart); } });
+  function cardArt(g, id, w, h) {   // the Delve Edition card art (rendered once into images/delve-*.jpg): a scene for the element, the creature big in front
+    var c = cardById("dlv-" + id), st = c ? cardSt(c) : { el: 0 }, el = st.el, t = 1.3, i;
+    var sky = [["#0a2a2a", "#1e5a4a", "#6ab88a"], ["#2a0a0a", "#7a2a14", "#ff9a3a"], ["#0a1a3a", "#2a5a9a", "#bfe6ff"]][el], gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, sky[0]); gr.addColorStop(0.62, sky[1]); gr.addColorStop(1, sky[2]); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    var rnd = (function (a) { return function () { a = (a * 16807) % 2147483647; return a / 2147483647; }; })(id.length * 999 + id.charCodeAt(0) * 7);
+    if (el === 0) { g.fillStyle = "rgba(255,250,220,.9)"; g.beginPath(); g.arc(w * 0.74, h * 0.2, w * 0.11, 0, 7); g.fill(); g.fillStyle = "rgba(255,250,220,.15)"; g.beginPath(); g.arc(w * 0.74, h * 0.2, w * 0.2, 0, 7); g.fill(); }
+    if (el === 1) { g.fillStyle = "#3a0e08"; g.beginPath(); g.moveTo(0, h * 0.6); g.lineTo(w * 0.3, h * 0.38); g.lineTo(w * 0.4, h * 0.4); g.lineTo(w * 0.7, h * 0.62); g.lineTo(0, h * 0.62); g.fill(); var lg = g.createRadialGradient(w * 0.35, h * 0.38, 0, w * 0.35, h * 0.38, w * 0.3); lg.addColorStop(0, "rgba(255,160,60,.6)"); lg.addColorStop(1, "rgba(255,100,30,0)"); g.fillStyle = lg; g.fillRect(0, 0, w, h); }
+    if (el === 2) for (i = 0; i < 3; i++) { g.strokeStyle = ["rgba(120,255,200,.25)", "rgba(160,140,255,.22)", "rgba(120,220,255,.2)"][i]; g.lineWidth = 26 - i * 6; g.beginPath(); g.moveTo(-20, h * (0.16 + i * 0.07)); g.bezierCurveTo(w * 0.3, h * (0.05 + i * 0.08), w * 0.6, h * (0.3 + i * 0.05), w + 20, h * (0.12 + i * 0.06)); g.stroke(); }
+    for (i = 0; i < 60; i++) { g.fillStyle = el === 1 ? "rgba(255," + (120 + rnd() * 100 | 0) + ",40," + (0.4 + rnd() * 0.5).toFixed(2) + ")" : "rgba(255,255,255," + (0.2 + rnd() * 0.6).toFixed(2) + ")"; var r2 = el === 2 ? 1.5 + rnd() * 2.5 : 1 + rnd() * 1.6; g.beginPath(); g.arc(rnd() * w, rnd() * h * (el === 2 ? 1 : 0.6), r2, 0, 7); g.fill(); }
+    var gy = h * 0.8;
+    g.fillStyle = ["#14301e", "#2a120a", "#dfeef8"][el]; g.beginPath(); g.moveTo(0, gy); for (i = 0; i <= 10; i++) g.lineTo(w * i / 10, gy - 10 * Math.sin(i * 1.7 + id.length)); g.lineTo(w, h); g.lineTo(0, h); g.fill();
+    if (el === 0) { g.fillStyle = "rgba(60,140,140,.5)"; g.fillRect(0, gy + 30, w, h - gy - 30); for (i = 0; i < 14; i++) { var rx = rnd() * w, rh = 60 + rnd() * 90; g.strokeStyle = "#0e2416"; g.lineWidth = 4; g.beginPath(); g.moveTo(rx, gy + 6); g.quadraticCurveTo(rx + 6, gy - rh * 0.5, rx + 3, gy - rh); g.stroke(); if (rnd() < 0.5) { g.fillStyle = "#3a2410"; g.fillRect(rx, gy - rh - 18, 7, 22); } } }
+    if (el === 1) { g.fillStyle = "rgba(255,120,30,.85)"; g.beginPath(); g.moveTo(0, gy + 40); g.quadraticCurveTo(w * 0.5, gy + 20, w, gy + 50); g.lineTo(w, gy + 70); g.quadraticCurveTo(w * 0.5, gy + 44, 0, gy + 62); g.fill(); }
+    if (el === 2) { g.fillStyle = "#b8d0e8"; for (i = 0; i < 5; i++) { var px = rnd() * w; g.beginPath(); g.moveTo(px - 40, gy); g.lineTo(px, gy - 70 - rnd() * 60); g.lineTo(px + 40, gy); g.fill(); } }
+    var sh = g.createRadialGradient(w / 2, gy + 6, 0, w / 2, gy + 6, w * 0.4); sh.addColorStop(0, "rgba(0,0,0,.45)"); sh.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sh; g.beginPath(); g.ellipse(w / 2, gy + 6, w * 0.4, 30, 0, 0, 7); g.fill();
+    var cv = document.createElement("canvas"); cv.width = cv.height = 1400; var q2 = cv.getContext("2d"), ots = ts, oox = ox, ooy = oy, ovw = vw, ovh = vh, fly = !!FLIER[id]; q2.setTransform(1, 0, 0, 1, 0, 0); q2.clearRect(0, 0, 1400, 1400); vw = vh = 1400;   // draw big on a scratch canvas, then crop to the creature and fit it
+    try {
+      if (ENEMY[id] && !BOSS[id]) { var e = newEnemy(id, 10, 10); ts = 260; ox = 700 - 10 * ts; oy = 1000 - 10 * ts; e.hurt = 0; e.alert = 6; drawEnemy(q2, e, 1300); }
+      else if (BOSS[id]) { var b = newBoss(id, 10, 10); ts = 150; ox = 700 - 10 * ts; oy = 1100 - 10 * ts; b.hurt = 0; b.st = "idle"; drawBoss(q2, b, 1300); }
+      else { q2.save(); q2.translate(700, 1100); q2.scale(14, 14); q2.lineJoin = "round"; q2.lineCap = "round"; if (id === "rook") rookArt(q2, 0.3, false); else famArt(q2, id, 1300, 1); q2.restore(); }
+    } catch (er) { if (window.console) console.log("cardArt " + id + " " + er); }
+    ts = ots; ox = oox; oy = ooy; vw = ovw; vh = ovh;
+    var D2 = q2.getImageData(0, 0, 1400, 1400).data, x0 = 1400, y0 = 1400, x1 = 0, y1 = 0;
+    for (var yy = 0; yy < 1400; yy += 2) for (var xx = 0; xx < 1400; xx += 2) if (D2[(yy * 1400 + xx) * 4 + 3] > 40) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+    if (x1 > x0) { var pad = id === "slime" ? 60 : 6; x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(1399, x1 + pad); y1 = Math.min(1399, y1 + pad); var bw = x1 - x0 + 2, bh = y1 - y0 + 2, fit = Math.min(w * 0.86 / bw, h * (BOSS[id] ? 0.6 : 0.52) / bh), dw = bw * fit, dh = bh * fit, by = fly ? gy - h * 0.12 - dh : gy + 8 - dh;
+      g.drawImage(cv, x0, y0, bw, bh, (w - dw) / 2, by, dw, dh); }
+    cvFree(cv);
+    var vg = g.createRadialGradient(w / 2, h / 2, w * 0.3, w / 2, h / 2, w * 0.9); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.45)"); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  }
   // the card table stands beside the museum in the Sky Village
   function tableSpot() { var M = museumSpot(); if (!M) return null; for (var d = 3; d < 8; d++) { var x = Math.floor(M.x) + d, y = M.y; if (TILES[get(x, y)].solid && !TILES[get(x, y - 1)].solid && !TILES[get(x, y - 2)].solid) return { x: x + 0.5, y: y }; } return null; }
   function drawTable(g) { var T2 = tableSpot(); if (!T2 || cave) return; var sx = ox + T2.x * ts, sy = oy + T2.y * ts, k = ts / 30; if (sx < -ts * 3 || sx > vw + ts * 3) return; g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
@@ -24424,8 +24525,9 @@
   MOUNTS.balloon = { n: "Hot-Air Balloon", spd: 0.85, jump: 1, seat: 0.05, bal: 1, c: "#ff7a5a", d: "" };
   var BAL = { up: false };
   function balloonStep(h, jump) { BAL.up = jump; if (jump) { p.vy = Math.max(p.vy - 30 * h, -4.4); S.st.balloonUp = (S.st.balloonUp || 0) + h; } else p.vy = Math.min(p.vy, 1.6); }
-  function balloonArt(g, t, up) {   // a patchwork balloon over a wicker basket; the burner roars while you rise
+  function balloonArt(g, t, up, part) {   // a patchwork balloon over a wicker basket; the burner roars while you rise. part "front" = only the basket (drawn over the rider)
     var IN = "#3a1a10", sway = Math.sin(t * 1.3) * 2;
+    if (part === "front") { balloonBasket(g, IN); return; }
     g.strokeStyle = "#5a3a1a"; g.lineWidth = 1; g.beginPath(); [[-11, -16, -18 + sway, -74], [11, -16, 18 + sway, -74], [-4, -16, -6 + sway, -72], [4, -16, 6 + sway, -72]].forEach(function (q) { g.moveTo(q[0], q[1]); g.lineTo(q[2], q[3]); }); g.stroke();
     g.save(); g.translate(sway, -104);
     g.beginPath(); g.moveTo(-16, 30); g.bezierCurveTo(-46, 6, -36, -36, 0, -38); g.bezierCurveTo(36, -36, 46, 6, 16, 30); g.closePath();
@@ -24437,15 +24539,18 @@
     g.beginPath(); g.rect(-9, 30, 18, 5); aInk(g, aG(g, 30, 35, "#8a6a4a", "#5a3a1a", "#3a2410"), IN, 1);
     if (up) { var f = 0.7 + 0.3 * Math.sin(t * 30); g.fillStyle = "rgba(255,170,60," + (0.6 * f).toFixed(2) + ")"; g.beginPath(); g.moveTo(-4, 35); g.quadraticCurveTo(0, 24 - f * 8, 4, 35); g.fill(); g.fillStyle = "#fff2a8"; g.beginPath(); g.moveTo(-1.6, 35); g.quadraticCurveTo(0, 29 - f * 4, 1.6, 35); g.fill(); }
     g.restore();
+    if (part !== "back") balloonBasket(g, IN);
+  }
+  function balloonBasket(g, IN) {
     g.beginPath(); g.moveTo(-13, -18); g.lineTo(13, -18); g.lineTo(11, 0); g.lineTo(-11, 0); g.closePath();
     g.save(); aInk(g, aG(g, -18, 0, "#d8a868", "#a8743a", "#6a4418"), IN, 1.3); g.clip(); g.strokeStyle = "rgba(60,30,10,.45)"; g.lineWidth = 0.8; for (var y = -14; y < 0; y += 4) { g.beginPath(); g.moveTo(-14, y); g.lineTo(14, y); g.stroke(); } for (var x = -10; x <= 10; x += 5) { g.beginPath(); g.moveTo(x, -18); g.lineTo(x * 0.9, 0); g.stroke(); } g.restore();
     g.beginPath(); g.rect(-14, -20, 28, 3); aInk(g, "#7a4a1a", IN, 1);
   }
-  function broomArt(g, t, run) {   // a crooked broom: the handle first, then the bristles tied on at the back
-    var IN = "#1a0a2a", bob = Math.sin(t * 3) * 1.5; g.translate(0, -12 + bob);
+  function broomArt(g, t, run, part) {   // a crooked broom: bristles tied on at the back, the handle (part "front") drawn over the rider's legs
+    var IN = "#1a0a2a", bob = Math.sin(t * 3) * 1.5; g.translate(0, -40 + bob);
+    if (part === "front") { g.beginPath(); g.moveTo(-16, -1.6); g.lineTo(26, -2.4); g.quadraticCurveTo(30, -2, 31, -4); g.lineTo(32, -1); g.quadraticCurveTo(28, 1.6, 26, 0.6); g.lineTo(-16, 1.4); g.closePath(); aInk(g, aG(g, -3, 2, "#9a6a4a", "#6a3a1a", "#3a1a08"), "#2a1006", 1); g.beginPath(); g.rect(-17, -3.6, 4, 7.2); aInk(g, "#8a3ad8", IN, 0.8); return; }
     g.beginPath(); g.moveTo(-14, -3); g.quadraticCurveTo(-30, -6, -36, -2 + (run ? Math.sin(t * 20) : 0)); g.quadraticCurveTo(-32, 4, -14, 3); g.closePath(); g.save(); aInk(g, aG(g, -6, 4, "#e8c870", "#b8903a", "#7a5a1a"), "#3a2a0a", 1); g.clip(); g.strokeStyle = "rgba(90,60,10,.5)"; g.lineWidth = 0.6; for (var i = -3; i <= 3; i += 1.5) { g.beginPath(); g.moveTo(-14, i); g.lineTo(-36, i * 1.4); g.stroke(); } g.restore();
-    g.beginPath(); g.moveTo(-16, -1.6); g.lineTo(26, -2.4); g.quadraticCurveTo(30, -2, 31, -4); g.lineTo(32, -1); g.quadraticCurveTo(28, 1.6, 26, 0.6); g.lineTo(-16, 1.4); g.closePath(); aInk(g, aG(g, -3, 2, "#9a6a4a", "#6a3a1a", "#3a1a08"), "#2a1006", 1);
-    g.beginPath(); g.rect(-17, -3.6, 4, 7.2); aInk(g, "#8a3ad8", IN, 0.8);
+    if (part !== "back") { g.beginPath(); g.moveTo(-16, -1.6); g.lineTo(26, -2.4); g.quadraticCurveTo(30, -2, 31, -4); g.lineTo(32, -1); g.quadraticCurveTo(28, 1.6, 26, 0.6); g.lineTo(-16, 1.4); g.closePath(); aInk(g, aG(g, -3, 2, "#9a6a4a", "#6a3a1a", "#3a1a08"), "#2a1006", 1); }
     if (!reduce) for (var s2 = 0; s2 < 3; s2++) { var a = t * 4 + s2 * 2.1; g.fillStyle = "rgba(200,150,255," + (0.4 + 0.4 * Math.sin(a)).toFixed(2) + ")"; g.fillRect(-38 - s2 * 5 + Math.sin(a) * 2, Math.cos(a * 1.3) * 3, 1.6, 1.6); }
   }
   // ---------- where the new places are (found once per world, the same every load) ----------
@@ -24581,6 +24686,17 @@
     });
     o.isl = made.length ? made : [{ none: 1 }]; save();
   }
+  function islesDecor(g, now) {   // dangling roots, drifting clouds and a soft glow under each sky island
+    var o = S.p8; if (!o || !o.isl || cave || HOME || OCS) return; var t = now / 1000, k = ts / 30;
+    o.isl.forEach(function (q, n) { if (q.none) return; var sx = ox + q.x * ts, sy = oy + q.y * ts; if (sx < -ts * 14 || sx > vw + ts * 14 || sy < -ts * 10 || sy > vh + ts * 10) return;
+      g.save(); g.translate(sx, sy); g.scale(k, k); g.lineCap = "round";
+      var gl = g.createRadialGradient(0, 170, 0, 0, 170, 140); gl.addColorStop(0, "rgba(200,230,255,.28)"); gl.addColorStop(1, "rgba(200,230,255,0)"); g.fillStyle = gl; g.fillRect(-170, 20, 340, 320);
+      for (var r = 0; r < 9; r++) { var rx = -190 + r * 47 + ((r * 37 + n * 11) % 13), top = (240 - Math.abs(rx)) / 1.4 + 24, len = 40 + ((r * 53 + n * 7) % 60), sw = Math.sin(t * 0.9 + r) * 5;
+        if (Math.abs(rx) > 210) continue; g.strokeStyle = "#2a1a0a"; g.lineWidth = 4.4; g.beginPath(); g.moveTo(rx, top); g.quadraticCurveTo(rx + sw, top + len * 0.5, rx + sw * 1.6, top + len); g.stroke(); g.strokeStyle = r % 3 ? "#6a4a2a" : "#4a8a3a"; g.lineWidth = 2.4; g.stroke();
+        if (r % 3 === 0) { g.fillStyle = "#5ab84a"; g.beginPath(); g.ellipse(rx + sw * 1.6, top + len, 4, 2.4, 0.4, 0, 7); g.fill(); } }
+      [[-300, 40, 70], [280, 70, 60], [-200, 150, 50]].forEach(function (c, i) { var cx = c[0] + Math.sin(t * 0.15 + i + n) * 30; g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(cx, c[1], c[2], c[2] * 0.32, 0, 0, 7); g.ellipse(cx - c[2] * 0.4, c[1] - c[2] * 0.12, c[2] * 0.5, c[2] * 0.3, 0, 0, 7); g.ellipse(cx + c[2] * 0.35, c[1] - c[2] * 0.15, c[2] * 0.45, c[2] * 0.28, 0, 0, 7); g.fill(); });
+      g.restore(); });
+  }
   function islesNear() { var o = p8(); if (!o.isl) return null; for (var i = 0; i < o.isl.length; i++) { var q = o.isl[i]; if (!q.none && Math.abs(p.x - q.x) < 9 && Math.abs(p.y - q.y) < 3) return q; } return null; }
   function isleTick2() { if (!world || cave || HOME || OCS) return; islesBuild(); var q = islesNear(), o = p8(); if (q && !(o.islf || {})[q.x]) { if (!o.islf) o.islf = {}; o.islf[q.x] = 1; S.st.skyisles = Object.keys(o.islf).length; popup("A sky island!", "Island " + S.st.skyisles + " of " + o.isl.filter(function (z) { return !z.none; }).length + ". Mine its Skystone and open the chest.", "#dff0ff", "☁"); snd("open", "Epic"); checkGoals(); save(); } }
   SIDE.push({ id: "p8_isles", cat: "Explorer", ch: 0, n: "Islands in the Sky", d: "Build a Hot-Air Balloon (Lumen Shards from the Glow Marsh warm it) and land on all three sky islands over Murkwater.", need: 3, v: function () { return S.st.skyisles || 0; }, rw: { goldcoin: 4, skystone: 4 }, show: function () { return (S.st.glowvisits || 0) > 0 || (S.inv.balloon || 0) > 0; } });
@@ -24601,12 +24717,12 @@
     else if (q[0] === "en") altarAct(q[1], q[2]);
     else if (q[0] === "sk") skillAct(q[1]);
     else if (q[0] === "dr") { if (DRM && !DRM.end) dreamEnd(); else closeStory(); }
-    else if (q[0] === "cd") { if (q[1] === "list") { DUEL = null; cardsOpen(); } else if (q[1] === "duel") duelStart(q[2]); else if (q[1] === "play") duelPlay(+q[2]); }
+    else if (q[0] === "cd") cardAct(q);
   }
   var P8D = -1;
   function p8Tick(dt) { var d = S.days | 0; if (P8D < 0) P8D = d; if (d > P8D) { P8D = d; smDaily(); } bugTick(dt); swrTick(dt); skillTick(dt); siteTick(dt); P8C -= dt; if (P8C <= 0) { P8C = 1; if (world && !cave && !HOME && !OCS && !trans) { towerTick(); isleTick2(); } } }
   var P8C = 2;
-  function p8WorldDraw(g, now) { glowDraw(g, now); mazeDraw(g, now); heartDraw(g, now); smDraw(g, now); drawMuseum(g, now); drawTable(g); spiritDraw(g, now); bugDraw(g, now); P8VIS.forEach(function (q) { if (q[0] === "witchrune") runeDraw(g, q[1], q[2], now); else terrDraw(g, q[1], q[2], now); }); P8VIS.length = 0; }
+  function p8WorldDraw(g, now) { islesDecor(g, now); glowDraw(g, now); mazeDraw(g, now); heartDraw(g, now); seaMonDraw(g, now); drawMuseum(g, now); drawTable(g); spiritDraw(g, now); bugDraw(g, now); P8VIS.forEach(function (q) { if (q[0] === "witchrune") runeDraw(g, q[1], q[2], now); else terrDraw(g, q[1], q[2], now); }); P8VIS.length = 0; }
   var P8VIS = [];
   function p8Pill() {
     var c8 = p8cPill(); if (c8) return c8;
@@ -24618,9 +24734,9 @@
     return null;
   }
   function p8Tap(tx, ty) { var td = TILES[get(tx, ty)]; if (!td) return false; if (td.kind === "terrarium") { terrOpen(tx, ty); return true; } if (td.kind === "mossaltar") { altarOpen(); return true; } if (td.kind === "witchrune") return runeTap(tx, ty); return false; }
-  function p8JournalHtml() { var o = p8(); return "<h3>Collections</h3><p>Bugs " + Object.keys(o.bug).length + "/" + Object.keys(BUGS).length + " · Croak Cards " + Object.keys(cardsOwn()).filter(function (k) { return CARDS[k]; }).length + "/" + Object.keys(CARDS).length + " · Skeletons " + (S.st.skeletons || 0) + "/3 · Sea monster: " + (o.sm.st ? SM_ST[o.sm.st] : "none yet") + "</p>"; }
+  function p8JournalHtml() { var o = p8(); return "<h3>Collections</h3><p>Bugs " + Object.keys(o.bug).length + "/" + Object.keys(BUGS).length + " · Cards " + myCards().length + "/" + (SCB() ? SCB().cards().length : 0) + " · Skeletons " + (S.st.skeletons || 0) + "/3 · Sea monster: " + (o.sm.st ? SM_ST[o.sm.st] : "none yet") + "</p>"; }
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };
-  window.__sbx.p8 = { S: p8, mount: mountK, mountArt: mountArt, M: MOUNTS, bugs: BUGL, BUGS: BUGS, bugTick: bugTick, catch: bugCatch, bugArt: bugArt, terr: terrOpen, sm: smOpen, smAct: smAct, smArt: smArt, smDaily: smDaily, mined: p8Mined, mus: museumOpen, musAct: museumAct, musSpot: museumSpot, altar: altarOpen, altarAct: altarAct, skill: skillOpen, skillAct: skillAct, skLv: skLv, zone: zoneScore, swr: swrTick, spirit: spiritSpot, spiritArt: spiritArt, heart: heartOpen, heartSpot: heartSpot, dream: dreamStart, D: function () { return DRM; }, cards: cardsOpen, duel: duelStart, play: duelPlay, cardPic: cardPic, give: cardGive, act: p8Act, pill: p8Pill, table: tableSpot, evo: { bird: birdStage, anim: animStage }, mul: { dig: p8DigMul, dmg: p8DmgMul, hurt: p8HurtMul, spd: p8SpdMul, bite: p8BiteMul, crop: p8CropMul } };
+  window.__sbx.p8 = { S: p8, mount: mountK, mountArt: mountArt, M: MOUNTS, bugs: BUGL, BUGS: BUGS, bugTick: bugTick, catch: bugCatch, bugArt: bugArt, terr: terrOpen, sm: smOpen, smAct: smAct, smArt: smArt, smDaily: smDaily, mined: p8Mined, mus: museumOpen, musAct: museumAct, musSpot: museumSpot, altar: altarOpen, altarAct: altarAct, skill: skillOpen, skillAct: skillAct, skLv: skLv, zone: zoneScore, swr: swrTick, spirit: spiritSpot, spiritArt: spiritArt, heart: heartOpen, heartSpot: heartSpot, dream: dreamStart, D: function () { return DRM; }, cards: cardsOpen, duel: duelStart, play: duelPlay, cardArt: cardArt, give: cardGive, pack: cardPackOpen, act: p8Act, pill: p8Pill, table: tableSpot, evo: { bird: birdStage, anim: animStage }, mul: { dig: p8DigMul, dmg: p8DmgMul, hurt: p8HurtMul, spd: p8SpdMul, bite: p8BiteMul, crop: p8CropMul } };
   window.__sbx.p7 = { ward: wardOpen, mopen: moltOpen, act: p7Act, dance: function (k) { emote(k); } };
   window.__sbx.p6 = { hs: function () { return homeS(); }, hp: function () { return [cp.x, cp.y]; }, tap: tapHook, setWall: setWall, STAIN_OF: STAIN_OF, cam: function (x, y) { cam.x = x; cam.y = y; }, S: function () { return p5(); }, price: shipPrice, hot: hotPick, mut: p5Mutate, eat: p5Eat, rep: repHtml, rank: repRank, vtr: vilTr, bank: bankOpen, bankAct: bankAct, bankSpot: bankSpot, mer: MER, merOpen: merOpen, merTick: merTick, beetlePic: function () { return beetlePic(); }, pennyPic: function () { return pennyPic(); }, fest: festOpen, house: houseOpen, scan: houseScan, act: p5Act, ban: banOpen, bp: bpOpen, bpSave: bpSave, bpPlace: function (x, y, i) { BP.pl = i; bpPlace(x, y); }, ghArt: ghArt, scare: scareArt, ship: renderShip };
   window.__sbx.p5 = { nibPic: nibPic, rookPic: rookPic, tour: tourAct, tourFin: tourFinish, reel: rhythmStart, hit: reelHit, RF: function () { return RF; }, nb: nbOpen, jobs: nbJobs, nbAct: nbAct, nbSpot: nbSpot, thief: thiefAct, clues: thClueSpots, THF: THF, rival: rivalAct, spawn: rivalSpawn, ROOK: ROOK, radio: radioOpen, jrn: famJournalHtml, tick: p4Tick, gold: function () { GOLDB = true; }, land: landFish };
