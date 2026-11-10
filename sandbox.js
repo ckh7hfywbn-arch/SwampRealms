@@ -20755,35 +20755,59 @@
     + '<path d="M18 33 Q32 46 46 33 Q44 42 32 44 Q20 42 18 33Z" fill="#dcd6c8" stroke="#9a9488" stroke-width="1.2"/><path d="M24 32 Q32 36 40 32" fill="none" stroke="#12220f" stroke-width="2" stroke-linecap="round"/>'
     + '<path d="M40 34 l9 -3" stroke="#6a4426" stroke-width="2.4" stroke-linecap="round"/><circle cx="50" cy="30.5" r="2.6" fill="#8a5a32"/><circle cx="52" cy="25" r="2" fill="#cfd6dd" opacity=".7"/>'
     + '<path d="M12 18 Q32 2 52 18 L50 14 Q32 0 14 14Z" fill="#2a3a6a"/><path d="M14 14 Q32 4 50 14 L52 18 Q32 8 12 18Z" fill="#3a4e8a" stroke="#1a2448" stroke-width="1.4"/><rect x="13" y="15" width="38" height="4" rx="2" fill="#c83a3a"/><circle cx="32" cy="4" r="3.6" fill="#f6eedb"/></svg>';
+  // A FROG NPC in the house style (Old Croaker's build): webbed feet behind, body + head + both eye bumps as one inked silhouette with the
+  // belly and o.inner (clothes) clipped to it, top-lit, glinting golden eyes in the bumps. Units: 30 to a tile, feet at (0, 0), facing right.
+  // It leaves the canvas lifted by the breath (o.br) so the caller can draw hats, beards and props on top in the same place.
+  function frogNpc(g, o) {
+    var IN = o.ink, SK = aG(g, -40, 0, o.hi, o.mid, o.lo), hb = -33;
+    [[-7, 1], [6.4, -1]].forEach(function (q) { g.beginPath(); g.moveTo(q[0] - 5.4 * q[1], -1.4); g.lineTo(q[0] - 6.6 * q[1], 0.4); g.lineTo(q[0] - 2.8 * q[1], -0.2); g.lineTo(q[0] - 1 * q[1], 1); g.lineTo(q[0] + 1.4 * q[1], 0); g.lineTo(q[0] + 4.2 * q[1], 0.6); g.lineTo(q[0] + 3.6 * q[1], -3.4); g.closePath(); aInk(g, aG(g, -4, 1, o.hi, o.mid, o.lo), IN, 1.1); });
+    g.translate(0, -(o.br || 0) * 0.4);
+    g.beginPath(); g.moveTo(-11, -2.4); g.quadraticCurveTo(-15, -9, -13.4, -17); g.quadraticCurveTo(-12.6, -22, -10.4, -26.6); g.quadraticCurveTo(-10.6, -28.8, -9.4, -30);
+    g.arc(-5, hb, 4.9, Math.PI * 0.82, Math.PI * 1.98); g.quadraticCurveTo(1, hb + 2.4, 2.2, hb - 0.6); g.arc(7, hb, 4.9, Math.PI * 1.02, Math.PI * 2.16);
+    g.quadraticCurveTo(13.6, -28, 13.4, -25.6); g.quadraticCurveTo(14.8, -18, 13.6, -10); g.quadraticCurveTo(12.6, -3.6, 11, -2.4); g.quadraticCurveTo(0, 0.4, -11, -2.4); g.closePath();
+    g.save(); aInk(g, SK, IN, 1.5); g.clip();
+    if (o.belly !== false) { g.fillStyle = aG(g, -18, -1, "#fbf6c8", "#e6e0a8", "#bcb47a"); g.beginPath(); g.ellipse(1.5, -8.6, 9.4, 8.6, 0, 0, 7); g.fill(); }
+    g.fillStyle = "rgba(0,0,0,.16)"; [[-10, -21, 1.6], [11, -20, 1.3], [-3, -29, 1]].forEach(function (q) { g.beginPath(); g.ellipse(q[0], q[1], q[2], q[2] * 0.8, 0.3, 0, 7); g.fill(); });
+    if (o.inner) o.inner(g);
+    g.restore(); aShine(g, -7, -27, 3.6, 1.2, 0.3, -0.35);
+    [-5, 7].forEach(function (ex) { if (o.patch && ex === 7) return; var ey = hb + 0.2;
+      if (o.blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ex - 2.8, ey); g.quadraticCurveTo(ex, ey + 1.4, ex + 2.8, ey); g.stroke(); }
+      else { g.beginPath(); g.arc(ex, ey, 3.3, 0, 7); aInk(g, aG(g, ey - 3.3, ey + 3.3, "#fff0a0", "#ffd23f", "#d89a1a"), IN, 0.9); g.fillStyle = "#12220f"; g.beginPath(); g.ellipse(ex + 0.4, ey + 0.2, 0.9, 2.2, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(ex - 1, ey - 1.3, 0.8, 0, 7); g.fill(); } });
+  }
   function drawCroako(g, now) {
     var sc = OCS; if (!sc || !sc.main) return; var gy = croakoY(), sx = ox + CROAKO.x * ts, sy = oy + gy * ts; if (sx < -ts * 3 || sx > vw + ts * 3) return;
     CROAKO.t += 0.016; var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.5) * 0.7, face = sc.pl.x < CROAKO.x ? -1 : 1, near = croakoNear(), k = ts / 30;
     g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
     g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
-    // a bait bucket and a coil of rope beside him
-    g.fillStyle = "#7a8288"; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-25, -10); g.lineTo(-15, -10); g.lineTo(-14, 0); g.closePath(); g.fill(); g.strokeStyle = "#4a5258"; g.lineWidth = 1.2; g.stroke(); g.beginPath(); g.arc(-20, -10, 5.5, Math.PI, 0); g.stroke();
-    g.fillStyle = "#c9a876"; g.beginPath(); g.ellipse(22, -2.5, 7, 2.6, 0, 0, 7); g.fill(); g.strokeStyle = "#8a6a3a"; g.beginPath(); g.ellipse(22, -2.5, 4.5, 1.5, 0, 0, 7); g.stroke();
-    g.save(); g.scale(face, 1); g.translate(0, -br * 0.3);
-    // a fishing rod over the shoulder, line drooping
-    g.strokeStyle = "#6a4426"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(8, -14); g.lineTo(30, -52); g.stroke(); g.strokeStyle = "rgba(246,238,219,.6)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(30, -52); g.quadraticCurveTo(36, -30, 33, -18); g.stroke(); g.fillStyle = "#e8341c"; g.beginPath(); g.arc(33, -17, 1.6, 0, 7); g.fill();
-    // feet, yellow rain slicker, belly
-    g.fillStyle = "#3a9a90"; g.strokeStyle = "#1c5a54"; g.lineWidth = 1.6; [-7, 6].forEach(function (fx) { g.beginPath(); g.ellipse(fx, -2.5, 6, 3, 0, 0, 7); g.fill(); g.stroke(); });
-    g.fillStyle = "#f2c14e"; g.strokeStyle = "#8a6a1a"; g.beginPath(); g.ellipse(0, -13, 13, 11.5, 0, 0, 7); g.fill(); g.stroke();
-    g.fillStyle = "#e8b23a"; g.fillRect(-1, -23, 2, 20); g.fillStyle = "#8a6a1a"; [-18, -13, -8].forEach(function (yy) { g.beginPath(); g.arc(2.6, yy, 1.2, 0, 7); g.fill(); });
-    g.strokeStyle = "#e8b23a"; g.lineWidth = 3.4; g.beginPath(); g.moveTo(7, -16); g.quadraticCurveTo(10, -15, 9, -12); g.stroke();
-    // head: blue-green, a grey frog beard, an eye patch, a pipe
-    g.fillStyle = "#4aa8a0"; g.strokeStyle = "#1c5a54"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(1, -27, 12, 8, 0, 0, 7); g.fill(); g.stroke();
-    var blink = (now % 4200) < 140;
-    g.beginPath(); g.arc(-5, -33, 4.6, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.arc(7, -33, 4.6, 0, 7); g.fill(); g.stroke();
-    if (blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-7.6, -33); g.lineTo(-2.4, -33); g.stroke(); } else { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(-5, -33, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(-5.3, -34.6, 1.6, 3.2); }
-    g.fillStyle = "#1a1a22"; g.beginPath(); g.arc(7, -33, 3.4, 0, 7); g.fill(); g.strokeStyle = "#1a1a22"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(3, -36); g.lineTo(12, -28); g.stroke();
-    g.fillStyle = "#dcd6c8"; g.strokeStyle = "#9a9488"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-9, -24); g.quadraticCurveTo(1, -14, 11, -24); g.quadraticCurveTo(9, -18, 1, -16); g.quadraticCurveTo(-7, -18, -9, -24); g.fill(); g.stroke();
-    g.strokeStyle = "#12220f"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-4, -25); g.quadraticCurveTo(1, -23, 7, -25); g.stroke();
-    g.strokeStyle = "#6a4426"; g.lineWidth = 2; g.beginPath(); g.moveTo(6, -24); g.lineTo(13, -26); g.stroke(); g.fillStyle = "#8a5a32"; g.beginPath(); g.arc(14, -27, 2.2, 0, 7); g.fill();
-    if (!reduce) for (var i = 0; i < 3; i++) { var ph = (t * 0.5 + i / 3) % 1; g.fillStyle = "rgba(220,225,230," + (0.5 * (1 - ph)).toFixed(3) + ")"; g.beginPath(); g.arc(15 + Math.sin(t + i) * 2 * ph, -30 - ph * 14, 1.4 + ph * 2.6, 0, 7); g.fill(); }
-    // navy knit cap with a red band and a pom-pom
-    g.fillStyle = "#3a4e8a"; g.strokeStyle = "#1a2448"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-10, -37); g.quadraticCurveTo(1, -52, 12, -37); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = "#c83a3a"; g.fillRect(-10.5, -39, 23, 3); g.fillStyle = "#f6eedb"; g.beginPath(); g.arc(1, -49, 3, 0, 7); g.fill();
+    // a bait bucket and a coil of rope beside him (inked)
+    g.beginPath(); g.moveTo(-26, 0); g.lineTo(-25.4, -10); g.lineTo(-14.6, -10); g.lineTo(-14, 0); g.closePath(); aInk(g, aG(g, -10, 0, "#c8d0d6", "#8a949a", "#565e64"), "#2a3036", 1.1);
+    g.fillStyle = "rgba(255,255,255,.3)"; g.fillRect(-23.6, -9, 1.4, 8); g.strokeStyle = "#2a3036"; g.lineWidth = 1.1; g.beginPath(); g.arc(-20, -10, 5.5, Math.PI, 0); g.stroke(); g.beginPath(); g.ellipse(-20, -10, 5.4, 1.3, 0, 0, 7); aInk(g, "#1e4a5a", "#2a3036", 0.8);
+    [[22, -2.6, 7, 2.8], [22, -4.4, 5.6, 2.2], [22, -6, 3.8, 1.6]].forEach(function (q) { g.beginPath(); g.ellipse(q[0], q[1], q[2], q[3], 0, 0, 7); aInk(g, aG(g, q[1] - q[3], q[1] + q[3], "#ecd6a6", "#c9a876", "#8a6a3a"), "#4a3416", 0.9); });
+    g.save(); g.scale(face, 1);
+    // the rod over his shoulder: inked cane, a line drooping to a red float
+    g.strokeStyle = "#2a1606"; g.lineWidth = 3.6; g.beginPath(); g.moveTo(8, -14 - br * 0.3); g.lineTo(30, -52); g.stroke(); g.strokeStyle = "#9a6a3a"; g.lineWidth = 2; g.stroke();
+    g.strokeStyle = "rgba(246,238,219,.7)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(30, -52); g.quadraticCurveTo(36, -30, 33, -18); g.stroke(); g.beginPath(); g.arc(33, -17, 1.8, 0, 7); aInk(g, "#e8341c", "#5a0a04", 0.7);
+    frogNpc(g, { hi: "#86e8d8", mid: "#4aa8a0", lo: "#1f6a64", ink: "#0c3632", br: br, blink: (now % 4200) < 140, patch: 1, belly: false,
+      inner: function (g) {   // the yellow rain slicker, buttoned down the front
+        g.beginPath(); g.moveTo(-16, -21); g.quadraticCurveTo(0, -25, 16, -21); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#ffe07a", "#f2c14e", "#b8862a"); g.fill();
+        g.strokeStyle = "#8a6a1a"; g.lineWidth = 1; g.beginPath(); g.moveTo(-16, -21); g.quadraticCurveTo(0, -25, 16, -21); g.stroke(); g.beginPath(); g.moveTo(0.6, -23); g.lineTo(0.6, 2); g.stroke();
+        g.fillStyle = "rgba(255,255,255,.35)"; g.fillRect(-10, -19, 2, 16); [-18, -12.6, -7.2].forEach(function (yy) { g.beginPath(); g.arc(3.4, yy, 1.2, 0, 7); aInk(g, "#8a6a1a", "#4a3406", 0.5); }); } });
+    aTube(g, [[8.6, -15], [11.4, -14.4], [10.6, -11]], [3.8, 3.4, 3.2], aG(g, -16, -10, "#ffe07a", "#f2c14e", "#b8862a"), "#5a4006", 1.1);   // the arm on the rod
+    g.beginPath(); g.arc(10.2, -10.6, 2, 0, 7); aInk(g, "#4aa8a0", "#0c3632", 0.9);
+    // the eye patch and its strap, a grey frog beard and a pipe with a curl of smoke
+    g.strokeStyle = "#140c08"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(1.6, -37.6); g.lineTo(12.6, -27.6); g.stroke();
+    g.beginPath(); g.ellipse(7, -33, 3.6, 3.3, 0.1, 0, 7); aInk(g, aG(g, -36, -30, "#3a3030", "#1c1414", "#0a0606"), "#000", 0.8);
+    g.beginPath(); g.moveTo(-9.6, -24.4); g.quadraticCurveTo(1, -12.6, 11.6, -24.4); g.quadraticCurveTo(9.4, -17.4, 4, -16.6); g.lineTo(1, -13.6); g.lineTo(-1.6, -16.6); g.quadraticCurveTo(-7.4, -17.4, -9.6, -24.4); g.closePath(); aInk(g, aG(g, -25, -14, "#ffffff", "#e2dccc", "#aaa494"), "#6a6456", 0.9);
+    g.strokeStyle = "rgba(106,100,86,.55)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(-4, -21); g.lineTo(-3, -17.6); g.moveTo(5, -21); g.lineTo(4.6, -17.6); g.stroke();
+    g.strokeStyle = "#0c3632"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-4.4, -25.4); g.quadraticCurveTo(1, -23.6, 7, -25.4); g.stroke();
+    g.strokeStyle = "#2a1606"; g.lineWidth = 2.8; g.beginPath(); g.moveTo(6, -24.4); g.lineTo(12.6, -26.4); g.stroke(); g.strokeStyle = "#7a4a22"; g.lineWidth = 1.4; g.stroke();
+    g.beginPath(); g.moveTo(12, -26); g.lineTo(12.4, -30.4); g.lineTo(16.6, -30.4); g.lineTo(16, -25.4); g.closePath(); aInk(g, aG(g, -31, -25, "#b07a44", "#8a5a32", "#5a3a1a"), "#2a1606", 0.9);
+    if (!reduce) for (var i = 0; i < 3; i++) { var ph = (t * 0.5 + i / 3) % 1; g.fillStyle = "rgba(220,225,230," + (0.5 * (1 - ph)).toFixed(3) + ")"; g.beginPath(); g.arc(15 + Math.sin(t + i) * 2 * ph, -32 - ph * 14, 1.4 + ph * 2.6, 0, 7); g.fill(); }
+    // a navy knit cap: ribbed, a red band and a pom-pom
+    g.beginPath(); g.moveTo(-10.4, -37); g.quadraticCurveTo(-9.6, -51.6, 1.4, -51.6); g.quadraticCurveTo(12.4, -51.6, 12.6, -37); g.closePath(); g.save(); aInk(g, aG(g, -52, -37, "#5a70b0", "#3a4e8a", "#1e2a58"), "#10183a", 1.2); g.clip();
+    g.strokeStyle = "rgba(16,24,58,.45)"; g.lineWidth = 0.7; for (var rb = -8; rb <= 11; rb += 2.4) { g.beginPath(); g.moveTo(rb, -37); g.lineTo(rb * 0.8 + 0.6, -50); g.stroke(); }
+    g.fillStyle = aG(g, -41, -37, "#ff6a5a", "#c83a3a", "#8a1a1a"); g.fillRect(-11, -41, 24, 3.6); g.restore();
+    g.beginPath(); g.arc(1.4, -52, 3.2, 0, 7); aInk(g, aG(g, -55, -49, "#ffffff", "#f6eedb", "#c8c0a8"), "#7a7462", 0.9); aShine(g, -3.6, -48, 2.4, 0.9, 0.35, -0.3);
     g.restore();
     var got = (S.inv.fishlog || 0) > 0, pay = got && FBOOK.some(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }), bang = !got || pay, by = -64 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
     if (bang || near) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = bang ? "#f2c14e" : "#7af0ff"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, bang ? 8 : 10, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = bang ? "#f2c14e" : "#e8fbff"; g.font = "900 " + (bang ? 12 : 10) + "px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(bang ? "!" : "...", 0, by + (bang ? 4.5 : 2)); }
@@ -21476,22 +21500,28 @@
     var t = now / 1000, br = reduce ? 0 : Math.sin(t * 1.4) * 0.7, face = cp.x < CROAKA.x ? -1 : 1, near = croakaNear(), k = ts / 30, K = croakaS(), ord = croakaOrder();
     g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
     g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 14, 3, 0, 0, 7); g.fill();
-    g.fillStyle = "#b07a44"; g.strokeStyle = "#5a3a1e"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-26, 0); g.lineTo(-27, -9); g.lineTo(-13, -9); g.lineTo(-14, 0); g.closePath(); g.fill(); g.stroke();   // a basket
-    g.beginPath(); g.arc(-20, -9, 6, Math.PI, 0); g.stroke(); g.fillStyle = "#ff8a2a"; g.fillRect(-24, -12, 3, 4); g.fillRect(-19, -13, 3, 5); g.fillStyle = "#5ab84a"; g.fillRect(-23, -15, 1, 3); g.fillRect(-18, -16, 1, 3);
-    g.save(); g.scale(face, 1); g.translate(0, -br * 0.3);
-    g.fillStyle = "#6aa83a"; g.strokeStyle = "#2f5a1e"; g.lineWidth = 1.6; [-7, 6].forEach(function (fx) { g.beginPath(); g.ellipse(fx, -2.5, 6, 3, 0, 0, 7); g.fill(); g.stroke(); });
-    g.fillStyle = "#e86a8a"; g.strokeStyle = "#8a2a4a"; g.beginPath(); g.moveTo(-14, -3); g.quadraticCurveTo(-13, -22, 0, -24); g.quadraticCurveTo(13, -22, 14, -3); g.closePath(); g.fill(); g.stroke();   // dress
-    g.fillStyle = "rgba(255,240,240,.5)"; for (var gx = -10; gx <= 10; gx += 5) g.fillRect(gx, -21, 2, 18); for (var gy = -20; gy <= -5; gy += 5) g.fillRect(-12, gy, 24, 2);   // gingham
-    g.fillStyle = "#f6eedb"; g.strokeStyle = "#a89878"; g.lineWidth = 1; g.beginPath(); g.moveTo(-7, -18); g.lineTo(7, -18); g.lineTo(8, -4); g.lineTo(-8, -4); g.closePath(); g.fill(); g.stroke();   // apron
-    g.fillStyle = "#7ab84a"; g.strokeStyle = "#2f5a1e"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(1, -28, 12, 8, 0, 0, 7); g.fill(); g.stroke();
-    var blink = (now % 3900) < 140; g.beginPath(); g.arc(-5, -34, 4.6, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.arc(7, -34, 4.6, 0, 7); g.fill(); g.stroke();
-    if (blink) { g.strokeStyle = "#12220f"; g.lineWidth = 1.4; [-5, 7].forEach(function (ex) { g.beginPath(); g.moveTo(ex - 2.6, -34); g.lineTo(ex + 2.6, -34); g.stroke(); }); }
-    else [-5, 7].forEach(function (ex) { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(ex, -34, 3, 0, 7); g.fill(); g.fillStyle = "#12220f"; g.fillRect(ex - 0.8, -35.6, 1.6, 3.2); });
-    g.fillStyle = "rgba(255,140,170,.6)"; g.beginPath(); g.arc(-8, -27, 2.2, 0, 7); g.arc(10, -27, 2.2, 0, 7); g.fill();
-    g.strokeStyle = "#12220f"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(-3, -25); g.quadraticCurveTo(1, -22, 6, -25); g.stroke();
-    g.fillStyle = "#e8c46a"; g.strokeStyle = "#8a6a2a"; g.lineWidth = 1.2; g.beginPath(); g.ellipse(1, -38, 19, 4.2, 0, 0, 7); g.fill(); g.stroke();   // straw hat
-    g.beginPath(); g.moveTo(-9, -38); g.quadraticCurveTo(1, -52, 11, -38); g.closePath(); g.fill(); g.stroke(); g.fillStyle = "#e86a8a"; g.fillRect(-9.5, -41, 21, 2.6);
-    g.fillStyle = "#ff7ab0"; g.beginPath(); g.arc(9, -42, 3.2, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(9, -42, 1.3, 0, 7); g.fill();
+    // a woven basket of carrots beside her (inked), then Croaka herself on the shared frog body
+    [[-24, -15, -1], [-19, -16, 1]].forEach(function (c) { g.beginPath(); g.moveTo(c[0] - 1.6, c[1] + 4); g.lineTo(c[0] + 0.4 * c[2], c[1] + 9); g.lineTo(c[0] + 1.6, c[1] + 4); g.closePath(); aInk(g, aG(g, c[1] + 3, c[1] + 9, "#ffb05a", "#ff8a2a", "#c85a10"), "#5a2406", 0.8); g.strokeStyle = "#2f7a1e"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(c[0], c[1] + 4); g.lineTo(c[0] - 1, c[1]); g.moveTo(c[0], c[1] + 4); g.lineTo(c[0] + 1.4, c[1] + 0.6); g.stroke(); });
+    g.beginPath(); g.moveTo(-26, 0); g.lineTo(-27.4, -9); g.lineTo(-12.6, -9); g.lineTo(-14, 0); g.closePath(); g.save(); aInk(g, aG(g, -9, 0, "#d8a060", "#b07a44", "#7a4e22"), "#3a220e", 1.2); g.clip();
+    g.strokeStyle = "rgba(58,34,14,.5)"; g.lineWidth = 0.7; for (var wv = -6; wv < 0; wv += 2.2) { g.beginPath(); g.moveTo(-28, wv); g.lineTo(-12, wv); g.stroke(); } g.restore();
+    g.strokeStyle = "#3a220e"; g.lineWidth = 2.4; g.beginPath(); g.arc(-20, -9, 6, Math.PI, 0); g.stroke(); g.strokeStyle = "#b07a44"; g.lineWidth = 1.2; g.stroke();
+    g.save(); g.scale(face, 1);
+    frogNpc(g, { hi: "#b2ec84", mid: "#7ab84a", lo: "#3e7a28", ink: "#163010", br: br, blink: (now % 3900) < 140, belly: false,
+      inner: function (g) {   // a pink gingham dress with a white apron
+        g.beginPath(); g.moveTo(-16, -20); g.quadraticCurveTo(0, -25.6, 16, -20); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#ff9ab0", "#e86a8a", "#a83a5a"); g.fill();
+        g.fillStyle = "rgba(255,240,244,.42)"; for (var gx = -14; gx <= 14; gx += 5) g.fillRect(gx, -23, 2, 25); for (var gy = -21; gy <= 0; gy += 5) g.fillRect(-16, gy, 32, 2);
+        g.strokeStyle = "#7a2440"; g.lineWidth = 1; g.beginPath(); g.moveTo(-16, -20); g.quadraticCurveTo(0, -25.6, 16, -20); g.stroke();
+        g.beginPath(); g.moveTo(-7, -18.4); g.lineTo(7.6, -18.4); g.lineTo(9, -1); g.lineTo(-8.4, -1); g.closePath(); aInk(g, aG(g, -19, -1, "#ffffff", "#f6eedb", "#cfc6ae"), "#9a8e70", 0.9);
+        g.strokeStyle = "rgba(154,142,112,.6)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(-4, -9); g.quadraticCurveTo(0.4, -7.6, 5, -9); g.stroke(); } });
+    g.fillStyle = "rgba(255,140,170,.55)"; g.beginPath(); g.ellipse(-8.6, -27.4, 2.4, 1.6, 0, 0, 7); g.ellipse(10.6, -27.4, 2.4, 1.6, 0, 0, 7); g.fill();   // rosy cheeks
+    g.strokeStyle = "#163010"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-3.4, -25.4); g.quadraticCurveTo(1, -22, 6, -25.4); g.stroke();
+    // a wide straw sun hat with a pink band and a flower
+    g.beginPath(); g.moveTo(-8.6, -38.4); g.quadraticCurveTo(-8, -51, 1.4, -51.2); g.quadraticCurveTo(10.8, -51, 11.4, -38.4); g.closePath(); aInk(g, aG(g, -51, -38, "#f8e09a", "#e8c46a", "#a8862a"), "#5a3e0e", 1.1);
+    g.save(); g.clip(); g.strokeStyle = "rgba(90,62,14,.4)"; g.lineWidth = 0.6; for (var hw = -6; hw <= 9; hw += 2.6) { g.beginPath(); g.moveTo(hw, -38.6); g.quadraticCurveTo(hw * 0.6 + 0.6, -45, 1.4, -51); g.stroke(); } g.restore();
+    g.beginPath(); g.moveTo(-8.4, -42.4); g.quadraticCurveTo(1.4, -41, 11.2, -42.4); g.lineTo(11.4, -39.6); g.quadraticCurveTo(1.4, -38.2, -8.6, -39.6); g.closePath(); aInk(g, aG(g, -43, -39, "#ffa8c0", "#e86a8a", "#a83a5a"), "#5a1428", 0.8);
+    g.beginPath(); g.ellipse(1.4, -38.4, 19, 4.2, -0.02, 0, 7); aInk(g, aG(g, -42.6, -34.2, "#f8e09a", "#e8c46a", "#a8862a"), "#5a3e0e", 1.1);
+    for (var pt = 0; pt < 5; pt++) { var pa = pt / 5 * 6.283; g.beginPath(); g.arc(10 + Math.cos(pa) * 2.2, -42.4 + Math.sin(pa) * 2.2, 1.8, 0, 7); aInk(g, "#ff8ab8", "#8a2450", 0.6); }
+    g.beginPath(); g.arc(10, -42.4, 1.4, 0, 7); aInk(g, "#ffd23f", "#8a5a06", 0.6); aShine(g, -3, -47.6, 2.6, 0.9, 0.4, -0.3);
     g.restore();
     var bang = !K.met || !ord.done || (S.inv.farmbook > 0 && FMB.some(function (P) { return fmPageDone(P) && !(S.hbpay && S.hbpay[P.id]); })), by = -62 + (reduce ? 0 : Math.sin(now / 320) * 1.6);
     if (bang) { g.fillStyle = "rgba(10,20,16,.88)"; g.strokeStyle = "#ffb0d8"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, by, 8, 7.5, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-2, by + 7); g.lineTo(0, by + 11); g.lineTo(2, by + 7); g.fill(); g.fillStyle = "#ffb0d8"; g.font = "900 11px Nunito,sans-serif"; g.textAlign = "center"; g.fillText(K.met ? "♥" : "!", 0, by + 4); }
@@ -21781,6 +21811,50 @@
     else if (sn === 0) { q.fillStyle = "rgba(170,235,150,.18)"; q.fillRect(0, 0, c.width, c.height); q.fillStyle = "#ffc0dc"; for (var f = 0; f < c.width * c.height / 700; f++) q.fillRect(Math.floor(SW.hash(f, v, 67) * c.width), Math.floor(SW.hash(v, f, 68) * c.height), 2, 2); }
     q.restore();
   }
+  // WORLD TREES ON THE HOMESTEAD: the homestead's trees are real Murkwater trees out of your world, painted with the very same art (treePix
+  // for the trunk, crownPaint for the crown) the way a felled tree is. A few of different heights are picked once per world (trunk and crown
+  // kept apart, so the season only recolours the leaves). Null if the world has none left standing, and then the old block tree is used.
+  var WTA = null;
+  function worldTreeArt() {
+    if (WTA && WTA.w === world) return WTA.L; WTA = { w: world, L: [] }; if (!world || !world.trees) return WTA.L;
+    var sx0 = Math.floor(world.spawn ? world.spawn.x : W / 2), xs = [], seenH = {};
+    for (var d = 0; d < 900 && xs.length < 60; d++) for (var sg = -1; sg <= 1; sg += 2) { var xx = sx0 + d * sg; if (xx < 2 || xx >= W - 2 || world.bio[xx] !== 0 || canStyle(xx) !== 0) continue;   // trunks standing on the ground near spawn
+      var yy = Math.max(1, (col[xx] || 2) - 16); while (yy < H - 1 && yy < (col[xx] || 0) + 4 && get(xx, yy) !== T.LOG) yy++; if (get(xx, yy) === T.LOG && get(xx, yy + 1) === T.LOG && get(xx, yy + 2) === T.LOG) xs.push(xx); }
+    for (var n = 0; n < xs.length && WTA.L.length < 4; n++) {
+      var x = xs[n], y = Math.max(1, (col[x] || 2) - 16); while (y < H - 1 && get(x, y) !== T.LOG) y++; if (y >= H - 1) continue; while (get(x, y + 1) === T.LOG) y++; var gy = y + 1; if (!TILES[get(x, gy)].solid) continue;
+      var L = treeAbove(x, gy); if (L.length < 4) continue;
+      for (var s2 = -1; s2 <= 1; s2 += 2) if (get(x + s2, y) === T.LOG && get(x + s2, y - 1) === T.AIR) L.push([x + s2, y]);   // the roots at its foot
+      var leaves = [], st = L.slice(), seen = {};
+      while (st.length && leaves.length < 400) { var c = st.pop(); for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = c[0] + dx, ny = c[1] + dy, nk = ny * W + nx; if (seen[nk] || Math.abs(nx - x) > 8 || ny > gy) continue; seen[nk] = 1; if (get(nx, ny) === T.LEAVES && !(S.pleaf && S.pleaf[nk])) { leaves.push([nx, ny]); st.push([nx, ny]); } } }
+      if (leaves.length < 6) continue;
+      var all = L.concat(leaves), x0 = x, x1 = x, y0 = gy, y1 = gy; all.forEach(function (c2) { if (c2[0] < x0) x0 = c2[0]; if (c2[0] > x1) x1 = c2[0]; if (c2[1] < y0) y0 = c2[1]; if (c2[1] > y1) y1 = c2[1]; });
+      var hgt = gy - y0; if (hgt < 5 || hgt > 12 || seenH[hgt]) continue; seenH[hgt] = 1;
+      var M = 2, A = 16, cw = (x1 - x0 + 1 + M * 2) * A, ch = (y1 - y0 + 1 + M * 2) * A, tc = hpCan(cw, ch), cc = hpCan(cw, ch);
+      L.forEach(function (c3) { var pc = treePix(c3[0], c3[1]); if (pc) tc.g.drawImage(pc, (c3[0] - x0 + M) * A - 8, (c3[1] - y0 + M) * A - 8); });
+      var lf = leaves.slice().sort(function (a, b) { return b[1] - a[1] || a[0] - b[0]; }), LF = []; lf.forEach(function (q) { LF.push(q[0], q[1]); });
+      try { cc.g.drawImage(crownPaint(LF, x0, y0, x1, y1, M), 0, 0); } catch (e) { continue; }
+      var cr = hpCan(cw, ch); cr.g.drawImage(cc.c, 0, 0);   // the crown alone, trimmed of the trunk's rows below it, for the forest canopy
+      WTA.L.push({ t: tc.c, c: cc.c, bx: (x + 0.5 - x0 + M) * A, by: (gy - y0 + M) * A, h: hgt });
+    }
+    WTA.L.sort(function (a, b) { return a.h - b.h; }); return WTA.L;
+  }
+  // the crowns are pixel art in CPAL[0]'s seven greens, so a season is an exact palette swap (no tint over the whole thing): spring a fresher
+  // green with blossom, autumn one of three ramps (orange, red, gold), winter a dark evergreen with snow on every sunlit top
+  var SEAPAL = { 0: [["#0d2a1e", "#1a5a3c", "#2a8250", "#44aa6e", "#5ec084", "#84e2a0", "#c8ffd8"]],
+    2: [["#2a1008", "#5a1e0c", "#8a3212", "#c0521c", "#e07a2a", "#f4a840", "#ffd27a"], ["#2a0a0a", "#5a1410", "#8a2216", "#b8361e", "#d8542a", "#ee7a3a", "#ffb070"], ["#2a1a08", "#5a3a10", "#8a5a16", "#b8801e", "#d8a42a", "#f0c84a", "#fff08a"]],
+    3: [["#142226", "#22383c", "#34504e", "#c8d8e2", "#e6eef4", "#ffffff", "#ffffff"]] };
+  function seasonCrown(cv, v) {
+    var sn = HSEA < 0 ? 1 : HSEA; if (sn === 1 || !SEAPAL[sn]) return cv; var P = SEAPAL[sn][v % SEAPAL[sn].length], from = palRgb("cpal0", CPAL[0]), to = palRgb("sea" + sn + "_" + (v % SEAPAL[sn].length), P);
+    var c = hpCan(cv.width, cv.height), q = c.g; q.drawImage(cv, 0, 0); var im = q.getImageData(0, 0, cv.width, cv.height), d = im.data, n, k;
+    for (n = 0; n < d.length; n += 4) { if (!d[n + 3]) continue; for (k = 0; k < 7; k++) { var f = from[k]; if (d[n] === f[0] && d[n + 1] === f[1] && d[n + 2] === f[2]) { d[n] = to[k][0]; d[n + 1] = to[k][1]; d[n + 2] = to[k][2]; break; } } }
+    if (sn === 0) for (n = 0; n < 40; n++) { var px = Math.floor(SW.hash(n, v, 67) * cv.width), py = Math.floor(SW.hash(v, n, 68) * cv.height), o2 = (py * cv.width + px) * 4; if (d[o2 + 3] && d[o2 + 1] > d[o2]) { d[o2] = 255; d[o2 + 1] = n & 1 ? 192 : 236; d[o2 + 2] = n & 1 ? 220 : 244; } }   // blossom
+    q.putImageData(im, 0, 0); return c.c;
+  }
+  function hsWTree(v) {   // world tree v (0 = shortest), dressed for the season: { c: canvas, bx, by } or null
+    var L = worldTreeArt(); if (!L.length) return null; var q = L[v % L.length], key = "treeW" + (v % L.length); if (HSPR[key]) return HSPR[key];
+    var out = hpCan(q.t.width, q.t.height); out.g.drawImage(q.t, 0, 0); out.g.drawImage(seasonCrown(q.c, v), 0, 0);
+    return (HSPR[key] = { c: out.c, bx: q.bx, by: q.by });
+  }
   function hsTree(v) {   // a Delve tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees), dressed for the season
     var key = "tree" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(48, 80), g0 = S2.g, LC = hpCan(48, 80), g = LC.g;
     var L = v === 0 ? [[16, 0], [8, 10], [24, 10], [0, 22], [16, 20], [32, 22], [8, 34], [24, 34], [16, 40]] : v === 1 ? [[16, 6], [4, 16], [20, 14], [32, 18], [8, 30], [24, 30], [16, 40]] : [[12, 4], [24, 6], [4, 18], [18, 18], [32, 20], [10, 32], [26, 32], [18, 42]];
@@ -22001,6 +22075,14 @@
       pts.push([px, py, 8 + SW.hash(x, y, 303) * 9, Math.floor(SW.hash(x, y, 304) * 3), dd]);
     }
     pts.sort(function (p1, p2) { return p1[1] - p2[1]; });
+    var WC = worldTreeArt();
+    if (WC.length) {   // the same crowns as the trees in your world, packed close (every other point), back to front, the deep woods darker
+      var lc = hpCan(W, H), SC = {};
+      pts.forEach(function (q, n) { if ((Math.floor(q[0] / 12) + Math.floor(q[1] / 11)) % 2) return; var wi = (q[3] + n) % WC.length, sv = (n * 7 + q[3]) % 3, sk = wi + "_" + sv, cv2 = SC[sk] || (SC[sk] = seasonCrown(WC[wi].c, sv)), cx = Math.round(q[0] - cv2.width / 2), cy = Math.round(q[1] - cv2.height * 0.42);
+        lc.g.drawImage(cv2, cx, cy); if (q[4] > 1) { lc.g.save(); lc.g.globalCompositeOperation = "source-atop"; lc.g.fillStyle = "rgba(4,14,10," + Math.min(0.4, (q[4] - 1) * 0.07).toFixed(2) + ")"; lc.g.fillRect(cx, cy, cv2.width, cv2.height); lc.g.restore(); } });
+      Object.keys(SC).forEach(function (k2) { if (SC[k2] !== WC[+k2.split("_")[0]].c) cvFree(SC[k2]); }); g.drawImage(lc.c, 0, 0); cvFree(lc.c); return (HFOR = c);
+    }
+    pts.sort(function (p1, p2) { return p1[1] - p2[1]; });
     pts.forEach(function (q) {
       var P = PAL[q[3]], r = q[2], X = q[0], Y = q[1];
       g.fillStyle = "rgba(0,10,4,.45)"; g.beginPath(); g.arc(X + 2, Y + 4, r, 0, 6.2832); g.fill();   // its shadow on the crowns below
@@ -22014,8 +22096,8 @@
   }
   function homeProp(g, id, i, j, T0) {
     var h = SW.hash(i, j, 92), s = ts / 16;
-    if (id === HT.TREE) { var v = h < 0.5 ? 0 : h < 0.8 ? 1 : 2, jx = Math.round((SW.hash(i, j, 93) - 0.5) * 6) * s, jy = Math.round((SW.hash(j, i, 95) - 0.5) * 6);
-      hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3); hDraw(g, hsTree(v), i + 0.5, j + 1, 24, 80 + jy, jx); return; }
+    if (id === HT.TREE) { var v = h < 0.5 ? 0 : h < 0.8 ? 1 : 2, jx = Math.round((SW.hash(i, j, 93) - 0.5) * 6) * s, jy = Math.round((SW.hash(j, i, 95) - 0.5) * 6), wt = hsWTree(Math.floor(h * 4));
+      if (wt) { if (SW.hash(i, j, 97) < 0.42 || (i > 0 && i < HW - 1 && hmT(i - 1, j) !== HT.TREE)) { hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3); hDraw(g, wt.c, i + 0.5, j + 1, wt.bx, wt.by - 3 + jy, jx); } } else if (hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3) || 1) hDraw(g, hsTree(v), i + 0.5, j + 1, 24, 80 + jy, jx); return; }
     if (id === HT.ROCK) { hDraw(g, caveNode(T.STONE, Math.floor(h * 4)), i, j, 0, 2); return; }
     if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.5) * ts, oy + (j + 0.9) * ts, ts * 0.45, ts * 0.13, 0.25); hDraw(g, hsStump(), i, j, 0, 1); return; }
     var wnd = 1 + wxN() * 0.6 + wxStorm() * 1.8;
@@ -22135,6 +22217,8 @@
   window.__sbx.pause = { open: function () { openPause(); }, close: function () { closePause(); }, act: function (a) { pauseAct(a); }, opt: function (k) { optAct(k); }, get on() { return pauseOpen; }, get view() { return pauseView; }, OPT: OPT };
   window.__sbx.feel = { la: CAMLA, get sq() { return p.sq || 0; } };
   window.__sbx.coat = { C: COATS, A: ARROWK, load: loadAmmo, ammo: function () { return bowAmmo(); }, hit: coatHit, step: coatStep, dt: coatDt };
+  window.__sbx.tour = { cave: function (f) { var h = (world.holes || [])[0] || { x: Math.floor(p.x), y: Math.floor(p.y) }; enterCave(h.x, h.y, f || 1, true); }, sea: function () { ocEnterPier(); } };
+  window.__sbx.wta = function () { WTA = null; return worldTreeArt().map(function (q) { return [q.h, q.t.width, q.t.height, q.bx, q.by]; }); };
   window.__sbx.art = { e: function (g, e, now) { drawEnemy(g, e, now); }, a: function (g, a, now) { drawAnimal(g, a, now); }, view: function () { return { ox: ox, oy: oy, ts: ts }; }, crit: CRIT, npc: npc, oc: function (g, m, now) { ocDrawMob(g, m, now); }, ocNew: function (k, x, y) { return ocNewMob(k, x, y); }, boss: function (g, e, now) { drawBoss(g, e, now); }, bossNew: function (k, x, y) { return newBoss(k, x, y); }, zaruk: function (g, x, y, sc, t, f, sl) { drawZaruk(g, x, y, sc, t, f, 1, sl || 0); }, crew: function (g, x, y, r, col, f, t) { drawCrewFrog(g, x, y, r, col, f, t); }, miner: function (g, x, y, r, t, h) { drawMinerFrog(g, x, y, r, t, h); }, vil: function (g, v, now) { drawVil(g, v, now); }, vils: function () { return vilList(); }, saltjaw: function (g, m, now) { drawCaptain(g, m, now); }, npcDraw: function (g, now) { drawNpc(g, now || 1000); }, anim: function (k, x, y) { return newAnimal(k, x, y, true); } };   // draw one creature onto any canvas (art checks)
   window.__sbx.cont = { near: function () { return contNear(); }, at: function (x, y) { return contAtCell(x, y); }, open: function (c) { openCont(c); }, act: function (a) { contAct(a); }, map: function () { return cave && cave.F ? contMap(cave.F) : null; }, read: function () { useRead(0); }, sell: function (k) { sellShop(k); }, sellHtml: function () { return sellHtml(); } };
   window.__sbx.paw = { target: function () { return pawTarget(); }, PAW: PAW, get cool() { return cool; } };
