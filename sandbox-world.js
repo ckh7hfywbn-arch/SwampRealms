@@ -552,7 +552,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     var STEEP = new Uint8Array(W);
     for (x = 1; x < W - 1; x++) STEEP[x] = Math.max(Math.abs(top[x] - top[x - 1]), Math.abs(top[x] - top[x + 1]));
     for (x = 0; x < W; x++) {
-      var b = bio[x], vr = sub[x], tp = top[x], alt = SURF - tp, steep = STEEP[x] >= 2 && alt > 6, cap = alt > (b === 2 && !vr ? 22 : 34) && b !== 1;
+      var b = bio[x], vr = sub[x], tp = top[x], alt = SURF - tp, steep = STEEP[x] >= 2 && alt > 6, cap = b === 2 && alt > (vr ? 34 : 22);   // snow caps only in Frostfen (Murkwater's high peaks stay green and stony)
       var soilN = vnoise(x * 0.2, 0.7, seed + 2), soil = alt > 14 ? 1 + Math.floor(soilN * 2) : 3 + Math.floor(soilN * 3);
       for (y = 0; y < H; y++) {
         var id = T.AIR, d = y - tp;

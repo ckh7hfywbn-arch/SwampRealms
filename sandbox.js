@@ -17363,10 +17363,12 @@
   function id2pack(id, td) { return mapPack(id === T.WATER ? "#2a8f95" : td.kind === "ore" ? td.c2 : td.c); }
   function mapImg() {   // the explored world, one pixel per tile. PERF: rebuilt only when the land or what you have explored changed (and at most twice a second), with no per-pixel string work
     var now = performance.now(), key = buildN + ":" + editN + ":" + exVer + ":" + (world.gx0 | 0) + ":" + (world.gx1 | 0) + ":" + W;
-    if (M.img && (M.key === key || now - M.imgT < 500)) return M.img; M.imgT = now; M.key = key;
+    if (M.img && (M.key === key || M.drag || M.pinch || now - M.imgT < 2500)) return M.img; M.imgT = now; M.key = key;   // never while you drag or pinch (that was the stutter), and at most every 2.5 s while open
     var gx0 = world.gx0 !== undefined ? world.gx0 : 0, gw = (world.gx1 !== undefined ? world.gx1 : W - 1) - gx0 + 1;
-    var off = M.img || document.createElement("canvas"); if (off.width !== gw || off.height !== H) { off.width = gw; off.height = H; M.im = null; } off.gx0 = gx0;
-    var g = off.getContext("2d"), im = M.im || (M.im = g.createImageData(gw, H)), u = new Uint32Array(im.data.buffer), lut = mapLut(), x, y, mx, i, id, c, row, orow;
+    // MAP STRIPS: the picture is kept as strips 1024 tiles wide. One canvas as wide as the world (up to 12,000 px) is past what phone graphics
+    // chips draw quickly, so dragging the map stuttered; strips are drawn only where they are on screen.
+    var off = M.img || { strips: [] }; if (off.width !== gw || off.height !== H) { off.strips.forEach(function (q) { cvFree(q.c); }); off.strips = []; M.im = null; } off.width = gw; off.height = H; off.gx0 = gx0;
+    var im = M.im || (M.im = (off.strips[0] ? off.strips[0].c : document.createElement("canvas")).getContext("2d").createImageData(gw, H)), u = new Uint32Array(im.data.buffer), lut = mapLut(), x, y, mx, i, id, c, row, orow;
     for (y = 0; y < H; y++) {
       row = y * W; orow = y * gw;
       for (mx = 0; mx < gw; mx++) {
@@ -17378,7 +17380,12 @@
         u[orow + mx] = c;
       }
     }
-    g.putImageData(im, 0, 0); return (M.img = off);
+    for (var sx = 0, sk = 0; sx < gw; sx += 1024, sk++) {
+      var sw = Math.min(1024, gw - sx), st = off.strips[sk]; if (!st) { st = off.strips[sk] = { c: document.createElement("canvas") }; }
+      if (st.c.width !== sw || st.c.height !== H) { st.c.width = sw; st.c.height = H; } st.x0 = sx; st.w = sw;
+      st.c.getContext("2d").putImageData(im, -sx, 0, sx, 0, sw, H);
+    }
+    off.strips.length = Math.ceil(gw / 1024); return (M.img = off);
   }
   function m2s(x, y) { return [(x - M.cx) * M.s + M.cw / 2, (y - M.cy) * M.s + M.ch / 2]; }
   function s2m(x, y) { return [(x - M.cw / 2) / M.s + M.cx, (y - M.ch / 2) / M.s + M.cy]; }
@@ -17386,11 +17393,16 @@
   function mapFit() { var sp = mapSpan(); M.s = mapMin(); M.cx = M.s > M.cw / (sp[1] - sp[0]) + 1e-6 ? p.x : (sp[0] + sp[1]) / 2; M.cy = H / 2; mapClamp(); }
   function mapMe() { M.s = Math.max(M.s, clamp(M.cw / 260, mapMin(), 44)); M.cx = p.x; M.cy = p.y; mapClamp(); }
   function drawMapView() {
-    var c = $("sbxMapC"); if (!c || !mapOpen) return; var g = c.getContext("2d"), s = M.s;
+    var c = $("sbxMapC"); if (!c || !mapOpen) return;
+    if (M.fling) { var fn = performance.now(), fdt = Math.min(50, fn - M.fling.t); M.fling.t = fn; M.cx -= M.fling.vx * fdt / M.s; M.cy -= M.fling.vy * fdt / M.s; mapClamp(); var fd = Math.pow(0.0035, fdt / 1000); M.fling.vx *= fd; M.fling.vy *= fd; if (Math.hypot(M.fling.vx, M.fling.vy) < 0.02) M.fling = null; }
+    var g = c.getContext("2d"), s = M.s;
     g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0); g.fillStyle = "#03080a"; g.fillRect(0, 0, M.cw, M.ch);
     var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, H); g.imageSmoothingEnabled = false;
     var v0 = s2m(0, 0), v1 = s2m(M.cw, M.ch), sx0 = Math.max(0, Math.floor(v0[0] - MI.gx0)), sx1 = Math.min(MI.width, Math.ceil(v1[0] - MI.gx0)), sy0 = Math.max(0, Math.floor(v0[1])), sy1 = Math.min(H, Math.ceil(v1[1]));   // PERF: draw only the part of the map that is on screen
-    if (sx1 > sx0 && sy1 > sy0) { var d0 = m2s(MI.gx0 + sx0, sy0), d1 = m2s(MI.gx0 + sx1, sy1); g.drawImage(MI, sx0, sy0, sx1 - sx0, sy1 - sy0, d0[0], d0[1], d1[0] - d0[0], d1[1] - d0[1]); }
+    if (sx1 > sx0 && sy1 > sy0) MI.strips.forEach(function (st) {   // only the strips on screen, each cut to what shows
+      var a = Math.max(sx0, st.x0), b = Math.min(sx1, st.x0 + st.w); if (b <= a) return;
+      var d0 = m2s(MI.gx0 + a, sy0), d1 = m2s(MI.gx0 + b, sy1); g.drawImage(st.c, a - st.x0, sy0, b - a, sy1 - sy0, d0[0], d0[1], d1[0] - d0[0], d1[1] - d0[1]);
+    });
     g.strokeStyle = "#4ee6b455"; g.lineWidth = 1.5; g.strokeRect(o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
     if (s >= 6) {   // tile grid when zoomed right in, every 10 tiles
       g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1; g.beginPath(); var gx0 = Math.max(0, Math.floor(s2m(0, 0)[0] / 10) * 10), gx1 = Math.min(W, s2m(M.cw, 0)[0]), gy0 = Math.max(0, Math.floor(s2m(0, 0)[1] / 10) * 10), gy1 = Math.min(H, s2m(0, M.ch)[1]), q;
@@ -17427,7 +17439,7 @@
       g.restore();
     });
     g.textBaseline = "alphabetic";
-    $("sbxMapInfo").textContent = (S.wp.length ? S.wp.length + " / " + WP_MAX + " waypoints" : "No waypoints yet") + " · " + (M.s / mapMin()).toFixed(1) + "x";
+    var inf = (S.wp.length ? S.wp.length + " / " + WP_MAX + " waypoints" : "No waypoints yet") + " · " + (M.s / mapMin()).toFixed(1) + "x"; if (inf !== M.inf) { M.inf = inf; $("sbxMapInfo").textContent = inf; }   // (only when it changes: a text change every frame costs a page layout)
   }
   // Waypoint icons: little vector glyphs drawn centred on (0,0) in a box about 2r wide. Used on the map pins and on the picker buttons.
   var WP_ICON_NAMES = { dot: "Dot", home: "Home", star: "Star", heart: "Heart", skull: "Danger", pick: "Mine", chest: "Treasure", flag: "Flag", cave: "Cave", tree: "Tree", crown: "Crown", sword: "Battle" };
@@ -17493,18 +17505,20 @@
     function pt(e) { var r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
     c.addEventListener("pointerdown", function (e) {
       e.preventDefault(); try { c.setPointerCapture(e.pointerId); } catch (x) {} var q = pt(e); M.pts[e.pointerId] = q; var ids = Object.keys(M.pts);
-      if (ids.length === 1) M.drag = { x: q.x, y: q.y, cx: M.cx, cy: M.cy, t: performance.now(), moved: false };
+      M.fling = null; if (ids.length === 1) M.drag = { x: q.x, y: q.y, cx: M.cx, cy: M.cy, t: performance.now(), moved: false };
       else if (ids.length === 2) { var a = M.pts[ids[0]], b = M.pts[ids[1]]; M.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, s: M.s }; if (M.drag) M.drag.moved = true; }
     });
     c.addEventListener("pointermove", function (e) {
       if (!M.pts[e.pointerId]) return; var q = pt(e); M.pts[e.pointerId] = q; var ids = Object.keys(M.pts);
       if (ids.length >= 2 && M.pinch) { var a = M.pts[ids[0]], b = M.pts[ids[1]]; zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, M.pinch.s * (Math.hypot(a.x - b.x, a.y - b.y) / M.pinch.d)); }
-      else if (M.drag) { var dx = q.x - M.drag.x, dy = q.y - M.drag.y; if (!M.drag.moved && Math.hypot(dx, dy) > 6) M.drag.moved = true; if (M.drag.moved) { M.cx = M.drag.cx - dx / M.s; M.cy = M.drag.cy - dy / M.s; mapClamp(); } }
+      else if (M.drag) { var dx = q.x - M.drag.x, dy = q.y - M.drag.y; if (!M.drag.moved && Math.hypot(dx, dy) > 6) M.drag.moved = true; if (M.drag.moved) { M.cx = M.drag.cx - dx / M.s; M.cy = M.drag.cy - dy / M.s; mapClamp(); }
+        var tn = performance.now(), L = M.drag.lp; if (L && tn > L.t) { var k2 = Math.min(1, (tn - L.t) / 60); M.drag.vx = (M.drag.vx || 0) * (1 - k2) + (q.x - L.x) / (tn - L.t) * k2; M.drag.vy = (M.drag.vy || 0) * (1 - k2) + (q.y - L.y) / (tn - L.t) * k2; } M.drag.lp = { x: q.x, y: q.y, t: tn }; }   // (finger speed, for the fling)
     });
     var up = function (e) {
       if (!M.pts[e.pointerId]) return; var q = M.pts[e.pointerId], was = Object.keys(M.pts).length; delete M.pts[e.pointerId];
       if (e.type === "pointerup" && was === 1 && M.drag && !M.drag.moved && performance.now() - M.drag.t < 700) mapTap(q.x, q.y);
-      if (!Object.keys(M.pts).length) M.drag = null; M.pinch = null;
+      if (!Object.keys(M.pts).length) { if (e.type === "pointerup" && M.drag && M.drag.moved && !M.pinch && M.drag.lp && performance.now() - M.drag.lp.t < 90 && Math.hypot(M.drag.vx || 0, M.drag.vy || 0) > 0.25) M.fling = { vx: M.drag.vx, vy: M.drag.vy, t: performance.now() }; M.drag = null; }   // FLING: let go while moving and the map glides to a stop
+      M.pinch = null;
       if (Object.keys(M.pts).length === 1) { var k = Object.keys(M.pts)[0]; M.drag = { x: M.pts[k].x, y: M.pts[k].y, cx: M.cx, cy: M.cy, t: 0, moved: true }; }
     };
     c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up); c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -21841,7 +21855,7 @@
       try { tickAmbSound(dt); } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
-        if (mapOpen) { if (M.drag || M.pinch || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
+        if (mapOpen) { if (M.drag || M.pinch || M.fling || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
         else if (HOME) homeRender(now); else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
         drawTrans(); if (hbDirty) drawBar();
       } catch (er) { loopErr(er); }
