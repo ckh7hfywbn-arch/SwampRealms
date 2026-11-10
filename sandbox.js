@@ -18001,7 +18001,8 @@
   function cvStepDown() {
     canFree(); Object.keys(LEAFCACHE).forEach(function (k) { cvFree(LEAFCACHE[k]); }); LEAFCACHE = {}; LEAFKEY = 0;
     (world && world.structs || []).forEach(function (q) { if (q.pic && q.pic.cv) { cvFree(q.pic.cv); q.pic.cv = null; } });
-    if (!HOME) { cvFree(HG); HG = null; cvFree(HFOR); HFOR = null; }
+    cvFree(HG); HG = null; cvFree(HFOR); HFOR = null; Object.keys(HSPR).forEach(function (k) { var v = HSPR[k]; (Array.isArray(v) ? v : [v]).forEach(function (c) { if (c && c.getContext) cvFree(c); }); }); HSPR = {}; HATL = null;
+    if (HOME) { HOME.fk = null; HOME.gd = 1; HOME.vig = null; }   // in the homestead: everything it painted is painted again, so a picture that failed to draw comes back
     if (SLB) { cvFree(SLB.c); SLB = null; } if (SHL) { cvFree(SHL.c); SHL = null; } if (typeof WeakMap !== "undefined") SILH = new WeakMap();
     sprite = null; spriteKey = "";
     if (!CVW.low) { CVW.low = true; lowq = true; dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} toast("Your device ran low on graphics memory, so Delve switched to lighter graphics. You can change it in Options > Graphics.", "#f2c14e"); }
