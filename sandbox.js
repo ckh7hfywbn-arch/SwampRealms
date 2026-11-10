@@ -17341,9 +17341,22 @@
   function mapSpan() { return world && world.gx1 !== undefined ? [world.gx0, world.gx1 + 1] : [0, W]; }
   function mapMin() { var sp = mapSpan(); return Math.max(0.2, Math.min(1, M.cw / (sp[1] - sp[0]))); }
   function mapClamp() { var sp = mapSpan(); M.s = clamp(M.s, mapMin(), 44); M.cx = clamp(M.cx, sp[0], sp[1]); M.cy = clamp(M.cy, 0, H); }
+  // SMOOTH MAP: the map canvas is bigger than the screen by MPAD on every side. While you drag, pinch or fling, the picture already drawn is
+  // just slid and scaled with a CSS transform (the graphics chip does that for free); it is only redrawn when you have moved past the
+  // margin or zoomed a lot, and once more, crisp, when you let go.
   function mapSize() {
-    var c = $("sbxMapC"), r = c.getBoundingClientRect(); M.cw = Math.max(200, r.width); M.ch = Math.max(160, r.height); M.dpr = Math.min(2, window.devicePixelRatio || 1);
-    c.width = Math.round(M.cw * M.dpr); c.height = Math.round(M.ch * M.dpr);
+    var c = $("sbxMapC"), r = $("sbxMapV").getBoundingClientRect(); M.cw = Math.max(200, r.width); M.ch = Math.max(160, r.height); M.dpr = Math.min(2, window.devicePixelRatio || 1);
+    M.pad = Math.round(Math.max(M.cw, M.ch) * 0.45);
+    c.style.left = c.style.top = -M.pad + "px"; c.style.width = M.cw + M.pad * 2 + "px"; c.style.height = M.ch + M.pad * 2 + "px"; c.style.transformOrigin = "0 0"; c.style.transform = "";
+    c.width = Math.round((M.cw + M.pad * 2) * M.dpr); c.height = Math.round((M.ch + M.pad * 2) * M.dpr); M.dr = null;
+  }
+  function mapFlingStep() { if (M.fling) { var fn = performance.now(), fdt = Math.min(50, fn - M.fling.t); M.fling.t = fn; M.cx -= M.fling.vx * fdt / M.s; M.cy -= M.fling.vy * fdt / M.s; mapClamp(); var fd = Math.pow(0.0035, fdt / 1000); M.fling.vx *= fd; M.fling.vy *= fd; if (Math.hypot(M.fling.vx, M.fling.vy) < 0.02) M.fling = null; } }
+  function mapGlide() {   // during a gesture: slide the last drawing into place, or redraw if it no longer covers the screen
+    var D = M.dr, c = $("sbxMapC"); if (!D) return drawMapView();
+    var k = M.s / D.s, tx = M.s * (D.cx - M.cx) + (M.cw / 2 + M.pad) * (1 - k), ty = M.s * (D.cy - M.cy) + (M.ch / 2 + M.pad) * (1 - k);
+    var x0 = -M.pad + tx, y0 = -M.pad + ty, x1 = x0 + (M.cw + M.pad * 2) * k, y1 = y0 + (M.ch + M.pad * 2) * k;   // where the drawn canvas lands on screen
+    if (k < 0.7 || k > 1.45 || x0 > 0 || y0 > 0 || x1 < M.cw || y1 < M.ch) return drawMapView();
+    c.style.transform = "translate3d(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px,0) scale(" + k.toFixed(4) + ")";
   }
   var MAPB = null;
   function mapBands() {   // the biome stretches of the land made so far: [x0, x1, biome]
@@ -17394,11 +17407,11 @@
   function mapMe() { M.s = Math.max(M.s, clamp(M.cw / 260, mapMin(), 44)); M.cx = p.x; M.cy = p.y; mapClamp(); }
   function drawMapView() {
     var c = $("sbxMapC"); if (!c || !mapOpen) return;
-    if (M.fling) { var fn = performance.now(), fdt = Math.min(50, fn - M.fling.t); M.fling.t = fn; M.cx -= M.fling.vx * fdt / M.s; M.cy -= M.fling.vy * fdt / M.s; mapClamp(); var fd = Math.pow(0.0035, fdt / 1000); M.fling.vx *= fd; M.fling.vy *= fd; if (Math.hypot(M.fling.vx, M.fling.vy) < 0.02) M.fling = null; }
-    var g = c.getContext("2d"), s = M.s;
-    g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0); g.fillStyle = "#03080a"; g.fillRect(0, 0, M.cw, M.ch);
+    var g = c.getContext("2d"), s = M.s, PD = M.pad || 0;
+    c.style.transform = ""; M.dr = { cx: M.cx, cy: M.cy, s: M.s };
+    g.setTransform(M.dpr, 0, 0, M.dpr, PD * M.dpr, PD * M.dpr); g.fillStyle = "#03080a"; g.fillRect(-PD, -PD, M.cw + PD * 2, M.ch + PD * 2);   // (screen 0,0 sits PD into the canvas, so the margin round the screen is drawn too)
     var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, H); g.imageSmoothingEnabled = false;
-    var v0 = s2m(0, 0), v1 = s2m(M.cw, M.ch), sx0 = Math.max(0, Math.floor(v0[0] - MI.gx0)), sx1 = Math.min(MI.width, Math.ceil(v1[0] - MI.gx0)), sy0 = Math.max(0, Math.floor(v0[1])), sy1 = Math.min(H, Math.ceil(v1[1]));   // PERF: draw only the part of the map that is on screen
+    var v0 = s2m(-PD, -PD), v1 = s2m(M.cw + PD, M.ch + PD), sx0 = Math.max(0, Math.floor(v0[0] - MI.gx0)), sx1 = Math.min(MI.width, Math.ceil(v1[0] - MI.gx0)), sy0 = Math.max(0, Math.floor(v0[1])), sy1 = Math.min(H, Math.ceil(v1[1]));   // PERF: draw only the part of the map that is on screen
     if (sx1 > sx0 && sy1 > sy0) MI.strips.forEach(function (st) {   // only the strips on screen, each cut to what shows
       var a = Math.max(sx0, st.x0), b = Math.min(sx1, st.x0 + st.w); if (b <= a) return;
       var d0 = m2s(MI.gx0 + a, sy0), d1 = m2s(MI.gx0 + b, sy1); g.drawImage(st.c, a - st.x0, sy0, b - a, sy1 - sy0, d0[0], d0[1], d1[0] - d0[0], d1[1] - d0[1]);
@@ -17412,7 +17425,7 @@
     }
     g.textAlign = "center"; g.font = signFont(14);
     mapBands().forEach(function (z) {
-      var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BIOX[z[2]].c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, 0), o0[1], Math.min(r, M.cw) - Math.max(l, 0), 4); g.globalAlpha = 0.85;
+      var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BIOX[z[2]].c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, -PD), o0[1], Math.min(r, M.cw + PD) - Math.max(l, -PD), 4); g.globalAlpha = 0.85;
       if (r > 0 && l < M.cw) g.fillText(BIOX[z[2]].n, (Math.max(l, 0) + Math.min(r, M.cw)) / 2, Math.max(o0[1] + 20, 78)); g.globalAlpha = 1;
     });
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
@@ -17430,7 +17443,7 @@
     g.strokeStyle = "#fff"; g.lineWidth = 2.6; g.beginPath(); g.arc(pq[0], pq[1], pulse, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(pq[0], pq[1], 4.6, 0, 6.2832); g.fill();
     g.textAlign = "left"; g.font = signFont(12); g.textBaseline = "middle";
     (S.wp || []).forEach(function (w, i) {   // waypoint pins: a pointed drop with a ring, name beside it when selected or zoomed in
-      var q = m2s(w.x + 0.5, w.y + 0.5), col = WP_COL[w.c], on = i === M.sel; if (q[0] < -30 || q[0] > M.cw + 30 || q[1] < -30 || q[1] > M.ch + 30) return;
+      var q = m2s(w.x + 0.5, w.y + 0.5), col = WP_COL[w.c], on = i === M.sel; if (q[0] < -30 - PD || q[0] > M.cw + 30 + PD || q[1] < -30 - PD || q[1] > M.ch + 30 + PD) return;
       g.save(); g.translate(q[0], q[1]); g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.ellipse(0, 1, 6, 2.2, 0, 0, 6.2832); g.fill();
       g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(-13, -14, -9, -27, 0, -27); g.bezierCurveTo(9, -27, 13, -14, 0, 0); g.closePath();
       g.fillStyle = col; g.fill(); g.lineWidth = on ? 3 : 2; g.strokeStyle = on ? "#fff" : "#06100d"; g.stroke();
@@ -17502,7 +17515,7 @@
   function closeMap() { mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
   (function () {
     var c = $("sbxMapC"), V = $("sbxMapV");
-    function pt(e) { var r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    function pt(e) { var r = V.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }   // (the canvas itself is bigger and slides about)
     c.addEventListener("pointerdown", function (e) {
       e.preventDefault(); try { c.setPointerCapture(e.pointerId); } catch (x) {} var q = pt(e); M.pts[e.pointerId] = q; var ids = Object.keys(M.pts);
       M.fling = null; if (ids.length === 1) M.drag = { x: q.x, y: q.y, cx: M.cx, cy: M.cy, t: performance.now(), moved: false };
@@ -21855,7 +21868,7 @@
       try { tickAmbSound(dt); } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
-        if (mapOpen) { if (M.drag || M.pinch || M.fling || M.dirty || now - (M.fT || 0) > 45) { M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
+        if (mapOpen) { if ((M.drag && M.drag.moved) || M.pinch || M.fling) { M.gl = 1; mapFlingStep(); mapGlide(); } else if (M.gl || M.dirty || now - (M.fT || 0) > 70) { M.gl = 0; M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
         else if (HOME) homeRender(now); else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
         drawTrans(); if (hbDirty) drawBar();
       } catch (er) { loopErr(er); }
