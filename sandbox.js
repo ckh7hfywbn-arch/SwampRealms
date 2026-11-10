@@ -1223,7 +1223,8 @@
   var FLOW = { dt: 0.06, lavaEvery: 4, budget: 2400, budgetLow: 1400, waterMin: 2, lavaMin: 4, sheet: 2, lavaSheet: 3, run: 14, lavaRun: 4, dry: [18, 40] };   // sheet: the thinnest a liquid spreads out to
   function isLiq(id) { return id === T.WATER || id === T.LAVA; }
   function lvAt(i) { return (FL && FL[i]) || 8; }
-  function flOpen(id) { if (id === T.AIR) return true; var td = TILES[id]; return !!td && !td.solid && !td.crop && !td.decor && (td.sway || td.kind === "reed" || td.kind === "flower" || td.kind === "bloom" || td.kind === "glowcap"); }
+  function flOpen(id) { if (id === T.AIR) return true; var td = TILES[id]; return !!td && !td.solid && !td.crop && !td.decor && (td.sway || td.kind === "reed" || td.kind === "flower" || td.kind === "bloom" || td.kind === "glowcap" || isPlantT(id)); }
+  function isPlantT(id) { var td = TILES[id]; return id !== T.AIR && !!td && !td.solid && !td.crop && !td.decor && id !== T.VINE && rampFree(id); }   // a wild or planted plant (flowers, reeds, mushrooms, ferns, saplings ...)
   function flInit() { FL = new Uint8Array(W * H); FLM = new Uint8Array(W * H); FLQ = []; PUD = {}; }
   function flWake(x, y) {
     if (!FLM) return;
@@ -1234,6 +1235,9 @@
   }
   function flPut(i, id, lv) {   // set a cell's liquid (or anything else) and its level, with save, light and multiplayer bookkeeping
     var x = i % W, y = (i / W) | 0; FL[i] = isLiq(id) && lv < 8 ? lv : 0;
+    var was = tiles[i]; if (isLiq(id) && was !== id && !isLiq(was) && isPlantT(was)) {   // WATER WASHES PLANTS AWAY: flowers, reeds and mushrooms in its path break and float off as items (lava just burns them)
+      if (id === T.WATER) { var dk = dropOf(TILES[was]); if (dk && ITEMS[dk]) spawnDrop(dk, 1, x, y, true); chips(x + 0.5, y + 0.5, TILES[was].c || "#58d68b", 4, 3); } else chips(x + 0.5, y + 0.5, "#ff8a3d", 5, 4);
+    }
     if (tiles[i] !== id) setT(x, y, id); else { editN++; flWake(x, y); mpTileEdit(x, y, id); }
     if (id === T.WATER && lv <= FLOW.sheet) PUD[i] = flN + Math.round((FLOW.dry[0] + Math.random() * (FLOW.dry[1] - FLOW.dry[0])) / FLOW.dt); else if (PUD[i] !== undefined) delete PUD[i];
   }
@@ -1324,16 +1328,18 @@
   function autoShape(ix) {
     if (cave || OPT.autoramp === false) return 0;
     var i = ix % W, j = (ix / W) | 0; if (i < 2 || i >= W - 2 || j < 2 || j >= H - 2) return 0;
-    var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !rampFree(tiles[ix - W])) return 0;
-    var sL = TILES[tiles[ix - 1]].solid, sR = TILES[tiles[ix + 1]].solid;
-    var step = function (k) { return rampFree(tiles[k]) && TILES[tiles[k + W]].solid; };   // open beside, with ground one block lower
+    // world tree trunks are scenery you walk through, so a trunk standing on or beside a block does not stop it sloping (TREE BASES)
+    var nl = function (k) { return tiles[k] === T.LOG && orig[k] === T.LOG; }, fr = function (k) { return rampFree(tiles[k]) || nl(k); }, so = function (k) { return TILES[tiles[k]].solid && !nl(k); };
+    var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !fr(ix - W)) return 0;
+    var sL = so(ix - 1), sR = so(ix + 1);
+    var step = function (k) { return fr(k) && TILES[tiles[k + W]].solid; };   // open beside, with ground one block lower
     if (!sL && !sR) return step(ix - 1) && step(ix + 1) ? 1 : 0;   // a lone block sticking up one step: a low half-height bump (like Terraria's smoothing)
     var m = sL ? ix - 1 : ix + 1, mo = sL ? -1 : 1;   // a mound two blocks wide and one high: both halves become a low bump
-    if (step(ix - mo) && NATC[tiles[m]] && tiles[m] === orig[m] && rampFree(tiles[m - W]) && !TILES[tiles[m + mo]].solid && step(m + mo) && !TILES[tiles[ix - mo]].solid && S.shape[m] === undefined) return 1;
+    if (step(ix - mo) && NATC[tiles[m]] && tiles[m] === orig[m] && fr(m - W) && !so(m + mo) && step(m + mo) && !so(ix - mo) && S.shape[m] === undefined) return 1;
     if (sL === sR) return 0;   // flat ground or a wall on both sides
     var low = sL ? 1 : -1, n = ix + low;   // the open side
-    if (!rampFree(tiles[n]) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
-    var hi = ix - low - W; if (!rampFree(tiles[hi]) && !(NATC[tiles[hi]] && rampFree(tiles[hi - W]))) return 0;   // the high side goes on up as a slope (a staircase) or levels off, but a ramp never runs into a wall (it lifted you into the wall)
+    if (!fr(n) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
+    var hi = ix - low - W; if (!fr(hi) && !(NATC[tiles[hi]] && fr(hi - W))) return 0;   // the high side goes on up as a slope (a staircase) or levels off, but a ramp never runs into a wall (it lifted you into the wall)
     // (a mound two blocks wide slopes on both sides into a little hump, so the grass runs over it unbroken)
     return low > 0 ? 3 : 2;   // open on the right: rising to the left; open on the left: rising to the right
   }
@@ -2676,6 +2682,7 @@
     if ((td.kind === "farmland" || td.kind === "farmwet") && cropAt(x, y - 1)) { var tc = cropAt(x, y - 1); setT(x, y - 1, T.AIR); harvestCrop(x, y - 1, tc); }   // the crop on top comes with it
     setT(x, y, T.AIR); S.st.mined++;
     if (td.crop) harvestCrop(x, y, td);
+    if (y > 0 && TILES[id].solid && isPlantT(get(x, y - 1))) breakTile0(x, y - 1);   // PLANTS NEED GROUND: a flower, reed or mushroom on top of the block falls with it (and drops as usual)
     var SDROP = {}; SDROP[T.REED] = ["seed_carrot", 0.18]; SDROP[T.GLOWCAP] = ["seed_potato", 0.15]; SDROP[T.BLOOM] = ["seed_pepper", 0.2]; SDROP[T.SPIKE] = ["seed_frost", 0.2];
     if (SDROP[id] && ITEMS[SDROP[id][0]] && Math.random() < SDROP[id][1]) give(SDROP[id][0], 1, x, y - 0.6);   // wild plants sometimes drop crop seeds
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id);
@@ -6317,7 +6324,7 @@
   // A quick roll the way you are moving (or facing): a burst of speed and a moment where nothing can hurt you (it reuses hurtGrace, which
   // every enemy and hazard already checks). Works on the surface (on the ground or in the air), in the Mine and at the homestead; not while
   // swimming under the sea, sailing, riding the motorbike, climbing a ladder or warping.
-  var DODGE = { t: 0, cd: 0, dx: 1, dy: 0 }, DODGE_T = 0.26, DODGE_CD = 0.62, DODGE_IF = 0.36;
+  var DODGE = { t: 0, cd: 0, dx: 1, dy: 0 }, DODGE_T = 0.26, DODGE_CD = 1.5, DODGE_IF = 0.36;   // (cooldown 1.5 s: rolls can't be chained into endless dodging)
   function tryDodge() {
     if (deadUI || panelOpen || packOpen || mapOpen || titleOpen || trans || hp <= 0 || DODGE.cd > 0 || OCS || warp || PHOTO.on) return false;
     var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0) || (joy.x > 0.3 ? 1 : joy.x < -0.3 ? -1 : 0), dy = 0;
@@ -6333,7 +6340,10 @@
     var px = cave || HOME ? cp.x : p.x, py = cave || HOME ? cp.y - 0.2 : p.y - 0.1; chips(px, py, "#d8e8d0", 7, 3); sfxWhoosh();
     return true;
   }
-  function tickDodge(dt) { if (DODGE.t > 0) DODGE.t = Math.max(0, DODGE.t - dt); if (DODGE.cd > 0) DODGE.cd = Math.max(0, DODGE.cd - dt); }
+  var RBTN = null, RBK = -1;
+  function tickDodge(dt) { if (DODGE.t > 0) DODGE.t = Math.max(0, DODGE.t - dt); if (DODGE.cd > 0) DODGE.cd = Math.max(0, DODGE.cd - dt);
+    var k = Math.ceil(DODGE.cd / DODGE_CD * 24); if (k === RBK) return; RBK = k;   // the roll buttons show the cooldown as a sweep that empties
+    if (!RBTN) RBTN = [].slice.call(document.querySelectorAll("[data-roll]")); RBTN.forEach(function (b) { b.classList.toggle("cd", k > 0); b.style.setProperty("--cdp", (k / 24 * 100).toFixed(1) + "%"); }); }
   function dodgeSpeed(base) { return base * (0.5 + 0.5 * DODGE.t / DODGE_T); }   // fast at the start, easing out
   function dodgeSpin(g, h) {
     if (reduce) return; var a = 0;
@@ -12208,7 +12218,7 @@
   function coachSteps() {
     var t = coarse;
     return [
-      { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave,.sbx-stage.joyall") ? "#sbxJoy" : document.querySelector("#sbxPad .lr [data-k]") ? "#sbxPad .lr" : '[data-k="l"]') : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
+      { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave,.sbx-stage.joyall") ? "#sbxJoy" : document.querySelector("#sbxDpad") ? "#sbxDpad" : '[data-k="l"]') : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
       { id: "jump", t: "Jump", d: t ? "Tap the big button to jump." : "Press Space to jump.", el: t ? ".sbx-stage .jump" : "", keys: ["Space"], done: function (c) { return c.jumped; } },
       { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? ".sbx-stage button.roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
       { id: "dig", t: "Gather", d: t ? "Hold your finger on the glowing ring to gather from it." : "Hold the mouse on the glowing ring to gather from it.", world: true, keys: [t ? "" : "Hold mouse"], done: function (c) { return (S.st.mined || 0) > c.m0 || (S.inv.stick || 0) > c.s0 || (S.inv.fiber || 0) > c.f0; } },
@@ -16732,8 +16742,26 @@
     var n = nearChestKeys().length; if (!n) return "";
     return '<p class="crg-chests"><img alt="" src="' + icon("chest") + '">Also using what\'s in ' + (n === 1 ? "1 chest" : n + " chests") + " nearby</p>";
   }
+  // CRAFT ORDER: inside each group, items go from Common up, and an item's upgrades (Reed Pick > Glowspore Pick > ...) come right after it
+  function recFam(r) {
+    var f = r.tier ? "pick" : r.wpn ? "wpn" : r.arm ? "arm" : r.bag ? "bag" : r.bow ? "bow" : r.rod ? "rod" : r.hoe ? "hoe" : r.bucket ? "bkt" : "", lv = r.tier || r.wpn || r.arm || r.bag || r.bow || r.rod || r.hoe || r.bucket || 0;
+    if (!f) { var m = /^(.*?)(\d+)$/.exec(r.id || ""); if (m && m[1].length > 1) { f = m[1]; lv = +m[2]; } else if (/ Mk (I+)\b/.test(r.n || "")) { f = (r.n || "").replace(/ Mk I+.*$/, ""); lv = /Mk (I+)/.exec(r.n)[1].length; } }
+    return { f: f || "#" + r.id, lv: lv };
+  }
+  function craftSort(recs) {
+    var groups = [], by = {};
+    recs.forEach(function (r, i) { var k = r.sub || ""; if (!by[k]) { by[k] = []; groups.push(k); } by[k].push([r, i]); });
+    var out = [];
+    groups.forEach(function (k) {
+      var L = by[k], fam = {};
+      L.forEach(function (e) { var F = recFam(e[0]); e.f = F.f; e.lv = F.lv; var cur = fam[F.f]; if (!cur || F.lv < cur.lv || (F.lv === cur.lv && e[1] < cur.i)) fam[F.f] = { lv: F.lv, i: e[1], r: rarRec(e[0]) }; });
+      L.sort(function (a, b) { var A = fam[a.f], B = fam[b.f]; return A.r - B.r || A.i - B.i || a.lv - b.lv || a[1] - b[1]; });
+      L.forEach(function (e) { out.push(e[0]); });
+    });
+    return out;
+  }
   function craftGrid(recs, ctx, pre) {   // recs already filtered to one category; pre = extra HTML above the slots (bench level, experiments)
-    pre = chestNote() + (pre || "");
+    pre = chestNote() + (pre || ""); recs = craftSort(recs);
     var sel = cgPick(ctx, recs), last = "", h = "";
     if (sel) CG_SEL[ctx] = sel.id;
     recs.forEach(function (r) { if (r.sub !== last) { if (last) h += "</div>"; last = r.sub; h += '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">'; } h += cgTile(r, sel && r.id === sel.id); });
@@ -17782,6 +17810,30 @@
   cv.addEventListener("mousedown", function (e) { if (e.button === 2) { e.preventDefault(); trySpecial(); } });   // right-click: special
   cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   [].forEach.call(document.querySelectorAll("[data-roll]"), function (rb) { rb.addEventListener("pointerdown", function (e) { e.preventDefault(); rb.classList.add("on"); setTimeout(function () { rb.classList.remove("on"); }, 160); tryDodge(); }); });   // DODGE ROLL buttons (phones: in the pad on the surface, on their own in the Mine)
+  // D-PAD (phones, on the surface): one pad with left, right, up and down and small diagonals between them. Slide your thumb around it:
+  // the direction under your thumb is held (a diagonal holds both of its directions). Up climbs ladders and vines, down drops through.
+  (function () {
+    var D = $("sbxDpad"); if (!D) return; var id = null, cur = "";
+    var cells = {}; ["l", "r", "u", "d", "ul", "ur", "dl", "dr"].forEach(function (k) { cells[k] = D.querySelector(".dp-" + k); });
+    function set(dir) {
+      if (dir === cur) return; cur = dir; tk.l = /l/.test(dir) ? 1 : 0; tk.r = /r/.test(dir) ? 1 : 0; tk.u = /u/.test(dir) ? 1 : 0; tk.d = /d/.test(dir) ? 1 : 0;
+      Object.keys(cells).forEach(function (k) { if (cells[k]) cells[k].classList.toggle("on", k === dir); }); D.classList.toggle("on", !!dir);
+      if (dir) { $("sbxHint").classList.remove("on"); try { if (navigator.vibrate && !reduce) navigator.vibrate(6); } catch (e) {} }
+    }
+    function at(e) {
+      var r = D.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), R = r.width / 2, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < R * 0.16) return set("");
+      var a = Math.atan2(dy, dx) * 180 / Math.PI;   // 0 right, 90 down
+      var n = a < 0 ? a + 360 : a, dir;
+      if (n < 28 || n >= 332) dir = "r"; else if (n < 62) dir = "dr"; else if (n < 118) dir = "d"; else if (n < 152) dir = "dl"; else if (n < 208) dir = "l"; else if (n < 242) dir = "ul"; else if (n < 298) dir = "u"; else dir = "ur";
+      set(dir);
+    }
+    D.addEventListener("pointerdown", function (e) { if (LAYE) return; e.preventDefault(); id = e.pointerId; try { D.setPointerCapture(id); } catch (x) {} at(e); });
+    D.addEventListener("pointermove", function (e) { if (e.pointerId === id) at(e); });
+    var end = function (e) { if (e.pointerId !== id) return; id = null; set(""); };
+    D.addEventListener("pointerup", end); D.addEventListener("pointercancel", end); D.addEventListener("lostpointercapture", end);
+    D.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  })();
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
     var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; b.classList.remove("on"); };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -17993,49 +18045,76 @@
   var JOYALL = false; try { JOYALL = localStorage.getItem("swamp-delve-joy") === "all"; } catch (e) {}
   function setJoyAll(on) { JOYALL = !!on; stageEl.classList.toggle("joyall", JOYALL); stopInput(); try { localStorage.setItem("swamp-delve-joy", JOYALL ? "all" : "caves"); } catch (e) {} }
   stageEl.classList.toggle("joyall", JOYALL);
-  var CTLN = { l: "Left arrow", r: "Right arrow", j: "Jump", roll: "Dodge roll", spec: "Special", joy: "Walk stick" }, CTLK = ["l", "r", "j", "roll", "spec", "joy"];
-  var CTLD = { l: { x: 0.1, y: 0.7 }, r: { x: 0.24, y: 0.7 }, j: { x: 0.9, y: 0.7 }, roll: { x: 0.78, y: 0.6 }, spec: { x: 0.9, y: 0.5 }, joy: { x: 0.17, y: 0.66 } };   // fallback spots when a button is not on screen to measure
+  var CTLN = { pad: "D-pad", j: "Jump", roll: "Dodge roll", spec: "Special", joy: "Walk stick" }, CTLK = ["pad", "j", "roll", "spec", "joy"];
+  var CTLD = { pad: { x: 0.17, y: 0.72 }, j: { x: 0.9, y: 0.7 }, roll: { x: 0.78, y: 0.6 }, spec: { x: 0.9, y: 0.5 }, joy: { x: 0.17, y: 0.66 } };   // fallback spots when a button is not on screen to measure
   var CTLR = null, CTLL = null, LAYD = {};
   try { LAYD = JSON.parse(localStorage.getItem("swamp-delve-layout") || "{}") || {}; } catch (e) { LAYD = {}; }
-  function layClean(L) { return { x: clamp(+L.x || 0.5, 0, 1), y: clamp(+L.y || 0.5, 0, 1), s: clamp(+L.s || 1, 0.5, 2.2), o: clamp(L.o == null ? 1 : +L.o, 0.25, 1) }; }
+  function layClean(L) { var o = { x: clamp(+L.x || 0.5, 0, 1), y: clamp(+L.y || 0.5, 0, 1), s: clamp(+L.s || 1, 0.5, 2.2), o: clamp(L.o == null ? 1 : +L.o, 0.25, 1) }; if (L.hid) o.hid = 1; return o; }
+  // EXTRA BUTTONS: Customize Controls > Add puts any of these on screen. A key action presses that action's key (your own key if you
+  // changed it); a "hold" action is held while your finger is on it.
+  var XACT = [
+    { id: "x_use", n: "Use (F)", a: "use", g: "F" }, { id: "x_craft", n: "Crafting", f: function () { toggleCraft(); }, from: "sbxMenuBtn" }, { id: "x_pack", n: "Backpack", f: function () { $("sbxPackBtn").click(); }, from: "sbxPackBtn" },
+    { id: "x_jrn", n: "Journal", f: function () { toggleJournal(); }, from: "sbxJrnBtn" }, { id: "x_map", n: "Map", a: "map", g: "M" }, { id: "x_emo", n: "Emotes", f: function () { $("sbxEmoBtn").click(); }, from: "sbxEmoBtn" },
+    { id: "x_up", n: "Up / climb", h: "u", g: "▲" }, { id: "x_down", n: "Down / drop", h: "d", g: "▼" }, { id: "x_swap", n: "Swap to pick", a: "swap", g: "Q" }, { id: "x_qs", n: "Quick stack", a: "qstack", g: "X" },
+    { id: "x_load", n: "Next loadout", a: "loadout", g: "L" }, { id: "x_pin", n: "Drop a pin", a: "pin", g: "N" }, { id: "x_bore", n: "Bore Drill", a: "bore", g: "Z" }];
+  function xact(id) { for (var i = 0; i < XACT.length; i++) if (XACT[i].id === id) return XACT[i]; return null; }
+  function xKey(aid) { for (var i = 0; i < KEYACT.length; i++) if (KEYACT[i].id === aid) return KEYMAP.b[aid] || KEYACT[i].d[0]; return ""; }
+  function xMake(id) {   // build an extra button and register it as a control
+    var X = xact(id); if (!X || CTLR[id]) return null;
+    var b = document.createElement("button"); b.type = "button"; b.className = "sbx-xb"; b.setAttribute("aria-label", X.n);
+    var src = X.from && $(X.from), sv = src && src.querySelector("svg");
+    b.innerHTML = (sv ? sv.outerHTML : "<b>" + X.g + "</b>") + "<small>" + esc(X.n.replace(/ \(.\)$/, "")) + "</small>";
+    b.addEventListener("pointerdown", function (e) { if (LAYE) return; e.preventDefault(); b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {}
+      if (X.h) { tk[X.h] = 1; return; }
+      if (X.f) { X.f(); return; }
+      var k = xKey(X.a); if (k) { window.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true })); window.dispatchEvent(new KeyboardEvent("keyup", { key: k, bubbles: true })); } });
+    var up = function () { b.classList.remove("on"); if (X.h) tk[X.h] = 0; };
+    b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("lostpointercapture", up); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    b.setAttribute("data-lk", id); b.setAttribute("data-ln", X.n); b.__h = { p: CTLL, n: null }; CTLL.appendChild(b);
+    CTLR[id] = [b]; CTLN[id] = X.n; if (CTLK.indexOf(id) < 0) CTLK.push(id); return b;
+  }
+  function xDrop(id) { if (!CTLR[id]) return; CTLR[id].forEach(function (el) { el.remove(); }); delete CTLR[id]; CTLK = CTLK.filter(function (k) { return k !== id; }); }
   function layInit() {
     var P = $("sbxPad"); if (!P || CTLR) return;
-    CTLR = { l: [P.querySelector('[data-k="l"]')], r: [P.querySelector('[data-k="r"]')], j: [P.querySelector('[data-k="j"]')], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")], joy: [$("sbxJoy")] };
+    CTLR = { pad: [$("sbxDpad")], j: [P.querySelector('[data-k="j"]')], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")], joy: [$("sbxJoy")] };
     CTLL = document.createElement("div"); CTLL.className = "sbx-ctl"; CTLL.id = "sbxCtl"; stageEl.insertBefore(CTLL, $("sbxRoll") || P.nextSibling);
     CTLK.forEach(function (k) { CTLR[k] = CTLR[k].filter(Boolean); CTLR[k].forEach(function (el) { el.__h = { p: el.parentNode, n: el.nextSibling }; el.setAttribute("data-lk", k); el.setAttribute("data-ln", CTLN[k]); }); });
+    Object.keys(LAYD).forEach(function (k) { if (/^x_/.test(k)) xMake(k); });
   }
   function layFree(k) { CTLR[k].forEach(function (el) { if (el.parentNode !== CTLL) CTLL.appendChild(el); }); }
   function layHome(k) {
     CTLR[k].forEach(function (el) {
-      if (el.parentNode === CTLL) { var h = el.__h; if (h.n && h.n.parentNode === h.p) h.p.insertBefore(el, h.n); else h.p.appendChild(el); }
+      el.classList.remove("lay-off");
+      if (el.parentNode === CTLL && el.__h.p !== CTLL) { var h = el.__h; if (h.n && h.n.parentNode === h.p) h.p.insertBefore(el, h.n); else h.p.appendChild(el); }
       el.style.left = el.style.top = el.style.opacity = ""; el.style.removeProperty("--bs");
     });
   }
   function layPlace(k, L) {
     var W = stageEl.clientWidth || 1, H = stageEl.clientHeight || 1;
     CTLR[k].forEach(function (el) {
+      el.classList.toggle("lay-off", !!L.hid);
       var half = (el.offsetWidth || 64) * L.s / 2 + 4, cx = clamp(L.x * W, half, Math.max(half, W - half)), cy = clamp(L.y * H, half, Math.max(half, H - half));
       el.style.left = cx + "px"; el.style.top = cy + "px"; el.style.setProperty("--bs", L.s); el.style.opacity = L.o < 1 ? L.o : "";
     });
   }
   function applyLayout() {
     if (!CTLR || LAYE) return;
-    CTLK.forEach(function (k) { if (CTLMQ.matches && LAYD[k]) { layFree(k); layPlace(k, layClean(LAYD[k])); } else layHome(k); });
+    CTLK.forEach(function (k) { var x = /^x_/.test(k); if (CTLMQ.matches && LAYD[k]) { layFree(k); layPlace(k, layClean(LAYD[k])); } else { layHome(k); if (x) CTLR[k].forEach(function (el) { el.classList.add("lay-off"); }); } });
   }
   // ---- the editor ----
-  var LAYE = null;   // { w: working copy, sel, grid, ptr: {id:{x,y}}, drag, pinch, back: the journal tab to return to }
+  var LAYE = null;   // { w: working copy, sel ("" none, "*" all, or one key), add: the Add list is open, grid, ptr: {id:{x,y}}, drag, pinch, back: the journal tab to return to }
   function layMeasure(k) {
     var W = stageEl.clientWidth || 1, H = stageEl.clientHeight || 1, sr = stageEl.getBoundingClientRect();
     if (LAYD[k]) return layClean(LAYD[k]);
     var vis = CTLR[k].filter(function (e) { return e.offsetParent && e.getBoundingClientRect().width > 4; })[0], r = vis ? vis.getBoundingClientRect() : null;
     if (r) return { x: (r.left + r.width / 2 - sr.left) / W, y: (r.top + r.height / 2 - sr.top) / H, s: 1, o: 1 };
-    return { x: CTLD[k].x, y: CTLD[k].y, s: 1, o: 1 };
+    return { x: (CTLD[k] || { x: 0.5 }).x, y: (CTLD[k] || { y: 0.45 }).y, s: 1, o: 1 };
   }
   function openLayout() {
     layInit(); if (!CTLR) return;
     var back = panelOpen ? tab : ""; if (panelOpen) closePanel();
     var w = {}; CTLK.forEach(function (k) { w[k] = layMeasure(k); });   // measure where every button sits now, before lifting any out
-    LAYE = { w: w, sel: "", grid: true, ptr: {}, drag: null, pinch: null, back: back };
+    LAYE = { w: w, sel: "", add: false, grid: true, ptr: {}, drag: null, pinch: null, back: back };
     panelOpen = true; stopInput(); stageEl.classList.add("lay-ed");
     CTLK.forEach(function (k) { layFree(k); layPlace(k, w[k]); });
     var ov = document.createElement("div"); ov.className = "sbx-lay grid"; ov.id = "sbxLay"; stageEl.appendChild(ov);
@@ -18045,39 +18124,62 @@
   }
   function closeLayout(keep) {
     if (!LAYE) return; var E = LAYE;
-    if (keep) { var n = {}; CTLK.forEach(function (k) { if (E.w[k].ed || LAYD[k]) { var c = layClean(E.w[k]); n[k] = { x: +c.x.toFixed(4), y: +c.y.toFixed(4), s: +c.s.toFixed(2), o: +c.o.toFixed(2) }; } }); LAYD = n; try { localStorage.setItem("swamp-delve-layout", JSON.stringify(LAYD)); } catch (e) {} }
+    if (keep) { var n = {}; CTLK.forEach(function (k) { if (E.w[k].ed || LAYD[k] || /^x_/.test(k)) { var c = layClean(E.w[k]); n[k] = { x: +c.x.toFixed(4), y: +c.y.toFixed(4), s: +c.s.toFixed(2), o: +c.o.toFixed(2) }; if (c.hid) n[k].hid = 1; } }); LAYD = n; try { localStorage.setItem("swamp-delve-layout", JSON.stringify(LAYD)); } catch (e) {} }
     else { try { LAYD = JSON.parse(localStorage.getItem("swamp-delve-layout") || "{}") || {}; } catch (e) { LAYD = {}; } }   // Cancel: forget any resets too
     LAYE = null; [$("sbxLay"), $("sbxLayUi")].forEach(function (el) { if (el) el.remove(); });
+    CTLK.slice().forEach(function (k) { if (/^x_/.test(k) && !LAYD[k]) xDrop(k); }); Object.keys(LAYD).forEach(function (k) { if (/^x_/.test(k)) xMake(k); });   // extra buttons follow the saved layout
     stageEl.classList.remove("lay-ed"); CTLK.forEach(function (k) { CTLR[k].forEach(function (el) { el.classList.remove("lay-sel", "on"); }); layHome(k); });
     panelOpen = false; applyLayout();
     if (keep) toast("Button layout saved.");
     if (E.back) openPanel(E.back);
   }
+  function laySelKeys() { var E = LAYE; return E.sel === "*" ? CTLK.filter(function (k) { return !E.w[k].hid; }) : E.sel ? [E.sel] : []; }
   function layUi() {
-    var ui = $("sbxLayUi"); if (!ui || !LAYE) return; var E = LAYE, s = E.sel, L = s ? E.w[s] : null;
+    var ui = $("sbxLayUi"); if (!ui || !LAYE) return; var E = LAYE, s = E.sel, L = s === "*" ? null : s ? E.w[s] : null, ks = laySelKeys();
     var h = '<div class="ly-bar"><div class="ly-t"><b>Customize Controls</b><small>' + (s ? "Drag to move. Pinch or use the sliders to resize." : "Tap a button to pick it, then drag it anywhere.") + "</small></div>"
-      + '<div class="ly-btns"><button type="button" class="btn ghost' + (E.grid ? " on" : "") + '" data-ly="grid" aria-pressed="' + E.grid + '">Snap</button><button type="button" class="btn ghost" data-ly="reset">Reset all</button><button type="button" class="btn ghost" data-ly="cancel">Cancel</button><button type="button" class="btn" data-ly="done">Done</button></div></div>';
-    if (L) h += '<div class="ly-sheet' + (L.y >= 0.45 ? " top" : "") + '"><div class="ly-sh"><b>' + CTLN[s] + '</b><button type="button" class="btn ghost op-mini" data-ly="one">Default</button></div>'
-      + '<label class="ly-sl"><span>Size</span><input type="range" min="50" max="220" step="5" value="' + Math.round(L.s * 100) + '" data-lyr="s" aria-label="Button size"><b>' + Math.round(L.s * 100) + "%</b></label>"
-      + '<label class="ly-sl"><span>Solid</span><input type="range" min="25" max="100" step="5" value="' + Math.round(L.o * 100) + '" data-lyr="o" aria-label="How solid the button is"><b>' + Math.round(L.o * 100) + "%</b></label></div>";
-    if (!L) { var avg = 0; CTLK.forEach(function (k) { avg += E.w[k].s; }); avg = avg / CTLK.length;
-      h += '<div class="ly-sheet"><div class="ly-sh"><b>All controls</b><small>Or tap one button to change just that one.</small></div><label class="ly-sl"><span>Size</span><input type="range" min="50" max="220" step="5" value="' + Math.round(avg * 100) + '" data-lyall="s" aria-label="Size of all controls"><b>' + Math.round(avg * 100) + "%</b></label>"
-        + '<label class="ly-sl"><span>Solid</span><input type="range" min="25" max="100" step="5" value="' + Math.round(E.w.j.o * 100) + '" data-lyall="o" aria-label="How solid all controls are"><b>' + Math.round(E.w.j.o * 100) + "%</b></label></div>"; }
+      + '<div class="ly-btns"><button type="button" class="btn ghost' + (E.grid ? " on" : "") + '" data-ly="grid" aria-pressed="' + E.grid + '">Snap</button><button type="button" class="btn ghost' + (E.add ? " on" : "") + '" data-ly="add">+ Add</button><button type="button" class="btn ghost' + (s === "*" ? " on" : "") + '" data-ly="all">Select all</button><button type="button" class="btn ghost" data-ly="reset">Reset all</button><button type="button" class="btn ghost" data-ly="cancel">Cancel</button><button type="button" class="btn" data-ly="done">Done</button></div></div>';
+    if (E.add) {   // the Add list: buttons you removed, and every extra button
+      var gone = CTLK.filter(function (k) { return E.w[k].hid; }), extra = XACT.filter(function (X) { return !CTLR[X.id]; });
+      h += '<div class="ly-sheet ly-add"><div class="ly-sh"><b>Add a button</b><button type="button" class="btn ghost op-mini" data-ly="addx">Close</button></div><div class="ly-addg">'
+        + gone.map(function (k) { return '<button type="button" class="ly-ai" data-lyadd="' + k + '"><b>+</b>' + esc(CTLN[k]) + "<small>Put back</small></button>"; }).join("")
+        + extra.map(function (X) { return '<button type="button" class="ly-ai" data-lyadd="' + X.id + '"><b>+</b>' + esc(X.n) + "</button>"; }).join("")
+        + (gone.length || extra.length ? "" : '<p class="sbx-note">Every button is already on screen.</p>') + "</div></div>";
+    } else if (ks.length) {
+      var avg = function (f) { var t = 0; ks.forEach(function (k) { t += E.w[k][f]; }); return t / ks.length; };
+      h += '<div class="ly-sheet' + (L && L.y >= 0.45 ? " top" : "") + '"><div class="ly-sh"><b>' + (s === "*" ? "All buttons" : esc(CTLN[s])) + "</b>"
+        + (s === "*" ? '<button type="button" class="btn ghost op-mini" data-ly="desel">Done</button>' : '<span class="op-btns"><button type="button" class="btn ghost op-mini" data-ly="one">Default</button><button type="button" class="btn ghost op-mini ly-del" data-ly="del">Remove</button></span>') + "</div>"
+        + '<label class="ly-sl"><span>Size</span><input type="range" min="50" max="220" step="5" value="' + Math.round(avg("s") * 100) + '" data-lyr="s" aria-label="Button size"><b>' + Math.round(avg("s") * 100) + "%</b></label>"
+        + '<label class="ly-sl"><span>Solid</span><input type="range" min="25" max="100" step="5" value="' + Math.round(avg("o") * 100) + '" data-lyr="o" aria-label="How solid the button is"><b>' + Math.round(avg("o") * 100) + "%</b></label></div>";
+    }
     ui.innerHTML = h; $("sbxLay").classList.toggle("grid", E.grid);
-    CTLK.forEach(function (k) { CTLR[k].forEach(function (el) { el.classList.toggle("lay-sel", k === s); }); });
+    CTLK.forEach(function (k) { CTLR[k].forEach(function (el) { el.classList.toggle("lay-sel", ks.indexOf(k) >= 0); }); });
   }
   function layInput(e) {
-    var t = e.target;
-    if (LAYE && t.hasAttribute("data-lyall")) { var fa = t.getAttribute("data-lyall"); CTLK.forEach(function (k) { var Lk = LAYE.w[k]; Lk[fa] = +t.value / 100; Lk.ed = 1; layPlace(k, Lk); }); var ba = t.parentNode.querySelector("b"); if (ba) ba.textContent = t.value + "%"; return; } if (!LAYE || !LAYE.sel || !t.hasAttribute("data-lyr")) return; var L = LAYE.w[LAYE.sel], f = t.getAttribute("data-lyr");
-    L[f] = +t.value / 100; L.ed = 1; layPlace(LAYE.sel, L); var b = t.parentNode.querySelector("b"); if (b) b.textContent = t.value + "%";
+    var t = e.target; if (!LAYE || !t.hasAttribute("data-lyr")) return; var f = t.getAttribute("data-lyr"), ks = laySelKeys(); if (!ks.length) return;
+    ks.forEach(function (k) { var L = LAYE.w[k]; L[f] = +t.value / 100; L.ed = 1; layPlace(k, L); }); var b = t.parentNode.querySelector("b"); if (b) b.textContent = t.value + "%";
   }
   function layClick(e) {
+    var ad = e.target.closest("[data-lyadd]"); if (ad && LAYE) { var E0 = LAYE, k0 = ad.getAttribute("data-lyadd");
+      if (/^x_/.test(k0) && !CTLR[k0]) { xMake(k0); var nx0 = CTLK.filter(function (q) { return /^x_/.test(q); }).length - 1; E0.w[k0] = { x: 0.32 + (nx0 % 4) * 0.12, y: 0.32 + Math.floor(nx0 / 4) * 0.1, s: 1, o: 1, ed: 1 }; layFree(k0); }   // new buttons line up in rows so they never stack
+      else { E0.w[k0].hid = 0; E0.w[k0].ed = 1; }
+      layPlace(k0, E0.w[k0]); E0.add = false; E0.sel = k0; return layUi(); }
     var b = e.target.closest("[data-ly]"); if (!b || !LAYE) return; var a = b.getAttribute("data-ly"), E = LAYE;
     if (a === "done") return closeLayout(true);
     if (a === "cancel") return closeLayout(false);
     if (a === "grid") { E.grid = !E.grid; return layUi(); }
+    if (a === "add") { E.add = !E.add; E.sel = ""; return layUi(); }
+    if (a === "addx") { E.add = false; return layUi(); }
+    if (a === "all") { E.add = false; E.sel = E.sel === "*" ? "" : "*"; return layUi(); }
+    if (a === "desel") { E.sel = ""; return layUi(); }
+    if (a === "del" && E.sel && E.sel !== "*") {   // remove: extra buttons go away, built-in ones hide (Add puts them back)
+      var dk = E.sel; E.sel = "";
+      if (/^x_/.test(dk)) { xDrop(dk); delete E.w[dk]; } else { E.w[dk].hid = 1; E.w[dk].ed = 1; layPlace(dk, E.w[dk]); }
+      return layUi();
+    }
     if (a === "reset" || a === "one") {   // back to the built-in spot: put it home, measure it there, lift it out again
-      var ks = a === "one" ? [E.sel] : CTLK.slice(); ks.forEach(function (k) { delete LAYD[k]; layHome(k); });
+      var ks = a === "one" ? [E.sel] : CTLK.slice();
+      if (a === "reset") ks = ks.filter(function (k) { if (/^x_/.test(k)) { xDrop(k); delete E.w[k]; return false; } return true; });
+      ks.forEach(function (k) { delete LAYD[k]; layHome(k); });
       ks.forEach(function (k) { E.w[k] = layMeasure(k); E.w[k].ed = 0; }); ks.forEach(function (k) { layFree(k); layPlace(k, E.w[k]); });
       if (a === "reset") E.sel = "";
       return layUi();
@@ -18088,18 +18190,18 @@
     if (!LAYE || e.target.closest("#sbxLayUi")) return;
     e.preventDefault(); e.stopPropagation(); var E = LAYE, q = layPt(e); E.ptr[e.pointerId] = q;
     var ids = Object.keys(E.ptr);
-    if (ids.length >= 2 && E.sel) {   // second finger: pinch the picked button
+    if (ids.length >= 2 && E.sel && E.sel !== "*") {   // second finger: pinch the picked button
       var a = E.ptr[ids[0]], b = E.ptr[ids[1]]; E.drag = null; E.pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, s0: E.w[E.sel].s }; return;
     }
     var el = e.target.closest("[data-lk]");
     if (!el || el.parentNode !== CTLL) { if (E.sel) { E.sel = ""; layUi(); } return; }
-    var k = el.getAttribute("data-lk"), W = stageEl.clientWidth, H = stageEl.clientHeight;
-    if (E.sel !== k) { E.sel = k; layUi(); }
+    var k = el.getAttribute("data-lk"), W = stageEl.clientWidth, H = stageEl.clientHeight; if (!E.w[k] || E.w[k].hid) return;
+    if (E.sel !== k && E.sel !== "*") { E.sel = k; E.add = false; layUi(); }
     E.drag = { id: e.pointerId, k: k, ox: q.x - E.w[k].x * W, oy: q.y - E.w[k].y * H };
   }, true);
   window.addEventListener("pointermove", function (e) {
     if (!LAYE || !LAYE.ptr[e.pointerId]) return; var E = LAYE, q = layPt(e); E.ptr[e.pointerId] = q; e.preventDefault();
-    if (E.pinch && E.sel) { var ids = Object.keys(E.ptr); if (ids.length < 2) return; var a = E.ptr[ids[0]], b = E.ptr[ids[1]], L = E.w[E.sel]; L.s = clamp(E.pinch.s0 * Math.hypot(a.x - b.x, a.y - b.y) / E.pinch.d0, 0.5, 2.2); L.ed = 1; layPlace(E.sel, L); layUiNums(); return; }
+    if (E.pinch && E.sel && E.sel !== "*") { var ids = Object.keys(E.ptr); if (ids.length < 2) return; var a = E.ptr[ids[0]], b = E.ptr[ids[1]], L = E.w[E.sel]; L.s = clamp(E.pinch.s0 * Math.hypot(a.x - b.x, a.y - b.y) / E.pinch.d0, 0.5, 2.2); L.ed = 1; layPlace(E.sel, L); layUiNums(); return; }
     if (!E.drag || E.drag.id !== e.pointerId) return;
     var W = stageEl.clientWidth || 1, H = stageEl.clientHeight || 1, cx = q.x - E.drag.ox, cy = q.y - E.drag.oy, G = 16;
     if (E.grid) { cx = Math.round(cx / G) * G; cy = Math.round(cy / G) * G; }
@@ -18109,7 +18211,7 @@
   function layUp(e) { if (!LAYE || !LAYE.ptr[e.pointerId]) return; delete LAYE.ptr[e.pointerId]; if (Object.keys(LAYE.ptr).length < 2) LAYE.pinch = null; if (LAYE.drag && LAYE.drag.id === e.pointerId) LAYE.drag = null; }
   window.addEventListener("pointerup", layUp, true); window.addEventListener("pointercancel", layUp, true);
   stageEl.addEventListener("click", function (e) { if (LAYE && !e.target.closest("#sbxLayUi")) { e.preventDefault(); e.stopPropagation(); } }, true);   // no jumping, rolling or specials while you arrange
-  function layUiNums() { var E = LAYE, L = E && E.sel && E.w[E.sel]; if (!L) return; [].forEach.call(document.querySelectorAll("#sbxLayUi [data-lyr]"), function (r) { var v = Math.round(L[r.getAttribute("data-lyr")] * 100); r.value = v; var b = r.parentNode.querySelector("b"); if (b) b.textContent = v + "%"; }); }
+  function layUiNums() { var E = LAYE, L = E && E.sel && E.sel !== "*" && E.w[E.sel]; if (!L) return; [].forEach.call(document.querySelectorAll("#sbxLayUi [data-lyr]"), function (r) { var v = Math.round(L[r.getAttribute("data-lyr")] * 100); r.value = v; var b = r.parentNode.querySelector("b"); if (b) b.textContent = v + "%"; }); }
   if (CTLMQ.addEventListener) CTLMQ.addEventListener("change", function () { applyLayout(); });
   var last = 0, slowN = 0, frN = 0, lastDraw = 0, rafAvg = 16.7, rafPrev = 0, rafOdd = false;
   // SAFETY NET: an unexpected error in one frame is logged and the game keeps running (before, any error stopped the loop and the game froze)
@@ -21759,7 +21861,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };

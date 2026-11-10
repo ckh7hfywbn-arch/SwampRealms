@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="ui.css?v=cardback1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui64-hudcraft">
+<link rel="stylesheet" href="sandbox.css?v=ui65-dpad">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -143,8 +143,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
   <div class="sbx-pops" id="sbxPops" role="status" aria-live="polite"></div>
   <div class="sbx-pad" id="sbxPad">
    <div class="lr">
-    <button type="button" data-k="l" aria-label="Move left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <button type="button" data-k="r" aria-label="Move right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <div class="sbx-dpad" id="sbxDpad" role="group" aria-label="Direction pad: left, right, up to climb, down to drop"><i class="dp-l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(0deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-u"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(90deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(180deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(270deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-ul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(45deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-ur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(135deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-dr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(225deg)"><path d="M15 6l-6 6 6 6"/></svg></i><i class="dp-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(315deg)"><path d="M15 6l-6 6 6 6"/></svg></i><b class="dp-hub" aria-hidden="true"></b></div>
    </div>
    <div class="rj"><button type="button" class="roll" data-roll aria-label="Dodge roll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v5h-5"/></svg></button>
 <button type="button" class="jump" data-k="j" aria-label="Jump"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-8 7 8"/><path d="M5 21l7-8 7 8"/></svg></button></div>
@@ -244,7 +243,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="sandbox-ocean.js?v=ocean2-tides" onload="__dl('ocean')"></script>
 <script src="delve-avatar.js?v=delve9-strides" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="sandbox.js?v=delve302-craftbtn" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve303-dpad" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.
