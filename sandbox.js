@@ -8447,7 +8447,7 @@
   // it, or pick it up where it lands). FALL: a herd of Bog Elk crosses the swamp, and the stags drop their antlers. SUMMER: Shellback Turtles
   // swim across the open sea, and sailing alongside them earns a Turtle Scute. WINTER: Brine Whales pass, spouting, and leave Ambergris.
   // All four keepsakes (with a rope) make the Wanderer's Charm. S.mig = { s: season index the herd last came, d: day } so each herd comes once a day.
-  var MIGF = [], MIGE = [], MIGT = { f: 8, said: -1 };
+  var MIGF = [], MIGE = [], MIGT = { f: 30, said: -1, d: -1, n: 0 };   // Goose Down: one every 70-130 s, at most 3 a day (6 with the Wanderer's Charm)
   function migSeason() { var d = seasonDay(); return d >= 2 && d <= 5 ? seasonOf() : -1; }
   var MIG_SAY = ["The Lily Geese are flying north! Catch the Goose Down as it drifts down.", "Shellback Turtles are crossing the open sea this week. Sail alongside them!", "A herd of Bog Elk is moving south through the swamp. The stags drop their antlers as they go.", "Brine Whales are passing through the Brinebog Sea. Go and see them!"];
   function tickMig(dt) {
@@ -8455,7 +8455,8 @@
     var ms = migSeason(), wd = hasCharm("wander") ? 2 : 1, i;
     if (ms >= 0 && MIGT.said !== (S.days | 0) && seasonDay() === 2 && phaseOf(S.time).id === "day") { MIGT.said = S.days | 0; toast(MIG_SAY[ms], "#c8a070"); }
     var surf = !OCS && !HOME && p.y < pcol() + 8, day = daylight(S.time) > 0.5;
-    if (ms === 0 && surf && day) { MIGT.f -= dt * wd; if (MIGT.f <= 0) { MIGT.f = 18 + Math.random() * 18; MIGF.push({ x: p.x + (Math.random() - 0.5) * 22, y: cam.y - vh / 2 / ts - 1, ph: Math.random() * 6, vy: 1.1 + Math.random() * 0.4, life: 40 }); } }
+    if (MIGT.d !== (S.days | 0)) { MIGT.d = S.days | 0; MIGT.n = 0; }
+    if (ms === 0 && surf && day && MIGT.n < 3 * wd) { MIGT.f -= dt * wd; if (MIGT.f <= 0) { MIGT.f = 70 + Math.random() * 60; MIGT.n++; MIGF.push({ x: p.x + (Math.random() - 0.5) * 22, y: cam.y - vh / 2 / ts - 1, ph: Math.random() * 6, vy: 1.1 + Math.random() * 0.4, life: 40 }); } }
     for (i = MIGF.length - 1; i >= 0; i--) { var F = MIGF[i]; F.ph += dt * 2.2; F.y += F.vy * dt; F.x += Math.sin(F.ph) * 0.9 * dt; F.life -= dt;
       if (Math.abs(F.x - p.x) < 0.9 && Math.abs(F.y - (p.y - 0.8)) < 1.1) { give("goosedown", wd, undefined, undefined, true); text(F.x, F.y - 0.4, "+" + wd + " Goose Down", "#f6f2e8"); thud(900, 0.02); S.st.down = (S.st.down || 0) + 1; MIGF.splice(i, 1); continue; }
       var gy = col[clamp(Math.floor(F.x), 0, W - 1)]; if (F.y >= gy - 0.2 || F.life <= 0) { if (F.life > 0) spawnDrop("goosedown", 1, Math.floor(F.x), gy - 1); MIGF.splice(i, 1); } }
