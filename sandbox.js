@@ -9329,10 +9329,10 @@
   }
   // ---------- GROUND DROPS IN THE MINE, THE HOMESTEAD AND UNDER THE SEA ----------
   // The surface has its own physics drops (spawnDrop / tickDrops). The top-down scenes keep a simple list on the scene itself:
-  // cave.F.gd (per floor, kept while you are in the Mine), HOME.gd and OCS.gd. Items bob where they lie; walk over one to pick it up
+  // cave.F.gd (per floor, kept while you are in the Mine), HOME.fpL and OCS.gd. Items bob where they lie; walk over one to pick it up
   // when you have room. dropAt picks the right place; flushExtra empties the old Overflow (S.extra) onto the ground at your feet.
   function gdScene() {
-    if (HOME) return { L: HOME.gd || (HOME.gd = []), pl: cp };
+    if (HOME) return { L: HOME.fpL || (HOME.fpL = []), pl: cp };   // (not HOME.gd: that is the ground-repaint flag, and keeping drops there repainted the whole homestead every frame)
     if (cave && cave.F) return { L: cave.F.gd || (cave.F.gd = []), pl: cp };
     if (OCS && !OCS.sea && OCS.pl) return { L: OCS.gd || (OCS.gd = []), pl: OCS.pl, sea: 1 };
     return null;
@@ -21773,22 +21773,30 @@
   function hR(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }
   function homeDeepTree(i, j) { return hmT(i, j) === HT.TREE && (j + 1 >= HH || hmT(i, j + 1) === HT.TREE || hmT(i, j + 1) === HT.GATE || SW.hash(i, j, 92) < 0.4); }   // only the top edge of the forest shows trunks; the rest is canopy
   var HFM = 10, HFOR = null;
-  function homeForest() {   // the leafy forest around the farm (and past its edge) never changes: paint it once, 16 px per tile
+  function homeForest() {   // the forest around the farm (and past its edge) never changes: paint it once, 16 px per tile
     var M = HFM, W = (HW + M * 2) * 16, H = (HH + M * 2) * 16, c = document.createElement("canvas"); c.width = W; c.height = H; var g = c.getContext("2d"), i, j; g.imageSmoothingEnabled = false;
-    // the canopy seen from above: round leafy clumps in the grass greens, lit from the top-left, so it reads as treetops (not static)
-    var LCl = ["#0d2a1e", "#145038", "#1d7249", "#2f9a6a", "#58d68b"];
-    function clump(cx, cy, r, hv) { var k = hv % 1;
-      g.fillStyle = LCl[0]; g.beginPath(); g.arc(cx + 1, cy + 2, r, 0, 6.2832); g.fill();
-      g.fillStyle = LCl[1 + (k < 0.4 ? 0 : 1)]; g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.fill();
-      g.fillStyle = LCl[3]; g.beginPath(); g.arc(cx - r * 0.25, cy - r * 0.3, r * 0.62, 0, 6.2832); g.fill();
-      g.fillStyle = LCl[4]; g.globalAlpha = 0.55; g.beginPath(); g.arc(cx - r * 0.4, cy - r * 0.48, r * 0.26, 0, 6.2832); g.fill(); g.globalAlpha = 1; }
-    for (j = -M; j < HH + M; j++) for (i = -M; i < HW + M; i++) {
-      var inside = i >= 0 && j >= 0 && i < HW && j < HH; if (inside && !homeDeepTree(i, j)) continue;
-      var h = SW.hash(inside ? i : i + 99, inside ? j : j + 99, 92), X = (i + M) * 16, Y = (j + M) * 16;
-      var up0 = j > 0 && hmT(i, j - 1) !== HT.TREE ? 1 : 0;   // the forest edge facing the farm from below: no overhang onto the walkable row
-      if (inside) { clump(X + 8, Y + (up0 ? 6 : -2), 9, h); clump(X + 8 + (h < 0.5 ? -8 : 8), Y + (up0 ? 5 : -10), 8, h * 7); clump(X + 8, Y + 11, 9, h * 3); if (h > 0.85) { g.fillStyle = "#ffb0d8"; g.fillRect(X + 5, Y, 2, 2); g.fillRect(X + 11, Y + 6, 2, 2); } }
-      else { clump(X + 8, Y + 2, 10, h); clump(X + 8 + (h < 0.5 ? -8 : 8), Y + 11, 9, h * 5); }
+    // TREETOPS SEEN FROM ABOVE: a dark forest floor, then crowns of different sizes and three shades of green, scattered (not a grid),
+    // drawn top to bottom so each overlaps the one behind, lit from the top-left; the deep woods away from the farm are darker
+    var forest = function (i2, j2) { var ins = i2 >= 0 && j2 >= 0 && i2 < HW && j2 < HH; return !ins || homeDeepTree(i2, j2); };
+    var PAL = [["#0b2419", "#174a33", "#22663f", "#3a8a52", "#7cc47a"], ["#0a2218", "#14473a", "#1d6a4e", "#2f9a6a", "#6fd69a"], ["#10261a", "#25502e", "#3a6e34", "#5a8e40", "#a8c870"]];
+    for (j = -M; j < HH + M; j++) for (i = -M; i < HW + M; i++) if (forest(i, j)) { g.fillStyle = "#081a12"; g.fillRect((i + M) * 16, (j + M) * 16, 16, 16); }
+    var pts = [];
+    for (var y = 0; y < H + 10; y += 11) for (var x = (y / 11 & 1) * 6; x < W + 10; x += 12) {
+      var hx = SW.hash(x, y, 301), hy = SW.hash(y, x, 302), px = x + (hx - 0.5) * 9, py = y + (hy - 0.5) * 8;
+      var ti = Math.floor(px / 16) - M, tj = Math.floor(py / 16) - M; if (!forest(ti, tj)) continue;
+      var ins = ti >= 0 && tj >= 0 && ti < HW && tj < HH, dd = ins ? 0 : Math.max(-ti, -tj, ti - HW + 1, tj - HH + 1);
+      pts.push([px, py, 8 + SW.hash(x, y, 303) * 9, Math.floor(SW.hash(x, y, 304) * 3), dd]);
     }
+    pts.sort(function (p1, p2) { return p1[1] - p2[1]; });
+    pts.forEach(function (q) {
+      var P = PAL[q[3]], r = q[2], X = q[0], Y = q[1];
+      g.fillStyle = "rgba(0,10,4,.45)"; g.beginPath(); g.arc(X + 2, Y + 4, r, 0, 6.2832); g.fill();   // its shadow on the crowns below
+      g.fillStyle = P[1]; g.beginPath(); g.arc(X, Y, r, 0, 6.2832); g.fill();
+      g.fillStyle = P[2]; g.beginPath(); g.arc(X - r * 0.15, Y - r * 0.18, r * 0.78, 0, 6.2832); g.fill();
+      g.fillStyle = P[3]; for (var l = 0; l < 3; l++) { var la = -2.4 + l * 0.75 + SW.hash(X, l, 305) * 0.3; g.beginPath(); g.arc(X + Math.cos(la) * r * 0.42, Y + Math.sin(la) * r * 0.42, r * 0.36, 0, 6.2832); g.fill(); }
+      g.fillStyle = P[4]; g.globalAlpha = 0.5; g.beginPath(); g.arc(X - r * 0.42, Y - r * 0.5, r * 0.2, 0, 6.2832); g.fill(); g.globalAlpha = 1;
+      if (q[4] > 1) { g.fillStyle = "rgba(4,14,10," + Math.min(0.42, (q[4] - 1) * 0.07).toFixed(2) + ")"; g.beginPath(); g.arc(X, Y, r + 0.5, 0, 6.2832); g.fill(); }
+    });
     seasonLeaves(c, 1); return (HFOR = c);
   }
   function homeProp(g, id, i, j, T0) {
