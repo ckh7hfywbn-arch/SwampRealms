@@ -1179,7 +1179,7 @@
   var editN = 0;
   function setT(x, y, id) {   // (MALLET: a broken or replaced block loses its shape)
     var i = y * W + x; if (S.shape && S.shape[i] !== undefined && tiles[i] !== id) { delete S.shape[i]; shapeCount(); } if (FL && !isLiq(id)) FL[i] = 0; editN++; if (S.dflip && S.dflip[i] && tiles[i] !== id) delete S.dflip[i]; animDoorNote(i, tiles[i], id); tiles[i] = id; mpTileEdit(x, y, id); flWake(x, y);
-    if (S.stain && S.stain[i] !== undefined && !STAINABLE[id]) delete S.stain[i];   // broken or replaced: the stain goes with it (an opening door keeps its stain)
+    if (S.stain && S.stain[i] !== undefined && !STAINABLE[id] && !(id !== T.AIR && STAINS[S.stain[i]] && STAINS[S.stain[i]].all)) delete S.stain[i];   // broken or replaced: the stain goes with it (an opening door keeps its stain)
     if (id === orig[i]) delete edits[i]; else edits[i] = id;
     recalc(x);
   }
@@ -2707,7 +2707,7 @@
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
     return TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid || TILES[get(tx, ty + 1)].solid;
   }
-  function setWall(x, y, id) { wallN++; mpWallEdit(x, y, id); var i = y * W + x; walls[i] = id; if (S.wstain && S.wstain[i] !== undefined && !WSTAINABLE[id]) delete S.wstain[i]; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
+  function setWall(x, y, id) { wallN++; mpWallEdit(x, y, id); var i = y * W + x; walls[i] = id; if (S.wstain && S.wstain[i] !== undefined && !WSTAINABLE[id] && !(id && STAINS[S.wstain[i]] && STAINS[S.wstain[i]].all)) delete S.wstain[i]; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
   function canWall(tx, ty, wid) {   // walls go on the back layer: the front tile must be free (air or a decor piece), and the wall needs a block or another wall beside, above or below it
     if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 3) return false;
     var id = get(tx, ty); if (TILES[id].solid || id === T.WATER || id === T.LAVA) return false;
@@ -5672,7 +5672,7 @@
     if (!S.nohunger) S.food = Math.min(100, S.food + it.food);
     if (it.heal) { hp = Math.min(MAXHP, hp + it.heal); drawHp(); }
     if (it.efx && S.fx) { S.fx[it.efx[0]] = Math.max(S.fx[it.efx[0]] || 0, it.efx[1]); drawFx(true); }   // DISCOVERIES: secret dishes give a potion effect too
-    S.st.eaten++; if (it.cooked) S.ate[k] = 1; shownFood = -1; drawFood();
+    S.st.eaten++; if (it.cooked) S.ate[k] = 1; shownFood = -1; drawFood(); p5Eat(k);
     text(meX(), meY(), "+" + it.food + " food" + (it.heal ? "  +" + it.heal + " hp" : ""), "#ffd27a"); actStart("eat", k);   // three bites, with crumbs (actFx)
     hbDirty = true; checkTrail(); checkGoals(); if (panelOpen) renderPanel();
   }
@@ -8315,7 +8315,7 @@
     for (var y = by - 2; y <= by + 2; y++) for (var x = bx - 2; x <= bx + 2; x++) if (kegAt(x, y)) { var d = Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)); if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
-  function tapHook(tx, ty) { if (!cave && kegAt(tx, ty)) { lightKeg(tx, ty, BOMBK.keg.fuse); return true; } if (!cave && radioAt(tx, ty) && !(JB.on && JB.x === tx && JB.y === ty)) { radioOpen(tx, ty); return true; } if (!cave && jbKind(tx, ty)) return jbPlay(tx, ty); if (!cave && isWay(tx, ty)) { openWay(tx, ty); return true; } if (!cave && isConf(tx, ty)) return popConfetti(tx, ty); if (!cave && isPot(tx, ty)) return takePot(tx, ty); if (!cave && markTap(tx, ty)) return true; return false; }
+  function tapHook(tx, ty) { if (!cave && p5Tap(tx, ty)) return true; if (!cave && kegAt(tx, ty)) { lightKeg(tx, ty, BOMBK.keg.fuse); return true; } if (!cave && radioAt(tx, ty) && !(JB.on && JB.x === tx && JB.y === ty)) { radioOpen(tx, ty); return true; } if (!cave && jbKind(tx, ty)) return jbPlay(tx, ty); if (!cave && isWay(tx, ty)) { openWay(tx, ty); return true; } if (!cave && isConf(tx, ty)) return popConfetti(tx, ty); if (!cave && isPot(tx, ty)) return takePot(tx, ty); if (!cave && markTap(tx, ty)) return true; return false; }
   function fHook() { var vn = vilNear(); if (vn) { openVil(vn); return true; } var k = kegNear(); if (k) { lightKeg(k.x, k.y, BOMBK.keg.fuse); return true; } if (markF()) return true; var jn = jbNear(); if (jn) return jbPlay(jn.x, jn.y); var wn = wayNear(); if (wn) { openWay(wn.x, wn.y); return true; } for (var cy2 = Math.floor(p.y - 1) - 1; cy2 <= Math.floor(p.y - 1) + 1; cy2++) for (var cx2 = Math.floor(p.x) - 2; cx2 <= Math.floor(p.x) + 2; cx2++) if (isConf(cx2, cy2)) return popConfetti(cx2, cy2); return false; }
   function stepBlast(dt) {
     for (var f = flashes.length - 1; f >= 0; f--) { flashes[f].t -= dt; if (flashes[f].t <= 0) flashes.splice(f, 1); }
@@ -8648,6 +8648,7 @@
   function jbList(kind) {   // songs this player can play, in order
     var L = JBK[kind].knows.slice();
     if (JBK[kind].any) Object.keys(ITEMS).forEach(function (k) { var r = ITEMS[k].record; if (r && S.inv[k] > 0 && L.indexOf(r) < 0) L.push(r); });
+    if (kind === "musicbox") Object.keys(S.mk || {}).forEach(function (k) { var r = k.indexOf("song_") === 0 ? k.slice(5) : ""; if (r && L.indexOf(r) < 0 && (typeof SONGS === "undefined" || SONGS[r])) L.push(r); });   // PHASE 5: a Music Box plays every song you have heard
     return L;
   }
   function jbOut() {
@@ -9203,7 +9204,7 @@
     $("sbxStoryBox").style.setProperty("--qc", "#8fd6ff");
     h += '<div class="st-croak vil-pic" aria-hidden="true"><img alt="" src="' + vilPortrait(V) + '"></div><small>' + esc(V.role) + "</small><h2 class=\"st-hi\">" + esc(V.n) + "</h2>";
     h += '<p class="vil-say">“' + esc(vilLine) + '”</p><p class="vil-hearts" aria-label="' + hearts + ' of 5 hearts">' + "♥".repeat(hearts) + '<span>' + "♥".repeat(5 - hearts) + "</span>" + (hearts >= 5 ? " Best friends!" : " Trade to make friends") + "</p>";
-    h += '<div class="vil-trades">' + V.tr.map(function (q, i) {
+    h += shopLine() + '<div class="vil-trades">' + vilTr(V).map(function (q, i) {
       var ok = vilPay(q[0]); if (q[1].repair) ok = ok && ["pick", "wpn", "arm", "shovel"].some(function (k) { return durMax(k) > 0 && durOf(k) < durMax(k); });
       return '<button type="button" data-vil="t:' + i + '"' + (ok ? "" : " disabled") + '><div class="vt-give"><em>You give</em>' + vilCost(q[0]) + '</div><b aria-hidden="true">→</b><div class="vt-get"><em>You get</em>' + vilCost(q[1]) + "</div></button>";
     }).join("") + "</div>";
@@ -9213,7 +9214,7 @@
   function vilAct(a) {
     var v = vilOpen; if (!v) return; var V = v.V;
     if (a === "chat") { var L2 = V.talk.concat(V.hi); vilLine = L2[(S.st.vchats = (S.st.vchats || 0) + 1) % L2.length]; renderVil(); return; }
-    var q = V.tr[+a.split(":")[1]]; if (!q || !vilPay(q[0])) return;
+    var q = vilTr(V)[+a.split(":")[1]]; if (!q || !vilPay(q[0])) return;
     payCost(q[0]); for (var k in q[0]) if (!(S.inv[k] > 0) && sel === k) { sel = "pick"; bare = true; }
     for (k in q[1]) { if (k === "repair") { ["pick", "wpn", "arm", "shovel"].forEach(function (s2) { var m = durMax(s2); if (m > 0) S.dur[s2] = m; }); armKey = ""; toast("Old Shellwick mended all your gear!", "#8fd6ff"); } else give(k, q[1][k], undefined, undefined, true); }
     if (!S.vf) S.vf = {}; S.vf[V.id] = (S.vf[V.id] || 0) + 1; S.st.vtrades = (S.st.vtrades || 0) + 1; reslot(); hbDirty = true;
@@ -10857,7 +10858,12 @@
     { k: "stain_white", n: "Whitewash", p: ["#7e786c", "#c4bdae", "#f4f0e6"] },
     { k: "stain_sage", n: "Sage", p: ["#24341e", "#4a663c", "#86a46a"] },
     { k: "stain_blue", n: "Bog Blue", p: ["#16263a", "#365672", "#6a92b0"] },
-    { k: "stain_plum", n: "Plum", p: ["#26102c", "#56285e", "#8a5a96"] }
+    { k: "stain_plum", n: "Plum", p: ["#26102c", "#56285e", "#8a5a96"] },
+    // PHASE 5 paints (all: 1): they go on any block, wall or furniture, and colour every pixel
+    { k: "paint_red", n: "Red", p: ["#4a0a0a", "#b02a2a", "#ff7a6a"], all: 1 }, { k: "paint_blue", n: "Blue", p: ["#0a1a4a", "#2a5ac8", "#8ab8ff"], all: 1 },
+    { k: "paint_green", n: "Green", p: ["#0a2a10", "#2a8a3a", "#9ae07a"], all: 1 }, { k: "paint_yellow", n: "Yellow", p: ["#5a3a06", "#e0a82a", "#fff0a0"], all: 1 },
+    { k: "paint_white", n: "White", p: ["#8a8478", "#d8d2c4", "#ffffff"], all: 1 }, { k: "paint_black", n: "Black", p: ["#08080a", "#24242a", "#4a4a54"], all: 1 },
+    { k: "paint_pink", n: "Pink", p: ["#5a1a3a", "#e05a9a", "#ffc0e0"], all: 1 }, { k: "paint_purple", n: "Purple", p: ["#1a0a3a", "#6a3aa8", "#c09aff"], all: 1 }
   ];
   var STAIN_OF = {}; STAINS.forEach(function (q, i) { STAIN_OF[q.k] = i; });
   var STAIN_KINDS = { planks: 1, parquet: 1, door: 1, trapdoor: 1, trapdooro: 1, ladder: 1, chair: 1, table: 1, chest: 1, stool: 1, bookshelf: 1, sign: 1, fence: 1, wardrobe: 1, dresser: 1, desk: 1, crate: 1, trough: 1, weaponrack: 1, barrel: 1 };
@@ -10875,7 +10881,7 @@
       if (d[i + 3] < 20) { wood.push(0); continue; }
       var r = d[i] / 255, gg = d[i + 1] / 255, b = d[i + 2] / 255, mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), l = (mx + mn) / 2, sat = mx === mn ? 0 : (mx - mn) / (1 - Math.abs(2 * l - 1) + 1e-6), h = 0;
       if (mx !== mn) { h = mx === r ? ((gg - b) / (mx - mn)) % 6 : mx === gg ? (b - r) / (mx - mn) + 2 : (r - gg) / (mx - mn) + 4; h *= 60; if (h < 0) h += 360; }
-      var isWood = (h >= 4 && h <= 62 && sat >= 0.12 && l <= 0.93) || (l < 0.18 && r >= b);   // browns and tans (and the darkest wood lines)
+      var isWood = STAINS[si].all ? true : (h >= 4 && h <= 62 && sat >= 0.12 && l <= 0.93) || (l < 0.18 && r >= b);   // browns and tans (and the darkest wood lines)
       wood.push(isWood ? 1 : 0); if (isWood) { lo = Math.min(lo, l); hi = Math.max(hi, l); }
     }
     var span = Math.max(0.12, hi - lo);
@@ -10889,7 +10895,7 @@
   }
   function drawStain(g, i, j, sx3, sy) {   // called after the normal cell is drawn: paint the stained version on top
     var ix = j * W + i, si = S.stain[ix], id = tiles[ix], v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
-    if (si !== undefined && STAINABLE[id]) {
+    if (si !== undefined && (STAINABLE[id] || (STAINS[si] && STAINS[si].all))) {
       var td = TILES[id], vv = SMOP[id] || td.solid ? v : 0; g.imageSmoothingEnabled = false;
       if (MATF[id]) { matTile(g, id, i, j, sx3, sy, si); return; }
       if (td.kind === "door" || td.hatch || td.kind === "ladder" || td.kind === "fence") { matWood(g, td, i, j, sx3, sy, si); return; }   // ADVENTURE LOOK blocks: the same shapes in the stain's colours (they carry their own outline)
@@ -10902,7 +10908,7 @@
     }
   }
   function drawWallStain(g, wl, i, j, sx, sy) {
-    var si = S.wstain[j * W + i]; if (si === undefined || !WSTAINABLE[wl]) return false;
+    var si = S.wstain[j * W + i]; if (si === undefined || !(WSTAINABLE[wl] || (STAINS[si] && STAINS[si].all))) return false;
     if (MATF[wl]) { matWall(g, wl, i, j, sx, sy, si); return true; }
     var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3; g.imageSmoothingEnabled = false;
     g.drawImage(stainCanvas(wl, v, si), 0, 0, 16, 16, sx, sy, ts, ts); return true;
@@ -10916,8 +10922,8 @@
     var key = tx + "," + ty; if (key === stainLast) return; stainLast = key;
     var ddx = tx + 0.5 - p.x, ddy = ty + 0.5 - (p.y - PH / 2); if (ddx * ddx + ddy * ddy > REACH * REACH) { nag("That is too far away."); return; }
     var ix = ty * W + tx, id = tiles[ix], wl = walls[ix], sand = sel === "sandpaper", si = STAIN_OF[sel];
-    var front = !!STAINABLE[id], back = !front && !TILES[id].solid && wl && WSTAINABLE[wl];
-    if (!front && !back) { nag(sand ? "Sandpaper takes the stain off stained wood." : "Stain only works on wood: Planks, doors, ladders, fences, wooden furniture and wooden walls."); return; }
+    var pnt = si !== undefined && STAINS[si].all, front = sand ? S.stain[ix] !== undefined : pnt ? paintOk(id) : !!STAINABLE[id], back = !front && !TILES[id].solid && wl && (sand ? S.wstain[ix] !== undefined : pnt || WSTAINABLE[wl]);
+    if (!front && !back) { nag(sand ? "Sandpaper takes stain or paint off." : pnt ? "There's nothing there to paint." : "Stain only works on wood: Planks, doors, ladders, fences, wooden furniture and wooden walls."); return; }
     var map = front ? S.stain : S.wstain;
     // doors are two tiles: stain (or sand) both halves together
     var cells = [ix]; if (front && TILES[id].kind === "door") { [ix - W, ix + W].forEach(function (q) { if (q >= 0 && q < W * H && TILES[tiles[q]] && TILES[tiles[q]].kind === "door") cells.push(q); }); }
@@ -11879,6 +11885,7 @@
     if (POTIONS[sel]) { useDrink(dt); return; }
     if (AMMO_ALL.indexOf(sel) >= 0) { useLoad(dt); return; }
     if (sel === "mallet") { useMallet(dt); return; }   // MALLET
+    if (sel === "blueprint") { useBlueprint(dt); return; }   // PHASE 5 BLUEPRINTS
     if (isStainTool(sel)) { useStain(dt); return; }
     if (ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) { useFood(dt); return; }   // holding food: tap to eat
     if (ITEMS[sel] && ITEMS[sel].read) { useRead(dt); return; }   // LOOT PACK: open an old book or a sealed letter
@@ -13580,7 +13587,7 @@
   }
   function drawCell0(g, i, j, sx3, sy, now) {
     if (tiles[j * W + i] === T.X_thermalvent && now && !reduce && Math.random() < 0.5) parts.push({ x: i + 0.5 + (Math.random() - 0.5) * 2.4, y: j + 0.3, vx: (Math.random() - 0.5) * 0.6, vy: -7 - Math.random() * 5, life: 1.6, max: 1.6, c: Math.random() < 0.5 ? "#ffb04a" : "#ffe9b0", s: 2 });
-    if (now) { var ptd2 = TILES[tiles[j * W + i]]; if (ptd2 && PUFFK[ptd2.kind]) stationPuff(ptd2, i, j, now); }
+    if (now) { var ptd2 = TILES[tiles[j * W + i]]; if (ptd2 && PUFFK[ptd2.kind]) stationPuff(ptd2, i, j, now); if (ptd2 && ptd2.decor !== false && P5K[ptd2.kind]) p5Cell(tiles[j * W + i], i, j); }
     if (tiles[j * W + i] === T.X_sprinkler && now && !reduce && Math.random() < 0.08) parts.push({ x: i + 0.5 + (Math.random() - 0.5) * 0.4, y: j + 0.1, vx: (Math.random() - 0.5) * 5, vy: -2 - Math.random() * 2, life: 0.5, max: 0.5, c: "#bfeeff", s: 2 });
       var id = tiles[j * W + i], td = TILES[id], under = j >= col[i] && j > world.top[i];   // cave wall only below the natural ground line: air under a roof, eave or overhang you build stays open sky
       if (id === T.AIR) {
@@ -16777,12 +16784,13 @@
     ["Gear|Diving", "x_scubasuit x_suit2 x_suit3 x_suit4 x_tank1 x_tank2 x_tank3 x_tank4 x_flippers x_divelamp x_dome"],
     ["Materials|Boat Parts", "x_boat_sail x_boat_lamp x_boat_anchor"],
     ["Food|From the Sea", "x_kelpwrap x_seastew x_piersushi"],
+    ["Building|Paints", "x_paint_red x_paint_blue x_paint_green x_paint_yellow x_paint_white x_paint_black x_paint_pink x_paint_purple x_blueprint"],
     ["Building|Wood Stains", "x_stain_walnut x_stain_ebony x_stain_honey x_stain_mahogany x_stain_white x_stain_sage x_stain_blue x_stain_plum x_sandpaper"],
     ["Potions|Restoring", "x_tonic_heal x_tonic_hide x_tonic_fire x_m_bandage x_m_salve"],
     ["Potions|Arrow Ointments", "x_vial x_ot_venom x_ot_numb x_ot_sleep x_ot_mark x_ot_spark x_ot_blast x_ot_leech"],
     ["Potions|Adventuring", "x_tonic_mine x_tonic_speed x_tonic_night x_tonic_fish x_tonic_leap"],
     ["Potions|Wonders", "x_tonic_regen x_tonic_grand x_tonic_glow x_tonic_feather x_tonic_luck x_tonic_grow x_tonic_gill x_tonic_brute"],
-    ["Food|Farming", "x_sprinkler x_trough x_fishtrap x_compost x_compostbin x_seedmaker x_picklekeg x_farmgate x_duckcoop x_mudbarn"],
+    ["Food|Farming", "x_sprinkler x_trough x_fishtrap x_compost x_compostbin x_seedmaker x_picklekeg x_farmgate x_duckcoop x_mudbarn x_greenhouse"],
     ["Food|Quick Meals", "x_roastcarrot x_bakedpotato x_skewer x_grilledmeat x_grilledfish x_omelette x_milkshake"],
     ["Food|Soups & Snacks", "x_f_swampsalad x_f_redcapsoup x_f_glowbroth x_f_buttermash x_f_frostjam x_f_swamptea x_f_bogkebab x_f_emberkebab x_f_cocoa x_f_sandwich x_f_lilycookie x_f_mossmuffin x_f_dumplings"],
     ["Food|Hearty Meals", "x_f_carproll x_f_fishpie x_f_carrotcake x_f_eelcurry x_fishchips x_catstew x_chowder x_spicyeel x_truffleroast x_chili x_stew x_berrypie x_feast x_f_breadloaf x_f_noodles x_f_mushroompie"],
@@ -16816,8 +16824,8 @@
     ["Lighting|Lamp Blocks", "x_nb_sporelamp x_nb_paperlamp x_nb_moonlamp x_nb_fireflylamp"],
     ["Garden|Pots & Planters", "d_pot d_fpot d_planter d_glowpot"],
     ["Garden|Structures", "d_fence d_bale d_well d_fountain x_d_signpost x_d_stonelantern x_d_standingstone"],
-    ["Garden|Curios", "x_scarecrow x_gravestone x_totem d_cauldron d_urn"],
-    ["Decor|Wall Art", "d_painting d_banner d_sign d_emberbanner d_frostbanner x_mirror x_worldmap x_wreath x_tap_swamp x_tap_ember x_tap_frost x_fishtrophy"],
+    ["Garden|Curios", "x_d_waterspout x_d_housesign x_scarecrow x_gravestone x_totem d_cauldron d_urn"],
+    ["Decor|Wall Art", "x_d_flagbanner x_d_plaque d_painting d_banner d_sign d_emberbanner d_frostbanner x_mirror x_worldmap x_wreath x_tap_swamp x_tap_ember x_tap_frost x_fishtrophy"],
     ["Decor|Trophies & Armory", "d_bugtrophy d_frogtrophy x_battrophy x_antlers x_weaponrack x_armorstand x_shield x_swords x_wolftrophy x_gatortrophy x_waspnest x_slimejar"],
     ["Decor|Legendary", "x_swampheart"],
     ["Decor|Spooky", "x_cobweb x_d_skullcandle x_d_bonepile"],
@@ -18276,7 +18284,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var p5b = e.target.closest("[data-p5]"); if (p5b) { if (!p5b.disabled) p5Act(p5b.getAttribute("data-p5")); return; } var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -19620,7 +19628,7 @@
       g.strokeStyle = Cc("#4a2e18", gh); g.lineWidth = 0.07 * k; hullShape(); g.stroke(); g.fillStyle = Cc("#5a3a1e", gh); g.fillRect(-1 * k, -1.15 * k, 0.12 * k, 0.5 * k);
     });
     part("boat_rudder", function (gh) { g.fillStyle = Cc("#7a5a3a", gh); g.beginPath(); g.moveTo(-4.4 * k, -0.2 * k); g.lineTo(-5.2 * k, 0.5 * k); g.lineTo(-5 * k, 1.6 * k); g.lineTo(-4.3 * k, 1.5 * k); g.lineTo(-4.1 * k, 0.4 * k); g.closePath(); g.fill(); g.strokeStyle = Cc("#4a2e18", gh); g.lineWidth = 0.06 * k; g.stroke(); });
-    part("boat_mast", function (gh) { g.fillStyle = Cc("#6a4426", gh); g.fillRect(0.2 * k, -6.4 * k, 0.3 * k, 5.4 * k); g.fillStyle = Cc("#8a5a32", gh); g.fillRect(0.28 * k, -6.4 * k, 0.1 * k, 5.4 * k); g.fillStyle = Cc("#6a4426", gh); g.fillRect(-1.9 * k, -5.4 * k, 4.6 * k, 0.22 * k); g.fillStyle = Cc("#e8d9a8", gh); g.beginPath(); g.moveTo(0.5 * k, -6.4 * k); g.lineTo(2.1 * k, -6.1 * k); g.lineTo(0.5 * k, -5.8 * k); g.closePath(); g.fill(); g.strokeStyle = Cc("#c9a876", gh); g.lineWidth = 0.04 * k; g.beginPath(); g.moveTo(0.35 * k, -6.2 * k); g.lineTo(4.6 * k, -1.4 * k); g.moveTo(0.35 * k, -6.2 * k); g.lineTo(-4 * k, -1.2 * k); g.stroke(); });
+    part("boat_mast", function (gh) { g.fillStyle = Cc("#6a4426", gh); g.fillRect(0.2 * k, -6.4 * k, 0.3 * k, 5.4 * k); g.fillStyle = Cc("#8a5a32", gh); g.fillRect(0.28 * k, -6.4 * k, 0.1 * k, 5.4 * k); g.fillStyle = Cc("#6a4426", gh); g.fillRect(-1.9 * k, -5.4 * k, 4.6 * k, 0.22 * k); if (!shipFlag(g, 0.5 * k, -6.1 * k, k, now, gh)) { g.fillStyle = Cc("#e8d9a8", gh); g.beginPath(); g.moveTo(0.5 * k, -6.4 * k); g.lineTo(2.1 * k, -6.1 * k); g.lineTo(0.5 * k, -5.8 * k); g.closePath(); g.fill(); } g.strokeStyle = Cc("#c9a876", gh); g.lineWidth = 0.04 * k; g.beginPath(); g.moveTo(0.35 * k, -6.2 * k); g.lineTo(4.6 * k, -1.4 * k); g.moveTo(0.35 * k, -6.2 * k); g.lineTo(-4 * k, -1.2 * k); g.stroke(); });
     part("boat_sail", function (gh) { var bl = reduce ? 0 : Math.sin(now / 900) * 0.12 * k; g.fillStyle = Cc("#2f7a3a", gh); g.beginPath(); g.moveTo(0.4 * k, -5.2 * k); g.bezierCurveTo(3.6 * k + bl, -4.7 * k, 3.9 * k + bl, -2.6 * k, 0.4 * k, -1.6 * k); g.bezierCurveTo(-1.8 * k - bl, -2.4 * k, -1.9 * k - bl, -4.6 * k, 0.4 * k, -5.2 * k); g.fill(); g.fillStyle = Cc("#58b85a", gh); g.beginPath(); g.moveTo(0.4 * k, -4.9 * k); g.bezierCurveTo(3.2 * k + bl, -4.5 * k, 3.4 * k + bl, -2.8 * k, 0.4 * k, -1.9 * k); g.bezierCurveTo(-1.5 * k - bl, -2.6 * k, -1.6 * k - bl, -4.4 * k, 0.4 * k, -4.9 * k); g.fill(); g.strokeStyle = Cc("#2f7a3a", gh); g.lineWidth = 0.05 * k; for (var v = 0; v < 5; v++) { var a = -1.9 + v * 0.95; g.beginPath(); g.moveTo(0.4 * k, -3.4 * k); g.lineTo((0.4 + Math.sin(a) * 1.9) * k, (-3.4 - Math.cos(a) * 1.4) * k); g.stroke(); } g.fillStyle = Cc("#ffffff55", gh); g.beginPath(); g.ellipse(1.6 * k, -4.2 * k, 0.5 * k, 0.2 * k, -0.5, 0, 6.2832); g.fill(); });
     part("boat_wheel", function (gh) { var cx = -2.6 * k, cy = -2.3 * k; g.fillStyle = Cc("#5a3a1e", gh); g.fillRect(cx - 0.08 * k, cy, 0.16 * k, 1.2 * k); g.strokeStyle = Cc("#c98c4f", gh); g.lineWidth = 0.1 * k; g.beginPath(); g.arc(cx, cy, 0.5 * k, 0, 6.2832); g.stroke(); g.lineWidth = 0.06 * k; for (var s = 0; s < 8; s++) { var a2 = s / 8 * 6.2832 + (o.spin || 0); g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a2) * 0.72 * k, cy + Math.sin(a2) * 0.72 * k); g.stroke(); } g.fillStyle = Cc("#c9a52a", gh); g.beginPath(); g.arc(cx, cy, 0.13 * k, 0, 6.2832); g.fill(); });
     part("boat_lamp", function (gh) { var cx = 4.1 * k, cy = -1.75 * k; if (!gh) { var gr = g.createRadialGradient(cx, cy, 0, cx, cy, 2.6 * k); gr.addColorStop(0, o.lit ? "rgba(255,226,122,.55)" : "rgba(255,226,122,.25)"); gr.addColorStop(1, "rgba(255,226,122,0)"); g.fillStyle = gr; g.fillRect(cx - 2.6 * k, cy - 2.6 * k, 5.2 * k, 5.2 * k); } g.fillStyle = Cc("#5a3a1e", gh); g.fillRect(cx - 0.1 * k, cy, 0.2 * k, 0.4 * k); g.fillStyle = Cc("#2f7a3a", gh); g.beginPath(); g.arc(cx - 0.22 * k, cy - 0.15 * k, 0.26 * k, 0, 6.2832); g.arc(cx + 0.22 * k, cy - 0.15 * k, 0.26 * k, 0, 6.2832); g.fill(); g.fillStyle = Cc("#fff6c0", gh); g.beginPath(); g.arc(cx - 0.22 * k, cy - 0.15 * k, 0.16 * k, 0, 6.2832); g.arc(cx + 0.22 * k, cy - 0.15 * k, 0.16 * k, 0, 6.2832); g.fill(); g.fillStyle = Cc("#14281a", gh); g.fillRect(cx - 0.24 * k, cy - 0.22 * k, 0.05 * k, 0.14 * k); g.fillRect(cx + 0.2 * k, cy - 0.22 * k, 0.05 * k, 0.14 * k); });
@@ -21210,7 +21218,7 @@
       var q = k.split(","), x = +q[0], y = +q[1], wet = HOME ? homeWet(x, y) : homeWetT(tiles, x, y), mul = (wet ? 2 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1);
       if (C.wat) { var pid = HOME ? hmT(x, y) : tiles[y * HW + x]; mul = pid === HT.PADDYW ? 2 * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1) * (homeUp("soil") ? 1.2 : 1) : 0; wet = mul > 0; }
       if (C.moon) mul = isNight(S.time) ? mul * 1.5 : 0;
-      mul *= seasonMul(e.k);   // SEASONS
+      mul *= cropMul(e.k, x, y) * scareMul(x, y);   // SEASONS (a greenhouse nearby: always in season; a living scarecrow at night: faster)
       e.d = (e.d || 0) + sec; if (wet) e.w = (e.w || 0) + sec;
       e.g += sec * mul;
       while (e.g >= C.t && e.s < 4) { e.g -= C.t; e.s++; if (e.s === 4) { if (HOME) chips(x + 0.5, y + 0.4, C.fruit, 8, 4); homeGiantTry(x, y, e.k); } }
@@ -21235,9 +21243,9 @@
   function homeDaily() {   // Croaker's cart empties the shipping crate every morning and leaves silver coins in your bag
     var o = homeS(), d = S.days | 0; if (o.day === d) return; o.day = d; if (HOME && o.sea !== undefined) seasonWelcome();
     Object.keys(o.c).forEach(function (k) { var e = o.c[k]; if (e && e.s >= 4 && HF.giant && HF.giant[e.k]) { var q = k.split(","); homeGiantTry(+q[0], +q[1], e.k, 0.12); } });   // overnight, a ripe patch may swell into a giant
-    homeAnimalDaily();
+    p5AnimalDaily(); homeAnimalDaily();
     var ks = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }); if (!ks.length) return;
-    var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); if (homeUp("cart")) val *= 1.2; o.ship = {}; o.cr += val;
+    var val = 0, n = 0; ks.forEach(function (k) { val += (HF.ship[k] || 0) * o.ship[k]; n += o.ship[k]; }); if (typeof o.shv === "number" && o.shv > 0) val = o.shv; o.shv = 0; if (homeUp("cart")) val *= 1.2; o.ship = {}; o.cr += val;
     var coins = Math.floor(o.cr + 1e-6); o.cr -= coins; if (coins > 0 && ITEMS.silvercoin) give("silvercoin", coins, undefined, undefined, true);
     S.st.shipped = (S.st.shipped || 0) + n; popup("The cart came by!", n + (n === 1 ? " thing" : " things") + " shipped: " + (coins ? "+" + coins + " Silver Coin" + (coins === 1 ? "" : "s") : "not a whole coin yet, saved for next time"), "#c8d0d8", "⛀"); snd("coin"); checkGoals();
   }
@@ -21371,7 +21379,7 @@
   function homeGiantHit(g) {   // a giant crop takes three good whacks
     g.h = (g.h || 0) + 1; HOME.work = 0.3; thud(120, 0.1); shake = 0.3; chips(g.x + 1.5, g.y + 1.4, CROPS[g.k].fruit, 10, 6);
     if (g.h < 3) { text(g.x + 1.5, g.y - 0.6, g.h === 1 ? "Whack!" : "Almost...", "#ffe9a8"); return; }
-    var o = homeS(), C = CROPS[g.k]; o.gi.splice(o.gi.indexOf(g), 1);
+    var o = homeS(), C = CROPS[g.k]; p5Giant(g); o.gi.splice(o.gi.indexOf(g), 1);
     var n = 12 + Math.floor(Math.random() * 7), pz = 2 + Math.floor(Math.random() * 3); give(C.produce, n - pz, undefined, undefined, true); if (ITEMS[C.produce + "_g"]) give(C.produce + "_g", pz, undefined, undefined, true); else give(C.produce, pz, undefined, undefined, true);
     if (SEEDOF[g.k]) give(SEEDOF[g.k], 3, undefined, undefined, true); S.st.giantharv = (S.st.giantharv || 0) + 1; S.st.harvests++; S.st.cropbits |= HBITS[g.k] || 0;
     for (var i = 0; i < 30; i++) hFx(g.x + Math.random() * 3 - 0.5, g.y + Math.random() * 3 - 0.5, C.fruit, 1);
@@ -21391,7 +21399,7 @@
     if (C.wat) S.st.paddyharv = (S.st.paddyharv || 0) + 1; if (C.moon) S.st.moonharv = (S.st.moonharv || 0) + 1;
     fmLog("c:" + e.k, 1, got[2] ? 2 : got[1] ? 1 : 0);   // FARM ALMANAC
     if (sel === "hoe" && sd && (S.inv[sd] || 0) > 0) { S.inv[sd]--; if (S.inv[sd] <= 0) delete S.inv[sd]; o.c[key] = { k: e.k, g: 0, s: 1 }; S.st.planted++; reslot(); hbDirty = true; }   // the hoe replants as it harvests
-    S.st.harvests++; S.st.cropbits |= HBITS[e.k] || 0; snd("coin"); homeGoals();
+    p5Mutate(x, y, e.k, comp); S.st.harvests++; S.st.cropbits |= HBITS[e.k] || 0; snd("coin"); homeGoals();
   }
   // ---- the shipping crate and the seed stall ----
   function openShip() {
@@ -21399,16 +21407,16 @@
   }
   function renderShip() {
     var o = homeS(), have = Object.keys(HF.ship).filter(function (k) { return ITEMS[k] && (S.inv[k] || 0) > 0; }), inBox = Object.keys(o.ship).filter(function (k) { return o.ship[k] > 0; }), pend = 0;
-    inBox.forEach(function (k) { pend += (HF.ship[k] || 0) * o.ship[k]; });
+    inBox.forEach(function (k) { pend += (HF.ship[k] || 0) * o.ship[k]; }); if (o.shv > 0) pend = o.shv;
     var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("silvercoin") + '"><div><small>Your Homestead</small><h2>Shipping Crate</h2><p class="mo-sub">Drop your harvest in. Croaker\'s cart comes by every morning and leaves Silver Coins in your bag. Spend them at the Seed Stall.</p></div></div>';
-    h += '<p class="mo-msg">In the crate: <b>' + (inBox.length ? inBox.map(function (k) { return o.ship[k] + " " + esc(ITEMS[k].n); }).join(", ") : "nothing yet") + "</b>" + (pend ? " · worth about <b>" + Math.floor(pend + o.cr) + " Silver</b>" : "") + "</p>";
-    h += '<ul class="mo-list">' + (have.length ? have.map(function (k) { return '<li class="have"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + " ×" + S.inv[k] + "</b><small>" + HF.ship[k] + " Silver each</small></div>" + '<button type="button" class="btn mo-fit" data-hship="' + k + '">Ship all</button></li>'; }).join("") : '<li><div><b>Nothing to ship</b><small>Grow and harvest crops on your homestead.</small></div></li>') + "</ul>";
+    h += marketLine(); h += '<p class="mo-msg">In the crate: <b>' + (inBox.length ? inBox.map(function (k) { return o.ship[k] + " " + esc(ITEMS[k].n); }).join(", ") : "nothing yet") + "</b>" + (pend ? " · worth about <b>" + Math.floor(pend + o.cr) + " Silver</b>" : "") + "</p>";
+    h += '<ul class="mo-list">' + (have.length ? have.map(function (k) { return '<li class="have"><img alt="" src="' + icon(k) + '"><div><b>' + esc(ITEMS[k].n) + " ×" + S.inv[k] + "</b><small>" + priceTag(k) + "</small></div>" + '<button type="button" class="btn mo-fit" data-hship="' + k + '">Ship all</button></li>'; }).join("") : '<li><div><b>Nothing to ship</b><small>Grow and harvest crops on your homestead.</small></div></li>') + "</ul>";
     h += '<div class="st-row">' + (have.length > 1 ? '<button type="button" class="btn" data-hship="*">Ship everything</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#c8d0d8"); $("sbxStoryBox").innerHTML = h;
   }
   function shipAct(k) {
     var o = homeS(), L = k === "*" ? Object.keys(HF.ship).filter(function (q) { return ITEMS[q] && (S.inv[q] || 0) > 0; }) : [k];
-    L.forEach(function (q) { var n = S.inv[q] || 0; if (!n) return; o.ship[q] = (o.ship[q] || 0) + n; delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } });
+    L.forEach(function (q) { var n = S.inv[q] || 0; if (!n) return; o.shv = (o.shv || 0) + shipPrice(q) * n; o.ship[q] = (o.ship[q] || 0) + n; delete S.inv[q]; if (sel === q) { sel = "pick"; bare = true; } });
     reslot(); hbDirty = true; thud(240, 0.06); save(); renderShip();
   }
   function openStall() { var el = $("sbxStory"); if (!el) return; storyOpen = 224; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderStall(); }
@@ -21477,6 +21485,7 @@
     var o = homeS(), it = ITEMS[sel], fast = homeUp("keg") ? 0.6 : 1;
     if (m.o) { give(m.o, m.n || 1, undefined, undefined, true); text(x + 0.5, y - 0.4, "+" + (m.n || 1) + " " + ITEMS[m.o].n, "#ffe9a8"); if (m.k === "picklekeg") { S.st.preserves = (S.st.preserves || 0) + (m.n || 1); fmLog("p:" + m.o, m.n || 1); } if (m.k === "seedmaker") S.st.seedsmade = (S.st.seedsmade || 0) + (m.n || 1); delete m.o; delete m.n; delete m.i; snd("coin"); checkGoals(); return; }
     if (sel === "pick" && !m.i) { delete o.m[x + "," + y]; give(m.k, 1, undefined, undefined, true); if (m.k === "sprinkler") hMark(x, y, 3); thud(160, 0.06); hFx(x, y, "#8a6a4a", 8); return; }
+    if (m.k === "scarecrow") { if (press) scareTalk(m, x, y); return; }
     if (m.k === "sprinkler") { if (press) nag("The sprinkler waters the soil around it. Use your pick to move it."); return; }
     if (m.i) { if (press) nag(ITEMS[m.i] ? "Working on " + ITEMS[m.i].n + "... " + Math.ceil(m.t) + " s left." : "Working..."); return; }
     var have = (S.inv[sel] || 0) > 0, crop = have && it && Object.keys(CROPS).some(function (c) { return CROPS[c].produce === sel || CROPS[c].produce + "_s" === sel || CROPS[c].produce + "_g" === sel; }), base = crop ? sel.replace(/_[sg]$/, "") : null;
@@ -21518,9 +21527,10 @@
   var bldAt = null;
   function openBld(b) { bldAt = b; var el = $("sbxStory"); if (!el) return; storyOpen = 225; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); renderBld(); }
   function renderBld() {
+    if (bldAt && bldAt.k === "greenhouse") { ghPanel(bldAt); return; }
     var o = homeS(), b = bldAt, D = HF.bld[b.k], bi = (o.b || []).indexOf(b), L = homeAnimals().filter(function (a) { return a.b === bi; }), cap = homeBldCap(b), fib = S.inv.fiber || 0;
     var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon(b.k) + '"><div><small>Your Homestead</small><h2>' + esc(ITEMS[b.k].n) + '</h2><p class="mo-sub">' + L.length + " / " + cap + " animals. Each morning, every animal eats 1 hay from the trough and leaves " + (b.k === "duckcoop" ? "an egg" : "something") + " outside. Pet them once a day: happy animals sometimes leave two.</p></div></div>";
-    h += '<p class="mo-msg">Hay in the trough: <b>' + (b.hay || 0) + "</b> (Fiber is hay)</p>";
+    h += '<p class="mo-msg">Hay in the trough: <b>' + (b.hay || 0) + "</b> (Fiber is hay)</p>" + bldExtra(b, L);
     h += '<ul class="mo-list">' + (L.length ? L.map(function (a) { var A = ANIM[a.k]; return '<li class="have"><img alt="" src="' + icon(A.prod) + '"><div><b>' + esc(a.nm) + " the " + esc(A.n) + "</b><small>" + "♥".repeat(Math.ceil((a.f || 0) / 2)) + "♡".repeat(5 - Math.ceil((a.f || 0) / 2)) + (a.hungry ? " · hungry" : "") + "</small></div></li>"; }).join("") : '<li><div><b>No animals yet</b><small>Buy them at the Seed Stall.</small></div></li>') + "</ul>";
     h += '<div class="st-row">' + (fib ? '<button type="button" class="btn" data-hbld="hay">Add ' + Math.min(fib, 40 - (b.hay || 0)) + " Fiber</button>" : "") + (!L.length ? '<button type="button" class="btn ghost" data-hbld="move">Pick it up</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
     $("sbxStoryBox").style.setProperty("--qc", "#c9a06a"); $("sbxStoryBox").innerHTML = h;
@@ -22017,7 +22027,7 @@
   }
   function mmss(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t / 60) + ":" + ("0" + (t % 60)).slice(-2); }
   function p4Tick(dt) {   // called every frame from advTime, in every scene
-    if (!S) return; var o = p4(), hud = "";
+    if (!S) return; p5Tick(dt); var o = p4(), hud = "";
     var T = o.tour; if (T.st === 1) { T.t -= dt; T.sc = (S.st.fish - T.b[0]) + 3 * ((S.st.rarefish || 0) - T.b[1]) + 6 * ((S.st.legfish || 0) - T.b[2]); var el2 = (150 - T.t) / 150; T.R.forEach(function (r) { r.s = Math.floor(r.r * el2 + r.j * Math.sin(el2 * 9 + r.r)); r.s = Math.max(0, r.s); }); var best = T.R.reduce(function (a, r) { return r.s > a.s ? r : a; }, T.R[0]);
       hud = "Fishing Tournament " + mmss(T.t) + " · You " + T.sc + " · " + best.n + " " + best.s; if (T.t <= 0) tourFinish(); }
     var R = o.rv.race; if (R) { hud = rivalTick(dt, R) || hud; }
@@ -22209,7 +22219,13 @@
   }
   var NIBPIC = null;
   function nibPic() { if (NIBPIC) return NIBPIC; var c = document.createElement("canvas"); c.width = c.height = 160; var g = c.getContext("2d"); g.translate(88, 104); g.scale(3.2, 3.2); g.lineJoin = "round"; otterArt(g, 0, 0); NIBPIC = c.toDataURL(); cvFree(c); return NIBPIC; }
+  function p5HomeDraw(g, now, SY) {   // a little mood bubble over each animal out in the yard
+    var t = now / 1000; homeAnimals().forEach(function (a, i) { if (a.inside || a.x === undefined) return; var m = petMood(a); if (m[0] === "content") return; var sx = ox + a.x * ts, sy = SY(oy + a.y * ts) - ts * 1.5 + Math.sin(t * 2.4 + i) * ts * 0.06, r = ts * 0.26;
+      g.globalAlpha = m[0] === "happy" ? 0.55 + 0.35 * Math.sin(t * 3 + i) : 0.95; g.fillStyle = "rgba(255,255,255,.92)"; g.beginPath(); g.arc(sx, sy, r, 0, 7); g.moveTo(sx - r * 0.3, sy + r * 0.8); g.lineTo(sx, sy + r * 1.4); g.lineTo(sx + r * 0.3, sy + r * 0.8); g.fill();
+      g.fillStyle = m[3]; g.font = "900 " + Math.round(r * 1.2) + "px Nunito,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(m[1], sx, sy + 1); g.globalAlpha = 1; g.textBaseline = "alphabetic"; });
+  }
   function p4HomeDraw(g, now, SY) {
+    p5HomeDraw(g, now, SY);
     var T = p4().th, t = now / 1000;
     if (T.st === 1) thClueSpots().forEach(function (q, i) { if (T.c[i]) return; var sx = ox + (q[0] + 0.5) * ts, sy = SY(oy + (q[1] + 0.8) * ts), a = 0.5 + 0.5 * Math.sin(t * 3 + i); g.fillStyle = "rgba(255,240,200," + (0.25 + 0.35 * a).toFixed(2) + ")"; for (var s2 = 0; s2 < 4; s2++) { var an = t * 1.5 + s2 * 1.57; g.fillRect(Math.round(sx + Math.cos(an) * ts * 0.35), Math.round(sy - ts * 0.2 + Math.sin(an) * ts * 0.18), 2, 2); } g.fillStyle = TH_CLUE[i][2]; g.globalAlpha = 0.7; for (var pp = 0; pp < 3; pp++) { g.beginPath(); g.ellipse(sx - ts * 0.25 + pp * ts * 0.25, sy - pp % 2 * ts * 0.1, ts * 0.06, ts * 0.04, 0, 0, 7); g.fill(); } g.globalAlpha = 1; });
     if (THF.on) { var sx2 = ox + THF.x * ts, sy2 = SY(oy + THF.y * ts), k = ts / 30; g.save(); g.translate(sx2, sy2); g.scale(k * THF.face, k); g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, 12, 2.6, 0, 0, 7); g.fill(); otterArt(g, t, THF.run); g.restore(); }
@@ -22307,7 +22323,7 @@
   function famJournalHtml() {
     var h = '<div class="p4-jfam"><h3>Family</h3>' + Object.keys(FAM).filter(famMet).map(function (w) { return '<div class="p4-jf"><img alt="" src="' + famPic(w) + '"><span><b>' + esc(FAM[w].n) + "</b>" + famHeartsHtml(w) + "</span></div>"; }).join("");
     var T = townList(); h += "<h3>Moving to town</h3>" + (T.length ? T.map(function (c) { return "<p><b>" + esc(c.who) + "</b> · " + esc(c.why) + "</p>"; }).join("") : '<p class="st-tip">Nobody yet. Your choices in the family and village stories decide who moves in when the town is built.</p>');
-    return h + "</div>";
+    return h + p5JournalHtml() + "</div>";
   }
   var P4ACT = null;
   function p4Pill(g, now) {   // a pill over whichever Phase 4 thing you are standing at (tap it, or press F)
@@ -22322,10 +22338,10 @@
     var B = nbSpot(); if (nbNear()) return { l: "Notice Board", fn: nbOpen, x: B.x, y: B.y - 2.6 };
     if (rivalNear()) return { l: "Talk to Rook", fn: function () { rivalAct("talk"); }, x: ROOK.x, y: ROOK.y - 2.4 };
     var r = radioNear(); if (r) return { l: "Tune the radio", fn: function () { radioOpen(r.x, r.y); }, x: r.x + 0.5, y: r.y - 1.2 };
-    return null;
+    return p5Pill();
   }
   function p4WorldDraw(g, now) { drawBartyWorld(g, now); p4WorldDraw2(g, now); }
-  function p4WorldDraw2(g, now) { drawBoard(g, now); drawRival(g, now); }
+  function p4WorldDraw2(g, now) { drawBoard(g, now); drawRival(g, now); p5WorldDraw(g, now); }
   // ---------- #44 CROAKER'S LOGBOOK: his sailor's log, torn up in the storm and scattered across the Brinebog Sea ----------
   // Eight pages (a Lore thread, so they're read in Journal > Lore like the others). Where each one turns up:
   //   LB1 Croaker hands it over after the thunderstorm tale    LB2 a sea chest off Croaker's Pier    LB3 the Old Lighthouse
@@ -22446,6 +22462,496 @@
   ITEMS.goldbait = { n: "Golden Bait", gem: "#ffd23f" }; ORDER.push("goldbait");
   OCI.goldbait = function (g) { var E = function (x, y, rx, ry, c) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 6.3); g.fill(); }; g.fillStyle = "#5a3a06"; g.beginPath(); g.ellipse(16, 18, 11, 7, -0.4, 0, 6.3); g.fill(); E(16, 17, 10, 6, "#f2b83a"); E(14, 15, 6, 3, "#ffe08a"); E(12, 14, 2, 1.2, "#fff"); g.strokeStyle = "#8a6a1a"; g.lineWidth = 1; for (var i = 0; i < 3; i++) { g.beginPath(); g.arc(16 + i * 3 - 3, 17, 5, -0.6, 0.6); g.stroke(); } g.fillStyle = "#c8d0d8"; g.fillRect(24, 6, 2, 9); g.beginPath(); g.arc(23, 15, 3, 0, 3.2); g.strokeStyle = "#c8d0d8"; g.lineWidth = 1.6; g.stroke(); };
   FXN.fed = "Well Fed";
+  // =====================================================================================================================
+  // PHASE 5: HOMESTEAD, ECONOMY AND TOWN (roadmap #55-#68). Everything new is kept in S.p5 (saved whole, like S.p4).
+  // =====================================================================================================================
+  function p5() {
+    if (!S.p5 || typeof S.p5 !== "object") S.p5 = {}; var o = S.p5;
+    ["ban", "tro", "town", "bank", "pump", "cb", "rep", "mer", "hy", "fest", "shop", "rate"].forEach(function (k) { if (!o[k] || typeof o[k] !== "object" || Array.isArray(o[k])) o[k] = {}; });
+    if (!Array.isArray(o.bpL)) o.bpL = []; return o;
+  }
+  // ---------- #55 CROAKA'S MARKET BOARD: crop prices change with the seasons, and one crop a day is the hot pick ----------
+  var PROD2C = null;
+  function prodBase(k) { return String(k).replace(/^pres_/, "").replace(/_[sg]$/, ""); }
+  function prodCrop(k) { if (!PROD2C) { PROD2C = {}; Object.keys(CROPS).forEach(function (c) { if (CROPS[c].produce) PROD2C[CROPS[c].produce] = c; }); } return PROD2C[prodBase(k)] || ""; }
+  function hotPick(d) { var L = Object.keys(HF.ship).filter(function (k) { return ITEMS[k] && prodCrop(k) && prodBase(k) === k; }).sort(); return L.length ? L[Math.floor(SW.hash((d | 0) + 11, 3, 91) * L.length)] : ""; }
+  function priceMul(k, d) {
+    var c = prodCrop(k), m = 1 + 0.04 * repRank("farm"); if (!c) return m;
+    m *= inSeason(c) ? 0.85 : 1.35; if (prodBase(k) === hotPick(d === undefined ? S.days : d)) m *= 2; return m;
+  }
+  function shipPrice(k) { return (HF.ship[k] || 0) * priceMul(k); }
+  function priceTag(k) {
+    var c = prodCrop(k), v = Math.round(shipPrice(k) * 10) / 10, t = v + " Silver each";
+    if (prodBase(k) === hotPick(S.days)) return t + ' <em class="p5-hot">★ hot pick, double</em>';
+    if (c) return t + (inSeason(c) ? ' <em class="p5-lo">↓ in season</em>' : ' <em class="p5-hi">↑ out of season</em>');
+    return t;
+  }
+  function marketLine() {
+    var h = hotPick(S.days); if (!h) return "";
+    return '<p class="mo-sub p5-mkt">Croaka\'s market board: today\'s <b>hot pick is ' + esc(ITEMS[h].n) + "</b> (double price). Crops in season sell for less (everyone has them); out-of-season crops sell for more. The cart pays the price on the day you ship." + (repRank("farm") ? " Farmers' Guild bonus: +" + repRank("farm") * 4 + "%." : "") + "</p>";
+  }
+  // ---------- #56 THE GREENHOUSE: crops within 3 tiles of it grow as if it were their season ----------
+  function ghNear(x, y) { var o = homeS(), B = o.b || []; for (var i = 0; i < B.length; i++) { var b = B[i]; if (b.k !== "greenhouse") continue; var D = HF.bld.greenhouse; if (x >= b.x - 3 && x < b.x + D.w + 3 && y >= b.y - 3 && y < b.y + D.h + 3) return true; } return false; }
+  function cropMul(k, x, y) { return ghNear(x, y) ? 1.15 : seasonMul(k); }
+  function ghArt() {   // a glasshouse: white iron frame, pale green panes with a shine, pots and leaves pressed against the glass
+    var w = 4, h = 3, S2 = hpCan(w * 16 + 16, h * 16 + 24), g = S2.g, OX = 8, OY = 20, W2 = w * 16, H2 = h * 16;
+    var px = function (x, y, ww, hh, c) { g.fillStyle = c; g.fillRect(OX + x, OY + y, ww, hh); };
+    px(-2, H2 - 6, W2 + 4, 6, "#6a5a4a"); px(-2, H2 - 6, W2 + 4, 1, "#8a7a62");   // a low brick footing
+    px(0, 6, W2, H2 - 12, "#9ad8c0"); px(0, 6, W2, H2 - 12, "rgba(255,255,255,.08)");
+    for (var x = 4; x < W2; x += 9) { px(x, H2 - 14, 5, 8, "#a8603a"); px(x - 1, H2 - 15, 7, 2, "#c8784a"); px(x + 1, H2 - 22, 3, 8, "#4a9a3a"); px(x - 1, H2 - 20, 3, 3, "#6ac04a"); px(x + 3, H2 - 24, 3, 3, "#7ad05a"); px(x + 1, H2 - 26, 2, 2, x % 2 ? "#ff7aa0" : "#ffd23f"); }
+    for (var y = 0; y < 18; y++) { var half = Math.round((18 - y) * (W2 / 2) / 18); px(W2 / 2 - half, 6 - 18 + y, half * 2, 1, y % 6 === 5 ? "#e8f4ee" : "#b8ecd8"); }   // the pitched glass roof
+    for (x = 0; x <= W2; x += 16) px(Math.min(W2 - 2, x), 6, 2, H2 - 12, "#f4f8f2");   // iron mullions
+    px(0, 6, W2, 2, "#f4f8f2"); px(0, Math.round(H2 / 2), W2, 1, "#e0ece6");
+    for (y = 0; y < 18; y++) { var h2 = Math.round((18 - y) * (W2 / 2) / 18); px(W2 / 2 - h2, 6 - 18 + y, 2, 1, "#f4f8f2"); px(W2 / 2 + h2 - 2, 6 - 18 + y, 2, 1, "#f4f8f2"); }
+    px(W2 / 2 - 1, -12, 2, 18, "#f4f8f2");
+    for (var s = 0; s < 4; s++) { px(3 + s * 16, 9, 2, 10, "rgba(255,255,255,.55)"); px(6 + s * 16, 9, 1, 6, "rgba(255,255,255,.35)"); }   // the shine on each pane
+    px(W2 / 2 - 6, H2 - 22, 12, 16, "#6ab89a"); px(W2 / 2 - 6, H2 - 22, 12, 1, "#f4f8f2"); px(W2 / 2 - 1, H2 - 22, 2, 16, "#f4f8f2"); px(W2 / 2 + 3, H2 - 14, 2, 2, "#ffd23f");   // the door
+    return S2.c;
+  }
+  function ghPanel(b) {
+    var h = '<div class="mo-box hm-box"><div class="hm-hd"><img alt="" src="' + icon("greenhouse") + '"><div><small>Your Homestead</small><h2>Greenhouse</h2><p class="mo-sub">Its warm air spreads 3 tiles all around it. Crops planted there grow as fast as in their best season, even in the depths of winter.</p></div></div>';
+    var n = 0, o = homeS(); Object.keys(o.c).forEach(function (k) { var q = k.split(","); if (ghNear(+q[0], +q[1])) n++; });
+    h += '<p class="mo-msg">Crops in the warm zone right now: <b>' + n + "</b></p>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-hbld="move">Pick it up</button><button type="button" class="btn ghost" data-story-close>Close</button></div></div>';
+    $("sbxStoryBox").style.setProperty("--qc", "#9ad8c0"); $("sbxStoryBox").innerHTML = h;
+  }
+  // ---------- #57 CROP MUTATIONS: two different crops growing side by side can cross into a rare hybrid ----------
+  var HYB = {   // hybrid: [crop A, crop B, name, colour, colour 2, ship price, effect]
+    firecarrot: ["carrot", "pepper", "Fire Carrot", "#ff5a1f", "#ffd23f", 7, ["fire", 180]],
+    frostato: ["potato", "frost", "Frostato", "#9ad8ff", "#e8d0a0", 7, ["hide", 180]],
+    glowmelon: ["mudmelon", "glowgourd", "Glowmelon", "#7af0c8", "#4a9a3a", 12, ["glow", 300]],
+    moonpumpkin: ["croakpumpkin", "moonpetal", "Moon Pumpkin", "#c8d8ff", "#ff8a2a", 14, ["night", 300]],
+    lotusleek: ["lilyleek", "lotus", "Lotus Leek", "#ff9ad0", "#7ac87a", 8, ["regen", 90]],
+    sunbeancorn: ["reedcorn", "bogbean", "Sunbean Corn", "#ffd23f", "#7a4a22", 8, ["speed", 180]]
+  };
+  Object.keys(HYB).forEach(function (k) { var q = HYB[k]; ITEMS[k] = { n: q[2], food: 22, heal: 8, efx: q[6], hyb: 1 }; ORDER.push(k); HF.ship[k] = q[5];
+    OCI[k] = function (g) {
+      var gr = g.createLinearGradient(8, 6, 24, 28); gr.addColorStop(0, q[3]); gr.addColorStop(1, q[4]);
+      g.fillStyle = "#1a2a12"; g.beginPath(); g.ellipse(16, 18, 10.5, 10, 0.2, 0, 6.3); g.fill(); g.fillStyle = gr; g.beginPath(); g.ellipse(16, 18, 9, 8.6, 0.2, 0, 6.3); g.fill();
+      g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 1; g.beginPath(); g.moveTo(16, 10); g.quadraticCurveTo(12, 18, 16, 26); g.stroke();
+      g.fillStyle = "#3a8a2a"; g.beginPath(); g.ellipse(19, 8, 5, 2.4, -0.6, 0, 6.3); g.fill(); g.fillStyle = "#6ac04a"; g.beginPath(); g.ellipse(13, 8, 4, 2, 0.6, 0, 6.3); g.fill();
+      g.fillStyle = "rgba(255,255,255,.7)"; g.beginPath(); g.ellipse(12, 14, 3, 2, -0.5, 0, 6.3); g.fill();
+      g.fillStyle = "#fff"; [[25, 9], [6, 13], [26, 22]].forEach(function (s) { g.fillRect(s[0], s[1] - 2, 1, 5); g.fillRect(s[0] - 2, s[1], 5, 1); });   // a sparkle: it's rare
+    }; });
+  function hybOf(a, b) { for (var k in HYB) { var q = HYB[k]; if ((q[0] === a && q[1] === b) || (q[0] === b && q[1] === a)) return k; } return ""; }
+  function p5Mutate(x, y, ck, comp) {
+    var o = homeS(), best = ""; for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; var e = o.c[(x + dx) + "," + (y + dy)]; if (e && e.k !== ck) { var hk = hybOf(ck, e.k); if (hk) best = hk; } }
+    if (!best) return; var ch = 0.08 + (comp ? 0.07 : 0) + repRank("farm") * 0.01 + (scareNear(x, y) ? 0.03 : 0); if (Math.random() > ch) return;
+    give(best, 1, undefined, undefined, true); S.st.hybrids = (S.st.hybrids || 0) + 1; var first = !p5().hy[best]; p5().hy[best] = 1;
+    text(x + 0.5, y - 1.8, "✦ Mutation: " + ITEMS[best].n + "!", "#ff9ad0"); hFx(x, y, HYB[best][3], 16);
+    if (first) { popup("A new hybrid!", ITEMS[best].n + " (" + CROPS[HYB[best][0]].n + " × " + CROPS[HYB[best][1]].n + ")", "#ff9ad0", "✦"); snd("open", "Epic"); } else snd("open", "Rare");
+  }
+  SIDE.push({ id: "p5_hyb", cat: "Farmer", ch: 0, n: "Mad Botanist", d: "Grow every kind of hybrid crop. Plant two different crops side by side; when you harvest, they sometimes cross.", need: 6, v: function () { return Object.keys(p5().hy).length; }, rw: { goldcoin: 3, tonic_grow: 2 }, show: function () { return (S.st.hybrids || 0) > 0; } });
+  // ---------- #58 SCARECROWS come alive at night: they tend the crops around them and keep watch for thieves ----------
+  if (HF.mach) HF.mach.scarecrow = 1; if (HF.bld) HF.bld.greenhouse = { w: 4, h: 3, animals: [], cap: 0 };
+  function scareNear(x, y) { var o = homeS(); if (!o.m) return false; for (var k in o.m) { if (o.m[k].k !== "scarecrow") continue; var q = k.split(","); if (Math.abs(+q[0] - x) <= 4 && Math.abs(+q[1] - y) <= 4) return true; } return false; }
+  function scareMul(x, y) { return isNight(S.time) && scareNear(x, y) ? 1.25 : 1; }
+  var SCARE_LINES = ["Caw-tion! Nothing gets past me. Except crows. Crows get past me.", "I stood still ALL day. Do you know how hard that is?", "The carrots are safe. I've been staring at them for hours.", "Psst. The moon told me a secret. It's made of cheese. Don't tell anyone.", "My straw itches. It's fine. Everything's fine.", "I saw something small and furry earlier. I think it was afraid of me. Good."];
+  function scareTalk(m, x, y) { if (!isNight(S.time)) { text(x + 0.5, y - 1.6, "It's just a scarecrow... for now.", "#e8d8a8"); return; } m.ln = ((m.ln || 0) + 1) % SCARE_LINES.length; text(x + 0.5, y - 2, SCARE_LINES[m.ln], "#ffd76a"); thud(600, 0.03); S.st.scaretalk = (S.st.scaretalk || 0) + 1; checkGoals(); }
+  function scareArt(g, t, night, look, IN) {   // a straw scarecrow on its pole: patched shirt, a burlap head with a stitched grin, a floppy hat. At night it wakes.
+    IN = IN || "#2a1a06"; var wob = night ? Math.sin(t * 3) * 0.12 : Math.sin(t * 0.8) * 0.03, hop = night ? Math.abs(Math.sin(t * 3)) * 2.4 : 0;
+    g.beginPath(); g.rect(-1.4, -26, 2.8, 26); aInk(g, aG(g, -26, 0, "#9a6a3a", "#7a4a22", "#4a2a10"), IN, 0.8);   // the pole
+    g.save(); g.translate(0, -hop); g.rotate(wob);
+    g.beginPath(); g.moveTo(-19, -27); g.lineTo(19, -27); g.lineTo(19, -24.4); g.lineTo(-19, -24.4); g.closePath(); aInk(g, aG(g, -27, -24, "#9a6a3a", "#7a4a22", "#4a2a10"), IN, 0.8);   // the crossbar
+    [-1, 1].forEach(function (sd) { g.beginPath(); g.moveTo(sd * 18, -27.6); g.lineTo(sd * 22, -29 + (night ? Math.sin(t * 6 + sd) * 2 : 0)); g.lineTo(sd * 21, -25); g.lineTo(sd * 23, -23 + (night ? Math.sin(t * 5 + sd) * 2 : 0)); g.lineTo(sd * 18, -23.6); g.closePath(); aInk(g, aG(g, -29, -23, "#f2d87a", "#d8b44a", "#a8822a"), "#5a400a", 0.6); });   // straw hands
+    g.beginPath(); g.moveTo(-17, -28.4); g.quadraticCurveTo(0, -31, 17, -28.4); g.lineTo(17, -23); g.lineTo(9, -22); g.lineTo(8, -10); g.quadraticCurveTo(0, -8, -8, -10); g.lineTo(-9, -22); g.lineTo(-17, -23); g.closePath();
+    g.save(); aInk(g, aG(g, -31, -8, "#6a9ad8", "#3a6aa8", "#1a3a6a"), "#0a1a3a", 1); g.clip(); g.fillStyle = "#c8603a"; g.fillRect(2, -20, 5, 5); g.strokeStyle = "rgba(255,240,220,.6)"; g.lineWidth = 0.5; g.strokeRect(2.4, -19.6, 4.2, 4.2); g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(-17, -28, 34, 2); g.restore();   // a patched shirt
+    [-5, 5].forEach(function (x) { g.beginPath(); g.moveTo(x - 1.6, -9.4); g.lineTo(x, -5.4); g.lineTo(x + 1.6, -9.4); g.closePath(); g.fillStyle = "#d8b44a"; g.fill(); });   // straw poking out
+    g.beginPath(); g.ellipse(0, -35, 7.4, 7, 0, 0, 7); aInk(g, aG(g, -42, -28, "#e8d0a0", "#c8a46a", "#8a6a3a"), "#4a3416", 1);   // the burlap head
+    g.strokeStyle = "rgba(74,52,22,.5)"; g.lineWidth = 0.4; for (var i = -5; i <= 5; i += 2.5) { g.beginPath(); g.moveTo(i, -41); g.lineTo(i * 0.9, -29); g.stroke(); }
+    if (night) { [-2.8, 2.8].forEach(function (x) { var gl = g.createRadialGradient(x + look, -36, 0, x + look, -36, 4); gl.addColorStop(0, "rgba(255,190,60,.9)"); gl.addColorStop(1, "rgba(255,190,60,0)"); g.fillStyle = gl; g.beginPath(); g.arc(x + look, -36, 4, 0, 7); g.fill(); g.fillStyle = "#fff4c0"; g.beginPath(); g.arc(x + look, -36, 1.3, 0, 7); g.fill(); }); }
+    else { g.strokeStyle = IN; g.lineWidth = 0.9; [-2.8, 2.8].forEach(function (x) { g.beginPath(); g.moveTo(x - 1.2, -37.2); g.lineTo(x + 1.2, -34.8); g.moveTo(x + 1.2, -37.2); g.lineTo(x - 1.2, -34.8); g.stroke(); }); }   // stitched X eyes by day
+    g.strokeStyle = IN; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-3.6, -31.6); g.quadraticCurveTo(0, night ? -29 : -30.2, 3.6, -31.6); g.stroke(); for (i = -2.4; i <= 2.4; i += 1.6) { g.beginPath(); g.moveTo(i, -32.2); g.lineTo(i, -30.4); g.stroke(); }
+    g.beginPath(); g.moveTo(-12, -40.4); g.quadraticCurveTo(0, -38, 12, -40.4); g.lineTo(9, -42); g.quadraticCurveTo(7, -51, 0, -50); g.quadraticCurveTo(-6, -50.6, -8, -42); g.closePath(); aInk(g, aG(g, -51, -38, "#8a6a4a", "#6a4a2a", "#3a2410"), "#1a0e04", 1);   // floppy hat
+    g.fillStyle = "#c8303a"; g.fillRect(-7.6, -43.4, 15.6, 1.8); aShine(g, -3, -47, 2.4, 0.9, 0.3, -0.3);
+    g.restore();
+  }
+  // ---------- #59 PET HOUSES: name your coops, barns and animals, and every animal has a mood ----------
+  function petMood(a) {
+    var d = S.days | 0, since = a.pd === undefined ? 9 : d - a.pd;
+    if (a.hungry) return ["hungry", "🌾", "Hungry: fill the trough", "#f2c14e"];
+    if (since >= 3) return ["lonely", "💧", "Lonely: give them a pet", "#7ab8ff"];
+    if (since === 0) return ["happy", "♥", "Happy", "#ff7ab8"];
+    return ["content", "☺", "Content", "#9ae07a"];
+  }
+  function p5AnimalDaily() {   // a lonely animal's friendship slips a little each morning; a happy one may leave a bonus
+    var o = homeS(); homeAnimals().forEach(function (a) { var m = petMood(a)[0]; if (m === "lonely") a.f = Math.max(0, (a.f || 0) - 1); if (m === "happy" && Math.random() < 0.15 && ANIM[a.k] && (o.b || [])[a.b]) { if (!o.dr) o.dr = []; var b = o.b[a.b]; o.dr.push({ k: ANIM[a.k].prod, x: b.x + Math.random() * 3, y: b.y + HF.bld[b.k].h + 0.6 }); } });
+  }
+  var RNM = -1;
+  function bldExtra(b, L) {   // added to the coop / barn window: its name, and each animal's mood and a rename box
+    var h = '<div class="p5-bname"><label>Name: <input id="p5BldNm" maxlength="18" value="' + esc(b.nm || "") + '" placeholder="' + esc(ITEMS[b.k].n) + '"></label><button type="button" class="btn ghost" data-p5="bldnm">Save</button></div>';
+    h += '<ul class="p5-moods">' + L.map(function (a) { var m = petMood(a), ai = homeAnimals().indexOf(a);
+      return '<li><span class="p5-mood" style="--mc:' + m[3] + '">' + m[1] + "</span><span><b>" + esc(a.nm) + "</b><small>" + m[2] + "</small></span>" + (RNM === ai ? '<input id="p5AnNm" maxlength="14" value="' + esc(a.nm) + '"><button type="button" class="btn" data-p5="annm:' + ai + '">OK</button>' : '<button type="button" class="btn ghost" data-p5="anren:' + ai + '">Rename</button>') + "</li>"; }).join("") + "</ul>";
+    return h;
+  }
+  function cleanName(s, n) { return String(s || "").replace(/[<>&"]/g, "").replace(/\s+/g, " ").trim().slice(0, n); }
+  // ---------- #60 THE HARVEST FESTIVAL: on the last day of Fall, bring your heaviest giant pumpkin to the Sky Village ----------
+  function festYear() { return Math.floor((S.days | 0) / (SEASON_DAYS * 4)); }
+  function festNow() { return seasonOf() === 2 && seasonDay() === SEASON_DAYS && S.time >= 10 && S.time < 260; }
+  function festSoon() { return seasonOf() === 2 && !festNow(); }
+  function p5Giant(gc) {   // a giant Croak Pumpkin was harvested: weigh it
+    if (gc.k !== "croakpumpkin") return; var o = homeS(), lb = Math.round(380 + Math.random() * 420 + (o.f[gc.x + "," + gc.y] ? 120 : 0) + (homeUp("soil") ? 60 : 0) + repRank("farm") * 25);
+    var P = p5().pump; if (P.y !== festYear()) { P.y = festYear(); P.best = 0; } if (lb > (P.best || 0)) P.best = lb; P.ever = Math.max(P.ever || 0, lb);
+    setTimeout(function () { popup("Giant pumpkin: " + lb + " lb!", lb >= (P.best || 0) ? "Your heaviest this year. Enter it at the Harvest Festival on the last day of Fall." : "Your best this year is " + P.best + " lb.", "#ff8a2a", "★"); }, 900);
+  }
+  var FEST_RIV = [["Croaka", 520], ["Gus Gillwater", 610], ["Elder Wadereed", 680], ["Mayor Bullfrog", 750]];
+  function festOpen() {
+    if (!p4Open(263)) return; var P = p5().pump, F = p5().fest, mine = P.y === festYear() ? P.best || 0 : 0, yr = festYear();
+    var R = FEST_RIV.map(function (r, i) { return { n: r[0], w: Math.round(r[1] + yr * 40 + SW.hash(yr, i, 61) * 160) }; }), h = '<h2 class="st-hi">The Harvest Festival</h2><p class="st-tip">Hay bales, lanterns, cider... and the Giant Pumpkin Contest! The heaviest pumpkin wins the blue ribbon.</p>';
+    if (F.y === yr) { h += '<p>You already entered this year. ' + (F.pl === 1 ? "Your blue ribbon is on the wall at the Village Hall." : "There's always next Fall!") + '</p><div class="st-row"><button type="button" class="btn" data-story-close>Enjoy the festival</button></div>'; p4Box(h, "#ff8a2a"); return; }
+    if (!mine) { h += '<p>You don\'t have a giant pumpkin this year. Grow Croak Pumpkins on your homestead in Fall: a ripe patch can swell into a giant overnight. Whack it three times to harvest and weigh it.</p><div class="st-row"><button type="button" class="btn" data-story-close>Next year, then</button></div>'; p4Box(h, "#ff8a2a"); return; }
+    var L = R.concat([{ n: "You", w: mine, me: 1 }]).sort(function (a, b) { return b.w - a.w; }), pl = L.findIndex(function (q) { return q.me; }) + 1;
+    F.y = yr; F.pl = pl; var rw = pl === 1 ? { goldcoin: 4, ribbon_blue: 1 } : pl === 2 ? { goldcoin: 2, ribbon_red: 1 } : pl === 3 ? { silvercoin: 20 } : { silvercoin: 8 }, rr = {}; Object.keys(rw).forEach(function (k) { if (ITEMS[k]) rr[k] = rw[k]; }); giveRw(rr); S.st.festwins = (S.st.festwins || 0) + (pl === 1 ? 1 : 0);
+    h += '<ol class="p4-board">' + L.map(function (q) { return "<li" + (q.me ? ' class="me"' : "") + "><span>" + esc(q.n) + "</span><b>" + q.w + " lb</b></li>"; }).join("") + "</ol>";
+    h += "<p>" + ["", "“A new record for the Sky Village! The blue ribbon goes to... YOU!”", "“Second place! A fine, fat pumpkin.”", "“Third! Respectable. Very respectable.”", "“A lovely pumpkin. Maybe more compost next year?”", "“It's... it's a pumpkin. Well done for coming.”"][pl] + '</p><div class="st-gift">' + Object.keys(rr).map(function (k) { return '<span><img alt="" src="' + icon(k) + '">' + rr[k] + " " + esc(ITEMS[k].n) + "</span>"; }).join("") + '</div><div class="st-row"><button type="button" class="btn" data-story-close>Hooray!</button></div>';
+    p4Box(h, "#ff8a2a"); snd("open", pl === 1 ? "Legendary" : "Rare"); checkGoals(); save();
+  }
+  function drawFest(g, now) {   // bunting, hay bales, pumpkins and a judges' scale beside the dinner spot
+    if (!festNow() || cave) return; var D = dinSpot(); if (!D) return; var sx = ox + D.x * ts, sy = oy + D.y * ts, k = ts / 30, t = now / 1000; if (sx < -ts * 8 || sx > vw + ts * 8) return;
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
+    g.strokeStyle = "#5a3a1a"; g.lineWidth = 1; g.beginPath(); g.moveTo(-80, -70); g.quadraticCurveTo(0, -58, 80, -70); g.stroke();
+    for (var i = 0; i < 12; i++) { var u = i / 11, x = -80 + u * 160, y = -70 + 12 * 4 * u * (1 - u) * (1) + Math.sin(t * 2 + i) * 0.8; g.beginPath(); g.moveTo(x - 5, y); g.lineTo(x + 5, y); g.lineTo(x, y + 9); g.closePath(); aInk(g, ["#ff8a2a", "#ffd23f", "#c8303a", "#7ac04a"][i % 4], "#3a1a06", 0.6); }
+    [[-70, 0], [64, 0]].forEach(function (q) { g.beginPath(); g.rect(q[0] - 12, -12, 24, 12); aInk(g, aG(g, -12, 0, "#f2d87a", "#d8b44a", "#a8822a"), "#5a400a", 1); g.strokeStyle = "rgba(90,64,10,.5)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(q[0] - 12, -6); g.lineTo(q[0] + 12, -6); g.stroke();
+      g.beginPath(); g.ellipse(q[0], -18, 8, 6, 0, 0, 7); aInk(g, aG(g, -24, -12, "#ffb04a", "#ff8a2a", "#c8501a"), "#5a2006", 1); g.strokeStyle = "rgba(90,32,6,.5)"; g.beginPath(); g.moveTo(q[0], -24); g.lineTo(q[0], -12); g.stroke(); g.fillStyle = "#3a6a1a"; g.fillRect(q[0] - 0.8, -27, 1.6, 4); });
+    g.restore();
+  }
+  // ---------- ribbons from the festival (wall decor icons) ----------
+  [["ribbon_blue", "Blue Ribbon", "#3a7ae8", "#ffd23f"], ["ribbon_red", "Red Ribbon", "#d83a3a", "#ffe08a"]].forEach(function (q) { ITEMS[q[0]] = { n: q[1], gem: q[2], treasure: 1 }; ORDER.push(q[0]);
+    OCI[q[0]] = function (g) { g.fillStyle = "#1a1a2a"; g.beginPath(); g.moveTo(9, 16); g.lineTo(6, 30); g.lineTo(11, 26); g.lineTo(15, 30); g.lineTo(15, 18); g.closePath(); g.moveTo(23, 16); g.lineTo(26, 30); g.lineTo(21, 26); g.lineTo(17, 30); g.lineTo(17, 18); g.closePath(); g.fill(); g.fillStyle = q[2]; g.beginPath(); g.moveTo(10, 16); g.lineTo(8, 27); g.lineTo(11, 24.6); g.lineTo(14, 27); g.lineTo(14, 18); g.closePath(); g.moveTo(22, 16); g.lineTo(24, 27); g.lineTo(21, 24.6); g.lineTo(18, 27); g.lineTo(18, 18); g.closePath(); g.fill();
+      g.fillStyle = "#1a1a2a"; g.beginPath(); for (var i = 0; i < 16; i++) { var a = i / 16 * 6.283, r = i % 2 ? 9 : 11; g.lineTo(16 + Math.cos(a) * r, 12 + Math.sin(a) * r); } g.fill(); g.fillStyle = q[2]; g.beginPath(); for (i = 0; i < 16; i++) { a = i / 16 * 6.283; r = i % 2 ? 7.6 : 9.6; g.lineTo(16 + Math.cos(a) * r, 12 + Math.sin(a) * r); } g.fill(); g.fillStyle = q[3]; g.beginPath(); g.arc(16, 12, 5, 0, 7); g.fill(); g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(13, 9, 2, 2); }; });
+  // ---------- #61 COOKING COMBOS: eat different foods close together and the buffs stack up ----------
+  var P5T = 0;
+  var COMBO = [null, null, [["regen", 45]], [["regen", 60], ["speed", 90]], [["regen", 90], ["speed", 120], ["luck", 120]], [["regen", 120], ["speed", 150], ["luck", 150], ["brute", 150]]];
+  function p5Eat(k) {
+    var C = p5().cb; if (!Array.isArray(C.L)) C.L = []; C.L = C.L.filter(function (q) { return P5T - q.t < 180 && q.t <= P5T; });
+    if (C.L.some(function (q) { return q.k === k; })) { C.L.forEach(function (q) { if (q.k === k) q.t = P5T; }); return; }
+    C.L.push({ k: k, t: P5T }); var n = Math.min(5, C.L.length); if (n < 2) return;
+    COMBO[n].forEach(function (f) { S.fx[f[0]] = Math.max(S.fx[f[0]] || 0, f[1]); }); drawFx(true);
+    S.st.combo = Math.max(S.st.combo || 0, n); text(meX(), meY() - 0.8, "Food combo ×" + n + "!", ["", "", "#ffd27a", "#ffb04a", "#ff8a5a", "#ff5a8a"][n]);
+    if (n === 3 || n === 5) { popup(n === 5 ? "Feast combo!" : "Food combo ×3", n === 5 ? "Five different foods: Mending, Swiftness, Fortune and Brute Strength." : "Three different foods: Mending and Swiftness.", "#ffb04a", "♨"); snd("open", n === 5 ? "Epic" : "Rare"); }
+    checkGoals();
+  }
+  SIDE.push({ id: "p5_combo", cat: "Cook", ch: 0, n: "Five-Course Frog", d: "Eat five different foods within three minutes for a Feast combo.", need: 5, v: function () { return S.st.combo || 0; }, rw: { goldcoin: 2, croakersoup: 2 }, show: function () { return (S.st.combo || 0) >= 2; } });
+  // ---------- #62 MORE SECRETS TO DISCOVER: the hybrid crops unlock new brews and dishes at the Brewing Stand and the Cooking Pot ----------
+  [["tonic_ember", "Ember Draught", { fx: "fire", t: 600, c: "#ff5a1f", d: "Lava burns you 80% less for 10 minutes." }, ["bottle", "firecarrot", "emberroot"], "A carrot that bites back, and a root from the ember fields."],
+   ["tonic_frosthide", "Frostbark Tonic", { fx: "hide", t: 480, c: "#9ad8ff", d: "Take 20% less damage for 8 minutes." }, ["bottle", "frostato", "frostberry"], "A potato from the cold, and a berry that loves it."],
+   ["tonic_moonglow", "Moonglow Elixir", { fx: "glow", t: 900, c: "#c8d8ff", d: "You glow softly for 15 minutes." }, ["bottle", "glowmelon", "moonpetal"], "A melon that shines, and a petal that only wakes at night."],
+   ["tonic_sunrun", "Sunrunner Brew", { fx: "speed", t: 480, c: "#ffd23f", d: "Walk and swim 25% faster for 8 minutes." }, ["bottle", "sunbeancorn", "goldfeather"], "Corn that grew with a bean, and a feather of gold."],
+   ["tonic_lotus", "Lotus Calm", { fx: "regen", t: 240, c: "#ff9ad0", d: "Health comes back steadily for 4 minutes." }, ["bottle", "lotusleek", "marshlily"], "A leek that crossed with a lotus, and a flower from the marsh."]].forEach(function (q) {
+    ITEMS[q[0]] = { n: q[1] }; ORDER.push(q[0]); POTIONS[q[0]] = q[2]; SPR[q[0]] = potionSprite(q[2].c); if (ITEMS.bottle) SECRETS.push(["brew", q[3], q[0], 1, q[4]]); DISCS.push(q[0]); });
+  [["moonpie", "Moon Pumpkin Pie", 60, 20, ["luck", 300], ["moonpumpkin", "goatmilk", "duckegg"], "A pumpkin touched by the moon, baked with milk and an egg.", "#c8d8ff"],
+   ["firestew", "Fire Carrot Stew", 54, 18, ["brute", 300], ["firecarrot", "rawmeat", "potato"], "The hottest carrot you ever grew, stewed with meat and a potato.", "#ff5a1f"]].forEach(function (q) {
+    ITEMS[q[0]] = { n: q[1], food: q[2], heal: q[3], cooked: 1, efx: q[4] }; ORDER.push(q[0]); SECRETS.push(["cook", q[5], q[0], 1, q[6]]); DISCS.push(q[0]);
+    OCI[q[0]] = function (g) { g.fillStyle = "#2a1606"; g.beginPath(); g.ellipse(16, 21, 13, 7, 0, 0, 7); g.fill(); g.fillStyle = "#e8e0d0"; g.beginPath(); g.ellipse(16, 20, 12, 6, 0, 0, 7); g.fill(); g.fillStyle = q[7]; g.beginPath(); g.ellipse(16, 18, 9, 4.4, 0, 0, 7); g.fill(); g.fillStyle = "rgba(255,255,255,.5)"; g.beginPath(); g.ellipse(13, 16.6, 3, 1.2, 0, 0, 7); g.fill(); g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 1.2; [11, 16, 21].forEach(function (x) { g.beginPath(); g.moveTo(x, 12); g.quadraticCurveTo(x + 2, 9, x, 5); g.stroke(); }); }; });
+  // ---------- #65 REPUTATION with four groups: the Sky Villagers, the Brinebog pirates, the Miners' Lodge and the Farmers' Guild ----------
+  var REP = {
+    vil: { n: "Sky Villagers", c: "#8fd6ff", ic: "silvercoin", pts: function () { return (S.st.vtrades || 0) * 2 + (S.st.nbjobs || 0) * 4 + Math.floor((S.st.vchats || 0) / 2) + Object.keys(S.vg || {}).length * 10; }, perk: ["", "", "Village shops stock more (level 2)", "", "Village shops stock rare goods (level 3)", ""], how: "Trade, chat and do Notice Board jobs in the Sky Village." },
+    pir: { n: "Brinebog Pirates", c: "#e8c87a", ic: "doubloon", pts: function () { return (S.st.pirates || 0) * 3 + (S.st.captain || 0) * 25 + (S.st.occhests || 0) * 2 + (S.st.pships || 0) * 10 + (S.st.islands || 0) * 4; }, perk: ["", "", "", "", "", ""], how: "Sail the Brinebog: beat pirates, open sea chests, find islands." },
+    min: { n: "Miners' Lodge", c: "#c8a0ff", ic: "ironingot", pts: function () { return Math.floor((S.st.mined || 0) / 40) + Math.floor((S.st.rigOre || 0) / 10) + (S.st.cclear || 0) * 3 + Math.floor((S.st.caveDeep || 0) / 4); }, perk: ["", "", "", "", "", ""], how: "Dig, clear caves and run mining rigs." },
+    farm: { n: "Farmers' Guild", c: "#9ae07a", ic: "carrot", pts: function () { return Math.floor((S.st.shipped || 0) / 8) + Math.floor((S.st.harvests || 0) / 6) + (S.st.hybrids || 0) * 5 + (S.st.festwins || 0) * 25; }, perk: ["", "+4% crop prices", "+8% crop prices", "+12% crop prices", "+16% crop prices", "+20% crop prices"], how: "Harvest, ship crops, grow hybrids, win the Harvest Festival." }
+  };
+  var REP_T = [0, 15, 50, 120, 250, 500], REP_N = ["Stranger", "Known", "Liked", "Trusted", "Honoured", "Legend"];
+  var REP_RW = { vil: ["silvercoin", 10], pir: ["doubloon", 6], min: ["ironingot", 4], farm: ["silvercoin", 10] };
+  function repPts(k) { return Math.max(0, Math.floor(REP[k].pts() || 0)); }
+  function repRank(k) { if (!S || !REP[k]) return 0; var v = repPts(k), r = 0; for (var i = 0; i < REP_T.length; i++) if (v >= REP_T[i]) r = i; return r; }
+  function repCheck() {
+    var o = p5().rep; Object.keys(REP).forEach(function (k) { var r = repRank(k); if (o[k] === undefined) { o[k] = r; return; } if (r <= o[k]) return; o[k] = r; var R = REP_RW[k], rw = {}; if (ITEMS[R[0]]) rw[R[0]] = R[1] * r; if (r >= 3 && ITEMS.goldcoin) rw.goldcoin = r - 2; giveRw(rw);
+      popup(REP[k].n + ": " + REP_N[r], (REP[k].perk[r] ? REP[k].perk[r] + ". " : "") + "Reward: " + rewardText(rw), REP[k].c, "⚑"); snd("open", "Rare"); });
+  }
+  function repHtml() {
+    return "<h3>Reputation</h3>" + Object.keys(REP).map(function (k) { var R = REP[k], v = repPts(k), r = repRank(k), nx = REP_T[r + 1], pc = nx ? Math.round((v - REP_T[r]) / (nx - REP_T[r]) * 100) : 100;
+      return '<div class="p5-rep" style="--rc:' + R.c + '"><img alt="" src="' + icon(R.ic) + '"><span><b>' + esc(R.n) + " · " + REP_N[r] + '</b><i class="p5-bar"><em style="width:' + pc + '%"></em></i><small>' + (nx ? v + " / " + nx + " · " : "Max rank · ") + esc(R.how) + "</small></span></div>"; }).join("");
+  }
+  // ---------- #63 SKY VILLAGE SHOPS grow as the village trusts you ----------
+  var SHOP2 = [[{ silvercoin: 6 }, { seed_moonpetal: 3 }], [{ silvercoin: 10 }, { tonic_luck: 1 }], [{ silvercoin: 4 }, { earthworm: 6 }], [{ silvercoin: 8 }, { compost: 6 }], [{ silvercoin: 7 }, { swamptea: 3 }], [{ silvercoin: 9 }, { stain_honey: 12 }], [{ silvercoin: 6 }, { seed_glowgourd: 2 }], [{ silvercoin: 12 }, { tonic_grow: 2 }], [{ silvercoin: 5 }, { kelpwrap: 2 }], [{ silvercoin: 10 }, { candle: 6 }]];
+  var SHOP3 = [[{ silvercoin: 25 }, { goldbait: 1 }], [{ goldcoin: 1 }, { starshard: 1 }], [{ silvercoin: 20 }, { prism: 1 }], [{ silvercoin: 18 }, { moonstone: 1 }], [{ goldcoin: 2 }, { realmshard: 1 }], [{ silvercoin: 30 }, { greenhouse: 1 }], [{ silvercoin: 22 }, { goldfeather: 1 }], [{ silvercoin: 16 }, { amethyst: 2 }]];
+  function shopLvl() { var r = repRank("vil"); return 1 + (r >= 2 ? 1 : 0) + (r >= 4 ? 1 : 0); }
+  function okTr(q) { return q && Object.keys(q[0]).concat(Object.keys(q[1])).every(function (k) { return !!ITEMS[k]; }); }
+  function vilTr(V) {
+    var L = V.tr.slice(), lv = shopLvl(), hsh = 0; String(V.id).split("").forEach(function (ch) { hsh = (hsh * 31 + ch.charCodeAt(0)) | 0; }); hsh = Math.abs(hsh);
+    if (lv >= 2) { var a = SHOP2[hsh % SHOP2.length]; if (okTr(a)) L.push(a); }
+    if (lv >= 3) { var b = SHOP3[hsh % SHOP3.length]; if (okTr(b)) L.push(b); }
+    return L;
+  }
+  function shopLine() { var lv = shopLvl(); return '<p class="p5-shop">Shop level ' + lv + " of 3" + (lv < 3 ? " · reach " + (lv === 1 ? "Liked" : "Honoured") + " with the Sky Villagers for more stock" : " · rare goods in stock") + "</p>"; }
+  // ---------- #64 THE FROG BANK: keep your Silver Coins safe and earn 2% interest every morning ----------
+  var BKX = null;
+  function bankSpot() {
+    var s = world && world.sky, D = dinSpot(), B = nbSpot(); if (!s || !D) return null; if (BKX && BKX.w === world) return BKX.v; BKX = { w: world, v: null }; var sgn = B && B.x > D.x ? -1 : 1;
+    for (var d = 5; d < 30 && !BKX.v; d++) { var x = Math.floor(D.x) + sgn * d; if (B && Math.abs(x - B.x) < 4) continue; if (TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid) BKX.v = { x: x + 1, y: s.y }; }
+    return BKX.v;
+  }
+  function bankNear() { var B = bankSpot(); return B && !cave && !HOME && !OCS && Math.abs(B.x - p.x) < 2.2 && Math.abs(B.y - p.y) < 2.4; }
+  function bankDaily(days) { var b = p5().bank; if (!(b.v > 0)) return; for (var i = 0; i < Math.min(days, 30); i++) { var add = b.v >= 10 ? Math.max(1, Math.floor(Math.min(b.v, 5000) * 0.02)) : 0; b.v += add; b.int = (b.int || 0) + add; } }
+  function bankOpen() {
+    if (!p4Open(264)) return; var b = p5().bank, have = S.inv.silvercoin || 0, v = b.v || 0;
+    var h = '<div class="st-croak p4-pic"><img alt="" src="' + pennyPic() + '"></div><small>Penny Puddlewig, Frog Bank teller</small><h2 class="st-hi">“' + (v ? "Your savings are safe with us, dear. Every coin accounted for." : "Welcome to the Frog Bank! Leave your coins with us and they grow a little every morning.") + "”</h2>";
+    h += '<div class="p5-bank"><div><small>In the bank</small><b>' + v + '</b></div><div><small>In your bag</small><b>' + have + '</b></div><div><small>Interest earned</small><b>' + (b.int || 0) + '</b></div></div><p class="st-tip">2% interest every morning on up to 5,000 Silver (at least 1 coin once you have 10 saved).</p>';
+    h += '<div class="st-row"><button type="button" class="btn" data-p5="bank:in:10"' + (have >= 10 ? "" : " disabled") + '>Deposit 10</button><button type="button" class="btn" data-p5="bank:in:all"' + (have ? "" : " disabled") + '>Deposit all</button></div>';
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-p5="bank:out:10"' + (v >= 10 ? "" : " disabled") + '>Withdraw 10</button><button type="button" class="btn ghost" data-p5="bank:out:all"' + (v ? "" : " disabled") + '>Withdraw all</button><button type="button" class="btn ghost" data-story-close>Done</button></div>';
+    p4Box(h, "#7ae0a0");
+  }
+  function bankAct(dir, amt) {
+    var b = p5().bank, v = b.v || 0, have = S.inv.silvercoin || 0, n = amt === "all" ? (dir === "in" ? have : v) : +amt;
+    if (dir === "in") { n = Math.min(n, have); if (n <= 0) return; S.inv.silvercoin -= n; if (S.inv.silvercoin <= 0) delete S.inv.silvercoin; b.v = v + n; reslot(); hbDirty = true; }
+    else { n = Math.min(n, v); if (n <= 0) return; b.v = v - n; give("silvercoin", n, undefined, undefined, true); }
+    S.st.bankmax = Math.max(S.st.bankmax || 0, b.v); snd("coin"); checkGoals(); save(); bankOpen();
+  }
+  SIDE.push({ id: "p5_bank", cat: "Collector", ch: 0, n: "Nest Egg", d: "Save 500 Silver Coins in the Frog Bank in the Sky Village.", need: 500, v: function () { return S.st.bankmax || 0; }, rw: { goldcoin: 5 }, show: function () { return (S.st.bankmax || 0) > 0; } });
+  function pennyArt(g, t) {   // Penny Puddlewig: a neat mint-green frog with a green visor, spectacles and a pencil behind her ear
+    frogNpc(g, { hi: "#c8f0c0", mid: "#7ac88a", lo: "#3a7a4a", ink: "#123a1e", br: Math.sin(t * 2) * 0.5, blink: (t * 1000) % 4100 < 130, belly: true,
+      inner: function (g) { g.beginPath(); g.moveTo(-16, -20); g.quadraticCurveTo(0, -24, 16, -20); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = aG(g, -24, 0, "#fff8ec", "#e8e0d0", "#b8b0a0"); g.fill(); g.fillStyle = "#3a5a8a"; g.beginPath(); g.moveTo(-2, -21); g.lineTo(2, -21); g.lineTo(1.4, -10); g.lineTo(0, -8); g.lineTo(-1.4, -10); g.closePath(); g.fill(); } });
+    g.strokeStyle = "#5a4a2a"; g.lineWidth = 0.9; [[-4.4, -40], [7, -40.4]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 3.4, 0, 7); g.stroke(); }); g.beginPath(); g.moveTo(-1, -40.4); g.lineTo(3.6, -40.6); g.stroke();
+    g.beginPath(); g.moveTo(-12, -44); g.quadraticCurveTo(1, -48, 14, -44); g.lineTo(16, -40.6); g.quadraticCurveTo(1, -43.4, -14, -40.6); g.closePath(); aInk(g, aG(g, -48, -40, "#8ae0a0", "#3aa85a", "#1a6a3a"), "#0a3a1a", 0.9);   // the visor
+    g.save(); g.translate(13, -46); g.rotate(0.9); g.beginPath(); g.rect(-0.9, -6, 1.8, 10); aInk(g, "#ffd23f", "#5a4a0a", 0.5); g.fillStyle = "#ff9ab0"; g.fillRect(-0.9, -7.4, 1.8, 1.6); g.restore();
+  }
+  var PENNYPIC = null; function pennyPic() { if (PENNYPIC) return PENNYPIC; var c = document.createElement("canvas"); c.width = c.height = 200; var g = c.getContext("2d"); g.translate(100, 190); g.scale(3.3, 3.3); g.lineJoin = "round"; g.lineCap = "round"; pennyArt(g, 2); PENNYPIC = c.toDataURL(); cvFree(c); return PENNYPIC; }
+  function drawBank(g, now) {
+    var B = bankSpot(); if (!B || cave) return; var sx = ox + B.x * ts, sy = oy + B.y * ts; if (sx < -ts * 4 || sx > vw + ts * 4 || sy < -ts * 4 || sy > vh + ts * 2) return; var k = ts / 30, t = now / 1000;
+    g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 30, 3, 0, 0, 7); g.fill();
+    g.save(); g.translate(8, -12); pennyArt(g, t); g.restore();   // Penny stands behind the counter
+    g.beginPath(); g.rect(-26, -22, 52, 22); aInk(g, aG(g, -22, 0, "#d8b07a", "#a87a48", "#6a4a22"), "#2a1606", 1.2);   // the counter
+    g.fillStyle = "rgba(42,22,6,.35)"; [-18, -6, 6, 18].forEach(function (x) { g.fillRect(x - 0.5, -18, 1, 16); });
+    g.beginPath(); g.rect(-28, -25, 56, 4); aInk(g, aG(g, -25, -21, "#f0d8a8", "#c8a070", "#8a6a3a"), "#2a1606", 1);
+    g.beginPath(); g.moveTo(-30, -74); g.lineTo(30, -74); g.lineTo(26, -64); g.lineTo(-26, -64); g.closePath(); aInk(g, aG(g, -74, -64, "#7ae0a0", "#3aa85a", "#1a6a3a"), "#0a3a1a", 1);   // the sign
+    [-24, 24].forEach(function (x) { g.beginPath(); g.rect(x - 1.6, -64, 3.2, 40); aInk(g, aG(g, -64, -24, "#9a6a3a", "#7a4a22", "#4a2a10"), "#2a1606", 0.8); });
+    g.font = "900 8px Nunito,sans-serif"; g.textAlign = "center"; g.fillStyle = "#f4fff0"; g.fillText("FROG BANK", 0, -66.6);
+    [[-14, -28], [-9, -27], [-11, -30.6]].forEach(function (q) { g.beginPath(); g.ellipse(q[0], q[1], 3.2, 1.4, 0, 0, 7); aInk(g, aG(g, q[1] - 1.4, q[1] + 1.4, "#ffffff", "#d8dce4", "#9aa0aa"), "#3a3e48", 0.6); });   // a stack of coins
+    g.restore();
+  }
+  // ---------- #66 BARTLEBY, THE WANDERING MERCHANT BEETLE: turns up some days with rare goods ----------
+  var MER = { on: false, x: 0, y: 0, face: 1, d: -1 };
+  var MER_POOL = [["goldbait", 1, { silvercoin: 30 }], ["tonic_luck", 2, { silvercoin: 14 }], ["prism", 1, { silvercoin: 24 }], ["moonstone", 1, { silvercoin: 20 }], ["realmshard", 1, { goldcoin: 2 }], ["starshard", 1, { silvercoin: 28 }], ["rec_stomp", 1, { doubloon: 8 }], ["rec_jig", 1, { doubloon: 8 }], ["seed_glowgourd", 4, { silvercoin: 18 }], ["seed_moonpetal", 4, { silvercoin: 14 }], ["firecarrot", 2, { silvercoin: 20 }], ["glowmelon", 1, { silvercoin: 22 }], ["goldfeather", 1, { silvercoin: 26 }], ["amethyst", 2, { silvercoin: 16 }], ["tonic_grand", 1, { silvercoin: 20 }], ["greenhouse", 1, { silvercoin: 45 }]];
+  function merDay() { var d = S.days | 0; return d >= 3 && SW.hash(d, 17, 83) < 0.32; }
+  function merStock() { var o = p5().mer, d = S.days | 0; if (o.d !== d) { o.d = d; var L = MER_POOL.filter(function (q) { return ITEMS[q[0]] && Object.keys(q[2]).every(function (k) { return ITEMS[k]; }); }), S2 = []; for (var i = 0; i < 4 && L.length; i++) { var j = Math.floor(SW.hash(d, i, 87) * L.length); S2.push(L.splice(j, 1)[0].concat([0])); } o.L = S2; } return o.L || []; }
+  function merTick() {
+    if (!merDay() || isNight(S.time) || S.time > 225) { if (MER.on && (cave || HOME || OCS || Math.abs(MER.x - p.x) > 30)) MER.on = false; if (S.time > 225 && MER.on && Math.abs(MER.x - p.x) > 12) MER.on = false; return; }
+    if (MER.on || MER.d === (S.days | 0) || cave || HOME || OCS || panelOpen) return;
+    var dir = -(p.face || 1), x = Math.floor(p.x) + dir * 9; if (x < 3 || x >= W - 3 || !col[x] || TILES[get(x, col[x] - 1)].solid) return;
+    MER.on = true; MER.d = S.days | 0; MER.x = x + 0.5; MER.y = col[x]; MER.face = -dir; toast("A merchant beetle trundles up, clinking with wares!", "#c8a0ff");
+  }
+  function merNear() { return MER.on && !cave && !HOME && !OCS && Math.abs(MER.x - p.x) < 2.4 && Math.abs(MER.y - p.y) < 2.6; }
+  function merOpen() {
+    if (!p4Open(265)) return; var L = merStock(), h = '<div class="st-croak p4-pic"><img alt="" src="' + beetlePic() + '"></div><small>Bartleby, wandering merchant</small><h2 class="st-hi">“' + ["Rare goods! Strange goods! Goods from very far away. Mostly from under rocks.", "Psst. You look like someone who appreciates a fine trinket.", "One of each, while stocks last! I leave at dusk. Beetles need their sleep."][(S.days | 0) % 3] + "”</h2><div class=\"p4-jobs\">";
+    L.forEach(function (q, i) { var ok = !q[3] && canPay(q[2]); h += '<div class="p4-job' + (q[3] ? " done" : "") + '"><img alt="" src="' + icon(q[0]) + '"><span><b>' + q[1] + " " + esc(ITEMS[q[0]].n) + "</b><small>" + Object.keys(q[2]).map(function (k) { return q[2][k] + " " + esc(ITEMS[k].n); }).join(", ") + "</small></span>" + (q[3] ? '<em class="p4-ok">Sold</em>' : '<button type="button" class="btn' + (ok ? "" : " ghost") + '" data-p5="mer:' + i + '"' + (ok ? "" : " disabled") + ">Buy</button>") + "</div>"; });
+    h += '</div><div class="st-row"><button type="button" class="btn" data-story-close>Maybe later</button></div>'; p4Box(h, "#c8a0ff");
+  }
+  function merBuy(i) { var q = merStock()[+i]; if (!q || q[3] || !canPay(q[2])) return; payCost(q[2]); give(q[0], q[1], undefined, undefined, true); q[3] = 1; reslot(); hbDirty = true; S.st.merbuys = (S.st.merbuys || 0) + 1; snd("coin"); checkGoals(); save(); merOpen(); }
+  function beetleArt(g, t, walk) {   // Bartleby: a glossy violet beetle on six tapered legs, a huge patched pack of wares, a tiny bowler hat
+    var IN = "#1a0a2a", st = walk ? Math.sin(t * 10) * 2 : 0, bob = walk ? Math.abs(Math.sin(t * 10)) * 0.8 : Math.sin(t * 2) * 0.4;
+    [[-12, st], [-2, -st], [8, st]].forEach(function (L, i) { [-1, 1].forEach(function (sd) { if (sd < 0 && i === 1) return; var hx = L[0] + sd * 1.2, fx2 = hx + (sd > 0 ? L[1] : -L[1]) + 3; g.beginPath(); g.moveTo(hx - 1.8, -9); g.lineTo(hx + 1.8, -9); g.lineTo(hx + 2.4, -4.4); g.lineTo(fx2 + 1, 0); g.lineTo(fx2 - 1.6, 0); g.lineTo(hx - 0.6, -4.4); g.closePath(); aInk(g, aG(g, -9, 0, sd > 0 ? "#6a4a8a" : "#4a2a6a", "#3a1a5a", "#1a0a2a"), IN, 0.8); g.fillStyle = "#c8a0ff"; g.beginPath(); g.arc(hx + 0.6, -4.6, 0.9, 0, 7); g.fill(); }); });
+    g.translate(0, -bob);
+    g.beginPath(); g.moveTo(-20, -16); g.quadraticCurveTo(-22, -36, -8, -40); g.lineTo(6, -40); g.quadraticCurveTo(16, -38, 14, -18); g.closePath(); aInk(g, aG(g, -40, -16, "#d8a868", "#a87a40", "#6a4a20"), "#2a1606", 1.1);   // the pack, behind the shell
+    g.fillStyle = "#c8603a"; g.fillRect(-14, -34, 7, 6); g.strokeStyle = "rgba(42,22,6,.5)"; g.lineWidth = 0.6; g.beginPath(); g.moveTo(-20, -26); g.lineTo(14, -27); g.stroke();
+    [[-16, -42, "#ffd23f"], [-6, -43, "#7ae0ff"], [4, -42, "#ff7aa0"]].forEach(function (q) { g.beginPath(); g.arc(q[0], q[1], 3, 0, 7); aInk(g, q[2], IN, 0.6); });   // trinkets poking out
+    g.beginPath(); g.moveTo(-17, -8); g.quadraticCurveTo(-18, -24, -4, -25); g.quadraticCurveTo(12, -25, 15, -12); g.quadraticCurveTo(20, -14, 22, -10); g.quadraticCurveTo(24, -3, 17, -4); g.quadraticCurveTo(0, -2, -17, -8); g.closePath();   // shell and head: one piece
+    g.save(); aInk(g, aG(g, -25, -3, "#b07ae0", "#6a3aa8", "#2a0a5a"), IN, 1.2); g.clip(); g.strokeStyle = "rgba(26,10,42,.7)"; g.lineWidth = 0.9; g.beginPath(); g.moveTo(-1, -25); g.quadraticCurveTo(1, -14, -2, -4); g.moveTo(14, -16); g.quadraticCurveTo(13, -9, 14, -4); g.stroke(); g.restore();
+    aShine(g, -8, -19, 5, 2, 0.45, -0.2); aShine(g, 6, -19, 3, 1.2, 0.35, -0.2);
+    aEye(g, 19, -10, 1.8, "#2a0a3a", IN, false, 0.5);
+    g.strokeStyle = IN; g.lineWidth = 1; [[20, -13, 26, -20 + Math.sin(t * 4) * 1.5], [18, -13.4, 22, -22 + Math.sin(t * 4 + 1) * 1.5]].forEach(function (q) { g.beginPath(); g.moveTo(q[0], q[1]); g.quadraticCurveTo(q[0] + 2, q[1] - 5, q[2], q[3]); g.stroke(); g.fillStyle = "#c8a0ff"; g.beginPath(); g.arc(q[2], q[3], 1.2, 0, 7); g.fill(); });
+    g.beginPath(); g.moveTo(11, -14.6); g.lineTo(21, -15.4); g.lineTo(19.6, -17); g.quadraticCurveTo(16, -22, 13, -17.4); g.closePath(); aInk(g, aG(g, -22, -14, "#5a5a5a", "#2a2a2a", "#0a0a0a"), "#000", 0.7); g.fillStyle = "#c8303a"; g.fillRect(13, -17.4, 6.6, 1);   // a bowler hat
+  }
+  var BEETPIC = null; function beetlePic() { if (BEETPIC) return BEETPIC; var c = document.createElement("canvas"); c.width = c.height = 200; var g = c.getContext("2d"); g.translate(96, 160); g.scale(3, 3); g.lineJoin = "round"; g.lineCap = "round"; beetleArt(g, 0, 0); BEETPIC = c.toDataURL(); cvFree(c); return BEETPIC; }
+  function drawMer(g, now) {
+    if (!MER.on || cave || HOME || OCS) return; var sx = ox + MER.x * ts, sy = oy + MER.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3) return; var k = ts / 30;
+    g.save(); g.translate(sx, sy); g.scale(k * MER.face, k); g.lineJoin = "round"; g.lineCap = "round"; g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, 0, 20, 3, 0, 0, 7); g.fill(); beetleArt(g, now / 1000, 0); g.restore();
+  }
+  // ---------- icons for the Phase 5 items that are not blocks ----------
+  OCI.greenhouse = function (g) { g.fillStyle = "#2a3a30"; g.fillRect(4, 12, 24, 16); g.beginPath(); g.moveTo(3, 13); g.lineTo(16, 3); g.lineTo(29, 13); g.fill(); g.fillStyle = "#9ad8c0"; g.fillRect(6, 14, 20, 12); g.beginPath(); g.moveTo(6, 13); g.lineTo(16, 5); g.lineTo(26, 13); g.fill(); g.fillStyle = "#f4f8f2"; [6, 11, 16, 21, 25].forEach(function (x) { g.fillRect(x, 13, 1, 13); }); g.fillRect(6, 19, 20, 1); g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(8, 15, 1, 4); g.fillRect(18, 15, 1, 4); g.fillStyle = "#4a9a3a"; g.fillRect(8, 22, 3, 4); g.fillRect(20, 21, 3, 5); g.fillStyle = "#ff7aa0"; g.fillRect(9, 21, 1, 1); g.fillStyle = "#6a5a4a"; g.fillRect(4, 26, 24, 3); };
+  var PAINTS = { paint_red: "#d83a3a", paint_blue: "#3a6ad8", paint_green: "#3aa84a", paint_yellow: "#f2c83a", paint_white: "#f4f0e6", paint_black: "#2a2a30", paint_pink: "#ff8ac0", paint_purple: "#8a4ac8" };
+  Object.keys(PAINTS).forEach(function (k) { OCI[k] = function (g) { g.fillStyle = "#2a2a30"; g.fillRect(7, 10, 18, 18); g.fillStyle = "#b8bcc4"; g.fillRect(8, 11, 16, 16); g.fillStyle = "#d8dce4"; g.fillRect(8, 11, 3, 16); g.fillStyle = PAINTS[k]; g.fillRect(8, 11, 16, 5); g.fillRect(14, 16, 4, 5); g.fillRect(15, 21, 2, 2); g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(9, 12, 4, 1); g.strokeStyle = "#2a2a30"; g.lineWidth = 1.4; g.beginPath(); g.arc(16, 10, 8, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }; });
+  OCI.blueprint = function (g) { g.fillStyle = "#0a2a5a"; g.fillRect(5, 6, 22, 20); g.fillStyle = "#2a6ad8"; g.fillRect(6, 7, 20, 18); g.strokeStyle = "rgba(220,240,255,.35)"; g.lineWidth = 1; for (var i = 9; i < 25; i += 4) { g.beginPath(); g.moveTo(i, 7); g.lineTo(i, 25); g.moveTo(6, i); g.lineTo(26, i); g.stroke(); } g.strokeStyle = "#f4fbff"; g.lineWidth = 1.4; g.strokeRect(10, 13, 12, 9); g.beginPath(); g.moveTo(9, 13); g.lineTo(16, 8); g.lineTo(23, 13); g.stroke(); g.strokeRect(14.5, 17, 3, 5); g.fillStyle = "#e8d8a8"; g.fillRect(4, 5, 3, 22); g.fillRect(25, 5, 3, 22); g.fillStyle = "#a8925a"; g.fillRect(4, 5, 1, 22); };
+  // ---------- #69 PAINT: paints go on any block, wall or furniture (wood stains only colour wood) ----------
+  function paintOk(id) { var td = TILES[id]; return !!(td && id !== T.AIR && !isLiq(id) && id !== T.BEDROCK && !td.crop); }
+  // ---------- #67 TOWN BUILDING and #68 HOUSE RATING ----------
+  function houseScan(sx, sy) {   // flood the open space around the sign: walls all round, a door, a light, furniture
+    var seen = {}, Q = [[sx, sy]], R = [], door = 0, lights = 0, dec = {}, decN = 0, wallN = 0, open = false;
+    while (Q.length) { var q = Q.pop(), x = q[0], y = q[1], key = x + "," + y; if (seen[key]) continue; seen[key] = 1;
+      if (Math.abs(x - sx) > 16 || Math.abs(y - sy) > 12 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1) { open = true; break; }
+      var id = get(x, y), td = TILES[id];
+      if (td.kind === "door" || td.hatch) { door++; if ((td.light || 0) > 0) lights++; continue; }
+      if (td.solid) { if ((td.light || 0) > 0) lights++; continue; }
+      R.push(key); if (walls[y * W + x]) wallN++; if ((td.light || 0) > 0) lights++;
+      if (id !== T.AIR && !(x === sx && y === sy) && td.kind !== "ladder" && !isLiq(id)) { dec[td.kind || td.n] = 1; decN++; }
+      if (R.length > 220) { open = true; break; }
+      Q.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]); }
+    var sz = R.length, ok = !open && sz >= 12 && door > 0 && lights > 0 && decN >= 2, why = open ? "It isn't closed in: build walls, a floor and a roof all the way round (a door counts as wall)." : sz < 12 ? "It's too small: a house needs at least 12 open tiles inside." : !door ? "It needs a door." : !lights ? "It needs a light inside: a torch, a lamp or a candle." : decN < 2 ? "It needs some furniture: at least two pieces, like a chair and a table or a bed." : "";
+    return { ok: ok, why: why, sz: sz, door: door, lights: lights, kinds: Object.keys(dec).length, decN: decN, wallF: sz ? wallN / sz : 0 };
+  }
+  function townWho() {   // who could move in: the friends your choices brought, and Sky Villagers who are your best friends
+    var L = townList().map(function (c) { return c.who; }); (vilList() || []).forEach(function (v) { if (S.vg && S.vg[v.V.id]) L.push(v.V.n); }); return L;
+  }
+  function townHome(who) { var T2 = p5().town; for (var k in T2) if (T2[k].who === who) return k; return ""; }
+  var HSG = { x: 0, y: 0 };
+  function houseOpen(x, y) {
+    if (x !== undefined) { HSG.x = x; HSG.y = y; } x = HSG.x; y = HSG.y; if (!p4Open(266)) return; var H2 = houseScan(x, y), key = x + "," + y, T2 = p5().town[key], h = '<h2 class="st-hi">' + (T2 ? esc(T2.who) + "'s house" : "An empty house") + "</h2>";
+    if (!H2.ok) { h += '<p class="st-tip"><b>Not a proper house yet.</b> ' + esc(H2.why) + "</p>"; if (T2) h += "<p>" + esc(T2.who) + " is waiting until it's fixed.</p>"; }
+    else if (T2) h += "<p>" + esc(T2.who) + " lives here. " + esc(["“Best house in the swamp, this.”", "“I've hung my hat. It feels like home.”", "“Thanks for having me in town!”"][(S.days | 0) % 3]) + "</p>";
+    else { var who = townWho().filter(function (w) { return !townHome(w); });
+      h += who.length ? '<p class="st-tip">Who should move in?</p><div class="p5-town">' + who.map(function (w) { return '<button type="button" class="btn ghost" data-p5="inv:' + esc(w) + '">' + esc(w) + "</button>"; }).join("") + "</div>" : '<p class="st-tip">Nobody is ready to move in. The choices you make in the family stories decide who comes to town, and Sky Villagers come once they are your best friends (5 hearts).</p>'; }
+    var rt = p5().rate[key]; h += '<p class="p5-stars">' + (rt ? "Croaker's rating: " + "★".repeat(rt) + "☆".repeat(5 - rt) : "Not rated yet") + "</p>";
+    h += '<div class="st-row">' + (H2.ok ? '<button type="button" class="btn" data-p5="rate">Ask Croaker to rate it</button>' : "") + (T2 ? '<button type="button" class="btn ghost" data-p5="evict">Ask them to move out</button>' : "") + '<button type="button" class="btn ghost" data-story-close>Close</button></div>';
+    p4Box(h, "#c88a52");
+  }
+  function houseRate() {
+    var H2 = houseScan(HSG.x, HSG.y); if (!H2.ok) return; var st = 1 + (H2.sz >= 30 ? 1 : 0) + (H2.kinds >= 4 ? 1 : 0) + (H2.kinds >= 8 && H2.lights >= 2 ? 1 : 0) + (H2.wallF >= 0.7 ? 1 : 0); st = clamp(st, 1, 5);
+    var key = HSG.x + "," + HSG.y, R = p5().rate, best = R.best || 0; R[key] = st; if (st > best) { R.best = st; var rw = [null, { silvercoin: 5 }, { silvercoin: 10 }, { silvercoin: 20 }, { goldcoin: 2 }, { goldcoin: 4, swampheart: 0 }][st]; var rr = {}; Object.keys(rw).forEach(function (k) { if (ITEMS[k] && rw[k]) rr[k] = rw[k]; }); giveRw(rr); }
+    S.st.housestars = Math.max(S.st.housestars || 0, st);
+    var tips = []; if (H2.sz < 30) tips.push("more room"); if (H2.kinds < 8) tips.push("more different furniture and decor"); if (H2.lights < 2) tips.push("another light"); if (H2.wallF < 0.7) tips.push("back walls behind everything");
+    if (!p4Open(267)) return; p4Box(famHead("croaker", "house inspector") + '<h2 class="st-hi">' + "★".repeat(st) + "☆".repeat(5 - st) + "</h2><p>“" + ["", "Well, it's got a roof. Mostly.", "Cosy! A bit bare, mind.", "Now that's a proper home. I'd stop for tea.", "Lovely! Fancy, even. My old cabin was never this nice.", "Five stars! I've seen palaces in the Sky Village with less charm. Truly."][st] + "”</p>" + (tips.length && st < 5 ? '<p class="st-tip">For more stars: ' + tips.join(", ") + ".</p>" : "") + '<div class="st-row"><button type="button" class="btn" data-p5="house">Back</button></div>', "#ffd23f");
+    snd("open", st >= 4 ? "Epic" : "Rare"); checkGoals(); save();
+  }
+  SIDE.push({ id: "p5_town", cat: "Family & Friends", ch: 0, n: "Welcome to Town", d: "Invite 3 friends to live in houses you built. Put a House Sign inside each house.", need: 3, v: function () { return Object.keys(p5().town).length; }, rw: { goldcoin: 4, swamptea: 3 }, show: function () { return townWho().length > 0 || Object.keys(p5().town).length > 0; } });
+  SIDE.push({ id: "p5_rate", cat: "Decorator", ch: 0, n: "Five-Star Home", d: "Build a house that Croaker rates five stars.", need: 5, v: function () { return S.st.housestars || 0; }, rw: { goldcoin: 3, prism: 1 }, show: function () { return (S.st.housestars || 0) > 0; } });
+  function townArt(g, who, t) {   // the friends who move to town, standing in their houses
+    if (who === "Bartholomew") { bartyArt(g, t * 1000, 1, Math.sin(t * 2) * 0.6, true); return; }
+    if (who === "Rook Ribbitson") { rookArt(g, t, 0); return; }
+    if (who === "Nibbles") { otterArt(g, t, 0); return; }
+    if (who === "Constable Croakwell" || who === "Old Finn the angler") { var cop = who[0] === "C";
+      frogNpc(g, { hi: cop ? "#a8d8a0" : "#c8d0b8", mid: cop ? "#5a9a5a" : "#8a9a7a", lo: cop ? "#2a5a2a" : "#4a5a3a", ink: "#102a10", br: Math.sin(t * 2) * 0.5, blink: (t * 1000) % 3900 < 130, belly: true,
+        inner: function (g) { g.beginPath(); g.moveTo(-16, -20); g.quadraticCurveTo(0, -24, 16, -20); g.lineTo(16, 2); g.lineTo(-16, 2); g.closePath(); g.fillStyle = cop ? aG(g, -24, 0, "#4a6ab8", "#2a4a8a", "#122a5a") : aG(g, -24, 0, "#c8a46a", "#9a7a42", "#6a4a22"); g.fill(); if (cop) { g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(-7, -14, 2.2, 0, 7); g.fill(); } } });
+      if (cop) { g.beginPath(); g.moveTo(-11, -42); g.lineTo(13, -42); g.lineTo(10, -52); g.quadraticCurveTo(1, -55, -8, -52); g.closePath(); aInk(g, aG(g, -55, -42, "#4a6ab8", "#2a4a8a", "#122a5a"), "#0a1a3a", 1); g.fillStyle = "#ffd23f"; g.fillRect(-1, -50, 4, 4); }
+      else { g.beginPath(); g.moveTo(-14, -40); g.quadraticCurveTo(1, -37, 16, -40); g.lineTo(11, -42); g.quadraticCurveTo(1, -52, -9, -42); g.closePath(); aInk(g, aG(g, -52, -38, "#8a9a6a", "#6a7a4a", "#3a4a2a"), "#1a2410", 1); [[-4, -44], [5, -45]].forEach(function (q) { g.fillStyle = ["#ff6a5a", "#ffd23f"][q[0] > 0 ? 1 : 0]; g.beginPath(); g.arc(q[0], q[1], 1.4, 0, 7); g.fill(); }); }
+      return; }
+    var V = (vilList() || []).filter(function (v) { return v.V.n === who; })[0]; if (V) { var im = TOWNIM[who]; if (!im) { im = TOWNIM[who] = new Image(); im.src = vilPortrait(V.V); } if (im.complete && im.naturalWidth) g.drawImage(im, -22, -46, 44, 44 * im.naturalHeight / im.naturalWidth); }
+  }
+  var TOWNIM = {};
+  // ---------- #70 WATERFALLS, #71 TROPHY PLAQUES, #74 BANNERS: drawn on top of their decor block ----------
+  var P5VIS = [], P5K = { waterspout: 1, plaque: 1, flagbanner: 1, housesign: 1 };
+  function p5Cell(id, i, j) { var k = TILES[id].kind; if (k === "waterspout" || k === "plaque" || k === "flagbanner" || k === "housesign") P5VIS.push([k, i, j]); }
+  function trophyOk(k) { if (!ITEMS[k]) return false; var fm = FMETA[k]; if (fm && (fm[1] === "r" || fm[1] === "l")) return true; for (var b in BOSS) if (BOSS[b].loot && BOSS[b].loot[k] !== undefined && /chitin|scale|mane|horn|tusk|crown|fang/.test(k)) return true; return /ribbon|trophy|crown|idol_|horn_|lure_/.test(k) || !!ITEMS[k].hyb; }
+  function p5Tap(tx, ty) {
+    var td = TILES[get(tx, ty)]; if (!td) return false; var key = tx + "," + ty;
+    if (td.kind === "housesign") { houseOpen(tx, ty); return true; }
+    if (td.kind === "flagbanner") { banOpen(tx, ty); return true; }
+    if (td.kind === "plaque") { var o = p5().tro;
+      if (o[key]) { if (sel === "pick" || bare) { give(o[key], 1, undefined, undefined, true); toast("Took down the " + ITEMS[o[key]].n + ".", "#c8a04a"); delete o[key]; save(); return true; } toast("The " + ITEMS[o[key]].n + " is mounted here. Tap with your pick to take it down.", "#c8a04a"); return true; }
+      if (sel && S.inv[sel] > 0 && trophyOk(sel)) { o[key] = sel; S.inv[sel]--; if (S.inv[sel] <= 0) { delete S.inv[sel]; sel = "pick"; bare = true; } reslot(); hbDirty = true; S.st.trophies = Object.keys(o).length; popup("Mounted!", ITEMS[o[key]].n, "#c8a04a", "★"); snd("open", "Rare"); checkGoals(); save(); return true; }
+      toast("Hold a boss trophy, a rare or legendary fish, a hybrid crop or a ribbon, then tap the plaque to mount it.", "#c8a04a"); return true; }
+    return false;
+  }
+  SIDE.push({ id: "p5_trophy", cat: "Decorator", ch: 0, n: "Hall of Fame", d: "Mount 6 trophies, rare fish or ribbons on Trophy Plaques.", need: 6, v: function () { return S.st.trophies || 0; }, rw: { goldcoin: 3 }, show: function () { return (S.st.trophies || 0) > 0; } });
+  function p5CellDraw(g, now) {
+    var t = now / 1000; P5VIS.forEach(function (q) { var k = q[0], i = q[1], j = q[2], sx = ox + i * ts, sy = oy + j * ts;
+      if (k === "waterspout") {   // pour down until something solid stops it
+        var n = 0; for (var y = j + 1; y < Math.min(H, j + 24); y++) { var id = get(i, y); if (TILES[id].solid || isLiq(id)) break; n++; } var top = sy + ts * 0.72, bot = sy + ts * (n + 1);
+        var gr = g.createLinearGradient(0, top, 0, bot); gr.addColorStop(0, "rgba(150,220,255,.85)"); gr.addColorStop(1, "rgba(90,180,230,.7)"); g.fillStyle = gr; g.fillRect(sx + ts * 0.36, top, ts * 0.28, bot - top);
+        g.fillStyle = "rgba(240,252,255,.55)"; var ph = (t * 3) % 1; for (var s2 = -1; s2 < (bot - top) / (ts * 0.5); s2++) { var yy = top + (s2 + ph) * ts * 0.5; if (yy > top && yy < bot - 2) g.fillRect(sx + ts * (0.4 + (s2 % 2) * 0.1), yy, ts * 0.06, ts * 0.22); }
+        if (n > 0 && !reduce) { for (var f = 0; f < 5; f++) { var a = t * 4 + f * 1.3, rr = ts * (0.2 + 0.12 * Math.sin(a * 1.7)); g.fillStyle = "rgba(240,252,255," + (0.35 + 0.25 * Math.sin(a)).toFixed(2) + ")"; g.beginPath(); g.arc(sx + ts * 0.5 + Math.cos(a) * ts * 0.3, bot - ts * 0.08 - Math.abs(Math.sin(a)) * ts * 0.15, rr * 0.5, 0, 7); g.fill(); } }
+      } else if (k === "plaque") { var tk = p5().tro[i + "," + j]; if (!tk) return; var im = dropIcon(tk); if (im.complete && im.naturalWidth) { g.imageSmoothingEnabled = false; g.drawImage(im, sx + ts * 0.18, sy + ts * 0.1, ts * 0.64, ts * 0.64); } }
+      else if (k === "flagbanner") { var B = p5().ban[i + "," + j]; if (B) { g.save(); g.translate(sx, sy); flagArt(g, B, ts * 0.12, ts * 0.12, ts * 0.76, ts * 0.86, t + i, true); g.restore(); } }
+      else if (k === "housesign") { var T2 = p5().town[i + "," + j]; if (!T2) return; var kk = ts / 30, bx = sx + ts * 1.4; g.save(); g.translate(bx, sy + ts); g.scale(kk * (i % 2 ? -1 : 1), kk); g.lineJoin = "round"; g.lineCap = "round"; g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 0, 12, 2.6, 0, 0, 7); g.fill(); townArt(g, T2.who, t); g.restore(); }
+    });
+    P5VIS.length = 0;
+  }
+  // ---------- #74 CUSTOM BANNERS AND FLAGS ----------
+  var BAN_C = ["#d83a3a", "#ff8a2a", "#f2c83a", "#3aa84a", "#2a8a8a", "#3a6ad8", "#8a4ac8", "#ff8ac0", "#f4f0e6", "#2a2a30", "#8a5a32", "#c8a04a"];
+  var BAN_P = ["Plain", "Stripes", "Chevron", "Border", "Halves", "Cross"], BAN_E = ["None", "Frog", "Star", "Moon", "Fish", "Leaf", "Crown", "Anchor", "Skull", "Heart"];
+  function emblem(g, e, x, y, r, c) {
+    g.fillStyle = c; g.strokeStyle = c; g.lineWidth = r * 0.22; g.beginPath();
+    if (e === 1) { g.ellipse(x, y + r * 0.15, r * 0.8, r * 0.55, 0, 0, 7); g.moveTo(x - r * 0.35 + r * 0.3, y - r * 0.45); g.arc(x - r * 0.35, y - r * 0.45, r * 0.3, 0, 7); g.moveTo(x + r * 0.35 + r * 0.3, y - r * 0.45); g.arc(x + r * 0.35, y - r * 0.45, r * 0.3, 0, 7); g.fill(); }
+    else if (e === 2) { for (var i = 0; i < 10; i++) { var a = i / 10 * 6.283 - Math.PI / 2, rr = i % 2 ? r * 0.42 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); }
+    else if (e === 3) { g.arc(x, y, r * 0.85, 0.6, 5.7); g.arc(x + r * 0.4, y - r * 0.1, r * 0.7, 5.4, 0.9, true); g.closePath(); g.fill(); }
+    else if (e === 4) { g.ellipse(x - r * 0.15, y, r * 0.7, r * 0.42, 0, 0, 7); g.moveTo(x + r * 0.45, y); g.lineTo(x + r, y - r * 0.45); g.lineTo(x + r, y + r * 0.45); g.closePath(); g.fill(); }
+    else if (e === 5) { g.moveTo(x, y - r); g.quadraticCurveTo(x + r, y - r * 0.2, x, y + r); g.quadraticCurveTo(x - r, y - r * 0.2, x, y - r); g.fill(); }
+    else if (e === 6) { g.moveTo(x - r * 0.85, y + r * 0.5); g.lineTo(x - r * 0.85, y - r * 0.5); g.lineTo(x - r * 0.4, y); g.lineTo(x, y - r * 0.75); g.lineTo(x + r * 0.4, y); g.lineTo(x + r * 0.85, y - r * 0.5); g.lineTo(x + r * 0.85, y + r * 0.5); g.closePath(); g.fill(); }
+    else if (e === 7) { g.arc(x, y - r * 0.65, r * 0.22, 0, 7); g.moveTo(x, y - r * 0.45); g.lineTo(x, y + r * 0.8); g.moveTo(x - r * 0.45, y - r * 0.2); g.lineTo(x + r * 0.45, y - r * 0.2); g.moveTo(x - r * 0.75, y + r * 0.2); g.quadraticCurveTo(x - r * 0.6, y + r * 0.85, x, y + r * 0.85); g.quadraticCurveTo(x + r * 0.6, y + r * 0.85, x + r * 0.75, y + r * 0.2); g.stroke(); }
+    else if (e === 8) { g.arc(x, y - r * 0.15, r * 0.7, 0, 7); g.rect(x - r * 0.45, y + r * 0.3, r * 0.9, r * 0.5); g.fill(); g.fillStyle = "rgba(0,0,0,.55)"; g.beginPath(); g.arc(x - r * 0.28, y - r * 0.15, r * 0.18, 0, 7); g.arc(x + r * 0.28, y - r * 0.15, r * 0.18, 0, 7); g.fill(); }
+    else if (e === 9) { g.moveTo(x, y + r * 0.8); g.bezierCurveTo(x - r * 1.2, y - r * 0.1, x - r * 0.5, y - r * 1, x, y - r * 0.35); g.bezierCurveTo(x + r * 0.5, y - r * 1, x + r * 1.2, y - r * 0.1, x, y + r * 0.8); g.fill(); }
+  }
+  function flagArt(g, B, x, y, w, h, t, tails) {   // the cloth waves a little; tails = a banner's swallowtail bottom
+    var c1 = BAN_C[B.b] || BAN_C[0], c2 = BAN_C[B.c] || BAN_C[8], wv = reduce ? 0 : Math.sin(t * 2) * w * 0.03;
+    g.save(); g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y); g.lineTo(x + w + wv, y + h); if (tails) { g.lineTo(x + w * 0.5 + wv, y + h * 0.8); } g.lineTo(x + wv, y + h); g.closePath(); g.fillStyle = c1; g.fill(); g.clip();
+    g.fillStyle = c2; var pt = B.p | 0;
+    if (pt === 1) for (var i = 1; i < 6; i += 2) g.fillRect(x, y + h * i / 6, w + 4, h / 6);
+    else if (pt === 2) { g.beginPath(); g.moveTo(x, y + h * 0.55); g.lineTo(x + w / 2, y + h * 0.3); g.lineTo(x + w, y + h * 0.55); g.lineTo(x + w, y + h * 0.72); g.lineTo(x + w / 2, y + h * 0.47); g.lineTo(x, y + h * 0.72); g.fill(); }
+    else if (pt === 3) { g.lineWidth = Math.max(2, w * 0.12); g.strokeStyle = c2; g.strokeRect(x, y, w + wv, h); }
+    else if (pt === 4) g.fillRect(x + w / 2, y, w, h);
+    else if (pt === 5) { g.fillRect(x + w * 0.42, y, w * 0.16, h); g.fillRect(x, y + h * 0.36, w + 4, h * 0.14); }
+    if (B.e) emblem(g, B.e | 0, x + w / 2 + wv * 0.5, y + h * 0.42, Math.min(w, h) * 0.3, pt === 4 ? "#ffffff" : BAN_C[B.ec === undefined ? 2 : B.ec]);
+    g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(x, y, w * 0.18, h); g.fillStyle = "rgba(0,0,0,.14)"; g.fillRect(x + w * 0.82, y, w, h);
+    g.restore(); g.strokeStyle = "rgba(0,0,0,.45)"; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y); g.stroke();
+  }
+  var BAN = { k: "", ship: false };
+  function banOpen(x, y, ship) {
+    if (x !== undefined) { BAN.k = x + "," + y; BAN.ship = !!ship; } var o = p5(), B = BAN.ship ? (o.sflag || (o.sflag = { b: 5, c: 8, p: 0, e: 1, ec: 2 })) : (o.ban[BAN.k] || (o.ban[BAN.k] = { b: 0, c: 2, p: 0, e: 2, ec: 2 })); if (!p4Open(268)) return;
+    var sw = function (key, val) { return '<div class="p5-sw">' + BAN_C.map(function (c, i) { return '<button type="button" style="--c:' + c + '" class="' + (B[key] === i ? "on" : "") + '" data-p5="ban:' + key + ":" + i + '" aria-label="Colour ' + (i + 1) + '"></button>'; }).join("") + "</div>"; };
+    var h = '<h2 class="st-hi">' + (BAN.ship ? "Your ship's flag" : "Design your banner") + '</h2><canvas id="p5BanC" class="p5-banc" width="160" height="200"></canvas>';
+    h += "<h3>Cloth</h3>" + sw("b") + "<h3>Pattern</h3>" + '<div class="p5-ch">' + BAN_P.map(function (n, i) { return '<button type="button" class="' + (B.p === i ? "on" : "") + '" data-p5="ban:p:' + i + '">' + n + "</button>"; }).join("") + "</div>" + sw("c");
+    h += "<h3>Emblem</h3>" + '<div class="p5-ch">' + BAN_E.map(function (n, i) { return '<button type="button" class="' + (B.e === i ? "on" : "") + '" data-p5="ban:e:' + i + '">' + n + "</button>"; }).join("") + "</div>" + sw("ec");
+    h += '<div class="st-row">' + (!BAN.ship ? '<button type="button" class="btn ghost" data-p5="ban:toship">Fly this on my boat</button>' : "") + '<button type="button" class="btn" data-story-close>Done</button></div>';
+    p4Box(h, BAN_C[B.b]); var cv2 = $("p5BanC"); if (cv2) { var g = cv2.getContext("2d"); g.clearRect(0, 0, 160, 200); g.fillStyle = "#6a4426"; g.fillRect(14, 10, 132, 8); flagArt(g, B, 24, 18, 112, BAN.ship ? 110 : 168, 0, !BAN.ship); }
+  }
+  function banAct(a, b) { var o = p5(), B = BAN.ship ? o.sflag : o.ban[BAN.k]; if (a === "toship") { o.sflag = Object.assign({}, B); toast("Your boat now flies this flag!", "#4fd0e8"); save(); return; } if (!B) return; B[a] = +b; save(); banOpen(); }
+  function shipFlag(g, x, y, k, now, gh) { var F = S.p5 && S.p5.sflag; if (!F || gh) return false; g.fillStyle = "#6a4426"; g.fillRect(x - 0.05 * k, y - 0.1 * k, 0.1 * k, 0.4 * k); flagArt(g, F, x, y - 0.3 * k, 1.6 * k, 1.0 * k, now / 1000, false); return true; }
+  // ---------- #72 BLUEPRINTS: save a build, then place copies of it ----------
+  var BP = { a: null, pl: -1 }, TIL2IT = null;
+  function til2it() { if (TIL2IT) return TIL2IT; TIL2IT = {}; ORDER.forEach(function (k) { var it = ITEMS[k]; if (!it || it.seed) return; if (it.tile !== undefined && TIL2IT[it.tile] === undefined) TIL2IT[it.tile] = k; if (it.wall !== undefined) TIL2IT["w" + it.wall] = k; }); return TIL2IT; }
+  function bpSave(a, b) {
+    var x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = Math.min(a[1], b[1]), y1 = Math.max(a[1], b[1]); if (x1 - x0 > 23 || y1 - y0 > 15) { nag("A blueprint can be at most 24 x 16 tiles."); return; }
+    var M = til2it(), C = [], n = 0; for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) { var id = get(x, y), wl = walls[y * W + x], td = TILES[id], t2 = (M[id] !== undefined || (td.kind === "door" && id !== T.AIR)) ? id : 0, w2 = wl && M["w" + wl] ? wl : 0; C.push([t2, w2]); if (t2 || w2) n++; }
+    if (!n) { nag("There's nothing built there to save."); return; }
+    var L = p5().bpL; if (L.length >= 12) L.shift(); L.push({ n: "Build " + ((S.st.bpsaved || 0) + 1), w: x1 - x0 + 1, h: y1 - y0 + 1, c: C }); S.st.bpsaved = (S.st.bpsaved || 0) + 1;
+    popup("Blueprint saved", L[L.length - 1].n + " (" + (x1 - x0 + 1) + " x " + (y1 - y0 + 1) + "). Tap Blueprints to place a copy.", "#4a8ae8", "▦"); snd("open", "Rare"); save();
+  }
+  function bpCost(B) { var M = til2it(), c = {}; B.c.forEach(function (q) { if (q[0] && M[q[0]] !== undefined && TILES[q[0]].kind !== "door") c[M[q[0]]] = (c[M[q[0]]] || 0) + 1; else if (q[0] && TILES[q[0]].kind === "door" && M[q[0]] !== undefined) c[M[q[0]]] = (c[M[q[0]]] || 0) + 1; if (q[1] && M["w" + q[1]]) c[M["w" + q[1]]] = (c[M["w" + q[1]]] || 0) + 1; }); return c; }
+  function bpOpen() {
+    if (!p4Open(269)) return; var L = p5().bpL, h = '<h2 class="st-hi">Blueprints</h2><p class="st-tip">Holding the scroll, tap two corners of a build to save it. Pick one here to place it: tap where its top-left corner should go. Blocks come from your bag and only go into empty space.</p>';
+    h += L.length ? '<div class="p4-jobs">' + L.map(function (B, i) { var c = bpCost(B), ok = canPay(c), miss = Object.keys(c).filter(function (k) { return (S.inv[k] || 0) < c[k]; });
+      return '<div class="p4-job"><i class="p4-jic">▦</i><span><b>' + esc(B.n) + " · " + B.w + " x " + B.h + "</b><small>" + Object.keys(c).slice(0, 5).map(function (k) { return c[k] + " " + esc(ITEMS[k].n); }).join(", ") + (Object.keys(c).length > 5 ? "..." : "") + (miss.length ? " · missing " + miss.length + " kind" + (miss.length > 1 ? "s" : "") : "") + '</small></span><button type="button" class="btn' + (ok ? "" : " ghost") + '" data-p5="bp:pl:' + i + '">' + (ok ? "Place" : "Place part") + '</button><button type="button" class="btn ghost" data-p5="bp:del:' + i + '" aria-label="Delete">✕</button></div>'; }).join("") + "</div>" : '<p>No blueprints yet.</p>';
+    h += '<div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>'; p4Box(h, "#4a8ae8");
+  }
+  function bpPlace(tx, ty) {
+    var B = p5().bpL[BP.pl]; BP.pl = -1; if (!B) return; var M = til2it(), put = 0, skip = 0;
+    for (var j = 0; j < B.h; j++) for (var i = 0; i < B.w; i++) { var q = B.c[j * B.w + i], x = tx + i, y = ty + j; if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+      if (q[1] && !walls[y * W + x]) { var wk = M["w" + q[1]]; if (wk && S.inv[wk] > 0) { setWall(x, y, q[1]); S.inv[wk]--; if (S.inv[wk] <= 0) delete S.inv[wk]; put++; } else skip++; }
+      if (q[0] && get(x, y) === T.AIR) { var ik = M[q[0]]; if (ik === undefined && TILES[q[0]].kind === "door") { setT(x, y, q[0]); continue; } if (ik && S.inv[ik] > 0) { setT(x, y, q[0]); if (TILES[q[0]].solid && S.shape) S.shape[y * W + x] = 0; S.inv[ik]--; if (S.inv[ik] <= 0) delete S.inv[ik]; put++; } else skip++; } }
+    if (sel && !(S.inv[sel] > 0) && sel !== "blueprint") { sel = "pick"; bare = true; } reslot(); hbDirty = true; S.st.placed += put; S.st.bpplaced = (S.st.bpplaced || 0) + 1;
+    chips(tx + B.w / 2, ty + B.h / 2, "#4a8ae8", 30, 9); thud(260, 0.08); toast("Placed " + put + " pieces" + (skip ? ", " + skip + " skipped (not enough in your bag)" : "") + ".", "#4a8ae8"); checkGoals(); save();
+  }
+  function useBlueprint(dt) {
+    mine = null; aim.door = false; aim.stn = ""; aim.chest = false; var tap = aim.down && !BP.was; BP.was = aim.down; bpBtn(true); if (!tap || aim.tx < 0) return;
+    if (cave) { nag("Blueprints are for building on the surface."); return; }
+    if (BP.pl >= 0) { bpPlace(aim.tx, aim.ty); return; }
+    if (!BP.a) { BP.a = [aim.tx, aim.ty]; toast("First corner set. Now tap the opposite corner.", "#4a8ae8"); thud(500, 0.03); return; }
+    var a = BP.a; BP.a = null; bpSave(a, [aim.tx, aim.ty]);
+  }
+  function bpBtn(on) { var el = $("p5BpBtn"); if (!on) { if (el && !el.hidden) el.hidden = true; return; } if (!el) { el = document.createElement("button"); el.id = "p5BpBtn"; el.type = "button"; el.className = "p5-bpbtn"; el.textContent = "Blueprints"; el.addEventListener("click", function (e) { e.stopPropagation(); bpOpen(); }); stageEl.appendChild(el); } if (el.hidden) el.hidden = false; }
+  function bpDraw(g) {   // the corner you picked, and a ghost of the build you are about to place
+    if (sel !== "blueprint" || cave || HOME || OCS) return;
+    if (BP.a) { g.strokeStyle = "#7ab0ff"; g.lineWidth = 2; g.setLineDash([5, 4]); var x0 = Math.min(BP.a[0], aim.tx < 0 ? BP.a[0] : aim.tx), y0 = Math.min(BP.a[1], aim.ty < 0 ? BP.a[1] : aim.ty), x1 = Math.max(BP.a[0], aim.tx), y1 = Math.max(BP.a[1], aim.ty); g.strokeRect(ox + x0 * ts, oy + y0 * ts, (x1 - x0 + 1) * ts, (y1 - y0 + 1) * ts); g.setLineDash([]); }
+    var B = BP.pl >= 0 && p5().bpL[BP.pl]; if (B && aim.tx >= 0) { g.globalAlpha = 0.45; g.fillStyle = "#7ab0ff"; for (var j = 0; j < B.h; j++) for (var i = 0; i < B.w; i++) { var q = B.c[j * B.w + i]; if (q[0] || q[1]) g.fillRect(ox + (aim.tx + i) * ts + 1, oy + (aim.ty + j) * ts + 1, ts - 2, ts - 2); } g.globalAlpha = 1; g.strokeStyle = "#cfe0ff"; g.lineWidth = 2; g.strokeRect(ox + aim.tx * ts, oy + aim.ty * ts, B.w * ts, B.h * ts); }
+  }
+  // ---------- the Phase 5 router, tick and world drawing ----------
+  var P5D = -1, P5C = 0;
+  function p5Tick(dt) {
+    P5T += dt; var d = S.days | 0; if (P5D < 0) P5D = d; if (d > P5D) { bankDaily(d - P5D); P5D = d; }
+    P5C -= dt; if (P5C <= 0) { P5C = 4; repCheck(); merTick(); }
+    if (sel !== "blueprint") { bpBtn(false); BP.a = null; if (BP.pl >= 0 && sel !== "blueprint") BP.pl = -1; }
+  }
+  function p5Act(a) {
+    var q = a.split(":");
+    if (q[0] === "bank") bankAct(q[1], q[2]);
+    else if (q[0] === "mer") merBuy(q[1]);
+    else if (q[0] === "inv") { var w = q.slice(1).join(":"); if (townHome(w)) return; p5().town[HSG.x + "," + HSG.y] = { who: w, d: S.days | 0 }; popup(w + " moved in!", "Welcome to town.", "#c88a52", "⌂"); snd("open", "Epic"); checkGoals(); save(); houseOpen(); }
+    else if (q[0] === "evict") { delete p5().town[HSG.x + "," + HSG.y]; save(); houseOpen(); }
+    else if (q[0] === "rate") houseRate();
+    else if (q[0] === "house") houseOpen();
+    else if (q[0] === "ban") banAct(q[1], q[2]);
+    else if (q[0] === "bp") { if (q[1] === "pl") { BP.pl = +q[2]; BP.a = null; closeStory(); toast("Tap where the top-left corner of the build should go.", "#4a8ae8"); } else if (q[1] === "del") { p5().bpL.splice(+q[2], 1); save(); bpOpen(); } }
+    else if (q[0] === "bldnm") { if (bldAt) { bldAt.nm = cleanName($("p5BldNm") && $("p5BldNm").value, 18); save(); renderBld(); } }
+    else if (q[0] === "anren") { RNM = +q[1]; renderBld(); var inp = $("p5AnNm"); if (inp) inp.focus(); }
+    else if (q[0] === "annm") { var A2 = homeAnimals()[+q[1]], nm = cleanName($("p5AnNm") && $("p5AnNm").value, 14); if (A2 && nm) A2.nm = nm; RNM = -1; save(); renderBld(); }
+  }
+  function p5WorldDraw(g, now) { drawBank(g, now); drawMer(g, now); drawFest(g, now); p5CellDraw(g, now); bpDraw(g); }
+  function p5Pill() {
+    var B = bankSpot(); if (bankNear()) return { l: "Frog Bank", fn: bankOpen, x: B.x, y: B.y - 3 };
+    if (merNear()) return { l: "Bartleby's wares", fn: merOpen, x: MER.x, y: MER.y - 2.6 };
+    var D = dinSpot(); if (festNow() && D && !cave && !HOME && !OCS && Math.abs(D.x - p.x) < 4 && Math.abs(D.y - p.y) < 2.5) return { l: "Harvest Festival", fn: festOpen, x: D.x, y: D.y - 3 };
+    return null;
+  }
+  function p5JournalHtml() { var hy = Object.keys(HYB).filter(function (k) { return p5().hy[k]; }); return repHtml() + (hy.length ? "<h3>Hybrid crops</h3><p>" + hy.map(function (k) { return esc(ITEMS[k].n); }).join(", ") + " (" + hy.length + " of " + Object.keys(HYB).length + ")</p>" : ""); }
   // ---------- HOMESTEAD stage 4: CROAKA, Old Croaker's sister, who lives on your homestead ----------
   // S.home.ka = { met, f friendship 0-10, g highest heart gift given, ord: { day, k item, n, done } }
   var CROAKA = { x: 10.5, y: 7.85, tx: 10, ty: 7 };
@@ -22901,7 +23407,7 @@
     return (HSPR.house = hpOutline(S2.c));
   }
   function hsBld(k) {   // a coop or barn, built from Delve blocks: Reed Thatch or Red Shingles over Plank Wall, a door, a Feeding Trough
-    var key = "bld" + k; if (HSPR[key]) return HSPR[key]; var D = HF.bld[k], w = D.w, h = D.h, S2 = hpCan(w * 16 + 16, h * 16 + 20), g = S2.g, OX = 8, OY = 16, x, y;
+    var key = "bld" + k; if (HSPR[key]) return HSPR[key]; if (k === "greenhouse") return (HSPR[key] = hpOutline(ghArt())); var D = HF.bld[k], w = D.w, h = D.h, S2 = hpCan(w * 16 + 16, h * 16 + 20), g = S2.g, OX = 8, OY = 16, x, y;
     var roof = k === "duckcoop" ? T.THATCH : htid("Red Shingles"), rows = h - 1 + 1, wy = OY + (h - 1) * 16;
     for (y = 0; y < rows; y++) for (x = -1; x <= w; x++) { var m = (y === 0 ? 1 : 0) | (y === rows - 1 ? 2 : 0) | (x === -1 ? 4 : 0) | (x === w ? 8 : 0), rc = hMat(roof, (x & 1) | ((y & 1) << 1), m); if (rc) g.drawImage(rc, OX + x * 16 + (x === -1 ? 8 : x === w ? -8 : 0), OY - 12 + y * 16); }
     snowRoof(g, 0, wy - 6, S2.c.width);
@@ -22964,6 +23470,7 @@
       if (e[1] === 3) { homeCrate(g); return; }
       if (e[1] === 4) { homeStall(g); return; }
       if (e[1] === 5) { homeGateArt(g); return; }
+      if (e[1] === 7 && e[4].k === "scarecrow") { var skn = isNight(S.time); hpShadow(g, ox + (e[2] + 0.5) * ts, oy + (e[3] + 0.92) * ts, ts * 0.4, ts * 0.12, 0.22); g.save(); g.translate(ox + (e[2] + 0.5) * ts, oy + (e[3] + 0.95) * ts); g.scale(ts / 30, ts / 30); g.lineJoin = "round"; g.lineCap = "round"; scareArt(g, T0 + e[2], skn, skn ? Math.sin(T0 * 0.7 + e[2]) * 1.2 : 0); g.restore(); return; }
       if (e[1] === 7) { var mm = e[4], mid = mm.k === "picklekeg" ? T.BARREL : mm.k === "seedmaker" ? T.POT : mm.k === "compostbin" ? T.BALE : T.X_sprinkler;
         hpShadow(g, ox + (e[2] + 0.5) * ts, oy + (e[3] + 0.92) * ts, ts * 0.42, ts * 0.12, 0.22); hTile(g, mid, e[2], e[3] - 0.15);
         if (mm.k === "sprinkler" && !reduce && dlA > 0.3) { var spr = (T0 * 2 + e[2]) % 1; g.fillStyle = "rgba(200,240,255,.6)"; for (var sp2 = 0; sp2 < 6; sp2++) { var an2 = sp2 / 6 * 6.2832 + T0, rr2 = spr * ts * (homeUp("nozzle") ? 2.2 : 1.3); g.fillRect(ox + (e[2] + 0.5) * ts + Math.cos(an2) * rr2, oy + (e[3] + 0.2) * ts + Math.sin(an2) * rr2 * 0.6 - Math.sin(spr * 3.14) * ts * 0.5, s16 * 2, s16 * 2); } }
@@ -22984,7 +23491,7 @@
     if (aim.tx >= 0 && !panelOpen && !coarse || (aim.down && aim.tx >= 0)) { var adx = aim.tx + 0.5 - cp.x, ady = aim.ty + 0.5 - (cp.y - 0.3), near = adx * adx + ady * ady <= HREACH * HREACH;   // the tile you're pointing at, on the ground
       g.strokeStyle = near ? "rgba(255,246,200,.85)" : "rgba(255,120,100,.5)"; g.lineWidth = 2 / HK; var hw2 = sel === "hoe" && S.hoe > 1 ? (HOES[S.hoe].w - 1) / 2 : 0; g.strokeRect(ox + (aim.tx - hw2) * ts + 1, oy + aim.ty * ts + 1, ts * (hw2 * 2 + 1) - 2, ts - 2); }
     g.restore();
-    drawSceneDrops(g, now); p4HomeDraw(g, now, SY);   // what lies on the ground stands up (sceneSY puts it on the tilted ground)
+    drawSceneDrops(g, now);   // what lies on the ground stands up (sceneSY puts it on the tilted ground)
     var sun = sunState(S.time); sun.a *= 1 - 0.85 * wxN(); HOME.sun = sun; var HWIND = 1 + wxN() * 0.6 + wxStorm() * 1.8;   // rain clouds hide the sun; storms blow the crops about
     if (shadowBegin(sun)) {
       L.forEach(function (e) { var B = SY(oy + e[0] * ts);
@@ -22996,6 +23503,7 @@
       SREC.dy = 0; shadowEnd(g, sun);
     }
     L.forEach(function (e) { var dy = DY(e[0]); if (dy) { g.save(); g.translate(0, dy); drawE(g, e); g.restore(); } else drawE(g, e); });   // each standing thing, full height, at its tilted foot
+    p4HomeDraw(g, now, SY);   // PHASE 4/5: clues, the crop thief, animal moods
     // --- daytime life: slow cloud shadows drifting over the farm, butterflies over the grass ---
     if (!reduce && dlA > 0.6 && SN < 2) {
       gIn(); for (i = 0; i < 3; i++) { var cxc = ox + ((((T0 * 0.18 + i * 17) % 60) - 10) * ts), cyc = oy + (6 + i * 8 + Math.sin(T0 * 0.05 + i) * 2) * ts; var cka = 0.09 * clamp(sun.a / 0.3, 0, 1); hpShadow(g, cxc, cyc, ts * 4.5, ts * 1.6, cka); hpShadow(g, cxc + ts * 2.6, cyc - ts * 0.6, ts * 2.6, ts * 1.2, cka); } g.restore();
@@ -23043,7 +23551,7 @@
     if (aim.tx >= 0 && o.m && o.m[aim.tx + "," + aim.ty]) { var mh = o.m[aim.tx + "," + aim.ty], ml = ITEMS[mh.k].n + (mh.o ? ": ready! Tap to collect" : mh.i ? ": " + Math.ceil(mh.t) + " s left" : mh.k === "sprinkler" ? ": waters the soil around it" : mh.k === "compostbin" ? ": add 4 Fiber or Leaves" : ": tap with a crop selected");
       g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var mw = g.measureText(ml).width + 14, mx2 = ox + (aim.tx + 0.5) * ts, my2 = oy + (aim.ty - 1.3) * ts + DY(aim.ty + 1); g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(mx2 - mw / 2, my2 - 11, mw, 20); g.fillStyle = mh.o ? "#ffe27a" : "#f6eedb"; g.fillText(ml, mx2, my2 + 4); }
     if (aim.tx >= 0) { var ce2 = o.c[aim.tx + "," + aim.ty], C2 = ce2 && CROPS[ce2.k]; if (C2) { var wet2 = homeWet(aim.tx, aim.ty), pidl = hmT(aim.tx, aim.ty);
-      if (C2.wat) wet2 = pidl === HT.PADDYW; var left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (C2.moon ? 1.5 * (wet2 ? 2 : 1) : wet2 ? 2 : 1) / seasonMul(ce2.k), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : C2.wat && !wet2 ? ": the paddy is dry" : C2.moon && !isNight(S.time) ? ": waits for night" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (C2.wat ? " \u00b7 flooded" : wet2 ? " \u00b7 watered" : " \u00b7 dry")) + (o.f[aim.tx + "," + aim.ty] ? " \u00b7 compost" : "") + (ce2.s < 4 ? (inSeason(ce2.k) ? " \u00b7 in season" : seasonOf() === 3 ? " \u00b7 too cold, grows very slowly" : " \u00b7 out of season, grows slowly") : "");
+      if (C2.wat) wet2 = pidl === HT.PADDYW; var left = ce2.s >= 4 ? 0 : ((4 - ce2.s) * C2.t - ce2.g) / (C2.moon ? 1.5 * (wet2 ? 2 : 1) : wet2 ? 2 : 1) / cropMul(ce2.k, aim.tx, aim.ty), lbl = C2.n + (ce2.s >= 4 ? ": ripe!" : C2.wat && !wet2 ? ": the paddy is dry" : C2.moon && !isNight(S.time) ? ": waits for night" : ": " + (left >= 60 ? Math.ceil(left / 60) + " min" : Math.ceil(left) + " s") + (C2.wat ? " \u00b7 flooded" : wet2 ? " \u00b7 watered" : " \u00b7 dry")) + (o.f[aim.tx + "," + aim.ty] ? " \u00b7 compost" : "") + (ce2.s < 4 ? (ghNear(aim.tx, aim.ty) ? " \u00b7 greenhouse warmth" : inSeason(ce2.k) ? " \u00b7 in season" : seasonOf() === 3 ? " \u00b7 too cold, grows very slowly" : " \u00b7 out of season, grows slowly") : "");
       g.font = "800 " + Math.max(11, Math.round(ts * 0.38)) + "px Nunito, system-ui, sans-serif"; var lw = g.measureText(lbl).width + 14, lx = ox + (aim.tx + 0.5) * ts, ly = oy + (aim.ty - 0.75) * ts + DY(aim.ty + 1); g.fillStyle = "rgba(30,22,10,.85)"; g.fillRect(lx - lw / 2, ly - 11, lw, 20); g.fillStyle = ce2.s >= 4 ? "#ffe27a" : wet2 ? "#9ae0ff" : "#f6eedb"; g.fillText(lbl, lx, ly + 4); } }
     if (!panelOpen && !trans && hp > 0) homeActions().slice(0, 1).forEach(function (a) { homePill(g, now, a.label, ox + a.ax * ts, SY(oy + a.ay * ts), a.fn); });
   }
@@ -23240,6 +23748,7 @@
   window.__sbx.coat = { C: COATS, A: ARROWK, load: loadAmmo, ammo: function () { return bowAmmo(); }, hit: coatHit, step: coatStep, dt: coatDt };
   window.__sbx.tour = { cave: function (f) { var h = (world.holes || [])[0] || { x: Math.floor(p.x), y: Math.floor(p.y) }; enterCave(h.x, h.y, f || 1, true); }, sea: function () { ocEnterPier(); } };
   window.__sbx.rar = function () { var o = {}; Object.keys(ITEMS).forEach(function (k) { o[k] = [rarItem(k), ITEMS[k].n]; }); return o; };
+  window.__sbx.p6 = { hs: function () { return homeS(); }, hp: function () { return [cp.x, cp.y]; }, tap: tapHook, setWall: setWall, STAIN_OF: STAIN_OF, cam: function (x, y) { cam.x = x; cam.y = y; }, S: function () { return p5(); }, price: shipPrice, hot: hotPick, mut: p5Mutate, eat: p5Eat, rep: repHtml, rank: repRank, vtr: vilTr, bank: bankOpen, bankAct: bankAct, bankSpot: bankSpot, mer: MER, merOpen: merOpen, merTick: merTick, beetlePic: function () { return beetlePic(); }, pennyPic: function () { return pennyPic(); }, fest: festOpen, house: houseOpen, scan: houseScan, act: p5Act, ban: banOpen, bp: bpOpen, bpSave: bpSave, bpPlace: function (x, y, i) { BP.pl = i; bpPlace(x, y); }, ghArt: ghArt, scare: scareArt, ship: renderShip };
   window.__sbx.p5 = { nibPic: nibPic, rookPic: rookPic, tour: tourAct, tourFin: tourFinish, reel: rhythmStart, hit: reelHit, RF: function () { return RF; }, nb: nbOpen, jobs: nbJobs, nbAct: nbAct, nbSpot: nbSpot, thief: thiefAct, clues: thClueSpots, THF: THF, rival: rivalAct, spawn: rivalSpawn, ROOK: ROOK, radio: radioOpen, jrn: famJournalHtml, tick: p4Tick, gold: function () { GOLDB = true; }, land: landFish };
   window.__sbx.p4 = { talk: function () { talkCroaker(); }, act: function (a) { p4Act(a); }, add: function (w, n) { famAdd(w, n); }, mail: function () { mailOpen(); }, din: function (k) { dinOpen(k); }, tale: function (id) { taleStart(id); }, S: function () { return p4(); }, din0: function () { return dinSpot(); }, mail0: function () { return mailSpot(); }, get TL() { return TL; }, croako: function () { talkCroako(); }, close: function () { closeStory(); } };
   window.__sbx.act = { freeze: function (kind, k, t) { actStart(kind, k); ACT.t0 = performance.now() - t * 1000; ACT.freeze = t; }, toss: function (a) { tossSlot(a, false, true); }, drink: function (k) { drink(k); }, eat: function (k) { eat(k); }, get mn() { return HOME && HOME.mn; }, gd: function () { var sc = gdScene(); return sc ? sc.L : null; }, get cp() { return cp; }, hmT: function (x, y) { return hmT(x, y); }, HT: function () { return HT; } };

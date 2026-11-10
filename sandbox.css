@@ -2518,3 +2518,25 @@ small.bo-cost{display:flex}
 .p4-job small{text-transform:none;letter-spacing:0;font:700 .76rem Nunito,sans-serif;color:inherit}.p4-job>span{min-width:0}.p4-job .btn{flex:none;width:auto;min-width:0;margin:0}
 .p4-job b{font-weight:800}
 .p4-job>span{text-align:left}.p4-jic{font-style:normal}
+/* Phase 5: homestead, economy and town */
+.p5-hot,.p5-lo,.p5-hi{font-style:normal;font-weight:900;font-size:.72rem;padding:1px 6px;border-radius:999px;margin-left:4px;white-space:nowrap}
+.p5-hot{background:#ffd23f;color:#3a2a04}.p5-lo{background:#ffffff14;color:#9ad0ff}.p5-hi{background:#7ae0a033;color:#9af0b8}
+.p5-mkt{background:#ffd23f14;border:1px solid #ffd23f44;border-radius:12px;padding:8px 10px;margin:0 0 10px}
+.p5-bname{display:flex;gap:8px;align-items:center;margin:0 0 10px}.p5-bname label{flex:1;display:flex;gap:8px;align-items:center;font:800 .85rem Nunito,sans-serif}
+.p5-bname input,.p5-moods input{flex:1;min-width:0;padding:7px 10px;border-radius:10px;border:1.5px solid #ffffff2a;background:#0006;color:#fff;font:700 .9rem Nunito,sans-serif}
+.p5-moods{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.p5-moods li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:12px;background:#ffffff0a}
+.p5-moods li>span:nth-child(2){flex:1;display:flex;flex-direction:column;font:800 .86rem Nunito,sans-serif}.p5-moods small{opacity:.75;font-weight:700}
+.p5-moods .btn{flex:none;padding:6px 10px;font-size:.78rem}
+.p5-mood{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--mc) 25%,transparent);color:var(--mc);font-size:1rem;border:1.5px solid var(--mc)}
+.p5-rep{display:flex;gap:10px;align-items:center;padding:7px 9px;border-radius:12px;background:#ffffff0a;margin:0 0 6px;border-left:3px solid var(--rc)}
+.p5-rep img{width:30px;height:30px;image-rendering:pixelated}.p5-rep>span{flex:1;display:flex;flex-direction:column;gap:3px;font:800 .86rem Nunito,sans-serif}.p5-rep small{opacity:.7;font-weight:700}
+.p5-bar{display:block;height:6px;border-radius:4px;background:#ffffff14;overflow:hidden}.p5-bar em{display:block;height:100%;background:var(--rc)}
+.p5-shop{margin:0 0 8px;font:800 .78rem Nunito,sans-serif;color:#8fd6ff;opacity:.9}
+.p5-bank{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}.p5-bank div{padding:10px 6px;border-radius:14px;background:#ffffff0b;display:flex;flex-direction:column;align-items:center;gap:2px}
+.p5-bank small{font:800 .7rem Nunito,sans-serif;opacity:.7;text-transform:none;letter-spacing:0}.p5-bank b{font:900 1.3rem Nunito,sans-serif;color:#9af0b8}
+.p5-town{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 12px}.p5-stars{font:900 1rem Nunito,sans-serif;color:#ffd23f;margin:4px 0 10px}
+.p5-banc{display:block;margin:0 auto 6px;width:120px;height:150px;border-radius:12px;background:#0004}
+.p5-sw{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 8px}.p5-sw button{width:28px;height:28px;border-radius:50%;background:var(--c);border:2px solid #0006;padding:0}.p5-sw button.on{outline:3px solid #fff;outline-offset:1px}
+.p5-ch{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:0 0 8px}.p5-ch button{padding:6px 10px;border-radius:999px;border:1.5px solid #ffffff2a;background:#0004;color:#fff;font:800 .76rem Nunito,sans-serif}.p5-ch button.on{background:#fff;color:#1a1a1a}
+.p5-bpbtn{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 112px);z-index:31;padding:9px 18px;border-radius:999px;border:2px solid #7ab0ff;background:#0a1a3ae6;color:#e8f2ff;font:900 .85rem Nunito,sans-serif;box-shadow:0 4px 14px #0006}

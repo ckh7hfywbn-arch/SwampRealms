@@ -1751,6 +1751,23 @@
   R("x_compostbin", "Compost Bin", { compostbin: 1 }, { planks: 4, fiber: 6 }, { bench: true, d: "Turns Fiber or Leaves into Bog Compost." });
   R("x_duckcoop", "Duck Coop", { duckcoop: 1 }, { planks: 20, fiber: 10, stone: 6 }, { bench: true, d: "A home for up to 4 Bog Ducks on your homestead." });
   R("x_mudbarn", "Mud Barn", { mudbarn: 1 }, { planks: 36, stone: 16, bogiron: 3 }, { bench: true, d: "A home for up to 4 Mud Pigs and Frost Goats on your homestead." });
+  // PHASE 5 (sandbox.js PHASE 5): the Greenhouse, paints, the House Sign, the Trophy Plaque, the Waterfall Spout, a custom Banner, the Blueprint Scroll
+  item("greenhouse", "Greenhouse", { tile: T.PLANKS, d: "A 4 x 3 glasshouse for your homestead. Crops within 3 tiles of it grow as if it were their best season, even in winter." });
+  R("x_greenhouse", "Greenhouse", { greenhouse: 1 }, { glass: 12, planks: 10, ironingot: 2 }, { bench: true, d: "Crops near it grow in any season." });
+  [["paint_red", "Red Paint", "dyered"], ["paint_blue", "Blue Paint", "dyeblue"], ["paint_green", "Green Paint", "dyegreen"], ["paint_yellow", "Yellow Paint", "sulfur"], ["paint_white", "White Paint", "quartz"], ["paint_black", "Black Paint", "charcoal"], ["paint_pink", "Pink Paint", "marshlily"], ["paint_purple", "Purple Paint", "amethyst"]].forEach(function (q) {
+    item(q[0], q[1], { d: "Hold it and tap (or drag across) any block, back wall or piece of furniture to paint it. One use per block. Sandpaper takes paint off." });
+    R("x_" + q[0], q[1] + " (16)", (function () { var o = {}; o[q[0]] = 16; return o; })(), (function () { var o = { clay: 1 }; o[q[2]] = 1; return o; })(), { d: "Paints any block, wall or furniture. Sandpaper takes it off again." });
+  });
+  item("blueprint", "Blueprint Scroll", { d: "Hold it and tap two corners to save a build. Then tap the Blueprints button to place a copy anywhere, paid from your bag." });
+  R("x_blueprint", "Blueprint Scroll", { blueprint: 1 }, { fiber: 4, stick: 2, dyeblue: 1 }, { d: "Save a build and place copies of it." });
+  deco("housesign", "House Sign", "#c88a52", function (rect) { rect(7, 6, 2, 10, "#6a4426"); rect(2, 2, 12, 7, "#c88a52"); rect(2, 2, 12, 1, "#e8b070"); rect(2, 8, 12, 1, "#6a4426"); rect(4, 4, 3, 3, "#4aa84a"); rect(5, 3, 1, 1, "#7ae07a"); rect(8, 4, 4, 1, "#3a2410"); rect(8, 6, 3, 1, "#3a2410"); });
+  deco("plaque", "Trophy Plaque", "#c8a04a", function (rect) { rect(3, 2, 10, 12, "#6a4426"); rect(4, 3, 8, 10, "#9a6a3a"); rect(4, 3, 8, 1, "#c8925a"); rect(5, 13, 6, 2, "#c8a04a"); rect(6, 14, 4, 1, "#ffe08a"); rect(2, 4, 1, 8, "#4a2a14"); rect(13, 4, 1, 8, "#4a2a14"); }, 0, null, "wall");
+  deco("waterspout", "Waterfall Spout", "#6ac8e8", function (rect) { rect(3, 4, 10, 5, "#7a7a72"); rect(3, 4, 10, 1, "#9a9a92"); rect(5, 8, 6, 3, "#5a5a54"); rect(6, 10, 4, 2, "#6ac8e8"); rect(7, 11, 2, 5, "#9ae0ff"); rect(4, 5, 2, 2, "#4a8a4a"); }, 0, null, "wall");
+  deco("flagbanner", "Custom Banner", "#d83a3a", function (rect) { rect(2, 0, 12, 2, "#6a4426"); rect(3, 2, 10, 11, "#d83a3a"); rect(3, 13, 3, 3, "#d83a3a"); rect(10, 13, 3, 3, "#d83a3a"); rect(6, 13, 4, 1, "#d83a3a"); rect(6, 5, 4, 4, "#ffd23f"); }, 0, null, "wall");
+  Dc("x_d_housesign", "Town", "House Sign", { housesign: 1 }, { planks: 3, stick: 2 }, "Put it inside a house you built (walls all round, a door, a light and some furniture) and tap it to invite someone to live there, or to ask Croaker to rate it.");
+  Dc("x_d_plaque", "Wall Art", "Trophy Plaque", { plaque: 1 }, { planks: 3, goldbar: 1 }, "Hang it on a wall and tap it holding a boss trophy, a rare fish or a ribbon to mount it. Tap it with your pick to take it down.");
+  Dc("x_d_waterspout", "Garden & Curios", "Waterfall Spout", { waterspout: 1 }, { stone: 6, ironingot: 1, glass: 1 }, "A stone spout that pours a waterfall down to the ground below. Just for looks: the water never floods.");
+  Dc("x_d_flagbanner", "Wall Art", "Custom Banner", { flagbanner: 1 }, { cloth: 3, stick: 2 }, "Hang it and tap it to design it: colours, a pattern and an emblem. You can fly the same design on your boat.");
   var PRES = {};   // PRESERVES: one jar per crop
   Object.keys(CROPS).forEach(function (k) { var pk = CROPS[k].produce, I = ITEMS[pk]; if (!I || ITEMS["pres_" + pk]) return; PRES[pk] = "pres_" + pk;
     item("pres_" + pk, I.n + " Preserves", { food: Math.round((I.food || 6) * 2), heal: (I.heal || 0) + 4, cooked: 1, pb: pk, pc: CROPS[k].fruit });

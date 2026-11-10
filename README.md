@@ -1135,3 +1135,25 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Bartholomew (#52):** the lost fourth sibling, a castaway on Castaway Rock. Bring him home with his hat.
   - **Swamp Radio (#53):** a new decor piece (Decor Workbench, Music). Croaker's Call-In (callers change with what you've done), Weather & Tides, and Swamp Tunes (plays like a jukebox).
   - **The mailbox (#54):** by your camp. A letter from the family most mornings, sometimes with a gift.
+- **Phase 5: Homestead, economy and town (roadmap #55–#68).** State lives in `S.p5` (see `PHASE 5` in sandbox.js).
+  - **Market prices (#55):** the Shipping Crate now pays seasonal prices: crops in season sell for 15% less, out-of-season crops for 35% more, and one **hot pick** a day sells for double. The price is fixed on the day you ship.
+  - **Greenhouse (#56):** a 4 x 3 glasshouse (Workbench: 12 Glass, 10 Planks, 2 Iron Ingots). Crops within 3 tiles of it grow as if it were their best season, even in winter.
+  - **Hybrid crops (#57):** two different crops planted side by side can cross when you harvest: Fire Carrot, Frostato, Glowmelon, Moon Pumpkin, Lotus Leek and Sunbean Corn. Each gives a buff when eaten and sells well. Side quest "Mad Botanist".
+  - **Living scarecrows (#58):** place a Scarecrow on the homestead. At night it wakes up (glowing eyes, waving straw hands), crops within 4 tiles grow 25% faster, and it chats when tapped.
+  - **Pet houses and moods (#59):** name your coops and barns, rename animals, and every animal has a mood (happy, content, hungry, lonely) shown in a bubble over its head. Lonely animals lose friendship; happy ones sometimes leave a bonus.
+  - **Harvest Festival (#60):** giant Croak Pumpkins are weighed when harvested. On the last day of Fall, enter your heaviest at the Sky Village for a ribbon and gold.
+  - **Food combos (#61):** eat different foods within 3 minutes to stack Mending, Swiftness, Fortune and Brute Strength (up to a 5-food Feast combo).
+  - **More secrets (#62):** five new secret brews and two secret dishes made from hybrid crops, found by experimenting.
+  - **Village shops (#63):** Sky Village shops gain new stock at Liked and Honoured with the villagers.
+  - **Frog Bank (#64):** Penny Puddlewig's counter in the Sky Village. 2% interest every morning on up to 5,000 Silver. Side quest "Nest Egg".
+  - **Reputation (#65):** Sky Villagers, Brinebog Pirates, Miners' Lodge and Farmers' Guild, from Stranger to Legend, with rewards at every rank (the Guild also raises crop prices). Shown in the Journal's Lore tab.
+  - **Bartleby the merchant beetle (#66):** turns up on some days with four rare items, and leaves at dusk.
+  - **Town building (#67):** put a **House Sign** inside a house you built (closed in, a door, a light, two pieces of furniture) and tap it to invite a friend: Bartholomew, Nibbles or the Constable, Rook, Old Finn, or any Sky Villager who is your best friend. They live there.
+  - **House rating (#68):** ask Croaker to rate a house from 1 to 5 stars (size, variety of decor, lights, back walls), with rewards for each new best.
+- **Phase 6: Building and player expression (roadmap #69–#74).**
+  - **Paint (#69):** 8 paints (by hand: a dye or mineral + Clay makes 16) colour any block, back wall or furniture. Sandpaper takes paint off. Paints are new entries at the end of `STAINS` (`all: 1`).
+  - **Waterfalls (#70):** a Waterfall Spout pours an animated waterfall down to the next solid block, with foam (decor only, never floods).
+  - **Trophy Plaque (#71):** mount a boss trophy, a rare or legendary fish, a hybrid crop or a ribbon on the wall.
+  - **Blueprints (#72):** hold a Blueprint Scroll, tap two corners to save a build (up to 24 x 16), then use the Blueprints button to place a copy, paid from your bag.
+  - **Music Box (#73):** now plays every song you have heard, not just its lullaby.
+  - **Custom banners and flags (#74):** design a banner (12 colours, 6 patterns, 9 emblems) and fly the same design on your boat's mast.
