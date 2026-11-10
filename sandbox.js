@@ -16864,7 +16864,7 @@
   // Crafted things take the rarity of their rarest ingredient, raised by the tool/weapon/armor tier they are and the Workbench level they need.
   // Gathered things go by how deep or far you find them (a block's pick tier, the fish's rarity) and a few hand-picked ones (RARX).
   var RARN = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"], RARC = ["#c9d3cf", "#5fd36a", "#4aa8ff", "#b46cff", "#ffad2e", "#ff5a8c"];
-  var RARX = { stick: 0, fiber: 0, pebble: 0, wood: 0, planks: 0, leaves: 0, mud: 0, clippers: 0, torch: 0, spore: 1, glowcap: 0, cinder: 1, basalt: 1, frostrock: 1, crystal: 2, ironingot: 2, ironore: 1, goldbar: 3, gold: 3, quartz: 2, glass: 1, brass: 2,
+  var RARX = { stick: 0, fiber: 0, pebble: 0, wood: 0, planks: 0, leaves: 0, mud: 0, clippers: 0, torch: 0, bottle: 0, clearglass: 0, nails: 0, spore: 1, glowcap: 0, cinder: 1, basalt: 1, frostrock: 1, crystal: 2, ironingot: 2, ironore: 1, goldbar: 3, gold: 3, quartz: 2, glass: 1, brass: 2,
     moonstone: 3, amethyst: 3, ruby: 3, sapphire: 3, amber: 2, starore: 4, starsteel: 4, realmstone: 4, swamptoken: 2, silvercoin: 1, goldcoin: 2, bugfrag: 1, frogscale: 2, batwing: 1, x_drill: 3, x_jet: 3, x_grap3: 3, x_detect: 2, prospect: 2, x_mallet: 1 };
   var RARM = {}, RARR = null;
   function rarRecRaw(r) {

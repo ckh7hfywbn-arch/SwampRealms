@@ -1120,3 +1120,4 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Item card:** it replaces the old hint, like the crafting card: a big icon tile, the name, a rarity tag, the stack count, a short description, and the actions (a gold Hold button, then To hotbar, Split, Drop).
   - **Phones:** Sort and Quick stack get their own row under the title, and the item card sticks to the bottom so its buttons are always in reach.
 - **Torches are Common** (`RARX.torch = 0`): they were showing as Uncommon in the backpack and the crafting list.
+- **Glass Bottle, Clear Glass and Iron Nails are Common** too (`RARX`).
