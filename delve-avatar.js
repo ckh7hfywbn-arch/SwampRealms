@@ -122,8 +122,16 @@ var DelveAv = (function () {
     AN[k] = { x0: 7, y0: 5, eyes: [[9, 11], [12, 11]], hy: 8, hw: 8, fy: [11, 8], ring: [16, 12], mask: [13, 8], leg: Pp.leg, head: personHead(Pp.style, Pp.extra) };
     COL[k] = Pp.skin; IRIS[k] = Pp.eye;
   });
-  function palFor(a) {
-    var base = COL[a], skin = base;
+  function palFor(a, o) {   // o.col: a body colour chosen in the Delve Wardrobe; o.pat: a molting path (tree, bull, dart, glass)
+    var P0 = palBase(a, o && !PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.col || "") ? o.col : COL[a]); if (!o || PEOPLE[a]) return P0;
+    if (o.pat === "tree") { P0.r = "#ff3b30"; P0.g = "#f2e08a"; }
+    else if (o.pat === "bull") { P0.g = "#f2d86a"; P0.d = dk(P0.b, 0.42); }
+    else if (o.pat === "dart") { P0.d = "#14141c"; P0.g = dk(P0.b, 0.25); P0.r = "#10131a"; }
+    else if (o.pat === "glass") { P0.g = "#f4fff8"; P0.l = lt(P0.b, 0.5); }
+    return P0;
+  }
+  function palBase(a, base) {
+    var skin = base;
     if (PEOPLE[a]) { var Pp = PEOPLE[a]; return { b: base, l: lt(base, 0.25), d: dk(base, 0.18), w: "#f6f6ee", k: "#10131a", n: lt("#e88a8a", 0.1), m: base, y: "#ffb830", x: "#d97a10", g: "#f1ead0", skin: skin, sl: lt(base, 0.1), sd: dk(base, 0.25), h: Pp.hair, e: dk(Pp.hair, 0.3), r: Pp.eye, q: "#9a4a4a", f: dk(base, 0.28), s: dk(base, 0.18) }; }
     return { b: base, l: lt(base, 0.3), d: dk(base, 0.32), w: "#f6f6ee", k: "#10131a", n: "#e8a0a0", m: a === "donkey" ? "#d9d5e6" : a === "monkey" ? "#e8c9a0" : base, y: "#ffb830", x: "#d97a10", g: "#f1ead0", skin: skin, sl: lt(base, 0.22), sd: dk(base, 0.3), h: "#1c1613", e: "#2e2018", r: "#ff3b30", s: "#a8433f" };
   }
@@ -361,7 +369,7 @@ var DelveAv = (function () {
 
   // ---------- arms ----------
   function armRows(o, a) {   // 8 rows of [left colour, right colour]
-    var s = SHIRTS[o.shirt] || SHIRTS[""], P = palFor(a), rows = [], sl = s.sl, i;
+    var s = SHIRTS[o.shirt] || SHIRTS[""], P = palFor(a, o), rows = [], sl = s.sl, i;
     for (i = 0; i < 8; i++) {
       if (i < sl) {
         var c = s.sleeve, cc = [c[0], c[2]];
@@ -397,7 +405,7 @@ var DelveAv = (function () {
   }
   function armUp(B, x, y, rows) { var c0 = B.cur; rows.forEach(function (r, i) { B.cur = r.lay || 1; B.p(x, y - i, r[0]); B.p(x + 1, y - i, r[1]); }); B.cur = c0; }   // an arm raised above the shoulder (hand on top)
   function drawBack(o, PO) {
-    var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a), by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i, y;
+    var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a, o), by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i, y;
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null, s = SHIRTS[shirt] || SHIRTS[""];
     B.cur = 1;
     // legs and the backs of the shoes (heels)
@@ -449,7 +457,7 @@ var DelveAv = (function () {
   // ---------- main frame ----------
   function drawFrame(o, pose, withArm) {
     if (POSE[pose] && POSE[pose].back) return drawBack(o, POSE[pose]);
-    var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a), PO = POSE[pose] || POSE.idle0, by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i;
+    var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a, o), PO = POSE[pose] || POSE.idle0, by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i;
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null;
     B.cur = 9; if (o.neck === "cape") CAPE_BACK(B, by, /^(walk|run)/.test(pose) ? (PO.by < 0 ? 1 : 0) : 0);
     B.cur = 2; if (shirt === "hoodie") { B.r(7, 16 + by, 8, 3, "#4a2a9a"); B.p(7, 16 + by, "#6a3fc4"); }
@@ -581,7 +589,7 @@ var DelveAv = (function () {
     }
     return o;
   }
-  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
+  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.col || "", o.pat || "", o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
   var CACHE = {};
   function sprite(o, animal, s) {
     o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); s = Math.max(1, s | 0);
