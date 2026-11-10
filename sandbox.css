@@ -372,10 +372,10 @@ body.sbx-app footer{margin-top:28px}
 }
 
 /* ---- Control size option (Options > Touch controls). --cs is set on the stage from the saved setting. ---- */
-.sbx-pad .lr{transform:scale(var(--cs,1));transform-origin:left bottom}
-.sbx-pad .jump{transform:scale(var(--cs,1));transform-origin:right bottom}
-.sbx-pad .jump.on{transform:scale(calc(var(--cs,1) * .95))}
-.sbx-joy{transform:scale(var(--cs,1));transform-origin:left bottom}
+.sbx-pad .lr{transform-origin:left bottom}
+.sbx-pad .jump{transform-origin:right bottom}
+.sbx-pad .jump.on{transform:scale(.95)}
+.sbx-joy{transform-origin:left bottom}
 .sbx-dock{transform:translateX(-50%) scale(var(--ds,var(--cs,1)));transform-origin:50% 100%}
 /* Crafting station window (tap a Workbench / Furnace / Loom / Mason's Table). --stn = the station's colour */
 .sbx-sbox{--stn:#4ee6b4;width:min(520px,100%);height:min(640px,100%);background:linear-gradient(180deg,#0b1a15f8,#050e0bfc);border-color:color-mix(in srgb,var(--stn) 60%,transparent);box-shadow:0 20px 60px -12px #000,0 0 34px -14px var(--stn)}
@@ -724,7 +724,7 @@ body.sbx-app footer{margin-top:28px}
 @media (prefers-reduced-motion:reduce){.sbx-tip{animation:none}.sbx-menubtn.pulse{animation:none;box-shadow:0 0 0 3px rgba(78,230,180,.5)}.sbx-card.flash{animation:none;box-shadow:0 0 0 2px #4ee6b4}}
 /* phones: the backpack and Journal buttons sit beside the health bar, so all 9 hotbar slots fit across the full width */
 @media(max-width:480px){
- .sbx-dock{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:5px;width:calc(100% - 12px)}
+ .sbx-dock{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:5px;width:calc(100% - 12px)}
  .sbx-dcol{display:contents}
  .sbx-dock .sbx-vrow{grid-column:1;grid-row:1;min-width:0}
  .sbx-dock .sbx-packbtn{grid-column:2;grid-row:1}
@@ -2265,3 +2265,49 @@ small.bo-cost{display:flex}
 .op-tomenu:active{transform:translateY(2px);box-shadow:0 2px 0 #0a2219}
 .op-tomenu svg{width:26px;height:26px;flex:none}
 .op-tomenu b{display:block;font:900 1.05rem Nunito,sans-serif}.op-tomenu small{display:block;opacity:.75;font:700 .78rem Nunito,sans-serif}
+
+/* ===== HUD BUTTONS (Nov 2026): Crafting and Backpack sit under the mini-map; the Journal and Options are small buttons beside Emotes ===== */
+.sbx-ibtns{pointer-events:auto;align-items:center}
+.sbx-sbtn{width:34px;height:34px;border-radius:11px}.sbx-sbtn svg{width:19px;height:19px}
+.sbx-mbtns{display:flex;gap:7px;justify-content:flex-end;pointer-events:auto;margin-top:2px}
+.sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:50px;height:50px;border-radius:15px}
+.sbx-mbtns .sbx-packbtn svg,.sbx-mbtns .sbx-menubtn svg{width:24px;height:24px}
+.sbx-menubtn{border-color:rgba(242,193,78,.6);color:#ffe9a8;background:linear-gradient(160deg,#2a200ae6,#0a0805d9);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px -10px #000,0 0 18px -8px #f2c14e}
+.sbx-packbtn{border-color:rgba(78,230,180,.55);color:#c8fff4;background:linear-gradient(160deg,#07120fe6,#030806d9);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px -10px #000,0 0 18px -10px #4ee6b4}
+.sbx-mbtns .sbx-kb{position:absolute;left:auto;right:-4px;bottom:-5px;width:auto;height:auto;padding:2px 4px;border-radius:6px;background:#0a120ee6;border:1px solid #ffffff22;font-size:.58rem;color:#f6eedb}
+@media(max-width:600px){.sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:42px;height:42px;border-radius:13px}.sbx-mbtns{gap:6px}.sbx-sbtn{width:32px;height:32px}}
+@media(max-height:520px) and (orientation:landscape){.sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:42px;height:42px}.sbx-sbtn{width:32px;height:32px}}
+.sbx-stage.paused .sbx-mbtns,.sbx-stage.paused .sbx-ibtns{visibility:hidden}
+/* the Crafting window: a title instead of Journal tabs */
+.sbx-ptitle{display:flex;align-items:center;gap:9px;margin:0;padding:4px 6px;font:900 1.12rem Nunito,sans-serif;letter-spacing:.02em;color:#ffe9a8}
+.sbx-ptitle svg{width:22px;height:22px;color:#f2c14e}
+/* PHONES: the quest tracker is a small Quests button */
+.sbx-trail.mini{width:auto;min-width:0;grid-template-columns:auto auto auto;gap:3px 6px;padding:5px 9px 6px;border-radius:12px}
+.sbx-trail.mini svg{width:16px;height:16px;color:var(--qc)}
+.sbx-trail.mini b{font-size:.74rem}
+.sbx-trail.mini em{font-size:.64rem}
+.sbx-trail.mini .bar{grid-column:1/-1}
+.sbx-ctl>.sbx-joy{width:132px;height:132px}
+.sbx-stage.lay-ed .sbx-ctl>.sbx-joy{display:block!important}
+.ly-sh small{display:block;font:700 .72rem Nunito,sans-serif;opacity:.75}
+/* OPTIONS: section buttons, then one page per section */
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.op-secbtn{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;padding:14px;border-radius:16px;border:1px solid #4ee6b433;background:linear-gradient(160deg,#0f2a20,#08140f);color:#eafff5;text-align:left;cursor:pointer;box-shadow:0 4px 0 #04100b}
+.op-secbtn:hover{border-color:#4ee6b499}.op-secbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #04100b}
+.op-si{grid-row:1/3;display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:#4ee6b41f;color:#4ee6b4}.op-si svg{width:24px;height:24px}
+.op-secbtn b{font:900 1rem Nunito,sans-serif}.op-secbtn small{font:700 .74rem Nunito,sans-serif;opacity:.7;line-height:1.25}
+.op-sechead{display:flex;align-items:center;gap:12px;margin:0 0 12px}.op-sechead h2{margin:0;font:900 1.15rem Nunito,sans-serif;color:#eafff5}
+.op-back{display:inline-flex;align-items:center;gap:4px}.op-back svg{width:16px;height:16px}
+@media(max-width:600px){.op-grid{grid-template-columns:1fr 1fr;gap:8px}.op-secbtn{padding:11px;column-gap:9px}.op-si{width:36px;height:36px}.op-secbtn small{display:none}.op-si{grid-row:auto}}
+.op-card h3:empty{display:none}
+/* ITEM RARITY: a glow in the rarity colour around craft tiles (Common stays plain) */
+.crg-t.rar-1,.crg-t.rar-2,.crg-t.rar-3,.crg-t.rar-4,.crg-t.rar-5{border-color:color-mix(in srgb,var(--rc) 70%,transparent);box-shadow:inset 0 0 14px -4px var(--rc),0 0 12px -5px var(--rc)}
+.crg-t.rar-3,.crg-t.rar-4,.crg-t.rar-5{box-shadow:inset 0 0 18px -4px var(--rc),0 0 16px -4px var(--rc)}
+.crg-t.rar-4,.crg-t.rar-5{animation:rarGlow 2.6s ease-in-out infinite}
+@keyframes rarGlow{50%{box-shadow:inset 0 0 22px -3px var(--rc),0 0 22px -3px var(--rc)}}
+.crg-t[class*="rar-"]:not(.rar-0) span{color:color-mix(in srgb,var(--rc) 55%,#f6eedb)}
+.crg-t.crg-lock[class*="rar-"]:not(.rar-0),.crg-t.crg-own[class*="rar-"]:not(.rar-0){animation:none;border-color:color-mix(in srgb,var(--rc) 38%,transparent);box-shadow:inset 0 0 10px -5px var(--rc),0 0 8px -6px var(--rc)}
+.crg-t.on[class*="rar-"]{box-shadow:0 0 0 2px var(--stn,#4ee6b4),inset 0 0 16px -4px var(--rc),0 8px 18px -8px var(--stn,#4ee6b4)}
+.crg-big[class*="rar-"]:not(.rar-0){box-shadow:inset 0 0 16px -4px var(--rc),0 0 0 1px color-mix(in srgb,var(--rc) 60%,transparent)}
+.rar-tag{display:inline-block;margin:2px 0 3px;padding:1px 7px;border-radius:999px;font:900 .62rem/1.5 Nunito,sans-serif;font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--rc);background:color-mix(in srgb,var(--rc) 16%,transparent);border:1px solid color-mix(in srgb,var(--rc) 45%,transparent)}
+@media (prefers-reduced-motion:reduce){.crg-t.rar-4,.crg-t.rar-5{animation:none}}

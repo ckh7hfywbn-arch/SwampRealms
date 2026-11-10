@@ -183,6 +183,9 @@
    ["x_jet", "Swamp-Gas Jetpack", "Carry it: keep holding jump at the top of a jump to fly on swamp gas. It refuels on the ground."],
    ["x_grap2", "Grapple Upgrade: Mk II", "Your grapple reaches half again as far and swings: pump with left and right, reel with up and down, jump to fling off."],
    ["x_grap3", "Grapple Upgrade: Mk III", "Double reach, and the hook bites into tree leaves and trunks too."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
+  // REED CLIPPERS: tree leaves only drop Leaves when you carry a pair (sticks still fall out with your paws). Made by hand from paw materials.
+  if (!ITEMS.clippers) { ITEMS.clippers = { n: "Reed Clippers", d: "Carry them and tree leaves you break drop Leaves too, for beds, packs, vests and rugs." }; if (ORDER.indexOf("clippers") < 0) ORDER.push("clippers"); }
+  RECIPES.push({ id: "clippers", n: "Reed Clippers", out: { clippers: 1 }, cost: { stick: 2, fiber: 2, pebble: 1 }, d: "Two sharpened pebbles lashed to sticks. Carry them and tree leaves you break drop Leaves (without them you only get Sticks). Made by hand." });
   // MESSAGE IN A BOTTLE: washes up on the tide flats at low tide (one a day at most). Hold it and tap on land to read it: it marks a Captain's Cache.
   if (!ITEMS.x_bottle) { ITEMS.x_bottle = { n: "Message in a Bottle", tmap: 1, bottle: 1, d: "Washed up on the tide flats. Hold it on land and tap to uncork it: someone wrote down where they buried something." }; if (ORDER.indexOf("x_bottle") < 0) ORDER.push("x_bottle"); }
   [["starore", "Star Ore", "A chunk of a fallen meteor, still faintly warm. Smelt it into Starsteel at a Stone Furnace."], ["starsteel", "Starsteel Ingot", "Metal from the sky: light, blue-white and harder than iron. The Lily Belle's best upgrades are made of it."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2], gem: q[0] === "starore" ? "#9ad8ff" : "#d8f0ff" }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
@@ -232,20 +235,20 @@
     { ch: 0, id: "stick", n: "Gather Sticks", d: "Hold on tree leaves to punch them. Leaves sometimes drop Sticks. Murkwater tree trunks can be chopped with your paws for Wood too.", need: 5, v: function () { return S.st.stick; }, tg: [T.LEAVES] },
     { ch: 0, id: "fiber", n: "Gather Reed Fiber", d: "Snip cattails by the water, or the vines hanging under tree leaves.", need: 3, v: function () { return S.st.fiber; }, tg: [T.REED, T.VINE], rw: { stick: 2 } },
     { ch: 0, id: "pebble", n: "Dig for Pebbles", d: "Dig mud with your paws. Pebbles pop out now and then.", need: 2, v: function () { return S.st.pebble; }, tg: [T.MOSS, T.MUD], rw: { fiber: 1 } },
-    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open your Journal (E or the Journal button), tap Craft, then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { stick: 3 } },
-    { ch: 0, id: "spear", n: "Arm Yourself", d: "Night brings creatures. Craft the Reed Spear in the Journal (Sticks, Reed Fiber, Pebbles), pick it in the hotbar and hold to swing.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { pebble: 2 } },
-    { ch: 0, id: "campfire", n: "Make Camp", d: "Chop 4 Wood from a tree trunk (your paws work on Murkwater trees; other trees need your pick), craft a Campfire in the Journal and place it on the ground. Its light keeps the dark back.", need: 1, v: function () { return S.st.campfires || 0; }, tg: [T.LOG], rw: { fiber: 3 } },
+    { ch: 0, id: "pick1", n: "Craft the Reed Pick", d: "Open Crafting (E or the hammer button under the map), then make your first tool.", need: 1, v: function () { return S.tier >= 1 ? 1 : 0; }, rw: { stick: 3 } },
+    { ch: 0, id: "spear", n: "Arm Yourself", d: "Night brings creatures. Craft the Reed Spear in Crafting (Sticks, Reed Fiber, Pebbles), pick it in the hotbar and hold to swing.", need: 1, v: function () { return S.wpn >= 1 ? 1 : 0; }, rw: { pebble: 2 } },
+    { ch: 0, id: "campfire", n: "Make Camp", d: "Chop 4 Wood from a tree trunk (your paws work on Murkwater trees; other trees need your pick), craft a Campfire (Crafting, the hammer button) and place it on the ground. Its light keeps the dark back.", need: 1, v: function () { return S.st.campfires || 0; }, tg: [T.LOG], rw: { fiber: 3 } },
     { ch: 0, id: "sleepbag", n: "A Place to Sleep", d: "Craft a Sleeping Bag (Reed Fiber and Sticks) and roll it out next to your campfire.", need: 1, v: function () { return S.st.sleepbags || 0; }, tg: [T.REED, T.VINE], rw: { torch: 4 } },
     { ch: 0, id: "night1", n: "Your First Night", d: "When night falls, stand next to your Sleeping Bag and tap Sleep (or press F). You wake at dawn healed, and the bag becomes your respawn point.", need: 1, v: function () { return S.st.sleeps; }, rw: { planks: 6 } },
     // ---- Chapter 2: food, farm and shelter ----
     { ch: 1, id: "wood", n: "Chop Wood", d: "Hold on a tree trunk with your pick (or paws, on Murkwater trees). Chop the bottom to fell the whole tree. You need 8 Wood.", need: 8, v: function () { return S.st.wood; }, tg: [T.LOG], deep: 8, rw: { fiber: 4 } },
-    { ch: 1, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in the Journal, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
+    { ch: 1, id: "bench", n: "Build a Workbench", d: "Craft a Bog Workbench in Crafting, pick it in the hotbar, then tap the ground to place it. Tap it later to open it.", need: 1, v: function () { return S.st.benches; }, rw: { torch: 4 } },
     { ch: 1, id: "lights", n: "Light the Dark", d: "Place 4 torches. They stick to walls and floors. More torches are made from Sticks and Glowcaps (the glowing mushrooms) or Glowspore.", need: 4, v: function () { return S.st.torches; }, rw: { planks: 8 } },
     { ch: 1, id: "eat", n: "Grab a Bite", d: "Your hunger bar (under your health) slowly empties. Redcap Mushrooms grow wild in the swamp. Pick food in the hotbar, then tap to eat.", need: 1, v: function () { return S.st.eaten; }, rw: { seed_carrot: 4, farmgate: 1 } },
     { ch: 1, id: "plant", n: "Plant a Garden", d: "Place your Farm Gate and step through to your homestead. Till the mud with a Reed Hoe (made by hand), then plant Swamp Carrot Seeds. Watered soil, or soil next to the pond, grows crops twice as fast.", need: 3, v: function () { return S.st.planted; }, rw: { seed_potato: 2 } },
     { ch: 1, id: "harvest", n: "First Harvest", d: "When a crop on your homestead shows its ripe produce, tap it to pick it. You get food, plus seeds to plant again. Ship spares in the crate for Silver Coins.", need: 1, v: function () { return S.st.harvests; }, rw: { stone: 8, clay: 4 } },
     { ch: 1, id: "cook", n: "Home Cooking", d: "Make a Cooking Pot at your Bog Workbench, place it, tap it and cook a meal. Cooked food fills you up far more than raw food, and it heals you.", need: 1, v: function () { return S.st.cooked; }, rw: { torch: 6 } },
-    { ch: 1, id: "bed", n: "A Real Bed", d: "Time to trade the Sleeping Bag up. Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp.", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
+    { ch: 1, id: "bed", n: "A Real Bed", d: "Time to trade the Sleeping Bag up. Craft a Swamp Bed (Planks, Fiber, Leaves) and place it on solid ground near camp. Tree leaves only drop Leaves while you carry Reed Clippers (made by hand from Sticks, Fiber and a Pebble).", need: 1, v: function () { return S.st.beds; }, rw: { torch: 4 } },
     { ch: 1, id: "door", n: "Close the Door", d: "Craft a Swamp Door and place it in a doorway. Closed doors keep bugs, frogs and bats out.", need: 1, v: function () { return S.st.doors; }, rw: { planks: 6 } },
     { ch: 1, id: "stash", n: "Stash Your Loot", d: "Craft a Wooden Chest, place it at camp, open it and store 10 items.", need: 10, v: function () { return S.st.stashed; }, rw: { planks: 8 } },
     { ch: 1, id: "fishing", n: "Gone Fishing", d: "Craft a Reed Fishing Rod by hand, pick it in the hotbar and tap a lake to cast. When the bobber dips and a ! shows, tap again to reel in.", need: 1, v: function () { return S.st.fish; }, rw: { bogminnow: 2, stick: 2 } },
@@ -372,8 +375,8 @@
     sq("bless1", "Explorer", 1, "Blessed", "Receive a Blessing from the Rune Altar in a Stone Circle.", 1, st("blessings"), { tonic_luck: 1 }),
     sq("bless3", "Explorer", 2, "Stone Whisperer", "Receive 3 Blessings.", 3, st("blessings"), { starshard: 1 }),
     sq("wish1", "Explorer", 1, "Make a Wish", "Toss an Ancient Coin into a Wishing Well.", 1, st("wishes"), { goldfeather: 1 }),
-    sq("bld4", "Explorer", 2, "Grand Tour", "Step inside the Tavern, the Igloo, the Tea House and the Sun Temple.", 4, function () { return ["tavern", "igloo", "teahouse", "suntemple"].filter(function (k) { return S.vis["k_" + k]; }).length; }, { ancientcoin: 2, cloth: 3 }),
-    sq("temple1", "Explorer", 3, "Tomb Raider", "Open the treasure chest in a Sun Temple.", 1, st("templeLoot"), { ruby: 2 }),
+    sq("bld4", "Explorer", 2, "Grand Tour", "Step inside the Tavern, the Igloo, the Tea House and the Sun Temple. They stand in the new lands past Frostfen and Ember Bog.", 4, function () { return ["tavern", "igloo", "teahouse", "suntemple"].filter(function (k) { return S.vis["k_" + k]; }).length; }, { ancientcoin: 2, cloth: 3 }),
+    sq("temple1", "Explorer", 3, "Tomb Raider", "Open the treasure chest in a Sun Temple, out in the new lands past Ember Bog and Frostfen.", 1, st("templeLoot"), { ruby: 2 }),
     sq("whut1", "Explorer", 2, "Something Bubbling", "Step inside a Witch Hut, deep in Murkwater.", 1, function () { return S.vis.k_witchhut ? 1 : 0; }, { bottle: 4 }),
     sq("whut2", "Explorer", 3, "Witch's Hoard", "Raid a Witch's Chest.", 1, st("wchests"), { hexdust: 2 }),
     sq("glide500", "Explorer", 3, "Riding the Thermals", "Glide 500 tiles with the Emberfly Wings.", 500, st("glided"), { tonic_leap: 1 }),
@@ -549,11 +552,11 @@
     { id: "left", n: "Move left", d: ["a", "ArrowLeft"] }, { id: "right", n: "Move right", d: ["d", "ArrowRight"] },
     { id: "jump", n: "Jump / climb", d: [" ", "w", "ArrowUp"] }, { id: "down", n: "Down / drop", d: ["s", "ArrowDown"] },
     { id: "dodge", n: "Dodge roll", d: ["Shift", "c"] }, { id: "use", n: "Use / interact", d: ["f"] }, { id: "swap", n: "Swap to pick", d: ["q"] },
-    { id: "journal", n: "Journal", d: ["e"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
+    { id: "craft", n: "Crafting", d: ["e"] }, { id: "journal", n: "Journal", d: ["j"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
     { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "bore", n: "Bore Drill on/off", d: ["z"] }, { id: "emote", n: "Emotes", d: ["t"] }
   ];
   var KEYMAP = { b: {}, wait: "" };
-  try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); } catch (e) {}
+  try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); if (KEYMAP.b.journal && !KEYMAP.b.craft) { KEYMAP.b.craft = KEYMAP.b.journal; delete KEYMAP.b.journal; } } catch (e) {}   // a key picked for the old Journal (which held crafting) now opens Crafting
   function keySave() { try { localStorage.setItem("swamp-delve-keys", JSON.stringify(KEYMAP.b)); } catch (e) {} }
   function keyNorm(k) { return k && k.length === 1 ? k.toLowerCase() : k; }
   function keyLabel(k) { return k === " " ? "Space" : k && k.length === 1 ? k.toUpperCase() : (k || "").replace("Arrow", "\u2190\u2192\u2191\u2193".charAt(["Left", "Right", "Up", "Down"].indexOf((k || "").replace("Arrow", ""))) || ""); }
@@ -643,7 +646,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 1, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 2 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 1, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 5, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 3 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
   // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
   // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
@@ -681,7 +684,7 @@
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
     if (o.wv === SW.WORLDVER) {   // BIOME VARIANTS: a save from before them keeps its land exactly; only land made from now on can be a variant
       var bvo = o.bvar && typeof o.bvar === "object" ? o.bvar : null;
-      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: bvo.sp >= 2 ? 2 : bvo.sp ? 1 : 0 } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
+      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: clamp(bvo.sp | 0, 0, 3) } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
     }
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
@@ -1191,7 +1194,14 @@
     return PCOL.v;
   }
   function recalc(x) {   // first row that counts as ground/roof (sets sky light and the dark backwall). World-generated trunks are scenery, so they never count: no backwall appears under a tree when you chop it.
-    for (var y = 0; y < H; y++) { var i = y * W + x, id = tiles[i]; if (opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i]) && !(rmask && rmask[i] === id)) { col[x] = y; return; } }   // generated buildings are scenery: sky light passes them
+    var roof = function (y) { var i = y * W + x, id = tiles[i]; return opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i]) && !(rmask && rmask[i] === id); };
+    var gt = world && world.top ? world.top[x] - 4 : -1;
+    for (var y = 0; y < H; y++) { if (!roof(y)) continue;
+      if (y < gt) {   // FLOATING ISLANDS (the Sky Village, the Cinder Aerie, sky platforms) cast no shade on the land far below: a solid layer high above the ground with a tall open drop under it does not count as a roof
+        var e = y; while (e + 1 < H && roof(e + 1)) e++; var gap = 0; while (e + 1 + gap < H && gap < 8 && !roof(e + 1 + gap)) gap++;
+        if (gap >= 8) { y = e; continue; }
+      }
+      col[x] = y; return; }   // generated buildings are scenery: sky light passes them
     col[x] = H;
   }
   var editN = 0;
@@ -1348,6 +1358,11 @@
     var lo = 0, ok = function (d) { return !boxHit(nx, y - d) && !boxHit(p.x, y - d); };
     for (var d = 0.03; d <= 0.62; d += 0.03) { if (ok(d)) { for (var k = 0; k < 8; k++) { var m = (lo + d) / 2; if (ok(m)) d = m; else lo = m; } return d; } lo = d; }   // (refined to a hair, so you stay on the slope instead of popping up and dropping back)
     return -1;
+  }
+  function nearFree(x, y) {   // the closest spot within 0.75 sideways and 1.1 up where your box fits, or null
+    var best = null, bd = 9;
+    for (var dy = 0; dy <= 1.1; dy += 0.05) for (var dx = -0.75; dx <= 0.75; dx += 0.05) { var d = dx * dx + dy * dy * 1.4; if (d >= bd) continue; if (!boxHit(x + dx, y - dy)) { bd = d; best = [x + dx, y - dy]; } }
+    return best;
   }
   function settleDown(x, lo, hi) {   // lo is free, hi hits: the lowest free height between them (to a hair)
     if (!boxHit(x, hi)) return hi;
@@ -2396,6 +2411,7 @@
       g.fillStyle = "#ffffff88"; g.beginPath(); g.moveTo(16, 4); g.lineTo(21, 14); g.lineTo(16, 14); g.lineTo(11, 14); g.closePath(); g.fill();
       g.strokeStyle = "#00000055"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(16, 4); g.lineTo(26, 14); g.lineTo(16, 28); g.lineTo(6, 14); g.closePath(); g.stroke();
     } else if (id === "door") { g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, T.DOORO_T * 16, 16, 16, 8, 1, 16, 15); g.drawImage(ATLAS, 0, T.DOORO_B * 16, 16, 16, 8, 16, 16, 15); }
+    else if (id === "leaves" && world && world.bio) { var lx = Math.floor((SW.SPAWNX || W / 2)), lcv = null; try { lcv = crownPaint([lx, 6], lx, 6, lx, 6, 1); } catch (e) {} if (lcv) { g.imageSmoothingEnabled = false; g.drawImage(lcv, 11, 11, 26, 26, 1, 1, 30, 30); } else g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, 2, 2, 28, 28); }   // the same art as leaves in the world (crownPaint)
     else { var t = ITEMS[id].tile; if (MATF[t]) g.drawImage(matIcon(t), 2, 2); else g.drawImage(ATLAS, 0, t * 16, 16, 16, 2, 2, 28, 28); }
     return (ICO[key] = c.toDataURL());
   }
@@ -2625,6 +2641,7 @@
   function breakTile(x, y) {   // GROUND DROPS + FELLING + LEAF DECAY wrap the real break below
     var id0 = get(x, y), fell = id0 === T.LOG && !cave ? treeAbove(x, y).length : 0;
     var vein = !VEIN.busy && !cave && TILES[id0] && TILES[id0].kind === "ore" && veinOn();
+    LEAFPL = id0 === T.LEAVES && !!(S.pleaf && S.pleaf[y * W + x]);   // leaves you placed: they come back, but give no Sticks or saplings
     if (id0 === T.LEAVES && S.pleaf) delete S.pleaf[y * W + x];
     DROPMODE++; try { breakTile0(x, y); } finally { DROPMODE--; }
     if (vein) veinStart(x, y, id0, false);
@@ -2632,8 +2649,9 @@
     if (fell) fellTree(x, y);
     if (id0 === T.LOG || id0 === T.LEAVES) leafCheck(x, y, 6);
   }
+  var LEAFPL = false;
   function breakTile0(x, y) {
-    var id = get(x, y), td = TILES[id];
+    var id = get(x, y), td = TILES[id], pl = LEAFPL; LEAFPL = false;
     if (rmask && x >= 0 && x < W && y >= 0 && y < H) rmask[y * W + x] = 0;
     if (td && td.gpart && garageBreak(x, y)) return;   // GARAGE: comes down all at once
     if (id === T.REALMORE) { S.st.realm++; if (S.st.realm === 1) toast("Realmstone! It hums like it wants to be somewhere else.", "#8affe0"); }
@@ -2662,10 +2680,10 @@
     if (SDROP[id] && ITEMS[SDROP[id][0]] && Math.random() < SDROP[id][1]) give(SDROP[id][0], 1, x, y - 0.6);   // wild plants sometimes drop crop seeds
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id);
     matBreak(id);
-    if (td.drop) { var n = dropQty(td); give(td.drop, n, x, y); if (td.kind === "ore") { snd("coin"); if (gem("pick", "amethyst") && Math.random() < 0.15) { give(td.drop, 1, x, y); text(x + 0.5, y, "x2", "#e0a0ff"); } if (hasCharm("lode") && Math.random() < 0.25) { give(td.drop, 1, x, y); text(x + 0.5, y - 0.3, "+1", "#ff8a7a"); } } }
+    if (td.drop && !(id === T.LEAVES && !pl && !(S.inv.clippers > 0))) { var n = dropQty(td); give(td.drop, n, x, y); if (td.kind === "ore") { snd("coin"); if (gem("pick", "amethyst") && Math.random() < 0.15) { give(td.drop, 1, x, y); text(x + 0.5, y, "x2", "#e0a0ff"); } if (hasCharm("lode") && Math.random() < 0.25) { give(td.drop, 1, x, y); text(x + 0.5, y - 0.3, "+1", "#ff8a7a"); } } }
     if (td.bonus) td.bonus.forEach(function (bq) { if (Math.random() < bq[1]) give(bq[0], bq[2] + Math.floor(Math.random() * (bq[3] - bq[2] + 1)), x, y - 0.4); });   // loot blocks (geode, fossil, cache)
-    if (id === T.LEAVES && Math.random() < 0.5) give("stick", 1, x, y - 0.55);
-    if (id === T.LEAVES && ITEMS.sapling && Math.random() < 0.06) give("sapling", 1, x + 0.3, y - 0.55);   // trees grow back now                                  // Stage 1: sticks from leaves
+    if (id === T.LEAVES && !pl && Math.random() < 0.5) give("stick", 1, x, y - 0.55);
+    if (id === T.LEAVES && !pl && ITEMS.sapling && Math.random() < 0.06) give("sapling", 1, x + 0.3, y - 0.55);   // trees grow back now                                  // Stage 1: sticks from leaves
     else if ((id === T.MUD || id === T.MOSS) && Math.random() < 0.16) give("pebble", 1, x, y - 0.55);         // Stage 1: pebbles from mud
     if (id === T.LOG && get(x, y - 1) === T.LOG) { /* upper trunk stays; keep it simple and forgiving */ }
   }
@@ -2735,7 +2753,8 @@
   }
   function place(tx, ty, item) {
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
-    setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); if (TILES[ITEMS[item].tile] && TILES[ITEMS[item].tile].solid && S.shape[ty * W + tx] === undefined) { S.shape[ty * W + tx] = 0; shapeCount(); }   // AUTO RAMPS: a block you place is always a full block (only untouched ground slopes) S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
+    setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); if (TILES[ITEMS[item].tile] && TILES[ITEMS[item].tile].solid && S.shape[ty * W + tx] === undefined) { S.shape[ty * W + tx] = 0; shapeCount(); }   // AUTO RAMPS: a block you place is always a full block (only untouched ground slopes)
+    S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
     if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
@@ -9706,6 +9725,7 @@
   (function () {
     SPR.grapple = { r: ["................", "..........aa....", ".........a..a...", "........abba....", ".......abbb.....", "......gbb.......", ".....gg.........", "....gl..........", "...gg...........", "..gl.l..........", ".gg..g..........", ".g...gl.........", ".gl...g.........", "..gg.gg.........", "...ggl..........", "................"], p: { a: "#cfd6dc", b: "#7a8290", g: "#4f8a3c", l: "#8fd06a" } };
     SPR.x_drill = { r: ["................", "........aaaa....", ".......abbbba...", "......abccccba..", ".....abcddddcba.", "....abcdeeedcba.", "...abcdeffedcba.", "..abcdeffffedca.", "..abcdefffedcba.", "...abcdeeedcba..", "....abcdddcba...", ".....abcccba....", "......abbba.....", ".......aaa......", "................", "................"], p: { a: "#3a3e44", b: "#6b7279", c: "#9aa3ab", d: "#c9cdd2", e: "#f2c14e", f: "#ff8a3d" } };
+    SPR.clippers = { r: ["................", ".a...........a..", ".ba.........ab..", "..ba.......ab...", "...ba.....ab....", "....ba...ab.....", ".....babab......", "......aca.......", ".....ddcdd......", "....dd...dd.....", "...dd.....dd....", "..ee.......ee...", ".eef.......fee..", ".eef.......fee..", "..ee.......ee...", "................"], p: { a: "#5a6068", b: "#c8d2da", c: "#3a2a1a", d: "#8a5a32", e: "#2f9a6a", f: "#58d68b" } };
     SPR.x_detect = { r: ["................", "..........aaa...", ".........abbba..", "..........aaa...", "..........a.....", ".........a......", "........a.......", ".......a........", "......a.........", ".....a..........", "...ccccc........", "..cdddddc.......", "..cdeeedc.......", "..cdddddc.......", "...ccccc........", "................"], p: { a: "#6b7279", b: "#ff4a5a", c: "#3a3e44", d: "#9aa3ab", e: "#4ee6b4" } };
     SPR.x_jet = { r: ["................", "....aa....aa....", "...abba..abba...", "...abba..abba...", "...abcaaaacba...", "...abccddccba...", "...abccddccba...", "...abccccccba...", "...abba..abba...", "...aeea..aeea...", "....ff....ff....", "....gf....fg....", ".....g....g.....", "................", "................", "................"], p: { a: "#3a3e44", b: "#7fd06a", c: "#5a9a4a", d: "#f2c14e", e: "#6b7279", f: "#9fe86a", g: "#d8ffb0" } };
     SPR.x_grap2 = { r: ["................", "...........aa...", "..........abba..", "..........abba..", "...........aa...", "..........c.....", ".........c......", "........c.......", ".......c........", "......c.........", ".....c..........", "....c...........", "...dd...........", "..deed..........", "...dd...........", "................"], p: { a: "#9aa0ac", b: "#d8dde4", c: "#5fa83f", d: "#c8925a", e: "#f2c14e" } };
@@ -10652,7 +10672,7 @@
     if (v !== qh.v) { qh.v = v; qh.t = 0; } else if (!panelOpen && !sleepT) qh.t += 0.5;
     var rc = QRC[q.id], r = rc && recById(rc), st = r && recStatus(r), ready = !!(st && st.ready && !st.owned && !stnOf(r));
     if (btn) btn.classList.toggle("pulse", ready && !panelOpen);
-    if (ready && !qh.said[q.id] && !panelOpen) { qh.said[q.id] = 1; showTip("You have everything for the " + r.n + "! Open your Journal (" + (coarse ? "the book button" : "E") + ") or tap Show me.", rc, "#4ee6b4"); }
+    if (ready && !qh.said[q.id] && !panelOpen) { qh.said[q.id] = 1; showTip("You have everything for the " + r.n + "! Open Crafting (" + (coarse ? "the hammer button" : "E") + ") or tap Show me.", rc, "#4ee6b4"); }
     if (q.ch <= 1 && qh.t >= 70 && !qh.stuck[q.id] && !panelOpen) { qh.stuck[q.id] = 1; trailNudge(); }   // stuck a while: the tracker (which says how, and opens the recipe when tapped) pulses
   }
   // ---------- PACING: saplings and bad-luck protection ----------
@@ -11395,24 +11415,33 @@
     var pc = Math.round(v * 100);
     return '<span class="pz-vol"><button type="button" data-opt="' + key + ':-1" aria-label="' + esc(label) + ' down"' + (pc <= 0 ? " disabled" : "") + '>&minus;</button><span class="pz-meter" aria-hidden="true"><i style="width:' + pc + '%"></i></span><b>' + (pc ? pc + "%" : "Off") + '</b><button type="button" data-opt="' + key + ':1" aria-label="' + esc(label) + ' up"' + (pc >= 100 ? " disabled" : "") + ">+</button></span>";
   }
-  function settingsRows() {   // shared by the pause menu's Settings and Journal > Options
-    var r = function (name, hint, ctl) { return '<div class="pz-row"><div><b>' + name + "</b>" + (hint ? "<small>" + hint + "</small>" : "") + "</div>" + ctl + "</div>"; };
+  function optRow(name, hint, ctl) { return '<div class="pz-row"><div><b>' + name + "</b>" + (hint ? "<small>" + hint + "</small>" : "") + "</div>" + ctl + "</div>"; }
+  function setAudio() { var r = optRow;
     return r("Music", "Changes with the land you are in.", optVol("mus", MUS.on ? MUS.vol : 0, "Music volume"))
       + r("Sound effects", "Digging, footsteps, hits and chimes.", optVol("fx", OPT.fx, "Sound effects volume"))
-      + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
-      + r("Full screen", "Fills the whole screen. Delve does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
+      + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume")); }
+  function setGfx() { var r = optRow;
+    return r("Full screen", "Fills the whole screen. Delve does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
-      + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality"))
-      + '<h3 class="pz-sub">Accessibility</h3>'
-      + r("Colour-blind mode", "Shifts the game's colours so reds, greens and blues are easier to tell apart.", optSeg("cb", OPT.cb, [["off", "Off"], ["p", "Protan"], ["d", "Deutan"], ["t", "Tritan"]], "Colour-blind mode"))
+      + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality")); }
+  function setAccess() { var r = optRow;
+    return r("Colour-blind mode", "Shifts the game's colours so reds, greens and blues are easier to tell apart.", optSeg("cb", OPT.cb, [["off", "Off"], ["p", "Protan"], ["d", "Deutan"], ["t", "Tritan"]], "Colour-blind mode"))
       + r("Text size", "Makes menus, messages and the Journal bigger.", optSeg("tx", OPT.tx, [[1, "Normal"], [1.15, "Large"], [1.3, "Larger"]], "Text size"))
       + r("Reduce motion", "Turns off spins, bobbing and camera sway. System follows your device setting.", optSeg("motion", OPT.motion, [["sys", "System"], ["on", "On"], ["off", "Off"]], "Reduce motion"))
-      + r("Lightning flashes", "Off keeps storms from lighting up the whole screen.", optSeg("flash", OPT.flash ? 1 : 0, [[1, "On"], [0, "Soft"]], "Lightning flashes"))
-      + '<h3 class="pz-sub">Controls</h3>' + keymapRows();
+      + r("Lightning flashes", "Off keeps storms from lighting up the whole screen.", optSeg("flash", OPT.flash ? 1 : 0, [[1, "On"], [0, "Soft"]], "Lightning flashes")); }
+  function settingsRows() {   // the pause menu's Settings: everything on one page
+    return setAudio() + setGfx() + '<h3 class="pz-sub">Accessibility</h3>' + setAccess() + '<h3 class="pz-sub">Controls</h3>' + keymapRows();
+  }
+  var OPTSEC = "";
+  function optIcon(k) {
+    var P = { home: '<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/>', eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>', snd: '<path d="M4 9.5h4L13 5v14l-5-4.5H4z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/>',
+      keys: '<rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M7.5 14h9"/>', acc: '<circle cx="12" cy="4.5" r="1.8"/><path d="M5 8.5l7 1.5 7-1.5M12 10v4.5l-3 6M12 14.5l3 6"/>', char: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/>',
+      mp: '<circle cx="8.5" cy="8.5" r="3.2"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M2.8 19.5c.8-3.3 3-5 5.7-5s4.9 1.7 5.7 5M14.2 14.8c2.6-.6 5.6.8 6.6 4.2"/>', dev: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13"/>' }[k] || "";
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P + "</svg>";
   }
   var FSPEND = null;
   function fsWant() { if (FSPEND !== null) return FSPEND; try { return window.__gfs && window.__gfs.active ? 1 : 0; } catch (e) { return 0; } }
@@ -11446,8 +11475,8 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
-        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Crafting</dd><dt>J</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Hammer button</dt><dd>Crafting</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
     B.innerHTML = '<button type="button" class="pz-resume" data-pz="resume"><span class="pz-ri">' + ttIcon("play") + "</span><b>Resume</b><kbd>Esc</kbd></button>"
@@ -11475,7 +11504,7 @@
     if (a === "resume") return closePause();
     if (a === "back") { pauseView = "main"; renderPause(); var f = pzEl.querySelector("[data-pz=set]"); if (f) f.focus({ preventScroll: true }); return; }
     if (a === "set" || a === "keys") { pauseView = a; renderPause(); var b = pzEl.querySelector("[data-pz=back]"); if (b) b.focus({ preventScroll: true }); return; }
-    if (a === "journal" || a === "allopts") { closePause(); pauseBack = true; openPanel(a === "allopts" ? "more" : undefined); return; }
+    if (a === "journal" || a === "allopts") { closePause(); pauseBack = true; openPanel(a === "allopts" ? "more" : tab === "craft" || tab === "chest" ? "quests" : undefined); return; }
     if (a === "title") { closePause(); return openTitle(); }
     if (a === "photo") return openPhoto();
   }
@@ -12004,7 +12033,7 @@
   function craft(id) {
     var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
     if (id === "x_grap2" && (S.grapLv | 0) >= 1) { nag("Your grapple already has the Mk II upgrade."); return; } if (id === "x_grap3" && (S.grapLv | 0) < 1) { nag("Install the Mk II upgrade first."); return; } if (id === "x_grap3" && (S.grapLv | 0) >= 2) { nag("Your grapple is already Mk III."); return; }
-    if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
+    if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet" || id === "clippers") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     if (r.tier && S.tier >= r.tier) return;
     if (r.wpn && S.wpn >= r.wpn) return;
@@ -12140,7 +12169,8 @@
       { el: "sbxTrail", t: "Your goal right now", d: "It says what to do and how to do it. Tap it any time to see all your quests." },
       { el: "sbxBar", t: "Your hotbar", d: coarse ? "Tap a tool or an item to hold it, then hold your finger on the world to use it." : "Click a slot (or press 1 to 9) to hold a tool or item, then hold the mouse on the world to use it." },
       { el: "sbxPackBtn", t: "Your backpack", d: "Everything you carry, plus your armor, weapon and charms." },
-      { el: "sbxMenuBtn", t: "Your journal", d: "Quests, crafting, the map, your collections and the settings. Most things start here." },
+      { el: "sbxMenuBtn", t: "Crafting", d: "Make tools, gear, blocks and furniture from what you gather. It glows when you can make what your quest needs." },
+      { el: "sbxJrnBtn", t: "Your journal", d: "Quests, your log, awards, lore and the world map." },
       coarse ? { el: "sbxPad", t: "Moving around", d: "Walk with the arrows (or drag the stick) and jump with the big button. Hold on blocks to dig, chop and build." }
              : { el: null, t: "Moving around", d: "Walk with A and D, jump with Space. Hold the mouse on blocks to dig, chop and build. F opens doors, chests and caves." },
       { el: null, t: "That's it!", d: "Follow the goal in the top corner, and the gold ring shows you what to dig. You'll pick up the rest as you go. Have fun!" }
@@ -12234,7 +12264,14 @@
   function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
     var el = $("sbxTrail"), q = MAIN[S.qi], side = !q; if (side) q = bestSide();
     if (!q) { if (!el.hidden) el.hidden = true; return; }
-    var v = Math.min(q.need, Math.floor(q.v())), key = q.id + ":" + v; if (key === trailKey) return; trailKey = key;
+    var v = Math.min(q.need, Math.floor(q.v())), mini = PHONEQ.matches, key = q.id + ":" + v + (mini ? ":m" : ""); if (key === trailKey) return; trailKey = key;
+    el.classList.toggle("mini", mini);
+    if (mini) {   // PHONES: a small Quests button (with how far along the current quest is) that opens the quest book on it
+      el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c); el.title = q.n; el.setAttribute("aria-label", "Quests. Now: " + q.n + ", " + v + " of " + q.need);
+      el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/></svg><b>Quests</b><em>' + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>';
+      return;
+    }
+    el.removeAttribute("aria-label");
     el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c);
     el.title = side ? "Side quest" : "Chapter " + (q.ch + 1) + ": " + CHAPTERS[q.ch].n;
     var tip = !side && q.ch <= 2 && !OPT.notips ? trailTip(q) : ""; el.classList.toggle("tip", !!tip);   // NEW PLAYERS: the first chapters say how, right on the tracker
@@ -12527,7 +12564,7 @@
     // vertical
     var ny = p.y + p.vy * h, vpre = p.vy; p.on = false;
     if (!boxHit(p.x, ny) && !(p.vy > 0 && leafLand(p.x, p.y, ny))) p.y = ny;
-    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0; while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1;
+    else if (p.vy > 0) { p.y = Math.floor(ny); var g = 0, nf = boxHit(p.x, p.y) ? nearFree(p.x, p.y) : null; if (nf) { p.x = nf[0]; p.y = nf[1]; } else while (boxHit(p.x, p.y) && g++ < 4) p.y -= 1;   // NO TELEPORTS: stuck in a block, you slip to the nearest free spot (a little sideways or up), never up through it
       if (g > 1 && p.x !== PX0 && !boxHit(PX0, Math.floor(ny))) { p.x = PX0; p.y = Math.floor(ny); }   /* NO TELEPORTS: overlapping a wall on landing never pops you up onto it; you go back to where you stood */ if (SHAPEN && ny > p.y) p.y = settleDown(p.x, p.y, ny); p.on = true; p.vy = 0; if (bounceAt(vpre)) { /* PLAYGROUND: boing */ } else if (vpre > FALL_SAFE && !p.wet && !gliding && !fx("feather") && !hasCharm("feather")) hurt(Math.round((vpre - FALL_SAFE) * FALL_DMG), "fall"); if (vpre > 8) { p.land = Math.min(0.28, vpre / 70); dust(Math.min(10, Math.round(vpre / 3))); }
       if (vpre > 3.5 && !reduce) { p.sq = -Math.min(0.3, (vpre - 2) / 48); p.sqv = 0; }
       if (vpre > 7) { landPuff(vpre); var gid = get(Math.floor(p.x), Math.floor(p.y + 0.2)); matStep(gid, Math.min(1, (vpre - 5) / 16)); if (vpre > 16) thud(70, Math.min(0.12, (vpre - 14) / 90)); } }
@@ -15053,12 +15090,29 @@
       var fog = mixC(cc, sk[1], 0.5 - L2 * 0.2); cc = mixC(cc, fog, 0.55 * (1 - L2 * 0.3));
       g.fillStyle = rgb(mixC([6, 12, 20], cc, 0.2 + 0.8 * day)); g.beginPath(); g.moveTo(-12, Math.min(vh, skyCut + ts));
       var hst = 12 / ts, hwq = Math.floor((cam.x * par - (vw / 2 + 12) / ts) / hst) * hst;   // land-fixed sample grid (no shimmer while walking)
+      var RIDGE = [];
       for (var sx2 = -12; sx2 <= vw + 24; hwq += hst) {
         sx2 = vw / 2 + (hwq - cam.x * par) * ts; var wx = hwq, sm = Math.sin(wx * f2) * amp + Math.sin(wx * f2 * 2.3 + 1) * amp * 0.4;
         var jag = (1 - Math.abs(Math.sin(wx * f2 * 1.7 + L2))) * amp * 1.1, pk = Math.abs(Math.sin(wx * f2 * 1.2 + L2 * 2)) * amp * 1.0;
-        g.lineTo(sx2, oy + (base + sm * bw[0] + (jag - amp * 0.4) * bw[1] - (pk - amp * 0.3) * bw[2]) * ts);
+        var ry = oy + (base + sm * bw[0] + (jag - amp * 0.4) * bw[1] - (pk - amp * 0.3) * bw[2]) * ts; g.lineTo(sx2, ry); RIDGE.push(sx2, ry);
       }
-      g.lineTo(vw + 12, Math.min(vh, skyCut + ts)); g.closePath(); g.fill();   // PERF: the hills stop just under the lowest ground line (the ground hides the rest)
+      g.lineTo(vw + 12, Math.min(vh, skyCut + ts)); g.closePath(); g.fill();
+      // RICHER BACKDROP: each hill layer gets a sunlit rim along its ridge, a soft shade band under it, and (nearer layers) a fringe of
+      // distant treetops, so the hills read as land with depth instead of flat cut-outs
+      if (above > 0.05) {
+        var rimC = mixC(mixC(cc, sk[0], 0.5), [255, 236, 190], 0.25 * day), shC = mixC(cc, [4, 10, 16], 0.35);
+        g.save(); g.beginPath(); g.moveTo(RIDGE[0], RIDGE[1]); for (var rq = 2; rq < RIDGE.length; rq += 2) g.lineTo(RIDGE[rq], RIDGE[rq + 1]);
+        g.globalAlpha = (0.22 + 0.18 * day) * above; g.strokeStyle = rgb(rimC); g.lineWidth = Math.max(1, ts * (0.1 + L2 * 0.04)); g.lineJoin = "round"; g.stroke();
+        if (L2 >= 1) {   // treetop fringe: little rounded crowns along the ridge, dark below and lit on top
+          var fs = ts * (0.5 + L2 * 0.25);
+          for (rq = 0; rq < RIDGE.length; rq += 2) { var wq = Math.round((cam.x * par) + (RIDGE[rq] - vw / 2) / ts); if (SW.hash(wq, L2, 77) < 0.45) continue; var fr = fs * (0.6 + SW.hash(wq, L2, 78) * 0.7);
+            g.globalAlpha = above * (0.85 - L2 * 0.1); g.fillStyle = rgb(mixC(cc, shC, 0.4)); g.beginPath(); g.arc(RIDGE[rq], RIDGE[rq + 1] + fr * 0.35, fr, 0, 6.2832); g.fill();
+            g.globalAlpha = above * (0.18 + 0.16 * day); g.fillStyle = rgb(rimC); g.beginPath(); g.arc(RIDGE[rq] - fr * 0.25, RIDGE[rq + 1] + fr * 0.05, fr * 0.55, 0, 6.2832); g.fill(); }
+        }
+        var shg = g.createLinearGradient(0, oy + (base - amp * 0.4) * ts, 0, oy + (base + amp * 0.9) * ts); shg.addColorStop(0, "rgba(0,0,0,0)"); shg.addColorStop(1, "rgba(" + (shC[0] | 0) + "," + (shC[1] | 0) + "," + (shC[2] | 0) + "," + (0.28 * above).toFixed(3) + ")");
+        g.globalAlpha = 1; g.fillStyle = shg; var shy = oy + (base - amp * 0.4) * ts; if (shy < skyCut) g.fillRect(0, shy, vw, Math.min(skyCut - shy, (amp * 1.3) * ts));
+        g.restore();
+      }   // PERF: the hills stop just under the lowest ground line (the ground hides the rest)
       // mist pooled on top of this layer: farther layers fade into the sky colour (atmospheric perspective)
       var fy0 = oy + (base - amp * 1.6) * ts, fgr = g.createLinearGradient(0, fy0, 0, fy0 + ts * 9);
       fgr.addColorStop(0, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)"); fgr.addColorStop(0.45, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + "," + ((0.3 - L2 * 0.07) * above).toFixed(3) + ")"); fgr.addColorStop(1, "rgba(" + (sk[1][0] | 0) + "," + (sk[1][1] | 0) + "," + (sk[1][2] | 0) + ",0)");
@@ -15068,11 +15122,18 @@
         for (var tk = k0; tk <= k1; tk++) {
           var tx = tk * 16 + SW.hash(tk, 3, 9) * 8, th = 11 + SW.hash(tk, 4, 9) * 9, tw = 5.5 + SW.hash(tk, 5, 9) * 4, tsx = vw / 2 + (tx - cam.x * par) * ts, tby = oy + (base + 3) * ts, tty = tby - th * ts;
           if (tsx < -tw * ts * 2 || tsx > vw + tw * ts * 2) continue;
-          g.globalAlpha = bw[0] * above; g.fillStyle = rgb(tcol);
-          g.beginPath(); g.moveTo(tsx - ts * 0.9, tby); g.quadraticCurveTo(tsx - ts * 0.35, tby - th * ts * 0.5, tsx - ts * 0.3, tty); g.lineTo(tsx + ts * 0.3, tty); g.quadraticCurveTo(tsx + ts * 0.35, tby - th * ts * 0.5, tsx + ts * 0.9, tby); g.fill();
-          for (var cb = 0; cb < 4; cb++) { var cxx = tsx + (cb - 1.5) * tw * ts * 0.42, cyy = tty + Math.abs(cb - 1.5) * ts * 0.9; g.beginPath(); g.ellipse(cxx, cyy, tw * ts * 0.5, tw * ts * 0.26, 0, 0, 6.2832); g.fill(); }
-          g.fillStyle = rgb(rim); g.globalAlpha = bw[0] * above * 0.5; g.beginPath(); g.ellipse(tsx - tw * ts * 0.1, tty - tw * ts * 0.12, tw * ts * 0.55, tw * ts * 0.07, 0, 0, 6.2832); g.fill();
-          g.globalAlpha = bw[0] * above * 0.8; g.strokeStyle = rgb(tcol); g.lineWidth = Math.max(1, ts * 0.07);
+          var tA = bw[0] * above * 0.7, lit = mixC(rim, [255, 240, 200], 0.2 * day), mid = mixC(tcol, rim, 0.35);
+          g.globalAlpha = tA; g.fillStyle = rgb(tcol);
+          g.beginPath(); g.moveTo(tsx - ts * 1.1, tby); g.quadraticCurveTo(tsx - ts * 0.35, tby - th * ts * 0.45, tsx - ts * 0.28, tty); g.lineTo(tsx + ts * 0.28, tty); g.quadraticCurveTo(tsx + ts * 0.35, tby - th * ts * 0.45, tsx + ts * 1.1, tby); g.fill();
+          g.fillStyle = rgb(mid); g.globalAlpha = tA * 0.6; g.fillRect(tsx - ts * 0.22, tty, ts * 0.12, th * ts * 0.7);   // a lit stripe up the trunk
+          var CB = [];   // the crown: a dome of overlapping round clumps
+          for (var cb = 0; cb < 13; cb++) { var ang = Math.PI * (0.05 + 0.9 * (cb / 12)), rr2 = tw * ts * (0.2 + SW.hash(tk, cb, 12) * 0.12), dd = tw * ts * (0.34 + SW.hash(tk, cb, 13) * 0.18);
+            CB.push([tsx - Math.cos(ang) * dd, tty - Math.sin(ang) * dd * 0.55 + ts * 0.6, rr2]); }
+          CB.push([tsx, tty - tw * ts * 0.12, tw * ts * 0.32]);
+          g.globalAlpha = tA; g.fillStyle = rgb(tcol); CB.forEach(function (c) { g.beginPath(); g.arc(c[0], c[1], c[2], 0, 6.2832); g.fill(); });
+          g.fillStyle = rgb(mid); g.globalAlpha = tA * 0.7; CB.forEach(function (c) { g.beginPath(); g.arc(c[0] - c[2] * 0.18, c[1] - c[2] * 0.22, c[2] * 0.72, 0, 6.2832); g.fill(); });
+          g.fillStyle = rgb(lit); g.globalAlpha = tA * (0.35 + 0.25 * day); CB.forEach(function (c) { if (c[1] > tty + ts * 0.2) return; g.beginPath(); g.arc(c[0] - c[2] * 0.35, c[1] - c[2] * 0.42, c[2] * 0.36, 0, 6.2832); g.fill(); });
+          g.globalAlpha = bw[0] * above * 0.6; g.strokeStyle = rgb(tcol); g.lineWidth = Math.max(1, ts * 0.06);
           for (var vn = 0; vn < 6; vn++) { var vx = tsx + (vn - 2.5) * tw * ts * 0.2, vl = (1.2 + SW.hash(tk, vn, 11) * 2.8) * ts; g.beginPath(); g.moveTo(vx, tty + ts * 0.8); g.lineTo(vx + Math.sin(now / 1400 + vn + tk) * ts * 0.12, tty + ts * 0.8 + vl); g.stroke(); }
           g.globalAlpha = 1;
         }
@@ -16491,7 +16552,7 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "x_mallet prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
+    ["Tools|Utility", "clippers x_mallet prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
     ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3"],
     ["Tools|Arrows", "x_arrow x_firearrow x_ar_venom x_ar_numb x_ar_sleep x_ar_mark x_ar_spark x_ar_blast x_ar_leech"],
     ["Tools|Adventuring", "x_grapple"],
@@ -16611,9 +16672,41 @@
     for (i = 0; i < recs.length; i++) if (cgState(recs[i]) !== "own") return recs[i];
     return recs[0] || null;
   }
+  // ---------- ITEM RARITY: Common, Uncommon, Rare, Epic, Legendary, Mythic ----------
+  // Crafted things take the rarity of their rarest ingredient, raised by the tool/weapon/armor tier they are and the Workbench level they need.
+  // Gathered things go by how deep or far you find them (a block's pick tier, the fish's rarity) and a few hand-picked ones (RARX).
+  var RARN = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"], RARC = ["#c9d3cf", "#5fd36a", "#4aa8ff", "#b46cff", "#ffad2e", "#ff5a8c"];
+  var RARX = { stick: 0, fiber: 0, pebble: 0, wood: 0, planks: 0, leaves: 0, mud: 0, clippers: 0, spore: 1, glowcap: 0, cinder: 1, basalt: 1, frostrock: 1, crystal: 2, ironingot: 2, ironore: 1, goldbar: 3, gold: 3, quartz: 2, glass: 1, brass: 2,
+    moonstone: 3, amethyst: 3, ruby: 3, sapphire: 3, amber: 2, starore: 4, starsteel: 4, realmstone: 4, swamptoken: 2, silvercoin: 1, goldcoin: 2, bugfrag: 1, frogscale: 2, batwing: 1, x_drill: 3, x_jet: 3, x_grap3: 3, x_detect: 2, prospect: 2, x_mallet: 1 };
+  var RARM = {}, RARR = null;
+  function rarRecRaw(r) {
+    var T6 = [0, 0, 1, 2, 3, 4, 5], lv = r.tier || r.wpn || r.arm || r.bow || r.rod || r.hoe || r.bucket || 0;
+    var m = 0; Object.keys(r.cost || {}).forEach(function (k) { m = Math.max(m, rarItem(k)); });
+    if (lv) m = Math.max(m, T6[Math.min(6, lv)]); if (r.bag) m = Math.max(m, r.bag);
+    if (r.charm) m = Math.max(m, 2); if (r.bl) m = Math.max(m, Math.min(4, r.bl - 1)); if (r.need >= 3) m = Math.max(m, r.need - 1);
+    return Math.min(5, m);
+  }
+  function rarRec(r) { var k = r.out ? Object.keys(r.out)[0] : ""; if (k && RARX[k] !== undefined) return RARX[k]; if (/Realm Gate|Heart of the Swamp/.test(r.n || "")) return 5; return rarRecRaw(r); }
+  function rarItem(id) {
+    if (RARM[id] !== undefined) return RARM[id]; RARM[id] = 0;   // (guards against recipes that loop)
+    var v = 0, it = ITEMS[id] || {}, n = (it.n || id) + "";
+    if (RARX[id] !== undefined) v = RARX[id];
+    else {
+      if (!RARR) { RARR = {}; RECIPES.concat(typeof DECOR !== "undefined" ? DECOR : []).forEach(function (r) { if (r.out) Object.keys(r.out).forEach(function (k) { if (!RARR[k]) RARR[k] = r; }); }); }
+      if (RARR[id]) v = rarRecRaw(RARR[id]);
+      else if (typeof FMETA !== "undefined" && FMETA[id]) v = { c: 0, u: 1, r: 2, l: 4 }[FMETA[id][1]] || 0;
+      else if (it.tile !== undefined && TILES[it.tile]) v = Math.max(0, Math.min(4, (TILES[it.tile].tier | 0) - 1));
+      else if (/^charm_/.test(id)) v = 2;
+      if (/star|celestial|dragon|ancient|legend|crown|heart of|realm|phoenix|void/i.test(n)) v = Math.max(v, 4);
+      else if (/ruby|sapphire|amethyst|emerald|moonstone|diamond|gold|trophy|relic/i.test(n)) v = Math.max(v, 3);
+      else if (/iron|copper|silver|brass|quartz|crystal|pearl|ingot|scute|ambergris|antler/i.test(n)) v = Math.max(v, 1);
+    }
+    return (RARM[id] = Math.max(0, Math.min(5, v)));
+  }
+  function rarTag(n) { return '<em class="rar-tag" style="--rc:' + RARC[n] + '">' + RARN[n] + "</em>"; }
   function cgTile(r, on) {
-    var v = recVis(r), c = cgState(r), lbl = r.n + (c === "ready" ? ", ready to craft" : c === "own" ? ", owned" : c === "lock" ? ", locked" : "");
-    return '<button type="button" class="crg-t crg-' + c + (on ? " on" : "") + '" data-csel="' + r.id + '" aria-pressed="' + !!on + '" aria-label="' + esc(lbl) + '"><img alt="" src="' + v.im + '"><span>' + esc(r.n) + "</span>" + (c === "lock" ? '<i class="crg-lk" aria-hidden="true"></i>' : c === "own" ? '<i class="crg-ok" aria-hidden="true"></i>' : "") + "</button>";
+    var rr = rarRec(r), v = recVis(r), c = cgState(r), lbl = r.n + (c === "ready" ? ", ready to craft" : c === "own" ? ", owned" : c === "lock" ? ", locked" : "");
+    return '<button type="button" class="crg-t crg-' + c + " rar-" + rr + (on ? " on" : "") + '" style="--rc:' + RARC[rr] + '" data-csel="' + r.id + '" aria-pressed="' + !!on + '" aria-label="' + esc(lbl + ", " + RARN[rr]) + '"><img alt="" src="' + v.im + '"><span>' + esc(r.n) + "</span>" + (c === "lock" ? '<i class="crg-lk" aria-hidden="true"></i>' : c === "own" ? '<i class="crg-ok" aria-hidden="true"></i>' : "") + "</button>";
   }
   function cgCost(cost) {   // the ingredients as little slots: picture, then have / need
     var pool = chestPool();
@@ -16631,7 +16724,8 @@
     else { note = "Still need " + miss.join(", ") + "."; btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
     var desc = c === "lock" ? "" : r.d ? itShort(r.d, 150) : "", rep = "";
     var ok2 = cgOwnKey(r); if (c === "own" && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
-    return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big"><img alt="" src="' + v.im + '"></span><div><b>' + esc(r.n) + "</b>" + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
+    var rr2 = rarRec(r);
+    return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + v.im + '"></span><div><b style="color:' + (rr2 ? RARC[rr2] : "inherit") + '">' + esc(r.n) + "</b>" + rarTag(rr2) + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
       + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
   }
   function chestNote() {   // CRAFT FROM CHESTS: say when nearby chests are being counted
@@ -16766,6 +16860,7 @@
     var mine = all.filter(function (r) { var o = stnOf(r); return o === k || (o === "" && !r.charm); });
     return mine.sort(function (a, b) { return CRAFT_CATS.indexOf(a.cat2) - CRAFT_CATS.indexOf(b.cat2) || (CRAFT_SUBS[a.cat2] || []).indexOf(a.sub) - (CRAFT_SUBS[b.cat2] || []).indexOf(b.sub) || a.rank - b.rank; });
   }
+  var stnQ = {};
   function renderStn() {
     var k = stnOpen.k;
     if (stnKeyAt(stnOpen.x, stnOpen.y) !== k) { closeStn(); return; }   // it was broken or swapped while open
@@ -16775,12 +16870,15 @@
     $("sbxStnBox").style.setProperty("--stn", stnColor(k));
     $("sbxStnTitle").innerHTML = '<img alt="" src="' + icon(D.ic) + '"><span>' + esc(stnName(k)) + "<small>" + (total ? total + " ready to craft" : esc(D.d)) + "</small></span>";
     if (!sc || cats.indexOf(sc) < 0) { sc = cats[0] || ""; cats.forEach(function (c) { if (!stnCat[k] && rd[c] && !rd[sc]) sc = c; }); stnCat[k] = sc; }
-    if (cats.length > 1) h += '<div class="sbx-cbar crg-bar">' + cgTabs(cats, sc, "data-stc", rd) + "</div>";
+    var sq = (stnQ[k] || "").trim().toLowerCase();   // STATION SEARCH: type to find a recipe in this station, across all its sections
+    var sbar = '<div class="sbx-csr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="sbxStnSearch" type="search" value="' + esc(stnQ[k] || "") + '" placeholder="Search this ' + esc(stnName(k)) + '" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search recipes">' + (sq ? '<button type="button" class="cs-x" data-stnclear="1" aria-label="Clear search">&times;</button>' : "") + "</div>";
+    if (sq) h += '<div class="sbx-cbar">' + sbar + "</div>"; else h += '<div class="sbx-cbar crg-bar">' + sbar + (cats.length > 1 ? cgTabs(cats, sc, "data-stc", rd) : "") + "</div>";
     var nch = nearChestKeys().length, pre = "";
     if (nch) pre += '<p class="crg-chest">Also using ' + nch + " nearby chest" + (nch > 1 ? "s" : "") + ".</p>";
     if (k === "bench" && sc === cats[0]) { var cb = BENCH_LV[S.bl], nbl = BENCH_LV[S.bl + 1]; pre += '<div class="crg-lvl" style="--lc:' + cb.c + '"><img alt="" src="' + icon("bench") + '"><div><b>' + esc(cb.n) + "</b><small>Level " + S.bl + " of " + (BENCH_LV.length - 1) + (nbl ? " · next unlocks " + esc(nbl.gives) : " · fully upgraded") + "</small></div>" + (nbl ? '<button type="button" class="btn' + (canPay(nbl.cost) ? "" : " ghost") + '" data-csel="__bup">Upgrade</button>' : "") + "</div>"; }
     if ((k === "cook" || k === "brew") && sc === cats[0]) { var sct = cgSecrets(k), sfound = sct.filter(function (q) { return S.disc[q[2]]; }).length; pre += '<div class="crg-lvl" style="--lc:#c08cff"><img alt="" src="' + icon(sfound ? sct.filter(function (q) { return S.disc[q[2]]; })[0][2] : k === "cook" ? "glowgoulash" : "tonic_star") + '"><div><b>Experiment</b><small>Mix three ingredients to find secret ' + (k === "cook" ? "dishes" : "brews") + ". " + sfound + " of " + sct.length + ' found.</small></div><button type="button" class="btn" data-cg-exp="' + k + '">Try it</button></div>'; }
-    var shown = recs.filter(function (r) { return r.cat2 === sc; });
+    var shown = sq ? recs.filter(function (r) { var it = r.out ? Object.keys(r.out)[0] : r.id; return (r.n + " " + (ITEMS[it] ? ITEMS[it].n : "") + " " + (r.d || "")).toLowerCase().indexOf(sq) >= 0; }) : recs.filter(function (r) { return r.cat2 === sc; });
+    if (sq) pre = shown.length ? "" : '<p class="sbx-note">Nothing here matches “' + esc(stnQ[k]) + '”.</p>';
     if (CG_SEL[k] === "__bup" && k === "bench") h += '<div class="crg"><div class="crg-list">' + pre + shown.map(function (r, i) { return (i === 0 || r.sub !== shown[i - 1].sub ? (i ? "</div>" : "") + '<h4 class="crg-sub">' + esc(r.sub) + '</h4><div class="crg-g">' : "") + cgTile(r, false); }).join("") + (shown.length ? "</div>" : "") + '</div><div class="crg-side"><div class="crg-d crg-up">' + benchUpCard().replace(/<h3>[^<]*<\/h3>/, "") + "</div></div></div>";
     else h += craftGrid(shown, k, pre);
     var bd = $("sbxStnBody"), oc = bd.querySelector(".sbx-cats"), ol = oc ? oc.scrollLeft : 0, st = bd.scrollTop; bd.innerHTML = h; bd.scrollTop = st;
@@ -17129,11 +17227,14 @@
     if (mapOpen) return;
     if (tab === "bag" || tab === "map") tab = "craft";
     if (tab === "trail" || tab === "goals") tab = "quests";
-    var tabs = [["quests", "Quests"], ["log", "Log"], ["awards", "Awards"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["craft", "Craft"], ["map", "Map"], ["more", "Options"]];
+    // CRAFTING has its own window (the hammer button, E); the Journal (book button, J) holds the rest
+    var tabs = [["quests", "Quests"], ["log", "Log"], ["awards", "Awards"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["map", "Map"], ["more", "Options"]];
     if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "craft";
     if (DEV.on) tabs.push(["dev", "Dev"]); else if (tab === "dev") tab = "more";
     if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
-    $("sbxTabs").innerHTML = tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
+    $("sbxPanel").classList.toggle("craftwin", tab === "craft");
+    $("sbxTabs").innerHTML = tab === "craft" ? '<h2 class="sbx-ptitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5-2.2 2.2-5-5z"/><path d="M13.4 8.6L4.6 17.4a1.6 1.6 0 002.3 2.3l8.8-8.8"/></svg>Crafting</h2>'
+      : tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
     var h = "";
     if (tab === "quests") {
       h += qbRender();
@@ -17181,8 +17282,9 @@
       var stp = function (attr, val, label) { return '<span class="op-stp"><button type="button" class="btn ghost" ' + attr.replace("%", "-1") + ' aria-label="' + esc(label) + ' down">&minus;</button><b>' + val + '</b><button type="button" class="btn ghost" ' + attr.replace("%", "1") + ' aria-label="' + esc(label) + ' up">+</button></span>'; };
       var row = function (name, hint, ctl) { return '<div class="op-row"><div><b>' + name + "</b>" + (hint ? "<small>" + hint + "</small>" : "") + "</div>" + ctl + "</div>"; };
       var card = function (title, body) { return '<section class="op-card"><h3>' + title + "</h3>" + body + "</section>"; };
-      if (curId && !titleOpen && !MP.on && !MP.ws) h += '<button type="button" class="op-tomenu" data-tomenu>' + pzIcon("home") + "<span><b>Return to menu</b><small>Saves your world first</small></span></button>";
-      if (curId) h += card("This world",
+      // OPTIONS: a page of section buttons; each opens its own page (General, Graphics, Audio, Controls, Accessibility ...)
+      var SEC = {};
+      if (curId) SEC.general = card("This world",
         row(esc(curEntry() ? curEntry().name : "My Swamp"), "Day " + ((S.days | 0) + 1) + " · saves automatically", '<span class="op-btns"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Worlds</button></span>')
         + row("Difficulty", esc(dif().d), '<span class="sbx-diff op-seg">' + DIFF.map(function (D, i) { return '<button type="button" class="btn' + (S.diff === i ? "" : " ghost") + '" data-diff="' + i + '" aria-pressed="' + (S.diff === i) + '" style="--dc:' + D.c + '">' + D.n + "</button>"; }).join("") + "</span>")
         + row("Keep inventory", "On: you keep everything when you pass out. Off: you lose some of your loot.", sw("data-keepinvtoggle", S.keepInv, "Keep inventory"))
@@ -17192,18 +17294,30 @@
         + row("Day counter", "Show the in-game day under the biome name.", sw("data-daytoggle", SHOWDAYS, "Day counter"))
         + row("Crafting mini-games", "Forge strikes for Masterwork gear, stirring for perfect brews. Off = craft instantly.", sw("data-cgtoggle", CGON, "Crafting mini-games")));
       an = charList().map(function (q) { return { id: q.id, name: q.name }; });   // CHARACTERS: people and animals
-      h += card("Play as", '<div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = '<img alt="" src="' + DelveAv.thumb(Object.assign({}, Crystals.outfit()), a.id, 3) + '">'; } catch (e) { try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e2) {} } return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note op-foot">Your avatar gear comes from the Armory.</p>');
-      h += card("Sound &amp; screen",
-        '<div class="pz-rows op-pz">' + settingsRows() + "</div>"
+      SEC.char = card("Play as", '<div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = '<img alt="" src="' + DelveAv.thumb(Object.assign({}, Crystals.outfit()), a.id, 3) + '">'; } catch (e) { try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e2) {} } return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note op-foot">Your avatar gear comes from the Armory.</p>');
+      SEC.general = (SEC.general || "") + card("World and screen", '<div class="pz-rows op-pz">'
         + row("Weather", "Rain, snow and ash. Waters crops, and fish bite sooner.", sw("data-wxtoggle", WX.on, "Weather"))
         + row("Mini-map", "Tap it to open the World Map.", sw("data-minitoggle", MINI.on, "Mini-map"))
-        + row("Zoom", "How close the camera is.", stp('data-zoom="%"', Math.round(S.zoom * 100) + "%", "Zoom"))
-        + row("Control size", "Touch stick, buttons, hotbar and HUD.", '<span class="op-btns">' + stp('data-ui="%"', Math.round(UIS * 100) + "%", "Control size") + '<button type="button" class="btn ghost op-mini" data-ui="0" aria-label="Reset control size">Reset</button></span>')
+        + row("Zoom", "How close the camera is.", stp('data-zoom="%"', Math.round(S.zoom * 100) + "%", "Zoom")) + "</div>") + '<p class="sbx-note op-seed">World seed ' + S.seed + "</p>";
+      SEC.graphics = card("", '<div class="pz-rows op-pz">' + setGfx() + "</div>");
+      SEC.audio = card("", '<div class="pz-rows op-pz">' + setAudio() + "</div>");
+      SEC.access = card("", '<div class="pz-rows op-pz">' + setAccess() + "</div>");
+      SEC.controls = card("Controls", row("Hotbar size", "The hotbar and the health and hunger bars. Touch buttons and the walk stick are sized in Customize Controls.", '<span class="op-btns">' + stp('data-ui="%"', Math.round(UIS * 100) + "%", "Hotbar size") + '<button type="button" class="btn ghost op-mini" data-ui="0" aria-label="Reset hotbar size">Reset</button></span>')
         + (CTLMQ.matches ? row("Movement", JOYALL ? "The walk stick everywhere." : "Arrows on the surface, the stick in caves, the Mine and at sea.", '<span class="op-btns op-seg"><button type="button" class="btn' + (JOYALL ? " ghost" : "") + '" data-joyall="0" aria-pressed="' + !JOYALL + '">Arrows</button><button type="button" class="btn' + (JOYALL ? "" : " ghost") + '" data-joyall="1" aria-pressed="' + JOYALL + '">Stick</button></span>')
-          + row("Button layout", "Move and resize jump, dodge roll, special and the arrows.", '<button type="button" class="btn" data-layout>Customize</button>') : ""));
-      h += card("Play together", row(MP.on ? (MP.role === "host" ? "Room " + esc(MP.code) : "Visiting") : "Multiplayer", MP.on ? (MP.role === "host" ? (MP.npeers + 1) + " / 4 players in your world." : "You are in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs.", '<button type="button" class="btn" data-mpopen>' + (MP.on ? "Manage" : "Play together") + "</button>"));
-      if (!DEV.on) h += card("Developer mode", row("Dev code", "Unlocks a cheat menu on this device, for trying things out.", '<span class="op-btns"><input id="devCode" class="dev-q dev-code" type="password" autocomplete="off" placeholder="Code" aria-label="Dev code"><button type="button" class="btn" data-devunlock>Unlock</button></span>'));
-      h += '<p class="sbx-note op-seed">World seed ' + S.seed + "</p>";
+          + row("Customize controls", "Move, resize and fade each touch button and the walk stick, or all of them at once.", '<button type="button" class="btn" data-layout>Customize</button>') : ""))
+        + (CTLMQ.matches && !matchMedia("(hover:hover)").matches ? "" : card("Keyboard", '<div class="pz-rows op-pz">' + keymapRows() + "</div>"));
+      SEC.mp = card("Play together", row(MP.on ? (MP.role === "host" ? "Room " + esc(MP.code) : "Visiting") : "Multiplayer", MP.on ? (MP.role === "host" ? (MP.npeers + 1) + " / 4 players in your world." : "You are in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs.", '<button type="button" class="btn" data-mpopen>' + (MP.on ? "Manage" : "Play together") + "</button>"));
+      if (!DEV.on) SEC.dev = card("Developer mode", row("Dev code", "Unlocks a cheat menu on this device, for trying things out.", '<span class="op-btns"><input id="devCode" class="dev-q dev-code" type="password" autocomplete="off" placeholder="Code" aria-label="Dev code"><button type="button" class="btn" data-devunlock>Unlock</button></span>'));
+      var OSL = [["general", "General", "Your world, difficulty, hunger, weather, map and zoom", "home"], ["graphics", "Graphics", "Full screen, frame rate, lighting and effects", "eye"], ["audio", "Audio", "Music, sound effects and ambience", "snd"],
+        ["controls", "Controls", "Touch buttons, the walk stick, keys and hotbar size", "keys"], ["access", "Accessibility", "Colour-blind mode, text size and motion", "acc"], ["char", "Character", "Who you play as", "char"], ["mp", "Play together", "Host or join a room with friends", "mp"], ["dev", "Developer", "Cheat menu code", "dev"]].filter(function (q) { return SEC[q[0]]; });
+      if (OPTSEC && SEC[OPTSEC]) {
+        var cur = OSL.filter(function (q) { return q[0] === OPTSEC; })[0];
+        h += '<div class="op-sechead"><button type="button" class="btn ghost op-back" data-optsec=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Options</button><h2>' + (cur ? cur[1] : "") + "</h2></div>" + SEC[OPTSEC];
+      } else {
+        OPTSEC = "";
+        if (curId && !titleOpen && !MP.on && !MP.ws) h += '<button type="button" class="op-tomenu" data-tomenu>' + pzIcon("home") + "<span><b>Return to menu</b><small>Saves your world first</small></span></button>";
+        h += '<div class="op-grid">' + OSL.map(function (q) { return '<button type="button" class="op-secbtn" data-optsec="' + q[0] + '"><span class="op-si">' + optIcon(q[3]) + "</span><b>" + q[1] + "</b><small>" + q[2] + "</small></button>"; }).join("") + "</div>";
+      }
     }
     var oc = document.querySelector(".sbx-cats"), os = document.querySelector(".sbx-subs"), ol1 = oc ? oc.scrollLeft : 0, ol2 = os ? os.scrollLeft : 0;
     $("sbxPanel").classList.toggle("qbook", tab === "quests"); $("sbxBody").classList.toggle("qb-on", tab === "quests");
@@ -17653,10 +17767,11 @@
     if (e.pointerId === aim.id) { aim.down = false; aim.id = null; mine = null; if (e.pointerType !== "mouse") aim.tx = -1; } };
   cv.addEventListener("pointerup", endAim); cv.addEventListener("pointercancel", endAim); cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   (function () {   // the analog stick (touch / small screens, caves only): drag anywhere inside the ring
-    var base = $("sbxJoy"), knob = $("sbxJoyKnob"), id = null, R = 52; if (!base) return;
+    var base = $("sbxJoy"), knob = $("sbxJoyKnob"), id = null, R = 52, JS = 1; if (!base) return;
+    function joyScale() { return base.parentNode && base.parentNode.id === "sbxCtl" ? +(base.style.getPropertyValue("--bs") || 1) : 1; }   // its size comes from Customize Controls
     function mv(e) {
-      var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, d / (R * UIS));
-      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0;   // on the surface, pull down to drop or climb down knob.style.transform = "translate(" + (dx / d * Math.min(d, R * UIS) / UIS) + "px," + (dy / d * Math.min(d, R * UIS) / UIS) + "px)";
+      var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, JS = joyScale(), k = Math.min(1, d / (R * JS));
+      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0;   // on the surface, pull down to drop or climb down knob.style.transform = "translate(" + (dx / d * Math.min(d, R * JS) / JS) + "px," + (dy / d * Math.min(d, R * JS) / JS) + "px)";
     }
     base.addEventListener("pointerdown", function (e) { e.preventDefault(); id = e.pointerId; try { base.setPointerCapture(id); } catch (x) {} base.classList.add("on"); $("sbxHint").classList.remove("on"); mv(e); });
     base.addEventListener("pointermove", function (e) { if (e.pointerId === id) mv(e); });
@@ -17690,7 +17805,8 @@
     if ((k === "Escape" || k === "p" || k === "P") && !panelOpen && !mapOpen && !trans) { openPause(); e.preventDefault(); return; }
     if (k === "Enter" && MP.on && !panelOpen) { openChat(); e.preventDefault(); return; }
     if (k === "Escape" && panelOpen) { closePanel(); return; }
-    if (k === "e" || k === "E") { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); e.preventDefault(); return; }
+    if (k === "e" || k === "E") { toggleCraft(); e.preventDefault(); return; }
+    if (k === "j" || k === "J") { toggleJournal(); e.preventDefault(); return; }
     if (k === "m" || k === "M") { mapOpen ? closeMap() : openMap(); e.preventDefault(); return; }
     if (mapOpen && (k === "+" || k === "=")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s * 1.4); e.preventDefault(); return; }
     if (mapOpen && (k === "-" || k === "_")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s / 1.4); e.preventDefault(); return; }
@@ -17727,9 +17843,15 @@
   });
   window.addEventListener("blur", function () { keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; });
   $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
-  $("sbxTrail").addEventListener("click", function () { var q = MAIN[S.qi], rc = q && QRC[q.id], r = rc && recById(rc); if (r && !recStatus(r).owned) openCraftTo(rc); else openPanel("quests"); });
+  var PHONEQ = matchMedia ? matchMedia("(max-width:600px),(pointer:coarse) and (max-height:520px)") : { matches: false };
+  if (PHONEQ.addEventListener) PHONEQ.addEventListener("change", function () { trailKey = ""; });
+  $("sbxTrail").addEventListener("click", function () { if (PHONEQ.matches) { QB.ch = ""; QB.sel = MAIN[S.qi] ? MAIN[S.qi].id : ""; if (panelOpen) closePanel(); openPanel("quests"); return; } var q = MAIN[S.qi], rc = q && QRC[q.id], r = rc && recById(rc); if (r && !recStatus(r).owned) openCraftTo(rc); else openPanel("quests"); });
   $("sbxTip").addEventListener("click", function (e) { var b = e.target.closest("[data-tip]"); if (!b) return; var rc = $("sbxTip").getAttribute("data-rc"); hideTip(); if (b.getAttribute("data-tip") === "show" && rc) openCraftTo(rc); });
-  $("sbxMenuBtn").addEventListener("click", function () { if (packOpen || mapOpen || stnOpen) { closePanel(); openPanel(); } else if (panelOpen) closePanel(); else openPanel(); });
+  function toggleCraft() { if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab === "craft") return closePanel(); if (panelOpen) closePanel(); openPanel("craft"); }
+  function toggleJournal(t) { var want = t || (tab === "craft" || tab === "chest" ? "quests" : tab); if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab !== "craft" && (!t || tab === t)) return closePanel(); if (panelOpen) closePanel(); openPanel(want); }
+  $("sbxMenuBtn").addEventListener("click", function () { toggleCraft(); });
+  $("sbxJrnBtn").addEventListener("click", function () { toggleJournal(); });
+  $("sbxOptBtn").addEventListener("click", function () { OPTSEC = ""; toggleJournal("more"); });
   $("sbxPackBtn").addEventListener("click", function () { packOpen ? closePack() : openPack(); });
   $("sbxPack").addEventListener("click", function (e) { if (e.target === this) closePack(); });
   function panelClick(e) {
@@ -17758,7 +17880,7 @@
     if (t.hasAttribute("data-qb-x")) { QB.sel = ""; return renderPanel(); }
     if (t.hasAttribute("data-qb-rc")) { return openCraftTo(t.getAttribute("data-qb-rc")); }
     if (t.getAttribute("data-tab") === "map") return openMap();
-    if (t.getAttribute("data-tab")) { tab = t.getAttribute("data-tab"); confirmNew = false; return renderPanel(); }
+    if (t.getAttribute("data-tab")) { tab = t.getAttribute("data-tab"); if (tab === "more") OPTSEC = ""; confirmNew = false; return renderPanel(); }
     if (t.hasAttribute("data-cc")) { ccat = t.getAttribute("data-cc"); csub = ""; renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-cs")) { csub = t.getAttribute("data-cs"); renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-cready")) { cready = !cready; renderPanel(); return; }
@@ -17795,6 +17917,7 @@
     if (t.hasAttribute("data-layout")) return openLayout();
     if (t.hasAttribute("data-ui")) { var uv = +t.getAttribute("data-ui"); setUi(uv === 0 ? 1 : UIS + uv * 0.1); return renderPanel(); }
     if (t.hasAttribute("data-zoom")) { var Z = [0.8, 1, 1.25, 1.5, 2], zi = clamp(Z.indexOf(S.zoom) + +t.getAttribute("data-zoom"), 0, Z.length - 1); S.zoom = Z[zi]; resize(); return renderPanel(); }
+    if (t.hasAttribute("data-optsec")) { OPTSEC = t.getAttribute("data-optsec"); renderPanel(); $("sbxBody").scrollTop = 0; return; }
     if (t.hasAttribute("data-tomenu")) { pauseBack = false; closePanel(); return openTitle(); }
     if (t.hasAttribute("data-camp")) { respawn("Back at camp."); return closePanel(); }
     if (t.hasAttribute("data-wl-open")) return openWorlds();
@@ -17807,6 +17930,12 @@
   $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
   $("sbxMini").addEventListener("click", function () { if (OCS && OCS.sea) { OCS.sea.chart = !OCS.sea.chart; return; } if (!panelOpen && !cave) openMap(); });
   $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
+  $("sbxStnBody").addEventListener("input", function (e) {
+    if (e.target.id !== "sbxStnSearch" || !stnOpen) return; var k = stnOpen.k, pos = e.target.selectionStart; stnQ[k] = e.target.value; renderStn();
+    var i = $("sbxStnSearch"); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (er) {} }
+  });
+  $("sbxStnBody").addEventListener("keydown", function (e) { if (e.target.id !== "sbxStnSearch") return; e.stopPropagation(); if (e.key === "Escape") { e.preventDefault(); if (stnOpen && stnQ[stnOpen.k]) { stnQ[stnOpen.k] = ""; renderStn(); } else e.target.blur(); } else if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } });
+  $("sbxStnBody").addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-stnclear]"); if (b && stnOpen) { stnQ[stnOpen.k] = ""; renderStn(); var i = $("sbxStnSearch"); if (i) i.focus(); } });
   $("sbxBody").addEventListener("input", function (e) {   // CRAFT SEARCH: results update as you type (the box keeps focus)
     if (e.target.id !== "sbxCSearch") return;
     var was = !!csearch.trim(); csearch = e.target.value; var now = !!csearch.trim();
@@ -17864,14 +17993,14 @@
   var JOYALL = false; try { JOYALL = localStorage.getItem("swamp-delve-joy") === "all"; } catch (e) {}
   function setJoyAll(on) { JOYALL = !!on; stageEl.classList.toggle("joyall", JOYALL); stopInput(); try { localStorage.setItem("swamp-delve-joy", JOYALL ? "all" : "caves"); } catch (e) {} }
   stageEl.classList.toggle("joyall", JOYALL);
-  var CTLN = { l: "Left arrow", r: "Right arrow", j: "Jump", roll: "Dodge roll", spec: "Special" }, CTLK = ["l", "r", "j", "roll", "spec"];
-  var CTLD = { l: { x: 0.1, y: 0.7 }, r: { x: 0.24, y: 0.7 }, j: { x: 0.9, y: 0.7 }, roll: { x: 0.78, y: 0.6 }, spec: { x: 0.9, y: 0.5 } };   // fallback spots when a button is not on screen to measure
+  var CTLN = { l: "Left arrow", r: "Right arrow", j: "Jump", roll: "Dodge roll", spec: "Special", joy: "Walk stick" }, CTLK = ["l", "r", "j", "roll", "spec", "joy"];
+  var CTLD = { l: { x: 0.1, y: 0.7 }, r: { x: 0.24, y: 0.7 }, j: { x: 0.9, y: 0.7 }, roll: { x: 0.78, y: 0.6 }, spec: { x: 0.9, y: 0.5 }, joy: { x: 0.17, y: 0.66 } };   // fallback spots when a button is not on screen to measure
   var CTLR = null, CTLL = null, LAYD = {};
   try { LAYD = JSON.parse(localStorage.getItem("swamp-delve-layout") || "{}") || {}; } catch (e) { LAYD = {}; }
   function layClean(L) { return { x: clamp(+L.x || 0.5, 0, 1), y: clamp(+L.y || 0.5, 0, 1), s: clamp(+L.s || 1, 0.5, 2.2), o: clamp(L.o == null ? 1 : +L.o, 0.25, 1) }; }
   function layInit() {
     var P = $("sbxPad"); if (!P || CTLR) return;
-    CTLR = { l: [P.querySelector('[data-k="l"]')], r: [P.querySelector('[data-k="r"]')], j: [P.querySelector('[data-k="j"]')], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")] };
+    CTLR = { l: [P.querySelector('[data-k="l"]')], r: [P.querySelector('[data-k="r"]')], j: [P.querySelector('[data-k="j"]')], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")], joy: [$("sbxJoy")] };
     CTLL = document.createElement("div"); CTLL.className = "sbx-ctl"; CTLL.id = "sbxCtl"; stageEl.insertBefore(CTLL, $("sbxRoll") || P.nextSibling);
     CTLK.forEach(function (k) { CTLR[k] = CTLR[k].filter(Boolean); CTLR[k].forEach(function (el) { el.__h = { p: el.parentNode, n: el.nextSibling }; el.setAttribute("data-lk", k); el.setAttribute("data-ln", CTLN[k]); }); });
   }
@@ -17931,11 +18060,15 @@
     if (L) h += '<div class="ly-sheet' + (L.y >= 0.45 ? " top" : "") + '"><div class="ly-sh"><b>' + CTLN[s] + '</b><button type="button" class="btn ghost op-mini" data-ly="one">Default</button></div>'
       + '<label class="ly-sl"><span>Size</span><input type="range" min="50" max="220" step="5" value="' + Math.round(L.s * 100) + '" data-lyr="s" aria-label="Button size"><b>' + Math.round(L.s * 100) + "%</b></label>"
       + '<label class="ly-sl"><span>Solid</span><input type="range" min="25" max="100" step="5" value="' + Math.round(L.o * 100) + '" data-lyr="o" aria-label="How solid the button is"><b>' + Math.round(L.o * 100) + "%</b></label></div>";
+    if (!L) { var avg = 0; CTLK.forEach(function (k) { avg += E.w[k].s; }); avg = avg / CTLK.length;
+      h += '<div class="ly-sheet"><div class="ly-sh"><b>All controls</b><small>Or tap one button to change just that one.</small></div><label class="ly-sl"><span>Size</span><input type="range" min="50" max="220" step="5" value="' + Math.round(avg * 100) + '" data-lyall="s" aria-label="Size of all controls"><b>' + Math.round(avg * 100) + "%</b></label>"
+        + '<label class="ly-sl"><span>Solid</span><input type="range" min="25" max="100" step="5" value="' + Math.round(E.w.j.o * 100) + '" data-lyall="o" aria-label="How solid all controls are"><b>' + Math.round(E.w.j.o * 100) + "%</b></label></div>"; }
     ui.innerHTML = h; $("sbxLay").classList.toggle("grid", E.grid);
     CTLK.forEach(function (k) { CTLR[k].forEach(function (el) { el.classList.toggle("lay-sel", k === s); }); });
   }
   function layInput(e) {
-    var t = e.target; if (!LAYE || !LAYE.sel || !t.hasAttribute("data-lyr")) return; var L = LAYE.w[LAYE.sel], f = t.getAttribute("data-lyr");
+    var t = e.target;
+    if (LAYE && t.hasAttribute("data-lyall")) { var fa = t.getAttribute("data-lyall"); CTLK.forEach(function (k) { var Lk = LAYE.w[k]; Lk[fa] = +t.value / 100; Lk.ed = 1; layPlace(k, Lk); }); var ba = t.parentNode.querySelector("b"); if (ba) ba.textContent = t.value + "%"; return; } if (!LAYE || !LAYE.sel || !t.hasAttribute("data-lyr")) return; var L = LAYE.w[LAYE.sel], f = t.getAttribute("data-lyr");
     L[f] = +t.value / 100; L.ed = 1; layPlace(LAYE.sel, L); var b = t.parentNode.querySelector("b"); if (b) b.textContent = t.value + "%";
   }
   function layClick(e) {
@@ -21599,7 +21732,7 @@
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
 
   buildAtlas(); load(); layInit(); resize(); applyLayout(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
-  $("sbxHint").textContent = S.qi === 0 ? (coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens your Journal, B your Backpack.";
+  $("sbxHint").textContent = S.qi === 0 ? (coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens Crafting, J your Journal, B your Backpack.";
   stageEl.classList.add("title"); titleEl.hidden = false; cam.x = p.x; cam.y = titleCamTarget(); renderTitle(); drawTitleLogo(performance.now());
   window.__sbxReady = true; if (window.__dlDone) window.__dlDone();   // tell the loading screen the world is built
   // UI feel: a soft tick on every button in a window (follows the sound switch), and mouse-wheel scrolling across the category chip rows
@@ -21626,7 +21759,7 @@
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };

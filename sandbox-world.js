@@ -427,7 +427,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     // NEW BUILDINGS: their own pass after everything else (only in new land), a few of each, spread out
     if (nw) STRUCT_KINDS.forEach(function (K, ki) {
       if (!K.nw) return;
-      if (GEN_SPARSE > 1 && GEN_EDGE && hash(ki, 773, seed) < 0.6) return;   // open land: past the middle, most places have only some of the newer buildings (the middle keeps one of each for the Grand Tour)
+      if (GEN_SPARSE > 2 && !GEN_EDGE) return;   // QUEST BUILDINGS (sp 3): the Tavern, Igloo, Tea House and Sun Temple are only found past the first three lands
+      if (GEN_SPARSE === 2 && GEN_EDGE && hash(ki, 773, seed) < 0.6) return;   // open land: past the middle, most places have only some of the newer buildings (the middle keeps one of each for the Grand Tour)
       var cols = 0; for (x = 0; x < W; x++) if (bio[x] === K.b && (!sub || (sub[x] ? 1 : 0) === K.sub)) cols++;
       if (cols < 120) return;
       var want = GEN_SPARSE ? 1 : Math.max(1, Math.min(3, Math.round(cols / 420))), made = 0;
@@ -1079,17 +1080,22 @@ batwing: { n: "Bat Wing", frag: "bat" },
     seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
     var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
     for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
+    // BIGGER LANDS (sp 3, worlds from Nov 2026): Frostfen, Murkwater and Ember Bog are each 30% wider. The middle map is made CW wide and
+    // centred on the same column, so camp sits where it always did and the world (and every save index) keeps its size.
+    var BIG = (bv.sp | 0) >= 3, CW = BIG ? Math.round(CORE_W * 1.3 / 2) * 2 : CORE_W, OFF = EXT - (CW - CORE_W) / 2, keep0 = [W, B_FROST, B_EMBER, SPAWNX];
     var core; GEN_VAR = bv.c ? 1 : 0; GEN_SPARSE = bv.sp | 0;
-    try { core = gen(seed); } finally { GEN_VAR = 0; GEN_SPARSE = 0; }   // exactly the original map (W = CORE_W here), so old saves line up
+    if (BIG) { W = CW; B_FROST = Math.round(720 * 1.3); B_EMBER = Math.round(1440 * 1.3); SPAWNX = CW / 2; }
+    var SPL = SPAWNX;
+    try { core = gen(seed); } finally { GEN_VAR = 0; GEN_SPARSE = 0; W = keep0[0]; B_FROST = keep0[1]; B_EMBER = keep0[2]; SPAWNX = keep0[3]; }   // (older worlds: exactly the original map, W = CORE_W, so old saves line up)
     POST.forEach(function (f) { f(core); });
-    for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); wwl.set(core.walls.subarray(y * CORE_W, (y + 1) * CORE_W), y * WW + EXT); }
-    wtop.set(core.top, EXT); wbio.set(core.bio, EXT); wsub.set(core.sub, EXT);
-    shiftX(core, EXT);
+    for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CW, (y + 1) * CW), y * WW + OFF); wwl.set(core.walls.subarray(y * CW, (y + 1) * CW), y * WW + OFF); }
+    wtop.set(core.top, OFF); wbio.set(core.bio, OFF); wsub.set(core.sub, OFF);
+    shiftX(core, OFF);
     var lay = { "-1": [], "1": [] };   // the segments on each side, nearest first: [x0, x1, biome]
     [-1, 1].forEach(function (sd) {
-      var prev = sd < 0 ? 2 : 1, edge = sd < 0 ? EXT : EXT + CORE_W, n = 0;
+      var prev = sd < 0 ? 2 : 1, edge = sd < 0 ? OFF : OFF + CW, n = 0;
       while (sd < 0 ? edge > 0 : edge < WW) {
-        var w = bv.sp > 1 ? 760 + Math.floor(hash(n, sd * 977, seed) * 401) : 480 + Math.floor(hash(n, sd * 977, seed) * 241),   // OPEN LAND (sp 2, worlds from now on): each land past the middle is about half as wide again, with far fewer buildings
+        var w = bv.sp > 2 ? 990 + Math.floor(hash(n, sd * 977, seed) * 521) : bv.sp > 1 ? 760 + Math.floor(hash(n, sd * 977, seed) * 401) : 480 + Math.floor(hash(n, sd * 977, seed) * 241),   // OPEN LAND (sp 2, worlds from now on): each land past the middle is about half as wide again, with far fewer buildings
           b = (prev + 1 + Math.floor(hash(n, sd * 978, seed) * 2)) % 3;   // never the same biome twice in a row
         var a = sd < 0 ? Math.max(0, edge - w) : edge, z = sd < 0 ? edge : Math.min(WW, edge + w);
         if (z - a < 160) { if (lay[sd].length) { var L = lay[sd][lay[sd].length - 1]; if (sd < 0) L[0] = 0; else L[1] = WW; } break; }   // a sliver at the very end joins the last segment
@@ -1097,7 +1103,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       }
     });
     return { trees: core.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, marks: core.marks || [], holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie, sky: core.sky,
-      spawn: { x: SPAWNX + EXT + 0.5, y: core.top[SPAWNX] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: EXT, gx1: EXT + CORE_W - 1 };
+      spawn: { x: SPL + OFF + 0.5, y: core.top[SPL] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: OFF, gx1: OFF + CW - 1 };
   }
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
     var n = wd.done[sd], seg = wd.lay[sd][n]; if (!seg) return null;
