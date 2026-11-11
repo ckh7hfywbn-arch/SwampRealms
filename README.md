@@ -1281,3 +1281,12 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Hidden things stay hidden:** lanterns, fireflies and treasure round a corner give no glow.
   - **Light level:** the maze's base light dropped from 0.5 to 0.16.
   - **Code:** `mazeVis` in `sandbox.js`.
+- **Pixel icons for the old flat items:** 102 items that still had flat, simple drawings now use 16×16 pixel art like the rest of the game, shaded and outlined. Search `PIXEL ICONS` / `NEWICO` in `sandbox.js`.
+  - **Sea items:** kelp, Kelp Wrap, Sea Stew, Pier Sushi, coral, shell, ink sac, jelly gel, eel skin, puffer spine, lure bulb, brass, black pearl, sea glass, petal snap, imp horn, gold bait, moon pie and fire stew.
+  - **Paint and dive gear:** all 8 paint cans, the 4 air tanks, the 4 dive suits, flippers and the dive lamp.
+  - **Bugs:** 4 butterflies, 2 moths, 3 beetles, the jade dragonfly, the hopper and the glow snail.
+  - **Fossils:** all 12 fossil bones.
+  - **Preserves:** all 14 preserve jars, each in its crop's colour.
+  - **Motorbike:** all 13 motorbike parts and the motorbike itself.
+  - **Wild plants:** the 13 wild plants, from cotton and redcap to cactus and fern.
+  - **Other:** the vein charm.
