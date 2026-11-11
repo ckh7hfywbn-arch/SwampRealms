@@ -16237,6 +16237,8 @@
     sy += reduce ? 0 : Math.sin(now / 300) * 2;
     var w = g.measureText(label).width + fpx * 2.2, h = Math.max(26, fpx * 2);
     sx = clamp(sx, w / 2 + 8, vw - w / 2 - 8); sy = clamp(sy, h / 2 + 64, vh - h / 2 - 8);   // POLISH: always fully on screen (clear of the top bar)
+    var me = cave ? { x: ox + cp.x * ts, y: oy + cp.y * ts, h: ts * (ts <= 32 ? 2.3 : 1.7) } : { x: ox + p.x * ts, y: oy + p.y * ts, h: ts * 1.8 };   // never on top of you: lift it above your head
+    if (Math.abs(sx - me.x) < w / 2 + ts * 0.4 && sy + h / 2 > me.y - me.h && sy - h / 2 < me.y) sy = me.y - me.h - h / 2 - 4;
     var cr = ctlRects();   // and clear of the on-screen controls (joystick, buttons): above them, so a thumb can tap it
     for (var it = 0; it < 6; it++) { var hit = null; for (var k = 0; k < cr.length; k++) { var r = cr[k]; if (sx + w / 2 > r.l - 6 && sx - w / 2 < r.r + 6 && sy + h / 2 > r.t - 6 && sy - h / 2 < r.b + 6) { hit = r; break; } } if (!hit) break; var ny = Math.max(h / 2 + 64, hit.t - h / 2 - 12); if (ny === sy) break; sy = ny; }
     var x0 = sx - w / 2, y0 = sy - h / 2;
@@ -16260,6 +16262,7 @@
     // items in the paw, drinking and eating, a flinch when you are hit, a lean into the swing, the backpack, and the same size
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(cp.face, 1); dodgeSpin(g, ts * 0.85);
+    if (ts <= 32) g.scale(1.5, 1.5);   // PHONES: rooms are zoomed out, so you are drawn a little bigger than the furniture
     g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(0, -ts * 0.1, ts * 0.42, ts * 0.13, 0, 0, 6.2832); g.fill();
     if (!reduce) {   // the body leans, eased: into a weapon swing, back when you are hit, back to gulp a drink
       var ldt = clamp((now - (LEAN.t || now)) / 1000, 0, 0.1); LEAN.t = now; var tpL = toolPose();

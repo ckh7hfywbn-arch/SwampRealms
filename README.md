@@ -1221,3 +1221,4 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Tile size:** buildings and caves now use 32 px tiles on phones (they used 48 px, which showed only about 8 tiles across). A whole Witch Hut or Keep now fits on screen (`caveTs`).
   - **Action pills:** "Leave", "Open Witch's Chest" and the rest no longer grow with the room zoom. The text is capped at 14 px on phones and 17 px elsewhere (`drawPill`).
   - **Loot window:** compact on phones, with a 4-column item grid, smaller icons and buttons.
+  - **Your character on phones:** in rooms and caves you are drawn 1.5× bigger, while the furniture stays at the zoomed-out size. Action pills ("Leave" and the rest) now move above your head instead of covering you; before, the pill hid your character at the door.
