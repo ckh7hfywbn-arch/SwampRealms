@@ -17043,9 +17043,9 @@
     if (c === "own") { btn = '<button type="button" class="btn ghost" disabled>Owned</button>'; note = "You already have this."; }
     else if (c === "lock") { btn = '<button type="button" class="btn ghost" disabled>Locked</button>'; note = v.note; }
     else if (c === "ready") btn = '<button type="button" class="btn crg-go" data-sx-craft="' + r.id + '">' + (st.have ? "Make another" : "Craft") + "</button>";
-    if (st.have && c !== "lock") note = "You have this one. Another goes in your bag as a spare" + (S.inv[spareFor(r)] ? " (you have " + S.inv[spareFor(r)] + ")" : "") + ".";
     else if (st.can) { note = sk && sk !== ctx ? "Made at the " + stnName(sk) + "." : st.needB ? "Made at the Workbench." : r.deco ? "Made at the Decor Workbench." : ""; btn = sk && ctx === "bag" ? '<button type="button" class="btn ghost" data-sx-goto="' + r.id + '">Show me</button>' : '<button type="button" class="btn ghost" disabled>Craft</button>'; }
     else { note = "Still need " + miss.join(", ") + "."; btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
+    if (st.have && c !== "lock") note = "You have this one. Another goes in your bag as a spare" + (S.inv[spareFor(r)] ? " (you have " + S.inv[spareFor(r)] + ")" : "") + ".";   // (a note only: never touches the button)
     var desc = c === "lock" ? "" : r.d ? itShort(r.d, 150) : "", rep = "";
     var ok2 = cgOwnKey(r); if ((c === "own" || st.have) && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
     var rr2 = rarRec(r);
