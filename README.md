@@ -1247,3 +1247,9 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Testing:** `__sbx.ui` opens any window from tests (`__sbx.ui.stn("bench")` places and opens a station). The audit script checks 54 windows at phone and desktop size for buttons that touch.
 - **Character maker everywhere:** the main menu's **Character** button and **Options > Character** now open the full character maker, with animal, colour, hair, eyes and face. Before, they opened the old animal-only picker. The settings card shows your current look with a **Customize** button. Closing the maker refreshes the menu thumbnail and the settings card. Code: `myThumb`, `data-opcc`.
 - **Name in the character maker:** the maker has a **Name** field under the preview, plus a **Show above my head** switch. Typing a name turns the switch on, unless you already turned it off yourself. The name is the same one the Wardrobe's name tag uses (`look().nm` / `look().tag`), so the two stay in sync. The main menu and Options > Character show your name once you set one.
+- **Hotbar drag:**
+  - **Moving:** hold a hotbar slot and drag it onto another slot to move or swap it.
+  - **Dropping:** let go anywhere off the hotbar to drop the stack in front of you. That includes over the world, the health bar, the joystick or other buttons. Tools can't be dropped.
+  - **Phone fix:** dragging on a phone often got cancelled because the browser took the swipe as a scroll. Filled hotbar slots now have `touch-action:none`, and native image dragging is blocked.
+  - **Feedback:** the lifted slot dims and the slot under your finger grows with a dashed outline.
+  - **Code:** `dragOut` in `sandbox.js` (search `HOTBAR DRAG`).

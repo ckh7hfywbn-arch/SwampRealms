@@ -17971,9 +17971,15 @@
     var to = slotOfEl(t); if (to < 0 || to === D.from || !S.slots[D.from]) return;
     invAsk = ""; invSel = to; moveSlot(D.from, to); snd("coin");
   }
-  function dragOut(el) { return !!el && (el === cv || el === stageEl || (el.classList && (el.classList.contains("sbx-pack") || el.classList.contains("sbx-panel"))) && el.id !== "sbxStory"); }   // the world itself, or the dimmed backdrop around an open window
+  function dragOut(el) {   // the world itself, the HUD over it (health bar, joystick, buttons) or the dimmed backdrop around an open window
+    if (!el || !el.closest) return false; if (el === cv || el === stageEl) return true;
+    if (el.closest("#sbxBar,.sbx-pbox,#sbxStory,#sbxStn,#sbxMapV,#sbxCC,#sbxTitle,#sbxPause")) return false;
+    var pn = el.closest("#sbxPanel,#sbxPack"); if (pn) return el === pn;
+    return stageEl.contains(el);
+  }   // the world itself, or the dimmed backdrop around an open window
   function slotOfEl(b) { return b.hasAttribute("data-is") ? +b.getAttribute("data-is") : +b.getAttribute("data-slot"); }   // backpack slots use data-is, hotbar slots data-slot (-1 = a tool)
   [$("sbxPanel"), $("sbxPack"), $("sbxBar")].forEach(function (el) {
+    el.addEventListener("dragstart", function (e) { e.preventDefault(); });   // HOTBAR DRAG: a native image drag would steal the pointer
     el.addEventListener("pointerdown", function (e) {
       if (e.button && e.pointerType === "mouse") return;
       var b = e.target.closest("[data-is],.sbx-slot[data-slot]"); if (!b) return; var i = slotOfEl(b); if (!(i >= 0) || !S.slots[i]) return;

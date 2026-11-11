@@ -2721,3 +2721,8 @@ small.bo-cost{display:flex}
 .cc-tag i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#f6eedb;transition:transform .15s}
 .cc-tag.on i{background:#4ee6b4}.cc-tag.on i::after{transform:translateX(12px)}
 @media (max-width:640px){.cc-big{flex-wrap:wrap;row-gap:6px}.cc-nm{max-width:none;flex:1 1 150px}.cc-nm input{padding:7px 10px;font-size:.92rem}.cc-tag{flex:1 1 100%;justify-content:center}}
+/* HOTBAR DRAG: hold and drag a slot to move it or drop it. Without touch-action:none the phone grabs the finger to scroll and cancels the drag */
+.sbx-slot:not(.empty){touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.sbx-slot img,.sbx-is img{-webkit-user-drag:none;user-drag:none}
+.sbx-slot.lift{opacity:.35;transform:scale(.92)}
+.sbx-slot.drop{outline:2px dashed #f2c14e;outline-offset:-3px;transform:scale(1.08);background:linear-gradient(180deg,#2a3a1c,#14200e)}
