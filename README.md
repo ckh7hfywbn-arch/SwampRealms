@@ -1269,3 +1269,9 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Ownership:** everyone owns them from the start (`starter:1` in `store.js`, which `Crystals.owns` checks).
   - **Art:** each has pixel art in `delve-avatar.js` and vector art for the site avatar and Armory cards in `avatar.js`.
   - **Armory:** they show there as Owned.
+- **More pebbles:** digging Mud, Mossy Mud, grass or Clay now drops a Pebble 40% of the time, up from 16% on mud and moss only. One in five of those drops is 2 Pebbles.
+- **No more repairs:**
+  - **When a tool breaks:** a broken pick, weapon, armor or shovel stays broken. The Craft tab shows "Yours broke. Make a new one." and the same recipe makes a fresh one at full durability. A broken pick still digs like bare paws.
+  - **Spares:** if you carry a spare of the same piece, it swaps in by itself when yours breaks.
+  - **What's gone:** the repair cards in the Craft tab and workbench, and every "Repair it in the Craft tab" message.
+  - **Code:** `brokenCur` and `swapSpare` in `sandbox.js`.

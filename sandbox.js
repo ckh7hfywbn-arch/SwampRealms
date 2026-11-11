@@ -45,7 +45,7 @@
   var SHOVEL = { n: "Reed Shovel", c: "#c9b58a", sp: 0.85 }, SOFT = {};
   [T.MOSS, T.MUD, T.CLAY, T.ASH, T.SNOW].forEach(function (i) { SOFT[i] = 1; });
   // DURABILITY: every tool wears out. A block broken costs the pick or shovel 1 point (2 for hard rock like Basalt and Frostrock); each swing that hits something costs the weapon 1.
-  // At 0 the tool is BROKEN, not lost: a broken pick digs like bare paws, a broken shovel or weapon cannot be used. Repair it in the Craft tab (Reed gear by hand, Glowspore and up next to a Workbench).
+  // At 0 the tool is BROKEN: a broken pick digs like bare paws, a broken shovel or weapon cannot be used. There are no repairs: craft a new one (the same recipe), or carry a spare of the same one and it swaps in by itself.
   // A newly crafted tool is at full durability. Saved in S.dur; older saves start with everything at full.
   var DUR = { pick: [0, 100, 180, 300, 480, 700], shovel: 80, wpn: [0, 40, 70, 100, 150, 240], arm: [0, 60, 110, 170, 260, 400] };
   var REPAIR = { pick: [null, { stick: 2, fiber: 2 }, { spore: 4, wood: 3 }, { cinder: 5, basalt: 3 }, { crystal: 6, frostrock: 4 }, { ironingot: 4, crystal: 5, moonstone: 1 }], shovel: { stick: 1, fiber: 2 }, wpn: [null, { stick: 2, fiber: 2 }, { spore: 3, planks: 2 }, { cinder: 4, basalt: 3 }, { crystal: 5, frostrock: 3 }, { ironingot: 3, crystal: 4, ruby: 1 }], arm: [null, { fiber: 3, leaves: 3 }, { spore: 4, fiber: 3 }, { cinder: 5, basalt: 3 }, { crystal: 6, frostrock: 4 }, { ironingot: 4, crystal: 5, sapphire: 1 }] };
@@ -1618,8 +1618,15 @@
     if (k === "pick" && gem("pick", "sapphire") && Math.random() < 0.35) return;   // a Sapphire in the pick: it wears out slower
     var m = durMax(k); if (m <= 0) return; var before = durOf(k), now = Math.max(0, before - n); S.dur[k] = now; hbDirty = true;
     if (panelOpen && tab === "craft") renderPanel();
-    if (now <= 0 && before > 0) { toast("Your " + toolName(k) + " broke" + (k === "arm" ? " and no longer protects you" : "") + "! Repair it in the Craft tab.", "#ff6b82"); thud(90, 0.12); chips(p.x, p.y - 1, "#c9b58a", 14, 6); mine = null; }
+    if (now <= 0 && before > 0) { var nm0 = toolName(k); toast("Your " + nm0 + " broke" + (k === "arm" ? " and no longer protects you" : "") + "! Craft a new one.", "#ff6b82"); setTimeout(function () { if (toolBroken(k)) swapSpare(k); }, 900); thud(90, 0.12); chips(p.x, p.y - 1, "#c9b58a", 14, 6); mine = null; }
     else if (before > m * 0.2 && now <= m * 0.2) toast("Your " + toolName(k) + " is wearing out.", "#f2c14e");
+  }
+  // NO REPAIRS: a tool that breaks is done. Craft a new one (the same recipe makes it fresh), or carry a spare: it swaps in by itself.
+  function brokenCur(r) { return !!((r.tier && r.tier === S.tier && toolBroken("pick")) || (r.wpn && r.wpn === S.wpn && toolBroken("wpn")) || (r.arm && r.arm === S.arm && toolBroken("arm")) || (r.sh && S.shovel && toolBroken("shovel"))); }
+  function swapSpare(k) {   // when a pick, weapon or armor breaks, a spare of the same one in your bag swaps in
+    var kd = k === "pick" ? "pick" : k === "wpn" ? "wpn" : k === "arm" ? "arm" : ""; if (!kd || !SPK[kd]) return false;
+    var t = S[SPK[kd].f] | 0; if (t) { var id = "sp_" + kd + t; if (S.inv[id] > 0) { var K = SPK[kd], f = K.f; S[f] = t; S.dur[k] = DUR[k][t]; S.inv[id]--; if (S.inv[id] <= 0) delete S.inv[id]; reslot(); ICO = {}; armKey = ""; spriteKey = ""; hbDirty = true; toast("Your spare " + K.L[t].n + " swaps in.", "#4ee6b4"); return true; } }
+    return false;
   }
   function repairNeedsBench(k) { return k === "pick" ? S.tier >= 2 : k === "wpn" ? S.wpn >= 2 : k === "arm" ? S.arm >= 2 : false; }
   function repairCost(k) { return k === "pick" ? REPAIR.pick[S.tier] : k === "shovel" ? REPAIR.shovel : k === "arm" ? REPAIR.arm[S.arm] : REPAIR.wpn[S.wpn]; }
@@ -2743,7 +2750,7 @@
     if (td.bonus) td.bonus.forEach(function (bq) { if (Math.random() < bq[1]) give(bq[0], bq[2] + Math.floor(Math.random() * (bq[3] - bq[2] + 1)), x, y - 0.4); });   // loot blocks (geode, fossil, cache)
     if (id === T.LEAVES && !pl && Math.random() < 0.5) give("stick", 1, x, y - 0.55);
     if (id === T.LEAVES && !pl && ITEMS.sapling && Math.random() < 0.06) give("sapling", 1, x + 0.3, y - 0.55);   // trees grow back now                                  // Stage 1: sticks from leaves
-    else if ((id === T.MUD || id === T.MOSS) && Math.random() < 0.16) give("pebble", 1, x, y - 0.55);         // Stage 1: pebbles from mud
+    else if ((id === T.MUD || id === T.MOSS || (T.GRASS !== undefined && id === T.GRASS) || id === T.CLAY) && Math.random() < 0.4) give("pebble", Math.random() < 0.2 ? 2 : 1, x, y - 0.55);   // Stage 1: pebbles from mud, moss and clay (2 in 5 blocks)
     if (id === T.LOG && get(x, y - 1) === T.LOG) { /* upper trunk stays; keep it simple and forgiving */ }
   }
   function fgAt(x, y) {   // a Farm Gate whose 3x3 space (one block either side, two above) covers this cell, or null
@@ -4082,7 +4089,7 @@
   }
   function caveSwing(dt) {   // weapon in a cave: a swing toward where you aim hits every creature in a cone in front of you
     if (!aim.down || !S.wpn) return;
-    var brk = toolBroken("wpn"); if (brk) nag("Your weapon is broken: you are only swatting. Repair it in the Craft tab.");   // a broken blade still swats weakly, so a fight can always be finished
+    var brk = toolBroken("wpn"); if (brk) nag("Your weapon is broken: you are only swatting. Craft a new one.");   // a broken blade still swats weakly, so a fight can always be finished
     cool -= dt; if (cool > 0) return; cool = brk ? 0.55 : wCd(); S.st.swings++; heldPh = 0;   // the swing starts with the hit
     var ax = (aim.mx - ox) / ts - cp.x, ay = (aim.my - oy) / ts - (cp.y - 0.5), al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1;
     thud(300 + S.wpn * 70, 0.04);
@@ -6505,7 +6512,7 @@
     if (deadUI || panelOpen || packOpen || titleOpen || trans || hp <= 0 || OCS || HOME || PHOTO.on) return false;
     var k = specKind(); if (!k) { nag("Hold your weapon or bow to use its special move."); return false; }
     if (FOC.v < FOC.max) { nag("Land more hits to fill your Special (" + Math.floor(FOC.v) + "%)."); return false; }
-    if (k !== "volley" && toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return false; }
+    if (k !== "volley" && toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); return false; }
     FOC.v = 0; S.st.specials = (S.st.specials || 0) + 1;
     var inC = !!cave, px = inC ? cp.x : p.x, py = inC ? cp.y - 0.5 : p.y - 0.9, ax = (aim.mx - ox) / ts - px, ay = (aim.my - oy) / ts - py, al = Math.sqrt(ax * ax + ay * ay) || 1;
     if (!inC) { ax = Math.abs(ax) > 0.2 ? (ax < 0 ? -1 : 1) : p.face || 1; ay = 0; p.face = ax; } else { ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1; }
@@ -11967,7 +11974,7 @@
     canBusy = false;
     if (sel === "weapon") {   // swing: faces your aim, one swing per cooldown. Nothing takes damage until Stage 3 adds enemies.
       mine = null; if (!aim.down || !S.wpn) return;
-      if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
+      if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); return; }
       var wdx = aim.mx - (ox + p.x * ts); if (Math.abs(wdx) > ts * 0.3) p.face = wdx < 0 ? -1 : 1;
       cool -= dt; if (cool > 0) return; cool = wCd(); S.st.swings++; swingQ = 0.1;
       thud(300 + S.wpn * 70, 0.04); for (var sk = 0; sk < 3; sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.35), y: p.y - 1.1 - sk * 0.12, vx: p.face * 3, vy: -0.4, life: 0.22, max: 0.3, c: WEAPONS[S.wpn].c, s: 3 });
@@ -12013,9 +12020,9 @@
       if (id === T.AIR || !isFinite(td.hard)) { mine = null; return; }
       if (sdoorAt(tx, ty)) { nag("Tap the door to go inside."); mine = null; return; }
       if (sel === "shovel" && !SOFT[id]) { nag("A shovel only digs soft ground (mud, moss, clay, ash, snow). Use your pick for " + td.n + "."); mine = null; return; }
-      if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
+      if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Craft a new one."); mine = null; return; }
       var pawOK = sel === "pick" && effTier() === 0 && pawChop(id, tx, ty);   // PROGRESSION: paws can chop Murkwater trees
-      if (sel === "pick" && td.tier > effTier() && !pawOK) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : id === T.LOG && trunkTree(tx, ty) ? "Only Murkwater trees can be chopped by paw. Craft the Reed Pick for this one." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
+      if (sel === "pick" && td.tier > effTier() && !pawOK) { nag(S.tier >= td.tier ? "Your pick is broken. Craft a new one." : id === T.LOG && trunkTree(tx, ty) ? "Only Murkwater trees can be chopped by paw. Craft the Reed Pick for this one." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
       if (plantHit && sel !== "pick" && td.tier > 0) { nag("Hold your pick to break " + td.n + "."); mine = null; return; }
       if (td.kind === "door" || td.hatch || td.kind === "chest" || td.kind === "lootchest" || td.cont) {   // a quick tap opens/closes the door, so breaking it needs a short hold first
         var dk = tx + "," + ty; if (doorHoldKey !== dk) { doorHoldKey = dk; doorHoldT = 0; }
@@ -12291,7 +12298,7 @@
     if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet" || id === "clippers") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     var spare = spareFor(r);   // MULTIPLES: gear you already have makes a spare copy for your bag (make 7 swords if you like)
-    if (r.sh && S.shovel) return;
+    if (r.sh && S.shovel && !brokenCur(r)) return;
     if (r.can && S.can) return;
     if (r.rod && S.rod >= r.rod) return;
     if (r.charm && S.charms.own[r.charm]) return;
@@ -16186,8 +16193,8 @@
       if (cave.isle && td.kind === "lootchest" && ISLW && ISLW.sealed) { nag("A pirate curse seals this chest. Beat every wave of the island's crew first."); mine = null; return; }
       if (sel !== "pick" && sel !== "shovel") { nag("Hold your pick to break rocks (press Q)."); mine = null; return; }
       if (sel === "shovel" && !SOFT[nid]) { nag("A shovel only digs soft things. Use your pick for " + td.n + "."); mine = null; return; }
-      if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Repair it in the Craft tab."); mine = null; return; }
-      if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
+      if (sel === "shovel" && toolBroken("shovel")) { nag("Your shovel is broken. Craft a new one."); mine = null; return; }
+      if (sel === "pick" && td.tier > effTier()) { nag(S.tier >= td.tier ? "Your pick is broken. Craft a new one." : "Needs the " + PICKS[td.tier].n + " to break " + td.n + "."); mine = null; return; }
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
       mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / td.hard; mine.tick -= dt;
       if (mine.tick <= 0) { mine.tick = 0.17; matHit(nid); mine.fl = 1; chips(tx + 0.5, ty + 0.5, td.kind === "ore" ? td.c2 : td.c, 2, 3); }
@@ -16974,7 +16981,7 @@
     if (r.deco) { var dl = !!(r.bl && S.bl < r.bl), nd = !decorNear(); return { owned: false, lock: dl, lock0: false, needB: nd, can: afford && !dl, ready: afford && !dl && !nd }; }
     var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can) || (r.rod && S.rod >= r.rod) || (r.charm && S.charms.own[r.charm]) || (r.hoe && S.hoe >= r.hoe) || (r.bucket && S.bucket >= r.bucket) || (r.net && S.net >= r.net) || (r.bow && S.bow >= r.bow)),
       lock0 = !!((r.bow && S.bow < r.bow - 1) || (r.rod && S.rod < r.rod - 1) || (r.hoe && S.hoe < r.hoe - 1) || (r.bucket && S.bucket < r.bucket - 1) || (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need)))),
-      lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()), have = owned && !!spareFor(r);
+      lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()); if (owned && brokenCur(r)) owned = false; var have = owned && !!spareFor(r);
     if (have) owned = false;   // MULTIPLES: you can always make another of a weapon, armor, pick or bow
     var can = !owned && !lock && afford;
     return { owned: owned, have: have, lock: lock, lock0: lock0, needB: needB, can: can, ready: can && !needB && !(r.stn && !nearStn(r.stn)) };
@@ -17060,7 +17067,7 @@
     else { note = "Still need " + miss.join(", ") + "."; btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
     if (st.have && c !== "lock") note = "You have this one. Another goes in your bag as a spare" + (S.inv[spareFor(r)] ? " (you have " + S.inv[spareFor(r)] + ")" : "") + ".";   // (a note only: never touches the button)
     var desc = c === "lock" ? "" : r.d ? itShort(r.d, 150) : "", rep = "";
-    var ok2 = cgOwnKey(r); if ((c === "own" || st.have) && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
+    var ok2 = cgOwnKey(r); if (brokenCur(r)) note = "Yours broke. Make a new one."; if (false && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
     var rr2 = rarRec(r);
     return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + v.im + '"></span><div><b style="color:' + (rr2 ? RARC[rr2] : "inherit") + '">' + esc(r.n) + "</b>" + rarTag(rr2) + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
       + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
@@ -19279,7 +19286,7 @@
     if (Math.abs(dx) > 0.3) pl.face = dx < 0 ? -1 : 1;
     if (sel !== "pick" && sel !== "shovel") { sc.mineP = null; if (press) nag("Hold your pick to dig coral and rock (press Q)."); return; }
     if (sel === "shovel" && id !== OT.SAND && id !== OT.SILT && !d.plant) { if (press) nag("A shovel only digs sand and silt. Use your pick."); sc.mineP = null; return; }
-    if (sel === "pick" && d.tier > effTier()) { if (press || !sc.nagT || performance.now() - sc.nagT > 2000) { sc.nagT = performance.now(); nag(S.tier >= d.tier ? "Your pick is broken. Repair it in the Craft tab." : "Needs the " + PICKS[d.tier].n + " to break " + d.n + "."); } sc.mineP = null; return; }
+    if (sel === "pick" && d.tier > effTier()) { if (press || !sc.nagT || performance.now() - sc.nagT > 2000) { sc.nagT = performance.now(); nag(S.tier >= d.tier ? "Your pick is broken. Craft a new one." : "Needs the " + PICKS[d.tier].n + " to break " + d.n + "."); } sc.mineP = null; return; }
     if (!sc.mineP || sc.mineP.x !== tx || sc.mineP.y !== ty) sc.mineP = { x: tx, y: ty, p: 0, tick: 0 };
     var mp = sc.mineP; mp.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") * 0.8 / Math.max(0.05, d.hard); mp.tick -= dt;
     if (mp.tick <= 0) { mp.tick = 0.2; matHit(id === OT.WOOD || id === OT.BARREL ? T.PLANKS : T.STONE); ocFx(3, tx + 0.5, ty + 0.5, d.c, { sp: 2.5, g: 2 }); }
@@ -19300,7 +19307,7 @@
   }
   function ocSwing(dt) {
     var sc = OCS, pl = sc.pl; if (!aim.down || !S.wpn) return;
-    if (toolBroken("wpn")) { nag("Your weapon is broken. Repair it in the Craft tab."); return; }
+    if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); return; }
     if (sc.cool > 0) return; sc.cool = wCd() * 1.15; S.st.swings++;
     var cx = pl.x, cy = pl.y - 0.45, ax = (aim.mx - ox) / ts - cx, ay = (aim.my - oy) / ts - cy, al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) pl.face = ax < 0 ? -1 : 1;
     sc.swing = 0.22; sc.swA = Math.atan2(ay, ax); thud(300 + S.wpn * 70, 0.04);
@@ -20481,7 +20488,7 @@
     var w = [], need = 0.3 + 0.1 * t;
     if (S.wpn) { var mw = durMax("wpn"), dw = durOf("wpn"); if (mw > 0 && dw / mw < need) w.push(toolName("wpn") + " " + (dw <= 0 ? "is broken" : "is at " + Math.round(dw / mw * 100) + "%")); }
     if (S.arm) { var ma = durMax("arm"), da = durOf("arm"); if (ma > 0 && da / ma < need) w.push(toolName("arm") + " " + (da <= 0 ? "is broken" : "is at " + Math.round(da / ma * 100) + "%")); }
-    return w.length ? '<p class="is-warn"><b>\u26a0 Worn gear.</b> Your ' + esc(w.join(" and your ")) + ". It may not last the raid: repair it in the Craft tab first.</p>" : "";
+    return w.length ? '<p class="is-warn"><b>\u26a0 Worn gear.</b> Your ' + esc(w.join(" and your ")) + ". It may not last the raid: craft a new one first.</p>" : "";
   }
   function isleCard(Q) {   // ISLAND RAIDS: what the island card says
     var t = isleTier(Q), fr = isleFresh(Q), r = ocS().raid[Q.id];
@@ -25190,7 +25197,7 @@
   var SPK = { wpn: { L: WEAPONS, f: "wpn", d: "wpn" }, arm: { L: ARMORS, f: "arm", d: "arm" }, pick: { L: PICKS, f: "tier", d: "pick" }, bow: { L: BOWS, f: "bow" } };
   Object.keys(SPK).forEach(function (kd) { var K = SPK[kd]; for (var t = 1; t < K.L.length; t++) { if (!K.L[t]) continue; (function (t2) { var id = "sp_" + kd + t2; ITEMS[id] = { n: K.L[t2].n, spare: kd, d: "A spare " + K.L[t2].n + ". Tap it to equip it; the one you are using goes back in your bag." }; ORDER.push(id);
     OCI[id] = function (g) { if (kd === "wpn") drawWeaponIcon(g, t2); else if (kd === "pick") drawPickIcon(g, t2); else drawSpr(g, kd + t2); }; })(t); } });
-  function spareFor(r) { return r.wpn && S.wpn >= r.wpn ? "sp_wpn" + r.wpn : r.arm && S.arm >= r.arm ? "sp_arm" + r.arm : r.tier && S.tier >= r.tier ? "sp_pick" + r.tier : r.bow && S.bow >= r.bow ? "sp_bow" + r.bow : ""; }
+  function spareFor(r) { if (brokenCur(r)) return ""; return r.wpn && S.wpn >= r.wpn ? "sp_wpn" + r.wpn : r.arm && S.arm >= r.arm ? "sp_arm" + r.arm : r.tier && S.tier >= r.tier ? "sp_pick" + r.tier : r.bow && S.bow >= r.bow ? "sp_bow" + r.bow : ""; }
   function equipSpare(id) {
     var m = id.match(/^sp_(wpn|arm|pick|bow)(\d)$/); if (!m || !(S.inv[id] > 0)) return; var kd = m[1], t = +m[2], K = SPK[kd], cur = S[K.f] | 0;
     if (cur === t) { nag("You're already using a " + K.L[t].n + "."); return; }
