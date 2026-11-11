@@ -11648,6 +11648,7 @@
       + '<button type="button" data-pz="ward">' + pzIcon("ward") + "<span>Wardrobe</span></button>"
       + '<button type="button" data-pz="skill">' + pzIcon("skill") + "<span>Skills</span>" + (skFree() ? "<em>" + skFree() + " to spend</em>" : "") + "</button>"
       + '<button type="button" data-pz="cards">' + pzIcon("cards") + "<span>Croak Cards</span></button>"
+      + (DEVON ? '<button type="button" data-pz="dev">' + pzIcon("skill") + "<span>Dev menu</span></button>" : "")
       + (MP.on || MP.ws ? "" : '<button type="button" data-pz="title">' + pzIcon("home") + "<span>Main menu</span><em>Saves first</em></button>") + "</nav>"
       + '<p class="pz-saved" aria-live="polite">' + (saveFail ? "Couldn't save on this device." : "Game saved.") + "</p>";
   }
@@ -11673,6 +11674,7 @@
     if (a === "ward") { closePause(); return wardOpen(); }
     if (a === "skill") { closePause(); return skillOpen(); }
     if (a === "cards") { closePause(); return cardsOpen(); }
+    if (a === "dev") { closePause(); return devOpen(); }
   }
   if (pzEl) pzEl.addEventListener("click", function (e) {
     var b = e.target.closest("[data-pz],[data-opt]"); if (!b) { if (e.target === pzEl) closePause(); return; }
@@ -12475,6 +12477,7 @@
   }
   function hurt(n, why, cont) {
     if (MP.proxy) return mpProxyHurt(n, why);
+    if (DEVGOD && n > 0) return;   // DEV MENU god mode
     if (molt() === "dart" && !cave && n > 0) enemies.forEach(function (e) { if (!e.def && !e.u && Math.abs(e.x - p.x) < 1.8 && Math.abs(e.y - p.y) < 2) moltThorns(e); });   // POISON DART: biting you hurts   // a creature on the host's screen hit a visiting player
     if (deadUI) return;   // the death screen is up: nothing can hurt you until you respawn
     if (n <= 0 || dv("god")) return; if (!cont && hurtGrace > 0) return;
@@ -24708,6 +24711,95 @@
     var m1 = mazeNear(); if (m1) return { l: "Enter the Mangrove Maze", fn: function () { enterSite("maze", m1); }, x: m1.x + 2.5, y: m1.y - 3.4 };
     return null;
   }
+  // =====================================================================================================================
+  // DEV MENU: jump straight to any feature for playtesting. Only on the test site (ocean-update.*), localhost, or with ?dev=1 in the URL
+  // (?dev=0 turns it off again). Opens from the pause menu, the DEV chip, or the ` key.
+  // =====================================================================================================================
+  var DEVON = (function () { try { var q = location.search; if (/[?&]dev=0/.test(q)) sessionStorage.removeItem("delve-dev"); else if (/[?&]dev=1/.test(q)) sessionStorage.setItem("delve-dev", "1"); return /^(localhost|127\.0\.0\.1)$|ocean-update/.test(location.hostname) || sessionStorage.getItem("delve-dev") === "1"; } catch (e) { return false; } })();
+  var DEVTAB = "go", DEVGOD = false;
+  function devTp(x, y, label) {   // teleport on the surface (leaves a cave, house or the sea first)
+    if (x == null) { toast("Not found in this world yet.", "#ff8a8a"); return; }
+    if (cave) leaveCaveNow(); if (HOME) leaveHomeNow();
+    setTimeout(function () { var cx = clamp(Math.floor(x), 1, W - 2); p.x = x; p.y = y != null ? y : col[cx]; p.vx = p.vy = 0; p.coy = 0; cam.x = p.x; cam.y = p.y - 1; toast("→ " + label, "#7af0ff"); }, cave || HOME ? 700 : 0);
+  }
+  function devGive(o) { Object.keys(o).forEach(function (k) { if (ITEMS[k]) give(k, o[k], undefined, undefined, true); }); reslot(); hbDirty = true; }
+  var DEVA = {
+    go: [
+      ["Camp (spawn)", function () { devTp(world.spawn.x + 0.5, null, "Camp"); }],
+      ["Witch's Tower: door", function () { var t = towerS(); devTp(t.built ? t.x - 1.5 : null, t.gy, "Witch's Tower"); }],
+      ["Witch's Tower: top", function () { var t = towerS(); devTp(t.built ? t.x + 4.5 : null, t.gy - 24, "Tower top"); }],
+      ["Glow Hollow", function () { var s = sites(); devTp(s && s.glow ? s.glow.x + 4.5 : null, null, "Glow Hollow"); }],
+      ["Mangrove Maze arch", function () { var s = sites(); devTp(s && s.maze ? s.maze.x + 5.5 : null, null, "Mangrove Maze"); }],
+      ["Sky island 1", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); devTp(I[0] ? I[0].x - 3.5 : null, I[0] ? I[0].y : null, "Sky island"); }],
+      ["Sky island 2", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); devTp(I[1] ? I[1].x - 3.5 : null, I[1] ? I[1].y : null, "Sky island"); }],
+      ["Sky island 3", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); devTp(I[2] ? I[2].x - 3.5 : null, I[2] ? I[2].y : null, "Sky island"); }],
+      ["Swamp Museum", function () { var M = museumSpot(); devTp(M ? M.x + 1.5 : null, M ? M.y : null, "Museum"); }],
+      ["Pier pool (sea monster)", function () { var x = pierGateX(); devTp(x != null ? x + 2.5 : null, null, "Pier pool"); }],
+      ["Heart Tree", function () { var H2 = heartSpot(); devTp(H2 ? H2.x - 2 : null, null, "Heart Tree"); }],
+      ["Enter the Glow Marsh", function () { S.time = 320; var s = sites(); if (s && s.glow) { devTp(s.glow.x + 2.5, null, "Glow Hollow"); setTimeout(function () { enterSite("glow", s.glow); }, 300); } }],
+      ["Enter the Mangrove Maze", function () { var s = sites(); if (s && s.maze) { devTp(s.maze.x + 2.5, null, "Maze"); setTimeout(function () { enterSite("maze", s.maze); }, 300); } }]
+    ],
+    give: [
+      ["Every mount", function () { devGive({ m_toad: 1, m_gator: 1, m_heron: 1, m_mudo: 1, m_drake: 1, m_mammoth: 1, m_broom: 1, balloon: 1 }); toast("Mounts in your bag: put one in the hotbar to ride.", "#ffd23f"); }],
+      ["Bug Net + spawn bugs", function () { S.net = Math.max(S.net || 0, 1); S.time = 120; BUGT.t = 0; for (var i = 0; i < 6; i++) { BUGT.t = 0; bugTick(0.01); } BUGL.forEach(function (b, i) { b.x = p.x + 2 + i; b.life = 300; }); toast("Bug Net ready, bugs nearby. Select the net and tap them.", "#ffd23f"); }],
+      ["Grapple + tree-frog molt", function () { devGive({ grapple: 1 }); S.molt = S.molt || {}; S.molt.k = "tree"; if (typeof lookChanged === "function") lookChanged(); toast("Grapple added, and you're a tree frog (wall cling).", "#ffd23f"); }],
+      ["All fossils", function () { var o = {}; Object.keys(FOSSILS).forEach(function (k) { FPARTS.forEach(function (q) { o["fos_" + k + "_" + q[0]] = 1; }); }); devGive(o); }],
+      ["Enchanting stuff", function () { devGive({ spore: 60, crystal: 20, starshard: 4, dreamshard: 6, mossaltar: 1 }); }],
+      ["Terrarium + 1 of each bug", function () { var o = { terrarium: 1 }; Object.keys(BUGS).forEach(function (k) { o["bug_" + k] = 1; p8().bug[k] = p8().bug[k] || 1; }); devGive(o); }],
+      ["20 fish + Leviathan Scale", function () { devGive({ catfish: 20, levscale: 1 }); }],
+      ["Balloon materials + Lumen", function () { devGive({ cloth: 10, rope: 6, planks: 6, lumen: 8, balloon: 1 }); }],
+      ["3 of every card pack", function () { var B = SCB(); if (B) B.packs().forEach(function (P) { B.givePack(P.id, 3); }); toast("Packs added: Croak Cards > Packs.", "#ffd23f"); }],
+      ["500 Swamp Coins", function () { var B = SCB(); if (B) B.coins(500); }],
+      ["Full health", function () { hp = MAXHP; drawHp(); }]
+    ],
+    set: [
+      ["Make it day", function () { S.time = 120; }],
+      ["Make it night", function () { S.time = 320; }],
+      ["Skip to tomorrow", function () { S.days = (S.days | 0) + 1; S.time = 120; }],
+      ["Max all skill levels", function () { S.st.mined = Math.max(S.st.mined || 0, 4000); S.st.fish = Math.max(S.st.fish || 0, 500); S.st.harvests = Math.max(S.st.harvests || 0, 1400); S.st.ckills = Math.max(S.st.ckills || 0, 700); toast("Skill points ready: pause > Skills.", "#ffd23f"); }],
+      ["Bird: Golden form", function () { S.st.fetched = Math.max(S.st.fetched || 0, 200); }],
+      ["Farm animals: Prize form", function () { homeAnimals().forEach(function (a) { a.f = 10; }); toast("Every homestead animal is at 10 hearts.", "#ffd23f"); }],
+      ["Sea monster: hatch", function () { var o = p8().sm; o.st = 2; o.fd = 0; o.hd = S.days | 0; }],
+      ["Sea monster: grown", function () { var o = p8().sm; o.st = 4; o.fd = 8; S.st.smgrown = 1; }],
+      ["Bloom the land here", function () { p8(); if (!p8().zn) p8().zn = {}; p8().zn[zoneOf(p.x)] = 100; toast("This stretch is blooming. At night a Bog Spirit visits.", "#7aff9a"); }],
+      ["Sour the land here", function () { p8(); if (!p8().zn) p8().zn = {}; p8().zn[zoneOf(p.x)] = -100; }],
+      ["Grow the Heart Tree", function () { p8(); if (!p8().zn) p8().zn = {}; for (var z = 0; z < 6; z++) p8().zn[zoneOf(world.spawn.x) + z - 2] = 90; }],
+      ["Show the tower rune order", function () { var t = towerS(); toast(t.ord ? "Order: " + t.ord.map(function (q) { return RUNE_S[q]; }).join(" → ") : "Tower not built yet.", "#d8a8ff"); }],
+      ["Reset the tower puzzle", function () { var t = towerS(); if (!t.built) return; t.lit = []; t.done = 0; t.broom = 0; for (var i = 1; i <= 9; i++) if ([2, 3].indexOf(i) >= 0) setT(t.x + i, t.gy - 24, T.X_witchgate); }],
+      ["Unlock all card opponents", function () { S.st.croakaf = Math.max(S.st.croakaf || 0, 1); S.st.fish = Math.max(S.st.fish || 0, 6); S.days = Math.max(S.days | 0, 4); }],
+      ["Reset today's daily rewards", function () { var o = p8(); o.gp = o.mz = o.cwd = o.spd = null; if (o.sm) o.sm.gift = o.sm.fed = null; }],
+      ["God mode: " + (DEVGOD ? "ON" : "off"), function () { DEVGOD = !DEVGOD; toast("God mode " + (DEVGOD ? "on: you take no damage." : "off."), "#ffd23f"); }]
+    ],
+    open: [
+      ["Croak Cards", function () { return cardsOpen("play"); }],
+      ["Skills", function () { return skillOpen(); }],
+      ["Mossy Altar", function () { return altarOpen(); }],
+      ["Swamp Museum", function () { return museumOpen(); }],
+      ["Sea monster pool", function () { return smOpen(); }],
+      ["Heart Tree", function () { return heartOpen(); }],
+      ["Dream (play one now)", function () { return dreamStart(); }],
+      ["Wardrobe", function () { return wardOpen(); }],
+      ["Bog Spirit gift (needs bloom + night)", function () { S.time = 320; p8(); if (!p8().zn) p8().zn = {}; p8().zn[zoneOf(p.x)] = 100; p8().spd = null; var s = spiritSpot(); if (s) devTp(s.x - 1.5, null, "Bog Spirit"); }]
+    ]
+  };
+  function devOpen(tab) {
+    if (!DEVON) return; if (tab) DEVTAB = tab; if (!p4Open(290)) return;
+    DEVA.set[DEVA.set.length - 1][0] = "God mode: " + (DEVGOD ? "ON" : "off");
+    var h = '<h2 class="st-hi">🛠 Dev menu</h2><p class="st-tip">Only shows on the test site. It changes this world\'s save, so test in a spare world.</p><div class="p7-tabs">' + [["go", "Go to"], ["give", "Give"], ["set", "Set"], ["open", "Open"]].map(function (t) { return '<button type="button" class="' + (DEVTAB === t[0] ? "on" : "") + '" data-p8="dev:tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + "</div>";
+    h += '<div class="p8-dev">' + DEVA[DEVTAB].map(function (a, i) { return '<button type="button" data-p8="dev:do:' + DEVTAB + ":" + i + '">' + esc(a[0]) + "</button>"; }).join("") + "</div>";
+    h += '<div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>'; p4Box(h, "#7af0ff");
+  }
+  function devAct(q) {
+    if (q[1] === "tab") return devOpen(q[2]);
+    var A = DEVA[q[2]] && DEVA[q[2]][+q[3]]; if (!A) return; var opensPanel = q[2] === "open";
+    if (!opensPanel) closeStory();
+    try { A[1](); } catch (e) { toast("Dev action failed: " + e.message, "#ff8a8a"); }
+    S.st.devused = 1; save(); checkGoals();
+  }
+  if (DEVON) {
+    window.addEventListener("keydown", function (e) { if (e.key === "`" && !/INPUT|TEXTAREA/.test((e.target || {}).tagName || "")) { e.preventDefault(); if (storyOpen === 290) closeStory(); else devOpen(); } });
+    (function () { var b = document.createElement("button"); b.type = "button"; b.className = "p8-devchip"; b.textContent = "DEV"; b.title = "Dev menu (` key)"; b.addEventListener("click", function () { if (world) devOpen(); }); var host = document.getElementById("sbxStage") || document.body; host.appendChild(b); })();
+  }
   // ---------- Phase 7 router, tick, drawing, pill and test hooks ----------
   function p8Act(a) {
     var q = a.split(":");
@@ -24718,6 +24810,7 @@
     else if (q[0] === "sk") skillAct(q[1]);
     else if (q[0] === "dr") { if (DRM && !DRM.end) dreamEnd(); else closeStory(); }
     else if (q[0] === "cd") cardAct(q);
+    else if (q[0] === "dev") devAct(q);
   }
   var P8D = -1;
   function p8Tick(dt) { var d = S.days | 0; if (P8D < 0) P8D = d; if (d > P8D) { P8D = d; smDaily(); } bugTick(dt); swrTick(dt); skillTick(dt); siteTick(dt); P8C -= dt; if (P8C <= 0) { P8C = 1; if (world && !cave && !HOME && !OCS && !trans) { towerTick(); isleTick2(); } } }
@@ -24735,6 +24828,7 @@
   }
   function p8Tap(tx, ty) { var td = TILES[get(tx, ty)]; if (!td) return false; if (td.kind === "terrarium") { terrOpen(tx, ty); return true; } if (td.kind === "mossaltar") { altarOpen(); return true; } if (td.kind === "witchrune") return runeTap(tx, ty); return false; }
   function p8JournalHtml() { var o = p8(); return "<h3>Collections</h3><p>Bugs " + Object.keys(o.bug).length + "/" + Object.keys(BUGS).length + " · Cards " + myCards().length + "/" + (SCB() ? SCB().cards().length : 0) + " · Skeletons " + (S.st.skeletons || 0) + "/3 · Sea monster: " + (o.sm.st ? SM_ST[o.sm.st] : "none yet") + "</p>"; }
+  window.__sbx.dev = { on: DEVON, open: devOpen, act: devAct, A: DEVA };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };
   window.__sbx.p8 = { S: p8, mount: mountK, mountArt: mountArt, M: MOUNTS, bugs: BUGL, BUGS: BUGS, bugTick: bugTick, catch: bugCatch, bugArt: bugArt, terr: terrOpen, sm: smOpen, smAct: smAct, smArt: smArt, smDaily: smDaily, mined: p8Mined, mus: museumOpen, musAct: museumAct, musSpot: museumSpot, altar: altarOpen, altarAct: altarAct, skill: skillOpen, skillAct: skillAct, skLv: skLv, zone: zoneScore, swr: swrTick, spirit: spiritSpot, spiritArt: spiritArt, heart: heartOpen, heartSpot: heartSpot, dream: dreamStart, D: function () { return DRM; }, cards: cardsOpen, duel: duelStart, play: duelPlay, cardArt: cardArt, give: cardGive, pack: cardPackOpen, act: p8Act, pill: p8Pill, table: tableSpot, evo: { bird: birdStage, anim: animStage }, mul: { dig: p8DigMul, dmg: p8DmgMul, hurt: p8HurtMul, spd: p8SpdMul, bite: p8BiteMul, crop: p8CropMul } };
   window.__sbx.p7 = { ward: wardOpen, mopen: moltOpen, act: p7Act, dance: function (k) { emote(k); } };

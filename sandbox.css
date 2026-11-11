@@ -2589,3 +2589,8 @@ small.bo-cost{display:flex}
 .p8-rev p{margin:0;font:800 .85rem Nunito,sans-serif;text-align:center}.p8-flip{width:150px;perspective:600px}.p8-flip .p8-card{max-width:150px;animation:p8flip .7s cubic-bezier(.2,.9,.3,1.3) both}
 @keyframes p8flip{0%{transform:rotateY(180deg) scale(.6);filter:brightness(3)}60%{filter:brightness(1.6)}100%{transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){.p8-flip .p8-card{animation:none}}
+/* DEV MENU (test site only) */
+.p8-dev{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 12px}.p8-dev button{padding:10px 8px;border-radius:12px;border:1.5px solid #7af0ff44;background:#7af0ff12;color:#e8fbff;font:800 .78rem/1.2 Nunito,sans-serif;text-align:left;cursor:pointer;text-transform:none;letter-spacing:0}
+.p8-dev button:active{background:#7af0ff33}
+.p8-devchip{position:absolute;z-index:40;left:10px;top:calc(env(safe-area-inset-top) + 112px);padding:3px 10px;border-radius:999px;border:1.5px solid #7af0ff88;background:#06181cdd;color:#7af0ff;font:900 .66rem Nunito,sans-serif;letter-spacing:.12em;cursor:pointer;opacity:.75}
+.p8-devchip:hover{opacity:1}
