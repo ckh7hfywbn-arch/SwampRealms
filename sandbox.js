@@ -9116,11 +9116,11 @@
       hi: ["Mind the sparkles, they cut.", "Got any shiny for old Bogrin?", "Ah, a fellow admirer of things that glitter."],
       talk: ["A gem is just a rock with ambition.", "Amethyst grows in geodes like frog eggs grow in ponds. Slowly, and all at once.", "My beard has three gems braided in it. Don't count them, it's rude."],
       tr: [[{ amethyst: 2 }, { quartz: 4 }], [{ quartz: 6 }, { amethyst: 1 }], [{ crystal: 10 }, { moonstone: 1 }]], gift: { amethyst: 4, quartz: 4 } },
-    { id: "chip", n: "Chip Woodgnaw", role: "Beaver Lumberjack", sp: "beaver", at: 60, cl: { t: "flannel", c: "#c8302a", c2: "#5a1410" }, hat: "beanie", hc: "#3a6a8a", tool: "axe", tail: "flat",
+    { id: "chip", n: "Chip Woodgnaw", role: "Beaver Lumberjack", sp: "beaver", at: 81, cl: { t: "flannel", c: "#c8302a", c2: "#5a1410" }, hat: "beanie", hc: "#3a6a8a", tool: "axe", tail: "flat",
       hi: ["TIMBERRR! Oh, hello.", "Watch your toes, I just sharpened my teeth.", "Fresh logs, fresh air, fresh day!"],
       talk: ["We plant two trees for every one we chew. Tess counts them. Tess counts everything.", "The islet trees grow funny up here. Always leaning toward the sun.", "Ever tried pine sap on toast? Don't."],
       tr: [[{ wood: 8 }, { planks: 24 }], [{ stick: 12 }, { sapling: 2 }], [{ leaves: 20 }, { wood: 6 }]], gift: { sapling: 4, planks: 30 } },
-    { id: "tess", n: "Timber Tess", role: "Beaver Lumberjack", sp: "beaver", at: 76, cl: { t: "flannel", c: "#3a8a4a", c2: "#14401e" }, hat: "beanie", hc: "#f2c14e", tool: "axe", tail: "flat",
+    { id: "tess", n: "Timber Tess", role: "Beaver Lumberjack", sp: "beaver", at: 97, cl: { t: "flannel", c: "#3a8a4a", c2: "#14401e" }, hat: "beanie", hc: "#f2c14e", tool: "axe", tail: "flat",
       hi: ["Two hundred and eleven trees planted this season.", "You've got sawdust on you. Respect.", "Chip's napping again, isn't he."],
       talk: ["Measure twice, chew once.", "That rope bridge? Built it with my own teeth. Don't jump on it.", "The best wood in the swamp is swamp oak. The best wood in the sky is... also swamp oak. We brought some."],
       tr: [[{ planks: 20 }, { wall_plank: 12 }], [{ wood: 10 }, { charcoal: 4 }], [{ fiber: 10 }, { rope: 3 }]], gift: { wood: 20, rope: 4 } },
@@ -9128,15 +9128,15 @@
       hi: ["*clang* Hm? Oh. Hello.", "Slow and steady makes the sharpest blade.", "Bring me your dented things."],
       talk: ["I've been hammering on this anvil for ninety years. It's starting to look like me.", "Iron from the swamp, fire from the bog, patience from the turtle.", "Mending is half of smithing. The other half is complaining about the heat."],
       tr: [[{ ironingot: 2 }, { repair: 1 }], [{ bogiron: 6, charcoal: 2 }, { ironingot: 3 }], [{ ironingot: 4, cinder: 4 }, { ironblock: 1 }]], gift: { ironingot: 8, tonic_hide: 2 } },
-    { id: "otto", n: "Otto Ripplepaw", role: "Otter Fisher", sp: "otter", at: 66, cl: { t: "vest", c: "#d8a43a", c2: "#7a5a1a" }, hat: "bucket", tool: "rod",
+    { id: "otto", n: "Otto Ripplepaw", role: "Otter Fisher", sp: "otter", at: 87, cl: { t: "vest", c: "#d8a43a", c2: "#7a5a1a" }, hat: "bucket", tool: "rod",
       hi: ["Caught anything good lately?", "The clouds are full of fish if you know where to cast. Just kidding. Probably.", "Hey hey, groundling!"],
       talk: ["I fish off the bridge. Mostly I catch Tess's hat.", "Worms work, fireflies work better, and a sad song works best of all.", "The rarest fish bite at night, when the lake's as dark as your coffee."],
       tr: [[{ bogminnow: 4 }, { earthworm: 6 }], [{ catfish: 3 }, { firefly: 4 }], [{ frosttrout: 2, catfish: 2 }, { tonic_fish: 1 }]], gift: { glowfin: 2, tonic_fish: 2 } },
-    { id: "nettie", n: "Nettie Newt", role: "Newt Baker", sp: "newt", at: 45, cl: { t: "apron", c: "#f4f0e8", c2: "#c8c0b0" }, hat: "chef", tool: "pin", tail: "long",
+    { id: "nettie", n: "Nettie Newt", role: "Newt Baker", sp: "newt", at: 66, cl: { t: "apron", c: "#f4f0e8", c2: "#c8c0b0" }, hat: "chef", tool: "pin", tail: "long",
       hi: ["Mind the flour!", "Something smells good, doesn't it? That's me. I mean the bread.", "Hungry? You look hungry."],
       talk: ["Baking up here is tricky. The cakes keep trying to float away.", "Frostberry pie is my secret recipe. The secret is frostberries.", "Old Croaker sends down for my carrot cake every spring."],
       tr: [[{ carrot: 4, duckegg: 1 }, { carrotcake: 2 }], [{ frostberry: 5 }, { berrypie: 2 }], [{ potato: 4 }, { bakedpotato: 4 }]], gift: { feast: 1, carrotcake: 2 } },
-    { id: "rocco", n: "Rocco Ringtail", role: "Raccoon Trader", sp: "raccoon", at: 48, cl: { t: "vest", c: "#7a3a8a", c2: "#f2c14e" }, hat: "none", tool: "pack", tail: "ring",
+    { id: "rocco", n: "Rocco Ringtail", role: "Raccoon Trader", sp: "raccoon", at: 69, cl: { t: "vest", c: "#7a3a8a", c2: "#f2c14e" }, hat: "none", tool: "pack", tail: "ring",
       hi: ["Psst. Want to see something shiny?", "Everything's for sale. Except my tail.", "Coins, coins, lovely coins!"],
       talk: ["I found this island by following a very suspicious cloud.", "One frog's junk is another raccoon's treasure. Usually the frog's treasure too.", "Don't ask where I got the Star Shards. Okay you can ask. I won't say."],
       tr: [[{ ancientcoin: 2 }, { goldfeather: 1 }], [{ ancientcoin: 4 }, { tonic_luck: 1 }], [{ amber: 8 }, { ancientcoin: 2 }]], gift: { ancientcoin: 5, prism: 1 } },
@@ -9331,7 +9331,7 @@
     } else snd("coin");
     chips(v.x, v.y - 1, "#8fd6ff", 12, 6); renderVil(); checkGoals(); save();
   }
-  function vilPill(g, now) { var v = vilNear(); if (!v || panelOpen) return false; drawPill(g, now, "Talk to " + v.V.n.split(" ")[0] + (coarse ? "" : " (F)"), ox + v.x * ts, oy + (v.y - vilH(v)) * ts - ts * 1.05, false, function () { openVil(v); }); return true; }
+  function vilPill(g, now) { var v = vilNear(); if (!v || panelOpen) return false; drawPill(g, now, "Talk to " + v.V.n.split(" ")[0] + (coarse ? "" : " (F)"), ox + v.x * ts, oy + (v.y - vilH(v)) * ts - 14 - ts * 0.3 - Math.max(14, Math.min(ts, 34) * 0.5), false, function () { openVil(v); }); return true; }
   // ---------- GROUND DROPS, TREE FELLING AND LEAF DECAY ----------
   // DROPS: whatever a broken block gives (its drop, bonus finds, chest loot, sticks...) now pops out as an item on the ground: it bounces,
   // settles, and floats to you when you walk close (or a tamed bird fetches it). Saved with the world (S.gdrop), so nothing is lost.
@@ -12951,6 +12951,7 @@
       for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
         var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
+        if (q.sky && (x0 + xx < q.x0 || x0 + xx > q.x1) && y0 + yy >= q.gy - q.bh && !(x0 + xx === q.outX && y0 + yy === q.gy - 3)) continue;   // a sky house's wide roof must not swallow the market stall or lamp beside its walls
         if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
         if (wv) { P.wl[k] = wv; wl[gi] = 0; any = true; }
       }
@@ -13789,7 +13790,7 @@
             if (nT && td.kind !== "moss" && td.kind !== "snow") { g.drawImage(shadeC("t30"), sx3, sy); }
             g.fillStyle = "rgba(0,0,0,.3)"; if (nB) g.fillRect(sx3, sy + ts - CELL.edge, ts, CELL.edge); if (nL) g.fillRect(sx3, sy, CELL.edge, ts); if (nR) g.fillRect(sx3 + ts - CELL.edge, sy, CELL.edge, ts);
           }
-          if (td.kind !== "door" && td.light < 3) {   // rounded 3D shading: a bright bevel on the lit top and a soft shadow thrown onto whatever is next to the block
+          if (td.kind !== "door" && td.light < 3 && !(MATF[id] && roofSlope(id, i, j))) {   // rounded 3D shading (not on a sloped roof: its open half would get a pale box): a bright bevel on the lit top and a soft shadow thrown onto whatever is next to the block
             if (nT) g.drawImage(shadeC("t34"), sx3, sy);
             if (nB) { var bgc = shadeC("bot"); g.drawImage(bgc, sx3, sy + ts - bgc.height); }
             if (nR && j >= col[i + 1]) g.drawImage(shadeC("rt"), sx3 + ts, sy);
@@ -13865,7 +13866,8 @@
       WG[c] = L; if (L) { anyLamp = true; var lrc = lightRGB(id); CRG[c] = (L * lrc[0] / 255) | 0; CGG[c] = (L * lrc[1] / 255) | 0; CBG[c] = (L * lrc[2] / 255) | 0; } else CRG[c] = CGG[c] = CBG[c] = 0;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
-      LG[c] = L; OP[c] = TILES[id].solid && !TILES[id].see && !(rmask && X >= 0 && X < W && Y >= 0 && Y < H && rmask[Y * W + X] === id) && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
+      var rsl = MATF[id] && X >= 0 && X < W && roofSlope(id, X, Y); if (rsl) { if (skyL > L) L = skyL; }   // ROOF SLOPES: half the cell is open sky, so light it like the sky (no pale or dark box round a sloped roof)
+      LG[c] = L; OP[c] = rsl ? LQ : TILES[id].solid && !TILES[id].see && !(rmask && X >= 0 && X < W && Y >= 0 && Y < H && rmask[Y * W + X] === id) && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : 10) * LQ);
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
@@ -18970,7 +18972,7 @@
   var OPG = { w: null, x: 0 };   // the gate stands where Murkwater Swamp meets the Ember Bog, as if the sea lay just behind that border
   // CAMP: Croaker's Pier and the Homestead both stand at camp, beside the Mine and the mailbox, in every world, so camp is the heart of the
   // game and exploring is pure freedom. campSpots() picks two flat stretches near spawn that keep clear of the Mine headframe, the mailbox,
-  // Old Croaker and each other: the pier's gate (with the sea monster pool beside it) and the Farm Gate (a real block, placed once per world).
+  // Old Croaker and each other: the pier's gate (the sea monster pool is inside, on the pier deck) and the Farm Gate (a real block, placed once per world).
   var CAMPS = { w: null };
   function campSpots() {
     if (CAMPS.w === world) return CAMPS; CAMPS = { w: world, pier: -1, farm: -1 }; if (!world || !col) return CAMPS;
@@ -19414,6 +19416,7 @@
       if (pl.x > P.slip - 5) A.push({ label: ocS().boat.done ? "Set sail" : "Work on the boat", ax: P.x1 + 2, ay: OSEA - 3.6, fn: function () { if (ocS().boat.done) ocSetSail(); else openBoat(); } });
       if (pl.x < 5) A.push({ label: "Back to the swamp", ax: 3, ay: OSEA - 3, fn: ocLeave });
       if (OWL > OSEA + 1.7 && pl.x > 8 && pl.x < 16) A.push({ label: "Climb down to the tide flats", ax: 12.5, ay: OSEA - 2.6, fn: tideDown });   // REAL TIDES
+      if (smNear()) A.push({ label: p8().sm.st ? (p8().sm.nm || "Sea monster") : "Pier pool", ax: SMX, ay: OSEA - 3.4, fn: smOpen });   // the pier pool
       if (Math.abs(pl.x - (DBX + 0.5)) < 2.2 && !DERBY) A.push({ label: "Pearl Dive Derby", ax: DBX + 0.5, ay: OSEA - 4.2, fn: openDerby });   // THE PEARL DIVE DERBY
     }
     if (sc.main && sc.diving && sc.land && sc.landOn && pl.x < m.pier.x1 && pl.y < OSEA + 11 && !domeIn()) A.push({ label: "Climb up to the pier", ax: pl.x, ay: pl.y - 2.2, fn: tideUp });   // the tide flats and the Tide Cave only
@@ -20051,6 +20054,7 @@
     }
     if (!sc.main) ocBoatSide(g, ox + (Math.floor(OCW / 2) + 0.5) * ts, surf + ts * 0.15, ts * 0.62, fullBoatParts(), now, { lit: dl < 0.6 });   // the Lily Belle waits above the dive site
     drawCroako(g, now);   // Croako on the beach
+    seaMonDraw(g, now);   // the pier pool
     drawCompassGlint(g, now);   // PHASE 4: Croaker's lost compass on the sea floor
     // --- life ---
     sc.amb.forEach(function (a) { ocDrawAmb(g, a, now); });
@@ -22006,10 +22010,16 @@
   }
   // ---------- #45 FAMILY DINNER: every Feastday at dusk the family eats together at the Sky Village ----------
   var DINX = null;
+  function skyOpen(x) {   // a Sky Village cell that is clear of houses (their tiles are pictures, so they read as air), stalls and lamps
+    var s = world && world.sky; if (!s) return false;
+    for (var q = 0, L = world.structs || []; q < L.length; q++) if (L[q].sky && x >= L[q].x0 - 1 && x <= L[q].x1 + 1) return false;
+    for (var y = s.y - 3; y <= s.y - 1; y++) if (get(x, y) !== T.AIR) return false;
+    return true;
+  }
   function dinSpot() {   // an open stretch of five tiles in the middle of the Sky Village
     var s = world && world.sky; if (!s) return null; if (DINX && DINX.w === world) return DINX.v; DINX = { w: world, v: null };
     var mid = Math.floor((s.a + s.z) / 2);
-    for (var d = 0; d < 40 && !DINX.v; d++) for (var sg = -1; sg <= 1; sg += 2) { var x0 = mid + sg * d, ok = true; for (var x = x0 - 2; x <= x0 + 2; x++) { if (!TILES[get(x, s.y)].solid || TILES[get(x, s.y - 1)].solid || TILES[get(x, s.y - 2)].solid || TILES[get(x, s.y - 3)].solid) ok = false; } if (ok && !DINX.v) DINX.v = { x: x0 + 0.5, y: s.y }; }
+    for (var d = 0; d < 40 && !DINX.v; d++) for (var sg = -1; sg <= 1; sg += 2) { var x0 = mid + sg * d, ok = true; for (var x = x0 - 2; x <= x0 + 2; x++) { if (!skyOpen(x) || !TILES[get(x, s.y)].solid || TILES[get(x, s.y - 1)].solid || TILES[get(x, s.y - 2)].solid || TILES[get(x, s.y - 3)].solid) ok = false; } if (ok && !DINX.v) DINX.v = { x: x0 + 0.5, y: s.y }; }
     return DINX.v;
   }
   function dinNow() { return wkday() === "Feastday" && S.time >= 200 && S.time < 340; }
@@ -22445,7 +22455,7 @@
   var NBX = null;
   function nbSpot() {
     var s = world && world.sky, D = dinSpot(); if (!s || !D) return null; if (NBX && NBX.w === world) return NBX.v; NBX = { w: world, v: null };
-    for (var d = 5; d < 30 && !NBX.v; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(D.x) + sg * d; if (!NBX.v && TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid) NBX.v = { x: x + 1, y: s.y }; }
+    for (var d = 5; d < 30 && !NBX.v; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(D.x) + sg * d; if (!NBX.v && skyOpen(x) && skyOpen(x + 1) && TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid) NBX.v = { x: x + 1, y: s.y }; }
     return NBX.v;
   }
   var NB_GIVE = [["planks", 12, "needs planks to fix the roof"], ["torch", 6, "is scared of the dark"], ["carrot", 4, "is baking carrot bread"], ["fiber", 10, "is weaving new baskets"], ["stone", 15, "is building a garden wall"], ["glass", 3, "broke a window (again)"], ["kelpwrap", 2, "is craving kelp wraps"], ["wood", 20, "needs firewood for the winter"], ["mushroompie", 1, "forgot a friend's birthday"], ["bogiron", 6, "is fixing the village bell"], ["swamptea", 2, "has a sore throat"], ["pearl", 1, "wants to propose to someone"], ["clay", 10, "is making flower pots"], ["honeyjar", 1, "has a sweet tooth"]];
@@ -22996,7 +23006,7 @@
   var BKX = null;
   function bankSpot() {
     var s = world && world.sky, D = dinSpot(), B = nbSpot(); if (!s || !D) return null; if (BKX && BKX.w === world) return BKX.v; BKX = { w: world, v: null }; var sgn = B && B.x > D.x ? -1 : 1;
-    for (var d = 5; d < 30 && !BKX.v; d++) { var x = Math.floor(D.x) + sgn * d; if (B && Math.abs(x - B.x) < 4) continue; if (TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid) BKX.v = { x: x + 1, y: s.y }; }
+    for (var d = 5; d < 30 && !BKX.v; d++) { var x = Math.floor(D.x) + sgn * d; if (B && Math.abs(x - B.x) < 4) continue; if (skyOpen(x) && skyOpen(x + 1) && TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid) BKX.v = { x: x + 1, y: s.y }; }
     return BKX.v;
   }
   function bankNear() { var B = bankSpot(); return B && !cave && !HOME && !OCS && Math.abs(B.x - p.x) < 2.2 && Math.abs(B.y - p.y) < 2.4; }
@@ -24465,7 +24475,8 @@
   SIDE.push({ id: "p8_bugs", cat: "Collector", ch: 0, n: "Bug Hunter", d: "Catch every kind of bug with your Bug Net. Sneak up on them: running scares them off.", need: 12, v: function () { return Object.keys(p8().bug).length; }, rw: { goldcoin: 3, firefly: 6 }, show: function () { return (S.st.caught || 0) > 0; } });
   // ---------- #84 RAISE A BABY SEA MONSTER at the pier ----------
   var SM_ST = ["", "Egg", "Hatchling", "Youngster", "Grown"];
-  function smNear() { if (cave || HOME || OCS || !world) return false; var x = pierGateX() + 6; return Math.abs(p.x - x) < 3.5 && Math.abs(p.y - (col[x] || p.y)) < 4; }
+  var SMX = 38.5;   // the pier pool: a wooden tub on Croaker's Pier deck, between two lamps (it used to be an invisible spot by the gate in the swamp)
+  function smNear() { return !!(OCS && OCS.main && !OCS.diving && OCS.pl && Math.abs(OCS.pl.x - SMX) < 2.2 && OCS.pl.y < OSEA + 0.5); }
   function smOpen() {
     if (!p4Open(273)) return; var o = p8().sm, d = S.days | 0, fish = Object.keys(S.inv).filter(function (k) { return FMETA[k] && S.inv[k] > 0; }), n = fish.reduce(function (a, k) { return a + S.inv[k]; }, 0), h;
     if (!o.st) { var hasEgg = S.inv.smegg > 0 || S.inv.levscale > 0;
@@ -24503,12 +24514,22 @@
   }
   var SMPIC = {};
   function smPic(st) { if (SMPIC[st]) return SMPIC[st]; var c = document.createElement("canvas"); c.width = c.height = 160; var g = c.getContext("2d"); g.translate(80, st === 1 ? 140 : 150); g.scale(st === 1 ? 6 : 3.4, st === 1 ? 6 : 3.4); g.lineJoin = "round"; smArt(g, st, 0); SMPIC[st] = c.toDataURL(); cvFree(c); return SMPIC[st]; }
-  function seaMonDraw(g, now) {
-    var o = p8().sm; if (!o.st || cave || HOME || OCS || !world) return; var x = pierGateX() + 6, gy = col[x]; if (!gy) return; var sx = ox + (x + 0.5) * ts, sy = oy + gy * ts; if (sx < -ts * 4 || sx > vw + ts * 4) return;
-    var k = ts / 30; g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
-    g.beginPath(); g.ellipse(0, 0, 26, 5, 0, 0, 7); aInk(g, aG(g, -5, 5, "#5ac8e8", "#2a8ab8", "#145a7a"), "#3a2a1a", 2);   // the pier pool, a wooden tub sunk in the bank
-    g.save(); g.beginPath(); g.rect(-30, -60, 60, 61); g.clip(); smArt(g, o.st, now / 1000); g.restore();
-    g.fillStyle = "rgba(200,240,255,.5)"; g.beginPath(); g.ellipse(0, 0, 24, 3.4, 0, 0, Math.PI); g.fill(); g.restore();
+  function seaMonDraw(g, now) {   // the pier pool on Croaker's Pier (drawn in the pier scene): a coopered tub of sea water, with the egg or your sea monster in it
+    if (!OCS || !OCS.main || OCS.diving) return; var o = p8().sm, sx = ox + SMX * ts, sy = oy + (OSEA - 1) * ts; if (sx < -ts * 4 || sx > vw + ts * 4) return;
+    var k = ts / 30, t = now / 1000, IN = "#2a1a0e", wy = -20; g.save(); g.translate(sx, sy); g.scale(k, k); g.lineJoin = "round";
+    g.fillStyle = "rgba(0,10,20,.3)"; g.beginPath(); g.ellipse(0, 1, 40, 3.5, 0, 0, 7); g.fill();   // its shadow on the deck
+    g.beginPath(); g.ellipse(0, wy, 34, 6, 0, 0, 7); aInk(g, "#3a2414", IN, 1.6);   // the back rim and the dark inside
+    g.beginPath(); g.ellipse(0, wy + 1, 31, 4.6, 0, 0, 7); g.fillStyle = aG(g, wy - 5, wy + 6, "#7ad8f0", "#3aa0c8", "#1a6a8a"); g.fill();   // the water
+    if (!reduce) { g.strokeStyle = "rgba(230,250,255,.55)"; g.lineWidth = 1; for (var r = 0; r < 2; r++) { var ph = (t * 0.5 + r * 0.5) % 1; g.globalAlpha = 1 - ph; g.beginPath(); g.ellipse(o.st ? 10 : -4, wy + 1, 6 + ph * 18, 1 + ph * 2.6, 0, 0, 7); g.stroke(); } g.globalAlpha = 1; }
+    if (o.st) { g.save(); g.beginPath(); g.rect(-40, -90, 80, 90 + wy + 1); g.clip(); g.translate(o.st === 1 ? 0 : -2, wy + 2); smArt(g, o.st, t); g.restore(); }   // the egg or the monster, its lower half under water
+    else { g.beginPath(); g.ellipse(-14, wy + 1, 6, 2.2, 0.1, 0.3, 6.0); g.lineTo(-14, wy + 1); g.closePath(); aInk(g, "#5aa83a", "#2a5a1a", 0.8); g.beginPath(); g.arc(-12, wy, 1.4, 0, 7); g.fillStyle = "#ffb0d8"; g.fill(); }   // empty: just a lily pad, waiting
+    g.fillStyle = "rgba(200,240,255,.35)"; g.beginPath(); g.ellipse(0, wy + 1, 31, 4.6, 0, 0, Math.PI); g.fill();   // the water's near edge catches the light
+    g.beginPath(); g.moveTo(-34, wy); g.ellipse(0, wy, 34, 6, 0, Math.PI, 0, true); g.lineTo(31, 0); g.quadraticCurveTo(0, 6, -31, 0); g.closePath();   // the front of the tub: one shape, slightly narrower at the foot
+    g.save(); aInk(g, aG(g, wy, 4, "#c88a4a", "#9a5e2a", "#5a3416"), IN, 1.6); g.clip();
+    g.strokeStyle = "rgba(40,20,8,.45)"; g.lineWidth = 0.9; for (var sv = -27; sv <= 27; sv += 9) { g.beginPath(); g.moveTo(sv, wy + 6 - Math.abs(sv) * 0.1); g.quadraticCurveTo(sv * 1.02, -8, sv * 0.94, 4); g.stroke(); }   // staves
+    [wy + 9, -5].forEach(function (hy, n) { g.beginPath(); g.moveTo(-36, hy - 1); g.quadraticCurveTo(0, hy + 7, 36, hy - 1); g.lineTo(36, hy + 2.6); g.quadraticCurveTo(0, hy + 10, -36, hy + 2); g.closePath(); g.fillStyle = aG(g, hy, hy + 8, "#a8b0b8", "#6a7078", "#3a4048"); g.fill(); g.fillStyle = "#c8d0d8"; g.beginPath(); g.arc(-22 + n * 44, hy + 3.4, 1.1, 0, 7); g.fill(); });   // iron hoops that wrap round
+    g.restore(); aShine(g, -20, wy + 7, 6, 1.6, 0.35, -0.1);
+    g.restore();
   }
   // ---------- #85 FOSSILS and the SWAMP MUSEUM: dig up bones, finish a skeleton, and it walks again ----------
   var FOSSILS = { mudo: { n: "Mudosaurus", b: 0, c: "#efe6cf", mount: "m_mudo" }, drake: { n: "Ember Drake", b: 1, c: "#ffd0a8", mount: "m_drake" }, mammoth: { n: "Frost Mammoth", b: 2, c: "#dff0ff", mount: "m_mammoth" } };
@@ -24520,7 +24541,7 @@
     give(id2, 1, x, y); S.st.fossils = (S.st.fossils || 0) + 1; if (!p8().fos[id2]) { p8().fos[id2] = 1; popup("A fossil!", ITEMS[id2].n + ". Take it to the Swamp Museum in the Sky Village.", "#efe6cf", "☠"); }
   }
   var MUX = null;
-  function museumSpot() { var s = world && world.sky, D = dinSpot(); if (!s || !D) return null; if (MUX && MUX.w === world) return MUX.v; MUX = { w: world, v: null }; var B = nbSpot(), K = bankSpot(); for (var d = 9; d < 40 && !MUX.v; d++) for (var sg = -1; sg <= 1 && !MUX.v; sg += 2) { var x = Math.floor(D.x) + sg * d; if ((B && Math.abs(x - B.x) < 5) || (K && Math.abs(x - K.x) < 5)) continue; if (TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid && !TILES[get(x - 1, s.y - 1)].solid) MUX.v = { x: x + 0.5, y: s.y }; } return MUX.v; }
+  function museumSpot() { var s = world && world.sky, D = dinSpot(); if (!s || !D) return null; if (MUX && MUX.w === world) return MUX.v; MUX = { w: world, v: null }; var B = nbSpot(), K = bankSpot(); for (var d = 9; d < 40 && !MUX.v; d++) for (var sg = -1; sg <= 1 && !MUX.v; sg += 2) { var x = Math.floor(D.x) + sg * d; if ((B && Math.abs(x - B.x) < 5) || (K && Math.abs(x - K.x) < 5)) continue; if (skyOpen(x) && skyOpen(x + 1) && TILES[get(x, s.y)].solid && !TILES[get(x, s.y - 1)].solid && !TILES[get(x, s.y - 2)].solid && !TILES[get(x + 1, s.y - 1)].solid && TILES[get(x + 1, s.y)].solid && !TILES[get(x - 1, s.y - 1)].solid) MUX.v = { x: x + 0.5, y: s.y }; } return MUX.v; }
   function museumNear() { var M = museumSpot(); return M && !cave && !HOME && !OCS && Math.abs(M.x - p.x) < 2.4 && Math.abs(M.y - p.y) < 2.6; }
   function museumOpen() {
     if (!p4Open(274)) return; var M = p8().mus, h = '<h2 class="st-hi">The Swamp Museum</h2><p class="st-tip">Donate fossil bones. Finish a skeleton and the curator, Professor Pondsworth, wakes it with a spark of Heart light: it becomes a mount you can ride.</p>';
@@ -25323,7 +25344,7 @@
       ["Sky island 2", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); dmTp(I[1] ? I[1].x - 3.5 : null, I[1] ? I[1].y : null, "Sky island"); }],
       ["Sky island 3", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); dmTp(I[2] ? I[2].x - 3.5 : null, I[2] ? I[2].y : null, "Sky island"); }],
       ["Swamp Museum", function () { var M = museumSpot(); dmTp(M ? M.x + 1.5 : null, M ? M.y : null, "Museum"); }],
-      ["Pier pool (sea monster)", function () { var x = pierGateX(); dmTp(x != null ? x + 6.5 : null, null, "Pier pool"); }],
+      ["Pier pool (sea monster)", function () { if (OCS && OCS.main) { OCS.pl.x = SMX; OCS.pl.y = OSEA - 1; return; } if (cave) leaveCaveNow(); setTimeout(function () { ocEnterPier(); setTimeout(function () { if (OCS && OCS.main) { OCS.pl.x = SMX; OCS.pl.y = OSEA - 1; } }, 1400); }, cave ? 700 : 0); }],
       ["Heart Tree", function () { var H2 = heartSpot(); dmTp(H2 ? H2.x - 2 : null, null, "Heart Tree"); }],
       ["Enter the Glow Marsh", function () { S.time = 320; var s = sites(); if (s && s.glow) { dmTp(s.glow.x + 2.5, null, "Glow Hollow"); setTimeout(function () { enterSite("glow", s.glow); }, 300); } }],
       ["Enter the Mangrove Maze", function () { var s = sites(); if (s && s.maze) { dmTp(s.maze.x + 2.5, null, "Maze"); setTimeout(function () { enterSite("maze", s.maze); }, 300); } }]
@@ -25634,13 +25655,12 @@
   var P8D = -1;
   function p8Tick(dt) { var d = S.days | 0; if (P8D < 0) P8D = d; if (d > P8D) { P8D = d; smDaily(); } bugTick(dt); swrTick(dt); skillTick(dt); siteTick(dt); P8C -= dt; if (P8C <= 0) { P8C = 1; cmdChip(); if (world && !cave && !HOME && !OCS && !trans) { towerTick(); isleTick2(); } } }
   var P8C = 2;
-  function p8WorldDraw(g, now) { islesDecor(g, now); glowDraw(g, now); mazeDraw(g, now); heartDraw(g, now); seaMonDraw(g, now); drawMuseum(g, now); drawTable(g); spiritDraw(g, now); bugDraw(g, now); P8VIS.forEach(function (q) { if (q[0] === "witchrune") runeDraw(g, q[1], q[2], now); else terrDraw(g, q[1], q[2], now); }); P8VIS.length = 0; }
+  function p8WorldDraw(g, now) { islesDecor(g, now); glowDraw(g, now); mazeDraw(g, now); heartDraw(g, now); drawMuseum(g, now); drawTable(g); spiritDraw(g, now); bugDraw(g, now); P8VIS.forEach(function (q) { if (q[0] === "witchrune") runeDraw(g, q[1], q[2], now); else terrDraw(g, q[1], q[2], now); }); P8VIS.length = 0; }
   var P8VIS = [];
   function p8Pill() {
     var c8 = p8cPill(); if (c8) return c8;
     if (museumNear()) { var M = museumSpot(); return { l: "Swamp Museum", fn: museumOpen, x: M.x, y: M.y - 3 }; }
     var T2 = tableSpot(); if (T2 && !cave && !HOME && !OCS && Math.abs(T2.x - p.x) < 2 && Math.abs(T2.y - p.y) < 2.4) return { l: "Croak Cards", fn: cardsOpen, x: T2.x, y: T2.y - 2 };
-    if (smNear()) { var x = pierGateX() + 6; return { l: p8().sm.st ? (p8().sm.nm || "Sea monster") : "Pier pool", fn: smOpen, x: x + 0.5, y: col[x] - 2.4 }; }
     var H2 = heartSpot(); if (H2 && heartStage() && !cave && !HOME && !OCS && Math.abs(H2.x - p.x) < 2 && Math.abs(H2.y - p.y) < 3) return { l: "Heart Tree", fn: heartOpen, x: H2.x, y: H2.y - 3.4 };
     var s = spiritSpot(); if (s && Math.abs(s.x - p.x) < 2.2 && Math.abs(s.y - p.y) < 3) return { l: "Bog Spirit", fn: spiritTalk, x: s.x, y: s.y - 1.4 };
     return null;
@@ -25651,7 +25671,7 @@
   window.__sbx.contAny = function () { var F = cave && cave.F; if (!F) return 0; for (var y = 0; y < F.h; y++) for (var x = 0; x < F.w; x++) { var c = contAtCell(x, y); if (c && c.kind === "deco") { openCont(c); return 1; } } return 0; };
   window.__sbxIcon = icon; window.__sbx.cc = function (f) { ccOpen(!!f); }; window.__sbx.ccTab = function (t) { CC.tab = t; ccRender(); }; window.__sbx.ccSet = function (k, v) { CC.d[k] = v; ccRender(); }; window.__sbx.ccDone = function () { ccClose(true); };
   window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA };
-  window.__sbx.ui = {aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask[y * W + x] ? " S" : "") + (walls[y * W + x] ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
+  window.__sbx.ui = {aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask[y * W + x] ? " S" : "") + (walls[y * W + x] ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, picDump: function (dx) { var x = p.x + (dx || 0), out = []; (world.structs || []).forEach(function (q) { var P = q.pic; if (P && x >= P.x0 && x <= P.x0 + P.w) out.push(q.kind + "|" + P.x0 + "|" + P.w + "|" + structCanvas(P).toDataURL()); }); return out; }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };
   window.__sbx.p8 = { S: p8, mount: mountK, mountArt: mountArt, M: MOUNTS, bugs: BUGL, BUGS: BUGS, bugTick: bugTick, catch: bugCatch, bugArt: bugArt, terr: terrOpen, sm: smOpen, smAct: smAct, smArt: smArt, smDaily: smDaily, mined: p8Mined, mus: museumOpen, musAct: museumAct, musSpot: museumSpot, altar: altarOpen, altarAct: altarAct, skill: skillOpen, skillAct: skillAct, skLv: skLv, zone: zoneScore, swr: swrTick, spirit: spiritSpot, spiritArt: spiritArt, heart: heartOpen, heartSpot: heartSpot, dream: dreamStart, D: function () { return DRM; }, cards: cardsOpen, duel: duelStart, play: duelPlay, cardArt: cardArt, give: cardGive, pack: cardPackOpen, act: p8Act, pill: p8Pill, table: tableSpot, evo: { bird: birdStage, anim: animStage }, mul: { dig: p8DigMul, dmg: p8DmgMul, hurt: p8HurtMul, spd: p8SpdMul, bite: p8BiteMul, crop: p8CropMul } };

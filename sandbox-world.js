@@ -916,7 +916,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     var sky = (function () {
       if (!GEN_AERIE) return null;
       function MS(n, fb) { var v = T["X_" + n]; return v !== undefined ? v : fb; }
-      var Y = 26, IW = 88, A = -1, x, y, k;
+      var Y = 26, IW = 109, A = -1, x, y, k;
       function clearSky(a) { if (a < 12 || a + IW > W - 12) return false; for (var q = a - 2; q <= a + IW + 2; q++) if (top[q] < Y + 18) return false; return true; }
       for (k = 0; k < 120 && A < 0; k++) { var c1 = SPAWNX - 300 - k * 6, c2 = SPAWNX + 120 + k * 6; if (clearSky(c1)) A = c1; else if (k > 30 && clearSky(c2) && (!aerie || c2 > aerie.x1 + 20 || c2 + IW < aerie.x0 - 20)) A = c2; }
       if (A < 0) return null;
@@ -934,7 +934,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
           else if (hash(x, 974, seed) < 0.06) put(x, Y + d + 1, T.LANTERN);
         }
       }
-      var M0 = A, M1 = A + 56, I0 = A + 67, I1 = A + IW - 1;
+      var G = 21, M0 = A, M1 = A + 56 + G, I0 = A + 67 + G, I1 = A + IW - 1;
       island(M0, M1, 14); island(I0, I1, 8);
       for (x = M1 + 1; x < I0; x++) { put(x, Y, T.PLANKS); if (x === M1 + 1 || x === I0 - 1) { put(x, Y - 1, T.FENCE); put(x, Y - 2, HL); } }   // the rope bridge
       put(M0, Y - 1, T.PLANKS); put(I1, Y - 1, T.PLANKS);   // a low rail at each far end
@@ -970,14 +970,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
         for (y = top0 - 10; y <= top0 - 8; y++) { P(cx - 1, y, T.LOG); P(cx + 1, y, T.LOG); } P(cx, top0 - 9, HL); P(cx - 1, top0 - 11, SHB); P(cx, top0 - 11, SHB); P(cx + 1, top0 - 11, SHB); P(cx, top0 - 12, SHB); P(cx, top0 - 13, T.BANNER);   // the belfry
       });
       // the market square: two awning stalls, crates and sacks, a well
-      [[A + 42, SHR], [A + 46, MS("shingleblue", SHR)]].forEach(function (q) { put(q[0] - 1, Y - 1, T.FENCE); put(q[0] + 1, Y - 1, T.FENCE); put(q[0] - 1, Y - 2, T.FENCE); put(q[0] + 1, Y - 2, T.FENCE); for (x = q[0] - 1; x <= q[0] + 1; x++) put(x, Y - 3, q[1]); put(q[0], Y - 1, x % 2 ? CRATE : SACK); });
-      put(A + 44, Y - 1, T.WELL); put(A + 41, Y - 1, T.BARREL); put(A + 49, Y - 1, SACK);
-      house("sawmill", "Beaver Lumber Mill", A + 51, 6, 5, 1, function (P, x0, x1, gy, top0, cx) {
+      [[A + 42 + G, SHR], [A + 46 + G, MS("shingleblue", SHR)]].forEach(function (q) { put(q[0] - 1, Y - 1, T.FENCE); put(q[0] + 1, Y - 1, T.FENCE); put(q[0] - 1, Y - 2, T.FENCE); put(q[0] + 1, Y - 2, T.FENCE); for (x = q[0] - 1; x <= q[0] + 1; x++) put(x, Y - 3, q[1]); put(q[0], Y - 1, x % 2 ? CRATE : SACK); });
+      put(A + 44 + G, Y - 1, T.WELL); put(A + 41 + G, Y - 1, T.BARREL); put(A + 49 + G, Y - 1, SACK);
+      house("sawmill", "Beaver Lumber Mill", A + 51 + G, 6, 5, 1, function (P, x0, x1, gy, top0, cx) {
         for (y = top0; y <= gy - 1; y++) for (x = x0; x <= x1; x++) P(x, y, T.PLANKS);
         [x0, x1].forEach(function (px) { for (y = top0; y <= gy - 1; y++) P(px, y, T.LOG); }); P(cx, gy - 4, GL); P(cx - 1, gy - 4, GL);
         gableP(P, x0 - 1, x1 + 1, top0 - 1, T.THATCH, T.THATCH);
       });
-      [A + 5, A + 20, A + 25, A + 40, A + 50].forEach(function (lx) { if (t[(Y - 1) * W + lx] === T.AIR) put(lx, Y - 1, LAMP); });
+      [A + 5, A + 20, A + 25, A + 40, A + 40 + G, A + 50 + G].forEach(function (lx) { if (t[(Y - 1) * W + lx] === T.AIR) put(lx, Y - 1, LAMP); });
       [A + 1, A + 13, A + 24, A + 39].forEach(function (fx) { if (t[(Y - 1) * W + fx] === T.AIR) put(fx, Y - 1, T.FLOWERPOT); });
       // the wooded islet: lumberjack trees, a log pile and stumps
       function tree(tx) { var th = 5 + Math.floor(hash(tx, 975, seed) * 3); for (y = Y - 1; y >= Y - th; y--) put(tx, y, T.LOG); for (var dy = -2; dy <= 2; dy++) for (var dx2 = -3; dx2 <= 3; dx2++) if (dx2 * dx2 / 9 + dy * dy / 4 <= 1 + (hash(tx + dx2, dy, seed + 976) - 0.5) * 0.4 && t[(Y - th - 1 + dy) * W + tx + dx2] === T.AIR) put(tx + dx2, Y - th - 1 + dy, T.LEAVES); }
@@ -985,7 +985,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
       put(I0 + 7, Y - 1, T.LOG); put(I0 + 8, Y - 1, T.LOG); put(I0 + 7, Y - 2, T.LOG); put(I0 + 14, Y - 1, T.STOOL); put(I0 + 2, Y - 1, CRATE);
       // the Sky Vine: from the ground up through the main island to the deck
       var vx = -1;
-      function byHouse(c) { for (var q = 0; q < structs.length; q++) if (c >= structs[q].mx0 - 1 && c <= structs[q].mx1 + 1) return true; for (q = 0; q < out.length; q++) if (c >= out[q].mx0 && c <= out[q].mx1) return true; return false; }   // (building tiles become pictures, so the vine must miss them)
+      function byHouse(c) { if (c >= A + 40 && c <= A + 41 + G) return true; for (var q = 0; q < structs.length; q++) if (c >= structs[q].mx0 - 1 && c <= structs[q].mx1 + 1) return true; for (q = 0; q < out.length; q++) if (c >= out[q].mx0 && c <= out[q].mx1) return true; return false; }   // (building tiles become pictures, so the vine must miss them)
       for (k = 0; k < 70 && vx < 0; k++) { var c = A + 23 + (k % 2 ? 1 : -1) * Math.ceil(k / 2); if (c < M0 + 1 || c > M1 - 1 || byHouse(c)) continue; var ok = t[(Y - 1) * W + c] === T.AIR && t[(Y - 2) * W + c] === T.AIR; for (y = Y + 1; y < top[c] - 1 && ok; y++) if (t[y * W + c] !== T.AIR && t[y * W + c] !== T.STONE && t[y * W + c] !== T.MUD && t[y * W + c] !== T.SPORE && t[y * W + c] !== T.VINE && t[y * W + c] !== T.LANTERN) ok = false; if (ok) vx = c; }
       if (vx < 0) for (k = 0; k < 70 && vx < 0; k++) { var c3 = A + 23 + (k % 2 ? 1 : -1) * Math.ceil(k / 2); if (c3 > M0 && c3 < M1 && !byHouse(c3)) vx = c3; }
       [M0 - 1, I1 + 1, M0 - 2, I1 + 2, M0 - 3, I1 + 3].forEach(function (c4) { if (vx < 0 && !byHouse(c4)) vx = c4; });   // or up the side of the island

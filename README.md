@@ -1377,3 +1377,5 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - a faint seam where two different built materials meet
 
   Glass and see-through blocks are left alone.
+- **Sky Village tidy-up:** no more pale boxes around the market stall roofs; the Village Hall's picture no longer swallows the red stall's roof, so it reads as one roof again; the "Talk to" pill now sits above a villager's role and hearts instead of on top of them; and the main island has a new open **village green** between the hall and the market, so the museum, Frog Bank and noticeboard stand in their own space instead of crowding the hall's front (the Sky Vine never comes up through the green).
+- **The pier pool is a real thing now:** the sea monster pool is a wooden tub on Croaker's Pier deck (between two lamps past the derby board), drawn with a lily pad when empty, then the egg, then your sea monster splashing in it. Walk up to it on the pier to open it. The old invisible spot by the pier gate in the swamp is gone. Dev menu: Go to > "Pier pool" now takes you into the pier, to the tub.
