@@ -1217,3 +1217,7 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **On you:** enchanted gear gives you a faint aura and orbiting sparkles. Settings > Graphics > Enchantment glow turns it off.
   - **Armor stands:** stands dressed with your enchanted gear glow too.
 - **Wardrobe outfit:** split into Hats, Face, Neck, Tops and Shoes sections, with counts. Each card shows your character wearing that piece, and pieces you don't own show their Armory price. A "None" card takes a piece off. There are no pants in the Armory yet.
+- **Phones: rooms and caves are less zoomed in.**
+  - **Tile size:** buildings and caves now use 32 px tiles on phones (they used 48 px, which showed only about 8 tiles across). A whole Witch Hut or Keep now fits on screen (`caveTs`).
+  - **Action pills:** "Leave", "Open Witch's Chest" and the rest no longer grow with the room zoom. The text is capped at 14 px on phones and 17 px elsewhere (`drawPill`).
+  - **Loot window:** compact on phones, with a 4-column item grid, smaller icons and buttons.

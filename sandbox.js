@@ -16232,9 +16232,10 @@
     return CTLRECT;
   }
   function drawPill(g, now, label, sx, sy, no, fn) { if (PHOTO.on || BUILDM) return;   // a tappable pill above a ladder or hole (tap it, or press F)
-    g.font = "800 " + Math.max(12, Math.round(ts * 0.5)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    var fpx = clamp(Math.round(ts * 0.5), 12, Math.min(vw, vh) < 560 ? 14 : 17);   // the pill's text no longer grows with zoomed-in rooms
+    g.font = "800 " + fpx + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
     sy += reduce ? 0 : Math.sin(now / 300) * 2;
-    var w = g.measureText(label).width + ts * 1.1, h = Math.max(26, ts * 0.9);
+    var w = g.measureText(label).width + fpx * 2.2, h = Math.max(26, fpx * 2);
     sx = clamp(sx, w / 2 + 8, vw - w / 2 - 8); sy = clamp(sy, h / 2 + 64, vh - h / 2 - 8);   // POLISH: always fully on screen (clear of the top bar)
     var cr = ctlRects();   // and clear of the on-screen controls (joystick, buttons): above them, so a thumb can tap it
     for (var it = 0; it < 6; it++) { var hit = null; for (var k = 0; k < cr.length; k++) { var r = cr[k]; if (sx + w / 2 > r.l - 6 && sx - w / 2 < r.r + 6 && sy + h / 2 > r.t - 6 && sy - h / 2 < r.b + 6) { hit = r; break; } } if (!hit) break; var ny = Math.max(h / 2 + 64, hit.t - h / 2 - 12); if (ny === sy) break; sy = ny; }
@@ -18379,6 +18380,8 @@
   function caveTs() {
     var F = cave.F, k;
     if (cave.bld) k = Math.floor(Math.min((vw - 40) / F.w, (vh - 150) / F.h) / 16); else k = Math.round(Math.max(vw, vh) / 22 / 16);
+    var small = Math.min(vw, vh) < 560;   // PHONES: buildings and caves were stuck at 48 px tiles (about 8 tiles across); let them zoom out to 32 px
+    if (small) { if (cave.bld) k = Math.min((vw - 16) / F.w, (vh - 190) / F.h) / 16; else k = Math.max(vw, vh) / 26 / 16; return clamp(Math.floor(k), 2, cave.bld ? 4 : 3) * 16; }
     return clamp(k, 3, cave.bld ? 5 : 4) * 16;
   }
   // Control size (joystick, arrows, jump, hotbar, menu buttons): a per-device setting kept outside the world saves. CSS reads it as --cs.
@@ -24981,6 +24984,8 @@
   }
   function p8Tap(tx, ty) { var td = TILES[get(tx, ty)]; if (!td) return false; if (td.kind === "terrarium") { terrOpen(tx, ty); return true; } if (td.kind === "mossaltar") { altarOpen(); return true; } if (td.kind === "witchrune") return runeTap(tx, ty); return false; }
   function p8JournalHtml() { var o = p8(); return "<h3>Collections</h3><p>Bugs " + Object.keys(o.bug).length + "/" + Object.keys(BUGS).length + " · Cards " + myCards().length + "/" + (SCB() ? SCB().cards().length : 0) + " · Skeletons " + (S.st.skeletons || 0) + "/3 · Sea monster: " + (o.sm.st ? SM_ST[o.sm.st] : "none yet") + "</p>"; }
+  window.__sbx.bld = function (kind) { var h = (world.structs || []).filter(function (q) { return q.kind === kind && !q.razed; })[0]; if (h) { p.x = (h.dx || h.x) + 0.5; enterBuilding(h); } return !!h; };
+  window.__sbx.contAny = function () { var F = cave && cave.F; if (!F) return 0; for (var y = 0; y < F.h; y++) for (var x = 0; x < F.w; x++) { var c = contAtCell(x, y); if (c && c.kind === "deco") { openCont(c); return 1; } } return 0; };
   window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA };
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };

@@ -2654,3 +2654,10 @@ small.bo-cost{display:flex}
 .p7-of:not(:disabled):active{transform:scale(.96)}
 .sbx-stage.panel .p8-cmdchip,.sbx-stage.panel .p8-devchip{display:none}
 .p8-cmdsug{max-height:min(220px,32vh)}.p8-cmdlog{max-height:min(140px,20vh)}
+/* PHONES: a compact loot window, so a chest doesn't fill the screen */
+@media (max-width:560px){
+  .ct-grid{grid-template-columns:repeat(4,1fr);gap:5px;margin:2px 0 8px}
+  .ct-it{padding:6px 3px 5px;border-radius:10px}.ct-it img{width:26px;height:26px}.ct-it em{font-size:.58rem;line-height:1.15}.ct-it b{font-size:.68rem;top:3px;right:4px}
+  .ct-head img{width:30px;height:30px}.ct-head h2{font-size:1.05rem}
+  #sbxStory .ct-box .st-row .btn{padding:7px 14px!important;min-height:0!important;font-size:.85rem!important}
+}
