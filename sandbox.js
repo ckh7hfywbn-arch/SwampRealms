@@ -18880,7 +18880,7 @@
   function tideStep(dt) {   // called every frame at the pier
     var sc = OCS; if (!sc) return; if (!sc.main) { OWL = OSEA; return; }
     var off = tideOff(tideDayF()); OWL = OSEA + off;
-    TIDE.hudT -= dt; if (TIDE.hudT <= 0 || !TIDE.info) { TIDE.hudT = 1; TIDE.info = tideInfo(); var mm = document.querySelector(".sbx-mini"), sr = stageEl.getBoundingClientRect(); TIDE.top = 76; if (mm && mm.offsetParent) { var mr = mm.getBoundingClientRect(); if (mr.right > sr.right - 200) TIDE.top = Math.round(mr.bottom - sr.top + 8); } }   // the tide clock sits under the mini-map
+    TIDE.hudT -= dt; if (TIDE.hudT <= 0 || !TIDE.info) { TIDE.hudT = 1; TIDE.info = tideInfo(); var mm = document.querySelector(".sbx-mini"), sr = stageEl.getBoundingClientRect(); TIDE.top = 76; [mm, $("sbxMenuBtn"), $("sbxPackBtn"), document.querySelector(".p8-devchip")].forEach(function (el) { if (!el || !el.offsetParent || el.hidden) return; var mr = el.getBoundingClientRect(); if (mr.width && mr.right > sr.right - 220 && mr.top - sr.top < sr.height * 0.4) TIDE.top = Math.max(TIDE.top, Math.round(mr.bottom - sr.top + 8)); }); }   // the tide clock sits under the mini-map AND the Crafting / Backpack buttons (it used to land under them)
     var I = TIDE.info;
     if (I.vault && !TIDE.saidV) { TIDE.saidV = 1; toast("Spring low tide! The sea has drained right out of the Tide Cave. The barnacle door at the bottom is open...", "#7af0ff"); }
     else if (!I.vault) TIDE.saidV = 0;
@@ -19618,6 +19618,34 @@
     }
     OATLAS = c; return c;
   }
+  // ROUNDED SEA BLOCKS: natural sea ground (sand, silt, reef rock, coral...) gets the main world's rounded corners where two open sides meet,
+  // a dark inked rim along every open side, a lit top bevel and a soft shadow underneath, so the beach and the sea floor read like the land.
+  var OCNAT = {}; ["SAND", "SHORE", "SILT", "ROCK", "DEEP", "CPINK", "CBLUE", "CORANGE", "GLOW", "BED"].forEach(function (k) { if (OT[k] !== undefined) OCNAT[OT[k]] = 1; });
+  var OCINK = {};
+  function ocInk(id) { if (OCINK[id]) return OCINK[id]; var h = (OTD[id] && OTD[id].c) || "#555555", v = [1, 3, 5].map(function (q) { return parseInt(h.slice(q, q + 2), 16); }); return (OCINK[id] = "rgb(" + v.map(function (x) { return Math.round(x * 0.38); }).join(",") + ")"); }
+  function ocOpen(i, j) { var t2 = ocT(i, j), d2 = OTD[t2]; return !d2 || !d2.solid; }
+  function ocNatTile(g, A, id, v, i, j, sx, sy) {
+    var nT = ocOpen(i, j - 1), nB = ocOpen(i, j + 1), nL = ocOpen(i - 1, j), nR = ocOpen(i + 1, j), r = ts * 0.42;
+    var tl = nT && nL ? r : 0, tr = nT && nR ? r : 0, br = nB && nR ? r : 0, bl = nB && nL ? r : 0, any = tl || tr || br || bl, ink = ocInk(id), lw = Math.max(1.5, ts / 14);
+    var path = function () { g.beginPath(); g.moveTo(sx + tl, sy); g.lineTo(sx + ts - tr, sy); if (tr) g.arcTo(sx + ts, sy, sx + ts, sy + tr, tr); g.lineTo(sx + ts, sy + ts - br); if (br) g.arcTo(sx + ts, sy + ts, sx + ts - br, sy + ts, br); g.lineTo(sx + bl, sy + ts); if (bl) g.arcTo(sx, sy + ts, sx, sy + ts - bl, bl); g.lineTo(sx, sy + tl); if (tl) g.arcTo(sx, sy, sx + tl, sy, tl); g.closePath(); };
+    if (any) { g.save(); path(); g.clip(); }
+    g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
+    if (nT) { var tg = g.createLinearGradient(0, sy, 0, sy + ts * 0.35); tg.addColorStop(0, "rgba(255,250,225,.32)"); tg.addColorStop(1, "rgba(255,250,225,0)"); g.fillStyle = tg; g.fillRect(sx, sy, ts, ts * 0.35); }
+    if (nB) { var bg2 = g.createLinearGradient(0, sy + ts * 0.6, 0, sy + ts); bg2.addColorStop(0, "rgba(0,0,0,0)"); bg2.addColorStop(1, "rgba(0,0,0,.3)"); g.fillStyle = bg2; g.fillRect(sx, sy + ts * 0.6, ts, ts * 0.4); }
+    if (nR) { g.fillStyle = "rgba(0,0,0,.16)"; g.fillRect(sx + ts * 0.8, sy, ts * 0.2, ts); }
+    if (any) g.restore();
+    if (!(nT || nB || nL || nR)) return;
+    g.strokeStyle = ink; g.lineWidth = lw; g.lineCap = "round"; g.beginPath(); var h2 = lw / 2;   // the inked rim, only along the open sides (and round the rounded corners)
+    if (nT) { g.moveTo(sx + (tl || 0), sy + h2); g.lineTo(sx + ts - (tr || 0), sy + h2); }
+    if (nB) { g.moveTo(sx + (bl || 0), sy + ts - h2); g.lineTo(sx + ts - (br || 0), sy + ts - h2); }
+    if (nL) { g.moveTo(sx + h2, sy + (tl || 0)); g.lineTo(sx + h2, sy + ts - (bl || 0)); }
+    if (nR) { g.moveTo(sx + ts - h2, sy + (tr || 0)); g.lineTo(sx + ts - h2, sy + ts - (br || 0)); }
+    if (tl) { g.moveTo(sx + h2, sy + tl); g.arcTo(sx + h2, sy + h2, sx + tl, sy + h2, tl - h2); }
+    if (tr) { g.moveTo(sx + ts - tr, sy + h2); g.arcTo(sx + ts - h2, sy + h2, sx + ts - h2, sy + tr, tr - h2); }
+    if (br) { g.moveTo(sx + ts - h2, sy + ts - br); g.arcTo(sx + ts - h2, sy + ts - h2, sx + ts - br, sy + ts - h2, br - h2); }
+    if (bl) { g.moveTo(sx + bl, sy + ts - h2); g.arcTo(sx + h2, sy + ts - h2, sx + h2, sy + ts - bl, bl - h2); }
+    g.stroke();
+  }
   var OISLE = {};
   function ocIsle(g, ix, hy, i, sky) {   // PIER ART: a far island on the horizon, a pixel silhouette (sand, jungle, palms) tinted by the sky
     var key = i + ":" + sky[1].map(function (q) { return q >> 3; }).join(","), c = OISLE[key];
@@ -19946,12 +19974,11 @@
       if (id === OT.AIRP) { g.fillStyle = "rgba(190,240,255,.22)"; g.fillRect(sx, sy, ts, ts); if (ocT(i, j - 1) !== OT.AIRP && !reduce) { g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(sx, sy, ts, Math.max(2, ts * 0.08)); } if (ocT(i, j + 1) !== OT.AIRP) { g.fillStyle = "rgba(232,251,255,.7)"; g.fillRect(sx, sy + ts - 2 + Math.sin(t * 3 + i) * 1.5, ts, 2); } continue; }
       if (d.plant) { ocPlant(g, id, sx, sy, i, j, now); if (d.lit) lights.push([i + 0.5, j + 0.6, d.lit, "255,90,160"]); continue; }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
-      g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
-      if (d.solid && j > OSEA && !OTD[ocT(i, j - 1)].solid) { g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(sx, sy, ts, Math.max(1, ts * 0.07)); }   // a lit top edge
+      if (OCNAT[id]) ocNatTile(g, A, id, v, i, j, sx, sy); else g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
+      if (d.solid && !OCNAT[id] && j > OSEA && !OTD[ocT(i, j - 1)].solid) { g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(sx, sy, ts, Math.max(1, ts * 0.07)); }   // a lit top edge
       if ((id === OT.SAND || id === OT.SHORE) && ocT(i, j - 1) === OT.AIR && j < OWL) { var u3 = ts / 16, gh = (i * 7 + j * 3) % 5;   // PIER ART: dune grass on dry sand
-        g.fillStyle = "#e9d69c"; g.fillRect(sx, sy, ts, Math.max(1, u3));
         if (gh < 3) [[3, 4, "#6a9a3a"], [5, 6, "#8ab84a"], [7, 3, "#5a8a32"], [11, 5, "#8ab84a"], [12, 3, "#6a9a3a"]].forEach(function (b, n) { if ((n + gh) % 2) return; g.fillStyle = b[2]; g.fillRect(sx + b[0] * u3, sy - b[1] * u3, Math.max(1, u3), b[1] * u3); g.fillRect(sx + (b[0] + (n % 2 ? 1 : -1)) * u3, sy - (b[1] - 1) * u3, Math.max(1, u3), u3); }); }
-      if (d.solid && j > OSEA && !OTD[ocT(i, j + 1)].solid) { g.fillStyle = "rgba(0,10,30,.25)"; g.fillRect(sx, sy + ts * 0.86, ts, ts * 0.14); }
+      if (d.solid && !OCNAT[id] && j > OSEA && !OTD[ocT(i, j + 1)].solid) { g.fillStyle = "rgba(0,10,30,.25)"; g.fillRect(sx, sy + ts * 0.86, ts, ts * 0.14); }
       if (d.lit) lights.push([i + 0.5, j + 0.5, d.lit, id === OT.LAMP ? "255,210,110" : id === OT.CLAM ? "210,190,255" : "110,240,220"]);
       if (id === OT.CHEST && !reduce && (Math.floor(t * 2 + i) % 3 === 0)) { g.fillStyle = "rgba(255,240,170," + (0.5 + 0.5 * Math.sin(t * 6 + i)) + ")"; g.fillRect(sx + ts * (0.2 + 0.6 * ((t * 0.7 + i * 0.3) % 1)), sy + ts * 0.15, 2, 2); }
     }

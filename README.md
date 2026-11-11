@@ -1333,3 +1333,9 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Sand:** beach sand with ripples and shell bits, darker damp shore sand with pebbles, and dune grass on dry sand.
   - **Tide Cave:** the back wall is now sandstone blocks with moss.
   - **Signs:** the Croaker's Pier and Pearl Dive Derby signs are pixel-wood boards on posts, with outlined painted lettering (`pixSign`).
+- **Pier fixes:**
+  - **Tide clock:** it now sits below the mini-map *and* the Crafting / Backpack buttons, instead of under them.
+  - **Rounded sea blocks:** sand, shore sand, silt, reef rock, coral and the deep rock at the pier and in the sea now look like the land's blocks (`ocNatTile`):
+    - rounded corners where two open sides meet
+    - a dark inked rim along open sides
+    - a lit top bevel and a soft shadow underneath
