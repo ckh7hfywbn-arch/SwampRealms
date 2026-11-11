@@ -1350,3 +1350,8 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Wear is kept:** a piece put in your bag keeps its wear (`S.spw`), so swapping no longer refreshes durability for free. Fresh spares are used first.
   - **No lost progress:** your best tier is remembered (`S.bt`, `btOf`), so taking gear off never locks a recipe.
   - **Code:** `unequipGear`, `equipSpare`.
+- **Camp is home base:** Croaker's Pier and the Homestead now both stand at camp, beside the Mine and the mailbox, in every world (new and old), so you no longer walk to the Ember Bog border for the pier. Code: `campSpots`, `campFarmGate`.
+  - **Pier gate:** stands at camp. The sea monster's pool sits a few steps past it, so their buttons don't overlap.
+  - **Farm Gate:** a real Farm Gate block is placed at camp once per world (`S.campfg`), flattening a small patch if needed. You can still craft and place more Farm Gates anywhere.
+  - **Placement:** both spots are picked on flat ground near spawn, clear of the Mine headframe, the mailbox and each other.
+  - **Quest text:** the Sea Breeze, Through the Farm Gate and A Place to Grow quests and the farming hints now point to camp.
