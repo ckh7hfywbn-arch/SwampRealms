@@ -969,8 +969,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
         gableP(P, x0 - 2, x1 + 2, top0 - 2, SHB, T.PLANKS);
         for (y = top0 - 10; y <= top0 - 8; y++) { P(cx - 1, y, T.LOG); P(cx + 1, y, T.LOG); } P(cx, top0 - 9, HL); P(cx - 1, top0 - 11, SHB); P(cx, top0 - 11, SHB); P(cx + 1, top0 - 11, SHB); P(cx, top0 - 12, SHB); P(cx, top0 - 13, T.BANNER);   // the belfry
       });
-      // the market square: two awning stalls, crates and sacks, a well
-      [[A + 42 + G, SHR], [A + 46 + G, MS("shingleblue", SHR)]].forEach(function (q) { put(q[0] - 1, Y - 1, T.FENCE); put(q[0] + 1, Y - 1, T.FENCE); put(q[0] - 1, Y - 2, T.FENCE); put(q[0] + 1, Y - 2, T.FENCE); for (x = q[0] - 1; x <= q[0] + 1; x++) put(x, Y - 3, q[1]); put(q[0], Y - 1, x % 2 ? CRATE : SACK); });
+      // the market square: crates and sacks, a well
+      put(A + 42 + G, Y - 1, CRATE); put(A + 47 + G, Y - 1, CRATE); put(A + 47 + G, Y - 2, SACK);   // the market: crates and sacks round the well (the old awning stalls are gone)
       put(A + 44 + G, Y - 1, T.WELL); put(A + 41 + G, Y - 1, T.BARREL); put(A + 49 + G, Y - 1, SACK);
       house("sawmill", "Beaver Lumber Mill", A + 51 + G, 6, 5, 1, function (P, x0, x1, gy, top0, cx) {
         for (y = top0; y <= gy - 1; y++) for (x = x0; x <= x1; x++) P(x, y, T.PLANKS);
