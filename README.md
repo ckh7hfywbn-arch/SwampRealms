@@ -1370,3 +1370,10 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Soil into soil:** as before, the rarer soil reaches into the commoner one.
   - **Rock into rock (new):** where two kinds of rock meet (stone, frostrock, basalt, ice, permafrost, obsidian, bedrock), the rarer one now reaches into the other in thinner tongues (`HRANK`).
   - **Not included:** building blocks (bricks, planks, glass...) keep clean edges, so built things stay crisp.
+- **Stronger edges on built blocks:** every placed or structure building block (bricks, planks, shingles...) now draws `buildEdge`:
+  - a clear inked border along each open side, which follows the rounded corners
+  - a lit band along the top
+  - a soft shadow along the bottom and right
+  - a faint seam where two different built materials meet
+
+  Glass and see-through blocks are left alone.
