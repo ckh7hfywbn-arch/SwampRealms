@@ -10526,7 +10526,7 @@
   function enterNexus(gx, gy) {   // called while the gate's bright fade covers the screen
     if (cave) return; stopInput(); enemies.length = 0; bmEndQuiet();
     cave = { hole: { x: gx + 1, y: gy, b: 0 }, bld: NEXUS_BLD, run: 7777, floors: {}, f: 0, F: null };
-    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++;
+    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++; if (S.st.nexus === 1 && !S.molt) setTimeout(function () { toast("You feel... itchy. Old Croaker will know why (molting unlocked).", "#7ae0a0"); }, 5000);
     setFloor(1, "down"); GD.x = GD_SLEEP.x; GD.y = GD_SLEEP.y; GD.tx = GD.x; GD.ty = GD.y; GD.intro = false; GD.face = -1; GD.alt = GD_SLEEP_ALT; GD.wk = 0; gdSleep(true); save();
   }
   function bmEndQuiet() { if (BM.on) { BM.on = false; BM.croak = false; bmRoll(); } }
@@ -24178,9 +24178,10 @@
     glass: { n: "Glass Frog", c: "#b8f0d8", pat: "glass", g: "◇", d: "See-through and sneaky: creatures notice you from half as far away, and your first hit on a creature deals double damage.", short: "Stealth and sneak attacks" }
   };
   function molt() { return S && S.molt && MOLT[S.molt] ? S.molt : ""; }
-  function moltCan() { return curCh() >= 3; }
+  function moltCan() { return (S.st.nexus || 0) > 0 || !!S.molt; }   // MOLTING unlocks once you have entered the SwampRealms (the end of the story); anyone who already molted keeps it
   function moltLine() { return moltCan() ? '<div class="st-row"><button type="button" class="btn ghost" data-p7="molt">' + (molt() ? "About molting again" : "“I feel... itchy.” (Molting)") + "</button></div>" : ""; }
   function moltOpen() {
+    if (!moltCan() && !DEVON) { nag("Molting comes later: enter the SwampRealms first."); return; }
     if (!p4Open(271)) return; var m = molt(), h = famHead("croaker", "molting") + '<h2 class="st-hi">' + (m ? "“Molt again? It'll cost you. Five Gold Coins for the herbs, and a very itchy night.”" : "“Itchy? Ha! You're molting, little one. Every delver does, sooner or later. What you become is up to you.”") + "</h2>";
     h += '<div class="p7-molts">' + Object.keys(MOLT).map(function (k) { var M = MOLT[k], on = m === k, pic = moltPic(k); return '<button type="button" class="p7-mo' + (on ? " on" : "") + '" style="--c:' + M.c + '" data-p7="mo:' + k + '"' + (on ? " disabled" : "") + '><img alt="" src="' + pic + '"><b>' + esc(M.n) + "</b><small>" + esc(M.d) + "</small>" + (on ? "<em>Your path</em>" : "") + "</button>"; }).join("") + "</div>";
     if (m) h += '<p class="st-tip">Molting again costs 5 Gold Coins (you have ' + (S.inv.goldcoin || 0) + ").</p>";
@@ -25117,7 +25118,7 @@
   function runeDraw(g, i, j, now) { var n = runeAt(i, j), tw = towerS(); if (n === -2) return; var sx = ox + (i + 0.5) * ts, sy = oy + (j + 0.2) * ts, t = now / 1000, s = n === -1 ? -1 : runeSym(n), lit = s >= 0 && (tw.done || tw.lit.indexOf(s) >= 0);
     g.font = "900 " + Math.round(ts * 0.42) + "px Nunito,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = lit ? "#ffe8ff" : n === -1 ? "#c89aff" : "rgba(180,140,220," + (0.45 + 0.2 * Math.sin(t * 2 + i)).toFixed(2) + ")"; g.fillText(n === -1 ? "∴" : RUNE_S[s], sx, sy);
     if (lit && !reduce) { g.fillStyle = "rgba(220,170,255,.25)"; g.beginPath(); g.arc(sx, sy, ts * 0.5, 0, 7); g.fill(); } g.textBaseline = "alphabetic"; }
-  SIDE.push({ id: "p8_tower", cat: "Explorer", ch: 0, n: "The Witch's Tower", d: "Climb the Bog Witch's Tower, wake its three runes in the right order, and reach the top. A grapple or a tree-frog molt helps.", need: 1, v: function () { return S.st.broom ? 1 : 0; }, rw: { goldcoin: 4, hexdust: 3 }, show: function () { return !!(S.p8 && S.p8.seen && S.p8.seen.tower); } });
+  SIDE.push({ id: "p8_tower", cat: "Explorer", ch: 0, n: "The Witch's Tower", d: "Climb the Bog Witch's Tower, wake its three runes in the right order, and reach the top. A grapple helps.", need: 1, v: function () { return S.st.broom ? 1 : 0; }, rw: { goldcoin: 4, hexdust: 3 }, show: function () { return !!(S.p8 && S.p8.seen && S.p8.seen.tower); } });
   // ---------- #94 SKY ISLANDS: three islands float high over Murkwater; only a hot-air balloon reaches them ----------
   function islesBuild() {
     var o = p8(); if (o.isl) return; var sx = Math.floor(world.spawn.x), made = [];
