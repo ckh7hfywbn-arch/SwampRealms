@@ -12862,7 +12862,7 @@
   }
   function dust(n) { var id = get(Math.floor(p.x), Math.floor(p.y + 0.2)), c = TILES[id] && TILES[id].solid ? TILES[id].c : "#8a8a80"; chips(p.x - p.face * 0.15, p.y - 0.05, c, n, 3); }
   function update(dt) {
-    if (S && !S.campfg && world && !cave && !HOME && !OCS && !titleOpen) campFarmGate();   // CAMP: the Homestead's gate
+    if (S && (!S.campfg || !S.mineflat) && world && !cave && !HOME && !OCS && !titleOpen) { mineFlat(); campFarmGate(); }   // CAMP: a level Mine, then the Homestead's gate
     if (sleepT > 0) {   // asleep: the world holds still while the screen fades; floating Z's keep drifting
       tickSleep(dt); for (var zi = texts.length - 1; zi >= 0; zi--) { texts[zi].life -= dt; texts[zi].y -= dt * 0.9; if (texts[zi].life <= 0) texts.splice(zi, 1); }
       if (sleepT > 0 && Math.random() < dt * 3) text(p.x + 0.4, p.y - PH - 0.1, "z", "#cfd6ff"); return;
@@ -18956,6 +18956,18 @@
     var flat = function (a, z) { var y = col[a]; for (var x = a; x <= z; x++) { if (x < 3 || x >= W - 3 || Math.abs(col[x] - y) > 1 || isLiq(get(x, col[x] - 1)) || isLiq(get(x, col[x]))) return false; } return true; };
     var pick = function (a0, a1, need) { for (var d = 4; d < 34; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = sx + sg * d, a = x + a0, z = x + a1; if (free(a, z) && flat(a, z)) { busy.push([a - need, z + need]); return x; } } return -1; };
     CAMPS.pier = pick(-2, 9, 1); CAMPS.farm = pick(-2, 2, 1); return CAMPS;
+  }
+  function mineFlat() {   // CAMP: level the ground under the Mine's headframe, rails, cart and sign once per world, so no part of it ever floats or sinks
+    if (!S || S.mineflat || cave || HOME || OCS || !world || !col) return; var M0 = world.holes && world.holes[0]; S.mineflat = 1; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return;
+    var gy = M0.y + 1, top = TILES[get(M0.x - 1, gy)] && TILES[get(M0.x - 1, gy)].solid ? get(M0.x - 1, gy) : T.MOSS, x, y;
+    if (!TILES[top] || !TILES[top].solid || TILES[top].kind === "leaves" || top === T.LOG) top = T.MOSS;
+    for (x = M0.x - 4; x <= M0.x + 5; x++) {
+      if (x < 1 || x >= W - 1) continue;
+      for (y = gy - 6; y < gy; y++) { if (x === M0.x && y === M0.y) continue; var id = get(x, y), td = TILES[id]; if (td && td.solid && id !== T.LOG && td.kind !== "leaves") setT(x, y, T.AIR); }   // ground poking up through the art
+      if (x === M0.x) continue;
+      if (!TILES[get(x, gy)].solid) setT(x, gy, top); for (y = gy + 1; y < gy + 8; y++) { if (TILES[get(x, y)].solid) break; setT(x, y, T.MUD); }   // a dip under the art: fill it in
+    }
+    hbDirty = true; save();
   }
   function campFarmGate() {   // the camp Farm Gate: placed once per world (flattening a 3-wide patch if it has to)
     if (!S || S.campfg || cave || HOME || OCS || T.X_farmgate === undefined || !world || !col) return; var fx = campSpots().farm; if (fx < 0) { S.campfg = -1; return; }

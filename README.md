@@ -1355,3 +1355,4 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Farm Gate:** a real Farm Gate block is placed at camp once per world (`S.campfg`), flattening a small patch if needed. You can still craft and place more Farm Gates anywhere.
   - **Placement:** both spots are picked on flat ground near spawn, clear of the Mine headframe, the mailbox and each other.
   - **Quest text:** the Sea Breeze, Through the Farm Gate and A Place to Grow quests and the farming hints now point to camp.
+- **The Mine always sits on flat ground:** once per world (`S.mineflat`, `mineFlat`), the ground under the Mine's headframe, rails, ore cart and MINE sign is levelled, so no part of it floats or sinks into a slope. Dips are filled with mud under a grassy top, and ground poking up through the art is cleared. Trees are left alone. Existing worlds are levelled the next time they load.
