@@ -1362,3 +1362,6 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Existing players:** anyone who already molted keeps their path.
   - **Other changes:** the Witch's Tower quest no longer suggests a tree-frog molt.
   - **Testing:** the dev menu's Molting button still opens it.
+- **Water that makes sense:** world generation now settles lakes and lagoons (and lava) at the end (`settle` in `sandbox-world.js`). Any liquid with open air beside it or under it drains away, so a lake whose rim is lower than its surface drops to the rim. No more lagoon hanging in the air with a flat wall where the Shores' dunes stop. Existing worlds get it on their next load, since the land is rebuilt from the seed.
+- **Trees on slopes:** where the ground falls away beside a tree's foot, the trunk grows a pair of roots that reach down the slope into the lower ground, so trees no longer look like they float. This covers palms and every other tree.
+- **Ores stay readable:** the soil tongues that creep into rock from neighbouring blocks are now drawn *under* an ore's gems instead of over them, and reach only half as far into ore blocks. The mixed look stays, but the ores aren't buried.

@@ -1012,6 +1012,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
         function (px, py, id) { if (px > 0 && px < W - 1 && py > 0 && t[py * W + px] === T.AIR) t[py * W + px] = id; }, function (px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; });
       if (b) TREES.push({ x: x0, k: r.k, b: b });
     });
+    (function settle() {   // WATER SETTLES: a lake or lagoon whose rim is lower than its surface (a column of water with open air beside or under it,
+      // e.g. where the Shores' dunes stop) drains down to the rim, so water never hangs in the air with a flat wall on one side
+      var liq = function (id) { return id === T.WATER || id === T.LAVA; }, open = function (x2, y2) { if (x2 < 0 || x2 >= W || y2 >= H) return false; var q = t[y2 * W + x2]; return q === T.AIR; };
+      for (var pass = 0; pass < 80; pass++) { var ch = 0;
+        for (var yy = 1; yy < H - 1; yy++) for (var xx = 0; xx < W; xx++) { var k = yy * W + xx; if (!liq(t[k])) continue;
+          if (open(xx, yy + 1) || open(xx - 1, yy) || open(xx + 1, yy)) { t[k] = T.AIR; ch++; } }
+        if (!ch) break; }
+    })();
     return { trees: TREES, W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
