@@ -46,4 +46,7 @@ A fresh player starts with bare paws. The early chain must always be doable in o
 
 ## Workflow
 - Big features go to the `ocean-update` branch (test site: ocean-update.swamprealms.com). Small fixes go to `main` through a PR.
+- **Dev menu:** every new Delve feature gets dev menu buttons in the same commit (`DEVA` in `sandbox.js`, search `DEV MENU`):
+  a "Go to" button for any new place, "Give" for new items, gear and mounts, "Set" for states that take time to reach (growth, unlocks,
+  time of day, daily resets), and "Open" for new panels. Run each new button once in the test before shipping.
 - Bump the `?v=` tags in `sandbox.html`, add README bullets, and run the smoke test (expect `AUDIT []` and `ERRORS 0`) before committing.
