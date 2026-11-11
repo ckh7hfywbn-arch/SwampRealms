@@ -2748,3 +2748,13 @@ small.bo-cost{display:flex}
 .cc-main{grid-template-columns:240px minmax(0,1fr)}.cc-main>*{min-width:0}
 @media (max-width:640px){.cc-main{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.cc-tabs{flex-wrap:wrap;overflow:visible}}
+/* DEV MENU: one place for every developer tool */
+.p8-devtabs{flex-wrap:wrap}
+.p8-dev button small{display:block;margin-top:2px;font:700 .66rem Nunito,sans-serif;color:#9fd0dc;opacity:.85}
+.p8-dev button.on{border-color:#4ee6b4;background:#4ee6b42a;color:#c8ffe8;box-shadow:0 0 0 2px #4ee6b433}
+#sbxStoryBox .dev-q{width:100%;box-sizing:border-box;margin:0 0 10px;padding:10px 12px;border-radius:12px;border:1.5px solid #7af0ff55;background:#06100bcc;color:#f6eedb;font:800 .95rem Nunito,sans-serif;outline:none}
+#sbxStoryBox .dev-q:focus{border-color:#7af0ff}
+.p8-devitems{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.p8-devitems .dev-it{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:10px;background:#ffffff08}
+.p8-devitems .dev-it img{width:32px;height:32px;image-rendering:pixelated}.p8-devitems .dev-it span{flex:1;font:800 .82rem Nunito,sans-serif}
+.p8-devitems .dev-it .btn{padding:6px 10px;font-size:.75rem}

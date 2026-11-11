@@ -1290,3 +1290,21 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Motorbike:** all 13 motorbike parts and the motorbike itself.
   - **Wild plants:** the 13 wild plants, from cotton and redcap to cactus and fern.
   - **Other:** the vein charm.
+- **One dev menu, old Developer Mode removed:**
+  - **What's gone:** the old code-locked "Developer mode" (the Options code box and the Dev tab in the Journal). Everything it did now lives in the dev menu (`DEV` chip, the \` key, or Pause > Dev menu). It shows on the test site, on localhost and with `?dev=1`.
+  - **Cheats:** god mode, fly, ghost, fast dig, peaceful and an FPS counter, as on/off switches.
+  - **Give:** heal and feed, best gear, the tester kit, every mount, seed, tonic, spare tool, motorbike part and dive item, plus the existing kits.
+  - **Any item:** search every item and give 1, 16 or 64.
+  - **Go to:**
+    - The SwampRealms, Old Croaker, the Homestead and Croaker's Pier.
+    - The open sea, on the boat.
+    - Mine floors 1, 10 and 20, and the Sunken Hollow.
+    - The volcano: the vent, or straight inside.
+    - Every biome, and both edges of the land.
+    - One button per building kind in your world, and the sky village.
+    - All the old places: Tower, islands, Museum, Heart Tree, Glow Marsh and the Maze.
+  - **Time:** morning to dawn, next day, Blood Moon now or tonight, a falling star, a rainbow.
+  - **Spawn:** every creature and boss, and a button to clear them.
+  - **World:** reveal the map, finish the current quest or chapter, meet Zaruk again, turn on world cheats, and the old Set buttons.
+  - **Open:** 27 windows, including the character maker, map, backpack, crafting, quest book, bank, mail, festival, fish log, farm book, molting, notice board, tall tales, earthquake, boat, motorbike, photo mode and commands.
+  - **Checked:** all 162 buttons were run once in the test with no errors.

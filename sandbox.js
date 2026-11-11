@@ -644,7 +644,7 @@
     el.innerHTML = h;
   }
   function ccClick(e) {
-    var b = e.target.closest("[data-cc]"); if (!b) return; var v = b.getAttribute("data-cc"), i = v.indexOf(":"), k = i < 0 ? v : v.slice(0, i), x = i < 0 ? "" : v.slice(i + 1), d = CC.d;
+    var b = e.target.closest("[data-cc]"); if (!b || !CC) return; var v = b.getAttribute("data-cc"), i = v.indexOf(":"), k = i < 0 ? v : v.slice(0, i), x = i < 0 ? "" : v.slice(i + 1), d = CC.d;
     if (k === "x") return ccClose(false);
     if (k === "done") return ccClose(true);
     if (k === "tab") { CC.tab = x; return ccRender(); }
@@ -12571,7 +12571,6 @@
   }
   function hurt(n, why, cont) {
     if (MP.proxy) return mpProxyHurt(n, why);
-    if (DEVGOD && n > 0) return;   // DEV MENU god mode
     if (molt() === "dart" && !cave && n > 0) enemies.forEach(function (e) { if (!e.def && !e.u && Math.abs(e.x - p.x) < 1.8 && Math.abs(e.y - p.y) < 2) moltThorns(e); });   // POISON DART: biting you hurts   // a creature on the host's screen hit a visiting player
     if (deadUI) return;   // the death screen is up: nothing can hurt you until you respawn
     if (n <= 0 || dv("god")) return; if (!cont && hurtGrace > 0) return;
@@ -17556,12 +17555,12 @@
     else if (k === "zaruk") { S.gmet = 0; toast("Zaruk will give his introduction again next visit.", "#4ee6d0"); }
     else if (k === "bmday") { S.bmNext = (S.days | 0); toast("Tonight is a Blood Moon.", "#ff5a6a"); }
     else if (k === "lock") return devLock();
-    if (panelOpen && tab === "dev") renderPanel();
+    if (storyOpen === 290 && /^(give|kit|gear|heal|map|zaruk|bmday)$/.test(k)) devOpen();   // keep the dev menu up for quick repeat taps
   }
   function devToggle(k) {
     DEV[k] = !DEV[k]; if (k === "ghost" && DEV.ghost) DEV.fly = true; if (k === "fly" && !DEV.fly) DEV.ghost = false;
     if (k === "peace" && DEV.peace) enemies.length = 0; if (k === "fps") devFps();
-    devSave(); renderPanel();
+    devSave(); if (storyOpen === 290) devOpen();
   }
   function devItemsHtml() {
     var q = DEV.q.trim().toLowerCase(); if (!q) return '<p class="sbx-note">Type to search every item in the game.</p>';
@@ -17603,7 +17602,7 @@
     // CRAFTING has its own window (the hammer button, E); the Journal (book button, J) holds the rest
     var tabs = [["quests", "Quests"], ["log", "Log"], ["awards", "Awards"], ["lore", loreUnread() ? "Lore \u2022" : "Lore"], ["map", "Map"], ["more", "Options"]];
     if (chestKey) tabs.splice(2, 0, ["chest", "Chest"]); else if (tab === "chest") tab = "craft";
-    if (DEV.on) tabs.push(["dev", "Dev"]); else if (tab === "dev") tab = "more";
+    if (tab === "dev") tab = "more";   // (the old Dev tab: everything moved to the dev menu)
     if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
     $("sbxPanel").classList.toggle("craftwin", tab === "craft");
     $("sbxTabs").innerHTML = tab === "craft" ? '<h2 class="sbx-ptitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5-2.2 2.2-5-5z"/><path d="M13.4 8.6L4.6 17.4a1.6 1.6 0 002.3 2.3l8.8-8.8"/></svg>Crafting</h2>'
@@ -17682,9 +17681,9 @@
           + row("Customize controls", "Move, resize and fade each touch button and the walk stick, or all of them at once.", '<button type="button" class="btn" data-layout>Customize</button>') : ""))
         + (CTLMQ.matches && !matchMedia("(hover:hover)").matches ? "" : card("Mouse and keyboard", row("Mouse wheel", "Scroll up or down to move through your hotbar.", optSeg("wheel", OPT.wheel === false ? "0" : "1", [["1", "Hotbar"], ["0", "Off"]], "Mouse wheel")) + '<div class="pz-rows op-pz">' + keymapRows() + "</div>"));
       SEC.mp = card("Play together", row(MP.on ? (MP.role === "host" ? "Room " + esc(MP.code) : "Visiting") : "Multiplayer", MP.on ? (MP.role === "host" ? (MP.npeers + 1) + " / 4 players in your world." : "You are in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs.", '<button type="button" class="btn" data-mpopen>' + (MP.on ? "Manage" : "Play together") + "</button>"));
-      if (!DEV.on) SEC.dev = card("Developer mode", row("Dev code", "Unlocks a cheat menu on this device, for trying things out.", '<span class="op-btns"><input id="devCode" class="dev-q dev-code" type="password" autocomplete="off" placeholder="Code" aria-label="Dev code"><button type="button" class="btn" data-devunlock>Unlock</button></span>'));
+      // (the old "Developer mode" code box is gone: the dev menu replaced it)
       var OSL = [["general", "General", "Your world, difficulty, hunger, weather, map and zoom", "home"], ["graphics", "Graphics", "Full screen, frame rate, lighting and effects", "eye"], ["audio", "Audio", "Music, sound effects and ambience", "snd"],
-        ["controls", "Controls", "Touch buttons, the walk stick, keys and hotbar size", "keys"], ["access", "Accessibility", "Colour-blind mode, text size and motion", "acc"], ["char", "Character", "Who you play as", "char"], ["mp", "Play together", "Host or join a room with friends", "mp"], ["dev", "Developer", "Cheat menu code", "dev"]].filter(function (q) { return SEC[q[0]]; });
+        ["controls", "Controls", "Touch buttons, the walk stick, keys and hotbar size", "keys"], ["access", "Accessibility", "Colour-blind mode, text size and motion", "acc"], ["char", "Character", "Who you play as", "char"], ["mp", "Play together", "Host or join a room with friends", "mp"]].filter(function (q) { return SEC[q[0]]; });
       if (OPTSEC && SEC[OPTSEC]) {
         var cur = OSL.filter(function (q) { return q[0] === OPTSEC; })[0];
         h += '<div class="op-sechead"><button type="button" class="btn ghost op-back" data-optsec=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Options</button><h2>' + (cur ? cur[1] : "") + "</h2></div>" + SEC[OPTSEC];
@@ -17698,7 +17697,6 @@
     $("sbxPanel").classList.toggle("qbook", tab === "quests"); $("sbxBody").classList.toggle("qb-on", tab === "quests");
     $("sbxBody").innerHTML = h; if (tab === "quests") qbAfter();
     if (tab === "dev") { var dqe = $("devQ"); if (dqe) dqe.addEventListener("input", function () { DEV.q = dqe.value; $("devList").innerHTML = devItemsHtml(); }); }
-    var dce = $("devCode"); if (dce) dce.addEventListener("keydown", function (e2) { if (e2.key === "Enter") { e2.preventDefault(); devUnlock(dce.value); } });
     [[".sbx-cats", ol1], [".sbx-subs", ol2]].forEach(function (q) { var row = document.querySelector(q[0]); if (!row) return; row.scrollLeft = q[1]; var on = row.querySelector(".on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; });
     var cur = document.querySelector("#sbxTabs [aria-selected=true]"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
   }
@@ -18282,7 +18280,7 @@
     if (mapOpen && (k === "+" || k === "=")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s * 1.4); e.preventDefault(); return; }
     if (mapOpen && (k === "-" || k === "_")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s / 1.4); e.preventDefault(); return; }
     if (k === "b" || k === "B") { packOpen ? closePack() : openPack(); e.preventDefault(); return; }
-    if (k === "`" && DEV.on) { if (panelOpen && tab === "dev") closePanel(); else { if (panelOpen) closePanel(); openPanel("dev"); } e.preventDefault(); return; }
+
     if (panelOpen) return;
     if (k === "ArrowLeft" || k === "a" || k === "A") keys.l = 1; else if (k === "ArrowRight" || k === "d" || k === "D") keys.r = 1;
     else if (k === "ArrowDown" || k === "s" || k === "S") keys.d = 1;
@@ -18346,7 +18344,6 @@
     if (t.hasAttribute("data-cgtoggle")) { CGON = !CGON; try { localStorage.setItem("swamp-delve-craftgames", CGON ? "1" : "0"); } catch (e) {} return renderPanel(); }
     if (t.hasAttribute("data-dev")) return devAct(t.getAttribute("data-dev"));   // DEVELOPER MODE
     if (t.hasAttribute("data-devt")) return devToggle(t.getAttribute("data-devt"));
-    if (t.hasAttribute("data-devunlock")) { var dc = $("devCode"); return devUnlock(dc ? dc.value : ""); }
     if (t.hasAttribute("data-charm")) { wearCharm(t.getAttribute("data-charm")); if (packOpen) renderPack(); if (panelOpen) renderPanel(); return; }
     if (t.hasAttribute("data-story")) { var sc = +t.getAttribute("data-story"); closePanel(); return showStory(sc); }
     if (t.hasAttribute("data-qb-ch")) { var nk = t.getAttribute("data-qb-ch"); if (nk !== QB.ch) { QB.ch = nk; QB.sel = ""; QB.fresh = true; } return renderPanel(); }   // QUEST BOOK
@@ -18431,7 +18428,7 @@
       return r;
     };
   })();
-  $("sbxStory").addEventListener("click", function (e) { var p8b = e.target.closest("[data-p8]"); if (p8b) { if (!p8b.disabled) p8Act(p8b.getAttribute("data-p8")); return; } var p7b = e.target.closest("[data-p7]"); if (p7b) { if (!p7b.disabled) p7Act(p7b.getAttribute("data-p7")); return; } var p5b = e.target.closest("[data-p5]"); if (p5b) { if (!p5b.disabled) p5Act(p5b.getAttribute("data-p5")); return; } var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
+  $("sbxStory").addEventListener("click", function (e) { var dvb = e.target.closest("[data-dev]"); if (dvb && storyOpen === 290) { devAct(dvb.getAttribute("data-dev")); return; } var p8b = e.target.closest("[data-p8]"); if (p8b) { if (!p8b.disabled) p8Act(p8b.getAttribute("data-p8")); return; } var p7b = e.target.closest("[data-p7]"); if (p7b) { if (!p7b.disabled) p7Act(p7b.getAttribute("data-p7")); return; } var p5b = e.target.closest("[data-p5]"); if (p5b) { if (!p5b.disabled) p5Act(p5b.getAttribute("data-p5")); return; } var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
   // ---------- LOOP, RESIZE, SAVE ----------
@@ -25119,16 +25116,45 @@
   // (?dev=0 turns it off again). Opens from the pause menu, the DEV chip, or the ` key.
   // =====================================================================================================================
   var DEVON = (function () { try { var q = location.search; if (/[?&]dev=0/.test(q)) sessionStorage.removeItem("delve-dev"); else if (/[?&]dev=1/.test(q)) sessionStorage.setItem("delve-dev", "1"); return /^(localhost|127\.0\.0\.1)$|ocean-update/.test(location.hostname) || sessionStorage.getItem("delve-dev") === "1"; } catch (e) { return false; } })();
-  var DEVTAB = "go", DEVGOD = false;
+  var DEVTAB = "cheat"; DEV.on = DEVON;   // the dev menu is the only developer tool now: it owns the cheat toggles (DEV.god, fly, ghost, dig, peace, fps)
   function dmTp(x, y, label) {   // teleport on the surface (leaves a cave, house or the sea first)
     if (x == null) { toast("Not found in this world yet.", "#ff8a8a"); return; }
     if (cave) leaveCaveNow(); if (HOME) leaveHomeNow();
     setTimeout(function () { var cx = clamp(Math.floor(x), 1, W - 2); p.x = x; p.y = y != null ? y : col[cx]; p.vx = p.vy = 0; p.coy = 0; cam.x = p.x; cam.y = p.y - 1; toast("→ " + label, "#7af0ff"); }, cave || HOME ? 700 : 0);
   }
+  function devMine(f) { if (OCS || HOME) { nag("Go to the surface first."); return; } if (cave) { leaveCaveNow(); setTimeout(function () { devMine(f); }, 900); return; } enterCave(Math.floor(p.x), Math.floor(p.y), f, true); }
+  function devPlaces() {   // buildings and villages in this world: one "Go to" button for the first of each kind
+    var L = [], seen = {};
+    (world.structs || []).forEach(function (st) { if (st.razed || seen[st.kind]) return; seen[st.kind] = 1; var nm = (BCHEST[st.kind] && BCHEST[st.kind].n ? BCHEST[st.kind].n.replace(/^The /, "").replace(/ (Cellar )?Chest$/, "") : st.kind.replace(/([a-z])([A-Z])/g, "$1 $2")); nm = nm.charAt(0).toUpperCase() + nm.slice(1);
+      L.push(["Building: " + nm, function () { dmTp(st.dx + 0.5, st.gy - 0.01, nm); setTimeout(function () { try { enterBuilding(st); } catch (e) {} }, 400); }]); });
+    var V = vilList && vilList(); if (V && V[0]) L.push(["Sky village", function () { dmTp(V[0].x, V[0].y, "Sky village"); }]);
+    return L;
+  }
+  function devTabList(t) {   // the buttons of one tab (some are built from this world)
+    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"]].map(function (q) { return [q[1] + ": " + (DEV[q[0]] ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
+    if (t === "time") return [["Morning", "time:60"], ["Afternoon", "time:200"], ["Dusk", "time:245"], ["Night", "time:300"], ["Dawn", "time:445"], ["Next day", "day"], ["Blood Moon now", "blood"], ["Blood Moon tonight", "bmday"], ["Falling star", "star"], ["Rainbow", "rainbow"]].map(function (q) { return [q[0], function () { devAct(q[1]); }]; });
+    if (t === "spawn") return Object.keys(ENEMY).filter(function (k) { return !BOSS[k]; }).map(function (k) { return [ENEMY[k].n, function () { devAct("mob:" + k); }]; })
+      .concat(Object.keys(BOSS).map(function (k) { return ["Boss: " + BOSS[k].n, function () { devAct("boss:" + k); }]; })).concat([["Clear all enemies", function () { devAct("clear"); }]]);
+    if (t === "go") return DEVA.go.slice(0, 15).concat(BIOMES.map(function (B, i) { return ["Biome: " + B.n, function () { devAct("tp:" + i); }]; })).concat(devPlaces()).concat(DEVA.go.slice(15));
+    return DEVA[t] || [];
+  }
   function devGive(o) { Object.keys(o).forEach(function (k) { if (ITEMS[k]) give(k, o[k], undefined, undefined, true); }); reslot(); hbDirty = true; }
   var DEVA = {
     go: [
       ["Camp (spawn)", function () { dmTp(world.spawn.x + 0.5, null, "Camp"); }],
+      ["Old Croaker", function () { devAct("tp:croak"); }],
+      ["The SwampRealms", function () { devAct("tp:realm"); }],
+      ["Homestead (your farm)", function () { if (cave || OCS) { nag("Go to the surface first."); return; } enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) }); }],
+      ["Croaker's Pier", function () { if (cave) leaveCaveNow(); setTimeout(function () { ocEnterPier(); }, cave ? 700 : 0); }],
+      ["Open sea (on the boat)", function () { if (cave || HOME) { nag("Go to the surface first."); return; } try { ocS().boat.done = 1; } catch (e) {} if (!OCS) { ocEnterPier(); setTimeout(function () { try { ocSetSail(); } catch (e) {} }, 1400); } else ocSetSail(); }],
+      ["Mine: floor 1", function () { devMine(1); }],
+      ["Mine: floor 10", function () { devMine(10); }],
+      ["Mine: floor 20", function () { devMine(20); }],
+      ["Sunken Hollow (Captain Saltjaw)", function () { devMine(SC.LAIR_F || 25); }],
+      ["Volcano vent", function () { var V = volcanoes(); dmTp(V[0] ? V[0].x : null, V[0] ? V[0].y : null, "Volcano vent"); }],
+      ["Enter the volcano", function () { var V = volcanoes(); if (!V[0]) return toast("No volcano in this world yet.", "#ff8a8a"); dmTp(V[0].x, V[0].y, "Volcano"); setTimeout(function () { enterVolcano(V[0]); }, 400); }],
+      ["West edge of the land", function () { devAct("tp:west"); }],
+      ["East edge of the land", function () { devAct("tp:east"); }],
       ["Witch's Tower: door", function () { var t = towerS(); dmTp(t.built ? t.x - 1.5 : null, t.gy, "Witch's Tower"); }],
       ["Witch's Tower: top", function () { var t = towerS(); dmTp(t.built ? t.x + 4.5 : null, t.gy - 24, "Tower top"); }],
       ["Glow Hollow", function () { var s = sites(); dmTp(s && s.glow ? s.glow.x + 4.5 : null, null, "Glow Hollow"); }],
@@ -25153,7 +25179,14 @@
       ["Balloon materials + Lumen", function () { devGive({ cloth: 10, rope: 6, planks: 6, lumen: 8, balloon: 1 }); }],
       ["3 of every card pack", function () { var B = SCB(); if (B) B.packs().forEach(function (P) { B.givePack(P.id, 3); }); toast("Packs added: Croak Cards > Packs.", "#ffd23f"); }],
       ["500 Swamp Coins", function () { var B = SCB(); if (B) B.coins(500); }],
-      ["Full health", function () { hp = MAXHP; drawHp(); }]
+      ["Heal and feed", function () { devAct("heal"); }],
+      ["Best gear (pick, weapon, armor, bag, wings)", function () { devAct("gear"); }],
+      ["Tester kit (blocks, food, bombs, tonics...)", function () { devAct("kit"); }],
+      ["Every seed and crop", function () { var o = {}; ORDER.forEach(function (k) { if (/^seed_/.test(k)) o[k] = 10; }); devGive(o); }],
+      ["Every tonic and potion", function () { var o = {}; ORDER.forEach(function (k) { if (/^tonic_/.test(k)) o[k] = 3; }); devGive(o); }],
+      ["Every spare tool", function () { var o = {}; ORDER.forEach(function (k) { if (/^sp_/.test(k)) o[k] = 1; }); devGive(o); }],
+      ["Every motorbike part", function () { var o = {}; ORDER.forEach(function (k) { if (/^moto_/.test(k)) o[k] = 1; }); devGive(o); }],
+      ["Every dive item", function () { var o = {}; ["scubasuit", "suit2", "suit3", "suit4", "tank1", "tank2", "tank3", "tank4", "flippers", "divelamp"].forEach(function (k) { o[k] = 1; }); devGive(o); }]
     ],
     set: [
       ["Make it day", function () { S.time = 120; }],
@@ -25171,7 +25204,11 @@
       ["Reset the tower puzzle", function () { var t = towerS(); if (!t.built) return; t.lit = []; t.done = 0; t.broom = 0; for (var i = 1; i <= 9; i++) if ([2, 3].indexOf(i) >= 0) setT(t.x + i, t.gy - 24, T.X_witchgate); }],
       ["Unlock all card opponents", function () { S.st.croakaf = Math.max(S.st.croakaf || 0, 1); S.st.fish = Math.max(S.st.fish || 0, 6); S.days = Math.max(S.days | 0, 4); }],
       ["Reset today's daily rewards", function () { var o = p8(); o.gp = o.mz = o.cwd = o.spd = null; if (o.sm) o.sm.gift = o.sm.fed = null; }],
-      ["God mode: " + (DEVGOD ? "ON" : "off"), function () { DEVGOD = !DEVGOD; toast("God mode " + (DEVGOD ? "on: you take no damage." : "off."), "#ffd23f"); }]
+      ["Reveal the whole map", function () { devAct("map"); }],
+      ["Finish this story quest", function () { devAct("quest:one"); }],
+      ["Finish this chapter", function () { devAct("quest:ch"); }],
+      ["Meet Zaruk again", function () { devAct("zaruk"); }],
+      ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
       ["Croak Cards", function () { return cardsOpen("play"); }],
@@ -25182,20 +25219,41 @@
       ["Heart Tree", function () { return heartOpen(); }],
       ["Dream (play one now)", function () { return dreamStart(); }],
       ["Wardrobe", function () { return wardOpen(); }],
+      ["Character maker", function () { closeStory(); return ccOpen(false); }],
+      ["Map", function () { closeStory(); return openMap(); }],
+      ["Backpack", function () { closeStory(); return openPack(); }],
+      ["Crafting", function () { closeStory(); return openPanel("craft"); }],
+      ["Quest book", function () { closeStory(); return openPanel("quests"); }],
+      ["Frog Bank", function () { return bankOpen(); }],
+      ["Mailbox", function () { return mailOpen(); }],
+      ["Festival", function () { return festOpen(); }],
+      ["Fish log", function () { return openFishLog(); }],
+      ["Farm book", function () { return openFarmBook(); }],
+      ["Molting", function () { return moltOpen(); }],
+      ["Notice board", function () { return nbOpen(); }],
+      ["Tall tales", function () { return taleOpen(); }],
+      ["Earthquake", function () { return quakeOpen(); }],
+      ["Boat (Lily Belle)", function () { return openBoat(); }],
+      ["Motorbike", function () { return openMoto(); }],
+      ["Photo mode", function () { closeStory(); return openPhoto(); }],
+      ["Commands (/)", function () { closeStory(); S.cheats = 1; return cmdOpen(); }],
       ["Bog Spirit gift (needs bloom + night)", function () { S.time = 320; p8(); if (!p8().zn) p8().zn = {}; p8().zn[zoneOf(p.x)] = 100; p8().spd = null; var s = spiritSpot(); if (s) dmTp(s.x - 1.5, null, "Bog Spirit"); }]
     ]
   };
-  function devOpen(tab) {
+  var DEVTABS = [["cheat", "Cheats"], ["give", "Give"], ["items", "Any item"], ["go", "Go to"], ["time", "Time"], ["spawn", "Spawn"], ["set", "World"], ["open", "Open"]];
+  function devOpen(tab) {   // DEV MENU: every developer tool in one place (only on the test site, localhost or with ?dev=1)
     if (!DEVON) return; if (tab) DEVTAB = tab; if (!p4Open(290)) return;
-    DEVA.set[DEVA.set.length - 1][0] = "God mode: " + (DEVGOD ? "ON" : "off");
-    var h = '<h2 class="st-hi">🛠 Dev menu</h2><p class="st-tip">Only shows on the test site. It changes this world\'s save, so test in a spare world.</p><div class="p7-tabs">' + [["go", "Go to"], ["give", "Give"], ["set", "Set"], ["open", "Open"]].map(function (t) { return '<button type="button" class="' + (DEVTAB === t[0] ? "on" : "") + '" data-p8="dev:tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + "</div>";
-    h += '<div class="p8-dev">' + DEVA[DEVTAB].map(function (a, i) { return '<button type="button" data-p8="dev:do:' + DEVTAB + ":" + i + '">' + esc(a[0]) + "</button>"; }).join("") + "</div>";
+    var h = '<h2 class="st-hi">🛠 Dev menu</h2><div class="p7-tabs p8-devtabs">' + DEVTABS.map(function (t) { return '<button type="button" class="' + (DEVTAB === t[0] ? "on" : "") + '" data-p8="dev:tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + "</div>";
+    if (DEVTAB === "items") h += '<input id="devQ" class="dev-q" type="search" placeholder="Search every item (bomb, lantern, wings...)" autocomplete="off" value="' + esc(DEV.q) + '"><div id="devList" class="p8-devitems">' + devItemsHtml() + "</div>";
+    else h += '<div class="p8-dev">' + devTabList(DEVTAB).map(function (a, i) { return '<button type="button" class="' + (a[3] ? "on" : "") + '" data-p8="dev:do:' + DEVTAB + ":" + i + '">' + esc(a[0]) + (a[2] ? "<small>" + esc(a[2]) + "</small>" : "") + "</button>"; }).join("") + "</div>";
+    if (DEVTAB === "set") h += '<p class="st-tip keep">Story: chapter ' + (curCh() + 1) + ", quest " + (S.qi + 1) + " of " + MAIN.length + ". Day " + ((S.days | 0) + 1) + ", next Blood Moon on day " + ((S.bmNext | 0) + 1) + ".</p>";
     h += '<div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>'; p4Box(h, "#7af0ff");
+    var qe = $("devQ"); if (qe) { qe.addEventListener("input", function () { DEV.q = qe.value; $("devList").innerHTML = devItemsHtml(); }); if (!coarse) qe.focus(); }
   }
   function dmAct(q) {
     if (q[1] === "tab") return devOpen(q[2]);
-    var A = DEVA[q[2]] && DEVA[q[2]][+q[3]]; if (!A) return; var opensPanel = q[2] === "open";
-    if (!opensPanel) closeStory();
+    var A = devTabList(q[2])[+q[3]]; if (!A) return; var opensPanel = q[2] === "open", stay = q[2] === "cheat" || q[2] === "give";
+    if (!opensPanel && !stay) closeStory();
     try { A[1](); } catch (e) { toast("Dev action failed: " + e.message, "#ff8a8a"); }
     S.st.devused = 1; save(); checkGoals();
   }
