@@ -1312,3 +1312,6 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Ready to craft:** the "you have everything for..." pop-up is now a small card that slides in from the right edge. It shows the item's icon, "Ready to craft" and its name, then slides away after 7 seconds. Before, it was a wide banner across the top for 14 seconds.
   - **Feedback:** a thin bar along the bottom counts down the time. Tap the card to open that recipe, or × to dismiss it.
   - **Other tips:** tips like the dusk warning use the same card and stay 9 seconds.
+- **Slide-in tips on phones:**
+  - **Size:** smaller, about 200px wide with a smaller icon and text.
+  - **Position:** lower down, on the right just above the jump and action buttons.

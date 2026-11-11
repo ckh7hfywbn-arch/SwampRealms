@@ -2774,3 +2774,14 @@ small.bo-cost{display:flex}
 @keyframes tipBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 @media (max-width:600px){.sbx-stage .sbx-tip{top:42%!important;right:8px}}
 @media (prefers-reduced-motion:reduce){.sbx-stage .sbx-tip{transition:none}.sbx-tip .tip-go img{animation:none}}
+/* SLIDE-IN TIP on phones: smaller, and lower (just above the controls) */
+@media (max-width:600px){
+  .sbx-stage .sbx-tip{top:auto!important;bottom:calc(220px + env(safe-area-inset-bottom));right:6px;max-width:min(200px,58vw);padding:5px 24px 7px 6px;gap:6px;border-radius:11px}
+  .sbx-tip .tip-go{gap:6px}
+  .sbx-tip .tip-go img{width:26px;height:26px;border-radius:7px}
+  .sbx-tip .tip-go small{font-size:.52rem;letter-spacing:.1em}
+  .sbx-tip .tip-go b{font-size:.78rem}
+  .sbx-tip p{font-size:.72rem}
+  .sbx-tip .tip-x{width:20px;height:20px;font-size:.85rem;top:2px;right:2px}
+  .sbx-tip .tip-bar{height:2px}
+}
