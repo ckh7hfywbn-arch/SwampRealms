@@ -1320,3 +1320,8 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Without an account:** players who never sign in get it once per device.
   - **Replaying:** the tour can still be replayed from Help.
   - **Code:** `tutDone` and `tutMark` in `sandbox.js`.
+- **Fix: tap to eat works every time:**
+  - **Cause 1:** eating used a shared cooldown that only counted down while you held the button, so a quick tap after a previous bite often did nothing.
+  - **Cause 2:** on phones, a tap shorter than one frame was never seen at all.
+  - **Fix:** food is now eaten on the press itself (`tapEat`), and every new tap eats, even mid-bite. Holding still eats again every 0.7 s.
+  - **Checked:** in tests, 10 of 10 taps ate on desktop and on a phone.

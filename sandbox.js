@@ -5766,7 +5766,18 @@
     text(meX(), meY(), "+" + it.food + " food" + (it.heal ? "  +" + it.heal + " hp" : ""), "#ffd27a"); actStart("eat", k);   // three bites, with crumbs (actFx)
     hbDirty = true; checkTrail(); checkGoals(); if (panelOpen) renderPanel();
   }
-  function useFood(dt) { mine = null; if (!aim.down || actT() >= 0) return; cool -= dt; if (cool > 0) return; cool = 0.7; eat(sel); }
+  var EATT = 0, EATP = -1;
+  function tapEat() {   // eat on the press itself, so even a very quick tap (shorter than one frame) counts
+    if (!(ITEMS[sel] && ITEMS[sel].food && ITEMS[sel].tile === undefined) || panelOpen || menuOpen) return; var now = performance.now();
+    if (actT() >= 0 && !(ACT && ACT.kind === "eat")) return; if (now - EATT < 200) return;
+    EATP = aim.t0; EATT = now; eat(sel);
+  }
+  function useFood(dt) {   // tap to eat: every fresh tap eats (the old shared cooldown only ran down while you held, so quick taps often did nothing)
+    mine = null; if (!aim.down) return; var fresh = aim.t0 !== EATP, now = performance.now();
+    if (actT() >= 0 && !(fresh && ACT && ACT.kind === "eat")) return;   // a new tap mid-bite eats the next one straight away
+    if (!fresh && now - EATT < 700) return; if (fresh && now - EATT < 200) return;   // holding eats again every 0.7 s
+    EATP = aim.t0; EATT = now; eat(sel);
+  }
   // ---------- FISHING ----------
   // Pick the rod (S.rod: 1 Reed Rod, 2 Ember Rod) and tap water to cast. The bobber floats... when it dips and a "!" shows, tap again quickly to reel in.
   // Tapping too early pulls the line in. The Reed Rod fishes water, and also through Frostfen ice; the Ember Rod can fish in lava too.
@@ -18183,14 +18194,14 @@
     if (panelOpen || menuOpen || trans || (e.pointerType === "mouse" && e.button !== 0)) return; e.preventDefault();
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
-    if (HOME) { if (homeTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); $("sbxHint").classList.remove("on"); return; }
-    if (OCS) { if (ocTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); return; }
+    if (HOME) { if (homeTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); tapEat(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); $("sbxHint").classList.remove("on"); return; }
+    if (OCS) { if (ocTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); tapEat(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); return; }
     if (aim.id !== null && aim.id !== e.pointerId && aim.down) return;
     if (inNexus() && GD.sleep && GD.wk <= 0) {   // tap the sleeping Warden to wake him
       var zr = cv.getBoundingClientRect(), zx = (e.clientX - zr.left - ox) / ts, zy = (e.clientY - zr.top - oy) / ts;
       if (Math.abs(zx - GD.x) < 1.6 && zy > GD.y - 1.9 && zy < GD.y + 0.4) { if (Math.abs(GD.x - cp.x) < 7 && Math.abs(GD.y - cp.y) < 7) gdWake(); else nag("Walk closer to wake Zaruk."); return; }
     }
-    aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
+    aim.id = e.pointerId; aim.down = true; setAim(e); aim.t0 = performance.now(); tapEat(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
     aim.lad = cave ? (aim.dx === cave.F.up.x && (aim.dy === cave.F.up.y || aim.dy === cave.F.up.y - 1) ? "up" : aim.dx === cave.F.down.x && aim.dy === cave.F.down.y ? "down" : "") : ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
     $("sbxHint").classList.remove("on"); if (ac && ac.state === "suspended") ac.resume();
   });
