@@ -1231,3 +1231,8 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Surprise me** button for a random look.
   - **Where it's kept:** the look is saved per device in `swamp-delve-appr`, and new worlds take it. `delve-avatar.js` gained `o.hair`, `o.eye`, `o.style`, `o.fx`, `o.tuft` and `o.scar`, and `o.col` now works for people too.
 - **Icon art:** the mounts (Toad, Gator and Heron saddles, the three bone mounts, the Witch's Broom and the Hot-Air Balloon) now use the real mount art, fitted onto a coloured disc. Items that showed the generic gem or a blank square got their own icons: Moonbloom, Realm Shard, Blood Shard, Lumen Shard, Skystone, Star Ore, Starsteel, Hex Dust, Spider Silk, Rainbow Prism, Snapper Petal, Imp Horn, Rime Core, Geode Chip, Gear, Frog Brooch, Old Compass and Pocket Watch.
+- **Craft as many as you like:**
+  - **Making extras:** weapons, armor, pickaxes and bows you already have can be crafted again. Each extra copy goes in your bag as a spare (`sp_wpn3`, `sp_arm2`, `sp_pick4`, `sp_bow2`) and stacks to 64. The recipe button says **Make another** and shows how many spares you have.
+  - **Equipping:** tap a spare in the hotbar, or **Equip** in the backpack, to wear it. The piece you had goes back in your bag, and spares always come fresh at full durability.
+  - **Trading:** spares can go in chests, be dropped, or be given to friends.
+  - **Code:** search `MULTIPLES:`.

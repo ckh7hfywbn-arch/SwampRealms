@@ -1625,6 +1625,7 @@
   // Any item can be held; materials that do nothing on their own dig with bare paws.
   var bare = false;   // holding nothing (an empty hotbar slot): you dig and pick with bare paws even if you own a pick
   function choose(id, slot) {
+    if (/^sp_(wpn|arm|pick|bow)\d$/.test(id)) { equipSpare(id); return; }   // MULTIPLES: a spare weapon, armor, pick or bow equips straight away
     if (id === "x_drill") { boreToggle(); id = "pick"; slot = -1; }
     bare = false;
     if (id === "fishlog") { openFishLog(); return; }
@@ -12273,9 +12274,7 @@
     if (id === "x_grap2" && (S.grapLv | 0) >= 1) { nag("Your grapple already has the Mk II upgrade."); return; } if (id === "x_grap3" && (S.grapLv | 0) < 1) { nag("Install the Mk II upgrade first."); return; } if (id === "x_grap3" && (S.grapLv | 0) >= 2) { nag("Your grapple is already Mk III."); return; }
     if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet" || id === "clippers") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
-    if (r.tier && S.tier >= r.tier) return;
-    if (r.wpn && S.wpn >= r.wpn) return;
-    if (r.arm && S.arm >= r.arm) return;
+    var spare = spareFor(r);   // MULTIPLES: gear you already have makes a spare copy for your bag (make 7 swords if you like)
     if (r.sh && S.shovel) return;
     if (r.can && S.can) return;
     if (r.rod && S.rod >= r.rod) return;
@@ -12284,7 +12283,6 @@
     if (r.bucket && S.bucket >= r.bucket) return;
     if (r.bucket && S.bucket < r.bucket - 1) { toast("Make the Wooden Bucket first.", "#f2c14e"); return; }
     if (r.net && S.net >= r.net) return;
-    if (r.bow && S.bow >= r.bow) return;
     if (r.hoe && S.hoe < r.hoe - 1) { toast("Make the " + HOES[r.hoe - 1].n + " first.", "#f2c14e"); return; }
     if (r.bow && S.bow < r.bow - 1) { toast("Make the " + BOWS[r.bow - 1].n + " first.", "#f2c14e"); return; }
     if (r.rod && S.rod < r.rod - 1) { toast("Make the Reed Fishing Rod first.", "#f2c14e"); return; }
@@ -12298,16 +12296,17 @@
     if (r.bench && !nearBench()) { toast("Stand near a Bog Workbench to craft this.", "#f2c14e"); return; }
     if (r.stn && !nearStn(r.stn)) { toast("Stand near a " + SbxExtra.STN[r.stn] + " to craft this.", "#f2c14e"); return; }
     for (var k in r.cost) if (haveIt(k) < r.cost[k]) { toast("Not enough " + ITEMS[k].n + ".", "#f2c14e"); return; }
-    if (r.out) {   // the crafted items must fit once the ingredients are used up
+    if (r.out || spare) {   // the crafted items must fit once the ingredients are used up
       reslot(); var sim = S.slots.map(function (c) { return c ? { k: c.k, n: c.n } : null; }), q;
       for (q in r.cost) takeFrom(sim, q, Math.min(S.inv[q] || 0, r.cost[q]), -1);
-      for (q in r.out) if (packInto(sim, q, r.out[q]) > 0) { toast("Not enough room in your inventory.", "#f2c14e"); return; }
+      if (spare) { if (packInto(sim, spare, 1) > 0) { toast("Not enough room in your inventory.", "#f2c14e"); return; } } else for (q in r.out) if (packInto(sim, q, r.out[q]) > 0) { toast("Not enough room in your inventory.", "#f2c14e"); return; }
     }
     if (craftGame(r)) return;   // CRAFTING MINI-GAMES: the forge or the cauldron runs first, then calls craft again
     var CQ = CRAFT_PASS && CRAFT_PASS.id === r.id ? CRAFT_PASS.q : -1;
     var fromChests = payCost(r.cost);
     reslot();
-    if (r.tier) { S.tier = r.tier; S.dur.pick = DUR.pick[r.tier]; ICO = {}; toast(r.n + " crafted. Dig faster!", PICKS[r.tier].c); snd("open", "Epic"); chips(p.x, p.y - 1, PICKS[r.tier].c, 30, 9); }
+    if (spare) { give(spare, 1, undefined, undefined, true); S.st.spares = (S.st.spares || 0) + 1; toast("Another " + ITEMS[spare].n + "! It's in your bag (" + (S.inv[spare] || 1) + " spare). Tap it to equip it.", "#f2c14e"); snd("open", "Rare"); chips(p.x, p.y - 1, "#f2c14e", 18, 7); }
+    else if (r.tier) { S.tier = r.tier; S.dur.pick = DUR.pick[r.tier]; ICO = {}; toast(r.n + " crafted. Dig faster!", PICKS[r.tier].c); snd("open", "Epic"); chips(p.x, p.y - 1, PICKS[r.tier].c, 30, 9); }
     else if (r.sh) { S.shovel = 1; S.dur.shovel = DUR.shovel; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar to dig soft ground!", SHOVEL.c); snd("open", "Epic"); chips(p.x, p.y - 1, SHOVEL.c, 24, 8); }
     else if (r.charm) { S.charms.own[r.charm] = 1; var wore = S.charms.on.length < charmSlots(); if (wore) S.charms.on.push(r.charm); toast(r.n + " crafted! " + CHARMS[r.charm].d + (wore ? " (Now wearing it.)" : " Wear it from the top of your backpack."), CHARMS[r.charm].c); snd("open", "Epic"); chips(p.x, p.y - 1, CHARMS[r.charm].c, 24, 8); checkGoals(); }
     else if (r.bucket) { S.bucket = r.bucket; ICO = {}; toast(r.n + " crafted! Tap water" + (r.bucket >= 2 ? " or lava" : "") + " to scoop it, tap an empty space to pour.", "#8fe0ff"); snd("open", "Epic"); chips(p.x, p.y - 1, "#8fe0ff", 20, 7); checkGoals(); }
@@ -12324,7 +12323,7 @@
     else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. You take " + Math.round(ARMORS[r.arm].red * 100) + "% less damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { if (fromChests) text(p.x, p.y - PH - 0.6, "used " + fromChests + " from chests", "#e8d9a8"); for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } if (r.stn === "cook") { S.st.cooked++; checkTrail(); checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
-    uiSnd("confirm", 0.4); cgApply(r, CQ);
+    uiSnd("confirm", 0.4); if (!spare) cgApply(r, CQ);
     S.mk[r.id] = (S.mk[r.id] || 0) + 1; checkGoals();
     hbDirty = true; renderPanel(); save();
   }
@@ -16957,8 +16956,10 @@
     if (r.deco) { var dl = !!(r.bl && S.bl < r.bl), nd = !decorNear(); return { owned: false, lock: dl, lock0: false, needB: nd, can: afford && !dl, ready: afford && !dl && !nd }; }
     var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can) || (r.rod && S.rod >= r.rod) || (r.charm && S.charms.own[r.charm]) || (r.hoe && S.hoe >= r.hoe) || (r.bucket && S.bucket >= r.bucket) || (r.net && S.net >= r.net) || (r.bow && S.bow >= r.bow)),
       lock0 = !!((r.bow && S.bow < r.bow - 1) || (r.rod && S.rod < r.rod - 1) || (r.hoe && S.hoe < r.hoe - 1) || (r.bucket && S.bucket < r.bucket - 1) || (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need)))),
-      lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()), can = !owned && !lock && afford;
-    return { owned: owned, lock: lock, lock0: lock0, needB: needB, can: can, ready: can && !needB && !(r.stn && !nearStn(r.stn)) };
+      lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()), have = owned && !!spareFor(r);
+    if (have) owned = false;   // MULTIPLES: you can always make another of a weapon, armor, pick or bow
+    var can = !owned && !lock && afford;
+    return { owned: owned, have: have, lock: lock, lock0: lock0, needB: needB, can: can, ready: can && !needB && !(r.stn && !nearStn(r.stn)) };
   }
   function recVis(r) {   // the picture, the one-line note and the status of one recipe (used by recCard and the Craft search)
     var st = recStatus(r), im, note;
@@ -17036,11 +17037,12 @@
     var miss = Object.keys(r.cost).filter(function (q) { return haveIt(q) < r.cost[q]; }).map(function (q) { return (r.cost[q] - haveIt(q)) + " " + ITEMS[q].n; });
     if (c === "own") { btn = '<button type="button" class="btn ghost" disabled>Owned</button>'; note = "You already have this."; }
     else if (c === "lock") { btn = '<button type="button" class="btn ghost" disabled>Locked</button>'; note = v.note; }
-    else if (c === "ready") btn = '<button type="button" class="btn crg-go" data-sx-craft="' + r.id + '">Craft</button>';
+    else if (c === "ready") btn = '<button type="button" class="btn crg-go" data-sx-craft="' + r.id + '">' + (st.have ? "Make another" : "Craft") + "</button>";
+    if (st.have && c !== "lock") note = "You have this one. Another goes in your bag as a spare" + (S.inv[spareFor(r)] ? " (you have " + S.inv[spareFor(r)] + ")" : "") + ".";
     else if (st.can) { note = sk && sk !== ctx ? "Made at the " + stnName(sk) + "." : st.needB ? "Made at the Workbench." : r.deco ? "Made at the Decor Workbench." : ""; btn = sk && ctx === "bag" ? '<button type="button" class="btn ghost" data-sx-goto="' + r.id + '">Show me</button>' : '<button type="button" class="btn ghost" disabled>Craft</button>'; }
     else { note = "Still need " + miss.join(", ") + "."; btn = '<button type="button" class="btn ghost" disabled>Craft</button>'; }
     var desc = c === "lock" ? "" : r.d ? itShort(r.d, 150) : "", rep = "";
-    var ok2 = cgOwnKey(r); if (c === "own" && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
+    var ok2 = cgOwnKey(r); if ((c === "own" || st.have) && ok2) { rep = repairHtml(function (q) { return q === ok2; }, ctx === "bench") || repairHtml(function (q) { return q === ok2; }, ctx !== "bench"); rep = rep.replace(/<h3>[^<]*<\/h3>/g, ""); if (rep) note = ""; }
     var rr2 = rarRec(r);
     return '<div class="crg-d crg-d-' + c + '"><div class="crg-dh"><span class="crg-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + v.im + '"></span><div><b style="color:' + (rr2 ? RARC[rr2] : "inherit") + '">' + esc(r.n) + "</b>" + rarTag(rr2) + (desc ? "<small>" + esc(desc) + "</small>" : "") + "</div></div>"
       + (c !== "own" ? '<div class="crg-cost">' + cgCost(r.cost) + "</div>" : "") + (note ? '<p class="crg-note">' + esc(note) + "</p>" : "") + rep + (rep ? "" : '<div class="crg-btn">' + btn + "</div>") + "</div>";
@@ -17249,7 +17251,7 @@
       var tool2 = cur2 && ITEMS[cur2.k].tool;
       h += '<div class="sbx-iinfo' + (cur2 ? " sel" : "") + '">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small></span></div>" : '<div class="pk-none"><span><small>Pick an item to see what you can do with it.</small></span></div>')
         + '<div class="acts">'
-        + (cur2 ? '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
+        + (cur2 ? '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : /^sp_/.test(cur2.k) ? "Equip" : "Hold") + "</button>"
           + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "") + (POTIONS[cur2.k] ? '<button type="button" class="btn" data-iact="drink">Drink</button>' : "")
           + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
           + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
@@ -17383,7 +17385,7 @@
     var tool2 = cur2 && ITEMS[cur2.k].tool, rr2 = cur2 ? rarItem(cur2.k) : 0, bl = cur2 ? itemBlurb(cur2.k) : "";
     h += '<div class="pk2-act' + (cur2 ? " sel" : "") + '">' + (cur2
       ? '<span class="crg-big pk2-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + icon(cur2.k) + '"></span><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + rarTag(rr2) + " " + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small>" + (bl ? '<em class="pk2-bl">' + esc(bl) + "</em>" : "") + '</span><span class="pk2-btns">'
-        + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
+        + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : /^sp_/.test(cur2.k) ? "Equip" : "Hold") + "</button>"
         + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "") + (POTIONS[cur2.k] ? '<button type="button" class="btn" data-iact="drink">Drink</button>' : "")
         + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
         + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
@@ -25015,6 +25017,21 @@
   if (DEVON) {
     window.addEventListener("keydown", function (e) { if (e.key === "`" && !/INPUT|TEXTAREA/.test((e.target || {}).tagName || "")) { e.preventDefault(); if (storyOpen === 290) closeStory(); else devOpen(); } });
     (function () { var b = document.createElement("button"); b.type = "button"; b.className = "p8-devchip"; b.textContent = "DEV"; b.title = "Dev menu (` key)"; b.addEventListener("click", function () { if (world) devOpen(); }); var host = document.getElementById("sbxStage") || document.body; host.appendChild(b); })();
+  }
+  // =====================================================================================================================
+  // MULTIPLES: crafting gear you already have gives a spare copy (sp_wpn3, sp_arm2, sp_pick4, sp_bow2) that stacks in your bag.
+  // Tap one (or Equip in the backpack) to wear it: the one you had goes back in your bag. Spares are always fresh, full durability.
+  // =====================================================================================================================
+  var SPK = { wpn: { L: WEAPONS, f: "wpn", d: "wpn" }, arm: { L: ARMORS, f: "arm", d: "arm" }, pick: { L: PICKS, f: "tier", d: "pick" }, bow: { L: BOWS, f: "bow" } };
+  Object.keys(SPK).forEach(function (kd) { var K = SPK[kd]; for (var t = 1; t < K.L.length; t++) { if (!K.L[t]) continue; (function (t2) { var id = "sp_" + kd + t2; ITEMS[id] = { n: K.L[t2].n, spare: kd, d: "A spare " + K.L[t2].n + ". Tap it to equip it; the one you are using goes back in your bag." }; ORDER.push(id);
+    OCI[id] = function (g) { if (kd === "wpn") drawWeaponIcon(g, t2); else if (kd === "pick") drawPickIcon(g, t2); else drawSpr(g, kd + t2); }; })(t); } });
+  function spareFor(r) { return r.wpn && S.wpn >= r.wpn ? "sp_wpn" + r.wpn : r.arm && S.arm >= r.arm ? "sp_arm" + r.arm : r.tier && S.tier >= r.tier ? "sp_pick" + r.tier : r.bow && S.bow >= r.bow ? "sp_bow" + r.bow : ""; }
+  function equipSpare(id) {
+    var m = id.match(/^sp_(wpn|arm|pick|bow)(\d)$/); if (!m || !(S.inv[id] > 0)) return; var kd = m[1], t = +m[2], K = SPK[kd], cur = S[K.f] | 0;
+    if (cur === t) { nag("You're already using a " + K.L[t].n + "."); return; }
+    S.inv[id]--; if (S.inv[id] <= 0) delete S.inv[id]; if (cur > 0) give("sp_" + kd + cur, 1, undefined, undefined, true);
+    S[K.f] = t; if (K.d && DUR[K.d]) S.dur[K.d] = DUR[K.d][t]; ICO = {}; if (kd === "arm") { armKey = ""; spriteKey = ""; }
+    reslot(); hbDirty = true; toast("Equipped the " + K.L[t].n + (cur > 0 ? ". Your " + K.L[cur].n + " went in your bag." : "."), K.L[t].c || "#f2c14e"); snd("open", "Rare"); save(); if (packOpen) renderPack();
   }
   // =====================================================================================================================
   // ICON ART: proper icons for things that showed a generic gem (the "diamond") or nothing at all, and the mount items
