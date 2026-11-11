@@ -1260,3 +1260,4 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Lighting:** brighter, with a teal tint instead of the muddy fog.
   - **How it's drawn:** each night's layout is painted once at 16 px a tile, then blitted. Code: search `MAZE ART` (`mazePaint`, `mazeLife`, `mazeArch`).
 - **Fix: crafting:** the Craft button in the crafting panel was greyed out for everything, even with all the materials. The MULTIPLES change had broken the if / else chain in `cgDetail`. The "you have a spare" note is now set after the chain, so it can't touch the button.
+- **Fullscreen crafting:** the crafting panel (E) and every crafting station window now fill the screen, like every other window. Content is centred at up to 1100px wide. Before, the panel was a floating box on desktop and a bottom sheet on phones.

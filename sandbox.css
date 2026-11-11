@@ -2349,11 +2349,11 @@ small.bo-cost{display:flex}
 .sbx-stage.lay-ed .sbx-ctl>.sbx-xb.lay-off{display:none!important}
 .sbx-stage.sbx-stage.lay-ed .sbx-ctl>.lay-off.lay-off,.sbx-stage.sbx-stage .sbx-ctl>.lay-off.lay-off{display:none!important}
 /* THE JOURNAL IS FULL SCREEN: quests, log, awards, lore and options fill the whole game view (Crafting stays a window) */
-.sbx-stage .sbx-panel:not(.craftwin){left:0!important;right:0!important;top:0!important;bottom:0!important;width:auto!important;height:auto!important;max-height:none!important;max-width:none!important;transform:none!important;border-radius:0!important;border:0!important;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);box-shadow:none!important;z-index:30}
-.sbx-stage .sbx-panel:not(.craftwin) .sbx-body{max-width:1100px;width:100%;margin:0 auto}
-.sbx-stage .sbx-panel:not(.craftwin) .sbx-phead{max-width:1100px;width:100%;margin:0 auto}
+.sbx-stage .sbx-panel{left:0!important;right:0!important;top:0!important;bottom:0!important;width:auto!important;height:auto!important;max-height:none!important;max-width:none!important;transform:none!important;border-radius:0!important;border:0!important;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);box-shadow:none!important;z-index:30}
+.sbx-stage .sbx-panel .sbx-body{max-width:1100px;width:100%;margin:0 auto}
+.sbx-stage .sbx-panel .sbx-phead{max-width:1100px;width:100%;margin:0 auto}
 .sbx-stage .sbx-panel.qbook:not(.craftwin) .sbx-body{max-width:none}
-.sbx-stage .sbx-panel:not(.craftwin){background:linear-gradient(180deg,#0b1c16,#050e0b)!important}
+.sbx-stage .sbx-panel{background:linear-gradient(180deg,#0b1c16,#050e0b)!important}
 .sbx-stage.panel:not(.lay-ed) .sbx-pad,.sbx-stage.panel:not(.lay-ed) .sbx-joy{visibility:hidden}
 /* map tap menu */
 .sbx-mpop{position:absolute;z-index:5;display:grid;gap:6px;min-width:220px;padding:8px;border-radius:16px;background:linear-gradient(180deg,#10261d,#08130e);border:1px solid #4ee6b455;box-shadow:0 14px 30px -10px #000;animation:mpopIn .14s ease-out}
@@ -2726,3 +2726,8 @@ small.bo-cost{display:flex}
 .sbx-slot img,.sbx-is img{-webkit-user-drag:none;user-drag:none}
 .sbx-slot.lift{opacity:.35;transform:scale(.92)}
 .sbx-slot.drop{outline:2px dashed #f2c14e;outline-offset:-3px;transform:scale(1.08);background:linear-gradient(180deg,#2a3a1c,#14200e)}
+/* FULLSCREEN CRAFTING: crafting stations open edge to edge like the crafting panel and every other window (content centred, max 1100px) */
+.sbx-stage .sbx-stn{padding:0!important;background:linear-gradient(180deg,#0b1c16,#050e0b)!important}
+.sbx-stage .sbx-stn .sbx-sbox{position:absolute!important;inset:0!important;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;border-radius:0!important;border:0!important;transform:none!important;margin:0!important;box-shadow:none!important;background:transparent!important;display:flex;flex-direction:column}
+.sbx-stage .sbx-stn .sbx-phead,.sbx-stage .sbx-stn .sbx-body{max-width:1100px;width:100%;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+.sbx-stage .sbx-stn .sbx-body{flex:1;min-height:0}
