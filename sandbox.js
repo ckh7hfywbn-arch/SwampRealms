@@ -18261,7 +18261,8 @@
     function joyScale() { return base.parentNode && base.parentNode.id === "sbxCtl" ? +(base.style.getPropertyValue("--bs") || 1) : 1; }   // its size comes from Customize Controls
     function mv(e) {
       var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, JS = joyScale(), k = Math.min(1, d / (R * JS));
-      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0;   // on the surface, pull down to drop or climb down knob.style.transform = "translate(" + (dx / d * Math.min(d, R * JS) / JS) + "px," + (dy / d * Math.min(d, R * JS) / JS) + "px)";
+      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0;   // (on the surface, pull down to drop or climb down)
+      knob.style.transform = "translate(" + (dx / d * Math.min(d, R * JS) / JS) + "px," + (dy / d * Math.min(d, R * JS) / JS) + "px)";   // the knob follows your thumb
     }
     base.addEventListener("pointerdown", function (e) { e.preventDefault(); id = e.pointerId; try { base.setPointerCapture(id); } catch (x) {} base.classList.add("on"); $("sbxHint").classList.remove("on"); mv(e); });
     base.addEventListener("pointermove", function (e) { if (e.pointerId === id) mv(e); });
@@ -20623,7 +20624,7 @@
     if (!S.st.piratetip) { S.st.piratetip = 1; toast("Pirate sails! Swamp pirates are coming for your cargo. " + (coarse ? "Tap their ship" : "Click their ship or press Space") + " to fire back.", "#ff7a6a"); }
   }
   function seaHurt(n) {
-    var B = ocS().boat; B.hp = Math.max(0, (B.hp || 100) - n * 100 / hullMax()); shake = Math.max(shake, 0.5);   // tougher hulls lose a smaller share thud(60, 0.14); OCS.sea.hurt = 0.4;
+    var B = ocS().boat; B.hp = Math.max(0, (B.hp || 100) - n * 100 / hullMax()); shake = Math.max(shake, 0.5); thud(60, 0.14); OCS.sea.hurt = 0.4;   // tougher hulls lose a smaller share
     if (B.hp <= 0) { toast("The Lily Belle is holed! Old Croaker's friends tow you home.", "#ff7a6a"); holdLoseHalf(); var lost = Math.min(S.inv.doubloon || 0, 5); if (lost) { S.inv.doubloon -= lost; if (S.inv.doubloon <= 0) delete S.inv.doubloon; reslot(); toast("The pirates got away with " + lost + " Doubloons.", "#ff9a5a"); } seaDock(); }
   }
   function seaLoot(sh) {
