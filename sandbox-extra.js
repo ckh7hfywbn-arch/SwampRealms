@@ -730,7 +730,7 @@
     rect(2, 0, 12, 16, "#7a8088"); rect(3, 0, 10, 1, "#9aa2aa"); rect(2, 0, 1, 16, "#5a6068"); rect(13, 0, 1, 16, "#5a6068"); rect(4, 1, 2, 14, "#8e969e");
     for (var k = 0; k < 8; k++) rect(3 + Math.floor(hh(k, 1, 3) * 10), Math.floor(hh(k, 2, 4) * 16), 1, 1, hh(k, 3, 5) > 0.5 ? "#a8b0b8" : "#60666e");
     rect(7, 5, 2, 1, "#6a5aa8"); rect(6, 6, 1, 3, "#6a5aa8"); rect(9, 6, 1, 3, "#6a5aa8"); rect(7, 9, 2, 1, "#6a5aa8"); rect(2, 12, 4, 4, "#4f8a3c", 0.8); rect(11, 13, 3, 3, "#4f8a3c", 0.8); rect(0, 15, 16, 1, "#000", 0.18);
-  }); TILES[T.X_standingstone].kind = "standingstone";
+  }); TILES[T.X_standingstone].kind = "standingstone"; TILES[T.X_standingstone].solid = false;   // you walk past standing stones (stone circles used to wall the path off)
   deco("runealtar", "Rune Altar", "#b58cff", function (rect) {
     rect(1, 10, 14, 6, "#6a7078"); rect(1, 10, 14, 1, "#9aa2aa"); rect(2, 15, 12, 1, "#40464e"); rect(3, 8, 10, 2, "#80888f"); rect(3, 8, 10, 1, "#b0b8c0");
     rect(6, 2, 4, 6, "#5a4a9a"); rect(7, 1, 2, 1, "#8a72e0"); rect(6, 2, 1, 6, "#4a3a80"); rect(7, 3, 2, 4, "#c8b4ff"); rect(7, 4, 2, 2, "#ffffff");

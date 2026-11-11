@@ -1196,3 +1196,10 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Give:** every mount, Bug Net with bugs spawned nearby, grapple and tree-frog molt, all fossils, enchanting materials, the terrarium and every bug, fish and a Leviathan Scale, balloon materials, card packs, Swamp Coins, full health.
   - **Set:** day or night, skip a day, max skills, the Golden bird and Prize animals, hatch or grow the sea monster, bloom or sour the land, grow the Heart Tree, show or reset the tower rune order, unlock card opponents, reset daily rewards, god mode.
   - **Open:** every new panel directly, including a dream on demand.
+- **Fixes from Stewey's playtest video (Nov 11):**
+  - **Stone circles no longer wall off the path:** Standing Stones are walk-through decoration now, and that includes ones you craft.
+  - **Witch Huts:** the Witch's Chest is hexed shut until you beat the Bog Witch outside, which matches the hint text. Before, you could walk past her and loot it.
+  - **Backpack:** potions have a **Drink** button, next to the Eat button that food already had.
+  - **Tour and practice:** the intro tour no longer pops up halfway through your first minute if you have already been digging and chopping. You get a short note on where to find it instead. The "Try it" practice skips walk, jump and dig if you have already done them.
+  - **Placement:** new worlds keep the Glow Hollow, the Mangrove Maze and the Witch's Tower at least 14 tiles from landmarks and buildings.
+  - **Dev menu:** the DEV chip moved to the right side, under the craft and backpack buttons, so it no longer covers the quest tracker.

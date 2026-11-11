@@ -2592,5 +2592,5 @@ small.bo-cost{display:flex}
 /* DEV MENU (test site only) */
 .p8-dev{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 12px}.p8-dev button{padding:10px 8px;border-radius:12px;border:1.5px solid #7af0ff44;background:#7af0ff12;color:#e8fbff;font:800 .78rem/1.2 Nunito,sans-serif;text-align:left;cursor:pointer;text-transform:none;letter-spacing:0}
 .p8-dev button:active{background:#7af0ff33}
-.p8-devchip{position:absolute;z-index:40;left:10px;top:calc(env(safe-area-inset-top) + 112px);padding:3px 10px;border-radius:999px;border:1.5px solid #7af0ff88;background:#06181cdd;color:#7af0ff;font:900 .66rem Nunito,sans-serif;letter-spacing:.12em;cursor:pointer;opacity:.75}
+.p8-devchip{position:absolute;z-index:40;right:12px;top:calc(env(safe-area-inset-top) + 178px);padding:3px 10px;border-radius:999px;border:1.5px solid #7af0ff88;background:#06181cdd;color:#7af0ff;font:900 .66rem Nunito,sans-serif;letter-spacing:.12em;cursor:pointer;opacity:.75}
 .p8-devchip:hover{opacity:1}

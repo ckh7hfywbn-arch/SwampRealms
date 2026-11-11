@@ -11167,6 +11167,8 @@
   }
   function openCont(c) {
     var el = $("sbxStory"); if (!el || !c) return;
+    if (c.kind === "chest" && cave && cave.bld && cave.bld.kind === "witchhut" && !(cave.F.cont && cave.F.cont[c.i]) && !(S.whut[cave.bld.id] >= (S.days | 0) - 1)) {   // the chest is hexed until you beat its owner
+      nag("The Witch's Chest is hexed shut! Beat the Bog Witch outside her hut first."); chips(c.x + 0.5, c.y + 0.5, "#b06aff", 10, 4); return; }
     if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
     contOpen = c; contContents(c); storyOpen = 217; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null;
     thud(c.kind === "chest" ? 300 : 240, 0.06); chips(c.x + 0.5, c.y + 0.5, c.kind === "chest" ? "#f2c14e" : "#e8dcb0", 8, 4); renderCont(); save();
@@ -12301,7 +12303,9 @@
       + '<button type="button" class="btn" data-story-close>' + (last ? "Keep exploring" : c === 0 ? "Let's begin" : "Onward!") + "</button>";
     if (gestured) snd("rise"); var bt = el.querySelector("[data-story-close]"); if (bt) bt.focus({ preventScroll: true });
   }
-  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); else if ((S.qi | 0) === 0 && !TOUR) setTimeout(function () { if (!panelOpen && storyOpen < 0 && !storyQ.length) startTour(false); }, 700); }
+  function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); else if ((S.qi | 0) === 0 && !TOUR) setTimeout(function () { if (!panelOpen && storyOpen < 0 && !storyQ.length) { if (playedAlready()) skipIntroTour(); else startTour(false); } }, 700); }
+  function playedAlready() { return (S.st.mined || 0) >= 3 || (S.st.felled || 0) > 0 || Object.keys(S.inv).length >= 4; }   // already found your feet: don't interrupt with the tour
+  function skipIntroTour() { try { if (localStorage.getItem("swamp-delve-tour") === "1") return; localStorage.setItem("swamp-delve-tour", "1"); localStorage.setItem("swamp-delve-coach", "1"); } catch (e) { return; } toast("Looks like you know your way around! For a tour later: title screen, How to play, Show me around.", "#4ee6b4"); }
   var CROAK_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="42" rx="24" ry="17" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><ellipse cx="32" cy="48" rx="15" ry="7" fill="#f1efb4"/><circle cx="19" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="45" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="19" cy="24" r="5" fill="#ffd23f"/><circle cx="45" cy="24" r="5" fill="#ffd23f"/><path d="M17 23h4M43 23h4" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 40q12 8 24 0" fill="none" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M12 16q7-9 14-3M38 13q7-6 14 3" fill="none" stroke="#e8e4d8" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="33" r="1.4" fill="#1c5e34"/><circle cx="37" cy="33" r="1.4" fill="#1c5e34"/></svg>';
   function findGuide() {
     var st = MAIN[S.qi]; guide = null;
@@ -12382,7 +12386,7 @@
       { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? ".sbx-stage button.roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
       { id: "dig", t: "Gather", d: t ? "Hold your finger on the glowing ring to gather from it." : "Hold the mouse on the glowing ring to gather from it.", world: true, keys: [t ? "" : "Hold mouse"], done: function (c) { return (S.st.mined || 0) > c.m0 || (S.inv.stick || 0) > c.s0 || (S.inv.fiber || 0) > c.f0; } },
       { id: "pack", t: "Your backpack", d: t ? "Tap the backpack to see what you carry." : "Press B to open your backpack.", el: "#sbxPackBtn", keys: ["B"], done: function () { return packOpen; } }
-    ];
+    ].filter(function (q) { return !((S.st.mined || 0) >= 3 && /walk|jump|dig/.test(q.id)); });   // skip the steps you have clearly done already
   }
   function startCoach(force) {
     if (COACH || (MP.on && MP.role === "guest") || cave || OCS || HOME || titleOpen) return;
@@ -17174,7 +17178,7 @@
       h += '<div class="sbx-iinfo' + (cur2 ? " sel" : "") + '">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small></span></div>" : '<div class="pk-none"><span><small>Pick an item to see what you can do with it.</small></span></div>')
         + '<div class="acts">'
         + (cur2 ? '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
-          + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "")
+          + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "") + (POTIONS[cur2.k] ? '<button type="button" class="btn" data-iact="drink">Drink</button>' : "")
           + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
           + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
           + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again" : "Drop all") + "</button>")
@@ -17308,7 +17312,7 @@
     h += '<div class="pk2-act' + (cur2 ? " sel" : "") + '">' + (cur2
       ? '<span class="crg-big pk2-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + icon(cur2.k) + '"></span><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + rarTag(rr2) + " " + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small>" + (bl ? '<em class="pk2-bl">' + esc(bl) + "</em>" : "") + '</span><span class="pk2-btns">'
         + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : "Hold") + "</button>"
-        + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "")
+        + (ITEMS[cur2.k].food ? '<button type="button" class="btn" data-iact="eat">Eat</button>' : "") + (POTIONS[cur2.k] ? '<button type="button" class="btn" data-iact="drink">Drink</button>' : "")
         + '<button type="button" class="btn ghost" data-iact="swap">' + (invSel >= INV_HOT ? "To hotbar" : "To bag") + "</button>"
         + (cur2.n > 1 ? '<button type="button" class="btn ghost" data-iact="split">Split</button>' : "")
         + (tool2 ? "" : '<button type="button" class="btn ghost" data-iact="toss1">Drop 1</button><button type="button" class="btn ghost' + (invAsk === "t" + invSel ? " warn" : "") + '" data-iact="tossall">' + (invAsk === "t" + invSel ? "Tap again to drop all" : "Drop all") + "</button>")
@@ -18049,6 +18053,7 @@
     else if (a === "tossall") tossSlot(invSel, true);
     else if (a === "sort") sortInv();
     else if (a === "eat") { eat(c.k); if (!S.slots[invSel]) invSel = -1; }
+    else if (a === "drink") { drink(c.k); if (!S.slots[invSel]) invSel = -1; }
     else if (a === "hold") { var k = c.k, at = invSel; if (at >= INV_HOT) { quickMove(at); at = hotIndex(k); } choose(k, at); closePanel(); }
   }
   [$("sbxPanel"), $("sbxPack")].forEach(function (el) { el.addEventListener("contextmenu", function (e) {   // right-click a slot: split the stack in half
@@ -24565,7 +24570,8 @@
     return true;
   }
   function siteFind(from, dir, w, tall, avoid) {
-    for (var d = 0; d < 400; d++) { var x = Math.floor(from + dir * d); if (avoid.some(function (a) { return Math.abs(a - x) < 30; })) continue; if (siteOk(x, w, tall)) return { x: x, y: col[x] }; } return null;
+    var mk = (world.marks || []).map(function (m) { return m.x; }).concat((world.structs || []).map(function (h) { return h.dx != null ? h.dx : h.x; }));
+    for (var d = 0; d < 400; d++) { var x = Math.floor(from + dir * d); if (avoid.some(function (a) { return Math.abs(a - x) < 30; }) || mk.some(function (a) { return a != null && Math.abs(a - x) < 14; })) continue; if (siteOk(x, w, tall)) return { x: x, y: col[x] }; } return null;
   }
   function sites() {
     if (!world || !world.spawn) return null; if (SITES && SITES.w === world) return SITES.v;
