@@ -495,8 +495,9 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1 };
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true };
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
+  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -891,7 +892,7 @@
   function curEntry() { return wIdx && wIdx.list.filter(function (x) { return x.id === curId; })[0]; }
   function touchIdx() {   // keep the little summary shown on the Worlds screen fresh
     var w = curEntry(); if (!w) return;
-    w.played = Date.now(); w.diff = S.diff; w.tier = S.tier; w.wpn = S.wpn; w.trail = S.qi; w.ch = curCh(); w.sleeps = S.st.sleeps; w.goals = Object.keys(S.ms).length; w.depth = S.st.maxDepth; wIdx.last = curId; saveIdx();
+    w.played = Date.now(); w.diff = S.diff; w.cheats = S.cheats ? 1 : 0; w.tier = S.tier; w.wpn = S.wpn; w.trail = S.qi; w.ch = curCh(); w.sleeps = S.st.sleeps; w.goals = Object.keys(S.ms).length; w.depth = S.st.maxDepth; wIdx.last = curId; saveIdx();
   }
   function switchWorld(id) {
     if (MP.on || MP.ws) mpLeave();
@@ -899,12 +900,13 @@
       bossGone(); save(); curId = id; start(tw); if (TC.pickedChar) { S.animal = TC.pickedChar; TC.pickedChar = ""; mkSprite(); } touchIdx(); if (!titleOpen) toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); }
     closeWorlds(); if (titleOpen) closeTitle();
   }
-  var newDiff = 1;
+  var newDiff = 1, newCheats = false;
+  function seedFrom(v) { v = String(v || "").trim(); if (!v) return randSeed(); if (/^-?\d+$/.test(v)) return (Math.abs(parseInt(v, 10)) % 2e9) || 1; var h = 0; for (var i = 0; i < v.length; i++) h = (Math.imul(h, 31) + v.charCodeAt(i)) | 0; return (Math.abs(h) % 2e9) || 1; }   // a typed seed: a number, or any word
   function createWorld(name) {
     if (wIdx.list.length >= MAXW) { toast("You can keep " + MAXW + " worlds. Delete one first.", "#f2c14e"); return; }
     if (MP.on || MP.ws) mpLeave();
     bossGone(); save(); var z = S.zoom, an = S.animal; addWorld(String(name || "").trim().slice(0, 24));
-    start(Object.assign(fresh(randSeed()), { zoom: z, animal: an, diff: newDiff })); save(); closeWorlds(); if (titleOpen) closeTitle(); toast("A fresh world: " + curEntry().name + " (" + DIFF[newDiff].n + "). Happy digging!", "#4ee6b4");
+    var sdIn = $("sbxWSeed"), sd = seedFrom(sdIn ? sdIn.value : ""); start(Object.assign(fresh(sd), { zoom: z, animal: an, diff: newDiff, cheats: newCheats ? 1 : 0 })); save(); touchIdx(); closeWorlds(); if (titleOpen) closeTitle(); toast("A fresh world: " + curEntry().name + " (" + DIFF[newDiff].n + (newCheats ? ", cheats on: press / or tap the / button for commands" : "") + "). Happy digging!", "#4ee6b4"); newCheats = false;
   }
   function deleteWorld(id) {
     try { localStorage.removeItem(wkey(id)); } catch (e) {}
@@ -933,6 +935,9 @@
         + '<h2>New world</h2><p class="wl2-sub">A fresh swamp to dig, build and explore. Your character comes with you.</p>'
         + '<label class="wl2-field"><span>Name</span><input id="sbxWName" type="text" maxlength="24" placeholder="My Swamp" autocomplete="off"></label>'
         + '<div class="wl2-diffs" role="radiogroup" aria-label="Difficulty">' + DIFF.map(function (D, i) { var on = newDiff === i; return '<button type="button" class="wl2-diff' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-wl-diff="' + i + '" style="--dc:' + D.c + '"><b>' + D.n + "</b><small>" + esc(DIFF_SHORT[i] || D.d) + "</small></button>"; }).join("") + "</div>"
+        + '<div class="wl2-opts"><div class="wl2-opt"><div><b>Cheats</b><small>Commands like /give, /tp, /time and /fly. Can\'t be changed after the world is made.</small></div><button type="button" class="op-sw' + (newCheats ? " on" : "") + '" role="switch" aria-checked="' + newCheats + '" aria-label="Cheats" data-wl-cheats><i></i></button></div>'
+        + '<label class="wl2-field wl2-seed"><span>Seed <small>(optional: the same seed makes the same world)</small></span><input id="sbxWSeed" type="text" maxlength="24" placeholder="Random" autocomplete="off"></label></div>'
+        + '<p class="wl2-lock">Difficulty, cheats and the seed are fixed once the world is made.</p>'
         + (list.length >= MAXW ? '<p class="wl2-warn">You can keep ' + MAXW + " worlds. Delete one first to make room.</p>" : "")
         + '<button type="button" class="btn wl2-create" data-fs-start data-wl-new' + (list.length >= MAXW ? " disabled" : "") + ">Create world</button></div>";
     } else {
@@ -943,7 +948,7 @@
         h += '<div class="wl2-w' + (cur ? " cur" : "") + (open || ren || del ? " open" : "") + '">' + wlArt(w) + '<div class="wl2-txt">'
           + (ren ? '<span class="wl2-ren"><input type="text" maxlength="24" data-wl-renin="' + w.id + '" value="' + esc(w.name) + '" aria-label="New name for ' + esc(w.name) + '"><button type="button" class="btn" data-wl-rensave="' + w.id + '">Save</button><button type="button" class="btn ghost" data-wl-renx>Cancel</button></span>'
                : '<b>' + esc(w.name) + "</b>")
-          + '<span class="wl2-meta"><em class="wl2-tag" style="--dc:' + D.c + '">' + D.n + "</em>" + (cur ? '<em class="wl2-tag now">Playing</em>' : "") + "<small>" + esc(sub) + "</small></span>" + cloudBadge(w) + "</div>"
+          + '<span class="wl2-meta"><em class="wl2-tag" style="--dc:' + D.c + '">' + D.n + "</em>" + (w.cheats ? '<em class="wl2-tag cheat">Cheats</em>' : "") + (cur ? '<em class="wl2-tag now">Playing</em>' : "") + "<small>" + esc(sub) + "</small></span>" + cloudBadge(w) + "</div>"
           + '<div class="wl2-go"><button type="button" class="btn' + (cur ? "" : " ghost") + '" data-fs-start data-wl-play="' + w.id + '">' + (cur ? "Resume" : "Play") + '</button><button type="button" class="wl2-more" data-wl-menu="' + w.id + '" aria-expanded="' + open + '" aria-label="More for ' + esc(w.name) + '">&middot;&middot;&middot;</button></div>'
           + (open && !del && !ren ? '<div class="wl2-menu"><button type="button" data-wl-ren="' + w.id + '">Rename</button><button type="button" class="warn" data-wl-del="' + w.id + '">Delete</button></div>' : "")
           + (del ? '<div class="wl2-confirm"><span>Delete <b>' + esc(w.name) + "</b>? This can't be undone" + (CLOUD.state === "on" && w.crev ? " (its cloud backup stays)" : "") + '.</span><button type="button" class="btn warn" data-wl-del="' + w.id + '">Delete world</button><button type="button" class="btn ghost" data-wl-delx>Keep it</button></div>' : "")
@@ -972,6 +977,7 @@
     if (b.hasAttribute("data-wl-newview")) { WL.view = "new"; WL.menu = ""; delAsk = ""; renderWorlds(); var ni = $("sbxWName"); if (ni) ni.focus(); return; }
     if (b.hasAttribute("data-wl-list")) { if (!wIdx.list.length || (titleOpen && WL.came === "new")) { WL.came = ""; return closeWorlds(); } WL.view = "list"; return renderWorlds(); }
     if (b.hasAttribute("data-wl-diff")) { newDiff = clamp(+b.getAttribute("data-wl-diff") || 0, 0, 2); return renderWorlds(); }
+    if (b.hasAttribute("data-wl-cheats")) { newCheats = !newCheats; var sk = $("sbxWSeed") ? $("sbxWSeed").value : ""; renderWorlds(); if ($("sbxWSeed")) $("sbxWSeed").value = sk; return; }
     if (b.hasAttribute("data-wl-new")) { var inp = $("sbxWName"); createWorld(inp ? inp.value : ""); if (menuOpen) renderWorlds(); return; }
     var mn = b.getAttribute("data-wl-menu"); if (mn) { WL.menu = WL.menu === mn ? "" : mn; delAsk = ""; WL.ren = ""; return renderWorlds(); }
     var rn = b.getAttribute("data-wl-ren"); if (rn) { WL.ren = rn; WL.menu = ""; return renderWorlds(); }
@@ -7800,6 +7806,7 @@
     var key = standAt.x + "," + standAt.y, st = S.stands[key] || (S.stands[key] = { a: 0, w: 0 });
     if (a === "best") { st.a = S.arm; st.w = S.wpn; }
     else { var q = a.split(":"), t = clamp(+q[1] || 0, 0, 5); if (q[0] === "a" && t <= S.arm) st.a = t; if (q[0] === "w" && t <= S.wpn) st.w = t; }
+    var en8 = (S.p8 && S.p8.en) || {}; st.ea = st.a && st.a === S.arm && en8.arm ? { k: en8.arm.k, l: en8.arm.l } : null; st.ew = st.w && st.w === S.wpn && en8.wpn ? { k: en8.wpn.k, l: en8.wpn.l } : null;   // your enchantments go on the stand with the gear
     S.st.stands = Math.max(S.st.stands, Object.keys(S.stands).filter(function (k) { var v = S.stands[k]; return v.a || v.w; }).length);
     thud(520, 0.04); checkGoals(); save(); renderStand();
   }
@@ -7826,6 +7833,7 @@
       if (x < X0 - 1 || x > X1 + 1 || y < Y0 - 2 || y > Y1 + 1) continue;
       if (!isStand(x, y)) { delete S.stands[key]; continue; }
       if (!st.a && !st.w) continue;
+      if (st.ea || st.ew) enchGlow(g, ox + (x + 0.5) * ts, oy + (y + 1) * ts, ts * 1.6, performance.now(), { arm: st.ea, wpn: st.ew });   // enchanted gear glows on the stand too
       paintStand(g, ox + (x + 0.5) * ts, oy + (y + 1) * ts, ts / 15, st);
     }
   }
@@ -11586,6 +11594,7 @@
     return r("Full screen", "Fills the whole screen. Delve does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
+      + r("Enchantment glow", "A soft glow and sparkles around you when your gear is enchanted.", optSeg("eglow", OPT.eglow === false ? 0 : 1, [[1, "On"], [0, "Off"]], "Enchantment glow"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
@@ -11618,6 +11627,8 @@
     else if (k === "amb") OPT.amb = clamp(Math.round((OPT.amb + 0.1 * +v) * 10) / 10, 0, 1);
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
+    else if (k === "wheel") OPT.wheel = v === "1";
+    else if (k === "eglow") OPT.eglow = v === "1";
     else if (k === "bloom") OPT.bloom = v === "1";
     else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
@@ -15623,6 +15634,7 @@
     drawWings(g, sx, sy + ts * 0.14, now);   // behind the body
     if (riding()) { g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); drawMoto(g, -1.55 * ts, 0, ts, motoS().p, performance.now(), { ride: true, run: Math.abs(p.vx) > 0.5, lit: true }); g.restore(); sy -= ts * 0.82; sx -= p.face * ts * 0.38; bob = 0; }   // SWAMP HOG: you sit on the bike
     var T0 = g.getTransform(), RIDE = drawMountUnder(g, sx, sy, performance.now()); if (RIDE) { sy -= RIDE.lift; sx += RIDE.dx; bob = 0; }   // MOUNTS: hop into the saddle and ride
+    if (OPT.eglow !== false && S.p8 && S.p8.en && !cave) enchGlow(g, sx, sy + ts * 0.1, ts * 1.7, now, S.p8.en);   // ENCHANTED GEAR: a faint glow (Settings can turn it off)
     var sq = 1 + bob * 0.03 + (p.vy < -2 ? 0.05 : 0) - (p.vy > 6 ? 0.04 : 0) + (reduce ? -(p.land || 0) : clamp(p.sq || 0, -0.32, 0.22));
     swimStep(now); var swimN = SWIM.on && !riding(); if (swimN) drawSwimFx(g);
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(p.face, 1); dodgeSpin(g, ts * 0.85);
@@ -17363,7 +17375,7 @@
   try { DEV.on = localStorage.getItem("swamp-delve-dev") === DEVH; var dvo = JSON.parse(localStorage.getItem("swamp-delve-devopts") || "{}"); ["god", "fly", "ghost", "dig", "peace", "fps"].forEach(function (k) { DEV[k] = !!dvo[k]; }); } catch (e) {}
   try { var dq = new URLSearchParams(location.search).get("dev"); if (dq && devHash(dq) === DEVH) { DEV.on = true; localStorage.setItem("swamp-delve-dev", DEVH); } } catch (e) {}
   function devSave() { try { localStorage.setItem("swamp-delve-devopts", JSON.stringify({ god: DEV.god, fly: DEV.fly, ghost: DEV.ghost, dig: DEV.dig, peace: DEV.peace, fps: DEV.fps })); } catch (e) {} }
-  function dv(k) { return DEV.on && DEV[k]; }
+  function dv(k) { return (DEV.on || !!(S && S.cheats && !(MP.on && MP.role === "guest"))) && DEV[k]; }   // developer mode, or a world with cheats on
   function devDig() { return dv("dig") ? 12 : 1; }
   function devUnlock(code) {
     if (devHash(code) !== DEVH) { nag("That is not the dev code."); return false; }
@@ -17557,7 +17569,9 @@
       var SEC = {};
       if (curId) SEC.general = card("This world",
         row(esc(curEntry() ? curEntry().name : "My Swamp"), "Day " + ((S.days | 0) + 1) + " · saves automatically", '<span class="op-btns"><button type="button" class="btn ghost" data-camp>Back to camp</button><button type="button" class="btn" data-wl-open>Worlds</button></span>')
-        + row("Difficulty", esc(dif().d), '<span class="sbx-diff op-seg">' + DIFF.map(function (D, i) { return '<button type="button" class="btn' + (S.diff === i ? "" : " ghost") + '" data-diff="' + i + '" aria-pressed="' + (S.diff === i) + '" style="--dc:' + D.c + '">' + D.n + "</button>"; }).join("") + "</span>")
+        + row("Difficulty", esc(dif().d) + " Chosen when the world was made.", '<span class="op-lock" style="--dc:' + dif().c + '">\ud83d\udd12 ' + esc(dif().n) + "</span>")
+        + row("Cheats", S.cheats ? "Commands are on: press / or tap the / button." : "Off for this world. Chosen when the world was made.", '<span class="op-lock">\ud83d\udd12 ' + (S.cheats ? "On" : "Off") + "</span>")
+        + row("World seed", "World size " + W + " \u00d7 " + H + " tiles. Type this seed into a new world to get the same land.", '<span class="op-lock op-seed">' + (S.seed | 0) + "</span>")
         + row("Keep inventory", "On: you keep everything when you pass out. Off: you lose some of your loot.", sw("data-keepinvtoggle", S.keepInv, "Keep inventory"))
         + (S.keepInv ? "" : row("Loot lost on death", "Share of each stack of loose materials lost when you pass out. Tools, gear and potions are always safe." + (S.lossPct === null || S.lossPct === undefined ? " Now following the difficulty." : ""), stp('data-lossstep="%"', lossPercent() + "%", "Loot lost on death")))
         + (S.keepInv ? "" : row("Gravestone lasts", "The loot you lose waits in a gravestone where you fell. Walk up and press F to take it back before it crumbles.", stp('data-gravemin="%"', (S.graveMin || 5) + " min", "Gravestone time")))
@@ -17576,7 +17590,7 @@
       SEC.controls = card("Controls", row("Hotbar size", "The hotbar and the health and hunger bars. Touch buttons and the walk stick are sized in Customize Controls.", '<span class="op-btns">' + stp('data-ui="%"', Math.round(UIS * 100) + "%", "Hotbar size") + '<button type="button" class="btn ghost op-mini" data-ui="0" aria-label="Reset hotbar size">Reset</button></span>')
         + (CTLMQ.matches ? row("Movement", JOYALL ? "The walk stick everywhere." : "Arrows on the surface, the stick in caves, the Mine and at sea.", '<span class="op-btns op-seg"><button type="button" class="btn' + (JOYALL ? " ghost" : "") + '" data-joyall="0" aria-pressed="' + !JOYALL + '">Arrows</button><button type="button" class="btn' + (JOYALL ? "" : " ghost") + '" data-joyall="1" aria-pressed="' + JOYALL + '">Stick</button></span>')
           + row("Customize controls", "Move, resize and fade each touch button and the walk stick, or all of them at once.", '<button type="button" class="btn" data-layout>Customize</button>') : ""))
-        + (CTLMQ.matches && !matchMedia("(hover:hover)").matches ? "" : card("Keyboard", '<div class="pz-rows op-pz">' + keymapRows() + "</div>"));
+        + (CTLMQ.matches && !matchMedia("(hover:hover)").matches ? "" : card("Mouse and keyboard", row("Mouse wheel", "Scroll up or down to move through your hotbar.", optSeg("wheel", OPT.wheel === false ? "0" : "1", [["1", "Hotbar"], ["0", "Off"]], "Mouse wheel")) + '<div class="pz-rows op-pz">' + keymapRows() + "</div>"));
       SEC.mp = card("Play together", row(MP.on ? (MP.role === "host" ? "Room " + esc(MP.code) : "Visiting") : "Multiplayer", MP.on ? (MP.role === "host" ? (MP.npeers + 1) + " / 4 players in your world." : "You are in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs.", '<button type="button" class="btn" data-mpopen>' + (MP.on ? "Manage" : "Play together") + "</button>"));
       if (!DEV.on) SEC.dev = card("Developer mode", row("Dev code", "Unlocks a cheat menu on this device, for trying things out.", '<span class="op-btns"><input id="devCode" class="dev-q dev-code" type="password" autocomplete="off" placeholder="Code" aria-label="Dev code"><button type="button" class="btn" data-devunlock>Unlock</button></span>'));
       var OSL = [["general", "General", "Your world, difficulty, hunger, weather, map and zoom", "home"], ["graphics", "Graphics", "Full screen, frame rate, lighting and effects", "eye"], ["audio", "Audio", "Music, sound effects and ambience", "snd"],
@@ -18222,6 +18236,7 @@
     if (!t) {   // CRAFT GRID: a click on empty space (not a slot, button, field or link) clears the pick
       var cz = e.target.closest(".crg") || e.target.closest("#sbxStnBody") || (tab === "craft" && !stnOpen && e.target.closest("#sbxBody"));
       if (cz && !e.target.closest("input,select,textarea,a,label,[data-csel],.crg-d")) { var ck = stnOpen ? stnOpen.k : "bag"; if (CG_SEL[ck] !== "") { CG_SEL[ck] = ""; renderPanel(); } }
+      if (packOpen && e.currentTarget && e.currentTarget.id === "sbxPack" && invSel >= 0 && !e.target.closest("input,select,textarea,a,label,.sbx-is,[data-islot],.pk2-act,.pk2-ov")) { invSel = -1; invAsk = ""; renderPack(); }   // BACKPACK: tap empty space to put the item down, like the craft grid
       return;
     }
     if (t.hasAttribute("data-close")) return closePanel();
@@ -18264,7 +18279,8 @@
     if (t.getAttribute("data-iextra")) return collectExtra(t.getAttribute("data-iextra"));
     if (t.getAttribute("data-hold")) { choose(t.getAttribute("data-hold")); return closePanel(); }
     if (t.getAttribute("data-an")) { S.animal = t.getAttribute("data-an"); try { localStorage.setItem("swamp-delve-char", S.animal); } catch (e) {} mkSprite(); return renderPanel(); }
-    if (t.hasAttribute("data-diff")) { var dv = clamp(+t.getAttribute("data-diff") || 0, 0, 2); if (MP.on && MP.role === "guest") { nag("The host picks the difficulty in their world."); return; } S.diff = dv; toast("Difficulty: " + DIFF[dv].n + ". " + DIFF[dv].d, DIFF[dv].c); save(); return renderPanel(); }
+    if (t.hasAttribute("data-diff")) { nag("Difficulty is chosen when a world is made."); return; }
+    if (false && t.hasAttribute("data-diff")) { var dv = clamp(+t.getAttribute("data-diff") || 0, 0, 2); if (MP.on && MP.role === "guest") { nag("The host picks the difficulty in their world."); return; } S.diff = dv; toast("Difficulty: " + DIFF[dv].n + ". " + DIFF[dv].d, DIFF[dv].c); save(); return renderPanel(); }
     if (t.hasAttribute("data-keepinvtoggle")) { if (MP.on && MP.role === "guest") { nag("The host picks the death rules in their world."); return; } S.keepInv = S.keepInv ? 0 : 1; toast(S.keepInv ? "Keep inventory is ON. You keep everything when you pass out." : "Keep inventory is OFF. You lose " + lossPercent() + "% of your loose loot when you pass out.", S.keepInv ? "#7fd06a" : "#ff8a3d"); save(); return renderPanel(); }
     if (t.hasAttribute("data-lossstep")) { if (MP.on && MP.role === "guest") { nag("The host picks the death rules in their world."); return; } S.lossPct = clamp(lossPercent() + 10 * (+t.getAttribute("data-lossstep") || 0), 0, 100); save(); return renderPanel(); }
     if (t.hasAttribute("data-gravemin")) { if (MP.on && MP.role === "guest") { nag("The host picks the death rules in their world."); return; } S.graveMin = clamp((S.graveMin || 5) + (+t.getAttribute("data-gravemin") || 0), 1, 15); save(); return renderPanel(); }
@@ -21673,6 +21689,15 @@
   }
   function p4Open(id) { var el = $("sbxStory"); if (!el) return false; if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel(); storyOpen = id; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); stopInput(); return true; }
   function p4Box(h, col) { var b = $("sbxStoryBox"); b.style.setProperty("--qc", col || "#4ee6b4"); b.innerHTML = h; var f = b.querySelector(".btn:not(.ghost)") || b.querySelector(".btn"); if (f) f.focus({ preventScroll: true }); }
+  // TOP BACK BUTTON: every window in the story panel gets a small sticky "Back" at the top, so you never scroll down to leave.
+  // It presses the window's own Back (or Close / Done / Leave) button, so nested views step back instead of closing outright.
+  (function () {
+    var box = $("sbxStoryBox"); if (!box || !window.MutationObserver) return;
+    function findExit() { var L = [].slice.call(box.querySelectorAll("button, a.btn")).filter(function (b) { return !b.classList.contains("sbx-topback") && !b.disabled && b.offsetParent !== null; }), by = function (re) { for (var i = L.length - 1; i >= 0; i--) if (re.test((L[i].textContent || "").trim())) return L[i]; return null; };
+      return by(/^(\u2039\s*)?back\b/i) || box.querySelector("[data-story-close]") || by(/^(close|done|leave|not now|cancel)$/i); }
+    function add() { if (box.querySelector(".sbx-topback")) return; var ex = findExit(); if (!ex) return; var b = document.createElement("button"); b.type = "button"; b.className = "sbx-topback"; b.innerHTML = "\u2039 Back"; b.setAttribute("aria-label", "Back"); b.addEventListener("click", function (e) { e.stopPropagation(); var x = findExit(); if (x) x.click(); else closeStory(); }); box.insertBefore(b, box.firstChild); }
+    new MutationObserver(function () { add(); }).observe(box, { childList: true });
+  })();
   function p4Back(w) { P4V.r = null; if (w === "croaker") { talkView = "main"; renderTalk(); } else if (w === "croako") talkCroako(); else if (w === "croaka") talkCroaka(); else if (w === "barty") talkBarty(); }
   // ---------- #54 CROAKER'S MAILBOX: a letter and a little present every day, from whichever of the family thinks of you ----------
   var MAILX = null;
@@ -23728,6 +23753,14 @@
     if (!b.closest("#sbxPanel, #sbxPack, #sbxStn, #sbxStory, #sbxWorlds, #sbxTip, #sbxMPV, #sbxTitle")) return;
     thud(b.classList.contains("op-sw") ? (b.classList.contains("on") ? 520 : 760) : 640 + Math.random() * 120, 0.018);
   }, true);
+  stageEl.addEventListener("wheel", function (e) {   // MOUSE WHEEL: scroll through the hotbar (Settings > Controls turns it off)
+    if (OPT.wheel === false || e.target.tagName !== "CANVAS" || panelOpen || menuOpen || pauseOpen || titleOpen || CMD.open || Math.abs(e.deltaY) < 1) return;
+    e.preventDefault(); var now = performance.now(); if (now - (WHL.t || 0) < 60) return; WHL.t = now;
+    var L = barEntries(), n = Math.min(INV_HOT, L.length), cur = selSlot >= 0 && selSlot < n ? selSlot : 0; if (!n) return;
+    var nx = selSlot >= 0 && selSlot < n ? (cur + (e.deltaY > 0 ? 1 : -1) + n) % n : e.deltaY > 0 ? 0 : n - 1, en = L[nx]; if (!en) return;
+    if (en.id) choose(en.id, en.slot != null ? en.slot : nx); else choose("hand", en.slot != null && en.slot >= 0 ? en.slot : nx); hbDirty = true;
+  }, { passive: false });
+  var WHL = { t: 0 };
   document.addEventListener("wheel", function (e) {
     var row = e.target.closest && e.target.closest(".sbx-cats, .sbx-subs"); if (!row || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
     if (row.scrollWidth <= row.clientWidth) return; row.scrollLeft += e.deltaY; e.preventDefault();
@@ -23799,12 +23832,15 @@
       h += (S.animal && S.animal !== "frog" ? '<p class="st-tip">Body colours are for frogs. You are playing as a ' + esc(S.animal) + "; switch animal on the title screen.</p>" : "");
       h += '<div class="p7-sw">' + BODYC.map(function (c, i) { return '<button type="button" style="--c:' + (c[0] || "#43c463") + '" class="' + ((L.col || "") === c[0] ? "on" : "") + '" data-p7="col:' + i + '" aria-label="' + c[1] + '" title="' + c[1] + '"></button>'; }).join("") + "</div>";
       if (S.molt) h += '<p class="st-tip">Your molting path (' + esc(MOLT[S.molt].n) + ") gives you its own pattern on top of any colour.</p>";
-    } else if (WARD.tab === "wear") {
+    } else if (WARD.tab === "wear") {   // OUTFIT: one section per clothing type, each card shows YOU wearing that piece
       var C = typeof Crystals !== "undefined" ? Crystals : null, o = C ? C.outfit() : {}, items = C && C.items ? (typeof C.items === "function" ? C.items() : C.items) : [];
       if (!C) h += "<p>The Armory isn't loaded.</p>"; else {
-        var own = items.filter(function (it) { return C.owns(it.id) && it.cat !== "bg"; });
-        h += own.length ? '<div class="p7-wear">' + own.map(function (it) { var on = o[it.cat] === it.id; return '<button type="button" class="' + (on ? "on" : "") + '" data-p7="eq:' + esc(it.id) + '"><b>' + esc(it.name) + "</b><small>" + esc(it.cat) + (on ? " · wearing" : "") + "</small></button>"; }).join("") + "</div>" : '<p class="st-tip">You don\'t own any hats or outfits yet. Earn Swamp Coins in Delve and the Arcade, then shop in the Armory.</p>';
-        h += '<div class="st-row"><a class="btn ghost" href="avatar.html">Open the Armory</a></div>';
+        var CATS = [["hat", "Hats", "🎩"], ["face", "Face", "🕶"], ["neck", "Neck", "🧣"], ["shirt", "Tops", "👕"], ["shoes", "Shoes", "👟"]], cat = WARD.cat || "hat";
+        h += '<div class="p7-cats">' + CATS.map(function (c) { var n = items.filter(function (it) { return it.cat === c[0] && C.owns(it.id); }).length; return '<button type="button" class="' + (cat === c[0] ? "on" : "") + '" data-p7="cat:' + c[0] + '"><i>' + c[2] + "</i>" + c[1] + (n ? "<small>" + n + "</small>" : "") + "</button>"; }).join("") + "</div>";
+        var L2 = items.filter(function (it) { return it.cat === cat; }).sort(function (x, y) { return (C.owns(y.id) ? 1 : 0) - (C.owns(x.id) ? 1 : 0) || (x.price || 0) - (y.price || 0); });
+        h += '<div class="p7-outfits"><button type="button" class="p7-of' + (!o[cat] ? " on" : "") + '" data-p7="uneq:' + cat + '"><img alt="" src="' + wearPic(cat, "") + '"><b>None</b><small>' + (!o[cat] ? "Wearing" : "Take it off") + "</small></button>"
+          + L2.map(function (it) { var own = C.owns(it.id), on = o[cat] === it.id; return '<button type="button" class="p7-of' + (on ? " on" : "") + (own ? "" : " lock") + '"' + (own ? ' data-p7="eq:' + esc(it.id) + '"' : " disabled") + '><img alt="" src="' + wearPic(cat, it.id) + '"><b>' + esc(it.name) + "</b><small>" + (on ? "Wearing" : own ? "Tap to wear" : "💎 " + (it.price || "?") + " in the Armory") + "</small></button>"; }).join("") + "</div>";
+        h += '<p class="st-tip">Pants aren\'t in the Armory yet. New pieces show up here as soon as you buy them.</p><div class="st-row"><a class="btn ghost" href="avatar.html">Open the Armory</a></div>';
       }
     } else if (WARD.tab === "trail") {
       h += '<div class="p4-jobs">' + TRAILS.map(function (t, i) { var ok = !i || t.ok(), on = (L.tr || 0) === i; return '<div class="p4-job' + (ok ? "" : " done") + '"><i class="p4-jic" style="color:' + t.c + '">' + t.g + "</i><span><b>" + esc(t.n) + "</b><small>" + esc(ok ? t.d : "Locked: " + t.how) + "</small></span>" + (ok ? '<button type="button" class="btn' + (on ? "" : " ghost") + '" data-p7="tr:' + i + '">' + (on ? "On" : "Wear") + "</button>" : '<em class="p4-ok">🔒</em>') + "</div>"; }).join("") + "</div>";
@@ -23816,6 +23852,9 @@
     }
     h += '<div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>'; p4Box(h, "#ff9ad0");
   }
+  var WPIC = {};
+  function wearPic(cat, id) {   // your character wearing one piece (the rest of your outfit as it is now)
+    try { var o = Object.assign({}, spriteOutfit || {}, { col: look().col, animal: S.animal }); o[cat] = id; var k = JSON.stringify(o); if (WPIC[k]) return WPIC[k]; WPIC[k] = DelveAv.thumb(o, S.animal, 4); return WPIC[k]; } catch (e) { return ""; } }
   var MEPIC = { k: "", u: "" };
   function mePic() { try { var o = Object.assign({}, spriteOutfit || {}, { col: look().col, animal: S.animal }), k = JSON.stringify(o); if (MEPIC.k === k && MEPIC.u) return MEPIC.u; MEPIC.k = k; MEPIC.u = DelveAv.thumb(o, S.animal, 5); return MEPIC.u; } catch (e) { return ""; } }
   function lookChanged() { spriteKey = ""; sprite = null; MEPIC.k = ""; save(); }
@@ -23940,10 +23979,12 @@
     var q = a.split(":"), L = look();
     if (q[0] === "tab") wardOpen(q[1]);
     else if (q[0] === "col") { L.col = BODYC[+q[1]] ? BODYC[+q[1]][0] : ""; lookChanged(); wardOpen(); }
+    else if (q[0] === "cat") { WARD.cat = q[1]; wardOpen(); }
+    else if (q[0] === "uneq") { try { var oo = Crystals.outfit(); if (oo[q[1]]) Crystals.equip(oo[q[1]]); } catch (e) {} lookChanged(); wardOpen(); }
     else if (q[0] === "eq") { try { Crystals.equip(q.slice(1).join(":")); } catch (e) {} lookChanged(); wardOpen(); }
     else if (q[0] === "tr") { L.tr = +q[1]; save(); wardOpen(); }
     else if (q[0] === "nm") { var v = ($("p7Nm") && $("p7Nm").value || "").replace(/[<>&"]/g, "").trim().slice(0, 16); L.nm = v; L.tag = 1; save(); wardOpen(); }
-    else if (q[0] === "tag") { L.tag = L.tag ? 0 : 1; save(); wardOpen(); }
+    else if (q[0] === "tag") { var v2 = ($("p7Nm") && $("p7Nm").value || "").replace(/[<>&"]/g, "").trim().slice(0, 16); if (v2) L.nm = v2; L.tag = L.tag ? 0 : 1; save(); wardOpen(); }   // keeps a name you typed but did not save yet
     else if (q[0] === "ti") { L.ti = L.ti === q[1] ? "" : q[1]; save(); wardOpen(); }
     else if (q[0] === "dance") { closeStory(); setTimeout(function () { emote(q[1]); }, 120); }
     else if (q[0] === "molt") moltOpen();
@@ -24258,16 +24299,30 @@
   function ench(slot) { var o = p8(); if (!o.en || typeof o.en !== "object") o.en = {}; return o.en[slot] || null; }
   function enLv(slot, k) { var e = ench(slot); return e && e.k === k ? e.l : 0; }
   function enCost(l) { var c = { spore: 10 * l, crystal: 3 * l }; if (l >= 2) c.starshard = 1; if (l >= 3) c.dreamshard = 3; return c; }
-  function altarOpen() {
-    if (!p4Open(275)) return; var h = '<h2 class="st-hi">The Mossy Altar</h2><p class="st-tip">Each tool takes one enchantment, up to level III. Choosing a different one replaces the old one. Level III needs Dream Shards, which only come from dreams.</p>';
-    Object.keys(ENCH).forEach(function (s) { var E = ENCH[s], cur = ench(s);
-      h += "<h3>" + E.n + (cur ? ": " + E.opts[cur.k].n + " " + ["", "I", "II", "III"][cur.l] : "") + '</h3><div class="p4-jobs">' + Object.keys(E.opts).map(function (k) { var O = E.opts[k], l = enLv(s, k), nx = l + 1, c = enCost(nx), max = l >= 3;
-        return '<div class="p4-job' + (max ? " done" : "") + '"><i class="p4-jic" style="color:#7af0ff">✦</i><span><b>' + O.n + " " + (l ? ["", "I", "II", "III"][l] : "") + "</b><small>" + O.d + (max ? " · maxed" : " · next: " + Object.keys(c).map(function (q) { return c[q] + " " + esc(ITEMS[q] ? ITEMS[q].n : q); }).join(", ")) + "</small></span>" + (max ? "" : '<button type="button" class="btn"' + (canPay(c) ? "" : " disabled") + ' data-p8="en:' + s + ":" + k + '">' + (l ? "Raise" : cur && cur.k !== k ? "Replace" : "Enchant") + "</button>") + "</div>"; }).join("") + "</div>"; });
-    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Done</button></div>'; p4Box(h, "#7af0ff");
+  var ECOL = { sharp: "#ff8a3a", heart: "#ff6ab0", swift: "#5ae0ff", luck: "#ffd23f", ward: "#b88aff", fleet: "#7aff9a" }, ALT = { s: "wpn", just: "" };
+  function enchGlow(g, cx, fy, hh, now, E) {   // a soft coloured aura and orbiting sparkles for enchanted gear (on you and on armor stands)
+    if (!E || reduce) return; var t = now / 1000, keys = ["arm", "wpn", "pick"].filter(function (k) { return E[k] && ECOL[E[k].k]; }); if (!keys.length) return;
+    g.save(); g.globalCompositeOperation = "lighter";
+    if (E.arm && ECOL[E.arm.k]) { var c = ECOL[E.arm.k], a = 0.1 + 0.05 * E.arm.l + 0.05 * Math.sin(t * 2.4), rg = g.createRadialGradient(cx, fy - hh * 0.5, hh * 0.1, cx, fy - hh * 0.5, hh * 0.75); rg.addColorStop(0, hexA(c, a)); rg.addColorStop(1, hexA(c, 0)); g.fillStyle = rg; g.beginPath(); g.ellipse(cx, fy - hh * 0.5, hh * 0.55, hh * 0.75, 0, 0, 7); g.fill(); }
+    keys.forEach(function (k, ki) { var e = E[k], c = ECOL[e.k], n = 1 + e.l; for (var i = 0; i < n; i++) { var ph = t * (1.2 + ki * 0.3) + i * 6.283 / n + ki, x = cx + Math.cos(ph) * hh * 0.42, y = fy - hh * (0.25 + 0.5 * (0.5 + 0.5 * Math.sin(ph * 1.7 + ki))), al = 0.35 + 0.45 * Math.max(0, Math.sin(t * 5 + i * 1.3 + ki)), r = Math.max(1, hh * 0.022);
+      g.fillStyle = hexA(c, al); g.fillRect(x - r, y - r, r * 2, r * 2); g.fillStyle = hexA("#ffffff", al * 0.8); g.fillRect(x - r * 0.4, y - r * 0.4, r * 0.8, r * 0.8); } });
+    g.restore();
+  }
+  function hexA(h, a) { var n = parseInt(h.slice(1), 16); return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + Math.max(0, Math.min(1, a)).toFixed(3) + ")"; }
+  function gearIcon(s) { return s === "wpn" ? (S.wpn ? icon("wpn" + S.wpn) : "") : s === "arm" ? (S.arm ? icon("arm" + S.arm) : "") : icon(S.tier ? "pick" + S.tier : "paw"); }
+  function gearName(s) { return s === "wpn" ? (S.wpn ? WEAPONS[S.wpn].n : "No weapon yet") : s === "arm" ? (S.arm ? ARMORS[S.arm].n : "No armor yet") : PICKS[S.tier].n; }
+  function altarOpen() {   // three plinths (weapon, pick, armor) with your real gear on them; enchanted gear glows with a moving trim
+    if (!p4Open(275)) return; var R = ["", "I", "II", "III"], h = '<h2 class="st-hi">The Mossy Altar</h2>';
+    h += '<div class="p8-plinths">' + Object.keys(ENCH).map(function (s) { var cur = ench(s), c = cur ? ECOL[cur.k] : "#7af0ff", ic = gearIcon(s);
+      return '<button type="button" class="p8-plinth' + (ALT.s === s ? " on" : "") + (cur ? " ench lv" + cur.l : "") + (ALT.just === s ? " just" : "") + '" style="--ec:' + c + '" data-p8="en:sel:' + s + '"><span class="p8-gear"><i class="p8-trim"></i>' + (ic ? '<img alt="" src="' + ic + '">' : '<em>' + (s === "arm" ? "⛨" : "⚔") + "</em>") + '<i class="p8-shine"></i></span><b>' + ENCH[s].n + "</b><small>" + esc(gearName(s)) + "</small>" + (cur ? '<span class="p8-ench">' + ENCH[s].opts[cur.k].n + " " + R[cur.l] + "</span>" : '<span class="p8-ench none">Not enchanted</span>') + "</button>"; }).join("") + "</div>";
+    var s0 = ALT.s, E = ENCH[s0], cur0 = ench(s0);
+    h += '<p class="st-tip">Each piece takes one enchantment, up to level III. Choosing the other one replaces it. Level III needs Dream Shards, which only come from dreams.</p><div class="p8-enopts">' + Object.keys(E.opts).map(function (k) { var O = E.opts[k], l = enLv(s0, k), c = enCost(l + 1), max = l >= 3;
+      return '<div class="p8-enopt" style="--ec:' + ECOL[k] + '"><div class="p8-enhd"><b>' + O.n + "</b><span class=\"p8-pips\">" + [1, 2, 3].map(function (i) { return '<i class="' + (i <= l ? "on" : "") + '"></i>'; }).join("") + "</span></div><small>" + O.d + "</small>" + (max ? '<p class="p8-max">Maxed out</p>' : '<p class="p8-cost">' + Object.keys(c).map(function (q) { var have = S.inv[q] || 0; return '<span class="' + (have >= c[q] ? "" : "short") + '"><img alt="" src="' + icon(q) + '">' + have + "/" + c[q] + "</span>"; }).join("") + '</p><button type="button" class="btn"' + (canPay(c) ? "" : " disabled") + ' data-p8="en:' + s0 + ":" + k + '">' + (l ? "Raise to " + R[l + 1] : cur0 && cur0.k !== k ? "Replace" : "Enchant") + "</button>") + "</div>"; }).join("") + "</div>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Done</button></div>'; p4Box(h, "#7af0ff"); ALT.just = "";
   }
   function altarAct(s, k) {
     var l = enLv(s, k) + 1, c = enCost(l); if (l > 3 || !canPay(c)) return; Object.keys(c).forEach(function (q) { S.inv[q] -= c[q]; if (S.inv[q] <= 0) delete S.inv[q]; }); reslot(); hbDirty = true;
-    p8().en[s] = { k: k, l: l }; S.st.enchants = (S.st.enchants || 0) + 1; snd("open", l >= 3 ? "Legendary" : "Epic"); popup("Enchanted!", ENCH[s].n + ": " + ENCH[s].opts[k].n + " " + ["", "I", "II", "III"][l], "#7af0ff", "✦");
+    ALT.just = s; p8().en[s] = { k: k, l: l }; S.st.enchants = (S.st.enchants || 0) + 1; snd("open", l >= 3 ? "Legendary" : "Epic"); popup("Enchanted!", ENCH[s].n + ": " + ENCH[s].opts[k].n + " " + ["", "I", "II", "III"][l], "#7af0ff", "✦");
     if (!reduce) for (var i = 0; i < 24; i++) parts.push({ x: p.x + (Math.random() - 0.5) * 2, y: p.y - Math.random() * 2, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 2, life: 1, max: 1, c: "#aff8ff", s: 2 });
     checkGoals(); save(); altarOpen();
   }
@@ -24718,12 +24773,104 @@
     return null;
   }
   // =====================================================================================================================
+  // CHEATS AND COMMANDS: a world made with Cheats on (chosen only when the world is created; S.cheats) gets a Minecraft-style command
+  // box. Open it with "/" (keyboard) or the "/" chip. Tab or tapping a suggestion fills it in; Up and Down walk your history.
+  // =====================================================================================================================
+  function cheatsOn() { return !!(S && S.cheats) && !(MP.on && MP.role === "guest"); }
+  var CMD = { el: null, hist: [], hi: -1, log: [] };
+  function cmdPlaces() {
+    var o = { camp: "your camp", croaker: "Old Croaker", spawn: "where the world began", west: "the west edge", east: "the east edge" }, s = sites(), I = (p8().isl || []).filter(function (q) { return !q.none; });
+    if (s && s.tw) { o.tower = "the Bog Witch's Tower"; o.towertop = "the top of the Witch's Tower"; } if (s && s.glow) o.glow = "the Glow Hollow"; if (s && s.maze) o.maze = "the Mangrove Maze"; if (museumSpot()) o.museum = "the Swamp Museum"; o.pier = "the pier";
+    I.forEach(function (q, i) { o["island" + (i + 1)] = "sky island " + (i + 1); });
+    BIOMES.forEach(function (B, i) { o[B.n.toLowerCase().replace(/[^a-z]+/g, "")] = B.n; }); return o;
+  }
+  function cmdItem(q) { q = String(q || "").toLowerCase(); if (ITEMS[q]) return q; var k = Object.keys(ITEMS).filter(function (id) { return ITEMS[id].n && ITEMS[id].n.toLowerCase().replace(/[^a-z0-9]+/g, "") === q.replace(/[^a-z0-9]+/g, ""); })[0]; return k || ""; }
+  var CMDS = {
+    help: { a: "", d: "List every command", f: function () { return Object.keys(CMDS).map(function (k) { return "/" + k + (CMDS[k].a ? " " + CMDS[k].a : "") + "  " + CMDS[k].d; }); } },
+    give: { a: "<item> [count]", d: "Give yourself items", f: function (A) { var nn = A.length > 1 && /^\d+$/.test(A[A.length - 1]) ? A.pop() : "1", k = cmdItem(A.join(" ")), n = clamp(parseInt(nn, 10) || 1, 1, 999); if (!k) return "No item called \"" + A.join(" ") + "\". Try /give torch 10"; give(k, n, undefined, undefined, true); reslot(); hbDirty = true; return "Gave " + n + " " + ITEMS[k].n; } },
+    tp: { a: "<place | x y>", d: "Teleport", f: function (A) {
+      var x = parseFloat(A[0]), y = parseFloat(A[1]); if (!isNaN(x)) { devTp(clamp(x, 2, W - 3), isNaN(y) ? undefined : clamp(y, 2, H - 3)); return "Teleported to " + Math.round(x) + (isNaN(y) ? "" : ", " + Math.round(y)); }
+      var w = (A[0] || "").toLowerCase(), s = sites(), t = towerS(), I = (p8().isl || []).filter(function (q) { return !q.none; });
+      if (w === "camp") { respawn("Back at camp."); return "Back at camp"; } if (w === "spawn") { devTp(world.spawn.x + 0.5); return "At the world spawn"; }
+      if (w === "croaker" && npc.ok) { devTp(npc.x + 1.5, npc.y); return "Next to Old Croaker"; }
+      if (w === "west") { devTp((world.gx0 || 0) + 12); return "The west edge"; } if (w === "east") { devTp((world.gx1 !== undefined ? world.gx1 : W - 1) - 12); return "The east edge"; }
+      if (w === "tower" && t.built) { devTp(t.x - 1.5, t.gy); return "The Witch's Tower"; } if (w === "towertop" && t.built) { devTp(t.x + 4.5, t.gy - 24); return "The top of the Witch's Tower"; }
+      if (w === "glow" && s && s.glow) { devTp(s.glow.x + 4.5); return "The Glow Hollow"; } if (w === "maze" && s && s.maze) { devTp(s.maze.x + 5.5); return "The Mangrove Maze"; }
+      if (w === "museum" && museumSpot()) { var M = museumSpot(); devTp(M.x + 1.5, M.y); return "The Swamp Museum"; } if (w === "pier") { devTp(pierGateX() + 2.5); return "The pier"; }
+      var im = w.match(/^island(\d)$/); if (im && I[+im[1] - 1]) { var q = I[+im[1] - 1]; devTp(q.x - 3.5, q.y); return "Sky island " + im[1]; }
+      for (var b = 0; b < BIOMES.length; b++) if (BIOMES[b].n.toLowerCase().replace(/[^a-z]+/g, "") === w) { devBiome(b); return BIOMES[b].n; }
+      return "Unknown place. Places: " + Object.keys(cmdPlaces()).join(", "); } },
+    time: { a: "<day|dusk|night|dawn|next|0-479>", d: "Change the time", f: function (A) { var w = (A[0] || "").toLowerCase(), v = { day: 60, noon: 120, dusk: 245, night: 300, midnight: 360, dawn: 445 }[w]; if (w === "next") { devAct("day"); return "Next day"; } if (v === undefined) v = parseInt(w, 10); if (isNaN(v)) return "Try /time night"; S.time = clamp(v, 0, 479); return "Time set to " + phaseOf(S.time).id; } },
+    weather: { a: "<clear|rain|storm>", d: "Change the weather", f: function (A) { var k = { clear: "calm", calm: "calm", sun: "calm", rain: "wet", wet: "wet", snow: "wet", storm: "storm", thunder: "storm" }[(A[0] || "").toLowerCase()]; if (!k) return "Try /weather rain"; wxNew(k); if (k !== "calm") S.wx.n = Math.max(S.wx.n || 0, 0.6); else S.wx.n = 0; return "Weather: " + (k === "calm" ? "clear" : k === "wet" ? "rain" : "storm"); } },
+    heal: { a: "", d: "Full health and food", f: function () { devAct("heal"); return "Healed and fed"; } },
+    god: { a: "[on|off]", d: "Take no damage", f: function (A) { return cmdToggle("god", A[0], "God mode"); } },
+    fly: { a: "[on|off]", d: "Fly (jump to rise, down to sink)", f: function (A) { return cmdToggle("fly", A[0], "Flying"); } },
+    ghost: { a: "[on|off]", d: "Fly through blocks", f: function (A) { return cmdToggle("ghost", A[0], "Ghost"); } },
+    fastdig: { a: "[on|off]", d: "Break blocks 12 times faster", f: function (A) { return cmdToggle("dig", A[0], "Fast dig"); } },
+    peaceful: { a: "[on|off]", d: "No creatures spawn", f: function (A) { return cmdToggle("peace", A[0], "Peaceful"); } },
+    summon: { a: "<creature | boss>", d: "Spawn a creature or a boss beside you", f: function (A) { var k = (A[0] || "").toLowerCase(); if (BOSS[k]) { devAct("boss:" + k); return "Summoned " + BOSS[k].n; } if (ENEMY[k]) { devAct("mob:" + k); return "Summoned " + ENEMY[k].n; } return "Unknown creature. Try: " + Object.keys(ENEMY).filter(function (q) { return !BOSS[q]; }).concat(Object.keys(BOSS)).join(", "); } },
+    kill: { a: "", d: "Clear every creature nearby", f: function () { devAct("clear"); return "All creatures cleared"; } },
+    gear: { a: "", d: "Best pick, weapon, armor and wings", f: function () { devAct("gear"); return "Best gear equipped"; } },
+    kit: { a: "", d: "A big builder's kit", f: function () { devAct("kit"); return "Tester kit added"; } },
+    map: { a: "", d: "Reveal the whole map", f: function () { devAct("map"); return "Map revealed"; } },
+    bloodmoon: { a: "", d: "Start a Blood Moon now", f: function () { devAct("blood"); return "The Blood Moon rises"; } },
+    star: { a: "", d: "Make a star fall", f: function () { devAct("star"); return "A star is falling"; } },
+    rainbow: { a: "", d: "Make a rainbow", f: function () { devAct("rainbow"); return "A rainbow"; } },
+    seed: { a: "", d: "Show this world's seed", f: function () { return "Seed: " + (S.seed | 0); } }
+  };
+  function cmdToggle(k, v, name) { var on = v === "on" ? true : v === "off" ? false : !DEV[k]; if (DEV[k] !== on) devToggle(k); return name + (on ? " on" : " off"); }
+  function cmdRun(line) {
+    line = String(line || "").trim().replace(/^\//, ""); if (!line) return; CMD.hist.unshift("/" + line); CMD.hist = CMD.hist.slice(0, 30); CMD.hi = -1;
+    var A = line.split(/\s+/), c = A.shift().toLowerCase(), C = CMDS[c], out;
+    if (!cheatsOn()) out = "Cheats are off in this world. They can only be turned on when a world is created.";
+    else if (!C) out = "Unknown command /" + c + ". Type /help";
+    else { try { out = C.f(A); } catch (e) { out = "That didn't work: " + e.message; } S.st.cmds = (S.st.cmds || 0) + 1; }
+    (Array.isArray(out) ? out : [out]).forEach(function (l) { CMD.log.push(l); }); CMD.log = CMD.log.slice(-40); cmdRender(); save();
+  }
+  function cmdSuggest(v) {
+    var m = v.replace(/^\//, "").split(/\s+/), c = (m[0] || "").toLowerCase(), last = (m[m.length - 1] || "").toLowerCase(), L = [];
+    if (m.length <= 1) L = Object.keys(CMDS).filter(function (k) { return k.indexOf(c) === 0; }).map(function (k) { return { t: "/" + k + " ", l: "/" + k + " " + CMDS[k].a, d: CMDS[k].d }; });
+    else if (m.length >= 2 && c === "give" && !/^\d+$/.test(last)) { var qq = m.slice(1).join(" ").toLowerCase(), sc = function (k) { var nm = ITEMS[k].n.toLowerCase(); return k === qq || nm === qq ? 0 : k.indexOf(qq) === 0 || nm.indexOf(qq) === 0 ? 1 : nm.split(/\s+/).some(function (w) { return w.indexOf(qq) === 0; }) ? 2 : 3; };
+      L = Object.keys(ITEMS).filter(function (k) { return ITEMS[k].n && (k.indexOf(qq) >= 0 || ITEMS[k].n.toLowerCase().indexOf(qq) >= 0); }).sort(function (x, y) { return sc(x) - sc(y) || ITEMS[x].n.length - ITEMS[y].n.length; }).slice(0, 8).map(function (k) { return { t: "/give " + k + " ", l: ITEMS[k].n, d: k, ic: k }; }); }
+    else if (m.length === 2 && c === "summon") L = Object.keys(ENEMY).filter(function (k) { return k.indexOf(last) === 0; }).slice(0, 10).map(function (k) { return { t: "/summon " + k, l: ENEMY[k].n, d: BOSS[k] ? "boss" : "creature" }; });
+    else if (m.length === 2 && c === "tp") { var P = cmdPlaces(); L = Object.keys(P).filter(function (k) { return k.indexOf(last) === 0; }).slice(0, 10).map(function (k) { return { t: "/tp " + k, l: k, d: P[k] }; }); }
+    else if (m.length === 2 && (c === "time" || c === "weather" || /^(god|fly|ghost|fastdig|peaceful)$/.test(c))) { var O = c === "time" ? ["day", "dusk", "night", "dawn", "next"] : c === "weather" ? ["clear", "rain", "storm"] : ["on", "off"]; L = O.filter(function (k) { return k.indexOf(last) === 0; }).map(function (k) { return { t: "/" + c + " " + k, l: k, d: "" }; }); }
+    return L;
+  }
+  function cmdOpen() {
+    if (!cheatsOn()) { nag(S.cheats ? "Only the host can use commands." : "Cheats are off in this world. Turn them on when you create a world."); return; }
+    if (panelOpen || menuOpen) return;
+    if (!CMD.el) { var d = document.createElement("div"); d.className = "p8-cmd"; d.innerHTML = '<div class="p8-cmdlog" aria-live="polite"></div><div class="p8-cmdsug"></div><div class="p8-cmdrow"><input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="/help" aria-label="Command"><button type="button" class="btn" data-cmd="go">Run</button><button type="button" class="btn ghost" data-cmd="x" aria-label="Close">✕</button></div>'; stageEl.appendChild(d); CMD.el = d;
+      var inp = d.querySelector("input");
+      inp.addEventListener("input", cmdRender);
+      inp.addEventListener("keydown", function (e) { e.stopPropagation();
+        if (e.key === "Enter") { e.preventDefault(); var v = inp.value; inp.value = "/"; cmdRun(v); }
+        else if (e.key === "Escape") { e.preventDefault(); cmdClose(); }
+        else if (e.key === "Tab") { e.preventDefault(); var s = cmdSuggest(inp.value)[0]; if (s) { inp.value = s.t; cmdRender(); } }
+        else if (e.key === "ArrowUp") { e.preventDefault(); if (CMD.hist.length) { CMD.hi = Math.min(CMD.hist.length - 1, CMD.hi + 1); inp.value = CMD.hist[CMD.hi]; } }
+        else if (e.key === "ArrowDown") { e.preventDefault(); CMD.hi = Math.max(-1, CMD.hi - 1); inp.value = CMD.hi < 0 ? "/" : CMD.hist[CMD.hi]; } });
+      inp.addEventListener("keyup", function (e) { e.stopPropagation(); });
+      d.addEventListener("click", function (e) { var b = e.target.closest("[data-cmd],[data-cmdsug]"); if (!b) return; if (b.hasAttribute("data-cmdsug")) { inp.value = b.getAttribute("data-cmdsug"); inp.focus(); cmdRender(); return; } var a = b.getAttribute("data-cmd"); if (a === "x") cmdClose(); else { var v = inp.value; inp.value = "/"; cmdRun(v); inp.focus(); } }); }
+    CMD.el.hidden = false; CMD.open = true; stopInput(); var i2 = CMD.el.querySelector("input"); i2.value = "/"; cmdRender(); setTimeout(function () { i2.focus(); }, 30);
+  }
+  function cmdClose() { if (!CMD.el) return; CMD.el.hidden = true; CMD.open = false; var i = CMD.el.querySelector("input"); if (i) i.blur(); }
+  function cmdRender() {
+    if (!CMD.el) return; var inp = CMD.el.querySelector("input"), L = cmdSuggest(inp.value);
+    CMD.el.querySelector(".p8-cmdsug").innerHTML = L.map(function (s) { return '<button type="button" data-cmdsug="' + esc(s.t) + '">' + (s.ic ? '<img alt="" src="' + icon(s.ic) + '">' : "") + "<b>" + esc(s.l) + "</b><small>" + esc(s.d || "") + "</small></button>"; }).join("");
+    CMD.el.querySelector(".p8-cmdlog").innerHTML = CMD.log.slice(-4).map(function (l) { return "<p>" + esc(l) + "</p>"; }).join("");
+  }
+  window.addEventListener("keydown", function (e) { if (e.key !== "/" || CMD.open || /INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || !S || !S.cheats) return; e.preventDefault(); cmdOpen(); });
+  function cmdChip() {   // the "/" chip appears in worlds with cheats on
+    var b = $("p8CmdChip"); if (!b) { b = document.createElement("button"); b.type = "button"; b.id = "p8CmdChip"; b.className = "p8-cmdchip"; b.textContent = "/"; b.title = "Commands (/)"; b.setAttribute("aria-label", "Commands"); b.addEventListener("click", function () { if (CMD.open) cmdClose(); else cmdOpen(); }); stageEl.appendChild(b); }
+    b.hidden = !cheatsOn() || !!cave && false;
+  }
+  // =====================================================================================================================
   // DEV MENU: jump straight to any feature for playtesting. Only on the test site (ocean-update.*), localhost, or with ?dev=1 in the URL
   // (?dev=0 turns it off again). Opens from the pause menu, the DEV chip, or the ` key.
   // =====================================================================================================================
   var DEVON = (function () { try { var q = location.search; if (/[?&]dev=0/.test(q)) sessionStorage.removeItem("delve-dev"); else if (/[?&]dev=1/.test(q)) sessionStorage.setItem("delve-dev", "1"); return /^(localhost|127\.0\.0\.1)$|ocean-update/.test(location.hostname) || sessionStorage.getItem("delve-dev") === "1"; } catch (e) { return false; } })();
   var DEVTAB = "go", DEVGOD = false;
-  function devTp(x, y, label) {   // teleport on the surface (leaves a cave, house or the sea first)
+  function dmTp(x, y, label) {   // teleport on the surface (leaves a cave, house or the sea first)
     if (x == null) { toast("Not found in this world yet.", "#ff8a8a"); return; }
     if (cave) leaveCaveNow(); if (HOME) leaveHomeNow();
     setTimeout(function () { var cx = clamp(Math.floor(x), 1, W - 2); p.x = x; p.y = y != null ? y : col[cx]; p.vx = p.vy = 0; p.coy = 0; cam.x = p.x; cam.y = p.y - 1; toast("→ " + label, "#7af0ff"); }, cave || HOME ? 700 : 0);
@@ -24731,19 +24878,19 @@
   function devGive(o) { Object.keys(o).forEach(function (k) { if (ITEMS[k]) give(k, o[k], undefined, undefined, true); }); reslot(); hbDirty = true; }
   var DEVA = {
     go: [
-      ["Camp (spawn)", function () { devTp(world.spawn.x + 0.5, null, "Camp"); }],
-      ["Witch's Tower: door", function () { var t = towerS(); devTp(t.built ? t.x - 1.5 : null, t.gy, "Witch's Tower"); }],
-      ["Witch's Tower: top", function () { var t = towerS(); devTp(t.built ? t.x + 4.5 : null, t.gy - 24, "Tower top"); }],
-      ["Glow Hollow", function () { var s = sites(); devTp(s && s.glow ? s.glow.x + 4.5 : null, null, "Glow Hollow"); }],
-      ["Mangrove Maze arch", function () { var s = sites(); devTp(s && s.maze ? s.maze.x + 5.5 : null, null, "Mangrove Maze"); }],
-      ["Sky island 1", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); devTp(I[0] ? I[0].x - 3.5 : null, I[0] ? I[0].y : null, "Sky island"); }],
-      ["Sky island 2", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); devTp(I[1] ? I[1].x - 3.5 : null, I[1] ? I[1].y : null, "Sky island"); }],
-      ["Sky island 3", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); devTp(I[2] ? I[2].x - 3.5 : null, I[2] ? I[2].y : null, "Sky island"); }],
-      ["Swamp Museum", function () { var M = museumSpot(); devTp(M ? M.x + 1.5 : null, M ? M.y : null, "Museum"); }],
-      ["Pier pool (sea monster)", function () { var x = pierGateX(); devTp(x != null ? x + 2.5 : null, null, "Pier pool"); }],
-      ["Heart Tree", function () { var H2 = heartSpot(); devTp(H2 ? H2.x - 2 : null, null, "Heart Tree"); }],
-      ["Enter the Glow Marsh", function () { S.time = 320; var s = sites(); if (s && s.glow) { devTp(s.glow.x + 2.5, null, "Glow Hollow"); setTimeout(function () { enterSite("glow", s.glow); }, 300); } }],
-      ["Enter the Mangrove Maze", function () { var s = sites(); if (s && s.maze) { devTp(s.maze.x + 2.5, null, "Maze"); setTimeout(function () { enterSite("maze", s.maze); }, 300); } }]
+      ["Camp (spawn)", function () { dmTp(world.spawn.x + 0.5, null, "Camp"); }],
+      ["Witch's Tower: door", function () { var t = towerS(); dmTp(t.built ? t.x - 1.5 : null, t.gy, "Witch's Tower"); }],
+      ["Witch's Tower: top", function () { var t = towerS(); dmTp(t.built ? t.x + 4.5 : null, t.gy - 24, "Tower top"); }],
+      ["Glow Hollow", function () { var s = sites(); dmTp(s && s.glow ? s.glow.x + 4.5 : null, null, "Glow Hollow"); }],
+      ["Mangrove Maze arch", function () { var s = sites(); dmTp(s && s.maze ? s.maze.x + 5.5 : null, null, "Mangrove Maze"); }],
+      ["Sky island 1", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); dmTp(I[0] ? I[0].x - 3.5 : null, I[0] ? I[0].y : null, "Sky island"); }],
+      ["Sky island 2", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); dmTp(I[1] ? I[1].x - 3.5 : null, I[1] ? I[1].y : null, "Sky island"); }],
+      ["Sky island 3", function () { var I = (p8().isl || []).filter(function (q) { return !q.none; }); dmTp(I[2] ? I[2].x - 3.5 : null, I[2] ? I[2].y : null, "Sky island"); }],
+      ["Swamp Museum", function () { var M = museumSpot(); dmTp(M ? M.x + 1.5 : null, M ? M.y : null, "Museum"); }],
+      ["Pier pool (sea monster)", function () { var x = pierGateX(); dmTp(x != null ? x + 2.5 : null, null, "Pier pool"); }],
+      ["Heart Tree", function () { var H2 = heartSpot(); dmTp(H2 ? H2.x - 2 : null, null, "Heart Tree"); }],
+      ["Enter the Glow Marsh", function () { S.time = 320; var s = sites(); if (s && s.glow) { dmTp(s.glow.x + 2.5, null, "Glow Hollow"); setTimeout(function () { enterSite("glow", s.glow); }, 300); } }],
+      ["Enter the Mangrove Maze", function () { var s = sites(); if (s && s.maze) { dmTp(s.maze.x + 2.5, null, "Maze"); setTimeout(function () { enterSite("maze", s.maze); }, 300); } }]
     ],
     give: [
       ["Every mount", function () { devGive({ m_toad: 1, m_gator: 1, m_heron: 1, m_mudo: 1, m_drake: 1, m_mammoth: 1, m_broom: 1, balloon: 1 }); toast("Mounts in your bag: put one in the hotbar to ride.", "#ffd23f"); }],
@@ -24785,7 +24932,7 @@
       ["Heart Tree", function () { return heartOpen(); }],
       ["Dream (play one now)", function () { return dreamStart(); }],
       ["Wardrobe", function () { return wardOpen(); }],
-      ["Bog Spirit gift (needs bloom + night)", function () { S.time = 320; p8(); if (!p8().zn) p8().zn = {}; p8().zn[zoneOf(p.x)] = 100; p8().spd = null; var s = spiritSpot(); if (s) devTp(s.x - 1.5, null, "Bog Spirit"); }]
+      ["Bog Spirit gift (needs bloom + night)", function () { S.time = 320; p8(); if (!p8().zn) p8().zn = {}; p8().zn[zoneOf(p.x)] = 100; p8().spd = null; var s = spiritSpot(); if (s) dmTp(s.x - 1.5, null, "Bog Spirit"); }]
     ]
   };
   function devOpen(tab) {
@@ -24795,7 +24942,7 @@
     h += '<div class="p8-dev">' + DEVA[DEVTAB].map(function (a, i) { return '<button type="button" data-p8="dev:do:' + DEVTAB + ":" + i + '">' + esc(a[0]) + "</button>"; }).join("") + "</div>";
     h += '<div class="st-row"><button type="button" class="btn" data-story-close>Close</button></div>'; p4Box(h, "#7af0ff");
   }
-  function devAct(q) {
+  function dmAct(q) {
     if (q[1] === "tab") return devOpen(q[2]);
     var A = DEVA[q[2]] && DEVA[q[2]][+q[3]]; if (!A) return; var opensPanel = q[2] === "open";
     if (!opensPanel) closeStory();
@@ -24812,14 +24959,14 @@
     if (q[0] === "ter") terrAct(q[1], q[2]);
     else if (q[0] === "sm") smAct(q[1]);
     else if (q[0] === "mus") museumAct(q[1], q[2]);
-    else if (q[0] === "en") altarAct(q[1], q[2]);
+    else if (q[0] === "en") { if (q[1] === "sel") { ALT.s = q[2]; altarOpen(); } else altarAct(q[1], q[2]); }
     else if (q[0] === "sk") skillAct(q[1]);
     else if (q[0] === "dr") { if (DRM && !DRM.end) dreamEnd(); else closeStory(); }
     else if (q[0] === "cd") cardAct(q);
-    else if (q[0] === "dev") devAct(q);
+    else if (q[0] === "dev") dmAct(q);
   }
   var P8D = -1;
-  function p8Tick(dt) { var d = S.days | 0; if (P8D < 0) P8D = d; if (d > P8D) { P8D = d; smDaily(); } bugTick(dt); swrTick(dt); skillTick(dt); siteTick(dt); P8C -= dt; if (P8C <= 0) { P8C = 1; if (world && !cave && !HOME && !OCS && !trans) { towerTick(); isleTick2(); } } }
+  function p8Tick(dt) { var d = S.days | 0; if (P8D < 0) P8D = d; if (d > P8D) { P8D = d; smDaily(); } bugTick(dt); swrTick(dt); skillTick(dt); siteTick(dt); P8C -= dt; if (P8C <= 0) { P8C = 1; cmdChip(); if (world && !cave && !HOME && !OCS && !trans) { towerTick(); isleTick2(); } } }
   var P8C = 2;
   function p8WorldDraw(g, now) { islesDecor(g, now); glowDraw(g, now); mazeDraw(g, now); heartDraw(g, now); seaMonDraw(g, now); drawMuseum(g, now); drawTable(g); spiritDraw(g, now); bugDraw(g, now); P8VIS.forEach(function (q) { if (q[0] === "witchrune") runeDraw(g, q[1], q[2], now); else terrDraw(g, q[1], q[2], now); }); P8VIS.length = 0; }
   var P8VIS = [];
@@ -24834,7 +24981,8 @@
   }
   function p8Tap(tx, ty) { var td = TILES[get(tx, ty)]; if (!td) return false; if (td.kind === "terrarium") { terrOpen(tx, ty); return true; } if (td.kind === "mossaltar") { altarOpen(); return true; } if (td.kind === "witchrune") return runeTap(tx, ty); return false; }
   function p8JournalHtml() { var o = p8(); return "<h3>Collections</h3><p>Bugs " + Object.keys(o.bug).length + "/" + Object.keys(BUGS).length + " · Cards " + myCards().length + "/" + (SCB() ? SCB().cards().length : 0) + " · Skeletons " + (S.st.skeletons || 0) + "/3 · Sea monster: " + (o.sm.st ? SM_ST[o.sm.st] : "none yet") + "</p>"; }
-  window.__sbx.dev = { on: DEVON, open: devOpen, act: devAct, A: DEVA };
+  window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA };
+  window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };
   window.__sbx.p8 = { S: p8, mount: mountK, mountArt: mountArt, M: MOUNTS, bugs: BUGL, BUGS: BUGS, bugTick: bugTick, catch: bugCatch, bugArt: bugArt, terr: terrOpen, sm: smOpen, smAct: smAct, smArt: smArt, smDaily: smDaily, mined: p8Mined, mus: museumOpen, musAct: museumAct, musSpot: museumSpot, altar: altarOpen, altarAct: altarAct, skill: skillOpen, skillAct: skillAct, skLv: skLv, zone: zoneScore, swr: swrTick, spirit: spiritSpot, spiritArt: spiritArt, heart: heartOpen, heartSpot: heartSpot, dream: dreamStart, D: function () { return DRM; }, cards: cardsOpen, duel: duelStart, play: duelPlay, cardArt: cardArt, give: cardGive, pack: cardPackOpen, act: p8Act, pill: p8Pill, table: tableSpot, evo: { bird: birdStage, anim: animStage }, mul: { dig: p8DigMul, dmg: p8DmgMul, hurt: p8HurtMul, spd: p8SpdMul, bite: p8BiteMul, crop: p8CropMul } };
   window.__sbx.p7 = { ward: wardOpen, mopen: moltOpen, act: p7Act, dance: function (k) { emote(k); } };

@@ -1203,3 +1203,17 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Tour and practice:** the intro tour no longer pops up halfway through your first minute if you have already been digging and chopping. You get a short note on where to find it instead. The "Try it" practice skips walk, jump and dig if you have already done them.
   - **Placement:** new worlds keep the Glow Hollow, the Mangrove Maze and the Witch's Tower at least 14 tiles from landmarks and buildings.
   - **Dev menu:** the DEV chip moved to the right side, under the craft and backpack buttons, so it no longer covers the quest tracker.
+- **World settings, cheats and commands:**
+  - **New world screen:** has a **Cheats** switch and an optional **Seed** field. A number or any word works as a seed, and the same seed gives the same land. Difficulty, cheats and the seed are fixed once the world is made. Settings shows them locked, along with the world size, and the world list tags cheat worlds.
+  - **Command box:** worlds with cheats get a Minecraft-style command box. Open it with `/` or the `/` chip. Tab or a tap fills in suggestions, and Up and Down step through your history. Commands: `/help /give <item> [n] /tp <place|x y> /time /weather /heal /god /fly /ghost /fastdig /peaceful /summon /kill /gear /kit /map /bloodmoon /star /rainbow /seed`. The command toggles reuse the developer-mode switches, which now also work in cheat worlds.
+  - **Fix:** the playtest dev menu's `devAct` and `devTp` functions had replaced the older Developer Mode functions of the same name. They are renamed (`dmAct` and `dmTp`), so Developer Mode works again.
+- **Quality of life:**
+  - **Backpack:** tapping empty space puts the selected item down, like the craft grid.
+  - **Back button:** every story-panel window has a small sticky **‹ Back** at the top. It presses that window's own Back, Close or Done button.
+  - **Name tag:** "Show name tag" keeps a name you typed but didn't save.
+  - **Mouse wheel:** scrolling moves through the hotbar by default. Settings > Controls > Mouse and keyboard turns it off.
+- **Enchanting visuals:**
+  - **Altar:** shows your real weapon, pick and armor on three plinths. Enchanted pieces get a spinning glowing trim, a shine sweep and a burst when you enchant. Each enchantment has its own colour. Enchant choices show level pips and the cost with your counts.
+  - **On you:** enchanted gear gives you a faint aura and orbiting sparkles. Settings > Graphics > Enchantment glow turns it off.
+  - **Armor stands:** stands dressed with your enchanted gear glow too.
+- **Wardrobe outfit:** split into Hats, Face, Neck, Tops and Shoes sections, with counts. Each card shows your character wearing that piece, and pieces you don't own show their Armory price. A "None" card takes a piece off. There are no pants in the Armory yet.
