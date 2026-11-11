@@ -2710,3 +2710,14 @@ small.bo-cost{display:flex}
 .op-cc b{font-size:1.02rem;color:#f6eedb}.op-cc small{font-size:.78rem;color:#9fd8c0;font-weight:700}
 .op-cc .btn{flex:none;padding:10px 16px}
 @media (max-width:420px){.op-cc{flex-wrap:wrap}.op-cc .btn{width:100%}}
+/* CHARACTER: name field and name-tag switch in the character maker */
+.cc-nm{display:flex;flex-direction:column;gap:4px;width:100%;max-width:220px}
+.cc-nm span{font:900 .68rem Nunito,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#4ee6b4}
+.cc-nm input{width:100%;box-sizing:border-box;padding:9px 12px;border-radius:12px;border:1.5px solid rgba(78,230,180,.35);background:#06100bcc;color:#f6eedb;font:800 1rem Nunito,sans-serif;text-align:center;outline:none;transition:border-color .15s,box-shadow .15s}
+.cc-nm input::placeholder{color:#f6eedb55}
+.cc-nm input:focus{border-color:#4ee6b4;box-shadow:0 0 0 3px #4ee6b433}
+.cc-tag{display:flex;align-items:center;gap:8px;padding:4px 2px;border:0;background:none;color:#cfe9dc;font:800 .78rem Nunito,sans-serif;cursor:pointer}
+.cc-tag i{position:relative;flex:none;width:30px;height:18px;border-radius:99px;background:#ffffff22;transition:background .15s}
+.cc-tag i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#f6eedb;transition:transform .15s}
+.cc-tag.on i{background:#4ee6b4}.cc-tag.on i::after{transform:translateX(12px)}
+@media (max-width:640px){.cc-big{flex-wrap:wrap;row-gap:6px}.cc-nm{max-width:none;flex:1 1 150px}.cc-nm input{padding:7px 10px;font-size:.92rem}.cc-tag{flex:1 1 100%;justify-content:center}}

@@ -612,8 +612,8 @@
   var CC = null;
   function ccOpen(first, onDone) {
     var el = $("sbxCC"); if (!el) { el = document.createElement("div"); el.id = "sbxCC"; el.className = "sbx-cc"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Make your character"); stageEl.appendChild(el);
-      el.addEventListener("click", ccClick); el.addEventListener("input", function (e) { if (e.target.id === "ccCol") { CC.d.col = e.target.value; ccRender(true); } }); }
-    var a = apprOf(); CC = { first: !!first, done: onDone || null, tab: "who", d: { animal: (S && S.animal) || defaultAnimal(), col: a.col, hair: a.hair, eye: a.eye, style: a.style, fx: a.fx, tuft: a.tuft, scar: a.scar } };
+      el.addEventListener("click", ccClick); el.addEventListener("input", function (e) { if (e.target.id === "ccCol") { CC.d.col = e.target.value; ccRender(true); } if (e.target.id === "ccNm" && CC) { CC.d.nm = e.target.value.replace(/[<>&"]/g, "").slice(0, 16); if (CC.d.nm.trim() && !CC.tagSet) { CC.d.tag = true; var tb = el.querySelector("[data-cc=tag]"); if (tb) { tb.classList.add("on"); tb.setAttribute("aria-pressed", "true"); } } } }); }
+    var a = apprOf(); CC = { first: !!first, done: onDone || null, tab: "who", d: { animal: (S && S.animal) || defaultAnimal(), col: a.col, hair: a.hair, eye: a.eye, style: a.style, fx: a.fx, tuft: a.tuft, scar: a.scar, nm: (S && look().nm) || "", tag: !!(S && look().tag) } };
     el.hidden = false; menuOpen = true; ccRender();
   }
   function ccOutfit(d) { var o = {}; try { o = Object.assign({}, Crystals.outfit()); } catch (e) {} return Object.assign(o, { animal: d.animal, col: d.col, hair: d.hair, eye: d.eye, style: d.style, fx: d.fx, tuft: d.tuft, scar: d.scar }); }
@@ -624,7 +624,7 @@
     var sw = function (key, L, round) { return '<div class="cc-sw' + (round ? " round" : "") + '">' + L.map(function (q) { var on = (d[key] || "") === q[0]; return '<button type="button" data-cc="' + key + ":" + q[0] + '" class="' + (on ? "on" : "") + '" title="' + esc(q[1]) + '" aria-label="' + esc(q[1]) + '" aria-pressed="' + on + '" style="--c:' + (q[0] && q[0][0] === "#" ? q[0] : "transparent") + '">' + (q[0] && q[0][0] === "#" ? "" : '<span>' + esc(q[1]) + "</span>") + "</button>"; }).join("") + "</div>"; };
     var tabs = [["who", "Character"], ["col", hum ? "Skin" : "Colour"], ["hair", "Hair"], ["eyes", "Eyes"], ["face", "Face"]];
     var h = '<div class="cc-box"><div class="cc-head"><div><small>' + (CC.first ? "Before you start" : "Character") + "</small><h2>Make your character</h2></div>" + (CC.first ? "" : '<button type="button" class="sbx-x" data-cc="x" aria-label="Close">&times;</button>') + "</div>";
-    h += '<div class="cc-main"><div class="cc-big"><img alt="Your character" src="' + big + '"><b>' + esc(charName(d.animal)) + '</b><button type="button" class="btn ghost cc-rand" data-cc="rand">🎲 Surprise me</button></div><div class="cc-side"><div class="cc-tabs">' + tabs.map(function (t) { return '<button type="button" class="' + (CC.tab === t[0] ? "on" : "") + '" data-cc="tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + '</div><div class="cc-pane">';
+    h += '<div class="cc-main"><div class="cc-big"><img alt="Your character" src="' + big + '"><b>' + esc(charName(d.animal)) + '</b><label class="cc-nm"><span>Name</span><input id="ccNm" maxlength="16" autocomplete="off" spellcheck="false" placeholder="' + esc(charName(d.animal).split(" ")[0]) + '" value="' + esc(d.nm || "") + '"></label><button type="button" class="cc-tag' + (d.tag ? " on" : "") + '" data-cc="tag" aria-pressed="' + !!d.tag + '"><i></i>Show above my head</button><button type="button" class="btn ghost cc-rand" data-cc="rand">🎲 Surprise me</button></div><div class="cc-side"><div class="cc-tabs">' + tabs.map(function (t) { return '<button type="button" class="' + (CC.tab === t[0] ? "on" : "") + '" data-cc="tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + '</div><div class="cc-pane">';
     if (CC.tab === "who") { var L = charList(); h += "<h3>People</h3>" + '<div class="cc-who">' + L.filter(function (q) { return q.human; }).map(function (q) { return '<button type="button" class="' + (q.id === d.animal ? "on" : "") + '" data-cc="animal:' + q.id + '"><img alt="" src="' + DelveAv.thumb(ccOutfit(Object.assign({}, d, { animal: q.id })), q.id, 3) + '"><small>' + esc(q.name.split(" ")[0]) + "</small></button>"; }).join("") + "</div><h3>Swamp animals</h3>" + '<div class="cc-who">' + L.filter(function (q) { return !q.human; }).map(function (q) { return '<button type="button" class="' + (q.id === d.animal ? "on" : "") + '" data-cc="animal:' + q.id + '"><img alt="" src="' + DelveAv.thumb(ccOutfit(Object.assign({}, d, { animal: q.id })), q.id, 3) + '"><small>' + esc(q.name.split(" ")[0]) + "</small></button>"; }).join("") + "</div>"; }
     else if (CC.tab === "col") h += "<h3>" + (hum ? "Skin tone" : "Body colour") + "</h3>" + sw("col", CC_SKIN, true) + '<label class="cc-pick">Any colour <input id="ccCol" type="color" value="' + (/^#[0-9a-f]{6}$/i.test(d.col || "") ? d.col : "#43c463") + '"></label>';
     else if (CC.tab === "hair") h += (hum ? "<h3>Hairstyle</h3>" + sw("style", [["", "Natural"]].concat((DelveAv.styles || []).map(function (k) { return [k, k[0].toUpperCase() + k.slice(1)]; }))) : "<h3>Tuft</h3>" + sw("tuft", CC_TUFT) + '<p class="cc-note">Tufts hide under hats.</p>') + "<h3>Hair colour</h3>" + sw("hair", CC_HAIR, true);
@@ -638,13 +638,14 @@
     if (k === "x") return ccClose(false);
     if (k === "done") return ccClose(true);
     if (k === "tab") { CC.tab = x; return ccRender(); }
+    if (k === "tag") { d.tag = !d.tag; CC.tagSet = true; snd("coin"); return ccRender(); }
     if (k === "rand") { var pk = function (L) { return L[Math.floor(Math.random() * L.length)][0]; }, L2 = charList(); d.animal = L2[Math.floor(Math.random() * L2.length)].id; d.col = pk(CC_SKIN); d.hair = pk(CC_HAIR); d.eye = pk(CC_EYE); d.tuft = pk(CC_TUFT); d.scar = Math.random() < 0.4 ? pk(CC_SCAR) : "none"; d.style = pk([[""]].concat((DelveAv.styles || []).map(function (s2) { return [s2]; }))); d.fx = pk(CC_FX); snd("coin"); return ccRender(); }
     d[k] = x; thud(620, 0.02); ccRender();
   }
   function ccClose(save2) {
     var el = $("sbxCC"); if (el) el.hidden = true; menuOpen = false; var C2 = CC; CC = null; if (!C2) return;
     if (save2 || C2.first) { var d = C2.d; ["hair", "eye", "style", "fx", "tuft", "scar", "col"].forEach(function (k) { APPR[k] = d[k] || ""; }); apprSave();
-      if (S) { look().col = d.col || ""; S.animal = d.animal; } try { localStorage.setItem("swamp-delve-char", d.animal); } catch (e) {}
+      if (S) { look().col = d.col || ""; S.animal = d.animal; look().nm = String(d.nm || "").trim(); look().tag = d.tag ? 1 : 0; } try { localStorage.setItem("swamp-delve-char", d.animal); } catch (e) {}
       spriteKey = ""; sprite = null; MEPIC.k = ""; WPIC = {}; mkSprite(); hbDirty = true; if (S) save(); if (MP.on) mpMe(); }
     if (C2.done) C2.done();
   }
@@ -11557,7 +11558,7 @@
     var nw = titleIsNew(), n = wIdx ? wIdx.list.length : 1;
     B.innerHTML = '<button type="button" class="tt-play" data-tt="play" data-fs-start><span class="tt-pi">' + ttIcon("play") + '</span><span class="tt-pt"><b>' + (nw ? "Create your world" : "Continue") + "</b><small>" + esc(nw ? "Name it, pick a difficulty, start digging" : titleSub()) + "</small></span></button>"
       + '<nav class="tt-list" aria-label="Main menu">'
-      + '<button type="button" data-tt="char" class="tt-char"><img alt="" src="' + myThumb(2) + '"><span>Character</span><em>' + esc(charName(S.animal).split(" ")[0]) + "</em></button>"
+      + '<button type="button" data-tt="char" class="tt-char"><img alt="" src="' + myThumb(2) + '"><span>Character</span><em>' + esc((S && look().nm) || charName(S.animal).split(" ")[0]) + "</em></button>"
       + '<button type="button" data-tt="new">' + ttIcon("new") + "<span>New world</span></button>"
       + '<button type="button" data-tt="worlds">' + ttIcon("worlds") + "<span>Worlds</span><em>" + n + "</em></button>"
       + '<button type="button" data-tt="mp">' + ttIcon("mp") + "<span>Play together</span></button>"
@@ -17643,7 +17644,7 @@
         + row("Day counter", "Show the in-game day under the biome name.", sw("data-daytoggle", SHOWDAYS, "Day counter"))
         + row("Crafting mini-games", "Forge strikes for Masterwork gear, stirring for perfect brews. Off = craft instantly.", sw("data-cgtoggle", CGON, "Crafting mini-games")));
       an = charList().map(function (q) { return { id: q.id, name: q.name }; });   // CHARACTERS: people and animals
-      SEC.char = card("Your character", '<div class="op-cc"><img alt="" src="' + myThumb(3) + '"><div><b>' + esc(charName(S.animal)) + '</b><small>Animal, colour, hair, eyes and face</small></div><button type="button" class="btn" data-opcc>Customize</button></div><p class="sbx-note op-foot">Your avatar gear comes from the Armory.</p>');
+      SEC.char = card("Your character", '<div class="op-cc"><img alt="" src="' + myThumb(3) + '"><div><b>' + esc(look().nm || charName(S.animal)) + '</b><small>Name, animal, colour, hair, eyes and face</small></div><button type="button" class="btn" data-opcc>Customize</button></div><p class="sbx-note op-foot">Your avatar gear comes from the Armory.</p>');
       SEC.general = (SEC.general || "") + card("World and screen", '<div class="pz-rows op-pz">'
         + row("Weather", "Rain, snow and ash. Waters crops, and fish bite sooner.", sw("data-wxtoggle", WX.on, "Weather"))
         + row("Mini-map", "Tap it to open the World Map.", sw("data-minitoggle", MINI.on, "Mini-map"))
