@@ -1275,3 +1275,9 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Spares:** if you carry a spare of the same piece, it swaps in by itself when yours breaks.
   - **What's gone:** the repair cards in the Craft tab and workbench, and every "Repair it in the Craft tab" message.
   - **Code:** `brokenCur` and `swapSpare` in `sandbox.js`.
+- **A real maze in the dark:**
+  - **Line of sight:** inside the Mangrove Maze you only see what is in a straight line from you, up to 6 tiles, without a wall in the way. Everything else is pitch black, so you can't read the paths ahead.
+  - **Your trail:** paths you have already seen stay as a faint memory.
+  - **Hidden things stay hidden:** lanterns, fireflies and treasure round a corner give no glow.
+  - **Light level:** the maze's base light dropped from 0.5 to 0.16.
+  - **Code:** `mazeVis` in `sandbox.js`.

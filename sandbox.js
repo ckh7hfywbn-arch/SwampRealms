@@ -16455,6 +16455,7 @@
       if (e.id === T.TORCH) { srcs.push([e.x + 0.5, e.y + 0.5, 6, 1]); glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, "255,170,60", 4.2, 0.3]); } else if (td.light || gl) { srcs.push([e.x + 0.5, e.y + 0.5, (td.gr || 3) * 1.3, 0.85]); if (gl) glows2.push([ox + (e.x + 0.5) * ts, oy + (e.y + 0.5) * ts, gl, td.gr || 3, td.ga || 0.2]); } });
     F.lamps.forEach(function (l) {
       if (l.x < X0 - 6 || l.x > X1 + 6 || l.y < Y0 - 6 || l.y > Y1 + 6) return;
+      if (F.maze && !mazeVis(F)[l.y * F.w + l.x]) return;   // MAZE DARK: a lantern round the corner stays hidden
       var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; if (!F.isle) g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);   // (island tiki torches draw themselves)
       glows2.push([lx + ts / 2, ly + ts / 2, th.glow, 3.2, 0.2]); srcs.push([l.x + 0.5, l.y + 0.5, 4.6, 0.8]);
     });
@@ -16462,7 +16463,7 @@
     for (j = ey0; j <= ey1; j++) for (i = ex0; i <= ex1; i++) {   // torches give light; ore glows a little
       idx = j * W2 + i; var inView = i >= X0 && i <= X1 && j >= Y0 && j <= Y1;
       if (F.torch[idx]) { srcs.push([i + 0.5, j + 0.5, 6.8, 1]); if (inView) { g.drawImage(ATLAS, 0, T.TORCH * 16, 16, 16, ox + i * ts, oy + j * ts, ts, ts); glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,170,60", 4.2, 0.3]); } }
-      else if (F.node[idx] && (TILES[F.node[idx]].kind === "lootchest" || TILES[F.node[idx]].kind === "lorenote")) { srcs.push([i + 0.5, j + 0.5, 2.4, 0.5]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,200,90", 2.4, 0.2]); }
+      else if (F.node[idx] && (TILES[F.node[idx]].kind === "lootchest" || TILES[F.node[idx]].kind === "lorenote") && (!F.maze || mazeVis(F)[idx])) { srcs.push([i + 0.5, j + 0.5, 2.4, 0.5]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,200,90", 2.4, 0.2]); }
       else if (F.node[idx] && TILES[F.node[idx]].kind === "ore") { srcs.push([i + 0.5, j + 0.5, 2.6, 0.6]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, F.node[idx] === T.CINDER ? "255,120,50" : F.node[idx] === T.CRYSTAL ? "130,225,255" : "80,240,190", 2.2, 0.16]); }
     }
     // rocks and the player, drawn back to front
@@ -16493,9 +16494,10 @@
     var gw = X1 - X0 + 1, gh = Y1 - Y0 + 1;
     if (!LC) { LC = document.createElement("canvas"); LCX = LC.getContext("2d"); }
     if (LC.width !== gw || LC.height !== gh) { LC.width = gw; LC.height = gh; LID = LCX.createImageData(gw, gh); } MAPPREV.d = null;   // the surface must repaint its light map after a cave used this canvas
-    var dk = LID.data, tr = th.tint[0], tg = th.tint[1], tb = th.tint[2];
+    var dk = LID.data, tr = th.tint[0], tg = th.tint[1], tb = th.tint[2], MZV = F.maze ? mazeVis(F) : null;
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
-      var cx = X0 + i + 0.5, cy = Y0 + j + 0.5, L = F.amb || 0.07;
+      var cx = X0 + i + 0.5, cy = Y0 + j + 0.5, L = F.amb || 0.07, mzc = MZV ? (Y0 + j) * F.w + X0 + i : -1;
+      if (MZV && !MZV[mzc]) { var kx0 = (j * gw + i) * 4; dk[kx0] = tr; dk[kx0 + 1] = tg; dk[kx0 + 2] = tb; dk[kx0 + 3] = F._seen[mzc] ? 232 : 255; continue; }
       for (var s = 0; s < srcs.length; s++) { var sc = srcs[s], ddx = cx - sc[0], ddy = cy - sc[1], d2 = ddx * ddx + ddy * ddy, rr = sc[2]; if (d2 < rr * rr) { var kk = 1 - Math.sqrt(d2) / rr, vv = sc[3] * Math.pow(kk, 1.2); if (vv > L) L = vv; } }
       var kx = (j * gw + i) * 4; dk[kx] = tr; dk[kx + 1] = tg; dk[kx + 2] = tb; dk[kx + 3] = Math.round(clamp(1 - L, 0, 0.94) * 255);
     }
@@ -24867,6 +24869,16 @@
     g.putImageData(im, 0, 0);
     return (F._mzc = c);
   }
+  function mazeVis(F) {   // MAZE DARK: which cells you can see right now (straight lines from you that don't pass through a wall), and which you have seen
+    var w = F.w, h = F.h, R = 6, px = Math.floor(cp.x), py = Math.floor(cp.y - 0.3), key = px + "," + py;
+    if (F._vk === key && F._vis) return F._vis; F._vk = key; var V = F._vis || (F._vis = new Uint8Array(w * h)); V.fill(0); if (!F._seen) F._seen = new Uint8Array(w * h);
+    for (var ty = py - R; ty <= py + R; ty++) for (var tx = px - R; tx <= px + R; tx++) {
+      if (tx < 0 || ty < 0 || tx >= w || ty >= h || (tx - px) * (tx - px) + (ty - py) * (ty - py) > R * R + 2) continue;
+      var n = Math.max(Math.abs(tx - px), Math.abs(ty - py)) * 2 || 1;
+      for (var k = 0; k <= n; k++) { var cx = Math.floor(px + 0.5 + (tx - px) * k / n), cy = Math.floor(py + 0.5 + (ty - py) * k / n), c = cy * w + cx; V[c] = 1; F._seen[c] = 1; if (F.wall[c] && !(cx === px && cy === py)) break; }
+    }
+    return V;
+  }
   function mazeBlit(g, F, X0, X1, Y0, Y1) {
     var c = mazePaint(F), P = MZP; g.imageSmoothingEnabled = false;
     g.drawImage(c, X0 * P, Y0 * P, (X1 - X0 + 1) * P, (Y1 - Y0 + 1) * P, ox + X0 * ts, oy + Y0 * ts, (X1 - X0 + 1) * ts, (Y1 - Y0 + 1) * ts);
@@ -24879,7 +24891,7 @@
     }
     for (var f = 0; f < 26; f++) {   // fireflies wander the paths near you
       var bx = (mzH(f, 1, F.seed | 0) * F.w), by = (mzH(f, 2, F.seed | 0) * F.h), fxw = bx + Math.sin(t * 0.37 + f * 2.1) * 1.6 + Math.sin(t * 0.9 + f) * 0.4, fyw = by + Math.cos(t * 0.31 + f * 1.3) * 1.2 + Math.sin(t * 1.1 + f * 3) * 0.3;
-      if (fxw < X0 - 1 || fxw > X1 + 1 || fyw < Y0 - 1 || fyw > Y1 + 1) continue; var bl = 0.5 + 0.5 * Math.sin(t * 2.4 + f * 1.9); if (bl < 0.15) continue;
+      if (fxw < X0 - 1 || fxw > X1 + 1 || fyw < Y0 - 1 || fyw > Y1 + 1) continue; var VV = mazeVis(F), fc = Math.floor(fyw) * F.w + Math.floor(fxw); if (!VV[fc]) continue; var bl = 0.5 + 0.5 * Math.sin(t * 2.4 + f * 1.9); if (bl < 0.15) continue;
       var px = ox + fxw * ts, py = oy + fyw * ts, r2 = Math.max(1.5, ts / 14);
       g.fillStyle = "rgba(220,255,140," + (0.85 * bl).toFixed(2) + ")"; g.fillRect(px - r2 / 2, py - r2 / 2, r2, r2);
       glows2.push([px, py, "200,255,120", 0.9, 0.22 * bl]); if (bl > 0.6) srcs.push([fxw, fyw, 1.8, 0.4 * bl]);
