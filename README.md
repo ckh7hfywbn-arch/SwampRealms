@@ -1315,3 +1315,8 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
 - **Slide-in tips on phones:**
   - **Size:** smaller, about 200px wide with a smaller icon and text.
   - **Position:** lower down, on the right just above the jump and action buttons.
+- **Tutorial once per account:** the intro tour, the practice coach ("Try it") and the "use the arrows to walk" hint now show only the first time an account plays, not in every new world.
+  - **Where it's stored:** the done flags are saved in the Crystals save (`delveTut`), which syncs to your account, so a new device you sign in on skips them too.
+  - **Without an account:** players who never sign in get it once per device.
+  - **Replaying:** the tour can still be replayed from Help.
+  - **Code:** `tutDone` and `tutMark` in `sandbox.js`.

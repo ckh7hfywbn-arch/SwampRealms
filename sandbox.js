@@ -11620,7 +11620,7 @@
   function closeTitle() {
     if (!titleOpen) return;
     titleOpen = false; TC.how = false; titleEl.hidden = true; stageEl.classList.remove("title"); hbDirty = true; lastBio = -1; touchIdx();
-    if (!hintShown) { hintShown = true; if (!S.st.mined) { $("sbxHint").classList.add("on"); setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000); } }
+    if (!hintShown) { hintShown = true; if (!S.st.mined && !tutDone("hint")) { tutMark("hint"); $("sbxHint").classList.add("on"); setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000); } }
     if (storyQ.length && storyOpen < 0) setTimeout(showStory, 500);
     try { cv.focus({ preventScroll: true }); } catch (e) {}
   }
@@ -12396,7 +12396,7 @@
   }
   function closeStory() { storyOpen = -1; panelOpen = false; $("sbxStory").hidden = true; stageEl.classList.remove("panel"); if (storyQ.length) setTimeout(showStory, 400); else if ((S.qi | 0) === 0 && !TOUR) setTimeout(function () { if (!panelOpen && storyOpen < 0 && !storyQ.length) { if (playedAlready()) skipIntroTour(); else startTour(false); } }, 700); }
   function playedAlready() { return (S.st.mined || 0) >= 3 || (S.st.felled || 0) > 0 || Object.keys(S.inv).length >= 4; }   // already found your feet: don't interrupt with the tour
-  function skipIntroTour() { try { if (localStorage.getItem("swamp-delve-tour") === "1") return; localStorage.setItem("swamp-delve-tour", "1"); localStorage.setItem("swamp-delve-coach", "1"); } catch (e) { return; } toast("Looks like you know your way around! For a tour later: title screen, How to play, Show me around.", "#4ee6b4"); }
+  function skipIntroTour() { if (tutDone("tour")) return; tutMark("tour"); tutMark("coach"); toast("Looks like you know your way around! For a tour later: title screen, How to play, Show me around.", "#4ee6b4"); }
   var CROAK_SVG = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="42" rx="24" ry="17" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><ellipse cx="32" cy="48" rx="15" ry="7" fill="#f1efb4"/><circle cx="19" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="45" cy="24" r="9" fill="#3fc25f" stroke="#1c5e34" stroke-width="2.5"/><circle cx="19" cy="24" r="5" fill="#ffd23f"/><circle cx="45" cy="24" r="5" fill="#ffd23f"/><path d="M17 23h4M43 23h4" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 40q12 8 24 0" fill="none" stroke="#12220f" stroke-width="2.2" stroke-linecap="round"/><path d="M12 16q7-9 14-3M38 13q7-6 14 3" fill="none" stroke="#e8e4d8" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="33" r="1.4" fill="#1c5e34"/><circle cx="37" cy="33" r="1.4" fill="#1c5e34"/></svg>';
   function findGuide() {
     var st = MAIN[S.qi]; guide = null;
@@ -12441,9 +12441,13 @@
     ];
     return L.filter(function (s) { if (!s.el) return true; var e = $(s.el); if (!e || e.hidden) return false; var r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4; });
   }
+  // TUTORIAL ONCE PER ACCOUNT: the tour, the practice coach and the "how to walk" hint show the first time an account plays, not in every new
+  // world. The flag lives in the Crystals save (synced to the account), plus this device's own flags for players who never sign in.
+  function tutDone(k) { try { if (Crystals.state && Crystals.state.delveTut && Crystals.state.delveTut[k || "tour"]) return true; } catch (e) {} try { return localStorage.getItem("swamp-delve-" + (k || "tour")) === "1"; } catch (e) { return false; } }
+  function tutMark(k) { try { localStorage.setItem("swamp-delve-" + (k || "tour"), "1"); } catch (e) {} try { var st = Crystals.state; st.delveTut = st.delveTut || {}; if (!st.delveTut[k]) { st.delveTut[k] = 1; Crystals.save(); } } catch (e) {} }
   function startTour(force) {
     if (TOUR || (!force && (MP.on && MP.role === "guest"))) return;
-    try { if (!force && localStorage.getItem("swamp-delve-tour") === "1") return; } catch (e) {}
+    if (!force && tutDone("tour")) return;
     if (!force && navigator.webdriver) return;   // (automated test browsers: they get the tour only when they ask)
     if (titleOpen || cave || (typeof OCS !== "undefined" && OCS) || HOME || panelOpen || menuOpen) { if (!force) return; }
     var steps = tourSteps(); if (!steps.length) return;
@@ -12465,7 +12469,7 @@
     } else { spot.style.cssText = "left:50%;top:50%;width:0;height:0"; spot.classList.add("none"); var cw2 = Math.min(320, sr.width - 24); card.style.cssText = "width:" + cw2 + "px;left:" + (sr.width / 2 - cw2 / 2) + "px;top:" + Math.max(80, sr.height * 0.32) + "px"; }
     var nb = el.querySelector("[data-tr=next]"); if (nb) nb.focus({ preventScroll: true });
   }
-  function endTour() { if (!TOUR) return; var tf = TOUR.force; TOUR.el.remove(); TOUR = null; panelOpen = false; try { localStorage.setItem("swamp-delve-tour", "1"); } catch (e) {} trailKey = ""; setTimeout(function () { startCoach(tf); }, 500); }
+  function endTour() { if (!TOUR) return; var tf = TOUR.force; TOUR.el.remove(); TOUR = null; panelOpen = false; tutMark("tour"); trailKey = ""; setTimeout(function () { startCoach(tf); }, 500); }
   // ---------- TRY IT: after the tour, a hands-on coach. A finger (phones) or key caps (keyboards) point at each control, and every step waits
   // until you actually do it: walk, jump, dodge roll, gather from the glowing leaves, open the backpack. Once per device; skippable. ----------
   var COACH = null;
@@ -12481,7 +12485,7 @@
   }
   function startCoach(force) {
     if (COACH || (MP.on && MP.role === "guest") || cave || OCS || HOME || titleOpen) return;
-    try { if (!force && localStorage.getItem("swamp-delve-coach") === "1") return; } catch (e) {}
+    if (!force && tutDone("coach")) return;
     if (!force && navigator.webdriver) return;
     var el = document.createElement("div"); el.className = "sbx-coach"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
     el.innerHTML = '<div class="co-hand" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M12 3a2.4 2.4 0 012.4 2.4V14l1.1-.3a2.3 2.3 0 012.9 1.6l.1.4.8-.2a2.3 2.3 0 012.8 1.4l.9-.2a2.3 2.3 0 012.8 1.8l.9 5.4a7 7 0 01-5.4 8H17a7 7 0 01-5.7-3l-4.6-6.6a2.3 2.3 0 013.6-2.9l1.3 1.4V5.4A2.4 2.4 0 0112 3z" fill="#fff6dc" stroke="#06100d" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="co-ring" aria-hidden="true"></div>'
@@ -12498,7 +12502,7 @@
     el.classList.remove("done"); el.classList.toggle("keys", !coarse);
   }
   function endCoach(win) {
-    if (!COACH) return; COACH.el.remove(); COACH = null; stageEl.classList.remove("coaching"); try { localStorage.setItem("swamp-delve-coach", "1"); } catch (e) {}
+    if (!COACH) return; COACH.el.remove(); COACH = null; stageEl.classList.remove("coaching"); tutMark("coach");
     if (win) { toast("You've got the basics. Follow your goal in the corner!", "#4ee6b4"); snd("rise"); }
   }
   function coachLeaf() {   // the nearest leaf block (or grass to dig) for the Gather step
