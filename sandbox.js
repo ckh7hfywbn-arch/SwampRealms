@@ -592,6 +592,7 @@
     return L;
   }
   function charName(id) { var c = charList().filter(function (q) { return q.id === id; })[0]; return c ? c.name : "You"; }
+  function myThumb(s2) { try { return DelveAv.thumb(Object.assign({}, typeof Crystals !== "undefined" ? Crystals.outfit() : {}, apprOf(), { animal: S.animal }), S.animal, s2 || 3); } catch (e) { return charThumb(S.animal, s2); } }   // you, with your colours, hair, eyes and face
   function charThumb(id, s2) { try { return DelveAv.thumb(Object.assign({}, typeof Crystals !== "undefined" ? Crystals.outfit() : {}), id, s2 || 3); } catch (e) { return ""; } }
   // =====================================================================================================================
   // CHARACTER CREATOR: pick who you are (any person or swamp animal) and make them yours: body or skin colour, hair (people: a style;
@@ -11556,7 +11557,7 @@
     var nw = titleIsNew(), n = wIdx ? wIdx.list.length : 1;
     B.innerHTML = '<button type="button" class="tt-play" data-tt="play" data-fs-start><span class="tt-pi">' + ttIcon("play") + '</span><span class="tt-pt"><b>' + (nw ? "Create your world" : "Continue") + "</b><small>" + esc(nw ? "Name it, pick a difficulty, start digging" : titleSub()) + "</small></span></button>"
       + '<nav class="tt-list" aria-label="Main menu">'
-      + '<button type="button" data-tt="char" class="tt-char"><img alt="" src="' + charThumb(S.animal, 2) + '"><span>Character</span><em>' + esc(charName(S.animal).split(" ")[0]) + "</em></button>"
+      + '<button type="button" data-tt="char" class="tt-char"><img alt="" src="' + myThumb(2) + '"><span>Character</span><em>' + esc(charName(S.animal).split(" ")[0]) + "</em></button>"
       + '<button type="button" data-tt="new">' + ttIcon("new") + "<span>New world</span></button>"
       + '<button type="button" data-tt="worlds">' + ttIcon("worlds") + "<span>Worlds</span><em>" + n + "</em></button>"
       + '<button type="button" data-tt="mp">' + ttIcon("mp") + "<span>Play together</span></button>"
@@ -11602,7 +11603,7 @@
   }
   function titleAct(k) {
     if (k === "play") { if (titleIsNew()) { openWorlds("new"); WL.came = "new"; return; } if (curId) return closeTitle(); return switchWorld(lastWorld().id); }   // WORLDS: Continue loads your last world now
-    if (k === "char") return openChar();   // CHARACTERS
+    if (k === "char") return ccOpen(false, function () { if (titleOpen) renderTitle(); });   // CHARACTERS: the full character maker
     if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
     if (k === "back") { TC.how = false; renderTitle(); var hb = titleEl.querySelector("[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
@@ -17642,7 +17643,7 @@
         + row("Day counter", "Show the in-game day under the biome name.", sw("data-daytoggle", SHOWDAYS, "Day counter"))
         + row("Crafting mini-games", "Forge strikes for Masterwork gear, stirring for perfect brews. Off = craft instantly.", sw("data-cgtoggle", CGON, "Crafting mini-games")));
       an = charList().map(function (q) { return { id: q.id, name: q.name }; });   // CHARACTERS: people and animals
-      SEC.char = card("Play as", '<div class="sbx-an">' + an.map(function (a) { var th = ""; try { th = '<img alt="" src="' + DelveAv.thumb(Object.assign({}, Crystals.outfit()), a.id, 3) + '">'; } catch (e) { try { th = AV.svg(Object.assign({}, Crystals.outfit(), { animal: a.id, nobg: true })).replace('viewBox="0 0 200 200"', 'viewBox="22 4 156 156"'); } catch (e2) {} } return '<button type="button" data-an="' + a.id + '" aria-pressed="' + (S.animal === a.id) + '" aria-label="' + esc(a.name) + '">' + th + "<small>" + esc(a.name.split(" ")[0]) + "</small></button>"; }).join("") + '</div><p class="sbx-note op-foot">Your avatar gear comes from the Armory.</p>');
+      SEC.char = card("Your character", '<div class="op-cc"><img alt="" src="' + myThumb(3) + '"><div><b>' + esc(charName(S.animal)) + '</b><small>Animal, colour, hair, eyes and face</small></div><button type="button" class="btn" data-opcc>Customize</button></div><p class="sbx-note op-foot">Your avatar gear comes from the Armory.</p>');
       SEC.general = (SEC.general || "") + card("World and screen", '<div class="pz-rows op-pz">'
         + row("Weather", "Rain, snow and ash. Waters crops, and fish bite sooner.", sw("data-wxtoggle", WX.on, "Weather"))
         + row("Mini-map", "Tap it to open the World Map.", sw("data-minitoggle", MINI.on, "Mini-map"))
@@ -18341,6 +18342,7 @@
     if (t.getAttribute("data-iact")) return invAct(t.getAttribute("data-iact"));
     if (t.getAttribute("data-iextra")) return collectExtra(t.getAttribute("data-iextra"));
     if (t.getAttribute("data-hold")) { choose(t.getAttribute("data-hold")); return closePanel(); }
+    if (t.hasAttribute("data-opcc")) { ccOpen(false, function () { if (panelOpen) renderPanel(); }); return; }
     if (t.getAttribute("data-an")) { S.animal = t.getAttribute("data-an"); try { localStorage.setItem("swamp-delve-char", S.animal); } catch (e) {} mkSprite(); return renderPanel(); }
     if (t.hasAttribute("data-diff")) { nag("Difficulty is chosen when a world is made."); return; }
     if (false && t.hasAttribute("data-diff")) { var dv = clamp(+t.getAttribute("data-diff") || 0, 0, 2); if (MP.on && MP.role === "guest") { nag("The host picks the difficulty in their world."); return; } S.diff = dv; toast("Difficulty: " + DIFF[dv].n + ". " + DIFF[dv].d, DIFF[dv].c); save(); return renderPanel(); }

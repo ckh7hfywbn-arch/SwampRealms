@@ -1245,3 +1245,4 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Command list:** the cheat command suggestions are one solid panel, so the game no longer shows through the gaps.
   - **Smaller fixes:** greyed-out ghost buttons keep a faint outline so they still read as buttons, and the backpack's "Save hotbar" pills sit inside their loadout cards.
   - **Testing:** `__sbx.ui` opens any window from tests (`__sbx.ui.stn("bench")` places and opens a station). The audit script checks 54 windows at phone and desktop size for buttons that touch.
+- **Character maker everywhere:** the main menu's **Character** button and **Options > Character** now open the full character maker, with animal, colour, hair, eyes and face. Before, they opened the old animal-only picker. The settings card shows your current look with a **Customize** button. Closing the maker refreshes the menu thumbnail and the settings card. Code: `myThumb`, `data-opcc`.

@@ -2703,3 +2703,10 @@ small.bo-cost{display:flex}
 .p8-cmdsug button{background:transparent}
 .p8-cmdsug button+button{border-top:1px solid rgba(255,255,255,.05);border-radius:0}
 .sbx-sbox2 .btn.ghost[disabled]{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03)}
+/* CHARACTER: settings card that opens the full character maker */
+.op-cc{display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:14px;background:rgba(4,10,8,.45);border:1px solid rgba(78,230,180,.16)}
+.op-cc img{width:72px;height:72px;object-fit:contain;image-rendering:pixelated;border-radius:12px;background:radial-gradient(circle at 50% 60%,#4ee6b433,transparent 70%)}
+.op-cc div{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.op-cc b{font-size:1.02rem;color:#f6eedb}.op-cc small{font-size:.78rem;color:#9fd8c0;font-weight:700}
+.op-cc .btn{flex:none;padding:10px 16px}
+@media (max-width:420px){.op-cc{flex-wrap:wrap}.op-cc .btn{width:100%}}
