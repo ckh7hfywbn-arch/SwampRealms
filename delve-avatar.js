@@ -123,7 +123,9 @@ var DelveAv = (function () {
     COL[k] = Pp.skin; IRIS[k] = Pp.eye;
   });
   function palFor(a, o) {   // o.col: a body colour chosen in the Delve Wardrobe; o.pat: a molting path (tree, bull, dart, glass)
-    var P0 = palBase(a, o && !PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.col || "") ? o.col : COL[a]); if (!o || PEOPLE[a]) return P0;
+    var P0 = palBase(a, o && /^#[0-9a-f]{6}$/i.test(o.col || "") ? o.col : COL[a]); if (!o) return P0;   // any character can take a body / skin colour now
+    var hx = /^#[0-9a-f]{6}$/i; if (hx.test(o.hair || "")) { P0.h = o.hair; P0.e = dk(o.hair, 0.3); } if (hx.test(o.eye || "") && PEOPLE[a]) P0.r = o.eye;
+    if (PEOPLE[a]) return P0;
     if (o.pat === "tree") { P0.r = "#ff3b30"; P0.g = "#f2e08a"; }
     else if (o.pat === "bull") { P0.g = "#f2d86a"; P0.d = dk(P0.b, 0.42); }
     else if (o.pat === "dart") { P0.d = "#14141c"; P0.g = dk(P0.b, 0.25); P0.r = "#10131a"; }
@@ -411,7 +413,7 @@ var DelveAv = (function () {
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null, s = SHIRTS[shirt] || SHIRTS[""];
     B.cur = 1;
     // legs and the backs of the shoes (heels)
-    var legC = A.leg, sh = SHOES[o.shoes];
+    var legC = !PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.col || "") && a !== "owl" ? o.col : A.leg, sh = SHOES[o.shoes];   // a recoloured animal's legs match its body
     [[7, PO.L, 1], [12, PO.R, -1]].forEach(function (lg) {
       var x = lg[0] + lg[1][0], lift = lg[1][1], bot = 30 - lift, top = 24 + by, side = lg[2];
       for (y = top; y <= bot; y++) { B.p(x, y, side > 0 ? dk(legC, 0.3) : lt(legC, 0.12)); B.p(x + 1, y, dk(legC, 0.08)); B.p(x + 2, y, side > 0 ? lt(legC, 0.12) : dk(legC, 0.3)); }
@@ -460,12 +462,13 @@ var DelveAv = (function () {
   function drawFrame(o, pose, withArm) {
     if (POSE[pose] && POSE[pose].back) return drawBack(o, POSE[pose]);
     var a = AN[o.animal] ? o.animal : "frog", A = AN[a], P = palFor(a, o), PO = POSE[pose] || POSE.idle0, by = PO.by, B = new Buf(FW, FH, 0, OY), acc = o.acc || {}, i;
+    if (PEOPLE[a] && (o.style || o.fx)) A = Object.assign({}, A, { head: personHead(STYLE[o.style] ? o.style : PEOPLE[a].style, o.fx === "none" ? "" : o.fx || PEOPLE[a].extra) });   // CUSTOM: hairstyle, freckles or beard
     var shirt = o.shirt || "", hv = o.hv && o.hat ? o.hv[o.hat] : null;
     B.cur = 9; if (o.neck === "cape") CAPE_BACK(B, by, /^(walk|run)/.test(pose) ? (PO.by < 0 ? 1 : 0) : 0);
     B.cur = 2; if (shirt === "hoodie") { B.r(7, 16 + by, 8, 3, "#4a2a9a"); B.p(7, 16 + by, "#6a3fc4"); }
     B.cur = 1;
     // legs + shoes
-    var legC = A.leg, sh = SHOES[o.shoes];
+    var legC = !PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.col || "") && a !== "owl" ? o.col : A.leg, sh = SHOES[o.shoes];   // a recoloured animal's legs match its body
     [[12, PO.R, -1], [7, PO.L, 1]].forEach(function (lg) {   // (the far leg first, so the near leg crosses in front of it)
       var hx = lg[0], fdx = lg[1][0], lift = lg[1][1], knee = lg[1][2] || 0, bot = 30 - lift, top = 24 + by, side = lg[2], x = hx + fdx, y;
       for (y = top; y <= bot; y++) {   // hip to foot on a slant, the knee pushed forward when it bends
@@ -495,6 +498,9 @@ var DelveAv = (function () {
     B.cur = 1; B.m(hx, hy0, A.head, P);
     // eye colour on the iris-free animals is handled in the maps; add a catch-light
     var E = A.eyes.map(function (e) { return [e[0], e[1] + by]; });
+    if (!PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.eye || "")) E.forEach(function (e) { B.p(e[0], e[1], o.eye); });   // CUSTOM: animal eye colour (the pupil)
+    if (!PEOPLE[a] && o.tuft && o.tuft !== "none" && !o.hat) tuft(B, A, by, o.tuft, /^#[0-9a-f]{6}$/i.test(o.hair || "") ? o.hair : dk(P.b, 0.35));   // CUSTOM: a tuft of hair on a swamp animal
+    if (o.scar && o.scar !== "none") scar(B, E, o.scar, P);   // CUSTOM: face scars
     if (PO.blink) E.forEach(function (e) {   // eyes shut: eye whites and pupils become skin, with a dark lid line along the bottom
       for (var yy = e[1] - 1; yy <= e[1]; yy++) for (var xx = e[0] - 1; xx <= e[0] + 1; xx++) { var c = B.get(xx, yy); if (c && (c[0] + c[1] + c[2] > 600 || c[0] + c[1] + c[2] < 150)) B.p(xx, yy, yy === e[1] ? P.d : P.b); }
     });
@@ -510,6 +516,23 @@ var DelveAv = (function () {
     B.cur = 1; if (A.ears && o.hat) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
     if (OUTLINE) B.outline(OL);
     return B;
+  }
+  function tuft(B, A, by, k, c) {   // a little hairdo on top of an animal's head (only when no hat covers it)
+    var w = 0; A.head.forEach(function (r) { w = Math.max(w, r.length); }); var cx = A.x0 + Math.floor(w / 2), ty = A.y0 + by, top = 0;
+    for (var j = 0; j < A.head.length; j++) { if (/[^. ]/.test(A.head[j].slice(Math.floor(w / 2) - 1, Math.floor(w / 2) + 1))) { top = j; break; } } ty += top;
+    var L = lt(c, 0.25), D = dk(c, 0.25), put = function (x, y, col) { B.p(cx + x, ty + y, col); };
+    if (k === "tuft") { put(-1, -1, c); put(0, -1, L); put(0, -2, c); put(1, -2, L); put(1, -3, c); put(-2, -1, D); }
+    else if (k === "mohawk") { for (var y = -3; y <= -1; y++) { put(-1, y, D); put(0, y, c); } put(0, -4, L); put(-1, -4, c); }
+    else if (k === "curl") { put(-1, -1, c); put(0, -1, c); put(1, -1, D); put(-1, -2, L); put(0, -3, c); put(1, -3, c); put(1, -2, c); }
+    else if (k === "fluff") { for (var x = -3; x <= 2; x++) put(x, -1, x % 2 ? c : L); put(-2, -2, c); put(0, -2, L); put(1, -2, c); }
+  }
+  function scar(B, E, k, P) {   // only over the face (pixels that are already there), in a dark tint of the skin with a pale edge
+    var c = dk(P.b, 0.42), hl = lt(P.b, 0.28), e = E[E.length - 1], f = E[0], put = function (x, y, col) { if (B.get(x, y)) B.p(x, y, col); };
+    if (k === "eye") { [-2, -1, 1, 2].forEach(function (d) { put(e[0] + 1, e[1] + d, c); }); put(e[0] + 2, e[1] - 2, hl); }
+    else if (k === "cheek") { put(e[0], e[1] + 2, c); put(e[0] + 1, e[1] + 3, c); put(e[0] + 2, e[1] + 4, c); put(e[0] + 1, e[1] + 2, hl); }
+    else if (k === "cross") { put(e[0] + 1, e[1] + 2, c); put(e[0] + 3, e[1] + 2, c); put(e[0] + 2, e[1] + 3, c); put(e[0] + 1, e[1] + 4, c); put(e[0] + 3, e[1] + 4, c); }
+    else if (k === "nose") { for (var x = f[0] + 1; x < e[0]; x++) put(x, f[1] + 2, (x - f[0]) % 2 ? c : hl); }
+    else if (k === "brow") { put(f[0] - 1, f[1] - 2, c); put(f[0], f[1] - 2, hl); put(f[0] + 1, f[1] - 1, c); }
   }
   // hats are authored in absolute rows; ByBuf shifts them with the body bob
   function ByBuf(B, by) { this.B = B; this.by = by; }
@@ -591,7 +614,7 @@ var DelveAv = (function () {
     }
     return o;
   }
-  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.col || "", o.pat || "", o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
+  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.col || "", o.pat || "", o.hair || "", o.eye || "", o.style || "", o.fx || "", o.tuft || "", o.scar || "", o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
   var CACHE = {};
   function sprite(o, animal, s) {
     o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); s = Math.max(1, s | 0);
@@ -609,7 +632,7 @@ var DelveAv = (function () {
   function full(o, animal, s, pose) { o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); return toCanvas(drawFrame(o, pose || "idle0", true), Math.max(1, s | 0)); }   // the whole figure with both arms (the backpack screen)
   function thumb(o, animal, s) { o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); return toCanvas(drawFrame(o, "idle0", true), s || 3).toDataURL(); }
 
-  var api = { people: PEOPLE, sprite: sprite, thumb: thumb, full: full, animals: Object.keys(AN), poses: Object.keys(POSE), _draw: drawFrame, _AN: AN, FW: FW, FH: FH };
+  var api = { styles: Object.keys(STYLE), people: PEOPLE, sprite: sprite, thumb: thumb, full: full, animals: Object.keys(AN), poses: Object.keys(POSE), _draw: drawFrame, _AN: AN, FW: FW, FH: FH };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   return api;
 })();

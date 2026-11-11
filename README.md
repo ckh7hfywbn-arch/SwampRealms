@@ -1222,3 +1222,12 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Action pills:** "Leave", "Open Witch's Chest" and the rest no longer grow with the room zoom. The text is capped at 14 px on phones and 17 px elsewhere (`drawPill`).
   - **Loot window:** compact on phones, with a 4-column item grid, smaller icons and buttons.
   - **Your character on phones:** in rooms and caves you are drawn 1.5× bigger, while the furniture stays at the zoomed-out size. Action pills ("Leave" and the rest) now move above your head instead of covering you; before, the pill hid your character at the door.
+- **Character creator** (search `CHARACTER CREATOR`). Opens on its own when you make your **first** world: you press Create, make your character, then **Start my world** drops you in. You can reopen it any time from Wardrobe > Colour > Customize.
+  - **Who you are:** any of the people or swamp animals.
+  - **Colour:** a skin tone or body colour, 18 presets plus any colour you pick, for every character (not just the frog). A recoloured animal's legs match.
+  - **Hair:** people choose a hairstyle; animals choose a tuft, mohawk, curl or fluff, which hides under hats. Plus a hair colour.
+  - **Eyes:** an eye colour (people's irises; animals' pupils).
+  - **Face:** five face scars, plus freckles or a beard for people.
+  - **Surprise me** button for a random look.
+  - **Where it's kept:** the look is saved per device in `swamp-delve-appr`, and new worlds take it. `delve-avatar.js` gained `o.hair`, `o.eye`, `o.style`, `o.fx`, `o.tuft` and `o.scar`, and `o.col` now works for people too.
+- **Icon art:** the mounts (Toad, Gator and Heron saddles, the three bone mounts, the Witch's Broom and the Hot-Air Balloon) now use the real mount art, fitted onto a coloured disc. Items that showed the generic gem or a blank square got their own icons: Moonbloom, Realm Shard, Blood Shard, Lumen Shard, Skystone, Star Ore, Starsteel, Hex Dust, Spider Silk, Rainbow Prism, Snapper Petal, Imp Horn, Rime Core, Geode Chip, Gear, Frog Brooch, Old Compass and Pocket Watch.

@@ -593,6 +593,60 @@
   }
   function charName(id) { var c = charList().filter(function (q) { return q.id === id; })[0]; return c ? c.name : "You"; }
   function charThumb(id, s2) { try { return DelveAv.thumb(Object.assign({}, typeof Crystals !== "undefined" ? Crystals.outfit() : {}), id, s2 || 3); } catch (e) { return ""; } }
+  // =====================================================================================================================
+  // CHARACTER CREATOR: pick who you are (any person or swamp animal) and make them yours: body or skin colour, hair (people: a style;
+  // animals: a tuft), hair colour, eye colour, a face scar, freckles or a beard. It opens by itself when you make your FIRST world
+  // (you join the world when you press Done), and any time from the Wardrobe. The look is kept per device ("swamp-delve-appr")
+  // and copied into each world's S.look, so a molt can still recolour you in one world.
+  // =====================================================================================================================
+  var APPR = (function () { try { var o = JSON.parse(localStorage.getItem("swamp-delve-appr") || "{}"); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; } })();
+  function apprSave() { try { localStorage.setItem("swamp-delve-appr", JSON.stringify(APPR)); } catch (e) {} }
+  function apprOf() { var A = APPR || {}, L = (S && S.look) || {}; return { col: L.col != null && L.col !== "" ? L.col : A.col || "", hair: A.hair || "", eye: A.eye || "", style: A.style || "", fx: A.fx || "", tuft: A.tuft || "", scar: A.scar || "" }; }
+  var CC_SKIN = [["", "Natural"], ["#f4d2b4", "Fair"], ["#e8b48a", "Light"], ["#c89a72", "Tan"], ["#a8724a", "Brown"], ["#6a4228", "Deep"], ["#43c463", "Swamp green"], ["#2fb89a", "Teal"], ["#4a8ae8", "Pond blue"], ["#8a5ad8", "Violet"], ["#ff7ab0", "Bubblegum"], ["#f2c14e", "Golden"], ["#e8503a", "Ember red"], ["#ff9a3a", "Tangerine"], ["#7a8a3a", "Olive"], ["#c8d8e0", "Frost white"], ["#3a3a48", "Night black"], ["#a86a3a", "Mud brown"]];
+  var CC_HAIR = [["", "Natural"], ["#16100c", "Black"], ["#6a3e1e", "Brown"], ["#c8582a", "Ginger"], ["#e8c46a", "Blonde"], ["#b8b4ac", "Silver"], ["#f4f0e8", "White"], ["#ff5aa8", "Pink"], ["#8a5ad8", "Purple"], ["#3a8ae8", "Blue"], ["#2fd08a", "Mint"], ["#e8302a", "Red"]];
+  var CC_EYE = [["", "Natural"], ["#2a1a10", "Dark brown"], ["#6a3e1e", "Brown"], ["#2a6ab8", "Blue"], ["#1a8a5a", "Green"], ["#8a8a9a", "Grey"], ["#d8a020", "Amber"], ["#8a3ad8", "Violet"], ["#e8302a", "Red"], ["#2ad8e8", "Cyan"], ["#ffd23f", "Gold"]];
+  var CC_TUFT = [["none", "None"], ["tuft", "Tuft"], ["mohawk", "Mohawk"], ["curl", "Curl"], ["fluff", "Fluff"]];
+  var CC_SCAR = [["none", "None"], ["eye", "Across the eye"], ["cheek", "Cheek slash"], ["cross", "Cross"], ["nose", "Over the nose"], ["brow", "Split brow"]];
+  var CC_FX = [["", "Natural"], ["none", "Plain"], ["freckles", "Freckles"], ["beard", "Beard"]];
+  var CC = null;
+  function ccOpen(first, onDone) {
+    var el = $("sbxCC"); if (!el) { el = document.createElement("div"); el.id = "sbxCC"; el.className = "sbx-cc"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Make your character"); stageEl.appendChild(el);
+      el.addEventListener("click", ccClick); el.addEventListener("input", function (e) { if (e.target.id === "ccCol") { CC.d.col = e.target.value; ccRender(true); } }); }
+    var a = apprOf(); CC = { first: !!first, done: onDone || null, tab: "who", d: { animal: (S && S.animal) || defaultAnimal(), col: a.col, hair: a.hair, eye: a.eye, style: a.style, fx: a.fx, tuft: a.tuft, scar: a.scar } };
+    el.hidden = false; menuOpen = true; ccRender();
+  }
+  function ccOutfit(d) { var o = {}; try { o = Object.assign({}, Crystals.outfit()); } catch (e) {} return Object.assign(o, { animal: d.animal, col: d.col, hair: d.hair, eye: d.eye, style: d.style, fx: d.fx, tuft: d.tuft, scar: d.scar }); }
+  function ccRender(previewOnly) {
+    var el = $("sbxCC"), d = CC.d, hum = !!(DelveAv.people && DelveAv.people[d.animal]), big = "";
+    try { big = DelveAv.full(ccOutfit(d), d.animal, 8, "idle0").toDataURL(); } catch (e) {}
+    if (previewOnly && el.querySelector(".cc-big img")) { el.querySelector(".cc-big img").src = big; return; }
+    var sw = function (key, L, round) { return '<div class="cc-sw' + (round ? " round" : "") + '">' + L.map(function (q) { var on = (d[key] || "") === q[0]; return '<button type="button" data-cc="' + key + ":" + q[0] + '" class="' + (on ? "on" : "") + '" title="' + esc(q[1]) + '" aria-label="' + esc(q[1]) + '" aria-pressed="' + on + '" style="--c:' + (q[0] && q[0][0] === "#" ? q[0] : "transparent") + '">' + (q[0] && q[0][0] === "#" ? "" : '<span>' + esc(q[1]) + "</span>") + "</button>"; }).join("") + "</div>"; };
+    var tabs = [["who", "Character"], ["col", hum ? "Skin" : "Colour"], ["hair", "Hair"], ["eyes", "Eyes"], ["face", "Face"]];
+    var h = '<div class="cc-box"><div class="cc-head"><div><small>' + (CC.first ? "Before you start" : "Character") + "</small><h2>Make your character</h2></div>" + (CC.first ? "" : '<button type="button" class="sbx-x" data-cc="x" aria-label="Close">&times;</button>') + "</div>";
+    h += '<div class="cc-main"><div class="cc-big"><img alt="Your character" src="' + big + '"><b>' + esc(charName(d.animal)) + '</b><button type="button" class="btn ghost cc-rand" data-cc="rand">🎲 Surprise me</button></div><div class="cc-side"><div class="cc-tabs">' + tabs.map(function (t) { return '<button type="button" class="' + (CC.tab === t[0] ? "on" : "") + '" data-cc="tab:' + t[0] + '">' + t[1] + "</button>"; }).join("") + '</div><div class="cc-pane">';
+    if (CC.tab === "who") { var L = charList(); h += "<h3>People</h3>" + '<div class="cc-who">' + L.filter(function (q) { return q.human; }).map(function (q) { return '<button type="button" class="' + (q.id === d.animal ? "on" : "") + '" data-cc="animal:' + q.id + '"><img alt="" src="' + DelveAv.thumb(ccOutfit(Object.assign({}, d, { animal: q.id })), q.id, 3) + '"><small>' + esc(q.name.split(" ")[0]) + "</small></button>"; }).join("") + "</div><h3>Swamp animals</h3>" + '<div class="cc-who">' + L.filter(function (q) { return !q.human; }).map(function (q) { return '<button type="button" class="' + (q.id === d.animal ? "on" : "") + '" data-cc="animal:' + q.id + '"><img alt="" src="' + DelveAv.thumb(ccOutfit(Object.assign({}, d, { animal: q.id })), q.id, 3) + '"><small>' + esc(q.name.split(" ")[0]) + "</small></button>"; }).join("") + "</div>"; }
+    else if (CC.tab === "col") h += "<h3>" + (hum ? "Skin tone" : "Body colour") + "</h3>" + sw("col", CC_SKIN, true) + '<label class="cc-pick">Any colour <input id="ccCol" type="color" value="' + (/^#[0-9a-f]{6}$/i.test(d.col || "") ? d.col : "#43c463") + '"></label>';
+    else if (CC.tab === "hair") h += (hum ? "<h3>Hairstyle</h3>" + sw("style", [["", "Natural"]].concat((DelveAv.styles || []).map(function (k) { return [k, k[0].toUpperCase() + k.slice(1)]; }))) : "<h3>Tuft</h3>" + sw("tuft", CC_TUFT) + '<p class="cc-note">Tufts hide under hats.</p>') + "<h3>Hair colour</h3>" + sw("hair", CC_HAIR, true);
+    else if (CC.tab === "eyes") h += "<h3>Eye colour</h3>" + sw("eye", CC_EYE, true);
+    else h += "<h3>Scars</h3>" + sw("scar", CC_SCAR) + (hum ? "<h3>Freckles and beards</h3>" + sw("fx", CC_FX) : "");
+    h += '</div></div></div><div class="cc-foot"><button type="button" class="btn cc-done" data-cc="done">' + (CC.first ? "Start my world →" : "Done") + "</button></div></div>";
+    el.innerHTML = h;
+  }
+  function ccClick(e) {
+    var b = e.target.closest("[data-cc]"); if (!b) return; var v = b.getAttribute("data-cc"), i = v.indexOf(":"), k = i < 0 ? v : v.slice(0, i), x = i < 0 ? "" : v.slice(i + 1), d = CC.d;
+    if (k === "x") return ccClose(false);
+    if (k === "done") return ccClose(true);
+    if (k === "tab") { CC.tab = x; return ccRender(); }
+    if (k === "rand") { var pk = function (L) { return L[Math.floor(Math.random() * L.length)][0]; }, L2 = charList(); d.animal = L2[Math.floor(Math.random() * L2.length)].id; d.col = pk(CC_SKIN); d.hair = pk(CC_HAIR); d.eye = pk(CC_EYE); d.tuft = pk(CC_TUFT); d.scar = Math.random() < 0.4 ? pk(CC_SCAR) : "none"; d.style = pk([[""]].concat((DelveAv.styles || []).map(function (s2) { return [s2]; }))); d.fx = pk(CC_FX); snd("coin"); return ccRender(); }
+    d[k] = x; thud(620, 0.02); ccRender();
+  }
+  function ccClose(save2) {
+    var el = $("sbxCC"); if (el) el.hidden = true; menuOpen = false; var C2 = CC; CC = null; if (!C2) return;
+    if (save2 || C2.first) { var d = C2.d; ["hair", "eye", "style", "fx", "tuft", "scar", "col"].forEach(function (k) { APPR[k] = d[k] || ""; }); apprSave();
+      if (S) { look().col = d.col || ""; S.animal = d.animal; } try { localStorage.setItem("swamp-delve-char", d.animal); } catch (e) {}
+      spriteKey = ""; sprite = null; MEPIC.k = ""; WPIC = {}; mkSprite(); hbDirty = true; if (S) save(); if (MP.on) mpMe(); }
+    if (C2.done) C2.done();
+  }
   var charPick = null;
   function openChar() {
     var el = $("sbxStory"); if (!el) return;
@@ -902,11 +956,13 @@
   }
   var newDiff = 1, newCheats = false;
   function seedFrom(v) { v = String(v || "").trim(); if (!v) return randSeed(); if (/^-?\d+$/.test(v)) return (Math.abs(parseInt(v, 10)) % 2e9) || 1; var h = 0; for (var i = 0; i < v.length; i++) h = (Math.imul(h, 31) + v.charCodeAt(i)) | 0; return (Math.abs(h) % 2e9) || 1; }   // a typed seed: a number, or any word
-  function createWorld(name) {
+  function createWorld(name, skipCC) {
     if (wIdx.list.length >= MAXW) { toast("You can keep " + MAXW + " worlds. Delete one first.", "#f2c14e"); return; }
+    if (!skipCC && !wIdx.list.length && !(function () { try { return localStorage.getItem("swamp-delve-cc") === "1"; } catch (e) { return false; } })()) {   // FIRST WORLD: make your character first, then step in
+      var sd0 = $("sbxWSeed") ? $("sbxWSeed").value : ""; ccOpen(true, function () { try { localStorage.setItem("swamp-delve-cc", "1"); } catch (e) {} if ($("sbxWSeed")) $("sbxWSeed").value = sd0; createWorld(name, true); if (menuOpen) renderWorlds(); }); return; }
     if (MP.on || MP.ws) mpLeave();
     bossGone(); save(); var z = S.zoom, an = S.animal; addWorld(String(name || "").trim().slice(0, 24));
-    var sdIn = $("sbxWSeed"), sd = seedFrom(sdIn ? sdIn.value : ""); start(Object.assign(fresh(sd), { zoom: z, animal: an, diff: newDiff, cheats: newCheats ? 1 : 0 })); save(); touchIdx(); closeWorlds(); if (titleOpen) closeTitle(); toast("A fresh world: " + curEntry().name + " (" + DIFF[newDiff].n + (newCheats ? ", cheats on: press / or tap the / button for commands" : "") + "). Happy digging!", "#4ee6b4"); newCheats = false;
+    var sdIn = $("sbxWSeed"), sd = seedFrom(sdIn ? sdIn.value : ""); start(Object.assign(fresh(sd), { zoom: z, animal: (function () { try { var c0 = localStorage.getItem("swamp-delve-char"); if (c0 && DelveAv._AN[c0]) return c0; } catch (e) {} return an; })(), diff: newDiff, cheats: newCheats ? 1 : 0, look: { col: APPR.col || "" } })); save(); touchIdx(); closeWorlds(); if (titleOpen) closeTitle(); toast("A fresh world: " + curEntry().name + " (" + DIFF[newDiff].n + (newCheats ? ", cheats on: press / or tap the / button for commands" : "") + "). Happy digging!", "#4ee6b4"); newCheats = false;
   }
   function deleteWorld(id) {
     try { localStorage.removeItem(wkey(id)); } catch (e) {}
@@ -2403,9 +2459,9 @@
   // ---------- PLAYER SPRITE (your avatar, gear included) ----------
   var spriteOutfit = null;
   function mkSprite() {   // the pixel full-body avatar (delve-avatar.js) is rebuilt whenever the Armory outfit or animal changes
-    var key = S.animal + "|" + S.arm + "|" + (S.look ? (S.look.col || "") + (S.molt || "") : "") + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
+    var AP = apprOf(), key = S.animal + "|" + S.arm + "|" + JSON.stringify(AP) + (S.molt || "") + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
     if (key === spriteKey) return; spriteKey = key; sprite = null;
-    var lk0 = S.look || {}; try { spriteOutfit = Object.assign({}, Crystals.outfit(), { animal: S.animal, arm: S.arm, col: lk0.col || "", pat: S.molt || "" }); } catch (e) { spriteOutfit = { animal: S.animal, arm: S.arm, col: lk0.col || "", pat: S.molt || "" }; }
+    var base = { animal: S.animal, arm: S.arm, col: AP.col, hair: AP.hair, eye: AP.eye, style: AP.style, fx: AP.fx, tuft: AP.tuft, scar: AP.scar, pat: S.molt || "" }; try { spriteOutfit = Object.assign({}, Crystals.outfit(), base); } catch (e) { spriteOutfit = base; }
   }
   function getSprite() {
     if (typeof DelveAv === "undefined") return null;
@@ -23829,13 +23885,13 @@
   // =====================================================================================================================
   function look() { if (!S.look || typeof S.look !== "object") S.look = {}; return S.look; }
   // ---------- #75 THE WARDROBE: body colour, Armory cosmetics you own, trail, title and name tag, all from inside Delve ----------
-  var BODYC = [["", "Swamp green"], ["#2fb89a", "Teal"], ["#4a8ae8", "Pond blue"], ["#8a5ad8", "Violet"], ["#ff7ab0", "Bubblegum"], ["#f2c14e", "Golden"], ["#e8503a", "Ember red"], ["#ff9a3a", "Tangerine"], ["#7a8a3a", "Olive"], ["#c8d8e0", "Frost white"], ["#3a3a48", "Night black"], ["#a86a3a", "Mud brown"]];
+  var BODYC = [["", "Natural"], ["#2fb89a", "Teal"], ["#4a8ae8", "Pond blue"], ["#8a5ad8", "Violet"], ["#ff7ab0", "Bubblegum"], ["#f2c14e", "Golden"], ["#e8503a", "Ember red"], ["#ff9a3a", "Tangerine"], ["#7a8a3a", "Olive"], ["#c8d8e0", "Frost white"], ["#3a3a48", "Night black"], ["#a86a3a", "Mud brown"]];
   var WARD = { tab: "look" };
   function wardOpen(t) {
     if (t) WARD.tab = t; if (!p4Open(270)) return; var L = look(), h = '<h2 class="st-hi">Wardrobe</h2><div class="p7-tabs">' + [["look", "Colour"], ["wear", "Outfit"], ["trail", "Trails"], ["title", "Name & title"], ["dance", "Dances"]].map(function (q) { return '<button type="button" class="' + (WARD.tab === q[0] ? "on" : "") + '" data-p7="tab:' + q[0] + '">' + q[1] + "</button>"; }).join("") + "</div>";
     h += '<div class="p7-me"><img alt="Your delver" src="' + mePic() + '"></div>';
     if (WARD.tab === "look") {
-      h += (S.animal && S.animal !== "frog" ? '<p class="st-tip">Body colours are for frogs. You are playing as a ' + esc(S.animal) + "; switch animal on the title screen.</p>" : "");
+      h += '<div class="p7-ccrow"><img alt="" src="' + mePic() + '"><div><b>' + esc(charName(S.animal)) + '</b><small>Change who you are, your hair, eyes and scars.</small></div><button type="button" class="btn" data-p7="cc">Customize</button></div><h3>Colour</h3>';
       h += '<div class="p7-sw">' + BODYC.map(function (c, i) { return '<button type="button" style="--c:' + (c[0] || "#43c463") + '" class="' + ((L.col || "") === c[0] ? "on" : "") + '" data-p7="col:' + i + '" aria-label="' + c[1] + '" title="' + c[1] + '"></button>'; }).join("") + "</div>";
       if (S.molt) h += '<p class="st-tip">Your molting path (' + esc(MOLT[S.molt].n) + ") gives you its own pattern on top of any colour.</p>";
     } else if (WARD.tab === "wear") {   // OUTFIT: one section per clothing type, each card shows YOU wearing that piece
@@ -23860,9 +23916,9 @@
   }
   var WPIC = {};
   function wearPic(cat, id) {   // your character wearing one piece (the rest of your outfit as it is now)
-    try { var o = Object.assign({}, spriteOutfit || {}, { col: look().col, animal: S.animal }); o[cat] = id; var k = JSON.stringify(o); if (WPIC[k]) return WPIC[k]; WPIC[k] = DelveAv.thumb(o, S.animal, 4); return WPIC[k]; } catch (e) { return ""; } }
+    try { var o = Object.assign({}, spriteOutfit || {}, { col: apprOf().col, animal: S.animal }); o[cat] = id; var k = JSON.stringify(o); if (WPIC[k]) return WPIC[k]; WPIC[k] = DelveAv.thumb(o, S.animal, 4); return WPIC[k]; } catch (e) { return ""; } }
   var MEPIC = { k: "", u: "" };
-  function mePic() { try { var o = Object.assign({}, spriteOutfit || {}, { col: look().col, animal: S.animal }), k = JSON.stringify(o); if (MEPIC.k === k && MEPIC.u) return MEPIC.u; MEPIC.k = k; MEPIC.u = DelveAv.thumb(o, S.animal, 5); return MEPIC.u; } catch (e) { return ""; } }
+  function mePic() { try { var o = Object.assign({}, spriteOutfit || {}, { col: apprOf().col, animal: S.animal }), k = JSON.stringify(o); if (MEPIC.k === k && MEPIC.u) return MEPIC.u; MEPIC.k = k; MEPIC.u = DelveAv.thumb(o, S.animal, 5); return MEPIC.u; } catch (e) { return ""; } }
   function lookChanged() { spriteKey = ""; sprite = null; MEPIC.k = ""; save(); }
   // ---------- #76 TRAILS: cosmetic sparkles that follow you, unlocked by doing things ----------
   var TRAILS = [
@@ -23986,6 +24042,7 @@
     if (q[0] === "tab") wardOpen(q[1]);
     else if (q[0] === "col") { L.col = BODYC[+q[1]] ? BODYC[+q[1]][0] : ""; lookChanged(); wardOpen(); }
     else if (q[0] === "cat") { WARD.cat = q[1]; wardOpen(); }
+    else if (q[0] === "cc") { closeStory(); ccOpen(false, function () { wardOpen("look"); }); }
     else if (q[0] === "uneq") { try { var oo = Crystals.outfit(); if (oo[q[1]]) Crystals.equip(oo[q[1]]); } catch (e) {} lookChanged(); wardOpen(); }
     else if (q[0] === "eq") { try { Crystals.equip(q.slice(1).join(":")); } catch (e) {} lookChanged(); wardOpen(); }
     else if (q[0] === "tr") { L.tr = +q[1]; save(); wardOpen(); }
@@ -24959,6 +25016,66 @@
     window.addEventListener("keydown", function (e) { if (e.key === "`" && !/INPUT|TEXTAREA/.test((e.target || {}).tagName || "")) { e.preventDefault(); if (storyOpen === 290) closeStory(); else devOpen(); } });
     (function () { var b = document.createElement("button"); b.type = "button"; b.className = "p8-devchip"; b.textContent = "DEV"; b.title = "Dev menu (` key)"; b.addEventListener("click", function () { if (world) devOpen(); }); var host = document.getElementById("sbxStage") || document.body; host.appendChild(b); })();
   }
+  // =====================================================================================================================
+  // ICON ART: proper icons for things that showed a generic gem (the "diamond") or nothing at all, and the mount items
+  // (drawn from the real mount art, fitted into the icon). 32 x 32, top-lit, inked like the creatures.
+  // =====================================================================================================================
+  function icFit(g, draw, bx, sc) {   // draw big on a scratch canvas, crop to what was drawn, fit it into the 32 x 32 icon
+    var c = document.createElement("canvas"); c.width = c.height = 260; var q = c.getContext("2d"); q.translate(130, 200); q.scale(sc || 2, sc || 2); q.lineJoin = "round"; q.lineCap = "round"; try { draw(q); } catch (e) {}
+    var d = q.getImageData(0, 0, 260, 260).data, x0 = 260, y0 = 260, x1 = 0, y1 = 0; for (var y = 0; y < 260; y += 2) for (var x = 0; x < 260; x += 2) if (d[(y * 260 + x) * 4 + 3] > 30) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 <= x0) { cvFree(c); return; } var bw = x1 - x0 + 3, bh = y1 - y0 + 3, s = Math.min((bx || 29) / bw, (bx || 29) / bh), dw = bw * s, dh = bh * s;
+    g.imageSmoothingEnabled = true; g.drawImage(c, x0 - 1, y0 - 1, bw, bh, 16 - dw / 2, 16 - dh / 2 + 0.5, dw, dh); cvFree(c);
+  }
+  function icRing(g, c1, c2) { var rg = g.createRadialGradient(16, 18, 2, 16, 18, 16); rg.addColorStop(0, c1); rg.addColorStop(1, c2); g.fillStyle = rg; g.beginPath(); g.arc(16, 16, 15, 0, 7); g.fill(); }
+  ["m_toad", "m_gator", "m_heron", "m_mudo", "m_drake", "m_mammoth"].forEach(function (k) {   // the mount itself, saddled, on a soft disc in its land's colour
+    var bg = { m_toad: ["#5a8a3a", "#1a2a12"], m_gator: ["#3a7a5a", "#0e2418"], m_heron: ["#6a8aa8", "#1a2430"], m_mudo: ["#8a7a5a", "#2a2216"], m_drake: ["#c85a2a", "#2a0e06"], m_mammoth: ["#7ab8e8", "#14243a"] }[k];
+    OCI[k] = function (g) { icRing(g, bg[0], bg[1]); icFit(g, function (q) { if (k === "m_gator") { q.beginPath(); q.rect(-16, -40, 70, 46); q.clip(); } mountArt(q, k, 0.25, false, k === "m_heron"); }, 30); };
+  });
+  OCI.m_broom = function (g) { icRing(g, "#8a5ad8", "#1a0a30"); icFit(g, function (q) { q.rotate(-0.55); broomArt(q, 0.4, false); }, 30); };
+  OCI.balloon = function (g) { icRing(g, "#7ac8ff", "#14304a"); icFit(g, function (q) { q.translate(0, 30); balloonArt(q, 0.3, true); }, 30, 1.2); };
+  function icGem(g, pts, hi, mid, lo, ink, shine) {   // a faceted crystal from a list of points, lit from the top
+    var gr = g.createLinearGradient(0, 2, 0, 30); gr.addColorStop(0, hi); gr.addColorStop(0.5, mid); gr.addColorStop(1, lo); g.fillStyle = gr; g.strokeStyle = ink; g.lineWidth = 1.4; g.lineJoin = "round";
+    g.beginPath(); pts.forEach(function (p2, i) { if (i) g.lineTo(p2[0], p2[1]); else g.moveTo(p2[0], p2[1]); }); g.closePath(); g.fill(); g.stroke();
+    if (shine !== false) { g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.moveTo(pts[0][0] - 1, pts[0][1] + 3); g.lineTo(pts[0][0] - 4, pts[0][1] + 9); g.lineTo(pts[0][0] - 2, pts[0][1] + 10); g.closePath(); g.fill(); }
+  }
+  function icSpark(g, x, y, r, c) { g.fillStyle = c || "#fff"; g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.3, y - r * 0.3); g.lineTo(x + r, y); g.lineTo(x + r * 0.3, y + r * 0.3); g.lineTo(x, y + r); g.lineTo(x - r * 0.3, y + r * 0.3); g.lineTo(x - r, y); g.lineTo(x - r * 0.3, y - r * 0.3); g.closePath(); g.fill(); }
+  OCI.realmshard = function (g) { var gl = g.createRadialGradient(16, 16, 2, 16, 16, 15); gl.addColorStop(0, "rgba(138,255,224,.5)"); gl.addColorStop(1, "rgba(138,255,224,0)"); g.fillStyle = gl; g.fillRect(0, 0, 32, 32);
+    icGem(g, [[16, 2], [23, 12], [20, 29], [11, 29], [8, 13]], "#e8fff8", "#5ae8c8", "#1a7a6a", "#0a3a34"); g.strokeStyle = "rgba(10,58,52,.6)"; g.lineWidth = 1; g.beginPath(); g.moveTo(16, 2); g.lineTo(15, 29); g.moveTo(8, 13); g.lineTo(23, 12); g.stroke(); icSpark(g, 25, 6, 3.4, "#e8fff8"); };
+  OCI.bloodshard = function (g) { icGem(g, [[14, 2], [22, 9], [25, 22], [16, 30], [8, 23], [7, 10]], "#ffb0b8", "#e8243a", "#6a0a14", "#3a0408"); g.strokeStyle = "rgba(58,4,8,.55)"; g.lineWidth = 1; g.beginPath(); g.moveTo(14, 2); g.lineTo(16, 30); g.moveTo(7, 10); g.lineTo(25, 22); g.stroke(); icSpark(g, 24, 6, 2.6, "#ffd8dc"); };
+  OCI.lumen = function (g) { var gl = g.createRadialGradient(16, 17, 1, 16, 17, 14); gl.addColorStop(0, "rgba(122,255,224,.7)"); gl.addColorStop(1, "rgba(122,255,224,0)"); g.fillStyle = gl; g.fillRect(0, 0, 32, 32);
+    icGem(g, [[16, 3], [21, 14], [16, 29], [11, 14]], "#ffffff", "#7affe0", "#1a8a8a", "#0a3a3a"); icGem(g, [[23, 11], [27, 18], [23, 27], [20, 18]], "#e8fff8", "#5ad8c8", "#1a6a6a", "#0a3a3a", false); icGem(g, [[8, 13], [11, 19], [8, 27], [5, 19]], "#e8fff8", "#5ad8c8", "#1a6a6a", "#0a3a3a", false); };
+  OCI.skystone = function (g) { g.fillStyle = "#3a4a5a"; g.beginPath(); g.ellipse(16, 18, 13, 11, 0, 0, 7); g.fill(); var gr = g.createLinearGradient(0, 7, 0, 29); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.5, "#c8dcf0"); gr.addColorStop(1, "#6a88a8"); g.fillStyle = gr; g.beginPath(); g.ellipse(16, 18, 11.6, 9.6, 0, 0, 7); g.fill();
+    g.strokeStyle = "#7ab8e8"; g.lineWidth = 1.6; g.beginPath(); g.arc(13, 17, 4, 3.6, 7.2); g.stroke(); g.beginPath(); g.arc(19, 20, 3, 0.4, 3.9); g.stroke(); icSpark(g, 22, 12, 2.4, "#fff"); };
+  OCI.starore = function (g) { g.fillStyle = "#1a1a2a"; g.beginPath(); g.moveTo(5, 24); g.lineTo(8, 10); g.lineTo(17, 5); g.lineTo(27, 11); g.lineTo(28, 24); g.lineTo(17, 29); g.closePath(); g.fill(); var gr = g.createLinearGradient(0, 6, 0, 28); gr.addColorStop(0, "#5a5a7a"); gr.addColorStop(1, "#24243a"); g.fillStyle = gr; g.beginPath(); g.moveTo(7, 23); g.lineTo(9, 11); g.lineTo(17, 7); g.lineTo(25, 12); g.lineTo(26, 23); g.lineTo(17, 27); g.closePath(); g.fill();
+    [[12, 14, 3.4], [20, 18, 2.8], [14, 22, 2.2], [21, 11, 1.8]].forEach(function (q) { icSpark(g, q[0], q[1], q[2], "#ffe08a"); }); };
+  OCI.starsteel = function (g) { g.fillStyle = "#1a2030"; g.beginPath(); g.moveTo(3, 22); g.lineTo(9, 12); g.lineTo(29, 12); g.lineTo(23, 22); g.closePath(); g.fill(); var gr = g.createLinearGradient(0, 12, 0, 22); gr.addColorStop(0, "#f0f8ff"); gr.addColorStop(0.5, "#9ab8e8"); gr.addColorStop(1, "#4a5a8a"); g.fillStyle = gr; g.beginPath(); g.moveTo(5, 21); g.lineTo(10, 13); g.lineTo(27, 13); g.lineTo(22, 21); g.closePath(); g.fill();
+    g.fillStyle = "#6a7aaa"; g.beginPath(); g.moveTo(5, 21); g.lineTo(22, 21); g.lineTo(22, 25); g.lineTo(5, 25); g.closePath(); g.fill(); icSpark(g, 17, 16, 3, "#ffe8a0"); icSpark(g, 25, 9, 2.2, "#fff"); };
+  OCI.hexdust = function (g) { g.fillStyle = "#2a1040"; g.beginPath(); g.ellipse(16, 25, 13, 5, 0, 0, 7); g.fill(); var gr = g.createLinearGradient(0, 12, 0, 28); gr.addColorStop(0, "#e0b8ff"); gr.addColorStop(1, "#6a2ab8"); g.fillStyle = gr; g.beginPath(); g.moveTo(4, 25); g.quadraticCurveTo(10, 12, 16, 12); g.quadraticCurveTo(23, 12, 28, 25); g.closePath(); g.fill();
+    g.fillStyle = "rgba(255,255,255,.5)"; [[12, 18], [17, 15], [20, 20], [9, 22]].forEach(function (q) { g.fillRect(q[0], q[1], 1.6, 1.6); }); icSpark(g, 23, 7, 3, "#f0d8ff"); icSpark(g, 9, 8, 2, "#d8b0ff"); };
+  OCI.silk = function (g) { g.fillStyle = "#3a3448"; g.beginPath(); g.ellipse(16, 16, 11, 12, 0, 0, 7); g.fill(); var gr = g.createRadialGradient(13, 12, 1, 16, 16, 12); gr.addColorStop(0, "#ffffff"); gr.addColorStop(1, "#b8b0d0"); g.fillStyle = gr; g.beginPath(); g.ellipse(16, 16, 9.8, 10.8, 0, 0, 7); g.fill();
+    g.strokeStyle = "rgba(120,110,150,.6)"; g.lineWidth = 1; for (var i = -2; i <= 2; i++) { g.beginPath(); g.ellipse(16, 16, 9.8 - Math.abs(i) * 1.5, 10.8, i * 0.35, 0, 7); g.stroke(); } g.strokeStyle = "#e8e4f0"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(24, 22); g.quadraticCurveTo(29, 27, 26, 30); g.stroke(); };
+  OCI.prism = function (g) { g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 2; g.beginPath(); g.moveTo(1, 20); g.lineTo(12, 18); g.stroke(); ["#ff4a4a", "#ffb02a", "#ffe04a", "#4ae86a", "#4aa8ff", "#a85aff"].forEach(function (c, i) { g.strokeStyle = c; g.lineWidth = 1.6; g.beginPath(); g.moveTo(19, 17); g.lineTo(31, 12 + i * 2.4); g.stroke(); });
+    icGem(g, [[15, 5], [25, 25], [5, 25]], "#ffffff", "#d8e8ff", "#7a8ab8", "#2a3450"); };
+  OCI.petalsnap = function (g) { g.fillStyle = "#2a0a1a"; g.beginPath(); g.moveTo(16, 3); g.quadraticCurveTo(30, 10, 22, 26); g.quadraticCurveTo(16, 31, 10, 26); g.quadraticCurveTo(2, 10, 16, 3); g.fill(); var gr = g.createLinearGradient(0, 4, 0, 28); gr.addColorStop(0, "#ffc8e0"); gr.addColorStop(1, "#d83a7a"); g.fillStyle = gr; g.beginPath(); g.moveTo(16, 5); g.quadraticCurveTo(27, 11, 21, 25); g.quadraticCurveTo(16, 29, 11, 25); g.quadraticCurveTo(5, 11, 16, 5); g.fill();
+    g.fillStyle = "#fff"; for (var t = 0; t < 4; t++) { g.beginPath(); g.moveTo(11 + t * 3, 20); g.lineTo(12.5 + t * 3, 23); g.lineTo(14 + t * 3, 20); g.fill(); } g.strokeStyle = "rgba(122,20,60,.6)"; g.lineWidth = 1; g.beginPath(); g.moveTo(16, 6); g.quadraticCurveTo(15, 13, 16, 19); g.stroke(); };
+  OCI.imphorn = function (g) { g.fillStyle = "#2a0804"; g.beginPath(); g.moveTo(7, 29); g.quadraticCurveTo(3, 12, 22, 3); g.quadraticCurveTo(14, 13, 16, 29); g.closePath(); g.fill(); var gr = g.createLinearGradient(4, 0, 18, 0); gr.addColorStop(0, "#ffb08a"); gr.addColorStop(0.5, "#ff5a2a"); gr.addColorStop(1, "#7a1a0a"); g.fillStyle = gr; g.beginPath(); g.moveTo(8.5, 27.5); g.quadraticCurveTo(5.5, 12.5, 20, 5); g.quadraticCurveTo(12.5, 14, 14.5, 27.5); g.closePath(); g.fill();
+    g.strokeStyle = "rgba(60,10,4,.6)"; g.lineWidth = 1; [24, 20, 16].forEach(function (y, i) { g.beginPath(); g.moveTo(7 + i * 0.4, y); g.lineTo(14 - i * 0.6, y - 1.5); g.stroke(); }); g.fillStyle = "#e8d8c0"; g.fillRect(6, 27, 10, 3); };
+  OCI.rimecore = function (g) { [[16, 1, 2.4], [29, 9, 2], [29, 23, 2], [16, 31, 2.4], [3, 23, 2], [3, 9, 2]].forEach(function (q) { g.strokeStyle = "#dff4ff"; g.lineWidth = q[2]; g.beginPath(); g.moveTo(16, 16); g.lineTo(q[0], q[1]); g.stroke(); });
+    g.fillStyle = "#1a3a5a"; g.beginPath(); g.arc(16, 16, 9.4, 0, 7); g.fill(); var gr = g.createRadialGradient(13, 12, 1, 16, 16, 9); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.5, "#9fe8ff"); gr.addColorStop(1, "#2a7ab8"); g.fillStyle = gr; g.beginPath(); g.arc(16, 16, 8.2, 0, 7); g.fill(); icSpark(g, 16, 16, 3.4, "rgba(255,255,255,.85)"); };
+  OCI.geodechip = function (g) { g.fillStyle = "#2a2018"; g.beginPath(); g.moveTo(3, 27); g.quadraticCurveTo(4, 6, 16, 4); g.quadraticCurveTo(28, 6, 29, 27); g.closePath(); g.fill(); var gr = g.createLinearGradient(0, 5, 0, 27); gr.addColorStop(0, "#c8a07a"); gr.addColorStop(1, "#6a4a2a"); g.fillStyle = gr; g.beginPath(); g.moveTo(4.5, 26); g.quadraticCurveTo(5.5, 7.5, 16, 5.5); g.quadraticCurveTo(26.5, 7.5, 27.5, 26); g.closePath(); g.fill();
+    g.fillStyle = "#3a2a5a"; g.beginPath(); g.moveTo(8, 26); g.quadraticCurveTo(9, 11, 16, 10); g.quadraticCurveTo(23, 11, 24, 26); g.closePath(); g.fill(); [[11, 26, 13, 15], [15, 26, 16, 12], [19, 26, 20, 15], [13, 26, 14.5, 19], [17.5, 26, 18.5, 18]].forEach(function (q, i) { g.fillStyle = i % 2 ? "#d8b8ff" : "#a87ae8"; g.beginPath(); g.moveTo(q[0] - 2, q[1]); g.lineTo(q[2], q[3]); g.lineTo(q[0] + 2, q[1]); g.closePath(); g.fill(); }); g.fillStyle = "#e8d8c0"; g.fillRect(3, 26, 26, 2.4); };
+  OCI.moonbloom = function (g) { var gl = g.createRadialGradient(16, 13, 1, 16, 13, 14); gl.addColorStop(0, "rgba(220,190,255,.6)"); gl.addColorStop(1, "rgba(220,190,255,0)"); g.fillStyle = gl; g.fillRect(0, 0, 32, 32);
+    g.strokeStyle = "#2a6a4a"; g.lineWidth = 2; g.beginPath(); g.moveTo(16, 30); g.quadraticCurveTo(14, 22, 16, 17); g.stroke(); g.fillStyle = "#3a8a5a"; g.beginPath(); g.ellipse(11, 25, 4, 1.8, -0.5, 0, 7); g.fill();
+    for (var i = 0; i < 6; i++) { var a = i / 6 * 6.283; g.save(); g.translate(16, 13); g.rotate(a); g.fillStyle = "#4a2a7a"; g.beginPath(); g.ellipse(0, -6, 3.6, 6.4, 0, 0, 7); g.fill(); var pg = g.createLinearGradient(0, -12, 0, 0); pg.addColorStop(0, "#fff4ff"); pg.addColorStop(1, "#b88aff"); g.fillStyle = pg; g.beginPath(); g.ellipse(0, -6, 2.8, 5.6, 0, 0, 7); g.fill(); g.restore(); }
+    g.fillStyle = "#fff2a8"; g.beginPath(); g.arc(16, 13, 2.6, 0, 7); g.fill(); };
+  OCI.gear = function (g) { g.save(); g.translate(16, 16); g.fillStyle = "#2a2a30"; for (var i = 0; i < 8; i++) { g.save(); g.rotate(i * Math.PI / 4); g.fillRect(-3, -15, 6, 6); g.restore(); } g.beginPath(); g.arc(0, 0, 11, 0, 7); g.fill();
+    var gr = g.createLinearGradient(0, -12, 0, 12); gr.addColorStop(0, "#e8e8f0"); gr.addColorStop(1, "#6a6a7a"); g.fillStyle = gr; for (var j = 0; j < 8; j++) { g.save(); g.rotate(j * Math.PI / 4); g.fillRect(-2, -14, 4, 5); g.restore(); } g.beginPath(); g.arc(0, 0, 9.8, 0, 7); g.fill(); g.fillStyle = "#2a2a30"; g.beginPath(); g.arc(0, 0, 3.6, 0, 7); g.fill(); g.restore(); };
+  OCI.frogbrooch = function (g) { g.fillStyle = "#5a3a06"; g.beginPath(); g.arc(16, 16, 13, 0, 7); g.fill(); var gr = g.createLinearGradient(0, 4, 0, 28); gr.addColorStop(0, "#fff4b0"); gr.addColorStop(1, "#b8840a"); g.fillStyle = gr; g.beginPath(); g.arc(16, 16, 11.4, 0, 7); g.fill();
+    g.fillStyle = "#1c5e34"; g.beginPath(); g.ellipse(16, 18, 7.5, 6, 0, 0, 7); g.fill(); g.fillStyle = "#4ec46a"; g.beginPath(); g.ellipse(16, 18, 6.4, 5, 0, 0, 7); g.fill(); [[12.5, 13], [19.5, 13]].forEach(function (q) { g.fillStyle = "#4ec46a"; g.beginPath(); g.arc(q[0], q[1], 2.8, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(q[0], q[1], 1.8, 0, 7); g.fill(); g.fillStyle = "#111"; g.beginPath(); g.arc(q[0] + 0.3, q[1], 0.9, 0, 7); g.fill(); }); g.strokeStyle = "#0e2f1a"; g.lineWidth = 1; g.beginPath(); g.arc(16, 19, 3, 0.3, 2.8); g.stroke(); };
+  OCI.oldcompass = function (g) { g.fillStyle = "#3a2410"; g.beginPath(); g.arc(16, 17, 13, 0, 7); g.fill(); var gr = g.createLinearGradient(0, 4, 0, 30); gr.addColorStop(0, "#e8c070"); gr.addColorStop(1, "#8a5a1a"); g.fillStyle = gr; g.beginPath(); g.arc(16, 17, 11.6, 0, 7); g.fill(); g.fillStyle = "#f4ecd0"; g.beginPath(); g.arc(16, 17, 8.6, 0, 7); g.fill();
+    g.fillStyle = "#d8302a"; g.beginPath(); g.moveTo(16, 10); g.lineTo(18, 17); g.lineTo(14, 17); g.closePath(); g.fill(); g.fillStyle = "#2a2a3a"; g.beginPath(); g.moveTo(16, 24); g.lineTo(18, 17); g.lineTo(14, 17); g.closePath(); g.fill(); g.fillStyle = "#e8c070"; g.fillRect(14, 1, 4, 4); };
+  OCI.pocketwatch = function (g) { g.strokeStyle = "#c8a040"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(16, 4); g.quadraticCurveTo(26, 0, 29, 8); g.stroke(); g.fillStyle = "#3a2a08"; g.beginPath(); g.arc(16, 18, 12, 0, 7); g.fill(); var gr = g.createLinearGradient(0, 6, 0, 30); gr.addColorStop(0, "#fff0a0"); gr.addColorStop(1, "#b8840a"); g.fillStyle = gr; g.beginPath(); g.arc(16, 18, 10.6, 0, 7); g.fill();
+    g.fillStyle = "#fbf6e8"; g.beginPath(); g.arc(16, 18, 7.8, 0, 7); g.fill(); g.strokeStyle = "#2a2a3a"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(16, 18); g.lineTo(16, 12.5); g.moveTo(16, 18); g.lineTo(20, 20); g.stroke(); g.fillStyle = "#c8a040"; g.fillRect(14, 4, 4, 3); };
   // ---------- Phase 7 router, tick, drawing, pill and test hooks ----------
   function p8Act(a) {
     var q = a.split(":");
@@ -24989,6 +25106,7 @@
   function p8JournalHtml() { var o = p8(); return "<h3>Collections</h3><p>Bugs " + Object.keys(o.bug).length + "/" + Object.keys(BUGS).length + " · Cards " + myCards().length + "/" + (SCB() ? SCB().cards().length : 0) + " · Skeletons " + (S.st.skeletons || 0) + "/3 · Sea monster: " + (o.sm.st ? SM_ST[o.sm.st] : "none yet") + "</p>"; }
   window.__sbx.bld = function (kind) { var h = (world.structs || []).filter(function (q) { return q.kind === kind && !q.razed; })[0]; if (h) { p.x = (h.dx || h.x) + 0.5; enterBuilding(h); } return !!h; };
   window.__sbx.contAny = function () { var F = cave && cave.F; if (!F) return 0; for (var y = 0; y < F.h; y++) for (var x = 0; x < F.w; x++) { var c = contAtCell(x, y); if (c && c.kind === "deco") { openCont(c); return 1; } } return 0; };
+  window.__sbxIcon = icon; window.__sbx.cc = function (f) { ccOpen(!!f); }; window.__sbx.ccTab = function (t) { CC.tab = t; ccRender(); }; window.__sbx.ccSet = function (k, v) { CC.d[k] = v; ccRender(); }; window.__sbx.ccDone = function () { ccClose(true); };
   window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA };
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };

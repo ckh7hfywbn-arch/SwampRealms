@@ -2661,3 +2661,29 @@ small.bo-cost{display:flex}
   .ct-head img{width:30px;height:30px}.ct-head h2{font-size:1.05rem}
   #sbxStory .ct-box .st-row .btn{padding:7px 14px!important;min-height:0!important;font-size:.85rem!important}
 }
+/* CHARACTER CREATOR */
+.sbx-cc{position:absolute;inset:0;z-index:80;display:grid;place-items:center;padding:calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 10px);background:radial-gradient(ellipse at 50% 30%,#163a2acc,#050a07f2)}
+.sbx-cc[hidden]{display:none}
+.cc-box{display:flex;flex-direction:column;width:min(860px,100%);max-height:100%;border-radius:22px;background:linear-gradient(#10201a,#0a120e);border:1.5px solid #4ee6b455;box-shadow:0 30px 80px #000c;overflow:hidden;color:#f6eedb}
+.cc-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 8px}.cc-head small{font:900 .7rem Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4ee6b4}.cc-head h2{margin:2px 0 0;font:900 1.35rem Nunito,sans-serif;letter-spacing:.02em}
+.cc-main{display:grid;grid-template-columns:240px 1fr;gap:14px;padding:4px 18px 10px;min-height:0;overflow:auto}
+.cc-big{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:18px;background:radial-gradient(ellipse at 50% 70%,#2a5a40,#0c1a12 72%);align-self:start;position:sticky;top:0}
+.cc-big img{width:176px;height:auto;image-rendering:pixelated;filter:drop-shadow(0 8px 10px #0008);animation:ccbob 2.4s ease-in-out infinite}.cc-big b{font:900 1rem Nunito,sans-serif}
+.cc-rand{padding:7px 14px!important;font-size:.82rem!important}
+@keyframes ccbob{50%{transform:translateY(-4px)}}
+.cc-tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.cc-tabs::-webkit-scrollbar{display:none}
+.cc-tabs button{flex:none;padding:7px 14px;border-radius:999px;border:1.5px solid #ffffff1c;background:#ffffff0a;color:#fff;font:800 .82rem Nunito,sans-serif;cursor:pointer}.cc-tabs button.on{border-color:#4ee6b4;background:#4ee6b422;color:#9dffd8}
+.cc-pane h3{margin:12px 0 6px;font:900 .74rem Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.cc-who{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
+.cc-who button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;border:1.5px solid #ffffff14;background:#ffffff08;color:#fff;cursor:pointer}.cc-who img{width:48px;height:auto;image-rendering:pixelated}.cc-who small{font:800 .66rem Nunito,sans-serif;text-transform:none;letter-spacing:0}
+.cc-who button.on{border-color:#4ee6b4;background:#4ee6b41e;box-shadow:0 0 0 2px #4ee6b433}
+.cc-sw{display:flex;flex-wrap:wrap;gap:6px}
+.cc-sw button{min-width:44px;height:36px;padding:0 12px;border-radius:999px;border:1.5px solid #ffffff22;background:#ffffff0a;color:#fff;font:800 .78rem Nunito,sans-serif;cursor:pointer}
+.cc-sw.round button{width:36px;min-width:0;padding:0;border-radius:50%;background:var(--c);box-shadow:inset 0 -6px 10px #0004}
+.cc-sw.round button span{font-size:.56rem;line-height:1}.cc-sw.round button:not([style*="#"]) {background:repeating-linear-gradient(45deg,#ffffff22 0 4px,transparent 4px 8px)}
+.cc-sw button.on{border-color:#fff;box-shadow:0 0 0 3px #4ee6b4,inset 0 -6px 10px #0004}
+.cc-pick{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font:800 .8rem Nunito,sans-serif}.cc-pick input{width:44px;height:32px;border:0;border-radius:8px;background:none;padding:0}
+.cc-note{margin:6px 0 0;font:700 .72rem Nunito,sans-serif;opacity:.6}
+.cc-foot{padding:10px 18px 16px;display:flex;justify-content:flex-end;border-top:1px solid #ffffff10}.cc-done{min-width:200px}
+@media (max-width:640px){.cc-main{grid-template-columns:1fr;padding:2px 12px 8px}.cc-big{position:static;flex-direction:row;justify-content:center;padding:8px}.cc-big img{width:96px}.cc-big b{font-size:.9rem}.cc-foot{justify-content:stretch}.cc-done{width:100%}}
+.p7-ccrow{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:#ffffff0a;margin:0 0 10px}.p7-ccrow img{width:44px;image-rendering:pixelated}.p7-ccrow div{flex:1}.p7-ccrow b{display:block;font:900 .9rem Nunito,sans-serif}.p7-ccrow small{font:700 .72rem Nunito,sans-serif;opacity:.7;text-transform:none;letter-spacing:0}
