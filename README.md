@@ -1325,3 +1325,11 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Cause 2:** on phones, a tap shorter than one frame was never seen at all.
   - **Fix:** food is now eaten on the press itself (`tapEat`), and every new tap eats, even mid-bite. Holding still eats again every 0.7 s.
   - **Checked:** in tests, 10 of 10 taps ate on desktop and on a phone.
+- **Croaker's Pier makeover:** the pier now matches the main world's pixel-art look. Search `PIER ART` in `sandbox.js`.
+  - **Far sea:** open water now runs from a fixed horizon above the pier, so the sea is always there behind the pier. Before, a low tide left a bare sky gradient under the pier. Waves glint on it as they drift past.
+  - **Far islands:** pixel islands sit on the horizon with palm trees, tinted by the time of day.
+  - **Deck:** shaded boards with dark gaps, nail heads and a beam underneath.
+  - **Posts:** round log posts with bark lines, rope lashings, barnacles and moss.
+  - **Sand:** beach sand with ripples and shell bits, darker damp shore sand with pebbles, and dune grass on dry sand.
+  - **Tide Cave:** the back wall is now sandstone blocks with moss.
+  - **Signs:** the Croaker's Pier and Pearl Dive Derby signs are pixel-wood boards on posts, with outlined painted lettering (`pixSign`).

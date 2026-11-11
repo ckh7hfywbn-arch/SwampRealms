@@ -18854,11 +18854,8 @@
   }
   function drawDerbyBoard(g) {   // the derby board on the pier
     var x = ox + (DBX + 0.5) * ts, y = oy + (OSEA - 1) * ts, D = derbyS();
-    oR(g, x - ts * 0.9, y - ts * 2.2, ts * 0.12, ts * 2.2, "#4a2e18"); oR(g, x + ts * 0.78, y - ts * 2.2, ts * 0.12, ts * 2.2, "#4a2e18");
-    oR(g, x - ts * 1.15, y - ts * 3.25, ts * 2.3, ts * 1.25, "#2a4a5a"); oR(g, x - ts * 1.15, y - ts * 3.25, ts * 2.3, ts * 0.14, "#7af0ff"); oR(g, x - ts * 1.05, y - ts * 3.05, ts * 2.1, ts * 0.95, "#1a3440");
-    g.font = signFont(Math.max(8, Math.round(ts * 0.22))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("PEARL DIVE", x, y - ts * 2.68); g.fillText("DERBY", x, y - ts * 2.38);
-    g.fillStyle = "#ffd23f"; g.font = "800 " + Math.max(8, Math.round(ts * 0.2)) + "px Nunito, system-ui, sans-serif"; g.fillText("Best " + D.best, x, y - ts * 2.14);
-    oE(g, x - ts * 0.7, y - ts * 3.05, ts * 0.12, ts * 0.12, "#f6f2e8"); oE(g, x + ts * 0.7, y - ts * 3.05, ts * 0.12, ts * 0.12, "#c88aff");
+    pixSign(g, x, y, 2.6, 1.5, [{ t: "PEARL DIVE", s: 0.6 }, { t: "DERBY", s: 0.6, c: "#9af4ff" }, { t: "Best " + D.best, s: 0.52, f: "ui", c: "#ffd23f" }], { post: true, c: ["#3a6a7a", "#4a8496", "#24485a", "#6ab0c0"] });
+    oE(g, x - ts * 1.05, y - ts * 2.55, ts * 0.13, ts * 0.13, "#f6f2e8"); oE(g, x + ts * 1.05, y - ts * 2.55, ts * 0.13, ts * 0.13, "#c88aff");
   }
   // ---------- REAL TIDES at Croaker's Pier ----------
   // The sea at the pier rises and falls twice a game day. For a couple of days each week (around days 6-7 of every 7) the SPRING TIDE runs
@@ -19582,19 +19579,37 @@
     var c = document.createElement("canvas"); c.width = 64; c.height = 16 * 32; var g = c.getContext("2d"), v, id; g.imageSmoothingEnabled = false;
     for (id = 0; id < 32; id++) for (v = 0; v < 4; v++) {
       var ox2 = v * 16, oy2 = id * 16, R = function (x, y, w, h, col, a) { g.globalAlpha = a == null ? 1 : a; g.fillStyle = col; g.fillRect(ox2 + x, oy2 + y, w, h); g.globalAlpha = 1; }, H = function (x, y, s) { return SW.hash(x + v * 16, y + (s || 0) * 7, 4400 + id); }, i, x, y;
-      if (id === OT.SAND || id === OT.SHORE) { R(0, 0, 16, 16, id === OT.SHORE ? "#cdb67a" : "#d9c48a"); for (i = 0; i < 26; i++) { x = (H(i, 1) * 16) | 0; y = (H(i, 2) * 16) | 0; R(x, y, 1, 1, H(i, 3) < 0.5 ? "#c4ad70" : "#ecdba4"); } R(0, 5 + (v % 2), 16, 1, "#cdb87c", 0.5); R(2, 11, 9, 1, "#e6d49a", 0.5); }
+      if (id === OT.SAND || id === OT.SHORE) {   // PIER ART: beach sand with ripples, darker damp shore sand, shell bits
+        var sb = id === OT.SHORE ? ["#c9ad6c", "#b39758", "#dcc488", "#9a8048"] : ["#e2cc8e", "#cdb474", "#f2e0a8", "#b89c5e"]; R(0, 0, 16, 16, sb[0]);
+        for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) { var hz = H(x, y, 9); if (hz < 0.09) R(x, y, 1, 1, sb[1]); else if (hz > 0.94) R(x, y, 1, 1, sb[2]); }
+        [3 + v % 3, 9 + (v * 2) % 4].forEach(function (yy, k) { for (x = 0; x < 16; x++) { var wy = yy + Math.round(Math.sin((x + v * 5 + k * 3) * 0.7)); R(x, wy, 1, 1, sb[3], 0.45); R(x, wy - 1, 1, 1, sb[2], 0.5); } });
+        if (H(0, 7) < 0.35) { x = 3 + ((H(1, 7) * 9) | 0); y = 5 + ((H(2, 7) * 7) | 0); R(x, y, 2, 1, "#f6e6d8"); R(x, y + 1, 2, 1, "#d8a890"); R(x + 1, y, 1, 1, "#ffffff"); }
+        if (id === OT.SHORE && H(3, 7) < 0.4) { x = 2 + ((H(4, 7) * 11) | 0); y = 8 + ((H(5, 7) * 6) | 0); R(x, y, 3, 2, "#7a8a96"); R(x, y, 2, 1, "#a8b4bc"); }
+      }
       else if (id === OT.SILT) { R(0, 0, 16, 16, "#6f7f62"); for (i = 0; i < 24; i++) { x = (H(i, 1) * 16) | 0; y = (H(i, 2) * 16) | 0; R(x, y, 1 + (H(i, 4) < 0.3 ? 1 : 0), 1, H(i, 3) < 0.5 ? "#5a6a4e" : "#8a9a78"); } }
       else if (id === OT.ROCK || id === OT.DEEP || id === OT.BED) { var deep = id !== OT.ROCK; R(0, 0, 16, 16, id === OT.BED ? "#10131c" : deep ? "#252c40" : "#626e7e"); for (i = 0; i < 5; i++) { y = 1 + i * 3 + ((H(i, 5) * 2) | 0); R(0, y, 16, 1, deep ? "#1a2032" : "#56626f", 0.8); } for (i = 0; i < 14; i++) { x = (H(i, 1) * 16) | 0; y = (H(i, 2) * 16) | 0; R(x, y, 2, 1, deep ? (H(i, 6) < 0.5 ? "#3a4462" : "#4a3a6a") : (H(i, 6) < 0.5 ? "#7a8696" : "#4c5764")); } if (H(0, 8) < 0.5) { x = (H(1, 8) * 10 + 2) | 0; R(x, 3, 1, 4, "#00000044"); R(x + 1, 6, 1, 5, "#00000044"); } }
       else if (id === OT.CPINK || id === OT.CBLUE || id === OT.CORANGE) { var b1 = id === OT.CPINK ? ["#d44a78", "#ff7a9a", "#ffb0c4", "#8a2a4a"] : id === OT.CBLUE ? ["#3a78d8", "#5aa8ff", "#a8d4ff", "#1f4a8a"] : ["#d8762a", "#ff9a4a", "#ffc88a", "#8a3a14"]; R(0, 0, 16, 16, b1[0]); for (i = 0; i < 9; i++) { x = (H(i, 1) * 13 + 1) | 0; y = (H(i, 2) * 13 + 1) | 0; R(x - 1, y, 3, 2, b1[1]); R(x, y - 1, 1, 4, b1[1]); R(x, y, 1, 1, b1[2]); } for (i = 0; i < 6; i++) { x = (H(i, 4) * 15) | 0; y = (H(i, 5) * 15) | 0; R(x, y, 1, 2, b1[3]); } }
       else if (id === OT.GLOW) { R(0, 0, 16, 16, "#1f3a44"); for (i = 0; i < 6; i++) { x = (H(i, 1) * 12 + 2) | 0; y = (H(i, 2) * 12 + 2) | 0; R(x - 1, y - 2, 3, 5, "#2fc8b8"); R(x, y - 3, 1, 6, "#6af0e0"); R(x, y - 2, 1, 2, "#e8fffb"); } for (i = 0; i < 6; i++) { x = (H(i, 4) * 15) | 0; y = (H(i, 5) * 15) | 0; R(x, y, 1, 1, "#9af8ee", 0.8); } }
       else if (id === OT.WOOD) { R(0, 0, 16, 16, "#6a4a2c"); [0, 4, 8, 12].forEach(function (yy, k) { R(0, yy, 16, 3, k % 2 ? "#7a5634" : "#62442a"); R(0, yy + 3, 16, 1, "#2e1e10"); R(0, yy, 16, 1, "#8a6642", 0.6); }); R(2 + ((H(0, 1) * 10) | 0), 2, 1, 1, "#2e1e10"); R(3 + ((H(1, 1) * 9) | 0), 10, 1, 1, "#2e1e10"); for (i = 0; i < 7; i++) { x = (H(i, 7) * 16) | 0; y = (H(i, 8) * 16) | 0; R(x, y, 2, 1, "#3a7a4a", 0.7); } }
       else if (id === OT.PLATE) { R(0, 0, 16, 16, "#8a6a2a"); R(1, 1, 14, 14, "#b8903a"); R(1, 1, 14, 2, "#d9b858"); R(1, 13, 14, 2, "#6a4a1a"); [[2, 2], [13, 2], [2, 13], [13, 13]].forEach(function (q) { R(q[0], q[1], 1, 1, "#4a3210"); }); for (i = 0; i < 8; i++) { x = (H(i, 1) * 12 + 2) | 0; y = (H(i, 2) * 12 + 2) | 0; R(x, y, 2, 1 + (H(i, 3) < 0.4 ? 1 : 0), "#3a9a7a", 0.85); } }
-      else if (id === OT.DOCK) { R(0, 0, 16, 16, "#6a4426"); R(0, 0, 16, 7, "#9a6a3a"); R(0, 0, 16, 1, "#c28a52"); R(0, 6, 16, 1, "#4a2e18"); R(0, 7, 16, 8, "#7a5230"); R(0, 14, 16, 2, "#3a2412"); [4, 12].forEach(function (xx) { R(xx, 0, 1, 7, "#5a3a1e"); }); R(2, 2, 1, 1, "#2e1e10"); R(9, 3, 1, 1, "#2e1e10"); R(3, 9, 1, 1, "#2e1e10"); R(11, 10, 1, 1, "#2e1e10"); }
+      else if (id === OT.DOCK) {   // PIER ART: two shaded deck boards, a dark gap, nail heads, and the beam under them
+        R(0, 0, 16, 16, "#5a3a20");
+        [[0, 7], [8, 7]].forEach(function (q, k) { var bx = q[0], top = 0, w = 8; R(bx, top, w, 6, k ^ (v & 1) ? "#a06e3e" : "#946434"); R(bx, top, w, 1, "#c99258"); R(bx, top + 5, w, 1, "#5e3c1e"); R(bx + w - 1, top, 1, 6, "#6a4424");
+          for (x = 0; x < w - 1; x++) if (H(x + bx, 3) < 0.22) R(bx + x, 2 + ((H(x, 4) * 3) | 0), 1, 1, "#7a5230", 0.8); R(bx + 1, 1, 1, 1, "#e8c08a", 0.7); R(bx + w - 2, 4, 1, 1, "#3a2412"); R(bx + 1, 4, 1, 1, "#3a2412"); });
+        R(0, 6, 16, 1, "#2a1a0c"); R(0, 7, 16, 5, "#6e4828"); R(0, 7, 16, 1, "#8a5e34"); for (x = 0; x < 16; x += 4) R(x + (v % 2), 9, 2, 1, "#56381c", 0.8); R(0, 11, 16, 1, "#3a2412");
+        R(0, 12, 16, 4, "#000000", 0); R(2, 12, 2, 4, "#4a2e18"); R(12, 12, 2, 4, "#4a2e18"); R(2, 12, 1, 4, "#6a4426");
+      }
       else if (id === OT.CLAM) { E2(g, ox2 + 8, oy2 + 11, 7, 4.5, "#b8a8d8"); E2(g, ox2 + 8, oy2 + 10, 6.4, 3.6, "#e8e0f8"); R(3, 8, 10, 1, "#9a8ac0"); R(3, 11, 10, 1, "#9a8ac0"); R(5, 7, 1, 5, "#9a8ac0"); R(8, 7, 1, 5, "#9a8ac0"); R(11, 7, 1, 5, "#9a8ac0"); E2(g, ox2 + 8, oy2 + 9, 2.4, 2.4, "#fff"); E2(g, ox2 + 7.4, oy2 + 8.4, 0.8, 0.8, "#ffffffcc"); }
       else if (id === OT.CHEST || id === OT.OPEN) { var op = id === OT.OPEN; R(2, 6, 12, 9, "#5a3a1e"); R(3, 7, 10, 7, "#8a5a2c"); R(3, 7, 10, 1, "#b8843a"); R(2, 10, 12, 1, "#3a2410"); R(7, 9, 2, 3, "#e0b840"); R(2, 6, 1, 9, "#c9a52a"); R(13, 6, 1, 9, "#c9a52a"); if (op) { R(2, 3, 12, 3, "#5a3a1e"); R(3, 3, 10, 2, "#7a4a22"); R(3, 7, 10, 3, "#1a1408"); R(5, 8, 2, 1, "#ffd23f"); R(9, 9, 2, 1, "#ffd23f"); } else { R(2, 4, 12, 3, "#7a4a22"); R(3, 4, 10, 1, "#a8743a"); R(2, 4, 12, 1, "#c9a52a"); R(7, 6, 2, 2, "#ffd23f"); } R(4, 14, 8, 1, "#3a7a4a", 0.6); }
       else if (id === OT.BARREL) { R(3, 3, 10, 12, "#6a4426"); R(2, 5, 12, 8, "#8a5a32"); R(3, 3, 10, 1, "#a8743a"); R(2, 6, 12, 1, "#4a2e18"); R(2, 11, 12, 1, "#4a2e18"); R(5, 4, 1, 10, "#a8743a", 0.6); R(10, 4, 1, 10, "#4a2e18", 0.6); R(3, 13, 10, 2, "#3a7a4a", 0.5); }
       else if (id === OT.CANNON) { R(3, 9, 10, 4, "#3a3a42"); R(2, 8, 4, 6, "#4a4a52"); R(12, 9, 3, 4, "#2a2a30"); R(4, 9, 8, 1, "#7a7a86"); R(3, 13, 3, 3, "#6a4426"); R(10, 13, 3, 3, "#6a4426"); R(5, 10, 4, 1, "#7a7a86", 0.6); R(4, 14, 8, 1, "#3a7a4a", 0.7); }
-      else if (id === OT.POST) { R(6, 0, 4, 16, "#4a2e18"); R(7, 0, 1, 16, "#6a4426"); for (i = 0; i < 6; i++) R(5 + (i % 2), 2 + i * 3, 5, 1, "#2e5a3a", 0.8); }
+      else if (id === OT.POST) {   // PIER ART: a round log post, lit on the left, with bark lines, rope lashing and barnacles
+        R(5, 0, 6, 16, "#4e321a"); R(5, 0, 1, 16, "#2e1c0c"); R(10, 0, 1, 16, "#2e1c0c"); R(6, 0, 1, 16, "#7a5232"); R(7, 0, 1, 16, "#6a4426");
+        for (y = 0; y < 16; y += 3) if (H(1, y) < 0.6) R(8 + ((H(2, y) * 2) | 0), y, 1, 2, "#3a2412", 0.8);
+        if (v === 1) { R(4, 3, 8, 2, "#c9a876"); R(4, 3, 8, 1, "#e6cf94"); R(4, 4, 8, 1, "#8a6a36"); }
+        if (v >= 2) for (i = 0; i < 4; i++) { y = 6 + ((H(i, 6) * 9) | 0); x = 5 + ((H(i, 7) * 5) | 0); R(x, y, 2, 2, "#d8d0c0"); R(x, y, 1, 1, "#ffffff"); R(x + 1, y + 1, 1, 1, "#8a8478"); }
+        if (v === 3) { R(5, 10, 6, 6, "#2e5a3a", 0.55); R(6, 11, 1, 4, "#4a8a4a", 0.8); }
+      }
       else if (id === OT.LADDER) { R(4, 0, 1, 16, "#7a5a3a"); R(11, 0, 1, 16, "#7a5a3a"); [1, 5, 9, 13].forEach(function (yy) { R(4, yy, 8, 2, "#9a7448"); R(4, yy, 8, 1, "#b8905a"); }); }
       else if (id === OT.LAMP) { R(7, 6, 2, 10, "#3a2412"); R(4, 1, 8, 7, "#8e969b"); R(5, 2, 6, 5, "#ffe27a"); R(6, 3, 4, 3, "#fff6c0"); R(3, 1, 10, 1, "#5a626a"); R(4, 8, 8, 1, "#5a626a"); }
       else if (id === OT.ROPE) { R(7, 0, 2, 16, "#c9a876"); for (i = 0; i < 8; i++) R(7, i * 2, 2, 1, "#a88a58"); }
@@ -19602,6 +19617,40 @@
       else if (id === OT.DGLASS) { R(0, 0, 16, 16, "#bfefff", 0.28); R(0, 0, 16, 1, "#e8fbff", 0.8); R(0, 15, 16, 1, "#7ab8c8", 0.7); R(0, 0, 1, 16, "#d8f8ff", 0.6); R(15, 0, 1, 16, "#7ab8c8", 0.6); R(3, 2, 2, 6, "#ffffff", 0.45); R(6, 2, 1, 3, "#ffffff", 0.35); }
     }
     OATLAS = c; return c;
+  }
+  var OISLE = {};
+  function ocIsle(g, ix, hy, i, sky) {   // PIER ART: a far island on the horizon, a pixel silhouette (sand, jungle, palms) tinted by the sky
+    var key = i + ":" + sky[1].map(function (q) { return q >> 3; }).join(","), c = OISLE[key];
+    if (!c) {
+      c = document.createElement("canvas"); var CW2 = 72, CH2 = 28; c.width = CW2; c.height = CH2; var q = c.getContext("2d"), hz = function (a, b) { return SW.hash(a, b, 900 + i); };
+      var far = ocRgb([sky[1][0] * 0.5 + 10, sky[1][1] * 0.6 + 20, sky[1][2] * 0.62 + 18]), mid = ocRgb([sky[1][0] * 0.42 + 6, sky[1][1] * 0.52 + 14, sky[1][2] * 0.55 + 12]), lit = ocRgb([sky[1][0] * 0.62 + 30, sky[1][1] * 0.7 + 30, sky[1][2] * 0.68 + 20]);
+      var half = 22 + i * 6, peak = 7 + i * 3;
+      for (var x = 0; x < CW2; x++) { var dx = (x - CW2 / 2) / half; if (Math.abs(dx) > 1) continue; var hgt = Math.round(peak * Math.pow(1 - dx * dx, 0.8) + (hz(x >> 1, 1) - 0.5) * 2.2); for (var y = CH2 - hgt; y < CH2; y++) { q.fillStyle = y === CH2 - hgt ? lit : y > CH2 - 3 ? mid : far; q.fillRect(x, y, 1, 1); } }
+      q.fillStyle = lit; q.fillRect(CW2 / 2 - half + 2, CH2 - 2, half * 2 - 4, 1);
+      [[-0.35, 9], [0.15, 11], [0.45, 8]].slice(0, 1 + i).forEach(function (pm) { var px = Math.round(CW2 / 2 + pm[0] * half), top = CH2 - peak - pm[1]; q.fillStyle = mid; for (var yy = top; yy < CH2 - peak + 3; yy++) q.fillRect(px + Math.round((yy - top) * 0.15), yy, 1, 1);
+        [[-4, 1], [-3, 0], [-2, -1], [2, -1], [3, 0], [4, 1], [-1, -1], [1, -1], [0, -2]].forEach(function (f) { q.fillRect(px + f[0], top + f[1], 1, 1); q.fillRect(px + f[0] * 0.5, top + f[1] * 0.5, 1, 1); }); });
+      OISLE[key] = c;
+    }
+    var sc3 = Math.max(1, Math.round(ts / 16 * 2)) / 2; g.imageSmoothingEnabled = false; g.drawImage(c, Math.round(ix - c.width * sc3 / 2), Math.round(hy - c.height * sc3 + sc3), c.width * sc3, c.height * sc3);
+  }
+  var OSIGN = {};
+  function pixSign(g, cx, bottomY, wt, ht, lines, opt) {   // PIER ART: a pixel-art wooden board on two posts, painted lettering with a dark rim
+    opt = opt || {}; var P = 16, key = wt + "x" + ht + ":" + (opt.c || "") + ":" + (opt.post ? 1 : 0), c = OSIGN[key];
+    if (!c) {
+      c = document.createElement("canvas"); c.width = wt * P + 4; c.height = (ht + (opt.post ? 1.6 : 0)) * P + 2; var q = c.getContext("2d"), R2 = function (x, y, w, h, col) { q.fillStyle = col; q.fillRect(x, y, w, h); }, W3 = wt * P, H3 = ht * P;
+      if (opt.post) { [[6, 9], [W3 - 6, 9]].forEach(function (pp) { R2(pp[0], H3 - 2, 5, c.height - H3 + 2, "#2e1c0c"); R2(pp[0] + 1, H3 - 2, 3, c.height - H3 + 2, "#5a3a20"); R2(pp[0] + 1, H3 - 2, 1, c.height - H3 + 2, "#7a5232"); }); }
+      var base = opt.c || ["#9a6a3a", "#b8834c", "#6e4626", "#d8a468"];
+      R2(2, 2, W3, H3, "#2a1608"); R2(3, 3, W3 - 2, H3 - 2, base[0]);
+      for (var y = 3; y < H3 + 1; y += 5) { R2(3, y, W3 - 2, 1, base[3]); R2(3, y + 4, W3 - 2, 1, base[2]); }
+      for (var x = 3; x < W3 + 1; x++) for (y = 3; y < H3 + 1; y++) if (SW.hash(x, y, 77) < 0.05) R2(x, y, 1, 1, base[2]);
+      [[5, 5], [W3 - 3, 5], [5, H3 - 2], [W3 - 3, H3 - 2]].forEach(function (n) { R2(n[0], n[1], 2, 2, "#3a2a1a"); R2(n[0], n[1], 1, 1, "#c8c0b0"); });
+      OSIGN[key] = c;
+    }
+    var k = ts / 16; g.imageSmoothingEnabled = false; var dw = c.width * k, dh = c.height * k, x0 = Math.round(cx - dw / 2), y0 = Math.round(bottomY - dh); g.drawImage(c, x0, y0, dw, dh);
+    var lh = (ht * 16 * k) / (lines.length + 0.6); g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
+    lines.forEach(function (L, n) { var fs = Math.max(9, Math.round(lh * (L.s || 0.72) * 1.18)); g.font = L.f === "ui" ? "900 " + fs + "px Nunito, system-ui, sans-serif" : signFont(fs); var ly = y0 + (2 + 1) * k + lh * (n + 0.8);
+      g.lineWidth = Math.max(2, fs * 0.22); g.strokeStyle = "#2a1608"; g.strokeText(L.t, cx, ly); g.fillStyle = L.c || "#fff2cf"; g.fillText(L.t, cx, ly); });
+    g.textBaseline = "alphabetic";
   }
   function E2(g, x, y, rx, ry, c) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 6.2832); g.fill(); }
 
@@ -19847,10 +19896,17 @@
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null; sc.btns = [];
     var shx = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0, shy = shake > 0 && !reduce ? (Math.random() - 0.5) * shake * 8 : 0;
     ox = pxS(vw / 2 - cam.x * ts + shx); oy = pxS(vh / 2 - cam.y * ts + shy);
-    var surf = oy + OWL * ts, dl = daylight(S.time), sky = skyAt(S.time);
+    var surf = oy + OWL * ts, dl = daylight(S.time), sky = skyAt(S.time), hzn = sc.main ? Math.min(surf, oy + (OSEA - 3.4) * ts) : surf;   // PIER ART: the far sea's horizon stays put when the tide goes out
     // --- sky ---
+    if (hzn < vh && hzn < surf) {   // the far sea: a band of open water from the horizon down, behind the beach and the pier
+      var dkf = 0.45 + 0.55 * dl, fg = g.createLinearGradient(0, hzn, 0, Math.max(hzn + 1, surf)); fg.addColorStop(0, ocRgb([sky[1][0] * 0.45 + 30 * dkf, sky[1][1] * 0.45 + 95 * dkf, sky[1][2] * 0.4 + 125 * dkf])); fg.addColorStop(0.35, ocRgb([22 * dkf + 8, 112 * dkf + 14, 150 * dkf + 24])); fg.addColorStop(1, ocRgb([14 * dkf + 6, 84 * dkf + 12, 124 * dkf + 22]));
+      g.fillStyle = fg; g.fillRect(0, hzn, vw, Math.max(0, surf - hzn) + 2);
+      for (i = 0; i < 40; i++) { var fx3 = (((i * 0.137 + t * 0.004 * (1 + i % 3)) % 1) * (vw + 60)) - 30 - (cam.x * ts * 0.08) % 60, fy3 = hzn + 3 + ((i * 7) % 11) / 11 * Math.max(4, Math.min(surf, vh) - hzn - 6), fa3 = 0.5 + 0.5 * Math.sin(t * 1.3 + i * 2.1); if (fy3 > surf - 2) continue;
+        g.fillStyle = "rgba(230,250,255," + (0.35 * fa3 * dkf).toFixed(3) + ")"; g.fillRect(Math.round(fx3), Math.round(fy3), Math.max(2, ts * (0.25 + (i % 3) * 0.12)), Math.max(1, ts * 0.05)); }
+      g.fillStyle = "rgba(255,255,255," + (0.35 * dkf).toFixed(3) + ")"; g.fillRect(0, hzn, vw, Math.max(1, ts * 0.05));
+    }
     if (surf > 0) {
-      var sg = g.createLinearGradient(0, 0, 0, surf); sg.addColorStop(0, ocRgb(sky[0])); sg.addColorStop(1, ocRgb(sky[1])); g.fillStyle = sg; g.fillRect(0, 0, vw, surf + 1);
+      var skyEnd = Math.min(surf, hzn), sg = g.createLinearGradient(0, 0, 0, skyEnd); sg.addColorStop(0, ocRgb(sky[0])); sg.addColorStop(1, ocRgb(sky[1])); g.fillStyle = sg; g.fillRect(0, 0, vw, skyEnd + 1);
       if (dl < 0.75) { if (!OCSTARS) { OCSTARS = []; for (i = 0; i < 90; i++) OCSTARS.push([Math.random(), Math.random(), Math.random()]); } g.fillStyle = "#fff"; OCSTARS.forEach(function (s) { g.globalAlpha = (0.75 - dl) * (0.5 + 0.5 * Math.sin(t * 2 + s[2] * 20)); g.fillRect(((s[0] * vw * 1.4 - cam.x * 2) % vw + vw) % vw, s[1] * surf * 0.9, 2, 2); }); g.globalAlpha = 1; }
       var ph = S.time / CYCLE, sunA = ph < 0.583 ? ph / 0.583 : -1, bx = vw * (0.12 + 0.76 * sunA), by = surf - Math.sin(Math.max(0, sunA) * Math.PI) * surf * 0.78 + ts * 0.5;
       if (sunA >= 0) { oG(g, bx, by, ts * 5, "rgba(255,236,170,.45)"); oE(g, bx, by, ts * 0.9, ts * 0.9, "#fff4c8"); }
@@ -19861,8 +19917,7 @@
       }
       for (i = 0; i < 3; i++) {   // islands on the horizon (parallax)
         var ix = ((i * 0.37 + 0.2) * OCW * ts * 0.3 - cam.x * ts * 0.18) % (vw + ts * 20); if (ix < -ts * 10) ix += vw + ts * 20;
-        g.fillStyle = ocRgb([sky[1][0] * 0.55, sky[1][1] * 0.62, sky[1][2] * 0.66]); g.beginPath(); g.moveTo(ix - ts * 4, surf); g.quadraticCurveTo(ix - ts, surf - ts * (1.4 + i * 0.5), ix + ts * 0.5, surf - ts * (1.1 + i * 0.4)); g.quadraticCurveTo(ix + ts * 2.5, surf - ts * 0.9, ix + ts * 4.5, surf); g.fill();
-        if (i === 1) { oR(g, ix + ts * 0.3, surf - ts * 2.6, ts * 0.12, ts * 1.4, ocRgb([sky[1][0] * 0.45, sky[1][1] * 0.5, sky[1][2] * 0.55])); oE(g, ix + ts * 0.36, surf - ts * 2.6, ts * 0.7, ts * 0.25, ocRgb([sky[1][0] * 0.45, sky[1][1] * 0.5, sky[1][2] * 0.55])); }
+        ocIsle(g, ix, hzn, i, sky);
       }
     }
     // --- water body ---
@@ -19887,12 +19942,15 @@
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(OCW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(OCH - 1, Math.floor((vh - oy) / ts)), lights = [];
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
       var id = sc.t[j * OCW + i], d = OTD[id], sx = ox + i * ts, sy = oy + j * ts;
-      if (id === OT.WATER || id === OT.AIR) { if (sc.main && m.tcave && i >= m.tcave.x0 && i <= 10 && j >= m.tcave.y0 && j <= m.tcave.y1) { g.fillStyle = (i + j) % 3 ? "#3a301f" : "#352b1c"; g.fillRect(sx, sy, ts, ts); } continue; }   // the Tide Cave: a dark sandstone back wall
+      if (id === OT.WATER || id === OT.AIR) { if (sc.main && m.tcave && i >= m.tcave.x0 && i <= 10 && j >= m.tcave.y0 && j <= m.tcave.y1) { var u4 = ts / 16, ev = (j & 1) * 8; g.fillStyle = "#3a301f"; g.fillRect(sx, sy, ts, ts); g.fillStyle = "#2a2216"; g.fillRect(sx, sy + 7 * u4, ts, u4); g.fillRect(sx, sy + 15 * u4, ts, u4); g.fillRect(sx + ((ev + 4) % 16) * u4, sy, u4, 7 * u4); g.fillRect(sx + ((ev + 12) % 16) * u4, sy + 8 * u4, u4, 7 * u4); g.fillStyle = "#4a3e28"; g.fillRect(sx, sy, ts, u4); g.fillRect(sx, sy + 8 * u4, ts, u4); if (((i * 7 + j * 13) % 5) === 0) { g.fillStyle = "#2e5a3a"; g.fillRect(sx + 3 * u4, sy + 9 * u4, 4 * u4, 2 * u4); } } continue; }   // the Tide Cave: a dark sandstone back wall
       if (id === OT.AIRP) { g.fillStyle = "rgba(190,240,255,.22)"; g.fillRect(sx, sy, ts, ts); if (ocT(i, j - 1) !== OT.AIRP && !reduce) { g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(sx, sy, ts, Math.max(2, ts * 0.08)); } if (ocT(i, j + 1) !== OT.AIRP) { g.fillStyle = "rgba(232,251,255,.7)"; g.fillRect(sx, sy + ts - 2 + Math.sin(t * 3 + i) * 1.5, ts, 2); } continue; }
       if (d.plant) { ocPlant(g, id, sx, sy, i, j, now); if (d.lit) lights.push([i + 0.5, j + 0.6, d.lit, "255,90,160"]); continue; }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
       if (d.solid && j > OSEA && !OTD[ocT(i, j - 1)].solid) { g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(sx, sy, ts, Math.max(1, ts * 0.07)); }   // a lit top edge
+      if ((id === OT.SAND || id === OT.SHORE) && ocT(i, j - 1) === OT.AIR && j < OWL) { var u3 = ts / 16, gh = (i * 7 + j * 3) % 5;   // PIER ART: dune grass on dry sand
+        g.fillStyle = "#e9d69c"; g.fillRect(sx, sy, ts, Math.max(1, u3));
+        if (gh < 3) [[3, 4, "#6a9a3a"], [5, 6, "#8ab84a"], [7, 3, "#5a8a32"], [11, 5, "#8ab84a"], [12, 3, "#6a9a3a"]].forEach(function (b, n) { if ((n + gh) % 2) return; g.fillStyle = b[2]; g.fillRect(sx + b[0] * u3, sy - b[1] * u3, Math.max(1, u3), b[1] * u3); g.fillRect(sx + (b[0] + (n % 2 ? 1 : -1)) * u3, sy - (b[1] - 1) * u3, Math.max(1, u3), u3); }); }
       if (d.solid && j > OSEA && !OTD[ocT(i, j + 1)].solid) { g.fillStyle = "rgba(0,10,30,.25)"; g.fillRect(sx, sy + ts * 0.86, ts, ts * 0.14); }
       if (d.lit) lights.push([i + 0.5, j + 0.5, d.lit, id === OT.LAMP ? "255,210,110" : id === OT.CLAM ? "210,190,255" : "110,240,220"]);
       if (id === OT.CHEST && !reduce && (Math.floor(t * 2 + i) % 3 === 0)) { g.fillStyle = "rgba(255,240,170," + (0.5 + 0.5 * Math.sin(t * 6 + i)) + ")"; g.fillRect(sx + ts * (0.2 + 0.6 * ((t * 0.7 + i * 0.3) % 1)), sy + ts * 0.15, 2, 2); }
@@ -19901,8 +19959,7 @@
     if (sc.mineP && sc.mineP.p > 0) { var mp2 = sc.mineP; g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8, ts * 0.12); g.fillStyle = "#7af0ff"; g.fillRect(ox + mp2.x * ts + ts * 0.1, oy + mp2.y * ts + ts * 0.78, ts * 0.8 * Math.min(1, mp2.p), ts * 0.12); }
     // --- the pier gate sign at the land end, and the boat at the slip ---
     if (sc.main && m.pier) {
-      var gx = ox + 2.5 * ts, gy = oy + OSEA * ts - ts * 1; oR(g, gx - ts * 0.08, gy - ts * 2.6, ts * 0.16, ts * 2.6, "#4a2e18"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.9, "#8a5a32"); oR(g, gx - ts * 1.1, gy - ts * 3.1, ts * 2.2, ts * 0.14, "#c28a52");
-      g.font = signFont(Math.max(9, Math.round(ts * 0.27))); g.textAlign = "center"; g.fillStyle = "#f6eedb"; g.fillText("CROAKER'S PIER", gx, gy - ts * 2.55);
+      var gx = ox + 2.5 * ts, gy = oy + OSEA * ts - ts * 1; pixSign(g, gx, gy, 3.4, 1.2, [{ t: "CROAKER'S", s: 0.62 }, { t: "PIER", s: 0.62, c: "#ffd27a" }], { post: true });
       var B = ocS().boat; ocBoatSide(g, ox + (m.pier.x1 + 4.6) * ts, surf + ts * 0.15, ts * 0.62, B.done ? fullBoatParts() : B.p, now, { nobp: false, lit: dl < 0.6 });
       if (!B.done) { g.font = "800 " + Math.max(10, Math.round(ts * 0.34)) + "px Nunito, system-ui, sans-serif"; g.fillStyle = "rgba(8,34,44,.75)"; var lbl = "Old Croaker's boat: " + ocBoatHave() + " / " + OBOAT.length + " parts", lw = g.measureText(lbl).width + ts * 0.6; g.fillRect(ox + (m.pier.x1 + 4.6) * ts - lw / 2, surf - ts * 5.4, lw, ts * 0.6); g.fillStyle = "#e8fbff"; g.fillText(lbl, ox + (m.pier.x1 + 4.6) * ts, surf - ts * 4.98); }
     }
