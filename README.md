@@ -1308,3 +1308,7 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **World:** reveal the map, finish the current quest or chapter, meet Zaruk again, turn on world cheats, and the old Set buttons.
   - **Open:** 27 windows, including the character maker, map, backpack, crafting, quest book, bank, mail, festival, fish log, farm book, molting, notice board, tall tales, earthquake, boat, motorbike, photo mode and commands.
   - **Checked:** all 162 buttons were run once in the test with no errors.
+- **Slide-in tips:**
+  - **Ready to craft:** the "you have everything for..." pop-up is now a small card that slides in from the right edge. It shows the item's icon, "Ready to craft" and its name, then slides away after 7 seconds. Before, it was a wide banner across the top for 14 seconds.
+  - **Feedback:** a thin bar along the bottom counts down the time. Tap the card to open that recipe, or × to dismiss it.
+  - **Other tips:** tips like the dusk warning use the same card and stay 9 seconds.

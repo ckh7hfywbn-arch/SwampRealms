@@ -2632,7 +2632,7 @@
   function noticeLane() {
     var now = performance.now(); if (now - laneT < 180) return; laneT = now;
     var st = $("sbxStage") || document.querySelector(".sbx-stage"), tip = $("sbxTip"), to = $("sbxToast"), bc = $("sbxBCard"); if (!st || !tip || !to) return;
-    if (panelOpen || menuOpen) { if (laneSig) { tip.style.top = to.style.top = ""; if (bc) bc.style.top = ""; laneSig = ""; } return; }
+    if (panelOpen || menuOpen) { if (laneSig) { to.style.top = ""; if (bc) bc.style.top = ""; laneSig = ""; } return; }
     var R = st.getBoundingClientRect(); if (!R.width) return;
     var lw = Math.min(560, R.width - 24), lx0 = R.left + (R.width - lw) / 2, lx1 = lx0 + lw, top = 8;
     [".sbx-hud", "#sbxTrail", "#sbxBoss", "#sbxMPChip"].forEach(function (sel) {
@@ -2640,8 +2640,7 @@
       var kids = sel === ".sbx-hud" ? el.children : [el];
       for (var k = 0; k < kids.length; k++) { var e = kids[k]; if (e.hidden || !e.offsetParent) continue; var r = e.getBoundingClientRect(); if (!r.width || r.right < lx0 || r.left > lx1 || r.top - R.top > R.height * 0.45) continue; top = Math.max(top, r.bottom - R.top + 8); }
     });
-    var y = top, tipH = tip.hidden ? 0 : tip.offsetHeight;
-    tip.style.top = y + "px"; if (tipH) y += tipH + 8;
+    var y = top;   // (the tip card slides in from the side now, out of this lane)
     to.style.top = y + "px"; var toH = to.classList.contains("on") && to.textContent ? to.offsetHeight + 8 : 0;
     if (bc) bc.style.top = Math.max(R.height * 0.26, y + toH) + "px";
     laneSig = "on";
@@ -10880,11 +10879,13 @@
     nlog("tip", msg);
     var el = $("sbxTip"); if (!el) return;
     el.style.setProperty("--tc", color || "#f2c14e");
-    el.innerHTML = '<p>' + esc(msg) + "</p>" + (rc ? '<button type="button" class="btn" data-tip="show">Show me</button>' : "") + '<button type="button" class="tip-x" data-tip="x" aria-label="Close tip">×</button>';
-    el.setAttribute("data-rc", rc || ""); el.hidden = false; tipT = 14;
+    var r = rc && recById(rc), out = r && (r.out ? Object.keys(r.out)[0] : r.tier ? "pick" + r.tier : r.wpn ? "wpn" + r.wpn : r.id), dur = rc ? 7 : 9;   // SLIDE-IN TIP: a small card from the right side, gone in 7-9 s
+    var ic = ""; try { ic = out ? icon(ITEMS[out] ? out : r.id) : ""; } catch (e) { ic = ""; }
+    el.innerHTML = (rc ? '<button type="button" class="tip-go" data-tip="show">' + (ic ? '<img alt="" src="' + ic + '">' : "") + "<span><small>Ready to craft</small><b>" + esc(r ? r.n : msg) + "</b></span></button>" : '<p>' + esc(msg) + "</p>") + '<button type="button" class="tip-x" data-tip="x" aria-label="Close tip">×</button><i class="tip-bar"></i>';
+    el.setAttribute("data-rc", rc || ""); el.classList.remove("out"); el.classList.toggle("craft", !!rc); el.style.setProperty("--td", dur + "s"); el.hidden = false; void el.offsetWidth; el.classList.add("in"); tipT = dur;
   }
   function trailNudge() { var el = $("sbxTrail"); if (!el || el.hidden) return; el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge"); setTimeout(function () { el.classList.remove("nudge"); }, 2600); }
-  function hideTip() { var el = $("sbxTip"); if (el) el.hidden = true; tipT = 0; }
+  function hideTip() { var el = $("sbxTip"); tipT = 0; if (!el || el.hidden) return; el.classList.remove("in"); el.classList.add("out"); setTimeout(function () { if (tipT <= 0) { el.hidden = true; el.classList.remove("out"); } }, reduce ? 0 : 320); }
   function openCraftTo(id) {   // the Journal's Craft tab, scrolled to one recipe, which flashes
     var r = recById(id); if (!r) return openPanel("quests");
     var k = stnOf(r);

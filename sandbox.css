@@ -2758,3 +2758,19 @@ small.bo-cost{display:flex}
 .p8-devitems .dev-it{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:10px;background:#ffffff08}
 .p8-devitems .dev-it img{width:32px;height:32px;image-rendering:pixelated}.p8-devitems .dev-it span{flex:1;font:800 .82rem Nunito,sans-serif}
 .p8-devitems .dev-it .btn{padding:6px 10px;font-size:.75rem}
+/* SLIDE-IN TIP: a small card that slides in from the right edge and leaves by itself (7 s for "ready to craft", 9 s for other tips) */
+.sbx-stage .sbx-tip{left:auto!important;right:10px;top:38%!important;transform:translateX(calc(100% + 24px));width:auto;max-width:min(270px,72vw);padding:8px 30px 10px 10px;gap:8px;border-radius:14px;overflow:hidden;animation:none;transition:transform .32s cubic-bezier(.2,.9,.3,1.2),opacity .32s;opacity:0}
+.sbx-stage .sbx-tip.in{transform:translateX(0);opacity:1}
+.sbx-stage .sbx-tip.out{transform:translateX(calc(100% + 24px));opacity:0;transition-timing-function:ease-in}
+.sbx-tip p{font:700 .8rem/1.3 Nunito,sans-serif}
+.sbx-tip .tip-go{display:flex;align-items:center;gap:9px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}
+.sbx-tip .tip-go img{flex:none;width:38px;height:38px;image-rendering:pixelated;border-radius:10px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--tc) 30%,transparent),transparent 70%);animation:tipBob 1.6s ease-in-out infinite}
+.sbx-tip .tip-go span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sbx-tip .tip-go small{font:900 .62rem Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--tc,#4ee6b4)}
+.sbx-tip .tip-go b{font:900 .92rem/1.15 Nunito,sans-serif;color:#f6eedb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbx-tip .tip-x{top:3px;right:3px;width:24px;height:24px;font-size:1rem}
+.sbx-tip .tip-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--tc,#4ee6b4);opacity:.75;transform-origin:left;animation:tipBar var(--td,7s) linear forwards}
+@keyframes tipBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes tipBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@media (max-width:600px){.sbx-stage .sbx-tip{top:42%!important;right:8px}}
+@media (prefers-reduced-motion:reduce){.sbx-stage .sbx-tip{transition:none}.sbx-tip .tip-go img{animation:none}}
