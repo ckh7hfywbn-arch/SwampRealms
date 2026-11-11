@@ -2692,3 +2692,14 @@ small.bo-cost{display:flex}
 .sbx-tipq{position:sticky;top:0;z-index:6;float:right;width:30px;height:30px;margin:0 0 4px 6px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--qc,#4ee6b4) 55%,transparent);background:#0b1410ee;color:var(--qc,#4ee6b4);font:900 .95rem Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 10px #0006}
 .sbx-tipq.on{background:var(--qc,#4ee6b4);color:#0b1410}
 #sbxStoryBox.show-tips .st-tip:not(.keep){animation:tipin .25s ease-out}@keyframes tipin{from{opacity:0;transform:translateY(-3px)}}
+/* UI CLEANUP: buttons never touch. Buttons have a 4px bottom lip, so rows of them need 10px between, not 8. */
+.sbx-sbox2 .st-row,.sbx-sbox2 .st-row2{row-gap:12px;column-gap:10px}
+.sbx-sbox2 .st-row+.st-row,.sbx-sbox2 .st-row+.st-row2,.sbx-sbox2 .st-row2+.st-row,.sbx-sbox2 .st-row2+.st-row2{margin-top:12px}
+.sbx-sbox2 .st-row .btn:last-child:nth-child(odd){grid-column:1/-1}
+.sbx-sbox2 .st-row .btn:last-child:nth-child(even){grid-column:auto}
+.sbx-row{row-gap:12px}
+.pk2-side .pk-loc .pk-losave{margin:2px 4px 4px;border-radius:6px}
+.p8-cmdsug{background:#0b1410f5;border-radius:12px;padding:4px;gap:0;border:1px solid rgba(78,230,180,.18)}
+.p8-cmdsug button{background:transparent}
+.p8-cmdsug button+button{border-top:1px solid rgba(255,255,255,.05);border-radius:0}
+.sbx-sbox2 .btn.ghost[disabled]{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03)}

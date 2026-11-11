@@ -1240,3 +1240,8 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Tips behind "?":** the extra hint lines in story windows (Croaker, altar, museum, notice board and others) are hidden. A small **?** button at the top shows them again. Key lines (quest text, duel results, the mural clue, the sea-monster status) always stay.
   - **Shorter popups:** toasts over 64 characters and popup titles over 70 are cut to their first sentence (`brief()`).
   - **Shorter item and crafting notes:** item blurbs show one sentence, and the backpack, charms, crafting stations, search and chest notes are trimmed to a few words.
+- **Cleaner buttons:**
+  - **Spacing:** buttons in story windows (Croaker, the bank, the altar, every NPC) never touch. Rows have 12px between them, which clears the 4px bottom lip on each button. An odd last button fills the row and an even one stays half width.
+  - **Command list:** the cheat command suggestions are one solid panel, so the game no longer shows through the gaps.
+  - **Smaller fixes:** greyed-out ghost buttons keep a faint outline so they still read as buttons, and the backpack's "Save hotbar" pills sit inside their loadout cards.
+  - **Testing:** `__sbx.ui` opens any window from tests (`__sbx.ui.stn("bench")` places and opens a station). The audit script checks 54 windows at phone and desktop size for buttons that touch.
