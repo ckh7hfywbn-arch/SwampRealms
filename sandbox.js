@@ -2588,8 +2588,9 @@
   var toastQ = [], toastUntil = 0, toastCur = "";
   var NLOG = [];   // (test hook: the last notices asked for)
   function nlog(a, b) { NLOG.push([a, Math.round(performance.now() / 1000), b]); if (NLOG.length > 60) NLOG.shift(); }
+  function brief(m, max) { m = String(m == null ? "" : m); if (m.length <= (max || 64)) return m; var f = m.match(/^[\s\S]*?[.!?](?=\s|$)/); return f && f[0].length >= 8 ? f[0] : m; }   // LESS TEXT: long notices keep their first sentence
   function toast(msg, color) {
-    nlog("toast", msg);
+    msg = brief(msg, 64); nlog("toast", msg);
     var now = performance.now();
     if (msg === toastCur && now < toastUntil + 400) return;
     if (toastQ.some(function (q) { return q[0] === msg; })) return;
@@ -2636,7 +2637,7 @@
   // Small pop-ups in the bottom-right corner. They queue: at most 2 show at once, one new one every ~0.9 s, and none while a window
   // (Journal, backpack, station...) is open, so they never cover what you are reading. A big pile collapses into "+N more".
   var popQ = [], popNext = 0;
-  function popup(label, title, color, icon) { nlog("pop", label + ": " + title); popQ.push([label, title, color, icon]); if (popQ.length > 3) { var extra = popQ.length - 2; popQ.splice(2, extra, ["More progress", "+" + extra + " more \u2014 see your Journal", "#f2c14e", "\u2605"]); } }
+  function popup(label, title, color, icon) { title = brief(title, 70); nlog("pop", label + ": " + title); popQ.push([label, title, color, icon]); if (popQ.length > 3) { var extra = popQ.length - 2; popQ.splice(2, extra, ["More progress", "+" + extra + " more \u2014 see your Journal", "#f2c14e", "\u2605"]); } }
   function pumpPops() {
     var box = $("sbxPops"); if (!box || !popQ.length || panelOpen || menuOpen || performance.now() < popNext || box.children.length >= 1 || performance.now() < toastUntil) return;   // NOTICES: one corner pop-up at a time
     var q = popQ.shift(), el = document.createElement("div"); el.className = "sbx-pop"; el.style.setProperty("--pc", q[2] || "#f2c14e");
@@ -7357,7 +7358,7 @@
     var own = Object.keys(CHARMS).filter(function (k) { return S.charms.own[k]; }), n = charmSlots();
     var worn = S.charms.on.map(function (k) { return CHARMS[k].n.replace(/ Charm$/, ""); }).join(", ");
     var h = '<details class="sbx-charms"' + (charmOpen === null ? (own.length <= 3 ? " open" : "") : charmOpen ? " open" : "") + '><summary class="ch-head"><b>Charms</b><em>' + (worn ? esc(worn) + " · " : "") + S.charms.on.length + " / " + n + " worn</em></summary>";
-    if (!own.length) return h + '<p class="sbx-note">No charms yet. Craft them in the Craft tab (Gear &gt; Charms). Most need boss trophies.</p></details>';
+    if (!own.length) return h + '<p class="sbx-note">No charms yet.</p></details>';
     h += '<div class="ch-list">' + own.map(function (k) {
       var C = CHARMS[k], on = hasCharm(k);
       return '<button type="button" class="ch-it' + (on ? " on" : "") + '" data-charm="' + k + '" aria-pressed="' + on + '" style="--cc:' + C.c + '"><img alt="" src="' + icon("charm_" + k) + '"><span><b>' + esc(C.n) + "</b><small>" + esc(C.d) + "</small></span><i>" + (on ? "Worn" : "Wear") + "</i></button>";
@@ -17154,8 +17155,8 @@
   function st_done(c) { return c === "own" || c === "lock"; }
   function csResInner() {
     var q = csearch.trim(), res = csFind(q), max = 30;
-    if (!res.length) return '<p class="sbx-note">Nothing in the game matches “' + esc(q) + '”. Try another word, like an item, a creature or a station.</p>';
-    return '<p class="sbx-note cs-n">' + res.length + (res.length === 1 ? " result" : " results") + (res.length > max ? ", showing the top " + max + ". Type more to narrow it down." : "") + "</p>" + res.slice(0, max).map(function (x) { return csCard(x.e); }).join("");
+    if (!res.length) return '<p class="sbx-note">Nothing in the game matches “' + esc(q) + '”. </p>';
+    return '<p class="sbx-note cs-n">' + res.length + (res.length === 1 ? " result" : " results") + (res.length > max ? ", top " + max + "" : "") + "</p>" + res.slice(0, max).map(function (x) { return csCard(x.e); }).join("");
   }
   function csResHtml() { return '<div id="sbxCRes">' + csResInner() + "</div>"; }
   function csBar() {
@@ -17246,7 +17247,7 @@
       for (i2 = 0; i2 < INV_HOT; i2++) g2 += cell(i2);
       var fillPc = Math.round(used / invN() * 100);
       h += '<div class="pk-cap' + (used >= invN() ? " full" : used >= invN() - 3 ? " near" : "") + '"><span class="bar"><i style="width:' + fillPc + '%"></i></span><b>' + used + " / " + invN() + "</b><small>" + (S.bag ? esc(BAGS[S.bag].n) + " +" + BAGS[S.bag].x : "Craft a Backpack for more room") + "</small></div>"
-        + '<p class="sbx-note pk-tip">Tap an item to pick it. Drag onto another slot to move, swap or merge. Stacks hold ' + STACK + " (" + STACK_SMALL + " for furniture).</p>";
+        + '<p class="sbx-note pk-tip">Tap to pick, drag to move.</p>';
       h += '<div class="sbx-inv"><div class="sbx-igrid">' + g1 + '</div>' + (g3 ? "<h3>" + esc(BAGS[S.bag].n) + '</h3><div class="sbx-igrid pack">' + g3 + "</div>" : "") + '<h3>Hotbar</h3><div class="sbx-igrid hot">' + g2 + "</div></div>";
       var tool2 = cur2 && ITEMS[cur2.k].tool;
       h += '<div class="sbx-iinfo' + (cur2 ? " sel" : "") + '">' + (cur2 ? '<div><img alt="" src="' + icon(cur2.k) + '"><span><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small></span></div>" : '<div class="pk-none"><span><small>Pick an item to see what you can do with it.</small></span></div>')
@@ -17259,8 +17260,8 @@
           : "")
         + '<button type="button" class="btn ghost pk-sort" data-iact="sort">Sort</button><button type="button" class="btn ghost pk-qs" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button></div></div>';
       var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
-      if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">These did not fit. Free a slot, then collect them.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
-      if (!used && !ek.length) h += '<p class="sbx-note">Your inventory is empty. Walk to a tree and hold on the leaves to gather Sticks.</p>';
+      if (ek.length) h += "<h3>Overflow</h3><p class=\"sbx-note\">Free a slot to collect.</p><div class=\"sbx-bag\">" + ek.map(function (k) { return '<button type="button" class="sbx-it" data-iextra="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b><small>" + esc(ITEMS[k].n) + " \u00b7 collect</small></button>"; }).join("") + "</div>";
+      if (!used && !ek.length) h += '<p class="sbx-note">Empty. Punch leaves for Sticks.</p>';
     return h;
   }
   // ---------- BACKPACK SCREEN: your character, your gear around it, then the inventory and hotbar ----------
@@ -17359,7 +17360,7 @@
     if (PK.pop === "charm") {
       var own = Object.keys(CHARMS).filter(function (k) { return S.charms.own[k]; });
       var h = '<div class="pk-pophead"><b>Charms<small>' + S.charms.on.length + " of " + charmSlots() + ' worn · tap one to wear or take it off</small></b><button type="button" class="sbx-x" data-pkpop-x aria-label="Close">&times;</button></div>';
-      if (!own.length) return h + '<p class="sbx-note">No charms yet. Craft them in the Craft tab (Gear &gt; Charms). Most need boss trophies.</p>';
+      if (!own.length) return h + '<p class="sbx-note">No charms yet.</p>';
       return h + '<div class="sbx-charms pk-chwrap"><div class="ch-list">' + own.map(function (k) { var C = CHARMS[k], on = hasCharm(k); return '<button type="button" class="ch-it' + (on ? " on" : "") + '" data-charm="' + k + '" aria-pressed="' + on + '" style="--cc:' + C.c + '"><img alt="" src="' + icon("charm_" + k) + '"><span><b>' + esc(C.n) + "</b><small>" + esc(C.d) + "</small></span><i>" + (on ? "Worn" : "Wear") + "</i></button>"; }).join("") + "</div></div>";
     }
     return "";
@@ -17382,7 +17383,7 @@
     var ek = ORDER.filter(function (k) { return S.extra[k] > 0; });
     if (ek.length) h += '<div class="pk2-over"><div class="pk2-lbl warn"><b>Didn\'t fit</b><span>Free a slot, then tap to collect</span></div><div class="pk2-overrow">' + ek.map(function (k) { return '<button type="button" class="pk2-ov" data-iextra="' + k + '" title="' + esc(ITEMS[k].n) + ': collect"><img alt="" src="' + icon(k) + '"><b>' + S.extra[k] + "</b></button>"; }).join("") + "</div></div>";
     h += '<div class="pk2-hot"><div class="pk2-lbl"><b>Hotbar</b><span>keys 1 to 9</span></div><div class="sbx-igrid hot">' + hot + "</div></div>";
-    var tool2 = cur2 && ITEMS[cur2.k].tool, rr2 = cur2 ? rarItem(cur2.k) : 0, bl = cur2 ? itemBlurb(cur2.k) : "";
+    var tool2 = cur2 && ITEMS[cur2.k].tool, rr2 = cur2 ? rarItem(cur2.k) : 0, bl = cur2 ? itShort(itemBlurb(cur2.k), 80) : "";
     h += '<div class="pk2-act' + (cur2 ? " sel" : "") + '">' + (cur2
       ? '<span class="crg-big pk2-big rar-' + rr2 + '" style="--rc:' + RARC[rr2] + '"><img alt="" src="' + icon(cur2.k) + '"></span><span class="pk2-nm"><b>' + esc(ITEMS[cur2.k].n) + "</b><small>" + rarTag(rr2) + " " + (tool2 ? "Tool" : cur2.n + " of " + stackMax(cur2.k)) + "</small>" + (bl ? '<em class="pk2-bl">' + esc(bl) + "</em>" : "") + '</span><span class="pk2-btns">'
         + '<button type="button" class="btn" data-iact="hold">' + (tool2 ? "Use" : /^sp_/.test(cur2.k) ? "Equip" : "Hold") + "</button>"
@@ -17589,7 +17590,7 @@
       h += craftBar();
       if (ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
       if (ccat === "Stations") {
-        h += '<h3>Crafting stations</h3><p class="sbx-note">Recipes that need a station only show up in that station\'s window. Place one, then tap it (or press F next to it) to open it.</p>';
+        h += '<h3>Crafting stations</h3><p class="sbx-note">Place one and tap it to see its recipes.</p>';
         STN_ORDER.forEach(function (k) {
           var D = STATIONS[k], recs = craftAll().filter(function (r) { return stnOf(r) === k; }); if (!recs.length || !ITEMS[D.ic]) return;
           var here = stationNearK(k), maker = craftAll().filter(function (r) { return r.out && r.out[D.ic]; })[0], mk = maker && stnOf(maker), have = (S.inv[D.ic] || 0) > 0;
@@ -17604,7 +17605,7 @@
         h += "<h3>Make by hand</h3>";
       }
       var shown = handAll().filter(function (r) { return r.cat2 === ccat; });
-      if (!shown.length) h += '<p class="sbx-note">Nothing here is made by hand. Open a crafting station to see its recipes.</p>';
+      if (!shown.length) h += '<p class="sbx-note">Made at a station.</p>';
       else h += craftGrid(shown, "bag");
     } else if (tab === "dev") {
       h += devHtml();
@@ -18009,8 +18010,8 @@
       Object.keys(r.cost || {}).forEach(function (c) { var L = IT_USE[c] = IT_USE[c] || []; var nm = clean(r.n); if (L.indexOf(nm) < 0) L.push(nm); });
     });
   }
-  function itShort(s, max) {   // the first sentence or two, up to about max characters
-    s = String(s || "").trim(); if (s.length <= max) return s;
+  function itShort(s, max) {   // LESS TEXT: just the first sentence, kept short
+    s = String(s || "").trim(); max = Math.min(max || 80, 80); var f1 = s.match(/^[^.!?]+[.!?]/); if (f1 && f1[0].length <= max) return f1[0].trim(); if (s.length <= max) return s;
     var parts = s.match(/[^.!?]+[.!?]+/g) || [s], out = "";
     for (var i = 0; i < parts.length; i++) { if ((out + parts[i]).length > max && out) break; out += parts[i]; }
     return out.length > max + 40 ? out.slice(0, max).replace(/\s+\S*$/, "") + "…" : out.trim();
@@ -21760,7 +21761,10 @@
     function findExit() { var L = [].slice.call(box.querySelectorAll("button, a.btn")).filter(function (b) { return !b.classList.contains("sbx-topback") && !b.disabled && b.offsetParent !== null; }), by = function (re) { for (var i = L.length - 1; i >= 0; i--) if (re.test((L[i].textContent || "").trim())) return L[i]; return null; };
       return by(/^(\u2039\s*)?back\b/i) || box.querySelector("[data-story-close]") || by(/^(close|done|leave|not now|cancel)$/i); }
     function add() { if (box.querySelector(".sbx-topback")) return; var ex = findExit(); if (!ex) return; var b = document.createElement("button"); b.type = "button"; b.className = "sbx-topback"; b.innerHTML = "\u2039 Back"; b.setAttribute("aria-label", "Back"); b.addEventListener("click", function (e) { e.stopPropagation(); var x = findExit(); if (x) x.click(); else closeStory(); }); box.insertBefore(b, box.firstChild); }
-    new MutationObserver(function () { add(); }).observe(box, { childList: true });
+    var TIPON = false;   // LESS TEXT: the "how it works" tips in every window hide behind a small "?" (tap to show them; it remembers while you play)
+    function addQ() { box.classList.toggle("show-tips", TIPON); if (box.querySelector(".sbx-tipq") || !box.querySelector(".st-tip:not(.keep)")) return; var q = document.createElement("button"); q.type = "button"; q.className = "sbx-tipq" + (TIPON ? " on" : ""); q.textContent = "?"; q.setAttribute("aria-label", "How this works"); q.title = "How this works";
+      q.addEventListener("click", function (e) { e.stopPropagation(); TIPON = !TIPON; box.classList.toggle("show-tips", TIPON); q.classList.toggle("on", TIPON); }); box.insertBefore(q, box.firstChild); }
+    new MutationObserver(function () { add(); addQ(); }).observe(box, { childList: true });
   })();
   function p4Back(w) { P4V.r = null; if (w === "croaker") { talkView = "main"; renderTalk(); } else if (w === "croako") talkCroako(); else if (w === "croaka") talkCroaka(); else if (w === "barty") talkBarty(); }
   // ---------- #54 CROAKER'S MAILBOX: a letter and a little present every day, from whichever of the family thinks of you ----------
@@ -24279,7 +24283,7 @@
     if (o.st >= 2 && o.ld !== d) { o.ld = d; }
     h = '<div class="p4-pic st-croak"><img alt="" src="' + smPic(o.st) + '"></div><small>' + esc(o.nm || "Your sea monster") + " · " + SM_ST[o.st] + "</small><h2 class=\"st-hi\">" + (o.st === 1 ? "The egg rocks gently in the warm pool." : o.st === 4 ? "“Mrrrrrooooo!” It splashes you. Affectionately." : "It peeks up at you, hungry.") + "</h2>";
     h += '<div class="p5-bank"><div><small>Stage</small><b>' + SM_ST[o.st] + '</b></div><div><small>Fed days</small><b>' + (o.fd || 0) + '</b></div><div><small>Fed today</small><b>' + (o.fed === d ? (o.fn || 0) : 0) + "/3</b></div></div>";
-    h += '<p class="st-tip">' + (o.st === 1 ? "It hatches tomorrow." : o.st === 4 ? "Grown! It brings you a gift from the deep every day, and swims beside the Lily Belle at sea." : "Feed it 3 fish a day. Fed days needed: " + (o.st === 2 ? 3 : 8) + " to grow.") + "</p>";
+    h += '<p class="st-tip keep">' + (o.st === 1 ? "It hatches tomorrow." : o.st === 4 ? "Grown! It brings you a gift from the deep every day, and swims beside the Lily Belle at sea." : "Feed it 3 fish a day. Fed days needed: " + (o.st === 2 ? 3 : 8) + " to grow.") + "</p>";
     h += '<label class="p7-nm">Name <input id="p8Sm" maxlength="14" value="' + esc(o.nm || "") + '" placeholder="Nessie"></label><div class="st-row">';
     if (o.st >= 2 && o.st < 4) h += '<button type="button" class="btn"' + (n && !(o.fed === d && o.fn >= 3) ? "" : " disabled") + ' data-p8="sm:feed">Feed a fish (' + n + ")</button>";
     if (o.st === 4 && o.gift !== d) h += '<button type="button" class="btn" data-p8="sm:gift">Take today\'s gift</button>';
@@ -24597,7 +24601,7 @@
         if (cwd[D.F.id] !== (S.days | 0)) { cwd[D.F.id] = S.days | 0; B.givePack("delve", 1); msg += " · +1 Delve pack"; }
         var prize = D.F.deck.filter(function (k) { return !(cardsOwn()[k] > 0); })[0]; if (prize && Math.random() < 0.4) { setTimeout(function () { cardGive(prize); }, 600); msg += " · and " + esc(D.F.n) + " hands you a card!"; }
         snd("open", "Epic"); checkGoals(); save(); D.msg = msg; }
-      h += '<h2 class="st-hi">' + (won ? "You won the match!" : D.me === D.them ? "A tied match." : esc(D.F.n) + " won the match.") + "</h2>" + (D.msg ? '<p class="st-tip">' + D.msg + "</p>" : "");
+      h += '<h2 class="st-hi">' + (won ? "You won the match!" : D.me === D.them ? "A tied match." : esc(D.F.n) + " won the match.") + "</h2>" + (D.msg ? '<p class="st-tip keep">' + D.msg + "</p>" : "");
       h += '<div class="st-row"><button type="button" class="btn" data-p8="cd:duel:' + D.F.id + '">Rematch</button><button type="button" class="btn ghost" data-p8="cd:list">Back</button></div>'; p4Box(h, "#ffe08a"); return; }
     h += "<h3>Play a card</h3>" + '<div class="p8-cards">' + D.hand.map(function (k, i) { return cardHtml(cardById(k), ' data-p8="cd:play:' + i + '"', ""); }).join("") + "</div>";
     h += '<div class="st-row"><button type="button" class="btn ghost" data-p8="cd:list">Give up</button></div>'; p4Box(h, "#ffe08a");
@@ -24782,7 +24786,7 @@
   function runeSym(n) { var tw = towerS(); return tw.sym ? tw.sym[n] : n; }
   function runeTap(tx, ty) {
     var tw = towerS(), n = runeAt(tx, ty); if (n === -2) return false;
-    if (n === -1) { if (!p4Open(280)) return true; p4Box('<h2 class="st-hi">A mural, scratched into a slab</h2><p class="st-tip">Three runes, drawn in purple ink that still glows:</p><p class="p8-mural">' + tw.ord.map(function (q) { return "<b>" + RUNE_S[q] + "</b>"; }).join(" → ") + '</p><p class="st-tip">Underneath, in a spidery hand: “My tower is for those who can fly, or cling to walls like a tree frog, or swing on a vine. Wake the runes upstairs in this order and my door will open. — G.”</p><div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>', "#b06aff"); return true; }
+    if (n === -1) { if (!p4Open(280)) return true; p4Box('<h2 class="st-hi">A mural, scratched into a slab</h2><p class="st-tip">Three runes, drawn in purple ink that still glows:</p><p class="p8-mural">' + tw.ord.map(function (q) { return "<b>" + RUNE_S[q] + "</b>"; }).join(" → ") + '</p><p class="st-tip keep">Underneath, in a spidery hand: “My tower is for those who can fly, or cling to walls like a tree frog, or swing on a vine. Wake the runes upstairs in this order and my door will open. — G.”</p><div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>', "#b06aff"); return true; }
     if (tw.done) { toast("The rune hums softly. The tower is already open.", "#b06aff"); return true; }
     var want = tw.ord[tw.lit.length], sym = runeSym(n);
     if (tw.lit.indexOf(sym) >= 0) { toast("That rune is already glowing.", "#b06aff"); return true; }

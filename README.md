@@ -1236,3 +1236,7 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Equipping:** tap a spare in the hotbar, or **Equip** in the backpack, to wear it. The piece you had goes back in your bag, and spares always come fresh at full durability.
   - **Trading:** spares can go in chests, be dropped, or be given to friends.
   - **Code:** search `MULTIPLES:`.
+- **Less text:**
+  - **Tips behind "?":** the extra hint lines in story windows (Croaker, altar, museum, notice board and others) are hidden. A small **?** button at the top shows them again. Key lines (quest text, duel results, the mural clue, the sea-monster status) always stay.
+  - **Shorter popups:** toasts over 64 characters and popup titles over 70 are cut to their first sentence (`brief()`).
+  - **Shorter item and crafting notes:** item blurbs show one sentence, and the backpack, charms, crafting stations, search and chest notes are trimmed to a few words.

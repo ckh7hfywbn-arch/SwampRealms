@@ -2687,3 +2687,8 @@ small.bo-cost{display:flex}
 .cc-foot{padding:10px 18px 16px;display:flex;justify-content:flex-end;border-top:1px solid #ffffff10}.cc-done{min-width:200px}
 @media (max-width:640px){.cc-main{grid-template-columns:1fr;padding:2px 12px 8px}.cc-big{position:static;flex-direction:row;justify-content:center;padding:8px}.cc-big img{width:96px}.cc-big b{font-size:.9rem}.cc-foot{justify-content:stretch}.cc-done{width:100%}}
 .p7-ccrow{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:#ffffff0a;margin:0 0 10px}.p7-ccrow img{width:44px;image-rendering:pixelated}.p7-ccrow div{flex:1}.p7-ccrow b{display:block;font:900 .9rem Nunito,sans-serif}.p7-ccrow small{font:700 .72rem Nunito,sans-serif;opacity:.7;text-transform:none;letter-spacing:0}
+/* LESS TEXT: tips hide behind a "?" */
+#sbxStoryBox:not(.show-tips) .st-tip:not(.keep){display:none}
+.sbx-tipq{position:sticky;top:0;z-index:6;float:right;width:30px;height:30px;margin:0 0 4px 6px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--qc,#4ee6b4) 55%,transparent);background:#0b1410ee;color:var(--qc,#4ee6b4);font:900 .95rem Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 10px #0006}
+.sbx-tipq.on{background:var(--qc,#4ee6b4);color:#0b1410}
+#sbxStoryBox.show-tips .st-tip:not(.keep){animation:tipin .25s ease-out}@keyframes tipin{from{opacity:0;transform:translateY(-3px)}}
