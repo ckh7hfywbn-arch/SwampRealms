@@ -1339,3 +1339,14 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
     - rounded corners where two open sides meet
     - a dark inked rim along open sides
     - a lit top bevel and a soft shadow underneath
+- **Backpack fits on one screen:**
+  - **Loadouts:** the section is gone from the page. A **Loadouts** button sits next to Sort and Quick stack and opens them in a pop-over.
+  - **Gear slots:** they show the name of what you wear (e.g. "Glowspore Pick").
+- **Drag and drop gear:**
+  - **Putting gear on:** drag a spare pickaxe, weapon or armor from your bag onto its slot to wear it. The one you had goes in your bag.
+  - **Taking gear off:** drag the piece you wear into your bag.
+  - **Wrong items:** the slot glows green when the piece fits and red when it doesn't, and dropping the wrong kind of item says what goes there.
+- **Fairer swapping:**
+  - **Wear is kept:** a piece put in your bag keeps its wear (`S.spw`), so swapping no longer refreshes durability for free. Fresh spares are used first.
+  - **No lost progress:** your best tier is remembered (`S.bt`, `btOf`), so taking gear off never locks a recipe.
+  - **Code:** `unequipGear`, `equipSpare`.

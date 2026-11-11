@@ -12320,14 +12320,14 @@
     if (r.bucket && S.bucket < r.bucket - 1) { toast("Make the Wooden Bucket first.", "#f2c14e"); return; }
     if (r.net && S.net >= r.net) return;
     if (r.hoe && S.hoe < r.hoe - 1) { toast("Make the " + HOES[r.hoe - 1].n + " first.", "#f2c14e"); return; }
-    if (r.bow && S.bow < r.bow - 1) { toast("Make the " + BOWS[r.bow - 1].n + " first.", "#f2c14e"); return; }
+    if (r.bow && btOf("bow") < r.bow - 1) { toast("Make the " + BOWS[r.bow - 1].n + " first.", "#f2c14e"); return; }
     if (r.rod && S.rod < r.rod - 1) { toast("Make the Reed Fishing Rod first.", "#f2c14e"); return; }
     if (r.bag && S.bag >= r.bag) return;
     if (r.bag && S.bag < r.bag - 1) { toast("Make the " + BAGS[r.bag - 1].n + " first.", "#f2c14e"); return; }
-    if (r.tier && S.tier < r.tier - 1) { toast("Craft the " + PICKS[r.tier - 1].n + " first.", "#f2c14e"); return; }
-    if (r.wpn && S.wpn < r.wpn - 1) { toast("Craft the " + WEAPONS[r.wpn - 1].n + " first.", "#f2c14e"); return; }
-    if (r.arm && S.arm < r.arm - 1) { toast("Craft the " + ARMORS[r.arm - 1].n + " first.", "#f2c14e"); return; }
-    if (r.need && S.tier < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
+    if (r.tier && btOf("tier") < r.tier - 1) { toast("Craft the " + PICKS[r.tier - 1].n + " first.", "#f2c14e"); return; }
+    if (r.wpn && btOf("wpn") < r.wpn - 1) { toast("Craft the " + WEAPONS[r.wpn - 1].n + " first.", "#f2c14e"); return; }
+    if (r.arm && btOf("arm") < r.arm - 1) { toast("Craft the " + ARMORS[r.arm - 1].n + " first.", "#f2c14e"); return; }
+    if (r.need && btOf("tier") < r.need) { toast("Needs the " + PICKS[r.need].n + " first.", "#f2c14e"); return; }
     if (r.bl && S.bl < r.bl) { toast("Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first.", "#f2c14e"); return; }
     if (r.bench && !nearBench()) { toast("Stand near a Bog Workbench to craft this.", "#f2c14e"); return; }
     if (r.stn && !nearStn(r.stn)) { toast("Stand near a " + SbxExtra.STN[r.stn] + " to craft this.", "#f2c14e"); return; }
@@ -16998,7 +16998,7 @@
     var afford = canPay(r.cost);
     if (r.deco) { var dl = !!(r.bl && S.bl < r.bl), nd = !decorNear(); return { owned: false, lock: dl, lock0: false, needB: nd, can: afford && !dl, ready: afford && !dl && !nd }; }
     var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can) || (r.rod && S.rod >= r.rod) || (r.charm && S.charms.own[r.charm]) || (r.hoe && S.hoe >= r.hoe) || (r.bucket && S.bucket >= r.bucket) || (r.net && S.net >= r.net) || (r.bow && S.bow >= r.bow)),
-      lock0 = !!((r.bow && S.bow < r.bow - 1) || (r.rod && S.rod < r.rod - 1) || (r.hoe && S.hoe < r.hoe - 1) || (r.bucket && S.bucket < r.bucket - 1) || (r.tier && S.tier < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && S.tier < r.need))) || (r.wpn && (S.wpn < r.wpn - 1 || (r.need && S.tier < r.need))) || (r.arm && (S.arm < r.arm - 1 || (r.need && S.tier < r.need)))),
+      lock0 = !!((r.bow && btOf("bow") < r.bow - 1) || (r.rod && S.rod < r.rod - 1) || (r.hoe && S.hoe < r.hoe - 1) || (r.bucket && S.bucket < r.bucket - 1) || (r.tier && btOf("tier") < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && btOf("tier") < r.need))) || (r.wpn && (btOf("wpn") < r.wpn - 1 || (r.need && btOf("tier") < r.need))) || (r.arm && (btOf("arm") < r.arm - 1 || (r.need && btOf("tier") < r.need)))),
       lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()); if (owned && brokenCur(r)) owned = false; var have = owned && !!spareFor(r);
     if (have) owned = false;   // MULTIPLES: you can always make another of a weapon, armor, pick or bow
     var can = !owned && !lock && afford;
@@ -17371,14 +17371,14 @@
   // gear slot icons, drawn (not emoji): faint outlines in the empty slots
   var PKI = { "\ud83d\udee1": '<path d="M12 3l7 3v5.5c0 4.3-3 7.6-7 9.5-4-1.9-7-5.2-7-9.5V6z"/>', "\u2694": '<path d="M20 4L9.6 14.4M20 4h-3.4M20 4v3.4"/><path d="M6.6 11.8l5.6 5.6M9.4 14.6L4.4 19.6"/>', "\u2726": '<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>', "\ud83c\udf92": '<rect x="5" y="7" width="14" height="13" rx="3"/><path d="M9 7V5.5a3 3 0 016 0V7M8.5 13h7v3h-7z"/>', "+": '<path d="M12 6v12M6 12h12"/>' };
   function pkSlot(attr, ic, label, sub, on, extra) {
-    return '<button type="button" class="pk-slot' + (ic ? "" : " empty") + (on ? " on" : "") + '" ' + attr + ' aria-label="' + esc(label + (sub ? ": " + sub : "")) + '">' + (ic ? '<img alt="" src="' + ic + '">' : '<svg class="pk-sil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">' + (PKI[extra] || PKI["+"]) + "</svg>") + "<small>" + esc(label) + "</small></button>";
+    return '<button type="button" class="pk-slot' + (ic ? "" : " empty") + (on ? " on" : "") + '" ' + attr + ' aria-label="' + esc(label + (sub ? ": " + sub : "")) + '">' + (ic ? '<img alt="" src="' + ic + '">' : '<svg class="pk-sil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">' + (PKI[extra] || PKI["+"]) + "</svg>") + "<small>" + esc(ic && sub && sub !== "none" && sub !== "empty" ? sub : label) + "</small></button>";   // BACKPACK: a filled slot names what is in it
   }
   function pkStars(k) { var n = mwStars(k); return n >= 2 ? '<em class="pk-st' + (n >= 3 ? " mw" : "") + '">' + (n >= 3 ? "★★★" : "★★") + "</em>" : ""; }
   function pkEqHtml() {
     var L = "", R = "";
-    L += pkSlot('data-pkeq="arm"', S.arm ? icon("arm" + S.arm) : "", "Armor", S.arm ? ARMORS[S.arm].n : "none", PK.focus === "arm", "🛡").replace("</small></button>", "</small>" + pkStars("arm") + "</button>");
-    L += pkSlot('data-pkeq="wpn"', S.wpn ? icon("wpn" + S.wpn) : "", "Weapon", S.wpn ? WEAPONS[S.wpn].n : "none", PK.focus === "wpn", "⚔").replace("</small></button>", "</small>" + pkStars("wpn") + "</button>");
-    L += pkSlot('data-pkeq="pick"', icon(S.tier ? "pick" + S.tier : "paw"), "Pickaxe", PICKS[S.tier].n, PK.focus === "pick").replace("</small></button>", "</small>" + pkStars("pick") + "</button>");
+    L += pkSlot('data-pkeq="arm" data-eqk="arm"', S.arm ? icon("arm" + S.arm) : "", "Armor", S.arm ? ARMORS[S.arm].n : "none", PK.focus === "arm", "🛡").replace("</small></button>", "</small>" + pkStars("arm") + "</button>");
+    L += pkSlot('data-pkeq="wpn" data-eqk="wpn"', S.wpn ? icon("wpn" + S.wpn) : "", "Weapon", S.wpn ? WEAPONS[S.wpn].n : "none", PK.focus === "wpn", "⚔").replace("</small></button>", "</small>" + pkStars("wpn") + "</button>");
+    L += pkSlot('data-pkeq="pick" data-eqk="pick"', icon(S.tier ? "pick" + S.tier : "paw"), "Pickaxe", PICKS[S.tier].n, PK.focus === "pick").replace("</small></button>", "</small>" + pkStars("pick") + "</button>");
     var n = charmSlots();
     for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; R += pkSlot('data-pkeq="charm"', ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "✦"); }
     R += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.focus === "bag", "🎒");
@@ -17443,7 +17443,7 @@
     if (t) t.innerHTML = '<svg class="pk2-ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="13" rx="3"/><path d="M9 7V5.5a3 3 0 016 0V7M8.5 13h7v3h-7z"/></svg>Backpack <small class="pk2-cnt' + (used >= N ? " full" : used >= N - 3 ? " near" : "") + '"><span class="pk2-cbar"><i style="width:' + Math.round(used / N * 100) + '%"></i></span>' + used + " / " + N + "</small>";
     var hd = t && t.parentNode, tools = $("pk2Tools");
     if (hd && !tools) { tools = document.createElement("div"); tools.id = "pk2Tools"; tools.className = "pk2-tools"; hd.insertBefore(tools, hd.querySelector(".sbx-x")); }
-    if (tools) tools.innerHTML = '<button type="button" class="btn ghost" data-iact="sort">Sort</button><button type="button" class="btn ghost" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button>';
+    if (tools) tools.innerHTML = '<button type="button" class="btn ghost" data-iact="sort">Sort</button><button type="button" class="btn ghost" data-iact="qstack" title="Put everything a nearby chest already holds into that chest (X)">Quick stack</button><button type="button" class="btn ghost' + (PK.pop === "lo" ? " on" : "") + '" data-pkeq="lo" title="Hotbar loadouts (L to switch)">Loadouts</button>';
     var bd = $("sbxPackBody"), stp = bd.scrollTop;
     if (!$("pkCv")) {
       bd.innerHTML = '<div class="pk2"><aside class="pk2-side"><div class="pk-stage"><canvas id="pkCv" aria-label="Your character, wearing your gear." role="img"></canvas><div class="pk-pop" id="pkPop" hidden></div></div>'
@@ -17455,13 +17455,13 @@
     $("pkName").textContent = pkName();
     $("pkStats").innerHTML = '<i title="Health">❤ ' + Math.ceil(hp) + "</i>" + '<i title="Damage blocked">🛡 ' + Math.round(armRed() * 100) + "%</i>" + (S.wpn ? '<i title="Weapon damage">⚔ ' + Math.round(wDmg()) + "</i>" : "") + '<i title="Pickaxe tier">⛏ ' + S.tier + "</i>";
     var fh = pkFocusHtml(); $("pkFocus").innerHTML = fh; $("pkFocus").hidden = !fh;
-    $("pkLo").innerHTML = loHtml();
-    var pp = $("pkPop"), ph = PK.pop ? pkPopHtml() : ""; pp.hidden = !ph; pp.innerHTML = ph; pp.className = "pk-pop" + (PK.pop ? " " + PK.pop : "");
+    $("pkLo").innerHTML = PK.pop === "lo" ? '<div class="pk-lopop"><div class="pk-pophead"><b>Loadouts<small>Save your hotbar here, then switch with L</small></b><button type="button" class="sbx-x" data-pkpop-x aria-label="Close">&times;</button></div>' + loHtml() + "</div>" : "";   // LOADOUTS: behind the Loadouts button at the top now (PK.pop "lo"), so the backpack fits on one screen
+    var pp = $("pkPop"), ph = PK.pop && PK.pop !== "lo" ? pkPopHtml() : ""; pp.hidden = !ph; pp.innerHTML = ph; pp.className = "pk-pop" + (PK.pop ? " " + PK.pop : "");
     $("pkInv").innerHTML = pkInvHtml(); bd.scrollTop = stp;
     pvStart();
   }
   function pkAct(a) {
-    if (a === "charm") { PK.pop = PK.pop === a ? "" : a; PK.focus = ""; thud(380, 0.03); }
+    if (a === "charm" || a === "lo") { PK.pop = PK.pop === a ? "" : a; PK.focus = ""; thud(380, 0.03); }
     else { PK.focus = PK.focus === a ? "" : a; PK.pop = ""; }
     renderPack();
   }
@@ -17995,11 +17995,13 @@
   function dragEnd(drop, e) {
     var D = idrag; idrag = null; if (!D) return;
     if (D.ghost && D.ghost.parentNode) D.ghost.parentNode.removeChild(D.ghost);
-    [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-is.lift, .sbx-slot.drop, .sbx-slot.lift"), function (b) { b.classList.remove("drop"); b.classList.remove("lift"); });
+    [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-is.lift, .sbx-slot.drop, .sbx-slot.lift, [data-eqk].drop, [data-eqk].nodrop, [data-eqk].lift"), function (b) { b.classList.remove("drop"); b.classList.remove("lift"); b.classList.remove("nodrop"); });
     if (!D.on) return;
     idragJust = true; setTimeout(function () { idragJust = false; }, 0);
     if (!drop) return;
-    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]");
+    var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]"), et = el && el.closest && el.closest("[data-eqk]");
+    if (D.eq) { if (t || (el && el.closest && el.closest("#pkInv"))) unequipGear(D.eq); return; }   // GEAR SWAP: the piece you wear, dropped in your bag
+    if (et) { var sk = S.slots[D.from] && S.slots[D.from].k, want = et.getAttribute("data-eqk"); if (sk && new RegExp("^sp_" + want + "\\d$").test(sk)) equipSpare(sk); else nag(want === "pick" ? "Only a spare pickaxe goes there." : want === "wpn" ? "Only a spare weapon goes there." : "Only spare armor goes there."); return; }
     if (!t && dragOut(el)) {   // DRAG TO DROP: let go over the world (outside the backpack and the hotbar) and the stack is dropped in front of you
       var dc = S.slots[D.from]; if (!dc) return;
       if (ITEMS[dc.k] && ITEMS[dc.k].tool) { nag("Tools can't be dropped."); return; }
@@ -18021,6 +18023,7 @@
     el.addEventListener("dragstart", function (e) { e.preventDefault(); });   // HOTBAR DRAG: a native image drag would steal the pointer
     el.addEventListener("pointerdown", function (e) {
       if (e.button && e.pointerType === "mouse") return;
+      var eb = e.target.closest("[data-eqk]"); if (eb) { var ek = eb.getAttribute("data-eqk"), ef = SPK[ek].f; if (S[ef] | 0) idrag = { from: -1, eq: ek, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: eb, th: e.pointerType === "mouse" ? 5 : 9 }; return; }   // GEAR SWAP: drag the piece you wear
       var b = e.target.closest("[data-is],.sbx-slot[data-slot]"); if (!b) return; var i = slotOfEl(b); if (!(i >= 0) || !S.slots[i]) return;
       idrag = { from: i, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: b, th: e.pointerType === "mouse" ? 5 : 9 };
     });
@@ -18030,16 +18033,18 @@
     var D = idrag; if (!D || e.pointerId !== D.id) return;
     if (!D.on) {
       if (Math.abs(e.clientX - D.x0) + Math.abs(e.clientY - D.y0) < D.th) return;
-      var c = S.slots[D.from]; if (!c) { idrag = null; return; }
+      var c = D.eq ? { k: SPK[D.eq].f === "tier" ? "pick" + S.tier : D.eq + S[SPK[D.eq].f], n: "" } : S.slots[D.from]; if (!c) { idrag = null; return; }
       D.on = true; D.src.classList.add("lift");
-      var g = document.createElement("div"); g.className = "sbx-drag"; g.innerHTML = '<img alt="" src="' + icon(c.k) + '"><b>' + c.n + '</b><i>Drop</i>'; document.body.appendChild(g); D.ghost = g;
+      var g = document.createElement("div"); g.className = "sbx-drag"; g.innerHTML = '<img alt="" src="' + icon(c.k) + '"><b>' + (c.n || "") + '</b><i>' + (D.eq ? "Take off" : "Drop") + '</i>'; document.body.appendChild(g); D.ghost = g;
     }
     e.preventDefault();
     D.ghost.style.transform = "translate(" + (e.clientX - 26) + "px," + (e.clientY - 26) + "px)";
     var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]"); if (t && !(slotOfEl(t) >= 0)) t = null;
     [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-slot.drop"), function (b) { if (b !== t) b.classList.remove("drop"); });
     if (t && t !== D.src) t.classList.add("drop");
-    var out = !t && dragOut(el); if (D.ghost.classList.contains("toss") !== out) { D.ghost.classList.toggle("toss", out); }   // over the world: the ghost shows it will be dropped
+    var et2 = el && el.closest && el.closest("[data-eqk]"); [].forEach.call(document.querySelectorAll("[data-eqk].drop,[data-eqk].nodrop"), function (b) { if (b !== et2) { b.classList.remove("drop"); b.classList.remove("nodrop"); } });
+    if (et2 && !D.eq) { var sk2 = S.slots[D.from] && S.slots[D.from].k, ok2 = sk2 && sk2.indexOf("sp_" + et2.getAttribute("data-eqk")) === 0; et2.classList.toggle("drop", !!ok2); et2.classList.toggle("nodrop", !ok2); }   // GEAR SWAP: the slot lights up if the piece fits
+    var out = !t && !et2 && !D.eq && dragOut(el); if (D.ghost.classList.contains("toss") !== out) { D.ghost.classList.toggle("toss", out); }   // over the world: the ghost shows it will be dropped
   }, { passive: false });
   window.addEventListener("pointerup", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(true, e); });
   window.addEventListener("pointercancel", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(false, e); });
@@ -25369,11 +25374,26 @@
   Object.keys(SPK).forEach(function (kd) { var K = SPK[kd]; for (var t = 1; t < K.L.length; t++) { if (!K.L[t]) continue; (function (t2) { var id = "sp_" + kd + t2; ITEMS[id] = { n: K.L[t2].n, spare: kd, d: "A spare " + K.L[t2].n + ". Tap it to equip it; the one you are using goes back in your bag." }; ORDER.push(id);
     OCI[id] = function (g) { if (kd === "wpn") drawWeaponIcon(g, t2); else if (kd === "pick") drawPickIcon(g, t2); else drawSpr(g, kd + t2); }; })(t); } });
   function spareFor(r) { if (brokenCur(r)) return ""; return r.wpn && S.wpn >= r.wpn ? "sp_wpn" + r.wpn : r.arm && S.arm >= r.arm ? "sp_arm" + r.arm : r.tier && S.tier >= r.tier ? "sp_pick" + r.tier : r.bow && S.bow >= r.bow ? "sp_bow" + r.bow : ""; }
+  // GEAR SWAP (backpack): drag a spare pick, weapon or armor onto its slot to wear it, or drag the one you wear into your bag to take it off.
+  // A piece that goes in your bag keeps its wear (S.spw[id] = list of worn durabilities; fresh spares have none). S.bt remembers the best
+  // tier you have had, so taking gear off never locks a recipe.
+  function btOf(f) { return Math.max(S[f] | 0, (S.bt && S.bt[f]) | 0); }
+  function btSet(f, v) { if (!S.bt) S.bt = {}; S.bt[f] = Math.max(S.bt[f] | 0, v | 0); }
+  function spwPush(id, dur, max) { if (dur == null || dur >= max) return; if (!S.spw) S.spw = {}; (S.spw[id] = S.spw[id] || []).push(dur); }
+  function spwTake(id, max) { var L = S.spw && S.spw[id]; if (!L || !L.length) return max; var n = S.inv[id] || 0; if (n > L.length) return max; var v = L.pop(); if (!L.length) delete S.spw[id]; return v; }   // fresh first, then the worn ones
+  function unequipGear(kd) {
+    var K = SPK[kd]; if (!K) return; var f = K.f, cur = S[f] | 0; if (!cur) return; var id = "sp_" + kd + cur;
+    if (room(id) < 1) { nag("No room in your bag."); return; }
+    btSet(f, cur); if (K.d && DUR[K.d]) spwPush(id, durOf(K.d === "wpn" ? "wpn" : K.d), DUR[K.d][cur]);
+    give(id, 1, undefined, undefined, true); S[f] = 0; ICO = {}; armKey = ""; spriteKey = ""; mine = null; reslot(); hbDirty = true;
+    toast("Your " + K.L[cur].n + " went in your bag.", "#cfe0e8"); thud(360, 0.04); save(); if (packOpen) renderPack();
+  }
   function equipSpare(id) {
     var m = id.match(/^sp_(wpn|arm|pick|bow)(\d)$/); if (!m || !(S.inv[id] > 0)) return; var kd = m[1], t = +m[2], K = SPK[kd], cur = S[K.f] | 0;
     if (cur === t) { nag("You're already using a " + K.L[t].n + "."); return; }
-    S.inv[id]--; if (S.inv[id] <= 0) delete S.inv[id]; if (cur > 0) give("sp_" + kd + cur, 1, undefined, undefined, true);
-    S[K.f] = t; if (K.d && DUR[K.d]) S.dur[K.d] = DUR[K.d][t]; ICO = {}; if (kd === "arm") { armKey = ""; spriteKey = ""; }
+    var nd = K.d && DUR[K.d] ? spwTake(id, DUR[K.d][t]) : 0;
+    S.inv[id]--; if (S.inv[id] <= 0) delete S.inv[id]; if (cur > 0) { btSet(K.f, cur); if (K.d && DUR[K.d]) spwPush("sp_" + kd + cur, durOf(K.d), DUR[K.d][cur]); give("sp_" + kd + cur, 1, undefined, undefined, true); }
+    S[K.f] = t; if (K.d && DUR[K.d]) S.dur[K.d] = nd; ICO = {}; if (kd === "arm") { armKey = ""; spriteKey = ""; }
     reslot(); hbDirty = true; toast("Equipped the " + K.L[t].n + (cur > 0 ? ". Your " + K.L[cur].n + " went in your bag." : "."), K.L[t].c || "#f2c14e"); snd("open", "Rare"); save(); if (packOpen) renderPack();
   }
   // =====================================================================================================================
