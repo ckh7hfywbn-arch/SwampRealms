@@ -560,7 +560,7 @@
   }
   // ---- THE MANGROVE MAZE (#92): a maze of mangrove roots and black water. Its paths regrow every night (seed = the day). The treasure waits at the far end ----
   var MAZE_TH = THEMES.length;
-  THEMES.push({ n: "The Mangrove Maze", sub: "Its paths change every night", floor: "#3a3a22", floor2: "#46462a", top: "#141a0a", topHi: "#2a3414", face: "#4a3a1e", faceHi: "#7a6a3a", faceLo: "#1e160a", tint: [6, 10, 2], lamp: T.TORCH, glow: "255,200,120" });
+  THEMES.push({ n: "The Mangrove Maze", sub: "Its paths change every night", floor: "#25453a", floor2: "#2e5546", top: "#163a1f", topHi: "#2f6e33", face: "#4a3220", faceHi: "#6e4c2e", faceLo: "#24170c", tint: [3, 14, 11], lamp: T.LANTERN || T.TORCH, glow: "255,220,140" });
   function genMaze(seed) {
     var w = CW, h = CH, n = w * h, wall = new Uint8Array(n).fill(1), pool = new Uint8Array(n), node = new Uint16Array(n), rnd = mulberry((seed ^ 0x3a2e) | 0), i, x, y;
     var MX = Math.floor((w - 3) / 3), MY = Math.floor((h - 4) / 3), vis = new Uint8Array(MX * MY), cell = function (cx, cy) { return { x: 2 + cx * 3, y: 2 + cy * 3 }; };
@@ -580,7 +580,7 @@
     for (var l = 0; l < 10 && lc.length; l++) { var li = lc.splice(Math.floor(rnd() * lc.length), 1)[0]; lamps.push({ x: li % w, y: (li / w) | 0 }); }
     var rocks = 0; for (i = 0; i < n; i++) if (node[i]) rocks++;
     return { w: w, h: h, floor: 1, biome: 0, bi: MAZE_TH, seed: seed, theme: THEMES[MAZE_TH], wall: wall, node: node, torch: new Uint8Array(n), up: up, down: { x: -60, y: -60 }, spawn: spawn, lamps: lamps, rocks: rocks,
-      sol: new Uint8Array(pool), pool: pool, maze: 1, amb: 0.35, prize: { x: fi % w, y: (fi / w) | 0 } };
+      sol: new Uint8Array(pool), pool: pool, maze: 1, amb: 0.5, prize: { x: fi % w, y: (fi / w) | 0 } };
   }
   // ---------- THE SUNKEN HOLLOW (Mine floor 25) ----------
   // A secret swamp buried under the Mine: one big cavern with a black-water lake, mangrove-root pillars, glowcaps and the wreck of a

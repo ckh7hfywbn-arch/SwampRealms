@@ -1253,3 +1253,9 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Phone fix:** dragging on a phone often got cancelled because the browser took the swipe as a scroll. Filled hotbar slots now have `touch-action:none`, and native image dragging is blocked.
   - **Feedback:** the lifted slot dims and the slot under your finger grows with a dashed outline.
   - **Code:** `dragOut` in `sandbox.js` (search `HOTBAR DRAG`).
+- **Mangrove Maze makeover:**
+  - **Entrance:** a pixel-art mangrove tree in the same greens and bark as the swamp trees around it. Its two root legs arch into the doorway, prop roots fan into a mud mound, moss hangs from the canopy, and fireflies drift in the dark doorway.
+  - **Inside:** the walls are leafy mangrove canopy. Each clump of leaves is lit from the top left, with dark seams between clumps. Where a wall faces a path, prop roots arch down into the water with ripples at their feet, and moss hangs over them.
+  - **Paths:** shallow swamp water with duckweed, lily pads and the odd pink flower. Dead ends are deep black water with slow ripples. Fireflies light the paths, and the maze is lit by lanterns instead of torches.
+  - **Lighting:** brighter, with a teal tint instead of the muddy fog.
+  - **How it's drawn:** each night's layout is painted once at 16 px a tile, then blitted. Code: search `MAZE ART` (`mazePaint`, `mazeLife`, `mazeArch`).

@@ -16376,6 +16376,7 @@
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F.w - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F.h - 1, Math.floor((vh - oy) / ts)), CA = caveAtlas(F.bi != null ? F.bi : F.biome), W2 = F.w;
     var glows2 = [], srcs = [[cp.x, cp.y - 0.6, fx("night") ? 12 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 9 : hasCharm("owl") ? 8.4 : 7.2, 1]];
     if (F.nx) { g.imageSmoothingEnabled = false; g.drawImage(F.nx.isl, ox, oy, F.w * ts, (F.h + 3) * ts); nxPillar(g, F, now); }   // THE SWAMPREALMS: the island, painted once
+    else if (F.maze) mazeBlit(g, F, X0, X1, Y0, Y1);   // MAZE ART: painted once per night
     else for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // ground and walls
       idx = j * W2 + i; var sx = ox + i * ts, sy = oy + j * ts, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (F.wall[idx] && F.iw && F.iw[idx]) g.drawImage(CA, v * 16, 0, 16, 16, sx, sy, ts, ts);   // ROOMS: an inner wall stands up in the row pass below
@@ -16391,6 +16392,7 @@
       }
     }
     if (F.lava) volcLava(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE OLD VOLCANO: glowing magma cracks
+    if (F.maze) mazeLife(g, F, X0, X1, Y0, Y1, now, srcs, glows2);
     if (F.glowm || F.maze) siteDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // PHASE 8: glowing pools, black water, the prize
     if (F.lair) lairDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // THE SUNKEN HOLLOW
     if (F.isle) isleDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2);   // ISLAND RAIDS
@@ -24741,7 +24743,7 @@
   }
   function siteDraw(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {   // water in the Glow Marsh and the Maze, and the prize at the far end
     var t = now / 1000, gw = !!F.glowm;
-    for (var j = Y0; j <= Y1; j++) for (var i = X0; i <= X1; i++) { var c = j * F.w + i; if (!F.pool || !F.pool[c]) continue; var sx = ox + i * ts, sy = oy + j * ts, ph = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(t * 1.5 + i * 0.8 + j * 1.1);
+    for (var j = Y0; j <= Y1; j++) for (var i = X0; i <= X1; i++) { var c = j * F.w + i; if (!F.pool || !F.pool[c] || !gw) continue; var sx = ox + i * ts, sy = oy + j * ts, ph = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(t * 1.5 + i * 0.8 + j * 1.1);
       g.fillStyle = gw ? "rgb(" + (20 + ph * 30 | 0) + "," + (120 + ph * 80 | 0) + "," + (130 + ph * 60 | 0) + ")" : "rgb(" + (16 + ph * 8 | 0) + "," + (22 + ph * 10 | 0) + "," + (14 + ph * 6 | 0) + ")"; g.fillRect(sx, sy, ts, ts);
       g.fillStyle = gw ? "rgba(220,255,245,.35)" : "rgba(160,170,120,.15)"; if (!F.pool[c - F.w] && !F.wall[c - F.w]) g.fillRect(sx, sy, ts, ts * 0.12);
       if (gw && (i * 7 + j * 3) % 9 === 0) { srcs.push([i + 0.5, j + 0.5, 2.6, 0.5]); glows2.push([sx + ts / 2, sy + ts / 2, "120,255,220", 1.4, 0.12 * ph]); } }
@@ -24757,17 +24759,154 @@
   }
   // ---------- #92 THE MANGROVE MAZE: an arch of mangrove roots leads down into it ----------
   function mazeNear() { var s = sites(); s = s && s.maze; return s && !cave && !HOME && !OCS && Math.abs(p.x - (s.x + 2.5)) < 2.6 && Math.abs(p.y - s.y) < 2.5 ? s : null; }
-  function mazeDraw(g, now) {   // the arch: two great roots that grow up out of the mud and meet overhead, a dark doorway between
-    var s = sites(); s = s && s.maze; if (!s || cave || HOME || OCS) return; var sx = ox + (s.x + 2.5) * ts, sy = oy + s.y * ts, k = ts / 30, t = now / 1000; if (sx < -ts * 5 || sx > vw + ts * 5) return; siteSeen("maze", s);
-    g.save(); g.translate(sx, sy); g.scale(k * 1.7, k * 1.7); g.lineJoin = "round"; var IN = "#1e1408";
-    g.beginPath(); g.moveTo(-26, 0); g.quadraticCurveTo(-26, -60, 0, -64); g.quadraticCurveTo(26, -60, 26, 0); g.closePath(); g.fillStyle = "#0a0c06"; g.fill();
-    var gr = g.createLinearGradient(0, -64, 0, 0); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(60,80,30,.35)"); g.fillStyle = gr; g.fill();
-    [[-1], [1]].forEach(function (q) { var f = q[0]; g.beginPath(); g.moveTo(f * 44, 0); g.quadraticCurveTo(f * 36, -4, f * 34, -16); g.quadraticCurveTo(f * 34, -66, f * 2, -76); g.lineTo(f * -4, -70); g.quadraticCurveTo(f * 26, -62, f * 24, -18); g.quadraticCurveTo(f * 24, -4, f * 18, 0); g.closePath(); aInk(g, aG(g, -76, 0, "#8a7a4a", "#5a4a2a", "#2a2010"), IN, 1.4); });
-    [[-30, 0, -8], [30, 0, 8], [-36, -2, -14], [36, -2, 14]].forEach(function (q) { g.beginPath(); g.moveTo(q[0], -12); g.quadraticCurveTo(q[0] + q[2] * 0.6, -6, q[0] + q[2], q[1]); g.lineTo(q[0] + q[2] * 0.7, q[1]); g.quadraticCurveTo(q[0] + q[2] * 0.2, -5, q[0] - q[2] * 0.15, -10); g.closePath(); aInk(g, "#5a4a2a", IN, 1); });   // prop roots, rooted in the mud
-    [[-22, -78, 16], [6, -86, 18], [26, -76, 14], [-6, -96, 12]].forEach(function (b) { g.beginPath(); g.arc(b[0], b[1], b[2], 0, 7); aInk(g, aG(g, b[1] - b[2], b[1] + b[2], "#6ab84a", "#3a7a2a", "#1a4a14"), "#0a2a08", 1.1); aShine(g, b[0] - b[2] * 0.3, b[1] - b[2] * 0.4, b[2] * 0.35, b[2] * 0.2, 0.25, -0.3); });
-    g.fillStyle = "rgba(255,210,120," + (0.5 + 0.3 * Math.sin(t * 3)).toFixed(2) + ")"; g.beginPath(); g.arc(-10, -30, 1.6, 0, 7); g.arc(9, -38, 1.4, 0, 7); g.fill();
-    g.restore();
+  // =====================================================================================================================
+  // MAZE ART: the Mangrove Maze, repainted. Inside: walls are a leafy mangrove canopy with prop roots arching down into shallow
+  // swamp water, lily pads and duckweed on the paths, black water in the dead ends, fireflies drifting. Painted once per night's
+  // layout at 16 px a tile (the same pixel size as every other tile) and blitted. Outside: the arch is a pixel-art mangrove whose two
+  // root legs make the doorway, with the same leaf greens and bark as the swamp trees around it.
+  // =====================================================================================================================
+  var MZP = 16;
+  function mzHex(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  var MZC = {
+    ink: mzHex("#0b1a0e"), lf0: mzHex("#163a1f"), lf1: mzHex("#215129"), lf2: mzHex("#2f6e33"), lf3: mzHex("#4a9442"), lf4: mzHex("#76bd57"),
+    bk0: mzHex("#24170c"), bk1: mzHex("#4a3220"), bk2: mzHex("#6e4c2e"), bk3: mzHex("#94704a"), gap: mzHex("#08110b"),
+    w0: mzHex("#1d362b"), w1: mzHex("#25453a"), w2: mzHex("#2e5546"), wHi: mzHex("#6f9f8a"), dk0: mzHex("#070d0b"), dk1: mzHex("#0f1c17"), dkHi: mzHex("#3c5c52"),
+    pad0: mzHex("#1c4320"), pad1: mzHex("#3b8636"), pad2: mzHex("#6bb84f"), dw0: mzHex("#5d8f37"), dw1: mzHex("#8cc055"), moss0: mzHex("#5f7f52"), moss1: mzHex("#8aa97a"), pink: mzHex("#ff9ac8"), pinkC: mzHex("#ffe27a")
+  };
+  function mzH(x, y, s) { var h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(s | 0, 2246822519); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+  function mazePaint(F) {
+    if (F._mzc) return F._mzc;
+    var P = MZP, w = F.w, h = F.h, PW = w * P, PH = h * P, c = document.createElement("canvas"); c.width = PW; c.height = PH;
+    var g = c.getContext("2d"), im = g.createImageData(PW, PH), d = im.data, sd = F.seed | 0, x, y, i, j;
+    var W = function (a, b) { return a < 0 || b < 0 || a >= w || b >= h ? 1 : F.wall[b * w + a]; }, POOL = function (a, b) { return a >= 0 && b >= 0 && a < w && b < h && F.pool && F.pool[b * w + a]; };
+    var put = function (px, py, col, a) { if (px < 0 || py < 0 || px >= PW || py >= PH) return; var k = (py * PW + px) * 4; if (a == null || a >= 1) { d[k] = col[0]; d[k + 1] = col[1]; d[k + 2] = col[2]; } else { d[k] += (col[0] - d[k]) * a; d[k + 1] += (col[1] - d[k + 1]) * a; d[k + 2] += (col[2] - d[k + 2]) * a; } d[k + 3] = 255; };
+    var M = new Uint8Array(PW * PH);   // 0 floor, 1 canopy, 2 root zone, 3 bark
+    // 1. which pixels are canopy (the top of a wall, plus the upper band of a wall that faces a path) and which are the root zone below it
+    for (y = 0; y < PH; y++) for (x = 0; x < PW; x++) {
+      i = x >> 4; j = y >> 4; if (!W(i, j)) continue; var face = !W(i, j + 1), ly = y & 15;
+      if (!face) { M[y * PW + x] = 1; continue; }
+      var cap = 5 + Math.round(1.6 * Math.sin(x * 0.55 + sd) + 1.2 * Math.sin(x * 0.21 + j) + mzH(x >> 1, j, sd) * 1.5);
+      M[y * PW + x] = ly < cap ? 1 : 2;
+    }
+    // canopy overhangs the paths a little at the sides and top, with a ragged edge
+    var M2 = new Uint8Array(M);
+    for (y = 0; y < PH; y++) for (x = 0; x < PW; x++) { if (M[y * PW + x]) continue; var r = 1 + Math.floor(mzH(x >> 1, y >> 1, sd + 7) * 3);
+      for (var q = 1; q <= r; q++) { if ((x - q >= 0 && M[y * PW + x - q] === 1) || (x + q < PW && M[y * PW + x + q] === 1) || (y + q < PH && M[(y + q) * PW + x] === 1)) { M2[y * PW + x] = 1; break; } } }
+    M = M2;
+    // 2. paths: shallow swamp water with soft patches, glints and duckweed; black water in the flooded dead ends
+    for (y = 0; y < PH; y++) for (x = 0; x < PW; x++) {
+      if (M[y * PW + x]) continue; i = x >> 4; j = y >> 4;
+      if (POOL(i, j)) { var e = (!POOL(i - 1, j) && !W(i - 1, j) && (x & 15) < 1) || (!POOL(i + 1, j) && !W(i + 1, j) && (x & 15) > 14) || (!POOL(i, j - 1) && !W(i, j - 1) && (y & 15) < 1) || (!POOL(i, j + 1) && !W(i, j + 1) && (y & 15) > 14);
+        put(x, y, e ? MZC.w0 : mzH(x >> 2, y >> 2, sd + 3) < 0.25 ? MZC.dk1 : MZC.dk0); continue; }
+      var n = Math.sin(x * 0.09 + sd) + Math.sin(y * 0.11 - x * 0.04) + (mzH(x >> 3, y >> 3, sd + 1) - 0.5) * 1.2;
+      put(x, y, n > 0.9 ? MZC.w2 : n > -0.5 ? MZC.w1 : MZC.w0);
+      var hh = mzH(x, y, sd + 2); if (hh < 0.012) put(x, y, MZC.wHi, 0.6);
+      var dwc = mzH(x >> 2, y >> 2, sd + 9); if (dwc < 0.035 && hh < 0.4) put(x, y, hh < 0.15 ? MZC.dw1 : MZC.dw0);
+    }
+    // 3. the root zone: dark gaps between prop roots that arch down into the water
+    for (j = 0; j < h; j++) for (i = 0; i < w; i++) {
+      if (!W(i, j) || W(i, j + 1)) continue; var x0 = i * P, y0 = j * P;
+      for (y = y0; y < y0 + P; y++) for (x = x0; x < x0 + P; x++) if (M[y * PW + x] === 2) put(x, y, MZC.gap);
+      var nR = 2 + (mzH(i, j, sd + 11) < 0.5 ? 1 : 0);
+      for (var rr = 0; rr < nR; rr++) {   // each root: a bark ribbon from under the canopy down past the cell into the water, bending as it goes
+        var rx = x0 + (rr + 0.5) * P / nR + (mzH(i, j * 7 + rr, sd) - 0.5) * 4, bend = (mzH(i * 3 + rr, j, sd + 5) - 0.5) * 7, wd = 1.6 + mzH(i, rr, sd + 6) * 1.2;
+        for (y = y0 + 2; y < y0 + P + 3; y++) { var tt = (y - y0) / (P + 3), cx = rx + bend * Math.sin(tt * 2.6), ww = wd * (1.15 - 0.3 * tt) + (tt > 0.85 ? (tt - 0.85) * 8 : 0);
+          for (x = Math.floor(cx - ww - 1); x <= Math.ceil(cx + ww + 1); x++) { var dx = x - cx; if (Math.abs(dx) > ww + 0.6) continue; var m = M[y * PW + x]; if (m === 1) continue; if (y >= y0 + P && (m || W(x >> 4, y >> 4))) continue;
+            M[y * PW + x] = 3; put(x, y, Math.abs(dx) > ww - 0.4 ? MZC.bk0 : dx < -ww * 0.3 ? MZC.bk3 : dx < ww * 0.25 ? MZC.bk2 : MZC.bk1); } }
+        var fy = y0 + P + 3, fx2 = Math.round(rx + bend * Math.sin(2.6)); if (!W(fx2 >> 4, fy >> 4)) { put(fx2 - 3, fy, MZC.wHi, 0.5); put(fx2 + 3, fy, MZC.wHi, 0.5); put(fx2 - 2, fy + 1, MZC.wHi, 0.3); put(fx2 + 2, fy + 1, MZC.wHi, 0.3); }   // a ripple where it meets the water
+      }
+      if (mzH(i, j, sd + 13) < 0.7) { var ay = y0 + 6 + Math.floor(mzH(i, j, sd + 14) * 5), ax0 = x0 - 2, ax1 = x0 + P + 2;   // an arching root across the gap
+        for (x = ax0; x <= ax1; x++) { var u = (x - ax0) / (ax1 - ax0), cy2 = ay - Math.sin(u * Math.PI) * 4; for (var yy = Math.floor(cy2 - 1); yy <= Math.ceil(cy2 + 1); yy++) { if (yy < 0 || x < 0 || x >= PW || M[yy * PW + x] === 1 || !W(x >> 4, yy >> 4)) continue; var dy = yy - cy2; M[yy * PW + x] = 3; put(x, yy, dy < -0.6 ? MZC.bk3 : dy > 0.6 ? MZC.bk0 : MZC.bk2); } }
+      }
+    }
+    // 4. shade the water: shadow under the canopy edge and the root wall
+    for (y = 0; y < PH; y++) for (x = 0; x < PW; x++) { if (M[y * PW + x]) continue; var sh = 0;
+      for (var s2 = 1; s2 <= 6; s2++) { var my = y - s2; if (my < 0) break; var mv = M[my * PW + x]; if (mv) { sh = Math.max(sh, (7 - s2) / 7 * (mv === 1 ? 0.45 : 0.55)); break; } }
+      if (x > 0 && M[y * PW + x - 1] === 1) sh = Math.max(sh, 0.3); if (x < PW - 1 && M[y * PW + x + 1] === 1) sh = Math.max(sh, 0.3);
+      if (sh) put(x, y, MZC.dk0, sh); }
+    // 5. lily pads and the odd flower on the open water (not on the main channel's black pools)
+    for (j = 0; j < h; j++) for (i = 0; i < w; i++) {
+      if (W(i, j) || POOL(i, j) || mzH(i, j, sd + 21) > 0.3) continue; var pr = 2.2 + mzH(i, j, sd + 22) * 1.8, pcx = i * P + 4 + mzH(i, j, sd + 23) * 8, pcy = j * P + 6 + mzH(i, j, sd + 24) * 7, na = mzH(i, j, sd + 25) * 6.28;
+      for (y = Math.floor(pcy - pr - 1); y <= pcy + pr + 1; y++) for (x = Math.floor(pcx - pr - 1); x <= pcx + pr + 1; x++) { var ddx = x - pcx, ddy = (y - pcy) * 1.25, dd = Math.sqrt(ddx * ddx + ddy * ddy); if (dd > pr + 0.5 || M[y * PW + x]) continue;
+        var ang = Math.atan2(ddy, ddx), notch = Math.abs(((ang - na + 9.42) % 6.28) - 3.14) < 0.35 && dd > 0.8; if (notch) continue;
+        put(x, y, dd > pr - 0.6 ? MZC.pad0 : ddx + ddy < -pr * 0.5 ? MZC.pad2 : MZC.pad1); }
+      if (mzH(i, j, sd + 26) < 0.18) { var fxp = Math.round(pcx - pr * 0.2), fyp = Math.round(pcy - pr * 0.3); put(fxp, fyp, MZC.pink); put(fxp + 1, fyp, MZC.pink); put(fxp, fyp - 1, MZC.pink); put(fxp + 1, fyp - 1, MZC.pinkC); }
+    }
+    // 6. the canopy: leaf clumps lit from the top left, darker seams between clumps, a dark ink rim, hanging moss over the roots
+    for (y = 0; y < PH; y++) for (x = 0; x < PW; x++) {
+      if (M[y * PW + x] !== 1) continue; var gx = x / 7, gy = y / 7, bi = Math.floor(gx), bj = Math.floor(gy), b1 = 9, b2 = 9, bdx = 0, bdy = 0;
+      for (var oj = -1; oj <= 1; oj++) for (var oi = -1; oi <= 1; oi++) { var ci = bi + oi, cj = bj + oj, ccx = ci + 0.15 + mzH(ci, cj, sd + 31) * 0.7, ccy = cj + 0.15 + mzH(ci, cj, sd + 32) * 0.7, ex = gx - ccx, ey = gy - ccy, dist = Math.sqrt(ex * ex + ey * ey);
+        if (dist < b1) { b2 = b1; b1 = dist; bdx = ex; bdy = ey; } else if (dist < b2) b2 = dist; }
+      var lit = -(bdx + bdy * 1.3) / Math.max(0.3, b1 + 0.2), seam = b2 - b1 < 0.12, col = lit > 0.75 ? MZC.lf3 : lit > 0.1 ? MZC.lf2 : lit > -0.6 ? MZC.lf1 : MZC.lf0;
+      if (seam) col = MZC.lf0; var sp = mzH(x, y, sd + 33); if (!seam && lit > 0.5 && sp < 0.08) col = MZC.lf4; else if (!seam && sp > 0.95) col = MZC.lf0;
+      var rim = (x > 0 && M[y * PW + x - 1] !== 1) || (x < PW - 1 && M[y * PW + x + 1] !== 1) || (y > 0 && M[(y - 1) * PW + x] !== 1) || (y < PH - 1 && M[(y + 1) * PW + x] !== 1);
+      put(x, y, rim ? MZC.ink : col);
+    }
+    for (x = 0; x < PW; x++) for (y = 1; y < PH; y++) { if (M[(y - 1) * PW + x] !== 1 || M[y * PW + x] === 1 || mzH(x, y, sd + 41) > 0.13) continue; if (!W(x >> 4, y >> 4) && M[y * PW + x] === 0 && mzH(x, y, sd + 44) > 0.4) continue;   // hanging moss
+      var len = 2 + Math.floor(mzH(x, y, sd + 42) * 6); for (var mL = 0; mL < len; mL++) put(x + (mL > 3 && mzH(x, mL, sd) < 0.3 ? 1 : 0), y + mL, mL < len - 1 ? MZC.moss0 : MZC.moss1, 0.95); }
+    g.putImageData(im, 0, 0);
+    return (F._mzc = c);
   }
+  function mazeBlit(g, F, X0, X1, Y0, Y1) {
+    var c = mazePaint(F), P = MZP; g.imageSmoothingEnabled = false;
+    g.drawImage(c, X0 * P, Y0 * P, (X1 - X0 + 1) * P, (Y1 - Y0 + 1) * P, ox + X0 * ts, oy + Y0 * ts, (X1 - X0 + 1) * ts, (Y1 - Y0 + 1) * ts);
+  }
+  function mazeLife(g, F, X0, X1, Y0, Y1, now, srcs, glows2) {   // the moving bits: a slow shimmer on the water, ripples in the black pools, fireflies
+    var t = reduce ? 0 : now / 1000, i, j;
+    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var c = j * F.w + i; if (F.wall[c]) continue; var sx = ox + i * ts, sy = oy + j * ts, hh = mzH(i, j, 77);
+      if (F.pool && F.pool[c]) { var rp = (t * 0.5 + hh) % 1; g.strokeStyle = "rgba(140,190,170," + (0.22 * (1 - rp)).toFixed(3) + ")"; g.lineWidth = Math.max(1, ts / 22); g.beginPath(); g.ellipse(sx + ts * (0.3 + hh * 0.4), sy + ts * 0.55, ts * 0.42 * rp + 1, ts * 0.18 * rp + 1, 0, 0, 6.28); g.stroke(); continue; }
+      if (hh < 0.35) { var gl = 0.5 + 0.5 * Math.sin(t * 1.3 + i * 1.7 + j); g.fillStyle = "rgba(150,210,190," + (0.06 * gl).toFixed(3) + ")"; g.fillRect(sx + ts * (0.15 + hh), sy + ts * (0.35 + 0.2 * Math.sin(t * 0.7 + i)), ts * 0.28, Math.max(1, ts / 16)); }
+    }
+    for (var f = 0; f < 26; f++) {   // fireflies wander the paths near you
+      var bx = (mzH(f, 1, F.seed | 0) * F.w), by = (mzH(f, 2, F.seed | 0) * F.h), fxw = bx + Math.sin(t * 0.37 + f * 2.1) * 1.6 + Math.sin(t * 0.9 + f) * 0.4, fyw = by + Math.cos(t * 0.31 + f * 1.3) * 1.2 + Math.sin(t * 1.1 + f * 3) * 0.3;
+      if (fxw < X0 - 1 || fxw > X1 + 1 || fyw < Y0 - 1 || fyw > Y1 + 1) continue; var bl = 0.5 + 0.5 * Math.sin(t * 2.4 + f * 1.9); if (bl < 0.15) continue;
+      var px = ox + fxw * ts, py = oy + fyw * ts, r2 = Math.max(1.5, ts / 14);
+      g.fillStyle = "rgba(220,255,140," + (0.85 * bl).toFixed(2) + ")"; g.fillRect(px - r2 / 2, py - r2 / 2, r2, r2);
+      glows2.push([px, py, "200,255,120", 0.9, 0.22 * bl]); if (bl > 0.6) srcs.push([fxw, fyw, 1.8, 0.4 * bl]);
+    }
+  }
+  var MZARCH = null;
+  function mazeArch() {   // the arch sprite, 7 tiles wide and 9 tall, foot at (56, 144)
+    if (MZARCH) return MZARCH; var AW = 112, AH = 144, FX = 56, FY = 140, c = document.createElement("canvas"); c.width = AW; c.height = AH;
+    var g = c.getContext("2d"), im = g.createImageData(AW, AH), d = im.data, M = new Uint8Array(AW * AH), S2 = new Float32Array(AW * AH), x, y;
+    var put = function (px, py, col, a) { if (px < 0 || py < 0 || px >= AW || py >= AH) return; var k = (py * AW + px) * 4; if (a == null) { d[k] = col[0]; d[k + 1] = col[1]; d[k + 2] = col[2]; d[k + 3] = 255; } else { d[k] = col[0]; d[k + 1] = col[1]; d[k + 2] = col[2]; d[k + 3] = Math.round(255 * a); } };
+    var stamp = function (cx, cy, r, v, side) { for (var yy = Math.floor(cy - r - 1); yy <= cy + r + 1; yy++) for (var xx = Math.floor(cx - r - 1); xx <= cx + r + 1; xx++) { if (xx < 0 || yy < 0 || xx >= AW || yy >= AH) continue; var dx = xx - cx, dy = yy - cy; if (dx * dx + dy * dy > r * r) continue; var k = yy * AW + xx; if (M[k] > v) continue; M[k] = v; S2[k] = side != null ? side : dx / Math.max(1, r); } };
+    var bez = function (p0, p1, p2, r0, r1, v, n) { for (var s = 0; s <= n; s++) { var t = s / n, a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, e = t * t; stamp(a * p0[0] + b * p1[0] + e * p2[0], a * p0[1] + b * p1[1] + e * p2[1], r0 + (r1 - r0) * t, v); } };
+    // prop roots fanning into the mud (behind the legs), then the two legs, then the trunk
+    [[-1], [1]].forEach(function (q) { var f = q[0];
+      [[14, -16, 34, -2], [18, -30, 44, -1], [12, -8, 26, 0], [20, -42, 50, 0]].forEach(function (r) { bez([FX + f * r[0], FY + r[1]], [FX + f * (r[0] + (r[2] - r[0]) * 0.8), FY + r[1] - 6], [FX + f * r[2], FY + r[3]], 2.2, 1.6, 1, 24); });
+      bez([FX + f * 22, FY], [FX + f * 30, FY - 64], [FX + f * 3, FY - 74], 8.5, 6, 2, 60);
+    });
+    bez([FX, FY - 72], [FX - 2, FY - 82], [FX + 1, FY - 92], 8, 6, 2, 20);
+    bez([FX - 2, FY - 84], [FX - 18, FY - 90], [FX - 26, FY - 100], 4, 2.5, 2, 20); bez([FX + 2, FY - 86], [FX + 16, FY - 92], [FX + 28, FY - 98], 4, 2.5, 2, 20);
+    // the doorway: dark inside the arch, under the legs
+    var door = function (xx, yy) { var dx = (xx - FX) / 17, dy = (FY - yy) / 62; return yy <= FY && yy > FY - 64 && dx * dx + Math.pow(Math.max(0, dy - 0.35) / 0.65, 2) < 1; };
+    for (y = 0; y < AH; y++) for (x = 0; x < AW; x++) if (!M[y * AW + x] && door(x, y)) M[y * AW + x] = 5;
+    // canopy clumps (drawn last, over the trunk's top), each one shaded on its own so they read as separate bunches of leaves
+    var CL = [[-40, -92, 10], [40, -90, 10], [-32, -104, 12], [30, -102, 12], [-20, -96, 11], [20, -95, 11], [-18, -116, 13], [16, -118, 13], [-2, -108, 12], [0, -128, 11], [-30, -122, 9], [30, -120, 9], [-6, -94, 9], [8, -96, 9]], CI = new Int8Array(AW * AH).fill(-1);
+    CL.forEach(function (b, n) { var cx = FX + b[0], cy = FY + b[1], r = b[2]; for (var yy = Math.floor(cy - r - 2); yy <= cy + r + 2; yy++) for (var xx = Math.floor(cx - r - 2); xx <= cx + r + 2; xx++) { if (xx < 0 || yy < 0 || xx >= AW || yy >= AH) continue; var dx = xx - cx, dy = yy - cy, rw = r + Math.sin(Math.atan2(dy, dx) * 7 + n) * 1.3 + (mzH(xx, yy, n) - 0.5) * 1.2; if (dx * dx + dy * dy > rw * rw) continue; var k = yy * AW + xx; M[k] = 3; CI[k] = n; S2[k] = (dx + dy * 1.2) / r; } });
+    for (y = 0; y < AH; y++) for (x = 0; x < AW; x++) { var k = y * AW + x, m = M[k]; if (!m) continue;
+      var edge = function (test) { return x === 0 || y === 0 || x === AW - 1 || y === AH - 1 || test(M[k - 1]) || test(M[k + 1]) || test(M[k - AW]) || test(M[k + AW]); };
+      if (m === 5) { var dd = (FY - y) / 64; put(x, y, dd < 0.25 ? MZC.dk1 : MZC.dk0); if (dd < 0.06 && mzH(x, y, 3) < 0.12) put(x, y, MZC.dkHi); continue; }
+      if (m === 3) { var n2 = CI[k], seam = (CI[k - 1] !== n2 && CI[k - 1] >= 0) || (CI[k - AW] !== n2 && CI[k - AW] >= 0), sp = mzH(x, y, 9), l = -S2[k] + (mzH(x >> 1, y >> 1, 11) - 0.5) * 0.7;
+        if (edge(function (v) { return v !== 3; })) { put(x, y, MZC.ink); continue; }
+        put(x, y, seam ? MZC.ink : l > 0.75 ? (sp < 0.2 ? MZC.lf4 : MZC.lf3) : l > 0.1 ? (sp < 0.05 ? MZC.lf3 : MZC.lf2) : l > -0.5 ? (sp > 0.94 ? MZC.lf0 : MZC.lf1) : MZC.lf0); continue; }
+      if (edge(function (v) { return v !== 1 && v !== 2; })) { put(x, y, MZC.bk0); continue; }
+      var s3 = S2[k], st = mzH(x >> 1, y >> 2, 4); put(x, y, s3 < -0.35 ? (st < 0.15 ? MZC.bk2 : MZC.bk3) : s3 < 0.2 ? (st < 0.3 ? MZC.bk1 : MZC.bk2) : st < 0.12 ? MZC.bk0 : MZC.bk1);
+    }
+    for (var mo = 0; mo < 22; mo++) { var mx = Math.round(FX - 42 + mzH(mo, 1, 5) * 84), top = -1; for (y = 0; y < AH; y++) if (M[y * AW + mx] === 3) top = y; if (top < 0) continue;   // moss hangs from the canopy
+      var ln = 4 + Math.floor(mzH(mo, 2, 5) * 14); for (var q2 = 1; q2 <= ln; q2++) put(mx + (q2 > 6 && mo % 2 ? 1 : 0), top + q2, q2 === ln ? MZC.moss1 : MZC.moss0); }
+    for (x = FX - 52; x < FX + 52; x++) { var mh = Math.round(3 - Math.abs(x - FX) / 18 + mzH(x, 0, 1) * 1.5); for (y = FY - mh + 1; y <= FY + 3; y++) if (!M[y * AW + x] || M[y * AW + x] === 5) put(x, y, y <= FY - mh + 1 ? mzHex("#4a3a24") : mzHex("#2e2416")); }   // a mud mound at its feet
+    g.putImageData(im, 0, 0);
+    return (MZARCH = { c: c, fx: FX, fy: FY });
+  }
+  function mazeDraw(g, now) {   // the arch: a pixel-art mangrove whose two root legs make the doorway (MAZE ART)
+    var s = sites(); s = s && s.maze; if (!s || cave || HOME || OCS) return; var sx = ox + (s.x + 2.5) * ts, sy = oy + s.y * ts, t = reduce ? 0 : now / 1000; if (sx < -ts * 5 || sx > vw + ts * 5) return; siteSeen("maze", s);
+    var A = mazeArch(), sc = ts / 16; g.imageSmoothingEnabled = false; g.drawImage(A.c, Math.round(sx - A.fx * sc), Math.round(sy - A.fy * sc), Math.round(A.c.width * sc), Math.round(A.c.height * sc));
+    for (var f = 0; f < 5; f++) { var bl = 0.5 + 0.5 * Math.sin(t * 2.2 + f * 1.7); if (bl < 0.2) continue; var fx2 = sx + (Math.sin(t * 0.6 + f * 2.3) * 9 + (f - 2) * 4) * sc, fy2 = sy - (14 + f * 9 + Math.sin(t * 0.8 + f) * 4) * sc, r = Math.max(2, sc * 1.2);
+      g.fillStyle = "rgba(200,255,120," + (0.18 * bl).toFixed(3) + ")"; g.beginPath(); g.arc(fx2, fy2, r * 3, 0, 7); g.fill(); g.fillStyle = "rgba(230,255,160," + (0.9 * bl).toFixed(2) + ")"; g.fillRect(fx2 - r / 2, fy2 - r / 2, r, r); }
+  }
+
   // ---------- #93 THE BOG WITCH'S TOWER: a tall ruin to climb (grapple or wall-clinging toes), three runes to light in order, then the top ----------
   var RUNE_S = ["☾", "✦", "◉"], RUNE_N = ["the Moon", "the Star", "the Eye"];
   function towerS() { var o = p8(); if (!o.tw || typeof o.tw !== "object") o.tw = {}; return o.tw; }
