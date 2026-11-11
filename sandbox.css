@@ -2731,3 +2731,20 @@ small.bo-cost{display:flex}
 .sbx-stage .sbx-stn .sbx-sbox{position:absolute!important;inset:0!important;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;border-radius:0!important;border:0!important;transform:none!important;margin:0!important;box-shadow:none!important;background:transparent!important;display:flex;flex-direction:column}
 .sbx-stage .sbx-stn .sbx-phead,.sbx-stage .sbx-stn .sbx-body{max-width:1100px;width:100%;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
 .sbx-stage .sbx-stn .sbx-body{flex:1;min-height:0}
+/* CHARACTER MAKER: Clothes tab */
+.cc-wcats{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.cc-wcats::-webkit-scrollbar{display:none}
+.cc-wcats button{position:relative;flex:none;padding:6px 13px;border-radius:10px;border:1.5px solid #ffffff1c;background:#ffffff08;color:#cfe9dc;font:800 .8rem Nunito,sans-serif;cursor:pointer}
+.cc-wcats button.on{border-color:#ff9ad0;background:#ff9ad01f;color:#ffd6ec}
+.cc-wcats button i{position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:#ff9ad0;box-shadow:0 0 0 2px #0b1410}
+.cc-wear{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.cc-wear button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;border-radius:12px;border:1.5px solid #ffffff14;background:radial-gradient(circle at 50% 38%,#ffffff10,#ffffff04 70%);color:#fff;cursor:pointer;transition:transform .12s,border-color .12s}
+.cc-wear button:not([disabled]):hover{transform:translateY(-2px);border-color:#ff9ad066}
+.cc-wear img{width:56px;height:auto;image-rendering:pixelated}
+.cc-wear small{font:800 .66rem Nunito,sans-serif;text-align:center;line-height:1.15;color:#e8f5ee}
+.cc-wear em{font:900 .6rem Nunito,sans-serif;font-style:normal;color:#9fd8c0}
+.cc-wear button.on{border-color:#ff9ad0;background:#ff9ad01c;box-shadow:0 0 0 2px #ff9ad033}
+.cc-wear button.lock{opacity:.5;cursor:default}.cc-wear button.lock img{filter:grayscale(.6) brightness(.8)}.cc-wear button.lock em{color:#9ad8ff}
+.cc-note a{color:#ff9ad0;font-weight:900}
+.cc-main{grid-template-columns:240px minmax(0,1fr)}.cc-main>*{min-width:0}
+@media (max-width:640px){.cc-main{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.cc-tabs{flex-wrap:wrap;overflow:visible}}

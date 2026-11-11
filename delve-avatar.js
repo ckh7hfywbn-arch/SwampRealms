@@ -144,6 +144,22 @@ var DelveAv = (function () {
 
   // ---------- hats: each draws upward from hy (the row sitting on the skull), hw = head width (even) ----------
   var HATS = {
+    // STARTER CLOTHES (free for everyone): straw sunhat, sweatband, swamp cap
+    strawhat: function (B, hy, hw) {
+      var bw = hw + 6, x0 = 11 - bw / 2, i; B.r(x0, hy, bw, 1, "#d9b25a"); B.p(x0, hy, "#a8823a"); B.p(x0 + bw - 1, hy, "#a8823a"); B.r(x0 + 1, hy + 1, bw - 2, 1, "#8a6a2a", 0.55);
+      for (i = 0; i < bw; i += 3) B.p(x0 + i + 1, hy, "#f2d88a");
+      B.row(hy - 1, hw - 2, "#c2362b"); B.p(11 - (hw - 2) / 2, hy - 1, "#e65a4a"); B.row(hy - 2, hw - 2, "#e8c46a"); B.row(hy - 3, hw - 4, "#e8c46a"); B.row(hy - 4, hw - 6 > 2 ? hw - 6 : 2, "#d9b25a");
+      B.p(11 - (hw - 2) / 2, hy - 2, "#fff0b0"); B.p(11 - (hw - 4) / 2, hy - 3, "#fff0b0"); B.p(11 + (hw - 2) / 2 - 1, hy - 2, "#a8823a"); B.p(11 + (hw - 4) / 2 - 1, hy - 3, "#a8823a");
+    },
+    sweatband: function (B, hy, hw) {
+      var x0 = 11 - hw / 2; B.row(hy, hw, "#f6f3ea"); B.p(x0, hy, "#d8d2c0"); B.p(x0 + hw - 1, hy, "#b8b2a0");
+      for (var i = 1; i < hw - 1; i += 2) B.p(x0 + i, hy, "#35d6b4"); B.p(x0 + hw, hy + 1, "#f6f3ea"); B.p(x0 + hw, hy + 2, "#d8d2c0");
+    },
+    swampcap: function (B, hy, hw) {
+      var x0 = 11 - hw / 2; B.row(hy, hw + 2, "#1f6a3a"); B.p(x0 - 1, hy, "#2f8a4a"); B.r(x0 + hw - 1, hy + 1, 3, 1, "#14502a");
+      B.row(hy - 1, hw - 2, "#2f8a4a"); B.row(hy - 2, hw - 2, "#2f8a4a"); B.row(hy - 3, hw - 4, "#2f8a4a"); B.p(11 - (hw - 2) / 2, hy - 1, "#5fbf6a"); B.p(11 - (hw - 2) / 2, hy - 2, "#5fbf6a");
+      B.p(10, hy - 2, "#f2c14e"); B.p(11, hy - 2, "#f2c14e"); B.p(10, hy - 1, "#a8740a"); B.p(11, hy - 4, "#14502a");
+    },
     raidband: function (B, hy, hw) {   // blood-red Dweller headband with trailing tails, over wild black hair
       var x0 = 11 - Math.floor(hw / 2), x1 = x0 + hw - 1;
       B.row(hy, hw + 2, "#c2362b"); B.p(x0 - 1, hy, "#e65a4a"); B.p(x1 + 1, hy, "#7a1f1a");
@@ -223,6 +239,13 @@ var DelveAv = (function () {
 
   // ---------- face gear: eyes = [[x,y],[x,y]] ----------
   var FACES = {
+    roundspecs: function (B, e) {
+      e.forEach(function (q) { var x = q[0] - 2, y = q[1] - 2; B.r(x, y, 5, 1, "#3a2a1c"); B.r(x, y + 4, 5, 1, "#3a2a1c"); B.r(x, y, 1, 5, "#3a2a1c"); B.r(x + 4, y, 1, 5, "#3a2a1c"); B.p(x + 1, y + 1, "#ffffff", 0.7); });
+      B.r(e[0][0] + 3, e[0][1] - 1, Math.max(1, e[1][0] - e[0][0] - 5), 1, "#3a2a1c");
+    },
+    bandage: function (B, e) {
+      var x = e[1][0] - 1, y = e[1][1] + 2; B.r(x, y, 4, 2, "#f1d2a8"); B.p(x, y, "#fff0d8"); B.p(x + 3, y + 1, "#c9a27a"); B.p(x + 1, y, "#c9a27a", 0.6); B.p(x + 2, y + 1, "#c9a27a", 0.6);
+    },
     eyepatch: function (B, e) {
       B.r(e[0][0] - 1, e[0][1] - 1, 3, 3, "#14141a"); B.p(e[0][0] - 1, e[0][1] - 1, "#3a3a4c"); B.r(e[0][0] + 2, e[0][1] - 1, e[1][0] - e[0][0] - 1, 1, "#14141a");
     },
@@ -262,6 +285,8 @@ var DelveAv = (function () {
     [[7, 17], [8, 18], [9, 19], [10, 20], [11, 20], [12, 19], [13, 18], [14, 17]].forEach(function (c, i) { B.p(c[0], c[1], i % 2 ? dark : col); });
   }
   var NECKS = {
+    shellnk: function (B, by) { [[7, 17], [8, 18], [9, 19], [12, 19], [13, 18], [14, 17]].forEach(function (c) { B.p(c[0], c[1] + by, "#6b4a26"); }); B.r(10, 19 + by, 2, 2, "#ffb3c8"); B.p(10, 19 + by, "#fff0f4"); B.p(11, 20 + by, "#d16a8a"); B.p(10, 21 + by, "#d16a8a", 0.7); },
+    kerchief: function (B, by) { B.r(7, 17 + by, 8, 1, "#2f6fd1"); B.r(8, 18 + by, 6, 1, "#2f6fd1"); B.r(9, 19 + by, 4, 1, "#2f6fd1"); B.r(10, 20 + by, 2, 1, "#1d4a96"); B.p(7, 17 + by, "#6aa0ff"); B.p(9, 18 + by, "#ffffff"); B.p(12, 18 + by, "#ffffff"); B.p(11, 19 + by, "#ffffff"); B.r(8, 19 + by, 1, 1, "#1d4a96", 0.6); },
     bell: function (B, by) { B.r(7, 17 + by, 8, 1, "#d12f4a"); B.r(7, 17 + by, 8, 1, "#7a1428", 0); B.p(7, 17 + by, "#ff7a7a"); B.r(10, 18 + by, 2, 2, "#f2c14e"); B.p(10, 18 + by, "#fff4b0"); B.p(11, 19 + by, "#a8740a"); },
     bowtie: function (B, by) { B.r(7, 17 + by, 3, 3, "#e83a9a"); B.r(12, 17 + by, 3, 3, "#e83a9a"); B.p(7, 17 + by, "#ff9ad0"); B.p(12, 17 + by, "#ff9ad0"); B.p(9, 18 + by, "#7a1f6a"); B.p(12, 18 + by, "#7a1f6a"); B.r(10, 17 + by, 2, 2, "#a8206a"); B.p(10, 17 + by, "#ff9ad0"); },
     scarf: function (B, by) {
@@ -287,6 +312,9 @@ var DelveAv = (function () {
     tux: { c: ["#3a3a4c", "#25252f", "#0e0e14"], sleeve: ["#3a3a4c", "#25252f", "#0e0e14"], sl: 6, cuff: "#f6f3ea" },
     armor: { c: G.tl, sleeve: ["#4a4a5c", "#25252f", "#0e0e14"], sl: 6, cuff: "#35d6b4", pauld: G.tl },
     robe: { c: G.red, sleeve: G.red, sl: 6, cuff: "#f2c14e" },
+    tank: { c: ["#ffffff", "#e6e2d6", "#9a968a"], sleeve: ["#ffffff", "#e6e2d6", "#9a968a"], sl: 0 },
+    flannel: { c: ["#e05a4a", "#b8322a", "#6a1410"], sleeve: ["#e05a4a", "#b8322a", "#6a1410"], sl: 6, cuff: "#3a1a14" },
+    overalls: { c: ["#6a9ae0", "#3a6ab8", "#1a3a70"], sleeve: ["#f6f3ea", "#d8d2c0", "#9a968a"], sl: 2 },
     raider: { c: ["#7a4a30", "#55331f", "#241410"], sleeve: ["#7a4a30", "#55331f", "#241410"], sl: 4, cuff: "#c2362b", pauld: ["#5a5a6e", "#2c2c38", "#0e0e14"] }
   };
   function torso(B, id, by, noItem) {
@@ -315,6 +343,14 @@ var DelveAv = (function () {
       for (i = 0; i < 5; i++) { B.p(x + 1 + i, y + i, "#2a1a10"); B.p(x + 2 + i, y + i, "#3a2518"); }
       B.p(x + 1, y, "#8a5a3a"); B.r(x, y + 5, 8, 1, "#c2362b"); B.r(x, y + 5, 8, 1, "#7a1f1a", 0.0); B.p(x, y + 5, "#e65a4a"); B.r(x + 3, y + 5, 2, 1, "#f1ead0"); B.p(x + 3, y + 5, "#ffffff");
       B.p(x + 5, y + 1, "#c2362b"); B.p(x + 6, y + 2, "#7a1f1a"); B.r(x + 1, y + 6, 6, 1, "#150c08");
+    } else if (id === "tank") {
+      B.r(x + 2, y, 4, 2, "#f1ead0", 0.0); B.r(x, y, 2, 2, "#000", 0.0); B.r(x + 2, y, 4, 1, "#c9c4b4"); B.r(x + 3, y + 1, 2, 1, "#c9c4b4"); B.p(x + 3, y + 3, "#35d6b4"); B.p(x + 4, y + 3, "#35d6b4"); B.p(x + 4, y + 4, "#0e7490");
+    } else if (id === "flannel") {
+      for (j = 0; j < 7; j++) for (i = 0; i < 8; i++) { if (j % 3 === 1 || i % 3 === 1) B.p(x + i, y + j, (j % 3 === 1 && i % 3 === 1) ? "#3a1a14" : "#7a2018", 0.75); }
+      B.r(x + 3, y, 2, 2, "#f6f3ea"); B.p(x + 3, y + 1, "#3a1a14"); B.p(x + 4, y + 3, "#f2c14e"); B.p(x + 4, y + 5, "#f2c14e");
+    } else if (id === "overalls") {
+      B.r(x, y, 8, 2, "#f6f3ea"); B.p(x, y, "#ffffff"); B.r(x + 1, y, 1, 3, "#3a6ab8"); B.r(x + 6, y, 1, 3, "#3a6ab8"); B.r(x + 2, y + 2, 4, 1, "#3a6ab8"); B.p(x + 1, y + 2, "#f2c14e"); B.p(x + 6, y + 2, "#f2c14e");
+      B.r(x + 3, y + 3, 2, 2, "#2a5aa8"); B.p(x + 3, y + 3, "#6a9ae0"); B.r(x, y + 6, 8, 1, "#1a3a70");
     } else if (id === "robe") {
       B.r(x + 3, y, 2, 7, "#f2c14e"); B.p(x + 3, y, "#fff4b0"); B.p(x + 3, y + 3, "#fff4b0"); B.p(x + 4, y + 5, "#a8740a");
       B.r(x, y, 8, 2, "#f6f3ea"); B.p(x, y, "#ffffff"); B.p(x + 1, y + 1, "#d8d2c0"); B.p(x + 3, y, "#f6f3ea"); B.p(x + 4, y + 1, "#d8d2c0"); B.p(x + 6, y + 1, "#d8d2c0");
@@ -325,7 +361,9 @@ var DelveAv = (function () {
   var SHOES = {
     sneakers: { rows: [".ccc", "cccc", "wwww"], pal: { c: "#35d6b4", w: "#f6f3ea" }, hi: { c: "#b8fff0" } },
     swampboots: { rows: [".ggg", ".bbb", ".bbb", ".bbb", "bbbb", "dddd"], pal: { g: "#4ccf5a", b: "#9a6030", d: "#2a1708" } },
-    gildedkicks: { rows: [".hhh", "gggg", "dddd"], pal: { h: "#fff4b0", g: "#f2c14e", d: "#a8740a" } }
+    gildedkicks: { rows: [".hhh", "gggg", "dddd"], pal: { h: "#fff4b0", g: "#f2c14e", d: "#a8740a" } },
+    sandals: { rows: [".s.s", "bbbb"], pal: { s: "#9a6030", b: "#5c3818" } },
+    rainboots: { rows: [".yyy", ".yyy", ".yyy", "yyyy", "dddd"], pal: { y: "#ffd23f", d: "#8a6a10" }, hi: { c: "#fff0a0" } }
   };
 
   // ---------- worn armor (Delve progression): drawn over the torso and the shoulders. a main, b light, c dark, t trim ----------

@@ -54,7 +54,7 @@ const COSMETICS=[
  {id:"robe",cat:"shirt",name:"Royal Robe",price:350},
  {id:"sneakers",cat:"shoes",name:"Swamp Sneakers",price:35},
  {id:"swampboots",cat:"shoes",name:"Mossy Stompers",price:90},
- {id:"gildedkicks",cat:"shoes",name:"Gilded Kicks",price:250},
+ {id:"gildedkicks",cat:"shoes",name:"Gilded Kicks",price:250},{id:"strawhat",cat:"hat",name:"Straw Sunhat",price:0,starter:1},{id:"sweatband",cat:"hat",name:"Sweatband",price:0,starter:1},{id:"swampcap",cat:"hat",name:"Swamp Cap",price:0,starter:1},{id:"roundspecs",cat:"face",name:"Round Specs",price:0,starter:1},{id:"bandage",cat:"face",name:"Bandage",price:0,starter:1},{id:"shellnk",cat:"neck",name:"Shell Necklace",price:0,starter:1},{id:"kerchief",cat:"neck",name:"Neckerchief",price:0,starter:1},{id:"tank",cat:"shirt",name:"Tank Top",price:0,starter:1},{id:"flannel",cat:"shirt",name:"Flannel Shirt",price:0,starter:1},{id:"overalls",cat:"shirt",name:"Overalls",price:0,starter:1},{id:"sandals",cat:"shoes",name:"Sandals",price:0,starter:1},{id:"rainboots",cat:"shoes",name:"Rain Boots",price:0,starter:1},
  {id:"pond",cat:"bg",name:"Lotus Pond",price:50},
  {id:"sunset",cat:"bg",name:"Dusk Marsh",price:80},
  {id:"night",cat:"bg",name:"Firefly Night",price:120},
@@ -103,7 +103,7 @@ const Crystals={
  animals:ANIMALS,
  tier:tierOf,
  item:id=>COSMETICS.find(x=>x.id===id),
- owns:id=>!!CS.own[id],
+ owns:id=>!!CS.own[id]||!!((COSMETICS.find(x=>x.id===id)||{}).starter),   // STARTER CLOTHES: free for everyone
  variant:id=>{const l=typeof AV!=="undefined"?AV.variants(id):[];const v=CS.hv&&CS.hv[id];return l.some(x=>x.id===v)?v:(l[0]?l[0].id:"")},   // chosen colour of a cosmetic that has variants (free to change)
  setVariant(id,v){cload();if(typeof AV!=="undefined"&&AV.variants(id).some(x=>x.id===v)){CS.hv[id]=v;csave();return true}return false},
  reload:cload,
@@ -133,7 +133,7 @@ const Crystals={
   try{SFX.streak()}catch(e){}
   return{ok:true};
  },
- equip(id){cload();const it=this.item(id);if(!it||!CS.own[id])return false;CS.eq[it.cat]=CS.eq[it.cat]===id?"":id;csave();return true},
+ equip(id){cload();const it=this.item(id);if(!it||!(CS.own[id]||it.starter))return false;CS.eq[it.cat]=CS.eq[it.cat]===id?"":id;csave();return true},
  clear(cat){cload();CS.eq[cat]="";csave()},
  setAnimal(a){cload();if(ANIMALS.some(x=>x.id===a)){CS.animal=a;csave()}},
  outfit(){return{animal:CS.animal,hat:CS.eq.hat,face:CS.eq.face,neck:CS.eq.neck,shirt:CS.eq.shirt,shoes:CS.eq.shoes,bg:CS.eq.bg,hv:CS.hv,acc:accWorn()}}

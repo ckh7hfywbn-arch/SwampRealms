@@ -1261,3 +1261,11 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **How it's drawn:** each night's layout is painted once at 16 px a tile, then blitted. Code: search `MAZE ART` (`mazePaint`, `mazeLife`, `mazeArch`).
 - **Fix: crafting:** the Craft button in the crafting panel was greyed out for everything, even with all the materials. The MULTIPLES change had broken the if / else chain in `cgDetail`. The "you have a spare" note is now set after the chain, so it can't touch the button.
 - **Fullscreen crafting:** the crafting panel (E) and every crafting station window now fill the screen, like every other window. Content is centred at up to 1100px wide. Before, the panel was a floating box on desktop and a bottom sheet on phones.
+- **Clothes in the character maker:**
+  - **New tab:** the character maker has a **Clothes** tab with sections for Hats, Face, Neck, Tops and Shoes. Each card shows your character wearing that piece, and **Surprise me** now picks clothes too.
+  - **What you can wear:** anything you own. Paid Armory pieces you don't own are greyed out with their Crystal price.
+  - **Saving:** your choices are saved to the same outfit as the Armory and the Wardrobe when you press Done.
+- **12 free starter clothes:** Straw Sunhat, Sweatband, Swamp Cap, Round Specs, Bandage, Shell Necklace, Neckerchief, Tank Top, Flannel Shirt, Overalls, Sandals and Rain Boots.
+  - **Ownership:** everyone owns them from the start (`starter:1` in `store.js`, which `Crystals.owns` checks).
+  - **Art:** each has pixel art in `delve-avatar.js` and vector art for the site avatar and Armory cards in `avatar.js`.
+  - **Armory:** they show there as Owned.
