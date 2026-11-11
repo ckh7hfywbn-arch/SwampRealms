@@ -14123,6 +14123,7 @@
   }
   // SOIL MIXING: where two different soils meet (peat or clay pockets in mud, say) the rarer one reaches into the commoner one in soft
   // tongues with a few loose crumbs, so pockets blend into the ground instead of sitting in it as square patches. Rank decides who reaches.
+  var HRANK = {}; [[T.BEDROCK, 0], [T.STONE, 1], [T.FROSTROCK, 2], [T.BASALT, 3], [T.ICE, 4], [T.X_permafrost, 5], [T.X_obsidian, 6]].forEach(function (r) { if (r[0] !== undefined) HRANK[r[0]] = r[1]; });   // which rock reaches into which
   var SRANK = {}; [[T.MOSS, 1], [T.MUD, 1], [T.SNOW, 2], [T.X_sand, 3], [T.X_silt, 4], [T.ASH, 5], [T.CLAY, 6], [T.X_peat, 7]].forEach(function (r) { if (r[0] !== undefined) SRANK[r[0]] = r[1]; });
   function seamCanvas(nid, side, v, dq, soft, thin) {   // a jagged tongue of soft ground nid reaching into a rock block (or a softer soil) from one side (cached)
     var key = nid + "," + side + "," + v + "," + dq + "," + ts + (soft ? "s" : "") + (thin ? "t" : ""), c = SEAMC.get(key); if (c) return c;
@@ -14143,7 +14144,9 @@
   function drawSeams(g, id, i, j, sx, sy) {
     var hard = CARVE_HARD[id], rk = SRANK[id]; if (!hard && !rk) return; var thin = !!NATOV || (TILES[get(i, j)] && TILES[get(i, j)].kind === "ore"); var dq = Math.round(clamp((j - SURF) / 46, 0, 1) * 4), v = ((i * 7 + j * 13) >>> 0) & 3;
     var nb = [get(i, j - 1), get(i + 1, j), get(i, j + 1), get(i - 1, j)];
-    for (var sd = 0; sd < 4; sd++) { var nid = nb[sd]; if (!CARVE_SOFT[nid] || !NATC[nid]) continue;
+    for (var sd = 0; sd < 4; sd++) { var nid = nb[sd]; if (!NATC[nid] || nid === id) continue;
+      if (hard && CARVE_HARD[nid]) { if ((HRANK[nid] || 0) > (HRANK[id] || 0)) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq, false, true), sx, sy, ts, ts); continue; }   // ROCK MIXING: rock into rock too (the rarer one reaches in, thinner)
+      if (!CARVE_SOFT[nid]) continue;
       if (hard) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq, false, thin), sx, sy, ts, ts);
       else if (SRANK[nid] > rk) g.drawImage(seamCanvas(nid, sd, (v + sd) & 3, dq, true, thin), sx, sy, ts, ts); }
   }

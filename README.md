@@ -1365,3 +1365,8 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
 - **Water that makes sense:** world generation now settles lakes and lagoons (and lava) at the end (`settle` in `sandbox-world.js`). Any liquid with open air beside it or under it drains away, so a lake whose rim is lower than its surface drops to the rim. No more lagoon hanging in the air with a flat wall where the Shores' dunes stop. Existing worlds get it on their next load, since the land is rebuilt from the seed.
 - **Trees on slopes:** where the ground falls away beside a tree's foot, the trunk grows a pair of roots that reach down the slope into the lower ground, so trees no longer look like they float. This covers palms and every other tree.
 - **Ores stay readable:** the soil tongues that creep into rock from neighbouring blocks are now drawn *under* an ore's gems instead of over them, and reach only half as far into ore blocks. The mixed look stays, but the ores aren't buried.
+- **Every natural block mixes with its neighbours:**
+  - **Soil into rock:** as before, soil reaches into rock.
+  - **Soil into soil:** as before, the rarer soil reaches into the commoner one.
+  - **Rock into rock (new):** where two kinds of rock meet (stone, frostrock, basalt, ice, permafrost, obsidian, bedrock), the rarer one now reaches into the other in thinner tongues (`HRANK`).
+  - **Not included:** building blocks (bricks, planks, glass...) keep clean edges, so built things stay crisp.
