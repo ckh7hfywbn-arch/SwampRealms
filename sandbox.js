@@ -725,6 +725,7 @@
       o.xk = x;
     }
     if (x.top && typeof x.top === "object") Object.keys(x.top).forEach(function (k) { if (o[k] === undefined && k !== "xk") o[k] = x.top[k]; });
+    if (x.top && x.top.p5 && x.top.p5.bank && o.p5 && typeof o.p5 === "object" && ((x.top.p5.bank.v | 0) > ((o.p5.bank && o.p5.bank.v) | 0))) { o.p5 = Object.assign({}, o.p5, { bank: x.top.p5.bank }); }   // FROG BANK: savings set aside by the old load bug come back
     if (o.oc && typeof o.oc === "object" && (x.oc || x.boat)) { o.oc = Object.assign({}, o.oc); if (x.oc) Object.keys(x.oc).forEach(function (k) { if (o.oc[k] === undefined) o.oc[k] = x.oc[k]; });
       if (x.boat && o.oc.boat && typeof o.oc.boat === "object") { o.oc.boat = Object.assign({}, o.oc.boat); Object.keys(x.boat).forEach(function (k) { if (o.oc.boat[k] === undefined) o.oc.boat[k] = x.boat[k]; }); } }
     else if (x.oc && !o.oc) o.oc = Object.assign({}, x.oc, x.boat ? {} : {});
@@ -897,6 +898,11 @@
     if (o.dst && typeof o.dst === "object") { d.dst = {}; ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore"].forEach(function (k) { if (o.dst[k] !== undefined && o.dst[k] !== null) d.dst[k] = o.dst[k]; }); }
     if (o.malc && typeof o.malc === "object") d.malc = { v: clamp(o.malc.v | 0, 0, 99999), warned: o.malc.warned ? 1 : 0, best: clamp(o.malc.best | 0, 0, 99999), c: clamp(+o.malc.c || 0, 0, 420), rz: Array.isArray(o.malc.rz) ? o.malc.rz.filter(function (k, i, a) { return (k | 0) === k && k >= 0 && k < 8 && a.indexOf(k) === i; }) : [] };
     if (d.dim === "malc" && !d.dst) d.dim = "";
+    // SAVED WHOLE: these were being set aside as "unknown" on every load (and so lost): the Frog Bank and the rest of phases 4, 5 and 7a,
+    // your Swamp Awakening, spare-gear wear, best tiers, the world's look and cheats, and two one-time camp fixes
+    ["p4", "p5", "p8", "spw", "bt", "look"].forEach(function (f) { if (o[f] && typeof o[f] === "object" && !Array.isArray(o[f])) d[f] = o[f]; });
+    if (typeof o.molt === "string" && /^[a-z_]{1,20}$/.test(o.molt)) d.molt = o.molt;
+    d.cheats = +o.cheats ? 1 : 0; ["mineflat", "campfg"].forEach(function (f) { var v = +o[f]; if (isFinite(v) && v) d[f] = v; });
     keepOut(o, d);   // keep aside what this version does not know
     return d;
   }
@@ -6564,8 +6570,8 @@
     var k = Math.ceil(DODGE.cd / DODGE_CD * 24); if (k === RBK) return; RBK = k;   // the roll buttons show the cooldown as a sweep that empties
     if (!RBTN) RBTN = [].slice.call(document.querySelectorAll("[data-roll]")); RBTN.forEach(function (b) { b.classList.toggle("cd", k > 0); b.style.setProperty("--cdp", (k / 24 * 100).toFixed(1) + "%"); }); }
   function dodgeSpeed(base) { return base * (0.5 + 0.5 * DODGE.t / DODGE_T); }   // fast at the start, easing out
-  function dodgeSpin(g, h) {
-    if (reduce) return; var a = 0;
+  function dodgeSpin(g, h) {   // (only the player's own Reduce Motion setting stops the spin; the speed saver's "reduce" used to, so slower phones rolled without rolling)
+    if (motionOff) return; var a = 0;
     if (DODGE.t > 0) a = (1 - DODGE.t / DODGE_T) * 6.2832; else if (SPEC.spin > 0) a = -(1 - SPEC.spin / SPEC.spinT) * 6.2832 * SPEC.turns; else return;
     g.translate(0, -h); g.rotate(a); g.translate(0, h);
   }
@@ -18983,6 +18989,13 @@
   function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
   ["touchstart", "touchmove", "touchend"].forEach(function (ev) { cv.addEventListener(ev, function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false }); });
   ["gesturestart", "gesturechange"].forEach(function (ev) { cv.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false }); });
+  (function () {   // PHONES: never zoom the page while playing (pinch, double tap or Safari's gesture zoom), wherever the fingers land
+    var stop = function (e) { e.preventDefault(); };
+    ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) { document.addEventListener(ev, stop, { passive: false }); });
+    document.addEventListener("touchmove", function (e) { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    document.addEventListener("dblclick", function (e) { var t = e.target; if (!(t && t.closest && t.closest("input,textarea,[contenteditable]"))) e.preventDefault(); }, { passive: false });
+    document.addEventListener("selectstart", function (e) { var t = e.target; if (!(t && t.closest && t.closest("input,textarea,[contenteditable]"))) e.preventDefault(); });
+  })();
   cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   cv.addEventListener("pointerdown", function (e) {
     if (panelOpen || menuOpen || trans || (e.pointerType === "mouse" && e.button !== 0)) return; e.preventDefault();
@@ -19129,7 +19142,7 @@
   $("sbxTrail").addEventListener("click", function () { if (inMC()) { var mq = mcQuest(); QB.ch = "s:Malcruor"; QB.sel = mq ? mq.id : ""; if (panelOpen) closePanel(); openPanel("quests"); return; } if (PHONEQ.matches) { QB.ch = ""; QB.sel = MAIN[S.qi] ? MAIN[S.qi].id : ""; if (panelOpen) closePanel(); openPanel("quests"); return; } var q = MAIN[S.qi], rc = q && QRC[q.id], r = rc && recById(rc); if (r && !recStatus(r).owned) openCraftTo(rc); else openPanel("quests"); });
   $("sbxTip").addEventListener("click", function (e) { var b = e.target.closest("[data-tip]"); if (!b) return; var rc = $("sbxTip").getAttribute("data-rc"); hideTip(); if (b.getAttribute("data-tip") === "show" && rc) openCraftTo(rc); });
   function toggleCraft() { if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab === "craft") return closePanel(); if (panelOpen) closePanel(); openPanel("craft"); }
-  function toggleJournal(t) { var want = t || (tab === "craft" || tab === "chest" ? "quests" : tab); if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab !== "craft" && (!t || tab === t)) return closePanel(); if (panelOpen) closePanel(); openPanel(want); }
+  function toggleJournal(t) { var want = t || (tab === "craft" || tab === "chest" || tab === "more" ? "quests" : tab); if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab !== "craft" && tab === want) return closePanel(); if (panelOpen) closePanel(); openPanel(want); }   // (the Journal button never reopens Options: "more" was its last tab)
   $("sbxMenuBtn").addEventListener("click", function () { toggleCraft(); });
   $("sbxJrnBtn").addEventListener("click", function () { toggleJournal(); });
   $("sbxOptBtn").addEventListener("click", function () { OPTSEC = ""; toggleJournal("more"); });
@@ -22363,7 +22376,7 @@
     var spd = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy); p.walk += spd * dt; p.vx = spd > 0.5 ? spd : 0; p.on = true; p.vy = 0; p.face = cp.face;
     hurtT = Math.max(0, hurtT - dt); hurtGrace = Math.max(0, hurtGrace - dt); shake = Math.max(0, shake - dt * 3); sinceHurt += dt;
     if (hp < MAXHP && sinceHurt > REGEN_WAIT) hp = Math.min(MAXHP, hp + REGEN_RATE * regenMul() * dt); drawHp();
-    cam.x += (cp.x - cam.x) * Math.min(1, dt * 8); cam.y += (cp.y - 1 - cam.y) * Math.min(1, dt * 8);
+    var cek = 1 - Math.exp(-dt * 8); cam.x += (cp.x - cam.x) * cek; cam.y += (cp.y - 1 - cam.y) * cek;   // (frame-rate independent: no lurch when a frame runs long)
     var hk = HOME.hk || 1, piv = HOME.piv || vh / 2, halfW = vw / 2 / ts, halfH = vh / 2 / (ts * hk), pd = HOME.pad || { t: 1, b: 2, s: 0.5 }; cam.x = clamp(cam.x, halfW - pd.s, HW - halfW + pd.s); cam.y = clamp(cam.y, halfH - pd.t, HH - halfH + pd.b);
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor(((aim.my - piv) / hk + piv - oy) / ts); if (aim.tx < 0 || aim.tx >= HW || aim.ty < 0 || aim.ty >= HH) aim.tx = -1;   // through the tilt
     tickFarm(dt); tickHunger(dt); tickFx(dt); tickBounties(dt);
@@ -23073,7 +23086,7 @@
     if (wkday() === "Feastday" && !dinNow() && S.time < 200) h += '<p class="st-tip"><b>Tonight:</b> family dinner at the Sky Village at dusk. “Bring something tasty, little one!”</p>';
     if (dinNow() && o.din !== dinWeek()) h += '<p class="st-tip"><b>Dinner time!</b> “Up to the Sky Village with you, the family\'s waiting.”</p>';
     h += '<div class="st-row p4-acts"><button type="button" class="btn ghost" data-p4="gift:croaker">Give a gift</button><button type="button" class="btn' + (fresh ? "" : " ghost") + '" data-p4="tales">' + (tl.length ? "Tall Tales" + (fresh ? ' <i class="p4-new">' + fresh + "</i>" : "") : "Tall Tales (2 ♥)") + "</button>" + (o.bt.compass && !o.bt.home ? '<button type="button" class="btn ghost" data-p4="brother">Your brother?</button>' : "") + "</div>";
-    h += moltLine(); return h;
+    return h;   // (the Swamp Awakening is Zaruk's alone now: Croaker no longer brings it up)
   }
   function p4CroakoRow() { var h = ""; if (famHearts("croako") >= 2) h += tourLine(); return h; }
   function p4CroakaRow() { var h = famHeartsHtml("croaka").replace("p4-hearts", "p4-hearts p4-hsm"); h += thiefLine(); return h; }
@@ -24527,8 +24540,10 @@
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; actBtn = null;
     ox = pxS(vw / 2 - cam.x * ts); oy = pxS(vh / 2 - cam.y * ts); if (shake > 0 && !reduce && OPT.shake > 0) { var shq = now / 1000, shk = shake * OPT.shake; ox += Math.round((Math.sin(shq * 53) * 0.6 + Math.sin(shq * 31.7) * 0.4) * shk * 7); oy += Math.round((Math.cos(shq * 47) * 0.6 + Math.sin(shq * 23.3) * 0.4) * shk * 6); } ox = pxS(ox); oy = pxS(oy);   // SCREEN SHAKE
     var HK = homeHK(), PIV = pxS(vh / 2); HOME.hk = HK; HOME.piv = PIV;
-    var SY = function (y) { return PIV + (y - PIV) * HK; }, DY = function (wy) { var f = oy + wy * ts; return SY(f) - f; }, wyAt = function (sy) { return ((sy - PIV) / HK + PIV - oy) / ts; };
-    var gIn = function () { g.save(); g.translate(0, PIV * (1 - HK)); g.scale(1, HK); };   // the ground's own (tilted) space
+    // SMOOTH SCROLLING: the tilted ground and everything standing on it are snapped to whole device pixels (GC), so rows of pixel art no longer
+    // shimmer a pixel up and down, and props no longer wobble against the ground, as the camera glides
+    var SY = function (y) { return PIV + (y - PIV) * HK; }, GC = pxS(SY(oy)) - SY(oy), DY = function (wy) { var f = oy + wy * ts; return pxS(SY(f) + GC) - f; }, wyAt = function (sy) { return ((sy - PIV - GC) / HK + PIV - oy) / ts; };
+    var gIn = function () { g.save(); g.translate(0, PIV * (1 - HK) + GC); g.scale(1, HK); };   // the ground's own (tilted) space
     if (!(ox <= 0 && SY(oy) <= 0 && ox + HW * ts >= vw && SY(oy + HH * ts) >= vh)) { g.fillStyle = "#24401f"; g.fillRect(0, 0, vw, vh); }   // PERF: the farm fills the view; the base colour is only needed past its edge
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(HW - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(wyAt(0)) - 1), Y1 = Math.min(HH - 1, Math.floor(wyAt(vh)) + 3), s16 = ts / 16;
     // --- the ground: one pre-painted pixel-art canvas, plus water glints that twinkle ---
@@ -26203,7 +26218,7 @@
       ["Festival", function () { return festOpen(); }],
       ["Fish log", function () { return openFishLog(); }],
       ["Farm book", function () { return openFarmBook(); }],
-      ["Swamp Awakening", function () { return moltOpen(); }],
+      ["Swamp Awakening (Zaruk's choices)", function () { openGuardian(false); GD.page = -4; renderGuardian(); }],
       ["Notice board", function () { return nbOpen(); }],
       ["Tall tales", function () { return taleOpen(); }],
       ["Earthquake", function () { return quakeOpen(); }],

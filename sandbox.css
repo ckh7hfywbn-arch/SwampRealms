@@ -2880,3 +2880,9 @@ small.bo-cost{display:flex}
 #sbxPack .sbx-is.on.rar-4,#sbxPack .sbx-is.on.rar-5{animation-name:rarGlowPk}
 @keyframes rarGlowPk{50%{box-shadow:0 0 0 2px #f2c14e,inset 0 0 22px -3px var(--rc),0 0 22px -3px var(--rc)}}
 #sbxPack .sbx-is.on[class*="rar-"]:not(.rar-0){border-color:#f2c14e;box-shadow:0 0 0 2px #f2c14e,inset 0 0 12px -4px var(--rc),0 8px 18px -8px #f2c14e}
+/* PHONES: no zooming while playing. No double-tap zoom anywhere, no text-selection loupe (the "magnifying glass") or callout from
+   holding and dragging, and text boxes at 16px so iPhone doesn't zoom in when one is focused. Typing in a box still works. */
+html,body.sbx-app{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.sbx-app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+body.sbx-app input,body.sbx-app textarea,body.sbx-app select,body.sbx-app [contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+@media (pointer:coarse){body.sbx-app input,body.sbx-app textarea,body.sbx-app select{font-size:max(16px,1em)}}
