@@ -997,7 +997,8 @@
   function switchWorld(id) {
     if (MP.on || MP.ws) mpLeave();
     if (id !== curId) { var tw = readWorld(id); if (!tw) { if (CLOUD.state === "on" && CLOUD.list.some(function (q) { return q.wid === id; })) { toast("Getting that world from your account…", "#4ee6b4"); cloudPull(id, true).then(function (ok) { if (ok) switchWorld(id); }); } else toast("That world could not be read.", "#ff8a3d"); return; }
-      bossGone(); save(); curId = id; start(tw); if (TC.pickedChar) { S.animal = TC.pickedChar; TC.pickedChar = ""; mkSprite(); } touchIdx(); if (!titleOpen) toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); }
+      var wasT = titleOpen, nm = (wEntry(id) || {}).name;
+      loadScreen("world", function () { bossGone(); save(); curId = id; start(tw); if (TC.pickedChar) { S.animal = TC.pickedChar; TC.pickedChar = ""; mkSprite(); } touchIdx(); closeWorlds(); if (titleOpen) closeTitle(); }, { line: "Waking your world", sub: nm, after: function () { if (!wasT) toast("Loaded " + (curEntry() ? curEntry().name : "world") + ".", "#4ee6b4"); } }); return; }   // LOADING SCREEN
     closeWorlds(); if (titleOpen) closeTitle();
   }
   var newDiff = 1, newCheats = false;
@@ -1007,8 +1008,11 @@
     if (!skipCC && !wIdx.list.length && !(function () { try { return localStorage.getItem("swamp-delve-cc") === "1"; } catch (e) { return false; } })()) {   // FIRST WORLD: make your character first, then step in
       var sd0 = $("sbxWSeed") ? $("sbxWSeed").value : ""; ccOpen(true, function () { try { localStorage.setItem("swamp-delve-cc", "1"); } catch (e) {} if ($("sbxWSeed")) $("sbxWSeed").value = sd0; createWorld(name, true); if (menuOpen) renderWorlds(); }); return; }
     if (MP.on || MP.ws) mpLeave();
-    bossGone(); save(); var z = S.zoom, an = S.animal; addWorld(String(name || "").trim().slice(0, 24));
-    var sdIn = $("sbxWSeed"), sd = seedFrom(sdIn ? sdIn.value : ""); start(Object.assign(fresh(sd), { zoom: z, animal: (function () { try { var c0 = localStorage.getItem("swamp-delve-char"); if (c0 && DelveAv._AN[c0]) return c0; } catch (e) {} return an; })(), diff: newDiff, cheats: newCheats ? 1 : 0, look: { col: APPR.col || "" } })); save(); touchIdx(); closeWorlds(); if (titleOpen) closeTitle(); toast("A fresh world: " + curEntry().name + " (" + DIFF[newDiff].n + (newCheats ? ", cheats on: press / or tap the / button for commands" : "") + "). Happy digging!", "#4ee6b4"); newCheats = false;
+    var nmIn = String(name || "").trim().slice(0, 24), sdIn = $("sbxWSeed"), sd = seedFrom(sdIn ? sdIn.value : "");
+    loadScreen("world", function () {   // LOADING SCREEN: the new land is built behind it
+    bossGone(); save(); var z = S.zoom, an = S.animal; addWorld(nmIn);
+    start(Object.assign(fresh(sd), { zoom: z, animal: (function () { try { var c0 = localStorage.getItem("swamp-delve-char"); if (c0 && DelveAv._AN[c0]) return c0; } catch (e) {} return an; })(), diff: newDiff, cheats: newCheats ? 1 : 0, look: { col: APPR.col || "" } })); save(); touchIdx(); closeWorlds(); if (titleOpen) closeTitle(); toast("A fresh world: " + curEntry().name + " (" + DIFF[newDiff].n + (newCheats ? ", cheats on: press / or tap the / button for commands" : "") + "). Happy digging!", "#4ee6b4"); newCheats = false;;
+    }, { sub: nmIn || "A new world" });
   }
   function deleteWorld(id) {
     try { localStorage.removeItem(wkey(id)); } catch (e) {}
@@ -1181,7 +1185,7 @@
       if (!e) { if (wIdx.list.length >= MAXW) { CLOUD.err = "You can keep " + MAXW + " worlds on this device. Delete one first."; if (menuOpen) renderWorlds(); return false; } e = { id: id, name: r.j.name || "World", made: Date.now(), played: r.j.updated || Date.now() }; wIdx.list.push(e); }
       try { localStorage.setItem(wkey(id), r.j.data); } catch (er) { CLOUD.err = "Not enough browser storage to download it."; if (menuOpen) renderWorlds(); return false; }
       e.name = r.j.name || e.name; e.crev = r.j.rev; e.cdirty = 0; e.conflict = 0; e.chash = saveHash(ok); e.csync = Date.now(); e.tier = ok.tier; e.wpn = ok.wpn; e.trail = ok.qi; e.ch = MAIN[ok.qi] ? MAIN[ok.qi].ch : CHAPTERS.length - 1; saveIdx();
-      if (id === curId) { start(ok); e.cdirty = 0; saveIdx(); toast(quiet ? "This world was updated from your cloud save." : "Loaded the cloud copy of " + e.name + ".", "#4ee6b4"); }
+      if (id === curId) { loadScreen("world", function () { start(ok); }, { line: "Waking your world", sub: e.name }); e.cdirty = 0; saveIdx(); toast(quiet ? "This world was updated from your cloud save." : "Loaded the cloud copy of " + e.name + ".", "#4ee6b4"); }
       else if (!quiet) toast("Downloaded " + e.name + ".", "#4ee6b4");
       if (menuOpen) renderWorlds(); return true;
     });
@@ -10601,6 +10605,59 @@
   function mcLevel() { return clamp((malcS().c || 0) / MC_SEC, 0, 1); }
   function mcAggro() { var v = malcS().v || 1; return Math.max(0.4, 1 - (v - 1) * 0.08); }   // creatures notice you from less far away each visit
   function mcSeed(s) { var h = Math.imul((s | 0) ^ 0x5bd1e995, 0x2c1b3c6d); h ^= h >>> 15; h = Math.imul(h, 0x297a2d39); h ^= h >>> 13; return (Math.abs(h) % 2e9) || 7; }   // every world has its own Malcruor
+  // ---- LOADING SCREENS: the few moments the game really stops to build a world (a new or saved world, crossing into Malcruor and back,
+  // a heart cleansed). They share the startup loader's look (dl-load) with their own colours, a line, a rotating tip and the block bar.
+  // loadScreen(kind, fn): paints the screen first, runs fn (the slow, synchronous build) behind it, fills the bar, then fades out.
+  // The game is held still meanwhile (trans.hold), and fades back in from black underneath.
+  var LS = { on: false };
+  var LSK = {
+    world: { line: "Shaping the land", art: "logo", tips: ["Hold on tree leaves to gather Sticks for your first pick.", "Murkwater trunks can be chopped bare-pawed. Every other tree needs a Reed Pick.", "Torches keep Dusk Bats away. Light up your caves.", "Sleep in a bed to skip the night.", "Old Croaker’s quests in the Journal always show what to do next.", "Each biome has its own pick tier. Check a block’s card to see what breaks it."] },
+    malc: { line: "Crossing into Malcruor", art: "portal", h: "Malcruor", tips: ["The corruption rises the whole time you are here. Get back to the portal before it fills.", "Die in Malcruor and everything you carry is lost. No gravestone.", "Break a Corrupted Heart and its land becomes Aurelmire, where the corruption drains away.", "Malcruor items are corrupted copies of home. Bloodiron gear is the best of them.", "Each visit, the creatures notice you from further away."] },
+    home: { line: "Back to the SwampRealms", art: "portal", h: "The SwampRealms", tips: ["Your bed, your chests and your camp are all back home.", "Bloodiron needs a Workbench in the SwampRealms to repair.", "The cracked portal is the third portal in the SwampRealms nexus.", "Bring a full stack of food next time. Malcruor hits hard."] },
+    dawn: { line: "The light returns", art: "sun", h: "Aurelmire", tips: ["In Aurelmire the corruption drains away while you stand there.", "Dawn Shards drop from every cleansed heart.", "Cleansed land drops golden Aurelmire items instead of corrupt ones.", "Cleanse all eight hearts and the corruption is gone for good."] }
+  };
+  function lsArt(k) {
+    if (k.art === "logo") return '<canvas class="ls-logo"></canvas>';
+    if (k.art === "sun") return '<div class="ls-sun" aria-hidden="true"><i class="ry"></i><i class="ds"></i></div>';
+    return '<div class="ls-portal" aria-hidden="true"><i class="sw"></i><i class="sw2"></i><i class="eye"></i>' +
+      '<svg class="cr" viewBox="0 0 100 100"><path d="M50 2 L47 12 L53 19 L48 28 M47 12 L41 15"/><path d="M96 44 L86 47 L80 42 L72 49"/><path d="M14 84 L22 76 L20 68 L28 62 M22 76 L30 79"/><path d="M80 90 L74 81 L77 73"/><path d="M6 36 L15 40 L17 47"/></svg></div>';
+  }
+  function loadScreen(kind, fn, o) {
+    o = o || {}; var k = LSK[kind] || LSK.world;
+    if (LS.on) { try { fn(); } catch (e) { console.error(e); } return; }
+    LS.on = true; try { stopInput(); } catch (e) {}
+    trans = { t: 0, done: true, hold: true, mid: function () {} };
+    var el = document.createElement("div"), N = 14, i, flies = "";
+    for (i = 0; i < 6; i++) flies += '<span class="dl-fly" style="left:' + (8 + i * 15 + (i * 37) % 9) + '%;top:' + (24 + (i * 53) % 46) + '%;animation-delay:' + (i * 0.7).toFixed(1) + 's"></span>';
+    el.className = "dl-load ls ls-" + kind + " out"; el.setAttribute("role", "progressbar"); el.setAttribute("aria-label", k.line); el.setAttribute("aria-valuemin", "0"); el.setAttribute("aria-valuemax", "100");
+    el.innerHTML = '<div class="dl-hills" aria-hidden="true"><i class="h1"></i><i class="h2"></i><i class="gr"></i></div>' + flies +
+      '<div class="dl-mid">' + lsArt(k) + (k.h ? '<p class="ls-h">' + k.h + '</p>' : "") + (o.sub ? '<p class="ls-sub"></p>' : "") +
+      '<div class="dl-bar" aria-hidden="true"></div><p class="dl-st"><span>' + (o.line || k.line) + '</span><b>0%</b></p><p class="dl-tip"></p></div>';
+    if (o.sub) el.querySelector(".ls-sub").textContent = o.sub;
+    (document.fullscreenElement || document.webkitFullscreenElement || document.body).appendChild(el); LS.el = el;
+    var bar = el.querySelector(".dl-bar"), pc = el.querySelector(".dl-st b"), tip = el.querySelector(".dl-tip"), cells = [];
+    for (i = 0; i < N; i++) { var c = document.createElement("i"); bar.appendChild(c); cells.push(c); }
+    var cv = el.querySelector(".ls-logo"); if (cv) { try { DelveLogo.draw(cv, { b: Math.max(5, Math.min(9, Math.floor((Math.min(innerWidth, 700) - 48) / 38))) }); } catch (e) {} }
+    var ti = Math.floor(Math.random() * k.tips.length); function nextTip() { tip.textContent = "Tip: " + k.tips[ti++ % k.tips.length]; } nextTip(); var tipT = setInterval(nextTip, 3200);
+    var aim = 0.35, shown = 0, built = false, t0 = performance.now(), minT = o.min || (kind === "dawn" ? 900 : kind === "world" ? 1000 : 1300);
+    function paint() {
+      shown += (aim - shown) * (built ? 0.22 : 0.08); if (aim - shown < 0.004) shown = aim;
+      var on = Math.floor(shown * N + 0.0001); for (var j = 0; j < N; j++) cells[j].className = j < on ? "on" : j === on && !built ? "dig" : "";
+      var p = Math.round(shown * 100); pc.textContent = p + "%"; el.setAttribute("aria-valuenow", p);
+      if (built && shown >= 0.999 && performance.now() - t0 > minT) { finish(); return; }
+      LS.raf = requestAnimationFrame(paint);
+    }
+    function finish() {
+      clearInterval(tipT); el.classList.add("out"); trans = { t: 0.3, done: true, mid: function () {} };   // the land fades in from black under the screen
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 600); LS.on = false; LS.el = null;
+      if (o.after) { try { o.after(); } catch (e) { console.error(e); } }
+    }
+    requestAnimationFrame(function () { el.classList.remove("out"); LS.raf = requestAnimationFrame(paint);
+      setTimeout(function () {   // the screen is fully up: now build (the page freezes here, behind it)
+        try { fn(); } catch (e) { console.error(e); try { loopErr(e); } catch (e2) {} }
+        built = true; aim = 1; trans = { t: 0, done: true, hold: true, mid: function () {} };   // start() may have cleared it: keep the game still until the screen goes
+      }, 300); });
+  }
   // ---- DIMENSIONS: the keys of S that belong to one world's land (edits, explored map, liquids, walls, where you stand, chests, graves...).
   // While you are in one world the other's are kept in S.dst; a swap saves, trades them over and rebuilds the land from its own seed.
   var DIMK = ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore"];
@@ -10695,11 +10752,11 @@
     if (inMC() || trans || hp <= 0 || !curId || OCS || HOME || (cave && !inNexus())) return;
     if (MP.on || MP.ws) { nag("Malcruor can only be entered in single player for now."); return; }
     stopInput(); thud(90, 0.18); snd("open", "Epic"); MC.fx = 1;
-    trans = { t: 0, done: false, mid: function () {
+    loadScreen("malc", function () {   // LOADING SCREEN: the cracked portal swirls while Malcruor is built
       var M = malcS(); M.h = cave && cave.hole ? { x: cave.hole.x, y: cave.hole.y } : null; M.v = (M.v || 0) + 1; M.c = 0; S.st.malcvisits = (S.st.malcvisits || 0) + 1; MC.warn = 0; MC.died = false;
       dimSwap("malc"); var G = mcGate(); if (!S.p || M.v) { p.x = G.x + 3.5; p.y = mcGateY(); var gd = 0; while (boxHit(p.x, p.y) && gd++ < 60) p.y -= 1; } p.face = 1; cam.x = p.x; cam.y = p.y - 1;
-      setTimeout(function () { banner("Malcruor", M.v === 1 ? "The corrupt world. Get back to the portal before the corruption takes you." : "Visit " + M.v + ". The creatures remember you...", "The blood moon never sets"); }, 700);
-    } };
+      setTimeout(function () { banner("Malcruor", M.v === 1 ? "The corrupt world. Get back to the portal before the corruption takes you." : "Visit " + M.v + ". The creatures remember you...", "The blood moon never sets"); }, 1500);
+    });
   }
   function mcLeave(dead, msg) {   // back through the portal to the SwampRealms (or, after an elimination, wake there)
     if (!inMC()) return;
@@ -10710,10 +10767,10 @@
       else if (M.h) { enterNexus(M.h.x - 1, M.h.y); cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y; }   // back out of the cracked portal in the SwampRealms
       else { p.vx = p.vy = 0; cam.x = p.x; cam.y = p.y - 1; }
       save();
-      setTimeout(function () { toast(dead ? "The corruption spat you back out into the SwampRealms. Whatever you carried is gone." : "You stagger back into the SwampRealms. The red light fades from your eyes.", dead ? "#ff5a5a" : "#ffb0a0"); }, 600);
+      setTimeout(function () { toast(dead ? "The corruption spat you back out into the SwampRealms. Whatever you carried is gone." : "You stagger back into the SwampRealms. The red light fades from your eyes.", dead ? "#ff5a5a" : "#ffb0a0"); }, 1400);
     };
-    if (dead) { go(); return; }
-    if (trans) return; stopInput(); thud(120, 0.12); snd("open", "Rare"); MC.fx = 1; trans = { t: 0, done: false, mid: go };
+    if (dead) { loadScreen("home", go, { line: "Waking in the SwampRealms" }); return; }   // LOADING SCREENS: home again
+    if (trans) return; stopInput(); thud(120, 0.12); snd("open", "Rare"); MC.fx = 1; loadScreen("home", go);
   }
   function mcTick(dt) {
     if (MC.fx > 0) MC.fx = Math.max(0, MC.fx - dt * 0.9); if (MC.gold > 0) MC.gold = Math.max(0, MC.gold - dt * 0.7);
@@ -10787,8 +10844,7 @@
     give("au_dawnshard", 3, h.x, col[h.x] - 1.5); give("au_citrine", 2, h.x, col[h.x] - 1.5); give("au_sundraught", 1, h.x, col[h.x] - 1.5); give("goldcoin", 3, h.x, col[h.x] - 1.5);
     checkGoals(); save();
     setTimeout(function () {
-      if (!inMC()) return; var go = function () { if (!inMC()) return; if (trans) { setTimeout(go, 400); return; } trans = { t: 0, done: false, mid: function () { mcRebuild(); } }; }; go();
-      setTimeout(function () { banner(all ? AU_NAME : "The light returns", all ? "Malcruor is cleansed. The corruption is gone for good." : "This land is " + AU_NAME + " now. " + M.rz.length + " of " + (SW.MALC_Z || 8) + " hearts cleansed.", all ? "A new swamp in the multiverse" : "Corruption fades here"); }, 900);
+      if (!inMC()) return; var go = function () { if (!inMC()) return; if (trans || LS.on) { setTimeout(go, 400); return; } loadScreen("dawn", mcRebuild, { line: all ? "The corruption breaks" : "The light returns", after: function () { banner(all ? AU_NAME : "The light returns", all ? "Malcruor is cleansed. The corruption is gone for good." : "This land is " + AU_NAME + " now. " + M.rz.length + " of " + (SW.MALC_Z || 8) + " hearts cleansed.", all ? "A new swamp in the multiverse" : "Corruption fades here"); } }); }; go();
     }, 1400);
   }
   function mcRebuild() {   // rebuild Malcruor in place with its cleansed areas (you stay where you are)
@@ -16995,7 +17051,7 @@
     hudT -= dt; if (hudT <= 0) { hudT = 0.25; hud(); }
     saveT += dt * 1000; if (saveT >= SAVE_MS) { saveT = 0; save(); }
   }
-  function tickTrans(dt) { trans.t += dt; if (!trans.done && trans.t >= 0.3) { trans.done = true; trans.mid(); } if (trans.t >= 0.6) trans = null; }
+  function tickTrans(dt) { if (trans.hold) return; trans.t += dt; if (!trans.done && trans.t >= 0.3) { trans.done = true; trans.mid(); } if (trans.t >= 0.6) trans = null; }
   function drawTrans() { if (!trans) return; var a = trans.t < 0.3 ? trans.t / 0.3 : Math.max(0, (0.6 - trans.t) / 0.3); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalAlpha = Math.min(1, a); ctx.fillStyle = "#03050a"; ctx.fillRect(0, 0, vw, vh); ctx.globalAlpha = 1; }
 
   // ---- cave art (all drawn in code, like the surface tiles) ----
@@ -24761,7 +24817,7 @@
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
   window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
-  window.__sbx = { mc: { on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { mc: { ls: function (k, o) { loadScreen(k, function () {}, o || { min: 3000 }); }, on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
@@ -26123,6 +26179,10 @@
       ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
+      ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
+      ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
+      ["Loading screen: home to the SwampRealms", function () { loadScreen("home", function () {}, { min: 3000 }); }],
+      ["Loading screen: the light returns", function () { loadScreen("dawn", function () {}, { min: 3000 }); }],
       ["Croak Cards", function () { return cardsOpen("play"); }],
       ["Skills", function () { return skillOpen(); }],
       ["Mossy Altar", function () { return altarOpen(); }],
