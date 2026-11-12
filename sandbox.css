@@ -2801,3 +2801,22 @@ small.bo-cost{display:flex}
 #pkLo .pk-lo h3{display:none}#pkLo .pk-lorow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 @media (max-width:480px){#pkLo .pk-lorow{grid-template-columns:1fr}#pkLo .pk-loc{display:flex;gap:8px}#pkLo .pk-loc>*{flex:1}}
 #sbxPack .pk2-tools{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+/* TIDY TOP BAR (phones held upright): the four small buttons in an even 2x2 on the left, the place name (and Malcruor's corruption bar,
+   drawn right under it) centred on the screen, and on the right the mini map with Crafting and the Backpack side by side under it, the
+   same width as the map. The quest pill drops below the 2x2. */
+@media (max-width:600px) and (orientation:portrait){
+ .sbx-hud{align-items:flex-start}
+ .sbx-ibtns{display:grid;grid-template-columns:repeat(2,36px);grid-auto-rows:36px;gap:6px}
+ .sbx-ibtns .sbx-ibtn{width:36px;height:36px;border-radius:12px}
+ .sbx-ibtns .sbx-ibtn svg{width:19px;height:19px}
+ .sbx-loc{position:absolute;left:50%;top:0;transform:translateX(-50%);max-width:calc(100% - 220px);justify-content:center;padding:7px 12px 7px 10px}
+ .sbx-loc div{text-align:center}
+ .sbx-loc{gap:7px}
+ .sbx-loc b{font-size:.86rem}
+ .sbx-loc span{font-size:.66rem}
+ .sbx-vit{width:104px;align-items:stretch}
+ .sbx-mini{margin-top:0;width:104px;height:66px}
+ .sbx-mbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:0}
+ .sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:100%;height:42px;border-radius:13px}
+ .sbx-trail{top:calc(max(8px,env(safe-area-inset-top)) + 86px)}
+}
