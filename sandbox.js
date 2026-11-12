@@ -10194,15 +10194,22 @@
   // horns. He is passive: he drifts around the hall, comes to hover beside you when you are near, and the first time you arrive he
   // introduces the SwampRealms (S.gmet = 1 after that). Talk to him again any time (tap "Talk to Zaruk" or press F beside him).
   var GD = { x: 12.5, y: 9, alt: 1.6, face: 1, t: 0, tx: 12.5, ty: 9, wait: 0, talkAt: 0, page: 0, intro: false, sleep: false, wk: 0, zz: 0 };
-  var GD_SLEEP = { x: 16.5, y: 8.35 }, GD_SLEEP_ALT = 0.62, NXROW = 5;   // NXROW: the row the portals stand on
+  var GD_SLEEP = { x: 16.5, y: 8.35 }, GD_POST = { x: 12, y: 11 }, GD_SLEEP_ALT = 0.62, NXROW = 5;   // GD_POST: where he keeps watch once awake   // NXROW: the row the portals stand on
   var NEXUS_BLD = { kind: "nexus", b: 0, id: 7777, name: "The SwampRealms" };
   var GD_INTRO = [
     "Hrrrah! A traveller, at last! Don't be frightened, little one. I am Zaruk, Warden of the SwampRealms.",
     "You are standing in the SwampRealms, the heart of the whole Dimension. It is the island that floats between every world, and every world is tied to it like a lantern on a string.",
     "The swamp you came from, with Murkwater, Ember Bog and Frostfen, is the first of the realms. Its Heart had gone dark. You lit it again, your Gate woke up, and here you are.",
-    "See the three great portals behind me? Each one leads to another realm. They are still being built, stone by stone. When one opens, you will hear it from me first.",
-    "Until then this island is yours. Come back through your Realm Gate whenever you like, and the little portal at the island's tip leads home. Give my best to that old frog Croaker!"
+    "See the three great portals behind me? The two on the left lead to the Glimmer Reef and the Thundercrown Peaks. They are still being built, stone by stone. When one opens, you will hear it from me first.",
+    "The third one, on the right, was meant for the Hollow Moon. Then one red night it cracked. Now it opens onto MALCRUOR: the corrupt world, under a blood moon that never sets.",
+    "Listen well, because Malcruor does not forgive. The corruption seeps into you the moment you arrive. You have seven minutes. Watch the bar, and get back to the portal before it fills.",
+    "Everything there hunts you. The creatures are twisted and tougher, some of the dead trees wake up and walk, and the flowers bite. And whatever you carry when you fall there, Malcruor keeps. Forever. No gravestone.",
+    "They say a young fox wandered through on the red night and never came back the same. If you ever see red eyes and tails of fire in the dark... run. I mean it.",
+    "Malcruor remembers you, too. Every time you go back, its creatures grow warier of you. Use that.",
+    "Until then this island is yours. Your Realm Gate brings you here whenever you like, and the little portal at the island's tip leads home. Give my best to that old frog Croaker!",
+    "Oh, and one more thing. You feel itchy, don't you? That is the SwampRealms' light working on you. You are about to MOLT, little one, and you get to choose what you become."
   ];
+  var GD_MALC = [GD_INTRO[4], GD_INTRO[5], GD_INTRO[6], GD_INTRO[8]];
   var GD_LINES = [
     "The portals hum a little louder every time you visit. The builders are nearly done with one of them.",
     "The colours here? Every realm leaks a little of its light into the SwampRealms. That is why the sky never looks the same twice.",
@@ -10824,7 +10831,7 @@
   function enterNexus(gx, gy) {   // called while the gate's bright fade covers the screen
     if (cave) return; stopInput(); enemies.length = 0; bmEndQuiet();
     cave = { hole: { x: gx + 1, y: gy, b: 0 }, bld: NEXUS_BLD, run: 7777, floors: {}, f: 0, F: null };
-    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++; if (S.st.nexus === 1 && !S.molt) setTimeout(function () { toast("You feel... itchy. Old Croaker will know why (molting unlocked).", "#7ae0a0"); }, 5000);
+    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++; if (S.st.nexus === 1 && !S.molt) setTimeout(function () { toast("You feel... itchy. Wake Zaruk: he will know why (molting unlocked).", "#7ae0a0"); }, 5000);
     setFloor(1, "down"); GD.x = GD_SLEEP.x; GD.y = GD_SLEEP.y; GD.tx = GD.x; GD.ty = GD.y; GD.intro = false; GD.face = -1; GD.alt = GD_SLEEP_ALT; GD.wk = 0; gdSleep(true); save();
   }
   function bmEndQuiet() { if (BM.on) { BM.on = false; BM.croak = false; bmRoll(); } }
@@ -10843,16 +10850,17 @@
       GD.alt = GD_SLEEP_ALT;
       if (GD.wk > 0) {
         GD.wk -= dt; var k2 = clamp(1 - GD.wk / 1.5, 0, 1); GD.alt = GD_SLEEP_ALT + (1.55 - GD_SLEEP_ALT) * (k2 * k2 * (3 - 2 * k2));
-        if (GD.wk <= 0) { GD.wk = 0; gdSleep(false); GD.wait = 1; GD.tx = GD.x; GD.ty = GD.y; if (!panelOpen && !trans) { GD.intro = !S.gmet; openGuardian(!S.gmet); } }
+        if (GD.wk <= 0) { GD.wk = 0; gdSleep(false); GD.wait = 4; GD.tx = GD_POST.x; GD.ty = GD_POST.y; if (!panelOpen && !trans) { GD.intro = !S.gmet; openGuardian(!S.gmet); } }
       }
       return;
     }
+    // awake, he keeps to his post beside the middle path (he never follows you, so he is never in the way of a portal): a slow drift
+    // around it, and he turns to watch you when you are near
     var dx = cp.x - GD.x, dy = cp.y - GD.y, d = Math.sqrt(dx * dx + dy * dy);
-    if (d < 5.5) { var side = GD.x < cp.x ? -1 : 1; GD.tx = cp.x + side * 2.1; GD.ty = cp.y - 0.4; GD.face = cp.x < GD.x ? -1 : 1; GD.wait = 1; }
-    else { GD.wait -= dt; if (GD.wait <= 0) { GD.wait = 2.5 + Math.random() * 3; GD.tx = 3.5 + Math.random() * (F.w - 7); GD.ty = 4 + Math.random() * (F.h - 7.5); } }
-    GD.tx = clamp(GD.tx, 1.8, F.w - 1.8); GD.ty = clamp(GD.ty, 3.2, F.h - 2.2);
-    var mx = GD.tx - GD.x, my = GD.ty - GD.y, md = Math.sqrt(mx * mx + my * my), sp = d < 5.5 ? 4 : 1.8;
-    if (md > 0.05) { var st = Math.min(md, sp * dt); GD.x += mx / md * st; GD.y += my / md * st; if (d >= 5.5 && Math.abs(mx) > 0.1) GD.face = mx < 0 ? -1 : 1; }
+    GD.wait -= dt; if (GD.wait <= 0) { GD.wait = 3 + Math.random() * 3; GD.tx = GD_POST.x + (Math.random() - 0.5) * 2.4; GD.ty = GD_POST.y + (Math.random() - 0.5) * 1.2; }
+    var mx = GD.tx - GD.x, my = GD.ty - GD.y, md = Math.sqrt(mx * mx + my * my);
+    if (md > 0.05) { var st = Math.min(md, (md > 3 ? 2.6 : 0.8) * dt); GD.x += mx / md * st; GD.y += my / md * st; }
+    if (d < 7) GD.face = cp.x < GD.x ? -1 : 1; else if (Math.abs(mx) > 0.1) GD.face = mx < 0 ? -1 : 1;
     GD.alt = 1.55 + Math.sin(GD.t * 2.1) * 0.18;
     if (!reduce && Math.random() < dt * 6) parts.push({ x: GD.x + (Math.random() - 0.5) * 1.6, y: GD.y - GD.alt + (Math.random() - 0.3) * 0.8, vx: (Math.random() - 0.5) * 0.4, vy: -0.4 - Math.random() * 0.4, g: -0.2, life: 1, max: 1, c: Math.random() < 0.5 ? "#9ffff0" : "#ffe9a0", s: 2 + Math.random() * 1.5, glw: 1 });
   }
@@ -10984,20 +10992,41 @@
     GD.page = intro || !S.gmet ? 0 : -1; storyOpen = 211; panelOpen = true; el.hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; aim.down = false; mine = null;
     renderGuardian(); thud(330, 0.05); snd("rise");
   }
-  function renderGuardian() {
-    var box = $("sbxStoryBox"), h = "", intro = GD.page >= 0; box.style.setProperty("--qc", "#4ee6d0");
-    h += '<div class="st-zaruk"><img alt="" src="' + zarukPic() + '"></div><small>' + (intro ? "Zaruk, Warden of the SwampRealms · " + (GD.page + 1) + " / " + GD_INTRO.length : "Zaruk, Warden of the SwampRealms") + "</small>";
-    h += "<p>" + esc(intro ? GD_INTRO[GD.page] : GD_LINES[Math.floor(Math.random() * GD_LINES.length)]) + "</p>";
-    if (intro && GD.page < GD_INTRO.length - 1) h += '<div class="st-row"><button type="button" class="btn" data-gd="next">Go on...</button></div>';
-    else if (intro) h += '<div class="st-row"><button type="button" class="btn" data-gd="done">Thank you, Zaruk!</button></div>';
-    else h += '<div class="st-row"><button type="button" class="btn ghost" data-gd="again">Tell me about the SwampRealms</button><button type="button" class="btn" data-story-close>Goodbye</button></div>';
+  function gdMoltHtml() {   // the four molts as cards, picked right here in Zaruk's box (the first molt is free)
+    return '<div class="p7-molts">' + Object.keys(MOLT).map(function (k) { var M = MOLT[k], pic = moltPic(k); return '<button type="button" class="p7-mo" style="--c:' + M.c + '" data-gd="mo:' + k + '"><img alt="" src="' + pic + '"><b>' + esc(M.n) + "</b><small>" + esc(M.d) + "</small></button>"; }).join("") + "</div>";
+  }
+  function renderGuardian() {   // GD.page: 0.. the introduction; -1 small talk; -2 molting; -3 about Malcruor
+    var box = $("sbxStoryBox"), h = "", intro = GD.page >= 0, pg = GD.page; box.style.setProperty("--qc", "#4ee6d0");
+    var steps = GD_INTRO.length - (molt() ? 1 : 0);   // (already molted: no itchy page)
+    h += '<div class="st-zaruk"><img alt="" src="' + zarukPic() + '"></div><small>Zaruk, Warden of the SwampRealms' + (intro ? " · " + (pg + 1) + " / " + steps : "") + "</small>";
+    if (intro) {
+      h += "<p>" + esc(GD_INTRO[pg]) + "</p>";
+      if (pg === GD_INTRO.length - 1 && !molt()) h += gdMoltHtml() + '<p class="st-tip">Your first molt is free. Old Croaker can help you molt again later (for 5 Gold Coins).</p>';
+      else if (pg < steps - 1) h += '<div class="st-row"><button type="button" class="btn" data-gd="next">Go on...</button></div>';
+      else h += '<div class="st-row"><button type="button" class="btn" data-gd="done">Thank you, Zaruk!</button></div>';
+    } else if (pg === -2) {
+      h += "<p>" + esc(molt() ? "You have molted already, little one: a " + MOLT[molt()].n + ". If you want to change, old Croaker has the herbs (5 Gold Coins)." : GD_INTRO[GD_INTRO.length - 1]) + "</p>";
+      h += (molt() ? "" : gdMoltHtml()) + '<div class="st-row"><button type="button" class="btn ghost" data-gd="back">Back</button></div>';
+    } else if (pg <= -3) {
+      var mi = -3 - pg; h += "<p>" + esc(GD_MALC[mi]) + "</p>";
+      h += '<div class="st-row">' + (mi < GD_MALC.length - 1 ? '<button type="button" class="btn" data-gd="mnext">Go on...</button>' : '<button type="button" class="btn ghost" data-gd="back">Back</button>') + "</div>";
+    } else {
+      h += "<p>" + esc(GD_LINES[Math.floor(Math.random() * GD_LINES.length)]) + "</p>";
+      h += '<div class="st-row"><button type="button" class="btn ghost" data-gd="malc">Tell me about Malcruor</button>' + (molt() ? "" : '<button type="button" class="btn ghost" data-gd="molt">I feel itchy... (Molting)</button>') + '<button type="button" class="btn ghost" data-gd="again">Tell me about the SwampRealms</button><button type="button" class="btn" data-story-close>Goodbye</button></div>';
+    }
     box.innerHTML = h; var b = box.querySelector("[data-gd]"); if (b) b.focus({ preventScroll: true });
   }
   function gdAct(a) {
     if (a === "next") { GD.page = Math.min(GD_INTRO.length - 1, GD.page + 1); renderGuardian(); thud(420, 0.03); return; }
     if (a === "again") { GD.page = 0; renderGuardian(); return; }
-    if (a === "done") { var first = !S.gmet; S.gmet = 1; closeStory(); if (first) { toast("Zaruk the Realm Warden is your friend now. Visit the SwampRealms whenever you like.", "#4ee6d0"); checkTrail(); checkGoals(); save(); } }
+    if (a === "back") { GD.page = -1; renderGuardian(); return; }
+    if (a === "molt") { GD.page = -2; renderGuardian(); return; }
+    if (a === "malc") { GD.page = -3; renderGuardian(); return; }
+    if (a === "mnext") { GD.page = Math.max(-3 - (GD_MALC.length - 1), GD.page - 1); renderGuardian(); thud(420, 0.03); return; }
+    if (a.indexOf("mo:") === 0) { var k = a.slice(3); if (!MOLT[k] || molt()) return; gdMet(); moltPick(k); return; }   // moltPick closes the box
+    if (a === "done") { closeStory(); gdMet(); }
   }
+  function gdMet() { var first = !S.gmet; S.gmet = 1; if (first) { toast("Zaruk the Realm Warden is your friend now. Visit the SwampRealms whenever you like.", "#4ee6d0"); checkTrail(); checkGoals(); save(); } }
   // ---------- POTIONS (Brewing Stand) ----------
   // Brew at a Brewing Stand: each potion is a Glass Bottle plus plants, crops or critters. Hold one and tap to drink it; you keep the bottle.
   // Timed effects live in S.fx = { key: seconds left } (saved), shown as chips above your health. Drinking the same one again resets its timer.
@@ -16932,8 +16961,9 @@
       var ln = ladderNear();
       if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.isle ? "Back to the boat" : F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
-    if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
-    else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, (npp.mc ? "Enter Malcruor" : "Under construction") + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, !npp.mc, function () { if (npp.mc) mcAsk(); else nxPortalTalk(npp); }); }
+    var npp = !panelOpen && !trans && !ladderNear() && F.nx ? nxPortalNear() : null;   // NEXUS: a portal you stand at comes first, then Zaruk
+    if (npp) drawPill(g, now, (npp.mc ? "Enter Malcruor" : "Under construction") + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, !npp.mc, function () { if (npp.mc) mcAsk(); else nxPortalTalk(npp); });
+    else if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });
     if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down) && !window.__NOPILL) {
       var qdx = aim.tx + 0.5 - cp.x, qdy = aim.ty + 0.5 - (cp.y - 0.4), ok = qdx * qdx + qdy * qdy <= CAVE_REACH * CAVE_REACH, cx0 = ox + aim.tx * ts, cy0 = oy + aim.ty * ts, L3 = ts * 0.3, pu = 1 + Math.sin(now / 160) * 0.06;
       g.strokeStyle = ok ? "rgba(255,244,200,.95)" : "rgba(255,90,90,.6)"; g.lineWidth = 2; g.beginPath();
@@ -18712,7 +18742,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) { if (np.mc) mcAsk(); else nxPortalTalk(np); } else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (np) { if (np.mc) mcAsk(); else nxPortalTalk(np); } else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip || (SC && holeNear()) ? null : structNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -24603,7 +24633,8 @@
   function moltPick(k) {
     if (!MOLT[k] || molt() === k) return; if (molt()) { if ((S.inv.goldcoin || 0) < 5) { nag("Molting again needs 5 Gold Coins."); return; } S.inv.goldcoin -= 5; if (S.inv.goldcoin <= 0) delete S.inv.goldcoin; reslot(); hbDirty = true; }
     S.molt = k; look().col = MOLT[k].c; S.st.molts = (S.st.molts || 0) + 1; lookChanged(); closeStory();
-    for (var i = 0; i < 26; i++) parts.push({ x: p.x + (Math.random() - 0.5) * 1.2, y: p.y - Math.random() * PH, vx: (Math.random() - 0.5) * 6, vy: -2 - Math.random() * 5, life: 0.9 + Math.random() * 0.6, max: 1.5, c: i % 2 ? "#e8f0c8" : MOLT[k].c, s: 3 });
+    var mpx = cave ? cp.x : p.x, mpy = cave ? cp.y : p.y;   // (in the SwampRealms you are cp)
+    for (var i = 0; i < 26; i++) parts.push({ x: mpx + (Math.random() - 0.5) * 1.2, y: mpy - Math.random() * PH, vx: (Math.random() - 0.5) * 6, vy: -2 - Math.random() * 5, life: 0.9 + Math.random() * 0.6, max: 1.5, c: i % 2 ? "#e8f0c8" : MOLT[k].c, s: 3 });
     p.sq = 0.3; p.sqv = 2; snd("open", "Epic"); popup("You molted!", MOLT[k].n + ": " + MOLT[k].short, MOLT[k].c, MOLT[k].g); checkGoals(); save();
   }
   function moltJump() { return molt() === "tree" ? 1.15 : 1; }
