@@ -10864,18 +10864,15 @@
   // ---- THE LOOK: the land is drawn as usual, then stained blood red and black (hue from a deep crimson, light and dark kept from the land),
   // under a blood moon. Creatures are stained on their own (mcCorruptDraw); you, your gear and dropped items keep their colours so they read.
   var MCB = [1, "#9a0c1a", "#6a3840"];   // MALCRUOR: the far woods and sky: stained blood red, then darkened (so the land in front reads clearly)
+  var MCSG = {};
   var MCGR = { col: 0.4, mul: 0, con: 0.45, band: 0.08, sl: 0.2 };   // MALCRUOR'S GRADE: a light red stain and a little contrast over the land (it used to repaint everything one red, which read as haze)
   function mcGrade(g, now, above) {   // (in Aurelmire, the cleansed areas, the stain fades out and a warm dawn light comes in: MC.rw, 0..1 round the camera)
     if (!inMC()) return;
     var rw = MC.rw || 0, k = 1 - rw;
     g.save();
-    if (k > 0.01) {
-      var MG = MCGR;
-      g.globalAlpha = MG.col * k; g.globalCompositeOperation = "color"; g.fillStyle = "#b0101c"; g.fillRect(0, 0, vw, vh);
-      if (MG.mul > 0) { g.globalAlpha = MG.mul * k; g.globalCompositeOperation = "multiply"; g.fillStyle = lowq ? "#b07078" : "#f0c8cc"; g.fillRect(0, 0, vw, vh); }
-      if (!lowq) { g.globalAlpha = MG.con * k; g.globalCompositeOperation = "multiply"; g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(g.canvas, 0, 0); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.globalAlpha = k;   // contrast: the picture times itself, so the land goes black and only lit edges stay red
-        g.globalCompositeOperation = "screen"; var hz2 = clamp((oy + (horizon(cam.x) - 6) * ts) / vh, 0.05, 0.95), hg = g.createLinearGradient(0, 0, 0, vh); hg.addColorStop(0, "rgba(0,0,0,0)"); hg.addColorStop(hz2, "rgba(150,16,24," + ((+MG.band || 0) * above).toFixed(3) + ")"); hg.addColorStop(Math.min(1, hz2 + 0.12), "rgba(0,0,0,0)"); g.fillStyle = hg; g.fillRect(0, 0, vw, vh);
-        g.globalCompositeOperation = "soft-light"; var sg = g.createLinearGradient(0, 0, 0, vh); sg.addColorStop(0, "rgba(255,90,70," + MG.sl + ")"); sg.addColorStop(0.55, "rgba(255,60,50," + (MG.sl * 0.3).toFixed(3) + ")"); sg.addColorStop(1, "rgba(0,0,0,.35)"); g.fillStyle = sg; g.fillRect(0, 0, vw, vh); }
+    if (k > 0.01) {   // PERF: two full-screen passes (it used to be six, plus a copy of the whole canvas onto itself, which phones felt)
+      g.globalAlpha = MCGR.col * k; g.globalCompositeOperation = "color"; g.fillStyle = "#b0101c"; g.fillRect(0, 0, vw, vh);
+      if (!lowq) { g.globalAlpha = k; g.globalCompositeOperation = "soft-light"; var sg = MCSG.g && MCSG.h === vh ? MCSG.g : (MCSG.h = vh, MCSG.g = (function () { var q = g.createLinearGradient(0, 0, 0, vh); q.addColorStop(0, "rgba(255,90,70,.22)"); q.addColorStop(0.55, "rgba(120,20,30,.25)"); q.addColorStop(1, "rgba(0,0,0,.5)"); return q; })()); g.fillStyle = sg; g.fillRect(0, 0, vw, vh); }
       g.globalCompositeOperation = "source-over"; g.globalAlpha = k;
       if (above > 0.02) { var tg = g.createLinearGradient(0, 0, 0, vh * 0.4); tg.addColorStop(0, "rgba(8,0,2," + (0.45 * above).toFixed(3) + ")"); tg.addColorStop(1, "rgba(8,0,2,0)"); g.fillStyle = tg; g.fillRect(0, 0, vw, vh * 0.4); }
     }
@@ -19001,10 +18998,9 @@
   function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
   ["touchstart", "touchmove", "touchend"].forEach(function (ev) { cv.addEventListener(ev, function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false }); });
   ["gesturestart", "gesturechange"].forEach(function (ev) { cv.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false }); });
-  (function () {   // PHONES: never zoom the page while playing (pinch, double tap or Safari's gesture zoom), wherever the fingers land
+  (function () {   // PHONES: never zoom the page while playing (pinch, double tap or Safari's gesture zoom), wherever the fingers land. (No touchmove listener: a blocking one made every drag wait on the script, which felt choppy; the viewport and touch-action already stop pinching.)
     var stop = function (e) { e.preventDefault(); };
     ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) { document.addEventListener(ev, stop, { passive: false }); });
-    document.addEventListener("touchmove", function (e) { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
     document.addEventListener("dblclick", function (e) { var t = e.target; if (!(t && t.closest && t.closest("input,textarea,[contenteditable]"))) e.preventDefault(); }, { passive: false });
     document.addEventListener("selectstart", function (e) { var t = e.target; if (!(t && t.closest && t.closest("input,textarea,[contenteditable]"))) e.preventDefault(); });
   })();
