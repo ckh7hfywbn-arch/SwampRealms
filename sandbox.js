@@ -12885,7 +12885,7 @@
     moltCling(dir, h); moltPound(!!(keys.d || tk.d)); mountStep(h, !!jump);   // MOLTING: tree frogs cling to walls, bullfrogs slam
     var lad = onLadder();
     if (lad) { p.vy = jump ? -4.8 : (keys.d || tk.d) ? 5.2 : (coarse ? 2.5 : 0); p.coy = 0; p.vx *= 0.9; }
-    else if (jump) { if (p.wet) p.vy = Math.max(p.vy - 52 * h, -5.2); else if (p.coy > 0) { p.vy = (feetWet ? -9 : -14.2) * (fx("leap") ? 1.3 : 1) * (hasCharm("spring") ? 1.15 : 1) * moltJump() * mountJump(); if (molt() === "tree" && !p.on && dir) p.vx = -dir * 7; p.coy = 0; p.on = false; if (!reduce) { p.sq = 0.17; p.sqv = 1.5; } } else if (p.air2 && !p.jprev && hasCharm("alpha")) { p.air2 = false; p.vy = -12.6; chips(p.x, p.y - 0.1, "#cfeaff", 8, 4); thud(640, 0.03); } }   // the Alpha Charm's second jump
+    else if (jump) { if (p.wet) p.vy = Math.max(p.vy - 52 * h, -5.2); else if (p.coy > 0) { p.vy = (feetWet ? -9 : -14.2) * (fx("leap") ? 1.3 : 1) * (hasCharm("spring") ? 1.15 : 1) * moltJump() * mountJump(); if (molt() === "tree" && p.cling > 0 && !feetWet && dir) p.vx = -dir * 7; p.cling = 0; p.coy = 0; p.on = false; if (!reduce) { p.sq = 0.17; p.sqv = 1.5; } } else if (p.air2 && !p.jprev && hasCharm("alpha")) { p.air2 = false; p.vy = -12.6; chips(p.x, p.y - 0.1, "#cfeaff", 8, 4); thud(640, 0.03); } }   // the Alpha Charm's second jump
     if (p.on || lad || p.wet) p.air2 = true;
     var upd = !lad && !p.wet && inUpdraft(p.x, p.y);
     gliding = !!(S.wings && jump && !p.on && !lad && !p.wet && !cave && (p.vy > 0 || upd));
@@ -24304,8 +24304,9 @@
   function moltDmg(e) { var m = molt(); return (m === "bull" ? 1.2 : 1) * (m === "glass" && e && e.lastHit === undefined ? 2 : 1); }
   function moltAggro() { return molt() === "glass" ? 0.5 : 1; }
   function moltCling(dir, h) {   // Tree Frog: hold toward a wall in the air and you stick; jump to spring off
+    if (p.cling > 0) p.cling -= h;   // the wall kick only happens off a real wall cling (never off water or plain jumps)
     if (molt() !== "tree" || p.on || p.wet || !dir) return; var wx = Math.floor(p.x + dir * 0.6), y1 = Math.floor(p.y - 0.4), y2 = Math.floor(p.y - 1.2);
-    if (!(TILES[get(wx, y1)].solid || TILES[get(wx, y2)].solid)) return; if (p.vy > 1.5) p.vy = 1.5; p.coy = 0.08; p.air2 = true;
+    if (!(TILES[get(wx, y1)].solid || TILES[get(wx, y2)].solid)) return; if (p.vy > 1.5) p.vy = 1.5; p.coy = 0.08; p.air2 = true; p.cling = 0.1;
     if (!reduce && Math.random() < h * 6) parts.push({ x: p.x + dir * 0.4, y: p.y - 0.6, vx: 0, vy: 1, life: 0.4, max: 0.4, c: "#9af08a", s: 2 });
   }
   var POUND = { on: false };
@@ -25424,7 +25425,7 @@
     give: [
       ["Every mount", function () { devGive({ m_toad: 1, m_gator: 1, m_heron: 1, m_mudo: 1, m_drake: 1, m_mammoth: 1, m_broom: 1, balloon: 1 }); toast("Mounts in your bag: put one in the hotbar to ride.", "#ffd23f"); }],
       ["Bug Net + spawn bugs", function () { S.net = Math.max(S.net || 0, 1); S.time = 120; BUGT.t = 0; for (var i = 0; i < 6; i++) { BUGT.t = 0; bugTick(0.01); } BUGL.forEach(function (b, i) { b.x = p.x + 2 + i; b.life = 300; }); toast("Bug Net ready, bugs nearby. Select the net and tap them.", "#ffd23f"); }],
-      ["Grapple + tree-frog molt", function () { devGive({ grapple: 1 }); S.molt = S.molt || {}; S.molt.k = "tree"; if (typeof lookChanged === "function") lookChanged(); toast("Grapple added, and you're a tree frog (wall cling).", "#ffd23f"); }],
+      ["Grapple + tree-frog molt", function () { devGive({ grapple: 1 }); S.molt = "tree"; if (typeof lookChanged === "function") lookChanged(); toast("Grapple added, and you're a tree frog (wall cling).", "#ffd23f"); }],
       ["All fossils", function () { var o = {}; Object.keys(FOSSILS).forEach(function (k) { FPARTS.forEach(function (q) { o["fos_" + k + "_" + q[0]] = 1; }); }); devGive(o); }],
       ["Enchanting stuff", function () { devGive({ spore: 60, crystal: 20, starshard: 4, dreamshard: 6, mossaltar: 1 }); }],
       ["Terrarium + 1 of each bug", function () { var o = { terrarium: 1 }; Object.keys(BUGS).forEach(function (k) { o["bug_" + k] = 1; p8().bug[k] = p8().bug[k] || 1; }); devGive(o); }],
