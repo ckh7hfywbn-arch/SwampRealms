@@ -10622,6 +10622,7 @@
     malc: { line: "Crossing into Malcruor", art: "portal", h: "Malcruor", tips: ["The corruption rises the whole time you are here. Get back to the portal before it fills.", "Die in Malcruor and everything you carry is lost. No gravestone.", "Break a Corrupted Heart and its land becomes Aurelmire, where the corruption drains away.", "Malcruor items are corrupted copies of home. Bloodiron gear is the best of them.", "Each visit, the creatures notice you from further away."] },
     home: { line: "Back to the SwampRealms", art: "portal", h: "The SwampRealms", tips: ["Your bed, your chests and your camp are all back home.", "Bloodiron needs a Workbench in the SwampRealms to repair.", "The cracked portal is the third portal in the SwampRealms nexus.", "Bring a full stack of food next time. Malcruor hits hard."] },
     realm: { line: "Entering the SwampRealms", art: "portal", h: "The SwampRealms", tips: ["Wake Zaruk, the old guardian: he knows what the SwampRealms' light does to you.", "Stand in the Prism Spring for your Swamp Awakening.", "Three portals stand in the SwampRealms. The cracked one leads to Malcruor.", "Your Swamp Awakening changes how you look and gives you a power of its own.", "You can always walk back out through the Realm Gate."] },
+    swamp: { line: "Back to the swamp", art: "logo", tips: ["Your camp, your bed and Old Croaker are waiting back in the swamp.", "The Realm Gate takes you back up to the SwampRealms any time.", "Bring Gold Coins up to the Prism Spring if you want to change your Swamp Awakening.", "Malcruor's portal is the cracked one in the SwampRealms."] },
     dawn: { line: "The light returns", art: "sun", h: "Aurelmire", tips: ["In Aurelmire the corruption drains away while you stand there.", "Dawn Shards drop from every cleansed heart.", "Cleansed land drops golden Aurelmire items instead of corrupt ones.", "Cleanse all eight hearts and the corruption is gone for good."] }
   };
   function lsArt(k) {
@@ -16854,6 +16855,7 @@
     if (k === "down") speedWin();
     if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Saltjaw's crew has chained the way down. Beat the Captain first."); return; }
     if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
+    if (k === "up" && inNexus()) { loadScreen("swamp", function () { leaveCaveNow(); }, { sub: (curEntry() || {}).name }); return; }   // LOADING SCREEN: out of the SwampRealms, back down to your world
     if (k === "up") trans = { t: 0, done: false, mid: function () { if (cave.f <= 1 || liftFloor(cave.f)) leaveCaveNow(); else setFloor(cave.f - 1, "up"); } };
     else trans = { t: 0, done: false, mid: function () { setFloor(cave.f + 1, "down"); save(); } };
   }
@@ -26298,6 +26300,7 @@
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
       ["Loading screen: home to the SwampRealms", function () { loadScreen("home", function () {}, { min: 3000 }); }],
       ["Loading screen: into the SwampRealms", function () { loadScreen("realm", function () {}, { min: 3000 }); }],
+      ["Loading screen: back to the swamp", function () { loadScreen("swamp", function () {}, { sub: "Preview", min: 3000 }); }],
       ["Loading screen: the light returns", function () { loadScreen("dawn", function () {}, { min: 3000 }); }],
       ["Croak Cards", function () { return cardsOpen("play"); }],
       ["Skills", function () { return skillOpen(); }],
