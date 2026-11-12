@@ -16807,6 +16807,7 @@
   }
   function caveB() { return !cave ? 0 : cave.bld || cave.volc || cave.glowm || cave.maze ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
+    if (CBK.c) { cvFree(CBK.c); CBK.c = null; CBK.F = null; }   // (the Mine floor's painting is let go)
     if (!cave) return; var h = cave.hole; cave = null; setTimeout(function () { if (S.quake && S.quake.used && S.quake.x === h.x && S.quake.y === h.y) quakeSeal("The fissure rumbles shut behind you."); }, 900); resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; hud(); save();
@@ -17087,6 +17088,82 @@
     }
     return (CATLAS[b] = c);
   }
+  // ---- THE MINE IN THE HOUSE STYLE: each floor's ground and rock walls are painted once, smooth (soft mottled floor with round pebbles,
+  // rock walls with rounded corners and a lit rim, cliff faces lit from the top with strata and a rocky foot, a soft shadow under them),
+  // CBK.K times 16 px per tile, then just copied each frame. Only the floor you are on is kept.
+  var CBK = { F: null, c: null, K: 3 };
+  function hexRgb(h) { h = h.replace("#", ""); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }
+  function rgbK(a, k) { return "rgb(" + Math.round(Math.min(255, a[0] * k)) + "," + Math.round(Math.min(255, a[1] * k)) + "," + Math.round(Math.min(255, a[2] * k)) + ")"; }
+  function caveBake(F) {
+    if (CBK.F === F && CBK.c) return CBK.c; if (CBK.c) cvFree(CBK.c); CBK.F = F;
+    var K = CBK.K, c = document.createElement("canvas"); c.width = F.w * 16 * K; c.height = F.h * 16 * K; var g = c.getContext("2d"), th = F.theme, W2 = F.w, i, j;
+    g.setTransform(K, 0, 0, K, 0, 0); g.lineJoin = "round"; g.lineCap = "round";
+    var wl = function (a, b) { return a < 0 || b < 0 || a >= F.w || b >= F.h ? true : !!F.wall[b * W2 + a]; };
+    var FL = hexRgb(th.floor), FL2 = hexRgb(th.floor2), TP = hexRgb(th.top), TH = hexRgb(th.topHi), FA = hexRgb(th.face), FH = hexRgb(th.faceHi), FO = hexRgb(th.faceLo);
+    for (j = 0; j < F.h; j++) for (i = 0; i < F.w; i++) {   // 1) the floor everywhere (it shows past the walls' rounded corners)
+      var X = i * 16, Y = j * 16, h = function (n) { return SW.hash(i * 7 + n, j * 13 - n, 600); };
+      g.fillStyle = th.floor; g.fillRect(X, Y, 16, 16);
+      for (var q = 0; q < 4; q++) { g.fillStyle = q & 1 ? rgbK(FL, 0.8) : th.floor2; g.globalAlpha = 0.4; g.beginPath(); g.ellipse(X + 2 + h(q) * 12, Y + 2 + h(q + 9) * 12, 2.4 + h(q + 4) * 3, 1.4 + h(q + 5) * 1.8, h(q + 6) * 3, 0, 7); g.fill(); }
+      g.globalAlpha = 1;
+      if (th.plank) { g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 0.5; for (var py0 = 3; py0 < 16; py0 += 4) { g.beginPath(); g.moveTo(X, Y + py0); g.lineTo(X + 16, Y + py0); g.stroke(); } }
+      else { var np = h(40) < 0.45 ? 1 : h(41) < 0.3 ? 2 : 0;
+        for (q = 0; q < np; q++) { var px = X + 2.5 + h(q + 42) * 11, py = Y + 2.5 + h(q + 44) * 11, pr = 0.8 + h(q + 46) * 1.3;
+          g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(px + 0.3, py + 0.6, pr * 1.1, pr * 0.6, 0, 0, 7); g.fill();
+          g.fillStyle = aG(g, py - pr, py + pr * 0.6, rgbK(FL2, 1.35), rgbK(FL2, 1.05), rgbK(FL, 0.75)); g.beginPath(); g.ellipse(px, py, pr * 1.15, pr * 0.8, 0, 0, 7); g.fill();
+          g.fillStyle = "rgba(255,255,255,.22)"; g.beginPath(); g.ellipse(px - pr * 0.35, py - pr * 0.3, pr * 0.4, pr * 0.22, -0.4, 0, 7); g.fill(); } }
+      if (!wl(i, j) && wl(i, j - 1)) { g.fillStyle = aG(g, Y, Y + 8, "rgba(0,0,0,.45)", "rgba(0,0,0,.16)", "rgba(0,0,0,0)"); g.fillRect(X, Y, 16, 8); }   // the shadow at the foot of a wall
+      if (!wl(i, j) && wl(i - 1, j)) { var sl = g.createLinearGradient(X, 0, X + 5, 0); sl.addColorStop(0, "rgba(0,0,0,.3)"); sl.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sl; g.fillRect(X, Y, 5, 16); }
+      if (!wl(i, j) && wl(i + 1, j)) { var sr = g.createLinearGradient(X + 16, 0, X + 11, 0); sr.addColorStop(0, "rgba(0,0,0,.3)"); sr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sr; g.fillRect(X + 11, Y, 5, 16); }
+    }
+    var RAD = 5;
+    for (j = 0; j < F.h; j++) for (i = 0; i < F.w; i++) { if (!wl(i, j)) continue;   // 2) the rock: wall tops, and cliff faces where the floor lies below
+      var X2 = i * 16, Y2 = j * 16, hh = function (n) { return SW.hash(i * 5 + n, j * 11 - n, 610); }, face = !wl(i, j + 1);
+      var oN = !wl(i, j - 1), oW = !wl(i - 1, j), oE = !wl(i + 1, j);
+      if (face) {
+        var rBL = oW ? RAD * 0.7 : 0, rBR = oE ? RAD * 0.7 : 0, rTL = oW && oN ? RAD : 0, rTR = oE && oN ? RAD : 0;
+        g.save(); g.beginPath(); if (g.roundRect) g.roundRect(X2, Y2, 16, 15.2, [rTL, rTR, rBR, rBL]); else g.rect(X2, Y2, 16, 15.2); g.clip();
+        g.fillStyle = aG(g, Y2, Y2 + 16, th.faceHi, th.face, th.faceLo); g.fillRect(X2, Y2, 16, 16);
+        for (var ch = 0; ch < 3; ch++) { var cx = X2 + 1 + hh(ch) * 12, cy = Y2 + 3 + ch * 4 + hh(ch + 3) * 2, cw = 4 + hh(ch + 6) * 5;   // rock chunks in the face, lit on top
+          g.beginPath(); if (g.roundRect) g.roundRect(cx, cy, cw, 3.2, 1.4); else g.rect(cx, cy, cw, 3.2); g.fillStyle = rgbK(FA, 1.12); g.fill(); g.fillStyle = rgbK(FH, 1.05); g.globalAlpha = 0.5; g.fillRect(cx + 0.8, cy + 0.3, cw - 1.6, 0.6); g.globalAlpha = 1; g.fillStyle = rgbK(FO, 0.9); g.fillRect(cx + 0.5, cy + 2.6, cw - 1, 0.6); }
+        g.strokeStyle = rgbK(FO, 0.9); g.globalAlpha = 0.6; g.lineWidth = 0.5; g.beginPath(); g.moveTo(X2, Y2 + 6.5 + hh(9) * 2); g.quadraticCurveTo(X2 + 8, Y2 + 5.5 + hh(10) * 3, X2 + 16, Y2 + 6.5 + hh(11) * 2); g.stroke(); g.globalAlpha = 1;   // a strata line
+        g.fillStyle = rgbK(FH, 1.15); g.globalAlpha = oN ? 0.7 : 0.35; g.fillRect(X2, Y2, 16, 1.2); g.globalAlpha = 1;
+        g.restore();
+        g.fillStyle = rgbK(FO, 0.75); for (var sc = 0; sc < 4; sc++) { var scx = X2 + 2 + sc * 4 + hh(sc + 12) * 1.2; if ((rBL && scx < X2 + 3) || (rBR && scx > X2 + 13)) continue; g.beginPath(); g.ellipse(scx, Y2 + 15, 2.2, 1.2, 0, 0, Math.PI); g.fill(); }   // the rocky foot
+      } else {
+        var rT = [oN && oW ? RAD : 0, oN && oE ? RAD : 0, 0, 0];
+        g.save(); g.beginPath(); if (g.roundRect) g.roundRect(X2, Y2, 16, 16, rT); else g.rect(X2, Y2, 16, 16); g.clip();
+        g.fillStyle = th.top; g.fillRect(X2, Y2, 16, 16);
+        for (var tb = 0; tb < 3; tb++) { g.fillStyle = th.topHi; g.globalAlpha = 0.45; g.beginPath(); g.ellipse(X2 + 2 + hh(tb + 20) * 12, Y2 + 2 + hh(tb + 23) * 12, 2 + hh(tb + 26) * 3, 1.2 + hh(tb + 29) * 1.6, hh(tb + 32) * 3, 0, 7); g.fill(); }
+        g.globalAlpha = 1;
+        if (oN) { g.fillStyle = rgbK(TH, 1.5); g.globalAlpha = 0.8; g.fillRect(X2, Y2, 16, 1); g.globalAlpha = 1; }
+        if (oW) { g.fillStyle = rgbK(TH, 1.3); g.globalAlpha = 0.55; g.fillRect(X2, Y2, 1, 16); g.globalAlpha = 1; }
+        if (oE) { g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(X2 + 15, Y2, 1, 16); }
+        g.restore();
+      }
+    }
+    CBK.c = c; return c;
+  }
+  function caveBlit(g, F, X0, X1, Y0, Y1) {
+    var c = caveBake(F), k = CBK.K * 16, x0 = Math.max(0, X0), y0 = Math.max(0, Y0), x1 = Math.min(F.w - 1, X1), y1 = Math.min(F.h - 1, Y1); if (x1 < x0 || y1 < y0) return;
+    var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(c, x0 * k, y0 * k, (x1 - x0 + 1) * k, (y1 - y0 + 1) * k, ox + x0 * ts, oy + y0 * ts, (x1 - x0 + 1) * ts, (y1 - y0 + 1) * ts); g.imageSmoothingEnabled = sm;
+  }
+  function caveRock(id, v) {   // a boulder or an ore-studded boulder from above: one lumpy top-lit silhouette in the block's colours, ore gems that catch the light
+    var key = "r" + id + ":" + v; if (CNODE[key]) return CNODE[key];
+    var td = TILES[id], ore = td.kind === "ore", K = 3, c = document.createElement("canvas"); c.width = c.height = 16 * K; var g = c.getContext("2d"); g.setTransform(K, 0, 0, K, 0, 0); g.lineJoin = "round";
+    var B = hexRgb(td.c || "#7a7a8a"), A = td.c2 || "#ffffff", h = function (n) { return SW.hash(v * 17 + id, n, 620); };
+    var pts = [], N = 9, cx = 8, cy = 8.6, rx = 6.6 - h(1) * 0.8, ry = 5.4 - h(2) * 0.6;
+    for (var k = 0; k < N; k++) { var a = k / N * 6.2832 + h(3), wob = 0.86 + h(k + 10) * 0.2; pts.push([cx + Math.cos(a) * rx * wob, cy + Math.sin(a) * ry * wob * (Math.sin(a) > 0 ? 0.85 : 1.1)]); }
+    var path = function () { g.beginPath(); for (var k = 0; k < N; k++) { var p0 = pts[k], p1 = pts[(k + 1) % N], mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2; if (!k) { var pl = pts[N - 1]; g.moveTo((pl[0] + p0[0]) / 2, (pl[1] + p0[1]) / 2); } g.quadraticCurveTo(p0[0], p0[1], mx, my); } g.closePath(); };
+    g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(cx + 0.6, cy + ry * 0.8, rx * 1.05, ry * 0.45, 0, 0, 7); g.fill();
+    path(); aInk(g, aG(g, cy - ry, cy + ry, rgbK(B, 1.35), rgbK(B, 1), rgbK(B, 0.62)), rgbK(B, 0.32), 0.8);
+    g.save(); path(); g.clip(); g.fillStyle = "rgba(0,0,0,.2)"; g.beginPath(); g.ellipse(cx + rx * 0.5, cy + ry * 0.5, rx * 0.8, ry * 0.7, 0, 0, 7); g.fill();
+    if (ore) for (var q = 0; q < 4; q++) { var gx = cx - 3.5 + h(q + 20) * 7, gy = cy - 2.6 + h(q + 24) * 5, gr = 0.9 + h(q + 28) * 0.7;   // gems set in the rock
+      g.beginPath(); g.moveTo(gx, gy - gr * 1.2); g.lineTo(gx + gr, gy); g.lineTo(gx, gy + gr * 1.1); g.lineTo(gx - gr, gy); g.closePath(); g.fillStyle = A; g.fill(); g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 0.35; g.stroke();
+      g.fillStyle = "rgba(255,255,255,.7)"; g.beginPath(); g.moveTo(gx, gy - gr * 1.2); g.lineTo(gx + gr * 0.5, gy - gr * 0.2); g.lineTo(gx, gy); g.closePath(); g.fill(); }
+    else { g.strokeStyle = rgbK(B, 0.45); g.lineWidth = 0.5; g.beginPath(); g.moveTo(cx - 1 + h(30) * 3, cy - ry * 0.5); g.lineTo(cx + h(31) * 2, cy); g.lineTo(cx - 1.5 + h(32) * 2, cy + ry * 0.6); g.stroke(); }
+    g.restore(); aShine(g, cx - rx * 0.38, cy - ry * 0.45, rx * 0.3, ry * 0.18, 0.35, -0.3);
+    return (CNODE[key] = c);
+  }
   function caveNode(id, v) {   // a boulder (stone, clay, basalt, frostrock) or an ore-studded boulder, seen from above
     var key = id + ":" + v; if (CNODE[key]) return CNODE[key];
     var c = document.createElement("canvas"); c.width = c.height = 16; var g = c.getContext("2d"), td = TILES[id], ore = td.kind === "ore", base = td.c, acc = td.c2, x, y, mask = [];
@@ -17106,12 +17183,18 @@
     else if (id === T.STONE) { R(5, 6, 1, 2, "#2d3236", 0.6); R(6, 8, 2, 1, "#2d3236", 0.6); }
     return (CNODE[key] = c);
   }
-  function drawShaft(g, sx, sy) {   // the hole to the next floor: a stone rim, a dark pit and the top of a ladder
-    g.fillStyle = "#2a2724"; g.fillRect(sx + ts * 0.06, sy + ts * 0.06, ts * 0.88, ts * 0.88); g.fillStyle = "#4a443e"; g.fillRect(sx + ts * 0.06, sy + ts * 0.06, ts * 0.88, Math.max(2, ts * 0.08));
-    g.fillStyle = "#040506"; g.fillRect(sx + ts * 0.15, sy + ts * 0.15, ts * 0.7, ts * 0.7); g.fillStyle = "#0b0d0f"; g.fillRect(sx + ts * 0.15, sy + ts * 0.55, ts * 0.7, ts * 0.3);
-    g.fillStyle = "#a8703c"; g.fillRect(sx + ts * 0.3, sy + ts * 0.15, ts * 0.07, ts * 0.45); g.fillRect(sx + ts * 0.63, sy + ts * 0.15, ts * 0.07, ts * 0.45);
-    g.fillStyle = "#c98c4f"; [0.24, 0.37, 0.5].forEach(function (yy) { g.fillRect(sx + ts * 0.3, sy + ts * yy, ts * 0.4, Math.max(2, ts * 0.05)); });
+  function drawShaft(g, sx, sy) {   // the hole to the next floor: a ring of round stones, a dark pit falling away, the top of a ladder
+    var cx = sx + ts / 2, cy = sy + ts / 2, r = ts * 0.44;
+    g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(cx, cy + ts * 0.06, r * 1.06, r * 0.98, 0, 0, 7); g.fill();
+    var pit = g.createRadialGradient(cx, cy + ts * 0.08, 0, cx, cy, r * 0.8); pit.addColorStop(0, "#000"); pit.addColorStop(0.7, "#06080a"); pit.addColorStop(1, "#1a1c20"); g.fillStyle = pit; g.beginPath(); g.ellipse(cx, cy, r * 0.8, r * 0.74, 0, 0, 7); g.fill();
+    g.strokeStyle = "#a8703c"; g.lineWidth = Math.max(1.5, ts * 0.06); g.lineCap = "round"; g.beginPath(); g.moveTo(cx - ts * 0.16, cy - r * 0.6); g.lineTo(cx - ts * 0.16, cy + r * 0.1); g.moveTo(cx + ts * 0.16, cy - r * 0.6); g.lineTo(cx + ts * 0.16, cy + r * 0.1); g.stroke();
+    g.strokeStyle = "#c98c4f"; g.lineWidth = Math.max(1.2, ts * 0.045); [-0.45, -0.18, 0.08].forEach(function (k) { g.beginPath(); g.moveTo(cx - ts * 0.16, cy + r * k); g.lineTo(cx + ts * 0.16, cy + r * k); g.stroke(); });
+    for (var q = 0; q < 10; q++) { var a = q / 10 * 6.2832, bx = cx + Math.cos(a) * r * 0.9, by = cy + Math.sin(a) * r * 0.84, br = ts * (0.085 + SW.hash(q, Math.round(sx), 630) * 0.03);
+      g.fillStyle = "#26262e"; g.beginPath(); g.ellipse(bx, by + br * 0.25, br * 1.1, br * 0.9, 0, 0, 7); g.fill();
+      g.fillStyle = aG(g, by - br, by + br, "#a8a4b0", "#76727e", "#4a4652"); g.beginPath(); g.ellipse(bx, by, br, br * 0.82, 0, 0, 7); g.fill();
+      g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.ellipse(bx - br * 0.3, by - br * 0.35, br * 0.35, br * 0.2, -0.4, 0, 7); g.fill(); }
   }
+
   var CTLRECT = [], CTLRECTECTT = 0;
   function ctlRects() {   // where the on-screen controls are, in canvas pixels (re-measured a few times a second)
     var now = performance.now(); if (now - CTLRECTECTT < 300) return CTLRECT; CTLRECTECTT = now; CTLRECT = [];
@@ -17207,6 +17290,7 @@
     var glows2 = [], srcs = [[cp.x, cp.y - 0.6, fx("night") ? 12 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 9 : hasCharm("owl") ? 8.4 : 7.2, 1]];
     if (F.nx) { g.imageSmoothingEnabled = false; g.drawImage(F.nx.isl, ox, oy, F.w * ts, (F.h + 3) * ts); nxPillar(g, F, now); }   // THE SWAMPREALMS: the island, painted once
     else if (F.maze) mazeBlit(g, F, X0, X1, Y0, Y1);   // MAZE ART: painted once per night
+    else if (!F.bld && !F.iw && F.wall && F.theme) caveBlit(g, F, X0, X1, Y0, Y1);   // THE MINE: smooth ground and rock, painted once per floor
     else for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // ground and walls
       idx = j * W2 + i; var sx = ox + i * ts, sy = oy + j * ts, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (F.wall[idx] && F.iw && F.iw[idx]) g.drawImage(CA, v * 16, 0, 16, 16, sx, sy, ts, ts);   // ROOMS: an inner wall stands up in the row pass below
@@ -17258,7 +17342,7 @@
       srcs.push([F.up.x + 0.5, F.up.y - 0.2, 5, 0.8]); glows2.push([ux + ts / 2, uy - ts * 0.3, "255,225,170", 3, 0.2]);
     } else if (liftFloor(cave.f)) drawLift(g, ux, uy, now, srcs, glows2);
     else {
-    g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy - ts, ts, ts); g.drawImage(ATLAS, 0, T.LADDER * 16, 16, 16, ux, uy, ts, ts); }
+    smDraw(g, 0, T.LADDER, 0, 0, 16, 16, ux, uy - ts, ts, ts); smDraw(g, 1, T.LADDER, 0, 0, 16, 16, ux, uy, ts, ts); }
     if (!F.bld && !F.isle && cave.f === 1) { g.fillStyle = "rgba(255,244,190,.16)"; g.fillRect(ux, uy - ts, ts, ts * 2); srcs.push([F.up.x + 0.5, F.up.y + 0.5, 6, 0.85]); glows2.push([ux + ts / 2, uy, "255,240,180", 3.4, 0.22]); }
     if (!F.bld && !F.isle) { drawShaft(g, ox + F.down.x * ts, oy + F.down.y * ts); srcs.push([F.down.x + 0.5, F.down.y + 0.5, 3.2, 0.55]); }
     else F.deco.forEach(function (e) { var td = TILES[e.id], gl = td.glow; if (e.flat) { if (e.id === T.LAVA) srcs.push([e.x + 0.5, e.y + 0.5, 2.4, 0.7]); return; }   // floor tiles never light the room (the lava troughs glow a little)
@@ -17266,13 +17350,13 @@
     F.lamps.forEach(function (l) {
       if (l.x < X0 - 6 || l.x > X1 + 6 || l.y < Y0 - 6 || l.y > Y1 + 6) return;
       if (F.maze && !mazeVis(F)[l.y * F.w + l.x]) return;   // MAZE DARK: a lantern round the corner stays hidden
-      var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; if (!F.isle) g.drawImage(ATLAS, lv * 16, th.lamp * 16, 16, 16, lx, ly, ts, ts);   // (island tiki torches draw themselves)
+      var lx = ox + l.x * ts, ly = oy + l.y * ts, lv = (l.x * 7 + l.y) & 3; if (!F.isle) smDraw(g, lv, th.lamp, 0, 0, 16, 16, lx, ly, ts, ts);   // (island tiki torches draw themselves)
       glows2.push([lx + ts / 2, ly + ts / 2, th.glow, 3.2, 0.2]); srcs.push([l.x + 0.5, l.y + 0.5, 4.6, 0.8]);
     });
     var ey0 = Math.max(0, Y0 - 7), ey1 = Math.min(F.h - 1, Y1 + 7), ex0 = Math.max(0, X0 - 7), ex1 = Math.min(F.w - 1, X1 + 7);
     for (j = ey0; j <= ey1; j++) for (i = ex0; i <= ex1; i++) {   // torches give light; ore glows a little
       idx = j * W2 + i; var inView = i >= X0 && i <= X1 && j >= Y0 && j <= Y1;
-      if (F.torch[idx]) { srcs.push([i + 0.5, j + 0.5, 6.8, 1]); if (inView) { g.drawImage(ATLAS, 0, T.TORCH * 16, 16, 16, ox + i * ts, oy + j * ts, ts, ts); glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,170,60", 4.2, 0.3]); } }
+      if (F.torch[idx]) { srcs.push([i + 0.5, j + 0.5, 6.8, 1]); if (inView) { smDraw(g, 0, T.TORCH, 0, 0, 16, 16, ox + i * ts, oy + j * ts, ts, ts); glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,170,60", 4.2, 0.3]); } }
       else if (F.node[idx] && (TILES[F.node[idx]].kind === "lootchest" || TILES[F.node[idx]].kind === "lorenote") && (!F.maze || mazeVis(F)[idx])) { srcs.push([i + 0.5, j + 0.5, 2.4, 0.5]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, "255,200,90", 2.4, 0.2]); }
       else if (F.node[idx] && TILES[F.node[idx]].kind === "ore") { srcs.push([i + 0.5, j + 0.5, 2.6, 0.6]); if (inView) glows2.push([ox + i * ts + ts / 2, oy + j * ts + ts / 2, F.node[idx] === T.CINDER ? "255,120,50" : F.node[idx] === T.CRYSTAL ? "130,225,255" : "80,240,190", 2.2, 0.16]); }
     }
@@ -17285,7 +17369,7 @@
       if (F.garage && rj === MOTO_CELL.y + MOTO_CELL.h - 1) drawGarageBike(g, now);
       for (var ri = X0; ri <= X1; ri++) {
         var rid = F.node[rj * W2 + ri]; if (!rid) continue;
-        var rx = ox + ri * ts, ry2 = oy + rj * ts; g.drawImage(caveNode(rid, ((ri * 7 + rj * 13) & 1)), 0, 0, 16, 16, rx, ry2, ts, ts);
+        var rx = ox + ri * ts, ry2 = oy + rj * ts, rk = TILES[rid].kind; if (rk === "lootchest" || rk === "lootpot" || rk === "lorenote") { hpShadow(g, rx + ts / 2, ry2 + ts * 0.86, ts * 0.38, ts * 0.1, 0.3); smDraw(g, 0, rid, 0, 0, 16, 16, rx, ry2, ts, ts); } else if (!TILES[rid].c) g.drawImage(caveNode(rid, ((ri * 7 + rj * 13) & 1)), 0, 0, 16, 16, rx, ry2, ts, ts); else { var smr = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(caveRock(rid, (ri * 7 + rj * 13) & 3), rx, ry2, ts, ts); g.imageSmoothingEnabled = smr; }
         if (TILES[rid].kind === "ore" && !reduce && ((now / 90 + ri * 7 + rj * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(rx + ts * 0.55, ry2 + ts * 0.3, 2, 2); }
       }
       if (F.lair) lairRow(g, F, rj, now, srcs, glows2);
