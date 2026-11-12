@@ -11,7 +11,7 @@
   // segments of random biomes (one biome each, 480-720 columns) as you walk towards them (genChunk), so it costs nothing until explored.
   // The generator itself works on any width: W / B_FROST / B_EMBER / SPAWNX below are the settings of the map being generated right now.
   var CORE_W = 2160, EXT = 5040, WORLD_W = CORE_W + EXT * 2;
-  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true, GEN_VAR = 0, GEN_SPARSE = 0;   // GEN_SPARSE: worlds made from now on have fewer buildings and landmarks (old saves keep theirs exactly)
+  var W = CORE_W, H = 200, SURF = 72, WORLDVER = 8, B_FROST = 720, B_EMBER = 1440, SPAWNX = 1080, GEN_EDGE = null, GEN_AERIE = true, GEN_VAR = 0, GEN_SPARSE = 0, GEN_MALC = 0;   // GEN_MALC: the map being made is Malcruor (no buildings, landmarks or mine). GEN_SPARSE: worlds made from now on have fewer buildings and landmarks (old saves keep theirs exactly)
   var T = { AIR: 0, MOSS: 1, MUD: 2, CLAY: 3, STONE: 4, LOG: 5, LEAVES: 6, WATER: 7, BASALT: 8, LAVA: 9, ASH: 10, SNOW: 11, ICE: 12, FROSTROCK: 13, SPORE: 14, CINDER: 15, CRYSTAL: 16, BEDROCK: 17, PLANKS: 18, TORCH: 19, GLOWCAP: 20, REED: 21, BLOOM: 22, SPIKE: 23, VINE: 24, BENCH: 25, BED: 26, DOOR_B: 27, DOOR_T: 28, DOORO_B: 29, DOORO_T: 30, LADDER: 31, CHEST: 32, HOLE: 33, CHAIR: 34, CHAIR_L: 35, TABLE: 36, PAINTING: 37, FLOWER: 38, BUCKET: 39, POT: 40, FLOWERPOT: 41, BARREL: 42, DECORBENCH: 43, STOOL: 44, RUG: 45, BOOKSHELF: 46, LANTERN: 47, BANNER: 48, SIGN: 49, PLANTER: 50, CAMPFIRE: 51, W_PLANK: 52, W_LOG: 53, W_BRICK: 54, W_PLASTER: 55, W_MOSS: 56, W_TIMBER: 57, BRICK: 58, THATCH: 59, GLASS: 60, BASALTBRICK: 61, CINDERLAMP: 62, ICEBRICK: 63, CRYSTALLAMP: 64, FOUNTAIN: 65, WELL: 66, CAULDRON: 67, FENCE: 68, BALE: 69, GLOWPOT: 70, WARDROBE: 71, HEARTH: 72, FROGSTATUE: 73, BRAZIER: 74, GUARDIAN: 75, EMBERLANTERN: 76, URN: 77, ANVIL: 78, ICESCULPT: 79, FROSTLANTERN: 80, THRONE: 81, SCONCE: 82, BUGTROPHY: 83, FROGTROPHY: 84, EMBERBANNER: 85, CHANDELIER: 86, FROSTBANNER: 87 };
 
   // Tile table, indexed by id.  hard = seconds to mine with the starter pick (Infinity = cannot be mined),
@@ -778,7 +778,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     if (!mineH && SPAWNX >= 0) holes.forEach(function (h) { if (!mineH || Math.abs(h.x - SPAWNX) < Math.abs(mineH.x - SPAWNX)) mineH = h; });
     var oldHoles = holes;
     // ---- 7. structures (see buildStructures): standalone buildings with a door you can walk into ----
-    var structs = buildStructures(t, top, bio, seed, holes, walls, sub, GEN_VAR);
+    var structs = GEN_MALC ? [] : buildStructures(t, top, bio, seed, holes, walls, sub, GEN_VAR);
     // ---- 7b. LANDMARKS (only in land made after they were added): stone circles, ruined camps, wishing wells, signposts, old mines,
     // shipwrecks on the Sunbaked Shores, treehouses in the Dark Oakwood and moon gates in the Cherry Blossom Vale. Plain blocks you can use
     // and dig like any other; world.marks lists them for the map and the signposts.
@@ -997,6 +997,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     })();
     craters.forEach(function (c) { for (x = c.x0; x <= c.x1; x++) for (y = c.lvl - 1; y < top[x] + 1; y++) if (t[y * W + x] === T.LAVA) t[y * W + x] = T.AIR; });   // OLD VOLCANOES: the crater lava drained away long ago (done last, so nothing else in the world moves)
     oldHoles.forEach(function (h) { if (h !== mineH && t[h.y * W + h.x] === T.HOLE) t[h.y * W + h.x] = h.was; });   // THE MINE: fill the other burrows back in
+    if (GEN_MALC && mineH) { if (t[mineH.y * W + mineH.x] === T.HOLE) t[mineH.y * W + mineH.x] = mineH.was; mineH = null; }   // MALCRUOR: no way down
     holes = mineH ? [{ x: mineH.x, y: mineH.y, b: mineH.b, mine: 1 }] : [];
     // ---- TREES, RESHAPED: the very last step, so every other part of the map is made exactly as before (old saves line up). Each tree the
     // map grew above is taken out and grown again in the same spot in its new shape (tall trunk, compact crown, leafy branches, roots). ----
@@ -1136,6 +1137,34 @@ batwing: { n: "Bat Wing", frag: "bat" },
     wd.done[sd] = n + 1; if (sd < 0) wd.gx0 = a; else wd.gx1 = z - 1;
     return { x0: a, x1: z - 1, structs: c.structs, b: b };
   }
-  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, hash: hash, mulberry: mulberry };
+  // ---------- MALCRUOR: the corrupt world behind the cracked red portal ----------
+  // A separate 1,200-column map with its own seed (made from the player's world seed, so every world has its own Malcruor). Its west part is
+  // the Rotmire (drowned swamp, pools that run red), its east part the Ashen Waste (dead trees, ash, old volcanoes). No buildings, no mine,
+  // no sky island. It sits in the middle of the same wide arrays the SwampRealms uses, walled in by bedrock on both sides, so every system
+  // that reads the grid works unchanged. Only one world is ever loaded: the game builds this one in place of the SwampRealms (see DIMENSIONS).
+  var MALC_W = 1200;
+  function genMalc(seed) {
+    seed = (seed | 0) || 1;
+    var WW = WORLD_W, MW = MALC_W, OFF = EXT + (CORE_W - MW) / 2, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y, c;
+    var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], SPM = 560;
+    W = MW; B_FROST = -400; B_EMBER = 700; SPAWNX = SPM; GEN_EDGE = null; GEN_AERIE = false; GEN_VAR = 0; GEN_SPARSE = 3; GEN_MALC = 1;
+    try { c = gen(seed); } finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; GEN_SPARSE = keep[7]; GEN_MALC = 0; }
+    POST.forEach(function (f) { f(c); });
+    var rnd = mulberry(seed ^ 0x6d41c0de);
+    for (y = 0; y < H; y++) for (x = 0; x < MW; x++) {   // the rot: red blooms instead of flowers, glowing caps in the dark
+      var i = y * MW + x, id = c.t[i];
+      if (id === T.FLOWER || (id === T.REED && rnd() < 0.3)) c.t[i] = T.BLOOM;
+      else if (id === T.AIR && y < H - 1 && y > c.top[x] + 6 && TILES[c.t[i + MW]].solid && c.t[i + MW] !== T.BEDROCK && rnd() < 0.02) c.t[i] = T.GLOWCAP;
+    }
+    for (x = 0; x < WW; x++) { wtop[x] = 0; wbio[x] = 1; }
+    for (y = 0; y < H; y++) { var row = y * WW; wt.fill(T.BEDROCK, row, row + WW); wt.set(c.t.subarray(y * MW, (y + 1) * MW), row + OFF); wwl.set(c.walls.subarray(y * MW, (y + 1) * MW), row + OFF); }   // bedrock past both ends
+    for (x = 0; x < 3; x++) for (y = 0; y < H; y++) { wt[y * WW + OFF + x] = T.BEDROCK; wt[y * WW + OFF + MW - 1 - x] = T.BEDROCK; }
+    wtop.set(c.top, OFF); wbio.set(c.bio, OFF); wsub.set(c.sub, OFF);
+    for (x = 0; x < 3; x++) { wtop[OFF + x] = 0; wtop[OFF + MW - 1 - x] = 0; }
+    shiftX(c, OFF);
+    return { trees: c.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: null, marks: [], holes: [], structs: [], feats: c.feats, aerie: null, sky: null,
+      spawn: { x: SPM + OFF + 0.5, y: c.top[SPM] }, malc: 1, gx0: OFF + 3, gx1: OFF + MW - 4 };
+  }
+  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, genMalc: genMalc, MALC_W: MALC_W, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);
