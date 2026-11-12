@@ -10221,7 +10221,7 @@
   var NXP = [
     { x: 8, n: "Glimmer Reef", a: [255, 84, 200], b: [70, 240, 225], lv: 0.42, sc: -1, say: "The Glimmer Reef: a sea of glass coral under three suns. Half its stones are still missing. Zaruk says the builders are working day and night." },
     { x: 16, n: "Thundercrown Peaks", a: [255, 206, 64], b: [150, 92, 255], lv: 0.68, sc: 0, say: "Thundercrown Peaks: mountains that ring like bells in the storm. This portal is the closest to finished. Not long now!" },
-    { x: 24, n: "The Hollow Moon", a: [176, 194, 255], b: [110, 255, 172], lv: 0.24, sc: 1, say: "The Hollow Moon: a world inside a moon, lit by glowing roots. It has barely been started. It is locked tight for now." }
+    { x: 24, n: "Malcruor", mc: 1, a: [255, 40, 50], b: [30, 0, 6], lv: 1, sc: 1, say: "Malcruor: this portal was meant to open on the Hollow Moon, until a red night cracked it. Now it opens on the corrupt world." }   // MALCRUOR: the third portal is the cracked red one (see MALCRUOR)
   ];
   var NXPAL = [["#ffd23f", "#ff7a2a", "#ffffff"], ["#ff4fb0", "#ffe27a", "#7ffcff"], ["#3af0ff", "#ffffff", "#ff9ae0"], ["#b07aff", "#ffd0f6", "#fff27a"]];
   function nxH(a, b, s) { var n = Math.sin(a * 127.1 + b * 311.7 + (s || 0) * 74.7) * 43758.5453; return n - Math.floor(n); }
@@ -10516,7 +10516,7 @@
     }
   }
   function nxRow(g, F, rj, now, glows) {
-    if (rj === NXROW) NXP.forEach(function (P, i) { nxPortal(g, P, i, now, glows); });
+    if (rj === NXROW) NXP.forEach(function (P, i) { if (P.mc) mcPortal(g, P.x + 0.5, NXROW, now, glows); else nxPortal(g, P, i, now, glows); });
     if (rj === F.nx.spring.y + 1) nxSpring(g, F, now, glows);
     if (rj === F.h - 1) nxHome(g, F, now, glows);
     for (var i = 0; i < F.nx.props.length; i++) if (F.nx.props[i].y === rj) nxProp(g, F.nx.props[i], now, glows);
@@ -10558,7 +10558,7 @@
     start(S); trans = tr; sel = ks; selSlot = kss; hbDirty = true; wilds.forEach(function (a) { a.mad = 0; });
     save();
   }
-  // ---- the cracked portals: one on dry ground a short walk west of camp in the SwampRealms, one beside where you arrive in Malcruor
+  // ---- the way in is the third of the SwampRealms' portals (NXP: the cracked red one); the way home is a cracked portal beside where you arrive in Malcruor
   var MCG = null;
   function mcGate() {
     if (MCG && MCG.b === buildN) return MCG;
@@ -10575,12 +10575,12 @@
     return (MCG = { x: best, b: buildN });
   }
   function mcGateY() { var G = mcGate(); return col[G.x]; }   // the ground row it stands on (follows the ground if it is dug)
-  function mcGateNear() { if (cave || OCS || HOME) return false; var G = mcGate(); return Math.abs(p.x - (G.x + 0.5)) < 2.6 && Math.abs(p.y - mcGateY()) < 2.6; }
+  function mcGateNear() { if (!inMC() || cave || OCS || HOME) return false; var G = mcGate(); return Math.abs(p.x - (G.x + 0.5)) < 2.6 && Math.abs(p.y - mcGateY()) < 2.6; }
   function mcPillQ() {
     if (!mcGateNear() || trans || hp <= 0) return null; var G = mcGate();
     return inMC() ? { l: "Return to the SwampRealms", fn: function () { mcLeave(false); }, x: G.x + 0.5, y: mcGateY() - 5.2 } : { l: "Enter Malcruor", fn: mcAsk, x: G.x + 0.5, y: mcGateY() - 5.2 };
   }
-  function drawMcGate(g, now) { if (cave || OCS || HOME) return; var G = mcGate(); mcPortal(g, G.x + 0.5, mcGateY() - 0.92, now, glows); }
+  function drawMcGate(g, now) { if (!inMC() || cave || OCS || HOME) return; var G = mcGate(); mcPortal(g, G.x + 0.5, mcGateY() - 0.92, now, glows); }
   var MCPC = null, MCPX = null, MCPI = null, MCPT = null;
   // the cracked red portal, painted at 16 px per tile into a 64 x 72 canvas: black and blood-red stone, split by glowing cracks, a red and
   // black swirl in the opening, red light leaking out at the bottom
@@ -10635,11 +10635,11 @@
     var b = $("mcGo"); if (b) b.onclick = function () { malcS().warned = 1; closePanel(); setTimeout(mcEnter, 120); };
   }
   function mcEnter() {
-    if (inMC() || trans || hp <= 0 || !curId || cave || OCS || HOME) return;
+    if (inMC() || trans || hp <= 0 || !curId || OCS || HOME || (cave && !inNexus())) return;
     if (MP.on || MP.ws) { nag("Malcruor can only be entered in single player for now."); return; }
     stopInput(); thud(90, 0.18); snd("open", "Epic"); MC.fx = 1;
     trans = { t: 0, done: false, mid: function () {
-      var M = malcS(); M.v = (M.v || 0) + 1; M.c = 0; S.st.malcvisits = (S.st.malcvisits || 0) + 1; MC.warn = 0; MC.died = false;
+      var M = malcS(); M.h = cave && cave.hole ? { x: cave.hole.x, y: cave.hole.y } : null; M.v = (M.v || 0) + 1; M.c = 0; S.st.malcvisits = (S.st.malcvisits || 0) + 1; MC.warn = 0; MC.died = false;
       dimSwap("malc"); var G = mcGate(); if (!S.p || M.v) { p.x = G.x + 3.5; p.y = mcGateY(); var gd = 0; while (boxHit(p.x, p.y) && gd++ < 60) p.y -= 1; } p.face = 1; cam.x = p.x; cam.y = p.y - 1;
       setTimeout(function () { banner("Malcruor", M.v === 1 ? "The corrupt world. Get back to the portal before the corruption takes you." : "Visit " + M.v + ". The creatures remember you...", "The blood moon never sets"); }, 700);
     } };
@@ -10650,7 +10650,8 @@
       var M = malcS(), best = Math.round(M.c || 0); if (!dead && best > (M.best || 0)) M.best = best; M.c = 0; MC.warn = 0;
       dimSwap(""); MC.fx = dead ? 0 : 0.8;
       if (dead) respawn(msg || "You woke up at camp.");
-      else { var G = mcGate(); p.x = G.x + 3.5; p.y = mcGateY(); var gd = 0; while (boxHit(p.x, p.y) && gd++ < 60) p.y -= 1; p.vx = p.vy = 0; cam.x = p.x; cam.y = p.y - 1; }
+      else if (M.h) { enterNexus(M.h.x - 1, M.h.y); cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y; }   // back out of the cracked portal in the SwampRealms
+      else { p.vx = p.vy = 0; cam.x = p.x; cam.y = p.y - 1; }
       save();
       setTimeout(function () { toast(dead ? "The corruption spat you back out into the SwampRealms. Whatever you carried is gone." : "You stagger back into the SwampRealms. The red light fades from your eyes.", dead ? "#ff5a5a" : "#ffb0a0"); }, 600);
     };
@@ -16932,7 +16933,7 @@
       if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.isle ? "Back to the boat" : F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
     if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });   // NEXUS
-    else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, "Under construction" + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, true, function () { nxPortalTalk(npp); }); }
+    else if (!panelOpen && !trans && !ladderNear() && F.nx) { var npp = nxPortalNear(); if (npp) drawPill(g, now, (npp.mc ? "Enter Malcruor" : "Under construction") + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, !npp.mc, function () { if (npp.mc) mcAsk(); else nxPortalTalk(npp); }); }
     if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down) && !window.__NOPILL) {
       var qdx = aim.tx + 0.5 - cp.x, qdy = aim.ty + 0.5 - (cp.y - 0.4), ok = qdx * qdx + qdy * qdy <= CAVE_REACH * CAVE_REACH, cx0 = ox + aim.tx * ts, cy0 = oy + aim.ty * ts, L3 = ts * 0.3, pu = 1 + Math.sin(now / 160) * 0.06;
       g.strokeStyle = ok ? "rgba(255,244,200,.95)" : "rgba(255,90,90,.6)"; g.lineWidth = 2; g.beginPath();
@@ -18711,7 +18712,7 @@
       else if (pierGateNear()) ocEnterPier();
       else if (farmGateNear()) enterHome(farmGateNear());
       else if (ventNear()) enterVolcano(ventNear());
-      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) nxPortalTalk(np); else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
+      else if (cave) { var ln = ladderNear(), np = nxPortalNear(), cnr = ln ? null : contNear(), rgn = rigNear(), isa = isleActs()[0]; if (isa) isa.fn(); else if (bellNear()) ringBell(); else if (minerNear()) rescueMiner(); else if (cartNear()) openCart(); else if (crewNear()) openCrew(); else if (rgn !== null) rigAct(rgn); else if (motoNear()) openMoto(); else if (cnr) openCont(cnr); else if (ln) useLadder(ln.k); else if (gdNear()) { if (GD.sleep) gdWake(); else openGuardian(); } else if (np) { if (np.mc) mcAsk(); else nxPortalTalk(np); } else nag(inNexus() ? "Walk up to Zaruk or a portal first." : "Stand next to a ladder to use it."); }
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip || (SC && holeNear()) ? null : structNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
@@ -25726,9 +25727,9 @@
       ["Heart Tree", function () { var H2 = heartSpot(); dmTp(H2 ? H2.x - 2 : null, null, "Heart Tree"); }],
       ["Enter the Glow Marsh", function () { S.time = 320; var s = sites(); if (s && s.glow) { dmTp(s.glow.x + 2.5, null, "Glow Hollow"); setTimeout(function () { enterSite("glow", s.glow); }, 300); } }],
       ["Enter the Mangrove Maze", function () { var s = sites(); if (s && s.maze) { dmTp(s.maze.x + 2.5, null, "Maze"); setTimeout(function () { enterSite("maze", s.maze); }, 300); } }],
-      ["Malcruor (the corrupt world)", function () { if (inMC()) { malcS().c = 0; MC.warn = 0; nag("You are in Malcruor. Corruption reset."); return; } malcS().warned = 1; if (cave) leaveCaveNow(); if (HOME) leaveHomeNow(); if (OCS) { nag("Leave the sea first."); return; } setTimeout(mcEnter, cave || HOME ? 900 : 0); }],
+      ["Malcruor (the corrupt world)", function () { if (inMC()) { malcS().c = 0; MC.warn = 0; nag("You are in Malcruor. Corruption reset."); return; } malcS().warned = 1; if (OCS) { nag("Leave the sea first."); return; } var go = function () { if (inNexus()) { cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; } mcEnter(); }; if (inNexus()) go(); else { if (HOME) leaveHomeNow(); if (cave) leaveCaveNow(); setTimeout(function () { devAct("tp:realm"); setTimeout(go, 1500); }, cave || HOME ? 900 : 0); } }],
       ["Malcruor: the portal home", function () { if (!inMC()) { nag("Enter Malcruor first."); return; } var G = mcGate(); dmTp(G.x + 3.5, null, "Portal home"); }],
-      ["Cracked red portal (SwampRealms)", function () { if (inMC()) { mcLeave(false); return; } var G = mcGate(); dmTp(G.x + 3.5, null, "Cracked red portal"); }]
+      ["Malcruor portal (in the SwampRealms)", function () { if (inMC()) { mcLeave(false); return; } var put = function () { if (inNexus()) { cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cam.x = cp.x; cam.y = cp.y; } }; if (inNexus()) put(); else { devAct("tp:realm"); setTimeout(put, 1500); } }]
     ],
     give: [
       ["Every mount", function () { devGive({ m_toad: 1, m_gator: 1, m_heron: 1, m_mudo: 1, m_drake: 1, m_mammoth: 1, m_broom: 1, balloon: 1 }); toast("Mounts in your bag: put one in the hotbar to ride.", "#ffd23f"); }],
