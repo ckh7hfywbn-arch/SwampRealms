@@ -2595,7 +2595,7 @@ small.bo-cost{display:flex}
 .p8-devchip{position:absolute;z-index:40;right:12px;top:calc(env(safe-area-inset-top) + 178px);padding:3px 10px;border-radius:999px;border:1.5px solid #7af0ff88;background:#06181cdd;color:#7af0ff;font:900 .66rem Nunito,sans-serif;letter-spacing:.12em;cursor:pointer;opacity:.75}
 .p8-devchip:hover{opacity:1}
 /* TOP BACK BUTTON on every story-panel window */
-.sbx-topback{position:sticky;top:0;z-index:6;display:inline-flex;align-items:center;gap:4px;margin:0 0 6px;padding:5px 12px 5px 9px;border-radius:999px;border:1.5px solid color-mix(in srgb,var(--qc,#4ee6b4) 55%,transparent);background:#0b1410ee;color:#fff;font:800 .78rem Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 10px #0006;backdrop-filter:blur(4px)}
+.sbx-topback{position:sticky;top:0;z-index:6;box-shadow:0 2px 0 rgba(0,0,0,.25),0 0 10px 8px var(--sbg,#0b1a14);display:inline-flex;align-items:center;gap:4px;margin:0 0 6px;padding:5px 12px 5px 9px;border-radius:999px;border:1.5px solid color-mix(in srgb,var(--qc,#4ee6b4) 55%,transparent);background:#0b1410ee;color:#fff;font:800 .78rem Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 10px #0006;backdrop-filter:blur(4px)}
 .sbx-topback:hover{background:#13221ae8}
 /* CHEATS: the command box, the "/" chip, the new-world options and locked settings */
 .p8-cmd{position:absolute;z-index:60;left:50%;bottom:calc(env(safe-area-inset-bottom) + 70px);transform:translateX(-50%);width:min(560px,94%);display:flex;flex-direction:column;gap:6px}
@@ -2901,3 +2901,7 @@ body.sbx-app input,body.sbx-app textarea,body.sbx-app select,body.sbx-app [conte
 .dl-load.ls-realm .dl-bar{box-shadow:0 0 0 2px #0a0618,inset 0 2px 6px #000}.dl-load.ls-realm .dl-bar i{background:#24183e}
 .dl-load.ls-realm .dl-bar i.on{background:linear-gradient(135deg,#ffd0f0,#b88aff 45%,#5a7aff);box-shadow:inset 2px 2px 0 rgba(255,255,255,.4),inset -2px -2px 0 rgba(0,0,0,.25),0 0 12px rgba(170,120,255,.6)}
 .dl-load.ls-realm .dl-st b{color:#ffd06a}.dl-load.ls-realm .dl-tip{color:#c8bce8}
+/* PLAYTEST FIXES: a notice that pops up while a window is open sits in a slim strip at the very top (clear of the window's buttons and
+   its Back button), and the DEV chip hides under menus and the Worlds screen instead of sitting on top of their fields */
+.sbx-stage.panel .sbx-toast{top:calc(max(6px,env(safe-area-inset-top)) + 2px)!important;bottom:auto!important;max-width:calc(100% - 150px)!important;font-size:.76rem;padding:5px 12px;z-index:60}
+.sbx-stage:has(.sbx-worlds:not([hidden])) .p8-devchip,.sbx-stage:has(.sbx-worlds:not([hidden])) .p8-cmdchip,.sbx-stage.title .p8-cmdchip{display:none}
