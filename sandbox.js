@@ -2859,6 +2859,7 @@
     if (mine.p >= 1) { setWall(tx, ty, 0); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 4, 5); debris(tx + 0.5, ty + 0.5, wid); matBreak(wid); if (item) give(item, 1, tx, ty); mine = null; }
   }
   function place(tx, ty, item) {
+    if (item === "sapling" && inMC()) { nag("Nothing grows in Malcruor's rotten ground. Not yet..."); return; }   // MALCRUOR: no trees grow back there
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
     setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); if (TILES[ITEMS[item].tile] && TILES[ITEMS[item].tile].solid && S.shape[ty * W + tx] === undefined) { S.shape[ty * W + tx] = 0; shapeCount(); }   // AUTO RAMPS: a block you place is always a full block (only untouched ground slopes)
     S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
@@ -9508,7 +9509,7 @@
   // and only while it is off screen, so nothing pops in in front of you.
   var regrowT = 3;
   function regrowLeaves() {
-    if (cave || !world.trees || !world.trees.length) return;
+    if (inMC() || cave || !world.trees || !world.trees.length) return;
     var half = vw / ts / 2 + 4, cx = cam.x, n = 0, tr = world.trees;
     for (var tries = 0; tries < 12 && n < 1; tries++) {
       var r = tr[(Math.random() * tr.length) | 0], b = r.b; if (Math.abs(r.x - p.x) > 160 || (b.x1 > cx - half && b.x0 < cx + half)) continue;
@@ -11437,6 +11438,7 @@
     chips(x + 0.5, y - 3, "#7fd06a", 20, 6); S.st.treesgrown++; return true;
   }
   function tickSaps(sec) {
+    if (inMC()) return;
     Object.keys(S.saps).forEach(function (key) {
       var q = key.split(","), x = +q[0], y = +q[1];
       if (get(x, y) !== T.X_sapling) { delete S.saps[key]; return; }
