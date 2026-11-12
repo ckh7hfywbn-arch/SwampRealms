@@ -481,7 +481,7 @@
   // MALCRUOR QUEST BOOK: its own page of the quest book (side quests in the "Malcruor" group), shown once you have been through the cracked
   // portal. While you are in Malcruor the quest tracker follows this book instead of the story (see drawTrail). Counters: S.st.malcvisits,
   // mcdug (blocks dug there), mckills (corrupted creatures), mclilies, treants, mcash (reached the Ashen Waste), mcedge (reached an end of it).
-  var MC_Q = ["mc_in", "mc_dig", "mc_kill", "mc_lily", "mc_tree", "mc_ash", "mc_edge", "mc_out", "mc_back"];
+  var MC_Q = ["mc_in", "mc_dig", "mc_kill", "mc_lily", "mc_tree", "mc_ash", "mc_edge", "mc_out", "mc_back", "mc_h1", "mc_h4", "mc_h8"];
   (function () {
     var c = function (k) { return function () { return S.st[k] || 0; }; }, shw = function () { return !!S && (!!(S.malc && S.malc.v) || inMC()); };
     [sq("mc_in", "Malcruor", 0, "Through the Crack", "Step through the cracked red portal in the SwampRealms into Malcruor.", 1, c("malcvisits"), { tonic_regen: 1 }),
@@ -492,7 +492,10 @@
       sq("mc_ash", "Malcruor", 0, "Into the Ashen Waste", "Cross the Rotmire and reach the Ashen Waste in the east.", 1, c("mcash"), { bloodshard: 3 }),
       sq("mc_edge", "Malcruor", 0, "Edge of the Mist", "Reach either end of Malcruor, where the red mist swallows the land.", 1, c("mcedge"), { tonic_brute: 1 }),
       sq("mc_out", "Malcruor", 0, "Made It Out", "Stay 5 minutes in one visit and still make it back through the portal alive.", 1, function () { return S.malc && (S.malc.best | 0) >= 300 ? 1 : 0; }, { ruby: 1 }),
-      sq("mc_back", "Malcruor", 0, "The Creatures Remember", "Visit Malcruor 5 times. Each time, its creatures keep a little further back.", 5, c("malcvisits"), { bloodlantern: 1 })
+      sq("mc_back", "Malcruor", 0, "The Creatures Remember", "Visit Malcruor 5 times. Each time, its creatures keep a little further back.", 5, c("malcvisits"), { bloodlantern: 1 }),
+      sq("mc_h1", "Malcruor", 0, "The First Light", "Break a Corrupted Heart. Its whole area turns to golden Aurelmire, where the corruption fades away.", 1, c("mchearts"), { au_sundraught: 2 }),
+      sq("mc_h4", "Malcruor", 0, "Half the Dawn", "Cleanse 4 of Malcruor's 8 Corrupted Hearts.", 4, c("mchearts"), { au_sunsteel: 4, goldcoin: 5 }),
+      sq("mc_h8", "Malcruor", 0, "Aurelmire", "Cleanse all 8 Corrupted Hearts. Malcruor becomes Aurelmire, a new swamp of the multiverse.", 8, c("mchearts"), { au_sunlamp: 6, goldcoin: 12 })
     ].forEach(function (q) { q.show = shw; SIDE.push(q); });
   })();
   SIDE.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
@@ -892,7 +895,7 @@
     if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
     d.dim = o.dim === "malc" ? "malc" : "";   // MALCRUOR: which world you are standing in, the other world's land (S.dst) and your visits
     if (o.dst && typeof o.dst === "object") { d.dst = {}; ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore"].forEach(function (k) { if (o.dst[k] !== undefined && o.dst[k] !== null) d.dst[k] = o.dst[k]; }); }
-    if (o.malc && typeof o.malc === "object") d.malc = { v: clamp(o.malc.v | 0, 0, 99999), warned: o.malc.warned ? 1 : 0, best: clamp(o.malc.best | 0, 0, 99999), c: clamp(+o.malc.c || 0, 0, 420) };
+    if (o.malc && typeof o.malc === "object") d.malc = { v: clamp(o.malc.v | 0, 0, 99999), warned: o.malc.warned ? 1 : 0, best: clamp(o.malc.best | 0, 0, 99999), c: clamp(+o.malc.c || 0, 0, 420), rz: Array.isArray(o.malc.rz) ? o.malc.rz.filter(function (k, i, a) { return (k | 0) === k && k >= 0 && k < 8 && a.indexOf(k) === i; }) : [] };
     if (d.dim === "malc" && !d.dst) d.dim = "";
     keepOut(o, d);   // keep aside what this version does not know
     return d;
@@ -909,7 +912,7 @@
   }
   function build(state) {
     buildN++;
-    world = state.dim === "malc" && SW.genMalc ? SW.genMalc(mcSeed(state.seed)) : SW.gen(state.seed, state.bvar); PICT = null;   // MALCRUOR: its own land, from its own seed MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
+    world = state.dim === "malc" && SW.genMalc ? SW.genMalc(mcSeed(state.seed), state.malc && state.malc.rz) : SW.gen(state.seed, state.bvar); PICT = null;   // MALCRUOR: its own land, from its own seed MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
     if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
     tiles = world.t; liftStructs(tiles, world.walls); orig = tiles.slice(); edits = {}; flInit();
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
@@ -2713,8 +2716,11 @@
     amber: "mc_hexite", quartz: "mc_hexite", ruby: "mc_hexite", sapphire: "mc_hexite", amethyst: "mc_hexite", moonstone: "mc_hexite", realmshard: "mc_hexite",
     glowcap: "mc_bloodcap", glowshroom: "mc_bloodcap", redcap: "mc_bloodcap", icecap: "mc_bloodcap",
     flower: "mc_bloodbloom", emberroot: "mc_bloodbloom", thistle: "mc_bloodbloom", cotton: "mc_bloodbloom", marshlily: "mc_bloodbloom", frostbell: "mc_bloodbloom", sapling: "" };
-  function mcK(k) { return inMC() && MCDROP[k] !== undefined ? MCDROP[k] : k; }
-  function mcDrop(id, td) { if (inMC() && id === T.BLOOM) return "mc_bloodbloom"; var k = td.drop; return k ? mcK(k) : k; }
+  // AURELMIRE DROPS: in a cleansed area of Malcruor, its things come out as their golden Aurelmire versions
+  var AUDROP = { mc_rotwood: "au_dawnwood", mc_bloodleaf: "au_goldleaf", mc_thornstick: "au_goldstick", mc_thornfiber: "au_goldfiber", mc_blackstone: "au_dawnstone", mc_rotmud: "au_honeyloam", mc_bloodore: "au_sunore",
+    mc_hexite: "au_citrine", mc_bloodcap: "au_goldcap", mc_bloodbloom: "au_sunbloom", mc_gloomberry: "au_honeyberry", mc_bloodingot: "au_sunsteel", mc_purge: "au_sundraught", mc_rotstew: "au_honeypie", mc_berrytart: "au_honeypie" };
+  function mcK(k) { if (!inMC()) return k; var m = MCDROP[k] !== undefined ? MCDROP[k] : k; if (m && mcRest(p.x) && AUDROP[m] && ITEMS[AUDROP[m]]) m = AUDROP[m]; return m; }
+  function mcDrop(id, td) { if (inMC() && id === T.BLOOM) return mcK("mc_bloodbloom"); var k = td.drop; return k ? mcK(k) : k; }
   function dropOf(td) { return td.kind === "door" ? "door" : td.hatch ? "trapdoor" : td.drop; }
   // VEIN MINING (Veinseeker Charm in your pickaxe): break an ore with the pick and every ore of the same kind touching it (sideways or
   // diagonally, up to 48 blocks) breaks too, one after another in a quick chain, each dropping its ore. Only ores: never stone or dirt.
@@ -2786,7 +2792,7 @@
     matBreak(id);
     var dk = mcDrop(id, td);   // MALCRUOR: blocks give their corrupted version there
     if (dk && !(id === T.LEAVES && !pl && !(S.inv.clippers > 0))) { var n = dropQty(td); give(dk, n, x, y); if (td.kind === "ore") { snd("coin"); if (gem("pick", "amethyst") && Math.random() < 0.15) { give(dk, 1, x, y); text(x + 0.5, y, "x2", "#e0a0ff"); } if (hasCharm("lode") && Math.random() < 0.25) { give(dk, 1, x, y); text(x + 0.5, y - 0.3, "+1", "#ff8a7a"); } } }
-    if (id === T.LEAVES && !pl && inMC() && Math.random() < 0.14) give("mc_gloomberry", 1, x, y - 0.55);   // MALCRUOR: berries hide in the blood-red leaves
+    if (id === T.LEAVES && !pl && inMC() && Math.random() < 0.14) give(mcK("mc_gloomberry"), 1, x, y - 0.55);   // MALCRUOR: berries hide in the blood-red leaves
     if (td.bonus) td.bonus.forEach(function (bq) { if (Math.random() < bq[1]) give(mcK(bq[0]), bq[2] + Math.floor(Math.random() * (bq[3] - bq[2] + 1)), x, y - 0.4); });   // loot blocks (geode, fossil, cache)
     if (id === T.LEAVES && !pl && Math.random() < 0.5) give(mcK("stick"), 1, x, y - 0.55);
     if (id === T.LEAVES && !pl && ITEMS.sapling && !inMC() && Math.random() < 0.06) give("sapling", 1, x + 0.3, y - 0.55);   // trees grow back now                                  // Stage 1: sticks from leaves
@@ -2859,7 +2865,7 @@
     if (mine.p >= 1) { setWall(tx, ty, 0); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 4, 5); debris(tx + 0.5, ty + 0.5, wid); matBreak(wid); if (item) give(item, 1, tx, ty); mine = null; }
   }
   function place(tx, ty, item) {
-    if (item === "sapling" && inMC()) { nag("Nothing grows in Malcruor's rotten ground. Not yet..."); return; }   // MALCRUOR: no trees grow back there
+    if (item === "sapling" && inMC() && !mcRest(tx)) { nag("Nothing grows in Malcruor's rotten ground. Not yet..."); return; }   // MALCRUOR: no trees grow back there
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
     setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); if (TILES[ITEMS[item].tile] && TILES[ITEMS[item].tile].solid && S.shape[ty * W + tx] === undefined) { S.shape[ty * W + tx] = 0; shapeCount(); }   // AUTO RAMPS: a block you place is always a full block (only untouched ground slopes)
     S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
@@ -3123,6 +3129,7 @@
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
     e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e); eliteDeath(e, false); p8Kill(e);
     if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small });
+    if (e.k === "mcheart") { mcCleanse(e.hk); return; }   // RESTORING MALCRUOR
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
     }
@@ -3828,7 +3835,7 @@
       if (e.def) { e.dead -= dt; if (e.boss) bossDeathTick(e, dt); if (e.k !== "wyrm") moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
       if (e.leave > 0 && e.k !== "bat" && e.k !== "wasp") { e.leave -= dt; if (e.leave <= 0) e.gone = true; }   // dawn: walkers slip away (bats and wasps fly off on their own)
       if (e.gone || (!e.boss && (Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44))) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
-      mpRun(e, function () { if (e.boss) updBoss(e, dt); else if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else if (e.k === "witch") updateWitch(e, dt); else if (e.k === "spider") updateSpider(e, dt); else if (e.k === "lily") updateLily(e, dt); else if (e.k === "treant") updateTreant(e, dt); else if (e.k === "imp") updateImp(e, dt); else if (e.k === "brute") updateBrute(e, dt); else if (e.k === "crawler") updateCrawler(e, dt); else updateFrog(e, dt); });
+      mpRun(e, function () { if (e.boss) updBoss(e, dt); else if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else if (e.k === "witch") updateWitch(e, dt); else if (e.k === "spider") updateSpider(e, dt); else if (e.k === "lily") updateLily(e, dt); else if (e.k === "treant") updateTreant(e, dt); else if (e.k === "mcheart") updateMcHeart(e, dt); else if (e.k === "imp") updateImp(e, dt); else if (e.k === "brute") updateBrute(e, dt); else if (e.k === "crawler") updateCrawler(e, dt); else updateFrog(e, dt); });
     }
   }
   // ---------- CAVE CREATURES (hole-cave floors, seen from above) ----------
@@ -5652,6 +5659,7 @@
     else if (e.k === "spider") drawSpider(g, e, d, flash, h, pd);
     else if (e.k === "lily") drawLily(g, e, d, flash, h, pd);
     else if (e.k === "treant") drawRotTree(g, e, flash, h, pd);
+    else if (e.k === "mcheart") drawMcHeart(g, e, flash, h);
     else if (e.k === "imp") drawImp(g, e, d, flash, h, pd);
     else if (e.k === "brute") drawBrute(g, e, d, flash, h, pd);
     else if (e.k === "crawler") drawCrawler(g, e, d, flash, h, pd);
@@ -5735,7 +5743,7 @@
     }
     g.restore();
   }
-  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && !e.boss) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
+  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
 
   // ---------- FARMING ----------
   // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
@@ -9473,7 +9481,7 @@
     // take it out of the world: wood for every log, a stick or sapling now and then from the leaves, the vines under it
     var yield2 = [];
     L.forEach(function (c) { setT(c[0], c[1], T.AIR); S.st.mined++; if (inMC()) S.st.mcdug = (S.st.mcdug || 0) + 1; yield2.push([mcK("wood"), c[0], c[1]]); recalc(c[0]); });   // (MALCRUOR: Rotwood, Thorn Sticks and Gloomberries)
-    leaves.forEach(function (c) { setT(c[0], c[1], T.AIR); if (Math.random() < 0.22) yield2.push([mcK("stick"), c[0], c[1]]); if (inMC() && Math.random() < 0.08) yield2.push(["mc_gloomberry", c[0], c[1]]); if (ITEMS.sapling && !inMC() && Math.random() < 0.035) yield2.push(["sapling", c[0], c[1]]); for (var vy = c[1] + 1; vy < H - 1 && get(c[0], vy) === T.VINE; vy++) { setT(c[0], vy, T.AIR); if (Math.random() < 0.3) yield2.push(["fiber", c[0], vy]); } });
+    leaves.forEach(function (c) { setT(c[0], c[1], T.AIR); if (Math.random() < 0.22) yield2.push([mcK("stick"), c[0], c[1]]); if (inMC() && Math.random() < 0.08) yield2.push([mcK("mc_gloomberry"), c[0], c[1]]); if (ITEMS.sapling && (!inMC() || mcRest(p.x)) && Math.random() < 0.035) yield2.push(["sapling", c[0], c[1]]); for (var vy = c[1] + 1; vy < H - 1 && get(c[0], vy) === T.VINE; vy++) { setT(c[0], vy, T.AIR); if (Math.random() < 0.3) yield2.push(["fiber", c[0], vy]); } });
     for (k = x0; k <= x1; k++) recalc(k);
     var dir = p.x < x + 0.5 ? 1 : -1;   // it falls away from you
     FALLING.push({ cv: cv, px: x + 0.5, py: y, ox: (x0 - M) - (x + 0.5), oy: (y0 - M) - y, a: 0, va: 0, dir: dir, t: 0, land: 0, items: yield2, h: Math.max(1, y - y0) });
@@ -9509,10 +9517,10 @@
   // and only while it is off screen, so nothing pops in in front of you.
   var regrowT = 3;
   function regrowLeaves() {
-    if (inMC() || cave || !world.trees || !world.trees.length) return;
+    if ((inMC() && !MC.rany) || cave || !world.trees || !world.trees.length) return;
     var half = vw / ts / 2 + 4, cx = cam.x, n = 0, tr = world.trees;
     for (var tries = 0; tries < 12 && n < 1; tries++) {
-      var r = tr[(Math.random() * tr.length) | 0], b = r.b; if (Math.abs(r.x - p.x) > 160 || (b.x1 > cx - half && b.x0 < cx + half)) continue;
+      var r = tr[(Math.random() * tr.length) | 0], b = r.b; if (inMC() && !mcRest(r.x)) continue; if (Math.abs(r.x - p.x) > 160 || (b.x1 > cx - half && b.x0 < cx + half)) continue;
       var x, y, i, ok = true, miss = [], by = r.b.y1;
       for (var tx = r.x; tx <= r.x + (r.k === "oak" ? 1 : 0); tx++) for (y = by; y >= b.y0; y--) { i = y * W + tx; if (orig[i] !== T.LOG) continue; if (tiles[i] !== T.LOG) { ok = false; break; } }   // its own trunk still standing
       if (!ok) continue;
@@ -10708,9 +10716,12 @@
     if (trans) return; stopInput(); thud(120, 0.12); snd("open", "Rare"); MC.fx = 1; trans = { t: 0, done: false, mid: go };
   }
   function mcTick(dt) {
-    if (MC.fx > 0) MC.fx = Math.max(0, MC.fx - dt * 0.9);
+    if (MC.fx > 0) MC.fx = Math.max(0, MC.fx - dt * 0.9); if (MC.gold > 0) MC.gold = Math.max(0, MC.gold - dt * 0.7);
+    if (inMC()) { var rwT = mcRestW(); MC.rw = (MC.rw || 0) + (rwT - (MC.rw || 0)) * Math.min(1, dt * 2.5); MC.rany = !!(world.mcz && malcS().rz && malcS().rz.length); auHeartsTick(); } else MC.rw = 0;
     if (!inMC() || hp <= 0 || deadUI || trans) return;
-    var M = malcS(); M.c = (M.c || 0) + dt; var lv = mcLevel();
+    var M = malcS();
+    if (mcFull() || mcRest(p.x)) { M.c = Math.max(0, (M.c || 0) - dt * (mcFull() ? 99 : 2)); var lv0 = mcLevel(); MC.warn = lv0 >= 0.9 ? 3 : lv0 >= 0.75 ? 2 : lv0 >= 0.5 ? 1 : 0; return; }   // AURELMIRE: the light there pushes the corruption back
+    M.c = (M.c || 0) + dt; var lv = mcLevel();
     if (!S.st.mcash && p.x > world.gx0 + (SW.MALC_W || 1200) * 0.58) { S.st.mcash = 1; checkGoals(); }   // MALCRUOR QUEST BOOK
     if (!S.st.mcedge && (p.x < world.gx0 + 14 || p.x > world.gx1 - 14)) { S.st.mcedge = 1; checkGoals(); }
     [[0.5, "The corruption is half way. Think about heading back.", "#ff8a6a"], [0.75, "The corruption is spreading through you. Head for the portal!", "#ff5a4a"], [0.9, "Almost consumed! Get to the portal NOW!", "#ff2a3a"]].forEach(function (w, i) {
@@ -10718,19 +10729,94 @@
     if (lv >= 1) { M.c = MC_SEC; hp = 0; if (!faintQ) faintQ = "corrupt"; }
   }
   function mcLeft() { return Math.max(0, MC_SEC - (malcS().c || 0)); }
+  // =====================================================================================================================================
+  // ---------- RESTORING MALCRUOR: the Corrupted Hearts, and Aurelmire ----------
+  // Malcruor is cut into 8 areas (SW.MALC_Z), each kept corrupt by a Corrupted Heart rooted in the surface near its middle. Break a heart
+  // (it spits out corrupted creatures while you hit it) and its whole area is cleansed: the world is rebuilt with that area as AURELMIRE,
+  // another swamp of the multiverse, the same land at golden dawn, with its own blocks, plants and items (the AURELMIRE pack in
+  // sandbox-extra.js, AUDROP). In Aurelmire the corruption drains away instead of filling, nothing corrupted spawns, and trees grow back.
+  // Cleanse all 8 and Malcruor is Aurelmire for good: no more corruption at all. S.malc.rz = the cleansed areas; world.mcz marks their
+  // columns, world.hearts lists the hearts. (Stage 2 will put Gardiss in front of the last one.)
+  var AU_NAME = "Aurelmire";
+  function mcRest(x) { return inMC() && !!world.mcz && world.mcz[clamp(Math.floor(x), 0, W - 1)] === 1; }
+  function mcFull() { return inMC() && !!world.hearts && world.hearts.length > 0 && world.hearts.every(function (h) { return h.done; }); }
+  function mcRestW() { if (!inMC() || !world.mcz) return 0; var cx = Math.floor(cam.x), n = 0, t = 0; for (var d = -24; d <= 24; d += 3) { t++; if (world.mcz[clamp(cx + d, 0, W - 1)]) n++; } return n / t; }
+  ENEMY.mcheart = { n: "Corrupted Heart", hp: 240, w: 2.2, h: 2.8, dmg: 0, glow: "#ff2a3a", chip: "#5a0a14", frag: "", chance: 0, max: 8 };
+  KSTAT.mcheart = "mchearts"; SHADOW.mcheart = 34; HBAR.mcheart = 96;
+  function auHeartsTick() {   // a heart is in the world while you are near it and its area is not cleansed yet
+    if (!world.hearts || trans) return;
+    world.hearts.forEach(function (h) {
+      if (h.done || Math.abs(p.x - (h.x + 0.5)) > 32) return;
+      if (enemies.some(function (e) { return e.k === "mcheart" && e.hk === h.k; })) return;
+      var e = newEnemy("mcheart", h.x + 0.5, col[h.x]); e.hk = h.k; e.dir = 1; e.st = "beat"; enemies.push(e);
+    });
+  }
+  function updateMcHeart(e, dt) {   // rooted in place. Once hit it wakes, and every few seconds it spits a corrupted creature out beside it
+    e.vx = 0; e.y = col[Math.floor(e.x)] || e.y; e.cd = (e.cd || 0) - dt;
+    if (e.hurt > 0 && !e.awake) { e.awake = true; e.cd = 1.2; toast("The heart is waking its creatures! Break it to cleanse this land.", "#ff8a8a"); }
+    if (e.awake && e.cd <= 0) {
+      e.cd = 4.5 + Math.random() * 2; var mins = enemies.filter(function (q) { return q.mcMin && !q.def; }).length;
+      if (mins < 4) { var kk = ["bug", "wolf", "imp", "slime"][Math.floor(Math.random() * 4)], sd = Math.random() < 0.5 ? -1 : 1, mx = e.x + sd * 2.4;
+        if (!eBoxHit(mx, e.y - 0.1, ENEMY[kk].w, ENEMY[kk].h)) { var m = newEnemy(kk, mx, e.y - 0.1); m.mc = 1; m.mcMin = 1; m.alert = 3; enemies.push(m); chips(mx, e.y - 0.5, "#ff2a3a", 10, 5); thud(90, 0.1); } }
+    }
+  }
+  function drawMcHeart(g, e, flash, h) {   // a huge corrupted heart rooted in the ground: veins, roots, a glowing core that beats
+    var F = function (c) { return flash ? "#ffffff" : c; }, t = e.tt || 0, beat = Math.pow(Math.max(0, Math.sin(t * (e.awake ? 5 : 3))), 6), sc = 1 + beat * 0.07;
+    if (!flash) eGlow(g, 0, -44, 70, "#ff1a2a", 0.25 + beat * 0.2);
+    g.save(); g.lineJoin = "round"; g.lineCap = "round";
+    // roots
+    [[-1, 1.0], [1, 0.9], [-0.5, 0.6], [0.6, 0.7]].forEach(function (r) { g.strokeStyle = F("#1a0608"); g.lineWidth = 7 * r[1]; g.beginPath(); g.moveTo(r[0] * 8, -8); g.quadraticCurveTo(r[0] * 22, -2, r[0] * 36, 2); g.stroke(); g.strokeStyle = F("#5a0a14"); g.lineWidth = 3 * r[1]; g.stroke(); });
+    g.translate(0, -40); g.scale(sc, sc);
+    // the heart
+    g.beginPath(); g.moveTo(0, 30); g.bezierCurveTo(-34, 6, -38, -24, -18, -30); g.bezierCurveTo(-8, -34, -2, -26, 0, -18); g.bezierCurveTo(2, -26, 8, -34, 18, -30); g.bezierCurveTo(38, -24, 34, 6, 0, 30); g.closePath();
+    var hg = g.createLinearGradient(0, -34, 0, 30); hg.addColorStop(0, F("#b01828")); hg.addColorStop(0.5, F("#6a0a16")); hg.addColorStop(1, F("#2a0408")); g.fillStyle = hg; g.fill();
+    g.strokeStyle = F("#12020a"); g.lineWidth = 3; g.stroke();
+    g.save(); g.clip();
+    g.strokeStyle = F(e.awake ? "#ff4a3a" : "#c01a28"); g.lineWidth = 2; [[-20, -22, -6, 4, -14, 20], [16, -24, 4, 0, 12, 18], [-4, -16, 2, 2, -2, 22]].forEach(function (v) { g.beginPath(); g.moveTo(v[0], v[1]); g.quadraticCurveTo(v[2], v[3], v[4], v[5]); g.stroke(); });
+    if (!flash) { var cg = g.createRadialGradient(0, -4, 1, 0, -4, 18); cg.addColorStop(0, "rgba(255,200,180," + (0.5 + beat * 0.5).toFixed(3) + ")"); cg.addColorStop(1, "rgba(255,40,40,0)"); g.fillStyle = cg; g.fillRect(-20, -24, 40, 40); }
+    g.restore();
+    g.fillStyle = F("rgba(255,180,170,.5)"); g.beginPath(); g.ellipse(-16, -20, 6, 3.5, -0.6, 0, 7); g.fill();   // the shine, top-left
+    g.restore();
+  }
+  function mcCleanse(k) {   // a heart is broken: its area becomes Aurelmire (the world is rebuilt, behind a golden flash)
+    var M = malcS(); M.rz = M.rz || []; if (M.rz.indexOf(k) < 0) M.rz.push(k); S.st.mchearts = M.rz.length;
+    var h = world.hearts[k], all = M.rz.length >= (SW.MALC_Z || 8);
+    enemies.forEach(function (q) { if (q.mcMin && !q.def) { q.def = true; q.dead = 0.6; } });
+    for (var i = 0; i < 70; i++) { var a = Math.random() * 6.283, v = 2 + Math.random() * 8; parts.push({ x: h.x + 0.5, y: col[h.x] - 1.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 3, g: 2, life: 1.6, max: 1.6, c: ["#ffe08a", "#fff6c8", "#ffb02a", "#ffffff"][i % 4], s: 2 + Math.random() * 3 }); }
+    shake = Math.max(shake, 0.5); thud(60, 0.3); snd("open", "Legendary"); MC.gold = 1.6;
+    give("au_dawnshard", 3, h.x, col[h.x] - 1.5); give("au_citrine", 2, h.x, col[h.x] - 1.5); give("au_sundraught", 1, h.x, col[h.x] - 1.5); give("goldcoin", 3, h.x, col[h.x] - 1.5);
+    checkGoals(); save();
+    setTimeout(function () {
+      if (!inMC()) return; var go = function () { if (!inMC()) return; if (trans) { setTimeout(go, 400); return; } trans = { t: 0, done: false, mid: function () { mcRebuild(); } }; }; go();
+      setTimeout(function () { banner(all ? AU_NAME : "The light returns", all ? "Malcruor is cleansed. The corruption is gone for good." : "This land is " + AU_NAME + " now. " + M.rz.length + " of " + (SW.MALC_Z || 8) + " hearts cleansed.", all ? "A new swamp in the multiverse" : "Corruption fades here"); }, 900);
+    }, 1400);
+  }
+  function mcRebuild() {   // rebuild Malcruor in place with its cleansed areas (you stay where you are)
+    var px = p.x, py = p.y, ks = sel, kss = selSlot, tr = trans; save();
+    try { canFree(); TLC.clear(); NATM.clear(); } catch (e) {}
+    start(S); trans = tr; sel = ks; selSlot = kss; hbDirty = true; p.x = px; p.y = py; var gd = 0; while (boxHit(p.x, p.y) && gd++ < 60) p.y -= 1; cam.x = p.x; cam.y = p.y - 1; MCLF.length = 0; save();
+  }
   // ---- THE LOOK: the land is drawn as usual, then stained blood red and black (hue from a deep crimson, light and dark kept from the land),
   // under a blood moon. Creatures are stained on their own (mcCorruptDraw); you, your gear and dropped items keep their colours so they read.
-  function mcGrade(g, now, above) {
+  function mcGrade(g, now, above) {   // (in Aurelmire, the cleansed areas, the stain fades out and a warm dawn light comes in: MC.rw, 0..1 round the camera)
     if (!inMC()) return;
-    g.save(); g.globalAlpha = 1;
-    g.globalAlpha = 0.82; g.globalCompositeOperation = "color"; g.fillStyle = "#b0101c"; g.fillRect(0, 0, vw, vh); g.globalAlpha = 1;
-    g.globalCompositeOperation = "multiply"; g.fillStyle = lowq ? "#b07078" : "#f0c8cc"; g.fillRect(0, 0, vw, vh);
-    if (!lowq) { g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(g.canvas, 0, 0); g.setTransform(dpr, 0, 0, dpr, 0, 0);   // contrast: the picture times itself, so the land goes black and only lit edges stay red
-      g.globalCompositeOperation = "screen"; var hz2 = clamp((oy + (horizon(cam.x) - 6) * ts) / vh, 0.05, 0.95), hg = g.createLinearGradient(0, 0, 0, vh); hg.addColorStop(0, "rgba(0,0,0,0)"); hg.addColorStop(hz2, "rgba(150,16,24," + (0.4 * above).toFixed(3) + ")"); hg.addColorStop(Math.min(1, hz2 + 0.12), "rgba(0,0,0,0)"); g.fillStyle = hg; g.fillRect(0, 0, vw, vh); }   // a glow along the horizon
-    if (!lowq) { g.globalCompositeOperation = "soft-light"; var sg = g.createLinearGradient(0, 0, 0, vh); sg.addColorStop(0, "rgba(255,90,70,.4)"); sg.addColorStop(0.55, "rgba(255,60,50,.12)"); sg.addColorStop(1, "rgba(0,0,0,.35)"); g.fillStyle = sg; g.fillRect(0, 0, vw, vh); }
-    g.globalCompositeOperation = "source-over";
-    if (above > 0.02) { var tg = g.createLinearGradient(0, 0, 0, vh * 0.4); tg.addColorStop(0, "rgba(8,0,2," + (0.45 * above).toFixed(3) + ")"); tg.addColorStop(1, "rgba(8,0,2,0)"); g.fillStyle = tg; g.fillRect(0, 0, vw, vh * 0.4); }   // the sky goes black overhead
-    if (above > 0.02) { g.globalAlpha = 0.42 * above; g.globalCompositeOperation = "screen"; mcMoon(g, now, true); g.globalCompositeOperation = "source-over"; g.globalAlpha = 1; }   // the moon's light through the trees
+    var rw = MC.rw || 0, k = 1 - rw;
+    g.save();
+    if (k > 0.01) {
+      g.globalAlpha = 0.82 * k; g.globalCompositeOperation = "color"; g.fillStyle = "#b0101c"; g.fillRect(0, 0, vw, vh);
+      g.globalAlpha = k; g.globalCompositeOperation = "multiply"; g.fillStyle = lowq ? "#b07078" : "#f0c8cc"; g.fillRect(0, 0, vw, vh);
+      if (!lowq) { g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(g.canvas, 0, 0); g.setTransform(dpr, 0, 0, dpr, 0, 0);   // contrast: the picture times itself, so the land goes black and only lit edges stay red
+        g.globalCompositeOperation = "screen"; var hz2 = clamp((oy + (horizon(cam.x) - 6) * ts) / vh, 0.05, 0.95), hg = g.createLinearGradient(0, 0, 0, vh); hg.addColorStop(0, "rgba(0,0,0,0)"); hg.addColorStop(hz2, "rgba(150,16,24," + (0.4 * above).toFixed(3) + ")"); hg.addColorStop(Math.min(1, hz2 + 0.12), "rgba(0,0,0,0)"); g.fillStyle = hg; g.fillRect(0, 0, vw, vh);
+        g.globalCompositeOperation = "soft-light"; var sg = g.createLinearGradient(0, 0, 0, vh); sg.addColorStop(0, "rgba(255,90,70,.4)"); sg.addColorStop(0.55, "rgba(255,60,50,.12)"); sg.addColorStop(1, "rgba(0,0,0,.35)"); g.fillStyle = sg; g.fillRect(0, 0, vw, vh); }
+      g.globalCompositeOperation = "source-over"; g.globalAlpha = k;
+      if (above > 0.02) { var tg = g.createLinearGradient(0, 0, 0, vh * 0.4); tg.addColorStop(0, "rgba(8,0,2," + (0.45 * above).toFixed(3) + ")"); tg.addColorStop(1, "rgba(8,0,2,0)"); g.fillStyle = tg; g.fillRect(0, 0, vw, vh * 0.4); }
+    }
+    if (rw > 0.01 && !lowq) {   // AURELMIRE: warm golden dawn
+      g.globalAlpha = rw; g.globalCompositeOperation = "soft-light"; var dg = g.createLinearGradient(0, 0, 0, vh); dg.addColorStop(0, "rgba(255,190,90,.55)"); dg.addColorStop(0.6, "rgba(255,220,140,.25)"); dg.addColorStop(1, "rgba(120,60,20,.3)"); g.fillStyle = dg; g.fillRect(0, 0, vw, vh);
+      g.globalCompositeOperation = "source-over";
+    }
+    if (above > 0.02) { g.globalAlpha = 0.42 * above; g.globalCompositeOperation = "screen"; mcMoon(g, now, true); }   // the moon's (or sun's) light through the trees
+    g.globalCompositeOperation = "source-over"; g.globalAlpha = 1;
     g.restore();
   }
   // ---- MALCRUOR'S TREES: red light glowing in the cracks of the black wood, and blood-red leaves that drift down glowing and lie on the
@@ -10742,7 +10828,7 @@
     var x0 = Math.max(0, Math.floor(-ox / ts)), x1 = Math.min(W - 1, Math.ceil((vw - ox) / ts)), y0 = Math.max(0, Math.floor(-oy / ts)), y1 = Math.min(H - 1, Math.ceil((vh - oy) / ts)), x, y, lv = [];
     g.save(); g.globalCompositeOperation = "lighter"; g.lineCap = "round"; var lw = Math.max(1, ts / 14);
     for (x = x0; x <= x1; x++) for (y = y0; y <= y1; y++) {
-      var id = tiles[y * W + x]; if (id === T.LOG && (tiles[(y - 1) * W + x] === T.LOG || tiles[(y + 1) * W + x] === T.LOG)) {   // (trunks only: boughs keep their own bark)
+      var id = tiles[y * W + x]; if (id === T.LOG && !(world.mcz && world.mcz[x]) && (tiles[(y - 1) * W + x] === T.LOG || tiles[(y + 1) * W + x] === T.LOG)) {   // (trunks only: boughs keep their own bark)
         var h = ((x * 73856093) ^ (y * 19349663)) >>> 0, pulse = 0.55 + 0.35 * Math.sin(t * 1.8 + (h % 628) / 100), sx = ox + x * ts, sy = oy + y * ts, cx = sx + ts * (0.25 + (h % 50) / 100);
         g.strokeStyle = "rgba(255," + (40 + (h % 30)) + ",36," + (0.7 * pulse).toFixed(3) + ")"; g.lineWidth = lw;
         g.beginPath(); g.moveTo(cx, sy); g.lineTo(cx + ts * ((h >> 3) % 3 - 1) * 0.12, sy + ts * 0.35); g.lineTo(cx - ts * 0.06, sy + ts * 0.65); g.lineTo(cx + ts * ((h >> 5) % 3 - 1) * 0.1, sy + ts); g.stroke();
@@ -10755,15 +10841,19 @@
       else L.life -= dt / 4;
       if (L.life <= 0 || Math.abs(L.x * ts + ox - vw / 2) > vw) { MCLF.splice(i, 1); continue; }
       var px = ox + L.x * ts, py = oy + L.y * ts, a = Math.min(1, L.life * 1.5), rr = ts * 0.55;
-      var gg = g.createRadialGradient(px, py, 0, px, py, rr); gg.addColorStop(0, "rgba(255,50,40," + (0.45 * a).toFixed(3) + ")"); gg.addColorStop(1, "rgba(255,20,30,0)"); g.fillStyle = gg; g.fillRect(px - rr, py - rr, rr * 2, rr * 2);
-      g.save(); g.translate(px, py); g.rotate(L.land ? 0.3 : L.r); g.fillStyle = "rgba(255," + (L.land ? 70 : 90) + ",70," + a.toFixed(3) + ")"; g.fillRect(-ts * 0.1, -ts * 0.05, ts * 0.2, ts * 0.1); g.restore();
+      var gg = g.createRadialGradient(px, py, 0, px, py, rr); var au2 = world.mcz && world.mcz[clamp(Math.floor(L.x), 0, W - 1)]; gg.addColorStop(0, au2 ? "rgba(255,210,90," + (0.4 * a).toFixed(3) + ")" : "rgba(255,50,40," + (0.45 * a).toFixed(3) + ")"); gg.addColorStop(1, au2 ? "rgba(255,200,80,0)" : "rgba(255,20,30,0)"); g.fillStyle = gg; g.fillRect(px - rr, py - rr, rr * 2, rr * 2);
+      g.save(); g.translate(px, py); g.rotate(L.land ? 0.3 : L.r); g.fillStyle = au2 ? "rgba(255," + (L.land ? 196 : 214) + ",80," + a.toFixed(3) + ")" : "rgba(255," + (L.land ? 70 : 90) + ",70," + a.toFixed(3) + ")"; g.fillRect(-ts * 0.1, -ts * 0.05, ts * 0.2, ts * 0.1); g.restore();
     }
     g.restore();
   }
   function mcOverlay(g, now) {   // the blood moon's light: a red haze, falling ash and embers, red mist at the world's edges, and a red vignette that tightens as the corruption grows
     var t = now / 1000;
     if (MC.fx > 0) { g.fillStyle = "rgba(200,10,30," + (Math.min(1, MC.fx) * 0.55).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }
-    if (!inMC()) return; var lv = mcLevel();
+    if (MC.gold > 0) { g.fillStyle = "rgba(255,236,170," + (Math.min(1, MC.gold) * 0.75).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh); }   // a heart cleansed: golden flash
+    if (!inMC()) return; var lv = mcLevel(), rw = MC.rw || 0;
+    if (rw > 0.01 && !reduce) for (var i2 = 0; i2 < 34; i2++) { var sp2 = 0.3 + (i2 * 29 % 11) / 11, bx = ((i2 * 83.1 + Math.sin(t * 0.5 + i2) * 24) % vw + vw) % vw, by = vh - ((i2 * 61.7 + t * 18 * sp2) % (vh + 20));   // AURELMIRE: golden motes drifting up
+      g.fillStyle = "rgba(255," + (220 + i2 % 30) + ",140," + (0.55 * rw).toFixed(3) + ")"; g.fillRect(Math.round(bx), Math.round(by), 2, 2); }
+    if (rw > 0.99) return; g.save(); g.globalAlpha = 1 - rw;
     g.fillStyle = "rgba(110,0,14," + (0.12 * lv).toFixed(3) + ")"; g.fillRect(0, 0, vw, vh);
     if (!reduce) for (var i = 0; i < 46; i++) { var sp = 0.4 + (i * 37 % 13) / 13, ax = ((i * 97.3 + Math.sin(t * 0.6 * sp + i) * 30 + t * 12 * sp) % (vw + 20) + vw + 20) % (vw + 20) - 10, ay = ((i * 53.7 + t * 26 * sp) % (vh + 20)) - 10;
       g.fillStyle = i % 5 === 0 ? "rgba(255,90,70,.75)" : "rgba(30,10,14,.55)"; g.fillRect(Math.round(ax), Math.round(ay), i % 5 === 0 ? 2 : 3, i % 5 === 0 ? 2 : 3); }
@@ -10773,6 +10863,7 @@
       if (k === 0) g.fillRect(-2, 0, Math.max(0, sx + w2 + 2), vh); else g.fillRect(sx - w2, 0, vw - (sx - w2) + 2, vh); });
     var vg = g.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * (0.55 - 0.25 * lv), vw / 2, vh / 2, Math.max(vw, vh) * 0.75), a = 0.3 + 0.45 * lv + (lv > 0.85 ? 0.12 * Math.sin(t * 7) : 0);
     vg.addColorStop(0, "rgba(60,0,8,0)"); vg.addColorStop(1, "rgba(60,0,8," + a.toFixed(3) + ")"); g.fillStyle = vg; g.fillRect(0, 0, vw, vh);
+    g.restore();
   }
   // ---- CREATURES: every one is a corrupted version (tougher, redder), plus Rotwood Treants that sleep as dead trees until you come close
   ENEMY.treant = { n: "Rotwood Treant", hp: 70, w: 1.3, h: 2.4, dmg: 18, glow: "#ff3a2a", chip: "#3e2620", frag: "mc_rotbark", chance: 0.8, max: 3 };
@@ -10797,11 +10888,12 @@
   var MC_KINDS = [["wolf", 4], ["bug", 3], ["slime", 3], ["imp", 2.5], ["lily", 3], ["treant", 3], ["frog", 2], ["wasp", 2.5], ["brute", 1], ["witch", 0.5]];
   function mcSpawn() {   // like spawnEnemy, but Malcruor's own creatures, at any hour, and fewer of them each few visits
     if (dv("peace")) return;
-    var cnt = {}, tot = 0; enemies.forEach(function (e) { if (!e.def && e.k !== "bat") { cnt[e.k] = (cnt[e.k] || 0) + 1; tot++; } });
+    var cnt = {}, tot = 0; enemies.forEach(function (e) { if (!e.def && e.k !== "bat" && e.k !== "mcheart") { cnt[e.k] = (cnt[e.k] || 0) + 1; tot++; } });
+    if (mcRest(p.x)) return;   // AURELMIRE: nothing corrupted comes there
     if (tot >= Math.max(3, 7 - Math.floor(((malcS().v || 1) - 1) / 3))) return;
     var side = Math.random() < 0.5 ? -1 : 1, x = Math.floor(p.x + side * (vw / 2 / ts + 2 + Math.random() * 8)) + 0.5, cx = Math.floor(x), y = -1;
     if (cx < world.gx0 + 6 || cx > world.gx1 - 6) return;
-    var G = mcGate(); if (Math.abs(cx - G.x) < 8) return;   // never right on the portal
+    var G = mcGate(); if (Math.abs(cx - G.x) < 8 || mcRest(cx)) return;   // never right on the portal, nor in Aurelmire
     var under = p.y > pcol() + 7, opts = [], tw = 0;
     MC_KINDS.forEach(function (q) { if ((cnt[q[0]] || 0) < ENEMY[q[0]].max && !(under && (q[0] === "treant" || q[0] === "lily" || q[0] === "wasp"))) { opts.push(q); tw += q[1]; } });
     if (under) { opts.push(["spider", 4]); tw += 4; }
@@ -10879,11 +10971,11 @@
     g.restore();
   }
   function mcHud(g, now) {   // the corruption bar, top middle: blood filling a vein-wrapped tube, with the time left
-    if (!inMC() || window.__NOPILL || titleOpen) return; var lv = mcLevel(), t = now / 1000, left = mcLeft();
+    if (!inMC() || window.__NOPILL || titleOpen || mcFull()) return; var lv = mcLevel(), t = now / 1000, left = mcLeft();   // (none once Malcruor is fully cleansed)
     // tucked right under the place name (the pill at the top), the same width, so it never covers the quest pill, the map or the buttons
     var R = mcHudRect(), fs = R.w < 170 ? 9 : 11, w = R.w - 12, h = R.w < 170 ? 13 : 15, x = Math.round(R.x + 6), y = Math.round(R.y + fs + 8), hot = lv > 0.75;
     g.save(); g.fillStyle = "rgba(10,2,4,.84)"; mrr(g, R.x, R.y, R.w, h + fs + 14, 9); g.fill(); g.strokeStyle = hot ? "rgba(255," + Math.round(60 + 60 * Math.sin(t * 8)) + ",60,.9)" : "rgba(160,30,40,.8)"; g.lineWidth = 2; g.stroke();
-    g.font = "900 " + fs + "px Nunito,system-ui,sans-serif"; g.textBaseline = "alphabetic"; g.textAlign = "center"; g.fillStyle = "#ff8a8a"; g.fillText("CORRUPTION", x + w / 2, y - 3);
+    g.font = "900 " + fs + "px Nunito,system-ui,sans-serif"; g.textBaseline = "alphabetic"; g.textAlign = "center"; var ins = mcRest(p.x); g.fillStyle = ins ? "#ffe08a" : "#ff8a8a"; g.fillText(ins ? "CORRUPTION FADING" : "CORRUPTION", x + w / 2, y - 3);
     g.fillStyle = "#1a0408"; mrr(g, x, y, w, h, 8); g.fill();
     if (lv > 0) { g.save(); mrr(g, x, y, w, h, 8); g.clip(); var fw = w * lv, gr = g.createLinearGradient(x, 0, x + w, 0); gr.addColorStop(0, "#5a0612"); gr.addColorStop(0.6, "#c8101e"); gr.addColorStop(1, "#ff3a3a"); g.fillStyle = gr; g.fillRect(x, y, fw, h);
       g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(x, y + 2, fw, 3);
@@ -10908,7 +11000,14 @@
     var r = { x: vw / 2 - 110, y: 64, w: 220 }; try { var L = $("sbxLoc").getBoundingClientRect(), C = cv.getBoundingClientRect(); if (L.width > 40) { var ww = Math.max(L.width, 96); r = { x: L.left - C.left + L.width / 2 - ww / 2, y: L.bottom - C.top + 5, w: ww }; } } catch (e) {}
     return (MCHR.r = r);
   }
-  function mcMoon(g, now, ghost) {   // MALCRUOR: the blood moon, part of the sky behind everything, always in the same spot on screen (clear of the top bar). ghost: its light again, shining through the trees in front of it (screen blend, so it never hides them)
+  function mcMoon(g, now, ghost) { var rw = MC.rw || 0; if (rw > 0.01) { g.save(); g.globalAlpha *= rw; auSun(g, now, ghost); g.restore(); } if (rw > 0.99) return; g.save(); g.globalAlpha *= 1 - rw; mcMoon0(g, now, ghost); g.restore(); }
+  function auSun(g, now, ghost) {   // AURELMIRE: a low golden sun where the blood moon hung
+    var R = mcHudRect(), r = Math.round(Math.max(24, Math.min(vw, vh) * 0.09)), mx = Math.round(vw * 0.74), my = Math.round(Math.max(vh * 0.2, R.y + 46 + r * 1.3)), t = now / 1000;
+    var gr = g.createRadialGradient(mx, my, r * 0.5, mx, my, r * 4); gr.addColorStop(0, "rgba(255,230,140,.6)"); gr.addColorStop(1, "rgba(255,200,90,0)"); g.fillStyle = gr; g.beginPath(); g.arc(mx, my, r * 4, 0, 7); g.fill();
+    if (!ghost) { g.strokeStyle = "rgba(255,236,170,.35)"; g.lineWidth = 3; for (var q = 0; q < 12; q++) { var a = q * 0.5236 + t * 0.08; g.beginPath(); g.moveTo(mx + Math.cos(a) * r * 1.25, my + Math.sin(a) * r * 1.25); g.lineTo(mx + Math.cos(a) * r * 1.9, my + Math.sin(a) * r * 1.9); g.stroke(); } }
+    var mg = g.createRadialGradient(mx - r * 0.25, my - r * 0.25, r * 0.1, mx, my, r); mg.addColorStop(0, "#fffbe8"); mg.addColorStop(0.55, "#ffe08a"); mg.addColorStop(1, "#ffb84a"); g.fillStyle = mg; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill();
+  }
+  function mcMoon0(g, now, ghost) {   // MALCRUOR: the blood moon, part of the sky behind everything, always in the same spot on screen (clear of the top bar). ghost: its light again, shining through the trees in front of it (screen blend, so it never hides them)
     var R = mcHudRect(), r = Math.round(Math.max(22, Math.min(vw, vh) * 0.085)), mx = Math.round(vw * 0.74), my = Math.round(Math.max(vh * 0.2, R.y + 46 + r * 1.3)), t = now / 1000;
     var gr = g.createRadialGradient(mx, my, r * 0.6, mx, my, r * 3.4); gr.addColorStop(0, "rgba(255,60,60,.5)"); gr.addColorStop(1, "rgba(255,20,30,0)"); g.fillStyle = gr; g.beginPath(); g.arc(mx, my, r * 3.4, 0, 7); g.fill();
     var mg = g.createRadialGradient(mx - r * 0.3, my - r * 0.3, r * 0.1, mx, my, r); mg.addColorStop(0, ghost ? "#ff9a8a" : "#ffffff"); mg.addColorStop(0.5, ghost ? "#ff3a3a" : "#ffc4b8"); mg.addColorStop(1, ghost ? "#b00c1c" : "#ff5a5a"); g.fillStyle = mg; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill();
@@ -11438,7 +11537,7 @@
     chips(x + 0.5, y - 3, "#7fd06a", 20, 6); S.st.treesgrown++; return true;
   }
   function tickSaps(sec) {
-    if (inMC()) return;
+    if (inMC() && !MC.rany) return;
     Object.keys(S.saps).forEach(function (key) {
       var q = key.split(","), x = +q[0], y = +q[1];
       if (get(x, y) !== T.X_sapling) { delete S.saps[key]; return; }
@@ -12383,7 +12482,7 @@
     return kind === "pot" ? pick(POT, 2) : pick(CHEST, 3 + (t > 1 ? 1 : 0));
   }
   function rollLoot(kind, b, tier) {
-    if (inMC() && (kind === "chest" || kind === "pot")) return mcLoot(kind, tier);
+    if (inMC() && (kind === "chest" || kind === "pot")) return mcLoot(kind, tier).map(function (q) { return [mcK(q[0]), q[1]]; });
     var one = function () { return typeof SbxExtra !== "undefined" && SbxExtra.loot ? SbxExtra.loot(kind, b, tier) : [["torch", 4]]; }, L = one();
     if (S.charms && (hasCharm("lucky") || fx("luck")) && Math.random() < 0.45) L = L.concat(one().slice(0, 1));   // the Lucky Clover: sometimes one extra find
     if (garageOwned() && (kind === "chest" || kind === "pot")) { var mp = motoLoot(kind, tier || 0); if (mp) L = L.concat([mp]); }   // GARAGE: motorcycle parts turn up in chests
@@ -14300,7 +14399,7 @@
         var top = get(i, j - 1) !== T.WATER, dd = 0; if (!top) { dd = 1; while (dd < 6 && get(i, j - dd - 1) === T.WATER) dd++; }
         var wl = top ? lvAt(j * W + i) : 8, woff = wl < 8 ? Math.round(ts * (1 - wl / 8)) : 0;   // a part-filled cell: what is behind shows above the surface
         if (woff) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); }
-        g.fillStyle = inMC() ? (WSTM[dd] || (WSTM[dd] = "rgba(" + (150 - dd * 14) + "," + (10 + dd) + "," + (24 - dd) + "," + (0.7 + dd * 0.04) + ")")) : WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")");   // (MALCRUOR: its pools run blood red) g.fillRect(sx3, sy + woff, ts, ts - woff);
+        g.fillStyle = inMC() && mcRest(i) ? (WSTA[dd] || (WSTA[dd] = "rgba(" + (240 - dd * 12) + "," + (176 - dd * 12) + "," + (70 - dd * 4) + "," + (0.6 + dd * 0.04) + ")")) : inMC() ? (WSTM[dd] || (WSTM[dd] = "rgba(" + (150 - dd * 14) + "," + (10 + dd) + "," + (24 - dd) + "," + (0.7 + dd * 0.04) + ")")) : WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")");   // (MALCRUOR: its pools run blood red) g.fillRect(sx3, sy + woff, ts, ts - woff);
         if (top) {   // the surface: a smooth swell that runs on from cell to cell (two waves), bent by any ripples from splashes
           var wsu = ts / 32, wpts = [], wq, wmax = ts - woff - 2, wsurf = j + woff / ts;
           for (wq = 0; wq <= 4; wq++) { var wxw = i + wq / 4, wv = CELL.wob * 1.5 + 2 + (Math.sin(wxw * 0.9 + now / 400) * 1.2 + Math.sin(wxw * 2.3 - now / 260) * 0.5) * Math.max(1, wsu * 1.4) + (RIPS.length ? rippleH(wxw, wsurf) * ts : 0); wpts.push(clamp(wv, 0, wmax)); }
@@ -14614,12 +14713,13 @@
   NATC[T.BASALT] = [[78, 56, 82], [20, 13, 28]]; NATC[T.ASH] = [[118, 102, 112], [34, 26, 40]]; NATC[T.SNOW] = [[240, 250, 255], [150, 192, 218]]; NATC[T.ICE] = [[176, 234, 252], [60, 122, 176]];
   NATC[T.FROSTROCK] = [[110, 146, 178], [26, 44, 70]]; NATC[T.BEDROCK] = [[40, 34, 52], [10, 8, 16]];
   if (T.X_peat) NATC[T.X_peat] = [[84, 60, 66], [24, 14, 26]]; if (T.X_silt) NATC[T.X_silt] = [[150, 140, 128], [48, 40, 52]];
-  if (T.X_mc_blackstone !== undefined) { NATC[T.X_mc_blackstone] = [[100, 72, 86], [30, 16, 24]]; NATC[T.X_mc_rotmud] = NATC[T.X_mc_blightmoss] = [[132, 72, 82], [44, 18, 28]]; }   // MALCRUOR: its ground is drawn like the SwampRealms' (rounded edges, depth shading)
+  if (T.X_mc_blackstone !== undefined) { NATC[T.X_mc_blackstone] = [[100, 72, 86], [30, 16, 24]]; NATC[T.X_mc_rotmud] = NATC[T.X_mc_blightmoss] = [[132, 72, 82], [44, 18, 28]]; }
+  if (T.X_au_dawnstone !== undefined) { NATC[T.X_au_dawnstone] = [[214, 186, 128], [120, 92, 56]]; NATC[T.X_au_honeyloam] = NATC[T.X_au_goldmoss] = [[184, 124, 66], [92, 54, 26]]; }   // AURELMIRE   // MALCRUOR: its ground is drawn like the SwampRealms' (rounded edges, depth shading)
   if (T.X_obsidian) NATC[T.X_obsidian] = [[84, 60, 116], [18, 10, 30]]; if (T.X_permafrost) NATC[T.X_permafrost] = [[168, 204, 226], [58, 100, 140]]; if (T.X_sand) NATC[T.X_sand] = [[236, 210, 150], [176, 134, 84]];
   function mixRgb(a, b, k) { return "rgb(" + ((a[0] + (b[0] - a[0]) * k) | 0) + "," + ((a[1] + (b[1] - a[1]) * k) | 0) + "," + ((a[2] + (b[2] - a[2]) * k) | 0) + ")"; }
 
   // PERF: the soft edge shading used to build several gradient objects per tile per frame. They are now painted once per tile size into tiny canvases and stamped.
-  var SHC = { ts: 0 }, BWS = {}, WST = [], WSTM = [], GSPR = {};
+  var SHC = { ts: 0 }, BWS = {}, WST = [], WSTM = [], WSTA = [], GSPR = {};
   function shadeC(key, id, j, pal, d0, d1) {
     if (SHC.ts !== ts) SHC = { ts: ts };
     var c = SHC[key]; if (c) return c;
@@ -14681,7 +14781,7 @@
     var lw = Math.max(1, CELL.edge), arc = function (cx, cy, r, a0, a1, col2, w2) { if (!r) return; g.strokeStyle = col2; g.lineWidth = w2; g.beginPath(); g.arc(cx, cy, Math.max(0.5, r - w2 / 2), a0, a1); g.stroke(); };
     var H = Math.PI;
     if (grass === true) {
-      var GP = id === T.X_mc_blightmoss ? MCGRASS : GRASSP[varAt(i)] || GRASSP[0], gw2 = ts * 0.17;
+      var GP = id === T.X_mc_blightmoss ? MCGRASS : id === T.X_au_goldmoss ? AUGRASS : GRASSP[varAt(i)] || GRASSP[0], gw2 = ts * 0.17;
       [[tl, sx + tl, sy + tl, H, H * 1.5], [tr, sx + ts - tr, sy + tr, H * 1.5, H * 2]].forEach(function (c) { if (!c[0]) return; arc(c[1], c[2], c[0], c[3], c[4], GP[0], gw2); arc(c[1], c[2], c[0], c[3], c[4], GP[1], gw2 * 0.55); arc(c[1], c[2], c[0], c[3] + 0.08, c[4] - 0.08, GP[2], Math.max(1, ts * 0.04)); });
     } else if (grass === "build") {   // a building block: its dark outline runs round every rounded corner, with a lit inner line on the top ones
       var ow = Math.max(1, Math.round(ts / 14)), oc = "rgba(18,22,26,.78)";
@@ -14762,7 +14862,7 @@
     drawSeams(g, id, i, j, sx, sy);   // ORES ON TOP: the neighbours' soil still creeps in at the edges, but under the gems, never over them
     if (NATOV) { var ov = NATOV; NATOV = null; ov(); }
     grassSide(g, id, i, j, sx, sy, tl, tr);
-    if (tl || tr || br || bl) { edgeShade(g, i, j, sx, sy, nB, false, false); g.restore(); carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, (id === T.MOSS || id === T.X_mc_blightmoss) && nT); edgeShade(g, i, j, sx, sy, false, nL, nR); }
+    if (tl || tr || br || bl) { edgeShade(g, i, j, sx, sy, nB, false, false); g.restore(); carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, (id === T.MOSS || id === T.X_mc_blightmoss || id === T.X_au_goldmoss) && nT); edgeShade(g, i, j, sx, sy, false, nL, nR); }
     else edgeShade(g, i, j, sx, sy, nB, nL, nR);
   }
   // SUNLIT GRASS SIDES: grass grows down any face of the ground the sun can see, like on the top: the side of a grassy block and the cliff face
@@ -14798,6 +14898,7 @@
     return c;
   }
   // grass lip colours per land type: [lip, top, highlight, tuft, litter colours]
+  var AUGRASS = ["#c8901a", "#f0b830", "rgba(255,246,190,.7)", "#ffd24a", ["#fff0a0", "#ff9a3a"]];
   var MCGRASS = ["#7a0c1c", "#b01828", "rgba(255,120,110,.6)", "#ff3a48", ["#ff5a5a", "#3a0a12"]];
   var GRASSP = [["#2f9a6a", "#3fae78", "rgba(155,245,191,.65)", "#58d68b"], ["#3fa86a", "#5cc47e", "rgba(200,255,210,.7)", "#7ade8e", ["#ff9ad0", "#ffc8e4", "#f07ab0"]], null,
     ["#1f5a34", "#2d6e3c", "rgba(150,200,130,.45)", "#3f8a46", ["#7a5a2a", "#5a4020", "#8a7a3a"]]];
@@ -14903,8 +15004,8 @@
     var sgr = g.createLinearGradient(0, sy, 0, sy + ts); sgr.addColorStop(0, mixRgb(pal[0], pal[1], d0)); sgr.addColorStop(1, mixRgb(pal[0], pal[1], d1)); g.fillStyle = sgr; g.fillRect(sx, sy, ts, ts);
     var k; natDetail(g, id, i, j, sx, sy, pal, (d0 + d1) / 2, hh);   // BLOCK TEXTURES: each material's own look
     // (scen: a world tree's trunk stands BEHIND the ground, like the buildings: the grass runs in front of it)
-    if ((id === T.MOSS || id === T.X_mc_blightmoss) && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
-      var GP = id === T.X_mc_blightmoss ? MCGRASS : GRASSP[varAt(i)] || GRASSP[0];   // BIOME VARIANTS (MALCRUOR: Blightmoss, a blood-red lip): spring grass in the Cherry Blossom Vale, dark moss in the Dark Oakwood
+    if ((id === T.MOSS || id === T.X_mc_blightmoss || id === T.X_au_goldmoss) && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
+      var GP = id === T.X_mc_blightmoss ? MCGRASS : id === T.X_au_goldmoss ? AUGRASS : GRASSP[varAt(i)] || GRASSP[0];   // BIOME VARIANTS (MALCRUOR: Blightmoss, a blood-red lip): spring grass in the Cherry Blossom Vale, dark moss in the Dark Oakwood
       g.fillStyle = GP[0]; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.16);
       for (k = 0; k < 3; k++) { g.beginPath(); g.arc(sx + ts * ((k + 0.5) / 3) + (hh(k + 20) - 0.5) * ts * 0.1, sy + ts * 0.1, ts * (0.15 + hh(k + 30) * 0.05), 0, 6.2832); g.fill(); }
       g.fillStyle = GP[1]; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.09);
@@ -15525,14 +15626,16 @@
     2: ["#163514", "#24561f", "#33742a", "#46913a", "#64b04c", "#94d26a", "#7a4a22"],
     3: ["#0a1a10", "#113020", "#18462a", "#1f5a34", "#2d6e3c", "#3f8a46", "#a8c060"],   // Dark Oakwood grass greens (GRASSP[3])
     4: ["#0a1f1d", "#12352f", "#1b4a3f", "#24604f", "#337a62", "#c6dbe8", "#f4fbff"],
-    m: ["#14040a", "#3a0814", "#5e0c1c", "#8a1424", "#c01c30", "#ff3a48", "#ffb0a0"] };   // MALCRUOR: blood-red crowns
+    m: ["#14040a", "#3a0814", "#5e0c1c", "#8a1424", "#c01c30", "#ff3a48", "#ffb0a0"],   // MALCRUOR: blood-red crowns
+    d: ["#5a3a10", "#a86a18", "#d89418", "#f0b830", "#ffd24a", "#ffe88a", "#fff8d8"] };   // AURELMIRE: golden crowns
   var BPAL = {   // bark: 1 outline, 2 dark, 3 mid, 4 light, 5 highlight, 6 frost
     0: ["#24140a", "#4a2e18", "#6a4426", "#8a5c34", "#a87a4a", "#eef6fb"],
     1: ["#2e1820", "#4e2c34", "#6e4248", "#8e5a60", "#ab7a7e", "#eef6fb"],
     2: ["#3a2810", "#6e5230", "#9a7a4a", "#bc9a62", "#d8b880", "#eef6fb"],
     3: ["#0e0806", "#22160c", "#33241a", "#46321f", "#5a4430", "#eef6fb"],
     4: ["#1a120c", "#3a2818", "#55402a", "#6e5638", "#8a7050", "#eef6fb"],
-    m: ["#060204", "#140a0e", "#22141a", "#321c24", "#ff3a3a", "#ff8a7a"] };   // MALCRUOR: rotwood, black bark whose ridges glow red
+    m: ["#060204", "#140a0e", "#22141a", "#321c24", "#ff3a3a", "#ff8a7a"],   // MALCRUOR: rotwood, black bark whose ridges glow red
+    d: ["#4a2a10", "#8a5a2c", "#b07a40", "#d8a862", "#ffe08a", "#fff8d8"] };   // AURELMIRE: honey-gold dawnwood
   var PALRGB = {};
   function palRgb(key, pal) { var r = PALRGB[key]; if (r) return r; r = PALRGB[key] = pal.map(function (h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }); return r; }
   function pxCanvas(buf, w, h, pal) {   // a palette-index buffer (0 = clear, 1.. = pal[i-1]) to a canvas
@@ -15653,7 +15756,7 @@
       for (k = 0; k < fill.length; k++) buf[fill[k]] = thash(fill[k] % pw, (fill[k] / pw) | 0, 17) < 0.14 ? 3 : 2;   // (a few shaded leaves in it, so it reads as foliage)
     }
     outlinePx(buf, pw, ph);
-    return pxCanvas(buf, pw, ph, inMC() ? palRgb("cm", CPAL.m) : palRgb("c" + st, CPAL[st]));
+    return pxCanvas(buf, pw, ph, inMC() ? (mcRest(L[0]) ? palRgb("cd", CPAL.d) : palRgb("cm", CPAL.m)) : palRgb("c" + st, CPAL[st]));
   }
   // PERF: a whole crown is painted once and kept until any of its leaves change; each frame it is one drawImage.
   function canFree() { CANT.forEach(function (e) { cvFree(e.cv); }); CANT.clear(); CANT_PX = 0; }
@@ -15729,7 +15832,7 @@
       if (nb.length === 2) thick(8 + nb[0][0] * 12, 8 + nb[0][1] * 12, 8 + nb[1][0] * 12, 8 + nb[1][1] * 12, 8 + (nb[0][0] + nb[1][0]) * 1.5, 8 + (nb[0][1] + nb[1][1]) * 1.5 + 1, 2.8, 1.7, true);
       else nb.forEach(function (o) { var near = toTrunk(o); thick(8, 8, 8 + o[0] * 12, 8 + o[1] * 12, 8 + o[0] * 5, 8 + o[1] * 6 - 1, near ? 2.2 : 1.8, near ? 2.8 : 1.6, true); });
       if (nb.length === 1) { var ox2 = -nb[0][0], oy2 = -nb[0][1] || -1; thick(8, 8, 8 + ox2 * 6, 8 + oy2 * 5, 8 + ox2 * 3, 8 + oy2 * 3 - 1, 2, 1, true); set(8 + ox2 * 6, 8 + oy2 * 5 - 1, 5, true); set(8 + ox2 * 7, 8 + oy2 * 5, 5, true); }
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     if (st === 2 && dn === T.AIR) { if (get(i - 1, j + 1) === T.LOG && bendUp(i - 1, j + 1) === 1) bd = -1; else if (get(i + 1, j + 1) === T.LOG && bendUp(i + 1, j + 1) === -1) bd = 1; }
     if (SN || up === T.LOG || up === T.LEAVES || bb || bd || (dn === T.LOG || TILES[dn].solid) && !Ls && !Rs) {   // an upright trunk block (a snag's trunk always)
@@ -15772,13 +15875,13 @@
       }
       if (j > top + 1 && j < foot - 1) for (var s3 = -1; s3 <= 1; s3 += 2) if (isLeaf(i + s3, j) && !isLeaf(i, j - 1) && !(twinL && s3 > 0) && !(twinR && s3 < 0)) thick(8 + s3 * 3, 12, 8 + s3 * 13, 7, 8 + s3 * 8, 12, 2.2, 1.2, true);   // a bough into a leafy tuft
       outlinePx(buf, N, N, deco);
-      return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
+      return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     if (up === T.AIR && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES) {   // a root block beside the foot: a buttress root sloping down from the trunk
       var sd = get(i - 1, j) === T.LOG && trunkTree(i - 1, j) ? -1 : get(i + 1, j) === T.LOG && trunkTree(i + 1, j) ? 1 : 0; if (!sd) return null;
       var te = sd > 0 ? 20 : -4, fr = sd > 0 ? -1 : 16;
       for (x = Math.min(te, fr); x <= Math.max(te, fr); x++) { var f2 = (x - fr) / (te - fr), ytop = 16 - 15.5 * Math.pow(Math.max(0, f2), 1.9); for (y = Math.ceil(ytop); y < 16; y++) set(x, y, y - ytop < 1.5 ? 4 : y - ytop < 4 ? 3 : 2, true); }
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     if (up !== T.LOG && dn !== T.LOG && (get(i - 1, j) === T.LOG || get(i + 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG)) {   // a side branch block: a bough
       if (TILES[dn].solid && dn !== T.LEAVES) return null;
@@ -15787,7 +15890,7 @@
       var lL = get(i - 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG, lR = get(i + 1, j) === T.LOG || get(i + 1, j + 1) === T.LOG;
       var yl = get(i - 1, j) === T.LOG ? 8 : 15, yr = get(i + 1, j) === T.LOG ? 8 : 15;
       thick(lL ? -5 : 3, lL ? yl : 8, lR ? 21 : 13, lR ? yr : 8, 8, 8, 3, 2.4, true);
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     return null;
   }
@@ -15929,7 +16032,7 @@
     var c = mixArr([[4, 14, 17], [17, 7, 8], [5, 10, 25]], bw); c = mixC(c, [7, 9, 28], night * 0.55); return mixC(c, [13, 6, 28], deep);
   }
   function render(now) {
-    var t = inMC() ? 380 : S.time, day = inMC() ? 0.62 : daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t), BLD, BLA;
+    var t = inMC() ? 380 : S.time, day = inMC() ? 0.62 + 0.3 * (MC.rw || 0) : daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t), BLD, BLA;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
     if (titleOpen && dpr >= 2 && dpr % 1 === 0) { ox = Math.round((vw / 2 - cam.x * ts) * dpr) / dpr; oy = Math.round((vh / 2 - cam.y * ts) * dpr) / dpr; }   // main-menu pan: snap to device pixels (half-steps on Retina) so the slow drift is even
     else { ox = pxS(vw / 2 - cam.x * ts); oy = pxS(vh / 2 - cam.y * ts); }
@@ -15937,7 +16040,7 @@
     ox = pxS(ox); oy = pxS(oy);   // keep every block edge on a whole device pixel (no seams between rows at 125% / 175% / phone scales)
     var HZ = horizon(cam.x), bw = biomeMix(cam.x), above = clamp(1 - (cam.y - (HZ + 3)) / 9, 0, 1);   // HZ: the local ground line, so valleys and peaks both get sky
     // --- sky: three-stop gradient, stars, sun/moon, clouds, aurora ---
-    var sk = skyAt(t); VMX = varMix(cam.x); var BSK = biomeSky(sk, skyMid(t), bw, day); if (inMC()) BSK = [[16, 2, 6], [128, 20, 28], [62, 6, 12]]; sk = [BSK[0], BSK[1]];
+    var sk = skyAt(t); VMX = varMix(cam.x); var BSK = biomeSky(sk, skyMid(t), bw, day); if (inMC()) { var rwS = MC.rw || 0, mxS = function (a, b) { return [0, 1, 2].map(function (q) { return Math.round(a[q] + (b[q] - a[q]) * rwS); }); }; BSK = [mxS([16, 2, 6], [86, 70, 140]), mxS([128, 20, 28], [255, 196, 120]), mxS([62, 6, 12], [210, 150, 96])]; } sk = [BSK[0], BSK[1]];
     if (VMX[0] + VMX[1] + VMX[2] > 0) { var vsk = [sk[0], sk[1]], vst = 0.22 + 0.2 * day; for (var vq = 0; vq < 3; vq++) if (VMX[vq] > 0) { vsk[0] = mixC(vsk[0], VSKY[vq][0], VMX[vq] * vst); vsk[1] = mixC(vsk[1], VSKY[vq][1], VMX[vq] * vst); } sk = vsk; }   // BIOME VARIANTS tint the sky
     var gr = g.createLinearGradient(0, 0, 0, vh), mid = mixC(sk[0], sk[1], 0.55);
     var dxa = Math.max(0, Math.floor(-ox / ts)), dxb = Math.min(W - 1, Math.floor((vw - ox) / ts)), dtop = Math.floor(-oy / ts), dmx = 0, dq;
@@ -16068,6 +16171,7 @@
         else { var fx = ((m.u * vw + Math.sin(tt * 0.8 * m.s + m.v * 9) * 16) % vw + vw) % vw, fy = ((m.v * vh + tt * 22 * m.s) % vh); g.fillStyle = "rgba(255,255,255," + (0.8 * above) + ")"; g.fillRect(fx, fy, 2, 2); }
       }
     }
+    if (inMC() && !deepV && (MC.rw || 0) > 0.01) { g.save(); g.globalAlpha = 0.65 * MC.rw; g.globalCompositeOperation = "color"; g.fillStyle = "#d8a040"; g.fillRect(0, 0, vw, vh); g.restore(); }   // AURELMIRE: the far woods and mist at golden dawn
     if (inMC() && !deepV) mcMoon(g, now);   // MALCRUOR: the blood moon hangs in front of the far woods, behind every real tree and block
     // --- terrain ---
     var X0 = Math.floor(-ox / ts), X1 = Math.floor((vw - ox) / ts), Y0 = Math.floor(-oy / ts), Y1 = Math.floor((vh - oy) / ts);
@@ -17202,7 +17306,7 @@
   var QB_BIG = { mwork3: 1, disc10: 1, warden: 1, blood1: 1, queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
   var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate", "starglass"];
   var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel", Homesteader: "farmgate", Malcruor: "bloodshard" };
-  var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", mc_in: "mc_dig", mc_dig: "mc_kill", mc_kill: "mc_lily", mc_lily: "mc_tree", mc_tree: "mc_ash", mc_ash: "mc_edge", mc_edge: "mc_out", mc_out: "mc_back", stain1: "stain8", bty1: "bty25" };
+  var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", mc_in: "mc_dig", mc_dig: "mc_kill", mc_kill: "mc_lily", mc_lily: "mc_tree", mc_tree: "mc_ash", mc_ash: "mc_edge", mc_edge: "mc_out", mc_out: "mc_back", mc_h1: "mc_h4", mc_h4: "mc_h8", stain1: "stain8", bty1: "bty25" };
   function qbIco(k) {   // an icon url for an item key, a tool tier ("pick3"), or null for a glyph ("#⚔")
     if (!k || k.charAt(0) === "#") return null;
     var m = /^pick(\d)$/.exec(k);
@@ -17472,8 +17576,9 @@
     if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
     if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.isle && cave.Q ? cave.Q.n : cf.bld || cf.glowm || cf.maze ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.isle ? (cave.port ? "Trading port" : TIER_N[cave.tier] + " island") : cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
     var b = bkeyAt(p.x), bi = BIOX[b], ph = phaseOf(S.time), depth = Math.max(0, Math.floor(p.y - SURF)), under = p.y > pcol() + 2;
-    if (inMC()) { var mzn = p.x < world.gx0 + (SW.MALC_W || 1200) * 0.58 ? "The Rotmire" : "The Ashen Waste"; hudSet("sbxBiome", "Malcruor"); if (HUDC.bc !== "#ff3a4a") { HUDC.bc = "#ff3a4a"; $("sbxLoc").style.setProperty("--bc", "#ff3a4a"); }
-      hudSet("sbxSub", mzn + (under ? " \u00b7 depth " + depth : " \u00b7 blood moon")); if (lastBio !== "mc") { lastBio = "mc"; } drawTrail(); if (hbDirty) drawBar(); return; }   // MALCRUOR
+    if (inMC()) { var mzn = p.x < world.gx0 + (SW.MALC_W || 1200) * 0.58 ? "The Rotmire" : "The Ashen Waste", auq = mcRest(p.x), auc = auq ? "#ffd24a" : "#ff3a4a", nh = (malcS().rz || []).length; hudSet("sbxBiome", auq || mcFull() ? AU_NAME : "Malcruor"); if (HUDC.bc !== auc) { HUDC.bc = auc; $("sbxLoc").style.setProperty("--bc", auc); }
+      if (auq) mzn = "Golden dawn"; else if (nh) mzn += " \u00b7 " + nh + "/" + (SW.MALC_Z || 8) + " cleansed";
+      hudSet("sbxSub", mzn + (under ? " \u00b7 depth " + depth : auq || nh ? "" : " \u00b7 blood moon")); if (lastBio !== "mc") { lastBio = "mc"; } drawTrail(); if (hbDirty) drawBar(); return; }   // MALCRUOR
     hudSet("sbxBiome", bi.n); if (HUDC.bc !== bi.c) { HUDC.bc = bi.c; $("sbxLoc").style.setProperty("--bc", bi.c); }
     hudSet("sbxSub", dayTag() + (SHOWDAYS && ph.id === "day" ? "Daytime" : PHN[ph.id]) + (under ? " \u00b7 depth " + depth : " \u00b7 " + (wxLabel() || "surface")));
     if (lastBio !== b) { bcard(bi, b); lastBio = b; }
@@ -24656,7 +24761,7 @@
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
   window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
-  window.__sbx = { mc: { on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { mc: { on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
@@ -25962,6 +26067,7 @@
       ["Enter the Glow Marsh", function () { S.time = 320; var s = sites(); if (s && s.glow) { dmTp(s.glow.x + 2.5, null, "Glow Hollow"); setTimeout(function () { enterSite("glow", s.glow); }, 300); } }],
       ["Enter the Mangrove Maze", function () { var s = sites(); if (s && s.maze) { dmTp(s.maze.x + 2.5, null, "Maze"); setTimeout(function () { enterSite("maze", s.maze); }, 300); } }],
       ["Malcruor (the corrupt world)", function () { if (inMC()) { malcS().c = 0; MC.warn = 0; nag("You are in Malcruor. Corruption reset."); return; } malcS().warned = 1; if (OCS) { nag("Leave the sea first."); return; } var go = function () { if (inNexus()) { cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; } mcEnter(); }; if (inNexus()) go(); else { if (HOME) leaveHomeNow(); if (cave) leaveCaveNow(); setTimeout(function () { devAct("tp:realm"); setTimeout(go, 1500); }, cave || HOME ? 900 : 0); } }],
+      ["Malcruor: nearest Corrupted Heart", function () { if (!inMC() || !world.hearts) { nag("Enter Malcruor first."); return; } var b = null; world.hearts.forEach(function (h) { if (!h.done && (!b || Math.abs(h.x - p.x) < Math.abs(b.x - p.x))) b = h; }); if (!b) { nag("Every heart is cleansed."); return; } dmTp(b.x - 4.5, null, "Corrupted Heart"); }],
       ["Malcruor: the portal home", function () { if (!inMC()) { nag("Enter Malcruor first."); return; } var G = mcGate(); dmTp(G.x + 3.5, null, "Portal home"); }],
       ["Malcruor portal (in the SwampRealms)", function () { if (inMC()) { mcLeave(false); return; } var put = function () { if (inNexus()) { cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cam.x = cp.x; cam.y = cp.y; } }; if (inNexus()) put(); else { devAct("tp:realm"); setTimeout(put, 1500); } }]
     ],
@@ -25989,6 +26095,9 @@
     ],
     set: [
       ["Malcruor: corruption to 90%", function () { if (!inMC()) { nag("Enter Malcruor first."); return; } malcS().c = MC_SEC * 0.9; MC.warn = 2; }],
+      ["Malcruor: cleanse the nearest heart", function () { if (!inMC() || !world.hearts) { nag("Enter Malcruor first."); return; } var b = null; world.hearts.forEach(function (h) { if (!h.done && (!b || Math.abs(h.x - p.x) < Math.abs(b.x - p.x))) b = h; }); if (b) mcCleanse(b.k); }],
+      ["Malcruor: cleanse all (Aurelmire)", function () { var M = malcS(); M.rz = [0, 1, 2, 3, 4, 5, 6, 7]; S.st.mchearts = 8; checkGoals(); if (inMC()) { MC.gold = 1.4; trans = { t: 0, done: false, mid: mcRebuild }; } toast("Malcruor is Aurelmire now.", "#ffd24a"); }],
+      ["Malcruor: un-cleanse (corrupt again)", function () { var M = malcS(); M.rz = []; if (inMC()) { MC.fx = 1; trans = { t: 0, done: false, mid: mcRebuild }; } toast("Malcruor is corrupt again.", "#ff8a8a"); }],
       ["Malcruor: corruption to 0%", function () { malcS().c = 0; MC.warn = 0; }],
       ["Malcruor: +5 visits (shyer creatures)", function () { malcS().v = (malcS().v || 0) + 5; toast("Malcruor visits: " + malcS().v, "#ff8a8a"); }],
       ["Malcruor: reset visits and warning", function () { var M = malcS(); M.v = inMC() ? 1 : 0; M.warned = 0; toast("Malcruor visits reset.", "#ff8a8a"); }],
@@ -26204,8 +26313,8 @@
 
   Object.keys(NEWICO).forEach(function (k) { SPR[k] = NEWICO[k]; delete SPC[k]; delete ICO[k]; });
   // MALCRUOR ICONS: corrupted pixel art. Each is an existing sprite with its colours mapped by brightness onto black, blood red and a pale red glow.
-  function corruptPal(P) {
-    var st = [[0, [10, 4, 6]], [0.3, [44, 10, 16]], [0.55, [128, 14, 28]], [0.75, [228, 40, 58]], [1, [255, 196, 182]]], o = {};
+  function corruptPal(P, stops) {
+    var st = stops || [[0, [10, 4, 6]], [0.3, [44, 10, 16]], [0.55, [128, 14, 28]], [0.75, [228, 40, 58]], [1, [255, 196, 182]]], o = {};
     Object.keys(P).forEach(function (k) { var m = /^#([0-9a-f]{6})$/i.exec(P[k]); if (!m) { o[k] = P[k]; return; } var n = parseInt(m[1], 16), L = (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255, i = 1;
       while (i < st.length - 1 && L > st[i][0]) i++; var a = st[i - 1], z = st[i], t = clamp((L - a[0]) / (z[0] - a[0]), 0, 1);
       o[k] = "#" + [0, 1, 2].map(function (j) { var v = Math.round(a[1][j] + (z[1][j] - a[1][j]) * t); return (v < 16 ? "0" : "") + v.toString(16); }).join(""); });
@@ -26214,6 +26323,11 @@
   var MC_ICONS = { pick6: "pick5", wpn6: "wpn5", arm6: "arm5", bow4: "bow3", hoe4: "hoe3", rod3: "rod2", mc_bloodore: "bogiron", mc_hexite: "ruby", mc_bloodingot: "ironingot", mc_fang: "bone", mc_rotbark: "amber", mc_bloodcap: "truffle", mc_gloomberry: "frostberry",
     mc_bloodbloom: "petalsnap", mc_bloodleaf: "kelp", mc_thornstick: "pufferspine", mc_thornfiber: "rope", mc_searedcap: "skewer", mc_rotstew: "stew", mc_berrytart: "berrypie", mc_purge: "jellygel" };
   Object.keys(MC_ICONS).forEach(function (k) { var d = SPR[MC_ICONS[k]]; if (!d) return; var sp = { r: d.r, p: corruptPal(d.p), o: "#0a0204" }; SPR[k] = sp; if (k.indexOf("mc_") === 0) NEWICO[k] = sp; delete SPC[k]; delete ICO[k]; });
+  // AURELMIRE ICONS: the same idea in honey, gold and dawn light
+  var AU_STOPS = [[0, [58, 32, 8]], [0.3, [138, 90, 28]], [0.55, [216, 148, 24]], [0.75, [255, 210, 74]], [1, [255, 251, 224]]];
+  var AU_ICONS = { au_sunore: "bogiron", au_citrine: "ruby", au_sunsteel: "ironingot", au_dawnshard: "moonstone", au_goldcap: "truffle", au_honeyberry: "frostberry", au_sunbloom: "petalsnap", au_goldleaf: "kelp",
+    au_goldstick: "pufferspine", au_goldfiber: "rope", au_goldroast: "skewer", au_honeypie: "berrypie", au_sundraught: "jellygel" };
+  Object.keys(AU_ICONS).forEach(function (k) { var d = SPR[AU_ICONS[k]] || SPR.ruby; if (!d || !ITEMS[k]) return; var sp = { r: d.r, p: corruptPal(d.p, AU_STOPS), o: "#3a2008" }; SPR[k] = sp; NEWICO[k] = sp; delete SPC[k]; delete ICO[k]; });
   if (SPR.mc_purge) { SPR.mc_purge.p = Object.assign({}, SPR.mc_purge.p); Object.keys(SPR.mc_purge.p).forEach(function (k, i) { if (i === 0) SPR.mc_purge.p[k] = "#ff7a96"; }); }   // the draught glows pink-red
   // ICON ART: proper icons for things that showed a generic gem (the "diamond") or nothing at all, and the mount items
   // (drawn from the real mount art, fitted into the icon). 32 x 32, top-lit, inked like the creatures.

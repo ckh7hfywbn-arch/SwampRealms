@@ -1143,7 +1143,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
   // no sky island. It sits in the middle of the same wide arrays the SwampRealms uses, walled in by bedrock on both sides, so every system
   // that reads the grid works unchanged. Only one world is ever loaded: the game builds this one in place of the SwampRealms (see DIMENSIONS).
   var MALC_W = 1200;
-  function genMalc(seed) {
+  var MALC_Z = 8;   // Malcruor is cleansed in 8 areas, one Corrupted Heart in each
+  function genMalc(seed, rz) {
     seed = (seed | 0) || 1;
     var WW = WORLD_W, MW = MALC_W, OFF = EXT + (CORE_W - MW) / 2, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y, c, i;
     var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], SPM = 560;
@@ -1176,6 +1177,15 @@ batwing: { n: "Bat Wing", frag: "bat" },
       while (tries++ < 6000 && (nc < 14 || np < 30)) { x = 8 + Math.floor(rnd() * (MW - 16)); y = c.top[x] + 10 + Math.floor(rnd() * (H - c.top[x] - 20)); var i2 = y * MW + x;
         if (y < H - 2 && c.t[i2] === T.AIR && TILES[c.t[i2 + MW]].solid && c.t[i2 + MW] !== T.BEDROCK) { if (nc < 14 && CH !== undefined) { c.t[i2] = CH; nc++; } else if (PT !== undefined) { c.t[i2] = PT; np++; } } }
     }
+    // the Corrupted Hearts: one on the surface in the middle of each area. Cleansed areas (rz) are Aurelmire: the same land at golden dawn
+    var ZW = MW / MALC_Z, hearts = [], mcz = new Uint8Array(WW), done = {};
+    (rz || []).forEach(function (k) { done[k] = 1; });
+    for (var z = 0; z < MALC_Z; z++) { var hx = Math.round(z * ZW + ZW / 2 + (rnd() - 0.5) * ZW * 0.3); hearts.push({ k: z, x: hx + OFF, y: c.top[hx], done: !!done[z] }); }
+    if (T.X_au_dawnstone !== undefined && rz && rz.length) {
+      var AU = {}; [["X_mc_blackstone", "X_au_dawnstone"], ["X_mc_rotmud", "X_au_honeyloam"], ["X_mc_blightmoss", "X_au_goldmoss"], ["X_mc_bloodvein", "X_au_sunvein"], ["X_mc_hexvein", "X_au_citvein"],
+        ["MCCAP", "AUCAP"], ["MCBLOOM", "AUBLOOM"], ["MCWEED", "AUREED"], ["MCVINE", "AUVINE"], ["MCBUSH", "AUBUSH"]].forEach(function (q) { if (T[q[0]] !== undefined && T[q[1]] !== undefined) AU[T[q[0]]] = T[q[1]]; });
+      for (x = 0; x < MW; x++) { if (!done[Math.min(MALC_Z - 1, Math.floor(x / ZW))]) continue; mcz[x + OFF] = 1; for (y = 0; y < H; y++) { var a2 = AU[c.t[y * MW + x]]; if (a2 !== undefined) c.t[y * MW + x] = a2; } }
+    }
     for (x = 0; x < WW; x++) { wtop[x] = 0; wbio[x] = 1; }
     for (y = 0; y < H; y++) { var row = y * WW; wt.fill(T.BEDROCK, row, row + WW); wt.set(c.t.subarray(y * MW, (y + 1) * MW), row + OFF); wwl.set(c.walls.subarray(y * MW, (y + 1) * MW), row + OFF); }   // bedrock past both ends
     for (x = 0; x < 3; x++) for (y = 0; y < H; y++) { wt[y * WW + OFF + x] = T.BEDROCK; wt[y * WW + OFF + MW - 1 - x] = T.BEDROCK; }
@@ -1183,8 +1193,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     for (x = 0; x < 3; x++) { wtop[OFF + x] = 0; wtop[OFF + MW - 1 - x] = 0; }
     shiftX(c, OFF);
     return { trees: c.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: null, marks: [], holes: [], structs: [], feats: c.feats, aerie: null, sky: null,
-      spawn: { x: SPM + OFF + 0.5, y: c.top[SPM] }, malc: 1, gx0: OFF + 3, gx1: OFF + MW - 4 };
+      spawn: { x: SPM + OFF + 0.5, y: c.top[SPM] }, malc: 1, gx0: OFF + 3, gx1: OFF + MW - 4, hearts: hearts, mcz: mcz, zw: ZW, off: OFF };
   }
-  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, genMalc: genMalc, MALC_W: MALC_W, hash: hash, mulberry: mulberry };
+  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, genMalc: genMalc, MALC_W: MALC_W, MALC_Z: MALC_Z, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);

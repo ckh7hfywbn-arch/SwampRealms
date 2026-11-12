@@ -1899,6 +1899,75 @@
   R("x_hoe4", "Bloodiron Hoe", null, { mc_bloodingot: 3, mc_rotplanks: 4, mc_thornfiber: 2 }, { hoe: 4, bench: true, bl: 4, d: "Tills and harvests 7 tiles at a time and often finds an extra crop. Needs the Iron Hoe." });
   R("x_rod3", "Bloodiron Rod", null, { mc_bloodingot: 2, mc_thornfiber: 4, mc_hexite: 1 }, { rod: 3, bench: true, bl: 4, d: "A corrupted rod: bites come faster, and it fishes lava like the Ember Rod. Needs the Ember Rod." });
   R("x_mc_purge", "Purging Draught", { mc_purge: 1 }, { mc_bloodbloom: 2, mc_gloomberry: 2, mc_hexite: 1 }, { stn: "cook", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
+  // ====================================================================================================
+  // AURELMIRE PACK: what Malcruor becomes where you cleanse it. Another swamp of the multiverse: the same land, at golden dawn. Golden
+  // versions of Malcruor's things: Dawnstone, Honeyloam, Goldmoss, Sunsteel Ore, Citrine, Dawnwood, Goldleaf, golden plants and foods, and
+  // the Sunlight Draught. In a cleansed area, breaking a block gives its Aurelmire version (sandbox.js AUDROP).
+  // ====================================================================================================
+  block("au_dawnwood", "Dawnwood", "#c89a5a", "#ffe08a", 1.0, function (rect, hh) {   // pale honey bark with bright gold grain
+    rect(0, 0, 16, 16, "#c08c4e"); [2, 6, 10, 13].forEach(function (x, i) { rect(x, 0, 1, 16, i % 2 ? "#9a6a36" : "#dcae6a"); });
+    for (var k = 0; k < 5; k++) rect(Math.floor(hh(k, 141, 1) * 14), Math.floor(hh(k, 141, 2) * 14), 2, 1, "#ffe08a");
+  });
+  TILES[T.X_au_dawnwood].kind = "au_dawnwood";
+  block("au_dawnplanks", "Dawnwood Planks", "#dcae6a", "#ffe08a", 0.8, function (rect) {
+    rect(0, 0, 16, 16, "#d8a862"); [0, 4, 8, 12].forEach(function (y, i) { rect(0, y, 16, 1, "#9a6a36"); rect(0, y + 1, 16, 1, "#f0c880"); rect(i % 2 ? 5 : 11, y + 1, 1, 3, "#9a6a36"); });
+  });
+  block("au_dawnstone", "Dawnstone", "#d8c08a", "#fff0b0", 1.4, function (rect, hh) {
+    rect(0, 0, 16, 16, "#d0b47e"); for (var k = 0; k < 12; k++) rect(Math.floor(hh(k, 151, 1) * 15), Math.floor(hh(k, 151, 2) * 15), 2, 1, hh(k, 151, 3) > 0.5 ? "#e8d09a" : "#a88c5a");
+    for (var j = 0; j < 3; j++) rect(Math.floor(hh(j, 153, 1) * 15), Math.floor(hh(j, 153, 2) * 15), 1, 1, "#fff6c8");
+  });
+  TILES[T.X_au_dawnstone].tier = 1;
+  block("au_honeyloam", "Honeyloam", "#b07a40", "#ffd27a", 0.5, function (rect, hh) {
+    rect(0, 0, 16, 16, "#ae7840"); for (var k = 0; k < 14; k++) rect(Math.floor(hh(k, 161, 1) * 14), Math.floor(hh(k, 161, 2) * 15), 3, 1, hh(k, 161, 3) > 0.5 ? "#c69050" : "#8a5a2c");
+  });
+  TILES[T.X_au_honeyloam].tier = 0;
+  block("au_goldmoss", "Goldmoss", "#ae7840", "#ffd24a", 0.6, function (rect, hh) {
+    rect(0, 0, 16, 16, "#ae7840"); rect(0, 0, 16, 3, "#e8b830"); rect(0, 3, 16, 1, "#b08020"); for (var q = 0; q < 5; q++) rect(Math.floor(hh(q, 171, 1) * 15), 0, 1, 1, "#fff0a0");
+  });
+  TILES[T.X_au_goldmoss].tier = 0; TILES[T.X_au_goldmoss].drop = "au_honeyloam";
+  block("au_sunvein", "Sunsteel Ore", "#d0b47e", "#ffd24a", 2.2, function (rect, hh) {
+    rect(0, 0, 16, 16, "#d0b47e"); [[3, 3], [10, 5], [6, 10], [12, 12], [2, 12]].forEach(function (o, i) { rect(o[0], o[1], 3, 2, "#c08a20"); rect(o[0], o[1], 2, 1, i % 2 ? "#fff0a0" : "#ffd24a"); });
+  }, 4, ["255,210,90", 0.9, 0.05]);
+  TILES[T.X_au_sunvein].kind = "ore"; TILES[T.X_au_sunvein].tier = 3; TILES[T.X_au_sunvein].drop = "au_sunore";
+  block("au_citvein", "Citrine Ore", "#d0b47e", "#ffb02a", 2.6, function (rect) {
+    rect(0, 0, 16, 16, "#d0b47e"); [[4, 4], [10, 9], [5, 11]].forEach(function (o) { rect(o[0], o[1] - 1, 1, 1, "#fff6c8"); rect(o[0] - 1, o[1], 3, 2, "#ffb02a"); rect(o[0], o[1] + 2, 1, 1, "#a06010"); });
+  }, 7, ["255,180,60", 1.4, 0.1]);
+  TILES[T.X_au_citvein].kind = "ore"; TILES[T.X_au_citvein].tier = 4; TILES[T.X_au_citvein].drop = "au_citrine";
+  block("au_dawnbrick", "Dawnstone Brick", "#e0c890", "#fff0b0", 1.6, function (rect) { bricks(rect, "#e0c890", "#a88c5a", "#f4e0b0"); });
+  block("au_sunlamp", "Sun Lamp", "#c08c4e", "#ffe08a", 1.2, function (rect) { lampBlock(rect, "#9a6a36", "#c08c4e", "#e8b830", "#ffd24a", "#fffbe0"); }, 14, ["255,220,120", 4.4, 0.3]);
+  function aplant(tk, n, c, drop, art, light, gl) { var id = tile(tk, n, c, c, 0.05, 0, drop, false, light || 0, tk, { sway: 1 }); ART[tk] = art; if (gl) glow(id, gl[0], gl[1], gl[2]); return id; }
+  aplant("AUCAP", "Goldcap", "#ffc23a", "au_goldcap", function (rect) {
+    rect(4, 10, 2, 6, "#f4ecd0"); rect(11, 12, 2, 4, "#f4ecd0"); rect(1, 6, 8, 4, "#e8a820"); rect(2, 5, 6, 1, "#ffd24a"); rect(3, 7, 1, 1, "#fffbe0"); rect(6, 6, 1, 1, "#fffbe0");
+    rect(8, 9, 7, 3, "#d89418"); rect(9, 8, 5, 1, "#ffd24a"); rect(10, 10, 1, 1, "#fffbe0"); rect(0, 15, 16, 1, "#8a5a2c");
+  }, 2, ["255,210,90", 0.8, 0.06]);
+  aplant("AUBLOOM", "Sunbloom", "#ffd24a", "au_sunbloom", function (rect) {
+    rect(7, 7, 2, 9, "#6a9a3a"); rect(4, 12, 3, 1, "#6a9a3a"); rect(9, 13, 3, 1, "#6a9a3a");
+    rect(4, 3, 8, 4, "#ffc23a"); rect(5, 2, 6, 1, "#ffe08a"); rect(3, 4, 1, 2, "#ffb02a"); rect(12, 4, 1, 2, "#ffb02a"); rect(6, 4, 4, 2, "#c06a10"); rect(7, 4, 1, 1, "#ffe08a");
+  }, 3, ["255,220,110", 0.9, 0.08]);
+  aplant("AUREED", "Goldreed", "#e8c060", "au_goldfiber", function (rect) {
+    [[2, 6], [5, 3], [8, 5], [11, 2], [13, 7]].forEach(function (b, i) { rect(b[0], b[1], 1, 16 - b[1], i % 2 ? "#c89a3a" : "#e8c060"); rect(b[0], b[1], 1, 2, "#fff0a0"); });
+  });
+  aplant("AUVINE", "Dawnvine", "#9ac04a", "au_goldfiber", function (rect) {
+    rect(7, 0, 2, 13, "#6a9a3a"); rect(5, 4, 2, 1, "#6a9a3a"); rect(9, 8, 2, 1, "#6a9a3a"); rect(4, 5, 2, 2, "#ffd24a"); rect(10, 9, 2, 2, "#ffd24a"); rect(7, 13, 2, 2, "#ffe08a");
+  }, 2, ["255,220,110", 0.6, 0.05]);
+  aplant("AUBUSH", "Honeyberry Bush", "#6a9a3a", "au_honeyberry", function (rect) {
+    rect(2, 7, 12, 8, "#5a8a32"); rect(3, 6, 10, 1, "#7aaa42"); [[4, 8], [8, 9], [11, 8], [6, 12], [10, 12], [3, 11]].forEach(function (b) { rect(b[0], b[1], 2, 2, "#ffb02a"); rect(b[0], b[1], 1, 1, "#fff0a0"); });
+  });
+  mat("au_goldleaf", "Goldleaf", "#ffd24a"); mat("au_goldstick", "Gilded Stick", "#c89a3a"); mat("au_goldfiber", "Gold Fiber", "#e8c060");
+  mat("au_sunore", "Sunsteel Ore", "#e8b830"); mat("au_citrine", "Citrine", "#ffb02a"); mat("au_sunsteel", "Sunsteel Ingot", "#ffd24a"); mat("au_dawnshard", "Dawn Shard", "#fff0a0");
+  item("au_sunbloom", "Sunbloom", { gem: "#ffd24a", d: "A golden flower that grows where Malcruor has been cleansed." });
+  item("au_goldcap", "Goldcap", { food: 8, heal: 2, gem: "#e8a820", d: "A sweet golden mushroom from Aurelmire." });
+  item("au_honeyberry", "Honeyberries", { food: 7, heal: 4, gem: "#ffb02a", d: "Honey-sweet berries from Aurelmire's bushes." });
+  item("au_goldroast", "Goldcap Roast", { food: 28, heal: 8, cooked: 1, gem: "#d89418" });
+  item("au_honeypie", "Honeyberry Pie", { food: 44, heal: 16, cooked: 1, gem: "#ffb02a" });
+  item("au_sundraught", "Sunlight Draught", { food: 4, heal: 10, purge: 180, cooked: 1, gem: "#fff0a0", d: "Drink it in Malcruor to push the corruption back by 3 minutes." });
+  R("x_au_dawnplanks", "Dawnwood Planks (4)", { au_dawnplanks: 4 }, { au_dawnwood: 1 }, { d: "Honey-gold planks from Aurelmire's Dawnwood." });
+  R("x_au_dawnbrick", "Dawnstone Brick (2)", { au_dawnbrick: 2 }, { au_dawnstone: 2 }, { stn: "mason", d: "A warm golden brick." });
+  R("x_au_sunlamp", "Sun Lamp (2)", { au_sunlamp: 2 }, { au_citrine: 1, au_dawnstone: 2 }, { d: "A bright golden lamp block." });
+  R("x_au_sunsteel", "Sunsteel Ingot", { au_sunsteel: 1 }, { au_sunore: 2 }, { stn: "furnace", d: "Smelted from Sunsteel Ore, found where Malcruor is cleansed." });
+  R("x_au_goldroast", "Goldcap Roast", { au_goldroast: 1 }, { au_goldcap: 2 }, { stn: "cook", d: "Fills 28 hunger and heals 8." });
+  R("x_au_honeypie", "Honeyberry Pie", { au_honeypie: 1 }, { au_honeyberry: 4, au_goldfiber: 1 }, { stn: "cook", d: "Fills 44 hunger and heals 16." });
+  R("x_au_sundraught", "Sunlight Draught", { au_sundraught: 1 }, { au_sunbloom: 2, au_honeyberry: 2, au_citrine: 1 }, { stn: "cook", d: "Pushes Malcruor's corruption back by 3 minutes and heals 10." });
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
