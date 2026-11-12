@@ -24637,7 +24637,7 @@
     var dlA = daylight(S.time);
     if (!HFOR || HOME.fk !== HFOR) { if (!HOME.fk) HFOR = null; homeForest(); HOME.fk = HFOR; }
     var fM = HFM, fx0 = Math.max(-fM, Math.floor(-ox / ts) - 1), fy0 = Math.max(-fM, Math.floor(wyAt(0)) - 1), fx1 = Math.min(HW + fM, Math.ceil((vw - ox) / ts) + 1), fy1 = Math.min(HH + fM, Math.ceil(wyAt(vh)) + 2);
-    var fstrip = function (a0, b0, a1, b1) { a0 = Math.max(a0, fx0); b0 = Math.max(b0, fy0); a1 = Math.min(a1, fx1); b1 = Math.min(b1, fy1); if (a1 > a0 && b1 > b0) g.drawImage(HFOR, (a0 + fM) * 16, (b0 + fM) * 16, (a1 - a0) * 16, (b1 - b0) * 16, ox + a0 * ts, oy + b0 * ts, (a1 - a0) * ts, (b1 - b0) * ts); };
+    var fstrip = function (a0, b0, a1, b1) { a0 = Math.max(a0, fx0); b0 = Math.max(b0, fy0); a1 = Math.min(a1, fx1); b1 = Math.min(b1, fy1); if (a1 > a0 && b1 > b0) { var fk = HFK * 16; g.imageSmoothingEnabled = true; g.drawImage(HFOR, (a0 + fM) * fk, (b0 + fM) * fk, (a1 - a0) * fk, (b1 - b0) * fk, ox + a0 * ts, oy + b0 * ts, (a1 - a0) * ts, (b1 - b0) * ts); g.imageSmoothingEnabled = false; } };
     fstrip(-fM, -fM, HW + fM, 3); fstrip(-fM, HH - 3, HW + fM, HH + fM); fstrip(-fM, 3, 3, HH - 3); fstrip(HW - 3, 3, HW + fM, HH - 3);   // the forest is only around the edges: draw just those strips
     // --- things that stand up, drawn back to front ---
     var L = [];
@@ -24777,40 +24777,49 @@
   function hR(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }
   function homeDeepTree(i, j) { return hmT(i, j) === HT.TREE && (j + 1 >= HH || hmT(i, j + 1) === HT.TREE || hmT(i, j + 1) === HT.GATE || SW.hash(i, j, 92) < 0.4); }   // only the top edge of the forest shows trunks; the rest is canopy
   var HFM = 10, HFOR = null;
-  function homeForest() {   // the forest around the farm (and past its edge) never changes: paint it once, 16 px per tile
-    var M = HFM, W = (HW + M * 2) * 16, H = (HH + M * 2) * 16, c = document.createElement("canvas"); c.width = W; c.height = H; var g = c.getContext("2d"), i, j; g.imageSmoothingEnabled = false;
-    // TREETOPS SEEN FROM ABOVE: a dark forest floor, then crowns of different sizes and three shades of green, scattered (not a grid),
-    // drawn top to bottom so each overlaps the one behind, lit from the top-left; the deep woods away from the farm are darker
-    var forest = function (i2, j2) { var ins = i2 >= 0 && j2 >= 0 && i2 < HW && j2 < HH; return !ins || homeDeepTree(i2, j2); };
-    var PAL = [["#0b2419", "#174a33", "#22663f", "#3a8a52", "#7cc47a"], ["#0a2218", "#14473a", "#1d6a4e", "#2f9a6a", "#6fd69a"], ["#10261a", "#25502e", "#3a6e34", "#5a8e40", "#a8c870"]];
-    for (j = -M; j < HH + M; j++) for (i = -M; i < HW + M; i++) if (forest(i, j)) { g.fillStyle = "#081a12"; g.fillRect((i + M) * 16, (j + M) * 16, 16, 16); }
-    var pts = [];
-    for (var y = 0; y < H + 10; y += 11) for (var x = (y / 11 & 1) * 6; x < W + 10; x += 12) {
-      var hx = SW.hash(x, y, 301), hy = SW.hash(y, x, 302), px = x + (hx - 0.5) * 9, py = y + (hy - 0.5) * 8;
+  // THE FOREST ROUND THE FARM, as background: big soft treetops seen from above (one silhouette per tree, lit from the top-left, a tinted
+  // outline), in calm, dark greens that get darker away from the farm, gaps of deep shade between them, and a soft shadow the treeline
+  // casts onto the edge of the farm. Painted once at HFK times 16 px per tile.
+  var HFK = 2;
+  var HFP = [   // per season: crown dark, mid, light, highlight, outline, floor; extra dots (blossom, autumn leaves, snow)
+    { d: "#16402c", m: "#22583a", l: "#2f6e46", h: "#5c9a68", k: "#0a2016", f: "#06130d", dots: ["#e8a8c8", "#f4c8dc"] },
+    { d: "#143c2a", m: "#1f5236", l: "#2b6842", h: "#4f8f5e", k: "#091d14", f: "#06120c", dots: null },
+    { d: "#3a3a1c", m: "#545026", l: "#6e6430", h: "#a08c48", k: "#1c1a0c", f: "#0e0c06", dots: ["#c8642a", "#a8402a", "#d89a38"] },
+    { d: "#1c3a30", m: "#2a4c40", l: "#3a5e50", h: "#6a8a7c", k: "#0c1a16", f: "#08110e", dots: null, snow: 1 }];
+  function homeForest() {
+    var M = HFM, K = HFK, W = (HW + M * 2) * 16, H = (HH + M * 2) * 16, c = document.createElement("canvas"); c.width = W * K; c.height = H * K; var g = c.getContext("2d"), i, j;
+    g.setTransform(K, 0, 0, K, 0, 0); g.lineJoin = "round";
+    var P = HFP[HSEA < 0 ? 1 : HSEA], forest = function (i2, j2) { var ins = i2 >= 0 && j2 >= 0 && i2 < HW && j2 < HH; return !ins || homeDeepTree(i2, j2); };
+    var depth = function (i2, j2) { return Math.max(0, -i2, -j2, i2 - HW + 1, j2 - HH + 1); };
+    for (j = -M; j < HH + M; j++) for (i = -M; i < HW + M; i++) if (forest(i, j)) { g.fillStyle = P.f; g.fillRect((i + M) * 16, (j + M) * 16, 16, 16); }
+    // the treeline's shadow on the farm: a soft fade out of every forest edge
+    for (j = 0; j < HH; j++) for (i = 0; i < HW; i++) { if (forest(i, j)) continue; var X = (i + M) * 16, Y = (j + M) * 16;
+      [[0, -1, 0, 0, 0, 9], [0, 1, 0, 16, 0, 7], [-1, 0, 0, 0, 9, 0], [1, 0, 16, 0, -9, 0]].forEach(function (q) { if (!forest(i + q[0], j + q[1])) return;
+        var x0 = X + q[2], y0 = Y + q[3], gr = g.createLinearGradient(x0, y0, x0 + q[4], y0 + (q[1] ? (q[1] < 0 ? q[5] : -q[5]) : 0)); gr.addColorStop(0, "rgba(4,16,10,.42)"); gr.addColorStop(1, "rgba(4,16,10,0)"); g.fillStyle = gr; g.fillRect(X, Y, 16, 16); }); }
+    var pts = [], SP = 19;
+    for (var y = 0; y < H + SP; y += SP * 0.8) for (var x = (Math.round(y / (SP * 0.8)) & 1) * SP * 0.5; x < W + SP; x += SP) {
+      var hx = SW.hash(Math.round(x), Math.round(y), 311), hy = SW.hash(Math.round(y), Math.round(x), 312), px = x + (hx - 0.5) * 8, py = y + (hy - 0.5) * 7;
       var ti = Math.floor(px / 16) - M, tj = Math.floor(py / 16) - M; if (!forest(ti, tj)) continue;
-      var ins = ti >= 0 && tj >= 0 && ti < HW && tj < HH, dd = ins ? 0 : Math.max(-ti, -tj, ti - HW + 1, tj - HH + 1);
-      pts.push([px, py, 8 + SW.hash(x, y, 303) * 9, Math.floor(SW.hash(x, y, 304) * 3), dd]);
+      pts.push([px, py, 10 + SW.hash(Math.round(x), Math.round(y), 313) * 5, SW.hash(Math.round(x), Math.round(y), 314), depth(ti, tj)]);
     }
-    pts.sort(function (p1, p2) { return p1[1] - p2[1]; });
-    var WC = worldTreeArt();
-    if (WC.length) {   // the same crowns as the trees in your world, packed close (every other point), back to front, the deep woods darker
-      var lc = hpCan(W, H), SC = {};
-      pts.forEach(function (q, n) { if ((Math.floor(q[0] / 12) + Math.floor(q[1] / 11)) % 2) return; var wi = (q[3] + n) % WC.length, sv = (n * 7 + q[3]) % 3, sk = wi + "_" + sv, cv2 = SC[sk] || (SC[sk] = seasonCrown(WC[wi].c, sv)), cx = Math.round(q[0] - cv2.width / 2), cy = Math.round(q[1] - cv2.height * 0.42);
-        if (q[4] > 1) { var lv = Math.min(6, q[4] - 1), dk = sk + "_d" + lv; if (!SC[dk]) { var dc = hpCan(cv2.width, cv2.height); dc.g.drawImage(cv2, 0, 0); dc.g.globalCompositeOperation = "source-atop"; dc.g.fillStyle = "rgba(4,14,10," + (lv * 0.065).toFixed(3) + ")"; dc.g.fillRect(0, 0, cv2.width, cv2.height); SC[dk] = dc.c; } cv2 = SC[dk]; }   // the deep woods darker: each crown shaded on its own (shading on the shared canvas darkened every crown under it again and again, to near black)
-        lc.g.drawImage(cv2, cx, cy); });
-      Object.keys(SC).forEach(function (k2) { if (SC[k2] !== WC[+k2.split("_")[0]].c) cvFree(SC[k2]); }); g.drawImage(lc.c, 0, 0); cvFree(lc.c); return (HFOR = c);
-    }
-    pts.sort(function (p1, p2) { return p1[1] - p2[1]; });
+    pts.sort(function (a, b) { return a[1] - b[1]; });
     pts.forEach(function (q) {
-      var P = PAL[q[3]], r = q[2], X = q[0], Y = q[1];
-      g.fillStyle = "rgba(0,10,4,.45)"; g.beginPath(); g.arc(X + 2, Y + 4, r, 0, 6.2832); g.fill();   // its shadow on the crowns below
-      g.fillStyle = P[1]; g.beginPath(); g.arc(X, Y, r, 0, 6.2832); g.fill();
-      g.fillStyle = P[2]; g.beginPath(); g.arc(X - r * 0.15, Y - r * 0.18, r * 0.78, 0, 6.2832); g.fill();
-      g.fillStyle = P[3]; for (var l = 0; l < 3; l++) { var la = -2.4 + l * 0.75 + SW.hash(X, l, 305) * 0.3; g.beginPath(); g.arc(X + Math.cos(la) * r * 0.42, Y + Math.sin(la) * r * 0.42, r * 0.36, 0, 6.2832); g.fill(); }
-      g.fillStyle = P[4]; g.globalAlpha = 0.5; g.beginPath(); g.arc(X - r * 0.42, Y - r * 0.5, r * 0.2, 0, 6.2832); g.fill(); g.globalAlpha = 1;
-      if (q[4] > 1) { g.fillStyle = "rgba(4,14,10," + Math.min(0.42, (q[4] - 1) * 0.07).toFixed(2) + ")"; g.beginPath(); g.arc(X, Y, r + 0.5, 0, 6.2832); g.fill(); }
+      var X = q[0], Y = q[1], r = q[2], v = q[3], dk = Math.min(0.62, q[4] * 0.09);
+      var lobes = [[0, 0, 1]]; for (var l = 0; l < 5; l++) { var a = l / 5 * 6.2832 + v * 3; lobes.push([Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.45, 0.58 + SW.hash(l, Math.round(X), 315) * 0.14]); }
+      var path = function (k) { g.beginPath(); lobes.forEach(function (b) { g.moveTo(X + b[0] + r * b[2] * k, Y + b[1]); g.arc(X + b[0], Y + b[1], r * b[2] * k, 0, 6.2832); }); };
+      g.fillStyle = "rgba(0,8,4,.5)"; g.beginPath(); g.ellipse(X + 3, Y + 5, r * 1.05, r * 0.9, 0, 0, 6.2832); g.fill();   // its shadow on the trees behind
+      path(1.06); g.fillStyle = P.k; g.fill();   // the outline: the same shape, a touch bigger, in a dark green
+      path(1); g.fillStyle = aG(g, Y - r, Y + r, P.l, P.m, P.d); g.fill();
+      g.save(); path(1); g.clip();
+      g.fillStyle = P.d; g.globalAlpha = 0.55; g.beginPath(); g.ellipse(X + r * 0.35, Y + r * 0.5, r * 0.9, r * 0.6, 0, 0, 6.2832); g.fill(); g.globalAlpha = 1;   // shade under and to the right
+      g.fillStyle = P.l; for (var b = 1; b < lobes.length; b++) if (lobes[b][1] < 0) { g.beginPath(); g.arc(X + lobes[b][0] - r * 0.08, Y + lobes[b][1] - r * 0.1, r * lobes[b][2] * 0.6, 0, 6.2832); g.fill(); }
+      g.fillStyle = P.h; g.globalAlpha = 0.45; g.beginPath(); g.ellipse(X - r * 0.35, Y - r * 0.45, r * 0.32, r * 0.18, -0.5, 0, 6.2832); g.fill(); g.globalAlpha = 1;
+      if (P.snow) { g.fillStyle = "rgba(240,248,252,.85)"; g.beginPath(); g.ellipse(X - r * 0.15, Y - r * 0.4, r * 0.6, r * 0.32, -0.2, 0, 6.2832); g.fill(); }
+      else if (P.dots) for (var d = 0; d < 5; d++) { g.fillStyle = P.dots[d % P.dots.length]; g.beginPath(); g.arc(X + (SW.hash(d, Math.round(X), 316) - 0.5) * r * 1.4, Y + (SW.hash(Math.round(Y), d, 317) - 0.5) * r * 1.2, 0.8, 0, 6.2832); g.fill(); }
+      if (dk > 0) { g.fillStyle = "rgba(2,10,6," + dk.toFixed(3) + ")"; g.fillRect(X - r * 1.4, Y - r * 1.4, r * 2.8, r * 2.8); }   // deeper in the woods: darker
+      g.restore();
     });
-    seasonLeaves(c, 1); return (HFOR = c);
+    return (HFOR = c);
   }
   function homeCracks(g, i, j, k, dx) {   // cracks spreading over a rock or stump you are breaking (whole pixels)
     var s = ts / 16, cx = ox + (i + 0.5) * ts + dx, cy = oy + (j + 0.45) * ts, n = 1 + Math.floor(k * 4); g.fillStyle = "rgba(20,14,10,.8)";
