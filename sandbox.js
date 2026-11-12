@@ -14612,6 +14612,7 @@
   NATC[T.BASALT] = [[78, 56, 82], [20, 13, 28]]; NATC[T.ASH] = [[118, 102, 112], [34, 26, 40]]; NATC[T.SNOW] = [[240, 250, 255], [150, 192, 218]]; NATC[T.ICE] = [[176, 234, 252], [60, 122, 176]];
   NATC[T.FROSTROCK] = [[110, 146, 178], [26, 44, 70]]; NATC[T.BEDROCK] = [[40, 34, 52], [10, 8, 16]];
   if (T.X_peat) NATC[T.X_peat] = [[84, 60, 66], [24, 14, 26]]; if (T.X_silt) NATC[T.X_silt] = [[150, 140, 128], [48, 40, 52]];
+  if (T.X_mc_blackstone !== undefined) { NATC[T.X_mc_blackstone] = [[100, 72, 86], [30, 16, 24]]; NATC[T.X_mc_rotmud] = NATC[T.X_mc_blightmoss] = [[132, 72, 82], [44, 18, 28]]; }   // MALCRUOR: its ground is drawn like the SwampRealms' (rounded edges, depth shading)
   if (T.X_obsidian) NATC[T.X_obsidian] = [[84, 60, 116], [18, 10, 30]]; if (T.X_permafrost) NATC[T.X_permafrost] = [[168, 204, 226], [58, 100, 140]]; if (T.X_sand) NATC[T.X_sand] = [[236, 210, 150], [176, 134, 84]];
   function mixRgb(a, b, k) { return "rgb(" + ((a[0] + (b[0] - a[0]) * k) | 0) + "," + ((a[1] + (b[1] - a[1]) * k) | 0) + "," + ((a[2] + (b[2] - a[2]) * k) | 0) + ")"; }
 
@@ -14678,7 +14679,7 @@
     var lw = Math.max(1, CELL.edge), arc = function (cx, cy, r, a0, a1, col2, w2) { if (!r) return; g.strokeStyle = col2; g.lineWidth = w2; g.beginPath(); g.arc(cx, cy, Math.max(0.5, r - w2 / 2), a0, a1); g.stroke(); };
     var H = Math.PI;
     if (grass === true) {
-      var GP = GRASSP[varAt(i)] || GRASSP[0], gw2 = ts * 0.17;
+      var GP = id === T.X_mc_blightmoss ? MCGRASS : GRASSP[varAt(i)] || GRASSP[0], gw2 = ts * 0.17;
       [[tl, sx + tl, sy + tl, H, H * 1.5], [tr, sx + ts - tr, sy + tr, H * 1.5, H * 2]].forEach(function (c) { if (!c[0]) return; arc(c[1], c[2], c[0], c[3], c[4], GP[0], gw2); arc(c[1], c[2], c[0], c[3], c[4], GP[1], gw2 * 0.55); arc(c[1], c[2], c[0], c[3] + 0.08, c[4] - 0.08, GP[2], Math.max(1, ts * 0.04)); });
     } else if (grass === "build") {   // a building block: its dark outline runs round every rounded corner, with a lit inner line on the top ones
       var ow = Math.max(1, Math.round(ts / 14)), oc = "rgba(18,22,26,.78)";
@@ -14759,7 +14760,7 @@
     drawSeams(g, id, i, j, sx, sy);   // ORES ON TOP: the neighbours' soil still creeps in at the edges, but under the gems, never over them
     if (NATOV) { var ov = NATOV; NATOV = null; ov(); }
     grassSide(g, id, i, j, sx, sy, tl, tr);
-    if (tl || tr || br || bl) { edgeShade(g, i, j, sx, sy, nB, false, false); g.restore(); carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, id === T.MOSS && nT); edgeShade(g, i, j, sx, sy, false, nL, nR); }
+    if (tl || tr || br || bl) { edgeShade(g, i, j, sx, sy, nB, false, false); g.restore(); carveRim(g, id, i, j, sx, sy, tl, tr, br, bl, (id === T.MOSS || id === T.X_mc_blightmoss) && nT); edgeShade(g, i, j, sx, sy, false, nL, nR); }
     else edgeShade(g, i, j, sx, sy, nB, nL, nR);
   }
   // SUNLIT GRASS SIDES: grass grows down any face of the ground the sun can see, like on the top: the side of a grassy block and the cliff face
@@ -14795,6 +14796,7 @@
     return c;
   }
   // grass lip colours per land type: [lip, top, highlight, tuft, litter colours]
+  var MCGRASS = ["#7a0c1c", "#b01828", "rgba(255,120,110,.6)", "#ff3a48", ["#ff5a5a", "#3a0a12"]];
   var GRASSP = [["#2f9a6a", "#3fae78", "rgba(155,245,191,.65)", "#58d68b"], ["#3fa86a", "#5cc47e", "rgba(200,255,210,.7)", "#7ade8e", ["#ff9ad0", "#ffc8e4", "#f07ab0"]], null,
     ["#1f5a34", "#2d6e3c", "rgba(150,200,130,.45)", "#3f8a46", ["#7a5a2a", "#5a4020", "#8a7a3a"]]];
   // ---------- BLOCK TEXTURES: every natural material has its own look (drawn once per block, then reused from the cache) ----------
@@ -14899,8 +14901,8 @@
     var sgr = g.createLinearGradient(0, sy, 0, sy + ts); sgr.addColorStop(0, mixRgb(pal[0], pal[1], d0)); sgr.addColorStop(1, mixRgb(pal[0], pal[1], d1)); g.fillStyle = sgr; g.fillRect(sx, sy, ts, ts);
     var k; natDetail(g, id, i, j, sx, sy, pal, (d0 + d1) / 2, hh);   // BLOCK TEXTURES: each material's own look
     // (scen: a world tree's trunk stands BEHIND the ground, like the buildings: the grass runs in front of it)
-    if (id === T.MOSS && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
-      var GP = GRASSP[varAt(i)] || GRASSP[0];   // BIOME VARIANTS: spring grass in the Cherry Blossom Vale, dark moss in the Dark Oakwood
+    if ((id === T.MOSS || id === T.X_mc_blightmoss) && nT) {   // minty grass lip with scalloped underside, highlight and tufts (like the Adventure ground)
+      var GP = id === T.X_mc_blightmoss ? MCGRASS : GRASSP[varAt(i)] || GRASSP[0];   // BIOME VARIANTS (MALCRUOR: Blightmoss, a blood-red lip): spring grass in the Cherry Blossom Vale, dark moss in the Dark Oakwood
       g.fillStyle = GP[0]; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.16);
       for (k = 0; k < 3; k++) { g.beginPath(); g.arc(sx + ts * ((k + 0.5) / 3) + (hh(k + 20) - 0.5) * ts * 0.1, sy + ts * 0.1, ts * (0.15 + hh(k + 30) * 0.05), 0, 6.2832); g.fill(); }
       g.fillStyle = GP[1]; g.fillRect(sx, sy - ts * 0.04, ts, ts * 0.09);
