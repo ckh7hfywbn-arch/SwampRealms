@@ -1856,6 +1856,28 @@
     [[4, 4], [10, 9], [5, 11]].forEach(function (o) { rect(o[0], o[1] - 1, 1, 1, "#ffb0c0"); rect(o[0] - 1, o[1], 3, 2, "#ff3a5a"); rect(o[0], o[1] + 2, 1, 1, "#8a0a26"); });
   }, 7, ["255,60,90", 1.4, 0.1]);
   TILES[T.X_mc_hexvein].kind = "ore"; TILES[T.X_mc_hexvein].tier = 4; TILES[T.X_mc_hexvein].drop = "mc_hexite";
+  // Malcruor's own plants (genMalc puts these where the SwampRealms' plants would grow)
+  function mplant(tk, n, c, drop, art, light, gl) { var id = tile(tk, n, c, c, 0.05, 0, drop, false, light || 0, tk, { sway: 1 }); ART[tk] = art; if (gl) glow(id, gl[0], gl[1], gl[2]); return id; }
+  mplant("MCCAP", "Bloodcap", "#c0182a", "mc_bloodcap", function (rect) {   // two dark red caps on black stalks, glowing pale spots
+    rect(4, 10, 2, 6, "#3a2228"); rect(11, 12, 2, 4, "#3a2228"); rect(1, 6, 8, 4, "#a0101e"); rect(2, 5, 6, 1, "#e0283a"); rect(1, 9, 8, 1, "#5a0812"); rect(3, 7, 1, 1, "#ffb0a0"); rect(6, 6, 1, 1, "#ffb0a0");
+    rect(8, 9, 7, 3, "#8a0c18"); rect(9, 8, 5, 1, "#e0283a"); rect(10, 10, 1, 1, "#ffb0a0"); rect(13, 9, 1, 1, "#ffb0a0"); rect(0, 15, 16, 1, "#2a0a10");
+  }, 3, ["255,40,50", 0.9, 0.08]);
+  mplant("MCBLOOM", "Bloodbloom", "#e0283a", "mc_bloodbloom", function (rect) {   // a thorny black stem and a blood-red flower with a glowing heart
+    rect(7, 7, 2, 9, "#2a1418"); rect(5, 11, 2, 1, "#2a1418"); rect(9, 13, 2, 1, "#2a1418"); rect(4, 10, 1, 1, "#ff3a3a"); rect(11, 12, 1, 1, "#ff3a3a");
+    rect(4, 3, 8, 4, "#a0101e"); rect(5, 2, 6, 1, "#e0283a"); rect(3, 4, 1, 2, "#c0182a"); rect(12, 4, 1, 2, "#c0182a"); rect(6, 4, 4, 2, "#ff4a4a"); rect(7, 4, 2, 1, "#ffd0c0");
+  }, 4, ["255,50,50", 1.1, 0.1]);
+  mplant("MCWEED", "Thornweed", "#5a1a24", "mc_thornfiber", function (rect) {   // black thorny blades with red tips
+    [[2, 6], [5, 3], [8, 5], [11, 2], [13, 7]].forEach(function (b, i) { rect(b[0], b[1], 1, 16 - b[1], i % 2 ? "#2a1418" : "#3a1c22"); rect(b[0], b[1], 1, 2, "#e0283a"); rect(b[0] + (i % 2 ? 1 : -1), b[1] + 5, 1, 1, "#5a1a24"); });
+    rect(0, 15, 16, 1, "#2a0a10");
+  });
+  mplant("MCVINE", "Bloodvine", "#7a0c18", "mc_thornfiber", function (rect) {   // hangs from the block above: a dark vine with red pods
+    rect(7, 0, 2, 13, "#2a1418"); rect(5, 4, 2, 1, "#2a1418"); rect(9, 8, 2, 1, "#2a1418"); rect(4, 5, 2, 2, "#c0182a"); rect(10, 9, 2, 2, "#c0182a"); rect(7, 13, 2, 2, "#e0283a"); rect(7, 14, 1, 1, "#ffb0a0");
+  }, 2, ["255,40,50", 0.7, 0.06]);
+  mplant("MCBUSH", "Gloomberry Bush", "#3a1420", "mc_gloomberry", function (rect) {   // a black thorn bush heavy with dark berries
+    rect(2, 7, 12, 8, "#2a1418"); rect(3, 6, 10, 1, "#3a1c22"); rect(1, 9, 1, 5, "#2a1418"); rect(14, 9, 1, 5, "#2a1418");
+    [[4, 8], [8, 9], [11, 8], [6, 12], [10, 12], [3, 11]].forEach(function (b) { rect(b[0], b[1], 2, 2, "#5a1a4a"); rect(b[0], b[1], 1, 1, "#c04a8a"); });
+    rect(0, 15, 16, 1, "#2a0a10");
+  });
   mat("mc_bloodleaf", "Bloodleaf", "#c0182a"); mat("mc_thornstick", "Thorn Stick", "#3a2026"); mat("mc_thornfiber", "Thorn Fiber", "#8a1a2a");
   mat("mc_bloodore", "Bloodiron Ore", "#8a2a2e"); mat("mc_hexite", "Hexite Shard", "#ff3a5a"); mat("mc_bloodingot", "Bloodiron Ingot", "#5a1a20");
   mat("mc_fang", "Corrupt Fang", "#e8d0c8"); mat("mc_rotbark", "Rotbark Heart", "#ff4a3a");

@@ -3506,7 +3506,7 @@
     var say = { frog: ["ribbit!", "croak?"], crab: ["click click!", "pinch?"], hare: ["!", "*twitch*"], beetle: ["bzzt", "*click*"] }[c.k] || CSAY[c.k];
     bubble({ k: "c", ref: c }, pickL(say), 1.4); funTone(c.k === "frog" ? 220 : c.k === "hare" ? 1200 : 900, c.k === "frog" ? 140 : 0, 0.12, c.k === "frog" ? "square" : "sine", 0.03);
   }
-  function tickCrit(dt) {
+  function tickCrit(dt) { if (inMC()) return null;
     if (cave) { CRIT.L.length = 0; return; }
     CRIT.t -= dt; if (CRIT.t <= 0) { CRIT.t = 3 + Math.random() * 4; spawnCrit(); }
     for (var i = CRIT.L.length - 1; i >= 0; i--) {
@@ -3528,7 +3528,7 @@
       if (TILES[get(Math.floor(c.x), Math.floor(c.y - 0.2))].kind === "water" && c.k !== "frog") c.face = -c.face;
     }
   }
-  function drawCrit(g, now) {
+  function drawCrit(g, now) { if (inMC()) return null;
     CRIT.L.forEach(function (c) {
       var sx = ox + c.x * ts, sy = oy + c.y * ts; if (sx < -ts * 2 || sx > vw + ts * 2 || sy < -ts * 2 || sy > vh + ts * 2) return;
       var u = ts / 16, air = !c.on, sq = air ? 1.12 : 1 + Math.sin(c.t * 3 + c.ph) * 0.03;
@@ -10601,7 +10601,7 @@
     DIMK.forEach(function (k) { if (S[k] !== undefined) cur[k] = S[k]; delete S[k]; });
     DIMK.forEach(function (k) { var v = oth[k] !== undefined ? oth[k] : F0[k]; if (v !== undefined) S[k] = v; });
     if (S.p && !(isFinite(S.p.x) && isFinite(S.p.y))) S.p = null;
-    S.dst = cur; S.dim = to; MCG = null;
+    S.dst = cur; S.dim = to; MCG = null; try { canFree(); TLC.clear(); NATM.clear(); CRIT.L.length = 0; } catch (e) {}   // (tree and tile art is cached per world)
     start(S); trans = tr; sel = ks; selSlot = kss; hbDirty = true; wilds.forEach(function (a) { a.mad = 0; });
     save();
   }
@@ -14298,7 +14298,7 @@
         var top = get(i, j - 1) !== T.WATER, dd = 0; if (!top) { dd = 1; while (dd < 6 && get(i, j - dd - 1) === T.WATER) dd++; }
         var wl = top ? lvAt(j * W + i) : 8, woff = wl < 8 ? Math.round(ts * (1 - wl / 8)) : 0;   // a part-filled cell: what is behind shows above the surface
         if (woff) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); }
-        g.fillStyle = WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")"); g.fillRect(sx3, sy + woff, ts, ts - woff);
+        g.fillStyle = inMC() ? (WSTM[dd] || (WSTM[dd] = "rgba(" + (150 - dd * 14) + "," + (10 + dd) + "," + (24 - dd) + "," + (0.7 + dd * 0.04) + ")")) : WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")");   // (MALCRUOR: its pools run blood red) g.fillRect(sx3, sy + woff, ts, ts - woff);
         if (top) {   // the surface: a smooth swell that runs on from cell to cell (two waves), bent by any ripples from splashes
           var wsu = ts / 32, wpts = [], wq, wmax = ts - woff - 2, wsurf = j + woff / ts;
           for (wq = 0; wq <= 4; wq++) { var wxw = i + wq / 4, wv = CELL.wob * 1.5 + 2 + (Math.sin(wxw * 0.9 + now / 400) * 1.2 + Math.sin(wxw * 2.3 - now / 260) * 0.5) * Math.max(1, wsu * 1.4) + (RIPS.length ? rippleH(wxw, wsurf) * ts : 0); wpts.push(clamp(wv, 0, wmax)); }
@@ -14616,7 +14616,7 @@
   function mixRgb(a, b, k) { return "rgb(" + ((a[0] + (b[0] - a[0]) * k) | 0) + "," + ((a[1] + (b[1] - a[1]) * k) | 0) + "," + ((a[2] + (b[2] - a[2]) * k) | 0) + ")"; }
 
   // PERF: the soft edge shading used to build several gradient objects per tile per frame. They are now painted once per tile size into tiny canvases and stamped.
-  var SHC = { ts: 0 }, BWS = {}, WST = [], GSPR = {};
+  var SHC = { ts: 0 }, BWS = {}, WST = [], WSTM = [], GSPR = {};
   function shadeC(key, id, j, pal, d0, d1) {
     if (SHC.ts !== ts) SHC = { ts: ts };
     var c = SHC[key]; if (c) return c;
@@ -15520,13 +15520,15 @@
     1: ["#4a1630", "#8c2f5c", "#b8487a", "#d86a98", "#f08fb6", "#ffc2da", "#fff3f8"],
     2: ["#163514", "#24561f", "#33742a", "#46913a", "#64b04c", "#94d26a", "#7a4a22"],
     3: ["#0a1a10", "#113020", "#18462a", "#1f5a34", "#2d6e3c", "#3f8a46", "#a8c060"],   // Dark Oakwood grass greens (GRASSP[3])
-    4: ["#0a1f1d", "#12352f", "#1b4a3f", "#24604f", "#337a62", "#c6dbe8", "#f4fbff"] };
+    4: ["#0a1f1d", "#12352f", "#1b4a3f", "#24604f", "#337a62", "#c6dbe8", "#f4fbff"],
+    m: ["#14040a", "#3a0814", "#5e0c1c", "#8a1424", "#c01c30", "#ff3a48", "#ffb0a0"] };   // MALCRUOR: blood-red crowns
   var BPAL = {   // bark: 1 outline, 2 dark, 3 mid, 4 light, 5 highlight, 6 frost
     0: ["#24140a", "#4a2e18", "#6a4426", "#8a5c34", "#a87a4a", "#eef6fb"],
     1: ["#2e1820", "#4e2c34", "#6e4248", "#8e5a60", "#ab7a7e", "#eef6fb"],
     2: ["#3a2810", "#6e5230", "#9a7a4a", "#bc9a62", "#d8b880", "#eef6fb"],
     3: ["#0e0806", "#22160c", "#33241a", "#46321f", "#5a4430", "#eef6fb"],
-    4: ["#1a120c", "#3a2818", "#55402a", "#6e5638", "#8a7050", "#eef6fb"] };
+    4: ["#1a120c", "#3a2818", "#55402a", "#6e5638", "#8a7050", "#eef6fb"],
+    m: ["#060204", "#140a0e", "#22141a", "#321c24", "#ff3a3a", "#ff8a7a"] };   // MALCRUOR: rotwood, black bark whose ridges glow red
   var PALRGB = {};
   function palRgb(key, pal) { var r = PALRGB[key]; if (r) return r; r = PALRGB[key] = pal.map(function (h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }); return r; }
   function pxCanvas(buf, w, h, pal) {   // a palette-index buffer (0 = clear, 1.. = pal[i-1]) to a canvas
@@ -15647,7 +15649,7 @@
       for (k = 0; k < fill.length; k++) buf[fill[k]] = thash(fill[k] % pw, (fill[k] / pw) | 0, 17) < 0.14 ? 3 : 2;   // (a few shaded leaves in it, so it reads as foliage)
     }
     outlinePx(buf, pw, ph);
-    return pxCanvas(buf, pw, ph, palRgb("c" + st, CPAL[st]));
+    return pxCanvas(buf, pw, ph, inMC() ? palRgb("cm", CPAL.m) : palRgb("c" + st, CPAL[st]));
   }
   // PERF: a whole crown is painted once and kept until any of its leaves change; each frame it is one drawImage.
   function canFree() { CANT.forEach(function (e) { cvFree(e.cv); }); CANT.clear(); CANT_PX = 0; }
@@ -15746,13 +15748,13 @@
       }
       if (j > top + 1 && j < foot - 1) for (var s3 = -1; s3 <= 1; s3 += 2) if (isLeaf(i + s3, j) && !isLeaf(i, j - 1) && !(twinL && s3 > 0) && !(twinR && s3 < 0)) thick(8 + s3 * 3, 12, 8 + s3 * 13, 7, 8 + s3 * 8, 12, 2.2, 1.2, true);   // a bough into a leafy tuft
       outlinePx(buf, N, N, deco);
-      return pxCanvas(buf, N, N, palRgb("b" + st, BPAL[st]));
+      return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
     }
     if (up === T.AIR && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES) {   // a root block beside the foot: a buttress root sloping down from the trunk
       var sd = get(i - 1, j) === T.LOG && trunkTree(i - 1, j) ? -1 : get(i + 1, j) === T.LOG && trunkTree(i + 1, j) ? 1 : 0; if (!sd) return null;
       var te = sd > 0 ? 20 : -4, fr = sd > 0 ? -1 : 16;
       for (x = Math.min(te, fr); x <= Math.max(te, fr); x++) { var f2 = (x - fr) / (te - fr), ytop = 16 - 15.5 * Math.pow(Math.max(0, f2), 1.9); for (y = Math.ceil(ytop); y < 16; y++) set(x, y, y - ytop < 1.5 ? 4 : y - ytop < 4 ? 3 : 2, true); }
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, palRgb("b" + st, BPAL[st]));
+      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
     }
     if (up !== T.LOG && dn !== T.LOG && (get(i - 1, j) === T.LOG || get(i + 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG)) {   // a side branch block: a bough
       if (TILES[dn].solid && dn !== T.LEAVES) return null;
@@ -15761,7 +15763,7 @@
       var lL = get(i - 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG, lR = get(i + 1, j) === T.LOG || get(i + 1, j + 1) === T.LOG;
       var yl = get(i - 1, j) === T.LOG ? 8 : 15, yr = get(i + 1, j) === T.LOG ? 8 : 15;
       thick(lL ? -5 : 3, lL ? yl : 8, lR ? 21 : 13, lR ? yr : 8, 8, 8, 3, 2.4, true);
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, palRgb("b" + st, BPAL[st]));
+      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? palRgb("bm", BPAL.m) : palRgb("b" + st, BPAL[st])));
     }
     return null;
   }

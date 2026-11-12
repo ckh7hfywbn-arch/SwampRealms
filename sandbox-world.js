@@ -1163,6 +1163,13 @@ batwing: { n: "Bat Wing", frag: "bat" },
         if (d.kind === "ore") MAP[id] = GEMS[d.drop] ? T.X_mc_hexvein : T.X_mc_bloodvein; else if (STONY[d.drop]) MAP[id] = T.X_mc_blackstone; else if (SOFT[d.drop] || id === T.GRASS || id === T.MOSS) MAP[id] = T.X_mc_rotmud; });
       for (i = 0; i < MW * H; i++) { var m2 = MAP[c.t[i]]; if (m2 === undefined) continue; var h2 = ((i * 2654435761) ^ (i >> 7) * 40503) >>> 0;   // (the ore veins thinned: about a third stay ore)
         if (m2 === T.X_mc_bloodvein && (h2 >>> 8) % 100 > 34 || m2 === T.X_mc_hexvein && (h2 >>> 8) % 100 > 55) m2 = T.X_mc_blackstone; c.t[i] = m2; }
+      // the plants: mushrooms become Bloodcaps, flowers Bloodblooms or Gloomberry Bushes, grasses and reeds Thornweed, vines Bloodvines
+      var CAPS = { glowcap: 1, glowshroom: 1, redcap: 1, icecap: 1 };
+      for (i = 0; i < MW * H; i++) { var pd = TILES[c.t[i]]; if (!pd || pd.solid || c.t[i] === T.AIR || pd.kind === "water" || c.t[i] === T.WATER || c.t[i] === T.LAVA || c.t[i] === T.BEDROCK) continue;
+        if (pd.kind === "vine") c.t[i] = T.MCVINE; else if (CAPS[pd.drop] || c.t[i] === T.GLOWCAP) c.t[i] = T.MCCAP;
+        else if (c.t[i] === T.BLOOM || c.t[i] === T.FLOWER || pd.kind === "flower" || pd.kind === "bloom" || /root|thistle|cotton|lily|bell|tuft/i.test(pd.kind || "")) c.t[i] = (((i * 2654435761) >>> 9) % 10) < 3 ? T.MCBUSH : T.MCBLOOM;
+        else if (pd.sway || pd.kind === "reed" || pd.drop === "fiber") c.t[i] = T.MCWEED; }
+      for (i = 0; i < MW * H; i++) if (TILES[c.t[i]] && TILES[c.t[i]].kind === "fossilblk") c.t[i] = T.X_mc_blackstone;
       for (x = 0; x < MW; x++) { var ty = c.top[x]; if (ty > 0 && ty < H && c.t[ty * MW + x] === T.X_mc_rotmud) c.t[ty * MW + x] = T.X_mc_blightmoss; }
       // treasure: chests and pots in the dark under the land
       var CH = T.X_lootchest, PT = T.X_lootpot, tries = 0, nc = 0, np = 0;
