@@ -2886,3 +2886,18 @@ html,body.sbx-app{touch-action:manipulation;-webkit-text-size-adjust:100%;text-s
 body.sbx-app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 body.sbx-app input,body.sbx-app textarea,body.sbx-app select,body.sbx-app [contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 @media (pointer:coarse){body.sbx-app input,body.sbx-app textarea,body.sbx-app select{font-size:max(16px,1em)}}
+/* THE SWAMPREALMS: deep violet night, the Prism Spring's rainbow swirling in the portal, coloured fireflies */
+.dl-load.ls-realm{color:#f0eaff;background:radial-gradient(120% 80% at 50% 30%,#2e1a5a 0,#140c2e 46%,#06040e 100%)}
+.dl-load.ls-realm .dl-hills .h1{background:#1e1440}.dl-load.ls-realm .dl-hills .h2{background:#120c2a}
+.dl-load.ls-realm .dl-hills .gr{background:linear-gradient(#7af0c8 0 5px,#3a9a8a 5px 10px,transparent 10px),repeating-linear-gradient(90deg,#24183e 0 30px,#1c1232 30px 32px),repeating-linear-gradient(0deg,#24183e 0 30px,#160e28 30px 32px);box-shadow:0 -2px 0 #06040e,0 -8px 24px rgba(160,120,255,.25)}
+.dl-load.ls-realm .dl-fly:nth-of-type(3n){background:#ffd2f0;box-shadow:0 0 10px 3px rgba(255,120,220,.7)}
+.dl-load.ls-realm .dl-fly:nth-of-type(3n+1){background:#d2e8ff;box-shadow:0 0 10px 3px rgba(120,170,255,.7)}
+.dl-load.ls-realm .ls-portal{background:#120a26;box-shadow:0 0 0 7px #2a1e4a,0 0 0 10px #0a0618,0 0 50px 12px rgba(170,120,255,.45),inset 0 0 26px #000}
+.dl-load.ls-realm .ls-portal .sw{background:conic-gradient(from 0deg,#ff6a8a,#ffb84a,#f8f06a,#6ae89a,#4ad8f0,#7a8aff,#c47aff,#ff6a8a);filter:blur(2px)}
+.dl-load.ls-realm .ls-portal .sw2{background:repeating-conic-gradient(from 20deg,rgba(255,255,255,.6) 0 4deg,transparent 4deg 30deg)}
+.dl-load.ls-realm .ls-portal .eye{background:radial-gradient(circle,#ffffff 0,#f4eaff 30%,#c8a8ff 55%,transparent 72%)}
+.dl-load.ls-realm .ls-portal .cr{display:none}
+.dl-load.ls-realm .ls-h{background:linear-gradient(90deg,#ff8aa8,#ffd06a,#8af0b0,#7ac8ff,#c89aff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 3px 0 #0a0618) drop-shadow(0 0 18px rgba(170,120,255,.5))}
+.dl-load.ls-realm .dl-bar{box-shadow:0 0 0 2px #0a0618,inset 0 2px 6px #000}.dl-load.ls-realm .dl-bar i{background:#24183e}
+.dl-load.ls-realm .dl-bar i.on{background:linear-gradient(135deg,#ffd0f0,#b88aff 45%,#5a7aff);box-shadow:inset 2px 2px 0 rgba(255,255,255,.4),inset -2px -2px 0 rgba(0,0,0,.25),0 0 12px rgba(170,120,255,.6)}
+.dl-load.ls-realm .dl-st b{color:#ffd06a}.dl-load.ls-realm .dl-tip{color:#c8bce8}

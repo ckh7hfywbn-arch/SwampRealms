@@ -8155,13 +8155,14 @@
     var fx = document.createElement("div"); fx.className = "sbx-gatefx"; stageEl.appendChild(fx); snd("open", "Epic");
     requestAnimationFrame(function () { fx.classList.add("on"); });
     var gq = gateAt ? { x: gateAt.x, y: gateAt.y } : { x: Math.floor(p.x), y: Math.floor(p.y - 1) };
-    setTimeout(function () {
-      var first = !S.done; S.done = 1; S.st.gatein = (S.st.gatein || 0) + 1; save();
-      enterNexus(gq.x, gq.y);   // NEXUS: through the gate you go
-      checkTrail();
-      if (first && MAIN[S.qi] && MAIN[S.qi].ch < 7) { storyQ.length = 0; storyQ.push(7); showStory(); }   // arriving early (story not finished): still tell "Beyond the Swamp" once; checkTrail tells it when Step Through was just completed
-      setTimeout(function () { fx.classList.remove("on"); setTimeout(function () { if (fx.parentNode) fx.parentNode.removeChild(fx); }, 900); }, 400);
-    }, 1300);
+    setTimeout(function () {   // LOADING SCREEN: the bright fade turns into the rainbow portal while the SwampRealms is built
+      var first = !S.done;
+      loadScreen("realm", function () {
+        S.done = 1; S.st.gatein = (S.st.gatein || 0) + 1; save();
+        enterNexus(gq.x, gq.y);   // NEXUS: through the gate you go
+        checkTrail(); if (fx.parentNode) fx.parentNode.removeChild(fx);
+      }, { after: function () { if (first && MAIN[S.qi] && MAIN[S.qi].ch < 7) { storyQ.length = 0; storyQ.push(7); showStory(); } } });   // arriving early (story not finished): still tell "Beyond the Swamp" once; checkTrail tells it when Step Through was just completed
+    }, 700);
   }
   function placedGate(tx, ty) { S.gates[tx + "," + ty] = { o: {}, on: 0 }; S.st.gatepl = 1; checkTrail(); toast("The Realm Gate stands. Tap it to see what it needs.", "#8affe0"); }
   function brokeGate(x, y) {
@@ -10620,6 +10621,7 @@
     world: { line: "Shaping the land", art: "logo", tips: ["Hold on tree leaves to gather Sticks for your first pick.", "Murkwater trunks can be chopped bare-pawed. Every other tree needs a Reed Pick.", "Torches keep Dusk Bats away. Light up your caves.", "Sleep in a bed to skip the night.", "Old Croaker’s quests in the Journal always show what to do next.", "Each biome has its own pick tier. Check a block’s card to see what breaks it."] },
     malc: { line: "Crossing into Malcruor", art: "portal", h: "Malcruor", tips: ["The corruption rises the whole time you are here. Get back to the portal before it fills.", "Die in Malcruor and everything you carry is lost. No gravestone.", "Break a Corrupted Heart and its land becomes Aurelmire, where the corruption drains away.", "Malcruor items are corrupted copies of home. Bloodiron gear is the best of them.", "Each visit, the creatures notice you from further away."] },
     home: { line: "Back to the SwampRealms", art: "portal", h: "The SwampRealms", tips: ["Your bed, your chests and your camp are all back home.", "Bloodiron needs a Workbench in the SwampRealms to repair.", "The cracked portal is the third portal in the SwampRealms nexus.", "Bring a full stack of food next time. Malcruor hits hard."] },
+    realm: { line: "Entering the SwampRealms", art: "portal", h: "The SwampRealms", tips: ["Wake Zaruk, the old guardian: he knows what the SwampRealms' light does to you.", "Stand in the Prism Spring for your Swamp Awakening.", "Three portals stand in the SwampRealms. The cracked one leads to Malcruor.", "Your Swamp Awakening changes how you look and gives you a power of its own.", "You can always walk back out through the Realm Gate."] },
     dawn: { line: "The light returns", art: "sun", h: "Aurelmire", tips: ["In Aurelmire the corruption drains away while you stand there.", "Dawn Shards drop from every cleansed heart.", "Cleansed land drops golden Aurelmire items instead of corrupt ones.", "Cleanse all eight hearts and the corruption is gone for good."] }
   };
   function lsArt(k) {
@@ -18364,7 +18366,7 @@
       else if (v === "croak") { if (npc.ok) devTp(npc.x + 1.5, npc.y); }
       else if (v === "west") devTp((world.gx0 || 0) + 12);
       else if (v === "east") devTp((world.gx1 !== undefined ? world.gx1 : W - 1) - 12);
-      else if (v === "realm") { if (cave) leaveCaveNow(); closePanel(); trans = { t: 0, done: false, mid: function () { enterNexus(Math.floor(p.x), Math.floor(p.y) - 1); } }; }
+      else if (v === "realm") { if (cave) leaveCaveNow(); closePanel(); loadScreen("realm", function () { enterNexus(Math.floor(p.x), Math.floor(p.y) - 1); }); }
       else devBiome(+v);
     }
     else if (k === "map") { ex.fill(1); exVer++; M.img = null; MAPB = null; toast("Whole map revealed.", "#7ffcff"); }
@@ -26293,6 +26295,7 @@
       ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
       ["Loading screen: home to the SwampRealms", function () { loadScreen("home", function () {}, { min: 3000 }); }],
+      ["Loading screen: into the SwampRealms", function () { loadScreen("realm", function () {}, { min: 3000 }); }],
       ["Loading screen: the light returns", function () { loadScreen("dawn", function () {}, { min: 3000 }); }],
       ["Croak Cards", function () { return cardsOpen("play"); }],
       ["Skills", function () { return skillOpen(); }],
