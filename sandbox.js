@@ -20557,12 +20557,38 @@
   var OCINK = {};
   function ocInk(id) { if (OCINK[id]) return OCINK[id]; var h = (OTD[id] && OTD[id].c) || "#555555", v = [1, 3, 5].map(function (q) { return parseInt(h.slice(q, q + 2), 16); }); return (OCINK[id] = "rgb(" + v.map(function (x) { return Math.round(x * 0.38); }).join(",") + ")"); }
   function ocOpen(i, j) { var t2 = ocT(i, j), d2 = OTD[t2]; return !d2 || !d2.solid; }
+  // SEA FLOOR IN THE HOUSE STYLE: sand, silt, rock and coral are painted smooth (soft lit-from-the-top fills, ripples, round stones, coral
+  // polyps, glowing sea grass), one canvas per block and variant at 3x, instead of the 16 px pixel tiles. ocNatTile clips and rims them.
+  var OSM = {};
+  function ocSmooth(id, v) {
+    var key = id + ":" + v; if (OSM[key]) return OSM[key]; var K = 3, c = document.createElement("canvas"); c.width = c.height = 16 * K; var g = c.getContext("2d"); g.setTransform(K, 0, 0, K, 0, 0); g.lineCap = "round";
+    var h = function (n) { return SW.hash(v * 31 + id, n, 640); }, blob = function (x, y, rx, ry, col, a) { g.globalAlpha = a; g.fillStyle = col; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 7); g.fill(); g.globalAlpha = 1; }, q;
+    var P = id === OT.SAND ? ["#ead49a", "#dcc286", "#f6e6b4", "#c0a468"] : id === OT.SHORE ? ["#cdb274", "#bea062", "#dcc488", "#a08650"] : id === OT.SILT ? ["#748466", "#66765a", "#8a9a7a", "#56664a"]
+      : id === OT.ROCK ? ["#68748a", "#5a6478", "#8a96aa", "#444e62"] : id === OT.DEEP ? ["#2c344c", "#242a40", "#3e4862", "#181d2e"] : id === OT.BED ? ["#151925", "#10131c", "#222838", "#0a0c14"]
+      : id === OT.CPINK ? ["#d84e7e", "#c23e6c", "#ff86a6", "#8a2a4a"] : id === OT.CBLUE ? ["#3e7edc", "#2f6ac4", "#6ab0ff", "#1f4a8a"] : id === OT.CORANGE ? ["#dc7a2e", "#c4661e", "#ffa452", "#8a3a14"] : id === OT.GLOW ? ["#22404a", "#1a343e", "#2e5260", "#122630"] : ["#888", "#777", "#aaa", "#555"];
+    g.fillStyle = P[0]; g.fillRect(0, 0, 16, 16);
+    for (q = 0; q < 4; q++) blob(2 + h(q) * 12, 2 + h(q + 4) * 12, 2.6 + h(q + 8) * 3, 1.5 + h(q + 12) * 2, q & 1 ? P[1] : P[2], 0.45);
+    if (id === OT.SAND || id === OT.SHORE) {   // ripples and the odd shell
+      g.strokeStyle = P[3]; g.lineWidth = 0.55; g.globalAlpha = 0.5; for (q = 0; q < 2; q++) { var ry = 4 + q * 6 + h(q + 20) * 2; g.beginPath(); g.moveTo(0, ry); g.bezierCurveTo(5, ry - 1.4, 11, ry + 1.4, 16, ry); g.stroke(); } g.globalAlpha = 1;
+      if (h(24) < 0.35) { var sx = 3 + h(25) * 9, sy = 4 + h(26) * 8; g.fillStyle = "#f6e6d8"; g.beginPath(); g.ellipse(sx, sy, 1.4, 1, 0, Math.PI, 0); g.fill(); g.strokeStyle = "#d8a890"; g.lineWidth = 0.3; for (var r = -1; r <= 1; r++) { g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + r * 1.1, sy - 0.8); g.stroke(); } }
+      for (q = 0; q < 6; q++) blob(1 + h(q + 30) * 14, 1 + h(q + 36) * 14, 0.35, 0.35, q & 1 ? P[3] : "#ffffff", 0.5);
+    } else if (id === OT.SILT || id === OT.BED) { for (q = 0; q < 10; q++) blob(1 + h(q + 30) * 14, 1 + h(q + 40) * 14, 0.45, 0.35, q & 1 ? P[3] : P[2], 0.6); }
+    else if (id === OT.ROCK || id === OT.DEEP) {   // round stones set in the rock, lit on top
+      for (q = 0; q < 3; q++) { var cx = 2.5 + h(q + 30) * 11, cy = 2.5 + h(q + 33) * 11, rr = 1.4 + h(q + 36) * 1.4;
+        blob(cx + 0.3, cy + 0.6, rr * 1.1, rr * 0.7, "#000", 0.25); g.fillStyle = aG(g, cy - rr, cy + rr, P[2], P[0], P[3]); g.beginPath(); g.ellipse(cx, cy, rr * 1.15, rr * 0.85, 0, 0, 7); g.fill(); blob(cx - rr * 0.35, cy - rr * 0.35, rr * 0.4, rr * 0.22, "#ffffff", 0.22); }
+    } else if (id === OT.CPINK || id === OT.CBLUE || id === OT.CORANGE) {   // coral: bumpy polyps with dark mouths
+      for (q = 0; q < 7; q++) { var px = 1.5 + h(q + 30) * 13, py = 1.5 + h(q + 37) * 13, pr = 0.9 + h(q + 44) * 0.8; g.fillStyle = aG(g, py - pr, py + pr, P[2], P[0], P[1]); g.beginPath(); g.arc(px, py, pr, 0, 7); g.fill(); blob(px, py + 0.1, pr * 0.35, pr * 0.3, P[3], 0.8); blob(px - pr * 0.35, py - pr * 0.4, pr * 0.3, pr * 0.2, "#ffffff", 0.35); }
+    } else if (id === OT.GLOW) {   // glowing sea grass
+      for (q = 0; q < 5; q++) { var gx = 2 + h(q + 30) * 12, gy = 14 - h(q + 35) * 3; g.strokeStyle = "#2fc8b8"; g.lineWidth = 1; g.beginPath(); g.moveTo(gx, gy + 2); g.quadraticCurveTo(gx + (h(q + 40) - 0.5) * 3, gy - 4, gx + (h(q + 45) - 0.5) * 2, gy - 8); g.stroke(); g.strokeStyle = "#9af8ec"; g.lineWidth = 0.4; g.stroke(); blob(gx + (h(q + 45) - 0.5) * 2, gy - 8, 0.8, 0.8, "#e8fffb", 0.9); }
+    }
+    return (OSM[key] = c);
+  }
   function ocNatTile(g, A, id, v, i, j, sx, sy) {
     var nT = ocOpen(i, j - 1), nB = ocOpen(i, j + 1), nL = ocOpen(i - 1, j), nR = ocOpen(i + 1, j), r = ts * 0.42;
     var tl = nT && nL ? r : 0, tr = nT && nR ? r : 0, br = nB && nR ? r : 0, bl = nB && nL ? r : 0, any = tl || tr || br || bl, ink = ocInk(id), lw = Math.max(1.5, ts / 14);
     var path = function () { g.beginPath(); g.moveTo(sx + tl, sy); g.lineTo(sx + ts - tr, sy); if (tr) g.arcTo(sx + ts, sy, sx + ts, sy + tr, tr); g.lineTo(sx + ts, sy + ts - br); if (br) g.arcTo(sx + ts, sy + ts, sx + ts - br, sy + ts, br); g.lineTo(sx + bl, sy + ts); if (bl) g.arcTo(sx, sy + ts, sx, sy + ts - bl, bl); g.lineTo(sx, sy + tl); if (tl) g.arcTo(sx, sy, sx + tl, sy, tl); g.closePath(); };
     if (any) { g.save(); path(); g.clip(); }
-    g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
+    var sm0 = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(ocSmooth(id, v), sx, sy, ts, ts); g.imageSmoothingEnabled = sm0;   // (smooth, like the land)
     if (nT) { var tg = g.createLinearGradient(0, sy, 0, sy + ts * 0.35); tg.addColorStop(0, "rgba(255,250,225,.32)"); tg.addColorStop(1, "rgba(255,250,225,0)"); g.fillStyle = tg; g.fillRect(sx, sy, ts, ts * 0.35); }
     if (nB) { var bg2 = g.createLinearGradient(0, sy + ts * 0.6, 0, sy + ts); bg2.addColorStop(0, "rgba(0,0,0,0)"); bg2.addColorStop(1, "rgba(0,0,0,.3)"); g.fillStyle = bg2; g.fillRect(sx, sy + ts * 0.6, ts, ts * 0.4); }
     if (nR) { g.fillStyle = "rgba(0,0,0,.16)"; g.fillRect(sx + ts * 0.8, sy, ts * 0.2, ts); }
