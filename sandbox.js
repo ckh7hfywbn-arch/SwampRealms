@@ -17849,7 +17849,9 @@
     return Math.min(5, m);
   }
   function rarRec(r) { var k = r.out ? Object.keys(r.out)[0] : ""; if (k && RARX[k] !== undefined) return RARX[k]; if (/Realm Gate|Heart of the Swamp/.test(r.n || "")) return 5; return rarRecRaw(r); }
+  var RAR_TOOL = { t_pick: "tier", t_weapon: "wpn", t_hoe: "hoe", t_rod: "rod", t_bow: "bow" };
   function rarItem(id) {
+    if (RAR_TOOL[id] && S) { var tf = RAR_TOOL[id], tl = S[tf === "tier" ? "tier" : tf] | 0, tr = tl ? RECIPES.filter(function (q) { return q[tf] === tl; })[0] : null; if (tr) return rarRec(tr); }   // the tool you hold: the rarity of the one you have now (Bloodiron = Epic)
     if (RARM[id] !== undefined) return RARM[id]; RARM[id] = 0;   // (guards against recipes that loop)
     var v = 0, it = ITEMS[id] || {}, n = (it.n || id) + "";
     var spm = /^sp_(pick|wpn|arm|bow)(\d+)$/.exec(id);   // a spare pick, weapon, armor or bow in the bag: the same rarity as its recipe
