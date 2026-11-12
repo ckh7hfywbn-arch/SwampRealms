@@ -24606,11 +24606,12 @@
     g.strokeStyle = BL[2]; g.globalAlpha = 0.5; g.lineWidth = 0.4; g.beginPath(); g.moveTo(8.6, 23); g.quadraticCurveTo(8.4, 18, 7.8, 12); g.stroke(); g.globalAlpha = 1;
     return (HSPR[key] = S2.c);
   }
-  function hReed(g, i, j, sw, h) {   // the reeds, swaying from their roots
-    var c = hsReed(Math.floor(h * 4)), s = ts / 16, bx = pxS(ox + (i + 0.5) * ts), by = pxS(oy + (j + 0.95) * ts), sm = g.imageSmoothingEnabled;
-    hpShadow(g, bx, by - s, ts * 0.42, ts * 0.12, 0.2);
-    g.save(); g.translate(bx, by); g.transform(1, 0, -sw * 0.045, 1, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(c, -10 * s, -26 * s, 20 * s, 26 * s); g.imageSmoothingEnabled = sm; g.restore();
+  function hReed(g, i, j, sw, h) {   // the reeds: the very same art as the swamp outside (its smooth tile), top half swaying in the wind
+    var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, X = pxS(ox + i * ts), Y = pxS(oy + (j - 0.2) * ts), half = Math.round(ts / 2), off = sw * ts * 0.06;
+    hpShadow(g, X + ts / 2, Y + ts * 0.98, ts * 0.38, ts * 0.1, 0.18);
+    smDraw(g, v, T.REED, 0, 8, 16, 8, X, Y + half, ts, ts - half); smDraw(g, v, T.REED, 0, 0, 16, 8, X + off, Y, ts, half);
   }
+
   function hsFence(m) {   // a split-rail fence piece; m: 1 = joins left, 2 = joins right (rails run on to the neighbour)
     var key = "fence" + m; if (HSPR[key]) return HSPR[key]; var S2 = hpCanK(16, 18), g = S2.g, ink = "#2a180c";
     var rail = function (y) { var x0 = m & 1 ? -1 : 6, x1 = m & 2 ? 17 : 10; if (x1 <= x0) return; g.beginPath(); if (g.roundRect) g.roundRect(x0, y, x1 - x0, 2.4, 1.1); else g.rect(x0, y, x1 - x0, 2.4); aInk(g, aG(g, y, y + 2.4, "#c48a54", "#9a6436", "#6a4020"), ink, 0.55); };
