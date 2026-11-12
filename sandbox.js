@@ -24369,7 +24369,7 @@
   var HSEA = -1;   // the season the homestead's art was last built for
   function homeSeasonArt() {   // a new season: rebuild the grass, trees and forest once
     var sn = seasonOf(); if (sn === HSEA) return; HSEA = sn; var P2 = HGRS[sn]; Object.keys(HGR).forEach(function (k) { HGR[k] = P2[k]; });
-    Object.keys(HSPR).forEach(function (k) { if (/^(mossTop|tree|house|bld)/.test(k)) delete HSPR[k]; }); cvFree(HFOR); HFOR = null; if (HOME) { HOME.fk = null; HOME.gd = 1; }
+    Object.keys(HSPR).forEach(function (k) { if (/^(mossTop|tree|house|bld|rock)/.test(k)) delete HSPR[k]; }); cvFree(HFOR); HFOR = null; if (HOME) { HOME.fk = null; HOME.gd = 1; }
   }
   function hMossTop() {   // a top-down tile of Murkwater grass
     if (HSPR.mossTop) return HSPR.mossTop; var out = [], x, y;
@@ -24386,47 +24386,96 @@
     if (!HOME) return; r = r === undefined ? 1 : r; var R = HOME.gdr;
     if (!R) HOME.gdr = { x0: x - r, y0: y - r, x1: x + r, y1: y + r }; else { R.x0 = Math.min(R.x0, x - r); R.y0 = Math.min(R.y0, y - r); R.x1 = Math.max(R.x1, x + r); R.y1 = Math.max(R.y1, y + r); }
   }
+  // HOMESTEAD GROUND, in the main world's style: smooth soil with round pebbles (Mud, Peat and Silt in their world colours), tilled rows,
+  // cobblestones, and Murkwater grass with rounded corners and the same scalloped lip along its raised south edge. Painted once at
+  // HGK times 16 px per tile (smooth, not pixel art) and repainted only where it changes.
+  var HGK = 3;
+  function hgRgb(a, k) { return "rgb(" + Math.round(a[0] * k) + "," + Math.round(a[1] * k) + "," + Math.round(a[2] * k) + ")"; }
+  var HGM = { 0: [[78, 64, 84], [56, 44, 62], [104, 90, 110]], 5: [[66, 46, 50], [46, 30, 36], [92, 70, 72]], 6: [[136, 124, 116], [108, 98, 94], [168, 158, 146]], 2: [[64, 42, 46], [44, 28, 32], [96, 70, 66]] };   // base, dark, light
+  function hgSoilTile(g, c, i, j, X, Y, wet) {   // one tile of loose ground: soft clumps, a pebble or two, all lit from the top
+    var P = HGM[c] || HGM[0], h = function (n) { return SW.hash(i * 7 + n, j * 13 - n, 140 + c); }, q;
+    g.fillStyle = hgRgb(P[0], wet ? 0.78 : 1); g.fillRect(X, Y, 16, 16);
+    for (q = 0; q < 4; q++) { g.fillStyle = q & 1 ? hgRgb(P[1], wet ? 0.8 : 1) : hgRgb(P[2], wet ? 0.8 : 1); g.globalAlpha = 0.5; g.beginPath(); g.ellipse(X + 2 + h(q) * 12, Y + 2 + h(q + 9) * 12, 2 + h(q + 4) * 3, 1.2 + h(q + 5) * 1.8, h(q + 6) * 3, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+    if (c === 5) { g.strokeStyle = hgRgb(P[1], 0.8); g.lineWidth = 0.5; g.lineCap = "round"; for (q = 0; q < 4; q++) { var fx0 = X + 2 + h(q + 20) * 12, fy0 = Y + 2 + h(q + 21) * 12; g.beginPath(); g.moveTo(fx0, fy0); g.quadraticCurveTo(fx0 + 2, fy0 - 1.2, fx0 + 3.5, fy0 + 0.4); g.stroke(); } }
+    if (c === 6) { g.strokeStyle = hgRgb(P[2], 1.04); g.lineWidth = 0.45; for (q = 0; q < 2; q++) { var ry = Y + 4 + q * 6 + h(q + 30) * 2; g.beginPath(); g.moveTo(X + 1, ry); g.quadraticCurveTo(X + 8, ry - 1.4, X + 15, ry); g.stroke(); } }
+    var np = h(40) < 0.5 ? 2 : h(41) < 0.75 ? 1 : 3;   // pebbles: round, top-lit, a soft shadow under each
+    for (q = 0; q < np; q++) { var px = X + 2.5 + h(q + 42) * 11, py = Y + 2.5 + h(q + 44) * 11, pr = 0.8 + h(q + 46) * 1.5;
+      g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(px + 0.3, py + 0.6, pr * 1.1, pr * 0.6, 0, 0, 7); g.fill();
+      g.fillStyle = aG(g, py - pr, py + pr * 0.6, "#b2a8b8", "#8a8096", "#5e566a"); g.beginPath(); g.ellipse(px, py, pr * 1.15, pr * 0.8, 0, 0, 7); g.fill();
+      g.fillStyle = "rgba(255,255,255,.35)"; g.beginPath(); g.ellipse(px - pr * 0.35, py - pr * 0.3, pr * 0.4, pr * 0.22, -0.4, 0, 7); g.fill(); }
+  }
+  function hgTilled(g, i, j, X, Y, wet, seeded) {   // Garden Soil: three soft raised rows, darker when watered
+    var P = HGM[2], k = wet ? 0.72 : 1; g.fillStyle = hgRgb(P[1], k); g.fillRect(X, Y, 16, 16);
+    for (var r = 0; r < 3; r++) { var ry = Y + 1.2 + r * 5.2;
+      g.fillStyle = aG(g, ry, ry + 4, hgRgb(P[2], k * 1.05), hgRgb(P[0], k), hgRgb(P[1], k)); g.beginPath(); g.moveTo(X, ry + 3.6); g.bezierCurveTo(X, ry - 0.4, X + 16, ry - 0.4, X + 16, ry + 3.6); g.lineTo(X + 16, ry + 4); g.lineTo(X, ry + 4); g.closePath(); g.fill();
+      g.fillStyle = wet ? "rgba(160,220,255,.16)" : "rgba(255,240,230,.12)"; g.fillRect(X, ry + 0.6, 16, 0.6); }
+    if (seeded) { g.fillStyle = "#1e1210"; for (var cq = 0; cq < 5; cq++) { g.beginPath(); g.ellipse(X + 2 + SW.hash(i * 7 + cq, j, 50) * 12, Y + 2.5 + (cq % 3) * 5.2, 0.7, 0.45, 0, 0, 7); g.fill(); } }
+  }
+  function hgCobble(g, i, j, X, Y) {   // Mossy Cobblestone: round stones in a dark bed, a little moss between them
+    g.fillStyle = "#3a3646"; g.fillRect(X, Y, 16, 16);
+    var cells = [[4, 4], [12, 4.5], [4.5, 12], [12, 12]];
+    cells.forEach(function (q, n) { var hx = SW.hash(i * 5 + n, j, 150), hy = SW.hash(i, j * 5 + n, 151), cx = X + q[0] + (hx - 0.5) * 2, cy = Y + q[1] + (hy - 0.5) * 2, rx = 3.5 + hx * 0.4, ry = 3.1 + hy * 0.4;
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(cx, cy + 0.7, rx, ry, 0, 0, 7); g.fill();
+      g.fillStyle = aG(g, cy - ry, cy + ry, "#a8b0c0", "#7e8698", "#565c70"); g.beginPath(); g.ellipse(cx, cy, rx, ry, hx, 0, 7); g.fill();
+      g.fillStyle = "rgba(255,255,255,.22)"; g.beginPath(); g.ellipse(cx - rx * 0.3, cy - ry * 0.35, rx * 0.45, ry * 0.25, -0.3, 0, 7); g.fill(); });
+    g.fillStyle = HGR.mid; for (var m = 0; m < 3; m++) if (SW.hash(i * 3 + m, j, 152) < 0.6) { g.beginPath(); g.ellipse(X + 1 + SW.hash(i, j * 3 + m, 153) * 14, Y + 1 + SW.hash(j, i * 3 + m, 154) * 14, 0.9, 0.6, 0, 0, 7); g.fill(); }
+  }
   function homeGround(R) {   // R: just repaint these tiles (x0..x1, y0..y1); no R: the whole map
-    var W = HW * 16, H = HH * 16, t = HOME.t, o = homeS(), i, j, x, y;
+    var K = HGK, W = HW * 16 * K, H = HH * 16 * K, t = HOME.t, o = homeS(), i, j;
     if (!HG) { HG = document.createElement("canvas"); HG.width = W; HG.height = H; R = null; }
     var X0 = R ? Math.max(0, R.x0) : 0, Y0 = R ? Math.max(0, R.y0) : 0, X1 = R ? Math.min(HW - 1, R.x1) : HW - 1, Y1 = R ? Math.min(HH - 1, R.y1) : HH - 1;
-    var g = HG.getContext("2d"), MT = hMossTop(), cob = htid("Mossy Cobblestone"), soil = htid("Garden Soil"), wsoil = htid("Watered Soil"), peat = htid("Peat"), silt = htid("Silt");
-    g.save(); g.beginPath(); g.rect(X0 * 16, Y0 * 16, (X1 - X0 + 1) * 16, (Y1 - Y0 + 1) * 16); g.clip();
-    g.imageSmoothingEnabled = false; g.clearRect(X0 * 16, Y0 * 16, (X1 - X0 + 1) * 16, (Y1 - Y0 + 1) * 16);
+    var g = HG.getContext("2d");
+    g.save(); g.setTransform(K, 0, 0, K, 0, 0); g.beginPath(); g.rect(X0 * 16, Y0 * 16, (X1 - X0 + 1) * 16, (Y1 - Y0 + 1) * 16); g.clip();
+    g.imageSmoothingEnabled = true; g.clearRect(X0 * 16, Y0 * 16, (X1 - X0 + 1) * 16, (Y1 - Y0 + 1) * 16);
     var C = function (a, b) { return a < 0 || b < 0 || a >= HW || b >= HH ? 7 : hgCode(t[b * HW + a]); }, raised = function (c) { return c === 1 || c === 7; };
-    for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
-      var c = C(i, j), X = i * 16, Y = j * 16, v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
-      if (c === 1 || c === 7) { g.drawImage(MT[v], X, Y); if (c === 7) { g.fillStyle = "rgba(10,30,14,.38)"; g.fillRect(X, Y, 16, 16); } }
-      else if (c === 2) hAt(g, wsoil >= 0 && t[j * HW + i] === HT.SOIL && homeWet(i, j) ? wsoil : soil, X, Y);
-      else if (c === 3) { var cm = (C(i, j - 1) === 3 ? 0 : 1) | (C(i, j + 1) === 3 ? 0 : 2) | (C(i - 1, j) === 3 ? 0 : 4) | (C(i + 1, j) === 3 ? 0 : 8), mc = hMat(cob, (i & 1) | ((j & 1) << 1), cm); if (mc) g.drawImage(mc, X, Y); else hAt(g, cob, X, Y); }
-      else if (c === 5) hAt(g, peat, X, Y, v & 1);
-      else if (c === 6) hAt(g, silt, X, Y, v & 1);
-      else hAt(g, T.MUD, X, Y, v & 1);
-      if (c === 4) {   // Delve's water: teal over the mud, deeper further from the bank, with the bright surface line along the near shore
+    var A0 = Math.max(0, X0 - 1), A1 = Math.min(HW - 1, X1 + 1), B0 = Math.max(0, Y0 - 1), B1 = Math.min(HH - 1, Y1 + 1);
+    // 1) the low ground: soil, tilled rows, cobbles, water
+    for (j = B0; j <= B1; j++) for (i = A0; i <= A1; i++) {
+      var c = C(i, j), X = i * 16, Y = j * 16, id = t[j * HW + i];
+      if (raised(c)) { hgSoilTile(g, 0, i, j, X, Y, false); continue; }   // (under the grass: shows past its rounded corners)
+      if (c === 2) hgTilled(g, i, j, X, Y, id === HT.SOIL && homeWet(i, j), id === HT.SOIL && !!o.f[i + "," + j]);
+      else if (c === 3) hgCobble(g, i, j, X, Y);
+      else hgSoilTile(g, c === 4 ? 0 : c, i, j, X, Y, c === 4);
+      if (c === 4) {   // Delve's teal water, deeper away from the bank, soft rounded banks and a bright line along the near shore
         var dd = 0; for (var q = 1; q <= 3; q++) { if (C(i, j - q) === 4 && C(i - q, j) === 4 && C(i + q, j) === 4 && C(i, j + q) === 4) dd = q; else break; }
-        g.fillStyle = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.66 + dd * 0.07) + ")"; g.fillRect(X, Y, 16, 16);
-        if (t[j * HW + i] === HT.PADDYW) { g.fillStyle = "rgba(150,120,80,.25)"; g.fillRect(X, Y, 16, 16); }
-        if (HSEA === 3) { g.fillStyle = "rgba(214,236,248,.72)"; g.fillRect(X, Y, 16, 16); g.fillStyle = "rgba(255,255,255,.75)"; var ih = SW.hash(i, j, 66); if (ih < 0.5) { g.fillRect(X + 2 + Math.floor(ih * 18), Y + 3, 1, 5); g.fillRect(X + 3 + Math.floor(ih * 18), Y + 7, 3, 1); } if (ih > 0.7) g.fillRect(X + 9, Y + 9, 5, 1); g.fillStyle = "rgba(120,160,190,.35)"; g.fillRect(X + Math.floor(ih * 12), Y + 12, 4, 1); }   // winter: the water freezes over
-        if (C(i, j - 1) !== 4) { g.fillStyle = "rgba(10,40,48,.45)"; g.fillRect(X, Y, 16, 3); g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(X, Y + 3, 16, 1); }
-        if (C(i, j + 1) !== 4) { g.fillStyle = "rgba(210,255,248,.55)"; g.fillRect(X, Y + 15, 16, 1); }
-        if (C(i - 1, j) !== 4) { g.fillStyle = "rgba(210,255,248,.45)"; g.fillRect(X, Y, 1, 16); } if (C(i + 1, j) !== 4) { g.fillStyle = "rgba(210,255,248,.45)"; g.fillRect(X + 15, Y, 1, 16); }
+        var wN = C(i, j - 1) !== 4, wS = C(i, j + 1) !== 4, wW = C(i - 1, j) !== 4, wE = C(i + 1, j) !== 4, rr = 4;
+        g.fillStyle = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.7 + dd * 0.07) + ")";
+        g.beginPath(); if (g.roundRect) g.roundRect(X, Y, 16, 16, [wN && wW ? rr : 0, wN && wE ? rr : 0, wS && wE ? rr : 0, wS && wW ? rr : 0]); else g.rect(X, Y, 16, 16); g.fill();
+        if (id === HT.PADDYW) { g.fillStyle = "rgba(150,120,80,.25)"; g.fillRect(X, Y, 16, 16); }
+        if (HSEA === 3) { g.fillStyle = "rgba(214,236,248,.72)"; g.fillRect(X, Y, 16, 16); }
+        if (wN) { g.fillStyle = "rgba(10,40,48,.4)"; g.fillRect(X + (wW ? rr : 0), Y, 16 - (wW ? rr : 0) - (wE ? rr : 0), 2.5); g.fillStyle = "rgba(210,255,248,.7)"; g.fillRect(X + (wW ? rr : 0), Y + 2.5, 16 - (wW ? rr : 0) - (wE ? rr : 0), 0.7); }
       }
-      if (t[j * HW + i] === HT.PADDY || t[j * HW + i] === HT.PADDYW) {   // paddies: a low Mud bank around each field
+      if (id === HT.PADDY || id === HT.PADDYW) {   // paddies: a low rounded mud bank round each field
         var pd = function (a, b) { var q2 = a < 0 || b < 0 || a >= HW || b >= HH ? 0 : t[b * HW + a]; return q2 === HT.PADDY || q2 === HT.PADDYW; };
-        g.fillStyle = "#6b4a2e"; if (!pd(i, j - 1)) g.fillRect(X, Y, 16, 2); if (!pd(i - 1, j)) g.fillRect(X, Y, 2, 16); if (!pd(i + 1, j)) g.fillRect(X + 14, Y, 2, 16); if (!pd(i, j + 1)) { g.fillStyle = "#8a6440"; g.fillRect(X, Y + 14, 16, 2); }
+        g.fillStyle = "#6a4a46"; if (!pd(i, j - 1)) g.fillRect(X, Y, 16, 1.6); if (!pd(i - 1, j)) g.fillRect(X, Y, 1.6, 16); if (!pd(i + 1, j)) g.fillRect(X + 14.4, Y, 1.6, 16); if (!pd(i, j + 1)) { g.fillStyle = "#86625a"; g.fillRect(X, Y + 14.4, 16, 1.6); }
       }
-      if (c === 5) { g.fillStyle = "rgba(0,0,0,.35)"; if (C(i, j - 1) !== 5) g.fillRect(X, Y, 16, 3); }
-      if (c === 2 && C(i, j - 1) !== 2) { g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(X, Y, 16, 2); }   // soil sits a little lower: a shadow along its top edge
-      if (t[j * HW + i] === HT.SOIL && o.f[i + "," + j]) { g.fillStyle = "#24160a"; for (var cq = 0; cq < 6; cq++) g.fillRect(X + 2 + Math.floor(SW.hash(i * 7 + cq, j, 50) * 12), Y + 4 + Math.floor(SW.hash(i, j * 7 + cq, 51) * 10), 2, 1); }
+      if ((c === 5 && C(i, j - 1) !== 5) || (c === 2 && C(i, j - 1) !== 2)) { g.fillStyle = aG(g, Y, Y + 3, "rgba(0,0,0,.34)", "rgba(0,0,0,.12)", "rgba(0,0,0,0)"); g.fillRect(X, Y, 16, 3); }   // sunk a little: a soft shadow along the top
     }
-    // the raised moss: its side (the real Mossy Mud block face) shows below every south edge, and moss tips spill over the other edges
-    for (j = Math.max(0, Y0 - 1); j <= Math.min(HH - 1, Y1 + 1); j++) for (i = Math.max(0, X0 - 1); i <= Math.min(HW - 1, X1 + 1); i++) {
-      var c2 = C(i, j); if (!raised(c2)) continue; var X2 = i * 16, Y2 = j * 16, below = C(i, j + 1);
-      if (!raised(below) && j + 1 < HH) { g.fillStyle = HGR.lip; g.fillRect(X2, Y2 + 16, 16, 3); for (var sc = 0; sc < 3; sc++) { var scx = X2 + 1 + sc * 5 + Math.floor(SW.hash(i * 3 + sc, j, 60) * 2); g.fillRect(scx, Y2 + 19, 4, 1); g.fillRect(scx + 1, Y2 + 20, 2, 1); }
-        g.fillStyle = HGR.top; g.fillRect(X2, Y2 + 16, 16, 1); g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(X2, Y2 + 21, 16, 2); }
-      if (!raised(C(i - 1, j)) && i > 0) { g.fillStyle = "rgba(20,40,20,.55)"; g.fillRect(X2, Y2, 1, 16); g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(X2 - 2, Y2 + 2, 2, 14); }
-      if (!raised(C(i + 1, j)) && i + 1 < HW) { g.fillStyle = "rgba(20,40,20,.55)"; g.fillRect(X2 + 15, Y2, 1, 16); g.fillStyle = "rgba(0,0,0,.2)"; g.fillRect(X2 + 16, Y2 + 2, 2, 14); }
-      if (!raised(C(i, j - 1)) && j > 0) { g.fillStyle = HGR.hi; g.fillRect(X2, Y2, 16, 1); g.fillStyle = HGR.tuft; for (var tp = 0; tp < 4; tp++) if (SW.hash(i * 4 + tp, j, 61) > 0.45) g.fillRect(X2 + tp * 4 + 1, Y2 - 1, 1, 1); }
+    // 2) the raised Murkwater grass: shadow, then its earthy south face, then the top with rounded outer corners and the scalloped lip
+    var RAD = 5;
+    for (j = B0; j <= B1; j++) for (i = A0; i <= A1; i++) { if (!raised(C(i, j)) || raised(C(i, j + 1)) || j + 1 >= HH) continue; var Xs = i * 16, Ys = j * 16;
+      var lo = !raised(C(i - 1, j)), ro = !raised(C(i + 1, j));
+      g.fillStyle = aG(g, Ys + 16, Ys + 24, "rgba(0,0,0,.34)", "rgba(0,0,0,.14)", "rgba(0,0,0,0)"); g.beginPath(); g.rect(Xs + (lo ? 2 : 0), Ys + 19, 16 - (lo ? 2 : 0) - (ro ? 2 : 0) + (ro ? 0 : 0), 5); g.fill();
+      g.fillStyle = aG(g, Ys + 14, Ys + 20, "#5c4658", "#4a3648", "#36263a"); g.beginPath(); if (g.roundRect) g.roundRect(Xs, Ys + 10, 16, 10, [0, 0, ro ? RAD : 0, lo ? RAD : 0]); else g.rect(Xs, Ys + 10, 16, 10); g.fill();
+      g.fillStyle = "rgba(170,150,170,.35)"; for (var pb = 0; pb < 2; pb++) if (SW.hash(i * 2 + pb, j, 160) < 0.6) { g.beginPath(); g.ellipse(Xs + 3 + SW.hash(i, j * 2 + pb, 161) * 10, Ys + 17.5, 0.9, 0.6, 0, 0, 7); g.fill(); }
+    }
+    var MT = hMossTop();
+    for (j = B0; j <= B1; j++) for (i = A0; i <= A1; i++) { var cr = C(i, j); if (!raised(cr)) continue; var Xg = i * 16, Yg = j * 16;
+      var n = !raised(C(i, j - 1)), s = !raised(C(i, j + 1)) && j + 1 < HH, w = !raised(C(i - 1, j)) && i > 0, e = !raised(C(i + 1, j)) && i + 1 < HW;
+      var rTL = n && w ? RAD : 0, rTR = n && e ? RAD : 0, rBR = s && e ? RAD : 0, rBL = s && w ? RAD : 0;
+      g.save(); g.beginPath(); if (g.roundRect) g.roundRect(Xg, Yg, 16, 16, [rTL, rTR, rBR, rBL]); else g.rect(Xg, Yg, 16, 16); g.clip();
+      g.fillStyle = aG(g, Yg, Yg + 16, HGR.top, HGR.base, HGR.lip); g.fillRect(Xg, Yg, 16, 16);
+      g.globalAlpha = 0.55; g.drawImage(MT[((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3], 0, 0, 16, 16, Xg, Yg, 16, 16); g.globalAlpha = 1;   // its soft mottling and tufts
+      if (cr === 7) { g.fillStyle = "rgba(10,30,14,.34)"; g.fillRect(Xg, Yg, 16, 16); }
+      if (w) { g.fillStyle = "rgba(10,30,20,.28)"; g.fillRect(Xg, Yg, 1.2, 16); } if (e) { g.fillStyle = "rgba(10,30,20,.28)"; g.fillRect(Xg + 14.8, Yg, 1.2, 16); }
+      if (n) { g.fillStyle = HGR.hi; g.globalAlpha = 0.75; g.fillRect(Xg, Yg, 16, 1); g.globalAlpha = 1; }
+      g.restore();
+      if (s) {   // the scalloped lip, like the grass edge outside: a row of round tufts hanging over the face
+        var sx0 = Xg + (rBL ? RAD * 0.6 : 0), sx1 = Xg + 16 - (rBR ? RAD * 0.6 : 0), nS = Math.max(1, Math.round((sx1 - sx0) / 4)), sw = (sx1 - sx0) / nS;
+        for (var k2 = 0; k2 < nS; k2++) { var cx = sx0 + sw * (k2 + 0.5); g.fillStyle = HGR.lip; g.beginPath(); g.ellipse(cx, Yg + 15.6, sw * 0.56, 1.9, 0, 0, Math.PI); g.fill(); g.fillStyle = HGR.top; g.beginPath(); g.ellipse(cx, Yg + 15.4, sw * 0.4, 0.8, 0, 0, Math.PI); g.fill(); }
+      }
+      if (n) { g.fillStyle = HGR.tuft; for (var tp = 0; tp < 3; tp++) if (SW.hash(i * 4 + tp, j, 61) > 0.5) { var tx = Xg + 2 + tp * 5 + SW.hash(i, j * 4 + tp, 62) * 2; if ((rTL && tx < Xg + RAD) || (rTR && tx > Xg + 16 - RAD)) continue; g.beginPath(); g.moveTo(tx - 0.8, Yg + 0.6); g.lineTo(tx, Yg - 1.6); g.lineTo(tx + 0.8, Yg + 0.6); g.fill(); } }
     }
     g.restore(); if (!R) HOME.gd = 0; HOME.gdr = null;
   }
@@ -24496,11 +24545,41 @@
     seasonLeaves(LC.c, v); g0.drawImage(LC.c, 0, 0);
     return (HSPR[key] = hpOutline(S2.c));
   }
-  function hsStump() { if (HSPR.stump) return HSPR.stump; var S2 = hpCan(16, 16), g = S2.g;
-    g.drawImage(ATLAS, 0, T.LOG * 16 + 6, 14, 10, 1, 7, 14, 9);
-    var ring = function (rx, ry, c) { for (var yy = 0; yy < 16; yy++) for (var xx = 0; xx < 16; xx++) { var nx = (xx + 0.5 - 8) / rx, ny = (yy + 0.5 - 6) / ry; if (nx * nx + ny * ny <= 1) { g.fillStyle = c; g.fillRect(xx, yy, 1, 1); } } };
-    ring(7, 3.2, "#6a4426"); ring(6, 2.5, "#c9a06a"); ring(4, 1.7, "#a87c4e"); ring(2.6, 1.1, "#c9a06a"); ring(1, 0.6, "#8a5e36"); g.fillStyle = "#5a9a3a"; g.fillRect(12, 4, 2, 1);
-    return (HSPR.stump = hpOutline(S2.c)); }
+  // ---- HOMESTEAD PROPS in the house style (smooth, top-lit, tinted ink outlines): the same Murkwater bark and round rocks as outside ----
+  function hpCanK(w, h) { var c = document.createElement("canvas"); c.width = w * HGK; c.height = h * HGK; var g = c.getContext("2d"); g.setTransform(HGK, 0, 0, HGK, 0, 0); g.lineJoin = "round"; g.lineCap = "round"; return { c: c, g: g }; }
+  function hDrawK(g, c, mx, my, ax, ay, dx) { var s = ts / 16, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(c, Math.round(ox + mx * ts - ax * s + (dx || 0)), Math.round(oy + my * ts - ay * s), c.width / HGK * s, c.height / HGK * s); g.imageSmoothingEnabled = sm; }
+  function hsStump() {   // a Murkwater stump: a short bark drum flaring into roots, a pale cut top with rings, moss on one side
+    if (HSPR.stump) return HSPR.stump; var S2 = hpCanK(20, 18), g = S2.g, BK = BARK[0], ink = "#21130f";
+    g.translate(2, 0);
+    g.beginPath(); g.moveTo(2.2, 6); g.lineTo(2, 12.4); g.quadraticCurveTo(0.2, 14.8, -1.2, 15.6); g.quadraticCurveTo(2.4, 16.2, 4.4, 14.6); g.quadraticCurveTo(6.4, 16.8, 8, 16.6);
+    g.quadraticCurveTo(9.8, 16.8, 11.6, 14.6); g.quadraticCurveTo(13.8, 16.2, 17.2, 15.6); g.quadraticCurveTo(15.8, 14.8, 14, 12.4); g.lineTo(13.8, 6); g.closePath();
+    var gr = g.createLinearGradient(1, 0, 15, 0); [0, 0.22, 0.5, 0.78, 1].forEach(function (k, n) { gr.addColorStop(k, BK[n]); }); aInk(g, gr, ink, 0.9);
+    g.save(); g.clip(); g.strokeStyle = "rgba(20,10,8,.45)"; g.lineWidth = 0.6; [4.6, 8, 11.4].forEach(function (x) { g.beginPath(); g.moveTo(x, 7); g.quadraticCurveTo(x + 0.6, 11, x - 0.2, 15.5); g.stroke(); });
+    g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(-2, 13.6, 22, 4); g.restore();
+    g.beginPath(); g.ellipse(8, 6, 5.9, 3, 0, 0, 7); aInk(g, aG(g, 3, 9, "#e2c08a", "#c9a06a", "#a87c4e"), ink, 0.9);   // the cut top
+    g.strokeStyle = "rgba(120,80,44,.7)"; g.lineWidth = 0.5; [[4.1, 2.05], [2.6, 1.3], [1.1, 0.55]].forEach(function (r) { g.beginPath(); g.ellipse(8.2, 6.1, r[0], r[1], 0, 0, 7); g.stroke(); });
+    g.strokeStyle = "rgba(40,20,10,.55)"; g.lineWidth = 0.45; g.beginPath(); g.moveTo(8.4, 6.2); g.lineTo(11.6, 4.6); g.stroke();
+    aShine(g, 5.6, 4.6, 2, 0.7, 0.3, -0.2);
+    g.fillStyle = "#3fae78"; g.beginPath(); g.ellipse(2.8, 8.6, 1.4, 2.4, -0.2, 0, 7); g.fill(); g.fillStyle = "#58d68b"; g.beginPath(); g.ellipse(2.5, 7.6, 0.8, 1.1, -0.2, 0, 7); g.fill();
+    return (HSPR.stump = S2.c);
+  }
+  function hsRock(v) {   // a round field rock: one lumpy silhouette, lit from the top, a crack, a cap of moss (four shapes)
+    var key = "rock" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCanK(20, 16), g = S2.g, h = function (n) { return SW.hash(v, n, 170); };
+    var pts = [], N = 9, cx = 10, cy = 9.6, rx = 7.6 - h(1) * 1.2, ry = 5.4 - h(2) * 0.8;
+    for (var k = 0; k < N; k++) { var a = k / N * 6.2832 + h(3), wob = 0.86 + h(k + 10) * 0.2; pts.push([cx + Math.cos(a) * rx * wob, cy + Math.sin(a) * ry * wob * (Math.sin(a) > 0 ? 0.85 : 1.1)]); }
+    g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(cx + 0.6, cy + ry * 0.75, rx * 1.05, ry * 0.45, 0, 0, 7); g.fill();
+    var path = function () { g.beginPath(); for (var k = 0; k < N; k++) { var p0 = pts[k], p1 = pts[(k + 1) % N], mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2; if (!k) { var pl = pts[N - 1]; g.moveTo((pl[0] + p0[0]) / 2, (pl[1] + p0[1]) / 2); } g.quadraticCurveTo(p0[0], p0[1], mx, my); } g.closePath(); };
+    path(); aInk(g, aG(g, cy - ry, cy + ry, "#b4c0d0", "#8290a6", "#55607a"), "#2a3042", 0.9);
+    g.save(); path(); g.clip();
+    g.fillStyle = "rgba(20,24,40,.22)"; g.beginPath(); g.ellipse(cx + rx * 0.5, cy + ry * 0.5, rx * 0.8, ry * 0.7, 0, 0, 7); g.fill();
+    g.strokeStyle = "rgba(30,34,52,.6)"; g.lineWidth = 0.55; g.beginPath(); g.moveTo(cx - 1 + h(20) * 3, cy - ry * 0.5); g.lineTo(cx + h(21) * 2, cy); g.lineTo(cx - 1.5 + h(22) * 2, cy + ry * 0.6); g.stroke();
+    if (HSEA === 3) { g.fillStyle = "#f2f7fb"; g.beginPath(); g.ellipse(cx - 0.5, cy - ry * 0.85, rx * 0.8, ry * 0.42, 0, 0, 7); g.fill(); }
+    else if (h(30) < 0.7) { g.fillStyle = HGR.base; g.beginPath(); g.ellipse(cx - 1.4 + h(31) * 2, cy - ry * 0.82, rx * 0.55, ry * 0.32, -0.2, 0, 7); g.fill(); g.fillStyle = HGR.tuft; g.beginPath(); g.ellipse(cx - 2 + h(31) * 2, cy - ry * 0.95, rx * 0.28, ry * 0.15, -0.2, 0, 7); g.fill(); }
+    g.restore();
+    aShine(g, cx - rx * 0.38, cy - ry * 0.45, rx * 0.3, ry * 0.18, 0.32, -0.3);
+    return (HSPR[key] = S2.c);
+  }
+  function hNT(id) { var key = "n" + id; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(18, 18); S2.g.drawImage(ATLAS, 0, id * 16, 16, 16, 1, 1, 16, 16); return (HSPR[key] = S2.c); }   // a plant as outside: no dark outline
   function hsGiant(k) { var key = "giant" + k; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(50, 50); S2.g.drawImage(ATLAS, 0, CROPS[k].tiles[3] * 16, 16, 16, 1, 1, 48, 48); return (HSPR[key] = hpOutline(S2.c)); }
   function hsHouse() {   // the cottage, all Delve blocks: Mossy Shingles roof, Log Wall front, a Swamp Door, Clear Glass windows with Flower Planters, a Stone Brick chimney
     if (HSPR.house) return HSPR.house; var S2 = hpCan(112, 104), g = S2.g, x, y, OX = 8, OY = 24;   // the sprite's (OX, OY) is the footprint's top-left corner
@@ -24532,7 +24611,7 @@
   function hDraw(g, c, mx, my, ax, ay, dx) { var s = ts / 16; g.drawImage(c, Math.round(ox + mx * ts - ax * s + (dx || 0)), Math.round(oy + my * ts - ay * s), c.width * s, c.height * s); }
   function hTile(g, id, mx, my, dx, dy) { if (id < 0) return; var s = ts / 16; g.drawImage(hOT(id), Math.round(ox + mx * ts + (dx || 0) - s), Math.round(oy + my * ts + (dy || 0) - s), ts + 2 * s, ts + 2 * s); }
   function hTileSway(g, id, mx, my, sw) {   // a plant whose top half leans in the wind (whole pixels)
-    if (id < 0) return; var s = ts / 16, c = hOT(id), X = Math.round(ox + mx * ts) - s, Y = Math.round(oy + my * ts) - s, k = 9, o2 = Math.round(sw) * s;
+    if (id < 0) return; var s = ts / 16, c = hNT(id), X = Math.round(ox + mx * ts) - s, Y = Math.round(oy + my * ts) - s, k = 9, o2 = Math.round(sw) * s;
     g.drawImage(c, 0, 0, 18, k, X + o2, Y, 18 * s, k * s); g.drawImage(c, 0, k, 18, 18 - k, X, Y + k * s, 18 * s, (18 - k) * s);
   }
   function homeRender(now) {
@@ -24551,7 +24630,7 @@
     if (!HG || HOME.gd || HOME.gdk !== HG) { homeGround(); HOME.gdk = HG; } else if (HOME.gdr) homeGround(HOME.gdr);
     gIn();
     var gx0 = Math.max(0, Math.floor(-ox / ts)), gy0 = Math.max(0, Math.floor(wyAt(0))), gx1 = Math.min(HW, Math.ceil((vw - ox) / ts)), gy1 = Math.min(HH, Math.ceil(wyAt(vh)));
-    if (gx1 > gx0 && gy1 > gy0) g.drawImage(HG, gx0 * 16, gy0 * 16, (gx1 - gx0) * 16, (gy1 - gy0) * 16, ox + gx0 * ts, oy + gy0 * ts, (gx1 - gx0) * ts, (gy1 - gy0) * ts);
+    if (gx1 > gx0 && gy1 > gy0) { var gk = HGK * 16; g.imageSmoothingEnabled = true; g.drawImage(HG, gx0 * gk, gy0 * gk, (gx1 - gx0) * gk, (gy1 - gy0) * gk, ox + gx0 * ts, oy + gy0 * ts, (gx1 - gx0) * ts, (gy1 - gy0) * ts); g.imageSmoothingEnabled = false; }
     if (!reduce && SN !== 3) for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) { var wid = t[j * HW + i]; if (!homeWater(wid)) continue;
       for (var gl = 0; gl < 2; gl++) { var hgl = SW.hash(i, j, 100 + gl), ph2 = (T0 * 0.9 + hgl * 7) % 3; if (ph2 > 0.5) continue; var gx = ox + (i * 16 + 3 + Math.floor(hgl * 10)) * s16, gy = oy + (j * 16 + 4 + Math.floor(SW.hash(j, i, 102 + gl) * 9)) * s16;
         g.fillStyle = ph2 < 0.25 ? "#ffffff" : "#bfe8f0"; g.fillRect(gx, gy, s16 * 2, s16); if (ph2 < 0.25) g.fillRect(gx + s16 * 0.5, gy - s16, s16, s16 * 3); } }
@@ -24742,8 +24821,8 @@
     if (id === HT.TREE) { var v = h < 0.5 ? 0 : h < 0.8 ? 1 : 2, jx = Math.round((SW.hash(i, j, 93) - 0.5) * 6) * s, jy = Math.round((SW.hash(j, i, 95) - 0.5) * 6), wt = hsWTree(Math.floor(h * 4));
       if (wt) { if (SW.hash(i, j, 97) < 0.42 || (i > 0 && i < HW - 1 && hmT(i - 1, j) !== HT.TREE)) { hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3); hDraw(g, wt.c, i + 0.5, j + 1, wt.bx, wt.by - 3 + jy, jx); } } else if (hpShadow(g, ox + (i + 0.5) * ts + jx, oy + (j + 0.9) * ts, ts * 0.9, ts * 0.28, 0.3) || 1) hDraw(g, hsTree(v), i + 0.5, j + 1, 24, 80 + jy, jx); return; }
     var MN = HOME.mn && HOME.mn.x === i && HOME.mn.y === j ? HOME.mn : null, mk = MN ? clamp(MN.t / MN.need, 0, 1) : 0, jit = MN && !reduce ? Math.round(Math.sin(T0 * 60) * s * (0.5 + mk)) : 0;
-    if (id === HT.ROCK) { hDraw(g, caveNode(T.STONE, Math.floor(h * 4)), i, j, 0, 2, jit); if (MN) homeCracks(g, i, j, mk, jit); return; }
-    if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.5) * ts, oy + (j + 0.9) * ts, ts * 0.45, ts * 0.13, 0.25); hDraw(g, hsStump(), i, j, 0, 1, jit); if (MN) homeCracks(g, i, j, mk, jit); return; }
+    if (id === HT.ROCK) { hDrawK(g, hsRock(Math.floor(h * 4)), i, j, 2, 4, jit); if (MN) homeCracks(g, i, j, mk, jit); return; }
+    if (id === HT.STUMP) { hpShadow(g, ox + (i + 0.5) * ts, oy + (j + 0.9) * ts, ts * 0.45, ts * 0.13, 0.25); hDrawK(g, hsStump(), i, j, 2, 3, jit); if (MN) homeCracks(g, i, j, mk, jit); return; }
     var wnd = 1 + wxN() * 0.6 + wxStorm() * 1.8;
     if (id === HT.REEDS) { hTileSway(g, T.REED, i, j - 0.2, reduce ? 0 : Math.sin(T0 * 1.4 * (wnd > 1.5 ? 1.7 : 1) + i * 0.8 + j) * 1.1 * wnd); return; }
     if (id === HT.FLOWER) { var fl = [htid("Swamp Flower"), htid("Marsh Lily"), htid("Bog Cotton")][Math.floor(h * 3)]; hTileSway(g, fl, i, j - 0.15, reduce ? 0 : Math.sin(T0 * 1.2 * (wnd > 1.5 ? 1.7 : 1) + i + j * 0.5) * 0.8 * wnd); return; }
