@@ -11440,11 +11440,11 @@
     function mk(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
     function blob(x, cx, cy, r) { for (var dy = -r; dy <= r; dy++) { var hw = Math.floor(Math.sqrt(r * r - dy * dy + r * 0.6)); var y = Math.round(cy + dy); x.fillRect(Math.round(cx - hw), y, hw * 2 + 1, 1); x.fillRect(Math.round(cx - hw) - SWW, y, hw * 2 + 1, 1); x.fillRect(Math.round(cx - hw) + SWW, y, hw * 2 + 1, 1); } }
     function rect(x, a, b, w, h) { x.fillRect(a, b, w, h); x.fillRect(a - SWW, b, w, h); x.fillRect(a + SWW, b, w, h); }
-    var DEF = [   // far to near: colour, highlight, trees, heights, crown size, trunk colour
-      { h: 170, c: [64, 146, 128], hi: [86, 166, 146], n: 26, th: [70, 150], cr: [12, 20], tk: null, seed: 11 },
-      { h: 170, c: [40, 112, 102], hi: [58, 134, 120], n: 20, th: [60, 140], cr: [14, 24], tk: null, seed: 23 },
-      { h: 180, c: [22, 78, 72], hi: [34, 98, 88], n: 15, th: [70, 150], cr: [16, 28], tk: [30, 60, 58], seed: 37 },
-      { h: 200, c: [14, 54, 42], hi: [32, 92, 62], n: 9, th: [110, 190], cr: [20, 34], tk: [70, 46, 32], bark: [48, 30, 22], vines: 1, seed: 53 } ];
+    var DEF = [   // far to near: rich teal layers with lit tops and shaded undersides; all one colour family so the real trees in front stand out
+      { h: 170, c: [64, 146, 128], hi: [88, 170, 148], n: 22, th: [70, 150], cr: [12, 20], tk: null, seed: 11 },
+      { h: 170, c: [40, 112, 102], hi: [62, 140, 124], n: 17, th: [60, 140], cr: [14, 24], tk: null, seed: 23 },
+      { h: 180, c: [24, 82, 76], hi: [40, 108, 96], n: 12, th: [70, 150], cr: [16, 28], tk: [20, 66, 62], seed: 37 },
+      { h: 200, c: [16, 60, 52], hi: [30, 94, 76], n: 8, th: [110, 190], cr: [20, 34], tk: [18, 54, 48], bark: [12, 40, 36], vines: 1, seed: 53 } ];
     SWF.L = DEF.map(function (d, li) {
       var cv2 = mk(SWW, d.h), x = cv2.getContext("2d");
       for (var k = 0; k < d.n; k++) {
@@ -11452,24 +11452,24 @@
         var cr = d.cr[0] + SW.hash(k, li, d.seed + 2) * (d.cr[1] - d.cr[0]), tw = Math.max(2, Math.round(cr * (d.tk ? 0.28 : 0.2)));
         x.fillStyle = dk(d.tk || d.c); rect(x, tx - (tw >> 1), top + cr * 0.6, tw, d.h);   // trunk
         if (d.tk) { x.fillStyle = dk(d.tk); rect(x, tx - tw, d.h - 4, tw * 2, 4); rect(x, tx - tw + 1, d.h - 7, tw * 2 - 2, 3); }   // root flare
-        if (d.bark) { x.fillStyle = dk(d.bark); for (var by = Math.round(top + cr); by < d.h - 6; by += 5 + ((by * 7) % 4)) rect(x, tx - (tw >> 1) + 1 + ((by >> 2) % 2), by, 1, 3); x.fillStyle = dk(d.tk, 1.25); rect(x, tx - (tw >> 1), top + cr, 1, d.h - top - cr - 6); }
+        if (d.bark) { x.fillStyle = dk(d.bark); for (var by = Math.round(top + cr); by < d.h - 6; by += 5 + ((by * 7) % 4)) rect(x, tx - (tw >> 1) + 1 + ((by >> 2) % 2), by, 1, 3); x.fillStyle = dk(d.tk, 1.3); rect(x, tx - (tw >> 1), top + cr, 1, d.h - top - cr - 6); }
         var nb = 5 + Math.floor(SW.hash(k, li, d.seed + 3) * 4), B = [];
         for (var q = 0; q < nb; q++) { var ang = Math.PI * (0.1 + 0.8 * q / (nb - 1)), dd = cr * (0.55 + SW.hash(k, q, d.seed + 4) * 0.35);
           B.push([tx - Math.cos(ang) * dd, top + cr - Math.sin(ang) * dd * 0.75, cr * (0.45 + SW.hash(k, q, d.seed + 5) * 0.25)]); }
         B.push([tx, top + cr * 0.55, cr * 0.62]);
-        B.forEach(function (b) { x.fillStyle = dk(d.c); blob(x, b[0], b[1], Math.round(b[2])); x.fillStyle = dk(d.hi); blob(x, b[0] - b[2] * 0.28, b[1] - b[2] * 0.32, Math.max(1, Math.round(b[2] * 0.5))); });
-        if (d.vines) { x.fillStyle = dk([34, 98, 52]); for (var v = 0; v < 5; v++) { var vx = Math.round(tx + (v - 2) * cr * 0.4), vl = 8 + Math.round(SW.hash(k, v, 91) * 30), vy = Math.round(top + cr * 1.15);
-          rect(x, vx, vy, 1, vl); for (var lf = vy + 3; lf < vy + vl; lf += 5) rect(x, vx + ((lf >> 2) % 2 ? 1 : -1), lf, 1, 2); } }
+        B.forEach(function (b) { x.fillStyle = dk(d.c, 0.72); blob(x, b[0] + b[2] * 0.14, b[1] + b[2] * 0.2, Math.round(b[2])); });
+        B.forEach(function (b) { x.fillStyle = dk(d.c); blob(x, b[0], b[1], Math.round(b[2] * 0.9)); x.fillStyle = dk(d.hi); blob(x, b[0] - b[2] * 0.28, b[1] - b[2] * 0.32, Math.max(1, Math.round(b[2] * 0.48))); });
+        if (d.vines) { x.fillStyle = dk(d.c); for (var v = 0; v < 5; v++) { var vx = Math.round(tx + (v - 2) * cr * 0.4), vl = 8 + Math.round(SW.hash(k, v, 91) * 30), vy = Math.round(top + cr * 1.15);
+          rect(x, vx, vy, 1, vl); } }
       }
       return { c: cv2, base: dk(d.c), h: d.h };
     });
     // the canopy across the top of the screen: a dense band of leaves, lit on top, with vines hanging down
-    var tc = mk(SWW, 70), tx2 = tc.getContext("2d");
-    for (var k2 = 0; k2 < 46; k2++) { var cx = k2 * SWW / 46 + SW.hash(k2, 7, 5) * 10, r = 9 + SW.hash(k2, 8, 5) * 9, cy = 6 + SW.hash(k2, 9, 5) * 12;
-      tx2.fillStyle = dk([12, 46, 36]); blob(tx2, cx, cy, Math.round(r)); tx2.fillStyle = dk([24, 74, 50]); blob(tx2, cx - r * 0.2, cy - r * 0.1, Math.round(r * 0.62)); tx2.fillStyle = dk([44, 118, 70]); blob(tx2, cx - r * 0.35, cy - r * 0.35, Math.max(1, Math.round(r * 0.28))); }
-    tx2.fillStyle = dk([12, 46, 36]); rect(tx2, 0, 0, SWW, 8);
-    for (k2 = 0; k2 < 34; k2++) { var vx2 = Math.round(SW.hash(k2, 3, 17) * SWW), vl2 = 14 + Math.round(SW.hash(k2, 4, 17) * 40), vy2 = 18;
-      tx2.fillStyle = dk([30, 92, 48]); rect(tx2, vx2, vy2, 1, vl2); tx2.fillStyle = dk([56, 140, 72]); for (var lf2 = vy2 + 4; lf2 < vy2 + vl2; lf2 += 6) rect(tx2, vx2 + ((lf2 >> 1) % 2 ? 1 : -2), lf2, 2, 2); rect(tx2, vx2 - 1, vy2 + vl2, 3, 2); }
+    var tc = mk(SWW, 56), tx2 = tc.getContext("2d");
+    for (var k2 = 0; k2 < 30; k2++) { var cx = k2 * SWW / 30 + SW.hash(k2, 7, 5) * 12, r = 6 + SW.hash(k2, 8, 5) * 7, cy = SW.hash(k2, 9, 5) * 7;
+      tx2.fillStyle = dk([10, 40, 34]); blob(tx2, cx + r * 0.15, cy + r * 0.2, Math.round(r)); tx2.fillStyle = dk([16, 58, 48]); blob(tx2, cx, cy, Math.round(r * 0.9)); tx2.fillStyle = dk([30, 92, 70]); blob(tx2, cx - r * 0.3, cy - r * 0.3, Math.max(1, Math.round(r * 0.45))); }
+    for (k2 = 0; k2 < 16; k2++) { var vx2 = Math.round(SW.hash(k2, 3, 17) * SWW), vl2 = 8 + Math.round(SW.hash(k2, 4, 17) * 30), vy2 = 6;
+      tx2.fillStyle = dk([16, 58, 48]); rect(tx2, vx2, vy2, 1, vl2); tx2.fillStyle = dk([30, 92, 70]); rect(tx2, vx2 - 1, vy2 + vl2, 2, 2); }
     SWF.top = tc;
   }
   function drawSwampForest(g, HZ, a, day, skyCut, now) {
@@ -11482,13 +11482,16 @@
       for (var x = off; x < vw; x += sw) g.drawImage(L.c, Math.round(x), yt, sw, L.h * P);
       g.fillStyle = L.base; if (yb < skyCut) g.fillRect(0, yb - 1, vw, skyCut - yb + 1);
       // mist pooling at the foot of every layer but the nearest
-      if (li < 3) { var mg = g.createLinearGradient(0, yb - ts * 3, 0, yb); mg.addColorStop(0, "rgba(90,170,150,0)"); mg.addColorStop(1, "rgba(90,170,150," + (0.35 * (0.4 + 0.6 * day)).toFixed(3) + ")"); g.fillStyle = mg; g.fillRect(0, yb - ts * 3, vw, ts * 3 + 2); }
+      if (li < 3) { var mg = g.createLinearGradient(0, yb - ts * 4, 0, yb); mg.addColorStop(0, "rgba(90,170,150,0)"); mg.addColorStop(1, "rgba(96,172,152," + (0.38 * (0.4 + 0.6 * day)).toFixed(3) + ")"); g.fillStyle = mg; g.fillRect(0, yb - ts * 4, vw, ts * 4 + 2); }
     }
+    // one soft haze over the whole backdrop pushes it back behind the world
+    var hzT = Math.round(oy + (HZ - 26) * ts), hzB = Math.min(skyCut, Math.round(oy + (HZ + 4) * ts));
+    if (hzB > hzT) { var hg = g.createLinearGradient(0, hzT, 0, hzB); hg.addColorStop(0, "rgba(70,140,128,0)"); hg.addColorStop(0.6, "rgba(84,156,140," + (0.08 * (0.3 + 0.7 * day)).toFixed(3) + ")"); hg.addColorStop(1, "rgba(96,170,150," + (0.16 * (0.3 + 0.7 * day)).toFixed(3) + ")"); g.fillStyle = hg; g.fillRect(0, hzT, vw, hzB - hzT); }
     g.globalAlpha = 1;
   }
   function drawSwampCanopy(g, a, day) {
     if (a <= 0.02 || !SWF.top) return;
-    var P = Math.max(1, Math.round(ts / 9)), sw = SWW * P, h = 70 * P, off = -(((cam.x * 0.6 * ts) % sw) + sw) % sw;
+    var P = Math.max(1, Math.round(ts / 9)), sw = SWW * P, h = 56 * P, off = -(((cam.x * 0.6 * ts) % sw) + sw) % sw;
     g.globalAlpha = a; for (var x = off; x < vw; x += sw) g.drawImage(SWF.top, Math.round(x), Math.round(-h * (1 - a) * 0.6), sw, h); g.globalAlpha = 1;
   }
   function drawPines(g, cc, par, base, a, now) {
