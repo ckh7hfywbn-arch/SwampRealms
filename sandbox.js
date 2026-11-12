@@ -10686,14 +10686,8 @@
       g.globalCompositeOperation = "screen"; var hz2 = clamp((oy + (horizon(cam.x) - 6) * ts) / vh, 0.05, 0.95), hg = g.createLinearGradient(0, 0, 0, vh); hg.addColorStop(0, "rgba(0,0,0,0)"); hg.addColorStop(hz2, "rgba(150,16,24," + (0.4 * above).toFixed(3) + ")"); hg.addColorStop(Math.min(1, hz2 + 0.12), "rgba(0,0,0,0)"); g.fillStyle = hg; g.fillRect(0, 0, vw, vh); }   // a glow along the horizon
     if (!lowq) { g.globalCompositeOperation = "soft-light"; var sg = g.createLinearGradient(0, 0, 0, vh); sg.addColorStop(0, "rgba(255,90,70,.4)"); sg.addColorStop(0.55, "rgba(255,60,50,.12)"); sg.addColorStop(1, "rgba(0,0,0,.35)"); g.fillStyle = sg; g.fillRect(0, 0, vw, vh); }
     g.globalCompositeOperation = "source-over";
-    if (above > 0.02) { var tg = g.createLinearGradient(0, 0, 0, vh * 0.6); tg.addColorStop(0, "rgba(8,0,2," + (0.6 * above).toFixed(3) + ")"); tg.addColorStop(1, "rgba(8,0,2,0)"); g.fillStyle = tg; g.fillRect(0, 0, vw, vh * 0.6); }   // the sky goes black overhead
-    if (above > 0.02) {   // the blood moon itself, bright over the stain
-      var mx = vw * 0.78, my = vh * 0.16, r = Math.max(26, vh * 0.075), t = now / 1000;
-      g.globalAlpha = above; var gr = g.createRadialGradient(mx, my, r * 0.5, mx, my, r * 3.6); gr.addColorStop(0, "rgba(255,40,40,.5)"); gr.addColorStop(1, "rgba(255,20,30,0)"); g.fillStyle = gr; g.beginPath(); g.arc(mx, my, r * 3.6, 0, 7); g.fill();
-      var mg = g.createRadialGradient(mx - r * 0.3, my - r * 0.3, r * 0.1, mx, my, r); mg.addColorStop(0, "#ff6a5a"); mg.addColorStop(0.6, "#d8182a"); mg.addColorStop(1, "#7a0612"); g.fillStyle = mg; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill();
-      g.fillStyle = "rgba(90,0,12,.5)"; [[-0.3, -0.2, 0.22], [0.25, 0.15, 0.17], [-0.05, 0.38, 0.12], [0.35, -0.35, 0.09]].forEach(function (q) { g.beginPath(); g.arc(mx + q[0] * r, my + q[1] * r, q[2] * r, 0, 7); g.fill(); });
-      g.strokeStyle = "rgba(255,120,100," + (0.25 + 0.1 * Math.sin(t * 1.3)).toFixed(3) + ")"; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, r + 1, 0, 7); g.stroke();
-    }
+    if (above > 0.02) { var tg = g.createLinearGradient(0, 0, 0, vh * 0.4); tg.addColorStop(0, "rgba(8,0,2," + (0.45 * above).toFixed(3) + ")"); tg.addColorStop(1, "rgba(8,0,2,0)"); g.fillStyle = tg; g.fillRect(0, 0, vw, vh * 0.4); }   // the sky goes black overhead
+    if (above > 0.02) { g.globalAlpha = 0.42 * above; g.globalCompositeOperation = "screen"; mcMoon(g, now, true); g.globalCompositeOperation = "source-over"; g.globalAlpha = 1; }   // the moon's light through the trees
     g.restore();
   }
   function mcOverlay(g, now) {   // the blood moon's light: a red haze, falling ash and embers, red mist at the world's edges, and a red vignette that tightens as the corruption grows
@@ -10816,17 +10810,32 @@
   }
   function mcHud(g, now) {   // the corruption bar, top middle: blood filling a vein-wrapped tube, with the time left
     if (!inMC() || window.__NOPILL || titleOpen) return; var lv = mcLevel(), t = now / 1000, left = mcLeft();
-    var w = Math.min(coarse ? 250 : 340, vw * 0.5), h = coarse ? 12 : 16, x = Math.round(vw / 2 - w / 2), y = coarse ? 92 : 96, hot = lv > 0.75;
-    g.save(); g.fillStyle = "rgba(10,2,4,.78)"; mrr(g, x - 8, y - 22, w + 16, h + 32, 10); g.fill(); g.strokeStyle = hot ? "rgba(255," + Math.round(60 + 60 * Math.sin(t * 8)) + ",60,.9)" : "rgba(160,30,40,.8)"; g.lineWidth = 2; g.stroke();
-    g.font = "900 12px Nunito,system-ui,sans-serif"; g.textAlign = "left"; g.fillStyle = "#ff8a8a"; g.fillText("CORRUPTION", x, y - 7);
-    g.textAlign = "right"; g.fillStyle = hot ? "#ffffff" : "#ffc0c0"; g.fillText(fmtT(left) + " left", x + w, y - 7);
+    // tucked right under the place name (the pill at the top), the same width, so it never covers the quest pill, the map or the buttons
+    var R = mcHudRect(), fs = R.w < 170 ? 9 : 11, w = R.w - 12, h = R.w < 170 ? 13 : 15, x = Math.round(R.x + 6), y = Math.round(R.y + fs + 8), hot = lv > 0.75;
+    g.save(); g.fillStyle = "rgba(10,2,4,.84)"; mrr(g, R.x, R.y, R.w, h + fs + 14, 9); g.fill(); g.strokeStyle = hot ? "rgba(255," + Math.round(60 + 60 * Math.sin(t * 8)) + ",60,.9)" : "rgba(160,30,40,.8)"; g.lineWidth = 2; g.stroke();
+    g.font = "900 " + fs + "px Nunito,system-ui,sans-serif"; g.textBaseline = "alphabetic"; g.textAlign = "center"; g.fillStyle = "#ff8a8a"; g.fillText("CORRUPTION", x + w / 2, y - 3);
     g.fillStyle = "#1a0408"; mrr(g, x, y, w, h, 8); g.fill();
     if (lv > 0) { g.save(); mrr(g, x, y, w, h, 8); g.clip(); var fw = w * lv, gr = g.createLinearGradient(x, 0, x + w, 0); gr.addColorStop(0, "#5a0612"); gr.addColorStop(0.6, "#c8101e"); gr.addColorStop(1, "#ff3a3a"); g.fillStyle = gr; g.fillRect(x, y, fw, h);
       g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(x, y + 2, fw, 3);
       g.strokeStyle = "rgba(20,0,4,.55)"; g.lineWidth = 1.5; for (var v = 0; v < 6; v++) { var vx = x + ((v * 61 + t * 14) % w); if (vx > x + fw) continue; g.beginPath(); g.moveTo(vx, y); g.quadraticCurveTo(vx + 6, y + h / 2, vx - 3, y + h); g.stroke(); }   // dark veins sliding through the blood
       g.restore(); }
     g.strokeStyle = "rgba(255,120,120,.35)"; g.lineWidth = 1; mrr(g, x + 0.5, y + 0.5, w - 1, h - 1, 8); g.stroke();
+    g.font = "900 " + (h - 3) + "px Nunito,system-ui,sans-serif"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(20,0,4,.85)"; g.fillStyle = hot ? "#ffffff" : "#ffd8d8"; g.strokeText(fmtT(left), x + w / 2, y + h / 2 + 1); g.fillText(fmtT(left), x + w / 2, y + h / 2 + 1);   // the time left, inside the bar
     g.restore();
+  }
+  var MCHR = { t: 0, r: null };
+  function mcHudRect() {   // where the place-name pill sits on the canvas (read from the page twice a second)
+    var n = performance.now(); if (MCHR.r && n - MCHR.t < 500) return MCHR.r; MCHR.t = n;
+    var r = { x: vw / 2 - 110, y: 64, w: 220 }; try { var L = $("sbxLoc").getBoundingClientRect(), C = cv.getBoundingClientRect(); if (L.width > 40) { var ww = Math.max(L.width, 96); r = { x: L.left - C.left + L.width / 2 - ww / 2, y: L.bottom - C.top + 5, w: ww }; } } catch (e) {}
+    return (MCHR.r = r);
+  }
+  function mcMoon(g, now, ghost) {   // MALCRUOR: the blood moon, part of the sky behind everything, always in the same spot on screen (clear of the top bar). ghost: its light again, shining through the trees in front of it (screen blend, so it never hides them)
+    var R = mcHudRect(), r = Math.round(Math.max(22, Math.min(vw, vh) * 0.085)), mx = Math.round(vw * 0.74), my = Math.round(Math.max(vh * 0.2, R.y + 46 + r * 1.3)), t = now / 1000;
+    var gr = g.createRadialGradient(mx, my, r * 0.6, mx, my, r * 3.4); gr.addColorStop(0, "rgba(255,60,60,.5)"); gr.addColorStop(1, "rgba(255,20,30,0)"); g.fillStyle = gr; g.beginPath(); g.arc(mx, my, r * 3.4, 0, 7); g.fill();
+    var mg = g.createRadialGradient(mx - r * 0.3, my - r * 0.3, r * 0.1, mx, my, r); mg.addColorStop(0, ghost ? "#ff9a8a" : "#ffffff"); mg.addColorStop(0.5, ghost ? "#ff3a3a" : "#ffc4b8"); mg.addColorStop(1, ghost ? "#b00c1c" : "#ff5a5a"); g.fillStyle = mg; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill();
+    if (ghost) return;
+    g.fillStyle = "rgba(150,10,24,.45)"; [[-0.3, -0.2, 0.22], [0.25, 0.15, 0.17], [-0.05, 0.38, 0.12], [0.35, -0.35, 0.09]].forEach(function (q) { g.beginPath(); g.arc(mx + q[0] * r, my + q[1] * r, q[2] * r, 0, 7); g.fill(); });
+    g.strokeStyle = "rgba(255,200,180," + (0.35 + 0.1 * Math.sin(t * 1.3)).toFixed(3) + ")"; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, r + 1, 0, 7); g.stroke();
   }
   function inNexus() { return !!(cave && cave.bld && cave.bld.kind === "nexus"); }
   function enterNexus(gx, gy) {   // called while the gate's bright fade covers the screen
@@ -15832,7 +15841,7 @@
       STARS.forEach(function (s) { var tw = 0.55 + 0.45 * Math.sin(now / 650 + s.p); g.globalAlpha = sa * tw; g.fillStyle = "#fff"; g.fillRect(s.x * vw, s.y * vh, s.s, s.s); if (s.b) { g.globalAlpha = sa * tw * 0.5; g.fillRect(s.x * vw - 3, s.y * vh + s.s / 2 - 0.5, 7 + s.s, 1); g.fillRect(s.x * vw + s.s / 2 - 0.5, s.y * vh - 3, 1, 7 + s.s); } }); g.globalAlpha = 1;
     };
     var sunF = t / 280, moonF = clamp((t - 280) / 200, 0, 1);
-    if (t < 285) sky2(g, sunF, "#fff0b8", "#ffcf5a", 26, now); else sky2(g, moonF, "#f2f6ff", "#9fb4ff", 20, now, true);
+    if (inMC()) {} else if (t < 285) sky2(g, sunF, "#fff0b8", "#ffcf5a", 26, now); else sky2(g, moonF, "#f2f6ff", "#9fb4ff", 20, now, true);
     var cg = mixC([255, 255, 255], [255, 170, 130], ph.id === "dusk" || ph.id === "dawn" ? 0.7 : 0); cg = mixC([40, 52, 90], cg, day);
     CLOUDS.forEach(function (c) { var cx = ((c.x + now * c.sp / 1000) % 1.5 - 0.25) * vw - cam.x * ts * 0.04; if (lowq) cloud(g, cx, c.y * vh, c.s * Math.max(1, ts / 22), rgb(cg), 0.5 * (0.35 + 0.65 * day) * above); else cloud2(g, cx, c.y * vh, c.s * Math.max(1, ts / 22), rgb(mixC(cg, [255, 250, 236], 0.35 * day)), rgb(mixC(cg, sk[0], 0.32)), 0.55 * (0.4 + 0.6 * day) * above); });
     var aw = bw[2] * night * above;
@@ -15946,6 +15955,7 @@
         else { var fx = ((m.u * vw + Math.sin(tt * 0.8 * m.s + m.v * 9) * 16) % vw + vw) % vw, fy = ((m.v * vh + tt * 22 * m.s) % vh); g.fillStyle = "rgba(255,255,255," + (0.8 * above) + ")"; g.fillRect(fx, fy, 2, 2); }
       }
     }
+    if (inMC() && !deepV) mcMoon(g, now);   // MALCRUOR: the blood moon hangs in front of the far woods, behind every real tree and block
     // --- terrain ---
     var X0 = Math.floor(-ox / ts), X1 = Math.floor((vw - ox) / ts), Y0 = Math.floor(-oy / ts), Y1 = Math.floor((vh - oy) / ts);
     glows.length = 0; CELL.wob = Math.sin(now / 500); CELL.edge = Math.max(1, Math.round(ts / 9)); CELL.sw = Math.sin(now / 700);
