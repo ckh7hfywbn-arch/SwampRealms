@@ -471,8 +471,25 @@
     sq("oc_site3", "Sailor", 0, "Wreck Diver", "Dive at 3 buoys out at sea.", 3, st("sitedives"), { pearl: 2 }),
     sq("pot1", "Wonders", 1, "End of the Rainbow", "Find a Pot of Gold where a rainbow touches the ground. Rainbows come out when the rain stops on a sunny day.", 1, st("pots_gold"), { prism: 1 })
   ];
+  // MALCRUOR QUEST BOOK: its own page of the quest book (side quests in the "Malcruor" group), shown once you have been through the cracked
+  // portal. While you are in Malcruor the quest tracker follows this book instead of the story (see drawTrail). Counters: S.st.malcvisits,
+  // mcdug (blocks dug there), mckills (corrupted creatures), mclilies, treants, mcash (reached the Ashen Waste), mcedge (reached an end of it).
+  var MC_Q = ["mc_in", "mc_dig", "mc_kill", "mc_lily", "mc_tree", "mc_ash", "mc_edge", "mc_out", "mc_back"];
+  (function () {
+    var c = function (k) { return function () { return S.st[k] || 0; }; }, shw = function () { return !!S && (!!(S.malc && S.malc.v) || inMC()); };
+    [sq("mc_in", "Malcruor", 0, "Through the Crack", "Step through the cracked red portal in the SwampRealms into Malcruor.", 1, c("malcvisits"), { tonic_regen: 1 }),
+      sq("mc_dig", "Malcruor", 0, "Rotten Ground", "Dig 25 blocks in Malcruor. It remembers every hole you make.", 25, c("mcdug"), { torch: 6 }),
+      sq("mc_kill", "Malcruor", 0, "Blood on the Blade", "Defeat 5 corrupted creatures in Malcruor.", 5, c("mckills"), { bloodshard: 2 }),
+      sq("mc_lily", "Malcruor", 0, "Thorns in the Rot", "Defeat 3 Snapper Lilies in Malcruor. Step back when the jaws open, then strike.", 3, c("mclilies"), { tonic_blood: 1 }),
+      sq("mc_tree", "Malcruor", 0, "Felled Rotwood", "Defeat a Rotwood Treant. Some dead trees are awake: jump back when one raises its arms.", 1, c("treants"), { goldcoin: 2 }),
+      sq("mc_ash", "Malcruor", 0, "Into the Ashen Waste", "Cross the Rotmire and reach the Ashen Waste in the east.", 1, c("mcash"), { bloodshard: 3 }),
+      sq("mc_edge", "Malcruor", 0, "Edge of the Mist", "Reach either end of Malcruor, where the red mist swallows the land.", 1, c("mcedge"), { tonic_brute: 1 }),
+      sq("mc_out", "Malcruor", 0, "Made It Out", "Stay 5 minutes in one visit and still make it back through the portal alive.", 1, function () { return S.malc && (S.malc.best | 0) >= 300 ? 1 : 0; }, { ruby: 1 }),
+      sq("mc_back", "Malcruor", 0, "The Creatures Remember", "Visit Malcruor 5 times. Each time, its creatures keep a little further back.", 5, c("malcvisits"), { bloodlantern: 1 })
+    ].forEach(function (q) { q.show = shw; SIDE.push(q); });
+  })();
   SIDE.forEach(function (q) { if (q.rw) Object.keys(q.rw).forEach(function (k) { if (!ITEMS[k]) delete q.rw[k]; }); });
-  var SIDE_CATS = ["Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Homesteader", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders", "Sailor"];
+  var SIDE_CATS = ["Malcruor", "Explorer", "Builder", "Decorator", "Crafter", "Farmer & Cook", "Homesteader", "Angler", "Rancher", "Hunter", "Delver", "Collector", "Wonders", "Sailor"];
   var GOALS = SIDE, TRAIL = MAIN;   // older names, still used by a few helpers
   function curCh() { return MAIN[S.qi] ? MAIN[S.qi].ch : CHAPTERS.length - 1; }
   function chQuests(c) { return MAIN.filter(function (q) { return q.ch === c; }); }
@@ -2743,7 +2760,7 @@
     if (isChest(id)) delete S.chests[x + "," + y];
     if (td.top !== undefined && y > 0 && TILES[get(x, y - 1)].small) { var ab = get(x, y - 1); setT(x, y - 1, T.AIR); give(dropOf(TILES[ab]), 1, x, y - 1); }   // INTERIOR: a piece left standing on furniture you break comes back to you
     if ((td.kind === "farmland" || td.kind === "farmwet") && cropAt(x, y - 1)) { var tc = cropAt(x, y - 1); setT(x, y - 1, T.AIR); harvestCrop(x, y - 1, tc); }   // the crop on top comes with it
-    setT(x, y, T.AIR); S.st.mined++; p8Mined(x, y, id);
+    setT(x, y, T.AIR); S.st.mined++; if (inMC()) S.st.mcdug = (S.st.mcdug || 0) + 1; p8Mined(x, y, id);
     if (td.crop) harvestCrop(x, y, td);
     if (y > 0 && TILES[id].solid && isPlantT(get(x, y - 1))) breakTile0(x, y - 1);   // PLANTS NEED GROUND: a flower, reed or mushroom on top of the block falls with it (and drops as usual)
     var SDROP = {}; SDROP[T.REED] = ["seed_carrot", 0.18]; SDROP[T.GLOWCAP] = ["seed_potato", 0.15]; SDROP[T.BLOOM] = ["seed_pepper", 0.2]; SDROP[T.SPIKE] = ["seed_frost", 0.2];
@@ -3089,7 +3106,8 @@
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
     }
-    var kills = ++S.st[KSTAT[e.k]];
+    if (!S.st[KSTAT[e.k]]) S.st[KSTAT[e.k]] = 0; var kills = ++S.st[KSTAT[e.k]];
+    if (inMC()) { S.st.mckills = (S.st.mckills || 0) + 1; if (e.k === "lily") S.st.mclilies = (S.st.mclilies || 0) + 1; }   // MALCRUOR QUEST BOOK
     var drop = pityDrop(d.frag, (kills === 1 && !e.small) || Math.random() < d.chance * (e.small ? 0.35 : 1));
     popup("Enemy defeated", (sp ? (e.small ? "Little " : "") + sp.n : d.n) + (drop ? " \u2022 +1 " + ITEMS[d.frag].n : ""), sp ? sp.glow : d.glow, "\u2694");
     if (e.k === "witch" && Math.random() < 0.3) { var pks = Object.keys(POTIONS), pk = pks[Math.floor(Math.random() * pks.length)]; give(pk, 1, e.x - 0.5, e.y - e.h - 1.3, true); }   // something from her bag
@@ -10670,6 +10688,8 @@
     if (MC.fx > 0) MC.fx = Math.max(0, MC.fx - dt * 0.9);
     if (!inMC() || hp <= 0 || deadUI || trans) return;
     var M = malcS(); M.c = (M.c || 0) + dt; var lv = mcLevel();
+    if (!S.st.mcash && p.x > world.gx0 + (SW.MALC_W || 1200) * 0.58) { S.st.mcash = 1; checkGoals(); }   // MALCRUOR QUEST BOOK
+    if (!S.st.mcedge && (p.x < world.gx0 + 14 || p.x > world.gx1 - 14)) { S.st.mcedge = 1; checkGoals(); }
     [[0.5, "The corruption is half way. Think about heading back.", "#ff8a6a"], [0.75, "The corruption is spreading through you. Head for the portal!", "#ff5a4a"], [0.9, "Almost consumed! Get to the portal NOW!", "#ff2a3a"]].forEach(function (w, i) {
       if (lv >= w[0] && MC.warn <= i) { MC.warn = i + 1; toast(w[1], w[2]); thud(70 - i * 10, 0.2); shake = Math.max(shake, 0.25 + i * 0.1); } });
     if (lv >= 1) { M.c = MC_SEC; hp = 0; if (!faintQ) faintQ = "corrupt"; }
@@ -10823,6 +10843,15 @@
     g.font = "900 " + (h - 3) + "px Nunito,system-ui,sans-serif"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(20,0,4,.85)"; g.fillStyle = hot ? "#ffffff" : "#ffd8d8"; g.strokeText(fmtT(left), x + w / 2, y + h / 2 + 1); g.fillText(fmtT(left), x + w / 2, y + h / 2 + 1);   // the time left, inside the bar
     g.restore();
   }
+  // FIT THE PLACE NAME: long names (and their second line) shrink a little until they fit the pill, instead of being cut off with "..."
+  function fitLoc() {
+    ["sbxBiome", "sbxSub"].forEach(function (id) { var el = $(id); if (!el) return; el.style.fontSize = ""; var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = fs * 0.62, n = 0;
+      var tw = function () { var r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width; };   // the text's own width (even where the pill clips it)
+      var room = el.clientWidth - 1;   // measured at full size: a name that does not fit has stretched the pill as wide as it can go
+      while (tw() > room && fs > min && n++ < 24) { fs -= 0.5; el.style.fontSize = fs + "px"; } });
+    MCHR.r = null;
+  }
+  (function () { try { var t0 = 0, run = function () { clearTimeout(t0); t0 = setTimeout(fitLoc, 30); }, mo = new MutationObserver(run); ["sbxBiome", "sbxSub"].forEach(function (id) { var el = $(id); if (el) mo.observe(el, { childList: true, characterData: true, subtree: true }); }); window.addEventListener("resize", run); if (document.fonts && document.fonts.ready) document.fonts.ready.then(run); } catch (e) {} })();
   var MCHR = { t: 0, r: null };
   function mcHudRect() {   // where the place-name pill sits on the canvas (read from the page twice a second)
     var n = performance.now(); if (MCHR.r && n - MCHR.t < 500) return MCHR.r; MCHR.t = n;
@@ -13015,21 +13044,22 @@
   }
   // the quest tracker's "how" line, for the first chapters: the first sentence of the quest's own instructions
   function trailTip(q) { var d = String(q.d || ""), m = d.match(/^[^.!?]*[.!?]/); var t = (m ? m[0] : d).trim(); if (t.length > 92) t = t.slice(0, 90).replace(/\s+\S*$/, "") + "…"; return t; }
-  function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest)
-    var el = $("sbxTrail"), q = MAIN[S.qi], side = !q; if (side) q = bestSide();
+  function mcQuest() { for (var i = 0; i < MC_Q.length; i++) if (!S.ms[MC_Q[i]]) return SIDE.filter(function (q) { return q.id === MC_Q[i]; })[0]; return null; }   // the next one in the Malcruor book
+  function drawTrail() {   // the HUD quest tracker: the current main quest (or, after the story, a side quest; in Malcruor, the Malcruor book)
+    var el = $("sbxTrail"), mcq = inMC() ? mcQuest() : null, q = mcq || MAIN[S.qi], side = !q || !!mcq; if (!q) q = bestSide();
     if (!q) { if (!el.hidden) el.hidden = true; return; }
     var v = Math.min(q.need, Math.floor(q.v())), mini = PHONEQ.matches, key = q.id + ":" + v + (mini ? ":m" : ""); if (key === trailKey) return; trailKey = key;
     el.classList.toggle("mini", mini);
     if (mini) {   // PHONES: a small Quests button (with how far along the current quest is) that opens the quest book on it
-      el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c); el.title = q.n; el.setAttribute("aria-label", "Quests. Now: " + q.n + ", " + v + " of " + q.need);
+      el.hidden = false; el.style.setProperty("--qc", mcq ? "#ff3a4a" : side ? "#c78bff" : CHAPTERS[q.ch].c); el.title = q.n; el.setAttribute("aria-label", "Quests. Now: " + q.n + ", " + v + " of " + q.need);
       el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/></svg><b>Quests</b><em>' + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>';
       return;
     }
     el.removeAttribute("aria-label");
-    el.hidden = false; el.style.setProperty("--qc", side ? "#c78bff" : CHAPTERS[q.ch].c);
-    el.title = side ? "Side quest" : "Chapter " + (q.ch + 1) + ": " + CHAPTERS[q.ch].n;
+    el.hidden = false; el.style.setProperty("--qc", mcq ? "#ff3a4a" : side ? "#c78bff" : CHAPTERS[q.ch].c);
+    el.title = mcq ? "Malcruor quest book" : side ? "Side quest" : "Chapter " + (q.ch + 1) + ": " + CHAPTERS[q.ch].n;
     var tip = !side && q.ch <= 2 && !OPT.notips ? trailTip(q) : ""; el.classList.toggle("tip", !!tip);   // NEW PLAYERS: the first chapters say how, right on the tracker
-    el.innerHTML = "<small>" + (side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>' + (tip ? '<span class="tp">' + esc(tip) + "</span>" : "");
+    el.innerHTML = "<small>" + (mcq ? "Malcruor \u00b7 Quest" : side ? "Side quest" : "Ch " + (q.ch + 1) + " \u00b7 Quest") + "</small><b>" + esc(q.n) + "</b><em>" + v + "/" + q.need + '</em><span class="bar"><i style="width:' + Math.round(v / q.need * 100) + '%"></i></span>' + (tip ? '<span class="tp">' + esc(tip) + "</span>" : "");
   }
   function checkGoals() {
     if (!cave && world) { var bb = world.bio[clamp(Math.floor(p.x), 0, W - 1)]; if (!S.vis["b" + bb]) { S.vis["b" + bb] = 1; trailKey = ""; } var vb = varAt(p.x); if (vb && !S.vis["v" + vb]) { S.vis["v" + vb] = 1; trailKey = ""; popup("New land discovered", VARB[vb - 1].n, VARB[vb - 1].c, "\u2726"); } }
@@ -17088,8 +17118,8 @@
   };
   var QB_BIG = { mwork3: 1, disc10: 1, warden: 1, blood1: 1, queen: 1, wyrm: 1, alpha: 1, heart: 1, through: 1, boss3: 1, boss10: 1, king5: 1, allkinds: 1, fishdex: 1, charm8: 1, song6: 1, star5: 1 };
   var QB_CHIC = ["pick1", "bed", "spore", "cinder", "crystal", "swampheart", "realmgate", "starglass"];
-  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel", Homesteader: "farmgate" };
-  var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", stain1: "stain8", bty1: "bty25" };
+  var QB_SIDEIC = { Explorer: "worldmap", Builder: "planks", Decorator: "decorbench", Crafter: "bench", "Farmer & Cook": "carrot", Angler: "bogminnow", Rancher: "duckegg", Hunter: "wpn2", Delver: "ladder", Collector: "ancientcoin", Wonders: "firework", Sailor: "boat_wheel", Homesteader: "farmgate", Malcruor: "bloodshard" };
+  var QB_LINK = { bow1: "arrow25", arrow25: "bow3", fish50: "fishdex", dbench1: "dcraft5", cook5: "gourmet", farm25: "crops4", pets3: "allpets", way2: "warp10", boom1: "keg1", keg1: "boom200", bld5: "allkinds", charm1: "charm8", boss10: "king5", ckill10: "cclear5", mc_in: "mc_dig", mc_dig: "mc_kill", mc_kill: "mc_lily", mc_lily: "mc_tree", mc_tree: "mc_ash", mc_ash: "mc_edge", mc_edge: "mc_out", mc_out: "mc_back", stain1: "stain8", bty1: "bty25" };
   function qbIco(k) {   // an icon url for an item key, a tool tier ("pick3"), or null for a glyph ("#⚔")
     if (!k || k.charAt(0) === "#") return null;
     var m = /^pick(\d)$/.exec(k);
@@ -17104,7 +17134,7 @@
   function qbChapters() {   // [{ key, n, c, ic, done, all, lock }]
     var L = [], cc = curCh();
     for (var i = 0; i < CHAPTERS.length; i++) { var ql = chQuests(i); if (!ql.length) continue; L.push({ key: "m" + i, n: CHAPTERS[i].n, c: CHAPTERS[i].c, ic: QB_CHIC[i] || "#★", done: ql.filter(function (q) { return MAIN.indexOf(q) < S.qi; }).length, all: ql.length, lock: i > cc, num: i + 1 }); }
-    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length) return; L.push({ key: "s:" + cat, n: cat, c: cat === "Sailor" ? "#4fd0e8" : cat === "Homesteader" ? "#7dd65a" : "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
+    SIDE_CATS.forEach(function (cat) { var ql = SIDE.filter(function (q) { return q.cat === cat; }); if (!ql.length || (cat === "Malcruor" && !sideOpen(ql[0]))) return; L.push({ key: "s:" + cat, n: cat, c: cat === "Malcruor" ? "#ff3a4a" : cat === "Sailor" ? "#4fd0e8" : cat === "Homesteader" ? "#7dd65a" : "#c78bff", ic: QB_SIDEIC[cat] || "#★", done: ql.filter(function (q) { return S.ms[q.id]; }).length, all: ql.length, lock: !ql.some(sideOpen), side: 1 }); });
     return L;
   }
   function qbLayout(key) {   // nodes [{ q, x, y, st, pr, big, rw }] and links [[from, to, done]] in pixels
@@ -17153,7 +17183,7 @@
   // "top" to the top. The colours and pad shapes live in sandbox.css under .qb-th-<theme>.
   var QB_TH = { m0: "fen", m1: "home", m2: "glow", m3: "ember", m4: "frost", m5: "heart", m6: "gate", m7: "cosmos", m8: "dawn",
     "s:Explorer": "map", "s:Builder": "blueprint", "s:Decorator": "parlor", "s:Crafter": "workshop", "s:Farmer & Cook": "farm", "s:Angler": "lake", "s:Rancher": "ranch",
-    "s:Hunter": "hunt", "s:Delver": "mine", "s:Collector": "vault", "s:Wonders": "fest", "s:Sailor": "sea", "s:Homesteader": "barnyard" };
+    "s:Hunter": "hunt", "s:Delver": "mine", "s:Collector": "vault", "s:Wonders": "fest", "s:Sailor": "sea", "s:Homesteader": "barnyard", "s:Malcruor": "ember" };
   function qbThemeDeco(th, w, h) {
     var R = function (a, b) { return qbHash(a * 1.31 + 7, b * 2.77 + 3); }, f = function (n) { return n.toFixed(1); }, o = "", t = "", i, x, y, n = Math.max(6, Math.round(w / 90));
     var ground = function (col, y0, amp) { var d = "M0 " + f(h - y0); for (var xx = 0; xx <= w + 60; xx += 60) d += " Q" + f(xx + 30) + " " + f(h - y0 - amp * (0.5 + R(xx, 1))) + " " + f(xx + 60) + " " + f(h - y0); return '<path fill="' + col + '" d="' + d + " L" + f(w + 60) + " " + h + " L0 " + h + 'Z"/>'; };
@@ -17293,7 +17323,7 @@
   function qbRender() {
     var chs = qbChapters(), cc = curCh();
     if (!QB.ch || !chs.some(function (c) { return c.key === QB.ch; })) { QB.ch = "m" + Math.min(cc, chs.filter(function (c) { return !c.side; }).length - 1); QB.fresh = true; }
-    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), sea = QB.ch === "s:Sailor", qth = QB_TH[QB.ch] || "", h = '<div class="qb' + (qth ? " qb-th qb-th-" + qth + (QB_ROUND[qth] ? " qb-round" : "") : "") + (sea ? " qb-sea" : "") + '" style="--qc:' + me.c + '">';   // OCEAN: the Sailor chapter is drawn as an undersea page
+    var me = chs.filter(function (c) { return c.key === QB.ch; })[0], L = qbLayout(QB.ch), sea = QB.ch === "s:Sailor", qth = QB_TH[QB.ch] || "", h = '<div class="qb' + (qth ? " qb-th qb-th-" + qth + (QB_ROUND[qth] ? " qb-round" : "") : "") + (sea ? " qb-sea" : "") + (QB.ch === "s:Malcruor" ? " qb-mc" : "") + '" style="--qc:' + me.c + '">';   // OCEAN: the Sailor chapter is drawn as an undersea page
     // chapter list
     h += '<nav class="qb-side" aria-label="Quest chapters"><small>Story</small>';
     chs.forEach(function (c, i) {
@@ -18850,7 +18880,7 @@
   $("sbxBar").addEventListener("click", function (e) { var b = e.target.closest("[data-sel]"); if (b) choose(b.getAttribute("data-sel"), +b.getAttribute("data-slot")); });
   var PHONEQ = matchMedia ? matchMedia("(max-width:600px),(pointer:coarse) and (max-height:520px)") : { matches: false };
   if (PHONEQ.addEventListener) PHONEQ.addEventListener("change", function () { trailKey = ""; });
-  $("sbxTrail").addEventListener("click", function () { if (PHONEQ.matches) { QB.ch = ""; QB.sel = MAIN[S.qi] ? MAIN[S.qi].id : ""; if (panelOpen) closePanel(); openPanel("quests"); return; } var q = MAIN[S.qi], rc = q && QRC[q.id], r = rc && recById(rc); if (r && !recStatus(r).owned) openCraftTo(rc); else openPanel("quests"); });
+  $("sbxTrail").addEventListener("click", function () { if (inMC()) { var mq = mcQuest(); QB.ch = "s:Malcruor"; QB.sel = mq ? mq.id : ""; if (panelOpen) closePanel(); openPanel("quests"); return; } if (PHONEQ.matches) { QB.ch = ""; QB.sel = MAIN[S.qi] ? MAIN[S.qi].id : ""; if (panelOpen) closePanel(); openPanel("quests"); return; } var q = MAIN[S.qi], rc = q && QRC[q.id], r = rc && recById(rc); if (r && !recStatus(r).owned) openCraftTo(rc); else openPanel("quests"); });
   $("sbxTip").addEventListener("click", function (e) { var b = e.target.closest("[data-tip]"); if (!b) return; var rc = $("sbxTip").getAttribute("data-rc"); hideTip(); if (b.getAttribute("data-tip") === "show" && rc) openCraftTo(rc); });
   function toggleCraft() { if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab === "craft") return closePanel(); if (panelOpen) closePanel(); openPanel("craft"); }
   function toggleJournal(t) { var want = t || (tab === "craft" || tab === "chest" ? "quests" : tab); if (panelOpen && !packOpen && !mapOpen && !stnOpen && storyOpen < 0 && tab !== "craft" && (!t || tab === t)) return closePanel(); if (panelOpen) closePanel(); openPanel(want); }

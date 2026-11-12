@@ -2820,3 +2820,6 @@ small.bo-cost{display:flex}
  .sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:100%;height:42px;border-radius:13px}
  .sbx-trail{top:calc(max(8px,env(safe-area-inset-top)) + 86px)}
 }
+/* MALCRUOR QUEST BOOK: the ember page, turned blood red and black */
+.qb-th-ember.qb-mc{--qbg:linear-gradient(180deg,#0a0204 0,#2a050c 55%,#5a0812 100%);--hb:#2a050c;--pr:#ff2a3a;--d1:#ff5a5a;--d2:#8a0a18;--vn:#ff3a4a;--vd:#4a0a12;--lf:#ff9a8a;--fl:#ff3a4a;--fl2:#ff8a7a;--fc:#ffe0dc;--cb1:#2a050c;--cb2:#0a0204}
+.qb-th-ember.qb-mc .lavaglow{fill:#ff1a2a}.qb-th-ember.qb-mc .emb{fill:#ff4a5a;filter:drop-shadow(0 0 4px #ff1a2a)}
