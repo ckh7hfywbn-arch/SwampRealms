@@ -795,7 +795,7 @@
     if (o.mk && typeof o.mk === "object") Object.keys(o.mk).forEach(function (k) { var n = Math.floor(+o.mk[k]); if (n > 0) d.mk[k] = n; });
     if (o.vis && typeof o.vis === "object") Object.keys(o.vis).forEach(function (k) { if (o.vis[k]) d.vis[k] = 1; });
     if (o.ms && o.ms.ember) d.vis.b1 = 1; if (o.ms && o.ms.frost) d.vis.b2 = 1;
-    d.rod = clamp(Math.floor(+o.rod) || 0, 0, 2); d.hoe = clamp(Math.floor(+o.hoe) || 0, 0, 3); d.bucket = clamp(Math.floor(+o.bucket) || 0, 0, 2); d.bkt = o.bkt === "water" || (o.bkt === "lava" && d.bucket >= 2) ? o.bkt : ""; d.bow = clamp(Math.floor(+o.bow) || 0, 0, 3); d.net = o.net ? 1 : 0; ["whut", "wloot"].forEach(function (mk3) { var src3 = o[mk3]; if (src3 && typeof src3 === "object" && o.wv === SW.WORLDVER) Object.keys(src3).forEach(function (k) { var v = Math.floor(+src3[k]); if (/^\d+$/.test(k) && v >= -1 && v < 1e6) d[mk3][k] = v; }); });
+    d.rod = clamp(Math.floor(+o.rod) || 0, 0, 3); d.hoe = clamp(Math.floor(+o.hoe) || 0, 0, 4); d.bucket = clamp(Math.floor(+o.bucket) || 0, 0, 2); d.bkt = o.bkt === "water" || (o.bkt === "lava" && d.bucket >= 2) ? o.bkt : ""; d.bow = clamp(Math.floor(+o.bow) || 0, 0, 4); d.net = o.net ? 1 : 0; ["whut", "wloot"].forEach(function (mk3) { var src3 = o[mk3]; if (src3 && typeof src3 === "object" && o.wv === SW.WORLDVER) Object.keys(src3).forEach(function (k) { var v = Math.floor(+src3[k]); if (/^\d+$/.test(k) && v >= -1 && v < 1e6) d[mk3][k] = v; }); });
     d.shape = {}; if (o.shape && typeof o.shape === "object" && o.wv === SW.WORLDVER) Object.keys(o.shape).forEach(function (k) { var v = Math.floor(+o.shape[k]); if (/^\d+$/.test(k) && v >= 1 && v <= 5) d.shape[k] = v; });   // MALLET block shapes
     ["stain", "wstain", "dflip"].forEach(function (mk2) { if (!d[mk2]) d[mk2] = {}; var src = o[mk2]; if (src && typeof src === "object" && o.wv === SW.WORLDVER) Object.keys(src).forEach(function (k) { var v = Math.floor(+src[k]); if (/^\d+$/.test(k) && v >= 0 && v < STAINS.length) d[mk2][k] = v; }); });
     if (o.saps && typeof o.saps === "object" && o.wv === SW.WORLDVER) Object.keys(o.saps).forEach(function (k) { if (/^\d+,\d+$/.test(k)) d.saps[k] = clamp(+o.saps[k] || 0, 0, 600); });
@@ -1477,7 +1477,7 @@
       if (!own) { delete S.inv[k]; delete S.extra[k]; }
       if (S.inv[k] > 1) S.inv[k] = 1;
     });
-    ITEMS.t_pick.n = PICKS[S.tier] ? PICKS[S.tier].n : "Pickaxe"; ITEMS.t_weapon.n = WEAPONS[S.wpn] ? WEAPONS[S.wpn].n : "Weapon"; ITEMS.t_shovel.n = SHOVEL.n; ITEMS.t_can.n = CAN.n; ITEMS.t_rod.n = S.rod >= 2 ? "Ember Rod" : "Reed Fishing Rod";
+    ITEMS.t_pick.n = PICKS[S.tier] ? PICKS[S.tier].n : "Pickaxe"; ITEMS.t_weapon.n = WEAPONS[S.wpn] ? WEAPONS[S.wpn].n : "Weapon"; ITEMS.t_shovel.n = SHOVEL.n; ITEMS.t_can.n = CAN.n; ITEMS.t_rod.n = S.rod >= 3 ? "Bloodiron Rod" : S.rod >= 2 ? "Ember Rod" : "Reed Fishing Rod";
     if (ITEMS.t_hoe) ITEMS.t_hoe.n = typeof HOES !== "undefined" && HOES[S.hoe] ? HOES[S.hoe].n : "Hoe";
     ITEMS.t_bucket.n = (typeof BUCKETS !== "undefined" && BUCKETS[S.bucket] ? BUCKETS[S.bucket].n : "Bucket") + (S.bkt ? " of " + (S.bkt === "water" ? "Water" : "Lava") : ""); ITEMS.t_net.n = "Bug Net"; if (ITEMS.t_bow) ITEMS.t_bow.n = typeof BOWS !== "undefined" && BOWS[S.bow] ? BOWS[S.bow].n : "Bow";
   }
@@ -5857,7 +5857,7 @@
     fishing.t -= dt; fishing.bob += dt;
     if (fishing.ph === "wait") {
       if (press) { fishing = null; nag("Too early! Wait for the bobber to dip and the ! to show."); thud(300, 0.03); return; }
-      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); if (fishing.lq !== "lava" && !cave) waterSplash(fishing.x + 0.5, waterTopY(fishing.x + 0.5, fishing.y + 0.5), 0.55); else chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
+      if (fishing.t <= 0) { fishing.ph = "bite"; fishing.t = S.rod >= 3 ? 1.15 : S.rod >= 2 ? 1.0 : 0.85; thud(760, 0.06); if (fishing.lq !== "lava" && !cave) waterSplash(fishing.x + 0.5, waterTopY(fishing.x + 0.5, fishing.y + 0.5), 0.55); else chips(fishing.x + 0.5, fishing.y, "#ffffff", 5, 3); }
     } else if (fishing.ph === "bite") {
       if (press) return landFish();
       if (fishing.t <= 0) { fishing.ph = "wait"; fishing.t = (2 + Math.random() * 4) * fishBiteMul(); nag("It got away! Wait for the next bite."); }
@@ -7347,7 +7347,7 @@
     WX.flash = Math.max(0, WX.flash - dt * 3); if (WX.bolt) { WX.bolt.t -= dt; if (WX.bolt.t <= 0) WX.bolt = null; }
     tickRainSound();
   }
-  function fishBiteMul() { return p8BiteMul() * (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1) * (fx("fish") ? 0.6 : 1); }
+  function fishBiteMul() { return p8BiteMul() * (S.wx && S.wx.n > 0.3 && !cave ? 0.7 : 1) * (hasCharm("angler") ? 0.65 : 1) * (fx("fish") ? 0.6 : 1) * (S.rod >= 3 ? 0.75 : 1); }
   function tickRainSound() {   // a soft filtered-noise hiss for rain / blizzard wind, following the music switch
     var want = WX.on && MUS.on && gestured && ac && S.wx && S.wx.n > 0.05 && !cave && !(typeof SFX !== "undefined" && SFX.on === false) && !document.hidden;
     var under = OCS && !OCS.sea && OCS.diving && OCS.pl.y > OWL + 0.6, above = HOME || OCS ? true : p.y <= pcol() + 4, lvl = want && above ? S.wx.n * MUS.vol * (wxBio() === 1 ? 0.25 : 0.55) * (under ? 0.35 : 1) : 0;   // under the waves it is muffled
@@ -7881,7 +7881,7 @@
   // ---------- HOE ----------
   // S.hoe = 0 (none) .. 3. Tap grass, mud or other soft ground (or the air just above it) to till it into Garden Soil, 1 / 3 / 5 tiles wide.
   // Tap crops to harvest every ripe one in the hoe's width, and each is replanted at once if you carry its seeds. The Iron Hoe sometimes finds an extra crop.
-  var HOES = [null, { n: "Reed Hoe", w: 1 }, { n: "Glowspore Hoe", w: 3 }, { n: "Iron Hoe", w: 5, bonus: 0.3 }];
+  var HOES = [null, { n: "Reed Hoe", w: 1 }, { n: "Glowspore Hoe", w: 3 }, { n: "Iron Hoe", w: 5, bonus: 0.3 }, { n: "Bloodiron Hoe", w: 7, bonus: 0.45 }];   // (4: MALCRUOR)
   var TILLABLE = {}; [T.MOSS, T.MUD, T.CLAY, T.ASH, T.SNOW, T.X_peat, T.X_silt].forEach(function (id) { if (id !== undefined) TILLABLE[id] = 1; });
   var hoePrev = false;
   function useHoe(dt) {
@@ -8187,7 +8187,8 @@
   var BOWS = [null,
     { n: "Reed Slingshot", c: "#c9b58a", dmg: 4, cd: 0.55, sp: 17, g: 20, ammo: ["pebble"] },
     { n: "Bogwood Bow", c: "#a8814b", dmg: 11, cd: 0.6, sp: 23, g: 12, ammo: ["firearrow", "arrow"], any: 1 },
-    { n: "Ember Longbow", c: "#ff8a3d", dmg: 20, cd: 0.5, sp: 29, g: 8, ammo: ["firearrow", "arrow"], any: 1 }
+    { n: "Ember Longbow", c: "#ff8a3d", dmg: 20, cd: 0.5, sp: 29, g: 8, ammo: ["firearrow", "arrow"], any: 1 },
+    { n: "Bloodthorn Bow", c: "#ff3a4a", dmg: 30, cd: 0.42, sp: 33, g: 6, ammo: ["firearrow", "arrow"], any: 1 }   // MALCRUOR
   ];
   var arrows = [], burns = [];
   function bowAmmo() { var B = BOWS[S.bow]; if (!B) return null; if (B.any && S.ammo && inv(S.ammo) > 0) return S.ammo; for (var i = 0; i < B.ammo.length; i++) if (inv(B.ammo[i]) > 0) return B.ammo[i]; return null; }   // the loaded kind first, then Fire Arrows, then plain Arrows
@@ -12372,7 +12373,15 @@
   // Cave Chests (content pack) work like Wooden Chests, but are found in caves and come filled: the loot is rolled the first time one is opened (or broken unopened).
   function isChest(id) { return id === T.CHEST || TILES[id].kind === "lootchest" || !!(TILES[id] && TILES[id].cont); }   // LOOT PACK: containers you place hold items too
   function lootTier(y) { var d = y - SURF; return d < 35 ? 0 : d < 80 ? 1 : 2; }
+  // MALCRUOR LOOT: chests and pots there hold Malcruor's things (deeper = better), with a little SwampRealms gold mixed in
+  function mcLoot(kind, tier) {
+    var t = tier || 0, pick = function (tab, n) { var out = [], used = {}; for (var i = 0; i < n * 3 && out.length < n; i++) { var q = tab[Math.floor(Math.random() * tab.length)]; if (used[q[0]] || !ITEMS[q[0]]) continue; used[q[0]] = 1; out.push([q[0], q[1] + Math.floor(Math.random() * (q[2] + 1))]); } return out; };
+    var POT = [["mc_gloomberry", 2, 3], ["mc_bloodcap", 2, 2], ["mc_thornfiber", 3, 3], ["mc_bloodore", 2, 2], ["mc_hexite", 1, 1], ["goldcoin", 1, 0], ["mc_fang", 1, 1], ["torch", 3, 3]];
+    var CHEST = [["mc_bloodingot", 2 + t, 2], ["mc_hexite", 2 + t, 2], ["mc_purge", 1, t], ["mc_rotstew", 1, 1], ["mc_fang", 2, 3], ["mc_rotbark", 1, t > 1 ? 1 : 0], ["goldcoin", 2 + t, 3], ["bloodshard", 2, 2], ["mc_hexlamp", 2, 2], ["tonic_blood", 1, 0], ["mc_berrytart", 1, 1]];
+    return kind === "pot" ? pick(POT, 2) : pick(CHEST, 3 + (t > 1 ? 1 : 0));
+  }
   function rollLoot(kind, b, tier) {
+    if (inMC() && (kind === "chest" || kind === "pot")) return mcLoot(kind, tier);
     var one = function () { return typeof SbxExtra !== "undefined" && SbxExtra.loot ? SbxExtra.loot(kind, b, tier) : [["torch", 4]]; }, L = one();
     if (S.charms && (hasCharm("lucky") || fx("luck")) && Math.random() < 0.45) L = L.concat(one().slice(0, 1));   // the Lucky Clover: sometimes one extra find
     if (garageOwned() && (kind === "chest" || kind === "pot")) { var mp = motoLoot(kind, tier || 0); if (mp) L = L.concat([mp]); }   // GARAGE: motorcycle parts turn up in chests
@@ -17500,8 +17509,8 @@
     ["Tools|Pickaxes", "pick1 pick2 pick3 pick4 pick5"],
     ["Tools|Melee Weapons", "wpn1 wpn2 wpn3 wpn4 wpn5"],
     ["Tools|Camping", "x_campfire x_sleepbag"],
-    ["Tools|Utility", "clippers x_mallet prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_homeshell"],
-    ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3"],
+    ["Tools|Utility", "clippers x_mallet prospect x_support x_spore x_drill x_detect x_jet x_grap2 x_grap3 shovel can x_hoe1 x_hoe2 x_hoe3 x_hoe4 x_bucket1 x_bucket2 x_net x_rod1 x_rod2 x_rod3 x_homeshell"],
+    ["Tools|Ranged Weapons", "x_bow1 x_bow2 x_bow3 x_bow4"],
     ["Tools|Arrows", "x_arrow x_firearrow x_ar_venom x_ar_numb x_ar_sleep x_ar_mark x_ar_spark x_ar_blast x_ar_leech"],
     ["Tools|Adventuring", "x_grapple"],
     ["Stations|Garage", "x_garage"],
@@ -25932,7 +25941,7 @@
     ],
     give: [
       ["Malcruor items (all of them)", function () { var o = {}; Object.keys(ITEMS).forEach(function (k) { if (k.indexOf("mc_") === 0) o[k] = /purge|stew|tart|seared/.test(k) ? 3 : 20; }); devGive(o); toast("Malcruor items in your bag.", "#ff8a8a"); }],
-      ["Bloodiron gear (tier 6)", function () { S.tier = Math.max(S.tier, 6); S.wpn = Math.max(S.wpn, 6); S.arm = Math.max(S.arm, 6); S.bl = Math.max(S.bl || 1, 4); if (S.dur) { delete S.dur.pick; delete S.dur.wpn; delete S.dur.arm; } reslot(); hbDirty = true; if (typeof mkSprite === "function") mkSprite(); toast("Bloodiron Pick, Reaver and Plate equipped.", "#ff8a8a"); }],
+      ["Bloodiron gear (tier 6, with bow, hoe and rod)", function () { S.tier = Math.max(S.tier, 6); S.wpn = Math.max(S.wpn, 6); S.arm = Math.max(S.arm, 6); S.bow = Math.max(S.bow || 0, 4); S.hoe = Math.max(S.hoe || 0, 4); S.rod = Math.max(S.rod || 0, 3); devGive({ arrow: 30 }); S.bl = Math.max(S.bl || 1, 4); if (S.dur) { delete S.dur.pick; delete S.dur.wpn; delete S.dur.arm; } reslot(); hbDirty = true; if (typeof mkSprite === "function") mkSprite(); toast("Bloodiron Pick, Reaver, Plate, Bloodthorn Bow, Bloodiron Hoe and Rod.", "#ff8a8a"); }],
       ["Every mount", function () { devGive({ m_toad: 1, m_gator: 1, m_heron: 1, m_mudo: 1, m_drake: 1, m_mammoth: 1, m_broom: 1, balloon: 1 }); toast("Mounts in your bag: put one in the hotbar to ride.", "#ffd23f"); }],
       ["Bug Net + spawn bugs", function () { S.net = Math.max(S.net || 0, 1); S.time = 120; BUGT.t = 0; for (var i = 0; i < 6; i++) { BUGT.t = 0; bugTick(0.01); } BUGL.forEach(function (b, i) { b.x = p.x + 2 + i; b.life = 300; }); toast("Bug Net ready, bugs nearby. Select the net and tap them.", "#ffd23f"); }],
       ["Grapple + Tree Frog awakening", function () { devGive({ grapple: 1 }); S.molt = "tree"; if (typeof lookChanged === "function") lookChanged(); toast("Grapple added, and you're a tree frog (wall cling).", "#ffd23f"); }],
@@ -26176,7 +26185,7 @@
       o[k] = "#" + [0, 1, 2].map(function (j) { var v = Math.round(a[1][j] + (z[1][j] - a[1][j]) * t); return (v < 16 ? "0" : "") + v.toString(16); }).join(""); });
     return o;
   }
-  var MC_ICONS = { pick6: "pick5", wpn6: "wpn5", arm6: "arm5", mc_bloodore: "bogiron", mc_hexite: "ruby", mc_bloodingot: "ironingot", mc_fang: "bone", mc_rotbark: "amber", mc_bloodcap: "truffle", mc_gloomberry: "frostberry",
+  var MC_ICONS = { pick6: "pick5", wpn6: "wpn5", arm6: "arm5", bow4: "bow3", hoe4: "hoe3", rod3: "rod2", mc_bloodore: "bogiron", mc_hexite: "ruby", mc_bloodingot: "ironingot", mc_fang: "bone", mc_rotbark: "amber", mc_bloodcap: "truffle", mc_gloomberry: "frostberry",
     mc_bloodbloom: "petalsnap", mc_bloodleaf: "kelp", mc_thornstick: "pufferspine", mc_thornfiber: "rope", mc_searedcap: "skewer", mc_rotstew: "stew", mc_berrytart: "berrypie", mc_purge: "jellygel" };
   Object.keys(MC_ICONS).forEach(function (k) { var d = SPR[MC_ICONS[k]]; if (!d) return; var sp = { r: d.r, p: corruptPal(d.p), o: "#0a0204" }; SPR[k] = sp; if (k.indexOf("mc_") === 0) NEWICO[k] = sp; delete SPC[k]; delete ICO[k]; });
   if (SPR.mc_purge) { SPR.mc_purge.p = Object.assign({}, SPR.mc_purge.p); Object.keys(SPR.mc_purge.p).forEach(function (k, i) { if (i === 0) SPR.mc_purge.p[k] = "#ff7a96"; }); }   // the draught glows pink-red

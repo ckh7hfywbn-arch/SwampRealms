@@ -1827,18 +1827,35 @@
     rect(0, 0, 16, 16, "#26161a"); [0, 4, 8, 12].forEach(function (y, i) { rect(0, y, 16, 1, "#0e0608"); rect(0, y + 1, 16, 1, "#3a2228"); rect(i % 2 ? 5 : 11, y + 1, 1, 3, "#0e0608"); });
     rect(0, 3, 16, 1, "#7a0a16", 0.8); rect(0, 11, 16, 1, "#7a0a16", 0.8); rect(3, 3, 3, 1, "#ff4a3a", 0.8); rect(9, 11, 4, 1, "#ff4a3a", 0.8);
   });
-  block("mc_blackstone", "Blackstone", "#1e1a1e", "#5a1a22", 1.4, function (rect, hh) {
-    rect(0, 0, 16, 16, "#211c20"); for (var k = 0; k < 12; k++) rect(Math.floor(hh(k, 51, 1) * 15), Math.floor(hh(k, 51, 2) * 15), 2, 1, hh(k, 51, 3) > 0.5 ? "#2e282c" : "#141014");
-    for (var j = 0; j < 4; j++) rect(Math.floor(hh(j, 53, 1) * 15), Math.floor(hh(j, 53, 2) * 15), 1, 1, "#a01a28");
+  block("mc_blackstone", "Blackstone", "#54464e", "#5a1a22", 1.4, function (rect, hh) {
+    rect(0, 0, 16, 16, "#54464e"); for (var k = 0; k < 14; k++) rect(Math.floor(hh(k, 51, 1) * 15), Math.floor(hh(k, 51, 2) * 15), 2, 1, hh(k, 51, 3) > 0.5 ? "#6c5c66" : "#33282e");
+    for (var j = 0; j < 4; j++) rect(Math.floor(hh(j, 53, 1) * 15), Math.floor(hh(j, 53, 2) * 15), 1, 1, "#ff4a5a");
   });
   TILES[T.X_mc_blackstone].tier = 1;
-  block("mc_rotmud", "Rotmud", "#2a1418", "#5a1a22", 0.5, function (rect, hh) {
-    rect(0, 0, 16, 16, "#2c161a"); for (var k = 0; k < 14; k++) rect(Math.floor(hh(k, 61, 1) * 14), Math.floor(hh(k, 61, 2) * 15), 3, 1, hh(k, 61, 3) > 0.5 ? "#3a1c22" : "#1c0c10");
-    for (var j = 0; j < 3; j++) rect(Math.floor(hh(j, 63, 1) * 15), Math.floor(hh(j, 63, 2) * 15), 1, 1, "#d02a3a");
+  block("mc_rotmud", "Rotmud", "#6a3a42", "#5a1a22", 0.5, function (rect, hh) {
+    rect(0, 0, 16, 16, "#6a3a42"); for (var k = 0; k < 14; k++) rect(Math.floor(hh(k, 61, 1) * 14), Math.floor(hh(k, 61, 2) * 15), 3, 1, hh(k, 61, 3) > 0.5 ? "#84505a" : "#42222a");
+    for (var j = 0; j < 3; j++) rect(Math.floor(hh(j, 63, 1) * 15), Math.floor(hh(j, 63, 2) * 15), 1, 1, "#ff5a6a");
   });
   TILES[T.X_mc_rotmud].tier = 0;
   block("mc_blackbrick", "Blackstone Brick", "#1e1a1e", "#ff3a3a", 1.6, function (rect) { bricks(rect, "#231e22", "#5a0a14", "#3a3236"); rect(3, 5, 4, 1, "#ff3a3a", 0.6); rect(9, 10, 4, 1, "#ff3a3a", 0.6); });
   block("mc_hexlamp", "Hexite Lamp", "#1a1014", "#ff3a4a", 1.2, function (rect) { lampBlock(rect, "#1a1014", "#2a161c", "#7a0a16", "#e0283a", "#ffb0a0"); }, 13, ["255,50,60", 4.2, 0.3]);
+  // Malcruor's own ground (genMalc lays these instead of the SwampRealms blocks): Blightmoss on top, ore veins in the Blackstone
+  block("mc_blightmoss", "Blightmoss", "#6a3a42", "#c0182a", 0.6, function (rect, hh) {
+    rect(0, 0, 16, 16, "#6a3a42"); for (var k = 0; k < 10; k++) rect(Math.floor(hh(k, 71, 1) * 14), 5 + Math.floor(hh(k, 71, 2) * 10), 3, 1, hh(k, 71, 3) > 0.5 ? "#84505a" : "#42222a");
+    rect(0, 0, 16, 3, "#e0283a"); rect(0, 3, 16, 1, "#8a1424"); for (var j = 0; j < 8; j++) { var x = Math.floor(hh(j, 73, 1) * 15); rect(x, 3, 1, 1 + Math.floor(hh(j, 73, 2) * 3), "#e0283a"); }
+    for (var q = 0; q < 5; q++) rect(Math.floor(hh(q, 75, 1) * 15), Math.floor(hh(q, 75, 2) * 2), 1, 1, "#ff3a3a");
+  });
+  TILES[T.X_mc_blightmoss].tier = 0; TILES[T.X_mc_blightmoss].drop = "mc_rotmud";
+  block("mc_bloodvein", "Bloodiron Ore", "#54464e", "#ff3a3a", 2.2, function (rect, hh) {
+    rect(0, 0, 16, 16, "#54464e"); for (var k = 0; k < 8; k++) rect(Math.floor(hh(k, 81, 1) * 15), Math.floor(hh(k, 81, 2) * 15), 2, 1, "#33282e");
+    [[3, 3], [10, 5], [6, 10], [12, 12], [2, 12]].forEach(function (o, i) { rect(o[0], o[1], 3, 2, "#b0141f"); rect(o[0], o[1], 2, 1, i % 2 ? "#ff4a3a" : "#c01a28"); });
+  }, 4, ["255,40,40", 0.9, 0.05]);
+  TILES[T.X_mc_bloodvein].kind = "ore"; TILES[T.X_mc_bloodvein].tier = 3; TILES[T.X_mc_bloodvein].drop = "mc_bloodore";
+  block("mc_hexvein", "Hexite Ore", "#54464e", "#ff3a5a", 2.6, function (rect, hh) {
+    rect(0, 0, 16, 16, "#54464e"); for (var k = 0; k < 8; k++) rect(Math.floor(hh(k, 91, 1) * 15), Math.floor(hh(k, 91, 2) * 15), 2, 1, "#33282e");
+    [[4, 4], [10, 9], [5, 11]].forEach(function (o) { rect(o[0], o[1] - 1, 1, 1, "#ffb0c0"); rect(o[0] - 1, o[1], 3, 2, "#ff3a5a"); rect(o[0], o[1] + 2, 1, 1, "#8a0a26"); });
+  }, 7, ["255,60,90", 1.4, 0.1]);
+  TILES[T.X_mc_hexvein].kind = "ore"; TILES[T.X_mc_hexvein].tier = 4; TILES[T.X_mc_hexvein].drop = "mc_hexite";
   mat("mc_bloodleaf", "Bloodleaf", "#c0182a"); mat("mc_thornstick", "Thorn Stick", "#3a2026"); mat("mc_thornfiber", "Thorn Fiber", "#8a1a2a");
   mat("mc_bloodore", "Bloodiron Ore", "#8a2a2e"); mat("mc_hexite", "Hexite Shard", "#ff3a5a"); mat("mc_bloodingot", "Bloodiron Ingot", "#5a1a20");
   mat("mc_fang", "Corrupt Fang", "#e8d0c8"); mat("mc_rotbark", "Rotbark Heart", "#ff4a3a");
@@ -1856,6 +1873,9 @@
   R("x_mc_searedcap", "Seared Bloodcap", { mc_searedcap: 1 }, { mc_bloodcap: 2 }, { stn: "cook", d: "Fills 24 hunger and heals 6." });
   R("x_mc_rotstew", "Rotroot Stew", { mc_rotstew: 1 }, { mc_bloodcap: 2, mc_gloomberry: 2, mc_bloodleaf: 1 }, { stn: "cook", d: "Fills 50 hunger and heals 18." });
   R("x_mc_berrytart", "Gloomberry Tart", { mc_berrytart: 1 }, { mc_gloomberry: 4, mc_thornfiber: 1 }, { stn: "cook", d: "Fills 34 hunger and heals 12." });
+  R("x_bow4", "Bloodthorn Bow", null, { mc_rotwood: 8, mc_thornfiber: 6, mc_bloodingot: 4, mc_fang: 4 }, { bow: 4, bench: true, bl: 4, d: "Malcruor's corrupted longbow, strung with Thorn Fiber. Damage 30, fast shots. Needs the Ember Longbow." });
+  R("x_hoe4", "Bloodiron Hoe", null, { mc_bloodingot: 3, mc_rotplanks: 4, mc_thornfiber: 2 }, { hoe: 4, bench: true, bl: 4, d: "Tills and harvests 7 tiles at a time and often finds an extra crop. Needs the Iron Hoe." });
+  R("x_rod3", "Bloodiron Rod", null, { mc_bloodingot: 2, mc_thornfiber: 4, mc_hexite: 1 }, { rod: 3, bench: true, bl: 4, d: "A corrupted rod: bites come faster, and it fishes lava like the Ember Rod. Needs the Ember Rod." });
   R("x_mc_purge", "Purging Draught", { mc_purge: 1 }, { mc_bloodbloom: 2, mc_gloomberry: 2, mc_hexite: 1 }, { stn: "cook", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;

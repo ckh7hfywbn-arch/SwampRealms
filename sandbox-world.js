@@ -1145,7 +1145,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
   var MALC_W = 1200;
   function genMalc(seed) {
     seed = (seed | 0) || 1;
-    var WW = WORLD_W, MW = MALC_W, OFF = EXT + (CORE_W - MW) / 2, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y, c;
+    var WW = WORLD_W, MW = MALC_W, OFF = EXT + (CORE_W - MW) / 2, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y, c, i;
     var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], SPM = 560;
     W = MW; B_FROST = -400; B_EMBER = 700; SPAWNX = SPM; GEN_EDGE = null; GEN_AERIE = false; GEN_VAR = 0; GEN_SPARSE = 3; GEN_MALC = 1;
     try { c = gen(seed); } finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; GEN_SPARSE = keep[7]; GEN_MALC = 0; }
@@ -1155,6 +1155,19 @@ batwing: { n: "Bat Wing", frag: "bat" },
       var i = y * MW + x, id = c.t[i];
       if (id === T.FLOWER || (id === T.REED && rnd() < 0.3)) c.t[i] = T.BLOOM;
       else if (id === T.AIR && y < H - 1 && y > c.top[x] + 6 && TILES[c.t[i + MW]].solid && c.t[i + MW] !== T.BEDROCK && rnd() < 0.02) c.t[i] = T.GLOWCAP;
+    }
+    // Malcruor's own ground: every SwampRealms stone becomes Blackstone, soft ground Rotmud with Blightmoss on top, ores Bloodiron or Hexite
+    if (T.X_mc_blackstone !== undefined) {
+      var STONY = { stone: 1, basalt: 1, obsidian: 1, frostrock: 1, permafrost: 1, ice: 1 }, SOFT = { mud: 1, clay: 1, ash: 1, peat: 1, silt: 1, snow: 1, sand: 1, dirt: 1 }, GEMS = { amber: 1, quartz: 1, ruby: 1, sapphire: 1, amethyst: 1, moonstone: 1, realmshard: 1 }, MAP = {};
+      Object.keys(TILES).forEach(function (k) { var d = TILES[k], id = +k; if (!d || id === T.BEDROCK || id === T.LOG || id === T.LEAVES || !d.solid) return;
+        if (d.kind === "ore") MAP[id] = GEMS[d.drop] ? T.X_mc_hexvein : T.X_mc_bloodvein; else if (STONY[d.drop]) MAP[id] = T.X_mc_blackstone; else if (SOFT[d.drop] || id === T.GRASS || id === T.MOSS) MAP[id] = T.X_mc_rotmud; });
+      for (i = 0; i < MW * H; i++) { var m2 = MAP[c.t[i]]; if (m2 === undefined) continue; var h2 = ((i * 2654435761) ^ (i >> 7) * 40503) >>> 0;   // (the ore veins thinned: about a third stay ore)
+        if (m2 === T.X_mc_bloodvein && (h2 >>> 8) % 100 > 34 || m2 === T.X_mc_hexvein && (h2 >>> 8) % 100 > 55) m2 = T.X_mc_blackstone; c.t[i] = m2; }
+      for (x = 0; x < MW; x++) { var ty = c.top[x]; if (ty > 0 && ty < H && c.t[ty * MW + x] === T.X_mc_rotmud) c.t[ty * MW + x] = T.X_mc_blightmoss; }
+      // treasure: chests and pots in the dark under the land
+      var CH = T.X_lootchest, PT = T.X_lootpot, tries = 0, nc = 0, np = 0;
+      while (tries++ < 6000 && (nc < 14 || np < 30)) { x = 8 + Math.floor(rnd() * (MW - 16)); y = c.top[x] + 10 + Math.floor(rnd() * (H - c.top[x] - 20)); var i2 = y * MW + x;
+        if (y < H - 2 && c.t[i2] === T.AIR && TILES[c.t[i2 + MW]].solid && c.t[i2 + MW] !== T.BEDROCK) { if (nc < 14 && CH !== undefined) { c.t[i2] = CH; nc++; } else if (PT !== undefined) { c.t[i2] = PT; np++; } } }
     }
     for (x = 0; x < WW; x++) { wtop[x] = 0; wbio[x] = 1; }
     for (y = 0; y < H; y++) { var row = y * WW; wt.fill(T.BEDROCK, row, row + WW); wt.set(c.t.subarray(y * MW, (y + 1) * MW), row + OFF); wwl.set(c.walls.subarray(y * MW, (y + 1) * MW), row + OFF); }   // bedrock past both ends
