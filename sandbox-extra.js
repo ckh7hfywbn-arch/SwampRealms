@@ -1806,6 +1806,57 @@
   item("farmbook", "Croaka's Farm Almanac", { gem: "#4a7a2a", book: 1, d: "Croaka's old green almanac. Every crop you harvest, every giant, egg and jar is written in it. Pick it on your hotbar to read it." });
   // METEOR SHOWERS (sandbox.js): a big meteor leaves a cluster of Meteorite in its crater. Star Ore smelts into Starsteel.
   ore("METEORITE", "Meteorite", "#2a2238", "#9ad8ff", 2.6, 2, 7, "starore", ["150,210,255", 2.6, 0.18], [["starore", 0.5, 1, 1], ["stardust", 0.35, 1, 1]]);
+  // ====================================================================================================
+  // MALCRUOR PACK: the corrupt world's own things. Nearly everything is a corrupted version of something from the SwampRealms (black wood
+  // with red veins, black stone, rotten mud, blood-red ore and gems, thorny sticks and fibre), plus a few things only Malcruor has (Bloodcap,
+  // Gloomberries, the Purging Draught that pushes the corruption back). In Malcruor, breaking a block gives its Malcruor version
+  // (sandbox.js MCDROP). Malcruor's own gear (Bloodiron Pick, Reaver and Plate) is tier 6 in sandbox.js. Item icons: corrupted pixel art
+  // made in sandbox.js (MC_ICONS); blocks have their own art here.
+  // ====================================================================================================
+  function veins(rect, hh, seed, col, glowc) {   // glowing red cracks running through a block
+    for (var v = 0; v < 3; v++) { var x0 = Math.floor(hh(v, seed, 1) * 14) + 1, y0 = 0, len = 5 + Math.floor(hh(v, seed, 2) * 9);
+      for (var q = 0; q < len; q++) { rect(x0, y0, 1, 2, col); if (q % 2) rect(x0, y0, 1, 1, glowc); y0 += 1 + (hh(v * 7 + q, seed, 3) > 0.7 ? 1 : 0); x0 += hh(v * 5 + q, seed, 4) > 0.66 ? 1 : hh(v * 5 + q, seed, 4) < 0.33 ? -1 : 0; x0 = Math.max(0, Math.min(15, x0)); if (y0 > 15) break; } }
+  }
+  block("mc_rotwood", "Rotwood", "#1a1014", "#ff3a3a", 1.0, function (rect, hh) {   // black bark, darker grain, red glow in the cracks
+    rect(0, 0, 16, 16, "#1c1216"); [2, 6, 10, 13].forEach(function (x, i) { rect(x, 0, 1, 16, i % 2 ? "#120a0e" : "#2a1a1e"); });
+    for (var k = 0; k < 6; k++) rect(Math.floor(hh(k, 41, 1) * 14), Math.floor(hh(k, 41, 2) * 14), 2, 1, "#2e1c22");
+    veins(rect, hh, 43, "#8a0c18", "#ff4a3a");
+  }, 3, ["255,50,40", 1.2, 0.07]);
+  TILES[T.X_mc_rotwood].kind = "mc_rotwood";
+  block("mc_rotplanks", "Rotwood Planks", "#2a161c", "#ff3a3a", 0.8, function (rect) {
+    rect(0, 0, 16, 16, "#26161a"); [0, 4, 8, 12].forEach(function (y, i) { rect(0, y, 16, 1, "#0e0608"); rect(0, y + 1, 16, 1, "#3a2228"); rect(i % 2 ? 5 : 11, y + 1, 1, 3, "#0e0608"); });
+    rect(0, 3, 16, 1, "#7a0a16", 0.8); rect(0, 11, 16, 1, "#7a0a16", 0.8); rect(3, 3, 3, 1, "#ff4a3a", 0.8); rect(9, 11, 4, 1, "#ff4a3a", 0.8);
+  });
+  block("mc_blackstone", "Blackstone", "#1e1a1e", "#5a1a22", 1.4, function (rect, hh) {
+    rect(0, 0, 16, 16, "#211c20"); for (var k = 0; k < 12; k++) rect(Math.floor(hh(k, 51, 1) * 15), Math.floor(hh(k, 51, 2) * 15), 2, 1, hh(k, 51, 3) > 0.5 ? "#2e282c" : "#141014");
+    for (var j = 0; j < 4; j++) rect(Math.floor(hh(j, 53, 1) * 15), Math.floor(hh(j, 53, 2) * 15), 1, 1, "#a01a28");
+  });
+  TILES[T.X_mc_blackstone].tier = 1;
+  block("mc_rotmud", "Rotmud", "#2a1418", "#5a1a22", 0.5, function (rect, hh) {
+    rect(0, 0, 16, 16, "#2c161a"); for (var k = 0; k < 14; k++) rect(Math.floor(hh(k, 61, 1) * 14), Math.floor(hh(k, 61, 2) * 15), 3, 1, hh(k, 61, 3) > 0.5 ? "#3a1c22" : "#1c0c10");
+    for (var j = 0; j < 3; j++) rect(Math.floor(hh(j, 63, 1) * 15), Math.floor(hh(j, 63, 2) * 15), 1, 1, "#d02a3a");
+  });
+  TILES[T.X_mc_rotmud].tier = 0;
+  block("mc_blackbrick", "Blackstone Brick", "#1e1a1e", "#ff3a3a", 1.6, function (rect) { bricks(rect, "#231e22", "#5a0a14", "#3a3236"); rect(3, 5, 4, 1, "#ff3a3a", 0.6); rect(9, 10, 4, 1, "#ff3a3a", 0.6); });
+  block("mc_hexlamp", "Hexite Lamp", "#1a1014", "#ff3a4a", 1.2, function (rect) { lampBlock(rect, "#1a1014", "#2a161c", "#7a0a16", "#e0283a", "#ffb0a0"); }, 13, ["255,50,60", 4.2, 0.3]);
+  mat("mc_bloodleaf", "Bloodleaf", "#c0182a"); mat("mc_thornstick", "Thorn Stick", "#3a2026"); mat("mc_thornfiber", "Thorn Fiber", "#8a1a2a");
+  mat("mc_bloodore", "Bloodiron Ore", "#8a2a2e"); mat("mc_hexite", "Hexite Shard", "#ff3a5a"); mat("mc_bloodingot", "Bloodiron Ingot", "#5a1a20");
+  mat("mc_fang", "Corrupt Fang", "#e8d0c8"); mat("mc_rotbark", "Rotbark Heart", "#ff4a3a");
+  item("mc_bloodbloom", "Bloodbloom", { gem: "#e0283a", d: "A flower that only grows under the blood moon. Used in draughts and dyes." });
+  item("mc_bloodcap", "Bloodcap", { food: 6, heal: 1, gem: "#c0182a", d: "A dark red mushroom from Malcruor. Edible raw, much better cooked." });
+  item("mc_gloomberry", "Gloomberries", { food: 5, heal: 3, gem: "#5a1a4a", d: "Sour black berries that hide in Malcruor's blood-red leaves." });
+  item("mc_searedcap", "Seared Bloodcap", { food: 24, heal: 6, cooked: 1, gem: "#a0301c" });
+  item("mc_rotstew", "Rotroot Stew", { food: 50, heal: 18, cooked: 1, gem: "#8a1a20" });
+  item("mc_berrytart", "Gloomberry Tart", { food: 34, heal: 12, cooked: 1, gem: "#6a1a4a" });
+  item("mc_purge", "Purging Draught", { food: 2, purge: 90, cooked: 1, gem: "#ff8aa0", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
+  R("x_mc_rotplanks", "Rotwood Planks (4)", { mc_rotplanks: 4 }, { mc_rotwood: 1 }, { d: "Black planks with a red glow in the grain. Rotwood comes from Malcruor's trees." });
+  R("x_mc_blackbrick", "Blackstone Brick (2)", { mc_blackbrick: 2 }, { mc_blackstone: 2 }, { stn: "mason", d: "A black brick with red mortar." });
+  R("x_mc_hexlamp", "Hexite Lamp (2)", { mc_hexlamp: 2 }, { mc_hexite: 1, mc_blackstone: 2 }, { d: "A blood-red lamp block. Bright." });
+  R("x_mc_bloodingot", "Bloodiron Ingot", { mc_bloodingot: 1 }, { mc_bloodore: 2 }, { stn: "furnace", d: "Smelted from Bloodiron Ore, which Malcruor's ore veins give." });
+  R("x_mc_searedcap", "Seared Bloodcap", { mc_searedcap: 1 }, { mc_bloodcap: 2 }, { stn: "cook", d: "Fills 24 hunger and heals 6." });
+  R("x_mc_rotstew", "Rotroot Stew", { mc_rotstew: 1 }, { mc_bloodcap: 2, mc_gloomberry: 2, mc_bloodleaf: 1 }, { stn: "cook", d: "Fills 50 hunger and heals 18." });
+  R("x_mc_berrytart", "Gloomberry Tart", { mc_berrytart: 1 }, { mc_gloomberry: 4, mc_thornfiber: 1 }, { stn: "cook", d: "Fills 34 hunger and heals 12." });
+  R("x_mc_purge", "Purging Draught", { mc_purge: 1 }, { mc_bloodbloom: 2, mc_gloomberry: 2, mc_hexite: 1 }, { stn: "cook", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);
