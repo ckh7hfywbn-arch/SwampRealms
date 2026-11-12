@@ -10207,7 +10207,7 @@
     "They say a young fox wandered through on the red night and never came back the same. If you ever see red eyes and tails of fire in the dark... run. I mean it.",
     "Malcruor remembers you, too. Every time you go back, its creatures grow warier of you. Use that.",
     "Until then this island is yours. Your Realm Gate brings you here whenever you like, and the little portal at the island's tip leads home. Give my best to that old frog Croaker!",
-    "Oh, and one more thing. You feel itchy, don't you? That is the SwampRealms' light working on you. You are about to MOLT, little one, and you get to choose what you become."
+    "Oh, and one more thing. You feel itchy, don't you? That is the SwampRealms' light working on you. It is time for your SWAMP AWAKENING, little one. Go and stand in the Prism Spring, the rainbow pool in the middle of the island. It will show you what you can become, and I will be right there with you."
   ];
   var GD_MALC = [GD_INTRO[4], GD_INTRO[5], GD_INTRO[6], GD_INTRO[8]];
   var GD_LINES = [
@@ -10240,7 +10240,7 @@
   function nxPrep(F) {   // (spawn: you arrive a few steps up from the way home, so its button does not pop up at once)
     var w = F.w, h = F.h, x, y, i, R0 = NXROW; F.iw = null; F.wins = []; F.spawn = { x: 16.5, y: h - 4.2 }; F.nx = { props: [], path: new Uint8Array(w * h), clear: new Uint8Array(w * h), stones: [], isl: null, spring: { x: 16, y: R0 + 9 } };
     NXP.forEach(function (P) { for (x = P.x - 1; x <= P.x + 1; x++) F.sol[R0 * w + x] = 1; });
-    for (y = R0 + 9; y <= R0 + 10; y++) for (x = 15; x <= 17; x++) F.sol[y * w + x] = 1;   // the Prism Spring
+    // (the Prism Spring is open: you step into it for your Swamp Awakening, see AWAKENING)
     for (y = R0 + 1; y <= R0 + 2; y++) for (x = 5; x <= 27; x++) if (!F.wall[y * w + x]) F.nx.path[y * w + x] = F.nx.clear[y * w + x] = 1;   // an opal terrace in front of the portals
     var line = function (x0, y0, x1, y1) {   // stepping stones of opal
       var n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / 0.95));
@@ -10633,6 +10633,7 @@
     glows.push([ox + cxw * ts, by - 22 * u, "255,40,50", 3, 0.3 + 0.1 * pulse]);
   }
   function mcAsk() {   // the first time: what Malcruor is, and what it costs to die there
+    if (inNexus() && !molt()) { gdSay("Not yet, little one! Your Swamp Awakening comes first. Step into the Prism Spring.", 5); nag("Do your Swamp Awakening first: stand in the Prism Spring."); return; }
     if (malcS().warned) return mcEnter();
     if (!p4Open(290)) return;
     p4Box('<h2 class="st-hi" style="color:#ff5a5a">Malcruor</h2><p>Red light seeps through the cracks of this portal. Old Croaker says a young fox wandered through it one red night and never came back the same.</p>' +
@@ -10831,7 +10832,7 @@
   function enterNexus(gx, gy) {   // called while the gate's bright fade covers the screen
     if (cave) return; stopInput(); enemies.length = 0; bmEndQuiet();
     cave = { hole: { x: gx + 1, y: gy, b: 0 }, bld: NEXUS_BLD, run: 7777, floors: {}, f: 0, F: null };
-    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++; if (S.st.nexus === 1 && !S.molt) setTimeout(function () { toast("You feel... itchy. Wake Zaruk: he will know why (molting unlocked).", "#7ae0a0"); }, 5000);
+    stageEl.classList.add("cave"); $("sbxHint").classList.remove("on"); S.vis.k_nexus = 1; S.st.nexus++; if (S.st.nexus === 1 && !S.molt) setTimeout(function () { toast("You feel... itchy. Wake Zaruk: he will know why (Swamp Awakening).", "#7ae0a0"); }, 5000);
     setFloor(1, "down"); GD.x = GD_SLEEP.x; GD.y = GD_SLEEP.y; GD.tx = GD.x; GD.ty = GD.y; GD.intro = false; GD.face = -1; GD.alt = GD_SLEEP_ALT; GD.wk = 0; gdSleep(true); save();
   }
   function bmEndQuiet() { if (BM.on) { BM.on = false; BM.croak = false; bmRoll(); } }
@@ -10857,7 +10858,8 @@
     // awake, he keeps to his post beside the middle path (he never follows you, so he is never in the way of a portal): a slow drift
     // around it, and he turns to watch you when you are near
     var dx = cp.x - GD.x, dy = cp.y - GD.y, d = Math.sqrt(dx * dx + dy * dy);
-    GD.wait -= dt; if (GD.wait <= 0) { GD.wait = 3 + Math.random() * 3; GD.tx = GD_POST.x + (Math.random() - 0.5) * 2.4; GD.ty = GD_POST.y + (Math.random() - 0.5) * 1.2; }
+    awkTick(dt, F); var POST = awkGuide() || AWK.anim ? { x: F.nx.spring.x + 6, y: F.nx.spring.y + 1.4 } : GD_POST;   // AWAKENING: he waits by the Spring for you
+    GD.wait -= dt; if (GD.wait <= 0 || Math.hypot(GD.tx - POST.x, GD.ty - POST.y) > 3) { GD.wait = 3 + Math.random() * 3; GD.tx = POST.x + (Math.random() - 0.5) * (POST === GD_POST ? 2.4 : 0.8); GD.ty = POST.y + (Math.random() - 0.5) * (POST === GD_POST ? 1.2 : 0.4); }
     var mx = GD.tx - GD.x, my = GD.ty - GD.y, md = Math.sqrt(mx * mx + my * my);
     if (md > 0.05) { var st = Math.min(md, (md > 3 ? 2.6 : 0.8) * dt); GD.x += mx / md * st; GD.y += my / md * st; }
     if (d < 7) GD.face = cp.x < GD.x ? -1 : 1; else if (Math.abs(mx) > 0.1) GD.face = mx < 0 ? -1 : 1;
@@ -10993,7 +10995,7 @@
     renderGuardian(); thud(330, 0.05); snd("rise");
   }
   function gdMoltHtml() {   // the four molts as cards, picked right here in Zaruk's box (the first molt is free)
-    return '<div class="p7-molts">' + Object.keys(MOLT).map(function (k) { var M = MOLT[k], pic = moltPic(k); return '<button type="button" class="p7-mo" style="--c:' + M.c + '" data-gd="mo:' + k + '"><img alt="" src="' + pic + '"><b>' + esc(M.n) + "</b><small>" + esc(M.d) + "</small></button>"; }).join("") + "</div>";
+    return '<div class="p7-molts">' + Object.keys(MOLT).map(function (k) { var M = MOLT[k], pic = moltPic(k); return '<button type="button" class="p7-mo" style="--c:' + M.c + '" data-gd="aw:' + k + '"><img alt="" src="' + pic + '"><b>' + esc(M.n) + "</b><small>" + esc(M.d) + "</small></button>"; }).join("") + "</div>";
   }
   function renderGuardian() {   // GD.page: 0.. the introduction; -1 small talk; -2 molting; -3 about Malcruor
     var box = $("sbxStoryBox"), h = "", intro = GD.page >= 0, pg = GD.page; box.style.setProperty("--qc", "#4ee6d0");
@@ -11001,18 +11003,22 @@
     h += '<div class="st-zaruk"><img alt="" src="' + zarukPic() + '"></div><small>Zaruk, Warden of the SwampRealms' + (intro ? " · " + (pg + 1) + " / " + steps : "") + "</small>";
     if (intro) {
       h += "<p>" + esc(GD_INTRO[pg]) + "</p>";
-      if (pg === GD_INTRO.length - 1 && !molt()) h += gdMoltHtml() + '<p class="st-tip">Your first molt is free. Old Croaker can help you molt again later (for 5 Gold Coins).</p>';
+      if (pg === GD_INTRO.length - 1 && !molt()) h += '<div class="st-row"><button type="button" class="btn" data-gd="done">I\'ll go to the Spring!</button></div>';
       else if (pg < steps - 1) h += '<div class="st-row"><button type="button" class="btn" data-gd="next">Go on...</button></div>';
       else h += '<div class="st-row"><button type="button" class="btn" data-gd="done">Thank you, Zaruk!</button></div>';
     } else if (pg === -2) {
-      h += "<p>" + esc(molt() ? "You have molted already, little one: a " + MOLT[molt()].n + ". If you want to change, old Croaker has the herbs (5 Gold Coins)." : GD_INTRO[GD_INTRO.length - 1]) + "</p>";
-      h += (molt() ? "" : gdMoltHtml()) + '<div class="st-row"><button type="button" class="btn ghost" data-gd="back">Back</button></div>';
+      h += "<p>" + esc(molt() ? "You have already awakened, little one: a " + MOLT[molt()].n + ". If you ever want to change, step into the Prism Spring again. The Spring asks 5 Gold Coins for a second awakening." : GD_INTRO[GD_INTRO.length - 1]) + "</p>";
+      h += '<div class="st-row">' + (molt() ? '<button type="button" class="btn ghost" data-gd="back">Back</button>' : '<button type="button" class="btn" data-gd="done">I\'ll go to the Spring!</button>') + "</div>";
+    } else if (pg === -4) {   // AWAKENING: you are standing in the Spring
+      var chg = !!molt();
+      h += "<p>" + esc(chg ? "The Spring remembers you, " + MOLT[molt()].n + ". A second awakening costs 5 Gold Coins (you have " + (S.inv.goldcoin || 0) + "). Who will you become now?" : "The Spring knows you, little one. Feel it? Now choose who you will become. Take your time: this is who you will be.") + "</p>";
+      h += gdMoltHtml() + '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Not yet</button></div>';
     } else if (pg <= -3) {
       var mi = -3 - pg; h += "<p>" + esc(GD_MALC[mi]) + "</p>";
       h += '<div class="st-row">' + (mi < GD_MALC.length - 1 ? '<button type="button" class="btn" data-gd="mnext">Go on...</button>' : '<button type="button" class="btn ghost" data-gd="back">Back</button>') + "</div>";
     } else {
       h += "<p>" + esc(GD_LINES[Math.floor(Math.random() * GD_LINES.length)]) + "</p>";
-      h += '<div class="st-row"><button type="button" class="btn ghost" data-gd="malc">Tell me about Malcruor</button>' + (molt() ? "" : '<button type="button" class="btn ghost" data-gd="molt">I feel itchy... (Molting)</button>') + '<button type="button" class="btn ghost" data-gd="again">Tell me about the SwampRealms</button><button type="button" class="btn" data-story-close>Goodbye</button></div>';
+      h += '<div class="st-row"><button type="button" class="btn ghost" data-gd="malc">Tell me about Malcruor</button>' + (molt() ? "" : '<button type="button" class="btn ghost" data-gd="molt">I feel itchy... (Swamp Awakening)</button>') + '<button type="button" class="btn ghost" data-gd="again">Tell me about the SwampRealms</button><button type="button" class="btn" data-story-close>Goodbye</button></div>';
     }
     box.innerHTML = h; var b = box.querySelector("[data-gd]"); if (b) b.focus({ preventScroll: true });
   }
@@ -11023,8 +11029,78 @@
     if (a === "molt") { GD.page = -2; renderGuardian(); return; }
     if (a === "malc") { GD.page = -3; renderGuardian(); return; }
     if (a === "mnext") { GD.page = Math.max(-3 - (GD_MALC.length - 1), GD.page - 1); renderGuardian(); thud(420, 0.03); return; }
-    if (a.indexOf("mo:") === 0) { var k = a.slice(3); if (!MOLT[k] || molt()) return; gdMet(); moltPick(k); return; }   // moltPick closes the box
-    if (a === "done") { closeStory(); gdMet(); }
+    if (a.indexOf("aw:") === 0) { var k = a.slice(3); if (!MOLT[k] || molt() === k) return; if (molt() && (S.inv.goldcoin || 0) < 5) { nag("A second awakening needs 5 Gold Coins."); return; } closeStory(); gdMet(); awkStart(k); return; }
+    if (a === "done") { closeStory(); gdMet(); if (!molt()) gdSay("Over here, little one! Step into the Prism Spring.", 6); }
+  }
+  // ---------- THE SWAMP AWAKENING: stand in the Prism Spring, choose who you become, and the SwampRealms' light changes you ----------
+  // (In the code it is still "molt": S.molt, MOLT.) The first time you enter the SwampRealms, Zaruk's welcome ends by sending you to the
+  // Spring; he waits beside it, a rainbow arrow bobs over it, and Malcruor's portal will not let you in until you have awakened. Standing in
+  // the Spring opens the four choices in Zaruk's box (a second awakening costs 5 Gold Coins). Picking one plays AWK.anim: rainbow rings
+  // gather into you, the Spring's pillar flares, a white flash (the change happens here), then a burst of colour and sparkles while Zaruk cheers.
+  var AWK = { anim: null, inside: false, say: "", sayT: 0 }, AWK_D = 3.8, AWK_FLASH = 1.5;
+  function awkGuide() { return inNexus() && !molt() && (S.gmet || !GD.sleep); }
+  function gdSay(txt, sec) { AWK.say = txt; AWK.sayT = sec || 4; }
+  function awkInSpring(F) { var sp = F.nx.spring; return Math.abs(cp.x - (sp.x + 0.5)) < 1.35 && Math.abs(cp.y - (sp.y + 1.1)) < 0.85; }
+  function awkStart(k) {
+    var F = cave && cave.F; if (!F || !F.nx) return; var sp = F.nx.spring;
+    cp.x = sp.x + 0.5; cp.y = sp.y + 1.1; cp.vx = cp.vy = 0; stopInput();
+    AWK.anim = { k: k, t: 0, flashed: false }; snd("rise"); thud(180, 0.12);
+    gdSay("Hold still... let the Spring's light in!", 2);
+  }
+  function awkTick(dt, F) {
+    if (AWK.sayT > 0) AWK.sayT -= dt;
+    var A = AWK.anim;
+    if (A) {
+      A.t += dt; stopInput(); cp.vx = cp.vy = 0;
+      if (!reduce && Math.random() < dt * 40) { var an = Math.random() * 6.283, r0 = A.t < AWK_FLASH ? 3.2 : 0.3, sp2 = A.t < AWK_FLASH ? -5 : 6, c = NXPAL[Math.floor(Math.random() * 4)][Math.floor(Math.random() * 3)];
+        parts.push({ x: cp.x + Math.cos(an) * r0, y: cp.y - 0.7 + Math.sin(an) * r0 * 0.6, vx: Math.cos(an) * sp2, vy: Math.sin(an) * sp2 * 0.6, g: 0, life: 0.6, max: 0.6, c: c, s: 2 + Math.random() * 2 }); }
+      if (!A.flashed && A.t >= AWK_FLASH) { A.flashed = true; moltApply(A.k); shake = Math.max(shake, 0.35); thud(90, 0.2); snd("open", "Epic");
+        for (var i = 0; i < 60; i++) { var a2 = Math.random() * 6.283, v = 3 + Math.random() * 7, c2 = NXPAL[i % 4][i % 3]; parts.push({ x: cp.x, y: cp.y - 0.7, vx: Math.cos(a2) * v, vy: Math.sin(a2) * v * 0.7 - 2, g: 3, life: 1.3, max: 1.3, c: i % 5 ? c2 : MOLT[A.k].c, s: 2 + Math.random() * 3 }); } }
+      if (A.t >= AWK_D) { var M = MOLT[A.k]; AWK.anim = null; popup("Swamp Awakening!", M.n + ": " + M.short, M.c, M.g);
+        gdSay("Hrrrah! Look at you! A true " + M.n + ". Now go, explore. And mind that cracked portal.", 6); AWK.inside = true; }
+      return;
+    }
+    if (!F || !F.nx) return;
+    var inS = awkInSpring(F);
+    if (inS && !AWK.inside && !panelOpen && !trans) { AWK.inside = true; GD.page = -4; if (GD.sleep) { gdSleep(false); GD.sleep = false; GD.wk = 0; GD.alt = 1.55; } openGuardian(false); GD.page = -4; renderGuardian(); }
+    if (!inS) AWK.inside = false;
+  }
+  function awkDraw(g, now, F) {
+    var t = now / 1000, sp = F.nx.spring, sx = ox + (sp.x + 0.5) * ts, sy = oy + (sp.y + 1.1) * ts, A = AWK.anim, u = ts / 16;
+    if (awkGuide() && !A && !panelOpen) {   // a rainbow arrow bobbing over the Spring
+      var ay = sy - ts * 2.6 + Math.sin(t * 4) * ts * 0.25, col = NXPAL[Math.floor(t * 3) % 4][0];
+      g.save(); g.fillStyle = col; g.strokeStyle = "#2a1440"; g.lineWidth = 2; g.beginPath(); g.moveTo(sx, ay + ts * 0.7); g.lineTo(sx - ts * 0.5, ay); g.lineTo(sx - ts * 0.2, ay); g.lineTo(sx - ts * 0.2, ay - ts * 0.6); g.lineTo(sx + ts * 0.2, ay - ts * 0.6); g.lineTo(sx + ts * 0.2, ay); g.lineTo(sx + ts * 0.5, ay); g.closePath(); g.fill(); g.stroke();
+      g.font = "900 " + Math.max(11, Math.round(ts * 0.42)) + "px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(40,10,60,.85)"; g.fillStyle = "#fff6c4"; g.strokeText("Swamp Awakening", sx, ay - ts * 0.85); g.fillText("Swamp Awakening", sx, ay - ts * 0.85); g.restore();
+    }
+    if (A) {
+      var k = A.t, px = ox + cp.x * ts, py = oy + (cp.y - 0.7) * ts, i;
+      g.save(); g.globalCompositeOperation = "lighter";
+      var pw = (k < AWK_FLASH ? k / AWK_FLASH : Math.max(0, 1 - (k - AWK_FLASH) / 1.6)) * 1.6;   // the Spring's pillar flares
+      var pl = g.createLinearGradient(0, sy, 0, sy - ts * 12); pl.addColorStop(0, "rgba(255,255,240," + (0.5 * pw).toFixed(3) + ")"); pl.addColorStop(1, "rgba(255,200,255,0)"); g.fillStyle = pl; g.fillRect(sx - ts * 0.9 * pw, sy - ts * 12, ts * 1.8 * pw, ts * 12);
+      if (k < AWK_FLASH) {   // rainbow rings gathering in
+        for (i = 0; i < 6; i++) { var f = ((k / AWK_FLASH) * 1.6 + i / 6) % 1, r = ts * 4.2 * (1 - f) + ts * 0.3, c = NXPAL[i % 4][i % 3];
+          g.strokeStyle = c; g.globalAlpha = f * 0.9; g.lineWidth = Math.max(2, ts * 0.14 * (1 - f) + 2); g.beginPath(); g.ellipse(px, py, r, r * 0.62, 0, 0, 6.283); g.stroke(); }
+      } else {   // the burst: rings racing out, turning rays of light
+        var b = (k - AWK_FLASH) / (AWK_D - AWK_FLASH);
+        for (i = 0; i < 4; i++) { var bf = clamp(b * 1.6 - i * 0.18, 0, 1); if (bf <= 0 || bf >= 1) continue; var br = ts * (0.5 + bf * 7); g.strokeStyle = NXPAL[i][0]; g.globalAlpha = 1 - bf; g.lineWidth = ts * 0.22 * (1 - bf) + 1; g.beginPath(); g.ellipse(px, py, br, br * 0.62, 0, 0, 6.283); g.stroke(); }
+        g.globalAlpha = Math.max(0, 1 - b) * 0.55; for (i = 0; i < 12; i++) { var ra = t * 0.8 + i * 0.5236, rl = ts * (3 + 2 * Math.sin(t * 3 + i)); g.fillStyle = NXPAL[i % 4][(i >> 2) % 3]; g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(ra - 0.06) * rl, py + Math.sin(ra - 0.06) * rl); g.lineTo(px + Math.cos(ra + 0.06) * rl, py + Math.sin(ra + 0.06) * rl); g.closePath(); g.fill(); }
+      }
+      var ag = g.createRadialGradient(px, py, 0, px, py, ts * 2.4), hc = MOLT[A.k].c; ag.addColorStop(0, "rgba(255,255,255,.75)"); ag.addColorStop(0.4, hc); ag.addColorStop(1, "rgba(0,0,0,0)");
+      g.globalAlpha = 0.35 + 0.45 * Math.sin(Math.min(1, k / AWK_D) * Math.PI); g.fillStyle = ag; g.beginPath(); g.arc(px, py, ts * 2.4, 0, 6.283); g.fill();
+      g.restore();
+      // the screen: a rainbow wash that swells to a white flash, then fades
+      var fl = k < AWK_FLASH ? Math.pow(k / AWK_FLASH, 3) * 0.6 : Math.max(0, 1 - (k - AWK_FLASH) / 0.7);
+      g.save(); g.globalAlpha = 0.18 * Math.sin(Math.min(1, k / AWK_D) * Math.PI); var hue = (t * 120) % 360, wg = g.createLinearGradient(0, 0, vw, vh); wg.addColorStop(0, "hsl(" + hue + ",100%,65%)"); wg.addColorStop(0.5, "hsl(" + ((hue + 120) % 360) + ",100%,65%)"); wg.addColorStop(1, "hsl(" + ((hue + 240) % 360) + ",100%,65%)"); g.fillStyle = wg; g.fillRect(0, 0, vw, vh);
+      if (fl > 0) { g.globalAlpha = fl; g.fillStyle = "#fffdf4"; g.fillRect(0, 0, vw, vh); } g.restore();
+    }
+    if (AWK.sayT > 0 && AWK.say && !panelOpen) {   // Zaruk talks: a speech bubble over him
+      var bx = ox + GD.x * ts, by = oy + (GD.y - GD.alt) * ts - ts * 3.3, fs = Math.max(11, Math.round(ts * 0.38)), words = AWK.say.split(" "), lines = [], ln = "", maxW = Math.min(vw * 0.6, fs * 18);
+      g.save(); g.font = "800 " + fs + "px Nunito,system-ui,sans-serif"; words.forEach(function (w2) { var tl = ln ? ln + " " + w2 : w2; if (g.measureText(tl).width > maxW && ln) { lines.push(ln); ln = w2; } else ln = tl; }); if (ln) lines.push(ln);
+      var bw2 = Math.max.apply(null, lines.map(function (l) { return g.measureText(l).width; })) + fs * 1.4, bh = lines.length * fs * 1.25 + fs * 0.9, x0 = clamp(bx - bw2 / 2, 6, vw - bw2 - 6), y0 = Math.max(70, by - bh);
+      g.globalAlpha = Math.min(1, AWK.sayT * 2); g.fillStyle = "rgba(20,16,44,.92)"; g.strokeStyle = "#4ee6d0"; g.lineWidth = 2; mrr(g, x0, y0, bw2, bh, fs * 0.6); g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(clamp(bx, x0 + 12, x0 + bw2 - 12) - 7, y0 + bh - 1); g.lineTo(clamp(bx, x0 + 12, x0 + bw2 - 12), y0 + bh + 9); g.lineTo(clamp(bx, x0 + 12, x0 + bw2 - 12) + 7, y0 + bh - 1); g.fill();
+      g.fillStyle = "#f6fff9"; g.textAlign = "center"; g.textBaseline = "top"; lines.forEach(function (l, i2) { g.fillText(l, x0 + bw2 / 2, y0 + fs * 0.45 + i2 * fs * 1.25); }); g.restore();
+    }
   }
   function gdMet() { var first = !S.gmet; S.gmet = 1; if (first) { toast("Zaruk the Realm Warden is your friend now. Visit the SwampRealms whenever you like.", "#4ee6d0"); checkTrail(); checkGoals(); save(); } }
   // ---------- POTIONS (Brewing Stand) ----------
@@ -16961,9 +17037,10 @@
       var ln = ladderNear();
       if (ln) { var lc = ln.k === "up" ? F.up : F.down; drawPill(g, now, (ln.k === "up" ? (F.isle ? "Back to the boat" : F.nx ? "Go home" : F.bld ? "Leave" : cave.f <= 1 ? "Climb out" : liftFloor(cave.f) ? "Ride the lift up" : "Go up") : "Go down") + (coarse ? "" : " (F)"), ox + (lc.x + 0.5) * ts, oy + lc.y * ts - ts * (ln.k === "up" ? (liftFloor(cave.f) ? 2.3 : 1.3) : 0.5), false, function () { useLadder(ln.k); }); }
     }
-    var npp = !panelOpen && !trans && !ladderNear() && F.nx ? nxPortalNear() : null;   // NEXUS: a portal you stand at comes first, then Zaruk
+    if (F.nx) awkDraw(g, now, F);   // AWAKENING: the guide arrow, the light show, and Zaruk's words
+    var npp = !panelOpen && !trans && !AWK.anim && !ladderNear() && F.nx ? nxPortalNear() : null;   // NEXUS: a portal you stand at comes first, then Zaruk
     if (npp) drawPill(g, now, (npp.mc ? "Enter Malcruor" : "Under construction") + (coarse ? "" : " (F)"), ox + (npp.x + 0.5) * ts, oy + (NXROW - 3.9) * ts, !npp.mc, function () { if (npp.mc) mcAsk(); else nxPortalTalk(npp); });
-    else if (!panelOpen && !trans && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });
+    else if (!panelOpen && !trans && !AWK.anim && !ladderNear() && gdNear()) drawPill(g, now, (GD.sleep ? "Wake Zaruk" : "Talk to Zaruk") + (coarse ? "" : " (F)"), ox + GD.x * ts, oy + (GD.y - GD.alt) * ts - ts * (GD.sleep ? 2.6 : 2.3), false, function () { if (GD.sleep) gdWake(); else openGuardian(); });
     if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down) && !window.__NOPILL) {
       var qdx = aim.tx + 0.5 - cp.x, qdy = aim.ty + 0.5 - (cp.y - 0.4), ok = qdx * qdx + qdy * qdy <= CAVE_REACH * CAVE_REACH, cx0 = ox + aim.tx * ts, cy0 = oy + aim.ty * ts, L3 = ts * 0.3, pu = 1 + Math.sin(now / 160) * 0.06;
       g.strokeStyle = ok ? "rgba(255,244,200,.95)" : "rgba(255,90,90,.6)"; g.lineWidth = 2; g.beginPath();
@@ -24507,7 +24584,7 @@
     if (WARD.tab === "look") {
       h += '<div class="p7-ccrow"><img alt="" src="' + mePic() + '"><div><b>' + esc(charName(S.animal)) + '</b><small>Change who you are, your hair, eyes and scars.</small></div><button type="button" class="btn" data-p7="cc">Customize</button></div><h3>Colour</h3>';
       h += '<div class="p7-sw">' + BODYC.map(function (c, i) { return '<button type="button" style="--c:' + (c[0] || "#43c463") + '" class="' + ((L.col || "") === c[0] ? "on" : "") + '" data-p7="col:' + i + '" aria-label="' + c[1] + '" title="' + c[1] + '"></button>'; }).join("") + "</div>";
-      if (S.molt) h += '<p class="st-tip">Your molting path (' + esc(MOLT[S.molt].n) + ") gives you its own pattern on top of any colour.</p>";
+      if (S.molt) h += '<p class="st-tip">Your Swamp Awakening (' + esc(MOLT[S.molt].n) + ") gives you its own pattern on top of any colour.</p>";
     } else if (WARD.tab === "wear") {   // OUTFIT: one section per clothing type, each card shows YOU wearing that piece
       var C = typeof Crystals !== "undefined" ? Crystals : null, o = C ? C.outfit() : {}, items = C && C.items ? (typeof C.items === "function" ? C.items() : C.items) : [];
       if (!C) h += "<p>The Armory isn't loaded.</p>"; else {
@@ -24620,22 +24697,25 @@
   };
   function molt() { return S && S.molt && MOLT[S.molt] ? S.molt : ""; }
   function moltCan() { return (S.st.nexus || 0) > 0 || !!S.molt; }   // MOLTING unlocks once you have entered the SwampRealms (the end of the story); anyone who already molted keeps it
-  function moltLine() { return moltCan() ? '<div class="st-row"><button type="button" class="btn ghost" data-p7="molt">' + (molt() ? "About molting again" : "“I feel... itchy.” (Molting)") + "</button></div>" : ""; }
-  function moltOpen() {
-    if (!moltCan() && !DEVON) { nag("Molting comes later: enter the SwampRealms first."); return; }
-    if (!p4Open(271)) return; var m = molt(), h = famHead("croaker", "molting") + '<h2 class="st-hi">' + (m ? "“Molt again? It'll cost you. Five Gold Coins for the herbs, and a very itchy night.”" : "“Itchy? Ha! You're molting, little one. Every delver does, sooner or later. What you become is up to you.”") + "</h2>";
-    h += '<div class="p7-molts">' + Object.keys(MOLT).map(function (k) { var M = MOLT[k], on = m === k, pic = moltPic(k); return '<button type="button" class="p7-mo' + (on ? " on" : "") + '" style="--c:' + M.c + '" data-p7="mo:' + k + '"' + (on ? " disabled" : "") + '><img alt="" src="' + pic + '"><b>' + esc(M.n) + "</b><small>" + esc(M.d) + "</small>" + (on ? "<em>Your path</em>" : "") + "</button>"; }).join("") + "</div>";
-    if (m) h += '<p class="st-tip">Molting again costs 5 Gold Coins (you have ' + (S.inv.goldcoin || 0) + ").</p>";
-    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Not yet</button></div>'; p4Box(h, "#7ae0a0");
+  function moltLine() { return moltCan() ? '<div class="st-row"><button type="button" class="btn ghost" data-p7="molt">' + (molt() ? "About changing your awakening" : "“I feel... itchy.” (Swamp Awakening)") + "</button></div>" : ""; }
+  function moltOpen() {   // Croaker: the Swamp Awakening happens at the Prism Spring now; he tells you so
+    if (!moltCan() && !DEVON) { nag("The Swamp Awakening comes later: enter the SwampRealms first."); return; }
+    if (!p4Open(271)) return; var m = molt(), h = famHead("croaker", "awakening") + '<h2 class="st-hi">' + (m ? "“A " + esc(MOLT[m].n) + " suits you! Want to change? Go stand in the Prism Spring up in the SwampRealms. It asks five Gold Coins for a second awakening.”" : "“Itchy? Ha! That's the Swamp Awakening coming on. Go up to the SwampRealms and stand in the Prism Spring, the rainbow pool. Zaruk will see you through it.”") + "</h2>";
+    h += '<div class="p7-molts">' + Object.keys(MOLT).map(function (k) { var M = MOLT[k]; return '<div class="p7-mo' + (m === k ? " on" : "") + '" style="--c:' + M.c + '"><img alt="" src="' + moltPic(k) + '"><b>' + esc(M.n) + "</b><small>" + esc(M.d) + "</small></div>"; }).join("") + "</div>";
+    h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Got it</button></div>'; p4Box(h, "#7ae0a0");
   }
   var MOPIC = {};
   function moltPic(k) { if (MOPIC[k]) return MOPIC[k]; try { MOPIC[k] = DelveAv.thumb(Object.assign({}, spriteOutfit || {}, { col: MOLT[k].c, pat: MOLT[k].pat, animal: "frog" }), "frog", 4); } catch (e) { MOPIC[k] = ""; } return MOPIC[k]; }
   function moltPick(k) {
-    if (!MOLT[k] || molt() === k) return; if (molt()) { if ((S.inv.goldcoin || 0) < 5) { nag("Molting again needs 5 Gold Coins."); return; } S.inv.goldcoin -= 5; if (S.inv.goldcoin <= 0) delete S.inv.goldcoin; reslot(); hbDirty = true; }
+    if (!MOLT[k] || molt() === k) return; if (molt()) { if ((S.inv.goldcoin || 0) < 5) { nag("A second awakening needs 5 Gold Coins."); return; } S.inv.goldcoin -= 5; if (S.inv.goldcoin <= 0) delete S.inv.goldcoin; reslot(); hbDirty = true; }
     S.molt = k; look().col = MOLT[k].c; S.st.molts = (S.st.molts || 0) + 1; lookChanged(); closeStory();
     var mpx = cave ? cp.x : p.x, mpy = cave ? cp.y : p.y;   // (in the SwampRealms you are cp)
     for (var i = 0; i < 26; i++) parts.push({ x: mpx + (Math.random() - 0.5) * 1.2, y: mpy - Math.random() * PH, vx: (Math.random() - 0.5) * 6, vy: -2 - Math.random() * 5, life: 0.9 + Math.random() * 0.6, max: 1.5, c: i % 2 ? "#e8f0c8" : MOLT[k].c, s: 3 });
-    p.sq = 0.3; p.sqv = 2; snd("open", "Epic"); popup("You molted!", MOLT[k].n + ": " + MOLT[k].short, MOLT[k].c, MOLT[k].g); checkGoals(); save();
+    p.sq = 0.3; p.sqv = 2; snd("open", "Epic"); popup("Swamp Awakening!", MOLT[k].n + ": " + MOLT[k].short, MOLT[k].c, MOLT[k].g); checkGoals(); save();
+  }
+  function moltApply(k) {   // the change itself (the Swamp Awakening light show calls this at its flash)
+    if (molt()) { S.inv.goldcoin = (S.inv.goldcoin || 0) - 5; if (S.inv.goldcoin <= 0) delete S.inv.goldcoin; reslot(); hbDirty = true; }
+    S.molt = k; look().col = MOLT[k].c; S.st.molts = (S.st.molts || 0) + 1; lookChanged(); checkGoals(); save();
   }
   function moltJump() { return molt() === "tree" ? 1.15 : 1; }
   function moltDmg(e) { var m = molt(); return (m === "bull" ? 1.2 : 1) * (m === "glass" && e && e.lastHit === undefined ? 2 : 1); }
@@ -25765,7 +25845,7 @@
     give: [
       ["Every mount", function () { devGive({ m_toad: 1, m_gator: 1, m_heron: 1, m_mudo: 1, m_drake: 1, m_mammoth: 1, m_broom: 1, balloon: 1 }); toast("Mounts in your bag: put one in the hotbar to ride.", "#ffd23f"); }],
       ["Bug Net + spawn bugs", function () { S.net = Math.max(S.net || 0, 1); S.time = 120; BUGT.t = 0; for (var i = 0; i < 6; i++) { BUGT.t = 0; bugTick(0.01); } BUGL.forEach(function (b, i) { b.x = p.x + 2 + i; b.life = 300; }); toast("Bug Net ready, bugs nearby. Select the net and tap them.", "#ffd23f"); }],
-      ["Grapple + tree-frog molt", function () { devGive({ grapple: 1 }); S.molt = "tree"; if (typeof lookChanged === "function") lookChanged(); toast("Grapple added, and you're a tree frog (wall cling).", "#ffd23f"); }],
+      ["Grapple + Tree Frog awakening", function () { devGive({ grapple: 1 }); S.molt = "tree"; if (typeof lookChanged === "function") lookChanged(); toast("Grapple added, and you're a tree frog (wall cling).", "#ffd23f"); }],
       ["All fossils", function () { var o = {}; Object.keys(FOSSILS).forEach(function (k) { FPARTS.forEach(function (q) { o["fos_" + k + "_" + q[0]] = 1; }); }); devGive(o); }],
       ["Enchanting stuff", function () { devGive({ spore: 60, crystal: 20, starshard: 4, dreamshard: 6, mossaltar: 1 }); }],
       ["Terrarium + 1 of each bug", function () { var o = { terrarium: 1 }; Object.keys(BUGS).forEach(function (k) { o["bug_" + k] = 1; p8().bug[k] = p8().bug[k] || 1; }); devGive(o); }],
@@ -25827,7 +25907,7 @@
       ["Festival", function () { return festOpen(); }],
       ["Fish log", function () { return openFishLog(); }],
       ["Farm book", function () { return openFarmBook(); }],
-      ["Molting", function () { return moltOpen(); }],
+      ["Swamp Awakening", function () { return moltOpen(); }],
       ["Notice board", function () { return nbOpen(); }],
       ["Tall tales", function () { return taleOpen(); }],
       ["Earthquake", function () { return quakeOpen(); }],
