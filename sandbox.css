@@ -2824,7 +2824,7 @@ small.bo-cost{display:flex}
 .qb-th-ember.qb-mc{--qbg:linear-gradient(180deg,#0a0204 0,#2a050c 55%,#5a0812 100%);--hb:#2a050c;--pr:#ff2a3a;--d1:#ff5a5a;--d2:#8a0a18;--vn:#ff3a4a;--vd:#4a0a12;--lf:#ff9a8a;--fl:#ff3a4a;--fl2:#ff8a7a;--fc:#ffe0dc;--cb1:#2a050c;--cb2:#0a0204}
 .qb-th-ember.qb-mc .lavaglow{fill:#ff1a2a}.qb-th-ember.qb-mc .emb{fill:#ff4a5a;filter:drop-shadow(0 0 4px #ff1a2a)}
 /* ---- LOADING SCREENS in play (sandbox.js loadScreen): the startup loader's look (dl-load), with a theme per kind ---- */
-.dl-load.ls{z-index:9990;transition:opacity .28s ease,visibility .28s}
+.dl-load.ls{z-index:2147483600;transition:opacity .28s ease,visibility .28s}
 .dl-load.ls.out{opacity:0;visibility:hidden}
 .dl-load.ls .dl-mid{gap:14px}
 .ls .ls-logo{display:block;max-width:92vw;height:auto}
