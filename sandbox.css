@@ -2874,3 +2874,9 @@ small.bo-cost{display:flex}
 .dl-load.ls-dawn .dl-bar i.on{background:linear-gradient(135deg,#fff6c8,#ffd24a 45%,#c48a1a);box-shadow:inset 2px 2px 0 rgba(255,255,255,.45),inset -2px -2px 0 rgba(0,0,0,.25),0 0 12px rgba(255,200,60,.6)}
 .dl-load.ls-dawn .dl-st b{color:#fff0b0}.dl-load.ls-dawn .dl-tip{color:#e8d4a0}
 @media(prefers-reduced-motion:reduce){.ls-portal,.ls-portal i,.ls-portal .cr,.ls-sun i{animation:none}}
+/* the legendary/mythic glow must keep the selected ring: its keyframe swapped the whole box-shadow, so the outline blinked on and off */
+.crg-t.on.rar-4,.crg-t.on.rar-5{animation-name:rarGlowOn}
+@keyframes rarGlowOn{50%{box-shadow:0 0 0 2px var(--stn,#4ee6b4),inset 0 0 22px -3px var(--rc),0 0 22px -3px var(--rc)}}
+#sbxPack .sbx-is.on.rar-4,#sbxPack .sbx-is.on.rar-5{animation-name:rarGlowPk}
+@keyframes rarGlowPk{50%{box-shadow:0 0 0 2px #f2c14e,inset 0 0 22px -3px var(--rc),0 0 22px -3px var(--rc)}}
+#sbxPack .sbx-is.on[class*="rar-"]:not(.rar-0){border-color:#f2c14e;box-shadow:0 0 0 2px #f2c14e,inset 0 0 12px -4px var(--rc),0 8px 18px -8px #f2c14e}
