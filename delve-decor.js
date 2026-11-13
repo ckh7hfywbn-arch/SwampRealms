@@ -65,8 +65,18 @@
     crystalcluster: { cat: "small" }, radio: { cat: "small" }, cushion: { cat: "cloth" }, jewelbox: { cat: "small" }, lockbox: { cat: "small" },
     cookiejar: { cat: "food" }, breadbin: { cat: "food" }, queencrown: { cat: "trophy" }, swampheart: { cat: "trophy" }, zarukfig: { cat: "trophy" }, terrarium: { cat: "plant" },
     // (Stage 9 adds plates, cups, bottles, food, pillows and plush; a plate's own slot takes food, e.g.)
-    plate: { cat: "tableware", slots: [S("on", "top", 2, 22, 2, ["food"], { step: 4, cap: 1 })] }
+    plate: { cat: "tableware", slots: [S("on", "top", 2, 22, 2, ["food"], { step: 4, cap: 1 })] },
+    x_plate: { cat: "tableware", slots: [S("on", "top", 1, 23, 2, ["food"], { step: 2, cap: 2 })] }
   };
+  // FOOD you already carry can be set out on a table or a plate (drawn at half size: a whole loaf on a plate, not a loaf the size of a chair)
+  ["breadloaf", "berrypie", "cheesewheel", "fishpie", "carrotcake", "rainbowcake", "roastcarrot", "bakedpotato", "grilledfish", "omelette", "starpancakes", "swampsushi",
+    "redcap", "icecap", "carrot", "potato", "frostberry", "truffle", "duckegg", "grilledmeat", "skewer", "bogkebab", "butter", "swampsalad"].forEach(function (k) { ITEM[k] = { cat: "food", sc: 0.5 }; });
+  ["jamjar", "honeyjar", "milkjug", "pickles"].forEach(function (k) { ITEM[k] = { cat: "bottle", sc: 0.55 }; });
+  // WALL PIECES go on any back wall at half-block steps (left, right, up), not just on a whole block
+  ["painting", "plaque", "mirror", "worldmap", "fishtrophy", "wreath", "sign", "tapestry_swamp", "tapestry_ember", "tapestry_frost", "crossedswords", "bugtrophy", "frogtrophy", "battrophy", "wolftrophy",
+    "gatortrophy", "shield", "antlers", "wyrmskull", "alphapelt", "cuckooclock", "dartboard", "fanart", "elderportrait", "sundisc", "starchart", "moonmirror", "spellscroll", "shieldwall", "dwarfaxes",
+    "hangingherbs", "windchime", "birdcage"].forEach(function (k) { ITEM[k] = { cat: "wall" }; });
+  var WALL = { size: [1, 1], slots: [S("wall", "wall", -16, 48, 30, ["wall"], { step: 16, cap: 2, layer: 0 })] };   // one back-wall cell: a piece can sit half a block either side, or half a block up
 
   // ---------- the object layer ----------
   // store (lives in the world save as S.deco): { n: next id, o: { id: rec } }
@@ -83,17 +93,19 @@
       if (typeof pk !== "string") return null;
       if (pk.charAt(0) === "t") { var xy = pk.slice(2).split(","), x = +xy[0], y = +xy[1], k = env.itemAt(x, y); return k && FURN[k] ? { k: k, def: FURN[k], x: x, y: y } : null; }
       if (pk.charAt(0) === "d") { var r = O[pk.slice(2)]; return r && ITEM[r.k] && ITEM[r.k].slots ? { k: r.k, def: ITEM[r.k], rec: r } : null; }
+      if (pk.charAt(0) === "w") { var wy = pk.slice(2).split(","); return env.wallAt && env.wallAt(+wy[0], +wy[1]) ? { k: "wall", def: WALL, x: +wy[0], y: +wy[1] } : null; }
+      if (pk === "c:carry") { var ck = env.carry ? env.carry() : ""; return ck && FURN[ck] ? { k: ck, def: FURN[ck], carry: 1 } : null; }   // a piece of furniture being moved: its things wait on it
       return null;
     }
     function slotOf(pk, sid) { var pd = parentDef(pk); if (!pd) return null; var L = pd.def.slots || []; for (var i = 0; i < L.length; i++) if (L[i].id === sid) return L[i]; return null; }
-    function wOf(k) { var d = ITEM[k], s = env.size ? env.size(k) : null; return d && d.w ? d.w : s ? s[0] : 16; }
-    function hOf(k) { var d = ITEM[k], s = env.size ? env.size(k) : null; return d && d.h ? d.h : s ? s[1] : 16; }
+    function wOf(k) { var d = ITEM[k], s = env.size ? env.size(k) : null; return d && d.w ? d.w : s ? Math.max(2, Math.round(s[0] * (d && d.sc || 1))) : 16; }
+    function hOf(k) { var d = ITEM[k], s = env.size ? env.size(k) : null; return d && d.h ? d.h : s ? Math.max(2, Math.round(s[1] * (d && d.sc || 1))) : 16; }
     function relink() { kids = {}; for (var id in O) { var r = O[id]; (kids[r.p] = kids[r.p] || []).push(r); } idx = null; }
     function childrenOf(pk) { return kids[pk] || []; }
     function depth(rec) { var d = 0, r = rec; while (r && r.p && r.p.charAt(0) === "d" && d < 6) { r = O[r.p.slice(2)]; d++; } return d; }
 
     // can item k go in slot sid of parent pk at offset o (ignoring the record "except", when moving one)? returns "" or why not
-    function check(pk, sid, k, o, except) {
+    function check(pk, sid, k, o, except, oy) {
       var it = ITEM[k]; if (!it) return "That can't go on furniture.";
       var sl = slotOf(pk, sid); if (!sl) return "Nothing to put it on there.";
       if (sl.cats.indexOf(it.cat) < 0) return "That doesn't go there.";
@@ -103,11 +115,13 @@
       if (pk.charAt(0) === "d") { var pr = O[pk.slice(2)]; if (!pr || depth(pr) >= 3) return "Can't stack that deep."; }
       var here = childrenOf(pk).filter(function (q) { return q.s === sid && q !== except; });
       if (here.length >= sl.cap) return "That spot is full.";
-      for (var i = 0; i < here.length; i++) { var q = here[i], qw = wOf(q.k); if (o < q.o + qw - 1 && q.o < o + w - 1) return "Something is already there."; }
+      for (var i = 0; i < here.length; i++) { var q = here[i], qw = wOf(q.k);
+        if (sl.surf === "wall") { var a0 = oy | 0, a1 = a0 + hOf(k), b0 = q.oy | 0, b1 = b0 + hOf(q.k); if (!(a0 < b1 - 1 && b0 < a1 - 1)) continue; }
+        if (o < q.o + qw - 1 && q.o < o + w - 1) return "Something is already there."; }
       return "";
     }
     function add(pk, sid, k, o, extra) {
-      var why = check(pk, sid, k, o); if (why) return { ok: false, why: why };
+      var why = check(pk, sid, k, o, null, extra && extra.oy); if (why) return { ok: false, why: why };
       var id = String(store.n++), rec = { id: id, k: k, p: pk, s: sid, o: Math.round(o) };
       if (extra) for (var e in extra) if (extra[e] !== undefined) rec[e] = extra[e];
       O[id] = rec; (kids[pk] = kids[pk] || []).push(rec); idx = null; return { ok: true, rec: rec };
@@ -120,6 +134,11 @@
     // where a record sits in the world: { x, y } = the bottom-left of its art, in blocks (floats), plus w, h in blocks and its flip
     function where(rec) {
       var sl = slotOf(rec.p, rec.s); if (!sl) return null; var w = wOf(rec.k), h = hOf(rec.k);
+      if (rec.p.charAt(0) === "w") {   // on a back wall: o along, oy up from the cell's bottom
+        var wxy = rec.p.slice(2).split(","), wx0 = +wxy[0], wy0 = +wxy[1];
+        return { x: wx0 + (sl.x0 + rec.o) / U, y: wy0 + 1 - (U - sl.y + (rec.oy | 0)) / U, w: w / U, h: h / U, f: rec.f | 0, layer: 0, d: 0 };
+      }
+      if (rec.p.charAt(0) === "c") return null;   // being carried: not in the world
       if (rec.p.charAt(0) === "t") {
         var xy = rec.p.slice(2).split(","), ax = +xy[0], ay = +xy[1], k = env.itemAt(ax, ay), d = FURN[k]; if (!d) return null;
         var pw = d.size[0] * U, ph = d.size[1] * U, fl = env.flipAt ? env.flipAt(ax, ay) : 0, lx = sl.x0 + rec.o;
@@ -166,11 +185,38 @@
       }
       return { bad: bad, orphans: orphans };
     }
+    // LOCATE: aiming at world point (wx, wy) with item k on parent pk: the best slot and snapped offset, and whether it fits
+    function locate(pk, wx, wy, k) {
+      var pd = parentDef(pk); if (!pd) return null; var it = ITEM[k]; if (!it) return null; var w = wOf(k), h = hOf(k), best = null;
+      (pd.def.slots || []).forEach(function (sl) {
+        if (sl.cats.indexOf(it.cat) < 0) return;
+        var ox0, sy, pw, fl = 0, span = sl.x1 - sl.x0;
+        if (pd.rec) { var pw2 = where(pd.rec); if (!pw2) return; pw = wOf(pd.rec.k); fl = pw2.f; ox0 = pw2.x; sy = pw2.y - (hOf(pd.rec.k) - sl.y) / U; }
+        else if (pd.k === "wall") { ox0 = pd.x; sy = pd.y + 1 - (U - sl.y) / U; pw = U; }
+        else { var d = pd.def; pw = d.size[0] * U; fl = env.flipAt ? env.flipAt(pd.x, pd.y) : 0; ox0 = pd.x; sy = (pd.y + 1) - (d.size[1] * U - sl.y) / U; }
+        var lx = (wx - ox0) * U; if (fl) lx = pw - lx;   // into the piece's own (unflipped) pixels
+        var o = Math.round((lx - sl.x0 - w / 2) / sl.step) * sl.step; o = Math.max(0, Math.min(span - w, o)); if (span - w < 0) o = 0;
+        var oy = 0; if (sl.surf === "wall") { oy = Math.round(((sy - wy) * U - h / 2) / 16) * 16; oy = Math.max(0, Math.min(16, oy)); }
+        var dy = sl.surf === "wall" ? 0 : Math.abs(wy - sy); if (sl.surf !== "wall" && (dy > 1.1 || lx < sl.x0 - 12 || lx > sl.x1 + 12)) return;
+        var why = check(pk, sl.id, k, o, null, oy), sc = dy + (why ? 5 : 0);
+        if (!best || sc < best.sc) best = { pk: pk, sid: sl.id, o: o, oy: oy, why: why, sc: sc, sl: sl };
+      });
+      return best;
+    }
+    function slotSpans(pk) {   // each slot of a parent as world lines {x0, x1, y, sl} (for drawing where things can go)
+      var pd = parentDef(pk), out = []; if (!pd || pd.carry) return out;
+      (pd.def.slots || []).forEach(function (sl) { var x0, x1, y;
+        if (pd.rec) { var pw = where(pd.rec); if (!pw) return; var pwd = wOf(pd.rec.k); x0 = pw.f ? pw.x + (pwd - sl.x1) / U : pw.x + sl.x0 / U; x1 = x0 + (sl.x1 - sl.x0) / U; y = pw.y - (hOf(pd.rec.k) - sl.y) / U; }
+        else if (pd.k === "wall") { x0 = pd.x + sl.x0 / U; x1 = pd.x + sl.x1 / U; y = pd.y + 1 - (U - sl.y) / U; }
+        else { var d = pd.def, fl = env.flipAt ? env.flipAt(pd.x, pd.y) : 0, W2 = d.size[0] * U; x0 = pd.x + (fl ? W2 - sl.x1 : sl.x0) / U; x1 = x0 + (sl.x1 - sl.x0) / U; y = (pd.y + 1) - (d.size[1] * U - sl.y) / U; }
+        out.push({ x0: x0, x1: x1, y: y, sl: sl }); });
+      return out;
+    }
     function count() { return Object.keys(O).length; }
     function all() { var a = []; for (var id in O) a.push(O[id]); return a; }
     relink();
     return { store: store, check: check, add: add, remove: remove, removeParent: removeParent, reparent: reparent, children: childrenOf, subtree: subtree,
-      where: where, inView: inView, hit: hit, validate: validate, count: count, all: all, slotOf: slotOf, parentDef: parentDef, dirty: function () { idx = null; }, wOf: wOf, hOf: hOf };
+      where: where, locate: locate, slotSpans: slotSpans, inView: inView, hit: hit, validate: validate, count: count, all: all, slotOf: slotOf, parentDef: parentDef, dirty: function () { idx = null; }, wOf: wOf, hOf: hOf };
   }
 
   var api = { U: U, CATS: CATS, FURN: FURN, ITEM: ITEM, create: create };

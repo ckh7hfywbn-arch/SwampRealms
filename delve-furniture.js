@@ -802,6 +802,8 @@
   A.housesign = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(11, 31, 10); K.post(14, 16, 4, 15, WOOD); K.slab(2, 4, 28, 13, WOOD, { grain: 1, shine: 1 }); K.nail(4, 6); K.nail(26, 6); R(6, 8, 8, 6, "#2a8a4a"); R(7, 9, 6, 1, "#4ab86a"); R(8, 10, 4, 3, "#f2e8cc"); R(16, 9, 10, 1, DARK[1]); R(16, 12, 8, 1, DARK[1]); } };
   A.witchrune = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(8, 31, 16); K.halo(16, 10, 10, "200,130,255", 0.45); K.slab(8, 18, 16, 13, PURP, { shine: 1 }); K.slab(11, 6, 10, 13, STONE, { round: 1 }); R(14, 8, 4, 9, "#c890ff"); K.P(15, 9, "#ffffff"); K.line(13, 11, 18, 15, "#e0c8ff"); R(11, 22, 10, 2, "#b06aff"); } };
   A.lorenote = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(3, 31, 26); R(3, 23, 26, 7, PALE[1]); R(4, 22, 24, 7, PALE[5]); R(4, 22, 24, 1, PALE[6]); for (var l = 0; l < 3; l++) R(7, 24 + l * 2, 16 - l * 3, 1, "#7a6a4a", 0.7); K.slab(2, 21, 3, 9, PALE, { round: 1 }); K.slab(27, 21, 3, 9, PALE, { round: 1 }); K.disc(22, 28, 2.4, "#c22e2a"); K.P(21, 27, "#ff6a5a"); } };
+  // ---------- DECORATING: new decorations ----------
+  A.x_plate = { w: 1, h: 1, draw: function (K) { K.ell(16, 29, 12, 2.6, CERA[0]); K.ell(16, 28.6, 11, 2, CERA[4]); K.ell(16, 28.4, 8, 1.2, CERA[3]); K.R(6, 28, 4, 1, CERA[6]); K.R(5, 30, 22, 1, CERA[1]); K.R(8, 29, 16, 1, "#3e7ad8", 0.35); } };
   function paint(kind) {   // a canvas with this piece at 32 px a block, or null
     var a = A[kind]; if (!a || typeof document === "undefined") return null;
     var c = document.createElement("canvas"); c.width = a.w * 32; c.height = a.h * 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;

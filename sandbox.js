@@ -208,6 +208,9 @@
    ["t_skull1", "Bilge Skull", "A pirate's old skull. The Bone Bell Society collects them."], ["t_skull2", "Foul Skull", "A pirate skull with a nasty grin."], ["t_skull3", "Bosun's Skull", "The skull of a pirate bosun, still wearing its earring."], ["t_skull4", "Dread Captain's Skull", "It still glows faintly. The Bone Bell Society will want this."],
    ["t_tea", "Crate of Bog Tea", "Strong, brown and very popular. Croaker & Sons buy it."], ["t_rum", "Barrel of Swamp Rum", "Don't drink it. Sell it to Croaker & Sons."], ["t_silk", "Crate of Spider Silk", "Light as mist. Croaker & Sons pay well."], ["t_spice", "Crate of Fire Spice", "Sneeze-hot. Croaker & Sons' best seller."], ["t_gems", "Pouch of Sea Gems", "A pouch of polished sea gems. The Gilded Toad buys them."]].forEach(function (q) { if (!ITEMS[q[0]]) { ITEMS[q[0]] = { n: q[1], d: q[2] + " Treasure: sell it at Driftwood Haven, the trading port.", treas: 1 }; if (ORDER.indexOf(q[0]) < 0) ORDER.push(q[0]); } });
   RECIPES.push({ id: "x_drill", n: "Bore Drill", out: { x_drill: 1 }, cost: { ironingot: 10, crystal: 6, goldbar: 1 }, bench: true, d: "Bolts onto your pickaxe. Press Z (or tap it in the hotbar) to switch it on and off: every block you dig takes the 8 around it too (if your pick can break them)." });
+  // DECORATING: a clay plate to set food out on (food goes on it, it goes on a table)
+  if (!ITEMS.x_plate) { ITEMS.x_plate = { n: "Clay Plate", decor: true, d: "Set it on a table, counter or shelf, then put food on it. Hold food and tap the plate." }; if (ORDER.indexOf("x_plate") < 0) ORDER.push("x_plate"); }
+  RECIPES.push({ id: "x_plate", n: "Clay Plate", out: { x_plate: 2 }, cost: { clay: 2 }, bench: true, d: "Two plates. Set them on tables, counters and shelves, then put food on them." });
   // MINER'S HELMET: caves are dark now (you only give off a faint glow underground). Carry the helmet and its lamp lights a medium circle around you.
   if (!ITEMS.x_helm) { ITEMS.x_helm = { n: "Miner's Helmet", d: "Carry it and its lamp lights a circle around you in caves, the Mine and anywhere underground. Without it you only see a faint glow." }; if (ORDER.indexOf("x_helm") < 0) ORDER.push("x_helm"); }
   RECIPES.push({ id: "x_helm", n: "Miner's Helmet", out: { x_helm: 1 }, cost: { bogiron: 3, glowcap: 2, fiber: 3 }, bench: true, d: "A bog-iron cap with a glowcap lamp. Carry it and caves, the Mine and tunnels light up around you (they are dark without it). You only need one." });
@@ -2460,6 +2463,7 @@
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
     var dvt = /^tank([1-4])$/.exec(id), dvs = id === "scubasuit" ? 1 : /^suit([2-4])$/.exec(id) ? +id.slice(4) : 0;   // DIVE GEAR: each tank and helmet has its own drawing (not one picture in four colours)
     if (dvt || dvs) { var big = document.createElement("canvas"); big.width = big.height = 96; var bg2 = big.getContext("2d"); try { if (dvt) ocTankArt(bg2, +dvt[1], 48, 14, 5.4, 1, 0); else { bg2.fillStyle = ["", "#2fb59a", "#7a5634", "#d8b4d0", "#26263e"][dvs]; bg2.beginPath(); if (bg2.roundRect) bg2.roundRect(22, 66, 52, 24, 10); else bg2.rect(22, 66, 52, 24); bg2.fill(); ocHelmArt(bg2, dvs, 48, 46, 5.2, 1, 0); } } catch (e) {} g.imageSmoothingEnabled = true; g.drawImage(big, 0, 0, 32, 32); return (ICO[key] = c.toDataURL()); }
+    if (typeof DelveFurn !== "undefined" && DelveFurn.art[id] && ITEMS[id] && ITEMS[id].tile === undefined) { var hda0 = DelveFurn.paint(id); if (hda0) { g.drawImage(hda0, 0, 0, 32, 32, 2, 2, 28, 28); return (ICO[key] = c.toDataURL()); } }   // DECORATING: new pieces drawn in delve-furniture.js
     if (blockIcon(g, id)) return (ICO[key] = c.toDataURL());   // BLOCK ICONS: natural ground, ores and lamp blocks drawn exactly as they look placed in the world
     if (typeof NEWICO !== "undefined" && NEWICO[id]) { drawSpr(g, id); return (ICO[key] = c.toDataURL()); }   // PIXEL ICONS
     if (OCI[id]) { try { OCI[id](g); } catch (e) {} return (ICO[key] = c.toDataURL()); }
@@ -2926,6 +2930,7 @@
     S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
     if (FSIZE[ITEMS[item].tile]) fPlaceParts(tx, ty);
+    decoCarryPlaced(item, tx, ty);   // DECORATING: a piece you were moving brings its things back
     if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
@@ -13034,6 +13039,7 @@
     var pzt = peaceAim(PAW.near + 0.3); if (pzt) { pawLock = true; PZT = pzt; pawSwing(dt, pzt); return; }   // pressing and holding on a peaceful creature: swat it
     if (pawLock) { if (aim.down) { mine = null; return; } pawLock = false; }   // still holding after a swat (the creature dodged): don't dig or build until you let go
     if (aim.down && aim.tx >= 0 && (critAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts) || birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts))) { mine = null; return; }   // tapping an animal (handled on release)
+    if (decoTry()) { mine = null; return; }   // DECORATING: a tap on furniture with a decoration, or on a decoration with your pick
     if (sel === "rod") { useRod(dt); return; }
     if (sel === "hoe") { useHoe(dt); return; }
     if (sel === "bucket") { useBucket(dt); return; }
@@ -13950,7 +13956,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
-    tickMw(dt); fTick(); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickMw(dt); fTick(); decoTick(); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (WCB.swT > 0 && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / Math.max(0.15, WCB.swD || WEAPONS[S.wpn].cd) : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
@@ -14779,20 +14785,106 @@
     if (FSIZE[id] && !fWhole(x, y)) return ""; return k;
   }
   function decoSpr(k) {   // a decoration's picture cropped tight to its pixels (32 px a block), with its size
-    if (DSPR[k] !== undefined) return DSPR[k]; DSPR[k] = null; var it = ITEMS[k]; if (!it || it.tile === undefined) return null; var a = hdArt(it.tile); if (!a) return null;
+    if (DSPR[k] !== undefined) return DSPR[k]; var it = ITEMS[k]; if (!it) return null;
+    var a = it.tile !== undefined ? hdArt(it.tile) : null; if (!a && typeof DelveFurn !== "undefined" && DelveFurn.art[k]) a = DelveFurn.paint(k);
+    if (!a) a = DSPR["~" + k];
+    if (!a) {   // no picture of its own (food): use its item icon, once it has loaded
+      if (!DSPR["@" + k]) { DSPR["@" + k] = 1; var im = new Image(); im.onload = function () { var cc = document.createElement("canvas"); cc.width = im.width; cc.height = im.height; cc.getContext("2d").drawImage(im, 0, 0); DSPR["~" + k] = cc; DSPK = {}; if (DECO) DECO.dirty(); }; im.src = icon(k); }
+      return null;
+    }
+    DSPR[k] = null;
     var g0 = a.getContext("2d"), d = g0.getImageData(0, 0, a.width, a.height).data, x0 = a.width, y0 = a.height, x1 = -1, y1 = -1;
     for (var y = 0; y < a.height; y++) for (var x = 0; x < a.width; x++) if (d[(y * a.width + x) * 4 + 3] > 140) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-    if (x1 < 0) return null; var c = document.createElement("canvas"); c.width = x1 - x0 + 1; c.height = y1 - y0 + 1; c.getContext("2d").drawImage(a, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+    if (x1 < 0) return (DSPR[k] = null); var c = document.createElement("canvas"); c.width = x1 - x0 + 1; c.height = y1 - y0 + 1; c.getContext("2d").drawImage(a, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
     return (DSPR[k] = c);
   }
   function decoSprK(k) { var a = decoSpr(k); if (!a) return null; var m = Math.max(1, Math.ceil(ts * dpr / 32)), key = k + "_" + m; if (DSPK[key]) return DSPK[key]; var c = document.createElement("canvas"); c.width = a.width * m; c.height = a.height * m; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); return (DSPK[key] = c); }
   function decoInit(state) {
     DECO = null; if (typeof DelveDecor === "undefined") return; if (!state.deco || typeof state.deco !== "object") state.deco = {};
-    DECO = DelveDecor.create(state.deco, { itemAt: decoItemAt, flipAt: function (x, y) { return S && S.dflip && S.dflip[y * W + x] ? 1 : 0; }, size: function (k) { var a = decoSpr(k); return a ? [a.width, a.height] : [16, 16]; } });
+    DECO = DelveDecor.create(state.deco, { itemAt: decoItemAt, flipAt: function (x, y) { return S && S.dflip && S.dflip[y * W + x] ? 1 : 0; }, size: function (k) { var a = decoSpr(k); return a ? [a.width, a.height] : [16, 16]; },
+      wallAt: function (x, y) { return x >= 0 && y >= 0 && x < W && y < H && hasW(x, y) && !TILES[get(x, y)].solid; }, carry: function () { return state.dcarry ? state.dcarry.k : ""; } });
     state.deco = DECO.store;
+    if (state.dcarry) decoCarryCancel(true);   // left the game while moving furniture: the piece and everything on it are in your bag
     var v = DECO.validate(); if (v.bad || v.orphans.length) { try { console.warn("[decor] removed " + v.bad + " broken record(s); " + v.orphans.length + " without furniture dropped as items"); } catch (e) {} }
     v.orphans.forEach(function (r) { var m = /^t:(-?\d+),(-?\d+)$/.exec(r.p), x = m ? +m[1] : Math.floor(p.x), y = m ? +m[2] : Math.floor(p.y) - 1; if (ITEMS[r.k]) dropAt(r.k, 1, x, y); });
   }
+  // ---------- STAGE 3: PLACING DECORATIONS BY HAND. Hold a decoration (a candle, a book, a plate, food, a painting...) and aim at
+  // furniture: the spots where it can go glow, it snaps to half or quarter-block steps along them, R flips it, and a tap sets it down.
+  // Aim at a plate to put food on it. Paintings and other wall pieces go on any back wall at half-block steps. With your pick (or
+  // a hand tool), tap a decoration to take it (and whatever is on it) back into your bag. ----------
+  var DAIM = null, DLAST = false, DFLIP = 0, DHOV = null;
+  function decoLocate(wx, wy, k) {
+    var it = DelveDecor.ITEM[k]; if (!it) return null; var best = null, tried = {};
+    function cand(pk) { if (tried[pk]) return; tried[pk] = 1; var L = DECO.locate(pk, wx, wy, k); if (L && (!best || L.sc < best.sc)) best = L; }
+    var r = DECO.hit(wx, wy); if (r && DelveDecor.ITEM[r.k] && DelveDecor.ITEM[r.k].slots) cand("d:" + r.id);
+    var cx = Math.floor(wx), cy = Math.floor(wy);
+    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var x = cx + dx, y = cy + dy, a = fAnchor(x, y) || [x, y]; if (decoItemAt(a[0], a[1])) cand("t:" + a[0] + "," + a[1]); }
+    if (it.cat === "wall" && hasW(cx, cy) && get(cx, cy) === T.AIR) cand("w:" + cx + "," + cy);
+    return best;
+  }
+  function decoTry() {   // called first thing in useTool: true = the tap was a decorating tap (don't dig, build or eat with it)
+    var start = (aim.down && !DLAST) || (aim.press && !aim.down && !DLAST); DLAST = aim.down; DAIM = null; DHOV = null; var pressed = aim.press;
+    if (!DECO || cave || HOME || OCS || aim.tx < 0 || panelOpen) return false;
+    var wx = (aim.mx - ox) / ts, wy = (aim.my - oy) / ts, dx = wx - p.x, dy = wy - (p.y - PH / 2); if (dx * dx + dy * dy > (REACH + 1) * (REACH + 1)) return false;
+    if (DelveDecor.ITEM[sel] && (S.inv[sel] || 0) > 0) {
+      var L = decoLocate(wx, wy, sel); if (!L) return false; DAIM = L; if (pressed) aim.press = 0;
+      if (start) { if (L.why) nag(L.why); else { var r = DECO.add(L.pk, L.sid, sel, L.o, { f: DFLIP ? 1 : undefined, oy: L.oy || undefined }); if (r.ok) { S.inv[sel]--; reslot(); S.st.decor = (S.st.decor | 0) + 1; snd("place"); save(); } else nag(r.why); } }
+      return true;
+    }
+    var hr = DECO.hit(wx, wy); if (!hr) return false;
+    if (sel === "pick" || sel === "weapon" || sel === "shovel" || bare) { DHOV = hr; if (pressed && start) aim.press = 0;
+      if (start) { var gone = DECO.remove(hr.id); gone.forEach(function (q) { if (ITEMS[q.k]) give(q.k, 1); }); snd("pop"); toast((gone.length > 1 ? gone.length + " pieces" : ITEMS[hr.k] ? ITEMS[hr.k].n : "It") + " back in your bag.", "#c8e8a0"); save(); }
+      return aim.down || start;
+    }
+    return false;
+  }
+  function decoFlipKey() {   // R: flip what you are about to place, or the decoration under your aim; false = not a decorating flip
+    if (!DECO || cave || HOME || OCS) return false;
+    if (S.dcarry) { S.dcarry.f = S.dcarry.f ? 0 : 1; toast("Turned the " + ITEMS[S.dcarry.k].n + " around.", "#c8e8a0"); return true; }
+    if (DAIM) { DFLIP = DFLIP ? 0 : 1; return true; }
+    var wx = (aim.mx - ox) / ts, wy = (aim.my - oy) / ts, r = DECO.hit(wx, wy); if (!r) return false; r.f = r.f ? 0 : 1; DECO.dirty(); save(); return true;
+  }
+  function decoPreview(g, now) {   // the glowing spots and the ghost of what you hold
+    if (DHOV && DHOV._w) { var w = DHOV._w; g.strokeStyle = "rgba(255,240,170," + (0.6 + Math.sin(now / 150) * 0.3) + ")"; g.lineWidth = 2; g.strokeRect(ox + w.x * ts - 2, oy + (w.y - w.h) * ts - 2, w.w * ts + 4, w.h * ts + 4); }
+    if (!DAIM) return; var L = DAIM, it = DelveDecor.ITEM[sel]; if (!it) return;
+    var spans = DECO.slotSpans(L.pk);
+    spans.forEach(function (sp) { if (sp.sl.cats.indexOf(it.cat) < 0) return; var on = sp.sl.id === L.sid, a = on ? 0.85 : 0.4;
+      g.fillStyle = "rgba(140,255,200," + a * (0.7 + Math.sin(now / 200) * 0.3) + ")"; if (sp.sl.surf === "wall") { g.globalAlpha = 0.35; g.fillRect(ox + sp.x0 * ts, oy + (sp.y - 1) * ts, (sp.x1 - sp.x0) * ts, ts); g.globalAlpha = 1; } else g.fillRect(ox + sp.x0 * ts, oy + sp.y * ts - 2, (sp.x1 - sp.x0) * ts, 3); });
+    var c = decoSprK(sel); if (!c) return; var wgt = DECO.wOf(sel) / 32, hgt = DECO.hOf(sel) / 32, sp0 = spans.filter(function (q) { return q.sl.id === L.sid; })[0]; if (!sp0) return;
+    var pd = DECO.parentDef(L.pk), fl = pd && pd.rec ? (pd.rec._w ? pd.rec._w.f : 0) : pd && pd.k !== "wall" && S.dflip[pd.y * W + pd.x] ? 1 : 0;
+    var gx = fl ? sp0.x1 - (L.o / 32) - wgt : sp0.x0 + L.o / 32, gy = sp0.y - (L.oy || 0) / 32 - hgt;
+    g.save(); g.globalAlpha = L.why ? 0.35 : 0.75; g.imageSmoothingEnabled = true; var dx = ox + gx * ts, dw = wgt * ts;
+    if (fl ^ DFLIP) { g.translate(dx * 2 + dw, 0); g.scale(-1, 1); } g.drawImage(c, dx, oy + gy * ts, dw, hgt * ts); g.restore();
+    g.strokeStyle = L.why ? "rgba(255,90,90,.8)" : "rgba(120,255,170,.9)"; g.lineWidth = 2; g.strokeRect(ox + gx * ts - 1, oy + gy * ts - 1, wgt * ts + 2, hgt * ts + 2);
+  }
+  // ---------- STAGE 4: MOVING FURNITURE WITH EVERYTHING ON IT. G (aiming at a piece) picks it up: the piece goes in your hand, and what
+  // stood on it (and in it, for storage) waits on it. Place it anywhere and it all comes back exactly as it was, turned the way it was
+  // (R turns it while you carry it). Esc or G again puts the piece and its things in your bag. ----------
+  function decoGrab(tx, ty) {
+    if (!DECO || cave || HOME || OCS) return false; if (S.dcarry) { decoCarryCancel(); return true; }
+    var a = fAnchor(tx, ty) || [tx, ty], id = get(a[0], a[1]), td = TILES[id]; if (!td || td.solid || td.fpart) return false; var k = dropOf(td);
+    if (!k || !ITEMS[k] || ITEMS[k].tile !== id || td.kind === "door" || td.kind === "ladder" || !(ITEMS[k].decor || FSIZE[id] || DelveDecor.FURN[k] || ITEMS[k].put)) { nag("That can't be picked up and moved."); return true; }
+    var key = a[0] + "," + a[1], idx = a[1] * W + a[0];
+    S.dcarry = { k: k, f: S.dflip[idx] ? 1 : 0, ch: S.chests[key] ? JSON.parse(JSON.stringify(S.chests[key])) : null, n: DECO.children("t:" + key).length };
+    delete S.chests[key]; DECO.reparent("t:" + key, "c:carry"); delete S.dflip[idx];
+    if (FSIZE[id]) fCells(a[0], a[1], FSIZE[id]).forEach(function (c) { if (TILES[get(c[0], c[1])].fpart) setT(c[0], c[1], T.AIR); });
+    setT(a[0], a[1], T.AIR); S.inv[k] = (S.inv[k] || 0) + 1; reslot(); choose(k);
+    toast("Moving the " + ITEMS[k].n + (S.dcarry.n ? " with " + S.dcarry.n + " thing" + (S.dcarry.n > 1 ? "s" : "") + " on it" : "") + ". Place it anywhere (R turns it, Esc puts it away).", "#c8e8a0"); snd("pop"); save(); return true;
+  }
+  function decoCarryPlaced(item, tx, ty) {   // place() set a piece down: if it is the one being moved, bring its things back
+    if (!S.dcarry || S.dcarry.k !== item || !DECO) return; var key = tx + "," + ty, c = S.dcarry;
+    DECO.reparent("c:carry", "t:" + key); if (c.ch) { var dst = S.chests[key] || (S.chests[key] = {}); for (var q in c.ch) dst[q] = (dst[q] || 0) + c.ch[q]; }
+    if (c.f) S.dflip[ty * W + tx] = 1; else delete S.dflip[ty * W + tx]; S.dcarry = null; DECO.dirty();
+    var bad = DECO.validate(); bad.orphans.forEach(function (r) { if (ITEMS[r.k]) give(r.k, 1); }); if (bad.orphans.length) toast(bad.orphans.length + " thing(s) didn't fit and went to your bag.", "#ffd27a");
+  }
+  function decoCarryCancel(quiet) {   // stop moving: the piece is already in your bag; its things and its stored items join it
+    if (!S.dcarry) return; var c = S.dcarry, n = 0; S.dcarry = null;
+    if (DECO) DECO.removeParent("c:carry").forEach(function (r) { if (ITEMS[r.k]) { give(r.k, 1); n++; } });
+    if (c.ch) for (var q in c.ch) if (ITEMS[q] && c.ch[q] > 0) { give(q, c.ch[q]); n += c.ch[q]; }
+    if (!quiet) toast("Put the " + (ITEMS[c.k] ? ITEMS[c.k].n : "piece") + " away" + (n ? " with " + n + " thing" + (n > 1 ? "s" : "") : "") + " in your bag.", "#c8e8a0");
+    try { save(); } catch (e) {}
+  }
+  function decoTick() { if (S && S.dcarry && !((S.inv[S.dcarry.k] || 0) > 0)) decoCarryCancel(); }   // the carried piece left your bag some other way
   function decoOnBreak(x, y) {   // the furniture at (x, y) is coming down: everything on it goes to your bag (it drops if the bag is full)
     if (!DECO) return; var gone = DECO.removeParent("t:" + x + "," + y); if (!gone.length) return; gone.forEach(function (r) { if (ITEMS[r.k]) give(r.k, 1); });
     toast(gone.length + " decoration" + (gone.length > 1 ? "s" : "") + " back in your bag.", "#c8e8a0");
@@ -16844,7 +16936,7 @@
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
-    decoDrawAll(g); drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
@@ -18398,7 +18490,7 @@
     ["Building|Playground", "x_bounceshroom x_speedmoss"],
     ["Decor|Party", "x_d_confetti x_d_balloons"],
     ["Tools|Blasting", "x_bomb x_stickybomb x_blastkeg x_firework x_starrocket"],
-    ["Gear|Armor", "arm1 arm2 arm3 arm4 arm5 arm6 x_helm"],
+    ["Gear|Armor", "arm1 arm2 arm3 arm4 arm5 arm6 x_helm"], ["Decor|Tables & Tabletops", "x_plate"],
     ["Gear|Backpacks", "bag1 bag2"],
     ["Gear|Boss Summons", "x_lure x_idol x_horn"],
     ["Gear|Mounts", "x_m_toad x_m_gator x_m_heron x_balloon"],
@@ -19907,7 +19999,9 @@
       else if (graveNear()) recoverGrave();
       else { var skip = bedNear() && isNight(S.time), dn = skip ? null : doorNear(), cn = skip || dn ? null : chestNear(), nn = !skip && !dn && !cn && npcNear(), sn = !skip && !dn && !cn && !nn && standNear(), tn = !skip && !dn && !cn && !nn && !sn && trapNear(), gn = !skip && !dn && !cn && !nn && !sn && !tn && gateNear(), jn = !skip && !dn && !cn && !nn && !sn && !tn && !gn && jewelNear(), an2 = skip || dn || cn || nn || sn || tn || gn || jn ? null : animalNear(), wn = skip || dn || cn || an2 ? null : stationNear(3), hn = skip || dn || cn || wn || !SC ? null : holeNear(); var gzn = skip || (SC && holeNear()) ? null : structNear(); if (gzn) enterBuilding(gzn); else if (dn) toggleDoor(dn.x, dn.y, true); else if (cn) openChest(cn.x, cn.y); else if (nn) talkCroaker(); else if (sn) openStand(sn.x, sn.y); else if (tn) emptyTrap(tn.x, tn.y); else if (gn) openGate(gn.x, gn.y); else if (jn) openJewel(jn.x, jn.y); else if (an2) useAnimal(an2); else if (wn) openStn(wn.k, wn.x, wn.y); else if (hn) enterCave(hn.x, hn.y); else if (!fHook()) trySleep(); }
     }
-    else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { flipDecor(aim.tx, aim.ty); }
+    else if ((k === "r" || k === "R") && !cave && !OCS && !HOME && aim.tx >= 0) { if (!decoFlipKey()) flipDecor(aim.tx, aim.ty); }
+    else if ((k === "g" || k === "G") && !cave && !OCS && !HOME && aim.tx >= 0 && !e.repeat) { decoGrab(aim.tx, aim.ty); }   // DECORATING: pick up a piece of furniture with everything on it
+    else if (k === "Escape" && S.dcarry) { decoCarryCancel(); }
     else if (k === "q" || k === "Q") { var h2 = hot(); choose(sel === "pick" ? (h2[0] || (S.wpn ? "weapon" : "pick")) : "pick"); }
     else if (k === "Shift" || k === "c" || k === "C") { if (!e.repeat) tryDodge(); }
     else if (k === "x" || k === "X") { if (!e.repeat) quickStack(); }
@@ -26012,7 +26106,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__decoT = { m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); } };   // (test harness: decorating)
+  window.__decoT = { st: function () { return { DAIM: !!DAIM, DHOV: DHOV ? DHOV.k : null, DLAST: DLAST, wx: (aim.mx - ox) / ts, wy: (aim.my - oy) / ts, hit: DECO && DECO.hit((aim.mx - ox) / ts, (aim.my - oy) / ts) ? 1 : 0, sel: sel, bare: bare }; }, m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); } };   // (test harness: decorating)
   window.__fsz = function () { return Object.keys(FSIZE).map(Number); }; window.__fart = fArt16; window.__fatlas = function () { return ATLAS; }; window.__hd = hdArt;   // (test harness: real-size furniture art)
   window.__sbx.dbg = { render: function (t) { render(t); }, OPT: OPT, chk: CHK, drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };

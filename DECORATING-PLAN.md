@@ -191,3 +191,38 @@ How to test:
 Not done yet (later stages): placing decorations by hand (Stage 3), moving furniture with its contents and wall slots (Stage 4), exact draw depth (Stage 5), the panel (Stage 6), lights on decorations (Stage 7), multiplayer messages (Stage 8), and new content such as plates, food, cups and pillows (Stage 9).
 
 Existing play is unchanged: old worlds load with no decorations, tile furniture and small table pieces work as before, and the smoke test passes.
+
+### Stages 3 and 4: done (13 Nov)
+What changed:
+- **Placing by hand (Stage 3).**
+  - Hold any decoration and aim at furniture. Every spot it can go glows (the one it will use brighter), a ghost shows where it lands (green if it fits, red with the reason if not), and it snaps to that spot's step (quarter or half block). A tap sets it down.
+  - It works on tables, desks, counters, dressers, shelves, beds, the sofa and wardrobe tops.
+  - **Nesting:** aim at a plate while holding food to put the food on it (Table → Plate → Food).
+  - **Food:** food you carry can be set out (drawn at half size); jars of jam, honey, milk and pickles count as bottles. Holding food over nothing still eats it as before.
+  - **Wall pieces** (paintings, trophies, mirrors, clocks, tapestries, maps and about 30 more) go on any back wall at half-block steps, including half a block up.
+  - **R** flips what you are about to place, or the decoration under your aim.
+  - **With the pick** (or a hand tool), hovering a decoration outlines it and a tap takes it and everything on it back to your bag.
+  - **New item:** Clay Plate (Workbench, 2 Clay for 2; Decor > Tables & Tabletops).
+- **Moving furniture (Stage 4).**
+  - **G** while aiming at a piece picks it up. Its decorations and its stored items wait on it while you carry it.
+  - **R** turns it while carrying.
+  - Placing it anywhere brings everything back in the same relative spots, mirrored if it was turned.
+  - **Esc** (or G again) puts the piece and all its things in your bag.
+  - Leaving the game mid-move does the same on the next load, so nothing is lost.
+  - Breaking a piece returns everything on it to your bag.
+
+Tested (in game, scripted):
+- **Scenarios 1–4:** table, candle, a plate beside it, bread on the plate.
+- **Scenarios 5–6:** moving the table with G (it all moves), turning it with R (it all mirrors).
+- **Scenario 7:** breaking the table (everything returns).
+- **Scenario 8:** wall paintings at half steps.
+- **Scenarios 10–11:** reload restores everything; reload while carrying returns everything to the bag.
+- Picking a plate up returns the bread with it.
+- Smoke test: `AUDIT []`, `ERRORS 0`.
+
+Not done yet:
+- Phones have no G or R key, so moving and flipping on touch come with the Stage 6 panel (selection card buttons). Placing and taking already work by tapping.
+- Rugs under furniture, and decorations drawn in exact depth, come in Stage 5. Decorations currently draw on top of all tiles.
+- Candles placed as decorations don't give light yet (Stage 7).
+- Multiplayer messages for decorations (Stage 8).
+- Scenario 12 (large numbers) and the stress test: Stage 5.
