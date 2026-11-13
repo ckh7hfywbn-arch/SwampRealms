@@ -1819,7 +1819,7 @@ body.sbx-app footer{margin-top:28px}
 .sbx-sbox{width:min(860px,100%);height:min(660px,100%)}
 @media (min-width:700px){
   .sbx-sbox .crg{grid-template-columns:minmax(0,1fr) 290px}
-  .sbx-sbox .crg-side{position:sticky;top:58px;bottom:auto;margin:0;padding:0;background:none}
+  .sbx-sbox .crg-side{position:sticky;top:calc(var(--cbh,58px) - 4px);bottom:auto;margin:0;padding:0;background:none}
   .sbx-sbox .crg-g{grid-template-columns:repeat(auto-fill,minmax(82px,1fr))}
 }
 @media (prefers-reduced-motion:reduce){.crg-t,.crg-t:hover,.crg-t.on{transition:none;transform:none}.crg-t.flash{animation:none;box-shadow:0 0 0 2px #4ee6b4}}
@@ -2909,3 +2909,16 @@ body.sbx-app input,body.sbx-app textarea,body.sbx-app select,body.sbx-app [conte
 #sbxPack .sbx-is.empty,.sbx-is.empty{background:radial-gradient(circle at 50% 42%,#ffffff0d,transparent 62%),linear-gradient(180deg,#183429,#10241b);border:1.5px solid #9fe8c447;box-shadow:inset 0 2px 6px #0008,inset 0 0 0 1px #00000040}
 #sbxPack .pk2-hot .sbx-is.empty,.sbx-igrid.hot .sbx-is.empty{border-color:#f2c14e3d}
 .sbx-slot.empty{background:linear-gradient(180deg,#163126,#0e2119);border-color:#9fe8c440;opacity:1}
+/* PC INVENTORY: no tap buttons for moving stacks (the mouse and keys do it, Minecraft-style); the stack on the cursor follows the mouse */
+.pk-keys{display:none}
+html.pc-inv .pk-keys{display:block;font-size:.74rem;line-height:1.5;opacity:.85}html.pc-inv .pk-keys b{color:#9fe8c4;font-weight:800}
+html.pc-inv .pk-tip{display:none}
+html.pc-inv [data-iact="swap"],html.pc-inv [data-iact="split"],html.pc-inv [data-iact="toss1"],html.pc-inv [data-iact="tossall"]{display:none}
+.inv-cur{position:absolute;left:0;top:0;z-index:2147483000;width:36px;height:36px;pointer-events:none;display:none;filter:drop-shadow(0 4px 6px #000a)}
+.inv-cur img{width:36px;height:36px;image-rendering:auto}
+.inv-cur b{position:absolute;right:-4px;bottom:-4px;font:900 .8rem/1 Nunito,system-ui,sans-serif;color:#fff;text-shadow:0 1px 0 #000,0 0 3px #000}
+html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
+/* SMOOTH SCROLLING in crafting lists: no pulsing glows while the list is moving, and the list scrolls on its own layer */
+.sbx-body,#sbxStnBody{overscroll-behavior:contain;will-change:scroll-position}
+.scrolling .crg-t,.scrolling .crg-t *{animation-play-state:paused!important;transition:none!important}
+.scrolling .crg-t:hover{transform:none!important}
