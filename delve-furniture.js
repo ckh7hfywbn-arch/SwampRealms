@@ -467,6 +467,145 @@
       K.P(x, y, land ? (lit > 0.6 ? "#7ad860" : lit > 0.2 ? "#4ab040" : "#2a7a2a") : (lit > 0.6 ? "#6ab4ff" : lit > 0.2 ? "#3a84e0" : "#1e54a8")); }
     K.P(11, 7, "#ffffff"); K.P(12, 7, "#d8f0ff");
     for (var a = -100; a <= 100; a += 4) { var t = a / 100 * Math.PI * 0.6, ax = Math.round(16 + Math.sin(t) * 12.5), ay = Math.round(13 - Math.cos(t) * 11.5); K.P(ax, ay, GOLD[4]); K.P(ax + 1, ay, GOLD[2]); } } };
+  // ---------- WALL ART, TROPHIES, LEGENDARY, SPOOKY AND PARTY (batch 3) ----------
+  function board(K, x, y, w, h, p, inner) {   // a framed wall board (frame lit top-left, inner panel)
+    K.slab(x, y, w, h, p || WOOD, { shine: 1 }); K.R(x + 2, y + 2, w - 4, h - 4, (p || WOOD)[0]); K.R(x + 3, y + 3, w - 6, h - 6, inner || "#2a1a10"); K.R(x + 3, y + 3, w - 6, 1, "#000", 0.3); K.nail(x + 1, y + 1); K.nail(x + w - 3, y + 1);
+  }
+  function hangTap(K, cl, emblem) {   // a tapestry on a rod with tassels
+    var R = K.R; K.slab(1, 1, 30, 3, WOOD, { round: 1, shine: 1 }); R(4, 4, 24, 23, cl[0]); R(5, 4, 22, 22, cl[3]); R(5, 4, 22, 1, cl[1]); for (var x = 7; x < 26; x += 6) { R(x, 5, 2, 21, cl[4], 0.5); R(x + 3, 5, 1, 21, cl[2], 0.5); }
+    R(6, 6, 20, 1, GOLD[4]); R(6, 24, 20, 1, GOLD[4]); for (var t = 5; t < 27; t += 3) { R(t, 26, 2, 3, cl[2]); K.P(t, 29, GOLD[4]); } emblem(K);
+  }
+  A.sign = { w: 1, h: 1, draw: function (K) { var R = K.R; K.post(7, 2, 3, 10, DARK); K.post(22, 2, 3, 10, DARK); K.slab(2, 10, 28, 15, WOOD, { grain: 1, shine: 1 }); K.nail(4, 12); K.nail(26, 12);
+    R(6, 15, 18, 2, DARK[1]); R(6, 19, 14, 2, DARK[1]); K.P(24, 19, "#2fb59a"); K.P(25, 19, "#2fb59a"); R(1, 25, 4, 1, WOOD[0], 0.5); } };
+  A.fishtrophy = { w: 1, h: 1, draw: function (K) { board(K, 2, 6, 28, 19, WOOD, "#1e3a4a"); var F = ["#0a3a30", "#147060", "#1e9a80", "#2ec8a4", "#5ae0c0", "#9af4dc", "#e0fff4"];
+    K.ell(15, 15.5, 8, 4, F[0]); K.ell(15, 15, 7, 3.2, F[3]); K.ell(13, 13.5, 4, 1.4, F[5]); R2(K, 22, 12, 4, 7, F[2]); K.P(10, 14, "#ffffff"); K.P(10, 15, "#0a1a1a"); K.R(9, 17, 3, 1, F[1]); for (var i = 13; i < 19; i += 2) K.P(i, 16, F[2]); } };
+  function R2(K, x, y, w, h, c) { for (var i = 0; i < h; i++) { var hw = Math.round(Math.abs(i - (h - 1) / 2)); K.R(x + (w - 1) - hw - 1, y + i, hw + 2, 1, c); } }
+  A.mirror = { w: 1, h: 1, draw: function (K) { var R = K.R; K.slab(6, 1, 20, 30, GOLD, { round: 1, shine: 1 }); R(8, 3, 16, 26, "#2a4a5a"); var g = K.g.createLinearGradient(8, 3, 24, 29); g.addColorStop(0, "#d8f4ff"); g.addColorStop(0.5, "#8ac4dc"); g.addColorStop(1, "#5a90a8"); K.g.fillStyle = g; K.g.fillRect(9, 4, 14, 24);
+    K.line(11, 8, 16, 3, "#ffffff"); K.line(11, 12, 20, 3, "#ffffff", 0.6); K.line(13, 22, 21, 14, "#ffffff", 0.35); K.disc(16, 1, 2, "#ff6a9a"); } };
+  A.worldmap = { w: 1, h: 1, draw: function (K) { var R = K.R; board(K, 1, 3, 30, 25, DARK, "#e8d8b0"); R(5, 7, 22, 17, "#e8d8b0"); R(5, 7, 22, 17, "#7aaad0", 0.35);
+    [[7, 9, 8, 6], [17, 12, 7, 8], [9, 17, 6, 5]].forEach(function (l) { K.ell(l[0] + l[2] / 2, l[1] + l[3] / 2, l[2] / 2, l[3] / 2, "#6aa84a"); K.P(l[0] + 2, l[1] + 2, "#3a7a2a"); });
+    K.line(10, 12, 20, 16, "#8a3a1a", 0.7); K.R(19, 15, 3, 3, "#d6382e"); K.P(20, 16, "#ffd23f"); } };
+  A.plaque = { w: 1, h: 1, draw: function (K) { var R = K.R; K.slab(5, 3, 22, 22, DARK, { round: 1, shine: 1 }); K.slab(8, 6, 16, 16, WOOD, { round: 1 }); K.disc(16, 13, 5, GOLD[2]); K.disc(16, 13, 4, GOLD[4]); K.disc(15, 12, 1.6, GOLD[6]); R(13, 18, 6, 2, GOLD[3]);
+    K.slab(11, 24, 10, 5, GOLD, { shine: 1 }); R(13, 26, 6, 1, GOLD[1]); } };
+  A.painting = { w: 1, h: 1, draw: function (K) { var R = K.R; board(K, 2, 3, 28, 24, GOLD, "#5a8ac8"); R(5, 6, 22, 18, "#8ac0e8"); R(5, 14, 22, 10, "#4a9a4a"); K.ell(12, 16, 9, 4, "#6aba5a"); K.ell(22, 18, 8, 3, "#3a8a3a");
+    K.disc(22, 9, 3, "#ffe680"); K.disc(22, 9, 2, "#fff6c0"); K.ell(10, 9, 3, 1.2, "#ffffff"); K.ell(13, 8, 2, 1, "#ffffff"); R(14, 18, 2, 4, "#5a3418"); K.ell(15, 16, 3, 3, "#2a7a2a"); } };
+  A.tapestry_swamp = { w: 1, h: 1, draw: function (K) { hangTap(K, ["#0a2a22", "#0e4a3a", "#14705a", "#1f9a7c", "#3ec09c", "#7ae0c0", "#c4ffe8"], function (K) { K.ell(16, 17, 6, 4, GOLD[3]); K.ell(16, 16.5, 5, 3, GOLD[5]); K.disc(13, 12, 1.8, GOLD[5]); K.disc(19, 12, 1.8, GOLD[5]); K.P(13, 12, "#0a2a22"); K.P(19, 12, "#0a2a22"); }); } };
+  A.tapestry_ember = { w: 1, h: 1, draw: function (K) { hangTap(K, ["#3a0a04", "#6a1408", "#9a2410", "#c83a18", "#e8602a", "#f6904a", "#ffc890"], function (K) { K.flame(16, 22, 13, ["#6a1408", "#ff8a1a", "#ffc43a", "#fff0a0"]); }); } };
+  A.tapestry_frost = { w: 1, h: 1, draw: function (K) { hangTap(K, ["#081e3a", "#0e3060", "#164a8a", "#2266b0", "#3e8ad0", "#7ab8ec", "#d4f0ff"], function (K) { var c = "#e8fbff"; K.R(15, 9, 2, 14, c); K.R(9, 15, 14, 2, c); K.line(11, 11, 21, 21, c); K.line(21, 11, 11, 21, c); K.disc(16, 16, 2, "#fff"); }); } };
+  A.wreath = { w: 1, h: 1, draw: function (K) { for (var a = 0; a < 40; a++) { var t = a / 40 * Math.PI * 2, x = 16 + Math.cos(t) * 10, y = 16 + Math.sin(t) * 10; K.ell(x, y, 3.6, 2.6, a % 3 ? LEAF[3] : LEAF[2]); K.P(Math.round(x - 1), Math.round(y - 1), LEAF[5]); }
+    [[0.3], [1.4], [2.6], [3.6], [4.9], [5.7]].forEach(function (b) { K.disc(16 + Math.cos(b[0]) * 10, 16 + Math.sin(b[0]) * 10, 1.8, "#d6203a"); K.P(Math.round(15 + Math.cos(b[0]) * 10), Math.round(15 + Math.sin(b[0]) * 10), "#ffb0b8"); });
+    K.R(12, 2, 8, 4, "#c22e2a"); K.R(12, 2, 8, 1, "#ff6a5a"); K.line(14, 5, 11, 10, "#c22e2a"); K.line(18, 5, 21, 10, "#c22e2a"); } };
+  A.crossedswords = { w: 1, h: 1, draw: function (K) { [[4, 27, 26, 5], [28, 27, 6, 5]].forEach(function (s) { K.line(s[0], s[1], s[2], s[3], IRON[1]); K.line(s[0], s[1] - 1, s[2], s[3] - 1, IRON[5]); K.line(s[0] + (s[2] > s[0] ? 1 : -1), s[1], s[2] + (s[2] > s[0] ? 1 : -1), s[3], IRON[3]); });
+    [[6, 24], [26, 24]].forEach(function (h, i) { K.slab(h[0] - 3, h[1] - 3, 7, 3, GOLD, { round: 1 }); K.slab(h[0] - (i ? -1 : 3), h[1], 3, 5, DARK, {}); K.disc(h[0] - (i ? -2 : 2), h[1] + 6, 1.6, GOLD[4]); });
+    K.disc(16, 16, 5, WOOD[0]); K.disc(16, 16, 4, "#c22e2a"); K.disc(15, 15, 1.5, "#ff8a7a"); } };
+  A.slimejar = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); K.slab(6, 8, 20, 23, ["#2a3a30", "#5a7a66", "#8ab0a0", "#b0d4c8", "#cce8de", "#e4f6f0", "#ffffff"], { round: 1 }); R(8, 12, 16, 17, "#4ad84a"); R(8, 12, 16, 2, "#9af07a");
+    K.ell(16, 22, 6, 5, "#2a9a2a"); K.ell(15, 21, 5, 4, "#5ae85a"); K.P(13, 20, "#ffffff"); K.P(14, 21, "#103a10"); K.P(18, 21, "#103a10"); R(14, 24, 4, 1, "#103a10"); R(8, 10, 1, 19, "#fff", 0.6); K.slab(7, 4, 18, 5, WOOD, { round: 1, shine: 1 }); } };
+  function trophy(K, inner, head) { board(K, 2, 4, 28, 24, WOOD, inner); head(K); K.slab(11, 26, 10, 3, GOLD, { shine: 1 }); }
+  A.bugtrophy = { w: 1, h: 1, draw: function (K) { trophy(K, "#2a1a2a", function (K) { K.ell(14, 17, 8, 6, "#14060f"); K.ell(14, 16.5, 7, 5, "#5a2d62"); K.ell(12, 14.5, 3, 1.6, "#a676bc"); [9, 13, 17].forEach(function (x) { K.R(x, 8, 2, 4, "#f1e5d0"); K.P(x, 7, "#ff6b82"); }); K.disc(22, 18, 3.6, "#14060f"); K.disc(22, 18, 2.8, "#4a2656"); K.P(23, 17, "#ffb0a0"); K.P(21, 17, "#ffb0a0"); }); } };
+  A.frogtrophy = { w: 1, h: 1, draw: function (K) { trophy(K, "#1a2a1a", function (K) { K.ell(16, 18, 9, 6, "#0e3a10"); K.ell(16, 17.5, 8, 5, "#3ec040"); K.ell(14, 16, 4, 2, "#7ae86a"); [11, 21].forEach(function (x) { K.disc(x, 12, 3.4, "#0e3a10"); K.disc(x, 12, 2.6, "#5ad85a"); K.disc(x, 12, 1.6, "#ffe066"); K.P(x, 12, "#1a1a1a"); }); K.R(12, 20, 8, 1, "#0e3a10"); K.R(13, 21, 6, 1, "#f2a0a0"); }); } };
+  A.battrophy = { w: 1, h: 1, draw: function (K) { trophy(K, "#1a1a2a", function (K) { var B2 = "#5a3a8a"; for (var i = 0; i < 9; i++) { K.R(5 + i, 12 + Math.round(i * 0.5), 1, 7 - Math.round(i * 0.4), B2); K.R(26 - i, 12 + Math.round(i * 0.5), 1, 7 - Math.round(i * 0.4), B2); } K.line(5, 12, 13, 16, "#2a1a4a"); K.line(26, 12, 18, 16, "#2a1a4a");
+    K.disc(16, 16, 4.4, "#1a0e2a"); K.disc(16, 16, 3.6, "#7a58ae"); K.R(12, 10, 2, 3, "#7a58ae"); K.R(18, 10, 2, 3, "#7a58ae"); K.P(14, 15, "#ffd23f"); K.P(18, 15, "#ffd23f"); K.P(15, 18, "#fff"); K.P(17, 18, "#fff"); }); } };
+  A.wolftrophy = { w: 1, h: 1, draw: function (K) { trophy(K, "#2a1a10", function (K) { var W = ["#1e2228", "#4a5260", "#6e7888", "#949eae", "#b8c0cc", "#d8dee6", "#ffffff"]; K.R(9, 7, 4, 5, W[1]); K.R(19, 7, 4, 5, W[1]); K.P(10, 8, "#d8a0a0"); K.P(20, 8, "#d8a0a0");
+    K.ell(16, 16, 8, 7, W[0]); K.ell(16, 15.5, 7, 6, W[3]); K.ell(14, 13, 3.5, 2.5, W[5]); K.ell(16, 20, 4, 3, W[5]); K.R(15, 19, 3, 2, "#1a1a1a"); K.R(12, 14, 2, 2, "#ffd23f"); K.R(18, 14, 2, 2, "#ffd23f"); K.P(13, 15, "#1a1a1a"); K.P(18, 15, "#1a1a1a"); }); } };
+  A.gatortrophy = { w: 1, h: 1, draw: function (K) { trophy(K, "#1a2a1a", function (K) { var G = ["#0a2a10", "#14401a", "#1e5a24", "#2a7430", "#3e8e40", "#5aaa58", "#8ad080"]; K.slab(5, 12, 24, 9, G, { round: 1 }); K.R(6, 18, 22, 3, "#c8d8a0"); for (var t = 8; t < 27; t += 3) { K.P(t, 17, "#ffffff"); K.P(t + 1, 21, "#ffffff"); }
+    K.disc(9, 11, 2.6, G[0]); K.disc(9, 11, 1.8, "#e8d23a"); K.P(9, 11, "#1a1a1a"); for (var b = 12; b < 27; b += 4) K.P(b, 12, G[6]); }); } };
+  A.shield = { w: 1, h: 1, draw: function (K) { var R = K.R; for (var y = 2; y < 30; y++) { var w = y < 18 ? 12 : Math.round(12 - (y - 18) * 1); R(16 - w, y, w * 2, 1, IRON[0]); R(17 - w, y, w * 2 - 2, 1, y < 4 ? IRON[5] : "#2a5ab0"); R(17 - w, y, 2, 1, IRON[4]); R(15 + w - 2, y, 1, 1, IRON[2]); }
+    R(14, 4, 4, 24, GOLD[3]); R(6, 12, 20, 4, GOLD[3]); R(14, 4, 1, 24, GOLD[6]); R(6, 12, 20, 1, GOLD[6]); K.disc(16, 14, 3, GOLD[2]); K.disc(16, 14, 2, "#d6382e"); K.P(15, 13, "#ff8a7a"); } };
+  A.antlers = { w: 1, h: 1, draw: function (K) { var BN = "#e8dcc0", BS = "#a89878"; [[-1], [1]].forEach(function (sd) { var d = sd[0]; K.line(16 + d * 3, 18, 16 + d * 11, 4, BS); K.line(16 + d * 2, 18, 16 + d * 10, 4, BN); K.line(16 + d * 7, 11, 16 + d * 13, 10, BN); K.line(16 + d * 9, 7, 16 + d * 6, 2, BN); K.line(16 + d * 5, 14, 16 + d * 3, 8, BN); });
+    K.slab(9, 18, 14, 11, WOOD, { round: 1, shine: 1 }); K.R(11, 20, 10, 7, WOOD[2]); K.ell(16, 20, 4, 2.4, "#c8b890"); } };
+  A.waspnest = { w: 1, h: 1, draw: function (K) { var R = K.R, N = ["#3a2a10", "#7a5a24", "#a07a34", "#c49a48", "#d8b464", "#ecd090", "#fff0c0"]; R(15, 0, 2, 4, DARK[3]);
+    for (var y = 4; y < 28; y++) { var w = Math.round(Math.sin((y - 3) / 25 * Math.PI) * 10 + 2); R(16 - w, y, w * 2, 1, N[(y % 4 < 2) ? 3 : 4]); K.P(16 - w, y, N[0]); K.P(16 + w - 1, y, N[1]); if (y % 4 === 0) R(16 - w, y, w * 2, 1, N[2]); }
+    K.ell(16, 22, 3, 2.4, "#1a0e06"); [[25, 8], [6, 14], [27, 20]].forEach(function (b) { K.R(b[0], b[1], 3, 2, "#ffd23f"); K.P(b[0] + 1, b[1], "#1a1a1a"); K.P(b[0], b[1] - 1, "#ffffff", 0.7); }); } };
+  A.armorstand = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); K.slab(9, 28, 14, 3, DARK, { round: 1 }); K.post(14, 18, 4, 11, DARK);
+    K.slab(7, 7, 18, 13, IRON, { round: 1, shine: 1 }); R(15, 8, 2, 11, IRON[2]); K.slab(3, 7, 7, 5, IRON, { round: 1 }); K.slab(22, 7, 7, 5, IRON, { round: 1 }); R(8, 18, 16, 2, "#7a1410");
+    K.disc(16, 4, 4, IRON[0]); K.disc(16, 4, 3.2, IRON[4]); R(13, 4, 6, 1, "#1a1a1a"); K.P(14, 2, IRON[6]); } };
+  A.weaponrack = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(2, 31, 28); K.post(2, 6, 4, 25, WOOD); K.post(26, 6, 4, 25, WOOD); K.slab(1, 5, 30, 3, WOOD, { shine: 1 }); K.slab(1, 22, 30, 3, WOOD);
+    [[9, IRON], [16, IRON], [23, IRON]].forEach(function (w, i) { R(w[0], 3 + i, 2, 19, i === 1 ? WOOD[3] : IRON[4]); R(w[0], 3 + i, 1, 19, i === 1 ? WOOD[5] : IRON[6]); });
+    K.slab(7, 1, 6, 3, IRON); K.ell(17, 4, 4, 2.5, IRON[3]); K.slab(21, 2, 6, 3, GOLD); R(8, 22, 18, 1, WOOD[0]); } };
+  A.queencrown = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); K.halo(16, 16, 14, "255,220,120", 0.25); K.slab(7, 26, 18, 5, ["#1a0a2a", "#2a1040", "#3e1a5a", "#5a2a7a", "#7a3e9a", "#9a58bc", "#c896e0"], { round: 1, shine: 1 });
+    R(8, 17, 16, 9, GOLD[0]); R(9, 18, 14, 7, GOLD[4]); R(9, 18, 14, 1, GOLD[6]); [9, 15, 21].forEach(function (x, i) { var h = i === 1 ? 9 : 6; for (var y = 0; y < h; y++) R(x + Math.floor(y / 3), 17 - y, Math.max(1, 3 - Math.floor(y / 3)), 1, GOLD[4]); K.disc(x + 1, 17 - h, 1.4, GOLD[5]); });
+    K.disc(16, 21, 2, "#d6203a"); K.P(15, 20, "#ffb0b8"); K.disc(11, 22, 1.2, "#3ab0ff"); K.disc(21, 22, 1.2, "#3ab0ff"); } };
+  A.wyrmskull = { w: 1, h: 1, draw: function (K) { var BN = ["#3a3226", "#8a7e66", "#b8ac90", "#d8ceb4", "#ece4ce", "#f8f2e2", "#ffffff"]; board(K, 1, 4, 30, 23, DARK, "#2a1a10");
+    K.ell(12, 15, 7, 6, BN[0]); K.ell(12, 14.5, 6, 5, BN[3]); K.slab(14, 14, 14, 6, BN, { round: 1 }); K.line(6, 10, 2, 5, BN[4]); K.line(7, 9, 4, 4, BN[3]); K.ell(11, 14, 2.4, 2, "#1a0a06"); K.P(11, 14, "#ff6a2a");
+    for (var t = 16; t < 27; t += 3) { K.P(t, 20, BN[6]); K.P(t, 21, BN[2]); } K.P(26, 16, "#1a0a06"); } };
+  A.alphapelt = { w: 1, h: 1, draw: function (K) { var R = K.R, W = ["#2a3440", "#7a8ea0", "#a8bccc", "#cddbe6", "#e4eef4", "#f4f9fc", "#ffffff"]; R(3, 1, 26, 2, DARK[3]);
+    for (var y = 3; y < 30; y++) { var w = y < 8 ? 9 : y < 24 ? 11 : 11 - (y - 24); R(16 - w, y, w * 2, 1, W[3]); R(16 - w, y, 2, 1, W[5]); R(16 + w - 2, y, 2, 1, W[1]); } [4, 26].forEach(function (x) { R(x, 22, 3, 7, W[2]); });
+    K.ell(16, 9, 6, 5, W[0]); K.ell(16, 8.5, 5, 4, W[4]); R(13, 8, 2, 1, "#7af0ff"); R(18, 8, 2, 1, "#7af0ff"); K.disc(16, 17, 3, "#7af0ff"); K.disc(16, 17, 2, "#e0ffff"); for (var s = 8; s < 25; s += 4) R(s, 23, 2, 1, W[1]); } };
+  A.swampheart = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); K.halo(16, 12, 15, "60,240,170", 0.4); K.slab(7, 25, 18, 6, STONE, { round: 1, shine: 1 }); R(9, 27, 14, 1, "#2fb59a");
+    for (var y = 2; y < 25; y++) { var w = Math.round(Math.sin((y - 1) / 24 * Math.PI) * 6.5) + 1; R(16 - w, y, w * 2, 1, "#1aa874"); R(16 - w, y, Math.max(1, Math.round(w * 0.6)), 1, "#5af0b8"); K.P(16 - w - 1, y, "#063a24"); K.P(16 + w, y, "#063a24"); }
+    R(14, 6, 2, 10, "#c4ffe8"); K.P(13, 5, "#ffffff"); [[5, 6], [27, 10], [24, 3]].forEach(function (p) { K.P(p[0], p[1], "#9affd8"); }); } };
+  A.cobweb = { w: 1, h: 1, draw: function (K) { var c = "#e8eef4"; for (var a = 0; a < 5; a++) { var t = a / 4 * Math.PI / 2; K.line(0, 0, Math.round(Math.cos(t) * 31), Math.round(Math.sin(t) * 31), c, 0.75); }
+    [7, 14, 21, 28].forEach(function (r) { for (var a2 = 0; a2 <= 30; a2++) { var t2 = a2 / 30 * Math.PI / 2; K.P(Math.round(Math.cos(t2) * r + Math.sin(t2 * 4) * 0.6), Math.round(Math.sin(t2) * r), c, 0.6); } }); K.disc(13, 12, 1.4, "#1a1a1a"); K.P(12, 11, "#ff3a3a"); } };
+  A.bonepile = { w: 1, h: 1, draw: function (K) { var BN = ["#3a3226", "#8a7e66", "#b8ac90", "#d8ceb4", "#ece4ce", "#f8f2e2", "#ffffff"]; K.shadow(2, 31, 28);
+    [[3, 28, 27, 22], [5, 22, 26, 28], [8, 25, 20, 19]].forEach(function (b) { K.line(b[0], b[1], b[2], b[3], BN[1]); K.line(b[0], b[1] - 1, b[2], b[3] - 1, BN[4]); K.disc(b[0], b[1] - 0.5, 1.6, BN[5]); K.disc(b[2], b[3] - 0.5, 1.6, BN[5]); });
+    K.ell(16, 17, 7, 6, BN[0]); K.ell(16, 16.5, 6, 5, BN[3]); K.ell(14, 15, 3, 2, BN[5]); K.ell(13, 17, 1.8, 1.8, "#1a1008"); K.ell(19, 17, 1.8, 1.8, "#1a1008"); K.R(13, 21, 6, 2, BN[2]); for (var t = 13; t < 19; t += 2) K.P(t, 22, BN[6]); } };
+  A.confetti = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); K.slab(8, 26, 16, 5, ["#2a1040", "#3a1a5a", "#5a2a7a", "#7a3e9a", "#9a58bc", "#c896e0", "#f0d4ff"], { round: 1 });
+    for (var y = 10; y < 26; y++) { R(10, y, 12, 1, y % 4 < 2 ? "#ff5ab4" : "#ffd8ec"); } K.R(10, 10, 1, 16, "#fff", 0.5); K.slab(9, 8, 14, 3, GOLD, { round: 1 });
+    [[6, 4, "#ffd23f"], [13, 1, "#5ab4ff"], [21, 3, "#5aff8a"], [26, 7, "#ff5ab4"], [3, 9, "#b06aff"], [17, 5, "#ff8a3a"], [24, 0, "#ffd23f"]].forEach(function (c) { R(c[0], c[1], 2, 1, c[2]); K.P(c[0] + 1, c[1] + 1, c[2]); }); } };
+  A.balloons = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(7, 31, 18); K.slab(9, 26, 14, 5, GOLD, { round: 1, shine: 1 });
+    [[10, 9, "#e84a5a", "#ffb0b8"], [21, 7, "#3a8ae8", "#b0d8ff"], [16, 4, "#ffd23f", "#fff4c0"]].forEach(function (b) { K.line(b[0], b[1] + 6, 16, 26, "#e8e8e8", 0.8); K.ell(b[0], b[1], 5, 6, "#1a1a2a", 0.25); K.ell(b[0], b[1], 4.6, 5.6, b[2]); K.ell(b[0] - 1.5, b[1] - 2, 1.5, 2, b[3]); K.R(b[0] - 1, b[1] + 5, 2, 2, b[2]); }); } };
+  // ---------- CURIOSITIES, MUSIC AND STATUES (batch 4) ----------
+  var GLASS = ["#2a3a40", "#5a7a86", "#8ab0bc", "#b0d4dc", "#cce8ee", "#e4f6f8", "#ffffff"], ICE = ["#1a3a5a", "#3a6a9a", "#5a9ac8", "#8ac4e8", "#b0dcf4", "#d8f0ff", "#ffffff"];
+  function statueBase(K, x, w) { K.slab(x, 26, w, 5, STONE, { shine: 1 }); K.R(x + 1, 30, w - 2, 1, STONE[1]); }
+  A.shipbottle = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(2, 31, 28); K.slab(3, 16, 22, 13, GLASS, { round: 1 }); R(4, 17, 20, 11, "#5a8aa8", 0.35); K.slab(24, 19, 5, 7, GLASS); K.slab(28, 19, 3, 7, WOOD, { round: 1 });
+    R(6, 24, 16, 3, "#2a6aa8"); R(6, 24, 16, 1, "#7acbff"); K.slab(8, 21, 12, 3, WOOD, {}); R(13, 13, 1, 8, DARK[3]); R(10, 14, 3, 5, "#f6f0dc"); R(14, 15, 4, 5, "#ffffff"); K.P(13, 12, "#d6382e"); R(5, 17, 1, 9, "#fff", 0.6); } };
+  A.windchime = { w: 1, h: 1, draw: function (K) { var R = K.R; R(15, 0, 2, 3, IRON[3]); K.slab(3, 3, 26, 3, WOOD, { round: 1, shine: 1 });
+    [[6, 12], [11, 16], [16, 20], [21, 15], [26, 11]].forEach(function (t, i) { R(t[0], 6, 1, 3, "#c8c8c8"); K.post(t[0] - 1, 9, 3, t[1], i % 2 ? GOLD : IRON); }); K.disc(16, 26, 2.2, WOOD[3]); R(16, 6, 1, 18, "#c8c8c8", 0.6); R(14, 27, 4, 4, "#d6587a"); } };
+  A.frogidol = { w: 1, h: 1, draw: function (K) { var J = ["#0a2a1a", "#1a4a2a", "#2a6a3a", "#3a8a4e", "#5aaa6a", "#7ac88a", "#b8f0c0"]; K.shadow(4, 31, 24); statueBase(K, 5, 22);
+    K.ell(16, 19, 10, 7, J[0]); K.ell(16, 18.5, 9, 6, J[3]); K.ell(13, 16, 4, 2.4, J[5]); [11, 21].forEach(function (x) { K.disc(x, 11, 3.6, J[0]); K.disc(x, 11, 2.8, J[3]); K.disc(x, 11, 1.4, "#ffd23f"); K.P(x, 11, "#1a1a1a"); });
+    K.R(11, 21, 10, 1, J[0]); K.disc(16, 24, 1.6, "#e8b83a"); [7, 24].forEach(function (x) { K.ell(x, 25, 3, 1.6, J[2]); }); } };
+  A.minecart = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(2, 31, 28);
+    [[6, 8, "#e8b83a"], [12, 6, "#a8b8c8"], [18, 7, "#d6382e"], [23, 9, "#7a5a3a"]].forEach(function (o) { K.ell(o[0] + 2, o[1] + 3, 3.4, 3, "#1a1a1a"); K.ell(o[0] + 2, o[1] + 2.5, 3, 2.6, o[2]); K.P(o[0] + 1, o[1] + 1, "#ffffff", 0.6); });
+    K.slab(2, 11, 28, 14, IRON, { shine: 1 }); R(4, 15, 24, 1, IRON[2]); R(4, 20, 24, 1, IRON[2]); K.nail(4, 13); K.nail(26, 13); K.nail(4, 22); K.nail(26, 22);
+    [8, 24].forEach(function (x) { K.disc(x, 27, 3.8, "#1a1a1a"); K.disc(x, 27, 2.8, IRON[3]); K.disc(x, 27, 1, IRON[6]); }); } };
+  A.lectern = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); K.slab(9, 28, 14, 3, DARK, { round: 1 }); K.post(14, 14, 4, 15, DARK);
+    for (var i = 0; i < 8; i++) R(4, 7 + i, 24 - 0, 1, i < 2 ? WOOD[5] : WOOD[3]); K.line(4, 7, 27, 7, WOOD[0]); R(4, 14, 24, 1, WOOD[0]);
+    R(6, 4, 9, 4, "#f6ecd2"); R(17, 4, 9, 4, "#fff6e0"); R(15, 3, 2, 5, "#a89070"); R(8, 5, 5, 1, "#8a7a60"); R(19, 5, 5, 1, "#8a7a60"); R(22, 0, 2, 5, "#d6382e"); } };
+  A.terrarium = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(2, 31, 28); K.slab(2, 6, 28, 25, GLASS, { round: 1 }); R(4, 8, 24, 21, "#a8d8d0", 0.45); R(4, 22, 24, 7, "#6a4a2a"); R(4, 22, 24, 1, "#4a8a3a");
+    leafy(K, 10, 22, 4, 0.4, 8); leafy(K, 21, 22, 5, 0.3, 11, ["#0a2a1a", "#14401a", "#1e5a24", "#2a8a50", "#3eaa6a", "#5ac88a", "#9af0b8"]); K.ell(15, 25, 3, 1.4, "#e05a3a"); K.P(14, 24, "#ffd8c0");
+    R(4, 8, 1, 20, "#fff", 0.6); K.slab(1, 4, 30, 3, WOOD, { round: 1, shine: 1 }); } };
+  A.mossaltar = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(2, 31, 28); K.halo(16, 6, 9, "120,240,255", 0.35); K.slab(3, 12, 26, 19, STONE, { shine: 1 }); R(6, 16, 20, 11, STONE[2]); R(8, 18, 16, 7, STONE[1]);
+    for (var x = 3; x < 29; x++) { var m = 1 + Math.round(Math.abs(Math.sin(x * 1.3)) * 2); R(x, 11, 1, m + 1, LEAF[4]); K.P(x, 11, LEAF[6]); if (x % 5 === 0) R(x, 12, 1, m + 3, LEAF[3]); }
+    K.slab(13, 3, 6, 8, ["#0a3a4a", "#1a6a8a", "#2a9ab4", "#4ac4e0", "#7ae0f4", "#b0f4ff", "#ffffff"], { round: 1, shine: 1 }); R(11, 6, 10, 2, "#4ac4e0"); K.P(15, 4, "#ffffff"); } };
+  A.birdcage = { w: 1, h: 1, draw: function (K) { var R = K.R; R(15, 0, 2, 3, GOLD[2]); K.disc(16, 3, 2, GOLD[4]);
+    for (var y = 5; y < 27; y++) { var w = y < 12 ? Math.round(Math.sqrt(Math.max(0, 49 - (12 - y) * (12 - y))) * 1.4) : 10; for (var x = 16 - w; x <= 16 + w; x += 4) K.P(x, y, GOLD[y < 12 ? 5 : 4]); }
+    R(5, 26, 22, 3, GOLD[0]); R(6, 26, 20, 2, GOLD[4]); R(6, 26, 20, 1, GOLD[6]); R(7, 19, 18, 1, WOOD[3]);
+    K.ell(15, 16, 4, 3.2, "#ff8a1a"); K.disc(18, 14, 2.4, "#ffa63a"); K.P(19, 13, "#1a1a1a"); K.P(21, 14, "#ffd23f"); K.R(11, 16, 3, 2, "#d6582a"); K.P(15, 19, "#7a4a1a"); } };
+  A.gramophone = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(4, 31, 24); K.slab(4, 22, 24, 9, WOOD, { grain: 1, shine: 1 }); R(7, 25, 18, 1, WOOD[1]); K.disc(14, 22, 1.6, GOLD[4]);
+    K.post(13, 12, 3, 11, GOLD); for (var i = 0; i < 14; i++) { var r = 1 + i * 0.55; K.ell(15 + i, 11 - i * 0.55, 1.2, r, i < 4 ? GOLD[3] : GOLD[4]); } K.ell(29, 3.5, 2, 7.6, GOLD[1]); K.ell(28.6, 3.5, 1.2, 6.2, "#3a2406"); K.line(16, 9, 26, 3, GOLD[6]); } };
+  A.crystalcluster = { w: 1, h: 1, draw: function (K) { K.shadow(3, 31, 26); K.halo(16, 16, 15, "140,210,255", 0.3);
+    [[8, 14, 4, -0.25, ICE], [16, 4, 5, 0, ["#2a1a5a", "#4a2a8a", "#6a46b8", "#8a6ad8", "#aa90ec", "#d0bcff", "#ffffff"]], [23, 11, 4, 0.25, ICE], [12, 20, 3, -0.4, ICE], [21, 19, 3, 0.4, ICE]].forEach(function (c) {
+      var p = c[4], tip = c[1], base = 29; for (var y = tip; y <= base; y++) { var k = Math.min(1, (y - tip) / 4), w = Math.round(c[2] * k), sx = Math.round(c[0] + (base - y) * c[3]); K.R(sx - w, y, w * 2 + 1, 1, p[3]); K.R(sx - w, y, Math.max(1, w), 1, p[5]); K.P(sx - w - 1, y, p[0]); K.P(sx + w + 1, y, p[0]); } K.P(c[0], tip, p[6]); });
+    K.slab(4, 28, 24, 3, STONE, { round: 1 }); } };
+  A.starchart = { w: 1, h: 1, draw: function (K) { var R = K.R; board(K, 1, 2, 30, 27, DARK, "#0e1a40"); R(4, 5, 24, 21, "#121e4a");
+    [[7, 8], [12, 11], [18, 9], [23, 14], [20, 20], [10, 19], [15, 16], [25, 7], [6, 22]].forEach(function (s, i) { K.P(s[0], s[1], i % 3 ? "#ffffff" : "#ffe680"); if (i % 3 === 0) { K.P(s[0] - 1, s[1], "#ffe680", 0.5); K.P(s[0] + 1, s[1], "#ffe680", 0.5); } });
+    K.line(7, 8, 12, 11, "#8aa8ff", 0.5); K.line(12, 11, 18, 9, "#8aa8ff", 0.5); K.line(18, 9, 23, 14, "#8aa8ff", 0.5); K.line(15, 16, 20, 20, "#8aa8ff", 0.5); K.disc(23, 21, 3, "#e8d070"); K.disc(22, 20, 3, "#121e4a"); } };
+  A.musicbox = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(3, 31, 26); K.slab(3, 18, 26, 13, WOOD, { grain: 1 }); K.slab(3, 15, 26, 4, DARK, { shine: 1 }); R(12, 23, 8, 4, GOLD[4]); K.P(12, 23, GOLD[6]);
+    K.disc(16, 13, 2.6, "#ff9cc4"); K.R(15, 7, 2, 6, "#ffc4dc"); K.ell(16, 7, 4, 1.4, "#ff9cc4"); K.disc(16, 5, 1.6, "#ffe0c8"); K.R(28, 22, 3, 2, GOLD[3]); K.R(29, 20, 1, 6, GOLD[3]);
+    K.P(5, 6, "#ffffff"); K.R(4, 7, 2, 2, "#ffffff"); K.R(25, 3, 1, 4, "#ffffff"); K.R(23, 6, 3, 2, "#ffffff"); } };
+  A.radio = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(3, 31, 26); K.slab(3, 11, 26, 20, WOOD, { round: 1, grain: 1, shine: 1 }); R(6, 14, 12, 14, "#3a2010"); for (var y = 15; y < 28; y += 2) R(6, y, 12, 1, "#8a5a2c");
+    K.slab(20, 14, 7, 6, GOLD, {}); R(21, 15, 5, 4, "#ffe8a0"); R(23, 15, 1, 4, "#d6382e"); K.disc(21.5, 24, 1.8, GOLD[2]); K.disc(25.5, 24, 1.8, GOLD[2]); K.line(22, 11, 26, 2, IRON[3]); K.P(26, 1, "#d6382e"); } };
+  A.jukebox = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(3, 31, 26); K.halo(16, 12, 15, "255,120,200", 0.3);
+    K.slab(3, 4, 26, 27, ["#3a0a2a", "#6a1448", "#9a2a6a", "#c8408a", "#e86aa8", "#ff9ac8", "#ffd8ec"], { round: 1 }); K.ell(16, 7, 11, 5, "#ffd23f"); K.ell(16, 7, 9, 3.6, "#ff8ac4");
+    R(7, 11, 18, 8, "#1a1a3a"); R(8, 12, 16, 6, "#5ae8ff", 0.65); for (var x = 9; x < 24; x += 3) R(x, 13, 2, 4, "#e8fbff"); R(7, 21, 18, 7, "#2a0a1a"); for (var x2 = 8; x2 < 24; x2 += 2) R(x2, 22, 1, 5, x2 % 4 ? "#ffd23f" : "#ff9a1a"); R(4, 5, 1, 24, "#fff", 0.35); } };
+  A.aquarium = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(1, 31, 30); K.slab(1, 26, 30, 5, DARK, { shine: 1 }); K.slab(1, 6, 30, 21, IRON); R(3, 8, 26, 17, "#2a8ac8"); R(3, 8, 26, 3, "#7ad8ff"); R(3, 22, 26, 3, "#e8d090");
+    leafy(K, 7, 22, 3, 0.35, 8); leafy(K, 25, 22, 3, 0.35, 10);
+    [[12, 14, "#ff8a1a"], [20, 17, "#ffd23f"]].forEach(function (f) { K.ell(f[0], f[1], 3, 2, f[2]); R(f[0] - 5, f[1] - 1, 2, 3, f[2]); K.P(f[0] + 1, f[1] - 1, "#1a1a1a"); }); [[16, 11], [17, 9], [15, 7]].forEach(function (b) { K.P(b[0], b[1], "#e8fbff"); }); R(3, 8, 1, 17, "#fff", 0.5); } };
+  A.frogstatue = { w: 1, h: 1, draw: function (K) { K.shadow(3, 31, 26); statueBase(K, 4, 24); K.ell(16, 18, 10, 8, STONE[0]); K.ell(16, 17.5, 9, 7, STONE[4]); K.ell(13, 14, 5, 3, STONE[5]); K.ell(8, 23, 3, 2, STONE[3]); K.ell(24, 23, 3, 2, STONE[3]);
+    [11, 21].forEach(function (x) { K.disc(x, 9, 3.6, STONE[0]); K.disc(x, 9, 2.8, STONE[4]); K.disc(x, 9, 1.4, "#5affd8"); }); K.R(11, 20, 10, 1, STONE[1]); LEAF.slice(3, 5).forEach(function (c, i) { K.R(6 + i * 16, 15 + i * 3, 4, 2, c); }); } };
+  A.anvil = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(3, 31, 26); K.slab(7, 25, 18, 6, DARK, { shine: 1 }); K.slab(11, 17, 10, 9, IRON); K.slab(3, 10, 26, 8, IRON, { shine: 1 }); for (var i = 0; i < 5; i++) R(0 + i, 11 + Math.floor(i / 2), 4, 3 - Math.floor(i / 2), IRON[3]);
+    R(4, 11, 24, 1, IRON[6]); K.halo(18, 9, 6, "255,160,60", 0.4); K.slab(14, 7, 9, 3, ["#5a1a06", "#a82a0a", "#e8501a", "#ff8a2a", "#ffb84a", "#ffe08a", "#fff6d0"]); [[20, 3], [24, 5], [16, 2]].forEach(function (s) { K.P(s[0], s[1], "#ffd860"); }); } };
+  A.guardian = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(6, 31, 20); statueBase(K, 6, 20); K.slab(9, 10, 14, 17, STONE, { round: 1 }); R(11, 13, 10, 3, "#ff8a2a"); R(12, 20, 8, 2, "#ff8a2a", 0.7);
+    K.slab(10, 1, 12, 10, STONE, { round: 1, shine: 1 }); R(12, 5, 3, 2, "#ff8a2a"); R(17, 5, 3, 2, "#ff8a2a"); K.halo(16, 6, 6, "255,140,40", 0.3); K.post(25, 4, 3, 23, IRON); R(24, 3, 5, 2, IRON[5]); K.slab(5, 12, 5, 8, STONE, { round: 1 }); } };
+  A.snowman = { w: 1, h: 1, draw: function (K) { var S3 = ["#5a6a80", "#a8b8cc", "#c8d6e4", "#e2ecf4", "#f0f6fa", "#ffffff", "#ffffff"]; K.shadow(5, 31, 22); K.disc(16, 24, 7.6, S3[0]); K.disc(16, 24, 7, S3[3]); K.disc(14, 22, 3.6, S3[5]);
+    K.disc(16, 14, 5.6, S3[0]); K.disc(16, 14, 5, S3[3]); K.disc(15, 12.5, 2.4, S3[5]); K.R(11, 17, 11, 2, "#d6382e"); K.R(19, 18, 2, 5, "#d6382e"); K.P(14, 13, "#1a1a1a"); K.P(18, 13, "#1a1a1a"); K.R(16, 15, 4, 1, "#ff8a1a"); K.P(16, 22, "#1a1a1a"); K.P(16, 25, "#1a1a1a");
+    K.slab(10, 7, 12, 2, IRON, {}); K.slab(12, 1, 8, 7, IRON, { shine: 1 }); K.R(12, 6, 8, 1, "#d6382e"); K.line(9, 20, 3, 15, DARK[3]); K.line(23, 20, 29, 15, DARK[3]); } };
+  A.icesculpt = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(4, 31, 24); K.halo(16, 14, 14, "160,220,255", 0.3); K.slab(6, 26, 20, 5, ICE, { shine: 1 });
+    K.ell(16, 18, 8, 7, ICE[1]); K.ell(16, 17.5, 7, 6, ICE[3]); K.ell(13, 15, 3, 2, ICE[5]); K.line(20, 13, 27, 5, ICE[2]); K.line(21, 13, 28, 6, ICE[4]); K.ell(27, 5, 3, 2.4, ICE[4]); K.P(28, 4, "#1a3a5a");
+    for (var w = 0; w < 6; w++) { K.line(10 - w, 12 + w, 4, 6 + w * 2, ICE[w % 2 ? 3 : 4]); } R(13, 13, 1, 10, "#ffffff", 0.6); } };
+  A.obelisk = { w: 1, h: 1, draw: function (K) { var R = K.R, PU = ["#1a1a3a", "#2a2a5a", "#3e3e7a", "#5a5a9a", "#7a7ab8", "#a0a0d8", "#d8d8ff"]; K.shadow(6, 31, 20); K.slab(8, 27, 16, 4, PU, { shine: 1 });
+    for (var y = 3; y < 27; y++) { var w = Math.round(3 + (y - 3) * 0.12); R(16 - w, y, w * 2, 1, PU[3]); K.P(16 - w, y, PU[5]); K.P(16 + w - 1, y, PU[1]); } for (var t = 0; t < 4; t++) { R(16 - t, t, t * 2 + 1, 1, PU[5]); }
+    K.halo(16, 14, 6, "140,140,255", 0.35); [9, 14, 19, 24].forEach(function (y, i) { R(15, y, 2, 2, i % 2 ? "#8af0ff" : "#c8a0ff"); }); } };
   function paint(kind) {   // a canvas with this piece at 32 px a block, or null
     var a = A[kind]; if (!a || typeof document === "undefined") return null;
     var c = document.createElement("canvas"); c.width = a.w * 32; c.height = a.h * 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
