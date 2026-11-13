@@ -1063,8 +1063,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
     return c;
   }
   function treeGrow(k, x, by, hs, can, put, solid) {
-    var R = { swamp: [6, 4], pine: [9, 4], cherry: [5, 3], palm: [8, 3], oak: [7, 4], snag: [5, 4] }[k] || [6, 4], want = R[0] + Math.floor(hs(1) * R[1]);
-    for (var h = want; h >= Math.max(4, want - 5); h--) {   // (heights keep the crown on screen at normal zoom)
+    var R = { swamp: [8, 4], pine: [12, 5], cherry: [7, 3], palm: [10, 3], oak: [9, 4], snag: [7, 3] }[k] || [8, 4], want = R[0] + Math.floor(hs(1) * R[1]);   // TALL TREES (Nov 2026): about a third taller, so more logs per tree
+    for (var h = want; h >= Math.max(4, want - 7); h--) {   // (shorter ones where something is in the way)
       var c = treeShape(k, x, by, h, hs), ok = true, lv = 0, lf = 0, q;
       for (q = 0; q < c.length && ok; q++) { var e = c[q]; if (e[3] === "root") continue; if (e[2] === T.LOG) { if (!can(e[0], e[1])) ok = false; } else { lv++; if (can(e[0], e[1])) lf++; } }
       if (!ok || (lv && lf < lv * 0.85)) continue;

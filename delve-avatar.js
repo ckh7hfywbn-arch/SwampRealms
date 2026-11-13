@@ -151,6 +151,12 @@ var DelveAv = (function () {
       B.row(hy - 1, hw - 2, "#c2362b"); B.p(11 - (hw - 2) / 2, hy - 1, "#e65a4a"); B.row(hy - 2, hw - 2, "#e8c46a"); B.row(hy - 3, hw - 4, "#e8c46a"); B.row(hy - 4, hw - 6 > 2 ? hw - 6 : 2, "#d9b25a");
       B.p(11 - (hw - 2) / 2, hy - 2, "#fff0b0"); B.p(11 - (hw - 4) / 2, hy - 3, "#fff0b0"); B.p(11 + (hw - 2) / 2 - 1, hy - 2, "#a8823a"); B.p(11 + (hw - 4) / 2 - 1, hy - 3, "#a8823a");
     },
+    minerhelm: function (B, hy, hw) {   // MINER'S HELMET (Delve: worn underground while you carry it): a brass dome with a glowing lamp at the front
+      var x0 = 11 - hw / 2; B.row(hy, hw + 2, "#7a4e1e"); B.p(x0 - 1, hy, "#a8702e"); B.p(x0 + hw, hy, "#4a2e10");
+      B.row(hy - 1, hw, "#d89a42"); B.row(hy - 2, hw, "#d89a42"); B.row(hy - 3, hw - 2, "#c98a3a"); B.row(hy - 4, hw - 4 > 2 ? hw - 4 : 2, "#b07a30");
+      B.p(x0, hy - 1, "#f2c070"); B.p(x0, hy - 2, "#f2c070"); B.p(x0 + 1, hy - 3, "#f2c070"); B.p(x0 + hw - 1, hy - 1, "#8a5a22"); B.p(x0 + hw - 1, hy - 2, "#8a5a22"); B.p(x0 + hw - 2, hy - 3, "#8a5a22");
+      B.r(9, hy - 3, 4, 3, "#5a3a16"); B.r(10, hy - 2, 2, 1, "#fff4b0"); B.p(10, hy - 3, "#ffe680"); B.p(11, hy - 3, "#fff9d8"); B.p(10, hy - 1, "#ffd23f"); B.p(11, hy - 1, "#ffd23f");
+    },
     sweatband: function (B, hy, hw) {
       var x0 = 11 - hw / 2; B.row(hy, hw, "#f6f3ea"); B.p(x0, hy, "#d8d2c0"); B.p(x0 + hw - 1, hy, "#b8b2a0");
       for (var i = 1; i < hw - 1; i += 2) B.p(x0 + i, hy, "#35d6b4"); B.p(x0 + hw, hy + 1, "#f6f3ea"); B.p(x0 + hw, hy + 2, "#d8d2c0");
