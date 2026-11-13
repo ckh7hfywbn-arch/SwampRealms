@@ -527,7 +527,7 @@
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
   var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true };
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.chunks === false) OPT.chunks = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
-  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; } catch (e) {}
+  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pxmob === false) OPT.pxmob = false; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -5017,6 +5017,7 @@
     }
   }
   function eGlow(g, x, y, r, col, a) {
+    if (PXPASS && g === PXG) { var m = g.getTransform(), sc = Math.sqrt(m.a * m.a + m.b * m.b); PXPASS.push([m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f, r * sc, col, a]); return; }   // PIXEL CREATURES: glows stay soft
     var c = parseInt(col.slice(1), 16), rr = (c >> 16) & 255, gg = (c >> 8) & 255, bb = c & 255, rg = g.createRadialGradient(x, y, 0, x, y, r);
     rg.addColorStop(0, "rgba(" + rr + "," + gg + "," + bb + ",1)"); rg.addColorStop(1, "rgba(" + rr + "," + gg + "," + bb + ",0)");
     g.globalAlpha = a; g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); g.globalAlpha = 1;
@@ -5866,7 +5867,32 @@
     }
     g.restore();
   }
-  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
+  // ---------- PIXEL CREATURES (test): each creature is drawn exactly as before (same shapes, animation, wind-ups and hit flash), but onto
+  // a small canvas at 32 px a block, its edges snapped hard, then blown up crisp, so it has the same rich-pixel look as the furniture and
+  // your avatar. Soft glows are kept smooth (drawn on the screen after). Dev menu > Cheats > Pixel creatures turns it off to compare. ----------
+  var PXC = null, PXG = null, PXPASS = null, PXU = 32;
+  function pxMob(g, x, y, wT, hT, draw) {   // x, y = the creature's feet (world); wT x hT blocks around it
+    if (OPT.pxmob === false || typeof document === "undefined") { draw(g); return; }
+    var bx0 = Math.floor((x - wT / 2) * PXU) / PXU, by0 = Math.floor((y - hT + 1.5) * PXU) / PXU, sx = ox + bx0 * ts, sy = oy + by0 * ts;
+    if (sx > vw + ts || sy > vh + ts || sx + wT * ts < -ts || sy + hT * ts < -ts) return;
+    var cw = wT * PXU, ch = hT * PXU;
+    if (!PXC) { PXC = document.createElement("canvas"); PXG = PXC.getContext("2d", { willReadFrequently: true }); }
+    if (PXC.width < cw || PXC.height < ch) { PXC.width = Math.max(PXC.width, cw); PXC.height = Math.max(PXC.height, ch); }
+    PXG.setTransform(1, 0, 0, 1, 0, 0); PXG.clearRect(0, 0, cw, ch); PXG.globalAlpha = 1; PXG.globalCompositeOperation = "source-over";
+    var sv = [ox, oy, ts, vw, vh]; ox = -bx0 * PXU; oy = -by0 * PXU; ts = PXU; vw = cw; vh = ch; PXPASS = [];
+    try { draw(PXG); } finally { ox = sv[0]; oy = sv[1]; ts = sv[2]; vw = sv[3]; vh = sv[4]; }
+    var gl = PXPASS; PXPASS = null;
+    var im = PXG.getImageData(0, 0, cw, ch), d = im.data, mx = 0, i;
+    for (i = 3; i < d.length; i += 4) if (d[i] > mx) mx = d[i];
+    var th = mx * 0.42;
+    for (i = 0; i < d.length; i += 4) { var a = d[i + 3]; if (!a) continue; if (d[i] < 5 && d[i + 1] < 5 && d[i + 2] < 5) { d[i + 3] = a >= 20 ? Math.min(a, 90) : 0; continue; }   // its shadow stays see-through
+      d[i + 3] = a >= th ? mx : 0; }
+    PXG.putImageData(im, 0, 0);
+    var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(PXC, 0, 0, cw, ch, sx, sy, wT * ts, hT * ts); g.imageSmoothingEnabled = sm;
+    var k = ts / PXU; gl.forEach(function (q) { eGlow(g, sx + q[0] * k, sy + q[1] * k, q[2] * k, q[3], q[4]); });
+  }
+  function pxEnemy(g, e, now, draw) { var z = e.sz || 1; pxMob(g, e.x, e.y, Math.ceil(Math.max(4, e.w * 2.6 + 3) * z), Math.ceil(Math.max(4, e.h * 2.4 + 3) * z), draw); }
+  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else if (!e.boss) pxEnemy(g, e, now, function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
 
   // ---------- FARMING ----------
   // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
@@ -6118,7 +6144,7 @@
     } else nag("The " + A.n + " sniffs the food... give it a little more.");
   }
   function eatFrom(k) { S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) sel = "pick", bare = true; } reslot(); hbDirty = true; }
-  function drawAnimals(g, now) { if (inMC()) return null; allAnimals().forEach(function (a) { drawAnimal(g, a, now); }); }
+  function drawAnimals(g, now) { if (inMC()) return null; allAnimals().forEach(function (a) { pxMob(g, a.x, a.y, Math.ceil(Math.max(4, (a.w || 1) * 2.6 + 3)), Math.ceil(Math.max(4, (a.h || 1) * 2.4 + 3)), function (c) { drawAnimal(c, a, now); }); }); }
   function drawAnimal(g, a, now) {
     var sx = ox + a.x * ts, sy = oy + a.y * ts; if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
     var t = a.tt, walk = Math.abs(a.mv || 0) > 0.2, bob = walk ? Math.abs(Math.sin(t * 9)) * 1.4 : Math.sin(t * 2) * 0.4, sc = a.baby ? 0.62 : 1;
@@ -19032,6 +19058,7 @@
     if (storyOpen === 290 && /^(give|kit|gear|heal|map|zaruk|bmday)$/.test(k)) devOpen();   // keep the dev menu up for quick repeat taps
   }
   function devToggle(k) {
+    if (k === "pxmob") { OPT.pxmob = OPT.pxmob === false; optSave(); toast("Pixel creatures " + (OPT.pxmob ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     if (k === "chunks") { OPT.chunks = OPT.chunks === false; chkClear(); optSave(); toast("Fast world drawing " + (OPT.chunks ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     DEV[k] = !DEV[k]; if (k === "ghost" && DEV.ghost) DEV.fly = true; if (k === "fly" && !DEV.fly) DEV.ghost = false;
     if (k === "peace" && DEV.peace) enemies.length = 0; if (k === "fps") devFps();
@@ -27220,7 +27247,7 @@
     return L;
   }
   function devTabList(t) {   // the buttons of one tab (some are built from this world)
-    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"]].map(function (q) { return [q[1] + ": " + (DEV[q[0]] ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
+    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"], ["pxmob", "Pixel creatures", "Creatures drawn as rich pixel art"]].map(function (q) { return [q[1] + ": " + ((q[0] === "pxmob" ? OPT.pxmob !== false : DEV[q[0]]) ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
     if (t === "time") return [["Morning", "time:60"], ["Afternoon", "time:200"], ["Dusk", "time:245"], ["Night", "time:300"], ["Dawn", "time:445"], ["Next day", "day"], ["Blood Moon now", "blood"], ["Blood Moon tonight", "bmday"], ["Falling star", "star"], ["Rainbow", "rainbow"]].map(function (q) { return [q[0], function () { devAct(q[1]); }]; });
     if (t === "spawn") return Object.keys(ENEMY).filter(function (k) { return !BOSS[k]; }).map(function (k) { return [ENEMY[k].n, function () { devAct("mob:" + k); }]; })
       .concat(Object.keys(BOSS).map(function (k) { return ["Boss: " + BOSS[k].n, function () { devAct("boss:" + k); }]; })).concat([["Clear all enemies", function () { devAct("clear"); }]]);
