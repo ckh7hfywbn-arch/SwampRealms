@@ -933,6 +933,7 @@
     flLoad(state.fl); ex = new Uint8Array(W * H); unrle(state.ex, ex);
     walls = world.walls ? world.walls.slice() : new Uint16Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
+    decoInit(state);   // DECORATING: this world's decorations (S.deco), checked against the furniture now in place
   }
   function start(state) {
     S = state; if (!S.shape) S.shape = {}; shapeCount(); if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
@@ -2814,6 +2815,7 @@
     if (td && td.gpart && garageBreak(x, y)) return;   // GARAGE: comes down all at once
     if (td && td.fpart) { var fpa = fAnchor(x, y); if (fpa) breakTile0(fpa[0], fpa[1]); else setT(x, y, T.AIR); return; }   // REAL-SIZE FURNITURE: any cell takes the whole piece down
     if (FSIZE[id]) fBreakParts(x, y, FSIZE[id]);
+    decoOnBreak(x, y);   // DECORATING: what stood on it comes back
     if (id === T.REALMORE) { S.st.realm++; if (S.st.realm === 1) toast("Realmstone! It hums like it wants to be somewhere else.", "#8affe0"); }
     if (td.kind === "realmgate") brokeGate(x, y);
     if (td.kind === "fallenstar") starMined(x, y);
@@ -10920,7 +10922,7 @@
   }
   // ---- DIMENSIONS: the keys of S that belong to one world's land (edits, explored map, liquids, walls, where you stand, chests, graves...).
   // While you are in one world the other's are kept in S.dst; a swap saves, trades them over and rebuilds the land from its own seed.
-  var DIMK = ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore"];
+  var DIMK = ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore", "deco"];
   function dimSwap(to) {
     save(); bossGone(); if (BM.on) bmEndQuiet();
     var cur = {}, oth = S.dst && typeof S.dst === "object" ? S.dst : {}, F0 = fresh(S.seed), ks = sel, kss = selSlot, tr = trans;
@@ -14751,6 +14753,7 @@
   // ---------- INTERIOR: decor drawing (mirroring, and small pieces sitting down onto a table, counter or shelf below) ----------
   function flipDecor(x, y) {   // turn a placed decor piece to face the other way (R, or the Flip button on touch)
     var fpf = fAnchor(x, y); if (fpf) { x = fpf[0]; y = fpf[1]; }   // REAL-SIZE FURNITURE: flip the whole piece
+    if (DECO) DECO.dirty();   // DECORATING: what stands on it flips with it
     var id = get(x, y), it = TILES[id]; if (!it || it.solid || !ITEMS[dropOf(it)] || !(ITEMS[dropOf(it)].decor || FSIZE[id])) return false;
     if (id === T.CHAIR || id === T.CHAIR_L) { setT(x, y, id === T.CHAIR ? T.CHAIR_L : T.CHAIR); thud(260, 0.03); return true; }
     var i = y * W + x; S.dflip = S.dflip || {}; if (S.dflip[i]) delete S.dflip[i]; else S.dflip[i] = 1; editN++; thud(260, 0.03); chips(x + 0.5, y + 0.6, it.c2 || "#fff", 3, 2); return true;
@@ -14767,6 +14770,44 @@
   function hdK(id) { var a = hdArt(id); if (!a) return null; var k = Math.max(1, Math.ceil(ts * dpr / 32)), key = id + "_" + k; if (HDK[key]) return HDK[key]; var c = document.createElement("canvas"); c.width = a.width * k; c.height = a.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); c.k = k; return (HDK[key] = c); }
   function decoPart(g, v, id, sy0, sh, dx, dy, dw, dh) { if (dh <= 0) return; var hc = !FSIZE[id] && hdK(id); if (hc) { g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high"; g.drawImage(hc, 0, sy0 * 2 * hc.k, 32 * hc.k, sh * 2 * hc.k, dx, dy, dw, dh); g.imageSmoothingEnabled = false; g.imageSmoothingQuality = "low"; return; } if (SMOP[id]) sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, sy0, 16, sh, dx, dy, dw, dh); else smDraw(g, v, id, 0, sy0, 16, sh, dx, dy, dw, dh); }
   function surfTop(i, j) { var b = fTd(i, j + 1); return b && b.top && !b.solid ? b.top : 0; }
+  // ---------- DECORATING (Stage 2, see DECORATING-PLAN.md and delve-decor.js): decorations are records hanging off furniture (or off
+  // each other), kept in S.deco, not tiles. DECO is the live manager for the current world. A record whose furniture is gone is never
+  // lost: on load it drops as an item where the furniture was; when you break the furniture, everything on it goes to your bag. ----------
+  var DECO = null, DSPR = {}, DSPK = {};
+  function decoItemAt(x, y) {   // the item key of the furniture whose anchor tile is (x, y), if it is whole
+    var id = get(x, y), td = TILES[id]; if (!td || td.fpart || td.solid) return ""; var k = dropOf(td); if (!k || typeof DelveDecor === "undefined" || !DelveDecor.FURN[k]) return "";
+    if (FSIZE[id] && !fWhole(x, y)) return ""; return k;
+  }
+  function decoSpr(k) {   // a decoration's picture cropped tight to its pixels (32 px a block), with its size
+    if (DSPR[k] !== undefined) return DSPR[k]; DSPR[k] = null; var it = ITEMS[k]; if (!it || it.tile === undefined) return null; var a = hdArt(it.tile); if (!a) return null;
+    var g0 = a.getContext("2d"), d = g0.getImageData(0, 0, a.width, a.height).data, x0 = a.width, y0 = a.height, x1 = -1, y1 = -1;
+    for (var y = 0; y < a.height; y++) for (var x = 0; x < a.width; x++) if (d[(y * a.width + x) * 4 + 3] > 140) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return null; var c = document.createElement("canvas"); c.width = x1 - x0 + 1; c.height = y1 - y0 + 1; c.getContext("2d").drawImage(a, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+    return (DSPR[k] = c);
+  }
+  function decoSprK(k) { var a = decoSpr(k); if (!a) return null; var m = Math.max(1, Math.ceil(ts * dpr / 32)), key = k + "_" + m; if (DSPK[key]) return DSPK[key]; var c = document.createElement("canvas"); c.width = a.width * m; c.height = a.height * m; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); return (DSPK[key] = c); }
+  function decoInit(state) {
+    DECO = null; if (typeof DelveDecor === "undefined") return; if (!state.deco || typeof state.deco !== "object") state.deco = {};
+    DECO = DelveDecor.create(state.deco, { itemAt: decoItemAt, flipAt: function (x, y) { return S && S.dflip && S.dflip[y * W + x] ? 1 : 0; }, size: function (k) { var a = decoSpr(k); return a ? [a.width, a.height] : [16, 16]; } });
+    state.deco = DECO.store;
+    var v = DECO.validate(); if (v.bad || v.orphans.length) { try { console.warn("[decor] removed " + v.bad + " broken record(s); " + v.orphans.length + " without furniture dropped as items"); } catch (e) {} }
+    v.orphans.forEach(function (r) { var m = /^t:(-?\d+),(-?\d+)$/.exec(r.p), x = m ? +m[1] : Math.floor(p.x), y = m ? +m[2] : Math.floor(p.y) - 1; if (ITEMS[r.k]) dropAt(r.k, 1, x, y); });
+  }
+  function decoOnBreak(x, y) {   // the furniture at (x, y) is coming down: everything on it goes to your bag (it drops if the bag is full)
+    if (!DECO) return; var gone = DECO.removeParent("t:" + x + "," + y); if (!gone.length) return; gone.forEach(function (r) { if (ITEMS[r.k]) give(r.k, 1); });
+    toast(gone.length + " decoration" + (gone.length > 1 ? "s" : "") + " back in your bag.", "#c8e8a0");
+  }
+  function decoDrawAll(g) {   // decorations in view, back to front, on top of their furniture (Stage 5 moves them into the row pass for exact depth)
+    if (!DECO || cave || HOME || OCS || !DECO.count()) return;
+    var x0 = (-ox) / ts - 1, y0 = (-oy) / ts - 1, L = DECO.inView(x0, y0, x0 + vw / ts + 2, y0 + vh / ts + 2); if (!L.length) return;
+    var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high";
+    L.forEach(function (r) { var w = r._w, c = decoSprK(r.k); if (!w || !c) return; var dx = ox + w.x * ts, dy = oy + (w.y - w.h) * ts, dw = w.w * ts, dh = w.h * ts;
+      if (w.f) { g.save(); g.translate(dx * 2 + dw, 0); g.scale(-1, 1); } g.drawImage(c, dx, dy, dw, dh); if (w.f) g.restore(); });
+    g.imageSmoothingEnabled = sm;
+  }
+  function decoNearest(r0) {   // the nearest furniture with slots around you, as [x, y, key]
+    var best = null, bd = 1e9; for (var y = Math.floor(p.y) - r0; y <= Math.floor(p.y) + r0; y++) for (var x = Math.floor(p.x) - r0; x <= Math.floor(p.x) + r0; x++) { var k = decoItemAt(x, y); if (!k) continue; var d = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y); if (d < bd) { bd = d; best = [x, y, k]; } } return best;
+  }
   // ---------- REAL-SIZE FURNITURE: beds, tables, workbenches and stations are 2 blocks wide, wardrobes, bookshelves and banners 2 tall,
   // tents and big crates 2 x 2. The piece's own tile sits in its bottom-left cell; the others hold fpart tiles (sandbox-extra) that point
   // back at it. Every cell draws its own slice of the piece's big picture (made once from its 16 x 16 art: the middle is drawn out, so
@@ -16803,7 +16844,7 @@
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
-    drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    decoDrawAll(g); drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
@@ -25971,6 +26012,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
+  window.__decoT = { m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); } };   // (test harness: decorating)
   window.__fsz = function () { return Object.keys(FSIZE).map(Number); }; window.__fart = fArt16; window.__fatlas = function () { return ATLAS; }; window.__hd = hdArt;   // (test harness: real-size furniture art)
   window.__sbx.dbg = { render: function (t) { render(t); }, OPT: OPT, chk: CHK, drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
@@ -27352,6 +27394,11 @@
       ["Swamp Awakening (Zaruk's choices)", function () { openGuardian(false); GD.page = -4; renderGuardian(); }],
       ["Notice board", function () { return nbOpen(); }],
       ["Tall tales", function () { return taleOpen(); }],
+      ["Decor test: dress the nearest table or shelf", function () { if (!DECO) return "No decor system"; var nb = decoNearest(8); if (!nb) return "Stand near a table, desk, counter, bed or bookshelf"; var pk = "t:" + nb[0] + "," + nb[1], d = DelveDecor.FURN[nb[2]], n = 0;
+        var pool = { top: ["tablecandle", "openbook", "fruitbowl", "lilyvase", "teapot", "stackedbooks", "bonsai", "inkquill"], inside: ["stackedbooks", "glowjar", "pottedfern", "fireflyjar", "frogidol"], pillow: ["cushion"] };
+        d.slots.forEach(function (sl) { var L = pool[sl.surf] || pool.top; for (var o = 0, t = 0; o < sl.x1 - sl.x0 && t < 12; t++) { var k = L[(n + t) % L.length], r = DECO.add(pk, sl.id, k, o); if (r.ok) { n++; o += DECO.wOf(k) + 2; } else o += sl.step; } }); save(); return "Placed " + n + " on the " + ITEMS[nb[2]].n; }],
+      ["Decor test: reload check (adds 2 broken records)", function () { if (!DECO) return "No decor system"; var st = S.deco; st.o["9001"] = { junk: 1 }; st.o["9002"] = { id: "9002", k: "tablecandle", p: "t:0,0", s: "top", o: 0 }; var before = DECO.count(); decoInit(S); return "Before " + before + ", after " + DECO.count() + " (broken removed, orphan dropped as an item)"; }],
+      ["Decor test: clear every decoration", function () { if (!DECO) return "No decor system"; var n = DECO.count(); S.deco = { n: 1, o: {} }; decoInit(S); save(); return "Cleared " + n; }],
       ["Earthquake", function () { QUAKE = { t: 4.2 }; toast("EARTHQUAKE!", "#ff9a4a"); aRumble(); return "Shaking"; }],
       ["Boat (Lily Belle)", function () { return openBoat(); }],
       ["Motorbike", function () { return openMoto(); }],

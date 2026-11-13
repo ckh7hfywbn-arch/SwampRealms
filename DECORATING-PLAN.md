@@ -164,3 +164,30 @@ Interior styling (flooring and wall materials, curtains, windows, themes) is spr
 ## 8. Decisions on the open questions (13 Nov)
 1. **Broken furniture:** its decorations go straight to the breaker's bag, or drop on the floor as items if the bag is full.
 2. **Multiplayer:** anyone in the room can place, move, take or break decorations (same as blocks today). No ownership or trust list; players choose who they play with.
+
+## Progress log
+
+### Stage 2: done (13 Nov)
+What changed:
+- **New file `delve-decor.js`.**
+  - Category list (`CATS`).
+  - Furniture slot definitions (`FURN`): table, coffee table, side table, nightstand, desk, counter, dresser, map table, jeweler's table, both workbenches, mason's table, wardrobe top, bookshelf (4 shelves and a top), potion and scroll shelf tops, wall shelf, cupboard, hutch, bed (pillow and quilt), sofa seat.
+  - Decoration definitions (`ITEM`): about 40 existing small pieces, each with a category. `plate` has its own food slot, which proves nesting.
+  - The object layer (`create`): add with checks (category, width, shelf height, capacity, overlap, nesting depth), remove a subtree, remove everything on a parent, reparent (for moving furniture), world position (follows flips and nesting), an 8×8 chunk index with view queries and hit-testing, and a load validator.
+- **`sandbox.js`.**
+  - `S.deco` is part of the world save and is swapped per dimension (added to `DIMK`).
+  - `decoInit` runs every time a world is built. It removes malformed records and drops records whose furniture is gone as items where the furniture was, so nothing is lost silently.
+  - Breaking furniture sends everything on it to your bag (`decoOnBreak`; it drops if the bag is full).
+  - Decorations are drawn from their HD art, cropped tight to their pixels, on top of their furniture. Exact depth comes in Stage 5.
+  - Flipping a piece flips what stands on it.
+- **Dev menu > Open:** "Decor test: dress the nearest table or shelf", "Decor test: reload check (adds 2 broken records)", "Decor test: clear every decoration".
+
+How to test:
+1. Build a table, bookshelf or bed, stand next to it and press "dress".
+2. Reload the page: the decorations come back.
+3. Press "reload check": the broken records are removed and the orphan drops as an item.
+4. Break the table: its things land in your bag.
+
+Not done yet (later stages): placing decorations by hand (Stage 3), moving furniture with its contents and wall slots (Stage 4), exact draw depth (Stage 5), the panel (Stage 6), lights on decorations (Stage 7), multiplayer messages (Stage 8), and new content such as plates, food, cups and pillows (Stage 9).
+
+Existing play is unchanged: old worlds load with no decorations, tile furniture and small table pieces work as before, and the smoke test passes.
