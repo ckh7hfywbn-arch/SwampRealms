@@ -2922,3 +2922,7 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 .sbx-body,#sbxStnBody{overscroll-behavior:contain;will-change:scroll-position}
 .scrolling .crg-t,.scrolling .crg-t *{animation-play-state:paused!important;transition:none!important}
 .scrolling .crg-t:hover{transform:none!important}
+
+/* DEV: FPS counter, bottom-left of the game */
+.sbx-fps{position:absolute;left:10px;bottom:10px;z-index:60;pointer-events:none;font:800 12px/1 Nunito,system-ui,sans-serif;color:#9ff0c0;background:rgba(6,14,12,.78);border:1px solid rgba(159,240,192,.35);border-radius:8px;padding:6px 9px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.sbx-fps.meh{color:#ffd23f;border-color:rgba(255,210,63,.4)}.sbx-fps.bad{color:#ff6a6a;border-color:rgba(255,106,106,.45)}

@@ -18488,6 +18488,19 @@
   }
   try { DEV.on = localStorage.getItem("swamp-delve-dev") === DEVH; var dvo = JSON.parse(localStorage.getItem("swamp-delve-devopts") || "{}"); ["god", "fly", "ghost", "dig", "peace", "fps"].forEach(function (k) { DEV[k] = !!dvo[k]; }); } catch (e) {}
   try { var dq = new URLSearchParams(location.search).get("dev"); if (dq && devHash(dq) === DEVH) { DEV.on = true; localStorage.setItem("swamp-delve-dev", DEVH); } } catch (e) {}
+  (function () {   // DEV: the FPS counter (bottom-left): real frames per second, the average frame time and the slowest frame in the last half second
+    var el = null, n = 0, t0 = 0, last = 0, worst = 0;
+    function tick(now) {
+      requestAnimationFrame(tick);
+      if (!DEV.fps) { if (el) el.hidden = true; t0 = 0; return; }
+      if (!el) { el = document.createElement("div"); el.className = "sbx-fps"; el.setAttribute("aria-hidden", "true"); }
+      if (el.parentNode !== stageEl) stageEl.appendChild(el); el.hidden = false;
+      if (!t0) { t0 = last = now; n = 0; worst = 0; return; }
+      n++; worst = Math.max(worst, now - last); last = now;
+      if (now - t0 >= 500) { var f = n * 1000 / (now - t0); el.textContent = Math.round(f) + " FPS \u00b7 " + (1000 / f).toFixed(1) + " ms \u00b7 worst " + Math.round(worst) + " ms"; el.className = "sbx-fps" + (f < 40 ? " bad" : f < 55 ? " meh" : ""); t0 = now; n = 0; worst = 0; }
+    }
+    requestAnimationFrame(tick);
+  })();
   function devSave() { try { localStorage.setItem("swamp-delve-devopts", JSON.stringify({ god: DEV.god, fly: DEV.fly, ghost: DEV.ghost, dig: DEV.dig, peace: DEV.peace, fps: DEV.fps })); } catch (e) {} }
   function dv(k) { return (DEV.on || !!(S && S.cheats && !(MP.on && MP.role === "guest"))) && DEV[k]; }   // developer mode, or a world with cheats on
   function devDig() { return dv("dig") ? 12 : 1; }
