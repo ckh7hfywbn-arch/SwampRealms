@@ -2973,8 +2973,9 @@
     else if (e.st === "wind") { e.t -= dt; e.dir = dx >= 0 ? 1 : -1; if (e.t <= 0) { var ldx = dx + p.vx * 0.45 * aiL(); if (ldx * dx > 0) e.dir = ldx >= 0 ? 1 : -1; e.st = "lunge"; e.t = 0; e.vy = -WOLF.lungeUp; e.on = false; e.hvx = e.dir * WOLF.lungeV * clamp(Math.abs(ldx) / (Math.abs(dx) || 1), 0.85, 1.3); thud(240, 0.07); } }
     else if (near) {
       e.st = "stalk"; e.dir = dx >= 0 ? 1 : -1;
-      if (Math.abs(dx) < WOLF.lungeAt && e.cd <= 0 && e.on) { e.st = "wind"; e.t = WOLF.wind; thud(130, 0.06); }
-      else vx = Math.abs(dx) > 1 ? e.dir * WOLF.run : 0;
+      var fdx = dx + (e.fk || 0);   // (a flanking wolf runs for your other side first)
+      if (Math.abs(dx) < WOLF.lungeAt && e.cd <= 0 && e.on && (!e.fk || Math.abs(fdx) < 1.2)) { e.st = "wind"; e.t = WOLF.wind; thud(130, 0.06); }
+      else { vx = Math.abs(fdx) > 0.6 ? Math.sign(fdx) * WOLF.run : 0; if (vx) e.dir = vx > 0 ? 1 : -1; if (e.fk && Math.abs(dx) < 1.4 && e.on && Math.sign(fdx) !== Math.sign(dx)) { e.vy = -10; e.on = false; } }   // leaps over you to get round
     } else {
       e.st = "patrol"; e.t -= dt; if (e.t <= 0) { e.t = 2 + Math.random() * 3; if (Math.random() < 0.35) e.dir = -e.dir; }
       var ax = Math.floor(e.x + e.dir * 1.0); if (!blocks(ax, Math.floor(e.y + 0.3)) && !blocks(ax, Math.floor(e.y + 1.3)) && !blocks(ax, Math.floor(e.y + 2.3))) e.dir = -e.dir;
@@ -3061,10 +3062,14 @@
     var nx = clamp(e.x + (vx + e.kv) * dt, 1, W - 1); e.kv *= Math.max(0, 1 - 9 * dt); if (Math.abs(e.kv) < 0.2) e.kv = 0; e.blocked = false;
     if (!eBoxHit(nx, e.y, e.w, e.h)) e.x = nx;
     else if (e.on && !eBoxHit(nx, e.y - 1.001, e.w, e.h) && !eBoxHit(e.x, e.y - 1.001, e.w, e.h)) { e.x = nx; e.y -= 1; if (e.boss) e.ry = (e.ry || 0) + 1; }   // bosses glide up the step (drawn offset, eased away)
-    else e.blocked = true;
+    else { e.blocked = true; if (!e.boss && Math.abs(e.kv) > 3.5) { var bgc = groundCol(nx + Math.sign(e.kv) * e.w * 0.5, e.y - e.h * 0.5 - 0.2); e.kv = -e.kv * 0.35; thud(140, 0.05); if (bgc && !reduce) chips(e.x + Math.sign(-e.kv) * e.w * 0.5, e.y - e.h * 0.5, bgc, 5, 3); } }   // knocked into a wall: it bounces off
+    var wasOn = e.on, vy0 = e.vy; if (!e.on && !e.boss) { if (e.fy0 === undefined || e.vy < 0) e.fy0 = Math.min(e.fy0 === undefined ? e.y : e.fy0, e.y); } else e.fy0 = undefined;
     var ny = e.y + e.vy * dt; e.on = false;
     if (!eBoxHit(e.x, ny, e.w, e.h)) e.y = ny;
-    else if (e.vy > 0) { e.y = Math.floor(ny); var gg = 0; while (eBoxHit(e.x, e.y, e.w, e.h) && gg++ < 4) e.y -= 1; e.on = true; e.vy = 0; }
+    else if (e.vy > 0) { e.y = Math.floor(ny); var gg = 0; while (eBoxHit(e.x, e.y, e.w, e.h) && gg++ < 4) e.y -= 1; e.on = true; e.vy = 0;
+      if (!wasOn && !e.boss && !e.def) { var fall = e.fy0 !== undefined ? e.y - e.fy0 : 0, lgc = groundCol(e.x, e.y); e.fy0 = undefined; e.kn = 0;
+        if (vy0 > 9 && lgc && !reduce) { for (var dq = 0; dq < 6; dq++) parts.push({ x: e.x + (dq - 2.5) * e.w * 0.18, y: e.y - 0.05, vx: (dq - 2.5) * 0.9, vy: -0.8 - Math.random() * 0.8, g: 3, life: 0.4, max: 0.45, c: lgc, s: 2.5 }); }
+        if (fall > 5.5 && !FLIER[e.k] && e.k !== "spider" && e.hp > 0) { HITK = { po: 8, kb: 0, up: 0 }; damageEnemy(e, Math.round((fall - 5.5) * 3 + 2), 0); HITK = HIT0; } } }   // a long fall hurts
     else { e.y = Math.ceil(ny - e.h) + e.h; e.vy = 0; }
     if (e.y > H - 2) { e.y = H - 2.01; e.vy = 0; }
   }
@@ -3150,14 +3155,35 @@
     enemies.push(newEnemy("bat", x, y));
     if (!S.st.warned) { S.st.warned = 1; toast("Bats come out at night! Craft a Swamp Bed and sleep to skip the night.", "#b58cff"); }
   }
+  // ---------- POISE: a creature shrugs off small hits and keeps attacking. Each hit chips its poise (a combo finisher or a charged heavy
+  // swing chips a lot); when it breaks the creature staggers (its wind-up is cancelled and it can't hurt you for a moment). A lunge, charge or
+  // dive already under way can't be cancelled: the stagger waits until it lands. Poise refills when you stop hitting it. ----------
+  var POISE = { frog: 10, bug: 9, slime: 9, wolf: 15, gator: 24, witch: 14, spider: 9, wasp: 7, bat: 7, imp: 12, brute: 42, treant: 46, lily: 12, crawler: 22, crab: 10, buccaneer: 16 };
+  var POISE_ATK = { lunge: 1, charge: 1, snap: 1, dash: 1, dive: 1, lash: 1, slam: 1, pounce: 1, roll: 1, drop: 1 };
+  var HIT0 = { po: 5, kb: 1, up: 0 }, HITK = HIT0;   // what the hit landing right now does to poise and knockback (set by the attack, then put back)
+  function poiseHit(e) {   // true: the creature staggers now
+    if (e.pm === undefined) { e.pm = (POISE[e.k] || 12) * (e.elite ? 1.6 : 1) * (e.small ? 0.55 : 1); e.po = e.pm; }
+    e.pt = 0; e.fl = 0.3; e.po -= HITK.po; if (e.po > 0) return false;
+    if (POISE_ATK[e.st]) { e.pb = 1; return false; }
+    e.po = e.pm; e.pb = 0; return true;
+  }
+  function staggerFx(e, x, y) { thud(110, 0.1); for (var k = 0; k < 6; k++) { var a = -Math.PI / 2 + (k - 2.5) * 0.45; parts.push({ x: x, y: y, vx: Math.cos(a) * 3.2, vy: Math.sin(a) * 3.2, life: 0.35, max: 0.4, c: k % 2 ? "#ffe48a" : "#ffffff", s: 3 }); } text(x, y - 0.4, "Stagger!", "#ffd36a"); }
+  function poiseTick(e, dt, x, y) {
+    e.fl = Math.max(0, (e.fl || 0) - dt); if (e.pm === undefined) return;
+    e.pt = (e.pt || 0) + dt; if (e.pt > 1.4 && e.po < e.pm) e.po = Math.min(e.pm, e.po + e.pm * dt * 0.8);
+    if (e.pb && !POISE_ATK[e.st]) { e.pb = 0; e.po = e.pm; e.hurt = Math.max(e.hurt, 0.55); staggerFx(e, x, y); }
+  }
   function damageEnemy(e, dmg, face) {
-    if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hurt = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
+    if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.fl = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
     if (e.boss) return damageBoss(e, coatDmg(e, dmg), face);
     if (e.def) return; enemies.forEach(function (o) { if (o !== e && !o.def && !o.boss && Math.abs(o.x - e.x) < 9 && Math.abs(o.y - e.y) < 5) o.alert = Math.max(o.alert || 0, 5); }); e.alert = 6;   // ALARM: a hurt creature calls the others nearby
-    dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; e.hurt = 0.3; e.kv = face * (e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5); text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
+    dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; var stg = poiseHit(e); if (stg && e.hp > 0) { e.hurt = 0.55; staggerFx(e, e.x, e.y - e.h); }
+    var hvy = e.k === "gator" || e.k === "brute" || e.k === "treant" || e.k === "crawler", kb0 = e.k === "bug" ? 6 : e.k === "gator" ? 2.5 : e.k === "wolf" ? 4.5 : 5;   // REAL KNOCKBACK: light taps nudge, a finisher, a heavy swing or a stagger launches it back and up
+    if (face) { e.kv = face * kb0 * (stg ? 1.3 : 0.55) * HITK.kb; if ((HITK.up || stg) && !FLIER[e.k]) { e.vy = Math.min(e.vy, -(HITK.up || 5) * (hvy ? 0.4 : 1)); e.on = false; e.kn = 1; } }
+    text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(e.hp > 0 ? "hit" : "kill");
-    if (FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a hit scares a bat or wasp off for a moment
-    if (e.k === "wolf" && e.st === "wind") e.st = "stalk";
+    if (stg && FLIER[e.k] && e.hp > 0 && e.st !== "away") { e.st = "away"; e.t = 0.7; e.cd = 1.2; }   // a stagger knocks a bat or wasp off for a moment
+    if (stg && e.k === "wolf" && e.st === "wind") e.st = "stalk";
     if (e.hp > 0) return;
     if (e.home !== undefined) S.whut[e.home] = S.days | 0;   // a Witch Hut's owner: back tomorrow
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
@@ -3200,7 +3226,7 @@
   }
   function pawStrike() {   // the swat lands: every creature just in front of you
     var f = p.face, xa = p.x - f * 0.3, xb = p.x + f * PAW.reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb), d = pawDmg();
-    enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { e.lastHit = 0; damageEnemy(e, d, f); } });
+    HITK = { po: 2, kb: 0.8, up: 0 }; enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { e.lastHit = 0; damageEnemy(e, d, f); } }); HITK = HIT0;
     mpStrikePlayers(lo, hi, d, f);
     if (PZT) { var pz2 = peaceAim(PAW.near + 0.6); PZT = null; if (pz2) peaceHit(pz2, d, f); }
   }
@@ -3793,9 +3819,10 @@
   }
   function strike() {   // one weapon swing: hits every enemy in front of you
     if (toolBroken("wpn")) return;
-    var reach = [0, 2.7, 2.2, 2.4, 2.4, 2.6, 2.7][S.wpn], f = p.face, xa = p.x - f * 0.3, xb = p.x + f * reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb);
-    var hits = 0;
-    enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; var md = moltDmg(e); e.lastHit = 0; damageEnemy(e, wDmg() * md, f); if (molt() === "dart") moltThorns(e); } }); gemLeech(hits);
+    var K = SWK, reach = [0, 2.7, 2.2, 2.4, 2.4, 2.6, 2.7][S.wpn] + (K.reach || 0), f = p.face, xa = p.x - f * 0.3, xb = p.x + f * reach, lo = Math.min(xa, xb), hi = Math.max(xa, xb);
+    var hits = 0; HITK = { po: K.po, kb: K.kb, up: K.up };
+    enemies.forEach(function (e) { if (!e.def && !e.u && e.x + e.w / 2 > lo && e.x - e.w / 2 < hi && e.y > p.y - PH - (FLIER[e.k] ? 1.2 : 0.5) && e.y - e.h < p.y + 0.3) { hits++; var md = moltDmg(e); e.lastHit = 0; damageEnemy(e, wDmg() * md * K.mul, f); if (molt() === "dart") moltThorns(e); } }); gemLeech(hits);
+    HITK = HIT0; if (hits && (K.heavy || K.fin)) { hitStop(K.heavy ? 0.11 : 0.07, 0.05); shake = Math.max(shake, K.heavy ? 0.5 : 0.3); }
     hits += mpStrikePlayers(lo, hi, wDmg(), f);
     var pz = peaceAim(reach + 0.8); if (pz) { hits++; peaceHit(pz, wDmg(), f); }   // pressing and holding on a peaceful creature
     if (hits) wear("wpn", 1);
@@ -3865,12 +3892,43 @@
     for (var i = enemies.length - 1; i >= 0; i--) {
       dt = enemies[i].def ? DT : coatDt(enemies[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it (it still falls)
       if (dt === 0) { var se = enemies[i]; se.hurt = Math.max(0, se.hurt - DT); if (se.k !== "wyrm" && !se.u) moveEnemy(se, DT, 0); continue; }
-      var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt); if (e.alert > 0) e.alert -= dt;
+      var e = enemies[i]; e.tt += dt; e.hurt = Math.max(0, e.hurt - dt); e.cd = Math.max(0, e.cd - dt); if (e.alert > 0) e.alert -= dt; if (!e.boss) { poiseTick(e, dt, e.x, e.y - e.h); eWorld(e, dt); }
       if (e.def) { e.dead -= dt; if (e.boss) bossDeathTick(e, dt); if (e.k !== "wyrm") moveEnemy(e, dt, 0); if (e.dead <= 0) enemies.splice(i, 1); continue; }
       if (e.leave > 0 && e.k !== "bat" && e.k !== "wasp") { e.leave -= dt; if (e.leave <= 0) e.gone = true; }   // dawn: walkers slip away (bats and wasps fly off on their own)
       if (e.gone || (!e.boss && (Math.abs(e.x - p.x) > 38 || Math.abs(e.y - p.y) > 44))) { if (e.gone) chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 4); enemies.splice(i, 1); continue; }
       mpRun(e, function () { if (e.boss) updBoss(e, dt); else if (e.k === "bug") updateBug(e, dt); else if (e.k === "bat") updateBat(e, dt); else if (e.k === "wolf") updateWolf(e, dt); else if (e.k === "gator") updateGator(e, dt); else if (e.k === "slime") updateSlime(e, dt); else if (e.k === "wasp") updateWasp(e, dt); else if (e.k === "witch") updateWitch(e, dt); else if (e.k === "spider") updateSpider(e, dt); else if (e.k === "lily") updateLily(e, dt); else if (e.k === "treant") updateTreant(e, dt); else if (e.k === "mcheart") updateMcHeart(e, dt); else if (e.k === "imp") updateImp(e, dt); else if (e.k === "brute") updateBrute(e, dt); else if (e.k === "crawler") updateCrawler(e, dt); else updateFrog(e, dt); });
     }
+    eCrowd(DT);
+  }
+  // ---------- CREATURES IN THE WORLD: they bump each other aside instead of stacking, a pack spreads round you, and the ground answers
+  // them (dust off a run or a hard landing, prints in snow, sand and mud, a splash, leaves knocked loose) ----------
+  function eSolo(e) { return !e.def && !e.boss && !e.u && !FLIER[e.k] && e.k !== "wyrm" && e.k !== "mcheart" && e.k !== "lily" && e.st !== "hang"; }
+  function eCrowd(dt) {
+    if (MP.on && MP.role === "guest") return;
+    var L = [], i, j; for (i = 0; i < enemies.length; i++) if (eSolo(enemies[i])) L.push(enemies[i]);
+    for (i = 0; i < L.length; i++) for (j = i + 1; j < L.length; j++) {
+      var a = L[i], b = L[j], dx = b.x - a.x, need = (a.w + b.w) * 0.42; if (Math.abs(dx) >= need || a.y - a.h > b.y || b.y - b.h > a.y) continue;
+      var push = (need - Math.abs(dx)) * Math.min(1, dt * 12) * 0.5, sg = dx === 0 ? (i % 2 ? 1 : -1) : Math.sign(dx);
+      if (!eBoxHit(a.x - sg * push, a.y, a.w, a.h)) a.x -= sg * push; if (!eBoxHit(b.x + sg * push, b.y, b.w, b.h)) b.x += sg * push;
+    }
+    var W2 = L.filter(function (e) { return e.k === "wolf" && Math.abs(e.x - p.x) < 9 && Math.abs(e.y - p.y) < 4; });   // a pack flanks: the second wolf on your side circles round to the other
+    W2.forEach(function (e) { e.fk = 0; });
+    if (W2.length > 1) { W2.sort(function (a, b) { return Math.abs(a.x - p.x) - Math.abs(b.x - p.x); }); var s0 = Math.sign(W2[0].x - p.x); for (i = 1; i < W2.length; i++) if (Math.sign(W2[i].x - p.x) === s0) W2[i].fk = -s0 * 2.2; }
+  }
+  function groundCol(x, y) { var td = TILES[get(Math.floor(x), Math.floor(y + 0.2))]; return td && td.solid ? (td.c || "#6a5a4a") : null; }
+  function eWorld(e, dt) {
+    if (reduce || e.def || FLIER[e.k] || e.u) return;
+    var mv = Math.abs(e.mv || 0) + Math.abs(e.kv || 0);
+    if (e.on && mv > 2.2) {   // dust kicked up by a run, prints left in soft ground
+      e.ds = (e.ds || 0) + mv * dt;
+      if (e.ds > 0.9) { e.ds = 0; var gc = groundCol(e.x, e.y); if (gc && Math.abs(e.x - p.x) < 24) parts.push({ x: e.x - (e.dir || 1) * e.w * 0.3, y: e.y - 0.05, vx: -(e.dir || 1) * (0.6 + Math.random()), vy: -0.6 - Math.random() * 0.6, g: 3, life: 0.4, max: 0.45, c: gc, s: 2 + Math.random() * 1.5 });
+        var fk = footKind(get(Math.floor(e.x), Math.floor(e.y + 0.2))); if (fk && FOOT.L.length < 90) FOOT.L.push({ x: e.x, y: Math.floor(e.y + 0.2), f: e.dir || 1, k: fk, t: 3, gy: e.y }); }
+    }
+    var wet = TILES[get(Math.floor(e.x), Math.floor(e.y - 0.3))].kind === "water";
+    if (wet && !e.wt0 && e.vy > 4 && e.k !== "gator") { for (var k = 0; k < 8; k++) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - 0.4, vx: (Math.random() - 0.5) * 3, vy: -3 - Math.random() * 3, g: 14, life: 0.5, max: 0.6, c: k % 2 ? "#bfeeff" : "#ffffff", s: 2.5 }); thud(300, 0.03); }
+    e.wt0 = wet;
+    if (e.kn && Math.abs(e.kv) > 2.5) { var tid = get(Math.floor(e.x), Math.floor(e.y - e.h * 0.5)), td = TILES[tid];   // knocked through tall plants or into leaves: they shed a few leaves
+      if (td && (td.kind === "leaves" || td.kind === "reed" || td.kind === "flower" || td.sway) && Math.random() < dt * 14) parts.push({ x: e.x, y: e.y - e.h * 0.5, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random(), g: 2, life: 0.9, max: 1, c: td.c2 || td.c || "#4a9a4a", s: 2.5 }); }
   }
   // ---------- CAVE CREATURES (hole-cave floors, seen from above) ----------
   // Each floor is stocked once, the first time you reach it (only once you carry a weapon). Deeper floors hold more of them, and tougher ones.
@@ -4109,7 +4167,7 @@
     for (var i = F.mobs.length - 1; i >= 0; i--) {
       dt = F.mobs[i].def ? DT : coatDt(F.mobs[i], DT);   // Numbleaf slows a creature's clock, Dreamcap stops it
       if (dt === 0) { F.mobs[i].hurt = Math.max(0, F.mobs[i].hurt - DT); moveMob(F, F.mobs[i], DT, 0, 0); continue; }
-      var m = F.mobs[i], C = CMOB[m.k]; if (m.k === "captain") { updCaptain(F, m, dt, i); continue; } m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt);
+      var m = F.mobs[i], C = CMOB[m.k]; if (m.k === "captain") { updCaptain(F, m, dt, i); continue; } m.tt += dt; m.hurt = Math.max(0, m.hurt - dt); m.cd = Math.max(0, m.cd - dt); poiseTick(m, dt, m.x, m.y - 0.8);
       if (m.def) { m.dead -= dt; m.z = Math.max(0, m.z - dt * 3); moveMob(F, m, dt, 0, 0); if (m.dead <= 0) F.mobs.splice(i, 1); continue; }
       var dx = cp.x - m.x, dy = cp.y - m.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, nx = dx / d, ny = dy / d, vx = 0, vy = 0, near = d < C.aggro * (m.alert > 0 ? 1.8 : 1) && hp > 0, touch = d < m.r + 0.34;
       if (m.alert > 0) m.alert -= dt; if (m.dgCd > 0) m.dgCd -= dt; if (m.dodged > 0) m.dodged -= dt;
@@ -4173,26 +4231,28 @@
     }
   }
   function caveSwing(dt) {   // weapon in a cave: a swing toward where you aim hits every creature in a cone in front of you
-    if (!aim.down || !S.wpn) return;
-    var brk = toolBroken("wpn"); if (brk) nag("Your weapon is broken: you are only swatting. Craft a new one.");   // a broken blade still swats weakly, so a fight can always be finished
-    cool -= dt; if (cool > 0) return; cool = brk ? 0.55 : wCd(); S.st.swings++; heldPh = 0;   // the swing starts with the hit
+    if (!S.wpn) return;
+    if (!wpnInput(dt)) return;
+    var brk = toolBroken("wpn"); if (brk) { nag("Your weapon is broken: you are only swatting. Craft a new one."); cool = 0.55; SWK = { mul: 1, po: 2, kb: 0.6, up: 0 }; }   // a broken blade still swats weakly, so a fight can always be finished
+    S.st.swings++; heldPh = 0; var K = SWK;   // the swing starts with the hit
     var ax = (aim.mx - ox) / ts - cp.x, ay = (aim.my - oy) / ts - (cp.y - 0.5), al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) cp.face = ax < 0 ? -1 : 1;
     thud(300 + S.wpn * 70, 0.04);
     for (var s2 = 0; s2 < 5; s2++) { var an = Math.atan2(ay, ax) + (s2 - 2) * 0.32; parts.push({ x: cp.x + Math.cos(an) * 1.1, y: cp.y - 0.5 + Math.sin(an) * 1.1, vx: Math.cos(an) * 2.5, vy: Math.sin(an) * 2.5 - 1, life: 0.2, max: 0.25, c: WEAPONS[S.wpn].c, s: 3 }); }
     var F = cave.F, hits = 0; if (!F.mobs) return;
     F.mobs.forEach(function (m) {
       if (m.def) return; var dx = m.x - cp.x, dy = (m.y - 0.3) - (cp.y - 0.5), d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-      if (d > CREACH[S.wpn] + m.r || (dx * ax + dy * ay) / d < 0.2) return;
-      hits++; damageCaveMob(m, brk ? Math.max(2, Math.round(wDmg() * 0.3)) : wDmg() * moltDmg(m), dx / d, dy / d); m.lastHit = 0; if (!brk && molt() === "dart") moltThorns(m); if (!brk) gemLeech(1);
+      if (d > CREACH[S.wpn] + m.r + (K.reach || 0) || (dx * ax + dy * ay) / d < 0.2) return;
+      hits++; HITK = { po: K.po, kb: K.kb, up: 0 }; damageCaveMob(m, brk ? Math.max(2, Math.round(wDmg() * 0.3)) : wDmg() * moltDmg(m) * K.mul, dx / d, dy / d); HITK = HIT0; m.lastHit = 0; if (!brk && molt() === "dart") moltThorns(m); if (!brk) gemLeech(1);
     });
+    if (hits && (K.heavy || K.fin)) { hitStop(K.heavy ? 0.11 : 0.07, 0.05); shake = Math.max(shake, K.heavy ? 0.5 : 0.3); }
     if (hits && !brk && !(cave.isle && Math.random() < 0.5)) wear("wpn", 1);   // island raids wear a blade at half rate (a Rough raid used to eat a whole Cinder Cleaver)
   }
   function damageCaveMob(m, dmg, ux, uy) {
     if (m.k === "captain") return hitCaptain(m, dmg, ux, uy);
     var F = cave.F, d = ENEMY[m.k], sp = m.k === "slime" ? SLIME_PAL[m.b] || SLIME_PAL[0] : null;
-    dmg = coatDmg(m, eliteDmg(m, dmg)); m.hp -= dmg; m.hurt = 0.3; if (F.mobs) aiAlarm(F, m); m.kx = ux * 6; m.ky = uy * 6; text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
-    if (CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
-    if ((m.st === "wind") && m.hp > 0) m.st = "patrol";
+    dmg = coatDmg(m, eliteDmg(m, dmg)); m.hp -= dmg; var stg = poiseHit(m); if (stg && m.hp > 0) { m.hurt = 0.55; staggerFx(m, m.x, m.y - 0.8); } if (F.mobs) aiAlarm(F, m); var kq = (stg ? 7 : 3) * HITK.kb; m.kx = ux * kq; m.ky = uy * kq;   // POISE: light hits nudge it, a break throws it back text(m.x, m.y - 1, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.4, sp ? sp.c : d.chip, 8, 6); thud(180 + Math.random() * 60, 0.06); impact(m.hp > 0 ? "hit" : "kill");
+    if (stg && CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
+    if (stg && (m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
     m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true); isleKill(m);
     if (m.k === "slime" && !m.small) [-1, 1].forEach(function (s2) {   // big slimes split in two
@@ -5680,7 +5740,7 @@
     if (e.boss) return drawBoss(g, e, now);
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
     if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
-    var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, h = Math.max(0, e.hurt) / 0.3, flash = e.hurt > 0.2 || e.def, d = ENEMY[e.k];
+    var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, eh0 = Math.max(e.hurt, e.fl || 0), h = Math.max(0, eh0) / 0.3, flash = eh0 > 0.2 || e.def, d = ENEMY[e.k];
     g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30 * (e.sz || 1), ts / 30 * (e.sz || 1));
     g.globalAlpha = 1 - pd * pd * 0.9;
     if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
@@ -11100,7 +11160,7 @@
   // corrupted creatures are drawn into a small canvas, then stained blood red and black (the hit flash still shows white)
   var MCOC = null, MCOX = null;
   function mcCorruptDraw(g, m, now, drawFn) {
-    var flash = m.hurt > 0.2 || m.def; if (flash) { drawFn(g); return; }
+    var flash = Math.max(m.hurt, m.fl || 0) > 0.2 || m.def; if (flash) { drawFn(g); return; }
     var S2 = Math.ceil(ts * (m.k === "brute" || m.k === "witch" ? 5.4 : 4.4)); if (!MCOC) { MCOC = document.createElement("canvas"); MCOX = MCOC.getContext("2d"); } if (MCOC.width !== S2) { MCOC.width = S2; MCOC.height = S2; }
     var c = MCOX, ax = S2 / 2, ay = S2 * 0.72, sox = ox, soy = oy, sx = ox + m.x * ts, sy = oy + m.y * ts;
     c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = "source-over"; c.globalAlpha = 1; c.clearRect(0, 0, S2, S2); c.imageSmoothingEnabled = false;
@@ -12839,14 +12899,43 @@
       for (var k = 0; k < 4; k++) parts.push({ x: sp.x + 0.5, y: sp.y + 0.4, vx: (Math.random() - 0.5) * 1.6, vy: -2 - Math.random() * 1.5, life: 0.6, max: 0.7, c: "#e8ffb0", s: 3 });
     }
   }
+  // ---------- YOUR COMBAT: click (or tap) for a three-hit combo; the third hit is a finisher (more damage, breaks poise, launches the
+  // creature). Keep holding after a swing to charge a heavy swing: release it (or hold to full) for a big hit that staggers almost anything. ----------
+  var WC = { dn: false, held: 0, ch: 0, n: 0, last: -9, full: 0 }, SWK = { mul: 1, po: 4, kb: 1, up: 0 };
+  function wpnInput(dt) {   // returns true when a swing starts this frame (SWK says which kind)
+    var down = aim.down, edge = (down && !WC.dn) || (!down && aim.press && !WC.dn); if (aim.press) aim.press = 0;
+    var rel = !down && WC.dn, chg = WC.ch; WC.dn = down; cool -= dt; WC.swT = Math.max(0, (WC.swT || 0) - dt);
+    if (rel || (down && WC.ch >= 1 && (WC.full += dt) > 0.22)) {   // a charged swing goes off on release, or by itself at full charge
+      WC.ch = 0; WC.held = 0; WC.full = 0;
+      if (chg >= 0.5) { var c2 = Math.min(1, chg); SWK = { mul: 1.3 + 1.2 * c2, po: 18 + 22 * c2, kb: 1.8 + c2, up: 6 + 4 * c2, heavy: 1, reach: 0.5 }; cool = wCd() * 1.5; WC.n = 0; WC.swT = WC.swD = cool; heldPh = 0; return true; }
+      return false;
+    }
+    if (edge && cool <= 0) {
+      var now = performance.now(); WC.n = now - WC.last < 750 && WC.n < 3 ? WC.n + 1 : 1; WC.last = now; WC.held = 0;
+      var fin = WC.n === 3; SWK = fin ? { mul: 1.6, po: 12, kb: 1.8, up: 7, fin: 1, reach: 0.25 } : { mul: 1, po: 4, kb: 1, up: 0 };
+      cool = wCd() * (fin ? 1.3 : 0.85); WC.swT = WC.swD = cool; heldPh = 0; return true;
+    }
+    if (down) { WC.held += dt; if (WC.held > 0.2 && cool <= 0) { var o = WC.ch; WC.ch = Math.min(1, WC.ch + dt / 0.6); if (o < 1 && WC.ch >= 1) { thud(880, 0.05); WC.flash = 0.25; } } }
+    return false;
+  }
+  function drawCharge(g, x, y) {   // the charge ring round you while a heavy swing builds
+    if (WC.flash > 0) WC.flash -= 1 / 60; if (WC.ch < 0.04 && !(WC.flash > 0)) return;
+    var r = ts * 0.95, k = WC.ch, full = k >= 1;
+    g.save(); g.lineCap = "round"; g.lineWidth = Math.max(2, ts * 0.09); g.strokeStyle = "rgba(10,20,16,.55)"; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.stroke();
+    g.strokeStyle = full ? "#ffe48a" : "#bff4ea"; g.beginPath(); g.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + 6.2832 * k); g.stroke();
+    if (full || WC.flash > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(performance.now() / 60); g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(x, y, r * 0.9, 0, 6.2832); g.fill(); }
+    g.restore();
+  }
   function useTool(dt) {
     canBusy = false;
     if (sel === "weapon") {   // swing: faces your aim, one swing per cooldown. Nothing takes damage until Stage 3 adds enemies.
-      mine = null; if (!aim.down || !S.wpn) return;
-      if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); return; }
+      mine = null; if (!S.wpn) return;
+      var wi = wpnInput(dt); if (!wi) return;
+      if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); WC.ch = 0; return; }
       var wdx = aim.mx - (ox + p.x * ts); if (Math.abs(wdx) > ts * 0.3) p.face = wdx < 0 ? -1 : 1;
-      cool -= dt; if (cool > 0) return; cool = wCd(); S.st.swings++; swingQ = 0.1;
-      thud(300 + S.wpn * 70, 0.04); for (var sk = 0; sk < 3; sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.35), y: p.y - 1.1 - sk * 0.12, vx: p.face * 3, vy: -0.4, life: 0.22, max: 0.3, c: WEAPONS[S.wpn].c, s: 3 });
+      S.st.swings++; swingQ = 0.1; var fin = SWK.fin, hv = SWK.heavy; if (S.st.swings === 3 && !S.st.cmbTip) { S.st.cmbTip = 1; toast("Combat: click three times in a row for a finisher. Keep holding to charge a heavy swing, then let go.", "#9ff0c0"); }
+      if (fin || hv) { p.vx += p.face * (hv ? 5 : 3.5); }   // a finisher or a heavy swing steps you into it
+      thud((hv ? 160 : fin ? 220 : 300) + S.wpn * 70, hv ? 0.1 : 0.05); for (var sk = 0; sk < (hv ? 9 : fin ? 6 : 3); sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.3), y: p.y - 1.1 - (sk % 3) * 0.25, vx: p.face * (hv ? 5 : 3), vy: -0.4 - (sk % 3) * 0.5, life: 0.22, max: 0.3, c: hv ? "#ffe48a" : WEAPONS[S.wpn].c, s: hv ? 4 : 3 });
       return;
     }
     var pt = pawTarget(); if (pt) { pawLock = true; pawSwing(dt, pt); return; }   // a creature under your aim: swat it, whatever you are holding
@@ -13767,7 +13856,7 @@
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
     tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
-    var working = pawOn || (sel === "weapon" ? (aim.down && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / WEAPONS[S.wpn].cd : 3);
+    var working = pawOn || (sel === "weapon" ? (WC.swT > 0 && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / Math.max(0.15, WC.swD || WEAPONS[S.wpn].cd) : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
       if (q.fl !== undefined) { q.fl += dt * 5; q.vx = Math.sin(q.fl) * 1.8; q.vy = Math.min(q.vy, 1.6); }   // leaf bits sway as they fall
@@ -16424,7 +16513,7 @@
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
-    drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
+    drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
@@ -17222,7 +17311,7 @@
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
     ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt); tickFx(dt); tickWeather(dt); tickBounties(dt); tickFlow(dt);
     caveTool(dt); tickVein(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt); tickGuardian(dt);
-    var working = !!mine || pawOn || (sel === "weapon" && aim.down && S.wpn > 0 && !panelOpen); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "weapon" && S.wpn > 0 ? 1 / wCd() : 5.4);   // a weapon swings at its own speed, like outside
+    var working = !!mine || pawOn || (sel === "weapon" && WC.swT > 0 && S.wpn > 0 && !panelOpen); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "weapon" && S.wpn > 0 ? 1 / Math.max(0.15, WC.swD || wCd()) : 5.4);   // a weapon swings at its own speed, like outside
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
@@ -17396,7 +17485,8 @@
       var sq = bedNear() && isNight(S.time) || doorNear() || chestNear() ? null : stationNear(2.2); if (sq) drawPill(g, now, "Open " + STATIONS[sq.k].sh + (coarse ? "" : " (F)"), ox + (sq.x + 0.5) * ts, oy + sq.y * ts - ts * 0.8, false, function () { openStn(sq.k, sq.x, sq.y); }); return; }
     var fis = S.quake && S.quake.x === h.x && S.quake.y === h.y; drawPill(g, now, (fis ? "Drop into the fissure: floor " + S.quake.f : "Enter the Mine") + (coarse ? "" : " (F)"), ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * (fis ? 1.9 : 4.9), false, function () { enterCave(h.x, h.y); });
   }
-  function drawCavePlayer(g, now) {   // you in the top-down scenes (the Mine, the homestead): the same animation as outside: swings with a swoosh,
+  function drawCavePlayer(g, now) { drawCavePlayer0(g, now); if (sel === "weapon" && cave) drawCharge(g, ox + cp.x * ts, oy + (cp.y - 0.6) * ts); }
+  function drawCavePlayer0(g, now) {   // you in the top-down scenes (the Mine, the homestead): the same animation as outside: swings with a swoosh,
     // items in the paw, drinking and eating, a flinch when you are hit, a lean into the swing, the backpack, and the same size
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
     g.save(); g.translate(sx, sy + ts * 0.14); g.scale(cp.face, 1); dodgeSpin(g, ts * 0.85);
@@ -25561,7 +25651,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__sbx.dbg = { ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
+  window.__sbx.dbg = { sel: function () { return [sel, aim.down, cool, WC, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
