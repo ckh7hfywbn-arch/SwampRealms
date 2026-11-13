@@ -15954,12 +15954,18 @@
     q.putImageData(im, 0, 0); return cv;
   }
   // PERF: a whole crown is painted once and kept until any of its leaves change; each frame it is one drawImage.
-  function canFree() { CANT.forEach(function (e) { cvFree(e.cv); }); CANT.clear(); CANT_PX = 0; }
+  function canFree() { CANT.forEach(function (e) { cvFree(e.cv); if (e.up) cvFree(e.up); }); CANT.clear(); CANT_PX = 0; }
+  function canUp(e) {   // a crown's pixel art blown up pixel by pixel (sharp) close to its size on screen, made once per crown
+    if (e.up) return e.up; var k = clamp(Math.round(ts / 16 * Math.max(1, dpr)), 1, coarse ? 2 : 3);
+    var c = document.createElement("canvas"); c.width = e.cv.width * k; c.height = e.cv.height * k; var x = c.getContext("2d"); x.imageSmoothingEnabled = false; x.drawImage(e.cv, 0, 0, c.width, c.height);
+    e.up = c; CANT_PX += c.width * c.height; return c;
+  }
   var CANT = new Map(), CANT_PX = 0, CSTAMP = null, CSTN = 0, CANL = [], CANBFS = [], CANSZ = 0;
   function drawCanopies(g, now, X0, X1, Y0, Y1) {
     var i, j, q, tt = now / 1000, S = Math.max(2, Math.round(ts * dpr));
     if (CANSZ !== S) { CANSZ = S; canFree(); }
     if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Uint32Array(W * H); CSTN++;
+    if (CSTN % 240 === 0) CANT.forEach(function (e) { if (e.up && CSTN - (e.seen || 0) > 240) { CANT_PX -= e.up.width * e.up.height; cvFree(e.up); e.up = null; } });   // crowns long off screen drop their big sharp copy (remade when seen again)
     var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (j = Math.max(1, Y0 - 3); j <= Math.min(H - 2, Y1 + 3); j++) for (i = Math.max(1, X0 - 3); i <= Math.min(W - 2, X1 + 3); i++) {   // (crowns are fluffier than their leaves: look a few tiles past the screen)
       if (tiles[j * W + i] !== T.LEAVES || CSTAMP[j * W + i] === CSTN) continue;
@@ -15972,15 +15978,22 @@
       }
       var e = CANT.get(mn), M = 2;
       if (!e || e.sig !== sig || e.n !== n) {
-        if (e) { CANT_PX -= e.cv.width * e.cv.height; cvFree(e.cv); CANT.delete(mn); }
+        if (e) { CANT_PX -= e.cv.width * e.cv.height; cvFree(e.cv); if (e.up) { CANT_PX -= e.up.width * e.up.height; cvFree(e.up); } CANT.delete(mn); }
         var L = []; for (q = 0; q < CANL.length; q += 2) L.push([CANL[q], CANL[q + 1]]);
         L.sort(function (a, b) { return b[1] - a[1] || a[0] - b[0]; }); var LF = []; L.forEach(function (t2) { LF.push(t2[0], t2[1]); });
         var cv = crownPaint(LF, x0, y0, x1, y1, M);
-        if (CANT_PX > (coarse ? 1.5e6 : 4e6)) canFree();
+        if (CANT_PX > (coarse ? 5e6 : 1.4e7)) canFree();   // (room for the sharp blown-up copies the sway draws from)
         e = { sig: sig, n: n, cv: cv, x0: x0, y0: y0 }; CANT.set(mn, e); CANT_PX += cv.width * cv.height;
       }
-      var u = ts / 16, sw = reduce ? 0 : Math.round((Math.sin(tt * 0.9 + (mn % 997) * 0.37) * 0.8 + Math.sin(tt * 2.1 + mn % 13) * 0.2) * Math.max(1, dpr) * ts / 28) / Math.max(1, dpr) / u;   // a gentle sway in the wind, in device-pixel steps (whole art-pixel jumps read as a jitter)
-      var dq = Math.max(1, dpr); g.drawImage(e.cv, Math.round((ox + (e.x0 - M) * ts + sw * u) * dq) / dq, Math.round((oy + (e.y0 - M) * ts) * dq) / dq, e.cv.width * u, e.cv.height * u);
+      var u = ts / 16, dq = Math.max(1, dpr), cx0 = Math.round((ox + (e.x0 - M) * ts) * dq) / dq, cy0 = Math.round((oy + (e.y0 - M) * ts) * dq) / dq, cw = e.cv.width * u, ch = e.cv.height * u;
+      if (reduce) { g.drawImage(e.cv, cx0, cy0, cw, ch); continue; }
+      // SMOOTH SWAY: the crown bends in the wind like a real canopy (the top moves most, the base stays on its trunk), drawn in thin bands
+      // at sub-pixel offsets from a sharp copy blown up close to screen size, so it glides instead of hopping whole pixels
+      e.seen = CSTN; var SU = canUp(e), kU = SU.width / e.cv.width, swA = (Math.sin(tt * 0.9 + (mn % 997) * 0.37) * 0.8 + Math.sin(tt * 2.1 + mn % 13) * 0.2) * ts / 28, NB = Math.max(4, Math.min(10, Math.round(e.cv.height / 24)));
+      g.imageSmoothingEnabled = true;
+      for (var bq = 0; bq < NB; bq++) { var b0 = Math.floor(e.cv.height * bq / NB), b1 = Math.floor(e.cv.height * (bq + 1) / NB), hgt = 1 - (b0 + b1) / 2 / e.cv.height, bend = swA * (0.25 + 0.75 * hgt * hgt);
+        g.drawImage(SU, 0, b0 * kU, SU.width, (b1 - b0) * kU, cx0 + bend, cy0 + b0 * u, cw, (b1 - b0) * u + (bq < NB - 1 ? 0.5 / dq : 0)); }
+      g.imageSmoothingEnabled = false;
     }
     g.imageSmoothingEnabled = sm;
   }
