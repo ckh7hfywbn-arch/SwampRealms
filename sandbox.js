@@ -16582,10 +16582,10 @@
     g.shadowBlur = 0; g.shadowColor = "transparent";
     var sm = g.imageSmoothingEnabled;
     var hpx = sprite ? sprite.s : Math.max(1, Math.round(ts * 1.7 / 24));   // one avatar art pixel (the sprite's own, so a tool is always sized to the body holding it, in caves and rooms too); tools are drawn a touch smaller than that so they read as small, neat props
-    var put = function (cv, k, gx, gy) { var z = hpx * k; g.save(); g.translate(hx, hy); g.rotate(tp.ang); g.imageSmoothingEnabled = false; g.drawImage(cv, -gx * z, -gy * z, 16 * z, 16 * z); g.restore(); };   // (gx, gy) = the grip cell that sits in the paw
+    var put = function (cv, k, gx, gy, mir) { var z = hpx * k; g.save(); g.translate(hx, hy); g.rotate(tp.ang); if (mir) g.transform(0, -1, -1, 0, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(cv, -gx * z, -gy * z, 16 * z, 16 * z); g.restore(); };   // (gx, gy) = the grip cell that sits in the paw; mir: flip the art over the handle (the pick's point faces forward, the way you swing it)
     if (sel === "pick") {
       if (S.tier < 1 || bare) return;   // an empty hand shows just your paws / hands
-      put(heldCanvas(S.tier), 0.8, 4, 12);
+      put(heldCanvas(S.tier), 0.8, 4, 12, true);
     } else if (sel === "shovel") {
       if (!S.shovel) return;
       put(heldShovel(), 0.8, 4, 12);
