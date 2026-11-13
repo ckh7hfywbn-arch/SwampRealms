@@ -522,8 +522,8 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true };
-  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true };
+  try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.chunks === false) OPT.chunks = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
   try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
@@ -12621,6 +12621,7 @@
       + r("Enchantment glow", "A soft glow and sparkles around you when your gear is enchanted.", optSeg("eglow", OPT.eglow === false ? 0 : 1, [[1, "On"], [0, "Off"]], "Enchantment glow"))
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
+      + r("Fast world drawing", "Paints the ground in big pieces for higher, steadier frame rates. Looks the same. Turn off if anything looks wrong.", optSeg("chunks", OPT.chunks !== false ? 1 : 0, [[1, "On"], [0, "Off"]], "Fast world drawing"))
       + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
       + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality")); }
   function setAccess() { var r = optRow;
@@ -12654,6 +12655,7 @@
     else if (k === "wheel") OPT.wheel = v === "1";
     else if (k === "eglow") OPT.eglow = v === "1";
     else if (k === "bloom") OPT.bloom = v === "1";
+    else if (k === "chunks") { OPT.chunks = v === "1"; chkClear(); }
     else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
     else if (k === "cb") { OPT.cb = /^(p|d|t)$/.test(v) ? v : "off"; applyA11y(); }
@@ -14779,7 +14781,7 @@
         }
       }
       if (cvA) { g.restore(); carveRim(g, id, i, j, sx3, sy, cvA[0], cvA[1], cvA[2], cvA[3], cvA.build ? "build" : false); cvA = null; }   // CARVED TERRAIN: close a rounded atlas block
-      if (td.light >= 3 && td.solid === false || td.light >= 6) glowPush(td, i, j, [sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]);
+      if (td.light >= 3 && td.solid === false || td.light >= 6) cellGlow(td, id, i, j, sx3, sy);
       if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
   }
   // VINES: each column of vine blocks is drawn as one strand that hangs from the leaves above it and sways like a chain:
@@ -15071,7 +15073,8 @@
   // painted once at full device resolution into a small canvas and stamped; the soft shade it throws onto its neighbours is still drawn
   // live (edgeShade) so everything stacks exactly as before. NATM is a Map in insertion order, trimmed to a pixel budget (about 16 MB).
   var NATM = new Map(), NATS = 0, NATPX = 0, NAT_BUDGET = 4e6, PERF = { nat: true, dark: true, vig: true };
-  function natClear() { NATM.forEach(function (c) { cvFree(c); }); NATM.clear(); NATPX = 0; }   // FIX (lag after Malcruor): the cache was emptied on every world switch but its pixel count was not, so after a few
+  function natClear() { NATM.forEach(function (c) { cvFree(c); }); NATM.clear(); NATPX = 0; NATGEN++; }
+  var NATGEN = 0;   // FIX (lag after Malcruor): the cache was emptied on every world switch but its pixel count was not, so after a few
   // switches it believed it was always full, threw every tile away the moment it was made, and repainted the whole screen of tiles every frame
   function natTrim(NB) { if (NATPX <= NB) return; var it = NATM.keys(); while (NATPX > NB * 0.75) { var ok = it.next(); if (ok.done) { NATPX = 0; NATM.forEach(function (c) { NATPX += c.width * c.height; }); break; } var oc = NATM.get(ok.value); NATPX -= oc.width * oc.height; NATM.delete(ok.value); } }
   // ---------- CARVED TERRAIN: rounded outer corners, grass that wraps round them, and soft ground bleeding into rock ----------
@@ -15162,7 +15165,7 @@
     if (carved) { carveBack(g, i, j, sx, sy, tl, tr, bl, br); g.save(); carvePath(g, sx, sy, tl, tr, br, bl, nT); g.clip(); }
     if (!PERF.nat) { natBody(g, id, i, j, sx, sy, scen, nT, nL, nR); carveEnd(g, id, i, j, sx, sy, nB, nL, nR, tl, tr, br, bl, nT); return; }
     var S = Math.max(2, Math.round(ts * dpr)); if (S !== NATS) { natClear(); NATS = S; }
-    var NB = Math.max(NAT_BUDGET, vw * vh * dpr * dpr * 3);   // PERF: room for every tile on screen (big or high-res screens used to overflow 4 Mpx, so the cache threw tiles away and rebuilt them every frame: unplayable lag on PC)
+    var NB = Math.max(NAT_BUDGET, vw * vh * dpr * dpr * (OPT.chunks !== false && !cave ? 1.5 : 3));   // (with chunk painting most tiles live in the painted pieces, so the tile cache needs less room)   // PERF: room for every tile on screen (big or high-res screens used to overflow 4 Mpx, so the cache threw tiles away and rebuilt them every frame: unplayable lag on PC)
     var key = (((id * W + i) * H + j) * 16 + (nT ? 8 : 0) + (nL ? 4 : 0) + (nR ? 2 : 0) + (scen ? 1 : 0)) * 16 + varAt(i), cv = NATM.get(key), k2 = S / ts;   // PERF: a number, not a string, so no garbage per tile per frame
     if (!cv) {
       // room above for the grass lip and tufts, in WHOLE canvas pixels: at a 1.5x canvas a margin of 11 CSS px is 16.5 px, which put every surface block
@@ -16386,6 +16389,81 @@
   function shadowTint(bw, night, deep) {   // the colour of the dark: teal in the swamp, smoky ember in the bog, deep blue in the snow; violet far down
     var c = mixArr([[4, 14, 17], [17, 7, 8], [5, 10, 25]], bw); c = mixC(c, [7, 9, 28], night * 0.55); return mixC(c, [13, 6, 28], deep);
   }
+  // ---------- CHUNK PAINTING (PERF): the ground that never moves (natural blocks and open air with only the cave's back rock behind it) is
+  // painted into pieces of 8 x 8 blocks, and each piece is drawn with one picture instead of up to 64. Everything else (plants,
+  // water, lava, trees, ores, buildings, slopes, anything near them) is still drawn block by block, every frame, exactly as before, so nothing
+  // that moves or glows changes. A piece is painted again the moment anything in or around it changes; while it is being painted (two
+  // pieces a frame at most, the ones on screen first, then the next ones around the edge so walking never waits) its blocks are drawn
+  // the old way. Options > Graphics > Fast world drawing turns it off. ----------
+  var CHK = { m: new Map(), q: 0, g: "", vis: null, vx0: 0, vy0: 0, vw: 0, vh: 0 }, CHS = 8, CHM = 1;   // (8 x 8 blocks: small enough that a piece of open sky needs no picture at all and memory stays low on sharp screens)
+  function chkClear() { CHK.m.forEach(function (c) { if (c.cv) cvFree(c.cv); }); CHK.m.clear(); CHK.vis = null; }
+  function chkStaticAt(ix) {   // a block that can be painted once: natural ground (not a slope or half block) or plain open air
+    var id = tiles[ix]; if (walls[ix] || S.stain[ix] !== undefined || AFX.place[ix]) return false;
+    if (id === T.AIR) return true;
+    return (!!NATC[id] || !!SMGEM[id]) && TILES[id].solid && !(SHAPEN && shapeAt(ix));   // (an ore's twinkle and glow are added live: chkLive)
+  }
+  function cellGlow(td, id, i, j, sx3, sy) { glowPush(td, i, j, [sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]); }
+  function chkLive(g, i, j, sx3, sy, now) {   // the moving part of a painted ore block: its glow and its twinkle (as drawCell0 does)
+    var id = tiles[j * W + i], td = TILES[id]; if (!SMGEM[id]) return;
+    if (td.light >= 3 && td.solid === false || td.light >= 6) cellGlow(td, id, i, j, sx3, sy);
+    if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
+  }
+  function chkSig(cx, cy) {   // everything a piece's picture depends on: the blocks, back walls, stains and slope marks in and around it, the ground line
+    var x0 = cx * CHS - 3, y0 = cy * CHS - 3, x1 = x0 + CHS + 6, y1 = y0 + CHS + 6, h = 2166136261 | 0, x, y, ix;
+    for (y = y0; y < y1; y++) { if (y < 0 || y >= H) { h = Math.imul(h ^ 77, 16777619); continue; }
+      for (x = x0; x < x1; x++) { if (x < 0 || x >= W) { h = Math.imul(h ^ 91, 16777619); continue; } ix = y * W + x;
+        h = Math.imul(h ^ tiles[ix], 16777619); h = Math.imul(h ^ (walls[ix] | 0) ^ (orig[ix] === T.LOG ? 1 << 20 : 0), 16777619);
+        if (S.stain[ix] !== undefined) h = Math.imul(h ^ 0x5151, 16777619); if (S.shape[ix] !== undefined) h = Math.imul(h ^ (S.shape[ix] + 7) * 131, 16777619); if (AFX.place[ix]) h = Math.imul(h ^ 0x3333, 16777619); } }
+    for (x = x0; x < x1; x++) if (x >= 0 && x < W) h = Math.imul(h ^ (col[x] * 977 + world.top[x] * 31 + (world.bio[x] | 0)), 16777619);
+    return h;
+  }
+  function chkBake(c, now) {
+    var k = Math.max(1, dpr), cw = Math.round((CHS + CHM * 2) * ts * k), cv = c.cv && c.cv.width === cw ? c.cv : null;
+    if (!cv) { if (c.cv) cvFree(c.cv); cv = document.createElement("canvas"); cv.width = cv.height = cw; }
+    var q = cv.getContext("2d"); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, cw, cw); q.setTransform(k, 0, 0, k, 0, 0); q.imageSmoothingEnabled = false;
+    var bk = c.bk || (c.bk = new Uint8Array(CHS * CHS)), x0 = c.x * CHS, y0 = c.y * CHS, i, j, a, b, ok, any = 0;
+    for (j = 0; j < CHS; j++) for (i = 0; i < CHS; i++) {   // a block is painted into the piece only if it and everything round it (one block each side, two above) stays still
+      var gx = x0 + i, gy = y0 + j; ok = gx >= 1 && gx < W - 1 && gy >= 2 && gy < H - 1;
+      for (b = -1; ok && b <= 1; b++) for (a = -1; a <= 1; a++) if (!chkStaticAt((gy + b) * W + gx + a)) { ok = false; break; }
+      if (ok) for (a = -1; a <= 1; a++) { var t2 = tiles[(gy - 2) * W + gx + a]; if (t2 === T.LOG) { ok = false; break; } }   // (a tree's roots reach down two blocks)
+      bk[j * CHS + i] = ok ? 1 : 0; if (ok && (tiles[gy * W + gx] !== T.AIR || (gy >= col[gx] && gy > world.top[gx]))) any++;   // (open sky draws nothing: no picture needed)
+    }
+    for (j = 0; j < CHS; j++) for (i = 0; i < CHS; i++) if (bk[j * CHS + i]) drawCell(q, x0 + i, y0 + j, (i + CHM) * ts, (j + CHM) * ts, now);
+    c.cv = any ? cv : (cvFree(cv), null); c.any = any; c.ok = true;
+  }
+  function chkFrame(g, X0, X1, Y0, Y1, now) {   // draws the pieces on screen; returns false when the old way must be used for everything
+    if (OPT.chunks === false || cave || !PERF.nat || !world) { if (CHK.m.size) chkClear(); return false; }
+    if (!world.__chk) world.__chk = ++CHK.q; var gs = [NATGEN, ts, dpr, OPT.carve, OPT.gside, OPT.autoramp, SHAPEN, W, H, world.__chk, inMC() ? 1 : 0].join(",");
+    if (gs !== CHK.g) { chkClear(); CHK.g = gs; }
+    var cx0 = Math.floor((X0 - 2) / CHS), cx1 = Math.floor((X1 + 2) / CHS), cy0 = Math.floor((Y0 - 1) / CHS), cy1 = Math.floor((Y1 + 2) / CHS), cx, cy, budget = 3, nw = cx1 - cx0 + 1;
+    var vis = CHK.vis && CHK.vis.length === nw * (cy1 - cy0 + 1) ? CHK.vis : (CHK.vis = new Array(nw * (cy1 - cy0 + 1)));
+    CHK.vx0 = cx0; CHK.vy0 = cy0; CHK.vw = nw; CHK.vh = cy1 - cy0 + 1;
+    for (cy = cy0; cy <= cy1; cy++) for (cx = cx0; cx <= cx1; cx++) {
+      var vi = (cy - cy0) * nw + (cx - cx0); vis[vi] = null; if (cx < 0 || cy < 0 || cx * CHS >= W || cy * CHS >= H) continue;
+      var key = cy * 65536 + cx, c = CHK.m.get(key), sg = chkSig(cx, cy);
+      if (c && c.sig !== sg) { c.ok = false; }
+      if (!c) { c = { x: cx, y: cy, sig: sg, ok: false, cv: null, t: 0 }; CHK.m.set(key, c); }
+      if (!c.ok) { if (budget <= 0) continue; budget--; c.sig = sg; chkBake(c, now); }
+      c.t = now; vis[vi] = c;
+      if (c.cv) { var k = Math.max(1, dpr); g.drawImage(c.cv, ox + (cx * CHS - CHM) * ts, oy + (cy * CHS - CHM) * ts, c.cv.width / k, c.cv.height / k); }
+    }
+    if (budget > 0) {   // PAINT AHEAD: the ring of pieces just off screen, so walking on never finds an unpainted piece
+      for (cy = cy0 - 1; cy <= cy1 + 1 && budget > 0; cy++) for (cx = cx0 - 1; cx <= cx1 + 1 && budget > 0; cx++) {
+        if (cy >= cy0 && cy <= cy1 && cx >= cx0 && cx <= cx1) continue; if (cx < 0 || cy < 0 || cx * CHS >= W || cy * CHS >= H) continue;
+        var key2 = cy * 65536 + cx, c2 = CHK.m.get(key2); if (c2 && c2.ok) continue;
+        if (!c2) { c2 = { x: cx, y: cy, sig: 0, ok: false, cv: null, t: now }; CHK.m.set(key2, c2); } c2.sig = chkSig(cx, cy); chkBake(c2, now); c2.t = now; budget--;
+      }
+    }
+    if (CHK.m.size > (nw * (cy1 - cy0 + 1) + 2 * (nw + cy1 - cy0 + 3)) * 2) {   // let go of pieces long off screen
+      var old = []; CHK.m.forEach(function (c3, k3) { if (now - c3.t > 4000) old.push(k3); });
+      old.forEach(function (k3) { var c4 = CHK.m.get(k3); if (c4.cv) cvFree(c4.cv); CHK.m.delete(k3); });
+    }
+    return true;
+  }
+  function chkSkip(i, j) {   // is this block already in a painted piece on screen?
+    var vi = ((j / CHS | 0) - CHK.vy0) * CHK.vw + ((i / CHS | 0) - CHK.vx0), c = CHK.vis[vi];
+    return !!c && c.ok && c.bk[(j % CHS) * CHS + (i % CHS)] === 1;
+  }
   function render(now) {
     var t = inMC() ? 380 : S.time, day = inMC() ? 0.62 + 0.3 * (MC.rw || 0) : daylight(t), g = ctx, i, j, night = 1 - day, ph = phaseOf(t), BLD, BLA;
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
@@ -16534,8 +16612,10 @@
     glows.length = 0; CELL.wob = Math.sin(now / 500); CELL.edge = Math.max(1, Math.round(ts / 9)); CELL.sw = Math.sin(now / 700);
     drawStructs(g, X0, X1, Y0, Y1);   // buildings first: they are pictures behind everything you build
     SHQ.length = 0;   // MALLET: ramp edges queued by this frame's blocks only
+    var chOn = chkFrame(g, X0, X1, Y0, Y1, now);   // CHUNK PAINTING: the still ground in big pieces first
     for (j = Y0 - 1; j <= Y1 + 2; j++) for (i = X0 - 2; i <= X1 + 2; i++) {   // (a little past the edges: trunks, roots and plants reach into the next tile, so nothing pops out before it has left the screen)
       if (i < 0 || i >= W || j < 0 || j >= H) continue;
+      if (chOn && chkSkip(i, j)) { if (SMGEM[tiles[j * W + i]]) chkLive(g, i, j, ox + i * ts, oy + j * ts, now); continue; }
       var pfk = AFX.place[j * W + i];
       if (pfk) {   // a block you just placed pops in (grows from 70% with a little overshoot)
         var pk = (performance.now() - pfk) / PLACE_POP, ptd = TILES[tiles[j * W + i]];
@@ -18772,6 +18852,7 @@
     if (storyOpen === 290 && /^(give|kit|gear|heal|map|zaruk|bmday)$/.test(k)) devOpen();   // keep the dev menu up for quick repeat taps
   }
   function devToggle(k) {
+    if (k === "chunks") { OPT.chunks = OPT.chunks === false; chkClear(); optSave(); toast("Fast world drawing " + (OPT.chunks ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     DEV[k] = !DEV[k]; if (k === "ghost" && DEV.ghost) DEV.fly = true; if (k === "fly" && !DEV.fly) DEV.ghost = false;
     if (k === "peace" && DEV.peace) enemies.length = 0; if (k === "fps") devFps();
     devSave(); if (storyOpen === 290) devOpen();
@@ -18793,7 +18874,8 @@
       + row("Ghost", "Fly straight through blocks.", sw('data-devt="ghost"', DEV.ghost, "Ghost"))
       + row("Fast dig", "Break anything 12 times faster.", sw('data-devt="dig"', DEV.dig, "Fast dig"))
       + row("Peaceful", "No creatures spawn.", sw('data-devt="peace"', DEV.peace, "Peaceful"))
-      + row("FPS counter", "Bottom-left corner.", sw('data-devt="fps"', DEV.fps, "FPS counter")));
+      + row("FPS counter", "Bottom-left corner.", sw('data-devt="fps"', DEV.fps, "FPS counter"))
+      + row("Fast world drawing", "Chunk painting (Options > Graphics). Flip it to compare frame rates.", sw('data-devt="chunks"', OPT.chunks !== false, "Fast world drawing")));
     h += card("You", '<div class="dev-btns">' + b("heal", "Heal and feed") + b("gear", "Best gear") + b("kit", "Tester kit") + "</div>");
     h += card("Give items", '<input id="devQ" class="dev-q" type="search" placeholder="Search items (e.g. bomb, lantern, wings)" autocomplete="off" value="' + esc(DEV.q) + '"><div id="devList">' + devItemsHtml() + "</div>");
     h += card("Time and events", '<div class="dev-btns">' + b("time:60", "Morning", 1) + b("time:200", "Afternoon", 1) + b("time:245", "Dusk", 1) + b("time:300", "Night", 1) + b("time:445", "Dawn", 1) + b("day", "Next day", 1) + "</div>"
@@ -19734,7 +19816,7 @@
   // world turns blank and everything lags), every picture cache is emptied and the game drops to its low-memory graphics, once.
   var CVW = { bad: 0, low: false };
   function cvStepDown() {
-    canFree(); Object.keys(LEAFCACHE).forEach(function (k) { cvFree(LEAFCACHE[k]); }); LEAFCACHE = {}; LEAFKEY = 0;
+    canFree(); chkClear(); natClear(); Object.keys(LEAFCACHE).forEach(function (k) { cvFree(LEAFCACHE[k]); }); LEAFCACHE = {}; LEAFKEY = 0;
     (world && world.structs || []).forEach(function (q) { if (q.pic && q.pic.cv) { cvFree(q.pic.cv); q.pic.cv = null; } });
     cvFree(HG); HG = null; cvFree(HFOR); HFOR = null; Object.keys(HSPR).forEach(function (k) { var v = HSPR[k]; (Array.isArray(v) ? v : [v]).forEach(function (c) { if (c && c.getContext) cvFree(c); }); }); HSPR = {}; HATL = null;
     if (HOME) { HOME.fk = null; HOME.gd = 1; HOME.vig = null; }   // in the homestead: everything it painted is painted again, so a picture that failed to draw comes back
@@ -19743,6 +19825,7 @@
     if (!CVW.low) { CVW.low = true; lowq = true; dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} toast("Your device ran low on graphics memory, so Delve switched to lighter graphics. You can change it in Options > Graphics.", "#f2c14e"); }
     resize();
   }
+  ["contextlost", "contextrestored"].forEach(function (ev) { try { cv.addEventListener(ev, function () { try { chkClear(); natClear(); canFree(); TLC.clear(); } catch (e) {} }); } catch (e) {} });   // the graphics card was reset: every saved picture is painted again
   setInterval(function () {
     if (document.hidden || !world) return; var c = document.createElement("canvas"), ok = false; c.width = c.height = 2; var q = null; try { q = c.getContext("2d"); } catch (e) {}
     if (q) { try { q.fillStyle = "#ff0000"; q.fillRect(0, 0, 2, 2); ok = q.getImageData(0, 0, 1, 1).data[0] > 200; } catch (e) { ok = true; } }   // (a read that is refused is not a memory problem)
@@ -25697,7 +25780,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__sbx.dbg = { drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
+  window.__sbx.dbg = { render: function (t) { render(t); }, OPT: OPT, chk: CHK, drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
