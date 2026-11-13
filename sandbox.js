@@ -13731,10 +13731,11 @@
     // CAMERA LOOK-AHEAD: the view leads a couple of tiles the way you are running (a dead zone ignores small steps and turns), and drops
     // a little ahead of a long fall so you can see where you will land
     var runL = Math.abs(p.vx) > 3.2; CAMLA.idle = runL ? 0 : (CAMLA.idle || 0) + dt;   // keep the lead through short pauses and turns, then drift back to centre
-    var laT = !OPT.look || reduce || warp ? 0 : runL ? Math.sign(p.vx) * Math.min(3, vw / ts * 0.09) : CAMLA.idle > 0.25 ? 0 : CAMLA.x;
+    var laT = 0;   // STEADY CAMERA: no sideways lead when you run (it swung the view about and slid the block under the cursor); the view stays centred on you
     if (!(aim.down || mine) || runL) CAMLA.x += (laT - CAMLA.x) * Math.min(1, dt * (Math.abs(laT) > Math.abs(CAMLA.x) ? 3 : 5));   // SNAPPY CAMERA: the lead settles back in a fraction of a second, and holds still while you mine or build (so the block under the cursor stays put)
     var laY = OPT.look && !reduce && !p.on && p.vy > 9 && !p.wet ? Math.min(2.5, (p.vy - 9) * 0.18) : 0; CAMLA.y += (laY - CAMLA.y) * Math.min(1, dt * 2.5);
-    var cbo = activeBoss(), ctx2 = p.x + CAMLA.x, cty = p.y - 1.1 + CAMLA.y, cdk = 12;
+    if (p.on || p.wet || onLadder() || CAMLA.gy === undefined || p.y > CAMLA.gy + 0.4 || p.y < CAMLA.gy - 3.2) CAMLA.gy = p.y;   // STEADY CAMERA: a jump does not bob the view; it follows once you land, climb, swim or fall away
+    var cbo = activeBoss(), ctx2 = p.x + CAMLA.x, cty = CAMLA.gy - 1.1 + CAMLA.y, cdk = 12;
     mineIntroTick(dt); if (MPAN) { var mk2 = MPAN.t < 4.2 ? 1 : 0; if (mk2) { ctx2 = MPAN.x; cty = MPAN.y; cdk = 2.4; } }   // THE MINE: first-visit look
     if (cbo && !cbo.def) { var cdx = cbo.x - p.x, lean = cbo.st === "intro" || cbo.st === "introleap" ? 0.55 : 0.36; ctx2 = p.x + clamp(cdx * lean, -7, 7); cty = p.y - 1.1 - clamp((p.y - (cbo.y - cbo.h)) * 0.25, -1.5, 3); cdk = 4.5; }   // BOSS CAMERA: keep the boss in the picture
     cam.x += (ctx2 - cam.x) * (1 - Math.exp(-dt * cdk)); cam.y += (cty - cam.y) * (1 - Math.exp(-dt * 9));   // (frame-rate independent easing: no lurch when a frame runs long)
@@ -17163,7 +17164,7 @@
     if (fx("regen") && hp > 0 && hp < MAXHP) hp = Math.min(MAXHP, hp + 3 * dt);   // Mending Tonic
     drawHp();
     var lsp = Math.sqrt(cp.vx * cp.vx + cp.vy * cp.vy), lgo = OPT.look && !reduce && !F.bld && lsp > 2;
-    var lax = lgo ? cp.vx / lsp * 1.6 : 0, lay = lgo ? cp.vy / lsp * 1.1 : 0;
+    var lax = 0, lay = 0;   // STEADY CAMERA (caves too): centred on you, no lead
     if (!(aim.down || mine) || lgo) { CAMLA.x += (lax - CAMLA.x) * Math.min(1, dt * 4); CAMLA.y += (lay - CAMLA.y) * Math.min(1, dt * 4); }   // snappy, and still while you mine (the block under the cursor stays put)
     var cek2 = 1 - Math.exp(-dt * 12); cam.x += (cp.x + CAMLA.x - cam.x) * cek2; cam.y += (cp.y - 0.8 + CAMLA.y - cam.y) * cek2;
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts;
