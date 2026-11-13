@@ -15936,7 +15936,22 @@
       for (k = 0; k < fill.length; k++) buf[fill[k]] = thash(fill[k] % pw, (fill[k] / pw) | 0, 17) < 0.14 ? 3 : 2;   // (a few shaded leaves in it, so it reads as foliage)
     }
     outlinePx(buf, pw, ph);
+    if (inMC() && world.mcz) {   // MALCRUOR: where cleansed land meets corrupt land the leaves blend from gold to blood red across a few blocks (one crown can span the edge)
+      var wc = new Float32Array(pw), any = false;
+      for (x = 0; x < pw; x++) { wc[x] = mcCleanW(x0 - M + (x + 0.5) / A); if (wc[x] > 0.001 && wc[x] < 0.999) any = true; }
+      if (any) return pxCanvasMix(buf, pw, ph, palRgb("cm", CPAL.m), palRgb("cd", CPAL.d), wc);
+      return pxCanvas(buf, pw, ph, wc[pw >> 1] >= 0.5 ? palRgb("cd", CPAL.d) : palRgb("cm", CPAL.m));
+    }
     return pxCanvas(buf, pw, ph, inMC() ? (mcRest(L[0]) ? palRgb("cd", CPAL.d) : palRgb("cm", CPAL.m)) : palRgb("c" + st, CPAL[st]));
+  }
+  function mcCleanW(xf) {   // 0 = corrupt, 1 = cleansed, blended smoothly over about 6 blocks either side of the border
+    var R = 6, t = 0, n = 0; for (var d = -R; d <= R; d += 0.5) { var w = 1 - Math.abs(d) / (R + 0.5); t += (world.mcz[clamp(Math.floor(xf + d), 0, W - 1)] === 1 ? 1 : 0) * w; n += w; }
+    var v = t / n; return v * v * (3 - 2 * v);
+  }
+  function pxCanvasMix(buf, w, h, pa, pb, wc) {   // like pxCanvas, but each column blends palette pa into pb by wc[x]
+    var cv = document.createElement("canvas"); cv.width = w; cv.height = h; var q = cv.getContext("2d"), im = q.createImageData(w, h), d = im.data;
+    for (var k = 0; k < w * h; k++) { var v = buf[k]; if (!v) continue; var f = wc[k % w], a = pa[v - 1], b = pb[v - 1]; d[k * 4] = a[0] + (b[0] - a[0]) * f; d[k * 4 + 1] = a[1] + (b[1] - a[1]) * f; d[k * 4 + 2] = a[2] + (b[2] - a[2]) * f; d[k * 4 + 3] = 255; }
+    q.putImageData(im, 0, 0); return cv;
   }
   // PERF: a whole crown is painted once and kept until any of its leaves change; each frame it is one drawImage.
   function canFree() { CANT.forEach(function (e) { cvFree(e.cv); }); CANT.clear(); CANT_PX = 0; }
