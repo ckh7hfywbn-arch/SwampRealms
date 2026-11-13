@@ -294,3 +294,25 @@ Tested (in game, scripted, `tdeco8*.js`, two browser pages with the messages car
 Not done yet:
 - Not tested on the live relay server with two real devices. The test passes messages between two pages directly; the live relay adds the same "from" stamp (a clash with it was found and fixed).
 - Stage 9 (full regression, polish and new content) is on hold, as asked.
+
+### Shared and locked storage (13 Nov, after Stage 8)
+What changed:
+- **Guests can use storage.** Any player can open chests, cupboards, bookshelves and every other container in the world. The host's machine keeps the contents. A guest's take or store is a request the host checks and answers, then the host sends the new contents to everyone. Items a guest stores leave their bag at once and come back if the chest is full, so nothing can be copied.
+- **Owners and locks.** Storage belongs to whoever placed it; anything else is the host's. The owner can lock it from the chest window (the line under its name shows 🔒 Locked or 🔓 Shared and the owner). A locked chest opens only for its owner and the world's host. A chest with things in it can't be broken, so a locked chest is safe from the others.
+- **Moving storage.** Guests can now move storage with G or Put away (not someone else's locked one). Its contents travel with it on the host's machine, and Put away brings them to the mover's bag. Plain wooden chests can be moved like other furniture.
+- **Fixed (Stage 8):** a guest's decorating changes only reached the host (the relay sends guest messages to the host only). The host now passes them on to the other guests. Found with a three-player test.
+- Cave chests a guest opens first roll their loot on the host's machine; the lore page goes to the guest, not the host.
+- Quick stack (X) stays a your-own-world feature; its message now says so.
+
+Tested (three browser pages, `tchest.js`, with the relay's rules copied: guests reach only the host, the host reaches everyone):
+- Bea places a chest: the host records her as owner; Cal sees it.
+- Bea opens it, stores 10 sticks: the host's chest holds 10, Bea has 0, Cal's copy shows 10.
+- Bea locks it: Cal is refused opening and moving it ("Locked by Bea"); the host can open it.
+- Bea unlocks; Cal takes all 10, then stores 3 back one by one.
+- Bea moves the chest with G (the 3 sticks wait on the host), places it elsewhere (they follow), then puts it away (she gets the 3 sticks; nothing left on the host).
+- Cal adds a decoration: the host and Bea both get it, Cal has no duplicate.
+- Stage 2–8 tests pass. Smoke test: `AUDIT []`, `ERRORS 0`.
+
+Not done yet:
+- Owners are matched by player name (the account name when signed in), so two players using the same guest name would share ownership.
+- Not tested on the live relay with real devices.

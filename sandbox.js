@@ -608,7 +608,7 @@
     if (typeof o.ex === "string" && o.ex) { var a0 = new Uint8Array(cw * H), a1 = new Uint8Array(W * H); unrle(o.ex, a0); for (var y = 0; y < H; y++) a1.set(a0.subarray(y * cw, (y + 1) * cw), y * W + ext); n.ex = rle(a1); }
     if (o.deco && o.deco.o && typeof o.deco.o === "object") { var dm = {}; Object.keys(o.deco.o).forEach(function (q) { var r = o.deco.o[q]; if (r && typeof r.p === "string") { var mp = /^([tgw]):(-?\d+),(-?\d+)$/.exec(r.p); dm[q] = mp ? Object.assign({}, r, { p: mp[1] + ":" + sx(mp[2]) + "," + mp[3] }) : r; } }); n.deco = { n: o.deco.n, o: dm }; }   // DECORATING: parents by position move with the land
     ["stain", "wstain", "dflip", "shape", "loff", "dvar"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { if (/^\d+$/.test(q)) m[six(q)] = o[k][q]; }); n[k] = m; } });
-    ["chests", "farm", "saps", "gates", "traps", "stands"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { var a = q.split(","); if (a.length === 2) m[sx(a[0]) + "," + a[1]] = o[k][q]; }); n[k] = m; } });
+    ["chests", "farm", "saps", "gates", "traps", "stands", "chown"].forEach(function (k) { if (o[k] && typeof o[k] === "object") { var m = {}; Object.keys(o[k]).forEach(function (q) { var a = q.split(","); if (a.length === 2) m[sx(a[0]) + "," + a[1]] = o[k][q]; }); n[k] = m; } });
     if (Array.isArray(o.wp)) n.wp = o.wp.map(function (w) { return w && typeof w === "object" ? Object.assign({}, w, { x: sx(w.x) }) : w; });
     if (Array.isArray(o.pets)) n.pets = o.pets.map(function (q) { return q && typeof q === "object" ? Object.assign({}, q, { x: sx(q.x), hx: q.hx !== undefined ? sx(q.hx) : q.hx }) : q; });
     if (o.p && typeof o.p === "object") n.p = Object.assign({}, o.p, { x: sx(o.p.x) });
@@ -904,7 +904,7 @@
     if (o.mres && typeof o.mres === "object") { d.mres = {}; Object.keys(o.mres).forEach(function (k) { if (/^\d+$/.test(k)) d.mres[k] = 1; }); }   // LOST MINERS
     if (o.ach && typeof o.ach === "object") { d.ach = {}; Object.keys(o.ach).forEach(function (k) { var t = o.ach[k] | 0; if (t > 0 && t <= 3) d.ach[k] = t; }); }   // AWARDS
     d.dim = o.dim === "malc" ? "malc" : "";   // MALCRUOR: which world you are standing in, the other world's land (S.dst) and your visits
-    if (o.dst && typeof o.dst === "object") { d.dst = {}; ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore", "deco", "loff", "dvar", "dmig"].forEach(function (k) { if (o.dst[k] !== undefined && o.dst[k] !== null) d.dst[k] = o.dst[k]; }); }
+    if (o.dst && typeof o.dst === "object") { d.dst = {}; ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore", "deco", "loff", "dvar", "dmig", "chown"].forEach(function (k) { if (o.dst[k] !== undefined && o.dst[k] !== null) d.dst[k] = o.dst[k]; }); }
     if (o.malc && typeof o.malc === "object") d.malc = { v: clamp(o.malc.v | 0, 0, 99999), warned: o.malc.warned ? 1 : 0, best: clamp(o.malc.best | 0, 0, 99999), c: clamp(+o.malc.c || 0, 0, 420), rz: Array.isArray(o.malc.rz) ? o.malc.rz.filter(function (k, i, a) { return (k | 0) === k && k >= 0 && k < 8 && a.indexOf(k) === i; }) : [] };
     if (d.dim === "malc" && !d.dst) d.dim = "";
     // SAVED WHOLE: these were being set aside as "unknown" on every load (and so lost): the Frog Bank and the rest of phases 4, 5 and 7a,
@@ -913,6 +913,7 @@
     // DECORATING: the decorations (checked record by record when the world starts: decoInit), what you were carrying, lamps you turned off and dyes
     if (o.deco && typeof o.deco === "object" && !Array.isArray(o.deco) && o.deco.o && typeof o.deco.o === "object") d.deco = { n: Math.max(1, Math.floor(+o.deco.n) || 1), o: o.deco.o };
     if (+o.dmig >= 1) d.dmig = 1;
+    if (o.chown && typeof o.chown === "object" && o.wv === SW.WORLDVER) { d.chown = {}; Object.keys(o.chown).forEach(function (k) { var w = o.chown[k]; if (/^-?\d+,-?\d+$/.test(k) && w && typeof w.o === "string" && w.o.length <= 40) d.chown[k] = w.l ? { o: w.o, l: 1 } : { o: w.o }; }); }   // SHARED AND LOCKED STORAGE
     ["dcarry", "dcarryD"].forEach(function (f) { var c = o[f]; if (c && typeof c === "object" && typeof c.k === "string" && ITEMS[c.k]) d[f] = c; });
     ["loff", "dvar"].forEach(function (f) { var src = o[f]; if (src && typeof src === "object" && o.wv === SW.WORLDVER) { d[f] = {}; Object.keys(src).forEach(function (k) { var v = Math.floor(+src[k]); if (/^\d+$/.test(k) && v >= 1 && v <= 9) d[f][k] = v; }); } });
     if (typeof o.molt === "string" && /^[a-z_]{1,20}$/.test(o.molt)) d.molt = o.molt;
@@ -1598,7 +1599,7 @@
   // ---------- QUICK STACK (X, or the button in the backpack): everything in your bag (not the hotbar, never tools) that a nearby chest
   // already holds goes into that chest, nearest chest first. Chests within CHEST_PULL tiles on the surface. ----------
   function quickStack() {
-    if (MP.on && MP.role === "guest") { nag("Only the host can use chests in this world."); return 0; }
+    if (MP.on && MP.role === "guest") { nag("Quick stack works in your own world. Open the chest to store things here."); return 0; }
     var CH = nearChestKeys(); if (!CH.length) { nag(cave || OCS || HOME ? "Quick stack works near your chests on the surface." : "No chests nearby. Quick stack fills chests within " + CHEST_PULL + " tiles."); return 0; }
     reslot(); var bag = {}, i, k;
     for (i = INV_HOT; i < invN(); i++) { var c = S.slots[i]; if (c && ITEMS[c.k] && !ITEMS[c.k].tool) bag[c.k] = (bag[c.k] || 0) + c.n; }
@@ -2937,7 +2938,8 @@
     S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
     if (FSIZE[ITEMS[item].tile]) fPlaceParts(tx, ty);
-    decoCarryPlaced(item, tx, ty);   // DECORATING: a piece you were moving brings its things back
+    var wasCarry = S.dcarry && S.dcarry.k === item; decoCarryPlaced(item, tx, ty);   // DECORATING: a piece you were moving brings its things back
+    if (!wasCarry && MP.on && MP.role === "guest" && isChest(ITEMS[item].tile)) { var ok2 = tx + "," + ty; setTimeout(function () { mpSend({ t: "chown", k: ok2 }); }, 400); }   // SHARED STORAGE: storage you place is yours
     if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
@@ -7800,6 +7802,7 @@
     if (m.t === "p") { q = mpPeer(m.from); mpState(q, m); return; }
     if (m.t === "set") { MP.applying = true; for (var i = 0; i + 2 < m.L.length; i += 3) { var sv = m.L[i + 2] | 0, sid = sv & 4095, slv = (sv >> 12) & 7; if (m.L[i] >= 0 && m.L[i] < W && m.L[i + 1] >= 0 && m.L[i + 1] < H && TILES[sid]) { if (FL && isLiq(sid)) FL[m.L[i + 1] * W + m.L[i]] = slv; setT(m.L[i], m.L[i + 1], sid); } } MP.applying = false; if (DECO) DECO.dirty(); return; }
     if (m.t === "deco") { decoRecv(m); return; }   // DECORATING (Stage 8)
+    if (/^ch(q|m|lk|own|s|r|give|mv|gv)$/.test(m.t)) { chestMsg(m); return; }   // SHARED AND LOCKED STORAGE
     if (m.t === "wall") { MP.applying = true; for (var j = 0; j + 2 < m.L.length; j += 3) if (m.L[j] >= 0 && m.L[j] < W && m.L[j + 1] >= 0 && m.L[j + 1] < H) setWall(m.L[j], m.L[j + 1], m.L[j + 2]); MP.applying = false; return; }
     if (m.t === "chat") { q = mpPeer(m.from); var txt = String(m.m || "").slice(0, 80); q.say = txt; q.sayT = 5; addChat(q.name, txt); return; }
     if (m.t === "cfg") { MP.pvp = !!m.pvp; toast("The host turned PvP " + (MP.pvp ? "ON: players can hit each other." : "off."), MP.pvp ? "#ff8a7a" : "#4ee6b4"); renderMP(); return; }
@@ -10936,7 +10939,7 @@
   }
   // ---- DIMENSIONS: the keys of S that belong to one world's land (edits, explored map, liquids, walls, where you stand, chests, graves...).
   // While you are in one world the other's are kept in S.dst; a swap saves, trades them over and rebuilds the land from its own seed.
-  var DIMK = ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore", "deco", "loff", "dvar", "dmig"];
+  var DIMK = ["e", "ex", "fl", "we", "p", "genL", "genR", "chests", "graves", "stands", "traps", "gates", "saps", "razed", "rzm", "gdrop", "shape", "farm", "carts", "speed", "mres", "quake", "flood", "trv", "ways", "tmap", "stain", "wstain", "dflip", "whut", "wloot", "pleaf", "spore", "deco", "loff", "dvar", "dmig", "chown"];
   function dimSwap(to) {
     if (S.dcarry) decoCarryCancel(true); if (S.dcarryD) decoDCancel(true);   // DECORATING: what you were moving goes in your bag before the land changes
     save(); bossGone(); if (BM.on) bmEndQuiet();
@@ -12852,17 +12855,87 @@
     return best;
   }
   function openChest(x, y) {
-    if (MP.on && MP.role === "guest") { nag("Only the host can open chests in this world."); return; }
     var cid = get(x, y); if (!isChest(cid)) return false; var key = x + "," + y;
+    if (MP.on && MP.role === "guest") { CHQ = { k: key, t: performance.now() }; mpSend({ t: "chq", k: key }); return true; }   // SHARED STORAGE: the host's machine holds the contents; it answers with them
+    chestInit(x, y);
+    chestKey = key; snd("coin"); openPanel("chest"); return true;
+  }
+  function chestInit(x, y, remote) {   // a cave chest rolls its loot the first time anyone opens it (remote: a guest opened it; the lore page is theirs, not the host's)
+    var cid = get(x, y), key = x + "," + y;
     if (!S.chests[key]) {
       S.chests[key] = {};
-      if (TILES[cid].kind === "lootchest") { loreChest(loreSrcAt(x, y), y > col[clamp(x, 0, W - 1)] + 6 ? 0.55 : 0.4); var L = key === aerieKey() ? aerieLoot() : rollLoot("chest", world.bio[x], lootTier(y)); L.forEach(function (q) { S.chests[key][q[0]] = q[1]; }); chips(x + 0.5, y + 0.3, "#f2c14e", 18, 7); treasureFound(L.length); }
+      if (TILES[cid].kind === "lootchest") { if (!remote) loreChest(loreSrcAt(x, y), y > col[clamp(x, 0, W - 1)] + 6 ? 0.55 : 0.4); var L = key === aerieKey() ? aerieLoot() : rollLoot("chest", world.bio[x], lootTier(y)); L.forEach(function (q) { S.chests[key][q[0]] = q[1]; }); chips(x + 0.5, y + 0.3, "#f2c14e", 18, 7); treasureFound(L.length); }
     }
-    chestKey = key; snd("coin"); openPanel("chest"); return true;
+  }
+  // ---------- SHARED AND LOCKED STORAGE (playing together). The host's machine keeps every chest and container. A guest who opens one
+  // asks the host ("chq"); the host answers with what is inside ("chs"), and every take or store is a request ("chm") that the host
+  // checks and answers ("chr"), then tells everyone the new contents. Items a guest stores leave their bag at once and come back if the
+  // chest can't take them, so nothing is ever copied. A chest belongs to whoever placed it (S.chown: { o: name, l: locked }); its owner
+  // can lock it so only they and the world's host can open it. Unowned chests are the host's. A full chest can't be broken, so a locked
+  // chest with things in it is safe. ----------
+  var CHQ = null, CHRID = 0, CHPEND = {};
+  function chOwn(k) { return S.chown && S.chown[k] || null; }
+  function chMe() { return String(MP.myName || (WUSER !== "guest" ? WUSER : "") || "Host"); }
+  function chOwnerName(k) { var w = chOwn(k); return w ? w.o : MP.on && MP.role === "guest" ? (MP.hostName || "the host") : "you"; }
+  function chestBcast(k) { if (MP.on && MP.role === "host") mpSend({ t: "chs", k: k, c: S.chests[k] || {}, w: chOwn(k) }); }
+  function chestLock() {
+    var k = chestKey; if (!k) return; var w = chOwn(k);
+    if (MP.on && MP.role === "guest") { if (!w || w.o !== chMe()) { nag("Only its owner can lock it."); return; } mpSend({ t: "chlk", k: k, l: w.l ? 0 : 1 }); return; }
+    S.chown = S.chown || {}; if (!w) w = S.chown[k] = { o: chMe() }; if (w.l) delete w.l; else w.l = 1; toast(w.l ? "Locked: only " + (w.o === chMe() ? "you" : w.o) + " and the host can open it." : "Unlocked: everyone can use it.", "#f2c14e"); chestBcast(k); save(); renderPanel();
+  }
+  function chestReq(item, all, dir) {   // a guest's take or store, sent to the host
+    var c = S.chests[chestKey] || {}, n;
+    if (dir === "put") { n = all === 1 ? 1 : (S.inv[item] || 0); if (n <= 0) return; S.inv[item] -= n; if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) { sel = "pick"; bare = true; } } reslot(); }
+    else { var rm = room(item); n = Math.min(all === 1 ? 1 : (c[item] || 0), rm); if (n <= 0) { toast(rm <= 0 ? "Your inventory is full." : "That's gone already.", "#f2c14e"); return; } }
+    var rid = ++CHRID; CHPEND[rid] = { k: chestKey, item: item, n: n, dir: dir }; mpSend({ t: "chm", k: chestKey, item: item, n: n, dir: dir, rid: rid }); snd("coin"); hbDirty = true; renderPanel();
+  }
+  function chestMsg(m) {   // the storage messages, both ways
+    var q = MP.peers[m.from], who = q ? String(q.name || "") : "", ok = typeof m.k === "string" && /^-?\d+,-?\d+$/.test(m.k), xy = ok ? m.k.split(",") : null;
+    if (MP.role === "host") {
+      if (m.t === "chmv" || m.t === "chgv") {   // a guest moving storage furniture: its contents travel on the host's machine (parked while carried)
+        var kk = function (z) { return typeof z === "string" && /^(-?\d+,-?\d+|x:\w{1,40})$/.test(z); };
+        if (!q) return true;
+        if (m.t === "chmv" && kk(m.a) && kk(m.b)) { var wa = chOwn(m.a); if (wa && wa.l && wa.o !== who) return true;   // locked and not theirs: what is inside stays where it was
+          if (S.chests[m.a]) { var dst = S.chests[m.b] || (S.chests[m.b] = {}); for (var ik in S.chests[m.a]) dst[ik] = Math.min(99999, (dst[ik] || 0) + S.chests[m.a][ik]); delete S.chests[m.a]; }
+          if (wa) { S.chown[m.b] = wa; delete S.chown[m.a]; } if (/,/.test(m.a)) mpSend({ t: "chs", k: m.a, gone: 1 }); if (/,/.test(m.b)) chestBcast(m.b); save(); }
+        if (m.t === "chgv" && kk(m.a) && /^x:/.test(m.a)) { var L = S.chests[m.a] || {}; delete S.chests[m.a]; if (S.chown) delete S.chown[m.a]; mpSend({ t: "chgive", to: m.from, L: L }); save(); }
+        return true;
+      }
+      if (!ok || !q) return true; var x = +xy[0], y = +xy[1], w = chOwn(m.k);
+      if (m.t === "chq" || m.t === "chm") {
+        if (!isChest(get(x, y))) { mpSend({ t: "chs", to: m.from, k: m.k, gone: 1, rid: m.rid }); if (m.t === "chm") mpSend({ t: "chr", to: m.from, rid: m.rid, n: 0 }); return true; }
+        if (w && w.l && w.o !== who) { mpSend({ t: "chs", to: m.from, k: m.k, deny: w.o }); if (m.t === "chm") mpSend({ t: "chr", to: m.from, rid: m.rid, n: 0 }); return true; }
+        chestInit(x, y, true); var c = S.chests[m.k];
+        if (m.t === "chq") { mpSend({ t: "chs", to: m.from, k: m.k, c: c, w: w, open: 1 }); return true; }
+        var it = ITEMS[m.item], n = Math.max(0, Math.min(99999, Math.floor(+m.n) || 0)), got = 0;
+        if (it && !it.tool && n > 0) { if (m.dir === "put") { if (c[m.item] || chestKinds(c) < CHEST_KINDS) { got = n; c[m.item] = Math.min(99999, (c[m.item] || 0) + n); } }
+          else if (m.dir === "take") { got = Math.min(n, c[m.item] || 0); if (got > 0) { c[m.item] -= got; if (c[m.item] <= 0) delete c[m.item]; } } }
+        mpSend({ t: "chr", to: m.from, rid: m.rid, n: got }); if (got) { chestBcast(m.k); save(); if (chestKey === m.k && panelOpen && tab === "chest") renderPanel(); } return true;
+      }
+      if (m.t === "chlk") { if (w && w.o === who) { if (m.l) w.l = 1; else delete w.l; chestBcast(m.k); save(); } return true; }
+      if (m.t === "chown") { S.chown = S.chown || {}; if (!S.chown[m.k] && who) { S.chown[m.k] = { o: who }; chestBcast(m.k); } return true; }
+      return true;
+    }
+    if (m.t === "chs" && ok) {   // a guest: new contents (for everyone), or the answer to opening one
+      if (m.c && typeof m.c === "object") S.chests[m.k] = m.c; if (m.gone) delete S.chests[m.k]; S.chown = S.chown || {}; if (m.w && typeof m.w.o === "string") S.chown[m.k] = m.w; else if (m.c) delete S.chown[m.k];
+      var mine = CHQ && CHQ.k === m.k;
+      if (m.deny) { if (mine || chestKey === m.k) { CHQ = null; if (chestKey === m.k && panelOpen) closePanel(); nag("Locked by " + m.deny + "."); } return true; }
+      if (m.gone) { if (mine) { CHQ = null; nag("That chest is gone."); } return true; }
+      if (mine && m.open) { CHQ = null; chestKey = m.k; snd("coin"); openPanel("chest"); return true; }
+      if (chestKey === m.k && panelOpen && tab === "chest") renderPanel(); return true;
+    }
+    if (m.t === "chr") { var pq = CHPEND[m.rid]; if (!pq) return true; delete CHPEND[m.rid]; var n2 = Math.max(0, Math.min(pq.n, Math.floor(+m.n) || 0));
+      if (pq.dir === "put") { if (n2 < pq.n) { give(pq.item, pq.n - n2); toast(n2 ? "The chest was nearly full: " + (pq.n - n2) + " came back." : "The chest is full.", "#f2c14e"); } else S.st.stashed += n2; }
+      else if (n2 > 0) give(pq.item, n2);
+      hbDirty = true; if (panelOpen && tab === "chest") renderPanel(); return true; }
+    if (m.t === "chgive" && m.L && typeof m.L === "object") { for (var gk in m.L) if (ITEMS[gk] && m.L[gk] > 0) give(gk, Math.min(99999, m.L[gk] | 0)); return true; }
+    return false;
   }
   function addInv(item, n) { var fit = Math.min(n, room(item)); if (fit > 0) { S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit); if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item); } hbDirty = true; return fit; }   // like give(), but without counting it as gathered; returns how many fit
   function chestMove(item, all, dir) {
     if (ITEMS[item] && ITEMS[item].tool) { nag("Tools stay with you."); return; }   // dir "put": bag -> chest, "take": chest -> bag. all = whole stack
+    if (MP.on && MP.role === "guest") { if (ITEMS[item]) chestReq(item, all, dir); return; }   // SHARED STORAGE: the host does it
+    if (MP.on && MP.role === "host") setTimeout(function () { chestBcast(chestKey); }, 0);
     var c = S.chests[chestKey]; if (!c || !ITEMS[item]) return;
     if (all === 1) {   // PC: right-click moves just one
       if (dir === "put") { if (!(S.inv[item] > 0)) return; if (!c[item] && chestKinds(c) >= CHEST_KINDS) { toast("This chest is full.", "#f2c14e"); return; } c[item] = (c[item] || 0) + 1; S.inv[item]--; if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick", bare = true; } }
@@ -14890,10 +14963,12 @@
   function decoGrab(tx, ty) {
     if (!DECO || cave || HOME || OCS) return false; if (S.dcarry) { decoCarryCancel(); return true; }
     var a = fAnchor(tx, ty) || [tx, ty], id = get(a[0], a[1]), td = TILES[id]; if (!td || td.solid || td.fpart) return false; var k = dropOf(td);
-    if (!k || !ITEMS[k] || ITEMS[k].tile !== id || td.kind === "door" || td.kind === "ladder" || !(ITEMS[k].decor || FSIZE[id] || DelveDecor.FURN[k] || ITEMS[k].put)) { nag("That can't be picked up and moved."); return true; }
+    if (!k || !ITEMS[k] || ITEMS[k].tile !== id || td.kind === "door" || td.kind === "ladder" || !(ITEMS[k].decor || FSIZE[id] || DelveDecor.FURN[k] || ITEMS[k].put || (isChest(id) && td.kind !== "lootchest"))) { nag("That can't be picked up and moved."); return true; }
     var key = a[0] + "," + a[1], idx = a[1] * W + a[0];
-    if (MP.on && MP.role === "guest" && isChest(id)) { nag("Only the host can move furniture that stores items."); return true; }   // PLAYING TOGETHER: storage lives on the host's machine
-    var park = decoParkKey(); S.dcarry = { k: k, f: S.dflip[idx] ? 1 : 0, ch: S.chests[key] ? JSON.parse(JSON.stringify(S.chests[key])) : null, n: DECO.children("t:" + key).length, park: park };
+    var gst = MP.on && MP.role === "guest" && isChest(id), cw = chOwn(key);
+    if (cw && cw.l && cw.o !== chMe() && MP.on && MP.role === "guest") { nag("Locked by " + cw.o + "."); return true; }   // LOCKED STORAGE: only its owner (and the host) can move it
+    var park = decoParkKey(); S.dcarry = { k: k, f: S.dflip[idx] ? 1 : 0, ch: !gst && S.chests[key] ? JSON.parse(JSON.stringify(S.chests[key])) : null, n: DECO.children("t:" + key).length, park: park, w: !gst && cw ? cw : undefined, gst: gst ? 1 : undefined };
+    if (gst) mpSend({ t: "chmv", a: key, b: park }); else if (cw) { delete S.chown[key]; if (MP.on) mpSend({ t: "chs", k: key, gone: 1 }); }   // SHARED STORAGE: a guest's carried storage keeps its contents on the host
     delete S.chests[key]; DECO.reparent("t:" + key, "c:carry"); decoNet({ op: "park", a: "t:" + key, b: park }); if (S.dflip[idx]) decoMap("dflip", idx, 0); delete S.dflip[idx];
     if (FSIZE[id]) fCells(a[0], a[1], FSIZE[id]).forEach(function (c) { if (TILES[get(c[0], c[1])].fpart) setT(c[0], c[1], T.AIR); });
     setT(a[0], a[1], T.AIR); S.inv[k] = (S.inv[k] || 0) + 1; reslot(); choose(k);
@@ -14901,13 +14976,13 @@
   }
   function decoCarryPlaced(item, tx, ty) {   // place() set a piece down: if it is the one being moved, bring its things back
     if (!S.dcarry || S.dcarry.k !== item || !DECO) return; var key = tx + "," + ty, c = S.dcarry;
-    DECO.reparent("c:carry", "t:" + key); if (c.park) decoNet({ op: "rp", a: c.park, b: "t:" + key }); if (c.ch) { var dst = S.chests[key] || (S.chests[key] = {}); for (var q in c.ch) dst[q] = (dst[q] || 0) + c.ch[q]; }
-    if (c.f) S.dflip[ty * W + tx] = 1; else delete S.dflip[ty * W + tx]; if (c.f) decoMap("dflip", ty * W + tx, 1); S.dcarry = null; DECO.dirty();
+    DECO.reparent("c:carry", "t:" + key); if (c.park) decoNet({ op: "rp", a: c.park, b: "t:" + key }); if (c.gst) mpSend({ t: "chmv", a: c.park, b: key }); if (c.w) { S.chown = S.chown || {}; S.chown[key] = c.w; } if (c.ch) { var dst = S.chests[key] || (S.chests[key] = {}); for (var q in c.ch) dst[q] = (dst[q] || 0) + c.ch[q]; }
+    if (c.f) S.dflip[ty * W + tx] = 1; else delete S.dflip[ty * W + tx]; if (c.f) decoMap("dflip", ty * W + tx, 1); S.dcarry = null; DECO.dirty(); if (!c.gst) chestBcast(key);
     var bad = DECO.validate(); bad.orphans.forEach(function (r) { if (ITEMS[r.k]) give(r.k, 1); }); if (bad.orphans.length) toast(bad.orphans.length + " thing(s) didn't fit and went to your bag.", "#ffd27a");
   }
   function decoCarryCancel(quiet) {   // stop moving: the piece is already in your bag; its things and its stored items join it
     if (!S.dcarry) return; var c = S.dcarry, n = 0; S.dcarry = null;
-    if (DECO) DECO.removeParent("c:carry").forEach(function (r) { if (ITEMS[r.k]) { give(r.k, 1); n++; } }); if (c.park) decoNet({ op: "rmp", pk: c.park });
+    if (DECO) DECO.removeParent("c:carry").forEach(function (r) { if (ITEMS[r.k]) { give(r.k, 1); n++; } }); if (c.park) decoNet({ op: "rmp", pk: c.park }); if (c.gst && MP.on) mpSend({ t: "chgv", a: c.park });   // (a guest gets the stored things from the host)
     if (c.ch) for (var q in c.ch) if (ITEMS[q] && c.ch[q] > 0) { give(q, c.ch[q]); n += c.ch[q]; }
     if (!quiet) toast("Put the " + (ITEMS[c.k] ? ITEMS[c.k].n : "piece") + " away" + (n ? " with " + n + " thing" + (n > 1 ? "s" : "") : "") + " in your bag.", "#c8e8a0");
     try { save(); } catch (e) {}
@@ -14990,7 +15065,7 @@
   function decoSelect(wx, wy, hr) {
     if (hr) { DSEL = { d: hr.id }; uiSnd("confirm"); return; }
     var tx = Math.floor(wx), ty = Math.floor(wy), a = fAnchor(tx, ty) || [tx, ty], id = get(a[0], a[1]), td = TILES[id], k = td && !td.solid && !td.fpart ? dropOf(td) : "";
-    if (k && ITEMS[k] && ITEMS[k].tile === id && (ITEMS[k].decor || FSIZE[id] || DelveDecor.FURN[k]) && td.kind !== "door" && td.kind !== "ladder") { DSEL = { x: a[0], y: a[1], k: k }; uiSnd("confirm"); } else DSEL = null;
+    if (k && ITEMS[k] && ITEMS[k].tile === id && (ITEMS[k].decor || FSIZE[id] || DelveDecor.FURN[k] || (isChest(id) && td.kind !== "lootchest")) && td.kind !== "door" && td.kind !== "ladder") { DSEL = { x: a[0], y: a[1], k: k }; uiSnd("confirm"); } else DSEL = null;
   }
   function decoSelBox() {   // the selection's rectangle in blocks, or null
     var r = decoSelRec(); if (r && r._w) return { x: r._w.x, y: r._w.y - r._w.h, w: r._w.w, h: r._w.h };
@@ -15212,7 +15287,10 @@
   function decoParkKey() { return "x:" + String(MP.on ? MP.id : 0).replace(/\W/g, "") + "_" + (++DPK) + "_" + (Date.now() % 1e7); }
   function decoMap(k, i, v) { decoNet({ op: "map", k: k, i: i, v: v ? v | 0 : 0 }); }
   function decoRecv(m) {
-    if (!DECO || typeof m.op !== "string") return; var ok = function (q) { return typeof q === "string" && q.length > 0 && q.length < 48; };
+    if (!DECO || typeof m.op !== "string") return;
+    if (MP.role === "guest" && m.o !== undefined && String(m.o) === String(MP.id)) return;   // our own change, passed on by the host
+    if (MP.role === "host" && m.from !== undefined && m.o === undefined) { var fw = {}; for (var fk in m) if (fk !== "from" && fk !== "to") fw[fk] = m[fk]; fw.o = m.from; mpSend(fw); }   // a guest's change: the relay only brings it to the host, so pass it on to the other guests
+    var ok = function (q) { return typeof q === "string" && q.length > 0 && q.length < 48; };
     DMPA = true;
     try {
       if (m.op === "add" && m.r) DECO.put(m.r);
@@ -19616,6 +19694,9 @@
       var cc = S.chests[chestKey] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
       var ckx = chestKey.split(","), ctd = TILES[get(+ckx[0], +ckx[1])], cname = ctd.kind === "lootchest" ? "Cave Chest" : ctd.cont ? ctd.n : "Wooden Chest";
       h += '<p class="sbx-note"><b>' + cname + '</b> (' + ck.length + " of " + CHEST_KINDS + ' kinds). Tap an item to move the whole stack.</p>';
+      if (MP.on || chOwn(chestKey)) { var cow = chOwn(chestKey), myc = MP.on && MP.role === "guest" ? !!cow && cow.o === chMe() : true;   // SHARED AND LOCKED STORAGE
+        h += '<p class="sbx-note sbx-chown">' + (cow && cow.l ? "🔒 Locked" : "🔓 Shared") + " · owner: <b>" + esc(cow ? (cow.o === chMe() ? "you" : cow.o) : chOwnerName(chestKey)) + "</b>" + (cow && cow.l ? " (only the owner and the host can open it)" : " (everyone in the world can use it)") +
+          (myc ? ' <button type="button" class="btn ghost" data-ch-lock>' + (cow && cow.l ? "Unlock" : "Lock") + "</button>" : "") + "</p>"; }
       h += '<h3>In the chest</h3>' + (ck.length ? '<div class="sbx-bag">' + ORDER.filter(function (k) { return cc[k]; }).map(function (k) { return btn(k, cc[k], "data-ch-take"); }).join("") + "</div>" : '<p class="sbx-note">Empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="take"' + (ck.length ? "" : " disabled") + ">Take all</button>";
       h += '<h3>In your backpack</h3>' + (mine2.length ? '<div class="sbx-bag">' + mine2.map(function (k) { return btn(k, S.inv[k], "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your backpack is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine2.length ? "" : " disabled") + ">Store all</button>";
     } else {
@@ -20422,6 +20503,7 @@
     if (t.hasAttribute("data-ch-take")) return chestMove(t.getAttribute("data-ch-take"), true, "take");
     if (t.hasAttribute("data-ch-put")) return chestMove(t.getAttribute("data-ch-put"), true, "put");
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
+    if (t.hasAttribute("data-ch-lock")) return chestLock();
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.hasAttribute("data-sx-bup")) return upgradeBench();
     if (t.hasAttribute("data-csel")) { var ck2 = stnOpen ? stnOpen.k : "bag", cv = t.getAttribute("data-csel"); CG_SEL[ck2] = CG_SEL[ck2] === cv ? "" : cv; snd("tick"); return renderPanel(); }   // CRAFT GRID: pick a slot (the picked one again clears it)
@@ -26467,8 +26549,8 @@
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
   window.__decoT = { st: function () { return { DAIM: !!DAIM, DHOV: DHOV ? DHOV.k : null, DLAST: DLAST, wx: (aim.mx - ox) / ts, wy: (aim.my - oy) / ts, hit: DECO && DECO.hit((aim.mx - ox) / ts, (aim.my - oy) / ts) ? 1 : 0, sel: sel, bare: bare }; }, m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); },
     mode: function (on) { if (on !== undefined) decoMode(on); return DMODE; }, sel: function () { return DSEL; }, sit: function () { return SIT; }, act: function (a) { decoAct(a); }, use: function (c) { return decoUse(c); }, panel: function () { return decoPanel(); },
-    stn: function () { return stnOpen; }, bar: function () { return DBAR && !DBAR.hidden ? DBAR.textContent : ""; }, pose: function () { return playerPose(performance.now()); }, dsel: function (o) { DSEL = o; decoBarRender(); }, clean: function (o) { return clean(o); }, stress: function (n) { return decoStress(n); }, log: function () { return NLOG.slice(-8); }, vc: function (k) { return decoVarCount(k); }, migrate: function () { return decoMigrate(); }, W: function () { return W; },
-    mp: { fake: function (id, role) { MP.id = id; MP.role = role; MP.ws = { readyState: 1, send: function (s) { (window.__mpOut = window.__mpOut || []).push(s); }, close: function () {} }; if (role === "host") MP.on = true; }, recv: function (m) { mpOn(m); }, snap: function () { return worldSnap(); }, enter: function (w) { mpEnterGuest({ t: "welcome", world: w, wv: SW.WORLDVER }); }, flush: function () { var o = window.__mpOut || []; window.__mpOut = []; return o; } } };   // (test harness: decorating)
+    stn: function () { return stnOpen; }, bar: function () { return DBAR && !DBAR.hidden ? DBAR.textContent : ""; }, pose: function () { return playerPose(performance.now()); }, dsel: function (o) { DSEL = o; decoBarRender(); }, clean: function (o) { return clean(o); }, stress: function (n) { return decoStress(n); }, log: function () { return NLOG.slice(-8); }, vc: function (k) { return decoVarCount(k); }, migrate: function () { return decoMigrate(); }, chest: { open: function (x, y) { return openChest(x, y); }, move: function (k, a, d) { chestMove(k, a, d); }, lock: function () { chestLock(); } }, net: function (m) { decoNet(m); }, W: function () { return W; },
+    mp: { fake: function (id, role, name) { MP.id = id; MP.role = role; MP.myName = name || MP.myName; MP.ws = { readyState: 1, send: function (s) { (window.__mpOut = window.__mpOut || []).push(s); }, close: function () {} }; if (role === "host") MP.on = true; }, recv: function (m) { mpOn(m); }, snap: function () { return worldSnap(); }, enter: function (w) { mpEnterGuest({ t: "welcome", world: w, wv: SW.WORLDVER }); }, flush: function () { var o = window.__mpOut || []; window.__mpOut = []; return o; } } };   // (test harness: decorating)
   window.__fsz = function () { return Object.keys(FSIZE).map(Number); }; window.__fart = fArt16; window.__fatlas = function () { return ATLAS; }; window.__hd = hdArt;   // (test harness: real-size furniture art)
   window.__sbx.dbg = { render: function (t) { render(t); }, OPT: OPT, chk: CHK, drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
