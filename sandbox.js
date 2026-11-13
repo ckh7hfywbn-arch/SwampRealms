@@ -2551,7 +2551,9 @@
       g.strokeStyle = "#00000055"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(16, 4); g.lineTo(26, 14); g.lineTo(16, 28); g.lineTo(6, 14); g.closePath(); g.stroke();
     } else if (id === "door") { g.imageSmoothingEnabled = false; g.drawImage(ATLAS, 0, T.DOORO_T * 16, 16, 16, 8, 1, 16, 15); g.drawImage(ATLAS, 0, T.DOORO_B * 16, 16, 16, 8, 16, 16, 15); }
     else if (id === "leaves" && world && world.bio) { var lx = Math.floor((SW.SPAWNX || W / 2)), lcv = null; try { lcv = crownPaint([lx, 6], lx, 6, lx, 6, 1); } catch (e) {} if (lcv) { g.imageSmoothingEnabled = false; g.drawImage(lcv, 11, 11, 26, 26, 1, 1, 30, 30); } else g.drawImage(ATLAS, 0, T.LEAVES * 16, 16, 16, 2, 2, 28, 28); }   // the same art as leaves in the world (crownPaint)
-    else { var t = ITEMS[id].tile; if (MATF[t]) g.drawImage(matIcon(t), 2, 2); else g.drawImage(ATLAS, 0, t * 16, 16, 16, 2, 2, 28, 28); }
+    else { var t = ITEMS[id].tile, hda = t !== undefined && hdArt(t);
+      if (hda) { var hs = 28 / Math.max(hda.width, hda.height); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(hda, 16 - hda.width * hs / 2, 30 - hda.height * hs, hda.width * hs, hda.height * hs); }   // FURNITURE HD: the new picture, the whole piece
+      else if (MATF[t]) g.drawImage(matIcon(t), 2, 2); else g.drawImage(ATLAS, 0, t * 16, 16, 16, 2, 2, 28, 28); }
     return (ICO[key] = c.toDataURL());
   }
 
@@ -14743,7 +14745,17 @@
     if (id === T.CHAIR || id === T.CHAIR_L) { setT(x, y, id === T.CHAIR ? T.CHAIR_L : T.CHAIR); thud(260, 0.03); return true; }
     var i = y * W + x; S.dflip = S.dflip || {}; if (S.dflip[i]) delete S.dflip[i]; else S.dflip[i] = 1; editN++; thud(260, 0.03); chips(x + 0.5, y + 0.6, it.c2 || "#fff", 3, 2); return true;
   }
-  function decoPart(g, v, id, sy0, sh, dx, dy, dw, dh) { if (dh <= 0) return; if (SMOP[id]) sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, sy0, 16, sh, dx, dy, dw, dh); else smDraw(g, v, id, 0, sy0, 16, sh, dx, dy, dw, dh); }
+  // FURNITURE HD (delve-furniture.js): the core furniture is painted at 32 px a block, double the old detail. hdArt(id) = that picture
+  // (or null), hdK(id) = it enlarged to the screen's pixels, so it stays crisp. CHAIR_L is the chair facing left.
+  var HDC = {}, HDK = {};
+  function hdArt(id) {
+    if (HDC[id] !== undefined) return HDC[id]; HDC[id] = null; if (typeof DelveFurn === "undefined") return null;
+    var td = TILES[id], key = id === T.CHAIR_L ? "chair" : null; if (!key) for (var k in DelveFurn.art) if (ITEMS[k] && ITEMS[k].tile === id) { key = k; break; }
+    var c = key ? DelveFurn.paint(key) : null; if (c && id === T.CHAIR_L) { var m = document.createElement("canvas"); m.width = c.width; m.height = c.height; var mg = m.getContext("2d"); mg.translate(c.width, 0); mg.scale(-1, 1); mg.drawImage(c, 0, 0); c = m; }
+    return (HDC[id] = c);
+  }
+  function hdK(id) { var a = hdArt(id); if (!a) return null; var k = Math.max(1, Math.ceil(ts * dpr / 32)), key = id + "_" + k; if (HDK[key]) return HDK[key]; var c = document.createElement("canvas"); c.width = a.width * k; c.height = a.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); c.k = k; return (HDK[key] = c); }
+  function decoPart(g, v, id, sy0, sh, dx, dy, dw, dh) { if (dh <= 0) return; var hc = !FSIZE[id] && hdK(id); if (hc) { g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high"; g.drawImage(hc, 0, sy0 * 2 * hc.k, 32 * hc.k, sh * 2 * hc.k, dx, dy, dw, dh); g.imageSmoothingEnabled = false; g.imageSmoothingQuality = "low"; return; } if (SMOP[id]) sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, sy0, 16, sh, dx, dy, dw, dh); else smDraw(g, v, id, 0, sy0, 16, sh, dx, dy, dw, dh); }
   function surfTop(i, j) { var b = fTd(i, j + 1); return b && b.top && !b.solid ? b.top : 0; }
   // ---------- REAL-SIZE FURNITURE: beds, tables, workbenches and stations are 2 blocks wide, wardrobes, bookshelves and banners 2 tall,
   // tents and big crates 2 x 2. The piece's own tile sits in its bottom-left cell; the others hold fpart tiles (sandbox-extra) that point
@@ -14830,7 +14842,9 @@
     }
     return (FART16[id] = c);
   }
-  function fArtK(id) { var k = Math.max(1, Math.ceil(ts * dpr / 16)), key = id + "_" + k; if (FAC[key]) return FAC[key]; var a = fArt16(id), c = document.createElement("canvas"); c.width = a.width * k; c.height = a.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); c.k = k; return (FAC[key] = c); }
+  function fArtK(id) {   // the piece's picture enlarged to the screen's pixels; c.u = its pixels per block (the HD pieces are 32, the drawn-out ones 16)
+    var hd = hdArt(id), u = hd ? 32 : 16, k = Math.max(1, Math.ceil(ts * dpr / u)), key = id + "_" + k; if (FAC[key]) return FAC[key];
+    var a = hd || fArt16(id), c = document.createElement("canvas"); c.width = a.width * k; c.height = a.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); c.k = k; c.u = u * k; return (FAC[key] = c); }
   function fDraw(g, id, i, j, sx, sy) {   // draw this cell's slice of a big piece; false = draw it the old one-block way
     var ax = i, ay = j, ox2 = 0, oy2 = 0, td = TILES[id];
     if (td.fpart) { var a = fAnchor(i, j); if (!a) { FORPH.push([i, j]); return true; } ax = a[0]; ay = a[1]; ox2 = td.fpart[0]; oy2 = td.fpart[1]; }
@@ -14838,7 +14852,7 @@
     var aid = get(ax, ay), sz = FSIZE[aid], fl = S.dflip && S.dflip[ay * W + ax], c = fArtK(aid), k = c.k, col = fl ? sz[0] - 1 - ox2 : ox2, row = sz[1] - 1 - oy2;
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high";
     if (fl) { g.save(); g.translate(sx * 2 + ts, 0); g.scale(-1, 1); }
-    g.drawImage(c, col * 16 * k, row * 16 * k, 16 * k, 16 * k, sx, sy, ts, ts);
+    g.drawImage(c, col * c.u, row * c.u, c.u, c.u, sx, sy, ts, ts);
     if (fl) g.restore(); g.imageSmoothingEnabled = false; g.imageSmoothingQuality = "low";
     return true;
   }
@@ -25946,7 +25960,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__fsz = function () { return Object.keys(FSIZE).map(Number); }; window.__fart = fArt16; window.__fatlas = function () { return ATLAS; };   // (test harness: real-size furniture art)
+  window.__fsz = function () { return Object.keys(FSIZE).map(Number); }; window.__fart = fArt16; window.__fatlas = function () { return ATLAS; }; window.__hd = hdArt;   // (test harness: real-size furniture art)
   window.__sbx.dbg = { render: function (t) { render(t); }, OPT: OPT, chk: CHK, drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
