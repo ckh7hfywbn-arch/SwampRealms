@@ -2427,6 +2427,8 @@
     var key = id === "bow" ? "bow" + Math.max(1, S.bow) : id === "bucket" ? bucketKey() : id === "hoe" ? "hoe" + Math.max(1, S.hoe) : id === "rod" ? "rod" + Math.max(1, S.rod) : id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
     if (ICO[key]) return ICO[key];
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
+    var dvt = /^tank([1-4])$/.exec(id), dvs = id === "scubasuit" ? 1 : /^suit([2-4])$/.exec(id) ? +id.slice(4) : 0;   // DIVE GEAR: each tank and helmet has its own drawing (not one picture in four colours)
+    if (dvt || dvs) { var big = document.createElement("canvas"); big.width = big.height = 96; var bg2 = big.getContext("2d"); try { if (dvt) ocTankArt(bg2, +dvt[1], 48, 14, 5.4, 1, 0); else { bg2.fillStyle = ["", "#2fb59a", "#7a5634", "#d8b4d0", "#26263e"][dvs]; bg2.beginPath(); if (bg2.roundRect) bg2.roundRect(22, 66, 52, 24, 10); else bg2.rect(22, 66, 52, 24); bg2.fill(); ocHelmArt(bg2, dvs, 48, 46, 5.2, 1, 0); } } catch (e) {} g.imageSmoothingEnabled = true; g.drawImage(big, 0, 0, 32, 32); return (ICO[key] = c.toDataURL()); }
     if (typeof NEWICO !== "undefined" && NEWICO[id]) { drawSpr(g, id); return (ICO[key] = c.toDataURL()); }   // PIXEL ICONS
     if (OCI[id]) { try { OCI[id](g); } catch (e) {} return (ICO[key] = c.toDataURL()); }
     if (ITEMS[id] && ITEMS[id].pb) {   // HOMESTEAD: a jar of preserves in the crop's colour
@@ -21173,24 +21175,74 @@
     var sx = ox + pl.x * ts, sy = oy + (pl.y - 0.55) * ts;
     g.save(); if (swim && !reduce) { g.translate(sx, sy); g.rotate(pl.ang); g.translate(-sx, -sy); }
     var suit = ocSuit(), tk = ocTank(), u = ts / 16, f = pl.face, bx = ox + pl.x * ts, by = oy + pl.y * ts;
-    if (tk && sc.diving) { var tc = ["", "#c9a52a", "#8ec8d8", "#c86aff", "#ff6a4a"][tk]; g.fillStyle = "#3a3a44"; mrr(g, bx - f * 6 * u - 2.6 * u, by - 22 * u, 5.2 * u, 12 * u, 2.4 * u); g.fill(); g.fillStyle = tc; mrr(g, bx - f * 6 * u - 2 * u, by - 21.4 * u, 4 * u, 10.6 * u, 2 * u); g.fill(); g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(bx - f * 6 * u - 1.2 * u, by - 20.4 * u, 1 * u, 7 * u); }
+    if (tk && sc.diving) ocTankArt(g, tk, bx - f * 6 * u, by - 22 * u, u, f, now);   // DIVE GEAR: a tank of its own design per upgrade
     try { drawPlayer(g, now); } catch (e) {}
-    if (suit) {   // the suit: a collar and a round frog-eye mask; deeper suits get a bigger helmet (brass, pearl, then the glowing abyss suit)
-      var hx = bx + f * 0.6 * u, hy = by - 19.5 * u * AVS, stT = ocSuitT(), sc2 = OSUIT[stT].c, hr = [0, 3.6, 5.2, 5.6, 6][stT];
-      if (stT >= 4) oG(g, hx + f * 1.5 * u, hy - 0.5 * u, 12 * u, "rgba(122,240,255,.3)");
-      g.fillStyle = sc2; g.fillRect(hx - 5 * u, hy + 4.6 * u, 10 * u, 1.6 * u);
-      g.strokeStyle = sc2; g.lineWidth = (stT >= 2 ? 2 : 1.4) * u; g.fillStyle = stT >= 4 ? "rgba(40,20,80,.55)" : "rgba(160,240,255,.35)"; g.beginPath(); g.arc(hx + f * (stT >= 2 ? 0.6 : 1.5) * u, hy - 0.5 * u, hr * u, 0, 6.2832); g.fill(); g.stroke();
-      if (stT === 2) { g.fillStyle = "#8a5a1a"; [0, 1.57, 3.14, 4.71].forEach(function (a) { g.fillRect(hx + f * 0.6 * u + Math.cos(a) * hr * u - 0.6 * u, hy - 0.5 * u + Math.sin(a) * hr * u - 0.6 * u, 1.2 * u, 1.2 * u); }); }
-      if (stT === 3) { g.fillStyle = "#ff9ac8"; g.beginPath(); g.arc(hx + f * 0.6 * u, hy - 0.5 * u - hr * u, 1.2 * u, 0, 6.2832); g.fill(); }
-      if (stT >= 4) { g.fillStyle = "#7af0ff"; g.fillRect(hx + f * 0.6 * u - 0.5 * u, hy - 0.5 * u - hr * u - 2.4 * u, 1 * u, 2.4 * u); g.beginPath(); g.arc(hx + f * 0.6 * u, hy - 0.5 * u - hr * u - 2.6 * u, 1.1 * u, 0, 6.2832); g.fill(); }
-      g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx + f * 0.3 * u, hy - 2.6 * u, 1.2 * u, 1.2 * u);
-      if (tk && sc.diving) { g.strokeStyle = "#2a2a30"; g.lineWidth = 1 * u; g.beginPath(); g.moveTo(bx - f * 5 * u, by - 20 * u); g.quadraticCurveTo(hx - f * 3 * u, hy - 5 * u, hx - f * 1.6 * u, hy + 2 * u); g.stroke(); }
+    if (suit) {   // the helmet: a design of its own for each suit (goggles and snorkel, brass, pearl, then the glowing abyss helmet), with the air hose from the tank
+      var hx = bx + f * 0.6 * u, hy = by - 19.5 * u * AVS, stT = ocSuitT();
+      if (tk && sc.diving) { g.strokeStyle = "#2a2a30"; g.lineWidth = 1.1 * u; g.lineCap = "round"; g.beginPath(); g.moveTo(bx - f * 5 * u, by - 20 * u); g.quadraticCurveTo(hx - f * 3 * u, hy - 5 * u, hx - f * 1.6 * u, hy + 2 * u); g.stroke(); }
+      ocHelmArt(g, stT, hx, hy, u, f, now);
     }
     if ((S.inv.flippers || 0) > 0 && sc.diving) { var kick = reduce ? 0 : Math.sin(now / 140) * 2 * u; g.fillStyle = "#2fb59a"; g.beginPath(); g.ellipse(bx - f * 5 * u, by - 1 * u + kick, 4 * u, 1.4 * u, -f * 0.3, 0, 6.2832); g.fill(); g.fillStyle = "#4ee6b4"; g.beginPath(); g.ellipse(bx - f * 3 * u, by + 0.2 * u - kick, 4 * u, 1.4 * u, -f * 0.2, 0, 6.2832); g.fill(); }
     g.restore();
     p.x = keep.x; p.y = keep.y; p.on = keep.on; p.vy = keep.vy; p.vx = keep.vx; p.wet = keep.wet; p.face = keep.face;
   }
 
+  // ---- DIVE GEAR, a design per upgrade (house style: top-lit, tinted ink): tanks on the back, and the helmet over the head ----
+  function ocTankArt(g, tk, x, y, u, f, now) {   // x, y: top centre of the tank on your back
+    g.save(); g.lineJoin = "round";
+    var cyl = function (cx, w, h, hi, mid, lo, ink) { g.beginPath(); if (g.roundRect) g.roundRect(cx - w / 2, y, w, h, w / 2); else g.rect(cx - w / 2, y, w, h); var gr = g.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0); gr.addColorStop(0, hi); gr.addColorStop(0.45, mid); gr.addColorStop(1, lo); aInk(g, gr, ink, 0.7 * u); aShine(g, cx - w * 0.2, y + h * 0.3, w * 0.12, h * 0.22, 0.45, 0); };
+    if (tk === 1) {   // Frogskin: one plain yellow bottle with a green band and a little valve
+      cyl(x, 5 * u, 11 * u, "#ffe48a", "#e0b83a", "#9a7414", "#4a3608"); g.fillStyle = "#3fae5a"; g.fillRect(x - 2.5 * u, y + 6.5 * u, 5 * u, 1.4 * u);
+      g.fillStyle = "#6a6a74"; g.fillRect(x - 0.8 * u, y - 1.6 * u, 1.6 * u, 1.8 * u);
+    } else if (tk === 2) {   // Brassback: twin brass cylinders, riveted bands, a pressure dial
+      cyl(x - 2.3 * u, 4.2 * u, 12 * u, "#ffe0a0", "#d9a53a", "#8a5a14", "#3a2408"); cyl(x + 2.3 * u, 4.2 * u, 12 * u, "#ffe0a0", "#d9a53a", "#8a5a14", "#3a2408");
+      g.fillStyle = "#6a4a1a"; [3, 8.6].forEach(function (yy) { g.fillRect(x - 4.6 * u, y + yy * u, 9.2 * u, 1.1 * u); });
+      g.beginPath(); g.arc(x, y - 0.6 * u, 1.8 * u, 0, 7); aInk(g, "#f4ecd2", "#3a2408", 0.5 * u); g.strokeStyle = "#c83a2a"; g.lineWidth = 0.5 * u; g.beginPath(); g.moveTo(x, y - 0.6 * u); g.lineTo(x + Math.cos(now / 900) * 1.3 * u, y - 0.6 * u + Math.sin(now / 900) * 1.3 * u); g.stroke();
+    } else if (tk === 3) {   // Pearlplate: a nautilus shell canister, pearly, with a soft pink glow
+      var cx = x, cy = y + 6 * u, r = 5.4 * u; g.beginPath(); g.arc(cx, cy, r, 0, 7); aInk(g, aG(g, cy - r, cy + r, "#fff4fa", "#f0cce4", "#b88aa8"), "#5a3a52", 0.7 * u);
+      g.strokeStyle = "rgba(150,90,130,.6)"; g.lineWidth = 0.6 * u; g.beginPath(); for (var a = 0; a < 5.6; a += 0.2) { var rr = r * (0.18 + a / 6.2 * 0.75); var px = cx + Math.cos(a * f) * rr, py = cy + Math.sin(a) * rr; if (!a) g.moveTo(px, py); else g.lineTo(px, py); } g.stroke();
+      for (var k = 0; k < 6; k++) { var aa = k / 6 * 6.28; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(aa) * r * 0.9, cy + Math.sin(aa) * r * 0.9); g.stroke(); }
+      oG(g, cx, cy, r * 1.6, "rgba(255,150,210,.25)"); aShine(g, cx - r * 0.35, cy - r * 0.4, r * 0.3, r * 0.18, 0.6, -0.4);
+    } else {   // Abyss: a dark, finned capsule with a glowing core you can see through a window
+      g.beginPath(); g.moveTo(x - 3 * u, y + 1 * u); g.quadraticCurveTo(x, y - 2.4 * u, x + 3 * u, y + 1 * u); g.lineTo(x + 3.4 * u, y + 11 * u); g.quadraticCurveTo(x, y + 13.4 * u, x - 3.4 * u, y + 11 * u); g.closePath();
+      aInk(g, aG(g, y - 2, y + 13 * u, "#4a4a6a", "#26263e", "#10101e"), "#06060e", 0.7 * u);
+      g.fillStyle = "#1a1a2e"; g.beginPath(); g.moveTo(x - 3.4 * u, y + 7 * u); g.lineTo(x - 6 * u, y + 12 * u); g.lineTo(x - 3.2 * u, y + 11 * u); g.closePath(); g.fill(); g.beginPath(); g.moveTo(x + 3.4 * u, y + 7 * u); g.lineTo(x + 6 * u, y + 12 * u); g.lineTo(x + 3.2 * u, y + 11 * u); g.closePath(); g.fill();
+      var pul = 0.75 + 0.25 * Math.sin(now / 300); oG(g, x, y + 5.5 * u, 6 * u, "rgba(122,240,255," + (0.35 * pul).toFixed(3) + ")");
+      g.beginPath(); if (g.roundRect) g.roundRect(x - 1.4 * u, y + 2.4 * u, 2.8 * u, 6.4 * u, 1.4 * u); else g.rect(x - 1.4 * u, y + 2.4 * u, 2.8 * u, 6.4 * u); g.fillStyle = "rgba(170,250,255," + pul.toFixed(3) + ")"; g.fill();
+    }
+    g.restore();
+  }
+  function ocHelmArt(g, st, hx, hy, u, f, now) {   // hx, hy: the middle of your head
+    g.save(); g.lineJoin = "round"; g.lineCap = "round";
+    if (st === 1) {   // Frogskin: a goggle mask with two round frog-eye lenses on a strap, and a snorkel
+      g.strokeStyle = "#2a6a3a"; g.lineWidth = 1.4 * u; g.beginPath(); g.moveTo(hx - 5 * u, hy - 0.4 * u); g.lineTo(hx + 5 * u, hy - 0.4 * u); g.stroke();
+      [-2.2, 2.2].forEach(function (dx) { var lx = hx + (dx + f * 0.8) * u, ly = hy - 0.8 * u; g.beginPath(); g.arc(lx, ly, 2.2 * u, 0, 7); aInk(g, "rgba(170,240,255,.45)", "#2a6a3a", 0.9 * u); aShine(g, lx - 0.7 * u, ly - 0.8 * u, 0.6 * u, 0.4 * u, 0.7, -0.4); });
+      var sxp = hx - f * 3.6 * u; g.strokeStyle = "#e0b83a"; g.lineWidth = 1.2 * u; g.beginPath(); g.moveTo(sxp, hy + 1 * u); g.lineTo(sxp, hy - 6.5 * u); g.quadraticCurveTo(sxp, hy - 8 * u, sxp + f * 1.2 * u, hy - 8 * u); g.stroke();
+      g.fillStyle = "#c83a2a"; g.beginPath(); g.arc(sxp + f * 1.4 * u, hy - 8 * u, 0.8 * u, 0, 7); g.fill();
+    } else if (st === 2) {   // Brassback: the classic brass helmet, a round dome with a big front porthole, two side ports, bolts and a collar
+      var r = 5.6 * u; g.beginPath(); if (g.roundRect) g.roundRect(hx - 6.4 * u, hy + 3.6 * u, 12.8 * u, 2.6 * u, 1 * u); else g.rect(hx - 6.4 * u, hy + 3.6 * u, 12.8 * u, 2.6 * u); aInk(g, aG(g, hy + 3.6 * u, hy + 6.2 * u, "#ffe0a0", "#c8902e", "#7a4e10"), "#3a2408", 0.6 * u);
+      g.beginPath(); g.arc(hx, hy - 0.6 * u, r, 0, 7); aInk(g, aG(g, hy - r, hy + r, "#ffe6aa", "#d9a53a", "#8a5a14"), "#3a2408", 0.8 * u);
+      var fpx = hx + f * 1.6 * u; g.beginPath(); g.arc(fpx, hy - 0.4 * u, 2.6 * u, 0, 7); aInk(g, "rgba(150,220,240,.55)", "#5a3a10", 1 * u);
+      for (var b = 0; b < 6; b++) { var a = b / 6 * 6.28; g.fillStyle = "#6a4a14"; g.beginPath(); g.arc(fpx + Math.cos(a) * 3.3 * u, hy - 0.4 * u + Math.sin(a) * 3.3 * u, 0.45 * u, 0, 7); g.fill(); }
+      g.beginPath(); g.arc(hx - f * 3.8 * u, hy - 0.4 * u, 1.3 * u, 0, 7); aInk(g, "rgba(150,220,240,.5)", "#5a3a10", 0.6 * u);
+      g.fillStyle = "#b07a24"; g.fillRect(hx - 0.8 * u, hy - r - 1.6 * u, 1.6 * u, 1.8 * u);   // the air valve on top
+      aShine(g, hx - 2.4 * u, hy - 3.6 * u, 1.4 * u, 0.8 * u, 0.55, -0.5); aShine(g, fpx - 0.9 * u, hy - 1.4 * u, 0.6 * u, 0.4 * u, 0.7, -0.4);
+    } else if (st === 3) {   // Pearlplate: a smooth pearl dome with fluted shell ridges over it and a pink pearl on the crown
+      var r3 = 5.8 * u; g.beginPath(); g.arc(hx, hy - 0.6 * u, r3, 0, 7); aInk(g, aG(g, hy - r3, hy + r3, "#fffaff", "#f0d8ec", "#b898b8"), "#5a3a52", 0.8 * u);
+      g.save(); g.beginPath(); g.arc(hx, hy - 0.6 * u, r3, Math.PI, 0); g.clip(); g.strokeStyle = "rgba(160,110,150,.55)"; g.lineWidth = 0.6 * u; for (var k = -3; k <= 3; k++) { g.beginPath(); g.moveTo(hx, hy + 2 * u); g.lineTo(hx + k * 2.2 * u, hy - r3 - 1 * u); g.stroke(); } g.restore();
+      g.beginPath(); g.ellipse(hx + f * 1.4 * u, hy + 0.4 * u, 3.4 * u, 2.4 * u, 0, 0, 7); aInk(g, "rgba(190,240,255,.55)", "#7a5a72", 0.8 * u);
+      g.beginPath(); g.arc(hx, hy - r3 - 0.6 * u, 1.3 * u, 0, 7); aInk(g, aG(g, hy - r3 - 2, hy - r3 + 1, "#ffd0e8", "#ff8ac0", "#c84a88"), "#6a1a3a", 0.5 * u); oG(g, hx, hy - r3 - 0.6 * u, 3.6 * u, "rgba(255,150,210,.35)");
+      aShine(g, hx - 2.6 * u, hy - 3.8 * u, 1.6 * u, 0.8 * u, 0.6, -0.5);
+    } else {   // Abyss: a sleek dark helmet with a glowing visor slit and a dangling lure light, like an anglerfish
+      var r4 = 6 * u, pul = 0.7 + 0.3 * Math.sin(now / 260); oG(g, hx + f * 1.5 * u, hy - 0.5 * u, 13 * u, "rgba(122,240,255," + (0.22 * pul).toFixed(3) + ")");
+      g.beginPath(); g.moveTo(hx - r4, hy + 2 * u); g.quadraticCurveTo(hx - r4 * 1.05, hy - r4 * 1.1, hx + f * 1 * u, hy - r4 * 1.1); g.quadraticCurveTo(hx + r4 * 1.15, hy - r4 * 0.6, hx + r4 * 0.9, hy + 2.4 * u); g.quadraticCurveTo(hx, hy + 4.4 * u, hx - r4, hy + 2 * u); g.closePath();
+      aInk(g, aG(g, hy - r4, hy + 4 * u, "#4e4e74", "#28284a", "#10101e"), "#06060e", 0.9 * u);
+      g.beginPath(); if (g.roundRect) g.roundRect(hx - 2 * u + f * 1.6 * u, hy - 1.6 * u, 6 * u, 1.8 * u, 0.9 * u); else g.rect(hx - 2 * u, hy - 1.6 * u, 6 * u, 1.8 * u); g.fillStyle = "rgba(150,250,255," + pul.toFixed(3) + ")"; g.fill();
+      var lx = hx + f * 4 * u, ly = hy - r4 - 2 * u; g.strokeStyle = "#3a3a5a"; g.lineWidth = 0.8 * u; g.beginPath(); g.moveTo(hx, hy - r4 * 1.05); g.quadraticCurveTo(hx + f * 1 * u, hy - r4 - 5 * u, lx, ly); g.stroke();
+      oG(g, lx, ly + 0.8 * u, 4 * u, "rgba(122,240,255," + (0.5 * pul).toFixed(3) + ")"); g.fillStyle = "#e8ffff"; g.beginPath(); g.arc(lx, ly + 0.8 * u, 1.1 * u, 0, 7); g.fill();
+    }
+    g.restore();
+  }
   // ---------- OLD CROAKER'S BOAT: the build window at the pier slip (works like the motorcycle in the garage) ----------
   var boatMsg = "";
   function openBoat() {
