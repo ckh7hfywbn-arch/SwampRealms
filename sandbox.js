@@ -16007,10 +16007,10 @@
         e = { sig: sig, n: n, cv: cv, x0: x0, y0: y0 }; CANT.set(mn, e); CANT_PX += cv.width * cv.height;
       }
       var u = ts / 16, dq = Math.max(1, dpr), cx0 = Math.round((ox + (e.x0 - M) * ts) * dq) / dq, cy0 = Math.round((oy + (e.y0 - M) * ts) * dq) / dq, cw = e.cv.width * u, ch = e.cv.height * u;
-      if (reduce) { g.drawImage(e.cv, cx0, cy0, cw, ch); continue; }
+      if (OPT.motion === "on") { g.drawImage(e.cv, cx0, cy0, cw, ch); continue; }   // (only "Reduce motion: On" in Options stills the trees: the frame-rate saver and the system setting used to freeze them for good)
       // SMOOTH SWAY: the crown bends in the wind like a real canopy (the top moves most, the base stays on its trunk), drawn in thin bands
       // at sub-pixel offsets from a sharp copy blown up close to screen size, so it glides instead of hopping whole pixels
-      e.seen = CSTN; var SU = canUp(e), kU = SU.width / e.cv.width, swA = (Math.sin(tt * 0.9 + (mn % 997) * 0.37) * 0.8 + Math.sin(tt * 2.1 + mn % 13) * 0.2) * ts / 28, NB = Math.max(4, Math.min(10, Math.round(e.cv.height / 24)));
+      e.seen = CSTN; var SU = canUp(e), kU = SU.width / e.cv.width, swA = (Math.sin(tt * 0.9 + (mn % 997) * 0.37) * 0.8 + Math.sin(tt * 2.1 + mn % 13) * 0.2) * ts * 0.09, NB = Math.max(4, Math.min(10, Math.round(e.cv.height / 24)));
       g.imageSmoothingEnabled = true;
       for (var bq = 0; bq < NB; bq++) { var b0 = Math.floor(e.cv.height * bq / NB), b1 = Math.floor(e.cv.height * (bq + 1) / NB), hgt = 1 - (b0 + b1) / 2 / e.cv.height, bend = swA * (0.25 + 0.75 * hgt * hgt);
         g.drawImage(SU, 0, b0 * kU, SU.width, (b1 - b0) * kU, cx0 + bend, cy0 + b0 * u, cw, (b1 - b0) * u + (bq < NB - 1 ? 0.5 / dq : 0)); }
