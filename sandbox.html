@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css?v=cardstats1">
 <link rel="stylesheet" href="ui.css?v=cardback1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui104-fps">
+<link rel="stylesheet" href="sandbox.css?v=ui105-decor">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -130,6 +130,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
    <div class="sbx-vit">
     <canvas class="sbx-mini" id="sbxMini" role="button" tabindex="0" aria-label="Mini-map. Tap to open the World Map." hidden></canvas>
     <div class="sbx-mbtns">
+     <button type="button" class="sbx-ibtn sbx-decobtn" id="sbxDecoBtn" aria-label="Decorate (O)" title="Decorate (O)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11V7a2 2 0 012-2h8a2 2 0 012 2v4"/><path d="M4 11a2 2 0 012 2v2h12v-2a2 2 0 114 0v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4a2 2 0 012-2z"/><path d="M6 18v2M18 18v2"/></svg><kbd class="sbx-kb">O</kbd></button>
      <button type="button" class="sbx-ibtn sbx-menubtn" id="sbxMenuBtn" aria-label="Crafting (E)" title="Crafting (E)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5-2.2 2.2-5-5z"/><path d="M13.4 8.6L4.6 17.4a1.6 1.6 0 002.3 2.3l8.8-8.8"/><path d="M15.5 3.5l1-1M20.5 8.5l1-1"/></svg><kbd class="sbx-kb">E</kbd></button>
      <button type="button" class="sbx-ibtn sbx-packbtn" id="sbxPackBtn" aria-label="Open backpack (B)" title="Backpack (B)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5V5a3 3 0 016 0v.5"/><path d="M7 7h10a3 3 0 013 3v9a2 2 0 01-2 2H6a2 2 0 01-2-2v-9a3 3 0 013-3z"/><path d="M8.5 15h7v3h-7z"/><path d="M4 12.5h2M18 12.5h2"/></svg><kbd class="sbx-kb">B</kbd></button>
     </div>
@@ -244,10 +245,10 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="sandbox-ocean.js?v=ocean3-slip" onload="__dl('ocean')"></script>
 <script src="delve-avatar.js?v=av-helm" onload="__dl('davatar')"></script>
 <script src="delve-lore.js?v=lore2" onload="__dl('lore')"></script>
-<script src="delve-furniture.js?v=furn7" onload="__dl('furn')"></script>
-<script src="delve-decor.js?v=decor2" onload="__dl('decor')"></script>
+<script src="delve-furniture.js?v=furn8" onload="__dl('furn')"></script>
+<script src="delve-decor.js?v=decor3" onload="__dl('decor')"></script>
 <script src="delve-pixmobs.js?v=pix1" onload="__dl('pix')"></script>
-<script src="sandbox.js?v=delve434-decor34" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve435-decor567" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.

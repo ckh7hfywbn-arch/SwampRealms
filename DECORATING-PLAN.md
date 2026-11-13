@@ -226,3 +226,42 @@ Not done yet:
 - Candles placed as decorations don't give light yet (Stage 7).
 - Multiplayer messages for decorations (Stage 8).
 - Scenario 12 (large numbers) and the stress test: Stage 5.
+
+### Stages 5, 6 and 7: done (13 Nov)
+What changed:
+- **Depth and rugs (Stage 5).**
+  - Rugs (Reed Rug, Fur Rug) now lie on the floor as decorations, at half-block steps, so tables, sofas and beds stand on them. Holding a rug and aiming at a floor shows the glowing spot as usual.
+  - Every decoration has a layer. Rugs (floor) and wall pieces (back wall) are drawn cell by cell, right after that cell's back wall and before its furniture. So a bookshelf hides part of a painting behind it, a solid block hides what is behind it, and wall pieces cast a small shadow. Things standing on furniture are drawn after all blocks, in order: furniture, what stands on it, what stands on that.
+  - Cells holding rugs or wall pieces are never baked into the fast chunk pictures, and the chunk signature notices them, so placing or removing one redraws correctly.
+- **Decorate mode and panel (Stage 6).**
+  - **O**, or the new chair button next to Crafting and the Backpack, turns decorate mode on. While it is on, taps never dig, fight or swat: they place what you hold, or select what you tap.
+  - Selecting shows a dashed gold outline and a bar at the top with the piece's picture, name and where it sits, plus buttons: **Pieces** (the panel), **Flip**, **Move**, **Put away**, **Colour**, **Light on/off** (for lamps and candles) and **Use** (Sit, Read, Cook or Look), and **Done**. The buttons work by tap, so phones can now flip and move.
+  - Keys in decorate mode: R flips, G moves, Delete puts away, Esc deselects, then leaves.
+  - **Moving a decoration** (Move on a plate, say) carries it with everything on it; set it down on another spot and they come back on it. Esc or Put away returns it all to your bag.
+  - **Put away** on furniture takes the piece, everything on it and everything stored in it, into your bag.
+  - **The panel** (Pieces, or the dev menu): tabs for All, Furniture, Tables & tops, Storage, Lighting, Wall art, Plants, Food, Tableware, Books, Collectibles, Cloth and Rugs; search as you type; each piece with its picture, name, what it is for (where it goes, whether it stores, lights, seats or tells the time) and how many you carry. "Show what I don't have" lists the rest with where to craft it. Picking one puts it in your hand.
+  - Messages now stack under the bar instead of behind it.
+- **Working furniture (Stage 7).**
+  - **Sit** on chairs, stools, the sofa, the rocking chair and the throne: F while standing at one (or Use). Move or jump to get up.
+  - **Lamps and candles switch off and on** (F near a lamp, or Light in the bar), both lamp blocks you place and candles standing on furniture. Off means no light, no glow, and a snuffed picture (no flame, dark glass).
+  - **Decoration lights:** candles, oil lamps, lanterns and skull candles standing on furniture now light the room like the block versions.
+  - **Clocks** (Grandfather Clock, Cuckoo Clock) tell the time and day. **Trophies and statues** show your records (fish, creatures, bosses, days, mining).
+  - **Stoves cook:** the Iron Stove, Counter Stove and Stone Hearth open the Cooking Pot's recipes, and F finds them like any station.
+  - **Storage:** bookshelves, cupboards, dressers, wardrobes, hutches and about 50 more were already containers; they keep their contents when moved or put away (checked).
+  - **Colour variants:** five dyes (Rose, Amber, Moss, Sky, Plum) for any decoration or piece of furniture with coloured cloth, paint, glass or glaze. Wood, metal, stone, gold and flames keep their own colour, so plain wooden tables have no dyes.
+- **Save fix (important):** decorations were being set aside as "unknown" by the save cleaner on a real reload (the Stage 2 to 4 tests went around it). They are now saved and checked properly, along with what you are carrying, lamps you turned off and dyes. Decorations set aside by the earlier test builds come back on the next load. Moving between worlds puts anything you are carrying in your bag first.
+
+Tested (in game, scripted, `tdeco5*.js`):
+- **Scenario 9:** a rug, then a table on it (table stands on the rug); a painting, then a bookshelf in front of it (partly hidden).
+- Decorate mode: tapping a candle selects it (not taken); tapping the ground doesn't dig; Flip, Colour and Light change the record; moving a plate carries its bread to another table; Put away on a table returns the table, the plate and the bread.
+- Panel: 13 tabs, search ("rug" finds both rugs), Lighting tab, picking a piece puts it in hand and closes the panel. Desktop and phone sizes.
+- Sitting (pose, held in place, move to stand); a lamp switched off (light gone at night, flame gone); clock text; a stove opens the cooking window; colours on a sofa, cushion and painting.
+- Save cleaner keeps decorations, switched-off lamps and dyes; reload keeps a snuffed candle snuffed.
+- **Scenario 12 (stress):** 1,000 decorations in view (rugs, wall pieces, tables, plates and food): no frame-time change in the headless browser (median 56 ms before, 50 ms after; the headless browser is slow either way). Building 1,000 records took 32 ms.
+- Stages 2–4 tests still pass. Smoke test: `AUDIT []`, `ERRORS 0`.
+
+Not done yet:
+- Multiplayer messages for decorations, lamp switches and dyes (Stage 8). In a multiplayer room these stay on the machine that made them until then.
+- Bookshelf reading (opening a book to read it) is not built; bookshelves store books like before.
+- Old rug tiles stay tiles (they still work); new rugs go down as floor decorations.
+- Lamp blocks that only have the older 16-pixel picture (no HD art) keep their flame picture when switched off; their light and glow do switch off.

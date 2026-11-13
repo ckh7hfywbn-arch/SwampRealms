@@ -35,11 +35,11 @@
     // a turned wooden leg / post (lit left, shaded right)
     K.post = function (x, y, w, h, p) { R(x, y, w, h, p[0]); R(x + 1, y, w - 2, h - 1, p[3]); R(x + 1, y, 1, h - 1, p[5]); if (w > 3) R(x + w - 2, y, 1, h - 1, p[2]); };
     K.shadow = function (x, y, w, a) { R(x + 1, y, w - 2, 1, "#000", a || 0.28); R(x + 3, y - 1, w - 6, 1, "#000", (a || 0.28) * 0.5); };
-    K.flame = function (cx, by, s, cols) {   // a teardrop flame, base at by, s = height
+    K.flame = function (cx, by, s, cols) { if (K.unlit) { R(Math.round(cx) - 0, Math.round(by) - 2, 1, 2, "#2a2018"); return; }   // UNLIT (a lamp turned off): just the burnt wick   // a teardrop flame, base at by, s = height
       cols = cols || ["#c8340e", "#ff6a1a", "#ffa62e", "#ffd860", "#fff6d0"];
       for (var i = 0; i < cols.length; i++) { var k = 1 - i / (cols.length + 0.5), hh = s * k, ww = Math.max(1, s * 0.38 * k); for (var y = 0; y < hh; y++) { var t = y / hh, half = ww * Math.sin(Math.PI * Math.min(1, (1 - t) * 0.85 + 0.15)) * (t < 0.2 ? 0.75 + t * 1.25 : 1); R(Math.round(cx - half), Math.round(by - y - i * 0.6), Math.max(1, Math.round(half * 2)), 1, cols[i]); } }
     };
-    K.halo = function (cx, cy, r, rgb, a) { var gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, "rgba(" + rgb + "," + a + ")"); gr.addColorStop(1, "rgba(" + rgb + ",0)"); g.fillStyle = gr; g.fillRect(cx - r, cy - r, r * 2, r * 2); };
+    K.halo = function (cx, cy, r, rgb, a) { if (K.unlit) return; var gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, "rgba(" + rgb + "," + a + ")"); gr.addColorStop(1, "rgba(" + rgb + ",0)"); g.fillStyle = gr; g.fillRect(cx - r, cy - r, r * 2, r * 2); };
     K.nail = function (x, y, p) { P(x, y, (p || IRON)[5]); P(x + 1, y + 1, (p || IRON)[1]); };
     return K;
   }
@@ -804,10 +804,16 @@
   A.lorenote = { w: 1, h: 1, draw: function (K) { var R = K.R; K.shadow(3, 31, 26); R(3, 23, 26, 7, PALE[1]); R(4, 22, 24, 7, PALE[5]); R(4, 22, 24, 1, PALE[6]); for (var l = 0; l < 3; l++) R(7, 24 + l * 2, 16 - l * 3, 1, "#7a6a4a", 0.7); K.slab(2, 21, 3, 9, PALE, { round: 1 }); K.slab(27, 21, 3, 9, PALE, { round: 1 }); K.disc(22, 28, 2.4, "#c22e2a"); K.P(21, 27, "#ff6a5a"); } };
   // ---------- DECORATING: new decorations ----------
   A.x_plate = { w: 1, h: 1, draw: function (K) { K.ell(16, 29, 12, 2.6, CERA[0]); K.ell(16, 28.6, 11, 2, CERA[4]); K.ell(16, 28.4, 8, 1.2, CERA[3]); K.R(6, 28, 4, 1, CERA[6]); K.R(5, 30, 22, 1, CERA[1]); K.R(8, 29, 16, 1, "#3e7ad8", 0.35); } };
-  function paint(kind) {   // a canvas with this piece at 32 px a block, or null
+  function paint(kind, unlit) {   // a canvas with this piece at 32 px a block, or null; unlit = a lamp or candle turned off (no flame or halo, its glass goes dark)
     var a = A[kind]; if (!a || typeof document === "undefined") return null;
     var c = document.createElement("canvas"); c.width = a.w * 32; c.height = a.h * 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
-    try { a.draw(kit(g, c.width, c.height)); } catch (e) { return null; }
+    try { var K = kit(g, c.width, c.height); K.unlit = !!unlit; a.draw(K); } catch (e) { return null; }
+    if (unlit) {   // glowing glass, embers and lit panes painted straight in: dim the bright warm pixels to a cold, dark tone
+      var d = g.getImageData(0, 0, c.width, c.height), q = d.data;
+      for (var i = 0; i < q.length; i += 4) { if (q[i + 3] < 20) continue; var r = q[i], gg = q[i + 1], b = q[i + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b);
+        if (mx > 205 && (mx - mn > 50 || mn > 225)) { var k = 0.36; q[i] = r * k + 18; q[i + 1] = gg * k + 16; q[i + 2] = b * k + 20; } }
+      g.putImageData(d, 0, 0);
+    }
     return c;
   }
   var api = { art: A, paint: paint, kit: kit };

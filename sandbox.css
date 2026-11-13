@@ -2278,6 +2278,47 @@ small.bo-cost{display:flex}
 @media(max-width:600px){.sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:42px;height:42px;border-radius:13px}.sbx-mbtns{gap:6px}.sbx-sbtn{width:32px;height:32px}}
 @media(max-height:520px) and (orientation:landscape){.sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:42px;height:42px}.sbx-sbtn{width:32px;height:32px}}
 .sbx-stage.paused .sbx-mbtns,.sbx-stage.paused .sbx-ibtns{visibility:hidden}
+/* DECORATE MODE (O): the chair button by the backpack, the bar at the top while it is on, and the decorating panel */
+.sbx-mbtns .sbx-decobtn{width:42px;height:50px;border-radius:15px;border-color:rgba(255,198,90,.5);color:#ffe0a0;background:linear-gradient(160deg,#20160ae6,#0a0705d9);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 22px -10px #000}
+.sbx-mbtns .sbx-decobtn svg{width:22px;height:22px}
+.sbx-mbtns .sbx-decobtn.on{background:linear-gradient(160deg,#ffc65a,#e08a2a);color:#2a1606;border-color:#fff2c0;box-shadow:0 0 18px -4px #ffc65a}
+@media(max-width:600px){.sbx-mbtns .sbx-decobtn{width:36px;height:42px;border-radius:13px}}
+@media(max-height:520px) and (orientation:landscape){.sbx-mbtns .sbx-decobtn{width:36px;height:42px}}
+.sbx-dbar{position:absolute;left:50%;transform:translateX(-50%);top:calc(max(8px,env(safe-area-inset-top)) + 58px);z-index:6;display:flex;align-items:center;gap:10px;max-width:calc(100% - 16px);padding:7px 8px 7px 10px;border-radius:16px;background:linear-gradient(160deg,#241a0cf2,#0d0905eb);border:1.5px solid #ffc65a88;box-shadow:0 10px 26px -12px #000,0 0 0 1px #00000055;pointer-events:auto;font-family:Nunito,system-ui,sans-serif;color:#fff4dc}
+.sbx-dbar[hidden]{display:none}
+.sbx-dsel{display:flex;align-items:center;gap:8px;min-width:0;max-width:260px}
+.sbx-dsel img,.sbx-dico{width:34px;height:34px;flex:none;image-rendering:pixelated;border-radius:9px;background:#ffffff10;display:grid;place-items:center;font-style:normal;color:#ffc65a}
+.sbx-dsel b{display:block;font:800 .82rem/1.15 Nunito,system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbx-dsel small{display:block;font:600 .68rem/1.2 Nunito,system-ui,sans-serif;color:#e8d4a8;opacity:.9}
+.sbx-dbtns{display:flex;gap:5px;flex-wrap:nowrap;justify-content:flex-end}
+.sbx-dbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:50px;height:46px;padding:3px 6px;border-radius:12px;border:1px solid #ffffff22;background:#ffffff10;color:#fff4dc;cursor:pointer;font:700 .64rem/1 Nunito,system-ui,sans-serif}
+.sbx-dbtn i{font-style:normal;font-size:1.05rem;line-height:1;color:#ffd27a}
+.sbx-dbtn:hover:not(:disabled),.sbx-dbtn:focus-visible{background:#ffc65a2a;border-color:#ffc65a99}
+.sbx-dbtn:disabled{opacity:.35;cursor:default}
+.sbx-dbtn[data-dk="done"]{background:#ffc65a;color:#2a1606;border-color:#fff2c0}.sbx-dbtn[data-dk="done"] i{color:#2a1606}
+@media(max-height:520px) and (orientation:landscape){.sbx-dbar{top:calc(max(6px,env(safe-area-inset-top)));padding:5px 6px}.sbx-dsel small{display:none}.sbx-dbtn{height:38px;min-width:44px}}
+@media(max-width:760px){.sbx-dbar{flex-direction:column;align-items:stretch;gap:6px;top:calc(max(8px,env(safe-area-inset-top)) + 172px);width:calc(100% - 16px)}.sbx-dsel{max-width:none}.sbx-dbtns{justify-content:space-between;flex-wrap:nowrap}.sbx-dbtn{min-width:0;flex:1;height:44px;padding:3px 2px}}
+.sbx-stage.paused .sbx-dbar,.sbx-stage.panel .sbx-dbar{visibility:hidden}
+.dk-h{margin:0 0 4px;font:800 1.2rem/1.2 Nunito,system-ui,sans-serif;color:#ffd27a}
+.dk-help{text-transform:none;letter-spacing:0;margin:0 0 10px;font:600 .8rem/1.4 Nunito,system-ui,sans-serif;color:#eadcc0}
+.dk-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.dk-q{flex:1;min-width:160px;padding:9px 12px;border-radius:11px;border:1.5px solid #ffc65a66;background:#0b0905;color:#fff4dc;font:700 .9rem Nunito,system-ui,sans-serif}
+.dk-all{display:flex;gap:6px;align-items:center;font:700 .74rem Nunito,system-ui,sans-serif;color:#eadcc0;cursor:pointer}
+.dk-tabs{display:flex;gap:5px;overflow-x:auto;padding:2px 0 8px;margin:0 0 6px;scrollbar-width:thin}
+.dk-tabs button{flex:none;padding:6px 10px;border-radius:999px;border:1px solid #ffffff22;background:#ffffff0c;color:#eadcc0;cursor:pointer;font:800 .72rem Nunito,system-ui,sans-serif}
+.dk-tabs button.on{background:#ffc65a;color:#2a1606;border-color:#fff2c0}
+.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;max-height:min(52vh,460px);overflow-y:auto;padding-right:2px}
+.dk-it{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:12px;border:1.5px solid #ffffff18;background:#ffffff0a;color:#fff;cursor:pointer;text-align:left}
+.dk-it:hover,.dk-it:focus-visible{border-color:#ffc65a99;background:#ffc65a18}
+.dk-it.on{border-color:#ffc65a;background:#ffc65a22}
+.dk-it img{width:36px;height:36px;flex:none;image-rendering:pixelated}
+.dk-it span{flex:1;min-width:0}
+.dk-it b{display:block;font:800 .8rem/1.2 Nunito,system-ui,sans-serif;text-transform:none;letter-spacing:0;text-align:left}
+.dk-it small{display:block;font:600 .66rem/1.3 Nunito,system-ui,sans-serif;color:#d8c8a8;text-transform:none;letter-spacing:0;text-align:left}
+.dk-n{flex:none;font:800 .74rem Nunito,system-ui,sans-serif;font-style:normal;color:#ffd27a}
+.dk-it.dk-no{opacity:.5}.dk-it.dk-no .dk-n{color:#aaa;font-weight:600}
+.dk-none{text-transform:none;letter-spacing:0;grid-column:1/-1;margin:8px 2px;font:600 .8rem/1.4 Nunito,system-ui,sans-serif;color:#d8c8a8}
+
 /* the Crafting window: a title instead of Journal tabs */
 .sbx-ptitle{display:flex;align-items:center;gap:9px;margin:0;padding:4px 6px;font:900 1.12rem Nunito,sans-serif;letter-spacing:.02em;color:#ffe9a8}
 .sbx-ptitle svg{width:22px;height:22px;color:#f2c14e}
@@ -2818,6 +2859,7 @@ small.bo-cost{display:flex}
  .sbx-mini{margin-top:0;width:104px;height:66px}
  .sbx-mbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:0}
  .sbx-mbtns .sbx-packbtn,.sbx-mbtns .sbx-menubtn{width:100%;height:42px;border-radius:13px}
+ .sbx-mbtns .sbx-decobtn{grid-column:1/-1;width:100%;height:32px}
  .sbx-trail{top:calc(max(8px,env(safe-area-inset-top)) + 86px)}
 }
 /* MALCRUOR QUEST BOOK: the ember page, turned blood red and black */

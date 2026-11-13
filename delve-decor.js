@@ -76,6 +76,9 @@
   ["painting", "plaque", "mirror", "worldmap", "fishtrophy", "wreath", "sign", "tapestry_swamp", "tapestry_ember", "tapestry_frost", "crossedswords", "bugtrophy", "frogtrophy", "battrophy", "wolftrophy",
     "gatortrophy", "shield", "antlers", "wyrmskull", "alphapelt", "cuckooclock", "dartboard", "fanart", "elderportrait", "sundisc", "starchart", "moonmirror", "spellscroll", "shieldwall", "dwarfaxes",
     "hangingherbs", "windchime", "birdcage"].forEach(function (k) { ITEM[k] = { cat: "wall" }; });
+  ["rug", "furrug"].forEach(function (k) { ITEM[k] = { cat: "rug" }; });   // RUGS lie on the floor under furniture (Stage 5)
+  CATS.rug = "Rugs";
+  var FLOOR = { size: [1, 1], slots: [S("floor", "floor", -16, 48, 32, ["rug"], { step: 16, cap: 2, layer: -1 })] };   // one floor cell: a rug can sit half a block either side
   var WALL = { size: [1, 1], slots: [S("wall", "wall", -16, 48, 30, ["wall"], { step: 16, cap: 2, layer: 0 })] };   // one back-wall cell: a piece can sit half a block either side, or half a block up
 
   // ---------- the object layer ----------
@@ -87,12 +90,14 @@
   function create(store, env) {
     if (!store || typeof store !== "object") store = {};
     if (!(store.n > 0)) store.n = 1; if (!store.o || typeof store.o !== "object") store.o = {};
-    var O = store.o, kids = {}, idx = null;
+    var O = store.o, kids = {}, idx = null, gen = 0;
 
     function parentDef(pk) {   // the definition of whatever this parent key points at, or null
       if (typeof pk !== "string") return null;
       if (pk.charAt(0) === "t") { var xy = pk.slice(2).split(","), x = +xy[0], y = +xy[1], k = env.itemAt(x, y); return k && FURN[k] ? { k: k, def: FURN[k], x: x, y: y } : null; }
       if (pk.charAt(0) === "d") { var r = O[pk.slice(2)]; return r && ITEM[r.k] && ITEM[r.k].slots ? { k: r.k, def: ITEM[r.k], rec: r } : null; }
+      if (pk.charAt(0) === "g") { var gy = pk.slice(2).split(","); return env.floorAt && env.floorAt(+gy[0], +gy[1]) ? { k: "floor", def: FLOOR, x: +gy[0], y: +gy[1] } : null; }
+      if (pk === "c:dcarry") { var dk = env.dcarry ? env.dcarry() : ""; return dk && ITEM[dk] && ITEM[dk].slots ? { k: dk, def: ITEM[dk], carry: 1 } : null; }   // a decoration being moved: what was on it waits
       if (pk.charAt(0) === "w") { var wy = pk.slice(2).split(","); return env.wallAt && env.wallAt(+wy[0], +wy[1]) ? { k: "wall", def: WALL, x: +wy[0], y: +wy[1] } : null; }
       if (pk === "c:carry") { var ck = env.carry ? env.carry() : ""; return ck && FURN[ck] ? { k: ck, def: FURN[ck], carry: 1 } : null; }   // a piece of furniture being moved: its things wait on it
       return null;
@@ -134,6 +139,7 @@
     // where a record sits in the world: { x, y } = the bottom-left of its art, in blocks (floats), plus w, h in blocks and its flip
     function where(rec) {
       var sl = slotOf(rec.p, rec.s); if (!sl) return null; var w = wOf(rec.k), h = hOf(rec.k);
+      if (rec.p.charAt(0) === "g") { var gxy = rec.p.slice(2).split(","), gx0 = +gxy[0], gy0 = +gxy[1]; return { x: gx0 + (sl.x0 + rec.o) / U, y: gy0 + 1, w: w / U, h: h / U, f: rec.f | 0, layer: -1, d: 0 }; }
       if (rec.p.charAt(0) === "w") {   // on a back wall: o along, oy up from the cell's bottom
         var wxy = rec.p.slice(2).split(","), wx0 = +wxy[0], wy0 = +wxy[1];
         return { x: wx0 + (sl.x0 + rec.o) / U, y: wy0 + 1 - (U - sl.y + (rec.oy | 0)) / U, w: w / U, h: h / U, f: rec.f | 0, layer: 0, d: 0 };
@@ -151,7 +157,7 @@
     }
     // the chunk index: 8 x 8 block cells -> the records whose art touches them (rebuilt only after a change)
     function index() {
-      if (idx) return idx; idx = {};
+      if (idx) return idx; idx = {}; gen++;
       for (var id in O) { var r = O[id], w = where(r); if (!w) continue; r._w = w;
         for (var cy = Math.floor((w.y - w.h) / 8); cy <= Math.floor(w.y / 8); cy++) for (var cx = Math.floor(w.x / 8); cx <= Math.floor((w.x + w.w) / 8); cx++) { var key = cx + "," + cy; (idx[key] = idx[key] || []).push(r); } }
       return idx;
@@ -192,12 +198,12 @@
         if (sl.cats.indexOf(it.cat) < 0) return;
         var ox0, sy, pw, fl = 0, span = sl.x1 - sl.x0;
         if (pd.rec) { var pw2 = where(pd.rec); if (!pw2) return; pw = wOf(pd.rec.k); fl = pw2.f; ox0 = pw2.x; sy = pw2.y - (hOf(pd.rec.k) - sl.y) / U; }
-        else if (pd.k === "wall") { ox0 = pd.x; sy = pd.y + 1 - (U - sl.y) / U; pw = U; }
+        else if (pd.k === "wall" || pd.k === "floor") { ox0 = pd.x; sy = pd.y + 1 - (U - sl.y) / U; pw = U; }
         else { var d = pd.def; pw = d.size[0] * U; fl = env.flipAt ? env.flipAt(pd.x, pd.y) : 0; ox0 = pd.x; sy = (pd.y + 1) - (d.size[1] * U - sl.y) / U; }
         var lx = (wx - ox0) * U; if (fl) lx = pw - lx;   // into the piece's own (unflipped) pixels
         var o = Math.round((lx - sl.x0 - w / 2) / sl.step) * sl.step; o = Math.max(0, Math.min(span - w, o)); if (span - w < 0) o = 0;
         var oy = 0; if (sl.surf === "wall") { oy = Math.round(((sy - wy) * U - h / 2) / 16) * 16; oy = Math.max(0, Math.min(16, oy)); }
-        var dy = sl.surf === "wall" ? 0 : Math.abs(wy - sy); if (sl.surf !== "wall" && (dy > 1.1 || lx < sl.x0 - 12 || lx > sl.x1 + 12)) return;
+        var flat = sl.surf === "wall" || sl.surf === "floor", dy = flat ? 0 : Math.abs(wy - sy); if (!flat && (dy > 1.1 || lx < sl.x0 - 12 || lx > sl.x1 + 12)) return;
         var why = check(pk, sl.id, k, o, null, oy), sc = dy + (why ? 5 : 0);
         if (!best || sc < best.sc) best = { pk: pk, sid: sl.id, o: o, oy: oy, why: why, sc: sc, sl: sl };
       });
@@ -207,7 +213,7 @@
       var pd = parentDef(pk), out = []; if (!pd || pd.carry) return out;
       (pd.def.slots || []).forEach(function (sl) { var x0, x1, y;
         if (pd.rec) { var pw = where(pd.rec); if (!pw) return; var pwd = wOf(pd.rec.k); x0 = pw.f ? pw.x + (pwd - sl.x1) / U : pw.x + sl.x0 / U; x1 = x0 + (sl.x1 - sl.x0) / U; y = pw.y - (hOf(pd.rec.k) - sl.y) / U; }
-        else if (pd.k === "wall") { x0 = pd.x + sl.x0 / U; x1 = pd.x + sl.x1 / U; y = pd.y + 1 - (U - sl.y) / U; }
+        else if (pd.k === "wall" || pd.k === "floor") { x0 = pd.x + sl.x0 / U; x1 = pd.x + sl.x1 / U; y = pd.y + 1 - (U - sl.y) / U; }
         else { var d = pd.def, fl = env.flipAt ? env.flipAt(pd.x, pd.y) : 0, W2 = d.size[0] * U; x0 = pd.x + (fl ? W2 - sl.x1 : sl.x0) / U; x1 = x0 + (sl.x1 - sl.x0) / U; y = (pd.y + 1) - (d.size[1] * U - sl.y) / U; }
         out.push({ x0: x0, x1: x1, y: y, sl: sl }); });
       return out;
@@ -216,7 +222,7 @@
     function all() { var a = []; for (var id in O) a.push(O[id]); return a; }
     relink();
     return { store: store, check: check, add: add, remove: remove, removeParent: removeParent, reparent: reparent, children: childrenOf, subtree: subtree,
-      where: where, locate: locate, slotSpans: slotSpans, inView: inView, hit: hit, validate: validate, count: count, all: all, slotOf: slotOf, parentDef: parentDef, dirty: function () { idx = null; }, wOf: wOf, hOf: hOf };
+      where: where, locate: locate, slotSpans: slotSpans, inView: inView, hit: hit, validate: validate, count: count, all: all, slotOf: slotOf, parentDef: parentDef, dirty: function () { idx = null; }, gen: function () { index(); return gen; }, wOf: wOf, hOf: hOf };
   }
 
   var api = { U: U, CATS: CATS, FURN: FURN, ITEM: ITEM, create: create };
