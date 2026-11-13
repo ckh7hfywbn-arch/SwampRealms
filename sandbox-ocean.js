@@ -235,6 +235,7 @@
 
     // ---- Croaker's Pier ----
     if (main) {
+      for (x = DOCK1 - 8; x <= DOCK1 + 24; x++) for (y = SEA; y < Math.min(bed[x], SEA + 16); y++) { var cq = get(x, y); if (cq !== T.WATER && cq !== T.CHEST) set(x, y, T.WATER); }   // open water round the boat slip: no rock outcrop for the Lily Belle to sit on
       for (x = DOCK0; x <= DOCK1; x++) { set(x, SEA - 1, x === DIVEX ? T.AIR : T.DOCK); if (x % 7 === 3) for (y = SEA; y < SEA + 9; y++) if (get(x, y) === T.WATER) set(x, y, T.POST); }
       for (y = SEA - 1; y <= SEA + 3; y++) set(DIVEX, y, T.LADDER);
       for (x = DOCK0 + 4; x < DOCK1; x += 9) { set(x, SEA - 2, T.LAMP); }
