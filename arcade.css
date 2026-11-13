@@ -87,3 +87,19 @@ footer::before{content:"";position:absolute;left:10%;right:10%;top:-1px;height:2
 @media (prefers-reduced-motion:reduce){.feat::before{animation:none}.btn,.btn:active{transition:none}}
 /* the new Delve cover keeps its logo on the left and the fight in the middle: aim the cabinet screen there */
 .feat-delve .feat-art img{object-position:30% 30%}
+/* ---------- DELVE'S MARQUEE, redone: the mint and teal of the other games' strips, as a lit neon sign. Glass with a row of chasing bulbs
+   above and below, the words lit from inside, and a slow shine sweeping across it (on ::after, over the sign only). ---------- */
+.feat{background:linear-gradient(180deg,#0c1612,#060a08) padding-box,linear-gradient(160deg,#6dffcf,#2fb98a 35%,#5ad8f0 65%,#6dffcf) border-box;
+ box-shadow:0 0 0 1px #000,0 0 36px -8px #4ee6b4aa,0 0 80px -24px #5ad8f0,0 28px 50px -26px #000}
+.feat:hover{box-shadow:0 0 0 1px #000,0 0 48px -6px #4ee6b4cc,0 0 100px -20px #5ad8f0,0 28px 50px -26px #000}
+.feat::before{content:"\25B6\00a0\00a0 Now playing \00a0\00a0\25C0";height:40px;color:#04221a;letter-spacing:.3em;font:900 13px/1 Nunito,sans-serif;
+ text-shadow:0 1px 0 #ffffff8c,0 0 10px #ffffffa6;
+ background:radial-gradient(circle,#ffffff 0 1.8px,#ffffff00 2.8px) 0 3px/16px 6px repeat-x,radial-gradient(circle,#ffffff 0 1.8px,#ffffff00 2.8px) 8px 31px/16px 6px repeat-x,
+  repeating-linear-gradient(90deg,#ffffff14 0 2px,transparent 2px 6px),linear-gradient(180deg,#b6fff0 0,#6dffcf 22%,#2fd6a8 55%,#1f9f86 100%);
+ border-bottom:2px solid #000;box-shadow:inset 0 2px 0 #ffffffa0,inset 0 -7px 12px -6px #0b4a3c,0 0 26px #4ee6b4aa,0 6px 30px -6px #5ad8f0aa}
+.feat::after{content:"";position:absolute;left:0;right:0;top:0;height:40px;z-index:3;pointer-events:none;border-radius:23px 23px 0 0;
+ background:linear-gradient(105deg,transparent 40%,#ffffff99 48%,#ffffff 50%,#ffffff99 52%,transparent 60%) -100% 0/50% 100% no-repeat;mix-blend-mode:soft-light}
+@media (prefers-reduced-motion:no-preference){.feat::before{animation:delveChase 1.1s steps(2) infinite}.feat::after{animation:delveShine 3.8s cubic-bezier(.5,0,.2,1) infinite}}
+@keyframes delveChase{to{background-position:16px 3px,24px 31px,0 0,0 0}}
+@keyframes delveShine{0%,50%{background-position:-100% 0}100%{background-position:200% 0}}
+.feat-art{box-shadow:0 0 0 6px #020403,0 0 0 8px #4ee6b44d,0 0 28px 2px #5ad8f04d,inset 0 0 30px #000}
