@@ -1422,6 +1422,7 @@
     // world tree trunks are scenery you walk through, so a trunk standing on or beside a block does not stop it sloping (TREE BASES)
     var nl = function (k) { return tiles[k] === T.LOG && orig[k] === T.LOG; }, fr = function (k) { return rampFree(tiles[k]) || nl(k); }, so = function (k) { return TILES[tiles[k]].solid && !nl(k); };
     var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !fr(ix - W)) return 0;
+    if (nl(ix - W)) return 0;   // TREES ON HILLS: the block a trunk stands on stays flat, so the tree's foot sits on the ground (a sloped block under it left it hanging in the air)
     var sL = so(ix - 1), sR = so(ix + 1);
     var step = function (k) { return fr(k) && TILES[tiles[k + W]].solid; };   // open beside, with ground one block lower
     if (!sL && !sR) return step(ix - 1) && step(ix + 1) ? 1 : 0;   // a lone block sticking up one step: a low half-height bump (like Terraria's smoothing)
