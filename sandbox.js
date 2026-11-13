@@ -1422,7 +1422,6 @@
     // world tree trunks are scenery you walk through, so a trunk standing on or beside a block does not stop it sloping (TREE BASES)
     var nl = function (k) { return tiles[k] === T.LOG && orig[k] === T.LOG; }, fr = function (k) { return rampFree(tiles[k]) || nl(k); }, so = function (k) { return TILES[tiles[k]].solid && !nl(k); };
     var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !fr(ix - W)) return 0;
-    if (nl(ix - W)) return 0;   // TREES ON HILLS: the block a trunk stands on stays flat, so the tree's foot sits on the ground (a sloped block under it left it hanging in the air)
     var sL = so(ix - 1), sR = so(ix + 1);
     var step = function (k) { return fr(k) && TILES[tiles[k + W]].solid; };   // open beside, with ground one block lower
     if (!sL && !sR) return step(ix - 1) && step(ix + 1) ? 1 : 0;   // a lone block sticking up one step: a low half-height bump (like Terraria's smoothing)
@@ -16116,13 +16115,13 @@
     var t = j, f = j, dx, dy; while (get(i, t - 1) === T.LOG && j - t < 24) t--; while (get(i, f + 1) === T.LOG && f - j < 24) f++;
     var sig = (t * 131 + f) | 0;
     for (dy = -2; dy <= 2; dy++) for (dx = -2; dx <= 2; dx++) sig = (Math.imul(sig, 31) + get(i + dx, j + dy)) | 0;
-    sig = (Math.imul(sig, 31) + get(i, t - 1) + get(i - 1, t - 1) * 7 + get(i + 1, t - 1) * 13 + (canStyle(i) === 2 && trunkTree(i, j) ? 999 : 0)) | 0;
+    sig = (Math.imul(sig, 31) + get(i, t - 1) + get(i - 1, t - 1) * 7 + get(i + 1, t - 1) * 13 + (canStyle(i) === 2 && trunkTree(i, j) ? 999 : 0) + (j + 1 < H ? shapeAt((j + 1) * W + i) * 7919 : 0)) | 0;
     var e = TLC.get(ix);
     if (!e || e.sig !== sig) { e = { sig: sig, cv: treePix(i, j) }; if (TLC.size > 3000) TLC.clear(); TLC.set(ix, e); }
     if (!e.cv) return false;
     if (under) drawBackRock(g, i, j, sx, sy);
     var u = ts / 16, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
-    g.drawImage(e.cv, sx - 8 * u, sy - 8 * u, 32 * u, 32 * u); g.imageSmoothingEnabled = sm;
+    g.drawImage(e.cv, sx - 8 * u, sy - 8 * u, 32 * u, e.cv.height * u); g.imageSmoothingEnabled = sm;
     return true;
   }
   // SNAGS (the Ember Bog's dead trees, and Malcruor's): drawn like the other trees now, a round tapering trunk with a splintered top and real
@@ -16137,8 +16136,10 @@
   }
   function treePix(i, j) {   // one trunk block as 32x32 art px (the block is the middle 16x16; the rest is room for roots and boughs), or null
     var ix = j * W + i, up = get(i, j - 1), dn = get(i, j + 1), solidN = function (a, b) { var id = get(a, b); return TILES[id].solid && id !== T.LEAVES; };
-    var Ls = solidN(i - 1, j), Rs = solidN(i + 1, j), st = canStyle(i), N = 32, O = 8, buf = new Uint8Array(N * N), deco = new Uint8Array(N * N), x, y, k;
-    var set = function (x, y, v, dc) { x = Math.round(x) + O; y = Math.round(y) + O; if (x < 0 || y < 0 || x >= N || y >= N) return; buf[y * N + x] = v; if (dc) deco[y * N + x] = 1; };
+    // SLOPE FOOT: a trunk standing on a sloped block reaches on down into the slope, and its roots spread down the hill along the ground
+    var shD = !cave && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES ? shapeAt((j + 1) * W + i) : 0, slopeF = shD === 2 || shD === 3, ysf = function (x) { return shD === 2 ? 32 - x : 16 + x; };
+    var Ls = solidN(i - 1, j), Rs = solidN(i + 1, j), st = canStyle(i), N = 32, NH = slopeF ? 48 : 32, O = 8, buf = new Uint8Array(N * NH), deco = new Uint8Array(N * NH), x, y, k;
+    var set = function (x, y, v, dc) { x = Math.round(x) + O; y = Math.round(y) + O; if (x < 0 || y < 0 || x >= N || y >= NH) return; buf[y * N + x] = v; if (dc) deco[y * N + x] = 1; };
     var thick = function (ax, ay, bx, by, cx, cy, r0, r1, dc) {   // a tapering bough along a curve, lit on its upper side
       for (var s = 0; s <= 24; s++) { var t = s / 24, px2 = (1 - t) * (1 - t) * ax + 2 * t * (1 - t) * cx + t * t * bx, py2 = (1 - t) * (1 - t) * ay + 2 * t * (1 - t) * cy + t * t * by, r = r0 + (r1 - r0) * t;
         for (var yy = Math.floor(py2 - r); yy <= py2 + r; yy++) for (var xx = Math.floor(px2 - r); xx <= px2 + r; xx++) { var d = (xx - px2) * (xx - px2) + (yy - py2) * (yy - py2); if (d <= r * r) set(xx, yy, yy < py2 - r * 0.3 ? 4 : yy > py2 + r * 0.4 ? 2 : 3, dc); } }
@@ -16151,7 +16152,7 @@
       if (nb.length === 2) thick(8 + nb[0][0] * 12, 8 + nb[0][1] * 12, 8 + nb[1][0] * 12, 8 + nb[1][1] * 12, 8 + (nb[0][0] + nb[1][0]) * 1.5, 8 + (nb[0][1] + nb[1][1]) * 1.5 + 1, 2.8, 1.7, true);
       else nb.forEach(function (o) { var near = toTrunk(o); thick(8, 8, 8 + o[0] * 12, 8 + o[1] * 12, 8 + o[0] * 5, 8 + o[1] * 6 - 1, near ? 2.2 : 1.8, near ? 2.8 : 1.6, true); });
       if (nb.length === 1) { var ox2 = -nb[0][0], oy2 = -nb[0][1] || -1; thick(8, 8, 8 + ox2 * 6, 8 + oy2 * 5, 8 + ox2 * 3, 8 + oy2 * 3 - 1, 2, 1, true); set(8 + ox2 * 6, 8 + oy2 * 5 - 1, 5, true); set(8 + ox2 * 7, 8 + oy2 * 5, 5, true); }
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, NH, deco); return pxCanvas(buf, N, NH, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     if (st === 2 && dn === T.AIR) { if (get(i - 1, j + 1) === T.LOG && bendUp(i - 1, j + 1) === 1) bd = -1; else if (get(i + 1, j + 1) === T.LOG && bendUp(i + 1, j + 1) === -1) bd = 1; }
     if (SN || up === T.LOG || up === T.LEAVES || bb || bd || (dn === T.LOG || TILES[dn].solid) && !Ls && !Rs) {   // an upright trunk block (a snag's trunk always)
@@ -16163,10 +16164,10 @@
       var twinL = get(i + 1, j) === T.LOG && get(i + 1, j - 1) !== T.AIR && get(i + 1, j + 1) !== T.AIR, twinR = get(i - 1, j) === T.LOG && get(i - 1, j - 1) !== T.AIR && get(i - 1, j + 1) !== T.AIR;
       var isFoot = TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES, hgt = foot - top + 1;
       var rL = isFoot && get(i - 1, j) === T.LOG && get(i - 1, j - 1) === T.AIR, rR = isFoot && get(i + 1, j) === T.LOG && get(i + 1, j - 1) === T.AIR;
-      for (y = 0; y < 16; y++) {
-        var tv = (j - top + y / 16) / Math.max(1, hgt), w = st === 2 ? 7 : st === 4 ? 6 + tv * 3 : 7 + tv * 3, c = 8 + bb * 8 * (1 - y / 16) + bd * 8 * (y / 16);
+      for (y = 0; y < (slopeF && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES ? 27 : 16); y++) {
+        var tv = (j - top + Math.min(16, y) / 16) / Math.max(1, hgt), w = st === 2 ? 7 : st === 4 ? 6 + tv * 3 : 7 + tv * 3, c = 8 + bb * 8 * (1 - y / 16) + bd * 8 * (y / 16);
         if (st === 3 && (get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG) && up !== T.AIR && !twinL && !twinR) w = 13 + tv * 2;   // the dark oak's trunk stays thick into the crown
-        if (isFoot && y >= 9) w += Math.pow(y - 8, 1.35) * 0.9;   // the foot flares out
+        if (isFoot && y >= (slopeF ? 15 : 9)) w += Math.pow(y - (slopeF ? 14 : 8), 1.35) * (slopeF ? 0.75 : 0.9);   // the foot flares out (lower down, into the slope, when it stands on one)
         var Lx = Math.round(c - w / 2), Rx = Math.round(c + w / 2) - 1, inkL = true, inkR = true;
         if (twinL) { Lx = Math.round(2 + (1 - tv) * 2); Rx = 16; inkR = false; }   // the dark oak's two-wide trunk: one thick trunk over both blocks
         if (twinR) { Lx = -1; Rx = Math.round(13 - (1 - tv) * 2); inkL = false; }
@@ -16178,6 +16179,7 @@
           if (st !== 2) for (var gk = 0; gk < (twinL || twinR ? 2 : 2); gk++) { var gx = Lx + Math.round((gk + 1) * (Rx - Lx) / 3) + (thash(i * 3 + gk, (j * 16 + y) / 5 | 0, 9) > 0.5 ? 1 : 0); if (x === gx && x > Lx && x < Rx) tn = Math.max(2, tn - 1) === tn ? 1 : tn - 1; }   // bark grooves running up the trunk
           if (st === 2 && ((j * 16 + y) % 5) === 0 && x > Lx && x < Rx) tn = 2; else if (st === 2 && ((j * 16 + y) % 5) === 1 && x > Lx && x < Rx) tn = 4;   // palm rings
           if ((x === Lx && inkL) || (x === Rx && inkR)) tn = 1;
+          if (slopeF && isFoot && y > ysf(x) + 1.5) continue;   // (below the hillside: hidden in the ground)
           set(x, y, tn);
         }
         if (st === 4 && world.bio[clamp(i, 0, W - 1)] === 2 && thash(i, j * 16 + y, 12) > 0.86) set(Lx + 1, y, 6);   // frost on the bark
@@ -16188,19 +16190,25 @@
         var gn = get(i + s0, j + 1); if (TILES[gn].solid || gn === T.LOG || (s0 < 0 ? Ls : Rs)) continue; var dl = TILES[get(i + s0, j + 2)].solid ? 23 : 21;
         thick(8 + s0 * 3, 10, 8 + s0 * 12, dl, 8 + s0 * 9, 13, 3, 1.2, true); thick(8 + s0 * 2, 12, 8 + s0 * 7, dl + 0.5, 8 + s0 * 5, 17, 2.2, 0.9, true);
       }
-      if (isFoot && !twinL && !twinR) for (var s = -1; s <= 1; s += 2) {   // little roots gripping the ground
+      if (slopeF && isFoot && !twinL && !twinR && st !== 2) {   // roots down the hill: two long ones along the slope on the low side, a short one into the high side
+        var LO = shD === 2 ? -1 : 1, onDown = TILES[get(i + LO, j + 2)].solid;   // (the long root only where the hill goes on down)
+        if (onDown) thick(8 + LO * 3, 19, 8 + LO * 14, ysf(8 + LO * 14) + 0.5, 8 + LO * 9, ysf(8 + LO * 9) - 1.5, 2.8, 1.1, true);
+        thick(8 + LO * 1, 22, 8 + LO * 8, ysf(8 + LO * 8) + 1, 8 + LO * 5, ysf(8 + LO * 5) - 0.5, 2.1, 0.9, true);
+        thick(8 - LO * 3, 18, 8 - LO * 9, ysf(8 - LO * 9) + 0.5, 8 - LO * 6, ysf(8 - LO * 6) - 1, 2.2, 0.9, true);
+      }
+      if (isFoot && !twinL && !twinR && !slopeF) for (var s = -1; s <= 1; s += 2) {   // little roots gripping the ground
         if ((s < 0 ? Ls || rL : Rs || rR) || st === 2) continue; var ln = 4 + thash(i, s, 61) * 4;
         thick(8 + s * 4, 11, 8 + s * (5 + ln), 16.5, 8 + s * (4 + ln * 0.4), 15, 2.2, 0.8, true);
       }
       if (j > top + 1 && j < foot - 1) for (var s3 = -1; s3 <= 1; s3 += 2) if (isLeaf(i + s3, j) && !isLeaf(i, j - 1) && !(twinL && s3 > 0) && !(twinR && s3 < 0)) thick(8 + s3 * 3, 12, 8 + s3 * 13, 7, 8 + s3 * 8, 12, 2.2, 1.2, true);   // a bough into a leafy tuft
-      outlinePx(buf, N, N, deco);
-      return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, NH, deco);
+      return pxCanvas(buf, N, NH, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     if (up === T.AIR && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES) {   // a root block beside the foot: a buttress root sloping down from the trunk
       var sd = get(i - 1, j) === T.LOG && trunkTree(i - 1, j) ? -1 : get(i + 1, j) === T.LOG && trunkTree(i + 1, j) ? 1 : 0; if (!sd) return null;
       var te = sd > 0 ? 20 : -4, fr = sd > 0 ? -1 : 16;
       for (x = Math.min(te, fr); x <= Math.max(te, fr); x++) { var f2 = (x - fr) / (te - fr), ytop = 16 - 15.5 * Math.pow(Math.max(0, f2), 1.9); for (y = Math.ceil(ytop); y < 16; y++) set(x, y, y - ytop < 1.5 ? 4 : y - ytop < 4 ? 3 : 2, true); }
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, NH, deco); return pxCanvas(buf, N, NH, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     if (up !== T.LOG && dn !== T.LOG && (get(i - 1, j) === T.LOG || get(i + 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG)) {   // a side branch block: a bough
       if (TILES[dn].solid && dn !== T.LEAVES) return null;
@@ -16209,7 +16217,7 @@
       var lL = get(i - 1, j) === T.LOG || get(i - 1, j + 1) === T.LOG, lR = get(i + 1, j) === T.LOG || get(i + 1, j + 1) === T.LOG;
       var yl = get(i - 1, j) === T.LOG ? 8 : 15, yr = get(i + 1, j) === T.LOG ? 8 : 15;
       thick(lL ? -5 : 3, lL ? yl : 8, lR ? 21 : 13, lR ? yr : 8, 8, 8, 3, 2.4, true);
-      outlinePx(buf, N, N, deco); return pxCanvas(buf, N, N, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
+      outlinePx(buf, N, NH, deco); return pxCanvas(buf, N, NH, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
     return null;
   }
@@ -25652,7 +25660,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__sbx.dbg = { sel: function () { return [sel, aim.down, cool, WC, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
+  window.__sbx.dbg = { shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WC, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
