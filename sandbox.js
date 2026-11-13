@@ -19843,7 +19843,7 @@
   function tideSpring(df) { var w = ((df % 7) + 7) % 7, d = Math.abs(w - 6.5); d = Math.min(d, 7 - d); var k = clamp(1 - d / 1.7, 0, 1); return k * k * (3 - 2 * k); }
   function tideOff(df) {   // how far below mean sea level the water stands (rows): normal tides -0.7..+3.5, spring tides -1.4..+8.6
     var sf = tideSpring(df), mid = 1.4 + 2.2 * sf, amp = 2.1 + 2.9 * sf;
-    return mid + amp * Math.cos(df * Math.PI * 4 - Math.PI * 2 / 3);   // lows at about 8 in the morning and 8 at night
+    return Math.max(0, mid + amp * Math.cos(df * Math.PI * 4 - Math.PI * 2 / 3));   // lows at about 8 in the morning and 8 at night (never above the usual level: no high tide over the dock)
   }
   var VAULT_OPEN = 7.6;   // the vault door unseals when the water is this far down (only spring lows get there)
   function springIdx() { return Math.floor((tideDayF() + 0.5) / 7); }
@@ -20630,7 +20630,13 @@
   var OCNAT = {}; ["SAND", "SHORE", "SILT", "ROCK", "DEEP", "CPINK", "CBLUE", "CORANGE", "GLOW", "BED"].forEach(function (k) { if (OT[k] !== undefined) OCNAT[OT[k]] = 1; });
   var OCINK = {};
   function ocInk(id) { if (OCINK[id]) return OCINK[id]; var h = (OTD[id] && OTD[id].c) || "#555555", v = [1, 3, 5].map(function (q) { return parseInt(h.slice(q, q + 2), 16); }); return (OCINK[id] = "rgb(" + v.map(function (x) { return Math.round(x * 0.38); }).join(",") + ")"); }
-  function ocOpen(i, j) { var t2 = ocT(i, j), d2 = OTD[t2]; return !d2 || !d2.solid; }
+  var OCOBJ = {}; ["CHEST", "OPEN", "BARREL", "LAMP", "CLAM", "CANNON", "LADDER", "ROPE", "TUBE", "POST"].forEach(function (k) { if (OT[k] !== undefined) OCOBJ[OT[k]] = 1; });
+  function ocInCave(i, j) { var sc = OCS, m = sc && sc.m; return !!(sc && sc.main && m.tcave && i >= m.tcave.x0 && i <= 10 && j >= m.tcave.y0 && j <= m.tcave.y1); }
+  function ocOpen(i, j) {   // PIER: does this side of a block show its rounded, inked edge? Water and air do; a chest, barrel or lamp sitting on it does too (it is an object, not ground);
+    var t2 = ocT(i, j), d2 = OTD[t2];   // the Tide Cave's stone back wall does not: blocks against it merge into it like the land does
+    if (ocInCave(i, j) && (!d2 || !d2.solid || OCOBJ[t2])) return false;
+    return !d2 || !d2.solid || !!OCOBJ[t2];
+  }
   // SEA FLOOR IN THE HOUSE STYLE: sand, silt, rock and coral are painted smooth (soft lit-from-the-top fills, ripples, round stones, coral
   // polyps, glowing sea grass), one canvas per block and variant at 3x, instead of the 16 px pixel tiles. ocNatTile clips and rims them.
   var OSM = {};
@@ -20968,13 +20974,13 @@
     return CAUS;
   }
   function ocCaustics(g, surf, t, k, solid) {   // k: strength (daylight); bands get weaker with depth. solid: a path of the sea floor cells
-    if (k < 0.03 || liteFx()) return; var F = causticFrames(), fr = F[Math.floor(t * 8) % F.length], T2 = ts * 6, bands = 3, bh = ts * 8;
-    var offx = ((ox * 0.96) % T2 + T2) % T2 - T2, offy = ((oy) % T2 + T2) % T2 - T2;
+    if (k < 0.03 || liteFx()) return; var F = causticFrames(), fp = t * 5, fi = Math.floor(fp), fq = fp - fi, frA = F[fi % F.length], frB = F[(fi + 1) % F.length], T2 = ts * 6, bands = 3, bh = ts * 8;   // SMOOTH: each frame fades into the next (they used to flip 8 times a second)
+    var offx = ((ox * 0.96 + t * ts * 0.25) % T2 + T2) % T2 - T2, offy = ((oy) % T2 + T2) % T2 - T2;
     g.save(); g.globalCompositeOperation = "lighter"; g.imageSmoothingEnabled = true;
     for (var b = 0; b < bands; b++) { var y0 = surf + b * bh, y1 = y0 + bh; if (y1 < 0 || y0 > vh) continue; g.save(); g.beginPath(); g.rect(0, Math.max(0, y0), vw, Math.min(vh, y1) - Math.max(0, y0)); g.clip();
-      var fall = Math.pow(1 - b / bands, 1.6), tile = function () { for (var yy = offy; yy < vh; yy += T2) { if (yy + T2 < y0 || yy > y1) continue; for (var xx = offx; xx < vw; xx += T2) g.drawImage(fr, xx, yy, T2, T2); } };
-      if (!solid) { g.globalAlpha = k * 0.07 * fall; tile(); }
-      if (solid) { g.save(); solid(); g.clip(); g.globalAlpha = k * 0.42 * fall; tile(); g.restore(); }   // bright on the sea floor and rocks, where the light lands
+      var fall = Math.pow(1 - b / bands, 1.6), tile = function () { for (var yy = offy; yy < vh; yy += T2) { if (yy + T2 < y0 || yy > y1) continue; for (var xx = offx; xx < vw; xx += T2) { g.globalAlpha = ga * (1 - fq); g.drawImage(frA, xx, yy, T2, T2); g.globalAlpha = ga * fq; g.drawImage(frB, xx, yy, T2, T2); } } };
+      var ga = 0; if (!solid) { ga = k * 0.07 * fall; tile(); }
+      if (solid) { g.save(); solid(); g.clip(); ga = k * 0.3 * fall; tile(); g.restore(); }   // bright on the sea floor and rocks, where the light lands
       g.restore(); }
     g.restore(); g.imageSmoothingEnabled = false;
   }
@@ -21031,6 +21037,7 @@
       var id = sc.t[j * OCW + i], d = OTD[id], sx = ox + i * ts, sy = oy + j * ts;
       if (id === OT.WATER || id === OT.AIR) { if (sc.main && m.tcave && i >= m.tcave.x0 && i <= 10 && j >= m.tcave.y0 && j <= m.tcave.y1) { var smt = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(ocWall((j & 1) * 2 + ((i * 7 + j * 13) % 5 === 0 ? 1 : 0)), sx, sy, ts, ts); g.imageSmoothingEnabled = smt; } continue; }   // the Tide Cave: a dark sandstone back wall
       if (id === OT.AIRP) { g.fillStyle = "rgba(190,240,255,.22)"; g.fillRect(sx, sy, ts, ts); if (ocT(i, j - 1) !== OT.AIRP && !reduce) { g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(sx, sy, ts, Math.max(2, ts * 0.08)); } if (ocT(i, j + 1) !== OT.AIRP) { g.fillStyle = "rgba(232,251,255,.7)"; g.fillRect(sx, sy + ts - 2 + Math.sin(t * 3 + i) * 1.5, ts, 2); } continue; }
+      if (ocInCave(i, j) && (d.plant || OCOBJ[id] || !d.solid)) { var smw = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(ocWall((j & 1) * 2), sx, sy, ts, ts); g.imageSmoothingEnabled = smw; }   // the Tide Cave's back wall behind what stands in it
       if (d.plant) { ocPlant(g, id, sx, sy, i, j, now); if (d.lit) lights.push([i + 0.5, j + 0.6, d.lit, "255,90,160"]); continue; }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (OCNAT[id]) ocNatTile(g, A, id, v, i, j, sx, sy); else if (id === OT.DOCK || id === OT.POST || id === OT.WOOD) { var smo = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(ocSmooth(id, v), sx, sy, ts, ts); g.imageSmoothingEnabled = smo; } else g.drawImage(A, v * 16, id * 16, 16, 16, sx, sy, ts, ts);
