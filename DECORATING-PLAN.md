@@ -265,3 +265,32 @@ Not done yet:
 - Bookshelf reading (opening a book to read it) is not built; bookshelves store books like before.
 - Old rug tiles stay tiles (they still work); new rugs go down as floor decorations.
 - Lamp blocks that only have the older 16-pixel picture (no HD art) keep their flame picture when switched off; their light and glow do switch off.
+
+### Stage 8: done (13 Nov)
+What changed:
+- **Playing together.** Every decorating change is sent to the other players and applied there: placing, taking, flipping, dyeing, lighting or snuffing, moving a decoration or a piece of furniture with everything on it, putting away, breaking, and the per-cell changes (flipped furniture, lamps switched off, dyed furniture). Flipping furniture was not shared before at all; it is now.
+  - While someone carries a piece, what was on it waits out of sight on everyone else's screen and reappears on it where it is set down. If they put it away instead, it disappears for everyone.
+  - Decorations made while playing together get the maker's tag in their id, so two players can never make the same one.
+  - A player joining while the host carries something sees it the same way as everyone else.
+  - A guest's own world is never touched: anything they were carrying goes in their bag before they join, and their carried pieces stay their own.
+  - Guests can't move or put away furniture that stores items (only the host can open storage, so a guest moving it could copy its contents).
+  - A guest never drops items for records it can't place; the host's world decides.
+- **Old saves.** Once per world, small pieces you placed as tiles on furniture (candles, vases, books and the rest) and old rug tiles become decorations in the same spot, flipped and switched off as they were. They can then be moved, nudged and dyed. Pieces that don't sit on furniture (a candle on the floor) and anything the world generated stay as they are. A message says how many changed.
+- **Guards.**
+  - A world holds at most 4,000 decorations, which keeps a save well inside the cloud's limit (900k characters; 4,000 decorations are about 260k).
+  - The computed position of each decoration is no longer written into saves (it made them bigger).
+  - Records arriving from other players are checked (known item, valid parent, offset and id) before they go in.
+- Cloud backup needs no change: decorations are part of the world save it already uploads.
+
+Tested (in game, scripted, `tdeco8*.js`, two browser pages with the messages carried between them):
+- A guest joins and sees the host's table, candle, plate and bread.
+- The host flips, dyes and snuffs the candle: the guest matches.
+- The guest puts a vase on the host's bookshelf: the host matches.
+- The host lifts the plate with its bread and sets it down elsewhere; lifts the table with G and places it: the guest matches after each step.
+- The guest is refused when moving the host's bookshelf (storage); the guest breaks the table: both clear.
+- Old save: a candle (switched off) and a vase placed as tiles on a table, and a rug tile, become decorations; a candle on the floor stays a tile; running it again converts nothing.
+- Saves no longer contain computed positions. Stages 2–7 tests still pass. Smoke test: `AUDIT []`, `ERRORS 0`.
+
+Not done yet:
+- Not tested on the live relay server with two real devices. The test passes messages between two pages directly; the live relay adds the same "from" stamp (a clash with it was found and fixed).
+- Stage 9 (full regression, polish and new content) is on hold, as asked.

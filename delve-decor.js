@@ -105,7 +105,9 @@
     function slotOf(pk, sid) { var pd = parentDef(pk); if (!pd) return null; var L = pd.def.slots || []; for (var i = 0; i < L.length; i++) if (L[i].id === sid) return L[i]; return null; }
     function wOf(k) { var d = ITEM[k], s = env.size ? env.size(k) : null; return d && d.w ? d.w : s ? Math.max(2, Math.round(s[0] * (d && d.sc || 1))) : 16; }
     function hOf(k) { var d = ITEM[k], s = env.size ? env.size(k) : null; return d && d.h ? d.h : s ? Math.max(2, Math.round(s[1] * (d && d.sc || 1))) : 16; }
-    function relink() { kids = {}; for (var id in O) { var r = O[id]; (kids[r.p] = kids[r.p] || []).push(r); } idx = null; }
+    var N = 0, LIMIT = 4000;   // a world holds at most LIMIT decorations (keeps saves well inside the cloud's size limit)
+    function relink() { kids = {}; N = 0; for (var id in O) { var r = O[id]; N++; (kids[r.p] = kids[r.p] || []).push(r); } idx = null; }
+    function seq(a) { var m = /(\d+)$/.exec(a.id); return m ? +m[1] : 0; }   // creation order (ids made while playing together carry the player's prefix)
     function childrenOf(pk) { return kids[pk] || []; }
     function depth(rec) { var d = 0, r = rec; while (r && r.p && r.p.charAt(0) === "d" && d < 6) { r = O[r.p.slice(2)]; d++; } return d; }
 
@@ -127,9 +129,11 @@
     }
     function add(pk, sid, k, o, extra) {
       var why = check(pk, sid, k, o, null, extra && extra.oy); if (why) return { ok: false, why: why };
-      var id = String(store.n++), rec = { id: id, k: k, p: pk, s: sid, o: Math.round(o) };
+      if (N >= LIMIT) return { ok: false, why: "This world already holds " + LIMIT + " decorations." };
+      var id = (env.idp ? env.idp() : "") + String(store.n++); while (O[id]) id = (env.idp ? env.idp() : "") + String(store.n++);
+      var rec = { id: id, k: k, p: pk, s: sid, o: Math.round(o) };
       if (extra) for (var e in extra) if (extra[e] !== undefined) rec[e] = extra[e];
-      O[id] = rec; (kids[pk] = kids[pk] || []).push(rec); idx = null; return { ok: true, rec: rec };
+      O[id] = rec; N++; (kids[pk] = kids[pk] || []).push(rec); idx = null; return { ok: true, rec: rec };
     }
     function subtree(id) { var out = [], st = [id]; while (st.length) { var cur = st.pop(), r = O[cur]; if (!r) continue; out.push(r); childrenOf("d:" + cur).forEach(function (c) { st.push(c.id); }); } return out; }
     function remove(id) { var gone = subtree(id); gone.forEach(function (r) { delete O[r.id]; }); relink(); return gone; }   // the record and everything on it
@@ -158,14 +162,14 @@
     // the chunk index: 8 x 8 block cells -> the records whose art touches them (rebuilt only after a change)
     function index() {
       if (idx) return idx; idx = {}; gen++;
-      for (var id in O) { var r = O[id], w = where(r); if (!w) continue; r._w = w;
+      for (var id in O) { var r = O[id], w = where(r); if (!w) { if (r._w) r._w = null; continue; } Object.defineProperty(r, "_w", { value: w, writable: true, configurable: true, enumerable: false });   // (not saved)
         for (var cy = Math.floor((w.y - w.h) / 8); cy <= Math.floor(w.y / 8); cy++) for (var cx = Math.floor(w.x / 8); cx <= Math.floor((w.x + w.w) / 8); cx++) { var key = cx + "," + cy; (idx[key] = idx[key] || []).push(r); } }
       return idx;
     }
     function inView(x0, y0, x1, y1) {   // records in this block rectangle, each once, in draw order (back to front)
       var I = index(), seen = {}, out = [];
       for (var cy = Math.floor(y0 / 8); cy <= Math.floor(y1 / 8); cy++) for (var cx = Math.floor(x0 / 8); cx <= Math.floor(x1 / 8); cx++) (I[cx + "," + cy] || []).forEach(function (r) { if (!seen[r.id]) { seen[r.id] = 1; out.push(r); } });
-      return out.sort(function (a, b) { return (a._w.layer - b._w.layer) || (a._w.d - b._w.d) || (+a.id - +b.id); });
+      return out.sort(function (a, b) { return (a._w.layer - b._w.layer) || (a._w.d - b._w.d) || (seq(a) - seq(b)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); });
     }
     function hit(x, y) {   // the top-most record under a world point (blocks), or null
       var L = inView(x - 1, y - 1, x + 1, y + 1); for (var i = L.length - 1; i >= 0; i--) { var w = L[i]._w; if (x >= w.x && x <= w.x + w.w && y >= w.y - w.h && y <= w.y) return L[i]; } return null;
@@ -178,6 +182,7 @@
       for (var id in O) { var r = O[id];
         if (!r || typeof r !== "object" || typeof r.k !== "string" || typeof r.p !== "string" || typeof r.s !== "string" || !(r.o >= 0) || r.id !== id) { delete O[id]; bad++; continue; }
         if (r.p === "d:" + id) { delete O[id]; bad++; continue; }
+        if (Object.prototype.propertyIsEnumerable.call(r, "_w")) delete r._w;   // (older saves kept the computed position)
         if (+id >= store.n) store.n = +id + 1;
       }
       relink();
@@ -218,11 +223,18 @@
         out.push({ x0: x0, x1: x1, y: y, sl: sl }); });
       return out;
     }
-    function count() { return Object.keys(O).length; }
+    function count() { return N; }
+    // PLAYING TOGETHER (Stage 8): records that arrive from another player go in as they are (they were checked on their machine)
+    function put(rec) {
+      if (!rec || typeof rec !== "object" || typeof rec.id !== "string" || !/^[a-z0-9_]{1,24}$/i.test(rec.id) || typeof rec.k !== "string" || !ITEM[rec.k] || typeof rec.p !== "string" || typeof rec.s !== "string" || !(rec.o >= 0) || O[rec.id] || N >= LIMIT) return false;
+      var r = { id: rec.id, k: rec.k, p: rec.p, s: rec.s, o: Math.round(rec.o) }; ["f", "oy", "v", "st"].forEach(function (f) { if (rec[f] > 0 && rec[f] < 64) r[f] = rec[f] | 0; });
+      O[r.id] = r; relink(); return true;
+    }
+    function patch(id, f) { var r = O[id]; if (!r || !f) return false; ["f", "v", "st", "oy"].forEach(function (q) { if (f[q] !== undefined) { if (f[q] > 0 && f[q] < 64) r[q] = f[q] | 0; else delete r[q]; } }); idx = null; return true; }
     function all() { var a = []; for (var id in O) a.push(O[id]); return a; }
     relink();
     return { store: store, check: check, add: add, remove: remove, removeParent: removeParent, reparent: reparent, children: childrenOf, subtree: subtree,
-      where: where, locate: locate, slotSpans: slotSpans, inView: inView, hit: hit, validate: validate, count: count, all: all, slotOf: slotOf, parentDef: parentDef, dirty: function () { idx = null; }, gen: function () { index(); return gen; }, wOf: wOf, hOf: hOf };
+      put: put, patch: patch, LIMIT: LIMIT, where: where, locate: locate, slotSpans: slotSpans, inView: inView, hit: hit, validate: validate, count: count, all: all, slotOf: slotOf, parentDef: parentDef, dirty: function () { idx = null; }, gen: function () { index(); return gen; }, wOf: wOf, hOf: hOf };
   }
 
   var api = { U: U, CATS: CATS, FURN: FURN, ITEM: ITEM, create: create };
