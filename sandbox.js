@@ -527,7 +527,7 @@
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
   var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true };
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.chunks === false) OPT.chunks = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
-  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; } catch (e) {}
+  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pixbug === false) OPT.pixbug = false; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -5792,6 +5792,9 @@
       var leg = t * 14;
       g.save(); g.translate(!e.def && h > 0 ? Math.sin(now / 1000 * 90) * 1.6 * h : 0, 0); g.rotate(-f * 0.22 * h); g.scale(f * (1 + 0.5 * pd + 0.16 * h), 1 - 0.75 * pd - 0.14 * h);
       if (!e.def) eGlow(g, 0, -2, 26, d.glow, 0.35);
+      var bmv = e.st === "patrol" || e.st === "charge" || e.st === "retreat", bspr = OPT.pixbug !== false && pixFrame("bug", e.st === "charge" ? "charge" : "walk", bmv && !e.def ? Math.floor(t * (e.st === "charge" ? 16 : 9)) % 4 : 0, flash);
+      if (bspr) { var bu = 30 / 32; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high"; g.drawImage(bspr, -21 * bu, -32 * bu, 48 * bu, 32 * bu); g.imageSmoothingEnabled = false; }   // PIXEL BRAMBLE BUG (hand-drawn frames, delve-pixmobs.js)
+      else {
       var bln = flash ? "#fff" : "#12060f";
       for (var i = 0; i < 3; i++) { var lx = -9 + i * 9, ph = (e.st === "patrol" || e.st === "charge" || e.st === "retreat") ? Math.sin(leg + i * 2.1) * 3 : 0; aLimb(g, [[lx, -7], [lx + ph * 0.4 + 1.2, -3.6], [lx + ph, -0.6]], 1.8, flash ? "#ffe9ee" : "#3a1d42", bln); }
       var sg = g.createLinearGradient(0, -24, 0, -4); sg.addColorStop(0, flash ? "#fff" : "#5a2d62"); sg.addColorStop(1, flash ? "#ffd6df" : "#2a1432");
@@ -5806,6 +5809,7 @@
       g.fillStyle = e.st === "charge" ? "#ffd0c0" : "#ffb0a0"; g.beginPath(); g.ellipse(15.5, -9.5, 2.3, 3, 0, 0, 7); g.ellipse(11, -9.5, 1.9, 2.6, 0, 0, 7); g.fill();
       g.fillStyle = "#2a0d18"; g.beginPath(); g.arc(16, -9.3, 1, 0, 7); g.arc(11.4, -9.3, 0.9, 0, 7); g.fill();
       g.strokeStyle = "#2a0d18"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(9, -13.5); g.lineTo(14, -11.6); g.moveTo(19, -12.8); g.lineTo(14.5, -11.6); g.stroke();
+      }
       g.restore();
     } else {
       var wind = e.st === "wind", lash = e.st === "lash", rec = e.st === "recover", air = !e.on && !e.def, pw = wind ? 1 - e.t / FROG.wind : 0, sxx = 1, syy = 1;
@@ -5865,6 +5869,12 @@
       g.fillStyle = e.hp / e.mx > 0.5 ? "#7dffb0" : e.hp / e.mx > 0.25 ? "#f2c14e" : "#ff6a5a"; g.fillRect(-14, -hb + 1, 28 * Math.max(0, e.hp / e.mx), 3);
     }
     g.restore();
+  }
+  var PXF = {};
+  function pixFrame(kind, st, n, flash) {   // a hand-drawn pixel frame enlarged to the screen's pixels (crisp), or null
+    if (typeof DelvePix === "undefined" || !DelvePix.has(kind)) return null; var src = DelvePix.frame(kind, st, n, flash); if (!src) return null;
+    var k = Math.max(1, Math.ceil(ts * dpr / 32)), key = kind + st + n + (flash ? "f" : "") + "_" + k; if (PXF[key]) return PXF[key];
+    var c = document.createElement("canvas"); c.width = src.width * k; c.height = src.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(src, 0, 0, c.width, c.height); return (PXF[key] = c);
   }
   function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
 
@@ -19032,6 +19042,7 @@
     if (storyOpen === 290 && /^(give|kit|gear|heal|map|zaruk|bmday)$/.test(k)) devOpen();   // keep the dev menu up for quick repeat taps
   }
   function devToggle(k) {
+    if (k === "pixbug") { OPT.pixbug = OPT.pixbug === false; optSave(); toast("Pixel Bramble Bug " + (OPT.pixbug ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     if (k === "chunks") { OPT.chunks = OPT.chunks === false; chkClear(); optSave(); toast("Fast world drawing " + (OPT.chunks ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     DEV[k] = !DEV[k]; if (k === "ghost" && DEV.ghost) DEV.fly = true; if (k === "fly" && !DEV.fly) DEV.ghost = false;
     if (k === "peace" && DEV.peace) enemies.length = 0; if (k === "fps") devFps();
@@ -27220,7 +27231,7 @@
     return L;
   }
   function devTabList(t) {   // the buttons of one tab (some are built from this world)
-    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"]].map(function (q) { return [q[1] + ": " + (DEV[q[0]] ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
+    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"], ["pixbug", "Pixel Bramble Bug", "Hand-drawn pixel art trial"]].map(function (q) { return [q[1] + ": " + ((q[0] === "pixbug" ? OPT.pixbug !== false : DEV[q[0]]) ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
     if (t === "time") return [["Morning", "time:60"], ["Afternoon", "time:200"], ["Dusk", "time:245"], ["Night", "time:300"], ["Dawn", "time:445"], ["Next day", "day"], ["Blood Moon now", "blood"], ["Blood Moon tonight", "bmday"], ["Falling star", "star"], ["Rainbow", "rainbow"]].map(function (q) { return [q[0], function () { devAct(q[1]); }]; });
     if (t === "spawn") return Object.keys(ENEMY).filter(function (k) { return !BOSS[k]; }).map(function (k) { return [ENEMY[k].n, function () { devAct("mob:" + k); }]; })
       .concat(Object.keys(BOSS).map(function (k) { return ["Boss: " + BOSS[k].n, function () { devAct("boss:" + k); }]; })).concat([["Clear all enemies", function () { devAct("clear"); }]]);
