@@ -817,6 +817,7 @@
     if (o.vf && typeof o.vf === "object") Object.keys(o.vf).forEach(function (k) { if (isFinite(o.vf[k])) d.vf[k] = clamp(Math.floor(o.vf[k]), 0, 999); });   // SKY VILLAGE friendship
     if (o.bird && typeof o.bird === "object" && BIRDK[o.bird.k]) d.bird = { k: o.bird.k, n: String(o.bird.n || "Pip").slice(0, 16) };   // BIRDS: your bird
     if (Array.isArray(o.gdrop) && o.wv === SW.WORLDVER) d.gdrop = o.gdrop.slice(-300);   // GROUND DROPS still lying around
+    if (Array.isArray(o.tdrop)) d.tdrop = o.tdrop.filter(function (E) { return E && /^t_/.test(E.k) && E.v > 0 && typeof E.id === "string"; }).slice(-20);   // DROPPED TOOLS (kept even if the world changed: they come back to you)
     if (o.pleaf && typeof o.pleaf === "object" && o.wv === SW.WORLDVER) Object.keys(o.pleaf).forEach(function (k) { if (o.pleaf[k]) d.pleaf[k] = 1; });   // leaves you placed (they never decay)
     if (o.cont && typeof o.cont === "object" && o.wv === SW.WORLDVER) { d.cont = {}; Object.keys(o.cont).slice(0, 4000).forEach(function (k) { var v = o.cont[k]; if (!v || !isFinite(v.d) || !v.L || typeof v.L !== "object" || !/^b\d+:\d+,\d+$/.test(k)) return; var L = {}; Object.keys(v.L).forEach(function (q) { if (ITEMS[q] && v.L[q] > 0) L[q] = Math.min(9999, v.L[q] | 0); }); d.cont[k] = { d: Math.floor(v.d), L: L }; }); }   // LOOT PACK: searched containers
     if (o.rzm && typeof o.rzm === "object" && o.wv === SW.WORLDVER) { d.rzm = {}; Object.keys(o.rzm).forEach(function (k) { if (/^\d+$/.test(k) && typeof o.rzm[k] === "string" && /^[0-9a-f]{1,400}$/.test(o.rzm[k])) d.rzm[k] = o.rzm[k]; }); }
@@ -9502,6 +9503,31 @@
     var fx = p.face || 1, d = { k: k, n: n, x: p.x + fx * 0.35, y: p.y - 1.05, vx: fx * (5.2 + Math.random() * 1.2), vy: -5.5 - Math.random() * 1.2, t: 0, on: false, ph: Math.random() * 6, toss: true };
     drops.push(d); if (drops.length > 400) drops.splice(0, drops.length - 400); S.st.tossed = (S.st.tossed || 0) + n;
   }
+  // ---------- DROPPING TOOLS: a pickaxe, weapon, bow, shovel, can, rod, hoe, bucket or net can be dropped like anything else. The one you
+  // drop stops being yours until you pick it back up (it keeps its tier and wear); it never vanishes on the ground, and if the game is
+  // reloaded before you pick it up it comes back to you. ----------
+  var TOOLF = { t_pick: ["tier", "pick"], t_weapon: ["wpn", "wpn"], t_bow: ["bow", ""], t_shovel: ["shovel", "shovel"], t_can: ["can", ""], t_rod: ["rod", ""], t_hoe: ["hoe", ""], t_bucket: ["bucket", ""], t_net: ["net", ""] };
+  function dropTool(k, fromCur) {
+    var F = TOOLF[k]; if (!F) return false; var v = S[F[0]]; if (!v) return false;
+    if (hp <= 0 || titleOpen) return false;
+    var E = { k: k, f: F[0], v: v, d: F[1] && S.dur[F[1]] != null ? S.dur[F[1]] : null, dk: F[1], bk: k === "t_bucket" ? S.bkt || "" : "", id: Math.random().toString(36).slice(2, 9) };
+    if (!S.tdrop) S.tdrop = []; S.tdrop.push(E);
+    S[F[0]] = 0; if (k === "t_bucket") S.bkt = ""; if (F[1] && S.dur) delete S.dur[F[1]];
+    if (!fromCur) { for (var i = 0; i < S.slots.length; i++) if (S.slots[i] && S.slots[i].k === k) S.slots[i] = null; }
+    delete S.inv[k]; if (S.extra) delete S.extra[k];
+    var tk = Object.keys(TOOLKEY).filter(function (t) { return TOOLKEY[t] === k; })[0]; if (sel === tk || sel === k) { sel = "pick"; bare = true; selSlot = -1; }
+    var nm = ITEMS[k].n; if (gdScene()) { sceneToss(k, 1); var sc = gdScene(); if (sc && sc.L.length) sc.L[sc.L.length - 1].tool = E; } else { tossDrop(k, 1); if (drops.length) drops[drops.length - 1].tool = E; }
+    syncTools(); ICO = {}; mine = null; reslot(); hbDirty = true; snd("coin"); toast("Dropped your " + nm + ". Walk over it to pick it back up.", "#cfe0e8"); save(); if (packOpen) renderPack(); else if (panelOpen) renderPanel();
+    return true;
+  }
+  function takeTool(E) {   // a dropped tool picked back up
+    if (S.tdrop) S.tdrop = S.tdrop.filter(function (q) { return q.id !== E.id; });
+    var cur = S[E.f] | 0, kd = E.f === "tier" ? "pick" : E.f, spare = SPK[kd] && kd !== "arm";
+    if (cur > 0 && spare) { var id = "sp_" + kd + E.v; if (SPK[kd].d && DUR[SPK[kd].d] && E.d != null) spwPush(id, E.d, DUR[SPK[kd].d][E.v]); give(id, 1, undefined, undefined, true); }
+    else if (cur > 0) { if (E.v > cur) { S[E.f] = E.v; if (E.dk && E.d != null) S.dur[E.dk] = E.d; } }
+    else { S[E.f] = E.v; if (E.dk && E.d != null) S.dur[E.dk] = E.d; if (E.k === "t_bucket") S.bkt = E.bk || ""; }
+    syncTools(); ICO = {}; reslot(); hbDirty = true; save(); return 1;
+  }
   function dropSolid(x, y) { var tx = Math.floor(x), ty = Math.floor(y); if (ty < 0) return false; if (ty >= H) return true; var id = get(tx, ty); return blocks(tx, ty) || (TILES[id].solid && id !== T.LEAVES); }
   function tickDrops(dt) {
     if (!cave && !HOME && !OCS) flushExtra();
@@ -9509,7 +9535,7 @@
     var px = p.x, py = p.y - 0.75;
     for (var i = drops.length - 1; i >= 0; i--) {
       var d = drops[i]; d.t += dt; d.ph += dt * 3;
-      if (d.t > DESPAWN && !d.bird) { drops.splice(i, 1); continue; }
+      if (d.t > DESPAWN && !d.bird && !d.tool) { drops.splice(i, 1); continue; }
       if (Math.abs(d.x - px) > 90) continue;   // far away: frozen where it lies
       if (d.bird) continue;   // being carried
       var dx = px - d.x, dy = py - d.y, dist = Math.sqrt(dx * dx + dy * dy), wet = TILES[get(Math.floor(d.x), Math.floor(d.y))].kind === "water";
@@ -9517,7 +9543,7 @@
       if (d.t > 0.45 && dist < 3.2 && !(d.full > 0) && !(d.toss && !d.away) && hp > 0) {   // close: it floats to you
         var pull = 14 / Math.max(0.6, dist); d.vx += dx / dist * pull * dt * 3; d.vy += dy / dist * pull * dt * 3; d.vx *= 0.9; d.vy *= 0.9; d.on = false;
         d.x += d.vx * dt; d.y += d.vy * dt;
-        if (dist < 0.75) { var got = give(d.k, d.n); if (got > 0) { text(d.x, d.y - 0.6, "+" + got + " " + ITEMS[d.k].n, ITEMS[d.k].gem || "#f6eedb"); if (Math.random() < 0.6) thud(640 + Math.random() * 120, 0.025); } d.n -= got; if (d.n <= 0) { drops.splice(i, 1); continue; } d.full = 2; }
+        if (dist < 0.75) { var got = d.tool ? takeTool(d.tool) : give(d.k, d.n); if (got > 0) { text(d.x, d.y - 0.6, "+" + got + " " + ITEMS[d.k].n, ITEMS[d.k].gem || "#f6eedb"); if (Math.random() < 0.6) thud(640 + Math.random() * 120, 0.025); } d.n -= got; if (d.n <= 0) { drops.splice(i, 1); continue; } d.full = 2; }
         continue;
       }
       if (d.full > 0) d.full -= dt;
@@ -9727,11 +9753,11 @@
         if (d.z <= 0) { d.z = 0; if (d.vz < -2.2) d.vz = -d.vz * 0.38; else { delete d.vz; d.vx = d.vy = 0; } }
       }
       if (!menuOpen && !titleOpen && !panelOpen && !packOpen) d.age = (d.age || 0) + dt;
-      if (d.age > DESPAWN) { L.splice(i, 1); continue; }
+      if (d.age > DESPAWN && !d.tool) { L.splice(i, 1); continue; }
       var dx = pl.x - d.x, dy = (pl.y - (sc.sea ? 0.4 : 0.1)) - d.y, dist = Math.sqrt(dx * dx + dy * dy);
       if (live && !(d.wait > 0) && dist < 1.6) {   // close: it slides to you
         if (dist < 0.55) {
-          var got = give(d.k, d.n); if (got > 0) { text(d.x, d.y - 0.6, "+" + got + " " + ITEMS[d.k].n, ITEMS[d.k].gem || "#f6eedb"); if (Math.random() < 0.6) thud(640 + Math.random() * 120, 0.025); }
+          var got = d.tool ? takeTool(d.tool) : give(d.k, d.n); if (got > 0) { text(d.x, d.y - 0.6, "+" + got + " " + ITEMS[d.k].n, ITEMS[d.k].gem || "#f6eedb"); if (Math.random() < 0.6) thud(640 + Math.random() * 120, 0.025); }
           d.n -= got; if (d.n <= 0) { L.splice(i, 1); continue; } d.wait = 1.5;   // still no room: it waits a moment before trying again
         } else { var pull = Math.min(dist, dt * 7); d.x += dx / dist * pull; d.y += dy / dist * pull; }
       }
@@ -9744,8 +9770,10 @@
     }
     g.imageSmoothingEnabled = sm;
   }
-  function dropsLoad() { drops = []; (Array.isArray(S.gdrop) ? S.gdrop : []).forEach(function (q) { if (q && ITEMS[q[0]] && q[1] > 0 && isFinite(q[2]) && isFinite(q[3])) drops.push({ k: q[0], n: Math.min(9999, q[1] | 0), x: +q[2], y: +q[3], vx: 0, vy: 0, t: isFinite(q[4]) ? Math.max(1, +q[4]) : 1, on: false, ph: Math.random() * 6 }); }); fellQ = []; decayQ = []; }
-  function dropsSave() { S.gdrop = drops.filter(function (d) { return !d.bird; }).slice(-300).map(function (d) { return [d.k, d.n, +d.x.toFixed(2), +d.y.toFixed(2), Math.round(d.t)]; }); }
+  function dropsLoad() { drops = []; (Array.isArray(S.gdrop) ? S.gdrop : []).forEach(function (q) { if (q && ITEMS[q[0]] && q[1] > 0 && isFinite(q[2]) && isFinite(q[3])) var tE = null; if (q[5]) { tE = (S.tdrop || []).filter(function (E) { return E.id === q[5]; })[0]; if (!tE) return; } drops.push({ k: q[0], n: Math.min(9999, q[1] | 0), x: +q[2], y: +q[3], vx: 0, vy: 0, t: isFinite(q[4]) ? Math.max(1, +q[4]) : 1, on: false, ph: Math.random() * 6, tool: tE || undefined }); }); fellQ = []; decayQ = [];
+    var lost = (S.tdrop || []).filter(function (E) { return !drops.some(function (d) { return d.tool === E; }); });   // a tool dropped somewhere that isn't kept (a cave, the homestead, the sea): it comes back to you
+    if (lost.length) setTimeout(function () { lost.forEach(function (E) { takeTool(E); toast("Your dropped " + (ITEMS[E.k] ? ITEMS[E.k].n : "tool") + " came back to you.", "#cfe0e8"); }); }, 1500); }
+  function dropsSave() { S.gdrop = drops.filter(function (d) { return !d.bird; }).slice(-300).map(function (d) { return d.tool ? [d.k, d.n, +d.x.toFixed(2), +d.y.toFixed(2), Math.round(d.t), d.tool.id] : [d.k, d.n, +d.x.toFixed(2), +d.y.toFixed(2), Math.round(d.t)]; }); }
   // ---------- BIRDS: wild songbirds you can tame; yours rides on your shoulder and fetches what you drop ----------
   // Wild birds hop and peck on open ground in the daytime and fly off if you rush at them. Hold any seeds and they stay put:
   // tap one to feed it a seed (3 seeds and it is yours). Your bird (S.bird: kind and name) rides on your shoulder, and whenever
@@ -19174,7 +19202,7 @@
     if (et) { var sk = S.slots[D.from] && S.slots[D.from].k, want = et.getAttribute("data-eqk"); if (sk && new RegExp("^sp_" + want + "\\d$").test(sk)) equipSpare(sk); else nag(want === "pick" ? "Only a spare pickaxe goes there." : want === "wpn" ? "Only a spare weapon goes there." : "Only spare armor goes there."); return; }
     if (!t && dragOut(el)) {   // DRAG TO DROP: let go over the world (outside the backpack and the hotbar) and the stack is dropped in front of you
       var dc = S.slots[D.from]; if (!dc) return;
-      if (ITEMS[dc.k] && ITEMS[dc.k].tool) { nag("Tools can't be dropped."); return; }
+      if (TOOLF[dc.k]) { dropTool(dc.k); return; }   // tools drop too (see DROPPING TOOLS)
       if (hp <= 0 || titleOpen) return;
       tossSlot(D.from, true, true); return;
     }
@@ -19414,11 +19442,20 @@
     el.addEventListener("pointerleave", function () { CUR.hov = -1; });
   });
   document.addEventListener("pointermove", function (e) { if (e.pointerType !== "mouse") return; CUR.x = e.clientX; CUR.y = e.clientY; if (CUR.k) curMove(); }, { passive: true });
+  document.addEventListener("pointerdown", function (e) {   // PC: holding a stack on the cursor, click outside the window (the world or the dimmed backdrop) to drop it: left drops it all, right drops one
+    if (e.pointerType !== "mouse" || !CUR.k || !pcInv() || !dragOut(e.target)) return;
+    e.preventDefault(); e.stopImmediatePropagation(); CUR.eat = performance.now(); if (hp <= 0 || titleOpen) return;
+    var k = CUR.k;
+    if (TOOLF[k]) { CUR.k = null; CUR.n = 0; if (!dropTool(k, true)) give(k, 1, undefined, undefined, true); curDraw(); invAfter(); return; }
+    var n = e.button === 2 ? 1 : CUR.n; CUR.n -= n; if (CUR.n <= 0) { CUR.k = null; CUR.n = 0; }
+    if (gdScene()) sceneToss(k, n); else tossDrop(k, n); snd("coin"); hbDirty = true; curDraw(); invAfter();
+  }, true);
+  ["click", "pointerup", "contextmenu"].forEach(function (ev) { document.addEventListener(ev, function (e) { if (CUR.eat && performance.now() - CUR.eat < 600) { if (ev !== "pointerup") CUR.eat = ev === "click" || ev === "contextmenu" ? 0 : CUR.eat; e.preventDefault(); e.stopImmediatePropagation(); } }, true); });   // (the click that dropped it does not also close the window)
   document.addEventListener("keydown", function (e) {   // 1-9 swap the slot under the mouse with that hotbar slot; Q / Ctrl+Q drop from it
     if (!(panelOpen || packOpen) || CUR.hov < 0 || !pcInv() || e.target.closest && e.target.closest("input,textarea")) return;
     var i = CUR.hov, n = /^Digit[1-9]$/.test(e.code) ? +e.code.slice(5) - 1 : -1;
     if (n >= 0 && n < INV_HOT) { e.preventDefault(); e.stopImmediatePropagation(); if (i === n) return; var A = S.slots[i], B = S.slots[n]; S.slots[i] = B; S.slots[n] = A; hbDirty = true; invAfter(); return; }
-    if (e.code === "KeyQ" && S.slots[i] && !ITEMS[S.slots[i].k].tool) { e.preventDefault(); e.stopImmediatePropagation(); tossSlot(i, e.ctrlKey || e.metaKey, true); }
+    if (e.code === "KeyQ" && S.slots[i]) { e.preventDefault(); e.stopImmediatePropagation(); if (TOOLF[S.slots[i].k]) dropTool(S.slots[i].k); else tossSlot(i, e.ctrlKey || e.metaKey, true); }
   }, true);
   // ---------- INPUT ----------
   function setAim(e) { var r = cv.getBoundingClientRect(); aim.mx = e.clientX - r.left; aim.my = e.clientY - r.top - (e.pointerType === "mouse" ? 0 : clamp(ts * 1.3, 28, 44)); } // touch: aim sits just above the fingertip so your finger does not hide the target
@@ -25660,7 +25697,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__sbx.dbg = { shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WC, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
+  window.__sbx.dbg = { drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WC, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
