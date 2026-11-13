@@ -12929,29 +12929,29 @@
   }
   // ---------- YOUR COMBAT: click (or tap) for a three-hit combo; the third hit is a finisher (more damage, breaks poise, launches the
   // creature). Keep holding after a swing to charge a heavy swing: release it (or hold to full) for a big hit that staggers almost anything. ----------
-  var WC = { dn: false, held: 0, ch: 0, n: 0, last: -9, full: 0 }, SWK = { mul: 1, po: 4, kb: 1, up: 0 };
+  var WCB = { dn: false, held: 0, ch: 0, n: 0, last: -9, full: 0 }, SWK = { mul: 1, po: 4, kb: 1, up: 0 };
   function wpnInput(dt) {   // returns true when a swing starts this frame (SWK says which kind)
-    var down = aim.down, edge = (down && !WC.dn) || (!down && aim.press && !WC.dn); if (aim.press) aim.press = 0;
-    var rel = !down && WC.dn, chg = WC.ch; WC.dn = down; cool -= dt; WC.swT = Math.max(0, (WC.swT || 0) - dt);
-    if (rel || (down && WC.ch >= 1 && (WC.full += dt) > 0.22)) {   // a charged swing goes off on release, or by itself at full charge
-      WC.ch = 0; WC.held = 0; WC.full = 0;
-      if (chg >= 0.5) { var c2 = Math.min(1, chg); SWK = { mul: 1.3 + 1.2 * c2, po: 18 + 22 * c2, kb: 1.8 + c2, up: 6 + 4 * c2, heavy: 1, reach: 0.5 }; cool = wCd() * 1.5; WC.n = 0; WC.swT = WC.swD = cool; heldPh = 0; return true; }
+    var down = aim.down, edge = (down && !WCB.dn) || (!down && aim.press && !WCB.dn); if (aim.press) aim.press = 0;
+    var rel = !down && WCB.dn, chg = WCB.ch; WCB.dn = down; cool -= dt; WCB.swT = Math.max(0, (WCB.swT || 0) - dt);
+    if (rel || (down && WCB.ch >= 1 && (WCB.full += dt) > 0.22)) {   // a charged swing goes off on release, or by itself at full charge
+      WCB.ch = 0; WCB.held = 0; WCB.full = 0;
+      if (chg >= 0.5) { var c2 = Math.min(1, chg); SWK = { mul: 1.3 + 1.2 * c2, po: 18 + 22 * c2, kb: 1.8 + c2, up: 6 + 4 * c2, heavy: 1, reach: 0.5 }; cool = wCd() * 1.5; WCB.n = 0; WCB.swT = WCB.swD = cool; heldPh = 0; return true; }
       return false;
     }
     if (edge && cool <= 0) {
-      var now = performance.now(); WC.n = now - WC.last < 750 && WC.n < 3 ? WC.n + 1 : 1; WC.last = now; WC.held = 0;
-      var fin = WC.n === 3; SWK = fin ? { mul: 1.6, po: 12, kb: 1.8, up: 7, fin: 1, reach: 0.25 } : { mul: 1, po: 4, kb: 1, up: 0 };
-      cool = wCd() * (fin ? 1.3 : 0.85); WC.swT = WC.swD = cool; heldPh = 0; return true;
+      var now = performance.now(); WCB.n = now - WCB.last < 750 && WCB.n < 3 ? WCB.n + 1 : 1; WCB.last = now; WCB.held = 0;
+      var fin = WCB.n === 3; SWK = fin ? { mul: 1.6, po: 12, kb: 1.8, up: 7, fin: 1, reach: 0.25 } : { mul: 1, po: 4, kb: 1, up: 0 };
+      cool = wCd() * (fin ? 1.3 : 0.85); WCB.swT = WCB.swD = cool; heldPh = 0; return true;
     }
-    if (down) { WC.held += dt; if (WC.held > 0.2 && cool <= 0) { var o = WC.ch; WC.ch = Math.min(1, WC.ch + dt / 0.6); if (o < 1 && WC.ch >= 1) { thud(880, 0.05); WC.flash = 0.25; } } }
+    if (down) { WCB.held += dt; if (WCB.held > 0.2 && cool <= 0) { var o = WCB.ch; WCB.ch = Math.min(1, WCB.ch + dt / 0.6); if (o < 1 && WCB.ch >= 1) { thud(880, 0.05); WCB.flash = 0.25; } } }
     return false;
   }
   function drawCharge(g, x, y) {   // the charge ring round you while a heavy swing builds
-    if (WC.flash > 0) WC.flash -= 1 / 60; if (WC.ch < 0.04 && !(WC.flash > 0)) return;
-    var r = ts * 0.95, k = WC.ch, full = k >= 1;
+    if (WCB.flash > 0) WCB.flash -= 1 / 60; if (WCB.ch < 0.04 && !(WCB.flash > 0)) return;
+    var r = ts * 0.95, k = WCB.ch, full = k >= 1;
     g.save(); g.lineCap = "round"; g.lineWidth = Math.max(2, ts * 0.09); g.strokeStyle = "rgba(10,20,16,.55)"; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.stroke();
     g.strokeStyle = full ? "#ffe48a" : "#bff4ea"; g.beginPath(); g.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + 6.2832 * k); g.stroke();
-    if (full || WC.flash > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(performance.now() / 60); g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(x, y, r * 0.9, 0, 6.2832); g.fill(); }
+    if (full || WCB.flash > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(performance.now() / 60); g.fillStyle = "#ffe48a"; g.beginPath(); g.arc(x, y, r * 0.9, 0, 6.2832); g.fill(); }
     g.restore();
   }
   function useTool(dt) {
@@ -12959,7 +12959,7 @@
     if (sel === "weapon") {   // swing: faces your aim, one swing per cooldown. Nothing takes damage until Stage 3 adds enemies.
       mine = null; if (!S.wpn) return;
       var wi = wpnInput(dt); if (!wi) return;
-      if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); WC.ch = 0; return; }
+      if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); WCB.ch = 0; return; }
       var wdx = aim.mx - (ox + p.x * ts); if (Math.abs(wdx) > ts * 0.3) p.face = wdx < 0 ? -1 : 1;
       S.st.swings++; swingQ = 0.1; var fin = SWK.fin, hv = SWK.heavy; if (S.st.swings === 3 && !S.st.cmbTip) { S.st.cmbTip = 1; toast("Combat: click three times in a row for a finisher. Keep holding to charge a heavy swing, then let go.", "#9ff0c0"); }
       if (fin || hv) { p.vx += p.face * (hv ? 5 : 3.5); }   // a finisher or a heavy swing steps you into it
@@ -13884,7 +13884,7 @@
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
     tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
-    var working = pawOn || (sel === "weapon" ? (WC.swT > 0 && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / Math.max(0.15, WC.swD || WEAPONS[S.wpn].cd) : 3);
+    var working = pawOn || (sel === "weapon" ? (WCB.swT > 0 && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / Math.max(0.15, WCB.swD || WEAPONS[S.wpn].cd) : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
       if (q.fl !== undefined) { q.fl += dt * 5; q.vx = Math.sin(q.fl) * 1.8; q.vy = Math.min(q.vy, 1.6); }   // leaf bits sway as they fall
@@ -17348,7 +17348,7 @@
     if (aim.tx < 0 || aim.tx >= F.w || aim.ty < 0 || aim.ty >= F.h) aim.tx = -1;
     ckx *= Math.max(0, 1 - 9 * dt); cky *= Math.max(0, 1 - 9 * dt); tickFarm(dt); tickHunger(dt); tickFx(dt); tickWeather(dt); tickBounties(dt); tickFlow(dt);
     caveTool(dt); tickVein(dt); stepArrows(dt); if (!F.bld && !trans) updateCaveMobs(dt); tickGuardian(dt);
-    var working = !!mine || pawOn || (sel === "weapon" && WC.swT > 0 && S.wpn > 0 && !panelOpen); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "weapon" && S.wpn > 0 ? 1 / Math.max(0.15, WC.swD || wCd()) : 5.4);   // a weapon swings at its own speed, like outside
+    var working = !!mine || pawOn || (sel === "weapon" && WCB.swT > 0 && S.wpn > 0 && !panelOpen); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "weapon" && S.wpn > 0 ? 1 / Math.max(0.15, WCB.swD || wCd()) : 5.4);   // a weapon swings at its own speed, like outside
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
     for (var m = texts.length - 1; m >= 0; m--) { texts[m].life -= dt; texts[m].y -= dt * 0.9; if (texts[m].life <= 0) texts.splice(m, 1); }
     msT -= dt; if (msT <= 0) { msT = 0.6; checkGoals(); }
@@ -25697,7 +25697,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
-  window.__sbx.dbg = { drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WC, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
+  window.__sbx.dbg = { drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
