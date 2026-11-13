@@ -2422,6 +2422,26 @@
     Object.keys(P).forEach(function (k) { if (!SPR[k]) SPR[k] = P[k]; });
   })();
   function heldCan() { return sprCanvas("can"); }
+  function blockIcon(g, id) {   // the block's own in-world art (rounded natural ground with its texture, ores with their gems, lamp blocks with their frame) in a 32-px icon
+    var it = ITEMS[id], tid = it && it.tile, td = tid !== undefined && TILES[tid]; if (!td || !td.solid || typeof NATC === "undefined") return false;
+    var nat = NATC[tid] ? tid : SMGEM[tid] ? orePal(td) : 0, lamp = MATF[tid] && MATF[tid].f === "lamp";
+    if (!nat && !lamp) return false;
+    try {
+      var T0 = ts || 16, k = 28 / T0, R2 = 6.5; g.save(); g.imageSmoothingEnabled = true;
+      g.beginPath(); if (g.roundRect) g.roundRect(2, 2, 28, 28, lamp ? 4 : R2); else g.rect(2, 2, 28, 28); g.save(); g.clip();
+      if (lamp) g.drawImage(matCanvas(tid, 0, 15), 2, 2, 28, 28);
+      else {
+        g.translate(2, 2); g.scale(k, k);
+        natBody(g, nat, 7, SURF + 4, 0, 0, false, true, false, false);
+        if (SMGEM[tid]) smDraw(g, 0, tid, 0, 0, 16, 16, 0, 0, T0, T0);
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        var sh = g.createLinearGradient(0, 18, 0, 30); sh.addColorStop(0, "rgba(0,0,0,0)"); sh.addColorStop(1, "rgba(0,0,0,.28)"); g.fillStyle = sh; g.fillRect(2, 18, 28, 12);   // the soft shadow along its foot
+      }
+      g.restore();
+      g.lineWidth = 1.6; g.strokeStyle = "rgba(12,8,16,.78)"; g.beginPath(); if (g.roundRect) g.roundRect(2, 2, 28, 28, lamp ? 4 : R2); else g.rect(2, 2, 28, 28); g.stroke();   // the dark ink round the block, like in the world
+      g.restore(); return true;
+    } catch (e) { try { g.restore(); g.restore(); } catch (e2) {} g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 32, 32); return false; }
+  }
   function icon(id) {
     if (ITEMS[id] && ITEMS[id].tool) return icon(ITEMS[id].tool);
     var key = id === "bow" ? "bow" + Math.max(1, S.bow) : id === "bucket" ? bucketKey() : id === "hoe" ? "hoe" + Math.max(1, S.hoe) : id === "rod" ? "rod" + Math.max(1, S.rod) : id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
@@ -2429,6 +2449,7 @@
     var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"); g.imageSmoothingEnabled = false;
     var dvt = /^tank([1-4])$/.exec(id), dvs = id === "scubasuit" ? 1 : /^suit([2-4])$/.exec(id) ? +id.slice(4) : 0;   // DIVE GEAR: each tank and helmet has its own drawing (not one picture in four colours)
     if (dvt || dvs) { var big = document.createElement("canvas"); big.width = big.height = 96; var bg2 = big.getContext("2d"); try { if (dvt) ocTankArt(bg2, +dvt[1], 48, 14, 5.4, 1, 0); else { bg2.fillStyle = ["", "#2fb59a", "#7a5634", "#d8b4d0", "#26263e"][dvs]; bg2.beginPath(); if (bg2.roundRect) bg2.roundRect(22, 66, 52, 24, 10); else bg2.rect(22, 66, 52, 24); bg2.fill(); ocHelmArt(bg2, dvs, 48, 46, 5.2, 1, 0); } } catch (e) {} g.imageSmoothingEnabled = true; g.drawImage(big, 0, 0, 32, 32); return (ICO[key] = c.toDataURL()); }
+    if (blockIcon(g, id)) return (ICO[key] = c.toDataURL());   // BLOCK ICONS: natural ground, ores and lamp blocks drawn exactly as they look placed in the world
     if (typeof NEWICO !== "undefined" && NEWICO[id]) { drawSpr(g, id); return (ICO[key] = c.toDataURL()); }   // PIXEL ICONS
     if (OCI[id]) { try { OCI[id](g); } catch (e) {} return (ICO[key] = c.toDataURL()); }
     if (ITEMS[id] && ITEMS[id].pb) {   // HOMESTEAD: a jar of preserves in the crop's colour
@@ -25540,6 +25561,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
+  window.__sbx.dbg = { ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
   window.__sbx.fp = { emote: function (k) { emote(k); }, bar: function (o) { emoBar(o); }, EMO: EMO, bubs: function () { return BUBS; }, CRIT: CRIT, spawnCrit: function () { spawnCrit(); }, boop: function (c) { boopCrit(c); }, FOOT: FOOT, STREAK: STREAK, lucky: function (x, y) { luckyFind(x, y); }, brk: function (id, x, y) { funBreak(id, x, y); }, PHOTO: PHOTO, photo: function () { openPhoto(); }, pact: function (a) { photoAct(a); }, chat: CHAT };
