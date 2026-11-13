@@ -1968,6 +1968,10 @@
   R("x_au_goldroast", "Goldcap Roast", { au_goldroast: 1 }, { au_goldcap: 2 }, { stn: "cook", d: "Fills 28 hunger and heals 8." });
   R("x_au_honeypie", "Honeyberry Pie", { au_honeypie: 1 }, { au_honeyberry: 4, au_goldfiber: 1 }, { stn: "cook", d: "Fills 44 hunger and heals 16." });
   R("x_au_sundraught", "Sunlight Draught", { au_sundraught: 1 }, { au_sunbloom: 2, au_honeyberry: 2, au_citrine: 1 }, { stn: "cook", d: "Pushes Malcruor's corruption back by 3 minutes and heals 10." });
+  // REAL-SIZE FURNITURE: the other cells of a piece bigger than one block (a bed is 2 wide, a wardrobe 2 tall, a tent 2 x 2). The piece's own
+  // tile sits in its bottom-left cell; these fill the rest, point back at it (fpart = [cells right, cells up]) and draw their slice of its art.
+  // (Added last so every older tile keeps its number.)
+  [["X_fpart_r", [1, 0]], ["X_fpart_t", [0, 1]], ["X_fpart_tr", [1, 1]]].forEach(function (q) { tile(q[0], "Furniture", "#8a6a44", "#c49a6a", 0.4, 0, null, false, 0, "fpart", { fpart: q[1] }); }); ART.fpart = function () {};
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

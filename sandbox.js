@@ -2810,6 +2810,8 @@
     var id = get(x, y), td = TILES[id], pl = LEAFPL; LEAFPL = false;
     if (rmask && x >= 0 && x < W && y >= 0 && y < H) rmask[y * W + x] = 0;
     if (td && td.gpart && garageBreak(x, y)) return;   // GARAGE: comes down all at once
+    if (td && td.fpart) { var fpa = fAnchor(x, y); if (fpa) breakTile0(fpa[0], fpa[1]); else setT(x, y, T.AIR); return; }   // REAL-SIZE FURNITURE: any cell takes the whole piece down
+    if (FSIZE[id]) fBreakParts(x, y, FSIZE[id]);
     if (id === T.REALMORE) { S.st.realm++; if (S.st.realm === 1) toast("Realmstone! It hums like it wants to be somewhere else.", "#8affe0"); }
     if (td.kind === "realmgate") brokeGate(x, y);
     if (td.kind === "fallenstar") starMined(x, y);
@@ -2877,8 +2879,9 @@
     if (item === "trapdoor") { var hl = get(tx - 1, ty), hr = get(tx + 1, ty); if (!(TILES[hl].solid || isHatch(hl) || TILES[hr].solid || isHatch(hr))) { nag("A trapdoor needs a block (or another trapdoor) beside it to hinge on."); return false; } }
     if (item === "chest" && !TILES[get(tx, ty + 1)].solid) { nag("A chest needs solid ground under it."); return false; }
     if (item === "sapling") { var sg = get(tx, ty + 1); if (sg !== T.MOSS && sg !== T.MUD && sg !== T.SNOW && sg !== T.ASH && sg !== T.X_peat) { nag("Plant saplings on mud, moss, snow or ash."); return false; } }
+    if (FSIZE[t]) { if (fFit(tx, ty, item)) return true; var fsz = FSIZE[t]; nag("The " + td.n + " is " + fsz[0] + " by " + fsz[1] + " blocks: it needs that much free space" + (td.put === "wall" ? " beside a wall or back wall." : " and solid ground under it.")); return false; }   // REAL-SIZE FURNITURE
     var prule = ITEMS[item].put;   // decor: "floor" pieces stand on solid ground, "wall" pieces hang on a block beside or above them (see DECOR_FLOOR / DECOR_WALL in sandbox-world.js)
-    var under = TILES[get(tx, ty + 1)], onTop = !!(td.small && under.top !== undefined && !under.solid);   // INTERIOR: small pieces stand on tables, counters and shelves
+    var under = fTd(tx, ty + 1), onTop = !!(td.small && under.top !== undefined && !under.solid);   // INTERIOR: small pieces stand on tables, counters and shelves
     if (prule === "floor" && !under.solid && !onTop) { nag(td.small ? "That needs solid ground, or a table, counter or shelf, under it." : "That needs solid ground under it."); return false; }
     if (prule === "wall" && !(TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid || hasW(tx, ty))) { nag("Hang this on a wall: it needs a block beside or above it, or a back wall behind it."); return false; }
     if (prule) return true;
@@ -2912,15 +2915,17 @@
     if (mine.p >= 1) { setWall(tx, ty, 0); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 4, 5); debris(tx + 0.5, ty + 0.5, wid); matBreak(wid); if (item) give(item, 1, tx, ty); mine = null; }
   }
   function place(tx, ty, item) {
+    if (FSIZE[ITEMS[item].tile]) { var ffa = fFit(tx, ty, item); if (!ffa) return; tx = ffa[0]; ty = ffa[1]; }   // REAL-SIZE FURNITURE: the piece's own cell
     if (item === "sapling" && inMC() && !mcRest(tx)) { nag("Nothing grows in Malcruor's rotten ground. Not yet..."); return; }   // MALCRUOR: no trees grow back there
     if (ITEMS[item].tile === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[ty * W + tx] = 1; }
     setT(tx, ty, ITEMS[item].tile); AFX.place[ty * W + tx] = performance.now(); if (TILES[ITEMS[item].tile] && TILES[ITEMS[item].tile].solid && S.shape[ty * W + tx] === undefined) { S.shape[ty * W + tx] = 0; shapeCount(); }   // AUTO RAMPS: a block you place is always a full block (only untouched ground slopes)
     S.inv[item]--; S.st.placed++; if (item === "torch") S.st.torches++; if (item === "bench") S.st.benches++; if (item === "bed") S.st.beds++; if (item === "campfire") S.st.campfires = (S.st.campfires || 0) + 1; if (item === "sleepbag") S.st.sleepbags = (S.st.sleepbags || 0) + 1;
     if (item === "door") { setT(tx, ty - 1, T.DOOR_T); S.st.doors++; }
+    if (FSIZE[ITEMS[item].tile]) fPlaceParts(tx, ty);
     if (item === "garage") garagePlaced(tx, ty);
     if (ITEMS[item].decor) S.st.decor++; if (item === "decorbench") S.st.dbenches++;
     if (item === "chair" && p.face < 0) setT(tx, ty, T.CHAIR_L);
-    else if (ITEMS[item].decor && p.face < 0) { S.dflip = S.dflip || {}; S.dflip[ty * W + tx] = 1; }   // INTERIOR: decor faces the way you were facing
+    else if ((ITEMS[item].decor || FSIZE[ITEMS[item].tile]) && p.face < 0) { S.dflip = S.dflip || {}; S.dflip[ty * W + tx] = 1; }   // INTERIOR: decor faces the way you were facing
     if (item === "ladder") S.st.ladders++;
     if (ITEMS[item].seed) plantCrop(tx, ty, item);
     if (item === "realmgate") placedGate(tx, ty);
@@ -13038,6 +13043,7 @@
     var tx = aim.tx, ty = aim.ty, dx = tx + 0.5 - p.x, dy = ty + 0.5 - (p.y - PH / 2);
     if (dx * dx + dy * dy > REACH * REACH) { mine = null; return; }
     if (Math.abs(dx) > 0.35) p.face = dx < 0 ? -1 : 1;   // turn to face what you are digging or building
+    var fpa0 = fAnchor(tx, ty); if (fpa0) { tx = fpa0[0]; ty = fpa0[1]; }   // REAL-SIZE FURNITURE: digging any cell of a piece digs the piece
     if (sel === "can") { useCan(dt, tx, ty); return; }
     var pk = TILES[get(tx, ty)], plantHit = sel !== "pick" && sel !== "shovel" && !!pk && !pk.crop && (pk.kind === "leaves" || (!pk.solid && (pk.kind === "reed" || pk.kind === "flower" || pk.kind === "bloom" || pk.kind === "glowcap" || pk.kind === "vine" || pk.sway)));
     var pawItem = ITEMS[sel] && ITEMS[sel].tile === undefined && !ITEMS[sel].wall && !ITEMS[sel].tool;   // a plain material in hand: dig like bare paws
@@ -13930,7 +13936,7 @@
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
     tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
-    tickMw(dt); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
+    tickMw(dt); fTick(); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (WCB.swT > 0 && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / Math.max(0.15, WCB.swD || WEAPONS[S.wpn].cd) : 3);
     // particles and floating text
     for (var k = parts.length - 1; k >= 0; k--) { var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; } q.vy += (q.g !== undefined ? q.g : 22) * dt;
@@ -14732,13 +14738,112 @@
   }
   // ---------- INTERIOR: decor drawing (mirroring, and small pieces sitting down onto a table, counter or shelf below) ----------
   function flipDecor(x, y) {   // turn a placed decor piece to face the other way (R, or the Flip button on touch)
-    var id = get(x, y), it = TILES[id]; if (!it || it.solid || !ITEMS[dropOf(it)] || !ITEMS[dropOf(it)].decor) return false;
+    var fpf = fAnchor(x, y); if (fpf) { x = fpf[0]; y = fpf[1]; }   // REAL-SIZE FURNITURE: flip the whole piece
+    var id = get(x, y), it = TILES[id]; if (!it || it.solid || !ITEMS[dropOf(it)] || !(ITEMS[dropOf(it)].decor || FSIZE[id])) return false;
     if (id === T.CHAIR || id === T.CHAIR_L) { setT(x, y, id === T.CHAIR ? T.CHAIR_L : T.CHAIR); thud(260, 0.03); return true; }
     var i = y * W + x; S.dflip = S.dflip || {}; if (S.dflip[i]) delete S.dflip[i]; else S.dflip[i] = 1; editN++; thud(260, 0.03); chips(x + 0.5, y + 0.6, it.c2 || "#fff", 3, 2); return true;
   }
   function decoPart(g, v, id, sy0, sh, dx, dy, dw, dh) { if (dh <= 0) return; if (SMOP[id]) sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, sy0, 16, sh, dx, dy, dw, dh); else smDraw(g, v, id, 0, sy0, 16, sh, dx, dy, dw, dh); }
-  function surfTop(i, j) { var b = TILES[get(i, j + 1)]; return b && b.top && !b.solid ? b.top : 0; }
+  function surfTop(i, j) { var b = fTd(i, j + 1); return b && b.top && !b.solid ? b.top : 0; }
+  // ---------- REAL-SIZE FURNITURE: beds, tables, workbenches and stations are 2 blocks wide, wardrobes, bookshelves and banners 2 tall,
+  // tents and big crates 2 x 2. The piece's own tile sits in its bottom-left cell; the others hold fpart tiles (sandbox-extra) that point
+  // back at it. Every cell draws its own slice of the piece's big picture (made once from its 16 x 16 art: the middle is drawn out, so
+  // legs, ends and trims keep their size), taps and digging on any cell go to the piece, and it comes down whole. A piece placed before
+  // this (or by the world) grows to full size by itself as soon as there is room; with no room it stays small. ----------
+  var FSZK = { bed: [2, 1], table: [2, 1], bench: [2, 1], decorbench: [2, 1], furnace: [2, 1], loom: [2, 1], masontable: [2, 1], jeweltable: [2, 1], desk: [2, 1], sofa: [2, 1], maptable: [2, 1], sawbench: [2, 1],
+    wardrobe: [1, 2], bookshelf: [1, 2], banner: [1, 2], emberbanner: [1, 2], frostbanner: [1, 2], forgebanner: [1, 2], potionshelf: [1, 2], scrollshelf: [1, 2], tent: [2, 2], crate: [2, 2], supplycrate: [2, 2] };
+  var FSIZE = {}, FUPQ = [], FORPH = [], FAC = {}, FART16 = {};
+  if (T.X_fpart_r !== undefined) Object.keys(FSZK).forEach(function (k) { if (ITEMS[k] && ITEMS[k].tile !== undefined && TILES[ITEMS[k].tile] && !TILES[ITEMS[k].tile].solid) FSIZE[ITEMS[k].tile] = FSZK[k]; });
+  function fpTile(dx, dy) { return dx && dy ? T.X_fpart_tr : dx ? T.X_fpart_r : T.X_fpart_t; }
+  function fCells(ax, ay, sz) { var L = []; for (var dy = 0; dy < sz[1]; dy++) for (var dx = 0; dx < sz[0]; dx++) if (dx || dy) L.push([ax + dx, ay - dy, dx, dy]); return L; }
+  function fAnchor(x, y) {   // the furniture piece a part cell belongs to, or null
+    var td = TILES[get(x, y)]; if (!td || !td.fpart) return null;
+    var ax = x - td.fpart[0], ay = y + td.fpart[1], sz = FSIZE[get(ax, ay)]; return sz && td.fpart[0] < sz[0] && td.fpart[1] < sz[1] ? [ax, ay] : null;
+  }
+  function fWhole(ax, ay) { var sz = FSIZE[get(ax, ay)]; return !!sz && fCells(ax, ay, sz).every(function (c) { return get(c[0], c[1]) === fpTile(c[2], c[3]); }); }
+  function fTd(x, y) { var a = fAnchor(x, y); return TILES[a ? get(a[0], a[1]) : get(x, y)]; }   // a part cell acts like its piece (a table's right half is a table top too)
+  function fBreakParts(ax, ay, sz) {
+    fCells(ax, ay, sz).forEach(function (c) { if (get(c[0], c[1]) !== fpTile(c[2], c[3])) return; setT(c[0], c[1], T.AIR);
+      if (c[3] === sz[1] - 1 && c[1] > 0 && TILES[get(c[0], c[1] - 1)].small) { var ab = get(c[0], c[1] - 1); setT(c[0], c[1] - 1, T.AIR); give(dropOf(TILES[ab]), 1, c[0], c[1] - 1); } });   // a candle on the far end comes back to you
+  }
+  function fFree(x, y) { return x >= 1 && x < W - 1 && y >= 1 && y < H - 3 && get(x, y) === T.AIR; }
+  function fFits(ax, ay, sz, wall, up) {   // up: the piece already stands in its own cell (growing an older one)
+    for (var dy = 0; dy < sz[1]; dy++) for (var dx = 0; dx < sz[0]; dx++) if (!fFree(ax + dx, ay - dy) && !(up && dx === 0 && dy === 0)) return false;
+    if (wall) { for (var wy = 0; wy < sz[1]; wy++) for (var wx = 0; wx < sz[0]; wx++) { var cx = ax + wx, cy = ay - wy; if (TILES[get(cx - 1, cy)].solid || TILES[get(cx + 1, cy)].solid || TILES[get(cx, cy - 1)].solid || hasW(cx, cy)) return true; } return false; }
+    for (var fx = 0; fx < sz[0]; fx++) if (!TILES[get(ax + fx, ay + 1)].solid) return false;   // stands on solid ground along its whole width
+    return true;
+  }
+  function fFit(tx, ty, item) {   // where a piece goes so it covers the cell you aimed at: growing away from you, standing on the floor first
+    var t = ITEMS[item].tile, sz = FSIZE[t], wall = ITEMS[item].put === "wall"; if (!sz) return null;
+    var xs = sz[0] > 1 ? (p.x < tx + 0.5 ? [tx, tx - 1] : [tx - 1, tx]) : [tx], ys = sz[1] > 1 ? (wall ? [ty + 1, ty] : [ty, ty + 1]) : [ty];
+    for (var a = 0; a < ys.length; a++) for (var b = 0; b < xs.length; b++) if (fFits(xs[b], ys[a], sz, wall)) return [xs[b], ys[a]];
+    return null;
+  }
+  function fPlaceParts(ax, ay) { var sz = FSIZE[get(ax, ay)]; if (sz) fCells(ax, ay, sz).forEach(function (c) { setT(c[0], c[1], fpTile(c[2], c[3])); }); }
+  function fTick() {   // grow older pieces to full size, and clear part cells whose piece is gone
+    if (FUPQ.length) { FUPQ.splice(0, 8).forEach(function (q) { var sz = FSIZE[get(q[0], q[1])]; if (!sz || fWhole(q[0], q[1])) return; var put = ITEMS[dropOf(TILES[get(q[0], q[1])])], wall = !!(put && put.put === "wall");
+      if (fCells(q[0], q[1], sz).every(function (c) { return fFree(c[0], c[1]); }) && fFits(q[0], q[1], sz, wall, true)) fPlaceParts(q[0], q[1]); else FSKIP[q[1] * W + q[0]] = 1; }); }
+    if (FORPH.length) FORPH.splice(0, 16).forEach(function (q) { if (TILES[get(q[0], q[1])].fpart && !fAnchor(q[0], q[1])) setT(q[0], q[1], T.AIR); });
+  }
+  var FSKIP = {};
+  var FBIGART = {   // pieces drawn at full size by hand (the rest are drawn out from their 16 x 16 art)
+    tent: function (R) {   // 32 x 32: a canvas ridge tent with guy ropes, an open flap and a little pennant
+      R(15, 0, 1, 7, "#6a4a2a"); R(16, 0, 5, 3, "#d6382e"); R(16, 0, 5, 1, "#ff6a5a");
+      for (var y = 0; y < 25; y++) { var hw = Math.round(1 + y * 0.6); R(16 - hw, 6 + y, hw * 2, 1, y < 3 ? "#ecd6a6" : "#cfae72"); R(16 - hw, 6 + y, 2, 1, "#8a6a3a"); R(16 + hw - 2, 6 + y, 2, 1, "#8a6a3a"); if (y > 4) R(16 - hw + 2, 6 + y, Math.max(1, Math.round(hw * 0.5)), 1, "#e2c48c"); }
+      for (var y2 = 13; y2 < 31; y2++) { var w2 = Math.round((y2 - 13) * 0.42); R(16 - w2, y2, w2 * 2 + 1, 1, "#3a2a1a"); R(16 - w2, y2, 1, 1, "#5a4022"); }
+      for (var y3 = 15; y3 < 31; y3 += 2) R(16 + Math.round((y3 - 13) * 0.42), y3, 1, 2, "#a8844c");
+      R(15, 6, 2, 25, "#a8844c", 0.55); R(0, 31, 32, 1, "#5a4022"); R(2, 30, 3, 1, "#6a4a2a"); R(27, 30, 3, 1, "#6a4a2a"); R(1, 29, 1, 2, "#8a6a3a"); R(30, 29, 1, 2, "#8a6a3a");
+      for (var q = 0; q < 9; q++) { R(2 + q, 29 - q * 2, 1, 1, "#d8c8a0", 0.8); R(29 - q, 29 - q * 2, 1, 1, "#d8c8a0", 0.8); }
+    },
+    crate: function (R) {   // 32 x 32: a big plank crate with a framed edge, a cross brace and nail heads
+      R(1, 5, 30, 27, "#4a2e14"); R(2, 6, 28, 25, "#c08a4a");
+      for (var y = 11; y < 30; y += 5) { R(2, y, 28, 1, "#8e5e2e"); R(2, y + 1, 28, 1, "#d49a58", 0.5); }
+      R(2, 6, 28, 3, "#8a5a2c"); R(2, 28, 28, 3, "#7a4c24"); R(2, 6, 3, 25, "#8a5a2c"); R(27, 6, 3, 25, "#7a4c24"); R(2, 6, 28, 1, "#e0a868"); R(2, 6, 1, 25, "#c88e50");
+      for (var i = 0; i <= 21; i++) { var by = 27 - Math.round(i * 18 / 21); R(5 + i, by - 1, 2, 3, "#6e4420"); R(5 + i, by - 1, 1, 1, "#a87440"); }
+      [[3, 7], [28, 7], [3, 29], [28, 29], [15, 7], [15, 29]].forEach(function (n) { R(n[0], n[1], 1, 1, "#e8e0d0"); });
+      R(1, 31, 30, 1, "#2e1c0c");
+    }
+  };
+  var FBAND = { bookshelf: { y: [5] }, potionshelf: { y: [5], cy: 10 }, scrollshelf: { y: [5] }, banner: { y: [1], at: 10.5 } };   // which strip to repeat when it isn't obvious (a whole shelf; the plain cloth under the banner's badge)
+  function fArt16(id) {   // the piece's full picture at 16 px a block
+    if (FART16[id]) return FART16[id]; var sz = FSIZE[id], W2 = sz[0] * 16, H2 = sz[1] * 16, c = document.createElement("canvas"); c.width = W2; c.height = H2; var g = c.getContext("2d", { willReadFrequently: true });
+    var hand = FBIGART[TILES[id].kind];
+    if (hand) hand(function (x, y, w, h, col, al) { g.globalAlpha = al == null ? 1 : al; g.fillStyle = col; g.fillRect(x, y, w, h); g.globalAlpha = 1; });
+    else {
+      var t = document.createElement("canvas"); t.width = t.height = 16; var tg = t.getContext("2d", { willReadFrequently: true }); tg.drawImage(ATLAS, 0, id * 16, 16, 16, 0, 0, 16, 16);
+      var src = tg.getImageData(0, 0, 16, 16).data, px = function (x, y) { var k = (y * 16 + x) * 4; return [src[k], src[k + 1], src[k + 2], src[k + 3]]; };
+      var diff = function (a, b, vert) { var d = 0; for (var z = 0; z < 16; z++) { var p1 = vert ? px(z, a) : px(a, z), p2 = vert ? px(z, b) : px(b, z); d += Math.abs(p1[3] - p2[3]) * 2 + (p1[3] && p2[3] ? Math.abs(p1[0] - p2[0]) + Math.abs(p1[1] - p2[1]) + Math.abs(p1[2] - p2[2]) : 0); } return d; };
+      var hint = FBAND[TILES[id].kind] || {};
+      var band = function (vert) {   // the strip of rows or columns that repeats most seamlessly, as near the middle as possible
+        if (vert && hint.cy) return { c: hint.cy, p: hint.y[0] };
+        var best = null, at = vert && hint.at ? hint.at : 8; ((vert ? hint.y : hint.x) || [2, 4, 1, 8]).forEach(function (pp) { for (var c0 = 1; c0 + pp <= 15; c0++) { var cost = diff(c0, c0 + pp, vert) + Math.abs(c0 + pp / 2 - at) * 30 + (pp === 1 ? 60 : 0); if (!best || cost < best.cost) best = { c: c0, p: pp, cost: cost }; } }); return best;
+      };
+      var map = function (n, bd) {   // source index for each output pixel; -1 = left empty (a strip that doesn't divide 16 leaves a row or two clear at the top)
+        var o = []; if (n === 1) { for (var q0 = 0; q0 < 16; q0++) o.push(q0); return o; }
+        var reps = Math.floor(16 / bd.p), ins = reps * bd.p, padn = 16 - ins, q;
+        for (q = 0; q < padn; q++) o.push(-1);
+        for (q = 0; q < bd.c + bd.p; q++) o.push(q); for (q = 0; q < ins; q++) o.push(bd.c + q % bd.p); for (q = bd.c + bd.p; q < 16; q++) o.push(q); return o;
+      };
+      var mx = map(sz[0], sz[0] > 1 ? band(false) : null), my = map(sz[1], sz[1] > 1 ? band(true) : null), out = g.createImageData(W2, H2), od = out.data;
+      for (var yy = 0; yy < H2; yy++) for (var xx = 0; xx < W2; xx++) { if (mx[xx] < 0 || my[yy] < 0) continue; var sp = px(mx[xx], my[yy]), ok = (yy * W2 + xx) * 4; od[ok] = sp[0]; od[ok + 1] = sp[1]; od[ok + 2] = sp[2]; od[ok + 3] = sp[3]; }
+      g.putImageData(out, 0, 0);
+    }
+    return (FART16[id] = c);
+  }
+  function fArtK(id) { var k = Math.max(1, Math.ceil(ts * dpr / 16)), key = id + "_" + k; if (FAC[key]) return FAC[key]; var a = fArt16(id), c = document.createElement("canvas"); c.width = a.width * k; c.height = a.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(a, 0, 0, c.width, c.height); c.k = k; return (FAC[key] = c); }
+  function fDraw(g, id, i, j, sx, sy) {   // draw this cell's slice of a big piece; false = draw it the old one-block way
+    var ax = i, ay = j, ox2 = 0, oy2 = 0, td = TILES[id];
+    if (td.fpart) { var a = fAnchor(i, j); if (!a) { FORPH.push([i, j]); return true; } ax = a[0]; ay = a[1]; ox2 = td.fpart[0]; oy2 = td.fpart[1]; }
+    else if (!fWhole(i, j)) { if (!FSKIP[j * W + i] && FUPQ.length < 64) FUPQ.push([i, j]); return false; }
+    var aid = get(ax, ay), sz = FSIZE[aid], fl = S.dflip && S.dflip[ay * W + ax], c = fArtK(aid), k = c.k, col = fl ? sz[0] - 1 - ox2 : ox2, row = sz[1] - 1 - oy2;
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = lowq ? "low" : "high";
+    if (fl) { g.save(); g.translate(sx * 2 + ts, 0); g.scale(-1, 1); }
+    g.drawImage(c, col * 16 * k, row * 16 * k, 16 * k, 16 * k, sx, sy, ts, ts);
+    if (fl) g.restore(); g.imageSmoothingEnabled = false; g.imageSmoothingQuality = "low";
+    return true;
+  }
   function decoDraw(g, v, id, i, j, sx, sy, flipAs) {
+    if ((FSIZE[id] || TILES[id].fpart) && flipAs === undefined && fDraw(g, id, i, j, sx, sy)) return;
     var off = TILES[id].small ? surfTop(i, j) : 0, fl = flipAs !== undefined ? flipAs : S.dflip && S.dflip[j * W + i], swa = off ? 0 : swayAngle(TILES[id], i, j);
     if (swa) { g.save(); g.translate(sx + ts / 2, sy); g.rotate(swa); g.translate(-(sx + ts / 2), -sy); }
     var bop = JB.on ? jbBop(i, j) : 0; if (bop) { g.save(); g.translate(sx + ts / 2, sy + ts); g.scale(1 + bop * 0.07, 1 - bop * 0.08); g.translate(-(sx + ts / 2), -(sy + ts)); }   // JUKEBOX: bobs to the beat
@@ -16751,8 +16856,15 @@
       var gi = ITEMS[sel]; if (gi && gi.tile !== undefined && !gi.wall && !gi.seed && (S.inv[sel] || 0) > 0 && get(aim.tx, aim.ty) === T.AIR) {   // INTERIOR: a see-through preview of what you are about to place
         QUIET = 1; var can = ok && canPlace(aim.tx, aim.ty, sel); QUIET = 0;
         var gt = gi.tile, gv = ((Math.imul(aim.tx, 73856093) ^ Math.imul(aim.ty, 19349663)) >>> 0) & 3; g.save(); g.globalAlpha = can ? 0.6 : 0.3; g.imageSmoothingEnabled = false;
+        var gfa = FSIZE[gt] ? (QUIET = 1, fFit(aim.tx, aim.ty, sel)) : null; QUIET = 0;
+        if (FSIZE[gt]) {   // REAL-SIZE FURNITURE: the whole piece, where it will go
+          var gsz = FSIZE[gt], gax = gfa ? gfa[0] : aim.tx, gay = gfa ? gfa[1] : aim.ty, gc = fArtK(gt), gx0 = ox + gax * ts, gy0 = oy + (gay - gsz[1] + 1) * ts, gfl2 = p.face < 0;
+          g.imageSmoothingEnabled = true; if (gfl2) { g.save(); g.translate(gx0 * 2 + gsz[0] * ts, 0); g.scale(-1, 1); } g.drawImage(gc, gx0, gy0, gsz[0] * ts, gsz[1] * ts); if (gfl2) g.restore(); g.imageSmoothingEnabled = false;
+          g.globalAlpha = 1; g.strokeStyle = can ? "rgba(120,255,170,.9)" : "rgba(255,90,90,.75)"; g.lineWidth = 2; g.strokeRect(gx0 + 1, gy0 + 1, gsz[0] * ts - 2, gsz[1] * ts - 2); g.restore();
+        } else {
         if (MATF[gt]) g.drawImage(matCanvas(gt, 0, 15), cx0, cy0); else if (gi.decor) { var gfl = p.face < 0 && sel !== "chair", gst = TILES[gt].small ? surfTop(aim.tx, aim.ty) : 0; decoDraw(g, gv, gt, aim.tx, aim.ty, cx0, cy0, gfl); if (gst) { g.save(); if (gfl) { g.translate(cx0 * 2 + ts, 0); g.scale(-1, 1); } decoPart(g, gv, gt, 16 - gst, gst, cx0, cy0 + ts, ts, Math.round(gst * ts / 16)); g.restore(); } } else g.drawImage(ATLAS, 0, gt * 16, 16, 16, cx0, cy0, ts, ts);
         g.globalAlpha = 1; g.strokeStyle = can ? "rgba(120,255,170,.9)" : "rgba(255,90,90,.75)"; g.lineWidth = 2; g.strokeRect(cx0 + 1, cy0 + 1, ts - 2, ts - 2); g.restore();
+        }
       }
     }
     drawSleepFade(g);
@@ -19615,7 +19727,7 @@
       var zr = cv.getBoundingClientRect(), zx = (e.clientX - zr.left - ox) / ts, zy = (e.clientY - zr.top - oy) / ts;
       if (Math.abs(zx - GD.x) < 1.6 && zy > GD.y - 1.9 && zy < GD.y + 0.4) { if (Math.abs(GD.x - cp.x) < 7 && Math.abs(GD.y - cp.y) < 7) gdWake(); else nag("Walk closer to wake Zaruk."); return; }
     }
-    aim.id = e.pointerId; aim.down = true; setAim(e); aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); tapEat(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
+    aim.id = e.pointerId; aim.down = true; setAim(e); aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); tapEat(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); if (!cave) { var fpa2 = fAnchor(aim.dx, aim.dy); if (fpa2) { aim.dx = fpa2[0]; aim.dy = fpa2[1]; } } aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
     aim.lad = cave ? (aim.dx === cave.F.up.x && (aim.dy === cave.F.up.y || aim.dy === cave.F.up.y - 1) ? "up" : aim.dx === cave.F.down.x && aim.dy === cave.F.down.y ? "down" : "") : ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
     $("sbxHint").classList.remove("on"); if (ac && ac.state === "suspended") ac.resume();
   });
@@ -25834,6 +25946,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
+  window.__fsz = function () { return Object.keys(FSIZE).map(Number); }; window.__fart = fArt16; window.__fatlas = function () { return ATLAS; };   // (test harness: real-size furniture art)
   window.__sbx.dbg = { render: function (t) { render(t); }, OPT: OPT, chk: CHK, drops: function () { return drops; }, shapeAt: function (x, y) { return shapeAt(y * W + x); }, sel: function () { return [sel, aim.down, cool, WCB, hp, typeof dead !== "undefined" ? dead : null, panelOpen]; }, ITEMS: ITEMS, TILES: TILES, T: T, icon: icon, MATF: MATF, ICO: function () { return ICO; }, matCanvas: function (a, b, c) { return matCanvas(a, b, c); }, setT: setT, W: function () { return W; }, H: function () { return H; } };   // (test harness: item and block tables)
   window.__sbx.perf = { PERF: PERF, render: function (now) { render(now); }, nat: function () { return [NATM.size, NATPX]; } };
   window.__sbx.hz = { raw: function (x) { return horizonRaw(x); }, eased: function (x) { return horizon(x); }, mini: MINI };
@@ -27154,6 +27267,7 @@
       ["Every tonic and potion", function () { var o = {}; ORDER.forEach(function (k) { if (/^tonic_/.test(k)) o[k] = 3; }); devGive(o); }],
       ["Every spare tool", function () { var o = {}; ORDER.forEach(function (k) { if (/^sp_/.test(k)) o[k] = 1; }); devGive(o); }],
       ["Every motorbike part", function () { var o = {}; ORDER.forEach(function (k) { if (/^moto_/.test(k)) o[k] = 1; }); devGive(o); }],
+      ["Every real-size furniture piece", function () { var o = {}; Object.keys(FSZK).forEach(function (k) { if (ITEMS[k]) o[k] = 1; }); devGive(o); }],
       ["Every dive item", function () { var o = {}; ["scubasuit", "suit2", "suit3", "suit4", "tank1", "tank2", "tank3", "tank4", "flippers", "divelamp"].forEach(function (k) { o[k] = 1; }); devGive(o); }]
     ],
     set: [
