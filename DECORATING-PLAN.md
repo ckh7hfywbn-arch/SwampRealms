@@ -161,6 +161,6 @@ Interior styling (flooring and wall materials, curtains, windows, themes) is spr
 12. Many pieces and lots of decorations, with performance checked.
 13. Regression check on building, inventory, survival and multiplayer.
 
-## 8. Open questions for you
-1. When a table is broken, should its decorations go straight to your bag, or drop on the floor as items (as blocks do now)? My plan: to the bag, or dropped if the bag is full.
-2. Should other players in multiplayer be able to move or take decorations in your house, or only the world's host? My plan: only the host and anyone the host trusts (this ties into the future "visiting homes" feature).
+## 8. Decisions on the open questions (13 Nov)
+1. **Broken furniture:** its decorations go straight to the breaker's bag, or drop on the floor as items if the bag is full.
+2. **Multiplayer:** anyone in the room can place, move, take or break decorations (same as blocks today). No ownership or trust list; players choose who they play with.
