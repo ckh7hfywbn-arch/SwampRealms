@@ -3164,18 +3164,18 @@
   var HIT0 = { po: 5, kb: 1, up: 0 }, HITK = HIT0;   // what the hit landing right now does to poise and knockback (set by the attack, then put back)
   function poiseHit(e) {   // true: the creature staggers now
     if (e.pm === undefined) { e.pm = (POISE[e.k] || 12) * (e.elite ? 1.6 : 1) * (e.small ? 0.55 : 1); e.po = e.pm; }
-    e.pt = 0; e.fl = 0.3; e.po -= HITK.po; if (e.po > 0) return false;
+    e.pt = 0; e.hf = 0.3; e.po -= HITK.po; if (e.po > 0) return false;
     if (POISE_ATK[e.st]) { e.pb = 1; return false; }
     e.po = e.pm; e.pb = 0; return true;
   }
   function staggerFx(e, x, y) { thud(110, 0.1); for (var k = 0; k < 6; k++) { var a = -Math.PI / 2 + (k - 2.5) * 0.45; parts.push({ x: x, y: y, vx: Math.cos(a) * 3.2, vy: Math.sin(a) * 3.2, life: 0.35, max: 0.4, c: k % 2 ? "#ffe48a" : "#ffffff", s: 3 }); } text(x, y - 0.4, "Stagger!", "#ffd36a"); }
   function poiseTick(e, dt, x, y) {
-    e.fl = Math.max(0, (e.fl || 0) - dt); if (e.pm === undefined) return;
+    e.hf = Math.max(0, (e.hf || 0) - dt); if (e.pm === undefined) return;   // (hf: the hit flash. NOT e.fl: bats and wasps keep their wing beat there)
     e.pt = (e.pt || 0) + dt; if (e.pt > 1.4 && e.po < e.pm) e.po = Math.min(e.pm, e.po + e.pm * dt * 0.8);
     if (e.pb && !POISE_ATK[e.st]) { e.pb = 0; e.po = e.pm; e.hurt = Math.max(e.hurt, 0.55); staggerFx(e, x, y); }
   }
   function damageEnemy(e, dmg, face) {
-    if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.fl = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
+    if (MP.on && MP.role === "guest") { if (e.def) return; mpSend({ t: "hit", i: e.nid, d: dmg, f: face }); e.hf = 0.3; text(e.x, e.y - e.h - 0.3, "-" + Math.round(dmg), "#ffe48a"); chips(e.x, e.y - e.h * 0.5, ENEMY[e.k].chip, 6, 5); thud(180 + Math.random() * 60, 0.06); return; }   // the host applies it
     if (e.boss) return damageBoss(e, coatDmg(e, dmg), face);
     if (e.def) return; enemies.forEach(function (o) { if (o !== e && !o.def && !o.boss && Math.abs(o.x - e.x) < 9 && Math.abs(o.y - e.y) < 5) o.alert = Math.max(o.alert || 0, 5); }); e.alert = 6;   // ALARM: a hurt creature calls the others nearby
     dmg = coatDmg(e, eliteDmg(e, dmg)); if (e.k === "crawler" && e.sh) { dmg = Math.max(1, Math.round(dmg * 0.2)); thud(1500, 0.04); chips(e.x, e.y - e.h * 0.6, "#e8d8ff", 4, 5); } e.hp -= dmg; var stg = poiseHit(e); if (stg && e.hp > 0) { e.hurt = 0.55; staggerFx(e, e.x, e.y - e.h); }
@@ -5741,7 +5741,7 @@
     if (e.boss) return drawBoss(g, e, now);
     var sx = ox + e.x * ts, sy = oy + e.y * ts;
     if (sx < -ts * 3 || sx > vw + ts * 3 || sy < -ts * 3 || sy > vh + ts * 3) return;
-    var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, eh0 = Math.max(e.hurt, e.fl || 0), h = Math.max(0, eh0) / 0.3, flash = eh0 > 0.2 || e.def, d = ENEMY[e.k];
+    var f = e.dir, t = e.tt, pd = e.def ? 1 - e.dead / 0.6 : 0, eh0 = Math.max(e.hurt, e.hf || 0), h = Math.max(0, eh0) / 0.3, flash = eh0 > 0.2 || e.def, d = ENEMY[e.k];
     g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30 * (e.sz || 1), ts / 30 * (e.sz || 1));
     g.globalAlpha = 1 - pd * pd * 0.9;
     if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
@@ -11188,7 +11188,7 @@
   // corrupted creatures are drawn into a small canvas, then stained blood red and black (the hit flash still shows white)
   var MCOC = null, MCOX = null;
   function mcCorruptDraw(g, m, now, drawFn) {
-    var flash = Math.max(m.hurt, m.fl || 0) > 0.2 || m.def; if (flash) { drawFn(g); return; }
+    var flash = Math.max(m.hurt, m.hf || 0) > 0.2 || m.def; if (flash) { drawFn(g); return; }
     var S2 = Math.ceil(ts * (m.k === "brute" || m.k === "witch" ? 5.4 : 4.4)); if (!MCOC) { MCOC = document.createElement("canvas"); MCOX = MCOC.getContext("2d"); } if (MCOC.width !== S2) { MCOC.width = S2; MCOC.height = S2; }
     var c = MCOX, ax = S2 / 2, ay = S2 * 0.72, sox = ox, soy = oy, sx = ox + m.x * ts, sy = oy + m.y * ts;
     c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = "source-over"; c.globalAlpha = 1; c.clearRect(0, 0, S2, S2); c.imageSmoothingEnabled = false;
