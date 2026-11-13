@@ -15837,10 +15837,10 @@
   }
   // PERF: a whole crown is painted once and kept until any of its leaves change; each frame it is one drawImage.
   function canFree() { CANT.forEach(function (e) { cvFree(e.cv); }); CANT.clear(); CANT_PX = 0; }
-  var CANT = new Map(), CANT_PX = 0, CSTAMP = null, CSTN = 0, CANL = [], CANBFS = [], CANS = 0;
+  var CANT = new Map(), CANT_PX = 0, CSTAMP = null, CSTN = 0, CANL = [], CANBFS = [], CANSZ = 0;
   function drawCanopies(g, now, X0, X1, Y0, Y1) {
     var i, j, q, tt = now / 1000, S = Math.max(2, Math.round(ts * dpr));
-    if (CANS !== S) { CANS = S; canFree(); }
+    if (CANSZ !== S) { CANSZ = S; canFree(); }
     if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Uint32Array(W * H); CSTN++;
     var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (j = Math.max(1, Y0 - 3); j <= Math.min(H - 2, Y1 + 3); j++) for (i = Math.max(1, X0 - 3); i <= Math.min(W - 2, X1 + 3); i++) {   // (crowns are fluffier than their leaves: look a few tiles past the screen)
@@ -21664,17 +21664,61 @@
   function seaIslAt(x, y) { var I = seaIslands(); for (var i = 0; i < I.length; i++) if (Math.hypot(I[i].x - x, I[i].y - y) < I[i].r + 3) return I[i]; return null; }
   function seaTap(sx, sy) {   // returns true if the tap was used
     var s = OCS.sea, w = seaFromScreen(sx, sy), x = w[0], y = w[1];
+    if (Math.hypot(s.x - x, s.y - y) < 3.4) { s.sling = { sx: sx, sy: sy, cx: sx, cy: sy }; if (!S.st.slingtip) { S.st.slingtip = 1; toast("Pull back from your boat to aim the cannons, then let go to fire.", "#ffd27a"); } return true; }   // CANNON AIMING: pull back from your boat
     if (s.lev && s.lev.up && !s.lev.dead && Math.hypot(s.lev.hx - x, s.lev.hy - y) < 4) { seaFire({ x: s.lev.hx, y: s.lev.hy, ang: 0, sp: 0 }, true); return true; }   // tap the Leviathan to fire
     for (var i = 0; i < s.ships.length; i++) { var sh = s.ships[i]; if (!sh.sink && Math.hypot(sh.x - x, sh.y - y) < 4) { seaFire(sh, true); return true; } }
     var I = seaIslAt(x, y); if (I) { s.tgt = { x: I.x, y: I.y, isl: I }; thud(420, 0.03); if (!ocS().isl[I.id]) { ocS().isl[I.id] = 1; S.st.islands = Object.keys(ocS().isl).filter(function (k) { return /^\d+$/.test(k); }).length; } return true; }
     for (var j = 0; j < OSITES.length; j++) if (Math.hypot(OSITES[j].x - x, OSITES[j].y - y) < 3) { s.tgt = { x: OSITES[j].x, y: OSITES[j].y, site: OSITES[j] }; return true; }
     s.tgt = { x: x, y: y }; return true;
   }
+  // ---- CANNON AIMING: press on your boat and pull back like a slingshot; the farther you pull, the farther the shot. A dotted arc and a
+  // landing ring show where it will come down; let go to fire. The balls fly in a real arc (with a shadow on the water), the cannons
+  // flash and smoke, and a hit bursts in fire, smoke and splinters; a miss throws up a splash.
+  function seaRange() { return [26, 30, 34][shipUp("can")]; }
+  function slingTarget() { var s = OCS.sea, L = s.sling; if (!L) return null; var w0 = seaFromScreen(L.sx, L.sy), w1 = seaFromScreen(L.cx, L.cy), dx = w0[0] - w1[0], dy = w0[1] - w1[1], d = Math.hypot(dx, dy); if (d < 0.8) return null;
+    var rng = seaRange(), dist = Math.min(rng, d * 2.4); return { x: s.x + dx / d * dist, y: s.y + dy / d * dist, d: dist, p: dist / rng }; }
+  function seaFireAt(tx, ty) {   // fire at a spot on the water (the ball lands there)
+    var s = OCS.sea, cl = shipUp("can"); if (s.cd > 0) { nag("The cannons are reloading..."); return; }
+    var d = Math.hypot(tx - s.x, ty - s.y), a = Math.atan2(ty - s.y, tx - s.x), bs = cl >= 2 ? 26 : 22, T = Math.max(0.35, d / bs); s.cd = s.cdMax = [1.5, 1.1, 0.9][cl];
+    var CD = canOf(); (cl ? [-0.04, 0.04] : [0]).forEach(function (da) { s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a + da) * d / T, vy: Math.sin(a + da) * d / T, life: T, T: T, mine: 1, dmg: cl >= 2 ? 2 : 1, star: cl >= 2, cd: CD.id, land: 1 }); });
+    seaMuzzle(a); thud(70, 0.12); shake = Math.max(shake, 0.25);
+  }
+  function seaMuzzle(a) { var s = OCS.sea; (s.booms = s.booms || []).push({ k: "muzzle", x: s.x + Math.cos(a) * 1.4, y: s.y + Math.sin(a) * 1.4, a: a, t: 0 }); s.recoil = 0.25; }
+  function seaBoom(x, y, kind) { var s = OCS.sea; (s.booms = s.booms || []).push({ k: kind, x: x, y: y, t: 0, sp: [0, 1, 2, 3, 4, 5, 6, 7].map(function (q) { var a = q / 8 * 6.28 + Math.random() * 0.5; return [Math.cos(a), Math.sin(a), 0.6 + Math.random() * 0.8]; }) }); }
+  function seaBoomsTick(dt) { var s = OCS.sea; if (!s.booms) return; for (var i = s.booms.length - 1; i >= 0; i--) { s.booms[i].t += dt; if (s.booms[i].t > (s.booms[i].k === "muzzle" ? 0.5 : 0.9)) s.booms.splice(i, 1); } if (s.recoil > 0) s.recoil = Math.max(0, s.recoil - dt); }
+  function seaBoomsDraw(g, k) {   // (drawn in the chart's own space: world units times k)
+    var s = OCS.sea; (s.booms || []).forEach(function (b) {
+      var f = b.t, X = b.x * k, Y = b.y * k;
+      if (b.k === "muzzle") { var e = f / 0.5; g.save(); g.translate(X, Y); g.rotate(b.a); g.globalAlpha = Math.max(0, 1 - e * 2.2); g.fillStyle = "#fff2b0"; g.beginPath(); g.moveTo(0, -k * 0.35); g.lineTo(k * (1 + e * 2), 0); g.lineTo(0, k * 0.35); g.closePath(); g.fill(); g.globalAlpha = 1; g.restore();
+        for (var q = 0; q < 4; q++) { g.fillStyle = "rgba(220,220,220," + (0.55 * (1 - e)).toFixed(3) + ")"; g.beginPath(); g.arc(X + Math.cos(b.a) * k * (0.6 + e * 1.6 + q * 0.3), Y + Math.sin(b.a) * k * (0.6 + e * 1.6) + (q - 1.5) * k * 0.3 - e * k * 0.6, k * (0.35 + e * 0.6), 0, 7); g.fill(); } return; }
+      var e2 = f / 0.9;
+      if (b.k === "hit") {
+        g.fillStyle = "rgba(255,230,150," + Math.max(0, 0.9 - e2 * 3).toFixed(3) + ")"; g.beginPath(); g.arc(X, Y, k * (0.8 + e2 * 3), 0, 7); g.fill();
+        g.fillStyle = "rgba(255,120,40," + Math.max(0, 0.8 - e2 * 1.6).toFixed(3) + ")"; g.beginPath(); g.arc(X, Y, k * (0.6 + e2 * 1.8), 0, 7); g.fill();
+        b.sp.forEach(function (v) { var r = k * v[2] * (1 + e2 * 3.2); g.strokeStyle = "rgba(110,70,36," + (1 - e2).toFixed(3) + ")"; g.lineWidth = k * 0.16; g.lineCap = "round"; g.beginPath(); g.moveTo(X + v[0] * r, Y + v[1] * r - e2 * k); g.lineTo(X + v[0] * (r + k * 0.5), Y + v[1] * (r + k * 0.5) - e2 * k); g.stroke();
+          g.fillStyle = "rgba(60,56,60," + (0.45 * (1 - e2)).toFixed(3) + ")"; g.beginPath(); g.arc(X + v[0] * r * 0.6, Y + v[1] * r * 0.6 - e2 * k * 2, k * (0.4 + e2 * 0.7), 0, 7); g.fill(); });
+      } else {   // a splash: a white ring and droplets
+        g.strokeStyle = "rgba(240,252,255," + (0.8 * (1 - e2)).toFixed(3) + ")"; g.lineWidth = k * 0.18; g.beginPath(); g.ellipse(X, Y, k * (0.4 + e2 * 2.2), k * (0.25 + e2 * 1.3), 0, 0, 7); g.stroke();
+        b.sp.forEach(function (v) { var up = Math.sin(Math.min(1, e2 * 1.6) * Math.PI) * k * 1.4 * v[2]; g.fillStyle = "rgba(230,248,255," + (1 - e2).toFixed(3) + ")"; g.beginPath(); g.arc(X + v[0] * k * e2 * 1.6, Y + v[1] * k * e2 * 0.9 - up, k * 0.14, 0, 7); g.fill(); });
+      }
+    });
+    if (s.sling) {   // the aim: the pull-back line from the boat, a dotted arc to where it lands, a ring there
+      var tg = slingTarget(); if (!tg) return; var x0 = s.x * k, y0 = s.y * k, x1 = tg.x * k, y1 = tg.y * k, ok = s.cd <= 0;
+      var col = ok ? "255,236,160" : "255,140,120", mid = [(x0 + x1) / 2, (y0 + y1) / 2 - tg.d * k * 0.18];
+      g.setLineDash([k * 0.35, k * 0.35]); g.lineWidth = Math.max(2, k * 0.14); g.strokeStyle = "rgba(" + col + ",.9)"; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(mid[0], mid[1], x1, y1); g.stroke(); g.setLineDash([]);
+      g.strokeStyle = "rgba(" + col + ",.95)"; g.lineWidth = Math.max(2, k * 0.12); g.beginPath(); g.ellipse(x1, y1, k * 1.6, k * 1, 0, 0, 7); g.stroke(); g.beginPath(); g.moveTo(x1 - k * 0.6, y1); g.lineTo(x1 + k * 0.6, y1); g.moveTo(x1, y1 - k * 0.4); g.lineTo(x1, y1 + k * 0.4); g.stroke();
+      var pw = seaToScreen(0, 0); var cw = [s.sling.cx - pw[0], s.sling.cy - pw[1]];   // the pull band back to your finger
+      g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = Math.max(2, k * 0.1); g.beginPath(); g.moveTo(x0, y0); g.lineTo(cw[0], cw[1]); g.stroke();
+      g.fillStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.arc(cw[0], cw[1], k * 0.35, 0, 7); g.fill();
+    }
+  }
+  document.addEventListener("pointermove", function (e) { if (OCS && OCS.sea && OCS.sea.sling) { var r = cv.getBoundingClientRect(); OCS.sea.sling.cx = e.clientX - r.left; OCS.sea.sling.cy = e.clientY - r.top; } }, { passive: true });
+  document.addEventListener("pointerup", function () { if (!(OCS && OCS.sea && OCS.sea.sling)) return; var tg = slingTarget(); OCS.sea.sling = null; aim.down = false; if (tg) seaFireAt(tg.x, tg.y); });
   function seaFire(sh, manual) {
     var s = OCS.sea, cl = shipUp("can"), rng = [26, 30, 34][cl]; if (s.cd > 0) { if (manual) nag("The cannons are reloading..."); return; }
     var d = Math.hypot(sh.x - s.x, sh.y - s.y); if (d > rng) { if (manual) nag("Out of range. Sail closer!"); return; }
     s.cd = s.cdMax = [1.5, 1.1, 0.9][cl]; var bs = cl >= 2 ? 26 : 22, t = d / bs, tx = sh.x + Math.cos(sh.ang) * (sh.sp || 0) * t, ty = sh.y + Math.sin(sh.ang) * (sh.sp || 0) * t, a = Math.atan2(ty - s.y, tx - s.x);
-    var CD = canOf(); (cl ? [-0.045, 0.045] : [0]).forEach(function (da) { s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a + da) * bs, vy: Math.sin(a + da) * bs, life: Math.min(1.8, t + 0.2), mine: 1, dmg: cl >= 2 ? 2 : 1, star: cl >= 2, cd: CD.id }); }); thud(70, 0.12); shake = Math.max(shake, 0.15);
+    var CD = canOf(); (cl ? [-0.045, 0.045] : [0]).forEach(function (da) { s.balls.push({ x: s.x, y: s.y, vx: Math.cos(a + da) * bs, vy: Math.sin(a + da) * bs, life: Math.min(1.8, t + 0.2), T: Math.min(1.8, t + 0.2), mine: 1, dmg: cl >= 2 ? 2 : 1, star: cl >= 2, cd: CD.id }); }); seaMuzzle(a); thud(70, 0.12); shake = Math.max(shake, 0.15);
     for (var i = 0; i < 6; i++) s.wake.push({ x: s.x + Math.cos(a) * 1.5, y: s.y + Math.sin(a) * 1.5, life: 0.6, smoke: 1, vx: Math.cos(a) * 2 + (Math.random() - 0.5), vy: Math.sin(a) * 2 + (Math.random() - 0.5) });
   }
   function seaSpawnShip() {
@@ -21735,6 +21779,7 @@
     return { x: best.x - uy * sg * R + ux * 2, y: best.y + ux * sg * R + uy * 2 };
   }
   function seaUpdate(dt) {
+    seaBoomsTick(dt);
     var sc = OCS, s = sc.sea, B = ocS().boat, i; advTime(dt); tickWeather(dt); p4SeaTick(dt, s); s.t += dt; sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     var turn = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), thr = ((keys.u || tk.u) ? 1 : 0) - ((keys.d || tk.d) ? 1 : 0), want = s.sp, maxSp = 11 * (fx("speed") ? 1.2 : 1) * (S.lair && Array.isArray(S.lair.crew) && S.lair.crew.some(function (c) { return c.job === "ship"; }) ? 1.2 : 1);
     seaWxStep(s, dt); maxSp *= s.spMul * (hasCharm("wander") ? 1.1 : 1); migSeaStep(s, dt); levStep(s, dt);   // WEATHER AT SEA, MIGRATIONS, THE LEVIATHAN
@@ -21776,11 +21821,11 @@
     if (nearest && nd < 18 && s.cd <= 0 && s.auto !== false) seaFire(nearest, false);   // the deckhand frog fires the cannons when pirates come close
     for (i = s.balls.length - 1; i >= 0; i--) {
       var b = s.balls[i]; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; var hit = false;
-      if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2)) { hit = true; sh2.hp -= b.dmg || 1; sh2.hurt = 0.3; for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
+      if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && (!b.land || b.life < 0.12) && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2) + (b.land ? 0.6 : 0)) { hit = true; sh2.hp -= b.dmg || 1; sh2.hurt = 0.3; seaBoom(b.x, b.y, "hit"); for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
         if (sh2.hp <= 0) { sh2.sink = 0.01; S.st.pships = (S.st.pships || 0) + 1; s.loot.push({ x: sh2.x, y: sh2.y, items: seaLoot(sh2), t: 0 }); snd("coin"); toast(sh2.big ? "You sank a pirate galleon! Its cargo is floating free." : "Pirate sloop sunk! Sail over the floating crate to grab its cargo.", "#7af0ff"); } } });
-      else if (Math.hypot(s.x - b.x, s.y - b.y) < 2) { hit = true; seaHurt(b.big ? 16 : 11); for (var q2 = 0; q2 < 8; q2++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); }
+      else if (Math.hypot(s.x - b.x, s.y - b.y) < 2) { hit = true; seaBoom(b.x, b.y, "hit"); seaHurt(b.big ? 16 : 11); for (var q2 = 0; q2 < 8; q2++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); }
       if (b.mine && !hit && levHit(b)) hit = true;
-      if (hit || b.life <= 0) { if (!hit) { for (var q3 = 0; q3 < 4; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); waterSplash(b.x, b.y, b.big ? 1.6 : 1.2, 1); } s.balls.splice(i, 1); }
+      if (hit || b.life <= 0) { if (!hit) { seaBoom(b.x, b.y, "splash"); for (var q3 = 0; q3 < 4; q3++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, spl: 1 }); waterSplash(b.x, b.y, b.big ? 1.6 : 1.2, 1); } s.balls.splice(i, 1); }
     }
     for (i = s.loot.length - 1; i >= 0; i--) { var L = s.loot[i]; L.t += dt; if (Math.hypot(L.x - s.x, L.y - s.y) < 3) { L.items.forEach(function (it) { give(it[0], it[1], undefined, undefined, true); texts.push({ s: "+" + it[1] + " " + ITEMS[it[0]].n, x: cam.x, y: cam.y - 1 - texts.length * 0.4, c: "#ffd23f", life: 1.6 }); }); s.loot.splice(i, 1); snd("coin"); } else if (L.t > 90) s.loot.splice(i, 1); }
     if (s.gulls.length < 4 && Math.random() < dt * 0.3) s.gulls.push({ x: s.x + (Math.random() - 0.5) * 60, y: s.y + (Math.random() - 0.5) * 40, a: Math.random() * 6.28, t: 0, life: 20 });
@@ -21916,7 +21961,8 @@
       if (jump < 0.05 && Math.random() < 0.05) s.wake.push({ x: ax, y: ay, vx: 0, vy: 0, life: 0.6, spl: 1 }); });
     seaBoatTop(g, s.x * k, s.y * k, s.ang, k, now, { lit: dl < 0.7, hurt: s.hurt > 0 && Math.floor(now / 70) % 2 === 0, up: ocS().boat.up || {} });
     s.balls.forEach(function (b) { var CB = b.mine ? (CANS.filter(function (q) { return q.id === b.cd; })[0] || CANS[0]) : CANS[0]; if (CB.trail) { var spd = Math.hypot(b.vx, b.vy) || 1, gt = g.createLinearGradient(b.x * k, b.y * k, (b.x - b.vx / spd * 2.4) * k, (b.y - b.vy / spd * 2.4) * k); gt.addColorStop(0, "rgba(" + CB.trail + ",.85)"); gt.addColorStop(1, "rgba(" + CB.trail + ",0)"); g.strokeStyle = gt; g.lineWidth = k * 0.4; g.lineCap = "round"; g.beginPath(); g.moveTo(b.x * k, b.y * k); g.lineTo((b.x - b.vx / spd * 2.4) * k, (b.y - b.vy / spd * 2.4) * k); g.stroke(); if (CB.sparkle && Math.random() < 0.5) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5), vy: (Math.random() - 0.5), life: 0.4, fire: 1 }); }
-      if (b.star) { oG(g, b.x * k, b.y * k, k * 0.9, "rgba(140,220,255,.6)"); } g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(b.x * k + k * 0.2, b.y * k + k * 0.3, k * 0.22, 0, 6.2832); g.fill(); g.fillStyle = CB.ball; g.beginPath(); g.arc(b.x * k, b.y * k - Math.sin(clamp(b.life, 0, 1.5) * 2) * k * 0.4, k * 0.24, 0, 6.2832); g.fill(); });
+      if (b.star) { oG(g, b.x * k, b.y * k, k * 0.9, "rgba(140,220,255,.6)"); } var bf = b.T ? clamp(1 - b.life / b.T, 0, 1) : 0.5, bh = Math.sin(bf * Math.PI) * k * (0.6 + (b.T || 1) * 1.6), bsz = k * (0.24 + bh / k * 0.05); g.fillStyle = "rgba(0,0,0," + (0.3 - bh / k * 0.04).toFixed(3) + ")"; g.beginPath(); g.ellipse(b.x * k, b.y * k + k * 0.15, k * 0.26, k * 0.14, 0, 0, 6.2832); g.fill(); g.fillStyle = CB.ball; g.beginPath(); g.arc(b.x * k, b.y * k - bh, bsz, 0, 6.2832); g.fill(); g.fillStyle = "rgba(255,255,255,.4)"; g.beginPath(); g.arc(b.x * k - bsz * 0.35, b.y * k - bh - bsz * 0.35, bsz * 0.3, 0, 6.2832); g.fill(); });   // a real arc: up and down, the shadow on the water below
+    seaBoomsDraw(g, k);
     s.gulls.forEach(function (gu) { var fl = Math.sin(gu.t * 9) * 0.5, gx2 = gu.x * k, gy2 = gu.y * k; g.strokeStyle = "#ffffff"; g.lineWidth = Math.max(1.5, k * 0.12); g.beginPath(); g.moveTo(gx2 - k * 0.7, gy2 - fl * k * 0.3); g.quadraticCurveTo(gx2 - k * 0.3, gy2 - k * 0.3, gx2, gy2); g.quadraticCurveTo(gx2 + k * 0.3, gy2 - k * 0.3, gx2 + k * 0.7, gy2 - fl * k * 0.3); g.stroke(); });
     g.restore(); drawWaterFx(g, vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy, k); g.save(); g.translate(vw / 2 - cam.x * k + shx, vh / 2 - cam.y * k + shy);
     // island names
