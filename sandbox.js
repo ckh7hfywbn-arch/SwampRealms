@@ -10331,55 +10331,66 @@
     var cool = clamp(side * side * 0.9 - 0.15, 0, 0.75); hue = hue * (1 - cool) + (-172) * cool;   // the sides lean cyan (-172 = 188)
     return hue;
   }
-  function nxIsland(F) {   // the whole island at 16 px per cell: luminous cloud-ground, white cloud steps, glowing rims, cloud billows under every south edge
-    var w = F.w, h = F.h, PW = w * 16, PH = (h + 3) * 16, c = document.createElement("canvas"); c.width = PW; c.height = PH;
-    var g = c.getContext("2d"), im = g.createImageData(PW, PH), d = im.data, x, y, px, py;
-    var fl = function (xx, yy) { return xx >= 0 && yy >= 0 && xx < w && yy < h && !F.wall[yy * w + xx]; };
-    var put = function (X, Y, rgb, a) { if (X < 0 || Y < 0 || X >= PW || Y >= PH) return; var k = (Y * PW + X) * 4; if (a == null || a >= 1) { d[k] = rgb[0]; d[k + 1] = rgb[1]; d[k + 2] = rgb[2]; d[k + 3] = 255; return; } var oa = d[k + 3] / 255; if (oa <= 0) { d[k] = rgb[0]; d[k + 1] = rgb[1]; d[k + 2] = rgb[2]; d[k + 3] = a * 255; return; } d[k] = d[k] * (1 - a) + rgb[0] * a; d[k + 1] = d[k + 1] * (1 - a) + rgb[1] * a; d[k + 2] = d[k + 2] * (1 - a) + rgb[2] * a; d[k + 3] = Math.max(d[k + 3], a * 255); };
-    var puff = function (X, Y) { return 0.5 + 0.25 * Math.sin(X * 0.09 + Math.sin(Y * 0.07) * 2.6) + 0.25 * Math.cos(Y * 0.11 + Math.sin(X * 0.05) * 2.1); };   // soft cloudy light and shade
-    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
-      if (!fl(x, y)) continue;
-      var path = F.nx.path[y * w + x], up = fl(x, y - 1), dn = fl(x, y + 1), lf = fl(x - 1, y), rt = fl(x + 1, y);
-      for (py = 0; py < 16; py++) for (px = 0; px < 16; px++) {
-        var X = x * 16 + px, Y = y * 16 + py, r = nxH(X, Y, 1), hue = nxHue(X, Y, w, h), pf = puff(X, Y), col;
-        if (path) {   // the terrace: white marble shot with gold, glowing
-          var seam = (px + (y % 2) * 8) % 16 === 0 || py === 0;
-          col = seam ? hsl2(42, 0.85, 0.66) : hsl2(45 + pf * 20, 0.7, 0.86 + pf * 0.08 + (px + py < 5 ? 0.04 : 0)); if (r > 0.97) col = hsl2(X * 3 + Y * 5, 0.9, 0.8);
-        } else {   // cloud-ground: bright, saturated colour with soft billows of light
-          col = hsl2(hue + (pf - 0.5) * 30, 0.78, 0.55 + pf * 0.2 + (nxH(X >> 1, Y >> 1, 4) - 0.5) * 0.02);
-          if (r < 0.006) col = [255, 255, 255];   // a glint
-          else if (r > 0.994) col = hsl2(hue + 150, 1, 0.75);   // a fleck of a contrasting colour
-        }
-        if (!up && py < 2) col = py === 0 ? [255, 255, 255] : hsl2(hue + 20, 1, 0.86);   // glowing white rims facing the void
-        if (!lf && px === 0 || !rt && px === 15) col = hsl2(hue + 10, 1, 0.88);
-        if (!dn && py >= 14) col = hsl2(hue, 0.7, py === 15 ? 0.82 : 0.7);
-        put(X, Y, col);
-      }
-      if (!path) for (var f = 0; f < 2; f++) if (nxH(x, y, 20 + f) < 0.2) {   // little star-flowers
-        var fx = x * 16 + 2 + Math.floor(nxH(x, y, 30 + f) * 11), fy = y * 16 + 2 + Math.floor(nxH(x, y, 40 + f) * 10), fh = nxHue(fx, fy, w, h) + 160;
-        put(fx, fy, [255, 255, 245]); put(fx - 1, fy, hsl2(fh, 1, 0.7)); put(fx + 1, fy, hsl2(fh, 1, 0.7)); put(fx, fy - 1, hsl2(fh, 1, 0.7)); put(fx, fy + 1, hsl2(fh, 1, 0.7));
-      }
-      if (!dn) for (px = 0; px < 16; px++) {   // under a south edge: billowing cyan-white cloud that thins into the void
-        var X2 = x * 16 + px, bump = Math.abs(Math.sin((X2 + nxH(x, y, 7) * 9) * 0.21)), depth = Math.round(14 + 14 * bump + 10 * nxH(X2 >> 3, y, 7));
-        if (!lf && px < 5) depth = Math.round(depth * (0.3 + px * 0.14)); if (!rt && px > 10) depth = Math.round(depth * (0.3 + (15 - px) * 0.14));
-        for (var k = 0; k < depth; k++) {
-          var Y2 = (y + 1) * 16 + k, cy = Math.floor(Y2 / 16); if (cy < h && fl(x, cy)) break;
-          var kk = k / depth, sh = 0.5 + 0.5 * Math.sin(X2 * 0.33 + k * 0.4);
-          var cc = kk < 0.12 ? [255, 255, 255] : hsl2(192 + kk * 30 - sh * 8, 0.85, 0.9 - kk * 0.32 - (sh > 0.85 ? 0.06 : 0));
-          put(X2, Y2, cc, kk > 0.7 ? (1 - kk) / 0.3 : 1);
-        }
-        if (nxH(X2 >> 1, y, 12) > 0.9 && px % 3 === 0) for (var s = 0; s < 7; s++) put(X2, (y + 1) * 16 + depth + s * 2, [230, 252, 255], 0.8 - s * 0.11);   // drifting wisps of light
-      }
+  function nxIsland(F) {   // THE SWAMPREALMS ISLAND in the house style, painted once at 3x: a soft iridescent meadow (gold to the north, rose and violet in the
+    // middle, teal to the south) with rounded edges and a lit rim, little tufts and star-flowers, an opal marble terrace, cloud stepping
+    // stones, and crystal cliffs hanging under every southern edge, glowing from inside and fading into the void
+    var w = F.w, h = F.h, K = 3, PW = w * 16, PH = (h + 3) * 16, c = document.createElement("canvas"); c.width = PW * K; c.height = PH * K;
+    var g = c.getContext("2d"), x, y; g.setTransform(K, 0, 0, K, 0, 0); g.lineJoin = "round"; g.lineCap = "round";
+    var fl = function (xx, yy) { return xx >= 0 && yy >= 0 && xx < w && yy < h && !F.wall[yy * w + xx]; }, R = 6;
+    var rgbS = function (a, al) { return "rgba(" + a[0] + "," + a[1] + "," + a[2] + "," + (al == null ? 1 : al) + ")"; };
+    var hueAt = function (X, Y) { return nxHue(X, Y, w, h); };
+    // 1) crystal cliffs under the south edges (drawn first, so the ground sits on them)
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { if (!fl(x, y) || fl(x, y + 1)) continue;
+      var X0 = x * 16, Yb = (y + 1) * 16, hu = hueAt(X0 + 8, Yb), lf = fl(x - 1, y) && !fl(x - 1, y + 1), rt = fl(x + 1, y) && !fl(x + 1, y + 1);
+      for (var q = 0; q < 3; q++) {   // three hanging crystals per cell, longest in the middle
+        var cx = X0 + 3 + q * 5 + (nxH(x, y, 60 + q) - 0.5) * 2, len = 10 + nxH(x, y, 63 + q) * 18 * (q === 1 ? 1.3 : 1) * (lf || q ? 1 : 0.6) * (rt || q < 2 ? 1 : 0.6), wd = 3 + nxH(x, y, 66 + q) * 2.2;
+        var cg = g.createLinearGradient(0, Yb - 2, 0, Yb + len); cg.addColorStop(0, rgbS(hsl2(hu + 20, 0.6, 0.78))); cg.addColorStop(0.5, rgbS(hsl2(hu + 40, 0.7, 0.6), 0.9)); cg.addColorStop(1, rgbS(hsl2(hu + 60, 0.8, 0.45), 0));
+        g.beginPath(); g.moveTo(cx - wd, Yb - 2); g.lineTo(cx + wd, Yb - 2); g.lineTo(cx + wd * 0.35, Yb + len * 0.82); g.lineTo(cx, Yb + len); g.lineTo(cx - wd * 0.35, Yb + len * 0.82); g.closePath(); g.fillStyle = cg; g.fill();
+        g.strokeStyle = rgbS(hsl2(hu + 40, 0.8, 0.88), 0.55); g.lineWidth = 0.6; g.beginPath(); g.moveTo(cx - wd * 0.4, Yb); g.lineTo(cx - wd * 0.1, Yb + len * 0.7); g.stroke(); }
+      var rg = g.createLinearGradient(0, Yb - 1, 0, Yb + 7); rg.addColorStop(0, rgbS(hsl2(hu + 10, 0.55, 0.62))); rg.addColorStop(1, rgbS(hsl2(hu + 30, 0.6, 0.42), 0)); g.fillStyle = rg; g.fillRect(X0 - (lf ? 0 : -2), Yb - 1, 16 + (lf ? 0 : -2) + (rt ? 0 : -2), 8);   // the earthy underside
     }
-    F.nx.stones.forEach(function (st) {   // white cloud steps, like a stair of light
-      var sx = Math.round(st[0] * 16), sy = Math.round(st[1] * 16), r = st[2];
-      for (var yy = -r; yy <= r; yy++) for (var xx = -r - 2; xx <= r + 2; xx++) {
-        var e = (xx * xx) / ((r + 2) * (r + 2)) + (yy * yy) / (r * r); if (e > 1) continue;
-        put(sx + xx, sy + yy + 2, [40, 120, 200], 0.25);
-        put(sx + xx, sy + yy, e > 0.72 ? [176, 236, 255] : yy > r * 0.35 ? [214, 246, 255] : [255, 255, 255]);
-      }
+    // 2) the ground: one rounded silhouette per cell (rounded only where it meets the void), filled from the island's colour field
+    var gg = g.createLinearGradient(0, 4 * 16, 0, h * 16); [0, 0.25, 0.5, 0.75, 1].forEach(function (k) { gg.addColorStop(k, rgbS(hsl2(48 - k * 220, 0.55, 0.66))); });
+    g.save(); g.beginPath();
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { if (!fl(x, y)) continue; var n = !fl(x, y - 1), s = !fl(x, y + 1), wv = !fl(x - 1, y), e = !fl(x + 1, y);
+      if (g.roundRect) g.roundRect(x * 16, y * 16, 16.4, 16.4, [n && wv ? R : 0, n && e ? R : 0, s && e ? R : 0, s && wv ? R : 0]); else g.rect(x * 16, y * 16, 16.4, 16.4); }
+    g.clip(); g.fillStyle = gg; g.fillRect(0, 0, PW, h * 16);
+    for (var b = 0; b < w * h * 0.9; b++) {   // soft billows of colour and light, so it shimmers instead of banding
+      var bx = nxH(b, 1, 70) * PW, by = nxH(b, 2, 70) * h * 16, br = 10 + nxH(b, 3, 70) * 26, hu2 = hueAt(bx, by) + (nxH(b, 4, 70) - 0.5) * 40, lt = 0.6 + nxH(b, 5, 70) * 0.18;
+      var bg2 = g.createRadialGradient(bx, by, 0, bx, by, br); bg2.addColorStop(0, rgbS(hsl2(hu2, 0.62, lt), 0.42)); bg2.addColorStop(1, rgbS(hsl2(hu2, 0.62, lt), 0)); g.fillStyle = bg2; g.fillRect(bx - br, by - br, br * 2, br * 2); }
+    var tl = g.createLinearGradient(0, 0, PW, h * 16); tl.addColorStop(0, "rgba(255,255,255,.14)"); tl.addColorStop(0.5, "rgba(255,255,255,0)"); tl.addColorStop(1, "rgba(20,10,60,.16)"); g.fillStyle = tl; g.fillRect(0, 0, PW, h * 16);   // lit from the top left
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { if (!fl(x, y) || F.nx.path[y * w + x]) continue;   // tufts and star-flowers
+      var hu3 = hueAt(x * 16 + 8, y * 16 + 8);
+      for (var tq = 0; tq < 2; tq++) if (nxH(x, y, 80 + tq) < 0.55) { var tx = x * 16 + 3 + nxH(x, y, 82 + tq) * 10, ty = y * 16 + 5 + nxH(x, y, 84 + tq) * 9; g.strokeStyle = rgbS(hsl2(hu3 - 10, 0.6, 0.48), 0.7); g.lineWidth = 0.8; g.beginPath(); g.moveTo(tx - 1.2, ty); g.lineTo(tx - 2, ty - 2.6); g.moveTo(tx, ty); g.lineTo(tx, ty - 3.4); g.moveTo(tx + 1.2, ty); g.lineTo(tx + 2, ty - 2.6); g.stroke(); }
+      if (nxH(x, y, 20) < 0.22) { var fx = x * 16 + 3 + nxH(x, y, 30) * 10, fy = y * 16 + 3 + nxH(x, y, 40) * 10, fh = hu3 + 160; g.fillStyle = rgbS(hsl2(fh, 0.9, 0.72)); for (var pt = 0; pt < 5; pt++) { var pa = pt / 5 * 6.28; g.beginPath(); g.ellipse(fx + Math.cos(pa) * 1.4, fy + Math.sin(pa) * 1.4, 1.1, 0.8, pa, 0, 7); g.fill(); } g.fillStyle = "#fffbe6"; g.beginPath(); g.arc(fx, fy, 0.8, 0, 7); g.fill(); }
+    }
+    g.restore();
+    // 3) the rim: a bright lit lip where the ground meets the void, a darker edge below it
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { if (!fl(x, y)) continue; var n2 = !fl(x, y - 1), s2 = !fl(x, y + 1), w2 = !fl(x - 1, y), e2 = !fl(x + 1, y), hu4 = hueAt(x * 16 + 8, y * 16 + 8), X1 = x * 16, Y1 = y * 16;
+      g.lineWidth = 1.4;
+      if (n2) { g.strokeStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.moveTo(X1 + (w2 ? R : 0), Y1 + 0.7); g.lineTo(X1 + 16 - (e2 ? R : 0), Y1 + 0.7); g.stroke(); }
+      if (s2) { g.strokeStyle = rgbS(hsl2(hu4 + 30, 0.6, 0.38), 0.85); g.beginPath(); g.moveTo(X1 + (w2 ? R : 0), Y1 + 15.4); g.lineTo(X1 + 16 - (e2 ? R : 0), Y1 + 15.4); g.stroke(); }
+      if (w2) { g.strokeStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.moveTo(X1 + 0.7, Y1 + (n2 ? R : 0)); g.lineTo(X1 + 0.7, Y1 + 16 - (s2 ? R : 0)); g.stroke(); }
+      if (e2) { g.strokeStyle = rgbS(hsl2(hu4 + 30, 0.6, 0.45), 0.6); g.beginPath(); g.moveTo(X1 + 15.3, Y1 + (n2 ? R : 0)); g.lineTo(X1 + 15.3, Y1 + 16 - (s2 ? R : 0)); g.stroke(); }
+      [[n2 && w2, X1 + R, Y1 + R, Math.PI, Math.PI * 1.5, "rgba(255,255,255,.85)"], [n2 && e2, X1 + 16 - R, Y1 + R, Math.PI * 1.5, Math.PI * 2, "rgba(255,255,255,.7)"], [s2 && e2, X1 + 16 - R, Y1 + 16 - R, 0, Math.PI / 2, rgbS(hsl2(hu4 + 30, 0.6, 0.4), 0.85)], [s2 && w2, X1 + R, Y1 + 16 - R, Math.PI / 2, Math.PI, rgbS(hsl2(hu4 + 30, 0.6, 0.4), 0.7)]].forEach(function (a) { if (!a[0]) return; g.strokeStyle = a[5]; g.beginPath(); g.arc(a[1], a[2], R - 0.7, a[3], a[4]); g.stroke(); });
+    }
+    // 4) the opal terrace in front of the portals: rounded marble slabs with gold seams
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { if (!fl(x, y) || !F.nx.path[y * w + x]) continue; var X2 = x * 16, Y2 = y * 16;
+      g.fillStyle = "rgba(160,120,40,.55)"; g.fillRect(X2, Y2, 16, 16);
+      var off = (y & 1) * 8; [[off - 8, 0], [off + 8, 0]].forEach(function (sl) { var sx = X2 + sl[0]; g.save(); g.beginPath(); g.rect(X2, Y2, 16, 16); g.clip(); g.beginPath(); if (g.roundRect) g.roundRect(sx + 0.7, Y2 + 0.7, 14.6, 14.6, 2.6); else g.rect(sx + 0.7, Y2 + 0.7, 14.6, 14.6);
+        g.fillStyle = aG(g, Y2, Y2 + 16, "#fffaf0", "#f4e6cc", "#d8c4a0"); g.fill(); g.strokeStyle = "rgba(200,170,110,.35)"; g.lineWidth = 0.5; g.beginPath(); g.moveTo(sx + 3, Y2 + 4 + nxH(x, y, 90) * 6); g.bezierCurveTo(sx + 6, Y2 + 2, sx + 9, Y2 + 12, sx + 13, Y2 + 8); g.stroke();
+        g.fillStyle = "rgba(255,255,255,.5)"; g.fillRect(sx + 2, Y2 + 1.6, 11, 0.8); g.restore(); });
+    }
+    // 5) cloud stepping stones: soft, lit from the top, a cool shadow beneath
+    F.nx.stones.forEach(function (st) {
+      var sx = st[0] * 16, sy = st[1] * 16, r = st[2];
+      g.fillStyle = "rgba(40,60,140,.25)"; g.beginPath(); g.ellipse(sx, sy + 2.4, r + 2.4, r * 0.75, 0, 0, 7); g.fill();
+      var cg2 = aG(g, sy - r, sy + r, "#ffffff", "#e6f6ff", "#a8d8f4"); g.fillStyle = cg2;
+      g.beginPath(); g.ellipse(sx, sy, r + 2, r * 0.8, 0, 0, 7); g.fill(); g.beginPath(); g.arc(sx - r * 0.45, sy - r * 0.35, r * 0.55, 0, 7); g.arc(sx + r * 0.35, sy - r * 0.45, r * 0.6, 0, 7); g.fill();
+      g.strokeStyle = "rgba(110,170,220,.55)"; g.lineWidth = 0.7; g.beginPath(); g.ellipse(sx, sy, r + 2, r * 0.8, 0, 0.1, Math.PI - 0.1); g.stroke();
+      g.fillStyle = "rgba(255,255,255,.8)"; g.beginPath(); g.ellipse(sx - r * 0.5, sy - r * 0.55, r * 0.35, r * 0.18, -0.3, 0, 7); g.fill();
     });
-    g.putImageData(im, 0, 0); return c;
+    return c;
   }
   // ---- the sky: a blaze of light, painted small every frame, then scaled up crisp ----
   var NXS = null, NXC = null, NXX = null, NXN = null, NXCL = null, NXA = null, NXB = null;
@@ -10394,11 +10405,14 @@
       var rg = g.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, "rgba(" + cc + ",.55)"); rg.addColorStop(1, "rgba(" + cc + ",0)"); g.fillStyle = rg; g.fillRect(x - r, y - r, r * 2, r * 2);
     }
     // cyan-white cloud banks (bottom and sides)
-    NXCL = document.createElement("canvas"); NXCL.width = 320; NXCL.height = 90; var cg = NXCL.getContext("2d");
-    for (var q = 0; q < 150; q++) {
-      var qx = nxH(q, 41) * 340 - 10, qy = 30 + nxH(q, 42) * 60 + Math.abs(qx - 160) * -0.08, qr = 8 + nxH(q, 43) * 22, lit = nxH(q, 44);
-      cg.fillStyle = lit < 0.3 ? "#3aa8e8" : lit < 0.6 ? "#7ee2ff" : lit < 0.85 ? "#c8f7ff" : "#ffffff"; cg.beginPath(); cg.arc(Math.round(qx), Math.round(qy), Math.round(qr), 0, 6.2832); cg.fill();
-    }
+    NXCL = document.createElement("canvas"); NXCL.width = 960; NXCL.height = 270; var cg = NXCL.getContext("2d"); cg.setTransform(3, 0, 0, 3, 0, 0);   // soft cloud banks: puffs lit from the top, back rows deeper blue, painted at 3x
+    var puffs = []; for (var q = 0; q < 130; q++) { var qx = nxH(q, 41) * 340 - 10; puffs.push([qx, 30 + nxH(q, 42) * 60 + Math.abs(qx - 160) * -0.08, 8 + nxH(q, 43) * 22]); }
+    puffs.sort(function (a, b) { return a[1] - b[1]; });
+    puffs.forEach(function (pf, n) { var k = n / puffs.length, top = k < 0.35 ? [120, 200, 250] : k < 0.7 ? [190, 240, 255] : [245, 252, 255], bot = k < 0.35 ? [50, 120, 210] : k < 0.7 ? [110, 190, 240] : [170, 225, 250];
+      var rg = cg.createLinearGradient(0, pf[1] - pf[2], 0, pf[1] + pf[2]); rg.addColorStop(0, "rgb(" + top.join(",") + ")"); rg.addColorStop(0.55, "rgb(" + top.map(function (v, z) { return Math.round((v + bot[z]) / 2); }).join(",") + ")"); rg.addColorStop(1, "rgb(" + bot.join(",") + ")");
+      cg.fillStyle = rg; cg.beginPath(); cg.arc(pf[0], pf[1], pf[2], 0, 6.2832); cg.fill();
+      cg.fillStyle = "rgba(255,255,255,.35)"; cg.beginPath(); cg.ellipse(pf[0] - pf[2] * 0.25, pf[1] - pf[2] * 0.55, pf[2] * 0.5, pf[2] * 0.22, -0.2, 0, 6.2832); cg.fill(); });
+    cg.setTransform(1, 0, 0, 1, 0, 0);
     NXA = ["255,255,255", "190,140,255", "120,240,255"].map(function (ac) { var s2 = document.createElement("canvas"); s2.width = 1; s2.height = 24; var x2 = s2.getContext("2d"), lg = x2.createLinearGradient(0, 0, 0, 24); lg.addColorStop(0, "rgba(" + ac + ",0)"); lg.addColorStop(0.8, "rgba(" + ac + ",1)"); lg.addColorStop(1, "rgba(" + ac + ",0)"); x2.fillStyle = lg; x2.fillRect(0, 0, 1, 24); return s2; });
   }
   function nxBolt(W2, H2, t) {   // a fresh fork of lightning: from the blaze at the top, crackling outwards
@@ -10413,10 +10427,10 @@
     if (NXC.width !== W2 || NXC.height !== H2) { NXC.width = W2; NXC.height = H2; }
     var c = NXX, px = (cam.x / F.w - 0.5), py = (cam.y / F.h - 0.5), bcx = W2 * (0.5 - px * 0.1), bcy = H2 * (0.18 - py * 0.12);
     var bg = c.createRadialGradient(bcx, bcy, 0, bcx, bcy, Math.max(W2, H2) * 0.95);   // the blaze: white-gold at the heart, through rose and violet, out to electric cyan
-    bg.addColorStop(0, "#fffbe6"); bg.addColorStop(0.1, "#ffe27a"); bg.addColorStop(0.24, "#ff9a3c"); bg.addColorStop(0.38, "#ec4aa0"); bg.addColorStop(0.52, "#8a4ae6"); bg.addColorStop(0.68, "#2f7ae8"); bg.addColorStop(0.84, "#1fc8e8"); bg.addColorStop(1, "#7af0ff");
+    bg.addColorStop(0, "#fff6dc"); bg.addColorStop(0.08, "#ffd890"); bg.addColorStop(0.2, "#ff8a6a"); bg.addColorStop(0.34, "#d04a9a"); bg.addColorStop(0.5, "#6a3ab8"); bg.addColorStop(0.68, "#2e2c8e"); bg.addColorStop(0.84, "#1c4a92"); bg.addColorStop(1, "#1c7aa0");   // a deep twilight round the blaze, so the island glows against it
     c.globalCompositeOperation = "source-over"; c.globalAlpha = 1; c.fillStyle = bg; c.fillRect(0, 0, W2, H2);
     c.imageSmoothingEnabled = true;
-    c.globalAlpha = 0.85; c.drawImage(NXN, -W2 * 0.15 - px * W2 * 0.12, -H2 * 0.12 - py * H2 * 0.12, W2 * 1.3, H2 * 1.3);
+    c.globalAlpha = 0.6; c.drawImage(NXN, -W2 * 0.15 - px * W2 * 0.12, -H2 * 0.12 - py * H2 * 0.12, W2 * 1.3, H2 * 1.3);
     c.globalAlpha = 0.5; c.drawImage(NXN, W2 * 1.12 - px * W2 * 0.06, -H2 * 0.1 - py * H2 * 0.06, -W2 * 1.25, H2 * 1.25); c.globalAlpha = 1;
     c.globalCompositeOperation = "lighter";
     var core = c.createRadialGradient(bcx, bcy, 0, bcx, bcy, H2 * 0.45); core.addColorStop(0, "rgba(255,255,240,.85)"); core.addColorStop(0.35, "rgba(255,230,160,.35)"); core.addColorStop(1, "rgba(255,200,120,0)");
@@ -10454,7 +10468,7 @@
     }
     // cloud banks rolling along the bottom and up the sides
     var dr = (t * 3) % 320, cy0 = H2 - H2 * 0.3 - py * H2 * 0.15;
-    c.imageSmoothingEnabled = false;
+    c.imageSmoothingEnabled = true;
     for (var cb = -1; cb <= Math.ceil(W2 / 320); cb++) c.drawImage(NXCL, Math.round(cb * 320 - dr - px * W2 * 0.2), Math.round(cy0), 320, 90);
     c.fillStyle = "#3aa8e8"; c.fillRect(0, Math.round(cy0) + 89, W2, H2);
     c.globalAlpha = 0.75; c.drawImage(NXCL, Math.round(-80 - px * W2 * 0.1 + Math.sin(t * 0.1) * 6), Math.round(H2 * 0.35 - py * H2 * 0.1), 200, 56);
@@ -10464,7 +10478,7 @@
     var gcx = (ox + F.w / 2 * ts) / P, gcy = (oy + F.h * 0.62 * ts) / P, gr2 = F.w * ts / P * 0.62, ug = c.createRadialGradient(gcx, gcy, 0, gcx, gcy, gr2);
     ug.addColorStop(0, "rgba(255,240,200,.25)"); ug.addColorStop(0.5, "rgba(120,240,255,.12)"); ug.addColorStop(1, "rgba(0,0,0,0)"); c.fillStyle = ug; c.fillRect(gcx - gr2, gcy - gr2, gr2 * 2, gr2 * 2);
     c.globalCompositeOperation = "source-over";
-    g.imageSmoothingEnabled = false; g.drawImage(NXC, 0, 0, W2, H2, 0, 0, W2 * P, H2 * P);
+    g.imageSmoothingEnabled = true; g.drawImage(NXC, 0, 0, W2, H2, 0, 0, W2 * P, H2 * P); g.imageSmoothingEnabled = false;   // (smooth: it is a painted sky now, not pixels)
   }
   // ---- props, portals, the spring and the way home (drawn row by row with everything else, so you walk in front of / behind them) ----
   function nxR(g, bx, by, u) { return function (x, y, w, h, col) { g.fillStyle = col; var X = Math.round(bx + x * u), Y = Math.round(by - (y + h) * u); g.fillRect(X, Y, Math.round(bx + (x + w) * u) - X, Math.round(by - y * u) - Y); }; }
@@ -10490,33 +10504,59 @@
     }
     return { tpl: tpl, op: op };
   }
-  function nxPortal(g, P, idx, now, glows) {   // a portal, painted at 16 px per tile into a 64 x 72 canvas, then scaled up crisp
-    var t = now / 1000, W = 64, H = 72, u0 = ts / 16, dxa = ox + (P.x + 0.5) * ts - 32 * u0;
-    if (dxa > vw || dxa + 64 * u0 < 0 || oy + (NXROW + 0.92) * ts < 0) return;   // off screen
+  function nxPortal(g, P, idx, now, glows) {   // a portal still being built, in the house style: a marble arch with gold seams, the swirl filling it from the bottom, scaffolds, chains and a padlock
+    var t = now / 1000, W = 64, H = 72, u = ts / 16, dx0 = ox + (P.x + 0.5) * ts - 32 * u, by = oy + (NXROW + 0.92) * ts;
+    if (dx0 > vw || dx0 + 64 * u < 0 || by < 0) return;   // off screen
     if (!NXPC) { NXPC = document.createElement("canvas"); NXPC.width = W; NXPC.height = H; NXPX = NXPC.getContext("2d"); NXPI = NXPX.createImageData(W, H); }
     if (!P._t) P._t = nxPortalTpl(P, idx);
-    var d = NXPI.data, op = P._t.op, lvl = 69 - (69 - 34 + 15) * P.lv, spk = Math.floor(t * 3); d.set(P._t.tpl);   // how full of swirl the opening is (they are not finished)
+    var d = NXPI.data, op = P._t.op, lvl = 69 - (69 - 34 + 15) * P.lv; d.fill(0);   // the swirl, a small canvas drawn soft into the opening
     for (var n = 0; n < op.length; n += 5) {
       var k = op[n], x = op[n + 1], y = op[n + 2], th = op[n + 3], r = op[n + 4], edge = lvl + Math.sin(x * 0.45 + t * 3) * 1.4;
-      if (y >= edge) {
-        var v = Math.sin(th * 3 + r * 0.38 - t * 2.4) * 0.5 + 0.5, v2 = Math.sin(r * 0.6 - t * 3.1 + th) * 0.5 + 0.5, m = v * 0.8 + v2 * 0.2, br2 = 0.45 + 0.35 * v2;
-        if (y - edge < 1.5) { d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 200; continue; }
-        d[k] = Math.min(255, (P.a[0] * m + P.b[0] * (1 - m)) * br2); d[k + 1] = Math.min(255, (P.a[1] * m + P.b[1] * (1 - m)) * br2); d[k + 2] = Math.min(255, (P.a[2] * m + P.b[2] * (1 - m)) * br2); d[k + 3] = 230;
-      } else if (nxH(x, y, spk) > 0.985) { d[k] = P.a[0]; d[k + 1] = P.a[1]; d[k + 2] = P.a[2]; d[k + 3] = 200; }   // loose sparks in the unfinished part
+      if (y >= edge) { var v = Math.sin(th * 3 + r * 0.38 - t * 2.4) * 0.5 + 0.5, v2 = Math.sin(r * 0.6 - t * 3.1 + th) * 0.5 + 0.5, m = v * 0.8 + v2 * 0.2, br2 = 0.5 + 0.4 * v2;
+        if (y - edge < 1.5) { d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 220; continue; }
+        d[k] = Math.min(255, (P.a[0] * m + P.b[0] * (1 - m)) * br2); d[k + 1] = Math.min(255, (P.a[1] * m + P.b[1] * (1 - m)) * br2); d[k + 2] = Math.min(255, (P.a[2] * m + P.b[2] * (1 - m)) * br2); d[k + 3] = 235; }
     }
     NXPX.putImageData(NXPI, 0, 0);
-    var R = function (x2, y2, w, h, col) { NXPX.fillStyle = col; NXPX.fillRect(x2, y2, w, h); };
-    if (P.sc <= 0) { R(2, 20, 2, 52, "#9a6a3a"); R(12, 26, 2, 46, "#9a6a3a"); R(0, 30, 16, 2, "#c08a4a"); R(0, 50, 16, 2, "#c08a4a"); for (var b = 0; b < 8; b++) R(3 + b, 50 - b * 2.4 | 0, 2, 2, "#7a4a22"); R(1, 29, 16, 1, "#5a3a1a"); }   // scaffolding
-    if (P.sc >= 0) { R(60, 20, 2, 52, "#9a6a3a"); R(50, 26, 2, 46, "#9a6a3a"); R(48, 30, 16, 2, "#c08a4a"); R(48, 50, 16, 2, "#c08a4a"); for (var b2 = 0; b2 < 8; b2++) R(59 - b2, 50 - b2 * 2.4 | 0, 2, 2, "#7a4a22"); }
-    for (var c3 = 0; c3 < 15; c3++) { R(19 + c3 * 2, 40 + c3 * 2, 2, 2, c3 % 2 ? "#cfd6e6" : "#8a92a8"); R(45 - c3 * 2, 40 + c3 * 2, 2, 2, c3 % 2 ? "#cfd6e6" : "#8a92a8"); }   // chains across
-    R(28, 50, 9, 7, "#f2c14e"); R(29, 51, 7, 5, "#d89a2a"); R(30, 46, 5, 1, "#e0e4ee"); R(30, 46, 1, 4, "#e0e4ee"); R(34, 46, 1, 4, "#e0e4ee"); R(32, 52, 1, 2, "#3a2410");   // padlock
-    R(14, 58, 2, 13, "#5a3a1a"); R(48, 58, 2, 13, "#5a3a1a");   // the barrier
-    for (var s3 = 0; s3 < 9; s3++) R(14 + s3 * 4, 60, 4, 3, s3 % 2 ? "#5a2a8a" : "#ffd23f");
-    R(14, 63, 36, 1, "#2a1440");
-    var bob = function (i2) { return Math.round(Math.sin(t * 1.6 + i2 * 2.1 + idx) * 1.5); };   // stones floating up to their places
-    [[8, 10], [52, 6], [44, 2]].forEach(function (q, i2) { R(q[0], q[1] + bob(i2), 5, 4, "#e8dcc4"); R(q[0], q[1] + bob(i2), 5, 1, "#ffffff"); R(q[0], q[1] + 3 + bob(i2), 5, 1, "#c89a4a"); });
-    var u = ts / 16, dx0 = ox + (P.x + 0.5) * ts - 32 * u, by = oy + (NXROW + 0.92) * ts;
-    g.drawImage(NXPC, 0, 0, W, H, Math.round(dx0), Math.round(by - H * u), Math.round(W * u), Math.round(H * u));
+    var ac = "rgb(" + P.a.join(",") + ")", aD = "rgb(" + P.a.map(function (v) { return Math.round(v * 0.55); }).join(",") + ")", aL = "rgb(" + P.a.map(function (v) { return Math.round(v + (255 - v) * 0.55); }).join(",") + ")";
+    var arch = function (x0, x1, yb, r) { var cx = 32; g.moveTo(x0, yb); g.lineTo(x0, 34); g.arc(cx, 34, r, Math.PI, 0); g.lineTo(x1, yb); };
+    g.save(); g.translate(dx0, by - H * u); g.scale(u, u); g.lineJoin = "round"; g.lineCap = "round";
+    g.fillStyle = "rgba(30,10,60,.3)"; g.beginPath(); g.ellipse(32, 71.5, 27, 2.6, 0, 0, 7); g.fill();
+    // the opening: a dark void, then the swirl
+    g.save(); g.beginPath(); arch(16.5, 47, 68, 15.5); g.closePath(); g.clip();
+    var vd = g.createLinearGradient(0, 18, 0, 68); vd.addColorStop(0, "#1a0e3a"); vd.addColorStop(1, "#2a1a50"); g.fillStyle = vd; g.fillRect(16, 18, 32, 52);
+    for (var sp = 0; sp < 6; sp++) { var sx = 20 + nxH(sp, idx, 21) * 24, sy = 22 + ((nxH(sp, idx, 22) * 40 + t * 4) % 40); g.fillStyle = "rgba(" + P.a.join(",") + "," + (0.4 + 0.4 * Math.sin(t * 3 + sp)) + ")"; g.beginPath(); g.arc(sx, sy, 0.7, 0, 7); g.fill(); }
+    g.imageSmoothingEnabled = true; g.drawImage(NXPC, 0, 0); g.imageSmoothingEnabled = false; g.restore();
+    // the marble arch (one silhouette with the opening cut out), top-lit, inked in a deep tint of the portal colour
+    g.beginPath(); g.moveTo(10.5, 66.5); g.lineTo(10.5, 34); g.arc(32, 34, 22, Math.PI, 0); g.lineTo(53.5, 66.5); g.lineTo(47, 66.5); g.lineTo(47, 34); g.arc(32, 34, 15.5, 0, Math.PI, true); g.lineTo(17, 66.5); g.closePath();
+    aInk(g, aG(g, 12, 67, "#fffdf6", "#efe2c8", "#c8b08a"), "#5a3a2a", 0.9);
+    g.save(); g.clip();
+    g.strokeStyle = ac; g.globalAlpha = 0.85; g.lineWidth = 2; g.beginPath(); g.arc(32, 34, 16.6, Math.PI, 0); g.moveTo(16, 34); g.lineTo(16, 67); g.moveTo(48, 34); g.lineTo(48, 67); g.stroke(); g.globalAlpha = 1;   // a band of the portal colour round the inside
+    g.strokeStyle = "rgba(200,150,60,.75)"; g.lineWidth = 0.7;
+    for (var bk = 1; bk < 9; bk++) { var a2 = Math.PI + bk / 9 * Math.PI; g.beginPath(); g.moveTo(32 + Math.cos(a2) * 15.5, 34 + Math.sin(a2) * 15.5); g.lineTo(32 + Math.cos(a2) * 22, 34 + Math.sin(a2) * 22); g.stroke(); }
+    for (var yy = 40; yy < 66; yy += 6) { g.beginPath(); g.moveTo(10, yy); g.lineTo(17, yy); g.moveTo(47, yy); g.lineTo(54, yy); g.stroke(); }
+    g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.arc(32, 34, 20.6, Math.PI * 1.05, Math.PI * 1.45); g.arc(32, 34, 18.6, Math.PI * 1.45, Math.PI * 1.05, true); g.closePath(); g.fill();
+    g.restore();
+    g.beginPath(); g.moveTo(25.5, 13.5); g.lineTo(32, 9.5); g.lineTo(38.5, 13.5); g.lineTo(37, 17); g.lineTo(27, 17); g.closePath(); aInk(g, aG(g, 9.5, 17, aL, ac, aD), aD, 0.6); aShine(g, 29.5, 12.6, 1.6, 0.6, 0.6, -0.4);   // the keystone gem
+    var missing = Math.round((1 - P.lv) * 4);   // the unfinished stones: gaps in the crown, the blocks floating up to their places
+    for (var ms = 0; ms < missing; ms++) { var ma = Math.PI + (ms === 0 ? 7.5 : ms === 1 ? 1.5 : ms === 2 ? 5.5 : 3) / 9 * Math.PI; g.fillStyle = "#1a0e3a"; g.beginPath(); g.arc(32, 34, 21.6, ma - 0.17, ma + 0.17); g.arc(32, 34, 16, ma + 0.17, ma - 0.17, true); g.closePath(); g.fill(); }
+    // the stepped base
+    g.beginPath(); if (g.roundRect) g.roundRect(7, 65.5, 50, 3.6, 1.2); else g.rect(7, 65.5, 50, 3.6); aInk(g, aG(g, 65.5, 69, "#fffaf0", "#ecdcbc", "#c8ac80"), "#5a3a2a", 0.7);
+    g.beginPath(); if (g.roundRect) g.roundRect(9, 68.6, 46, 3, 1); else g.rect(9, 68.6, 46, 3); aInk(g, aG(g, 68.6, 71.6, "#e6d2aa", "#c8a878", "#9a7a50"), "#5a3a2a", 0.7);
+    // scaffolding (wood, inked)
+    var wood = function (x0, y0, x1, y1, w2) { g.strokeStyle = "#4a2a14"; g.lineWidth = w2 + 1; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.strokeStyle = "#b07a40"; g.lineWidth = w2; g.stroke(); g.strokeStyle = "rgba(255,220,160,.5)"; g.lineWidth = w2 * 0.3; g.beginPath(); g.moveTo(x0 - w2 * 0.2, y0); g.lineTo(x1 - w2 * 0.2, y1); g.stroke(); };
+    var scaf = function (sx2, dir) { wood(sx2, 20, sx2, 71, 2); wood(sx2 + dir * 10, 26, sx2 + dir * 10, 71, 2); wood(sx2 - dir * 1, 30.5, sx2 + dir * 13, 30.5, 1.8); wood(sx2 - dir * 1, 50.5, sx2 + dir * 13, 50.5, 1.8); wood(sx2, 50, sx2 + dir * 10, 31, 1.2); };
+    if (P.sc <= 0) scaf(3, 1); if (P.sc >= 0) scaf(61, -1);
+    // chains across the opening, a padlock, and the barrier tape
+    for (var c3 = 0; c3 < 8; c3++) { [[19 + c3 * 3.6, 40 + c3 * 3.6], [45 - c3 * 3.6, 40 + c3 * 3.6]].forEach(function (L) { g.strokeStyle = "#4a5068"; g.lineWidth = 1.5; g.beginPath(); g.ellipse(L[0], L[1], 1.6, 1, 0.78 * (L[0] < 32 ? 1 : -1), 0, 7); g.stroke(); g.strokeStyle = "#dfe4ee"; g.lineWidth = 0.7; g.stroke(); }); }
+    g.strokeStyle = "#5a6070"; g.lineWidth = 1.6; g.beginPath(); g.arc(32.5, 49.5, 2.6, Math.PI, 0); g.stroke(); g.strokeStyle = "#e6eaf2"; g.lineWidth = 0.8; g.stroke();
+    g.beginPath(); if (g.roundRect) g.roundRect(28, 49.5, 9, 7.5, 1.6); else g.rect(28, 49.5, 9, 7.5); aInk(g, aG(g, 49.5, 57, "#ffe9a0", "#f2c14e", "#b07a1a"), "#5a3a10", 0.7); aShine(g, 30, 51.2, 1.6, 0.6, 0.6, 0);
+    g.fillStyle = "#3a2410"; g.beginPath(); g.arc(32.5, 52.6, 0.9, 0, 7); g.fill(); g.fillRect(32.1, 52.8, 0.8, 2);
+    wood(14.5, 58, 14.5, 71, 1.6); wood(49.5, 58, 49.5, 71, 1.6);
+    g.save(); g.beginPath(); g.rect(14, 59.5, 36, 3.4); g.clip(); for (var s3 = 0; s3 < 10; s3++) { g.fillStyle = s3 % 2 ? "#5a2a8a" : "#ffd23f"; g.beginPath(); g.moveTo(14 + s3 * 4, 63); g.lineTo(18 + s3 * 4, 59.5); g.lineTo(22 + s3 * 4, 59.5); g.lineTo(18 + s3 * 4, 63); g.closePath(); g.fill(); } g.restore();
+    g.strokeStyle = "#2a1440"; g.lineWidth = 0.6; g.strokeRect(14, 59.5, 36, 3.4);
+    [[8, 10], [52, 6], [44, 2]].forEach(function (q, i2) { var fy = q[1] + (reduce ? 0 : Math.sin(t * 1.6 + i2 * 2.1 + idx) * 1.5);   // stones floating up to their places
+      g.beginPath(); if (g.roundRect) g.roundRect(q[0], fy, 6, 4.4, 1.2); else g.rect(q[0], fy, 6, 4.4); aInk(g, aG(g, fy, fy + 4.4, "#ffffff", "#ecdcc0", "#c49a5a"), "#5a3a2a", 0.6); });
+    g.restore();
     var gc = P.a[0] + "," + P.a[1] + "," + P.a[2]; glows.push([ox + (P.x + 0.5) * ts, by - 22 * u, gc, 2.6, 0.22 + 0.06 * Math.sin(t * 2 + idx)]);
   }
   var NXHC = null, NXHX = null, NXHI = null;
@@ -10531,7 +10571,8 @@
     }
     NXHX.putImageData(NXHI, 0, 0);
     var u = ts / 16, cx = ox + (F.up.x + 0.5) * ts, cy = oy + (F.up.y + 0.45) * ts + Math.sin(t * 1.4) * u;
-    g.drawImage(NXHC, 0, 0, W, H, Math.round(cx - 14 * u), Math.round(cy - 10 * u), Math.round(W * u), Math.round(H * u));
+    g.save(); g.beginPath(); g.ellipse(cx, cy, 12.4 * u, 8.6 * u, 0, 0, 7); g.clip(); g.imageSmoothingEnabled = true; g.drawImage(NXHC, 0, 0, W, H, cx - 14 * u, cy - 10 * u, W * u, H * u); g.imageSmoothingEnabled = false; g.restore();   // drawn soft, inside a mossy ring
+    g.lineWidth = 2.6 * u; g.strokeStyle = "#1a5a3a"; g.beginPath(); g.ellipse(cx, cy, 12.6 * u, 8.8 * u, 0, 0, 7); g.stroke(); g.lineWidth = 1.5 * u; g.strokeStyle = "#7af0b0"; g.stroke(); g.lineWidth = 0.7 * u; g.strokeStyle = "rgba(255,255,255,.7)"; g.beginPath(); g.ellipse(cx, cy, 12.6 * u, 8.8 * u, 0, Math.PI * 1.1, Math.PI * 1.6); g.stroke();
     glows.push([cx, cy, "120,255,190", 2, 0.25]);
   }
   function nxPillar(g, F, now) {   // the Spring's pillar of light, rising into the sky (painted on the ground layer, so everything stands in front of it)
@@ -10541,52 +10582,88 @@
     g.fillStyle = pl; g.fillRect(Math.round(cx - pw * u), Math.round(cy - 9 * ts), Math.round(pw * 2 * u), Math.round(8.1 * ts));
     g.fillStyle = "rgba(255,255,255,.4)"; g.fillRect(Math.round(cx - 3 * u), Math.round(cy - 9 * ts), Math.round(6 * u), Math.round(8 * ts));
   }
-  function nxSpring(g, F, now, glows) {   // the Prism Spring: a pool of liquid light with a ring of crystals turning above it
-    var t = now / 1000, u = ts / 16, sp = F.nx.spring, cx = ox + (sp.x + 0.5) * ts, cy = oy + (sp.y + 1.1) * ts, R = nxR(g, cx, cy, u), i;
-
-    for (var yy = -10; yy <= 10; yy++) { var hw = Math.round(Math.sqrt(1 - (yy / 10.5) * (yy / 10.5)) * 24); for (var xx = -hw; xx < hw; xx += 2) { var edge = Math.abs(xx) > hw - 3 || Math.abs(yy) > 8; var h2 = (Math.atan2(yy, xx / 2) * 57 + t * 60 + Math.hypot(xx, yy * 2) * 6) % 360; var col = edge ? "#e6dcff" : "rgb(" + hsl2(h2, 0.85, 0.62).join(",") + ")"; R(xx, -yy + 1, 2, 1, col); } }
-    R(-2, 11, 4, 1, "#fff");
-    var pts = []; for (i = 0; i < 10; i++) { var a = t * 0.7 + i / 10 * 6.2832; pts.push({ x: Math.cos(a) * 20, y: 22 + Math.sin(a) * 6, z: Math.sin(a), c: NXPAL[i % 4][i % 3] }); }
+  function nxSpring(g, F, now, glows) {   // the Prism Spring: a pool of liquid light in an opal basin, with a ring of crystals turning around a floating prism
+    var t = now / 1000, u = ts / 16, sp = F.nx.spring, cx = ox + (sp.x + 0.5) * ts, cy = oy + (sp.y + 1.1) * ts, i;
+    g.save(); g.translate(cx, cy); g.scale(u, u); g.lineJoin = "round";
+    g.fillStyle = "rgba(30,10,70,.28)"; g.beginPath(); g.ellipse(0, -9, 28, 12.5, 0, 0, 7); g.fill();
+    g.beginPath(); g.ellipse(0, -10, 26.5, 11.5, 0, 0, 7); aInk(g, aG(g, -22, 2, "#ffffff", "#e8dcff", "#a894dc"), "#4a3a8a", 0.9);   // the opal basin
+    g.save(); g.beginPath(); g.ellipse(0, -10.6, 22.5, 9, 0, 0, 7); g.clip();
+    var rot = reduce ? 0 : t * 0.6;
+    if (g.createConicGradient) { var cg = g.createConicGradient(rot, 0, -10.6); for (var k = 0; k <= 6; k++) { var c = hsl2(k * 60 + 300, 0.85, 0.64); cg.addColorStop(k / 6, "rgb(" + c.join(",") + ")"); } g.fillStyle = cg; } else g.fillStyle = "#ff9ae0";
+    g.save(); g.translate(0, -10.6); g.scale(1, 0.4); g.translate(0, 10.6); g.fillRect(-24, -40, 48, 60); g.restore();
+    var gl = g.createRadialGradient(-4, -13, 0, 0, -10.6, 22); gl.addColorStop(0, "rgba(255,255,255,.85)"); gl.addColorStop(0.35, "rgba(255,255,255,.25)"); gl.addColorStop(1, "rgba(60,20,120,.35)"); g.fillStyle = gl; g.fillRect(-24, -22, 48, 24);
+    g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 0.7; for (i = 0; i < 3; i++) { var ph = ((reduce ? 0.3 : t * 0.45) + i / 3) % 1; g.globalAlpha = 1 - ph; g.beginPath(); g.ellipse(0, -10.6, 3 + ph * 20, (3 + ph * 20) * 0.4, 0, 0, 7); g.stroke(); } g.globalAlpha = 1;
+    g.restore();
+    g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 0.9; g.beginPath(); g.ellipse(0, -10, 24.5, 10.2, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke();
+    var pts = []; for (i = 0; i < 8; i++) { var a = (reduce ? 0 : t * 0.7) + i / 8 * 6.2832; pts.push({ x: Math.cos(a) * 21, y: -26 + Math.sin(a) * 6, z: Math.sin(a), h: i * 45 }); }
     pts.sort(function (p1, p2) { return p1.z - p2.z; });
-    var prism = function () { var by2 = 24 + Math.sin(t * 1.8) * 1.5; for (var r = 0; r < 9; r++) { var w2 = r < 4 ? r * 2 + 1 : (8 - r) * 2 + 1; R(-w2 / 2 | 0, by2 + r, w2, 1, r < 4 ? "#fff6c4" : "#ff9ae0"); } R(-1, by2 + 3, 2, 2, "#ffffff"); };
-    var drawn = false;
-    pts.forEach(function (q) { if (!drawn && q.z > 0) { prism(); drawn = true; } var s2 = q.z > 0 ? 3 : 2; R(Math.round(q.x) - 1, Math.round(q.y), s2, s2 + 1, q.c); });
-    if (!drawn) prism();
-    glows.push([cx, cy - 1.2 * ts, "255,170,240", 3, 0.24]); glows.push([cx, cy - 0.2 * ts, "120,240,255", 2.4, 0.2]);
+    var shard = function (q) { var s2 = 0.75 + 0.25 * (q.z + 1) / 2, c1 = hsl2(q.h, 0.8, 0.85), c2 = hsl2(q.h + 20, 0.85, 0.6), c3 = hsl2(q.h + 40, 0.7, 0.35);
+      g.save(); g.translate(q.x, q.y); g.scale(s2, s2); g.beginPath(); g.moveTo(0, -4.5); g.lineTo(2.2, -1); g.lineTo(1.4, 3.5); g.lineTo(0, 4.8); g.lineTo(-1.4, 3.5); g.lineTo(-2.2, -1); g.closePath();
+      aInk(g, aG(g, -4.5, 4.8, "rgb(" + c1.join(",") + ")", "rgb(" + c2.join(",") + ")", "rgb(" + c3.join(",") + ")"), "rgba(" + c3.join(",") + ",.9)", 0.5); g.fillStyle = "rgba(255,255,255,.6)"; g.beginPath(); g.moveTo(0, -4.5); g.lineTo(-2.2, -1); g.lineTo(0, 0); g.closePath(); g.fill(); g.restore(); };
+    var prism = function () { var py = -30 + (reduce ? 0 : Math.sin(t * 1.8) * 1.5), sw2 = reduce ? 1 : Math.cos(t * 0.9);
+      var hl = g.createRadialGradient(0, py, 0, 0, py, 12); hl.addColorStop(0, "rgba(255,250,220,.55)"); hl.addColorStop(1, "rgba(255,200,240,0)"); g.fillStyle = hl; g.beginPath(); g.arc(0, py, 12, 0, 7); g.fill();
+      g.save(); g.translate(0, py); g.scale(0.45 + 0.55 * Math.abs(sw2), 1);
+      g.beginPath(); g.moveTo(0, -7); g.lineTo(4.6, -1); g.lineTo(0, 7.5); g.lineTo(-4.6, -1); g.closePath(); aInk(g, aG(g, -7, 7.5, "#ffffff", "#fff2b8", "#ff8ad8"), "#8a3a8a", 0.6);
+      g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.moveTo(0, -7); g.lineTo(-4.6, -1); g.lineTo(0, -1); g.closePath(); g.fill(); g.fillStyle = "rgba(160,60,160,.2)"; g.beginPath(); g.moveTo(0, -1); g.lineTo(4.6, -1); g.lineTo(0, 7.5); g.closePath(); g.fill(); g.restore(); };
+    var drawn = false; pts.forEach(function (q) { if (!drawn && q.z > 0) { prism(); drawn = true; } shard(q); }); if (!drawn) prism();
+    g.restore();
+    glows.push([cx, cy - 1.2 * ts, "255,170,240", 3, 0.24]); glows.push([cx, cy - 0.6 * ts, "120,240,255", 2.4, 0.2]);
   }
-  function nxProp(g, q, now, glows) {
-    var t = now / 1000, u = ts / 16, bx = ox + q.x * ts, by = oy + (q.y + 0.92) * ts, R = nxR(g, bx, by, u), c = q.c;
+  function nxCluster(g, e, now, glows) {   // the island's big crystal clusters, in the house style: faceted prisms growing out of a mossy opal rock, each top-lit with a tinted ink edge
+    var t = now / 1000, u = ts / 16, bx = ox + (e.x + 0.5) * ts, by = oy + (e.y + 0.95) * ts;
+    g.save(); g.translate(bx, by); g.scale(u, u); g.lineJoin = "round";
+    var hu = 190 + nxH(e.x, e.y, 7) * 140, col = function (dh, s2, l, a) { var c = hsl2(hu + dh, s2, l); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + (a == null ? 1 : a) + ")"; };
+    g.fillStyle = "rgba(20,0,50,.28)"; g.beginPath(); g.ellipse(0, 0, 9, 2, 0, 0, 7); g.fill();
+    var pul = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(t * 1.6 + e.x);
+    [[-5, -11, 2.6, -0.32], [5, -13, 2.8, 0.28], [0, -19, 3.6, 0.02], [-8.5, -6, 1.8, -0.6], [8.5, -7, 1.9, 0.6]].forEach(function (q, n) {   // drawn behind the rock, so their roots are hidden
+      g.save(); g.translate(q[0] * 0.4, -1); g.rotate(q[3]); var L = -q[1], W = q[2];
+      g.beginPath(); g.moveTo(-W, 0); g.lineTo(-W, -L * 0.78); g.lineTo(0, -L); g.lineTo(W, -L * 0.78); g.lineTo(W, 0); g.closePath();
+      var gr = g.createLinearGradient(-W, 0, W, 0); gr.addColorStop(0, col(n * 12, 0.75, 0.9)); gr.addColorStop(0.5, col(n * 12 + 15, 0.8, 0.68)); gr.addColorStop(1, col(n * 12 + 35, 0.7, 0.45)); aInk(g, gr, col(40, 0.6, 0.22), 0.6);
+      g.fillStyle = "rgba(255,255,255," + (0.35 + 0.25 * pul) + ")"; g.beginPath(); g.moveTo(-W * 0.55, -1); g.lineTo(-W * 0.55, -L * 0.76); g.lineTo(-W * 0.1, -L * 0.88); g.lineTo(-W * 0.1, -1); g.closePath(); g.fill();
+      g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 0.4; g.beginPath(); g.moveTo(-W, -L * 0.78); g.lineTo(W, -L * 0.78); g.stroke(); g.restore(); });
+    g.beginPath(); g.moveTo(-9, 0); g.quadraticCurveTo(-10, -4, -6, -5); g.quadraticCurveTo(-2, -7, 2, -5.5); g.quadraticCurveTo(7, -6.5, 9.5, -2.5); g.quadraticCurveTo(10, 0, 8, 0.6); g.lineTo(-8, 0.6); g.closePath();
+    aInk(g, aG(g, -7, 1, "#f4ecff", "#c8b8ec", "#8a76c0"), "#3a2a6a", 0.7); aShine(g, -4, -4.6, 2.4, 0.7, 0.55, -0.15);
+    g.fillStyle = "rgba(120,230,170,.75)"; g.beginPath(); g.ellipse(3, -5.6, 3, 0.9, -0.1, 0, 7); g.fill();
+    g.restore(); var gc = hsl2(hu + 10, 0.8, 0.7); glows.push([bx, by - 12 * u, gc.join(","), 1.8, 0.14 + 0.08 * pul]);
+  }
+  function nxProp(g, q, now, glows) {   // the island's plants and shards, in the house style (smooth, top-lit, tinted ink), drawn in 16-px units from the foot of the cell
+    var t = now / 1000, u = ts / 16, bx = ox + q.x * ts, by = oy + (q.y + 0.92) * ts, c = q.c;
     if (bx < -ts * 1.5 || bx > vw + ts * 0.5 || by < -ts * 0.5 || by > vh + ts * 2.5) return;   // off screen
-    if (q.k === "bloom") {
-      var sw = reduce ? 0 : Math.sin(t * 1.1 + q.ph) * 1.6;
-      for (var i = 0; i < 18; i++) R(7 + Math.round(sw * i / 18), i, 2, 1, i % 5 === 0 ? "#7ad62a" : "#a8ff3e");
-      R(4, 5, 3, 2, "#2fe0c0"); R(3, 6, 1, 1, "#2fe0c0"); R(9 + Math.round(sw * 0.45), 9, 3, 2, "#2fe0c0"); R(12 + Math.round(sw * 0.45), 10, 1, 1, "#2fe0c0");
-      var hx = 8 + Math.round(sw), hy = 20;
-      R(hx - 6, hy - 1, 4, 4, c[0]); R(hx + 2, hy - 1, 4, 4, c[0]); R(hx - 2, hy + 3, 4, 4, c[0]); R(hx - 2, hy - 5, 4, 4, c[0]);
-      R(hx - 6, hy + 2, 1, 1, c[1]); R(hx + 5, hy + 2, 1, 1, c[1]); R(hx + 1, hy + 6, 1, 1, c[1]); R(hx - 2, hy - 5, 1, 1, c[1]);
-      R(hx - 2, hy - 1, 4, 4, c[2]); R(hx - 1, hy + 1, 1, 1, "#ffffff");
-      glows.push([bx + hx * u, by - (hy + 1) * u, "255,140,230", 1.3, 0.16]);
-    } else if (q.k === "orb") {
-      for (var j = 0; j < 22; j++) R(6 + Math.round(Math.sin(j * 0.35) * 1.2), j, 4, 1, (j + Math.floor(t * 2)) % 4 < 2 ? "#c25aff" : "#7a2ab8");
-      R(2, 16, 5, 2, "#7a2ab8"); R(10, 19, 5, 2, "#7a2ab8");
-      [[2, 22, 4, "#4ef0e0"], [13, 25, 4, "#ffd23f"], [8, 29, 5, "#ff6a8a"]].forEach(function (o, n) {
-        var oy2 = o[1] + Math.round(Math.sin(t * 1.3 + q.ph + n * 2) * 1.2); nxDisc(R, o[0] + 2, oy2, o[2], o[3]); R(o[0] + 1, oy2 + Math.round(o[2] / 2), 2, 2, "#ffffff");
-      });
-      glows.push([bx + 8 * u, by - 26 * u, "255,170,200", 1.6, 0.2]);
-    } else if (q.k === "mush") {
-      [[2, 0, 6, c[1], c[2]], [8, 0, 8, c[0], c[2]], [11, 0, 5, c[2], c[0]]].forEach(function (m, n) {
-        var hgt = [5, 8, 4][n]; R(m[0] + Math.floor(m[2] / 2) - 1, 0, 2, hgt, "#f6eedb");
-        for (var r = 0; r < 3; r++) R(m[0] + r, hgt + r, m[2] - r * 2 + 1, 1, m[3]);
-        R(m[0] + 1, hgt + 1, 1, 1, m[4]); R(m[0] + m[2] - 2, hgt, 1, 1, m[4]);
-      });
+    g.save(); g.translate(bx + 8 * u, by); g.scale(u, u); g.lineJoin = "round"; g.lineCap = "round";
+    var hexRgb = function (h) { h = h.replace("#", ""); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }, mixC = function (a, b, k) { return [Math.round(a[0] + (b[0] - a[0]) * k), Math.round(a[1] + (b[1] - a[1]) * k), Math.round(a[2] + (b[2] - a[2]) * k)]; };
+    var ink = function (hex) { return mixC(hexRgb(hex), [20, 10, 40], 0.65); }, rgbs = function (a) { return "rgb(" + a[0] + "," + a[1] + "," + a[2] + ")"; };
+    if (q.k === "bloom") {   // a tall glow-bloom: a curving stem with two leaves and a five-petal head
+      var sw = reduce ? 0 : Math.sin(t * 1.1 + q.ph) * 1.6, hx = sw, hy = -20;
+      g.fillStyle = "rgba(20,0,40,.22)"; g.beginPath(); g.ellipse(0, 0, 4, 1.2, 0, 0, 7); g.fill();
+      g.strokeStyle = "#3a8a2a"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(sw * 0.2, -10, hx, hy); g.stroke(); g.strokeStyle = "#8aea4a"; g.lineWidth = 0.9; g.stroke();
+      [[-1, -6, -5.5], [1, -10, 5]].forEach(function (L) { g.beginPath(); g.moveTo(sw * 0.15, L[1]); g.quadraticCurveTo(L[2] * 0.6, L[1] - 3, L[2], L[1] - 0.5); g.quadraticCurveTo(L[2] * 0.5, L[1] + 1.2, sw * 0.15, L[1]); aInk(g, aG(g, L[1] - 3, L[1] + 1, "#8af0c0", "#2fe0a0", "#1a8a6a"), "#0e4a3a", 0.5); });
+      for (var p = 0; p < 5; p++) { var a = p / 5 * 6.2832 - 1.57 + sw * 0.05, px = hx + Math.cos(a) * 3.2, py = hy + Math.sin(a) * 3.2; g.beginPath(); g.ellipse(px, py, 2.9, 2.1, a, 0, 7); aInk(g, aG(g, py - 2.6, py + 2.6, rgbs(mixC(hexRgb(c[0]), [255, 255, 255], 0.35)), c[0], rgbs(mixC(hexRgb(c[0]), [0, 0, 0], 0.25))), rgbs(ink(c[0])), 0.55); }
+      g.beginPath(); g.arc(hx, hy, 1.9, 0, 7); aInk(g, aG(g, hy - 2, hy + 2, "#ffffff", c[2], c[1]), rgbs(ink(c[1])), 0.5); aShine(g, hx - 0.6, hy - 0.7, 0.6, 0.4, 0.8, -0.4);
+      glows.push([bx + (8 + hx) * u, by + hy * u, "255,140,230", 1.3, 0.16]);
+    } else if (q.k === "orb") {   // an orb tree: a twisted violet trunk with three glowing orbs hanging from its arms
+      g.fillStyle = "rgba(20,0,40,.25)"; g.beginPath(); g.ellipse(0, 0, 6, 1.6, 0, 0, 7); g.fill();
+      g.beginPath(); g.moveTo(-2.4, 0); g.bezierCurveTo(-1, -8, -3.4, -14, -1, -22); g.lineTo(1.4, -22); g.bezierCurveTo(-0.6, -14, 2.4, -8, 2.4, 0); g.closePath(); aInk(g, (function () { var q2 = g.createLinearGradient(-3, 0, 3, 0); q2.addColorStop(0, "#d48aff"); q2.addColorStop(0.5, "#9a4ae0"); q2.addColorStop(1, "#5a2290"); return q2; })(), "#2a0a4a", 0.7);
+      g.strokeStyle = "#7a32b8"; g.lineWidth = 1.4; [[-0.6, -16, -6, -19], [0.6, -19, 6, -22], [0, -22, 0, -27]].forEach(function (b) { g.beginPath(); g.moveTo(b[0], b[1]); g.quadraticCurveTo((b[0] + b[2]) / 2, b[3] + 1, b[2], b[3]); g.stroke(); });
+      [[-6, -17, 2.8, "#4ef0e0"], [6, -20, 2.8, "#ffd23f"], [0, -29.5, 3.4, "#ff6a8a"]].forEach(function (o, n) {
+        var oy2 = o[1] + (reduce ? 0 : Math.sin(t * 1.3 + q.ph + n * 2) * 0.8); var og = g.createRadialGradient(o[0] - o[2] * 0.3, oy2 - o[2] * 0.35, 0, o[0], oy2, o[2]); og.addColorStop(0, "#ffffff"); og.addColorStop(0.35, o[3]); og.addColorStop(1, rgbs(mixC(hexRgb(o[3]), [40, 0, 60], 0.45)));
+        g.beginPath(); g.arc(o[0], oy2, o[2], 0, 7); aInk(g, og, rgbs(ink(o[3])), 0.5); glows.push([bx + (8 + o[0]) * u, by + oy2 * u, o[3] === "#4ef0e0" ? "80,240,224" : o[3] === "#ffd23f" ? "255,210,63" : "255,106,138", 0.9, 0.18]); });
+    } else if (q.k === "mush") {   // a cluster of three mushrooms: smooth domed caps with spots, pale stems
+      [[-5, 5, 3.2, c[1]], [1, 8, 4.2, c[0]], [5.5, 4, 2.6, c[2]]].forEach(function (m) {
+        var mx = m[0], hg = m[1], r = m[2]; g.fillStyle = "rgba(20,0,40,.22)"; g.beginPath(); g.ellipse(mx, 0, r * 0.9, 0.9, 0, 0, 7); g.fill();
+        g.beginPath(); g.moveTo(mx - r * 0.32, 0); g.quadraticCurveTo(mx - r * 0.42, -hg * 0.5, mx - r * 0.28, -hg); g.lineTo(mx + r * 0.28, -hg); g.quadraticCurveTo(mx + r * 0.42, -hg * 0.5, mx + r * 0.32, 0); g.closePath(); aInk(g, aG(g, -hg, 0, "#fffaf0", "#f0e2c8", "#c8b494"), "#5a4a3a", 0.5);
+        g.beginPath(); g.moveTo(mx - r, -hg + 0.4); g.quadraticCurveTo(mx - r, -hg - r * 1.2, mx, -hg - r * 1.15); g.quadraticCurveTo(mx + r, -hg - r * 1.2, mx + r, -hg + 0.4); g.quadraticCurveTo(mx, -hg + 1.2, mx - r, -hg + 0.4); g.closePath();
+        aInk(g, aG(g, -hg - r * 1.2, -hg + 1, rgbs(mixC(hexRgb(m[3]), [255, 255, 255], 0.35)), m[3], rgbs(mixC(hexRgb(m[3]), [0, 0, 0], 0.3))), rgbs(ink(m[3])), 0.55);
+        g.fillStyle = "rgba(255,255,255,.85)"; [[-0.45, -0.55, 0.32], [0.3, -0.75, 0.24], [0.5, -0.3, 0.2]].forEach(function (sp) { g.beginPath(); g.arc(mx + sp[0] * r, -hg + sp[1] * r, sp[2] * r, 0, 7); g.fill(); }); });
       glows.push([bx + 8 * u, by - 7 * u, "200,255,120", 1, 0.12]);
-    } else if (q.k === "shard") {
-      var hov = 6 + Math.sin(t * 1.5 + q.ph) * 1.6, spin = Math.abs(Math.cos(t * 0.9 + q.ph)), rows = [1, 3, 5, 5, 5, 5, 5, 3, 1];
-      g.fillStyle = "rgba(10,0,30,.3)"; g.fillRect(Math.round(bx + 5 * u), Math.round(by - 1 * u), Math.round(6 * u), Math.round(1.4 * u));
-      rows.forEach(function (w2, r) { var ww = Math.max(1, Math.round(w2 * (0.4 + 0.6 * spin))), x0 = 8 - Math.ceil(ww / 2); R(x0, hov + r, Math.ceil(ww / 2), 1, c[0]); R(x0 + Math.ceil(ww / 2), hov + r, Math.floor(ww / 2), 1, c[2]); });
-      R(7, hov + 6, 1, 1, "#ffffff");
-      glows.push([bx + 8 * u, by - (hov + 4) * u, "200,170,255", 1.4, 0.2]);
+    } else if (q.k === "shard") {   // a floating crystal: a faceted gem turning slowly over its shadow
+      var hov = -9 - (reduce ? 0 : Math.sin(t * 1.5 + q.ph) * 1.6), spin = 0.35 + 0.65 * Math.abs(Math.cos(t * 0.9 + q.ph));
+      g.fillStyle = "rgba(10,0,30,.28)"; g.beginPath(); g.ellipse(0, 0, 3.2 * spin + 1, 1, 0, 0, 7); g.fill();
+      g.save(); g.translate(0, hov); g.scale(spin, 1);
+      g.beginPath(); g.moveTo(0, -6); g.lineTo(3, -2); g.lineTo(2.2, 3.6); g.lineTo(0, 6); g.lineTo(-2.2, 3.6); g.lineTo(-3, -2); g.closePath(); aInk(g, aG(g, -6, 6, rgbs(mixC(hexRgb(c[0]), [255, 255, 255], 0.5)), c[0], rgbs(mixC(hexRgb(c[0]), [30, 0, 60], 0.4))), rgbs(ink(c[0])), 0.6 / Math.max(0.4, spin));
+      g.fillStyle = "rgba(255,255,255,.5)"; g.beginPath(); g.moveTo(0, -6); g.lineTo(-3, -2); g.lineTo(0, -0.5); g.closePath(); g.fill(); g.fillStyle = "rgba(0,0,40,.18)"; g.beginPath(); g.moveTo(0, -0.5); g.lineTo(3, -2); g.lineTo(2.2, 3.6); g.lineTo(0, 6); g.closePath(); g.fill();
+      g.restore(); glows.push([bx + 8 * u, by + (hov) * u, "200,170,255", 1.4, 0.2]);
     }
+    g.restore();
   }
   function nxRow(g, F, rj, now, glows) {
     if (rj === NXROW) NXP.forEach(function (P, i) { if (P.mc) mcPortal(g, P.x + 0.5, NXROW, now, glows); else nxPortal(g, P, i, now, glows); });
@@ -10737,15 +10814,30 @@
     if (dx0 > vw || dx0 + 64 * u < 0 || by < 0 || by - H * u > vh) return;
     if (!MCPC) { MCPC = document.createElement("canvas"); MCPC.width = W; MCPC.height = H; MCPX = MCPC.getContext("2d"); MCPI = MCPX.createImageData(W, H); }
     if (!MCPT) MCPT = mcPortalTpl();
-    var d = MCPI.data, op = MCPT.op, pulse = 0.5 + 0.5 * Math.sin(t * 2.2); d.set(MCPT.tpl);
+    var d = MCPI.data, op = MCPT.op, pulse = 0.5 + 0.5 * Math.sin(t * 2.2); d.fill(0);
     for (var n = 0; n < op.length; n += 5) {   // the swirl: blood red and black, turning the other way to the SwampRealms' portals
       var k = op[n], x = op[n + 1], y = op[n + 2], th = op[n + 3], r = op[n + 4], v = Math.sin(th * 3 - r * 0.42 + t * 2.6) * 0.5 + 0.5, v2 = Math.sin(r * 0.5 + t * 3.4 - th * 2) * 0.5 + 0.5, m = v * 0.75 + v2 * 0.25;
       var br = 0.55 + 0.45 * (1 - r / 26); d[k] = Math.min(255, (40 + 215 * m) * br); d[k + 1] = Math.min(255, (4 + 30 * m * m) * br); d[k + 2] = Math.min(255, (10 + 40 * m * m) * br); d[k + 3] = 240;
       if (m > 0.93) { d[k] = 255; d[k + 1] = 150; d[k + 2] = 130; }
     }
-    for (var c = 0; c < W * H; c++) if (MCPT.crack[c] && MCPT.tpl[c * 4 + 3]) { d[c * 4] = 255; d[c * 4 + 1] = Math.round(60 + 120 * pulse); d[c * 4 + 2] = Math.round(40 + 60 * pulse); }   // the cracks breathe
     MCPX.putImageData(MCPI, 0, 0);
-    g.drawImage(MCPC, 0, 0, W, H, Math.round(dx0), Math.round(by - H * u), Math.round(W * u), Math.round(H * u));
+    if (!MCPT.cr) { var hs = function (a, b) { var q = Math.sin(a * 91.7 + b * 47.3) * 43758.5453; return q - Math.floor(q); }; MCPT.cr = [[22, 14, 1, 0.9], [44, 18, -1, 1.1], [14, 44, 1, 0.6], [50, 52, -1, 0.7], [30, 10, 1, -0.4]].map(function (c) { var px = c[0], py = c[1], L = [[px, py]]; for (var s = 0; s < 22; s++) { px += c[2] * (0.6 + hs(s, c[0]) * 0.8) * 0.8; py += c[3] + (hs(c[1], s) - 0.5) * 1.6; L.push([px, py]); } return L; }); }
+    var arch = function () { g.beginPath(); g.moveTo(10.5, 66.5); g.lineTo(10.5, 34); g.arc(32, 34, 22, Math.PI, 0); g.lineTo(53.5, 66.5); g.lineTo(47, 66.5); g.lineTo(47, 34); g.arc(32, 34, 15.5, 0, Math.PI, true); g.lineTo(17, 66.5); g.closePath(); };
+    g.save(); g.translate(dx0, by - H * u); g.scale(u, u); g.lineJoin = "round"; g.lineCap = "round";
+    g.save(); g.beginPath(); g.moveTo(16.5, 68); g.lineTo(16.5, 34); g.arc(32, 34, 15.5, Math.PI, 0); g.lineTo(47, 68); g.closePath(); g.clip(); g.fillStyle = "#12020a"; g.fillRect(16, 18, 32, 52); g.imageSmoothingEnabled = true; g.drawImage(MCPC, 0, 0); g.imageSmoothingEnabled = false; g.restore();
+    arch(); aInk(g, aG(g, 12, 67, "#7a2a34", "#4a1420", "#240810"), "#0e0206", 1);   // an obsidian arch, top-lit, with a red band inside
+    g.save(); g.clip();
+    g.strokeStyle = "#9a1424"; g.lineWidth = 2; g.beginPath(); g.arc(32, 34, 16.6, Math.PI, 0); g.moveTo(16, 34); g.lineTo(16, 67); g.moveTo(48, 34); g.lineTo(48, 67); g.stroke();
+    g.strokeStyle = "rgba(10,0,4,.8)"; g.lineWidth = 0.7; for (var bk = 1; bk < 9; bk++) { var a2 = Math.PI + bk / 9 * Math.PI; g.beginPath(); g.moveTo(32 + Math.cos(a2) * 15.5, 34 + Math.sin(a2) * 15.5); g.lineTo(32 + Math.cos(a2) * 22, 34 + Math.sin(a2) * 22); g.stroke(); }
+    for (var yy = 40; yy < 66; yy += 6) { g.beginPath(); g.moveTo(10, yy); g.lineTo(17, yy); g.moveTo(47, yy); g.lineTo(54, yy); g.stroke(); }
+    g.fillStyle = "rgba(255,140,150,.22)"; g.beginPath(); g.arc(32, 34, 20.6, Math.PI * 1.05, Math.PI * 1.45); g.arc(32, 34, 18.6, Math.PI * 1.45, Math.PI * 1.05, true); g.closePath(); g.fill();
+    var cc = "rgb(255," + Math.round(60 + 120 * pulse) + "," + Math.round(40 + 60 * pulse) + ")";   // the cracks breathe
+    MCPT.cr.forEach(function (L) { g.beginPath(); L.forEach(function (p2, z) { if (z) g.lineTo(p2[0], p2[1]); else g.moveTo(p2[0], p2[1]); }); g.strokeStyle = "rgba(255,40,40," + (0.25 + 0.2 * pulse) + ")"; g.lineWidth = 2.4; g.stroke(); g.strokeStyle = cc; g.lineWidth = 0.9; g.stroke(); });
+    g.restore();
+    g.beginPath(); if (g.roundRect) g.roundRect(7, 65.5, 50, 3.6, 1.2); else g.rect(7, 65.5, 50, 3.6); aInk(g, aG(g, 65.5, 69, "#782030", "#46101c", "#28080e"), "#0e0206", 0.7);
+    g.beginPath(); if (g.roundRect) g.roundRect(9, 68.6, 46, 3, 1); else g.rect(9, 68.6, 46, 3); aInk(g, aG(g, 68.6, 71.6, "#4a1220", "#2a0a12", "#16040a"), "#0e0206", 0.7);
+    g.beginPath(); g.moveTo(26, 13.5); g.lineTo(32, 9.5); g.lineTo(38, 13.5); g.lineTo(36.5, 17); g.lineTo(27.5, 17); g.closePath(); aInk(g, aG(g, 9.5, 17, "#ff8a8a", "#d81e30", "#6a0812"), "#2a0208", 0.6); aShine(g, 29.5, 12.6, 1.5, 0.6, 0.55, -0.4);
+    g.restore();
     // red light leaking along the ground, and motes rising out of the opening
     var lg = g.createRadialGradient(ox + cxw * ts, by, 0, ox + cxw * ts, by, ts * 3); lg.addColorStop(0, "rgba(255,40,50," + (0.22 + 0.1 * pulse).toFixed(3) + ")"); lg.addColorStop(1, "rgba(255,40,50,0)");
     g.fillStyle = lg; g.fillRect(ox + cxw * ts - ts * 3, by - ts * 1.5, ts * 6, ts * 3);
@@ -17300,7 +17392,7 @@
     if (F.nx) drawNexusSky(g, now, F); else { g.fillStyle = "#04060a"; g.fillRect(0, 0, vw, vh); }
     var X0 = Math.max(0, Math.floor(-ox / ts)), X1 = Math.min(F.w - 1, Math.floor((vw - ox) / ts)), Y0 = Math.max(0, Math.floor(-oy / ts)), Y1 = Math.min(F.h - 1, Math.floor((vh - oy) / ts)), CA = caveAtlas(F.bi != null ? F.bi : F.biome), W2 = F.w;
     var glows2 = [], srcs = [[cp.x, cp.y - 0.6, fx("night") ? 12 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 9 : hasCharm("owl") ? 8.4 : 7.2, 1]];
-    if (F.nx) { g.imageSmoothingEnabled = false; g.drawImage(F.nx.isl, ox, oy, F.w * ts, (F.h + 3) * ts); nxPillar(g, F, now); }   // THE SWAMPREALMS: the island, painted once
+    if (F.nx) { g.imageSmoothingEnabled = true; g.drawImage(F.nx.isl, ox, oy, F.w * ts, (F.h + 3) * ts); g.imageSmoothingEnabled = false; nxPillar(g, F, now); }   // THE SWAMPREALMS: the island, painted once
     else if (F.maze) mazeBlit(g, F, X0, X1, Y0, Y1);   // MAZE ART: painted once per night
     else if (!F.bld && !F.iw && F.wall && F.theme) caveBlit(g, F, X0, X1, Y0, Y1);   // THE MINE: smooth ground and rock, painted once per floor
     else for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {   // ground and walls
@@ -17377,7 +17469,7 @@
       for (var rj = ja; rj <= jb; rj++) {
       if (F.iw) drawRoomWalls(g, rj, X0, X1, now, th);
       if (F.nx) nxRow(g, F, rj, now, glows2);
-      if (F.dr && F.dr[rj]) F.dr[rj].forEach(function (e) { if (e.x >= X0 && e.x <= X1) drawRoomPiece(g, e); });
+      if (F.dr && F.dr[rj]) F.dr[rj].forEach(function (e) { if (e.x >= X0 && e.x <= X1) { if (F.nx && e.id === T.X_crystalcluster) nxCluster(g, e, now, glows2); else drawRoomPiece(g, e); } });
       if (F.garage && rj === MOTO_CELL.y + MOTO_CELL.h - 1) drawGarageBike(g, now);
       for (var ri = X0; ri <= X1; ri++) {
         var rid = F.node[rj * W2 + ri]; if (!rid) continue;
