@@ -528,9 +528,9 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true };
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true, cvox: 1 };
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.chunks === false) OPT.chunks = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
-  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pixbug === false) OPT.pixbug = false; } catch (e) {}
+  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pixbug === false) OPT.pixbug = false; if (optS2.cvox === 0 || optS2.cvox === 0.5) OPT.cvox = optS2.cvox; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -556,7 +556,7 @@
     { id: "craft", n: "Crafting", d: ["e"] }, { id: "journal", n: "Journal", d: ["j"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
     { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "bore", n: "Bore Drill on/off", d: ["z"] }, { id: "emote", n: "Emotes", d: ["t"] },
     { id: "build", n: "Build mode", d: ["h"] }, { id: "decorate", n: "Decorate mode", d: ["o"] }, { id: "flip", n: "Flip furniture or decor", d: ["r"] },
-    { id: "grab", n: "Pick up furniture", d: ["g"] }, { id: "pause", n: "Pause menu", d: ["p"] }
+    { id: "grab", n: "Pick up furniture", d: ["g"] }, { id: "pause", n: "Pause menu", d: ["p"] }, { id: "codex", n: "Codex", d: ["k"] }
   ];
   // A bound key set to "none" means the action has no key at all (its default keys are off too). "none" is never a real key name.
   var KEYMAP = { b: {}, wait: "" };
@@ -832,7 +832,7 @@
     });
     d.days = Math.max(0, Math.min(1e6, Math.floor(+o.days) || 0));
     d.zoom = [0.8, 1, 1.25, 1.5, 2].indexOf(+o.zoom) > -1 ? +o.zoom : 1;
-    d.food = isFinite(+o.food) && o.food !== null && o.food !== undefined ? clamp(+o.food, 0, 100) : 100; d.nohunger = o.nohunger ? 1 : 0;
+    d.food = isFinite(+o.food) && o.food !== null && o.food !== undefined ? clamp(+o.food, 0, 100) : 100; d.nohunger = o.nohunger ? 1 : 0; d.ess = isFinite(+o.ess) ? clamp(Math.floor(+o.ess), 0, 9e7) : 0;   // SWAMP ESSENCE
     if (o.ate && typeof o.ate === "object") Object.keys(o.ate).forEach(function (k) { if (ITEMS[k] && ITEMS[k].cooked) d.ate[k] = 1; });
     if (o.farm && typeof o.farm === "object" && o.wv === SW.WORLDVER) Object.keys(o.farm).forEach(function (k) { var f = o.farm[k]; if (/^\d+,\d+$/.test(k) && f && CROPS[f.c]) d.farm[k] = { c: f.c, g: Math.max(0, +f.g || 0), w: Math.max(0, +f.w || 0) }; });
     if (o.mk && typeof o.mk === "object") Object.keys(o.mk).forEach(function (k) { var n = Math.floor(+o.mk[k]); if (n > 0) d.mk[k] = n; });
@@ -3255,7 +3255,8 @@
     if (e.home !== undefined) S.whut[e.home] = S.days | 0;   // a Witch Hut's owner: back tomorrow
     var d = ENEMY[e.k], sp = e.k === "slime" ? SLIME_PAL[e.b] || SLIME_PAL[0] : null;
     e.def = true; e.dead = 0.6; chips(e.x, e.y - e.h * 0.5, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); if (e.bm) bmKilled(e); eliteDeath(e, false); p8Kill(e);
-    if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small });
+    var essV = essVal(e.mx || d.hp, !!e.elite, !!e.boss), essG = MP.role === "host" && e.lastHit && MP.peers[e.lastHit]; if (!essG) essDrop(e.x, e.y - e.h * 0.5, essV);   // SWAMP ESSENCE (a guest's kill: the orbs fly to them instead)
+    if (MP.role === "host" && e.lastHit && MP.peers[e.lastHit]) mpSend({ t: "kill", to: e.lastHit, k: e.k, small: !!e.small, ev: essV, ex: e.x, ey: e.y - e.h * 0.5 });
     if (e.k === "mcheart") { mcCleanse(e.hk); return; }   // RESTORING MALCRUOR
     if (e.k === "slime" && !e.small) {   // a big slime splits into two little ones
       [-1, 1].forEach(function (s2) { var kid = newEnemy("slime", clamp(e.x + s2 * 0.3, 1.5, W - 1.5), e.y); kid.small = true; kid.b = e.b; kid.w = 0.55; kid.h = 0.45; kid.hp = kid.mx = 6; kid.dmg = 4; kid.kv = s2 * 5; kid.vy = -6; kid.cd = 0.6; kid.t = 0.6; if (!eBoxHit(kid.x, kid.y, kid.w, kid.h)) enemies.push(kid); });
@@ -3823,7 +3824,7 @@
       var a = T2.a; if (a.hp === undefined) a.hp = AHP[a.k] || 12; a.hp -= dmg; a.kv = f * 7; if (a.on) a.vy = -4.5;
       if (a.k === "goat") a.mad = 10; else a.flee = 6;
       if (a.hp <= 0) {
-        var ix = wilds.indexOf(a); if (ix >= 0) wilds.splice(ix, 1); chips(a.x, a.y - a.h / 2, "#d8c8b0", 14, 6); S.st.hunted = (S.st.hunted || 0) + 1;
+        var ix = wilds.indexOf(a); if (ix >= 0) wilds.splice(ix, 1); chips(a.x, a.y - a.h / 2, "#d8c8b0", 14, 6); essKill(a.x, a.y - a.h / 2, AHP[a.k] || 8); vxPlay(a.k, "d", a.x, a.y, p.x, p.y); S.st.hunted = (S.st.hunted || 0) + 1;
         var L = a.k === "duck" ? [["rawmeat", 1], ["duckegg", Math.random() < 0.3 ? 1 : 0]] : a.k === "pig" ? [["rawmeat", 2], ["leather", Math.random() < 0.6 ? 1 : 0], ["truffle", Math.random() < 0.2 ? 1 : 0]] : [["rawmeat", 2], ["leather", 1], ["goatmilk", Math.random() < 0.3 ? 1 : 0]];
         L.forEach(function (q) { if (q[1] > 0 && ITEMS[q[0]]) spawnDrop(q[0], q[1], a.x - 0.5, a.y - 1); });
       }
@@ -4330,7 +4331,7 @@
     if (stg && CMOB[m.k].fly && m.hp > 0) { m.st = "away"; m.t = 0.6; m.cd = 1.1; }
     if (stg && (m.st === "wind") && m.hp > 0) m.st = "patrol";
     if (m.hp > 0) return;
-    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true); isleKill(m);
+    m.def = true; m.dead = 0.6; chips(m.x, m.y - 0.4, sp ? sp.glow : d.glow, 16, 8); snd("open", "Epic"); eliteDeath(m, true); isleKill(m); essKill(m.x, m.y - 0.4, m.mx || (d && d.hp), !!m.elite);
     if (m.k === "slime" && !m.small) [-1, 1].forEach(function (s2) {   // big slimes split in two
       var kid = newCaveMob("slime", m.x + s2 * 0.25, m.y, F, cave.f); kid.small = true; kid.r = 0.22; kid.hp = kid.mx = Math.round(6 * (1 + 0.08 * (cave.f - 1))); kid.dmg = Math.max(3, Math.round(m.dmg * 0.55)); kid.kx = s2 * 5 + uy * 2; kid.ky = -ux * 2; kid.cd = 0.6; kid.t = 0.5;
       if (mobFree(F, kid.x, kid.y, kid.r, false)) F.mobs.push(kid);
@@ -4573,7 +4574,7 @@
     if (m.def) return; if (!m.awake) { m.awake = true; m.st = "chase"; capSay(m, "Ye'll pay for that, ye bilge rat!", 2.4); }
     m.hp -= dmg; m.flash = 0.12; m.kx = ux * 1.5; m.ky = uy * 1.5; text(m.x, m.y - 2.2, "-" + Math.round(dmg), "#ffe48a"); chips(m.x, m.y - 0.9, "#3fd6c0", 8, 6); thud(160 + Math.random() * 50, 0.06);
     if (m.hp > 0) return;
-    m.hp = 0; m.def = true; m.dead = 2.2; F_clearFx(); capSay(m, "Blast it... the hollow's yours, landlubber. Mind me drill.", 3);
+    m.hp = 0; m.def = true; m.dead = 2.2; F_clearFx(); essKill(m.x, m.y - 0.4, m.mx || 360, false, true); capSay(m, "Blast it... the hollow's yours, landlubber. Mind me drill.", 3);
     (cave.F.mobs || []).forEach(function (o) { if (o !== m && !o.def) { o.def = true; o.dead = 0.6; chips(o.x, o.y - 0.4, "#3fd6c0", 10, 6); } });   // his crew scatters
     snd("rise"); thud(60, 0.2);
   }
@@ -6686,7 +6687,7 @@
     e.hp -= dmg; e.hurt = 0.16; e.kv = face * 1.2; e.sqv = (e.sqv || 0) + 2.2; hitStop(0.05, 0.12); text(e.x, e.y - e.h - 0.4, "-" + Math.round(dmg) + (e.st === "dazed" ? "!" : ""), e.st === "dazed" ? "#ffb13b" : "#ffe48a");
     chips(e.x, e.y - e.h * 0.5, B.chip, 8, 6); thud(150 + Math.random() * 50, 0.06);
     if (e.hp > 0) { if (!e.rage && e.hp < e.mx * 0.4) { e.rage = 1; e.roar = e.u ? 0 : 1.15; e.rr = 0; if (e.u) bossRing(e.x, surfAt(e.x) - 0.5, B.c, 8); shake = 0.6; toast("The " + B.n + " is enraged!", B.c); thud(70, 0.12); } return; }
-    e.def = true; e.dead = BOSS_DIE; e.burst = 0; e.u = false; bshots.length = 0; S.bossOn = ""; shake = 1; chips(e.x, e.y - e.h * 0.5, B.c, 18, 8); hitStop(0.9, 0.28); thud(55, 0.2);
+    e.def = true; e.dead = BOSS_DIE; e.burst = 0; e.u = false; bshots.length = 0; S.bossOn = ""; essKill(e.x, e.y - e.h * 0.5, e.mx, false, true); shake = 1; chips(e.x, e.y - e.h * 0.5, B.c, 18, 8); hitStop(0.9, 0.28); thud(55, 0.2);
     enemies.forEach(function (q) { if (q.minion && !q.def) q.gone = true; });
     var first = !(S.st.boss & B.bit); S.st.boss |= B.bit; S.st.bossk++; try { cardDrop(e.k, e.x, e.y, true); } catch (er2) {} if (MP.role === "host" && MP.npeers) mpSend({ t: "bosswin", k: e.k });
     var L = Object.assign({}, B.loot); if (first) L[B.item] = 0;
@@ -6839,6 +6840,84 @@
   }
   function sfxHit(heavy) { sfxThump(heavy ? 150 : 210, heavy ? 42 : 70, heavy ? 0.22 : 0.11, heavy ? 0.22 : 0.13); sfxNoise(heavy ? 0.16 : 0.07, heavy ? 2600 : 3600, heavy ? 500 : 1200, heavy ? 0.16 : 0.1, "highpass"); }
   function sfxWhoosh() { sfxNoise(0.22, 500, 2600, 0.09); }
+  // ---------- SWAMP ESSENCE: every creature you defeat bursts into glowing orbs that drift to you (stronger foes give more) ----------
+  // S.ess is the total Essence you have gathered in this world; levels come from it (essLevel). Orbs come in four sizes
+  // (1 teal, 3 lime, 7 gold, 17 pink; now and then a blue one), each a little glowing bog-seed with a sprout on top.
+  // The orbs live in whatever scene they dropped in (surface, cave, dive); leaving the scene collects the rest at once.
+  var ORBS = [], ORBX = { last: 0, scene: "", spr: [], streak: 0, sT: 0, pend: 0 };
+  var ESS_COL = [["#4ee6b4", "#d6fff2", "#1b6f58"], ["#a8f05a", "#f2ffd6", "#4c7a1e"], ["#ffd24a", "#fff6cf", "#8a6410"], ["#ff7ad8", "#ffe2f6", "#8a2a72"], ["#7fd6ff", "#e2f7ff", "#245e86"]];
+  function essNeed(lv) { return 12 + lv * 7; }   // Essence from level lv to the next
+  function essLevel(x) { var lv = 0, n = essNeed(0); x = Math.max(0, x | 0); while (x >= n && lv < 999) { x -= n; lv++; n = essNeed(lv); } return { lv: lv, have: x, need: n }; }
+  function essVal(mx, elite, boss) { return clamp(Math.round((mx || 6) / 6 * (elite ? 2.5 : 1) * (boss ? 2 : 1)), 1, 400); }
+  function essScene() { return OCS ? (OCS.sea ? "sea" : "oc") : HOME ? "home" : cave ? "cave" : "w"; }
+  function essTgt() { if (OCS && OCS.pl) return { x: OCS.pl.x, y: OCS.pl.y - 0.3 }; if (cave || HOME) return { x: cp.x, y: cp.y - 0.35 }; return { x: p.x, y: p.y - PH * 0.55 }; }
+  function essDrop(x, y, val) {   // burst val Essence out of (x, y) as orbs
+    val = Math.max(1, Math.round(val)); var sc = essScene();
+    if (sc === "sea" || sc === "home") { essGain(val); return; }   // (on the boat or at home there is nowhere for orbs to fly: it goes straight in)
+    if (ORBX.scene && ORBX.scene !== sc) essFlush(); ORBX.scene = sc;
+    var sz = [17, 7, 3, 1], top = sc === "w";
+    while (val > 0) {
+      if (ORBS.length >= 140) { essGain(val); break; }
+      var s = 1; for (var i = 0; i < sz.length; i++) if (sz[i] <= val) { s = sz[i]; break; }
+      val -= s; var ci = s >= 17 ? 3 : s >= 7 ? 2 : s >= 3 ? 1 : 0; if (s === 1 && Math.random() < 0.18) ci = 4;
+      var a = Math.random() * 6.2832, sp = 2.5 + Math.random() * 3.5;
+      ORBS.push({ x: x + (Math.random() - 0.5) * 0.4, y: y + (Math.random() - 0.5) * 0.3, vx: Math.cos(a) * sp, vy: top ? -3 - Math.random() * 4 : Math.sin(a) * sp, v: s, ci: ci, t: -Math.random() * 0.15, ph: Math.random() * 6.2832, r: s >= 17 ? 0.34 : s >= 7 ? 0.28 : s >= 3 ? 0.23 : 0.18, g: top ? 1 : 0 });
+    }
+  }
+  function essKill(x, y, mx, elite, boss) { essDrop(x, y, essVal(mx, elite, boss)); }
+  function essFlush() { var n = 0; ORBS.forEach(function (o) { n += o.v; }); ORBS.length = 0; if (n) essGain(n, true); }
+  function essGain(v, quiet) {
+    var before = essLevel(S.ess | 0).lv; S.ess = Math.min(9e7, (S.ess | 0) + Math.max(0, Math.round(v))); S.st.essence = (S.st.essence || 0) + v;
+    var L = essLevel(S.ess); essHud(true);
+    if (L.lv > before) {
+      var tg = essTgt(); chips(tg.x, tg.y, "#ffd24a", 18, 7); chips(tg.x, tg.y, "#ff7ad8", 12, 6); text(tg.x, tg.y - 1, "Level " + L.lv + "!", "#ffd24a");
+      toast("Swamp Essence level " + L.lv + "!", "#4ee6b4"); essLvSnd();
+    } else if (!quiet) essSnd();
+  }
+  function essSnd() {   // a bubbly bloop with a sparkle on top; quick pickups step up the scale
+    if (!fxReady()) return; var now = performance.now(); ORBX.streak = now - ORBX.sT < 450 ? Math.min(ORBX.streak + 1, 10) : 0; ORBX.sT = now;
+    if (now - (ORBX.sn || 0) < 40) return; ORBX.sn = now;
+    var m = Math.pow(2, [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24][ORBX.streak] / 12);
+    try { tn(0, 420 * m, 760 * m, 0.07, "sine", 0.05); tn(0.035, 1240 * m, 1480 * m, 0.08, "triangle", 0.022); } catch (e) {}
+  }
+  function essLvSnd() { if (!fxReady()) return; try { [523, 659, 784, 1046, 1318].forEach(function (f, i) { tn(i * 0.075, f, f * 1.01, 0.22, "triangle", 0.05); tn(i * 0.075, f * 2, f * 2.02, 0.12, "sine", 0.015); }); nz(0.3, 0.5, 0.02, 7000, "highpass"); } catch (e) {} }
+  function essHud(bump) {
+    var el = $("sbxEss"); if (!el || !S) return; var L = essLevel(S.ess | 0), pc = Math.round(L.have / L.need * 100);
+    var key = L.lv + ":" + pc; if (el._k !== key) { el._k = key; el.querySelector(".fl").style.width = pc + "%"; el.querySelector(".ic b").textContent = L.lv; el.setAttribute("aria-valuenow", pc); el.setAttribute("aria-valuetext", "Level " + L.lv + ", " + L.have + " of " + L.need + " Essence"); el.title = "Swamp Essence: level " + L.lv + " (" + L.have + " / " + L.need + ")"; }
+    if (bump && !reduce) { el.classList.remove("got"); void el.offsetWidth; el.classList.add("got"); }
+  }
+  function orbSprite(ci) {   // one 64x64 picture per colour: soft halo, a top-lit glassy seed with a swirl inside, a tinted ink rim and a tiny sprout
+    if (ORBX.spr[ci]) return ORBX.spr[ci];
+    var c = document.createElement("canvas"); c.width = c.height = 64; var g = c.getContext("2d"), C = ESS_COL[ci];
+    var hg = g.createRadialGradient(32, 34, 2, 32, 34, 31); hg.addColorStop(0, C[0] + "aa"); hg.addColorStop(0.45, C[0] + "44"); hg.addColorStop(1, C[0] + "00"); g.fillStyle = hg; g.fillRect(0, 0, 64, 64);
+    g.strokeStyle = C[2]; g.lineWidth = 2; g.lineCap = "round"; g.beginPath(); g.moveTo(32, 22); g.quadraticCurveTo(31, 17, 34, 14); g.stroke();   // the sprout's stem (drawn first, the seed covers its root)
+    g.fillStyle = C[1]; g.beginPath(); g.ellipse(37.5, 13.5, 4.2, 2.2, -0.5, 0, 6.2832); g.fill(); g.strokeStyle = C[2]; g.lineWidth = 1.2; g.stroke();
+    g.beginPath(); g.ellipse(29.5, 15.5, 3, 1.7, 0.6, 0, 6.2832); g.fillStyle = C[0]; g.fill(); g.stroke();
+    var bg = g.createRadialGradient(27, 28, 1, 32, 34, 13); bg.addColorStop(0, C[1]); bg.addColorStop(0.5, C[0]); bg.addColorStop(1, C[2]);
+    g.beginPath(); g.arc(32, 34, 12.5, 0, 6.2832); g.fillStyle = bg; g.fill(); g.lineWidth = 1.6; g.strokeStyle = C[2]; g.stroke();
+    g.save(); g.beginPath(); g.arc(32, 34, 12, 0, 6.2832); g.clip(); g.globalAlpha = 0.55; g.strokeStyle = C[1]; g.lineWidth = 1.4;   // the swirl, clipped inside the seed
+    g.beginPath(); for (var i = 0; i <= 28; i++) { var a = i * 0.36, r = 1 + i * 0.32; g[i ? "lineTo" : "moveTo"](32 + Math.cos(a) * r, 35 + Math.sin(a) * r * 0.8); } g.stroke(); g.restore();
+    g.globalAlpha = 0.9; g.fillStyle = "#ffffff"; g.beginPath(); g.ellipse(27, 28.5, 3.6, 2.2, -0.6, 0, 6.2832); g.fill(); g.globalAlpha = 1;
+    ORBX.spr[ci] = c; return c;
+  }
+  function drawOrbs(g, now) {   // move (this frame) and draw the orbs; called from each scene's draw, after its darkness, so they glow
+    if (!ORBS.length) { ORBX.last = now; return; }
+    var sc = essScene(); if (sc !== ORBX.scene) { essFlush(); return; }
+    var dt = Math.min(0.05, Math.max(0, (now - (ORBX.last || now)) / 1000)); ORBX.last = now; if (pauseOpen || (panelOpen && !MP.on)) dt = 0;
+    var tg = essTgt(), i, o, k = now / 1000;
+    for (i = ORBS.length - 1; i >= 0; i--) {
+      o = ORBS[i]; o.t += dt;
+      if (o.t < 0.45) { o.vx *= Math.exp(-dt * 3.2); o.vy = o.vy * Math.exp(-dt * 3.2) + o.g * 16 * dt; }
+      else { var dx = tg.x - o.x, dy = tg.y - o.y, d = Math.hypot(dx, dy) || 1, spd = Math.min(22, 5 + (o.t - 0.45) * 16), f = Math.min(1, dt * 7); o.vx += (dx / d * spd - o.vx) * f; o.vy += (dy / d * spd - o.vy) * f; if (d < 0.5 || o.t > 6) { ORBS.splice(i, 1); essGain(o.v); continue; } }
+      o.x += o.vx * dt; o.y += o.vy * dt;
+    }
+    for (i = 0; i < ORBS.length; i++) {
+      o = ORBS[i]; var pul = 1 + 0.09 * Math.sin(k * 7 + o.ph), R = o.r * ts * pul, S2 = R * 5.1, cx = ox + o.x * ts, cy = oy + (o.y + Math.sin(k * 4 + o.ph) * 0.05) * ts;
+      g.globalAlpha = Math.min(1, 0.4 + o.t * 3); g.drawImage(orbSprite(o.ci), cx - S2 / 2, cy - S2 / 2 - R * 0.15, S2, S2);
+      if (!lowq) { g.fillStyle = ESS_COL[o.ci][1]; for (var m = 0; m < 2; m++) { var an = k * (2.6 + m) + o.ph + m * 3.14, mr = R * 1.55; g.globalAlpha = 0.75; g.fillRect(Math.round(cx + Math.cos(an) * mr - 1), Math.round(cy + Math.sin(an) * mr * 0.7 - 1), 2, 2); } }
+    }
+    g.globalAlpha = 1;
+  }
   function bossRing(x, y, c, r, w) { BRINGS.push({ x: x, y: y, c: c, R: r || 7, t: 0, max: 0.55, w: w || 1 }); if (BRINGS.length > 8) BRINGS.shift(); }
   function bossFeel(e, dt) {
     e.fc = e.fc == null ? e.dir : e.fc + (e.dir - e.fc) * Math.min(1, dt * 9);
@@ -7934,6 +8013,7 @@
     return false;
   }
   function mpKill(m) {   // guest: you landed the last hit, so the kill counts for you too
+    if (m.ev > 0 && isFinite(m.ex) && isFinite(m.ey) && !cave && !OCS && !HOME) essDrop(+m.ex, +m.ey, Math.min(400, +m.ev)); else if (m.ev > 0) essGain(Math.min(400, +m.ev));   // SWAMP ESSENCE
     var d = ENEMY[m.k]; if (!d || !KSTAT[m.k]) return;
     var kills = ++S.st[KSTAT[m.k]], drop = pityDrop(d.frag, (kills === 1 && !m.small) || Math.random() < d.chance * (m.small ? 0.35 : 1));
     if (drop && d.frag) give(d.frag, 1, undefined, undefined, true);
@@ -12706,6 +12786,7 @@
     ward: '<path d="M8 3l4 3 4-3 4 4-3 3v11H7V10L4 7z"/>',
     skill: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
     cards: '<path d="M4 6l9-2 3 14-9 2zM15 5l5 1-2 13"/>',
+    codex: '<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11"/><circle cx="12" cy="8.5" r="2"/>',
     book: '<path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5zM4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5z"/>',
     keys: '<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7.5 14h9"/>',
     home: '<path d="M4 11l8-6.5 8 6.5M6.5 9.5V19h11V9.5"/>',
@@ -12723,7 +12804,8 @@
   function setAudio() { var r = optRow;
     return r("Music", "Changes with the land you are in.", optVol("mus", MUS.on ? MUS.vol : 0, "Music volume"))
       + r("Sound effects", "Digging, footsteps, hits and chimes.", optVol("fx", OPT.fx, "Sound effects volume"))
-      + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume")); }
+      + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
+      + r("Creature sounds", "Growls, oinks, quacks and croaks from the creatures around you, now and then.", optSeg("cvox", OPT.cvox == null ? 1 : OPT.cvox, [[0, "Off"], [0.5, "Quiet"], [1, "Normal"]], "Creature sounds")); }
   function setGfx() { var r = optRow;
     return r("Full screen", "Fills the whole screen. Delve does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
@@ -12764,6 +12846,7 @@
     else if (k === "look") OPT.look = v === "1";
     else if (k === "wheel") OPT.wheel = v === "1";
     else if (k === "eglow") OPT.eglow = v === "1";
+    else if (k === "cvox") { OPT.cvox = +v === 0 ? 0 : +v === 0.5 ? 0.5 : 1; if (OPT.cvox) setTimeout(function () { vxPlay("pig", "i", 0, 0, 0, 0, true); }, 60); }
     else if (k === "bloom") OPT.bloom = v === "1";
     else if (k === "chunks") { OPT.chunks = v === "1"; chkClear(); }
     else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
@@ -12796,6 +12879,7 @@
       + (cave ? "" : '<button type="button" data-pz="photo">' + pzIcon("cam") + "<span>Photo mode</span></button>")
       + '<button type="button" data-pz="ward">' + pzIcon("ward") + "<span>Wardrobe</span></button>"
       + '<button type="button" data-pz="skill">' + pzIcon("skill") + "<span>Skills</span>" + (skFree() ? "<em>" + skFree() + " to spend</em>" : "") + "</button>"
+      + '<button type="button" data-pz="codex">' + pzIcon("codex") + "<span>Codex</span></button>"
       + '<button type="button" data-pz="cards">' + pzIcon("cards") + "<span>Croak Cards</span></button>"
       + (DEVON ? '<button type="button" data-pz="dev">' + pzIcon("skill") + "<span>Dev menu</span></button>" : "")
       + (MP.on || MP.ws ? "" : '<button type="button" data-pz="title">' + pzIcon("home") + "<span>Main menu</span><em>Saves first</em></button>") + "</nav>"
@@ -12823,6 +12907,7 @@
     if (a === "ward") { closePause(); return wardOpen(); }
     if (a === "skill") { closePause(); return skillOpen(); }
     if (a === "cards") { closePause(); return cardsOpen(); }
+    if (a === "codex") { closePause(); return cxOpen(); }
     if (a === "dev") { closePause(); return devOpen(); }
   }
   if (pzEl) pzEl.addEventListener("click", function (e) {
@@ -14443,6 +14528,132 @@
   }
   function cricket() { var f = 4200 + Math.random() * 700, n = 3 + Math.floor(Math.random() * 3), v = 0.007 + Math.random() * 0.006; for (var i = 0; i < n; i++) tn(i * 0.055, f, f * 0.97, 0.035, "sine", v); }
   function frog() { var f = 170 + Math.random() * 90, v = 0.022 + Math.random() * 0.014; tn(0, f * 1.25, f, 0.07, "triangle", v); tn(0.1, f * 1.3, f * 0.9, 0.09, "triangle", v * 0.9); if (Math.random() < 0.3) tn(0.32, f * 1.2, f, 0.07, "triangle", v * 0.7); }
+  // ---------- CREATURE VOICES: every animal and creature makes its own sounds now and then (made with the game's own synth) ----------
+  // Idle calls come every so often (each creature has its own timer, and only one idle call plays at a time across the whole scene,
+  // so it never turns into a racket). Event sounds follow what the creature does: a wolf growls when it crouches, snarls as it lunges,
+  // huffs and puffs while it gets its breath back after a lunge, yelps when hit. Quieter and panned to the side the further away it is.
+  // Options > Audio > Creature sounds: Off / Quiet / Normal (OPT.cvox 0 / 0.5 / 1).
+  var VOXS = { gap: 0, last: {}, nb: null };
+  function vxOut(vol, pan) {
+    var g = ac.createGain(); g.gain.value = vol;
+    if (ac.createStereoPanner) { var sp = ac.createStereoPanner(); sp.pan.value = clamp(pan || 0, -0.85, 0.85); g.connect(sp); sp.connect(fxOut()); } else g.connect(fxOut());
+    return g;
+  }
+  // A voiced sound: an oscillator swept through pitch points, through formant filters (the mouth), with optional roughness (a fast wobble = growl)
+  function vxT(out, t0, dur, type, pts, forms, rough, atk) {
+    var t = ac.currentTime + t0, o = ac.createOscillator(), g = ac.createGain(), i; o.type = type;
+    o.frequency.setValueAtTime(pts[0], t); for (i = 1; i < pts.length; i++) o.frequency.linearRampToValueAtTime(pts[i], t + dur * i / (pts.length - 1));
+    var a = atk || Math.min(0.03, dur * 0.2); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1, t + a); g.gain.setValueAtTime(1, t + Math.max(a, dur * 0.6)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    var src = o;
+    if (rough) { var am = ac.createGain(), lfo = ac.createOscillator(), ld = ac.createGain(); lfo.frequency.value = rough[0]; ld.gain.value = rough[1] * 0.5; am.gain.value = 1 - rough[1] * 0.5; lfo.connect(ld); ld.connect(am.gain); o.connect(am); src = am; lfo.start(t); lfo.stop(t + dur + 0.05); }
+    if (forms) forms.forEach(function (F) { var bq = ac.createBiquadFilter(), fg = ac.createGain(); bq.type = "bandpass"; bq.frequency.value = F[0]; bq.Q.value = F[1]; fg.gain.value = F[2]; src.connect(bq); bq.connect(fg); fg.connect(g); });
+    else src.connect(g);
+    g.connect(out); o.start(t); o.stop(t + dur + 0.05);
+  }
+  // Breath and hiss: filtered noise swept from f0 to f1
+  function vxN(out, t0, dur, type, f0, f1, q, vol) {
+    var t = ac.currentTime + t0, src = ac.createBufferSource(), bq = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = nzBuf(); src.playbackRate.value = 0.85 + Math.random() * 0.3; bq.type = type; bq.Q.value = q;
+    bq.frequency.setValueAtTime(f0, t); bq.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(0.04, dur * 0.3)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(bq); bq.connect(g); g.connect(out); src.start(t, Math.random() * 0.4); src.stop(t + dur + 0.05);
+  }
+  function rr(a, b) { return a + Math.random() * (b - a); }
+  var VOICE = {
+    growl: function (o, k) { var d = rr(0.7, 1.1), f = 82 * k; vxT(o, 0, d, "sawtooth", [f, f * 1.18, f * 1.08, f * 0.92], [[320, 3, 1.6], [780, 4, 0.7]], [rr(26, 36), 0.85]); vxN(o, 0, d, "lowpass", 500, 300, 0.7, 0.35); },
+    snarl: function (o, k) { var f = 150 * k; vxT(o, 0, 0.32, "sawtooth", [f, f * 1.5, f * 0.85], [[520, 3, 1.8], [1300, 5, 0.8]], [44, 0.7]); vxN(o, 0, 0.3, "bandpass", 1800, 900, 1.2, 0.5); },
+    pant: function (o, k) { var n = 5 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) { var out2 = i % 2 === 0; vxN(o, i * 0.27, out2 ? 0.17 : 0.13, "bandpass", (out2 ? 1400 : 1000) * k, (out2 ? 800 : 700) * k, 1.4, out2 ? 0.55 : 0.32); } },
+    yelp: function (o, k) { var f = 620 * k; vxT(o, 0, 0.17, "triangle", [f, f * 1.7, f * 0.9], [[1100 * k, 3, 1.6]]); },
+    howl: function (o, k) { var f = 290 * k, d = rr(1.6, 2.2); vxT(o, 0, d, "sine", [f, f * 1.7, f * 1.9, f * 1.8, f * 1.3], null, [5.5, 0.18], 0.25); vxT(o, 0, d, "triangle", [f * 2, f * 3.4, f * 3.8, f * 3.6, f * 2.6], [[1400, 2, 0.25]], null, 0.3); },
+    oink: function (o, k) { var n = Math.random() < 0.45 ? 2 : 1; for (var i = 0; i < n; i++) { var f = rr(170, 205) * k; vxT(o, i * 0.24, 0.19, "sawtooth", [f, f * 1.3, f * 0.85], [[480, 4, 1.8], [1150, 6, 0.6]], [rr(60, 80), 0.6]); vxN(o, i * 0.24, 0.12, "bandpass", 700, 400, 2, 0.25); } },
+    squeal: function (o, k) { var f = 600 * k; vxT(o, 0, 0.45, "sawtooth", [f, f * 1.6, f * 1.3, f], [[1200, 4, 1.5], [2600, 6, 0.5]], [30, 0.5]); },
+    quack: function (o, k) { var n = 1 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) { var f = rr(440, 520) * k; vxT(o, i * 0.2, 0.15, "sawtooth", [f, f * 1.12, f * 0.8], [[950, 5, 1.8], [1900, 6, 0.8]], [28, 0.45]); } },
+    bleat: function (o, k) { var f = rr(400, 460) * k; vxT(o, 0, rr(0.5, 0.75), "sawtooth", [f, f * 1.08, f * 1.02, f * 0.92], [[820, 4, 1.6], [2300, 6, 0.6]], [rr(10, 13), 0.75]); },
+    croak: function (o, k) { var f = rr(120, 150) * k; vxT(o, 0, 0.22, "square", [f, f * 1.15, f * 0.9], [[420, 3, 1.3], [900, 5, 0.6]], [rr(36, 48), 0.9]); if (Math.random() < 0.5) vxT(o, 0.28, 0.18, "square", [f * 1.1, f * 0.85], [[420, 3, 1.3]], [42, 0.9]); },
+    gulp: function (o, k) { vxT(o, 0, 0.12, "sine", [260 * k, 120 * k], null); },
+    bellow: function (o, k) { var f = 52 * k; vxT(o, 0, rr(0.9, 1.3), "sawtooth", [f, f * 1.1, f * 0.95], [[180, 3, 2], [420, 4, 0.6]], [rr(18, 24), 0.9]); vxN(o, 0.1, 0.8, "lowpass", 260, 160, 0.7, 0.3); },
+    hiss: function (o, k) { vxN(o, 0, rr(0.6, 0.9), "highpass", 2600, 3800, 0.7, 0.42); vxT(o, 0, 0.5, "sawtooth", [70 * k, 62 * k], [[200, 3, 1]], [22, 0.8]); },
+    squeak: function (o, k) { var n = 2 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) { var f = rr(2600, 3400) * k; vxT(o, i * rr(0.07, 0.11), 0.05, "sine", [f, f * 1.2, f * 0.9], null); } },
+    screech: function (o, k) { var f = 2200 * k; vxT(o, 0, 0.22, "sawtooth", [f, f * 1.3, f * 0.8], [[2600, 4, 1.4]], [70, 0.4]); },
+    buzz: function (o, k) { var d = rr(0.5, 0.9), f = rr(175, 205) * k; vxT(o, 0, d, "sawtooth", [f, f * 1.06, f * 0.96, f * 1.04], [[900, 1.5, 1.2], [2400, 3, 0.5]], [rr(20, 30), 0.35], 0.12); },
+    zing: function (o, k) { var f = 210 * k; vxT(o, 0, 0.35, "sawtooth", [f, f * 1.9], [[1200, 1.5, 1.4]], [30, 0.3]); },
+    squelch: function (o, k) { vxN(o, 0, 0.2, "lowpass", 900 * k, 220 * k, 1.5, 0.6); vxT(o, 0.02, 0.14, "sine", [240 * k, 110 * k], null); },
+    chitter: function (o, k) { var n = 5 + Math.floor(Math.random() * 5); for (var i = 0; i < n; i++) vxN(o, i * rr(0.03, 0.05), 0.022, "bandpass", 3600 * k, 3000 * k, 4, 0.55); },
+    click: function (o, k) { var n = 2 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) vxN(o, i * 0.09, 0.03, "bandpass", 2400 * k, 1800 * k, 5, 0.6); },
+    cackle: function (o, k) { var n = 4 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) { var f = (560 + i * 30) * k; vxT(o, i * 0.13, 0.1, "sawtooth", [f, f * 0.86], [[820, 4, 1.6], [1400, 5, 0.9]], [8, 0.2]); vxN(o, i * 0.13, 0.05, "bandpass", 2500, 2000, 2, 0.2); } },
+    roar: function (o, k) { var f = 72 * k, d = rr(0.9, 1.3); vxT(o, 0, d, "sawtooth", [f, f * 1.35, f * 1.2, f * 0.8], [[260, 3, 2], [650, 4, 0.8]], [rr(24, 30), 0.85]); vxN(o, 0, d, "bandpass", 700, 300, 0.8, 0.45); },
+    gibber: function (o, k) { var n = 4 + Math.floor(Math.random() * 4); for (var i = 0; i < n; i++) { var f = rr(500, 900) * k; vxT(o, i * 0.08, 0.07, "triangle", [f, f * rr(0.7, 1.4)], [[1600, 3, 1.4]]); } },
+    rustle: function (o, k) { vxN(o, 0, rr(0.4, 0.7), "bandpass", 3200 * k, 1800 * k, 0.9, 0.35); },
+    snap: function (o, k) { vxN(o, 0, 0.05, "highpass", 1800, 2600, 0.8, 0.9); vxT(o, 0, 0.06, "square", [300 * k, 120 * k], null); },
+    arr: function (o, k) { var f = rr(130, 155) * k; vxT(o, 0, rr(0.4, 0.6), "sawtooth", [f, f * 1.1, f * 0.85], [[700, 5, 1.5], [1150, 6, 0.9], [2400, 8, 0.3]], [7, 0.25]); },
+    bloop: function (o, k) { var n = 2 + Math.floor(Math.random() * 3); for (var i = 0; i < n; i++) { var f = rr(260, 420) * k; vxT(o, i * rr(0.06, 0.1), 0.07, "sine", [f, f * 2.1], null); } },
+    thrum: function (o, k) { vxT(o, 0, 1.1, "sine", [55 * k, 60 * k, 50 * k], null, [3, 0.5], 0.2); vxN(o, 0, 1, "lowpass", 300, 150, 0.7, 0.25); }
+  };
+  // Who says what. i = idle calls (one picked at random), w = wind-up, a = attack, h = hurt, d = defeated, b = getting its breath back,
+  // k = pitch (bigger = lower), e = seconds between idle calls [min, max], v = loudness.
+  var KVOX = {
+    wolf: { i: ["growl", "growl", "howl"], w: "growl", a: "snarl", h: "yelp", d: "yelp", b: "pant", k: 1, e: [9, 18], v: 0.55 },
+    alpha: { i: ["growl", "howl"], w: "growl", a: "snarl", h: "snarl", d: "howl", b: "pant", k: 0.75, e: [6, 11], v: 0.75 },
+    gator: { i: ["bellow", "hiss"], w: "hiss", a: "snap", h: "hiss", d: "bellow", k: 1, e: [12, 22], v: 0.55 },
+    frog: { i: ["croak"], w: "gulp", a: "croak", h: "gulp", d: "croak", k: 1, e: [6, 13], v: 0.5 },
+    bat: { i: ["squeak"], w: "screech", a: "screech", h: "squeak", d: "squeak", k: 1, e: [5, 11], v: 0.32 },
+    wasp: { i: ["buzz"], w: "zing", a: "zing", h: "buzz", d: "zing", k: 1, e: [5, 10], v: 0.35 },
+    slime: { i: ["squelch"], a: "squelch", h: "squelch", d: "squelch", k: 1, e: [7, 14], v: 0.45 },
+    spider: { i: ["chitter"], w: "chitter", a: "hiss", h: "chitter", d: "chitter", k: 1, e: [8, 15], v: 0.4 },
+    bug: { i: ["click", "chitter"], w: "click", a: "chitter", h: "click", d: "chitter", k: 0.8, e: [8, 15], v: 0.4 },
+    crab: { i: ["click"], a: "snap", h: "click", d: "chitter", k: 1, e: [8, 15], v: 0.4 },
+    crawler: { i: ["chitter", "click"], w: "chitter", a: "snap", h: "chitter", d: "chitter", k: 0.7, e: [8, 14], v: 0.45 },
+    witch: { i: ["cackle"], w: "cackle", a: "cackle", h: "squeal", d: "squeal", k: 1, e: [10, 18], v: 0.45 },
+    imp: { i: ["gibber"], w: "gibber", a: "screech", h: "gibber", d: "squeal", k: 1, e: [7, 13], v: 0.4 },
+    brute: { i: ["roar", "growl"], w: "roar", a: "roar", h: "growl", d: "roar", k: 0.8, e: [9, 16], v: 0.6 },
+    treant: { i: ["thrum", "rustle"], w: "roar", a: "rustle", h: "rustle", d: "thrum", k: 0.6, e: [10, 18], v: 0.55 },
+    lily: { i: ["rustle"], w: "hiss", a: "snap", h: "rustle", d: "rustle", k: 1, e: [9, 16], v: 0.45 },
+    buccaneer: { i: ["arr"], w: "arr", a: "arr", h: "yelp", d: "arr", k: 1, e: [9, 16], v: 0.45 },
+    queen: { i: ["buzz", "chitter"], w: "screech", a: "zing", h: "screech", d: "screech", k: 0.6, e: [6, 10], v: 0.6 },
+    wyrm: { i: ["roar", "hiss"], w: "roar", a: "roar", h: "growl", d: "roar", k: 0.6, e: [6, 10], v: 0.7 },
+    duck: { i: ["quack"], h: "quack", d: "quack", k: 1, e: [10, 22], v: 0.38 },
+    pig: { i: ["oink"], h: "squeal", d: "squeal", k: 1, e: [10, 22], v: 0.42 },
+    goat: { i: ["bleat"], h: "bleat", d: "bleat", k: 1, e: [12, 24], v: 0.4 },
+    fish: { i: ["bloop"], a: "bloop", h: "bloop", d: "bloop", k: 1, e: [8, 15], v: 0.3 },
+    pirate: { i: ["arr"], w: "arr", a: "arr", h: "yelp", d: "arr", k: 1, e: [9, 16], v: 0.45 }
+  };
+  var VXALIAS = { snapjaw: "fish", puffer: "fish", jelly: "fish", urchin: "fish", eel: "fish", angler: "fish", captain: "pirate" };
+  var VXW = { wind: 1, crouch: 1, aim: 1, charge: 1 }, VXA = { lunge: 1, dive: 1, dash: 1, snap: 1, pounce: 1, leap: 1, hop: 1, bite: 1, spit: 1, throw: 1, swing: 1, lash: 1 };
+  function vxPlay(kind, ev, x, y, lx, ly, force) {   // play creature kind's sound for event ev at (x, y), heard from (lx, ly)
+    var V = KVOX[kind] || KVOX[VXALIAS[kind]]; if (!V) return false; var nm = ev === "i" ? V.i[Math.floor(Math.random() * V.i.length)] : V[ev]; if (!nm || !VOICE[nm]) return false;
+    var cv = OPT.cvox == null ? 1 : OPT.cvox; if (cv <= 0 || !fxReady()) return false;
+    var dx = x - lx, dy = y - ly, d = Math.hypot(dx, dy), R = 20; if (d > R && !force) return false;
+    var key = kind + ev, now = performance.now(); if (!force && now - (VOXS.last[key] || 0) < (ev === "h" ? 220 : 500)) return false; VOXS.last[key] = now;
+    var vol = V.v * cv * Math.pow(Math.max(0, 1 - d / R), 1.25) * (ev === "i" ? 0.85 : 1); if (force) vol = V.v * cv; if (vol < 0.01) return false;
+    try { VOICE[nm](vxOut(vol * 0.5, dx / 14), V.k * rr(0.93, 1.07)); } catch (e) { return false; }
+    return true;
+  }
+  var VXM = typeof WeakMap !== "undefined" ? new WeakMap() : null;   // each creature's voice state, kept off the creature so it never gets saved or sent
+  function vxWatch(c, kind, lx, ly, dt, idleOk) {   // follow one creature: idle timer, and changes in its state, health and life
+    var V = KVOX[kind] || KVOX[VXALIAS[kind]]; if (!V || !VXM) return;
+    var x = c.x, y = c.y - (c.h ? c.h * 0.5 : 0.3), st = c.st || "", m = VXM.get(c);
+    if (!m) { VXM.set(c, { h: c.hp, s: st, t: rr(2, V.e[1]), d: !!c.def }); return; }
+    if ((c.def || c.dead > 0 || (c.hp !== undefined && c.hp <= 0)) && !m.d) { m.d = true; vxPlay(kind, "d", x, y, lx, ly); return; }
+    if (m.d) return;
+    if (c.hp !== undefined && m.h !== undefined && c.hp < m.h) vxPlay(kind, "h", x, y, lx, ly); m.h = c.hp;
+    if (st !== m.s) { if (VXW[st]) vxPlay(kind, "w", x, y, lx, ly); else if (VXA[st]) vxPlay(kind, "a", x, y, lx, ly); else if (st === "recover" && V.b) vxPlay(kind, "b", x, y, lx, ly); m.s = st; }
+    m.t -= dt;
+    if (m.t <= 0 && idleOk) { m.t = rr(V.e[0], V.e[1]); if (VOXS.gap <= 0 && !(kind === "bat" && c.st === "away") && vxPlay(kind, "i", x, y, lx, ly)) VOXS.gap = rr(1.6, 2.6); }
+    else if (m.t <= 0) m.t = rr(1, 3);
+  }
+  function tickVoices(dt) {
+    VOXS.gap -= dt; if ((OPT.cvox == null ? 1 : OPT.cvox) <= 0 || !fxReady() || titleOpen || !S) return;
+    var idle = !panelOpen && !pauseOpen, L, i;
+    try {
+      if (OCS) { if (OCS.sea || !OCS.pl) return; L = OCS.pl; (OCS.mobs || []).forEach(function (m) { vxWatch(m, m.k, L.x, L.y, dt, idle); }); return; }
+      if (HOME) { homeAnimals().forEach(function (a) { if (!a.inside && a.x !== undefined) vxWatch(a, a.k, cp.x, cp.y, dt, idle); }); return; }
+      if (cave) { var mobs = cave.F && cave.F.mobs || []; for (i = 0; i < mobs.length; i++) vxWatch(mobs[i], mobs[i].k, cp.x, cp.y, dt, idle); return; }
+      var lx = p.x, ly = p.y - PH * 0.5;
+      for (i = 0; i < enemies.length; i++) vxWatch(enemies[i], enemies[i].k, lx, ly, dt, idle);
+      for (i = 0; i < wilds.length; i++) vxWatch(wilds[i], wilds[i].k, lx, ly, dt, idle);
+      if (S.pets) for (i = 0; i < S.pets.length; i++) { var pt = S.pets[i]; if (pt.x !== undefined) vxWatch(pt, pt.k, lx, ly, dt * 0.6, idle); }
+    } catch (e) {}
+  }
   // ---------- AMBIENCE BEDS: every area has its own soundscape, by day and by night ----------
   // Looping filtered-noise beds (wind, leaves, insect hum, cave hum, frost whistle, machinery) fade between areas, and timed one-shots
   // sit on top: birdsong, owls, gulls, hull creaks, cave drips and far rumbles, lava blubs, ice creaks, bubbles and a deep whale moan.
@@ -17459,6 +17670,7 @@
     g.imageSmoothingEnabled = false;
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
     drawBubs(g);
+    drawOrbs(g, now);   // SWAMP ESSENCE orbs (after the darkness, so they glow)
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     drawGuide(g, now); drawStarPointer(g, now); drawMapMark(g, now); drawTmpWp(g, now); drawFissure(g, now); drawWpWorld(g, now); drawSpore(g, now); drawProspect(g, now); drawDetect(g, now); drawJet(g); drawPotMark(g, now); drawBMHud(g, now); mcHud(g, now);
     drawBedPrompt(g, now);
@@ -18554,6 +18766,7 @@
     if (!F.nx) { g.imageSmoothingEnabled = true; drawVig(g); g.imageSmoothingEnabled = false; }
     drawProspect(g, now); drawSpeed(g, now); drawIsleHud(g, now);
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
+    drawOrbs(g, now);   // SWAMP ESSENCE orbs (after the darkness, so they glow)
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans) contGlints(g, now);
     if (!panelOpen && !trans && motoNear()) drawPill(g, now, (motoS().done ? "Look at the Swamp Hog" : "Work on the motorcycle") + (coarse ? "" : " (F)"), ox + (MOTO_CELL.x + 1.5) * ts, oy + (MOTO_CELL.y - 0.9) * ts, false, function () { openMoto(); });
@@ -18872,6 +19085,7 @@
   // ---------- HUD AND PANELS ----------
   var HUDC = {}; function hudSet(id, v) { if (HUDC[id] !== v) { HUDC[id] = v; $(id).textContent = v; } }   // PERF: rewriting identical text 4x a second re-blurred and re-laid-out the HUD
   function hud() {
+    essHud();
     if (HOME) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; var ho = homeS(), nc = Object.keys(ho.c).length, nr = Object.keys(ho.c).filter(function (k) { return ho.c[k].s >= 4; }).length; $("sbxBiome").textContent = "Your Homestead"; $("sbxLoc").style.setProperty("--bc", "#7dd65a"); $("sbxSub").textContent = dayTag() + (nc ? nc + " crop" + (nc === 1 ? "" : "s") + (nr ? " \u00b7 " + nr + " ripe" : "") : "Till, plant, water"); if (hbDirty) drawBar(); return; }
     if (OCS) { HUDC.bc = HUDC.sbxBiome = HUDC.sbxSub = ""; lastBio = -1; $("sbxBiome").textContent = OCS.sea ? "The Brinebog Sea" : OCS.main ? "Croaker's Pier" : OCS.site.name; $("sbxLoc").style.setProperty("--bc", "#4fd0e8"); $("sbxSub").textContent = dayTag() + (OCS.sea ? "Sailing the Lily Belle" : OCS.diving ? "Diving \u00b7 " + Math.floor(ocDepth(OCS.pl.y - 0.45)) + " m" : "On the dock"); if (hbDirty) drawBar(); return; }
     if (cave) { var cf = cave.F; $("sbxBiome").textContent = cf.isle && cave.Q ? cave.Q.n : cf.bld || cf.glowm || cf.maze ? cf.theme.n : cf.theme.n + " \u00b7 Floor " + cave.f; $("sbxLoc").style.setProperty("--bc", BIOMES[cf.biome].c); $("sbxSub").textContent = dayTag() + (cf.isle ? (cave.port ? "Trading port" : TIER_N[cave.tier] + " island") : cf.nx ? "Floating island" : cf.bld ? "Inside" : cf.theme.sub); drawTrail(); if (hbDirty) drawBar(); return; }
@@ -20440,6 +20654,7 @@
     if (k === "Escape" && panelOpen) { closePanel(); return; }
     if (k === "e" || k === "E") { toggleCraft(); e.preventDefault(); return; }
     if (k === "j" || k === "J") { toggleJournal(); e.preventDefault(); return; }
+    if ((k === "k" || k === "K") && !e.repeat) { if (storyOpen === 292) closePanel(); else cxOpen(); e.preventDefault(); return; }   // THE CODEX
     if (k === "m" || k === "M") { mapOpen ? closeMap() : openMap(); e.preventDefault(); return; }
     if (mapOpen && (k === "+" || k === "=")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s * 1.4); e.preventDefault(); return; }
     if (mapOpen && (k === "-" || k === "_")) { M.dirty = true; zoomAt(M.cw / 2, M.ch / 2, M.s / 1.4); e.preventDefault(); return; }
@@ -20603,6 +20818,9 @@
     };
   })();
   $("sbxStory").addEventListener("input", function (e) { if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-dkq") && storyOpen === 291) { DKQ = e.target.value || ""; var gq = $("sbxDkGrid"); if (gq) gq.innerHTML = decoGridHtml(); } });   // DECORATE PANEL: search as you type
+  $("sbxStory").addEventListener("click", function (e) { var cxb = e.target.closest("[data-cx]"); if (cxb && storyOpen === 292) { e.preventDefault(); cxAct(cxb.getAttribute("data-cx")); } });
+  $("sbxStory").addEventListener("keydown", function (e) { if (storyOpen === 292 && e.key === "Escape" && e.target.hasAttribute && e.target.hasAttribute("data-cxq")) { e.preventDefault(); e.stopPropagation(); if (CX.q) { CX.q = ""; CX.qf = true; cxRender(); } else closePanel(); } });
+  $("sbxStory").addEventListener("input", function (e) { if (storyOpen === 292 && e.target.hasAttribute("data-cxq")) { CX.q = e.target.value; CX.qf = true; clearTimeout(CX.qt); CX.qt = setTimeout(cxRender, 120); } });
   $("sbxStory").addEventListener("click", function (e) { var dkb = e.target.closest("[data-dkp]"); if (dkb && storyOpen === 291) { if (dkb.tagName !== "INPUT") e.preventDefault(); decoPanelAct(dkb.getAttribute("data-dkp")); return; } var dvb = e.target.closest("[data-dev]"); if (dvb && storyOpen === 290) { devAct(dvb.getAttribute("data-dev")); return; } var p8b = e.target.closest("[data-p8]"); if (p8b) { if (!p8b.disabled) p8Act(p8b.getAttribute("data-p8")); return; } var p7b = e.target.closest("[data-p7]"); if (p7b) { if (!p7b.disabled) p7Act(p7b.getAttribute("data-p7")); return; } var p5b = e.target.closest("[data-p5]"); if (p5b) { if (!p5b.disabled) p5Act(p5b.getAttribute("data-p5")); return; } var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
@@ -21373,7 +21591,7 @@
     m.hp -= dmg; m.hurt = 0.3; m.kx = ux * 6 / (m.boss ? 3 : 1); m.ky = uy * 6 / (m.boss ? 3 : 1); text(m.x, m.y - 0.9, "-" + Math.round(dmg), "#ffe48a"); ocFx(7, m.x, m.y, OM[m.k].g, { sp: 3, g: 2 }); thud(190 + Math.random() * 60, 0.06);
     if (m.st === "aim") m.st = "idle"; if (m.k === "puffer") m.inf = 1;
     if (m.hp > 0) return;
-    m.dead = 0.5; m.hp = 0; var d = OM[m.k], o = ocS(); o.kills[m.k] = (o.kills[m.k] || 0) + 1; S.st.ockills = (S.st.ockills || 0) + 1; ocFx(16, m.x, m.y, d.g, { sp: 5, g: 1 }); snd("open", "Epic");
+    m.dead = 0.5; m.hp = 0; var d = OM[m.k], o = ocS(); o.kills[m.k] = (o.kills[m.k] || 0) + 1; essKill(m.x, m.y, m.mx || d.hp, false, !!m.boss); S.st.ockills = (S.st.ockills || 0) + 1; ocFx(16, m.x, m.y, d.g, { sp: 5, g: 1 }); snd("open", "Epic");
     if (m.fixed && m.id) o.dead[m.id] = ocToday();
     var got = []; d.drops.forEach(function (q) { if (!ITEMS[q[0]]) return; var first = o.kills[m.k] === 1 && q === d.drops[0]; if (first || Math.random() < q[3]) { var n = q[1] + Math.floor(Math.random() * (q[2] - q[1] + 1)); give(q[0], n, m.x - 0.5, m.y - 1); got.push(n + " " + ITEMS[q[0]].n); } });
     if (m.k === "captain") { var bp = ["boat_figure", "boat_wheel"].filter(ocPartWant); if (bp.length) { give(bp[0], 1, m.x - 0.5, m.y - 1.6); } S.st.captain = 1; popup("Cap'n Gillbeard defeated", "The galleon's treasure is yours.", "#a8fff0", "⚓"); shake = 0.5; }
@@ -22305,6 +22523,7 @@
     }   // WEATHER AT SEA: fog over the pier
     // --- words and pills ---
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)"; g.lineJoin = "round";
+    drawOrbs(g, now);   // SWAMP ESSENCE orbs (after the darkness, so they glow)
     texts.forEach(function (tx) { g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, ox + tx.x * ts, oy + tx.y * ts); g.fillText(tx.s, ox + tx.x * ts, oy + tx.y * ts); }); g.globalAlpha = 1;
     if (!panelOpen && !trans && hp > 0) ocActions().forEach(function (a) { ocPill(g, now, a.label, ox + a.ax * ts, oy + a.ay * ts, a.fn); });
     if (!panelOpen && aim.tx >= 0 && (!coarse || aim.down) && !window.__NOPILL) {   // the target box
@@ -26511,6 +26730,7 @@
     if (PHOTO.on) tickPhoto(dt);
     if (!document.hidden) {
       try { tickAmbSound(dt); } catch (er) {}
+      try { tickVoices(dt); } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (window.__CAMOV) { cam.x = window.__CAMOV.x; cam.y = window.__CAMOV.y; }   // (test/trailer hook: a scripted camera)
@@ -27136,6 +27356,203 @@
     ALT.just = s; p8().en[s] = { k: k, l: l }; S.st.enchants = (S.st.enchants || 0) + 1; snd("open", l >= 3 ? "Legendary" : "Epic"); popup("Enchanted!", ENCH[s].n + ": " + ENCH[s].opts[k].n + " " + ["", "I", "II", "III"][l], "#7af0ff", "✦");
     if (!reduce) for (var i = 0; i < 24; i++) parts.push({ x: p.x + (Math.random() - 0.5) * 2, y: p.y - Math.random() * 2, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 2, life: 1, max: 1, c: "#aff8ff", s: 2 });
     checkGoals(); save(); altarOpen();
+  }
+  // ---------- THE SWAMP CODEX: everything in the game, in one place (pause menu > Codex, or K) ----------
+  // Built from the game's own tables every time it opens (blocks, items, recipes, gear, creatures, Essence, your keys), so it never goes out of date.
+  // Sections on the left, a search box that looks through everything, a list in the middle and the full card on the right (one at a time on phones).
+  var CX = { sec: "start", q: "", sel: "", cat: "", data: null, ic: [] };
+  var CXSEC = [["start", "Getting Started", "#4ee6b4"], ["blocks", "Blocks", "#c9b58a"], ["gear", "Gear & Fighting", "#ff7a5a"], ["creatures", "Creatures", "#a8e05a"], ["items", "Items & Materials", "#ffd24a"],
+    ["craft", "Crafting & Stations", "#e0a060"], ["lands", "Lands", "#7fd6ff"], ["essence", "Swamp Essence", "#ff7ad8"], ["controls", "Controls", "#b58cff"]];
+  var CXHAB = {
+    bug: "Murkwater, at night and underground.", frog: "Murkwater, at night and underground.", bat: "Out in the sky from late dusk to early dawn. Torches keep them away.",
+    wolf: "Frostfen.", gator: "Murkwater lakes and shores.", slime: "Caves everywhere, and the surface at night. Big ones split in two.", wasp: "Ember Bog, in the daytime.",
+    spider: "Caves. It hangs from the ceiling and drops on you.", witch: "Witch Huts. She keeps her distance, lobs hex bottles and blinks away when you get close.",
+    lily: "Murkwater, at night. It looks like a pink bud until you come close.", imp: "Ember Bog. Keeps its distance and throws fireballs (its hand glows first).",
+    brute: "Frostfen. Slow and huge: it raises both fists, then slams.", crawler: "Every cave. Its shell blocks most damage while it is curled up.",
+    crab: "Island raids.", buccaneer: "Island raids.", treant: "Malcruor. It sleeps as a dead tree until you come close.", mcheart: "Malcruor."
+  };
+  var CXTELL = {
+    wolf: "When it crouches, jump or back away.", gator: "When its jaws open, get out of reach.", slime: "It hops at you. Big ones split in two when popped.", wasp: "When it glows red, step aside.",
+    spider: "Dodge the pounce.", witch: "Dodge her hex bottles, then strike.", lily: "Step back, or hit it while its mouth hangs open.", imp: "Watch for the glowing hand, then dodge the fireball. It hops away if you rush it.",
+    brute: "Jump as its fists land: the ground shudders.", crawler: "It curls, rolls at you, then sits dizzy: hit it then.", frog: "It lashes its tongue from a distance.", bat: "Red eyes mean a dive is coming: step aside.",
+    queen: "She shudders (\"!\") before a charge, and is dazed after hitting a wall: hits then deal 50% more.", wyrm: "It can only be hit while above ground. Watch the dust and the glowing cracks.",
+    alpha: "Jump the ice shards after its pounce and watch the icicle shadows."
+  };
+  function cxE(s) { return esc(String(s == null ? "" : s)); }
+  function cxIc(k) { return ITEMS[k] ? '<img class="cx-ic" alt="" data-ic="' + cxE(k) + '" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">' : ""; }
+  function cxCost(c) { return c ? Object.keys(c).map(function (k) { return '<span class="cx-cost">' + cxIc(k) + "<b>" + c[k] + "</b> " + cxE(ITEMS[k] ? ITEMS[k].n : k) + "</span>"; }).join(" ") : ""; }
+  function cxStn(r) { var k = stnOf(r), s = !k ? "By hand (Crafting, E)" : STATIONS[k] ? STATIONS[k].n : k; if (r.bl && BENCH_LV[r.bl] && k === "bench") s = BENCH_LV[r.bl].n + " or better"; return s; }
+  function cxRows(L) { return '<table class="cx-t">' + L.filter(function (r) { return r && r[1] !== "" && r[1] != null; }).map(function (r) { return "<tr><th>" + cxE(r[0]) + "</th><td>" + r[1] + "</td></tr>"; }).join("") + "</table>"; }
+  function cxRecipesFor(k) { return RECIPES.concat(DECOR).filter(function (r) { return r.out && r.out[k]; }); }
+  function cxHowMake(rs) { return rs.map(function (r) { return '<div class="cx-rec"><div class="cx-rh"><b>' + cxE(r.n) + "</b><small>" + cxE(cxStn(r)) + "</small></div>" + cxCost(r.cost) + (r.d ? '<p class="cx-d">' + cxE(r.d) + "</p>" : "") + "</div>"; }).join(""); }
+  function cxUsedIn(k) { var L = RECIPES.concat(DECOR).filter(function (r) { return r.cost && r.cost[k]; }); if (!L.length) return ""; return '<h4>Used to make</h4><div class="cx-chips">' + L.slice(0, 24).map(function (r) { var o = r.out ? Object.keys(r.out)[0] : null; return '<button type="button" class="cx-chip" data-cx="go:' + (o && ITEMS[o] ? "i:" + o : "r:" + r.id) + '">' + (o ? cxIc(o) : "") + cxE(r.n) + "</button>"; }).join("") + (L.length > 24 ? "<span class=\"cx-more\">and " + (L.length - 24) + " more</span>" : "") + "</div>"; }
+  function cxSources(k) {   // every way to get item k that the game's tables know about
+    var L = [];
+    Object.keys(TILES).forEach(function (id) { var td = TILES[id]; if (td && td.drop === k && td.n && td.n !== "Air" && isFinite(td.hard) && L.length < 40) L.push("Break <b>" + cxE(td.n) + "</b> (" + cxE(td.tier > 0 ? (PICKS[td.tier] ? PICKS[td.tier].n : "a better pick") + " or better" : "bare paws work") + ")."); });
+    Object.keys(ENEMY).forEach(function (e) { var d = ENEMY[e]; if (d.frag === k) L.push("Dropped by <b>" + cxE(d.n) + "</b> (" + Math.round((d.chance || 0) * 100) + "% a kill, the first one always)."); });
+    Object.keys(BOSS).forEach(function (b) { var B = BOSS[b]; if (B.loot && B.loot[k]) L.push("Boss loot: <b>" + cxE(B.n) + "</b> drops " + B.loot[k] + "."); });
+    Object.keys(ANIM).forEach(function (a) { if (ANIM[a].prod === k) L.push("A tame, well-fed <b>" + cxE(ANIM[a].n) + "</b> makes it now and then."); });
+    if (typeof OM !== "undefined") Object.keys(OM).forEach(function (m) { var d = OM[m]; (d.drops || []).forEach(function (q) { if (q[0] === k) L.push("Sea creature <b>" + cxE(d.n) + "</b> (" + Math.round(q[3] * 100) + "%)."); }); });
+    if (k === "rawmeat" || k === "leather") L.push("Hunting wild ducks, pigs and goats.");
+    return L;
+  }
+  function cxItemCat(k) {
+    var I = ITEMS[k];
+    if (I.summon) return "Boss summons"; if (I.mount || I.ride || I.motopart || I.boatpart || I.garage) return "Rides & parts"; if (I.tool || I.grap || /^x_(helm|detect|jet|drill|grap)/.test(k)) return "Tools & gadgets";
+    if (I.seed) return "Seeds & farming"; if (I.food) return "Food"; if (I.frag || Object.keys(ENEMY).some(function (e) { return ENEMY[e].frag === k; })) return "Creature drops";
+    if (I.gem || I.valuable || I.treasure || I.treas || I.fossil || TROPHY[k]) return "Gems & treasures"; if (I.decor) return "Furniture & decor"; if (I.wall) return "Back walls";
+    if (I.record || I.disc || I.book || I.read) return "Records & books"; if (I.bug) return "Bugs"; return "Materials";
+  }
+  function cxBlockCat(td, id) {
+    var n = td.n.toLowerCase(), k = (td.kind || "").toLowerCase();
+    if (id === T.WATER || id === T.LAVA || /water|lava/.test(n)) return "Liquids";
+    if (k === "ore" || /ore\b|crystal|gem|quartz|ruby|sapphire|amethyst|moonstone|realmstone|geode/.test(n)) return "Ores & gems";
+    if (/log|leaves|trunk|bark|vine|sapling|branch/.test(n)) return "Trees";
+    if (td.light && td.light > 0) return "Lights";
+    if (/brick|plank|glass|thatch|shingle|parquet|plaster|checker|tile|cobble|block/.test(n)) return "Building";
+    if (!td.solid) return "Plants & small things";
+    return "Ground & stone";
+  }
+  function cxBuild() {
+    var D = [], i, add = function (o) { D.push(o); return o; }, dmul = dif().ehp || 1;
+    // ---- Getting started ----
+    add({ id: "g:first", sec: "start", cat: "Basics", n: "Your first day", c: "#4ee6b4", sub: "From bare paws to your first pick", body:
+      "<p>You start with bare paws. Paws can dig soft ground (mud, moss and peat; clay is slower), punch leaves for <b>Sticks</b>, snip reeds and vines for <b>Fiber</b>, dig up <b>Pebbles</b>, and chop the trunks of <b>Murkwater</b> swamp trees for <b>Wood</b>.</p>" +
+      "<p>Every other tree, and all stone, needs a pick. Your first is the <b>Reed Pick</b> (3 Sticks, 3 Fiber, 2 Pebbles, made by hand in Crafting). It opens up every tree, stone and clay.</p>" +
+      "<p>Next, make a <b>Bog Workbench</b> (10 Wood, 4 Fiber) and place it at camp. Better tools, armor and new stations are crafted there.</p><p>Old Croaker's quests in the Journal always show what to do next.</p>" });
+    add({ id: "g:bench", sec: "start", cat: "Basics", n: "Workbench levels", c: "#c98c4f", sub: "Finish each land to gear up for the next", body:
+      "<p>Your Bog Workbench has one level for the whole world. Each upgrade costs materials from the land <b>before</b> the one the new gear is for, so you finish a land to gear up for the next.</p>" +
+      cxRows(BENCH_LV.slice(1).map(function (b, j) { return ["Level " + (j + 1) + ": " + b.n, cxE(b.gives || "") + (b.cost ? '<div class="cx-sm">' + cxCost(b.cost) + "</div>" : "") + (b.from ? '<div class="cx-sm">Materials from ' + cxE(b.from) + "</div>" : "")]; })) });
+    add({ id: "g:night", sec: "start", cat: "Basics", n: "Day, night and sleeping", c: "#b58cff", sub: "Bats, beds and torches", body:
+      "<p>Dusk Bats come out in the sky from late dusk to early dawn. A roof or the ground stops them, and torches keep them away.</p>" +
+      "<p>Make a <b>Swamp Bed</b> (6 Planks, 6 Fiber, 8 Leaves). At night, stand next to it and sleep to skip to dawn, heal fully and set where you wake up. Bats can't hurt you while you sleep.</p>" });
+    add({ id: "g:hunger", sec: "start", cat: "Basics", n: "Health and hunger", c: "#f2a14e", sub: "Eat to keep healing", body:
+      "<p>Hunger drains about a full bar every 12 minutes of play. Pick food in the hotbar and tap to eat.</p>" +
+      "<p>If you pass out, what you lose depends on your world's settings: with Keep Inventory on, nothing. Otherwise a share of every stack of loose materials (tools, gear, potions, trophies and summons are always safe). Hard difficulty loses 20% by default.</p>" });
+    add({ id: "g:tiers", sec: "start", cat: "Basics", n: "Pick tiers", c: "#c9b58a", sub: "Which pick breaks what", body:
+      "<p>Each land has its own pick tier. A block's card in the <b>Blocks</b> section shows exactly what breaks it.</p>" + cxRows(PICKS.map(function (q, j) { return [q.n, "Digs " + q.sp + "x" + (j ? ", breaks blocks of tier " + j + " and below" : ", soft ground and Murkwater trunks only")]; })) });
+    // ---- Blocks ----
+    var seenN = {};
+    Object.keys(TILES).map(Number).sort(function (a, b) { return a - b; }).forEach(function (id) {
+      var td = TILES[id]; if (!td || !td.n || id === T.AIR || seenN[td.n] || /^(Hole|Air)$/.test(td.n)) return;
+      var dk = td.drop && ITEMS[td.drop]; if (dk && (dk.decor || dk.put)) return; seenN[td.n] = 1;
+      var brk = !isFinite(td.hard) ? "Can't be broken" : td.tier > 0 ? (PICKS[td.tier] ? PICKS[td.tier].n : "Tier " + td.tier + " pick") + " or better" : "Bare paws" + (SOFT[id] ? " (a Reed Shovel digs it fast)" : "");
+      if (id === T.LOG) brk = "Bare paws for Murkwater trunks; a Reed Pick for every other tree";
+      var desc = dk && dk.d ? dk.d : ""; var rs = td.drop ? cxRecipesFor(td.drop) : [];
+      add({ id: "b:" + id, sec: "blocks", cat: cxBlockCat(td, id), n: td.n, ico: td.drop, c: td.c2 || "#c9b58a", sub: brk, body:
+        (desc ? '<p>' + cxE(desc) + "</p>" : "") + cxRows([["Breaks with", cxE(brk)], ["Toughness", isFinite(td.hard) ? (td.hard <= 0.5 ? "Soft" : td.hard <= 1.2 ? "Medium" : td.hard <= 2.5 ? "Hard" : "Very hard") + " (" + td.hard + ")" : "Unbreakable"], ["Drops", dk ? cxIc(td.drop) + cxE(dk.n) : "Nothing"], ["Solid", td.solid ? "Yes: you stand on it" : "No: you walk through it"], ["Light", td.light ? "Gives off light" : ""]]) +
+          (rs.length ? "<h4>How to make it</h4>" + cxHowMake(rs) : "") + (td.drop ? cxUsedIn(td.drop) : "") });
+    });
+    // ---- Gear & fighting ----
+    var foes = Object.keys(ENEMY).filter(function (k) { return !BOSS[k] && ENEMY[k].hp && k !== "mcheart"; });
+    add({ id: "f:how", sec: "gear", cat: "How fighting works", n: "Fighting basics", c: "#ff7a5a", sub: "Tells, dodging, specials and armor", body:
+      "<p>Every creature shows a <b>tell</b> before it attacks (a crouch, open jaws, a red glow). A careful player can always dodge: watch for it, then <b>dodge roll</b> (Shift or C) or step away.</p>" +
+      "<p>Light hits nudge a creature; a finisher, a heavy swing or a stagger knocks it back. A hurt creature calls others nearby.</p><p>When your weapon special is full, press <b>V</b> or right-click to use it.</p>" +
+      "<p><b>Armor</b> is worn as soon as it's made and cuts the damage you take. Each hit that hurts you wears it down; at zero it's broken (no protection) until you repair it. Weapons and picks wear down with use too.</p>" +
+      "<p>Some creatures come as <b>elites</b>: bigger, tougher (more health, half again the damage) and worth more Essence.</p>" });
+    var W1 = WEAPONS.slice(1);
+    add({ id: "f:chart", sec: "gear", cat: "How fighting works", n: "Damage chart", c: "#ffd24a", sub: "Hits to defeat each creature, by weapon", body:
+      "<p>How many hits each weapon needs on your current difficulty (plain hits, before charms, skills, gems or enchantments).</p><div class=\"cx-scroll\"><table class=\"cx-grid\"><tr><th>Creature</th><th>Health</th>" + W1.map(function (w) { return '<th style="color:' + w.c + '">' + cxE(w.n) + " <small>" + w.dmg + "</small></th>"; }).join("") + "</tr>" +
+      foes.map(function (k) { var hp = Math.round(ENEMY[k].hp * dmul); return "<tr><th>" + cxE(ENEMY[k].n) + "</th><td>" + hp + "</td>" + W1.map(function (w) { return "<td>" + Math.ceil(hp / w.dmg) + "</td>"; }).join("") + "</tr>"; }).join("") +
+      Object.keys(BOSS).map(function (k) { var hp = Math.round(BOSS[k].hp * dmul); return '<tr class="boss"><th>' + cxE(BOSS[k].n) + "</th><td>" + hp + "</td>" + W1.map(function (w) { return "<td>" + Math.ceil(hp / w.dmg) + "</td>"; }).join("") + "</tr>"; }).join("") + "</table></div>" });
+    WEAPONS.forEach(function (w, j) { if (!j) return; var r = RECIPES.filter(function (q) { return q.wpn === j; });
+      add({ id: "f:w" + j, sec: "gear", cat: "Weapons", n: w.n, c: w.c, sub: "Damage " + w.dmg + " · " + (1 / w.cd).toFixed(1) + " swings a second", body:
+        cxRows([["Damage", w.dmg], ["Swing time", w.cd + "s"], ["Damage a second", Math.round(w.dmg / w.cd)], ["Durability", DUR.wpn[j] ? DUR.wpn[j] + " hits" : ""], ["Repair", REPAIR.wpn[j] ? cxCost(REPAIR.wpn[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
+    ARMORS.forEach(function (a, j) { if (!j) return; var r = RECIPES.filter(function (q) { return q.arm === j; });
+      add({ id: "f:a" + j, sec: "gear", cat: "Armor", n: a.n, c: a.c, sub: "Blocks " + Math.round(a.red * 100) + "% of damage", body:
+        cxRows([["Blocks", Math.round(a.red * 100) + "% of damage (lava only half as well)"], ["Durability", DUR.arm[j] ? DUR.arm[j] + " hits" : ""], ["Repair", REPAIR.arm[j] ? cxCost(REPAIR.arm[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
+    PICKS.forEach(function (q, j) { if (!j) return; var r = RECIPES.filter(function (x) { return x.tier === j; });
+      add({ id: "f:p" + j, sec: "gear", cat: "Picks", n: q.n, c: q.c, sub: "Digs " + q.sp + "x · tier " + j, body:
+        cxRows([["Digging speed", q.sp + "x (bare paws are " + PICKS[0].sp + "x)"], ["Breaks", "Blocks of tier " + j + " and below"], ["Durability", DUR.pick[j] ? DUR.pick[j] + " blocks" : ""], ["Repair", REPAIR.pick[j] ? cxCost(REPAIR.pick[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
+    BOWS.forEach(function (bw, j) { if (!bw) return;
+      add({ id: "f:b" + j, sec: "gear", cat: "Bows", n: bw.n, c: bw.c, sub: "Damage " + bw.dmg + " a shot", body: cxRows([["Damage", bw.dmg + " a shot"], ["Time between shots", bw.cd + "s"], ["Ammo", bw.ammo.map(function (a) { return cxIc(a) + cxE(ITEMS[a] ? ITEMS[a].n : a); }).join(", ")]]) }); });
+    // ---- Creatures ----
+    Object.keys(ENEMY).forEach(function (k) {
+      var d = ENEMY[k], B = BOSS[k], hp = Math.round((B ? B.hp : d.hp) * dmul), ess = essVal(hp, false, !!B);
+      add({ id: "c:" + k, sec: "creatures", cat: B ? "Bosses" : k === "mcheart" || k === "treant" ? "Malcruor" : "Hostile", n: d.n, ico: d.frag || (B && B.item), c: d.glow, sub: "Health " + hp + " · hits for " + (B ? B.dmg : d.dmg), body:
+        cxRows([["Health", hp + (dmul !== 1 ? " (on this difficulty)" : "")], ["Hits for", B ? B.dmg : d.dmg], ["Where", cxE(B ? BIO_NAMES[B.b] + (B.sub ? " · " + B.sub : "") : CXHAB[k] || "")], ["Watch for", cxE(CXTELL[k] || "")],
+          ["Drops", B ? cxCost(B.loot) : d.frag && ITEMS[d.frag] ? cxIc(d.frag) + cxE(ITEMS[d.frag].n) + " (" + Math.round(d.chance * 100) + "%)" : ""], ["Summoned with", B && ITEMS[B.item] ? cxIc(B.item) + cxE(ITEMS[B.item].n) : ""], ["Swamp Essence", "about " + ess]]) +
+          (B ? "<p>Every boss is <b>enraged</b> under 40% health: faster, with more shots. Pass out or run far away and it leaves (you get the summon item back).</p>" : "") });
+    });
+    Object.keys(ANIM).forEach(function (k) { var A = ANIM[k];
+      add({ id: "c:a" + k, sec: "creatures", cat: "Animals", n: A.n, ico: A.prod, c: "#e0c090", sub: "Tame it, or hunt it", body:
+        cxRows([["Lives in", (A.b || []).map(function (b) { return BIO_NAMES[b]; }).join(", ")], ["Favourite food", cxE(A.favN || "")], ["Makes", ITEMS[A.prod] ? cxIc(A.prod) + cxE(ITEMS[A.prod].n) + (A.every ? " now and then when fed" : "") : ""], ["Health", AHP[k] || ""], ["Swamp Essence", "about " + essVal(AHP[k] || 8)]]) +
+          "<p>Feed it its favourite food to tame it, and it follows you home. Hunting it gives Raw Meat and sometimes more.</p>" }); });
+    if (typeof OM !== "undefined") Object.keys(OM).forEach(function (k) { var d = OM[k];
+      add({ id: "c:o" + k, sec: "creatures", cat: "Sea creatures", n: d.n, ico: d.drops && d.drops[0] ? d.drops[0][0] : null, c: d.g || d.c || "#4fd0e8", sub: "Health " + d.hp + (d.dmg ? " · hits for " + d.dmg : ""), body:
+        cxRows([["Health", d.hp], ["Hits for", d.dmg || ""], ["Where", "Under the Brinebog Sea (dive from Croaker's Pier)"], ["Drops", (d.drops || []).filter(function (q) { return ITEMS[q[0]]; }).map(function (q) { return cxIc(q[0]) + cxE(ITEMS[q[0]].n) + " (" + Math.round(q[3] * 100) + "%)"; }).join("<br>")], ["Swamp Essence", "about " + essVal(d.hp, false, !!d.boss)]]) }); });
+    // ---- Items ----
+    ORDER.forEach(function (k) {
+      var I = ITEMS[k]; if (!I || !I.n || I.tile !== undefined && !I.decor && TILES[I.tile] && seenN[TILES[I.tile].n]) return;
+      var rs = cxRecipesFor(k), src = cxSources(k), cat = cxItemCat(k), d0 = I.d || (rs[0] && rs[0].d) || "";
+      add({ id: "i:" + k, sec: "items", cat: cat, n: I.n, ico: k, c: "#ffd24a", sub: rs.length ? cxStn(rs[0]) : src.length ? src[0].replace(/<[^>]+>/g, "") : "Found while exploring", body:
+        (d0 ? "<p>" + cxE(d0) + "</p>" : "") + cxRows([["Food", I.food ? "Fills " + I.food + (I.heal ? ", heals " + I.heal : "") : ""], ["Summons", I.summon && BOSS[I.summon] ? cxE(BOSS[I.summon].n) : ""]]) +
+          (rs.length ? "<h4>How to make it</h4>" + cxHowMake(rs) : "") + (src.length ? "<h4>Where to find it</h4><ul class=\"cx-ul\">" + src.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ul>" : rs.length ? "" : "<p class=\"cx-sm\">This one isn't crafted. You find it while exploring.</p>") + cxUsedIn(k) });
+    });
+    // ---- Crafting & stations ----
+    Object.keys(STATIONS).forEach(function (k) { var Sn = STATIONS[k], L = RECIPES.concat(DECOR).filter(function (r) { return stnOf(r) === k; });
+      add({ id: "s:" + k, sec: "craft", cat: "Stations", n: Sn.n, ico: Sn.ic, c: Sn.c, sub: L.length + " recipes", body: "<p>" + cxE(Sn.d) + "</p><p>Place it, then tap it (or press F next to it) to open it.</p>" + cxRows([["How to make it", cxRecipesFor(Sn.ic).length ? cxHowMake(cxRecipesFor(Sn.ic)) : ""]]) +
+        "<h4>Made here</h4><div class=\"cx-chips\">" + L.map(function (r) { var o = r.out ? Object.keys(r.out)[0] : null; return '<button type="button" class="cx-chip" data-cx="go:' + (o && ITEMS[o] ? "i:" + o : "r:" + r.id) + '">' + (o ? cxIc(o) : "") + cxE(r.n) + "</button>"; }).join("") + "</div>" }); });
+    add({ id: "s:hand", sec: "craft", cat: "Stations", n: "Crafting by hand", c: "#4ee6b4", sub: "No station needed (E)", body: "<p>Some things need no station at all: open Crafting (E) anywhere.</p><div class=\"cx-chips\">" + RECIPES.filter(function (r) { return !stnOf(r); }).map(function (r) { var o = r.out ? Object.keys(r.out)[0] : null; return '<button type="button" class="cx-chip" data-cx="go:' + (o && ITEMS[o] ? "i:" + o : "r:" + r.id) + '">' + (o ? cxIc(o) : "") + cxE(r.n) + "</button>"; }).join("") + "</div>" });
+    RECIPES.concat(DECOR).forEach(function (r) { if (r.out && Object.keys(r.out).some(function (o) { return ITEMS[o]; })) return;
+      add({ id: "r:" + r.id, sec: "craft", cat: "Upgrades & gear", n: r.n, c: "#e0a060", sub: cxStn(r), body: cxHowMake([r]) }); });
+    // ---- Lands ----
+    var LANDS = [["Murkwater Swamp", "#4ee6b4", "Where you start. Bare paws can chop Murkwater trunks; the Reed Pick opens everything else here. Bramble Bugs, Swamp Frogs, Bog Gators and Snapper Lilies live here. Its boss is the Bramble Queen."],
+      ["Ember Bog", "#ff8a3d", "Hot basalt and cinder. You need the Glowspore Pick to break Basalt and Cinder Ore. Ember Wasps fly by day and Cinder Imps throw fire. Its boss is the Magma Wyrm."],
+      ["Frostfen", "#7fd6ff", "Ice and frost crystal. You need the Cinder Pick to break Frostrock and Frost Crystal. Frost Wolves hunt in packs and Rime Brutes slam the ground. Its boss is the Frost Alpha."],
+      ["Caves and the Mine", "#b08aff", "Dark: carry a Miner's Helmet or torches. Slimes, Cave Spiders and Geode Crawlers live down here, with Cave Chests that glow faintly."],
+      ["The Brinebog Sea", "#4fd0e8", "Reached from Croaker's Pier: dive for sea creatures and treasure, sail to islands and fight swamp pirates."],
+      ["Your Homestead", "#7ad04a", "Your own farm through a Farm Gate. All farming happens here: crops, animals, the shipping crate and the seed stall."],
+      ["Malcruor", "#ff3a4a", "The corrupted land. Everything is tougher and redder, Rotwood Treants sleep as dead trees, and Corrupted Hearts must be cleansed."]];
+    LANDS.forEach(function (L, j) { add({ id: "l:" + j, sec: "lands", cat: "Lands", n: L[0], c: L[1], sub: L[2].split(". ")[0] + ".", body: "<p>" + cxE(L[2]) + "</p>" }); });
+    // ---- Swamp Essence ----
+    var lvRows = [], tot = 0; for (i = 0; i < 25; i++) { tot += essNeed(i); lvRows.push(["Level " + (i + 1), essNeed(i) + " more (" + tot + " in all)"]); }
+    var me = essLevel(S.ess | 0);
+    add({ id: "e:what", sec: "essence", cat: "Swamp Essence", n: "What is Swamp Essence?", c: "#ff7ad8", sub: "Glowing orbs from every creature you defeat", body:
+      "<p>Every creature you defeat bursts into little glowing <b>Swamp Essence</b> orbs that drift to you. Stronger creatures give more, elites give two and a half times as much, and bosses give double.</p>" +
+      '<p class="cx-orbs"><i style="--o:#4ee6b4"></i> 1 &nbsp; <i style="--o:#a8f05a"></i> 3 &nbsp; <i style="--o:#ffd24a"></i> 7 &nbsp; <i style="--o:#ff7ad8"></i> 17</p>' +
+      "<p>Your Essence fills the bar above your hotbar, and each full bar is a new level. You're level <b>" + me.lv + "</b>, with " + me.have + " of " + me.need + " toward the next.</p>" });
+    add({ id: "e:lv", sec: "essence", cat: "Swamp Essence", n: "Level table", c: "#ffd24a", sub: "How much Essence each level takes", body: cxRows(lvRows) });
+    add({ id: "e:val", sec: "essence", cat: "Swamp Essence", n: "Essence by creature", c: "#a8f05a", sub: "About how much each one gives", body: cxRows(foes.map(function (k) { return [ENEMY[k].n, "about " + essVal(Math.round(ENEMY[k].hp * dmul))]; }).concat(Object.keys(BOSS).map(function (k) { return [BOSS[k].n + " (boss)", "about " + essVal(Math.round(BOSS[k].hp * dmul), false, true)]; }))) });
+    // ---- Controls ----
+    add({ id: "k:keys", sec: "controls", cat: "Keyboard", n: "Your keys", c: "#b58cff", sub: "Change them in Settings > Controls", body:
+      cxRows(KEYACT.map(function (a) { var b = KEYMAP.b[a.id]; return [a.n, b === "none" ? "None" : b ? keyLabel(b) : a.d.map(keyLabel).join(" or ")]; }).concat([["Hotbar", "1 to 9, or the mouse wheel"], ["Dig, chop, place, attack", "Hold the mouse"], ["Chat (playing together)", "Enter"], ["Codex", "K"]])) +
+      "<p>Change any key in Settings. If the key you press already does something, you can <b>Bind</b> it (the old action loses it) or <b>Cancel</b>.</p>" });
+    add({ id: "k:touch", sec: "controls", cat: "Touch", n: "Touch controls", c: "#7fd6ff", sub: "Phones and tablets", body: cxRows([["Walk", "The stick or the arrows"], ["Jump, climb ladders", "The jump button"], ["Dig, chop, place, attack", "Hold on a block"], ["See what an item is", "Hold an item"], ["Switch tools", "Tap the hotbar"]]) + "<p>Move, resize and fade every button in Options > Controls > Customize.</p>" });
+    return D;
+  }
+  function cxOpen(sec, sel) {
+    if (!p4Open(292)) return; CX.data = cxBuild(); if (sec) { CX.sec = sec; CX.cat = ""; } if (sel !== undefined) CX.sel = sel; CX.q = ""; cxRender(true); uiSnd("open");
+  }
+  function cxList() {
+    var q = CX.q.trim().toLowerCase();
+    return CX.data.filter(function (e) { return q ? (e.n + " " + e.cat + " " + (e.sub || "")).toLowerCase().indexOf(q) >= 0 || (q.length > 3 && e.body.replace(/<[^>]+>/g, " ").toLowerCase().indexOf(q) >= 0) : e.sec === CX.sec && (!CX.cat || e.cat === CX.cat); });
+  }
+  function cxRender(first) {
+    if (storyOpen !== 292) return; var L = cxList(), sel = CX.data.filter(function (e) { return e.id === CX.sel; })[0], secC = (CXSEC.filter(function (s) { return s[0] === CX.sec; })[0] || CXSEC[0])[2];
+    var cats = []; if (!CX.q) CX.data.forEach(function (e) { if (e.sec === CX.sec && cats.indexOf(e.cat) < 0) cats.push(e.cat); });
+    var h = '<div class="cx-root' + (sel ? " has-sel" : "") + '" style="--cx:' + (sel ? sel.c : secC) + '"><div class="cx-head"><h2><span class="cx-orb"></span>Swamp Codex</h2>' +
+      '<input type="search" class="cx-q" data-cxq placeholder="Search everything" aria-label="Search the Codex" value="' + cxE(CX.q) + '"><button type="button" class="cx-x" data-story-close aria-label="Close the Codex">×</button></div>' +
+      '<nav class="cx-nav" aria-label="Codex sections">' + CXSEC.map(function (s) { return '<button type="button" style="--sc:' + s[2] + '" class="' + (!CX.q && CX.sec === s[0] ? "on" : "") + '" data-cx="sec:' + s[0] + '"><i></i>' + cxE(s[1]) + "</button>"; }).join("") + "</nav>" +
+      '<div class="cx-list">' + (cats.length > 1 ? '<div class="cx-cats"><button type="button" class="' + (!CX.cat ? "on" : "") + '" data-cx="cat:">All</button>' + cats.map(function (c) { return '<button type="button" class="' + (CX.cat === c ? "on" : "") + '" data-cx="cat:' + cxE(c) + '">' + cxE(c) + "</button>"; }).join("") + "</div>" : "") +
+      (CX.q ? '<p class="cx-found">' + L.length + " found</p>" : "") +
+      (L.length ? L.map(function (e) { return '<button type="button" class="cx-row' + (e.id === CX.sel ? " on" : "") + '" style="--rc:' + e.c + '" data-cx="sel:' + cxE(e.id) + '">' + (e.ico ? cxIc(e.ico) : '<i class="cx-dot"></i>') + "<span><b>" + cxE(e.n) + "</b><small>" + cxE(e.sub || e.cat) + "</small></span></button>"; }).join("") : '<p class="cx-none">Nothing matches that. Try another word.</p>') + "</div>" +
+      '<article class="cx-card">' + (sel ? '<button type="button" class="cx-back" data-cx="back">‹ Back</button><div class="cx-ch">' + (sel.ico ? cxIc(sel.ico) : '<i class="cx-dot"></i>') + "<div><h3>" + cxE(sel.n) + "</h3><small>" + cxE(sel.cat) + "</small></div></div>" + sel.body : '<div class="cx-empty"><span class="cx-orb big"></span><p>Pick anything on the left to read all about it.</p></div>') + "</article></div>";
+    p4Box(h, sel ? sel.c : secC); cxIcons();
+    var qi = $("sbxStoryBox").querySelector("[data-cxq]"); if (qi && (CX.qf || first && !matchMedia("(pointer:coarse)").matches)) { qi.focus({ preventScroll: true }); var v = qi.value.length; try { qi.setSelectionRange(v, v); } catch (e) {} }
+    var on = $("sbxStoryBox").querySelector(".cx-row.on"); if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest" });
+  }
+  function cxIcons() {   // fill the item pictures a few at a time, so a long list opens instantly
+    var L = [].slice.call($("sbxStoryBox").querySelectorAll("img[data-ic]")), i = 0;
+    (function step() { if (storyOpen !== 292) return; var n = 0; while (i < L.length && n < 30) { var im = L[i++]; try { im.src = icon(im.getAttribute("data-ic")); } catch (e) {} im.removeAttribute("data-ic"); n++; } if (i < L.length) requestAnimationFrame(step); })();
+  }
+  function cxAct(a) {
+    if (a.indexOf("sec:") === 0) { CX.sec = a.slice(4); CX.cat = ""; CX.q = ""; CX.sel = ""; CX.qf = false; }
+    else if (a.indexOf("cat:") === 0) CX.cat = a.slice(4);
+    else if (a.indexOf("sel:") === 0) { CX.sel = a.slice(4); CX.qf = false; }
+    else if (a.indexOf("go:") === 0) { var id = a.slice(3), e = CX.data.filter(function (x) { return x.id === id; })[0]; if (e) { CX.sec = e.sec; CX.cat = ""; CX.q = ""; CX.sel = id; } }
+    else if (a === "back") CX.sel = "";
+    uiSnd("select"); cxRender();
   }
   // ---------- #87 SKILL TREES: mining, fishing, farming and combat, each with two branches ----------
   var SKILLS = {
@@ -27884,6 +28301,8 @@
       ["Malcruor portal (in the SwampRealms)", function () { if (inMC()) { mcLeave(false); return; } var put = function () { if (inNexus()) { cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cam.x = cp.x; cam.y = cp.y; } }; if (inNexus()) put(); else { devAct("tp:realm"); setTimeout(put, 1500); } }]
     ],
     give: [
+      ["Swamp Essence +50 (as orbs)", function () { var tg = essTgt(); essDrop(tg.x + 2.5, tg.y - 1, 50); }],
+      ["Swamp Essence +500 (straight in)", function () { essGain(500); }],
       ["Decorating kit (rugs, lamps, seats, clock, trophies, stove, dyeable pieces)", function () { devGive({ rug: 4, furrug: 2, tablecandle: 6, oillamp: 3, lantern: 3, skullcandle: 2, chair: 3, stool: 2, sofa: 1, rockingchair: 1, throne: 1, clock: 1, cuckooclock: 1, plaque: 1, fishtrophy: 1, wolftrophy: 1, goldfrog: 1, stovekettle: 1, counterstove: 1, table: 3, bookshelf: 1, desk: 1, bed: 1, x_plate: 4, breadloaf: 3, painting: 3, tapestry_swamp: 1, lilyvase: 3, cushion: 3, stackedbooks: 3, teapot: 2, streetlamp: 1, wall_plank: 60 }); toast("Decorating kit in your bag. Press O to decorate.", "#ffd27a"); }],
       ["Malcruor items (all of them)", function () { var o = {}; Object.keys(ITEMS).forEach(function (k) { if (k.indexOf("mc_") === 0) o[k] = /purge|stew|tart|seared/.test(k) ? 3 : 20; }); devGive(o); toast("Malcruor items in your bag.", "#ff8a8a"); }],
       ["Bloodiron gear (tier 6, with bow, hoe and rod)", function () { S.tier = Math.max(S.tier, 6); S.wpn = Math.max(S.wpn, 6); S.arm = Math.max(S.arm, 6); S.bow = Math.max(S.bow || 0, 4); S.hoe = Math.max(S.hoe || 0, 4); S.rod = Math.max(S.rod || 0, 3); devGive({ arrow: 30 }); S.bl = Math.max(S.bl || 1, 4); if (S.dur) { delete S.dur.pick; delete S.dur.wpn; delete S.dur.arm; } reslot(); hbDirty = true; if (typeof mkSprite === "function") mkSprite(); toast("Bloodiron Pick, Reaver, Plate, Bloodthorn Bow, Bloodiron Hoe and Rod.", "#ff8a8a"); }],
@@ -27908,6 +28327,7 @@
       ["Every dive item", function () { var o = {}; ["scubasuit", "suit2", "suit3", "suit4", "tank1", "tank2", "tank3", "tank4", "flippers", "divelamp"].forEach(function (k) { o[k] = 1; }); devGive(o); }]
     ],
     set: [
+      ["Swamp Essence: back to level 0", function () { S.ess = 0; essHud(); toast("Swamp Essence reset.", "#ff7ad8"); }],
       ["Malcruor: corruption to 90%", function () { if (!inMC()) { nag("Enter Malcruor first."); return; } malcS().c = MC_SEC * 0.9; MC.warn = 2; }],
       ["Malcruor: cleanse the nearest heart", function () { if (!inMC() || !world.hearts) { nag("Enter Malcruor first."); return; } var b = null; world.hearts.forEach(function (h) { if (!h.done && (!b || Math.abs(h.x - p.x) < Math.abs(b.x - p.x))) b = h; }); if (b) mcCleanse(b.k); }],
       ["Malcruor: cleanse all (Aurelmire)", function () { var M = malcS(); M.rz = [0, 1, 2, 3, 4, 5, 6, 7]; S.st.mchearts = 8; checkGoals(); if (inMC()) { MC.gold = 1.4; trans = { t: 0, done: false, mid: mcRebuild }; } toast("Malcruor is Aurelmire now.", "#ffd24a"); }],
@@ -27937,6 +28357,10 @@
       ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
+      ["Codex", function () { cxOpen(); }],
+      ["Codex: Gear & Fighting (damage chart)", function () { cxOpen("gear", "f:chart"); }],
+      ["Creature voices: play every one", function () { if (panelOpen) closePanel(); var L = Object.keys(KVOX), i = 0; (function nx() { if (i >= L.length) return; var k = L[i++]; toast(k, "#a8e05a"); vxPlay(k, "i", 0, 0, 0, 0, true); setTimeout(nx, 1700); })(); }],
+      ["Creature voices: wolf growl, snarl, pant, yelp", function () { if (panelOpen) closePanel(); ["w", "a", "b", "h"].forEach(function (ev, j) { setTimeout(function () { vxPlay("wolf", ev, 0, 0, 0, 0, true); }, j * 1600); }); }],
       ["Key conflict pop-up (Bind / Cancel)", function () { if (panelOpen) closePanel(); KEYMAP.pend = { id: "build", k: "e", oid: "craft" }; keyPopShow(); }],
       ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
@@ -28248,6 +28672,7 @@
   window.__sbx.contAny = function () { var F = cave && cave.F; if (!F) return 0; for (var y = 0; y < F.h; y++) for (var x = 0; x < F.w; x++) { var c = contAtCell(x, y); if (c && c.kind === "deco") { openCont(c); return 1; } } return 0; };
   window.__sbxIcon = icon; window.__sbx.cc = function (f) { ccOpen(!!f); }; window.__sbx.ccTab = function (t) { CC.tab = t; ccRender(); }; window.__sbx.ccSet = function (k, v) { CC.d[k] = v; ccRender(); }; window.__sbx.ccDone = function () { ccClose(true); };
   window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA };
+  window.__sbx.ess = { get v() { return S.ess | 0; }, drop: function (x, y, n) { essDrop(x, y, n); }, orbs: function () { return ORBS.length; }, lv: function () { return essLevel(S.ess | 0); }, tgt: function () { return essTgt(); }, vox: function (k, ev) { return vxPlay(k, ev || "i", 0, 0, 0, 0, true); }, kinds: function () { return Object.keys(KVOX); }, cx: function (s2, sel) { cxOpen(s2, sel); }, cxData: function () { return cxBuild(); }, cxAct: function (a) { cxAct(a); }, spr: function (i) { return orbSprite(i); } };
   window.__sbx.ui = {hold: function (k, a, ph) { sel = k; bare = false; heldAmt = a; heldPh = ph; }, joy: function (x, y) { joy.x = x; joy.y = y; }, aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask[y * W + x] ? " S" : "") + (walls[y * W + x] ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, picDump: function (dx) { var x = p.x + (dx || 0), out = []; (world.structs || []).forEach(function (q) { var P = q.pic; if (P && x >= P.x0 && x <= P.x0 + P.w) out.push(q.kind + "|" + P.x0 + "|" + P.w + "|" + structCanvas(P).toDataURL()); }); return out; }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };
