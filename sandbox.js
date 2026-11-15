@@ -19953,24 +19953,32 @@
     } else if (tab === "craft") {
       h += craftBar();
       if (ccat === "Stations") h += '<p class="sbx-note">Your tool: <b style="color:' + PICKS[S.tier].c + '">' + mwName("pick", PICKS[S.tier].n) + "</b>" + (S.wpn ? ". Weapon: <b style=\"color:" + WEAPONS[S.wpn].c + "\">" + mwName("wpn", WEAPONS[S.wpn].n) + " (damage " + Math.round(wDmg()) + ")</b>" : "") + (S.arm ? ". Armor: <b style=\"color:" + ARMORS[S.arm].c + "\">" + mwName("arm", ARMORS[S.arm].n) + " (blocks " + Math.round(armRed() * 100) + "%)</b>" : "") + ". " + (S.st.benches ? "Better picks, weapons and armor are made at your Workbench: tap it (or press F next to it) to open it." : "Only simple gear is made by hand. Craft a Bog Workbench, place it, then tap it to open it and make better tools.") + "</p>";
-      if (ccat === "Stations") {
-        h += '<h3>Crafting stations</h3><p class="sbx-note">Place one and tap it to see its recipes.</p>';
+      if (ccat === "Stations") {   // STATIONS: the same slots and side card as every other section; a station's card opens it, makes one, or says where it comes from
+        var stns = [];
         STN_ORDER.forEach(function (k) {
           var D = STATIONS[k], recs = craftAll().filter(function (r) { return stnOf(r) === k; }); if (!recs.length || !ITEMS[D.ic]) return;
           var here = stationNearK(k), maker = craftAll().filter(function (r) { return r.out && r.out[D.ic]; })[0], mk = maker && stnOf(maker), have = (S.inv[D.ic] || 0) > 0;
-          // what the button does: open the one next to you, make one right now (you are at the station that makes it, or it is made by hand), or say how to get one
           var mst = maker ? recStatus(maker) : null, makeHere = maker && !here && !have && mst && mst.ready && (!mk || mk === "bench" || stationNearK(mk) || stnHeld(mk));
-          var how = here ? "" : have ? "You have one in your bag: place it, then tap it to open it." : !maker ? "" : mst && mst.lock ? "Unlocks later at the Workbench." : (mk ? "Made at the " + stnName(mk) + (mk === "bench" ? "" : "") + "." : "Made by hand.") + (makeHere ? "" : mst && !canPay(maker.cost) ? " Still missing: " + Object.keys(maker.cost).filter(function (c) { return (S.inv[c] || 0) < maker.cost[c]; }).map(function (c) { return (maker.cost[c] - (S.inv[c] || 0)) + " " + ITEMS[c].n; }).join(", ") + "." : mk && !(stationNearK(mk) || stnHeld(mk)) ? " Stand next to your " + stnName(mk) + " to make it." : "");
-          var btn = here ? '<button type="button" class="btn" data-stn-open="' + k + '">Open</button>'
-            : makeHere ? '<button type="button" class="btn" data-sx-craft="' + maker.id + '">Make one</button>'
-            : '<button type="button" class="btn ghost" disabled>' + (have ? "Place it" : "Build one") + "</button>";
-          h += '<div class="sbx-card"><img class="big" alt="" src="' + icon(D.ic) + '"><div><b style="color:' + stnColor(k) + '">' + esc(stnName(k)) + "</b><small>" + esc(D.d + " " + recs.length + " recipes. " + how) + '</small>' + (makeHere ? '<div class="cost">' + costHtml(maker.cost) + "</div>" : "") + "</div>" + btn + "</div>";
+          var lock = !here && !have && mst && mst.lock, how = here ? "One is right here." : have ? "You have one in your bag: place it, then tap it to open it." : !maker ? "" : lock ? "Unlocks later at the Workbench." : mk ? "Made at the " + stnName(mk) + "." : "Made by hand.";
+          var btn = here ? '<button type="button" class="btn crg-go" data-stn-open="' + k + '">Open</button>' : makeHere ? '<button type="button" class="btn crg-go" data-sx-craft="' + maker.id + '">Make one</button>' : '<button type="button" class="btn ghost" disabled>' + (have ? "Place it" : lock ? "Locked" : "Build one") + "</button>";
+          stns.push({ k: k, D: D, n: stnName(k), c: stnColor(k), recs: recs.length, maker: maker, how: how, btn: btn, st: here || makeHere ? "ready" : have ? "own" : lock ? "lock" : mst && mst.can ? "can" : "miss", have: have, here: here });
         });
-        h += "<h3>Make by hand</h3>";
+        var hand = craftSort(handAll().filter(function (r) { return r.cat2 === ccat && !(r.out && stns.some(function (q) { return r.out[q.D.ic]; })); })), selv = CG_SEL.bag, selS = typeof selv === "string" && selv.indexOf("stn:") === 0 ? stns.filter(function (q) { return "stn:" + q.k === selv; })[0] : null;
+        var selR = selS || selv === "" ? null : cgPick("bag", hand); if (!selS && !selR && selv !== "") selS = stns[0];
+        var stTile = function (q) { var on = selS === q, lbl = q.n + (q.st === "ready" ? (q.here ? ", here" : ", ready to make") : q.st === "own" ? ", in your bag" : q.st === "lock" ? ", locked" : "");
+          return '<button type="button" class="crg-t crg-' + q.st + (on ? " on" : "") + '" style="--rc:' + q.c + '" data-csel="stn:' + q.k + '" aria-pressed="' + on + '" aria-label="' + esc(lbl) + '"><img alt="" src="' + icon(q.D.ic) + '"><span>' + esc(q.n) + "</span>" + (q.st === "lock" ? '<i class="crg-lk" aria-hidden="true"></i>' : q.st === "own" ? '<i class="crg-ok" aria-hidden="true"></i>' : "") + "</button>"; };
+        var stDetail = function (q) { return '<div class="crg-d crg-d-' + q.st + '"><div class="crg-dh"><span class="crg-big" style="--rc:' + q.c + '"><img alt="" src="' + icon(q.D.ic) + '"></span><div><b style="color:' + q.c + '">' + esc(q.n) + "</b><small>" + esc(q.D.d) + "</small></div></div>"
+          + '<p class="crg-note">' + q.recs + " recipes. Place it, then tap it (or press F next to it) to open it." + (q.how ? " " + esc(q.how) : "") + "</p>"
+          + (q.maker && !q.here && !q.have ? '<div class="crg-cost">' + cgCost(q.maker.cost) + "</div>" : "") + '<div class="crg-btn">' + q.btn + "</div></div>"; };
+        var lh = chestNote() + '<h4 class="crg-sub">Crafting stations</h4><div class="crg-g">' + stns.map(stTile).join("") + "</div>", lastS = "";
+        hand.forEach(function (r) { if (r.sub !== lastS) { lh += (lastS ? "</div>" : "") + '<h4 class="crg-sub">' + esc(r.sub === "Stations" || !r.sub ? "Made by hand" : r.sub) + '</h4><div class="crg-g">'; lastS = r.sub; } lh += cgTile(r, selR && r.id === selR.id); });
+        if (lastS) lh += "</div>";
+        h += '<div class="crg"><div class="crg-list">' + lh + '</div><div class="crg-side">' + (selS ? stDetail(selS) : cgDetail(selR, "bag")) + "</div></div>";
+      } else {
+        var shown = handAll().filter(function (r) { return r.cat2 === ccat; });
+        if (!shown.length) h += '<p class="sbx-note">Made at a station.</p>';
+        else h += craftGrid(shown, "bag");
       }
-      var shown = handAll().filter(function (r) { return r.cat2 === ccat; });
-      if (!shown.length) h += '<p class="sbx-note">Made at a station.</p>';
-      else h += craftGrid(shown, "bag");
     } else if (tab === "dev") {
       h += devHtml();
     } else if (tab === "log") {
