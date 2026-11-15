@@ -27360,7 +27360,7 @@
   // ---------- THE SWAMP CODEX: everything in the game, in one place (pause menu > Codex, or K) ----------
   // Built from the game's own tables every time it opens (blocks, items, recipes, gear, creatures, Essence, your keys), so it never goes out of date.
   // Sections on the left, a search box that looks through everything, a list in the middle and the full card on the right (one at a time on phones).
-  var CX = { sec: "start", q: "", sel: "", cat: "", data: null, ic: [] };
+  var CX = { sec: "start", q: "", sel: "", cat: "", data: null, ic: {} };
   var CXSEC = [["start", "Getting Started", "#4ee6b4"], ["blocks", "Blocks", "#c9b58a"], ["gear", "Gear & Fighting", "#ff7a5a"], ["creatures", "Creatures", "#a8e05a"], ["items", "Items & Materials", "#ffd24a"],
     ["craft", "Crafting & Stations", "#e0a060"], ["lands", "Lands", "#7fd6ff"], ["essence", "Swamp Essence", "#ff7ad8"], ["controls", "Controls", "#b58cff"]];
   var CXHAB = {
@@ -27379,7 +27379,8 @@
     alpha: "Jump the ice shards after its pounce and watch the icicle shadows."
   };
   function cxE(s) { return esc(String(s == null ? "" : s)); }
-  function cxIc(k) { return ITEMS[k] ? '<img class="cx-ic" alt="" data-ic="' + cxE(k) + '" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">' : ""; }
+  var CXBLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";   // a valid see-through 1x1 (a broken one shows Safari's "?")
+  function cxIc(k) { if (!ITEMS[k]) return ""; var u = CX.ic[k]; return u ? '<img class="cx-ic" alt="" src="' + u + '">' : '<img class="cx-ic" alt="" data-ic="' + cxE(k) + '" src="' + CXBLANK + '">'; }   // icons drawn once are reused at once
   function cxCost(c) { return c ? Object.keys(c).map(function (k) { return '<span class="cx-cost">' + cxIc(k) + "<b>" + c[k] + "</b> " + cxE(ITEMS[k] ? ITEMS[k].n : k) + "</span>"; }).join(" ") : ""; }
   function cxStn(r) { var k = stnOf(r), s = !k ? "By hand (Crafting, E)" : STATIONS[k] ? STATIONS[k].n : k; if (r.bl && BENCH_LV[r.bl] && k === "bench") s = BENCH_LV[r.bl].n + " or better"; return s; }
   function cxRows(L) { return '<table class="cx-t">' + L.filter(function (r) { return r && r[1] !== "" && r[1] != null; }).map(function (r) { return "<tr><th>" + cxE(r[0]) + "</th><td>" + r[1] + "</td></tr>"; }).join("") + "</table>"; }
@@ -27566,8 +27567,8 @@
     cxIcons();
   }
   function cxIcons() {   // fill the item pictures a few at a time, so a long list opens instantly
-    var L = [].slice.call($("sbxStoryBox").querySelectorAll("img[data-ic]")), i = 0;
-    (function step() { if (storyOpen !== 292) return; var n = 0; while (i < L.length && n < 30) { var im = L[i++]; try { im.src = icon(im.getAttribute("data-ic")); } catch (e) {} im.removeAttribute("data-ic"); n++; } if (i < L.length) requestAnimationFrame(step); })();
+    var L = [].slice.call($("sbxStoryBox").querySelectorAll("img[data-ic]")).filter(function (im) { var u = CX.ic[im.getAttribute("data-ic")]; if (!u) return true; im.src = u; im.removeAttribute("data-ic"); return false; }), i = 0;   // already drawn: in place right now
+    (function step() { if (storyOpen !== 292) return; var n = 0; while (i < L.length && n < 30) { var im = L[i++], ik = im.getAttribute("data-ic"); try { var iu = CX.ic[ik] || (CX.ic[ik] = icon(ik)); im.src = iu; } catch (e) {} im.removeAttribute("data-ic"); n++; } if (i < L.length) requestAnimationFrame(step); })();
   }
   function cxAct(a) {
     var part = "list";
