@@ -381,6 +381,26 @@ var DelveAv = (function () {
     5: { a: "#5a2a7a", b: "#c06aff", c: "#2a1438", t: "#ffd23f", t2: "#ff8a3d" },
     6: { a: "#1e1418", b: "#3a2228", c: "#0a0406", t: "#ff3a3a", t2: "#ffb0a0" }   // MALCRUOR: Bloodiron Plate, black with glowing red veins
   };
+  // ARMOR PIECES (Nov 2026): a set's helmet (in place of a hat), leggings over the legs and boots in place of shoes, in the set's colours
+  function armHelm(B, hy, hw, t) {
+    var P = ARM[t]; if (!P) return; var x0 = 11 - hw / 2;
+    B.p(x0 - 1, hy + 1, P.c); B.p(x0 + hw, hy + 1, P.c);   // cheek guards
+    B.row(hy, hw + 2, P.c); B.p(x0 - 1, hy, P.b);
+    B.row(hy - 1, hw, P.a); B.row(hy - 2, hw, P.a); B.row(hy - 3, hw - 2, P.a); B.row(hy - 4, hw - 4 > 2 ? hw - 4 : 2, P.b);
+    B.p(x0, hy - 1, P.b); B.p(x0, hy - 2, P.b); B.p(x0 + 1, hy - 3, P.b); B.p(x0 + hw - 1, hy - 1, P.c); B.p(x0 + hw - 1, hy - 2, P.c); B.p(x0 + hw - 2, hy - 3, P.c);
+    if (t === 1) { for (var i = 1; i < hw - 1; i += 2) B.p(x0 + i, hy - 2, P.t); }
+    else if (t === 2) { B.r(10, hy - 2, 2, 1, P.t); B.p(10, hy - 3, P.t2); }
+    else if (t === 3) { B.r(10, hy - 5, 2, 2, P.t); B.p(10, hy - 5, P.t2); B.row(hy, hw, P.t); }
+    else if (t === 4) { B.p(x0, hy - 4, P.b); B.p(x0 + hw - 1, hy - 4, P.b); B.p(x0, hy - 5, P.t2); B.p(x0 + hw - 1, hy - 5, P.t2); B.r(10, hy - 5, 2, 1, P.t); }
+    else if (t === 5) { B.p(x0 + 1, hy - 5, P.t); B.p(10, hy - 6, P.t); B.p(11, hy - 6, P.t); B.p(10, hy - 5, P.t); B.p(11, hy - 5, P.t); B.p(x0 + hw - 2, hy - 5, P.t); B.row(hy, hw, P.t); B.p(11, hy - 2, P.t2); }
+    else if (t === 6) { B.p(x0 - 1, hy - 3, P.t); B.p(x0 - 2, hy - 4, P.t); B.p(x0 - 2, hy - 5, P.t2); B.p(x0 + hw, hy - 3, P.t); B.p(x0 + hw + 1, hy - 4, P.t); B.p(x0 + hw + 1, hy - 5, P.t2); B.r(10, hy - 2, 2, 1, P.t); }
+  }
+  function armBoot(B, x, bot, side, P, front) {   // a boot: shaft, foot and a dark sole; x = the leg's left column
+    var fx = front ? (side > 0 ? x - 1 : x) : x, w = front ? 4 : 3, sx = front ? (side > 0 ? fx + 1 : fx) : x;
+    B.p(sx, bot - 2, side > 0 ? P.b : P.c); B.p(sx + 1, bot - 2, P.a); B.p(sx + 2, bot - 2, side > 0 ? P.c : P.b);
+    B.r(fx, bot - 1, w, 1, P.a); B.p(side > 0 ? fx : fx + w - 1, bot - 1, P.b); B.p(sx + 1, bot - 2, P.t);
+    B.r(fx, bot, w, 1, P.c);
+  }
   function armorOver(B, tier, by) {
     var P = ARM[tier]; if (!P) return; var x = 7, y = 17 + by;
     B.r(x, y, 8, 7, P.a); B.r(x, y, 8, 1, P.b); B.r(x, y, 1, 7, P.b); B.r(x + 7, y, 1, 7, P.c); B.r(x + 1, y + 6, 6, 1, P.c);
@@ -462,9 +482,11 @@ var DelveAv = (function () {
     var legC = !PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.col || "") && a !== "owl" ? o.col : A.leg, sh = SHOES[o.shoes];   // a recoloured animal's legs match its body
     [[7, PO.L, 1], [12, PO.R, -1]].forEach(function (lg) {
       var x = lg[0] + lg[1][0], lift = lg[1][1], bot = 30 - lift, top = 24 + by, side = lg[2];
-      for (y = top; y <= bot; y++) { B.p(x, y, side > 0 ? dk(legC, 0.3) : lt(legC, 0.12)); B.p(x + 1, y, dk(legC, 0.08)); B.p(x + 2, y, side > 0 ? lt(legC, 0.12) : dk(legC, 0.3)); }
+      var lc = o.legs && ARM[o.legs] ? ARM[o.legs].a : legC;
+      for (y = top; y <= bot; y++) { B.p(x, y, side > 0 ? dk(lc, 0.3) : lt(lc, 0.12)); B.p(x + 1, y, dk(lc, 0.08)); B.p(x + 2, y, side > 0 ? lt(lc, 0.12) : dk(lc, 0.3)); }
       if (shirt === "tux") { B.cur = 2; for (y = top; y < top + 2; y++) B.r(x, y, 3, 1, "#1a1a22"); B.cur = 1; }
-      if (sh) { B.cur = 8; var rows = sh.rows, n = rows.length, y0 = bot - n + 1;
+      if (o.boots && ARM[o.boots]) { B.cur = 8; armBoot(B, x, bot, side, ARM[o.boots], false); B.cur = 1; }
+      else if (sh) { B.cur = 8; var rows = sh.rows, n = rows.length, y0 = bot - n + 1;
         for (var j = 0; j < n; j++) for (var k = 0; k < 3; k++) { var ch = rows[j].charAt(1 + k); if (ch === ".") continue; B.p(x + k, y0 + j, j === n - 1 ? dk(sh.pal[ch], 0.25) : sh.pal[ch]); }
         B.cur = 1;
       } else B.r(x, bot, 3, 1, dk(legC, 0.4));
@@ -498,8 +520,8 @@ var DelveAv = (function () {
     B.cur = 6; if (o.face && o.face !== "clawpaint" && o.face !== "oracleeye" && o.face !== "hearts" && o.face !== "laser" && o.face !== "monocle") { var ey = A.eyes[0][1] + by, hw2 = A.hw; B.r(11 - hw2 / 2, ey, hw2, 1, o.face === "shades" ? "#0e7490" : o.face === "fireflygoggles" ? "#5a3d00" : o.face === "gothicshades" ? "#8aa0c8" : "#14141a"); }
     B.cur = 5; if (acc.bandana) { var mk = A.mask, my = mk[0] + by; B.r(10, my, 2, 2, "#d12f4a"); B.p(9, my + 2, "#a82240"); B.p(12, my + 2, "#a82240"); B.p(10, my, "#ff7a7a"); }   // the knot
     // hat
-    B.cur = 7; if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
-    B.cur = 1; if (A.ears && o.hat) A.ears.cells.forEach(function (cc) { B.p(cc[0], cc[1] + by, P.b); });
+    B.cur = 7; if (o.helm && ARM[o.helm]) armHelm(new ByBuf(B, by), A.hy, A.hw, o.helm); else if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
+    B.cur = 1; if (A.ears && (o.hat || o.helm)) A.ears.cells.forEach(function (cc) { B.p(cc[0], cc[1] + by, P.b); });
     if (OUTLINE) B.outline(OL);
     return B;
   }
@@ -520,10 +542,12 @@ var DelveAv = (function () {
       for (y = top; y <= bot; y++) {   // hip to foot on a slant, the knee pushed forward when it bends
         var t = (y - top) / Math.max(1, bot - top), xx = Math.round(hx + fdx * t + knee * Math.sin(Math.PI * Math.min(1, t * 1.15)) * 0.6);
         var far = side < 0, cL = far ? dk(legC, 0.18) : lt(legC, 0.2), cM = far ? dk(legC, 0.1) : legC, cR = dk(legC, far ? 0.4 : 0.3);
+        if (o.legs && ARM[o.legs]) { var LG = ARM[o.legs]; cL = far ? dk(LG.a, 0.12) : LG.b; cM = far ? dk(LG.a, 0.12) : LG.a; cR = dk(LG.c, far ? 0.15 : 0); if (y === Math.round((top + bot) / 2)) cM = LG.t; }
         B.p(xx, y, side > 0 ? cL : cR); B.p(xx + 1, y, cM); B.p(xx + 2, y, side > 0 ? cR : cL);
       }
       if (shirt === "tux") { B.cur = 2; for (y = top; y < top + 2; y++) B.r(x, y, 3, 1, "#25252f"); B.cur = 1; }
-      if (sh) { B.cur = 8;
+      if (o.boots && ARM[o.boots]) { B.cur = 8; armBoot(B, x, bot, side, ARM[o.boots], true); B.cur = 1; }
+      else if (sh) { B.cur = 8;
         var rows = sh.rows, n = rows.length, y0 = bot - n + 1, fx = side > 0 ? x - 1 : x;
         for (var j = 0; j < n; j++) for (var k = 0; k < 4; k++) { var ch = rows[j].charAt(side > 0 ? k : 3 - k); if (ch === ".") continue; B.p(fx + k, y0 + j, sh.pal[ch]); }
         if (sh.hi) B.p(fx + (side > 0 ? 1 : 2), y0 + 1, sh.hi.c);
@@ -545,7 +569,7 @@ var DelveAv = (function () {
     // eye colour on the iris-free animals is handled in the maps; add a catch-light
     var E = A.eyes.map(function (e) { return [e[0], e[1] + by]; });
     if (!PEOPLE[a] && /^#[0-9a-f]{6}$/i.test(o.eye || "")) E.forEach(function (e) { B.p(e[0], e[1], o.eye); });   // CUSTOM: animal eye colour (the pupil)
-    if (!PEOPLE[a] && o.tuft && o.tuft !== "none" && !o.hat) tuft(B, A, by, o.tuft, /^#[0-9a-f]{6}$/i.test(o.hair || "") ? o.hair : dk(P.b, 0.35));   // CUSTOM: a tuft of hair on a swamp animal
+    if (!PEOPLE[a] && o.tuft && o.tuft !== "none" && !o.hat && !o.helm) tuft(B, A, by, o.tuft, /^#[0-9a-f]{6}$/i.test(o.hair || "") ? o.hair : dk(P.b, 0.35));   // CUSTOM: a tuft of hair on a swamp animal
     if (o.scar && o.scar !== "none") scar(B, E, o.scar, P);   // CUSTOM: face scars
     if (PO.blink) E.forEach(function (e) {   // eyes shut: eye whites and pupils become skin, with a dark lid line along the bottom
       for (var yy = e[1] - 1; yy <= e[1]; yy++) for (var xx = e[0] - 1; xx <= e[0] + 1; xx++) { var c = B.get(xx, yy); if (c && (c[0] + c[1] + c[2] > 600 || c[0] + c[1] + c[2] < 150)) B.p(xx, yy, yy === e[1] ? P.d : P.b); }
@@ -558,8 +582,8 @@ var DelveAv = (function () {
     B.cur = 5; if (acc.bandana) { var mk = A.mask, mw = mk[1], mx = 11 - mw / 2, my = mk[0] + by; B.r(mx, my, mw, 2, "#d12f4a"); B.r(mx, my, mw, 1, "#ff7a7a"); B.r(mx, my + 1, mw, 1, "#a82240"); for (i = 1; i < mw; i += 3) B.p(mx + i, my + 1, "#ffffff"); B.r(mx + mw, my, 2, 2, "#d12f4a"); B.r(mx + mw, my + 2, 1, 2, "#a82240"); B.p(mx + mw, my, "#ff7a7a"); }
     if (acc.ring) { var rg = A.ring; B.p(rg[0], rg[1] + by, "#fff4b0"); B.p(rg[0], rg[1] + by + 1, "#f2c14e"); B.p(rg[0], rg[1] + by + 2, "#a8740a"); }
     // hat
-    B.cur = 7; if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
-    B.cur = 1; if (A.ears && o.hat) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
+    B.cur = 7; if (o.helm && ARM[o.helm]) armHelm(new ByBuf(B, by), A.hy, A.hw, o.helm); else if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
+    B.cur = 1; if (A.ears && (o.hat || o.helm)) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
     if (OUTLINE) B.outline(OL);
     return B;
   }
@@ -660,7 +684,7 @@ var DelveAv = (function () {
     }
     return o;
   }
-  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.col || "", o.pat || "", o.hair || "", o.eye || "", o.style || "", o.fx || "", o.tuft || "", o.scar || "", o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0].join("|"); }
+  function okey(o) { var h = o.hat ? (o.hv && o.hv[o.hat]) || "" : ""; var a = o.acc || {}; return [o.animal, o.col || "", o.pat || "", o.hair || "", o.eye || "", o.style || "", o.fx || "", o.tuft || "", o.scar || "", o.hat, o.face, o.neck, o.shirt, o.shoes, h, a.ring ? 1 : 0, a.necklace ? 1 : 0, a.bandana ? 1 : 0, o.arm || 0, o.helm || 0, o.legs || 0, o.boots || 0].join("|"); }
   var CACHE = {};
   function sprite(o, animal, s) {
     o = Object.assign({}, o, { animal: AN[animal] ? animal : "frog" }); s = Math.max(1, s | 0);

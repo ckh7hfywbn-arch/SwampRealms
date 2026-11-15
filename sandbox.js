@@ -72,6 +72,13 @@
     { n: "No Armor", c: "#8fd37a", red: 0 }, { n: "Reed Vest", c: "#d3a96b", red: 0.12 }, { n: "Glowspore Mail", c: "#4ee6b4", red: 0.24 },
     { n: "Cinder Plate", c: "#ff8a3d", red: 0.36 }, { n: "Frost Plate", c: "#7fd6ff", red: 0.5 }, { n: "Swampking Plate", c: "#c06aff", red: 0.62 }
   ];
+  // ARMOR PIECES (Nov 2026): every armor set is four pieces: the chestpiece (S.arm), helmet, leggings and boots (S.ap.helm / legs / boots, each a tier).
+  // A full set blocks 10% more than the chestpiece alone used to, shared out: chest 45%, leggings 25%, helmet 15%, boots 15%. Each piece wears down on its
+  // own (S.dur.helm ...). Wearing all four of one set gives that set's bonus (SETB). Older saves get the pieces matching the chestpiece they wear.
+  var APC = { helm: { n: "Helmet", share: 0.15, dur: 0.6, cost: 0.4 }, legs: { n: "Leggings", share: 0.25, dur: 0.8, cost: 0.6 }, boots: { n: "Boots", share: 0.15, dur: 0.6, cost: 0.4 } }, APSH = { arm: 0.45, helm: 0.15, legs: 0.25, boots: 0.15 }, APK = ["helm", "legs", "boots"];
+  var APN = [null, ["Reed Hood", "Reed Leggings", "Reed Sandals"], ["Glowspore Helm", "Glowspore Greaves", "Glowspore Boots"], ["Cinder Helm", "Cinder Greaves", "Cinder Sabatons"], ["Frost Helm", "Frost Greaves", "Frost Boots"], ["Swampking Crown", "Swampking Greaves", "Swampking Boots"], ["Bloodiron Helm", "Bloodiron Greaves", "Bloodiron Boots"]];
+  var SETB = [null, { n: "Light Step", d: "+8% running speed" }, { n: "Spore Mend", d: "Health comes back 25% faster" }, { n: "Fireproof", d: "Lava and fire hurt half as much" }, { n: "Frostguard", d: "Take 10% less damage" }, { n: "Royal Vigor", d: "Health comes back 50% faster and +5% damage" }, { n: "Bloodthirst", d: "Heal 3 every time you defeat a creature" }];
+  function apName(k, t) { return APN[t] ? APN[t][APK.indexOf(k)] : ""; }
   // MALCRUOR GEAR (tier 6): the corrupted top tier, forged from Malcruor's Bloodiron, Hexite, Corrupt Fangs and Rotbark Hearts.
   PICKS.push({ n: "Bloodiron Pick", c: "#ff3a4a", sp: 7.5 }); WEAPONS.push({ n: "Bloodiron Reaver", c: "#ff3a4a", dmg: 52, cd: 0.32 }); ARMORS.push({ n: "Bloodiron Plate", c: "#ff3a4a", red: 0.7 });
   DUR.pick.push(900); DUR.wpn.push(320); DUR.arm.push(520);
@@ -135,6 +142,10 @@
     { id: "arm6", n: "Bloodiron Plate", arm: 6, need: 5, bench: true, bl: 4, cost: { mc_bloodingot: 10, mc_fang: 4, mc_hexite: 4, mc_thornfiber: 8, mc_rotbark: 2 }, d: "Black plate veined with glowing red. Blocks 70% of damage. Needs the Swampking Plate and Pick." },
     { id: "arm5", n: "Swampking Plate", arm: 5, need: 4, bench: true, bl: 4, cost: { queenchitin: 2, wyrmscale: 2, alphamane: 2, ironingot: 8, sapphire: 1, crystal: 12 }, d: "Royal plate of chitin, scale and mane. Blocks 62% of damage. Needs the Frost Plate, all three boss trophies and a Frost Workbench." },
   ];
+  RECIPES.filter(function (r) { return r.arm; }).forEach(function (r) { r.d = r.d.replace(/Blocks ([^.]*?) of (all )?damage\./, "The chestpiece of a four-piece set: a full set blocks " + Math.round(Math.min(0.85, ARMORS[r.arm].red * 1.1) * 100) + "% of damage."); });
+  RECIPES.filter(function (r) { return r.arm; }).forEach(function (r) {   // ARMOR PIECES: helmet, leggings and boots for every set, same Workbench level, cheaper than the chestpiece
+    APK.forEach(function (k) { var c = {}; Object.keys(r.cost).forEach(function (q) { c[q] = Math.max(1, Math.round(r.cost[q] * APC[k].cost)); });
+      RECIPES.push({ id: "ap_" + k + r.arm, n: apName(k, r.arm), ap: k, apt: r.arm, need: r.need, bench: r.bench, bl: r.bl, cost: c, d: APC[k].n + " of the " + ARMORS[r.arm].n.split(" ")[0] + " set. Worn as soon as it is made. A full set gives " + SETB[r.arm].n + ": " + SETB[r.arm].d.toLowerCase() + "." }); }); });
   // ---- DECOR WORKBENCH: recipes made while standing next to a Decor Workbench (Decor tab in the bag) ----
   // TO ADD A NEW DECOR ITEM: (1) a tile() line + ITEMS entry + name in ITEM_ORDER and DECOR_FLOOR or DECOR_WALL in sandbox-world.js,
   // (2) a drawing for its "kind" in paint() below, (3) one line here. cat groups the cards. cost may use other decor items (pot, barrel ...) to build "creations".
@@ -817,6 +828,8 @@
     d.can = +o.can ? 1 : 0; d.water = d.can ? clamp(Math.floor(+o.water) || 0, 0, CAN.max) : 0;
     d.dur = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0, arm: DUR.arm[d.arm] || 0 };   // older saves: everything at full
     if (o.dur && typeof o.dur === "object") { var dm = { pick: DUR.pick[d.tier] || 0, shovel: d.shovel ? DUR.shovel : 0, wpn: DUR.wpn[d.wpn] || 0, arm: DUR.arm[d.arm] || 0 }; Object.keys(dm).forEach(function (k) { if (isFinite(+o.dur[k]) && o.dur[k] !== null) d.dur[k] = clamp(Math.floor(+o.dur[k]), 0, dm[k]); }); }
+    var ap0 = o.ap && typeof o.ap === "object" ? o.ap : (d.arm ? { helm: d.arm, legs: d.arm, boots: d.arm } : {});   // ARMOR PIECES (older saves: the set matching the chestpiece you wear)
+    d.ap = {}; APK.forEach(function (k) { var t = Math.floor(+ap0[k]); d.ap[k] = clamp(isFinite(t) ? t : 0, 0, ARMORS.length - 1); var mx = Math.round((DUR.arm[d.ap[k]] || 0) * APC[k].dur); d.dur[k] = o.ap && o.dur && isFinite(+o.dur[k]) && o.dur[k] !== null ? clamp(Math.floor(+o.dur[k]), 0, mx) : mx; });
     d.hp = isFinite(+o.hp) && +o.hp > 0 ? Math.min(MAXHP, +o.hp) : MAXHP;   // older saves start at full health
     d.time = clamp(+o.time || 60, 0, CYCLE - 0.01);
     if (o.bed && isFinite(o.bed.x) && isFinite(o.bed.y)) d.bed = { x: clamp(Math.floor(o.bed.x), 0, W - 1), y: clamp(Math.floor(o.bed.y), 0, H - 1) };   // checked against the world on respawn
@@ -1689,14 +1702,14 @@
   }
   function invAfter() { if (!TOOLKEY[sel] && !(S.inv[sel] > 0)) { sel = "pick", bare = true; selSlot = -1; } renderPanel(); }
   // ---------- DURABILITY ----------
-  function durMax(k) { var m = k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : k === "arm" ? DUR.arm[S.arm] || 0 : DUR.wpn[S.wpn] || 0; return Math.round(m * mwDurK(k === "weapon" ? "wpn" : k)); }
+  function durMax(k) { if (APC[k]) return Math.round((DUR.arm[(S.ap || {})[k] | 0] || 0) * APC[k].dur); var m = k === "pick" ? DUR.pick[S.tier] || 0 : k === "shovel" ? (S.shovel ? DUR.shovel : 0) : k === "arm" ? DUR.arm[S.arm] || 0 : DUR.wpn[S.wpn] || 0; return Math.round(m * mwDurK(k === "weapon" ? "wpn" : k)); }
   // CRAFTING: Masterwork stars (S.mw = { pick, wpn, arm } = 0-3, from the forge strikes when that piece was made). 2 = Fine, 3 = Masterwork.
   function mwStars(k) { return (S && S.mw && S.mw[k]) || 0; }
   function mwDurK(k) { var s2 = mwStars(k); return s2 >= 3 ? 1.3 : s2 === 2 ? 1.15 : 1; }
   function mwPow(k) { var s2 = mwStars(k); return s2 >= 3 ? 1.1 : s2 === 2 ? 1.04 : 1; }
   function mwName(k, n) { var s2 = mwStars(k); return s2 >= 3 ? "Masterwork " + n : s2 === 2 ? "Fine " + n : n; }
   function durOf(k) { var v = S.dur[k], m = durMax(k); return v == null ? m : Math.min(v, m); }
-  var toolName = function (k) { return k === "pick" ? mwName("pick", PICKS[S.tier].n) : k === "shovel" ? SHOVEL.n : k === "arm" ? mwName("arm", ARMORS[S.arm].n) : mwName("wpn", WEAPONS[S.wpn].n); };
+  var toolName = function (k) { if (APC[k]) return apName(k, (S.ap || {})[k] | 0) || APC[k].n; return k === "pick" ? mwName("pick", PICKS[S.tier].n) : k === "shovel" ? SHOVEL.n : k === "arm" ? mwName("arm", ARMORS[S.arm].n) : mwName("wpn", WEAPONS[S.wpn].n); };
   var toolBroken = function (k) { return durMax(k) > 0 && durOf(k) <= 0; };
   // ---------- PROGRESSION: what bare paws can do (the one place to change it) ----------
   // Bare paws dig soft ground and punch leaves, and chop Murkwater (swamp) trees, so a new player can get Wood from the very start; every other
@@ -1717,7 +1730,7 @@
     else if (before > m * 0.2 && now <= m * 0.2) toast("Your " + toolName(k) + " is wearing out.", "#f2c14e");
   }
   // NO REPAIRS: a tool that breaks is done. Craft a new one (the same recipe makes it fresh), or carry a spare: it swaps in by itself.
-  function brokenCur(r) { return !!((r.tier && r.tier === S.tier && toolBroken("pick")) || (r.wpn && r.wpn === S.wpn && toolBroken("wpn")) || (r.arm && r.arm === S.arm && toolBroken("arm")) || (r.sh && S.shovel && toolBroken("shovel"))); }
+  function brokenCur(r) { return !!((r.ap && (S.ap || {})[r.ap] === r.apt && toolBroken(r.ap)) || (r.tier && r.tier === S.tier && toolBroken("pick")) || (r.wpn && r.wpn === S.wpn && toolBroken("wpn")) || (r.arm && r.arm === S.arm && toolBroken("arm")) || (r.sh && S.shovel && toolBroken("shovel"))); }
   function swapSpare(k) {   // when a pick, weapon or armor breaks, a spare of the same one in your bag swaps in
     var kd = k === "pick" ? "pick" : k === "wpn" ? "wpn" : k === "arm" ? "arm" : ""; if (!kd || !SPK[kd]) return false;
     var t = S[SPK[kd].f] | 0; if (t) { var id = "sp_" + kd + t; if (S.inv[id] > 0) { var K = SPK[kd], f = K.f; S[f] = t; S.dur[k] = DUR[k][t]; S.inv[id]--; if (S.inv[id] <= 0) delete S.inv[id]; reslot(); ICO = {}; armKey = ""; spriteKey = ""; hbDirty = true; toast("Your spare " + K.L[t].n + " swaps in.", "#4ee6b4"); return true; } }
@@ -2495,7 +2508,24 @@
       g.restore(); return true;
     } catch (e) { try { g.restore(); g.restore(); } catch (e2) {} g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 32, 32); return false; }
   }
+  var ARMP = { 1: ["#a8814b", "#d3a96b", "#6b4a26", "#4f8a3c"], 2: ["#157a64", "#1fbf93", "#0b4d3e", "#4ee6b4"], 3: ["#3a2e34", "#5a4a52", "#1c1418", "#ff6a1f"], 4: ["#3f9fc4", "#7fd6ff", "#16465e", "#ffffff"], 5: ["#5a2a7a", "#c06aff", "#2a1438", "#ffd23f"], 6: ["#1e1418", "#3a2228", "#0a0406", "#ff3a3a"] };   // main, light, dark, trim (as worn on the character)
+  function apIcon(k, t) {   // a 16x16 pixel picture of a helmet, leggings or boots in the set's colours
+    var c = document.createElement("canvas"); c.width = c.height = 32; var g = c.getContext("2d"), P = ARMP[t] || ARMP[1], r = function (x, y, w, h, col) { g.fillStyle = col; g.fillRect(x * 2, y * 2, w * 2, h * 2); }, ink = "#14100c";
+    if (k === "helm") {
+      r(5, 2, 6, 1, ink); r(4, 3, 8, 1, ink); r(3, 4, 10, 7, ink); r(4, 11, 3, 2, ink); r(9, 11, 3, 2, ink);
+      r(5, 3, 6, 1, P[1]); r(4, 4, 8, 6, P[0]); r(4, 4, 1, 6, P[1]); r(11, 4, 1, 6, P[2]); r(4, 10, 8, 1, P[2]); r(5, 11, 1, 1, P[0]); r(10, 11, 1, 1, P[0]);
+      r(5, 7, 6, 1, P[2]); r(7, 7, 2, 1, P[3]); r(7, 2, 2, 3, P[3]); r(5, 4, 1, 1, "#ffffff");
+      if (t === 5) { r(4, 1, 1, 2, P[3]); r(7, 0, 2, 2, P[3]); r(11, 1, 1, 2, P[3]); } if (t === 6) { r(2, 2, 1, 3, P[3]); r(13, 2, 1, 3, P[3]); } if (t === 4) { r(3, 2, 1, 2, P[1]); r(12, 2, 1, 2, P[1]); }
+    } else if (k === "legs") {
+      r(3, 2, 10, 3, ink); r(3, 5, 4, 9, ink); r(9, 5, 4, 9, ink);
+      r(4, 3, 8, 1, P[3]); r(4, 4, 8, 1, P[0]); [4, 10].forEach(function (x) { r(x, 5, 2, 8, P[0]); r(x, 5, 1, 8, P[1]); r(x + 1, 12, 1, 1, P[2]); r(x, 8, 2, 1, P[3]); });
+    } else {
+      [[2, 0], [9, 0]].forEach(function (b) { var x = b[0]; r(x, 4, 4, 8, ink); r(x, 11, 6, 3, ink); r(x + 1, 5, 2, 6, P[0]); r(x + 1, 5, 1, 6, P[1]); r(x + 1, 11, 4, 1, P[0]); r(x + 1, 12, 4, 1, P[2]); r(x + 1, 6, 2, 1, P[3]); });
+    }
+    return c.toDataURL();
+  }
   function icon(id) {
+    var apm = /^ap_(helm|legs|boots)([1-9])$/.exec(id); if (apm) return ICO[id] || (ICO[id] = apIcon(apm[1], +apm[2]));   // ARMOR PIECES
     if (ITEMS[id] && ITEMS[id].tool) return icon(ITEMS[id].tool);
     var key = id === "bow" ? "bow" + Math.max(1, S.bow) : id === "bucket" ? bucketKey() : id === "hoe" ? "hoe" + Math.max(1, S.hoe) : id === "rod" ? "rod" + Math.max(1, S.rod) : id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
     if (ICO[key]) return ICO[key];
@@ -2605,9 +2635,9 @@
   var spriteOutfit = null;
   var HSHOW = 0;
   function mkSprite() {   // the pixel full-body avatar (delve-avatar.js) is rebuilt whenever the Armory outfit or animal changes
-    var AP = apprOf(), key = S.animal + "|" + S.arm + "|" + JSON.stringify(AP) + (S.molt || "") + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
+    var AP = apprOf(), key = S.animal + "|" + S.arm + "|" + JSON.stringify(S.ap || {}) + "|" + JSON.stringify(AP) + (S.molt || "") + "|" + (function () { try { return JSON.stringify(Crystals.outfit()); } catch (e) { return ""; } })();
     key += "|" + HSHOW; if (key === spriteKey) return; spriteKey = key; sprite = null;
-    var base = { animal: S.animal, arm: S.arm, col: AP.col, hair: AP.hair, eye: AP.eye, style: AP.style, fx: AP.fx, tuft: AP.tuft, scar: AP.scar, pat: S.molt || "" }; try { spriteOutfit = Object.assign({}, Crystals.outfit(), base); } catch (e) { spriteOutfit = base; }
+    var base = { animal: S.animal, arm: S.arm, helm: (S.ap || {}).helm | 0, legs: (S.ap || {}).legs | 0, boots: (S.ap || {}).boots | 0, col: AP.col, hair: AP.hair, eye: AP.eye, style: AP.style, fx: AP.fx, tuft: AP.tuft, scar: AP.scar, pat: S.molt || "" }; try { spriteOutfit = Object.assign({}, Crystals.outfit(), base); } catch (e) { spriteOutfit = base; }
     if (HSHOW) spriteOutfit.hat = "minerhelm";   // MINER'S HELMET: on your head while you are underground
   }
   function getSprite() {
@@ -5972,7 +6002,7 @@
   var HUNGER_RATE = 100 / 620, starveT = 0, shownFood = -1;
   function meX() { return cave || HOME ? cp.x : p.x; }
   function meY() { return cave || HOME ? cp.y - 1.4 : p.y - PH - 0.3; }
-  function regenMul() { var hc = (hasCharm("hearty") ? 1.2 : 1) * (gem("arm", "amethyst") ? 1.25 : 1) * (fx("fed") ? 1.5 : 1); if (S.nohunger) return hc; return (S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1) * hc; }
+  function regenMul() { var hc = (setOn(2) ? 1.25 : 1) * (setOn(5) ? 1.5 : 1) * (hasCharm("hearty") ? 1.2 : 1) * (gem("arm", "amethyst") ? 1.25 : 1) * (fx("fed") ? 1.5 : 1); if (S.nohunger) return hc; return (S.food >= 80 ? 1.6 : S.food < 25 ? 0 : 1) * hc; }
   function drawFood() {
     var el = $("sbxFood"); if (!el) return; el.hidden = !!S.nohunger; if (S.nohunger) return;
     var v = Math.max(0, Math.ceil(S.food)); if (v === shownFood) return; shownFood = v;
@@ -11907,7 +11937,10 @@
   function wDmg() { return p8DmgMul() * WEAPONS[S.wpn].dmg * mwPow("wpn") * (gem("wpn", "ruby") ? 1.2 : gem("wpn", "amber") ? 1.1 : 1) * (fx("brute") ? 1.25 : 1) * (hasCharm("brute") ? 1.15 : 1) * (hasCharm("blood") && isNight(S.time) ? 1.2 : 1); }   // treats pack: Brute Tonic, Ogre Charm
   function wCd() { return WEAPONS[S.wpn].cd * (gem("wpn", "sapphire") ? 0.85 : 1); }
   function gemLeech(hits) { if (hits > 0 && gem("wpn", "amethyst") && hp > 0 && hp < MAXHP) { hp = Math.min(MAXHP, hp + hits); drawHp(); } if (hits > 0 && hasCharm("leech") && hp > 0 && hp < MAXHP) { hp = Math.min(MAXHP, hp + 2 * hits); drawHp(); } }
-  function armRed() { return Math.min(0.85, ARMORS[S.arm].red + (gem("arm", "sapphire") ? 0.08 : 0) + (mwStars("arm") >= 3 ? 0.04 : mwStars("arm") === 2 ? 0.02 : 0)); }
+  function apOn(k) { var t = k === "arm" ? S.arm : (S.ap || {})[k] | 0; return t > 0 && durOf(k) > 0 ? t : 0; }   // the tier of a worn, unbroken piece (0 = none)
+  function setOn(t) { var a = S.ap || {}; return S.arm === t && a.helm === t && a.legs === t && a.boots === t && !!(apOn("arm") && apOn("helm") && apOn("legs") && apOn("boots")); }   // a full set of tier t
+  function setTier() { for (var t = 1; t < ARMORS.length; t++) if (setOn(t)) return t; return 0; }
+  function armRed() { var v = 0; ["arm", "helm", "legs", "boots"].forEach(function (k) { var t = apOn(k); if (t) v += APSH[k] * ARMORS[t].red * 1.1; }); if (!v) return 0; return Math.min(0.85, v + (gem("arm", "sapphire") ? 0.08 : 0) + (mwStars("arm") >= 3 ? 0.04 : mwStars("arm") === 2 ? 0.02 : 0)); }
   function gemDig() { return p8DigMul() * (gem("pick", "ruby") ? 1.2 : gem("pick", "amber") ? 1.1 : 1) * (gem("pick", "moonstone") && cave ? 1.3 : 1); }
   function openJewel(x, y) {
     var el = $("sbxStory"); if (!el) return;
@@ -13409,7 +13442,7 @@
   function craftGame(r) {
     if (CRAFT_PASS && CRAFT_PASS.id === r.id) return false;
     var k = cgKind(r); if (!k || !CGON) return false;
-    var ic = icon(r.tier ? "pick" + r.tier : r.wpn ? "wpn" + r.wpn : r.arm ? "arm" + r.arm : Object.keys(r.out || {})[0] || "cookpot");
+    var ic = icon(r.ap ? "ap_" + r.ap + r.apt : r.tier ? "pick" + r.tier : r.wpn ? "wpn" + r.wpn : r.arm ? "arm" + r.arm : Object.keys(r.out || {})[0] || "cookpot");
     cgStart(k, r.n, ic, function (q) { CRAFT_PASS = { id: r.id, q: q }; craft(r.id); CRAFT_PASS = null; });
     return true;
   }
@@ -13615,7 +13648,8 @@
       var moved = 0; Object.keys(S.extra).forEach(function (ek) { var fit = Math.min(S.extra[ek], room(ek)); if (fit > 0) { S.inv[ek] = (S.inv[ek] || 0) + fit; packInto(S.slots, ek, fit); S.extra[ek] -= fit; moved += fit; if (S.extra[ek] <= 0) delete S.extra[ek]; } });
       toast(r.n + " crafted. +" + (BAGS[S.bag].x - BAGS[S.bag - 1].x) + " bag slots (" + S.slots.length + " in all)!" + (moved ? " " + moved + " Overflow items moved in." : ""), BAGS[S.bag].c); snd("open", "Epic"); chips(p.x, p.y - 1, BAGS[S.bag].c, 26, 8); checkGoals();
     }
-    else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. You take " + Math.round(ARMORS[r.arm].red * 100) + "% less damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
+    else if (r.ap) { S.ap = S.ap || {}; S.ap[r.ap] = r.apt; S.dur[r.ap] = durMax(r.ap); ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn.", ARMORS[r.apt].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.apt].c, 22, 8); if (setOn(r.apt)) setTimeout(function () { popup("Full set!", ARMORS[r.apt].n.split(" ")[0] + " set: " + SETB[r.apt].n + " (" + SETB[r.apt].d.toLowerCase() + ")", ARMORS[r.apt].c, "\u2726"); }, 600); checkGoals(); }
+    else if (r.arm) { S.arm = r.arm; S.dur.arm = DUR.arm[r.arm]; ICO = {}; armKey = ""; spriteKey = ""; toast(r.n + " crafted and worn. Your armor now blocks " + Math.round(armRed() * 100) + "% of damage!", ARMORS[r.arm].c); snd("open", "Epic"); chips(p.x, p.y - 1, ARMORS[r.arm].c, 30, 9); checkGoals(); }
     else if (r.wpn) { S.wpn = r.wpn; S.dur.wpn = DUR.wpn[r.wpn]; ICO = {}; toast(r.n + " crafted. Pick it in the hotbar and swing!", WEAPONS[r.wpn].c); snd("open", "Epic"); chips(p.x, p.y - 1, WEAPONS[r.wpn].c, 30, 9); }
     else { if (fromChests) text(p.x, p.y - PH - 0.6, "used " + fromChests + " from chests", "#e8d9a8"); for (var o in r.out) give(o, r.out[o], undefined, undefined, true); if (r.deco) { S.st.dcraft++; checkGoals(); } if (r.stn === "cook") { S.st.cooked++; checkTrail(); checkGoals(); } toast(r.id === "bench" ? "Workbench made! Pick it in the hotbar, then tap the ground." : "Crafted " + r.n, "#4ee6b4"); snd("coin"); }
     uiSnd("confirm", 0.4); if (!spare) cgApply(r, CQ);
@@ -13855,9 +13889,10 @@
     if (hasCharm("king") && (why === "boss" || BOSS[why])) n *= 0.8;   // the Swampking Sigil
     if (fx("hide")) n *= 0.8;   // Ironhide Brew
     if (gem("arm", "moonstone") && isNight(S.time) && !cave) n *= 0.8;
-    if (S.arm > 0 && durOf("arm") > 0) {   // armor blocks a share of the hit (half as much against lava) and wears down on every real hit
+    if (setOn(3) && /lava|fire|burn/.test(String(why))) n *= 0.5;   // CINDER SET: Fireproof
+    if (armRed() > 0) {   // armor blocks a share of the hit (half as much against lava) and every worn piece wears down on every real hit
       var blocked = n * armRed() * (why === "lava" ? 0.5 : 1); n -= blocked;
-      if (!cont) { wear("arm", n >= 14 ? 2 : 1); armKey = ""; if (blocked >= 1) text((OCS ? OCS.pl.x : cave ? cp.x : p.x) + 0.5, OCS ? OCS.pl.y - 1.3 : cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
+      if (!cont) { ["arm", "helm", "legs", "boots"].forEach(function (k) { if (apOn(k)) wear(k, n >= 14 ? 2 : 1); }); armKey = ""; if (blocked >= 1) text((OCS ? OCS.pl.x : cave ? cp.x : p.x) + 0.5, OCS ? OCS.pl.y - 1.3 : cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
     if (!cont) { hurtGrace = 0.5; shake = Math.max(shake, Math.min(1, 0.2 + n / 35)); if (n >= 8) hitStop(0.06, 0.12); text(OCS ? OCS.pl.x : cave ? cp.x : p.x, OCS ? OCS.pl.y - 1.5 : cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
@@ -19173,7 +19208,7 @@
     ["Building|Playground", "x_bounceshroom x_speedmoss"],
     ["Decor|Party", "x_d_confetti x_d_balloons"],
     ["Tools|Blasting", "x_bomb x_stickybomb x_blastkeg x_firework x_starrocket"],
-    ["Gear|Armor", "arm1 arm2 arm3 arm4 arm5 arm6 x_helm"], ["Decor|Tables & Tabletops", "x_plate"],
+    ["Gear|Helmets", "ap_helm1 ap_helm2 ap_helm3 ap_helm4 ap_helm5 ap_helm6 x_helm"], ["Gear|Chestpieces", "arm1 arm2 arm3 arm4 arm5 arm6"], ["Gear|Leggings", "ap_legs1 ap_legs2 ap_legs3 ap_legs4 ap_legs5 ap_legs6"], ["Gear|Boots", "ap_boots1 ap_boots2 ap_boots3 ap_boots4 ap_boots5 ap_boots6"], ["Decor|Tables & Tabletops", "x_plate"],
     ["Gear|Backpacks", "bag1 bag2"],
     ["Gear|Boss Summons", "x_lure x_idol x_horn"],
     ["Gear|Mounts", "x_m_toad x_m_gator x_m_heron x_balloon"],
@@ -19242,12 +19277,12 @@
     ["Decor|Storage", (typeof SbxExtra !== "undefined" && SbxExtra.CONTK ? SbxExtra.CONTK : []).map(function (k) { return "x_s_" + k; }).join(" ")]
   ].forEach(function (g) { var ps = g[0].split("|"); (CRAFT_SUBS[ps[0]] = CRAFT_SUBS[ps[0]] || []).push(ps[1]); g[1].split(" ").forEach(function (id) { CRAFT_MAP[id] = g[0]; }); });
   function craftGuess(r) {   // a recipe no list above names: file it by what it makes, so new gear never lands in Decor
-    if (r.tier) return "Tools|Pickaxes"; if (r.wpn) return "Tools|Melee Weapons"; if (r.arm) return "Gear|Armor"; if (r.bow) return "Tools|Ranged Weapons"; if (r.charm) return "Gear|Charms";
+    if (r.tier) return "Tools|Pickaxes"; if (r.wpn) return "Tools|Melee Weapons"; if (r.arm) return "Gear|Chestpieces"; if (r.ap) return "Gear|" + { helm: "Helmets", legs: "Leggings", boots: "Boots" }[r.ap]; if (r.bow) return "Tools|Ranged Weapons"; if (r.charm) return "Gear|Charms";
     if (r.stn === "cook") return "Food|Hearty Meals"; if (r.stn === "brew") return "Potions|Wonders"; if (r.stn === "furnace") return "Materials|Smelted & Fired"; if (r.stn === "mason") return "Building|Stone & Brick";
     var k = Object.keys(r.out || {})[0], it = k && ITEMS[k]; if (it && (it.light || /lamp|lantern|candle|torch/i.test(r.n))) return "Lighting|Lanterns & Lamps";
     return "Decor|More";
   }
-  function recRank(r) { var c = 0, k; for (k in r.cost) c += r.cost[k]; return (r.bl || 0) * 100000 + (r.tier || r.wpn || r.arm || r.bag || 0) * 1000 + (r.stn ? 50 : 0) + (r.bench ? 20 : 0) + c; }
+  function recRank(r) { var c = 0, k; for (k in r.cost) c += r.cost[k]; return (r.bl || 0) * 100000 + (r.tier || r.wpn || r.arm || r.apt || r.bag || 0) * 1000 + (r.ap ? { helm: 0, legs: 400, boots: 600 }[r.ap] : r.arm ? 200 : 0) + (r.stn ? 50 : 0) + (r.bench ? 20 : 0) + c; }
   function craftAll() {
     if (CRAFT_ALL) return CRAFT_ALL;
     CRAFT_ALL = RECIPES.concat(DECOR);
@@ -19259,7 +19294,7 @@
   function recStatus(r) {   // owned / locked / affordable / ready-to-craft-right-now for one recipe (gear recipes and Decor Workbench recipes)
     var afford = canPay(r.cost);
     if (r.deco) { var dl = !!(r.bl && S.bl < r.bl), nd = !decorNear(); return { owned: false, lock: dl, lock0: false, needB: nd, can: afford && !dl, ready: afford && !dl && !nd }; }
-    var owned = !!((r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can) || (r.rod && S.rod >= r.rod) || (r.charm && S.charms.own[r.charm]) || (r.hoe && S.hoe >= r.hoe) || (r.bucket && S.bucket >= r.bucket) || (r.net && S.net >= r.net) || (r.bow && S.bow >= r.bow)),
+    var owned = !!((r.ap && ((S.ap || {})[r.ap] | 0) >= r.apt) || (r.tier && S.tier >= r.tier) || (r.wpn && S.wpn >= r.wpn) || (r.arm && S.arm >= r.arm) || (r.sh && S.shovel) || (r.bag && S.bag >= r.bag) || (r.can && S.can) || (r.rod && S.rod >= r.rod) || (r.charm && S.charms.own[r.charm]) || (r.hoe && S.hoe >= r.hoe) || (r.bucket && S.bucket >= r.bucket) || (r.net && S.net >= r.net) || (r.bow && S.bow >= r.bow)),
       lock0 = !!((r.bow && btOf("bow") < r.bow - 1) || (r.rod && S.rod < r.rod - 1) || (r.hoe && S.hoe < r.hoe - 1) || (r.bucket && S.bucket < r.bucket - 1) || (r.tier && btOf("tier") < r.tier - 1) || (r.bag && (S.bag < r.bag - 1 || (r.need && btOf("tier") < r.need))) || (r.wpn && (btOf("wpn") < r.wpn - 1 || (r.need && btOf("tier") < r.need))) || (r.arm && (btOf("arm") < r.arm - 1 || (r.need && btOf("tier") < r.need)))),
       lock = lock0 || !!(r.bl && S.bl < r.bl), needB = !!(r.bench && !nearBench()); if (owned && brokenCur(r)) owned = false; var have = owned && !!spareFor(r);
     if (have) owned = false;   // MULTIPLES: you can always make another of a weapon, armor, pick or bow
@@ -19272,7 +19307,7 @@
       im = icon(Object.keys(r.out)[0]);
       note = st.lock ? "Needs the " + BENCH_LV[r.bl].n + " (tap your Bog Workbench to upgrade it)." : r.d;
     } else {
-      im = r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(r.sh ? "shovel" : r.can ? "can" : r.charm ? "charm_" + r.charm : r.hoe ? "hoe" + r.hoe : r.bucket ? (r.bucket >= 2 ? "bkt_i" : "bkt_w") : r.net ? "net" : r.bow ? "bow" + r.bow : r.rod ? "rod" + r.rod : r.bag ? "bag" + r.bag : Object.keys(r.out)[0]);
+      im = r.ap ? icon("ap_" + r.ap + r.apt) : r.arm ? icon("arm" + r.arm) : r.wpn ? icon("wpn" + r.wpn) : r.tier ? (function () { var old = S.tier; S.tier = r.tier; var u = icon("pick"); S.tier = old; return u; })() : icon(r.sh ? "shovel" : r.can ? "can" : r.charm ? "charm_" + r.charm : r.hoe ? "hoe" + r.hoe : r.bucket ? (r.bucket >= 2 ? "bkt_i" : "bkt_w") : r.net ? "net" : r.bow ? "bow" + r.bow : r.rod ? "rod" + r.rod : r.bag ? "bag" + r.bag : Object.keys(r.out)[0]);
       note = st.lock && !st.lock0 ? "Upgrade your Workbench to the " + BENCH_LV[r.bl].n + " first." : st.lock ? (r.bag ? (S.bag < r.bag - 1 ? "Make the " + BAGS[r.bag - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.arm ? (S.arm < r.arm - 1 ? "Craft the " + ARMORS[r.arm - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.wpn ? (S.wpn < r.wpn - 1 ? "Craft the " + WEAPONS[r.wpn - 1].n + " first." : "Needs the " + PICKS[r.need].n + " first.") : r.rod ? "Craft the Reed Fishing Rod first." : r.hoe ? "Craft the " + HOES[r.hoe - 1].n + " first." : r.bucket ? "Craft the Wooden Bucket first." : r.bow ? "Craft the " + BOWS[r.bow - 1].n + " first." : "Craft the " + PICKS[r.tier - 1].n + " first.") : (st.needB && !st.owned ? "Needs a Bog Workbench nearby." : r.stn && !nearStn(r.stn) ? "Needs a " + SbxExtra.STN[r.stn] + " nearby. " + r.d : r.d);
     }
     return { st: st, im: im, note: note };
@@ -19658,7 +19693,7 @@
   function pkFocusHtml() {
     var f = PK.focus; if (!f) return "";
     if (f === "bag") return S.bag ? "<b>" + esc(BAGS[S.bag].n) + "</b><span>+" + BAGS[S.bag].x + " slots: the tinted ones in your items</span>" : "<b>No backpack</b><span>Craft a Reed Backpack (Craft tab, Gear) for 12 more slots.</span>";
-    if (f === "arm") return S.arm ? "<b>" + esc(mwName("arm", ARMORS[S.arm].n)) + "</b><span>Blocks " + Math.round(armRed() * 100) + "% of damage · " + pkDur("arm") + "</span>" : "<b>No armor</b><span>Armor is made at your Workbench.</span>";
+    if (f === "arm") { var apl = APK.map(function (k) { var t = (S.ap || {})[k] | 0; return t ? apName(k, t) + (toolBroken(k) ? " (broken)" : "") : "no " + APC[k].n.toLowerCase(); }).join(", "), stt = setTier(); return S.arm || armRed() ? "<b>" + esc(S.arm ? mwName("arm", ARMORS[S.arm].n) : "No chestpiece") + "</b><span>Blocks " + Math.round(armRed() * 100) + "% of damage" + (S.arm ? " · " + pkDur("arm") : "") + "</span><span>" + esc(apl) + "</span>" + (stt ? "<span>Full set: " + esc(SETB[stt].n) + "</span>" : "") : "<b>No armor</b><span>Armor is made at your Workbench: chestpiece, helmet, leggings and boots.</span>"; }
     if (f === "wpn") return S.wpn ? "<b>" + esc(mwName("wpn", WEAPONS[S.wpn].n)) + "</b><span>Damage " + Math.round(wDmg()) + " · " + pkDur("wpn") + "</span>" : "<b>No weapon</b><span>Craft the Reed Spear by hand (Craft tab).</span>";
     if (f === "pick") return "<b>" + esc(S.tier ? mwName("pick", PICKS[S.tier].n) : PICKS[0].n) + "</b><span>" + (S.tier ? "Tier " + S.tier + " · " + pkDur("pick") : "Craft the Reed Pick to dig faster.") + "</span>";
     return "";
@@ -27598,9 +27633,10 @@
     WEAPONS.forEach(function (w, j) { if (!j) return; var r = RECIPES.filter(function (q) { return q.wpn === j; });
       add({ id: "f:w" + j, sec: "gear", cat: "Weapons", n: w.n, c: w.c, sub: "Damage " + w.dmg + " · " + (1 / w.cd).toFixed(1) + " swings a second", body:
         cxRows([["Damage", w.dmg], ["Swing time", w.cd + "s"], ["Damage a second", Math.round(w.dmg / w.cd)], ["Durability", DUR.wpn[j] ? DUR.wpn[j] + " hits" : ""], ["Repair", REPAIR.wpn[j] ? cxCost(REPAIR.wpn[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
-    ARMORS.forEach(function (a, j) { if (!j) return; var r = RECIPES.filter(function (q) { return q.arm === j; });
-      add({ id: "f:a" + j, sec: "gear", cat: "Armor", n: a.n, c: a.c, sub: "Blocks " + Math.round(a.red * 100) + "% of damage", body:
-        cxRows([["Blocks", Math.round(a.red * 100) + "% of damage (lava only half as well)"], ["Durability", DUR.arm[j] ? DUR.arm[j] + " hits" : ""], ["Repair", REPAIR.arm[j] ? cxCost(REPAIR.arm[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
+    ARMORS.forEach(function (a, j) { if (!j) return; var r = RECIPES.filter(function (q) { return q.arm === j || q.ap && q.apt === j; });
+      add({ id: "f:a" + j, sec: "gear", cat: "Armor", n: a.n.split(" ")[0] + " Armor Set", c: a.c, sub: "Full set blocks " + Math.round(a.red * 110) + "% · " + SETB[j].n, body:
+        "<p>Four pieces: " + cxE(a.n) + ", " + cxE(APN[j].join(", ")) + ". A full set blocks " + Math.round(a.red * 110) + "% of damage (chest 45%, leggings 25%, helmet 15%, boots 15% of that).</p>" +
+        cxRows([["Full set bonus", "<b>" + cxE(SETB[j].n) + "</b>: " + cxE(SETB[j].d)], ["Blocks (full set)", Math.round(Math.min(0.85, a.red * 1.1) * 100) + "% of damage (lava only half as well)"], ["Durability", DUR.arm[j] ? DUR.arm[j] + " hits" : ""], ["Repair", REPAIR.arm[j] ? cxCost(REPAIR.arm[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
     PICKS.forEach(function (q, j) { if (!j) return; var r = RECIPES.filter(function (x) { return x.tier === j; });
       add({ id: "f:p" + j, sec: "gear", cat: "Picks", n: q.n, c: q.c, sub: "Digs " + q.sp + "x · tier " + j, body:
         cxRows([["Digging speed", q.sp + "x (bare paws are " + PICKS[0].sp + "x)"], ["Breaks", "Blocks of tier " + j + " and below"], ["Durability", DUR.pick[j] ? DUR.pick[j] + " blocks" : ""], ["Repair", REPAIR.pick[j] ? cxCost(REPAIR.pick[j]) : ""]]) + (r.length ? "<h4>How to make it</h4>" + cxHowMake(r) : "") }); });
@@ -27766,14 +27802,14 @@
   function skillTick(dt) { SKN.t -= dt; if (SKN.t > 0) return; SKN.t = 5; var f = skFree(); if (SKN.seen < 0) SKN.seen = f; if (f > SKN.seen) toast("Skill point ready! Open Skills from the pause menu.", "#ffd23f"); SKN.seen = f; }
   // the perks, read by the hooks in speedMul, gemDig, wDmg, hurt, fishBiteMul and crop growth
   function p8DigMul() { return (skHas("str") ? 1.15 : 1) * (skHas("str2") && cave ? 1.2 : 1) * (1 + 0.12 * enLv("pick", "swift")); }
-  function p8DmgMul() { return (skHas("claw") ? 1.1 : 1) * (skHas("claw2") && isNight(S.time) ? 1.15 : 1) * (1 + 0.1 * enLv("wpn", "sharp")); }
-  function p8HurtMul() { return (skHas("hide") ? 0.9 : 1) * (1 - 0.08 * enLv("arm", "ward")); }
-  function p8SpdMul() { return (skHas("eye2") && cave ? 1.12 : 1) * (1 + 0.05 * enLv("arm", "fleet")); }
+  function p8DmgMul() { return (setOn(5) ? 1.05 : 1) * (skHas("claw") ? 1.1 : 1) * (skHas("claw2") && isNight(S.time) ? 1.15 : 1) * (1 + 0.1 * enLv("wpn", "sharp")); }
+  function p8HurtMul() { return (setOn(4) ? 0.9 : 1) * (skHas("hide") ? 0.9 : 1) * (1 - 0.08 * enLv("arm", "ward")); }
+  function p8SpdMul() { return (setOn(1) ? 1.08 : 1) * (skHas("eye2") && cave ? 1.12 : 1) * (1 + 0.05 * enLv("arm", "fleet")); }
   function p8BiteMul() { var wet = S.wx && S.wx.n > 0.3; return (1 - 0.12 * enLv("rod", "bite")) * (skHas("lure") ? 0.85 : 1) * (skHas("lure2") ? 0.85 : 1) * (skHas("sea") && OCS ? 0.8 : 1) * (skHas("sea2") && wet ? 0.75 : 1); }
   function p8CropMul() { var wet = S.wx && S.wx.n > 0.3; return (skHas("grow") ? 1.1 : 1) * (skHas("grow2") ? 1.12 : 1) * (skHas("moon") && isNight(S.time) ? 1.2 : 1) * (skHas("moon2") && wet ? 1.2 : 1); }
   function p8FosMul() { return (skHas("eye") ? 2 : 1) * (1 + 0.5 * enLv("pick", "luck")); }
   function p8Kill(e) {   // a defeated creature: heal perks, and sometimes its Croak Card
-    var heal = 2 * enLv("wpn", "heart") + (skHas("hide2") ? 3 : 0); if (heal && hp > 0) { hp = Math.min(MAXHP, hp + heal); drawHp(); text(p.x, p.y - 2, "+" + heal, "#7aff9a"); }
+    var heal = 2 * enLv("wpn", "heart") + (skHas("hide2") ? 3 : 0) + (setOn(6) ? 3 : 0); if (heal && hp > 0) { hp = Math.min(MAXHP, hp + heal); drawHp(); text(p.x, p.y - 2, "+" + heal, "#7aff9a"); }
     cardDrop(e.k, e.x, e.y, false);
   }
   // ---------- #88 THE SWAMP REMEMBERS: each stretch of land blooms or sours with how you treat it ----------
@@ -28484,6 +28520,8 @@
       ["Malcruor portal (in the SwampRealms)", function () { if (inMC()) { mcLeave(false); return; } var put = function () { if (inNexus()) { cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cam.x = cp.x; cam.y = cp.y; } }; if (inNexus()) put(); else { devAct("tp:realm"); setTimeout(put, 1500); } }]
     ],
     give: [
+      ["Armor: wear the next full set (helmet, chest, leggings, boots)", function () { var t = (setTier() % (ARMORS.length - 1)) + 1; S.arm = t; S.ap = { helm: t, legs: t, boots: t }; ["arm", "helm", "legs", "boots"].forEach(function (k) { S.dur[k] = durMax(k); }); spriteKey = ""; armKey = ""; ICO = {}; toast(ARMORS[t].n.split(" ")[0] + " set on: blocks " + Math.round(armRed() * 100) + "%, " + SETB[t].n, ARMORS[t].c); }],
+      ["Armor: take off helmet, leggings and boots", function () { S.ap = { helm: 0, legs: 0, boots: 0 }; spriteKey = ""; armKey = ""; toast("Chestpiece only: blocks " + Math.round(armRed() * 100) + "%", "#c9b58a"); }],
       ["Swamp Essence +50 (as orbs)", function () { var tg = essTgt(); essDrop(tg.x + 2.5, tg.y - 1, 50); }],
       ["Swamp Essence +500 (straight in)", function () { essGain(500); }],
       ["Decorating kit (rugs, lamps, seats, clock, trophies, stove, dyeable pieces)", function () { devGive({ rug: 4, furrug: 2, tablecandle: 6, oillamp: 3, lantern: 3, skullcandle: 2, chair: 3, stool: 2, sofa: 1, rockingchair: 1, throne: 1, clock: 1, cuckooclock: 1, plaque: 1, fishtrophy: 1, wolftrophy: 1, goldfrog: 1, stovekettle: 1, counterstove: 1, table: 3, bookshelf: 1, desk: 1, bed: 1, x_plate: 4, breadloaf: 3, painting: 3, tapestry_swamp: 1, lilyvase: 3, cushion: 3, stackedbooks: 3, teapot: 2, streetlamp: 1, wall_plank: 60 }); toast("Decorating kit in your bag. Press O to decorate.", "#ffd27a"); }],
