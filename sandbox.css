@@ -3072,3 +3072,6 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 .cx-root>*{min-width:0}
 @media(max-width:820px){.cx-root{grid-template-columns:minmax(0,1fr)}.cx-t th{width:42%}}
 @media(max-width:420px){.cx-head{gap:8px;padding:10px}.cx-head h2{font-size:0;gap:0}.cx-head h2 .cx-orb{width:22px;height:22px}}
+.cx-moreb{margin:6px 2px 2px;padding:9px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--cx) 55%,transparent);background:none;color:#eaf3ea;font:800 .82rem Nunito,system-ui,sans-serif;cursor:pointer}
+.cx-moreb:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
+@media(pointer:coarse){.cx-q{font-size:16px}}

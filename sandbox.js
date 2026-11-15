@@ -20819,8 +20819,8 @@
   })();
   $("sbxStory").addEventListener("input", function (e) { if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-dkq") && storyOpen === 291) { DKQ = e.target.value || ""; var gq = $("sbxDkGrid"); if (gq) gq.innerHTML = decoGridHtml(); } });   // DECORATE PANEL: search as you type
   $("sbxStory").addEventListener("click", function (e) { var cxb = e.target.closest("[data-cx]"); if (cxb && storyOpen === 292) { e.preventDefault(); cxAct(cxb.getAttribute("data-cx")); } });
-  $("sbxStory").addEventListener("keydown", function (e) { if (storyOpen === 292 && e.key === "Escape" && e.target.hasAttribute && e.target.hasAttribute("data-cxq")) { e.preventDefault(); e.stopPropagation(); if (CX.q) { CX.q = ""; CX.qf = true; cxRender(); } else closePanel(); } });
-  $("sbxStory").addEventListener("input", function (e) { if (storyOpen === 292 && e.target.hasAttribute("data-cxq")) { CX.q = e.target.value; CX.qf = true; clearTimeout(CX.qt); CX.qt = setTimeout(cxRender, 120); } });
+  $("sbxStory").addEventListener("keydown", function (e) { if (storyOpen === 292 && e.key === "Escape" && e.target.hasAttribute && e.target.hasAttribute("data-cxq")) { e.preventDefault(); e.stopPropagation(); if (CX.q) { CX.q = ""; e.target.value = ""; cxRender(false, "list"); } else closePanel(); } });
+  $("sbxStory").addEventListener("input", function (e) { if (storyOpen === 292 && e.target.hasAttribute("data-cxq")) { CX.q = e.target.value; CX.more = 0; clearTimeout(CX.qt); CX.qt = setTimeout(function () { cxRender(false, "list"); }, 180); } });
   $("sbxStory").addEventListener("click", function (e) { var dkb = e.target.closest("[data-dkp]"); if (dkb && storyOpen === 291) { if (dkb.tagName !== "INPUT") e.preventDefault(); decoPanelAct(dkb.getAttribute("data-dkp")); return; } var dvb = e.target.closest("[data-dev]"); if (dvb && storyOpen === 290) { devAct(dvb.getAttribute("data-dev")); return; } var p8b = e.target.closest("[data-p8]"); if (p8b) { if (!p8b.disabled) p8Act(p8b.getAttribute("data-p8")); return; } var p7b = e.target.closest("[data-p7]"); if (p7b) { if (!p7b.disabled) p7Act(p7b.getAttribute("data-p7")); return; } var p5b = e.target.closest("[data-p5]"); if (p5b) { if (!p5b.disabled) p5Act(p5b.getAttribute("data-p5")); return; } var p4b = e.target.closest("[data-p4]"); if (p4b) { if (!p4b.disabled) p4Act(p4b.getAttribute("data-p4")); return; } var gdb = e.target.closest("[data-gd]"); if (gdb && storyOpen === 211) { gdAct(gdb.getAttribute("data-gd")); return; } var chb = e.target.closest("[data-char]"); if (chb && storyOpen === 215) { charAct(chb.getAttribute("data-char")); return; } var rgb = e.target.closest("[data-rig]"); if (rgb && storyOpen === 229) { rigBtn(rgb.getAttribute("data-rig")); return; } var crb = e.target.closest("[data-crew]"); if (crb && storyOpen === 231) { crewBtn(crb.getAttribute("data-crew")); return; } var ctb = e.target.closest("[data-cart]"); if (ctb && storyOpen === 232) { cartGo(ctb.getAttribute("data-cart")); return; } var spb = e.target.closest("[data-spore]"); if (spb && storyOpen === 233) { sporeBtn(spb.getAttribute("data-spore")); return; } var lfb = e.target.closest("[data-lift]"); if (lfb && storyOpen === 228) { liftAct(lfb.getAttribute("data-lift")); return; } var rzb = e.target.closest("[data-raze]"); if (rzb && storyOpen === 216) { razeAct(rzb.getAttribute("data-raze")); return; } var ctb = e.target.closest("[data-cont]"); if (ctb && storyOpen === 217) { contAct(ctb.getAttribute("data-cont")); return; } var hsb = e.target.closest("[data-hship]"); if (hsb && storyOpen === 223) { shipAct(hsb.getAttribute("data-hship")); return; } var hab = e.target.closest("[data-hanim]"); if (hab && storyOpen === 224) { if (!hab.disabled) stallAnimal(hab.getAttribute("data-hanim")); return; } var hpb = e.target.closest("[data-hpet]"); if (hpb && storyOpen === 224) { if (!hpb.disabled) stallPet(+hpb.getAttribute("data-hpet")); return; } var hbd = e.target.closest("[data-hbld]"); if (hbd && storyOpen === 225) { bldAct(hbd.getAttribute("data-hbld")); return; } var hup = e.target.closest("[data-hup]"); if (hup && storyOpen === 226) { if (!hup.disabled) ledgerBuy(hup.getAttribute("data-hup")); return; } var hbb = e.target.closest("[data-hbuy]"); if (hbb && storyOpen === 224) { if (!hbb.disabled) stallBuy(hbb.getAttribute("data-hbuy")); return; } var cka = e.target.closest("[data-croaka]"); if (cka && storyOpen === 227) { if (!cka.disabled) croakaAct(cka.getAttribute("data-croaka")); return; } var cko = e.target.closest("[data-croako]"); if (cko && storyOpen === 221) { closeStory(); var fpg = FBOOK.findIndex(function (P) { return fbPageDone(P) && !(S.fpay && S.fpay[P.id]); }); openFishLog(fpg >= 0 ? fpg + 1 : 0); return; } var mob = e.target.closest("[data-moto]"); if (mob && storyOpen === 218) { motoAct(mob.getAttribute("data-moto")); return; } var bob = e.target.closest("[data-boat]"); if (bob && storyOpen === 219) { boatAct(bob.getAttribute("data-boat")); return; } var isb = e.target.closest("[data-isle]"); if (isb && storyOpen === 220) { isleAct(isb.getAttribute("data-isle")); return; } var lhb = e.target.closest("[data-lh]"); if (lhb && storyOpen === 241) { if (!lhb.disabled) lhAct(lhb.getAttribute("data-lh")); return; } var dyb = e.target.closest("[data-derby]"); if (dyb && storyOpen === 242) { derbyAct(dyb.getAttribute("data-derby")); return; } var hlb = e.target.closest("[data-hold]"); if (hlb && storyOpen === 243) { holdAct(hlb.getAttribute("data-hold")); return; } var mcb = e.target.closest("[data-merch]"); if (mcb && storyOpen === 244) { merchAct(mcb.getAttribute("data-merch")); return; } var swb = e.target.closest("[data-ship]"); if (swb && storyOpen === 245) { if (!swb.disabled) shipAct2(swb.getAttribute("data-ship")); return; } var wyb = e.target.closest("[data-way]"); if (wyb && wayAt && storyOpen === 210) { wayAct(wyb.getAttribute("data-way")); return; } var sgb = e.target.closest("[data-sign]"); if (sgb && storyOpen === 212) { signAct(sgb.getAttribute("data-sign")); return; } var lrb = e.target.closest("[data-lore]"); if (lrb && storyOpen === 214) { var lv = lrb.getAttribute("data-lore"); if (lv === "tab") { closeStory(); openPanel("lore"); } else openLore(lv); return; } var vlb = e.target.closest("[data-vil]"); if (vlb && storyOpen === 213) { if (!vlb.disabled) vilAct(vlb.getAttribute("data-vil")); return; } var jb = e.target.closest("[data-jewel]"); if (jb && jewelAt && storyOpen === 202) { if (!jb.disabled) jewelAct(jb.getAttribute("data-jewel")); return; } var gb = e.target.closest("[data-gate]"); if (gb && gateAt && storyOpen === 201) { if (!gb.disabled) gateAct(gb.getAttribute("data-gate")); return; } var sb = e.target.closest("[data-stand]"); if (sb && standAt) { standAct(sb.getAttribute("data-stand")); return; } var ta = e.target.closest("[data-talk]"); if (ta) { talkAct(ta.getAttribute("data-talk")); return; } if (e.target === this || e.target.closest("[data-story-close]")) closeStory(); });
   $("sbxStn").addEventListener("click", function (e) { if (e.target === this) closeStn(); });
 
@@ -27522,38 +27522,64 @@
     return D;
   }
   function cxOpen(sec, sel) {
-    if (!p4Open(292)) return; CX.data = cxBuild(); if (sec) { CX.sec = sec; CX.cat = ""; } if (sel !== undefined) CX.sel = sel; CX.q = ""; cxRender(true); uiSnd("open");
+    if (!p4Open(292)) return; CX.data = cxBuild(); if (sec) { CX.sec = sec; CX.cat = ""; } if (sel !== undefined) CX.sel = sel; CX.q = ""; CX.more = 0; cxRender(true); uiSnd("open");
   }
   function cxList() {
     var q = CX.q.trim().toLowerCase();
-    return CX.data.filter(function (e) { return q ? (e.n + " " + e.cat + " " + (e.sub || "")).toLowerCase().indexOf(q) >= 0 || (q.length > 3 && e.body.replace(/<[^>]+>/g, " ").toLowerCase().indexOf(q) >= 0) : e.sec === CX.sec && (!CX.cat || e.cat === CX.cat); });
+    return CX.data.filter(function (e) {
+      if (!q) return e.sec === CX.sec && (!CX.cat || e.cat === CX.cat);
+      if (!e.tx) { e.tn = (e.n + " " + e.cat + " " + (e.sub || "")).toLowerCase(); e.tx = e.body.replace(/<[^>]+>/g, " ").toLowerCase(); }   // (search index, made once per entry)
+      return e.tn.indexOf(q) >= 0 || (q.length > 3 && e.tx.indexOf(q) >= 0);
+    }).sort(q ? function (x, y) { var a2 = x.n.toLowerCase().indexOf(q) === 0 ? 0 : x.tn.indexOf(q) >= 0 ? 1 : 2, b2 = y.n.toLowerCase().indexOf(q) === 0 ? 0 : y.tn.indexOf(q) >= 0 ? 1 : 2; return a2 - b2; } : undefined);
   }
-  function cxRender(first) {
-    if (storyOpen !== 292) return; var L = cxList(), sel = CX.data.filter(function (e) { return e.id === CX.sel; })[0], secC = (CXSEC.filter(function (s) { return s[0] === CX.sec; })[0] || CXSEC[0])[2];
-    var cats = []; if (!CX.q) CX.data.forEach(function (e) { if (e.sec === CX.sec && cats.indexOf(e.cat) < 0) cats.push(e.cat); });
-    var h = '<div class="cx-root' + (sel ? " has-sel" : "") + '" style="--cx:' + (sel ? sel.c : secC) + '"><div class="cx-head"><h2><span class="cx-orb"></span>Swamp Codex</h2>' +
-      '<input type="search" class="cx-q" data-cxq placeholder="Search everything" aria-label="Search the Codex" value="' + cxE(CX.q) + '"><button type="button" class="cx-x" data-story-close aria-label="Close the Codex">×</button></div>' +
-      '<nav class="cx-nav" aria-label="Codex sections">' + CXSEC.map(function (s) { return '<button type="button" style="--sc:' + s[2] + '" class="' + (!CX.q && CX.sec === s[0] ? "on" : "") + '" data-cx="sec:' + s[0] + '"><i></i>' + cxE(s[1]) + "</button>"; }).join("") + "</nav>" +
-      '<div class="cx-list">' + (cats.length > 1 ? '<div class="cx-cats"><button type="button" class="' + (!CX.cat ? "on" : "") + '" data-cx="cat:">All</button>' + cats.map(function (c) { return '<button type="button" class="' + (CX.cat === c ? "on" : "") + '" data-cx="cat:' + cxE(c) + '">' + cxE(c) + "</button>"; }).join("") + "</div>" : "") +
+  var CXPAGE = 80;
+  function cxSecC() { return (CXSEC.filter(function (s) { return s[0] === CX.sec; })[0] || CXSEC[0])[2]; }
+  function cxSelE() { return CX.data.filter(function (e) { return e.id === CX.sel; })[0]; }
+  function cxListHtml() {
+    var L = cxList(), n = CX.more || CXPAGE, cats = [];
+    if (!CX.q) CX.data.forEach(function (e) { if (e.sec === CX.sec && cats.indexOf(e.cat) < 0) cats.push(e.cat); });
+    return (cats.length > 1 ? '<div class="cx-cats"><button type="button" class="' + (!CX.cat ? "on" : "") + '" data-cx="cat:">All</button>' + cats.map(function (c) { return '<button type="button" class="' + (CX.cat === c ? "on" : "") + '" data-cx="cat:' + cxE(c) + '">' + cxE(c) + "</button>"; }).join("") + "</div>" : "") +
       (CX.q ? '<p class="cx-found">' + L.length + " found</p>" : "") +
-      (L.length ? L.map(function (e) { return '<button type="button" class="cx-row' + (e.id === CX.sel ? " on" : "") + '" style="--rc:' + e.c + '" data-cx="sel:' + cxE(e.id) + '">' + (e.ico ? cxIc(e.ico) : '<i class="cx-dot"></i>') + "<span><b>" + cxE(e.n) + "</b><small>" + cxE(e.sub || e.cat) + "</small></span></button>"; }).join("") : '<p class="cx-none">Nothing matches that. Try another word.</p>') + "</div>" +
-      '<article class="cx-card">' + (sel ? '<button type="button" class="cx-back" data-cx="back">‹ Back</button><div class="cx-ch">' + (sel.ico ? cxIc(sel.ico) : '<i class="cx-dot"></i>') + "<div><h3>" + cxE(sel.n) + "</h3><small>" + cxE(sel.cat) + "</small></div></div>" + sel.body : '<div class="cx-empty"><span class="cx-orb big"></span><p>Pick anything on the left to read all about it.</p></div>') + "</article></div>";
-    p4Box(h, sel ? sel.c : secC); cxIcons();
-    var qi = $("sbxStoryBox").querySelector("[data-cxq]"); if (qi && (CX.qf || first && !matchMedia("(pointer:coarse)").matches)) { qi.focus({ preventScroll: true }); var v = qi.value.length; try { qi.setSelectionRange(v, v); } catch (e) {} }
-    var on = $("sbxStoryBox").querySelector(".cx-row.on"); if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest" });
+      (L.length ? L.slice(0, n).map(function (e) { return '<button type="button" class="cx-row' + (e.id === CX.sel ? " on" : "") + '" style="--rc:' + e.c + '" data-cx="sel:' + cxE(e.id) + '">' + (e.ico ? cxIc(e.ico) : '<i class="cx-dot"></i>') + "<span><b>" + cxE(e.n) + "</b><small>" + cxE(e.sub || e.cat) + "</small></span></button>"; }).join("") +
+        (L.length > n ? '<button type="button" class="cx-moreb" data-cx="more">Show ' + Math.min(CXPAGE, L.length - n) + " more (" + (L.length - n) + " left)</button>" : "") : '<p class="cx-none">Nothing matches that. Try another word.</p>');
+  }
+  function cxCardHtml() {
+    var sel = cxSelE();
+    return sel ? '<button type="button" class="cx-back" data-cx="back">‹ Back</button><div class="cx-ch">' + (sel.ico ? cxIc(sel.ico) : '<i class="cx-dot"></i>') + "<div><h3>" + cxE(sel.n) + "</h3><small>" + cxE(sel.cat) + "</small></div></div>" + sel.body : '<div class="cx-empty"><span class="cx-orb big"></span><p>Pick anything on the left to read all about it.</p></div>';
+  }
+  // PARTS: the window (search box, close button, section bar) is built once; after that only the list and the card are swapped,
+  // so typing never loses letters and the section bar keeps its scroll on phones.
+  function cxRender(first, parts) {
+    if (storyOpen !== 292) return; var box = $("sbxStoryBox"), root = box.querySelector(".cx-root"), sel = cxSelE(), col = sel ? sel.c : cxSecC();
+    if (!root || first) {
+      p4Box('<div class="cx-root"><div class="cx-head"><h2><span class="cx-orb"></span>Swamp Codex</h2><input type="search" class="cx-q" data-cxq placeholder="Search everything" aria-label="Search the Codex" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button type="button" class="cx-x" data-story-close aria-label="Close the Codex">×</button></div>' +
+        '<nav class="cx-nav" aria-label="Codex sections">' + CXSEC.map(function (s) { return '<button type="button" style="--sc:' + s[2] + '" data-cxs="' + s[0] + '" data-cx="sec:' + s[0] + '"><i></i>' + cxE(s[1]) + "</button>"; }).join("") + '</nav><div class="cx-list"></div><article class="cx-card"></article></div>', col);
+      root = box.querySelector(".cx-root"); root.querySelector("[data-cxq]").value = CX.q; parts = null;
+      if (!matchMedia("(pointer:coarse)").matches) root.querySelector("[data-cxq]").focus({ preventScroll: true });
+    }
+    box.style.setProperty("--qc", col); root.style.setProperty("--cx", col); root.classList.toggle("has-sel", !!sel);
+    [].forEach.call(root.querySelectorAll("[data-cxs]"), function (b) { var on = !CX.q && b.getAttribute("data-cxs") === CX.sec; b.classList.toggle("on", on); if (on && parts === "list" && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+    var lst = root.querySelector(".cx-list"), card = root.querySelector(".cx-card");
+    if (parts !== "card") { var keep = parts === "more" ? lst.scrollTop : 0; lst.innerHTML = cxListHtml(); lst.scrollTop = keep; }
+    else [].forEach.call(lst.querySelectorAll(".cx-row"), function (r) { r.classList.toggle("on", r.getAttribute("data-cx") === "sel:" + CX.sel); });
+    if (parts !== "list" && parts !== "more") { card.innerHTML = cxCardHtml(); card.scrollTop = 0; }
+    cxIcons();
   }
   function cxIcons() {   // fill the item pictures a few at a time, so a long list opens instantly
     var L = [].slice.call($("sbxStoryBox").querySelectorAll("img[data-ic]")), i = 0;
     (function step() { if (storyOpen !== 292) return; var n = 0; while (i < L.length && n < 30) { var im = L[i++]; try { im.src = icon(im.getAttribute("data-ic")); } catch (e) {} im.removeAttribute("data-ic"); n++; } if (i < L.length) requestAnimationFrame(step); })();
   }
   function cxAct(a) {
-    if (a.indexOf("sec:") === 0) { CX.sec = a.slice(4); CX.cat = ""; CX.q = ""; CX.sel = ""; CX.qf = false; }
-    else if (a.indexOf("cat:") === 0) CX.cat = a.slice(4);
-    else if (a.indexOf("sel:") === 0) { CX.sel = a.slice(4); CX.qf = false; }
-    else if (a.indexOf("go:") === 0) { var id = a.slice(3), e = CX.data.filter(function (x) { return x.id === id; })[0]; if (e) { CX.sec = e.sec; CX.cat = ""; CX.q = ""; CX.sel = id; } }
-    else if (a === "back") CX.sel = "";
-    uiSnd("select"); cxRender();
+    var part = "list";
+    if (a.indexOf("sec:") === 0) { CX.sec = a.slice(4); CX.cat = ""; CX.sel = ""; CX.more = 0; if (CX.q) { CX.q = ""; var qi = $("sbxStoryBox").querySelector("[data-cxq]"); if (qi) qi.value = ""; } part = "both"; }
+    else if (a.indexOf("cat:") === 0) { CX.cat = a.slice(4); CX.more = 0; }
+    else if (a === "more") { CX.more = (CX.more || CXPAGE) + CXPAGE; part = "more"; }
+    else if (a.indexOf("sel:") === 0) { CX.sel = a.slice(4); part = "card"; }
+    else if (a.indexOf("go:") === 0) { var id = a.slice(3), e = CX.data.filter(function (x) { return x.id === id; })[0]; if (e) { var jump = CX.q || e.sec !== CX.sec || (CX.cat && CX.cat !== e.cat); CX.sec = e.sec; CX.sel = id; if (jump) { CX.cat = ""; CX.more = 0; if (CX.q) { CX.q = ""; var qj = $("sbxStoryBox").querySelector("[data-cxq]"); if (qj) qj.value = ""; } part = "both"; } else part = "card"; } }
+    else if (a === "back") { CX.sel = ""; part = "card"; }
+    uiSnd("select"); cxRender(false, part === "both" ? null : part);
   }
+
   // ---------- #87 SKILL TREES: mining, fishing, farming and combat, each with two branches ----------
   var SKILLS = {
     mine: { n: "Mining", c: "#c8a46a", xp: function () { return S.st.mined || 0; }, nodes: [["str", "Strong Arms", "+15% digging speed"], ["str2", "Stone Heart", "+20% more digging speed down the Mine", "str"], ["eye", "Keen Eye", "Fossils turn up twice as often"], ["eye2", "Tunnel Rat", "+12% running speed underground", "eye"]] },
