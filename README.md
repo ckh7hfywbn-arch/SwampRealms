@@ -1483,3 +1483,10 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
 - **Backpack gear panel:** just Armor, Charms and the Backpack now; the Weapon and Pickaxe slots are gone (they live on the hotbar).
 - **Arcade cover:** the SwampRealms Delve logo is centred on Delve's cover.
 - **Arcade page:** Delve's "Now playing" strip is now a mint and teal neon sign like the other games' strips (glass bulbs chasing above and below, words lit from inside, a slow shine sweeping across), and the cabinet border glows mint and sky blue to match. The Loadout section is gone from the Arcade (it only applied to the Swamp Adventure, which has the Armory).
+- **Delve quick wins (Nov 15, from the SwampRealms: Delve Notion list):**
+  - **Building blocks moved to the Bog Workbench:** Stone Brick, Reed Thatch, Glowspore Glass, Basalt Brick, Cinder Lamp Block, Frost Brick and Crystal Lamp Block are crafted at the Bog Workbench (same Workbench levels as before). The Decor Workbench is now furniture, lamps, garden pieces and wall decor only.
+  - **More controls you can change:** Build mode (H), Decorate mode (O), Flip furniture or decor (R), Pick up furniture (G) and Pause (P) are in the Controls list now. Set a key to "None" to leave an action with no key.
+  - **Key conflict pop-up:** pressing a key another action already uses opens a pop-up with **Bind** (moves the key to the new action; the old one gets "None") and **Cancel** (or Esc, nothing changes). Dev menu: Open > "Key conflict pop-up".
+  - **Username taken:** signing up with a name that's already used shows "Username is occupied." (`worker.js`, `/api/register`).
+  - Trees were made taller on Nov 13 (`eb103ff`); nothing changed for tree height in this pass.
+  - Script versions: `sandbox.js` delve438-controls, `sandbox.css` ui106-controls.

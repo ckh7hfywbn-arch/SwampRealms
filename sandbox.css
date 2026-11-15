@@ -1871,6 +1871,16 @@ body.sbx-app footer{margin-top:28px}
 @keyframes pzk{50%{background:#f2c14e33}}
 @media(prefers-reduced-motion:reduce){.pz-kbtn.wait{animation:none}}
 .pz-kbtn:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
+/* the key conflict pop-up (Bind / Cancel) */
+.sbx-kpop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px;background:rgba(4,12,10,.6)}
+.sbx-kpop[hidden]{display:none}
+.sbx-kpop-card{max-width:360px;padding:16px 18px;border-radius:14px;border:1px solid #4ee6b4;background:#0f1d19;color:#cfe7da;font:600 .92rem Nunito,system-ui,sans-serif;box-shadow:0 10px 40px #0008}
+.sbx-kpop-card b{color:#e8fff4}
+.sbx-kpop-card p{margin:.5em 0}
+.sbx-kpop-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.sbx-kpop-btns button{min-height:36px;padding:6px 14px;border-radius:10px;border:1px solid #4ee6b455;background:rgba(0,0,0,.3);color:#cfe7da;font:800 .85rem Nunito,system-ui,sans-serif;cursor:pointer}
+.sbx-kpop-btns button.pri{background:#4ee6b4;border-color:#4ee6b4;color:#06241a}
+.sbx-kpop-btns button:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
 html.sbx-txbig .sbx-panel,html.sbx-txbig .sbx-pack,html.sbx-txbig .sbx-pause>*,html.sbx-txbig .sbx-toast,html.sbx-txbig .sbx-hint,html.sbx-txbig .sbx-tip,html.sbx-txbig .sbx-pops,html.sbx-txbig .sbx-banner,html.sbx-txbig .sbx-trail,html.sbx-txbig .sbx-mcard,html.sbx-txbig .sbx-dead>*{zoom:var(--ui-tx,1)}
 /* TRY IT coach */
 .sbx-coach{position:absolute;inset:0;z-index:65;pointer-events:none}

@@ -109,7 +109,14 @@
     { id: "w_timber", n: "Timber Frame Wall (4)", out: { wall_timber: 4 }, bench: true, cost: { planks: 1, clay: 1 }, d: "Cream plaster in dark wooden frames, like a cottage. Needs a Bog Workbench nearby." },
     { id: "w_plaster", n: "Plaster Wall (4)", out: { wall_plaster: 4 }, bench: true, cost: { clay: 2, fiber: 1 }, d: "Smooth cream plaster. Needs a Bog Workbench nearby." },
     { id: "w_brick", n: "Stone Brick Wall (4)", out: { wall_brick: 4 }, bench: true, cost: { stone: 2 }, d: "Grey stone bricks for cellars and castles. Needs a Bog Workbench nearby." },
-    { id: "decorbench", n: "Decor Workbench", out: { decorbench: 1 }, bench: true, cost: { planks: 14, fiber: 6, clay: 4 }, d: "Place it in your camp or house. Tap it (or press F next to it) to open its window, where all the furniture, lamps, garden pieces, building blocks and wall decor are crafted. Made at the Bog Workbench." },
+    { id: "d_brick", bench: true, n: "Stone Brick (4)", out: { brick: 4 }, cost: { stone: 4 }, d: "A solid block of grey stone bricks. Place it like Planks for walls, floors and chimneys." },
+    { id: "d_thatch", bench: true, n: "Reed Thatch (4)", out: { thatch: 4 }, cost: { fiber: 6, stick: 2 }, d: "Golden straw blocks for a cosy cottage roof." },
+    { id: "d_glass", bench: true, n: "Glowspore Glass (2)", out: { glass: 2 }, cost: { clay: 4, spore: 1 }, d: "A see-through teal pane. Put it in a wall for a window." },
+    { id: "d_bbrick", bench: true, n: "Basalt Brick (4)", out: { basaltbrick: 4 }, cost: { basalt: 4 }, bl: 2, d: "Dark bricks with faint hot cracks. Strong castle walls." },
+    { id: "d_clamp", bench: true, n: "Cinder Lamp Block", out: { cinderlamp: 1 }, cost: { cinder: 3, basalt: 2 }, bl: 2, d: "A solid block with a glowing ember core. A very bright light you can build into a wall or floor." },
+    { id: "d_ibrick", bench: true, n: "Frost Brick (4)", out: { icebrick: 4 }, cost: { ice: 4, frostrock: 2 }, bl: 3, d: "Pale blue ice bricks for glittering halls." },
+    { id: "d_crlamp", bench: true, n: "Crystal Lamp Block", out: { crystallamp: 1 }, cost: { crystal: 3, frostrock: 2 }, bl: 3, d: "A solid block around a glowing Frost Crystal. The brightest block light in the swamp." },
+    { id: "decorbench", n: "Decor Workbench", out: { decorbench: 1 }, bench: true, cost: { planks: 14, fiber: 6, clay: 4 }, d: "Place it in your camp or house. Tap it (or press F next to it) to open its window, where all the furniture, lamps, garden pieces and wall decor are crafted. Building blocks are made at the Bog Workbench. Made at the Bog Workbench." },
     { id: "pick2", n: "Glowspore Pick", tier: 2, bench: true, cost: { spore: 16, wood: 12 }, d: "Digs 1.8x faster. Breaks Basalt and Cinder Ore." },
     { id: "bag2", n: "Bog Hauler Pack", bag: 2, need: 2, bench: true, cost: { fiber: 16, spore: 8, planks: 8, leaves: 12 }, d: "A big stitched pack with side pockets and a glowing buckle. Adds 12 more bag slots (54 in all). Needs the Reed Backpack and the Glowspore Pick." },
     { id: "wpn2", n: "Glowspore Blade", wpn: 2, need: 2, bench: true, cost: { spore: 12, wood: 8, planks: 8, bugfrag: 3 }, d: "A glowing blade. Damage 9, quick swing. Needs the Glowspore Pick and Bramble Fragments from Bramble Bugs." },
@@ -148,13 +155,6 @@
     { id: "d_banner", cat: "Wall decor", n: "Swamp Banner", out: { banner: 1 }, cost: { fiber: 6, stick: 2, flower: 1 }, d: "A teal cloth banner. Hangs from a wall or a ceiling beam." },
     { id: "d_sign", cat: "Wall decor", n: "Wooden Sign", out: { sign: 1 }, cost: { planks: 3, stick: 1 }, d: "A little board to hang beside a door." },
     // ---- DECOR EXPANSION. bl = Workbench level needed (see BENCH_LV): Murkwater pieces need none, Ember Bog pieces the Glowspore Workbench (2), Frostfen pieces the Cinder Forge (3), the Throne the Frost Workbench (4). ----
-    { id: "d_brick", cat: "Building blocks", n: "Stone Brick (4)", out: { brick: 4 }, cost: { stone: 4 }, d: "A solid block of grey stone bricks. Place it like Planks for walls, floors and chimneys." },
-    { id: "d_thatch", cat: "Building blocks", n: "Reed Thatch (4)", out: { thatch: 4 }, cost: { fiber: 6, stick: 2 }, d: "Golden straw blocks for a cosy cottage roof." },
-    { id: "d_glass", cat: "Building blocks", n: "Glowspore Glass (2)", out: { glass: 2 }, cost: { clay: 4, spore: 1 }, d: "A see-through teal pane. Put it in a wall for a window." },
-    { id: "d_bbrick", cat: "Building blocks", n: "Basalt Brick (4)", out: { basaltbrick: 4 }, cost: { basalt: 4 }, bl: 2, d: "Dark bricks with faint hot cracks. Strong castle walls." },
-    { id: "d_clamp", cat: "Building blocks", n: "Cinder Lamp Block", out: { cinderlamp: 1 }, cost: { cinder: 3, basalt: 2 }, bl: 2, d: "A solid block with a glowing ember core. A very bright light you can build into a wall or floor." },
-    { id: "d_ibrick", cat: "Building blocks", n: "Frost Brick (4)", out: { icebrick: 4 }, cost: { ice: 4, frostrock: 2 }, bl: 3, d: "Pale blue ice bricks for glittering halls." },
-    { id: "d_crlamp", cat: "Building blocks", n: "Crystal Lamp Block", out: { crystallamp: 1 }, cost: { crystal: 3, frostrock: 2 }, bl: 3, d: "A solid block around a glowing Frost Crystal. The brightest block light in the swamp." },
     { id: "d_wardrobe", cat: "Murkwater Showpieces", n: "Swamp Wardrobe", out: { wardrobe: 1 }, cost: { planks: 12, fiber: 4, clay: 2 }, d: "A tall two-door wardrobe for the bedroom." },
     { id: "d_fence", cat: "Murkwater Showpieces", n: "Wooden Fence (2)", out: { fence: 2 }, cost: { planks: 2, stick: 2 }, d: "Fence off a garden. A row of fences joins up." },
     { id: "d_bale", cat: "Murkwater Showpieces", n: "Reed Bale", out: { bale: 1 }, cost: { fiber: 12 }, d: "A tied bale of dried reeds. Good for a barn or a market." },
@@ -554,8 +554,11 @@
     { id: "jump", n: "Jump / climb", d: [" ", "w", "ArrowUp"] }, { id: "down", n: "Down / drop", d: ["s", "ArrowDown"] },
     { id: "dodge", n: "Dodge roll", d: ["Shift", "c"] }, { id: "use", n: "Use / interact", d: ["f"] }, { id: "swap", n: "Swap to pick", d: ["q"] },
     { id: "craft", n: "Crafting", d: ["e"] }, { id: "journal", n: "Journal", d: ["j"] }, { id: "pack", n: "Backpack", d: ["b"] }, { id: "map", n: "Map", d: ["m"] },
-    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "bore", n: "Bore Drill on/off", d: ["z"] }, { id: "emote", n: "Emotes", d: ["t"] }
+    { id: "qstack", n: "Quick stack", d: ["x"] }, { id: "loadout", n: "Next loadout", d: ["l"] }, { id: "pin", n: "Drop a pin", d: ["n"] }, { id: "special", n: "Weapon special", d: ["v"] }, { id: "bore", n: "Bore Drill on/off", d: ["z"] }, { id: "emote", n: "Emotes", d: ["t"] },
+    { id: "build", n: "Build mode", d: ["h"] }, { id: "decorate", n: "Decorate mode", d: ["o"] }, { id: "flip", n: "Flip furniture or decor", d: ["r"] },
+    { id: "grab", n: "Pick up furniture", d: ["g"] }, { id: "pause", n: "Pause menu", d: ["p"] }
   ];
+  // A bound key set to "none" means the action has no key at all (its default keys are off too). "none" is never a real key name.
   var KEYMAP = { b: {}, wait: "" };
   try { var kmS = JSON.parse(localStorage.getItem("swamp-delve-keys") || "{}"); if (kmS && typeof kmS === "object") KEYACT.forEach(function (a) { if (typeof kmS[a.id] === "string" && kmS[a.id].length <= 12) KEYMAP.b[a.id] = kmS[a.id]; }); if (KEYMAP.b.journal && !KEYMAP.b.craft) { KEYMAP.b.craft = KEYMAP.b.journal; delete KEYMAP.b.journal; } } catch (e) {}   // a key picked for the old Journal (which held crafting) now opens Crafting
   function keySave() { try { localStorage.setItem("swamp-delve-keys", JSON.stringify(KEYMAP.b)); } catch (e) {} }
@@ -570,17 +573,45 @@
   function keyOwner(k) { k = keyNorm(k); for (var i = 0; i < KEYACT.length; i++) { var a = KEYACT[i], b = KEYMAP.b[a.id]; if (b ? keyNorm(b) === k : a.d.indexOf(k) >= 0) return a; } return null; }
   function keymapRows() {
     return '<div class="pz-keymap">' + KEYACT.map(function (a) {
-      var b = KEYMAP.b[a.id], w = KEYMAP.wait === a.id, lbl = b ? keyLabel(b) : a.d.map(keyLabel).join(" / ");
+      var b = KEYMAP.b[a.id], w = KEYMAP.wait === a.id, lbl = b === "none" ? "None" : b ? keyLabel(b) : a.d.map(keyLabel).join(" / ");
       return '<div class="pz-krow' + (b ? " custom" : "") + '"><span>' + esc(a.n) + '</span><button type="button" class="pz-kbtn' + (w ? " wait" : "") + '" data-opt="key:' + a.id + '">' + (w ? "Press a key..." : esc(lbl)) + "</button></div>";
     }).join("") + '</div><div class="pz-row"><div><small>Tap a key to change it, then press the new key (Esc cancels). Arrow keys always work.</small></div><span class="pz-seg"><button type="button" data-opt="key:reset">Reset</button></span></div>';
   }
-  window.addEventListener("keydown", function (e) {   // waiting for a new key for an action
+  // KEY CONFLICTS: a key another action already uses opens a pop-up. Bind moves the key to the new action and removes it from the old one
+  // (that one gets no key). Cancel (or Esc) leaves every binding as it was.
+  function keyPopShow() {
+    var P = KEYMAP.pend, A = KEYACT.filter(function (a) { return a.id === P.id; })[0], O = KEYACT.filter(function (a) { return a.id === P.oid; })[0];
+    var el = document.getElementById("sbxKPop");
+    if (!el) {
+      el = document.createElement("div"); el.id = "sbxKPop"; el.className = "sbx-kpop"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.hidden = true;
+      el.addEventListener("click", function (ev) { var b = ev.target.closest("[data-kp]"); if (!b) return; if (b.getAttribute("data-kp") === "bind") keyPopBind(); else keyPopClose(); });
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<div class="sbx-kpop-card" role="document"><b>' + esc(keyLabel(P.k)) + " is already in use</b>"
+      + "<p>" + esc(keyLabel(P.k)) + " currently does " + esc(O.n) + ".</p>"
+      + "<p><b>Bind</b> gives it to " + esc(A.n) + " and removes it from " + esc(O.n) + ".</p>"
+      + '<div class="sbx-kpop-btns"><button type="button" data-kp="cancel">Cancel</button><button type="button" class="pri" data-kp="bind">Bind</button></div></div>';
+    el.hidden = false; var fb = el.querySelector('[data-kp="bind"]'); if (fb) fb.focus();
+  }
+  function keyPopClose() {
+    KEYMAP.pend = null; var el = document.getElementById("sbxKPop"); if (el) el.hidden = true;
+    try { if (pauseOpen) renderPause(); if (panelOpen) renderPanel(); } catch (er) {}
+  }
+  function keyPopBind() {
+    var P = KEYMAP.pend; if (!P) return;
+    var A = KEYACT.filter(function (a) { return a.id === P.id; })[0], O = KEYACT.filter(function (a) { return a.id === P.oid; })[0];
+    KEYMAP.b[P.oid] = "none"; KEYMAP.b[P.id] = P.k; keySave();
+    toast(A.n + " is now " + keyLabel(P.k) + ". " + O.n + " has no key.", "#7fd6ff");
+    keyPopClose();
+  }
+  window.addEventListener("keydown", function (e) {   // waiting for a new key for an action, or the Bind / Cancel pop-up is up
+    if (KEYMAP.pend) { e.preventDefault(); e.stopImmediatePropagation(); if (e.key === "Escape") keyPopClose(); return; }
     if (!KEYMAP.wait) return; e.preventDefault(); e.stopImmediatePropagation();
     var id = KEYMAP.wait; KEYMAP.wait = "";
     if (e.key !== "Escape") {
       var k = keyNorm(e.key), own = keyOwner(k), act = KEYACT.filter(function (a) { return a.id === id; })[0];
-      if (/^(Enter|Tab|Meta|Control|Alt|CapsLock|`|p|g|r|[1-9])$/.test(k) || k.indexOf("Arrow") === 0) toast("That key is kept for something else. Pick another.", "#f2c14e");
-      else if (own && own.id !== id) toast(keyLabel(k) + " already does " + own.n + ". Pick another key.", "#f2c14e");
+      if (/^(Enter|Tab|Meta|Control|Alt|CapsLock|`|[1-9])$/.test(k) || k.indexOf("Arrow") === 0) toast("That key is kept for something else. Pick another.", "#f2c14e");
+      else if (own && own.id !== id) { KEYMAP.pend = { id: id, k: k, oid: own.id }; keyPopShow(); }
       else { KEYMAP.b[id] = k; keySave(); toast(act.n + " is now " + keyLabel(k) + ".", "#7fd6ff"); }
     }
     try { if (pauseOpen) renderPause(); if (panelOpen) renderPanel(); } catch (er) {}
@@ -12753,7 +12784,7 @@
     var back = '<button type="button" class="pz-back" data-pz="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button>';
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
-      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Crafting</dd><dt>J</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>Pause</dd></dl></div>'
+      B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Crafting</dd><dt>J</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>H</dt><dd>Build mode</dd><dt>O</dt><dd>Decorate mode</dd><dt>R</dt><dd>Flip furniture or decor</dd><dt>G</dt><dd>Pick up furniture (decorating)</dd><dt>Esc or P</dt><dd>Pause</dd></dl></div>'
         + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Hammer button</dt><dd>Crafting</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
@@ -13192,7 +13223,7 @@
   // TO ADD A STATION: an entry here (tile kind in `kind`), and give its recipes a way to map to the key in stnOf().
   var STATIONS = {
     bench: { n: "Bog Workbench", sh: "Workbench", kind: "bench", ic: "bench", c: "#c98c4f", d: "Tools, weapons, armor, walls and new crafting stations. Upgrade it with loot from each biome to unlock better gear." },
-    decor: { n: "Decor Workbench", sh: "Decor Bench", kind: "decorbench", ic: "decorbench", c: "#7fc9a0", d: "Furniture, lamps, garden pieces, building blocks and wall decor." },
+    decor: { n: "Decor Workbench", sh: "Decor Bench", kind: "decorbench", ic: "decorbench", c: "#7fc9a0", d: "Furniture, lamps, garden pieces and wall decor." },
     furnace: { n: "Stone Furnace", sh: "Furnace", kind: "furnace", ic: "furnace", c: "#ff9a4a", d: "Smelt Bog Iron into ingots, fire clay into bricks and melt glass and gems into glowing blocks." },
     loom: { n: "Weaver's Loom", sh: "Loom", kind: "loom", ic: "loom", c: "#e8d9a8", d: "Weave Bog Cotton into cloth." },
     mason: { n: "Mason's Table", sh: "Mason's Table", kind: "masontable", ic: "masontable", c: "#b8c2c8", d: "Cut stone, bricks, shingles and quartz into building blocks and floors." },
@@ -27906,6 +27937,7 @@
       ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
+      ["Key conflict pop-up (Bind / Cancel)", function () { if (panelOpen) closePanel(); KEYMAP.pend = { id: "build", k: "e", oid: "craft" }; keyPopShow(); }],
       ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
       ["Loading screen: home to the SwampRealms", function () { loadScreen("home", function () {}, { min: 3000 }); }],
