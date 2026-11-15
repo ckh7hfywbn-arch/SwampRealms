@@ -7432,9 +7432,18 @@
     var c = MINI.rgb[hex]; if (c) return c; var h = hex.length === 4 ? "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3] : hex;
     return (MINI.rgb[hex] = [parseInt(h.slice(1, 3), 16) || 0, parseInt(h.slice(3, 5), 16) || 0, parseInt(h.slice(5, 7), 16) || 0]);
   }
+  function drawSrcMini(cv) {   // the minimap for caves, the homestead and the pier: a window of that place's map picture around you
+    var src = mapSrc(), now = performance.now(), key = src.id + "|" + mapSrcKey(src);
+    if (!MINI.sp || MINI.sk !== key && now - (MINI.st || 0) > 400) { MINI.sk = key; MINI.st = now; var c = MINI.sp || document.createElement("canvas"); if (c.width !== src.w || c.height !== src.h) { c.width = src.w; c.height = src.h; } var gg = c.getContext("2d"), im = gg.createImageData(src.w, src.h); try { mapPaint(src, new Uint32Array(im.data.buffer)); } catch (e) {} gg.putImageData(im, 0, 0); MINI.sp = c; }
+    var dpr = Math.min(2, window.devicePixelRatio || 1), cw = cv.clientWidth || 140, ch = cv.clientHeight || 88; if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); }
+    var g = cv.getContext("2d"), z = Math.max(cw / Math.min(src.w, 48), ch / Math.min(src.h, 30)), x0 = src.me[0] - cw / 2 / z, y0 = src.me[1] - ch / 2 / z; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false; g.fillStyle = "#0a120f"; g.fillRect(0, 0, cw, ch);
+    g.drawImage(MINI.sp, -x0 * z, -y0 * z, src.w * z, src.h * z);
+    g.fillStyle = "#f2c14e"; g.strokeStyle = "#0b1a15"; g.lineWidth = 1.5; g.beginPath(); g.arc(cw / 2, ch / 2, 3.2, 0, 6.2832); g.fill(); g.stroke();
+  }
   function drawMini() {
-    var cv = $("sbxMini"); if (!cv) return; var show = MINI.on && !cave && !!world; if (cv.hidden === show) cv.hidden = !show; if (!show) return;
+    var cv = $("sbxMini"); if (!cv) return; var show = MINI.on && !!world; if (cv.hidden === show) cv.hidden = !show; if (!show) return;
     if (typeof OCS !== "undefined" && OCS && OCS.sea) { drawSeaMini(cv); return; }   // at sea: the sea chart
+    if (cave || HOME || (typeof OCS !== "undefined" && OCS)) { drawSrcMini(cv); return; }   // MAP REWORK: a cave floor, the homestead or the pier shows its own map
     // SMOOTH: the view follows the (eased) camera every frame and scrolls by fractions of a tile; the tile picture itself is only rebuilt
     // when the view crosses a tile edge or every 250 ms (for digging and newly explored land), and is drawn one tile bigger than the view
     var now = performance.now(), tw = MINI.tw, th = MINI.th, fx0 = cam.x - tw / 2, fy0 = cam.y - 0.9 - th / 2, ix0 = Math.floor(fx0), iy0 = Math.floor(fy0), bw2 = tw + 1, bh2 = th + 1;
@@ -19998,10 +20007,135 @@
     var cur = document.querySelector("#sbxTabs [aria-selected=true]"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
   }
   // ---------- FULL-SCREEN MAP: zoom, drag, and waypoints ----------
-  var M = { s: 1, cx: 0, cy: 0, cw: 0, ch: 0, dpr: 1, pts: {}, drag: null, pinch: null, sel: -1, img: null, imgT: -1e9 };
-  function mapSpan() { return world && world.gx1 !== undefined ? [world.gx0, world.gx1 + 1] : [0, W]; }
-  function mapMin() { var sp = mapSpan(); return Math.max(0.2, Math.min(1, M.cw / (sp[1] - sp[0]))); }
-  function mapClamp() { var sp = mapSpan(); M.s = clamp(M.s, mapMin(), 44); M.cx = clamp(M.cx, sp[0], sp[1]); M.cy = clamp(M.cy, 0, H); }
+  // ---------- MAPS FOR EVERY PLACE (map rework, Nov 2026) ----------
+  // Each place you can be has its own map: the surface of whichever world you are in (the Swamp Realms or Malcruor; a new world that swaps in
+  // its own land gets one for free), each cave floor (it fills in as you walk), your homestead, and Croaker's Pier with the dive. At sea, M
+  // opens the sea chart. mapSrc() says what the current place is; the map, its picture and the minimap all draw from it.
+  // THE LOOK: the game's own tile colours, shaded like the game is lit: lit tops where a block meets open air, a shadow under overhangs,
+  // ground darkening the deeper it goes, ores toned down so the map reads cleanly, a sky that fades to the land's colour, and unexplored
+  // land as dark fog with a dithered pixel edge.
+  function mpHex(h) { h = String(h || "#000"); if (h.length === 4) h = "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; return [parseInt(h.slice(1, 3), 16) || 0, parseInt(h.slice(3, 5), 16) || 0, parseInt(h.slice(5, 7), 16) || 0]; }
+  function mpP(r, g, b) { return (0xFF000000 | (clamp(Math.round(b), 0, 255) << 16) | (clamp(Math.round(g), 0, 255) << 8) | clamp(Math.round(r), 0, 255)) >>> 0; }
+  function mpMul(c, k) { return mpP((c & 255) * k, (c >> 8 & 255) * k, (c >> 16 & 255) * k); }
+  function mpMix(c, d, k) { return mpP((c & 255) + ((d & 255) - (c & 255)) * k, (c >> 8 & 255) + ((d >> 8 & 255) - (c >> 8 & 255)) * k, (c >> 16 & 255) + ((d >> 16 & 255) - (c >> 16 & 255)) * k); }
+  function mpLit(c, k) { return mpMix(c, 0xFFFFFFFF, k); }
+  var MP_FOG = mpP(10, 18, 15), MP_FOG2 = mpP(20, 33, 28), MP_ROCK = mpP(74, 70, 64), MP_BROCK = [mpP(70, 72, 60), mpP(78, 56, 50), mpP(76, 92, 108)], MP_BROCK_MC = mpP(62, 30, 34);
+  function mpN(x, y) { return ((x * 73856093) ^ (y * 19349663)) >>> 0; }   // a fixed little noise per tile (no checkerboards)
+  var MPSKY = [["#5fb8a8", "#1d4a46"], ["#e98a56", "#4a2420"], ["#a8d8f0", "#2a4a66"]], MPSKY_MC = ["#b8404a", "#2a0a10"], MPCAVE = ["#151c18", "#1e1412", "#121a22"], MPCAVE_MC = "#1a0a0c";
+  function mapSrc() {
+    if (typeof OCS !== "undefined" && OCS && !OCS.sea && OCS.m && OCS.m.t) return { id: "oc", side: true, title: OCS.main ? "Croaker's Pier" : (OCS.site && OCS.site.name) || "Under the sea", c: "#4fd0e8", x0: 0, w: OCW, h: OCH, me: OCS.pl ? [OCS.pl.x, OCS.pl.y - 0.5] : [OCW / 2, OSEA] };
+    if (HOME) return { id: "home", top: true, title: "Your Homestead", c: "#7ad04a", x0: 0, w: HW, h: HH, me: [cp.x, cp.y - 0.3] };
+    if (cave && cave.F) { var F = cave.F, th = F.theme || {}; return { id: "cave", top: true, F: F, title: (F.isle && cave.Q ? cave.Q.n : F.bld || F.glowm || F.maze ? th.n : (th.n || "Cave") + " · Floor " + cave.f), c: th.faceHi || "#b08aff", x0: 0, w: F.w, h: F.h, me: [cp.x, cp.y - 0.3] }; }
+    var e = typeof curEntry === "function" ? curEntry() : null;
+    return { id: "w", side: true, title: inMC() ? "Malcruor" : e && e.name ? e.name : "World Map", c: inMC() ? "#ff4a5a" : "#4ee6b4", x0: world && world.gx0 !== undefined ? world.gx0 : 0, w: world && world.gx1 !== undefined ? world.gx1 - world.gx0 + 1 : W, h: H, me: [p.x, p.y - 1] };
+  }
+  function mapSeenTick() {   // CAVE MAPS: each floor remembers the tiles you have been near (not saved: a cave run is new each time)
+    if (!cave || !cave.F) return; var F = cave.F, n = F.w * F.h; if (!F.mseen || F.mseen.length !== n) { F.mseen = new Uint8Array(n); F.mseenV = 0; }
+    var cx = Math.floor(cp.x), cy = Math.floor(cp.y); if (cx === F.mseenX && cy === F.mseenY) return; F.mseenX = cx; F.mseenY = cy;
+    var R = helmOn() ? 9 : 7, R2 = R * R, ch = 0;
+    for (var y = Math.max(0, cy - R); y <= Math.min(F.h - 1, cy + R); y++) for (var x = Math.max(0, cx - R); x <= Math.min(F.w - 1, cx + R); x++) { var dx = x - cx, dy = y - cy; if (dx * dx + dy * dy <= R2) { var i = y * F.w + x; if (!F.mseen[i]) { F.mseen[i] = 1; ch = 1; } } }
+    if (ch) F.mseenV++;
+  }
+  // The picture of a place, one pixel per tile, in the map look. u: Uint32Array (w x h), returns nothing.
+  function mapPaint(src, u) {
+    var w = src.w, h = src.h, x, y, i, k, c;
+    if (src.id === "w") {
+      var mc = inMC(), lut = mapLut(), sky = [], skyL = mc ? [MPSKY_MC] : MPSKY, cav = mc ? [mpP.apply(null, mpHex(MPCAVE_MC))] : MPCAVE.map(function (q) { return mpP.apply(null, mpHex(q)); });
+      skyL.forEach(function (S2, b) { var a = mpHex(S2[0]), z = mpHex(S2[1]), L = new Uint32Array(H); for (y = 0; y < H; y++) { var t = Math.min(1, y / (SURF + 6)); L[y] = mpP(z[0] + (a[0] - z[0]) * t, z[1] + (a[1] - z[1]) * t, z[2] + (a[2] - z[2]) * t); } sky[b] = L; });
+      var gx0 = src.x0, row, top, bi, id, td, up, dn;
+      for (k = 0; k < w; k++) {
+        x = k + gx0; top = col[x]; bi = mc ? 0 : clamp(world.bio[x] | 0, 0, 2);
+        for (y = 0; y < h; y++) {
+          i = y * W + x; c = MP_FOG;
+          if (ex[i]) {
+            id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i]; td = TILES[id];
+            if (id === T.AIR || !td) c = y < top ? sky[mc ? 0 : bi][y] : cav[mc ? 0 : bi];
+            else if (id === T.WATER) { c = lut[id]; up = y > 0 ? tiles[i - W] : 0; c = up === T.AIR ? mpLit(c, 0.3) : mpMul(c, Math.max(0.6, 1 - Math.max(0, y - top) * 0.004)); }
+            else if (!td.solid) c = mpMix(y < top ? sky[bi][y] : cav[bi], lut[id] === undefined ? MP_ROCK : lut[id], 0.55);
+            else {
+              c = lut[id]; if (c === undefined) c = MP_ROCK; var d = y - top, br = mc ? MP_BROCK_MC : MP_BROCK[bi];
+              if (td.kind === "ore") c = mpMix(c, br, 0.6); else if (d > 3) c = mpMix(c, br, 0.32);   // underground rock leans to its land's own tone, ores just a hint, so the map reads cleanly
+              if (d > 2) c = mpMul(c, Math.max(0.52, 1 - (d - 2) * 0.0042));
+              up = y > 0 ? TILES[tiles[i - W]] : null; dn = y < H - 1 ? TILES[tiles[i + W]] : null;
+              if (!up || !up.solid) c = mpLit(c, 0.26); else if (!dn || !dn.solid) c = mpMul(c, 0.7);
+            }
+          } else if ((x > 0 && ex[i - 1]) || (x < W - 1 && ex[i + 1]) || (y > 0 && ex[i - W]) || (y < H - 1 && ex[i + W])) c = MP_FOG2;   // a soft rim where the fog meets what you have seen
+          u[y * w + k] = c;
+        }
+      }
+      return;
+    }
+    if (src.id === "cave") {
+      var F = src.F, th = F.theme || {}, P = function (hx) { return mpP.apply(null, mpHex(hx)); }, cTop = P(th.top || "#1b2219"), cTopH = P(th.topHi || "#2a3424"), cFace = P(th.face || "#3d4b3a"), cFaceH = P(th.faceHi || "#62775a"), cFl = P(th.floor || "#4b4a3c"), cFl2 = P(th.floor2 || "#5f5d4a"), cWat = P("#2a8f95"), cLav = P("#ff7a2a"), seen = F.mseen;
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        i = y * w + x;
+        if (seen && !seen[i]) { u[i] = (x > 0 && seen[i - 1]) || (x < w - 1 && seen[i + 1]) || (y > 0 && seen[i - w]) || (y < h - 1 && seen[i + w]) ? MP_FOG2 : MP_FOG; continue; }
+        if (F.wall[i]) { var open = y + 1 < h && !F.wall[i + w]; c = open ? cFace : ((mpN(x, y) & 15) === 0 ? cTopH : cTop); if (open && y > 0 && F.wall[i - w]) c = cFace; if (open && (y === 0 || !F.wall[i - w])) c = cFaceH; }
+        else if (F.lava && F.lava[i]) c = cLav;
+        else if (F.pool && F.pool[i]) c = cWat;
+        else if (F.node && F.node[i] && TILES[F.node[i]]) { var tn = TILES[F.node[i]]; c = P(tn.kind === "lootchest" ? "#f2c14e" : tn.c2 || tn.c || "#888"); }
+        else { c = (mpN(x, y) & 7) === 0 ? cFl2 : cFl; if (y > 0 && F.wall[i - w]) c = mpMul(c, 0.7); }
+        u[i] = c;
+      }
+      return;
+    }
+    if (src.id === "home") {
+      var t = HOME.t || homeTilesC(), HC = ["#4f8a3c", "#5f6a38", "#6f9a48", "#5a3e26", "#2a8f95", "#3a6a7a", "#a08a62", "#2f6a34", "#b8864a", "#9a6a3a", "#c98c4f", "#e0c070", "#7a7a78", "#6a4a2a", "#b08850", "#2a8f95", "#d86a9a", "#6a8a3a", "#3f8a8f"].map(function (q) { return mpP.apply(null, mpHex(q)); }), RAISED = {}; [HT.TREE, HT.HOUSE, HT.CRATE, HT.STALL, HT.ROCK, HT.FENCE, HT.STUMP, HT.GATE].forEach(function (q) { RAISED[q] = 1; });
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) { i = y * w + x; var id2 = t[i] | 0; c = HC[id2] !== undefined ? HC[id2] : HC[0]; if (id2 === HT.GRASS && (mpN(x, y) & 7) === 0) c = mpLit(c, 0.12); if (RAISED[id2]) { if (y + 1 < h && !RAISED[t[i + w] | 0]) c = mpMul(c, 0.72); else if (y > 0 && !RAISED[t[i - w] | 0]) c = mpLit(c, 0.2); } u[i] = c; }
+      return;
+    }
+    if (src.id === "oc") {
+      var m = OCS.m.t, wl = typeof OWL !== "undefined" ? OWL : OSEA, sA = mpHex("#8fd8e8"), sZ = mpHex("#3a8aa8"), wa = mpP(42, 143, 160), wz = mpP(8, 30, 48);
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        i = y * w + x; var o = m[i], D = OTD[o];
+        if (o === OT.AIR || (!D && y < wl)) { var tt = Math.min(1, y / Math.max(1, wl)); c = mpP(sA[0] + (sZ[0] - sA[0]) * tt, sA[1] + (sZ[1] - sA[1]) * tt, sA[2] + (sZ[2] - sA[2]) * tt); }
+        else if (o === OT.WATER || !D) { c = mpMix(wa, wz, Math.min(1, Math.max(0, y - wl) / Math.max(1, h - wl))); if (y > 0 && m[i - w] === OT.AIR) c = mpLit(c, 0.35); }
+        else { c = mpP.apply(null, mpHex(D.c || "#666")); var oa = y > 0 ? OTD[m[i - w]] : null; if (D.solid && (!oa || !oa.solid)) c = mpLit(c, 0.24); if (y > wl) c = mpMul(c, Math.max(0.6, 1 - (y - wl) * 0.01)); }
+        u[i] = c;
+      }
+    }
+  }
+  function mapSrcKey(src) {
+    if (src.id === "w") return "w:" + buildN + ":" + editN + ":" + exVer + ":" + (world.gx0 | 0) + ":" + (world.gx1 | 0) + ":" + W + ":" + (inMC() ? 1 : 0);
+    if (src.id === "cave") return "c:" + (cave.run || 0) + ":" + cave.f + ":" + (src.F.mseenV || 0) + ":" + editN;
+    if (src.id === "home") return "h:" + JSON.stringify((homeS().ed && Object.keys(homeS().ed).length) || 0) + ":" + editN;
+    return "o:" + (OCS.main ? 1 : 0) + ":" + editN;
+  }
+  // the player on the map: your own character's face in a ring
+  function mapAvatar() { if (MPX.av !== undefined) return MPX.av; MPX.av = null; try { var u2 = myThumb(2); if (u2) { var im = new Image(); im.onload = function () { MPX.av = im; M.dirty = true; }; im.src = u2; } } catch (e) {} return null; }
+  var MPX = {};
+  function mapDrawMe(g, q, now) {
+    var pulse = 13 + Math.sin(now / 260) * 1.8, av = MPX.av || mapAvatar();
+    g.save(); g.globalAlpha = 0.35; g.strokeStyle = "#ffffff"; g.lineWidth = 2; g.beginPath(); g.arc(q[0], q[1], pulse + 4, 0, 6.2832); g.stroke(); g.globalAlpha = 1;
+    g.fillStyle = "#0b1a15"; g.beginPath(); g.arc(q[0], q[1], 11, 0, 6.2832); g.fill();
+    if (av) { g.save(); g.beginPath(); g.arc(q[0], q[1], 10, 0, 6.2832); g.clip(); g.imageSmoothingEnabled = false; g.drawImage(av, q[0] - 11, q[1] - 11, 22, 22); g.restore(); }
+    else { g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(q[0], q[1], 5, 0, 6.2832); g.fill(); }
+    g.lineWidth = 2.6; g.strokeStyle = "#f2c14e"; g.beginPath(); g.arc(q[0], q[1], 11, 0, 6.2832); g.stroke();
+    g.fillStyle = "#f2c14e"; g.beginPath(); g.moveTo(q[0] - 4, q[1] + 10); g.lineTo(q[0] + 4, q[1] + 10); g.lineTo(q[0], q[1] + 16); g.closePath(); g.fill();
+    g.restore();
+  }
+  function mapPin(g, q, col, glyph, label) {   // a place marker in the game's style: dark disc, coloured ring, white glyph, label below
+    g.save(); g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.ellipse(q[0], q[1] + 9, 7, 2.4, 0, 0, 6.2832); g.fill();
+    g.fillStyle = "#0b1a15"; g.strokeStyle = col; g.lineWidth = 2.2; g.beginPath(); g.arc(q[0], q[1], 8, 0, 6.2832); g.fill(); g.stroke();
+    g.translate(q[0], q[1]); wpGlyph(g, glyph, 4.6, "#ffffff"); g.restore();
+    if (label) { g.save(); g.font = signFont(12); g.textAlign = "center"; g.lineWidth = 3.5; g.strokeStyle = "rgba(4,10,8,.85)"; g.fillStyle = "#f6eedb"; g.strokeText(label, q[0], q[1] + 22); g.fillText(label, q[0], q[1] + 22); g.restore(); }
+  }
+  function mapSrcMarks(src, g) {   // the markers that belong to caves, the homestead and the pier
+    if (src.id === "cave") {
+      var F = src.F, sn = function (pt) { return pt && pt.x >= 0 && (!F.mseen || F.mseen[Math.floor(pt.y) * F.w + Math.floor(pt.x)]); };
+      var far = function (pt) { return Math.hypot(pt.x + 0.5 - src.me[0], pt.y + 0.5 - src.me[1]) * M.s > 30; };   // (a pin right under your marker would only overlap it)
+      if (sn(F.up) && far(F.up)) mapPin(g, m2s(F.up.x + 0.5, F.up.y + 0.5), "#4ee6b4", "flag", "Way up");
+      if (sn(F.down) && far(F.down)) mapPin(g, m2s(F.down.x + 0.5, F.down.y + 0.5), "#f2c14e", "cave", "Way down");
+    } else if (src.id === "home") {
+      mapPin(g, m2s(HHOUSE.x + HHOUSE.w / 2, HHOUSE.y + HHOUSE.h / 2), "#c98c4f", "home", "House");
+      mapPin(g, m2s(HGATE.x + 1.5, HGATE.y + 0.5), "#4ee6b4", "flag", "Gate home");
+    }
+  }
+  var M = { s: 1, cx: 0, cy: 0, cw: 0, ch: 0, dpr: 1, pts: {}, drag: null, pinch: null, sel: -1, img: null, imgT: -1e9, src: null };
+  function mapSpan() { var sr = M.src || mapSrc(); return [sr.x0, sr.x0 + sr.w]; }
+  function mapH() { return (M.src || mapSrc()).h; }
+  function mapMin() { var sr = M.src || mapSrc(); return Math.max(0.2, Math.min(sr.id === "w" ? 1 : 40, Math.min(M.cw / sr.w, M.ch / sr.h) * 0.92)); }   // small places fit the whole screen
+  function mapClamp() { var sp = mapSpan(); M.s = clamp(M.s, mapMin(), 44); M.cx = clamp(M.cx, sp[0], sp[1]); M.cy = clamp(M.cy, 0, mapH()); }
   // SMOOTH MAP: the map canvas is bigger than the screen by MPAD on every side. While you drag, pinch or fling, the picture already drawn is
   // just slid and scaled with a CSS transform (the graphics chip does that for free); it is only redrawn when you have moved past the
   // margin or zoomed a lot, and once more, crisp, when you let go.
@@ -20035,59 +20169,47 @@
     Object.keys(TILES).forEach(function (k) { var td = TILES[k]; MAPLUT[k] = id2pack(+k, td); }); return MAPLUT;
   }
   function id2pack(id, td) { return mapPack(id === T.WATER ? "#2a8f95" : td.kind === "ore" ? td.c2 : td.c); }
-  function mapImg() {   // the explored world, one pixel per tile. PERF: rebuilt only when the land or what you have explored changed (and at most twice a second), with no per-pixel string work
-    var now = performance.now(), key = buildN + ":" + editN + ":" + exVer + ":" + (world.gx0 | 0) + ":" + (world.gx1 | 0) + ":" + W;
-    if (M.img && (M.key === key || M.drag || M.pinch || now - M.imgT < 2500)) return M.img; M.imgT = now; M.key = key;   // never while you drag or pinch (that was the stutter), and at most every 2.5 s while open
-    var gx0 = world.gx0 !== undefined ? world.gx0 : 0, gw = (world.gx1 !== undefined ? world.gx1 : W - 1) - gx0 + 1;
-    // MAP STRIPS: the picture is kept as strips 1024 tiles wide. One canvas as wide as the world (up to 12,000 px) is past what phone graphics
-    // chips draw quickly, so dragging the map stuttered; strips are drawn only where they are on screen.
-    var off = M.img || { strips: [] }; if (off.width !== gw || off.height !== H) { off.strips.forEach(function (q) { cvFree(q.c); }); off.strips = []; M.im = null; } off.width = gw; off.height = H; off.gx0 = gx0;
-    var im = M.im || (M.im = (off.strips[0] ? off.strips[0].c : document.createElement("canvas")).getContext("2d").createImageData(gw, H)), u = new Uint32Array(im.data.buffer), lut = mapLut(), x, y, mx, i, id, c, row, orow;
-    for (y = 0; y < H; y++) {
-      row = y * W; orow = y * gw;
-      for (mx = 0; mx < gw; mx++) {
-        x = mx + gx0; i = row + x; c = MAP_UNK;
-        if (ex[i]) {
-          id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i];
-          if (id === T.AIR) c = y < col[x] ? MAP_SKY : MAP_CAVE; else { c = lut[id]; if (c === undefined) c = MAP_UNK; }
-        }
-        u[orow + mx] = c;
-      }
-    }
+  function mapImg() {   // the picture of the current place, one pixel per tile (see mapPaint). PERF: rebuilt only when the place, the land or what you have explored changed (and at most every 2.5 s while open), never during a drag
+    var now = performance.now(), src = M.src || (M.src = mapSrc()), key = src.id + "|" + mapSrcKey(src);
+    if (M.img && M.img.src === src.id && (M.key === key || M.drag || M.pinch || now - M.imgT < 2500)) return M.img; M.imgT = now; M.key = key;
+    var gx0 = src.x0, gw = src.w, gh = src.h;
+    // MAP STRIPS: kept as strips 1024 tiles wide (one canvas as wide as the world is past what phone graphics chips draw quickly)
+    var off = M.img || { strips: [] }; if (off.width !== gw || off.height !== gh || off.src !== src.id) { off.strips.forEach(function (q) { cvFree(q.c); }); off.strips = []; M.im = null; } off.width = gw; off.height = gh; off.gx0 = gx0; off.src = src.id;
+    var im = M.im || (M.im = document.createElement("canvas").getContext("2d").createImageData(gw, gh)), u = new Uint32Array(im.data.buffer);
+    try { mapPaint(src, u); } catch (e) { u.fill(MP_FOG); }
     for (var sx = 0, sk = 0; sx < gw; sx += 1024, sk++) {
       var sw = Math.min(1024, gw - sx), st = off.strips[sk]; if (!st) { st = off.strips[sk] = { c: document.createElement("canvas") }; }
-      if (st.c.width !== sw || st.c.height !== H) { st.c.width = sw; st.c.height = H; } st.x0 = sx; st.w = sw;
-      st.c.getContext("2d").putImageData(im, -sx, 0, sx, 0, sw, H);
+      if (st.c.width !== sw || st.c.height !== gh) { st.c.width = sw; st.c.height = gh; } st.x0 = sx; st.w = sw;
+      st.c.getContext("2d").putImageData(im, -sx, 0, sx, 0, sw, gh);
     }
     off.strips.length = Math.ceil(gw / 1024); return (M.img = off);
   }
   function m2s(x, y) { return [(x - M.cx) * M.s + M.cw / 2, (y - M.cy) * M.s + M.ch / 2]; }
   function s2m(x, y) { return [(x - M.cw / 2) / M.s + M.cx, (y - M.ch / 2) / M.s + M.cy]; }
   function zoomAt(px, py, ns) { var w = s2m(px, py); M.s = clamp(ns, mapMin(), 44); M.cx = w[0] - (px - M.cw / 2) / M.s; M.cy = w[1] - (py - M.ch / 2) / M.s; mapClamp(); }
-  function mapFit() { var sp = mapSpan(); M.s = mapMin(); M.cx = M.s > M.cw / (sp[1] - sp[0]) + 1e-6 ? p.x : (sp[0] + sp[1]) / 2; M.cy = H / 2; mapClamp(); }
-  function mapMe() { M.s = Math.max(M.s, clamp(M.cw / 260, mapMin(), 44)); M.cx = p.x; M.cy = p.y; mapClamp(); }
+  function mapFit() { var sp = mapSpan(), sr = M.src || mapSrc(); M.s = mapMin(); M.cx = M.s > M.cw / (sp[1] - sp[0]) + 1e-6 ? sr.me[0] : (sp[0] + sp[1]) / 2; M.cy = sr.h / 2; mapClamp(); }
+  function mapMe() { var sr = M.src || mapSrc(); M.s = Math.max(M.s, clamp(sr.id === "w" ? M.cw / 260 : mapMin() * 1.8, mapMin(), 44)); M.cx = sr.me[0]; M.cy = sr.me[1]; mapClamp(); }
   function drawMapView() {
     var c = $("sbxMapC"); if (!c || !mapOpen) return;
     var g = c.getContext("2d"), s = M.s, PD = M.pad || 0;
     c.style.transform = ""; M.dr = { cx: M.cx, cy: M.cy, s: M.s };
-    g.setTransform(M.dpr, 0, 0, M.dpr, PD * M.dpr, PD * M.dpr); g.fillStyle = "#03080a"; g.fillRect(-PD, -PD, M.cw + PD * 2, M.ch + PD * 2);   // (screen 0,0 sits PD into the canvas, so the margin round the screen is drawn too)
-    var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, H); g.imageSmoothingEnabled = false;
-    var v0 = s2m(-PD, -PD), v1 = s2m(M.cw + PD, M.ch + PD), sx0 = Math.max(0, Math.floor(v0[0] - MI.gx0)), sx1 = Math.min(MI.width, Math.ceil(v1[0] - MI.gx0)), sy0 = Math.max(0, Math.floor(v0[1])), sy1 = Math.min(H, Math.ceil(v1[1]));   // PERF: draw only the part of the map that is on screen
+    g.setTransform(M.dpr, 0, 0, M.dpr, PD * M.dpr, PD * M.dpr); var SRC = M.src || (M.src = mapSrc()), MH = SRC.h; g.fillStyle = "#050b09"; g.fillRect(-PD, -PD, M.cw + PD * 2, M.ch + PD * 2);   // (screen 0,0 sits PD into the canvas, so the margin round the screen is drawn too)
+    var MI = mapImg(), o0 = m2s(MI.gx0, 0), o1 = m2s(MI.gx0 + MI.width, MH); g.imageSmoothingEnabled = false;
+    g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(o0[0] + 6, o0[1] + 8, o1[0] - o0[0], o1[1] - o0[1]);   // the map casts a soft drop shadow on the backdrop
+    var v0 = s2m(-PD, -PD), v1 = s2m(M.cw + PD, M.ch + PD), sx0 = Math.max(0, Math.floor(v0[0] - MI.gx0)), sx1 = Math.min(MI.width, Math.ceil(v1[0] - MI.gx0)), sy0 = Math.max(0, Math.floor(v0[1])), sy1 = Math.min(MH, Math.ceil(v1[1]));   // PERF: draw only the part of the map that is on screen
     if (sx1 > sx0 && sy1 > sy0) MI.strips.forEach(function (st) {   // only the strips on screen, each cut to what shows
       var a = Math.max(sx0, st.x0), b = Math.min(sx1, st.x0 + st.w); if (b <= a) return;
       var d0 = m2s(MI.gx0 + a, sy0), d1 = m2s(MI.gx0 + b, sy1); g.drawImage(st.c, a - st.x0, sy0, b - a, sy1 - sy0, d0[0], d0[1], d1[0] - d0[0], d1[1] - d0[1]);
     });
-    g.strokeStyle = "#4ee6b455"; g.lineWidth = 1.5; g.strokeRect(o0[0], o0[1], o1[0] - o0[0], o1[1] - o0[1]);
-    if (s >= 6) {   // tile grid when zoomed right in, every 10 tiles
-      g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1; g.beginPath(); var gx0 = Math.max(0, Math.floor(s2m(0, 0)[0] / 10) * 10), gx1 = Math.min(W, s2m(M.cw, 0)[0]), gy0 = Math.max(0, Math.floor(s2m(0, 0)[1] / 10) * 10), gy1 = Math.min(H, s2m(0, M.ch)[1]), q;
-      for (q = gx0; q <= gx1; q += 10) { var a = m2s(q, 0)[0]; g.moveTo(a, o0[1]); g.lineTo(a, o1[1]); }
-      for (q = gy0; q <= gy1; q += 10) { var b2 = m2s(0, q)[1]; g.moveTo(o0[0], b2); g.lineTo(o1[0], b2); }
-      g.stroke();
-    }
+    g.strokeStyle = "#0a1410"; g.lineWidth = 4; g.strokeRect(o0[0] - 2, o0[1] - 2, o1[0] - o0[0] + 4, o1[1] - o0[1] + 4);   // a dark ink frame with a lit inner line, like the game's panels
+    g.strokeStyle = SRC.c + "88"; g.lineWidth = 1.5; g.strokeRect(o0[0] - 0.5, o0[1] - 0.5, o1[0] - o0[0] + 1, o1[1] - o0[1] + 1);
+    if (SRC.id !== "w") { mapSrcMarks(SRC, g); mapDrawMe(g, m2s(SRC.me[0], SRC.me[1]), performance.now()); mapTitle(SRC); var inf2 = (M.s / mapMin()).toFixed(1) + "x"; if (inf2 !== M.inf) { M.inf = inf2; $("sbxMapInfo").textContent = inf2; } return; }
     g.textAlign = "center"; g.font = signFont(14);
-    mapBands().forEach(function (z) {
-      var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BIOX[z[2]].c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, -PD), o0[1], Math.min(r, M.cw + PD) - Math.max(l, -PD), 4); g.globalAlpha = 0.85;
-      if (r > 0 && l < M.cw) g.fillText(BIOX[z[2]].n, (Math.max(l, 0) + Math.min(r, M.cw)) / 2, Math.max(o0[1] + 20, 78)); g.globalAlpha = 1;
+    var MCB = inMC() ? [[world.gx0, world.gx0 + Math.round((SW.MALC_W || 1200) * 0.58), { n: "The Rotmire", c: "#ff4a5a" }], [world.gx0 + Math.round((SW.MALC_W || 1200) * 0.58), world.gx1 + 1, { n: "The Ashen Waste", c: "#c8b0a8" }]] : null;   // MALCRUOR: its own two lands
+    (MCB || mapBands()).forEach(function (z) {
+      if (MCB) z = [z[0], z[1], z[2]]; var BX = MCB ? z[2] : BIOX[z[2]];
+      var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BX.c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, -PD), o0[1], Math.min(r, M.cw + PD) - Math.max(l, -PD), 4); g.globalAlpha = 0.85;
+      if (r > 0 && l < M.cw) { var bx = (Math.max(l, 0) + Math.min(r, M.cw)) / 2, by = Math.max(o0[1] + 22, 80), bt = BX.n.toUpperCase(), bw = g.measureText(bt).width + 26; bx = clamp(bx, bw / 2 + 14, Math.max(bw / 2 + 14, M.cw - 74 - bw / 2)); g.globalAlpha = 0.92; g.fillStyle = "#0b1a15"; g.strokeStyle = BX.c; g.lineWidth = 2; g.beginPath(); g.moveTo(bx - bw / 2 - 8, by - 12); g.lineTo(bx + bw / 2 + 8, by - 12); g.lineTo(bx + bw / 2, by + 1); g.lineTo(bx + bw / 2 + 8, by + 13); g.lineTo(bx - bw / 2 - 8, by + 13); g.lineTo(bx - bw / 2, by + 1); g.closePath(); g.fill(); g.stroke(); g.fillStyle = BX.c; g.fillText(bt, bx, by + 6); } g.globalAlpha = 1;
     });
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
@@ -20101,8 +20223,7 @@
       [-2.8, 2.8].forEach(function (ex) { g.fillStyle = "#3fae5e"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 2.4, 0, 6.2832); g.fill(); g.fillStyle = "#ffd23f"; g.beginPath(); g.arc(cq[0] + ex, cq[1] - 2.4, 1.3, 0, 6.2832); g.fill(); });
     }
     if (TMPW) { var tq = m2s(TMPW.x + 0.5, TMPW.y + 0.5); g.save(); g.translate(tq[0], tq[1]); g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(-11, -12, -8, -23, 0, -23); g.bezierCurveTo(8, -23, 11, -12, 0, 0); g.closePath(); g.fillStyle = "#ffd36a"; g.fill(); g.setLineDash([3, 2]); g.lineWidth = 2; g.strokeStyle = "#3a2a06"; g.stroke(); g.setLineDash([]); g.fillStyle = "#3a2a06"; g.beginPath(); g.arc(0, -14, 4, 0, 6.3); g.fill(); g.restore(); }
-    var pq = m2s(p.x, p.y - 1), pulse = 9 + Math.sin(performance.now() / 260) * 1.6;
-    g.strokeStyle = "#fff"; g.lineWidth = 2.6; g.beginPath(); g.arc(pq[0], pq[1], pulse, 0, 6.2832); g.stroke(); g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(pq[0], pq[1], 4.6, 0, 6.2832); g.fill();
+    mapDrawMe(g, m2s(p.x, p.y - 1), performance.now()); mapTitle(SRC);
     g.textAlign = "left"; g.font = signFont(12); g.textBaseline = "middle";
     (S.wp || []).forEach(function (w, i) {   // waypoint pins: a pointed drop with a ring, name beside it when selected or zoomed in
       var q = m2s(w.x + 0.5, w.y + 0.5), col = WP_COL[w.c], on = i === M.sel; if (q[0] < -30 - PD || q[0] > M.cw + 30 + PD || q[1] < -30 - PD || q[1] > M.ch + 30 + PD) return;
@@ -20140,6 +20261,10 @@
     var dx = Math.round(w.x - p.x), dy = Math.round(w.y - p.y);
     return (Math.abs(dx) < 2 ? "right here sideways" : Math.abs(dx) + " tiles " + (dx > 0 ? "east" : "west")) + " · " + (Math.abs(dy) < 2 ? "same depth" : Math.abs(dy) + " " + (dy > 0 ? "down" : "up"));
   }
+  function mapTitle(src) {   // the map's heading: the place's name with its colour
+    var k = src.id + src.title + src.c; if (M.ttl === k) return; M.ttl = k; var b = $("sbxMapV").querySelector(".sbx-mtop b"); if (!b) return;
+    b.innerHTML = '<i class="sbx-mdot" style="--mc:' + src.c + '"></i>' + esc(src.title); $("sbxMapV").style.setProperty("--mc", src.c); $("sbxMapV").setAttribute("aria-label", "Map: " + src.title);
+  }
   function mapCard() {
     var cd = $("sbxMapCard"), w = M.sel >= 0 ? S.wp[M.sel] : null; if (!w) { cd.hidden = true; return; }
     cd.hidden = false;
@@ -20152,6 +20277,7 @@
     cd.innerHTML = head + note + cols + ics;
   }
   function mapTap(x, y) {
+    if (M.src && M.src.id !== "w") return;   // waypoints live on the surface map
     var i, best = -1, bd = 22 * 22;
     (S.wp || []).forEach(function (w, n) { var q = m2s(w.x + 0.5, w.y + 0.5), dx = q[0] - x, dy = q[1] - 13 - y, d = Math.min(dx * dx + dy * dy, dx * dx + (q[1] - y) * (q[1] - y)); if (d < bd) { bd = d; best = n; } });
     if (best >= 0) { mapPopClose(); M.sel = best; mapCard(); return; }
@@ -20198,10 +20324,12 @@
   }
   function mapDelete() { if (M.sel < 0) return; S.wp.splice(M.sel, 1); M.sel = -1; snd("open"); save(); mapCard(); }
   function openMap() {
-    if (mapOpen) return; M.dirty = true; if (packOpen) closePack(); else if (panelOpen) closePanel();
+    if (mapOpen) return; if (OCS && OCS.sea) { OCS.sea.chart = !OCS.sea.chart; return; }   // AT SEA: the sea chart is the map
+    M.src = mapSrc(); MPX.av = undefined; M.dirty = true; if (packOpen) closePack(); else if (panelOpen) closePanel();
     mapOpen = true; panelOpen = true; M.sel = -1; M.pts = {}; M.drag = M.pinch = null; $("sbxMapV").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
     var mb = $("sbxMapMine"); if (mb) mb.hidden = !(world.holes && world.holes[0]) || !!cave || !!HOME || !!OCS;
-    mapSize(); var seenW = mapSeenWidth(); M.s = clamp(M.cw / clamp(seenW * 1.6, 130, 300), mapMin(), 44); M.cx = p.x; M.cy = p.y; mapClamp(); mapCard(); drawMapView();   // opens zoomed to the land you have seen around you
+    mb = $("sbxMapHint"); if (mb) mb.textContent = M.src.id === "w" ? "Tap the map to make a waypoint or a temp waypoint. Tap a waypoint to rename, recolor or change its icon. Drag to move, scroll or pinch to zoom." : M.src.id === "cave" ? "This floor fills in as you explore it. Drag to move, scroll or pinch to zoom." : "Drag to move, scroll or pinch to zoom.";
+    mapSize(); if (M.src.id === "w") { var seenW = mapSeenWidth(); M.s = clamp(M.cw / clamp(seenW * 1.6, 130, 300), mapMin(), 44); M.cx = p.x; M.cy = p.y; } else { M.s = mapMin(); M.cx = M.src.x0 + M.src.w / 2; M.cy = M.src.h / 2; } mapClamp(); mapCard(); drawMapView();   // opens zoomed to the land you have seen around you
   }
   function mapSeenWidth() {   // how wide the explored stretch of surface around you is (columns), to pick a sensible zoom
     if (!ex || !col) return 300; var px = clamp(Math.floor(p.x), 0, W - 1), a = px, z = px, gap = 0, x;
@@ -20790,7 +20918,7 @@
   $("sbxChatGo").addEventListener("click", sendChat);
   setInterval(drawChat, 2000);
   $("sbxMPV").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "mpCode") { e.preventDefault(); mpJoin(e.target.value, $("mpName") ? $("mpName").value : mpName); } });
-  $("sbxMini").addEventListener("click", function () { if (OCS && OCS.sea) { OCS.sea.chart = !OCS.sea.chart; return; } if (!panelOpen && !cave) openMap(); });
+  $("sbxMini").addEventListener("click", function () { if (OCS && OCS.sea) { OCS.sea.chart = !OCS.sea.chart; return; } if (!panelOpen) openMap(); });
   $("sbxMini").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && !panelOpen && !cave) { e.preventDefault(); openMap(); } });
   $("sbxStnBody").addEventListener("input", function (e) {
     if (e.target.id !== "sbxStnSearch" || !stnOpen) return; var k = stnOpen.k, pos = e.target.selectionStart; stnQ[k] = e.target.value; renderStn();
@@ -26731,11 +26859,13 @@
     if (!document.hidden) {
       try { tickAmbSound(dt); } catch (er) {}
       try { tickVoices(dt); } catch (er) {}
+      try { mapSeenTick(); } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (window.__CAMOV) { cam.x = window.__CAMOV.x; cam.y = window.__CAMOV.y; }   // (test/trailer hook: a scripted camera)
         if (mapOpen) { if ((M.drag && M.drag.moved) || M.pinch || M.fling) { M.gl = 1; mapFlingStep(); mapGlide(); } else if (M.gl || M.dirty || now - (M.fT || 0) > 70) { M.gl = 0; M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
         else if (HOME) homeRender(now); else if (OCS) ocDraw(now); else if (cave) renderCave(now); else render(now);
+        if ((cave || HOME || (OCS && !OCS.sea)) && !mapOpen && now - (MINI.lt || 0) > 150) { MINI.lt = now; try { drawMini(); } catch (er2) {} }   // MAP REWORK: the minimap follows you into caves, the homestead and the pier
         drawTrans(); if (hbDirty) drawBar();
       } catch (er) { loopErr(er); }
     }
@@ -28395,6 +28525,7 @@
       ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
+      ["Map of this place (caves, homestead, pier, Malcruor...)", function () { if (panelOpen) closePanel(); setTimeout(openMap, 50); }],
       ["Codex", function () { cxOpen(); }],
       ["Codex: Gear & Fighting (damage chart)", function () { cxOpen("gear", "f:chart"); }],
       ["Creature voices: play every one", function () { if (panelOpen) closePanel(); var L = Object.keys(KVOX), i = 0; (function nx() { if (i >= L.length) return; var k = L[i++]; toast(k, "#a8e05a"); vxPlay(k, "i", 0, 0, 0, 0, true); setTimeout(nx, 1700); })(); }],

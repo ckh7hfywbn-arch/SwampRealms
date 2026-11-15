@@ -3078,3 +3078,15 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 /* enchanting: five gear plinths, and the Essence orb on the cost line */
 .p8-plinths{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}
 .p8-essi{display:inline-block;width:14px;height:14px;margin:0 3px 0 1px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#d6fff2 0,#4ee6b4 38%,#8a2a72 100%);box-shadow:0 0 6px #4ee6b4}
+/* ===== MAP REWORK: the place's own colour (--mc) runs through the frame, the title and the buttons ===== */
+.sbx-mapv{--mc:#4ee6b4;background:radial-gradient(120% 90% at 50% 40%,#0b1a15 0,#050b09 70%)}
+.sbx-mtop{background:linear-gradient(180deg,rgba(5,11,9,.95) 0,rgba(5,11,9,.7) 70%,rgba(5,11,9,0));border-bottom:0}
+.sbx-mtop b{display:flex;align-items:center;gap:10px;padding:6px 16px 6px 10px;border-radius:14px;background:linear-gradient(160deg,rgba(14,34,28,.92),rgba(4,10,8,.9));border:1.5px solid color-mix(in srgb,var(--mc) 60%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 18px -6px var(--mc);color:#f6eedb;font-size:1.15rem;letter-spacing:.02em;text-shadow:0 2px 0 #0008;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw}
+.sbx-mdot{flex:none;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0,var(--mc) 45%,#0006 110%);box-shadow:0 0 10px var(--mc)}
+.sbx-mtop span{text-align:center}
+.sbx-mctl button{border-color:color-mix(in srgb,var(--mc) 45%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 6px 14px -8px #000}
+.sbx-mctl button:hover,.sbx-mctl button:focus-visible{border-color:var(--mc);color:#fff;outline:none}
+.sbx-mhint{border-color:color-mix(in srgb,var(--mc) 30%,transparent);font-size:.72rem}
+@media(max-width:600px){.sbx-mtop b{font-size:.95rem;max-width:48vw}.sbx-mtop span{display:none}}
+@media(max-width:600px){.sbx-mtop{flex-wrap:wrap;row-gap:8px}.sbx-mtop b{order:1;flex:0 1 auto}.sbx-mtop .sbx-x{order:2;margin-left:auto}.sbx-mmine{order:3;flex-basis:100%;max-width:max-content}.sbx-mctl{top:calc(max(10px,env(safe-area-inset-top)) + 100px)}}
+@media(max-width:600px){.sbx-mmine{position:absolute;left:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);flex-basis:auto}}
