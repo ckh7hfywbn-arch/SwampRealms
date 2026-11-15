@@ -132,12 +132,12 @@ async function api(req, env, url) {
     if (await blocked(db, ipKey, REG_MAX, REG_WINDOW)) return json({ error: "Too many new accounts from here. Try again later." }, 429);
     const name = b.username.toLowerCase();
     if (await db.prepare("SELECT 1 AS x FROM users WHERE name = ?").bind(name).first())
-      return json({ error: "That username is taken." }, 409);
+      return json({ error: "Username is occupied." }, 409);
     const id = crypto.randomUUID(), salt = rand(16), hash = await pbkdf2(b.password, salt, ITER);
     try {
       await db.prepare("INSERT INTO users (id, name, display, salt, hash, iters, created) VALUES (?, ?, ?, ?, ?, ?, ?)")
         .bind(id, name, b.username, toB64(salt), toB64(hash), ITER, Date.now()).run();
-    } catch (e) { return json({ error: "That username is taken." }, 409); }
+    } catch (e) { return json({ error: "Username is occupied." }, 409); }
     await hit(db, ipKey, REG_WINDOW);
     return sess(await startSession(db, url, id), { user: { name: b.username }, save: null });
   }
