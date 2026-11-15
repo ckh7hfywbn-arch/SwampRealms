@@ -6056,7 +6056,7 @@
   function landFish() {
     var F = fishing, x = F.x, y = F.y; fishing = null;
     var under = y > col[clamp(x, 0, W - 1)] + 6, night = isNight(S.time), r = Math.random();
-    if (r < 0.04) { var L = rollLoot("pot", world.bio[x], under ? 1 : 0); L.forEach(function (q) { give(q[0], q[1], x, y - 0.6); }); popup("Fished up treasure!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#f2c14e", "✦"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
+    if (r < 0.04 * (1 + 0.5 * enLv("rod", "line"))) { var L = rollLoot("pot", world.bio[x], under ? 1 : 0); L.forEach(function (q) { give(q[0], q[1], x, y - 0.6); }); popup("Fished up treasure!", L.map(function (q) { return ITEMS[q[0]].n; }).join(", "), "#f2c14e", "✦"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.1) { give("oldboot", 1, x, y - 0.6); nag("Just an Old Boot..."); S.st.boots++; checkGoals(); return; }
     var hab = fishHab(F.lq, x, y), k = goldFish(hab) || rollFish(hab, F.bait, under ? 0.4 : 0), frr = FMETA[k] ? FMETA[k][1] : "c";   // FISH PACK: the water decides what bites
     if (frr === "l") { rhythmStart(k, function (win) { if (win) landFin(F, k, frr, x, y); else { nag("The legendary fish snapped your line!"); thud(150, 0.1); } }); return; }   // #47 a legendary fights back
@@ -8475,10 +8475,10 @@
     if (cool > 0) return;
     var am = bowAmmo();
     if (!am) { cool = 0.6; nag(S.bow === 1 ? "Out of Pebbles. Dig mud or stone for more." : "Out of Arrows. Craft some from Sticks, Pebbles and Fiber."); return; }
-    cool = B.cd * (gem("bow", "sapphire") ? 0.85 : 1); if (!(gem("bow", "amethyst") && Math.random() < 0.25)) { S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } } hbDirty = true; S.st.shots++;
+    cool = B.cd * (gem("bow", "sapphire") ? 0.85 : 1) * (1 - 0.08 * enLv("bow", "quick")); if (!(gem("bow", "amethyst") && Math.random() < 0.25)) { S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } } hbDirty = true; S.st.shots++;
     var fire = am === "firearrow", sp = B.sp * (gem("bow", "moonstone") ? 1.3 : 1), lift = inCave ? 0 : Math.min(0.35, d * 0.012);   // aim a little high on long shots so the arc lands near where you tapped
     var ux = dx / d, uy = dy / d - lift, ul = Math.sqrt(ux * ux + uy * uy); ux /= ul; uy /= ul;
-    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1)), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave, coat: ARROWK[am] || null });
+    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1) * (1 + 0.1 * enLv("bow", "power"))), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave, coat: ARROWK[am] || null });
     if (S.ammo && am === S.ammo && !(inv(am) > 0)) { toast("Out of " + ITEMS[am].n + "s. Back to " + (inv("firearrow") > 0 ? "Fire Arrows." : "plain Arrows."), "#f6eedb"); S.ammo = null; }
     if (ARROWK[am] || am === S.ammo) drawFx(true);
     thud(S.bow === 1 ? 420 : 260, 0.04);
@@ -21789,7 +21789,7 @@
   function ocLandFish(F) {
     var sc = OCS, pl = sc.pl, x = F.x + 0.5, r = Math.random(); sc.fish = null; S.st.seafish = (S.st.seafish || 0) + 1;
     var say = function (s2, c) { text(pl.x, pl.y - 1.9, s2, c); };
-    if (r < 0.05) { var L = [["doubloon", 2 + Math.floor(Math.random() * 4)], ["seaglass", 1 + Math.floor(Math.random() * 2)]]; if (Math.random() < 0.3) L.push(["pearl", 1]); L.forEach(function (q) { if (ITEMS[q[0]]) give(q[0], q[1], undefined, undefined, true); }); popup("Fished up a sunken purse!", L.map(function (q) { return ITEMS[q[0]] ? ITEMS[q[0]].n : ""; }).join(", "), "#f2c14e", "\u2726"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
+    if (r < 0.05 * (1 + 0.5 * enLv("rod", "line"))) { var L = [["doubloon", 2 + Math.floor(Math.random() * 4)], ["seaglass", 1 + Math.floor(Math.random() * 2)]]; if (Math.random() < 0.3) L.push(["pearl", 1]); L.forEach(function (q) { if (ITEMS[q[0]]) give(q[0], q[1], undefined, undefined, true); }); popup("Fished up a sunken purse!", L.map(function (q) { return ITEMS[q[0]] ? ITEMS[q[0]].n : ""; }).join(", "), "#f2c14e", "\u2726"); S.st.fishloot++; snd("open", "Epic"); checkGoals(); return; }
     if (r < 0.12) { var junk = Math.random() < 0.5 ? "oldboot" : "kelp"; if (ITEMS[junk]) give(junk, junk === "kelp" ? 2 : 1, undefined, undefined, true); if (junk === "oldboot") { S.st.boots++; nag("Just an Old Boot..."); } else say("+2 Brine Kelp", "#7fd06a"); checkGoals(); return; }
     var k = goldFish("sea") || rollFish("sea", F.bait, 0), frr = FMETA[k] ? FMETA[k][1] : "c";
     if (!ITEMS[k]) k = "bogminnow";
@@ -27325,12 +27325,19 @@
   var ENCH = {
     wpn: { n: "Weapon", opts: { sharp: { n: "Sharpness", d: "+10% damage per level" }, heart: { n: "Heartsteal", d: "Heal 2 per level when you defeat a creature" } } },
     pick: { n: "Pick", opts: { swift: { n: "Swiftdig", d: "+12% digging speed per level" }, luck: { n: "Lucky Find", d: "Fossils turn up 50% more often per level" } } },
-    arm: { n: "Armor", opts: { ward: { n: "Warding", d: "Take 8% less damage per level" }, fleet: { n: "Fleetfoot", d: "+5% running speed per level" } } }
+    arm: { n: "Armor", opts: { ward: { n: "Warding", d: "Take 8% less damage per level" }, fleet: { n: "Fleetfoot", d: "+5% running speed per level" } } },
+    bow: { n: "Bow", opts: { power: { n: "Power", d: "+10% arrow damage per level" }, quick: { n: "Quickdraw", d: "Shoot 8% faster per level" } } },
+    rod: { n: "Fishing Rod", opts: { bite: { n: "Quick Bite", d: "Fish bite 12% sooner per level" }, line: { n: "Lucky Line", d: "Treasure on the line half again as often per level" } } }
   };
+  // SWAMP ESSENCE pays for enchanting (Nov 2026): gear only (weapon, pick, armor, bow, fishing rod); charms and everything else can't be enchanted.
+  // Level III still needs 3 Dream Shards as well. Spending Essence lowers your Essence level, like spending levels.
+  var EN_ESS = [0, 30, 70, 140];
+  function enHas(s) { return s === "wpn" ? S.wpn > 0 : s === "arm" ? S.arm > 0 : s === "bow" ? S.bow > 0 : s === "rod" ? S.rod > 0 : true; }
+  function enPay(c, take) { if ((S.ess | 0) < (c.ess || 0)) return false; for (var q in c) if (q !== "ess" && (S.inv[q] || 0) < c[q]) return false; if (take) { S.ess = (S.ess | 0) - (c.ess || 0); for (var q2 in c) if (q2 !== "ess") { S.inv[q2] -= c[q2]; if (S.inv[q2] <= 0) delete S.inv[q2]; } essHud(true); } return true; }
   function ench(slot) { var o = p8(); if (!o.en || typeof o.en !== "object") o.en = {}; return o.en[slot] || null; }
   function enLv(slot, k) { var e = ench(slot); return e && e.k === k ? e.l : 0; }
-  function enCost(l) { var c = { spore: 10 * l, crystal: 3 * l }; if (l >= 2) c.starshard = 1; if (l >= 3) c.dreamshard = 3; return c; }
-  var ECOL = { sharp: "#ff8a3a", heart: "#ff6ab0", swift: "#5ae0ff", luck: "#ffd23f", ward: "#b88aff", fleet: "#7aff9a" }, ALT = { s: "wpn", just: "" };
+  function enCost(l) { var c = { ess: EN_ESS[l] || 140 }; if (l >= 3) c.dreamshard = 3; return c; }
+  var ECOL = { sharp: "#ff8a3a", heart: "#ff6ab0", swift: "#5ae0ff", luck: "#ffd23f", ward: "#b88aff", fleet: "#7aff9a", power: "#ff5a5a", quick: "#ffe066", bite: "#4fb6e8", line: "#ffd24a" }, ALT = { s: "wpn", just: "" };
   function enchGlow(g, cx, fy, hh, now, E) {   // a soft coloured aura and orbiting sparkles for enchanted gear (on you and on armor stands)
     if (!E || reduce) return; var t = now / 1000, keys = ["arm", "wpn", "pick"].filter(function (k) { return E[k] && ECOL[E[k].k]; }); if (!keys.length) return;
     g.save(); g.globalCompositeOperation = "lighter";
@@ -27340,19 +27347,19 @@
     g.restore();
   }
   function hexA(h, a) { var n = parseInt(h.slice(1), 16); return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + Math.max(0, Math.min(1, a)).toFixed(3) + ")"; }
-  function gearIcon(s) { return s === "wpn" ? (S.wpn ? icon("wpn" + S.wpn) : "") : s === "arm" ? (S.arm ? icon("arm" + S.arm) : "") : icon(S.tier ? "pick" + S.tier : "paw"); }
-  function gearName(s) { return s === "wpn" ? (S.wpn ? WEAPONS[S.wpn].n : "No weapon yet") : s === "arm" ? (S.arm ? ARMORS[S.arm].n : "No armor yet") : PICKS[S.tier].n; }
+  function gearIcon(s) { return s === "wpn" ? (S.wpn ? icon("wpn" + S.wpn) : "") : s === "arm" ? (S.arm ? icon("arm" + S.arm) : "") : s === "bow" ? (S.bow ? icon("bow") : "") : s === "rod" ? (S.rod ? icon("rod") : "") : icon(S.tier ? "pick" + S.tier : "paw"); }
+  function gearName(s) { return s === "wpn" ? (S.wpn ? WEAPONS[S.wpn].n : "No weapon yet") : s === "arm" ? (S.arm ? ARMORS[S.arm].n : "No armor yet") : s === "bow" ? (S.bow && BOWS[S.bow] ? BOWS[S.bow].n : "No bow yet") : s === "rod" ? (S.rod ? ITEMS.t_rod.n : "No rod yet") : PICKS[S.tier].n; }
   function altarOpen() {   // three plinths (weapon, pick, armor) with your real gear on them; enchanted gear glows with a moving trim
     if (!p4Open(275)) return; var R = ["", "I", "II", "III"], h = '<h2 class="st-hi">The Mossy Altar</h2>';
     h += '<div class="p8-plinths">' + Object.keys(ENCH).map(function (s) { var cur = ench(s), c = cur ? ECOL[cur.k] : "#7af0ff", ic = gearIcon(s);
-      return '<button type="button" class="p8-plinth' + (ALT.s === s ? " on" : "") + (cur ? " ench lv" + cur.l : "") + (ALT.just === s ? " just" : "") + '" style="--ec:' + c + '" data-p8="en:sel:' + s + '"><span class="p8-gear"><i class="p8-trim"></i>' + (ic ? '<img alt="" src="' + ic + '">' : '<em>' + (s === "arm" ? "⛨" : "⚔") + "</em>") + '<i class="p8-shine"></i></span><b>' + ENCH[s].n + "</b><small>" + esc(gearName(s)) + "</small>" + (cur ? '<span class="p8-ench">' + ENCH[s].opts[cur.k].n + " " + R[cur.l] + "</span>" : '<span class="p8-ench none">Not enchanted</span>') + "</button>"; }).join("") + "</div>";
+      return '<button type="button" class="p8-plinth' + (ALT.s === s ? " on" : "") + (cur ? " ench lv" + cur.l : "") + (ALT.just === s ? " just" : "") + '" style="--ec:' + c + '" data-p8="en:sel:' + s + '"><span class="p8-gear"><i class="p8-trim"></i>' + (ic ? '<img alt="" src="' + ic + '">' : '<em>' + (s === "arm" ? "⛨" : s === "bow" ? "➶" : s === "rod" ? "⌇" : "⚔") + "</em>") + '<i class="p8-shine"></i></span><b>' + ENCH[s].n + "</b><small>" + esc(gearName(s)) + "</small>" + (cur ? '<span class="p8-ench">' + ENCH[s].opts[cur.k].n + " " + R[cur.l] + "</span>" : '<span class="p8-ench none">Not enchanted</span>') + "</button>"; }).join("") + "</div>";
     var s0 = ALT.s, E = ENCH[s0], cur0 = ench(s0);
-    h += '<p class="st-tip">Each piece takes one enchantment, up to level III. Choosing the other one replaces it. Level III needs Dream Shards, which only come from dreams.</p><div class="p8-enopts">' + Object.keys(E.opts).map(function (k) { var O = E.opts[k], l = enLv(s0, k), c = enCost(l + 1), max = l >= 3;
-      return '<div class="p8-enopt" style="--ec:' + ECOL[k] + '"><div class="p8-enhd"><b>' + O.n + "</b><span class=\"p8-pips\">" + [1, 2, 3].map(function (i) { return '<i class="' + (i <= l ? "on" : "") + '"></i>'; }).join("") + "</span></div><small>" + O.d + "</small>" + (max ? '<p class="p8-max">Maxed out</p>' : '<p class="p8-cost">' + Object.keys(c).map(function (q) { var have = S.inv[q] || 0; return '<span class="' + (have >= c[q] ? "" : "short") + '"><img alt="" src="' + icon(q) + '">' + have + "/" + c[q] + "</span>"; }).join("") + '</p><button type="button" class="btn"' + (canPay(c) ? "" : " disabled") + ' data-p8="en:' + s0 + ":" + k + '">' + (l ? "Raise to " + R[l + 1] : cur0 && cur0.k !== k ? "Replace" : "Enchant") + "</button>") + "</div>"; }).join("") + "</div>";
+    h += '<p class="st-tip keep">Enchanting costs <b>Swamp Essence</b> (you have <b>' + (S.ess | 0) + '</b>). Each piece takes one enchantment, up to level III. Choosing the other one replaces it. Level III also needs 3 Dream Shards, which only come from dreams.</p>' + (enHas(s0) ? "" : '<p class="st-tip keep">Make a ' + esc(ENCH[s0].n.toLowerCase()) + " first, then bring it here.</p>") + '<div class="p8-enopts">' + Object.keys(E.opts).map(function (k) { var O = E.opts[k], l = enLv(s0, k), c = enCost(l + 1), max = l >= 3;
+      return '<div class="p8-enopt" style="--ec:' + ECOL[k] + '"><div class="p8-enhd"><b>' + O.n + "</b><span class=\"p8-pips\">" + [1, 2, 3].map(function (i) { return '<i class="' + (i <= l ? "on" : "") + '"></i>'; }).join("") + "</span></div><small>" + O.d + "</small>" + (max ? '<p class="p8-max">Maxed out</p>' : '<p class="p8-cost">' + Object.keys(c).map(function (q) { var have = q === "ess" ? S.ess | 0 : S.inv[q] || 0; return '<span class="' + (have >= c[q] ? "" : "short") + '">' + (q === "ess" ? '<i class="p8-essi" title="Swamp Essence"></i>' : '<img alt="" src="' + icon(q) + '">') + have + "/" + c[q] + (q === "ess" ? " Essence" : "") + "</span>"; }).join("") + '</p><button type="button" class="btn"' + (enPay(c) && enHas(s0) ? "" : " disabled") + ' data-p8="en:' + s0 + ":" + k + '">' + (l ? "Raise to " + R[l + 1] : cur0 && cur0.k !== k ? "Replace" : "Enchant") + "</button>") + "</div>"; }).join("") + "</div>";
     h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Done</button></div>'; p4Box(h, "#7af0ff"); ALT.just = "";
   }
   function altarAct(s, k) {
-    var l = enLv(s, k) + 1, c = enCost(l); if (l > 3 || !canPay(c)) return; Object.keys(c).forEach(function (q) { S.inv[q] -= c[q]; if (S.inv[q] <= 0) delete S.inv[q]; }); reslot(); hbDirty = true;
+    var l = enLv(s, k) + 1, c = enCost(l); if (l > 3 || !ENCH[s] || !enHas(s) || !enPay(c)) return; enPay(c, true); reslot(); hbDirty = true;
     ALT.just = s; p8().en[s] = { k: k, l: l }; S.st.enchants = (S.st.enchants || 0) + 1; snd("open", l >= 3 ? "Legendary" : "Epic"); popup("Enchanted!", ENCH[s].n + ": " + ENCH[s].opts[k].n + " " + ["", "I", "II", "III"][l], "#7af0ff", "✦");
     if (!reduce) for (var i = 0; i < 24; i++) parts.push({ x: p.x + (Math.random() - 0.5) * 2, y: p.y - Math.random() * 2, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 2, life: 1, max: 1, c: "#aff8ff", s: 2 });
     checkGoals(); save(); altarOpen();
@@ -27512,7 +27519,11 @@
     add({ id: "e:what", sec: "essence", cat: "Swamp Essence", n: "What is Swamp Essence?", c: "#ff7ad8", sub: "Glowing orbs from every creature you defeat", body:
       "<p>Every creature you defeat bursts into little glowing <b>Swamp Essence</b> orbs that drift to you. Stronger creatures give more, elites give two and a half times as much, and bosses give double.</p>" +
       '<p class="cx-orbs"><i style="--o:#4ee6b4"></i> 1 &nbsp; <i style="--o:#a8f05a"></i> 3 &nbsp; <i style="--o:#ffd24a"></i> 7 &nbsp; <i style="--o:#ff7ad8"></i> 17</p>' +
-      "<p>Your Essence fills the bar above your hotbar, and each full bar is a new level. You're level <b>" + me.lv + "</b>, with " + me.have + " of " + me.need + " toward the next.</p>" });
+      "<p>Spend it on <b>enchanting</b> your gear at a Mossy Altar.</p><p>Your Essence fills the bar beside your hunger bar, and each full bar is a new level. You're level <b>" + me.lv + "</b>, with " + me.have + " of " + me.need + " toward the next.</p>" });
+    add({ id: "e:ench", sec: "essence", cat: "Enchanting", n: "Enchanting", c: "#7af0ff", sub: "Spend Essence at a Mossy Altar", body:
+      "<p>At a <b>Mossy Altar</b>, spend Swamp Essence to enchant your gear: weapon, pick, armor, bow and fishing rod. Charms and other items can't be enchanted.</p><p>Each piece takes one enchantment, up to level III; picking the other one replaces it. Level III also needs 3 Dream Shards. Spending Essence lowers your Essence level.</p>" +
+      cxRows([["Level I", EN_ESS[1] + " Essence"], ["Level II", EN_ESS[2] + " Essence"], ["Level III", EN_ESS[3] + " Essence and 3 Dream Shards"]]) +
+      Object.keys(ENCH).map(function (sl) { return "<h4>" + cxE(ENCH[sl].n) + "</h4>" + cxRows(Object.keys(ENCH[sl].opts).map(function (k) { return [ENCH[sl].opts[k].n, cxE(ENCH[sl].opts[k].d)]; })); }).join("") });
     add({ id: "e:lv", sec: "essence", cat: "Swamp Essence", n: "Level table", c: "#ffd24a", sub: "How much Essence each level takes", body: cxRows(lvRows) });
     add({ id: "e:val", sec: "essence", cat: "Swamp Essence", n: "Essence by creature", c: "#a8f05a", sub: "About how much each one gives", body: cxRows(foes.map(function (k) { return [ENEMY[k].n, "about " + essVal(Math.round(ENEMY[k].hp * dmul))]; }).concat(Object.keys(BOSS).map(function (k) { return [BOSS[k].n + " (boss)", "about " + essVal(Math.round(BOSS[k].hp * dmul), false, true)]; }))) });
     // ---- Controls ----
@@ -27613,7 +27624,7 @@
   function p8DmgMul() { return (skHas("claw") ? 1.1 : 1) * (skHas("claw2") && isNight(S.time) ? 1.15 : 1) * (1 + 0.1 * enLv("wpn", "sharp")); }
   function p8HurtMul() { return (skHas("hide") ? 0.9 : 1) * (1 - 0.08 * enLv("arm", "ward")); }
   function p8SpdMul() { return (skHas("eye2") && cave ? 1.12 : 1) * (1 + 0.05 * enLv("arm", "fleet")); }
-  function p8BiteMul() { var wet = S.wx && S.wx.n > 0.3; return (skHas("lure") ? 0.85 : 1) * (skHas("lure2") ? 0.85 : 1) * (skHas("sea") && OCS ? 0.8 : 1) * (skHas("sea2") && wet ? 0.75 : 1); }
+  function p8BiteMul() { var wet = S.wx && S.wx.n > 0.3; return (1 - 0.12 * enLv("rod", "bite")) * (skHas("lure") ? 0.85 : 1) * (skHas("lure2") ? 0.85 : 1) * (skHas("sea") && OCS ? 0.8 : 1) * (skHas("sea2") && wet ? 0.75 : 1); }
   function p8CropMul() { var wet = S.wx && S.wx.n > 0.3; return (skHas("grow") ? 1.1 : 1) * (skHas("grow2") ? 1.12 : 1) * (skHas("moon") && isNight(S.time) ? 1.2 : 1) * (skHas("moon2") && wet ? 1.2 : 1); }
   function p8FosMul() { return (skHas("eye") ? 2 : 1) * (1 + 0.5 * enLv("pick", "luck")); }
   function p8Kill(e) {   // a defeated creature: heal perks, and sometimes its Croak Card

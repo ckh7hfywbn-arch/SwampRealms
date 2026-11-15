@@ -3075,3 +3075,6 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 .cx-moreb{margin:6px 2px 2px;padding:9px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--cx) 55%,transparent);background:none;color:#eaf3ea;font:800 .82rem Nunito,system-ui,sans-serif;cursor:pointer}
 .cx-moreb:focus-visible{outline:2px solid #f2c14e;outline-offset:2px}
 @media(pointer:coarse){.cx-q{font-size:16px}}
+/* enchanting: five gear plinths, and the Essence orb on the cost line */
+.p8-plinths{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}
+.p8-essi{display:inline-block;width:14px;height:14px;margin:0 3px 0 1px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#d6fff2 0,#4ee6b4 38%,#8a2a72 100%);box-shadow:0 0 6px #4ee6b4}
