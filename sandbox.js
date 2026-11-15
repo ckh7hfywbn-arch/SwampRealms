@@ -27622,13 +27622,16 @@
       add({ id: "c:o" + k, sec: "creatures", cat: "Sea creatures", n: d.n, ico: d.drops && d.drops[0] ? d.drops[0][0] : null, c: d.g || d.c || "#4fd0e8", sub: "Health " + d.hp + (d.dmg ? " · hits for " + d.dmg : ""), body:
         cxRows([["Health", d.hp], ["Hits for", d.dmg || ""], ["Where", "Under the Brinebog Sea (dive from Croaker's Pier)"], ["Drops", (d.drops || []).filter(function (q) { return ITEMS[q[0]]; }).map(function (q) { return cxIc(q[0]) + cxE(ITEMS[q[0]].n) + " (" + Math.round(q[3] * 100) + "%)"; }).join("<br>")], ["Swamp Essence", "about " + essVal(d.hp, false, !!d.boss)]]) }); });
     // ---- Items ----
-    ORDER.forEach(function (k) {
+    var cxItem = function (k) {
       var I = ITEMS[k]; if (!I || !I.n || I.tile !== undefined && !I.decor && TILES[I.tile] && seenN[TILES[I.tile].n]) return;
       var rs = cxRecipesFor(k), src = cxSources(k), cat = cxItemCat(k), d0 = I.d || (rs[0] && rs[0].d) || "";
       add({ id: "i:" + k, sec: "items", cat: cat, n: I.n, ico: k, c: "#ffd24a", sub: rs.length ? cxStn(rs[0]) : src.length ? src[0].replace(/<[^>]+>/g, "") : "Found while exploring", body:
         (d0 ? "<p>" + cxE(d0) + "</p>" : "") + cxRows([["Food", I.food ? "Fills " + I.food + (I.heal ? ", heals " + I.heal : "") : ""], ["Summons", I.summon && BOSS[I.summon] ? cxE(BOSS[I.summon].n) : ""]]) +
           (rs.length ? "<h4>How to make it</h4>" + cxHowMake(rs) : "") + (src.length ? "<h4>Where to find it</h4><ul class=\"cx-ul\">" + src.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ul>" : rs.length ? "" : "<p class=\"cx-sm\">This one isn't crafted. You find it while exploring.</p>") + cxUsedIn(k) });
-    });
+    };
+    ORDER.forEach(cxItem);
+    var cxHave = {}; D.forEach(function (e) { cxHave[e.id] = 1; if (e.sec === "blocks" && e.ico) cxHave["i:" + e.ico] = 1; });
+    RECIPES.concat(DECOR).forEach(function (r) { if (r.out) Object.keys(r.out).forEach(function (k) { if (ITEMS[k] && !cxHave["i:" + k]) { cxHave["i:" + k] = 1; cxItem(k); } }); });   // things made by a recipe but not in the item list (homestead buildings...)
     // ---- Crafting & stations ----
     Object.keys(STATIONS).forEach(function (k) { var Sn = STATIONS[k], L = RECIPES.concat(DECOR).filter(function (r) { return stnOf(r) === k; });
       add({ id: "s:" + k, sec: "craft", cat: "Stations", n: Sn.n, ico: Sn.ic, c: Sn.c, sub: L.length + " recipes", body: "<p>" + cxE(Sn.d) + "</p><p>Place it, then tap it (or press F next to it) to open it.</p>" + cxRows([["How to make it", cxRecipesFor(Sn.ic).length ? cxHowMake(cxRecipesFor(Sn.ic)) : ""]]) +
@@ -27666,7 +27669,7 @@
     return D;
   }
   function cxOpen(sec, sel) {
-    if (!p4Open(292)) return; CX.data = cxBuild(); if (sec) { CX.sec = sec; CX.cat = ""; } if (sel !== undefined) CX.sel = sel; CX.q = ""; CX.more = 0; cxRender(true); uiSnd("open");
+    if (!p4Open(292)) return; CX.data = cxBuild(); if (sec) { CX.sec = sec; CX.cat = ""; } if (sel !== undefined) CX.sel = sel; CX.q = ""; CX.more = 0; CX.hist = []; cxRender(true); uiSnd("open");
   }
   function cxList() {
     var q = CX.q.trim().toLowerCase();
@@ -27701,7 +27704,7 @@
       root = box.querySelector(".cx-root"); root.querySelector("[data-cxq]").value = CX.q; parts = null;
       if (!matchMedia("(pointer:coarse)").matches) root.querySelector("[data-cxq]").focus({ preventScroll: true });
     }
-    box.style.setProperty("--qc", col); root.style.setProperty("--cx", col); root.classList.toggle("has-sel", !!sel);
+    box.style.setProperty("--qc", col); root.style.setProperty("--cx", col); root.classList.toggle("has-sel", !!sel); root.classList.toggle("has-hist", !!(CX.hist && CX.hist.length));
     [].forEach.call(root.querySelectorAll("[data-cxs]"), function (b) { var on = !CX.q && b.getAttribute("data-cxs") === CX.sec; b.classList.toggle("on", on); if (on && parts === "list" && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
     var lst = root.querySelector(".cx-list"), card = root.querySelector(".cx-card");
     if (parts !== "card") { var keep = parts === "more" ? lst.scrollTop : 0; lst.innerHTML = cxListHtml(); lst.scrollTop = keep; }
@@ -27713,16 +27716,26 @@
     var L = [].slice.call($("sbxStoryBox").querySelectorAll("img[data-ic]")).filter(function (im) { var u = CX.ic[im.getAttribute("data-ic")]; if (!u) return true; im.src = u; im.removeAttribute("data-ic"); return false; }), i = 0;   // already drawn: in place right now
     (function step() { if (storyOpen !== 292) return; var n = 0; while (i < L.length && n < 30) { var im = L[i++], ik = im.getAttribute("data-ic"); try { var iu = CX.ic[ik] || (CX.ic[ik] = icon(ik)); im.src = iu; } catch (e) {} im.removeAttribute("data-ic"); n++; } if (i < L.length) requestAnimationFrame(step); })();
   }
+  // BACK goes to the page you were on before, one step at a time: every card you open from another card (or from a search) is remembered.
+  function cxPush() { if (!CX.hist) CX.hist = []; if (CX.sel) { CX.hist.push({ sec: CX.sec, cat: CX.cat, sel: CX.sel, q: CX.q }); if (CX.hist.length > 40) CX.hist.shift(); } }
+  function cxSetQ(q) { CX.q = q; var qi = $("sbxStoryBox").querySelector("[data-cxq]"); if (qi && qi.value !== q) qi.value = q; }
   function cxAct(a) {
     var part = "list";
-    if (a.indexOf("sec:") === 0) { CX.sec = a.slice(4); CX.cat = ""; CX.sel = ""; CX.more = 0; if (CX.q) { CX.q = ""; var qi = $("sbxStoryBox").querySelector("[data-cxq]"); if (qi) qi.value = ""; } part = "both"; }
+    if (a.indexOf("sec:") === 0) { CX.sec = a.slice(4); CX.cat = ""; CX.sel = ""; CX.more = 0; CX.hist = []; if (CX.q) cxSetQ(""); part = "both"; }
     else if (a.indexOf("cat:") === 0) { CX.cat = a.slice(4); CX.more = 0; }
     else if (a === "more") { CX.more = (CX.more || CXPAGE) + CXPAGE; part = "more"; }
-    else if (a.indexOf("sel:") === 0) { CX.sel = a.slice(4); part = "card"; }
-    else if (a.indexOf("go:") === 0) { var id = a.slice(3), e = CX.data.filter(function (x) { return x.id === id; })[0]; if (e) { var jump = CX.q || e.sec !== CX.sec || (CX.cat && CX.cat !== e.cat); CX.sec = e.sec; CX.sel = id; if (jump) { CX.cat = ""; CX.more = 0; if (CX.q) { CX.q = ""; var qj = $("sbxStoryBox").querySelector("[data-cxq]"); if (qj) qj.value = ""; } part = "both"; } else part = "card"; } }
-    else if (a === "back") { CX.sel = ""; part = "card"; }
+    else if (a.indexOf("sel:") === 0) { var nid = a.slice(4); if (nid === CX.sel) return; cxPush(); CX.sel = nid; part = "card"; }
+    else if (a.indexOf("go:") === 0) { var id = a.slice(3), e = CX.data.filter(function (x) { return x.id === id; })[0];
+      if (!e && id.indexOf("i:") === 0) { var ik = id.slice(2); e = CX.data.filter(function (x) { return x.sec === "blocks" && x.ico === ik; })[0]; if (e) id = e.id; }
+      if (!e && id.indexOf("i:") === 0) { var ik2 = id.slice(2), rs2 = cxRecipesFor(ik2); if (rs2.length) { e = { id: id, sec: "items", cat: "Homestead & buildings", n: (ITEMS[ik2] && ITEMS[ik2].n) || rs2[0].n, ico: ITEMS[ik2] && ITEMS[ik2].n ? ik2 : null, c: "#ffd24a", sub: cxStn(rs2[0]), body: (rs2[0].d ? "<p>" + cxE(rs2[0].d) + "</p>" : "") + "<h4>How to make it</h4>" + cxHowMake(rs2) }; CX.data.push(e); } } if (e) { cxPush(); var jump = CX.q || e.sec !== CX.sec || (CX.cat && CX.cat !== e.cat); CX.sec = e.sec; CX.sel = id; if (jump) { CX.cat = ""; CX.more = 0; if (CX.q) cxSetQ(""); part = "both"; } else part = "card"; } }
+    else if (a === "back") {
+      var H2 = CX.hist && CX.hist.pop();
+      if (H2) { var listMoved = H2.sec !== CX.sec || H2.cat !== CX.cat || H2.q !== CX.q; CX.sec = H2.sec; CX.cat = H2.cat; CX.sel = H2.sel; if (H2.q !== CX.q) cxSetQ(H2.q); CX.more = 0; part = listMoved ? "both" : "card"; }
+      else { CX.sel = ""; part = "card"; }
+    }
     uiSnd("select"); cxRender(false, part === "both" ? null : part);
   }
+
 
   // ---------- #87 SKILL TREES: mining, fishing, farming and combat, each with two branches ----------
   var SKILLS = {

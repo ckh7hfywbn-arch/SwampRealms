@@ -3090,3 +3090,4 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 @media(max-width:600px){.sbx-mtop b{font-size:.95rem;max-width:48vw}.sbx-mtop span{display:none}}
 @media(max-width:600px){.sbx-mtop{flex-wrap:wrap;row-gap:8px}.sbx-mtop b{order:1;flex:0 1 auto}.sbx-mtop .sbx-x{order:2;margin-left:auto}.sbx-mmine{order:3;flex-basis:100%;max-width:max-content}.sbx-mctl{top:calc(max(10px,env(safe-area-inset-top)) + 100px)}}
 @media(max-width:600px){.sbx-mmine{position:absolute;left:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);flex-basis:auto}}
+.cx-root.has-hist .cx-back{display:inline-block}
