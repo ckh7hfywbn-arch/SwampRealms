@@ -12362,9 +12362,9 @@
     return F.cmap;
   }
   function contAtCell(x, y) {   // { kind: "deco" | "chest", ... } for a cell of the room you are in
-    var F = cave && cave.F; if (!F || F.isle || x < 0 || y < 0 || x >= F.w || y >= F.h) return null; var i = y * F.w + x, nd = F.node[i];
-    if (nd && TILES[nd] && TILES[nd].kind === "lootchest") return { kind: "chest", i: i, x: x, y: y, id: nd, n: cave.bld ? (BCHEST[cave.bld.kind] ? BCHEST[cave.bld.kind].n.replace(/^The /, "") : "Witch's Chest") : "Cave Chest" };
-    var e = contMap(F)[i]; if (e) return { kind: "deco", i: i, x: x, y: y, id: e.id, type: contTypeOf(e.id), n: TILES[e.id].n };
+    var F = cave && cave.F; if (!F || x < 0 || y < 0 || x >= F.w || y >= F.h) return null; var i = y * F.w + x, nd = F.node[i];
+    if (nd && TILES[nd] && TILES[nd].kind === "lootchest") return { kind: "chest", i: i, x: x, y: y, id: nd, n: F.isle ? "Pirate Chest" : cave.bld ? (BCHEST[cave.bld.kind] ? BCHEST[cave.bld.kind].n.replace(/^The /, "") : "Witch's Chest") : "Cave Chest" };
+    if (F.isle) return null; var e = contMap(F)[i]; if (e) return { kind: "deco", i: i, x: x, y: y, id: e.id, type: contTypeOf(e.id), n: TILES[e.id].n };
     return null;
   }
   function contNear() {   // the closest container within reach of your feet
@@ -12385,7 +12385,8 @@
       if (!L) {
         first = true; L = F.cont[c.i] = {};
         var list;
-        if (cave.bld && cave.bld.kind === "witchhut") list = witchLootList();
+        if (cave.isle) list = isleChestList();   // ISLAND RAIDS: pirate chests can be searched too (once the crew is beaten)
+        else if (cave.bld && cave.bld.kind === "witchhut") list = witchLootList();
         else if (cave.bld && BCHEST[cave.bld.kind]) list = bldLootList();
         else { var ct = cave.f < 5 ? 0 : cave.f < 12 ? 1 : 2; list = rollLoot("chest", caveB(), ct); loreChest(["cave", "b" + caveB()], 0.6); }
         list.forEach(function (q) { if (ITEMS[q[0]]) L[q[0]] = (L[q[0]] || 0) + q[1]; });
@@ -12407,6 +12408,7 @@
   }
   function openCont(c) {
     var el = $("sbxStory"); if (!el || !c) return;
+    if (c.kind === "chest" && cave && cave.isle && ISLW && ISLW.sealed) { nag("A pirate curse seals this chest. Beat every wave of the island's crew first."); return; }
     if (c.kind === "chest" && cave && cave.bld && cave.bld.kind === "witchhut" && !(cave.F.cont && cave.F.cont[c.i]) && !(S.whut[cave.bld.id] >= (S.days | 0) - 1)) {   // the chest is hexed until you beat its owner
       nag("The Witch's Chest is hexed shut! Beat the Bog Witch outside her hut first."); chips(c.x + 0.5, c.y + 0.5, "#b06aff", 10, 4); return; }
     if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && storyOpen < 0) closePanel();
@@ -18398,6 +18400,7 @@
     var F = cave.F, i = y * F.w + x, id = F.node[i], td = TILES[id]; F.node[i] = 0; S.st.mined++; S.st.cmined++; caveStress(x, y);
     if (!VEIN.busy && td && td.kind === "ore" && veinOn()) veinStart(x, y, id, true);   // VEIN MINING in caves
     chips(x + 0.5, y + 0.5, td.kind === "ore" ? td.c2 : td.c, td.kind === "ore" ? 6 : 3, 6); debris(x + 0.5, y + 0.5, id); matBreak(id);
+    if (td.kind === "lootchest" && F.cont && F.cont[i]) { var LO = F.cont[i]; delete F.cont[i]; Object.keys(LO).forEach(function (k) { if (LO[k] > 0 && ITEMS[k]) dropAt(k, LO[k], x, y); }); chips(x + 0.5, y + 0.5, "#f2c14e", 12, 6); return; }   // an opened chest: what is still inside spills out (no new loot)
     if ((td.kind === "lootchest" || td.kind === "lootpot") && cave.isle) { isleBreak(x, y, td); return; }   // ISLAND RAIDS
     if (td.kind === "lootchest" && cave.bld && cave.bld.kind === "witchhut") { witchLoot(x, y); return; }
     if (td.kind === "lootchest" && cave.bld && BCHEST[cave.bld.kind]) { bldLoot(x, y); return; }
@@ -23141,6 +23144,12 @@
     if (W2.wave < W2.of) { isleWave(); W2.t = 3.2; return; }
     W2.done = true; W2.sealed = false; ocS().raid[cave.isle] = ocToday(); S.st.raids = (S.st.raids || 0) + 1; S.st["raids" + cave.tier] = (S.st["raids" + cave.tier] || 0) + 1;
     popup("Island cleared!", "The curse on the treasure chests lifts. Pry them open with your pick.", TIER_C[cave.tier], "★"); snd("open", "Epic"); checkGoals(); save();
+  }
+  function isleChestList() {   // what a pirate chest holds (the same as breaking it used to give)
+    var t = Math.max(1, cave.tier), R2 = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }, L = [["t_chest" + t, 1], ["doubloon", R2(2, 4 + t * 2)]];
+    if (Math.random() < 0.15 * t) L.push(["t_gems", 1]); if (t >= 3 && Math.random() < 0.4) L.push(["pearl", 1]);
+    popup("Treasure!", ITEMS["t_chest" + t].n, TIER_C[t], "✦"); snd("open", t >= 3 ? "Epic" : "Rare"); S.st.ichests = (S.st.ichests || 0) + 1; checkGoals();
+    return L;
   }
   function isleBreak(x, y, td) {   // a chest or crate on an island
     var t = Math.max(1, cave.tier), R2 = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); };
