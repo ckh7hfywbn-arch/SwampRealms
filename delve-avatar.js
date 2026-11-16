@@ -397,9 +397,9 @@ var DelveAv = (function () {
     else if (t === 5) { if (!flat) { B.p(x0 + 1, Y(5), P.t); B.p(x0 + hw - 2, Y(5), P.t); } B.p(10, Y(6), P.t); B.p(11, Y(6), P.t); B.p(10, Y(5), P.t); B.p(11, Y(5), P.t); B.row(hy, hw, P.t); B.p(11, hy - (flat ? 1 : 2), P.t2); }
     else if (t === 6) { if (!flat) { B.p(x0 - 1, Y(3), P.t); B.p(x0 - 2, Y(4), P.t); B.p(x0 - 2, Y(5), P.t2); B.p(x0 + hw, Y(3), P.t); B.p(x0 + hw + 1, Y(4), P.t); B.p(x0 + hw + 1, Y(5), P.t2); } B.r(10, hy - (flat ? 1 : 2), 2, 1, P.t); }
   }
-  // HELMET FIT per animal: the frog's helmet sits on its skull below the eye bumps (the eyes are drawn back over it), the elephant's is wider
-  // for its big head, and the donkey's ears get armored sleeves in the helmet's colours (see the ear lines below)
-  var HFIT = { frog: { hy: 9, top: 3 }, elephant: { hw: 10 }, donkey: { flat: 1 } };
+  // HELMET FIT per animal: the elephant's is wider for its big head, and the donkey's is low with its ears in armored sleeves in the helmet's
+  // colours (see the ear lines below). Every other animal (the frog included) wears it as drawn.
+  var HFIT = { elephant: { hw: 10 }, donkey: { flat: 1 } };
   function helmFit(o, A) { var f = HFIT[o.animal] || {}; return { hy: f.hy || A.hy, hw: f.hw || A.hw, top: f.top || 0, flat: !!f.flat }; }
   function armBoot(B, x, bot, side, P, front) {   // a boot: shaft, foot and a dark sole; x = the leg's left column
     var fx = front ? (side > 0 ? x - 1 : x) : x, w = front ? 4 : 3, sx = front ? (side > 0 ? fx + 1 : fx) : x;
