@@ -330,14 +330,14 @@
   deco("realmgate", "Realm Gate", "#8affe0", function (rect) {   // the small pedestal; the arch is drawn big by sandbox.js
     rect(1, 10, 14, 6, "#3a3450"); rect(1, 10, 14, 1, "#5a5274"); rect(3, 6, 10, 4, "#2a2440"); rect(6, 2, 4, 4, "#8affe0"); rect(7, 3, 2, 2, "#ffffff"); rect(2, 12, 2, 2, "#c06aff"); rect(12, 12, 2, 2, "#c06aff");
   }, 8, ["140,255,224", 2.4, 0.16]);
-  item("arrow", "Arrow", {}); item("firearrow", "Fire Arrow", {});   // ammo for the Bogwood Bow and Ember Longbow
+  item("arrow", "Arrow", {}); item("firearrow", "Fire Arrow", {});   // ammo for the Bogwood Bow and Ember Bow
   deco("brewstand", "Brewing Stand", "#c06aff", function (rect) {   // a little rack of bubbling bottles over a flame
     rect(1, 14, 14, 2, "#5a4a52"); rect(7, 4, 2, 10, "#8a6a3a"); rect(3, 4, 10, 1, "#8a6a3a");
     rect(2, 6, 3, 5, "#cfeaf2"); rect(2, 8, 3, 3, "#ff5a6a"); rect(11, 6, 3, 5, "#cfeaf2"); rect(11, 8, 3, 3, "#4ee6b4");
     rect(5, 10, 6, 4, "#3a3450"); rect(6, 9, 4, 2, "#c06aff"); rect(7, 12, 2, 2, "#ff8a3d"); rect(7, 0, 1, 2, "#e8d0ff", 0.6); rect(9, 1, 1, 2, "#e8d0ff", 0.5);
   }, 5, ["192,106,255", 1.6, 0.1]);
   item("bottle", "Glass Bottle", {});
-  [["tonic_heal", "Healing Tonic"], ["tonic_mine", "Miner's Draught"], ["tonic_speed", "Swiftfoot Brew"], ["tonic_night", "Night Eye Elixir"], ["tonic_fire", "Emberguard Potion"], ["tonic_hide", "Ironhide Brew"], ["tonic_fish", "Angler's Brew"], ["tonic_leap", "Leaping Brew"]].forEach(function (q) { item(q[0], q[1], {}); });
+  [["tonic_heal", "Healing Potion"], ["tonic_mine", "Mining Potion"], ["tonic_speed", "Speed Potion"], ["tonic_night", "Night Vision Potion"], ["tonic_fire", "Fire Resistance Potion"], ["tonic_hide", "Resistance Potion"], ["tonic_fish", "Fishing Potion"], ["tonic_leap", "Leaping Potion"]].forEach(function (q) { item(q[0], q[1], {}); });
   mat("hexdust", "Hex Dust", "#b06aff");   // dropped by Bog Witches
   deco("jeweltable", "Jeweler's Table", "#e0a0ff", function (rect) {   // a small stone-topped table with a loupe and gems
     rect(1, 7, 14, 2, "#8e969b"); rect(1, 7, 14, 1, "#c4ccd1"); rect(2, 9, 2, 7, "#6e431f"); rect(12, 9, 2, 7, "#6e431f"); rect(4, 12, 8, 1, "#6e431f");
@@ -479,8 +479,8 @@
   [["lodestone", "Lodestone"], ["goldfeather", "Golden Feather"], ["owlfeather", "Snowy Owl Feather"], ["springroot", "Springroot"], ["leechfang", "Leech Fang"],
    ["trolltusk", "Troll Tusk"], ["ancientcoin", "Ancient Coin"], ["starshard", "Star Shard"], ["mandrake", "Mandrake Root"]].forEach(function (q) { item(q[0], q[1], { treasure: 1 }); tr(q[0]); });
   // potions (8): drawn as bottles in their own colour
-  [["tonic_regen", "Mending Tonic"], ["tonic_glow", "Glow Tonic"], ["tonic_feather", "Featherfall Tonic"], ["tonic_luck", "Fortune Tonic"], ["tonic_grow", "Growth Tonic"],
-   ["tonic_gill", "Gillweed Tonic"], ["tonic_brute", "Brute Tonic"], ["tonic_grand", "Grand Healing Tonic"]].forEach(function (q) { item(q[0], q[1], {}); tr(q[0]); });
+  [["tonic_regen", "Regeneration Potion"], ["tonic_glow", "Glow Potion"], ["tonic_feather", "Slow Falling Potion"], ["tonic_luck", "Luck Potion"], ["tonic_grow", "Growth Potion"],
+   ["tonic_gill", "Swimming Potion"], ["tonic_brute", "Strength Potion"], ["tonic_grand", "Greater Healing Potion"]].forEach(function (q) { item(q[0], q[1], {}); tr(q[0]); });
   // meals (12): hunger filled, health healed
   food("swampsalad", "Swamp Salad", 24, 6, 1); food("redcapsoup", "Redcap Soup", 30, 8, 1); food("glowbroth", "Glowcap Broth", 30, 12, 1); food("buttermash", "Buttered Mash", 36, 8, 1);
   food("bogkebab", "Bog Kebab", 38, 12, 1); food("emberkebab", "Ember Kebab", 42, 14, 1); food("carproll", "Crystal Carp Roll", 44, 18, 1); food("eelcurry", "Magma Eel Curry", 60, 24, 1);
@@ -681,7 +681,7 @@
   dfood("swampsushi", "Swamp Sushi", 55, 35, ["gill", 300]);
   dfood("emberpopcorn", "Ember Popcorn", 35, 12, ["fire", 240]);
   dfood("croakersoup", "Croaker's Secret Soup", 90, 50, ["regen", 90]);
-  ["tonic_star", "tonic_titan", "tonic_zephyr", "tonic_blood"].forEach(function (k, i) { item(k, ["Starlight Elixir", "Titan Tonic", "Zephyr Draught", "Bloodmoon Brew"][i], { disc: 1 }); tr(k); DISC.push(k); });
+  ["tonic_star", "tonic_titan", "tonic_zephyr", "tonic_blood"].forEach(function (k, i) { item(k, ["Starlight Potion", "Titan Potion", "Feather Potion", "Blood Moon Potion"][i], { disc: 1 }); tr(k); DISC.push(k); });
   // the secret recipes: [station, three ingredients, result, how many, a riddle for the experiment window]
   var SECRETS = [
     ["cook", ["glowshroom", "rawmeat", "spore"], "glowgoulash", 1, "Something that glows, something that walked, something dug from the dark."],
@@ -1083,14 +1083,14 @@
   item("fishlog", "Croako's Fishing Log", { gem: "#7a4a26", book: 1, d: "A battered leather book from Croako. Every fish you catch is written in it. Pick it on your hotbar to read it." });
   food("brinemackerel", "Brine Mackerel", 9, 2); food("kelpsnapper", "Kelp Snapper", 12, 4); food("goldgilly", "Golden Gilly", 24, 18); food("piersushi", "Pier Sushi", 42, 14, 1);   // fished off Croaker's Pier
   item("kelpwrap", "Kelp Wrap", { food: 28, gem: "#3f9a4c", cooked: 1 }); item("seastew", "Bog Sea Stew", { food: 60, gem: "#ff9a5a", cooked: 1 });
-  item("scubasuit", "Frogskin Scuba Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Safe to 45 m (20 m without it). Air Tanks give you more air." });
+  item("scubasuit", "Frogskin Diving Suit", { gem: "#2fb59a", d: "A snug frogskin wetsuit with a brass-rimmed mask. Safe to 45 m (20 m without it). Air Tanks give you more air." });
   item("tank1", "Reed Air Tank", { gem: "#7fbf6a", d: "+45 seconds of air." });
   item("tank2", "Brass Air Tank", { gem: "#d9a53a", d: "+90 seconds of air." });
   item("tank3", "Pearl Air Tank", { gem: "#f4e6ff", d: "+160 seconds of air." });
   item("tank4", "Deepglass Air Tank", { gem: "#7af0ff", d: "+260 seconds of air." });
-  item("suit2", "Brassback Diving Suit", { gem: "#d9a53a", d: "A riveted brass helmet over a tough eelskin suit. Holds out the pressure to 85 m." });
-  item("suit3", "Pearlplate Deep Suit", { gem: "#f4e6ff", d: "Pearl-plated and lined with urchin spines. Safe to 125 m, and you breathe slower (+20 s of air)." });
-  item("suit4", "Gatorhide Abyss Suit", { gem: "#7af0ff", d: "Old gator hide, a glowing lure on the helmet and black pearls in the seams. Safe all the way to the bottom of the trench." });
+  item("suit2", "Brass Diving Suit", { gem: "#d9a53a", d: "A riveted brass helmet over a tough eelskin suit. Holds out the pressure to 85 m." });
+  item("suit3", "Pearl Diving Suit", { gem: "#f4e6ff", d: "Pearl-plated and lined with urchin spines. Safe to 125 m, and you breathe slower (+20 s of air)." });
+  item("suit4", "Gatorhide Diving Suit", { gem: "#7af0ff", d: "Old gator hide, a glowing lure on the helmet and black pearls in the seams. Safe all the way to the bottom of the trench." });
   item("flippers", "Frog Flippers", { gem: "#4ee6b4", d: "Webbed flippers: you swim 30% faster." });
   item("divelamp", "Dive Lantern", { gem: "#ffd23f", d: "A sealed glowing lantern that lights up the deep around you." });
   item("boat_keel", "Gator-Bone Keel", { gem: "#c9b28a", boatpart: 1 }); item("boat_hull", "Hull Planks", { gem: "#9a6a3a", boatpart: 1 });
@@ -1113,10 +1113,10 @@
   R("x_impbrick", "Imp Brick (2)", { impbrick: 2 }, { imphorn: 1, cinder: 1 }, { d: "A hot red brick with an ember glow. Imp Horns drop from Cinder Imps in Ember Bog." });
   R("x_bloomstone", "Bloomstone (2)", { bloomstone: 2 }, { petalsnap: 2, stone: 1 }, { d: "A pink glowing block. Snapper Petals drop from Snapper Lilies in Murkwater." });
   // ocean pack
-  R("x_scubasuit", "Frogskin Scuba Suit", { scubasuit: 1 }, { leather: 6, kelp: 8, glass: 2, pearl: 1 }, { bench: true, d: "Dive below the shallows. A wetsuit and mask in one. Kelp grows in the Brinebog Sea." });
-  R("x_suit2", "Brassback Diving Suit", { suit2: 1 }, { scubasuit: 1, brass: 8, ironingot: 6, glass: 2, eelskin: 3 }, { bench: true, d: "Upgrades your Scuba Suit. Safe to 85 m." });
-  R("x_suit3", "Pearlplate Deep Suit", { suit3: 1 }, { suit2: 1, pearl: 8, seaglass: 8, urchinspine: 6, brass: 6 }, { bench: true, d: "Upgrades your Brassback suit. Safe to 125 m." });
-  R("x_suit4", "Gatorhide Abyss Suit", { suit4: 1 }, { suit3: 1, blackpearl: 3, lurebulb: 2, doubloon: 20, jellygel: 6, eelskin: 6 }, { bench: true, d: "Upgrades your Pearlplate suit. Safe all the way down." });
+  R("x_scubasuit", "Frogskin Diving Suit", { scubasuit: 1 }, { leather: 6, kelp: 8, glass: 2, pearl: 1 }, { bench: true, d: "Dive below the shallows. A wetsuit and mask in one. Kelp grows in the Brinebog Sea." });
+  R("x_suit2", "Brass Diving Suit", { suit2: 1 }, { scubasuit: 1, brass: 8, ironingot: 6, glass: 2, eelskin: 3 }, { bench: true, d: "Upgrades your Scuba Suit. Safe to 85 m." });
+  R("x_suit3", "Pearl Diving Suit", { suit3: 1 }, { suit2: 1, pearl: 8, seaglass: 8, urchinspine: 6, brass: 6 }, { bench: true, d: "Upgrades your Brassback suit. Safe to 125 m." });
+  R("x_suit4", "Gatorhide Diving Suit", { suit4: 1 }, { suit3: 1, blackpearl: 3, lurebulb: 2, doubloon: 20, jellygel: 6, eelskin: 6 }, { bench: true, d: "Upgrades your Pearlplate suit. Safe all the way down." });
   R("x_tank1", "Reed Air Tank", { tank1: 1 }, { fiber: 8, clay: 4, glass: 1, kelp: 2 }, { bench: true, d: "+45 s of air." });
   R("x_tank2", "Brass Air Tank", { tank2: 1 }, { ironingot: 6, brass: 4, glass: 2, kelp: 3 }, { bench: true, d: "+90 s of air." });
   R("x_tank3", "Pearl Air Tank", { tank3: 1 }, { ironingot: 8, pearl: 6, seaglass: 6, brass: 6 }, { bench: true, d: "+160 s of air." });
@@ -1163,14 +1163,14 @@
   R("x_ch_lode", "Lodestone Charm", null, { lodestone: 4, ironingot: 2, rope: 1 }, { charm: "lode", bench: true, bl: 3, d: "Ore you mine sometimes drops one extra. Lodestone hides in chests and pots below the surface." });
   R("x_ch_owl", "Owl Charm", null, { owlfeather: 3, moonstone: 1, rope: 1 }, { charm: "owl", bench: true, bl: 3, d: "See farther in the dark. Snowy Owl Feathers are found in Frostfen chests and pots." });
   R("x_ch_brute", "Ogre Charm", null, { trolltusk: 2, ironingot: 3, rope: 1 }, { charm: "brute", bench: true, bl: 4, d: "Your weapon hits 15% harder. Troll Tusks are found only in the deepest chests." });
-  R("x_tonic_regen", "Mending Tonic", { tonic_regen: 1 }, { bottle: 1, mandrake: 1, marshlily: 2 }, { stn: "brew", d: "Health comes back steadily (3 a second) for 1 minute." });
-  R("x_tonic_glow", "Glow Tonic", { tonic_glow: 1 }, { bottle: 1, glowshroom: 2, firefly: 1 }, { stn: "brew", d: "You glow and light up the dark around you for 5 minutes." });
-  R("x_tonic_feather", "Featherfall Tonic", { tonic_feather: 1 }, { bottle: 1, batwing: 2, fiber: 2 }, { stn: "brew", d: "Fall slowly and take no fall damage for 3 minutes. Hold down to drop fast." });
-  R("x_tonic_luck", "Fortune Tonic", { tonic_luck: 1 }, { bottle: 1, ancientcoin: 1, amber: 1 }, { stn: "brew", d: "Chests, pots and fished-up treasure sometimes give an extra find, for 5 minutes." });
-  R("x_tonic_grow", "Growth Tonic", { tonic_grow: 1 }, { bottle: 1, earthworm: 2, carrot: 1 }, { stn: "brew", d: "Your crops grow 50% faster for 5 minutes." });
-  R("x_tonic_gill", "Gillweed Tonic", { tonic_gill: 1 }, { bottle: 1, bogminnow: 2, fiber: 2 }, { stn: "brew", d: "Swim 60% faster for 4 minutes." });
-  R("x_tonic_brute", "Brute Tonic", { tonic_brute: 1 }, { bottle: 1, rawmeat: 2, pepper: 2 }, { stn: "brew", d: "Your weapon hits 25% harder for 3 minutes." });
-  R("x_tonic_grand", "Grand Healing Tonic", { tonic_grand: 1 }, { bottle: 1, mandrake: 1, starshard: 1, marshlily: 2 }, { stn: "brew", bl: 3, d: "Heals 100 health right away. Star Shards are found only in the deepest chests." });
+  R("x_tonic_regen", "Regeneration Potion", { tonic_regen: 1 }, { bottle: 1, mandrake: 1, marshlily: 2 }, { stn: "brew", d: "Health comes back steadily (3 a second) for 1 minute." });
+  R("x_tonic_glow", "Glow Potion", { tonic_glow: 1 }, { bottle: 1, glowshroom: 2, firefly: 1 }, { stn: "brew", d: "You glow and light up the dark around you for 5 minutes." });
+  R("x_tonic_feather", "Slow Falling Potion", { tonic_feather: 1 }, { bottle: 1, batwing: 2, fiber: 2 }, { stn: "brew", d: "Fall slowly and take no fall damage for 3 minutes. Hold down to drop fast." });
+  R("x_tonic_luck", "Luck Potion", { tonic_luck: 1 }, { bottle: 1, ancientcoin: 1, amber: 1 }, { stn: "brew", d: "Chests, pots and fished-up treasure sometimes give an extra find, for 5 minutes." });
+  R("x_tonic_grow", "Growth Potion", { tonic_grow: 1 }, { bottle: 1, earthworm: 2, carrot: 1 }, { stn: "brew", d: "Your crops grow 50% faster for 5 minutes." });
+  R("x_tonic_gill", "Swimming Potion", { tonic_gill: 1 }, { bottle: 1, bogminnow: 2, fiber: 2 }, { stn: "brew", d: "Swim 60% faster for 4 minutes." });
+  R("x_tonic_brute", "Strength Potion", { tonic_brute: 1 }, { bottle: 1, rawmeat: 2, pepper: 2 }, { stn: "brew", d: "Your weapon hits 25% harder for 3 minutes." });
+  R("x_tonic_grand", "Greater Healing Potion", { tonic_grand: 1 }, { bottle: 1, mandrake: 1, starshard: 1, marshlily: 2 }, { stn: "brew", bl: 3, d: "Heals 100 health right away. Star Shards are found only in the deepest chests." });
   R("x_f_swampsalad", "Swamp Salad", { swampsalad: 1 }, { marshlily: 1, carrot: 1 }, { stn: "cook", d: "Fills 24 hunger and heals 6." });
   R("x_f_redcapsoup", "Redcap Soup", { redcapsoup: 1 }, { redcap: 2, potato: 1 }, { stn: "cook", d: "Fills 30 hunger and heals 8." });
   R("x_f_glowbroth", "Glowcap Broth", { glowbroth: 1 }, { glowshroom: 2, carrot: 1 }, { stn: "cook", d: "Fills 30 hunger and heals 12." });
@@ -1232,30 +1232,30 @@
   R("x_realmgate", "Realm Gate", { realmgate: 1 }, { realmshard: 6, frostrock: 16, ironingot: 6, crystal: 8 }, { bench: true, bl: 4, d: "A great stone arch. Place it in the open, then offer it the boss trophies, the three lights and 8 Realm Shards to wake it. Needs a Frost Workbench." });
   R("x_bow1", "Reed Slingshot", null, { stick: 3, fiber: 4 }, { bow: 1, d: "Shoots Pebbles. Damage 4. Pick it in the hotbar and tap toward a target. Made by hand." });
   R("x_bow2", "Bogwood Bow", null, { planks: 8, rope: 2, fiber: 6 }, { bow: 2, bench: true, d: "Shoots Arrows in a long arc. Damage 11 (17 with Fire Arrows). Needs the Reed Slingshot and a Workbench." });
-  R("x_bow3", "Ember Longbow", null, { planks: 10, ironingot: 4, cinder: 8, ruby: 1 }, { bow: 3, bench: true, bl: 3, d: "A lava-veined longbow with a flat, fast shot. Damage 20 (26 with Fire Arrows). Needs a Cinder Forge Workbench." });
+  R("x_bow3", "Ember Bow", null, { planks: 10, ironingot: 4, cinder: 8, ruby: 1 }, { bow: 3, bench: true, bl: 3, d: "A lava-veined longbow with a flat, fast shot. Damage 20 (26 with Fire Arrows). Needs a Cinder Forge Workbench." });
   R("x_arrow", "Arrows (6)", { arrow: 6 }, { stick: 2, pebble: 1, fiber: 1 }, { d: "Ammo for bows. Made by hand." });
   R("x_firearrow", "Fire Arrows (6)", { firearrow: 6 }, { arrow: 6, cinder: 1, sulfur: 1 }, { d: "+6 damage and sets the target burning for a few seconds. Tap them in your hotbar to load them. Bows use them before plain Arrows. Made by hand." });
   R("x_brewstand", "Brewing Stand", { brewstand: 1 }, { stone: 6, glass: 2, planks: 4 }, { bench: true, d: "Place it, then tap it to brew potions. Made at the Bog Workbench." });
   R("x_bottle", "Glass Bottles (3)", { bottle: 3 }, { glass: 1 }, { stn: "brew", d: "Every potion starts with one. You get the bottle back after drinking." });
-  R("x_tonic_heal", "Healing Tonic", { tonic_heal: 1 }, { bottle: 1, marshlily: 2, redcap: 1 }, { stn: "brew", d: "Heals 40 health right away." });
-  R("x_tonic_mine", "Miner's Draught", { tonic_mine: 1 }, { bottle: 1, glowshroom: 2, spore: 2 }, { stn: "brew", d: "Dig 40% faster for 3 minutes." });
-  R("x_tonic_speed", "Swiftfoot Brew", { tonic_speed: 1 }, { bottle: 1, thistle: 2, carrot: 1 }, { stn: "brew", d: "Walk and swim 25% faster for 3 minutes." });
-  R("x_tonic_night", "Night Eye Elixir", { tonic_night: 1 }, { bottle: 1, firefly: 2, frostbell: 1 }, { stn: "brew", d: "See much farther in the dark, in caves too, for 4 minutes." });
-  R("x_tonic_fire", "Emberguard Potion", { tonic_fire: 1 }, { bottle: 1, emberroot: 2, pepper: 2 }, { stn: "brew", d: "Lava burns you 80% less for 3 minutes." });
-  R("x_tonic_hide", "Ironhide Brew", { tonic_hide: 1 }, { bottle: 1, icecap: 2, frostberry: 2 }, { stn: "brew", d: "Take 20% less damage for 3 minutes." });
-  R("x_tonic_leap", "Leaping Brew", { tonic_leap: 1 }, { bottle: 1, hexdust: 1, frogfrag: 1 }, { stn: "brew", d: "Jump 30% higher for 3 minutes. Hex Dust comes from Bog Witches." });
+  R("x_tonic_heal", "Healing Potion", { tonic_heal: 1 }, { bottle: 1, marshlily: 2, redcap: 1 }, { stn: "brew", d: "Heals 40 health right away." });
+  R("x_tonic_mine", "Mining Potion", { tonic_mine: 1 }, { bottle: 1, glowshroom: 2, spore: 2 }, { stn: "brew", d: "Dig 40% faster for 3 minutes." });
+  R("x_tonic_speed", "Speed Potion", { tonic_speed: 1 }, { bottle: 1, thistle: 2, carrot: 1 }, { stn: "brew", d: "Walk and swim 25% faster for 3 minutes." });
+  R("x_tonic_night", "Night Vision Potion", { tonic_night: 1 }, { bottle: 1, firefly: 2, frostbell: 1 }, { stn: "brew", d: "See much farther in the dark, in caves too, for 4 minutes." });
+  R("x_tonic_fire", "Fire Resistance Potion", { tonic_fire: 1 }, { bottle: 1, emberroot: 2, pepper: 2 }, { stn: "brew", d: "Lava burns you 80% less for 3 minutes." });
+  R("x_tonic_hide", "Resistance Potion", { tonic_hide: 1 }, { bottle: 1, icecap: 2, frostberry: 2 }, { stn: "brew", d: "Take 20% less damage for 3 minutes." });
+  R("x_tonic_leap", "Leaping Potion", { tonic_leap: 1 }, { bottle: 1, hexdust: 1, frogfrag: 1 }, { stn: "brew", d: "Jump 30% higher for 3 minutes. Hex Dust comes from Bog Witches." });
   // ARROW OINTMENTS: tiny vials brewed at the Brewing Stand, then worked into special arrows at a Workbench (6 Arrows + 1 ointment = 6 of them).
   item("vial", "Tiny Vial", {});
-  [["ot_venom", "Bog Venom"], ["ot_numb", "Numbleaf Salve"], ["ot_sleep", "Dreamcap Draught"], ["ot_mark", "Glowmoss Paste"], ["ot_spark", "Sparkoil"], ["ot_blast", "Popper Paste"], ["ot_leech", "Leechroot Tincture"]].forEach(function (q) { item(q[0], q[1], {}); });
+  [["ot_venom", "Venom Oil"], ["ot_numb", "Numbing Oil"], ["ot_sleep", "Sleep Oil"], ["ot_mark", "Glow Oil"], ["ot_spark", "Spark Oil"], ["ot_blast", "Popper Oil"], ["ot_leech", "Leech Oil"]].forEach(function (q) { item(q[0], q[1], {}); });
   [["ar_venom", "Venom Arrow"], ["ar_numb", "Numbing Arrow"], ["ar_sleep", "Sleep Arrow"], ["ar_mark", "Glowmark Arrow"], ["ar_spark", "Spark Arrow"], ["ar_blast", "Popper Arrow"], ["ar_leech", "Leech Arrow"]].forEach(function (q) { item(q[0], q[1], {}); });
   R("x_vial", "Tiny Vials (4)", { vial: 4 }, { glass: 1 }, { stn: "brew", d: "Little vials for arrow ointments. Brewed at a Brewing Stand." });
-  R("x_ot_venom", "Bog Venom", { ot_venom: 1 }, { vial: 1, stinger: 1, redcap: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
-  R("x_ot_numb", "Numbleaf Salve", { ot_numb: 1 }, { vial: 1, icecap: 1, frostberry: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
-  R("x_ot_sleep", "Dreamcap Draught", { ot_sleep: 1 }, { vial: 1, glowshroom: 1, batwing: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
-  R("x_ot_mark", "Glowmoss Paste", { ot_mark: 1 }, { vial: 1, spore: 2, firefly: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
-  R("x_ot_spark", "Sparkoil", { ot_spark: 1 }, { vial: 1, jellygel: 1, quartz: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
-  R("x_ot_blast", "Popper Paste", { ot_blast: 1 }, { vial: 1, sulfur: 1, cinder: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
-  R("x_ot_leech", "Leechroot Tincture", { ot_leech: 1 }, { vial: 1, leechfang: 1, marshlily: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_venom", "Venom Oil", { ot_venom: 1 }, { vial: 1, stinger: 1, redcap: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_numb", "Numbing Oil", { ot_numb: 1 }, { vial: 1, icecap: 1, frostberry: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_sleep", "Sleep Oil", { ot_sleep: 1 }, { vial: 1, glowshroom: 1, batwing: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_mark", "Glow Oil", { ot_mark: 1 }, { vial: 1, spore: 2, firefly: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_spark", "Spark Oil", { ot_spark: 1 }, { vial: 1, jellygel: 1, quartz: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_blast", "Popper Oil", { ot_blast: 1 }, { vial: 1, sulfur: 1, cinder: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
+  R("x_ot_leech", "Leech Oil", { ot_leech: 1 }, { vial: 1, leechfang: 1, marshlily: 1 }, { stn: "brew", d: "An arrow ointment. Work it into Arrows at a Workbench." });
   R("x_ar_venom", "Venom Arrows (6)", { ar_venom: 6 }, { arrow: 6, ot_venom: 1 }, { bench: true, d: "Poisons the target: damage over time for 5 seconds, stacking up to 3 times. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
   R("x_ar_numb", "Numbing Arrows (6)", { ar_numb: 6 }, { arrow: 6, ot_numb: 1 }, { bench: true, d: "The target moves and attacks at half speed for 4 seconds (bosses at 70%). Tap it in your hotbar to load it into your bow. Made at a Workbench." });
   R("x_ar_sleep", "Sleep Arrows (6)", { ar_sleep: 6 }, { arrow: 6, ot_sleep: 1 }, { bench: true, d: "Puts the target to sleep for 4 seconds, until something hits it. Bosses shrug it off. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
@@ -1263,7 +1263,7 @@
   R("x_ar_spark", "Spark Arrows (6)", { ar_spark: 6 }, { arrow: 6, ot_spark: 1 }, { bench: true, d: "A spark jumps from the target to the 2 nearest creatures for 60% damage. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
   R("x_ar_blast", "Popper Arrows (6)", { ar_blast: 6 }, { arrow: 6, ot_blast: 1 }, { bench: true, d: "Bursts where it lands, even on a wall, hurting creatures close by. Never breaks blocks. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
   R("x_ar_leech", "Leech Arrows (6)", { ar_leech: 6 }, { arrow: 6, ot_leech: 1 }, { bench: true, d: "Each hit heals you for a quarter of its damage. Tap it in your hotbar to load it into your bow. Made at a Workbench." });
-  R("x_tonic_fish", "Angler's Brew", { tonic_fish: 1 }, { bottle: 1, earthworm: 2, catfish: 1 }, { stn: "brew", d: "Fish bite 40% sooner for 5 minutes." });
+  R("x_tonic_fish", "Fishing Potion", { tonic_fish: 1 }, { bottle: 1, earthworm: 2, catfish: 1 }, { stn: "brew", d: "Fish bite 40% sooner for 5 minutes." });
   R("x_jeweltable", "Jeweler's Table", { jeweltable: 1 }, { stone: 8, planks: 4, quartz: 2 }, { bench: true, d: "Tap it to set gems into your weapon, armor, pick and bow. Each socket costs the gem and a Quartz Shard (from Geodes). Made at the Bog Workbench." });
   R("x_stain_walnut", "Walnut Stain (12)", { stain_walnut: 12 }, { wood: 2, mud: 1 }, { d: "A rich dark brown. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
   R("x_stain_ebony", "Ebony Stain (12)", { stain_ebony: 12 }, { wood: 1, charcoal: 1 }, { d: "Nearly black. Hold it and tap or drag across placed wood (Planks, doors, ladders, fences, wooden furniture and walls) to colour it. One use per block. Made by hand." });
@@ -1809,7 +1809,7 @@
   // ====================================================================================================
   // MALCRUOR PACK: the corrupt world's own things. Nearly everything is a corrupted version of something from the SwampRealms (black wood
   // with red veins, black stone, rotten mud, blood-red ore and gems, thorny sticks and fibre), plus a few things only Malcruor has (Bloodcap,
-  // Gloomberries, the Purging Draught that pushes the corruption back). In Malcruor, breaking a block gives its Malcruor version
+  // Gloomberries, the Purging Potion that pushes the corruption back). In Malcruor, breaking a block gives its Malcruor version
   // (sandbox.js MCDROP). Malcruor's own gear (Bloodiron Pick, Reaver and Plate) is tier 6 in sandbox.js. Item icons: corrupted pixel art
   // made in sandbox.js (MC_ICONS); blocks have their own art here.
   // ====================================================================================================
@@ -1887,7 +1887,7 @@
   item("mc_searedcap", "Seared Bloodcap", { food: 24, heal: 6, cooked: 1, gem: "#a0301c" });
   item("mc_rotstew", "Rotroot Stew", { food: 50, heal: 18, cooked: 1, gem: "#8a1a20" });
   item("mc_berrytart", "Gloomberry Tart", { food: 34, heal: 12, cooked: 1, gem: "#6a1a4a" });
-  item("mc_purge", "Purging Draught", { food: 2, purge: 90, cooked: 1, gem: "#ff8aa0", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
+  item("mc_purge", "Purging Potion", { food: 2, purge: 90, cooked: 1, gem: "#ff8aa0", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
   R("x_mc_rotplanks", "Rotwood Planks (4)", { mc_rotplanks: 4 }, { mc_rotwood: 1 }, { d: "Black planks with a red glow in the grain. Rotwood comes from Malcruor's trees." });
   R("x_mc_blackbrick", "Blackstone Brick (2)", { mc_blackbrick: 2 }, { mc_blackstone: 2 }, { stn: "mason", d: "A black brick with red mortar." });
   R("x_mc_hexlamp", "Hexite Lamp (2)", { mc_hexlamp: 2 }, { mc_hexite: 1, mc_blackstone: 2 }, { d: "A blood-red lamp block. Bright." });
@@ -1895,14 +1895,14 @@
   R("x_mc_searedcap", "Seared Bloodcap", { mc_searedcap: 1 }, { mc_bloodcap: 2 }, { stn: "cook", d: "Fills 24 hunger and heals 6." });
   R("x_mc_rotstew", "Rotroot Stew", { mc_rotstew: 1 }, { mc_bloodcap: 2, mc_gloomberry: 2, mc_bloodleaf: 1 }, { stn: "cook", d: "Fills 50 hunger and heals 18." });
   R("x_mc_berrytart", "Gloomberry Tart", { mc_berrytart: 1 }, { mc_gloomberry: 4, mc_thornfiber: 1 }, { stn: "cook", d: "Fills 34 hunger and heals 12." });
-  R("x_bow4", "Bloodthorn Bow", null, { mc_rotwood: 8, mc_thornfiber: 6, mc_bloodingot: 4, mc_fang: 4 }, { bow: 4, bench: true, bl: 4, d: "Malcruor's corrupted longbow, strung with Thorn Fiber. Damage 30, fast shots. Needs the Ember Longbow." });
+  R("x_bow4", "Bloodthorn Bow", null, { mc_rotwood: 8, mc_thornfiber: 6, mc_bloodingot: 4, mc_fang: 4 }, { bow: 4, bench: true, bl: 4, d: "Malcruor's corrupted longbow, strung with Thorn Fiber. Damage 30, fast shots. Needs the Ember Bow." });
   R("x_hoe4", "Bloodiron Hoe", null, { mc_bloodingot: 3, mc_rotplanks: 4, mc_thornfiber: 2 }, { hoe: 4, bench: true, bl: 4, d: "Tills and harvests 7 tiles at a time and often finds an extra crop. Needs the Iron Hoe." });
   R("x_rod3", "Bloodiron Rod", null, { mc_bloodingot: 2, mc_thornfiber: 4, mc_hexite: 1 }, { rod: 3, bench: true, bl: 4, d: "A corrupted rod: bites come faster, and it fishes lava like the Ember Rod. Needs the Ember Rod." });
-  R("x_mc_purge", "Purging Draught", { mc_purge: 1 }, { mc_bloodbloom: 2, mc_gloomberry: 2, mc_hexite: 1 }, { stn: "cook", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
+  R("x_mc_purge", "Purging Potion", { mc_purge: 1 }, { mc_bloodbloom: 2, mc_gloomberry: 2, mc_hexite: 1 }, { stn: "cook", d: "Drink it in Malcruor to push the corruption back by 90 seconds." });
   // ====================================================================================================
   // AURELMIRE PACK: what Malcruor becomes where you cleanse it. Another swamp of the multiverse: the same land, at golden dawn. Golden
   // versions of Malcruor's things: Dawnstone, Honeyloam, Goldmoss, Sunsteel Ore, Citrine, Dawnwood, Goldleaf, golden plants and foods, and
-  // the Sunlight Draught. In a cleansed area, breaking a block gives its Aurelmire version (sandbox.js AUDROP).
+  // the Sunlight Potion. In a cleansed area, breaking a block gives its Aurelmire version (sandbox.js AUDROP).
   // ====================================================================================================
   block("au_dawnwood", "Dawnwood", "#c89a5a", "#ffe08a", 1.0, function (rect, hh) {   // pale honey bark with bright gold grain
     rect(0, 0, 16, 16, "#c08c4e"); [2, 6, 10, 13].forEach(function (x, i) { rect(x, 0, 1, 16, i % 2 ? "#9a6a36" : "#dcae6a"); });
@@ -1960,14 +1960,14 @@
   item("au_honeyberry", "Honeyberries", { food: 7, heal: 4, gem: "#ffb02a", d: "Honey-sweet berries from Aurelmire's bushes." });
   item("au_goldroast", "Goldcap Roast", { food: 28, heal: 8, cooked: 1, gem: "#d89418" });
   item("au_honeypie", "Honeyberry Pie", { food: 44, heal: 16, cooked: 1, gem: "#ffb02a" });
-  item("au_sundraught", "Sunlight Draught", { food: 4, heal: 10, purge: 180, cooked: 1, gem: "#fff0a0", d: "Drink it in Malcruor to push the corruption back by 3 minutes." });
+  item("au_sundraught", "Sunlight Potion", { food: 4, heal: 10, purge: 180, cooked: 1, gem: "#fff0a0", d: "Drink it in Malcruor to push the corruption back by 3 minutes." });
   R("x_au_dawnplanks", "Dawnwood Planks (4)", { au_dawnplanks: 4 }, { au_dawnwood: 1 }, { d: "Honey-gold planks from Aurelmire's Dawnwood." });
   R("x_au_dawnbrick", "Dawnstone Brick (2)", { au_dawnbrick: 2 }, { au_dawnstone: 2 }, { stn: "mason", d: "A warm golden brick." });
   R("x_au_sunlamp", "Sun Lamp (2)", { au_sunlamp: 2 }, { au_citrine: 1, au_dawnstone: 2 }, { d: "A bright golden lamp block." });
   R("x_au_sunsteel", "Sunsteel Ingot", { au_sunsteel: 1 }, { au_sunore: 2 }, { stn: "furnace", d: "Smelted from Sunsteel Ore, found where Malcruor is cleansed." });
   R("x_au_goldroast", "Goldcap Roast", { au_goldroast: 1 }, { au_goldcap: 2 }, { stn: "cook", d: "Fills 28 hunger and heals 8." });
   R("x_au_honeypie", "Honeyberry Pie", { au_honeypie: 1 }, { au_honeyberry: 4, au_goldfiber: 1 }, { stn: "cook", d: "Fills 44 hunger and heals 16." });
-  R("x_au_sundraught", "Sunlight Draught", { au_sundraught: 1 }, { au_sunbloom: 2, au_honeyberry: 2, au_citrine: 1 }, { stn: "cook", d: "Pushes Malcruor's corruption back by 3 minutes and heals 10." });
+  R("x_au_sundraught", "Sunlight Potion", { au_sundraught: 1 }, { au_sunbloom: 2, au_honeyberry: 2, au_citrine: 1 }, { stn: "cook", d: "Pushes Malcruor's corruption back by 3 minutes and heals 10." });
   // REAL-SIZE FURNITURE: the other cells of a piece bigger than one block (a bed is 2 wide, a wardrobe 2 tall, a tent 2 x 2). The piece's own
   // tile sits in its bottom-left cell; these fill the rest, point back at it (fpart = [cells right, cells up]) and draw their slice of its art.
   // (Added last so every older tile keeps its number.)

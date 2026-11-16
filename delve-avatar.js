@@ -379,7 +379,7 @@ var DelveAv = (function () {
     3: { a: "#3a2e34", b: "#5a4a52", c: "#1c1418", t: "#ff6a1f", t2: "#ffd25a" },
     4: { a: "#3f9fc4", b: "#7fd6ff", c: "#16465e", t: "#ffffff", t2: "#bff0ff" },
     5: { a: "#5a2a7a", b: "#c06aff", c: "#2a1438", t: "#ffd23f", t2: "#ff8a3d" },
-    6: { a: "#1e1418", b: "#3a2228", c: "#0a0406", t: "#ff3a3a", t2: "#ffb0a0" }   // MALCRUOR: Bloodiron Plate, black with glowing red veins
+    6: { a: "#1e1418", b: "#3a2228", c: "#0a0406", t: "#ff3a3a", t2: "#ffb0a0" }   // MALCRUOR: Bloodiron Chestplate, black with glowing red veins
   };
   // ARMOR PIECES (Nov 2026): a set's helmet (in place of a hat), leggings over the legs and boots in place of shoes, in the set's colours
   function armHelm(B, hy, hw, t, flat) {   // flat: a low two-row dome (the donkey: its armored ears rise above it), the top trims sit lower to match

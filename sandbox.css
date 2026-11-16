@@ -341,9 +341,6 @@ body.sbx-app footer{margin-top:28px}
 .sbx-mtop b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#c8fff4}
 .sbx-mtop span{flex:1;color:#f6eedb99;font:800 .8rem Nunito,system-ui,sans-serif}
 .sbx-mtop .sbx-x{pointer-events:auto}
-.sbx-mmine{pointer-events:auto;flex:none;padding:7px 12px;border-radius:999px;border:1px solid #f2c14e;background:rgba(44,30,8,.85);color:#ffe3a0;font:800 .82rem Nunito,system-ui,sans-serif;cursor:pointer}
-.sbx-mmine:hover,.sbx-mmine:focus-visible{background:#5a3f10;outline:2px solid #f2c14e;outline-offset:2px}
-.sbx-mmine[hidden]{display:none}
 .sbx-mctl{position:absolute;right:max(10px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 54px);display:grid;gap:6px}
 .sbx-mctl button{width:42px;height:42px;display:grid;place-items:center;padding:0;border-radius:12px;border:1px solid #4ee6b455;background:linear-gradient(160deg,rgba(14,34,28,.88),rgba(4,10,8,.85));color:#c8fff4;font:800 1.4rem/1 Nunito,system-ui,sans-serif;cursor:pointer}
 .sbx-mctl button svg{width:20px;height:20px}
@@ -3088,6 +3085,38 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 .sbx-mctl button:hover,.sbx-mctl button:focus-visible{border-color:var(--mc);color:#fff;outline:none}
 .sbx-mhint{border-color:color-mix(in srgb,var(--mc) 30%,transparent);font-size:.72rem}
 @media(max-width:600px){.sbx-mtop b{font-size:.95rem;max-width:48vw}.sbx-mtop span{display:none}}
-@media(max-width:600px){.sbx-mtop{flex-wrap:wrap;row-gap:8px}.sbx-mtop b{order:1;flex:0 1 auto}.sbx-mtop .sbx-x{order:2;margin-left:auto}.sbx-mmine{order:3;flex-basis:100%;max-width:max-content}.sbx-mctl{top:calc(max(10px,env(safe-area-inset-top)) + 100px)}}
-@media(max-width:600px){.sbx-mmine{position:absolute;left:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);flex-basis:auto}}
 .cx-root.has-hist .cx-back{display:inline-block}
+
+/* ===== MAP WINDOW (Nov 2026): the map sits in a carved swamp-wood frame with brass studs; the land fills the window top to bottom and you drag to see the rest ===== */
+.sbx-mapv{display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));box-sizing:border-box;background:radial-gradient(120% 100% at 50% 45%,rgba(4,12,9,.78),rgba(1,4,3,.94))}
+.sbx-mapv[hidden]{display:none}
+.sbx-mframe{position:relative;box-sizing:border-box;width:min(1180px,100%);height:min(860px,100%);display:flex;flex-direction:column;padding:0 14px 14px;border-radius:20px;border:2px solid #0e0703;
+  background:radial-gradient(circle,#ffe7a6 0 1.6px,#c9963c 2.6px,#6a4614 4.4px,#0e0703 5.4px,transparent 6.2px) 4px 4px/22px 22px no-repeat,radial-gradient(circle,#ffe7a6 0 1.6px,#c9963c 2.6px,#6a4614 4.4px,#0e0703 5.4px,transparent 6.2px) calc(100% - 4px) 4px/22px 22px no-repeat,radial-gradient(circle,#ffe7a6 0 1.6px,#c9963c 2.6px,#6a4614 4.4px,#0e0703 5.4px,transparent 6.2px) 4px calc(100% - 4px)/22px 22px no-repeat,radial-gradient(circle,#ffe7a6 0 1.6px,#c9963c 2.6px,#6a4614 4.4px,#0e0703 5.4px,transparent 6.2px) calc(100% - 4px) calc(100% - 4px)/22px 22px no-repeat,linear-gradient(180deg,rgba(255,220,150,.07),rgba(0,0,0,.25)),repeating-linear-gradient(92deg,#3a2413 0 6px,#33200f 6px 9px,#402815 9px 17px,#2e1c0d 17px 21px);
+  box-shadow:inset 0 0 0 1px #7a5426,inset 0 2px 0 #a07434,inset 0 -3px 0 #1a0e05,0 26px 70px -12px #000,0 0 46px -18px var(--mc)}
+.sbx-mapv .sbx-mtop{position:relative;inset:auto;flex:none;display:flex;align-items:center;gap:12px;padding:9px 12px 9px;background:none;pointer-events:auto}
+.sbx-mapv .sbx-mtop b{max-width:50%;background:linear-gradient(180deg,#2a1a0c,#160c05);border:1.5px solid #b4873a;box-shadow:inset 0 1px 0 #e0b45a66,inset 0 -2px 0 #0008,0 3px 8px -3px #000;color:#ffe9a8}
+.sbx-mapv .sbx-mtop span{color:#f2d9a0aa}
+.sbx-mapv .sbx-mtop .sbx-x{margin-left:auto;border-color:#b4873a;background:linear-gradient(180deg,#2a1a0c,#160c05);color:#ffe9a8}
+.sbx-mvp{position:relative;flex:1;min-height:0;overflow:hidden;border-radius:10px;border:2px solid #0e0703;background:#0b1512;box-shadow:0 0 0 2px #b4873a,0 0 0 3px #0e0703,0 0 22px -6px color-mix(in srgb,var(--mc) 70%,transparent)}
+.sbx-mvp canvas{z-index:0}
+.sbx-mvig{position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;box-shadow:inset 0 0 36px 4px rgba(0,0,0,.62),inset 0 0 0 1px rgba(255,230,170,.08)}
+.sbx-mvp .sbx-mctl{z-index:2;top:10px;right:10px}
+.sbx-mvp .sbx-mhint{z-index:2;bottom:10px;left:10px;transform:none;max-width:calc(100% - 200px);text-align:left;animation:mhintOut 9s ease forwards}
+.sbx-mvp .sbx-mcard{z-index:3;bottom:12px}
+.sbx-mvp .sbx-mpop{z-index:4}
+@keyframes mhintOut{0%,82%{opacity:1}100%{opacity:0;visibility:hidden}}
+@media(max-height:520px){.sbx-mapv{padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left))}.sbx-mframe{padding:0 9px 9px;border-radius:14px}.sbx-mapv .sbx-mtop{padding:5px 12px}.sbx-mapv .sbx-mtop b{font-size:.98rem;padding:4px 12px 4px 8px}.sbx-mvp .sbx-mctl{gap:5px;top:8px;right:8px}.sbx-mvp .sbx-mctl button{width:36px;height:36px;font-size:1.2rem}}
+@media(max-width:600px){.sbx-mapv .sbx-mtop{flex-wrap:nowrap}.sbx-mapv .sbx-mtop b{max-width:70%}}
+/* ===== HUD (Nov 2026): health and hunger share the width above the hotbar in two equal halves; the Swamp Essence level is an XP strip
+   that runs along the whole top edge of the hotbar, with the level number in a gem at its middle ===== */
+.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food{flex:1 1 0;width:auto;min-width:0;height:28px}
+.sbx-dcol .sbx-xp{position:relative;display:block;width:auto;height:10px;margin:2px 4px -1px;padding:0;border-radius:6px;background:linear-gradient(180deg,rgba(6,10,8,.9),rgba(2,4,3,.86));border:1px solid rgba(168,240,90,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 10px -6px #000;pointer-events:none}
+.sbx-xp .trk{position:absolute;left:2px;right:2px;top:2px;bottom:2px;height:auto;border-radius:4px;background:rgba(0,0,0,.55);box-shadow:inset 0 1px 2px #000}
+.sbx-xp .fl{border-radius:4px;background-size:100% 100%,100% 100%}
+.sbx-xp .trk::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.45) calc(10% - 1px) 10%);pointer-events:none}
+.sbx-xp .ic{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:0;transform:translate(-50%,-50%);z-index:2}
+.sbx-xp.got .ic{animation:essPopX .45s ease-out}
+@keyframes essPopX{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.35)}100%{transform:translate(-50%,-50%) scale(1)}}
+@media(max-width:480px),(max-height:520px) and (orientation:landscape){.sbx-dcol .sbx-xp{height:9px}.sbx-xp .ic{width:20px;height:20px}.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food{height:26px}}
+@media(max-width:480px){.sbx-dock .sbx-xp{grid-column:1/-1;grid-row:2}.sbx-dock .sbx-bar{grid-row:3}}
+@media(prefers-reduced-motion:reduce){.sbx-xp.got .ic{animation:none}}
