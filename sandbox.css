@@ -3120,3 +3120,13 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 @media(max-width:480px),(max-height:520px) and (orientation:landscape){.sbx-dcol .sbx-xp{height:9px}.sbx-xp .ic{width:20px;height:20px}.sbx-vrow .sbx-hp,.sbx-vrow .sbx-food{height:26px}}
 @media(max-width:480px){.sbx-dock .sbx-xp{grid-column:1/-1;grid-row:2}.sbx-dock .sbx-bar{grid-row:3}}
 @media(prefers-reduced-motion:reduce){.sbx-xp.got .ic{animation:none}}
+/* ===== NOTICES (Nov 2026): small notes that slide in on the right side, under the minimap and buttons, instead of a big banner in the middle ===== */
+.sbx-stage .sbx-toast{left:auto!important;right:max(10px,env(safe-area-inset-right))!important;top:calc(max(8px,env(safe-area-inset-top)) + 178px)!important;bottom:auto!important;transform:translateX(16px);max-width:min(250px,56vw)!important;padding:6px 11px 6px 10px;border-radius:11px;border-width:1px;border-left-width:3px;font-size:.72rem;line-height:1.25;text-align:left;white-space:normal;box-shadow:0 6px 16px -8px #000,0 0 14px -8px var(--tc,#4ee6b4);z-index:3}
+.sbx-stage .sbx-toast.on{animation:sbxToastSide var(--td,2.4s) ease forwards}
+@keyframes sbxToastSide{0%{opacity:0;transform:translateX(16px)}8%,82%{opacity:.96;transform:none}100%{opacity:0;transform:translateX(8px)}}
+.sbx-stage.panel .sbx-toast{top:calc(max(6px,env(safe-area-inset-top)) + 54px)!important;z-index:60}
+@media(max-height:520px){.sbx-stage .sbx-toast{top:calc(max(6px,env(safe-area-inset-top)) + 166px)!important;max-width:min(220px,40vw)!important;font-size:.68rem;padding:5px 9px}}
+@media(prefers-reduced-motion:reduce){.sbx-stage .sbx-toast.on{animation:none;opacity:.96;transform:none}}
+.sbx-pop{padding:5px 10px 5px 7px;border-radius:10px}.sbx-pop i{width:18px;height:18px;font-size:.7rem}.sbx-pop small{font-size:.56rem}.sbx-pop b{font-size:.72rem}
+.sbx-pops{max-width:min(250px,60vw)}
+.sbx-bcard b{font-size:clamp(1.25rem,3.6vw,2rem)!important}
