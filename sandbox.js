@@ -15874,7 +15874,9 @@
     var a = s2.split(",").map(Number); return (LRGB[id] = [a[0] | 0, a[1] | 0, a[2] | 0]);
   }
   function lightGrid(gx0, gy0, gw, gh, day, pcx, pcy) {
-    var n = gw * gh, skyL = Math.round(day * 15 * LQ), i, j, c;
+    // DARKER NIGHTS (Nov 2026): at night the open sky gives only a faint moonlight (1 of 15, was 5) and your own glow shrinks from 10 to 4,
+    // so you can see yourself and the next step or two but need torches, lamps, the Miner's Helmet or a Night Vision Potion to see further
+    var nk = clamp((1 - day) / 0.7, 0, 1), n = gw * gh, skyL = Math.round(clamp(day - 0.235 * nk, 0, 1) * 15 * LQ), i, j, c;
     // PERF (phones): the light only changes when the view moves, the time of day steps, or something changes; reuse it on alternate frames
     var key = gx0 + "," + gy0 + "," + gw + "," + gh + "," + skyL + "," + pcx + "," + pcy + "," + editN;
     if (lowq && LG && LG.length >= n && key === LKEY && (LPAR = 1 - LPAR)) return;
@@ -15888,7 +15890,7 @@
       var rsl = MATF[id] && X >= 0 && X < W && roofSlope(id, X, Y); if (rsl) { if (skyL > L) L = skyL; }   // ROOF SLOPES: half the cell is open sky, so light it like the sky (no pale or dark box round a sloped roof)
       LG[c] = L; OP[c] = rsl ? LQ : TILES[id].solid && !TILES[id].see && !(rmask && X >= 0 && X < W && Y >= 0 && Y < H && rmask[Y * W + X] === id) && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
     }
-    var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : p.y > pcol() + 3 ? (helmOn() ? 9 : 3) : 10) * LQ);   // DARK CAVES: underground you only glow faintly; the Miner's Helmet lights a medium circle
+    var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : p.y > pcol() + 3 ? (helmOn() ? 9 : 3) : helmOn() ? 10 : Math.round(10 - 6 * nk)) * LQ);   // DARK CAVES: underground you only glow faintly; the Miner's Helmet lights a medium circle
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
     if (fx("night")) for (var nj = Math.max(0, pj - 9); nj <= Math.min(gh - 1, pj + 9); nj++) for (var ni = Math.max(0, pi - 12); ni <= Math.min(gw - 1, pi + 12); ni++) { var nc = nj * gw + ni; if (LG[nc] < 8 * LQ) LG[nc] = 8 * LQ; }   // Night Eye: everything near you is dimly visible
     (world.structs || []).forEach(function (q) { var P = q.pic; if (!P || !P.lt.length || P.x0 > gx0 + gw || P.x0 + P.w < gx0 || P.y0 > gy0 + gh || P.y0 + P.h < gy0) return; P.lt.forEach(function (l) { var li = l[0] - gx0, lj = l[1] - gy0; if (li >= 0 && li < gw && lj >= 0 && lj < gh) { var k2 = lj * gw + li; LG[k2] = Math.max(LG[k2], l[2] * LQ); WG[k2] = Math.max(WG[k2], l[2] * LQ); } }); });   // building lamps
