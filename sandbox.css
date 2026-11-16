@@ -3130,3 +3130,4 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 .sbx-pop{padding:5px 10px 5px 7px;border-radius:10px}.sbx-pop i{width:18px;height:18px;font-size:.7rem}.sbx-pop small{font-size:.56rem}.sbx-pop b{font-size:.72rem}
 .sbx-pops{max-width:min(250px,60vw)}
 .sbx-bcard b{font-size:clamp(1.25rem,3.6vw,2rem)!important}
+.pk2-ovst .pk2-lbl b{color:#7ff5d0}.pk2-ovst .pk2-ov{border-color:#4ee6b466;box-shadow:0 0 10px -6px #4ee6b4}
