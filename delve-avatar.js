@@ -382,19 +382,25 @@ var DelveAv = (function () {
     6: { a: "#1e1418", b: "#3a2228", c: "#0a0406", t: "#ff3a3a", t2: "#ffb0a0" }   // MALCRUOR: Bloodiron Plate, black with glowing red veins
   };
   // ARMOR PIECES (Nov 2026): a set's helmet (in place of a hat), leggings over the legs and boots in place of shoes, in the set's colours
-  function armHelm(B, hy, hw, t) {
-    var P = ARM[t]; if (!P) return; var x0 = 11 - hw / 2;
+  function armHelm(B, hy, hw, t, flat) {   // flat: a low two-row dome (the donkey: its armored ears rise above it), the top trims sit lower to match
+    var P = ARM[t]; if (!P) return; var x0 = 11 - hw / 2, Y = function (k) { return flat && k >= 3 ? hy - k + 2 : hy - k; };
     B.p(x0 - 1, hy + 1, P.c); B.p(x0 + hw, hy + 1, P.c);   // cheek guards
     B.row(hy, hw + 2, P.c); B.p(x0 - 1, hy, P.b);
-    B.row(hy - 1, hw, P.a); B.row(hy - 2, hw, P.a); B.row(hy - 3, hw - 2, P.a); B.row(hy - 4, hw - 4 > 2 ? hw - 4 : 2, P.b);
-    B.p(x0, hy - 1, P.b); B.p(x0, hy - 2, P.b); B.p(x0 + 1, hy - 3, P.b); B.p(x0 + hw - 1, hy - 1, P.c); B.p(x0 + hw - 1, hy - 2, P.c); B.p(x0 + hw - 2, hy - 3, P.c);
-    if (t === 1) { for (var i = 1; i < hw - 1; i += 2) B.p(x0 + i, hy - 2, P.t); }
-    else if (t === 2) { B.r(10, hy - 2, 2, 1, P.t); B.p(10, hy - 3, P.t2); }
-    else if (t === 3) { B.r(10, hy - 5, 2, 2, P.t); B.p(10, hy - 5, P.t2); B.row(hy, hw, P.t); }
-    else if (t === 4) { B.p(x0, hy - 4, P.b); B.p(x0 + hw - 1, hy - 4, P.b); B.p(x0, hy - 5, P.t2); B.p(x0 + hw - 1, hy - 5, P.t2); B.r(10, hy - 5, 2, 1, P.t); }
-    else if (t === 5) { B.p(x0 + 1, hy - 5, P.t); B.p(10, hy - 6, P.t); B.p(11, hy - 6, P.t); B.p(10, hy - 5, P.t); B.p(11, hy - 5, P.t); B.p(x0 + hw - 2, hy - 5, P.t); B.row(hy, hw, P.t); B.p(11, hy - 2, P.t2); }
-    else if (t === 6) { B.p(x0 - 1, hy - 3, P.t); B.p(x0 - 2, hy - 4, P.t); B.p(x0 - 2, hy - 5, P.t2); B.p(x0 + hw, hy - 3, P.t); B.p(x0 + hw + 1, hy - 4, P.t); B.p(x0 + hw + 1, hy - 5, P.t2); B.r(10, hy - 2, 2, 1, P.t); }
+    B.row(hy - 1, hw, P.a); B.row(hy - 2, hw, P.a);
+    if (!flat) { B.row(hy - 3, hw - 2, P.a); B.row(hy - 4, hw - 4 > 2 ? hw - 4 : 2, P.b); B.p(x0 + 1, hy - 3, P.b); B.p(x0 + hw - 2, hy - 3, P.c); }
+    else B.row(hy - 2, hw - 4, P.b);
+    B.p(x0, hy - 1, P.b); B.p(x0, hy - 2, P.b); B.p(x0 + hw - 1, hy - 1, P.c); B.p(x0 + hw - 1, hy - 2, P.c);
+    if (t === 1) { for (var i = 1; i < hw - 1; i += 2) B.p(x0 + i, hy - 1 - (flat ? 0 : 1), P.t); }
+    else if (t === 2) { B.r(10, hy - (flat ? 1 : 2), 2, 1, P.t); B.p(10, hy - (flat ? 2 : 3), P.t2); }
+    else if (t === 3) { B.r(10, Y(5), 2, 2, P.t); B.p(10, Y(5), P.t2); B.row(hy, hw, P.t); }
+    else if (t === 4) { if (!flat) { B.p(x0, Y(4), P.b); B.p(x0 + hw - 1, Y(4), P.b); B.p(x0, Y(5), P.t2); B.p(x0 + hw - 1, Y(5), P.t2); } B.r(10, Y(5), 2, 1, P.t); }
+    else if (t === 5) { if (!flat) { B.p(x0 + 1, Y(5), P.t); B.p(x0 + hw - 2, Y(5), P.t); } B.p(10, Y(6), P.t); B.p(11, Y(6), P.t); B.p(10, Y(5), P.t); B.p(11, Y(5), P.t); B.row(hy, hw, P.t); B.p(11, hy - (flat ? 1 : 2), P.t2); }
+    else if (t === 6) { if (!flat) { B.p(x0 - 1, Y(3), P.t); B.p(x0 - 2, Y(4), P.t); B.p(x0 - 2, Y(5), P.t2); B.p(x0 + hw, Y(3), P.t); B.p(x0 + hw + 1, Y(4), P.t); B.p(x0 + hw + 1, Y(5), P.t2); } B.r(10, hy - (flat ? 1 : 2), 2, 1, P.t); }
   }
+  // HELMET FIT per animal: the frog's helmet sits on its skull below the eye bumps (the eyes are drawn back over it), the elephant's is wider
+  // for its big head, and the donkey's ears get armored sleeves in the helmet's colours (see the ear lines below)
+  var HFIT = { frog: { hy: 9, top: 3 }, elephant: { hw: 10 }, donkey: { flat: 1 } };
+  function helmFit(o, A) { var f = HFIT[o.animal] || {}; return { hy: f.hy || A.hy, hw: f.hw || A.hw, top: f.top || 0, flat: !!f.flat }; }
   function armBoot(B, x, bot, side, P, front) {   // a boot: shaft, foot and a dark sole; x = the leg's left column
     var fx = front ? (side > 0 ? x - 1 : x) : x, w = front ? 4 : 3, sx = front ? (side > 0 ? fx + 1 : fx) : x;
     B.p(sx, bot - 2, side > 0 ? P.b : P.c); B.p(sx + 1, bot - 2, P.a); B.p(sx + 2, bot - 2, side > 0 ? P.c : P.b);
@@ -520,8 +526,8 @@ var DelveAv = (function () {
     B.cur = 6; if (o.face && o.face !== "clawpaint" && o.face !== "oracleeye" && o.face !== "hearts" && o.face !== "laser" && o.face !== "monocle") { var ey = A.eyes[0][1] + by, hw2 = A.hw; B.r(11 - hw2 / 2, ey, hw2, 1, o.face === "shades" ? "#0e7490" : o.face === "fireflygoggles" ? "#5a3d00" : o.face === "gothicshades" ? "#8aa0c8" : "#14141a"); }
     B.cur = 5; if (acc.bandana) { var mk = A.mask, my = mk[0] + by; B.r(10, my, 2, 2, "#d12f4a"); B.p(9, my + 2, "#a82240"); B.p(12, my + 2, "#a82240"); B.p(10, my, "#ff7a7a"); }   // the knot
     // hat
-    B.cur = 7; if (o.helm && ARM[o.helm]) armHelm(new ByBuf(B, by), A.hy, A.hw, o.helm); else if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
-    B.cur = 1; if (A.ears && (o.hat || o.helm)) A.ears.cells.forEach(function (cc) { B.p(cc[0], cc[1] + by, P.b); });
+    B.cur = 7; if (o.helm && ARM[o.helm]) { var hfB = helmFit(o, A); armHelm(new ByBuf(B, by), hfB.hy, hfB.hw, o.helm, hfB.flat); } else if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
+    B.cur = 1; if (A.ears && (o.hat || o.helm)) A.ears.cells.forEach(function (cc) { var EH = o.helm && ARM[o.helm]; B.p(cc[0], cc[1] + by, EH ? (cc[0] === 7 || cc[0] === 14 ? EH.c : EH.a) : P.b); });
     if (OUTLINE) B.outline(OL);
     return B;
   }
@@ -582,8 +588,8 @@ var DelveAv = (function () {
     B.cur = 5; if (acc.bandana) { var mk = A.mask, mw = mk[1], mx = 11 - mw / 2, my = mk[0] + by; B.r(mx, my, mw, 2, "#d12f4a"); B.r(mx, my, mw, 1, "#ff7a7a"); B.r(mx, my + 1, mw, 1, "#a82240"); for (i = 1; i < mw; i += 3) B.p(mx + i, my + 1, "#ffffff"); B.r(mx + mw, my, 2, 2, "#d12f4a"); B.r(mx + mw, my + 2, 1, 2, "#a82240"); B.p(mx + mw, my, "#ff7a7a"); }
     if (acc.ring) { var rg = A.ring; B.p(rg[0], rg[1] + by, "#fff4b0"); B.p(rg[0], rg[1] + by + 1, "#f2c14e"); B.p(rg[0], rg[1] + by + 2, "#a8740a"); }
     // hat
-    B.cur = 7; if (o.helm && ARM[o.helm]) armHelm(new ByBuf(B, by), A.hy, A.hw, o.helm); else if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
-    B.cur = 1; if (A.ears && (o.hat || o.helm)) A.ears.cells.forEach(function (c) { B.p(c[0], c[1] + by, c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
+    B.cur = 7; if (o.helm && ARM[o.helm]) { var hfF = helmFit(o, A); armHelm(new ByBuf(B, by), hfF.hy, hfF.hw, o.helm, hfF.flat); if (hfF.top) B.m(A.x0, A.y0 + by, A.head.slice(0, hfF.top), P); } else if (o.hat && HATS[o.hat]) HATS[o.hat](new ByBuf(B, by), A.hy, A.hw, hv);
+    B.cur = 1; if (A.ears && (o.hat || o.helm)) A.ears.cells.forEach(function (c) { var EH = o.helm && ARM[o.helm]; B.p(c[0], c[1] + by, EH ? (c[0] === 7 ? EH.b : c[0] === 14 ? EH.c : c[1] === 2 ? EH.t : EH.a) : c[0] < 11 ? (c[0] === 7 ? P.b : P.n) : (c[0] === 13 ? P.n : P.b)); });
     if (OUTLINE) B.outline(OL);
     return B;
   }
