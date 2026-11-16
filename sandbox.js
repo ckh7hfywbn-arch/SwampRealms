@@ -2664,7 +2664,10 @@
   }
   var snd = function (n, a) { try { if (typeof SFX !== "undefined" && SFX[n]) SFX[n](a); } catch (e) {} };
   var FXB = null;
-  function fxOut() { if (!FXB) { FXB = ac.createGain(); FXB.connect(ac.destination); } FXB.gain.value = OPT.fx; return FXB; }   // Effects volume (Options)
+  // CALMER MIX (Nov 2026): every Delve sound effect goes through one bus that sits about 30% lower than before and through a gentle limiter,
+  // so when footsteps, digging, creatures and chimes pile up they blend instead of spiking. The Sound effects slider still scales it all.
+  var FX_TRIM = 0.7;
+  function fxOut() { if (!FXB) { FXB = ac.createGain(); try { var cp = ac.createDynamicsCompressor(); cp.threshold.value = -20; cp.knee.value = 14; cp.ratio.value = 4; cp.attack.value = 0.004; cp.release.value = 0.25; FXB.connect(cp); cp.connect(ac.destination); } catch (e) { FXB.connect(ac.destination); } } FXB.gain.value = OPT.fx * FX_TRIM; return FXB; }   // Effects volume (Options)
   function fxReady() {
     if (typeof SFX !== "undefined" && SFX.on === false) return false; if (!gestured && !ac) return false; if (OPT.fx <= 0.001) return false;
     try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); return true; } catch (e) { return false; }
@@ -2687,7 +2690,7 @@
     if (!b) { for (var k = 0; k < c && !b; k++) { b = SMP.buf[g + "_" + k]; if (b) i = k; } } if (!b) return false; SMP.last[g] = i;
     try { var src = ac.createBufferSource(), gn = ac.createGain(); src.buffer = b; src.playbackRate.value = (rate || 1) * (0.93 + Math.random() * 0.14); gn.gain.value = (vol == null ? 0.5 : vol) * (0.88 + Math.random() * 0.24); src.connect(gn); gn.connect(fxOut()); src.start(); return true; } catch (e) { return false; }
   }
-  function uiSnd(g, vol) { var now = performance.now(); if (now - (SMP.ui || 0) < 60) return; SMP.ui = now; smp("ui_" + g, vol == null ? 0.45 : vol); }
+  function uiSnd(g, vol) { var now = performance.now(); if (now - (SMP.ui || 0) < 60) return; SMP.ui = now; smp("ui_" + g, (vol == null ? 0.45 : vol) * 0.6); }
   // ---------- MATERIAL SOUNDS: every block family hits and breaks with its own sound (dirt crunch, stone crack, wood knock, leaf rustle, glass chime, metal ring) ----------
   var NZB = null, MATC = {};
   // SOFT NOISE for the looping beds (wind, leaves, rain): 8 seconds of pink noise with a seamless crossfaded loop. A short white-noise loop
@@ -2725,8 +2728,9 @@
     return (MATC[id] = m);
   }
   function matHit(id) {   // one tap of the pick or shovel
-    if (!fxReady()) return; var m = matOf(id), r = 0.9 + Math.random() * 0.2;
-    var HG = { dirt: ["impactSoft_medium", 0.42, 1.05], wood: ["impactWood_light", 0.5, 1], glass: ["impactGlass_light", 0.4, 1.05], metal: ["impactMetal_light", 0.4, 1], stone: ["impactMining", 0.42, 1.08], ore: ["impactMining", 0.45, 1.15] }[m];
+    if (!fxReady()) return; var nowH = performance.now(); if (nowH - (MATC.hitT || 0) < 300) return; MATC.hitT = nowH;   // CALMER MIX: at most about three dig taps a second (the pick still hits every 0.17 s)
+    var m = matOf(id), r = 0.9 + Math.random() * 0.2;
+    var HG = { dirt: ["impactSoft_medium", 0.27, 1.05], wood: ["impactWood_light", 0.32, 1], glass: ["impactGlass_light", 0.26, 1.05], metal: ["impactMetal_light", 0.26, 1], stone: ["impactMining", 0.27, 1.08], ore: ["impactMining", 0.3, 1.15] }[m];
     if (HG && smp(HG[0], HG[1], HG[2])) { if (m === "ore") try { tn(0.01, 1900 * r, 0, 0.06, "sine", 0.018); } catch (e) {} return; }   // a recorded hit (ore keeps its little glint)
     try {
       if (m === "dirt") { nz(0, 0.07, 0.16, 700 * r, "lowpass"); tn(0, 120 * r, 80, 0.05, "sine", 0.05); }
@@ -2752,7 +2756,7 @@
   }
   function stepGroup(id) { var m = matOf(id), n = ((TILES[id] || {}).n || "") + ""; return /snow|ice|frost/i.test(n) ? "footstep_snow" : m === "wood" ? "footstep_wood" : m === "stone" || m === "ore" || m === "metal" || m === "glass" ? "footstep_concrete" : "footstep_grass"; }
   function matStep(id, vol) {   // a landing: a soft thump in the ground's own voice
-    if (!fxReady()) return; if (smp(stepGroup(id), 0.35 + 0.4 * vol, 0.85)) return; var m = matOf(id);
+    if (!fxReady()) return; if (smp(stepGroup(id), 0.2 + 0.25 * vol, 0.85)) return; var m = matOf(id);
     try { if (m === "wood") tn(0, 160, 100, 0.08, "triangle", 0.1 * vol); else if (m === "plant" || m === "dirt") nz(0, 0.1, 0.18 * vol, 600, "lowpass"); else nz(0, 0.08, 0.14 * vol, 1200, "bandpass", 1.2); tn(0, 85, 50, 0.1, "sine", 0.12 * vol); } catch (e) {}
   }
 
@@ -3747,7 +3751,7 @@
       FOOT.acc += Math.abs(p.vx) * dt;
       if (FOOT.acc >= 1.05) {
         FOOT.acc = 0; FOOT.side = 1 - FOOT.side; var gx = Math.floor(p.x), gy = Math.floor(p.y + 0.2), gid = get(gx, gy);
-        if (fxReady() && !smp(stepGroup(gid), 0.2, 1)) { var m = matOf(gid); try { if (m === "wood") tn(0, 190 + FOOT.side * 20, 140, 0.05, "triangle", 0.035); else if (m === "stone" || m === "ore" || m === "metal") nz(0, 0.04, 0.05, 1800 + FOOT.side * 200, "bandpass", 1.4); else if (m === "glass") tn(0, 1800, 0, 0.04, "sine", 0.012); else nz(0, 0.06, m === "plant" ? 0.04 : 0.07, footKind(gid) === "snow" ? 2400 : 700 + FOOT.side * 120, footKind(gid) === "snow" ? "highpass" : "lowpass"); } catch (e) {} }
+        if (fxReady() && !smp(stepGroup(gid), 0.12, 1)) { var m = matOf(gid); try { if (m === "wood") tn(0, 190 + FOOT.side * 20, 140, 0.05, "triangle", 0.035); else if (m === "stone" || m === "ore" || m === "metal") nz(0, 0.04, 0.05, 1800 + FOOT.side * 200, "bandpass", 1.4); else if (m === "glass") tn(0, 1800, 0, 0.04, "sine", 0.012); else nz(0, 0.06, m === "plant" ? 0.04 : 0.07, footKind(gid) === "snow" ? 2400 : 700 + FOOT.side * 120, footKind(gid) === "snow" ? "highpass" : "lowpass"); } catch (e) {} }
         var fk = footKind(gid); if (fk && !reduce) { FOOT.L.push({ x: p.x + (FOOT.side ? 0.12 : -0.12) * p.face, y: gy, f: p.face, k: fk, t: 0, gy: p.y }); if (FOOT.L.length > 70) FOOT.L.shift(); }
       }
     }
@@ -6927,11 +6931,11 @@
   }
   function essSnd() {   // a bubbly bloop with a sparkle on top; quick pickups step up the scale
     if (!fxReady()) return; var now = performance.now(); ORBX.streak = now - ORBX.sT < 450 ? Math.min(ORBX.streak + 1, 10) : 0; ORBX.sT = now;
-    if (now - (ORBX.sn || 0) < 40) return; ORBX.sn = now;
+    if (now - (ORBX.sn || 0) < 90) return; ORBX.sn = now;
     var m = Math.pow(2, [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24][ORBX.streak] / 12);
-    try { tn(0, 420 * m, 760 * m, 0.07, "sine", 0.05); tn(0.035, 1240 * m, 1480 * m, 0.08, "triangle", 0.022); } catch (e) {}
+    try { tn(0, 420 * m, 760 * m, 0.07, "sine", 0.035); tn(0.035, 1240 * m, 1480 * m, 0.08, "triangle", 0.014); } catch (e) {}
   }
-  function essLvSnd() { if (!fxReady()) return; try { [523, 659, 784, 1046, 1318].forEach(function (f, i) { tn(i * 0.075, f, f * 1.01, 0.22, "triangle", 0.05); tn(i * 0.075, f * 2, f * 2.02, 0.12, "sine", 0.015); }); nz(0.3, 0.5, 0.02, 7000, "highpass"); } catch (e) {} }
+  function essLvSnd() { if (!fxReady()) return; try { [523, 659, 784, 1046, 1318].forEach(function (f, i) { tn(i * 0.075, f, f * 1.01, 0.22, "triangle", 0.07); tn(i * 0.075, f * 2, f * 2.02, 0.12, "sine", 0.021); }); nz(0.3, 0.5, 0.02, 7000, "highpass"); } catch (e) {} }
   function essHud(bump) {
     var el = $("sbxEss"); if (!el || !S) return; var L = essLevel(S.ess | 0), pc = Math.round(L.have / L.need * 100);
     var key = L.lv + ":" + pc; if (el._k !== key) { el._k = key; el.querySelector(".fl").style.width = pc + "%"; el.querySelector(".ic b").textContent = L.lv; el.setAttribute("aria-valuenow", pc); el.setAttribute("aria-valuetext", "Level " + L.lv + ", " + L.have + " of " + L.need + " Essence"); el.title = "Swamp Essence: level " + L.lv + " (" + L.have + " / " + L.need + ")"; }
@@ -7689,7 +7693,7 @@
         WX.sndG = ac.createGain(); WX.sndG.gain.value = 0; WX.snd.connect(hp); hp.connect(f); f.connect(WX.sndG); WX.sndG.connect(ac.destination); WX.snd.start();
       }
       WX.sndF.frequency.setTargetAtTime(under ? 500 : wxBio() === 2 ? 1800 : 5200, ac.currentTime, 1);
-      WX.sndG.gain.setTargetAtTime(lvl * 0.05, ac.currentTime, 0.8);
+      WX.sndG.gain.setTargetAtTime(lvl * 0.038, ac.currentTime, 0.8);
       if (lvl > 0.04 && !under && wxBio() === 0 && Math.random() < lvl * 0.5) { var pf = 2200 + Math.random() * 2600; nz(Math.random() * 0.05, 0.025, 0.006 * lvl * OPT.amb, pf, "bandpass", 6); }   // a few raindrops patter on top
     } catch (e) {}
   }
@@ -12869,7 +12873,7 @@
     return r("Music", "Changes with the land you are in.", optVol("mus", MUS.on ? MUS.vol : 0, "Music volume"))
       + r("Sound effects", "Digging, footsteps, hits and chimes.", optVol("fx", OPT.fx, "Sound effects volume"))
       + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
-      + r("Creature sounds", "Growls, oinks, quacks and croaks from the creatures around you, now and then.", optSeg("cvox", OPT.cvox == null ? 1 : OPT.cvox, [[0, "Off"], [0.5, "Quiet"], [1, "Normal"]], "Creature sounds")); }
+      + r("Creature sounds", "Growls, oinks, quacks and croaks from the creatures around you, now and then.", optSeg("cvox", OPT.cvox == null ? 0.5 : OPT.cvox, [[0, "Off"], [0.5, "Quiet"], [1, "Normal"]], "Creature sounds")); }
   function setGfx() { var r = optRow;
     return r("Full screen", "Fills the whole screen. Delve does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
@@ -12904,7 +12908,7 @@
       setTimeout(function () { FSPEND = null; if (pauseOpen) renderPause(); else if (panelOpen && tab === "more") renderPanel(); }, 700); return;
     }
     if (k === "mus") { var mv = clamp(Math.round(((MUS.on ? MUS.vol : 0) + 0.1 * +v) * 10) / 10, 0, 1); MUS.on = mv > 0; if (mv > 0) MUS.vol = mv; try { localStorage.setItem("swamp-delve-music", MUS.on ? "1" : "0"); localStorage.setItem("swamp-delve-musicvol", String(MUS.vol)); } catch (e) {} }
-    else if (k === "fx") { OPT.fx = clamp(Math.round((OPT.fx + 0.1 * +v) * 10) / 10, 0, 1); if (FXB) FXB.gain.value = OPT.fx; try { if (typeof SFX !== "undefined" && SFX.vol) SFX.vol(OPT.fx); } catch (e) {} matHit(T.STONE !== undefined ? T.STONE : 1); }
+    else if (k === "fx") { OPT.fx = clamp(Math.round((OPT.fx + 0.1 * +v) * 10) / 10, 0, 1); if (FXB) FXB.gain.value = OPT.fx * FX_TRIM; try { if (typeof SFX !== "undefined" && SFX.vol) SFX.vol(OPT.fx); } catch (e) {} matHit(T.STONE !== undefined ? T.STONE : 1); }
     else if (k === "amb") OPT.amb = clamp(Math.round((OPT.amb + 0.1 * +v) * 10) / 10, 0, 1);
     else if (k === "shake") { OPT.shake = clamp(+v, 0, 1); if (OPT.shake) shake = Math.max(shake, 0.35); }
     else if (k === "look") OPT.look = v === "1";
@@ -13917,7 +13921,7 @@
       if (!cont) { ["arm", "helm", "legs", "boots"].forEach(function (k) { if (apOn(k)) wear(k, n >= 14 ? 2 : 1); }); armKey = ""; if (blocked >= 1) text((OCS ? OCS.pl.x : cave ? cp.x : p.x) + 0.5, OCS ? OCS.pl.y - 1.3 : cave ? cp.y - 1.3 : p.y - PH - 0.1, "-" + Math.round(blocked) + " blocked", "#7fd6ff"); }
     }
     hp -= n; sinceHurt = 0; hurtT = Math.max(hurtT, cont ? 0.15 : 0.5);
-    if (!cont) { hurtGrace = 0.5; shake = Math.max(shake, Math.min(1, 0.2 + n / 35)); if (n >= 8) hitStop(0.06, 0.12); text(OCS ? OCS.pl.x : cave ? cp.x : p.x, OCS ? OCS.pl.y - 1.5 : cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.07); }
+    if (!cont) { hurtGrace = 0.5; shake = Math.max(shake, Math.min(1, 0.2 + n / 35)); if (n >= 8) hitStop(0.06, 0.12); text(OCS ? OCS.pl.x : cave ? cp.x : p.x, OCS ? OCS.pl.y - 1.5 : cave ? cp.y - 1.5 : p.y - PH - 0.3, "-" + Math.round(n), "#ff6a5a"); thud(110, 0.1); }
     if (hp <= 0) { hp = 0; if (!faintQ) faintQ = why || "hit"; }   // CRASH FIX: passing out waits for the end of this frame. Respawning right here
     // emptied the enemy list while the enemy that hit you was still being updated, which threw and stopped the game loop (the game froze)
   }
@@ -14687,7 +14691,7 @@
   var VXW = { wind: 1, crouch: 1, aim: 1, charge: 1 }, VXA = { lunge: 1, dive: 1, dash: 1, snap: 1, pounce: 1, leap: 1, hop: 1, bite: 1, spit: 1, throw: 1, swing: 1, lash: 1 };
   function vxPlay(kind, ev, x, y, lx, ly, force) {   // play creature kind's sound for event ev at (x, y), heard from (lx, ly)
     var V = KVOX[kind] || KVOX[VXALIAS[kind]]; if (!V) return false; var nm = ev === "i" ? V.i[Math.floor(Math.random() * V.i.length)] : V[ev]; if (!nm || !VOICE[nm]) return false;
-    var cv = OPT.cvox == null ? 1 : OPT.cvox; if (cv <= 0 || !fxReady()) return false;
+    var cv = OPT.cvox == null ? 0.5 : OPT.cvox; if (cv <= 0 || !fxReady()) return false;
     var dx = x - lx, dy = y - ly, d = Math.hypot(dx, dy), R = 20; if (d > R && !force) return false;
     var key = kind + ev, now = performance.now(); if (!force && now - (VOXS.last[key] || 0) < (ev === "h" ? 220 : 500)) return false; VOXS.last[key] = now;
     var vol = V.v * cv * Math.pow(Math.max(0, 1 - d / R), 1.25) * (ev === "i" ? 0.85 : 1); if (force) vol = V.v * cv; if (vol < 0.01) return false;
@@ -14704,11 +14708,11 @@
     if (c.hp !== undefined && m.h !== undefined && c.hp < m.h) vxPlay(kind, "h", x, y, lx, ly); m.h = c.hp;
     if (st !== m.s) { if (VXW[st]) vxPlay(kind, "w", x, y, lx, ly); else if (VXA[st]) vxPlay(kind, "a", x, y, lx, ly); else if (st === "recover" && V.b) vxPlay(kind, "b", x, y, lx, ly); m.s = st; }
     m.t -= dt;
-    if (m.t <= 0 && idleOk) { m.t = rr(V.e[0], V.e[1]); if (VOXS.gap <= 0 && !(kind === "bat" && c.st === "away") && vxPlay(kind, "i", x, y, lx, ly)) VOXS.gap = rr(1.6, 2.6); }
+    if (m.t <= 0 && idleOk) { m.t = rr(V.e[0], V.e[1]); if (VOXS.gap <= 0 && !(kind === "bat" && c.st === "away") && vxPlay(kind, "i", x, y, lx, ly)) VOXS.gap = rr(3.5, 6); }
     else if (m.t <= 0) m.t = rr(1, 3);
   }
   function tickVoices(dt) {
-    VOXS.gap -= dt; if ((OPT.cvox == null ? 1 : OPT.cvox) <= 0 || !fxReady() || titleOpen || !S) return;
+    VOXS.gap -= dt; if ((OPT.cvox == null ? 0.5 : OPT.cvox) <= 0 || !fxReady() || titleOpen || !S) return;
     var idle = !panelOpen && !pauseOpen, L, i;
     try {
       if (OCS) { if (OCS.sea || !OCS.pl) return; L = OCS.pl; (OCS.mobs || []).forEach(function (m) { vxWatch(m, m.k, L.x, L.y, dt, idle); }); return; }
@@ -14751,7 +14755,7 @@
     var bb = bioAt(); return bb === 1 ? "ember" : bb === 2 ? "frost" : "swamp";
   }
   function tickAmbBeds(dt) {
-    var z = ambZone(), night = daylight(S.time) < 0.6, rain = wxN() > 0.45, k = OPT.amb * OPT.fx, L = { air: 0, leaf: 0, buzz: 0, hum: 0, whistle: 0, machine: 0, rumble: 0 }, F = {};
+    var z = ambZone(), night = daylight(S.time) < 0.6, rain = wxN() > 0.45, k = OPT.amb * OPT.fx * 0.75, L = { air: 0, leaf: 0, buzz: 0, hum: 0, whistle: 0, machine: 0, rumble: 0 }, F = {};
     AMBB.zone = z;
     if (z === "swamp" || z === "farm") { L.air = 0.012; L.leaf = night ? 0.004 : 0.008; L.buzz = night ? 0 : 0.0035; if (!night && !rain) ambEvery("tw", dt, 1.4, 4.5, aTweet); if (night) ambEvery("owl", dt, 12, 28, aOwl); }
     else if (z === "ember") { L.rumble = 0.03; L.air = 0.008; F.air = 500; ambEvery("bl", dt, 2, 5, function () { nz(0, 0.05, 0.012 * OPT.amb, 3200, "highpass", 1); }); }
@@ -27005,7 +27009,7 @@
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("button"); if (!b || b.disabled) return;
     if (!b.closest("#sbxPanel, #sbxPack, #sbxStn, #sbxStory, #sbxWorlds, #sbxTip, #sbxMPV, #sbxTitle")) return;
-    thud(b.classList.contains("op-sw") ? (b.classList.contains("on") ? 520 : 760) : 640 + Math.random() * 120, 0.018);
+    thud(b.classList.contains("op-sw") ? (b.classList.contains("on") ? 520 : 760) : 640 + Math.random() * 120, 0.009);
   }, true);
   stageEl.addEventListener("wheel", function (e) {   // MOUSE WHEEL: scroll through the hotbar (Settings > Controls turns it off)
     if (OPT.wheel === false || e.target.tagName !== "CANVAS" || panelOpen || menuOpen || pauseOpen || titleOpen || CMD.open || Math.abs(e.deltaY) < 1) return;
