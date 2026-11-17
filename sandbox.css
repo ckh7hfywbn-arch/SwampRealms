@@ -3170,3 +3170,21 @@ html.sbx-txbig .sbx-stage>.sbx-toast,html.sbx-txbig .sbx-stage>.sbx-hint,html.sb
 /* windows shrink with the HUD on short landscape phones too */
 .sbx-stage>.sbx-pack,.sbx-stage>.sbx-panel,.sbx-stage>.sbx-pause>*,.sbx-stage>.sbx-dead>*{zoom:var(--hz)}
 html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sbx-txbig .sbx-stage>.sbx-pause>*,html.sbx-txbig .sbx-stage>.sbx-dead>*{zoom:calc(var(--hz) * var(--ui-tx,1))}
+/* main menu: Add to Home Screen (a full-width row under the two columns, in gold) and its steps */
+.sbx-title .tt-list .tt-a2hb{grid-column:1/-1;margin-top:2px;border-top:1px solid rgba(242,193,78,.18);border-radius:0 0 11px 11px}
+.sbx-title .tt-list .tt-a2hb svg{color:#f2c14e}
+.sbx-title .tt-list .tt-a2hb em{background:rgba(242,193,78,.16);color:#ffe9a8}
+.sbx-title .tt-list .tt-a2hb:hover,.sbx-title .tt-list .tt-a2hb:focus-visible{background:rgba(242,193,78,.12);box-shadow:inset 3px 0 0 #f2c14e}
+.sbx-title .tt-a2h{max-width:680px}
+.sbx-title .a2h-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.sbx-title .a2h-top img{width:58px;height:58px;border-radius:14px;flex:none;box-shadow:0 6px 16px -6px #000,0 0 0 1px #f2c14e66}
+.sbx-title .a2h-top h2{margin:0 0 4px;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.35rem;color:#ffe9a8}
+.sbx-title .a2h-top p{margin:0;font-weight:700;font-size:.88rem;line-height:1.4;color:#c3dccf}
+.sbx-title .a2h-col ol{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px;counter-reset:a2h}
+.sbx-title .a2h-col li{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.88rem;line-height:1.35;color:#d4ecdf;counter-increment:a2h}
+.sbx-title .a2h-col li b{color:#fff;font-weight:800}
+.sbx-title .a2h-ic{position:relative;flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#10231c;border:1px solid #4ee6b455;color:#4ee6b4}
+.sbx-title .a2h-ic svg{width:20px;height:20px}
+.sbx-title .a2h-ic::after{content:counter(a2h);position:absolute;top:-6px;left:-6px;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#f2c14e;color:#1a1405;font:900 .66rem/1 Nunito,system-ui,sans-serif}
+.sbx-title .a2h-note{margin:0 0 14px;padding:9px 12px;border-radius:12px;background:rgba(242,193,78,.08);border:1px solid rgba(242,193,78,.25);font-weight:600;font-size:.82rem;line-height:1.4;color:#d4ecdf}
+.sbx-title .a2h-note b{color:#ffe9a8}

@@ -12787,8 +12787,33 @@
     worlds: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.3 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.3-3.8-8.5S9.4 5.9 12 3.5z"/>',
     mp: '<circle cx="8.5" cy="9" r="3"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M3 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M14.5 14.3c2.6-.3 5.1 1.2 5.8 4.7"/>',
     opts: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"/>',
-    how: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 014.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17.2v.1"/>'
+    how: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 014.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17.2v.1"/>',
+    home: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8.5v6M9 11.5h6M10.5 18.5h3"/>',
+    share: '<path d="M12 3v11M8 7l4-4 4 4"/><path d="M6 11H5v9.5h14V11h-1"/>',
+    addsq: '<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M12 8.5v7M8.5 12h7"/>',
+    dots: '<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'
   };
+  // ADD TO HOME SCREEN: the main menu offers it on phones and tablets (and on computers whose browser can install Delve). Where the browser
+  // can install it in one tap (Android Chrome, Edge, desktop Chrome) the button does that; otherwise (iPhone, iPad) it shows the steps.
+  var A2H = { ev: null, ios: /iPhone|iPad|iPod/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1), droid: /Android/.test(navigator.userAgent || "") };
+  function a2hApp() { try { return !!(navigator.standalone || matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches); } catch (e) { return false; } }
+  function a2hShow() { return !a2hApp() && (!!A2H.ev || coarse || A2H.ios); }
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); A2H.ev = e; if (titleOpen && !TC.how && !TC.home) renderTitle(); });
+  window.addEventListener("appinstalled", function () { A2H.ev = null; if (titleOpen) renderTitle(); toast("Delve is on your Home Screen. Open it from the frog icon for full screen.", "#4ee6b4"); });
+  function a2hHtml() {
+    var st = function (ic, t) { return '<li><span class="a2h-ic">' + ttIcon(ic) + "</span><span>" + t + "</span></li>"; };
+    var ios = '<div class="a2h-col"><h3>iPhone and iPad</h3><ol>' + st("share", "Tap the <b>Share</b> button in your browser's toolbar.") + st("addsq", "Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.") + st("home", "Open Delve from the new <b>frog icon</b>.") + "</ol></div>";
+    var and = '<div class="a2h-col"><h3>Android</h3><ol>' + st("dots", "Tap the browser's <b>menu</b> (the three dots).") + st("addsq", "Tap <b>Add to Home screen</b> or <b>Install app</b>.") + st("home", "Open Delve from the new <b>frog icon</b>.") + "</ol></div>";
+    return '<div class="tt-how tt-a2h" role="group" aria-label="Add to Home Screen">'
+      + '<div class="a2h-top"><img alt="" src="delve-icon-180.png"><div><h2>Add Delve to your Home Screen</h2><p>It opens full screen and sideways, with no browser bars, like a real app. Your worlds stay the same.</p></div></div>'
+      + '<div class="tt-hcols">' + (A2H.droid ? and + ios : ios + and) + "</div>"
+      + '<p class="a2h-note"><b>Not working?</b> Private or incognito tabs can\'t add to the Home Screen, so open Delve in a normal tab first. On iPhone, Safari works best. If an old Delve icon opens with the browser bars, delete it and add it again.</p>'
+      + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
+  }
+  function a2hGo() {
+    if (A2H.ev) { var ev = A2H.ev; A2H.ev = null; try { ev.prompt(); if (ev.userChoice) ev.userChoice.then(function () { if (titleOpen) renderTitle(); }); } catch (e) {} return; }
+    TC.home = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true });
+  }
   function ttIcon(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TT_IC[k] + "</svg>"; }
   function titleIsNew() { return !wIdx || !wIdx.list.length; }
   function lastWorld() { return wIdx && (wEntry(wIdx.last) || wIdx.list.slice().sort(function (a, b) { return b.played - a.played; })[0]); }
@@ -12800,7 +12825,8 @@
     return bits.join(" · ");
   }
   function renderTitle() {
-    var B = $("sbxTBtns"); if (!B) return; titleEl.classList.toggle("how", TC.how);
+    var B = $("sbxTBtns"); if (!B) return; titleEl.classList.toggle("how", TC.how || !!TC.home);
+    if (TC.home) { B.innerHTML = a2hHtml(); return; }
     if (TC.how) {
       B.innerHTML = '<div class="tt-how" role="group" aria-label="How to play">'
         + '<h2>How to play</h2>'
@@ -12820,7 +12846,8 @@
       + '<button type="button" data-tt="worlds">' + ttIcon("worlds") + "<span>Worlds</span><em>" + n + "</em></button>"
       + '<button type="button" data-tt="mp">' + ttIcon("mp") + "<span>Play together</span></button>"
       + '<button type="button" data-tt="opts">' + ttIcon("opts") + "<span>Options</span></button>"
-      + '<button type="button" data-tt="how">' + ttIcon("how") + "<span>How to play</span></button></nav>";
+      + '<button type="button" data-tt="how">' + ttIcon("how") + "<span>How to play</span></button>"
+      + (a2hShow() ? '<button type="button" data-tt="a2h" class="tt-a2hb">' + ttIcon("home") + "<span>Add to Home Screen</span><em>Full screen</em></button>" : "") + "</nav>";
   }
   function drawTitleLogo(now) {
     var cv = $("sbxLogo"); if (!cv || typeof DelveLogo === "undefined") return;
@@ -12848,13 +12875,13 @@
     bossGone(); save(); if (panelOpen) closePanel(); if (menuOpen) closeWorlds(); closeMPV();
     if (curId) { touchIdx(); backdrop(); }   // your world stops running; the menu shows the scenery world
     keys.l = keys.r = keys.j = keys.d = keys.u = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null;
-    titleOpen = true; TC.how = false; stageEl.classList.add("title"); titleEl.hidden = false; titleEl.classList.remove("in"); void titleEl.offsetWidth; titleEl.classList.add("in");
+    titleOpen = true; TC.how = false; TC.home = false; stageEl.classList.add("title"); titleEl.hidden = false; titleEl.classList.remove("in"); void titleEl.offsetWidth; titleEl.classList.add("in");
     cam.y = titleCamTarget(); renderTitle(); drawTitleLogo(performance.now());
     var pb = titleEl.querySelector(".tt-play"); if (pb) pb.focus({ preventScroll: true });
   }
   function closeTitle() {
     if (!titleOpen) return;
-    titleOpen = false; TC.how = false; titleEl.hidden = true; stageEl.classList.remove("title"); hbDirty = true; lastBio = -1; touchIdx();
+    titleOpen = false; TC.how = false; TC.home = false; titleEl.hidden = true; stageEl.classList.remove("title"); hbDirty = true; lastBio = -1; touchIdx();
     if (!hintShown) { hintShown = true; if (!S.st.mined && !tutDone("hint")) { tutMark("hint"); $("sbxHint").classList.add("on"); setTimeout(function () { $("sbxHint").classList.remove("on"); }, 14000); } }
     if (storyQ.length && storyOpen < 0) setTimeout(showStory, 500);
     try { cv.focus({ preventScroll: true }); } catch (e) {}
@@ -12864,14 +12891,15 @@
     if (k === "char") return ccOpen(false, function () { if (titleOpen) renderTitle(); });   // CHARACTERS: the full character maker
     if (k === "tour") { TC.how = false; closeTitle(); setTimeout(function () { startTour(true); }, 600); return; }
     if (k === "how") { TC.how = true; renderTitle(); var bb = titleEl.querySelector("[data-tt=back]"); if (bb) bb.focus({ preventScroll: true }); return; }
-    if (k === "back") { TC.how = false; renderTitle(); var hb = titleEl.querySelector("[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
+    if (k === "a2h") return a2hGo();
+    if (k === "back") { var wasHome = TC.home; TC.how = false; TC.home = false; renderTitle(); var hb = titleEl.querySelector(wasHome ? "[data-tt=a2h]" : "[data-tt=how]"); if (hb) hb.focus({ preventScroll: true }); return; }
     if (k === "worlds" || k === "new") { openWorlds(k === "new" ? "new" : "list"); WL.came = k; return; }
     if (k === "mp") return openMPV();
     if (k === "opts") return openPanel("more");
   }
   function titleKey(e) {
     var k = e.key;
-    if (k === "Escape" && TC.how) { e.preventDefault(); return titleAct("back"); }
+    if (k === "Escape" && (TC.how || TC.home)) { e.preventDefault(); return titleAct("back"); }
     if (k === "ArrowDown" || k === "ArrowUp" || k === "s" || k === "w" || k === "S" || k === "W") {
       var bs = [].slice.call(titleEl.querySelectorAll("button")), i = bs.indexOf(document.activeElement), d = (k === "ArrowDown" || k === "s" || k === "S") ? 1 : -1;
       var n = bs.length; if (n) { bs[i < 0 ? (d > 0 ? 0 : n - 1) : (i + d + n) % n].focus({ preventScroll: true }); e.preventDefault(); }
@@ -27142,7 +27170,7 @@
     var app = navigator.standalone || (matchMedia && (matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches));
     var off = 0; try { off = +localStorage.getItem("swamp-delve-iosfs") || 0; } catch (e) {}
     if (ios && !app && off < 3) el.hidden = false;
-    el.addEventListener("click", function (e) { if (!e.target.closest("[data-iosfs-x]")) return; el.hidden = true; try { localStorage.setItem("swamp-delve-iosfs", "9"); } catch (er) {} });
+    el.addEventListener("click", function (e) { if (!e.target.closest("[data-iosfs-x]")) { if (titleOpen) { el.hidden = true; a2hGo(); } return; } el.hidden = true; try { localStorage.setItem("swamp-delve-iosfs", "9"); } catch (er) {} });
     try { localStorage.setItem("swamp-delve-iosfs", String(off + 1)); } catch (e) {}   // (it stops showing by itself after three visits)
   })();
   if (ROTQ.addEventListener) ROTQ.addEventListener("change", rotChk); else if (ROTQ.addListener) ROTQ.addListener(rotChk);
@@ -28819,6 +28847,7 @@
       ["Creature voices: wolf growl, snarl, pant, yelp", function () { if (panelOpen) closePanel(); ["w", "a", "b", "h"].forEach(function (ev, j) { setTimeout(function () { vxPlay("wolf", ev, 0, 0, 0, 0, true); }, j * 1600); }); }],
       ["Key conflict pop-up (Bind / Cancel)", function () { if (panelOpen) closePanel(); KEYMAP.pend = { id: "build", k: "e", oid: "craft" }; keyPopShow(); }],
       ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
+      ["Add to Home Screen steps (main menu)", function () { if (panelOpen) closePanel(); if (!titleOpen) openTitle(); setTimeout(function () { TC.home = true; renderTitle(); }, 60); }],
       ["Turn-your-phone screen (preview, tap to close)", function () { if (panelOpen) closePanel(); var rb = $("sbxRot"); if (rb) rb.classList.add("show"); }],
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
       ["Loading screen: home to the SwampRealms", function () { loadScreen("home", function () {}, { min: 3000 }); }],
