@@ -759,7 +759,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 2, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 6, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 3 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 2, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 6, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, gear: { back: "", lamp: "", mount: "", ride: 1 }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 3 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
   // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
   // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
@@ -903,7 +903,8 @@
     if (o.traps && typeof o.traps === "object" && o.wv === SW.WORLDVER) Object.keys(o.traps).forEach(function (k) { var v = o.traps[k]; if (/^\d+,\d+$/.test(k) && v) d.traps[k] = { f: (Array.isArray(v.f) ? v.f : []).filter(function (f) { return ITEMS[f]; }).slice(0, TRAP_MAX), t: clamp(+v.t || 0, 0, TRAP_T) }; });
     if (o.stands && typeof o.stands === "object" && o.wv === SW.WORLDVER) Object.keys(o.stands).forEach(function (k) { var v = o.stands[k]; if (/^\d+,\d+$/.test(k) && v) d.stands[k] = { a: clamp(Math.floor(+v.a) || 0, 0, 5), w: clamp(Math.floor(+v.w) || 0, 0, 5) }; });
     if (typeof o.bossOn === "string" && ITEMS[o.bossOn] && ITEMS[o.bossOn].summon) d.bossOn = o.bossOn;
-    if (o.charms && typeof o.charms === "object") { if (o.charms.own) Object.keys(CHARMS).forEach(function (k) { if (o.charms.own[k]) d.charms.own[k] = 1; }); if (Array.isArray(o.charms.on)) o.charms.on.forEach(function (k) { if (d.charms.own[k] && d.charms.on.indexOf(k) < 0 && d.charms.on.length < 3) d.charms.on.push(k); }); }
+    if (o.charms && typeof o.charms === "object") { if (o.charms.own) Object.keys(CHARMS).forEach(function (k) { if (o.charms.own[k]) d.charms.own[k] = 1; }); if (Array.isArray(o.charms.on)) o.charms.on.forEach(function (k) { if (d.charms.own[k] && d.charms.on.indexOf(k) < 0 && d.charms.on.length < 6) d.charms.on.push(k); }); }
+    if (o.gear && typeof o.gear === "object") d.gear = { back: typeof o.gear.back === "string" && ITEMS[o.gear.back] ? o.gear.back : "", lamp: typeof o.gear.lamp === "string" && ITEMS[o.gear.lamp] ? o.gear.lamp : "", mount: typeof o.gear.mount === "string" && ITEMS[o.gear.mount] ? o.gear.mount : "", ride: o.gear.ride === 0 ? 0 : 1 };   // MORE GEAR
     if (o.wx && WX_LEN[o.wx.k] && isFinite(+o.wx.t)) d.wx = { k: o.wx.k, t: clamp(+o.wx.t, 1, 600), n: clamp(+o.wx.n || 0, 0, 1) };
     if (o.bty && typeof o.bty === "object") {   // Old Croaker's bounties
       var okb = function (b) { if (!b || typeof b.id !== "string" || !isFinite(+b.need) || !isFinite(+b.b)) return null; var rw = {}; if (b.rw && typeof b.rw === "object") Object.keys(b.rw).forEach(function (k) { var n = Math.floor(+b.rw[k]); if (ITEMS[k] && n > 0) rw[k] = Math.min(n, 99); }); return { id: b.id.slice(0, 12), need: Math.max(1, Math.floor(+b.need)), b: Math.max(0, Math.floor(+b.b)), tk: clamp(Math.floor(+b.tk) || 2, 1, 20), rw: rw, done: b.done ? 1 : 0, told: b.told ? 1 : 0 }; };
@@ -992,7 +993,7 @@
     decoInit(state);   // DECORATING: this world's decorations (S.deco), checked against the furniture now in place
   }
   function start(state) {
-    S = state; if (!S.shape) S.shape = {}; shapeCount(); if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
+    S = state; if (!S.shape) S.shape = {}; try { gearFix(); } catch (er) {} shapeCount(); if (S.st && !(S.st.mineLift | 0) && (S.st.caveDeep | 0) >= 5) S.st.mineLift = Math.min(Math.floor(S.st.caveDeep / 5) * 5, 50); dropsLoad(); setTimeout(function () { try { tickAch(0, true); } catch (e) {} }, 0); if (S.bossOn) { S.inv[S.bossOn] = (S.inv[S.bossOn] || 0) + 1; var rb = S.bossOn; S.bossOn = ""; setTimeout(function () { toast("The fight was left unfinished, so your " + ITEMS[rb].n + " is back in your bag.", "#f2c14e"); }, 1500); }
     benchLv = S.bl || 1; repaintBench(); grow.length = 0; canAcc = 0; build(S); cave = null; trans = null; OCS = null; OISL = null; HOME = null; HTC = null; resize(); stageEl.classList.remove("cave", "ocean", "home");
     if (state.grown) { state.grown = false; setTimeout(function () { toast("The world was rebuilt! Taller mountains, volcanoes, ice spires and deeper caves. Your items are safe.", "#f2c14e"); }, 1200); }
     var sp = world.spawn; p.x = S.p ? S.p.x : sp.x; p.y = S.p ? S.p.y : sp.y; p.face = S.p ? S.p.f : 1; p.vx = p.vy = 0;
@@ -1604,6 +1605,7 @@
     if (fit > 0) {
       if (!S.found) S.found = {}; if (!S.found[item]) { S.found[item] = 1; collFound(item); }
       S.inv[item] = (S.inv[item] || 0) + fit; packInto(S.slots, item, fit);
+      if ((item === "x_jet" && !gearS().back) || (item === "x_helm" && !gearS().lamp)) setTimeout(function () { if (gearEquip(item === "x_jet" ? "back" : "lamp", item, true)) toast("Equipped the " + ITEMS[item].n + " (Backpack > More gear).", "#7af0d0"); }, 0);   // MORE GEAR: it goes straight into its slot
       if (typeof S.st[item] === "number") S.st[item] += fit;
       if (ITEMS[item].tile !== undefined && S.mru.indexOf(item) < 0) S.mru.push(item);
       if (tx !== undefined) { if (giveBatch) giveBatch[item] = (giveBatch[item] || 0) + fit; else text(tx + 0.5, ty, "+" + fit + " " + ITEMS[item].n, ITEMS[item].gem || "#f6eedb"); }   // a blast gathers its pickups into one line each
@@ -1731,7 +1733,7 @@
     if (id !== T.LOG || cave || walls[ty * W + tx]) return false;
     return trunkTree(tx, ty) && canStyle(tx) === 0 && world.bio[clamp(tx, 0, W - 1)] === 0;   // a Murkwater tree's trunk (world-grown or grown from a sapling)
   }
-  function helmOn() { return (S.inv.x_helm || 0) > 0; }   // MINER'S HELMET: carried = worn
+  function helmOn() { return gearOn("lamp", "x_helm"); }   // MINER'S HELMET: worn in the Head lamp slot (More gear)
   function effTier() { return !bare && S.tier > 0 && durOf("pick") > 0 ? S.tier : 0; }   // a broken pick digs like bare paws
   function wear(k, n) {
     if (k === "pick" && gem("pick", "sapphire") && Math.random() < 0.35) return;   // a Sapphire in the pick: it wears out slower
@@ -7832,13 +7834,43 @@
     star: { n: "Wishing Star Charm", d: "Falling stars come on every clear night and land closer to you.", c: "#ffe9a0", g: "#7fa8ff" },   // starfall pack
     wander: { n: "Wanderer's Charm", d: "Migrations come twice as often and leave twice the keepsakes, and you sail 10% faster.", c: "#c8a070", g: "#9ad0ff" }   // MIGRATIONS
   };
-  function charmSlots() { return (S.st.boss & 7) === 7 ? 3 : 2; }
+  function charmBase() { return (S.st.boss & 7) === 7 ? 3 : 2; }   // the charm slots under your character
+  function charmSlots() { return charmBase() + trinkOpen(); }   // ... plus the open trinket slots (ring, necklace, belt) in More gear
+  // ---------- MORE GEAR (Curios-style extra slots, Nov 2026): Back (Jetpack), Head lamp (Miner's Helmet), Mount, and trinket slots ----------
+  // S.gear = { back, lamp, mount: item ids moved out of the bag into the slot, ride: 1/0 }. The Jetpack and the Miner's Helmet only work
+  // while they sit in their slot. A saddle in the Mount slot is ridden on the surface without holding it (ride can be switched off).
+  // Trinket slots hold charms: the Ring is open from the start, the Necklace after your first boss, the Belt after your second.
+  var GEARS = { back: { n: "Back", e: "Jetpack", ok: function (k) { return k === "x_jet"; }, none: "Craft the Swamp-Gas Jetpack at a Workbench (Craft tab, Tools)." },
+    lamp: { n: "Head lamp", e: "Miner's Helmet", ok: function (k) { return k === "x_helm"; }, none: "Craft the Miner's Helmet at a Workbench (Craft tab, Tools)." },
+    mount: { n: "Mount", e: "Saddle", ok: function (k) { return !!(typeof MOUNTS !== "undefined" && MOUNTS[k]); }, none: "Craft a saddle (Toad, Gator or Heron) at a Workbench, or raise a skeleton at the museum." } };
+  var TRINK = [{ k: "ring", n: "Ring", need: 0 }, { k: "neck", n: "Necklace", need: 1 }, { k: "belt", n: "Belt", need: 2 }];
+  function bossN() { var b = S.st.boss | 0; return (b & 1 ? 1 : 0) + (b & 2 ? 1 : 0) + (b & 4 ? 1 : 0); }
+  function trinkOpen() { var n = bossN(); return TRINK.filter(function (t) { return n >= t.need; }).length; }
+  function gearS() { if (!S.gear || typeof S.gear !== "object") S.gear = { back: "", lamp: "", mount: "", ride: 1 }; return S.gear; }
+  function gearOn(slot, k) { return gearS()[slot] === k; }
+  function gearHas(k) { var G = gearS(); return G.back === k || G.lamp === k || G.mount === k; }
+  function gearTakeInv(k) { S.inv[k]--; if (S.inv[k] <= 0) { delete S.inv[k]; if (sel === k) { sel = "pick"; bare = true; } } reslot(); hbDirty = true; }
+  function gearOff(slot, quiet) {
+    var G = gearS(), k = G[slot]; if (!k) return true;
+    if (room(k) < 1) { if (!quiet) nag("Your bag is full. Free a slot to take off the " + ITEMS[k].n + "."); return false; }
+    G[slot] = ""; addInv(k, 1); if (!quiet) toast("Took off the " + ITEMS[k].n + ".", "#f6eedb"); save(); return true;
+  }
+  function gearEquip(slot, k, quiet) {
+    var G = gearS(); if (!GEARS[slot] || !GEARS[slot].ok(k) || !(S.inv[k] > 0)) return false;
+    var old = G[slot]; gearTakeInv(k); G[slot] = k; if (old) addInv(old, 1);
+    if (slot === "mount") G.ride = 1;
+    if (!quiet) { toast("Equipped the " + ITEMS[k].n + (slot === "mount" ? ". You ride it on the surface." : "."), "#7af0d0"); snd("coin"); }
+    S.st.gearswap = (S.st.gearswap || 0) + 1; save(); return true;
+  }
+  function gearFix() {   // older saves (and fresh crafts): a carried Jetpack or Miner's Helmet goes straight into its empty slot, so it keeps working
+    var G = gearS(); ["back", "lamp"].forEach(function (sl) { if (!G[sl]) { var k = sl === "back" ? "x_jet" : "x_helm"; if (S.inv[k] > 0) gearEquip(sl, k, true); } });
+  }
   function hasCharm(k) { return S.charms.on.indexOf(k) > -1; }
   function wearCharm(k) {
     if (!S.charms.own[k]) return;
     var i = S.charms.on.indexOf(k);
     if (i > -1) { S.charms.on.splice(i, 1); toast("Took off the " + CHARMS[k].n + ".", "#f6eedb"); }
-    else if (S.charms.on.length >= charmSlots()) { nag("You can wear " + charmSlots() + " charms" + (charmSlots() < 3 ? ". Beat all three bosses to wear a third." : ".") + " Take one off first."); return; }
+    else if (S.charms.on.length >= charmSlots()) { nag("You can wear " + charmSlots() + " charms" + (trinkOpen() < 3 ? ". Beat bosses to open more trinket slots (Backpack > More gear)." : ".") + " Take one off first."); return; }
     else { S.charms.on.push(k); toast("Wearing the " + CHARMS[k].n + ": " + CHARMS[k].d, CHARMS[k].c); snd("coin"); }
     S.st.charmswap++; checkGoals(); save();
   }
@@ -10242,13 +10274,13 @@
   // SWAMP-GAS JETPACK: carry it; keep holding jump once you're falling (or near the top of a jump) to thrust up. 2.2 s of gas, refills on the ground.
   var JET = { f: 2.2, max: 2.2, on: false, puff: 0 };
   function jetStep(h, jump, lad) {
-    if (!(S.inv.x_jet > 0) || cave) { JET.on = false; return; }
+    if (!gearOn("back", "x_jet") || cave) { JET.on = false; return; }
     if (p.on || lad) { JET.f = Math.min(JET.max, JET.f + h * 1.6); JET.on = false; return; }
     JET.on = !!jump && !p.wet && JET.f > 0 && p.vy > -3 && !gliding;
     if (JET.on) { JET.f -= h; p.vy = Math.max(p.vy - 72 * h, -8.5); JET.puff -= h; if (JET.puff <= 0) { JET.puff = 0.04; parts.push({ x: p.x - p.face * 0.25, y: p.y - 0.6, vx: (Math.random() - 0.5) * 1.5, vy: 4 + Math.random() * 2, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? "#9fe86a" : "#d8ffb0", s: 3, g: -2 }); if (Math.random() < 0.3) nz(0, 0.08, 0.012, 700 + Math.random() * 400, "bandpass", 2); } S.st.jetT = (S.st.jetT || 0) + h; }
   }
   function drawJet(g) {
-    if (!(S.inv.x_jet > 0) || cave || JET.f >= JET.max - 0.01) return; var sx = ox + (p.x - 0.75) * ts, sy = oy + (p.y - 1.6) * ts, hh = ts * 1.0;
+    if (!gearOn("back", "x_jet") || cave || JET.f >= JET.max - 0.01) return; var sx = ox + (p.x - 0.75) * ts, sy = oy + (p.y - 1.6) * ts, hh = ts * 1.0;
     g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(sx - 3, sy - 1, 6, hh + 2); g.fillStyle = JET.f < 0.5 ? "#ff6b82" : "#9fe86a"; g.fillRect(sx - 2, sy + hh * (1 - JET.f / JET.max), 4, hh * JET.f / JET.max);
   }
   // BORE DRILL: Z (or tapping it in the hotbar) switches 3x3 digging on and off for the pickaxe (S.bore).
@@ -13760,7 +13792,7 @@
   function craft(id) {
     var r = RECIPES.concat(DECOR).filter(function (x) { return x.id === id; })[0]; if (!r) return;
     if (id === "x_grap2" && (S.grapLv | 0) >= 1) { nag("Your grapple already has the Mk II upgrade."); return; } if (id === "x_grap3" && (S.grapLv | 0) < 1) { nag("Install the Mk II upgrade first."); return; } if (id === "x_grap3" && (S.grapLv | 0) >= 2) { nag("Your grapple is already Mk III."); return; }
-    if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet" || id === "clippers" || id === "x_helm") && (S.inv[id] || 0) > 0) { nag("You already have one."); return; }
+    if ((id === "x_mallet" && (S.inv.mallet || 0) > 0) || (id === "x_drill" || id === "x_detect" || id === "x_jet" || id === "clippers" || id === "x_helm") && ((S.inv[id] || 0) > 0 || gearHas(id))) { nag("You already have one."); return; }
     if (r.deco && !decorNear()) { toast("Stand next to a Decor Workbench to craft this.", "#f2c14e"); return; }
     var spare = spareFor(r);   // MULTIPLES: gear you already have makes a spare copy for your bag (make 7 swords if you like)
     if (r.sh && S.shovel && !brokenCur(r)) return;
@@ -19833,23 +19865,66 @@
   function pvBind(cv) {}
   // gear slot icons, drawn (not emoji): faint outlines in the empty slots
   var PKI = { "\ud83d\udee1": '<path d="M12 3l7 3v5.5c0 4.3-3 7.6-7 9.5-4-1.9-7-5.2-7-9.5V6z"/>', "\u2694": '<path d="M20 4L9.6 14.4M20 4h-3.4M20 4v3.4"/><path d="M6.6 11.8l5.6 5.6M9.4 14.6L4.4 19.6"/>', "\u2726": '<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>', "\ud83c\udf92": '<rect x="5" y="7" width="14" height="13" rx="3"/><path d="M9 7V5.5a3 3 0 016 0V7M8.5 13h7v3h-7z"/>', "+": '<path d="M12 6v12M6 12h12"/>' };
+  Object.assign(PKI, {   // MORE GEAR slot outlines
+    helm: '<path d="M4.5 15.5c0-5 3.4-9 7.5-9s7.5 4 7.5 9"/><path d="M3 15.5h18v2.5H3zM12 6.5v5"/>',
+    legs: '<path d="M7 4h10l-.6 16h-3.6L12 10.5 11.2 20H7.6z"/>',
+    boots: '<path d="M7 4h5v9l6.5 2.5c1 .4 1.5 1.2 1.5 2.2V20H6z"/><path d="M6 17h14"/>',
+    jet: '<rect x="5" y="5" width="5.5" height="11" rx="2.2"/><rect x="13.5" y="5" width="5.5" height="11" rx="2.2"/><path d="M10.5 9h3M6.5 18.5l1.2 2.5 1.2-2.5M15.1 18.5l1.2 2.5 1.2-2.5"/>',
+    lamp: '<path d="M5 15c0-4.7 3.1-8 7-8s7 3.3 7 8z"/><circle cx="12" cy="11" r="2"/><path d="M3.5 15h17M12 4V2.5M7 5.5L6 4.3M17 5.5l1-1.2"/>',
+    mount: '<path d="M5 11c0-2.5 2.5-4 7-4s7 1.5 7 4v3H5z"/><path d="M8 14v5M16 14v5M12 7V4.5M10.5 4.5h3"/>',
+    ring: '<circle cx="12" cy="14" r="6"/><path d="M9.5 6.5L12 3.5l2.5 3L12 8.5z"/>',
+    neck: '<path d="M5 4c0 6 3 9.5 7 9.5S19 10 19 4"/><path d="M12 13.5l-2.5 3L12 20l2.5-3.5z"/>',
+    belt: '<rect x="3" y="9" width="18" height="6" rx="1.5"/><rect x="9.5" y="8" width="5" height="8" rx="1"/><path d="M12 10.5v3"/>',
+    lock: '<rect x="6" y="11" width="12" height="9" rx="2"/><path d="M8.5 11V8.5a3.5 3.5 0 017 0V11"/>'
+  });
   function pkSlot(attr, ic, label, sub, on, extra) {
     return '<button type="button" class="pk-slot' + (ic ? "" : " empty") + (on ? " on" : "") + '" ' + attr + ' aria-label="' + esc(label + (sub ? ": " + sub : "")) + '">' + (ic ? '<img alt="" src="' + ic + '">' : '<svg class="pk-sil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">' + (PKI[extra] || PKI["+"]) + "</svg>") + "<small>" + esc(ic && sub && sub !== "none" && sub !== "empty" ? sub : label) + "</small></button>";   // BACKPACK: a filled slot names what is in it
   }
   function pkStars(k) { var n = mwStars(k); return n >= 2 ? '<em class="pk-st' + (n >= 3 ? " mw" : "") + '">' + (n >= 3 ? "★★★" : "★★") + "</em>" : ""; }
+  var APSLOTS = [["helm", "Helmet"], ["arm", "Chest"], ["legs", "Legs"], ["boots", "Boots"]];
+  try { PK.more = localStorage.getItem("swamp-delve-moregear") === "1"; } catch (er) {}
   function pkEqHtml() {
-    var L = "", R = "";
-    L += pkSlot('data-pkeq="arm" data-eqk="arm"', S.arm ? icon("arm" + S.arm) : "", "Armor", S.arm ? ARMORS[S.arm].n : "none", PK.focus === "arm", "🛡").replace("</small></button>", "</small>" + pkStars("arm") + "</button>");
-    // (no Weapon or Pickaxe slots here: those live on the hotbar. This is just what you wear: armor, charms and the backpack)
-    var n = charmSlots();
-    for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; R += pkSlot('data-pkeq="charm"', ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "✦"); }
-    R += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.focus === "bag", "🎒");
-    return [L, R];
+    // ARMOR: all four pieces in a row (helmet, chestpiece, leggings, boots), then the charm slots and the backpack, then More gear
+    var h = '<div class="pk-armrow">' + APSLOTS.map(function (q) { var k = q[0], t = k === "arm" ? S.arm : (S.ap || {})[k] | 0, ic = t ? icon(k === "arm" ? "arm" + t : "ap_" + k + t) : "";
+      return pkSlot('data-pkeq="' + k + '"' + (k === "arm" ? ' data-eqk="arm"' : ""), ic, q[1], q[1], PK.focus === k, k === "arm" ? "\ud83d\udee1" : k).replace("</small></button>", "</small>" + (k === "arm" ? pkStars("arm") : "") + (t && toolBroken(k) ? '<em class="pk-brk">broken</em>' : "") + "</button>"); }).join("") + "</div>";
+    var n = charmBase(), r = "";
+    for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; r += pkSlot('data-pkeq="charm"', ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "\u2726"); }
+    r += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.focus === "bag", "\ud83c\udf92");
+    h += '<div class="pk-eqrow" style="grid-template-columns:repeat(' + (n + 1) + ',minmax(0,1fr))">' + r + "</div>";
+    // MORE GEAR: the expand button (with little icons of what is in there), then the extra slots
+    var G = gearS(), mini = ["back", "lamp", "mount"].filter(function (k) { return G[k]; }).map(function (k) { return '<img alt="" src="' + icon(G[k]) + '">'; }).join("") + S.charms.on.slice(n).map(function (k) { return '<img alt="" src="' + icon("charm_" + k) + '">'; }).join("");
+    var filled = ["back", "lamp", "mount"].filter(function (k) { return G[k]; }).length + Math.max(0, S.charms.on.length - n), open = 3 + trinkOpen();
+    h += '<button type="button" class="pk-morebtn' + (PK.more ? " on" : "") + '" data-pkmore aria-expanded="' + !!PK.more + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></svg><b>More gear</b><span class="mini">' + mini + '</span><small>' + filled + " / " + open + '</small><i class="chev">' + (PK.more ? "\u25b4" : "\u25be") + "</i></button>";
+    if (PK.more) {
+      var cells = ["back", "lamp", "mount"].map(function (k) { var it = G[k]; return pkSlot('data-pkg="' + k + '"', it ? icon(it) : "", GEARS[k].n, it ? ITEMS[it].n : "empty", PK.gpick === k, k === "back" ? "jet" : k).replace('class="pk-slot', 'class="pk-slot gx' + (k === "mount" && it && !G.ride ? " off" : "")); }).join("");
+      cells += TRINK.map(function (t, ti) { var ok = bossN() >= t.need, ck = ok ? S.charms.on[n + TRINK.slice(0, ti).filter(function (q) { return bossN() >= q.need; }).length] : null;
+        return pkSlot('data-pkg="' + t.k + '"', ck ? icon("charm_" + ck) : "", t.n, ck ? CHARMS[ck].n : ok ? "empty" : "locked", PK.gpick === t.k, ok ? t.k : "lock").replace('class="pk-slot', 'class="pk-slot gx' + (ok ? "" : " locked")); }).join("");
+      h += '<div class="pk-more">' + cells + "</div>" + pkGearPick();
+    }
+    return [h, ""];
+  }
+  function pkGearPick() {   // the picker under More gear: what you can put in the chosen slot
+    var k = PK.gpick; if (!k) return ""; var G = gearS(), h = '<div class="pk-gpick">';
+    if (GEARS[k]) {
+      var cur = G[k], own = Object.keys(S.inv).filter(function (q) { return S.inv[q] > 0 && GEARS[k].ok(q); });
+      h += '<div class="pk-gph"><b>' + GEARS[k].n + "</b><small>" + (k === "back" ? "Jetpack: keep holding jump at the top of a jump to fly. Only works while worn here." : k === "lamp" ? "Miner's Helmet: lights the dark underground. Only works while worn here." : "A saddle here is ridden on the surface without holding it.") + "</small></div>";
+      if (cur) h += '<div class="pk-gcur"><img alt="" src="' + icon(cur) + '"><span><b>' + esc(ITEMS[cur].n) + "</b><small>" + (k === "mount" ? (G.ride ? "Riding" : "Resting (not ridden)") : "Equipped") + "</small></span>" + (k === "mount" ? '<button type="button" class="btn ghost" data-pkride>' + (G.ride ? "Get off" : "Ride") + "</button>" : "") + '<button type="button" class="btn ghost" data-pkgoff="' + k + '">Take off</button></div>';
+      if (own.length) h += '<div class="pk-glist">' + own.map(function (q) { return '<button type="button" class="pk-gopt" data-pkgeq="' + k + ":" + q + '"><img alt="" src="' + icon(q) + '"><span><b>' + esc(ITEMS[q].n) + "</b><small>" + (cur ? "Swap in" : "Equip") + "</small></span></button>"; }).join("") + "</div>";
+      else if (!cur) h += '<p class="sbx-note">' + esc(GEARS[k].none) + "</p>";
+    } else {
+      var T = TRINK.filter(function (t) { return t.k === k; })[0], ok = bossN() >= T.need;
+      if (!ok) return h + '<div class="pk-gph"><b>' + T.n + ' (locked)</b><small>Opens after you beat ' + (T.need === 1 ? "your first boss" : T.need + " bosses") + ". It holds one more charm.</small></div></div>";
+      var ownC = Object.keys(CHARMS).filter(function (q) { return S.charms.own[q]; });
+      h += '<div class="pk-gph"><b>' + T.n + "</b><small>Each open trinket slot lets you wear one more charm (they fill the Charm slots first, then Ring, Necklace and Belt). " + S.charms.on.length + " of " + charmSlots() + " worn.</small></div>";
+      h += ownC.length ? '<div class="sbx-charms pk-chwrap"><div class="ch-list">' + ownC.map(function (q) { var C = CHARMS[q], on = hasCharm(q); return '<button type="button" class="ch-it' + (on ? " on" : "") + '" data-charm="' + q + '" aria-pressed="' + on + '" style="--cc:' + C.c + '"><img alt="" src="' + icon("charm_" + q) + '"><span><b>' + esc(C.n) + "</b><small>" + esc(C.d) + "</small></span><i>" + (on ? "Worn" : "Wear") + "</i></button>"; }).join("") + "</div></div>" : '<p class="sbx-note">No charms yet. Craft them in the Craft tab (Gear, Charms).</p>';
+    }
+    return h + "</div>";
   }
   function pkFocusHtml() {
     var f = PK.focus; if (!f) return "";
     if (f === "bag") return S.bag ? "<b>" + esc(BAGS[S.bag].n) + "</b><span>+" + BAGS[S.bag].x + " slots: the tinted ones in your items</span>" : "<b>No backpack</b><span>Craft a Reed Backpack (Craft tab, Gear) for 12 more slots.</span>";
     if (f === "arm") { var apl = APK.map(function (k) { var t = (S.ap || {})[k] | 0; return t ? apName(k, t) + (toolBroken(k) ? " (broken)" : "") : "no " + APC[k].n.toLowerCase(); }).join(", "), stt = setTier(); return S.arm || armRed() ? "<b>" + esc(S.arm ? mwName("arm", ARMORS[S.arm].n) : "No chestpiece") + "</b><span>Blocks " + Math.round(armRed() * 100) + "% of damage" + (S.arm ? " · " + pkDur("arm") : "") + "</span><span>" + esc(apl) + "</span>" + (stt ? "<span>Full set: " + esc(SETB[stt].n) + "</span>" : "") : "<b>No armor</b><span>Armor is made at your Workbench: chestpiece, helmet, leggings and boots.</span>"; }
+    if (APC[f]) { var tq = (S.ap || {})[f] | 0; return tq ? "<b>" + esc(apName(f, tq)) + "</b><span>" + APC[f].n + " · blocks part of the damage you take · " + pkDur(f) + (toolBroken(f) ? " · broken, repair it at a Workbench" : "") + "</span>" : "<b>No " + APC[f].n.toLowerCase() + "</b><span>Craft one at a Workbench (Craft tab, Gear). Every armor set has a helmet, chestpiece, leggings and boots.</span>"; }
     if (f === "wpn") return S.wpn ? "<b>" + esc(mwName("wpn", WEAPONS[S.wpn].n)) + "</b><span>Damage " + Math.round(wDmg()) + " · " + pkDur("wpn") + "</span>" : "<b>No weapon</b><span>Craft the Reed Spear by hand (Craft tab).</span>";
     if (f === "pick") return "<b>" + esc(S.tier ? mwName("pick", PICKS[S.tier].n) : PICKS[0].n) + "</b><span>" + (S.tier ? "Tier " + S.tier + " · " + pkDur("pick") : "Craft the Reed Pick to dig faster.") + "</span>";
     return "";
@@ -19915,13 +19990,15 @@
         + '<div class="pk2-main" id="pkInv"></div></div>';
       pvBind($("pkCv"));
     }
-    var eq = pkEqHtml(), eqEl = $("pkEq"); eqEl.innerHTML = eq[0] + eq[1]; eqEl.style.gridTemplateColumns = "repeat(" + ((charmSlots() + 2) % 3 === 0 ? 3 : 2) + ",minmax(0,1fr))";
+    var eq = pkEqHtml(), eqEl = $("pkEq"); eqEl.innerHTML = eq[0] + eq[1]; eqEl.style.gridTemplateColumns = "minmax(0,1fr)";
     $("pkName").textContent = pkName();
     $("pkStats").innerHTML = '<i title="Health">❤ ' + Math.ceil(hp) + "</i>" + '<i title="Damage blocked">🛡 ' + Math.round(armRed() * 100) + "%</i>" + (S.wpn ? '<i title="Weapon damage">⚔ ' + Math.round(wDmg()) + "</i>" : "") + '<i title="Pickaxe tier">⛏ ' + S.tier + "</i>";
     var fh = pkFocusHtml(); $("pkFocus").innerHTML = fh; $("pkFocus").hidden = !fh;
     $("pkLo").innerHTML = PK.pop === "lo" ? '<div class="pk-lopop"><div class="pk-pophead"><b>Loadouts<small>Save your hotbar here, then switch with L</small></b><button type="button" class="sbx-x" data-pkpop-x aria-label="Close">&times;</button></div>' + loHtml() + "</div>" : "";   // LOADOUTS: behind the Loadouts button at the top now (PK.pop "lo"), so the backpack fits on one screen
     var pp = $("pkPop"), ph = PK.pop && PK.pop !== "lo" ? pkPopHtml() : ""; pp.hidden = !ph; pp.innerHTML = ph; pp.className = "pk-pop" + (PK.pop ? " " + PK.pop : "");
+    var sdc = document.querySelector(".pk2-side"), ssp = sdc ? sdc.scrollTop : 0;
     $("pkInv").innerHTML = pkInvHtml(); bd.scrollTop = stp;
+    if (sdc) { var two = getComputedStyle(document.querySelector(".pk2")).gridTemplateColumns.split(" ").length > 1; sdc.style.maxHeight = two ? bd.clientHeight - 2 + "px" : ""; sdc.style.overflowY = two ? "auto" : ""; sdc.scrollTop = ssp; }   // MORE GEAR: the gear column scrolls on its own, so the items stay in view
     pvStart();
   }
   function pkAct(a) {
@@ -20010,7 +20087,7 @@
     var A = a.split(":"), k = A[0], v = A[1];
     if (k === "heal") { hp = MAXHP; S.food = 100; shownFood = -1; drawHp(); drawFood(); toast("Healed and fed.", "#7dffb0"); }
     else if (k === "gear") {
-      S.tier = PICKS.length - 1; S.wpn = WEAPONS.length - 1; S.arm = ARMORS.length - 1; S.bag = Math.max(S.bag || 0, 2); S.dur = {}; S.wings = 1; S.st.wings = 1;
+      S.tier = PICKS.length - 1; S.wpn = WEAPONS.length - 1; S.arm = ARMORS.length - 1; if (!S.ap || typeof S.ap !== "object") S.ap = {}; APK.forEach(function (q) { S.ap[q] = S.arm; }); S.bag = Math.max(S.bag || 0, 2); S.dur = {}; S.wings = 1; S.st.wings = 1;
       if (BENCH_LV && BENCH_LV.length) { S.bl = BENCH_LV.length - 1; benchLv = S.bl; try { repaintBench(); } catch (e) {} }
       spriteKey = ""; ICO = {}; reslot(); hbDirty = true; toast("Best pick, weapon, armor, big backpack, wings and a max Workbench.", "#f2c14e");
     }
@@ -21115,6 +21192,11 @@
     if (t.hasAttribute("data-close")) return closePanel();
     if (t.hasAttribute("data-lore")) return openLore(t.getAttribute("data-lore"));   // LORE: read a page
     if (t.hasAttribute("data-pkeq")) return pkAct(t.getAttribute("data-pkeq"));   // BACKPACK SCREEN: gear slots
+    if (t.hasAttribute("data-pkmore")) { PK.more = !PK.more; if (!PK.more) PK.gpick = ""; try { localStorage.setItem("swamp-delve-moregear", PK.more ? "1" : "0"); } catch (er) {} thud(380, 0.03); return renderPack(); }   // MORE GEAR
+    if (t.hasAttribute("data-pkg")) { var gk = t.getAttribute("data-pkg"); PK.gpick = PK.gpick === gk ? "" : gk; PK.focus = ""; PK.pop = ""; thud(380, 0.03); renderPack(); var gp = document.querySelector(".pk-gpick"); if (gp && gp.scrollIntoView) gp.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" }); return; }
+    if (t.hasAttribute("data-pkgoff")) { gearOff(t.getAttribute("data-pkgoff")); return renderPack(); }
+    if (t.hasAttribute("data-pkgeq")) { var gq = t.getAttribute("data-pkgeq").split(":"); gearEquip(gq[0], gq[1]); return renderPack(); }
+    if (t.hasAttribute("data-pkride")) { var G9 = gearS(); G9.ride = G9.ride ? 0 : 1; toast(G9.ride ? "Riding the " + ITEMS[G9.mount].n.replace(/ (Saddle|Harness|Bone Whistle)$/, "") + "." : "You got off. It waits in the Mount slot.", "#7af0d0"); save(); return renderPack(); }
     if (t.hasAttribute("data-lo")) return loUse(+t.getAttribute("data-lo"));   // HOTBAR LOADOUTS
     if (t.hasAttribute("data-collc")) return collClaim(+t.getAttribute("data-collc"));   // COLLECTION LOG chests
     if (t.hasAttribute("data-losave")) return loSave(+t.getAttribute("data-losave"));
@@ -27642,7 +27724,7 @@ var ATK = { on: false, mine: false };
   OCI.m_gator = function (g) { g.fillStyle = "#1a2a12"; g.fillRect(4, 12, 24, 12); g.fillStyle = "#4a7a3a"; g.fillRect(5, 13, 22, 10); g.fillStyle = "#6a3a1a"; g.fillRect(10, 11, 12, 6); g.fillStyle = "#c8884a"; g.fillRect(11, 12, 10, 2); g.fillStyle = "#e8e0b8"; for (var i = 6; i < 26; i += 4) g.fillRect(i, 22, 2, 2); };
   OCI.m_heron = function (g) { g.strokeStyle = "#5a3a1a"; g.lineWidth = 2.4; g.beginPath(); g.moveTo(6, 22); g.quadraticCurveTo(16, 6, 26, 22); g.stroke(); g.fillStyle = "#c8d8e8"; g.beginPath(); g.ellipse(16, 12, 6, 4, 0, 0, 7); g.fill(); g.fillStyle = "#ffd23f"; g.fillRect(14, 9, 4, 3); g.fillStyle = "#2a2a3a"; g.fillRect(15, 15, 2, 10); };
   ["m_mudo", "m_drake", "m_mammoth"].forEach(function (k) { OCI[k] = function (g) { g.fillStyle = "#2a2418"; g.fillRect(6, 6, 20, 20); g.fillStyle = MOUNTS[k].bones; g.fillRect(8, 8, 16, 4); g.fillRect(14, 8, 4, 16); g.fillRect(8, 20, 16, 4); g.beginPath(); g.arc(9, 10, 4, 0, 7); g.arc(23, 10, 4, 0, 7); g.arc(9, 22, 4, 0, 7); g.arc(23, 22, 4, 0, 7); g.fill(); }; });
-  function mountK() { return sel && MOUNTS[sel] && S.inv[sel] > 0 && !cave && !HOME && !OCS && hp > 0 && !riding() ? sel : ""; }
+  function mountK() { if (cave || HOME || OCS || hp <= 0 || riding()) return ""; if (sel && MOUNTS[sel] && S.inv[sel] > 0) return sel; var G = gearS(); return G.mount && G.ride && MOUNTS[G.mount] ? G.mount : ""; }   // held saddle, or the one in the Mount slot (More gear)
   function mountSpd() { var k = mountK(); return k ? (p.wet ? MOUNTS[k].swim || 1 : MOUNTS[k].spd) : 1; }
   function mountJump() { var k = mountK(); return k ? MOUNTS[k].jump : 1; }
   var MFL = { n: 0, was: false };
@@ -28969,6 +29051,7 @@ var ATK = { on: false, mine: false };
       ["Balloon materials + Lumen", function () { devGive({ cloth: 10, rope: 6, planks: 6, lumen: 8, balloon: 1 }); }],
       ["3 of every card pack", function () { var B = SCB(); if (B) B.packs().forEach(function (P) { B.givePack(P.id, 3); }); toast("Packs added: Croak Cards > Packs.", "#ffd23f"); }],
       ["500 Swamp Coins", function () { var B = SCB(); if (B) B.coins(500); }],
+      ["More gear kit (Jetpack, Miner's Helmet, Toad + Heron saddles, 4 charms)", function () { devGive({ x_jet: 1, x_helm: 1, m_toad: 1, m_heron: 1 }); ["bramble", "alpha", "miner", "glow"].forEach(function (k) { S.charms.own[k] = 1; }); save(); }],
       ["Heal and feed", function () { devAct("heal"); }],
       ["Best gear (pick, weapon, armor, bag, wings)", function () { devAct("gear"); }],
       ["Tester kit (blocks, food, bombs, tonics...)", function () { devAct("kit"); }],
@@ -28980,6 +29063,7 @@ var ATK = { on: false, mine: false };
       ["Every dive item", function () { var o = {}; ["scubasuit", "suit2", "suit3", "suit4", "tank1", "tank2", "tank3", "tank4", "flippers", "divelamp"].forEach(function (k) { o[k] = 1; }); devGive(o); }]
     ],
     set: [
+      ["More gear: open every trinket slot (beats all three bosses)", function () { S.st.boss = (S.st.boss | 0) | 7; save(); toast("Ring, Necklace and Belt are open (and the third charm slot).", "#7af0d0"); }],
       ["Touch jump: switch between Up to jump + Attack button and the Jump button", function () { setUpJump(!UPJ); toast(UPJ ? "Up to jump, and the big button attacks." : "The big button jumps again.", "#ffb27a"); }],
       ["Fill the bag with Stone (to test Overstocked)", function () { reslot(); S.slots.forEach(function (c, i) { if (!c) S.slots[i] = { k: "stone", n: stackMax("stone") }; else if (c.k === "stone") c.n = stackMax("stone"); }); S.inv = totals(S.slots); hbDirty = true; toast("Bag filled with Stone.", "#7ffcff"); }],
       ["Swamp Essence: back to level 0", function () { S.ess = 0; essHud(); toast("Swamp Essence reset.", "#ff7ad8"); }],
@@ -29019,6 +29103,7 @@ var ATK = { on: false, mine: false };
       ["Creature voices: wolf growl, snarl, pant, yelp", function () { if (panelOpen) closePanel(); ["w", "a", "b", "h"].forEach(function (ev, j) { setTimeout(function () { vxPlay("wolf", ev, 0, 0, 0, 0, true); }, j * 1600); }); }],
       ["Key conflict pop-up (Bind / Cancel)", function () { if (panelOpen) closePanel(); KEYMAP.pend = { id: "build", k: "e", oid: "craft" }; keyPopShow(); }],
       ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
+      ["Backpack: More gear drawer", function () { if (panelOpen) closePanel(); PK.more = true; setTimeout(function () { openPack(); PK.more = true; renderPack(); }, 60); }],
       ["Add to Home Screen steps (main menu)", function () { if (panelOpen) closePanel(); if (!titleOpen) openTitle(); setTimeout(function () { TC.home = true; renderTitle(); }, 60); }],
       ["Turn-your-phone screen (preview, tap to close)", function () { if (panelOpen) closePanel(); var rb = $("sbxRot"); if (rb) rb.classList.add("show"); }],
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
