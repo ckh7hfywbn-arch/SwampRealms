@@ -20304,6 +20304,14 @@
     M.pad = Math.round(Math.max(M.cw, M.ch) * 0.45);
     c.style.left = c.style.top = -M.pad + "px"; c.style.width = M.cw + M.pad * 2 + "px"; c.style.height = M.ch + M.pad * 2 + "px"; c.style.transformOrigin = "0 0"; c.style.transform = "";
     c.width = Math.round((M.cw + M.pad * 2) * M.dpr); c.height = Math.round((M.ch + M.pad * 2) * M.dpr); M.dr = null;
+    var o = mapOv(); o.width = Math.round(M.cw * M.dpr); o.height = Math.round(M.ch * M.dpr);
+  }
+  // The depth ruler and the scale bar belong to the window, not the map: they live on their own canvas over it (never slid with the map),
+  // redrawn every frame of a drag or a glide, so they stay put and the depth marks move smoothly with the land.
+  function mapOv() { var o = $("sbxMapO"); if (!o) { o = document.createElement("canvas"); o.id = "sbxMapO"; o.className = "sbx-mov"; o.setAttribute("aria-hidden", "true"); var c = $("sbxMapC"); c.parentNode.insertBefore(o, c.nextSibling); } return o; }
+  function mapOverlay() {
+    var o = mapOv(), g = o.getContext("2d"), SRC = M.src || (M.src = mapSrc()); g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0); g.clearRect(0, 0, M.cw, M.ch);
+    mapChrome(g, SRC);
   }
   function mapFlingStep() { if (M.fling) { var fn = performance.now(), fdt = Math.min(50, fn - M.fling.t); M.fling.t = fn; M.cx -= M.fling.vx * fdt / M.s; M.cy -= M.fling.vy * fdt / M.s; mapClamp(); var fd = Math.pow(0.0035, fdt / 1000); M.fling.vx *= fd; M.fling.vy *= fd; if (Math.hypot(M.fling.vx, M.fling.vy) < 0.02) M.fling = null; } }
   function mapGlide() { mapPopClose();   // during a gesture: slide the last drawing into place, or redraw if it no longer covers the screen
@@ -20312,6 +20320,7 @@
     var x0 = -M.pad + tx, y0 = -M.pad + ty, x1 = x0 + (M.cw + M.pad * 2) * k, y1 = y0 + (M.ch + M.pad * 2) * k;   // where the drawn canvas lands on screen
     if (k < 0.7 || k > 1.45 || x0 > 0 || y0 > 0 || x1 < M.cw || y1 < M.ch) return drawMapView();
     c.style.transform = "translate3d(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px,0) scale(" + k.toFixed(4) + ")";
+    mapOverlay();
   }
   var MAPB = null;
   function mapBands() {   // the biome stretches of the land made so far: [x0, x1, biome]
@@ -20363,15 +20372,15 @@
     });
     g.strokeStyle = "#0a1410"; g.lineWidth = 4; g.strokeRect(o0[0] - 2, o0[1] - 2, o1[0] - o0[0] + 4, o1[1] - o0[1] + 4);   // a dark ink frame with a lit inner line, like the game's panels
     g.strokeStyle = SRC.c + "88"; g.lineWidth = 1.5; g.strokeRect(o0[0] - 0.5, o0[1] - 0.5, o1[0] - o0[0] + 1, o1[1] - o0[1] + 1);
-    if (SRC.id !== "w") { mapSrcMarks(SRC, g); mapDrawMe(g, m2s(SRC.me[0], SRC.me[1]), performance.now()); mapChrome(g, SRC); mapTitle(SRC); var inf2 = (M.s / mapMin()).toFixed(1) + "x"; if (inf2 !== M.inf) { M.inf = inf2; $("sbxMapInfo").textContent = inf2; } return; }
+    if (SRC.id !== "w") { mapSrcMarks(SRC, g); mapDrawMe(g, m2s(SRC.me[0], SRC.me[1]), performance.now()); mapOverlay(); mapTitle(SRC); var inf2 = (M.s / mapMin()).toFixed(1) + "x"; if (inf2 !== M.inf) { M.inf = inf2; $("sbxMapInfo").textContent = inf2; } return; }
     g.textAlign = "center"; g.font = signFont(14);
     var MCB = inMC() ? [[world.gx0, world.gx0 + Math.round((SW.MALC_W || 1200) * 0.58), { n: "The Rotmire", c: "#ff4a5a" }], [world.gx0 + Math.round((SW.MALC_W || 1200) * 0.58), world.gx1 + 1, { n: "The Ashen Waste", c: "#c8b0a8" }]] : null;   // MALCRUOR: its own two lands
-    var lastR = -1e9, mapHs = o1[1] - o0[1], ribY = Math.max(o0[1] + 24, 24);   // ZOOMED OUT: the ribbons sit above a thin map instead of on it
+    var lastR = -1e9, mapHs = o1[1] - o0[1], ribY = o0[1] + 24;   // each ribbon floats in the sky over the middle of its land (above its hills and trees, never above the map's top) and moves with the map: it never follows the window
     (MCB || mapBands()).forEach(function (z) {
       if (MCB) z = [z[0], z[1], z[2]]; var BX = MCB ? z[2] : BIOX[z[2]];
       var l = m2s(z[0], 0)[0], r = m2s(z[1], 0)[0]; g.fillStyle = BX.c; g.globalAlpha = 0.9; g.fillRect(Math.max(l, -PD), o0[1], Math.min(r, M.cw + PD) - Math.max(l, -PD), 4); g.globalAlpha = 0.85;
-      var bt0 = BX.n.toUpperCase(), bw0 = g.measureText(bt0).width + 26, vis = Math.min(r, M.cw) - Math.max(l, 0);
-      if (r > 0 && l < M.cw && vis >= bw0 + 20) { var bx = (Math.max(l, 0) + Math.min(r, M.cw)) / 2, by = ribY, bt = bt0, bw = bw0; bx = clamp(bx, Math.max(l, 0) + bw / 2 + 10, Math.min(r, M.cw - 64) - bw / 2 - 10); if (bx - bw / 2 - 10 < lastR) { g.globalAlpha = 1; return; } lastR = bx + bw / 2 + 10; g.globalAlpha = 0.92; g.fillStyle = "#0b1a15"; g.strokeStyle = BX.c; g.lineWidth = 2; g.beginPath(); g.moveTo(bx - bw / 2 - 8, by - 12); g.lineTo(bx + bw / 2 + 8, by - 12); g.lineTo(bx + bw / 2, by + 1); g.lineTo(bx + bw / 2 + 8, by + 13); g.lineTo(bx - bw / 2 - 8, by + 13); g.lineTo(bx - bw / 2, by + 1); g.closePath(); g.fill(); g.stroke(); g.fillStyle = BX.c; g.fillText(bt, bx, by + 6); } g.globalAlpha = 1;
+      var bt0 = BX.n.toUpperCase(), bw0 = g.measureText(bt0).width + 26, bxc = (l + r) / 2;
+      if (r - l >= bw0 + 20 && bxc + bw0 / 2 > -PD && bxc - bw0 / 2 < M.cw + PD) { var bx = bxc, bt = bt0, bw = bw0, tx0 = Math.floor((z[0] + z[1]) / 2), topY = 1e9; for (var tq = tx0 - 24; tq <= tx0 + 24; tq += 2) topY = Math.min(topY, col[clamp(tq, 0, W - 1)]); var by = Math.max(ribY, m2s(0, topY - 9)[1] - 16); if (bx - bw / 2 - 10 < lastR) { g.globalAlpha = 1; return; } lastR = bx + bw / 2 + 10; g.globalAlpha = 0.92; g.fillStyle = "#0b1a15"; g.strokeStyle = BX.c; g.lineWidth = 2; g.beginPath(); g.moveTo(bx - bw / 2 - 8, by - 12); g.lineTo(bx + bw / 2 + 8, by - 12); g.lineTo(bx + bw / 2, by + 1); g.lineTo(bx + bw / 2 + 8, by + 13); g.lineTo(bx - bw / 2 - 8, by + 13); g.lineTo(bx - bw / 2, by + 1); g.closePath(); g.fill(); g.stroke(); g.fillStyle = BX.c; g.fillText(bt, bx, by + 6); } g.globalAlpha = 1;
     });
     (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
@@ -20396,7 +20405,7 @@
       if (on || s >= 5) { var tw = g.measureText(w.n).width; g.fillStyle = "rgba(4,10,8,.82)"; g.fillRect(12, -30, tw + 12, 20); g.fillStyle = "#f6eedb"; g.fillText(w.n, 18, -20); }
       g.restore();
     });
-    g.textBaseline = "alphabetic"; mapChrome(g, SRC);
+    g.textBaseline = "alphabetic"; mapOverlay();
     var inf = (S.wp.length ? S.wp.length + " / " + WP_MAX + " waypoints" : "No waypoints yet") + " · " + (M.s / mapMin()).toFixed(1) + "x"; if (inf !== M.inf) { M.inf = inf; $("sbxMapInfo").textContent = inf; }   // (only when it changes: a text change every frame costs a page layout)
   }
   // MAP WINDOW EXTRAS: a depth ruler down the left edge of the world map (Surface, 50 m, 100 m ...) and a scale bar in the bottom corner

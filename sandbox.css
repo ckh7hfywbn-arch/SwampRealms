@@ -3200,3 +3200,4 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
  .sbx-stage.cave.upj:not(.ocean) .sbx-pad .roll{visibility:hidden}
 }
 .sbx-stage.home .sbx-ctl>[data-k="a"],.sbx-stage.home .sbx-pad .jump.atk{display:none}
+.sbx-mvp .sbx-mov{z-index:1;pointer-events:none;cursor:default}
