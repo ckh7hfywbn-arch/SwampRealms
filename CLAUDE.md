@@ -2,16 +2,7 @@
 
 ## Creature art: the house style (every new entity must follow this)
 
-**Pixel art is the house style (Nov 17).** Every creature is shown as crisp pixel art at 32 art-pixels a block, the grain of the
-Bramble Bug (`delve-pixmobs.js`) and the HD furniture. Two ways to get there:
-- **The real style: hand-drawn frames** in `delve-pixmobs.js` (`DelvePix.frame`, like the Bramble Bug): each creature painted pixel by
-  pixel (shaded dome/body, ink rim, dither at shade steps, a walk cycle and attack frames). Every creature moves to this, a few at a time.
-- Stopgap only: the pixel renderer `pixDraw` in `sandbox.js` (search `PIXEL CREATURES`) crisps the vector art into a 32 px-a-block
-  sprite. It is subtle at play size and is NOT the pixel art style (at 16 px a block it turns faces to mush). Creatures without hand
-  frames go through it until their frames exist.
-- Check it with pixels on and off (dev menu, Cheats: "Pixel creatures"); the detail must still read at play size.
-
-The vector art underneath still follows the rules below. Every creature, enemy, animal, NPC and boss in Delve is drawn in one style. The reference creatures are the wolf, the gator, the
+Every creature, enemy, animal, NPC and boss in Delve is drawn in one style. The reference creatures are the wolf, the gator, the
 Bog Witch, the Swamp Queen and the Alpha. A new entity is not done until it sits next to those and looks like it belongs.
 
 Use the shared art kit in `sandbox.js` (search `CREATURE ART KIT`):

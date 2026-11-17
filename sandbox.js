@@ -541,7 +541,7 @@
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
   var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true, cvox: 1 };
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.chunks === false) OPT.chunks = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
-  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pixbug === false) OPT.pixbug = false; if (optS2.pixmobs === false) OPT.pixmobs = false; if (optS2.cvox === 0 || optS2.cvox === 0.5) OPT.cvox = optS2.cvox; } catch (e) {}
+  try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pixbug === false) OPT.pixbug = false; if (optS2.cvox === 0 || optS2.cvox === 0.5) OPT.cvox = optS2.cvox; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -5138,7 +5138,6 @@
     }
   }
   function eGlow(g, x, y, r, col, a) {
-    if (PXM.cap) { var M = g.getTransform(); PXM.cap.push([M.a * x + M.c * y + M.e, M.b * x + M.d * y + M.f, r * Math.hypot(M.a, M.b), col, a * g.globalAlpha]); return; }   // PIXEL CREATURES: glows stay soft light, drawn over the sprite
     var c = parseInt(col.slice(1), 16), rr = (c >> 16) & 255, gg = (c >> 8) & 255, bb = c & 255, rg = g.createRadialGradient(x, y, 0, x, y, r);
     rg.addColorStop(0, "rgba(" + rr + "," + gg + "," + bb + ",1)"); rg.addColorStop(1, "rgba(" + rr + "," + gg + "," + bb + ",0)");
     g.globalAlpha = a; g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); g.globalAlpha = 1;
@@ -5199,12 +5198,6 @@
   }
   function drawWolf(g, e, d, flash, h, pd) {
     var t = e.tt, wind = e.st === "wind", lunge = e.st === "lunge", run = Math.abs(e.mv) > 2.5, walk = Math.abs(e.mv) > 0.3, pw = wind ? clamp(1 - e.t / WOLF.wind, 0, 1) : 0;
-    if (pixOn() && !e.def) {   // PIXEL WOLF (hand-drawn frames, delve-pixmobs.js): walk cycle, crouched wind-up, the lunge
-      var wst = wind ? "wind" : lunge ? "lunge" : walk || run ? "walk" : "idle", wspr = pixFrame(e.mc ? "wolfmc" : "wolf", wst === "idle" ? "walk" : wst, wst === "walk" ? Math.floor(t * (run ? 12 : 7)) % 4 : 0, flash);
-      if (wspr) { var wu = 30 / 32; g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * (1 + 0.5 * pd), 1 - 0.75 * pd); if (lunge) g.rotate(e.vy < 0 ? -0.12 : 0.08);
-        eGlow(g, 0, -12, wind ? 30 : 24, wind || lunge || e.mc ? "#ff4a3a" : d.glow, wind ? 0.25 + 0.4 * pw : e.mc ? 0.22 : 0.16);
-        g.imageSmoothingEnabled = false; g.drawImage(wspr, -31 * wu, -40 * wu + 1, 64 * wu, 40 * wu); g.restore(); return; }
-    }
     var F = function (c) { return flash ? "#ffffff" : c; };
     var MC = !!e.mc;   // THORNBACK HOUND (Malcruor): ash-black fur, bare ribs, bloodthorn spines down the back, ember eyes and an ember breath
     var fur = F(MC ? "#5e4848" : "#93a3b3"), dk = F(MC ? "#382628" : "#566779"), dk2 = F(MC ? "#24161a" : "#3e4c5c"), lt = F(MC ? "#8a6e6a" : "#e6eef4"), frost = F(MC ? "#a8141e" : "#c9ecff"), ln = F(MC ? "#140608" : "#232b35"), inner = F(MC ? "#ff4a4a" : "#c98b98");
@@ -5316,9 +5309,6 @@
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, e.wet && !e.def ? Math.sin(t * 2.4) * 0.8 : 0);
     g.scale(e.dir * (1 + 0.5 * pd + 0.08 * h), 1 - 0.75 * pd);
     if (!e.def) eGlow(g, 6, -6, wind ? 34 : 26, wind || e.st === "snap" ? "#ff6a5a" : d.glow, wind ? 0.35 : 0.12);
-    var gspr = pixOn() && !e.def && pixFrame("gator", jaw > 0.05 || wind ? "jaw" : "walk", jaw > 0.05 || wind ? Math.max(1, Math.min(4, Math.round(jaw * 4))) : walk ? Math.floor(t * 8) % 4 : 0, flash);
-    if (gspr) pixPut(g, gspr, 35, 24);   // PIXEL GATOR (hand-drawn frames, delve-pixmobs.js)
-    else {
     g.lineCap = "round"; g.lineJoin = "round";
     var sw = Math.sin(t * (walk ? 7 : 1.6)) * (walk ? 4 : 1.5);
     g.fillStyle = sk; g.strokeStyle = ln; g.lineWidth = 1.5;
@@ -5338,7 +5328,6 @@
     g.fillStyle = "#0c1408"; g.beginPath(); g.ellipse(4.2, -7, 0.5, 1.4, 0, 0, 7); g.fill();
     g.fillStyle = ln; g.beginPath(); g.arc(18.5, -3.2, 0.8, 0, 7); g.fill();
     g.restore();
-    }
     g.restore();
     if (e.wet && !e.def) {   // the waterline: tint the part of the gator that is under the surface
       var wy = Math.floor(e.y - 1.5), xx = Math.floor(e.x); while (wy < e.y + 1 && get(xx, wy) !== T.WATER) wy++;
@@ -5349,10 +5338,6 @@
   function drawSlime(g, e, d, flash, h, pd) {
     var MC = !!e.mc, t = e.tt, P = MC ? { c: "#8e1426", dk: "#2a0408", hi: "#e85a6a", glow: "#ff2a3a" } : SLIME_PAL[e.b] || SLIME_PAL[0], s0 = e.small ? 0.62 : 1, air = !e.on && !e.def, sxx = 1, syy = 1;
     if (air) { var k = clamp(-e.vy / 10, -1, 1); sxx = 1 - 0.14 * k; syy = 1 + 0.2 * k; } else { var q = e.sq || 0; sxx = 1 + 0.25 * q + 0.03 * Math.sin(t * 5); syy = 1 - 0.22 * q - 0.03 * Math.sin(t * 5); }
-    var sspr = pixOn() && !e.def && pixFrame(MC ? "slimemc" : "slime" + (e.b || 0), syy < 0.9 ? "squash" : syy > 1.12 ? "up" : syy > 1.04 ? "down" : "idle", Math.sin(t * 5) > 0 ? 1 : 0, flash);
-    if (sspr) {   // PIXEL SLIME (hand-drawn frames, delve-pixmobs.js): idle wobble, squash, stretch up, stretch down
-      g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * s0 * (1 + 0.6 * pd), s0 * (1 - 0.8 * pd));
-      eGlow(g, 0, -9, 26, P.glow, e.b === 1 ? 0.45 : 0.28); pixPut(g, sspr, 20, 32); g.restore(); return; }
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * s0 * sxx * (1 + 0.6 * pd), s0 * syy * (1 - 0.8 * pd));
     if (!e.def) eGlow(g, 0, -9, 26, P.glow, e.b === 1 ? 0.45 : 0.28);
     var body = flash ? "#ffffff" : P.c;
@@ -5955,8 +5940,7 @@
     g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30 * (e.sz || 1), ts / 30 * (e.sz || 1));
     g.globalAlpha = 1 - pd * pd * 0.9;
     if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
-    if (pixHand(g, e, d, flash, h, pd)) {}   // hand-drawn pixel frames (delve-pixmobs.js) for the creatures in PIXH
-    else if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
+    if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
     else if (e.k === "wolf") drawWolf(g, e, d, flash, h, pd);
     else if (e.k === "gator") drawGator(g, e, d, flash, h, pd);
     else if (e.k === "slime") drawSlime(g, e, d, flash, h, pd);
@@ -6065,75 +6049,12 @@
     g.restore();
   }
   var PXF = {};
-  // PIXH: hand-drawn pixel creatures drawn straight from their frames. a(e) = frame set, f(e) = [state, frame], ax / H = the frame's anchor
-  // and height, dy = lift above the feet (flyers), flip = faces its way, glow(e, d) = [x, y, r, colour, alpha], after(g, e) = extra bits (tongue, "!")
-  var PIXH = {
-    wasp: { ax: 24, H: 32, dy: 3, flip: 1, a: function (e) { return e.mc ? "waspmc" : "wasp"; }, f: function (e) { var hot = e.st === "wind" || e.st === "dash"; return [hot ? "hot" : "fly", Math.sin(e.fl || e.tt * 40) > 0 ? 0 : 1]; },
-      glow: function (e, d) { var hot = e.st === "wind" || e.st === "dash"; return [0, -9, hot ? 28 : 20, hot || e.mc ? "#ff3b2a" : d.glow, hot ? 0.55 : 0.25]; } },
-    bat: { ax: 32, H: 32, dy: 6, flip: 0, a: function () { return "bat"; }, f: function (e) { var up = e.st === "dive" ? 0.25 : Math.sin(e.fl), hot = e.st === "wind" || e.st === "dive"; return [hot ? "hot" : "fly", up > 0.33 ? 0 : up < -0.33 ? 2 : 1]; },
-      glow: function (e, d) { var hot = e.st === "wind" || e.st === "dive"; return [0, -9, hot ? 30 : 22, hot ? "#ff5a7a" : d.glow, hot ? 0.55 : 0.28]; } },
-    imp: { ax: 22, H: 48, dy: 0, flip: 1, a: function (e) { return e.mc ? "impmc" : "imp"; }, f: function (e) { return e.st === "wind" ? ["wind", 0] : !e.on ? ["air", Math.sin(e.tt * 14) > 0 ? 1 : 0] : Math.abs(e.mv || 0) > 0.1 ? ["walk", Math.sin(e.tt * 12) > 0 ? 1 : 0] : ["idle", 0]; },
-      glow: function (e, d) { var pw = e.st === "wind" ? clamp(1 - e.t / IMP.wind, 0, 1) : 0; return e.st === "wind" ? [10, -38, 16 + 10 * pw, e.mc ? "#ff2a3a" : "#ff8a2a", 0.4 + 0.5 * pw] : [0, -14, 22, e.mc ? "#ff3a2a" : d.glow, 0.26]; } },
-    frog: { ax: 24, H: 34, dy: 0, flip: 1, a: function (e) { return e.mc ? "frogmc" : "frog"; }, f: function (e) { return e.st === "wind" ? ["wind", 0] : e.st === "lash" ? ["lash", 0] : !e.on && !e.def ? ["air", 0] : ["idle", Math.sin(e.tt * 4) > 0 ? 1 : 0]; },
-      glow: function (e, d) { var w = e.st === "wind", pw = w ? clamp(1 - e.t / FROG.wind, 0, 1) : 0; return [0, -10, w ? 30 + 10 * pw : 24, w || e.st === "lash" ? "#ffb347" : e.mc ? "#ff3a2a" : d.glow, w ? 0.35 + 0.5 * pw : 0.2]; },
-      before: function (g, e, flash) { if (e.st === "lash" && e.ext > 0.02) { var L = FROG.reach * 30 * e.ext, fln = flash ? "#ffffff" : e.mc ? "#140606" : "#0c2a14"; g.strokeStyle = fln; g.lineWidth = 5.6; g.lineCap = "round"; g.beginPath(); g.moveTo(19, -10); g.lineTo(19 + L, -10); g.stroke(); g.strokeStyle = flash ? "#fff" : "#ff7e93"; g.lineWidth = 3.8; g.stroke(); g.beginPath(); g.arc(19 + L, -10, 4.2, 0, 7); aInk(g, flash ? "#fff" : "#ff8aa0", fln, 1); } },
-      after: function (g, e) { if (e.st === "wind" && !e.def) { var t = e.tt; g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); } } }
-  };
-  function pixHand(g, e, d, flash, h, pd) {
-    var P = PIXH[e.k]; if (!P || !pixOn() || e.def) return false; var fs = P.f(e), spr = pixFrame(P.a(e), fs[0], fs[1], flash); if (!spr) return false;
-    var t = e.tt || 0; g.save(); g.translate(h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, P.dy); g.scale((P.flip ? e.dir : 1) * (1 + 0.5 * pd), 1 - 0.75 * pd);
-    var gl = P.glow(e, d); g.save(); g.translate(0, -P.dy); eGlow(g, gl[0], gl[1], gl[2], gl[3], gl[4]); if (P.before) P.before(g, e, flash); g.restore();
-    pixPut(g, spr, P.ax, P.H); g.restore(); if (P.after) { g.save(); g.scale(e.dir, 1); P.after(g, e); g.restore(); } return true;
-  }
-  function pixPut(g, spr, ax, H) { var u = 30 / 32, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(spr, -ax * u, -H * u + 1, spr.width / Math.max(1, Math.round(spr.height / H)) * u, H * u); g.imageSmoothingEnabled = sm; }   // a hand frame, feet on the ground
   function pixFrame(kind, st, n, flash) {   // a hand-drawn pixel frame enlarged to the screen's pixels (crisp), or null
     if (typeof DelvePix === "undefined" || !DelvePix.has(kind)) return null; var src = DelvePix.frame(kind, st, n, flash); if (!src) return null;
     var k = Math.max(1, Math.ceil(ts * dpr / 32)), key = kind + st + n + (flash ? "f" : "") + "_" + k; if (PXF[key]) return PXF[key];
     var c = document.createElement("canvas"); c.width = src.width * k; c.height = src.height * k; var q = c.getContext("2d"); q.imageSmoothingEnabled = false; q.drawImage(src, 0, 0, c.width, c.height); return (PXF[key] = c);
   }
-  // ---- PIXEL CREATURES (house style): every creature is drawn as crisp pixel art at 32 art-pixels a block, the same grain as the
-  // Bramble Bug and the HD furniture. The creature's own art (shape, top-lit shading, ink, eyes, states, hit flash) is painted small
-  // into its own sprite, then hardened: edges snap to whole pixels, shading snaps into flat bands, faint glows and shadows become a
-  // pixel haze, and a dark tinted rim is added outside. Sprites refresh 12 times a second (a pixel-art frame rate) and right away when the
-  // creature turns, gets hit or changes state. Off with OPT.pixmobs = false (dev menu, Set).
-  var PXM = { fps: 12, cap: null, res: 32 };   // res: art pixels per block (16 was tried: an auto filter that coarse turns faces to mush)
-  function pixOn() { return OPT.pixmobs !== false; }
-  function pixDraw(g, e, now, span, drawFn) {
-    var k = Math.max(1, Math.round(ts * dpr / PXM.res)), P = ts * dpr / k, S2 = Math.ceil(span * P), ay = Math.round(S2 * 0.72), ax = Math.round(S2 / 2);
-    var flash = Math.max(e.hurt || 0, e.hf || 0) > 0.2 || !!e.def, key = (e.dir || 1) + "|" + (e.st || "") + "|" + (flash ? 1 : 0) + "|" + k + "|" + S2 + "|" + (e.hp | 0) + "|" + (e.def ? 1 : 0);
-    var C = e._px; if (!C || C.c.width !== S2) { C = e._px = { c: document.createElement("canvas"), t: -1, key: "" }; C.c.width = C.c.height = S2; C.g = C.c.getContext("2d", { willReadFrequently: true }); }
-    if (C.key !== key || now - C.t >= 1000 / PXM.fps || e.def) {
-      C.key = key; C.t = now; var c = C.g, sts = ts, sox = ox, soy = oy, svw = vw, svh = vh;
-      c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = "source-over"; c.clearRect(0, 0, S2, S2);
-      ts = P; ox = ax - e.x * P; oy = ay - e.y * P; vw = S2; vh = S2; e._pxa = 1;
-      PXM.cap = C.gl = [];
-      try { drawFn(c); } catch (er) {} finally { ts = sts; ox = sox; oy = soy; vw = svw; vh = svh; e._pxa = 0; PXM.cap = null; }
-      pixHarden(c, S2);
-    }
-    var sc = k / dpr, X = Math.round((ox + e.x * ts) * dpr) / dpr - ax * sc, Y = Math.round((oy + e.y * ts) * dpr) / dpr - ay * sc;
-    if (C.gl && C.gl.length) { g.save(); C.gl.forEach(function (q) { eGlow(g, X + q[0] * sc, Y + q[1] * sc, q[2] * sc, q[3], q[4]); }); g.restore(); }   // glows: soft light behind the sprite
-    var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(C.c, X, Y, S2 * sc, S2 * sc); g.imageSmoothingEnabled = sm;
-  }
-  function pixHarden(c, n) {
-    var im = c.getImageData(0, 0, n, n), d = im.data, A = new Uint8Array(n * n), i, x, y;
-    for (i = 0; i < n * n; i++) A[i] = d[i * 4 + 3];
-    for (y = 0; y < n; y++) for (x = 0; x < n; x++) { i = y * n + x; var a = A[i], o = i * 4;
-      if (a >= 120) { var ia = 255 / a; for (var ch = 0; ch < 3; ch++) { var v = Math.min(255, d[o + ch] * ia); d[o + ch] = Math.min(255, Math.round(v / 18) * 18); } d[o + 3] = 255; continue; }
-      var solidN = (x > 0 && A[i - 1] >= 120) || (x < n - 1 && A[i + 1] >= 120) || (y > 0 && A[i - n] >= 120) || (y < n - 1 && A[i + n] >= 120);
-      if (solidN) {   // the rim just outside the body: a dark ink tinted with the body's own colour
-        var j = x > 0 && A[i - 1] >= 120 ? i - 1 : x < n - 1 && A[i + 1] >= 120 ? i + 1 : y > 0 && A[i - n] >= 120 ? i - n : i + n, q = j * 4, ja = 255 / Math.max(1, A[j]);
-        if (a >= 40 || true) { d[o] = d[q] * ja * 0.28 | 0; d[o + 1] = d[q + 1] * ja * 0.28 | 0; d[o + 2] = d[q + 2] * ja * 0.3 | 0; d[o + 3] = a >= 40 ? 255 : 230; }
-        continue; }
-      if (a >= 26) { var ib = 255 / a, r0 = d[o] * ib, g0 = d[o + 1] * ib, b0 = d[o + 2] * ib, lu = 0.3 * r0 + 0.59 * g0 + 0.11 * b0;   // faint stuff: the ground shadow stays as a flat pixel shadow,
-        if (lu < 60) { d[o] = d[o + 1] = d[o + 2] = 0; d[o + 3] = 84; } else if (a >= 84) { d[o] = Math.min(255, r0) | 0; d[o + 1] = Math.min(255, g0) | 0; d[o + 2] = Math.min(255, b0) | 0; d[o + 3] = 150; } else d[o + 3] = 0; }   // a bright glow core keeps a pixel halo, a faint glow goes
-      else d[o + 3] = 0;
-    }
-    c.putImageData(im, 0, 0);
-  }
-  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss && !MCN[e.k]) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else if (pixOn() && !e.boss && !PXHAND[e.k] && (e.k !== "bug" || e.mc) && enOnScr(e)) pixDraw(g, e, now, (PXSPAN[e.k] || 4.4) * (e.sz || 1), function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
-  var PXHAND = { wolf: 1, gator: 1, slime: 1, spider: 1, witch: 1, wasp: 1, bat: 1, imp: 1, frog: 1 };   // creatures with hand-drawn pixel frames (delve-pixmobs.js) skip the stopgap renderer
-  var PXSPAN = { brute: 5.4, witch: 5.4, wyrm: 6, rottree: 6, treant: 6, gator: 5.2, buccaneer: 5 };
-  function enOnScr(e) { var sx = ox + e.x * ts, sy = oy + e.y * ts; return sx > -ts * 3 && sx < vw + ts * 3 && sy > -ts * 3 && sy < vh + ts * 3; }
+  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss && !MCN[e.k]) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
 
   // ---------- FARMING ----------
   // S.farm["x,y"] = { c: crop key, g: growth seconds into the current stage, w: seconds of water left }. Crops grow all the time (even in a cave),
@@ -12403,8 +12324,6 @@
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(f * (1 + 0.4 * pd), 1 - 0.7 * pd);
     var PC = MC ? "#ff2a3a" : "#d08aff", PB = MC ? "#c8101e" : "#b06aff";   // the potion's glow and colour
     if (!e.def) eGlow(g, 0, -26, wind ? 30 : 22, wind || MC ? PC : d.glow, wind ? 0.5 : 0.28);
-    var wtspr = pixOn() && !e.def && pixFrame(MC ? "witchmc" : "witch", wind ? "wind" : "walk", Math.sin(t * 2.6) > 0 ? 1 : 0, flash);
-    if (wtspr) { if (wind) eGlow(g, 9, -54, 12, PC, 0.7); pixPut(g, wtspr, 22, 80); g.restore(); return; }   // PIXEL BOG WITCH (hand-drawn frames, delve-pixmobs.js)
     g.lineCap = "round"; g.lineJoin = "round";
     var s1 = Math.sin(t * 3) * 1.2, s2 = Math.sin(t * 3 + 1) * 1.2;
     // the far arm, holding a gnarled broom-stick staff
@@ -12893,10 +12812,6 @@
     if (e.st === "hang" && !cave && e.ay !== undefined) {   // the silk thread up to the ceiling
       g.strokeStyle = MC ? "rgba(220,40,50,.85)" : "rgba(240,240,250,.85)"; g.lineWidth = 1.1; g.beginPath(); g.moveTo(0, -10); g.lineTo(0, -10 - (e.y - e.ay) * 30); g.stroke();
     }
-    var pspr = pixOn() && !e.def && pixFrame(MC ? "spidermc" : "spider" + (e.b || 0), crouch ? "crouch" : "walk", mv && !crouch ? Math.floor(t * 14) % 4 : 0, flash);
-    if (pspr) {   // PIXEL SPIDER (hand-drawn frames, delve-pixmobs.js): skitter cycle and the crouch before a pounce
-      g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(f * (1 + 0.4 * pd), 1 - 0.7 * pd);
-      eGlow(g, 2, -8, crouch ? 26 : 20, MC ? "#ff2a3a" : d.glow, crouch ? 0.5 : 0.3); pixPut(g, pspr, 32, 32); g.restore(); return; }
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, crouch ? 2 : 0); g.scale(f * 1.3 * (1 + 0.4 * pd), 1.3 * (1 - 0.7 * pd) * (crouch ? 0.85 : 1));
     if (!e.def) eGlow(g, 2, -8, crouch ? 26 : 20, MC ? "#ff2a3a" : d.glow, crouch ? 0.5 : 0.3);
     g.lineCap = "round"; g.lineJoin = "round";
@@ -20140,7 +20055,6 @@
     if (storyOpen === 290 && /^(give|kit|gear|heal|map|zaruk|bmday)$/.test(k)) devOpen();   // keep the dev menu up for quick repeat taps
   }
   function devToggle(k) {
-    if (k === "pixmobs") { OPT.pixmobs = OPT.pixmobs === false; optSave(); toast("Pixel creatures " + (OPT.pixmobs ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     if (k === "pixbug") { OPT.pixbug = OPT.pixbug === false; optSave(); toast("Pixel Bramble Bug " + (OPT.pixbug ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     if (k === "chunks") { OPT.chunks = OPT.chunks === false; chkClear(); optSave(); toast("Fast world drawing " + (OPT.chunks ? "on" : "off") + ".", "#9ff0c0"); if (storyOpen === 290) devOpen(); return; }
     DEV[k] = !DEV[k]; if (k === "ghost" && DEV.ghost) DEV.fly = true; if (k === "fly" && !DEV.fly) DEV.ghost = false;
@@ -27478,7 +27392,7 @@ var ATK = { on: false, mine: false };
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.upj = function (v) { setUpJump(v); return UPJ; };   // (tests: switch Up to jump on or off)
-  window.__sbx.tk = tk; window.__sbx.opt = OPT;   // (tests: the touch keys)
+  window.__sbx.tk = tk;   // (tests: the touch keys)
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
   window.__decoT = { st: function () { return { DAIM: !!DAIM, DHOV: DHOV ? DHOV.k : null, DLAST: DLAST, wx: (aim.mx - ox) / ts, wy: (aim.my - oy) / ts, hit: DECO && DECO.hit((aim.mx - ox) / ts, (aim.my - oy) / ts) ? 1 : 0, sel: sel, bare: bare }; }, m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); },
     mode: function (on) { if (on !== undefined) decoMode(on); return DMODE; }, sel: function () { return DSEL; }, sit: function () { return SIT; }, act: function (a) { decoAct(a); }, use: function (c) { return decoUse(c); }, panel: function () { return decoPanel(); },
@@ -28993,7 +28907,7 @@ var ATK = { on: false, mine: false };
     return L;
   }
   function devTabList(t) {   // the buttons of one tab (some are built from this world)
-    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"], ["pixbug", "Pixel Bramble Bug", "Hand-drawn pixel art trial"], ["pixmobs", "Pixel creatures", "Every creature drawn as pixel art (off: smooth art)"]].map(function (q) { return [q[1] + ": " + ((q[0] === "pixbug" || q[0] === "pixmobs" ? OPT[q[0]] !== false : DEV[q[0]]) ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
+    if (t === "cheat") return [["god", "God mode", "No damage, never hungry"], ["fly", "Fly", "Jump to rise, down to sink"], ["ghost", "Ghost", "Fly through blocks"], ["dig", "Fast dig", "Break anything 12x faster"], ["peace", "Peaceful", "No creatures spawn"], ["fps", "FPS counter", "Bottom-left corner"], ["pixbug", "Pixel Bramble Bug", "Hand-drawn pixel art trial"]].map(function (q) { return [q[1] + ": " + ((q[0] === "pixbug" ? OPT.pixbug !== false : DEV[q[0]]) ? "ON" : "off"), function () { devToggle(q[0]); }, q[2], DEV[q[0]]]; });
     if (t === "time") return [["Morning", "time:60"], ["Afternoon", "time:200"], ["Dusk", "time:245"], ["Night", "time:300"], ["Dawn", "time:445"], ["Next day", "day"], ["Blood Moon now", "blood"], ["Blood Moon tonight", "bmday"], ["Falling star", "star"], ["Rainbow", "rainbow"]].map(function (q) { return [q[0], function () { devAct(q[1]); }]; }).concat([["Weather: rain", "wet"], ["Weather: storm", "storm"], ["Weather: clear", "calm"]].map(function (q) { return [q[0], function () { wxNew(q[1]); S.wx.n = q[1] === "calm" ? 0 : q[1] === "wet" ? 0.6 : 1; toast(q[0].slice(9) + " now.", "#7ffcff"); }]; }));
     if (t === "spawn") return Object.keys(ENEMY).filter(function (k) { return !BOSS[k]; }).map(function (k) { return [ENEMY[k].n, function () { devAct("mob:" + k); }]; })
       .concat(Object.keys(MCN).map(function (k) { return ["Malcruor: " + MCN[k], function () { devAct("mcmob:" + k); }]; }))
