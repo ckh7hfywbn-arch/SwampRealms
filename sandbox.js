@@ -6060,10 +6060,10 @@
   // into its own sprite, then hardened: edges snap to whole pixels, shading snaps into flat bands, faint glows and shadows become a
   // pixel haze, and a dark tinted rim is added outside. Sprites refresh 12 times a second (a pixel-art frame rate) and right away when the
   // creature turns, gets hit or changes state. Off with OPT.pixmobs = false (dev menu, Set).
-  var PXM = { fps: 12, cap: null };
+  var PXM = { fps: 12, cap: null, res: 32 };   // res: art pixels per block (16 was tried: an auto filter that coarse turns faces to mush)
   function pixOn() { return OPT.pixmobs !== false; }
   function pixDraw(g, e, now, span, drawFn) {
-    var k = Math.max(1, Math.round(ts * dpr / 32)), P = ts * dpr / k, S2 = Math.ceil(span * P), ay = Math.round(S2 * 0.72), ax = Math.round(S2 / 2);
+    var k = Math.max(1, Math.round(ts * dpr / PXM.res)), P = ts * dpr / k, S2 = Math.ceil(span * P), ay = Math.round(S2 * 0.72), ax = Math.round(S2 / 2);
     var flash = Math.max(e.hurt || 0, e.hf || 0) > 0.2 || !!e.def, key = (e.dir || 1) + "|" + (e.st || "") + "|" + (flash ? 1 : 0) + "|" + k + "|" + S2 + "|" + (e.hp | 0) + "|" + (e.def ? 1 : 0);
     var C = e._px; if (!C || C.c.width !== S2) { C = e._px = { c: document.createElement("canvas"), t: -1, key: "" }; C.c.width = C.c.height = S2; C.g = C.c.getContext("2d", { willReadFrequently: true }); }
     if (C.key !== key || now - C.t >= 1000 / PXM.fps || e.def) {
@@ -6075,8 +6075,8 @@
       pixHarden(c, S2);
     }
     var sc = k / dpr, X = Math.round((ox + e.x * ts) * dpr) / dpr - ax * sc, Y = Math.round((oy + e.y * ts) * dpr) / dpr - ay * sc;
+    if (C.gl && C.gl.length) { g.save(); C.gl.forEach(function (q) { eGlow(g, X + q[0] * sc, Y + q[1] * sc, q[2] * sc, q[3], q[4]); }); g.restore(); }   // glows: soft light behind the sprite
     var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(C.c, X, Y, S2 * sc, S2 * sc); g.imageSmoothingEnabled = sm;
-    if (C.gl && C.gl.length) { g.save(); C.gl.forEach(function (q) { eGlow(g, X + q[0] * sc, Y + q[1] * sc, q[2] * sc, q[3], q[4]); }); g.restore(); }
   }
   function pixHarden(c, n) {
     var im = c.getImageData(0, 0, n, n), d = im.data, A = new Uint8Array(n * n), i, x, y;
