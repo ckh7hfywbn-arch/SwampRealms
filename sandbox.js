@@ -20302,6 +20302,7 @@
     var oc = document.querySelector(".sbx-cats"), os = document.querySelector(".sbx-subs"), ol1 = oc ? oc.scrollLeft : 0, ol2 = os ? os.scrollLeft : 0;
     $("sbxPanel").classList.toggle("qbook", tab === "quests"); $("sbxBody").classList.toggle("qb-on", tab === "quests");
     $("sbxBody").innerHTML = h; if (tab === "quests") qbAfter();
+    if (tab === "craft") { var cbr2 = $("sbxBody").querySelector(".sbx-cbar"); if (cbr2) $("sbxBody").style.setProperty("--cbh", cbr2.offsetHeight + "px"); }   // CRAFT CARD: it sits on the right, just under the search bar
     if (tab === "dev") { var dqe = $("devQ"); if (dqe) dqe.addEventListener("input", function () { DEV.q = dqe.value; $("devList").innerHTML = devItemsHtml(); }); }
     [[".sbx-cats", ol1], [".sbx-subs", ol2]].forEach(function (q) { var row = document.querySelector(q[0]); if (!row) return; row.scrollLeft = q[1]; var on = row.querySelector(".on"); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2; });
     var cur = document.querySelector("#sbxTabs [aria-selected=true]"); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
