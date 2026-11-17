@@ -3296,3 +3296,9 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
 .st-ts{display:block;margin-top:10px}
 .st-ts input{width:100%;box-sizing:border-box;padding:10px 14px;border-radius:12px;border:1.5px solid #7af0d066;background:#06100b;color:#fff;font:700 16px Nunito,system-ui,sans-serif;outline:none}
 .st-ts input:focus{border-color:#7af0d0;box-shadow:0 0 0 3px #7af0d040}
+/* LIVE MENUS: the chest window is a drawer on the right, so the world (and your belts and hoppers) stays in view on the left */
+.sbx-stage .sbx-panel.chestwin{left:auto!important;width:min(620px,58%)!important;border-left:1px solid #7af0d055!important;box-shadow:-24px 0 60px -12px #000,-1px 0 18px -4px #7af0d044!important;animation:chestIn .24s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes chestIn{from{translate:40px 0;opacity:0}}
+.sbx-stage .sbx-panel.chestwin .sbx-body,.sbx-stage .sbx-panel.chestwin .sbx-phead{max-width:none}
+.sbx-stage .sbx-panel.chestwin .sbx-bag{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+.sbx-stage:has(.sbx-panel.chestwin:not([hidden])) :is(.sbx-dock,.sbx-loc){opacity:0;pointer-events:none;transition:opacity .2s}

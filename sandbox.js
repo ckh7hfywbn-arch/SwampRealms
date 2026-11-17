@@ -6128,6 +6128,7 @@
   }
   function tickHunger(dt) {
     if (S.nohunger) { drawFood(); return; }
+    if (MENUSAFE) return;   // (no hunger while a window is open)
     if (dv("god")) { S.food = 100; drawFood(); return; }
     var was = S.food; S.food = Math.max(0, S.food - dt * HUNGER_RATE * (fx("fed") ? 0.6 : 1) * (hasCharm("hearty") ? 0.65 : 1) * (gem("arm", "amber") ? 0.85 : 1) * dif().hunger);
     if (was >= 50 && S.food < 50 && !(S.st.htip & 1)) { S.st.htip |= 1; toast("Getting hungry! Pick food in the hotbar and tap to eat. Cattails drop carrot seeds, and Redcap Mushrooms are edible.", "#f2c14e"); }
@@ -14257,6 +14258,7 @@
     if (MP.proxy) return mpProxyHurt(n, why);
     if (molt() === "dart" && !cave && n > 0) enemies.forEach(function (e) { if (!e.def && !e.u && Math.abs(e.x - p.x) < 1.8 && Math.abs(e.y - p.y) < 2) moltThorns(e); });   // POISON DART: biting you hurts   // a creature on the host's screen hit a visiting player
     if (deadUI) return;   // the death screen is up: nothing can hurt you until you respawn
+    if (MENUSAFE) return;   // LIVE MENUS: the world runs behind your windows, but nothing can hurt you while one is open
     if (n <= 0 || dv("god")) return; if (!cont && hurtGrace > 0) return;
     n *= dif().dmg;   // difficulty
     n = mountHurt(n) * p8HurtMul();   // PHASE 7: a mammoth mount, Warding and Tough Hide
@@ -14568,6 +14570,8 @@
     var cbo = activeBoss(), ctx2 = p.x + CAMLA.x, cty = p.y - 1.1 + CAMLA.y, cdk = 12, cdy = 10;   // CENTRED CAMERA: follows you up and down through jumps, smoothly
     mineIntroTick(dt); if (MPAN) { var mk2 = MPAN.t < 4.2 ? 1 : 0; if (mk2) { ctx2 = MPAN.x; cty = MPAN.y; cdk = 2.4; } }   // THE MINE: first-visit look
     if (cbo && !cbo.def) { var cdx = cbo.x - p.x, lean = cbo.st === "intro" || cbo.st === "introleap" ? 0.55 : 0.36; ctx2 = p.x + clamp(cdx * lean, -7, 7); cty = p.y - 1.1 - clamp((p.y - (cbo.y - cbo.h)) * 0.25, -1.5, 3); cdk = 4.5; cdy = 9; }   // BOSS CAMERA: keep the boss in the picture
+    var chw = panelOpen && tab === "chest" && chestKey && $("sbxPanel").classList.contains("chestwin") ? $("sbxPanel").offsetWidth : 0;
+    if (chw > 0 && chw < vw * 0.9) { var cq = chestKey.replace(/^term:/, "").split(","); ctx2 = +cq[0] + 0.5 + chw / 2 / ts; cty = +cq[1] - 0.5; cdk = 6; cdy = 6; }   // CHEST DRAWER: the camera slides so the chest sits in the middle of the part of the world you can still see
     cam.x += (ctx2 - cam.x) * (1 - Math.exp(-dt * cdk)); cam.y += (cty - cam.y) * (1 - Math.exp(-dt * cdy));   // (frame-rate independent easing: no lurch when a frame runs long)
     var halfW = vw / 2 / ts, halfH = vh / 2 / ts;
     cam.x = W <= halfW * 2 ? W / 2 : clamp(cam.x, halfW, W - halfW); cam.y = H <= halfH * 2 ? H / 2 : clamp(cam.y, halfH, H - halfH + 2);
@@ -20387,6 +20391,7 @@
     if (tab === "dev") tab = "more";   // (the old Dev tab: everything moved to the dev menu)
     if (tab === "decor") { tab = "craft"; ccat = "Furniture"; csub = ""; }   // the Decor Workbench now opens the Craft tab on Furniture
     $("sbxPanel").classList.toggle("craftwin", tab === "craft");
+    $("sbxPanel").classList.toggle("chestwin", tab === "chest" && !!chestKey);   // LIVE MENUS: chests open as a side drawer so you can watch the world (and your belts) beside it
     $("sbxTabs").innerHTML = tab === "craft" ? '<h2 class="sbx-ptitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5-2.2 2.2-5-5z"/><path d="M13.4 8.6L4.6 17.4a1.6 1.6 0 002.3 2.3l8.8-8.8"/></svg>Crafting</h2>'
       : tabs.map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + "</button>"; }).join("");
     var h = "";
@@ -27546,7 +27551,8 @@
   function homeStall(g) { hDrawK(g, hsStall(), HSTALL.x, HSTALL.y + 1, 4, 40); }
   function homeGateArt(g) { hDrawK(g, hsSignpost(), HGATE.x - 1, HGATE.y + 1, 2, 30); hDrawK(g, hsLamppost(), HGATE.x + 2, HGATE.y + 1, 0, 34); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
-  var PZN = -1, PZD = 0, PZDIRTY = false;
+  var PZN = -1, PZD = 0, PZDIRTY = false, MENUSAFE = false, MSAFEK = 0, MSCROLL = 0;
+  document.addEventListener("scroll", function () { MSCROLL = performance.now(); }, { capture: true, passive: true });
   // ATTACK BUTTON: while it is held, the game aims for you at the nearest creature in front of you (within about 7 blocks; in caves and on
   // islands, the nearest one around you). It only ever fights: it never digs, chops, places, picks up or opens anything (atkSwat in useTool
   // and caveTool). A sword swings and combos as usual and the bow shoots; anything else in your hand (a pick, a block, food...) is a paw
@@ -27596,10 +27602,15 @@ var ATK = { on: false, mine: false };
   }
   function loop(now) {
     var titleMove = titleOpen && !panelOpen && !menuOpen && !cave && !OCS && !HOME && !mapOpen;   // the main-menu fly-by: draw every frame so the pan glides
-    var paused = (panelOpen || menuOpen || titleOpen) && !titleMove && !trans && !MP.on && !PHOTO.on && !(mapOpen && (M.drag || M.pinch || M.fling || M.dirty));   // (the map is a menu, but while you move it it runs at full frame rate: at 10 a second it felt choppy)
+    // LIVE MENUS: only the pause menu (and the world list, title and death screens) stop the game. Behind every other window the world keeps
+    // running (belts move, chests fill, crops grow), but you're safe there: nothing hurts you and you don't get hungry (MENUSAFE).
+    var live = panelOpen && !pauseOpen && !menuOpen && !titleOpen && !deadUI && !trans && !PHOTO.on && !document.hidden; MENUSAFE = live || (MP.on && panelOpen && !pauseOpen);
+    if (live) { keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; }
+    if (MENUSAFE) MSAFEK = now; else if (MSAFEK && now - MSAFEK < 400) { hurtGrace = Math.max(hurtGrace, 0.8); MSAFEK = 0; }   // closing a window: a moment to get your bearings
+    var paused = (panelOpen || menuOpen || titleOpen) && !live && !titleMove && !trans && !MP.on && !PHOTO.on && !(mapOpen && (M.drag || M.pinch || M.fling || M.dirty));   // (the map is a menu, but while you move it it runs at full frame rate: at 10 a second it felt choppy)
     var rgap = now - rafPrev; rafPrev = now; if (rgap > 2 && rgap < 40) rafAvg += (rgap - rafAvg) * 0.05;   // the screen's real refresh interval (smoothed)
     rafOdd = !rafOdd;
-    if (paused ? now - lastDraw < 100 : OPT.fps === 30 ? now - lastDraw < 30 : OPT.fps === 60 ? (rafAvg < 9.5 && rafOdd) : false) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other refresh (an even rhythm); menus redraw ~10x a second   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
+    if (paused ? now - lastDraw < 100 : live && coarse ? now - lastDraw < 30 : OPT.fps === 30 ? now - lastDraw < 30 : OPT.fps === 60 ? (rafAvg < 9.5 && rafOdd) : false) { requestAnimationFrame(loop); return; }   // PERF: 120/144 Hz screens draw every other refresh (an even rhythm); menus redraw ~10x a second   // PERF: 120/144 Hz screens draw every other frame; a paused game (menus open) redraws about 10 times a second
     lastDraw = now;
     var raw = (now - last) / 1000 || 0.016, dt = Math.min(0.05, raw); last = now;
     var frI = rafAvg / 1000; if (frI > 0.004 && frI < 0.04 && raw < 0.1) { var nFr = Math.max(1, Math.round(raw / frI)); if (Math.abs(raw - nFr * frI) < frI * 0.4) dt = Math.min(0.05, nFr * frI); }   // SMOOTH MOTION: the screen shows frames at an even beat, but timestamps wobble; step by whole frames so movement doesn't judder
@@ -27614,11 +27625,12 @@ var ATK = { on: false, mine: false };
       try { mapSeenTick(); } catch (er) {}
       try { atkTick(); if (!(OCS && OCS.sea)) devChipReset(); var jb = JBT || (JBT = document.querySelector("#sbxPad .jump")); if (jb) { var cn = !!(OCS && OCS.sea), mn = !cn && jb.classList.contains("atk") && atkMineOk(); if (jb.classList.contains("cann") !== cn) jb.classList.toggle("cann", cn); if (mn) { var mic = icon(sel === "shovel" ? "shovel" : "pick"); if (jb.__mic !== mic) { jb.__mic = mic; jb.style.setProperty("--mineic", "url(" + mic + ")"); } }   // the Mine button shows the tool you hold (its own pixel icon)
           if (jb.classList.contains("mine") !== mn) { jb.classList.toggle("mine", mn); jb.setAttribute("aria-label", mn ? "Mine" : jb.classList.contains("atk") ? "Attack" : "Jump"); } } } catch (er) {}
-      try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
+      try { if (trans) tickTrans(dt); if ((MP.on || live || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (window.__CAMOV) { cam.x = window.__CAMOV.x; cam.y = window.__CAMOV.y; }   // (test/trailer hook: a scripted camera)
         if (mapOpen) { if ((M.drag && M.drag.moved) || M.pinch || M.fling) { M.gl = 1; mapFlingStep(); mapGlide(); } else if (M.gl || M.dirty || now - (M.fT || 0) > 70) { M.gl = 0; M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
-        else if (paused && PZN >= 0 && now - PZD < 1500 && !PZDIRTY) {}   // PERF: with a window open the world behind is a still picture: draw it once, not 10 times a second (scrolling a window stays smooth on phones)
+        else if (paused && PZN >= 0 && now - PZD < 1500 && !PZDIRTY) {}
+        else if (live && coarse && now - MSCROLL < 220) {}   // LIVE MENUS on phones: while you scroll a window the world behind holds still for a moment, so scrolling stays smooth   // PERF: with a window open the world behind is a still picture: draw it once, not 10 times a second (scrolling a window stays smooth on phones)
         else { var rnow = now; if (paused) { if (PZN < 0) PZN = now; rnow = PZN; PZD = now; PZDIRTY = false; } else PZN = -1;   // MENUS OPEN: the world behind is a still picture (the game is paused), so the rain doesn't stutter along at 10 frames a second
           if (HOME) homeRender(rnow); else if (OCS) ocDraw(rnow); else if (cave) renderCave(rnow); else render(rnow); }
         if ((cave || HOME || (OCS && !OCS.sea)) && !mapOpen && now - (MINI.lt || 0) > 150) { MINI.lt = now; try { drawMini(); } catch (er2) {} }   // MAP REWORK: the minimap follows you into caves, the homestead and the pier
