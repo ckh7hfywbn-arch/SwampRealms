@@ -3190,3 +3190,13 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
 .sbx-title .a2h-note b{color:#ffe9a8}
 .sbx-title .tt-a2h{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 .sbx-title .tt-a2h .tt-hcols.one{grid-template-columns:1fr}
+/* UP TO JUMP: the big gold button becomes a sword (Attack), a warmer ember gold; it also shows in caves, the Nexus and on islands */
+.sbx-pad .jump.atk,.sbx-ctl>.jump.atk{border-color:#ff9a5a99;color:#ffe2c4;background:radial-gradient(circle at 35% 30%,rgba(255,138,74,.38),rgba(28,10,4,.66));box-shadow:0 0 18px -4px #ff8a4a66}
+.sbx-pad .jump.atk.on,.sbx-ctl>.jump.atk.on{background:#ff8a4a55;border-color:#ffb27a;box-shadow:0 0 24px -2px #ff8a4aaa}
+.sbx-pad .jump.atk svg{width:34px;height:34px}
+@media(pointer:coarse),(max-width:760px){
+ .sbx-stage.cave.upj:not(.home):not(.title):not(.photo) .sbx-pad{display:flex}
+ .sbx-stage.cave.upj .sbx-pad .lr{visibility:hidden}
+ .sbx-stage.cave.upj:not(.ocean) .sbx-pad .roll{visibility:hidden}
+}
+.sbx-stage.home .sbx-ctl>[data-k="a"],.sbx-stage.home .sbx-pad .jump.atk{display:none}

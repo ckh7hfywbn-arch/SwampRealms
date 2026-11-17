@@ -12833,7 +12833,7 @@
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
         + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
-        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
+        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd>' + (UPJ ? '<dt>Up</dt><dd>Jump, climb ladders</dd><dt>Sword button</dt><dd>Attack the nearest creature</dd>' : '<dt>Jump button</dt><dd>Jump, climb ladders</dd>') + '<dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
       return;
@@ -12953,7 +12953,9 @@
       + r("Reduce motion", "Turns off spins, bobbing and camera sway. System follows your device setting.", optSeg("motion", OPT.motion, [["sys", "System"], ["on", "On"], ["off", "Off"]], "Reduce motion"))
       + r("Lightning flashes", "Off keeps storms from lighting up the whole screen.", optSeg("flash", OPT.flash ? 1 : 0, [[1, "On"], [0, "Soft"]], "Lightning flashes")); }
   function settingsRows() {   // the pause menu's Settings: everything on one page
-    return setAudio() + setGfx() + '<h3 class="pz-sub">Accessibility</h3>' + setAccess() + '<h3 class="pz-sub">Controls</h3>' + keymapRows();
+    var r = function (n, hint, ctl) { return '<div class="pz-row"><div><b>' + n + "</b><small>" + hint + "</small></div>" + ctl + "</div>"; };
+    var tj = CTLMQ.matches ? r("Jump", UPJ ? "Push up on the arrows or the stick to jump. The big button attacks." : "The big button jumps. Hold on a creature to attack it.", optSeg("upj", UPJ ? "1" : "0", [["1", "Up to jump"], ["0", "Jump button"]], "Jump")) : "";
+    return setAudio() + setGfx() + '<h3 class="pz-sub">Accessibility</h3>' + setAccess() + '<h3 class="pz-sub">Controls</h3>' + tj + keymapRows();
   }
   var OPTSEC = "";
   function optIcon(k) {
@@ -12966,6 +12968,7 @@
   function fsWant() { if (FSPEND !== null) return FSPEND; try { return window.__gfs && window.__gfs.active ? 1 : 0; } catch (e) { return 0; } }
   function optAct(spec) {   // "fx:1", "shake:0.5", "gq:high" ...
     var i = spec.indexOf(":"), k = spec.slice(0, i), v = spec.slice(i + 1);
+    if (k === "upj") { setUpJump(v === "1"); if (pauseOpen) renderPause(); else if (panelOpen) renderPanel(); return; }
     if (k === "fs") {   // full screen lives here now (no button on the page); the browser takes a moment to switch, so show the choice straight away
       FSPEND = +v ? 1 : 0; try { if (window.__gfs) { if (+v) window.__gfs.enter(); else window.__gfs.leave(); } } catch (e) {}
       setTimeout(function () { FSPEND = null; if (pauseOpen) renderPause(); else if (panelOpen && tab === "more") renderPanel(); }, 700); return;
@@ -12999,7 +13002,7 @@
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
       B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Crafting</dd><dt>J</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>H</dt><dd>Build mode</dd><dt>O</dt><dd>Decorate mode</dd><dt>R</dt><dd>Flip furniture or decor</dd><dt>G</dt><dd>Pick up furniture (decorating)</dd><dt>Esc or P</dt><dd>Pause</dd></dl></div>'
-        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd><dt>Jump button</dt><dd>Jump, climb ladders</dd><dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Hammer button</dt><dd>Crafting</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
+        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd>' + (UPJ ? '<dt>Up</dt><dd>Jump, climb ladders</dd><dt>Sword button</dt><dd>Attack the nearest creature</dd>' : '<dt>Jump button</dt><dd>Jump, climb ladders</dd>') + '<dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Hammer button</dt><dd>Crafting</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
     B.innerHTML = '<button type="button" class="pz-resume" data-pz="resume"><span class="pz-ri">' + ttIcon("play") + "</span><b>Resume</b><kbd>Esc</kbd></button>"
@@ -13824,7 +13827,7 @@
       { el: "sbxPackBtn", t: "Your backpack", d: "Everything you carry, plus your armor, weapon and charms." },
       { el: "sbxMenuBtn", t: "Crafting", d: "Make tools, gear, blocks and furniture from what you gather. It glows when you can make what your quest needs." },
       { el: "sbxJrnBtn", t: "Your journal", d: "Quests, your log, awards, lore and the world map." },
-      coarse ? { el: "sbxPad", t: "Moving around", d: "Walk with the arrows (or drag the stick) and jump with the big button. Hold on blocks to dig, chop and build." }
+      coarse ? { el: "sbxPad", t: "Moving around", d: UPJ ? "Walk with the arrows (or drag the stick) and press up to jump. The sword button attacks the nearest creature. Hold on blocks to dig, chop and build." : "Walk with the arrows (or drag the stick) and jump with the big button. Hold on blocks to dig, chop and build." }
              : { el: null, t: "Moving around", d: "Walk with A and D, jump with Space. Hold the mouse on blocks to dig, chop and build. F opens doors, chests and caves." },
       { el: null, t: "That's it!", d: "Follow the goal in the top corner, and the gold ring shows you what to dig. You'll pick up the rest as you go. Have fun!" }
     ];
@@ -13866,7 +13869,7 @@
     var t = coarse;
     return [
       { id: "walk", t: "Walk", d: t ? "Hold an arrow to walk." : "Hold A or D (or the arrow keys) to walk.", el: t ? (document.querySelector(".sbx-stage.cave,.sbx-stage.joyall") ? "#sbxJoy" : document.querySelector("#sbxDpad") ? "#sbxDpad" : '[data-k="l"]') : "", keys: ["A", "D"], done: function (c) { return Math.abs(p.x - c.x0) > 4; } },
-      { id: "jump", t: "Jump", d: t ? "Tap the big button to jump." : "Press Space to jump.", el: t ? ".sbx-stage .jump" : "", keys: ["Space"], done: function (c) { return c.jumped; } },
+      { id: "jump", t: "Jump", d: t ? (UPJ ? "Press up on the arrows (or push the stick up) to jump." : "Tap the big button to jump.") : "Press Space to jump.", el: t ? (UPJ ? (document.querySelector(".sbx-stage.joyall") ? "#sbxJoy" : "#sbxDpad") : ".sbx-stage .jump") : "", keys: ["Space"], done: function (c) { return c.jumped; } },
       { id: "roll", t: "Dodge roll", d: t ? "Tap the round button to roll. Nothing can hurt you mid-roll." : "Press Shift (or C) to roll. Nothing can hurt you mid-roll.", el: t ? ".sbx-stage button.roll" : "", keys: ["Shift"], done: function (c) { return (S.st.dodges || 0) > c.d0; } },
       { id: "dig", t: "Gather", d: t ? "Hold your finger on the glowing ring to gather from it." : "Hold the mouse on the glowing ring to gather from it.", world: true, keys: [t ? "" : "Hold mouse"], done: function (c) { return (S.st.mined || 0) > c.m0 || (S.inv.stick || 0) > c.s0 || (S.inv.fiber || 0) > c.f0; } },
       { id: "pack", t: "Your backpack", d: t ? "Tap the backpack to see what you carry." : "Press B to open your backpack.", el: "#sbxPackBtn", keys: ["B"], done: function () { return packOpen; } }
@@ -14256,7 +14259,7 @@
     if (cheerT > 0) cheerT = Math.max(0, cheerT - dt);
     dustT -= dt; if (dustT <= 0 && p.on && Math.abs(p.vx) > 4) { dustT = 0.12; dust(1); }
     tickDodge(dt); tickCoach(dt); tickSpecial(dt); tickElites(dt); tickAch(dt); tickDetect(dt); tickQuake(dt); if (Math.random() < dt * 0.2) sporeTick(); if (lairOwned() && Math.random() < dt * 0.5) crewTick();
-    var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0) || (joy.x > 0.3 ? 1 : joy.x < -0.3 ? -1 : 0), jump = keys.j || tk.j;   // STICK EVERYWHERE: the walk stick walks on the surface too
+    var dir = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0) || (joy.x > 0.3 ? 1 : joy.x < -0.3 ? -1 : 0), jump = keys.j || tk.j || (UPJ && tk.u);   // STICK EVERYWHERE: the walk stick walks on the surface too
     if (warp) { dir = 0; jump = 0; }   // WAYSTONES: you stand still while the light gathers
     if (dir) p.face = dir;
     updateDoors(dt, dir); updateHatches(dt, dir);
@@ -18067,7 +18070,7 @@
   // Floor 1's up ladder is the way out. Nothing in a cave is saved except your bag and stats (S.st.caves / cmined / caveDeep).
   var joy = { x: 0, y: 0 }, cave = null, trans = null, actBtn = null, cp = { x: 0, y: 0, vx: 0, vy: 0, face: 1 }, CAVE_REACH = 3.4, CAVE_SPEED = 5.2, CATLAS = [], CNODE = {};
   function joyReset() { joy.x = joy.y = 0; var jk = $("sbxJoyKnob"); if (jk) jk.style.transform = ""; }
-  function stopInput() { joyReset(); keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = 0; aim.down = false; mine = null; }
+  function stopInput() { joyReset(); keys.l = keys.r = keys.j = keys.u = keys.d = 0; tk.l = tk.r = tk.j = tk.u = tk.d = tk.a = 0; aim.down = false; mine = null; }
   function holeNear() {   // the closest Cave Hole within about 4 tiles of you on the surface, or null
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), best = null, bd = 4.3 * 4.3, x, y, dx, dy, d;
     for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 4; x <= cx + 4; x++) if (get(x, y) === T.HOLE) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.5); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
@@ -20113,6 +20116,7 @@
       SEC.access = card("", '<div class="pz-rows op-pz">' + setAccess() + "</div>");
       SEC.controls = card("Controls", row("Hotbar size", "The hotbar and the health and hunger bars. Touch buttons and the walk stick are sized in Customize Controls.", '<span class="op-btns">' + stp('data-ui="%"', Math.round(UIS * 100) + "%", "Hotbar size") + '<button type="button" class="btn ghost op-mini" data-ui="0" aria-label="Reset hotbar size">Reset</button></span>')
         + (CTLMQ.matches ? row("Movement", JOYALL ? "The walk stick everywhere." : "Arrows on the surface, the stick in caves, the Mine and at sea.", '<span class="op-btns op-seg"><button type="button" class="btn' + (JOYALL ? " ghost" : "") + '" data-joyall="0" aria-pressed="' + !JOYALL + '">Arrows</button><button type="button" class="btn' + (JOYALL ? "" : " ghost") + '" data-joyall="1" aria-pressed="' + JOYALL + '">Stick</button></span>')
+          + row("Jump", UPJ ? "Push up on the arrows or the stick to jump. The big button attacks." : "The big button jumps. Hold on a creature to attack it.", '<span class="op-btns op-seg"><button type="button" class="btn' + (UPJ ? "" : " ghost") + '" data-upj="1" aria-pressed="' + UPJ + '">Up to jump</button><button type="button" class="btn' + (UPJ ? " ghost" : "") + '" data-upj="0" aria-pressed="' + !UPJ + '">Jump button</button></span>')
           + row("Customize controls", "Move, resize and fade each touch button and the walk stick, or all of them at once.", '<button type="button" class="btn" data-layout>Customize</button>') : ""))
         + (CTLMQ.matches && !matchMedia("(hover:hover)").matches ? "" : card("Mouse and keyboard", row("Mouse wheel", "Scroll up or down to move through your hotbar.", optSeg("wheel", OPT.wheel === false ? "0" : "1", [["1", "Hotbar"], ["0", "Off"]], "Mouse wheel")) + '<div class="pz-rows op-pz">' + keymapRows() + "</div>"));
       SEC.mp = card("Play together", row(MP.on ? (MP.role === "host" ? "Room " + esc(MP.code) : "Visiting") : "Multiplayer", MP.on ? (MP.role === "host" ? (MP.npeers + 1) + " / 4 players in your world." : "You are in " + esc(MP.hostName) + "'s world.") : "Open your world to up to 3 friends, or join theirs.", '<button type="button" class="btn" data-mpopen>' + (MP.on ? "Manage" : "Play together") + "</button>"));
@@ -20857,6 +20861,7 @@
   cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   cv.addEventListener("pointerdown", function (e) {
     if (panelOpen || menuOpen || trans || (e.pointerType === "mouse" && e.button !== 0)) return; e.preventDefault();
+    if (aim.id === "atk") { aim.down = false; aim.id = null; ATK.on = false; mine = null; }   // (a finger on the world takes over from the Attack button)
     if (bedBtn) { var br = cv.getBoundingClientRect(), bx = e.clientX - br.left, by = e.clientY - br.top, pd = e.pointerType === "mouse" ? 4 : 12; if (bx >= bedBtn.x - pd && bx <= bedBtn.x + bedBtn.w + pd && by >= bedBtn.y - pd && by <= bedBtn.y + bedBtn.h + pd) { trySleep(); return; } }
     if (actBtn) { var ar = cv.getBoundingClientRect(), ax = e.clientX - ar.left, ay = e.clientY - ar.top, apd = e.pointerType === "mouse" ? 4 : 12; if (ax >= actBtn.x - apd && ax <= actBtn.x + actBtn.w + apd && ay >= actBtn.y - apd && ay <= actBtn.y + actBtn.h + apd) { actBtn.fn(); return; } }
     if (HOME) { if (homeTap(e)) return; if (aim.id !== null && aim.id !== e.pointerId && aim.down) return; aim.id = e.pointerId; aim.down = true; setAim(e); aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); tapEat(); aim.door = aim.chest = aim.hole = false; aim.stn = null; aim.lad = ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {} if (ac && ac.state === "suspended") ac.resume(); $("sbxHint").classList.remove("on"); return; }
@@ -20895,12 +20900,12 @@
     function joyScale() { return base.parentNode && base.parentNode.id === "sbxCtl" ? +(base.style.getPropertyValue("--bs") || 1) : 1; }   // its size comes from Customize Controls
     function mv(e) {
       var r = base.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.sqrt(dx * dx + dy * dy) || 1, JS = joyScale(), k = Math.min(1, d / (R * JS));
-      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0;   // (on the surface, pull down to drop or climb down)
+      var m = k < 0.14 ? 0 : (k - 0.14) / 0.86; joy.x = dx / d * m; joy.y = dy / d * m; if (!cave && !OCS && !HOME) tk.d = joy.y > 0.6 ? 1 : 0; if (UPJ && (!cave || OCS) && !HOME) tk.u = joy.y < -0.55 ? 1 : 0;   // (up to jump: push the stick well up)   // (on the surface, pull down to drop or climb down)
       knob.style.transform = "translate(" + (dx / d * Math.min(d, R * JS) / JS) + "px," + (dy / d * Math.min(d, R * JS) / JS) + "px)";   // the knob follows your thumb
     }
     base.addEventListener("pointerdown", function (e) { e.preventDefault(); id = e.pointerId; try { base.setPointerCapture(id); } catch (x) {} base.classList.add("on"); $("sbxHint").classList.remove("on"); mv(e); });
     base.addEventListener("pointermove", function (e) { if (e.pointerId === id) mv(e); });
-    var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); if (!cave && !OCS && !HOME) tk.d = 0; };
+    var up = function (e) { if (e.pointerId !== id) return; id = null; base.classList.remove("on"); joyReset(); if (!cave && !OCS && !HOME) tk.d = 0; if (UPJ) tk.u = 0; };
     base.addEventListener("pointerup", up); base.addEventListener("pointercancel", up); base.addEventListener("lostpointercapture", up); base.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
   (function () { var sb = $("sbxSpec"); if (sb) sb.addEventListener("click", function (e) { e.preventDefault(); trySpecial(); }); })();   // WEAPON SPECIALS button
@@ -20932,7 +20937,7 @@
     D.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
-    var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; b.classList.remove("on"); };
+    var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); k = b.getAttribute("data-k"); tk.a = tk.j = 0; tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; if (k === "a" || k === "j") tk.a = tk.j = 0; b.classList.remove("on"); };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   });
   window.addEventListener("keydown", function (e) {
@@ -21081,6 +21086,7 @@
     if (t.hasAttribute("data-wxtoggle")) { WX.on = !WX.on; WX.drops.length = 0; try { localStorage.setItem("swamp-delve-weather", WX.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
     if (t.hasAttribute("data-minitoggle")) { MINI.on = !MINI.on; MINI.t = 0; try { localStorage.setItem("swamp-delve-minimap", MINI.on ? "1" : "0"); } catch (e) {} return renderPanel(); }
     if (t.hasAttribute("data-daytoggle")) { SHOWDAYS = !SHOWDAYS; try { localStorage.setItem("swamp-delve-daycount", SHOWDAYS ? "1" : "0"); } catch (e) {} hud(); return renderPanel(); }
+    if (t.hasAttribute("data-upj")) { setUpJump(t.getAttribute("data-upj") === "1"); return renderPanel(); }
     if (t.hasAttribute("data-joyall")) { setJoyAll(t.getAttribute("data-joyall") === "1"); return renderPanel(); }
     if (t.hasAttribute("data-layout")) return openLayout();
     if (t.hasAttribute("data-ui")) { var uv = +t.getAttribute("data-ui"); setUi(uv === 0 ? 1 : UIS + uv * 0.1); return renderPanel(); }
@@ -21194,9 +21200,25 @@
   // MOVEMENT MODE ("swamp-delve-joy"): "all" = the walk stick everywhere (the arrows hide), otherwise arrows on the surface and the stick in caves.
   var CTLMQ = matchMedia ? matchMedia("(pointer:coarse),(max-width:760px)") : { matches: false };
   var JOYALL = false; try { JOYALL = localStorage.getItem("swamp-delve-joy") === "all"; } catch (e) {}
+  // UP TO JUMP (touch): the d-pad's up (and up-left / up-right) or the stick pushed up jumps, and climbs on ladders and vines; the big gold
+  // button becomes ATTACK, which swings at the nearest creature in front of you (a virtual aim: see atkTick). Options > Controls > Jump
+  // switches back to the jump button. Saved per device.
+  var UPJ = true; try { UPJ = localStorage.getItem("swamp-delve-upjump") !== "0"; } catch (e) {}
+  var JUMP_SVG = null;
+  function upjApply() {
+    stageEl.classList.toggle("upj", UPJ); CTLN.j = UPJ ? "Attack" : "Jump";
+    [].forEach.call(document.querySelectorAll(".sbx-stage .jump"), function (b) {
+      if (JUMP_SVG === null) JUMP_SVG = b.innerHTML;
+      b.setAttribute("data-k", UPJ ? "a" : "j"); b.classList.toggle("atk", UPJ); b.setAttribute("aria-label", UPJ ? "Attack" : "Jump"); if (b.hasAttribute("data-lk")) b.setAttribute("data-ln", CTLN.j);
+      b.innerHTML = UPJ ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 3.5L19.8 7 11 15.8 8.2 13 17 4.2z" fill="currentColor" fill-opacity=".25"/><path d="M5.6 11.6l6.8 6.8"/><path d="M8.6 15.4l-4 4"/><circle cx="3.9" cy="20.1" r="1.2" fill="currentColor"/></svg>' : JUMP_SVG;
+    });
+    var dp = $("sbxDpad"); if (dp) dp.setAttribute("aria-label", UPJ ? "Direction pad: left, right, up to jump and climb, down to drop" : "Direction pad: left, right, up to climb, down to drop");
+  }
+  function setUpJump(on) { UPJ = !!on; stopInput(); upjApply(); try { localStorage.setItem("swamp-delve-upjump", UPJ ? "1" : "0"); } catch (e) {} }
   function setJoyAll(on) { JOYALL = !!on; stageEl.classList.toggle("joyall", JOYALL); stopInput(); try { localStorage.setItem("swamp-delve-joy", JOYALL ? "all" : "caves"); } catch (e) {} }
   stageEl.classList.toggle("joyall", JOYALL);
   var CTLN = { pad: "D-pad", j: "Jump", roll: "Dodge roll", spec: "Special", joy: "Walk stick" }, CTLK = ["pad", "j", "roll", "spec", "joy"];
+  upjApply();
   var CTLD = { pad: { x: 0.17, y: 0.72 }, j: { x: 0.9, y: 0.7 }, roll: { x: 0.78, y: 0.6 }, spec: { x: 0.9, y: 0.5 }, joy: { x: 0.17, y: 0.66 } };   // fallback spots when a button is not on screen to measure
   var CTLR = null, CTLL = null, LAYD = {};
   try { LAYD = JSON.parse(localStorage.getItem("swamp-delve-layout") || "{}") || {}; } catch (e) { LAYD = {}; }
@@ -21227,7 +21249,7 @@
   function xDrop(id) { if (!CTLR[id]) return; CTLR[id].forEach(function (el) { el.remove(); }); delete CTLR[id]; CTLK = CTLK.filter(function (k) { return k !== id; }); }
   function layInit() {
     var P = $("sbxPad"); if (!P || CTLR) return;
-    CTLR = { pad: [$("sbxDpad")], j: [P.querySelector('[data-k="j"]')], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")], joy: [$("sbxJoy")] };
+    CTLR = { pad: [$("sbxDpad")], j: [P.querySelector(".jump")], roll: [P.querySelector(".roll"), $("sbxRoll")], spec: [$("sbxSpec")], joy: [$("sbxJoy")] };
     CTLL = document.createElement("div"); CTLL.className = "sbx-ctl"; CTLL.id = "sbxCtl"; stageEl.insertBefore(CTLL, $("sbxRoll") || P.nextSibling);
     CTLK.forEach(function (k) { CTLR[k] = CTLR[k].filter(Boolean); CTLR[k].forEach(function (el) { el.__h = { p: el.parentNode, n: el.nextSibling }; el.setAttribute("data-lk", k); el.setAttribute("data-ln", CTLN[k]); }); });
     Object.keys(LAYD).forEach(function (k) { if (/^x_/.test(k)) xMake(k); });
@@ -21611,7 +21633,7 @@
   }
 
   // ---------- the pier gate near camp: the way in ----------
-  var OCJ = { t: -1e9 }; try { $("sbxPad").querySelector(".jump").addEventListener("pointerdown", function () { OCJ.t = performance.now(); }); } catch (e) {}   // a quick tap on the jump button still counts as a hop
+  var OCJ = { t: -1e9 }; try { $("sbxPad").querySelector(".jump").addEventListener("pointerdown", function () { if (!UPJ) OCJ.t = performance.now(); }); } catch (e) {}   // a quick tap on the jump button still counts as a hop
   var OPG = { w: null, x: 0 };   // the gate stands where Murkwater Swamp meets the Ember Bog, as if the sea lay just behind that border
   // CAMP: Croaker's Pier and the Homestead both stand at camp, beside the Mine and the mailbox, in every world, so camp is the heart of the
   // game and exploring is pure freedom. campSpots() picks two flat stretches near spawn that keep clear of the Mine headframe, the mailbox,
@@ -21723,7 +21745,7 @@
   // ---------- update: walking the pier, swimming, air, pressure ----------
   function ocUpdate(dt) {
     var sc = OCS, pl = sc.pl, m = sc.m; advTime(dt); tickWeather(dt); tideStep(dt); sc.mt += dt; if (cheerT > 0) cheerT = Math.max(0, cheerT - dt); if (p.land) p.land = Math.max(0, p.land - dt * 2.2);   // FIX: a quest cheer no longer gets stuck (arms up) after a swim
-    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j || performance.now() - OCJ.t < 160;
+    var dx = ((keys.r || tk.r) ? 1 : 0) - ((keys.l || tk.l) ? 1 : 0), dy = ((keys.d || tk.d) ? 1 : 0) - ((keys.u || tk.u) ? 1 : 0), up = keys.j || tk.j || (UPJ && tk.u) || performance.now() - OCJ.t < 160;
     if (joy.x || joy.y) { dx = joy.x; dy = joy.y; }
     if (hurtT > 0) { dx *= 0.5; }
     var ssp = ocSwimSp(), shock = pl.shock > 0 ? 0.45 : 1; pl.shock = Math.max(0, pl.shock - dt);
@@ -23585,7 +23607,7 @@
       seaTrail(sh, dt, sh.big ? 2.8 : 2.2);
       if (dd < nd) { nd = dd; nearest = sh; }
     }
-    if ((keys.j || tk.j) && nearest && s.cd <= 0) seaFire(nearest, false);
+    if ((keys.j || tk.j || tk.a) && nearest && s.cd <= 0) seaFire(nearest, false);
     if (nearest && nd < 18 && s.cd <= 0 && s.auto !== false) seaFire(nearest, false);   // the deckhand frog fires the cannons when pirates come close
     for (i = s.balls.length - 1; i >= 0; i--) {
       var b = s.balls[i]; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; var hit = false;
@@ -23802,7 +23824,7 @@
       var hitB = Math.hypot(s.x - L.ring.x, s.y - L.ring.y) < 3.6; for (var q3 = 0; q3 < 30; q3++) s.wake.push({ x: L.ring.x + (Math.random() - 0.5) * 5, y: L.ring.y + (Math.random() - 0.5) * 5, vx: (Math.random() - 0.5) * 9, vy: (Math.random() - 0.5) * 9, life: 1, spl: 1 });
       waterSplash(L.ring.x, L.ring.y, 2.4, 1); shake = Math.max(shake, hitB ? 1 : 0.5); thud(45, 0.25); if (hitB) seaHurt(14); L.ring = null; } }
     L.up = L.st === "up" || L.st === "rise";
-    if ((keys.j || tk.j) && L.up && s.cd <= 0) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);
+    if ((keys.j || tk.j || tk.a) && L.up && s.cd <= 0) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);
     if (L.up && s.cd <= 0 && s.auto !== false && Math.hypot(L.hx - s.x, L.hy - s.y) < 20) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);   // the deckhand frog fires too
   }
   function levHit(b) {
@@ -27115,6 +27137,28 @@
   function homeGateArt(g) { hDrawK(g, hsSignpost(), HGATE.x - 1, HGATE.y + 1, 2, 30); hDrawK(g, hsLamppost(), HGATE.x + 2, HGATE.y + 1, 0, 34); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   var PZN = -1;
+  // ATTACK BUTTON: while it is held, the game aims for you, as if a finger were held on the nearest creature in front of you (within about 7
+  // blocks; in caves and on islands, the nearest one around you), so every weapon, the bow and bare-paw swats work exactly as when you
+  // press on a creature. With nothing near, it swings just in front of you. At sea the button fires the cannons instead (see seaFire).
+  var ATK = { on: false, prev: null };   // prev: what you held before the button switched to your weapon
+  function atkTarget() {
+    var best = null, bd = 1e9, px, py, face;
+    if (OCS) { var pl = OCS.pl || {}; px = pl.x; py = pl.y - 0.45; face = pl.face || 1;
+      (OCS.mobs || []).forEach(function (m) { if (m.dead) return; var dx = m.x - px, dy = m.y - py, d = dx * dx + dy * dy + (dx * face < 0 ? 3 : 0); if (d < bd && d < 49) { bd = d; best = [m.x, m.y]; } }); }
+    else if (cave) { px = cp.x; py = cp.y - 0.5; face = cp.face || 1;
+      (cave.F.mobs || []).forEach(function (m) { if (m.def) return; var dx = m.x - px, dy = (m.y - 0.3) - py, d = dx * dx + dy * dy; if (d < bd && d < 49) { bd = d; best = [m.x, m.y - 0.3]; } }); }
+    else { px = p.x; py = p.y - PH / 2; face = p.face || 1;
+      enemies.forEach(function (e) { if (e.def || e.u) return; var ex = e.x, ey = e.y - e.h / 2, dx = ex - px, dy = ey - py; if (Math.abs(dx) > 7.5 || Math.abs(dy) > 5) return; var d = dx * dx + dy * dy * 1.5 + (dx * face < 0 ? 6 : 0); if (d < bd) { bd = d; best = [ex, ey]; } }); }
+    return best || [px + face * 1.3, py];
+  }
+  function atkTick() {
+    var want = !!tk.a && !panelOpen && !menuOpen && !titleOpen && !trans && !deadUI && !HOME && !(OCS && OCS.sea);
+    if (!want) { if (ATK.on) { ATK.on = false; if (aim.id === "atk") { aim.down = false; aim.id = null; mine = null; aim.tx = -1; } if (ATK.prev !== null && sel === "weapon") { sel = ATK.prev; hbDirty = true; } ATK.prev = null; } return; }
+    if (aim.id !== null && aim.id !== "atk") return;   // a finger on the world wins
+    var T2 = atkTarget(); aim.mx = ox + T2[0] * ts; aim.my = oy + T2[1] * ts;
+    if (!ATK.on) { ATK.on = true; ATK.prev = null; if (S.wpn && sel !== "weapon" && sel !== "bow") { ATK.prev = sel; sel = "weapon"; hbDirty = true; }   // the button always fights with your weapon (or your bow, if you are holding it)
+      aim.id = "atk"; aim.down = true; aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); aim.dx = Math.floor(T2[0]); aim.dy = Math.floor(T2[1]); aim.door = aim.chest = aim.stn = aim.hole = false; aim.lad = ""; $("sbxHint").classList.remove("on"); }
+  }
   function loop(now) {
     var titleMove = titleOpen && !panelOpen && !menuOpen && !cave && !OCS && !HOME && !mapOpen;   // the main-menu fly-by: draw every frame so the pan glides
     var paused = (panelOpen || menuOpen || titleOpen) && !titleMove && !trans && !MP.on && !PHOTO.on && !(mapOpen && (M.drag || M.pinch || M.fling || M.dirty));   // (the map is a menu, but while you move it it runs at full frame rate: at 10 a second it felt choppy)
@@ -27133,6 +27177,7 @@
       try { tickVoices(dt); } catch (er) {}
       try { if (!titleOpen) overTick(dt); } catch (er) {}
       try { mapSeenTick(); } catch (er) {}
+      try { atkTick(); } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (window.__CAMOV) { cam.x = window.__CAMOV.x; cam.y = window.__CAMOV.y; }   // (test/trailer hook: a scripted camera)
@@ -27178,7 +27223,7 @@
   (function () { var rb = $("sbxRot"); if (rb) rb.addEventListener("click", function () { rb.classList.remove("show"); }); })();   // (the dev preview closes with a tap)
 
   buildAtlas(); load(); layInit(); resize(); applyLayout(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
-  $("sbxHint").textContent = S.qi === 0 ? (coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens Crafting, J your Journal, B your Backpack.";
+  $("sbxHint").textContent = S.qi === 0 ? (coarse ? ((JOYALL ? "Drag the stick to walk" : "Use the arrows to walk") + (UPJ ? ", up to jump." : ".")) + " Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? ((JOYALL ? "Drag the stick to walk" : "Use the arrows to walk") + (UPJ ? ", up to jump." : ".")) + " Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens Crafting, J your Journal, B your Backpack.";
   stageEl.classList.add("title"); titleEl.hidden = false; cam.x = p.x; cam.y = titleCamTarget(); renderTitle(); drawTitleLogo(performance.now());
   window.__sbxReady = true; if (window.__dlDone) window.__dlDone();   // tell the loading screen the world is built
   // UI feel: a soft tick on every button in a window (follows the sound switch), and mouse-wheel scrolling across the category chip rows
@@ -27224,6 +27269,7 @@
   window.__sbx.bm = { BM: BM, BMW: BMW, start: bmStart, end: bmEnd, night: bmNight, tick: tickBlood, force: function () { S.bmNext = S.days | 0; S.time = 290; } };
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
+  window.__sbx.upj = function (v) { setUpJump(v); return UPJ; };   // (tests: switch Up to jump on or off)
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
   window.__decoT = { st: function () { return { DAIM: !!DAIM, DHOV: DHOV ? DHOV.k : null, DLAST: DLAST, wx: (aim.mx - ox) / ts, wy: (aim.my - oy) / ts, hit: DECO && DECO.hit((aim.mx - ox) / ts, (aim.my - oy) / ts) ? 1 : 0, sel: sel, bare: bare }; }, m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); },
     mode: function (on) { if (on !== undefined) decoMode(on); return DMODE; }, sel: function () { return DSEL; }, sit: function () { return SIT; }, act: function (a) { decoAct(a); }, use: function (c) { return decoUse(c); }, panel: function () { return decoPanel(); },
@@ -27961,7 +28007,7 @@
     add({ id: "k:keys", sec: "controls", cat: "Keyboard", n: "Your keys", c: "#b58cff", sub: "Change them in Settings > Controls", body:
       cxRows(KEYACT.map(function (a) { var b = KEYMAP.b[a.id]; return [a.n, b === "none" ? "None" : b ? keyLabel(b) : a.d.map(keyLabel).join(" or ")]; }).concat([["Hotbar", "1 to 9, or the mouse wheel"], ["Dig, chop, place, attack", "Hold the mouse"], ["Chat (playing together)", "Enter"], ["Codex", "K"]])) +
       "<p>Change any key in Settings. If the key you press already does something, you can <b>Bind</b> it (the old action loses it) or <b>Cancel</b>.</p>" });
-    add({ id: "k:touch", sec: "controls", cat: "Touch", n: "Touch controls", c: "#7fd6ff", sub: "Phones and tablets", body: cxRows([["Walk", "The stick or the arrows"], ["Jump, climb ladders", "The jump button"], ["Dig, chop, place, attack", "Hold on a block"], ["See what an item is", "Hold an item"], ["Switch tools", "Tap the hotbar"]]) + "<p>Move, resize and fade every button in Options > Controls > Customize.</p>" });
+    add({ id: "k:touch", sec: "controls", cat: "Touch", n: "Touch controls", c: "#7fd6ff", sub: "Phones and tablets", body: cxRows([["Walk", "The stick or the arrows"], ["Jump, climb ladders", UPJ ? "Up on the arrows or the stick" : "The jump button"]].concat(UPJ ? [["Attack the nearest creature", "The sword button"]] : []).concat([["Dig, chop, place, attack", "Hold on a block"], ["See what an item is", "Hold an item"], ["Switch tools", "Tap the hotbar"]])) + "<p>Move, resize and fade every button in Options > Controls > Customize.</p>" });
     return D;
   }
   function cxOpen(sec, sel) {
@@ -28809,6 +28855,7 @@
       ["Every dive item", function () { var o = {}; ["scubasuit", "suit2", "suit3", "suit4", "tank1", "tank2", "tank3", "tank4", "flippers", "divelamp"].forEach(function (k) { o[k] = 1; }); devGive(o); }]
     ],
     set: [
+      ["Touch jump: switch between Up to jump + Attack button and the Jump button", function () { setUpJump(!UPJ); toast(UPJ ? "Up to jump, and the big button attacks." : "The big button jumps again.", "#ffb27a"); }],
       ["Fill the bag with Stone (to test Overstocked)", function () { reslot(); S.slots.forEach(function (c, i) { if (!c) S.slots[i] = { k: "stone", n: stackMax("stone") }; else if (c.k === "stone") c.n = stackMax("stone"); }); S.inv = totals(S.slots); hbDirty = true; toast("Bag filled with Stone.", "#7ffcff"); }],
       ["Swamp Essence: back to level 0", function () { S.ess = 0; essHud(); toast("Swamp Essence reset.", "#ff7ad8"); }],
       ["Malcruor: corruption to 90%", function () { if (!inMC()) { nag("Enter Malcruor first."); return; } malcS().c = MC_SEC * 0.9; MC.warn = 2; }],
