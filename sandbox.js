@@ -11598,7 +11598,7 @@
     if (md > 0.05) { var st = Math.min(md, (md > 3 ? 2.6 : 0.8) * dt); GD.x += mx / md * st; GD.y += my / md * st; }
     if (d < 7) GD.face = cp.x < GD.x ? -1 : 1; else if (Math.abs(mx) > 0.1) GD.face = mx < 0 ? -1 : 1;
     GD.alt = 1.55 + Math.sin(GD.t * 2.1) * 0.18;
-    if (!reduce && Math.random() < dt * 6) parts.push({ x: GD.x + (Math.random() - 0.5) * 1.6, y: GD.y - GD.alt + (Math.random() - 0.3) * 0.8, vx: (Math.random() - 0.5) * 0.4, vy: -0.4 - Math.random() * 0.4, g: -0.2, life: 1, max: 1, c: Math.random() < 0.5 ? "#9ffff0" : "#ffe9a0", s: 2 + Math.random() * 1.5, glw: 1 });
+    if (!reduce && Math.random() < dt * 6) parts.push({ x: GD.x + (Math.random() - 0.5) * 1.6, y: GD.y - GD.alt + (Math.random() - 0.3) * 0.8, vx: (Math.random() - 0.5) * 0.4, vy: -0.4 - Math.random() * 0.4, g: -0.2, life: 1, max: 1, c: ["#9ffff0", "#ffe9a0", "#ffb0f0", "#c8a8ff"][Math.floor(Math.random() * 4)], s: 2 + Math.random() * 1.5, glw: 1 });
   }
   // a tapered tube along points (legs, tails): filled, but only its two sides and the far end are inked, so where it joins the body there is no seam
   function aTube(g, pts, ws, fill, ln, lw) {
@@ -11609,24 +11609,29 @@
     g.beginPath(); side(L); g.quadraticCurveTo(ex, ey, R[n - 1][0], R[n - 1][1]); side(R, 1); g.closePath(); g.fillStyle = fill; g.fill();
     if (ln) { g.beginPath(); side(L); g.quadraticCurveTo(ex, ey, R[n - 1][0], R[n - 1][1]); side(R, 1); g.strokeStyle = ln; g.lineWidth = lw || 1.2; g.stroke(); }
   }
-  // ZARUK, the Realm Warden, in the house style: a golden winged lion with a monkey's face, a flame mane, dragon horns and wings and a curly
-  // tufted tail. Wings, horns, ears and tail are drawn first so they grow out of him; the body (chest and neck) is one inked silhouette; legs are
+  // ZARUK, the Realm Warden, in the house style and the SwampRealms (Nexus) colours: a pearl-and-lilac winged lion with a monkey's face, an
+  // aurora mane (cyan, violet, pink like the Nexus sky), crystal horns, rainbow dragon wings ribbed in gold, a gold circlet with a prism gem, star
+  // markings and a curly tail with an aurora tuft. Wings, horns, ears and tail are drawn first so they grow out of him; the body (chest and neck) is one inked silhouette; legs are
   // tapered tubes with paws and toe lines, seamless at the hip. Drawn around (x, y) = the middle of his body; sc = pixels per unit; sl 0..1 = asleep.
   function drawZaruk(g, x, y, sc, t, face, glowA, sl) {
     sl = sl || 0; var aw = 1 - sl, br = Math.sin(t * 1.7), flap = sl ? 0.55 * sl + Math.sin(t * 6.5) * aw : Math.sin(t * 6.5), tail = Math.sin(t * (sl ? 0.9 : 2.4)) * (sl ? 0.4 : 1), sw = Math.sin(t * 3) * aw;
-    var IN = "#5a2a0a", FH = "#ffd88a", FM = "#eaa43c", FL = "#b0641c", MI = "#4a1a06", MH = "#f28a34", MM = "#cc5a1c", ML = "#7e2c0c", FC = "#ffe8c8", FCM = "#f4caa0", FCL = "#d29a62";
+    var IN = "#2e1866", FH = "#fbf2ff", FM = "#c4a6ff", FL = "#6a4ac4", MI = "#3e1670", FC = "#fff4f2", FCM = "#f6d4e4", FCL = "#d4a0c8";
+    var aur = function (y0, y1) { var q = g.createLinearGradient(0, y0, 0, y1); q.addColorStop(0, "#8ff8ff"); q.addColorStop(0.3, "#5cc8ff"); q.addColorStop(0.6, "#a476ff"); q.addColorStop(1, "#ff5cc4"); return q; };   // the aurora: cyan, violet, pink
+    var star = function (sx, sy, r, c, a) { g.globalAlpha = a; g.fillStyle = c; g.beginPath(); g.moveTo(sx, sy - r); g.quadraticCurveTo(sx, sy, sx + r, sy); g.quadraticCurveTo(sx, sy, sx, sy + r); g.quadraticCurveTo(sx, sy, sx - r, sy); g.quadraticCurveTo(sx, sy, sx, sy - r); g.fill(); g.globalAlpha = 1; };
     g.save(); g.translate(x, y); g.scale(sc * face * (1 + 0.025 * br * sl), sc * (1 - 0.03 * br * sl)); g.lineJoin = "round"; g.lineCap = "round";
-    if (glowA) { var ag = g.createRadialGradient(0, 0, 4, 0, 0, 42); ag.addColorStop(0, "rgba(160,255,240," + (0.24 * glowA) + ")"); ag.addColorStop(1, "rgba(160,255,240,0)"); g.fillStyle = ag; g.beginPath(); g.arc(0, 0, 42, 0, 7); g.fill(); }
+    if (glowA) { var ag = g.createRadialGradient(0, -2, 4, 0, -2, 46); ag.addColorStop(0, "rgba(255,170,240," + (0.26 * glowA) + ")"); ag.addColorStop(0.5, "rgba(150,230,255," + (0.16 * glowA) + ")"); ag.addColorStop(1, "rgba(150,230,255,0)"); g.fillStyle = ag; g.beginPath(); g.arc(0, -2, 46, 0, 7); g.fill(); }
     // WINGS: dragon membranes rooted at the shoulder, behind the body. The far one is darker and smaller.
     [[0, 0.82], [1, 1]].forEach(function (wq) {
       var near = wq[0], k = wq[1], ang = (0.18 + Math.sin(t * 6.5) * 0.38) * aw - 0.2 * sl + (near ? 0 : -0.14); g.save(); g.translate(near ? 0 : -3, near ? -5 : -7); g.rotate(ang); g.scale(k, k);
       g.beginPath(); g.moveTo(2, 2); g.quadraticCurveTo(-6, -20, -20, -27); g.quadraticCurveTo(-28, -29, -36, -24);
       g.quadraticCurveTo(-31, -20, -33, -14); g.quadraticCurveTo(-27, -15, -25, -9); g.quadraticCurveTo(-19, -11, -16, -4); g.quadraticCurveTo(-10, -6, -7, 1); g.quadraticCurveTo(-3, 0, 2, 2); g.closePath();
-      var wg = g.createLinearGradient(0, -28, -10, 4); wg.addColorStop(0, near ? "#9a7aff" : "#5a4aa8"); wg.addColorStop(0.55, near ? "#5ab8d8" : "#356a94"); wg.addColorStop(1, near ? "#3a8aa8" : "#24486a");
-      g.save(); aInk(g, wg, "#20163e", 1.5); g.clip(); g.fillStyle = "rgba(255,255,255,.14)"; g.beginPath(); g.ellipse(-16, -20, 14, 4, -0.5, 0, 7); g.fill(); g.restore();
-      g.strokeStyle = "#20163e"; g.lineWidth = 2.6; g.beginPath(); g.moveTo(1, 1); g.quadraticCurveTo(-8, -18, -20, -27); g.moveTo(-14, -18); g.quadraticCurveTo(-24, -18, -33, -14); g.moveTo(-11, -13); g.quadraticCurveTo(-20, -11, -25, -9); g.moveTo(-8, -8); g.lineTo(-16, -4); g.stroke();
-      g.strokeStyle = near ? "#d8f2ff" : "#8aa0d0"; g.lineWidth = 1.1; g.stroke();
-      g.fillStyle = near ? "#efe6cc" : "#b8ae94"; g.beginPath(); g.moveTo(-19, -27.5); g.lineTo(-23, -31); g.lineTo(-21, -26); g.closePath(); aInk(g, g.fillStyle, "#20163e", 0.9);   // the wing claw
+      var wg = g.createLinearGradient(-30, -28, -2, 4); wg.addColorStop(0, near ? "#ffb4ec" : "#b07ac8"); wg.addColorStop(0.4, near ? "#c4a2ff" : "#7e66c4"); wg.addColorStop(0.75, near ? "#86e6ff" : "#5a8ec4"); wg.addColorStop(1, near ? "#7ff4e4" : "#4a8a9e");
+      g.save(); aInk(g, wg, "#2e1a62", 1.5); g.clip(); g.fillStyle = "rgba(255,255,255,.22)"; g.beginPath(); g.ellipse(-16, -20, 14, 4, -0.5, 0, 7); g.fill();
+      if (near) [[-26, -21, 1.6], [-18, -14, 1.2], [-29, -26, 1], [-12, -8, 1.1], [-22, -10, 0.9]].forEach(function (q, qi) { star(q[0], q[1], q[2] * (1 + 0.35 * Math.sin(t * 3 + qi * 1.7)), "#ffffff", 0.85); });
+      g.restore();
+      g.strokeStyle = "#2e1a62"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(1, 1); g.quadraticCurveTo(-8, -18, -20, -27); g.moveTo(-14, -18); g.quadraticCurveTo(-24, -18, -33, -14); g.moveTo(-11, -13); g.quadraticCurveTo(-20, -11, -25, -9); g.moveTo(-8, -8); g.lineTo(-16, -4); g.stroke();
+      g.strokeStyle = near ? "#ffd76a" : "#b8925a"; g.lineWidth = 0.95; g.stroke();   // gold wing ribs
+      g.fillStyle = near ? "#bff6ff" : "#7aa8c8"; g.beginPath(); g.moveTo(-19, -27.5); g.lineTo(-23, -31); g.lineTo(-21, -26); g.closePath(); aInk(g, g.fillStyle, "#2e1a62", 0.9);   // the wing claw: a little crystal
       g.restore();
     });
     // FAR LEGS (darker), behind the body
@@ -11655,15 +11660,16 @@
     var tp = [[-14, 1], [-22, 4 + tail * 2], [-29, -1 + tail * 3], [-29, -9 + tail * 3], [-24, -12 + tail * 2], [-21, -8 + tail * 1.5]];
     aTube(g, tp, [5, 4, 3.4, 3, 2.6, 2.4], aG(g, -12, 6, FH, FM, FL), IN, 1.2);
     g.save(); g.translate(-20.4, -7.6 + tail * 1.5); g.rotate(0.9 + tail * 0.2); g.beginPath(); g.moveTo(0, -1.6);
-    for (var ti = 0; ti <= 6; ti++) { var ta = -1.2 + ti / 6 * 2.4, tr = ti % 2 ? 3.4 : 6; g.lineTo(Math.cos(ta) * tr + 1, Math.sin(ta) * tr); } g.lineTo(0, 1.6); g.closePath(); aInk(g, aG(g, -6, 6, MH, MM, ML), MI, 1.1); g.restore();
+    for (var ti = 0; ti <= 6; ti++) { var ta = -1.2 + ti / 6 * 2.4, tr = ti % 2 ? 3.4 : 6; g.lineTo(Math.cos(ta) * tr + 1, Math.sin(ta) * tr); } g.lineTo(0, 1.6); g.closePath(); aInk(g, aur(-6, 6), MI, 1.1); g.restore();
     // BODY: one silhouette from rump to chest, the neck rising into the mane
     g.beginPath(); g.moveTo(-17, 1); g.quadraticCurveTo(-18, -5, -11, -6.5); g.quadraticCurveTo(-3, -7.5, 4, -7.5 + br * 0.3); g.quadraticCurveTo(9, -10, 12, -12);
     g.lineTo(16, -4); g.quadraticCurveTo(16.5, 5, 10, 9); g.quadraticCurveTo(2, 11.5, -6, 10.5); g.quadraticCurveTo(-15, 10, -17, 1); g.closePath();
     g.save(); aInk(g, aG(g, -8, 12, FH, FM, FL), IN, 1.5); g.clip();
     // dragon scales down his belly, curving with the body
-    g.fillStyle = "#ffe6a8"; g.beginPath(); g.ellipse(1, 11, 14, 5, -0.04, 0, 7); g.fill();
-    g.strokeStyle = "#d89a4a"; g.lineWidth = 0.9; for (var si = 0; si < 6; si++) { var bx = -10 + si * 4.4, by = 8.4 - Math.abs(si - 2.5) * 0.35; g.beginPath(); g.arc(bx, by, 2.4, 0.2, Math.PI - 0.2); g.stroke(); }
-    g.strokeStyle = "rgba(122,60,12,.35)"; g.lineWidth = 1; g.beginPath(); g.moveTo(-15, 3); g.quadraticCurveTo(-10, -1, -5, 1); g.stroke();   // the haunch crease
+    g.fillStyle = "#e8fbff"; g.beginPath(); g.ellipse(1, 11, 14, 5, -0.04, 0, 7); g.fill();
+    [[-12, -1.5, 1.5], [-8.5, 1.5, 1], [-5, -2.8, 1.2], [-1, 0.8, 0.8], [3, -3.5, 1]].forEach(function (q, qi) { star(q[0], q[1], q[2] * (1 + 0.3 * Math.sin(t * 2.4 + qi)), qi % 2 ? "#ffffff" : "#8ff0ff", 0.9); });   // star markings over the haunch and back
+    g.strokeStyle = "rgba(140,200,240,.9)"; g.lineWidth = 0.9; for (var si = 0; si < 6; si++) { var bx = -10 + si * 4.4, by = 8.4 - Math.abs(si - 2.5) * 0.35; g.beginPath(); g.arc(bx, by, 2.4, 0.2, Math.PI - 0.2); g.stroke(); }
+    g.strokeStyle = "rgba(70,40,140,.3)"; g.lineWidth = 1; g.beginPath(); g.moveTo(-15, 3); g.quadraticCurveTo(-10, -1, -5, 1); g.stroke();   // the haunch crease
     g.restore();
     aShine(g, -6, -4.6, 7, 1.6, 0.3, -0.06);
     legs(0);
@@ -11673,28 +11679,35 @@
     [[-2.5, -8, 0.82], [3, -9, 1]].forEach(function (h) {
       var k = h[2]; g.save(); g.translate(h[0], h[1]); g.scale(k, k);
       var hpz = [[0, 2], [-2.4, -4], [-6.4, -8.6], [-11.4, -9.6]];
-      aTube(g, hpz, [5.6, 4.2, 2.6, 0.8], aG(g, -10, 2, k < 1 ? "#d8ccae" : "#fff6dc", k < 1 ? "#b8aa88" : "#e6d6b0", k < 1 ? "#8a7a5a" : "#b09a70"), "#4e3e22", 1.1);
-      g.strokeStyle = "rgba(78,62,34,.5)"; g.lineWidth = 0.7; [[-0.6, -1.6, 2.4], [-3.4, -5.6, 1.8], [-6.6, -8.2, 1.2]].forEach(function (r) { g.beginPath(); g.moveTo(r[0] - r[2], r[1] - r[2] * 0.4); g.lineTo(r[0] + r[2], r[1] + r[2] * 0.5); g.stroke(); });
+      aTube(g, hpz, [5.6, 4.2, 2.6, 0.8], aG(g, -10, 2, k < 1 ? "#b8e4f4" : "#f2ffff", k < 1 ? "#86b8e0" : "#a6ecff", k < 1 ? "#5a7ab8" : "#6aa6e8"), "#28407a", 1.1);
+      g.strokeStyle = "rgba(255,255,255,.75)"; g.lineWidth = 0.7; [[-0.6, -1.6, 2.4], [-3.4, -5.6, 1.8], [-6.6, -8.2, 1.2]].forEach(function (r) { g.beginPath(); g.moveTo(r[0] - r[2], r[1] - r[2] * 0.4); g.lineTo(r[0] + r[2], r[1] + r[2] * 0.5); g.stroke(); });
       g.restore();
     });
     // monkey ears poke out of the mane
     [[-9.5, 0, 0.85], [9.5, -1, 1]].forEach(function (e2) { g.beginPath(); g.arc(e2[0], e2[1], 3.9 * e2[2], 0, 7); aInk(g, aG(g, e2[1] - 4, e2[1] + 4, FH, FM, FL), IN, 1.2); g.fillStyle = "#ff9fb4"; g.beginPath(); g.arc(e2[0] + (e2[0] < 0 ? 0.4 : -0.4), e2[1] + 0.3, 2.2 * e2[2], 0, 7); g.fill(); });
     // the mane: one flame-shaped ruff of locks, flowing back
     g.beginPath(); for (var m = 0; m <= 18; m++) { var a = m / 18 * 6.283 - 1.2, back = Math.cos(a) < 0 ? 1 : 0, r1 = (m % 2 ? 10.4 : 14 + back * 2.4) + Math.sin(t * 2.2 + m) * 0.45; var px = Math.cos(a) * r1 - back * 1.5, py = Math.sin(a) * r1 * 0.95; if (!m) g.moveTo(px, py); else g.quadraticCurveTo(Math.cos(a - 0.17) * (r1 + 1.5) - back * 1.5, Math.sin(a - 0.17) * (r1 + 1.5) * 0.95, px, py); }
-    g.closePath(); g.save(); aInk(g, aG(g, -14, 14, MH, MM, ML), MI, 1.4); g.clip();
-    g.strokeStyle = "rgba(74,26,6,.45)"; g.lineWidth = 0.9; for (m = 0; m < 12; m++) { var a3 = m / 12 * 6.283 + 0.2; g.beginPath(); g.moveTo(Math.cos(a3) * 9, Math.sin(a3) * 9); g.quadraticCurveTo(Math.cos(a3 + 0.12) * 12, Math.sin(a3 + 0.12) * 12, Math.cos(a3 + 0.05) * 14.5, Math.sin(a3 + 0.05) * 14.5); g.stroke(); }
+    g.closePath(); g.save(); aInk(g, aur(-15, 15), MI, 1.4); g.clip();
+    g.strokeStyle = "rgba(255,255,255,.4)"; g.lineWidth = 0.9; for (m = 0; m < 12; m++) { var a3 = m / 12 * 6.283 + 0.2; g.beginPath(); g.moveTo(Math.cos(a3) * 9, Math.sin(a3) * 9); g.quadraticCurveTo(Math.cos(a3 + 0.12) * 12, Math.sin(a3 + 0.12) * 12, Math.cos(a3 + 0.05) * 14.5, Math.sin(a3 + 0.05) * 14.5); g.stroke(); }
     g.restore(); aShine(g, -8, -5, 3.4, 1.3, 0.28, -0.9);
     // the face: a heart-shaped monkey face with a round muzzle, one shape
     g.beginPath(); g.moveTo(0.5, 9); g.bezierCurveTo(-7, 8.5, -9.5, 2, -8, -2.5); g.bezierCurveTo(-7, -6.4, -2, -7, 0.4, -4.2); g.bezierCurveTo(2.6, -7.2, 8, -6.6, 8.8, -2.4); g.bezierCurveTo(10, 2, 7.6, 8.6, 0.5, 9); g.closePath();
-    g.save(); aInk(g, aG(g, -6, 9, FC, FCM, FCL), "#8a4a1a", 1.2); g.clip(); g.fillStyle = "rgba(255,140,150,.35)"; g.beginPath(); g.ellipse(-5.6, 3, 2.2, 1.4, 0, 0, 7); g.ellipse(6.4, 2.6, 2.2, 1.4, 0, 0, 7); g.fill(); g.restore();
-    g.beginPath(); g.ellipse(0.8, 4.2, 4.6, 3.4, 0, 0, 7); g.fillStyle = aG(g, 1, 7.6, "#fff2dc", FCM, FCL); g.fill();   // the muzzle (no outline: it is part of the face)
-    if (sl > 0.5) [[-3.2, -0.6], [4.4, -0.8]].forEach(function (e3) { g.strokeStyle = "#5a2a10"; g.lineWidth = 1.1; g.beginPath(); g.arc(e3[0], e3[1] - 0.8, 2.2, 0.35, Math.PI - 0.35); g.stroke(); g.beginPath(); g.moveTo(e3[0] - 2.4, e3[1] + 0.2); g.lineTo(e3[0] - 3.1, e3[1] + 0.9); g.stroke(); });   // asleep: eyes shut, with lashes
-    else { aEye(g, -3.2, -0.8, 2.6, "#2ad6c0", "#5a2a10", false, 0.45); aEye(g, 4.4, -1, 2.7, "#2ad6c0", "#5a2a10", false, 0.45);
-      g.strokeStyle = "#7a3a12"; g.lineWidth = 1.1; g.beginPath(); g.moveTo(-5.4, -4.4); g.quadraticCurveTo(-3.4, -5.4, -1.4, -4.6); g.moveTo(2.2, -4.8); g.quadraticCurveTo(4.6, -5.8, 6.8, -4.6); g.stroke(); }
-    g.beginPath(); g.moveTo(0.8, 2.2); g.quadraticCurveTo(-1, 1.6, -0.8, 2.6); g.quadraticCurveTo(0.8, 4.2, 2.4, 2.6); g.quadraticCurveTo(2.6, 1.6, 0.8, 2.2); g.fillStyle = "#5a2210"; g.fill();   // nose
-    g.strokeStyle = "#5a2210"; g.lineWidth = 1; g.beginPath(); g.moveTo(-2.4, 5.4); g.quadraticCurveTo(0.8, 7.6 - sl * 1.4, 4, 5.2); g.stroke();
-    if (sl < 0.5) { g.fillStyle = "#fff"; g.strokeStyle = "#5a2210"; g.lineWidth = 0.5; [[-0.6, 6.3], [2.4, 6.2]].forEach(function (f2) { g.beginPath(); g.moveTo(f2[0] - 0.6, f2[1] - 0.2); g.lineTo(f2[0], f2[1] + 1.3); g.lineTo(f2[0] + 0.6, f2[1] - 0.2); g.closePath(); g.fill(); g.stroke(); }); }   // two little fangs
+    g.save(); aInk(g, aG(g, -6, 9, FC, FCM, FCL), "#6a3070", 1.2); g.clip(); g.fillStyle = "rgba(255,120,190,.38)"; g.beginPath(); g.ellipse(-5.6, 3, 2.2, 1.4, 0, 0, 7); g.ellipse(6.4, 2.6, 2.2, 1.4, 0, 0, 7); g.fill(); g.restore();
+    g.beginPath(); g.ellipse(0.8, 4.2, 4.6, 3.4, 0, 0, 7); g.fillStyle = aG(g, 1, 7.6, "#fffaf6", FCM, FCL); g.fill();   // the muzzle (no outline: it is part of the face)
+    if (sl > 0.5) [[-3.2, -0.6], [4.4, -0.8]].forEach(function (e3) { g.strokeStyle = "#4a2060"; g.lineWidth = 1.1; g.beginPath(); g.arc(e3[0], e3[1] - 0.8, 2.2, 0.35, Math.PI - 0.35); g.stroke(); g.beginPath(); g.moveTo(e3[0] - 2.4, e3[1] + 0.2); g.lineTo(e3[0] - 3.1, e3[1] + 0.9); g.stroke(); });   // asleep: eyes shut, with lashes
+    else { aEye(g, -3.2, -0.8, 2.6, "#ffb83a", "#4a2060", false, 0.45); aEye(g, 4.4, -1, 2.7, "#ffb83a", "#4a2060", false, 0.45);
+      g.strokeStyle = "#6a3478"; g.lineWidth = 1.1; g.beginPath(); g.moveTo(-5.4, -4.4); g.quadraticCurveTo(-3.4, -5.4, -1.4, -4.6); g.moveTo(2.2, -4.8); g.quadraticCurveTo(4.6, -5.8, 6.8, -4.6); g.stroke(); }
+    g.beginPath(); g.moveTo(0.8, 2.2); g.quadraticCurveTo(-1, 1.6, -0.8, 2.6); g.quadraticCurveTo(0.8, 4.2, 2.4, 2.6); g.quadraticCurveTo(2.6, 1.6, 0.8, 2.2); g.fillStyle = "#7a2a6a"; g.fill();   // nose
+    g.strokeStyle = "#6a2462"; g.lineWidth = 1; g.beginPath(); g.moveTo(-2.4, 5.4); g.quadraticCurveTo(0.8, 7.6 - sl * 1.4, 4, 5.2); g.stroke();
+    if (sl < 0.5) { g.fillStyle = "#fff"; g.strokeStyle = "#6a2462"; g.lineWidth = 0.5; [[-0.6, 6.3], [2.4, 6.2]].forEach(function (f2) { g.beginPath(); g.moveTo(f2[0] - 0.6, f2[1] - 0.2); g.lineTo(f2[0], f2[1] + 1.3); g.lineTo(f2[0] + 0.6, f2[1] - 0.2); g.closePath(); g.fill(); g.stroke(); }); }   // two little fangs
     aShine(g, -3, -4.6, 2.6, 0.9, 0.4, -0.3);
+    // the Warden's circlet: a gold band across the top of the mane with a prism gem that shifts colour
+    g.strokeStyle = "#5a3a10"; g.lineWidth = 3.4; g.beginPath(); g.moveTo(-8.4, -6.6); g.quadraticCurveTo(0.4, -11.4, 9.2, -6.8); g.stroke();
+    g.strokeStyle = aG(g, -10, -6, "#fff2b0", "#ffcf4a", "#c88a1a"); g.lineWidth = 2; g.stroke();
+    var gh = (t * 40) % 360; g.beginPath(); g.moveTo(0.4, -12.6); g.lineTo(2.7, -9.4); g.lineTo(0.4, -6.6); g.lineTo(-1.9, -9.4); g.closePath();
+    var gg2 = g.createLinearGradient(-2, -12.6, 2.7, -6.6); gg2.addColorStop(0, "hsl(" + gh + ",100%,85%)"); gg2.addColorStop(0.5, "hsl(" + ((gh + 120) % 360) + ",95%,70%)"); gg2.addColorStop(1, "hsl(" + ((gh + 240) % 360) + ",90%,62%)");
+    aInk(g, gg2, "#5a3a10", 0.9); star(-0.4, -10.6, 1.1, "#ffffff", 0.95);
+    if (sl < 0.5) star(0.4, -14.2, 1.4 + Math.sin(t * 4) * 0.6, "#fff8d0", 0.8);
     g.restore(); g.restore();
   }
   function gdSl() { return GD.sleep ? (GD.wk > 0 ? clamp(GD.wk / 1.5 * 1.6 - 0.3, 0, 1) : 1) : 0; }
@@ -23191,7 +23204,7 @@
   function drawIsleHud(g, now) {
     if (!cave || !cave.isle) return; var W2 = ISLW, F = cave.F;
     if (!panelOpen && !trans) isleActs().forEach(function (a) { drawPill(g, now, a.label + (coarse ? "" : " (F)"), ox + a.x * ts, oy + a.y * ts, false, a.fn); });
-    if (cave.port || !W2) return; var w = 240, x = (vw - w) / 2, y = 108, alive = (F.mobs || []).filter(function (q) { return !q.def; }).length;
+    if (cave.port || !W2 || window.__NOPILL) return; var w = 240, x = (vw - w) / 2, y = 108, alive = (F.mobs || []).filter(function (q) { return !q.def; }).length;
     var txt = W2.done ? (W2.of ? "Island cleared: open the chests!" : "Picked clean") : W2.wave ? "Wave " + W2.wave + " of " + W2.of + " · " + alive + " left" : "The crew is coming...";
     g.fillStyle = "rgba(6,20,34,.8)"; mrr(g, x, y, w, 40, 12); g.fill(); g.font = "800 10px Nunito, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = TIER_C[cave.tier]; g.fillText(skulls(cave.tier) + " " + TIER_N[cave.tier].toUpperCase() + " ISLAND · " + cave.Q.n, vw / 2, y + 14);
     g.font = "900 14px Nunito, system-ui, sans-serif"; g.fillStyle = W2.done ? "#ffd23f" : "#f6eedb"; g.fillText(txt, vw / 2, y + 32);
@@ -23701,6 +23714,7 @@
       rainStreaks(g, now, wrn, wst, function (sx, sy) { var wx = (sx - sox) / k, wy = (sy - soy) / k; if (I.some(function (Q) { return Math.hypot(Q.x - wx, Q.y - wy) < Q.r; })) rainPip(wx, wy, 1); else waterRing(wx, wy, 0.03, 1, 0.7); }, function () { return [Math.random() * vw, Math.random() * (vh + 40) - 20]; });
       drawBoltScr(g, 0, vh * 0.7); } else if (WX.flash > 0 || WX.bolt) drawBoltScr(g, 0, vh * 0.7); if (snk > 0) sceneGlow(g, SLI, snk);
     seaFogDraw(g, now, k, shx, shy);   // WEATHER AT SEA: fog, then the lighthouse beam cutting through it
+    if (!window.__NOPILL) {   // (trailer capture hides the sea HUD)
     // off-screen pointers: home, the target, and pirates
     var arrow = function (wx, wy, col, lbl) { var p2 = seaToScreen(wx, wy); if (p2[0] > 20 && p2[0] < vw - 20 && p2[1] > 70 && p2[1] < vh - 20) return; var a = Math.atan2(p2[1] - vh / 2, p2[0] - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 26, vw - 26), ey = clamp(vh / 2 + Math.sin(a) * vh, 84, vh - 30); g.save(); g.translate(ex, ey); g.rotate(a); g.fillStyle = col; g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, -8); g.lineTo(-6, 8); g.closePath(); g.fill(); g.restore(); if (lbl) { g.font = "800 11px Nunito, system-ui, sans-serif"; g.fillStyle = col; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.strokeText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); g.fillText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); } };
     arrow(I[0].x, I[0].y, "#ffd23f", "Pier"); if (s.tgt && s.tgt.isl) arrow(s.tgt.x, s.tgt.y, "#e8fbff", ""); s.ships.forEach(function (sh) { if (!sh.sink && seeShip(sh)) arrow(sh.x, sh.y, "#ff6a5a", ""); });
@@ -23713,6 +23727,7 @@
     g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hcx - hww, hcy, hww, 24, 9); g.fill(); g.strokeStyle = "rgba(255,210,63,.5)"; g.lineWidth = 1; g.stroke(); g.fillStyle = "#ffd23f"; g.textAlign = "right"; g.fillText(htx, hcx - 10, hcy + 16); g.textAlign = "center"; sc.btns.push({ x: hcx - hww, y: hcy, w: hww, h: 24, fn: openHold });
     if (s.wx) { var WL = { storm: ["Storm", "the wind is pushing you", "#ffb0a0"], fog: ["Fog", shipUp("nest") ? "the lookout keeps watch" : "you can't see far", "#cfe0e8"], calm: ["Glassy calm", "no wind, no pirates", "#7af0ff"], rain: ["Rain", "", "#bfe0ff"], fair: ["Fair winds", "", "#e8fbff"] }[s.wx.k];
       g.font = "800 11px Nunito, system-ui, sans-serif"; var wtx = WL[0] + (WL[1] ? " \u00b7 " + WL[1] : ""), ww = g.measureText(wtx).width + 20; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx + hw + 8 - ww, hy + 22, ww, 22, 9); g.fill(); g.fillStyle = WL[2]; g.textAlign = "right"; g.fillText(wtx, hx + hw - 2, hy + 37); g.textAlign = "center"; }
+    }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)";
     texts.forEach(function (tx) { var p3 = seaToScreen(tx.x, tx.y); g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, p3[0], p3[1]); g.fillText(tx.s, p3[0], p3[1]); }); g.globalAlpha = 1;
     if (!panelOpen && !trans && !s.chart) { seaActions().forEach(function (a, n) { var p4 = seaToScreen(a.wx, a.wy); ocPill(g, now, a.label, p4[0], p4[1] - n * 40, a.fn); }); }
