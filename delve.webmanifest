@@ -1,0 +1,16 @@
+{
+  "name": "SwampRealms: Delve",
+  "short_name": "Delve",
+  "description": "A 2D dig-and-build sandbox in the swamp.",
+  "start_url": "/sandbox",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#0d110a",
+  "theme_color": "#0d110a",
+  "icons": [
+    { "src": "/delve-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/delve-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

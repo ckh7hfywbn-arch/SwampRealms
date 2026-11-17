@@ -3154,3 +3154,19 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 @keyframes rotArc{0%,18%{transform:rotate(30deg);opacity:.35}45%,80%{transform:rotate(-60deg);opacity:1}100%{transform:rotate(30deg);opacity:.35}}
 @keyframes rotHop{0%,50%,70%,100%{transform:translateY(0)}60%{transform:translateY(-8px)}}
 @media(prefers-reduced-motion:reduce){.sbx-rot::before,.sbx-rot::after,.rot-arc,.rot-dev,.rot-frog{animation:none}.rot-dev{transform:rotate(-90deg)}}
+/* touch HUD size: --hz (set in resize) shrinks every HUD layer on short landscape phones */
+.sbx-stage{--hz:1}
+.sbx-stage>.sbx-hud,.sbx-stage>.sbx-trail,.sbx-stage>.sbx-hint,.sbx-stage>.sbx-bcard,.sbx-stage>.sbx-toast,.sbx-stage>.sbx-banner,.sbx-stage>.sbx-pops,.sbx-stage>.sbx-pad,.sbx-stage>.sbx-ctl,.sbx-stage>.sbx-dock,.sbx-stage>.p8-devchip{zoom:var(--hz)}
+html.sbx-txbig .sbx-stage>.sbx-toast,html.sbx-txbig .sbx-stage>.sbx-hint,html.sbx-txbig .sbx-stage>.sbx-pops,html.sbx-txbig .sbx-stage>.sbx-banner,html.sbx-txbig .sbx-stage>.sbx-trail{zoom:calc(var(--hz) * var(--ui-tx,1))}
+/* the iPhone "play full screen" tip on the title screen */
+.tt-ios{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:3;display:flex;align-items:center;gap:10px;max-width:min(360px,46%);padding:9px 10px 9px 9px;border-radius:14px;background:linear-gradient(#0b1a15f2,#050e0bf8);border:1px solid #f2c14e8c;box-shadow:0 14px 40px -10px #000,0 0 24px -6px #f2c14e40;color:#d8eadf;font:700 .78rem/1.3 Nunito,system-ui,sans-serif;animation:iosIn .5s .8s both cubic-bezier(.2,1.4,.4,1)}
+.tt-ios[hidden]{display:none}
+.tt-ios img{width:40px;height:40px;border-radius:10px;flex:none;image-rendering:auto;box-shadow:0 4px 10px -4px #000}
+.tt-ios b{display:block;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:.98rem;color:#ffe9a8;margin-bottom:1px}
+.tt-ios i{font-style:normal;color:#9ff0cf;font-weight:800}
+.tt-ios button{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid #4ee6b455;background:#10231c;color:#d8eadf;font-size:1.1rem;line-height:1;cursor:pointer}
+@keyframes iosIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.sbx-title .tt-col,.sbx-title .tt-foot,.sbx-title .tt-ios{zoom:var(--hz,1)}
+/* windows shrink with the HUD on short landscape phones too */
+.sbx-stage>.sbx-pack,.sbx-stage>.sbx-panel,.sbx-stage>.sbx-pause>*,.sbx-stage>.sbx-dead>*{zoom:var(--hz)}
+html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sbx-txbig .sbx-stage>.sbx-pause>*,html.sbx-txbig .sbx-stage>.sbx-dead>*{zoom:calc(var(--hz) * var(--ui-tx,1))}

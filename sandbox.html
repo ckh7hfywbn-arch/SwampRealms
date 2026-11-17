@@ -24,6 +24,13 @@
 <meta name="twitter:image:alt" content="SwampRealms: Delve. A cabin above a torch-lit cave full of glowing ore.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d110a'/%3E%3Crect x='7' y='6' width='14' height='20' rx='3' transform='rotate(-8 14 16)' fill='%23f2c14e'/%3E%3Cpath d='M14 11l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z' transform='rotate(-8 14 16)' fill='%231a1405'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0d110a">
+<!-- Add to Home Screen: opens Delve full screen and sideways (the only way to get true full screen on an iPhone) -->
+<link rel="manifest" href="delve.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Delve">
+<link rel="apple-touch-icon" href="delve-icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Caveat:wght@600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
@@ -31,7 +38,7 @@
 <link rel="stylesheet" href="styles.css?v=cardstats1">
 <link rel="stylesheet" href="ui.css?v=cardback1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui116-landscape">
+<link rel="stylesheet" href="sandbox.css?v=ui117-hudfit">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -171,6 +178,11 @@ html.dl-on,html.dl-on body{overflow:hidden}
     <p class="tt-tag">Dig deep. Build big. Light up the swamp.</p>
     <div class="tt-btns" id="sbxTBtns"></div>
    </div>
+   <div class="tt-ios" id="sbxIosFs" hidden>
+    <img src="delve-icon-180.png" alt="">
+    <span><b>Play full screen</b>Tap your browser's <i>Share</i> button, then <i>Add to Home Screen</i>. Open Delve from its icon.</span>
+    <button type="button" data-iosfs-x aria-label="Hide this tip">&times;</button>
+   </div>
    <div class="tt-foot">
     <a class="tt-link" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>SwampRealms home</a>
     <a class="tt-link" href="arcade.html">More games</a>
@@ -262,7 +274,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="delve-furniture.js?v=furn8" onload="__dl('furn')"></script>
 <script src="delve-decor.js?v=decor4" onload="__dl('decor')"></script>
 <script src="delve-pixmobs.js?v=pix1" onload="__dl('pix')"></script>
-<script src="sandbox.js?v=delve461-landscape" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve462-hudfit" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.

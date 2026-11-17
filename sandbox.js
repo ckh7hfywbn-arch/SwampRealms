@@ -21127,6 +21127,10 @@
   }, 2000);
   function resize() {
     var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(dprCap, window.devicePixelRatio || 1);
+    // TOUCH HUD SIZE: on a phone held sideways the screen is short (an iPhone in the browser leaves under 300px), so the buttons, bars and
+    // hotbar shrink with the height (CSS zoom by --hz on each HUD layer). Desktop and tall screens stay at full size.
+    var hz = coarse && vw > vh ? clamp(vh / 440, 0.62, 1) : 1; hz = Math.round(hz * 100) / 100;
+    if (hz !== HUDZ) { HUDZ = hz; stageEl.style.setProperty("--hz", hz); setTimeout(function () { try { fitDock(); applyLayout(); } catch (e) {} }, 0); }
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr); cv.style.width = vw + "px"; cv.style.height = vh + "px";
     ts = Math.max(12, Math.round(clamp(Math.max(vw, vh) / 34, coarse ? 24 : 15, 40) * (S ? S.zoom : 1)));
     if (cave && cave.F) ts = caveTs();
@@ -21151,6 +21155,7 @@
     return clamp(k, 3, cave.bld ? 5 : 4) * 16;
   }
   // Control size (joystick, arrows, jump, hotbar, menu buttons): a per-device setting kept outside the world saves. CSS reads it as --cs.
+  var HUDZ = 1;   // the touch HUD size (see resize)
   var UIS = 1; try { UIS = +localStorage.getItem("swamp-delve-ui") || 1; } catch (e) {}
   function setUi(v) { UIS = clamp(Math.round(v * 10) / 10, 0.6, 1.8); stageEl.style.setProperty("--cs", UIS); fitDock(); try { localStorage.setItem("swamp-delve-ui", String(UIS)); } catch (e) {} }
   function fitDock() { var d = document.querySelector(".sbx-dock"); if (d && d.offsetWidth) d.style.setProperty("--ds", Math.min(UIS, (stageEl.clientWidth - 12) / d.offsetWidth)); }   // the hotbar grows with the setting only as far as the screen is wide enough
@@ -21212,7 +21217,7 @@
     CTLR[k].forEach(function (el) {
       el.classList.toggle("lay-off", !!L.hid);
       var half = (el.offsetWidth || 64) * L.s / 2 + 4, cx = clamp(L.x * W, half, Math.max(half, W - half)), cy = clamp(L.y * H, half, Math.max(half, H - half));
-      el.style.left = cx + "px"; el.style.top = cy + "px"; el.style.setProperty("--bs", L.s); el.style.opacity = L.o < 1 ? L.o : "";
+      var zz = HUDZ || 1; el.style.left = cx / zz + "px"; el.style.top = cy / zz + "px"; el.style.setProperty("--bs", L.s);   // (the controls layer is zoomed by --hz) el.style.opacity = L.o < 1 ? L.o : "";
     });
   }
   function applyLayout() {
@@ -27130,6 +27135,16 @@
     if (up) { keys.l = keys.r = keys.j = keys.d = keys.u = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; }
     var sb = $("sbxRotSub"); if (sb) sb.textContent = titleOpen ? "Then pick up where you left off." : "Your game is paused. It'll be right here when you turn back.";
   }
+  // iPhones can't make a web page full screen, but a Home Screen icon opens Delve with no browser bars at all: say so once, on the title screen
+  (function () {
+    var el = $("sbxIosFs"); if (!el) return;
+    var ios = /iPhone|iPod/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) <= 600);
+    var app = navigator.standalone || (matchMedia && (matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches));
+    var off = 0; try { off = +localStorage.getItem("swamp-delve-iosfs") || 0; } catch (e) {}
+    if (ios && !app && off < 3) el.hidden = false;
+    el.addEventListener("click", function (e) { if (!e.target.closest("[data-iosfs-x]")) return; el.hidden = true; try { localStorage.setItem("swamp-delve-iosfs", "9"); } catch (er) {} });
+    try { localStorage.setItem("swamp-delve-iosfs", String(off + 1)); } catch (e) {}   // (it stops showing by itself after three visits)
+  })();
   if (ROTQ.addEventListener) ROTQ.addEventListener("change", rotChk); else if (ROTQ.addListener) ROTQ.addListener(rotChk);
   document.addEventListener("fullscreenchange", rotLock); document.addEventListener("webkitfullscreenchange", rotLock);
   (function () { var rb = $("sbxRot"); if (rb) rb.addEventListener("click", function () { rb.classList.remove("show"); }); })();   // (the dev preview closes with a tap)
